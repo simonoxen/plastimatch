@@ -589,12 +589,14 @@ bspline_make_grad (float* cond_x, float* cond_y, float* cond_z,
 
 void
 report_score (
-    char *alg, 
+    Bspline_parms *parms,
     Bspline_xform *bxf, 
-    Bspline_state *bst, 
-    int num_vox, 
-    double timing)
+    Bspline_state *bst
+) 
 {
+    Reg_parms* reg_parms = &parms->reg_parms;
+    Bspline_score* ssd = &bst->ssd;
+
     int i;
     float ssd_grad_norm, ssd_grad_mean;
 
@@ -602,25 +604,34 @@ report_score (
     ssd_grad_norm = 0;
     ssd_grad_mean = 0;
     for (i = 0; i < bxf->num_coeff; i++) {
-	ssd_grad_mean += bst->ssd.grad[i];
-	ssd_grad_norm += fabs (bst->ssd.grad[i]);
+    ssd_grad_mean += bst->ssd.grad[i];
+    ssd_grad_norm += fabs (bst->ssd.grad[i]);
     }
 
     // JAS 04.19.2010
     // MI scores are between 0 and 1
     // The extra decimal point resolution helps in seeing
     // if the optimizer is performing adequately.
-    if (!strcmp (alg, "MI")) {
-	logfile_printf (
-	    "%s[%2d,%3d] %1.8f NV %6d GM %9.3f GN %9.3f [%9.3f secs]\n", 
-	    alg, bst->it, bst->feval, bst->ssd.score, num_vox, ssd_grad_mean, 
-	    ssd_grad_norm, timing);
+    if (parms->metric == BMET_MI) {
+    logfile_printf (
+        "MI[%2d,%3d] %1.8f NV %6d GM %9.3f GN %9.3f [ %9.3f s ]\n",
+         bst->it, bst->feval, ssd->score, ssd->num_vox,
+         ssd_grad_mean, ssd_grad_norm, ssd->time_smetric + ssd->time_rmetric);
     } else {
-	logfile_printf (
-	    "%s[%2d,%3d] %9.3f NV %6d GM %9.3f GN %9.3f [%9.3f secs]\n", 
-	    alg, bst->it, bst->feval, bst->ssd.score, num_vox, ssd_grad_mean, 
-	    ssd_grad_norm, timing);
+    logfile_printf (
+        "MSE[%2d,%3d] %9.3f NV %6d GM %9.3f GN %9.3f [ %9.3f s ]\n", 
+         bst->it, bst->feval, ssd->score, ssd->num_vox,
+         ssd_grad_mean, ssd_grad_norm, ssd->time_smetric + ssd->time_rmetric);
     }
+
+    /* Display extra stats if regularization is enabled */
+    if (reg_parms->lambda > 0) {
+    logfile_printf (
+        "         SM %9.3f RM %9.3f       %3.3f s | %3.3f s  \n",
+         ssd->smetric, ssd->rmetric,
+         ssd->time_smetric, ssd->time_rmetric);
+    }
+
 }
 
 /* -----------------------------------------------------------------------
@@ -850,6 +861,12 @@ bspline_score (
 	printf ("comuting regularization\n");
 	bspline_regularize_score (parms, bst, bxf, fixed, moving);
     }
+
+    /* Compute total score to send of optimizer */
+    bst->ssd.score = bst->ssd.smetric + reg_parms->lambda * bst->ssd.rmetric;
+
+    /* Report results of this iteration */
+    report_score (parms, bxf, bst);
 
 #if defined (commentout)
     /* Add landmark score/gradient to image score/gradient */

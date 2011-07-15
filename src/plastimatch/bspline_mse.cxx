@@ -54,7 +54,6 @@ bspline_score_h_mse (
 {
     Bspline_score* ssd = &bst->ssd;
     double score_tile;
-    int num_vox;
 
     float* f_img = (float*)fixed->img;
     float* m_img = (float*)moving->img;
@@ -63,7 +62,6 @@ bspline_score_h_mse (
     int idx_tile;
 
     Timer timer;
-    double interval;
 
     size_t cond_size = 64*bxf->num_knots*sizeof(float);
     float* cond_x = (float*)malloc(cond_size);
@@ -76,8 +74,8 @@ bspline_score_h_mse (
     plm_timer_start (&timer);
 
     // Zero out accumulators
-    ssd->score = 0;
-    num_vox = 0;
+    ssd->smetric = 0;
+    ssd->num_vox = 0;
     score_tile = 0;
     memset(ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset(cond_x, 0, cond_size);
@@ -185,7 +183,7 @@ bspline_score_h_mse (
 
                 // Store the score!
                 score_tile += diff * diff;
-                num_vox++;
+                ssd->num_vox++;
 
                 // Compute dc_dv
                 dc_dv[0] = diff * m_grad[3 * idx_moving_round + 0];
@@ -225,14 +223,13 @@ bspline_score_h_mse (
     free (cond_y);
     free (cond_z);
 
-    ssd->score = score_tile / num_vox;
+    ssd->smetric = score_tile / ssd->num_vox;
 
     for (i = 0; i < bxf->num_coeff; i++) {
-        ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
+        ssd->grad[i] = 2 * ssd->grad[i] / ssd->num_vox;
     }
 
-    interval = plm_timer_report (&timer);
-    report_score ("MSE", bxf, bst, num_vox, interval);
+    ssd->time_smetric = plm_timer_report (&timer);
 }
 
 
@@ -259,7 +256,6 @@ bspline_score_g_mse (
 {
     Bspline_score* ssd = &bst->ssd;
     double score_tile;
-    int num_vox;
 
     float* f_img = (float*)fixed->img;
     float* m_img = (float*)moving->img;
@@ -268,7 +264,6 @@ bspline_score_g_mse (
     int idx_tile;
 
     Timer timer;
-    double interval;
 
     size_t cond_size = 64*bxf->num_knots*sizeof(float);
     float* cond_x = (float*)malloc(cond_size);
@@ -281,8 +276,8 @@ bspline_score_g_mse (
     plm_timer_start (&timer);
 
     // Zero out accumulators
-    ssd->score = 0;
-    num_vox = 0;
+    int num_vox = 0;
+    ssd->smetric = 0;
     score_tile = 0;
     memset(ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset(cond_x, 0, cond_size);
@@ -420,6 +415,7 @@ bspline_score_g_mse (
 
     } /* LOOP_THRU_VOL_TILES */
 
+    ssd->num_vox = num_vox;
 
     /* Now we have a ton of bins and each bin's 64 slots are full.
      * Let's sum each bin's 64 slots.  The result with be dc_dp. */
@@ -429,14 +425,14 @@ bspline_score_g_mse (
     free (cond_y);
     free (cond_z);
 
-    ssd->score = score_tile / num_vox;
+    ssd->smetric = score_tile / ssd->num_vox;
 
     for (i = 0; i < bxf->num_coeff; i++) {
-        ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
+        ssd->grad[i] = 2 * ssd->grad[i] / ssd->num_vox;
     }
 
-    interval = plm_timer_report (&timer);
-    report_score ("MSE", bxf, bst, num_vox, interval);
+    /* Save for reporting */
+    ssd->time_smetric = plm_timer_report (&timer);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -473,10 +469,8 @@ bspline_score_c_mse (
     float* m_img = (float*) moving->img;
     float* m_grad = (float*) moving_grad->img;
     float dxyz[3];
-    int num_vox;
     int pidx, qidx;
     Timer timer;
-    double interval;
     float m_val;
 
     /* GCS: Oct 5, 2009.  We have determined that sequential accumulation
@@ -495,9 +489,9 @@ bspline_score_c_mse (
 
     plm_timer_start (&timer);
 
-    ssd->score = 0.0f;
+    ssd->num_vox = 0;
+    ssd->smetric = 0.0f;
     memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
-    num_vox = 0;
     LOOP_THRU_ROI_Z (rijk, fijk, bxf) {
         p[2] = REGION_INDEX_Z (rijk, bxf);
         q[2] = REGION_OFFSET_Z (rijk, bxf);
@@ -562,7 +556,7 @@ bspline_score_c_mse (
                 }
 
                 score_acc += diff * diff;
-                num_vox++;
+                ssd->num_vox++;
 
             } /* LOOP_THRU_ROI_X */
         } /* LOOP_THRU_ROI_Y */
@@ -573,11 +567,10 @@ bspline_score_c_mse (
     }
 
     /* Normalize score for MSE */
-    ssd->score = score_acc / num_vox;
+    ssd->smetric = score_acc / ssd->num_vox;
     for (i = 0; i < bxf->num_coeff; i++) {
-        ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
+        ssd->grad[i] = 2 * ssd->grad[i] / ssd->num_vox;
     }
 
-    interval = plm_timer_report (&timer);
-    report_score ("MSE", bxf, bst, num_vox, interval);
+    ssd->time_smetric = plm_timer_report (&timer);
 }

@@ -101,7 +101,7 @@ main (int argc, char* argv[])
         break;
     case 'b':
         bxf = (Bspline_xform*)load (&options, ANALYTIC);
-        S = vf_regularize_analytic (&bscore, parms, bxf);
+//        vf_regularize_analytic (&bscore, parms, bxf);
         break;
     default:
         printf ("Warning: Using implementation 'a'\n");

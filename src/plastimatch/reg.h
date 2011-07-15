@@ -47,7 +47,7 @@ float
 vf_regularize_numerical (Volume* vol);
 
 gpuit_EXPORT
-float
+void
 vf_regularize_analytic (
     Bspline_score *bspline_score, 
     const Reg_parms* reg_parms,

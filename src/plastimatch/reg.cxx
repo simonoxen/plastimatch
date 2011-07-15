@@ -12,6 +12,7 @@
 #include "print_and_exit.h"
 #include "reg.h"
 #include "volume.h"
+#include "plm_timer.h"
 
 //#define DEBUG
 
@@ -280,7 +281,7 @@ get_Vmatrix (double* V, double* X, double* Y, double* Z)
     }
 }
 
-double
+void
 region_smoothness (
     Bspline_score *bspline_score, 
     const Reg_parms* reg_parms,    
@@ -295,29 +296,29 @@ region_smoothness (
     int i,j;
 
     for (j=0; j<64; j++) {
+    	/* S = pVp operation ----------------------------- */
         for (i=0; i<64; i++) {
             X[j] += bxf->coeff[3*knots[i]+0] * V[64*j + i];
             Y[j] += bxf->coeff[3*knots[i]+1] * V[64*j + i];
             Z[j] += bxf->coeff[3*knots[i]+2] * V[64*j + i];
         }
 
-	/* S = pVp operation */
         S += X[j] * bxf->coeff[3*knots[j]+0];
         S += Y[j] * bxf->coeff[3*knots[j]+1];
         S += Z[j] * bxf->coeff[3*knots[j]+2];
+        /* ------------------------------------------------ */
 
-	/* dS/dp = 2Vp operation */
-	bspline_score->grad[3*knots[j]+0] += 2 * reg_parms->lambda * X[j];
-	bspline_score->grad[3*knots[j]+1] += 2 * reg_parms->lambda * Y[j];
-	bspline_score->grad[3*knots[j]+2] += 2 * reg_parms->lambda * Z[j];
+        /* dS/dp = 2Vp operation */
+        bspline_score->grad[3*knots[j]+0] += 2 * reg_parms->lambda * X[j];
+        bspline_score->grad[3*knots[j]+1] += 2 * reg_parms->lambda * Y[j];
+        bspline_score->grad[3*knots[j]+2] += 2 * reg_parms->lambda * Z[j];
     }
 
-    bspline_score->score += reg_parms->lambda * S;
-
-    return S;
+//    bspline_score->score += reg_parms->lambda * S;
+    bspline_score->rmetric += S;
 }
 
-float
+void
 vf_regularize_analytic (
     Bspline_score *bspline_score, 
     const Reg_parms* reg_parms,
@@ -336,6 +337,9 @@ vf_regularize_analytic (
     double V[4096];                     /* 64 x 64 matrix */
     int knots[64];                      /* local set for current region */
     double gs[3];                       /* grid spacing */
+    Timer timer;
+
+    plm_timer_start (&timer);
 
     // Total number of regions in grid
     n = bxf->rdims[0] * bxf->rdims[1] * bxf->rdims[2];
@@ -367,41 +371,40 @@ vf_regularize_analytic (
         eval_integral (Y, QY[0], gs[1]);
         eval_integral (Z, QZ[0], gs[2]);
         get_Vmatrix (V, X, Y, Z);
-        S += region_smoothness (bspline_score, reg_parms, bxf, V, knots);
+        region_smoothness (bspline_score, reg_parms, bxf, V, knots);
 
         eval_integral (X, QX[0], gs[0]);
         eval_integral (Y, QY[2], gs[1]);
         eval_integral (Z, QZ[0], gs[2]);
         get_Vmatrix (V, X, Y, Z);
-        S += region_smoothness (bspline_score, reg_parms, bxf, V, knots);
+        region_smoothness (bspline_score, reg_parms, bxf, V, knots);
 
         eval_integral (X, QX[0], gs[0]);
         eval_integral (Y, QY[0], gs[1]);
         eval_integral (Z, QZ[2], gs[2]);
         get_Vmatrix (V, X, Y, Z);
-        S += region_smoothness (bspline_score, reg_parms, bxf, V, knots);
+        region_smoothness (bspline_score, reg_parms, bxf, V, knots);
 
         eval_integral (X, QX[1], gs[0]);
         eval_integral (Y, QY[1], gs[1]);
         eval_integral (Z, QZ[0], gs[2]);
         get_Vmatrix (V, X, Y, Z);
-        S += region_smoothness (bspline_score, reg_parms, bxf, V, knots);
+        region_smoothness (bspline_score, reg_parms, bxf, V, knots);
 
         eval_integral (X, QX[1], gs[0]);
         eval_integral (Y, QY[0], gs[1]);
         eval_integral (Z, QZ[1], gs[2]);
         get_Vmatrix (V, X, Y, Z);
-        S += region_smoothness (bspline_score, reg_parms, bxf, V, knots);
+        region_smoothness (bspline_score, reg_parms, bxf, V, knots);
 
         eval_integral (X, QX[0], gs[0]);
         eval_integral (Y, QY[1], gs[1]);
         eval_integral (Z, QZ[1], gs[2]);
         get_Vmatrix (V, X, Y, Z);
-        S += region_smoothness (bspline_score, reg_parms, bxf, V, knots);
+        region_smoothness (bspline_score, reg_parms, bxf, V, knots);
     }
 
-
-    return (float)S;
+    bspline_score->time_rmetric = plm_timer_report (&timer);
 }
 
 
@@ -570,32 +573,22 @@ regularize (
     const Bspline_xform* bxf
 )
 {
-    float S = 0.0;      /* smoothness score */
-    float* dSdP;        /* smoothness grad  */
-
     switch (reg_parms->implementation) {
     case 'a':
-        S = vf_regularize_numerical (compute_vf_from_coeff (bxf));
+//        S = vf_regularize_numerical (compute_vf_from_coeff (bxf));
+        print_and_exit (
+            "Sorry, regularization implementation (%c) is currently unavailable.\n",
+            reg_parms->implementation
+        );
         break;
     case 'b':
-        //S = vf_regularize_analytic (bxf);
-        S = vf_regularize_analytic (bspline_score, reg_parms, bxf);
+        vf_regularize_analytic (bspline_score, reg_parms, bxf);
         break;
     default:
-	print_and_exit ("Error: unknown reg_parms->implementation (%c)\n",
-	    reg_parms->implementation);
+        print_and_exit (
+            "Error: unknown reg_parms->implementation (%c)\n",
+            reg_parms->implementation
+        );
         break;
     }
-
-    printf ("            %9.3f S\n", S);
-
-    /* Grad is probably best updated inside "flavors" */
-    /* Not sure if score should be done here or inside "flavors" */
-
-#if 0
-    Leave this commented out until the gradient is implemented
-    or the optimization will probably get stuck...
-    *score += reg_parms->lambda * S;
-#endif
-
 }

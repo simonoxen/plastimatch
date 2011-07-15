@@ -39,21 +39,33 @@ enum BsplineMetric {
 
 class Bspline_score {
 public:
-    float score;
-    float* grad;
+    float score;         /* Total Score (sent to optimizer) */
+    float smetric;       /* Similarity metric */
+    float rmetric;       /* Regularization metric */
+    int num_vox;         /* Number of voxel with correspondence */
+    float* grad;         /* Change in score wrt control coeff */
+
+    double time_smetric;   /* Time to compute similarity metric */
+    double time_rmetric;   /* Time to compute regularization metric */
 public:
     Bspline_score () {
-	score = 0;
-	grad = 0;
+        score = 0;
+        smetric = 0;
+        rmetric = 0;
+        num_vox = 0;
+        grad = 0;
+
+        time_smetric = 0;
+        time_rmetric = 0;
     }
 };
 
 typedef struct bspline_state_struct Bspline_state;
 struct bspline_state_struct {
-    int it;                              /* Number of iterations */
-    int feval;                           /* Number of function evaluations */
-    Bspline_score ssd;                   /* Score and Gradient  */
-    void* dev_ptrs;                      /* GPU Device Pointers */
+    int it;              /* Number of iterations */
+    int feval;           /* Number of function evaluations */
+    Bspline_score ssd;   /* Score and Gradient  */
+    void* dev_ptrs;      /* GPU Device Pointers */
 };
 
 typedef struct BSPLINE_MI_Hist_Parms_struct BSPLINE_MI_Hist_Parms;
@@ -245,8 +257,11 @@ void
 dump_hist (BSPLINE_MI_Hist* mi_hist, int it);
 
 void
-report_score (char *alg, Bspline_xform *bxf, 
-	      Bspline_state *bst, int num_vox, double timing);
+report_score (
+    Bspline_parms *parms,
+    Bspline_xform *bxf, 
+    Bspline_state *bst
+);
 
 /* Debugging routines */
 void
