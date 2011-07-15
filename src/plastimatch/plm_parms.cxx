@@ -258,6 +258,29 @@ set_key_val (
 	    goto error_exit;
 	}
     }
+    else if (!strcmp (key, "regularization"))
+    {
+	if (section == 0) goto error_not_global;
+	if (!strcmp(val,"none")) {
+	    stage->regularization_type = REGULARIZATION_NONE;
+	}
+	else if (!strcmp(val,"analytic")) {
+	    stage->regularization_type = REGULARIZATION_BSPLINE_ANALYTIC;
+	}
+	else if (!strcmp(val,"numeric")) {
+	    stage->regularization_type = REGULARIZATION_BSPLINE_NUMERIC;
+	}
+	else {
+	    goto error_exit;
+	}
+    }
+    else if (!strcmp (key, "regularization_lambda"))
+    {
+	if (section == 0) goto error_not_global;
+	if (sscanf (val, "%f", &stage->regularization_lambda) != 1) {
+	    goto error_exit;
+	}
+    }
     else if (!strcmp (key, "background_val")) {
 	if (section == 0) goto error_not_global;
 	if (sscanf (val, "%g", &stage->background_val) != 1) {

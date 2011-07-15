@@ -55,6 +55,12 @@ enum Subsampling_type {
     SUBSAMPLING_VOXEL_RATE
 };
 
+enum Regularization_type {
+    REGULARIZATION_NONE, 
+    REGULARIZATION_BSPLINE_ANALYTIC, 
+    REGULARIZATION_BSPLINE_NUMERIC
+};
+
 class Stage_parms {
 public:
     /* Stage # */
@@ -66,6 +72,8 @@ public:
     char alg_flavor;
     Threading threading_type;
     int metric_type;
+    Regularization_type regularization_type;
+    float regularization_lambda;
     /* Image subsampling */
     Subsampling_type subsampling_type;
     int fixed_subsample_rate[3];   /* In voxels */
@@ -126,6 +134,8 @@ public:
 	alg_flavor = 0;
 	threading_type = THREADING_CPU_OPENMP;
 	metric_type = METRIC_MSE;
+	regularization_type = REGULARIZATION_BSPLINE_ANALYTIC;
+	regularization_lambda = 0.0f;
 	/* Image subsampling */
 	subsampling_type = SUBSAMPLING_AUTO;
 	fixed_subsample_rate[0] = 4;

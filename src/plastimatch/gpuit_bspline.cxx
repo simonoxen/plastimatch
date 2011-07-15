@@ -66,7 +66,9 @@ do_gpuit_bspline_stage_internal (
     /* Make spatial gradient image */
     moving_grad = volume_make_gradient (moving_ss);
 
-    /* Initialize parms */
+    /* --- Initialize parms --- */
+
+    /* Optimization */
     if (stage->optim_type == OPTIMIZATION_STEEPEST) {
 	parms.optimization = BOPT_STEEPEST;
     } else if (stage->optim_type == OPTIMIZATION_LIBLBFGS) {
@@ -75,6 +77,7 @@ do_gpuit_bspline_stage_internal (
 	parms.optimization = BOPT_LBFGSB;
     }
 
+    /* Metric */
     switch (stage->metric_type) {
     case METRIC_MSE:
 	parms.metric = BMET_MSE;
@@ -86,6 +89,8 @@ do_gpuit_bspline_stage_internal (
     default:
 	print_and_exit ("Undefined metric type in gpuit_bspline\n");
     }
+
+    /* Threading */
     switch (stage->threading_type) {
     case THREADING_CPU_SINGLE:
 	if (stage->alg_flavor == 0) {
@@ -116,6 +121,24 @@ do_gpuit_bspline_stage_internal (
     default:
 	print_and_exit ("Undefined impl type in gpuit_bspline\n");
     }
+
+    /* Regularization */
+    parms.reg_parms.lambda = stage->regularization_lambda;
+    switch (stage->regularization_type) {
+    case REGULARIZATION_NONE:
+	parms.reg_parms.lambda = 0.0f;
+	break;
+    case REGULARIZATION_BSPLINE_ANALYTIC:
+	parms.reg_parms.implementation = 'a';
+	break;
+    case REGULARIZATION_BSPLINE_NUMERIC:
+	parms.reg_parms.implementation = 'b';
+	break;
+    default:
+	print_and_exit ("Undefined regularization type in gpuit_bspline\n");
+    }
+
+    /* Other stuff */
     parms.max_its = stage->max_its;
     parms.max_feval = stage->max_its;
     parms.mi_hist.fixed.bins = stage->mi_histogram_bins;

@@ -741,7 +741,8 @@ bspline_transform_point (
 }
 
 void
-bspline_score (Bspline_parms *parms, 
+bspline_score (
+    Bspline_parms *parms, 
     Bspline_state *bst,
     Bspline_xform* bxf, 
     Volume *fixed, 

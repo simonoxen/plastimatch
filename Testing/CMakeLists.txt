@@ -195,6 +195,7 @@ endif ()
 ##   rect-3.mha    Standard rect, centered
 ##   rect-4.mha    Uchar rect, centered
 ##   sphere-1.mha  Uchar sphere, bg=0, fg=255
+##   sphere-2.mha  Standard sphere, centered
 ##   rtds-ct-1.mha    Synthetic ct
 ##   rtds-dose-1.mha  Synthetic dose
 ##   rtds-s-1.mha     Synthetic ss
@@ -207,110 +208,101 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_TESTING_BUILD_DIR}/donut-1.mha;--output-ss-img;${PLM_TESTING_BUILD_DIR}/donut-ss-1.mha;--output-type;float;--pattern;donut;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--donut-radius;10 10 10;--background;-1000;--foreground;0"
   )
-
 plm_add_test (
   "gauss-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;0 0 0;--gauss-std;10 10 10"
   )
-
 plm_add_test (
   "gauss-2"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_TESTING_BUILD_DIR}/gauss-2.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;10 0 0;--gauss-std;10 10 10"
   )
-
 plm_add_test (
   "gauss-3"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_TESTING_BUILD_DIR}/gauss-3.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;-1000;--gauss-center;10 0 0;--gauss-std;10 10 10"
   )
-
 plm_add_test (
   "gauss-4"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_TESTING_BUILD_DIR}/gauss-4.mha;--output-type;float;--pattern;gauss;--origin;+25 +25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--spacing;-1.31579 -1.31579 2;--background;-1000;--foreground;0;--gauss-center;0 0 0;--gauss-std;10 10 10"
   )
-
 plm_add_test (
   "gauss-5"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_TESTING_BUILD_DIR}/gauss-5.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;20 0 0;--gauss-std;10 10 10"
   )
-
 plm_add_test (
   "gauss-6"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_TESTING_BUILD_DIR}/gauss-6.mha;--output-type;float;--pattern;gauss;--origin;-15 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;10 0 0;--gauss-std;10 10 10"
   )
-
 plm_add_test (
   "gauss-ushort-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_TESTING_BUILD_DIR}/gauss-ushort-1.mha;--output-type;ushort;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;1000;--gauss-center;0 0 0;--gauss-std;10 10 10"
   )
-
 plm_add_test (
   "gauss-ushort-2"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_TESTING_BUILD_DIR}/gauss-ushort-2.mha;--output-type;ushort;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;1000;--gauss-center;10 0 0;--gauss-std;10 10 10"
   )
-
 plm_add_test (
   "gauss-double-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_TESTING_BUILD_DIR}/gauss-double-1.mha;--output-type;double;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;1000;--gauss-center;0 0 0;--gauss-std;10 10 10"
   )
-
 plm_add_test (
   "gauss-double-2"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_TESTING_BUILD_DIR}/gauss-double-2.mha;--output-type;double;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;1000;--gauss-center;10 0 0;--gauss-std;10 10 10"
   )
-
 plm_add_test (
   "rect-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_TESTING_BUILD_DIR}/rect-1.mha;--output-type;float;--output-dose-img;${PLM_TESTING_BUILD_DIR}/rect-1-dose-img.mha;--output-ss-img;${PLM_TESTING_BUILD_DIR}/rect-1-ss-img.mha;--output-dicom;${PLM_TESTING_BUILD_DIR}/rect-1-dicom;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;-1000"
   )
-
 plm_add_test (
   "rect-2"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_TESTING_BUILD_DIR}/rect-2.mha;--output-type;float;--output-dicom;${PLM_TESTING_BUILD_DIR}/rect-2-dicom;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-30 70 -50 50 -50 50"
   )
-
 plm_add_test (
   "rect-3"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_TESTING_BUILD_DIR}/rect-3.mha;--output-type;float;--output-dicom;${PLM_TESTING_BUILD_DIR}/rect-3-dicom;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-50 50 -50 50 -50 50"
   )
-
 plm_add_test (
   "rect-4"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_TESTING_BUILD_DIR}/rect-4.mha;--output-type;uchar;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;1;--rect-size;-50 50 -50 50 -50 50"
   )
-
 plm_add_test (
   "sphere-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_TESTING_BUILD_DIR}/sphere-1.mha;--output-type;uchar;--pattern;sphere;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;255;--sphere-center;0 0 0;--sphere-radius;10 10 10"
+  )
+plm_add_test (
+  "sphere-2"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_TESTING_BUILD_DIR}/sphere-2.mha;--output-type;float;--pattern;sphere;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--sphere-center;0 0 0;--sphere-radius;50 50 50"
   )
 
 ## -------------------------------------------------------------------------
@@ -1465,16 +1457,22 @@ plm_add_test (
   "${PLM_TESTING_DATA_DIR}/plm-register-bspline-itk-output.txt"
   )
 
-
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 3) - rect 2 & rect 3
 ##   register-rect-bspline
+##   register-regularization
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-register-rect-bspline" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "${PLM_TESTING_DATA_DIR}/plm-register-rect-bspline.txt"
+  )
+plm_add_test (
+  "plm-register-regularization" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_TESTING_DATA_DIR}/plm-register-regularization.txt"
   )
 
 ## -------------------------------------------------------------------------
