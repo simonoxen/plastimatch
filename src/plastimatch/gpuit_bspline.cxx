@@ -129,10 +129,10 @@ do_gpuit_bspline_stage_internal (
 	parms.reg_parms.lambda = 0.0f;
 	break;
     case REGULARIZATION_BSPLINE_ANALYTIC:
-	parms.reg_parms.implementation = 'a';
+	parms.reg_parms.implementation = 'b';
 	break;
     case REGULARIZATION_BSPLINE_NUMERIC:
-	parms.reg_parms.implementation = 'b';
+	parms.reg_parms.implementation = 'a';
 	break;
     default:
 	print_and_exit ("Undefined regularization type in gpuit_bspline\n");

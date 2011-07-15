@@ -9,6 +9,7 @@
 #include "bspline.h"
 #include "bspline_xform.h"
 #include "math_util.h"
+#include "print_and_exit.h"
 #include "reg.h"
 #include "volume.h"
 
@@ -306,9 +307,9 @@ region_smoothness (
         S += Z[j] * bxf->coeff[3*knots[j]+2];
 
 	/* dS/dp = 2Vp operation */
-	bspline_score->grad[3*knots[i]+0] += 2 * reg_parms->lambda * X[j];
-	bspline_score->grad[3*knots[i]+1] += 2 * reg_parms->lambda * Y[j];
-	bspline_score->grad[3*knots[i]+2] += 2 * reg_parms->lambda * Z[j];
+	bspline_score->grad[3*knots[j]+0] += 2 * reg_parms->lambda * X[j];
+	bspline_score->grad[3*knots[j]+1] += 2 * reg_parms->lambda * Y[j];
+	bspline_score->grad[3*knots[j]+2] += 2 * reg_parms->lambda * Z[j];
     }
 
     bspline_score->score += reg_parms->lambda * S;
@@ -581,6 +582,8 @@ regularize (
         S = vf_regularize_analytic (bspline_score, reg_parms, bxf);
         break;
     default:
+	print_and_exit ("Error: unknown reg_parms->implementation (%c)\n",
+	    reg_parms->implementation);
         break;
     }
 

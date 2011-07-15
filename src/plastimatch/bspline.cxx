@@ -840,7 +840,6 @@ bspline_score (
 	}
     }
 
-
     /* Regularize */
     if (reg_parms->lambda > 0.0f) {
         regularize (&bst->ssd, reg_parms, bxf);
