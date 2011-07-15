@@ -24,24 +24,6 @@ texture<float, 1, cudaReadModeElementType> tex_coeff;
 texture<float, 1, cudaReadModeElementType> tex_LUT_Bspline_x;
 texture<float, 1, cudaReadModeElementType> tex_LUT_Bspline_y;
 texture<float, 1, cudaReadModeElementType> tex_LUT_Bspline_z;
-
-#define VMEM_INIT()                                             \
-    CUDA_init_vmem (&dev_ptrs->vmem_list)                            
-
-#define VMEM_ALLOC(gpu_addr, mem_size)                          \
-    CUDA_alloc_vmem (gpu_addr, mem_size, &dev_ptrs->vmem_list)       
-
-#define VMEM_TALLY()                                            \
-    CUDA_tally_vmem (&dev_ptrs->vmem_list)                           
-
-#define VMEM_PRINT()                                            \
-    CUDA_print_vmem (&dev_ptrs->vmem_list)                           
-
-#define VMEM_FREE(gpu_addr)                                     \
-    CUDA_free_vmem (gpu_addr, &dev_ptrs->vmem_list)                  
-
-#define VMEM_FREEALL()                                          \
-    CUDA_freeall_vmem (&dev_ptrs->vmem_list)                         
 ////////////////////////////////////////////////////////////
 
 
@@ -88,65 +70,33 @@ CUDA_bspline_mi_init_a (
     Bspline_parms* parms
 )
 {
-    int out_of_gmem;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
 
-    // Keep track of how much memory we allocated
-    // in the GPU global memory.
+    // Keep track of how much memory we allocated in the GPU global memory.
     long unsigned GPU_Memory_Bytes = 0;
-    long unsigned CPU_Pinned_Bytes = 0;
 
     printf ("Allocating GPU Memory\n");
 
-    // Get GPU properties (can we zero-copy?)
-    parms->gpu_zcpy = CUDA_zero_copy_check (parms->gpuid) && parms->gpu_zcpy;
-    if (parms->gpu_zcpy) {
-        // Enable GPU to use pinned CPU memory
-        cudaSetDeviceFlags (cudaDeviceMapHost);
-        VMEM_INIT ();
-        printf ("GPU is using zero copy\n");
-    }
-
-    // Fixed Image (zero copy if possible)
+    // Fixed Image
     // ----------------------------------------------------------
     dev_ptrs->fixed_image_size = fixed->npix * fixed->pix_size;
-    if (parms->gpu_zcpy) {
-        CUDA_alloc_copy ((void **)&dev_ptrs->fixed_image,
-                        (void **)&fixed->img,
-                        dev_ptrs->fixed_image_size,
-                        cudaZeroCopy);
-        CPU_Pinned_Bytes += dev_ptrs->fixed_image_size;
-        printf ("o");
-    } else {
-        CUDA_alloc_copy ((void **)&dev_ptrs->fixed_image,
-                        (void **)&fixed->img,
-                        dev_ptrs->fixed_image_size,
-                        cudaGlobalMem);
-        GPU_Memory_Bytes += dev_ptrs->fixed_image_size;
-        printf(".");
-    }
+    CUDA_alloc_copy ((void **)&dev_ptrs->fixed_image,
+                     (void **)&fixed->img,
+                     dev_ptrs->fixed_image_size);
+    GPU_Memory_Bytes += dev_ptrs->fixed_image_size;
+    printf(".");
     // ----------------------------------------------------------
 
 
-    // Moving Image (zero copy if possible)
+    // Moving Image
     // ----------------------------------------------------------
     dev_ptrs->moving_image_size = moving->npix * moving->pix_size;
-    if (parms->gpu_zcpy) {
-        CUDA_alloc_copy ((void **)&dev_ptrs->moving_image,
-                        (void **)&moving->img,
-                        dev_ptrs->moving_image_size,
-                        cudaZeroCopy);
-        CPU_Pinned_Bytes += dev_ptrs->moving_image_size;
-        printf ("o");
-    } else {
-        CUDA_alloc_copy ((void **)&dev_ptrs->moving_image,
-                        (void **)&moving->img,
-                        dev_ptrs->moving_image_size,
-                        cudaGlobalMem);
+    CUDA_alloc_copy ((void **)&dev_ptrs->moving_image,
+                     (void **)&moving->img,
+                     dev_ptrs->moving_image_size);
 
-        GPU_Memory_Bytes += dev_ptrs->moving_image_size;
-        printf(".");
-    }
+    GPU_Memory_Bytes += dev_ptrs->moving_image_size;
+    printf(".");
     // ----------------------------------------------------------
 
 
@@ -220,17 +170,6 @@ CUDA_bspline_mi_init_a (
 
 
     // dc_dv_x,  dc_dv_y,  and  dc_dv_z
-    //   Try to keep these in GPU memory for speed.  If there
-    //   is not enough GPU memory, we will move them to pinned
-    //   CPU memory as a last resort.
-    //
-    // NOTE: If spill over to CPU pinned memory occurs and the
-    //       user does not have a significantly large amount
-    //       of RAM, the linux kernel may decide that the bspline
-    //       process needs to die.  In this event the user will
-    //       just see "Killed" in the terminal.  There is no
-    //       way to trap this signal, so that is as user friendly
-    //       as it can get.
     // ----------------------------------------------------------
     int3 vol_dim;
     vol_dim.x = fixed->dim[0];
@@ -255,65 +194,23 @@ CUDA_bspline_mi_init_a (
     dev_ptrs->dc_dv_y_size = dev_ptrs->dc_dv_x_size;
     dev_ptrs->dc_dv_z_size = dev_ptrs->dc_dv_x_size;
 
-    out_of_gmem = 
     CUDA_alloc_zero ((void **)&dev_ptrs->dc_dv_x,
                     dev_ptrs->dc_dv_x_size,
-                    cudaAllocCasual);
+                    cudaAllocStern);
+    GPU_Memory_Bytes += dev_ptrs->dc_dv_x_size;
+    printf(".");
 
-    if (out_of_gmem) {
-        if (parms->gpu_zcpy) {
-            VMEM_ALLOC ((void **)&dev_ptrs->dc_dv_x,
-                            dev_ptrs->dc_dv_x_size);
-            CPU_Pinned_Bytes += dev_ptrs->dc_dv_x_size;
-            printf ("o");
-        } else {
-            printf ("Out of memory!\n");
-            exit (0);
-        }
-    } else {
-        GPU_Memory_Bytes += dev_ptrs->dc_dv_x_size;
-        printf(".");
-    }
-
-    out_of_gmem = 
     CUDA_alloc_zero ((void **)&dev_ptrs->dc_dv_y,
                     dev_ptrs->dc_dv_y_size,
-                    cudaAllocCasual);
+                    cudaAllocStern);
+    GPU_Memory_Bytes += dev_ptrs->dc_dv_y_size;
+    printf(".");
 
-    if (out_of_gmem) {
-        if (parms->gpu_zcpy) {
-            VMEM_ALLOC ((void **)&dev_ptrs->dc_dv_y,
-                            dev_ptrs->dc_dv_y_size);
-            CPU_Pinned_Bytes += dev_ptrs->dc_dv_y_size;
-            printf ("o");
-        } else {
-            printf ("Out of memory!\n");
-            exit (0);
-        }
-    } else {
-        GPU_Memory_Bytes += dev_ptrs->dc_dv_y_size;
-        printf(".");
-    }
-
-    out_of_gmem = 
     CUDA_alloc_zero ((void **)&dev_ptrs->dc_dv_z,
                     dev_ptrs->dc_dv_z_size,
-                    cudaAllocCasual);
-
-    if (out_of_gmem) {
-        if (parms->gpu_zcpy) {
-            VMEM_ALLOC ((void **)&dev_ptrs->dc_dv_z,
-                            dev_ptrs->dc_dv_z_size);
-            CPU_Pinned_Bytes += dev_ptrs->dc_dv_z_size;
-            printf ("o");
-        } else {
-            printf ("Out of memory!\n");
-            exit (0);
-        }
-    } else {
-        GPU_Memory_Bytes += dev_ptrs->dc_dv_z_size;
-        printf(".");
-    }
+                    cudaAllocStern);
+    GPU_Memory_Bytes += dev_ptrs->dc_dv_z_size;
+    printf(".");
     // ----------------------------------------------------------
 
 
@@ -351,8 +248,7 @@ CUDA_bspline_mi_init_a (
 
     CUDA_alloc_copy ((void **)&dev_ptrs->LUT_Offsets,
                     (void **)&offsets,
-                    dev_ptrs->LUT_Offsets_size,
-                    cudaGlobalMem);
+                    dev_ptrs->LUT_Offsets_size);
 
     GPU_Memory_Bytes += dev_ptrs->LUT_Offsets_size;
     printf(".");
@@ -379,8 +275,7 @@ CUDA_bspline_mi_init_a (
 
     CUDA_alloc_copy ((void **)&dev_ptrs->LUT_Knot,
                     (void **)&LUT_Knot,
-                    dev_ptrs->LUT_Knot_size,
-                    cudaGlobalMem);
+                    dev_ptrs->LUT_Knot_size);
 
     free (local_set_of_64);
     free (LUT_Knot);
@@ -417,8 +312,7 @@ CUDA_bspline_mi_init_a (
 
     CUDA_alloc_copy ((void **)&dev_ptrs->LUT_Bspline_x,
                      (void **)&LUT_Bspline_x,
-                     dev_ptrs->LUT_Bspline_x_size,
-                     cudaGlobalMem);
+                     dev_ptrs->LUT_Bspline_x_size);
 
     cudaBindTexture(0, tex_LUT_Bspline_x, dev_ptrs->LUT_Bspline_x, dev_ptrs->LUT_Bspline_x_size);
     GPU_Memory_Bytes += dev_ptrs->LUT_Bspline_x_size;
@@ -427,8 +321,7 @@ CUDA_bspline_mi_init_a (
 
     CUDA_alloc_copy ((void **)&dev_ptrs->LUT_Bspline_y,
                      (void **)&LUT_Bspline_y,
-                     dev_ptrs->LUT_Bspline_y_size,
-                     cudaGlobalMem);
+                     dev_ptrs->LUT_Bspline_y_size);
 
     cudaBindTexture(0, tex_LUT_Bspline_y, dev_ptrs->LUT_Bspline_y, dev_ptrs->LUT_Bspline_y_size);
     GPU_Memory_Bytes += dev_ptrs->LUT_Bspline_y_size;
@@ -436,8 +329,7 @@ CUDA_bspline_mi_init_a (
 
     CUDA_alloc_copy ((void **)&dev_ptrs->LUT_Bspline_z,
                      (void **)&LUT_Bspline_z,
-                     dev_ptrs->LUT_Bspline_z_size,
-                     cudaGlobalMem);
+                     dev_ptrs->LUT_Bspline_z_size);
 
     cudaBindTexture(0, tex_LUT_Bspline_z, dev_ptrs->LUT_Bspline_z, dev_ptrs->LUT_Bspline_z_size);
     GPU_Memory_Bytes += dev_ptrs->LUT_Bspline_z_size;
@@ -454,16 +346,8 @@ CUDA_bspline_mi_init_a (
 
     // Report global memory allocation.
     printf("             Real GPU Memory: %ld MB\n", GPU_Memory_Bytes / 1048576);
-    if (parms->gpu_zcpy) {
-        printf("          Virtual GPU Memory: %u MB\n", VMEM_TALLY () / 1048576);
-        printf("Explicitly Pinned CPU Memory: %ld MB\n", CPU_Pinned_Bytes / 1048576);
-    }
 
 #if defined (commentout)
-    if (parms->gpu_zcpy) {
-        printf ("---------------------------\n");
-        VMEM_PRINT ();
-    }
     printf ("---------------------------\n");
     printf ("Skipped Voxels: %i MB\n", dev_ptrs->skipped_size / 1048576);
     printf ("         Score: %i MB\n", dev_ptrs->score_size / 1048576);
@@ -511,30 +395,14 @@ CUDA_bspline_mse_init_j (
 
     printf ("Allocating GPU Memory");
 
-    // Get GPU properties (can we zero-copy?)
-    parms->gpu_zcpy = CUDA_zero_copy_check (parms->gpuid) && parms->gpu_zcpy;
-    if (parms->gpu_zcpy) {
-        // Enable GPU to use pinned CPU memory
-        cudaSetDeviceFlags (cudaDeviceMapHost);
-        printf ("GPU is using zero copy\n");
-    }
-
     // Fixed Image (zero copy if possible)
     // ----------------------------------------------------------
     dev_ptrs->fixed_image_size = fixed->npix * fixed->pix_size;
-    if (parms->gpu_zcpy) {
-        CUDA_alloc_copy ((void **)&dev_ptrs->fixed_image,
-                         (void **)&fixed->img,
-                         dev_ptrs->fixed_image_size,
-                         cudaZeroCopy);
-    } else {
-        CUDA_alloc_copy ((void **)&dev_ptrs->fixed_image,
-                         (void **)&fixed->img,
-                         dev_ptrs->fixed_image_size,
-                         cudaGlobalMem);
-        GPU_Memory_Bytes += dev_ptrs->fixed_image_size;
-        printf(".");
-    }
+    CUDA_alloc_copy ((void **)&dev_ptrs->fixed_image,
+                     (void **)&fixed->img,
+                     dev_ptrs->fixed_image_size);
+    GPU_Memory_Bytes += dev_ptrs->fixed_image_size;
+    printf(".");
     // ----------------------------------------------------------
 
 
@@ -543,8 +411,7 @@ CUDA_bspline_mse_init_j (
     dev_ptrs->moving_image_size = moving->npix * moving->pix_size;
     CUDA_alloc_copy ((void **)&dev_ptrs->moving_image,
                      (void **)&moving->img,
-                     dev_ptrs->moving_image_size,
-                     cudaGlobalMem);
+                     dev_ptrs->moving_image_size);
 
     cudaBindTexture(0, tex_moving_image,
                     dev_ptrs->moving_image,
@@ -559,19 +426,11 @@ CUDA_bspline_mse_init_j (
     // Moving Image Gradient
     // ----------------------------------------------------------
     dev_ptrs->moving_grad_size = moving_grad->npix * moving_grad->pix_size;
-    if (parms->gpu_zcpy) {
-        CUDA_alloc_copy ((void **)&dev_ptrs->moving_grad,
-                         (void **)&moving_grad->img,
-                         dev_ptrs->moving_grad_size,
-                         cudaZeroCopy);
-    } else {
-        CUDA_alloc_copy ((void **)&dev_ptrs->moving_grad,
-                         (void **)&moving_grad->img,
-                         dev_ptrs->moving_grad_size,
-                         cudaGlobalMem);
-        GPU_Memory_Bytes += dev_ptrs->moving_grad_size;
-        printf(".");
-    }
+    CUDA_alloc_copy ((void **)&dev_ptrs->moving_grad,
+                     (void **)&moving_grad->img,
+                     dev_ptrs->moving_grad_size);
+    GPU_Memory_Bytes += dev_ptrs->moving_grad_size;
+    printf(".");
     // ----------------------------------------------------------
 
 
@@ -687,9 +546,7 @@ CUDA_bspline_mse_init_j (
 
     CUDA_alloc_copy ((void **)&dev_ptrs->LUT_Offsets,
                     (void **)&offsets,
-                    dev_ptrs->LUT_Offsets_size,
-                    cudaGlobalMem);
-
+                    dev_ptrs->LUT_Offsets_size);
     GPU_Memory_Bytes += dev_ptrs->LUT_Offsets_size;
     printf(".");
 
@@ -715,8 +572,7 @@ CUDA_bspline_mse_init_j (
 
     CUDA_alloc_copy ((void **)&dev_ptrs->LUT_Knot,
                     (void **)&LUT_Knot,
-                    dev_ptrs->LUT_Knot_size,
-                    cudaGlobalMem);
+                    dev_ptrs->LUT_Knot_size);
 
     free (local_set_of_64);
     free (LUT_Knot);
@@ -778,8 +634,7 @@ CUDA_bspline_mse_init_j (
 
     CUDA_alloc_copy ((void **)&dev_ptrs->LUT_Bspline_x,
                     (void **)&LUT_Bspline_x,
-                    dev_ptrs->LUT_Bspline_x_size,
-                    cudaGlobalMem);
+                    dev_ptrs->LUT_Bspline_x_size);
 
     cudaBindTexture(0, tex_LUT_Bspline_x, dev_ptrs->LUT_Bspline_x, dev_ptrs->LUT_Bspline_x_size);
     GPU_Memory_Bytes += dev_ptrs->LUT_Bspline_x_size;
@@ -788,8 +643,7 @@ CUDA_bspline_mse_init_j (
 
     CUDA_alloc_copy ((void **)&dev_ptrs->LUT_Bspline_y,
                     (void **)&LUT_Bspline_y,
-                    dev_ptrs->LUT_Bspline_y_size,
-                    cudaGlobalMem);
+                    dev_ptrs->LUT_Bspline_y_size);
 
     cudaBindTexture(0, tex_LUT_Bspline_y, dev_ptrs->LUT_Bspline_y, dev_ptrs->LUT_Bspline_y_size);
     GPU_Memory_Bytes += dev_ptrs->LUT_Bspline_y_size;
@@ -797,8 +651,7 @@ CUDA_bspline_mse_init_j (
 
     CUDA_alloc_copy ((void **)&dev_ptrs->LUT_Bspline_z,
                     (void **)&LUT_Bspline_z,
-                    dev_ptrs->LUT_Bspline_z_size,
-                    cudaGlobalMem);
+                    dev_ptrs->LUT_Bspline_z_size);
 
     cudaBindTexture(0, tex_LUT_Bspline_z, dev_ptrs->LUT_Bspline_z, dev_ptrs->LUT_Bspline_z_size);
     GPU_Memory_Bytes += dev_ptrs->LUT_Bspline_z_size;
@@ -836,14 +689,6 @@ CUDA_bspline_mse_cleanup_j (
     cudaUnbindTexture(tex_LUT_Bspline_y);
     cudaUnbindTexture(tex_LUT_Bspline_z);
 
-    // Zero paged memory
-    cudaFreeHost (fixed->img);
-    if (cudaGetLastError() == cudaSuccess) { fixed->img = 0; }
-    cudaFreeHost (moving->img);
-    if (cudaGetLastError() == cudaSuccess) { moving->img = 0; }
-    cudaFreeHost (moving_grad->img);
-    if (cudaGetLastError() == cudaSuccess) { moving_grad->img = 0; }
-    
     // Global Memory
     cudaFree(dev_ptrs->fixed_image);
     cudaFree(dev_ptrs->moving_image);
@@ -883,23 +728,6 @@ CUDA_bspline_mi_cleanup_a (
     cudaUnbindTexture(tex_LUT_Bspline_y);
     cudaUnbindTexture(tex_LUT_Bspline_z);
 
-    // Zero paged memory
-    cudaFreeHost (fixed->img);
-    if (cudaGetLastError() == cudaSuccess) { fixed->img = 0; }
-    cudaFreeHost (moving->img);
-    if (cudaGetLastError() == cudaSuccess) { moving->img = 0; }
-
-    // Things that *could* have been allocated into gpu vmem
-    if (VMEM_FREE (dev_ptrs->dc_dv_x)) {
-        cudaFree(dev_ptrs->dc_dv_x);
-    }
-    if (VMEM_FREE (dev_ptrs->dc_dv_y)) {
-        cudaFree(dev_ptrs->dc_dv_y);
-    }
-    if (VMEM_FREE (dev_ptrs->dc_dv_z)) {
-        cudaFree(dev_ptrs->dc_dv_z);
-    }
-    
     // Global Memory
     cudaFree(dev_ptrs->fixed_image);
     cudaFree(dev_ptrs->moving_image);
@@ -918,9 +746,6 @@ CUDA_bspline_mi_cleanup_a (
     cudaFree(dev_ptrs->LUT_Bspline_x);
     cudaFree(dev_ptrs->LUT_Bspline_y);
     cudaFree(dev_ptrs->LUT_Bspline_z);
-
-    // Just to be safe (in case we missed something)
-    VMEM_FREEALL ();
 }
 
 
@@ -1219,24 +1044,6 @@ CUDA_bspline_mi_hist_jnt (
 
     dev_ptrs->j_hist_seg_size = dev_ptrs->j_hist_size * num_blocks;
 
-#if defined (commentout)
-    printf ("Attempting to allocate j_hist_set (%i MB)\n", dev_ptrs->j_hist_seg_size/1048576);
-    int out_of_gmem = 
-    CUDA_alloc_zero ((void **)&dev_ptrs->j_hist_seg,
-                    dev_ptrs->j_hist_seg_size,
-                    cudaAllocCasual);
-
-    if (out_of_gmem) {
-//        if (parms->gpu_zcpy) {
-            VMEM_ALLOC ((void **)&dev_ptrs->j_hist_seg,
-                            dev_ptrs->j_hist_seg_size);
-//        } else {
-//            printf ("Failed to allocate memory for j_hist_seg\n");
-//            exit (0);
-//        }
-    }
-#endif
-
     cudaMalloc ((void**)&dev_ptrs->j_hist_seg, dev_ptrs->j_hist_seg_size);
     cudaMemset(dev_ptrs->j_hist_seg, 0, dev_ptrs->j_hist_seg_size);
     CUDA_check_error ("Failed to allocate memory for j_hist_seg");
@@ -1349,7 +1156,7 @@ CUDA_bspline_mi_grad (
     build_gbd (&gbd, bxf, fixed, moving);
 
 
-    BSPLINE_Score* ssd = &bst->ssd;
+    Bspline_score* ssd = &bst->ssd;
     float* host_grad = ssd->grad;
     float score = ssd->score;
 
@@ -1969,8 +1776,7 @@ CUDA_bspline_interpolate_vf (
 
     CUDA_alloc_copy ((void **)&coeff,
                      (void **)&bxf->coeff,
-                     coeff_size,
-                     cudaGlobalMem);
+                     coeff_size);
 
     cudaBindTexture(0, tex_coeff,
                     coeff,
@@ -2011,22 +1817,19 @@ CUDA_bspline_interpolate_vf (
 
     CUDA_alloc_copy ((void **)&LUT_Bspline_x,
                      (void **)&LUT_Bspline_x_cpu,
-                     LUT_Bspline_x_size,
-                     cudaGlobalMem);
+                     LUT_Bspline_x_size);
 
     cudaBindTexture(0, tex_LUT_Bspline_x, LUT_Bspline_x, LUT_Bspline_x_size);
 
     CUDA_alloc_copy ((void **)&LUT_Bspline_y,
                      (void **)&LUT_Bspline_y_cpu,
-                     LUT_Bspline_y_size,
-                     cudaGlobalMem);
+                     LUT_Bspline_y_size);
 
     cudaBindTexture(0, tex_LUT_Bspline_y, LUT_Bspline_y, LUT_Bspline_y_size);
 
     CUDA_alloc_copy ((void **)&LUT_Bspline_z,
                      (void **)&LUT_Bspline_z_cpu,
-                     LUT_Bspline_z_size,
-                     cudaGlobalMem);
+                     LUT_Bspline_z_size);
 
     cudaBindTexture(0, tex_LUT_Bspline_z, LUT_Bspline_z, LUT_Bspline_z_size);
 

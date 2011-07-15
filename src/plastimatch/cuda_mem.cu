@@ -12,39 +12,16 @@ void
 CUDA_alloc_copy (
     void** gpu_addr,
     void** cpu_addr,
-    size_t mem_size,
-    cuda_alloc_copy_mode mode
+    size_t mem_size
 )
 {
-    // If zero copying, this will hold the CPU memory address of
-    // the new pinned memory address in the CPU memory map.
-    // After CPU memory contents is relocated to this new pinned
-    // memory, this pointer will overwrite the original CPU
-    // pointer (*cpu_addr).
-    void* pinned_host_mem;
+    // Allcoated some global memory on the GPU
+    cudaMalloc ((void**)gpu_addr, mem_size);
+    CUDA_check_error ("Out of GPU memory.");
 
-    if (mode == cudaZeroCopy) {
-        // Allocate some pinned CPU memory for zero paging
-        cudaHostAlloc ((void **)&pinned_host_mem, mem_size, cudaHostAllocMapped);
-        CUDA_check_error ("Failed to allocate pinned memory.");
-
-        // Relocate data to pinned memory
-        memcpy (pinned_host_mem, *cpu_addr, mem_size);
-        free (*cpu_addr);
-        *cpu_addr = pinned_host_mem;
-
-        // Get the address of the pinned page in the GPU memory map.
-        cudaHostGetDevicePointer ((void **)gpu_addr, (void *)pinned_host_mem, 0);
-        CUDA_check_error ("Failed to map CPU memory to GPU.");
-    } else {
-        // Allcoated some global memory on the GPU
-        cudaMalloc ((void**)gpu_addr, mem_size);
-        CUDA_check_error ("Out of GPU memory.");
-
-        // Populate the allocated global GPU memory
-        cudaMemcpy (*gpu_addr, *cpu_addr, mem_size, cudaMemcpyHostToDevice);
-        CUDA_check_error ("Failed to copy data to GPU");
-    }
+    // Populate the allocated global GPU memory
+    cudaMemcpy (*gpu_addr, *cpu_addr, mem_size, cudaMemcpyHostToDevice);
+    CUDA_check_error ("Failed to copy data to GPU");
 }
 
 // If you plan on using CUDA_alloc_vmem() to extend

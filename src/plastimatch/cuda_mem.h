@@ -17,11 +17,6 @@ struct vmem_entry
     Vmem_Entry* next;
 };
 
-enum cuda_alloc_copy_mode {
-    cudaGlobalMem,
-    cudaZeroCopy
-};
-
 enum cuda_alloc_fail_mode {
     cudaAllocStern,
     cudaAllocCasual
@@ -37,8 +32,7 @@ plmcuda_EXPORT (
 void CUDA_alloc_copy,
     void** gpu_addr,
     void** cpu_addr,
-    size_t mem_size,
-    enum cuda_alloc_copy_mode mode
+    size_t mem_size
 );
 
 plmcuda_EXPORT (

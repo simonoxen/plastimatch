@@ -124,7 +124,6 @@ public:
 	this->debug_dir = "";
 	this->debug_stage = 0;
 	this->gpuid = 0;
-	this->gpu_zcpy = 0;
 	this->convergence_tol = 0.1;
 	this->convergence_tol_its = 4;
 	this->mi_hist.f_hist = 0;

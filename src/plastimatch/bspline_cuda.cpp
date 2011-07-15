@@ -273,7 +273,7 @@ bspline_mi_pvi_8_dc_dv (
     double* f_hist = mi_hist->f_hist;
     double* m_hist = mi_hist->m_hist;
     double* j_hist = mi_hist->j_hist;
-    BSPLINE_Score* ssd = &bst->ssd;
+    Bspline_score* ssd = &bst->ssd;
     int n1, n2, n3, n4, n5, n6, n7, n8;
     int idx_fbin, idx_mbin, idx_jbin;
     int offset_fbin;
@@ -417,7 +417,7 @@ inline void
 bspline_update_grad_b_inline (Bspline_state* bst, Bspline_xform* bxf, 
              int pidx, int qidx, float dc_dv[3])
 {
-    BSPLINE_Score* ssd = &bst->ssd;
+    Bspline_score* ssd = &bst->ssd;
     int i, j, k, m;
     int cidx;
     float* q_lut = &bxf->q_lut[qidx*64];
@@ -645,7 +645,7 @@ CUDA_bspline_mi_a (
 {
 
     // --- DECLARE LOCAL VARIABLES ------------------------------
-    BSPLINE_Score* ssd; // Holds the SSD "Score" information
+    Bspline_score* ssd; // Holds the SSD "Score" information
     int num_vox;        // Holds # of voxels in the fixed volume
     Timer timer;
     //Timer timer0;
@@ -717,7 +717,7 @@ CUDA_bspline_mi_a (
 
     // dump histogram images?
     if (parms->xpm_hist_dump) {
-//        dump_xpm_hist (mi_hist, parms->xpm_hist_dump, bst->it);
+        dump_xpm_hist (mi_hist, parms->xpm_hist_dump, bst->it);
     }
 
     if (parms->debug) {
@@ -782,7 +782,7 @@ CUDA_bspline_mse_j (
 )
 {
     // --- DECLARE LOCAL VARIABLES ------------------------------
-    BSPLINE_Score* ssd;     // Holds the SSD "Score" information
+    Bspline_score* ssd;     // Holds the SSD "Score" information
     int num_vox;            // Holds # of voxels in the fixed volume
     float ssd_grad_norm;    // Holds the SSD Gradient's Norm
     float ssd_grad_mean;    // Holds the SSD Gradient's Mean
