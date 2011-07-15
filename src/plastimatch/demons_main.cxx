@@ -20,7 +20,7 @@ main (int argc, char* argv[])
     Volume* fixed;
     Volume* moving;
     Volume* warped;
-    Volume* moving_grad;
+    Volume* moving_grad = 0;
     Volume* vector_field;
 
     /* Read in command line options */

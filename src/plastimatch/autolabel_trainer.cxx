@@ -102,7 +102,7 @@ Autolabel_trainer::load_input_file_tsv1 (
 
     /* Generate map from t-spine # to z pos */
     std::map<float, float> t_map;
-    for (int i = 0; i < ps.point_list.size(); i++) {
+    for (unsigned int i = 0; i < ps.point_list.size(); i++) {
 	if (ps.point_list[i].label == "C7") {
 	    t_map.insert (std::pair<float,float> (0, ps.point_list[i].p[2]));
 	}
