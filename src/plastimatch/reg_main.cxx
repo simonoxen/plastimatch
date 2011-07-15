@@ -4,6 +4,7 @@
 #include "plm_config.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "mha_io.h"
 #include "volume.h"
 #include "bspline_xform.h"
@@ -81,6 +82,14 @@ load (Reg_options* options, int mode)
 
 }
 
+void
+init_bscore (Bspline_xform* bxf, Bspline_score* ssd)
+{
+    ssd->grad = (float*)malloc (bxf->num_coeff * sizeof (float));
+    memset (ssd->grad, 0, bxf->num_coeff * sizeof (float));
+    ssd->rmetric = 0;
+}
+
 int
 main (int argc, char* argv[])
 {
@@ -90,6 +99,7 @@ main (int argc, char* argv[])
     Bspline_score bscore;
     Bspline_xform *bxf = NULL;
     float S = 9999.9f;
+
 
     reg_opts_parse_args (&options, argc, argv);
 
@@ -101,7 +111,9 @@ main (int argc, char* argv[])
         break;
     case 'b':
         bxf = (Bspline_xform*)load (&options, ANALYTIC);
-//        vf_regularize_analytic (&bscore, parms, bxf);
+        init_bscore (bxf, &bscore);
+        vf_regularize_analytic (&bscore, parms, bxf);
+        S = bscore.rmetric;
         break;
     default:
         printf ("Warning: Using implementation 'a'\n");
@@ -116,6 +128,7 @@ main (int argc, char* argv[])
 
     if (bxf) {
         bspline_xform_free (bxf);
+        free (bscore.grad);
     }
 
     printf ("S = %f\n", S);

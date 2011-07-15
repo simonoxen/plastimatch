@@ -314,7 +314,6 @@ region_smoothness (
         bspline_score->grad[3*knots[j]+2] += 2 * reg_parms->lambda * Z[j];
     }
 
-//    bspline_score->score += reg_parms->lambda * S;
     bspline_score->rmetric += S;
 }
 
