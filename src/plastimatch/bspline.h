@@ -37,17 +37,22 @@ enum BsplineMetric {
     BMET_MI
 };
 
-typedef struct BSPLINE_Score_struct BSPLINE_Score;
-struct BSPLINE_Score_struct {
+class Bspline_score {
+public:
     float score;
     float* grad;
+public:
+    Bspline_score () {
+	score = 0;
+	grad = 0;
+    }
 };
 
-typedef struct bspline_state Bspline_state;
-struct bspline_state {
+typedef struct bspline_state_struct Bspline_state;
+struct bspline_state_struct {
     int it;                              /* Number of iterations */
     int feval;                           /* Number of function evaluations */
-    BSPLINE_Score ssd;                   /* Score and Gradient  */
+    Bspline_score ssd;                   /* Score and Gradient  */
     void* dev_ptrs;                      /* GPU Device Pointers */
 };
 
@@ -186,11 +191,12 @@ bspline_transform_point (
 gpuit_EXPORT
 void
 bspline_interpolate_vf (Volume* interp, 
-			Bspline_xform* bxf);
+    const Bspline_xform* bxf);
 
 /* Used internally */
 void
-bspline_interp_pix (float out[3], Bspline_xform *bxf, int p[3], int qidx);
+bspline_interp_pix (float out[3], const Bspline_xform* bxf, 
+    int p[3], int qidx);
 void
 bspline_interp_pix_b (
     float out[3], 
@@ -245,7 +251,7 @@ report_score (char *alg, Bspline_xform *bxf,
 
 /* Debugging routines */
 void
-dump_gradient (Bspline_xform* bxf, BSPLINE_Score* ssd, char* fn);
+dump_gradient (Bspline_xform* bxf, Bspline_score* ssd, char* fn);
 
 void
 bspline_save_debug_state 
@@ -259,7 +265,7 @@ void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_base, int iter);
 
 void
 bspline_make_grad (float* cond_x, float* cond_y, float* cond_z,
-    Bspline_xform* bxf, BSPLINE_Score* ssd);
+    Bspline_xform* bxf, Bspline_score* ssd);
 
 void
 bspline_update_sets (float* sets_x, float* sets_y, float* sets_z,

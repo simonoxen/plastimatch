@@ -52,7 +52,7 @@ bspline_score_h_mse (
     Volume *moving,
     Volume *moving_grad)
 {
-    BSPLINE_Score* ssd = &bst->ssd;
+    Bspline_score* ssd = &bst->ssd;
     double score_tile;
     int num_vox;
 
@@ -257,7 +257,7 @@ bspline_score_g_mse (
     Volume *moving,
     Volume *moving_grad)
 {
-    BSPLINE_Score* ssd = &bst->ssd;
+    Bspline_score* ssd = &bst->ssd;
     double score_tile;
     int num_vox;
 
@@ -454,7 +454,7 @@ bspline_score_c_mse (
     Volume *moving_grad
 )
 {
-    BSPLINE_Score* ssd = &bst->ssd;
+    Bspline_score* ssd = &bst->ssd;
     int i;
     int rijk[3];             /* Indices within fixed image region (vox) */
     int fijk[3], fv;         /* Indices within fixed image (vox) */

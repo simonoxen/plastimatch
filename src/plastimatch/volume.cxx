@@ -72,10 +72,10 @@ volume_allocate (Volume *vol, int min_size)
 
 Volume*
 volume_create (
-    int dim[3], 
-    float offset[3], 
-    float spacing[3], 
-    float direction_cosines[9], 
+    const int dim[3], 
+    const float offset[3], 
+    const float spacing[3], 
+    const float direction_cosines[9], 
     enum Volume_pixel_type vox_type, 
     int vox_planes, 
     int min_size

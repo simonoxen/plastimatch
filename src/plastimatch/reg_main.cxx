@@ -87,6 +87,7 @@ main (int argc, char* argv[])
     Reg_options options;
     Reg_parms *parms = &options.parms;
     Volume *vf = NULL;
+    Bspline_score bscore;
     Bspline_xform *bxf = NULL;
     float S = 9999.9f;
 
@@ -100,7 +101,7 @@ main (int argc, char* argv[])
         break;
     case 'b':
         bxf = (Bspline_xform*)load (&options, ANALYTIC);
-        S = vf_regularize_analytic (bxf);
+        S = vf_regularize_analytic (&bscore, parms, bxf);
         break;
     default:
         printf ("Warning: Using implementation 'a'\n");

@@ -167,7 +167,7 @@ bspline_regularize_hessian_update_grad (
     int derive2
 )
 {
-    BSPLINE_Score* ssd = &bst->ssd;
+    Bspline_score* ssd = &bst->ssd;
     int i, j, k, m;
     int cidx;
     float* q_lut = 0;
@@ -213,7 +213,7 @@ bspline_regularize_hessian_update_grad_b (
     float *q_lut
 )
 {
-    BSPLINE_Score* ssd = &bst->ssd;
+    Bspline_score* ssd = &bst->ssd;
     int i, j, k, m;
     int cidx;
 
@@ -244,7 +244,7 @@ bspline_regularize_score_from_prerendered (
     Volume *moving
 )
 {
-    BSPLINE_Score* ssd = &bst->ssd;
+    Bspline_score* ssd = &bst->ssd;
     float grad_score;
     int ri, rj, rk;
     int fi, fj, fk;
@@ -389,7 +389,7 @@ bspline_regularize_score (
     Volume *moving
 )
 {
-    BSPLINE_Score* ssd = &bst->ssd;
+    Bspline_score* ssd = &bst->ssd;
     double grad_score;
     int ri, rj, rk;
     int fi, fj, fk;

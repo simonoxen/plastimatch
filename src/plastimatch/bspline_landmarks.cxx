@@ -227,7 +227,7 @@ bspline_landmarks_score_b (
     Volume *moving
 )
 {
-    BSPLINE_Score* ssd = &bst->ssd;
+    Bspline_score* ssd = &bst->ssd;
     Bspline_landmarks *blm = parms->landmarks;
     int lidx;
     FILE *fp, *fp2;
@@ -375,7 +375,7 @@ bspline_landmarks_score_a (
     Volume *moving
 )
 {
-    BSPLINE_Score* ssd = &bst->ssd;
+    Bspline_score* ssd = &bst->ssd;
     Bspline_landmarks *blm = parms->landmarks;
     int lidx;
     FILE *fp, *fp2;

@@ -157,7 +157,7 @@ bspline_optimize_lbfgsb (
     Volume *fixed = bod->fixed;
     Volume *moving = bod->moving;
     Volume *moving_grad = bod->moving_grad;
-    BSPLINE_Score* ssd = &bst->ssd;
+    Bspline_score* ssd = &bst->ssd;
     char task[60], csave[60];
     logical lsave[4];
     integer n, m, iprint, *nbd, *iwa, isave[44];

@@ -5,9 +5,10 @@
 #define _reg_h_
 
 #include "plm_config.h"
-#include "volume.h"
 #include "bspline_xform.h"
+#include "volume.h"
 
+class Bspline_score;
 
 class Reg_parms
 {
@@ -22,14 +23,20 @@ public:
     }
 };
 
+#if defined (commentout)
+#endif
 
 gpuit_EXPORT
 void
-regularize (Reg_parms* reg_parms, Bspline_xform* bxf, float* score, float* grad);
+regularize (
+    Bspline_score* bsp_score,    /* Gets updated */
+    const Reg_parms* reg_parms,
+    const Bspline_xform* bxf
+);
 
 gpuit_EXPORT
 Volume*
-compute_vf_from_coeff (Bspline_xform* bxf);
+compute_vf_from_coeff (const Bspline_xform* bxf);
 
 gpuit_EXPORT
 void
@@ -41,6 +48,9 @@ vf_regularize_numerical (Volume* vol);
 
 gpuit_EXPORT
 float
-vf_regularize_analytic (Bspline_xform* bxf);
+vf_regularize_analytic (
+    Bspline_score *bspline_score, 
+    const Reg_parms* reg_parms,
+    const Bspline_xform* bxf);
 
 #endif /* _reg_h_ */

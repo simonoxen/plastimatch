@@ -229,7 +229,7 @@ void find_knots(int* knots, int tile_num, int* rdims, int* cdims)
    Debugging routines
    ----------------------------------------------------------------------- */
 void
-dump_gradient (Bspline_xform* bxf, BSPLINE_Score* ssd, const char* fn)
+dump_gradient (Bspline_xform* bxf, Bspline_score* ssd, const char* fn)
 {
     int i;
     FILE* fp;
@@ -395,7 +395,7 @@ bspline_state_destroy (
 }
 
 void
-bspline_interp_pix (float out[3], Bspline_xform* bxf, int p[3], int qidx)
+bspline_interp_pix (float out[3], const Bspline_xform* bxf, int p[3], int qidx)
 {
     int i, j, k, m;
     int cidx;
@@ -449,7 +449,7 @@ bspline_interp_pix_b (
 
 void
 bspline_interpolate_vf (Volume* interp, 
-			Bspline_xform* bxf)
+    const Bspline_xform* bxf)
 {
     int i, j, k, v;
     int p[3];
@@ -526,7 +526,7 @@ bspline_update_grad (
     Bspline_xform* bxf, 
     int p[3], int qidx, float dc_dv[3])
 {
-    BSPLINE_Score* ssd = &bst->ssd;
+    Bspline_score* ssd = &bst->ssd;
     int i, j, k, m;
     int cidx;
     float* q_lut = &bxf->q_lut[qidx*64];
@@ -552,7 +552,7 @@ void
 bspline_update_grad_b (Bspline_state* bst, Bspline_xform* bxf, 
     int pidx, int qidx, float dc_dv[3])
 {
-    BSPLINE_Score* ssd = &bst->ssd;
+    Bspline_score* ssd = &bst->ssd;
     int i, j, k, m;
     int cidx;
     float* q_lut = &bxf->q_lut[qidx*64];
@@ -574,7 +574,7 @@ bspline_update_grad_b (Bspline_state* bst, Bspline_xform* bxf,
 
 void
 bspline_make_grad (float* cond_x, float* cond_y, float* cond_z,
-                   Bspline_xform* bxf, BSPLINE_Score* ssd)
+                   Bspline_xform* bxf, Bspline_score* ssd)
 {
     int kidx, sidx;
 
@@ -842,7 +842,7 @@ bspline_score (Bspline_parms *parms,
 
     /* Regularize */
     if (reg_parms->lambda > 0.0f) {
-        regularize (reg_parms, bxf, &bst->ssd.score, bst->ssd.grad);
+        regularize (&bst->ssd, reg_parms, bxf);
     }
 
     /* Add vector field score/gradient to image score/gradient */

@@ -934,7 +934,7 @@ bspline_mi_pvi_8_dc_dv (
     double* m_hist = mi_hist->m_hist;
     double* j_hist = mi_hist->j_hist;
         
-    BSPLINE_Score* ssd = &bst->ssd;
+    Bspline_score* ssd = &bst->ssd;
     int idx_fbin, idx_mbin, idx_jbin, idx_pv;
     int offset_fbin;
     int n[8];
@@ -1042,7 +1042,7 @@ bspline_mi_pvi_6_dc_dv (
     double* f_hist = mi_hist->f_hist;
     double* m_hist = mi_hist->m_hist;
     double* j_hist = mi_hist->j_hist;
-    BSPLINE_Score* ssd = &bst->ssd;
+    Bspline_score* ssd = &bst->ssd;
     int debug = 0;
 
     dc_dv[0] = dc_dv[1] = dc_dv[2] = 0.0f;
@@ -1138,7 +1138,7 @@ bspline_score_f_mi (Bspline_parms *parms,
     Volume *moving, 
     Volume *moving_grad)
 {
-    BSPLINE_Score* ssd = &bst->ssd;
+    Bspline_score* ssd = &bst->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
     int pidx;
     int num_vox;
@@ -1440,7 +1440,7 @@ bspline_score_e_mi (
     Volume *moving, 
     Volume *moving_grad)
 {
-    BSPLINE_Score* ssd = &bst->ssd;
+    Bspline_score* ssd = &bst->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
     int pidx;
     int num_vox;
@@ -1786,7 +1786,7 @@ bspline_score_d_mi (Bspline_parms *parms,
     Volume *moving, 
     Volume *moving_grad)
 {
-    BSPLINE_Score* ssd = &bst->ssd;
+    Bspline_score* ssd = &bst->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
     int rijk[3];
     float diff;
@@ -2074,7 +2074,7 @@ bspline_score_c_mi (Bspline_parms *parms,
     Volume *moving, 
     Volume *moving_grad)
 {
-    BSPLINE_Score* ssd = &bst->ssd;
+    Bspline_score* ssd = &bst->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
     int rijk[3];
     int fijk[3], fv;

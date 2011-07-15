@@ -40,7 +40,7 @@ bspline_optimize_steepest_trace (
     Volume *moving_grad
 )
 {
-    BSPLINE_Score* ssd = &bst->ssd;
+    Bspline_score* ssd = &bst->ssd;
     int i;
     float alpha = 1.0f;
     float ssd_grad_norm;
@@ -232,7 +232,7 @@ bspline_optimize_steepest_trust (
     Volume *moving_grad
 )
 {
-    BSPLINE_Score* ssd = &bst->ssd;
+    Bspline_score* ssd = &bst->ssd;
     int i;
     float alpha = 1.0f;
     float ssd_grad_norm;
@@ -376,7 +376,7 @@ bspline_optimize_steepest_naive (
     Volume *moving_grad
 )
 {
-    BSPLINE_Score* ssd = &bst->ssd;
+    Bspline_score* ssd = &bst->ssd;
     int i;
     //    float a = 0.003f;
     //    float alpha = 0.5f, A = 10.0f;
