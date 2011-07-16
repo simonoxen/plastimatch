@@ -490,7 +490,7 @@ if (EXISTS "${CMAKE_SOURCE_DIR}/.svn")
       ERROR_VARIABLE svn_error
       )
     if (${svn_result} EQUAL 0)
-      message (STATUS "Looking for version in svn - found")
+      message (STATUS "Looking for version in svn - found ${svn_version}")
       set (PLASTIMATCH_SVN_VERSION ${svn_version})
     else ()
       message (STATUS "Looking for version in svn - can't connect")
