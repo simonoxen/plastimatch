@@ -80,10 +80,17 @@ class plastimatch1_EXPORT Direction_cosines {
 	}
 	return true;
     }
+    void copy_to_itk (DirectionType *itk_direction) {
+	for (unsigned int d1 = 0; d1 < 3; d1++) {
+	    for (unsigned int d2 = 0; d2 < 3; d2++) {
+		(*itk_direction)[d1][d2] = m_direction_cosines[d1*3+d2];
+	    }
+	}
+    }
     bool is_identity () {
 	Direction_cosines id;
 	float frob = 0.;
-
+	
 	for (int i = 0; i < 9; i++) {
 	    frob += fabs (m_direction_cosines[i] - id.m_direction_cosines[i]);
 	}

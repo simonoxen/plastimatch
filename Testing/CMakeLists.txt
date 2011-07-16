@@ -297,7 +297,7 @@ plm_add_test (
   "rect-5"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--output;${PLM_TESTING_BUILD_DIR}/rect-5.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-50 50 -50 50 -50 50;--direction-cosines;rotated"
+  "synth;--output;${PLM_TESTING_BUILD_DIR}/rect-5.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-50 50 -50 50 -50 50;--origin;0 -353.553 -250;--direction-cosines;rotated"
   )
 plm_add_test (
   "sphere-1"

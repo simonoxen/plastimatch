@@ -270,7 +270,7 @@ if (PLM_REDUCED_TESTS)
     "rect-2"
     "rect-3"
     "rect-4"
-    "rect-5"
+#    "rect-5"
     "sphere-1"
     "sphere-2"
     "bspline-bxf"

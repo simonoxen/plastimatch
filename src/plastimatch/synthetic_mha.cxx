@@ -393,11 +393,13 @@ synthetic_mha (
     }
     rg.SetSize (sz);
     rg.SetIndex (st);
+    parms->dc.copy_to_itk (&dc);
 
     FloatImageType::Pointer im_out = FloatImageType::New();
-    im_out->SetRegions(rg);
-    im_out->SetOrigin(og);
-    im_out->SetSpacing(sp);
+    im_out->SetRegions (rg);
+    im_out->SetOrigin (og);
+    im_out->SetSpacing (sp);
+    im_out->SetDirection (dc);
     im_out->Allocate();
 
     UCharImageType::Pointer uchar_img = UCharImageType::New();
@@ -405,9 +407,9 @@ synthetic_mha (
 	UCharIteratorType;
     UCharIteratorType uchar_img_it;
     if (parms->m_want_ss_img) {
-	uchar_img->SetRegions(rg);
-	uchar_img->SetOrigin(og);
-	uchar_img->SetSpacing(sp);
+	uchar_img->SetRegions (rg);
+	uchar_img->SetOrigin (og);
+	uchar_img->SetSpacing (sp);
 	uchar_img->Allocate();
 	uchar_img_it = UCharIteratorType (uchar_img, 
 	    uchar_img->GetLargestPossibleRegion());
@@ -419,9 +421,9 @@ synthetic_mha (
 	FloatIteratorType;
     FloatIteratorType dose_img_it;
     if (parms->m_want_dose_img) {
-	dose_img->SetRegions(rg);
-	dose_img->SetOrigin(og);
-	dose_img->SetSpacing(sp);
+	dose_img->SetRegions (rg);
+	dose_img->SetOrigin (og);
+	dose_img->SetSpacing (sp);
 	dose_img->Allocate();
 	dose_img_it = FloatIteratorType (dose_img, 
 	    dose_img->GetLargestPossibleRegion());
