@@ -270,7 +270,9 @@ if (PLM_REDUCED_TESTS)
     "rect-2"
     "rect-3"
     "rect-4"
+    "rect-5"
     "sphere-1"
+    "sphere-2"
     "bspline-bxf"
     "bspline-bxf-check"
     "bspline-a"
@@ -330,6 +332,14 @@ if (PLM_REDUCED_TESTS)
     "fdk-opencl-a"
     "fdk-opencl-a-stats"
     "fdk-opencl-a-check"
+
+    "fdk-tutorial-a"
+    "fdk-tutorial-b"
+    "fdk-tutorial-b-stats-1"
+    "fdk-tutorial-b-check-1"
+    "fdk-tutorial-c"
+    "fdk-tutorial-c-stats-1"
+    "fdk-tutorial-c-check-1"
 
     "landmark-warp-a"
     "landmark-warp-a-stats-1"
@@ -433,6 +443,7 @@ if (PLM_REDUCED_TESTS)
     "plm-register-bspline-itk-output"
 
     "plm-register-rect-bspline" 
+    "plm-register-regularization" 
 
     "plm-register-compose" 
     "plm-compose-a" 
