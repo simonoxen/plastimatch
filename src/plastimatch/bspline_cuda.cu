@@ -731,7 +731,7 @@ CUDA_bspline_mi_cleanup_a (
     // Global Memory
     cudaFree(dev_ptrs->fixed_image);
     cudaFree(dev_ptrs->moving_image);
-    cudaFree(dev_ptrs->skipped);
+    cudaFree(dev_ptrs->skipped_atomic);
     cudaFree(dev_ptrs->f_hist);
     cudaFree(dev_ptrs->m_hist);
     cudaFree(dev_ptrs->j_hist);

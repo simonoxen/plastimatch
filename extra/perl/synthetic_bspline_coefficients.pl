@@ -1,3 +1,5 @@
+#!/usr/bin/perl
+
 $header = <<EODATA
 MGH_GPUIT_BSP <experimental>
 img_origin = -187.500000 -187.500000 -187.500000
