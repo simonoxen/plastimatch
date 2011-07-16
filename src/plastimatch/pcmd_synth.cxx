@@ -235,7 +235,7 @@ parse_fn (
 
     /* Direction cosines */
     if (parser->option ("direction-cosines")) {
-	std::string arg = parser->get_string("rect-size");
+	std::string arg = parser->get_string("direction-cosines");
 	if (arg == "identity") {
 	    /* do nothing */
 	}
