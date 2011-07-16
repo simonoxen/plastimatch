@@ -194,6 +194,7 @@ endif ()
 ##   rect-2.mha    Standard rect, off-center
 ##   rect-3.mha    Standard rect, centered
 ##   rect-4.mha    Uchar rect, centered
+##   rect-5.mha    Standard rect, centered, direction cosines rotated
 ##   sphere-1.mha  Uchar sphere, bg=0, fg=255
 ##   sphere-2.mha  Standard sphere, centered
 ##   rtds-ct-1.mha    Synthetic ct
@@ -291,6 +292,12 @@ plm_add_test (
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_TESTING_BUILD_DIR}/rect-4.mha;--output-type;uchar;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;1;--rect-size;-50 50 -50 50 -50 50"
+  )
+plm_add_test (
+  "rect-5"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_TESTING_BUILD_DIR}/rect-5.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-50 50 -50 50 -50 50;--direction-cosines;rotated"
   )
 plm_add_test (
   "sphere-1"
