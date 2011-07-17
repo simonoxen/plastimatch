@@ -8,11 +8,11 @@
     http://www.cs.berkeley.edu/~sequin/CS184/TEXT/Algorithm.html
   */
 #include "plm_config.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <math.h>
-#include "render_polyline.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include "rasterize_slice.h"
 
 typedef struct edge Edge;
 struct edge {
@@ -65,9 +65,9 @@ print_edges (Edge* p)
     }
 }
 
-
+/* Rasterizes a single closed polygon on a slice */
 void
-render_slice_polyline (
+rasterize_slice (
     unsigned char* acc_img,
     int* dims,
     float* spacing,

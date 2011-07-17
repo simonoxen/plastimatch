@@ -17,7 +17,7 @@
 #include "plm_int.h"
 #include "plm_path.h"
 #include "rasterizer.h"
-#include "render_polyline.h"
+#include "rasterize_slice.h"
 #include "rtss_polyline_set.h"
 #include "rtss_structure.h"
 #include "volume.h"
@@ -130,7 +130,7 @@ Rasterizer::process_next (
 
 	/* Render contour to binary */
 	memset (this->acc_img, 0, slice_voxels * sizeof(unsigned char));
-	render_slice_polyline (
+	rasterize_slice (
 	    this->acc_img, 
 	    this->dim, 
 	    this->spacing, 

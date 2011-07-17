@@ -3,8 +3,9 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include <set>
-#include <stdio.h>
+#include <vector>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "bstring_util.h"
@@ -12,6 +13,7 @@
 #include "img_metadata.h"
 #include "math_util.h"
 #include "plm_image_header.h"
+#include "pstring.h"
 #include "rtss_polyline_set.h"
 #include "rtss_structure.h"
 
@@ -208,7 +210,7 @@ Rtss_polyline_set::adjust_structure_names (void)
     for (i = 0; i < this->num_structures; i++) {
         curr_structure = this->slist[i];
 	bool changed = false;
-	CBString tmp = curr_structure->name;
+	Pstring tmp = curr_structure->name;
 	for (j = 0; j < curr_structure->name.length(); j++) {
 	    /* GE Adv sim doesn't like names with strange punctuation. */
 	    if (! isalnum (curr_structure->name[j])) {
@@ -216,7 +218,7 @@ Rtss_polyline_set::adjust_structure_names (void)
 		changed = true;
 	    }
 	}
-	if (changed) {
+	if (changed && !tmp.has_prefix ("Unknown")) {
 	    printf ("Substituted structure name (%s) to (%s)\n", 
 		(const char*) tmp, (const char*) curr_structure->name);
 	}
@@ -476,4 +478,83 @@ Rtss_polyline_set::set_geometry_from_plm_image (
 void
 Rtss_polyline_set::keyholize (void)
 {
+#if defined (commentout)
+    printf ("Keyholizing...\n");
+
+    /* Loop through structures */
+    for (int i = 0; i < this->num_structures; i++) {
+	Rtss_structure *curr_structure = this->slist[i];
+
+	/* Find groups of contours which lie on the same slice */
+	std::vector<bool> used_contours;
+	used_contours.assign (curr_structure->num_contours, false);
+
+	for (int j = 0; j < curr_structure->num_contours; j++) {
+	    std::vector<int> group_contours;
+	    Rtss_polyline *group_polyline = curr_structure->pslist[j];
+	    if (group_polyline->num_vertices == 0) {
+		group_polyline->slice_no = -1;
+		continue;
+	    }
+	    if (used_contours[j] == true) {
+		continue;
+	    }
+	    float group_z = group_polyline->z[0];
+	    group_contours.push_back (j);
+	    for (int k = j+1; k < curr_structure->num_contours; k++) {
+		Rtss_polyline *curr_polyline = curr_structure->pslist[k];
+		if (curr_polyline->num_vertices == 0) {
+		    curr_polyline->slice_no = -1;
+		    continue;
+		}
+		float curr_z = curr_polyline->z[0];
+		if (curr_z - group_z < SPACING_TOL) {
+		    used_contours[k] = true;
+		    group_contours.push_back (k);
+		}
+	    }
+
+	    /* We have now found a group */
+	    printf ("Keyholizing group:");
+	    for (unsigned int k = 0; k < group_contours.size(); k++) {
+		printf (" %d", group_contours[k]);
+	    }
+	    printf ("\n");
+
+	    /* Find an outermost contour in group */
+	    int cidx_xmin = -1;
+	    float xmin = FLT_MAX;
+	    for (unsigned int k = 0; k < group_contours.size(); k++) {
+		int cidx = group_contours[k];
+		Rtss_polyline *curr_polyline = curr_structure->pslist[cidx];
+
+		float curr_xmin = FLT_MAX;
+		for (int l = 0; l < curr_polyline->num_vertices; l++) {
+		    if (curr_polyline->x[l] < curr_xmin) {
+			curr_xmin = curr_polyline->x[l];
+		    }
+		}
+
+		if (curr_xmin < xmin) {
+		    cidx_xmin = cidx;
+		    xmin = curr_xmin;
+		}
+	    }
+	    
+	    /* Loop through other contours, find contours contained 
+	       in this contour */
+	    for (unsigned int k = 0; k < group_contours.size(); k++) {
+		int cidx = group_contours[k];
+		Rtss_polyline *curr_polyline = curr_structure->pslist[cidx];
+		if (cidx == cidx_xmin) {
+		    continue;
+		}
+
+		float x = curr_polyline->x[0];
+		float y = curr_polyline->y[0];
+		
+	    }
+	}
+    }
+#endif
 }

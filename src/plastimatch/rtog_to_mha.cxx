@@ -58,7 +58,7 @@
 
 #include "getopt.h"
 #include "exchkeys.h"
-#include "render_polyline.h"
+#include "rasterize_slice.h"
 
 #define BUFLEN 2048
 
@@ -913,7 +913,7 @@ load_skin (RTOG_Header* rtog_header, Program_Parms* parms)
 
 void
 render_slice (RTOG_Header* rtog_header, unsigned char* slice_img, 
-	      unsigned char* acc_img, Cxt_polyline_Slice* ps)
+    unsigned char* acc_img, Cxt_polyline_Slice* ps)
 {
     int i, j;
     int slice_voxels = rtog_header->ct.size_of_dimension_1 * rtog_header->ct.size_of_dimension_2;
@@ -933,10 +933,10 @@ render_slice (RTOG_Header* rtog_header, unsigned char* slice_img,
 
     for (i = 0; i < ps->num_polyline; i++) {
 	memset (acc_img, 0, dims[0]*dims[1]*sizeof(unsigned char));
-	render_slice_polyline (acc_img, dims, spacing, offset, 
-				ps->pllist[i].num_vertices,
-				ps->pllist[i].x,
-				ps->pllist[i].y);
+	rasterize_slice (acc_img, dims, spacing, offset, 
+	    ps->pllist[i].num_vertices,
+	    ps->pllist[i].x,
+	    ps->pllist[i].y);
 	for (j = 0; j < slice_voxels; j++) {
 	    slice_img[j] ^= acc_img[j];
 	}

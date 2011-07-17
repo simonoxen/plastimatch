@@ -207,7 +207,7 @@ plm_add_test (
   "donut-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--output;${PLM_TESTING_BUILD_DIR}/donut-1.mha;--output-ss-img;${PLM_TESTING_BUILD_DIR}/donut-ss-1.mha;--output-type;float;--pattern;donut;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--donut-radius;10 10 10;--background;-1000;--foreground;0"
+  "synth;--output;${PLM_TESTING_BUILD_DIR}/donut-1.mha;--output-ss-img;${PLM_TESTING_BUILD_DIR}/donut-ss-1.mha;--output-type;float;--pattern;donut;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--donut-radius;10 10 10;--background;-1000;--foreground;0;--output-dicom;${PLM_TESTING_BUILD_DIR}/donut-1-dicom"
   )
 plm_add_test (
   "gauss-1"
@@ -1030,6 +1030,22 @@ plmtest_check_string ("plm-convert-dicom-h-check"
   "${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-h-stats.stdout.txt"
   "Patient Position . (.*[^ ]) *$"
   "FFS"
+  )
+
+## -------------------------------------------------------------------------
+## plastimatch-convert-dicom-donut
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-convert-dicom-donut"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/donut-1-dicom;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-donut-ss.nrrd"
+  )
+plm_add_test (
+  "plm-convert-dicom-donut-stats" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-donut-ss.nrrd"
   )
 
 ## -------------------------------------------------------------------------

@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _render_polyline_h_
-#define _render_polyline_h_
+#ifndef _rasterize_slice_h_
+#define _rasterize_slice_h_
 
 #include "plm_config.h"
 
@@ -12,7 +12,7 @@ extern "C" {
 
 plastimatch1_EXPORT
 void
-render_slice_polyline (
+rasterize_slice (
     unsigned char* acc_img,
     int* dims,
     float* spacing,

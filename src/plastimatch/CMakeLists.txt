@@ -149,6 +149,7 @@ set (GPUIT_LIBRARY_SRC
   proj_image_dir.cxx proj_image_dir.h
   proj_matrix.cxx proj_matrix.h 
   proton_dose.cxx proton_dose.h 
+  pstring.h
   ray_trace_exact.cxx ray_trace_exact.h 
   ray_trace_uniform.cxx ray_trace_uniform.h 
   string_util.cxx string_util.h
@@ -371,11 +372,11 @@ set (PLASTIMATCH1_LIBRARY_SRC
   plm_version.h 
   plm_warp.cxx plm_warp.h 
   rasterizer.cxx rasterizer.h
+  rasterize_slice.cxx rasterize_slice.h
   rbf_gauss.cxx rbf_gauss.h
   rbf_wendland.cxx rbf_wendland.h
   rbf_cluster.cxx rbf_cluster.h
   referenced_dicom_dir.cxx referenced_dicom_dir.h 
-  render_polyline.cxx render_polyline.h
   resample_mha.cxx resample_mha.h 
   rtds.cxx rtds.h
   rtds_dicom.cxx rtds_dicom.h
