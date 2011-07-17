@@ -714,9 +714,11 @@ CUDA_bspline_mi_a (
     // ----------------------------------------------------------
 
     // dump histogram images?
+#if !defined (PLM_USE_GPU_PLUGINS)
     if (parms->xpm_hist_dump) {
         dump_xpm_hist (mi_hist, parms->xpm_hist_dump, bst->it);
     }
+#endif
 
     if (parms->debug) {
 //        dump_hist (mi_hist, bst->it);
