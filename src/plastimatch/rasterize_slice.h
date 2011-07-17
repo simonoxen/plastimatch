@@ -18,8 +18,17 @@ rasterize_slice (
     float* spacing,
     float* offset,
     int num_vertices,
-    float* x_in,           /* vertices in mm */
-    float* y_in            /* vertices in mm */
+    const float* x_in,           /* polygon vertices in mm */
+    const float* y_in            /* polygon vertices in mm */
+);
+
+bool
+point_in_polygon (
+    const float* x_in,           /* polygon vertices in mm */
+    const float* y_in,           /* polygon vertices in mm */
+    int num_vertices,
+    float x_test,
+    float y_test
 );
 
 #if defined __cplusplus

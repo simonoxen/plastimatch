@@ -478,7 +478,7 @@ Rtss_polyline_set::set_geometry_from_plm_image (
 void
 Rtss_polyline_set::keyholize (void)
 {
-#if defined (commentout)
+#if defined (PLM_CONFIG_KEYHOLIZE)
     printf ("Keyholizing...\n");
 
     /* Loop through structures */

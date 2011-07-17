@@ -65,6 +65,48 @@ print_edges (Edge* p)
     }
 }
 
+/* Returns true if point lies within polygon */
+/* I don't use the below algorithm, but it looks interesing:
+   http://softsurfer.com/Archive/algorithm_0103/algorithm_0103.htm */
+bool
+point_in_polygon (
+    const float* x_in,           /* polygon vertices in mm */
+    const float* y_in,           /* polygon vertices in mm */
+    int num_vertices,
+    float x_test,
+    float y_test
+)
+{
+    int num_crossings = 0;
+
+    /* Check if last vertex == first vertex.  If so, remove it. */
+    if (x_in[num_vertices-1] == x_in[0] && y_in[num_vertices-1] == y_in[0]) {
+	num_vertices --;
+    }
+
+    for (int i = 0; i < num_vertices; i++) {
+	int a = i, b = (i==num_vertices-1 ? 0 : i+1);
+	/* Reorder segment so that y[a] > y[b] */
+	if (y_in[a] == y_in[b]) continue;
+	if (y_in[a] < y_in[b]) a = b, b = i;
+	/* Reject segments too high or too low */
+	/* If upper y is exactly equal to query location, reject */
+	if (y_in[a] <= y_test) continue;
+	if (y_in[b] > y_test) continue;
+
+	/* Find x coordinate of segment */
+	float frac = (y_in[a] - y_test) / (y_in[a] - y_in[b]);
+	float x_line_seg = x_in[b] + frac * (x_in[a] - x_in[b]);
+
+	/* If x_test is to the right x_line_seg, then we have a crossing.
+	   Count as inside for left boundaries. */
+	if (x_test >= x_line_seg) {
+	    num_crossings ++;
+	}
+    }
+    return (num_crossings % 2) == 1;
+}
+
 /* Rasterizes a single closed polygon on a slice */
 void
 rasterize_slice (
@@ -73,8 +115,8 @@ rasterize_slice (
     float* spacing,
     float* offset,
     int num_vertices,
-    float* x_in,           /* vertices in mm */
-    float* y_in            /* vertices in mm */
+    const float* x_in,          /* polygon vertices in mm */
+    const float* y_in           /* polygon vertices in mm */
 )
 {
     unsigned char* imgp;

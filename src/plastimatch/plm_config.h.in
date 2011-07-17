@@ -48,6 +48,7 @@
 #cmakedefine PLM_SLICER_HARDCODED_FILENAME 1
 #cmakedefine BUILD_SHARED_LIBS 1
 #cmakedefine PLM_USE_SS_IMAGE_VEC 1
+#cmakedefine PLM_CONFIG_KEYHOLIZE 1
 
 /* Needed for dynamic linking */
 #cmakedefine PLM_USE_GPU_PLUGINS 1
