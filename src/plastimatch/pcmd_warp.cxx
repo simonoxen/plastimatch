@@ -168,6 +168,12 @@ parse_fn (
 		"using one of the --input options"));
     }
 
+    /* Check that no extraneous options were given */
+    if (parser->number_of_arguments() != 0) {
+	std::string extra_arg = (*parser)[0];
+	throw (dlib::error ("Error.  Unknown option " + extra_arg));
+    }
+
     /* Input files */
     parms->input_fn = parser->get_string("input").c_str();
     parms->vf_in_fn = parser->get_string("vf").c_str();
