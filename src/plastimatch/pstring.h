@@ -7,7 +7,7 @@
 #include "plm_config.h"
 #include "bstrwrap.h"
 
-class gpuit_EXPORT Pstring : public CBString
+class Pstring : public CBString
 {
   public:
     Pstring (CBString s) : CBString (s) {}
