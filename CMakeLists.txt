@@ -71,7 +71,7 @@ option (PLM_CONFIG_DISABLE_SSE2 "Set to ON to build without SSE" OFF)
 option (PLM_SLICER_HARDCODED_FILENAME 
   "Use hardcoded filename instead of tmpfile()" OFF)
 set (PLM_CONFIG_VERSION_STRING "" CACHE STRING "Version string")
-OPTION (PLM_CONFIG_KEYHOLIZE "Enable RT structure keyholization" OFF)
+option (PLM_CONFIG_KEYHOLIZE "Enable RT structure keyholization" OFF)
 
 # Optional components
 option (PLM_BUILD_ISE "Build ISE fluoro program" OFF)
