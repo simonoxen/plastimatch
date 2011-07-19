@@ -4948,15 +4948,18 @@ doublereal dpmeps_(void)
     a = one;
     b = one;
 L10:
+    /* JAS 2011.07.09
+     * Make this a little less verbose */
     a += a;
-    printf ("a = %g ", a);
+//    printf ("a = %g ", a);
     temp = a + one;
-    printf ("temp = %g ", temp);
+//    printf ("temp = %g ", temp);
     temp1 = temp - a;
-    printf ("temp1 = %g\n", temp1);
+//    printf ("temp1 = %g\n", temp1);
     if (temp1 - one == zero) {
 	goto L10;
     }
+	printf ("a = %g temp = %g temp1 = %g\n", a, temp, temp1);
 L20:
     b += b;
     temp = a + b;
