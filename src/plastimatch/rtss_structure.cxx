@@ -10,6 +10,7 @@
 #include "file_util.h"
 #include "math_util.h"
 #include "plm_image_header.h"
+#include "pstring.h"
 #include "rtss_polyline_set.h"
 #include "rtss_structure.h"
 
@@ -83,7 +84,7 @@ Rtss_structure::add_polyline ()
 }
 
 void
-Rtss_structure::adjust_name (CBString *name_out, const CBString *name_in)
+Rtss_structure::adjust_name (Pstring *name_out, const Pstring *name_in)
 {
     int i;
 
@@ -119,7 +120,7 @@ Rtss_structure::set_color (const char* color_string)
 }
 
 void
-Rtss_structure::get_dcm_color_string (CBString *dcm_color) const
+Rtss_structure::get_dcm_color_string (Pstring *dcm_color) const
 {
     int r, g, b;
     this->structure_rgb (&r, &g, &b);

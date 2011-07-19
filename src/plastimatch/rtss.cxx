@@ -25,9 +25,9 @@
 
 static void
 compose_prefix_fn (
-    CBString *fn, 
-    const CBString &output_prefix, 
-    const CBString &structure_name,
+    Pstring *fn, 
+    const Pstring &output_prefix, 
+    const Pstring &structure_name,
     const char* extension
 )
 {
@@ -91,7 +91,7 @@ Rtss::load (const char *ss_img, const char *ss_list)
 }
 
 void
-Rtss::load_cxt (const CBString &input_fn, Referenced_dicom_dir *rdd)
+Rtss::load_cxt (const Pstring &input_fn, Referenced_dicom_dir *rdd)
 {
     this->m_cxt = new Rtss_polyline_set;
     cxt_load (this, rdd, (const char*) input_fn);
@@ -115,7 +115,7 @@ Rtss::load_xio (char *input_dir)
 }
 
 void
-Rtss::save_colormap (const CBString &colormap_fn)
+Rtss::save_colormap (const Pstring &colormap_fn)
 {
     ss_list_save_colormap (this->m_cxt, (const char*) colormap_fn);
 }
@@ -123,7 +123,7 @@ Rtss::save_colormap (const CBString &colormap_fn)
 void
 Rtss::save_cxt (
     Referenced_dicom_dir *rdd, 
-    const CBString &cxt_fn, 
+    const Pstring &cxt_fn, 
     bool prune_empty
 )
 {
@@ -161,7 +161,7 @@ Rtss::save_gdcm_rtss (
 void
 Rtss::save_fcsv (
     const Rtss_structure *curr_structure, 
-    const CBString& fn
+    const Pstring& fn
 )
 {
     Labeled_pointset pointset;
@@ -178,7 +178,7 @@ Rtss::save_fcsv (
 }
 
 void
-Rtss::save_prefix_fcsv (const CBString &output_prefix)
+Rtss::save_prefix_fcsv (const Pstring &output_prefix)
 {
     int i;
 
@@ -189,7 +189,7 @@ Rtss::save_prefix_fcsv (const CBString &output_prefix)
 
     for (i = 0; i < m_cxt->num_structures; i++)
     {
-	CBString fn;
+	Pstring fn;
 	Rtss_structure *curr_structure = m_cxt->slist[i];
 
 	compose_prefix_fn (&fn, output_prefix, curr_structure->name, "fcsv");
@@ -198,7 +198,7 @@ Rtss::save_prefix_fcsv (const CBString &output_prefix)
 }
 
 void
-Rtss::save_ss_image (const CBString &ss_img_fn)
+Rtss::save_ss_image (const Pstring &ss_img_fn)
 {
     if (!this->m_ss_img) {
 	print_and_exit (
@@ -219,13 +219,13 @@ Rtss::save_ss_image (const CBString &ss_img_fn)
 }
 
 void
-Rtss::save_labelmap (const CBString &labelmap_fn)
+Rtss::save_labelmap (const Pstring &labelmap_fn)
 {
     this->m_labelmap->save_image ((const char*) labelmap_fn);
 }
 
 void
-Rtss::save_prefix (const CBString &output_prefix)
+Rtss::save_prefix (const Pstring &output_prefix)
 {
     int i;
 
@@ -239,7 +239,7 @@ Rtss::save_prefix (const CBString &output_prefix)
 
     for (i = 0; i < m_ss_list->num_structures; i++)
     {
-	CBString fn;
+	Pstring fn;
 	Rtss_structure *curr_structure = m_ss_list->slist[i];
 	int bit = curr_structure->bit;
 
@@ -259,14 +259,14 @@ Rtss::save_prefix (const CBString &output_prefix)
 }
 
 void
-Rtss::save_ss_list (const CBString &ss_list_fn)
+Rtss::save_ss_list (const Pstring &ss_list_fn)
 {
     ss_list_save (this->m_cxt, (const char*) ss_list_fn);
 }
 
 void
 Rtss::save_xio (Xio_ct_transform *xio_transform, Xio_version xio_version, 
-    const CBString &output_dir)
+    const Pstring &output_dir)
 {
     xio_structures_save (this->m_cxt, xio_transform,
 	xio_version, (const char*) output_dir);

@@ -14,7 +14,7 @@
 class Rtss_polyline {
 public:
     int slice_no;
-    CBString ct_slice_uid;
+    Pstring ct_slice_uid;
     int num_vertices;
     float* x;
     float* y;
@@ -28,8 +28,8 @@ public:
 
 class Rtss_structure {
 public:
-    CBString name;
-    CBString color;
+    Pstring name;
+    Pstring color;
     int id;                    /* Used for import/export (must be >= 1) */
     int bit;                   /* Used for ss-img (-1 for no bit) */
     int num_contours;
@@ -43,10 +43,10 @@ public:
     void clear ();
     Rtss_polyline* add_polyline ();
     void set_color (const char* color_string);
-    void get_dcm_color_string (CBString *dcm_color) const;
+    void get_dcm_color_string (Pstring *dcm_color) const;
     void structure_rgb (int *r, int *g, int *b) const;
 
-    static void adjust_name (CBString *name_out, const CBString *name_in);
+    static void adjust_name (Pstring *name_out, const Pstring *name_in);
 };
 
 #if defined __cplusplus
@@ -64,8 +64,8 @@ plastimatch1_EXPORT
 Cxt_structure*
 cxt_add_structure (
     Cxt_structure_list *cxt, 
-    const CBString& structure_name, 
-    const CBString& color, 
+    const Pstring& structure_name, 
+    const Pstring& color, 
     int structure_id);
 plastimatch1_EXPORT
 Cxt_structure*
@@ -117,7 +117,7 @@ void
 cxt_structure_rgb (const Cxt_structure *structure, int *r, int *g, int *b);
 plastimatch1_EXPORT
 void
-cxt_adjust_name (CBString *name_out, const CBString *name_in);
+cxt_adjust_name (Pstring *name_out, const Pstring *name_in);
 #endif
 
 #if defined __cplusplus

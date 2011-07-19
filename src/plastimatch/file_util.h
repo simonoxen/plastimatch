@@ -5,8 +5,8 @@
 #define _file_util_h_
 
 #include "plm_config.h"
-#include "bstrwrap.h"
 #include "plm_int.h"
+#include "pstring.h"
 
 #if (_WIN32)
 #define ISSLASH(c) (((c) == '/') || ((c) == '\\'))
@@ -43,7 +43,7 @@ file_util_parent (const char *filename);
 
 #if defined __cplusplus
 plmsys_EXPORT
-CBString*
+Pstring*
 file_load (const char* filename);
 #endif
 

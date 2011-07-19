@@ -243,7 +243,7 @@ Gdcm_series::digest_files (void)
 void
 Gdcm_series::get_slice_info (
     int *slice_no,                  /* Output */
-    CBString *ct_slice_uid,         /* Output */
+    Pstring *ct_slice_uid,         /* Output */
     float z                         /* Input */
 )
 {
@@ -269,7 +269,7 @@ Gdcm_series::get_slice_info (
 }
 
 void
-Gdcm_series::get_slice_uids (std::vector<CBString> *slice_uids)
+Gdcm_series::get_slice_uids (std::vector<Pstring> *slice_uids)
 {
     slice_uids->clear ();
     if (!this->m_have_ct) {

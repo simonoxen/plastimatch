@@ -51,7 +51,7 @@ ss_list_load (Rtss_polyline_set* cxt, const char* ss_list_fn)
         }
 
 	Rtss_structure *curr_structure = cxt->add_structure (
-	    CBString (name), CBString (color), struct_id);
+	    Pstring (name), Pstring (color), struct_id);
 	curr_structure->bit = bit;
 	struct_id ++;
     }
@@ -109,7 +109,7 @@ ss_list_save_colormap (Rtss_polyline_set* cxt, const char* colormap_fn)
     for (i = 0; i < cxt->num_structures; i++) {
 	int r, g, b;
 	Rtss_structure *curr_structure;
-	CBString adjusted_name;
+	Pstring adjusted_name;
 
 	curr_structure = cxt->slist[i];
 	if (curr_structure->bit >= 0) {
@@ -124,7 +124,7 @@ ss_list_save_colormap (Rtss_polyline_set* cxt, const char* colormap_fn)
     for (i = 0; i < cxt->num_structures; i++) {
 	int r, g, b;
 	Rtss_structure *curr_structure;
-	CBString adjusted_name;
+	Pstring adjusted_name;
 
 	curr_structure = cxt->slist[i];
 	if (curr_structure->bit == -1) {

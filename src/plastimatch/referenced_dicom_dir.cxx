@@ -32,7 +32,7 @@ Referenced_dicom_dir::load (const char *dicom_dir)
 void
 Referenced_dicom_dir::get_slice_info (
     int *slice_no,                  /* Output */
-    CBString *ct_slice_uid,         /* Output */
+    Pstring *ct_slice_uid,          /* Output */
     float z                         /* Input */
 ) const
 {

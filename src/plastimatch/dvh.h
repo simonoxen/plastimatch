@@ -6,7 +6,7 @@
 
 #include "plm_config.h"
 #include <string>
-#include "bstrwrap.h"
+#include "pstring.h"
 #include "resample_mha.h"
 
 class Plm_image;
@@ -41,10 +41,10 @@ public:
 
 class plastimatch1_EXPORT Dvh_parms_pcmd {
 public:
-    CBString input_ss_img_fn;
-    CBString input_ss_list_fn;
-    CBString input_dose_fn;
-    CBString output_csv_fn;
+    Pstring input_ss_img_fn;
+    Pstring input_ss_list_fn;
+    Pstring input_dose_fn;
+    Pstring output_csv_fn;
     Dvh_parms dvh_parms;
 public:
     Dvh_parms_pcmd () {

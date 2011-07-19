@@ -19,7 +19,7 @@
 
 
 static void
-assign_random_color (CBString& color)
+assign_random_color (Pstring& color)
 {
     static int idx = 0;
     static const char* colors[] = {
@@ -87,10 +87,10 @@ Rtss_polyline_set::clear (void)
     this->init ();
 }
 
-CBString
+Pstring
 Rtss_polyline_set::find_unused_structure_name (void)
 {
-    CBString test_name;
+    Pstring test_name;
     for (int n = 1; n < std::numeric_limits<int>::max(); ++n) {
 	test_name.format ("%s (%d)", "Unknown structure", n);
 	bool dup_found = 0;
@@ -112,8 +112,8 @@ Rtss_polyline_set::find_unused_structure_name (void)
 /* Add structure (if it doesn't already exist) */
 Rtss_structure*
 Rtss_polyline_set::add_structure (
-    const CBString& structure_name, 
-    const CBString& color, 
+    const Pstring& structure_name, 
+    const Pstring& color, 
     int structure_id)
 {
     Rtss_structure* new_structure;

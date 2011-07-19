@@ -12,6 +12,7 @@ class Pstring : public CBString
   public:
     Pstring () {}
     Pstring (CBString& s) : CBString (s) {}
+    Pstring (const char *s) : CBString (s) {}
     using CBString::operator =;
     const Pstring& operator = (const std::string& s) {
 	(*this) = s.c_str();

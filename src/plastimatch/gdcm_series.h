@@ -8,8 +8,8 @@
 #include <map>
 #include <list>
 #include <vector>
-#include "bstrwrap.h"
 #include "img_metadata.h"
+#include "pstring.h"
 
 /* Forward declarations */
 namespace gdcm {
@@ -26,9 +26,9 @@ public:
 
     void load (const char *dicom_dir);
     void digest_files (void);
-    void get_slice_info (int *slice_no, CBString *ct_slice_uid, float z);
+    void get_slice_info (int *slice_no, Pstring *ct_slice_uid, float z);
     gdcm::File *get_ct_slice (void);
-    void get_slice_uids (std::vector<CBString> *slice_uids);
+    void get_slice_uids (std::vector<Pstring> *slice_uids);
     std::string get_patient_position ();
     const std::string& get_rtdose_filename ();
     const std::string& get_rtstruct_filename ();

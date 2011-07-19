@@ -166,7 +166,7 @@ cxt_load (
         if (rc != 3) {
             break;
         }
-	cxt->add_structure (CBString (name), CBString (color), struct_id);
+	cxt->add_structure (Pstring (name), Pstring (color), struct_id);
     }
 
     /* Part 3: Contour info */

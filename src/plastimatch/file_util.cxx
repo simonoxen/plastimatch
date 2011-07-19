@@ -197,11 +197,11 @@ strip_extension (char* filename)
     }
 }
 
-CBString*
+Pstring*
 file_load (const char* filename)
 {
     FILE *fp;
-    CBString *buf;
+    Pstring *buf;
 
     fp = fopen (filename, "rb");
     if (!fp) {
@@ -209,7 +209,7 @@ file_load (const char* filename)
     }
 
     /* Slurp the file into the buffer */
-    buf = new CBString ();
+    buf = new Pstring ();
     buf->read ((bNread) fread, fp);
     fclose (fp);
 

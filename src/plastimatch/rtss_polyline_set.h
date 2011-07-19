@@ -7,7 +7,7 @@
 #include "plm_config.h"
 #include <list>
 #include <vector>
-#include "bstrwrap.h"
+#include "pstring.h"
 
 class Plm_image;
 class Plm_image_header;
@@ -35,8 +35,8 @@ public:
     void init (void);
     void clear (void);
     Rtss_structure* add_structure (
-	const CBString& structure_name, 
-	const CBString& color, 
+	const Pstring& structure_name, 
+	const Pstring& color, 
 	int structure_id);
     Rtss_structure* find_structure_by_id (int structure_id);
     void debug (void);
@@ -48,7 +48,7 @@ public:
     void find_rasterization_geometry (float offset[3], 
 	float spacing[3], int dims[3]);
     void find_rasterization_geometry (Plm_image_header *pih);
-    CBString find_unused_structure_name (void);
+    Pstring find_unused_structure_name (void);
     void fix_polyline_slice_numbers (void);
     void free_all_polylines (void);
     void keyholize (void);

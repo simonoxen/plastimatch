@@ -164,8 +164,8 @@ gdcm_rtss_load (
 	if (1 != sscanf (roi_number.c_str(), "%d", &structure_id)) {
 	    continue;
 	}
-	cxt->add_structure (CBString (roi_name.c_str()), 
-	    CBString (), structure_id);
+	cxt->add_structure (Pstring (roi_name.c_str()), 
+	    Pstring (), structure_id);
     }
 
     /* ROIContourSequence */
@@ -457,7 +457,7 @@ gdcm_rtss_save (
 	    "ContourImageSequence not generated.\n");
     }
     int i = 1;
-    for (std::vector<CBString>::iterator it = rdd->m_ct_slice_uids.begin();
+    for (std::vector<Pstring>::iterator it = rdd->m_ct_slice_uids.begin();
 	 it != rdd->m_ct_slice_uids.end();
 	 it++)
     {
@@ -510,7 +510,7 @@ gdcm_rtss_save (
 	roic_seq->AddSQItem (roic_item, i+1);
 	
 	/* ROIDisplayColor */
-	CBString dcm_color;
+	Pstring dcm_color;
 	curr_structure->get_dcm_color_string (&dcm_color);
 	roic_item->InsertValEntry ((const char*) dcm_color, 0x3006, 0x002a);
 

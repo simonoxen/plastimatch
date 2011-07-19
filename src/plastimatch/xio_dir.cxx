@@ -1,11 +1,12 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
+#include <algorithm>
+#include <string>
+#include <vector>
 #include <stdlib.h>
 #include <stdio.h>
-#include <vector>
-#include <string>
-#include <algorithm>
 
 #include <itksys/SystemTools.hxx>
 #include <itksys/Directory.hxx>
@@ -14,7 +15,6 @@
 #include "bstrlib.h"
 
 #include "file_util.h"
-#include "plm_config.h"
 #include "print_and_exit.h"
 #include "xio_dir.h"
 #include "xio_plan.h"

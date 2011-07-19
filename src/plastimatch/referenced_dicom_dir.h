@@ -8,6 +8,7 @@
 #include <vector>
 #include "img_metadata.h"
 #include "plm_image_header.h"
+#include "pstring.h"
 
 class Referenced_dicom_dir {
 public:
@@ -16,13 +17,13 @@ public:
 
     Plm_image_header m_pih;
     Img_metadata m_demographics;
-    CBString m_study_id;
-    CBString m_ct_study_uid;
-    CBString m_ct_series_uid;
-    CBString m_ct_fref_uid;
+    Pstring m_study_id;
+    Pstring m_ct_study_uid;
+    Pstring m_ct_series_uid;
+    Pstring m_ct_fref_uid;
 
     /* These must be sorted in order, starting with origin slice */
-    std::vector<CBString> m_ct_slice_uids;
+    std::vector<Pstring> m_ct_slice_uids;
 
 public:
     plastimatch1_EXPORT
@@ -30,7 +31,7 @@ public:
     plastimatch1_EXPORT
     ~Referenced_dicom_dir ();
     void load (const char *dicom_dir);
-    void get_slice_info (int *slice_no, CBString *ct_slice_uid, float z) const;
+    void get_slice_info (int *slice_no, Pstring *ct_slice_uid, float z) const;
 
 };
 

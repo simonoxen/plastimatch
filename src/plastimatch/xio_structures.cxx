@@ -2,12 +2,11 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
+#include <algorithm>
+#include <string>
+#include <vector>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string>
-#include <algorithm>
-#include <vector>
-
 #include <itksys/SystemTools.hxx>
 #include <itksys/Directory.hxx>
 #include <itksys/RegularExpression.hxx>
@@ -20,6 +19,7 @@
 #include "plm_image_patient_position.h"
 #include "plm_path.h"
 #include "print_and_exit.h"
+#include "pstring.h"
 #include "rtss_polyline_set.h"
 #include "rtss_structure.h"
 #include "xio_ct.h"
@@ -108,8 +108,8 @@ add_cms_contournames (Rtss_polyline_set *rtss, const char *filename)
 	}
 
 	/* Add structure */
-	rtss->add_structure (CBString ((const char*) line1->data), 
-	    CBString(), structure_id);
+	rtss->add_structure (Pstring ((const char*) line1->data), 
+	    Pstring(), structure_id);
 
 	/* Skip extra lines */
 	for (int i = 0; i < skip_lines; i++) {
