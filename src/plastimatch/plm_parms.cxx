@@ -24,6 +24,7 @@ set_key_val (
     int section
 )
 {
+    int rc;
     Stage_parms* stage = 0;
     if (section != 0) {
 	stage = regp->stages[regp->num_stages-1];
@@ -341,9 +342,13 @@ set_key_val (
     else if (!strcmp (key, "mattes_histogram_bins") 
 	|| !strcmp (key, "mi_histogram_bins")) {
 	if (section == 0) goto error_not_global;
-	if (sscanf (val, "%d", &stage->mi_histogram_bins) != 1) {
-	    goto error_exit;
-	}
+    rc = sscanf (val, "%d,%d", &stage->mi_histogram_bins_fixed,
+                               &stage->mi_histogram_bins_moving);
+    if (rc == 1) {
+        stage->mi_histogram_bins_moving = stage->mi_histogram_bins_fixed;
+    } else if (rc != 2) {
+        goto error_exit;
+    }
     }
     else if (!strcmp (key, "num_samples")
 	|| !strcmp (key, "mattes_num_spatial_samples")

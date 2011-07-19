@@ -141,8 +141,10 @@ do_gpuit_bspline_stage_internal (
     /* Other stuff */
     parms.max_its = stage->max_its;
     parms.max_feval = stage->max_its;
-    parms.mi_hist.fixed.bins = stage->mi_histogram_bins;
-    parms.mi_hist.moving.bins = stage->mi_histogram_bins;
+    parms.mi_hist.fixed.bins = stage->mi_histogram_bins_fixed;
+    parms.mi_hist.moving.bins = stage->mi_histogram_bins_moving;
+    parms.mi_hist.joint.bins = parms.mi_hist.fixed.bins
+                             * parms.mi_hist.moving.bins;
     parms.young_modulus = stage->young_modulus;
 
     /* Load and adjust landmarks, if needed */

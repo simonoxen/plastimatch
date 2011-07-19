@@ -92,7 +92,8 @@ public:
     /* Quaternion optimizer */
     float learn_rate;
     /* Mattes mutual information */
-    int mi_histogram_bins;
+    int mi_histogram_bins_fixed;
+    int mi_histogram_bins_moving;
     int mi_num_spatial_samples;
     /* ITK & GPUIT demons */
     float demons_std;
@@ -158,7 +159,8 @@ public:
 	/* Quaternion optimizer */
 	learn_rate = 0.01 ;
 	/* Mattes mutual information */
-	mi_histogram_bins = 20;
+	mi_histogram_bins_fixed = 20;
+	mi_histogram_bins_moving = 20;
 	mi_num_spatial_samples = 10000;
 	/* ITK & GPUIT demons */
 	demons_std = 6.0;

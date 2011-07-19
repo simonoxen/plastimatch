@@ -699,7 +699,7 @@ CUDA_bspline_mi_a (
     // ----------------------------------------------------------
 
     plm_timer_start (&timer);   // <=== START TIMING HERE
-    
+
     // --- GENERATE HISTOGRMS -----------------------------------
 //  plm_timer_start (&timer0);
     if ((mi_hist->fixed.bins > GPU_MAX_BINS) ||

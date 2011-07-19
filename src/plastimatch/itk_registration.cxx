@@ -229,7 +229,7 @@ set_metric (RegistrationType::Pointer registration,
 		the images are detailed, it may be necessary to use a
 		much higher proportion, such as $20$ percent. */
 	    MattesMIMetricType::Pointer metric = MattesMIMetricType::New();
-	    metric->SetNumberOfHistogramBins(stage->mi_histogram_bins);
+	    metric->SetNumberOfHistogramBins(stage->mi_histogram_bins_fixed);
 	    metric->SetNumberOfSpatialSamples(stage->mi_num_spatial_samples);
 	    registration->SetMetric(metric);
 	}
