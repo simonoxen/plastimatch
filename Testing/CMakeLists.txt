@@ -882,6 +882,16 @@ plmtest_check_interval ("landmark-warp-c-check-2"
   )
 
 ## -------------------------------------------------------------------------
+## plm-warp-landmark-a
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-warp-landmark-a" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "warp;--input;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;--output-pointset;${PLM_TESTING_BUILD_DIR}/plm-warp-landmark-a.fcsv;--xf;${PLM_TESTING_BUILD_DIR}/landmark-warp-c-vf.mha"
+  )
+
+## -------------------------------------------------------------------------
 ## plastimatch convert dicom (and dicom rt)
 ##   plm convert dicom a: ct only
 ##   plm convert dicom b: rtss only, with referenced-ct
