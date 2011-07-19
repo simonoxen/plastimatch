@@ -342,7 +342,7 @@ set_key_val (
     else if (!strcmp (key, "mattes_histogram_bins") 
 	|| !strcmp (key, "mi_histogram_bins")) {
 	if (section == 0) goto error_not_global;
-    rc = sscanf (val, "%d,%d", &stage->mi_histogram_bins_fixed,
+    rc = sscanf (val, "%d %d", &stage->mi_histogram_bins_fixed,
                                &stage->mi_histogram_bins_moving);
     if (rc == 1) {
         stage->mi_histogram_bins_moving = stage->mi_histogram_bins_fixed;

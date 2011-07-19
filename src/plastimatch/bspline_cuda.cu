@@ -345,7 +345,7 @@ CUDA_bspline_mi_init_a (
     printf (" done.\n");
 
     // Report global memory allocation.
-    printf("             Real GPU Memory: %ld MB\n", GPU_Memory_Bytes / 1048576);
+    printf("             GPU Memory: %ld MB\n", GPU_Memory_Bytes / 1048576);
 
 #if defined (commentout)
     printf ("---------------------------\n");
@@ -667,7 +667,7 @@ CUDA_bspline_mse_init_j (
     printf("done.\n");
 
     // Report global memory allocation.
-    printf("  Allocated: %ld MB\n", GPU_Memory_Bytes / 1048576);
+    printf("             GPU Memory: %ld MB\n", GPU_Memory_Bytes / 1048576);
 
 }
 

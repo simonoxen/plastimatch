@@ -25,7 +25,7 @@
 //#define PROFILE_MSE
 
 /* HARDWARE IMPOSED CONSTANTS */
-#define GPU_MAX_BINS 20
+#define GPU_MAX_BINS 32
 
 typedef struct dev_pointers_bspline Dev_Pointers_Bspline;
 struct dev_pointers_bspline
