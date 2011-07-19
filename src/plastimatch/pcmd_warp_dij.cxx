@@ -9,26 +9,15 @@
 #include "itkInterpolateImagePointsFilter.h"
 #include "itkLinearInterpolateImageFunction.h"
 #include "itkVectorLinearInterpolateImageFunction.h"
-#include "getopt.h"
 
 #include "itk_image.h"
 #include "itk_image_load.h"
 #include "pcmd_warp.h"
 #include "plm_path.h"
+#include "print_and_exit.h"
 
 typedef unsigned short ushort;
 typedef unsigned long ulong;
-
-#if defined (commentout)
-typedef struct __Program_Parms Program_Parms;
-struct __Program_Parms {
-    char dij_in[_MAX_PATH];
-    char ctatts_in[_MAX_PATH];
-    char dif_in[_MAX_PATH];
-    char vf_in[_MAX_PATH];
-    char dij_out[_MAX_PATH];
-};
-#endif
 
 typedef struct __Ctatts Ctatts;
 struct __Ctatts {
@@ -587,6 +576,11 @@ convert_vector_field (
 void
 warp_dij_main (Warp_parms* parms)
 {
+    print_and_exit (
+	"Warping of Dij matrices has been disabled due to lack of interest.\n"
+	"Please contact plastimatch developers if you need this.\n");
+
+#if defined (commentout)
     DeformationFieldType::Pointer vf = DeformationFieldType::New();
     Ctatts ctatts;
     Dif dif;
@@ -600,4 +594,5 @@ warp_dij_main (Warp_parms* parms)
 
     convert_vector_field (vf, &ctatts, &dif, parms->input_fn, 
 	(const char*) parms->output_dij_fn);
+#endif
 }

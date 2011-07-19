@@ -17,7 +17,6 @@ class Warp_parms {
 public:
     /* Input files */
     CBString input_fn;
-    CBString vf_in_fn;
     CBString xf_in_fn;
     CBString referenced_dicom_dir;
     CBString input_cxt_fn;

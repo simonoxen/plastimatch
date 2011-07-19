@@ -49,8 +49,6 @@ parse_fn (
 	"dicom directory, or xio directory", 1, "");
     parser->add_long_option ("", "xf", 
 	"input transform used to warp image(s)", 1, "");
-    parser->add_long_option ("", "vf", 
-	"input vector field used to warp image(s)", 1, "");
     parser->add_long_option ("", "referenced-ct", 
 	"dicom directory used to set UIDs and metadata", 1, "");
     parser->add_long_option ("", "input-cxt", 
@@ -176,7 +174,6 @@ parse_fn (
 
     /* Input files */
     parms->input_fn = parser->get_string("input").c_str();
-    parms->vf_in_fn = parser->get_string("vf").c_str();
     parms->xf_in_fn = parser->get_string("xf").c_str();
     parms->referenced_dicom_dir = parser->get_string("referenced-ct").c_str();
     parms->input_cxt_fn = parser->get_string("input-cxt").c_str();
