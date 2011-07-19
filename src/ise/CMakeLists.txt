@@ -65,6 +65,10 @@ set (ISE_SRC
   ise_resize.c ise_resize.h
   )
 
+set (ACQUIRE_4030E_SRC
+  acquire_4030e.cxx
+  )
+
 set (ISE_QT_SRC
   iqt_main.cxx
   iqt_main_window.cxx iqt_main_window.h
@@ -154,3 +158,6 @@ if (QT4_FOUND)
   endif ()
   plm_add_executable (ise_qt "${ISE_QT_SRC}" "${ISE_QT_LIBRARIES}" "" 0)
 endif ()
+
+plm_add_executable (acquire_4030e "${ACQUIRE_4030E_SRC}" 
+  "${PAXSCAN_LIBRARIES}" "" 0)

@@ -1,7 +1,7 @@
 Plastimatch is a collaborative effort.  Contributors include:
 
 MGH: Greg Sharp, Ziji Wu, Marta Peroni, Justin Lee, Rui Li, 
-    Nadya Shusharina, Joost Verburg
+    Nadya Shusharina, Joost Verburg, Matt Bieniosek
 
 Drexel: Nagarajan Kandasamy, Harman Singh, Christopher Sagedy, 
     James Shackleford, Chatura Atapattu, Dustin Houck, Ronald O'Brien, 
