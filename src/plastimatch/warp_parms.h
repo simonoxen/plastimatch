@@ -6,47 +6,47 @@
 
 #include "plm_config.h"
 #include <string.h>
-#include "bstrwrap.h"
 
 #include "plm_file_format.h"
 #include "plm_image_type.h"
 #include "plm_image_patient_position.h"
+#include "pstring.h"
 #include "xio_io.h"
 
 class Warp_parms {
 public:
     /* Input files */
-    CBString input_fn;
-    CBString xf_in_fn;
-    CBString referenced_dicom_dir;
-    CBString input_cxt_fn;
-    CBString input_ss_img_fn;
-    CBString input_ss_list_fn;
-    CBString input_dose_img_fn;
-    CBString input_dose_xio_fn;
-    CBString input_dose_ast_fn;
-    CBString input_dose_mc_fn;
-    CBString fixed_img_fn;
+    Pstring input_fn;
+    Pstring xf_in_fn;
+    Pstring referenced_dicom_dir;
+    Pstring input_cxt_fn;
+    Pstring input_ss_img_fn;
+    Pstring input_ss_list_fn;
+    Pstring input_dose_img_fn;
+    Pstring input_dose_xio_fn;
+    Pstring input_dose_ast_fn;
+    Pstring input_dose_mc_fn;
+    Pstring fixed_img_fn;
 
     /* Dij input files */
-    CBString ctatts_in_fn;
-    CBString dif_in_fn;
+    Pstring ctatts_in_fn;
+    Pstring dif_in_fn;
 
     /* Output files */
-    CBString output_colormap_fn;
-    CBString output_cxt_fn;
-    CBString output_dicom;
-    CBString output_dij_fn;
-    CBString output_dose_img_fn;
-    CBString output_img_fn;
-    CBString output_labelmap_fn;
-    CBString output_pointset_fn;
-    CBString output_prefix;
-    CBString output_prefix_fcsv;
-    CBString output_ss_img_fn;
-    CBString output_ss_list_fn;
-    CBString output_vf_fn;
-    CBString output_xio_dirname;
+    Pstring output_colormap_fn;
+    Pstring output_cxt_fn;
+    Pstring output_dicom;
+    Pstring output_dij_fn;
+    Pstring output_dose_img_fn;
+    Pstring output_img_fn;
+    Pstring output_labelmap_fn;
+    Pstring output_pointset_fn;
+    Pstring output_prefix;
+    Pstring output_prefix_fcsv;
+    Pstring output_ss_img_fn;
+    Pstring output_ss_list_fn;
+    Pstring output_vf_fn;
+    Pstring output_xio_dirname;
 
     /* Output options */
     Plm_image_type output_type;

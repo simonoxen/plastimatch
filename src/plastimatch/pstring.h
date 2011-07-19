@@ -10,7 +10,14 @@
 class Pstring : public CBString
 {
   public:
-    Pstring (CBString s) : CBString (s) {}
+    Pstring () {}
+    Pstring (CBString& s) : CBString (s) {}
+    using CBString::operator =;
+    const Pstring& operator = (const std::string& s) {
+	(*this) = s.c_str();
+	return *this;
+    }
+    
   public:
     bool empty (void) {
 	return this->length() == 0;
