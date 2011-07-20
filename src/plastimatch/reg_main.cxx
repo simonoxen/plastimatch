@@ -95,6 +95,7 @@ main (int argc, char* argv[])
 {
     Reg_options options;
     Reg_parms *parms = &options.parms;
+    Reg_state rst;
     Volume *vf = NULL;
     Bspline_score bscore;
     Bspline_xform *bxf = NULL;
@@ -112,7 +113,11 @@ main (int argc, char* argv[])
     case 'b':
         bxf = (Bspline_xform*)load (&options, ANALYTIC);
         init_bscore (bxf, &bscore);
-        vf_regularize_analytic (&bscore, parms, bxf);
+
+        vf_regularize_analytic_init (&rst, bxf);
+        vf_regularize_analytic (&bscore, parms, &rst, bxf);
+        vf_regularize_analytic_destroy (&rst);
+
         S = bscore.rmetric;
         break;
     default:
