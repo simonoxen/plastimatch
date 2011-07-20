@@ -322,6 +322,15 @@ vf_regularize_analytic_init (
     Reg_state* rst,
     const Bspline_xform* bxf)
 {
+    double X[256];                      /* 16 x 16 matrix */
+    double Y[256];                      /* 16 x 16 matrix */
+    double Z[256];                      /* 16 x 16 matrix */
+    double gs[3];
+
+    gs[0] = (double)bxf->grid_spac[0];
+    gs[1] = (double)bxf->grid_spac[1];
+    gs[2] = (double)bxf->grid_spac[2];
+
     rst->QX_mats = (double*)malloc (3 * 16 * sizeof (double));
     rst->QY_mats = (double*)malloc (3 * 16 * sizeof (double));
     rst->QZ_mats = (double*)malloc (3 * 16 * sizeof (double));
@@ -334,19 +343,62 @@ vf_regularize_analytic_init (
     rst->QY = (double**)malloc (3 * sizeof (double*));
     rst->QZ = (double**)malloc (3 * sizeof (double*));
 
+    /* 4x4 matrices */
     rst->QX[0] = &(rst->QX_mats[0]);
-    rst->QX[1] = &(rst->QX_mats[16]);
-    rst->QX[2] = &(rst->QX_mats[32]);
+    rst->QX[1] = rst->QX[0] + 16;
+    rst->QX[2] = rst->QX[1] + 16;
 
     rst->QY[0] = &(rst->QY_mats[0]);
-    rst->QY[1] = &(rst->QY_mats[16]);
-    rst->QY[2] = &(rst->QY_mats[32]);
+    rst->QY[1] = rst->QY[0] + 16;
+    rst->QY[2] = rst->QY[1] + 16;
 
     rst->QZ[0] = &(rst->QZ_mats[0]);
-    rst->QZ[1] = &(rst->QZ_mats[16]);
-    rst->QZ[2] = &(rst->QZ_mats[32]);
+    rst->QZ[1] = rst->QZ[0] + 16;
+    rst->QZ[2] = rst->QZ[1] + 16;
 
     init_analytic (rst->QX, rst->QY, rst->QZ, bxf);
+
+    /* The below should probably be wrapped into init_analytic() */
+    rst->V_mats = (double*)malloc (6*4096 * sizeof (double));
+    rst->V = (double**)malloc (6 * sizeof (double*));
+
+    /* The six 64 x 64 V matrices */
+    rst->V[0] = &(rst->V_mats[0]);
+    rst->V[1] = rst->V[0] + 4096;
+    rst->V[2] = rst->V[1] + 4096;
+    rst->V[3] = rst->V[2] + 4096;
+    rst->V[4] = rst->V[3] + 4096;
+    rst->V[5] = rst->V[4] + 4096;
+
+    eval_integral (X, rst->QX[2], gs[0]);
+    eval_integral (Y, rst->QY[0], gs[1]);
+    eval_integral (Z, rst->QZ[0], gs[2]);
+    get_Vmatrix (rst->V[0], X, Y, Z);
+
+    eval_integral (X, rst->QX[0], gs[0]);
+    eval_integral (Y, rst->QY[2], gs[1]);
+    eval_integral (Z, rst->QZ[0], gs[2]);
+    get_Vmatrix (rst->V[1], X, Y, Z);
+
+    eval_integral (X, rst->QX[0], gs[0]);
+    eval_integral (Y, rst->QY[0], gs[1]);
+    eval_integral (Z, rst->QZ[2], gs[2]);
+    get_Vmatrix (rst->V[2], X, Y, Z);
+
+    eval_integral (X, rst->QX[1], gs[0]);
+    eval_integral (Y, rst->QY[1], gs[1]);
+    eval_integral (Z, rst->QZ[0], gs[2]);
+    get_Vmatrix (rst->V[3], X, Y, Z);
+
+    eval_integral (X, rst->QX[1], gs[0]);
+    eval_integral (Y, rst->QY[0], gs[1]);
+    eval_integral (Z, rst->QZ[1], gs[2]);
+    get_Vmatrix (rst->V[4], X, Y, Z);
+
+    eval_integral (X, rst->QX[0], gs[0]);
+    eval_integral (Y, rst->QY[1], gs[1]);
+    eval_integral (Z, rst->QZ[1], gs[2]);
+    get_Vmatrix (rst->V[5], X, Y, Z);
 }
 
 void
@@ -361,6 +413,9 @@ vf_regularize_analytic_destroy (
     free (rst->QX_mats);
     free (rst->QY_mats);
     free (rst->QZ_mats);
+
+    free (rst->V_mats);
+    free (rst->V);
 }
 
 
@@ -374,10 +429,6 @@ vf_regularize_analytic (
     int i,n;
 
     double S;                           /* Smoothness */
-    double X[256];                      /* 16 x 16 matrix */
-    double Y[256];                      /* 16 x 16 matrix */
-    double Z[256];                      /* 16 x 16 matrix */
-    double V[4096];                     /* 64 x 64 matrix */
     int knots[64];                      /* local set for current region */
     double gs[3];                       /* grid spacing */
     Timer timer;
@@ -387,51 +438,18 @@ vf_regularize_analytic (
     // Total number of regions in grid
     n = bxf->rdims[0] * bxf->rdims[1] * bxf->rdims[2];
 
-    gs[0] = (double)bxf->grid_spac[0];
-    gs[1] = (double)bxf->grid_spac[1];
-    gs[2] = (double)bxf->grid_spac[2];
-
     S = 0.0;
     for (i=0; i<n; i++) {
 
         // Get the set of 64 control points for this region
         find_knots (knots, i, bxf->cdims);
 
-        eval_integral (X, rst->QX[2], gs[0]);
-        eval_integral (Y, rst->QY[0], gs[1]);
-        eval_integral (Z, rst->QZ[0], gs[2]);
-        get_Vmatrix (V, X, Y, Z);
-        region_smoothness (bspline_score, reg_parms, bxf, V, knots);
-
-        eval_integral (X, rst->QX[0], gs[0]);
-        eval_integral (Y, rst->QY[2], gs[1]);
-        eval_integral (Z, rst->QZ[0], gs[2]);
-        get_Vmatrix (V, X, Y, Z);
-        region_smoothness (bspline_score, reg_parms, bxf, V, knots);
-
-        eval_integral (X, rst->QX[0], gs[0]);
-        eval_integral (Y, rst->QY[0], gs[1]);
-        eval_integral (Z, rst->QZ[2], gs[2]);
-        get_Vmatrix (V, X, Y, Z);
-        region_smoothness (bspline_score, reg_parms, bxf, V, knots);
-
-        eval_integral (X, rst->QX[1], gs[0]);
-        eval_integral (Y, rst->QY[1], gs[1]);
-        eval_integral (Z, rst->QZ[0], gs[2]);
-        get_Vmatrix (V, X, Y, Z);
-        region_smoothness (bspline_score, reg_parms, bxf, V, knots);
-
-        eval_integral (X, rst->QX[1], gs[0]);
-        eval_integral (Y, rst->QY[0], gs[1]);
-        eval_integral (Z, rst->QZ[1], gs[2]);
-        get_Vmatrix (V, X, Y, Z);
-        region_smoothness (bspline_score, reg_parms, bxf, V, knots);
-
-        eval_integral (X, rst->QX[0], gs[0]);
-        eval_integral (Y, rst->QY[1], gs[1]);
-        eval_integral (Z, rst->QZ[1], gs[2]);
-        get_Vmatrix (V, X, Y, Z);
-        region_smoothness (bspline_score, reg_parms, bxf, V, knots);
+        region_smoothness (bspline_score, reg_parms, bxf, rst->V[0], knots);
+        region_smoothness (bspline_score, reg_parms, bxf, rst->V[1], knots);
+        region_smoothness (bspline_score, reg_parms, bxf, rst->V[2], knots);
+        region_smoothness (bspline_score, reg_parms, bxf, rst->V[3], knots);
+        region_smoothness (bspline_score, reg_parms, bxf, rst->V[4], knots);
+        region_smoothness (bspline_score, reg_parms, bxf, rst->V[5], knots);
     }
 
     bspline_score->time_rmetric = plm_timer_report (&timer);

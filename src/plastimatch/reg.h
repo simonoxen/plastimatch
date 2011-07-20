@@ -32,6 +32,10 @@ struct reg_state_struct {
     double** QX;
     double** QY;
     double** QZ;
+
+    double* V_mats;     /* The 6 64x64 V matricies */
+
+    double** V;
 };
 
 #if defined (commentout)
