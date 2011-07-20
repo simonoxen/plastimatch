@@ -350,6 +350,21 @@ vf_regularize_analytic_init (
 }
 
 void
+vf_regularize_analytic_destroy (
+    Reg_state* rst
+)
+{
+    free (rst->QX);
+    free (rst->QY);
+    free (rst->QZ);
+
+    free (rst->QX_mats);
+    free (rst->QY_mats);
+    free (rst->QZ_mats);
+}
+
+
+void
 vf_regularize_analytic (
     Bspline_score *bspline_score, 
     const Reg_parms* reg_parms,

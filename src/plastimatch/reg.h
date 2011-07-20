@@ -67,6 +67,12 @@ vf_regularize_analytic_init (
 
 gpuit_EXPORT
 void
+vf_regularize_analytic_destroy (
+    Reg_state* rst
+);
+
+gpuit_EXPORT
+void
 vf_regularize_analytic (
     Bspline_score *bspline_score, 
     const Reg_parms* reg_parms,

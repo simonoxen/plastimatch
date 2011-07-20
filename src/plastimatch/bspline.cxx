@@ -366,8 +366,14 @@ bspline_state_destroy (
     Volume* moving_grad
 )
 {
+    Reg_parms* reg_parms = &parms->reg_parms;
+
     if (bst->ssd.grad) {
         free (bst->ssd.grad);
+    }
+
+    if (reg_parms->lambda > 0.0f) {
+        vf_regularize_analytic_destroy (&bst->rst);
     }
 
 #if (CUDA_FOUND)
