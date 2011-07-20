@@ -66,6 +66,7 @@ struct bspline_state_struct {
     int feval;           /* Number of function evaluations */
     Bspline_score ssd;   /* Score and Gradient  */
     void* dev_ptrs;      /* GPU Device Pointers */
+    Reg_state rst;       /* Analytic regularization */
 };
 
 typedef struct BSPLINE_MI_Hist_Parms_struct BSPLINE_MI_Hist_Parms;

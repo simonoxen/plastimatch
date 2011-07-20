@@ -23,6 +23,17 @@ public:
     }
 };
 
+typedef struct reg_state_struct Reg_state;
+struct reg_state_struct {
+    double* QX_mats;    /* Three 4x4 matrices */
+    double* QY_mats;    /* Three 4x4 matrices */
+    double* QZ_mats;    /* Three 4x4 matrices */
+
+    double** QX;
+    double** QY;
+    double** QZ;
+};
+
 #if defined (commentout)
 #endif
 
@@ -30,6 +41,7 @@ gpuit_EXPORT
 void
 regularize (
     Bspline_score* bsp_score,    /* Gets updated */
+    const Reg_state* rst,
     const Reg_parms* reg_parms,
     const Bspline_xform* bxf
 );
@@ -48,9 +60,18 @@ vf_regularize_numerical (Volume* vol);
 
 gpuit_EXPORT
 void
+vf_regularize_analytic_init (
+    Reg_state* rst,
+    const Bspline_xform* bxf
+);
+
+gpuit_EXPORT
+void
 vf_regularize_analytic (
     Bspline_score *bspline_score, 
     const Reg_parms* reg_parms,
-    const Bspline_xform* bxf);
+    const Reg_state* rst,
+    const Bspline_xform* bxf
+);
 
 #endif /* _reg_h_ */

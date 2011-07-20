@@ -128,12 +128,18 @@ bspline_state_create (
     Volume *moving, 
     Volume *moving_grad)
 {
+    Reg_parms* reg_parms = &parms->reg_parms;
+
     Bspline_state *bst = (Bspline_state*) malloc (sizeof (Bspline_state));
     memset (bst, 0, sizeof (Bspline_state));
     bst->ssd.grad = (float*) malloc (bxf->num_coeff * sizeof(float));
     memset (bst->ssd.grad, 0, bxf->num_coeff * sizeof(float));
 
     bspline_cuda_state_create (bst, bxf, parms, fixed, moving, moving_grad);
+
+    if (reg_parms->lambda > 0.0f) {
+        vf_regularize_analytic_init (&bst->rst, bxf);
+    }
 
     if (parms->metric == BMET_MI) {
         int i;
@@ -853,7 +859,7 @@ bspline_score (
 
     /* Regularize */
     if (reg_parms->lambda > 0.0f) {
-        regularize (&bst->ssd, reg_parms, bxf);
+        regularize (&bst->ssd, &bst->rst, reg_parms, bxf);
     }
 
     /* Add vector field score/gradient to image score/gradient */
