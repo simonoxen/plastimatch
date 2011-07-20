@@ -152,6 +152,11 @@ float *d_nearest_neighb;
 // NB what to do if there is just one landmark in a cluster??
 
 for(k=0; k<num_clusters; k++) {
+	int num_landm_in_clust = 0; 
+	for(i=0; i<num_landmarks; i++)
+	{if (lw->cluster_id[i]==k)
+	num_landm_in_clust++;}
+	if (num_landm_in_clust>1){
     D = 0; count = 0; dmax=-1;
     for(i=0; i<num_landmarks; i++) {
 	for(j=i; j<num_landmarks; j++) {
@@ -171,7 +176,7 @@ for(k=0; k<num_clusters; k++) {
     D /= count;	
     D = D ; //a magic number
 
-    printf("nclust %d   nland %d   dmax = %f  D = %f\n", num_clusters, num_landmarks, dmax, D);
+    printf("nclust %d   nland %d   dmax = %f  D = %f\n", num_clusters, num_landm_in_clust, dmax, D);
     
 	
 	// single long cluster needs other treatment
@@ -209,6 +214,10 @@ for(k=0; k<num_clusters; k++) {
     
 	free(d_nearest_neighb);
     } // end if dmax/D>...,  long cluster
+
+	} //end if many landmarks in a cluster
+	else {D=50;}//clusters of one landmark get a magic radius
+
 
      for(i=0; i<num_landmarks; i++) { 
 	 if (lw->cluster_id[i] == k) lw->adapt_radius[i] = D;
