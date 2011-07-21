@@ -7,12 +7,12 @@
 #include "plm_config.h"
 #include <string.h>
 #include <stdlib.h>
-#include "bstrwrap.h"
+#include "pstring.h"
 
 class Compare_parms {
 public:
-    CBString img_in_1_fn;
-    CBString img_in_2_fn;
+    Pstring img_in_1_fn;
+    Pstring img_in_2_fn;
 };
 
 void do_command_compare (int argc, char *argv[]);

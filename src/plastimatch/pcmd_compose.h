@@ -5,16 +5,16 @@
 #define _pcmd_compose_h_
 
 #include "plm_config.h"
-#include <string.h>
 #include <stdlib.h>
-#include "bstrwrap.h"
+#include <string.h>
 #include "plm_image_type.h"
+#include "pstring.h"
 
 class Compose_parms {
 public:
-    CBString xf_in_1_fn;
-    CBString xf_in_2_fn;
-    CBString xf_out_fn;
+    Pstring xf_in_1_fn;
+    Pstring xf_in_2_fn;
+    Pstring xf_out_fn;
     bool negate_mask;
     float mask_value;
     bool output_dicom;

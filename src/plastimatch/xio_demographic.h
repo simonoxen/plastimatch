@@ -5,12 +5,13 @@
 #define _xio_demographic_h_
 
 #include "plm_config.h"
+#include "pstring.h"
 
 class Xio_demographic
 {
 public:
-    CBString m_patient_name;
-    CBString m_patient_id;
+    Pstring m_patient_name;
+    Pstring m_patient_id;
 public:
     Xio_demographic (const char *filename);
     ~Xio_demographic ();

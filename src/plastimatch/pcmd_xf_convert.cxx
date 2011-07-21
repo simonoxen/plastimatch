@@ -9,13 +9,14 @@
 #include "plm_clp.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
+#include "pstring.h"
 #include "xform_convert.h"
 
 class Xf_convert_parms {
 public:
-    CBString input_fn;
-    CBString output_fn;
-    CBString output_type;
+    Pstring input_fn;
+    Pstring output_fn;
+    Pstring output_type;
 
     /* Geometry options */
     bool m_have_dim;
@@ -37,7 +38,7 @@ public:
 };
 
 void
-set_output_xform_type (Xform_convert *xfc, const CBString& output_type)
+set_output_xform_type (Xform_convert *xfc, const Pstring& output_type)
 {
     if (output_type == "vf") {
 	xfc->m_xf_out_type = XFORM_ITK_VECTOR_FIELD;

@@ -7,14 +7,14 @@
 #include "plm_config.h"
 #include <string.h>
 #include <stdlib.h>
-#include "bstrwrap.h"
 #include "itk_image.h"
+#include "pstring.h"
 
 class Diff_parms {
 public:
-    CBString img_in_1_fn;
-    CBString img_in_2_fn;
-    CBString img_out_fn;
+    Pstring img_in_1_fn;
+    Pstring img_in_2_fn;
+    Pstring img_out_fn;
 };
 
 void do_command_diff (int argc, char *argv[]);

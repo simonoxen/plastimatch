@@ -11,6 +11,7 @@
 #include "bstring_util.h"
 #include "itk_point.h"
 #include "print_and_exit.h"
+#include "pstring.h"
 
 void
 load_data (
@@ -25,7 +26,7 @@ load_data (
     }
     CBStream bs ((bNread) fread, fp);
 
-    CBString line;
+    Pstring line;
     Autolabel_point datum;
     while (bstring_not_empty (line = bs.readLine ('\n'))) {
 	float x, y;

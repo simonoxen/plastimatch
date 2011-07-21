@@ -16,20 +16,21 @@
 #include "plm_clp.h"
 #include "pointset.h"
 #include "print_and_exit.h"
+#include "pstring.h"
 #include "rbf_gauss.h"
 #include "rbf_wendland.h"
 
 class Landmark_warp_main_parms {
 public:
-    CBString fixed_lm_fn;
-    CBString moving_lm_fn;
-    CBString input_vf_fn;
-    CBString input_img_fn;
-    CBString output_img_fn;
-    CBString output_vf_fn;
-    CBString output_lm_fn;
+    Pstring fixed_lm_fn;
+    Pstring moving_lm_fn;
+    Pstring input_vf_fn;
+    Pstring input_img_fn;
+    Pstring output_img_fn;
+    Pstring output_vf_fn;
+    Pstring output_lm_fn;
 
-    CBString fixed_img_fn;
+    Pstring fixed_img_fn;
     bool have_dim;
     int dim[3];
     bool have_origin;
@@ -39,7 +40,7 @@ public:
     bool have_direction_cosines;
     float direction_cosines[9];
 
-    CBString algorithm;
+    Pstring algorithm;
 
     Landmark_warp lw;
 

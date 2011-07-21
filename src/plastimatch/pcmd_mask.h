@@ -7,15 +7,15 @@
 #include "plm_config.h"
 #include <string.h>
 #include <stdlib.h>
-#include "bstrwrap.h"
 #include "itk_mask.h"
 #include "plm_image_type.h"
+#include "pstring.h"
 
 class Mask_parms {
 public:
-    CBString input_fn;
-    CBString output_fn;
-    CBString mask_fn;
+    Pstring input_fn;
+    Pstring output_fn;
+    Pstring mask_fn;
     enum Mask_operation mask_operation;
     float mask_value;
     bool output_dicom;

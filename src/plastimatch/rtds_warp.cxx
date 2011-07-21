@@ -14,6 +14,7 @@
 #include "logfile.h"
 #include "plm_image_type.h"
 #include "plm_warp.h"
+#include "pstring.h"
 #include "referenced_dicom_dir.h"
 #include "rtds_dicom.h"
 #include "rtds_warp.h"
@@ -408,7 +409,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	&& rtds->m_xio_dose_input
 	&& rtds->m_dose)
     {
-	CBString fn;
+	Pstring fn;
 
 	printf ("Rtds_warp: Saving xio dose.\n");
 	fn.format ("%s/%s", (const char*) parms->output_xio_dirname, "dose");

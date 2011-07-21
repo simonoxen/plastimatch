@@ -5,19 +5,19 @@
 #include <stdlib.h>
 #include "itkImageRegionIterator.h"
 
-#include "bstring_util.h"
 #include "pcmd_segment.h"
 #include "plm_clp.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
+#include "pstring.h"
 #include "resample_mha.h"
 #include "segment_body.h"
 
 class Segment_parms {
 public:
-    CBString input_fn;
-    CBString output_fn;
-    CBString output_dicom;
+    Pstring input_fn;
+    Pstring output_fn;
+    Pstring output_dicom;
     float lower_threshold;
     float upper_threshold;
 

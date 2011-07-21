@@ -5,14 +5,14 @@
 #define _pcmd_thumbnail_h_
 
 #include "plm_config.h"
-#include <string.h>
 #include <stdlib.h>
-#include "bstrwrap.h"
+#include <string.h>
+#include "pstring.h"
 
 class Thumbnail_parms {
 public:
-    CBString img_in_fn;
-    CBString img_out_fn;
+    Pstring img_in_fn;
+    Pstring img_out_fn;
     int thumbnail_dim;
     float thumbnail_spacing;
     bool have_slice_loc;

@@ -532,7 +532,7 @@ opencl_load_programs (
 )
 {
     cl_int status;
-    CBString *buf;
+    Pstring *buf;
     const char *buf_cstr;
     size_t len;
 

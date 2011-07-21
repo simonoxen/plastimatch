@@ -18,10 +18,10 @@
 
 typedef struct synthetic_mha_main_parms Synthetic_mha_main_parms;
 struct synthetic_mha_main_parms {
-    CBString output_fn;
-    CBString output_dose_img_fn;
-    CBString output_ss_img_fn;
-    CBString output_dicom;
+    Pstring output_fn;
+    Pstring output_dose_img_fn;
+    Pstring output_ss_img_fn;
+    Pstring output_dicom;
     Synthetic_mha_parms sm_parms;
 };
 

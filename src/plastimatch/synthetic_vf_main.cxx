@@ -7,22 +7,22 @@
 #include <stdlib.h>
 #include <vector>
 
-#include "bstring_util.h"
 #include "itk_image.h"
 #include "itk_image_save.h"
 #include "math_util.h"
 #include "plm_clp.h"
+#include "pstring.h"
 #include "synthetic_vf.h"
 
 typedef struct synthetic_vf_main_parms Synthetic_vf_main_parms;
 struct synthetic_vf_main_parms {
-    CBString output_fn;
-    CBString fixed_fn;
+    Pstring output_fn;
+    Pstring fixed_fn;
     Synthetic_vf_parms sv_parms;
 };
 
 void
-do_synthetic_vf (CBString& fn, Synthetic_vf_parms *parms)
+do_synthetic_vf (Pstring& fn, Synthetic_vf_parms *parms)
 {
 #if defined (commentout)
     /* Create vf */

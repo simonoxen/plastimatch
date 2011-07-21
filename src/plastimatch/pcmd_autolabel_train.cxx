@@ -16,14 +16,15 @@
 #include "plm_image_header.h"
 #include "plm_image_patient_position.h"
 #include "print_and_exit.h"
+#include "pstring.h"
 #include "thumbnail.h"
 
 class Autolabel_train_parms {
 public:
-    CBString input_dir;
-    CBString output_libsvm_fn;
-    CBString output_network_fn;
-    CBString task;
+    Pstring input_dir;
+    Pstring output_libsvm_fn;
+    Pstring output_network_fn;
+    Pstring task;
 };
 
 /* ITK typedefs */

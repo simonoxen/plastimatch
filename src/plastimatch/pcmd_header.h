@@ -7,11 +7,11 @@
 #include "plm_config.h"
 #include <string.h>
 #include <stdlib.h>
-#include "bstrwrap.h"
+#include "pstring.h"
 
 class Header_parms {
 public:
-    CBString img_in_fn;
+    Pstring img_in_fn;
 };
 
 void

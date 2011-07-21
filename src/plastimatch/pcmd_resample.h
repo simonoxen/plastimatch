@@ -6,14 +6,14 @@
 
 #include "plm_config.h"
 #include <stdlib.h>
-#include "bstrwrap.h"
 #include "plm_image_type.h"
+#include "pstring.h"
 
 class Resample_parms {
 public:
-    CBString img_in_fn;
-    CBString img_out_fn;
-    CBString fixed_fn;
+    Pstring img_in_fn;
+    Pstring img_out_fn;
+    Pstring fixed_fn;
     Plm_image_type output_type;
     float origin[3];
     bool have_origin;

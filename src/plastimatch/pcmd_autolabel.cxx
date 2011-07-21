@@ -15,13 +15,14 @@
 #include "plm_image_header.h"
 #include "plm_image_patient_position.h"
 #include "print_and_exit.h"
+#include "pstring.h"
 #include "thumbnail.h"
 
 class Autolabel_parms {
 public:
-    CBString input_fn;
-    CBString output_fn;
-    CBString network_fn;
+    Pstring input_fn;
+    Pstring output_fn;
+    Pstring network_fn;
 };
 
 /* ITK typedefs */
