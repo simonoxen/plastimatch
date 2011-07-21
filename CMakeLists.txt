@@ -176,31 +176,6 @@ if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
 endif ()
 
 ##-----------------------------------------------------------------------------
-## JAS 10.28.2010
-## nvcc automatically passed the flag -malign-double to gcc when compiling .cu
-## files.  This can be a problem when structs are shared between 
-## .c & .cu files on 32-bit machines.  So, we pass -malign-double to gcc 
-## for .c files as well so that everybody is using the same alignment.  
-## -malign-double is automatically passed to gcc for 64-bit architectures.
-## 
-## GCS 2010-10-30
-## -malign-double should only be enabled for 32-bit machines.  gcc 4.1.2 
-## gives an error if it is used on x86_64.
-##-----------------------------------------------------------------------------
-if (CMAKE_COMPILER_IS_GNUCC AND HAVE_32_BIT)
-  if (CMAKE_C_FLAGS)
-    set (CMAKE_C_FLAGS "-malign-double")
-  else ()
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -malign-double")
-  endif ()
-  if (CMAKE_CXX_FLAGS)
-    set (CMAKE_CXX_FLAGS "-malign-double")
-  else ()
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -malign-double")
-  endif ()
-endif ()
-
-##-----------------------------------------------------------------------------
 ##  Extra paths
 ##-----------------------------------------------------------------------------
 set (PLM_TESTING_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Testing")
@@ -388,6 +363,34 @@ if (NOT PLM_CONFIG_DISABLE_CUDA)
   set (CUDA_FOUND ${CUDA_FOUND} CACHE BOOL "Did we find cuda?")
   if (CUDA_FOUND)
     cuda_include_directories (${CMAKE_CURRENT_SOURCE_DIR})
+  endif ()
+endif ()
+
+##-----------------------------------------------------------------------------
+## JAS 10.28.2010
+## nvcc automatically passed the flag -malign-double to gcc when compiling .cu
+## files.  This can be a problem when structs are shared between 
+## .c & .cu files on 32-bit machines.  So, we pass -malign-double to gcc 
+## for .c files as well so that everybody is using the same alignment.  
+## -malign-double is automatically passed to gcc for 64-bit architectures.
+## 
+## GCS 2010-10-30
+## -malign-double should only be enabled for 32-bit machines.  gcc 4.1.2 
+## gives an error if it is used on x86_64.
+## 
+## GCS 2011-07-21
+## -malign-double is not compatible with ITK.  Need a fix soon...
+##-----------------------------------------------------------------------------
+if (CUDA_FOUND AND CMAKE_COMPILER_IS_GNUCC AND HAVE_32_BIT)
+  if (CMAKE_C_FLAGS)
+    set (CMAKE_C_FLAGS "-malign-double")
+  else ()
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -malign-double")
+  endif ()
+  if (CMAKE_CXX_FLAGS)
+    set (CMAKE_CXX_FLAGS "-malign-double")
+  else ()
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -malign-double")
   endif ()
 endif ()
 
