@@ -344,15 +344,15 @@ vf_regularize_analytic_init (
     rst->QZ = (double**)malloc (3 * sizeof (double*));
 
     /* 4x4 matrices */
-    rst->QX[0] = &(rst->QX_mats[0]);
+    rst->QX[0] = rst->QX_mats;
     rst->QX[1] = rst->QX[0] + 16;
     rst->QX[2] = rst->QX[1] + 16;
 
-    rst->QY[0] = &(rst->QY_mats[0]);
+    rst->QY[0] = rst->QY_mats;
     rst->QY[1] = rst->QY[0] + 16;
     rst->QY[2] = rst->QY[1] + 16;
 
-    rst->QZ[0] = &(rst->QZ_mats[0]);
+    rst->QZ[0] = rst->QZ_mats;
     rst->QZ[1] = rst->QZ[0] + 16;
     rst->QZ[2] = rst->QZ[1] + 16;
 
@@ -363,7 +363,7 @@ vf_regularize_analytic_init (
     rst->V = (double**)malloc (6 * sizeof (double*));
 
     /* The six 64 x 64 V matrices */
-    rst->V[0] = &(rst->V_mats[0]);
+    rst->V[0] = rst->V_mats;
     rst->V[1] = rst->V[0] + 4096;
     rst->V[2] = rst->V[1] + 4096;
     rst->V[3] = rst->V[2] + 4096;
@@ -427,10 +427,7 @@ vf_regularize_analytic (
     const Bspline_xform* bxf)
 {
     int i,n;
-
-    double S;                           /* Smoothness */
-    int knots[64];                      /* local set for current region */
-    double gs[3];                       /* grid spacing */
+    int knots[64];
     Timer timer;
 
     plm_timer_start (&timer);
@@ -438,9 +435,7 @@ vf_regularize_analytic (
     // Total number of regions in grid
     n = bxf->rdims[0] * bxf->rdims[1] * bxf->rdims[2];
 
-    S = 0.0;
     for (i=0; i<n; i++) {
-
         // Get the set of 64 control points for this region
         find_knots (knots, i, bxf->cdims);
 
