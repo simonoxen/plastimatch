@@ -24,6 +24,9 @@ warp_pointset_main (Warp_parms* parms)
     FloatPointSetType::Pointer itk_ps_in 
 	= itk_float_pointset_from_pointset (ps);
 
+    pointset_debug (ps);
+    printf ("---\n");
+
     itk_pointset_debug (itk_ps_in);
     printf ("---\n");
 

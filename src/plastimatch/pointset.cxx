@@ -69,14 +69,6 @@ pointset_load_fcsv (const char *fn)
 	return 0;
     }
 
-    /* Check if this file is an fcsv file */
-    fgets (s, 1024, fp);
-    if (strncmp (s, "# Fiducial List file", strlen ("# Fiducial List file")))
-    {
-	fclose (fp);
-	return 0;
-    }
-
     /* Got an fcsv file.  Parse it. */
     ps = pointset_create ();
     while (!feof(fp)) {
@@ -95,7 +87,10 @@ pointset_load_fcsv (const char *fn)
         rc = sscanf (s2, ",%f,%f,%f,%d,%d\n", 
 	    &lm[0], &lm[1], &lm[2], &land_sel, &land_vis);
 	if (rc != 5) {
-	    print_and_exit ("Error parsing landmark file: %s\n", fn);
+	    /* If there are not 5 numbers, then it is not an fcsv file */
+	    pointset_destroy (ps);
+	    fclose (fp);
+	    return 0;
 	}
 	ps->num_points ++;
 	pointset_resize (ps, ps->num_points);
