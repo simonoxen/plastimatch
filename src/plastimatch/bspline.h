@@ -23,8 +23,7 @@
  * the -malign-double flag on 32-bit systems... so, believe it or not
  * this might be the cleanest solution */
 #if (__GNUC__) && (HAVE_32_BIT)
-//    typedef double double_align8 __attribute__ ((aligned(8)));
-    typedef double double_align8;
+    typedef double double_align8 __attribute__ ((aligned(8)));
 #else 
     typedef double double_align8;
 #endif
