@@ -380,19 +380,27 @@ endif ()
 ## 
 ## GCS 2011-07-21
 ## -malign-double is not compatible with ITK.  Need a fix soon...
+##
+## JAS 2011-07-23
+## I have disabled -malign-double passing to gcc/g++ compiled objects and
+## have taken to manually byte aligning structures that are passed to
+## nvcc compiled objects.  (See double_align8 typedef in bspline.h)
+## Hopefully this will solve the problem.
 ##-----------------------------------------------------------------------------
-if (CUDA_FOUND AND CMAKE_COMPILER_IS_GNUCC AND HAVE_32_BIT)
-  if (CMAKE_C_FLAGS)
-    set (CMAKE_C_FLAGS "-malign-double")
-  else ()
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -malign-double")
-  endif ()
-  if (CMAKE_CXX_FLAGS)
-    set (CMAKE_CXX_FLAGS "-malign-double")
-  else ()
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -malign-double")
-  endif ()
-endif ()
+#if (CUDA_FOUND AND CMAKE_COMPILER_IS_GNUCC AND HAVE_32_BIT)
+#  if (CMAKE_C_FLAGS)
+#    set (CMAKE_C_FLAGS "-malign-double")
+#  else ()
+#    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -malign-double")
+#  endif ()
+#  if (CMAKE_CXX_FLAGS)
+#    set (CMAKE_CXX_FLAGS "-malign-double")
+#  else ()
+#    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -malign-double")
+#  endif ()
+#endif ()
+
+
 
 ##-----------------------------------------------------------------------------
 ##  Slicer

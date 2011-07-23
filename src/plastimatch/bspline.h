@@ -12,6 +12,23 @@
 
 #define DOUBLE_HISTS	// Use doubles for histogram accumulation
 
+
+/* JAS 2011.07.23
+ * The following is a fix that allows us to more selectively enforce
+ * the -malign-double compatibility required by object files compiled
+ * by nvcc.  Any structures that are used by both nvcc compiled files
+ * and gcc/g++ compiled files should use this.  The reason we do not
+ * simply pass -malign-double to gcc/g++ in order to achieve this
+ * compatibility is because Slicer's ITK does not come compiled with
+ * the -malign-double flag on 32-bit systems... so, believe it or not
+ * this might be the cleanest solution */
+#if (__GNUC__) && (HAVE_32_BIT)
+//    typedef double double_align8 __attribute__ ((aligned(8)));
+    typedef double double_align8;
+#else 
+    typedef double double_align8;
+#endif
+
 /* -----------------------------------------------------------------------
    Types
    ----------------------------------------------------------------------- */
@@ -101,7 +118,7 @@ public:
     int debug_stage;             /* Used to tag debug files by stage */
     int gpuid;                   /* Sets GPU to use for multi-gpu machines */
     int gpu_zcpy;                /* Use zero-copy when possible? */
-    double convergence_tol;      /* When to stop iterations based on score */
+    double_align8 convergence_tol;      /* When to stop iterations based on score */
     int convergence_tol_its;     /* How many iterations to check for 
 				    convergence tol */
     BSPLINE_MI_Hist mi_hist;     /* Histogram for MI score */
@@ -109,8 +126,8 @@ public:
 				    data stored on the GPU */
     void *data_from_gpu;         /* Pointer to structure that stores the 
 				    data returned from the GPU */
-    double lbfgsb_factr;         /* Function value tolerance for L-BFGS-B */
-    double lbfgsb_pgtol;         /* Projected grad tolerance for L-BFGS-B */
+    double_align8 lbfgsb_factr;         /* Function value tolerance for L-BFGS-B */
+    double_align8 lbfgsb_pgtol;         /* Projected grad tolerance for L-BFGS-B */
 
     struct bspline_landmarks* landmarks;  /* The landmarks themselves */
     float landmark_stiffness;    /* Attraction of landmarks (0 == no 
