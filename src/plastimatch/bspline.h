@@ -22,7 +22,7 @@
  * compatibility is because Slicer's ITK does not come compiled with
  * the -malign-double flag on 32-bit systems... so, believe it or not
  * this might be the cleanest solution */
-#if (__GNUC__) && (HAVE_32_BIT)
+#if (__GNUC__) && (HAVE_32_BIT) && (CUDA_FOUND)
     typedef double double_align8 __attribute__ ((aligned(8)));
 #else 
     typedef double double_align8;
