@@ -60,14 +60,14 @@ demons_c (
 	vf_convert_to_interleaved (vf_smooth);
     } else {
 	/* Otherwise initialize to zero */
-	vf_smooth = volume_create (fixed->dim, fixed->offset, fixed->spacing, 
+	vf_smooth = new Volume (fixed->dim, fixed->offset, fixed->spacing, 
 	    fixed->direction_cosines, PT_VF_FLOAT_INTERLEAVED, 3, 0);
     }
-    vf_est = volume_create (fixed->dim, fixed->offset, fixed->spacing, 
+    vf_est = new Volume (fixed->dim, fixed->offset, fixed->spacing, 
 	fixed->direction_cosines, PT_VF_FLOAT_INTERLEAVED, 3, 0);
     vf_est_img = (float*) vf_est->img;
     vf_smooth_img = (float*) vf_smooth->img;
-    m_grad_mag = volume_create (moving->dim, moving->offset, moving->spacing, 
+    m_grad_mag = new Volume (moving->dim, moving->offset, moving->spacing, 
 	moving->direction_cosines, PT_FLOAT, 1, 0);
     m_grad_mag_img = (float*) m_grad_mag->img;
 
@@ -163,8 +163,8 @@ demons_c (
     free (kerx);
     free (kery);
     free (kerz);
-    volume_destroy (vf_est);
-    volume_destroy (m_grad_mag);
+    delete vf_est;
+    delete m_grad_mag;
 
     diff_run = plm_timer_report (&timer);
     printf ("Time for %d iterations = %f (%f sec / it)\n", 

@@ -117,7 +117,7 @@ read_mha_internal (
    
     fprintf(stdout, "reading %s\n", filename);
  
-    vol  = (Volume*) malloc (sizeof(Volume));
+    vol  = new Volume;
     vol->pix_size = -1;
     vol->pix_type = PT_UNDEFINED;
     while (fgets (linebuf, LINELEN, fp)) {
@@ -186,6 +186,9 @@ read_mha_internal (
 	printf ("Oops, couldn't interpret mha data type\n");
 	exit (-1);
     }
+
+    /* Update proj and step matrices */
+    vol->set_direction_cosines (vol->direction_cosines);
         
     if (mh5) {
 	fseek(fp, 512, SEEK_SET);
@@ -240,6 +243,4 @@ read_mha (const char* filename)
     } else {
 	return read_mha_internal (filename, 0);
     }
-    
-
 }

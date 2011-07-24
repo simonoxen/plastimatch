@@ -34,7 +34,7 @@ bxf_from_vf (Volume* vf, int* vox_per_rgn)
     );
     compute_coeff_from_vf (bxf, vf);
 
-    volume_destroy (vf);
+    delete vf;
     return bxf;
 }
 
@@ -144,7 +144,7 @@ main (int argc, char* argv[])
     } /* switch(implementation) */
 
     if (vf) {
-        volume_destroy (vf);
+        delete vf;
     }
 
     if (bxf) {

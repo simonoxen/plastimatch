@@ -33,6 +33,36 @@ vf_warp (Volume *vout, Volume *vin, Volume *vf)
 	vf->direction_cosines[1],
 	vf->direction_cosines[2]
     );
+    printf ("spac: "
+	"vin = %f %f %f ...\n"
+	"vf = %f %f %f ...\n",
+	vin->spacing[0],
+	vin->spacing[1],
+	vin->spacing[2],
+	vf->spacing[0],
+	vf->spacing[1],
+	vf->spacing[2]
+    );
+    printf ("proj: "
+	"vin = %f %f %f ...\n"
+	"vf = %f %f %f ...\n",
+	vin->proj[0][0],
+	vin->proj[0][1],
+	vin->proj[0][2],
+	vf->proj[0][0],
+	vf->proj[0][1],
+	vf->proj[0][2]
+    );
+    printf ("step: "
+	"vin = %f %f %f ...\n"
+	"vf = %f %f %f ...\n",
+	vin->step[0][0],
+	vin->step[0][1],
+	vin->step[0][2],
+	vf->step[0][0],
+	vf->step[0][1],
+	vf->step[0][2]
+    );
 
     if (!vout) {
 	vout = volume_clone_empty (vin);

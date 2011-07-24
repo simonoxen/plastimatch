@@ -96,7 +96,7 @@ main (int argc, char* argv[])
     write_mha (options.output_file, vol);
 
     /* Free memory */
-    volume_destroy (vol);
+    delete vol;
 
 //    UNLOAD_LIBRARY (libplmopencl);
 

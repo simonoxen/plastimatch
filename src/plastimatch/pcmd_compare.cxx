@@ -97,8 +97,8 @@ vf_compare (Compare_parms* parms)
 
     vf_analyze (vol1, vol2);
 
-    volume_destroy (vol1);
-    volume_destroy (vol2);
+    delete vol1;
+    delete vol2;
 }
 
 static void

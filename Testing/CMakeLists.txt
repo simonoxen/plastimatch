@@ -423,7 +423,7 @@ plm_add_test (
   "bspline-mi-c-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/bspline
-  "-a;steepest;-m;10;-f;c;-M;mi;-O;${PLM_TESTING_BUILD_DIR}/bspline-mi-c-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-3.mha"
+  "-a;steepest;-m;10;-f;c;-M;mi;-O;${PLM_TESTING_BUILD_DIR}/bspline-mi-c-1.mha;-x;${PLM_TESTING_BUILD_DIR}/bspline-mi-c-1.txt;-V;${PLM_TESTING_BUILD_DIR}/bspline-mi-c-1-vf.mha;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-3.mha"
   )
 plmtest_check_interval (bspline-mi-c-1-check
   "${PLM_TESTING_BUILD_DIR}/bspline-mi-c-1.stdout.txt"

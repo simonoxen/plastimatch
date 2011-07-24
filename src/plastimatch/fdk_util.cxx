@@ -30,7 +30,7 @@ my_create_volume (Fdk_options* options)
     offset[1] = -vol_size[1] / 2.0f + spacing[1] / 2.0f;
     offset[2] = -vol_size[2] / 2.0f + spacing[2] / 2.0f;
 
-    return volume_create (resolution, offset, spacing, 0, PT_FLOAT, 1, 0);
+    return new Volume (resolution, offset, spacing, 0, PT_FLOAT, 1, 0);
 }
 
 float

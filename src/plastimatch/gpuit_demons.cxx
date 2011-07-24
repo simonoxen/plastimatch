@@ -67,9 +67,9 @@ do_gpuit_demons_stage_internal (
     /* Do something with output vector field */
     xf_out->set_gpuit_vf (vf_out);
 
-    volume_destroy (fixed_ss);
-    volume_destroy (moving_ss);
-    volume_destroy (moving_grad);
+    delete fixed_ss;
+    delete moving_ss;
+    delete moving_grad;
 }
 
 void

@@ -77,10 +77,10 @@ main (int argc, char* argv[])
     memset (roi_offset, 0, 3*sizeof(int));
     if (options.input_xf_fn) {
 	bxf = bspline_xform_load (options.input_xf_fn);
-    if (!bxf) {
-        fprintf (stderr, "Failed to load %s\n", options.input_xf_fn);
-        exit (-1);
-    }
+	if (!bxf) {
+	    fprintf (stderr, "Failed to load %s\n", options.input_xf_fn);
+	    exit (-1);
+	}
     } else {
 	bxf = (Bspline_xform*) malloc (sizeof (Bspline_xform));
 	bspline_xform_initialize (
@@ -114,7 +114,7 @@ main (int argc, char* argv[])
     )
     {
 	printf ("Creating vector field.\n");
-	vector_field = volume_create (fixed->dim, fixed->offset, 
+	vector_field = new Volume (fixed->dim, fixed->offset, 
 	    fixed->spacing, fixed->direction_cosines, 
 	    PT_VF_FLOAT_INTERLEAVED, 3, 0);
 	if (parms->threading == BTHR_CUDA) {
@@ -154,11 +154,11 @@ main (int argc, char* argv[])
     bspline_parms_free (parms);
     bspline_xform_free (bxf);
     free (bxf);
-    volume_destroy (fixed);
-    volume_destroy (moving);
-    volume_destroy (moving_grad);
-    volume_destroy (moving_warped);
-    volume_destroy (vector_field);
+    delete fixed;
+    delete moving;
+    delete moving_grad;
+    delete moving_warped;
+    delete vector_field;
 
     printf ("Done freeing memory\n");
 

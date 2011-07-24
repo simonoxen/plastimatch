@@ -164,9 +164,9 @@ main (int argc, char* argv[])
     check_gradient (&options, fixed, moving, moving_grad);
 
     /* Free memory */
-    volume_destroy (fixed);
-    volume_destroy (moving);
-    volume_destroy (moving_grad);
+    delete fixed;
+    delete moving;
+    delete moving_grad;
 
     printf ("Done freeing memory\n");
 

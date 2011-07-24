@@ -48,7 +48,7 @@ Rasterizer::init (
 
     /* Create output volume for mask image.  This is reused for each 
        structure */
-    this->uchar_vol = volume_create (this->dim, this->origin, 
+    this->uchar_vol = new Volume (this->dim, this->origin, 
 	this->spacing, 0, PT_UCHAR, 1, 0);
     if (this->uchar_vol == 0) {
 	print_and_exit ("ERROR: failed in allocating the volume");
@@ -57,7 +57,7 @@ Rasterizer::init (
     /* Create output volume for labelmap */
     this->labelmap_vol = 0;
     if (want_labelmap) {
-	this->labelmap_vol = volume_create (this->dim, 
+	this->labelmap_vol = new Volume (this->dim, 
 	    this->origin, this->spacing, 0, PT_UINT32, 1, 0);
 	if (this->labelmap_vol == 0) {
 	    print_and_exit ("ERROR: failed in allocating the volume");
@@ -77,7 +77,7 @@ Rasterizer::init (
 #else
     this->ss_img_vol = 0;
     if (want_ss_img) {
-	this->ss_img_vol = volume_create (this->dim, 
+	this->ss_img_vol = new Volume (this->dim, 
 	    this->origin, this->spacing, 0, PT_UINT32, 1, 0);
 	if (this->ss_img_vol == 0) {
 	    print_and_exit ("ERROR: failed in allocating the volume");
@@ -230,14 +230,14 @@ Rasterizer::current_name (
 Rasterizer::~Rasterizer (void)
 {
     if (this->uchar_vol) {
-	volume_destroy (this->uchar_vol);
+	delete this->uchar_vol;
     }
     if (this->labelmap_vol) {
-	volume_destroy (this->labelmap_vol);
+	delete this->labelmap_vol;
     }
 #if (!PLM_USE_SS_IMAGE_VEC)
     if (this->ss_img_vol) {
-	volume_destroy (this->ss_img_vol);
+	delete this->ss_img_vol;
     }
 #endif
     free (this->acc_img);

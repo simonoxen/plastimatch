@@ -186,7 +186,7 @@ do_gpuit_bspline_stage_internal (
 	&& stage->warped_landmarks_fn[0]) {
 	logfile_printf("Trying to warp landmarks, output file: %s\n",
 	    stage->warped_landmarks_fn);
-	vector_field = volume_create (fixed_ss->dim, fixed_ss->offset, 
+	vector_field = new Volume (fixed_ss->dim, fixed_ss->offset, 
 	    fixed_ss->spacing, fixed_ss->direction_cosines, 
 	    PT_VF_FLOAT_INTERLEAVED, 3, 0);
 	bspline_interpolate_vf (vector_field, xf_out->get_gpuit_bsp() );
@@ -196,15 +196,15 @@ do_gpuit_bspline_stage_internal (
 	    bspline_landmarks_write_file( stage->warped_landmarks_fn, "warped", 
 		parms.landmarks->warped_landmarks, 
 		parms.landmarks->num_landmarks ); 
-	    volume_destroy(vector_field);
+	    delete vector_field;
 	} else 
 	    print_and_exit ("Could not interpolate vector field for landmark warping\n");
     }
 
     /* Free up temporary memory */
-    volume_destroy (fixed_ss);
-    volume_destroy (moving_ss);
-    volume_destroy (moving_grad);
+    delete fixed_ss;
+    delete moving_ss;
+    delete moving_grad;
     bspline_parms_free (&parms);
 }
 

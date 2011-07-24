@@ -1114,7 +1114,7 @@ xform_gpuit_bsp_to_gpuit_vf (
     Volume* vf_out;
 
     /* GCS FIX: Need direction cosines */
-    vf_out = volume_create (dim, offset, spacing, 0, 
+    vf_out = new Volume (dim, offset, spacing, 0, 
 	PT_VF_FLOAT_INTERLEAVED, 3, 0);
     bspline_interpolate_vf (vf_out, bxf);
     return vf_out;
@@ -1126,7 +1126,7 @@ xform_itk_vf_to_gpuit_vf (
     int* dim, float* offset, float* spacing)
 {
     /* GCS FIX: Need direction cosines */
-    Volume* vf_out = volume_create (dim, offset, spacing, 0, 
+    Volume* vf_out = new Volume (dim, offset, spacing, 0, 
 	PT_VF_FLOAT_INTERLEAVED, 3, 0);
     float* img = (float*) vf_out->img;
     FloatVector3DType displacement;

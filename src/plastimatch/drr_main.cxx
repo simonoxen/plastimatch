@@ -267,7 +267,7 @@ main (int argc, char* argv[])
     drr_render_volume (vol, &options);
 
     if (!options.geometry_only) {
-	volume_destroy (vol);
+	delete vol;
     }
     printf ("Done.\n");
     return 0;

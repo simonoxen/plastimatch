@@ -263,7 +263,7 @@ rpl_volume_create (
     dv_dims[1] = ires[1];   // cols = aperture cols
     dv_dims[2] = (int) floorf (ct_diag + 0.5) / ray_step;
 
-    rvol->vol = volume_create (dv_dims, dv_off, dv_ps, NULL, PT_FLOAT, 1, 0);
+    rvol->vol = new Volume (dv_dims, dv_off, dv_ps, NULL, PT_FLOAT, 1, 0);
 
     return rvol;
 }
@@ -273,7 +273,7 @@ rpl_volume_destroy (Rpl_volume *rpl_vol)
 {
     free (rpl_vol->depth_offset);
     proj_matrix_destroy (rpl_vol->pmat);
-    volume_destroy (rpl_vol->vol);
+    delete rpl_vol->vol;
     free (rpl_vol);
 }
 

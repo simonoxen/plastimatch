@@ -164,9 +164,12 @@ demons_opencl (
 	vf_convert_to_interleaved (vf_smooth);
     } else {
 	/* Otherwise initialize to zero */
-	vf_smooth = volume_create (fixed->dim, fixed->offset, fixed->pix_spacing, PT_VF_FLOAT_INTERLEAVED, fixed->direction_cosines, 0);
+	vf_smooth = new Volume (fixed->dim, fixed->offset, 
+	    fixed->pix_spacing, PT_VF_FLOAT_INTERLEAVED, 
+	    fixed->direction_cosines, 0);
     }
-    vf_est = volume_create (fixed->dim, fixed->offset, fixed->pix_spacing, PT_VF_FLOAT_INTERLEAVED, fixed->direction_cosines, 0);
+    vf_est = new Volume (fixed->dim, fixed->offset, fixed->pix_spacing, 
+	PT_VF_FLOAT_INTERLEAVED, fixed->direction_cosines, 0);
     vf_est_img = (float*) vf_est->img;
     vf_smooth_img = (float*) vf_smooth->img;
 
@@ -722,7 +725,7 @@ demons_opencl (
     free (kerx);
     free (kery);
     free (kerz);
-    volume_destroy (vf_est);
+    delete vf_est;
 
     /***************************************************************/
 

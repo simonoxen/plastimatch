@@ -70,8 +70,19 @@ volume_allocate (Volume *vol, int min_size)
     }
 }
 
-Volume*
-volume_create (
+Volume::~Volume ()
+{
+    if (this->pix_type == PT_VF_FLOAT_PLANAR) {
+	float** planes = (float**) this->img;
+	free (planes[0]);
+	free (planes[1]);
+	free (planes[2]);
+    }
+    free (this->img);
+}
+
+void 
+Volume::create (
     const int dim[3], 
     const float offset[3], 
     const float spacing[3], 
@@ -81,84 +92,88 @@ volume_create (
     int min_size
 )
 {
-    int i, j;
-    Volume* vol = (Volume*) malloc (sizeof(Volume));
-    if (!vol) {
-	fprintf (stderr, "Memory allocation failed.\n");
-	exit(1);
-    }
-
-    memset (vol, 0, sizeof(Volume));
-    for (i = 0; i < 3; i++) {
-	vol->dim[i] = dim[i];
-	vol->offset[i] = offset[i];
-	vol->spacing[i] = spacing[i];
-    }
-    if (direction_cosines) {
-	memcpy (vol->direction_cosines, direction_cosines, 
-	    sizeof(vol->direction_cosines));
-    } else {
-	vol->direction_cosines[0] = 1.0f;
-	vol->direction_cosines[4] = 1.0f;
-	vol->direction_cosines[8] = 1.0f;
-    }
-    vol->npix = vol->dim[0] * vol->dim[1] * vol->dim[2];
-    vol->pix_type = vox_type;
-    vol->vox_planes = vox_planes;
-
-    // NSH version of step and proj
-    // works ok for matrix, still needs testing for spacing
-    volume_matrix3x3inverse (vol->inverse_direction_cosines, 
-	vol->direction_cosines);
+    int i;
 
     for (i = 0; i < 3; i++) {
-	for (j = 0; j < 3; j++) {
-	    vol->step[i][j] = vol->direction_cosines[3*i+j] 
-		* vol->spacing[j];
-	    vol->proj[i][j] = vol->inverse_direction_cosines[3*i+j] 
-		/ vol->spacing[i];
-	}
+	this->dim[i] = dim[i];
+	this->offset[i] = offset[i];
+	this->spacing[i] = spacing[i];
     }
+    this->npix = this->dim[0] * this->dim[1] * this->dim[2];
+    this->pix_type = vox_type;
+    this->vox_planes = vox_planes;
+
+    set_direction_cosines (direction_cosines);
 
     switch (vox_type) {
     case PT_UCHAR:
-	vol->pix_size = sizeof(unsigned char);
+	this->pix_size = sizeof(unsigned char);
 	break;
     case PT_SHORT:
-	vol->pix_size = sizeof(short);
+	this->pix_size = sizeof(short);
 	break;
     case PT_UINT16:
-	vol->pix_size = sizeof(uint16_t);
+	this->pix_size = sizeof(uint16_t);
 	break;
     case PT_UINT32:
-	vol->pix_size = sizeof(uint32_t);
+	this->pix_size = sizeof(uint32_t);
 	break;
     case PT_FLOAT:
-	vol->pix_size = sizeof(float);
+	this->pix_size = sizeof(float);
 	break;
     case PT_VF_FLOAT_INTERLEAVED:
-	vol->pix_size = 3 * sizeof(float);
+	this->pix_size = 3 * sizeof(float);
 	break;
     case PT_VF_FLOAT_PLANAR:
-	vol->pix_size = sizeof(float);
+	this->pix_size = sizeof(float);
 	break;
     case PT_UCHAR_VEC_INTERLEAVED:
-	vol->pix_size = vol->vox_planes * sizeof(unsigned char);
+	this->pix_size = this->vox_planes * sizeof(unsigned char);
 	break;
     default:
 	fprintf (stderr, "Unhandled type in volume_create().\n");
 	exit (-1);
     }
 
-    volume_allocate (vol, min_size);
-    return vol;
+    volume_allocate (this, min_size);
+}
+
+void 
+Volume::set_direction_cosines (
+    const float direction_cosines[9]
+)
+{
+    const float identity[9] = {1., 0., 0., 0., 1., 0., 0., 0., 1.};
+    const float* dc;
+    if (direction_cosines) {
+	dc = direction_cosines;
+    } else {
+	dc = identity;
+    }
+
+    memcpy (this->direction_cosines, dc, sizeof(this->direction_cosines));
+
+    // NSH version of step and proj
+    // works ok for matrix, still needs testing for spacing
+    volume_matrix3x3inverse (this->inverse_direction_cosines, 
+	this->direction_cosines);
+
+    for (int i = 0; i < 3; i++) {
+	for (int j = 0; j < 3; j++) {
+	    this->step[i][j] = this->direction_cosines[3*i+j] 
+		* this->spacing[j];
+	    this->proj[i][j] = this->inverse_direction_cosines[3*i+j] 
+		/ this->spacing[i];
+	}
+    }
+
 }
 
 Volume*
 volume_clone_empty (Volume* ref)
 {
     Volume* vout;
-    vout = volume_create (ref->dim, ref->offset, ref->spacing, 
+    vout = new Volume (ref->dim, ref->offset, ref->spacing, 
 	ref->direction_cosines, ref->pix_type, ref->vox_planes, 0);
     return vout;
 }
@@ -167,7 +182,7 @@ Volume*
 volume_clone (Volume* ref)
 {
     Volume* vout;
-    vout = volume_create (ref->dim, ref->offset, ref->spacing, 
+    vout = new Volume (ref->dim, ref->offset, ref->spacing, 
 	ref->direction_cosines, ref->pix_type, ref->vox_planes, 0);
     switch (ref->pix_type) {
     case PT_UCHAR:
@@ -186,20 +201,6 @@ volume_clone (Volume* ref)
 	break;
     }
     return vout;
-}
-
-void
-volume_destroy (Volume* vol)
-{
-    if (!vol) return;
-    if (vol->pix_type == PT_VF_FLOAT_PLANAR) {
-	float** planes = (float**) vol->img;
-	free (planes[0]);
-	free (planes[1]);
-	free (planes[2]);
-    }
-    free (vol->img);
-    free (vol);
 }
 
 void
@@ -444,7 +445,7 @@ volume_resample_float (Volume* vol_in, int* dim, float* offset, float* spacing)
     float val;
     float default_val = 0.0f;
 
-    vol_out = volume_create (dim, offset, spacing, vol_in->direction_cosines, 
+    vol_out = new Volume (dim, offset, spacing, vol_in->direction_cosines, 
 	PT_FLOAT, 1, 0);
     in_img = (float*) vol_in->img;
     out_img = (float*) vol_out->img;
@@ -486,7 +487,7 @@ volume_resample_vf_float_interleaved (Volume* vol_in, int* dim,
     float* val;
     float default_val[3] = { 0.0f, 0.0f, 0.0f };
 
-    vol_out = volume_create (dim, offset, spacing, vol_in->direction_cosines, 
+    vol_out = new Volume (dim, offset, spacing, vol_in->direction_cosines, 
 	PT_VF_FLOAT_INTERLEAVED, 3, 0);
     in_img = (float*) vol_in->img;
     out_img = (float*) vol_out->img;
@@ -528,7 +529,7 @@ volume_resample_vf_float_planar (Volume* vol_in, int* dim,
     Volume* vol_out;
     float **in_img, **out_img;
 
-    vol_out = volume_create (dim, offset, spacing, vol_in->direction_cosines, 
+    vol_out = new Volume (dim, offset, spacing, vol_in->direction_cosines, 
 	PT_VF_FLOAT_PLANAR, 3, 0);
     in_img = (float**) vol_in->img;
     out_img = (float**) vol_out->img;
@@ -671,7 +672,7 @@ Volume*
 volume_make_gradient (Volume* ref)
 {
     Volume *grad;
-    grad = volume_create (ref->dim, ref->offset, ref->spacing, 
+    grad = new Volume (ref->dim, ref->offset, ref->spacing, 
 	ref->direction_cosines, PT_VF_FLOAT_INTERLEAVED, 3, 0);
     volume_calc_grad (grad, ref);
 

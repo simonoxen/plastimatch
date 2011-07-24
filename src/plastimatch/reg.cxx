@@ -22,12 +22,10 @@
 Volume*
 compute_vf_from_coeff (const Bspline_xform* bxf)
 {
-    Volume* vf;
-
-    vf = volume_create (
-            bxf->img_dim, bxf->img_origin, 
-            bxf->img_spacing, 0, 
-            PT_VF_FLOAT_INTERLEAVED, 3, 0
+    Volume* vf = new Volume (
+	bxf->img_dim, bxf->img_origin, 
+	bxf->img_spacing, 0, 
+	PT_VF_FLOAT_INTERLEAVED, 3, 0
     );
     bspline_interpolate_vf (vf, bxf);
 

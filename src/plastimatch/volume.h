@@ -28,32 +28,71 @@ public:
     float offset[3];
     float spacing[3];
     float direction_cosines[9];
+    float inverse_direction_cosines[9];
     float step[3][3];           // direction_cosines * spacing
     float proj[3][3];           // inv direction_cosines / spacing
-    float inverse_direction_cosines[9];
 
     enum Volume_pixel_type pix_type;	// Voxel Data type
     int vox_planes;                     // # planes per voxel
     int pix_size;		        // # bytes per voxel
     void* img;			        // Voxel Data
+public:
+    Volume () {
+	init ();
+    }
+    Volume (
+	const int dim[3], 
+	const float offset[3], 
+	const float spacing[3], 
+	const float direction_cosines[9], 
+	enum Volume_pixel_type vox_type, 
+	int vox_planes, 
+	int min_size
+    ) {
+	init ();
+	create (dim, offset, spacing, direction_cosines, vox_type, 
+	    vox_planes, min_size);
+    }
+    ~Volume ();
+public:
+    void init () {
+	for (int d = 0; d < 3; d++) {
+	    dim[d] = 0;
+	    offset[d] = 0;
+	    spacing[d] = 0;
+	}
+	for (int d = 0; d < 9; d++) {
+	    direction_cosines[d] = 0;
+	    inverse_direction_cosines[d] = 0;
+	}
+	for (int i = 0; i < 3; i++) {
+	    for (int j = 0; j < 3; j++) {
+		proj[i][j] = 0;
+		step[i][j] = 0;
+	    }
+	}
+	npix = 0;
+	pix_type = PT_UNDEFINED;
+	vox_planes = 0;
+	pix_size = 0;
+	img = 0;
+    }
+    void create (
+	const int dim[3], 
+	const float offset[3], 
+	const float spacing[3], 
+	const float direction_cosines[9], 
+	enum Volume_pixel_type vox_type, 
+	int vox_planes, 
+	int min_size
+    );
+    void set_direction_cosines (const float direction_cosines[9]);
 };
 
 #if defined __cplusplus
 extern "C" {
 #endif
-gpuit_EXPORT
-Volume*
-volume_create (
-    const int dim[3], 
-    const float offset[3], 
-    const float spacing[3], 
-    const float direction_cosines[9], 
-    enum Volume_pixel_type vox_type, 
-    int vox_planes, 
-    int min_size
-);
-gpuit_EXPORT
-void volume_destroy (Volume* vol);
+
 gpuit_EXPORT
 void volume_convert_to_float (Volume* ref);
 gpuit_EXPORT

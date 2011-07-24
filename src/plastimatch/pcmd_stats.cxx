@@ -57,7 +57,7 @@ stats_vf_main (Stats_parms* parms)
 	    "Sorry, file \"%s\" is not an interleaved float vector field.\n", 
 	    (const char*) parms->img_in_fn);
 	fprintf (stderr, "Type = %d\n", vol->pix_type);
-	volume_destroy (vol);
+	delete vol;
 	exit (-1);
     }
 
@@ -76,7 +76,7 @@ stats_vf_main (Stats_parms* parms)
 	vf_analyze_second_deriv (vol);
 	vf_analyze_mask (vol, mask);
 	vf_analyze_strain_mask (vol, mask);
-	volume_destroy (mask);
+	delete mask;
     }
 }
 

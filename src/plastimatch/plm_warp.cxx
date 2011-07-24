@@ -163,13 +163,13 @@ plm_warp_native (
     pih->get_direction_cosines (direction_cosines);
     if (vf) {
 	printf ("Creating output vf...\n");
-	vf_out = volume_create (dim, origin, spacing, direction_cosines,
+	vf_out = new Volume (dim, origin, spacing, direction_cosines,
 	    PT_VF_FLOAT_INTERLEAVED, 3, 0);
     }
 
     /* Create output image */
     printf ("Creating output volume...\n");
-    v_out = volume_create (dim, origin, spacing, direction_cosines, 
+    v_out = new Volume (dim, origin, spacing, direction_cosines, 
 	PT_FLOAT, 1, 0);
 
     /* Warp using gpuit native warper */
@@ -186,7 +186,7 @@ plm_warp_native (
 	im_warped->convert (im_in->m_original_type);
 	im_warped->m_original_type = im_in->m_original_type;
     } else {
-	volume_destroy (v_out);
+	delete v_out;
     }
 
     /* Return vf to caller */
@@ -194,7 +194,7 @@ plm_warp_native (
 	printf ("> Convert vf to itk\n");
 	*vf = xform_gpuit_vf_to_itk_vf (vf_out, 0);
 	printf ("> Conversion complete.\n");
-	volume_destroy (vf_out);
+	delete vf_out;
     }
     printf ("plm_warp_native is complete.\n");
 }
@@ -238,13 +238,13 @@ plm_warp_native_vec (
     pih->get_direction_cosines (direction_cosines);
     if (vf) {
 	printf ("Creating output vf...\n");
-	vf_out = volume_create (dim, origin, spacing, direction_cosines,
+	vf_out = new Volume (dim, origin, spacing, direction_cosines,
 	    PT_VF_FLOAT_INTERLEAVED, 3, 0);
     }
 
     /* Create output image */
     printf ("Creating output volume (%d planes)...\n", v_in->vox_planes);
-    v_out = volume_create (dim, origin, spacing, direction_cosines, 
+    v_out = new Volume (dim, origin, spacing, direction_cosines, 
 	PT_UCHAR_VEC_INTERLEAVED, v_in->vox_planes, 0);
 
     /* Warp using gpuit native warper */
@@ -261,7 +261,7 @@ plm_warp_native_vec (
 	im_warped->convert (im_in->m_original_type);
 	im_warped->m_original_type = im_in->m_original_type;
     } else {
-	volume_destroy (v_out);
+	delete v_out;
     }
 
     /* Return vf to caller */
@@ -269,7 +269,7 @@ plm_warp_native_vec (
 	printf ("> Convert vf to itk\n");
 	*vf = xform_gpuit_vf_to_itk_vf (vf_out, 0);
 	printf ("> Conversion complete.\n");
-	volume_destroy (vf_out);
+	delete vf_out;
     }
     printf ("plm_warp_native is complete.\n");
 }

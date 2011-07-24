@@ -244,7 +244,7 @@ xio_dose_load_cube (
 
     /* Flip XiO Z axis */
     Volume* vflip;
-    vflip = volume_create (v->dim, v->offset, v->spacing, 
+    vflip = new Volume (v->dim, v->offset, v->spacing, 
 	v->direction_cosines, v->pix_type, 1, 0);
 
     for (k=0;k<v->dim[2];k++) {
@@ -280,7 +280,7 @@ xio_dose_create_volume (
 {
     Volume *v;
 
-    v = volume_create (xdh->dim, xdh->offset, xdh->spacing, 0, 
+    v = new Volume (xdh->dim, xdh->offset, xdh->spacing, 0, 
 	PT_UINT32, 1, 0);
     pli->set_gpuit (v);
 
@@ -401,7 +401,7 @@ xio_dose_save (
 
     /* Create new volume for output */
     Volume* v_write;
-    v_write = volume_create (v->dim, v->offset, v->spacing, 
+    v_write = new Volume (v->dim, v->offset, v->spacing, 
 	v->direction_cosines, v->pix_type, v->vox_planes, 0);
 
     /* Clone volume and flip XiO Z axis */
@@ -448,7 +448,7 @@ xio_dose_save (
     fclose(fp);
     fclose(fpt);
 
-    volume_destroy (v_write);
+    delete v_write;
 }
 
 void

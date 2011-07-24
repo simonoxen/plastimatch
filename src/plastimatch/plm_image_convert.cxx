@@ -58,7 +58,7 @@ plm_image_convert_gpuit_to_itk (Plm_image* pli, T itk_img, U)
     }
 
     /* Free gpuit data */
-    volume_destroy (vol);
+    delete vol;
     pli->m_gpuit = 0;
 
     return itk_img;
@@ -87,7 +87,7 @@ plm_image_convert_itk_to_gpuit_float (Plm_image* pli, T img)
 	spacing[d1] = sp[d1];
     }
     direction_cosines_from_itk (direction_cosines, &dc);
-    Volume* vol = volume_create (dim, offset, spacing, direction_cosines, 
+    Volume* vol = new Volume (dim, offset, spacing, direction_cosines, 
 	PT_FLOAT, 1, 0);
 
     float* vol_img = (float*) vol->img;
@@ -225,7 +225,7 @@ plm_image_convert_gpuit_uint32_to_itk_uchar_vec (Plm_image* pli)
     }
 
     /* Free gpuit data */
-    volume_destroy (vol);
+    delete vol;
     pli->m_gpuit = 0;
 
     return im_out;
@@ -282,7 +282,7 @@ plm_image_convert_gpuit_uchar_vec_to_itk_uchar_vec (Plm_image* pli)
     }
 
     /* Free gpuit data */
-    volume_destroy (vol);
+    delete vol;
     pli->m_gpuit = 0;
 
     return im_out;
@@ -311,7 +311,7 @@ plm_image_convert_itk_uchar_vec_to_gpuit_uchar_vec (Plm_image* pli,
     direction_cosines_from_itk (direction_cosines, &dc);
     int vox_planes = itk_img->GetVectorLength ();
 
-    Volume* vol = volume_create (dim, offset, spacing, direction_cosines, 
+    Volume* vol = new Volume (dim, offset, spacing, direction_cosines, 
 	PT_UCHAR_VEC_INTERLEAVED, vox_planes, 0);
 
     unsigned char* vol_img = (unsigned char*) vol->img;

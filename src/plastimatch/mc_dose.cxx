@@ -134,7 +134,7 @@ mc_dose_create_volume (
 {
     Volume *v;
 
-    v = volume_create (mcdh->dim, mcdh->offset, mcdh->spacing, 0, 
+    v = new Volume (mcdh->dim, mcdh->offset, mcdh->spacing, 0, 
 	PT_FLOAT, 1, 0);
     pli->set_gpuit (v);
 

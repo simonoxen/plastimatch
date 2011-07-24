@@ -69,7 +69,7 @@ mexFunction (
           1.0, 0.0, 0.0,
           0.0, 1.0, 0.0,
           0.0, 0.0, 1.0 };
-    vol = volume_create (dim, offset, spacing, direction_cosines, 
+    vol = new Volume (dim, offset, spacing, direction_cosines, 
 	pix_type, 1, 0);
 
     /* Fill in the CT volume with values */
@@ -107,6 +107,6 @@ mexFunction (
     
     
     /* Clean up memory */
-    volume_destroy (vol);
+    delete vol;
     proj_image_destroy (proj);
 }

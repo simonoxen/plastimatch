@@ -82,7 +82,7 @@ public:
     }
     void free () {
 	if (m_gpuit) {
-	    volume_destroy ((Volume*) m_gpuit);
+	    delete (Volume*) m_gpuit;
 	}
 
 	m_original_type = PLM_IMG_TYPE_UNDEFINED;

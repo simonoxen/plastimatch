@@ -69,12 +69,12 @@ main (int argc, char* argv[])
 	write_mha (options.output_img_fn, warped);
     }
 
-    volume_destroy (fixed);
-    volume_destroy (moving);
+    delete fixed;
+    delete moving;
     if (options.parms.threading != THREADING_OPENCL) {
-	volume_destroy (moving_grad);
+	delete moving_grad;
     }
-    volume_destroy (vector_field);
+    delete vector_field;
 
     return 0;
 }

@@ -593,7 +593,7 @@ rbf_gauss_warp (Landmark_warp *lw)
     lw->m_pih.get_dim (dim);
     lw->m_pih.get_direction_cosines (direction_cosines);
 
-    vf_out = volume_create (dim, origin, spacing, direction_cosines, 
+    vf_out = new Volume (dim, origin, spacing, direction_cosines, 
 	PT_VF_FLOAT_INTERLEAVED, 3, 0);
 
     printf ("Rendering vector field\n");
@@ -604,7 +604,7 @@ rbf_gauss_warp (Landmark_warp *lw)
     moving = lw->m_input_img->gpuit_float ();
 
     printf ("Creating output vol\n");
-    warped_out = volume_create (dim, origin, spacing, direction_cosines,
+    warped_out = new Volume (dim, origin, spacing, direction_cosines,
 	PT_FLOAT, 1, 0);
 
     printf ("Warping image\n");

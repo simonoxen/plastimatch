@@ -37,8 +37,8 @@ main (int argc, char* argv[])
 
     write_mha (options.output_fn, dose);
 
-    volume_destroy (ct);
-    volume_destroy (dose);
+    delete ct;
+    delete dose;
     printf ("done.  \n\n");
     return 0;
 }
