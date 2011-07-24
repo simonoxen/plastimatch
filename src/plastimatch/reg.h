@@ -75,6 +75,16 @@ vf_regularize_analytic_destroy (
     Reg_state* rst
 );
 
+
+gpuit_EXPORT
+void
+vf_regularize_analytic_omp (
+    Bspline_score *bspline_score, 
+    const Reg_parms* reg_parms,
+    const Reg_state* rst,
+    const Bspline_xform* bxf
+);
+
 gpuit_EXPORT
 void
 vf_regularize_analytic (

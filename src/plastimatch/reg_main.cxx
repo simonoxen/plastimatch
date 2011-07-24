@@ -126,7 +126,7 @@ main (int argc, char* argv[])
         init_bscore (bxf, &bscore);
 
         vf_regularize_analytic_init (&rst, bxf);
-        vf_regularize_analytic (&bscore, parms, &rst, bxf);
+        vf_regularize_analytic_omp (&bscore, parms, &rst, bxf);
         vf_regularize_analytic_destroy (&rst);
 
         S = bscore.rmetric;
