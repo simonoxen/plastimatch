@@ -36,6 +36,8 @@ struct reg_state_struct {
     double* V_mats;     /* The 6 64x64 V matricies */
 
     double** V;
+
+    double* cond;
 };
 
 #if defined (commentout)

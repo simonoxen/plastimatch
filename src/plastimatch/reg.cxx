@@ -112,9 +112,9 @@ reg_sort_sets (
 #if (OPENMP_FOUND)
 void
 reg_update_grad (
+    Bspline_score* ssd,
     double* cond,
-    const Bspline_xform* bxf,
-    Bspline_score* ssd
+    const Bspline_xform* bxf
 )
 {
     int kidx, sidx;
@@ -419,6 +419,8 @@ vf_regularize_analytic_init (
     double Z[256];                      /* 16 x 16 matrix */
     double gs[3];
 
+    rst->cond = (double*)malloc(3*64*bxf->num_knots*sizeof(double));
+
     gs[0] = (double)bxf->grid_spac[0];
     gs[1] = (double)bxf->grid_spac[1];
     gs[2] = (double)bxf->grid_spac[2];
@@ -491,6 +493,8 @@ vf_regularize_analytic_init (
     eval_integral (Y, rst->QY[1], gs[1]);
     eval_integral (Z, rst->QZ[1], gs[2]);
     get_Vmatrix (rst->V[5], X, Y, Z);
+
+    printf ("Regularizer initialized\n");
 }
 
 void
@@ -498,6 +502,8 @@ vf_regularize_analytic_destroy (
     Reg_state* rst
 )
 {
+    free (rst->cond);
+
     free (rst->QX);
     free (rst->QY);
     free (rst->QZ);
@@ -522,14 +528,12 @@ vf_regularize_analytic_omp (
 {
     int i,n;
     Timer timer;
-    double* cond;
 
     double S = 0.0;
 
     plm_timer_start (&timer);
 
-    cond = (double*)malloc(3*64*bxf->num_knots*sizeof(double));
-    memset (cond, 0, 3*64*bxf->num_knots * sizeof (double));
+    memset (rst->cond, 0, 3*64*bxf->num_knots * sizeof (double));
 
     // Total number of regions in grid
     n = bxf->rdims[0] * bxf->rdims[1] * bxf->rdims[2];
@@ -552,15 +556,13 @@ vf_regularize_analytic_omp (
         S += region_smoothness_omp (sets, reg_parms, bxf, rst->V[4], knots);
         S += region_smoothness_omp (sets, reg_parms, bxf, rst->V[5], knots);
 
-        reg_sort_sets (cond, sets, knots, bxf);
+        reg_sort_sets (rst->cond, sets, knots, bxf);
     }
 
-    reg_update_grad (cond, bxf, bspline_score);
+    reg_update_grad (bspline_score, rst->cond, bxf);
 
     bspline_score->rmetric = S;
     bspline_score->time_rmetric = plm_timer_report (&timer);
-
-    free (cond);
 }
 #endif
 
