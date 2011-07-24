@@ -1036,8 +1036,6 @@ endif ()
 ## -------------------------------------------------------------------------
 ## Unit test targets
 ## -------------------------------------------------------------------------
-plm_add_executable (bspline_test_1 bspline_test_1.cxx
-  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 0)
 if (ITK_FOUND)
   plm_add_executable (plm_drr_api_a plm_drr_api_a.cxx
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)

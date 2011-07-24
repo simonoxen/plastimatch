@@ -313,19 +313,6 @@ plm_add_test (
   )
 
 ## -------------------------------------------------------------------------
-## bspline-bxf - read and write bxf format
-## -------------------------------------------------------------------------
-plm_add_test (
-  "bspline-bxf"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/bspline_test_1
-  "${PLM_TESTING_DATA_DIR}/xf-bspline-1.txt;${PLM_TESTING_BUILD_DIR}/xf-bspline-1.txt"
-  )
-ADD_TEST (bspline-bxf-check ${CMAKE_COMMAND} -E compare_files
-  "${PLM_TESTING_DATA_DIR}/xf-bspline-1.txt"
-  "${PLM_TESTING_BUILD_DIR}/xf-bspline-1.txt")
-
-## -------------------------------------------------------------------------
 ## bspline - bspline algorithm flavors
 ## -------------------------------------------------------------------------
 plm_add_test (
