@@ -325,9 +325,9 @@ get_Vmatrix (double* V, double* X, double* Y, double* Z)
     }
 }
 
-/* Employs locks in order to enforce thread safety
- * on mulit-core machines.  Also score is returned
- * so as to take advantage of OpenMP's built in
+/* Employs my "world famous" thread safe "condense" control-point
+ * update method for mulit-core acceleration.  Also, score is
+ * returned so as to take advantage of OpenMP's built in
  * sum-reduction capabilities */
 #if (OPENMP_FOUND)
 double
