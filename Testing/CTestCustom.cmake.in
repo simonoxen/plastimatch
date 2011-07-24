@@ -234,6 +234,14 @@ if (NOT BROOK_FOUND)
     )
 endif ()
 
+## If we don't have GDCM 1.X, don't run these tests
+if (GDCM_VERSION_1)
+  set (CTEST_CUSTOM_TESTS_IGNORE
+    ${CTEST_CUSTOM_TESTS_IGNORE}
+    "plm-convert-dicom-donut-stats" 
+    )
+endif ()
+
 ## Don't test unused algorithms
 if (NOT PLM_TEST_BSPLINE_FLAVORS)
   set (CTEST_CUSTOM_TESTS_IGNORE
