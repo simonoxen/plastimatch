@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#if (OPENMP_FOUND)
+#include <omp.h>
+#endif
 
 #include "bspline.h"
 #include "bspline_xform.h"
@@ -81,6 +84,47 @@ compute_coeff_from_vf (Bspline_xform* bxf, Volume* vol)
         } /* j < vol->dim[1] */
     } /* k < vol->dim[2] */
 }
+
+
+#if (OPENMP_FOUND)
+void
+reg_sort_sets (
+    double* cond_x, double* cond_y, double* cond_z,
+    double* sets_x, double* sets_y, double* sets_z,
+    int* k_lut, const Bspline_xform* bxf)
+{
+    int sidx, kidx;
+
+    /* Rackem' Up */
+    for (sidx=0; sidx<64; sidx++) {
+        kidx = k_lut[sidx];
+
+        cond_x[ (64*kidx) + sidx ] = sets_x[sidx];
+        cond_y[ (64*kidx) + sidx ] = sets_y[sidx];
+        cond_z[ (64*kidx) + sidx ] = sets_z[sidx];
+    }
+}
+#endif
+
+
+#if (OPENMP_FOUND)
+void
+reg_update_grad (
+    double* cond_x, double* cond_y, double* cond_z,
+    const Bspline_xform* bxf, Bspline_score* ssd)
+{
+    int kidx, sidx;
+
+    for (kidx=0; kidx < (bxf->cdims[0] * bxf->cdims[1] * bxf->cdims[2]); kidx++) {
+        for (sidx=0; sidx<64; sidx++) {
+            ssd->grad[3*kidx + 0] += cond_x[64*kidx + sidx];
+            ssd->grad[3*kidx + 1] += cond_y[64*kidx + sidx];
+            ssd->grad[3*kidx + 2] += cond_z[64*kidx + sidx];
+        }
+    }
+}
+#endif
+
 
 void 
 find_knots (int* knots, int tile_num, const int* cdims)
@@ -281,6 +325,51 @@ get_Vmatrix (double* V, double* X, double* Y, double* Z)
     }
 }
 
+/* Employs locks in order to enforce thread safety
+ * on mulit-core machines.  Also score is returned
+ * so as to take advantage of OpenMP's built in
+ * sum-reduction capabilities */
+#if (OPENMP_FOUND)
+double
+region_smoothness_omp (
+    Bspline_score *bspline_score, 
+    const Reg_parms* reg_parms,    
+    const Bspline_xform* bxf,
+    double* V, 
+    int* knots,
+    double* sets_x,
+    double* sets_y,
+    double* sets_z)
+{
+    double S = 0.0;         /* Region smoothness */
+    double X[64] = {0};
+    double Y[64] = {0};
+    double Z[64] = {0};
+    int i,j;
+
+    for (j=0; j<64; j++) {
+    	/* S = pVp operation ----------------------------- */
+        for (i=0; i<64; i++) {
+            X[j] += bxf->coeff[3*knots[i]+0] * V[64*j + i];
+            Y[j] += bxf->coeff[3*knots[i]+1] * V[64*j + i];
+            Z[j] += bxf->coeff[3*knots[i]+2] * V[64*j + i];
+        }
+
+        S += X[j] * bxf->coeff[3*knots[j]+0];
+        S += Y[j] * bxf->coeff[3*knots[j]+1];
+        S += Z[j] * bxf->coeff[3*knots[j]+2];
+        /* ------------------------------------------------ */
+
+        /* dS/dp = 2Vp operation */
+        sets_x[j] += 2 * reg_parms->lambda * X[j];
+        sets_y[j] += 2 * reg_parms->lambda * Y[j];
+        sets_z[j] += 2 * reg_parms->lambda * Z[j];
+    }
+
+    return S;
+}
+#endif
+
 void
 region_smoothness (
     Bspline_score *bspline_score, 
@@ -316,6 +405,7 @@ region_smoothness (
 
     bspline_score->rmetric += S;
 }
+
 
 void
 vf_regularize_analytic_init (
@@ -419,6 +509,78 @@ vf_regularize_analytic_destroy (
 }
 
 
+/* flavor 'c' */
+#if (OPENMP_FOUND)
+void
+vf_regularize_analytic_omp (
+    Bspline_score *bspline_score, 
+    const Reg_parms* reg_parms,
+    const Reg_state* rst,
+    const Bspline_xform* bxf)
+{
+    int i,n;
+    Timer timer;
+    double* cond_x;
+    double* cond_y;
+    double* cond_z;
+
+    double S = 0.0;
+
+    plm_timer_start (&timer);
+
+    cond_x = (double*)malloc(64*bxf->num_knots*sizeof(double));
+    cond_y = (double*)malloc(64*bxf->num_knots*sizeof(double));
+    cond_z = (double*)malloc(64*bxf->num_knots*sizeof(double));
+    memset (cond_x, 0, 64*bxf->num_knots * sizeof (double));
+    memset (cond_y, 0, 64*bxf->num_knots * sizeof (double));
+    memset (cond_z, 0, 64*bxf->num_knots * sizeof (double));
+
+    // Total number of regions in grid
+    n = bxf->rdims[0] * bxf->rdims[1] * bxf->rdims[2];
+
+    bspline_score->rmetric = 0.0;
+
+#pragma omp parallel for reduction(+:S)
+    for (i=0; i<n; i++) {
+        int knots[64];
+        double sets_x[64], sets_y[64], sets_z[64];
+
+        memset (sets_x, 0, 64*sizeof (double));
+        memset (sets_y, 0, 64*sizeof (double));
+        memset (sets_z, 0, 64*sizeof (double));
+
+        find_knots (knots, i, bxf->cdims);
+
+        S += region_smoothness_omp (bspline_score, reg_parms, bxf, rst->V[0], knots, sets_x, sets_y, sets_z);
+        S += region_smoothness_omp (bspline_score, reg_parms, bxf, rst->V[1], knots, sets_x, sets_y, sets_z);
+        S += region_smoothness_omp (bspline_score, reg_parms, bxf, rst->V[2], knots, sets_x, sets_y, sets_z);
+        S += region_smoothness_omp (bspline_score, reg_parms, bxf, rst->V[3], knots, sets_x, sets_y, sets_z);
+        S += region_smoothness_omp (bspline_score, reg_parms, bxf, rst->V[4], knots, sets_x, sets_y, sets_z);
+        S += region_smoothness_omp (bspline_score, reg_parms, bxf, rst->V[5], knots, sets_x, sets_y, sets_z);
+
+        reg_sort_sets (
+            cond_x, cond_y, cond_z,
+            sets_x, sets_y, sets_z,
+            knots, bxf
+        );
+    }
+
+    reg_update_grad (
+        cond_x, cond_y, cond_z,
+        bxf, bspline_score
+    );
+
+    bspline_score->rmetric = S;
+    bspline_score->time_rmetric = plm_timer_report (&timer);
+
+    free (cond_x);
+    free (cond_y);
+    free (cond_z);
+}
+#endif
+
+
+/* flavor 'b' */
 void
 vf_regularize_analytic (
     Bspline_score *bspline_score, 
@@ -435,6 +597,8 @@ vf_regularize_analytic (
     // Total number of regions in grid
     n = bxf->rdims[0] * bxf->rdims[1] * bxf->rdims[2];
 
+    bspline_score->rmetric = 0.0;
+
     for (i=0; i<n; i++) {
         // Get the set of 64 control points for this region
         find_knots (knots, i, bxf->cdims);
@@ -450,8 +614,7 @@ vf_regularize_analytic (
     bspline_score->time_rmetric = plm_timer_report (&timer);
 }
 
-
-
+/* flavor 'a' */
 float
 vf_regularize_numerical (Volume* vol)
 {
@@ -627,6 +790,13 @@ regularize (
         break;
     case 'b':
         vf_regularize_analytic (bspline_score, reg_parms, rst, bxf);
+        break;
+    case 'c':
+#if (OPENMP_FOUND)
+        vf_regularize_analytic_omp (bspline_score, reg_parms, rst, bxf);
+#else
+        vf_regularize_analytic (bspline_score, reg_parms, rst, bxf);
+#endif
         break;
     default:
         print_and_exit (

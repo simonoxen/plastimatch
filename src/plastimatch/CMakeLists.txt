@@ -648,6 +648,8 @@ if (OPENMP_FOUND)
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
   set_source_files_properties (fdk.cxx
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
+  set_source_files_properties (reg.cxx
+    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
   set_source_files_properties (openmp_test.c
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
 endif ()

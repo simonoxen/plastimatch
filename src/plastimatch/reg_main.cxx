@@ -120,6 +120,22 @@ main (int argc, char* argv[])
 
         S = bscore.rmetric;
         break;
+    case 'c':
+#if (OPENMP_FOUND)
+        bxf = (Bspline_xform*)load (&options, ANALYTIC);
+        init_bscore (bxf, &bscore);
+
+        vf_regularize_analytic_init (&rst, bxf);
+        vf_regularize_analytic (&bscore, parms, &rst, bxf);
+        vf_regularize_analytic_destroy (&rst);
+
+        S = bscore.rmetric;
+#else
+        printf ("OpenMP is required to use implementation (c).\n");
+        printf ("Exiting...\n\n");
+        exit (0);
+#endif
+        break;
     default:
         printf ("Warning: Using implementation 'a'\n");
         vf = (Volume*)load (&options, NUMERICAL);

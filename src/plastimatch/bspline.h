@@ -65,14 +65,14 @@ public:
     double time_rmetric;   /* Time to compute regularization metric */
 public:
     Bspline_score () {
-        score = 0;
-        smetric = 0;
-        rmetric = 0;
-        num_vox = 0;
-        grad = 0;
+        this->score = 0;
+        this->smetric = 0;
+        this->rmetric = 0;
+        this->num_vox = 0;
+        this->grad = 0;
 
-        time_smetric = 0;
-        time_rmetric = 0;
+        this->time_smetric = 0;
+        this->time_rmetric = 0;
     }
 };
 
