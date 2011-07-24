@@ -89,9 +89,11 @@ compute_coeff_from_vf (Bspline_xform* bxf, Volume* vol)
 #if (OPENMP_FOUND)
 void
 reg_sort_sets (
-    double* cond_x, double* cond_y, double* cond_z,
-    double* sets_x, double* sets_y, double* sets_z,
-    int* k_lut, const Bspline_xform* bxf)
+    double* cond,
+    double* sets,
+    int* k_lut,
+    const Bspline_xform* bxf
+)
 {
     int sidx, kidx;
 
@@ -99,9 +101,9 @@ reg_sort_sets (
     for (sidx=0; sidx<64; sidx++) {
         kidx = k_lut[sidx];
 
-        cond_x[ (64*kidx) + sidx ] = sets_x[sidx];
-        cond_y[ (64*kidx) + sidx ] = sets_y[sidx];
-        cond_z[ (64*kidx) + sidx ] = sets_z[sidx];
+        cond[3*(64*kidx+sidx)+0] = sets[3*sidx+0];
+        cond[3*(64*kidx+sidx)+1] = sets[3*sidx+1];
+        cond[3*(64*kidx+sidx)+2] = sets[3*sidx+2];
     }
 }
 #endif
@@ -110,16 +112,18 @@ reg_sort_sets (
 #if (OPENMP_FOUND)
 void
 reg_update_grad (
-    double* cond_x, double* cond_y, double* cond_z,
-    const Bspline_xform* bxf, Bspline_score* ssd)
+    double* cond,
+    const Bspline_xform* bxf,
+    Bspline_score* ssd
+)
 {
     int kidx, sidx;
 
     for (kidx=0; kidx < (bxf->cdims[0] * bxf->cdims[1] * bxf->cdims[2]); kidx++) {
         for (sidx=0; sidx<64; sidx++) {
-            ssd->grad[3*kidx + 0] += cond_x[64*kidx + sidx];
-            ssd->grad[3*kidx + 1] += cond_y[64*kidx + sidx];
-            ssd->grad[3*kidx + 2] += cond_z[64*kidx + sidx];
+            ssd->grad[3*kidx+0] += cond[3*(64*kidx+sidx)+0];
+            ssd->grad[3*kidx+1] += cond[3*(64*kidx+sidx)+1];
+            ssd->grad[3*kidx+2] += cond[3*(64*kidx+sidx)+2];
         }
     }
 }
@@ -332,14 +336,12 @@ get_Vmatrix (double* V, double* X, double* Y, double* Z)
 #if (OPENMP_FOUND)
 double
 region_smoothness_omp (
-    Bspline_score *bspline_score, 
+    double* sets,
     const Reg_parms* reg_parms,    
     const Bspline_xform* bxf,
     double* V, 
-    int* knots,
-    double* sets_x,
-    double* sets_y,
-    double* sets_z)
+    int* knots
+)
 {
     double S = 0.0;         /* Region smoothness */
     double X[64] = {0};
@@ -361,9 +363,9 @@ region_smoothness_omp (
         /* ------------------------------------------------ */
 
         /* dS/dp = 2Vp operation */
-        sets_x[j] += 2 * reg_parms->lambda * X[j];
-        sets_y[j] += 2 * reg_parms->lambda * Y[j];
-        sets_z[j] += 2 * reg_parms->lambda * Z[j];
+        sets[3*j+0] += 2 * reg_parms->lambda * X[j];
+        sets[3*j+1] += 2 * reg_parms->lambda * Y[j];
+        sets[3*j+2] += 2 * reg_parms->lambda * Z[j];
     }
 
     return S;
@@ -520,20 +522,14 @@ vf_regularize_analytic_omp (
 {
     int i,n;
     Timer timer;
-    double* cond_x;
-    double* cond_y;
-    double* cond_z;
+    double* cond;
 
     double S = 0.0;
 
     plm_timer_start (&timer);
 
-    cond_x = (double*)malloc(64*bxf->num_knots*sizeof(double));
-    cond_y = (double*)malloc(64*bxf->num_knots*sizeof(double));
-    cond_z = (double*)malloc(64*bxf->num_knots*sizeof(double));
-    memset (cond_x, 0, 64*bxf->num_knots * sizeof (double));
-    memset (cond_y, 0, 64*bxf->num_knots * sizeof (double));
-    memset (cond_z, 0, 64*bxf->num_knots * sizeof (double));
+    cond = (double*)malloc(3*64*bxf->num_knots*sizeof(double));
+    memset (cond, 0, 3*64*bxf->num_knots * sizeof (double));
 
     // Total number of regions in grid
     n = bxf->rdims[0] * bxf->rdims[1] * bxf->rdims[2];
@@ -543,39 +539,28 @@ vf_regularize_analytic_omp (
 #pragma omp parallel for reduction(+:S)
     for (i=0; i<n; i++) {
         int knots[64];
-        double sets_x[64], sets_y[64], sets_z[64];
+        double sets[3*64];
 
-        memset (sets_x, 0, 64*sizeof (double));
-        memset (sets_y, 0, 64*sizeof (double));
-        memset (sets_z, 0, 64*sizeof (double));
+        memset (sets, 0, 3*64*sizeof (double));
 
         find_knots (knots, i, bxf->cdims);
 
-        S += region_smoothness_omp (bspline_score, reg_parms, bxf, rst->V[0], knots, sets_x, sets_y, sets_z);
-        S += region_smoothness_omp (bspline_score, reg_parms, bxf, rst->V[1], knots, sets_x, sets_y, sets_z);
-        S += region_smoothness_omp (bspline_score, reg_parms, bxf, rst->V[2], knots, sets_x, sets_y, sets_z);
-        S += region_smoothness_omp (bspline_score, reg_parms, bxf, rst->V[3], knots, sets_x, sets_y, sets_z);
-        S += region_smoothness_omp (bspline_score, reg_parms, bxf, rst->V[4], knots, sets_x, sets_y, sets_z);
-        S += region_smoothness_omp (bspline_score, reg_parms, bxf, rst->V[5], knots, sets_x, sets_y, sets_z);
+        S += region_smoothness_omp (sets, reg_parms, bxf, rst->V[0], knots);
+        S += region_smoothness_omp (sets, reg_parms, bxf, rst->V[1], knots);
+        S += region_smoothness_omp (sets, reg_parms, bxf, rst->V[2], knots);
+        S += region_smoothness_omp (sets, reg_parms, bxf, rst->V[3], knots);
+        S += region_smoothness_omp (sets, reg_parms, bxf, rst->V[4], knots);
+        S += region_smoothness_omp (sets, reg_parms, bxf, rst->V[5], knots);
 
-        reg_sort_sets (
-            cond_x, cond_y, cond_z,
-            sets_x, sets_y, sets_z,
-            knots, bxf
-        );
+        reg_sort_sets (cond, sets, knots, bxf);
     }
 
-    reg_update_grad (
-        cond_x, cond_y, cond_z,
-        bxf, bspline_score
-    );
+    reg_update_grad (cond, bxf, bspline_score);
 
     bspline_score->rmetric = S;
     bspline_score->time_rmetric = plm_timer_report (&timer);
 
-    free (cond_x);
-    free (cond_y);
-    free (cond_z);
+    free (cond);
 }
 #endif
 
