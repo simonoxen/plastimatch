@@ -108,6 +108,7 @@ read_mha_internal (
     Volume* vol;
     int tmp;
     FILE* fp;
+    bool have_direction_cosines = false;
 
     fp = fopen (filename,"rb");
     if (!fp) {
@@ -154,6 +155,7 @@ read_mha_internal (
 		&vol->direction_cosines[6],
 		&vol->direction_cosines[7],
 		&vol->direction_cosines[8]) == 9) {
+	    have_direction_cosines = true;
 	    continue;
 	}
 	if (sscanf (linebuf, "ElementNumberOfChannels = %d", &tmp) == 1) {
@@ -188,8 +190,12 @@ read_mha_internal (
     }
 
     /* Update proj and step matrices */
-    vol->set_direction_cosines (vol->direction_cosines);
-        
+    if (have_direction_cosines) {
+	vol->set_direction_cosines (vol->direction_cosines);
+    } else {
+	vol->set_direction_cosines (0);
+    }
+
     if (mh5) {
 	fseek(fp, 512, SEEK_SET);
     }
