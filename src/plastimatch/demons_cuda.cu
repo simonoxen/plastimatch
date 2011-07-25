@@ -644,7 +644,7 @@ demons_cuda (
     free(kerx);
     free(kery);
     free(kerz);
-    delete f_est;
+    delete vf_est;
 
     diff_run = plm_timer_report(&timer);
     printf("Time for %d iterations = %f (%f sec / it)\n", parms->max_its, diff_run, diff_run / parms->max_its);
