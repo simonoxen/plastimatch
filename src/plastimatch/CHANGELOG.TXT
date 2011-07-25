@@ -1,4 +1,10 @@
-Version 1.5.0
+Version 1.5.1 (build 2617)
+*  Reg-2-3 code for 2D-3D registration
+*  Slicer plugin enhancements: XFORM warper, synthetic images, DVH display
+*  Early prototype of B-spline regularization
+*  Many bug fixes
+
+Version 1.5.0 (build 2498)
 *  CUDA-accelerated mutual information for B-splines
 *  Regularized gaussian landmark splines
 *  Replace cone RBF with Wendland RBF
