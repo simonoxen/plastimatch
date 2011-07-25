@@ -19,7 +19,7 @@ enum Volume_pixel_type {
     PT_UCHAR_VEC_INTERLEAVED
 };
 
-class Volume
+class gpuit_EXPORT Volume
 {
 public:
     int dim[3];		        // x, y, z Dims
