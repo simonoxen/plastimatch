@@ -1,26 +1,31 @@
+Version 1.5.2 (build 2621)
+Sun Jul 24 21:06:48 EDT 2011
+* Fix build problem with cuda
+* Fix regression on loading mha files without direction cosines
+
 Version 1.5.1 (build 2617)
-*  Reg-2-3 code for 2D-3D registration
-*  Slicer plugin enhancements: XFORM warper, synthetic images, DVH display
-*  Early prototype of B-spline regularization
-*  Many bug fixes
+* Reg-2-3 code for 2D-3D registration
+* Slicer plugin enhancements: XFORM warper, synthetic images, DVH display
+* Early prototype of B-spline regularization
+* Many bug fixes
 
 Version 1.5.0 (build 2498)
-*  CUDA-accelerated mutual information for B-splines
-*  Regularized gaussian landmark splines
-*  Replace cone RBF with Wendland RBF
-*  Better handling of image metadata
-*  Many imporvements to image converion and warping
+* CUDA-accelerated mutual information for B-splines
+* Regularized gaussian landmark splines
+* Replace cone RBF with Wendland RBF
+* Better handling of image metadata
+* Many imporvements to image converion and warping
 
 Version 1.4.0 (svn only)
-*  Native grid-aligned B-spline registration (MSE: CUDA, OpenMP, MI: CPU)
-*  Native demons registration (Brook, CPU)
-*  Wrappers for some ITK registration transforms: translation, rigid, 
-   affine, B-spline, demons
-*  Global thin-plate spline (ITK), local cone RBF (native)
-*  Multistage registration framework
-*  FDK cone-beam reconstruction (CUDA, OpenMP)
-*  DRR generation (CUDA, OpenMP)
-*  Dicom image import/export, DicomRT structure set import/export
-*  XiO image import, XiO structure set import/export
-*  3D slicer plugins
-*  Mondoshot screen capture program
+* Native grid-aligned B-spline registration (MSE: CUDA, OpenMP, MI: CPU)
+* Native demons registration (Brook, CPU)
+* Wrappers for some ITK registration transforms: translation, rigid, 
+  affine, B-spline, demons
+* Global thin-plate spline (ITK), local cone RBF (native)
+* Multistage registration framework
+* FDK cone-beam reconstruction (CUDA, OpenMP)
+* DRR generation (CUDA, OpenMP)
+* Dicom image import/export, DicomRT structure set import/export
+* XiO image import, XiO structure set import/export
+* 3D slicer plugins
+* Mondoshot screen capture program
