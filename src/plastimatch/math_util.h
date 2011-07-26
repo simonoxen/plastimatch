@@ -131,9 +131,6 @@ static inline void vec_outer (double* v1, const double* v2, const double* v3, co
     for (j=0; j<n; j++) {
         for (i=0; i<n; i++) {
             v1[n*j + i] = v2[j] * v3[i];
-            v1[n*j + i] = v2[j] * v3[i];
-            v1[n*j + i] = v2[j] * v3[i];
-            v1[n*j + i] = v2[j] * v3[i];
         }
     }
 }

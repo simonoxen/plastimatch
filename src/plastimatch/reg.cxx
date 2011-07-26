@@ -18,6 +18,20 @@
 #include "plm_timer.h"
 
 //#define DEBUG
+//#define CHECK
+
+void
+print_matrix (double* mat, int m, int n)
+{
+    int i,j;
+
+    for (j=0; j<n; j++) {
+        for (i=0; i<m; i++) {
+            printf ("%1.3e ", mat[m*j+i]);
+        }
+        printf ("\n");
+    }
+}
 
 Volume*
 compute_vf_from_coeff (const Bspline_xform* bxf)
@@ -212,9 +226,15 @@ init_analytic (double **QX, double **QY, double **QZ,
     };
 
     /* grid spacing */
+#if defined (CHECK)
+    rx = 1.0;
+    ry = 1.0;
+    rz = 1.0;
+#else
     rx = 1.0/bxf->grid_spac[0];
     ry = 1.0/bxf->grid_spac[1];
     rz = 1.0/bxf->grid_spac[2];
+#endif
 
     double RX[16] = {
         1.0, 0.0,   0.0,      0.0,
@@ -493,6 +513,19 @@ vf_regularize_analytic_init (
     get_Vmatrix (rst->V[5], X, Y, Z);
 
     printf ("Regularizer initialized\n");
+
+#if defined (CHECK)
+    printf ("\nrst->QX[2] = \n");
+    print_matrix (rst->QX[2], 4, 4);
+
+    printf ("\nrst->QX[1] = \n");
+    print_matrix (rst->QX[1], 4, 4);
+
+    printf ("\nrst->QX[0] = \n");
+    print_matrix (rst->QX[0], 4, 4);
+
+    exit (0);
+#endif
 }
 
 void
