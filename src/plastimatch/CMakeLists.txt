@@ -135,6 +135,7 @@ set (GPUIT_LIBRARY_SRC
   demons.cxx demons.h
   demons_cpu.cxx
   demons_misc.cxx demons_misc.h
+  demons_state.cxx demons_state.h
   dir_list.cxx dir_list.h
   drr.cxx drr.h
   drr_trilin.cxx drr_trilin.h
@@ -192,8 +193,8 @@ if (CUDA_FOUND)
   if (BUILD_SHARED_LIBS)      # << Dynamic loading
     set (PLMCUDA_LIBRARY_SRC
       ${PLMCUDA_LIBRARY_SRC}
-      volume.cxx          # for demons_cuda.cu
-      volume.h            # for demons_cuda.cu
+#      volume.cxx          # for demons_cuda.cu
+#      volume.h            # for demons_cuda.cu
     )
     set (PLMCUDA_LIBRARY_DEPENDENCIES
       plmsys

@@ -8,6 +8,7 @@
 #include "demons_cuda.h"
 #include "demons_misc.h"
 #include "demons_opts.h"
+#include "demons_state.h"
 #include "plm_timer.h"
 #include "volume.h"
 
@@ -362,6 +363,7 @@ __global__ void volume_calc_grad_kernel (float *out_img, unsigned int blockY, fl
 
 Volume* 
 demons_cuda (
+    Demons_state *demons_state,
     Volume* fixed, 
     Volume* moving, 
     Volume* moving_grad, 
@@ -388,6 +390,7 @@ demons_cuda (
     float *d_vf_est, *d_vf_smooth, *d_moving, *d_fixed, *d_m_grad, *d_m_grad_mag, *d_kerx, *d_kery, *d_kerz, *d_swap, *d_ssd;
     dim3 block, grid, reductionGrid;
 
+#if defined (commentout)
     /* Allocate memory for vector fields */
     if (vf_init) {
 	/* If caller has an initial estimate, we copy it */
@@ -400,6 +403,7 @@ demons_cuda (
     }
     vf_est = new Volume (fixed->dim, fixed->offset, fixed->spacing, 
 	fixed->direction_cosines, PT_VF_FLOAT_INTERLEAVED, 3, 0);
+#endif
 
     /* Initialize GPU timers */
     gpu_time = 0;

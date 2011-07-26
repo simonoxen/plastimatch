@@ -2,19 +2,21 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
-#include <stdio.h>
+#include <math.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <math.h>
-#include "demons.h"
-#include "demons_cuda.h"
-#include "threading.h"
-#include "delayload.h"
-#include "volume.h"
 #ifndef _WIN32
 #include <dlfcn.h>
 #endif
+
+#include "delayload.h"
+#include "demons.h"
+#include "demons_cuda.h"
+#include "demons_state.h"
+#include "threading.h"
+#include "volume.h"
 
 void
 demons_default_parms (DEMONS_Parms* parms)
@@ -41,13 +43,17 @@ demons (
 )
 {
     Volume* tmp;
+    Demons_state demons_state;
 
     LOAD_LIBRARY (libplmcuda);
     LOAD_SYMBOL (demons_cuda, libplmcuda);
+    // LOAD_LIBRARY (libplmopencl);
+    // LOAD_SYMBOL (demons_opencl, libplmopencl);
 
-//    LOAD_LIBRARY (libplmopencl);
-//    LOAD_SYMBOL (demons_opencl, libplmopencl);
-
+#if CUDA_FOUND
+    /* Eventually all of the implementations will use this */
+    demons_state.init (fixed, moving, moving_grad, vf_init, parms);
+#endif
 
     switch (parms->threading) {
 #if BROOK_FOUND
@@ -58,7 +64,7 @@ demons (
 #if CUDA_FOUND
     case THREADING_CUDA:
     	if (!delayload_cuda ()) { exit (0); }
-        tmp = (Volume*) demons_cuda (
+        tmp = (Volume*) demons_cuda (&demons_state, 
 	    fixed, moving, moving_grad, vf_init, parms);
         UNLOAD_LIBRARY (libplmcuda);
         return tmp;

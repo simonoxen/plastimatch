@@ -7,23 +7,18 @@
 #include "plm_config.h"
 
 #include "demons.h"
-#include "volume.h"
 
-#if defined __cplusplus
-extern "C" {
-#endif
+class Demons_state;
+class Volume;
 
 plmcuda_EXPORT (
 Volume* demons_cuda,
+    Demons_state *demons_state,
     Volume* fixed,
     Volume* moving,
     Volume* moving_grad,
     Volume* vf_init,
     DEMONS_Parms* parms
 );
-
-#if defined __cplusplus
-}
-#endif
 
 #endif
