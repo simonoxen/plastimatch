@@ -41,6 +41,19 @@ Mammographic image analysis homepage
 CIP Survey of Biomedical Imaging Archives
   https://wiki.nci.nih.gov/display/CIP/CIP+Survey+of+Biomedical+Imaging+Archives
 
+BrainWeb:
+  http://mouldy.bic.mni.mcgill.ca/brainweb/
+
+  Synthetic MRI images
+
+NA-MIC libraries:
+  http://na-mic.org/Wiki/index.php/Downloads
+
+DICOM samples:
+  http://www.aycan.de/main/lp/sample_dicom_images.html
+
+  http://pubimage.hcuge.ch:8080/
+
 Cornell list:
   http://www.via.cornell.edu/databases/
 
@@ -50,11 +63,6 @@ CMU computer vision list:
   http://www.cs.cmu.edu/~cil/v-images.html
 
   A list of image databases (some are medical)
-
-BrainWeb:
-  http://mouldy.bic.mni.mcgill.ca/brainweb/
-
-  Synthetic MRI images
 
 Other unsorted stuff:
   http://peipa.essex.ac.uk/benchmark/databases/index.html#medical
