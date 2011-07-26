@@ -64,9 +64,11 @@ demons (
 #if CUDA_FOUND
     case THREADING_CUDA:
     	if (!delayload_cuda ()) { exit (0); }
-        tmp = (Volume*) demons_cuda (&demons_state, 
-	    fixed, moving, moving_grad, vf_init, parms);
+        demons_cuda (&demons_state, fixed, moving, moving_grad, 
+	    vf_init, parms);
         UNLOAD_LIBRARY (libplmcuda);
+	/* GCS FIX: This leaks vf_est... */
+	tmp = demons_state.vf_smooth;
         return tmp;
 #endif
 

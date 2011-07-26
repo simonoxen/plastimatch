@@ -12,7 +12,7 @@ class Demons_state;
 class Volume;
 
 plmcuda_EXPORT (
-Volume* demons_cuda,
+void demons_cuda,
     Demons_state *demons_state,
     Volume* fixed,
     Volume* moving,

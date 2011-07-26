@@ -361,7 +361,8 @@ __global__ void volume_calc_grad_kernel (float *out_img, unsigned int blockY, fl
 	out_img[gk] = (float) (tex1Dfetch(tex_moving, idx_n) - tex1Dfetch(tex_moving, idx_p)) * c_spacing_div2[2];
 }
 
-Volume* 
+//Volume* 
+void
 demons_cuda (
     Demons_state *demons_state,
     Volume* fixed, 
@@ -379,7 +380,7 @@ demons_cuda (
     float *kerx, *kery, *kerz;
     int fw[3];
     double diff_run, gpu_time, kernel_time;
-    Volume *vf_est, *vf_smooth;
+    //Volume *vf_est, *vf_smooth;
     int inliers;
     float ssd;
     Timer timer, gpu_timer, kernel_timer;
@@ -442,8 +443,10 @@ demons_cuda (
     cudaMalloc((void**)&d_inliers, inlier_size);
 
     /* Copy/Initialize device memory */
-    cudaMemcpy(d_vf_est, vf_est->img, interleaved_vol_size, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_vf_smooth, vf_est->img, interleaved_vol_size, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_vf_est, demons_state->vf_est->img, 
+	interleaved_vol_size, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_vf_smooth, demons_state->vf_est->img, 
+	interleaved_vol_size, cudaMemcpyHostToDevice);
     cudaMemcpy(d_fixed, fixed->img, vol_size, cudaMemcpyHostToDevice);
     cudaMemcpy(d_moving, moving->img, vol_size, cudaMemcpyHostToDevice);
     cudaMemset(d_m_grad, 0, interleaved_vol_size);
@@ -642,13 +645,14 @@ demons_cuda (
 
     /* Copy final output from device to host */
     plm_timer_start(&gpu_timer);
-    cudaMemcpy(vf_smooth->img, d_vf_est, interleaved_vol_size, cudaMemcpyDeviceToHost);
+    cudaMemcpy (demons_state->vf_smooth->img, d_vf_est, 
+	interleaved_vol_size, cudaMemcpyDeviceToHost);
     gpu_time += plm_timer_report(&gpu_timer);
 
     free(kerx);
     free(kery);
     free(kerz);
-    delete vf_est;
+    //delete vf_est;
 
     diff_run = plm_timer_report(&timer);
     printf("Time for %d iterations = %f (%f sec / it)\n", parms->max_its, diff_run, diff_run / parms->max_its);
@@ -676,5 +680,5 @@ demons_cuda (
     cudaFree(d_ssd);
     cudaFree(d_inliers);
 
-    return vf_smooth;
+    //return vf_smooth;
 }
