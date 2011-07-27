@@ -25,7 +25,9 @@ REG23RegistrationInitializationTask::REG23RegistrationInitializationTask() :
 }
 
 REG23RegistrationInitializationTask::~REG23RegistrationInitializationTask()
-{}
+{
+  ;
+}
 
 bool REG23RegistrationInitializationTask::HasInput() const
 {
@@ -296,22 +298,6 @@ bool REG23RegistrationInitializationTask::Execute()
   TaskFinished(true); // throw in every case!
 
   succ &= (!m_CancelRequest);
-  return succ;
-}
-
-bool REG23RegistrationInitializationTask::Unexecute()
-{
-  m_CancelRequest = false;
-  emit
-  TaskStarted(true);
-  emit
-  TaskProgressInfo(true, 0);
-  bool succ = true;
-
-  // FIXME:
-
-  emit
-  TaskFinished(true);
   return succ;
 }
 

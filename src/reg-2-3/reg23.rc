@@ -1,6 +1,6 @@
 1 VERSIONINFO
-FILEVERSION 1,2,5,3
-PRODUCTVERSION 1,2,5,3
+FILEVERSION 1,2,5,4
+PRODUCTVERSION 1,2,5,4
 BEGIN
   BLOCK "StringFileInfo"
   BEGIN
@@ -8,12 +8,12 @@ BEGIN
     BEGIN
       VALUE "CompanyName", "Institute for Research and Development on Advanced Radiation Technologies (radART)"
       VALUE "FileDescription", "N-way 2D/3D Registration (REG23)"
-      VALUE "FileVersion", "1.2.5.3"
+      VALUE "FileVersion", "1.2.5.4"
       VALUE "InternalName", "REG23"
       VALUE "LegalCopyright", "Copyright (c) 2010-2011 radART"
       VALUE "OriginalFilename", "reg23.exe"
       VALUE "ProductName", "REG23"
-      VALUE "ProductVersion", "'3-Fingers' (1.2.5.3)"
+      VALUE "ProductVersion", "'3-Fingers' (1.2.5.4)"
     END
   END
 

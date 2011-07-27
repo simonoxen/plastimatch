@@ -21,7 +21,7 @@ class REG23Model;
  *
  * @author phil
  * @author Markus
- * @version 1.1
+ * @version 1.2
  */
 class REG23RegistrationExecutionTask : public Task
 {
@@ -32,13 +32,12 @@ public:
   virtual ~REG23RegistrationExecutionTask();
 
   /**
-   * This task can be unexecuted; i.e. outputting the transformation that was
-   * set prior to this task.
+   * This implementation does not support unexecution.
    * @see Task#IsUnexecutable()
    */
   virtual bool IsUnexecutable() const
   {
-    return true;
+    return false;
   }
 
   /**
@@ -48,7 +47,7 @@ public:
    */
   virtual bool IsReexecuteable() const
   {
-    return true;
+    return false;
   }
 
   /**
@@ -93,10 +92,13 @@ public:
     return m_UnexecuteInfoAvailable;
   }
 
-  /** Unexecutes the task. Apply the previous transform.
+  /** No unexecution implemented!
    * @see Task#Unexecute()
    */
-  virtual bool Unexecute();
+  virtual bool Unexecute()
+  {
+    return false;
+  }
 
   /**
    * The name of the task is "Registration".
@@ -180,6 +182,12 @@ public:
 
   /** @return the elapsed time since last start of the task **/
   double GetElapsedTimeSinceStart();
+
+  /** Delete this task after execution. **/
+  bool DeleteThisTaskAfterProcessing()
+  {
+    return true;
+  }
 
 protected:
   /** Execution done, unexecution information is now available. **/

@@ -21,7 +21,7 @@ class REG23Model;
  *
  * @author phil
  * @author Markus
- * @version 1.1
+ * @version 1.2
  */
 class REG23RegistrationInitializationTask : public Task
 {
@@ -32,13 +32,12 @@ public:
   virtual ~REG23RegistrationInitializationTask();
 
   /**
-   * This task can be unexecuted; i.e. deinitializing the registration
-   * framework.
+   * This implementation does not support unexecution.
    * @see Task#IsUnexecutable()
    */
   virtual bool IsUnexecutable() const
   {
-    return true;
+    return false;
   }
 
   /**
@@ -93,10 +92,13 @@ public:
     return m_UnexecuteInfoAvailable;
   }
 
-  /** Unexecutes the task. Deinitialize the registration framework.
+  /** No unexecution implemented!
    * @see Task#Unexecute()
    */
-  virtual bool Unexecute();
+  virtual bool Unexecute()
+  {
+    return false;
+  }
 
   /**
    * The name of the task is "Initialize registration".
@@ -136,6 +138,12 @@ public:
    * @see Task#IsCancelable()
    */
   bool IsCancelable() const
+  {
+    return true;
+  }
+
+  /** Delete this task after execution. **/
+  bool DeleteThisTaskAfterProcessing()
   {
     return true;
   }

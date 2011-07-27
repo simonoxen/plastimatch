@@ -22,6 +22,7 @@ REG23RegistrationExecutionTask::REG23RegistrationExecutionTask() :
 
 REG23RegistrationExecutionTask::~REG23RegistrationExecutionTask()
 {
+  ;
 }
 
 bool REG23RegistrationExecutionTask::HasInput() const
@@ -66,6 +67,12 @@ bool REG23RegistrationExecutionTask::Execute()
 {
   m_CancelRequest = false;
   REG23Model *tm = this->m_TargetModel;
+
+  // do the real registration (NOTE: the progress is updated via the
+  // callback commands of the registration framework)
+  itk::RealTimeClock::Pointer timer = itk::RealTimeClock::New();
+  m_StartTime = timer->GetTimeStamp();
+
   emit
   TaskStarted(true);
   double p = 0.;
@@ -82,10 +89,6 @@ bool REG23RegistrationExecutionTask::Execute()
     tm->GetOptimizerCommand()->SetCallbackFunction(this,
         (MemberPointer)&REG23RegistrationExecutionTask::OnOptimizerCallback);
 
-    // do the real registration (NOTE: the progress is updated via the
-    // callback commands of the registration framework)
-    itk::RealTimeClock::Pointer timer = itk::RealTimeClock::New();
-    m_StartTime = timer->GetTimeStamp();
     ITKVTKImage *ivi = tm->m_Volume->ProduceImage();
     TEMPLATE_CALL_COMP(ivi->GetComponentType(),
                        succ = tm->ExecuteRegistration, )
@@ -100,22 +103,6 @@ bool REG23RegistrationExecutionTask::Execute()
   TaskFinished(true); // throw in every case!
 
   succ &= (!m_CancelRequest);
-  return succ;
-}
-
-bool REG23RegistrationExecutionTask::Unexecute()
-{
-  m_CancelRequest = false;
-  emit
-  TaskStarted(true);
-  emit
-  TaskProgressInfo(true, 0);
-  bool succ = true;
-
-  // FIXME:
-
-  emit
-  TaskFinished(true);
   return succ;
 }
 
@@ -140,6 +127,8 @@ double REG23RegistrationExecutionTask::GetElapsedTimeSinceStart()
 {
   itk::RealTimeClock::Pointer timer = itk::RealTimeClock::New();
   double currentRegistrationTime = timer->GetTimeStamp() - m_StartTime;
+  if (currentRegistrationTime < 0)
+    currentRegistrationTime = 0;
   return currentRegistrationTime;
 }
 

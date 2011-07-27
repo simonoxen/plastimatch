@@ -107,7 +107,7 @@ void REG23ControlWindow::Initialize()
   // connect important task manager events:
   this->connect(m_CastedModel->GetTaskManager(),
       SIGNAL(TaskHasNoInputsDropped(Task*)), this,
-      SLOT(OnTaskManagerTaskHasNoInputsDropped(Task*)));
+      SLOT(OnTaskManagerTaskHasNoInputsDropped(Task*)), Qt::BlockingQueuedConnection);
 
   // set the status bar visible
   // (old code <- created and added stask pres. widget to status bar)
@@ -333,9 +333,9 @@ void REG23ControlWindow::OnMainTimerTimeout()
         m_StatusWidget->SetCancelButtonToolTip(REG23ControlWindow::tr(
             "Stop initialization process."));
         this->connect(vtask, SIGNAL(TaskStarted(bool)), this,
-            SLOT(OnTaskStarted(bool)));
+            SLOT(OnTaskStarted(bool)), Qt::BlockingQueuedConnection);
         this->connect(vtask, SIGNAL(TaskFinished(bool)), this,
-            SLOT(OnTaskFinished(bool)));
+            SLOT(OnTaskFinished(bool)), Qt::BlockingQueuedConnection);
         m_CastedModel->GetTaskManager()->ExecuteTask(vtask);
         ImageImporterTask *last = NULL;
         for (std::size_t i = 0; i < ftasks.size(); i++)
@@ -345,13 +345,13 @@ void REG23ControlWindow::OnMainTimerTimeout()
               "Importing fixed image %1 of %2 ..."). arg(i + 1).arg(
               ftasks.size()));
           this->connect(ftasks[i], SIGNAL(TaskStarted(bool)), this,
-              SLOT(OnTaskStarted(bool)));
+              SLOT(OnTaskStarted(bool)), Qt::BlockingQueuedConnection);
           this->connect(ftasks[i], SIGNAL(TaskFinished(bool)), this,
-              SLOT(OnTaskFinished(bool)));
+              SLOT(OnTaskFinished(bool)), Qt::BlockingQueuedConnection);
           m_CastedModel->GetTaskManager()->ExecuteTask(ftasks[i]);
         }
         this->connect(last, SIGNAL(TaskFinished(bool)), this,
-            SLOT(OnLastImageLoaderTaskFinished(bool)));
+            SLOT(OnLastImageLoaderTaskFinished(bool)), Qt::BlockingQueuedConnection);
       }
       else
       {
@@ -388,11 +388,11 @@ void REG23ControlWindow::OnLastImageLoaderTaskFinished(bool execute)
         REG23ControlWindow::tr("Initializing framework ..."),
         REG23ControlWindow::tr("Post-processing images ..."));
     this->connect(task, SIGNAL(TaskStarted(bool)), this,
-        SLOT(OnTaskStarted(bool)));
+        SLOT(OnTaskStarted(bool)), Qt::BlockingQueuedConnection);
     this->connect(task, SIGNAL(TaskFinished(bool)), this,
-        SLOT(OnTaskFinished(bool)));
+        SLOT(OnTaskFinished(bool)), Qt::BlockingQueuedConnection);
     this->connect(task, SIGNAL(TaskProgressInfo(bool,double)), this,
-        SLOT(OnTaskProgress(bool,double)));
+        SLOT(OnTaskProgress(bool,double)), Qt::BlockingQueuedConnection);
     m_CastedModel->GetTaskManager()->ExecuteTask(task);
     m_StatusWidget->SetCancelButtonToolTip(REG23ControlWindow::tr(
         "Stop initialization process."));
@@ -811,11 +811,11 @@ void REG23ControlWindow::OnStartButtonPressed()
     preTask->SetRegistrationTimeFormatString(REG23ControlWindow::tr(" [%1 s]"));
     preTask->SetIncludeRegistrationTimeInName(true);
     this->connect(preTask, SIGNAL(TaskStarted(bool)), this,
-        SLOT(OnTaskStarted(bool)));
+        SLOT(OnTaskStarted(bool)), Qt::BlockingQueuedConnection);
     this->connect(preTask, SIGNAL(TaskFinished(bool)), this,
-        SLOT(OnTaskFinished(bool)));
+        SLOT(OnTaskFinished(bool)), Qt::BlockingQueuedConnection);
     this->connect(preTask, SIGNAL(TaskProgressInfo(bool,double)), this,
-        SLOT(OnTaskProgress(bool,double)));
+        SLOT(OnTaskProgress(bool,double)), Qt::BlockingQueuedConnection);
     m_CastedModel->GetTaskManager()->ExecuteTask(preTask);
     m_StatusWidget->SetCancelButtonToolTip(REG23ControlWindow::tr(
         "Stop sparse pre-registration process."));
@@ -831,11 +831,11 @@ void REG23ControlWindow::OnStartButtonPressed()
       task->SetRegistrationTimeFormatString(REG23ControlWindow::tr(" [%1 s]"));
       task->SetIncludeRegistrationTimeInName(true);
       this->connect(task, SIGNAL(TaskStarted(bool)), this,
-          SLOT(OnTaskStarted(bool)));
+          SLOT(OnTaskStarted(bool)), Qt::BlockingQueuedConnection);
       this->connect(task, SIGNAL(TaskFinished(bool)), this,
-          SLOT(OnTaskFinished(bool)));
+          SLOT(OnTaskFinished(bool)), Qt::BlockingQueuedConnection);
       this->connect(task, SIGNAL(TaskProgressInfo(bool,double)), this,
-          SLOT(OnTaskProgress(bool,double)));
+          SLOT(OnTaskProgress(bool,double)), Qt::BlockingQueuedConnection);
       m_CastedModel->GetTaskManager()->ExecuteTask(task);
       m_StatusWidget->SetCancelButtonToolTip(REG23ControlWindow::tr(
           "Stop auto-registration process."));
@@ -1016,6 +1016,11 @@ void REG23ControlWindow::AddRenderViewGeometry(int idx, int x, int y, int w, int
 
 void REG23ControlWindow::OnGUIUpdateTimerTimeout()
 {
+  // NOTE: Obviously, this call helps to process pending events of the Qt-event-
+  // loop which is exceptionally important if we used multi-threaded openGL
+  // render calls.
+  QCoreApplication::processEvents();
+
   if (m_UpdateCostFunctionFlag)
   {
     m_UpdateCostFunctionFlag = false; // set back!

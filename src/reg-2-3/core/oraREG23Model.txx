@@ -60,6 +60,14 @@
 #include <vtkFunctionParser.h>
 #include <vtkImageCast.h>
 #include <vtkPlane.h>
+#include <vtkPolyDataToImageStencil.h>
+#include <vtkImageStencil.h>
+#include <vtkPointData.h>
+#include <vtkImageStencilData.h>
+#include <vtkTransformPolyDataFilter.h>
+#include <vtkMatrix4x4.h>
+#include <vtkTriangleFilter.h>
+#include <vtkLinearSubdivisionFilter.h>
 
 #include <fstream>
 #include <sstream>
@@ -2927,6 +2935,165 @@ REG23Model::ComputeCrossCorrelationInitialTransform(const unsigned int &index,
 
   return true;
 }
+
+template<typename TVolumeComponentType>
+itk::Image<unsigned char, 3>::Pointer
+REG23Model::CreateVolumeMask(ITKVTKImage *volume,
+    std::vector<vtkSmartPointer<vtkPolyData> > &maskstructures)
+{
+  if (!volume)
+    return NULL;
+  if (maskstructures.size() < 1)
+    return NULL;
+
+  // Cast to ITK image types
+  typedef TVolumeComponentType VolumePixelType;
+  typedef itk::Image<VolumePixelType, 3> VolumeImageType;
+  ITKVTKImage::ITKImagePointer ibase = this->GetVolumeImage()->GetAsITKImage<VolumePixelType>();
+  typename VolumeImageType::Pointer volumeImageITK = static_cast<VolumeImageType *> (ibase.GetPointer());
+  vtkSmartPointer<vtkImageData> volumeImageVTK = volume->GetAsVTKImage<VolumePixelType>();
+
+  // Volume properties
+  typename VolumeImageType::PointType originVol = volumeImageITK->GetOrigin();
+  typename VolumeImageType::DirectionType directionVol = volumeImageITK->GetDirection();
+
+  // Mask inside and outside values
+  // NOTE: mask is of type unsigned char
+  unsigned char maskOutsideValue = 0;
+  unsigned char maskInsideValue = 255;
+
+  // Create template image (required as input for the image stencil operation)
+  vtkSmartPointer<vtkImageData> templateImageAllInside = vtkSmartPointer<vtkImageData>::New();
+  templateImageAllInside->SetOrigin(volumeImageVTK->GetOrigin());
+  templateImageAllInside->SetSpacing(volumeImageVTK->GetSpacing());
+  templateImageAllInside->SetDimensions(volumeImageVTK->GetDimensions());
+  templateImageAllInside->SetExtent(volumeImageVTK->GetWholeExtent());
+  templateImageAllInside->SetScalarTypeToUnsignedChar();
+  templateImageAllInside->AllocateScalars();
+  // Fill the template image with the inside value
+  vtkSmartPointer<vtkDataArray> scalars = templateImageAllInside->GetPointData()->GetScalars();
+  for(vtkIdType i = 0; i < scalars->GetNumberOfTuples(); i++)
+  {
+    scalars->SetTuple1(i, maskInsideValue);
+  }
+
+  // Create a result image (initial all voxels are inside)
+  typedef unsigned char MaskVolumePixelType;
+  typedef itk::Image<MaskPixelType, 3> MaskVolumeImageType;
+  MaskVolumeImageType::Pointer resultMaskImage = MaskVolumeImageType::New();
+  resultMaskImage->SetRegions( volumeImageITK->GetLargestPossibleRegion());
+  resultMaskImage->Allocate();
+  resultMaskImage->FillBuffer(maskInsideValue);
+  resultMaskImage->SetSpacing(volumeImageITK->GetSpacing());
+  resultMaskImage->SetOrigin(volumeImageITK->GetOrigin());
+  resultMaskImage->SetDirection(volumeImageITK->GetDirection());
+
+  typedef itk::ImageRegionIterator<MaskVolumeImageType> MaskIteratorType;
+  MaskIteratorType itMask(resultMaskImage, resultMaskImage->GetLargestPossibleRegion());
+  itMask.GoToBegin();
+
+  // Convert directional cosine matrix of ITK to VTK transform matrix to transform
+  // structures to volume image space for mask generation
+  vtkSmartPointer<vtkMatrix4x4> dc = vtkSmartPointer<vtkMatrix4x4>::New();
+  dc->Identity();
+  // rows are columns in ITK image! -> Transpose
+  dc->SetElement(0, 0, directionVol[0][0]);
+  dc->SetElement(0, 1, directionVol[1][0]);
+  dc->SetElement(0, 2, directionVol[2][0]);
+  dc->SetElement(1, 0, directionVol[0][1]);
+  dc->SetElement(1, 1, directionVol[1][1]);
+  dc->SetElement(1, 2, directionVol[2][1]);
+  dc->SetElement(2, 0, directionVol[0][2]);
+  dc->SetElement(2, 1, directionVol[1][2]);
+  dc->SetElement(2, 2, directionVol[2][2]);
+
+  // Iterate over provided structures and generate mask images with vtkImageStencil
+  for (unsigned int i = 0; i < maskstructures.size(); ++i)
+  {
+    // Get polydata
+    vtkPolyData *structure = maskstructures[i];
+
+    // Transform polydata to volume image space (VTK has no direction)
+    vtkSmartPointer<vtkTransform> volumeTransform = vtkSmartPointer<vtkTransform>::New();
+    volumeTransform->Identity();
+    volumeTransform->PostMultiply();
+    volumeTransform->Translate(-originVol[0], -originVol[1], -originVol[2]);
+    volumeTransform->Concatenate(dc);
+    volumeTransform->Translate(originVol[0], originVol[1], originVol[2]);
+    volumeTransform->Update();
+
+    vtkSmartPointer<vtkTransformPolyDataFilter> transformToVolumeSpace =
+        vtkSmartPointer<vtkTransformPolyDataFilter>::New();
+    transformToVolumeSpace->SetTransform(volumeTransform);
+    transformToVolumeSpace->SetInput(structure);
+    transformToVolumeSpace->Update();
+
+    // Subdivide for more stability
+    vtkSmartPointer<vtkTriangleFilter> triangleFilter =
+       vtkSmartPointer<vtkTriangleFilter>::New();
+    triangleFilter->SetInput(transformToVolumeSpace->GetOutput());
+    triangleFilter->Update();
+
+    vtkSmartPointer<vtkLinearSubdivisionFilter> subdivisionFilter =
+        vtkSmartPointer<vtkLinearSubdivisionFilter>::New();
+    subdivisionFilter->SetInput(triangleFilter->GetOutput());
+    subdivisionFilter->SetNumberOfSubdivisions(1);
+    subdivisionFilter->Update();
+
+    // Convert polygonal data to image stencil
+    vtkSmartPointer<vtkPolyDataToImageStencil> polydataToStencil =
+      vtkSmartPointer<vtkPolyDataToImageStencil>::New();
+    // Add additional margin to account for voxels on the edge
+    polydataToStencil->SetOutputOrigin(templateImageAllInside->GetOrigin());
+    polydataToStencil->SetOutputSpacing(templateImageAllInside->GetSpacing());
+    polydataToStencil->SetOutputWholeExtent(templateImageAllInside->GetWholeExtent());
+    polydataToStencil->SetInput(subdivisionFilter->GetOutput());
+    try
+    {
+      polydataToStencil->Update();
+    }
+    catch (...)
+    {
+      std::cerr << "ERROR at generation of volume stencil (polydata id " << i << ")." << std::endl;
+      return NULL;
+    }
+
+    // Create a volume image mask (voxels inside the polydata get the inside
+    // value)
+    vtkSmartPointer<vtkImageStencil> stencilToVolume =
+      vtkSmartPointer<vtkImageStencil>::New();
+    stencilToVolume->SetStencil(polydataToStencil->GetOutput());
+    stencilToVolume->ReverseStencilOff();
+    stencilToVolume->SetInput(templateImageAllInside);
+    stencilToVolume->SetBackgroundValue(maskOutsideValue);
+    try
+    {
+      stencilToVolume->Update();
+    }
+    catch (...)
+    {
+      std::cerr << "ERROR at generation of volume mask (polydata id " << i << ")." << std::endl;
+      return NULL;
+    }
+    // Combine current structure mask with accumulated result
+    itMask.GoToBegin();
+    vtkSmartPointer<vtkDataArray> scalarsStructure = stencilToVolume->GetOutput()->GetPointData()->GetScalars();
+    for(vtkIdType j = 0; j < scalarsStructure->GetNumberOfTuples(); j++)
+    {
+      // Remove voxels from mask that are outside of the structure and preserve
+      // previous removed voxels
+      if (!(static_cast<int>(scalarsStructure->GetTuple1(j)) == maskOutsideValue &&
+          static_cast<int>(itMask.Value()) == maskInsideValue))
+      {
+        itMask.Value() = maskOutsideValue;
+      }
+      ++itMask;
+    }
+  }
+
+return resultMaskImage;
+}
+
 
 }
 

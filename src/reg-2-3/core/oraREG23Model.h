@@ -861,6 +861,8 @@ protected:
   std::vector<ImageConsumer *> m_PPFixedImagesPost;
   /** Source positions **/
   std::vector<double *> m_SourcePositions;
+  /** Source positions gantry offset angles in degrees **/
+  std::vector<double> m_GantryOffsetAngle;
   /** Explicit initial window/level pairs (optional, NULL if not specified) **/
   std::vector<double *> m_ExplicitInitialWLs;
   /** A synthetic structure set that holds the ORA structures **/
@@ -981,8 +983,6 @@ protected:
   TransformType::InputPointType m_CenterOfRotation;
   /** Global rendering context coordinator **/
   static QMutex m_RenderCoordinator;
-  /** Render time measurement **/
-  static vtkTimerLog *m_RenderTimer;
   /** Internal data member for window/level min and max**/
   double m_CurrentWindowLevelMinMax[2];
   /** Flag indicating whether or not the transformation help widgets are
@@ -1170,6 +1170,22 @@ protected:
   template<typename TComponentType>
   ITKVTKImage *UnsharpMaskImage(ITKVTKImage *image,
       std::vector<std::string> &args);
+
+  /** Generates a volume mask based on a provided list of (closed) polydata-objects.
+   * Voxels inside the polydata-objects are "outside" (value of zero) of the mask,
+   * and voxels outside any polydata-object are "inside" (value 255).
+   * NOTE: The returned image is of type unsigned char.
+   * NOTE: If more than 4 bounds of a polydata object are outside of the
+   * volume bounds a segfault occurs in vtkImageStencil (NULL is returned)!
+   * @param volume A dataset to generate a volumetric mask image.
+   * @param maskstructures A list of (closed) polydata-objects that define
+   * which values of the mask are "outside" (inside of any polydata-object).
+   * @return An mask-volume as ITKVTKImage of type unsigned char with the same
+   * characteristics as the volume (direction, origin, spacing, size).
+   */
+  template<typename TVolumeComponentType>
+  itk::Image<unsigned char, 3>::Pointer CreateVolumeMask(ITKVTKImage *volume,
+      std::vector<vtkSmartPointer<vtkPolyData> > &maskstructures);
 
   /**
    * Load the i-th prepared structure (dummy instance) from file. NOTE: In order
@@ -1435,10 +1451,11 @@ protected:
    * Parses an entry for generic variable expressions and returns the found
    * occurrences (structure UIDs and attributes) in vector form. A generic
    * variable is of the form "v{<struct-uid>.<attrib>}" where <struct-uid> is
-   * the structure UID (must exist!) and <attrib> is one of the following:
+   * the structure UID (must exist!) or "VOLUME" and <attrib> is one of the
+   * following:
    * xmin,xmax,ymin,ymax,zmin,zmax,w,h,d,cells,points.
    * @param expr the expression to be parsed
-   * @param structuids the structure UIDs of the found generic variables
+   * @param structuids the structure UIDs or "VOLUME" of the found generic variables
    * @param attribus the attributes of the found generic variables
    * @param currentStructureUID optionally provide the structure UID of the
    * current structure which is currently processed but not added to m_Structures
@@ -1450,7 +1467,7 @@ protected:
   /**
    * Get the value of a specified generic variable. This function should only
    * be called if it is sure that structuid.attrib exists!
-   * @param structuid the structure UID
+   * @param structuid the structure UID or "VOLUME"
    * @param attrib the attribute descriptor
    * @param currentStructureUID optionally provide the structure UID of the
    * current structure which is currently processed but not added to m_Structures

@@ -20,6 +20,7 @@ REG23SparseRegistrationExecutionTask::REG23SparseRegistrationExecutionTask() :
 
 REG23SparseRegistrationExecutionTask::~REG23SparseRegistrationExecutionTask()
 {
+  ;
 }
 
 void REG23SparseRegistrationExecutionTask::OnInternalFilterProgressReceptor(
@@ -50,6 +51,10 @@ bool REG23SparseRegistrationExecutionTask::Execute()
   REG23Model *tm = this->m_TargetModel;
   this->m_CancelRequest = false;
   this->m_CurrentProgressDirection = true;
+
+  itk::RealTimeClock::Pointer timer = itk::RealTimeClock::New();
+  m_StartTime = timer->GetTimeStamp();
+
   double p = 0.;
   emit
   TaskStarted(true);
@@ -60,8 +65,6 @@ bool REG23SparseRegistrationExecutionTask::Execute()
   if (!m_CancelRequest)
   {
     tm->SetExecuteSparsePreRegistration(false); // set back - at least once started
-    itk::RealTimeClock::Pointer timer = itk::RealTimeClock::New();
-    m_StartTime = timer->GetTimeStamp();
 
     if (tm->m_SparsePreRegistrationType == "CROSSCORRELATION")
     {
@@ -216,22 +219,6 @@ bool REG23SparseRegistrationExecutionTask::Execute()
   TaskFinished(true);
 
   succ &= (!m_CancelRequest);
-  return succ;
-}
-
-bool REG23SparseRegistrationExecutionTask::Unexecute()
-{
-  this->m_CancelRequest = false;
-  emit
-  TaskStarted(false);
-  emit
-  TaskProgressInfo(false, 0);
-  bool succ = true;
-
-  // FIXME:
-
-  emit
-  TaskFinished(false);
   return succ;
 }
 

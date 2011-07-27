@@ -87,7 +87,6 @@ namespace ora
 
 // static vars:
 QMutex REG23Model::m_RenderCoordinator;
-vtkTimerLog *REG23Model::m_RenderTimer = NULL;
 
 REG23Model::REG23Model() :
     Model()
@@ -256,24 +255,25 @@ void REG23Model::SetDRRToolRenderWindow(vtkRenderWindow *renWin)
   // NOTE: Do not connect/disconnect tool render window here, rather connect
   // the start/end events of the DRR engine!
 
-  //DisconnectRenderWindowFromGlobalLock(m_DRRToolRenderWindow);
+//  DisconnectRenderWindowFromGlobalLock(m_DRRToolRenderWindow);
   m_DRRToolRenderWindow = renWin;
-  //ConnectRenderWindowToGlobalLock(m_DRRToolRenderWindow);
+//  ConnectRenderWindowToGlobalLock(m_DRRToolRenderWindow);
 }
 
 void REG23Model::GlobalRenderCoordinationCB(vtkObject *caller, unsigned long eid,
       void *clientdata, void *calldata)
 {
-  if (!m_RenderTimer)
-    m_RenderTimer = vtkTimerLog::New();
+  vtkRenderWindow *rwin = dynamic_cast<vtkRenderWindow*>(caller);
   if (eid == vtkCommand::StartEvent)
   {
     REG23Model::m_RenderCoordinator.lock();
-    m_RenderTimer->StartTimer();
+    if (rwin)
+    {
+      rwin->MakeCurrent(); // be sure it is current
+    }
   }
   else if (eid == vtkCommand::EndEvent)
   {
-    m_RenderTimer->StopTimer();
     REG23Model::m_RenderCoordinator.unlock();
   }
 }
@@ -623,11 +623,11 @@ bool REG23Model::LoadConfiguration(std::string &errorSection,
   for (std::size_t k = 1; k <= m_FixedImages.size(); k++)
   {
     errorKey = "SourcePosition" + StreamConvert(k);
-    s = TrimF(m_Config->ReadString(errorSection, errorKey, ""));
-    ToUpperCase(s);
+    s = ToUpperCaseF(TrimF(m_Config->ReadString(errorSection, errorKey, "")));
+    while (ReplaceString(s, " ", ""));
     if (s.length() > 0)
     {
-      if (s != "FROM-IMAGE(ROTATIONAL)")
+      if (s.substr(0, 11) != "FROM-IMAGE(")
       {
         double *p = NULL;
         int n = ParseCommaSeparatedNumericStringVector(s, p);
@@ -643,13 +643,44 @@ bool REG23Model::LoadConfiguration(std::string &errorSection,
           return false;
         }
       }
-      else // FROM-IMAGE(ROTATIONAL)
+      else // FROM-IMAGE(ROTATIONAL) or FROM-IMAGE(ROTATIONAL,<offset>)
       {
         if (ToLowerCaseF(itksys::SystemTools::GetFilenameExtension(m_FixedImageFileNames[k - 1])) != ".rti" &&
-            ToLowerCaseF(itksys::SystemTools::GetFilenameExtension(m_FixedImageFileNames[k - 1])) != ".rti.org")
+            ToLowerCaseF(itksys::SystemTools::GetFilenameExtension(m_FixedImageFileNames[k - 1])) != ".rti.org" &&
+            ToLowerCaseF(itksys::SystemTools::GetFilenameExtension(m_FixedImageFileNames[k - 1])) != ".ora.xml")
         {
-          errorMessage = "The 'FROM-IMAGE(ROTATIONAL)' keyword requires a set corresponding RTI-image.";
+          errorMessage = "The 'FROM-IMAGE()' keyword requires a set corresponding RTI-image or ORA.XML-image.";
           return false;
+        }
+        std::string sa = s.substr(11, s.length());
+        sa = sa.substr(0, sa.length() - 1); // cut last ")"
+        std::vector<std::string> toks;
+        Tokenize(sa, toks, ",");
+        if (toks.size() < 1 || toks.size() > 2)
+        {
+          errorMessage = "The 'FROM-IMAGE()' keyword needs exactly 1 or 2 arguments!\n";
+          errorMessage += s;
+          return false;
+        }
+        if (toks[0] != "ROTATIONAL")
+        {
+          errorMessage = "The 'FROM-IMAGE()' keyword first argument must be 'ROTATIONAL'!\n";
+          errorMessage += s;
+          return false;
+        }
+        if (toks.size() == 2 && !IsNumeric(toks[1]))
+        {
+          errorMessage = "The 'FROM-IMAGE()' keyword argument <offset> must be numeric!";
+          errorMessage += s;
+          return false;
+        }
+        if (toks.size() == 2)
+        {
+          m_GantryOffsetAngle.push_back(atof(toks[1].c_str()));
+        }
+        else
+        {
+          m_GantryOffsetAngle.push_back(0.0);
         }
         m_SourcePositions.push_back(NULL); // for auto-determination later
       }
@@ -1562,6 +1593,7 @@ ImageImporterTask *REG23Model::GenerateVolumeImporterTask()
   task->SetPatientUID(m_PatientUID.c_str());
   task->SetVolumeIsoCenter(m_IsoCenter); // in cm
   task->SetTargetImageConsumer(m_Volume);
+  task->ForceUnexecutableState(false); // force it to be NON-UNEXECUTABLE!
 
   return task;
 }
@@ -1588,6 +1620,7 @@ std::vector<ImageImporterTask *> REG23Model::GenerateFixedImageImporterTasks()
       task->SetSiteInfo(m_SiteInfo); // ORA-connectivity
       task->SetPatientUID(m_PatientUID.c_str());
       task->SetTargetImageConsumer(m_FixedImages[i]);
+      task->ForceUnexecutableState(false); // force it to be NON-UNEXECUTABLE!
       ftasks.push_back(task);
     }
   }
@@ -1694,7 +1727,8 @@ bool REG23Model::FixAutoSourcePositions()
       psp[1] = 1.0;
       props->SetProjectionSpacing(psp); // essentially unimportant here
       props->SetLinacGantryDirection(0); // CW
-      props->SetLinacGantryAngle(mi->GetVolumeMetaInfo()->GetGantry() / 180. * vtkMath::Pi());
+      double gantry = mi->GetVolumeMetaInfo()->GetGantry() + m_GantryOffsetAngle[i];
+      props->SetLinacGantryAngle(gantry / 180. * vtkMath::Pi());
       if (!props->Update())
         return false;
       pos = new double[3];
@@ -3561,7 +3595,8 @@ bool REG23Model::ParseGenericVariables(std::string expr,
         Tokenize(s, v, ".");
         if (v.size() == 2)
         {
-          if (!m_Structures->FindStructure(v[0])) // invalid structure UID
+          if ((ToUpperCaseF(v[0]) != "VOLUME" &&
+                !m_Structures->FindStructure(v[0]))) // invalid structure UID
           {
             if (currentStructUID != v[0]) // last opportunity!
               return false;
@@ -3597,12 +3632,74 @@ bool REG23Model::ParseGenericVariables(std::string expr,
 double REG23Model::GetGenericVariableValue(std::string structuid,
     std::string attrib, std::string currentStructUID, vtkPolyData *currentPD)
 {
-  vtkPolyData *pd = NULL;
+  vtkSmartPointer<vtkPolyData> pd = vtkSmartPointer<vtkPolyData>::New();
   VTKStructure *st = m_Structures->FindStructure(structuid);
   if (st)
+  {
     pd = st->GetStructurePolyData();
+  }
+  else if (ToUpperCaseF(structuid) == "VOLUME")
+  {
+    ITKVTKImage *volume = NULL;
+    if (m_Volume)
+      volume = m_Volume->ProduceImage();
+    if (!volume)
+      return 0;
+
+    // Cast to ITK image types
+    // NOTE: USE DUMMY TYPE SINCE ONLY VOLUME PROPERTIES ARE NEEDED
+    typedef int VolumePixelType;
+    typedef itk::Image<VolumePixelType, 3> VolumeImageType;
+    ITKVTKImage::ITKImagePointer ibase = this->GetVolumeImage()->GetAsITKImage<VolumePixelType>();
+    VolumeImageType::Pointer volumeImageITK = static_cast<VolumeImageType *> (ibase.GetPointer());
+    vtkSmartPointer<vtkImageData> volumeImageVTK = volume->GetAsVTKImage<VolumePixelType>();
+
+    // Volume properties
+    VolumeImageType::PointType originVol = volumeImageITK->GetOrigin();
+    VolumeImageType::DirectionType directionVol = volumeImageITK->GetDirection();
+
+    // Create a dummy structure that represents the volume
+    vtkSmartPointer<vtkCubeSource> cs = vtkSmartPointer<vtkCubeSource>::New();
+    cs->SetBounds(volumeImageVTK->GetBounds());
+    cs->Update();
+
+    // Convert directional cosine matrix of ITK to VTK transform matrix to transform
+    // the volume cube to structure space
+    vtkSmartPointer<vtkMatrix4x4> dc = vtkMatrix4x4::New();
+    dc->Identity();
+    // rows are columns in ITK image! -> Transpose
+    dc->SetElement(0, 0, directionVol[0][0]);
+    dc->SetElement(0, 1, directionVol[1][0]);
+    dc->SetElement(0, 2, directionVol[2][0]);
+    dc->SetElement(1, 0, directionVol[0][1]);
+    dc->SetElement(1, 1, directionVol[1][1]);
+    dc->SetElement(1, 2, directionVol[2][1]);
+    dc->SetElement(2, 0, directionVol[0][2]);
+    dc->SetElement(2, 1, directionVol[1][2]);
+    dc->SetElement(2, 2, directionVol[2][2]);
+    dc->Invert();
+
+    // Transform volume polydata to structure space (VTK has no direction)
+    vtkTransform* volumeTransform = vtkTransform::New();
+    volumeTransform->Identity();
+    volumeTransform->PostMultiply();
+    volumeTransform->Translate(-originVol[0], -originVol[1], -originVol[2]);
+    volumeTransform->Concatenate(dc);
+    volumeTransform->Translate(originVol[0], originVol[1], originVol[2]);
+    volumeTransform->Update();
+
+    vtkTransformPolyDataFilter* transformToVolumeSpace =
+    vtkTransformPolyDataFilter::New();
+    transformToVolumeSpace->SetTransform(volumeTransform);
+    transformToVolumeSpace->SetInput(cs->GetOutput());
+    transformToVolumeSpace->Update();
+
+    pd->ShallowCopy(transformToVolumeSpace->GetOutput());
+  }
   else
+  {
     pd = currentPD;
+  }
   if (!pd)
     return 0;
   if (attrib == "cells")
@@ -3986,6 +4083,32 @@ bool REG23Model::ParseAndProcessStructureEntry(int index, bool simulation,
       bounds[3] = oy + hh;
       bounds[4] = oz;
       bounds[5] = oz + dd;
+
+      double oxVolume = GetGenericVariableValue("VOLUME", "xmin");
+      double oyVolume = GetGenericVariableValue("VOLUME", "ymin");
+      double ozVolume = GetGenericVariableValue("VOLUME", "zmin");
+      double wwVolume = GetGenericVariableValue("VOLUME", "w");
+      double hhVolume = GetGenericVariableValue("VOLUME", "h");
+      double ddVolume = GetGenericVariableValue("VOLUME", "d");
+      double boundsVolume[6];
+      boundsVolume[0] = oxVolume;
+      boundsVolume[1] = oxVolume + wwVolume;
+      boundsVolume[2] = oyVolume;
+      boundsVolume[3] = oyVolume + hhVolume;
+      boundsVolume[4] = ozVolume;
+      boundsVolume[5] = ozVolume + ddVolume;
+
+      // Limit bounds of cube to volume to avoid segfaults in Volumemask()-command
+      bounds[0] = vnl_math_max(bounds[0], boundsVolume[0]);
+      bounds[1] = vnl_math_min(bounds[1], boundsVolume[1]);
+      // Bounds in y-direction are not limited to enable full volume coverage
+      // because roundoff errors (large spacing) require greater box sizes as
+      // the bounding box of the volume.
+      //bounds[2] = vnl_math_max(bounds[2], boundsVolume[2]);
+      //bounds[3] = vnl_math_min(bounds[3], boundsVolume[3]);
+      bounds[4] = vnl_math_max(bounds[4], boundsVolume[4]);
+      bounds[5] = vnl_math_min(bounds[5], boundsVolume[5]);
+
       cs->SetBounds(bounds);
       cs->Update();
       // need to clean and generate normals (for eventual warping later):
@@ -4251,7 +4374,13 @@ bool REG23Model::ParseAndProcessStructureEntry(int index, bool simulation,
                 filter = f;
               }
               // apply decimation
-              filter->SetInput(pd);
+              vtkSmartPointer<vtkPolyDataNormals> normals =
+                  vtkSmartPointer<vtkPolyDataNormals>::New();
+              normals->SetInput(pd);
+              normals->SetComputePointNormals(true);
+              normals->SetSplitting(false); //!
+              normals->Update();
+              filter->SetInput(normals->GetOutput());
               filter->Update();
               vtkSmartPointer<vtkPolyData> pd2 =
                   vtkSmartPointer<vtkPolyData>::New();
@@ -4347,6 +4476,120 @@ bool REG23Model::ParseAndProcessStructureEntry(int index, bool simulation,
           else
           {
             errorMessage = "Empty structure UID in Clip()-command detected.";
+            return false;
+          }
+        }
+        else
+        {
+          errorMessage = "Missing closing ')' in Clip()-command detected.";
+          return false;
+        }
+      }
+      else if (ToUpperCaseF(t.substr(0, 11)) == "VOLUMEMASK(")
+      {
+        // Volumemask([<structure1>,...,<structureN>,]<filename>)
+        if (t.substr(t.length() - 1, 1) == ")")
+        {
+          // Extract arguments (without command and closing bracket)
+          std::vector<std::string> v2;
+          Tokenize(t.substr(11, t.length() - 11 - 1), v2, ",");
+          if (v2.size() < 1)
+          {
+            errorMessage = "Wrong number of arguments for Volumemask()-command.\n";
+            errorMessage += "Requires at least one argument ([<structure-uid>,]<filename>).";
+            return false;
+          }
+
+          // Validate and generate list of structures from arguments
+          std::vector<vtkSmartPointer<vtkPolyData> > maskstructures;
+          // Current structure
+          maskstructures.push_back(pd);
+          // Parse argument list
+          bool error = false;
+          for (std::size_t i = 0; i < v2.size() - 1; ++i)
+          {
+            std::string maskstrucureUID = v2[i];
+            if (maskstrucureUID.length() > 0)
+            {
+              VTKStructure *maskVStructure = m_Structures->FindStructure(maskstrucureUID);
+              if (maskVStructure)
+              {
+                maskstructures.push_back(maskVStructure->GetStructurePolyData());
+              }
+              else
+              {
+                errorMessage = "Invalid/unavailable structure UID in Volumemask()-command detected: ";
+                errorMessage += structureUID;
+                errorMessage += "\n";
+                error = true;
+              }
+            }
+            else
+            {
+              errorMessage = "Empty structure UID in Volumemask()-command detected at position";
+              errorMessage += i;
+              errorMessage += ".\n";
+              error = true;
+            }
+          }
+          if (error)
+            return false;
+
+          if (maskstructures.size() > 0)
+          {
+            if (!simulation)
+            {
+              ITKVTKImage *volume = NULL;
+              if (m_Volume)
+                volume = m_Volume->ProduceImage();
+              if (volume)
+              {
+                // Create volume mask and write it to a file
+                typedef unsigned char MaskVolumePixelType;
+                typedef itk::Image<MaskPixelType, 3> MaskVolumeImageType;
+                MaskVolumeImageType::Pointer volumeImageMask = NULL;
+                TEMPLATE_CALL_COMP(volume->GetComponentType(),
+                    volumeImageMask = CreateVolumeMask, volume, maskstructures)
+                if (volumeImageMask)
+                {
+                  try
+                  {
+                    // Write ITK image to file
+                    // NOTE: The image is oriented in the current frame of reference
+                    // If the same orientation as the ora-xml mhd volume is desired
+                    // use the ITKVTKImage code below
+                    std::string filename = v2[v2.size() - 1];
+
+                    // Export with ITK in current FOR orientation
+                    //typedef itk::ImageFileWriter<MaskVolumeImageType> WriterType;
+                    //writer->SetFileName(filename.c_str());
+                    //WriterType::Pointer writer = WriterType::New();
+                    //writer->SetInput(volumeImageMask);
+                    //writer->Update();
+
+                    // Export in ora xml format with reference to volume frame of reference
+                    ITKVTKImage volumeImageMaskITKVTK(itk::ImageIOBase::SCALAR, itk::ImageIOBase::UCHAR);
+                    volumeImageMaskITKVTK.SetITKImage(static_cast<ITKVTKImage::ITKImageType *>(volumeImageMask.GetPointer()), false);
+                    volumeImageMaskITKVTK.SetMetaInfo(volume->GetMetaInfo());
+                    volumeImageMaskITKVTK.SaveImageAsORAMetaImage<MaskVolumePixelType>(filename.c_str(), true);
+
+                  }
+                  catch (itk::ExceptionObject &e)
+                  {
+                    std::cerr << "Error at writing volume mask in Volumemask()-command.\n";
+                    std::cerr << e.GetDescription() << std::endl;
+                  }
+                }
+                else
+                {
+                  std::cerr << "Error at generation of volume mask in Volumemask()-command.\n";
+                }
+              }
+            }
+          }
+          else
+          {
+            errorMessage = "Empty structure list in Volumemask()-command detected.";
             return false;
           }
         }

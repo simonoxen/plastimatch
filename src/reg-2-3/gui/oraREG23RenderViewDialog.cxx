@@ -767,7 +767,7 @@ void REG23RenderViewDialog::BuildRenderPipeline()
   vtkSmartPointer<vtkMatrix4x4> imageOrientation =
         vtkSmartPointer<vtkMatrix4x4>::New();
   imageOrientation->Identity(); // 2D in-plane
-  m_Style->SetImageAxesOrientation(imageOrientation);
+  //m_Style->SetImageAxesOrientation(imageOrientation);
   m_Style->SetImageActor(m_OverlayActor2D);
   m_Style->SetMagnifier(m_OverlayMagnifier);
   m_Style->SetImageMapper(m_OverlayMapper2D);

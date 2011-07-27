@@ -5,7 +5,7 @@ namespace ora
 {
 
 // static member initialization:
-const std::string REG23GlobalInformation::ProductVersion = "1.2.5.3";
+const std::string REG23GlobalInformation::ProductVersion = "1.2.5.4";
 const std::string REG23GlobalInformation::NaturalProductVersion = "3-Fingers";
 const std::string REG23GlobalInformation::Copyright = "Copyright (c) 2010-2011 radART";
 const std::string REG23GlobalInformation::CompanyShortName = "radART";

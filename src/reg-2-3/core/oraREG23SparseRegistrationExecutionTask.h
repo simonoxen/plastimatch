@@ -20,7 +20,7 @@ class REG23Model;
  *
  * @author phil
  * @author Markus
- * @version 1.1
+ * @version 1.2
  */
 class REG23SparseRegistrationExecutionTask : public REG23RegistrationExecutionTask
 {
@@ -35,11 +35,6 @@ public:
    * @see Task#Execute()
    */
   virtual bool Execute();
-
-  /** Unexecutes the task. Apply the previous transform.
-   * @see Task#Unexecute()
-   */
-  virtual bool Unexecute();
 
   /**
    * The name of the task is "Registration".

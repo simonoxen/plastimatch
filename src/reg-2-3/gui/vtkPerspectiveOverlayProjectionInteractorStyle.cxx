@@ -173,26 +173,24 @@ void vtkPerspectiveOverlayProjectionInteractorStyle::ComputeCenterOfRotationInVi
   v2[0] = ReferenceImageOrientation->GetElement(1, 0);
   v2[1] = ReferenceImageOrientation->GetElement(1, 1);
   v2[2] = ReferenceImageOrientation->GetElement(1, 2);
-  double cs[2];
-  this->GetCurrentPixelSpacing(cs);
-  double origin[3];
-  ReferenceImagePlane->GetOrigin(origin);
-  center[0] = vtkMath::Dot(CenterOfRotation2D, v1) - vtkMath::Dot(origin, v1);
-  center[1] = vtkMath::Dot(CenterOfRotation2D, v2) - vtkMath::Dot(origin, v2);
+  double cs[3];
+  this->Magnifier->GetOutputSpacing(cs);
+  // pixel position within image actor:
+  double llc[3];
+  this->Magnifier->GetResliceAxesOrigin(llc);
+  double offset[3];
+  this->Magnifier->GetOutputOrigin(offset);
+  llc[0] += offset[0] * v1[0] + offset[1] * v2[0];
+  llc[1] += offset[0] * v1[1] + offset[1] * v2[1];
+  llc[2] += offset[0] * v1[2] + offset[1] * v2[2];
+  center[0] = vtkMath::Dot(CenterOfRotation2D, v1) - vtkMath::Dot(llc, v1);
+  center[1] = vtkMath::Dot(CenterOfRotation2D, v2) - vtkMath::Dot(llc, v2);
+  center[0] /= cs[0];
+  center[1] /= cs[1];
 
-  v1[0] = ImageAxesOrientation->GetElement(0, 0);
-  v1[1] = ImageAxesOrientation->GetElement(0, 1);
-  v1[2] = ImageAxesOrientation->GetElement(0, 2);
-  v2[0] = ImageAxesOrientation->GetElement(1, 0);
-  v2[1] = ImageAxesOrientation->GetElement(1, 1);
-  v2[2] = ImageAxesOrientation->GetElement(1, 2);
-  double imgOff[2];
-  imgOff[0] = vtkMath::Dot(origin, v1) - vtkMath::Dot(CurrentResliceOrigin, v1);
-  imgOff[1] = vtkMath::Dot(origin, v2) - vtkMath::Dot(CurrentResliceOrigin, v2);
-  imgOff[0] /= cs[0];
-  imgOff[1] /= cs[1];
-  center[0] = imgOff[0] + center[0] / cs[0]; // -> pixel position on viewport
-  center[1] = imgOff[1] + center[1] / cs[1];
+  // -> add actor offset within viewport:
+  center[0] += this->ImageActor->GetPosition()[0];
+  center[1] += this->ImageActor->GetPosition()[1];
 }
 
 void vtkPerspectiveOverlayProjectionInteractorStyle::OnMouseMove()
