@@ -126,16 +126,20 @@ do_gpuit_bspline_stage_internal (
     parms.reg_parms.lambda = stage->regularization_lambda;
     switch (stage->regularization_type) {
     case REGULARIZATION_NONE:
-	parms.reg_parms.lambda = 0.0f;
-	break;
+        parms.reg_parms.lambda = 0.0f;
+        break;
     case REGULARIZATION_BSPLINE_ANALYTIC:
-	parms.reg_parms.implementation = 'b';
-	break;
+        if (stage->threading_type == THREADING_CPU_OPENMP) {
+            parms.reg_parms.implementation = 'c';
+        } else {
+            parms.reg_parms.implementation = 'b';
+        }
+        break;
     case REGULARIZATION_BSPLINE_NUMERIC:
-	parms.reg_parms.implementation = 'a';
-	break;
+        parms.reg_parms.implementation = 'a';
+        break;
     default:
-	print_and_exit ("Undefined regularization type in gpuit_bspline\n");
+        print_and_exit ("Undefined regularization type in gpuit_bspline\n");
     }
 
     /* Other stuff */
