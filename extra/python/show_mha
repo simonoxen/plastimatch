@@ -2,10 +2,10 @@
 
 ## This is an easy command line mha file viewer 
 ## Author: Paolo Zaffino  (p.zaffino@yahoo.it)
-## rev 2
+## rev 3
 ## If your python version is < 2.7 you must install the argparse library
 ## NOT TESTED ON PYTHON 3
-## "show_mha -h" show the guide
+## "show_mha -h" shows the guide
 
 import argparse
 import numpy as np
@@ -36,10 +36,10 @@ else:
 
 ## View settings
 if args.view == 'c':
-	slice=np.rot90(img[:,slice_number],3)
+	slice=np.fliplr(np.rot90(img[:,slice_number],-1))
 	pixel_ratio=img_spacing[2]/img_spacing[1]
 elif args.view == 's':
-	slice=np.rot90(img[slice_number,:],3)
+	slice=np.fliplr(np.rot90(img[slice_number,:],-1))
 	pixel_ratio=img_spacing[2]/img_spacing[1]
 elif args.view == 'a':
 	slice=np.rot90(img[:,:,slice_number],1)
@@ -59,9 +59,9 @@ if args.overlay_image != None:
 		print "Warning: the two images don't have the same offset!"
 	
 	if args.view == 'c':
-		slice2=np.rot90(img2[:,slice_number],3)
+		slice2=np.fliplr(np.rot90(img2[:,slice_number],-1))
 	elif args.view == 's':
-		slice2=np.rot90(img2[slice_number,:],3)
+		slice2=np.fliplr(np.rot90(img2[slice_number,:],-1))
 	elif args.view == 'a':
 		slice2=np.rot90(img2[:,:,slice_number],1)
 	del img2
