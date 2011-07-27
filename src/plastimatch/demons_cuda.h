@@ -6,10 +6,15 @@
 
 #include "plm_config.h"
 
+#include "delayload.h"
 #include "demons.h"
 
 class Demons_state;
 class Volume;
+
+#if defined __cplusplus
+extern "C" {
+#endif
 
 plmcuda_EXPORT (
 void demons_cuda,
@@ -20,5 +25,9 @@ void demons_cuda,
     Volume* vf_init,
     DEMONS_Parms* parms
 );
+
+#if defined __cplusplus
+}
+#endif
 
 #endif

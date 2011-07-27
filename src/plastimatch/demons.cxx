@@ -69,13 +69,13 @@ demons (
         UNLOAD_LIBRARY (libplmcuda);
 	/* GCS FIX: This leaks vf_est... */
 	tmp = demons_state.vf_smooth;
-        return tmp;
+	return tmp;
 #endif
 
 #if OPENCL_FOUND
     case THREADING_OPENCL:
         tmp = demons_opencl (fixed, moving, moving_grad, vf_init, parms);
-//        UNLOAD_LIBRARY (libplmopencl);
+	//UNLOAD_LIBRARY (libplmopencl);
         return tmp;
 #endif
     case THREADING_CPU_SINGLE:
