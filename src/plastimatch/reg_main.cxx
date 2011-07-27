@@ -5,8 +5,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #include "mha_io.h"
 #include "volume.h"
+#include "plm_timer.h"
 #include "bspline_xform.h"
 #include "bspline.h"
 #include "reg_opts.h"
@@ -15,6 +17,24 @@
 #define NUMERICAL 0
 #define ANALYTIC  1
 
+
+void
+print_stats (Bspline_xform* bxf, Bspline_score* bscore, float score, double time)
+{
+    int i;
+    float grad_mean = 0.0f;
+    float grad_norm = 0.0f;
+
+    printf ("%9.3f   [ %9.3f s ]\n", score, time);
+
+    if (bscore->grad) {
+        for (i=0; i<bxf->num_coeff; i++) {
+            grad_mean += bscore->grad[i];
+            grad_norm += fabs (bscore->grad[i]);
+        }
+        printf ("GM %9.3f   GN %9.3f\n", grad_mean, grad_norm);
+    }
+}
 
 Bspline_xform*
 bxf_from_vf (Volume* vf, int* vox_per_rgn)
@@ -93,6 +113,8 @@ init_bscore (Bspline_xform* bxf, Bspline_score* ssd)
 int
 main (int argc, char* argv[])
 {
+    Timer timer;
+    double time;
     Reg_options options;
     Reg_parms *parms = &options.parms;
     Reg_state rst;
@@ -101,22 +123,27 @@ main (int argc, char* argv[])
     Bspline_xform *bxf = NULL;
     float S = 9999.9f;
 
-
     reg_opts_parse_args (&options, argc, argv);
+
+    parms->lambda = 1.0f;
 
     /* algorithm selection */
     switch (parms->implementation) {
     case 'a':
         vf = (Volume*)load (&options, NUMERICAL);
+        plm_timer_start (&timer);
         S = vf_regularize_numerical (vf);
+        time = plm_timer_report (&timer);
         break;
     case 'b':
         bxf = (Bspline_xform*)load (&options, ANALYTIC);
         init_bscore (bxf, &bscore);
 
+        plm_timer_start (&timer);
         vf_regularize_analytic_init (&rst, bxf);
         vf_regularize_analytic (&bscore, parms, &rst, bxf);
         vf_regularize_analytic_destroy (&rst);
+        time = plm_timer_report (&timer);
 
         S = bscore.rmetric;
         break;
@@ -125,9 +152,11 @@ main (int argc, char* argv[])
         bxf = (Bspline_xform*)load (&options, ANALYTIC);
         init_bscore (bxf, &bscore);
 
+        plm_timer_start (&timer);
         vf_regularize_analytic_init (&rst, bxf);
         vf_regularize_analytic_omp (&bscore, parms, &rst, bxf);
         vf_regularize_analytic_destroy (&rst);
+        time = plm_timer_report (&timer);
 
         S = bscore.rmetric;
 #else
@@ -139,9 +168,14 @@ main (int argc, char* argv[])
     default:
         printf ("Warning: Using implementation 'a'\n");
         vf = (Volume*)load (&options, NUMERICAL);
+        plm_timer_start (&timer);
         S = vf_regularize_numerical (vf);
+        time = plm_timer_report (&timer);
         break;
     } /* switch(implementation) */
+
+
+    print_stats (bxf, &bscore, S, time);
 
     if (vf) {
         delete vf;
@@ -151,8 +185,6 @@ main (int argc, char* argv[])
         bspline_xform_free (bxf);
         free (bscore.grad);
     }
-
-    printf ("S = %f\n", S);
 
     return 0;
 }
