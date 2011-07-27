@@ -168,6 +168,8 @@ public:
    * and the according patient (image list, FOR collection) - this information
    * must externally be set by using the appropriate methods of the
    * meta-information object.
+   * <br><b>NOTE:</b> The MHD file must be in the same directory as the ORA.XML
+   * file. An absolute path in the ORA-XML meta-information is ignored.
    * @param fileName the name of ORA extended image data (the XML-file, not
    *    the mhd-file!)
    * @param ignoreHash if TRUE, the hash (security) of the XML-file is ignored;

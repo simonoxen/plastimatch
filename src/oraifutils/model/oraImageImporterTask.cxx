@@ -24,6 +24,7 @@ ImageImporterTask::ImageImporterTask()
   m_ImageFileName = "";
   m_VolumeIsoCenter = NULL;
   m_ImportMode = IM_PLANAR_IMAGE;
+  m_ForcedUnexecutableState = true;
 }
 
 ImageImporterTask::~ImageImporterTask()

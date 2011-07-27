@@ -139,8 +139,8 @@ public:
 
   /**
    * Convert a single planar image from RTI format to ITK-format or directly
-   * reads it from ITK format.
-   * @param imageFile input file name of RTI or ITK image
+   * reads it from ITK format. Alternatively an ORA-XML file can be provided.
+   * @param imageFile input file name of RTI or ITK or ORA-XML image
    * @return the image pointer in case of success, NULL otherwise
    */
   ImageType *ConvertPlanarImageObject(std::string imageFile);

@@ -7,47 +7,52 @@
 #include <vtkCamera.h>
 #include <vtkMath.h>
 #include <vtkCallbackCommand.h>
-#include <vtkSmartPointer.h>
 #include <vtkPointData.h>
 #include <vtkLookupTable.h>
 #include <vtkMetaImageWriter.h>
+#include <vtkTransform.h>
+#include <vtkMatrix4x4.h>
+#include <vtkBox.h>
+#include <vtkPlane.h>
 
 #include <algorithm>
 #include <math.h>
 
 // default VTK config:
-vtkCxxRevisionMacro(vtk2DSceneImageInteractorStyle, "1.6")
+vtkCxxRevisionMacro(vtk2DSceneImageInteractorStyle, "2.1")
 vtkStandardNewMacro(vtk2DSceneImageInteractorStyle)
 
 vtk2DSceneImageInteractorStyle::vtk2DSceneImageInteractorStyle()
   : vtkInteractorStyleImage()
 {
   PseudoAltKeyFlag = false;
+  DoNotInvokeZoomingEvent = false;
+  ExternalPseudoAltKeyFlag = false;
   Renderer = NULL;
   RenderWindow = NULL;
   ReferenceImage = NULL;
   Magnifier = NULL;
-  ImageAxesOrientation = NULL;
+  // default: in-plane reslicing
+  ResliceOrientation = vtkSmartPointer<vtkMatrix4x4>::New();
+  ResliceOrientation->Identity();
   ImageActor = NULL;
   ImageMapper = NULL;
   CurrentMagnification = -10000;
-  CurrentResliceOrigin[0] = 0;
-  CurrentResliceOrigin[1] = 0;
-  CurrentResliceOrigin[2] = 0;
   CurrentResliceSpacing[0] = 0;
   CurrentResliceSpacing[1] = 0;
   CurrentResliceSpacing[2] = 0;
-  CurrentResliceExtent[0] = 0;
-  CurrentResliceExtent[1] = 0;
-  CurrentResliceExtent[2] = 0;
-  CurrentResliceExtent[3] = 0;
-  CurrentResliceExtent[4] = 0;
-  CurrentResliceExtent[5] = 0;
-  CurrentResliceCenter[0] = 0;
-  CurrentResliceCenter[1] = 0;
-  CurrentResliceCenter[2] = 0;
-  ContinuousZoomCenter[0] = 0;
-  ContinuousZoomCenter[1] = 0;
+  CurrentResliceRUC[0] = 0;
+  CurrentResliceRUC[1] = 0;
+  CurrentResliceRUC[2] = 0;
+  CurrentResliceLLC[0] = 0;
+	CurrentResliceLLC[1] = 0;
+	CurrentResliceLLC[2] = 0;
+	CurrentResliceExtent[0] = 0;
+	CurrentResliceExtent[1] = 0;
+	CurrentResliceExtent[2] = 0;
+	CurrentResliceExtent[3] = 0;
+	CurrentResliceExtent[4] = 0;
+	CurrentResliceExtent[5] = 0;
   SupportColorWindowing = true;
   InitialWL[0] = 0;
   InitialWL[1] = 0;
@@ -63,7 +68,9 @@ vtk2DSceneImageInteractorStyle::vtk2DSceneImageInteractorStyle()
   MinimumSpacingForZoom = -1;
   MaximumSpacingForZoom = -1;
   UseMinimumMaximumSpacingForZoom = false;
-
+  UseMouseWheelForZoomingInOut = true;
+  SecondaryTriggeredMouseWheel = false;
+  ResetFlipStates();
   vtkSmartPointer<vtkCallbackCommand> cbc =
       vtkSmartPointer<vtkCallbackCommand>::New();
   cbc->SetCallback(WindowLevelCallback);
@@ -101,9 +108,19 @@ vtk2DSceneImageInteractorStyle::~vtk2DSceneImageInteractorStyle()
   Renderer = NULL;
   ReferenceImage = NULL;
   Magnifier = NULL;
-  ImageAxesOrientation = NULL;
+  ResliceOrientation = NULL;
   ImageActor = NULL;
   ImageMapper = NULL;
+}
+
+void vtk2DSceneImageInteractorStyle::SetCurrentWindowLevelChannel(int channel)
+{
+  if (channel != CurrentWindowLevelChannel)
+  {
+    CurrentWindowLevelChannel = channel;
+    this->InvokeEvent(vtk2DSceneImageInteractorStyle::WindowLevelChannelChanged, this);
+    this->Modified();
+  }
 }
 
 void vtk2DSceneImageInteractorStyle::SetMagnifier(vtkImageReslice *magnifier)
@@ -111,21 +128,62 @@ void vtk2DSceneImageInteractorStyle::SetMagnifier(vtkImageReslice *magnifier)
 	if (magnifier != this->Magnifier)
 	{
 		this->Magnifier = magnifier;
-		if (this->ImageAxesOrientation && this->Magnifier)
-			this->Magnifier->SetResliceAxes(this->ImageAxesOrientation);
+		bool change = false;
+		if (this->ResliceOrientation && this->Magnifier)
+		{
+		  this->UpdateResliceOrientation(); // ensure
+		  vtkSmartPointer<vtkMatrix4x4> resliceAxes =
+		      vtkSmartPointer<vtkMatrix4x4>::New();
+		  // 'x'-axis:
+		  resliceAxes->SetElement(0, 0, this->ResliceOrientation->GetElement(0, 0));
+		  resliceAxes->SetElement(1, 0, this->ResliceOrientation->GetElement(0, 1));
+		  resliceAxes->SetElement(2, 0, this->ResliceOrientation->GetElement(0, 2));
+      // 'y'-axis:
+      resliceAxes->SetElement(0, 1, this->ResliceOrientation->GetElement(1, 0));
+      resliceAxes->SetElement(1, 1, this->ResliceOrientation->GetElement(1, 1));
+      resliceAxes->SetElement(2, 1, this->ResliceOrientation->GetElement(1, 2));
+      // 'z'-axis:
+      resliceAxes->SetElement(0, 2, this->ResliceOrientation->GetElement(2, 0));
+      resliceAxes->SetElement(1, 2, this->ResliceOrientation->GetElement(2, 1));
+      resliceAxes->SetElement(2, 2, this->ResliceOrientation->GetElement(2, 2));
+			this->Magnifier->SetResliceAxes(resliceAxes);
+			change = true;
+		}
+		if (this->ReferenceImage && this->Magnifier)
+		{
+	    double aorigin[3], aspacing[3];
+	    int aextent[6];
+	    this->ComputeAdjustedMaximumReslicingParameters(aorigin, aspacing, aextent);
+		  this->Magnifier->SetResliceAxesOrigin(aorigin);
+		  change = true;
+		}
+		if (change)
+		  this->AfterChangingMagnifier(); // provide entry point
 		this->Modified();
 	}
 }
 
-void vtk2DSceneImageInteractorStyle::SetImageAxesOrientation(vtkMatrix4x4 *orientation)
+void vtk2DSceneImageInteractorStyle::SetReferenceImage(vtkImageData *image)
 {
-	if (orientation != this->ImageAxesOrientation)
-	{
-		this->ImageAxesOrientation = orientation;
-		if (this->Magnifier)
-			this->Magnifier->SetResliceAxes(this->ImageAxesOrientation);
-		this->Modified();
-	}
+  if (this->ReferenceImage != image)
+  {
+    this->ReferenceImage = image;
+    if (this->ReferenceImage && this->Magnifier)
+    {
+      double aorigin[3], aspacing[3];
+      int aextent[6];
+      this->ComputeAdjustedMaximumReslicingParameters(aorigin, aspacing, aextent);
+      if (this->ResliceOrientation) // be sure that it is still valid!
+      {
+        this->Magnifier->SetResliceAxesOrigin(aorigin);
+        this->AfterChangingMagnifier(); // provide entry point
+      }
+      if (FlippedAlongColumn || FlippedAlongRow)
+        this->InvokeEvent(vtk2DSceneImageInteractorStyle::FlippingModeChanged, this);
+      ResetFlipStates();
+    }
+    this->Modified();
+  }
 }
 
 void vtk2DSceneImageInteractorStyle::SetRenderer(vtkRenderer *ren)
@@ -157,209 +215,421 @@ bool vtk2DSceneImageInteractorStyle::GetCurrentPixelSpacing(double spacing[2])
   }
 }
 
-void vtk2DSceneImageInteractorStyle::GetAdjustedReferenceImageGeometry(
-    double spacing[3], int extent[6])
+void vtk2DSceneImageInteractorStyle::ComputeVolumeCorners(double corners[8][3])
 {
   if (ReferenceImage)
   {
-    ReferenceImage->GetSpacing(spacing);
-    ReferenceImage->GetWholeExtent(extent);
-    if (spacing[0] != spacing[1])
+  	ReferenceImage->UpdateInformation();
+    double origin[3];
+    ReferenceImage->GetOrigin(origin); // *center* (not corner) of first voxel!
+    double spac[3];
+    ReferenceImage->GetSpacing(spac);
+    int we[6];
+    ReferenceImage->GetWholeExtent(we);
+    int dims[3];
+    dims[0] = we[1] - we[0] + 1; // safe retrieval of image dimensions
+    dims[1] = we[3] - we[2] + 1;
+    dims[2] = we[5] - we[4] + 1;
+
+    // -> here, we refer to the corner of the first voxel, so correct for it:
+    origin[0] -= spac[0] / 2.;
+    origin[1] -= spac[1] / 2.;
+    origin[2] -= spac[2] / 2.;
+
+    // width, height, depth:
+    double w = spac[0] * (double)dims[0];
+    double h = spac[1] * (double)dims[1];
+    double d = spac[2] * (double)dims[2];
+
+    // construct bounding volume box (on-grid):
+    // p1
+    corners[0][0] = origin[0];
+    corners[0][1] = origin[1];
+    corners[0][2] = origin[2];
+    // p2
+    corners[1][0] = origin[0] + w;
+    corners[1][1] = origin[1];
+    corners[1][2] = origin[2];
+    // p3
+    corners[2][0] = origin[0] + w;
+    corners[2][1] = origin[1] + h;
+    corners[2][2] = origin[2];
+    // p4
+    corners[3][0] = origin[0];
+    corners[3][1] = origin[1] + h;
+    corners[3][2] = origin[2];
+    // p5
+    corners[4][0] = origin[0];
+    corners[4][1] = origin[1];
+    corners[4][2] = origin[2] + d;
+    // p6
+    corners[5][0] = origin[0] + w;
+    corners[5][1] = origin[1];
+    corners[5][2] = origin[2] + d;
+    // p7
+    corners[6][0] = origin[0] + w;
+    corners[6][1] = origin[1] + h;
+    corners[6][2] = origin[2] + d;
+    // p8
+    corners[7][0] = origin[0];
+    corners[7][1] = origin[1] + h;
+    corners[7][2] = origin[2] + d;
+  }
+}
+
+void vtk2DSceneImageInteractorStyle::ComputeAdjustedSpacing(double spacing[3])
+{
+	if (ReferenceImage)
+	{
+		// SPACING: take simply the smallest component isotropically
+		double rspac[3];
+		ReferenceImage->GetSpacing(rspac);
+		spacing[0] = std::min(std::min(rspac[0], rspac[1]), rspac[2]);
+		spacing[1] = spacing[0];
+		spacing[2] = 1.0; // reslice PLANE!
+	}
+}
+
+double vtk2DSceneImageInteractorStyle::ComputeAdjustedMaximumReslicingParameters(
+    double origin[3], double spacing[3], int extent[6])
+{
+  if (ReferenceImage && ResliceOrientation)
+  {
+    double vc[8][3];
+    ComputeVolumeCorners(vc); // get the volume corners in WCS
+
+    this->UpdateResliceOrientation(); // ensure
+    if (!ResliceOrientation) // possible after updating!
+      return 0;
+
+    // REAL MAXIMUM EXTENT:
+    double *v;
+    double minp, maxp;
+    double maxExtent[6];
+    double v1[3]; // row direction
+    v1[0] = this->ResliceOrientation->GetElement(0, 0);
+    v1[1] = this->ResliceOrientation->GetElement(0, 1);
+    v1[2] = this->ResliceOrientation->GetElement(0, 2);
+    double v2[3]; // column direction
+    v2[0] = this->ResliceOrientation->GetElement(1, 0);
+    v2[1] = this->ResliceOrientation->GetElement(1, 1);
+    v2[2] = this->ResliceOrientation->GetElement(1, 2);
+    double v3[3]; // slicing direction
+    v3[0] = this->ResliceOrientation->GetElement(2, 0);
+    v3[1] = this->ResliceOrientation->GetElement(2, 1);
+    v3[2] = this->ResliceOrientation->GetElement(2, 2);
+    for (int x = 0; x < 3; ++x)
     {
-      double f, dist;
-      if (spacing[0] < spacing[1]) // adjust vertically
+      if (x == 0) // normalized row-direction
+        v = v1;
+      else if (x == 1) // normalized column-direction
+        v = v2;
+      else // normalized slicing-direction
+      	v = v3;
+      minp = vtkMath::Dot(vc[0], v);
+      maxp = minp;
+      for (int i = 1; i < 8; ++i)
       {
-        dist = static_cast<double>(extent[3] - extent[2] + 1) * spacing[1];
-        f = spacing[1] / spacing[0]; // magnific.
-        spacing[1] = spacing[0]; // new spacing!
-        extent[3] = static_cast<int>(extent[2] +
-            ceil(dist / spacing[1]) - 1); // new extent!
+        double pos = vtkMath::Dot(vc[i], v); // projection
+        if (pos < minp)
+          minp = pos;
+        if (pos > maxp)
+          maxp = pos;
       }
-      else // adjust horizontally
+      // the plane extent is related to the WCS origin!
+      maxExtent[x * 2 + 0] = minp; // store the direction extents
+      maxExtent[x * 2 + 1] = maxp;
+    }
+
+    // SPACING: take simply the smallest component isotropically
+    ComputeAdjustedSpacing(spacing);
+
+    // ORIGIN: relate to the real maximum plane w.r.t. the reslicing matrix;
+    // the discrepancy between plane pixel center and corner is also
+    // considered; NOTE: We take the centered plane along the slicing direction!
+    double centerCoordinate = (maxExtent[4] + maxExtent[5]) / 2.;
+    origin[0] = (maxExtent[0] + spacing[0] / 2.) * v1[0] +
+    		(maxExtent[2] + spacing[1] / 2.) * v2[0] +
+    		v3[0] * centerCoordinate;
+    origin[1] = (maxExtent[0] + spacing[0] / 2.) * v1[1] +
+    		(maxExtent[2] + spacing[1] / 2.) * v2[1] +
+    		v3[1] * centerCoordinate;
+    origin[2] = (maxExtent[0] + spacing[0] / 2.) * v1[2] +
+    		(maxExtent[2] + spacing[1] / 2.) * v2[2] +
+    		v3[2] * centerCoordinate;
+
+    // EXTENT: relate to the real maximum plane and isotropic spacing:
+    extent[0] = 0;
+    extent[1] = static_cast<int>(ceil((maxExtent[1] - maxExtent[0]) / spacing[0]) - 1);
+    extent[2] = 0;
+    extent[3] = static_cast<int>(ceil((maxExtent[3] - maxExtent[2]) / spacing[1]) - 1);
+    extent[4] = 0; // reslice PLANE!
+    extent[5] = 0;
+
+    return centerCoordinate;
+  }
+  return 0;
+}
+
+void vtk2DSceneImageInteractorStyle::FitImagePortionToRenderWindow(
+    double point1[3], double point2[3], bool adaptForZooming)
+{
+  if (!Magnifier || !ResliceOrientation || !RenderWindow ||
+      !ReferenceImage || !ImageActor)
+    return;
+  // check geometric integrity:
+  this->UpdateResliceOrientation(); // ensure
+  double v3[3]; // slicing direction (plane normal)
+  v3[0] = ResliceOrientation->GetElement(2, 0);
+  v3[1] = ResliceOrientation->GetElement(2, 1);
+  v3[2] = ResliceOrientation->GetElement(2, 2);
+  double p0[3];
+  this->Magnifier->GetResliceAxesOrigin(p0);
+  if (vtkPlane::DistanceToPlane(point1, v3, p0) > F_EPSILON)
+    return; // point1 not on plane!
+  if (vtkPlane::DistanceToPlane(point2, v3, p0) > F_EPSILON)
+    return; // point2 not on plane!
+
+  double v1[3];
+  v1[0] = ResliceOrientation->GetElement(0, 0);
+  v1[1] = ResliceOrientation->GetElement(0, 1);
+  v1[2] = ResliceOrientation->GetElement(0, 2);
+  double v2[3];
+  v2[0] = ResliceOrientation->GetElement(1, 0);
+  v2[1] = ResliceOrientation->GetElement(1, 1);
+  v2[2] = ResliceOrientation->GetElement(1, 2);
+
+  double bwidth = vtkMath::Dot(point2, v1) - vtkMath::Dot(point1, v1);
+  double bheight = vtkMath::Dot(point2, v2) - vtkMath::Dot(point1, v2);
+  if (bwidth <= 0 || bheight <= 0)
+    return; // point1/point2 incorrectly specified w.r.t. reslice orientation
+
+  double aspacing[3];
+  ComputeAdjustedSpacing(aspacing); // isotropic spacing
+  double aorigin[3];
+  aorigin[0] = point1[0];// - v1[0] * aspacing[0] / 2. - v2[0] * aspacing[1] / 2.;
+  aorigin[1] = point1[1];// - v1[1] * aspacing[0] / 2. - v2[1] * aspacing[1] / 2.;
+  aorigin[2] = point1[2];// - v1[2] * aspacing[0] / 2. - v2[2] * aspacing[1] / 2.;
+  int aextent[6];
+  aextent[0] = 0;
+  aextent[1] = static_cast<int>(ceil(bwidth / aspacing[0])) - 1;
+  aextent[2] = 0;
+  aextent[3] = static_cast<int>(ceil(bheight / aspacing[1])) - 1;
+  aextent[4] = 0;
+  aextent[5] = 0; // plane
+  int dims[3]; // dimensions retrieval
+  dims[0] = aextent[1] - aextent[0] + 1;
+  dims[1] = aextent[3] - aextent[2] + 1;
+  dims[2] = aextent[5] - aextent[4] + 1;
+
+  // NOTE: We do not need to consider the image spacing because this scene
+  // is purely pixel-based!
+  double width = (double)dims[0];
+  double height = (double)dims[1];
+  if (height <= 0)
+    height = 1.0;
+  if (width < 0)
+    width = 1.0;
+  int *sz = RenderWindow->GetSize();
+  double w = (double)sz[0];
+  double h = (double)sz[1];
+  double vpaspect = w / h; // viewport
+  double imgaspect = width / height; // image
+  bool fitToHeight = false;
+  // We need some logic on how to determine which dimension gets adapted!
+  if (vpaspect >= 1)
+  {
+    if (imgaspect >= 1)
+    {
+      if (imgaspect <= vpaspect)
       {
-//        f = spacing[1] / spacing[0]; // magnific.
-//        spacing[1] = spacing[0]; // take over
+        fitToHeight = true;
+      }
+      else
+      {
+        fitToHeight = false;
       }
     }
+    else
+    {
+      fitToHeight = true;
+    }
   }
+  else // vpaspect < 1
+  {
+    if (imgaspect >= 1)
+    {
+      fitToHeight = false;
+    }
+    else if (imgaspect <= vpaspect)
+    {
+      fitToHeight = true;
+    }
+    else
+    {
+      fitToHeight = false;
+    }
+  }
+  // calculate resulting plane height and width
+  double planeHeight, planeWidth;
+  CurrentMagnification = 1.; // common magnification - keep aspect ratio!
+  if (fitToHeight)
+  {
+    CurrentMagnification = h / height;
+    planeHeight = h;
+    planeWidth = imgaspect * planeHeight;
+  }
+  else
+  {
+    CurrentMagnification = w / width;
+    planeWidth = w;
+    planeHeight = planeWidth / imgaspect;
+  }
+
+  // update reslice spacing:
+  CurrentResliceSpacing[0] = aspacing[0] / CurrentMagnification;
+  CurrentResliceSpacing[1] = aspacing[1] / CurrentMagnification;
+  CurrentResliceSpacing[2] = 1; // not considered
+
+  // update reslice extent:
+  CurrentResliceExtent[0] = 0;
+  CurrentResliceExtent[1] = static_cast<int>(ceil(dims[0] * CurrentMagnification)) - 1;
+  CurrentResliceExtent[2] = 0;
+  CurrentResliceExtent[3] = static_cast<int>(ceil(dims[1] * CurrentMagnification)) - 1;
+  CurrentResliceExtent[4] = 0; // not considered
+  CurrentResliceExtent[5] = 0;
+
+  // determine whether we have to move the image actor:
+  // (NOTE: the image actor snaps only to integer positions, not to floating
+  // point pixel positions -> compute deviation and correct it later by
+  // adapting the reslice origin accordingly)
+  double deviation;
+  double v[3];
+  if (fitToHeight) // -> apply offset along row-direction if necessary
+  {
+    double offset = ((w - planeWidth) / 2.);
+    double offsetr = vtkMath::Round(offset);
+    deviation = (offset - offsetr) * CurrentResliceSpacing[0];
+    ImageActor->SetPosition(offsetr, 0);
+    v[0] = this->ResliceOrientation->GetElement(0, 0); // row direction
+    v[1] = this->ResliceOrientation->GetElement(0, 1);
+    v[2] = this->ResliceOrientation->GetElement(0, 2);
+  }
+  else // -> apply offset along column-direction if necessary
+  {
+    double offset = ((h - planeHeight) / 2.);
+    double offsetr = vtkMath::Round(offset);
+    deviation = (offset - offsetr) * CurrentResliceSpacing[1];
+    ImageActor->SetPosition(0, offsetr);
+    v[0] = this->ResliceOrientation->GetElement(1, 0); // column direction
+    v[1] = this->ResliceOrientation->GetElement(1, 1);
+    v[2] = this->ResliceOrientation->GetElement(1, 2);
+  }
+
+  // update reslice lower-left (WCS):
+  CurrentResliceLLC[0] = aorigin[0] + deviation * v[0] /* correction */;
+  CurrentResliceLLC[1] = aorigin[1] + deviation * v[1] /* correction */;
+  CurrentResliceLLC[2] = aorigin[2] + deviation * v[2] /* correction */;
+
+  // update reslice right-upper (WCS):
+  // (effective width/height are dim-1 because RUC is the image origin of the
+  // upper right pixel!)
+  double ew = (double)CurrentResliceExtent[1] * CurrentResliceSpacing[0];
+  double eh = (double)CurrentResliceExtent[3] * CurrentResliceSpacing[1];
+  CurrentResliceRUC[0] = CurrentResliceLLC[0] + ew * v1[0] + eh * v2[0];
+  CurrentResliceRUC[1] = CurrentResliceLLC[1] + ew * v1[1] + eh * v2[1];
+  CurrentResliceRUC[2] = CurrentResliceLLC[2] + ew * v1[2] + eh * v2[2];
+
+  // -> output origin is in-plane, not in WCS!
+  double inplaneOrigin[3];
+  double ref[3];
+  Magnifier->GetResliceAxesOrigin(ref);
+  inplaneOrigin[0] = vtkMath::Dot(CurrentResliceLLC, v1) -
+      vtkMath::Dot(ref, v1);
+  inplaneOrigin[1] = vtkMath::Dot(CurrentResliceLLC, v2) -
+      vtkMath::Dot(ref, v2);
+  inplaneOrigin[2] = 0;
+
+  // apply settings to magnifier:
+  Magnifier->SetOutputOrigin(inplaneOrigin);
+  Magnifier->SetOutputSpacing(CurrentResliceSpacing);
+  Magnifier->SetOutputExtent(CurrentResliceExtent);
+
+  DoNotInvokeZoomingEvent = true;
+  if (adaptForZooming)
+    Zoom(1.0);
+  DoNotInvokeZoomingEvent = false;
+
+  this->AfterChangingMagnifier(); // provide entry point
+
+  this->InvokeEvent(vtk2DSceneImageInteractorStyle::ImagePortionFittedToRenderWindow, this);
+}
+
+void vtk2DSceneImageInteractorStyle::FitRelativeImagePortionToRenderWindow(
+    double point1[2], double point2[2], bool adaptForZooming)
+{
+  if (!Magnifier || !ResliceOrientation || !RenderWindow ||
+      !ReferenceImage || !ImageActor)
+    return;
+
+  double origin[3];
+  Magnifier->GetResliceAxesOrigin(origin);
+  this->UpdateResliceOrientation(); // ensure
+  double v1[3];
+  v1[0] = ResliceOrientation->GetElement(0, 0);
+  v1[1] = ResliceOrientation->GetElement(0, 1);
+  v1[2] = ResliceOrientation->GetElement(0, 2);
+  double v2[3];
+  v2[0] = ResliceOrientation->GetElement(1, 0);
+  v2[1] = ResliceOrientation->GetElement(1, 1);
+  v2[2] = ResliceOrientation->GetElement(1, 2);
+
+  double p1[3];
+  p1[0] = origin[0] + point1[0] * v1[0] + point1[1] * v2[0];
+  p1[1] = origin[1] + point1[0] * v1[1] + point1[1] * v2[1];
+  p1[2] = origin[2] + point1[0] * v1[2] + point1[1] * v2[2];
+  double p2[3];
+  p2[0] = origin[0] + point2[0] * v1[0] + point2[1] * v2[0];
+  p2[1] = origin[1] + point2[0] * v1[1] + point2[1] * v2[1];
+  p2[2] = origin[2] + point2[0] * v1[2] + point2[1] * v2[2];
+
+  FitImagePortionToRenderWindow(p1, p2, adaptForZooming); // 3D version
 }
 
 void vtk2DSceneImageInteractorStyle::FitImageToRenderWindow()
 {
-  if (RenderWindow && ReferenceImage)
+  if (RenderWindow && ReferenceImage && ImageActor && Magnifier)
   {
-    // -> dimensions are derived from the whole extent which is reliable:
-    int dims[3];
-    int we[6];
-    double spacing[3];
-    this->GetAdjustedReferenceImageGeometry(spacing, we);
+    double aorigin[3], aspacing[3];
+    int aextent[6];
+    this->ComputeAdjustedMaximumReslicingParameters(aorigin, aspacing, aextent);
+    this->Magnifier->SetResliceAxesOrigin(aorigin); // be sure it is set
 
-    dims[0] = we[1] - we[0] + 1;
-    dims[1] = we[3] - we[2] + 1;
-    dims[2] = we[5] - we[4] + 1;
-    // NOTE: We do not need to consider the image spacing because this scene
-    // is purely pixel-based!
-    double width = (double) dims[0];
-    double height = (double) dims[1];
-    if (height <= 0)
-      height = 1.0;
-    if (width < 0)
-      width = 1.0;
-    int *sz = RenderWindow->GetSize();
-    double w = (double) sz[0];
-    double h = (double) sz[1];
-    double vpaspect = w / h; // viewport
-    double imgaspect = width / height; // image
-    bool fitToHeight = false;
-    // we need some logic ...
-    if (vpaspect >= 1)
-    {
-      if (imgaspect >= 1)
-      {
-        if (imgaspect <= vpaspect)
-        {
-          fitToHeight = true;
-        }
-        else
-        {
-          fitToHeight = false;
-        }
-      }
-      else
-      {
-        fitToHeight = true;
-      }
-    }
-    else // vpaspect < 1
-    {
-      if (imgaspect >= 1)
-      {
-        fitToHeight = false;
-      }
-      else if (imgaspect <= vpaspect)
-      {
-        fitToHeight = true;
-      }
-      else
-      {
-        fitToHeight = false;
-      }
-    }
-    // calculate resulting plane height and width
-    double planeHeight, planeWidth;
-    CurrentMagnification = 1.; // common magnification - keep aspect ratio!
-    if (fitToHeight)
-    {
-      CurrentMagnification = h / height;
-      planeHeight = h;
-      planeWidth = imgaspect * planeHeight;
-    }
-    else
-    {
-      CurrentMagnification = w / width;
-      planeWidth = w;
-      planeHeight = planeWidth / imgaspect;
-    }
-    spacing[0] /= CurrentMagnification;
-    spacing[1] /= CurrentMagnification;
-    spacing[2] = 1; // not considered
-    int extent[6];
-    extent[0] = 0;
-    extent[1] = sz[0] - 1;
-    extent[2] = 0;
-    extent[3] = sz[1] - 1;
-    extent[4] = 0; // not considered
-    extent[5] = 0;
-    // -> correct the image origin:
-    double origin[3];
-    ReferenceImage->GetOrigin(origin);
-    double v[3];
-    double offset;
-    if (fitToHeight) // -> apply offset along row-direction if necessary
-    {
-      v[0] = ImageAxesOrientation->Element[0][0]; // image row direction
-      v[1] = ImageAxesOrientation->Element[0][1];
-      v[2] = ImageAxesOrientation->Element[0][2];
-      offset = ((planeWidth - w) / 2) * spacing[0];
-    }
-    else // -> apply offset along column-direction if necessary
-    {
-      v[0] = ImageAxesOrientation->Element[1][0]; // image column direction
-      v[1] = ImageAxesOrientation->Element[1][1];
-      v[2] = ImageAxesOrientation->Element[1][2];
-      offset = ((planeHeight - h) / 2) * spacing[1];
-    }
-    origin[0] += v[0] * offset;
-    origin[1] += v[1] * offset;
-    origin[2] += v[2] * offset;
-
-    ApplyCurrentGeometry(origin, spacing, extent);
-  }
-}
-
-void vtk2DSceneImageInteractorStyle::ApplyCurrentGeometry(double *origin,
-    double *spacing, int *extent)
-{
-  if (Magnifier && ImageActor && RenderWindow)
-  {
-    // image actor is always at postion 0,0; ensure that!
-    double *actorPos = ImageActor->GetPosition();
-    if (actorPos[0] != 0 || actorPos[1] != 0)
-    {
-      double zero[2] = {0, 0};
-      ImageActor->SetPosition(zero);
-    }
-    CurrentResliceOrigin[0] = origin[0];
-    CurrentResliceOrigin[1] = origin[1];
-    CurrentResliceOrigin[2] = origin[2];
-  	CurrentResliceSpacing[0] = spacing[0];
-  	CurrentResliceSpacing[1] = spacing[1];
-  	CurrentResliceSpacing[2] = spacing[2];
-  	CurrentResliceExtent[0] = extent[0];
-    CurrentResliceExtent[1] = extent[1];
-    CurrentResliceExtent[2] = extent[2];
-    CurrentResliceExtent[3] = extent[3];
-    CurrentResliceExtent[4] = extent[4];
-    CurrentResliceExtent[5] = extent[5];
-
-    // compute current center point of resliced image:
+    this->UpdateResliceOrientation(); // ensure
     double v1[3];
-    v1[0] = ImageAxesOrientation->Element[0][0];
-    v1[1] = ImageAxesOrientation->Element[0][1];
-    v1[2] = ImageAxesOrientation->Element[0][2];
+    v1[0] = ResliceOrientation->GetElement(0, 0);
+    v1[1] = ResliceOrientation->GetElement(0, 1);
+    v1[2] = ResliceOrientation->GetElement(0, 2);
     double v2[3];
-    v2[0] = ImageAxesOrientation->Element[1][0];
-    v2[1] = ImageAxesOrientation->Element[1][1];
-    v2[2] = ImageAxesOrientation->Element[1][2];
-    double currWh = CurrentResliceSpacing[0] * static_cast<double>(
-        CurrentResliceExtent[1] - CurrentResliceExtent[0] + 1) / 2.;
-    double currHh = CurrentResliceSpacing[1] * static_cast<double>(
-        CurrentResliceExtent[3] - CurrentResliceExtent[2] + 1) / 2.;
-    CurrentResliceCenter[0] = CurrentResliceOrigin[0] +
-        v1[0] * currWh + v2[0] * currHh;
-    CurrentResliceCenter[1] = CurrentResliceOrigin[1] +
-        v1[1] * currWh + v2[1] * currHh;
-    CurrentResliceCenter[2] = CurrentResliceOrigin[2] +
-        v1[2] * currWh + v2[2] * currHh;
+    v2[0] = ResliceOrientation->GetElement(1, 0);
+    v2[1] = ResliceOrientation->GetElement(1, 1);
+    v2[2] = ResliceOrientation->GetElement(1, 2);
 
-    Magnifier->SetOutputOrigin(CurrentResliceOrigin);
-    Magnifier->SetOutputSpacing(CurrentResliceSpacing);
-    Magnifier->SetOutputExtent(CurrentResliceExtent);
+    double p1[3]; // cover the whole image (maximum region)
+    p1[0] = aorigin[0] - v1[0] * aspacing[0] / 2. - v2[0] * aspacing[1] / 2.;
+    p1[1] = aorigin[1] - v1[1] * aspacing[0] / 2. - v2[1] * aspacing[1] / 2.;
+    p1[2] = aorigin[2] - v1[2] * aspacing[0] / 2. - v2[2] * aspacing[1] / 2.;
+    double p2[3];
+    p2[0] = p1[0] + v1[0] * ((double)aextent[1] + 1.0) * aspacing[0] +
+        v2[0] * ((double)aextent[3] + 1.0) * aspacing[1];
+    p2[1] = p1[1] + v1[1] * ((double)aextent[1] + 1.0) * aspacing[0] +
+        v2[1] * ((double)aextent[3] + 1.0) * aspacing[1];
+    p2[2] = p1[2] + v1[2] * ((double)aextent[1] + 1.0) * aspacing[0] +
+        v2[2] * ((double)aextent[3] + 1.0) * aspacing[1];
 
-  	// checks in order to prevent pipeline errors:
-  	Magnifier->GetOutput()->UpdateInformation();
-    int we[6];
-    Magnifier->GetOutput()->GetWholeExtent(we);
-    int ue[6];
-    Magnifier->GetOutput()->GetUpdateExtent(ue);
-    // (forget about 3rd dimension here - is 2D only)
-    if (ue[0] < we[0] || ue[0] > we[1] || ue[1] < ue[0] || ue[1] > we[1] ||
-        ue[2] < we[2] || ue[2] > we[3] || ue[3] < ue[2] || ue[3] > we[3])
-    {
-      Magnifier->GetOutput()->SetUpdateExtentToWholeExtent();
-    }
+    FitImagePortionToRenderWindow(p1, p2, false);
 
-  	Magnifier->Update();
+    this->InvokeEvent(vtk2DSceneImageInteractorStyle::ImageFittedToRenderWindow, this);
   }
 }
 
@@ -367,23 +637,34 @@ void vtk2DSceneImageInteractorStyle::RestoreViewSettings()
 {
   if (Magnifier && CurrentMagnification != -10000 && RenderWindow)
   {
+    DoNotInvokeZoomingEvent = true;
     int *sz = RenderWindow->GetSize();
+    if (sz[0] <= 0 || sz[1] <= 0)
+      return;
     double newWidth = static_cast<double>(sz[0]);
     double oldWidth = static_cast<double>(CurrentResliceExtent[1] -
         CurrentResliceExtent[0] + 1);
+    double newHeight = static_cast<double>(sz[1]);
+    double oldHeight = static_cast<double>(CurrentResliceExtent[3] -
+        CurrentResliceExtent[2] + 1);
     double f = newWidth / oldWidth;
-
-    Zoom(f, 0.5, 0.5);
+    double f2 = newHeight / oldHeight;
+    if (oldWidth >= oldHeight)
+      Zoom(f);
+    else
+      Zoom(f2);
     // if min/max constraints for zooming are set, these have to be verified
     // internally by using the appropriate zooming directions (yes, I know, this
     // will introduce a minimal error ...)
     if (UseMinimumMaximumSpacingForZoom)
     {
       if (f < 1.)
-        Zoom(1.00001, 0.5, 0.5);
+      	Zoom(1.00000001);
       else
-        Zoom(0.9999, 0.5, 0.5);
+      	Zoom(0.99999999);
     }
+    DoNotInvokeZoomingEvent = false;
+    this->InvokeEvent(vtk2DSceneImageInteractorStyle::ViewRestored, this);
   }
 }
 
@@ -409,7 +690,7 @@ void vtk2DSceneImageInteractorStyle::OnKeyUp()
 
 void vtk2DSceneImageInteractorStyle::OnLeftButtonDown()
 {
-  if (PseudoAltKeyFlag) // PAN
+  if (PseudoAltKeyFlag || ExternalPseudoAltKeyFlag) // PAN
   {
     this->FindPokedRenderer(this->Interactor->GetEventPosition()[0],
                             this->Interactor->GetEventPosition()[1]);
@@ -451,6 +732,29 @@ void vtk2DSceneImageInteractorStyle::OnChar()
         rwi->Render();
       }
       break;
+    case 'i':
+    case 'I':
+    	AlterInterpolationMode();
+    	if (Magnifier)
+    	{
+    		Magnifier->Modified();
+    		rwi->Render();
+    	}
+    	break;
+    case 'x':
+    case 'X':
+    	FlipImageAlongRowDirection(ResliceOrientation);
+    	rwi->Render();
+    	break;
+    case 'y':
+    case 'Y':
+    	FlipImageAlongColumnDirection(ResliceOrientation);
+    	rwi->Render();
+    	break;
+    case 'w':
+    case 'W':
+      AlterWindowLevelChannel();
+      break;
   }
 
   // do not forward, deactivate the other keys
@@ -469,12 +773,16 @@ void vtk2DSceneImageInteractorStyle::OnKeyPress()
 
   if (key.compare("plus") == 0)
   {
+    SecondaryTriggeredMouseWheel = true;
     OnMouseWheelForward(); // zoom-in
+    SecondaryTriggeredMouseWheel = false;
     return; // no forwarding
   }
   else if (key.compare("minus") == 0)
   {
+    SecondaryTriggeredMouseWheel = true;
     OnMouseWheelBackward(); // zoom-out
+    SecondaryTriggeredMouseWheel = false;
     return; // no forwarding
   }
 
@@ -482,15 +790,14 @@ void vtk2DSceneImageInteractorStyle::OnKeyPress()
   vtkInteractorStyleImage::OnKeyPress();
 }
 
-void vtk2DSceneImageInteractorStyle::Zoom(double factor, double cx, double cy)
+void vtk2DSceneImageInteractorStyle::Zoom(double factor)
 {
   if (CurrentMagnification != -10000 && ReferenceImage && RenderWindow)
   {
     double newMagnification = CurrentMagnification * factor;
     double refSpacing[3];
     double newSpacing[3];
-    int we[6];
-    this->GetAdjustedReferenceImageGeometry(refSpacing, we);
+    ComputeAdjustedSpacing(refSpacing);
     // -> new spacing due to magnification
     newSpacing[0] = refSpacing[0] / newMagnification;
     newSpacing[1] = refSpacing[1] / newMagnification;
@@ -532,62 +839,119 @@ void vtk2DSceneImageInteractorStyle::Zoom(double factor, double cx, double cy)
       }
     }
 
-    int *sz = RenderWindow->GetSize();
-    double w = (double) sz[0];
-    double h = (double) sz[1];
+    double aorigin[3], aspacing[3];
+    int aextent[6];
+    ComputeAdjustedMaximumReslicingParameters(aorigin, aspacing, aextent);
+
+    double iwidth = ((double)aextent[1] + 1.0) * aspacing[0];
+    double iheight = ((double)aextent[3] + 1.0) * aspacing[1];
+    int newDims[2];
+    newDims[0] = static_cast<int>(ceil(iwidth / newSpacing[0]));
+    newDims[1] = static_cast<int>(ceil(iheight / newSpacing[1]));
+
+    double center[3];
+		center[0] = (CurrentResliceLLC[0] + CurrentResliceRUC[0]) / 2.;
+		center[1] = (CurrentResliceLLC[1] + CurrentResliceRUC[1]) / 2.;
+		center[2] = (CurrentResliceLLC[2] + CurrentResliceRUC[2]) / 2.;
+
+		this->UpdateResliceOrientation(); // ensure
     double v1[3];
-    v1[0] = ImageAxesOrientation->Element[0][0]; // image row direction
-    v1[1] = ImageAxesOrientation->Element[0][1];
-    v1[2] = ImageAxesOrientation->Element[0][2];
+    v1[0] = ResliceOrientation->GetElement(0, 0); // image row direction
+    v1[1] = ResliceOrientation->GetElement(0, 1);
+    v1[2] = ResliceOrientation->GetElement(0, 2);
     double v2[3];
-    v2[0] = ImageAxesOrientation->Element[1][0]; // image column direction
-    v2[1] = ImageAxesOrientation->Element[1][1];
-    v2[2] = ImageAxesOrientation->Element[1][2];
+    v2[0] = ResliceOrientation->GetElement(1, 0); // image column direction
+    v2[1] = ResliceOrientation->GetElement(1, 1);
+    v2[2] = ResliceOrientation->GetElement(1, 2);
 
-    CurrentMagnification = newMagnification; // apply zoom
-    int extent[6];
-    extent[0] = 0;
-    extent[1] = sz[0] - 1;
-    extent[2] = 0;
-    extent[3] = sz[1] - 1;
-    extent[4] = 0; // not considered
-    extent[5] = 0;
-    // -> correct the image origin:
-    double origin[3];
-    origin[0] = CurrentResliceCenter[0] -
-        v1[0] * w * newSpacing[0] / 2. -
-        v2[0] * h * newSpacing[1] / 2.;
-    origin[1] = CurrentResliceCenter[1] -
-        v1[1] * w * newSpacing[0] / 2. -
-        v2[1] * h * newSpacing[1] / 2.;
-    origin[2] = CurrentResliceCenter[2] -
-        v1[2] * w * newSpacing[0] / 2. -
-        v2[2] * h * newSpacing[1] / 2.;
-
-    if (cx != 0.5 || cy != 0.5)
+    int *sz = RenderWindow->GetSize();
+    bool fakeRUC = false;
+    double actorPos[2];
+    if (newDims[0] >= sz[0]) // no image actor movement (horizontal)
     {
-      double refPt[3];
-      refPt[0] = CurrentResliceOrigin[0] +
-          v1[0] * w * CurrentResliceSpacing[0] * cx +
-          v2[0] * h * CurrentResliceSpacing[1] * cy;
-      refPt[1] = CurrentResliceOrigin[1] +
-          v1[1] * w * CurrentResliceSpacing[0] * cx +
-          v2[1] * h * CurrentResliceSpacing[1] * cy;
-      refPt[2] = CurrentResliceOrigin[2] +
-          v1[2] * w * CurrentResliceSpacing[0] * cx +
-          v2[2] * h * CurrentResliceSpacing[1] * cy;
-
-      double dx = vtkMath::Dot(refPt, v1) - vtkMath::Dot(CurrentResliceCenter, v1);
-      double dy = vtkMath::Dot(refPt, v2) - vtkMath::Dot(CurrentResliceCenter, v2);
-      double dx2 = dx * factor;
-      double dy2 = dy * factor;
-
-      origin[0] = origin[0] + v1[0] * (dx2 - dx) + v2[0] * (dy2 - dy);
-      origin[1] = origin[1] + v1[1] * (dx2 - dx) + v2[1] * (dy2 - dy);
-      origin[2] = origin[2] + v1[2] * (dx2 - dx) + v2[2] * (dy2 - dy);
+    	actorPos[0] = 0;
+    	iwidth = sz[0] * newSpacing[0]; // max. width
+    	CurrentResliceLLC[0] = center[0] - v1[0] * iwidth / 2.;
+    	CurrentResliceLLC[1] = center[1] - v1[1] * iwidth / 2.;
+    	CurrentResliceLLC[2] = center[2] - v1[2] * iwidth / 2.;
+    	CurrentResliceExtent[1] = sz[0];
+    }
+    else // image actor movement
+    {
+    	actorPos[0] = (double)(sz[0] - newDims[0]) / 2.;
+    	double deviation = (actorPos[0] - vtkMath::Round(actorPos[0])) * newSpacing[0];
+    	actorPos[0] = vtkMath::Round(actorPos[0]);
+    	CurrentResliceLLC[0] = center[0] - v1[0] * (iwidth / 2. + deviation);
+    	CurrentResliceLLC[1] = center[1] - v1[1] * (iwidth / 2. + deviation);
+    	CurrentResliceLLC[2] = center[2] - v1[2] * (iwidth / 2. + deviation);
+    	CurrentResliceExtent[1] = newDims[0];
+    	fakeRUC = true;
+    }
+    if (newDims[1] >= sz[1]) // no image actor movement (vertical)
+    {
+    	actorPos[1] = 0;
+    	iheight = sz[1] * newSpacing[1]; // max. height
+    	CurrentResliceLLC[0] = CurrentResliceLLC[0] - v2[0] * iheight / 2.;
+    	CurrentResliceLLC[1] = CurrentResliceLLC[1] - v2[1] * iheight / 2.;
+    	CurrentResliceLLC[2] = CurrentResliceLLC[2] - v2[2] * iheight / 2.;
+    	CurrentResliceExtent[3] = sz[1];
+    }
+    else // image actor movement
+    {
+    	actorPos[1] = (double)(sz[1] - newDims[1]) / 2.;
+    	double deviation = (actorPos[1] - vtkMath::Round(actorPos[1])) * newSpacing[1];
+    	actorPos[1] = vtkMath::Round(actorPos[1]);
+    	CurrentResliceLLC[0] = CurrentResliceLLC[0] - v2[0] * (iheight / 2. + deviation);
+    	CurrentResliceLLC[1] = CurrentResliceLLC[1] - v2[1] * (iheight / 2. + deviation);
+    	CurrentResliceLLC[2] = CurrentResliceLLC[2] - v2[2] * (iheight / 2. + deviation);
+    	CurrentResliceExtent[3] = newDims[1];
+    	fakeRUC = true;
     }
 
-    ApplyCurrentGeometry(origin, newSpacing, extent);
+    CurrentMagnification = newMagnification;
+    CurrentResliceSpacing[0] = newSpacing[0];
+    CurrentResliceSpacing[1] = newSpacing[1];
+    CurrentResliceSpacing[2] = newSpacing[2];
+    if (!fakeRUC)
+    {
+			double ew = (double)CurrentResliceExtent[1] * CurrentResliceSpacing[0];
+			double eh = (double)CurrentResliceExtent[3] * CurrentResliceSpacing[1];
+			CurrentResliceRUC[0] = CurrentResliceLLC[0] + ew * v1[0] + eh * v2[0];
+			CurrentResliceRUC[1] = CurrentResliceLLC[1] + ew * v1[1] + eh * v2[1];
+			CurrentResliceRUC[2] = CurrentResliceLLC[2] + ew * v1[2] + eh * v2[2];
+    }
+    else // have to fake RUC in order to preserve the zooming center!
+    {
+    	double h[3];
+    	h[0] = center[0] - CurrentResliceLLC[0];
+    	h[1] = center[1] - CurrentResliceLLC[1];
+    	h[2] = center[2] - CurrentResliceLLC[2];
+    	CurrentResliceRUC[0] = center[0] + h[0];
+    	CurrentResliceRUC[1] = center[1] + h[1];
+    	CurrentResliceRUC[2] = center[2] + h[2];
+    }
+
+    ImageActor->SetPosition(actorPos);
+
+    // -> output origin is in-plane, not in WCS!
+    double ref[3];
+    Magnifier->GetResliceAxesOrigin(ref);
+    double inplaneOrigin[3];
+    inplaneOrigin[0] = vtkMath::Dot(CurrentResliceLLC, v1) -
+    		vtkMath::Dot(ref, v1);
+    inplaneOrigin[1] = vtkMath::Dot(CurrentResliceLLC, v2) -
+    		vtkMath::Dot(ref, v2);
+    inplaneOrigin[2] = 0;
+
+    // apply settings to magnifier:
+    Magnifier->SetOutputOrigin(inplaneOrigin);
+    Magnifier->SetOutputSpacing(CurrentResliceSpacing);
+    Magnifier->SetOutputExtent(CurrentResliceExtent);
+
+    this->AfterChangingMagnifier(); // provide entry point
+
+    if (!DoNotInvokeZoomingEvent)
+      this->InvokeEvent(vtk2DSceneImageInteractorStyle::Zooming, this);
 
     this->Interactor->Render();
   }
@@ -595,6 +959,8 @@ void vtk2DSceneImageInteractorStyle::Zoom(double factor, double cx, double cy)
 
 void vtk2DSceneImageInteractorStyle::OnMouseWheelForward()
 {
+  if (!SecondaryTriggeredMouseWheel && !UseMouseWheelForZoomingInOut)
+    return;
   this->FindPokedRenderer(this->Interactor->GetEventPosition()[0],
       this->Interactor->GetEventPosition()[1]);
   if (this->CurrentRenderer == NULL)
@@ -605,7 +971,7 @@ void vtk2DSceneImageInteractorStyle::OnMouseWheelForward()
   factor = pow(1.1, factor);
   this->GrabFocus(this->EventCallbackCommand);
   this->StartZoom();
-  Zoom(factor, 0.5, 0.5);
+  Zoom(factor);
   this->EndZoom();
   this->ReleaseFocus();
   this->InvokeEvent(vtkCommand::InteractionEvent, NULL);
@@ -613,6 +979,8 @@ void vtk2DSceneImageInteractorStyle::OnMouseWheelForward()
 
 void vtk2DSceneImageInteractorStyle::OnMouseWheelBackward()
 {
+  if (!SecondaryTriggeredMouseWheel && !UseMouseWheelForZoomingInOut)
+      return;
   this->FindPokedRenderer(this->Interactor->GetEventPosition()[0],
       this->Interactor->GetEventPosition()[1]);
   if (this->CurrentRenderer == NULL)
@@ -623,7 +991,7 @@ void vtk2DSceneImageInteractorStyle::OnMouseWheelBackward()
   factor = pow(1.1, factor);
   this->GrabFocus(this->EventCallbackCommand);
   this->StartZoom();
-  Zoom(factor, 0.5, 0.5);
+  Zoom(factor);
   this->EndZoom();
   this->ReleaseFocus();
   this->InvokeEvent(vtkCommand::InteractionEvent, NULL);
@@ -633,21 +1001,51 @@ void vtk2DSceneImageInteractorStyle::Pan(int dx, int dy)
 {
   if (CurrentMagnification != -10000 && ReferenceImage && RenderWindow)
   {
+    double aorigin[3], aspacing[3];
+    int aextent[6];
+    this->ComputeAdjustedMaximumReslicingParameters(aorigin, aspacing, aextent);
+
+    this->UpdateResliceOrientation(); // ensure
     double v1[3];
-    v1[0] = ImageAxesOrientation->Element[0][0]; // image row direction
-    v1[1] = ImageAxesOrientation->Element[0][1];
-    v1[2] = ImageAxesOrientation->Element[0][2];
+    v1[0] = ResliceOrientation->GetElement(0, 0);
+    v1[1] = ResliceOrientation->GetElement(0, 1);
+    v1[2] = ResliceOrientation->GetElement(0, 2);
     double v2[3];
-    v2[0] = ImageAxesOrientation->Element[1][0]; // image column direction
-    v2[1] = ImageAxesOrientation->Element[1][1];
-    v2[2] = ImageAxesOrientation->Element[1][2];
-    double origin[3];
-    double ddx = dx * CurrentResliceSpacing[0];
-    double ddy = dy * CurrentResliceSpacing[1];
-    origin[0] = CurrentResliceOrigin[0] - v1[0] * ddx - v2[0] * ddy;
-    origin[1] = CurrentResliceOrigin[1] - v1[1] * ddx - v2[1] * ddy;
-    origin[2] = CurrentResliceOrigin[2] - v1[2] * ddx - v2[2] * ddy;
-    ApplyCurrentGeometry(origin, CurrentResliceSpacing, CurrentResliceExtent);
+    v2[0] = ResliceOrientation->GetElement(1, 0);
+    v2[1] = ResliceOrientation->GetElement(1, 1);
+    v2[2] = ResliceOrientation->GetElement(1, 2);
+
+    double ddx = -dx * CurrentResliceSpacing[0];
+    double ddy = -dy * CurrentResliceSpacing[1];
+
+    CurrentResliceLLC[0] += ddx * v1[0] + ddy * v2[0];
+    CurrentResliceLLC[1] += ddx * v1[1] + ddy * v2[1];
+    CurrentResliceLLC[2] += ddx * v1[2] + ddy * v2[2];
+
+		double ew = (double)CurrentResliceExtent[1] * CurrentResliceSpacing[0];
+		double eh = (double)CurrentResliceExtent[3] * CurrentResliceSpacing[1];
+		CurrentResliceRUC[0] = CurrentResliceLLC[0] + ew * v1[0] + eh * v2[0];
+		CurrentResliceRUC[1] = CurrentResliceLLC[1] + ew * v1[1] + eh * v2[1];
+		CurrentResliceRUC[2] = CurrentResliceLLC[2] + ew * v1[2] + eh * v2[2];
+
+    // -> output origin is in-plane, not in WCS!
+	  double ref[3];
+	  Magnifier->GetResliceAxesOrigin(ref);
+    double inplaneOrigin[3];
+    inplaneOrigin[0] = vtkMath::Dot(CurrentResliceLLC, v1) -
+    		vtkMath::Dot(ref, v1);
+    inplaneOrigin[1] = vtkMath::Dot(CurrentResliceLLC, v2) -
+    		vtkMath::Dot(ref, v2);
+    inplaneOrigin[2] = 0;
+
+    // apply settings to magnifier:
+    Magnifier->SetOutputOrigin(inplaneOrigin);
+    Magnifier->SetOutputSpacing(CurrentResliceSpacing);
+    Magnifier->SetOutputExtent(CurrentResliceExtent);
+
+    this->AfterChangingMagnifier(); // provide entry point
+
+    this->InvokeEvent(vtk2DSceneImageInteractorStyle::Panning, this);
 
     this->Interactor->Render();
   }
@@ -676,21 +1074,7 @@ void vtk2DSceneImageInteractorStyle::OnMiddleButtonUp()
 
 void vtk2DSceneImageInteractorStyle::OnRightButtonDown()
 {
-  if (this->Interactor->GetShiftKey()) // ZOOM - click-point-based
-  {
-    int *sz = RenderWindow->GetSize();
-    int x = this->Interactor->GetEventPosition()[0];
-    int y = this->Interactor->GetEventPosition()[1];
-    ContinuousZoomCenter[0] = (double) x / (double) sz[0];
-    ContinuousZoomCenter[1] = (double) y / (double) sz[1];
-    this->StartZoom();
-  }
-  else // ZOOM - center-based
-  {
-    ContinuousZoomCenter[0] = 0.5;
-    ContinuousZoomCenter[1] = 0.5;
-    this->StartZoom();
-  }
+  this->StartZoom();
 }
 
 void vtk2DSceneImageInteractorStyle::OnRightButtonUp()
@@ -729,7 +1113,7 @@ void vtk2DSceneImageInteractorStyle::OnMouseMove()
       dy = this->Interactor->GetEventPosition()[1]
           - this->Interactor->GetLastEventPosition()[1];
       dyf = this->MotionFactor * dy / center[1];
-      Zoom(pow(1.1, dyf), ContinuousZoomCenter[0], ContinuousZoomCenter[1]);
+      Zoom(pow(1.1, dyf));
       this->InvokeEvent(vtkCommand::InteractionEvent, NULL);
       break;
   }
@@ -965,7 +1349,7 @@ void vtk2DSceneImageInteractorStyle::ResetWindowLevelInternal()
         ImageMapper->GetInput()->GetScalarRange(sr);
       }
       ImageMapper->SetColorWindow(sr[1] - sr[0]);
-      ImageMapper->SetColorLevel((sr[1] - sr[0]) / 2.);
+      ImageMapper->SetColorLevel(sr[0] + (sr[1] - sr[0]) / 2.);
     }
     else // LUT set
     {
@@ -1093,3 +1477,224 @@ bool vtk2DSceneImageInteractorStyle::OverrideResetWindowLevelByMinMax(int index,
   wl[1] = resetMinMax[0] + wl[0] / 2.; // level
   return OverrideResetWindowLevel(index, wl);
 }
+
+void vtk2DSceneImageInteractorStyle::AlterInterpolationMode()
+{
+	int mode = GetInterpolationMode();
+	if (mode != -1)
+	{
+		if (mode == VTK_RESLICE_NEAREST)
+			mode = VTK_RESLICE_LINEAR;
+		else if (mode == VTK_RESLICE_LINEAR)
+			mode = VTK_RESLICE_CUBIC;
+		else if (mode == VTK_RESLICE_CUBIC)
+			mode = VTK_RESLICE_NEAREST;
+		SetInterpolationMode(mode);
+	}
+}
+
+void vtk2DSceneImageInteractorStyle::AlterWindowLevelChannel()
+{
+  int maxChannel = (int)WindowLevelChannels.size();
+  int channel = CurrentWindowLevelChannel;
+  channel++;
+  if (channel < 0 || channel > maxChannel)
+  {
+    // out of range -> set to main channel:
+    channel = 0;
+  }
+  SetCurrentWindowLevelChannel(channel);
+}
+
+void vtk2DSceneImageInteractorStyle::SetInterpolationMode(int mode)
+{
+	if (Magnifier && Magnifier->GetInterpolationMode() != mode)
+	{
+		Magnifier->SetInterpolationMode(mode);
+		this->AfterChangingMagnifier(); // provide entry point
+		this->InvokeEvent(vtk2DSceneImageInteractorStyle::InterpolationModeChanged, this);
+	}
+}
+
+int vtk2DSceneImageInteractorStyle::GetInterpolationMode()
+{
+	if (Magnifier)
+		return Magnifier->GetInterpolationMode();
+	return -1;
+}
+
+void vtk2DSceneImageInteractorStyle::FlipImageAlongRowDirection(
+    vtkMatrix4x4 *resliceMatrix)
+{
+	if (!this->Magnifier)
+		return;
+	if (!resliceMatrix)
+		resliceMatrix = this->ResliceOrientation;
+
+  vtkSmartPointer<vtkTransform> t = vtkSmartPointer<vtkTransform>::New();
+  double yax[3];
+  yax[0] = resliceMatrix->GetElement(1, 0);
+  yax[1] = resliceMatrix->GetElement(1, 1);
+  yax[2] = resliceMatrix->GetElement(1, 2);
+  t->RotateWXYZ(180, yax);
+  double v[3];
+
+  this->UpdateResliceOrientation(); // ensure
+
+  v[0] = resliceMatrix->GetElement(0, 0);
+  v[1] = resliceMatrix->GetElement(0, 1);
+  v[2] = resliceMatrix->GetElement(0, 2);
+  t->TransformVector(v, v);
+  resliceMatrix->SetElement(0, 0, v[0]);
+  resliceMatrix->SetElement(0, 1, v[1]);
+  resliceMatrix->SetElement(0, 2, v[2]);
+
+  v[0] = resliceMatrix->GetElement(1, 0);
+  v[1] = resliceMatrix->GetElement(1, 1);
+  v[2] = resliceMatrix->GetElement(1, 2);
+  t->TransformVector(v, v);
+  resliceMatrix->SetElement(1, 0, v[0]);
+  resliceMatrix->SetElement(1, 1, v[1]);
+  resliceMatrix->SetElement(1, 2, v[2]);
+
+  v[0] = resliceMatrix->GetElement(2, 0);
+  v[1] = resliceMatrix->GetElement(2, 1);
+  v[2] = resliceMatrix->GetElement(2, 2);
+  t->TransformVector(v, v);
+  resliceMatrix->SetElement(2, 0, v[0]);
+  resliceMatrix->SetElement(2, 1, v[1]);
+  resliceMatrix->SetElement(2, 2, v[2]);
+
+  vtkSmartPointer<vtkMatrix4x4> resliceAxes =
+      vtkSmartPointer<vtkMatrix4x4>::New();
+  // 'x'-axis:
+  resliceAxes->SetElement(0, 0, resliceMatrix->GetElement(0, 0));
+  resliceAxes->SetElement(1, 0, resliceMatrix->GetElement(0, 1));
+  resliceAxes->SetElement(2, 0, resliceMatrix->GetElement(0, 2));
+  // 'y'-axis:
+  resliceAxes->SetElement(0, 1, resliceMatrix->GetElement(1, 0));
+  resliceAxes->SetElement(1, 1, resliceMatrix->GetElement(1, 1));
+  resliceAxes->SetElement(2, 1, resliceMatrix->GetElement(1, 2));
+  // 'z'-axis:
+  resliceAxes->SetElement(0, 2, resliceMatrix->GetElement(2, 0));
+  resliceAxes->SetElement(1, 2, resliceMatrix->GetElement(2, 1));
+  resliceAxes->SetElement(2, 2, resliceMatrix->GetElement(2, 2));
+	this->Magnifier->SetResliceAxes(resliceAxes);
+  double aorigin[3], aspacing[3];
+  int aextent[6];
+  this->ComputeAdjustedMaximumReslicingParameters(aorigin, aspacing, aextent);
+	this->Magnifier->SetResliceAxesOrigin(aorigin);
+
+  FitImageToRenderWindow();
+
+  FlippedAlongRow = !FlippedAlongRow;
+  this->InvokeEvent(vtk2DSceneImageInteractorStyle::FlippingModeChanged, this);
+}
+
+void vtk2DSceneImageInteractorStyle::FlipImageAlongColumnDirection(
+    vtkMatrix4x4 *resliceMatrix)
+{
+	if (!this->Magnifier)
+		return;
+	if (!resliceMatrix)
+		resliceMatrix = this->ResliceOrientation;
+
+  vtkSmartPointer<vtkTransform> t = vtkSmartPointer<vtkTransform>::New();
+  double xax[3];
+  xax[0] = resliceMatrix->GetElement(0, 0);
+  xax[1] = resliceMatrix->GetElement(0, 1);
+  xax[2] = resliceMatrix->GetElement(0, 2);
+  t->RotateWXYZ(180, xax);
+  double v[3];
+
+  this->UpdateResliceOrientation(); // ensure
+  v[0] = resliceMatrix->GetElement(0, 0);
+  v[1] = resliceMatrix->GetElement(0, 1);
+  v[2] = resliceMatrix->GetElement(0, 2);
+  t->TransformVector(v, v);
+  resliceMatrix->SetElement(0, 0, v[0]);
+  resliceMatrix->SetElement(0, 1, v[1]);
+  resliceMatrix->SetElement(0, 2, v[2]);
+
+  v[0] = resliceMatrix->GetElement(1, 0);
+  v[1] = resliceMatrix->GetElement(1, 1);
+  v[2] = resliceMatrix->GetElement(1, 2);
+  t->TransformVector(v, v);
+  resliceMatrix->SetElement(1, 0, v[0]);
+  resliceMatrix->SetElement(1, 1, v[1]);
+  resliceMatrix->SetElement(1, 2, v[2]);
+
+  v[0] = resliceMatrix->GetElement(2, 0);
+  v[1] = resliceMatrix->GetElement(2, 1);
+  v[2] = resliceMatrix->GetElement(2, 2);
+  t->TransformVector(v, v);
+  resliceMatrix->SetElement(2, 0, v[0]);
+  resliceMatrix->SetElement(2, 1, v[1]);
+  resliceMatrix->SetElement(2, 2, v[2]);
+
+  vtkSmartPointer<vtkMatrix4x4> resliceAxes =
+      vtkSmartPointer<vtkMatrix4x4>::New();
+  // 'x'-axis:
+  resliceAxes->SetElement(0, 0, resliceMatrix->GetElement(0, 0));
+  resliceAxes->SetElement(1, 0, resliceMatrix->GetElement(0, 1));
+  resliceAxes->SetElement(2, 0, resliceMatrix->GetElement(0, 2));
+  // 'y'-axis:
+  resliceAxes->SetElement(0, 1, resliceMatrix->GetElement(1, 0));
+  resliceAxes->SetElement(1, 1, resliceMatrix->GetElement(1, 1));
+  resliceAxes->SetElement(2, 1, resliceMatrix->GetElement(1, 2));
+  // 'z'-axis:
+  resliceAxes->SetElement(0, 2, resliceMatrix->GetElement(2, 0));
+  resliceAxes->SetElement(1, 2, resliceMatrix->GetElement(2, 1));
+  resliceAxes->SetElement(2, 2, resliceMatrix->GetElement(2, 2));
+	this->Magnifier->SetResliceAxes(resliceAxes);
+  double aorigin[3], aspacing[3];
+  int aextent[6];
+  this->ComputeAdjustedMaximumReslicingParameters(aorigin, aspacing, aextent);
+	this->Magnifier->SetResliceAxesOrigin(aorigin);
+
+  FitImageToRenderWindow();
+
+  FlippedAlongColumn = !FlippedAlongColumn;
+  this->InvokeEvent(vtk2DSceneImageInteractorStyle::FlippingModeChanged, this);
+}
+
+void vtk2DSceneImageInteractorStyle::UpdateResliceOrientation()
+{
+  // to be implemented in subclasses if required
+}
+
+void vtk2DSceneImageInteractorStyle::AfterChangingMagnifier()
+{
+  // to be implemented in subclasses if required
+}
+
+void vtk2DSceneImageInteractorStyle::StartZoom()
+{
+  this->vtkInteractorStyleImage::StartZoom();
+  this->InvokeEvent(vtk2DSceneImageInteractorStyle::StartZooming, this);
+}
+
+void vtk2DSceneImageInteractorStyle::EndZoom()
+{
+  this->InvokeEvent(vtk2DSceneImageInteractorStyle::EndZooming, this);
+  this->vtkInteractorStyleImage::EndZoom();
+}
+
+void vtk2DSceneImageInteractorStyle::StartPan()
+{
+  this->vtkInteractorStyleImage::StartPan();
+  this->InvokeEvent(vtk2DSceneImageInteractorStyle::StartPanning, this);
+}
+
+void vtk2DSceneImageInteractorStyle::EndPan()
+{
+  this->InvokeEvent(vtk2DSceneImageInteractorStyle::EndPanning, this);
+  this->vtkInteractorStyleImage::EndPan();
+}
+
+void vtk2DSceneImageInteractorStyle::ResetFlipStates()
+{
+	FlippedAlongColumn = false;
+	FlippedAlongRow = false;
+}
+

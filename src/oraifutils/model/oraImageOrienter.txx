@@ -1172,7 +1172,15 @@ ImageOrienter<TPixelType>::ConvertPlanarImageObject(std::string imageFile)
   }
   else // -> ITK reader
   {
-    dataSet = ImageType::LoadImageFromFile(imageFile, ITKVTKImage::ITKIO);
+    if (ToLowerCaseF(itksys::SystemTools::GetFilenameExtension(imageFile)) == ".ora.xml")
+    {
+    	// Allow ora.xml files as input and ignore invalid MD5 checksums
+      dataSet = ImageType::LoadFromORAMetaImage(imageFile, true);
+    }
+    else
+    {
+      dataSet = ImageType::LoadImageFromFile(imageFile, ITKVTKImage::ITKIO);
+    }
     // assume that the pixels are correctly aligned!
     typedef itk::Image<TPixelType, ITKVTKImage::Dimensions> InputImageType;
     typedef typename InputImageType::Pointer InputImageTypePointer;

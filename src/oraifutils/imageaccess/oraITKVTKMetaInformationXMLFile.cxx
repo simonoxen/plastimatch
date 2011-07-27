@@ -1164,8 +1164,8 @@ ITKVTKMetaInformationXMLFileWriter
   WriteEndElement("ORA_IMAGE_META_INFO", output); output << std::endl;
 
   // generate MD5-hash:
-  std::string md5Hash = "";
   std::string filecontent = output.str();
+  std::string md5Hash = "";
   char *filedata = const_cast<char*> (filecontent.c_str());
   md5Hash = ITKVTKMetaInformationXMLFileWriter::ComputeHashMD5(filedata, filecontent.length());
 

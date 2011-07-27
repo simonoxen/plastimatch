@@ -54,7 +54,17 @@ public:
    */
   virtual bool IsUnexecutable() const
   {
-    return true;
+    return true && m_ForcedUnexecutableState;
+  }
+
+  /**
+   * This method allows the unexecutable state to be externally modified
+   * (overridden). This could make sense if an external system does not want
+   * the task to be unexecutable.
+   */
+  virtual void ForceUnexecutableState(bool state)
+  {
+    m_ForcedUnexecutableState = state;
   }
 
   /**
@@ -65,7 +75,7 @@ public:
    */
   virtual bool IsReexecuteable() const
   {
-    return true;
+    return IsUnexecutable() && true;
   }
 
   /**
@@ -139,6 +149,15 @@ public:
   bool IsCancelable() const
   {
     return false;
+  }
+
+  /**
+   * Basically this method returns TRUE. It shows, however, only an effect
+   * if the unexecutable state is forced to FALSE!
+   */
+  bool DeleteThisTaskAfterProcessing()
+  {
+    return true;
   }
 
   /** Set image consumer which should receive the imported image. **/
@@ -234,6 +253,8 @@ protected:
   double *m_VolumeIsoCenter;
   /** Import mode. **/
   ImportMode m_ImportMode;
+  /** Forced unexecutable state **/
+  bool m_ForcedUnexecutableState;
 
 private:
   ImageImporterTask(const ImageImporterTask&);  // no copy

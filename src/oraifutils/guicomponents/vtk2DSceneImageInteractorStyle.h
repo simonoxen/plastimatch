@@ -10,6 +10,8 @@
 #include <vtkImageReslice.h>
 #include <vtkMatrix4x4.h>
 #include <vtkImageMapToColors.h>
+#include <vtkSmartPointer.h>
+#include <vtkCommand.h>
 
 #include <vector>
 
@@ -17,9 +19,10 @@
 class vtkRenderWindow;
 
 /**
- * Interactor style dedicated for usage with 2D scenes that are based on
- * vtkActor2D and vtkImageMapper. It enables basic zooming, panning, image
- * fitting (adapting image zoom to viewport), and color windowing.
+ * Interactor style dedicated for usage with 2D scene pipelines that are based
+ * on vtkActor2D and vtkImageMapper. It enables basic zooming, panning, image
+ * fitting (adapting image zoom to viewport), flipping along x/y axes, and
+ * color windowing.
  *
  * The following external component setup is assumed:<br>
  * An input image (or a specified image filter output) is connected to a
@@ -44,36 +47,102 @@ class vtkRenderWindow;
  * adapted in parallel; i.e. as soon as the contrast reaches its maximum,
  * leveling is also sensitive.
  *
+ * NOTE: This class is meant for 2D images (3D images with one slice). If a 3D
+ * image with more than 1 slices is set, the actual slice is set to the center
+ * slice along the current viewing direction. If you would like to have
+ * slicing capabilities for 3D volumes, you should refer to the subclass
+ * <code>vtk3DSlicingInteractorStyle</code> which is dedicated to interaction
+ * with 3D volumes.
+ *
  * Key/mouse bindings:<br>
  * - ZOOMING: (a) right mouse-button and up/down-movement (zooming w.r.t.
- * viewport center), (b) right mouse-button+shift and up/down-movement (zooming
- * w.r.t. to click-position), (c) '+'/'-'-keys (zoom-in, zoom-out), (d) 'r'-key
- * (fit zoom to actual viewport)<br>
+ * reslice plane center), (b) '+'/'-'-keys (zoom-in, zoom-out), (c) 'r'-key
+ * (fit zoom to actual viewport), (d - if configured to do so) mouse-wheel
+ * up/down (zoom-in, zoom-out)<br>
  * - PANNING: left mouse-button + ALT-key and left/right/up/down-movement
  * (panning of the image)<br>
  * - COLOR WINDOWING: (a) middle mouse-button (up-movement: increase
  * brightness, down-movement: decrease brightness, left-movement: decrease
  * contrast, right-movement: increase contrast), (b) 'r'-key+ctrl (reset window
  * level to whole image range) <br>
+ * - RESLICING INTERPOLATION: 'i'-key alters reslicing interpolation method
+ * (nearest-neighbor->linear->cubic->nearest-neighbor->...) if the magnifier
+ * component is already set
+ * - FLIPPING: 'x'-key flips the image along the x-axis by changing the reslice
+ * direction internally; 'y'-key flips the image along the y-axis by changing
+ * the reslice direction internally
+ * - WINDOW/LEVEL CHANNEL: 'w'-key alters the current window level channel
+ * (main channel->channel 1->channel 2->...->main channel->...)
  *
  * @see vtkInteractorStyleImage
  * @see vtkActor2D
  * @see vtkImageMapper
  * @see vtkImageReslice
+ * @see vtk3DSlicingInteractorStyle
  *
- * @author phil <philipp.steininger (at) pmu.ac.at>
- * @version 1.6
+ * @author phil
+ * @version 2.1
  */
 class vtk2DSceneImageInteractorStyle :
   public vtkInteractorStyleImage
 {
 public:
+  /** Special event IDs for this class. **/
+  typedef enum
+  {
+    StartZooming = vtkCommand::UserEvent + 1,
+    Zooming,
+    EndZooming,
+    StartPanning,
+    Panning,
+    EndPanning,
+    InterpolationModeChanged,
+    FlippingModeChanged,
+    WindowLevelChannelChanged,
+    ImageFittedToRenderWindow,
+    ImagePortionFittedToRenderWindow,
+    ViewRestored
+  } EventIds;
+
   /** Standard new **/
   static vtk2DSceneImageInteractorStyle* New();
   vtkTypeRevisionMacro(vtk2DSceneImageInteractorStyle, vtkInteractorStyleImage);
 
-  /** Fit the image to the render window. **/
-  void FitImageToRenderWindow();
+  /** Fit the whole image (maximum extent w.r.t. current reslice plane) to the
+   * render window in order to provide the maximum possible view. **/
+  virtual void FitImageToRenderWindow();
+
+  /** Fit a specified portion of the image (lying on the current reslice plane)
+   * to the render window in order to provide the maximum possible view for this
+   * image portion. NOTE: Both points which specify the image portion must lie
+   * on the reslice plane (only processed internally if this criterion is met)!
+   * @param point1 specifies the outer corner position of the "lower left" pixel
+   * of the reslice image portion defined in WCS
+   * @param point2 specifies the outer corner position of the "upper right" pixel
+   * of the reslice image portion defined in WCS
+   * @param adaptForZooming if TRUE, the current view is adapted so that zooming
+   * afterwards does not feel unintuitive - the whole render window is filled,
+   * but w.r.t. to desired view portion and resultant zooming factor **/
+  virtual void FitImagePortionToRenderWindow(double point1[3], double point2[3],
+      bool adaptForZooming);
+
+  /** Fit a specified portion of the image (lying on the current reslice plane)
+   * to the render window in order to provide the maximum possible view for this
+   * image portion. NOTE: Both points which specify the image portion are
+   * expressed as relative 2D values lying on the image plane. These values
+   * relate to the image origin of the maximum image plane w.r.t. to current
+   * reslicing orientation.
+   * @param point1 specifies the reslice origin of the image portion w.r.t.
+   * current reslice origin and orientation in the current reslice plane (2D
+   * vector in physical units)
+   * @param point2 specifies the "right upper" point of the image portion w.r.t.
+   * current reslice origin and orientation in the current reslice plane (2D
+   * vector in physical units)
+   * @param adaptForZooming if TRUE, the current view is adapted so that zooming
+   * afterwards does not feel unintuitive - the whole render window is filled,
+   * but w.r.t. to desired view portion and resultant zooming factor **/
+  virtual void FitRelativeImagePortionToRenderWindow(double point1[2],
+      double point2[2], bool adaptForZooming);
 
   void SetRenderer(vtkRenderer *ren);
   vtkGetObjectMacro(Renderer, vtkRenderer)
@@ -84,13 +153,10 @@ public:
   virtual void SetMagnifier(vtkImageReslice *magnifier);
   vtkGetObjectMacro(Magnifier, vtkImageReslice)
 
-  virtual void SetImageAxesOrientation(vtkMatrix4x4 *orientation);
-  vtkGetObjectMacro(ImageAxesOrientation, vtkMatrix4x4)
-
   vtkSetObjectMacro(ImageMapper, vtkImageMapper)
   vtkGetObjectMacro(ImageMapper, vtkImageMapper)
 
-  vtkSetObjectMacro(ReferenceImage, vtkImageData)
+  virtual void SetReferenceImage(vtkImageData *image);
   vtkGetObjectMacro(ReferenceImage, vtkImageData)
 
   vtkSetMacro(SupportColorWindowing, bool)
@@ -191,7 +257,7 @@ public:
   vtkSetVector2Macro(MainWindowLevelChannelResetWindowLevel, double)
   vtkGetVector2Macro(MainWindowLevelChannelResetWindowLevel, double)
 
-  vtkSetMacro(CurrentWindowLevelChannel, int)
+  void SetCurrentWindowLevelChannel(int channel);
   vtkGetMacro(CurrentWindowLevelChannel, int)
 
   vtkSetMacro(WindowLevelMouseSensitivity, double)
@@ -201,12 +267,56 @@ public:
   vtkGetMacro(RealTimeMouseSensitivityAdaption, bool)
   vtkBooleanMacro(RealTimeMouseSensitivityAdaption, bool)
 
+  /** Set the interpolation mode of the magnifier component (if set). **/
+  void SetInterpolationMode(int mode);
+  /** Get the interpolation mode of the magnifier component (if set).
+   * @return -1 if there is no magnifier, interpolation mode otherwise **/
+  int GetInterpolationMode();
+
+  /** Flip the image along the row-direction visually by rotating around the
+   * column-direction by 180 degrees. NOTE: This method changes the reslice
+   * orientation!
+   * @param resliceMatrix specifies the matrix to be changed **/
+  virtual void FlipImageAlongRowDirection(vtkMatrix4x4 *resliceMatrix = NULL);
+  /** Flip the image along the column-direction visually by rotating around the
+   * row-direction by 180 degrees. NOTE: This method changes the reslice
+   * orientation!
+   * @param resliceMatrix specifies the matrix to be changed **/
+  virtual void FlipImageAlongColumnDirection(vtkMatrix4x4 *resliceMatrix = NULL);
+
+  vtkSetMacro(UseMouseWheelForZoomingInOut, bool)
+  vtkGetMacro(UseMouseWheelForZoomingInOut, bool)
+  vtkBooleanMacro(UseMouseWheelForZoomingInOut, bool)
+
+  vtkSetMacro(ExternalPseudoAltKeyFlag, bool)
+  vtkGetMacro(ExternalPseudoAltKeyFlag, bool)
+
+  /** Reset internal flip-states to FALSE. E.g. if input data have
+   * changed. This method does not trigger the related eventl. **/
+  virtual void ResetFlipStates();
+  vtkGetMacro(FlippedAlongRow, bool)
+  vtkGetMacro(FlippedAlongColumn, bool)
+
+  /** @see vtkInteractorStyle#StartZoom() **/
+  virtual void StartZoom();
+  /** @see vtkInteractorStyle#EndZoom() **/
+  virtual void EndZoom();
+  /** @see vtkInteractorStyle#StartPan() **/
+  virtual void StartPan();
+  /** @see vtkInteractorStyle#EndPan() **/
+  virtual void EndPan();
+
 protected:
+  /** "Epsilon" for internal floating point comparisons. **/
+  static const double F_EPSILON = 1e-6;
   /** Flag is true if we think that the ALT key is pressed. The ALT key is not
    * really trackable using the interactor style. BUT: if the returned key code
    * is 0 and neither CTRL nor SHIFT are active, it's quite likely that ALT is
    * pressed. **/
   bool PseudoAltKeyFlag;
+  /** Additional flag indicating that ALT is currently pressed which can be
+   * set externally.  **/
+  bool ExternalPseudoAltKeyFlag;
   /** Connected renderer **/
   vtkRenderer *Renderer;
   /** Reference to the renderer's render window **/
@@ -216,27 +326,29 @@ protected:
   /** Magnifier that is connected to the image mapper's input and internally
    * realizes zooming **/
   vtkImageReslice *Magnifier;
-  /** Image axes orientation describing the 3D pose of the 2D image in 3D
-   * space (1st matrix row is image row direction, 2nd is image column direction,
-   * 3rd is cross product) - the vectors are expected to be normalized! **/
-  vtkMatrix4x4 *ImageAxesOrientation;
+  /** Image reslicing axes orientation defined in the image's coordinate system.
+   * Within this class, this matrix - which describes row/column-directions for
+   * reslicing - is set to identity because we do not allow any reslicing out of
+   * plane for 2D images. It's however used in order to implement generalism
+   * for N-D implementations (sub-classes). This matrix is row-based: first
+   * row defines the 'x'-axis orientation, second row defines the 'y'-axis
+   * orientation, third columns is the cross product of the first and second
+   * row. All row vectors are expected to be normalized! **/
+  vtkSmartPointer<vtkMatrix4x4> ResliceOrientation;
   /** Image actor used for pixel rendering (2D actor) **/
   vtkActor2D *ImageActor;
   /** Image mapper used for pixel rendering (2D mapper) **/
   vtkImageMapper *ImageMapper;
   /** Holds current magnification factor **/
   double CurrentMagnification;
-  /** Holds current reslice origin in world coordinates **/
-  double CurrentResliceOrigin[3];
+  /** Holds current reslice left-lower-corner in world coordinates **/
+  double CurrentResliceLLC[3];
+  /** Holds current reslice right-upper-corner in world coordinates **/
+  double CurrentResliceRUC[3];
   /** Holds current reslice spacing **/
   double CurrentResliceSpacing[3];
   /** Holds current reslice extent **/
   int CurrentResliceExtent[6];
-  /** Holds current reslice center (physical point in the middle of the
-   * render window) **/
-  double CurrentResliceCenter[3];
-  /** Stores the zoom center for continuous zooming (right mouse button). **/
-  double ContinuousZoomCenter[2];
   /** Flag indicating whether or not to support window/level. Needs a valid
    * pointer to the 2D image mapper.
    * @see ImageMapper **/
@@ -274,7 +386,7 @@ protected:
   /** Indicate which window/level "channel" is currently selected. The index
    * starts with 1 and ends with number of window/level "channels". An index
    * of 0 or another invalid index implicitly selects the image mapper
-   * window/level "channel"! **/
+   * window/level "channel" or the main channel (if set), respectively! **/
   int CurrentWindowLevelChannel;
   /** Flag indicating whether the minimum/maximum spacing values should be used
    * for limiting the zoom **/
@@ -287,6 +399,17 @@ protected:
    * UseMinimumMaximumSpacingForZoom is ON. If this attribute is smaller or
    * equal to 0, it will be ignored. **/
   double MaximumSpacingForZoom;
+  /** If true, the mouse wheel foward/backward events trigger zoom in/out. If
+   * false, mouse wheel movements do not have any effect. **/
+  bool UseMouseWheelForZoomingInOut;
+  /** Help flag **/
+  bool SecondaryTriggeredMouseWheel;
+  /** Flag indicating that image is flipped along row **/
+  bool FlippedAlongRow;
+  /** Flag indicating that image is flipped along column **/
+  bool FlippedAlongColumn;
+  /** Flag indicating that zooming event should not be invoked now **/
+  bool DoNotInvokeZoomingEvent;
 
   /** Callback for color windowing interactions. **/
   static void WindowLevelCallback(vtkObject *caller, unsigned long eid,
@@ -303,8 +426,8 @@ protected:
   virtual void OnKeyPress();
 
   /** Zoom in/out by a specified factor. A factor>1.0 zooms in, a factor<1.0
-   * zooms out. cx and cy specify the relative position of the zoom center. **/
-  virtual void Zoom(double factor, double cx, double cy);
+   * zooms out. **/
+  virtual void Zoom(double factor);
 
   /** Pan the image by the specified offset (in pixels). **/
   virtual void Pan(int dx, int dy);
@@ -324,11 +447,37 @@ protected:
   /** Compute current window/level factors that control w/l-sensitivity. **/
   virtual void ComputeCurrentWindowLevelFactors();
 
-  /** Get adjusted spacing and extent of the reference image. If the spacing
-   * components of the 2D image are different, the spacing is isotropically
-   * adjusted to the small spacing (the extent is "ceilingly" adjusted as well).
-   */
-  void GetAdjustedReferenceImageGeometry(double spacing[3], int extent[6]);
+  /** Compute the 8 corner points of the current reference image in world
+   * coordinate system **/
+  void ComputeVolumeCorners(double corners[8][3]);
+
+  /** Compute adjusted spacing w.r.t. the current reslicing direction **/
+  virtual void ComputeAdjustedSpacing(double spacing[3]);
+
+  /** Compute the adjusted reslicing parameters w.r.t. the current reslicing
+   * direction so that we retrieve the whole data set. This method returns
+   * the centered origin along the slicing direction.
+   * @return the center-coordinate along the slicing direction **/
+  virtual double ComputeAdjustedMaximumReslicingParameters(double origin[3],
+      double spacing[3], int extent[6]);
+
+  /** Alters reslicing interpolation mode if the magnifier component is set.
+   * Nearest-neighbor->linear->cubic->nearest-neighbor->...<br>
+   * Does NOT re-render automatically! **/
+  void AlterInterpolationMode();
+
+  /** Alters current window level channel. **/
+  void AlterWindowLevelChannel();
+
+  /** Update the reslice orientation matrix internally. This method has no
+   * effect in this class' implementation, but it is supposed to be implement
+   * in more complex subclasses. **/
+  virtual void UpdateResliceOrientation();
+
+  /** This method is called after changing magnifier props (origin, axes, output
+   * properties). In this class this method is simply empty. In more complex
+   * subclasses it may be a useful 'entry point'. **/
+  virtual void AfterChangingMagnifier();
 
 private:
   // purposely not implemented

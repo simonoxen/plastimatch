@@ -169,7 +169,9 @@ ITKVTKImage
       std::string path = itksys::SystemTools::GetFilenamePath(fileName);
       if (path.length() > 0) // ensure that path ends with file separator
         EnsureStringEndsWith(path, "/");
-      mhdFile = path + mhdFile;
+      // Force MHD file to be in same directory as ORA.XML file.
+      // Ignore absolute path from ORA.XML-MHDFileName.
+      mhdFile = path + itksys::SystemTools::GetFilenameName(mhdFile);
 
       // Get type information from file
       ITKPixelType pixelType;

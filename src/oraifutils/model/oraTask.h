@@ -22,7 +22,7 @@ namespace ora
  *
  * @author Markus 
  * @author phil 
- * @version 1.1
+ * @version 1.2
  */
 class Task : public QObject
 {
@@ -99,6 +99,13 @@ public:
    * won't have any effect.
    **/
   virtual void Cancel() { } ;
+
+  /** If a task is NOT unexecutable, it is not pushed onto the undo-stack.
+   * Therefore, such tasks can indicate that they want to be deleted by the
+   * task manager after execution. NOTE: This is done by the task manager after
+   * emitting the TaskProcessingEnd()-signal. Furthermore, a return value of
+   * TRUE only shows an effect on tasks that are NOT unexecutable! **/
+  virtual bool DeleteThisTaskAfterProcessing() = 0;
 
 signals:
   /** Task started. Should be emitted in subclasses.

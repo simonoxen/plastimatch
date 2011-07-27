@@ -136,10 +136,10 @@ TaskManager
   QMutexLocker locker(&mutex);
   while (!unfinishedTasks.isEmpty())
     delete unfinishedTasks.dequeue();
-  while (!undoStack.isEmpty())
-    delete undoStack.last();
-  while (!redoStack.isEmpty())
-    delete redoStack.last();
+  for (int i = 0; i < undoStack.size(); i++)
+    delete undoStack[i];
+  for (int i = 0; i < redoStack.size(); i++)
+    delete redoStack[i];
   undoStack.clear();
   redoStack.clear();
   return true;
@@ -213,7 +213,7 @@ TaskManager
     if (succ)
     {
       // TODO: Wait for the task to finish? (if it is a thread) with a WaitCondition
-      if (task->IsUnexecutable())
+      if (!task->IsUnexecutable())
       {
         // the task is executed but cannot be unexecuted
         // the undostack is now invalid
@@ -233,6 +233,12 @@ TaskManager
 
     emit TaskExecuteEnd(task, succ);
     emit TaskProcessingEnd(task);
+
+    // Optional auto-delete request of NOT-unexecutable tasks:
+    if (!task->IsUnexecutable() && task->DeleteThisTaskAfterProcessing())
+    {
+      delete task;
+    }
 
     {
       QMutexLocker locker(&mutex);

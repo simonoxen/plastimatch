@@ -28,6 +28,7 @@ ENDIF(ORAIFUTILS_USE_QT)
 SET(${OWN_LIB_NAME}_HDRS 
   ${${OWN_LIB_NAME}_HDRS}
   vtk2DSceneImageInteractorStyle.h
+
 )
 
 SET(${OWN_LIB_NAME}_SRCS
