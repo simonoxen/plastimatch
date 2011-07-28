@@ -313,6 +313,7 @@ if (NOT SQLITE_FOUND AND NOT BUILD_DEBIAN)
   add_subdirectory (libs/sqlite-3.6.21)
   set (SQLITE_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/sqlite-3.6.21")
   set (SQLITE_LIBRARIES sqlite3)
+  set (SQLITE_FOUND TRUE)
 endif ()
 
 ##-----------------------------------------------------------------------------
