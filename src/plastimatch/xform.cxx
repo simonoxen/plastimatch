@@ -371,7 +371,7 @@ bsp_grid_from_img_grid (
 
     /* Convert image specifications to grid specifications */
     for (int d=0; d<3; d++) {
-	float img_ext = (pih->Size(d) - 1) * pih->m_spacing[d];
+	float img_ext = (pih->Size(d) - 1) * fabs (pih->m_spacing[d]);
 #if defined (commentout)
 	printf ("img_ext[%d] %g <- (%d - 1) * %g\n", 
 	    d, img_ext, pih->Size(d), pih->m_spacing[d]);
@@ -1014,7 +1014,7 @@ create_gpuit_bxf (Plm_image_header* pih, float* grid_spac)
 	roi_offset[d] = 0;
 	roi_dim[d] = img_dim[d];
 	/* Compute vox_per_rgn */
-	vox_per_rgn[d] = ROUND_INT (grid_spac[d] / img_spacing[d]);
+	vox_per_rgn[d] = ROUND_INT (grid_spac[d] / fabs(img_spacing[d]));
 	if (vox_per_rgn[d] < 4) {
 	    printf ("Warning: vox_per_rgn was less than 4.\n");
 	    vox_per_rgn[d] = 4;

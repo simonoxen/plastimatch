@@ -294,7 +294,7 @@ bspline_xform_initialize
 	bxf->vox_per_rgn[d] = vox_per_rgn[d];
 
 	/* grid spacing is in mm */
-	bxf->grid_spac[d] = bxf->vox_per_rgn[d] * bxf->img_spacing[d];
+	bxf->grid_spac[d] = bxf->vox_per_rgn[d] * fabs (bxf->img_spacing[d]);
 
 	/* rdims is the number of regions */
 	bxf->rdims[d] = 1 + (bxf->roi_dim[d] - 1) / bxf->vox_per_rgn[d];
