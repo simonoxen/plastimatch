@@ -177,25 +177,6 @@ capture program.  Download WxWidgets from here:
 
   http://wxwidgets.org
 
-Brook (optional)
-^^^^^^^^^^^^^^^^
-Brook is depricated.
-
-However, you still need brook for GPU acceleration of demons deformable 
-registration.  Note also that brook is only tested on Windows.
-Download Brook from here:
-
-  http://graphics.stanford.edu/projects/brookgpu/
-
-If using brook, you also need to install the DirectX SDK and 
-the NVIDIA CG compiler.  Please refer to README.BROOK.TXT for details.
-
-After you have compiled plastimatch, you need to set the brook runtime 
-variables to get GPU acceleration.  Only the DirectX9 backend works.  
-Using the %COMSPEC% shell, do this:
-
-   set BRT_RUNTIME=dx9
-
 Compiling plastimatch (Windows)
 -------------------------------
 Run CMake as follows:
@@ -218,18 +199,6 @@ Then build in Visual Studio as follows:
 #. Change the build type (e.g. release, debug) to match ITK (and other 
    dependencies.  You probably want release.
 #. Click "Build Solution".  Let the project build.
-
-Special instructions for building with brook
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If using brook, make sure the plastimatch source directory doesn't 
-have any spaces in the path.  Compiling the .br files with 
-brook/fxc has problems with these.
-
-Also, you might need to click "Build Solution" a twice in Visual Studio.
-This is needed because brcc returns an error code for ARB & PS20 targets, 
-which stops the build, even though the .cpp is generated correctly.
-The second time around, the .cpp files exist and are up-to-date, 
-and the build should continue correctly.
 
 Special instructions for running cmake with MSYS/gcc on Windows
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

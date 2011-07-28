@@ -10,9 +10,6 @@
 Threading
 threading_parse (const char *string)
 {
-    if (!strcmp (string, "BROOK") || !strcmp (string, "brook")) {
-	return THREADING_BROOK;
-    }
     if (!strcmp (string, "CPU") || !strcmp (string, "cpu")) {
 	return THREADING_CPU_OPENMP;
     }

@@ -15,7 +15,7 @@ print_usage (void)
     printf (
 	"Usage: demons [options] fixed moving\n"
 	"Options:\n"
-	" -A algorithm         Either \"cpu\" or \"brook\" (default=cpu)\n"
+	" -A algorithm         Either \"cpu\" or \"cuda\" (default=cpu)\n"
 	" -a accel             Acceleration factor (default=1)\n"
 	" -e denom_eps         Minimum allowed denominator magnitude (default=1)\n"
 	" -f \"i j k\"           Width of smoothing kernel (voxels)\n"
@@ -46,12 +46,6 @@ parse_args (DEMONS_Options* options, int argc, char* argv[])
 		exit(1);
 	    }
 	    i++;
-#if BROOK_FOUND
-	    if (!strcmp(argv[i], "brook") || !strcmp(argv[i], "BROOK")) {
-		parms->threading = THREADING_BROOK;
-		continue;
-	    } 
-#endif
 #if CUDA_FOUND
 	    if (!strcmp(argv[i], "cuda") || !strcmp(argv[i], "CUDA")) {
 		parms->threading = THREADING_CUDA;

@@ -44,7 +44,6 @@ enum BsplineOptimization {
 
 enum BsplineThreading {
     BTHR_CPU,
-    BTHR_BROOK,
     BTHR_CUDA
 };
 

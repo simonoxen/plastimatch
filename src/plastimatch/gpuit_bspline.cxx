@@ -108,8 +108,6 @@ do_gpuit_bspline_stage_internal (
 	}
 	parms.threading = BTHR_CPU;
 	break;
-    case THREADING_BROOK:
-	/* Brook B-spline doesn't exist.  Use cuda instead. */
     case THREADING_CUDA:
 	if (stage->alg_flavor == 0) {
 	    parms.implementation = 'j';

@@ -1,3 +1,8 @@
+Version 1.5.3 (build ____)
+* Remove deprecated brook code
+* Fix/workaround problem with b-spline regularization on images with 
+  negative voxel spacing
+
 Version 1.5.2 (build 2621)
 Sun Jul 24 21:06:48 EDT 2011
 * Fix build problem with cuda

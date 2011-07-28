@@ -14,7 +14,7 @@ print_usage (void)
     printf (
 	"Usage: fdk [options]\n"
 	"Options:\n"
-	" -A hardware            One of \"cpu\", \"brook\" or \"cuda\" (default=cpu)\n"
+	" -A hardware            One of \"cpu\", \"cuda\" or \"opencl\" (default=cpu)\n"
 	" -a \"num ((num) num)\"   Use this range of images\n"
 	" -r \"r1 r2 r3\"          Set output resolution (in voxels)\n"
 	" -f filter              Either \"none\" or \"ramp\" (default=ramp)\n"
@@ -70,12 +70,6 @@ fdk_parse_args (Fdk_options* options, int argc, char* argv[])
 		exit(1);
 	    }
 	    i++;
-#if BROOK_FOUND
-	    if (!strcmp(argv[i], "brook") || !strcmp(argv[i], "BROOK")) {
-		options->threading = THREADING_BROOK;
-		continue;
-	    } 
-#endif
 #if CUDA_FOUND
 	    if (!strcmp(argv[i], "cuda") || !strcmp(argv[i], "CUDA")) {
 		options->threading = THREADING_CUDA;

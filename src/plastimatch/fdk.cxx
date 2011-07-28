@@ -13,7 +13,6 @@
 
 #include "bowtie_correction.h"
 #include "fdk.h"
-#include "fdk_brook.h"
 #include "fdk_cuda.h"
 #include "fdk_opencl.h"
 #include "fdk_opts.h"

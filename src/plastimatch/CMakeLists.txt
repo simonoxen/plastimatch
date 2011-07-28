@@ -31,10 +31,6 @@ include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/nSIFT)
 #  INCLUDE_DIRECTORIES (BEFORE ${F2C_INCLUDE_DIR})
 #ENDIF ()
 
-if (BROOK_FOUND)
-  include_directories (AFTER ${BROOK_INCLUDE_DIR})
-endif ()
-
 if (CUDA_FOUND)
   include_directories (AFTER ${CUDA_INCLUDE_DIRS})
   #INCLUDE_DIRECTORIES (AFTER ${CUDA_CUT_INCLUDE_DIR})
@@ -81,26 +77,6 @@ include_directories (AFTER ${RANSAC_INCLUDE_DIRS})
 
 if (wxWidgets_FOUND)
   include_directories (BEFORE ${wxWidgets_INCLUDE_DIRS})
-endif ()
-
-##-----------------------------------------------------------------------------
-##  BROOK FILES
-##-----------------------------------------------------------------------------
-if (BROOK_FOUND)
-  brcc_file(fdk_brook_kernel.br)
-  set_source_files_properties(fdk_brook.cpp PROPERTIES
-    OBJECT_DEPENDS "fdk_brook_kernel.cpp")
-
-  brcc_file(convolution_brook_kernel.br)
-  brcc_file(demons_brook_kernel.br)
-  set_source_files_properties(demons_brook_kernel_wrap.cpp PROPERTIES
-    OBJECT_DEPENDS "demons_brook_kernel.cpp")
-  set_source_files_properties(convolution_brook_kernel_wrap.cpp PROPERTIES
-    OBJECT_DEPENDS "convolution_brook_kernel.cpp")
-
-  brcc_file(toy_kernels.br)
-  set_source_files_properties(toy_kernels.cpp PROPERTIES
-    OBJECT_DEPENDS "toy_kernels.cpp")
 endif ()
 
 ##-----------------------------------------------------------------------------
@@ -164,19 +140,6 @@ set (GPUIT_LIBRARY_SRC
   volume_macros.h
   xpm.cxx xpm.h
   )
-
-if (BROOK_FOUND)
-  set (GPUIT_LIBRARY_SRC
-    ${GPUIT_LIBRARY_SRC}
-    demons_brook.cpp
-    demons_brook_kernel_wrap.cpp
-    demons_brook_kernel.br
-    demons_brook_kernel.h
-    convolution_brook_kernel.br
-    convolution_brook_kernel_wrap.cpp
-    convolution_brook_kernel.h
-    )
-endif ()
 
 if (CUDA_FOUND)
   set (PLMCUDA_LIBRARY_SRC
@@ -504,13 +467,6 @@ set (FDK_SRC
   fdk_opts.cxx fdk_opts.h
   fdk_util.cxx fdk_util.h
 )
-if (BROOK_FOUND)
-  set (FDK_SRC
-    ${FDK_SRC}
-    fdk_brook.cpp
-    fdk_brook_kernel.br
-    )
-endif ()
 set (HND_TO_PFM_SRC
   hnd_to_pfm.cxx 
   )

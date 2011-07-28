@@ -29,10 +29,8 @@ void demons_default_parms (DEMONS_Parms* parms);
 gpuit_EXPORT
 Volume* demons (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, DEMONS_Parms* parms);
 Volume* demons_c (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, DEMONS_Parms* parms);
-Volume* demons_brook (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, DEMONS_Parms* parms);
 
 //plmopencl_EXPORT (
-//Volume* demons_opencl ,
 Volume* demons_opencl (
     Volume* fixed,
     Volume* moving,

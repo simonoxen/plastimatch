@@ -32,7 +32,6 @@
 #cmakedefine PLM_CONFIG_VERSION_STRING "@PLM_CONFIG_VERSION_STRING@"
 
 /* External libraries */
-#cmakedefine BROOK_FOUND 1
 #cmakedefine BUILD_AGAINST_SLICER3 1
 #cmakedefine CUDA_FOUND 1
 #cmakedefine DCMTK_HAVE_CONFIG_H 1

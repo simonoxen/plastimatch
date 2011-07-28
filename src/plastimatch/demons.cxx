@@ -56,11 +56,6 @@ demons (
 #endif
 
     switch (parms->threading) {
-#if BROOK_FOUND
-    case THREADING_BROOK:
-    	return demons_brook (fixed, moving, moving_grad, vf_init, parms);
-#endif
-
 #if CUDA_FOUND
     case THREADING_CUDA:
     	if (!delayload_cuda ()) { exit (0); }

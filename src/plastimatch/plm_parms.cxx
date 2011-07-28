@@ -217,9 +217,6 @@ set_key_val (
 	    stage->threading_type = THREADING_CPU_SINGLE;
 #endif
 	}
-	else if (!strcmp(val,"brook")) {
-	    stage->threading_type = THREADING_BROOK;
-	}
 	else if (!strcmp(val,"cuda")) {
 #if (CUDA_FOUND)
 	    stage->threading_type = THREADING_CUDA;

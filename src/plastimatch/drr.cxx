@@ -277,7 +277,6 @@ drr_render_volume_perspective (
 
     /* Trace the set of rays */
     switch (options->threading) {
-    case THREADING_BROOK:
     case THREADING_CUDA:
 #if CUDA_FOUND
 	if (!delayload_cuda ()) {

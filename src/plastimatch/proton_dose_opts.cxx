@@ -73,8 +73,7 @@ proton_dose_parse_args (Proton_dose_options* options, int argc, char* argv[])
 		exit(1);
 	    }
 	    i++;
-	    if (!strcmp(argv[i], "brook") || !strcmp(argv[i], "BROOK")
-		|| !strcmp(argv[i], "cuda") || !strcmp(argv[i], "CUDA")
+	    if (!strcmp(argv[i], "cuda") || !strcmp(argv[i], "CUDA")
 		|| !strcmp(argv[i], "gpu") || !strcmp(argv[i], "GPU"))
 	    {
 		options->threading = THREADING_CUDA;

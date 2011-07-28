@@ -13,7 +13,6 @@
 
 #include "bowtie_correction.h"
 #include "fdk.h"
-#include "fdk_brook.h"
 #include "fdk_cuda.h"
 #include "fdk_opencl.h"
 #include "fdk_opts.h"
@@ -59,11 +58,6 @@ main (int argc, char* argv[])
 
     printf ("Reconstructing...\n");
     switch (options.threading) {
-#if (BROOK_FOUND)
-    case THREADING_BROOK:
-	fdk_brook_reconstruct (vol, proj_dir, &options);
-	break;
-#endif
 #if (CUDA_FOUND)
     case THREADING_CUDA:
 	CUDA_reconstruct_conebeam (vol, proj_dir, &options);

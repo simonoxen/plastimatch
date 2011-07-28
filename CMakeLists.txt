@@ -239,7 +239,6 @@ find_library (LIBDL_FOUND dl)
 ##-----------------------------------------------------------------------------
 ##  Search for libraries
 ##-----------------------------------------------------------------------------
-find_package (Brook)
 if (PLM_CONFIG_DISABLE_DCMTK)
   set (DCMTK_FOUND FALSE)
 else ()

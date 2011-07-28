@@ -415,23 +415,6 @@ vf_convert_to_planar (Volume* ref, int min_size)
     }
 }
 
-/* Used by demons_brook */
-void
-vf_pad_planar (Volume* vol, int size)
-{
-    int i;
-    float** img = (float**) vol->img;
-
-    if (vol->pix_type != PT_VF_FLOAT_PLANAR) {
-	fprintf (stderr, "Error, can't pad_planar a non-planar volume\n");
-	exit (-1);
-    }
-
-    for (i = 0; i < 3; i++) {
-	img[i] = (float *) realloc (img[i], size);
-    }
-}
-
 /* Nearest neighbor interpolation */
 static Volume*
 volume_resample_float (Volume* vol_in, int* dim, float* offset, float* spacing)
