@@ -208,10 +208,9 @@ get_largest_connected_component (UCharImageType::Pointer i2)
 	    (float) rel_filter->GetSizeOfObjectsInPixels()[ccs] / num_vox;
 	if (cc_pct > ccs_percent_thresh) {
 	    label_upper_thresh = ccs + 1;
-	    printf ("CC %d has size %d (%f,%f)\n", ccs, 
+	    printf ("CC %d has size %d (%f)\n", ccs, 
 		rel_filter->GetSizeOfObjectsInPixels()[ccs],
-		cc_pct,
-		ccs_percent_thresh
+		cc_pct
 	    );
 	} else {
 	    break;
