@@ -5,6 +5,7 @@
 #define _segment_body_h_
 
 #include "plm_config.h"
+#include "itk_image.h"
 #include "plm_image.h"
 
 class plastimatch1_EXPORT Segment_body {
@@ -17,13 +18,19 @@ class plastimatch1_EXPORT Segment_body {
     bool m_debug;
     bool m_fast;
 
+    float m_lower_threshold;
+    float m_upper_threshold;
+
   public:
     Segment_body () {
 	m_bot_given = false;
 	m_debug = false;
 	m_fast = false;
+	m_lower_threshold = -1000;
     }
     void do_segmentation ();
+    UCharImageType::Pointer threshold_patient (FloatImageType::Pointer i1);
+    int find_patient_bottom (FloatImageType::Pointer i1);
 };
 
 #endif

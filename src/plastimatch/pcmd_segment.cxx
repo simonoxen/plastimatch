@@ -18,8 +18,6 @@ public:
     Pstring input_fn;
     Pstring output_fn;
     Pstring output_dicom;
-    float lower_threshold;
-    float upper_threshold;
 
     Segment_body sb;
 };
@@ -68,9 +66,9 @@ parse_fn (
 	"Input image filename (required)", 1, "");
     parser->add_long_option ("", "bottom", 
 	"Bottom of patient (top of couch)", 1, "");
-#if defined (commentout)
     parser->add_long_option ("", "lower-threshold", 
 	"Lower threshold (include voxels above this value)", 1, "");
+#if defined (commentout)
     parser->add_long_option ("", "upper-threshold", 
 	"Upper threshold (include voxels below this value)", 1, "");
 #endif
@@ -95,8 +93,10 @@ parse_fn (
     parms->output_dicom = parser->get_string("output-dicom").c_str();
 #endif
     parms->input_fn = parser->get_string("input").c_str();
+    if (parser->option ("lower-threshold")) {
+	sb->m_lower_threshold = parser->get_float("lower-threshold");
+    }
 #if defined (commentout)
-    parms->lower_threshold = parser->get_float("lower-threshold");
     parms->upper_threshold = parser->get_float("upper-threshold");
 #endif
     if (parser->option ("bottom")) {

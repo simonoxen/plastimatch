@@ -27,7 +27,7 @@ const short T3 = -1000;
 
 /* Return bottom image row (indexed starting at 0) containing a patient pixel */
 int
-find_patient_bottom (FloatImageType::Pointer i1)
+Segment_body::find_patient_bottom (FloatImageType::Pointer i1)
 {
     FloatImageType::RegionType r1 = i1->GetLargestPossibleRegion();
     const FloatImageType::SizeType& sz = r1.GetSize();
@@ -53,7 +53,7 @@ find_patient_bottom (FloatImageType::Pointer i1)
 
     float* i3max = (float*) malloc (sz[1]*sizeof(float));
     for (unsigned long i = 0; i < sz[1]; i++) {
-	i3max[i] = -1000;
+	i3max[i] = m_lower_threshold;
     }
     FloatImageType::RegionType r3 = i3->GetLargestPossibleRegion();
     FloatIteratorType it3 (i3, r3);
@@ -88,13 +88,13 @@ find_patient_bottom (FloatImageType::Pointer i1)
 }
 
 UCharImageType::Pointer
-threshold_patient (FloatImageType::Pointer i1)
+Segment_body::threshold_patient (FloatImageType::Pointer i1)
 {
     typedef itk::BinaryThresholdImageFilter< 
 	FloatImageType, UCharImageType > ThresholdFilterType;
     ThresholdFilterType::Pointer thresh_filter = ThresholdFilterType::New ();
     thresh_filter->SetInput (i1);
-    thresh_filter->SetLowerThreshold (T3);
+    thresh_filter->SetLowerThreshold (m_lower_threshold);
     // Upper threshold is max value by default
     thresh_filter->SetOutsideValue (0);
     thresh_filter->SetInsideValue (1);
@@ -170,7 +170,7 @@ get_largest_connected_component (UCharImageType::Pointer i2)
 
     /* Identify components */
     typedef itk::ConnectedComponentImageFilter< 
-	UCharImageType, ShortImageType, UCharImageType > ConnectedFilterType;
+    UCharImageType, ShortImageType, UCharImageType > ConnectedFilterType;
     ConnectedFilterType::Pointer cc_filter = ConnectedFilterType::New ();
     cc_filter->SetInput (i2);
     try {
@@ -194,13 +194,37 @@ get_largest_connected_component (UCharImageType::Pointer i2)
     }
     i4 = rel_filter->GetOutput ();
 
-    /* Select largest component */
+    int num_vox = 
+	i4->GetLargestPossibleRegion().GetSize()[0] *
+	i4->GetLargestPossibleRegion().GetSize()[1] *
+	i4->GetLargestPossibleRegion().GetSize()[2];
+    int label_upper_thresh = 1;
+    float ccs_percent_thresh = 0.05;
+    for (unsigned int ccs = 0; 
+	 ccs < rel_filter->GetSizeOfObjectsInPixels().size();
+	 ++ccs) 
+    {
+	float cc_pct = 
+	    (float) rel_filter->GetSizeOfObjectsInPixels()[ccs] / num_vox;
+	if (cc_pct > ccs_percent_thresh) {
+	    label_upper_thresh = ccs + 1;
+	    printf ("CC %d has size %d (%f,%f)\n", ccs, 
+		rel_filter->GetSizeOfObjectsInPixels()[ccs],
+		cc_pct,
+		ccs_percent_thresh
+	    );
+	} else {
+	    break;
+	}
+    }
+
+    /* Select largest N components */
     typedef itk::BinaryThresholdImageFilter< ShortImageType,
-                                  UCharImageType > LabelSelectFilterType;
+	UCharImageType > LabelSelectFilterType;
     LabelSelectFilterType::Pointer ls_filter = LabelSelectFilterType::New ();
     ls_filter->SetInput (i4);
     ls_filter->SetLowerThreshold (1);
-    ls_filter->SetUpperThreshold (1);
+    ls_filter->SetUpperThreshold (label_upper_thresh);
     ls_filter->SetOutsideValue (0);
     ls_filter->SetInsideValue (1);
     try {
@@ -271,7 +295,7 @@ Segment_body::do_segmentation ()
 
     /* Threshold image */
     printf ("threshold\n");
-    i2 = threshold_patient (i1);
+    i2 = this->threshold_patient (i1);
 
     /* Zero out the couch */
     printf ("remove_couch\n");
@@ -298,6 +322,10 @@ Segment_body::do_segmentation ()
     /* Fill holes: Redo connected components on the (formerly) black parts */
     printf ("get_largest_connected_component\n");
     i2 = get_largest_connected_component (i2);
+
+    if (m_debug) {
+	itk_image_save (i2, "3_re_invert.nrrd");
+    }
 
     /* Invert the image */
     printf ("invert\n");
