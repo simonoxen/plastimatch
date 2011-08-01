@@ -9,5 +9,7 @@ Drexel: Nagarajan Kandasamy, Harman Singh, Christopher Sagedy,
 
 OHSU: Anthony Eden, Junan Zhang
 
+radART/Salzburg: Phil Steininger, Markus Neuner, Heinz Deutschmann
+
 If you have contributed to plastimatch, and you would like to add your 
 name, please email to Greg Sharp, gcsharp a@t partners dot org.
