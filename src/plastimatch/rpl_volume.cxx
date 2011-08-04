@@ -15,7 +15,7 @@
 #include "volume.h"
 #include "volume_limit.h"
 
-#define UNIFIED_DEPTH_OFFSET 1
+//#define UNIFIED_DEPTH_OFFSET 1
 
 //#define VERBOSE 1
 
@@ -374,7 +374,7 @@ proton_dose_ray_trace (
 
 	/* Compute distance from depth_offset to volume boundary */
 	dist = vec3_dist (ip1, p2);
-#if defined (commentout)
+#if VERBOSE
 	printf ("dist = %g, depth_off = %g\n", 
 	    dist, rpl_vol->depth_offset[0]);
 #endif
@@ -382,7 +382,7 @@ proton_dose_ray_trace (
 
 	/* Figure out how many steps to first step within volume */
 	cd.step_offset = (int) ceil (dist / rpl_vol->ray_step);
-#if defined (commentout)
+#if VERBOSE
 	printf ("step_offset = %d\n", cd.step_offset);
 #endif
 	
@@ -390,7 +390,7 @@ proton_dose_ray_trace (
 	vec3_scale3 (tmp, ray, rpl_vol->depth_offset[0] 
 	    + cd.step_offset * (double) rpl_vol->ray_step);
 	vec3_add3 (ip1, p2, tmp);
-#if defined (commentout)
+#if VERBOSE
 	printf ("ip1 (adj) = (%f, %f, %f)\n", ip1[0], ip1[1], ip1[2]);
 #endif
     }

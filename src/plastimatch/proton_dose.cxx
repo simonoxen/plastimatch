@@ -274,8 +274,8 @@ dose_direct (
     double dose;
 
     rgdepth = rpl_volume_get_rgdepth (
-                rpl_vol,        /* volume of radiological path lengths */
-                ct_xyz          /* voxel to find depth */
+	rpl_vol,        /* volume of radiological path lengths */
+	ct_xyz          /* voxel to find depth */
     );
 
     /* The voxel was not hit directly by the beam */
@@ -283,12 +283,12 @@ dose_direct (
         return 0.0f;
     }
 
-#if defined (commentout)
     if (ct_xyz[1] > 0.0 && ct_xyz[1] < 2.0 
-    && ct_xyz[2] > 0.0 && ct_xyz[2] < 2.0) {
-    printf ("(%f %f %f) %f\n", ct_xyz[0], ct_xyz[1], ct_xyz[2], 
-        rgdepth);
+	&& ct_xyz[2] > 0.0 && ct_xyz[2] < 2.0) {
+	printf ("(%f %f %f) %f\n", ct_xyz[0], ct_xyz[1], ct_xyz[2], 
+	    rgdepth);
     }
+#if defined (commentout)
 #endif
 
     /* Lookup the dose at this radiographic depth */
@@ -799,7 +799,8 @@ proton_dose_compute (
     int ct_ijk[3];
     double ct_xyz[4];
     double p1[3];
-    double ap_dist = 1000.;
+    //double ap_dist = 1000.;
+    double ap_dist = 10.;
     double nrm[3], pdn[3], prt[3], tmp[3];
     double ic_room[3];
     double ul_room[3];
@@ -814,9 +815,13 @@ proton_dose_compute (
     double tgt[3] = { options->isocenter[0], options->isocenter[1], 
 		      options->isocenter[2] };
     double vup[3] = { options->vup[0], options->vup[1], options->vup[2] };
-    double ic[2] = { 4.5, 4.5 };
+
+    /* This is a 10x10 grid, with image center at 4.5 */
+    //double ic[2] = { 4.5, 4.5 };
+    //int ires[2] = { 10, 10 };
+    double ic[2] = { 0, 0 };
+    int ires[2] = { 1, 1 };
     double ps[2] = { 1., 1. };
-    int ires[2] = { 10, 10 };
     Proton_Depth_Dose* pep;
 
     pmat = proj_matrix_create ();
@@ -878,7 +883,7 @@ proton_dose_compute (
         for (ct_ijk[1] = 0; ct_ijk[1] < ct_vol->dim[1]; ct_ijk[1]++) {
             for (ct_ijk[0] = 0; ct_ijk[0] < ct_vol->dim[0]; ct_ijk[0]++) {
                 double dose = 0.0;
-                
+
                 /* Transform vol index into space coords */
                 ct_xyz[0] = (double) (ct_vol->offset[0] + ct_ijk[0] * ct_vol->spacing[0]);
                 ct_xyz[1] = (double) (ct_vol->offset[1] + ct_ijk[1] * ct_vol->spacing[1]);

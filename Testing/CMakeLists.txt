@@ -1988,7 +1988,7 @@ plm_add_test (
   "proton-dose"
   ""
   ${PLM_PLASTIMATCH_PATH}/proton_dose
-  "-src;1 0 0;-iso;0 0 0;-vup;0 0 1;-u;1;-p;${PLM_TESTING_DATA_DIR}/bragg-curve.txt;--debug;${PLM_TESTING_BUILD_DIR}/rect-1.mha;${PLM_TESTING_BUILD_DIR}/proton-dose.mha"
+  "-src;1 0 0;-iso;0 0 0;-vup;0 0 1;-u;1;-p;${PLM_TESTING_DATA_DIR}/bragg-curve.txt;--debug;${PLM_TESTING_BUILD_DIR}/rect-2.mha;${PLM_TESTING_BUILD_DIR}/proton-dose.mha"
   )
 
 ## -------------------------------------------------------------------------
