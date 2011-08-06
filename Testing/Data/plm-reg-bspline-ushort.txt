@@ -1,9 +1,9 @@
 [GLOBAL]
 fixed=gauss-ushort-1.mha
 moving=gauss-ushort-2.mha
-vf_out=plm-register-bspline-ushort-vf.mha
-xform_out=plm-register-bspline-ushort-xf.txt
-img_out=plm-register-bspline-ushort-img.mha
+vf_out=plm-reg-bspline-ushort-vf.mha
+xform_out=plm-reg-bspline-ushort-xf.txt
+img_out=plm-reg-bspline-ushort-img.mha
 
 [STAGE]
 xform=bspline

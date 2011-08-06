@@ -144,6 +144,11 @@ Plm_image::load_native (const char* fname)
     }
 
     switch (component_type) {
+    case itk::ImageIOBase::CHAR:
+	this->m_itk_char = itk_image_load_char (fname, 0);
+	this->m_original_type = PLM_IMG_TYPE_ITK_CHAR;
+	this->m_type = PLM_IMG_TYPE_ITK_CHAR;
+	break;
     case itk::ImageIOBase::UCHAR:
 	this->m_itk_uchar = itk_image_load_uchar (fname, 0);
 	this->m_original_type = PLM_IMG_TYPE_ITK_UCHAR;
@@ -263,6 +268,9 @@ void
 Plm_image::save_image (const char* fname)
 {
     switch (this->m_type) {
+    case PLM_IMG_TYPE_ITK_CHAR:
+	itk_image_save (this->m_itk_char, fname);
+	break;
     case PLM_IMG_TYPE_ITK_UCHAR:
 	itk_image_save (this->m_itk_uchar, fname);
 	break;
@@ -398,6 +406,23 @@ Plm_image::set_itk (UCharVecImageType::Pointer img)
 /* -----------------------------------------------------------------------
    Conversion
    ----------------------------------------------------------------------- */
+void
+Plm_image::convert_to_itk_char (void)
+{
+    switch (this->m_type) {
+    case PLM_IMG_TYPE_ITK_CHAR:
+	return;
+    case PLM_IMG_TYPE_ITK_FLOAT:
+	this->m_itk_char = cast_char (this->m_itk_float);
+	this->m_itk_float = 0;
+	break;
+    default:
+	print_and_exit ("Error: unhandled conversion to itk_char\n");
+	return;
+    }
+    this->m_type = PLM_IMG_TYPE_ITK_CHAR;
+}
+
 void
 Plm_image::convert_to_itk_uchar (void)
 {
@@ -827,6 +852,9 @@ Plm_image::convert (Plm_image_type new_type)
     case PLM_IMG_TYPE_UNDEFINED:
 	/* Do nothing */
 	return;
+    case PLM_IMG_TYPE_ITK_CHAR:
+	this->convert_to_itk_char ();
+	break;
     case PLM_IMG_TYPE_ITK_UCHAR:
 	this->convert_to_itk_uchar ();
 	break;

@@ -58,6 +58,14 @@ itk_image_save (T image, const char* fname)
 
 template<class T> 
 void
+itk_image_save_char (T image, const char* fname)
+{
+    CharImageType::Pointer char_img = cast_char (image);
+    itk_image_save (char_img, fname);
+}
+
+template<class T> 
+void
 itk_image_save_uchar (T image, const char* fname)
 {
     UCharImageType::Pointer uchar_img = cast_uchar (image);
@@ -118,6 +126,7 @@ itk_image_save_double (T image, const char* fname)
 }
 
 /* Explicit instantiations */
+template plastimatch1_EXPORT void itk_image_save(CharImageType::Pointer, const char*);
 template plastimatch1_EXPORT void itk_image_save(UCharImageType::Pointer, const char*);
 template plastimatch1_EXPORT void itk_image_save(ShortImageType::Pointer, const char*);
 template plastimatch1_EXPORT void itk_image_save(UShortImageType::Pointer, const char*);
@@ -130,6 +139,7 @@ template plastimatch1_EXPORT void itk_image_save(DeformationFieldType::Pointer, 
 template plastimatch1_EXPORT void itk_image_save(UCharImage4DType::Pointer, const char*);
 template plastimatch1_EXPORT void itk_image_save(UCharVecImageType::Pointer, const char*);
 
+template plastimatch1_EXPORT void itk_image_save_char (FloatImageType::Pointer, const char*);
 template plastimatch1_EXPORT void itk_image_save_uchar (FloatImageType::Pointer, const char*);
 template plastimatch1_EXPORT void itk_image_save_short (FloatImageType::Pointer, const char*);
 template plastimatch1_EXPORT void itk_image_save_ushort (FloatImageType::Pointer, const char*);

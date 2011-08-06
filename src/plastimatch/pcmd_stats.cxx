@@ -24,7 +24,7 @@
 static void
 stats_vf_main (Stats_parms* parms)
 {
-    Volume *vol;
+    Volume *vol = 0;
     Xform xf1, xf2;
 
     xform_load (&xf1, (const char*) parms->img_in_fn);

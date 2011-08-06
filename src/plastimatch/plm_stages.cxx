@@ -171,13 +171,12 @@ static void
 save_output (
     Registration_Data* regd, 
     Xform *xf_out, 
-    //char *xf_out_fn,
-    //const std::list<std::string>& xf_out_fn, 
     const std::list<std::string>& xf_out_fn, 
-    bool xf_out_itk, 
+    bool xf_out_itk,
     int img_out_fmt,
-    char *img_out_fn,
-    char *vf_out_fn
+    Plm_image_type img_out_type,
+    const char *img_out_fn,
+    const char *vf_out_fn
 )
 {
     /* Save xf to all filenames in list */
@@ -223,7 +222,11 @@ save_output (
 	if (img_out_fn[0]) {
 	    logfile_printf ("Saving image...\n");
 	    if (img_out_fmt == IMG_OUT_FMT_AUTO) {
-		im_warped.save_image (img_out_fn);
+		if (img_out_type == PLM_IMG_TYPE_UNDEFINED) {
+		    im_warped.save_image (img_out_fn);
+		} else {
+		    im_warped.convert_and_save (img_out_fn, img_out_type);
+		}
 	    } else {
 		im_warped.save_short_dicom (img_out_fn, 0, 0);
 	    }
@@ -273,7 +276,8 @@ do_registration_stage (
 
     /* Save intermediate output */
     save_output (regd, xf_out, stage->xf_out_fn, stage->xf_out_itk, 
-	stage->img_out_fmt, stage->img_out_fn, stage->vf_out_fn);
+	stage->img_out_fmt, stage->img_out_type, stage->img_out_fn, 
+	stage->vf_out_fn);
 }
 
 static void
@@ -377,7 +381,8 @@ do_registration (Registration_Parms* regp)
 
     timer3.Start();
     save_output (&regd, xf_out, regp->xf_out_fn, regp->xf_out_itk, 
-	regp->img_out_fmt, regp->img_out_fn, regp->vf_out_fn);
+	regp->img_out_fmt, regp->img_out_type, regp->img_out_fn, 
+	regp->vf_out_fn);
     timer3.Stop();
 
     logfile_printf (

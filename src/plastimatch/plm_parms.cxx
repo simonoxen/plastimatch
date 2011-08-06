@@ -78,14 +78,8 @@ set_key_val (
 	}
     }
     else if (!strcmp (key, "img_out_type")) {
-	int type = IMG_OUT_TYPE_AUTO;
-	if (!strcmp (val, "uchar")) {
-	    type = IMG_OUT_TYPE_UCHAR;
-	} else if (!strcmp (val, "short")) {
-	    type = IMG_OUT_TYPE_SHORT;
-	} else if (!strcmp (val, "float")) {
-	    type = IMG_OUT_TYPE_FLOAT;
-	} else {
+	Plm_image_type type = plm_image_type_parse (val);
+	if (type == PLM_IMG_TYPE_UNDEFINED) {
 	    goto error_exit;
 	}
 	if (section == 0) {

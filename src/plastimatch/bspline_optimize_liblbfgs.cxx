@@ -99,5 +99,7 @@ bspline_optimize_liblbfgs (Bspline_optimize_data *bod)
     rc = lbfgs (bod->bxf->num_coeff, x, &fx, 
 	evaluate, progress, (void*) bod, &param);
 
+    (void) rc;  /* Suppress compiler warning */
+
     lbfgs_free (x);
 }

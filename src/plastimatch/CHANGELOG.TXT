@@ -2,6 +2,8 @@ Version 1.5.3 (build ____)
 * Remove deprecated brook code
 * Fix/workaround problem with b-spline regularization on images with 
   negative voxel spacing
+* Fix bug where img_out_type field was ignored in registration command file
+* Add support for signed char image type
 
 Version 1.5.2 (build 2621)
 Sun Jul 24 21:06:48 EDT 2011

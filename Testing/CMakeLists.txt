@@ -869,16 +869,6 @@ plmtest_check_interval ("landmark-warp-c-check-2"
   )
 
 ## -------------------------------------------------------------------------
-## plm-warp-landmark-a
-## -------------------------------------------------------------------------
-plm_add_test (
-  "plm-warp-landmark-a" 
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--input;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;--output-pointset;${PLM_TESTING_BUILD_DIR}/plm-warp-landmark-a.fcsv;--xf;${PLM_TESTING_BUILD_DIR}/landmark-warp-c-vf.mha"
-  )
-
-## -------------------------------------------------------------------------
 ## plastimatch convert dicom (and dicom rt)
 ##   plm convert dicom a: ct only
 ##   plm convert dicom b: rtss only, with referenced-ct
@@ -1234,113 +1224,113 @@ else ()
 endif ()
 
 plm_add_test (
-  "plm-register-align-center"
+  "plm-reg-align-center"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-register-align-center.txt"
+  "${PLM_TESTING_DATA_DIR}/plm-reg-align-center.txt"
   )
 plm_add_test (
-  "plm-register-align-center-stats"
+  "plm-reg-align-center-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "compare;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/plm-register-align-center-img.mha"
+  "compare;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/plm-reg-align-center-img.mha"
   )
-plmtest_check_interval ("plm-register-align-center-check"
-  "${PLM_TESTING_BUILD_DIR}/plm-register-align-center-stats.stdout.txt"
+plmtest_check_interval ("plm-reg-align-center-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-reg-align-center-stats.stdout.txt"
   "MAE *([-0-9.]*)"
   "-0.005"
   "0.005"
   )
 
 plm_add_test (
-  "plm-register-itk-translation"
+  "plm-reg-itk-translation"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-register-itk-translation.txt"
+  "${PLM_TESTING_DATA_DIR}/plm-reg-itk-translation.txt"
   )
 plm_add_test (
-  "plm-register-itk-translation-stats"
+  "plm-reg-itk-translation-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-register-itk-translation-img.mha"
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-reg-itk-translation-img.mha"
   )
-plmtest_check_interval ("plm-register-itk-translation-check"
-  "${PLM_TESTING_BUILD_DIR}/plm-register-itk-translation-stats.stdout.txt"
+plmtest_check_interval ("plm-reg-itk-translation-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-reg-itk-translation-stats.stdout.txt"
   "AVE *([-0-9.]*)"
   "-637.0"
   "-636.9"
   )
 
 plm_add_test (
-  "plm-register-itk-rigid"
+  "plm-reg-itk-rigid"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-register-itk-rigid.txt"
+  "${PLM_TESTING_DATA_DIR}/plm-reg-itk-rigid.txt"
   )
 plm_add_test (
-  "plm-register-itk-rigid-stats-1"
+  "plm-reg-itk-rigid-stats-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-register-itk-rigid-intermediate-img.mha"
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-reg-itk-rigid-intermediate-img.mha"
   )
-plmtest_check_interval ("plm-register-itk-rigid-check-1"
-  "${PLM_TESTING_BUILD_DIR}/plm-register-itk-rigid-stats-1.stdout.txt"
+plmtest_check_interval ("plm-reg-itk-rigid-check-1"
+  "${PLM_TESTING_BUILD_DIR}/plm-reg-itk-rigid-stats-1.stdout.txt"
   "AVE *([-0-9.]*)"
   "-965.7"
   "-965.4"
   )
 plm_add_test (
-  "plm-register-itk-rigid-stats-2"
+  "plm-reg-itk-rigid-stats-2"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-register-itk-rigid-img.mha"
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-reg-itk-rigid-img.mha"
   )
-plmtest_check_interval ("plm-register-itk-rigid-check-2"
-  "${PLM_TESTING_BUILD_DIR}/plm-register-itk-rigid-stats-2.stdout.txt"
+plmtest_check_interval ("plm-reg-itk-rigid-check-2"
+  "${PLM_TESTING_BUILD_DIR}/plm-reg-itk-rigid-stats-2.stdout.txt"
   "AVE *([-0-9.]*)"
   "-965.7"
   "-965.4"
   )
 
 plm_add_test (
-  "plm-register-itk-bspline"
+  "plm-reg-itk-bspline"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-register-itk-bspline.txt"
+  "${PLM_TESTING_DATA_DIR}/plm-reg-itk-bspline.txt"
   )
 plm_add_test (
-  "plm-register-itk-bspline-stats-1"
+  "plm-reg-itk-bspline-stats-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-register-itk-bspline-img.mha"
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-reg-itk-bspline-img.mha"
   )
-plmtest_check_interval ("plm-register-itk-bspline-check-1"
-  "${PLM_TESTING_BUILD_DIR}/plm-register-itk-bspline-stats-1.stdout.txt"
+plmtest_check_interval ("plm-reg-itk-bspline-check-1"
+  "${PLM_TESTING_BUILD_DIR}/plm-reg-itk-bspline-stats-1.stdout.txt"
   "AVE *([-0-9.]*)"
   "-763.85"
   "-763.75"
   )
 
 plm_add_test (
-  "plm-register-itk-demons"
+  "plm-reg-itk-demons"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-register-itk-demons.txt"
+  "${PLM_TESTING_DATA_DIR}/plm-reg-itk-demons.txt"
   )
-plmtest_check_interval ("plm-register-itk-demons-check-1"
-  "${PLM_TESTING_BUILD_DIR}/plm-register-itk-demons.stdout.txt"
+plmtest_check_interval ("plm-reg-itk-demons-check-1"
+  "${PLM_TESTING_BUILD_DIR}/plm-reg-itk-demons.stdout.txt"
   "VF_AVG +[^ ] +([-0-9.]*)"
   "8.55"
   "8.65"
   )
 plm_add_test (
-  "plm-register-itk-demons-stats-2"
+  "plm-reg-itk-demons-stats-2"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-register-itk-demons-img.mha"
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-reg-itk-demons-img.mha"
   )
-plmtest_check_interval ("plm-register-itk-demons-check-2"
-  "${PLM_TESTING_BUILD_DIR}/plm-register-itk-demons-stats-2.stdout.txt"
+plmtest_check_interval ("plm-reg-itk-demons-check-2"
+  "${PLM_TESTING_BUILD_DIR}/plm-reg-itk-demons-stats-2.stdout.txt"
   "AVE *([-0-9.]*)"
   "-853.0"
   "-852.6"
@@ -1348,13 +1338,14 @@ plmtest_check_interval ("plm-register-itk-demons-check-2"
 
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 2)
-##   bspline-single-c
-##   bspline-single-h
-##   bspline-single-openmp
-##   bspline-single-cuda
-##   register-bspline-ushort
-##   register-bspline-double
-##   register-bspline-itk-output"
+##   plm-bspline-single-c
+##   plm-bspline-single-h
+##   plm-bspline-single-openmp
+##   plm-bspline-single-cuda
+##   plm-reg-bspline-ushort
+##   plm-reg-bspline-double
+##   plm-reg-bspline-itk-output
+##   plm-reg-bspline-char-output
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-bspline-single-c" 
@@ -1433,48 +1424,68 @@ plmtest_check_interval ("plm-bspline-cuda-check"
   )
 
 plm_add_test (
-  "plm-register-bspline-ushort"
+  "plm-reg-bspline-ushort"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-register-bspline-ushort.txt"
+  "${PLM_TESTING_DATA_DIR}/plm-reg-bspline-ushort.txt"
   )
 plm_add_test (
-  "plm-register-bspline-ushort-stats"
+  "plm-reg-bspline-ushort-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-register-bspline-ushort-img.mha"
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-reg-bspline-ushort-img.mha"
   )
-plmtest_check_interval ("plm-register-bspline-ushort-check"
-  "${PLM_TESTING_BUILD_DIR}/plm-register-bspline-ushort-stats.stdout.txt"
+plmtest_check_interval ("plm-reg-bspline-ushort-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-reg-bspline-ushort-stats.stdout.txt"
   "AVE *([-0-9.]*)"
   "107.6"
   "108.6"
   )
 
 plm_add_test (
-  "plm-register-bspline-double"
+  "plm-reg-bspline-double"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-register-bspline-double.txt"
+  "${PLM_TESTING_DATA_DIR}/plm-reg-bspline-double.txt"
   )
 plm_add_test (
-  "plm-register-bspline-double-stats"
+  "plm-reg-bspline-double-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-register-bspline-double-img.mha"
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-reg-bspline-double-img.mha"
   )
-plmtest_check_interval ("plm-register-bspline-double-check"
-  "${PLM_TESTING_BUILD_DIR}/plm-register-bspline-double-stats.stdout.txt"
+plmtest_check_interval ("plm-reg-bspline-double-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-reg-bspline-double-stats.stdout.txt"
   "AVE *([-0-9.]*)"
   "108.6"
   "109.6"
   )
 
 plm_add_test (
-  "plm-register-bspline-itk-output"
+  "plm-reg-bspline-itk-output"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-register-bspline-itk-output.txt"
+  "${PLM_TESTING_DATA_DIR}/plm-reg-bspline-itk-output.txt"
+  )
+
+plm_add_test (
+  "plm-reg-bspline-char-output"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_TESTING_DATA_DIR}/plm-reg-bspline-char-output.txt"
+  )
+plm_add_test (
+  "plm-reg-bspline-char-output-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_TESTING_BUILD_DIR}/plm-reg-bspline-char-output.mha"
+  )
+plmtest_check_interval (
+  "plm-reg-bspline-char-output-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-reg-bspline-char-output-stats.stdout.txt"
+  "MIN *([-0-9.]*)"
+  "-128.1"
+  "-127.9"
   )
 
 ## -------------------------------------------------------------------------
@@ -1483,16 +1494,16 @@ plm_add_test (
 ##   register-regularization
 ## -------------------------------------------------------------------------
 plm_add_test (
-  "plm-register-rect-bspline" 
+  "plm-reg-rect-bspline" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-register-rect-bspline.txt"
+  "${PLM_TESTING_DATA_DIR}/plm-reg-rect-bspline.txt"
   )
 plm_add_test (
-  "plm-register-regularization" 
+  "plm-reg-regularization" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-register-regularization.txt"
+  "${PLM_TESTING_DATA_DIR}/plm-reg-regularization.txt"
   )
 
 ## -------------------------------------------------------------------------
@@ -1501,7 +1512,7 @@ plm_add_test (
 ##   and composes with results from an registration from gauss-2 to 
 ##   gauss-5.  The composed vf should be correctly align gauss-1 to gauss-5.
 ##   
-##   plm-register-compose    Make vf for testing composition
+##   plm-reg-compose    Make vf for testing composition
 ##   plm-compose-a           Compose translation and vector field
 ##   plm-compose-b           Compose vector field and vector field
 ##   plm-compose-c           Compose bspline and vector field
@@ -1512,16 +1523,16 @@ plm_add_test (
 ##   vector field.
 ## -------------------------------------------------------------------------
 plm_add_test (
-  "plm-register-compose" 
+  "plm-reg-compose" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-register-compose.txt"
+  "${PLM_TESTING_DATA_DIR}/plm-reg-compose.txt"
   )
 plm_add_test (
   "plm-compose-a" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "compose;${PLM_TESTING_BUILD_DIR}/plm-register-itk-translation-xf.txt;${PLM_TESTING_BUILD_DIR}/plm-register-compose-vf.mha;${PLM_TESTING_BUILD_DIR}/plm-compose-a-vf.mha"
+  "compose;${PLM_TESTING_BUILD_DIR}/plm-reg-itk-translation-xf.txt;${PLM_TESTING_BUILD_DIR}/plm-reg-compose-vf.mha;${PLM_TESTING_BUILD_DIR}/plm-compose-a-vf.mha"
   )
 plm_add_test (
   "plm-compose-a-warp" 
@@ -1545,7 +1556,7 @@ plm_add_test (
   "plm-compose-b" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "compose;${PLM_TESTING_BUILD_DIR}/plm-register-itk-translation-vf.mha;${PLM_TESTING_BUILD_DIR}/plm-register-compose-vf.mha;${PLM_TESTING_BUILD_DIR}/plm-compose-b-vf.mha"
+  "compose;${PLM_TESTING_BUILD_DIR}/plm-reg-itk-translation-vf.mha;${PLM_TESTING_BUILD_DIR}/plm-reg-compose-vf.mha;${PLM_TESTING_BUILD_DIR}/plm-compose-b-vf.mha"
   )
 plm_add_test (
   "plm-compose-b-warp" 
@@ -1569,7 +1580,7 @@ plm_add_test (
   "plm-compose-c" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "compose;plm-bspline-single-h-xf.txt;${PLM_TESTING_BUILD_DIR}/plm-register-compose-vf.mha;${PLM_TESTING_BUILD_DIR}/plm-compose-c-vf.mha"
+  "compose;plm-bspline-single-h-xf.txt;${PLM_TESTING_BUILD_DIR}/plm-reg-compose-vf.mha;${PLM_TESTING_BUILD_DIR}/plm-compose-c-vf.mha"
   )
 plm_add_test (
   "plm-compose-c-warp" 
@@ -1602,21 +1613,29 @@ plm_add_test (
 
 ## -------------------------------------------------------------------------
 ## plastimatch warp pointset
-##   plm warp pointset a:  xf = bspline, output fcsv
-##   plm warp pointset b:  xf = bspline, output txt
+##   plm-warp-pointset-a:  xf = bspline, output fcsv
+##   plm-warp-pointset-b:  xf = bspline, output txt
+##   plm-warp-pointset-c:  xf = vf, output fcsv
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-warp-pointset-a" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--xf;${PLM_TESTING_BUILD_DIR}/plm-register-rect-bspline-xf.txt;--input;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;--output-pointset;${PLM_TESTING_BUILD_DIR}/plm-warp-pointset-a.fcsv"
+  "warp;--xf;${PLM_TESTING_BUILD_DIR}/plm-reg-rect-bspline-xf.txt;--input;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;--output-pointset;${PLM_TESTING_BUILD_DIR}/plm-warp-pointset-a.fcsv"
   )
 plm_add_test (
   "plm-warp-pointset-b" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--xf;${PLM_TESTING_BUILD_DIR}/plm-register-rect-bspline-xf.txt;--input;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;--output-pointset;${PLM_TESTING_BUILD_DIR}/plm-warp-pointset-b.txt"
+  "warp;--xf;${PLM_TESTING_BUILD_DIR}/plm-reg-rect-bspline-xf.txt;--input;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;--output-pointset;${PLM_TESTING_BUILD_DIR}/plm-warp-pointset-b.txt"
   )
+plm_add_test (
+  "plm-warp-pointset-c" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "warp;--input;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;--output-pointset;${PLM_TESTING_BUILD_DIR}/plm-warp-landmark-a.fcsv;--xf;${PLM_TESTING_BUILD_DIR}/landmark-warp-c-vf.mha"
+  )
+
 
 ## -------------------------------------------------------------------------
 ## plastimatch warp

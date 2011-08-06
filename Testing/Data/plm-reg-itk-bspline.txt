@@ -1,9 +1,9 @@
 [GLOBAL]
 fixed=gauss-1.mha
 moving=gauss-2.mha
-vf_out=plm-register-itk-bspline-vf.mha
-xform_out=plm-register-itk-bspline-xf.txt
-img_out=plm-register-itk-bspline-img.mha
+vf_out=plm-reg-itk-bspline-vf.mha
+xform_out=plm-reg-itk-bspline-xf.txt
+img_out=plm-reg-itk-bspline-img.mha
 
 [STAGE]
 xform=bspline

@@ -25,6 +25,7 @@ public:
     Plm_image_patient_position m_patient_pos;
 
     /* The actual image is one of the following. */
+    CharImageType::Pointer m_itk_char;
     UCharImageType::Pointer m_itk_uchar;
     ShortImageType::Pointer m_itk_short;
     UShortImageType::Pointer m_itk_ushort;
@@ -44,6 +45,7 @@ private:
 	return *this;
     }
     
+    void convert_to_itk_char ();
     void convert_to_itk_uchar ();
     void convert_to_itk_short ();
     void convert_to_itk_ushort ();

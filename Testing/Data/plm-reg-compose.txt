@@ -1,9 +1,9 @@
 [GLOBAL]
 fixed=gauss-2.mha
 moving=gauss-5.mha
-vf_out=plm-register-compose-vf.mha
-xform_out=plm-register-compose.txt
-img_out=plm-register-compose-img.mha
+vf_out=plm-reg-compose-vf.mha
+xform_out=plm-reg-compose.txt
+img_out=plm-reg-compose-img.mha
 
 [STAGE]
 xform=bspline

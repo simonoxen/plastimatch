@@ -1,8 +1,8 @@
 [GLOBAL]
-fixed=gauss-1.mha
-moving=gauss-2.mha
-xf_out_itk=true
-xform_out=plm-register-bspline-itk-output.tfm
+fixed=rect-2.mha
+moving=rect-3.mha
+img_out=plm-reg-bspline-char-output.mha
+img_out_type=char
 
 [STAGE]
 xform=bspline

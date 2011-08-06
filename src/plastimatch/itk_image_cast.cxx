@@ -32,6 +32,27 @@
    Casting image types
    ----------------------------------------------------------------------- */
 template<class T> 
+CharImageType::Pointer
+cast_char (T image)
+{
+    typedef typename T::ObjectType ImageType;
+    typedef itk::CastImageFilter <
+	ImageType, CharImageType > CastFilterType;
+
+    typename CastFilterType::Pointer caster = CastFilterType::New();
+    caster->SetInput(image);
+    try {
+	caster->Update();
+    }
+    catch (itk::ExceptionObject & ex) {
+	printf ("ITK exception in CastFilter.\n");
+	std::cout << ex << std::endl;
+	exit(1);
+    }
+    return caster->GetOutput();
+}
+
+template<class T> 
 UCharImageType::Pointer
 cast_uchar (T image)
 {
@@ -179,6 +200,7 @@ cast_double (T image)
 }
 
 /* Explicit instantiations */
+template plastimatch1_EXPORT CharImageType::Pointer cast_char (FloatImageType::Pointer);
 template plastimatch1_EXPORT UCharImageType::Pointer cast_uchar (FloatImageType::Pointer);
 template plastimatch1_EXPORT ShortImageType::Pointer cast_short (UCharImageType::Pointer);
 template plastimatch1_EXPORT ShortImageType::Pointer cast_short (ShortImageType::Pointer);

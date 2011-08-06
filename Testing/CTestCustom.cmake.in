@@ -238,6 +238,7 @@ endif ()
 if (NOT GDCM_VERSION_1)
   set (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
+    "plm-convert-dicom-donut" 
     "plm-convert-dicom-donut-stats" 
     )
 endif ()
@@ -263,7 +264,7 @@ endif ()
 if (PLM_REDUCED_TESTS)
   set (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
-#    "donut-1"
+    "donut-1"
     "gauss-1"
     "gauss-2"
     "gauss-3"
@@ -412,24 +413,24 @@ if (PLM_REDUCED_TESTS)
 
     "plm-usage" 
 
-    "plm-register-align-center"
-    "plm-register-align-center-stats"
-    "plm-register-align-center-check"
-    "plm-register-itk-translation"
-    "plm-register-itk-translation-stats"
-    "plm-register-itk-translation-check"
-    "plm-register-itk-rigid"
-    "plm-register-itk-rigid-stats-1"
-    "plm-register-itk-rigid-check-1"
-    "plm-register-itk-rigid-stats-2"
-    "plm-register-itk-rigid-check-2"
-    "plm-register-itk-bspline"
-    "plm-register-itk-bspline-stats-1"
-    "plm-register-itk-bspline-check-1"
-    "plm-register-itk-demons"
-    "plm-register-itk-demons-check-1"
-    "plm-register-itk-demons-stats-2"
-    "plm-register-itk-demons-check-2"
+    "plm-reg-align-center"
+    "plm-reg-align-center-stats"
+    "plm-reg-align-center-check"
+    "plm-reg-itk-translation"
+    "plm-reg-itk-translation-stats"
+    "plm-reg-itk-translation-check"
+    "plm-reg-itk-rigid"
+    "plm-reg-itk-rigid-stats-1"
+    "plm-reg-itk-rigid-check-1"
+    "plm-reg-itk-rigid-stats-2"
+    "plm-reg-itk-rigid-check-2"
+    "plm-reg-itk-bspline"
+    "plm-reg-itk-bspline-stats-1"
+    "plm-reg-itk-bspline-check-1"
+    "plm-reg-itk-demons"
+    "plm-reg-itk-demons-check-1"
+    "plm-reg-itk-demons-stats-2"
+    "plm-reg-itk-demons-check-2"
     "plm-bspline-single-c"
     "plm-bspline-single-c-stats" 
     "plm-bspline-single-c-check" 
@@ -442,18 +443,22 @@ if (PLM_REDUCED_TESTS)
     "plm-bspline-cuda"
     "plm-bspline-cuda-stats"
     "plm-bspline-cuda-check"
-    "plm-register-bspline-ushort"
-    "plm-register-bspline-ushort-stats"
-    "plm-register-bspline-ushort-check"
-    "plm-register-bspline-double"
-    "plm-register-bspline-double-stats"
-    "plm-register-bspline-double-check"
-    "plm-register-bspline-itk-output"
+    "plm-reg-bspline-ushort"
+    "plm-reg-bspline-ushort-stats"
+    "plm-reg-bspline-ushort-check"
+    "plm-reg-bspline-double"
+    "plm-reg-bspline-double-stats"
+    "plm-reg-bspline-double-check"
+    "plm-reg-bspline-itk-output"
 
-    "plm-register-rect-bspline" 
-    "plm-register-regularization" 
+    "plm-reg-bspline-char-output"
+    "plm-reg-bspline-char-output-stats"
+    "plm-reg-bspline-char-output-check"
 
-    "plm-register-compose" 
+    "plm-reg-rect-bspline" 
+    "plm-reg-regularization" 
+
+    "plm-reg-compose" 
     "plm-compose-a" 
     "plm-compose-a-warp" 
     "plm-compose-a-stats"
@@ -471,6 +476,7 @@ if (PLM_REDUCED_TESTS)
 
     "plm-warp-pointset-a" 
     "plm-warp-pointset-b" 
+    "plm-warp-pointset-c" 
 
     "plm-warp-a"
     "plm-warp-a-stats"

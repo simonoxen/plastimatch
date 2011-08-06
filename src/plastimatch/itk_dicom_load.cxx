@@ -30,6 +30,7 @@
 /* -----------------------------------------------------------------------
     Definitions
    ----------------------------------------------------------------------- */
+typedef itk::ImageSeriesReader < CharImageType > DicomCharReaderType;
 typedef itk::ImageSeriesReader < UCharImageType > DicomUCharReaderType;
 typedef itk::ImageSeriesReader < ShortImageType > DicomShortReaderType;
 typedef itk::ImageSeriesReader < UShortImageType > DicomUShortReaderType;
@@ -126,11 +127,21 @@ load_dicom_dir_rdr(T rdr, const char *dicom_dir)
     }
 }
 
+CharImageType::Pointer
+load_dicom_char (const char *dicom_dir)
+{
+    DicomCharReaderType::Pointer fixed_input_rdr
+	= DicomCharReaderType::New();
+    load_dicom_dir_rdr (fixed_input_rdr, dicom_dir);
+    fixed_input_rdr->Update();
+    return fixed_input_rdr->GetOutput();
+}
+
 UCharImageType::Pointer
 load_dicom_uchar (const char *dicom_dir)
 {
     DicomUCharReaderType::Pointer fixed_input_rdr
-		= DicomUCharReaderType::New();
+	= DicomUCharReaderType::New();
     load_dicom_dir_rdr (fixed_input_rdr, dicom_dir);
     fixed_input_rdr->Update();
     return fixed_input_rdr->GetOutput();
@@ -140,7 +151,7 @@ ShortImageType::Pointer
 load_dicom_short (const char *dicom_dir)
 {
     DicomShortReaderType::Pointer fixed_input_rdr
-		= DicomShortReaderType::New();
+	= DicomShortReaderType::New();
     load_dicom_dir_rdr (fixed_input_rdr, dicom_dir);
     fixed_input_rdr->Update();
     return fixed_input_rdr->GetOutput();
@@ -150,7 +161,7 @@ UShortImageType::Pointer
 load_dicom_ushort (const char *dicom_dir)
 {
     DicomUShortReaderType::Pointer fixed_input_rdr
-		= DicomUShortReaderType::New();
+	= DicomUShortReaderType::New();
     load_dicom_dir_rdr (fixed_input_rdr, dicom_dir);
     fixed_input_rdr->Update();
     return fixed_input_rdr->GetOutput();
@@ -160,7 +171,7 @@ Int32ImageType::Pointer
 load_dicom_int32 (const char *dicom_dir)
 {
     DicomInt32ReaderType::Pointer fixed_input_rdr
-		= DicomInt32ReaderType::New();
+	= DicomInt32ReaderType::New();
     load_dicom_dir_rdr (fixed_input_rdr, dicom_dir);
     fixed_input_rdr->Update();
     return fixed_input_rdr->GetOutput();
@@ -170,7 +181,7 @@ UInt32ImageType::Pointer
 load_dicom_uint32 (const char *dicom_dir)
 {
     DicomUInt32ReaderType::Pointer fixed_input_rdr
-		= DicomUInt32ReaderType::New();
+	= DicomUInt32ReaderType::New();
     load_dicom_dir_rdr (fixed_input_rdr, dicom_dir);
     fixed_input_rdr->Update();
     return fixed_input_rdr->GetOutput();
@@ -180,7 +191,7 @@ FloatImageType::Pointer
 load_dicom_float (const char *dicom_dir)
 {
     DicomFloatReaderType::Pointer fixed_input_rdr
-		= DicomFloatReaderType::New();
+	= DicomFloatReaderType::New();
     load_dicom_dir_rdr (fixed_input_rdr, dicom_dir);
     fixed_input_rdr->Update();
     return fixed_input_rdr->GetOutput();
@@ -190,7 +201,7 @@ DoubleImageType::Pointer
 load_dicom_double (const char *dicom_dir)
 {
     DicomDoubleReaderType::Pointer fixed_input_rdr
-		= DicomDoubleReaderType::New();
+	= DicomDoubleReaderType::New();
     load_dicom_dir_rdr (fixed_input_rdr, dicom_dir);
     fixed_input_rdr->Update();
     return fixed_input_rdr->GetOutput();

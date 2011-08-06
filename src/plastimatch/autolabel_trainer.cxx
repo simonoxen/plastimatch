@@ -89,6 +89,8 @@ Autolabel_trainer::load_input_file_la (
 	}
     }
 
+    (void) found;  /* Suppress compiler warning */
+
     /* Still need to load file & generate learning vectors here */
 }
 
@@ -112,6 +114,9 @@ Autolabel_trainer::load_input_file_tsv1 (
 	else {
 	    float t;
 	    int rc = sscanf (ps.point_list[i].label.c_str(), "T%f", &t);
+	    if (rc != 1) {
+		print_and_exit ("Error parsing file %s\n", fcsv_fn);
+	    }
 	    if (t > 0.25 && t < 12.75) {
 		t_map.insert (std::pair<float,float> (
 			t, ps.point_list[i].p[2]));
