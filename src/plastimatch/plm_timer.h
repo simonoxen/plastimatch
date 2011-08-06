@@ -11,23 +11,17 @@
 #include <sys/time.h>
 #endif
 
-typedef struct timer_struct Timer;
-struct timer_struct {
+class plmsys_EXPORT Plm_timer {
+public:
     double start_time;
 #ifdef _WIN32
     LARGE_INTEGER clock_freq;
 #endif
 };
 
-#if defined __cplusplus
-extern "C" {
-#endif
 plmsys_EXPORT
-void plm_timer_start (Timer *timer);
+void plm_timer_start (Plm_timer *timer);
 plmsys_EXPORT
-double plm_timer_report (Timer *timer);
-#if defined __cplusplus
-}
-#endif
+double plm_timer_report (Plm_timer *timer);
 
 #endif

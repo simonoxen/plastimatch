@@ -35,7 +35,7 @@ demons_opencl (
     char device_name[256];	/* Device names */
     char *source_path, *source;
     Volume *vf_est, *vf_smooth;
-    Timer timer;
+    Plm_timer timer;
 
     /* Declare global memory */
     cl_mem g_moving_grad_x, g_moving_grad_y, g_moving_grad_z;

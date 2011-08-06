@@ -383,7 +383,7 @@ demons_cuda (
     //Volume *vf_est, *vf_smooth;
     int inliers;
     float ssd;
-    Timer timer, gpu_timer, kernel_timer;
+    Plm_timer timer, gpu_timer, kernel_timer;
 
     int vol_size, interleaved_vol_size, inlier_size, threadX, threadY, threadZ, blockX, blockY, blockZ, num_elements, half_num_elements, reductionBlocks;
     int *d_inliers;

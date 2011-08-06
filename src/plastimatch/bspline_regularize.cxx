@@ -261,7 +261,7 @@ bspline_regularize_score_from_prerendered (
     //float dux_dx[3];
     int num_vox, nv;
     int d,d1,d2,k;
-    Timer timer;
+    Plm_timer timer;
     double interval;
     float *vf; float du;
 
@@ -400,7 +400,7 @@ bspline_regularize_score (
     float dc_dv[3];
     int num_vox;
     int d1,d2,d3;
-    Timer timer;
+    Plm_timer timer;
     double interval;
     float grad_coeff;
     float raw_score;

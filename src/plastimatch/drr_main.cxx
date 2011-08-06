@@ -115,7 +115,7 @@ create_matrix_and_drr (
 	options->vup[1],
 	options->vup[2] };
     double sid = options->sid;
-    Timer timer;
+    Plm_timer timer;
 
     /* Set ic = image center (in pixels), and ps = pixel size (in mm)
        Note: pixels are numbered from 0 to ires-1 */
@@ -164,7 +164,7 @@ drr_render_volume (Volume* vol, Drr_options* options)
     Proj_image *proj;
     Proj_matrix *pmat;
     int a;
-    Timer timer;
+    Plm_timer timer;
     void *dev_state = 0;
 
     /* tgt is isocenter */

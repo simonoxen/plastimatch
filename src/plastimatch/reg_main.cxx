@@ -113,7 +113,7 @@ init_bscore (Bspline_xform* bxf, Bspline_score* ssd)
 int
 main (int argc, char* argv[])
 {
-    Timer timer;
+    Plm_timer timer;
     double time;
     Reg_options options;
     Reg_parms *parms = &options.parms;

@@ -276,11 +276,10 @@ CUDA_reconstruct_conebeam (
 
 
     ////// TIMING CODE //////////////////////
-    // Initialize Windows HighRes Timer
-    Timer timer_total;
+    Plm_timer timer_total;
     double time_total = 0;
 #if defined (TIME_KERNEL)
-    Timer timer;
+    Plm_timer timer;
     double backproject_time = 0.0;
     double filter_time = 0.0;
     double io_time = 0.0;

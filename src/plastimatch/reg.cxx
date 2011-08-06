@@ -538,7 +538,7 @@ vf_regularize_analytic_omp (
     const Bspline_xform* bxf)
 {
     int i,n;
-    Timer timer;
+    Plm_timer timer;
 
     double S = 0.0;
 
@@ -588,7 +588,7 @@ vf_regularize_analytic (
 {
     int i,n;
     int knots[64];
-    Timer timer;
+    Plm_timer timer;
 
     plm_timer_start (&timer);
 

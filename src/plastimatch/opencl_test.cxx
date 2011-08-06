@@ -628,7 +628,7 @@ void print1DArray(
 int 
 main(int argc, char * argv[])
 {
-    Timer timer;
+    Plm_timer timer;
     plm_timer_start (&timer);
 
     // Initialize Host application 

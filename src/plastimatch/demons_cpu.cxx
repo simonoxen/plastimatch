@@ -51,7 +51,7 @@ demons_c (
     float *vf_est_img, *vf_smooth_img;
     int inliers;
     float ssd;
-    Timer timer, it_timer;
+    Plm_timer timer, it_timer;
 
     /* Allocate memory for vector fields */
     if (vf_init) {

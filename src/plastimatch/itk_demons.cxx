@@ -35,7 +35,7 @@ public:
     itkNewMacro (Demons_Observer);
 
 public:
-    Timer timer;
+    Plm_timer timer;
     int m_feval;
 
 protected:

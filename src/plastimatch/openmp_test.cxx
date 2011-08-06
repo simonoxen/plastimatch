@@ -87,7 +87,7 @@ speedtest_openmp_2 (double output[LOOP1], double input[LOOP1])
 int
 main (int argc, char* argv[])
 {
-    Timer timer;
+    Plm_timer timer;
 
     double input[LOOP1], output[LOOP1];
 

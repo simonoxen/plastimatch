@@ -7,7 +7,7 @@
 #include "plm_timer.h"
 
 static double
-plm_timer_get_time (Timer *timer)
+plm_timer_get_time (Plm_timer *timer)
 {
 #if defined (_WIN32)
     LARGE_INTEGER clock_count;
@@ -22,7 +22,7 @@ plm_timer_get_time (Timer *timer)
 }
 
 void
-plm_timer_start (Timer *timer)
+plm_timer_start (Plm_timer *timer)
 {
 #if defined (_WIN32)
     QueryPerformanceFrequency (&timer->clock_freq);
@@ -31,7 +31,7 @@ plm_timer_start (Timer *timer)
 }
 
 double
-plm_timer_report (Timer *timer)
+plm_timer_report (Plm_timer *timer)
 {
     double current_time;
 

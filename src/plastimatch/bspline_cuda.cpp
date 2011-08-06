@@ -646,8 +646,7 @@ CUDA_bspline_mi_a (
 
     // --- DECLARE LOCAL VARIABLES ------------------------------
     Bspline_score* ssd; // Holds the SSD "Score" information
-    Timer timer;
-    //Timer timer0;
+    Plm_timer timer;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
     double* f_hist = mi_hist->f_hist;
     double* m_hist = mi_hist->m_hist;
@@ -785,7 +784,7 @@ CUDA_bspline_mse_j (
     Bspline_score* ssd;     // Holds the SSD "Score" information
     float ssd_grad_norm;    // Holds the SSD Gradient's Norm
     float ssd_grad_mean;    // Holds the SSD Gradient's Mean
-    Timer timer;
+    Plm_timer timer;
 
     static int it=0;        // Holds Iteration Number
     char debug_fn[1024];    // Debug message buffer

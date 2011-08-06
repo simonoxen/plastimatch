@@ -40,11 +40,11 @@ CUDA_reconstruct_conebeam (
     int num_imgs;
     int i;
     float scale;
-    Timer timer_total;
+    Plm_timer timer_total;
     double time_total = 0;
 
 #if FDK_CUDA_TIME_KERNEL
-    Timer timer;
+    Plm_timer timer;
     double backproject_time = 0.0;
     double filter_time = 0.0;
     double io_time = 0.0;
@@ -579,7 +579,7 @@ reconstruct_conebeam (
     double backproject_time = 0.0;
     double io_time = 0.0;
     Proj_image* cbi;
-    Timer timer;
+    Plm_timer timer;
 
     scale = (float) (sqrt(3.f) / (double) num_imgs);
     scale = scale * options->scale;

@@ -86,7 +86,7 @@ set (PLMSYS_LIBRARY_SRC
   file_util.cxx file_util.h
   logfile.c logfile.h
   interpolate.cxx interpolate.h
-  plm_timer.c plm_timer.h
+  plm_timer.cxx plm_timer.h
   print_and_exit.c print_and_exit.h 
   )
 
@@ -607,7 +607,7 @@ if (OPENMP_FOUND)
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
   set_source_files_properties (reg.cxx
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
-  set_source_files_properties (openmp_test.c
+  set_source_files_properties (openmp_test.cxx
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
 endif ()
 

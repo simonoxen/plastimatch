@@ -61,7 +61,7 @@ bspline_score_h_mse (
 
     int idx_tile;
 
-    Timer timer;
+    Plm_timer timer;
 
     size_t cond_size = 64*bxf->num_knots*sizeof(float);
     float* cond_x = (float*)malloc(cond_size);
@@ -263,7 +263,7 @@ bspline_score_g_mse (
 
     int idx_tile;
 
-    Timer timer;
+    Plm_timer timer;
 
     size_t cond_size = 64*bxf->num_knots*sizeof(float);
     float* cond_x = (float*)malloc(cond_size);
@@ -470,7 +470,7 @@ bspline_score_c_mse (
     float* m_grad = (float*) moving_grad->img;
     float dxyz[3];
     int pidx, qidx;
-    Timer timer;
+    Plm_timer timer;
     float m_val;
 
     /* GCS: Oct 5, 2009.  We have determined that sequential accumulation

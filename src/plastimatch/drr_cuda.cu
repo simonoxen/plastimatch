@@ -339,10 +339,6 @@ drr_cuda_ray_trace_image (
     Drr_options *options
 )
 {
-    //Timer timer;
-    //    double time_kernel = 0;
-    //    int i;
-
     // CUDA device pointers
     Drr_cuda_state *state = (Drr_cuda_state*) dev_state;
     Drr_kernel_args *kargs = state->kargs;

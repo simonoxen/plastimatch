@@ -1142,7 +1142,7 @@ bspline_score_f_mi (Bspline_parms *parms,
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
     int pidx;
     float num_vox_f;
-    Timer timer;
+    Plm_timer timer;
 
     float mse_score = 0.0f;
     double* f_hist = mi_hist->f_hist;
@@ -1443,7 +1443,7 @@ bspline_score_e_mi (
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
     int pidx;
     float num_vox_f;
-    Timer timer;
+    Plm_timer timer;
 
     float mse_score = 0.0f;
     double* f_hist = mi_hist->f_hist;
@@ -1792,7 +1792,7 @@ bspline_score_d_mi (Bspline_parms *parms,
     float* m_img = (float*) moving->img;
     float num_vox_f;
     int pidx;
-    Timer timer;
+    Plm_timer timer;
     float m_val;
 
     int fijk[3], fv;
@@ -2089,7 +2089,7 @@ bspline_score_c_mi (Bspline_parms *parms,
     float dxyz[3];
     float num_vox_f;
     int pidx, qidx;
-    Timer timer;
+    Plm_timer timer;
     float li_1[3];           /* Fraction of interpolant in lower index */
     float li_2[3];           /* Fraction of interpolant in upper index */
     float m_val;

@@ -67,7 +67,7 @@ public:
     RegistrationType::Pointer m_registration;
     double last_value;
     int m_feval;
-    Timer timer;
+    Plm_timer timer;
 
 protected:
     Optimization_Observer() {
