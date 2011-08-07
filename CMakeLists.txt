@@ -6,7 +6,7 @@
 project (plastimatch)
 set (PLM_VERSION_MAJOR "1")
 set (PLM_VERSION_MINOR "5")
-set (PLM_VERSION_PATCH "2")
+set (PLM_VERSION_PATCH "3")
 
 ##-----------------------------------------------------------------------------
 ##  Set up CMake defaults
@@ -904,8 +904,24 @@ set (CPACK_SOURCE_IGNORE_FILES
   "~$"
 )
 
+# Write files to extra_stuff directory.  These files will get put 
+# into the source tarball.
 file (WRITE "${CMAKE_BINARY_DIR}/extra_stuff/plastimatch_version.txt" 
-  "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH}")
+  "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH} ($PLASTIMATCH_SVN_VERSION)")
+execute_process (COMMAND date
+  RESULT_VARIABLE DATE_RESULT
+  OUTPUT_VARIABLE DATE_OUTPUT
+  ERROR_VARIABLE DATE_ERROR
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
+if (DATE_RESULT EQUAL 0)
+  set (TIMESTAMP ${DATE_OUTPUT})
+else ()
+  set (TIMESTAMP "Unknown")
+endif ()
+configure_file (
+  ${CMAKE_SOURCE_DIR}/src/plastimatch/CHANGELOG.TXT
+  ${CMAKE_BINARY_DIR}/extra_stuff/CHANGELOG.TXT
+  @ONLY)
 set (CPACK_SOURCE_INSTALLED_DIRECTORIES
   "${CMAKE_SOURCE_DIR};/;${CMAKE_BINARY_DIR}/extra_stuff;/src/plastimatch")
 

@@ -1,4 +1,5 @@
-Version 1.5.3 (build ____)
+Version 1.5.3 (build @PLASTIMATCH_SVN_VERSION@)
+@TIMESTAMP@
 * Add support for signed char image type
 * Fix/workaround problem with b-spline regularization on images with 
   negative voxel spacing
