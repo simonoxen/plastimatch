@@ -43,8 +43,8 @@ intermediate output).
    * - img_out_type
      - GLOBAL, STAGE
      - Data type of the output image.  Either “auto” (default), or 
-       an image type string, such as "float", "short", or "uchar"
-       (without the quotes).
+       an image type string: char, uchar, short, ushort, int, uint, 
+       float, or double.
    * - background_max
      - GLOBAL
      - -1200.0 (default) Units: image intensity

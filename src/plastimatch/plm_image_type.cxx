@@ -8,7 +8,10 @@
 Plm_image_type
 plm_image_type_parse (const char* string)
 {
-    if (!strcmp (string,"char")) {
+    if (!strcmp (string,"auto")) {
+	return PLM_IMG_TYPE_UNDEFINED;
+    }
+    else if (!strcmp (string,"char")) {
 	return PLM_IMG_TYPE_ITK_CHAR;
     }
     else if (!strcmp (string,"mask") || !strcmp (string,"uchar")) {
