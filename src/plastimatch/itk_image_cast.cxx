@@ -14,7 +14,7 @@
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
-#include "itkCastImageFilter.h"
+#include "itkClampCastImageFilter.h"
 #include "itkOrientImageFilter.h"
 #include "itk_image.h"
 #include "logfile.h"
@@ -36,10 +36,10 @@ CharImageType::Pointer
 cast_char (T image)
 {
     typedef typename T::ObjectType ImageType;
-    typedef itk::CastImageFilter <
-	ImageType, CharImageType > CastFilterType;
+    typedef itk::ClampCastImageFilter <
+	ImageType, CharImageType > ClampCastFilterType;
 
-    typename CastFilterType::Pointer caster = CastFilterType::New();
+    typename ClampCastFilterType::Pointer caster = ClampCastFilterType::New ();
     caster->SetInput(image);
     try {
 	caster->Update();
@@ -57,16 +57,16 @@ UCharImageType::Pointer
 cast_uchar (T image)
 {
     typedef typename T::ObjectType ImageType;
-    typedef itk::CastImageFilter <
-	ImageType, UCharImageType > CastFilterType;
+    typedef itk::ClampCastImageFilter <
+	ImageType, UCharImageType > ClampCastFilterType;
 
-    typename CastFilterType::Pointer caster = CastFilterType::New();
+    typename ClampCastFilterType::Pointer caster = ClampCastFilterType::New();
     caster->SetInput(image);
     try {
 	caster->Update();
     }
     catch (itk::ExceptionObject & ex) {
-	printf ("ITK exception in CastFilter.\n");
+	printf ("ITK exception in ClampCastFilter.\n");
 	std::cout << ex << std::endl;
 	exit(1);
     }
@@ -78,16 +78,16 @@ UShortImageType::Pointer
 cast_ushort (T image)
 {
     typedef typename T::ObjectType ImageType;
-    typedef itk::CastImageFilter <
-	ImageType, UShortImageType > CastFilterType;
+    typedef itk::ClampCastImageFilter <
+	ImageType, UShortImageType > ClampCastFilterType;
 
-    typename CastFilterType::Pointer caster = CastFilterType::New();
+    typename ClampCastFilterType::Pointer caster = ClampCastFilterType::New();
     caster->SetInput(image);
     try {
 	caster->Update();
     }
     catch (itk::ExceptionObject & ex) {
-	printf ("ITK exception in CastFilter.\n");
+	printf ("ITK exception in ClampCastFilter.\n");
 	std::cout << ex << std::endl;
 	exit(1);
     }
@@ -99,16 +99,16 @@ ShortImageType::Pointer
 cast_short (T image)
 {
     typedef typename T::ObjectType ImageType;
-    typedef itk::CastImageFilter <
-	ImageType, ShortImageType > CastFilterType;
+    typedef itk::ClampCastImageFilter <
+	ImageType, ShortImageType > ClampCastFilterType;
 
-    typename CastFilterType::Pointer caster = CastFilterType::New();
+    typename ClampCastFilterType::Pointer caster = ClampCastFilterType::New();
     caster->SetInput(image);
     try {
 	caster->Update();
     }
     catch (itk::ExceptionObject & ex) {
-	printf ("ITK exception in CastFilter.\n");
+	printf ("ITK exception in ClampCastFilter.\n");
 	std::cout << ex << std::endl;
 	exit(1);
     }
@@ -120,16 +120,16 @@ Int32ImageType::Pointer
 cast_int32 (T image)
 {
     typedef typename T::ObjectType ImageType;
-    typedef itk::CastImageFilter <
-	ImageType, Int32ImageType > CastFilterType;
+    typedef itk::ClampCastImageFilter <
+	ImageType, Int32ImageType > ClampCastFilterType;
 
-    typename CastFilterType::Pointer caster = CastFilterType::New();
+    typename ClampCastFilterType::Pointer caster = ClampCastFilterType::New();
     caster->SetInput(image);
     try {
 	caster->Update();
     }
     catch (itk::ExceptionObject & ex) {
-	printf ("ITK exception in CastFilter.\n");
+	printf ("ITK exception in ClampCastFilter.\n");
 	std::cout << ex << std::endl;
 	exit(1);
     }
@@ -141,16 +141,16 @@ UInt32ImageType::Pointer
 cast_uint32 (T image)
 {
     typedef typename T::ObjectType ImageType;
-    typedef itk::CastImageFilter <
-	ImageType, UInt32ImageType > CastFilterType;
+    typedef itk::ClampCastImageFilter <
+	ImageType, UInt32ImageType > ClampCastFilterType;
 
-    typename CastFilterType::Pointer caster = CastFilterType::New();
+    typename ClampCastFilterType::Pointer caster = ClampCastFilterType::New();
     caster->SetInput(image);
     try {
 	caster->Update();
     }
     catch (itk::ExceptionObject & ex) {
-	printf ("ITK exception in CastFilter.\n");
+	printf ("ITK exception in ClampCastFilter.\n");
 	std::cout << ex << std::endl;
 	exit(1);
     }
@@ -162,16 +162,16 @@ FloatImageType::Pointer
 cast_float (T image)
 {
     typedef typename T::ObjectType ImageType;
-    typedef itk::CastImageFilter <
-	ImageType, FloatImageType > CastFilterType;
+    typedef itk::ClampCastImageFilter <
+	ImageType, FloatImageType > ClampCastFilterType;
 
-    typename CastFilterType::Pointer caster = CastFilterType::New();
+    typename ClampCastFilterType::Pointer caster = ClampCastFilterType::New();
     caster->SetInput(image);
     try {
 	caster->Update();
     }
     catch (itk::ExceptionObject & ex) {
-	printf ("ITK exception in CastFilter.\n");
+	printf ("ITK exception in ClampCastFilter.\n");
 	std::cout << ex << std::endl;
 	exit(1);
     }
@@ -183,16 +183,16 @@ DoubleImageType::Pointer
 cast_double (T image)
 {
     typedef typename T::ObjectType ImageType;
-    typedef itk::CastImageFilter <
-	ImageType, DoubleImageType > CastFilterType;
+    typedef itk::ClampCastImageFilter <
+	ImageType, DoubleImageType > ClampCastFilterType;
 
-    typename CastFilterType::Pointer caster = CastFilterType::New();
+    typename ClampCastFilterType::Pointer caster = ClampCastFilterType::New();
     caster->SetInput(image);
     try {
 	caster->Update();
     }
     catch (itk::ExceptionObject & ex) {
-	printf ("ITK exception in CastFilter.\n");
+	printf ("ITK exception in ClampCastFilter.\n");
 	std::cout << ex << std::endl;
 	exit(1);
     }
