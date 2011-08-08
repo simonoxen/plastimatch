@@ -21,6 +21,10 @@ main (int argc, char * argv [])
 {
     PARSE_ARGS;
 
+    bool have_img_input = false;
+    bool have_ss_img_input = false;
+    bool have_img_output = false;
+    bool have_ss_img_output = false;
     Warp_parms parms;
     Plm_file_format file_type;
     Rtds rtds;
@@ -32,8 +36,26 @@ main (int argc, char * argv [])
 	parms.fixed_img_fn = plmslc_xformwarp_reference_vol.c_str();
     }
 
-    /* Input image (required) */
-    parms.input_fn = plmslc_xformwarp_input_img.c_str();
+    /* Input image or dose */
+    if (plmslc_xformwarp_input_img != "" 
+	&& plmslc_xformwarp_input_img != "None")
+    {
+	have_img_input = true;
+	parms.input_fn = plmslc_xformwarp_input_img.c_str();
+    }
+
+    /* Input ss image */
+    if (plmslc_xformwarp_input_ss_img != "" 
+	&& plmslc_xformwarp_input_ss_img != "None")
+    {
+	have_ss_img_input = true;
+	parms.input_ss_img_fn = plmslc_xformwarp_input_ss_img.c_str();
+    }
+
+    if (!have_img_input && !have_ss_img_input) {
+	printf ("Error.  No input specified.\n");
+	return EXIT_FAILURE;
+    }
 
     /* Get xform either from MRML scene or file */
     if (plmslc_xformwarp_input_xform_s != "" 
@@ -54,8 +76,28 @@ main (int argc, char * argv [])
 
     printf ("xf_in_fn = %s\n", (const char*) parms.xf_in_fn);
 
-    /* Output image (required) */
-    parms.output_img_fn = plmslc_xformwarp_output_img.c_str();
+    /* Output warped image or dose */
+    if (plmslc_xformwarp_output_img != "" 
+	&& plmslc_xformwarp_output_img != "None")
+    {
+	have_img_output = true;
+	parms.output_img_fn = plmslc_xformwarp_output_img.c_str();
+    }
+
+    /* Output warped ss image */
+    if (plmslc_xformwarp_output_ss_img != "" 
+	&& plmslc_xformwarp_output_ss_img != "None")
+    {
+	have_ss_img_output = true;
+	parms.output_ss_img_fn = plmslc_xformwarp_output_ss_img.c_str();
+    }
+
+    if (!(have_img_input && have_img_output)
+	&& !(have_ss_img_input && have_ss_img_output))
+    {
+	printf ("Error.  Output images not specified correctly.\n");
+	return EXIT_FAILURE;
+    }
 
     /* What is the input file type? */
     file_type = plm_file_format_deduce ((const char*) parms.input_fn);

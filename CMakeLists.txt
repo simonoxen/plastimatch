@@ -345,8 +345,10 @@ link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/nocedal)
 ##-----------------------------------------------------------------------------
 ##  Only use local specfun
 ##-----------------------------------------------------------------------------
-add_subdirectory (libs/specfun)
-link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/specfun)
+if (NOT BUILD_DEBIAN)
+  add_subdirectory (libs/specfun)
+  link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/specfun)
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Only use local msinttypes

@@ -25,7 +25,15 @@
       <label>Input volume</label>
       <channel>input</channel>
       <default>None</default>
-      <description>Input image or dose or structure set</description>
+      <description>Input image or dose</description>
+    </image>
+    <image>
+      <longflag>plmslc_xformwarp_input_ss_img</longflag>
+      <name>plmslc_xformwarp_input_ss_img</name>
+      <label>Input ss volume</label>
+      <channel>input</channel>
+      <default>None</default>
+      <description>Input structure set</description>
     </image>
     <transform fileExtensions=".txt" type="bspline">
       <name>plmslc_xformwarp_input_xform_s</name>
@@ -57,7 +65,15 @@
       <label>Output volume</label>
       <channel>output</channel>
       <default>None</default>
-      <description>Output (warped) Image etc.</description>
+      <description>Output (warped) image or dose</description>
+    </image>
+    <image type="label">
+      <longflag>plmslc_xformwarp_output_ss_img</longflag>
+      <name>plmslc_xformwarp_output_ss_img</name>
+      <label>Output ss volume</label>
+      <channel>output</channel>
+      <default>None</default>
+      <description>Output (warped) structure set volume</description>
     </image>
   </parameters>
 </executable>

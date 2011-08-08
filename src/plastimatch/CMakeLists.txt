@@ -747,8 +747,10 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Executable targets
 ##-----------------------------------------------------------------------------
-plm_add_executable (bragg_curve "${BRAGG_CURVE_SRC}" "${GPUIT_LIBRARIES}" 
-  "${GPUIT_EXE_LDFLAGS}" 0)
+if (NOT BUILD_DEBIAN)
+  plm_add_executable (bragg_curve "${BRAGG_CURVE_SRC}" "${GPUIT_LIBRARIES}" 
+    "${GPUIT_EXE_LDFLAGS}" 0)
+endif ()
 plm_add_executable (bspline "${BSPLINE_SRC}" "${GPUIT_LIBRARIES}" 
   "${PLMCUDA_EXE_LDFLAGS}" 0)
 plm_add_executable (check_grad "${CHECK_GRAD_SRC}" "${GPUIT_LIBRARIES}" 
@@ -780,8 +782,6 @@ plm_add_executable (Vmatrix "${VMATRIX_SRC}"
 plm_add_executable (xyzInt "${XYZINT_SRC}" 
   "" "" 
   ${INSTALL_IF_NOT_DEBIAN})
-
-
 
 if (FULL_PLASTIMATCH_BUILD)
   message (STATUS "PLASTIMATCH_LIBS: ${PLASTIMATCH_LIBS}")

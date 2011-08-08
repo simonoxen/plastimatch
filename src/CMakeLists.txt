@@ -16,8 +16,14 @@ set (GPUIT_LIBRARY_DEPENDENCIES
   ${LIBLBFGS_LIBRARIES}
   nocedal
   plmsys
-  specfun
   )
+
+if (NOT BUILD_DEBIAN)
+  set (GPUIT_LIBRARY_DEPENDENCIES 
+    ${GPUIT_LIBRARY_DEPENDENCIES}
+    specfun
+    )
+endif ()
 
 # JAS 2010.11.19
 # New CUDA plugin stuff
