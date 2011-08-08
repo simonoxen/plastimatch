@@ -28,6 +28,8 @@
 #include "bspline_macros.h"
 #include "xpm.h"
 
+#define VOPT_RES 1000
+
 /* -----------------------------------------------------------------------
    Initialization and teardown
    ----------------------------------------------------------------------- */
@@ -62,28 +64,182 @@ bspline_initialize_mi_bigbin (
 }
 
 static void
-bspline_initialize_mi_vol (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
+bspline_initialize_mi_hist_eqsp (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
 {
     int i;
     float min_vox, max_vox;
     float* img = (float*) vol->img;
 
     if (!img) {
-    logfile_printf ("Error trying to create histogram from empty image\n");
-    exit (-1);
+        logfile_printf ("Error trying to create histogram from empty image\n");
+        exit (-1);
     }
+
     min_vox = max_vox = img[0];
     for (i = 0; i < vol->npix; i++) {
-    if (img[i] < min_vox) {
-        min_vox = img[i];
-    } else if (img[i] > max_vox) {
-        max_vox = img[i];
-    }
+        if (img[i] < min_vox) {
+            min_vox = img[i];
+        } else if (img[i] > max_vox) {
+            max_vox = img[i];
+        }
     }
 
     /* To avoid rounding issues, top and bottom bin are only half full */
     hparms->delta = (max_vox - min_vox) / (hparms->bins - 1);
     hparms->offset = min_vox - 0.5 * hparms->delta;
+    printf ("  delta: %f\n", hparms->delta);
+}
+
+static inline double
+vopt_bin_error (int start, int end, double* d_lut, double* ds_lut)
+{
+    double sq_diff;
+    double diff;
+    double delta;
+    double result;
+
+    sq_diff = ds_lut[end] - ds_lut[start];
+    diff = d_lut[end] - d_lut[start];
+    delta = (double)end - (double)start + 1;
+
+    return sq_diff - (diff*diff)/delta;
+} 
+
+/* JAS - 2011.08.08
+ * Experimental implementation of V-Optimal Histograms
+ * ref: 
+ *   http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.92.3195&rep=rep1&type=pdf
+ */
+static void
+bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
+{
+    int i, j, k, idx_bin;
+    int curr, next, bottom;
+    float min_vox, max_vox;
+
+    int* tracker;
+    double* tmp_hist;
+    double* d_lut;
+    double* ds_lut;
+    double* err_lut;
+    double candidate;
+    float* img = (float*) vol->img;
+
+    if (!img) {
+        logfile_printf ("Error trying to create histogram from empty image\n");
+        exit (-1);
+    }
+
+    hparms->keys = VOPT_RES;
+    tmp_hist = (double*) malloc (hparms->keys * sizeof (double));
+    memset (tmp_hist, 0, hparms->keys * sizeof (double));
+
+    d_lut   = (double*) malloc (hparms->keys * sizeof (double));
+    ds_lut  = (double*) malloc (hparms->keys * sizeof (double));
+    err_lut = (double*) malloc (hparms->bins * hparms->keys * sizeof (double));
+    memset (err_lut, 0, hparms->bins * hparms->keys * sizeof (double));
+
+    tracker = (int*) malloc (hparms->bins * hparms->keys * sizeof (int));
+    memset (tracker, 0, hparms->bins * hparms->keys * sizeof (int));
+
+    /* Determine input image value range */
+    min_vox = max_vox = img[0];
+    for (i=0; i < vol->npix; i++) {
+        if (img[i] < min_vox) {
+            min_vox = img[i];
+        } else if (img[i] > max_vox) {
+            max_vox = img[i];
+        }
+    }
+
+    /* To avoid rounding issues, top and bottom bin are only half full */
+    hparms->delta = (max_vox - min_vox) / (hparms->keys - 1);
+    hparms->offset = min_vox - 0.5 * hparms->delta;
+
+    /* Construct high resolution histogram */
+    for (i=0; i<vol->npix; i++) {
+        idx_bin = floor ((img[i] - hparms->offset) / hparms->delta);
+        tmp_hist[idx_bin]++;
+    }
+
+    /* Create lookup tables for error computations */
+    d_lut[0] = tmp_hist[0];
+    ds_lut[0] = (tmp_hist[0] * tmp_hist[0]);
+    for (i=1; i<hparms->keys; i++) {
+        d_lut[i] = d_lut[i-1] + tmp_hist[i];
+        ds_lut[i] = ds_lut[i-1] + (tmp_hist[i] * tmp_hist[i]);
+    }
+
+    free (tmp_hist);
+
+    /* Compute the one bin scores */
+    for (i=0; i<hparms->keys; i++) {
+        err_lut[i] = vopt_bin_error (0, i, d_lut, ds_lut);
+    }
+
+    /* Compute best multi-bin scores */
+    for (j=1; j<hparms->bins; j++) {
+        for (i=0; i<hparms->keys; i++) {
+
+            err_lut[hparms->keys*j+i] = DBL_MAX;
+            tracker[hparms->keys*j+i] = 0;
+
+            for (k=0; k<i; k++) {
+                candidate = err_lut[hparms->keys*(j-1)+k] + vopt_bin_error (k+1, i, d_lut, ds_lut);
+                if (candidate < err_lut[hparms->keys*j+i]) {
+                    err_lut[hparms->keys*j+i] = candidate;
+                    tracker[hparms->keys*j+i] = k;
+                }
+            }
+        }
+    }
+
+    free (d_lut);
+    free (ds_lut);
+    free (err_lut);
+
+    /* Build the linear key table */
+    hparms->key_lut = (int*) malloc (hparms->keys * sizeof (int));
+    memset (hparms->key_lut, 0, hparms->keys * sizeof (int));
+
+    curr = hparms->keys-1;
+    for (j=hparms->bins-1; j>=0; j--) {
+        next = tracker[hparms->keys*j+curr];
+        bottom = next+1;
+        if (j == 0) { bottom = 0; }
+
+//        printf ("[%i] from %i to %i\n", j, bottom, curr);
+        for (i=bottom; i<=curr; i++) {
+            hparms->key_lut[i] = j;
+        }
+
+        curr = next;
+    }
+
+    free (tracker);
+
+#if 0
+    printf ("bins: %i  keys: %i\n", hparms->bins, hparms->keys);
+    printf ("...done!\n");
+    exit (0);
+#endif
+
+}
+
+static void
+bspline_initialize_mi_hist (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
+{
+    /* Histogram type specific init procedures */
+    if (hparms->type == HIST_EQSP) {
+        bspline_initialize_mi_hist_eqsp (hparms, vol);
+    }
+    else if (hparms->type == HIST_VOPT) {
+        bspline_initialize_mi_hist_vopt (hparms, vol);
+    }
+    else {
+        fprintf (stderr, "Error: Encountered invalid histogram type.  Terminating...\n");
+        exit (0);
+    }
 }
 
 void
@@ -93,8 +249,8 @@ bspline_initialize_mi (Bspline_parms* parms, Volume* fixed, Volume* moving)
     mi_hist->m_hist = (double*) malloc (sizeof (double) * mi_hist->moving.bins);
     mi_hist->f_hist = (double*) malloc (sizeof (double) * mi_hist->fixed.bins);
     mi_hist->j_hist = (double*) malloc (sizeof (double) * mi_hist->fixed.bins * mi_hist->moving.bins);
-    bspline_initialize_mi_vol (&mi_hist->moving, moving);
-    bspline_initialize_mi_vol (&mi_hist->fixed, fixed);
+    bspline_initialize_mi_hist (&mi_hist->moving, moving);
+    bspline_initialize_mi_hist (&mi_hist->fixed, fixed);
 
     /* Initialize biggest bin trackers for OpenMP MI */
     bspline_initialize_mi_bigbin (mi_hist->f_hist, &mi_hist->fixed, fixed);

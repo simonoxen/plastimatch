@@ -52,6 +52,11 @@ enum BsplineMetric {
     BMET_MI
 };
 
+enum BsplineHistType {
+    HIST_EQSP,
+    HIST_VOPT
+};
+
 class Bspline_score {
 public:
     float score;         /* Total Score (sent to optimizer) */
@@ -86,10 +91,16 @@ struct bspline_state_struct {
 
 typedef struct BSPLINE_MI_Hist_Parms_struct BSPLINE_MI_Hist_Parms;
 struct BSPLINE_MI_Hist_Parms_struct {
-    long bins;
-    float offset;
-    float delta;
-    int big_bin;    // fullest bin
+    /* Used by all histogram types */
+    enum BsplineHistType type;  /* Type of histograms */
+    long bins;                  /* # of bins in histogram  */
+    float offset;               /* minimum voxel intensity */
+    int big_bin;                /* fullest bin index       */
+    float delta;                /* bin OR key spacing   */
+
+    /* For V-Optimal Histograms */
+    long keys;              /* # of keys               */
+    int* key_lut;           /* bin keys lookup table   */
 };
 
 typedef struct BSPLINE_MI_Hist_struct BSPLINE_MI_Hist;
@@ -157,8 +168,11 @@ public:
 	this->mi_hist.f_hist = 0;
 	this->mi_hist.m_hist = 0;
 	this->mi_hist.j_hist = 0;
-	this->mi_hist.fixed.bins = 500;
-	this->mi_hist.moving.bins = 500;
+    this->mi_hist.fixed.type = HIST_EQSP;
+    this->mi_hist.moving.type = HIST_EQSP;
+    this->mi_hist.joint.type = HIST_EQSP;
+	this->mi_hist.fixed.bins = 32;
+	this->mi_hist.moving.bins = 32;
 	this->mi_hist.joint.bins 
 	    = this->mi_hist.fixed.bins * this->mi_hist.moving.bins;
 	this->mi_hist.fixed.big_bin = 0;
