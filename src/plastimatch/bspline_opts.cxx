@@ -52,6 +52,7 @@ print_usage (void)
     " --young-modulus float      Young modulus (cost of vector field gradient)\n"
     " --rbf-radius float         Apply radial basis functions with a given radius\n"
 	" --rbf-young-modulus float  RBF Young modulus (cost of RBF vf second derivative)\n"
+    " --vopt                     Use v-optimal histograms (experimental/cpu only)\n"
 	" --list-gpu                 Enumerates available GPU IDs and displays details\n"
     " --debug                    Create various debug files\n"
     );
@@ -352,6 +353,11 @@ bspline_opts_parse_args (Bspline_options* options, int argc, char* argv[])
 		print_usage ();
 	    }
 	}
+	else if (!strcmp (argv[i], "--vopt")) {
+        parms->mi_hist.fixed.type = HIST_VOPT;
+        parms->mi_hist.moving.type = HIST_VOPT;
+        parms->mi_hist.joint.type = HIST_VOPT;
+    }
 	else if (!strcmp (argv[i], "--list-gpu")) {
 #if (CUDA_FOUND)
 	    printf ("Enumerating available GPUs:\n\n");

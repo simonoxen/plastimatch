@@ -51,6 +51,9 @@ bspline_initialize_mi_bigbin (
     /* build a quick histogram */
     for (i=0; i<vol->npix; i++) {
         idx_bin = floor ((img[i] - hparms->offset) / hparms->delta);
+        if (hparms->type == HIST_VOPT) {
+            idx_bin = hparms->key_lut[idx_bin];
+        }
         hist[idx_bin]++;
     }
 
@@ -87,7 +90,6 @@ bspline_initialize_mi_hist_eqsp (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
     /* To avoid rounding issues, top and bottom bin are only half full */
     hparms->delta = (max_vox - min_vox) / (hparms->bins - 1);
     hparms->offset = min_vox - 0.5 * hparms->delta;
-    printf ("  delta: %f\n", hparms->delta);
 }
 
 static inline double
@@ -219,8 +221,26 @@ bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
     free (tracker);
 
 #if 0
-    printf ("bins: %i  keys: %i\n", hparms->bins, hparms->keys);
-    printf ("...done!\n");
+    printf ("High Resolution Histogram:\n");
+    for (i=0; i<hparms->keys; i++) {
+        printf ("  [%i] %f\n", i, tmp_hist[i]);
+    }
+
+    printf ("V-Optimal Histogram:\n");
+    int old_key = hparms->key_lut[0];
+    double tmp = 0;
+    j = 0;
+    for (i=0; i<hparms->keys; i++) {
+        if (hparms->key_lut[i] == old_key) {
+            tmp += tmp_hist[i];
+        } else {
+            printf ("  [%i] %f\n", j, tmp);
+            tmp = tmp_hist[i];
+            old_key = hparms->key_lut[i];
+            j++;
+        }
+    }
+    printf ("  [%i] %f\n", j, tmp);
     exit (0);
 #endif
 
@@ -895,6 +915,9 @@ bspline_mi_hist_add_pvi_8_omp (
 
     // Calculate fixed histogram bin and increment it
     idx_fbin = floor ((f_img[fv] - mi_hist->fixed.offset) / mi_hist->fixed.delta);
+    if (mi_hist->fixed.type == HIST_VOPT) {
+        idx_fbin = mi_hist->fixed.key_lut[idx_fbin];
+    }
 
     omp_set_lock(&f_locks[idx_fbin]);
     f_hist[idx_fbin]++;
@@ -906,6 +929,9 @@ bspline_mi_hist_add_pvi_8_omp (
     for (idx_pv=0; idx_pv<8; idx_pv++) {
 
         idx_mbin = floor ((m_img[n[idx_pv]] - mi_hist->moving.offset) / mi_hist->moving.delta);
+        if (mi_hist->moving.type == HIST_VOPT) {
+            idx_mbin = mi_hist->moving.key_lut[idx_mbin];
+        }
         idx_jbin = offset_fbin + idx_mbin;
 
         if (idx_mbin != mi_hist->moving.big_bin) {
@@ -969,6 +995,9 @@ bspline_mi_hist_add_pvi_8 (
 
     // Calculate fixed histogram bin and increment it
     idx_fbin = floor ((f_img[fv] - mi_hist->fixed.offset) / mi_hist->fixed.delta);
+    if (mi_hist->fixed.type == HIST_VOPT) {
+        idx_fbin = mi_hist->fixed.key_lut[idx_fbin];
+    }
     f_hist[idx_fbin]++;
 
     offset_fbin = idx_fbin * mi_hist->moving.bins;
@@ -976,6 +1005,9 @@ bspline_mi_hist_add_pvi_8 (
     // Add PV weights to moving & joint histograms   
     for (idx_pv=0; idx_pv<8; idx_pv++) {
         idx_mbin = floor ((m_img[n[idx_pv]] - mi_hist->moving.offset) / mi_hist->moving.delta);
+        if (mi_hist->moving.type == HIST_VOPT) {
+            idx_mbin = mi_hist->moving.key_lut[idx_mbin];
+        }
         idx_jbin = offset_fbin + idx_mbin;
         m_hist[idx_mbin] += w[idx_pv];
         j_hist[idx_jbin] += w[idx_pv];
@@ -1144,11 +1176,17 @@ bspline_mi_pvi_8_dc_dv (
 
     /* Fixed image voxel's histogram index */
     idx_fbin = floor ((f_img[fv] - mi_hist->fixed.offset) / mi_hist->fixed.delta);
+    if (mi_hist->fixed.type == HIST_VOPT) {
+        idx_fbin = mi_hist->fixed.key_lut[idx_fbin];
+    }
     offset_fbin = idx_fbin * mi_hist->moving.bins;
 
     /* Partial Volume Contributions */
     for (idx_pv=0; idx_pv<8; idx_pv++) {
         idx_mbin = floor ((m_img[n[idx_pv]] - mi_hist->moving.offset) / mi_hist->moving.delta);
+        if (mi_hist->moving.type == HIST_VOPT) {
+            idx_mbin = mi_hist->moving.key_lut[idx_mbin];
+        }
         idx_jbin = offset_fbin + idx_mbin;
         if (j_hist[idx_jbin] > 0.0001) {
             dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->smetric;
