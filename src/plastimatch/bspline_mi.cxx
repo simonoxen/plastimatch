@@ -33,6 +33,21 @@
 /* -----------------------------------------------------------------------
    Initialization and teardown
    ----------------------------------------------------------------------- */
+static inline double
+vopt_bin_error (int start, int end, double* d_lut, double* ds_lut)
+{
+    double sq_diff;
+    double diff;
+    double delta;
+    double result;
+
+    sq_diff = ds_lut[end] - ds_lut[start];
+    diff = d_lut[end] - d_lut[start];
+    delta = (double)end - (double)start + 1;
+
+    return sq_diff - (diff*diff)/delta;
+} 
+
 static void
 bspline_initialize_mi_bigbin (
     double* hist, 
@@ -92,21 +107,6 @@ bspline_initialize_mi_hist_eqsp (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
     hparms->offset = min_vox - 0.5 * hparms->delta;
 }
 
-static inline double
-vopt_bin_error (int start, int end, double* d_lut, double* ds_lut)
-{
-    double sq_diff;
-    double diff;
-    double delta;
-    double result;
-
-    sq_diff = ds_lut[end] - ds_lut[start];
-    diff = d_lut[end] - d_lut[start];
-    delta = (double)end - (double)start + 1;
-
-    return sq_diff - (diff*diff)/delta;
-} 
-
 /* JAS - 2011.08.08
  * Experimental implementation of V-Optimal Histograms
  * ref: 
@@ -121,6 +121,7 @@ bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
 
     int* tracker;
     double* tmp_hist;
+    double* tmp_avg;
     double* d_lut;
     double* ds_lut;
     double* err_lut;
@@ -134,7 +135,9 @@ bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
 
     hparms->keys = VOPT_RES;
     tmp_hist = (double*) malloc (hparms->keys * sizeof (double));
+    tmp_avg  = (double*) malloc (hparms->keys * sizeof (double));
     memset (tmp_hist, 0, hparms->keys * sizeof (double));
+    memset (tmp_avg,  0, hparms->keys * sizeof (double));
 
     d_lut   = (double*) malloc (hparms->keys * sizeof (double));
     ds_lut  = (double*) malloc (hparms->keys * sizeof (double));
@@ -153,26 +156,40 @@ bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
             max_vox = img[i];
         }
     }
-
+    
     /* To avoid rounding issues, top and bottom bin are only half full */
     hparms->delta = (max_vox - min_vox) / (hparms->keys - 1);
     hparms->offset = min_vox - 0.5 * hparms->delta;
 
-    /* Construct high resolution histogram */
+    /* Construct high resolution histogram w/ bin contribution averages*/
     for (i=0; i<vol->npix; i++) {
         idx_bin = floor ((img[i] - hparms->offset) / hparms->delta);
         tmp_hist[idx_bin]++;
+        tmp_avg[idx_bin] += img[i];
     }
 
-    /* Create lookup tables for error computations */
-    d_lut[0] = tmp_hist[0];
-    ds_lut[0] = (tmp_hist[0] * tmp_hist[0]);
-    for (i=1; i<hparms->keys; i++) {
-        d_lut[i] = d_lut[i-1] + tmp_hist[i];
-        ds_lut[i] = ds_lut[i-1] + (tmp_hist[i] * tmp_hist[i]);
+    /* Sorted estimation table
+     *   May introduce some error depending on sampling resolution, but far
+     *   more efficient than working on sorted volume data directly -- even if
+     *   sub-sampling were employed.
+     */
+    for (i=0; i<hparms->keys; i++) {
+        if (tmp_hist[i] > 0) {
+            tmp_avg[i] = tmp_avg[i] / tmp_hist[i];
+        }
     }
 
     free (tmp_hist);
+
+    /* Create lookup tables for error computations */
+    d_lut[0] = tmp_avg[0];
+    ds_lut[0] = (tmp_avg[0] * tmp_avg[0]);
+    for (i=1; i<hparms->keys; i++) {
+        d_lut[i] = d_lut[i-1] + tmp_avg[i];
+        ds_lut[i] = ds_lut[i-1] + (tmp_avg[i] * tmp_avg[i]);
+    }
+
+    free (tmp_avg);
 
     /* Compute the one bin scores */
     for (i=0; i<hparms->keys; i++) {
@@ -223,7 +240,7 @@ bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
 #if 0
     printf ("High Resolution Histogram:\n");
     for (i=0; i<hparms->keys; i++) {
-        printf ("  [%i] %f\n", i, tmp_hist[i]);
+        printf ("  [%i] %f\n", i, tmp_avg[i]);
     }
 
     printf ("V-Optimal Histogram:\n");
@@ -232,10 +249,10 @@ bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
     j = 0;
     for (i=0; i<hparms->keys; i++) {
         if (hparms->key_lut[i] == old_key) {
-            tmp += tmp_hist[i];
+            tmp += tmp_avg[i];
         } else {
             printf ("  [%i] %f\n", j, tmp);
-            tmp = tmp_hist[i];
+            tmp = tmp_avg[i];
             old_key = hparms->key_lut[i];
             j++;
         }
@@ -243,7 +260,6 @@ bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
     printf ("  [%i] %f\n", j, tmp);
     exit (0);
 #endif
-
 }
 
 static void
