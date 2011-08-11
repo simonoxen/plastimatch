@@ -100,7 +100,7 @@ gdcm_dose_load (Plm_image *pli, const char *dose_fn, const char *dicom_dir)
     gdcm_file->Load();
 
     std::cout << " loading dose " << std::endl;
-    /* Modality -- better be RTSTRUCT */
+    /* Modality -- better be RTDOSE */
     tmp = gdcm_file->GetEntryValue (0x0008, 0x0060);
     if (strncmp (tmp.c_str(), "RTDOSE", strlen("RTDOSE"))) {
 	print_and_exit ("Error.  Input file not RTDOSE: %s\n",
@@ -364,11 +364,11 @@ gdcm_dose_save (
     gf->InsertValEntry (s, 0x0028, 0x0030);
 
     /* BitsAllocated */
-    gf->InsertValEntry ("16", 0x0028, 0x0100);
+    gf->InsertValEntry ("32", 0x0028, 0x0100);
     /* BitsStored */
-    gf->InsertValEntry ("16", 0x0028, 0x0101);
+    gf->InsertValEntry ("32", 0x0028, 0x0101);
     /* HighBit */
-    gf->InsertValEntry ("15", 0x0028, 0x0102);
+    gf->InsertValEntry ("31", 0x0028, 0x0102);
     /* PixelRepresentation */
     gf->InsertValEntry ("0", 0x0028, 0x0103);
 
@@ -407,16 +407,16 @@ gdcm_dose_save (
     tmp->convert (PLM_IMG_TYPE_ITK_FLOAT);
     itk_image_stats (tmp->m_itk_float, &min_val, &max_val, &avg, 
 	&non_zero, &num_vox);
-#ifndef UINT16_T_MAX
-#define UINT16_T_MAX (0xffff)
+#ifndef UINT32_T_MAX
+#define UINT32_T_MAX (0xffffffff)
 #endif
     //float dose_scale = 0.04;
-    float dose_scale = 10.0 * max_val / UINT16_T_MAX;
-    /* Scale the image and convert to uint16_t */
+    float dose_scale = 10.0 * max_val / UINT32_T_MAX;
+    /* Scale the image and convert to uint32_t */
     tmp->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
     Volume *vol = (Volume*) tmp->m_gpuit;
     volume_scale (vol, 1 / dose_scale);
-    tmp->convert (PLM_IMG_TYPE_GPUIT_UINT16);
+    tmp->convert (PLM_IMG_TYPE_GPUIT_UINT32);
     vol = (Volume*) tmp->m_gpuit;
 
     /* DoseGridScaling */
