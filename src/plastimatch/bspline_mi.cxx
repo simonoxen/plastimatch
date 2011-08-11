@@ -27,8 +27,70 @@
 #include "volume_macros.h"
 #include "bspline_macros.h"
 #include "xpm.h"
+#include "mha_io.h"
 
+//#define DEBUG_VOPT
 #define VOPT_RES 1000
+
+/* Some neat debug facilities
+ *   Will probably move these somewhere more appropriate soon
+ */
+Volume*
+volume_clip_intensity (Volume* vin, float bot, float top)
+{
+    int i, j, N;
+    int* marks;
+    float* imgin;
+    float* imgout;
+    float min;
+    Volume* vout;
+
+    vout = volume_clone (vin);
+	imgin  = (float*) vin->img;
+	imgout = (float*) vout->img;
+
+    N=0;
+    min = FLT_MAX;
+    for (i=0; i<vin->npix; i++) {
+        if ( (imgin[i] >= bot) && (imgin[i] <= top) ) {
+            N++;
+        }
+        if (imgin[i] < min) {
+            min = imgin[i];
+        }
+    }
+    if (N == 0) { return NULL; }
+    marks = (int*) malloc (N * sizeof (int));
+
+    j=0;
+    for (i=0; i<vin->npix; i++) {
+        if ( (imgin[i] >= bot) && (imgin[i] <= top) ) {
+            marks[j++] = i;
+        }
+        imgout[i] = min;
+    }
+
+    for (i=0; i<j; i++) {
+        imgout[marks[i]] = imgin[marks[i]];
+    }
+
+    free (marks);
+
+    return vout;
+}
+
+static void
+dump_vol_clipped (char* fn, Volume* vin, float bot, float top)
+{
+    Volume* vout;
+
+    vout = volume_clip_intensity (vin, bot, top);
+    if (vout) {
+        write_mha (fn, vout);
+        delete vout;
+    }
+}
+
 
 /* -----------------------------------------------------------------------
    Initialization and teardown
@@ -237,28 +299,32 @@ bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
 
     free (tracker);
 
-#if 0
-    printf ("High Resolution Histogram:\n");
-    for (i=0; i<hparms->keys; i++) {
-        printf ("  [%i] %f\n", i, tmp_avg[i]);
-    }
 
-    printf ("V-Optimal Histogram:\n");
-    int old_key = hparms->key_lut[0];
-    double tmp = 0;
+#if defined (DEBUG_VOPT)
+    char buff[50];
+
+    int old_bin = hparms->key_lut[0];
+    float left = hparms->offset;
+    float right = left;
     j = 0;
     for (i=0; i<hparms->keys; i++) {
-        if (hparms->key_lut[i] == old_key) {
-            tmp += tmp_avg[i];
+        if (hparms->key_lut[i] == old_bin) {
+            right += hparms->delta;
         } else {
-            printf ("  [%i] %f\n", j, tmp);
-            tmp = tmp_avg[i];
-            old_key = hparms->key_lut[i];
+            printf ("Bin %i [%6.2f .. %6.2f]\n", j, left, right);
+            sprintf (buff, "vopt_lvl_%i.mha", j);
+            dump_vol_clipped (buff, vol, left, right);
+
+            old_bin = hparms->key_lut[i];
+            left = right;
             j++;
         }
     }
-    printf ("  [%i] %f\n", j, tmp);
-    exit (0);
+    /* Pick up the last bin ...ick */
+    printf ("Bin %i [%6.2f .. %6.2f]\n", j, left, right);
+    sprintf (buff, "vopt_lvl_%i.mha", j);
+    dump_vol_clipped (buff, vol, left, right);
+
 #endif
 }
 
