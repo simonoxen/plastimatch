@@ -239,6 +239,10 @@ bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
         if (tmp_hist[i] > 0) {
             tmp_avg[i] = tmp_avg[i] / tmp_hist[i];
         }
+        else if (i > 0) {
+            /* Prevent oversampling errors */
+            tmp_avg[i] = tmp_avg[i-1];
+        }
     }
 
     free (tmp_hist);
@@ -324,7 +328,7 @@ bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
     printf ("Bin %i [%6.2f .. %6.2f]\n", j, left, right);
     sprintf (buff, "vopt_lvl_%i.mha", j);
     dump_vol_clipped (buff, vol, left, right);
-
+    exit (0);
 #endif
 }
 
