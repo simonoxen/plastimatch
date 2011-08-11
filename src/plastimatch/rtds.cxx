@@ -26,7 +26,7 @@
 #include "xio_demographic.h"
 #include "xio_dir.h"
 #include "xio_dose.h"
-#include "xio_io.h"
+#include "xio_studyset.h"
 #include "xio_structures.h"
 
 Rtds::Rtds ()
@@ -153,15 +153,18 @@ Rtds::load_xio (
 	}
     }
 
+    printf("path is :: %s\n", xsd->path);
+
+    /* Load the XiO studyset slice list */
+    Xio_studyset xst (xsd->path);
+
     /* Load the XiO studyset CT images */
     this->m_img = new Plm_image;
-    printf ("calling xio_ct_load\n");
-    printf("path is :: %s\n", xsd->path);
-    xio_ct_load (this->m_img, xsd->path);
+    xio_ct_load (this->m_img, xst);
 
     /* Load the XiO studyset structure set */
     this->m_ss_image = new Rtss (this);
-    this->m_ss_image->load_xio (xsd->path);
+    this->m_ss_image->load_xio (xst);
 
     /* Apply XiO CT geometry to structures */
     if (this->m_ss_image->m_cxt) {

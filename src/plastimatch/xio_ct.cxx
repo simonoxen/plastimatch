@@ -24,7 +24,7 @@
 #include "print_and_exit.h"
 #include "rtss_polyline_set.h"
 #include "xio_ct.h"
-#include "xio_io.h"
+#include "xio_studyset.h"
 #include "xio_structures.h"
 
 typedef struct xio_ct_header Xio_ct_header;
@@ -51,13 +51,23 @@ xio_ct_load_header (Xio_ct_header *xch, const char *filename)
 
     bs = bsopen ((bNread) fread, fp);
 
-    /* Skip 9 lines */
+    /* Skip 5 lines */
     bsreadln (line1, bs, '\n');
     bsreadln (line1, bs, '\n');
     bsreadln (line1, bs, '\n');
     bsreadln (line1, bs, '\n');
     bsreadln (line1, bs, '\n');
-    bsreadln (line1, bs, '\n');
+
+    /* Get slice location */
+    rc = bsreadln (line1, bs, '\n');
+    if (rc == BSTR_ERR) {
+	print_and_exit ("Error reading slice location\n", line1->data);
+    }
+    rc = sscanf ((char*) line1->data, "%g", &xch->z_loc);
+    if (rc != 1) {
+	print_and_exit ("Error parsing slice location (%s)\n", line1->data);
+    }
+
     bsreadln (line1, bs, '\n');
     bsreadln (line1, bs, '\n');
     bsreadln (line1, bs, '\n');
@@ -84,7 +94,6 @@ xio_ct_load_header (Xio_ct_header *xch, const char *filename)
 	print_and_exit ("Error parsing image resolution (%s)\n", line1->data);
     }
 
-    /* Skip 7 lines */
     bsreadln (line1, bs, '\n');
     bsreadln (line1, bs, '\n');
     bsreadln (line1, bs, '\n');
@@ -92,18 +101,7 @@ xio_ct_load_header (Xio_ct_header *xch, const char *filename)
     bsreadln (line1, bs, '\n');
     bsreadln (line1, bs, '\n');
     bsreadln (line1, bs, '\n');
-
-    /* Get slice location */
-    rc = bsreadln (line1, bs, '\n');
-    if (rc == BSTR_ERR) {
-	print_and_exit ("Error reading slice location\n", line1->data);
-    }
-    rc = sscanf ((char*) line1->data, "%g", &xch->z_loc);
-    if (rc != 1) {
-	print_and_exit ("Error parsing slice location (%s)\n", line1->data);
-    }
-
-    /* Skip 1 lines */
+    bsreadln (line1, bs, '\n');
     bsreadln (line1, bs, '\n');
 
     /* Get pixel size */
@@ -135,7 +133,7 @@ xio_ct_load_image (
 {
     FILE *fp;
     Volume *v;
-    short *img, *slice_img;;
+    short *img, *slice_img;
     int i, rc;
 
     v = (Volume*) pli->m_gpuit;
@@ -205,80 +203,22 @@ xio_ct_create_volume (
 }
 
 void
-xio_ct_load (Plm_image *pli, char *input_dir)
+xio_ct_load (Plm_image *pli, Xio_studyset studyset)
 {
-    //const char *filename_re = "T\\.([-\\.0-9]*)\\.(CT|MR)";
-    const char *filename_re = "T\\.([-\\.0-9]*)\\.(CT|MR)";
-    const char *filename;
-    std::vector<std::pair<std::string,std::string> >::iterator it;
     int i;
+
     Xio_ct_header xch;
-    float z_prev, z_diff;
-    int this_chunk_len, best_chunk_len;
-    int this_chunk_start, best_chunk_start;
-    float this_chunk_diff = 0.0f, best_chunk_diff = 0.0f;
+    string ct_file;
 
-    /* Get the list of filenames */
-    std::vector<std::pair<std::string,std::string> > file_names;
-    xio_io_get_file_names (&file_names, input_dir, filename_re);
-    if (file_names.empty ()) {
-	print_and_exit ("No xio CT files found in directory %s\n", 
-			input_dir);
-    }
+    if (studyset.number_slices > 0) {
+	ct_file = studyset.studyset_dir + "/" + studyset.slices[0].filename_scan.c_str();
+        xio_ct_load_header (&xch, ct_file.c_str());
+	xio_ct_create_volume (pli, &xch, studyset.number_slices, studyset.thickness);
 
-    /* Iterate through filenames, find largest chunk */
-    it = file_names.begin();
-    filename = (*it).first.c_str();
-    xio_ct_load_header (&xch, filename);
-    z_prev = xch.z_loc;
-    this_chunk_start = best_chunk_start = 0;
-    this_chunk_len = best_chunk_len = 0;
-    ++it;
-    i = 1;
-    while (it != file_names.end()) {
-	filename = (*it).first.c_str();
-	xio_ct_load_header (&xch, filename);
-	z_diff = xch.z_loc - z_prev;
-	printf ("%f, %f\n", xch.z_loc, z_diff);
-	z_prev = xch.z_loc;
-	if (best_chunk_len == 0) {
-	    this_chunk_start = i - 1;
-	    this_chunk_diff = best_chunk_diff = z_diff;
-	    this_chunk_len = best_chunk_len = 2;
-	} else if (fabs (this_chunk_diff - z_diff) < 0.01) {
-	    this_chunk_len ++;
-	} else {
-	    printf ("RESET CHUNK: %d\n", i);
-	    this_chunk_start = i - 1;
-	    this_chunk_len = 2;
-	    this_chunk_diff = z_diff;
+	for (i = 0; i < studyset.number_slices - 1; i++) {
+	    ct_file = studyset.studyset_dir + "/" + studyset.slices[i].filename_scan.c_str();
+	    xio_ct_load_image (pli, i, ct_file.c_str());
 	}
-	if (this_chunk_len > best_chunk_len) {
-	    best_chunk_start = this_chunk_start;
-	    best_chunk_len = this_chunk_len;
-	    best_chunk_diff = this_chunk_diff;
-	}
-	++it;
-	++i;
-    }
-
-    printf ("Found best chunk: %d, %d, %g\n", best_chunk_start, 
-	best_chunk_len, best_chunk_diff);
-
-    /* Iterate through filenames, adding data to pli */
-    i = 0;
-    it = file_names.begin();
-    while (it != file_names.end()) {
-	filename = (*it).first.c_str();
-	if (i == best_chunk_start) {
-	    xio_ct_load_header (&xch, filename);
-	    xio_ct_create_volume (pli, &xch, best_chunk_len, best_chunk_diff);
-	}
-	if (i >= best_chunk_start && i < best_chunk_start + best_chunk_len ) {
-	    xio_ct_load_image (pli, i - best_chunk_start, filename);
-	}
-	++i;
-	++it;
     }
 }
 
@@ -376,7 +316,7 @@ xio_ct_get_transform (
 {
     /* Use patient position to determine the transformation from XiO CT
        coordinates to DICOM coordinates. Only the direction cosines
-       are modified, the original will remain the same.
+       are modified, the origin will remain the same.
        Because structures and dose in XiO are defined relative to CT
        geometry, the transform can be applied to those as well. */
 

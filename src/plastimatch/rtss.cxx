@@ -107,11 +107,11 @@ Rtss::load_gdcm_rtss (const char *input_fn, Referenced_dicom_dir *rdd)
 }
 
 void
-Rtss::load_xio (char *input_dir)
+Rtss::load_xio (Xio_studyset studyset)
 {
     this->m_cxt = new Rtss_polyline_set;
     printf ("calling xio_structures_load\n");
-    xio_structures_load (this->m_cxt, input_dir);
+    xio_structures_load (this->m_cxt, studyset);
 }
 
 void

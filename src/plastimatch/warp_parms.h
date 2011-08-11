@@ -11,7 +11,7 @@
 #include "plm_image_type.h"
 #include "plm_image_patient_position.h"
 #include "pstring.h"
-#include "xio_io.h"
+#include "xio_studyset.h"
 
 class Warp_parms {
 public:

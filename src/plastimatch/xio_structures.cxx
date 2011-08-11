@@ -23,7 +23,7 @@
 #include "rtss_polyline_set.h"
 #include "rtss_structure.h"
 #include "xio_ct.h"
-#include "xio_io.h"
+#include "xio_studyset.h"
 #include "xio_structures.h"
 
 /* Gdcm has a broken header file gdcmCommon.h, which defines C99 types 
@@ -233,39 +233,25 @@ add_cms_structure (Rtss_polyline_set *rtss, const char *filename,
 void
 xio_structures_load (
     Rtss_polyline_set *rtss, 
-    char *input_dir
+    Xio_studyset studyset
 )
 {
-    const char *filename_re = "^T\\.([-\\.0-9]*)\\.WC$";
-
     /* Get the index file */
-    std::string index_file = std::string(input_dir) + "/" + "contournames";
+    std::string index_file = std::string(studyset.studyset_dir) + "/" + "contournames";
     if (!itksys::SystemTools::FileExists (index_file.c_str(), true)) {
 	print_and_exit ("No xio contournames file found in directory %s\n", 
-			input_dir);
-    }
-
-    /* Get the list of filenames */
-    std::vector<std::pair<std::string,std::string> > file_names;
-    xio_io_get_file_names (&file_names, input_dir, filename_re);
-    if (file_names.empty ()) {
-	print_and_exit ("No xio structure files found in directory %s\n", 
-			input_dir);
+			studyset.studyset_dir);
     }
 
     /* Load the index file */
     rtss->init ();
     add_cms_contournames (rtss, index_file.c_str());
 
-    /* Iterate through filenames, adding data to CXT */
-    std::vector<std::pair<std::string,std::string> >::iterator it;
-    it = file_names.begin();
-    while (it != file_names.end()) {
-	const char *filename = (*it).first.c_str();
-	float z_loc = atof ((*it).second.c_str());
-	printf ("File: %s, Loc: %f\n", filename, z_loc);
-	add_cms_structure (rtss, filename, z_loc);
-	++it;
+    /* Load all .WC files, adding data to CXT */
+    std::string contour_file;
+    for (int i = 0; i < studyset.number_slices - 1; i++) {
+	contour_file = studyset.studyset_dir + "/" + studyset.slices[i].filename_contours;
+	add_cms_structure (rtss, contour_file.c_str(), studyset.slices[i].location);
     }
 
     rtss->debug ();
