@@ -107,7 +107,7 @@ Rtss::load_gdcm_rtss (const char *input_fn, Referenced_dicom_dir *rdd)
 }
 
 void
-Rtss::load_xio (Xio_studyset studyset)
+Rtss::load_xio (const Xio_studyset& studyset)
 {
     this->m_cxt = new Rtss_polyline_set;
     printf ("calling xio_structures_load\n");

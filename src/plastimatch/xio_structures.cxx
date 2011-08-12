@@ -233,7 +233,7 @@ add_cms_structure (Rtss_polyline_set *rtss, const char *filename,
 void
 xio_structures_load (
     Rtss_polyline_set *rtss, 
-    Xio_studyset studyset
+    const Xio_studyset& studyset
 )
 {
     /* Get the index file */
@@ -249,7 +249,7 @@ xio_structures_load (
 
     /* Load all .WC files, adding data to CXT */
     std::string contour_file;
-    for (int i = 0; i < studyset.number_slices - 1; i++) {
+    for (int i = 0; i < studyset.number_slices; i++) {
 	contour_file = studyset.studyset_dir + "/" + studyset.slices[i].filename_contours;
 	add_cms_structure (rtss, contour_file.c_str(), studyset.slices[i].location);
     }

@@ -33,7 +33,7 @@ public:
     void clear ();
     void load (const char *ss_img, const char *ss_list);
     void load_cxt (const Pstring &input_fn, Referenced_dicom_dir *rdd);
-    void load_xio (Xio_studyset xio_studyset);
+    void load_xio (const Xio_studyset& xio_studyset);
     void load_gdcm_rtss (const char *input_fn,  Referenced_dicom_dir *rdd);
 
     void save_colormap (const Pstring &colormap_fn);

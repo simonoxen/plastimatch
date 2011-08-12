@@ -10,7 +10,7 @@
 #include "xio_studyset.h"
 
 plastimatch1_EXPORT void
-xio_structures_load (Rtss_polyline_set *structures, Xio_studyset xsl);
+xio_structures_load (Rtss_polyline_set *structures, const Xio_studyset& xsl);
 plastimatch1_EXPORT 
 void
 xio_structures_save (
