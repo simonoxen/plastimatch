@@ -18,7 +18,7 @@ struct xio_ct_transform {
 
 plastimatch1_EXPORT 
 void
-xio_ct_load (Plm_image *plm, Xio_studyset xio_studyset);
+xio_ct_load (Plm_image *plm, const Xio_studyset *xio_studyset);
 plastimatch1_EXPORT 
 void
 xio_ct_get_transform_from_dicom_dir (

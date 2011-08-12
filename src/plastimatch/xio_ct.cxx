@@ -203,20 +203,20 @@ xio_ct_create_volume (
 }
 
 void
-xio_ct_load (Plm_image *pli, Xio_studyset studyset)
+xio_ct_load (Plm_image *pli, const Xio_studyset *studyset)
 {
     int i;
 
     Xio_ct_header xch;
     string ct_file;
 
-    if (studyset.number_slices > 0) {
-	ct_file = studyset.studyset_dir + "/" + studyset.slices[0].filename_scan.c_str();
+    if (studyset->number_slices > 0) {
+	ct_file = studyset->studyset_dir + "/" + studyset->slices[0].filename_scan.c_str();
         xio_ct_load_header (&xch, ct_file.c_str());
-	xio_ct_create_volume (pli, &xch, studyset.number_slices, studyset.thickness);
+	xio_ct_create_volume (pli, &xch, studyset->number_slices, studyset->thickness);
 
-	for (i = 0; i < studyset.number_slices - 1; i++) {
-	    ct_file = studyset.studyset_dir + "/" + studyset.slices[i].filename_scan.c_str();
+	for (i = 0; i < studyset->number_slices; i++) {
+	    ct_file = studyset->studyset_dir + "/" + studyset->slices[i].filename_scan.c_str();
 	    xio_ct_load_image (pli, i, ct_file.c_str());
 	}
     }

@@ -160,7 +160,7 @@ Rtds::load_xio (
 
     /* Load the XiO studyset CT images */
     this->m_img = new Plm_image;
-    xio_ct_load (this->m_img, xst);
+    xio_ct_load (this->m_img, &xst);
 
     /* Load the XiO studyset structure set */
     this->m_ss_image = new Rtss (this);

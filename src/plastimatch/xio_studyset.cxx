@@ -62,7 +62,7 @@ Xio_studyset::Xio_studyset (const char *input_dir)
 	int this_chunk_len;
 
 	for (int i = 1; i < all_number_slices; i++) {
-	    z_diff = all_slices[i - 1].location - all_slices[i].location;
+	    z_diff = all_slices[i].location - all_slices[i-1].location;
 
 	    if (i == 1) {
 		// First chunk
@@ -92,7 +92,6 @@ Xio_studyset::Xio_studyset (const char *input_dir)
 	best_chunk_start = 0;
 	best_chunk_len = 1;
 	best_chunk_diff = 0;
-
     }
 
     // Extract best chunk
