@@ -307,7 +307,7 @@ bool REG23Model::LoadConfiguration(std::string &errorSection,
   UnixUNCConverter *uuc = UnixUNCConverter::GetInstance(); // UNIX-UNC-map
   errorSection = "ORA";
   int i = 1, j;
-  std::string s = "";
+  std::string s = "", s2 = "";
   std::vector<std::string> sa;
   do
   {
@@ -493,7 +493,19 @@ bool REG23Model::LoadConfiguration(std::string &errorSection,
             haveViewInfo = true;
           }
         }
-        if (!haveViewInfo)
+        // specify / override fixed image's view name:
+        s2 = "FixedImage" + StreamConvert(i);
+        s2 += ".ViewName";
+        s2 = TrimF(m_Config->ReadString("Images", s2, ""));
+        if (s2.length() > 0)
+        {
+          if (haveViewInfo) // override
+            m_ViewNames[i - 1] = s2;
+          else // specify
+            m_ViewNames.push_back(s2);
+          haveViewInfo = true; // mark
+        }
+        if (!haveViewInfo) // no view info available
           m_ViewNames.push_back("");
       }
       i++;
@@ -567,7 +579,6 @@ bool REG23Model::LoadConfiguration(std::string &errorSection,
   }
   // - fixed pre-processing
   i = 1;
-  std::string s2;
   do
   {
     errorKey = "FixedImage" + StreamConvert(i);
@@ -582,7 +593,8 @@ bool REG23Model::LoadConfiguration(std::string &errorSection,
         s2 = TrimF(m_Config->ReadString(errorSection, errorKey, ""));
         if (s2.length() > 0 && !ParseImageProcessingEntry(s2, errorMessage, v,
             CAST | CROP | RESAMPLE | RESCALEMINMAX | RESCALESHIFTSCALE |
-            RESCALEWINDOWING | STORE | UNSHARPMASKING | FLIP))
+            RESCALEWINDOWING | STORE | UNSHARPMASKING | FLIP | THRESHOLD_ABOVE |
+            THRESHOLD_BELOW | THRESHOLD_OUTSIDE))
           return false; // errorMessage filled from parser!
         j++;
       } while (s2.length() > 0);
@@ -1372,6 +1384,49 @@ bool REG23Model::ParseImageProcessingEntry(std::string entry,
     }
     result.push_back("FLIP");
     result.push_back(toks[0]);
+    return true;
+  }
+  else if (entry.substr(0, 15) == "THRESHOLDABOVE(" && (operationFlags & THRESHOLD_ABOVE) == THRESHOLD_ABOVE)
+  {
+    entry = entry.substr(15, entry.length() - 16);
+    Tokenize(entry, toks, ",");
+    if (toks.size() != 2)
+    {
+      errorMessage = "The ThresholdAbove()-operator requires exactly two arguments (<thresh>,<out>).";
+      return false;
+    }
+    result.push_back("THRESHOLDABOVE");
+    result.push_back(toks[0]); // thresh
+    result.push_back(toks[1]); // out
+    return true;
+  }
+  else if (entry.substr(0, 15) == "THRESHOLDBELOW(" && (operationFlags & THRESHOLD_BELOW) == THRESHOLD_BELOW)
+  {
+    entry = entry.substr(15, entry.length() - 16);
+    Tokenize(entry, toks, ",");
+    if (toks.size() != 2)
+    {
+      errorMessage = "The ThresholdBelow()-operator requires exactly two arguments (<thresh>,<out>).";
+      return false;
+    }
+    result.push_back("THRESHOLDBELOW");
+    result.push_back(toks[0]); // thresh
+    result.push_back(toks[1]); // out
+    return true;
+  }
+  else if (entry.substr(0, 17) == "THRESHOLDOUTSIDE(" && (operationFlags & THRESHOLD_OUTSIDE) == THRESHOLD_OUTSIDE)
+  {
+    entry = entry.substr(17, entry.length() - 18);
+    Tokenize(entry, toks, ",");
+    if (toks.size() != 3)
+    {
+      errorMessage = "The ThresholdOutside()-operator requires exactly three arguments (<min>,<max>,<out>).";
+      return false;
+    }
+    result.push_back("THRESHOLDOUTSIDE");
+    result.push_back(toks[0]); // min
+    result.push_back(toks[1]); // max
+    result.push_back(toks[2]); // out
     return true;
   }
   else if (entry.substr(0, 14) == "RESCALEMINMAX("

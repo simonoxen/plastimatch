@@ -111,9 +111,16 @@ public:
     UNSHARPMASKING = 1 << 9,
     /** Apply flipping to the image data. **/
     FLIP = 1 << 10,
+    /** Apply thresholding (above-mode) to the image data. **/
+    THRESHOLD_ABOVE = 1 << 11,
+    /** Apply thresholding (below-mode) to the image data. **/
+    THRESHOLD_BELOW = 1 << 12,
+    /** Apply thresholding (outside-mode) to the image data. **/
+    THRESHOLD_OUTSIDE = 1 << 13,
     /** Represents all operations. */
     ALL = CAST | CROP | RESAMPLE | RESCALEMINMAX | RESCALESHIFTSCALE |
-          RESCALEWINDOWING | STORE | RESCALEMINMAXMASK | UNSHARPMASKING | FLIP
+          RESCALEWINDOWING | STORE | RESCALEMINMAXMASK | UNSHARPMASKING | FLIP |
+          THRESHOLD_ABOVE | THRESHOLD_BELOW | THRESHOLD_OUTSIDE
   } ProcessOperations;
 
   /** Default constructor. **/
@@ -1048,7 +1055,8 @@ protected:
    * - optionally resample it <br>
    * - optionally rescale it <br>
    * - optionally cast it to another component type<br>
-   * - optionally flip its image data.<br>
+   * - optionally flip its image data
+   * - optionally threshold its image data.<br>
    * This pre-processing directly relates to the loaded configuration specified
    * by configBaseKey parameter.
    * The dimension is statically presumed being 3.
@@ -1158,6 +1166,17 @@ protected:
    */
   template<typename TComponentType>
   ITKVTKImage *FlipImageData(ITKVTKImage *image, std::vector<std::string> &args);
+
+  /** Threshold the specified image data. Three types of thresholding are
+   * available: below, above, outside.
+   * @param image The input image to flip.
+   * @param args Argument vector with 2 or 3 elements
+   * @return a new ITKVTKImage instance containing the pointer to the result
+   * image if successful, NULL otherwise
+   * @see PreProcessImage()
+   */
+  template<typename TComponentType>
+  ITKVTKImage *ThresholdImageData(ITKVTKImage *image, std::vector<std::string> &args);
 
   /**
    * Apply unsharp masking to the specified image according to the arguments

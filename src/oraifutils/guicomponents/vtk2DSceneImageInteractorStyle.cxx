@@ -22,6 +22,8 @@
 vtkCxxRevisionMacro(vtk2DSceneImageInteractorStyle, "2.1")
 vtkStandardNewMacro(vtk2DSceneImageInteractorStyle)
 
+const double vtk2DSceneImageInteractorStyle::F_EPSILON = 1e-6;
+
 vtk2DSceneImageInteractorStyle::vtk2DSceneImageInteractorStyle()
   : vtkInteractorStyleImage()
 {

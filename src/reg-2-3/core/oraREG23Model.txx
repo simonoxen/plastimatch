@@ -24,7 +24,7 @@
 #include <oraGradientDifferenceImageToImageMetric.h>
 
 #include "itkImageKernelOperator.h"  // NOTE: Copied into source tree from ITK/Review
-
+//ITK
 #include <itkCastImageFilter.h>
 #include <itkExtractImageFilter.h>
 #include <itkChangeInformationImageFilter.h>
@@ -53,7 +53,8 @@
 #include <itkIdentityTransform.h>
 #include <itkMeanImageFilter.h>
 #include <itkFlipImageFilter.h>
-
+#include <itkThresholdImageFilter.h>
+//VTK
 #include <vtkColorTransferFunction.h>
 #include <vtkTable.h>
 #include <vtkMath.h>
@@ -1141,6 +1142,64 @@ REG23Model::RescaleImage(ITKVTKImage *image, std::vector<std::string> &args,
 
 template<typename TComponentType>
 ITKVTKImage *
+REG23Model::ThresholdImageData(ITKVTKImage *image, std::vector<std::string> &args)
+{
+  if (!image || args.size() < 3)
+    return NULL;
+  ITKVTKImage::ITKImagePointer ibase = image->GetAsITKImage<TComponentType>();
+  ITKVTKIMAGE_DOWNCAST(TComponentType, ibase, icast)
+  ITKVTKImage *resultImage = NULL;
+
+  typedef itk::ThresholdImageFilter<OriginalImageType> ThreshImageFilterType;
+  typename ThreshImageFilterType::Pointer threshFilter = ThreshImageFilterType::New ();
+  threshFilter->SetInput(icast);
+
+  if (args[0] == "THRESHOLDABOVE")
+  {
+    if (args.size() != 3)
+      return NULL;
+    threshFilter->ThresholdAbove(atof(args[1].c_str()));
+    threshFilter->SetOutsideValue(atof(args[2].c_str()));
+  }
+  else if (args[0] == "THRESHOLDBELOW")
+  {
+    if (args.size() != 3)
+      return NULL;
+    threshFilter->ThresholdBelow(atof(args[1].c_str()));
+    threshFilter->SetOutsideValue(atof(args[2].c_str()));
+  }
+  else if (args[0] == "THRESHOLDOUTSIDE")
+  {
+    if (args.size() != 4)
+      return NULL;
+    threshFilter->ThresholdOutside(atof(args[1].c_str()), atof(args[2].c_str()));
+    threshFilter->SetOutsideValue(atof(args[3].c_str()));
+  }
+  else
+  {
+    return NULL;
+  }
+
+  try
+  {
+    threshFilter->Update();
+    OriginalImagePointer outImage = threshFilter->GetOutput();
+    outImage->DisconnectPipeline();
+    resultImage = new ITKVTKImage(itk::ImageIOBase::SCALAR,
+                                  image->GetComponentType());
+    resultImage->SetITKImage(static_cast<ITKVTKImage::ITKImageType *>(
+                               outImage.GetPointer()), false);
+  }
+  catch (itk::ExceptionObject &e)
+  {
+    return NULL;
+  }
+
+  return resultImage;
+}
+
+template<typename TComponentType>
+ITKVTKImage *
 REG23Model::FlipImageData(ITKVTKImage *image, std::vector<std::string> &args)
 {
   if (!image || args.size() < 2)
@@ -1189,7 +1248,6 @@ REG23Model::FlipImageData(ITKVTKImage *image, std::vector<std::string> &args)
 
   return resultImage;
 }
-
 
 template<typename TComponentType>
 ITKVTKImage *
@@ -1259,7 +1317,8 @@ REG23Model::PreProcessImage(ITKVTKImage::ITKImagePointer image,
     {
       if (ParseImageProcessingEntry(s, emsg, args, CAST | CROP | RESAMPLE |
           RESCALEMINMAX | RESCALESHIFTSCALE | RESCALEWINDOWING | STORE |
-          UNSHARPMASKING | FLIP) && args.size() > 0)
+          UNSHARPMASKING | FLIP | THRESHOLD_ABOVE | THRESHOLD_BELOW |
+          THRESHOLD_OUTSIDE) && args.size() > 0)
       {
         pimage = NULL;
         if (args[0] == "CAST")
@@ -1307,6 +1366,13 @@ REG23Model::PreProcessImage(ITKVTKImage::ITKImagePointer image,
         {
           TEMPLATE_CALL_COMP(lastImage->GetComponentType(),
                              pimage = FlipImageData, lastImage, args)
+        }
+        else if (args[0] == "THRESHOLDABOVE" ||
+            args[0] == "THRESHOLDBELOW" ||
+            args[0] == "THRESHOLDOUTSIDE")
+        {
+          TEMPLATE_CALL_COMP(lastImage->GetComponentType(),
+                             pimage = ThresholdImageData, lastImage, args)
         }
         else if (args[0] == "RESCALEMINMAX")
         {

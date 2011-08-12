@@ -308,7 +308,7 @@ public:
 
 protected:
   /** "Epsilon" for internal floating point comparisons. **/
-  static const double F_EPSILON = 1e-6;
+  static const double F_EPSILON;
   /** Flag is true if we think that the ALT key is pressed. The ALT key is not
    * really trackable using the interactor style. BUT: if the returned key code
    * is 0 and neither CTRL nor SHIFT are active, it's quite likely that ALT is
