@@ -1,7 +1,8 @@
 /* -----------------------------------------------------------------------
-See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
------------------------------------------------------------------------ */
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 #include "plm_config.h"
+#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <algorithm>
@@ -11,28 +12,25 @@ See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 #include "print_and_exit.h"
 #include "xio_studyset.h"
 
-using namespace std;
-
 Xio_studyset::Xio_studyset (const char *input_dir)
-{   
-    studyset_dir = input_dir;
+{
+    this->studyset_dir = input_dir;
 
     // Open index.dat file in input_dir
-    string indexdat(input_dir);
+    std::string indexdat(input_dir);
     indexdat += "/index.dat";
-    ifstream index (indexdat);
+    std::ifstream index (indexdat.c_str());
 
-    int all_number_slices;
-    vector<Xio_studyset_slice> all_slices;
+    int all_number_slices = 0;
+    std::vector<Xio_studyset_slice> all_slices;
 
     if (index.is_open()) {
-
 	// Get total number of slices
 	index >> all_number_slices;
 
 	// Loop through slices getting filename and location
-	string slice_filename_scan;
-	string slice_name;
+	std::string slice_filename_scan;
+	std::string slice_name;
 	float slice_location;
 
 	for (int i = 0; i < all_number_slices; i++) {
@@ -44,12 +42,9 @@ Xio_studyset::Xio_studyset (const char *input_dir)
 	}
 
 	// Sort slices in positive direction
-	sort(all_slices.begin(), all_slices.end());
-
+	std::sort (all_slices.begin(), all_slices.end());
     } else {
-
 	all_number_slices = 0;
-
     }
 
     // Plastimatch only supports volumes with uniform voxel sizes
@@ -93,9 +88,7 @@ Xio_studyset::Xio_studyset (const char *input_dir)
 		}
 	    }
 	}
-
     } else {
-
 	best_chunk_start = 0;
 	best_chunk_len = 1;
 	best_chunk_diff = 0;
@@ -108,7 +101,7 @@ Xio_studyset::Xio_studyset (const char *input_dir)
     for (int i = 0; i < best_chunk_len; i++) {
 	slices.push_back(all_slices[best_chunk_start + i]);
     }
-};
+}
 
 Xio_studyset::~Xio_studyset ()
 {
