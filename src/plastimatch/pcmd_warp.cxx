@@ -282,7 +282,8 @@ parse_fn (
 	    throw (dlib::error (
 		    "Error. Unknown --patient-pos argument: " + arg));
 	}
-	std::transform (arg.begin(), arg.end(), arg.begin(), toupper);
+	std::transform (arg.begin(), arg.end(), arg.begin(), 
+	    (int(*)(int)) toupper);
 	std::string metadata_string = "0018,5100=" + arg;
 	parms->m_metadata.push_back (metadata_string);
     }

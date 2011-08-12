@@ -31,7 +31,7 @@ public:
     Xio_studyset_slice (string slice_filename_scan, const float slice_location);
     ~Xio_studyset_slice ();
 
-    bool operator < ( const Xio_studyset_slice &cmp )
+    bool operator < (const Xio_studyset_slice &cmp) const
     {
 	return location < cmp.location;
     }
@@ -40,7 +40,7 @@ public:
 class Xio_studyset
 {
 public:
-    string studyset_dir;
+    std::string studyset_dir;
     int number_slices;
     float thickness;
     vector<Xio_studyset_slice> slices;

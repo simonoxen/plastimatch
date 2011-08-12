@@ -240,7 +240,7 @@ xio_structures_load (
     std::string index_file = std::string(studyset.studyset_dir) + "/" + "contournames";
     if (!itksys::SystemTools::FileExists (index_file.c_str(), true)) {
 	print_and_exit ("No xio contournames file found in directory %s\n", 
-			studyset.studyset_dir);
+	    studyset.studyset_dir.c_str());
     }
 
     /* Load the index file */
