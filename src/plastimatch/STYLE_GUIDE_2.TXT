@@ -3,8 +3,16 @@ Introduction
 This is part 2 of the style guide.  It concerns how variables 
 and functions should be named to maintain a uniform look and feel.
 
-This style guide is not ready for use.
+Include files
+-------------
+Include files should be in the following order:
 
+ 1) plm_config.h
+ 2) Standard C++ include files (sorted alphabetically)
+ 3) Standard C include files (sorted alphabetically)
+ 4) Third party library include files (grouped, sorted alphabetically within	
+    each group if possible)
+ 5) Plastimatch include files (sorted alphabetically)
 
 File names and function names
 -----------------------------
@@ -18,7 +26,6 @@ proj_image_free ().
 The class name within a CXX file has the same name as the file.  
 For example, if the file is named Plm_image.cxx, the class is named 
 Plm_image.
-
 
 Function names: Object-oriented C
 ---------------------------------
@@ -53,7 +60,6 @@ Function names should use the following pattern.
     ...
     proj_image_save (&proj, filename);
     proj_image_free (&proj);
-
 
 Native layer, itk layer, wrapper layer [Proposed, not implemented]
 ------------------------------------------------------------------
@@ -91,7 +97,6 @@ The image header would become:
 
   plm_volset_header    ## Wrapper layer (wrapper layer sufficient?)
 
-
 Command line args, Function options [Proposed, not implemented]
 ---------------------------------------------------------------
 Command line arguments are digested, and then placed in a structure 
@@ -114,7 +119,6 @@ N.b. The old way is to use the term "parms" for both types of structures.
 N.b. Does this even make sense?  Cxt_to_mha can use the same structure 
 for both uses.
 
-
 Dim, dims, offset, origin, spacing [implemented]
 ------------------------------------------------
 To describe the position of an image in mm, use origin, not offset.  
@@ -135,10 +139,8 @@ but it becomes non-alphabetic:
 
   calling_a_function (region, origin, spacing, direction_cosines);
 
-
 Variable naming for indexing  [Proposed, not implemented]
 ---------------------------------------------------------
-
 Fixed image voxel                   (f[3]), fidx <currently (fi,fj,fk),fv>
 Moving image voxel                  (m[3]), midx < ditto >
     - what about ROI's              ?

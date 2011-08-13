@@ -24,7 +24,7 @@
 #include "rtss_polyline_set.h"
 
 void
-gdcm_series_test (char *dicom_dir)
+gdcm1_series_test (char *dicom_dir)
 {
     Gdcm_series gs;
 

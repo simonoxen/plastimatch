@@ -53,9 +53,10 @@ include (cmake/language_support.cmake)
 ##-----------------------------------------------------------------------------
 # Building little test programs
 option (PLM_BUILD_CUDA_TEST "Build CUDA test program" OFF)
+option (PLM_BUILD_DCMTK_TEST "Build DCMTK test program" OFF)
 option (PLM_BUILD_DLIB_TEST "Build dlib test program" OFF)
 option (PLM_BUILD_FANN_TEST "Build fann test program" OFF)
-option (PLM_BUILD_GDCM1_TEST "Build fann test program" OFF)
+option (PLM_BUILD_GDCM1_TEST "Build GDCM test program" OFF)
 option (PLM_BUILD_MEX_TEST "Build mex test program" OFF)
 option (PLM_BUILD_NLOPT_TEST "Build NLopt test program" OFF)
 option (PLM_BUILD_OPENCL_TEST "Build OpenCL test program" OFF)
@@ -64,7 +65,7 @@ option (PLM_BUILD_QT_TEST "Build Qt test program" OFF)
 
 # Plastimatch software configuration options
 option (PLM_USE_SS_IMAGE_VEC
-  "Save structure sets as ITK UCHAR VECimages (in development)" OFF)
+  "Save structure sets as ITK UCHAR VEC images (in development)" OFF)
 option (PLM_CONFIG_DISABLE_CUDA "Set to ON to build without CUDA" OFF)
 option (PLM_CONFIG_DISABLE_DCMTK "Set to ON to build without DCMTK" OFF)
 option (PLM_CONFIG_DISABLE_OPENCL "Set to ON to build without OpenCL" OFF)

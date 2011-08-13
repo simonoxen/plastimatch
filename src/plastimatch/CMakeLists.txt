@@ -394,6 +394,7 @@ endif ()
 if (DCMTK_FOUND AND NOT DCMTK_VERSION_STRING VERSION_LESS 3.6.0)
   set (PLASTIMATCH1_LIBRARY_SRC
     ${PLASTIMATCH1_LIBRARY_SRC}
+    dcmtk_series.cxx dcmtk_series.h
     dcmtk_util.cxx dcmtk_util.h
     )
 endif ()
@@ -897,6 +898,14 @@ if (CUDA_FOUND AND PLM_BUILD_CUDA_TEST)
   set_target_properties (cuda_test PROPERTIES LINKER_LANGUAGE CXX)
 endif ()
 
+# Test executable -- dcmtk
+if (DCMTK_FOUND AND DCMTK_VERSION_36 AND PLM_BUILD_DCMTK_TEST)
+  set (DCMTK_TEST_SRC
+    dcmtk_test.cxx)
+  plm_add_executable (dcmtk_test "${DCMTK_TEST_SRC}"
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
+endif ()
+
 # Test executable -- dlib
 if (PLM_BUILD_DLIB_TEST)
   set (DLIB_TEST_SRC dlib_test.cxx)
@@ -914,7 +923,7 @@ if (FANN_FOUND AND PLM_BUILD_FANN_TEST)
     "${FANN_TEST_SRC}" "${FANN_TEST_LIBS}" "${OPENMP_LDFLAGS}" 0)
 endif ()
 
-# Test executable -- mex
+# Test executable -- gdcm
 if (ITK_FOUND AND GDCM_VERSION_1 AND PLM_BUILD_GDCM1_TEST)
   set (GDCM1_TEST_SRC
     gdcm1_test.cxx)

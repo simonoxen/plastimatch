@@ -14,7 +14,7 @@
 #include "itkRegularExpressionSeriesFileNames.h"
 #include "bstrlib.h"
 
-#include "gdcm1_series.h"
+#include "file_util.h"
 #include "math_util.h"
 #include "plm_image_patient_position.h"
 #include "plm_path.h"
@@ -25,16 +25,6 @@
 #include "xio_ct.h"
 #include "xio_studyset.h"
 #include "xio_structures.h"
-
-/* Gdcm has a broken header file gdcmCommon.h, which defines C99 types 
-   (e.g. int32_t) when missing on MSVC.  However, it does so in an incorrect 
-   way that conflicts with plm_int.h (which also fixes missing C99 types).  
-   The workaround is to separately define the functions in file_util.h 
-   that we need. */
-extern "C"
-gpuit_EXPORT
-void make_directory_recursive (const char *dirname);
-
 
 static void
 add_cms_contournames (Rtss_polyline_set *rtss, const char *filename)
