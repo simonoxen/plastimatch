@@ -4,6 +4,7 @@
 #include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "dcm_util.h"
 #include "gdcm1_rdd.h"
