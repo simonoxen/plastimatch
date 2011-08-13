@@ -11,7 +11,7 @@
 #include "itkGDCMSeriesFileNames.h"
 #include "itkNumericSeriesFileNames.h"
 #include "itkImageSeriesWriter.h"
-#include "dicom_util.h"
+#include "dcm_util.h"
 #include "gdcm1_util.h"
 #include "gdcm2_util.h"
 #include "img_metadata.h"
@@ -177,7 +177,7 @@ itk_dicom_save (
 	/* Patient name */
 	encapsulate (dict, "0010|0010", "ANONYMOUS");
 	/* Patient id */
-	encapsulate (dict, "0010|0020", make_anon_patient_id());
+	encapsulate (dict, "0010|0020", dcm_anon_patient_id());
 	/* Patient sex */
 	encapsulate (dict, "0010|0040", "O");
     }

@@ -7,7 +7,7 @@
 #include <string.h>
 #include <gdcmFile.h>
 #include "bstrlib.h"
-#include "dicom_util.h"
+#include "dcm_util.h"
 #include "img_metadata.h"
 #include "make_string.h"
 
@@ -28,7 +28,7 @@ Img_metadata::create_anonymous ()
     /* PatientsName */
     this->set_metadata (0x0010, 0x0010, "ANONYMOUS");
     /* PatientID */
-    this->set_metadata (0x0010, 0x0020, make_anon_patient_id());
+    this->set_metadata (0x0010, 0x0020, dcm_anon_patient_id());
     /* PatientSex */
     this->set_metadata (0x0010, 0x0040, "O");
     /* PatientPosition */

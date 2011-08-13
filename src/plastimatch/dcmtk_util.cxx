@@ -1,12 +1,19 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _dicom_util_h_
-#define _dicom_util_h_
-
+#include "plm_config.h"
 #include <string>
+#include <stdio.h>
+#include <stdlib.h>
 
-std::string 
-make_anon_patient_id (void);
+#include "dcmtk_util.h"
 
-#endif
+void
+dcmtk_get_date_time (
+    std::string *date,
+    std::string *time
+)
+{
+    *date = "20110101";
+    *time = "120000";
+}

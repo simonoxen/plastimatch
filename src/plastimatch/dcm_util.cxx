@@ -1,14 +1,25 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include <stdlib.h>
-#include <time.h>
-#include <string>
 #include "plm_config.h"
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "dcm_util.h"
 #include "make_string.h"
 
+void
+dcm_get_date_time (
+    std::string *date,
+    std::string *time
+)
+{
+    *date = "20110101";
+    *time = "120000";
+}
+
 std::string 
-make_anon_patient_id (void)
+dcm_anon_patient_id (void)
 {
     int i;
     unsigned char uuid[16];

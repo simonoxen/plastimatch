@@ -285,7 +285,7 @@ set (PLASTIMATCH1_LIBRARY_SRC
   astroid_dose.cxx astroid_dose.h
   cxt_extract.cxx cxt_extract.h
   cxt_io.cxx cxt_io.h 
-  dicom_util.cxx dicom_util.h
+  dcm_util.cxx dcm_util.h
   direction_cosines.h
   dvh.cxx dvh.h
   gcs_metric.h gcs_metric.hxx 
@@ -388,6 +388,13 @@ if (ITK_FOUND AND GDCM_VERSION_2)
   set (PLASTIMATCH1_LIBRARY_SRC
     ${PLASTIMATCH1_LIBRARY_SRC}
     gdcm2_util.cxx gdcm2_util.h
+    )
+endif ()
+
+if (DCMTK_FOUND AND NOT DCMTK_VERSION_STRING VERSION_LESS 3.6.0)
+  set (PLASTIMATCH1_LIBRARY_SRC
+    ${PLASTIMATCH1_LIBRARY_SRC}
+    dcmtk_util.cxx dcmtk_util.h
     )
 endif ()
 

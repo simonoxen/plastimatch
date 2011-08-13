@@ -8,7 +8,7 @@
 #include "itkGDCMImageIO.h"
 #include "itkGDCMSeriesFileNames.h"
 #include "itkImageSeriesReader.h"
-#include "dicom_util.h"
+#include "dcm_util.h"
 #include "img_metadata.h"
 #include "itk_dicom_load.h"
 #include "logfile.h"
