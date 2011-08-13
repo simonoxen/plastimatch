@@ -2,15 +2,10 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
+#include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
-#include "dcmtk_config.h"
-#include "dcmtk/dcmdata/dcuid.h"
-#include "dcmtk/ofstd/ofstream.h"
-
-void
-dcmtk_series_test (const char *dicom_dir)
-{
-}
+#include "dcmtk_series.h"
 
 int
 main (int argc, char *argv[])

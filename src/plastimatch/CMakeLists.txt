@@ -394,6 +394,7 @@ endif ()
 if (DCMTK_FOUND AND NOT DCMTK_VERSION_STRING VERSION_LESS 3.6.0)
   set (PLASTIMATCH1_LIBRARY_SRC
     ${PLASTIMATCH1_LIBRARY_SRC}
+    dcmtk_file.cxx dcmtk_file.h
     dcmtk_series.cxx dcmtk_series.h
     dcmtk_util.cxx dcmtk_util.h
     )
@@ -669,6 +670,12 @@ if (FULL_PLASTIMATCH_BUILD)
   # tries to create a temporary library with the same name.  [MSVC 2005]
   # That is why the library is called plastimatch1 instead of plastimatch.
   set (PLASTIMATCH1_LIBRARY_DEPENDENCIES ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
+
+  # Add dcmtk libraries, if that is what the user configured
+  if (DCMTK_FOUND AND NOT DCMTK_VERSION_STRING VERSION_LESS 3.6.0)
+    set (PLASTIMATCH1_LIBRARY_DEPENDENCIES 
+      ${PLASTIMATCH1_LIBRARY_DEPENDENCIES} ${DCMTK_LIBRARIES})
+  endif ()
 
   # Ugh.  ITK is stupid.  They quietly dropped support for cygwin. 
   # However, you can still get 3.20.0 to work.  You need to run 
