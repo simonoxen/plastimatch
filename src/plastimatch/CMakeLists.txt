@@ -374,12 +374,12 @@ set (PLASTIMATCH1_LIBRARY_SRC
 if (ITK_FOUND AND GDCM_VERSION_1)
   set (PLASTIMATCH1_LIBRARY_SRC
     ${PLASTIMATCH1_LIBRARY_SRC}
-    gdcm_dose.cxx gdcm_dose.h
-    gdcm_file.cxx gdcm_file.h
+    gdcm1_dose.cxx gdcm1_dose.h
+    gdcm1_file.cxx gdcm1_file.h
     gdcm1_rdd.cxx gdcm1_rdd.h 
-    gdcm_rtss.cxx gdcm_rtss.h
-    gdcm_series.cxx gdcm_series.h
-    gdcm_series_helper_2.cxx gdcm_series_helper_2.h
+    gdcm1_rtss.cxx gdcm1_rtss.h
+    gdcm1_series.cxx gdcm1_series.h
+    gdcm1_series_helper_2.cxx gdcm1_series_helper_2.h
     gdcm1_util.cxx gdcm1_util.h
     )
 endif ()
@@ -450,8 +450,6 @@ set (DICE_STATS_SRC
   )
 set (DICOM_INFO_SRC
   dicom_info.cxx)
-set (DICOM_SERIES_TEST_SRC
-  dicom_series_test.cxx)
 set (DICOM_UID_SRC
   dicom_uid_main.cxx
   dicom_uid.cxx
@@ -805,8 +803,6 @@ if (FULL_PLASTIMATCH_BUILD)
   plm_add_executable (dicom_info "${DICOM_INFO_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${INSTALL_IF_NOT_DEBIAN})
-  plm_add_executable (dicom_series_test "${DICOM_SERIES_TEST_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
   plm_add_executable (distance_map "${DISTANCE_MAP_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
   plm_add_executable (extract_contour "${EXTRACT_CONTOUR_SRC}"
@@ -919,6 +915,14 @@ if (FANN_FOUND AND PLM_BUILD_FANN_TEST)
 endif ()
 
 # Test executable -- mex
+if (ITK_FOUND AND GDCM_VERSION_1 AND PLM_BUILD_GDCM1_TEST)
+  set (GDCM1_TEST_SRC
+    gdcm1_test.cxx)
+  plm_add_executable (gdcm1_test "${GDCM1_TEST_SRC}"
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
+endif ()
+
+# Test executable -- mex
 if (PLM_BUILD_MEX_TEST)
   if (OCTAVE_FOUND)
     add_custom_command (
@@ -997,6 +1001,7 @@ if (PLM_BUILD_QT_TEST AND QT4_FOUND)
   set (QT_TEST_SRC qt_test.cxx)
   plm_add_executable (qt_test "${QT_TEST_SRC}" "${QT_LIBRARIES}" "" 0)
 endif ()
+
 
 ## -------------------------------------------------------------------------
 ## Unit test targets

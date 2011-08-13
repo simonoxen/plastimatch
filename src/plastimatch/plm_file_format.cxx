@@ -11,8 +11,8 @@
 
 #include "file_util.h"
 #if GDCM_VERSION_1
-#include "gdcm_dose.h"
-#include "gdcm_rtss.h"
+#include "gdcm1_dose.h"
+#include "gdcm1_rtss.h"
 #endif
 #include "itk_image.h"
 #include "plm_file_format.h"
@@ -121,7 +121,7 @@ plm_file_format_deduce (const char* path)
     }
 
     /* Maybe dicom dose? */
-    if (gdcm_dose_probe (path)) {
+    if (gdcm1_dose_probe (path)) {
 	return PLM_FILE_FMT_DICOM_DOSE;
     }
 #endif

@@ -15,8 +15,7 @@
      PURPOSE.  See the above copyright notices for more information.
                                                                                 
 =========================================================================*/
-#include "gdcm_series_helper_2.h"
-//#include "gdcmSerieHelper.h"
+#include "gdcm1_series_helper_2.h"
 #include "gdcmDirList.h"
 #include "gdcmFile.h"
 #include "gdcmDictEntry.h" // for TranslateToKey

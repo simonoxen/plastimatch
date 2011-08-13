@@ -11,9 +11,9 @@
 #include "cxt_extract.h"
 #include "file_util.h"
 #if GDCM_VERSION_1
-#include "gdcm_dose.h"
-#include "gdcm_series.h"
-#include "gdcm_rtss.h"
+#include "gdcm1_dose.h"
+#include "gdcm1_series.h"
+#include "gdcm1_rtss.h"
 #endif
 #include "mc_dose.h"
 #include "plm_image_patient_position.h"
@@ -335,7 +335,7 @@ Rtds::save_dicom (const char *output_dir)
 	char fn[_MAX_PATH];
 	printf ("Rtds::save_dicom: gdcm_save_dose()\n");
 	snprintf (fn, _MAX_PATH, "%s/%s", output_dir, "dose.dcm");
-	gdcm_dose_save (m_dose, &m_img_metadata, &m_rdd, fn);
+	gdcm1_dose_save (m_dose, &m_img_metadata, &m_rdd, fn);
     }
 #endif
 }

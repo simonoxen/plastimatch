@@ -7,7 +7,7 @@
 #include "itk_image_save.h"
 #include "file_util.h"
 #if GDCM_VERSION_1
-#include "gdcm_rtss.h"
+#include "gdcm1_rtss.h"
 #endif
 #include "itk_metadata.h"
 #include "plm_warp.h"

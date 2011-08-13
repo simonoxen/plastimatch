@@ -9,7 +9,7 @@
 #include "bstring_util.h"
 #include "cxt_io.h"
 #include "file_util.h"
-#include "gdcm_rtss.h"
+#include "gdcm1_rtss.h"
 #include "plm_clp.h"
 #include "plm_file_format.h"
 #include "plm_image_header.h"

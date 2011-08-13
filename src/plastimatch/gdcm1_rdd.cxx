@@ -13,9 +13,9 @@
 #include "gdcmUtil.h"
 #endif
 
-#include "gdcm_file.h"
-#include "gdcm_rtss.h"
-#include "gdcm_series.h"
+#include "gdcm1_file.h"
+#include "gdcm1_rtss.h"
+#include "gdcm1_series.h"
 #include "gdcm1_util.h"
 #include "math_util.h"
 #include "plm_uid_prefix.h"

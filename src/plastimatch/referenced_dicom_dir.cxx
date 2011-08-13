@@ -4,7 +4,8 @@
 #include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "gdcm1_rdd.h"
+
+#include "dcm_util.h"
 #include "math_util.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
@@ -24,9 +25,7 @@ Referenced_dicom_dir::~Referenced_dicom_dir ()
 void
 Referenced_dicom_dir::load (const char *dicom_dir)
 {
-#if GDCM_VERSION_1
-    gdcm1_load_rdd (this, dicom_dir);
-#endif
+    dcm_load_rdd (this, dicom_dir);
 }
 
 void

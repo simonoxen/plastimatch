@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include "dcm_util.h"
+#include "gdcm1_rdd.h"
 #include "make_string.h"
 
 void
@@ -36,4 +37,16 @@ dcm_anon_patient_id (void)
     uuid [15] = '\0';
     patient_id = patient_id + make_string (uuid);
     return patient_id;
+}
+
+void
+dcm_load_rdd (Referenced_dicom_dir* rdd, const char* dicom_dir)
+{
+#if PLM_USE_DCMTK
+    /* Do nothing */
+#elif GDCM_VERSION_1
+    gdcm1_load_rdd (rdd, dicom_dir);
+#else
+    /* Do nothing */
+#endif
 }

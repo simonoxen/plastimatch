@@ -15,8 +15,8 @@
 #include "gdcmValEntry.h"
 
 #include "bstring_util.h"
-#include "gdcm_rtss.h"
-#include "gdcm_series.h"
+#include "gdcm1_rtss.h"
+#include "gdcm1_series.h"
 #include "gdcm1_util.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"

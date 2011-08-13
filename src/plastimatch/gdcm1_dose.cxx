@@ -12,8 +12,8 @@
 #include "gdcmSQItem.h"
 #include "gdcmUtil.h"
 
-#include "gdcm_dose.h"
-#include "gdcm_series.h"
+#include "gdcm1_dose.h"
+#include "gdcm1_series.h"
 #include "gdcm1_util.h"
 #include "logfile.h"
 #include "itk_image_stats.h"
@@ -50,7 +50,7 @@ void make_directory_recursive (const char *dirname);
 
 /* This function probes whether or not the file is a dicom dose format */
 bool
-gdcm_dose_probe (const char *dose_fn)
+gdcm1_dose_probe (const char *dose_fn)
 {
     gdcm::File *gdcm_file = new gdcm::File;
     std::string tmp;
@@ -80,7 +80,7 @@ dose_copy_raw (float *img_out, T *img_in, int nvox, float scale)
 }
 
 Plm_image*
-gdcm_dose_load (Plm_image *pli, const char *dose_fn, const char *dicom_dir)
+gdcm1_dose_load (Plm_image *pli, const char *dose_fn, const char *dicom_dir)
 {
     int i, rc;
     gdcm::File *gdcm_file = new gdcm::File;
@@ -248,7 +248,7 @@ gdcm_dose_load (Plm_image *pli, const char *dose_fn, const char *dicom_dir)
 }
 
 void
-gdcm_dose_save (
+gdcm1_dose_save (
     Plm_image *pli,                     /* Input: dose image */
     const Img_metadata *meta,           /* Input: patient name, etc. */
     const Referenced_dicom_dir *rdd,    /* Input: CT series info */

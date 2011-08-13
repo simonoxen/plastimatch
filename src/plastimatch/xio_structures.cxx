@@ -14,7 +14,7 @@
 #include "itkRegularExpressionSeriesFileNames.h"
 #include "bstrlib.h"
 
-#include "gdcm_series.h"
+#include "gdcm1_series.h"
 #include "math_util.h"
 #include "plm_image_patient_position.h"
 #include "plm_path.h"

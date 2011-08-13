@@ -8,9 +8,9 @@
 #include <time.h>
 
 #if GDCM_VERSION_1
-#include "gdcm_dose.h"
-#include "gdcm_rtss.h"
-#include "gdcm_series.h"
+#include "gdcm1_dose.h"
+#include "gdcm1_rtss.h"
+#include "gdcm1_series.h"
 #endif
 #include "logfile.h"
 #include "plm_image_patient_position.h"
@@ -35,7 +35,7 @@ Rtds::load_dicom (const char *dicom_dir)
 
      if (m_gdcm_series->m_rtdose_file_list) {
 	const std::string& filename = m_gdcm_series->get_rtdose_filename();
-	m_dose = gdcm_dose_load (0, filename.c_str(), dicom_dir);
+	m_dose = gdcm1_dose_load (0, filename.c_str(), dicom_dir);
     }
     if (m_gdcm_series->m_rtstruct_file_list) {
 	const std::string& filename = m_gdcm_series->get_rtstruct_filename();

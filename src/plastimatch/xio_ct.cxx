@@ -16,7 +16,7 @@
 #include "bstrlib.h"
 
 #if GDCM_VERSION_1
-#include "gdcm_series.h"
+#include "gdcm1_series.h"
 #endif
 #include "plm_image.h"
 #include "plm_image_type.h"

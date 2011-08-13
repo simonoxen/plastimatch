@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _gdcm_file_h_
-#define _gdcm_file_h_
+#ifndef _gdcm1_file_h_
+#define _gdcm1_file_h_
 
 #include "plm_config.h"
 #include <string>

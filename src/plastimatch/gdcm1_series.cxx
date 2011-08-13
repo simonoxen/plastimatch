@@ -15,8 +15,8 @@
 #include "gdcmUtil.h"
 
 #include "bstring_util.h"
-#include "gdcm_series.h"
-#include "gdcm_series_helper_2.h"
+#include "gdcm1_series.h"
+#include "gdcm1_series_helper_2.h"
 #include "math_util.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"

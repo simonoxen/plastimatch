@@ -6,8 +6,8 @@
 #include "cxt_extract.h"
 #include "file_util.h"
 #if GDCM_VERSION_1
-#include "gdcm_dose.h"
-#include "gdcm_rtss.h"
+#include "gdcm1_dose.h"
+#include "gdcm1_rtss.h"
 #endif
 #include "itk_image_load.h"
 #include "itk_image_save.h"
@@ -67,7 +67,7 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 		(const char*) parms->input_fn, &rtds->m_rdd);
 	    break;
 	case PLM_FILE_FMT_DICOM_DOSE:
-	    rtds->m_dose = gdcm_dose_load (
+	    rtds->m_dose = gdcm1_dose_load (
 		0, 
 		(const char*) parms->input_fn, 
 		(const char*) parms->referenced_dicom_dir);

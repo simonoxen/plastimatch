@@ -55,6 +55,7 @@ include (cmake/language_support.cmake)
 option (PLM_BUILD_CUDA_TEST "Build CUDA test program" OFF)
 option (PLM_BUILD_DLIB_TEST "Build dlib test program" OFF)
 option (PLM_BUILD_FANN_TEST "Build fann test program" OFF)
+option (PLM_BUILD_GDCM1_TEST "Build fann test program" OFF)
 option (PLM_BUILD_MEX_TEST "Build mex test program" OFF)
 option (PLM_BUILD_NLOPT_TEST "Build NLopt test program" OFF)
 option (PLM_BUILD_OPENCL_TEST "Build OpenCL test program" OFF)
@@ -68,10 +69,10 @@ option (PLM_CONFIG_DISABLE_CUDA "Set to ON to build without CUDA" OFF)
 option (PLM_CONFIG_DISABLE_DCMTK "Set to ON to build without DCMTK" OFF)
 option (PLM_CONFIG_DISABLE_OPENCL "Set to ON to build without OpenCL" OFF)
 option (PLM_CONFIG_DISABLE_SSE2 "Set to ON to build without SSE" OFF)
-option (PLM_SLICER_HARDCODED_FILENAME 
-  "Use hardcoded filename instead of tmpfile()" OFF)
 set (PLM_CONFIG_VERSION_STRING "" CACHE STRING "Version string")
 option (PLM_CONFIG_KEYHOLIZE "Enable RT structure keyholization" OFF)
+option (PLM_CONFIG_PREFER_DCMTK 
+  "Use DCMTK instead of GDCM for DICOM operations" OFF)
 
 # Optional components
 option (PLM_BUILD_ISE "Build ISE fluoro program" OFF)

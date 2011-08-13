@@ -15,9 +15,8 @@
      PURPOSE.  See the above copyright notices for more information.
                                                                                 
 =========================================================================*/
-
-#ifndef _gdcm_series_helper_
-#define _gdcm_series_helper_
+#ifndef _gdcm1_series_helper_
+#define _gdcm1_series_helper_
 
 #include "plm_config.h"
 #include "gdcmCommon.h" 
