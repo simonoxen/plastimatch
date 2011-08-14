@@ -106,8 +106,23 @@
       <element>GPU</element>
       <element>CPU</element>
     </string-enumeration>
+    <string-enumeration>
+      <name>output_type</name>
+      <longflag>--output_type</longflag>
+      <description>Data type of output image.  Choose "auto" to retain the same type as the input image.  Other choices are 8, 16, and 32 bit signed and unsigned integers, float, and double.</description>
+      <label>Output type</label>
+      <default>auto</default>
+      <element>auto</element>
+      <element>char</element>
+      <element>uchar</element>
+      <element>short</element>
+      <element>ushort</element>
+      <element>long</element>
+      <element>ulong</element>
+      <element>float</element>
+      <element>double</element>
+    </string-enumeration>
   </parameters>
-
 
   <!-- STAGE 0 -->
   <parameters>
@@ -165,6 +180,13 @@
       <longflag>--stage1gridsize</longflag>
       <description>Approximate B-Spline Grid Spacing (isotropic)</description>
     </double>
+    <double>
+      <name>stage_1_regularization</name>
+      <label>Regularization</label>
+      <default>0.005</default>
+      <longflag>--stage_1_regularization</longflag>
+      <description>Second derivative smoothness penalty</description>
+    </double>
     <integer>
       <name>stage_1_its</name>
       <label>Max iterations</label>
@@ -174,7 +196,7 @@
     </integer>
   </parameters>
 
-  <!-- STAGE 1 -->
+  <!-- STAGE 2 -->
   <parameters>
     <label>Stage 2 Options</label>
     <description></description>
@@ -198,6 +220,13 @@
       <default>50</default>
       <longflag>--stage2gridsize</longflag>
       <description>Approximate B-Spline Grid Spacing (isotropic)</description>
+    </double>
+    <double>
+      <name>stage_2_regularization</name>
+      <label>Regularization</label>
+      <default>0.005</default>
+      <longflag>--stage2_regularization</longflag>
+      <description>Second derivative smoothness penalty</description>
     </double>
     <integer>
       <name>stage_2_its</name>

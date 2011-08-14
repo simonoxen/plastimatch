@@ -1,6 +1,8 @@
 Version 1.5.3 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
 * Add support for signed char image type
+* Add output image type to slicer plugin
+* Add bspline regularization to slicer plugin
 * Fix/workaround problem with b-spline regularization on images with 
   negative voxel spacing
 * Fix bug where pixel values were wrapped instead of clamped when 

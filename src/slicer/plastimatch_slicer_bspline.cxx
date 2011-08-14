@@ -49,6 +49,10 @@ main (int argc, char * argv [])
 	    "xf_out=" << plmslc_output_bsp_f << "\n";
     }
 
+    if (output_type != "auto") {
+	command_string << "img_out_type = " << output_type << "\n";
+    }
+
     /* Stage 0 */
     if (enable_stage_0) {
 	command_string << 
@@ -81,6 +85,7 @@ main (int argc, char * argv [])
 	"max_its=" << stage_1_its << "\n"
 	"convergence_tol=5\n"
 	"grad_tol=1.5\n"
+	"regularization_lambda=" << stage_1_regularization << "\n"
 	"res=" 
 	<< stage_1_resolution[0] << " "
 	<< stage_1_resolution[1] << " "
@@ -95,6 +100,7 @@ main (int argc, char * argv [])
 	command_string << 
 	    "[STAGE]\n"
 	    "max_its=" << stage_2_its << "\n"
+	    "regularization_lambda=" << stage_1_regularization << "\n"
 	    "res=" 
 	    << stage_2_resolution[0] << " "
 	    << stage_2_resolution[1] << " "
