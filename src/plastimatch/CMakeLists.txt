@@ -714,9 +714,7 @@ if (SLICER_FOUND)
   set (OUTDIR "${PLUGIN_DIR}/${CMAKE_CFG_INTDIR}")
   set (QTOUTDIR "${QTPLUGIN_DIR}/${CMAKE_CFG_INTDIR}")
 
-  message (STATUS "OUTDIR = ${OUTDIR}")
-
-  # Copy executable
+  # Copy plastimatch executable
   plm_add_target_copy (plastimatch_slicer_copy_plastimatch_exe
     "${INDIR}/plastimatch${CMAKE_EXECUTABLE_SUFFIX}"
     "${OUTDIR}/plastimatch${CMAKE_EXECUTABLE_SUFFIX}"
@@ -775,119 +773,137 @@ endif ()
 ##  Executable targets
 ##-----------------------------------------------------------------------------
 if (NOT BUILD_DEBIAN)
-  plm_add_executable (bragg_curve "${BRAGG_CURVE_SRC}" "${GPUIT_LIBRARIES}" 
-    "${GPUIT_EXE_LDFLAGS}" 0)
+  plm_add_executable (bragg_curve "${BRAGG_CURVE_SRC}" 
+    "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
-plm_add_executable (bspline "${BSPLINE_SRC}" "${GPUIT_LIBRARIES}" 
-  "${PLMCUDA_EXE_LDFLAGS}" 0)
-plm_add_executable (check_grad "${CHECK_GRAD_SRC}" "${GPUIT_LIBRARIES}" 
-  "${GPUIT_EXE_LDFLAGS}" 0)
-plm_add_executable (demons "${DEMONS_SRC}" "${GPUIT_LIBRARIES}" 
-  "${PLMCUDA_EXE_LDFLAGS}" 0)
-plm_add_executable (drr "${DRR_SRC}" "${GPUIT_LIBRARIES}" 
-  "${PLMCUDA_EXE_LDFLAGS}" 1)
-plm_add_executable (dlib_train "${DLIB_TRAIN_SRC}" "${GPUIT_LIBRARIES}" 
-  "${PLMCUDA_EXE_LDFLAGS}" 
-  ${INSTALL_IF_NOT_DEBIAN})
-plm_add_executable (fdk "${FDK_SRC}" "${GPUIT_LIBRARIES}" 
-  "${PLMCUDA_EXE_LDFLAGS}" 1)
-plm_add_executable (reg "${REG_SRC}" "${GPUIT_LIBRARIES}" 
-  "${GPUIT_EXE_LDFLAGS}" 0)
-plm_add_executable (hnd_to_pfm "${HND_TO_PFM_SRC}" "${GPUIT_LIBRARIES}" 
-  "${GPUIT_EXE_LDFLAGS}" 
-  ${INSTALL_IF_NOT_DEBIAN})
+plm_add_executable (bspline "${BSPLINE_SRC}" 
+  "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+plm_add_executable (check_grad "${CHECK_GRAD_SRC}" 
+  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+plm_add_executable (demons "${DEMONS_SRC}" 
+  "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+plm_add_executable (drr "${DRR_SRC}" 
+  "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_ALWAYS})
+plm_add_executable (dlib_train "${DLIB_TRAIN_SRC}" 
+  "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+plm_add_executable (fdk "${FDK_SRC}" 
+  "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_ALWAYS})
+plm_add_executable (reg "${REG_SRC}" 
+  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+plm_add_executable (hnd_to_pfm "${HND_TO_PFM_SRC}" 
+  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
 plm_add_executable (mha_to_raw mha_to_raw.c "" "" 
-  ${INSTALL_IF_NOT_DEBIAN})
-plm_add_executable (proton_dose "${PROTON_DOSE_SRC}" "${GPUIT_LIBRARIES}" 
-  "${GPUIT_EXE_LDFLAGS}" 0)
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+plm_add_executable (proton_dose "${PROTON_DOSE_SRC}" 
+  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 plm_add_executable (raw_to_mha raw_to_mha.c "" "" 
-  ${INSTALL_IF_NOT_DEBIAN})
-plm_add_executable (test2 "${TEST2_SRC}" 
-  "" "" 0)
-plm_add_executable (Vmatrix "${VMATRIX_SRC}" 
-  "" "" 0)
-plm_add_executable (xyzInt "${XYZINT_SRC}" 
-  "" "" 
-  ${INSTALL_IF_NOT_DEBIAN})
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+plm_add_executable (test2 "${TEST2_SRC}" "" "" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+plm_add_executable (Vmatrix "${VMATRIX_SRC}" "" "" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+plm_add_executable (xyzInt "${XYZINT_SRC}" "" "" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
 
 if (FULL_PLASTIMATCH_BUILD)
   message (STATUS "PLASTIMATCH_LIBS: ${PLASTIMATCH_LIBS}")
   plm_add_executable (compute_distance "${COMPUTE_DISTANCE_SRC}" 
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${INSTALL_IF_NOT_DEBIAN})
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   plm_add_executable (compute_mean_image "${COMPUTE_MEAN_IMAGE_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   plm_add_executable (extract_slice "${EXTRACT_SLICE_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   plm_add_executable (dice_stats "${DICE_STATS_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${INSTALL_IF_NOT_DEBIAN})
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   plm_add_executable (dicom_info "${DICOM_INFO_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${INSTALL_IF_NOT_DEBIAN})
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   plm_add_executable (distance_map "${DISTANCE_MAP_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   plm_add_executable (extract_contour "${EXTRACT_CONTOUR_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   plm_add_executable (landmark_warp "${LANDMARK_WARP_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_ALWAYS})
   plm_add_executable (merge_vfs merge_vector_fields.cxx
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${INSTALL_IF_NOT_DEBIAN})
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   plm_add_executable (mha_to_rtog_dose "${MHA_TO_RTOG_DOSE_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   plm_add_executable (plastimatch "${PLASTIMATCH_SRC}"
-    "${PLASTIMATCH_LIBS}" "${PLMCUDA_EXE_LDFLAGS}" 1)
+    "${PLASTIMATCH_LIBS}" "${PLMCUDA_EXE_LDFLAGS}" 
+    ${BUILD_ALWAYS} ${INSTALL_ALWAYS})
   if (QT4_FOUND AND QT_QTSQL_FOUND)
     set (PLASTIMATCH_QT_LIBRARIES ${PLASTIMATCH_LIBS} 
       ${QT_LIBRARIES} ${QT_QTSQL_LIBRARIES})
     plm_add_executable (plastimatch_qt "${PLASTIMATCH_QT_SRC}"
-      "${PLASTIMATCH_QT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 0)
+      "${PLASTIMATCH_QT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
+      ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   endif ()
   plm_add_executable (ransac_test "${RANSAC_TEST_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   plm_add_executable (rtog_to_mha "${RTOG_TO_MHA_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   plm_add_executable (shuffle_mha "${SHUFFLE_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${INSTALL_IF_NOT_DEBIAN})
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   if (PLM_BUILD_SIFTND)
     plm_add_executable (siftnD "${SIFTnD_SRC}"
       "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-      ${INSTALL_IF_NOT_DEBIAN})
+      ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   endif ()
   plm_add_executable (synthetic_vf "${SYNTHETIC_VF_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${INSTALL_IF_NOT_DEBIAN})
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   plm_add_executable (union_mask union_mask.cxx
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${INSTALL_IF_NOT_DEBIAN})
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   plm_add_executable (vf_invert "${VF_INVERT_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${INSTALL_IF_NOT_DEBIAN})
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   plm_add_executable (xf_to_EMPIREFMT "${XF_TO_EMPIREFMT_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
 
 # executables that require cuda
 if (CUDA_FOUND)
-  plm_add_executable (cuda_probe 
-    "${CUDA_PROBE_SRC}" "${CUDA_LIBRARIES}" "" 
-    ${INSTALL_IF_NOT_DEBIAN})
+  plm_add_executable (cuda_probe "${CUDA_PROBE_SRC}" 
+    "${CUDA_LIBRARIES}" "" 
+    ${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
 endif ()
 
 # executables that require opencl
 if (OPENCL_FOUND)
-  plm_add_executable (opencl_probe 
-    "${OPENCL_PROBE_SRC}"  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
-    ${INSTALL_IF_NOT_DEBIAN})
+  plm_add_executable (opencl_probe "${OPENCL_PROBE_SRC}"
+    "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
 endif ()
 
 # dicom_uid requires dcmtk
 if (DCMTK_FOUND)
-  plm_add_executable (dicom_uid 
-    "${DICOM_UID_SRC}" "${DCMTK_LIBRARIES}" "" 
-    ${INSTALL_IF_NOT_DEBIAN})
+  plm_add_executable (dicom_uid "${DICOM_UID_SRC}" 
+    "${DCMTK_LIBRARIES}" "" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
 endif ()
 
 # mondoshot requires WIN32, wx, dcmtk, sqlite3
@@ -914,8 +930,9 @@ if (CUDA_FOUND AND PLM_BUILD_CUDA_TEST)
   cuda_compile (CUDA_TEST_WRAPPERS cuda_test.cu)
   set (CUDA_TEST_SRC ${CUDA_TEST_WRAPPERS} cuda_test.cu)
   message (STATUS "CUDA_TEST_SRC: ${CUDA_TEST_SRC}")
-  plm_add_executable (cuda_test 
-    "${CUDA_TEST_SRC}" "${CUDA_LIBRARIES}" "" 0)
+  plm_add_executable (cuda_test "${CUDA_TEST_SRC}" 
+    "${CUDA_LIBRARIES}" "" 
+    ${BUILD_ALWAYS} ${INSTALL_NEVER})
   set_target_properties (cuda_test PROPERTIES LINKER_LANGUAGE CXX)
 endif ()
 
@@ -924,15 +941,17 @@ if (DCMTK_FOUND AND DCMTK_VERSION_36 AND PLM_BUILD_DCMTK_TEST)
   set (DCMTK_TEST_SRC
     dcmtk_test.cxx)
   plm_add_executable (dcmtk_test "${DCMTK_TEST_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_ALWAYS} ${INSTALL_NEVER})
 endif ()
 
 # Test executable -- dlib
 if (PLM_BUILD_DLIB_TEST)
   set (DLIB_TEST_SRC dlib_test.cxx)
   set (DLIB_TEST_LIBS "")
-  plm_add_executable (dlib_test 
-    "${DLIB_TEST_SRC}" "${DLIB_TEST_LIBS}" "" 0)
+  plm_add_executable (dlib_test "${DLIB_TEST_SRC}" 
+    "${DLIB_TEST_LIBS}" "" 
+    ${BUILD_ALWAYS} ${INSTALL_NEVER})
 endif ()
 
 # Test executable -- fann
@@ -940,8 +959,9 @@ if (FANN_FOUND AND PLM_BUILD_FANN_TEST)
   set (FANN_TEST_SRC fann_test.c)
   set (FANN_TEST_LIBS 
     ${GPUIT_LIBRARIES} ${FANN_LIBRARIES})
-  plm_add_executable (fann_test 
-    "${FANN_TEST_SRC}" "${FANN_TEST_LIBS}" "${OPENMP_LDFLAGS}" 0)
+  plm_add_executable (fann_test "${FANN_TEST_SRC}" 
+    "${FANN_TEST_LIBS}" "${OPENMP_LDFLAGS}"
+    ${BUILD_ALWAYS} ${INSTALL_NEVER})
 endif ()
 
 # Test executable -- gdcm
@@ -949,7 +969,8 @@ if (ITK_FOUND AND GDCM_VERSION_1 AND PLM_BUILD_GDCM1_TEST)
   set (GDCM1_TEST_SRC
     gdcm1_test.cxx)
   plm_add_executable (gdcm1_test "${GDCM1_TEST_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_ALWAYS} ${INSTALL_NEVER})
 endif ()
 
 # Test executable -- mex
@@ -988,8 +1009,9 @@ if (PLM_BUILD_NLOPT_TEST AND NLOPT_FOUND)
   set (NLOPT_TEST_SRC nlopt_test.c)
   set (NLOPT_TEST_LIBS 
     ${GPUIT_LIBRARIES} ${NLOPT_LIBRARIES})
-  plm_add_executable (nlopt_test "${NLOPT_TEST_SRC}" "${NLOPT_TEST_LIBS}" 
-    "${OPENMP_LDFLAGS}" 0)
+  plm_add_executable (nlopt_test "${NLOPT_TEST_SRC}" 
+    "${NLOPT_TEST_LIBS}" "${OPENMP_LDFLAGS}" 
+    ${BUILD_ALWAYS} ${INSTALL_NEVER})
   set_target_properties (nlopt_test PROPERTIES LINKER_LANGUAGE CXX)
 endif ()
 
@@ -999,10 +1021,9 @@ if (PLM_BUILD_OPENCL_TEST AND OPENCL_FOUND)
     "${CMAKE_BINARY_DIR}/opencl_test.cl"
     )
   set (OPENCL_TEST_LIBS ${OPENCL_LIBRARIES} ${PLASTIMATCH_LIBS})
-  #SET (OPENCL_TEST_LIBS ${OPENCL_LIBRARIES} ${GPUIT_LIBRARIES})
   plm_add_executable (opencl_test "${OPENCL_TEST_SRC}" 
-    "${OPENCL_TEST_LIBS}" "" 0)
-  #SET_TARGET_PROPERTIES (opencl_test PROPERTIES LINKER_LANGUAGE CXX)
+    "${OPENCL_TEST_LIBS}" "" 
+    ${BUILD_ALWAYS} ${INSTALL_NEVER})
 
   # I don't yet know how to bundle the .cl file within the executable.
   # Therefore, copy the .cl into binary directory.
@@ -1017,8 +1038,9 @@ endif ()
 # Test executable -- openmp
 if (PLM_BUILD_OPENMP_TEST AND OPENMP_FOUND)
   set (OPENMP_TEST_SRC openmp_test.c)
-  plm_add_executable (openmp_test "${OPENMP_TEST_SRC}" "${GPUIT_LIBRARIES}" 
-    "${OPENMP_LDFLAGS}" 0)
+  plm_add_executable (openmp_test "${OPENMP_TEST_SRC}" 
+    "${GPUIT_LIBRARIES}" "${OPENMP_LDFLAGS}" 
+    ${BUILD_ALWAYS} ${INSTALL_NEVER})
 endif ()
 
 # Test executable -- cuda_tex_test
@@ -1029,7 +1051,8 @@ endif ()
 # Test executable -- qt
 if (PLM_BUILD_QT_TEST AND QT4_FOUND)
   set (QT_TEST_SRC qt_test.cxx)
-  plm_add_executable (qt_test "${QT_TEST_SRC}" "${QT_LIBRARIES}" "" 0)
+  plm_add_executable (qt_test "${QT_TEST_SRC}" "${QT_LIBRARIES}" "" 
+    ${BUILD_ALWAYS} ${INSTALL_NEVER})
 endif ()
 
 
@@ -1038,7 +1061,9 @@ endif ()
 ## -------------------------------------------------------------------------
 if (ITK_FOUND)
   plm_add_executable (plm_drr_api_a plm_drr_api_a.cxx
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   plm_add_executable (plm_registration_api_a plm_registration_api_a.cxx
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()

@@ -652,10 +652,23 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/src/plastimatch/plm_fortran.h.in
 ##-----------------------------------------------------------------------------
 ##  Debian install excludes some items
 ##-----------------------------------------------------------------------------
+set (INSTALL_NEVER 0)
+set (INSTALL_ALWAYS 1)
 if (BUILD_DEBIAN)
   set (INSTALL_IF_NOT_DEBIAN 0)
 else ()
   set (INSTALL_IF_NOT_DEBIAN 1)
+endif ()
+
+##-----------------------------------------------------------------------------
+##  Slicer extension build excludes some items
+##-----------------------------------------------------------------------------
+set (BUILD_NEVER 0)
+set (BUILD_ALWAYS 1)
+if (BUILD_AGAINST_SLICER3)
+  set (BUILD_IF_NOT_SLICER_EXT 0)
+else ()
+  set (BUILD_IF_NOT_SLICER_EXT 1)
 endif ()
 
 ##-----------------------------------------------------------------------------
