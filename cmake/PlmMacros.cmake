@@ -42,7 +42,7 @@ macro (PLM_ADD_EXECUTABLE
     TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS 
     TARGET_BUILD TARGET_INSTALL)
 
-  if (TARGET_BUILD)
+  if (${TARGET_BUILD})
     add_executable (${TARGET_NAME} ${TARGET_SRC})
     target_link_libraries (${TARGET_NAME} ${TARGET_LIBS})
     set_target_properties (${TARGET_NAME} 
@@ -115,10 +115,7 @@ macro (PLM_ADD_TARGET_COPY TARGET SRC DEST DEPENDENCY)
   add_custom_target (${TARGET} ALL DEPENDS "${DEST}")
   add_custom_command (
       OUTPUT "${DEST}"
-      COMMAND
-      ${CMAKE_COMMAND} "-E" "copy"
-      "${SRC}"
-      "${DEST}"
+      COMMAND ${CMAKE_COMMAND} "-E" "copy" "${SRC}" "${DEST}"
       DEPENDS ${DEPENDENCY}
       )
 endmacro ()

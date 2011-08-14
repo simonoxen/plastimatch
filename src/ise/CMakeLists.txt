@@ -156,10 +156,12 @@ if (QT4_FOUND)
   if (PAXSCAN_FOUND)
     set (ISE_QT_LIBRARIES ${ISE_QT_LIBRARIES} ${PAXSCAN_LIBRARIES})
   endif ()
-  plm_add_executable (ise_qt "${ISE_QT_SRC}" "${ISE_QT_LIBRARIES}" "" 0)
+  plm_add_executable (ise_qt "${ISE_QT_SRC}" "${ISE_QT_LIBRARIES}" "" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
 
 if (PAXSCAN_FOUND)
   plm_add_executable (acquire_4030e "${ACQUIRE_4030E_SRC}" 
-    "${PAXSCAN_LIBRARIES}" "" 0)
+    "${PAXSCAN_LIBRARIES}" "" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
