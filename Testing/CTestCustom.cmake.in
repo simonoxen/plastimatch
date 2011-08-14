@@ -1,3 +1,4 @@
+set (BUILD_DEBIAN @BUILD_DEBIAN@)
 set (BROOK_FOUND @BROOK_FOUND@)
 set (CMAKE_Fortran_COMPILER_WORKS @CMAKE_Fortran_COMPILER_WORKS@)
 set (CUDA_FOUND @CUDA_FOUND@)
@@ -247,8 +248,8 @@ endif ()
 if (BUILD_DEBIAN)
   set (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
+    "bragg-curve"
     "bragg-curve-check"
-    "plm-convert-dicom-donut-stats" 
     )
 endif ()
 
