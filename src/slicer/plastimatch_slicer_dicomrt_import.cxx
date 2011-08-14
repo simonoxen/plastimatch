@@ -40,6 +40,9 @@ main (int argc, char * argv [])
     if (reference_vol.compare ("None") != 0) {
 	parms.fixed_img_fn = reference_vol.c_str();
     }
+    if (output_ss_list != "" && output_ss_list != "None") {
+	parms.output_ss_list_fn = output_ss_list.c_str();
+    }
 
     /* Process warp */
     file_type = PLM_FILE_FMT_DICOM_DIR;

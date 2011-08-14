@@ -59,5 +59,12 @@
       <default>None</default>
       <description>Output Dose Image</description>
     </image>
+    <string>
+      <name>output_ss_list</name>
+      <longflag>output_ss_list</longflag>
+      <label>Output structure names (file)</label>
+      <description>Write a file containing the names of all the structures in the structure set (absolute path)</description>
+      <channel>input</channel>
+    </string>
   </parameters>
 </executable>

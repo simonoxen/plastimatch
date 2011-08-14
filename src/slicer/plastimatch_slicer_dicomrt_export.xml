@@ -22,7 +22,7 @@
     <image>
       <longflag>ct_image</longflag>
       <name>ct_image</name>
-      <label>Image volume (optional)</label>
+      <label>Image volume</label>
       <channel>input</channel>
       <default>None</default>
       <description>Image to save as CT (optional)</description>
@@ -33,15 +33,22 @@
       <label>Structure set volume</label>
       <channel>input</channel>
       <default>None</default>
-      <description>Image to save as Structure set (optional).  Note: this should be one bit per structure, not a labelmap.</description>
+      <description>Image to save as structure set (optional).  Note: this should be one bit per structure, not a labelmap.</description>
     </image>
     <image>
       <longflag>dose_image</longflag>
       <name>dose_image</name>
-      <label>Dose Volume</label>
+      <label>Dose volume</label>
       <channel>input</channel>
       <default>None</default>
       <description>Dose image (optional)</description>
     </image>
+    <string>
+      <name>input_ss_list</name>
+      <longflag>input_ss_list</longflag>
+      <label>Input structure names (file)</label>
+      <description>Read a file containing the names of all the structures in the structure set (absolute path)</description>
+      <channel>input</channel>
+    </string>
   </parameters>
 </executable>

@@ -35,6 +35,9 @@ main (int argc, char * argv [])
 	have_input = 1;
 	parms.input_ss_img_fn = ss_image.c_str();
     }
+    if (input_ss_list != "" && input_ss_list != "None") {
+	parms.input_ss_list_fn = input_ss_list.c_str();
+    }
 
     /* Required input */
     if (have_input && output_directory.compare ("None") != 0) {
@@ -44,6 +47,7 @@ main (int argc, char * argv [])
 	file_type = PLM_FILE_FMT_IMG;
 	rtds_warp (&rtds, file_type, &parms);
     }
+
 
     return EXIT_SUCCESS;
 }
