@@ -696,11 +696,15 @@ if (FULL_PLASTIMATCH_BUILD)
     "")
 endif ()
 
-if (WIN32 AND SLICER_FOUND)
+if (SLICER_FOUND)
   # The slicer plugin on windows can't find its dll easily.  Copy these 
-  # over to the lib directory.
-  set (INDIR
-    "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
+  # over to the lib directory.  Also, copy over the plastimatch 
+  # executable 
+  if (WIN32)
+    set (INDIR "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
+  else ()
+    set (INDIR "${CMAKE_BINARY_DIR}")
+  endif ()
   if (SLICER_IS_SLICER3)
     set (PLUGIN_DIR "${CMAKE_BINARY_DIR}/${Slicer3_INSTALL_PLUGINS_BIN_DIR}")
   else ()
@@ -712,50 +716,60 @@ if (WIN32 AND SLICER_FOUND)
 
   message (STATUS "OUTDIR = ${OUTDIR}")
 
-  macro (plm_slicer_copy_dll TARGET SRC DEST QTDEST DEPENDENCY)
-    plm_add_target_copy ("${TARGET}" "${SRC}" "${DEST}" "${DEPENDENCY}")
-    if (SLICER_IS_SLICER4)
-      set (QTTARGET "${TARGET}_qt")
-      plm_add_target_copy ("${QTTARGET}" "${SRC}" "${QTDEST}" "${DEPENDENCY}")
-    endif ()
-  endmacro ()
+  # Copy executable
+  plm_add_target_copy (plastimatch_slicer_copy_plastimatch_exe
+    "${INDIR}/plastimatch${CMAKE_EXECUTABLE_SUFFIX}"
+    "${OUTDIR}/plastimatch${CMAKE_EXECUTABLE_SUFFIX}"
+    plastimatch
+    )
 
-  #plm_add_target_copy (plastimatch_slicer_copy_plastimatch1
-  plm_slicer_copy_dll (plastimatch_slicer_copy_plastimatch1
-    "${INDIR}/plastimatch1.dll"
-    "${OUTDIR}/plastimatch1.dll"
-    "${QTOUTDIR}/plastimatch1.dll"
-    plastimatch1
-    )
-  plm_slicer_copy_dll (plastimatch_slicer_copy_gpuit
-    "${INDIR}/gpuit.dll"
-    "${OUTDIR}/gpuit.dll"
-    "${QTOUTDIR}/gpuit.dll"
-    gpuit
-    )
-  plm_slicer_copy_dll (plastimatch_slicer_copy_plmsys
-    "${INDIR}/plmsys.dll"
-    "${OUTDIR}/plmsys.dll"
-    "${QTOUTDIR}/plmsys.dll"
-    plmsys
-    )
-  if (CUDA_FOUND)
-    plm_slicer_copy_dll (plastimatch_slicer_copy_plmcuda
-      "${INDIR}/plmcuda.dll"
-      "${OUTDIR}/plmcuda.dll"
-      "${QTOUTDIR}/plmcuda.dll"
-      plmcuda
+  # Copy dlls
+  if (WIN32)
+    macro (plm_slicer_copy_dll TARGET SRC DEST QTDEST DEPENDENCY)
+      plm_add_target_copy ("${TARGET}" "${SRC}" "${DEST}" "${DEPENDENCY}")
+      if (SLICER_IS_SLICER4)
+	set (QTTARGET "${TARGET}_qt")
+	plm_add_target_copy ("${QTTARGET}" "${SRC}" "${QTDEST}" "${DEPENDENCY}")
+      endif ()
+    endmacro ()
+
+    plm_slicer_copy_dll (plastimatch_slicer_copy_plastimatch1
+      "${INDIR}/plastimatch1.dll"
+      "${OUTDIR}/plastimatch1.dll"
+      "${QTOUTDIR}/plastimatch1.dll"
+      plastimatch1
       )
-  endif ()
-  if (OPENCL_FOUND)
-    plm_slicer_copy_dll (plastimatch_slicer_copy_plmopencl
-      "${INDIR}/plmopencl.dll"
-      "${OUTDIR}/plmopencl.dll"
-      "${QTOUTDIR}/plmopencl.dll"
-      plmopencl
+    plm_slicer_copy_dll (plastimatch_slicer_copy_gpuit
+      "${INDIR}/gpuit.dll"
+      "${OUTDIR}/gpuit.dll"
+      "${QTOUTDIR}/gpuit.dll"
+      gpuit
       )
+    plm_slicer_copy_dll (plastimatch_slicer_copy_plmsys
+      "${INDIR}/plmsys.dll"
+      "${OUTDIR}/plmsys.dll"
+      "${QTOUTDIR}/plmsys.dll"
+      plmsys
+      )
+    if (CUDA_FOUND)
+      plm_slicer_copy_dll (plastimatch_slicer_copy_plmcuda
+	"${INDIR}/plmcuda.dll"
+	"${OUTDIR}/plmcuda.dll"
+	"${QTOUTDIR}/plmcuda.dll"
+	plmcuda
+	)
+    endif ()
+    if (OPENCL_FOUND)
+      plm_slicer_copy_dll (plastimatch_slicer_copy_plmopencl
+	"${INDIR}/plmopencl.dll"
+	"${OUTDIR}/plmopencl.dll"
+	"${QTOUTDIR}/plmopencl.dll"
+	plmopencl
+	)
+    endif ()
   endif ()
 endif ()
+
 
 ##-----------------------------------------------------------------------------
 ##  Executable targets
