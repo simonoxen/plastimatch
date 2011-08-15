@@ -165,3 +165,8 @@ if (PAXSCAN_FOUND)
     "${PAXSCAN_LIBRARIES}" "" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
+
+if (WIN32)
+  plm_add_executable (dips_test dips_test.cxx "" ""
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+endif ()

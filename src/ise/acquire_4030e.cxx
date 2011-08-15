@@ -14,8 +14,8 @@
 #include "iostatus.h"
 
 // The string such as "A422-07" is the imager serial number
-//char *default_path = "C:\\IMAGERs\\A422-07"; // Path to IMAGER tables
-char *default_path = "C:\\IMAGERs\\A663-11"; // Path to IMAGER tables
+char *default_path = "C:\\IMAGERs\\A422-07"; // Path to IMAGER tables
+//char *default_path = "C:\\IMAGERs\\A663-11"; // Path to IMAGER tables
 
 // In the following the mode number for the rad mode required should be set
 int  crntModeSelect = 0;
