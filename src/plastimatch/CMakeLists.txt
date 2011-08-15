@@ -560,6 +560,15 @@ if (QT4_FOUND AND QT_QTSQL_FOUND)
     pqt_main_window.ui
     )
 endif ()
+set (CRYSTALVIEW_SRC
+  cview_portal.cxx cview_portal.h
+  cview_main.cxx
+  )
+if (QT4_FOUND)
+  qt4_wrap_cpp (CRYSTALVIEW_SRC
+    cview_portal.h
+    )
+endif ()
 set (PROTON_DOSE_SRC
   proton_dose_main.cxx 
   proton_dose_opts.cxx proton_dose_opts.h
@@ -777,6 +786,12 @@ if (FULL_PLASTIMATCH_BUILD)
   plm_add_executable (plastimatch "${PLASTIMATCH_SRC}"
     "${PLASTIMATCH_LIBS}" "${PLMCUDA_EXE_LDFLAGS}" 
     ${BUILD_ALWAYS} ${INSTALL_ALWAYS})
+  if (QT4_FOUND)
+    set (CRYSTALVIEW_LIBRARIES ${PLASTIMATCH_LIBS} 
+      ${QT_LIBRARIES} ${QT_QTSQL_LIBRARIES})
+    plm_add_executable (cview "${CRYSTALVIEW_SRC}"
+      "${CRYSTALVIEW_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 0)
+  endif ()
   if (QT4_FOUND AND QT_QTSQL_FOUND)
     set (PLASTIMATCH_QT_LIBRARIES ${PLASTIMATCH_LIBS} 
       ${QT_LIBRARIES} ${QT_QTSQL_LIBRARIES})
