@@ -12,8 +12,6 @@
 #include "mha_io.h"
 #include "cview_portal.h"
 
-using namespace std;
-
 int
 main (int argc, char** argv)
 {
@@ -22,14 +20,14 @@ main (int argc, char** argv)
     if (argc > 1) {
         input_vol = read_mha (argv[1]);
     } else {
-        cout << "CrystalView 0.01a\n"
-             << "Usage: cview mha_file\n\n"
-             << "  When Running:\n"
-             << "    1 - axial view\n"
-             << "    2 - coronal view\n"
-             << "    3 - sagittal view\n\n"
-             << "  -/+ - change active slice\n"
-             << "  (or mouse wheel)\n\n";
+        std::cout << "CrystalView 0.02a\n"
+                  << "Usage: cview mha_file\n\n"
+                  << "  When Running:\n"
+                  << "    1 - axial view\n"
+                  << "    2 - coronal view\n"
+                  << "    3 - sagittal view\n\n"
+                  << "  -/+ - change active slice\n"
+                  << "  (or mouse wheel)\n\n";
 
         exit (0);
     }

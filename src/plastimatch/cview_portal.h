@@ -37,10 +37,11 @@ class PortalWidget : public QGraphicsView
 
     private:
         /* Qt4 rendering stuff */
-        QGraphicsScene* scene;
-        QImage* slice;
-        QPixmap pmap;
-        QGraphicsPixmapItem* pmi;
+        QGraphicsScene* scene;      /* Portal's QGraphicsScene    */
+        uchar* fb;                  /* Framebuffer for drawing    */
+        QImage* slice;              /* QImage tied to Framebuffer */
+        QPixmap pmap;               /* QPixmap for rendering      */
+        QGraphicsPixmapItem* pmi;   /* Needed to update QPixmap   */
 
         /* PortalWidget stuff */
         Volume* vol;            /* Plastimatch volume                    */

@@ -1,3 +1,4 @@
+#include <iostream>
 #include <float.h>
 #include <math.h>
 #include <QGraphicsScene>
@@ -8,21 +9,12 @@
 #include <QGraphicsPixmapItem>
 #include "volume.h"
 #include "cview_portal.h"
-#include "stdio.h"
 
-// TODO: Maintain aspect ratio within portal
+// TODO: * Maintain aspect ratio within portal
+//       * Pan / Zoom
 
 #define ROUND_INT(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
 
-#if 0
-static inline int
-get_index (int* ij, int slice, int* stride)
-{
-    return stride[2] * slice
-         + stride[1] * ij[1]
-         + stride[0] * ij[0];
-}
-#endif
 
 PortalWidget::PortalWidget (int width, int height)
 {
@@ -50,6 +42,7 @@ PortalWidget::setView (enum PortalViewType view)
     if (this->slice) {
         (this->scene)->removeItem (pmi);
         delete this->slice;
+        free (this->fb);
     }
 
     /* Change coordinate systems */
@@ -109,7 +102,8 @@ PortalWidget::setView (enum PortalViewType view)
     this->res[1] = (this->spacing[1] * (float)this->ijk_max[1]) / (float)this->dim[1];
 
     /* Make a new rendering surface */
-    this->slice = new QImage (this->dim[0], this->dim[1], QImage::Format_RGB32);
+    this->fb = (uchar*) malloc (4 * this->dim[0] * this->dim[1] * sizeof (uchar));
+    this->slice = new QImage (this->fb, this->dim[0], this->dim[1], QImage::Format_ARGB32);
     this->pmi = (this->scene)->addPixmap (this->pmap);
     this->renderSlice (this->ijk_max[2] / 2);
 }
@@ -160,6 +154,7 @@ void
 PortalWidget::renderSlice (int slice_num)
 {
     int i, j;                /* portal coords        */
+    int p[2];                /* frame buffer coords  */
     float xy[2];             /* real space coords    */
     float ij[2];             /* volume slice indices */
     int ij_f[2];
@@ -168,10 +163,9 @@ PortalWidget::renderSlice (int slice_num)
     float hfu;
     int idx, shade;
     float contrib[4];
-    QColor pixColor;
-    QPainter painter (this->slice);
 
     float* img = (float*) (this->vol)->img;
+    uchar* pixel;
 
     /* Set slice pixels */
     for (j=0; j<this->dim[1]; j++) {
@@ -180,6 +174,13 @@ PortalWidget::renderSlice (int slice_num)
         for (i=0; i<this->dim[0]; i++) {
             xy[0] = this->res[0]*(float)i;
             ij[0] = xy[0] / this->spacing[0];
+
+            /* Deal with Qt's inverted y-axis... this is a hack */
+            if ((this->view == PV_CORONAL) || (this->view == PV_SAGITTAL)) {
+                p[0] = i;  p[1] = this->dim[1] - j - 1;
+            } else {
+                p[0] = i;  p[1] = j;
+            }
 
             this->li_clamp_2d (ij_f, ij_r, li_1, li_2, ij);
 
@@ -205,20 +206,16 @@ PortalWidget::renderSlice (int slice_num)
 
             hfu = contrib[0] + contrib[1] + contrib[2] + contrib[3];
             shade = this->getPixelValue (hfu);
-            pixColor.setRgb (shade, shade, shade);
-            painter.setPen (pixColor);
-            painter.drawPoint (i, j);
+            pixel = &fb[4*this->dim[0]*p[1]+(4*p[0])];
+            pixel[0] = (uchar)shade;    // BLUE
+            pixel[1] = (uchar)shade;    // GREEN
+            pixel[2] = (uchar)shade;    // RED
+            pixel[3] = 0xFF;            // ALPHA
         }
     }
 
-    /* Deal with inverted y-axis */
-    if ((this->view == PV_CORONAL) || (this->view == PV_SAGITTAL)) {
-        QImage tmp = this->slice->mirrored();
-        this->pmap = QPixmap::fromImage (tmp);
-    } else {
-        this->pmap = QPixmap::fromImage (*(this->slice));
-    }
-
+    /* Have Qt actually render the frame */
+    this->pmap = QPixmap::fromImage (*(this->slice));
     (this->pmi)->setPixmap (this->pmap);
 
     this->current_slice = slice_num;
@@ -294,6 +291,7 @@ PortalWidget::keyPressEvent (QKeyEvent *event)
     }
 }
 
+/* Debug */
 void
 PortalWidget::mousePressEvent (QMouseEvent *event)
 {
@@ -306,8 +304,8 @@ PortalWidget::mousePressEvent (QMouseEvent *event)
     xy[0] = (float)i*this->res[0];
     xy[1] = (float)j*this->res[1];
 
-    printf ("   Portal Coords: %i %i\n", i, j);
-    printf ("RealSpace Coords: %f %f\n", xy[0], xy[1]);
-    printf ("    Slice Coords: %f %f\n", xy[0] / this->spacing[0],
-                                         xy[1] / this->spacing[1]);
+    std::cout << "   Portal: " << i << "  "<< j << "\n"
+              << "RealSpace: " << xy[0] << "  " << xy[1] << "\n"
+              << "    Slice: " << xy[0] / this->spacing[0] << "  "
+                               << xy[1] / this->spacing[1] << "\n";
 }
