@@ -170,3 +170,13 @@ if (WIN32)
   plm_add_executable (dips_test dips_test.cxx "" ""
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
+
+if (BITFLOW_FOUND)
+  set (BITFLOW_TEST_SRC 
+    bitflow.c bitflow.h
+    bitflow_test.cxx
+    debug.c debug.h)
+  plm_add_executable (bitflow_test "${BITFLOW_TEST_SRC}" 
+    "${BITFLOW_LIBRARIES}" ""
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+endif ()

@@ -1,3 +1,6 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 /** @file bitflow.h
  *	@brief Function prototypes for the bitflow wrapper functions
  *
@@ -7,18 +10,18 @@
  *	@author	Rui Li
  *	@bug No know bugs
  */
-
-/* -------------------------------------------------------------------------*
-    See COPYRIGHT for copyright information.
- * -------------------------------------------------------------------------*/
 #ifndef __BITFLOW_H__
 #define __BITFLOW_H__
 
-#include "config.h"
+#include "ise_config.h"
 #include "ise_error.h"
 #include "ise_structs.h"
 
 #if (BITFLOW_FOUND)
+
+#if defined __cplusplus
+extern "C" {
+#endif
 
 /** @brief Initialize the BitflowInfo struct
  *
@@ -101,6 +104,10 @@ int bitflow_probe(void);
  *	@ retrun Void.
  */
 void bitflow_clear_probe(BitflowInfo* bf, int idx);
+
+#if defined __cplusplus
+}
+#endif
 
 #endif
 #endif

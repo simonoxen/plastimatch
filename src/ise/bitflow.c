@@ -1,3 +1,6 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 /** @file bitflow.c
  *	@brief implementation of the wrapper functions to access the bitflow card.
  * 		
@@ -8,13 +11,8 @@
  *	@author	Rui Li
  *	@bug No know bugs
  */
-
-/* -----------------------------------------------------------------------
-   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
-   ----------------------------------------------------------------------- */
-
 #include "ise_config.h"
-#if (BITFLOW_FOUND])
+#if (BITFLOW_FOUND)
 #include <stdio.h>
 #include <conio.h>
 #include "R2Api.h"

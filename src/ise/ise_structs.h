@@ -1,10 +1,10 @@
-/* -------------------------------------------------------------------------*
-    See COPYRIGHT for copyright information.
- * -------------------------------------------------------------------------*/
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 #ifndef __ise_structs_h__
 #define __ise_structs_h__
 
-#include "config.h"
+#include "ise_config.h"
 #ifdef _WIN32
 #include <windows.h>
 #endif
