@@ -10,8 +10,11 @@
 #include "cview_portal.h"
 #include "stdio.h"
 
+// TODO: Maintain aspect ratio within portal
+
 #define ROUND_INT(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
 
+#if 0
 static inline int
 get_index (int* ij, int slice, int* stride)
 {
@@ -19,6 +22,7 @@ get_index (int* ij, int slice, int* stride)
          + stride[1] * ij[1]
          + stride[0] * ij[0];
 }
+#endif
 
 PortalWidget::PortalWidget (int width, int height)
 {
@@ -179,36 +183,24 @@ PortalWidget::renderSlice (int slice_num)
 
             this->li_clamp_2d (ij_f, ij_r, li_1, li_2, ij);
 
-#if 0
-            index = this->stride[2] * slice_num
+            idx = this->stride[2] * slice_num
                   + this->stride[1] * ij_f[1]
                   + this->stride[0] * ij_f[0];
-#endif
-            idx = get_index (ij_f, slice_num, this->stride);
         	contrib[0] = li_1[0] * li_1[1] * img[idx];
 
-#if 0
-            index = this->stride[2] * slice_num
+            idx = this->stride[2] * slice_num
                   + this->stride[1] * ij_f[1]
                   + this->stride[0] * (ij_f[0]+1);
-#endif
-            idx = get_index (ij_f, slice_num, this->stride);
         	contrib[1] = li_2[0] * li_1[1] * img[idx];
 
-#if 0
-            index = this->stride[2] * slice_num
+            idx = this->stride[2] * slice_num
                   + this->stride[1] * (ij_f[1]+1)
                   + this->stride[0] * ij_f[0];
-#endif
-            idx = get_index (ij_f, slice_num, this->stride);
         	contrib[2] = li_1[0] * li_2[1] * img[idx];
 
-#if 0
-            index = this->stride[2] * slice_num
+            idx = this->stride[2] * slice_num
                   + this->stride[1] * (ij_f[1]+1)
                   + this->stride[0] * (ij_f[0]+1);
-#endif
-            idx = get_index (ij_f, slice_num, this->stride);
         	contrib[3] = li_2[0] * li_2[1] * img[idx];
 
             hfu = contrib[0] + contrib[1] + contrib[2] + contrib[3];
