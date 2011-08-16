@@ -75,5 +75,21 @@
       <default>None</default>
       <description>Output (warped) structure set volume</description>
     </image>
+    <string-enumeration>
+      <name>plmslc_xformwarp_output_type</name>
+      <longflag>--output_type</longflag>
+      <description>Data type of output image.  Choose "auto" to retain the same type as the input image.  Other choices are 8, 16, and 32 bit signed and unsigned integers, float, and double.</description>
+      <label>Output volume type</label>
+      <default>auto</default>
+      <element>auto</element>
+      <element>char</element>
+      <element>uchar</element>
+      <element>short</element>
+      <element>ushort</element>
+      <element>long</element>
+      <element>ulong</element>
+      <element>float</element>
+      <element>double</element>
+    </string-enumeration>
   </parameters>
 </executable>

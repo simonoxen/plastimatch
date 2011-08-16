@@ -84,6 +84,12 @@ main (int argc, char * argv [])
 	parms.output_img_fn = plmslc_xformwarp_output_img.c_str();
     }
 
+    /* Output type */
+    if (plmslc_xformwarp_output_type != "auto") {
+	parms.output_type = plm_image_type_parse (
+	    plmslc_xformwarp_output_type.c_str());
+    }
+
     /* Output warped ss image */
     if (plmslc_xformwarp_output_ss_img != "" 
 	&& plmslc_xformwarp_output_ss_img != "None")
