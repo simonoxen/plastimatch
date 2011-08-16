@@ -27,7 +27,7 @@ CrystalWindow::openFile ()
 {
      QString fileName =
          QFileDialog::getOpenFileName(this, tr("Open File"), "",
-                                      tr("Images (*.mha"));
+                                      tr("MHA Volumes (*.mha)"));
 
     /* Convert from QString to char array */
     QByteArray ba = fileName.toLocal8Bit();
@@ -64,7 +64,7 @@ CrystalWindow::CrystalWindow (int argc, char** argv, QWidget *parent)
     this->setFixedSize (PSIZE*2+GSIZE, PSIZE*2+GSIZE+25);
 
     /* Add a menu */
-    itemOpen = new QAction ("O&pen", this);
+    itemOpen = new QAction ("&Open", this);
     itemExit = new QAction ("E&xit", this);
 
     menuFile = menuBar()->addMenu ("&File");
