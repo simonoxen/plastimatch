@@ -20,7 +20,7 @@ class PortalWidget : public QGraphicsView
     Q_OBJECT  /* Needed for QT signals/slots */
 
     public:
-        PortalWidget (int width, int height);
+        PortalWidget (int width, int height, QWidget *parent = 0);
         void setVolume (Volume* vol);
         void setView (enum PortalViewType view);
         void renderSlice (int slice_num);
@@ -29,6 +29,7 @@ class PortalWidget : public QGraphicsView
        void wheelEvent (QWheelEvent *event);
        void keyPressEvent (QKeyEvent *event);
        void mousePressEvent (QMouseEvent *event);
+       void resizeEvent (QResizeEvent *event);
 
     private:
         int getPixelValue (float hfu);

@@ -562,11 +562,12 @@ if (QT4_FOUND AND QT_QTSQL_FOUND)
 endif ()
 set (CRYSTALVIEW_SRC
   cview_portal.cxx cview_portal.h
-  cview_main.cxx
+  cview_main.cxx cview_main.h
   )
 if (QT4_FOUND)
   qt4_wrap_cpp (CRYSTALVIEW_SRC
     cview_portal.h
+    cview_main.h
     )
 endif ()
 set (PROTON_DOSE_SRC

@@ -16,21 +16,23 @@
 #define ROUND_INT(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
 
 
-PortalWidget::PortalWidget (int width, int height)
+PortalWidget::PortalWidget (int width, int height, QWidget *parent)
+    : QGraphicsView (parent)
 {
-    this->vol = NULL;
-    this->slice = NULL;
-    this->view = PV_AXIAL;
-    this->dim[0] = width;
-    this->dim[1] = height;
+    vol = NULL;
+    slice = NULL;
+    view = PV_AXIAL;
+    dim[0] = width;
+    dim[1] = height;
 
-    this->scene = new QGraphicsScene (this);
-    (this->scene)->setItemIndexMethod (QGraphicsScene::NoIndex);
-    (this->scene)->setSceneRect (0, 0, width, height);
-    (this->scene)->setBackgroundBrush (QBrush (Qt::black, Qt::SolidPattern));
+    scene = new QGraphicsScene (this);
+    scene->setItemIndexMethod (QGraphicsScene::NoIndex);
+    scene->setSceneRect (0, 0, dim[0], dim[1]);
+    scene->setBackgroundBrush (QBrush (Qt::black, Qt::SolidPattern));
 
-    setScene (this->scene);
-    setWindowTitle ("CrystalView v0.01a");
+    /* probably want to make this not fixed later */
+    setFixedSize (dim[0]+2, dim[1]+2);
+    setScene (scene);
 }
 
 void
@@ -39,58 +41,58 @@ PortalWidget::setView (enum PortalViewType view)
     this->view = view;
 
     /* Delete the old rendering surface */
-    if (this->slice) {
-        (this->scene)->removeItem (pmi);
-        delete this->slice;
-        free (this->fb);
+    if (slice) {
+        scene->removeItem (pmi);
+        delete slice;
+        free (fb);
     }
 
     /* Change coordinate systems */
-    switch (this->view) {
+    switch (view) {
     case PV_AXIAL:
-        this->ijk_max[0] = (this->vol)->dim[0];
-        this->ijk_max[1] = (this->vol)->dim[1];
-        this->ijk_max[2] = (this->vol)->dim[2];
+        ijk_max[0] = vol->dim[0];
+        ijk_max[1] = vol->dim[1];
+        ijk_max[2] = vol->dim[2];
 
-        this->stride[0] = 1;
-        this->stride[1] = (this->vol)->dim[0];
-        this->stride[2] = (this->vol)->dim[1] * (this->vol)->dim[0];
+        stride[0] = 1;
+        stride[1] = vol->dim[0];
+        stride[2] = vol->dim[1] * vol->dim[0];
 
-        this->spacing[0] = (this->vol)->spacing[0];
-        this->spacing[1] = (this->vol)->spacing[1];
+        spacing[0] = vol->spacing[0];
+        spacing[1] = vol->spacing[1];
 
-        this->offset[0] = (this->vol)->offset[0];
-        this->offset[1] = (this->vol)->offset[1];
+        offset[0] = vol->offset[0];
+        offset[1] = vol->offset[1];
         break;
     case PV_CORONAL:
-        this->ijk_max[0] = (this->vol)->dim[0];
-        this->ijk_max[1] = (this->vol)->dim[2];
-        this->ijk_max[2] = (this->vol)->dim[1];
+        ijk_max[0] = vol->dim[0];
+        ijk_max[1] = vol->dim[2];
+        ijk_max[2] = vol->dim[1];
 
-        this->stride[0] = 1;
-        this->stride[1] = (this->vol)->dim[1] * (this->vol)->dim[0];
-        this->stride[2] = (this->vol)->dim[0];
+        stride[0] = 1;
+        stride[1] = vol->dim[1] * vol->dim[0];
+        stride[2] = vol->dim[0];
 
-        this->spacing[0] = (this->vol)->spacing[0];
-        this->spacing[1] = (this->vol)->spacing[2];
+        spacing[0] = vol->spacing[0];
+        spacing[1] = vol->spacing[2];
 
-        this->offset[0] = (this->vol)->offset[0];
-        this->offset[1] = (this->vol)->offset[2];
+        offset[0] = vol->offset[0];
+        offset[1] = vol->offset[2];
         break;
     case PV_SAGITTAL:
-        this->ijk_max[0] = (this->vol)->dim[1];
-        this->ijk_max[1] = (this->vol)->dim[2];
-        this->ijk_max[2] = (this->vol)->dim[0];
+        ijk_max[0] = vol->dim[1];
+        ijk_max[1] = vol->dim[2];
+        ijk_max[2] = vol->dim[0];
 
-        this->stride[0] = (this->vol)->dim[0];
-        this->stride[1] = (this->vol)->dim[1] * (this->vol)->dim[0];
-        this->stride[2] = 1;
+        stride[0] = vol->dim[0];
+        stride[1] = vol->dim[1] * vol->dim[0];
+        stride[2] = 1;
 
-        this->spacing[0] = (this->vol)->spacing[1];
-        this->spacing[1] = (this->vol)->spacing[2];
+        spacing[0] = vol->spacing[1];
+        spacing[1] = vol->spacing[2];
 
-        this->offset[0] = (this->vol)->offset[1];
-        this->offset[1] = (this->vol)->offset[2];
+        offset[0] = vol->offset[1];
+        offset[1] = vol->offset[2];
         break;
     default:
         exit (-1);
@@ -98,21 +100,21 @@ PortalWidget::setView (enum PortalViewType view)
     }
 
     /* Portal resolution (mm per pix) */
-    this->res[0] = (this->spacing[0] * (float)this->ijk_max[0]) / (float)this->dim[0];
-    this->res[1] = (this->spacing[1] * (float)this->ijk_max[1]) / (float)this->dim[1];
+    res[0] = (spacing[0] * (float)ijk_max[0]) / (float)dim[0];
+    res[1] = (spacing[1] * (float)ijk_max[1]) / (float)dim[1];
 
     /* Make a new rendering surface */
-    this->fb = (uchar*) malloc (4 * this->dim[0] * this->dim[1] * sizeof (uchar));
-    this->slice = new QImage (this->fb, this->dim[0], this->dim[1], QImage::Format_ARGB32);
-    this->pmi = (this->scene)->addPixmap (this->pmap);
-    this->renderSlice (this->ijk_max[2] / 2);
+    fb = (uchar*) malloc (4*dim[0]*dim[1]*sizeof (uchar));
+    slice = new QImage (fb, dim[0], dim[1], QImage::Format_ARGB32);
+    pmi = (scene)->addPixmap (pmap);
+    renderSlice (ijk_max[2] / 2);
 }
 
 int
 PortalWidget::getPixelValue (float hfu)
 {
-    int scaled = floor ((hfu - this->min_intensity)
-        / (this->max_intensity - this->min_intensity) * 255 );
+    int scaled = floor ((hfu - min_intensity)
+        / (max_intensity - min_intensity) * 255 );
 
     if (scaled > 255) {
         return 255;
@@ -141,9 +143,9 @@ PortalWidget::li_clamp_2d (
             ij_f[n] = 0;
             ij_r[n] = 0;
             li_2[n] = 0.0f;
-        } else if (ij_f[n] >= this->ijk_max[n]-1) {
-            ij_f[n] = this->ijk_max[n] - 2;
-            ij_r[n] = this->ijk_max[n] - 1;
+        } else if (ij_f[n] >= ijk_max[n]-1) {
+            ij_f[n] = ijk_max[n] - 2;
+            ij_r[n] = ijk_max[n] - 1;
             li_2[n] = 1.0f;
         }
         li_1[n] = 1.0f - li_2[n];
@@ -164,49 +166,49 @@ PortalWidget::renderSlice (int slice_num)
     int idx, shade;
     float contrib[4];
 
-    float* img = (float*) (this->vol)->img;
+    float* img = (float*) vol->img;
     uchar* pixel;
 
     /* Set slice pixels */
-    for (j=0; j<this->dim[1]; j++) {
-        xy[1] = this->res[1]*(float)j;
-        ij[1] = xy[1] / this->spacing[1];
-        for (i=0; i<this->dim[0]; i++) {
-            xy[0] = this->res[0]*(float)i;
-            ij[0] = xy[0] / this->spacing[0];
+    for (j=0; j<dim[1]; j++) {
+        xy[1] = res[1]*(float)j;
+        ij[1] = xy[1] / spacing[1];
+        for (i=0; i<dim[0]; i++) {
+            xy[0] = res[0]*(float)i;
+            ij[0] = xy[0] / spacing[0];
 
             /* Deal with Qt's inverted y-axis... this is a hack */
-            if ((this->view == PV_CORONAL) || (this->view == PV_SAGITTAL)) {
-                p[0] = i;  p[1] = this->dim[1] - j - 1;
+            if ((view == PV_CORONAL) || (view == PV_SAGITTAL)) {
+                p[0] = i;  p[1] = dim[1] - j - 1;
             } else {
                 p[0] = i;  p[1] = j;
             }
 
             this->li_clamp_2d (ij_f, ij_r, li_1, li_2, ij);
 
-            idx = this->stride[2] * slice_num
-                  + this->stride[1] * ij_f[1]
-                  + this->stride[0] * ij_f[0];
+            idx = stride[2] * slice_num
+                  + stride[1] * ij_f[1]
+                  + stride[0] * ij_f[0];
         	contrib[0] = li_1[0] * li_1[1] * img[idx];
 
-            idx = this->stride[2] * slice_num
-                  + this->stride[1] * ij_f[1]
-                  + this->stride[0] * (ij_f[0]+1);
+            idx = stride[2] * slice_num
+                  + stride[1] * ij_f[1]
+                  + stride[0] * (ij_f[0]+1);
         	contrib[1] = li_2[0] * li_1[1] * img[idx];
 
-            idx = this->stride[2] * slice_num
-                  + this->stride[1] * (ij_f[1]+1)
-                  + this->stride[0] * ij_f[0];
+            idx = stride[2] * slice_num
+                  + stride[1] * (ij_f[1]+1)
+                  + stride[0] * ij_f[0];
         	contrib[2] = li_1[0] * li_2[1] * img[idx];
 
-            idx = this->stride[2] * slice_num
-                  + this->stride[1] * (ij_f[1]+1)
-                  + this->stride[0] * (ij_f[0]+1);
+            idx = stride[2] * slice_num
+                  + stride[1] * (ij_f[1]+1)
+                  + stride[0] * (ij_f[0]+1);
         	contrib[3] = li_2[0] * li_2[1] * img[idx];
 
             hfu = contrib[0] + contrib[1] + contrib[2] + contrib[3];
-            shade = this->getPixelValue (hfu);
-            pixel = &fb[4*this->dim[0]*p[1]+(4*p[0])];
+            shade = getPixelValue (hfu);
+            pixel = &fb[4*dim[0]*p[1]+(4*p[0])];
             pixel[0] = (uchar)shade;    // BLUE
             pixel[1] = (uchar)shade;    // GREEN
             pixel[2] = (uchar)shade;    // RED
@@ -215,8 +217,8 @@ PortalWidget::renderSlice (int slice_num)
     }
 
     /* Have Qt actually render the frame */
-    this->pmap = QPixmap::fromImage (*(this->slice));
-    (this->pmi)->setPixmap (this->pmap);
+    pmap = QPixmap::fromImage (*slice);
+    pmi->setPixmap (pmap);
 
     this->current_slice = slice_num;
 }
@@ -228,14 +230,14 @@ PortalWidget::setVolume (Volume* vol)
     float* img = (float*) vol->img;
     
     /* Obtain value range */
-    this->min_intensity = FLT_MAX;
-    this->max_intensity = FLT_MIN;
+    min_intensity = FLT_MAX;
+    max_intensity = FLT_MIN;
     for (int i=0; i<vol->npix; i++) {
-        if ( img[i] < this->min_intensity ) {
-            this->min_intensity = img[i];
+        if ( img[i] < min_intensity ) {
+            min_intensity = img[i];
         }
-        if ( img[i] > this->max_intensity ) {
-            this->max_intensity = img[i];
+        if ( img[i] > max_intensity ) {
+            max_intensity = img[i];
         }
     }
 
@@ -247,10 +249,10 @@ PortalWidget::setVolume (Volume* vol)
 void
 PortalWidget::doZoom (int step)
 {
-    if ( (this->current_slice + step < this->ijk_max[2]) &&
-         (this->current_slice + step >= 0)  ) {
-        this->current_slice += step;
-        this->renderSlice(this->current_slice);
+    if ( (current_slice + step < ijk_max[2]) &&
+         (current_slice + step >= 0)  ) {
+        current_slice += step;
+        renderSlice(current_slice);
     }
 }
 
@@ -261,7 +263,7 @@ PortalWidget::wheelEvent (QWheelEvent *event)
      *   Each wheel click is usually 15 degrees on most mice */
     int step = event->delta() / (8*15);
 
-    this->doZoom (step);
+    doZoom (step);
 }
 
 void
@@ -270,25 +272,51 @@ PortalWidget::keyPressEvent (QKeyEvent *event)
     switch (event->key())
     {
     case Qt::Key_1:
-        this->setView (PV_AXIAL);
+        setView (PV_AXIAL);
         break;
     case Qt::Key_2:
-        this->setView (PV_CORONAL);
+        setView (PV_CORONAL);
         break;
     case Qt::Key_3:
-        this->setView (PV_SAGITTAL);
+        setView (PV_SAGITTAL);
         break;
     case Qt::Key_Minus:
-        this->doZoom (-1);
+        doZoom (-1);
         break;
     case Qt::Key_Plus:
     case Qt::Key_Equal:
-        this->doZoom (1);
+        doZoom (1);
         break;
     default:
         /* Forward to default callback */
         QGraphicsView::keyPressEvent (event);
     }
+}
+
+void
+PortalWidget::resizeEvent (QResizeEvent *event)
+{
+    dim[0] = event->size().height();
+    dim[1] = event->size().width();
+    scene->setSceneRect (0, 0, dim[0], dim[1]);
+
+    /* Delete the old rendering surface */
+    if (slice) {
+        scene->removeItem (pmi);
+        delete slice;
+        free (fb);
+    }
+
+    /* Portal resolution (mm per pix) */
+    res[0] = (spacing[0] * (float)ijk_max[0]) / (float)dim[0];
+    res[1] = (spacing[1] * (float)ijk_max[1]) / (float)dim[1];
+
+    /* Make a new rendering surface */
+    fb = (uchar*) malloc (4*dim[0]*dim[1]*sizeof (uchar));
+    slice = new QImage (fb, dim[0], dim[1], QImage::Format_ARGB32);
+    pmi = (scene)->addPixmap (pmap);
+
+    renderSlice (current_slice);
 }
 
 /* Debug */
@@ -301,11 +329,11 @@ PortalWidget::mousePressEvent (QMouseEvent *event)
     i = event->pos().x();
     j = event->pos().y();
 
-    xy[0] = (float)i*this->res[0];
-    xy[1] = (float)j*this->res[1];
+    xy[0] = (float)i*res[0];
+    xy[1] = (float)j*res[1];
 
     std::cout << "   Portal: " << i << "  "<< j << "\n"
               << "RealSpace: " << xy[0] << "  " << xy[1] << "\n"
-              << "    Slice: " << xy[0] / this->spacing[0] << "  "
-                               << xy[1] / this->spacing[1] << "\n";
+              << "    Slice: " << xy[0] / spacing[0] << "  "
+                               << xy[1] / spacing[1] << "\n";
 }
