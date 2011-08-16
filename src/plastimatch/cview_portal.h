@@ -20,10 +20,16 @@ class PortalWidget : public QGraphicsView
     Q_OBJECT  /* Needed for QT signals/slots */
 
     public:
-        PortalWidget (int width, int height, QWidget *parent = 0);
+        PortalWidget (QWidget *parent = 0);
+
+    signals:
+        void cursorModified (float x, float y, float z);
+        void sliceModified (int n);
+
+    public slots:
         void setVolume (Volume* vol);
         void setView (enum PortalViewType view);
-        void renderSlice (int slice_num);
+        void setCursor (float x, float y, float z);
 
     protected:
        void wheelEvent (QWheelEvent *event);
@@ -32,6 +38,7 @@ class PortalWidget : public QGraphicsView
        void resizeEvent (QResizeEvent *event);
 
     private:
+        void renderSlice (int slice_num);
         int getPixelValue (float hfu);
         void doZoom (int step);
         void li_clamp_2d (int *ij_f, int *ij_r, float *li_1, float *li_2, float *ij);

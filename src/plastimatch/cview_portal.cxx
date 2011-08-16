@@ -12,26 +12,34 @@
 
 // TODO: * Maintain aspect ratio within portal
 //       * Pan / Zoom
+//       * Implement slots & signals (fully)
+//       * Qt Designer hooks
 
 #define ROUND_INT(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
 
 
-PortalWidget::PortalWidget (int width, int height, QWidget *parent)
+PortalWidget::PortalWidget (QWidget *parent)
     : QGraphicsView (parent)
 {
     vol = NULL;
     slice = NULL;
     view = PV_AXIAL;
-    dim[0] = width;
-    dim[1] = height;
+
+    /* NOTE: for some reason PortalWidget is not being bound by QGridLayout...
+     *       well, not the way I think it should be, at least */
+    setHorizontalScrollBarPolicy (Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy (Qt::ScrollBarAlwaysOff);
+    setSizePolicy (QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    dim[0] = size().width();
+    dim[1] = size().height();
 
     scene = new QGraphicsScene (this);
     scene->setItemIndexMethod (QGraphicsScene::NoIndex);
     scene->setSceneRect (0, 0, dim[0], dim[1]);
     scene->setBackgroundBrush (QBrush (Qt::black, Qt::SolidPattern));
+//    scene->setBackgroundBrush (QBrush (Qt::red, Qt::SolidPattern));
 
-    /* probably want to make this not fixed later */
-    setFixedSize (dim[0]+2, dim[1]+2);
     setScene (scene);
 }
 
@@ -39,6 +47,11 @@ void
 PortalWidget::setView (enum PortalViewType view)
 {
     this->view = view;
+
+    /* Cannot setView with no volume attached to portal */
+    if (!vol) {
+        return;
+    }
 
     /* Delete the old rendering surface */
     if (slice) {
@@ -107,6 +120,8 @@ PortalWidget::setView (enum PortalViewType view)
     fb = (uchar*) malloc (4*dim[0]*dim[1]*sizeof (uchar));
     slice = new QImage (fb, dim[0], dim[1], QImage::Format_ARGB32);
     pmi = (scene)->addPixmap (pmap);
+
+    /* We always set the portal to the center slice after changing the view */
     renderSlice (ijk_max[2] / 2);
 }
 
@@ -164,7 +179,11 @@ PortalWidget::renderSlice (int slice_num)
     float li_1[2], li_2[2];  /* linear interpolation fractions */
     float hfu;
     int idx, shade;
-    float contrib[4];
+
+    /* Do not render if no volume is attached to portal */
+    if (!vol) {
+        return;
+    }
 
     float* img = (float*) vol->img;
     uchar* pixel;
@@ -186,27 +205,26 @@ PortalWidget::renderSlice (int slice_num)
 
             this->li_clamp_2d (ij_f, ij_r, li_1, li_2, ij);
 
-            idx = stride[2] * slice_num
-                  + stride[1] * ij_f[1]
-                  + stride[0] * ij_f[0];
-        	contrib[0] = li_1[0] * li_1[1] * img[idx];
+            idx = stride[2]*slice_num
+                + stride[1]*(ij_f[1]+0)
+                + stride[0]*(ij_f[0]+0);
+        	hfu = li_1[0] * li_1[1] * img[idx];
 
-            idx = stride[2] * slice_num
-                  + stride[1] * ij_f[1]
-                  + stride[0] * (ij_f[0]+1);
-        	contrib[1] = li_2[0] * li_1[1] * img[idx];
+            idx = stride[2]*slice_num
+                + stride[1]*(ij_f[1]+0)
+                + stride[0]*(ij_f[0]+1);
+        	hfu += li_2[0] * li_1[1] * img[idx];
 
-            idx = stride[2] * slice_num
-                  + stride[1] * (ij_f[1]+1)
-                  + stride[0] * ij_f[0];
-        	contrib[2] = li_1[0] * li_2[1] * img[idx];
+            idx = stride[2]*slice_num
+                + stride[1]*(ij_f[1]+1)
+                + stride[0]*(ij_f[0]+0);
+        	hfu += li_1[0] * li_2[1] * img[idx];
 
-            idx = stride[2] * slice_num
-                  + stride[1] * (ij_f[1]+1)
-                  + stride[0] * (ij_f[0]+1);
-        	contrib[3] = li_2[0] * li_2[1] * img[idx];
+            idx = stride[2]*slice_num
+                + stride[1]*(ij_f[1]+1)
+                + stride[0]*(ij_f[0]+1);
+        	hfu += li_2[0] * li_2[1] * img[idx];
 
-            hfu = contrib[0] + contrib[1] + contrib[2] + contrib[3];
             shade = getPixelValue (hfu);
             pixel = &fb[4*dim[0]*p[1]+(4*p[0])];
             pixel[0] = (uchar)shade;    // BLUE
@@ -220,7 +238,8 @@ PortalWidget::renderSlice (int slice_num)
     pmap = QPixmap::fromImage (*slice);
     pmi->setPixmap (pmap);
 
-    this->current_slice = slice_num;
+    current_slice = slice_num;
+    emit sliceModified (current_slice);
 }
 
 void
@@ -296,10 +315,6 @@ PortalWidget::keyPressEvent (QKeyEvent *event)
 void
 PortalWidget::resizeEvent (QResizeEvent *event)
 {
-    dim[0] = event->size().height();
-    dim[1] = event->size().width();
-    scene->setSceneRect (0, 0, dim[0], dim[1]);
-
     /* Delete the old rendering surface */
     if (slice) {
         scene->removeItem (pmi);
@@ -307,11 +322,15 @@ PortalWidget::resizeEvent (QResizeEvent *event)
         free (fb);
     }
 
+    dim[0] = event->size().height();
+    dim[1] = event->size().width();
+
     /* Portal resolution (mm per pix) */
     res[0] = (spacing[0] * (float)ijk_max[0]) / (float)dim[0];
     res[1] = (spacing[1] * (float)ijk_max[1]) / (float)dim[1];
 
     /* Make a new rendering surface */
+    scene->setSceneRect (0, 0, dim[0], dim[1]);
     fb = (uchar*) malloc (4*dim[0]*dim[1]*sizeof (uchar));
     slice = new QImage (fb, dim[0], dim[1], QImage::Format_ARGB32);
     pmi = (scene)->addPixmap (pmap);
@@ -319,7 +338,12 @@ PortalWidget::resizeEvent (QResizeEvent *event)
     renderSlice (current_slice);
 }
 
-/* Debug */
+void
+PortalWidget::setCursor (float x, float y, float z)
+{
+    // set realspace coords
+}
+
 void
 PortalWidget::mousePressEvent (QMouseEvent *event)
 {
@@ -332,6 +356,9 @@ PortalWidget::mousePressEvent (QMouseEvent *event)
     xy[0] = (float)i*res[0];
     xy[1] = (float)j*res[1];
 
+//    emit cursorModified (xyz[0], xyz[1], xyz[2]);
+
+    /* Debug */
     std::cout << "   Portal: " << i << "  "<< j << "\n"
               << "RealSpace: " << xy[0] << "  " << xy[1] << "\n"
               << "    Slice: " << xy[0] / spacing[0] << "  "
