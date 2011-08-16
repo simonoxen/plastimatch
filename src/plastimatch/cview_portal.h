@@ -13,7 +13,6 @@ enum PortalViewType {
     PV_SAGITTAL
 };
 
-
 /* Derived classes of QGraphicsView */
 class PortalWidget : public QGraphicsView
 {
@@ -21,15 +20,17 @@ class PortalWidget : public QGraphicsView
 
     public:
         PortalWidget (QWidget *parent = 0);
+        int getSlices ();                        /* get # of slices in view */
 
     signals:
-        void cursorModified (float x, float y, float z);
-        void sliceModified (int n);
+        void cursorChanged (float x, float y, float z); /* on cursor change */
+        void sliceChanged (int n);                      /* on slice change  */
 
     public slots:
-        void setVolume (Volume* vol);
-        void setView (enum PortalViewType view);
-        void setCursor (float x, float y, float z);
+        void setVolume (Volume* vol);               /* Attach volume to portal  */
+        void setView (enum PortalViewType view);    /* Set portal view type     */
+        void setCursor (float x, float y, float z); /* Set the cursor RS coords */
+        void renderSlice (int slice_num);           /* Render slice_num         */
 
     protected:
        void wheelEvent (QWheelEvent *event);
@@ -37,13 +38,12 @@ class PortalWidget : public QGraphicsView
        void mousePressEvent (QMouseEvent *event);
        void resizeEvent (QResizeEvent *event);
 
-    private:
-        void renderSlice (int slice_num);
+    private: /* methods */
         int getPixelValue (float hfu);
         void doZoom (int step);
         void li_clamp_2d (int *ij_f, int *ij_r, float *li_1, float *li_2, float *ij);
 
-    private:
+    private: /* variables */
         /* Qt4 rendering stuff */
         QGraphicsScene* scene;      /* Portal's QGraphicsScene    */
         uchar* fb;                  /* Framebuffer for drawing    */

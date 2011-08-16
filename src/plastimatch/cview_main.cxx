@@ -44,7 +44,20 @@ PortalGrid::PortalGrid (Volume* input_vol, QWidget *parent)
     splitterV->addWidget (splitterT);
     splitterV->addWidget (splitterB);
 
+
+    /* Let's make a slider and connect it to portal1 */
+    QSlider *slider1 = new QSlider (Qt::Vertical);
+    slider1->setRange (0, 512);
+
+    connect (slider1, SIGNAL(valueChanged(int)),
+             portal1, SLOT(renderSlice(int)));
+
+    connect (portal1, SIGNAL(sliceChanged(int)),
+             slider1, SLOT(setValue(int)));
+
+    /* Set the layout */
     grid->addWidget (splitterV, 0, 0);
+    grid->addWidget (slider1, 0, 1);
     setLayout (grid);
 }
 

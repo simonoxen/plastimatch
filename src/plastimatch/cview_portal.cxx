@@ -181,7 +181,11 @@ PortalWidget::renderSlice (int slice_num)
     int idx, shade;
 
     /* Do not render if no volume is attached to portal */
+    /* Do not attempt to render an invalid slice number */
     if (!vol) {
+        return;
+    }
+    else if ((slice_num < 0) || (slice_num >= ijk_max[2])) {
         return;
     }
 
@@ -239,7 +243,7 @@ PortalWidget::renderSlice (int slice_num)
     pmi->setPixmap (pmap);
 
     current_slice = slice_num;
-    emit sliceModified (current_slice);
+    emit sliceChanged (current_slice);
 }
 
 void
@@ -344,6 +348,11 @@ PortalWidget::setCursor (float x, float y, float z)
     // set realspace coords
 }
 
+int PortalWidget::getSlices ()
+{
+    return ijk_max[2];
+}
+
 void
 PortalWidget::mousePressEvent (QMouseEvent *event)
 {
@@ -356,7 +365,7 @@ PortalWidget::mousePressEvent (QMouseEvent *event)
     xy[0] = (float)i*res[0];
     xy[1] = (float)j*res[1];
 
-//    emit cursorModified (xyz[0], xyz[1], xyz[2]);
+//    emit cursorChanged (xyz[0], xyz[1], xyz[2]);
 
     /* Debug */
     std::cout << "   Portal: " << i << "  "<< j << "\n"
