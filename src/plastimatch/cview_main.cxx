@@ -82,6 +82,11 @@ CrystalWindow::openVol (const char* fn)
 
     volume_convert_to_float (input_vol);
 
+    portalGrid->portal0->resetPortal();
+    portalGrid->portal1->resetPortal();
+    portalGrid->portal2->resetPortal();
+    portalGrid->portal3->resetPortal();
+
     portalGrid->portal0->setVolume (input_vol);
     portalGrid->portal1->setVolume (input_vol);
     portalGrid->portal2->setVolume (input_vol);

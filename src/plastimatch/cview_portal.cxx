@@ -414,6 +414,17 @@ PortalWidget::setTarget (float* xyz)
 }
 
 void
+PortalWidget::resetPortal ()
+{
+    scale_user = 1.0;
+    scale_mode = false;
+    pan_mode = false;
+    view_center[0] = FIELD_RES/2;
+    view_center[1] = FIELD_RES/2;
+    centerOn (view_center[0], view_center[1]);
+}
+
+void
 PortalWidget::renderSlice (int slice_num)
 {
     int i, j;                /* portal coords        */

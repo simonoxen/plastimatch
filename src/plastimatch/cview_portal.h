@@ -70,6 +70,7 @@ class PortalWidget : public QGraphicsView
         void setVolume (Volume* vol);               /* Attach volume to portal  */
         void setView (enum PortalViewType view);    /* Set portal view type     */
         void setTarget (float* xyz);                /* Set the cursor RS coords */
+        void resetPortal ();                        /* Removes user transforms  */
         void renderSlice (int slice_num);           /* Render slice_num         */
 
     protected:
