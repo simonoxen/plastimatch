@@ -12,7 +12,7 @@
 #include <time.h>
 #include <windows.h>
 #include <io.h>
-#include "dips_if.h"
+#include "dips.h"
 
 #define FLUORO_MODE 0
 //#define HIRES_IMAGE_HEIGHT 1536
