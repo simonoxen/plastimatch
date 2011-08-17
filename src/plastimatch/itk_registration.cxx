@@ -28,13 +28,13 @@
 #include "itk_demons.h"
 #include "itk_image.h"
 #include "itk_optim.h"
+#include "itk_resample.h"
 #include "itk_warp.h"
 #include "logfile.h"
 #include "plm_image_header.h"
 #include "plm_int.h"
 #include "plm_parms.h"
 #include "plm_timer.h"
-#include "resample_mha.h"
 #include "xform.h"
 
 #if !defined (ITK_USE_OPTIMIZED_REGISTRATION_METHODS) && defined (USE_GCS_METRIC)

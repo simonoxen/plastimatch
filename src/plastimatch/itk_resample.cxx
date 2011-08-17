@@ -11,7 +11,7 @@
 
 #include "plm_image_header.h"
 #include "itk_image.h"
-#include "resample_mha.h"
+#include "itk_resample.h"
 
 template <class T>
 T
@@ -96,22 +96,6 @@ vector_resample_image (T& vf_image, DoublePoint3DType origin,
 
     T out_image = filter->GetOutput();
     return out_image;
-}
-
-template <class T>
-T
-vector_resample_image (T& vf_image, float* origin, float* spacing, int* size)
-{
-    DoublePoint3DType cpp_origin;
-    DoubleVector3DType cpp_spacing;
-    SizeType cpp_size;
-    for (int i = 0; i < 3; i++) {
-	cpp_origin[i] = origin[i];
-	cpp_spacing[i] = spacing[i];
-	cpp_size[i] = size[i];
-    }
-
-    return vector_resample_image (vf_image, cpp_origin, cpp_spacing, cpp_size);
 }
 
 template <class T, class U>
@@ -361,7 +345,6 @@ subsample_image (T& image, int x_sampling_rate,
 
 /* Explicit instantiations */
 template plastimatch1_EXPORT DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, Plm_image_header*);
-template plastimatch1_EXPORT DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, float*, float*, int*);
 template DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, FloatImageType::Pointer&);
 template DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, float, float, float);
 

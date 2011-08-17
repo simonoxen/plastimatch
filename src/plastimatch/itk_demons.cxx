@@ -15,10 +15,10 @@
 #include "itkLinearInterpolateImageFunction.h"
 
 #include "itk_image.h"
+#include "itk_resample.h"
 #include "logfile.h"
 #include "plm_parms.h"
 #include "plm_timer.h"
-#include "resample_mha.h"
 #include "xform.h"
 
 typedef itk::DemonsRegistrationFilter<

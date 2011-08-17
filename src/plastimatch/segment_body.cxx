@@ -15,9 +15,9 @@
 
 #include "itk_image.h"
 #include "itk_image_save.h"
+#include "itk_resample.h"
 #include "plm_path.h"
 #include "plm_image_header.h"
-#include "resample_mha.h"
 #include "segment_body.h"
 
 /* Thresholds for finding patient & couch */

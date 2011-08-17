@@ -14,6 +14,7 @@
 #include "itk_image_save.h"
 #include "itk_optim.h"
 #include "itk_registration.h"
+#include "itk_resample.h"
 #include "itk_warp.h"
 #include "logfile.h"
 #include "mha_io.h"
@@ -22,7 +23,6 @@
 #include "plm_parms.h"
 #include "plm_stages.h"
 #include "plm_warp.h"
-#include "resample_mha.h"
 #include "vf.h"
 #include "xform.h"
 

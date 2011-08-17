@@ -181,6 +181,7 @@ endif ()
 
 ## -------------------------------------------------------------------------
 ## synth-test - create synthetic mha files
+##   black-1.mha   All black, slightly different geometry
 ##   donut-1.mha   Centered donut
 ##   gauss-1.mha   Centered gauss
 ##   gauss-2.mha   Off-center gauss
@@ -203,6 +204,12 @@ endif ()
 ## -------------------------------------------------------------------------
 set (SYNTH_MHA_SIZE 38)
 
+plm_add_test (
+  "black-1"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_TESTING_BUILD_DIR}/black-1.mha;--output-type;float;--pattern;rect;--origin;-25 -25 -25;--dim;40 40 40;--volume-size;50 50 50;--background;-1000;--foreground;-1000"
+  )
 plm_add_test (
   "donut-1"
   ""
@@ -1608,7 +1615,55 @@ plm_add_test (
   "plm-resample-a" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "resample;--input;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-resample-a.mha;--input-type;float;--output-type;float;--subsample;2 2 2"
+  "resample;--input;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-resample-a.mha;--output-type;float;--subsample;2 2 2"
+  )
+plm_add_test (
+  "plm-resample-a-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-resample-a.mha"
+  )
+plmtest_check_interval ("plm-resample-a-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-resample-a-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-879.0"
+  "-878.0"
+  )
+plm_add_test (
+  "plm-resample-b" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "resample;--input;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-resample-b.mha;--output-type;float;--fixed;${PLM_TESTING_BUILD_DIR}/black-1.mha"
+  )
+plm_add_test (
+  "plm-resample-b-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-resample-b.mha"
+  )
+plmtest_check_interval ("plm-resample-b-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-resample-b-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-879.0"
+  "-878.0"
+  )
+plm_add_test (
+  "plm-resample-c" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "resample;--input;${PLM_TESTING_BUILD_DIR}/bspline-mi-c-1-vf.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-resample-c-vf.mha;--fixed;${PLM_TESTING_BUILD_DIR}/black-1.mha"
+  )
+plm_add_test (
+  "plm-resample-c-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-resample-c-vf.mha"
+  )
+plmtest_check_interval ("plm-resample-c-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-resample-c-stats.stdout.txt"
+  "Mean: *([-0-9.]*)"
+  "6.73"
+  "6.8"
   )
 
 ## -------------------------------------------------------------------------

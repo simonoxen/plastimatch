@@ -6,8 +6,8 @@
 
 #include "plm_config.h"
 #include <string>
+#include "itk_resample.h"
 #include "pstring.h"
-#include "resample_mha.h"
 
 class Plm_image;
 

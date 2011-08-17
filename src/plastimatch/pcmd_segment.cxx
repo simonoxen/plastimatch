@@ -5,12 +5,12 @@
 #include <stdlib.h>
 #include "itkImageRegionIterator.h"
 
+#include "itk_resample.h"
 #include "pcmd_segment.h"
 #include "plm_clp.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "pstring.h"
-#include "resample_mha.h"
 #include "segment_body.h"
 
 class Segment_parms {

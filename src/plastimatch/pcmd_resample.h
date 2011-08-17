@@ -11,18 +11,18 @@
 
 class Resample_parms {
 public:
-    Pstring img_in_fn;
-    Pstring img_out_fn;
+    Pstring input_fn;
+    Pstring output_fn;
     Pstring fixed_fn;
     Plm_image_type output_type;
+    int dim[3];
+    bool m_have_dim;
     float origin[3];
-    bool have_origin;
+    bool m_have_origin;
     float spacing[3];
-    bool have_spacing;
-    int size[3];
-    bool have_size;
+    bool m_have_spacing;
     int subsample[3];
-    bool have_subsample;
+    bool m_have_subsample;
     float default_val;
     bool have_default_val;
     int adjust;
@@ -33,13 +33,13 @@ public:
 	for (int i = 0; i < 3; i++) {
 	    origin[i] = 0.0;
 	    spacing[i] = 0.0;
-	    size[i] = 0;
+	    dim[i] = 0;
 	    subsample[i] = 0;
 	}
-	have_origin = false;
-	have_spacing = false;
-	have_size = false;
-	have_subsample = false;
+	m_have_dim = false;
+	m_have_origin = false;
+	m_have_spacing = false;
+	m_have_subsample = false;
 	default_val = 0.0;
 	have_default_val = false;
 	adjust = 0;

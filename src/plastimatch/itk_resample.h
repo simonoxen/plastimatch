@@ -17,9 +17,6 @@ vector_resample_image (T& image, float x_spacing,
 			float y_spacing, float z_spacing);
 template <class T>
 T
-vector_resample_image (T& vf_image, float* origin, float* spacing, int* size);
-template <class T>
-T
 vector_resample_image (T& vf_image, Plm_image_header* pih);
 
 template <class T>

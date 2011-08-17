@@ -20,15 +20,15 @@ class Pstring : public CBString
     }
     
   public:
-    bool empty (void) {
+    bool empty (void) const {
 	return this->length() == 0;
     }
-    bool not_empty (void) {
+    bool not_empty (void) const {
 	return this->length() != 0;
     }
     /* Asymmetric comparison.  Return true if first section of Pstring 
        match prefix string.  */
-    bool has_prefix (const char* prefix) {
+    bool has_prefix (const char* prefix) const {
 	int pos;
 	for (pos = 0; pos < this->slen; ++pos) {
 	    if (prefix[pos] == 0) {

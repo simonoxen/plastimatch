@@ -316,6 +316,7 @@ set (PLASTIMATCH1_LIBRARY_SRC
   itk_pointset.cxx itk_pointset.h
   itk_optim.cxx itk_optim.h 
   itk_registration.cxx itk_registration.h 
+  itk_resample.cxx itk_resample.h 
   itk_tps.cxx itk_tps.h 
   itk_volume_header.cxx itk_volume_header.h
   itk_warp.cxx itk_warp.h 
@@ -342,7 +343,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   rbf_wendland.cxx rbf_wendland.h
   rbf_cluster.cxx rbf_cluster.h
   referenced_dicom_dir.cxx referenced_dicom_dir.h 
-  resample_mha.cxx resample_mha.h 
   rtds.cxx rtds.h
   rtds_dicom.cxx rtds_dicom.h
   rtds_warp.cxx rtds_warp.h
