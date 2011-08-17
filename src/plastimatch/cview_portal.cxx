@@ -320,8 +320,8 @@ PortalWidget::setView (enum PortalViewType view)
         stride[1] = vol->dim[0];
         stride[2] = vol->dim[1] * vol->dim[0];
 
-        spacing[0] = vol->spacing[0];
-        spacing[1] = vol->spacing[1];
+        spacing[0] = fabs (vol->spacing[0]);
+        spacing[1] = fabs (vol->spacing[1]);
 
         offset[0] = vol->offset[0];
         offset[1] = vol->offset[1];
@@ -335,8 +335,8 @@ PortalWidget::setView (enum PortalViewType view)
         stride[1] = vol->dim[1] * vol->dim[0];
         stride[2] = vol->dim[0];
 
-        spacing[0] = vol->spacing[0];
-        spacing[1] = vol->spacing[2];
+        spacing[0] = fabs (vol->spacing[0]);
+        spacing[1] = fabs (vol->spacing[2]);
 
         offset[0] = vol->offset[0];
         offset[1] = vol->offset[2];
@@ -350,8 +350,8 @@ PortalWidget::setView (enum PortalViewType view)
         stride[1] = vol->dim[1] * vol->dim[0];
         stride[2] = 1;
 
-        spacing[0] = vol->spacing[1];
-        spacing[1] = vol->spacing[2];
+        spacing[0] = fabs (vol->spacing[1]);
+        spacing[1] = fabs (vol->spacing[2]);
 
         offset[0] = vol->offset[1];
         offset[1] = vol->offset[2];

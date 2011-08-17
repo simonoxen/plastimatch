@@ -16,7 +16,7 @@
 #include "cview_portal.h"
 #include "cview_main.h"
 
-#define VERSION "0.04a"
+#define VERSION "0.05a"
 
 /////////////////////////////////////////////////////////
 // PortalGrid : public
