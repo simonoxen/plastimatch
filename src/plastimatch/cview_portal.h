@@ -38,12 +38,17 @@ class PortalWidget : public QGraphicsView
         float res[2];           /* portal resolution (in mm per pixel)   */
         float spacing[2];       /* voxel spacing in slice (in mm)        */
         float offset[2];        /* volume slice offset (in mm)           */
-        float sfactor;          /* Scaling factor                        */
-        int view_center[2];     /* point in scene that is in view center */
+
+        /* Scaling */
+        float sfactor;          /* overall scaling factor                */
+        float scale_window;     /* determined by portal dimensions       */
+        float scale_user;       /* user specifed scaling                 */
+        bool scale_mode;        /* makes mouse wheel scale               */
 
         /* Scroll/Panning */
-        bool pan_mode;
-        int pan_xy[2];
+        bool pan_mode;          /* is panning mode enabled?              */
+        int pan_xy[2];          /* tracking variables for panning        */
+        int view_center[2];     /* point in scene that is in view center */
 
 
     public:
@@ -52,7 +57,7 @@ class PortalWidget : public QGraphicsView
 
     private:
         int getPixelValue (float hfu);
-        void setScaleFactor ();
+        void setWindowScale ();
         void doZoom (int step);
         void doScale (float step);
         void li_clamp_2d (int *ij_f, int *ij_r, float *li_1, float *li_2, float *ij);
@@ -70,6 +75,7 @@ class PortalWidget : public QGraphicsView
     protected:
         void wheelEvent (QWheelEvent *event);
         void keyPressEvent (QKeyEvent *event);
+        void keyReleaseEvent (QKeyEvent *event);
         void mousePressEvent (QMouseEvent *event);
         void mouseReleaseEvent (QMouseEvent *event);
         void mouseMoveEvent (QMouseEvent *event);

@@ -33,11 +33,15 @@ PortalWidget::PortalWidget (QWidget *parent)
     slice = NULL;
     view = Axial;
     sfactor = 1.0;
+    scale_window = 1.0;
+    scale_user = 1.0;
+    scale_mode = false;
+    pan_mode = false;
     dim[0] = 0;
     dim[1] = 0;
+
     view_center[0] = FIELD_RES/2;
     view_center[1] = FIELD_RES/2;
-
 
     setHorizontalScrollBarPolicy (Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy (Qt::ScrollBarAlwaysOff);
@@ -48,7 +52,6 @@ PortalWidget::PortalWidget (QWidget *parent)
     scene->setItemIndexMethod (QGraphicsScene::NoIndex);
     scene->setSceneRect (0, 0, FIELD_RES, FIELD_RES);
     scene->setBackgroundBrush (QBrush (Qt::black, Qt::SolidPattern));
-//    scene->setBackgroundBrush (QBrush (Qt::red, Qt::SolidPattern));
 
     setScene (scene);
 }
@@ -79,7 +82,7 @@ PortalWidget::getPixelValue (float hfu)
 }
 
 void
-PortalWidget::setScaleFactor ()
+PortalWidget::setWindowScale ()
 {
     float tmp[2];
 
@@ -87,9 +90,9 @@ PortalWidget::setScaleFactor ()
     tmp[1] = (float)size().width() / (float)dim[1];
 
     if (tmp[0] < tmp[1]) {
-        sfactor = tmp[0];
+        scale_window = tmp[0];
     } else {
-        sfactor = tmp[1];
+        scale_window = tmp[1];
     }
 }
 
@@ -106,7 +109,7 @@ PortalWidget::doZoom (int step)
 void
 PortalWidget::doScale (float step)
 {
-    sfactor += step;
+    scale_user += step;
     renderSlice (current_slice);
 }
 
@@ -149,7 +152,12 @@ PortalWidget::wheelEvent (QWheelEvent *event)
      *   Each wheel click is usually 15 degrees on most mice */
     int step = event->delta() / (8*15);
 
-    doZoom (step);
+
+    if (scale_mode) {
+        doScale (0.1*step);
+    } else {
+        doZoom (step);
+    }
 }
 
 void
@@ -177,11 +185,28 @@ PortalWidget::keyPressEvent (QKeyEvent *event)
         break;
     case Qt::Key_BracketRight:
     case Qt::Key_L:
-        doScale (-0.1f);
+        doScale (+0.1f);
         break;
     case Qt::Key_BracketLeft:
     case Qt::Key_H:
-        doScale (0.1f);
+        doScale (-0.1f);
+        break;
+    case Qt::Key_Control:
+        scale_mode = true;
+        break;
+    default:
+        /* Forward to default callback */
+        QGraphicsView::keyPressEvent (event);
+    }
+}
+
+void
+PortalWidget::keyReleaseEvent (QKeyEvent *event)
+{
+    switch (event->key())
+    {
+    case Qt::Key_Control:
+        scale_mode = false;
         break;
     default:
         /* Forward to default callback */
@@ -265,8 +290,8 @@ PortalWidget::mouseMoveEvent (QMouseEvent *event)
 void
 PortalWidget::resizeEvent (QResizeEvent *event)
 {
-    centerOn (view_center[0],view_center[1]);
-    setScaleFactor ();
+    centerOn (view_center[0], view_center[1]);
+    setWindowScale ();
     renderSlice (current_slice);
 }
 
@@ -367,7 +392,7 @@ PortalWidget::setView (enum PortalViewType view)
     /* Rendering surface dimensions (pix) */
     dim[0] = floor (ijk_max[0]*spacing[0]);
     dim[1] = floor (ijk_max[1]*spacing[1]);
-    setScaleFactor();
+    setWindowScale ();
 
     /* Portal resolution (mm per pix) */
     res[0] = (spacing[0] * (float)ijk_max[0]) / (float)dim[0];
@@ -458,6 +483,7 @@ PortalWidget::renderSlice (int slice_num)
     }
 
     /* Have Qt actually render the frame */
+    sfactor = scale_window * scale_user;
     pmap = QPixmap::fromImage (*slice);
     pmap = pmap.scaled (dim[0]*sfactor, dim[1]*sfactor);
     pmi->setPixmap (pmap);
