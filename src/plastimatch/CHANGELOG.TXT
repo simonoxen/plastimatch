@@ -1,5 +1,8 @@
-Version 1.5.3 (build @PLASTIMATCH_SVN_VERSION@)
+Version 1.5.4 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
+
+Version 1.5.3 (build 2678)
+Sun Aug 14 21:56:51 EDT 2011
 * Add support for signed char image type
 * Add output image type to slicer bspline plugin
 * Add bspline regularization to slicer bspline plugin
