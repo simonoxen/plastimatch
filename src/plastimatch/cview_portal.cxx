@@ -13,13 +13,15 @@
 #include "volume.h"
 #include "cview_portal.h"
 
-// TODO: * Maintain aspect ratio within portal
-//       * Pan / Zoom
-//       * Implement slots & signals (fully)
+// TODO: * Fix coordinate reporting / signal
+//       * Fix window resize bug (loses centering)
 //       * Qt Designer hooks
 
 #define ROUND_INT(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
 
+/* This just determines the amount of black space
+ * a portal has within it */
+#define FIELD_RES 5012
 
 /////////////////////////////////////////////////////////
 // PortalWidget: public
@@ -31,19 +33,20 @@ PortalWidget::PortalWidget (QWidget *parent)
     vol = NULL;
     slice = NULL;
     view = Axial;
+    sfactor = 1.0;
+    dim[0] = 0;
+    dim[1] = 0;
+    
 
-    /* NOTE: for some reason PortalWidget is not being bound by QGridLayout...
-     *       well, not the way I think it should be, at least */
+
     setHorizontalScrollBarPolicy (Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy (Qt::ScrollBarAlwaysOff);
     setSizePolicy (QSizePolicy::Expanding, QSizePolicy::Expanding);
-
-    dim[0] = size().width();
-    dim[1] = size().height();
+    setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 
     scene = new QGraphicsScene (this);
     scene->setItemIndexMethod (QGraphicsScene::NoIndex);
-    scene->setSceneRect (0, 0, dim[0], dim[1]);
+    scene->setSceneRect (0, 0, FIELD_RES, FIELD_RES);
     scene->setBackgroundBrush (QBrush (Qt::black, Qt::SolidPattern));
 //    scene->setBackgroundBrush (QBrush (Qt::red, Qt::SolidPattern));
 
@@ -76,6 +79,21 @@ PortalWidget::getPixelValue (float hfu)
 }
 
 void
+PortalWidget::setScaleFactor ()
+{
+    float tmp[2];
+
+    tmp[0] = (float)size().height() / (float)dim[0];
+    tmp[1] = (float)size().width() / (float)dim[1];
+
+    if (tmp[0] < tmp[1]) {
+        sfactor = tmp[0];
+    } else {
+        sfactor = tmp[1];
+    }
+}
+
+void
 PortalWidget::doZoom (int step)
 {
     if ( (current_slice + step < ijk_max[2]) &&
@@ -83,6 +101,13 @@ PortalWidget::doZoom (int step)
         current_slice += step;
         renderSlice (current_slice);
     }
+}
+
+void
+PortalWidget::doScale (float step)
+{
+    sfactor += step;
+    renderSlice (current_slice);
 }
 
 void
@@ -141,12 +166,22 @@ PortalWidget::keyPressEvent (QKeyEvent *event)
     case Qt::Key_3:
         setView (Sagittal);
         break;
+    case Qt::Key_J:
     case Qt::Key_Minus:
         doZoom (-1);
         break;
+    case Qt::Key_K:
     case Qt::Key_Plus:
     case Qt::Key_Equal:
         doZoom (1);
+        break;
+    case Qt::Key_BracketRight:
+    case Qt::Key_L:
+        doScale (-0.1f);
+        break;
+    case Qt::Key_BracketLeft:
+    case Qt::Key_H:
+        doScale (0.1f);
         break;
     default:
         /* Forward to default callback */
@@ -157,47 +192,78 @@ PortalWidget::keyPressEvent (QKeyEvent *event)
 void
 PortalWidget::mousePressEvent (QMouseEvent *event)
 {
-    int i,j;
-    float xy[2];
+    int i = event->pos().x();
+    int j = event->pos().y();
 
-    i = event->pos().x();
-    j = event->pos().y();
+    switch (event->button()) {
+    case Qt::LeftButton:
 
-    xy[0] = (float)i*res[0];
-    xy[1] = (float)j*res[1];
+        float xy[2];
 
-//    emit cursorChanged (xyz[0], xyz[1], xyz[2]);
+        xy[0] = (float)i*res[0]/sfactor;
+        xy[1] = (float)j*res[1]/sfactor;
 
-    /* Debug */
-    std::cout << "   Portal: " << i << "  "<< j << "\n"
-              << "RealSpace: " << xy[0] << "  " << xy[1] << "\n"
-              << "    Slice: " << xy[0] / spacing[0] << "  "
-                               << xy[1] / spacing[1] << "\n";
+//        emit targetChanged (xyz[0], xyz[1], xyz[2]);
+
+        /* Debug */
+        std::cout << "   Portal: " << i << "  "<< j << "\n"
+                  << "RealSpace: " << xy[0] << "  " << xy[1] << "\n"
+                  << "    Slice: " << xy[0] / spacing[0] << "  "
+                                   << xy[1] / spacing[1] << "\n";
+        event->accept();
+        break;
+    case Qt::RightButton:
+        pan_mode = true;
+        pan_xy[0] = i;
+        pan_xy[1] = j;
+        setCursor (Qt::ClosedHandCursor);
+        event->accept();
+        break;
+    default:
+        event->ignore();
+        break;
+    }
+}
+
+void
+PortalWidget::mouseReleaseEvent (QMouseEvent *event)
+{
+    switch (event->button()) {
+    case Qt::LeftButton:
+        /* Empty */
+        event->ignore();
+        break;
+    case Qt::RightButton:
+        pan_mode = false;
+        setCursor (Qt::ArrowCursor);
+        event->accept();
+        break;
+    default:
+        event->ignore();
+        break;
+    }
+}
+
+void
+PortalWidget::mouseMoveEvent (QMouseEvent *event)
+{
+    int i = event->pos().x();
+    int j = event->pos().y();
+
+    if (pan_mode) {
+        translate ( (double)(i-pan_xy[0]), (double)(j-pan_xy[1]));
+        pan_xy[0] = i;
+        pan_xy[1] = j;
+        event->accept();
+        return;
+    }
+    event->ignore();
 }
 
 void
 PortalWidget::resizeEvent (QResizeEvent *event)
 {
-    /* Delete the old rendering surface */
-    if (slice) {
-        scene->removeItem (pmi);
-        delete slice;
-        free (fb);
-    }
-
-    dim[0] = event->size().height();
-    dim[1] = event->size().width();
-
-    /* Portal resolution (mm per pix) */
-    res[0] = (spacing[0] * (float)ijk_max[0]) / (float)dim[0];
-    res[1] = (spacing[1] * (float)ijk_max[1]) / (float)dim[1];
-
-    /* Make a new rendering surface */
-    scene->setSceneRect (0, 0, dim[0], dim[1]);
-    fb = (uchar*) malloc (4*dim[0]*dim[1]*sizeof (uchar));
-    slice = new QImage (fb, dim[0], dim[1], QImage::Format_ARGB32);
-    pmi = (scene)->addPixmap (pmap);
-
+    setScaleFactor ();
     renderSlice (current_slice);
 }
 
@@ -295,6 +361,11 @@ PortalWidget::setView (enum PortalViewType view)
         break;
     }
 
+    /* Rendering surface dimensions (pix) */
+    dim[0] = floor (ijk_max[0]*spacing[0]);
+    dim[1] = floor (ijk_max[1]*spacing[1]);
+    setScaleFactor();
+
     /* Portal resolution (mm per pix) */
     res[0] = (spacing[0] * (float)ijk_max[0]) / (float)dim[0];
     res[1] = (spacing[1] * (float)ijk_max[1]) / (float)dim[1];
@@ -302,14 +373,14 @@ PortalWidget::setView (enum PortalViewType view)
     /* Make a new rendering surface */
     fb = (uchar*) malloc (4*dim[0]*dim[1]*sizeof (uchar));
     slice = new QImage (fb, dim[0], dim[1], QImage::Format_ARGB32);
-    pmi = (scene)->addPixmap (pmap);
+    pmi = scene->addPixmap (pmap);
 
     /* We always set the portal to the center slice after changing the view */
     renderSlice (ijk_max[2] / 2);
 }
 
 void
-PortalWidget::setCursor (float x, float y, float z)
+PortalWidget::setTarget (float* xyz)
 {
     // set realspace coords
 }
@@ -385,7 +456,9 @@ PortalWidget::renderSlice (int slice_num)
 
     /* Have Qt actually render the frame */
     pmap = QPixmap::fromImage (*slice);
+    pmap = pmap.scaled (dim[0]*sfactor, dim[1]*sfactor);
     pmi->setPixmap (pmap);
+    pmi->setOffset (((FIELD_RES - pmap.width())/2), ((FIELD_RES- pmap.height())/2));
 
     current_slice = slice_num;
     emit sliceChanged (current_slice);
