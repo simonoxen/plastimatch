@@ -67,6 +67,7 @@ set (ISE_SRC
 
 set (ACQUIRE_4030E_SRC
   acquire_4030e.cxx
+  advantech.cxx
   )
 
 set (ISE_QT_SRC

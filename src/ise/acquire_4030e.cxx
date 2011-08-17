@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <conio.h>
+#include <dos.h>
+#include <math.h>
 
 #include "HcpErrors.h"
 #include "HcpFuncDefs.h"
@@ -691,13 +693,15 @@ int  PerformRadAcquisition()
 
     GetModeInfo(modeInfo);
 
-    printf("Calling vip_enable_sw_handshaking(FALSE)\n");
+    printf ("Calling vip_enable_sw_handshaking(FALSE)\n");
     result = vip_enable_sw_handshaking(FALSE);
     if (result != HCP_NO_ERR)
     {
 	printf("*** returns error %d\n", result);
 	return result;
     }
+#if defined (commentout)
+#endif
 
     printf("Calling vip_io_enable(HS_ACTIVE)\n");
     result = vip_io_enable(HS_ACTIVE);
@@ -814,21 +818,19 @@ void DisplayPrompt()
 }
 
 //----------------------------------------------------------------------
-//
 //  main
-//
 //----------------------------------------------------------------------
-
-int main(int argc, char* argv[])
+int 
+main(int argc, char* argv[])
 {
     char *path = default_path;
     int choice = 0;
     int result;
-    SOpenReceptorLink  orl;
-    SSysInfo  sysInfo;
+    SOpenReceptorLink orl;
+    SSysInfo sysInfo;
 
-    memset(&orl, 0, sizeof(SOpenReceptorLink));
-    printf("RadTest - Sample Code for Radiographic Image Acquisition\n\n");
+    memset (&orl, 0, sizeof(SOpenReceptorLink));
+    printf ("RadTest - Sample Code for Radiographic Image Acquisition\n\n");
 
     if (argc > 1)			// Check for receptor path on the command line
 	path = argv[1];
@@ -855,7 +857,7 @@ int main(int argc, char* argv[])
     {
 	GetSysInfo(sysInfo);
 
-	result = vip_select_mode(crntModeSelect);
+	result = vip_select_mode (crntModeSelect);
 
 	if (result == HCP_NO_ERR)
 	{
@@ -886,8 +888,10 @@ int main(int argc, char* argv[])
 		}
 	    }
 	}
-	else
-	    printf("vip_select_mode(%d) returns error %d\n", crntModeSelect, result);
+	else {
+	    printf ("vip_select_mode(%d) returns error %d\n", 
+		crntModeSelect, result);
+	}
 
 	vip_close_link();
     }
@@ -900,5 +904,3 @@ int main(int argc, char* argv[])
 
     return 0;
 }
-
-

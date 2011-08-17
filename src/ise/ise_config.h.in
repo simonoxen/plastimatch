@@ -4,6 +4,7 @@
 #ifndef __ise_config_h__
 #define __ise_config_h__
 
+#cmakedefine ADVANTECH_FOUND 1
 #cmakedefine BITFLOW_FOUND 1
 #cmakedefine MIL_FOUND 1
 #cmakedefine QT_FOUND 1
