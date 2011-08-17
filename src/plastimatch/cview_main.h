@@ -1,9 +1,10 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 #ifndef _cview_main_h_
 #define _cview_main_h_
 
 #include <QtGui>
-#include <QApplication>
-#include <QMenu>
 #include "volume.h"
 #include "cview_portal.h"
 
@@ -31,14 +32,17 @@ class CrystalWindow : public QMainWindow
 
     private: /* methods */
         bool openVol (const char* fn);
+        void createActions ();
+        void createMenu ();
 
     private: /* variables */
-        QMenu *menuFile;
-        QAction *itemOpen;
-        QAction *itemExit;
         PortalGrid *portalGrid;
         Volume* input_vol;
+        QMenu *menuFile;
+        QMenu *menuHelp;
+        QAction *actionOpen;
+        QAction *actionExit;
+        QAction *actionAboutQt;
 };
-
 
 #endif

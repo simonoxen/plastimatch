@@ -1,3 +1,7 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
+
 /* JAS - 2011.08.14
  *   This is CrystalView... which is currently more or less just a 
  *   testbed for my PortalWidget Qt4 class.  All of this is in
@@ -7,11 +11,6 @@
 #include "plm_config.h"
 #include <iostream>
 #include <QtGui>
-#include <QApplication>
-#include <QMenu>
-#include <QMenuBar>
-#include <QWidget>
-#include <QFileDialog>
 #include "volume.h"
 #include "mha_io.h"
 #include "cview_portal.h"
@@ -19,6 +18,9 @@
 
 #define VERSION "0.03a"
 
+/////////////////////////////////////////////////////////
+// PortalGrid : public
+//
 
 PortalGrid::PortalGrid (Volume* input_vol, QWidget *parent)
     :QWidget (parent)
@@ -62,32 +64,65 @@ PortalGrid::PortalGrid (Volume* input_vol, QWidget *parent)
 }
 
 
+/////////////////////////////////////////////////////////
+// CrystalWindow : private
+//
+
 bool
 CrystalWindow::openVol (const char* fn)
 {
-        if (input_vol) {
-            delete input_vol;
-        }
-        input_vol = read_mha (fn);
+    if (input_vol) {
+        delete input_vol;
+    }
+    input_vol = read_mha (fn);
 
-        if (!input_vol) {
-            return false;
-        }
+    if (!input_vol) {
+        return false;
+    }
 
-        volume_convert_to_float (input_vol);
+    volume_convert_to_float (input_vol);
 
-        portalGrid->portal0->setVolume (input_vol);
-        portalGrid->portal1->setVolume (input_vol);
-        portalGrid->portal2->setVolume (input_vol);
-        portalGrid->portal3->setVolume (input_vol);
+    portalGrid->portal0->setVolume (input_vol);
+    portalGrid->portal1->setVolume (input_vol);
+    portalGrid->portal2->setVolume (input_vol);
+    portalGrid->portal3->setVolume (input_vol);
 
-        portalGrid->portal0->setView (PV_AXIAL);
-        portalGrid->portal1->setView (PV_CORONAL);
-        portalGrid->portal2->setView (PV_SAGITTAL);
-        portalGrid->portal3->setView (PV_AXIAL);
+    portalGrid->portal0->setView (PortalWidget::Axial);
+    portalGrid->portal1->setView (PortalWidget::Coronal);
+    portalGrid->portal2->setView (PortalWidget::Sagittal);
+    portalGrid->portal3->setView (PortalWidget::Axial);
 
-        return true;
+    return true;
 }
+
+void
+CrystalWindow::createActions ()
+{
+    actionOpen = new QAction (tr("&Open"), this);
+    actionExit = new QAction (tr("E&xit"), this);
+    actionAboutQt = new QAction (tr("About &Qt"), this);
+
+    connect (actionExit, SIGNAL(triggered()), qApp, SLOT(quit()));
+    connect (actionOpen, SIGNAL(triggered()), this, SLOT(open()));
+    connect (actionAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+}
+
+void
+CrystalWindow::createMenu ()
+{
+    menuFile = menuBar()->addMenu (tr("&File"));
+    menuFile->addAction (actionOpen);
+    menuFile->addAction (actionExit);
+
+    menuBar()->addSeparator();  /* fancy in some environments */
+
+    menuHelp = menuBar()->addMenu (tr("&Help"));
+    menuHelp->addAction (actionAboutQt);
+}
+
+/////////////////////////////////////////////////////////
+// CrystalWindow : slots
+//
 
 void
 CrystalWindow::open ()
@@ -98,7 +133,7 @@ CrystalWindow::open ()
                 tr("Open Volume"),
                 "",
                 tr("MHA Volumes (*.mha)")
-);
+    );
 
     QByteArray ba = fileName.toLocal8Bit();
     const char *fn = ba.data();
@@ -109,27 +144,22 @@ CrystalWindow::open ()
     }
 }
 
+/////////////////////////////////////////////////////////
+// CrystalWindow : public
+//
 
 CrystalWindow::CrystalWindow (int argc, char** argv, QWidget *parent)
     :QMainWindow (parent)
 {
     input_vol = NULL;
 
+    createActions ();
+    createMenu ();
+
     portalGrid = new PortalGrid (input_vol);
     setCentralWidget (portalGrid);
 
-    /* Add a menu */
-    itemOpen = new QAction ("&Open", this);
-    itemExit = new QAction ("E&xit", this);
-
-    menuFile = menuBar()->addMenu ("&File");
-    menuFile->addAction (itemOpen);
-    menuFile->addAction (itemExit);
-
-    /* Make the menu actually do stuff */
-    connect (itemExit, SIGNAL(triggered()), qApp, SLOT(quit()));
-    connect (itemOpen, SIGNAL(triggered()), this, SLOT(open()));
-
+    /* open mha from command line */
     if (argc > 1) {
         if (!openVol (argv[1])) {
             std::cout << "Failed to load: " << argv[1] << "\n";
@@ -137,6 +167,9 @@ CrystalWindow::CrystalWindow (int argc, char** argv, QWidget *parent)
     }
 }
 
+/////////////////////////////////////////////////////////
+// main ()
+//
 
 int
 main (int argc, char** argv)
