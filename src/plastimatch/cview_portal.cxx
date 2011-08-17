@@ -191,6 +191,9 @@ PortalWidget::keyPressEvent (QKeyEvent *event)
     case Qt::Key_H:
         doScale (-0.1f);
         break;
+    case Qt::Key_R:
+        resetPortal ();
+        break;
     case Qt::Key_Control:
         scale_mode = true;
         break;
@@ -323,6 +326,12 @@ PortalWidget::setVolume (Volume* vol)
 }
 
 void
+PortalWidget::detachVolume ()
+{
+    vol = NULL;
+}
+
+void
 PortalWidget::setView (enum PortalViewType view)
 {
     /* Cannot setView with no volume attached to portal */
@@ -422,6 +431,7 @@ PortalWidget::resetPortal ()
     view_center[0] = FIELD_RES/2;
     view_center[1] = FIELD_RES/2;
     centerOn (view_center[0], view_center[1]);
+    renderSlice (current_slice);
 }
 
 void

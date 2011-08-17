@@ -72,6 +72,10 @@ bool
 CrystalWindow::openVol (const char* fn)
 {
     if (input_vol) {
+        portalGrid->portal0->detachVolume();
+        portalGrid->portal1->detachVolume();
+        portalGrid->portal2->detachVolume();
+        portalGrid->portal3->detachVolume();
         delete input_vol;
     }
     input_vol = read_mha (fn);

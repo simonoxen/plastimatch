@@ -67,11 +67,12 @@ class PortalWidget : public QGraphicsView
         void sliceChanged (int n);                      /* on slice change  */
 
     public slots:
-        void setVolume (Volume* vol);               /* Attach volume to portal  */
-        void setView (enum PortalViewType view);    /* Set portal view type     */
-        void setTarget (float* xyz);                /* Set the cursor RS coords */
-        void resetPortal ();                        /* Removes user transforms  */
-        void renderSlice (int slice_num);           /* Render slice_num         */
+        void setVolume (Volume* vol);               /* Attach volume to portal   */
+        void detachVolume ();                       /* Detach volume from portal */
+        void setView (enum PortalViewType view);    /* Set portal view type      */
+        void setTarget (float* xyz);                /* Set the cursor RS coords  */
+        void resetPortal ();                        /* Removes user transforms   */
+        void renderSlice (int slice_num);           /* Render slice_num          */
 
     protected:
         void wheelEvent (QWheelEvent *event);
