@@ -406,18 +406,26 @@ Plm_image::set_itk (UCharVecImageType::Pointer img)
 /* -----------------------------------------------------------------------
    Conversion
    ----------------------------------------------------------------------- */
+#define CONVERT_ITK_ITK(out_type,in_type)				\
+    (this->m_itk_##out_type = cast_##out_type (this->m_itk_##in_type),	\
+	this->m_itk_##in_type = 0)
+
 void
 Plm_image::convert_to_itk_char (void)
 {
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_CHAR:
 	return;
+    case PLM_IMG_TYPE_ITK_SHORT:
+	CONVERT_ITK_ITK (char, short);
+	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
-	this->m_itk_char = cast_char (this->m_itk_float);
-	this->m_itk_float = 0;
+	CONVERT_ITK_ITK (char, float);
 	break;
     default:
-	print_and_exit ("Error: unhandled conversion to itk_char\n");
+	print_and_exit (
+	    "Error: unhandled conversion from %s to itk_char\n",
+	    plm_image_type_string (this->m_type));
 	return;
     }
     this->m_type = PLM_IMG_TYPE_ITK_CHAR;
@@ -429,9 +437,11 @@ Plm_image::convert_to_itk_uchar (void)
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
 	return;
+    case PLM_IMG_TYPE_ITK_SHORT:
+	CONVERT_ITK_ITK (uchar, short);
+	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
-	this->m_itk_uchar = cast_uchar (this->m_itk_float);
-	this->m_itk_float = 0;
+	CONVERT_ITK_ITK (uchar, float);
 	break;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
 	this->m_itk_uchar = plm_image_convert_gpuit_to_itk (
@@ -442,7 +452,9 @@ Plm_image::convert_to_itk_uchar (void)
 	    this, this->m_itk_uchar, float (0));
 	break;
     default:
-	print_and_exit ("Error: unhandled conversion to itk_uchar\n");
+	print_and_exit (
+	    "Error: unhandled conversion from %s to itk_uchar\n",
+	    plm_image_type_string (this->m_type));
 	return;
     }
     this->m_type = PLM_IMG_TYPE_ITK_UCHAR;
@@ -455,12 +467,10 @@ Plm_image::convert_to_itk_short (void)
     case PLM_IMG_TYPE_ITK_SHORT:
 	return;
     case PLM_IMG_TYPE_ITK_LONG:
-	this->m_itk_short = cast_short (this->m_itk_int32);
-	this->m_itk_int32 = 0;
+	CONVERT_ITK_ITK (short, uint32);
 	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
-	this->m_itk_short = cast_short (this->m_itk_float);
-	this->m_itk_float = 0;
+	CONVERT_ITK_ITK (short, float);
 	break;
     case PLM_IMG_TYPE_GPUIT_SHORT:
 	this->m_itk_short = plm_image_convert_gpuit_to_itk (
@@ -471,7 +481,9 @@ Plm_image::convert_to_itk_short (void)
 	    this, this->m_itk_short, (float) 0);
 	break;
     default:
-	print_and_exit ("Error: unhandled conversion to itk_short\n");
+	print_and_exit (
+	    "Error: unhandled conversion from %s to itk_short\n",
+	    plm_image_type_string (this->m_type));
 	return;
     }
     this->m_type = PLM_IMG_TYPE_ITK_SHORT;
@@ -481,6 +493,9 @@ void
 Plm_image::convert_to_itk_ushort (void)
 {
     switch (this->m_type) {
+    case PLM_IMG_TYPE_ITK_SHORT:
+	CONVERT_ITK_ITK (ushort, short);
+	break;
     case PLM_IMG_TYPE_ITK_USHORT:
 	return;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
@@ -503,8 +518,7 @@ Plm_image::convert_to_itk_int32 (void)
     case PLM_IMG_TYPE_ITK_ULONG:
 	return;
     case PLM_IMG_TYPE_ITK_FLOAT:
-	this->m_itk_int32 = cast_int32 (this->m_itk_float);
-	this->m_itk_float = 0;
+	CONVERT_ITK_ITK (int32, float);
 	break;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
 	this->m_itk_int32 = plm_image_convert_gpuit_to_itk (
@@ -523,7 +537,9 @@ Plm_image::convert_to_itk_int32 (void)
 	    this, this->m_itk_int32, (float) 0);
 	break;
     default:
-	print_and_exit ("Error: unhandled conversion to itk_int32\n");
+	print_and_exit (
+	    "Error: unhandled conversion from %s to itk_int32\n",
+	    plm_image_type_string (this->m_type));
 	return;
     }
     this->m_type = PLM_IMG_TYPE_ITK_ULONG;
@@ -533,19 +549,16 @@ void
 Plm_image::convert_to_itk_uint32 (void)
 {
     switch (this->m_type) {
-    case PLM_IMG_TYPE_ITK_ULONG:
-	return;
     case PLM_IMG_TYPE_ITK_UCHAR:
-	this->m_itk_uint32 = cast_uint32 (this->m_itk_uchar);
-	this->m_itk_float = 0;
+	CONVERT_ITK_ITK (uint32, uchar);
 	break;
     case PLM_IMG_TYPE_ITK_SHORT:
-	this->m_itk_uint32 = cast_uint32 (this->m_itk_short);
-	this->m_itk_short = 0;
+	CONVERT_ITK_ITK (uint32, short);
 	break;
+    case PLM_IMG_TYPE_ITK_ULONG:
+	return;
     case PLM_IMG_TYPE_ITK_FLOAT:
-	this->m_itk_uint32 = cast_uint32 (this->m_itk_float);
-	this->m_itk_float = 0;
+	CONVERT_ITK_ITK (uint32, float);
 	break;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
 	this->m_itk_uint32 = plm_image_convert_gpuit_to_itk (
@@ -577,16 +590,13 @@ Plm_image::convert_to_itk_float ()
 {
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
-	this->m_itk_float = cast_float (this->m_itk_uchar);
-	this->m_itk_uchar = 0;
+	CONVERT_ITK_ITK (float, uchar);
 	break;
     case PLM_IMG_TYPE_ITK_SHORT:
-	this->m_itk_float = cast_float (this->m_itk_short);
-	this->m_itk_short = 0;
+	CONVERT_ITK_ITK (float, short);
 	break;
     case PLM_IMG_TYPE_ITK_ULONG:
-	this->m_itk_float = cast_float (this->m_itk_uint32);
-	this->m_itk_uint32 = 0;
+	CONVERT_ITK_ITK (float, uint32);
 	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
 	return;
@@ -599,7 +609,9 @@ Plm_image::convert_to_itk_float ()
 	    this, this->m_itk_float, (float) 0);
 	break;
     default:
-	print_and_exit ("Error: unhandled conversion to itk_float\n");
+	print_and_exit (
+	    "Error: unhandled conversion from %s to itk_float\n",
+	    plm_image_type_string (this->m_type));
 	return;
     }
     this->m_type = PLM_IMG_TYPE_ITK_FLOAT;
@@ -610,21 +622,17 @@ Plm_image::convert_to_itk_double ()
 {
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
-	this->m_itk_double = cast_double (this->m_itk_uchar);
-	this->m_itk_uchar = 0;
+	CONVERT_ITK_ITK (double, uchar);
 	break;
     case PLM_IMG_TYPE_ITK_SHORT:
-	this->m_itk_double = cast_double (this->m_itk_short);
-	this->m_itk_short = 0;
+	CONVERT_ITK_ITK (double, short);
 	break;
     case PLM_IMG_TYPE_ITK_ULONG:
-	this->m_itk_double = cast_double (this->m_itk_uint32);
-	this->m_itk_uint32 = 0;
+	CONVERT_ITK_ITK (double, uint32);
 	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
-	this->m_itk_double = cast_double (this->m_itk_float);
-	this->m_itk_float = 0;
-	return;
+	CONVERT_ITK_ITK (double, float);
+	break;
     case PLM_IMG_TYPE_ITK_DOUBLE:
 	return;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
@@ -636,7 +644,9 @@ Plm_image::convert_to_itk_double ()
 	    this, this->m_itk_double, (float) 0);
 	break;
     default:
-	print_and_exit ("Error: unhandled conversion to itk_double\n");
+	print_and_exit (
+	    "Error: unhandled conversion from %s to itk_double\n",
+	    plm_image_type_string (this->m_type));
 	return;
     }
     this->m_type = PLM_IMG_TYPE_ITK_DOUBLE;
@@ -672,8 +682,8 @@ Plm_image::convert_to_itk_uchar_vec (void)
 	break;
     default:
 	print_and_exit (
-	    "Error: unhandled conversion to itk_uchar_vec type=%d\n",
-	    m_type);
+	    "Error: unhandled conversion from %s to itk_uchar_vec\n",
+	    plm_image_type_string (this->m_type));
 	return;
     }
     this->m_type = PLM_IMG_TYPE_ITK_UCHAR_VEC;
@@ -711,7 +721,10 @@ Plm_image::convert_to_itk (void)
 	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT_FIELD:
     default:
-	print_and_exit ("Undefined conversion in Plm_image::convert_to_itk\n");
+	print_and_exit (
+	    "Error: unhandled conversion in Plm_image::convert_to_itk "
+	    " with type %s.\n",
+	    plm_image_type_string (this->m_type));
 	break;
     }
 }
@@ -732,7 +745,9 @@ Plm_image::convert_to_gpuit_short ()
     case PLM_IMG_TYPE_ITK_ULONG:
     case PLM_IMG_TYPE_ITK_FLOAT:
     default:
-	print_and_exit ("Error: unhandled conversion to gpuit_short()\n");
+	print_and_exit (
+	    "Error: unhandled conversion from %s to gpuit_short\n",
+	    plm_image_type_string (this->m_type));
 	return;
     }
 }
@@ -753,7 +768,9 @@ Plm_image::convert_to_gpuit_uint16 ()
     case PLM_IMG_TYPE_ITK_ULONG:
     case PLM_IMG_TYPE_ITK_FLOAT:
     default:
-	print_and_exit ("Error: unhandled conversion to gpuit_uint16()\n");
+	print_and_exit (
+	    "Error: unhandled conversion from %s to gpuit_uint16\n",
+	    plm_image_type_string (this->m_type));
 	return;
     }
 }
@@ -774,7 +791,9 @@ Plm_image::convert_to_gpuit_uint32 ()
     case PLM_IMG_TYPE_ITK_ULONG:
     case PLM_IMG_TYPE_ITK_FLOAT:
     default:
-	print_and_exit ("Error: unhandled conversion to gpuit_uint32()\n");
+	print_and_exit (
+	    "Error: unhandled conversion from %s to gpuit_uint32\n",
+	    plm_image_type_string (this->m_type));
 	return;
     }
 }
@@ -816,7 +835,9 @@ Plm_image::convert_to_gpuit_float ()
     case PLM_IMG_TYPE_GPUIT_FLOAT:
 	return;
     default:
-	print_and_exit ("Error: unhandled conversion to gpuit_float()\n");
+	print_and_exit (
+	    "Error: unhandled conversion from %s to gpuit_float\n",
+	    plm_image_type_string (this->m_type));
 	return;
     }
 }
@@ -834,7 +855,9 @@ Plm_image::convert_to_gpuit_uchar_vec ()
 	this->m_itk_uchar_vec = 0;
 	return;
     default:
-	print_and_exit ("Error: unhandled conversion to gpuit_uchar_vec\n");
+	print_and_exit (
+	    "Error: unhandled conversion from %s to gpuit_uchar_vec\n",
+	    plm_image_type_string (this->m_type));
 	return;
     }
 }

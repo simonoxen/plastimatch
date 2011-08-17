@@ -200,7 +200,9 @@ cast_double (T image)
 }
 
 /* Explicit instantiations */
+template plastimatch1_EXPORT CharImageType::Pointer cast_char (ShortImageType::Pointer);
 template plastimatch1_EXPORT CharImageType::Pointer cast_char (FloatImageType::Pointer);
+template plastimatch1_EXPORT UCharImageType::Pointer cast_uchar (ShortImageType::Pointer);
 template plastimatch1_EXPORT UCharImageType::Pointer cast_uchar (FloatImageType::Pointer);
 template plastimatch1_EXPORT ShortImageType::Pointer cast_short (UCharImageType::Pointer);
 template plastimatch1_EXPORT ShortImageType::Pointer cast_short (ShortImageType::Pointer);
@@ -208,7 +210,9 @@ template plastimatch1_EXPORT ShortImageType::Pointer cast_short (UShortImageType
 template plastimatch1_EXPORT ShortImageType::Pointer cast_short (Int32ImageType::Pointer);
 template plastimatch1_EXPORT ShortImageType::Pointer cast_short (UInt32ImageType::Pointer);
 template plastimatch1_EXPORT ShortImageType::Pointer cast_short (FloatImageType::Pointer);
+template plastimatch1_EXPORT UShortImageType::Pointer cast_ushort (ShortImageType::Pointer);
 template plastimatch1_EXPORT UShortImageType::Pointer cast_ushort (FloatImageType::Pointer);
+template plastimatch1_EXPORT Int32ImageType::Pointer cast_int32 (ShortImageType::Pointer);
 template plastimatch1_EXPORT Int32ImageType::Pointer cast_int32 (FloatImageType::Pointer);
 template plastimatch1_EXPORT UInt32ImageType::Pointer cast_uint32 (UCharImageType::Pointer);
 template plastimatch1_EXPORT UInt32ImageType::Pointer cast_uint32 (ShortImageType::Pointer);
