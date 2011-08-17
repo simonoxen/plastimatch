@@ -14,14 +14,13 @@
 #include "cview_portal.h"
 
 // TODO: * Fix coordinate reporting / signal
-//       * Fix window resize bug (loses centering)
 //       * Qt Designer hooks
 
 #define ROUND_INT(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
 
 /* This just determines the amount of black space
  * a portal has within it */
-#define FIELD_RES 5012
+#define FIELD_RES 4096
 
 /////////////////////////////////////////////////////////
 // PortalWidget: public
@@ -36,7 +35,8 @@ PortalWidget::PortalWidget (QWidget *parent)
     sfactor = 1.0;
     dim[0] = 0;
     dim[1] = 0;
-    
+    view_center[0] = FIELD_RES/2;
+    view_center[1] = FIELD_RES/2;
 
 
     setHorizontalScrollBarPolicy (Qt::ScrollBarAlwaysOff);
@@ -247,13 +247,15 @@ PortalWidget::mouseReleaseEvent (QMouseEvent *event)
 void
 PortalWidget::mouseMoveEvent (QMouseEvent *event)
 {
-    int i = event->pos().x();
-    int j = event->pos().y();
+    int dx = event->pos().x() - pan_xy[0];
+    int dy = event->pos().y() - pan_xy[1];
 
     if (pan_mode) {
-        translate ( (double)(i-pan_xy[0]), (double)(j-pan_xy[1]));
-        pan_xy[0] = i;
-        pan_xy[1] = j;
+        translate ( (double)dx, (double)dy);
+        view_center[0] -= dx;
+        view_center[1] -= dy;
+        pan_xy[0] = event->pos().x();
+        pan_xy[1] = event->pos().y();
         event->accept();
         return;
     }
@@ -263,6 +265,7 @@ PortalWidget::mouseMoveEvent (QMouseEvent *event)
 void
 PortalWidget::resizeEvent (QResizeEvent *event)
 {
+    centerOn (view_center[0],view_center[1]);
     setScaleFactor ();
     renderSlice (current_slice);
 }

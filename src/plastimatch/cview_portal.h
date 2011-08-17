@@ -39,6 +39,7 @@ class PortalWidget : public QGraphicsView
         float spacing[2];       /* voxel spacing in slice (in mm)        */
         float offset[2];        /* volume slice offset (in mm)           */
         float sfactor;          /* Scaling factor                        */
+        int view_center[2];     /* point in scene that is in view center */
 
         /* Scroll/Panning */
         bool pan_mode;
