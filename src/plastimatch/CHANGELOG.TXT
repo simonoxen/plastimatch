@@ -1,5 +1,6 @@
 Version 1.5.4 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
+* Fix bug where --fixed option was ignored when resampling vector fields
 
 Version 1.5.3 (build 2678)
 Sun Aug 14 21:56:51 EDT 2011
