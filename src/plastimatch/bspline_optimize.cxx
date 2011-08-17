@@ -122,20 +122,12 @@ bspline_optimize (
 	bspline_initialize_mi (parms, fixed, moving);
     }
 
-    if (parms->young_modulus !=0) {
-	bspline_xform_create_qlut_grad (bxf, bxf->img_spacing, bxf->vox_per_rgn);
-    }
-
     /* Do the optimization */
     bspline_optimize_select (bxf, bst, parms, fixed, moving, moving_grad);
-
-    if (parms->young_modulus !=0) {
-	bspline_xform_free_qlut_grad (bxf);
-    }
 
     if (bst_in) {
 	*bst_in = bst;
     } else {
-	bspline_state_destroy (bst, parms, fixed, moving, moving_grad);
+	bspline_state_destroy (bst, parms, bxf, fixed, moving, moving_grad);
     }
 }

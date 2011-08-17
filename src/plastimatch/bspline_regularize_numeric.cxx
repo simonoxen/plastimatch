@@ -9,8 +9,8 @@
 #include <math.h>
 
 #include "bspline.h"
-#include "bspline_regularize.h"
 #include "bspline_opts.h"
+#include "bspline_regularize_numeric.h"
 #include "logfile.h"
 #include "math_util.h"
 #include "plm_timer.h"
@@ -21,7 +21,8 @@
 
 /*internal use only - get k-th component (k=0,1,2) of 
 the vector field at location r using pre-rendered vf */
-static float f2( int k, int r[3], float  *vf, int *dims )
+static float
+f2 (int k, int r[3], float  *vf, int *dims)
 {
     int d;
     d = r[2] * dims[0] * dims[1] + r[1] * dims[0] + r[0];
@@ -31,8 +32,14 @@ static float f2( int k, int r[3], float  *vf, int *dims )
 /*
 first derivative of the vector field du_i/dx_i using pre-rendered vf
 calculated at position r[3] = (ri rj rk) in voxels */
-float bspline_regularize_1st_derivative (
-    int i,  int r[3], float h[3], float *vf, int *dims )
+float
+bspline_regularize_1st_derivative (
+    int i,
+    int r[3],
+    float h[3],
+    float *vf,
+    int *dims
+)
 {
     int r1[3], r2[3];
     int d;
@@ -47,7 +54,16 @@ float bspline_regularize_1st_derivative (
 /* second derivative of k-th component of vector field wrt x_i and x_j, 
 d2u_k/(dx_i dx_j) calculated at position r[3] = (ri rj rk) in voxels 
 using pre-rendered vf */
-float bspline_regularize_2nd_derivative( int k, int i, int j,  int r[3], float h[3], float *vf, int *dims )
+float
+bspline_regularize_2nd_derivative (
+    int k,
+    int i,
+    int j,
+    int r[3],
+    float h[3],
+    float *vf,
+    int *dims
+)
 {
     int r1[3], r2[3], r3[3], r4[3], r5[3], r6[3];
     int d;
@@ -158,7 +174,7 @@ bspline_regularize_hessian_component_b (
 
 void
 bspline_regularize_hessian_update_grad (
-    Bspline_state *bst, 
+    Bspline_score *ssd, 
     Bspline_xform* bxf, 
     int p[3], 
     int qidx, 
@@ -167,7 +183,6 @@ bspline_regularize_hessian_update_grad (
     int derive2
 )
 {
-    Bspline_score* ssd = &bst->ssd;
     int i, j, k, m;
     int cidx;
     float* q_lut = 0;
@@ -205,7 +220,7 @@ bspline_regularize_hessian_update_grad (
 
 void
 bspline_regularize_hessian_update_grad_b (
-    Bspline_state *bst, 
+    Bspline_score *ssd, 
     Bspline_xform* bxf, 
     int p[3], 
     int qidx, 
@@ -213,7 +228,6 @@ bspline_regularize_hessian_update_grad_b (
     float *q_lut
 )
 {
-    Bspline_score* ssd = &bst->ssd;
     int i, j, k, m;
     int cidx;
 
@@ -237,14 +251,13 @@ bspline_regularize_hessian_update_grad_b (
 
 void
 bspline_regularize_score_from_prerendered (
-    Bspline_parms *parms, 
-    Bspline_state *bst, 
+    Reg_parms *parms, 
+    Bspline_score *ssd, 
     Bspline_xform* bxf, 
     Volume *fixed, 
     Volume *moving
 )
 {
-    Bspline_score* ssd = &bst->ssd;
     float grad_score;
     int ri, rj, rk;
     int fi, fj, fk;
@@ -273,7 +286,7 @@ bspline_regularize_score_from_prerendered (
 
     vf = (float*) malloc( 3*bxf->roi_dim[0]*bxf->roi_dim[1]*bxf->roi_dim[2] *sizeof(float)); 
 
-    printf("---- YOUNG MODULUS %f\n", parms->young_modulus);
+    printf("---- YOUNG MODULUS %f\n", parms->lambda);
 
     /* rendering the entire field */
     for (rk = 0, fk = bxf->roi_offset[2]; rk < bxf->roi_dim[2]; rk++, fk++) {
@@ -335,9 +348,9 @@ bspline_regularize_score_from_prerendered (
 		//			dc_dv[k] += dux_dx[d] * bspline_regularize_2nd_derivative( k, d, d, rvec, bxf->img_spacing, vf, fixed->dim);
 
 		//			for(d=0;d<3;d++)
-		//			dc_dv[d] *= (parms->young_modulus/nv);
+		//			dc_dv[d] *= (parms->lambda/nv);
 			
-		//		bspline_update_grad (bst, bxf, p, qidx, dc_dv);
+		//		bspline_update_grad (ssd, bxf, p, qidx, dc_dv);
 	    }
 	}
     }
@@ -345,7 +358,7 @@ bspline_regularize_score_from_prerendered (
     free(vf);
 
     interval = plm_timer_report (&timer);
-    grad_score *= (parms->young_modulus / num_vox);
+    grad_score *= (parms->lambda / num_vox);
     printf ("        GRAD_COST %.4f     [%.3f secs]\n", grad_score, interval);
     ssd->score += grad_score;
 }
@@ -353,7 +366,7 @@ bspline_regularize_score_from_prerendered (
 #if defined (USE_FAST_CODE)
 static double
 update_score_and_grad (
-    Bspline_state *bst, 
+    Bspline_score *ssd, 
     Bspline_xform* bxf, 
     int p[3], 
     int qidx, 
@@ -374,7 +387,7 @@ update_score_and_grad (
 	dc_dv[d3] = weight * grad_coeff * dxyz[d3];
     }
 
-    bspline_regularize_hessian_update_grad_b (bst, bxf, p, qidx, dc_dv, qlut);
+    bspline_regularize_hessian_update_grad_b (ssd, bxf, p, qidx, dc_dv, qlut);
 
     return score;
 }
@@ -382,14 +395,12 @@ update_score_and_grad (
 
 void
 bspline_regularize_score (
-    Bspline_parms *parms, 
-    Bspline_state *bst, 
-    Bspline_xform* bxf, 
-    Volume *fixed, 
-    Volume *moving
+    Bspline_score *ssd, 
+    Reg_parms *parms, 
+    Reg_state *rst,
+    Bspline_xform* bxf
 )
 {
-    Bspline_score* ssd = &bst->ssd;
     double grad_score;
     int ri, rj, rk;
     int fi, fj, fk;
@@ -408,11 +419,11 @@ bspline_regularize_score (
 
     grad_score = 0;
     num_vox = bxf->roi_dim[0] * bxf->roi_dim[1] * bxf->roi_dim[2];
-    grad_coeff = parms->young_modulus / num_vox;
+    grad_coeff = parms->lambda / num_vox;
 
     plm_timer_start (&timer);
 
-    printf("---- YOUNG MODULUS %f\n", parms->young_modulus);
+    printf("---- YOUNG MODULUS %f\n", parms->lambda);
 
     for (rk = 0, fk = bxf->roi_offset[2]; rk < bxf->roi_dim[2]; rk++, fk++) {
 	p[2] = rk / bxf->vox_per_rgn[2];
@@ -427,22 +438,22 @@ bspline_regularize_score (
 		qidx = volume_index (bxf->vox_per_rgn, q);
 #if defined (USE_FAST_CODE)
 		grad_score += update_score_and_grad (
-		    bst, bxf, p, qidx, grad_coeff, 1,
+		    ssd, bxf, p, qidx, grad_coeff, 1,
 		    &bxf->q_d2xyz_lut[qidx*64]);
 		grad_score += update_score_and_grad (
-		    bst, bxf, p, qidx, grad_coeff, 1,
+		    ssd, bxf, p, qidx, grad_coeff, 1,
 		    &bxf->q_xd2yz_lut[qidx*64]);
 		grad_score += update_score_and_grad (
-		    bst, bxf, p, qidx, grad_coeff, 1,
+		    ssd, bxf, p, qidx, grad_coeff, 1,
 		    &bxf->q_xyd2z_lut[qidx*64]);
 		grad_score += update_score_and_grad (
-		    bst, bxf, p, qidx, grad_coeff, 2,
+		    ssd, bxf, p, qidx, grad_coeff, 2,
 		    &bxf->q_dxdyz_lut[qidx*64]);
 		grad_score += update_score_and_grad (
-		    bst, bxf, p, qidx, grad_coeff, 2,
+		    ssd, bxf, p, qidx, grad_coeff, 2,
 		    &bxf->q_dxydz_lut[qidx*64]);
 		grad_score += update_score_and_grad (
-		    bst, bxf, p, qidx, grad_coeff, 2,
+		    ssd, bxf, p, qidx, grad_coeff, 2,
 		    &bxf->q_xdydz_lut[qidx*64]);
 #else
 		for (d1=0;d1<3;d1++) {
@@ -458,7 +469,7 @@ bspline_regularize_score (
 			dc_dv[2] = weight * grad_coeff * dxyz[2];
 
 			bspline_regularize_hessian_update_grad (
-			    bst, bxf, p, qidx, dc_dv, d1, d2);
+			    ssd, bxf, p, qidx, dc_dv, d1, d2);
 		    }
 		}
 
@@ -468,7 +479,7 @@ bspline_regularize_score (
 
 	interval = plm_timer_report (&timer);
 	raw_score = grad_score /num_vox;
-	grad_score *= (parms->young_modulus / num_vox);
+	grad_score *= (parms->lambda / num_vox);
 	printf ("        GRAD_COST %.4f   RAW_GRAD %.4f   [%.3f secs]\n", grad_score, raw_score, interval);
 	ssd->score += grad_score;
     }

@@ -8,7 +8,7 @@
 #include "plm_config.h"
 #include "bspline_opts.h"
 #include "bspline.h"
-#include "reg.h"
+#include "bspline_regularize.h"
 #include "delayload.h"
 #if (CUDA_FOUND)
 #include "cuda_util.h"
@@ -326,7 +326,7 @@ bspline_opts_parse_args (Bspline_options* options, int argc, char* argv[])
 		exit(1);
 	    }
 	    i++;
-	    rc = sscanf (argv[i], "%g", &parms->young_modulus);
+	    rc = sscanf (argv[i], "%g", &reg_parms->lambda);
 	    if (rc != 1) {
 		print_usage ();
 	    }

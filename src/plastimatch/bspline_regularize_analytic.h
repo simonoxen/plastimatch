@@ -1,56 +1,14 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _reg_h_
-#define _reg_h_
+#ifndef _bspline_regularize_analytic_h_
+#define _bspline_regularize_analytic_h_
 
 #include "plm_config.h"
 #include "bspline_xform.h"
 #include "volume.h"
 
 class Bspline_score;
-
-class Reg_parms
-{
-public:
-    char implementation;    /* Implementation: a, b, c, etc */
-    float lambda;           /* Smoothness weighting factor  */
-public:
-    Reg_parms () {
-        /* Init */
-        this->implementation = '\0';
-        this->lambda = 0.0f;
-    }
-};
-
-typedef struct reg_state_struct Reg_state;
-struct reg_state_struct {
-    double* QX_mats;    /* Three 4x4 matrices */
-    double* QY_mats;    /* Three 4x4 matrices */
-    double* QZ_mats;    /* Three 4x4 matrices */
-
-    double** QX;
-    double** QY;
-    double** QZ;
-
-    double* V_mats;     /* The 6 64x64 V matricies */
-
-    double** V;
-
-    double* cond;
-};
-
-#if defined (commentout)
-#endif
-
-gpuit_EXPORT
-void
-regularize (
-    Bspline_score* bsp_score,    /* Gets updated */
-    const Reg_state* rst,
-    const Reg_parms* reg_parms,
-    const Bspline_xform* bxf
-);
 
 gpuit_EXPORT
 Volume*
@@ -76,7 +34,6 @@ void
 vf_regularize_analytic_destroy (
     Reg_state* rst
 );
-
 
 gpuit_EXPORT
 void

@@ -139,6 +139,10 @@ do_gpuit_bspline_stage_internal (
     default:
         print_and_exit ("Undefined regularization type in gpuit_bspline\n");
     }
+    /* JAS 2011.08.17
+     * This needs to be integrated with the above switch 
+     * young_modulus is regularization implementation 'd' */
+    parms.reg_parms.lambda = stage->young_modulus;
 
     /* Other stuff */
     parms.max_its = stage->max_its;
@@ -147,7 +151,6 @@ do_gpuit_bspline_stage_internal (
     parms.mi_hist.moving.bins = stage->mi_histogram_bins_moving;
     parms.mi_hist.joint.bins = parms.mi_hist.fixed.bins
                              * parms.mi_hist.moving.bins;
-    parms.young_modulus = stage->young_modulus;
 
     /* Load and adjust landmarks, if needed */
     if (stage->fixed_landmarks_fn[0] && stage->moving_landmarks_fn[0]) {

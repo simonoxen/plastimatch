@@ -10,12 +10,12 @@
 #endif
 
 #include "bspline.h"
+#include "bspline_regularize_analytic.h"
 #include "bspline_xform.h"
 #include "math_util.h"
-#include "print_and_exit.h"
-#include "reg.h"
-#include "volume.h"
 #include "plm_timer.h"
+#include "print_and_exit.h"
+#include "volume.h"
 
 //#define DEBUG
 
@@ -770,37 +770,3 @@ vf_regularize_numerical (Volume* vol)
     return S;
 }
 
-void
-regularize (
-    Bspline_score *bspline_score,    /* Gets updated */
-    const Reg_state* rst,
-    const Reg_parms* reg_parms,
-    const Bspline_xform* bxf
-)
-{
-    switch (reg_parms->implementation) {
-    case 'a':
-//        S = vf_regularize_numerical (compute_vf_from_coeff (bxf));
-        print_and_exit (
-            "Sorry, regularization implementation (%c) is currently unavailable.\n",
-            reg_parms->implementation
-        );
-        break;
-    case 'b':
-        vf_regularize_analytic (bspline_score, reg_parms, rst, bxf);
-        break;
-    case 'c':
-#if (OPENMP_FOUND)
-        vf_regularize_analytic_omp (bspline_score, reg_parms, rst, bxf);
-#else
-        vf_regularize_analytic (bspline_score, reg_parms, rst, bxf);
-#endif
-        break;
-    default:
-        print_and_exit (
-            "Error: unknown reg_parms->implementation (%c)\n",
-            reg_parms->implementation
-        );
-        break;
-    }
-}

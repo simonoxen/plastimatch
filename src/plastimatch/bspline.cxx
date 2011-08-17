@@ -128,9 +128,10 @@ bspline_state_create (
     Volume *moving, 
     Volume *moving_grad)
 {
-    Reg_parms* reg_parms = &parms->reg_parms;
-
     Bspline_state *bst = (Bspline_state*) malloc (sizeof (Bspline_state));
+    Reg_parms* reg_parms = &parms->reg_parms;
+    Reg_state* rst = &bst->rst;
+
     memset (bst, 0, sizeof (Bspline_state));
     bst->ssd.grad = (float*) malloc (bxf->num_coeff * sizeof(float));
     memset (bst->ssd.grad, 0, bxf->num_coeff * sizeof(float));
@@ -138,7 +139,9 @@ bspline_state_create (
     bspline_cuda_state_create (bst, bxf, parms, fixed, moving, moving_grad);
 
     if (reg_parms->lambda > 0.0f) {
-        vf_regularize_analytic_init (&bst->rst, bxf);
+        rst->fixed = fixed;
+        rst->moving = moving;
+        bspline_regularize_initialize (reg_parms, rst, bxf);
     }
 
     if (parms->metric == BMET_MI) {
@@ -365,8 +368,9 @@ bspline_parms_free (Bspline_parms* parms)
 
 void
 bspline_state_destroy (
-    Bspline_state* bst,
+    Bspline_state *bst,
     Bspline_parms *parms, 
+    Bspline_xform *bxf, 
     Volume* fixed,
     Volume* moving,
     Volume* moving_grad
@@ -379,7 +383,7 @@ bspline_state_destroy (
     }
 
     if (reg_parms->lambda > 0.0f) {
-        vf_regularize_analytic_destroy (&bst->rst);
+        bspline_regularize_destroy (reg_parms, &bst->rst, bxf);
     }
 
 #if (CUDA_FOUND)
@@ -871,13 +875,7 @@ bspline_score (
 
     /* Regularize */
     if (reg_parms->lambda > 0.0f) {
-        regularize (&bst->ssd, &bst->rst, reg_parms, bxf);
-    }
-
-    /* Add vector field score/gradient to image score/gradient */
-    if (parms->young_modulus) {
-	printf ("comuting regularization\n");
-	bspline_regularize_score (parms, bst, bxf, fixed, moving);
+        bspline_regularize (&bst->ssd, &bst->rst, reg_parms, bxf);
     }
 
     /* Compute total score to send of optimizer */

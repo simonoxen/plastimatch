@@ -104,10 +104,11 @@ set (GPUIT_LIBRARY_SRC
   bspline_optimize_steepest.cxx bspline_optimize_steepest.h
   bspline_opts.cxx bspline_opts.h
   bspline_regularize.cxx bspline_regularize.h
+  bspline_regularize_analytic.cxx bspline_regularize_analytic.h
+  bspline_regularize_numeric.cxx bspline_regularize_numeric.h
   bspline_warp.cxx bspline_warp.h
   bspline_xform.cxx bspline_xform.h
   delayload.c delayload.h
-  reg.cxx reg.h
   demons.cxx demons.h
   demons_cpu.cxx
   demons_misc.cxx demons_misc.h
@@ -623,7 +624,7 @@ if (OPENMP_FOUND)
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
   set_source_files_properties (fdk.cxx
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
-  set_source_files_properties (reg.cxx
+  set_source_files_properties (bspline_regularize_analytic.cxx
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
   set_source_files_properties (openmp_test.cxx
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
@@ -732,9 +733,9 @@ plm_add_executable (dlib_train "${DLIB_TRAIN_SRC}"
 plm_add_executable (fdk "${FDK_SRC}" 
   "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_ALWAYS})
-plm_add_executable (reg "${REG_SRC}" 
-  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+#plm_add_executable (reg "${REG_SRC}" 
+#  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
+#  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 plm_add_executable (hnd_to_pfm "${HND_TO_PFM_SRC}" 
   "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})

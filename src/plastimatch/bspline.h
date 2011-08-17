@@ -6,9 +6,9 @@
 
 #include "plm_config.h"
 #include <string>
+#include "bspline_regularize.h"
 #include "bspline_xform.h"
 #include "volume.h"
-#include "reg.h"
 
 #define DOUBLE_HISTS	// Use doubles for histogram accumulation
 
@@ -143,8 +143,6 @@ public:
 				    attraction) */
     char landmark_implementation; /*Landmark score implementation, 'a' or 'b' */
 
-    float young_modulus;         /* Penalty for having large gradient 
-				    of the vector field */
     float rbf_radius;            /* Radius of RBF; if rbf_radius>0, RBF 
 				    are used */
     float rbf_young_modulus;     /* Penalty for the large 2nd derivative 
@@ -185,7 +183,6 @@ public:
 	this->landmarks = 0;
 	this->landmark_stiffness = 0;
 	this->landmark_implementation = 'a';
-	this->young_modulus = 0;
 	this->rbf_radius = 0;
 	this->rbf_young_modulus = 0;
 	this->xpm_hist_dump = 0;
@@ -216,6 +213,7 @@ void
 bspline_state_destroy (
     Bspline_state *bst,
     Bspline_parms *parms,
+    Bspline_xform *bxf, 
     Volume* fixed,
     Volume* moving,
     Volume* moving_grad);
