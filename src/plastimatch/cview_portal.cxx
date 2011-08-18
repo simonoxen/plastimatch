@@ -29,17 +29,16 @@
 PortalWidget::PortalWidget (QWidget *parent)
     : QGraphicsView (parent)
 {
-    vol = NULL;
+    scene = NULL;
+    fb    = NULL;
     slice = NULL;
-    view = Axial;
-    sfactor = 1.0;
-    scale_window = 1.0;
-    scale_user = 1.0;
-    scale_mode = false;
-    pan_mode = false;
-    dim[0] = 0;
-    dim[1] = 0;
-
+    pmi   = NULL;
+    vol   = NULL;
+    view  = Axial;
+    min_intensity = FLT_MAX;
+    max_intensity = FLT_MIN;
+    current_slice = -1;
+    pan_mode      = false;
     view_center[0] = FIELD_RES/2;
     view_center[1] = FIELD_RES/2;
 
@@ -56,19 +55,45 @@ PortalWidget::PortalWidget (QWidget *parent)
     setScene (scene);
 }
 
-int PortalWidget::getSlices ()
-{
-    return ijk_max[2];
-}
-
 
 /////////////////////////////////////////////////////////
 // PortalWidget: private
 //
 
 int
-PortalWidget::getPixelValue (float hfu)
+PortalWidget::getPixelValue (float* ij)
 {
+    int ij_f[2];
+    int ij_r[2];
+    float li_1[2], li_2[2];  /* linear interpolation fractions */
+    float hfu;
+    int idx;
+    float* img = (float*) vol->img;
+
+    li_clamp_2d (ij_f, ij_r, li_1, li_2, ij);
+
+    idx = stride[2]*current_slice
+        + stride[1]*(ij_f[1]+0)
+        + stride[0]*(ij_f[0]+0);
+    hfu = li_1[0] * li_1[1] * img[idx];
+
+    idx = stride[2]*current_slice
+        + stride[1]*(ij_f[1]+0)
+        + stride[0]*(ij_f[0]+1);
+    hfu += li_2[0] * li_1[1] * img[idx];
+
+    idx = stride[2]*current_slice
+        + stride[1]*(ij_f[1]+1)
+        + stride[0]*(ij_f[0]+0);
+    hfu += li_1[0] * li_2[1] * img[idx];
+
+    idx = stride[2]*current_slice
+        + stride[1]*(ij_f[1]+1)
+        + stride[0]*(ij_f[0]+1);
+    hfu += li_2[0] * li_2[1] * img[idx];
+
+
+    /* remap to 8-bit grayscale */
     int scaled = floor ((hfu - min_intensity)
         / (max_intensity - min_intensity) * 255 );
 
@@ -90,9 +115,9 @@ PortalWidget::setWindowScale ()
     tmp[1] = (float)size().width() / (float)dim[1];
 
     if (tmp[0] < tmp[1]) {
-        scale_window = tmp[0];
+        scale.window = tmp[0];
     } else {
-        scale_window = tmp[1];
+        scale.window = tmp[1];
     }
 }
 
@@ -109,7 +134,7 @@ PortalWidget::doZoom (int step)
 void
 PortalWidget::doScale (float step)
 {
-    scale_user += step;
+    scale.user += step;
     renderSlice (current_slice);
 }
 
@@ -153,8 +178,8 @@ PortalWidget::wheelEvent (QWheelEvent *event)
     int step = event->delta() / (8*15);
 
 
-    if (scale_mode) {
-        doScale (0.1*step);
+    if ( scale.wheelMode ) {
+        doScale (0.1*(float)step);
     } else {
         doZoom (step);
     }
@@ -195,7 +220,7 @@ PortalWidget::keyPressEvent (QKeyEvent *event)
         resetPortal ();
         break;
     case Qt::Key_Control:
-        scale_mode = true;
+        scale.wheelMode = true;
         break;
     default:
         /* Forward to default callback */
@@ -209,7 +234,7 @@ PortalWidget::keyReleaseEvent (QKeyEvent *event)
     switch (event->key())
     {
     case Qt::Key_Control:
-        scale_mode = false;
+        scale.wheelMode = false;
         break;
     default:
         /* Forward to default callback */
@@ -228,8 +253,8 @@ PortalWidget::mousePressEvent (QMouseEvent *event)
 
         float xy[2];
 
-        xy[0] = (float)i*res[0]/sfactor;
-        xy[1] = (float)j*res[1]/sfactor;
+        xy[0] = (float)i*res[0]/scale.factor();
+        xy[1] = (float)j*res[1]/scale.factor();
 
 //        emit targetChanged (xyz[0], xyz[1], xyz[2]);
 
@@ -326,12 +351,6 @@ PortalWidget::setVolume (Volume* vol)
 }
 
 void
-PortalWidget::detachVolume ()
-{
-    vol = NULL;
-}
-
-void
 PortalWidget::setView (enum PortalViewType view)
 {
     /* Cannot setView with no volume attached to portal */
@@ -425,8 +444,8 @@ PortalWidget::setTarget (float* xyz)
 void
 PortalWidget::resetPortal ()
 {
-    scale_user = 1.0;
-    scale_mode = false;
+    scale.user = 1.0;
+    scale.wheelMode = false;
     pan_mode = false;
     view_center[0] = FIELD_RES/2;
     view_center[1] = FIELD_RES/2;
@@ -441,11 +460,8 @@ PortalWidget::renderSlice (int slice_num)
     int p[2];                /* frame buffer coords  */
     float xy[2];             /* real space coords    */
     float ij[2];             /* volume slice indices */
-    int ij_f[2];
-    int ij_r[2];
-    float li_1[2], li_2[2];  /* linear interpolation fractions */
-    float hfu;
-    int idx, shade;
+    int shade;
+    uchar* pixel;
 
     if (!vol) {
         return;
@@ -454,8 +470,7 @@ PortalWidget::renderSlice (int slice_num)
         return;
     }
 
-    float* img = (float*) vol->img;
-    uchar* pixel;
+    current_slice = slice_num;
 
     /* Set slice pixels */
     for (j=0; j<dim[1]; j++) {
@@ -465,6 +480,8 @@ PortalWidget::renderSlice (int slice_num)
             xy[0] = res[0]*(float)i;
             ij[0] = xy[0] / spacing[0];
 
+            shade = getPixelValue (ij);
+
             /* Deal with Qt's inverted y-axis... sometimes */
             if ((view == Coronal) || (view == Sagittal)) {
                 p[0] = i;  p[1] = dim[1] - j - 1;
@@ -472,29 +489,6 @@ PortalWidget::renderSlice (int slice_num)
                 p[0] = i;  p[1] = j;
             }
 
-            this->li_clamp_2d (ij_f, ij_r, li_1, li_2, ij);
-
-            idx = stride[2]*slice_num
-                + stride[1]*(ij_f[1]+0)
-                + stride[0]*(ij_f[0]+0);
-        	hfu = li_1[0] * li_1[1] * img[idx];
-
-            idx = stride[2]*slice_num
-                + stride[1]*(ij_f[1]+0)
-                + stride[0]*(ij_f[0]+1);
-        	hfu += li_2[0] * li_1[1] * img[idx];
-
-            idx = stride[2]*slice_num
-                + stride[1]*(ij_f[1]+1)
-                + stride[0]*(ij_f[0]+0);
-        	hfu += li_1[0] * li_2[1] * img[idx];
-
-            idx = stride[2]*slice_num
-                + stride[1]*(ij_f[1]+1)
-                + stride[0]*(ij_f[0]+1);
-        	hfu += li_2[0] * li_2[1] * img[idx];
-
-            shade = getPixelValue (hfu);
             pixel = &fb[4*dim[0]*p[1]+(4*p[0])];
             pixel[0] = (uchar)shade;    /* BLUE  */
             pixel[1] = (uchar)shade;    /* GREEN */
@@ -503,13 +497,11 @@ PortalWidget::renderSlice (int slice_num)
         }
     }
 
-    /* Have Qt actually render the frame */
-    sfactor = scale_window * scale_user;
+    /* Have Qt render the framebuffer */
     pmap = QPixmap::fromImage (*slice);
-    pmap = pmap.scaled (dim[0]*sfactor, dim[1]*sfactor);
+    pmap = pmap.scaled (dim[0]*scale.factor(), dim[1]*scale.factor());
     pmi->setPixmap (pmap);
     pmi->setOffset (((FIELD_RES - pmap.width())/2), ((FIELD_RES- pmap.height())/2));
 
-    current_slice = slice_num;
     emit sliceChanged (current_slice);
 }

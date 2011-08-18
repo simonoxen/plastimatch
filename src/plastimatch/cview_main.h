@@ -14,10 +14,7 @@ class PortalGrid : public QWidget
         PortalGrid (Volume* input_vol, QWidget* parent = 0);
 
     public:
-        PortalWidget* portal0;
-        PortalWidget* portal1;
-        PortalWidget* portal2;
-        PortalWidget* portal3;
+        PortalWidget* portal[4];
 };
 
 class CrystalWindow : public QMainWindow

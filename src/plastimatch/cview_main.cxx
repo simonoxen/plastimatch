@@ -33,28 +33,27 @@ PortalGrid::PortalGrid (Volume* input_vol, QWidget *parent)
     QSplitter *splitterV = new QSplitter (Qt::Vertical);
 
     /* Create some portals */
-    portal0 = new PortalWidget;
-    portal1 = new PortalWidget;
-    portal2 = new PortalWidget;
-    portal3 = new PortalWidget;
+    for (int i=0; i<4; i++) {
+        portal[i] = new PortalWidget;
+    }
 
     /* place portals inside splitters */
-    splitterT->addWidget (portal0);
-    splitterT->addWidget (portal1);
-    splitterB->addWidget (portal2);
-    splitterB->addWidget (portal3);
+    splitterT->addWidget (portal[0]);
+    splitterT->addWidget (portal[1]);
+    splitterB->addWidget (portal[2]);
+    splitterB->addWidget (portal[3]);
     splitterV->addWidget (splitterT);
     splitterV->addWidget (splitterB);
 
 
-    /* Let's make a slider and connect it to portal1 */
+    /* Let's make a slider and connect it to portal[1] */
     QSlider *slider1 = new QSlider (Qt::Vertical);
     slider1->setRange (0, 512);
 
     connect (slider1, SIGNAL(valueChanged(int)),
-             portal1, SLOT(renderSlice(int)));
+             portal[1], SLOT(renderSlice(int)));
 
-    connect (portal1, SIGNAL(sliceChanged(int)),
+    connect (portal[1], SIGNAL(sliceChanged(int)),
              slider1, SLOT(setValue(int)));
 
     /* Set the layout */
@@ -72,10 +71,9 @@ bool
 CrystalWindow::openVol (const char* fn)
 {
     if (input_vol) {
-        portalGrid->portal0->detachVolume();
-        portalGrid->portal1->detachVolume();
-        portalGrid->portal2->detachVolume();
-        portalGrid->portal3->detachVolume();
+        for (int i=0; i<4; i++) {
+            portalGrid->portal[i]->detachVolume();
+        }
         delete input_vol;
     }
     input_vol = read_mha (fn);
@@ -86,20 +84,15 @@ CrystalWindow::openVol (const char* fn)
 
     volume_convert_to_float (input_vol);
 
-    portalGrid->portal0->resetPortal();
-    portalGrid->portal1->resetPortal();
-    portalGrid->portal2->resetPortal();
-    portalGrid->portal3->resetPortal();
+    for (int i=0; i<4; i++) {
+        portalGrid->portal[i]->resetPortal();
+        portalGrid->portal[i]->setVolume (input_vol);
+    }
 
-    portalGrid->portal0->setVolume (input_vol);
-    portalGrid->portal1->setVolume (input_vol);
-    portalGrid->portal2->setVolume (input_vol);
-    portalGrid->portal3->setVolume (input_vol);
-
-    portalGrid->portal0->setView (PortalWidget::Axial);
-    portalGrid->portal1->setView (PortalWidget::Coronal);
-    portalGrid->portal2->setView (PortalWidget::Sagittal);
-    portalGrid->portal3->setView (PortalWidget::Axial);
+    portalGrid->portal[0]->setView (PortalWidget::Axial);
+    portalGrid->portal[1]->setView (PortalWidget::Coronal);
+    portalGrid->portal[2]->setView (PortalWidget::Sagittal);
+    portalGrid->portal[3]->setView (PortalWidget::Axial);
 
     return true;
 }

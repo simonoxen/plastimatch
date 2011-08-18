@@ -9,6 +9,23 @@
 
 class PortalWidget : public QGraphicsView
 {
+    class ScaleHandler
+    {
+        public:
+            bool wheelMode;     /* mouse wheel scaling toggle */
+            float window;       /* determined by portal size  */
+            float user;         /* determined by user         */
+            float factor () { return window*user; }
+            ScaleHandler ()
+            {
+                wheelMode = false;
+                window    = 1.0;
+                user      = 1.0;
+            };
+    };
+
+    /****************************************************************/
+
     Q_OBJECT  /* Needed for QT signals/slots */
 
     public:
@@ -38,12 +55,7 @@ class PortalWidget : public QGraphicsView
         float res[2];           /* portal resolution (in mm per pixel)   */
         float spacing[2];       /* voxel spacing in slice (in mm)        */
         float offset[2];        /* volume slice offset (in mm)           */
-
-        /* Scaling */
-        float sfactor;          /* overall scaling factor                */
-        float scale_window;     /* determined by portal dimensions       */
-        float scale_user;       /* user specifed scaling                 */
-        bool scale_mode;        /* makes mouse wheel scale               */
+        ScaleHandler scale;
 
         /* Scroll/Panning */
         bool pan_mode;          /* is panning mode enabled?              */
@@ -53,10 +65,10 @@ class PortalWidget : public QGraphicsView
 
     public:
         PortalWidget (QWidget *parent = 0);
-        int getSlices ();                        /* get # of slices in view */
+        int getNumSlices () { return ijk_max[2]; }
 
     private:
-        int getPixelValue (float hfu);
+        int getPixelValue (float* ij);
         void setWindowScale ();
         void doZoom (int step);
         void doScale (float step);
@@ -68,7 +80,7 @@ class PortalWidget : public QGraphicsView
 
     public slots:
         void setVolume (Volume* vol);               /* Attach volume to portal   */
-        void detachVolume ();                       /* Detach volume from portal */
+        void detachVolume () { vol = NULL; }        /* Detach volume from portal */
         void setView (enum PortalViewType view);    /* Set portal view type      */
         void setTarget (float* xyz);                /* Set the cursor RS coords  */
         void resetPortal ();                        /* Removes user transforms   */
