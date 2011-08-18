@@ -266,6 +266,7 @@ PortalWidget::mousePressEvent (QMouseEvent *event)
         event->accept();
         break;
     case Qt::RightButton:
+        scale.wheelMode = true;
         pan_mode = true;
         pan_xy[0] = i;
         pan_xy[1] = j;
@@ -287,6 +288,7 @@ PortalWidget::mouseReleaseEvent (QMouseEvent *event)
         event->ignore();
         break;
     case Qt::RightButton:
+        scale.wheelMode = false;
         pan_mode = false;
         setCursor (Qt::ArrowCursor);
         event->accept();

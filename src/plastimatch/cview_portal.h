@@ -9,6 +9,7 @@
 
 class PortalWidget : public QGraphicsView
 {
+    private:
     class ScaleHandler
     {
         public:

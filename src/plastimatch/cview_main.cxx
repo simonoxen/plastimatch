@@ -16,7 +16,7 @@
 #include "cview_portal.h"
 #include "cview_main.h"
 
-#define VERSION "0.06a"
+#define VERSION "0.07a"
 
 /////////////////////////////////////////////////////////
 // PortalGrid : public
@@ -184,10 +184,11 @@ main (int argc, char** argv)
               << "     3 - sagittal view\n"
               << "   -/+ - change active slice\n"
               << "     ] - zoom in\n"
-              << "     [ - zoom out\n\n"
+              << "     [ - zoom out\n"
+              << "     r - reset portal\n\n"
               << "  Mouse Functions:\n"
               << "      right click - pan/scroll\n"
-              << "       left click - report coordinate (incorrect)\n"
+              << "       left click - report coordinate (broken)\n"
               << "            wheel - change active slice\n"
               << "       Ctrl+wheel - zoom in/out\n\n";
 
