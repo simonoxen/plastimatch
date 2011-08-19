@@ -13,8 +13,7 @@
 #include "volume.h"
 #include "cview_portal.h"
 
-// TODO: * Fix: "Vox" shows render surface pixel coords
-//              instead of volume voxel coords
+// TODO: * Clean up this file!
 //       * Add: Multi-Volume / Layered Rendering System
 //       * Add: Qt Designer hooks
 
@@ -153,8 +152,8 @@ PortalWidget::updateCursor (const QPoint& view_ij)
         hud_xyz[1] = slice_xy.y();
         hud_xyz[2] = slice_z;
 
-        hud_ijk[0] = slice_ij.x();
-        hud_ijk[1] = slice_ij.y();
+        hud_ijk[0] = slice_ij.x()*res[0]/spacing[0];
+        hud_ijk[1] = slice_ij.y()*res[1]/spacing[1];
         hud_ijk[2] = current_slice;
         break;
     case Coronal:
@@ -162,9 +161,9 @@ PortalWidget::updateCursor (const QPoint& view_ij)
         hud_xyz[1] = slice_z;
         hud_xyz[2] = (-1.0)*slice_xy.y();
 
-        hud_ijk[0] = slice_ij.x();
+        hud_ijk[0] = slice_ij.x()*res[0]/spacing[0];
         hud_ijk[1] = current_slice;
-        hud_ijk[2] = slice_ij.y();
+        hud_ijk[2] = slice_ij.y()*res[1]/spacing[1];
         break;
     case Sagittal:
         hud_xyz[0] = slice_z;
@@ -172,8 +171,8 @@ PortalWidget::updateCursor (const QPoint& view_ij)
         hud_xyz[2] = (-1.0)*slice_xy.y();
 
         hud_ijk[0] = current_slice;
-        hud_ijk[1] = slice_ij.x();
-        hud_ijk[2] = slice_ij.y();
+        hud_ijk[1] = slice_ij.x()*res[0]/spacing[0];
+        hud_ijk[2] = slice_ij.y()*res[1]/spacing[1];
         break;
     }
 //    emit targetChanged (xyz[0], xyz[1], xyz[2]);
