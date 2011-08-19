@@ -136,15 +136,16 @@ PortalWidget::updateCursor (const QPoint& view_ij)
     }
 
     scene_ij = mapToScene (view_ij);
-    slice_offset.rx() = (FIELD_RES - pmap.width())/2.0;
-    slice_offset.ry() = (FIELD_RES - pmap.height())/2.0;
 
-    slice_ij.rx() = (scene_ij.x()-slice_offset.x())/scale.factor();
-    slice_ij.ry() = (scene_ij.y()-slice_offset.y())/scale.factor();
+    slice_offset.rx() = ((FIELD_RES - pmap.width())/2.0)*res[0];
+    slice_offset.ry() = ((FIELD_RES - pmap.height())/2.0)*res[1];
 
-    slice_xy.rx() = ((slice_ij.x())*res[0] + offset[0]);
-    slice_xy.ry() = ((slice_ij.y())*res[1] + offset[1]);
+    slice_xy.rx() = (scene_ij.x()*res[0]-slice_offset.x())/scale.factor() + offset[0];
+    slice_xy.ry() = (scene_ij.y()*res[1]-slice_offset.y())/scale.factor() + offset[1];
     slice_z = (current_slice*spacing[2] + offset[2]);
+
+    slice_ij.rx() = (slice_xy.x()-offset[0])/res[0];
+    slice_ij.ry() = (slice_xy.y()-offset[1])/res[1];
 
     switch (view) {
     case Axial:
