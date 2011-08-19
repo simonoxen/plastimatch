@@ -137,7 +137,7 @@ CrystalWindow::open ()
                 this,
                 tr("Open Volume"),
                 "",
-                tr("Image Volumes (*.mha; *.mhd; *.nrrd)")
+                tr("Image Volumes (*.mha *.mhd *.nrrd)")
     );
 
     QByteArray ba = fileName.toLocal8Bit();

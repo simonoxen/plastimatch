@@ -193,9 +193,9 @@ void
 PortalWidget::updateHUD ()
 {
     textPhy->setPlainText (QString ("Phy: %1 %2 %3")
-                           .arg (hud_xyz[0])
-                           .arg (hud_xyz[1])
-                           .arg (hud_xyz[2]));
+                           .arg (hud_xyz[0], 0, 'f', 2)
+                           .arg (hud_xyz[1], 0, 'f', 2)
+                           .arg (hud_xyz[2], 0, 'f', 2));
     textVox->setPlainText (QString ("Vox: %1 %2 %3")
                            .arg (hud_ijk[0])
                            .arg (hud_ijk[1])
@@ -441,6 +441,11 @@ PortalWidget::setVolume (Volume* vol)
             max_intensity = img[i];
         }
     }
+
+    /* Reset HUD */
+    memset (hud_xyz, 0, 3*sizeof (float));
+    memset (hud_ijk, 0, 3*sizeof (int));
+    updateHUD ();
 
     /* Display the loaded volume */
     PortalWidget::setView (Axial);
