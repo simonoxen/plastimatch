@@ -13,7 +13,7 @@
 #include "volume.h"
 #include "cview_portal.h"
 
-// TODO: * Fix: Coordinate reporting signal
+// TODO: * Add: Multi-Volume / Layered Rendering System
 //       * Add: Qt Designer hooks
 
 #define ROUND_INT(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
@@ -267,8 +267,8 @@ PortalWidget::mousePressEvent (QMouseEvent *event)
         slice_ij.rx() = (scene_ij.x()-slice_offset.x())/scale.factor();
         slice_ij.ry() = (scene_ij.y()-slice_offset.y())/scale.factor();
 
-        slice_xy.rx() = ((slice_ij.x())*spacing[0] + offset[0]);
-        slice_xy.ry() = ((slice_ij.y())*spacing[1] + offset[1]);
+        slice_xy.rx() = ((slice_ij.x())*res[0] + offset[0]);
+        slice_xy.ry() = ((slice_ij.y())*res[1] + offset[1]);
 
 //        emit targetChanged (xyz[0], xyz[1], xyz[2]);
 
