@@ -11,6 +11,7 @@
 #include "dcmtk/dcmdata/dctk.h"
 
 #include "dcmtk_file.h"
+#include "print_and_exit.h"
 
 Dcmtk_file::Dcmtk_file () {
 }
@@ -25,8 +26,17 @@ Dcmtk_file::~Dcmtk_file () {
 void
 Dcmtk_file::load (const char *fn) {
     DcmFileFormat dfile;
-    DcmObject *dset = &dfile;
+    OFCondition cond = dfile.loadFile (fn, EXS_Unknown, EGL_noChange);
+    if (cond.bad()) {
+	print_and_exit ("Sorry, couldn't open file as dicom: %s\n", fn);
+    }
+    DcmDataset *dset = dfile.getDataset();
     dset = dfile.getDataset();
+
+    const char *c = NULL;
+    if (dset->findAndGetString(DCM_PatientName, c).good() && c) {
+	printf ("Patient name = %s\n", c);
+    }    
 }
 
 void
