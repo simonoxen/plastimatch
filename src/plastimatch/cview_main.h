@@ -5,13 +5,14 @@
 #define _cview_main_h_
 
 #include <QtGui>
+#include "plm_image.h"
 #include "volume.h"
 #include "cview_portal.h"
 
 class PortalGrid : public QWidget
 {
     public:
-        PortalGrid (Volume* input_vol, QWidget* parent = 0);
+        PortalGrid (QWidget* parent = 0);
 
     public:
         PortalWidget* portal[4];
@@ -34,6 +35,7 @@ class CrystalWindow : public QMainWindow
 
     private: /* variables */
         PortalGrid *portalGrid;
+        Plm_image* pli;
         Volume* input_vol;
         QMenu *menuFile;
         QMenu *menuHelp;

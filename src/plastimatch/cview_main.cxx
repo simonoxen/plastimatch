@@ -11,8 +11,7 @@
 #include "plm_config.h"
 #include <iostream>
 #include <QtGui>
-#include "volume.h"
-#include "mha_io.h"
+#include "plm_image.h"
 #include "cview_portal.h"
 #include "cview_main.h"
 
@@ -22,7 +21,7 @@
 // PortalGrid : public
 //
 
-PortalGrid::PortalGrid (Volume* input_vol, QWidget *parent)
+PortalGrid::PortalGrid (QWidget *parent)
     :QWidget (parent)
 {
     /* Create a grid layout with splitters */
@@ -70,20 +69,24 @@ PortalGrid::PortalGrid (Volume* input_vol, QWidget *parent)
 bool
 CrystalWindow::openVol (const char* fn)
 {
-    if (input_vol) {
+    if (pli) {
         for (int i=0; i<4; i++) {
             portalGrid->portal[i]->detachVolume();
         }
-        delete input_vol;
+        delete pli;
     }
-    input_vol = read_mha (fn);
+
+    pli = plm_image_load (fn, PLM_IMG_TYPE_ITK_FLOAT);
+
+    if (!pli) {
+        return false;
+    }
+
+    input_vol = pli->gpuit_float();
 
     if (!input_vol) {
         return false;
     }
-
-    volume_convert_to_float (input_vol);
-
     for (int i=0; i<4; i++) {
         portalGrid->portal[i]->resetPortal();
         portalGrid->portal[i]->setVolume (input_vol);
@@ -154,11 +157,12 @@ CrystalWindow::CrystalWindow (int argc, char** argv, QWidget *parent)
     :QMainWindow (parent)
 {
     input_vol = NULL;
+    pli = NULL;
 
     createActions ();
     createMenu ();
 
-    portalGrid = new PortalGrid (input_vol);
+    portalGrid = new PortalGrid;
     setCentralWidget (portalGrid);
 
     /* open mha from command line */
