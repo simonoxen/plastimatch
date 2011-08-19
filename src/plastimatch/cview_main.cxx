@@ -16,7 +16,7 @@
 #include "cview_portal.h"
 #include "cview_main.h"
 
-#define VERSION "0.08a"
+#define VERSION "0.09a"
 
 /////////////////////////////////////////////////////////
 // PortalGrid : public
@@ -187,10 +187,11 @@ main (int argc, char** argv)
               << "     [ - zoom out\n"
               << "     r - reset portal\n\n"
               << "  Mouse Functions:\n"
-              << "      right click - pan/scroll\n"
-              << "       left click - report coordinate (broken)\n"
+              << "           Lclick - update HUD values\n"
+              << "           Rclick - pan/scroll\n"
               << "            wheel - change active slice\n"
-              << "       Ctrl+wheel - zoom in/out\n\n";
+              << "       Ctrl+wheel - zoom in/out\n"
+              << "     Rclick+wheel - zoom in/out\n\n";
 
 
     QApplication app (argc, argv);

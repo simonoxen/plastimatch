@@ -55,8 +55,8 @@ class PortalWidget : public QGraphicsView
         int current_slice;      /* Current slice index within volume     */
         int dim[2];             /* rendering surface dims (in pixels)    */
         float res[2];           /* portal resolution (in mm per pixel)   */
-        float spacing[2];       /* voxel spacing in slice (in mm)        */
-        float offset[2];        /* volume slice offset (in mm)           */
+        float spacing[3];       /* voxel spacing in slice (in mm)        */
+        float offset[3];        /* volume slice offset (in mm)           */
         PortalViewType view;    /* Axial or Coronal or Sagittal          */
         ScaleHandler scale;
 
@@ -65,6 +65,12 @@ class PortalWidget : public QGraphicsView
         int pan_xy[2];          /* tracking variables for panning        */
         int view_center[2];     /* point in scene that is in view center */
 
+        /* HUD */
+        bool hud_mode;
+        float hud_xyz[3];
+        int hud_ijk[3];
+        QGraphicsTextItem* textPhy;
+        QGraphicsTextItem* textVox;
 
     public:
         PortalWidget (QWidget *parent = 0);
@@ -72,6 +78,8 @@ class PortalWidget : public QGraphicsView
 
     private:
         int getPixelValue (float* ij);
+        void updateCursor (const QPoint& view_ij);
+        void updateHUD ();
         void setWindowScale ();
         void doZoom (int step);
         void doScale (float step);

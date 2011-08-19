@@ -13,7 +13,9 @@
 #include "volume.h"
 #include "cview_portal.h"
 
-// TODO: * Add: Multi-Volume / Layered Rendering System
+// TODO: * Fix: "Vox" shows render surface pixel coords
+//              instead of volume voxel coords
+//       * Add: Multi-Volume / Layered Rendering System
 //       * Add: Qt Designer hooks
 
 #define ROUND_INT(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
@@ -41,6 +43,9 @@ PortalWidget::PortalWidget (QWidget *parent)
     pan_mode      = false;
     view_center[0] = FIELD_RES/2;
     view_center[1] = FIELD_RES/2;
+    hud_mode = false;
+    memset (hud_xyz, 0, 3*sizeof (float));
+    memset (hud_ijk, 0, 3*sizeof (int));
 
     setHorizontalScrollBarPolicy (Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy (Qt::ScrollBarAlwaysOff);
@@ -51,8 +56,17 @@ PortalWidget::PortalWidget (QWidget *parent)
     scene->setItemIndexMethod (QGraphicsScene::NoIndex);
     scene->setSceneRect (0, 0, FIELD_RES, FIELD_RES);
     scene->setBackgroundBrush (QBrush (Qt::black, Qt::SolidPattern));
-
     setScene (scene);
+
+    textPhy = new QGraphicsTextItem;
+    textVox = new QGraphicsTextItem;
+    textPhy->setZValue (99);
+    textVox->setZValue (99);
+    textPhy->setDefaultTextColor (Qt::red);
+    textVox->setDefaultTextColor (Qt::green);
+
+    scene->addItem (textPhy);
+    scene->addItem (textVox);
 }
 
 
@@ -104,6 +118,90 @@ PortalWidget::getPixelValue (float* ij)
     }
 
     return scaled;
+}
+
+void
+PortalWidget::updateCursor (const QPoint& view_ij)
+{
+    QPointF scene_ij;       /* portal: scene coords */
+    QPoint slice_ij;        /* slice: pixel coods */
+    QPointF slice_xy;       /* slice: realspace coords */
+    QPointF slice_offset;   /* scene coords of slice left edge */
+    float slice_z;
+
+    /* QGraphicsPixmapItem is derived from QGraphicsItem */
+    if ((void*)pmi != (void*)itemAt (view_ij)) {
+        return;
+    } else if (!vol) {
+        return;
+    }
+
+    scene_ij = mapToScene (view_ij);
+    slice_offset.rx() = (FIELD_RES - pmap.width())/2.0;
+    slice_offset.ry() = (FIELD_RES - pmap.height())/2.0;
+
+    slice_ij.rx() = (scene_ij.x()-slice_offset.x())/scale.factor();
+    slice_ij.ry() = (scene_ij.y()-slice_offset.y())/scale.factor();
+
+    slice_xy.rx() = ((slice_ij.x())*res[0] + offset[0]);
+    slice_xy.ry() = ((slice_ij.y())*res[1] + offset[1]);
+    slice_z = (current_slice*spacing[2] + offset[2]);
+
+    switch (view) {
+    case Axial:
+        hud_xyz[0] = slice_xy.x();
+        hud_xyz[1] = slice_xy.y();
+        hud_xyz[2] = slice_z;
+
+        hud_ijk[0] = slice_ij.x();
+        hud_ijk[1] = slice_ij.y();
+        hud_ijk[2] = current_slice;
+        break;
+    case Coronal:
+        hud_xyz[0] = slice_xy.x();
+        hud_xyz[1] = slice_z;
+        hud_xyz[2] = (-1.0)*slice_xy.y();
+
+        hud_ijk[0] = slice_ij.x();
+        hud_ijk[1] = current_slice;
+        hud_ijk[2] = slice_ij.y();
+        break;
+    case Sagittal:
+        hud_xyz[0] = slice_z;
+        hud_xyz[1] = slice_xy.x();
+        hud_xyz[2] = (-1.0)*slice_xy.y();
+
+        hud_ijk[0] = current_slice;
+        hud_ijk[1] = slice_ij.x();
+        hud_ijk[2] = slice_ij.y();
+        break;
+    }
+//    emit targetChanged (xyz[0], xyz[1], xyz[2]);
+
+    updateHUD ();
+
+#if 0
+    std::cout << "--------------------------------------------\n"
+              << "     View: " << view_ij.x() << "  "<< view_ij.y() << "\n"
+              << "    Scene: " << scene_ij.x() << " " << scene_ij.y() << "\n"
+              << "    Slice: " << slice_ij.x() << " " << slice_ij.y() << "\n"
+              << "RealSpace: " << slice_xy.x() << " " << slice_xy.y() << "\n";
+#endif
+}
+
+void
+PortalWidget::updateHUD ()
+{
+    textPhy->setPlainText (QString ("Phy: %1 %2 %3")
+                           .arg (hud_xyz[0])
+                           .arg (hud_xyz[1])
+                           .arg (hud_xyz[2]));
+    textVox->setPlainText (QString ("Vox: %1 %2 %3")
+                           .arg (hud_ijk[0])
+                           .arg (hud_ijk[1])
+                           .arg (hud_ijk[2]));
+    textPhy->setPos (mapToScene(0,0));
+    textVox->setPos (mapToScene(0,this->height()-24));
 }
 
 void
@@ -218,6 +316,7 @@ PortalWidget::keyPressEvent (QKeyEvent *event)
         break;
     case Qt::Key_R:
         resetPortal ();
+        updateHUD ();
         break;
     case Qt::Key_Control:
         scale.wheelMode = true;
@@ -246,39 +345,14 @@ void
 PortalWidget::mousePressEvent (QMouseEvent *event)
 {
     QPoint view_ij;         /* portal: viewport coords */
-    QPointF scene_ij;       /* portal: scene coords */
-    QPoint slice_ij;        /* slice: pixel coods */
-    QPointF slice_xy;       /* slice: realspace coords */
-    QPointF slice_offset;   /* scene coords of slice left edge */
 
     view_ij = event->pos();
 
     switch (event->button()) {
     case Qt::LeftButton:
-
-        if (!itemAt (view_ij)) {
-            return;
-        }
-
-        scene_ij = mapToScene (view_ij);
-        slice_offset.rx() = (FIELD_RES - pmap.width())/2.0;
-        slice_offset.ry() = (FIELD_RES - pmap.height())/2.0;
-
-        slice_ij.rx() = (scene_ij.x()-slice_offset.x())/scale.factor();
-        slice_ij.ry() = (scene_ij.y()-slice_offset.y())/scale.factor();
-
-        slice_xy.rx() = ((slice_ij.x())*res[0] + offset[0]);
-        slice_xy.ry() = ((slice_ij.y())*res[1] + offset[1]);
-
-//        emit targetChanged (xyz[0], xyz[1], xyz[2]);
-
-        /* Debug */
-        std::cout << "--------------------------------------------\n"
-                  << "     View: " << view_ij.x() << "  "<< view_ij.y() << "\n"
-                  << "    Scene: " << scene_ij.x() << " " << scene_ij.y() << "\n"
-                  << "    Slice: " << slice_ij.x() << " " << slice_ij.y() << "\n"
-                  << "RealSpace: " << slice_xy.x() << " " << slice_xy.y() << "\n";
-
+        updateCursor (view_ij);
+        updateHUD ();
+        hud_mode = true;
         event->accept();
         break;
     case Qt::RightButton:
@@ -300,7 +374,7 @@ PortalWidget::mouseReleaseEvent (QMouseEvent *event)
 {
     switch (event->button()) {
     case Qt::LeftButton:
-        /* Empty */
+        hud_mode = false;
         event->ignore();
         break;
     case Qt::RightButton:
@@ -323,12 +397,15 @@ PortalWidget::mouseMoveEvent (QMouseEvent *event)
 
     if (pan_mode) {
         translate ( (double)dx, (double)dy);
+        updateHUD ();
         view_center[0] -= dx;
         view_center[1] -= dy;
         pan_xy[0] = event->pos().x();
         pan_xy[1] = event->pos().y();
-        event->accept();
-        return;
+    }
+    if (hud_mode) {
+        updateCursor (event->pos());
+        updateHUD ();
     }
     event->ignore();
 }
@@ -339,6 +416,7 @@ PortalWidget::resizeEvent (QResizeEvent *event)
     centerOn (view_center[0], view_center[1]);
     setWindowScale ();
     renderSlice (current_slice);
+    updateHUD ();
 }
 
 
@@ -396,9 +474,11 @@ PortalWidget::setView (enum PortalViewType view)
 
         spacing[0] = fabs (vol->spacing[0]);
         spacing[1] = fabs (vol->spacing[1]);
+        spacing[2] = fabs (vol->spacing[2]);
 
         offset[0] = vol->offset[0];
         offset[1] = vol->offset[1];
+        offset[2] = vol->offset[2];
         break;
     case Coronal:
         ijk_max[0] = vol->dim[0];
@@ -411,9 +491,11 @@ PortalWidget::setView (enum PortalViewType view)
 
         spacing[0] = fabs (vol->spacing[0]);
         spacing[1] = fabs (vol->spacing[2]);
+        spacing[2] = fabs (vol->spacing[1]);
 
         offset[0] = vol->offset[0];
         offset[1] = vol->offset[2];
+        offset[2] = vol->offset[1];
         break;
     case Sagittal:
         ijk_max[0] = vol->dim[1];
@@ -426,9 +508,11 @@ PortalWidget::setView (enum PortalViewType view)
 
         spacing[0] = fabs (vol->spacing[1]);
         spacing[1] = fabs (vol->spacing[2]);
+        spacing[2] = fabs (vol->spacing[0]);
 
         offset[0] = vol->offset[1];
         offset[1] = vol->offset[2];
+        offset[2] = vol->offset[0];
         break;
     default:
         exit (-1);
