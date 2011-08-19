@@ -103,7 +103,7 @@ CrystalWindow::openVol (const char* fn)
 void
 CrystalWindow::createActions ()
 {
-    actionOpen = new QAction (tr("&Open"), this);
+    actionOpen = new QAction (tr("&Open Volume"), this);
     actionExit = new QAction (tr("E&xit"), this);
     actionAboutQt = new QAction (tr("About &Qt"), this);
 
@@ -137,7 +137,7 @@ CrystalWindow::open ()
                 this,
                 tr("Open Volume"),
                 "",
-                tr("MHA Volumes (*.mha)")
+                tr("Image Volumes (*.mha; *.mhd; *.nrrd)")
     );
 
     QByteArray ba = fileName.toLocal8Bit();
