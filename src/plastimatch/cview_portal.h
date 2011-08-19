@@ -44,18 +44,20 @@ class PortalWidget : public QGraphicsView
         QPixmap pmap;               /* QPixmap for rendering      */
         QGraphicsPixmapItem* pmi;   /* Needed to update QPixmap   */
 
-        /* PortalWidget */
+        /* Image Attributes */
         Volume* vol;            /* Plastimatch volume                    */
-        PortalViewType view;    /* Axial or Coronal or Sagittal          */
         float min_intensity;    /* Min floating point value from volume  */
         float max_intensity;    /* Max floating point value from volume  */
-        int current_slice;      /* Current slice index within volume     */
-        int ijk_max[3];         /* index limits for current view type    */
         int stride[3];          /* volume strides for current view type  */
+
+        /* Portal Geometry */
+        int ijk_max[3];         /* index limits for current view type    */
+        int current_slice;      /* Current slice index within volume     */
         int dim[2];             /* rendering surface dims (in pixels)    */
         float res[2];           /* portal resolution (in mm per pixel)   */
         float spacing[2];       /* voxel spacing in slice (in mm)        */
         float offset[2];        /* volume slice offset (in mm)           */
+        PortalViewType view;    /* Axial or Coronal or Sagittal          */
         ScaleHandler scale;
 
         /* Scroll/Panning */

@@ -13,8 +13,8 @@
 #include "volume.h"
 #include "cview_portal.h"
 
-// TODO: * Fix coordinate reporting / signal
-//       * Qt Designer hooks
+// TODO: * Fix: Coordinate reporting signal
+//       * Add: Qt Designer hooks
 
 #define ROUND_INT(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
 
@@ -245,31 +245,47 @@ PortalWidget::keyReleaseEvent (QKeyEvent *event)
 void
 PortalWidget::mousePressEvent (QMouseEvent *event)
 {
-    int i = event->pos().x();
-    int j = event->pos().y();
+    QPoint view_ij;         /* portal: viewport coords */
+    QPointF scene_ij;       /* portal: scene coords */
+    QPoint slice_ij;        /* slice: pixel coods */
+    QPointF slice_xy;       /* slice: realspace coords */
+    QPointF slice_offset;   /* scene coords of slice left edge */
+
+    view_ij = event->pos();
 
     switch (event->button()) {
     case Qt::LeftButton:
 
-        float xy[2];
+        if (!itemAt (view_ij)) {
+            return;
+        }
 
-        xy[0] = (float)i*res[0]/scale.factor();
-        xy[1] = (float)j*res[1]/scale.factor();
+        scene_ij = mapToScene (view_ij);
+        slice_offset.rx() = (FIELD_RES - pmap.width())/2.0;
+        slice_offset.ry() = (FIELD_RES - pmap.height())/2.0;
+
+        slice_ij.rx() = (scene_ij.x()-slice_offset.x())/scale.factor();
+        slice_ij.ry() = (scene_ij.y()-slice_offset.y())/scale.factor();
+
+        slice_xy.rx() = ((slice_ij.x())*spacing[0] + offset[0]);
+        slice_xy.ry() = ((slice_ij.y())*spacing[1] + offset[1]);
 
 //        emit targetChanged (xyz[0], xyz[1], xyz[2]);
 
         /* Debug */
-        std::cout << "   Portal: " << i << "  "<< j << "\n"
-                  << "RealSpace: " << xy[0] << "  " << xy[1] << "\n"
-                  << "    Slice: " << xy[0] / spacing[0] << "  "
-                                   << xy[1] / spacing[1] << "\n";
+        std::cout << "--------------------------------------------\n"
+                  << "     View: " << view_ij.x() << "  "<< view_ij.y() << "\n"
+                  << "    Scene: " << scene_ij.x() << " " << scene_ij.y() << "\n"
+                  << "    Slice: " << slice_ij.x() << " " << slice_ij.y() << "\n"
+                  << "RealSpace: " << slice_xy.x() << " " << slice_xy.y() << "\n";
+
         event->accept();
         break;
     case Qt::RightButton:
         scale.wheelMode = true;
         pan_mode = true;
-        pan_xy[0] = i;
-        pan_xy[1] = j;
+        pan_xy[0] = view_ij.x();
+        pan_xy[1] = view_ij.y();
         setCursor (Qt::ClosedHandCursor);
         event->accept();
         break;
@@ -458,7 +474,7 @@ PortalWidget::resetPortal ()
 void
 PortalWidget::renderSlice (int slice_num)
 {
-    int i, j;                /* portal coords        */
+    int i, j;                /* slice coords         */
     int p[2];                /* frame buffer coords  */
     float xy[2];             /* real space coords    */
     float ij[2];             /* volume slice indices */
