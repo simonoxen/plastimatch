@@ -882,7 +882,8 @@ if (CUDA_FOUND AND PLM_BUILD_CUDA_TEST)
 endif ()
 
 # Test executable -- dcmtk
-if (DCMTK_FOUND AND DCMTK_VERSION_36 AND PLM_BUILD_DCMTK_TEST)
+if (DCMTK_FOUND AND DCMTK_VERSION_36 AND PLM_BUILD_DCMTK_TEST
+    AND FULL_PLASTIMATCH_BUILD)
   set (DCMTK_TEST_SRC
     dcmtk_test.cxx)
   plm_add_executable (dcmtk_test "${DCMTK_TEST_SRC}"
