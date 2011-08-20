@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "dcmtk_series.h"
+#include "dcmtk_series_set.h"
 
 int
 main (int argc, char *argv[])
@@ -18,7 +18,7 @@ main (int argc, char *argv[])
 	exit (1);
     }
 
-    dcmtk_series_test (dicom_dir);
+    dcmtk_series_set_test (dicom_dir);
 
     return 0;
 }

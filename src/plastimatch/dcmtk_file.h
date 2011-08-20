@@ -6,6 +6,9 @@
 
 #include "plm_config.h"
 
+class DcmFile;
+class DcmDataset;
+class DcmTagKey;
 
 class Dcmtk_file
 {
@@ -15,11 +18,12 @@ public:
     ~Dcmtk_file ();
 
 public:
-    //DcmFileFormat dfile;
-    //DcmObject *dset;
-
+    DcmFileFormat *m_dfile;
+    DcmDataset *m_dset;
+    
 public:
     void load (const char *fn);
+    const char* get_cstr (const DcmTagKey& tag_key);
 
 #if defined (commentout)
     void load (const char *dicom_dir);

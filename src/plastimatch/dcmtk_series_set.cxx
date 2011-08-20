@@ -10,22 +10,48 @@
 #include "dcmtk/dcmdata/dctk.h"
 
 #include "dcmtk_file.h"
-#include "dcmtk_series.h"
+#include "dcmtk_series_set.h"
 #include "print_and_exit.h"
 
-Dcmtk_series::Dcmtk_series ()
+Dcmtk_series_set::Dcmtk_series_set ()
 {
 }
 
-Dcmtk_series::~Dcmtk_series ()
+Dcmtk_series_set::~Dcmtk_series_set ()
 {
 }
 
 void
-dcmtk_series_test (char *dicom_dir)
+Dcmtk_series_set::insert_file (const char* fn)
+{
+    Dcmtk_file df;
+    df.load (fn);
+
+    const char *c = NULL;
+    c = df.get_cstr (DCM_SeriesInstanceUID);
+    if (!c) {
+	/* No SeriesInstanceUID? */
+	return;
+    }
+
+    Dcmtk_series_map::iterator smap_it;
+    smap_it = m_smap.find (std::string(c));
+    if (smap_it == m_smap.end()) {
+	printf ("Not yet found\n");
+	m_smap.insert (
+	    Dcmtk_series_map_pair (std::string(c), Dcmtk_series()));
+    } else {
+	printf ("Already found\n");
+    }
+}
+
+void
+dcmtk_series_set_test (char *dicom_dir)
 {
     OFBool recurse = OFFalse;
     OFList<OFString> input_files;
+
+    Dcmtk_series_set dss;
 
     printf ("Searching directory: %s\n", dicom_dir);
 
@@ -40,9 +66,6 @@ dcmtk_series_test (char *dicom_dir)
     OFListIterator(OFString) if_last = input_files.end();
     while (if_iter != if_last) {
 	const char *current = (*if_iter++).c_str();
-	printf ("File: %s\n", current);
-
-	Dcmtk_file df;
-	df.load (current);
+	dss.insert_file (current);
     }
 }
