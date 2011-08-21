@@ -1501,16 +1501,22 @@ plmtest_check_interval (
 ##   register-regularization
 ## -------------------------------------------------------------------------
 plm_add_test (
-  "plm-reg-rect-bspline" 
+  "plm-bspline-rect"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-reg-rect-bspline.txt"
+  "${PLM_TESTING_DATA_DIR}/plm-bspline-rect.txt"
   )
 plm_add_test (
-  "plm-reg-regularization" 
+  "plm-bspline-regularization-analytic" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-reg-regularization.txt"
+  "${PLM_TESTING_DATA_DIR}/plm-bspline-regularization-analytic.txt"
+  )
+plm_add_test (
+  "plm-bspline-regularization-numeric" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_TESTING_DATA_DIR}/plm-bspline-regularization-numeric.txt"
   )
 
 ## -------------------------------------------------------------------------

@@ -1,9 +1,9 @@
 [GLOBAL]
 fixed=rect-2.mha
 moving=rect-3.mha
-vf_out=plm-reg-rect-bspline-vf.mha
-xform_out=plm-reg-rect-bspline-xf.txt
-img_out=plm-reg-rect-bspline-img.mha
+vf_out=plm-bspline-rect-vf.mha
+xform_out=plm-bspline-rect-xf.txt
+img_out=plm-bspline-rect-img.mha
 
 [STAGE]
 xform=bspline

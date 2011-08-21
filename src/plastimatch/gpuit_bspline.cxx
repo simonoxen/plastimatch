@@ -142,7 +142,13 @@ do_gpuit_bspline_stage_internal (
     /* JAS 2011.08.17
      * This needs to be integrated with the above switch 
      * young_modulus is regularization implementation 'd' */
-    parms.reg_parms.lambda = stage->young_modulus;
+    if (stage->regularization_lambda != 0) {
+	parms.reg_parms.lambda = stage->regularization_lambda;
+    }
+
+    printf ("Regularization: %c %f\n", 
+	parms.reg_parms.implementation,
+	parms.reg_parms.lambda);
 
     /* Other stuff */
     parms.max_its = stage->max_its;

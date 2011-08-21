@@ -266,8 +266,8 @@ set_key_val (
 	    goto error_exit;
 	}
     }
-    else if (!strcmp (key, "regularization_lambda"))
-    {
+    else if (!strcmp (key, "regularization_lambda")
+	|| (!strcmp (key, "young_modulus"))) {
 	if (section == 0) goto error_not_global;
 	if (sscanf (val, "%f", &stage->regularization_lambda) != 1) {
 	    goto error_exit;
@@ -376,12 +376,6 @@ set_key_val (
     else if (!strcmp (key, "amoeba_parameter_tol")) {
 	if (section == 0) goto error_not_global;
 	if (sscanf (val, "%g", &(stage->amoeba_parameter_tol)) != 1) {
-	    goto error_exit;
-	}
-    }
-    else if (!strcmp (key, "young_modulus")) {
-	if (section == 0) goto error_not_global;
-	if (sscanf (val, "%g", &stage->young_modulus) != 1) {
 	    goto error_exit;
 	}
     }

@@ -1,9 +1,9 @@
 [GLOBAL]
 fixed=rect-3.mha
 moving=sphere-2.mha
-vf_out=plm-reg-regularization-vf.mha
-xform_out=plm-reg-regularization-xf.txt
-img_out=plm-reg-regularization-img.mha
+vf_out=plm-bspline-regularization-analytic-vf.mha
+xform_out=plm-bspline-regularization-analytic-xf.txt
+img_out=plm-bspline-regularization-analytic-img.mha
 
 [STAGE]
 xform=bspline
@@ -12,6 +12,7 @@ impl=plastimatch
 max_its=5
 convergence_tol=3
 grad_tol=0.1
+regularization=numeric
 regularization_lambda=1.0
 grid_spac=30 30 30
 res=1 1 1

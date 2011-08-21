@@ -104,7 +104,7 @@ public:
     int grid_method;     // num control points (0) or absolute spacing (1)
     int histoeq;         // histogram matching flag on (1) or off (0)
     /* Landmarks */
-    float young_modulus; // regularization (cost of vector field gradient)
+    //float young_modulus; // regularization (cost of vector field gradient)
     float landmark_stiffness; //strength of attraction between landmarks
     char landmark_flavor;
     char fixed_landmarks_fn[_MAX_PATH]; //fixed landmarks filename
@@ -176,7 +176,6 @@ public:
 	grid_spac[2] = 20.; 
 	grid_method = 1;     // by default goes to the absolute spacing
 	histoeq = 0;         // by default, don't do it
-	young_modulus = 0;
 	landmark_stiffness = 0;
 	/* Output files */
 	img_out_fmt = IMG_OUT_FMT_AUTO;
@@ -184,8 +183,7 @@ public:
 	*img_out_fn = 0;
 	xf_out_itk = false;
 	*vf_out_fn = 0;
-
-	young_modulus = 0;
+	/* Landmarks */
 	landmark_stiffness = 0;
 	landmark_flavor = 'a';
 	*fixed_landmarks_fn = 0;

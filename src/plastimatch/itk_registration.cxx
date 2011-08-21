@@ -25,6 +25,7 @@
 #endif
 #endif
 
+#include "compiler_warnings.h"
 #include "itk_demons.h"
 #include "itk_image.h"
 #include "itk_optim.h"
@@ -355,6 +356,7 @@ set_fixed_image_region (RegistrationType::Pointer registration,
 			    updated = 1;
 			}
 		    }
+		    UNUSED_VARIABLE (updated);
 		}
 	    }
 	}
@@ -397,6 +399,7 @@ set_fixed_image_region (RegistrationType::Pointer registration,
 			    updated = 1;
 			}
 		    }
+		    UNUSED_VARIABLE (updated);
 		}
 	    }
 	}
