@@ -160,6 +160,8 @@ get the best results if you build it yourself.
 Here is a rough guide how 
 to compile and use on windows:
 
+Building dcmtk 3.5.4 on windows
+
 #. Download and unpack source code for 3.5.4
 #. Run CMake - set WITH_LIBPNG, WITH_LIBTIFF, WITH_ZLIB to OFF
 #. Build
@@ -167,8 +169,13 @@ to compile and use on windows:
    with the same parent as the source directory
 #. Run CMake on plastimatch - set DCMTK_DIR to the install directory
 
-I once was able to use the contributed md-libraries (with VC 2005), 
-but can no longer figure out how to do this.
+Building dcmtk 3.6 on windows
+
+#. Download and unpack source code
+#. Run CMake - set WITH_LIBPNG, WITH_LIBTIFF, WITH_ZLIB to OFF
+#. Set install directory (if desired); I use $HOME/build/dcmtk-3.6.0-install
+#. Build DCMTK
+#. Run CMake on plastimatch - set DCMTK_DIR to the install directory
 
 WxWidgets (optional)
 ^^^^^^^^^^^^^^^^^^^^
