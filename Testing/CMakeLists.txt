@@ -330,7 +330,7 @@ plm_add_test (
   )
 plmtest_check_interval (bspline-a-check
   "${PLM_TESTING_BUILD_DIR}/bspline-a.stdout.txt"
-  "^MSE\\\\[.*, 10] *([0-9.]*)"
+  "^\\\\[.*, 10] MSE *([0-9.]*)"
   "18945.5"
   "18945.7"
   )
@@ -343,7 +343,7 @@ plm_add_test (
   )
 plmtest_check_interval (bspline-b-check
   "${PLM_TESTING_BUILD_DIR}/bspline-b.stdout.txt"
-  "^MSE\\\\[.*, 10] *([0-9.]*)"
+  "^\\\\[.*, 10] MSE *([0-9.]*)"
   "18945.5"
   "18945.7"
   )
@@ -356,7 +356,7 @@ plm_add_test (
   )
 plmtest_check_interval (bspline-c-check
   "${PLM_TESTING_BUILD_DIR}/bspline-c.stdout.txt"
-  "^MSE\\\\[.*, 10] *([0-9.]*)"
+  "^\\\\[.*, 10] MSE *([0-9.]*)"
   "1168.25"
   "1168.35"
   )
@@ -369,7 +369,7 @@ plm_add_test (
   )
 plmtest_check_interval (bspline-d-check
   "${PLM_TESTING_BUILD_DIR}/bspline-d.stdout.txt"
-  "^MSE\\\\[.*, 10] *([0-9.]*)"
+  "^\\\\[.*, 10] MSE *([0-9.]*)"
   "1168.25"
   "1168.35"
   )
@@ -382,7 +382,7 @@ plm_add_test (
   )
 plmtest_check_interval (bspline-e-check
   "${PLM_TESTING_BUILD_DIR}/bspline-e.stdout.txt"
-  "^MSE\\\\[.*, 10] *([0-9.]*)"
+  "^\\\\[.*, 10] MSE *([0-9.]*)"
   "1168.25"
   "1168.35"
   )
@@ -395,7 +395,7 @@ plm_add_test (
   )
 plmtest_check_interval (bspline-f-check
   "${PLM_TESTING_BUILD_DIR}/bspline-f.stdout.txt"
-  "^MSE\\\\[.*, 10] *([0-9.]*)"
+  "^\\\\[.*, 10] MSE *([0-9.]*)"
   "1168.25"
   "1168.35"
   )
@@ -408,7 +408,7 @@ plm_add_test (
   )
 plmtest_check_interval (bspline-g-check
   "${PLM_TESTING_BUILD_DIR}/bspline-g.stdout.txt"
-  "^MSE\\\\[.*, 10] *([0-9.]*)"
+  "^\\\\[.*, 10] MSE *([0-9.]*)"
   "1168.25"
   "1168.35"
   )
@@ -421,7 +421,7 @@ plm_add_test (
   )
 plmtest_check_interval (bspline-h-check
   "${PLM_TESTING_BUILD_DIR}/bspline-h.stdout.txt"
-  "^MSE\\\\[.*, 10] *([0-9.]*)"
+  "^\\\\[.*, 10] MSE *([0-9.]*)"
   "1168.25"
   "1168.35"
   )
@@ -434,7 +434,7 @@ plm_add_test (
   )
 plmtest_check_interval (bspline-mi-c-1-check
   "${PLM_TESTING_BUILD_DIR}/bspline-mi-c-1.stdout.txt"
-  "^MI\\\\[.*, 10] *([-0-9.]*)"
+  "^\\\\[.*, 10] *MI *([-0-9.]*)"
   "-0.800"
   "-0.796"
   )
@@ -449,7 +449,7 @@ plm_add_test (
 ## With DOUBLE_HIST defined, output is 0.032
 plmtest_check_interval (bspline-mi-c-2-check
   "${PLM_TESTING_BUILD_DIR}/bspline-mi-c-2.stdout.txt"
-  "^MI\\\\[.*, 10] *([-0-9.]*)"
+  "^\\\\[.*, 10] *MI *([-0-9.]*)"
   "-0.035"
   "-0.031"
   )
@@ -1496,27 +1496,75 @@ plmtest_check_interval (
   )
 
 ## -------------------------------------------------------------------------
-## plastimatch register (group 3) - rect 2 & rect 3
-##   register-rect-bspline
-##   register-regularization
+## plastimatch register (group 3)
+##   register-bsp-rect
+##   register-bsp-regularize-none
+##   register-bsp-regularize-analytic
+##   register-bsp-regularize-numeric
 ## -------------------------------------------------------------------------
 plm_add_test (
-  "plm-bspline-rect"
+  "plm-bsp-rect"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-bspline-rect.txt"
+  "${PLM_TESTING_DATA_DIR}/plm-bsp-rect.txt"
   )
 plm_add_test (
-  "plm-bspline-regularization-analytic" 
+  "plm-bsp-regularize-none" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-bspline-regularization-analytic.txt"
+  "${PLM_TESTING_DATA_DIR}/plm-bsp-regularize-none.txt"
   )
 plm_add_test (
-  "plm-bspline-regularization-numeric" 
+  "plm-bsp-regularize-none-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-bspline-regularization-numeric.txt"
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-bsp-regularize-none-vf.mha"
+  )
+plmtest_check_interval (
+  "plm-bsp-regularize-none-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-bsp-regularize-none-stats.stdout.txt"
+  "MINJAC *([-0-9.]*)"
+  "-0.01"
+  "0"
+  )
+plm_add_test (
+  "plm-bsp-regularize-analytic" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_TESTING_DATA_DIR}/plm-bsp-regularize-analytic.txt"
+  )
+plm_add_test (
+  "plm-bsp-regularize-analytic-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-bsp-regularize-analytic-vf.mha"
+  )
+plmtest_check_interval (
+  "plm-bsp-regularize-analytic-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-bsp-regularize-analytic-stats.stdout.txt"
+  "MINJAC *([-0-9.]*)"
+  "0.415"
+  "0.425"
+  )
+plm_add_test (
+  "plm-bsp-regularize-numeric" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_TESTING_DATA_DIR}/plm-bsp-regularize-numeric.txt"
+  )
+plm_add_test (
+  "plm-bsp-regularize-numeric-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-bsp-regularize-none-vf.
+ha"
+  )
+plmtest_check_interval (
+  "plm-bsp-regularize-numeric-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-bsp-regularize-numeric-stats.stdout.txt"
+  "MINJAC *([-0-9.]*)"
+  "0.415"
+  "0.425"
   )
 
 ## -------------------------------------------------------------------------

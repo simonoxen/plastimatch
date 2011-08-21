@@ -626,34 +626,42 @@ report_score (
     ssd_grad_norm = 0;
     ssd_grad_mean = 0;
     for (i = 0; i < bxf->num_coeff; i++) {
-    ssd_grad_mean += bst->ssd.grad[i];
-    ssd_grad_norm += fabs (bst->ssd.grad[i]);
+	ssd_grad_mean += bst->ssd.grad[i];
+	ssd_grad_norm += fabs (bst->ssd.grad[i]);
     }
 
-    // JAS 04.19.2010
-    // MI scores are between 0 and 1
-    // The extra decimal point resolution helps in seeing
-    // if the optimizer is performing adequately.
-    if (parms->metric == BMET_MI) {
-    logfile_printf (
-        "MI[%2d,%3d] %1.8f NV %6d GM %9.3f GN %9.3f [ %9.3f s ]\n",
-         bst->it, bst->feval, ssd->score, ssd->num_vox,
-         ssd_grad_mean, ssd_grad_norm, ssd->time_smetric + ssd->time_rmetric);
-    } else {
-    logfile_printf (
-        "MSE[%2d,%3d] %9.3f NV %6d GM %9.3f GN %9.3f [ %9.3f s ]\n", 
-         bst->it, bst->feval, ssd->score, ssd->num_vox,
-         ssd_grad_mean, ssd_grad_norm, ssd->time_smetric + ssd->time_rmetric);
-    }
-
-    /* Display extra stats if regularization is enabled */
+    /* First line, part 1 - iterations */
+    logfile_printf ("[%2d,%3d] ", bst->it, bst->feval);
+    /* First line, part 2 - score 
+       JAS 04.19.2010 MI scores are between 0 and 1
+       The extra decimal point resolution helps in seeing
+       if the optimizer is performing adequately. */
     if (reg_parms->lambda > 0) {
-    logfile_printf (
-        "         SM %9.3f RM %9.3f       %3.3f s | %3.3f s  \n",
-         ssd->smetric, ssd->rmetric,
-         ssd->time_smetric, ssd->time_rmetric);
+	logfile_printf ("SCORE ");
+    } else if (parms->metric == BMET_MI) {
+	logfile_printf ("MI  ");
+    } else {
+	logfile_printf ("MSE ");
     }
+    if (parms->metric == BMET_MI) {
+	logfile_printf ("%1.8f ", ssd->score);
+    } else {
+	logfile_printf ("%9.3f ", ssd->score);
+    }
+    /* First line, part 3 - misc stats */
+    logfile_printf (
+	    "NV %6d GM %9.3f GN %9.3f [ %9.3f s ]\n",
+	    ssd->num_vox, ssd_grad_mean, ssd_grad_norm, 
+	    ssd->time_smetric + ssd->time_rmetric);
 
+    /* Second line - extra stats if regularization is enabled */
+    if (reg_parms->lambda > 0) {
+	logfile_printf (
+	    "         %s %9.3f RM %9.3f       %3.3f s | %3.3f s\n",
+	    (parms->metric == BMET_MI) ? "MI   " : "MSE  ",
+	    ssd->smetric, ssd->rmetric,
+	    ssd->time_smetric, ssd->time_rmetric);
+    }
 }
 
 /* -----------------------------------------------------------------------
