@@ -11,18 +11,12 @@
 #include "itkMutualInformationImageToImageMetric.h"
 #include "itkRegularStepGradientDescentOptimizer.h"
 
-//#define USE_GCS_METRIC 1
-
 #if defined(ITK_USE_OPTIMIZED_REGISTRATION_METHODS)
 #include "itkOptMattesMutualInformationImageToImageMetric.h"
 #include "itkOptMeanSquaresImageToImageMetric.h"
 #else
 #include "itkMattesMutualInformationImageToImageMetric.h"
 #include "itkMeanSquaresImageToImageMetric.h"
-#if (USE_GCS_METRIC)
-#include "gcs_metric.h"
-#else
-#endif
 #endif
 
 #include "compiler_warnings.h"
@@ -38,13 +32,8 @@
 #include "plm_timer.h"
 #include "xform.h"
 
-#if !defined (ITK_USE_OPTIMIZED_REGISTRATION_METHODS) && defined (USE_GCS_METRIC)
-typedef itk::GCSMetric <
-    FloatImageType, FloatImageType > MSEMetricType;
-#else
 typedef itk::MeanSquaresImageToImageMetric <
     FloatImageType, FloatImageType > MSEMetricType;
-#endif
 typedef itk::MutualInformationImageToImageMetric <
     FloatImageType, FloatImageType > MIMetricType;
 typedef itk::MattesMutualInformationImageToImageMetric <
