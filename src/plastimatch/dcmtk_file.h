@@ -18,10 +18,12 @@ public:
     ~Dcmtk_file ();
 
 public:
+    std::string m_fn;
     DcmFileFormat *m_dfile;
-    DcmDataset *m_dset;
     
 public:
+    void init ();
+    void debug () const;
     void load (const char *fn);
     const char* get_cstr (const DcmTagKey& tag_key);
 

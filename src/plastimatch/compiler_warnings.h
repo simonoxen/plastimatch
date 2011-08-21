@@ -6,6 +6,6 @@
 
 #include "plm_config.h"
 
-#define SUPPRESS_UNUSED_VARIABLE_WARNING(a) ((void) a)
+#define UNUSED_VARIABLE(a) ((void) a)
 
 #endif

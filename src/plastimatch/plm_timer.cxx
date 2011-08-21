@@ -18,7 +18,7 @@ plm_timer_get_time (Plm_timer *timer)
     struct timeval tv;
     int rc;
     rc = gettimeofday (&tv, 0);
-    SUPPRESS_UNUSED_VARIABLE_WARNING (rc);
+    UNUSED_VARIABLE (rc);
     return ((double) tv.tv_sec) + ((double) tv.tv_usec) / 1000000.;
 #endif
 }

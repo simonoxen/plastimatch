@@ -9,6 +9,7 @@
 #include "dcmtk/ofstd/ofstream.h"
 #include "dcmtk/dcmdata/dctk.h"
 
+#include "compiler_warnings.h"
 #include "dcmtk_file.h"
 #include "dcmtk_series_set.h"
 #include "print_and_exit.h"
@@ -19,53 +20,77 @@ Dcmtk_series_set::Dcmtk_series_set ()
 
 Dcmtk_series_set::~Dcmtk_series_set ()
 {
+    /* Delete Dicom_series objects in map */
+    Dcmtk_series_map::iterator it;
+    for (it = m_smap.begin(); it != m_smap.end(); ++it) {
+	delete (*it).second;
+    }
 }
 
 void
 Dcmtk_series_set::insert_file (const char* fn)
 {
-    Dcmtk_file df;
-    df.load (fn);
+    Dcmtk_file *df = new Dcmtk_file (fn);
 
     const char *c = NULL;
-    c = df.get_cstr (DCM_SeriesInstanceUID);
+    c = df->get_cstr (DCM_SeriesInstanceUID);
     if (!c) {
 	/* No SeriesInstanceUID? */
+	delete df;
 	return;
     }
 
-    Dcmtk_series_map::iterator smap_it;
-    smap_it = m_smap.find (std::string(c));
-    if (smap_it == m_smap.end()) {
-	printf ("Not yet found\n");
-	m_smap.insert (
-	    Dcmtk_series_map_pair (std::string(c), Dcmtk_series()));
-    } else {
-	printf ("Already found\n");
+    Dcmtk_series_map::iterator it;
+    it = m_smap.find (std::string(c));
+    if (it == m_smap.end()) {
+	std::pair<Dcmtk_series_map::iterator,bool> ret 
+	    = m_smap.insert (Dcmtk_series_map_pair (std::string(c), 
+		    new Dcmtk_series()));
+	if (ret.second == false) {
+	    print_and_exit (
+		"Error inserting UID %s into dcmtk_series_map.\n", c);
+	}
+	it = ret.first;
+    }
+    Dcmtk_series *ds = (*it).second;
+    ds->insert (df);
+}
+
+void
+Dcmtk_series_set::insert_directory (const char* dir)
+{
+    OFBool recurse = OFFalse;
+    OFList<OFString> input_files;
+
+    OFStandard::searchDirectoryRecursively (
+	dir, input_files, "", "", recurse);
+
+    OFListIterator(OFString) if_iter = input_files.begin();
+    OFListIterator(OFString) if_last = input_files.end();
+    while (if_iter != if_last) {
+	const char *current = (*if_iter++).c_str();
+	this->insert_file (current);
+    }
+}
+
+void
+Dcmtk_series_set::debug (void)
+{
+    Dcmtk_series_map::iterator it;
+    for (it = m_smap.begin(); it != m_smap.end(); ++it) {
+	const std::string& key = (*it).first;
+	const Dcmtk_series *ds = (*it).second;
+	UNUSED_VARIABLE (ds);
+	printf ("SeriesInstanceUID = %s\n", key.c_str());
+	ds->debug ();
     }
 }
 
 void
 dcmtk_series_set_test (char *dicom_dir)
 {
-    OFBool recurse = OFFalse;
-    OFList<OFString> input_files;
-
     Dcmtk_series_set dss;
-
     printf ("Searching directory: %s\n", dicom_dir);
-
-    OFStandard::searchDirectoryRecursively (
-	dicom_dir, input_files, "", "", recurse);
-
-    if (input_files.empty()) {
-	print_and_exit ("Sorry.  Directory %s is empty.\n", dicom_dir);
-    }
-
-    OFListIterator(OFString) if_iter = input_files.begin();
-    OFListIterator(OFString) if_last = input_files.end();
-    while (if_iter != if_last) {
-	const char *current = (*if_iter++).c_str();
-	dss.insert_file (current);
-    }
+    dss.insert_directory (dicom_dir);
+    dss.debug ();
 }

@@ -14,11 +14,11 @@
 #include "print_and_exit.h"
 
 Dcmtk_file::Dcmtk_file () {
-    m_dfile = new DcmFileFormat;
-    m_dset = 0;
+    init ();
 }
 
 Dcmtk_file::Dcmtk_file (const char *fn) {
+    init ();
     this->load (fn);
 }
 
@@ -27,18 +27,32 @@ Dcmtk_file::~Dcmtk_file () {
 }
 
 void
+Dcmtk_file::init ()
+{
+    m_dfile = new DcmFileFormat;
+    m_fn = "";
+}
+
+void
+Dcmtk_file::debug () const
+{
+    printf (" %s\n", m_fn.c_str());
+}
+
+void
 Dcmtk_file::load (const char *fn) {
     OFCondition cond = m_dfile->loadFile (fn, EXS_Unknown, EGL_noChange);
     if (cond.bad()) {
 	print_and_exit ("Sorry, couldn't open file as dicom: %s\n", fn);
     }
-    m_dset = m_dfile->getDataset();
+    m_fn = fn;
 }
 
 const char*
 Dcmtk_file::get_cstr (const DcmTagKey& tag_key)
 {
-    const char* c = 0;
+    const char *c = 0;
+    DcmDataset *m_dset = m_dfile->getDataset();
     if (m_dset->findAndGetString(tag_key, c).good() && c) {
 	return c;
     }

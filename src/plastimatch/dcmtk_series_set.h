@@ -17,13 +17,14 @@ public:
     ~Dcmtk_series_set ();
 
 public:
-    typedef std::map<std::string, Dcmtk_series> Dcmtk_series_map;
-    typedef std::pair<std::string, Dcmtk_series> Dcmtk_series_map_pair;
+    typedef std::map<std::string, Dcmtk_series*> Dcmtk_series_map;
+    typedef std::pair<std::string, Dcmtk_series*> Dcmtk_series_map_pair;
     Dcmtk_series_map m_smap;
 
 public:
     void insert_file (const char* fn);
-
+    void insert_directory (const char* fn);
+    void debug (void);
 };
 
 #if defined __cplusplus

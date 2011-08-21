@@ -19,30 +19,24 @@ Dcmtk_series::Dcmtk_series ()
 
 Dcmtk_series::~Dcmtk_series ()
 {
+    std::list<Dcmtk_file*>::iterator it;
+    for (it = m_flist.begin(); it != m_flist.end(); ++it) {
+	delete (*it);
+    }
 }
 
 void
-dcmtk_series_test (char *dicom_dir)
+Dcmtk_series::insert (Dcmtk_file *df)
 {
-    OFBool recurse = OFFalse;
-    OFList<OFString> input_files;
+    m_flist.push_back (df);
+}
 
-    printf ("Searching directory: %s\n", dicom_dir);
-
-    OFStandard::searchDirectoryRecursively (
-	dicom_dir, input_files, "", "", recurse);
-
-    if (input_files.empty()) {
-	print_and_exit ("Sorry.  Directory %s is empty.\n", dicom_dir);
-    }
-
-    OFListIterator(OFString) if_iter = input_files.begin();
-    OFListIterator(OFString) if_last = input_files.end();
-    while (if_iter != if_last) {
-	const char *current = (*if_iter++).c_str();
-	printf ("File: %s\n", current);
-
-	Dcmtk_file df;
-	df.load (current);
+void
+Dcmtk_series::debug (void) const
+{
+    std::list<Dcmtk_file*>::const_iterator it;
+    for (it = m_flist.begin(); it != m_flist.end(); ++it) {
+	Dcmtk_file *df = (*it);
+	df->debug ();
     }
 }
