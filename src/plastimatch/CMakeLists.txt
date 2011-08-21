@@ -289,7 +289,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   dcm_util.cxx dcm_util.h
   direction_cosines.h
   dvh.cxx dvh.h
-  gcs_metric.h gcs_metric.hxx 
   gpuit_bspline.cxx gpuit_bspline.h 
   gpuit_demons.cxx gpuit_demons.h 
   img_metadata.cxx img_metadata.h 
