@@ -3,7 +3,8 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include <string.h>
-#include "dcmtk_config.h"
+#define HAVE_CONFIG_H 1               /* Needed for debian */
+#include "dcmtk/config/osconfig.h"
 #include "dcmtk/dcmdata/dcvrda.h"
 #include "dcmtk/dcmdata/dcvrtm.h"
 #include "dcmtk/dcmdata/dctypes.h"

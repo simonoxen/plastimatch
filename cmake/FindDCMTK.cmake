@@ -25,6 +25,8 @@
 include(CheckLibraryExists)
 include(FindThreads)
 
+set (DCMTK_DIR "" CACHE PATH "Root of DCMTK install tree (optional).")
+
 find_package (ZLIB)
 if (ZLIB_FOUND)
   message (STATUS "Looking for ZLIB - found")
@@ -59,14 +61,14 @@ find_path (
   /usr/local/dicom/include
   )
 
-if (UNIX)
-  find_file (DCMTK_HAVE_CONFIG_H dcmtk/config/cfunix.h
-    ${DCMTK_DIR}/include
-    /usr/local/dicom/include
-    )
-else ()
-  set (DCMTK_HAVE_CONFIG_H FALSE)
-endif ()
+# if (UNIX)
+#   find_file (DCMTK_HAVE_CONFIG_H dcmtk/config/cfunix.h
+#     ${DCMTK_DIR}/include
+#     /usr/local/dicom/include
+#     )
+# else ()
+#   set (DCMTK_HAVE_CONFIG_H FALSE)
+# endif ()
 
 find_library (DCMTK_dcmimgle_LIBRARY dcmimgle
   ${DCMTK_DIR}/dcmimgle/libsrc
@@ -205,10 +207,6 @@ if (DCMTK_INCLUDE_DIR
   if (WIN32)
     set (DCMTK_LIBRARIES ${DCMTK_LIBRARIES} netapi32 ws2_32)
   endif ()
-endif ()
-
-if (NOT DCMTK_FOUND)
-  set (DCMTK_DIR "" CACHE PATH "Root of DCMTK source tree (optional).")
 endif ()
 
 if (DCMTK_FOUND)

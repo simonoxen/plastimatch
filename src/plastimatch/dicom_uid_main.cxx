@@ -3,18 +3,12 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include <string.h>
-#include "dcmtk_config.h"
+#define HAVE_CONFIG_H 1               /* Needed for debian */
+#include "dcmtk/config/osconfig.h"
 #include "dcmtk/dcmdata/dcuid.h"
 #include "dcmtk/ofstd/ofstream.h"
+
 #include "dicom_uid.h"
-
-char* plm_dcmGenerateUniqueIdentifier (char* uid, const char* prefix);
-
-enum UID_Type {
-    STUDY,
-    SERIES,
-    INSTANCE
-};
 
 void
 print_usage (void)
