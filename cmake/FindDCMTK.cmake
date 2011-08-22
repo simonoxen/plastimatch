@@ -61,14 +61,14 @@ find_path (
   /usr/local/dicom/include
   )
 
-# if (UNIX)
-#   find_file (DCMTK_HAVE_CONFIG_H dcmtk/config/cfunix.h
-#     ${DCMTK_DIR}/include
-#     /usr/local/dicom/include
-#     )
-# else ()
-#   set (DCMTK_HAVE_CONFIG_H FALSE)
-# endif ()
+if (UNIX)
+  find_file (DCMTK_HAVE_CFUNIX_H dcmtk/config/cfunix.h
+    ${DCMTK_DIR}/include
+    /usr/local/dicom/include
+    )
+else ()
+  set (DCMTK_HAVE_CFUNIX_H FALSE)
+endif ()
 
 find_library (DCMTK_dcmimgle_LIBRARY dcmimgle
   ${DCMTK_DIR}/dcmimgle/libsrc

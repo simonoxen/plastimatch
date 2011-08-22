@@ -7,8 +7,7 @@
 #include <windows.h>
 #include <wincrypt.h>
 #endif
-#define HAVE_CONFIG_H 1               /* Needed for debian */
-#include "dcmtk/config/osconfig.h"
+#include "dcmtk_config.h"
 #include "dcmtk/dcmdata/dcuid.h"
 #include "dcmtk/ofstd/ofstream.h"
 

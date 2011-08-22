@@ -490,9 +490,6 @@ set (MONDOSHOT_SRC
   mondoshot_dicom.cpp mondoshot_dicom.h
   mondoshot_main.cpp mondoshot_main.h
   )
-set (MONDOSHOT_RELAY_SRC
-  mondoshot_relay_main.cpp
-  )
 set (OPENCL_PROBE_SRC
   opencl_probe_main.c
   )

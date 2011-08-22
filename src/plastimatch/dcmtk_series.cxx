@@ -4,8 +4,7 @@
 #include "plm_config.h"
 #include <stdlib.h>
 #include <stdio.h>
-#define HAVE_CONFIG_H 1               /* Needed for debian */
-#include "dcmtk/config/osconfig.h"
+#include "dcmtk_config.h"
 #include "dcmtk/ofstd/ofstream.h"
 #include "dcmtk/dcmdata/dctk.h"
 
