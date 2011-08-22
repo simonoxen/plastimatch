@@ -18,6 +18,11 @@ Dcmtk_series_set::Dcmtk_series_set ()
 {
 }
 
+Dcmtk_series_set::Dcmtk_series_set (const char* dicom_dir)
+{
+    this->insert_directory (dicom_dir);
+}
+
 Dcmtk_series_set::~Dcmtk_series_set ()
 {
     /* Delete Dicom_series objects in map */
@@ -74,9 +79,9 @@ Dcmtk_series_set::insert_directory (const char* dir)
 }
 
 void
-Dcmtk_series_set::debug (void)
+Dcmtk_series_set::debug (void) const
 {
-    Dcmtk_series_map::iterator it;
+    Dcmtk_series_map::const_iterator it;
     for (it = m_smap.begin(); it != m_smap.end(); ++it) {
 	const std::string& key = (*it).first;
 	const Dcmtk_series *ds = (*it).second;

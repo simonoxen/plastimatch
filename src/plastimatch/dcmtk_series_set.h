@@ -14,6 +14,7 @@ class Dcmtk_series_set
 {
 public:
     Dcmtk_series_set ();
+    Dcmtk_series_set (const char* dicom_dir);
     ~Dcmtk_series_set ();
 
 public:
@@ -24,7 +25,7 @@ public:
 public:
     void insert_file (const char* fn);
     void insert_directory (const char* fn);
-    void debug (void);
+    void debug (void) const;
 };
 
 #if defined __cplusplus

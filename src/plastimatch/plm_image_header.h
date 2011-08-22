@@ -45,14 +45,16 @@ class plastimatch1_EXPORT Plm_image_header {
     static int compare (Plm_image_header *pli1, Plm_image_header *pli2);
 
   public:
+    void set_dim (const int dim[3]);
     void set_origin (const float origin[3]);
     void set_spacing (const float spacing[3]);
-    void set_dim (const int dim[3]);
+    void set_direction_cosines (
+	const float direction_cosines[9]);
     void set_from_gpuit (
-	const int gpuit_dim[3],
-	const float gpuit_origin[3],
-	const float gpuit_spacing[3],
-	const float gpuit_direction_cosines[9]);
+	const int dim[3],
+	const float origin[3],
+	const float spacing[3],
+	const float direction_cosines[9]);
     void set_from_gpuit_bspline (Bspline_xform *bxf);
     void set_from_plm_image (Plm_image *pli);
     void set_from_volume_header (const Volume_header& vh);

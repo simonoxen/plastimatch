@@ -23,6 +23,18 @@ gpuit_EXPORT
 int
 parse_int13 (int *arr, const char *string);
 
+gpuit_EXPORT
+int
+parse_dicom_float2 (float *arr, const char *string);
+
+gpuit_EXPORT
+int
+parse_dicom_float3 (float *arr, const char *string);
+
+gpuit_EXPORT
+int
+parse_dicom_float6 (float *arr, const char *string);
+
 #if defined __cplusplus
 }
 #endif

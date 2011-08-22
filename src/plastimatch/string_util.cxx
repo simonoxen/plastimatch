@@ -40,6 +40,46 @@ parse_int13 (int *arr, const char *string)
     }
 }
 
+int
+parse_dicom_float2 (float *arr, const char *string)
+{
+    int rc;
+    rc = sscanf (string, "%f\\%f", &arr[0], &arr[1]);
+    if (rc == 2) {
+	return 0;
+    } else {
+	/* Failure */
+	return 1;
+    }
+}
+
+int
+parse_dicom_float3 (float *arr, const char *string)
+{
+    int rc;
+    rc = sscanf (string, "%f\\%f\\%f", &arr[0], &arr[1], &arr[2]);
+    if (rc == 3) {
+	return 0;
+    } else {
+	/* Failure */
+	return 1;
+    }
+}
+
+int
+parse_dicom_float6 (float *arr, const char *string)
+{
+    int rc;
+    rc = sscanf (string, "%f\\%f\\%f\\%f\\%f\\%f", 
+	&arr[0], &arr[1], &arr[2], &arr[3], &arr[4], &arr[5]);
+    if (rc == 6) {
+	return 0;
+    } else {
+	/* Failure */
+	return 1;
+    }
+}
+
 /* String trimming by GMan.
    http://stackoverflow.com/questions/1798112/removing-leading-and-trailing-spaces-from-a-string/1798170#1798170
    Distributed under Attribution-ShareAlike 3.0 Unported license (CC BY-SA 3.0) 

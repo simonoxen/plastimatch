@@ -31,6 +31,19 @@ itk_direction_identity (DirectionType* itk_direction);
    functions
    ----------------------------------------------------------------------- */
 void
+Plm_image_header::set_dim (const int dim[3])
+{
+    ImageRegionType::SizeType itk_size;
+    ImageRegionType::IndexType itk_index;
+    for (unsigned int d = 0; d < 3; d++) {
+	itk_index[d] = 0;
+	itk_size[d] = dim[d];
+    }
+    m_region.SetSize (itk_size);
+    m_region.SetIndex (itk_index);
+}
+
+void
 Plm_image_header::set_origin (const float origin[3])
 {
     for (unsigned int d = 0; d < 3; d++) {
@@ -47,41 +60,26 @@ Plm_image_header::set_spacing (const float spacing[3])
 }
 
 void
-Plm_image_header::set_dim (const int dim[3])
+Plm_image_header::set_direction_cosines (const float direction_cosines[9])
 {
-    ImageRegionType::SizeType itk_size;
-    ImageRegionType::IndexType itk_index;
-    for (unsigned int d = 0; d < 3; d++) {
-	itk_index[d] = 0;
-	itk_size[d] = dim[d];
+    if (direction_cosines) {
+	itk_direction_from_gpuit (&m_direction, direction_cosines);
+    } else {
+	itk_direction_identity (&m_direction);
     }
-    m_region.SetSize (itk_size);
-    m_region.SetIndex (itk_index);
 }
 
 void
 Plm_image_header::set_from_gpuit (
-    const int gpuit_dim[3],
-    const float gpuit_origin[3],
-    const float gpuit_spacing[3],
-    const float gpuit_direction_cosines[9])
+    const int dim[3],
+    const float origin[3],
+    const float spacing[3],
+    const float direction_cosines[9])
 {
-    ImageRegionType::SizeType itk_size;
-    ImageRegionType::IndexType itk_index;
-
-    for (unsigned int d1 = 0; d1 < 3; d1++) {
-	m_origin[d1] = gpuit_origin[d1];
-	m_spacing[d1] = gpuit_spacing[d1];
-	itk_index[d1] = 0;
-	itk_size[d1] = gpuit_dim[d1];
-    }
-    if (gpuit_direction_cosines) {
-	itk_direction_from_gpuit (&m_direction, gpuit_direction_cosines);
-    } else {
-	itk_direction_identity (&m_direction);
-    }
-    m_region.SetSize (itk_size);
-    m_region.SetIndex (itk_index);
+    this->set_dim (dim);
+    this->set_origin (origin);
+    this->set_spacing (spacing);
+    this->set_direction_cosines (direction_cosines);
 }
 
 void

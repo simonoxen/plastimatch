@@ -5,6 +5,8 @@
 #define _dcmtk_file_h_
 
 #include "plm_config.h"
+#include "string_util.h"
+#include "plm_image_header.h"
 
 class DcmFile;
 class DcmDataset;
@@ -20,6 +22,7 @@ public:
 public:
     std::string m_fn;
     DcmFileFormat *m_dfile;
+    Plm_image_header m_pih;
     
 public:
     void init ();
