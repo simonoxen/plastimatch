@@ -2,10 +2,11 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
+#include <float.h>
+#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <math.h>
 #include "bspline.h"
 #include "bspline_optimize.h"
 #include "bspline_optimize_lbfgsb.h"
@@ -44,108 +45,207 @@ setulb_ (integer*       n,
 }
 #endif
 
-#if defined (commentout)
-#define N 25
-#define M 5
-#define NMAX 1024
-#define MMAX 17
-#define NMAX 1024
-#define MMAX 17
-//#define N 25
-//#define M 5
-#define N NMAX
-#define M MMAX
-#endif
-
-
-#if defined (commentout)
-SAVEME ()
+class Nocedal_optimizer
 {
-
+public:
     char task[60], csave[60];
     logical lsave[4];
-#if defined (commentout)
-    integer n, m, iprint, nbd[NMAX], iwa[3*NMAX], isave[44];
-    doublereal f, factr, pgtol, x[NMAX], l[NMAX], u[NMAX], g[NMAX],
-	    wa[2*MMAX*NMAX+4*NMAX+12*MMAX*MMAX+12*MMAX], dsave[29];
-#endif
+    integer n, m, iprint, *nbd, *iwa, isave[44];
+    doublereal f, factr, pgtol, *x, *l, *u, *g, *wa, dsave[29];
+public:
+    Nocedal_optimizer (Bspline_optimize_data *bod);
+    ~Nocedal_optimizer () {
+	free (nbd);
+	free (iwa);
+	free (x);
+	free (l);
+	free (u);
+	free (g);
+	free (wa);
+    }
+    void setulb () {
+	setulb_ (&n,&m,x,l,u,nbd,&f,g,&factr,&pgtol,wa,iwa,task,&iprint,
+	    csave,lsave,isave,dsave,60,60);
+    }
+};
 
-    doublereal t1, t2;
-    integer i;
+Nocedal_optimizer::Nocedal_optimizer (Bspline_optimize_data *bod)
+{
+    Bspline_xform *bxf = bod->bxf;
+    Bspline_parms *parms = bod->parms;
 
+    int NMAX = bxf->num_coeff;
+    int MMAX = 20;
 
-    nbd = (integer*) malloc (sizeof(integer)*NMAX);
-    iwa = (integer*) malloc (sizeof(integer)*3*NMAX);
-    x = (doublereal*) malloc (sizeof(doublereal)*NMAX);
-    l = (doublereal*) malloc (sizeof(doublereal)*NMAX);
-    u = (doublereal*) malloc (sizeof(doublereal)*NMAX);
-    g = (doublereal*) malloc (sizeof(doublereal)*NMAX);
-    wa = (doublereal*) malloc (sizeof(doublereal)*2*MMAX*NMAX+4*NMAX+12*MMAX*MMAX+12*MMAX);
+    /* Try to allocate memory for hessian approximation.  
+       First guess based on heuristic. */
+    if (bxf->num_coeff >= 20) {
+	MMAX = 20 + (int) floor (sqrt ((float) (bxf->num_coeff - 20)));
+	if (MMAX > 1000) {
+	    MMAX = 1000;
+	}
+    }
+    do {
+	nbd = (integer*) malloc (sizeof(integer)*NMAX);
+	iwa = (integer*) malloc (sizeof(integer)*3*NMAX);
+	x = (doublereal*) malloc (sizeof(doublereal)*NMAX);
+	l = (doublereal*) malloc (sizeof(doublereal)*NMAX);
+	u = (doublereal*) malloc (sizeof(doublereal)*NMAX);
+	g = (doublereal*) malloc (sizeof(doublereal)*NMAX);
+	wa = (doublereal*) malloc (sizeof(doublereal)
+	    *(2*MMAX*NMAX+4*NMAX+12*MMAX*MMAX+12*MMAX));
 
-    printf ("Hello world\n");
-    n=N;
-    m=M;
+	if ((nbd == NULL) ||
+	    (iwa == NULL) ||
+	    (  x == NULL) ||
+	    (  l == NULL) ||
+	    (  u == NULL) ||
+	    (  g == NULL) ||
+	    ( wa == NULL))
+	{
+	    /* We didn't get enough memory.  Free what we got. */
+	    free (nbd);
+	    free (iwa);
+	    free (x);
+	    free (l);
+	    free (u);
+	    free (g);
+	    free (wa);
+
+	    /* Try again with reduced request */
+	    if (MMAX > 20) {
+		MMAX = MMAX / 2;
+	    } else if (MMAX > 10) {
+		MMAX = 10;
+	    } else if (MMAX > 2) {
+		MMAX --;
+	    } else {
+		print_and_exit ("System ran out of memory when "
+		    "initializing Nocedal optimizer.\n");
+	    }
+	}
+	else {
+	    /* Everything went great.  We got the memory. */
+	    break;
+	}
+    } while (1);
+    m = MMAX;
+    n = NMAX;
+
+    /* Give a little feedback to the user */
+    logfile_printf ("Setting NMAX, MMAX = %d %d\n", NMAX, MMAX);
+
+    /* If iprint is 1, the file iterate.dat will be created */
     iprint = 1;
-    factr=1.0e+7;
-    pgtol=1.0e-5;
+    iprint = 0;
 
-    /* Odd numbered fortran variables */
-    for (i=0; i < n; i+=2) {
-	nbd[i] = 2;
-	l[i]=1.0e0;
-	u[i]=1.0e2;
+    //factr = 1.0e+7;
+    //pgtol = 1.0e-5;
+    factr = parms->lbfgsb_factr;
+    pgtol = parms->lbfgsb_pgtol;
+
+    /* Bounds for deformation problem */
+    for (int i = 0; i < n; i++) {
+	nbd[i] = 0;
+	l[i]=-1.0e1;
+	u[i]=+1.0e1;
     }
-    /* Even numbered fortran variables */
-    for (i=1; i < n; i+=2) {
-	nbd[i] = 2;
-	l[i]=-1.0e2;
-	u[i]=1.0e2;
-    }
-    for (i=0; i < n; i++) {
-	x[i] = 3.0e0;
+
+    /* Initial guess */
+    for (int i = 0; i < n; i++) {
+	x[i] = bxf->coeff[i];
     }
 
     /* Remember: Fortran expects strings to be padded with blanks */
     memset (task, ' ', sizeof(task));
     memcpy (task, "START", 5);
-    printf ("%c%c%c%c%c%c%c%c%c%c\n", 
-	    task[0], task[1], task[2], task[3], task[4], 
-	    task[5], task[6], task[7], task[8], task[9]);
+    logfile_printf (">>> %c%c%c%c%c%c%c%c%c%c\n", 
+	task[0], task[1], task[2], task[3], task[4], 
+	task[5], task[6], task[7], task[8], task[9]);
+}
+
+void
+bspline_optimize_lbfgsb (
+    Bspline_optimize_data *bod
+)
+{
+    Bspline_xform *bxf = bod->bxf;
+    Bspline_state *bst = bod->bst;
+    Bspline_parms *parms = bod->parms;
+    Volume *fixed = bod->fixed;
+    Volume *moving = bod->moving;
+    Volume *moving_grad = bod->moving_grad;
+    Bspline_score* ssd = &bst->ssd;
+    FILE *fp = 0;
+    double best_score = DBL_MAX;
+
+    Nocedal_optimizer optimizer (bod);
+
+    /* Initialize # iterations, # function evaluations */
+    bst->it = 0;
+    bst->feval = 0;
+
+    if (parms->debug) {
+	fp = fopen ("scores.txt", "w");
+    }
 
     while (1) {
-	setulb_(&n,&m,x,l,u,nbd,&f,g,&factr,&pgtol,wa,iwa,task,&iprint,
-		csave,lsave,isave,dsave,60,60);
-	for (i = 0; i < 60; i++) printf ("%c", task[i]); printf ("\n");
-	if (task[0] == 'F' && task[1] == 'G') {
-	    /* Compute cost */
-	    t1 = x[0]-1.e0;
-	    f = 0.25e0 * t1 * t1;
-	    for (i = 1; i < n; i++) {
-		t1 = x[i-1] * x[i-1];
-		t2 = x[i] - t1;
-		f += t2 * t2;
+	/* Get next search location */
+	optimizer.setulb ();
+
+	if (optimizer.task[0] == 'F' && optimizer.task[1] == 'G') {
+	    /* Got a new probe location within a line search */
+
+	    /* Copy from fortran to C (double -> float) */
+	    for (int i = 0; i < bxf->num_coeff; i++) {
+		bxf->coeff[i] = (float) optimizer.x[i];
 	    }
-	    f *= 4.0;
-	    printf ("C/f = %g\n", f);
-	    /* Compute gradient */
-	    t1 = x[1] - x[0] * x[0];
-	    g[0] = 2.0 * (x[0] - 1.0) - 1.6e1 * x[0] * t1;
-	    for (i = 1; i < n-1; i++) {
-		t2 = t1;
-		t1 = x[i+1] - x[i] * x[i];
-		g[i] = 8.0 * t2 - 1.6e1 * x[i] * t1;
+
+	    /* Compute cost and gradient */
+	    bspline_score (parms, bst, bxf, fixed, moving, moving_grad);
+
+	    /* Give a little feedback to the user */
+	    bspline_display_coeff_stats (bxf);
+
+	    /* Save some debugging information */
+	    bspline_save_debug_state (parms, bst, bxf);
+	    if (parms->debug) {
+		fprintf (fp, "%f\n", ssd->score);
 	    }
-	    g[n] = 8.0 * t1;
-	    //	} else if (s_cmp(task, "NEW_X", (ftnlen)60, (ftnlen)5) == 0) {
-	} else if (memcmp (task, "NEW_X", strlen ("NEW_X")) == 0) {
-	    /* continue */
+
+	    /* Copy from C to fortran (float -> double) */
+	    optimizer.f = ssd->score;
+	    for (int i = 0; i < bxf->num_coeff; i++) {
+		optimizer.g[i] = ssd->grad[i];
+	    }
+
+	    /* Check # feval */
+	    if (bst->feval >= parms->max_feval) break;
+	    bst->feval ++;
+
+	} else if (memcmp (optimizer.task, "NEW_X", strlen ("NEW_X")) == 0) {
+	    /* Optimizer has completed a line search. */
+
+	    /* Check iterations */
+	    if (bst->it >= parms->max_its) break;
+	    bst->it ++;
+
 	} else {
 	    break;
 	}
     }
-}
-#endif
 
+    if (parms->debug) {
+	fclose (fp);
+    }
+
+}
+
+
+/* 00000000000000000000000000000000000000000000000000000000000000000000000
+   Delete this when refactoring is done.
+   * **************************************************************************/
+#if defined (commentout)
 void
 bspline_optimize_lbfgsb (
     Bspline_optimize_data *bod
@@ -165,10 +265,7 @@ bspline_optimize_lbfgsb (
     integer i;
     int NMAX, MMAX;
     FILE *fp = 0;
-    //    double best_score;
-
-    /* F2C Builtin function */
-    //    integer s_cmp (char *, char *, ftnlen, ftnlen);
+    double best_score = DBL_MAX;
 
     NMAX = bxf->num_coeff;
     // MMAX = (int) floor (bxf->num_coeff / 100);
@@ -185,7 +282,6 @@ bspline_optimize_lbfgsb (
 	    MMAX = 1000;
 	}
     }
-
     logfile_printf ("Setting NMAX, MMAX = %d %d\n", NMAX, MMAX);
 
     nbd = (integer*) malloc (sizeof(integer)*NMAX);
@@ -197,15 +293,15 @@ bspline_optimize_lbfgsb (
     wa = (doublereal*) malloc (sizeof(doublereal)*(2*MMAX*NMAX+4*NMAX+12*MMAX*MMAX+12*MMAX));
 
     if ( (nbd == NULL) ||
-         (iwa == NULL) ||
-         (  x == NULL) ||
-         (  l == NULL) ||
-         (  u == NULL) ||
-         (  g == NULL) ||
-         ( wa == NULL) )
+	(iwa == NULL) ||
+	(  x == NULL) ||
+	(  l == NULL) ||
+	(  u == NULL) ||
+	(  g == NULL) ||
+	( wa == NULL) )
     {
-        error_printf ("System ran out of memory when initializing optimizer.\n\n");
-        exit (1);
+	error_printf ("System ran out of memory when initializing optimizer.\n\n");
+	exit (1);
     }
 
     n=NMAX;
@@ -236,8 +332,8 @@ bspline_optimize_lbfgsb (
     memset (task, ' ', sizeof(task));
     memcpy (task, "START", 5);
     logfile_printf (">>> %c%c%c%c%c%c%c%c%c%c\n", 
-		    task[0], task[1], task[2], task[3], task[4], 
-		    task[5], task[6], task[7], task[8], task[9]);
+	task[0], task[1], task[2], task[3], task[4], 
+	task[5], task[6], task[7], task[8], task[9]);
 
     /* Initialize # iterations, # function evaluations */
     bst->it = 0;
@@ -249,7 +345,7 @@ bspline_optimize_lbfgsb (
 
     while (1) {
 	setulb_(&n,&m,x,l,u,nbd,&f,g,&factr,&pgtol,wa,iwa,task,&iprint,
-		csave,lsave,isave,dsave,60,60);
+	    csave,lsave,isave,dsave,60,60);
 #if defined (commentout)
 	logfile_printf (">>> ");
 	for (i = 0; i < 60; i++) {
@@ -301,11 +397,5 @@ bspline_optimize_lbfgsb (
 	fclose (fp);
     }
 
-    free (nbd);
-    free (iwa);
-    free (x);
-    free (l);
-    free (u);
-    free (g);
-    free (wa);
 }
+#endif
