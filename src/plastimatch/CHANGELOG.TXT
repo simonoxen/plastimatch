@@ -1,5 +1,9 @@
 Version 1.5.4 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
+* Fix bug in Nocedal optimizer where wrong answer is returned when 
+   optimization ends during partial line search
+* Fix bug where Nocedal optimizer would run out of memory during 
+  initialization of large problems
 * Fix bug where --fixed option was ignored when resampling vector fields
 
 Version 1.5.3 (build 2678)

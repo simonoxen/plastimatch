@@ -1524,8 +1524,8 @@ plmtest_check_interval (
   "plm-bsp-regularize-none-check"
   "${PLM_TESTING_BUILD_DIR}/plm-bsp-regularize-none-stats.stdout.txt"
   "MINJAC *([-0-9.]*)"
-  "-0.01"
-  "0"
+  "0.31"
+  "0.32"
   )
 plm_add_test (
   "plm-bsp-regularize-analytic" 

@@ -112,6 +112,11 @@ Nocedal_optimizer::Nocedal_optimizer (Bspline_optimize_data *bod)
 	    free (g);
 	    free (wa);
 
+	    /* Give a little feedback to the user */
+	    logfile_printf (
+		"Tried NMAX, MMAX = %d %d, but ran out of memory!\n",
+		NMAX, MMAX);
+
 	    /* Try again with reduced request */
 	    if (MMAX > 20) {
 		MMAX = MMAX / 2;
@@ -136,7 +141,6 @@ Nocedal_optimizer::Nocedal_optimizer (Bspline_optimize_data *bod)
     logfile_printf ("Setting NMAX, MMAX = %d %d\n", NMAX, MMAX);
 
     /* If iprint is 1, the file iterate.dat will be created */
-    iprint = 1;
     iprint = 0;
 
     //factr = 1.0e+7;
@@ -178,6 +182,7 @@ bspline_optimize_lbfgsb (
     Bspline_score* ssd = &bst->ssd;
     FILE *fp = 0;
     double best_score = DBL_MAX;
+    float *best_coeff = (float*) malloc (sizeof(float) * bxf->num_coeff);
 
     Nocedal_optimizer optimizer (bod);
 
@@ -203,6 +208,14 @@ bspline_optimize_lbfgsb (
 
 	    /* Compute cost and gradient */
 	    bspline_score (parms, bst, bxf, fixed, moving, moving_grad);
+
+	    /* Save coeff if best score */
+	    if (ssd->score < best_score) {
+		best_score = ssd->score;
+		for (int i = 0; i < bxf->num_coeff; i++) {
+		    best_coeff[i] = bxf->coeff[i];
+		}
+	    }
 
 	    /* Give a little feedback to the user */
 	    bspline_display_coeff_stats (bxf);
@@ -239,6 +252,10 @@ bspline_optimize_lbfgsb (
 	fclose (fp);
     }
 
+    /* Copy out the best results */
+    for (int i = 0; i < bxf->num_coeff; i++) {
+	bxf->coeff[i] = best_coeff[i];
+    }
 }
 
 
@@ -397,5 +414,6 @@ bspline_optimize_lbfgsb (
 	fclose (fp);
     }
 
+    free (best_coeff);
 }
 #endif
