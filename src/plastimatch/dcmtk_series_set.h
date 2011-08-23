@@ -25,6 +25,7 @@ public:
 public:
     void insert_file (const char* fn);
     void insert_directory (const char* fn);
+    void sort_all (void);
     void debug (void) const;
 };
 

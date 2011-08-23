@@ -85,7 +85,15 @@ Dcmtk_file::load (const char *fn) {
 	float direction_cosines[9];
 	int rc = parse_dicom_float6 (direction_cosines, c);
 	if (!rc) {
-	    /* GCS FIX: Need to find 3rd component */
+	    direction_cosines[6] 
+		= direction_cosines[1]*direction_cosines[5] 
+		- direction_cosines[2]*direction_cosines[4];
+	    direction_cosines[7] 
+		= direction_cosines[2]*direction_cosines[3] 
+		- direction_cosines[0]*direction_cosines[5];
+	    direction_cosines[8] 
+		= direction_cosines[0]*direction_cosines[4] 
+		- direction_cosines[1]*direction_cosines[3];
 	    this->m_pih.set_direction_cosines (direction_cosines);
 	}
     }
@@ -111,6 +119,12 @@ Dcmtk_file::get_cstr (const DcmTagKey& tag_key)
 	return c;
     }
     return 0;
+}
+
+bool
+dcmtk_file_compare_z_position (const Dcmtk_file* f1, const Dcmtk_file* f2)
+{
+    return f1->m_pih.m_origin[2] < f2->m_pih.m_origin[2];
 }
 
 void

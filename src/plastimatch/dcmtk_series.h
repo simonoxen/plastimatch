@@ -16,10 +16,12 @@ public:
     ~Dcmtk_series ();
 
 public:
+    
     std::list<Dcmtk_file*> m_flist;
 
 public:
     void insert (Dcmtk_file* df);
+    void sort (void);
     void debug (void) const;
 };
 

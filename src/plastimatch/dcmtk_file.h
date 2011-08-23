@@ -61,6 +61,10 @@ plastimatch1_EXPORT
 void
 dcmtk_series_test (char *dicom_dir);
 
+plastimatch1_EXPORT
+bool
+dcmtk_file_compare_z_position (const Dcmtk_file* f1, const Dcmtk_file* f2);
+
 #if defined __cplusplus
 }
 #endif

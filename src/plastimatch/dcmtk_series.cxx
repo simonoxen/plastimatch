@@ -31,6 +31,12 @@ Dcmtk_series::insert (Dcmtk_file *df)
 }
 
 void
+Dcmtk_series::sort (void)
+{
+    m_flist.sort (dcmtk_file_compare_z_position);
+}
+
+void
 Dcmtk_series::debug (void) const
 {
     std::list<Dcmtk_file*>::const_iterator it;

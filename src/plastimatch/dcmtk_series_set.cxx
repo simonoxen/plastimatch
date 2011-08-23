@@ -78,6 +78,18 @@ Dcmtk_series_set::insert_directory (const char* dir)
 }
 
 void
+Dcmtk_series_set::sort_all (void) 
+{
+    Dcmtk_series_map::iterator it;
+    for (it = m_smap.begin(); it != m_smap.end(); ++it) {
+	const std::string& key = (*it).first;
+	Dcmtk_series *ds = (*it).second;
+	UNUSED_VARIABLE (key);
+	ds->sort ();
+    }
+}
+
+void
 Dcmtk_series_set::debug (void) const
 {
     Dcmtk_series_map::const_iterator it;
@@ -96,5 +108,6 @@ dcmtk_series_set_test (char *dicom_dir)
     Dcmtk_series_set dss;
     printf ("Searching directory: %s\n", dicom_dir);
     dss.insert_directory (dicom_dir);
+    dss.sort_all ();
     dss.debug ();
 }
