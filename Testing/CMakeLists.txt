@@ -1730,13 +1730,13 @@ plm_add_test (
   "plm-warp-pointset-a" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--xf;${PLM_TESTING_BUILD_DIR}/plm-reg-rect-bspline-xf.txt;--input;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;--output-pointset;${PLM_TESTING_BUILD_DIR}/plm-warp-pointset-a.fcsv"
+  "warp;--xf;${PLM_TESTING_BUILD_DIR}/plm-bsp-rect-xf.txt;--input;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;--output-pointset;${PLM_TESTING_BUILD_DIR}/plm-warp-pointset-a.fcsv"
   )
 plm_add_test (
   "plm-warp-pointset-b" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--xf;${PLM_TESTING_BUILD_DIR}/plm-reg-rect-bspline-xf.txt;--input;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;--output-pointset;${PLM_TESTING_BUILD_DIR}/plm-warp-pointset-b.txt"
+  "warp;--xf;${PLM_TESTING_BUILD_DIR}/plm-bsp-rect-xf.txt;--input;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;--output-pointset;${PLM_TESTING_BUILD_DIR}/plm-warp-pointset-b.txt"
   )
 plm_add_test (
   "plm-warp-pointset-c" 
