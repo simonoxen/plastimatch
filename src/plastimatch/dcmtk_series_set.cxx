@@ -12,6 +12,7 @@
 #include "dcmtk_file.h"
 #include "dcmtk_series_set.h"
 #include "print_and_exit.h"
+#include "rtds.h"
 
 Dcmtk_series_set::Dcmtk_series_set ()
 {
@@ -99,6 +100,25 @@ Dcmtk_series_set::debug (void) const
 	UNUSED_VARIABLE (ds);
 	printf ("SeriesInstanceUID = %s\n", key.c_str());
 	ds->debug ();
+    }
+}
+
+void
+Dcmtk_series_set::load_rtds (Rtds *rtds)
+{
+    Dcmtk_series_map::iterator it;
+    for (it = m_smap.begin(); it != m_smap.end(); ++it) {
+	const std::string& key = (*it).first;
+	Dcmtk_series *ds = (*it).second;
+	UNUSED_VARIABLE (key);
+
+	/* Classify the series, looking for "image", "RTDOSE", 
+	   or "RTSTRUCT".  We want at most one of each. 
+	   Arbitrarily we choose the first one found. */
+	if (ds->get_modality() == "CT") {
+	    rtds->m_img = ds->load_plm_image ();
+	    continue;
+	}
     }
 }
 

@@ -7,7 +7,12 @@
 #include "plm_config.h"
 #include "itk_image.h"
 
+class Rtds;
+
 plastimatch1_EXPORT
 ShortImageType::Pointer dcmtk_load (const char *dicom_dir);
+
+void
+dcmtk_load_rtds (Rtds *rtds, const char *dicom_dir);
 
 #endif

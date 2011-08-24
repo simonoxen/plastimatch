@@ -10,6 +10,8 @@
 
 #include "dcmtk_series.h"
 
+class Rtds;
+
 class Dcmtk_series_set
 {
 public:
@@ -23,10 +25,11 @@ public:
     Dcmtk_series_map m_smap;
 
 public:
+    void debug (void) const;
+    void load_rtds (Rtds *rtds);
     void insert_file (const char* fn);
     void insert_directory (const char* fn);
     void sort_all (void);
-    void debug (void) const;
 };
 
 #if defined __cplusplus

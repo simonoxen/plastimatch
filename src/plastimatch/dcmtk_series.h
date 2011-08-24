@@ -8,6 +8,7 @@
 #include <list>
 
 class Dcmtk_file;
+class Plm_image;
 
 class Dcmtk_series 
 {
@@ -20,9 +21,11 @@ public:
     std::list<Dcmtk_file*> m_flist;
 
 public:
-    void insert (Dcmtk_file* df);
-    void sort (void);
     void debug (void) const;
+    std::string get_modality (void) const;
+    void insert (Dcmtk_file* df);
+    Plm_image* load_plm_image ();
+    void sort (void);
 };
 
 #endif

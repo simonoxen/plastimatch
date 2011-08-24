@@ -9,6 +9,7 @@
 #include "dcmtk/dcmdata/dctk.h"
 
 #include "dcmtk_file.h"
+#include "plm_int.h"
 #include "print_and_exit.h"
 
 Dcmtk_file::Dcmtk_file () {
@@ -25,17 +26,29 @@ Dcmtk_file::~Dcmtk_file () {
 }
 
 void
+Dcmtk_file::debug () const
+{
+    printf (" %s\n", m_fn.c_str());
+    m_vh.print ();
+}
+
+void
 Dcmtk_file::init ()
 {
     m_dfile = new DcmFileFormat;
     m_fn = "";
 }
 
-void
-Dcmtk_file::debug () const
+/* Look up DICOM value from tag */
+const char*
+Dcmtk_file::get_cstr (const DcmTagKey& tag_key) const
 {
-    printf (" %s\n", m_fn.c_str());
-    m_pih.print ();
+    const char *c = 0;
+    DcmDataset *dset = m_dfile->getDataset();
+    if (dset->findAndGetString(tag_key, c).good() && c) {
+	return c;
+    }
+    return 0;
 }
 
 void
@@ -62,7 +75,7 @@ Dcmtk_file::load (const char *fn) {
 	float origin[3];
 	int rc = parse_dicom_float3 (origin, c);
 	if (!rc) {
-	    this->m_pih.set_origin (origin);
+	    this->m_vh.set_origin (origin);
 	}
     }
 
@@ -75,7 +88,7 @@ Dcmtk_file::load (const char *fn) {
 	    dim[0] = cols;
 	    dim[1] = rows;
 	    dim[2] = 1;
-	    this->m_pih.set_dim (dim);
+	    this->m_vh.set_dim (dim);
 	}
     }
 
@@ -94,7 +107,7 @@ Dcmtk_file::load (const char *fn) {
 	    direction_cosines[8] 
 		= direction_cosines[0]*direction_cosines[4] 
 		- direction_cosines[1]*direction_cosines[3];
-	    this->m_pih.set_direction_cosines (direction_cosines);
+	    this->m_vh.set_direction_cosines (direction_cosines);
 	}
     }
 
@@ -105,26 +118,15 @@ Dcmtk_file::load (const char *fn) {
 	int rc = parse_dicom_float2 (spacing, c);
 	if (!rc) {
 	    spacing[2] = 0.0;
-	    this->m_pih.set_spacing (spacing);
+	    this->m_vh.set_spacing (spacing);
 	}
     }
-}
-
-const char*
-Dcmtk_file::get_cstr (const DcmTagKey& tag_key)
-{
-    const char *c = 0;
-    DcmDataset *dset = m_dfile->getDataset();
-    if (dset->findAndGetString(tag_key, c).good() && c) {
-	return c;
-    }
-    return 0;
 }
 
 bool
 dcmtk_file_compare_z_position (const Dcmtk_file* f1, const Dcmtk_file* f2)
 {
-    return f1->m_pih.m_origin[2] < f2->m_pih.m_origin[2];
+    return f1->m_vh.m_origin[2] < f2->m_vh.m_origin[2];
 }
 
 void
