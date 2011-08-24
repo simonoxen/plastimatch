@@ -9,6 +9,7 @@
 #include "itkMetaDataDictionary.h"
 #include "itkMetaDataObject.h"
 
+#include "dcmtk_load.h"
 #include "file_util.h"
 #include "itk_image.h"
 #include "itk_image_cast.h"
@@ -205,12 +206,16 @@ Plm_image::load_native (const char* fname)
 void
 Plm_image::load_native_dicom (const char* fname)
 {
+#if PLM_CONFIG_PREFER_DCMTK
+    this->m_itk_short = itk_image_load_short (fname, 0);
+#else
     /* GCS FIX: We don't yet have a way of getting original pixel type 
 	for dicom.  Force SHORT */
     /* FIX: Patient position / direction cosines not set */
     this->m_itk_short = itk_image_load_short (fname, 0);
     this->m_original_type = PLM_IMG_TYPE_ITK_SHORT;
     this->m_type = PLM_IMG_TYPE_ITK_SHORT;
+#endif
 }
 
 

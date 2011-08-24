@@ -394,6 +394,7 @@ endif ()
 if (DCMTK_FOUND AND NOT DCMTK_VERSION_STRING VERSION_LESS 3.6.0)
   set (PLASTIMATCH1_LIBRARY_SRC
     ${PLASTIMATCH1_LIBRARY_SRC}
+    dcmtk_load.cxx dcmtk_load.h
     dcmtk_file.cxx dcmtk_file.h
     dcmtk_series.cxx dcmtk_series.h
     dcmtk_series_set.cxx dcmtk_series_set.h
