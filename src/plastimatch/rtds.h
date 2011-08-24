@@ -50,6 +50,8 @@ public:
 	Plm_image_patient_position patient_pos);
     void load_rdd (const char *rdd);
     void load_dicom (const char *dicom_dir); 
+    void load_dcmtk (const char *dicom_dir); 
+    void load_gdcm (const char *dicom_dir); 
     void save_dicom (const char *output_dir);
     void convert_ss_img_to_cxt (void);
     void set_user_metadata (std::vector<std::string>& metadata);

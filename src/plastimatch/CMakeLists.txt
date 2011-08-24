@@ -344,7 +344,9 @@ set (PLASTIMATCH1_LIBRARY_SRC
   rbf_cluster.cxx rbf_cluster.h
   referenced_dicom_dir.cxx referenced_dicom_dir.h 
   rtds.cxx rtds.h
+  rtds_dcmtk.cxx
   rtds_dicom.cxx rtds_dicom.h
+  rtds_gdcm.cxx
   rtds_warp.cxx rtds_warp.h
   rtss.cxx rtss.h
   rtss_polyline_set.cxx rtss_polyline_set.h 

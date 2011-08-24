@@ -25,33 +25,10 @@ Rtds::load_dicom (const char *dicom_dir)
 	return;
     }
 
-#if GDCM_VERSION_1
-    if (m_gdcm_series) {
-	delete m_gdcm_series;
-    }
-    m_gdcm_series = new Gdcm_series;
-    m_gdcm_series->load (dicom_dir);
-    m_gdcm_series->digest_files ();
-
-     if (m_gdcm_series->m_rtdose_file_list) {
-	const std::string& filename = m_gdcm_series->get_rtdose_filename();
-	m_dose = gdcm1_dose_load (0, filename.c_str(), dicom_dir);
-    }
-    if (m_gdcm_series->m_rtstruct_file_list) {
-	const std::string& filename = m_gdcm_series->get_rtstruct_filename();
-	m_ss_image = new Rtss (this);
-	m_ss_image->load_gdcm_rtss (filename.c_str(), &m_rdd);
-    }
-#endif
-
-    /* Use existing itk reader for the image.
-       This is required because the native dicom reader doesn't yet 
-       handle things like MR. */
-    m_img = plm_image_load_native (dicom_dir);
-
-#if GDCM_VERSION_1
-    /* Use native reader to set img_metadata */
-    m_gdcm_series->get_img_metadata (&m_img_metadata);
+#if PLM_DCM_USE_DCMTK
+    this->load_dcmtk (dicom_dir);
+#else
+    this->load_gdcm (dicom_dir);
 #endif
 }
 
