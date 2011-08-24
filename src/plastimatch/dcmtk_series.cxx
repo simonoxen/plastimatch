@@ -59,28 +59,64 @@ Dcmtk_series::load_plm_image (void)
     /* Sort in Z direction */
     this->sort ();
 
+    /* GCS FIX:
+       (1) Direction cosines
+       (2) Minimum 2 slices
+    */
+
     /* Get first slice */
-    std::list<Dcmtk_file*>::iterator it;
-    it = m_flist.begin();
+    std::list<Dcmtk_file*>::iterator it = m_flist.begin();
     Dcmtk_file *df = (*it);
     float z_prev, z_diff;
+    int slice_no = 0;
     z_prev = df->m_vh.m_origin[2];
 
     /* Get next slice */
-    ++it;
+    ++it; ++slice_no;
     df = (*it);
     z_diff = df->m_vh.m_origin[2] - z_prev;
     z_prev = df->m_vh.m_origin[2];
-    printf ("%f\n", z_diff);
+
+    /* We want to find the largest chunk with equal spacing.  This will 
+       be used to resample in the case of irregular spacing. */
+    int this_chunk_start = 0, best_chunk_start = 0;
+    float this_chunk_diff = z_diff, best_chunk_diff = z_diff;
+    int this_chunk_len = 2, best_chunk_len = 2;
 
     /* Loop through remaining slices */
     while (++it != m_flist.end())
     {
+	++slice_no;
 	df = (*it);
 	z_diff = df->m_vh.m_origin[2] - z_prev;
 	z_prev = df->m_vh.m_origin[2];
-	printf ("%f\n", z_diff);
+
+	if (fabs (this_chunk_diff - z_diff) > 0.11) {
+	    /* Start a new chunk if difference in thickness is 
+	       more than 0.1 millimeter */
+	    this_chunk_start = slice_no - 1;
+	    this_chunk_len = 2;
+	    this_chunk_diff = z_diff;
+	} else {
+	    /* Same thickness, increase size of this chunk */
+	    this_chunk_diff = ((this_chunk_len * this_chunk_diff) + z_diff)
+		/ (this_chunk_len + 1);
+	    this_chunk_len++;
+
+	    // Check if this chunk is now the best chunk
+	    if (this_chunk_len > best_chunk_len) {
+		best_chunk_start = this_chunk_start;
+		best_chunk_len = this_chunk_len;
+		best_chunk_diff = this_chunk_diff;
+	    }
+	}
     }
+
+    /* Report information about best chunk */
+    printf ("Best chuck:\n  Slices %d to %d from (0 to %d)\n"
+	"  Slice spacing = %f\n", 
+	best_chunk_start, best_chunk_start + best_chunk_len - 1, 
+	slice_no, best_chunk_diff);
 
 #if defined (commentout)
     /* Try to assess best Z spacing */
