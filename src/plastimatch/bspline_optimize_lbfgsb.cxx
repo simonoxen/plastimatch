@@ -256,6 +256,7 @@ bspline_optimize_lbfgsb (
     for (int i = 0; i < bxf->num_coeff; i++) {
 	bxf->coeff[i] = best_coeff[i];
     }
+    free (best_coeff);
 }
 
 
@@ -414,6 +415,5 @@ bspline_optimize_lbfgsb (
 	fclose (fp);
     }
 
-    free (best_coeff);
 }
 #endif
