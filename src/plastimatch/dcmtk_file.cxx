@@ -63,6 +63,27 @@ Dcmtk_file::get_uint16 (const DcmTagKey& tag_key, uint16_t* val) const
     return m_dfile->getDataset()->findAndGetUint16(tag_key, (*val)).good();
 }
 
+bool
+Dcmtk_file::get_uint16_array (const DcmTagKey& tag_key, 
+    const uint16_t** val, unsigned long* count) const
+{
+#if defined (commentout)
+    return m_dfile->getDataset()->findAndGetUint16Array(
+	tag_key, (const Uint16*) (*val), (long unsigned int*) 0, OFFalse).good();
+#endif
+    const Uint16* foo;
+    OFCondition rc = m_dfile->getDataset()->findAndGetUint16Array(
+	tag_key, foo, count, OFFalse);
+    *val = foo;
+    return rc.good();
+}
+
+bool
+Dcmtk_file::get_element (const DcmTagKey& tag_key, DcmElement* val) const
+{
+    return m_dfile->getDataset()->findAndGetElement(tag_key, val).good();
+}
+
 void
 Dcmtk_file::load_header (const char *fn) {
     /* Save a copy of the filename */

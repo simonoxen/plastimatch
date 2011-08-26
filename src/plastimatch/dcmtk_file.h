@@ -10,6 +10,7 @@
 #include "volume_header.h"
 
 class DcmDataset;
+class DcmElement;
 class DcmTagKey;
 
 class Dcmtk_file
@@ -29,6 +30,9 @@ public:
     const char* get_cstr (const DcmTagKey& tag_key) const;
     bool get_uint8 (const DcmTagKey& tag_key, uint8_t* val) const;
     bool get_uint16 (const DcmTagKey& tag_key, uint16_t* val) const;
+    bool get_uint16_array (const DcmTagKey& tag_key, 
+	const uint16_t** val, unsigned long* count) const;
+    bool get_element (const DcmTagKey& tag_key, DcmElement* val) const;
     void init ();
     void load_header (const char *fn);
 };

@@ -232,6 +232,34 @@ Dcmtk_series::load_plm_image (void)
     pli->m_type = PLM_IMG_TYPE_GPUIT_SHORT;
     pli->m_original_type = PLM_IMG_TYPE_GPUIT_SHORT;
     pli->m_gpuit = new Volume (vh, PT_SHORT, 1);
+    Volume* vol = (Volume*) pli->m_gpuit;
+    uint16_t* img = (uint16_t*) vol->img;
+
+    for (it = m_flist.begin(); it != m_flist.end(); ++it) {
+	const uint16_t* pixel_data;
+	Dcmtk_file *df = (*it);
+	DcmElement *dummy_element;
+	unsigned long length;
+
+	rc = df->get_uint16_array (DCM_PixelData, &pixel_data, &length);
+	if (!rc) {
+	    print_and_exit ("Oops.  Error reading pixel data.  Punting.\n");
+	}
+#if defined (commentout)
+	rc = df->get_element (DCM_PixelData, dummy_element);
+	if (!rc) {
+	    print_and_exit ("Oops.  Error reading pixel data.  Punting.\n");
+	}
+	length = dummy_element->getLength();
+#endif
+
+	if (length != vh.m_dim[0] * vh.m_dim[1]) {
+	    print_and_exit ("Oops.  Dicom image had wrong length "
+		"(%d vs. %d x %d).\n", length, vh.m_dim[0],
+		vh.m_dim[1]);
+	}
+	memcpy (img, pixel_data, length * sizeof(uint16_t));
+    }
 
     return pli;
 }
