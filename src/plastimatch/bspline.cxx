@@ -269,7 +269,7 @@ dump_hist (BSPLINE_MI_Hist* mi_hist, int it, const std::string& prefix)
     fp = fopen (fn.c_str(), "wb");
     if (!fp) return;
     for (i = 0; i < mi_hist->fixed.bins; i++) {
-	fprintf (fp, "%d %f\n", i, f_hist[i]);
+        fprintf (fp, "%d %f\n", i, f_hist[i]);
     }
     fclose (fp);
 
@@ -279,7 +279,7 @@ dump_hist (BSPLINE_MI_Hist* mi_hist, int it, const std::string& prefix)
     fp = fopen (fn.c_str(), "wb");
     if (!fp) return;
     for (i = 0; i < mi_hist->moving.bins; i++) {
-	fprintf (fp, "%d %f\n", i, m_hist[i]);
+        fprintf (fp, "%d %f\n", i, m_hist[i]);
     }
     fclose (fp);
 
@@ -291,7 +291,7 @@ dump_hist (BSPLINE_MI_Hist* mi_hist, int it, const std::string& prefix)
     for (i = 0, v = 0; i < mi_hist->fixed.bins; i++) {
 	for (j = 0; j < mi_hist->moving.bins; j++, v++) {
 	    if (j_hist[v] > 0) {
-		fprintf (fp, "%d %d %d %g\n", i, j, v, j_hist[v]);
+            fprintf (fp, "%d %d %d %g\n", i, j, v, j_hist[v]);
 	    }
 	}
     }

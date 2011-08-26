@@ -158,7 +158,7 @@ public:
 	this->max_its = 10;
 	this->max_feval = 10;
 	this->debug = 0;
-	this->debug_dir = "";
+	this->debug_dir = ".";
 	this->debug_stage = 0;
 	this->gpuid = 0;
 	this->convergence_tol = 0.1;

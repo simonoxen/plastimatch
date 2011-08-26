@@ -101,7 +101,6 @@ vopt_bin_error (int start, int end, double* s_lut, double* ssq_lut)
     double sq_diff;
     double diff;
     double delta;
-    double result;
 
     sq_diff = ssq_lut[end] - ssq_lut[start];
     diff = s_lut[end] - s_lut[start];
@@ -167,6 +166,48 @@ bspline_initialize_mi_hist_eqsp (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
     /* To avoid rounding issues, top and bottom bin are only half full */
     hparms->delta = (max_vox - min_vox) / (hparms->bins - 1);
     hparms->offset = min_vox - 0.5 * hparms->delta;
+}
+
+static void
+bspline_mi_hist_vopt_dump_ranges (
+    BSPLINE_MI_Hist_Parms* hparms,
+    Volume* vol,
+    const std::string& prefix
+)
+{
+    FILE* fp;
+    std::string fn;
+    char buff[1024];
+    int i,j;
+
+    fn = prefix + "_vopt_ranges.txt";
+    fp = fopen (fn.c_str(), "wb");
+    if (!fp) return;
+
+    printf ("Writing %s vopt debug files to disk...\n", prefix.c_str());
+
+    int old_bin = hparms->key_lut[0];
+    float left = hparms->offset;
+    float right = left;
+    j = 0;
+    for (i=0; i<hparms->keys; i++) {
+        if (hparms->key_lut[i] == old_bin) {
+            right += hparms->delta;
+        } else {
+            fprintf (fp, "Bin %i [%6.2f .. %6.2f]\n", j, left, right);
+            sprintf (buff, "%s_vopt_lvl_%03i.mha", prefix.c_str(), j);
+            dump_vol_clipped (buff, vol, left, right);
+
+            old_bin = hparms->key_lut[i];
+            left = right;
+            j++;
+        }
+    }
+    /* Pick up the last bin */
+    fprintf (fp, "Bin %i [%6.2f .. %6.2f]\n", j, left, right);
+    sprintf (buff, "vopt_lvl_%i.mha", j);
+    dump_vol_clipped (buff, vol, left, right);
+    fclose (fp);
 }
 
 /* JAS - 2011.08.08
@@ -302,216 +343,7 @@ bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
     }
 
     free (tracker);
-
-
-#if defined (DEBUG_VOPT)
-    char buff[50];
-
-    int old_bin = hparms->key_lut[0];
-    float left = hparms->offset;
-    float right = left;
-    j = 0;
-    for (i=0; i<hparms->keys; i++) {
-        if (hparms->key_lut[i] == old_bin) {
-            right += hparms->delta;
-        } else {
-            printf ("Bin %i [%6.2f .. %6.2f]\n", j, left, right);
-            sprintf (buff, "vopt_lvl_%i.mha", j);
-            dump_vol_clipped (buff, vol, left, right);
-
-            old_bin = hparms->key_lut[i];
-            left = right;
-            j++;
-        }
-    }
-    /* Pick up the last bin */
-    printf ("Bin %i [%6.2f .. %6.2f]\n", j, left, right);
-    sprintf (buff, "vopt_lvl_%i.mha", j);
-    dump_vol_clipped (buff, vol, left, right);
-    exit (0);
-#endif
 }
-
-#if 0
-/* Tries to prevent incorrect error weighing by
- * using "TrueKeys" */
-static void
-bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
-{
-    int i, j, k, idx_bin;
-    int curr, next, bottom;
-    float min_vox, max_vox;
-    int true_keys;
-    int* true_lut;
-
-    int* tracker;
-    double* tmp_hist;
-    double* tmp_avg;
-    double* s_lut;
-    double* ssq_lut;
-    double* err_lut;
-    double candidate;
-    float* img = (float*) vol->img;
-
-    if (!img) {
-        logfile_printf ("Error trying to create histogram from empty image\n");
-        exit (-1);
-    }
-
-    hparms->keys = VOPT_RES;
-    tmp_hist = (double*) malloc (hparms->keys * sizeof (double));
-    tmp_avg  = (double*) malloc (hparms->keys * sizeof (double));
-    memset (tmp_hist, 0, hparms->keys * sizeof (double));
-    memset (tmp_avg,  0, hparms->keys * sizeof (double));
-
-    s_lut   = (double*) malloc (hparms->keys * sizeof (double));
-    ssq_lut = (double*) malloc (hparms->keys * sizeof (double));
-    err_lut = (double*) malloc (hparms->bins * hparms->keys * sizeof (double));
-    memset (err_lut, 0, hparms->bins * hparms->keys * sizeof (double));
-
-    tracker = (int*) malloc (hparms->bins * hparms->keys * sizeof (int));
-    memset (tracker, 0, hparms->bins * hparms->keys * sizeof (int));
-
-    /* Determine input image value range */
-    min_vox = max_vox = img[0];
-    for (i=0; i < vol->npix; i++) {
-        if (img[i] < min_vox) {
-            min_vox = img[i];
-        } else if (img[i] > max_vox) {
-            max_vox = img[i];
-        }
-    }
-    
-    /* To avoid rounding issues, top and bottom bin are only half full */
-    hparms->delta = (max_vox - min_vox) / (hparms->keys - 1);
-    hparms->offset = min_vox - 0.5 * hparms->delta;
-
-    /* Construct high resolution histogram w/ bin contribution averages*/
-    for (i=0; i<vol->npix; i++) {
-        idx_bin = floor ((img[i] - hparms->offset) / hparms->delta);
-        tmp_hist[idx_bin]++;
-        tmp_avg[idx_bin] += img[i];
-    }
-
-    /* Sorted estimation table
-     *   May introduce some error depending on sampling resolution, but far
-     *   more efficient than working on sorted volume data directly -- even if
-     *   sub-sampling were employed.
-     */
-    for (i=0; i<hparms->keys; i++) {
-        if (tmp_hist[i] > 0) {
-            tmp_avg[i] = tmp_avg[i] / tmp_hist[i];
-        }
-    }
-
-    true_lut = (int*) malloc (hparms->keys * sizeof (int));
-    memset (true_lut, 0, hparms->keys * sizeof (int));
-
-
-    /* Remove empty bins & remap */
-    j=0;
-    for (i=0; i<hparms->keys; i++) {
-        if (tmp_hist[i] > 0) {
-//            printf ("[ %i -> %i ]\n", j, i);
-            tmp_avg[j++] = tmp_avg[i];
-        }
-        true_lut[j] = i;
-    }
-    true_keys = j;
-    printf ("true_keys=%i\n", true_keys);
-    free (tmp_hist);
-
-    for (i=0; i<true_keys; i++) {
-        printf ("[%i] %f\n", i, tmp_avg[i]);
-    }
-
-    /* Create lookup tables for error computations */
-    s_lut[0] = tmp_avg[0];
-    ssq_lut[0] = (tmp_avg[0] * tmp_avg[0]);
-    for (i=1; i<true_keys; i++) {
-        s_lut[i] = s_lut[i-1] + tmp_avg[i];
-        ssq_lut[i] = ssq_lut[i-1] + (tmp_avg[i] * tmp_avg[i]);
-    }
-
-    free (tmp_avg);
-
-    /* Compute the one bin scores */
-    for (i=0; i<true_keys; i++) {
-        err_lut[i] = vopt_bin_error (0, i, s_lut, ssq_lut);
-    }
-
-    /* Compute best multi-bin scores */
-    for (j=1; j<hparms->bins; j++) {
-        for (i=0; i<true_keys; i++) {
-
-            err_lut[true_keys*j+i] = DBL_MAX;
-            tracker[true_keys*j+i] = 0;
-
-            for (k=0; k<i; k++) {
-                candidate = err_lut[true_keys*(j-1)+k] + vopt_bin_error (k+1, i, s_lut, ssq_lut);
-                if (candidate < err_lut[true_keys*j+i]) {
-                    err_lut[true_keys*j+i] = candidate;
-                    tracker[true_keys*j+i] = k;
-                }
-            }
-        }
-    }
-
-    free (s_lut);
-    free (ssq_lut);
-    free (err_lut);
-
-    /* Build the linear key table */
-    hparms->key_lut = (int*) malloc (hparms->keys * sizeof (int));
-    memset (hparms->key_lut, 0, hparms->keys * sizeof (int));
-
-    curr = true_keys-1;
-    for (j=hparms->bins-1; j>=0; j--) {
-        next = tracker[true_keys*j+curr];
-        bottom = next+1;
-        if (j == 0) { bottom = 0; }
-
-        printf ("[%i] from %i to %i\n", j, bottom, curr);
-        for (i=bottom; i<=curr; i++) {
-            for (k=true_lut[i]; k<true_lut[i+1]; k++) {
-                hparms->key_lut[i] = j;
-            }
-        }
-
-        curr = next;
-    }
-
-    free (true_lut);
-    free (tracker);
-
-#if defined (DEBUG_VOPT)
-    char buff[50];
-
-    int old_bin = hparms->key_lut[0];
-    float left = hparms->offset;
-    float right = left;
-    j = 0;
-    for (i=0; i<hparms->keys; i++) {
-        if (hparms->key_lut[i] == old_bin) {
-            right += hparms->delta;
-        } else {
-            printf ("Bin %i [%6.2f .. %6.2f]\n", j, left, right);
-            sprintf (buff, "vopt_lvl_%i.mha", j);
-            dump_vol_clipped (buff, vol, left, right);
-
-            old_bin = hparms->key_lut[i];
-            left = right;
-            j++;
-        }
-    }
-    /* Pick up the last bin */
-    printf ("Bin %i [%6.2f .. %6.2f]\n", j, left, right);
-    sprintf (buff, "vopt_lvl_%i.mha", j);
-    dump_vol_clipped (buff, vol, left, right);
-    exit (0);
-#endif
-}
-#endif
 
 
 static void
@@ -539,6 +371,11 @@ bspline_initialize_mi (Bspline_parms* parms, Volume* fixed, Volume* moving)
     mi_hist->j_hist = (double*) malloc (sizeof (double) * mi_hist->fixed.bins * mi_hist->moving.bins);
     bspline_initialize_mi_hist (&mi_hist->moving, moving);
     bspline_initialize_mi_hist (&mi_hist->fixed, fixed);
+
+    if (parms->debug) {
+        bspline_mi_hist_vopt_dump_ranges (&mi_hist->fixed, fixed, "fixed");
+        bspline_mi_hist_vopt_dump_ranges (&mi_hist->moving, moving, "moving");
+    }
 
     /* Initialize biggest bin trackers for OpenMP MI */
     bspline_initialize_mi_bigbin (mi_hist->f_hist, &mi_hist->fixed, fixed);
@@ -1610,11 +1447,8 @@ bspline_score_f_mi (Bspline_parms *parms,
     double* f_hist = mi_hist->f_hist;
     double* m_hist = mi_hist->m_hist;
     double* j_hist = mi_hist->j_hist;
-    static int it = 0;
     double mhis = 0.0f;      /* Moving histogram incomplete sum */
     double jhis = 0.0f;      /* Joint  histogram incomplete sum */
-    char debug_fn[1024];
-    FILE* fp = 0;
     int i, j, zz;
 
     size_t cond_size = 64*bxf->num_knots*sizeof(float);
@@ -1622,11 +1456,15 @@ bspline_score_f_mi (Bspline_parms *parms,
     float* cond_y = (float*)malloc(cond_size);
     float* cond_z = (float*)malloc(cond_size);
 
-
+#if 0
+    FILE* fp = 0;
+    static int it = 0;
+    char debug_fn[1024];
     if (parms->debug) {
         sprintf (debug_fn, "dump_mi_%02d.txt", it++);
         fp = fopen (debug_fn, "w");
     }
+#endif
 
     plm_timer_start (&timer);
 
@@ -1871,9 +1709,11 @@ bspline_score_f_mi (Bspline_parms *parms,
     free (cond_y);
     free (cond_z);
 
+#if 0
     if (parms->debug) {
         fclose (fp);
     }
+#endif
 
     mse_score = mse_score / ssd->num_vox;
 
@@ -1911,11 +1751,8 @@ bspline_score_e_mi (
     double* f_hist = mi_hist->f_hist;
     double* m_hist = mi_hist->m_hist;
     double* j_hist = mi_hist->j_hist;
-    static int it = 0;
     double mhis = 0.0f;      /* Moving histogram incomplete sum */
     double jhis = 0.0f;      /* Joint  histogram incomplete sum */
-    char debug_fn[1024];
-    FILE* fp = 0;
     int i, j, zz;
     omp_lock_t *f_locks, *m_locks, *j_locks;
 
@@ -1924,11 +1761,15 @@ bspline_score_e_mi (
     float* cond_y = (float*)malloc(cond_size);
     float* cond_z = (float*)malloc(cond_size);
 
-
+#if 0
+    FILE* fp = 0;
+    char debug_fn[1024];
+    static int it = 0;
     if (parms->debug) {
         sprintf (debug_fn, "dump_mi_%02d.txt", it++);
         fp = fopen (debug_fn, "w");
     }
+#endif
 
     plm_timer_start (&timer);
 
@@ -2219,11 +2060,11 @@ bspline_score_e_mi (
         omp_destroy_lock(&j_locks[i]);
     }
 
-
-
+#if 0
     if (parms->debug) {
         fclose (fp);
     }
+#endif
 
     mse_score = mse_score / ssd->num_vox;
     
@@ -2274,9 +2115,6 @@ bspline_score_d_mi (Bspline_parms *parms,
     double* f_hist = mi_hist->f_hist;
     double* m_hist = mi_hist->m_hist;
     double* j_hist = mi_hist->j_hist;
-    static int it = 0;
-    char debug_fn[1024];
-    FILE* fp = 0;
     int zz;
 
     size_t cond_size = 64*bxf->num_knots*sizeof(float);
@@ -2285,11 +2123,15 @@ bspline_score_d_mi (Bspline_parms *parms,
     float* cond_z = (float*)malloc(cond_size);
 
 
-
+#if 0
+    FILE* fp = 0;
+    char debug_fn[1024];
+    static int it = 0;
     if (parms->debug) {
         sprintf (debug_fn, "dump_mi_%02d.txt", it++);
         fp = fopen (debug_fn, "w");
     }
+#endif
 
     plm_timer_start (&timer);
 
@@ -2505,23 +2347,26 @@ bspline_score_d_mi (Bspline_parms *parms,
 
 
     /* Now we have a ton of bins and each bin's 64 slots are full.
-     * Let's sum each bin's 64 slots.  The result with be dc_dp. */
+     * Let's sum each bin's 64 slots.  The result will be dc_dp. */
     bspline_make_grad (cond_x, cond_y, cond_z, bxf, ssd);
 
     free (cond_x);
     free (cond_y);
     free (cond_z);
 
-
+#if 0
     if (parms->debug) {
         fclose (fp);
     }
+#endif
 
     mse_score = mse_score / ssd->num_vox;
+    if (parms->debug) {
+        printf ("<< MSE %3.3f >>\n", mse_score);
+    }
 
     ssd->time_smetric = plm_timer_report (&timer);
 }
-
 
 
 /* Mutual information version of implementation "C" */
@@ -2560,15 +2405,17 @@ bspline_score_c_mi (Bspline_parms *parms,
     double* f_hist = mi_hist->f_hist;
     double* m_hist = mi_hist->m_hist;
     double* j_hist = mi_hist->j_hist;
-    static int it = 0;
-    char debug_fn[1024];
-    FILE* fp = 0;
     int zz;
 
+#if 0
+    FILE* fp = 0;
+    char debug_fn[1024];
+    static int it = 0;
     if (parms->debug) {
     sprintf (debug_fn, "dump_mi_%02d.txt", it++);
     fp = fopen (debug_fn, "w");
     }
+#endif
 
     plm_timer_start (&timer);
 
@@ -2751,9 +2598,11 @@ bspline_score_c_mi (Bspline_parms *parms,
         } /* LOOP_THRU_ROI_Y */
     } /* LOOP_THRU_ROI_Z */
 
+#if 0
     if (parms->debug) {
         fclose (fp);
     }
+#endif
 
     mse_score = mse_score / ssd->num_vox;
 
