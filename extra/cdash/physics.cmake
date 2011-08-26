@@ -7,7 +7,7 @@ SET (CTEST_INITIAL_CACHE "
 CMAKE_GENERATOR:INTERNAL=Unix Makefiles
 
 //Name of the build
-BUILDNAME:STRING=lin64-Pisrc-gcc4.1.2
+BUILDNAME:STRING=lin64-Pisr-cd-gcc4.1.2
 
 //Name of the computer/site where compile is being run
 SITE:STRING=physics
