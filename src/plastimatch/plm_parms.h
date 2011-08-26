@@ -248,7 +248,7 @@ public:
     int set_command_string (const std::string& command_string);
 };
 
-class Registration_Data {
+class Registration_data {
 public:
     /* Input images */
     Plm_image *fixed_image;

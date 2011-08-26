@@ -232,7 +232,7 @@ set_metric (RegistrationType::Pointer registration,
 
 void
 set_mask_images (RegistrationType::Pointer registration,
-		 Registration_Data* regd,
+		 Registration_data* regd,
 		 Stage_parms* stage)
 {
     if (regd->fixed_mask) {
@@ -257,7 +257,7 @@ set_mask_images (RegistrationType::Pointer registration,
 void
 set_fixed_image_region_new_unfinished (
     RegistrationType::Pointer registration,
-    Registration_Data* regd,
+    Registration_data* regd,
     Stage_parms* stage
 )
 {
@@ -295,7 +295,7 @@ set_fixed_image_region_new_unfinished (
 
 void
 set_fixed_image_region (RegistrationType::Pointer registration,
-			Registration_Data* regd,
+			Registration_data* regd,
 			Stage_parms* stage)
 {
     int use_magic_value = 0;
@@ -612,7 +612,7 @@ set_xf_out (Xform *xf_out,
 
 void
 do_itk_registration_stage (
-    Registration_Data* regd, 
+    Registration_data* regd, 
     Xform *xf_out, 
     Xform *xf_in, 
     Stage_parms* stage
@@ -666,7 +666,7 @@ do_itk_registration_stage (
 
 void
 do_itk_center_stage (
-    Registration_Data* regd, Xform *xf_out, Xform *xf_in, Stage_parms* stage)
+    Registration_data* regd, Xform *xf_out, Xform *xf_in, Stage_parms* stage)
 {
     typedef itk::CenteredTransformInitializer < 
 	VersorTransformType, FloatImageType, FloatImageType 

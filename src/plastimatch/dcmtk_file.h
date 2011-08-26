@@ -5,10 +5,10 @@
 #define _dcmtk_file_h_
 
 #include "plm_config.h"
+#include "plm_int.h"
 #include "string_util.h"
 #include "volume_header.h"
 
-class DcmFile;
 class DcmDataset;
 class DcmTagKey;
 
@@ -27,8 +27,10 @@ public:
 public:
     void debug () const;
     const char* get_cstr (const DcmTagKey& tag_key) const;
+    bool get_uint8 (const DcmTagKey& tag_key, uint8_t* val) const;
+    bool get_uint16 (const DcmTagKey& tag_key, uint16_t* val) const;
     void init ();
-    void load (const char *fn);
+    void load_header (const char *fn);
 };
 
 #if defined __cplusplus

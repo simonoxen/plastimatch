@@ -19,7 +19,7 @@
 static void
 do_gpuit_bspline_stage_internal (
     Registration_Parms* regp, 
-    Registration_Data* regd, 
+    Registration_data* regd, 
     Xform *xf_out, 
     Xform *xf_in, 
     Stage_parms* stage)
@@ -199,14 +199,14 @@ do_gpuit_bspline_stage_internal (
 	    stage->warped_landmarks_fn);
 	vector_field = new Volume (fixed_ss->dim, fixed_ss->offset, 
 	    fixed_ss->spacing, fixed_ss->direction_cosines, 
-	    PT_VF_FLOAT_INTERLEAVED, 3, 0);
+	    PT_VF_FLOAT_INTERLEAVED, 3);
 	bspline_interpolate_vf (vector_field, xf_out->get_gpuit_bsp() );
 	if (vector_field) {
 	    bspline_landmarks_warp (vector_field, &parms, 
 		xf_out->get_gpuit_bsp(), fixed_ss, moving_ss );
 	    bspline_landmarks_write_file( stage->warped_landmarks_fn, "warped", 
 		parms.landmarks->warped_landmarks, 
-		parms.landmarks->num_landmarks ); 
+		parms.landmarks->num_landmarks);
 	    delete vector_field;
 	} else 
 	    print_and_exit ("Could not interpolate vector field for landmark warping\n");
@@ -222,7 +222,7 @@ do_gpuit_bspline_stage_internal (
 void
 do_gpuit_bspline_stage (
     Registration_Parms* regp, 
-    Registration_Data* regd, 
+    Registration_data* regd, 
     Xform *xf_out, 
     Xform *xf_in,
     Stage_parms* stage)

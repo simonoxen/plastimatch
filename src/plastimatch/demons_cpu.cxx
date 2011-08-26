@@ -61,14 +61,14 @@ demons_c (
     } else {
 	/* Otherwise initialize to zero */
 	vf_smooth = new Volume (fixed->dim, fixed->offset, fixed->spacing, 
-	    fixed->direction_cosines, PT_VF_FLOAT_INTERLEAVED, 3, 0);
+	    fixed->direction_cosines, PT_VF_FLOAT_INTERLEAVED, 3);
     }
     vf_est = new Volume (fixed->dim, fixed->offset, fixed->spacing, 
-	fixed->direction_cosines, PT_VF_FLOAT_INTERLEAVED, 3, 0);
+	fixed->direction_cosines, PT_VF_FLOAT_INTERLEAVED, 3);
     vf_est_img = (float*) vf_est->img;
     vf_smooth_img = (float*) vf_smooth->img;
     m_grad_mag = new Volume (moving->dim, moving->offset, moving->spacing, 
-	moving->direction_cosines, PT_FLOAT, 1, 0);
+	moving->direction_cosines, PT_FLOAT, 1);
     m_grad_mag_img = (float*) m_grad_mag->img;
 
     /* Create gradient magnitude image */

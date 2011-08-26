@@ -5,10 +5,9 @@
 #define _volume_header_h_
 
 #include "plm_config.h"
-#include "print_and_exit.h"
-#include "volume.h"
 
 class Bspline_xform;
+class Volume;
 
 class gpuit_EXPORT Volume_header {
 public:
@@ -43,18 +42,23 @@ public:
     static int compare (Volume_header *pli1, Volume_header *pli2);
 
 public:
-    void set_dim (int dim[3]);
-    void set_origin (float origin[3]);
-    void set_spacing (float spacing[3]);
-    void set_direction_cosines (float direction_cosines[9]);
+    void set_dim (const int dim[3]);
+    void set_origin (const float origin[3]);
+    void set_spacing (const float spacing[3]);
+    void set_direction_cosines (const float direction_cosines[9]);
     void set_direction_cosines_identity ();
 
-    void set (int dim[3], float origin[3], float spacing[3],
-	float direction_cosines[9]);
+    void set (const int dim[3], const float origin[3], const float spacing[3],
+	const float direction_cosines[9]);
     void set_from_bxf (Bspline_xform *bxf);
 
     static void clone (Volume_header *dest, Volume_header *src) {
 	dest->set (src->m_dim, src->m_origin, src->m_spacing, 
+	    src->m_direction_cosines);
+    }
+
+    void clone (const Volume_header *src) {
+	this->set (src->m_dim, src->m_origin, src->m_spacing, 
 	    src->m_direction_cosines);
     }
 

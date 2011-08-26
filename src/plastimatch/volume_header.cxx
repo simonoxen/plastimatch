@@ -13,7 +13,7 @@
 #include "volume_header.h"
 
 void
-Volume_header::set_dim (int dim[3])
+Volume_header::set_dim (const int dim[3])
 {
     for (unsigned int d = 0; d < 3; d++) {
 	m_dim[d] = dim[d];
@@ -21,7 +21,7 @@ Volume_header::set_dim (int dim[3])
 }
 
 void
-Volume_header::set_origin (float origin[3])
+Volume_header::set_origin (const float origin[3])
 {
     for (unsigned int d = 0; d < 3; d++) {
 	this->m_origin[d] = origin[d];
@@ -29,7 +29,7 @@ Volume_header::set_origin (float origin[3])
 }
 
 void
-Volume_header::set_spacing (float spacing[3])
+Volume_header::set_spacing (const float spacing[3])
 {
     for (unsigned int d = 0; d < 3; d++) {
 	this->m_spacing[d] = spacing[d];
@@ -37,7 +37,7 @@ Volume_header::set_spacing (float spacing[3])
 }
 
 void
-Volume_header::set_direction_cosines (float direction_cosines[9])
+Volume_header::set_direction_cosines (const float direction_cosines[9])
 {
     for (unsigned int d = 0; d < 9; d++) {
 	this->m_direction_cosines[d] = direction_cosines[d];
@@ -60,10 +60,10 @@ Volume_header::set_direction_cosines_identity ()
 
 void
 Volume_header::set (
-    int dim[3],
-    float origin[3],
-    float spacing[3],
-    float direction_cosines[9])
+    const int dim[3],
+    const float origin[3],
+    const float spacing[3],
+    const float direction_cosines[9])
 {
     this->set_dim (dim);
     this->set_origin (origin);

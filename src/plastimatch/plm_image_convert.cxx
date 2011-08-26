@@ -88,7 +88,7 @@ plm_image_convert_itk_to_gpuit_float (Plm_image* pli, T img)
     }
     direction_cosines_from_itk (direction_cosines, &dc);
     Volume* vol = new Volume (dim, offset, spacing, direction_cosines, 
-	PT_FLOAT, 1, 0);
+	PT_FLOAT, 1);
 
     float* vol_img = (float*) vol->img;
 
@@ -312,7 +312,7 @@ plm_image_convert_itk_uchar_vec_to_gpuit_uchar_vec (Plm_image* pli,
     int vox_planes = itk_img->GetVectorLength ();
 
     Volume* vol = new Volume (dim, offset, spacing, direction_cosines, 
-	PT_UCHAR_VEC_INTERLEAVED, vox_planes, 0);
+	PT_UCHAR_VEC_INTERLEAVED, vox_planes);
 
     unsigned char* vol_img = (unsigned char*) vol->img;
 

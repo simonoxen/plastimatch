@@ -15,7 +15,7 @@
 
 void
 do_gpuit_demons_stage_internal (
-    Registration_Data* regd, 
+    Registration_data* regd, 
     Xform *xf_out, 
     Xform *xf_in, 
     Stage_parms* stage)
@@ -74,7 +74,7 @@ do_gpuit_demons_stage_internal (
 
 void
 do_gpuit_demons_stage (
-    Registration_Data* regd, 
+    Registration_data* regd, 
     Xform *xf_out, 
     Xform *xf_in,
     Stage_parms* stage)

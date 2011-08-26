@@ -195,7 +195,7 @@ xio_ct_create_volume (
     spacing[1] = xch->spacing[1];
     spacing[2] = best_chunk_diff;
 
-    v = new Volume (dim, offset, spacing, 0, PT_SHORT, 1, 0);
+    v = new Volume (dim, offset, spacing, 0, PT_SHORT, 1);
     pli->set_gpuit (v);
 
     printf ("img: %p\n", v->img);

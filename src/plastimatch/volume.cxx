@@ -39,17 +39,16 @@ directions_cosine_debug (float *m)
 }
 
 void
-volume_allocate (Volume *vol, int min_size)
+Volume::allocate (void)
 {
-    if (vol->pix_type == PT_VF_FLOAT_PLANAR) {
+    if (this->pix_type == PT_VF_FLOAT_PLANAR) {
 	int i;
-	int alloc_size = min_size;
 	float** der = (float**) malloc (3*sizeof(float*));
 	if (!der) {
 	    fprintf (stderr, "Memory allocation failed.\n");
 	    exit(1);
 	}
-	if (alloc_size < vol->npix) alloc_size = vol->npix;
+	int alloc_size = this->npix;
 	for (i=0; i < 3; i++) {
 	    der[i] = (float*) malloc (alloc_size*sizeof(float));
 	    if (!der[i]) {
@@ -58,15 +57,15 @@ volume_allocate (Volume *vol, int min_size)
 	    }
 	    memset(der[i], 0, alloc_size*sizeof(float));
 	}
-	vol->img = (void*) der;
+	this->img = (void*) der;
     } else {
-	vol->img = (void*) malloc (vol->pix_size * vol->npix);
-	if (!vol->img) {
+	this->img = (void*) malloc (this->pix_size * this->npix);
+	if (!this->img) {
 	    fprintf (stderr, "Memory allocation failed (alloc size = %d).\n",
-		vol->pix_size * vol->npix);
+		this->pix_size * this->npix);
 	    exit(1);
 	}
-	memset (vol->img, 0, vol->pix_size * vol->npix);
+	memset (this->img, 0, this->pix_size * this->npix);
     }
 }
 
@@ -88,8 +87,7 @@ Volume::create (
     const float spacing[3], 
     const float direction_cosines[9], 
     enum Volume_pixel_type vox_type, 
-    int vox_planes, 
-    int min_size
+    int vox_planes
 )
 {
     int i;
@@ -135,7 +133,18 @@ Volume::create (
 	exit (-1);
     }
 
-    volume_allocate (this, min_size);
+    this->allocate ();
+}
+
+void 
+Volume::create (
+    const Volume_header& vh, 
+    enum Volume_pixel_type vox_type, 
+    int vox_planes
+)
+{
+    this->create (vh.m_dim, vh.m_origin, vh.m_spacing, 
+	vh.m_direction_cosines, vox_type, vox_planes);
 }
 
 void 
@@ -174,7 +183,7 @@ volume_clone_empty (Volume* ref)
 {
     Volume* vout;
     vout = new Volume (ref->dim, ref->offset, ref->spacing, 
-	ref->direction_cosines, ref->pix_type, ref->vox_planes, 0);
+	ref->direction_cosines, ref->pix_type, ref->vox_planes);
     return vout;
 }
 
@@ -183,7 +192,7 @@ volume_clone (Volume* ref)
 {
     Volume* vout;
     vout = new Volume (ref->dim, ref->offset, ref->spacing, 
-	ref->direction_cosines, ref->pix_type, ref->vox_planes, 0);
+	ref->direction_cosines, ref->pix_type, ref->vox_planes);
     switch (ref->pix_type) {
     case PT_UCHAR:
     case PT_SHORT:
@@ -366,22 +375,20 @@ vf_convert_to_interleaved (Volume* vf)
     }
 }
 
-/* min_size allows us to pad the size of the plane for brook stream reads */
 void
-vf_convert_to_planar (Volume* ref, int min_size)
+vf_convert_to_planar (Volume* ref)
 {
     switch (ref->pix_type) {
     case PT_VF_FLOAT_INTERLEAVED:
 	{
 	    int i;
 	    float* img = (float*) ref->img;
-	    int alloc_size = min_size;
 	    float** der = (float**) malloc (3*sizeof(float*));
 	    if (!der) {
 		printf ("Memory allocation failed.\n");
 		exit(1);
 	    }
-	    if (alloc_size < ref->npix) alloc_size = ref->npix;
+	    int alloc_size = ref->npix;
 	    for (i=0; i < 3; i++) {
 		der[i] = (float*) malloc (alloc_size*sizeof(float));
 		if (!der[i]) {
@@ -429,7 +436,7 @@ volume_resample_float (Volume* vol_in, int* dim, float* offset, float* spacing)
     float default_val = 0.0f;
 
     vol_out = new Volume (dim, offset, spacing, vol_in->direction_cosines, 
-	PT_FLOAT, 1, 0);
+	PT_FLOAT, 1);
     in_img = (float*) vol_in->img;
     out_img = (float*) vol_out->img;
 
@@ -471,7 +478,7 @@ volume_resample_vf_float_interleaved (Volume* vol_in, int* dim,
     float default_val[3] = { 0.0f, 0.0f, 0.0f };
 
     vol_out = new Volume (dim, offset, spacing, vol_in->direction_cosines, 
-	PT_VF_FLOAT_INTERLEAVED, 3, 0);
+	PT_VF_FLOAT_INTERLEAVED, 3);
     in_img = (float*) vol_in->img;
     out_img = (float*) vol_out->img;
 
@@ -513,7 +520,7 @@ volume_resample_vf_float_planar (Volume* vol_in, int* dim,
     float **in_img, **out_img;
 
     vol_out = new Volume (dim, offset, spacing, vol_in->direction_cosines, 
-	PT_VF_FLOAT_PLANAR, 3, 0);
+	PT_VF_FLOAT_PLANAR, 3);
     in_img = (float**) vol_in->img;
     out_img = (float**) vol_out->img;
 
@@ -656,7 +663,7 @@ volume_make_gradient (Volume* ref)
 {
     Volume *grad;
     grad = new Volume (ref->dim, ref->offset, ref->spacing, 
-	ref->direction_cosines, PT_VF_FLOAT_INTERLEAVED, 3, 0);
+	ref->direction_cosines, PT_VF_FLOAT_INTERLEAVED, 3);
     volume_calc_grad (grad, ref);
 
     return grad;

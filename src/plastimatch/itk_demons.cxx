@@ -95,7 +95,7 @@ deformation_stats (DeformationFieldType::Pointer vf)
 
 static void
 do_demons_stage_internal (
-    Registration_Data* regd, 
+    Registration_data* regd, 
     Xform *xf_out, 
     Xform *xf_in,
     Stage_parms* stage)
@@ -156,7 +156,7 @@ do_demons_stage_internal (
 }
 
 void
-do_demons_stage (Registration_Data* regd, 
+do_demons_stage (Registration_data* regd, 
 		 Xform *xf_out, 
 		 Xform *xf_in,
 		 Stage_parms* stage)

@@ -79,12 +79,12 @@ vf_invert_main (Vf_Invert_Parms* parms)
     /* GCS FIX: Need direction cosines */
     /* Create mask volume */
     mask = new Volume (parms->dim, parms->origin, parms->spacing, 0,
-	PT_UCHAR, 1, 0);
+	PT_UCHAR, 1);
 
     /* GCS FIX: Need direction cosines */
     /* Create tmp volume */
     vf_inv = new Volume (parms->dim, parms->origin, parms->spacing, 0, 
-	PT_VF_FLOAT_INTERLEAVED, 1, 0);
+	PT_VF_FLOAT_INTERLEAVED, 1);
 
     /* Load input vf */
     vf_in = read_mha (parms->vf_in_fn);
@@ -125,11 +125,11 @@ vf_invert_main (Vf_Invert_Parms* parms)
     /* GCS FIX: Need direction cosines */
     /* Create tmp & output volumes */
     vf_out = new Volume (parms->dim, parms->origin, parms->spacing, 0, 
-	PT_VF_FLOAT_INTERLEAVED, 3, 0);
+	PT_VF_FLOAT_INTERLEAVED, 3);
     img_out = (float*) vf_out->img;
     /* GCS FIX: Need direction cosines */
     vf_smooth = new Volume (parms->dim, parms->origin, parms->spacing, 0, 
-	PT_VF_FLOAT_INTERLEAVED, 3, 0);
+	PT_VF_FLOAT_INTERLEAVED, 3);
     img_smooth = (float*) vf_smooth->img;
 
     /* Iterate, pasting and smoothing */

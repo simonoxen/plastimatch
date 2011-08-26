@@ -10,8 +10,11 @@
 
 #include "dcmtk_file.h"
 #include "dcmtk_series.h"
+#include "math_util.h"
 #include "plm_image.h"
+#include "plm_image_type.h"
 #include "print_and_exit.h"
+#include "volume.h"
 #include "volume_header.h"
 
 Dcmtk_series::Dcmtk_series ()
@@ -62,20 +65,23 @@ Dcmtk_series::load_plm_image (void)
     /* GCS FIX:
        (1) Direction cosines
        (2) Minimum 2 slices
+       (3) Consistency of images w/in series
+       (4) Rescale offset/slope
+       (5) Different image types
     */
 
     /* Get first slice */
     std::list<Dcmtk_file*>::iterator it = m_flist.begin();
     Dcmtk_file *df = (*it);
-    float z_prev, z_diff;
+    float z_init, z_prev, z_diff, z_last;
     int slice_no = 0;
-    z_prev = df->m_vh.m_origin[2];
+    float best_chunk_z_start = z_init = z_prev = df->m_vh.m_origin[2];
 
     /* Get next slice */
     ++it; ++slice_no;
     df = (*it);
     z_diff = df->m_vh.m_origin[2] - z_prev;
-    z_prev = df->m_vh.m_origin[2];
+    z_last = z_prev = df->m_vh.m_origin[2];
 
     /* We want to find the largest chunk with equal spacing.  This will 
        be used to resample in the case of irregular spacing. */
@@ -89,7 +95,7 @@ Dcmtk_series::load_plm_image (void)
 	++slice_no;
 	df = (*it);
 	z_diff = df->m_vh.m_origin[2] - z_prev;
-	z_prev = df->m_vh.m_origin[2];
+	z_last = z_prev = df->m_vh.m_origin[2];
 
 	if (fabs (this_chunk_diff - z_diff) > 0.11) {
 	    /* Start a new chunk if difference in thickness is 
@@ -103,82 +109,129 @@ Dcmtk_series::load_plm_image (void)
 		/ (this_chunk_len + 1);
 	    this_chunk_len++;
 
-	    // Check if this chunk is now the best chunk
+	    /* Check if this chunk is now the best chunk */
 	    if (this_chunk_len > best_chunk_len) {
 		best_chunk_start = this_chunk_start;
 		best_chunk_len = this_chunk_len;
 		best_chunk_diff = this_chunk_diff;
+		best_chunk_z_start = z_prev 
+		    - (best_chunk_len-1) * best_chunk_diff;
 	    }
 	}
     }
 
     /* Report information about best chunk */
     printf ("Best chuck:\n  Slices %d to %d from (0 to %d)\n"
+	"  Z_loc = %f %f\n" 
 	"  Slice spacing = %f\n", 
-	best_chunk_start, best_chunk_start + best_chunk_len - 1, 
-	slice_no, best_chunk_diff);
+	best_chunk_start, best_chunk_start + best_chunk_len - 1, slice_no, 
+	best_chunk_z_start, 
+	best_chunk_z_start + (best_chunk_len - 1) * best_chunk_diff, 
+	best_chunk_diff);
 
-#if defined (commentout)
-    /* Try to assess best Z spacing */
-    float best_chunk_start = 0;
-    float best_chunk_diff;
-    int best_chunk_start;
-    int best_chunk_len;
-    float z_diff;
-    float this_chunk_diff;
-    int this_chunk_start;
-    int this_chunk_len;
+    /* Some debugging info */
+    printf ("Slices: ");
+    for (it = m_flist.begin(); it != m_flist.end(); ++it) {
+	Dcmtk_file *df = (*it);
+	printf ("%f ", df->m_vh.m_origin[2]);
+    }
+    printf ("\n");
 
+    /* Compute resampled volume header */
+    int slices_before = 
+	ROUND_INT ((best_chunk_z_start - z_init) / best_chunk_diff);
+    int slices_after = 
+	ROUND_INT ((z_last - best_chunk_z_start 
+		- (best_chunk_len - 1) * best_chunk_diff) / best_chunk_diff);
+    df = (*m_flist.begin());
+    vh.clone (&df->m_vh);
+    vh.m_dim[2] = slices_before + best_chunk_len + slices_after;
+    vh.m_origin[2] = best_chunk_z_start - slices_before * best_chunk_diff;
+    vh.m_spacing[2] = best_chunk_diff;
 
-    if (all_number_slices > 1) {
+    /* More debugging info */
+    vh.print ();
 
-	float z_diff;
-	float this_chunk_diff;
-	int this_chunk_start;
-	int this_chunk_len;
+    /* Still more debugging info */
+    printf ("Resamples slices: ");
+    for (int i = 0; i < vh.m_dim[2]; i++) {
+	printf ("%f ", vh.m_origin[2] + i * vh.m_spacing[2]);
+    }
+    printf ("\n");
 
-	for (int i = 1; i < all_number_slices; i++) {
-	    z_diff = all_slices[i].location - all_slices[i-1].location;
+    /* Divine image type */
+    df = (*m_flist.begin());
+    uint16_t samp_per_pix, bits_alloc, bits_stored, high_bit, pixel_rep;
+    const char* phot_interp;
+    bool rc = df->get_uint16 (DCM_SamplesPerPixel, &samp_per_pix);
+    if (!rc) {
+	delete pli;
+	return 0;
+    }
+    phot_interp = df->get_cstr (DCM_PhotometricInterpretation);
+    if (!phot_interp) {
+	delete pli;
+	return 0;
+    }
+    rc = df->get_uint16 (DCM_BitsAllocated, &bits_alloc);
+    if (!rc) {
+	delete pli;
+	return 0;
+    }
+    rc = df->get_uint16 (DCM_BitsStored, &bits_stored);
+    if (!rc) {
+	delete pli;
+	return 0;
+    }
+    rc = df->get_uint16 (DCM_HighBit, &high_bit);
+    if (!rc) {
+	delete pli;
+	return 0;
+    }
+    rc = df->get_uint16 (DCM_PixelRepresentation, &pixel_rep);
+    if (!rc) {
+	delete pli;
+	return 0;
+    }
+    printf ("Samp_per_pix: %d\n", (int) samp_per_pix);
+    printf ("Phot_interp: %s\n", phot_interp);
+    printf ("Bits_alloc: %d\n", (int) bits_alloc);
+    printf ("Bits_stored: %d\n", (int) bits_stored);
+    printf ("High_bit: %d\n", (int) high_bit);
+    printf ("Pixel_rep: %d\n", (int) pixel_rep);
 
-	    if (i == 1) {
-		// First chunk
-		this_chunk_start = best_chunk_start = 0;
-		this_chunk_diff = best_chunk_diff = z_diff;
-		this_chunk_len = best_chunk_len = 2;
-	    } else if (fabs (this_chunk_diff - z_diff) > 0.11) {
-		// Start a new chunk if difference in thickness is more than 0.1 millimeter
-		this_chunk_start = i - 1;
-		this_chunk_len = 2;
-		this_chunk_diff = z_diff;
-	    } else {
-		// Same thickness, increase size of this chunk
-		this_chunk_diff = ((this_chunk_len * this_chunk_diff) + z_diff)
-		    / (this_chunk_len + 1);
-		this_chunk_len++;
-
-		// Check if this chunk is now the best chunk
-		if (this_chunk_len > best_chunk_len) {
-		    best_chunk_start = this_chunk_start;
-		    best_chunk_len = this_chunk_len;
-		    best_chunk_diff = this_chunk_diff;
-		}
-	    }
-	}
-    } else {
-	best_chunk_start = 0;
-	best_chunk_len = 1;
-	best_chunk_diff = 0;
+    /* Some kinds of images we don't know how to deal with.  
+       Don't load these. */
+    if (samp_per_pix != 1) {
+	delete pli;
+	return 0;
+    }
+    if (strcmp (phot_interp, "MONOCHROME2")) {
+	delete pli;
+	return 0;
+    }
+    if (bits_alloc != 16) {
+	delete pli;
+	return 0;
+    }
+    if (bits_stored != 16) {
+	delete pli;
+	return 0;
+    }
+    if (high_bit != 15) {
+	delete pli;
+	return 0;
+    }
+    if (pixel_rep != 1) {
+	delete pli;
+	return 0;
     }
 
-    // Extract best chunk
-    number_slices = best_chunk_len;
-    thickness = best_chunk_diff;
-    for (int i = 0; i < best_chunk_len; i++) {
-	slices.push_back(all_slices[best_chunk_start + i]);
-    }
-#endif
+    printf ("Image looks ok.  Try to load.\n");
 
-
+    pli->m_type = PLM_IMG_TYPE_GPUIT_SHORT;
+    pli->m_original_type = PLM_IMG_TYPE_GPUIT_SHORT;
+    pli->m_gpuit = new Volume (vh, PT_SHORT, 1);
 
     return pli;
 }

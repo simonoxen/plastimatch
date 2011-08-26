@@ -240,7 +240,7 @@ rbf_wendland_warp (Landmark_warp *lw)
     lw->m_pih.get_dim (dim);
 	lw->m_pih.get_direction_cosines (direction_cosines);
     vf_out = new Volume (dim, origin, spacing, direction_cosines, 
-	PT_VF_FLOAT_INTERLEAVED, 3, 0);
+	PT_VF_FLOAT_INTERLEAVED, 3);
 
     printf ("Rendering vector field\n");
     rbf_wendland_update_vf (vf_out, lw, coeff);
@@ -251,7 +251,7 @@ rbf_wendland_warp (Landmark_warp *lw)
 
     printf ("Creating output vol\n");
     warped_out = new Volume (dim, origin, spacing, direction_cosines, 
-	PT_FLOAT, 1, 0);
+	PT_FLOAT, 1);
 
     printf ("Warping image\n");
     vf_warp (warped_out, moving, vf_out);

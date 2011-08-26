@@ -164,13 +164,13 @@ plm_warp_native (
     if (vf) {
 	printf ("Creating output vf...\n");
 	vf_out = new Volume (dim, origin, spacing, direction_cosines,
-	    PT_VF_FLOAT_INTERLEAVED, 3, 0);
+	    PT_VF_FLOAT_INTERLEAVED, 3);
     }
 
     /* Create output image */
     printf ("Creating output volume...\n");
     v_out = new Volume (dim, origin, spacing, direction_cosines, 
-	PT_FLOAT, 1, 0);
+	PT_FLOAT, 1);
 
     /* Warp using gpuit native warper */
     printf ("Running native warper...\n");

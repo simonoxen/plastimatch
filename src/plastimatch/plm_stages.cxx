@@ -33,7 +33,7 @@
    of the fixed_mask (if one is used), or by eliminating excess air 
    by thresholding */
 static void
-set_fixed_image_region_global (Registration_Data* regd)
+set_fixed_image_region_global (Registration_data* regd)
 {
     int use_magic_value = 1;
 
@@ -169,7 +169,7 @@ choose_image_type (int xform_type, int optim_type, int impl_type)
 
 static void
 save_output (
-    Registration_Data* regd, 
+    Registration_data* regd, 
     Xform *xf_out, 
     const std::list<std::string>& xf_out_fn, 
     bool xf_out_itk,
@@ -241,7 +241,7 @@ save_output (
 static void
 do_registration_stage (
     Registration_Parms* regp, 
-    Registration_Data* regd, 
+    Registration_data* regd, 
     Xform *xf_out, Xform *xf_in, 
     Stage_parms* stage)
 {
@@ -281,7 +281,7 @@ do_registration_stage (
 }
 
 static void
-load_input_files (Registration_Data* regd, Registration_Parms* regp)
+load_input_files (Registration_data* regd, Registration_Parms* regp)
 {
     Plm_image_type image_type = PLM_IMG_TYPE_ITK_FLOAT;
 
@@ -323,7 +323,7 @@ set_auto_subsampling (int subsample_rate[], Plm_image *pli)
 }
 
 static void
-set_automatic_parameters (Registration_Data* regd, Registration_Parms* regp)
+set_automatic_parameters (Registration_data* regd, Registration_Parms* regp)
 {
     for (int i = 0; i < regp->num_stages; i++) {
 	Stage_parms *stagep = regp->stages[i];
@@ -340,7 +340,7 @@ void
 do_registration (Registration_Parms* regp)
 {
     int i;
-    Registration_Data regd;
+    Registration_data regd;
     Xform xf1, xf2;
     Xform *xf_in, *xf_out, *xf_tmp;
     itk::TimeProbe timer1, timer2, timer3;

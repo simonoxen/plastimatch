@@ -5,6 +5,7 @@
 #define _volume_h_
 
 #include "plm_config.h"
+#include "volume_header.h"
 #include "volume_macros.h"
 
 enum Volume_pixel_type {
@@ -21,7 +22,7 @@ enum Volume_pixel_type {
 
 class gpuit_EXPORT Volume
 {
-public:
+  public:
     int dim[3];		        // x, y, z Dims
     int npix;			// # of voxels in volume
 				// = dim[0] * dim[1] * dim[2] 
@@ -36,7 +37,7 @@ public:
     int vox_planes;                     // # planes per voxel
     int pix_size;		        // # bytes per voxel
     void* img;			        // Voxel Data
-public:
+  public:
     Volume () {
 	init ();
     }
@@ -46,15 +47,22 @@ public:
 	const float spacing[3], 
 	const float direction_cosines[9], 
 	enum Volume_pixel_type vox_type, 
-	int vox_planes, 
-	int min_size
+	int vox_planes
     ) {
 	init ();
 	create (dim, offset, spacing, direction_cosines, vox_type, 
-	    vox_planes, min_size);
+	    vox_planes);
+    }
+    Volume (
+	const Volume_header& vh, 
+	enum Volume_pixel_type vox_type, 
+	int vox_planes
+    ) {
+	init ();
+	create (vh, vox_type, vox_planes);
     }
     ~Volume ();
-public:
+  public:
     void init () {
 	for (int d = 0; d < 3; d++) {
 	    dim[d] = 0;
@@ -83,10 +91,16 @@ public:
 	const float spacing[3], 
 	const float direction_cosines[9], 
 	enum Volume_pixel_type vox_type, 
-	int vox_planes, 
-	int min_size
+	int vox_planes = 1
+    );
+    void create (
+	const Volume_header& vh, 
+	enum Volume_pixel_type vox_type, 
+	int vox_planes = 1
     );
     void set_direction_cosines (const float direction_cosines[9]);
+  protected:
+    void allocate (void);
 };
 
 #if defined __cplusplus

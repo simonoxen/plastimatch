@@ -18,7 +18,7 @@ Dcmtk_file::Dcmtk_file () {
 
 Dcmtk_file::Dcmtk_file (const char *fn) {
     init ();
-    this->load (fn);
+    this->load_header (fn);
 }
 
 Dcmtk_file::~Dcmtk_file () {
@@ -51,8 +51,20 @@ Dcmtk_file::get_cstr (const DcmTagKey& tag_key) const
     return 0;
 }
 
+bool
+Dcmtk_file::get_uint8 (const DcmTagKey& tag_key, uint8_t* val) const
+{
+    return m_dfile->getDataset()->findAndGetUint8(tag_key, (*val)).good();
+}
+
+bool
+Dcmtk_file::get_uint16 (const DcmTagKey& tag_key, uint16_t* val) const
+{
+    return m_dfile->getDataset()->findAndGetUint16(tag_key, (*val)).good();
+}
+
 void
-Dcmtk_file::load (const char *fn) {
+Dcmtk_file::load_header (const char *fn) {
     /* Save a copy of the filename */
     m_fn = fn;
 
