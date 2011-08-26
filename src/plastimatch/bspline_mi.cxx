@@ -200,6 +200,7 @@ bspline_mi_hist_vopt_dump_ranges (
 
             old_bin = hparms->key_lut[i];
             left = right;
+            right += hparms->delta;
             j++;
         }
     }
