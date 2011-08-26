@@ -10,7 +10,7 @@ CMAKE_GENERATOR:INTERNAL=Unix Makefiles
 BUILDNAME:STRING=lin64-Pisr-Cd-gcc4.3.4
 
 //Name of the computer/site where compile is being run
-SITE:STRING=gelato
+SITE:STRING=gelato_1
 
 //The directory containing ITKConfig.cmake.  This is either the
 // root of the build tree, or PREFIX/lib/InsightToolkit for an
