@@ -27,8 +27,6 @@ Rtds::load_dicom (const char *dicom_dir)
 
 #if PLM_DCM_USE_DCMTK
     this->load_dcmtk (dicom_dir);
-    printf ("Done.\n");
-    exit (0);
 #else
     this->load_gdcm (dicom_dir);
 #endif

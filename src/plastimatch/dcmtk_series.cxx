@@ -68,6 +68,7 @@ Dcmtk_series::load_plm_image (void)
        (3) Consistency of images w/in series
        (4) Rescale offset/slope
        (5) Different image types
+       (6) Refine slice spacing based on entire chunk size
     */
 
     /* Get first slice */
@@ -235,32 +236,39 @@ Dcmtk_series::load_plm_image (void)
     Volume* vol = (Volume*) pli->m_gpuit;
     uint16_t* img = (uint16_t*) vol->img;
 
-    for (it = m_flist.begin(); it != m_flist.end(); ++it) {
+    for (int i = 0; i < vh.m_dim[2]; i++) {
+	/* Find the best slice, using nearest neighbor interpolation */
+	std::list<Dcmtk_file*>::iterator best_slice_it = m_flist.begin();
+	float best_z_dist = FLT_MAX;
+	float z_pos = vh.m_origin[2] + i * vh.m_spacing[2];
+	for (it = m_flist.begin(); it != m_flist.end(); ++it) {
+	    float this_z_dist = fabs ((*it)->m_vh.m_origin[2] - z_pos);
+	    if (this_z_dist < best_z_dist) {
+		best_z_dist = this_z_dist;
+		best_slice_it = it;
+	    }
+	}
+
+	/* Load the slice image data into volume */
 	const uint16_t* pixel_data;
-	Dcmtk_file *df = (*it);
-	DcmElement *dummy_element;
+	Dcmtk_file *df = (*best_slice_it);
 	unsigned long length;
+
+	printf ("Loading slice z=%f at location z=%f\n",
+	    (*best_slice_it)->m_vh.m_origin[2], z_pos);
 
 	rc = df->get_uint16_array (DCM_PixelData, &pixel_data, &length);
 	if (!rc) {
 	    print_and_exit ("Oops.  Error reading pixel data.  Punting.\n");
 	}
-#if defined (commentout)
-	rc = df->get_element (DCM_PixelData, dummy_element);
-	if (!rc) {
-	    print_and_exit ("Oops.  Error reading pixel data.  Punting.\n");
-	}
-	length = dummy_element->getLength();
-#endif
-
 	if (length != vh.m_dim[0] * vh.m_dim[1]) {
 	    print_and_exit ("Oops.  Dicom image had wrong length "
 		"(%d vs. %d x %d).\n", length, vh.m_dim[0],
 		vh.m_dim[1]);
 	}
 	memcpy (img, pixel_data, length * sizeof(uint16_t));
+	img += length;
     }
-
     return pli;
 }
 
