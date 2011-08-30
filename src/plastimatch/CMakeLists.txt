@@ -509,17 +509,18 @@ set (PLASTIMATCH_SRC
   pcmd_crop.cxx pcmd_crop.h
   pcmd_diff.cxx pcmd_diff.h
   pcmd_dvh.cxx pcmd_dvh.h
-  pcmd_xio_dvh.cxx pcmd_xio_dvh.h
   pcmd_header.cxx pcmd_header.h
   pcmd_mask.cxx pcmd_mask.h
+  pcmd_probe.cxx pcmd_probe.h
   pcmd_resample.cxx pcmd_resample.h
   pcmd_segment.cxx pcmd_segment.h
   pcmd_stats.cxx pcmd_stats.h
   pcmd_synth.cxx pcmd_synth.h
   pcmd_thumbnail.cxx pcmd_thumbnail.h 
-  pcmd_warp_dij.cxx 
   pcmd_warp.cxx pcmd_warp.h 
+  pcmd_warp_dij.cxx 
   pcmd_warp_pointset.cxx 
+  pcmd_xio_dvh.cxx pcmd_xio_dvh.h
   pcmd_xf_convert.cxx pcmd_xf_convert.h 
   plastimatch_main.cxx
   )

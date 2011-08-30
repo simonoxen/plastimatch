@@ -355,4 +355,3 @@ Rtds::set_user_metadata (std::vector<std::string>& metadata)
 	++it;
     }
 }
-

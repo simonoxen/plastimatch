@@ -17,6 +17,7 @@
 #include "pcmd_xio_dvh.h"
 #include "pcmd_mask.h"
 #include "pcmd_header.h"
+#include "pcmd_probe.h"
 #include "pcmd_resample.h"
 #include "pcmd_segment.h"
 #include "pcmd_stats.h"
@@ -55,16 +56,17 @@ print_usage (int return_code)
 	"\n"
 	"  header      "
 	"  mask        "
+	"  probe       "
 	"  register    "
 	"  resample    "
-	"  segment     "
 	"\n"
+	"  segment     "
 	"  stats       "
 	"  synth       "
 	"  thumbnail   "
 	"  warp        "
-	"  xf-convert  "
 	"\n"
+	"  xf-convert  "
 	"  xio-dvh     "
 	"\n"
 	"\n"
@@ -150,6 +152,9 @@ do_command (int argc, char* argv[])
     else if (!strcmp (command, "mask")) {
 	/* fill and mask are the same */
 	do_command_mask (argc, argv);
+    }
+    else if (!strcmp (command, "probe")) {
+	do_command_probe (argc, argv);
     }
     else if (!strcmp (command, "register")) {
 	do_command_register (argc, argv);
