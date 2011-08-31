@@ -1018,7 +1018,7 @@ plm_add_test (
   "plm-convert-dicom-h-stats" 
   ""
   ${PLM_PLASTIMATCH_PATH}/dicom_info
-  "${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-h-dicom/image000.dcm"
+  "--input;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-h-dicom/image000.dcm"
   )
 plmtest_check_string ("plm-convert-dicom-h-check" 
   "${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-h-stats.stdout.txt"
