@@ -14,7 +14,9 @@ if (SLICER_INCLUDE_DIR)
 endif ()
 
 # Find SlicerConfig.cmake or Slicer3Config.cmake
-unset (SLICER_CONFIG_FILE CACHE)
+if (NOT ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION} VERSION_LESS 2.8.0)
+  unset (SLICER_CONFIG_FILE CACHE)
+endif ()
 if (Slicer_DIR OR Slicer3_DIR)
   find_file (SLICER_CONFIG_FILE SlicerConfig.cmake
     "${Slicer_DIR}" "${Slicer3_DIR}")
