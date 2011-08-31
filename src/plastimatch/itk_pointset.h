@@ -9,7 +9,7 @@
 #include "itkDefaultStaticMeshTraits.h"
 
 #include "itk_image.h"
-#include "pointset.h"
+#include "raw_pointset.h"
 #include "xform.h"
 
 typedef itk::DefaultStaticMeshTraits< 
@@ -30,10 +30,10 @@ template<class T> void itk_pointset_load (T pointset, const char* fn);
 template<class T> T itk_pointset_warp (T ps_in, Xform* xf);
 template<class T> void itk_pointset_debug (T pointset);
 plastimatch1_EXPORT
-FloatPointSetType::Pointer itk_float_pointset_from_pointset (Pointset_old *ps);
-DoublePointSetType::Pointer itk_double_pointset_from_pointset (Pointset_old *ps);
+FloatPointSetType::Pointer itk_float_pointset_from_pointset (Raw_pointset *ps);
+DoublePointSetType::Pointer itk_double_pointset_from_pointset (Raw_pointset *ps);
 plastimatch1_EXPORT
-Pointset_old*
+Raw_pointset*
 pointset_from_itk_float_pointset (FloatPointSetType::Pointer itk_ps);
 
 #endif

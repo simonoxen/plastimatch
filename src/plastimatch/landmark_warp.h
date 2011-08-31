@@ -7,7 +7,7 @@
 #include "plm_config.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
-#include "pointset.h"
+#include "raw_pointset.h"
 
 class Xform;
 
@@ -15,8 +15,8 @@ class plastimatch1_EXPORT Landmark_warp
 {
 public:
     /* Inputs */
-    Pointset_old *m_fixed_landmarks;
-    Pointset_old *m_moving_landmarks;
+    Raw_pointset *m_fixed_landmarks;
+    Raw_pointset *m_moving_landmarks;
     Plm_image *m_input_img;
     Plm_image_header m_pih;
 
@@ -33,7 +33,7 @@ public:
     /* Outputs */
     Plm_image *m_warped_img;
     Xform *m_vf;
-    Pointset_old *m_warped_landmarks; // if regularized, warped l. may not exactly match fixed
+    Raw_pointset *m_warped_landmarks; // if regularized, warped l. may not exactly match fixed
 
 public:
     Landmark_warp ();

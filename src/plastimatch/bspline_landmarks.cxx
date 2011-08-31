@@ -153,7 +153,7 @@ Bspline_landmarks*
 bspline_landmarks_load (char *fixed_fn, char *moving_fn)
 {
     int num_fixed_landmarks, num_moving_landmarks;
-    Pointset_old *fixed_landmarks, *moving_landmarks;
+    Raw_pointset *fixed_landmarks, *moving_landmarks;
     Bspline_landmarks *blm;
 
     fixed_landmarks = pointset_load (fixed_fn);

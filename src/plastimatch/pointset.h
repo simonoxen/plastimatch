@@ -60,47 +60,4 @@ class gpuit_EXPORT Pointset {
 typedef Pointset<Labeled_point> Labeled_pointset;
 typedef Pointset<Point> Unlabeled_pointset;
 
-typedef struct pointset_old Pointset_old;
-struct pointset_old {
-    int num_points;
-    float *points;
-};
-
-#if defined __cplusplus
-extern "C" {
-#endif
-
-gpuit_EXPORT
-Pointset_old*
-pointset_load (const char *fn);
-gpuit_EXPORT
-void
-pointset_save (Pointset_old* ps, const char *fn);
-gpuit_EXPORT
-void
-pointset_save_fcsv_by_cluster (Pointset_old* ps, int *clust_id, int which_cluster, const char *fn);
-gpuit_EXPORT
-Pointset_old *
-pointset_create (void);
-gpuit_EXPORT
-void
-pointset_destroy (Pointset_old *ps);
-
-gpuit_EXPORT
-void
-pointset_resize (Pointset_old *ps, int new_size);
-gpuit_EXPORT
-void
-pointset_add_point (Pointset_old *ps, float lm[3]);
-gpuit_EXPORT
-void
-pointset_add_point_noadjust (Pointset_old *ps, float lm[3]);
-gpuit_EXPORT
-void
-pointset_debug (Pointset_old* ps);
-
-#if defined __cplusplus
-}
-#endif
-
 #endif

@@ -174,7 +174,7 @@ save_output_files (Landmark_warp_main_parms *parms)
 static void 
 landmark_convert_mm_to_voxel(
     int *landvox, 
-    Pointset_old *landmarks_mm, 
+    Raw_pointset *landmarks_mm, 
     float *offset, 
     float *pix_spacing,
     int *dim,

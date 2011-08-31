@@ -128,6 +128,7 @@ set (GPUIT_LIBRARY_SRC
   proj_matrix.cxx proj_matrix.h 
   proton_dose.cxx proton_dose.h 
   pstring.h
+  raw_pointset.cxx raw_pointset.h 
   ray_trace_exact.cxx ray_trace_exact.h 
   ray_trace_uniform.cxx ray_trace_uniform.h 
   string_util.cxx string_util.h
