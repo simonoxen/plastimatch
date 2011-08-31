@@ -25,20 +25,27 @@ public:
     }
 };
 
-static void
-parse_float_string (const Pstring& ps)
+static std::vector<int>
+parse_int_string (const Pstring& ps)
 {
+    std::vector<int> int_list;
     const char* p = (const char*) ps;
     int rc = 0;
     int n;
 
     do {
-	float f[3];
+	int v[3];
 
 	n = 0;
-	rc = sscanf (p, "%f %f %f;%n", &f[0], &f[1], &f[2], &n);
+	rc = sscanf (p, "%d %d %d;%n", &v[0], &v[1], &v[2], &n);
 	p += n;
+	if (rc >= 3) {
+	    int_list.push_back (v[0]);
+	    int_list.push_back (v[1]);
+	    int_list.push_back (v[2]);
+	}
     } while (rc >= 3 && n > 0);
+    return int_list;
 }
 
 static void
@@ -47,20 +54,59 @@ probe_img_main (Probe_parms *parms)
     FloatImageType::Pointer img = itk_image_load_float (
 	(const char*) parms->input_fn, 0);
     FloatImageType::RegionType rg = img->GetLargestPossibleRegion ();
+    
+    std::vector<int> int_list = parse_int_string (parms->index_string);
 
-    parse_float_string (parms->index_string);
+    for (unsigned int i = 0; i < int_list.size() / 3; i++) {
+	FloatImageType::IndexType pixel_index;
+	pixel_index[0] = int_list[i*3+0];
+	pixel_index[1] = int_list[i*3+1];
+	pixel_index[2] = int_list[i*3+2];
 
-    FloatImageType::IndexType pixel_index;
-    pixel_index[0] = 0;
-    pixel_index[1] = 0;
-    pixel_index[2] = 0;
-
-    FloatImageType::PixelType pixel_value = img->GetPixel (pixel_index);
+	printf ("Probe [%4d] (%3d, %3d, %3d): ", i, 
+	    (int) pixel_index[0], (int) pixel_index[1], (int) pixel_index[2]);
+	if (pixel_index[0] < 0 || pixel_index[0] >= (int) rg.GetSize(0)
+	    || pixel_index[1] < 0 || pixel_index[1] >= (int) rg.GetSize(1)
+	    || pixel_index[2] < 0 || pixel_index[2] >= (int) rg.GetSize(2))
+	{
+	    printf ("N/A\n");
+	} else {
+	    FloatImageType::PixelType pixel_value 
+		= img->GetPixel (pixel_index);
+	    printf ("%f\n", pixel_value);
+	}
+    }
 }
 
 static void
 probe_vf_main (Probe_parms *parms)
 {
+    DeformationFieldType::Pointer img = itk_image_load_float_field (
+	(const char*) parms->input_fn);
+    DeformationFieldType::RegionType rg = img->GetLargestPossibleRegion ();
+    
+    std::vector<int> int_list = parse_int_string (parms->index_string);
+
+    for (unsigned int i = 0; i < int_list.size() / 3; i++) {
+	DeformationFieldType::IndexType pixel_index;
+	pixel_index[0] = int_list[i*3+0];
+	pixel_index[1] = int_list[i*3+1];
+	pixel_index[2] = int_list[i*3+2];
+
+	printf ("Probe [%4d] (%3d, %3d, %3d): ", i, 
+	    (int) pixel_index[0], (int) pixel_index[1], (int) pixel_index[2]);
+	if (pixel_index[0] < 0 || pixel_index[0] >= (int) rg.GetSize(0)
+	    || pixel_index[1] < 0 || pixel_index[1] >= (int) rg.GetSize(1)
+	    || pixel_index[2] < 0 || pixel_index[2] >= (int) rg.GetSize(2))
+	{
+	    printf ("out of field\n");
+	} else {
+	    DeformationFieldType::PixelType pixel_value 
+		= img->GetPixel (pixel_index);
+	    printf ("%f %f %f\n", 
+		pixel_value[0], pixel_value[1], pixel_value[2]);
+	}
+    }
 }
 
 static void
