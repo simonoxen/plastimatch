@@ -13,17 +13,17 @@
 #include "pointset.h"
 #include "print_and_exit.h"
 
-Pointset*
+Pointset_old*
 pointset_create (void)
 {
-    Pointset *ps;
-    ps = (Pointset*) malloc (sizeof (Pointset));
-    memset (ps, 0, sizeof (Pointset));
+    Pointset_old *ps;
+    ps = (Pointset_old*) malloc (sizeof (Pointset_old));
+    memset (ps, 0, sizeof (Pointset_old));
     return ps;
 }
 
 void
-pointset_destroy (Pointset *ps)
+pointset_destroy (Pointset_old *ps)
 {
     if (ps->points) {
 	free (ps->points);
@@ -32,20 +32,21 @@ pointset_destroy (Pointset *ps)
 }
 
 void
-pointset_add_point (Pointset *ps, float lm[3])
+pointset_add_point (Pointset_old *ps, float lm[3])
 {
     ps->num_points ++;
     pointset_resize (ps, ps->num_points);
 
-    /* Note: Slicer landmarks are in RAS coordinates. 
-       Change RAS to LPS (note that LPS == ITK RAI). */
+    /* Note: Plastimatch landmarks are in LPS coordinates. 
+       Slicer landmarks are in RAS coordinates. 
+       Change LPS to RAS (note that LPS == ITK RAI). */
     ps->points[(ps->num_points-1)*3 + 0] = - lm[0];
     ps->points[(ps->num_points-1)*3 + 1] = - lm[1];
     ps->points[(ps->num_points-1)*3 + 2] = lm[2];
 }
 
 void
-pointset_add_point_noadjust (Pointset *ps, float lm[3])
+pointset_add_point_noadjust (Pointset_old *ps, float lm[3])
 {
     ps->num_points ++;
     pointset_resize (ps, ps->num_points);
@@ -57,11 +58,11 @@ pointset_add_point_noadjust (Pointset *ps, float lm[3])
 }
 
 
-static Pointset *
+static Pointset_old *
 pointset_load_fcsv (const char *fn)
 {
     FILE *fp;
-    Pointset *ps;
+    Pointset_old *ps;
     char s[1024];
 
     fp = fopen (fn, "r");
@@ -95,7 +96,8 @@ pointset_load_fcsv (const char *fn)
 	ps->num_points ++;
 	pointset_resize (ps, ps->num_points);
 
-	/* Note: Slicer landmarks are in RAS coordinates. 
+	/* Note: Plastimatch landmarks are in LPS coordinates. 
+	   Slicer landmarks are in RAS coordinates. 
 	   Change RAS to LPS (note that LPS == ITK RAI). */
 	ps->points[(ps->num_points-1)*3 + 0] = - lm[0];
 	ps->points[(ps->num_points-1)*3 + 1] = - lm[1];
@@ -106,11 +108,11 @@ pointset_load_fcsv (const char *fn)
     return ps;
 }
 
-static Pointset *
+static Pointset_old *
 pointset_load_txt (const char *fn)
 {
     FILE *fp;
-    Pointset *ps;
+    Pointset_old *ps;
     char s[1024];
 
     fp = fopen (fn, "r");
@@ -148,10 +150,10 @@ pointset_load_txt (const char *fn)
     return ps;
 }
 
-Pointset*
+Pointset_old*
 pointset_load (const char *fn)
 {
-    Pointset *ps;
+    Pointset_old *ps;
 
     /* First try to load fcsv */
     ps = pointset_load_fcsv (fn);
@@ -163,7 +165,7 @@ pointset_load (const char *fn)
 }
 
 static void
-pointset_save_txt (Pointset* ps, const char *fn)
+pointset_save_txt (Pointset_old* ps, const char *fn)
 {
     int i;
     FILE *fp;
@@ -181,7 +183,7 @@ pointset_save_txt (Pointset* ps, const char *fn)
 }
 
 static void
-pointset_save_fcsv (Pointset* ps, const char *fn)
+pointset_save_fcsv (Pointset_old* ps, const char *fn)
 {
     int i;
     FILE *fp;
@@ -222,7 +224,7 @@ pointset_save_fcsv (Pointset* ps, const char *fn)
 }
 
 void
-pointset_save_fcsv_by_cluster (Pointset* ps, int *clust_id, int which_cluster, const char *fn)
+pointset_save_fcsv_by_cluster (Pointset_old* ps, int *clust_id, int which_cluster, const char *fn)
 {
     int i;
     int symbol;
@@ -277,7 +279,7 @@ pointset_save_fcsv_by_cluster (Pointset* ps, int *clust_id, int which_cluster, c
 
 
 void
-pointset_save (Pointset* ps, const char *fn)
+pointset_save (Pointset_old* ps, const char *fn)
 {
     if (extension_is (fn, "fcsv")) {
 	pointset_save_fcsv (ps, fn);
@@ -287,7 +289,7 @@ pointset_save (Pointset* ps, const char *fn)
 }
 
 void
-pointset_resize (Pointset *ps, int new_size)
+pointset_resize (Pointset_old *ps, int new_size)
 {
     ps->num_points = new_size;
     ps->points = (float*) realloc (ps->points, 
@@ -295,7 +297,7 @@ pointset_resize (Pointset *ps, int new_size)
 }
 
 void
-pointset_debug (Pointset* ps)
+pointset_debug (Pointset_old* ps)
 {
     int i;
     printf ("Pointset:\n");
@@ -307,9 +309,9 @@ pointset_debug (Pointset* ps)
     }
 }
 
-/* Labeled_pointset */
+template<class T>
 void
-Labeled_pointset::load_fcsv (const char *fn)
+Pointset<T>::load_fcsv (const char *fn)
 {
     FILE *fp;
     char s[1024];
@@ -347,8 +349,8 @@ Labeled_pointset::load_fcsv (const char *fn)
 
 	/* Note: Slicer landmarks are in RAS coordinates. 
 	   Change RAS to LPS (note that LPS == ITK RAI). */
-	Labeled_point lp;
-	lp.label = buf;
+	T lp;
+	lp.set_label (buf);
 	lp.p[0] = - lm[0];
 	lp.p[1] = - lm[1];
 	lp.p[2] = lm[2];
@@ -357,8 +359,9 @@ Labeled_pointset::load_fcsv (const char *fn)
     fclose (fp);
 }
 
+template<class T>
 void
-Labeled_pointset::insert_ras (
+Pointset<T>::insert_ras (
     const std::string& label,
     float x,
     float y,
@@ -366,11 +369,12 @@ Labeled_pointset::insert_ras (
 )
 {
     /* RAS to LPS adjustment */
-    this->point_list.push_back (Labeled_point (label, -x, -y, z));
+    this->point_list.push_back (T (label, -x, -y, z));
 }
 
+template<class T>
 void
-Labeled_pointset::insert_lps (
+Pointset<T>::insert_lps (
     const std::string& label,
     float x,
     float y,
@@ -378,11 +382,12 @@ Labeled_pointset::insert_lps (
 )
 {
     /* Noo RAS to LPS adjustment */
-    this->point_list.push_back (Labeled_point (label, x, y, z));
+    this->point_list.push_back (T (label, x, y, z));
 }
 
+template<class T>
 void
-Labeled_pointset::save_fcsv (const char *fn)
+Pointset<T>::save_fcsv (const char *fn)
 {
     FILE *fp;
 
@@ -414,13 +419,14 @@ Labeled_pointset::save_fcsv (const char *fn)
 	(int) this->point_list.size());
 
     for (unsigned int i = 0; i < this->point_list.size(); i++) {
-	const Labeled_point& lp = this->point_list[i];
-	if (lp.label == "") {
+	const T& lp = this->point_list[i];
+	if (lp.get_label() == "") {
 	    fprintf (fp, "p-%03d", i);
 	} else {
-	    fprintf (fp, "%s", lp.label.c_str());
+	    fprintf (fp, "%s", lp.get_label().c_str());
 	}
-	/* Note: Slicer landmarks are in RAS coordinates. 
+	/* Note: Plastimatch landmarks are in LPS coordinates. 
+	   Slicer landmarks are in RAS coordinates. 
 	   Change LPS to RAS (note that LPS == ITK RAI). */
 	fprintf (fp, ",%f,%f,%f,1,1\n", 
 	    - lp.p[0], 
@@ -429,3 +435,6 @@ Labeled_pointset::save_fcsv (const char *fn)
     }
     fclose (fp);
 }
+
+template class Pointset<Labeled_point>;
+template class Pointset<Point>;

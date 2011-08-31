@@ -8,7 +8,24 @@
 #include <string>
 #include <vector>
 
-class Labeled_point {
+class gpuit_EXPORT Point {
+public:
+    Point () {}
+    Point (const std::string& label, float x, float y, float z) {
+	p[0] = x;
+	p[1] = y;
+	p[2] = z;
+    }
+public:
+    float p[3];
+public:
+    void set_label (const char* s) {}
+    std::string get_label (void) const {
+	return "";
+    }
+};
+
+class gpuit_EXPORT Labeled_point {
 public:
     Labeled_point () {}
     Labeled_point (const std::string& label, float x, float y, float z) {
@@ -20,11 +37,19 @@ public:
 public:
     std::string label;
     float p[3];
+public:
+    void set_label (const char* s) {
+	this->label = s;
+    }
+    std::string get_label (void) const {
+	return this->label;
+    }
 };
 
-class gpuit_EXPORT Labeled_pointset {
+template<class T>
+class gpuit_EXPORT Pointset {
   public:
-    std::vector<Labeled_point> point_list;
+    std::vector<T> point_list;
   public:
     void load_fcsv (const char *fn);
     void save_fcsv (const char *fn);
@@ -32,8 +57,11 @@ class gpuit_EXPORT Labeled_pointset {
     void insert_ras (const std::string& label, float x, float y, float z);
 };
 
-typedef struct pointset Pointset;
-struct pointset {
+typedef Pointset<Labeled_point> Labeled_pointset;
+typedef Pointset<Point> Unlabeled_pointset;
+
+typedef struct pointset_old Pointset_old;
+struct pointset_old {
     int num_points;
     float *points;
 };
@@ -43,33 +71,33 @@ extern "C" {
 #endif
 
 gpuit_EXPORT
-Pointset*
+Pointset_old*
 pointset_load (const char *fn);
 gpuit_EXPORT
 void
-pointset_save (Pointset* ps, const char *fn);
+pointset_save (Pointset_old* ps, const char *fn);
 gpuit_EXPORT
 void
-pointset_save_fcsv_by_cluster (Pointset* ps, int *clust_id, int which_cluster, const char *fn);
+pointset_save_fcsv_by_cluster (Pointset_old* ps, int *clust_id, int which_cluster, const char *fn);
 gpuit_EXPORT
-Pointset *
+Pointset_old *
 pointset_create (void);
 gpuit_EXPORT
 void
-pointset_destroy (Pointset *ps);
+pointset_destroy (Pointset_old *ps);
 
 gpuit_EXPORT
 void
-pointset_resize (Pointset *ps, int new_size);
+pointset_resize (Pointset_old *ps, int new_size);
 gpuit_EXPORT
 void
-pointset_add_point (Pointset *ps, float lm[3]);
+pointset_add_point (Pointset_old *ps, float lm[3]);
 gpuit_EXPORT
 void
-pointset_add_point_noadjust (Pointset *ps, float lm[3]);
+pointset_add_point_noadjust (Pointset_old *ps, float lm[3]);
 gpuit_EXPORT
 void
-pointset_debug (Pointset* ps);
+pointset_debug (Pointset_old* ps);
 
 #if defined __cplusplus
 }

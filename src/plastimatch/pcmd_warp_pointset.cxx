@@ -17,7 +17,7 @@ warp_pointset_main (Warp_parms* parms)
     //itk_pointset_load (ps_in, (const char*) parms->input_fn);
     //itk_pointset_debug (ps_in);
 
-    Pointset *ps = pointset_load ((const char*) parms->input_fn);
+    Pointset_old *ps = pointset_load ((const char*) parms->input_fn);
 
     xform_load (&xf, parms->xf_in_fn);
 
@@ -36,7 +36,7 @@ warp_pointset_main (Warp_parms* parms)
     itk_pointset_debug (itk_ps_out);
 
     if (bstring_not_empty (parms->output_pointset_fn)) {
-	Pointset *ps_out = pointset_from_itk_float_pointset (itk_ps_out);
+	Pointset_old *ps_out = pointset_from_itk_float_pointset (itk_ps_out);
 	pointset_save (ps_out, (const char*) parms->output_pointset_fn);
 	pointset_destroy (ps_out);
     }

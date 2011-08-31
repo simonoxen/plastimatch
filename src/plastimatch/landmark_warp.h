@@ -15,8 +15,8 @@ class plastimatch1_EXPORT Landmark_warp
 {
 public:
     /* Inputs */
-    Pointset *m_fixed_landmarks;
-    Pointset *m_moving_landmarks;
+    Pointset_old *m_fixed_landmarks;
+    Pointset_old *m_moving_landmarks;
     Plm_image *m_input_img;
     Plm_image_header m_pih;
 
@@ -33,7 +33,7 @@ public:
     /* Outputs */
     Plm_image *m_warped_img;
     Xform *m_vf;
-    Pointset *m_warped_landmarks; // if regularized, warped l. may not exactly match fixed
+    Pointset_old *m_warped_landmarks; // if regularized, warped l. may not exactly match fixed
 
 public:
     Landmark_warp ();

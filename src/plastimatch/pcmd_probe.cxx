@@ -12,6 +12,7 @@
 #include "plm_file_format.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
+#include "pointset.h"
 #include "pstring.h"
 
 class Probe_parms {
@@ -24,24 +25,20 @@ public:
     }
 };
 
-typedef float f3[3];
-
 static void
 parse_float_string (const Pstring& ps)
 {
     const char* p = (const char*) ps;
     int rc = 0;
+    int n;
 
     do {
 	float f[3];
-	int n;
 
+	n = 0;
 	rc = sscanf (p, "%f %f %f;%n", &f[0], &f[1], &f[2], &n);
-	printf ("rc = %d\n", rc);
-	if (rc >= 3) {
-	    printf ("%f %f %f\n", f[0], f[1], f[2]);
-	}
-    } while (rc == 4);
+	p += n;
+    } while (rc >= 3 && n > 0);
 }
 
 static void

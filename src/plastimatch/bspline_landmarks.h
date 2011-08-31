@@ -12,8 +12,8 @@ typedef struct bspline_landmarks Bspline_landmarks;
 struct bspline_landmarks {
     int num_landmarks;
     
-    Pointset *fixed_landmarks;
-    Pointset *moving_landmarks;
+    Pointset_old *fixed_landmarks;
+    Pointset_old *moving_landmarks;
     float *warped_landmarks; //moving landmarks displaced by current vector field
     int *landvox_mov;
     int *landvox_fix;
