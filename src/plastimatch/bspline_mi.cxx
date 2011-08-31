@@ -29,7 +29,6 @@
 #include "xpm.h"
 #include "mha_io.h"
 
-//#define DEBUG_VOPT
 #define VOPT_RES 1000
 
 /* Some neat debug facilities
@@ -96,17 +95,32 @@ dump_vol_clipped (char* fn, Volume* vin, float bot, float top)
    Initialization and teardown
    ----------------------------------------------------------------------- */
 static inline double
-vopt_bin_error (int start, int end, double* s_lut, double* ssq_lut)
+vopt_bin_error (int start, int end, double* s_lut, double* ssq_lut, double* cnt_lut)
 {
     double sq_diff;
     double diff;
     double delta;
+    double v, n;
 
     sq_diff = ssq_lut[end] - ssq_lut[start];
     diff = s_lut[end] - s_lut[start];
-    delta = (double)end - (double)start + 1;
+    delta = (double)end - (double)start + 1.0;
+    n = cnt_lut[end] - cnt_lut[start];
+    v = sq_diff - (diff*diff)/delta;
+    
+    /* JAS 2011.08.31
+     * This produces a histogram with "better utilized" bins, but the resulting
+     * registration is worse in my experience ...but, then again, I only have 1
+     * multi-modal data set.  I believe this may be better overall, so I will
+     * leave it enabled for now. */
+#if 1
+    /* Penalize solutions that have bins with less than one voxel */
+    if (n < 1.0) {
+        return DBL_MAX;
+    }
+#endif
 
-    return sq_diff - (diff*diff)/delta;
+    return v;
 } 
 
 static void
@@ -229,6 +243,7 @@ bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
     double* s_lut;
     double* ssq_lut;
     double* err_lut;
+    double* cnt_lut;
     double candidate;
     float* img = (float*) vol->img;
 
@@ -246,6 +261,7 @@ bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
     s_lut   = (double*) malloc (hparms->keys * sizeof (double));
     ssq_lut = (double*) malloc (hparms->keys * sizeof (double));
     err_lut = (double*) malloc (hparms->bins * hparms->keys * sizeof (double));
+    cnt_lut = (double*) malloc (hparms->keys* sizeof (double));
     memset (err_lut, 0, hparms->bins * hparms->keys * sizeof (double));
 
     tracker = (int*) malloc (hparms->bins * hparms->keys * sizeof (int));
@@ -253,14 +269,14 @@ bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
 
     /* Determine input image value range */
     min_vox = max_vox = img[0];
-    for (i=0; i < vol->npix; i++) {
+    for (i=1; i < vol->npix; i++) {
         if (img[i] < min_vox) {
             min_vox = img[i];
         } else if (img[i] > max_vox) {
             max_vox = img[i];
         }
     }
-    
+
     /* To avoid rounding issues, top and bottom bin are only half full */
     hparms->delta = (max_vox - min_vox) / (hparms->keys - 1);
     hparms->offset = min_vox - 0.5 * hparms->delta;
@@ -269,39 +285,36 @@ bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
     for (i=0; i<vol->npix; i++) {
         idx_bin = floor ((img[i] - hparms->offset) / hparms->delta);
         tmp_hist[idx_bin]++;
-        tmp_avg[idx_bin] += img[i];
+        tmp_avg[idx_bin] += img[i] - hparms->offset;
     }
 
-    /* Sorted estimation table
-     *   May introduce some error depending on sampling resolution, but far
-     *   more efficient than working on sorted volume data directly -- even if
-     *   sub-sampling were employed.
-     */
+    /* Sorted estimation table */
     for (i=0; i<hparms->keys; i++) {
         if (tmp_hist[i] > 0) {
             tmp_avg[i] = tmp_avg[i] / tmp_hist[i];
         }
         else if (i > 0) {
-            /* Prevent oversampling errors */
             tmp_avg[i] = tmp_avg[i-1];
         }
     }
 
-    free (tmp_hist);
-
     /* Create lookup tables for error computations */
     s_lut[0] = tmp_avg[0];
     ssq_lut[0] = (tmp_avg[0] * tmp_avg[0]);
+    cnt_lut[0] = tmp_hist[0];
     for (i=1; i<hparms->keys; i++) {
         s_lut[i] = s_lut[i-1] + tmp_avg[i];
         ssq_lut[i] = ssq_lut[i-1] + (tmp_avg[i] * tmp_avg[i]);
+        cnt_lut[i] = cnt_lut[i-1] + tmp_hist[i];
+//        printf ("[%i] %f\n", i, tmp_avg[i]);
     }
 
     free (tmp_avg);
+    free (tmp_hist);
 
     /* Compute the one-bin scores */
     for (i=0; i<hparms->keys; i++) {
-        err_lut[i] = vopt_bin_error (0, i, s_lut, ssq_lut);
+        err_lut[i] = vopt_bin_error (0, i, s_lut, ssq_lut, cnt_lut);
     }
 
     /* Compute best multi-bin scores */
@@ -312,8 +325,8 @@ bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
             tracker[hparms->keys*j+i] = 0;
 
             for (k=0; k<i; k++) {
-                candidate = err_lut[hparms->keys*(j-1)+k] + vopt_bin_error (k+1, i, s_lut, ssq_lut);
-                if (candidate < err_lut[hparms->keys*j+i]) {
+                candidate = err_lut[hparms->keys*(j-1)+k] + vopt_bin_error (k+1, i, s_lut, ssq_lut, cnt_lut);
+                if (candidate <= err_lut[hparms->keys*j+i]) {
                     err_lut[hparms->keys*j+i] = candidate;
                     tracker[hparms->keys*j+i] = k;
                 }
@@ -324,6 +337,7 @@ bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
     free (s_lut);
     free (ssq_lut);
     free (err_lut);
+    free (cnt_lut);
 
     /* Build the linear key table */
     hparms->key_lut = (int*) malloc (hparms->keys * sizeof (int));
@@ -335,7 +349,7 @@ bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
         bottom = next+1;
         if (j == 0) { bottom = 0; }
 
-//        printf ("[%i] from %i to %i\n", j, bottom, curr);
+//        printf ("[%i] from %i to %i\tErr: %6.2e\n", j, bottom, curr, err_lut[hparms->keys*j+curr]);
         for (i=bottom; i<=curr; i++) {
             hparms->key_lut[i] = j;
         }
