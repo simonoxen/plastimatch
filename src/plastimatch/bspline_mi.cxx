@@ -220,7 +220,7 @@ bspline_mi_hist_vopt_dump_ranges (
     }
     /* Pick up the last bin */
     fprintf (fp, "Bin %i [%6.2f .. %6.2f]\n", j, left, right);
-    sprintf (buff, "vopt_lvl_%i.mha", j);
+    sprintf (buff, "%s_vopt_lvl_%03i.mha", prefix.c_str(), j);
     dump_vol_clipped (buff, vol, left, right);
     fclose (fp);
 }
@@ -349,7 +349,8 @@ bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
         bottom = next+1;
         if (j == 0) { bottom = 0; }
 
-//        printf ("[%i] from %i to %i\tErr: %6.2e\n", j, bottom, curr, err_lut[hparms->keys*j+curr]);
+//        printf ("[%i] from %i to %i\tErr: %6.2e\n",
+//                  j, bottom, curr, err_lut[hparms->keys*j+curr]);
         for (i=bottom; i<=curr; i++) {
             hparms->key_lut[i] = j;
         }
