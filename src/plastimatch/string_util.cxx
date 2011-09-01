@@ -80,6 +80,55 @@ parse_dicom_float6 (float *arr, const char *string)
     }
 }
 
+/* Parse a string of the form "3 22 -1; 3 4 66; 3 1 0" */
+std::vector<int>
+parse_int3_string (const char* s)
+{
+    std::vector<int> int_list;
+    const char* p = s;
+    int rc = 0;
+    int n;
+
+    do {
+	int v[3];
+
+	n = 0;
+	rc = sscanf (p, "%d %d %d;%n", &v[0], &v[1], &v[2], &n);
+	p += n;
+	if (rc >= 3) {
+	    int_list.push_back (v[0]);
+	    int_list.push_back (v[1]);
+	    int_list.push_back (v[2]);
+	}
+    } while (rc >= 3 && n > 0);
+    return int_list;
+}
+
+/* Parse a string of the form "3 22 -1; 3 4 66; 3 1 0" */
+std::vector<float>
+parse_float3_string (const char* s)
+{
+    std::vector<float> float_list;
+    const char* p = s;
+    int rc = 0;
+    int n;
+
+    do {
+	float v[3];
+
+	n = 0;
+	rc = sscanf (p, "%f %f %f;%n", &v[0], &v[1], &v[2], &n);
+	p += n;
+	if (rc >= 3) {
+	    float_list.push_back (v[0]);
+	    float_list.push_back (v[1]);
+	    float_list.push_back (v[2]);
+	}
+    } while (rc >= 3 && n > 0);
+    return float_list;
+}
+
+
 /* String trimming by GMan.
    http://stackoverflow.com/questions/1798112/removing-leading-and-trailing-spaces-from-a-string/1798170#1798170
    Distributed under Attribution-ShareAlike 3.0 Unported license (CC BY-SA 3.0) 

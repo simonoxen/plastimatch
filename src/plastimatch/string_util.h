@@ -6,6 +6,7 @@
 
 #include "plm_config.h"
 #include <string>
+#include <vector>
 
 #if defined __cplusplus
 extern "C" {
@@ -34,6 +35,14 @@ parse_dicom_float3 (float *arr, const char *string);
 gpuit_EXPORT
 int
 parse_dicom_float6 (float *arr, const char *string);
+
+gpuit_EXPORT
+std::vector<int>
+parse_int3_string (const char* s);
+
+gpuit_EXPORT
+std::vector<float>
+parse_float3_string (const char* s);
 
 #if defined __cplusplus
 }

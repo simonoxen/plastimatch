@@ -3,6 +3,9 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include <stdlib.h>
+#include "itkLinearInterpolateImageFunction.h"
+#include "itkVectorLinearInterpolateImageFunction.h"
+#include "itkContinuousIndex.h"
 
 #include "pstring.h"
 #include "itk_image.h"
@@ -14,39 +17,18 @@
 #include "plm_image_header.h"
 #include "pointset.h"
 #include "pstring.h"
+#include "string_util.h"
 
 class Probe_parms {
 public:
     Pstring input_fn;
     Pstring index_string;
+    Pstring location_string;
 
 public:
     Probe_parms () {
     }
 };
-
-static std::vector<int>
-parse_int_string (const Pstring& ps)
-{
-    std::vector<int> int_list;
-    const char* p = (const char*) ps;
-    int rc = 0;
-    int n;
-
-    do {
-	int v[3];
-
-	n = 0;
-	rc = sscanf (p, "%d %d %d;%n", &v[0], &v[1], &v[2], &n);
-	p += n;
-	if (rc >= 3) {
-	    int_list.push_back (v[0]);
-	    int_list.push_back (v[1]);
-	    int_list.push_back (v[2]);
-	}
-    } while (rc >= 3 && n > 0);
-    return int_list;
-}
 
 static void
 probe_img_main (Probe_parms *parms)
@@ -55,24 +37,58 @@ probe_img_main (Probe_parms *parms)
 	(const char*) parms->input_fn, 0);
     FloatImageType::RegionType rg = img->GetLargestPossibleRegion ();
     
-    std::vector<int> int_list = parse_int_string (parms->index_string);
+    typedef itk::LinearInterpolateImageFunction < FloatImageType, 
+	float > InterpolatorType;
+    InterpolatorType::Pointer interpolator = InterpolatorType::New();
+    interpolator->SetInputImage (img);
 
-    for (unsigned int i = 0; i < int_list.size() / 3; i++) {
-	FloatImageType::IndexType pixel_index;
-	pixel_index[0] = int_list[i*3+0];
-	pixel_index[1] = int_list[i*3+1];
-	pixel_index[2] = int_list[i*3+2];
+    std::vector<float> index_list = parse_float3_string (
+	(const char*) parms->index_string);
+    for (unsigned int i = 0; i < index_list.size() / 3; i++) {
+	itk::ContinuousIndex<float, 3> cindex;
+	cindex[0] = index_list[i*3+0];
+	cindex[1] = index_list[i*3+1];
+	cindex[2] = index_list[i*3+2];
 
-	printf ("Probe [%4d] (%3d, %3d, %3d): ", i, 
-	    (int) pixel_index[0], (int) pixel_index[1], (int) pixel_index[2]);
-	if (pixel_index[0] < 0 || pixel_index[0] >= (int) rg.GetSize(0)
-	    || pixel_index[1] < 0 || pixel_index[1] >= (int) rg.GetSize(1)
-	    || pixel_index[2] < 0 || pixel_index[2] >= (int) rg.GetSize(2))
+	FloatPoint3DType point;
+	img->TransformContinuousIndexToPhysicalPoint (cindex, point);
+	printf ("%4d: %7.2f, %7.2f, %7.2f; %7.2f, %7.2f, %7.2f; ", 
+	    i, cindex[0], cindex[1], cindex[2], 
+	    point[0], point[1], point[2]);
+	if (cindex[0] < 0 || cindex[0] >= (int) rg.GetSize(0)
+	    || cindex[1] < 0 || cindex[1] >= (int) rg.GetSize(1)
+	    || cindex[2] < 0 || cindex[2] >= (int) rg.GetSize(2))
 	{
 	    printf ("N/A\n");
 	} else {
-	    FloatImageType::PixelType pixel_value 
-		= img->GetPixel (pixel_index);
+	    InterpolatorType::OutputType pixel_value 
+		= interpolator->EvaluateAtContinuousIndex (cindex);
+	    printf ("%f\n", pixel_value);
+	}
+    }
+
+    std::vector<float> location_list = parse_float3_string (
+	(const char*) parms->location_string);
+    for (unsigned int i = 0; i < location_list.size() / 3; i++) {
+	FloatPoint3DType point;
+	point[0] = location_list[i*3+0];
+	point[1] = location_list[i*3+1];
+	point[2] = location_list[i*3+2];
+
+	itk::ContinuousIndex<float, 3> cindex;
+	img->TransformPhysicalPointToContinuousIndex (point, cindex);
+	printf ("%4d: %7.2f, %7.2f, %7.2f; %7.2f, %7.2f, %7.2f; ", 
+	    (int) (index_list.size() / 3) + i, 
+	    cindex[0], cindex[1], cindex[2], 
+	    point[0], point[1], point[2]);
+	if (cindex[0] < 0 || cindex[0] >= (int) rg.GetSize(0)
+	    || cindex[1] < 0 || cindex[1] >= (int) rg.GetSize(1)
+	    || cindex[2] < 0 || cindex[2] >= (int) rg.GetSize(2))
+	{
+	    printf ("N/A\n");
+	} else {
+	    InterpolatorType::OutputType pixel_value 
+		= interpolator->EvaluateAtContinuousIndex (cindex);
 	    printf ("%f\n", pixel_value);
 	}
     }
@@ -85,24 +101,59 @@ probe_vf_main (Probe_parms *parms)
 	(const char*) parms->input_fn);
     DeformationFieldType::RegionType rg = img->GetLargestPossibleRegion ();
     
-    std::vector<int> int_list = parse_int_string (parms->index_string);
+    typedef itk::VectorLinearInterpolateImageFunction < DeformationFieldType, 
+	float > InterpolatorType;
+    InterpolatorType::Pointer interpolator = InterpolatorType::New();
+    interpolator->SetInputImage (img);
 
-    for (unsigned int i = 0; i < int_list.size() / 3; i++) {
-	DeformationFieldType::IndexType pixel_index;
-	pixel_index[0] = int_list[i*3+0];
-	pixel_index[1] = int_list[i*3+1];
-	pixel_index[2] = int_list[i*3+2];
+    std::vector<float> index_list = parse_float3_string (
+	(const char*) parms->index_string);
+    for (unsigned int i = 0; i < index_list.size() / 3; i++) {
+	itk::ContinuousIndex<float, 3> cindex;
+	cindex[0] = index_list[i*3+0];
+	cindex[1] = index_list[i*3+1];
+	cindex[2] = index_list[i*3+2];
 
-	printf ("Probe [%4d] (%3d, %3d, %3d): ", i, 
-	    (int) pixel_index[0], (int) pixel_index[1], (int) pixel_index[2]);
-	if (pixel_index[0] < 0 || pixel_index[0] >= (int) rg.GetSize(0)
-	    || pixel_index[1] < 0 || pixel_index[1] >= (int) rg.GetSize(1)
-	    || pixel_index[2] < 0 || pixel_index[2] >= (int) rg.GetSize(2))
+	FloatPoint3DType point;
+	img->TransformContinuousIndexToPhysicalPoint (cindex, point);
+	printf ("%4d: %7.2f, %7.2f, %7.2f; %7.2f, %7.2f, %7.2f; ", 
+	    i, cindex[0], cindex[1], cindex[2], 
+	    point[0], point[1], point[2]);
+	if (cindex[0] < 0 || cindex[0] >= (int) rg.GetSize(0)
+	    || cindex[1] < 0 || cindex[1] >= (int) rg.GetSize(1)
+	    || cindex[2] < 0 || cindex[2] >= (int) rg.GetSize(2))
 	{
-	    printf ("out of field\n");
+	    printf ("N/A\n");
 	} else {
-	    DeformationFieldType::PixelType pixel_value 
-		= img->GetPixel (pixel_index);
+	    InterpolatorType::OutputType pixel_value 
+		= interpolator->EvaluateAtContinuousIndex (cindex);
+	    printf ("%f %f %f\n", 
+		pixel_value[0], pixel_value[1], pixel_value[2]);
+	}
+    }
+
+    std::vector<float> location_list = parse_float3_string (
+	(const char*) parms->location_string);
+    for (unsigned int i = 0; i < location_list.size() / 3; i++) {
+	FloatPoint3DType point;
+	point[0] = location_list[i*3+0];
+	point[1] = location_list[i*3+1];
+	point[2] = location_list[i*3+2];
+
+	itk::ContinuousIndex<float, 3> cindex;
+	img->TransformPhysicalPointToContinuousIndex (point, cindex);
+	printf ("%4d: %7.2f, %7.2f, %7.2f; %7.2f, %7.2f, %7.2f; ", 
+	    (int) (index_list.size() / 3) + i, 
+	    cindex[0], cindex[1], cindex[2], 
+	    point[0], point[1], point[2]);
+	if (cindex[0] < 0 || cindex[0] >= (int) rg.GetSize(0)
+	    || cindex[1] < 0 || cindex[1] >= (int) rg.GetSize(1)
+	    || cindex[2] < 0 || cindex[2] >= (int) rg.GetSize(2))
+	{
+	    printf ("N/A\n");
+	} else {
+	    InterpolatorType::OutputType pixel_value 
+		= interpolator->EvaluateAtContinuousIndex (cindex);
 	    printf ("%f %f %f\n", 
 		pixel_value[0], pixel_value[1], pixel_value[2]);
 	}
@@ -145,6 +196,8 @@ parse_fn (
     /* Basic options */
     parser->add_long_option ("i", "index", 
 	"List of voxel indices, such as \"i j k;i j k;...\"", 1, "");
+    parser->add_long_option ("l", "location", 
+	"List of spatial locations, such as \"i j k;i j k;...\"", 1, "");
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -152,11 +205,19 @@ parse_fn (
     /* Handle --help, --version */
     parser->check_default_options ();
 
-    /* Check that an index was given */
-    parser->check_required ("index");
+    /* Check that an index or location was given */
+    if (!parser->have_option ("index") 
+	&& !parser->have_option("location"))
+    {
+	throw (dlib::error ("Error.  Please specify either an index "
+		"or a location option"));
+    }
 
     /* Check that an input file was given */
-    if (parser->number_of_arguments() != 1) {
+    if (parser->number_of_arguments() == 0) {
+	throw (dlib::error ("Error.  You must specify an input file"));
+	
+    } else if (parser->number_of_arguments() > 1) {
 	std::string extra_arg = (*parser)[1];
 	throw (dlib::error ("Error.  Unknown option " + extra_arg));
     }
@@ -164,6 +225,7 @@ parse_fn (
     /* Copy values into output struct */
     parms->input_fn = (*parser)[0].c_str();
     parms->index_string = parser->get_string("index").c_str();
+    parms->location_string = parser->get_string("location").c_str();
 }
 
 void
