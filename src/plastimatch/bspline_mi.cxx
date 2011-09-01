@@ -107,7 +107,7 @@ vopt_bin_error (int start, int end, double* s_lut, double* ssq_lut, double* cnt_
     delta = (double)end - (double)start + 1.0;
     n = cnt_lut[end] - cnt_lut[start];
     v = sq_diff - (diff*diff)/delta;
-    
+
     /* JAS 2011.08.31
      * This produces a histogram with "better utilized" bins, but the resulting
      * registration is worse in my experience ...but, then again, I only have 1

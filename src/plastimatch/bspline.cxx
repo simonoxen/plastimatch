@@ -356,7 +356,6 @@ bspline_parms_free (Bspline_parms* parms)
     if (parms->mi_hist.joint.type == HIST_VOPT) {
         free (parms->mi_hist.fixed.key_lut);
         free (parms->mi_hist.moving.key_lut);
-        free (parms->mi_hist.joint.key_lut);
     }
 
     if (parms->mi_hist.j_hist) {
