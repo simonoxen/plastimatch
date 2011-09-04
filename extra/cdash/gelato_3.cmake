@@ -1,5 +1,5 @@
 SET (CTEST_SOURCE_DIRECTORY "$ENV{HOME}/work/plastimatch")
-SET (CTEST_BINARY_DIRECTORY "$ENV{HOME}/build/nightly/plastimatch")
+SET (CTEST_BINARY_DIRECTORY "$ENV{HOME}/build/nightly/gelato_3/plastimatch")
 SET (CTEST_CMAKE_COMMAND "/usr/bin/cmake")
 SET (CTEST_COMMAND "/usr/bin/ctest -D Nightly")
 SET (CTEST_INITIAL_CACHE "
@@ -17,8 +17,8 @@ SITE:STRING=gelato_3
 // installation.
 ITK_DIR:PATH=/home/gcs6/build/itk-3.20.0
 
-//Directory with SlicerConfig.cmake or Slicer3Config.cmake
-Slicer_DIR:PATH=/PHShome/gcs6/build/slicer-3.6/Slicer3-build
+//Root of DCMTK install tree (optional).
+DCMTK_DIR:PATH=/PHShome/gcs6/build/dcmtk-3.6.0
 
 //Build with shared libraries.
 BUILD_SHARED_LIBS:BOOL=ON
