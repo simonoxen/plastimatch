@@ -8,10 +8,6 @@
 #include <string>
 #include <vector>
 
-#if defined __cplusplus
-extern "C" {
-#endif
-
 gpuit_EXPORT
 int
 plm_strcmp (const char* s1, const char* s2);
@@ -43,10 +39,6 @@ parse_int3_string (const char* s);
 gpuit_EXPORT
 std::vector<float>
 parse_float3_string (const char* s);
-
-#if defined __cplusplus
-}
-#endif
 
 gpuit_EXPORT
 const std::string
