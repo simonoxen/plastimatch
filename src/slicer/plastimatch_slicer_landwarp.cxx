@@ -15,8 +15,8 @@
 #include "math_util.h"
 #include "mha_io.h"
 #include "landmark_warp.h"
-#include "pointset.h"
 #include "print_and_exit.h"
+#include "raw_pointset.h"
 #include "rbf_gauss.h"
 #include "rbf_wendland.h"
 
@@ -98,8 +98,8 @@ main (int argc, char *argv[])
        pointset_add_point assumes RAS
     */
 
-    Pointset *fix_ps = pointset_create ();
-    Pointset *mov_ps = pointset_create ();
+    Raw_pointset *fix_ps = pointset_create ();
+    Raw_pointset *mov_ps = pointset_create ();
 
     for (unsigned long i = 0; i < num_fiducials; i++) {
 	
