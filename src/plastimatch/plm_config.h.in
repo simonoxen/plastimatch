@@ -61,11 +61,7 @@
 #define FORTRAN_FOUND 1
 
 /* Dicom attributes */
-#if DCMTK_FOUND && DCMTK_VERSION_36 && PLM_CONFIG_PREFER_DCMTK
-#  define PLM_DCM_USE_DCMTK 1
-#else
-#  undef PLM_DCM_USE_DCMTK
-#endif
+#cmakedefine PLM_DCM_USE_DCMTK 1
 
 /* ITK attributes */
 #cmakedefine ITK_FOUND 1

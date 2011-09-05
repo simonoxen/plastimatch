@@ -604,6 +604,11 @@ if (DCMTK_FOUND)
     set (DCMTK_VERSION_36 1)
   endif ()
 endif ()
+if (DCMTK_FOUND AND DCMTK_VERSION_36 AND PLM_CONFIG_PREFER_DCMTK)
+  set (PLM_DCM_USE_DCMTK 1)
+else ()
+  set (PLM_DCM_USE_DCMTK 0)
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  VTK

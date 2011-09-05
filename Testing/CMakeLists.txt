@@ -1080,6 +1080,16 @@ plm_add_test (
   )
 
 ## -------------------------------------------------------------------------
+## plastimatch convert dicom-rt (xio, irregular)
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-convert-dicom-irregular-a"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/xio-4.60-irregular-spacing;--output-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-irregular-a.mha;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-irregular-a-ss.mha;--output-ss-list;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-irregular-a-ss.txt;--output-dose-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-irregular-a-dose.mha"
+  )
+
+## -------------------------------------------------------------------------
 ## plastimatch convert dicom-rt (pinnacle)
 ## -------------------------------------------------------------------------
 plm_add_test (
