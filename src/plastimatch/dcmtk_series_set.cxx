@@ -107,19 +107,63 @@ void
 Dcmtk_series_set::load_rtds (Rtds *rtds)
 {
     Dcmtk_series_map::iterator it;
+    Dcmtk_series *ds_img = 0;
+    Dcmtk_series *ds_rtdose = 0;
+    Dcmtk_series *ds_rtss = 0;
+
+    /* First pass: loop through series and find ss, dose */
+    /* GCS FIX: maybe need additional pass, make sure ss & dose 
+       refer to same CT, in case of multiple ss & dose in same 
+       directory */
     for (it = m_smap.begin(); it != m_smap.end(); ++it) {
 	const std::string& key = (*it).first;
 	Dcmtk_series *ds = (*it).second;
 	UNUSED_VARIABLE (key);
 
-	/* Classify the series, looking for "image", "RTDOSE", 
-	   or "RTSTRUCT".  We want at most one of each. 
-	   Arbitrarily we choose the first one found. */
-	if (ds->get_modality() == "CT") {
-	    rtds->m_img = ds->load_plm_image ();
+	/* Check for rtstruct */
+	if (!ds_rtss && ds->get_modality() == "RTSTRUCT") {
+	    printf ("Found RTSTUCT, UID=%s\n", key.c_str());
+	    ds_rtss = ds;
+	    continue;
+	}
+
+	/* Check for rtdose */
+	if (!ds_rtdose && ds->get_modality() == "RTDOSE") {
+	    printf ("Found RTDOSE, UID=%s\n", key.c_str());
+	    ds_rtdose = ds;
 	    continue;
 	}
     }
+
+    /* Check if uid matches refereneced uid of rtstruct */
+    std::string referenced_uid = "";
+    if (ds_rtss) {
+	referenced_uid = ds_rtss->get_referenced_uid ();
+    }
+
+    /* Second pass: loop through series and find img */
+    for (it = m_smap.begin(); it != m_smap.end(); ++it) {
+	const std::string& key = (*it).first;
+	Dcmtk_series *ds = (*it).second;
+	UNUSED_VARIABLE (key);
+
+	/* Skip stuff we're not interested in */
+	const std::string& modality = ds->get_modality();
+	if (modality == "RTSTRUCT"
+	    || modality == "RTDOSE")
+	{
+	    continue;
+	}
+
+#if defined (commentout)
+	if (ds->get_modality() == "CT") {
+	    printf ("LOADING CT\n");
+	    rtds->m_img = ds->load_plm_image ();
+	    continue;
+	}
+#endif
+    }
+    printf ("Done.\n");
 }
 
 void

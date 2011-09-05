@@ -23,6 +23,7 @@ public:
 public:
     void debug (void) const;
     std::string get_modality (void) const;
+    std::string get_referenced_uid (void) const;
     void insert (Dcmtk_file* df);
     Plm_image* load_plm_image ();
     void sort (void);

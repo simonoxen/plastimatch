@@ -39,6 +39,12 @@ Dcmtk_file::init ()
     m_fn = "";
 }
 
+DcmDataset*
+Dcmtk_file::get_dataset (void) const
+{
+    return m_dfile->getDataset();
+}
+
 /* Look up DICOM value from tag */
 const char*
 Dcmtk_file::get_cstr (const DcmTagKey& tag_key) const

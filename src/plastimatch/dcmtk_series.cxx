@@ -47,6 +47,38 @@ Dcmtk_series::get_modality (void) const
     return std::string(c);
 }
 
+std::string 
+Dcmtk_series::get_referenced_uid (void) const
+{
+    bool rc;
+    if (this->get_modality() != "RTSTRUCT") {
+	return "";
+    }
+
+#if defined (commentout)
+    DcmSequenceOfItems* rfors = 0;
+    rc = m_flist.front()->get_dataset()->findAndGetSequence (
+	DCM_ReferencedFrameOfReferenceSequence, rfors).good();
+#endif
+    DcmItem* rfors = 0;
+    rc = m_flist.front()->get_dataset()->findAndGetSequenceItem (
+	DCM_ReferencedFrameOfReferenceSequence, rfors).good();
+    if (!rc) {
+	return "";
+    }
+    printf ("Found DCM_ReferencedFrameOfReferenceSequence!\n");
+
+    DcmItem* rss = 0;
+    rc = rfors->findAndGetSequenceItem (
+	DCM_RTReferencedStudySequence, rss).good();
+    if (!rc) {
+	return "";
+    }
+    printf ("Found DCM_RTReferencedStudySequence!\n");
+
+    return "";
+}
+
 void
 Dcmtk_series::insert (Dcmtk_file *df)
 {
@@ -70,6 +102,13 @@ Dcmtk_series::load_plm_image (void)
        (5) Different image types
        (6) Refine slice spacing based on entire chunk size
     */
+
+    /* Check for minimum 2 slices */
+    if (m_flist.size() < 2) {
+	delete pli;
+	return 0;
+    }
+    
 
     /* Get first slice */
     std::list<Dcmtk_file*>::iterator it = m_flist.begin();
@@ -261,7 +300,7 @@ Dcmtk_series::load_plm_image (void)
 	if (!rc) {
 	    print_and_exit ("Oops.  Error reading pixel data.  Punting.\n");
 	}
-	if (length != vh.m_dim[0] * vh.m_dim[1]) {
+	if (((long) length) != vh.m_dim[0] * vh.m_dim[1]) {
 	    print_and_exit ("Oops.  Dicom image had wrong length "
 		"(%d vs. %d x %d).\n", length, vh.m_dim[0],
 		vh.m_dim[1]);
