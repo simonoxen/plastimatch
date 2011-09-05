@@ -18,7 +18,7 @@ SITE:STRING=gelato_3
 ITK_DIR:PATH=/home/gcs6/build/itk-3.20.0
 
 //Root of DCMTK install tree (optional).
-DCMTK_DIR:PATH=/PHShome/gcs6/build/dcmtk-3.6.0
+DCMTK_DIR:PATH=/PHShome/gcs6/build/install/dcmtk-3.6.0
 
 //Build with shared libraries.
 BUILD_SHARED_LIBS:BOOL=ON
