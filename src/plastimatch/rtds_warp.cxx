@@ -91,6 +91,10 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	logfile_printf ("Loading RDD\n");
 	rtds->load_rdd ((const char*) parms->referenced_dicom_dir);
     } else {
+	/* GCS: 2011-09-05.  I think it is better to ask the user 
+	   to explicitly choose a referenced dicom dir than load 
+	   a directory by default. */
+#if defined (commentout)
 	/* Look for referenced CT in input directory */
 	if (bstring_not_empty (parms->input_fn)) {
 	    logfile_printf ("Loading RDD\n");
@@ -98,6 +102,7 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	    rtds->load_rdd (dirname);
 	    free (dirname);
 	}
+#endif
     }
 
     if (bstring_not_empty (parms->input_cxt_fn)) {
