@@ -99,16 +99,15 @@ registration codes.
 You need to install the driver and toolkit, but the SDK is not needed.
 
 Please note that CUDA is constantly evolving in order to provide new
-high performance computing features. Because Plastimatch tends to utilize new
-features as they become available, your CUDA drivers and toolkit need to be
-relatively current.  The following table will help you with selecting the
+high performance computing features. 
+The following table will help you with selecting the
 correct CUDA version to install/upgrade::
 
-  CUDA 2.1              Not supported
-  CUDA 2.2              Not supported
-  CUDA 2.3              Not supported
+  CUDA 2.X              Not supported
   CUDA 3.0              Recommended
   CUDA 3.1              Recommended
+  CUDA 3.2              Recommended
+  CUDA 4.0              Not supported
 
 Download CUDA from here:
 
@@ -176,6 +175,15 @@ Building dcmtk 3.6 on windows
 #. Set install directory (if desired); I use $HOME/build/dcmtk-3.6.0-install
 #. Build DCMTK
 #. Run CMake on plastimatch - set DCMTK_DIR to the install directory
+
+Building dcmtk 3.6 on linux x86_64 with gcc
+
+#. Download and unpack source code
+#. Run CMake - add -fPIC to CMAKE_CXX_FLAGS and CMAKE_C_FLAGS
+#. Set install directory (if desired); I use $HOME/build/dcmtk-3.6.0-install
+#. Build DCMTK
+#. Run CMake on plastimatch - set DCMTK_DIR to the install directory
+
 
 WxWidgets (optional)
 ^^^^^^^^^^^^^^^^^^^^
