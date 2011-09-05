@@ -1055,7 +1055,7 @@ plm_add_test (
   "plm-convert-dicom-aw-a-stats" 
   ""
   ${PLM_PLASTIMATCH_PATH}/dicom_info
-  "${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-a-dicom/image000.dcm"
+  "--input;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-a-dicom/image000.dcm"
   )
 plmtest_check_string ("plm-convert-dicom-aw-a-check" 
   "${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-a-stats.stdout.txt"
