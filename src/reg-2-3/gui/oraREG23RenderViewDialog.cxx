@@ -373,8 +373,16 @@ void REG23RenderViewDialog::Update(int id)
           // %3 ... acquisition date
           QString s1 = QString::fromStdString(smi->GetORAAcquisitionType());
           QString s2 = QString::fromStdString(smi->GetORAAcquisitionDate());
-          QString title = REG23RenderViewDialog::tr("%1: %2 (%3)").
+          QString title = "";
+          if (s1.length() > 0 && s2.length() > 0)
+            title = REG23RenderViewDialog::tr("%1: %2 (%3)").
               arg(m_BaseWindowTitle).arg(s1).arg(s2);
+          else if (s1.length() > 0)
+            title = REG23RenderViewDialog::tr("%1: %2").
+              arg(m_BaseWindowTitle).arg(s1);
+          else
+            title = REG23RenderViewDialog::tr("%1").
+              arg(m_BaseWindowTitle);
           // NOTE: cannot set window title from a thread, need to do this in
           // GUI-thread!
           m_WindowTitle = title;

@@ -247,6 +247,19 @@ public:
    bool ExtractBasicImageGeometry(double spacing[3], int size[3],
        double origin[3], double orientation[9]);
 
+  /** Override the basic image geometry of the internal ITK image using CPP
+   * data types instead of ITK-related types. This method ensures that the VTK
+   * image is set back to NULL (and deleted if necessary) in order to be sure
+   * that the VTK image takes over the geometry from the new ITK geometry on
+   * next access.
+   * @param spacing new spacing
+   * @param origin new origin
+   * @param orientation new image orientation (row-, column-, slicing-
+   * directions; 9 components) **/
+  template <typename TComponentType>
+   void OverrideBasicImageGeometry(double spacing[3], double origin[3],
+       double orientation[9]);
+
   /** Get a pointer to the internal image meta-information (open radART). **/
   virtual ITKVTKImageMetaInformation::Pointer GetMetaInfo()
   {

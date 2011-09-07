@@ -16,6 +16,8 @@ SET(${OWN_LIB_NAME}_HDRS
   oraDRRITFLikelihoodCostFunction.txx
   oraGradientDifferenceImageToImageMetric.h
   oraGradientDifferenceImageToImageMetric.txx
+  oraGradientMagnitudeDifferenceImageToImageMetric.h
+  oraGradientMagnitudeDifferenceImageToImageMetric.txx
 )
 
 SET(${OWN_LIB_NAME}_SRCS
@@ -28,6 +30,7 @@ IF(MSVC)
     oraStochasticRankCorrelationImageToImageMetric.txx  
     oraDRRITFLikelihoodCostFunction.txx
     oraGradientDifferenceImageToImageMetric.txx  
+    oraGradientMagnitudeDifferenceImageToImageMetric.txx
     PROPERTIES 
     LANGUAGE "CXX" 
     HEADER_FILE_ONLY FALSE

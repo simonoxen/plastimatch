@@ -110,7 +110,7 @@ namespace ora
  * @author phil 
  * @author VTK-community
  * @author Markus 
- * @version 2.3.1
+ * @version 2.3.2
  *
  * \ingroup Mappers
  */
@@ -398,6 +398,13 @@ vtkTypeRevisionMacro(GLSLDRRRayCastMapper, vtkGPUVolumeRayCastMapper)
     return DRRComputationNotSupportedReasons;
   }
 
+  vtkSetMacro(UnsharpMasking, bool)
+  vtkGetMacro(UnsharpMasking, bool)
+  vtkBooleanMacro(UnsharpMasking, bool)
+
+  vtkSetMacro(UnsharpMaskingRadius, int)
+  vtkGetMacro(UnsharpMaskingRadius, int)
+
 protected:
   /**
    * amount of video memory to be used / available on GPU
@@ -577,6 +584,10 @@ protected:
    * important for debug purposes!
    **/
   bool VerticalFlip;
+  /** Flag determining whether the DRR output should be unsharp masked. **/
+  bool UnsharpMasking;
+  /** Radius for unsharp masking (auto if <= 0). **/
+  int UnsharpMaskingRadius;
 
   /** Default constructor. **/
   GLSLDRRRayCastMapper();

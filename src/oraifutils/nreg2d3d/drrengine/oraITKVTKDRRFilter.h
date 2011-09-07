@@ -88,7 +88,7 @@ namespace ora
  * @see ora::GLSLDRRRayCastMapper
  *
  * @author phil 
- * @version 2.5
+ * @version 2.6
  *
  * \ingroup ImageFilters
  */

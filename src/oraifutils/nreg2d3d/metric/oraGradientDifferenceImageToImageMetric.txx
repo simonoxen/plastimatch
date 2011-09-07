@@ -4,7 +4,10 @@
 
 #include "oraGradientDifferenceImageToImageMetric.h"
 
+#include <sstream>
+
 #include <itkImageRegionConstIteratorWithIndex.h>
+#include <itkImageFileWriter.h>
 
 namespace ora
 {
@@ -57,7 +60,6 @@ void GradientDifferenceImageToImageMetric<TFixedImage, TMovingImage,
     os << indent << "Fixed Sobel Filters [" << d << "]: " << m_FixedSobelFilters[d].GetPointer() << "\n";
     os << indent << "Moving Sobel Operators [" << d << "]: " << m_MovingSobelOperators[d] << "\n";
     os << indent << "Moving Sobel Filters [" << d << "]: " << m_MovingSobelFilters[d].GetPointer() << "\n";
-
   }
   os << indent << "Transform Moving Image Filter: " << m_TransformMovingImageFilter.GetPointer() << "\n";
   os << indent << "Cast Fixed Image Filter: " << m_CastFixedImageFilter.GetPointer() << "\n";
@@ -81,10 +83,12 @@ template<class TFixedImage, class TMovingImage, class TGradientPixelType>
 void GradientDifferenceImageToImageMetric<TFixedImage, TMovingImage,
     TGradientPixelType>::Initialize() throw (itk::ExceptionObject)
 {
-  if (!this->GetComputeGradient())
-  {
-    itkExceptionMacro(<< "Gradient difference image to image metric requires ComputeGradient set to TRUE!");
-  }
+  // NOTE: Removed check for Gradient computation because the gradient volume
+  // is never used and requires a big amount of memory (CovariantVector<double>)
+  // if (!this->GetComputeGradient())
+  // {
+  //  itkExceptionMacro(<< "Gradient difference image to image metric requires ComputeGradient set to TRUE!");
+  // }
 
   Superclass::Initialize();
 
@@ -101,10 +105,12 @@ void GradientDifferenceImageToImageMetric<TFixedImage, TMovingImage,
       this->m_FixedImage->GetSpacing());
   m_TransformMovingImageFilter->SetOutputDirection(
       this->m_FixedImage->GetDirection());
+  m_TransformMovingImageFilter->ReleaseDataFlagOn();
 
   // fixed gradient image:
   m_CastFixedImageFilter = CastFixedImageFilterType::New();
   m_CastFixedImageFilter->SetInput(this->m_FixedImage);
+  m_CastFixedImageFilter->ReleaseDataFlagOn();
   for (unsigned int d = 0; d < ImageDimension; d++)
   {
     m_FixedSobelOperators[d].SetDirection(d);
@@ -114,12 +120,24 @@ void GradientDifferenceImageToImageMetric<TFixedImage, TMovingImage,
     m_FixedSobelFilters[d]->SetOperator(m_FixedSobelOperators[d]);
     m_FixedSobelFilters[d]->SetInput(m_CastFixedImageFilter->GetOutput());
     m_FixedSobelFilters[d]->UpdateLargestPossibleRegion();
+
+    if (this->GetDebug())
+    {
+      typedef itk::ImageFileWriter<GradientImageType> WriterType;
+      typename WriterType::Pointer w = WriterType::New();
+      std::stringstream filename;
+      filename << "debugoutput-gradientsobel-moving-image-" << d << ".mhd";
+      w->SetFileName(filename.str().c_str());
+      w->SetInput(m_FixedSobelFilters[d]->GetOutput());
+      w->Update();
+    }
   }
   ComputeVariance(); // update fixed image gradient variance
 
   // transformed moving gradient image:
   m_CastMovingImageFilter = CastMovingImageFilterType::New();
   m_CastMovingImageFilter->SetInput(m_TransformMovingImageFilter->GetOutput());
+  m_CastMovingImageFilter->ReleaseDataFlagOn();
   for (unsigned int d = 0; d < ImageDimension; d++)
   {
     m_MovingSobelOperators[d].SetDirection(d);
@@ -129,6 +147,16 @@ void GradientDifferenceImageToImageMetric<TFixedImage, TMovingImage,
     m_MovingSobelFilters[d]->SetOperator(m_MovingSobelOperators[d]);
     m_MovingSobelFilters[d]->SetInput(m_CastMovingImageFilter->GetOutput());
     m_MovingSobelFilters[d]->UpdateLargestPossibleRegion();
+    if (this->GetDebug())
+    {
+      typedef itk::ImageFileWriter<GradientImageType> WriterType;
+      typename WriterType::Pointer w = WriterType::New();
+      std::stringstream filename;
+      filename << "debugoutput-gradientsobel-moving-image-" << d << ".mhd";
+      w->SetFileName(filename.str().c_str());
+      w->SetInput(m_MovingSobelFilters[d]->GetOutput());
+      w->Update();
+    }
   }
 
 }
@@ -236,7 +264,7 @@ typename GradientDifferenceImageToImageMetric<TFixedImage, TMovingImage,
     m_MovingSobelFilters[d]->UpdateLargestPossibleRegion();
   }
   // and update the gradient range:
-  ComputeMovingGradientRange();
+  ComputeMovingGradientRange();  // FIXME: Is this really required because the values are never used
 
   MeasureType measure = itk::NumericTraits<MeasureType>::Zero;
   for (unsigned int d = 0; d < ImageDimension; d++)
@@ -261,8 +289,8 @@ typename GradientDifferenceImageToImageMetric<TFixedImage, TMovingImage,
     IteratorType mit(m_MovingSobelFilters[d]->GetOutput(),
         this->GetFixedImageRegion());
 
-    m_FixedSobelFilters[d]->UpdateLargestPossibleRegion(); // FIXME: do we need this?
-    m_MovingSobelFilters[d]->UpdateLargestPossibleRegion();
+    //m_FixedSobelFilters[d]->UpdateLargestPossibleRegion(); // FIXME: do we need this?
+    //m_MovingSobelFilters[d]->UpdateLargestPossibleRegion();
 
     this->m_NumberOfPixelsCounted = 0;
 

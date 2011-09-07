@@ -18,10 +18,12 @@
 
 #include "oraGLSLRayCastingCodeFragments.hxx"
 
+#include "oraVTKUnsharpMaskingImageFilter.h"
+
 namespace ora
 {
 
-vtkCxxRevisionMacro(GLSLDRRRayCastMapper, "2.3.1")
+vtkCxxRevisionMacro(GLSLDRRRayCastMapper, "2.3.2")
 
 vtkStandardNewMacro(GLSLDRRRayCastMapper)
 
@@ -131,6 +133,8 @@ GLSLDRRRayCastMapper::GLSLDRRRayCastMapper() :
   this->ClippedBoundingBox = this->Densify->GetOutput();
   this->DoScreenRenderingThoughLastDRRImageCopied = false;
   this->VerticalFlip = false;
+  this->UnsharpMasking = false;
+  this->UnsharpMaskingRadius = 0;
 }
 
 GLSLDRRRayCastMapper::~GLSLDRRRayCastMapper()
@@ -2224,6 +2228,27 @@ bool GLSLDRRRayCastMapper::CopyAndOrScreenRenderTexture()
         memcpy(pbuff2, pline, wb);
       }
       delete[] line;
+    }
+
+    if (UnsharpMasking)
+    {
+      VTKUnsharpMaskingImageFilter *usmf = VTKUnsharpMaskingImageFilter::New();
+      usmf->SetInput(this->LastDRR);
+      if (UnsharpMaskingRadius > 0)
+      {
+        usmf->SetRadius(UnsharpMaskingRadius);
+        usmf->AutoRadiusOff();
+      }
+      else
+      {
+        usmf->AutoRadiusOn();
+      }
+      usmf->Update();
+      // copy result
+      this->LastDRR->CopyAndCastFrom(usmf->GetOutput(), usmf->GetOutput()->GetWholeExtent());
+      usmf->SetInput(NULL);
+      usmf->Delete();
+      usmf = NULL;
     }
 
     if (!DoScreenRenderingThoughLastDRRImageCopied)

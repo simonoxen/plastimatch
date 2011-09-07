@@ -23,7 +23,7 @@ SET(BINNAME reg23)
 ### EXTERNAL LIBRARIES ###
 
 # Require ITK 3.20
-SET(ITK_MIN_VERSION "3.20")
+SET(ITK_MIN_VERSION "3.20") 
 FIND_PACKAGE(ITK) 
 IF(NOT ITK_FOUND)
   MESSAGE(SEND_ERROR "ITK ${ITK_MIN_VERSION} not found.  Please set the ITK_DIR variable.")
@@ -35,7 +35,7 @@ ELSE(NOT ITK_FOUND)
     INCLUDE(${ITK_USE_FILE})
   ENDIF("${ITK_VERSION_MAJOR}.${ITK_VERSION_MINOR}" VERSION_LESS ${ITK_MIN_VERSION})
 ENDIF(NOT ITK_FOUND)
-
+ 
 # Require VTK 5.6
 SET(VTK_MIN_VERSION "5.6.0")
 FIND_PACKAGE(VTK ${VTK_MIN_VERSION})
@@ -54,8 +54,8 @@ ELSE(NOT QT4_FOUND)
   INCLUDE(${QT_USE_FILE})
 ENDIF(NOT QT4_FOUND)
 
-# Require ORAIFUTILS 1.1.4
-SET(ORAIFUTILS_MIN_VERSION "1.1.4")
+# Require ORAIFUTILS 1.1.9
+SET(ORAIFUTILS_MIN_VERSION "1.1.9")
 FIND_PACKAGE(ORAIFUTILS ${ORAIFUTILS_MIN_VERSION} NO_MODULE REQUIRED HINTS ${ORAIFUTILS_BINARY_DIR})
 IF(NOT ORAIFUTILS_FOUND)
   MESSAGE(SEND_ERROR "ORAIFUTILS library ${ORAIFUTILS_MIN_VERSION} or greater not found. Please set the ORAIFUTILS_DIR variable.")
@@ -156,11 +156,11 @@ ELSE(WIN32 AND MINGW)
 ENDIF(WIN32 AND MINGW) 
 
 # File icon on win32
-if(WIN32)  
+if(WIN32)   
   if(MINGW)
     # Compile the short-path-converter-tool
     # (this is needed because windres.exe cannot handle long paths!!! see below)
-    SET(SPEDIR ${CMAKE_CURRENT_SOURCE_DIR}/shortpathexec)
+    SET(SPEDIR ${CMAKE_CURRENT_SOURCE_DIR}/shortpathexec) 
     ADD_SUBDIRECTORY(${SPEDIR})
   
     # rc-updater tool
@@ -224,4 +224,51 @@ TARGET_LINK_LIBRARIES(resultscollector
   ORAIFTools
 )
 
-
+# Generate Doxygen API documentation
+OPTION(REG23_BUILD_API_DOCS "Use Doxygen to create the HTML based REG23 API documentation" OFF) 
+IF(REG23_BUILD_API_DOCS) 
+  FIND_PACKAGE(Doxygen) 
+  IF(NOT DOXYGEN_FOUND) 
+    MESSAGE(SEND_ERROR "Doxygen is needed to build the REG23 API documentation. Please install it correctly") 
+  ELSE(NOT DOXYGEN_FOUND) 
+    # If Graphviz is installed use the 'dot' tool to generate graphs
+    # NOTE: CMake is unable to find DOT on Windows.
+    # NOTE: On windows the DOT_PATH must be set in the doxyfile otherwise errors occur. 
+    IF(DOXYGEN_DOT_FOUND OR (DOXYGEN_DOT_EXECUTABLE AND DOXYGEN_DOT_PATH))
+      SET(HAVEDOT "YES")
+      SET(DOTPATH ${DOXYGEN_DOT_PATH})
+    ELSE(DOXYGEN_DOT_FOUND OR (DOXYGEN_DOT_EXECUTABLE AND DOXYGEN_DOT_PATH))
+      SET(HAVEDOT "NO")
+    ENDIF(DOXYGEN_DOT_FOUND OR (DOXYGEN_DOT_EXECUTABLE AND DOXYGEN_DOT_PATH))
+    
+    # Link to external library documentations through tag-files generated with
+    # doxytag -t doc.tag path_to_html_doc.
+    # NOTE: The tag files are not contained in the SVN repository.
+    IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/doc/gdcm-2.0.14.tag)
+      SET(TAGFILES "${TAGFILES} \"${CMAKE_CURRENT_SOURCE_DIR}/doc/gdcm-2.0.14.tag=http://gdcm.sourceforge.net/2.0/html\"")
+    ENDIF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/doc/gdcm-2.0.14.tag)
+    IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/doc/itk-3.20.tag)
+      SET(TAGFILES "${TAGFILES} \"${CMAKE_CURRENT_SOURCE_DIR}/doc/itk-3.20.tag=http://www.itk.org/Doxygen320/html\"")
+    ENDIF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/doc/itk-3.20.tag)
+    IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/doc/vtk-5.6.tag)
+      SET(TAGFILES "${TAGFILES} \"${CMAKE_CURRENT_SOURCE_DIR}/doc/vtk-5.6.tag=http://www.vtk.org/doc/release/5.6/html\"")
+    ENDIF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/doc/vtk-5.6.tag)
+    # NOTE: Starting with Qt 4.x the html doc was changed to qch files 
+    # (not possible to generate tag files for Qt from qch)
+    # One must download the separate html documentation for tag file generation
+    IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/doc/qt-4.6.3.tag)
+      SET(TAGFILES "${TAGFILES} \"${CMAKE_CURRENT_SOURCE_DIR}/doc/qt-4.6.3.tag=http://doc.qt.nokia.com/4.6\"")
+    ENDIF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/doc/qt-4.6.3.tag)
+        IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/doc/oraifutils-1.1.4.tag)
+      SET(TAGFILES "${TAGFILES} \"${CMAKE_CURRENT_SOURCE_DIR}/doc/oraifutils-1.1.4.tag=file://///192.168.141.15/RAServer/IT/open-radART/docu/api-doc/oraifutils-1.1.4\"")
+    ENDIF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/doc/oraifutils-1.1.4.tag)
+    
+    CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in 
+                   ${CMAKE_CURRENT_BINARY_DIR}/doc/Doxyfile  @ONLY) 
+    ADD_CUSTOM_TARGET(doc ALL
+                   ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/doc/Doxyfile
+                   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc
+                   COMMENT "Generating REG23 API documentation with doxygen"
+                   VERBATIM) 
+  ENDIF(NOT DOXYGEN_FOUND)
+ENDIF(REG23_BUILD_API_DOCS) 

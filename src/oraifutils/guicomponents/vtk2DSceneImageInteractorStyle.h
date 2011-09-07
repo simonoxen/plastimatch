@@ -18,6 +18,9 @@
 // forward declaration:
 class vtkRenderWindow;
 
+// further motion flags:
+#define VTKIS_CURSOR 50
+
 /**
  * Interactor style dedicated for usage with 2D scene pipelines that are based
  * on vtkActor2D and vtkImageMapper. It enables basic zooming, panning, image
@@ -73,6 +76,12 @@ class vtkRenderWindow;
  * the reslice direction internally
  * - WINDOW/LEVEL CHANNEL: 'w'-key alters the current window level channel
  * (main channel->channel 1->channel 2->...->main channel->...)
+ * - CURSORING: (if support flag is enabled) left mouse-button without ALT-key
+ * or external ALT-flag set (down starts cursoring, movement while down button
+ * triggers cursoring events, up ends cursoring)
+ *
+ * Moreover, this class fires events (see EventIDs enum) which can be listend
+ * from external source.
  *
  * @see vtkInteractorStyleImage
  * @see vtkActor2D
@@ -81,7 +90,7 @@ class vtkRenderWindow;
  * @see vtk3DSlicingInteractorStyle
  *
  * @author phil
- * @version 2.1
+ * @version 2.3
  */
 class vtk2DSceneImageInteractorStyle :
   public vtkInteractorStyleImage
@@ -101,7 +110,10 @@ public:
     WindowLevelChannelChanged,
     ImageFittedToRenderWindow,
     ImagePortionFittedToRenderWindow,
-    ViewRestored
+    StartCursoring,
+    Cursoring,
+    EndCursoring,
+    ViewRestored /* this event ID should always stay the last one! */
   } EventIds;
 
   /** Standard new **/
@@ -306,9 +318,38 @@ public:
   /** @see vtkInteractorStyle#EndPan() **/
   virtual void EndPan();
 
+  vtkSetMacro(SupportCursoring, bool)
+  vtkGetMacro(SupportCursoring, bool)
+  vtkBooleanMacro(SupportCursoring, bool)
+  /** Start cursoring mode (if the cursoring-support flag is set). **/
+  virtual void StartCursor();
+  /** End cursoring mode (if the cursoring-support flag is set). **/
+  virtual void EndCursor();
+  vtkGetVector2Macro(CurrentInPlaneCursorPosition, int)
+  vtkGetVector3Macro(CurrentWorldCursorPosition, double)
+
+  /** Maps discrete in-plane coordinates (x,y) in pixels into real world
+   * coordinates (x,y,z) in physical units.
+   * \warning NOTE: This method is not really implemented in this class as this
+   * class is designed for 2D images. It should be overridden in subclasses
+   * that support image orientation in higher dimensions! **/
+  virtual void MapInPlaneCoordinatesIntoWorldCoordinates(const int ic[2],
+  		double wc[3]);
+
+  /** Maps real world coordinates (x,y,z) in physical units into discrete
+   * in-plane coordinates (x,y) in pixels.
+   * \warning NOTE: This method is not really implemented in this class as this
+   * class is designed for 2D images. It should be overridden in subclasses
+   * that support image orientation in higher dimensions! **/
+  virtual void MapWorldCoordinatesIntoInPlaneCoordinates(const double wc[3],
+  		int ic[2]);
+
 protected:
-  /** "Epsilon" for internal floating point comparisons. **/
+  /** "Epsilon" for accurate internal floating point comparisons. **/
   static const double F_EPSILON;
+  /** "Epsilon" for rather weak internal floating point comparisons. **/
+  static const double F_WEAK_EPSILON;
+
   /** Flag is true if we think that the ALT key is pressed. The ALT key is not
    * really trackable using the interactor style. BUT: if the returned key code
    * is 0 and neither CTRL nor SHIFT are active, it's quite likely that ALT is
@@ -410,6 +451,22 @@ protected:
   bool FlippedAlongColumn;
   /** Flag indicating that zooming event should not be invoked now **/
   bool DoNotInvokeZoomingEvent;
+  /** Flag indicating whether the cursoring events are fired. Cursoring events
+   * are triggered by left mouse button clicks and movements. NOTE: This class
+   * does not support any real cursoring capabilities. If activated (OFF by
+   * default), the cursoring events (see EventIDs enum) are fired and can be
+   * listened. **/
+  bool SupportCursoring;
+  /** Holds the current discrete cursor position coordinates (x, y) in pixels
+   * in-plane. This property is only reliable during cursoring events! **/
+  int CurrentInPlaneCursorPosition[2];
+  /** Holds the current real cursor position coordinates (x, y, y) in physical
+   * units in world coordinate system. This property is only reliable during
+   * cursoring events!
+   * \warning NOTE: This member is not really implemented in this class as this
+   * class is designed for 2D images. It is expected to be filled in subclasses
+   * that support image orientation in higher dimensions! **/
+  double CurrentWorldCursorPosition[3];
 
   /** Callback for color windowing interactions. **/
   static void WindowLevelCallback(vtkObject *caller, unsigned long eid,

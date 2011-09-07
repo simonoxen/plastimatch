@@ -326,8 +326,8 @@ public:
       SetIsocenterValid(false);
   }
 
-  SimpleSetter(Parent, itk::SmartPointer<ITKVTKImageMetaInformation>);
-  SimpleGetter(Parent, itk::SmartPointer<ITKVTKImageMetaInformation>);
+  SimpleSetter(Parent, ITKVTKImageMetaInformation*);
+  SimpleGetter(Parent, ITKVTKImageMetaInformation*);
 
   /** Utility method for anonymizing this information object. **/
   void Anonymize();
@@ -523,7 +523,7 @@ protected:
   std::string m_FullFileName;
 
   /** a reference to the parent meta information object **/
-  itk::SmartPointer<ITKVTKImageMetaInformation> m_Parent;
+  ITKVTKImageMetaInformation *m_Parent;
 
 private:
   /** purposely not implemented **/

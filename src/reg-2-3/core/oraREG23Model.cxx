@@ -118,6 +118,8 @@ REG23Model::REG23Model() :
   m_Transform = TransformType::New();
   m_CurrentParameters.SetSize(m_Transform->GetNumberOfParameters()); // =6
   m_CurrentParameters.Fill(0);
+  m_CurrentFixedParameters.SetSize(3);
+  m_CurrentFixedParameters.Fill(0);
   m_InitialParameters.SetSize(m_Transform->GetNumberOfParameters());
   m_InitialParameters.Fill(0);
   m_ReferenceParameters.SetSize(0); // invalid!
@@ -3037,7 +3039,7 @@ bool REG23Model::ParseOptimizerEntry(std::string typeEntry, std::string configEn
         if (!IsNumeric(cfgs[i]))
         {
           succ = false;
-          errorMessage = "NMI configuration parameter " + StreamConvert(i + 1);
+          errorMessage = "AMOEBA configuration parameter " + StreamConvert(i + 1);
           errorMessage += " is not numeric.";
         }
         args.push_back(TrimF(cfgs[i]));
@@ -3068,6 +3070,57 @@ bool REG23Model::ParseOptimizerEntry(std::string typeEntry, std::string configEn
     else
     {
       errorMessage = "Wrong number of AMOEBA configuration parameters.";
+      return false;
+    }
+  }
+  else if (typeEntry == "POWELL")
+  {
+    if (cfgs.size() == 5)
+    {
+      args.push_back("POWELL");
+      for (std::size_t i = 0; i < cfgs.size(); i++)
+      {
+        if (!IsNumeric(cfgs[i]))
+        {
+          succ = false;
+          errorMessage = "POWELL configuration parameter " + StreamConvert(i + 1);
+          errorMessage += " is not numeric.";
+        }
+        args.push_back(TrimF(cfgs[i]));
+      }
+      int maxiter = atoi(cfgs[0].c_str());
+      if (maxiter <= 0)
+      {
+        succ = false;
+        errorMessage = "POWELL maximum iterations configuration parameter is not >0.";
+      }
+      maxiter = atoi(cfgs[1].c_str());
+      if (maxiter <= 0)
+      {
+        succ = false;
+        errorMessage = "POWELL maximum line iterations configuration parameter is not >0.";
+      }
+
+      double val;
+      for (std::size_t i = 2; i < cfgs.size(); i++)
+      {
+        val = atof(cfgs[i].c_str());
+        if (val <= 0.)
+        {
+          succ = false;
+          errorMessage = "POWELL configuration parameter #" + StreamConvert(i + 1);
+          errorMessage += " is not >0.0.";
+        }
+      }
+      if (!succ)
+      {
+        args.clear();
+        return false;
+      }
+    }
+    else
+    {
+      errorMessage = "Wrong number of POWELL configuration parameters.";
       return false;
     }
   }
@@ -3303,7 +3356,12 @@ bool REG23Model::SaveTransformToFile()
       {
         if (i > 0)
           stfpars += ",";
-        stfpars += StreamConvert(m_Transform->GetFixedParameters()[i] + m_IsoCenter[i] * 10.);
+        // stfpars += StreamConvert(m_Transform->GetFixedParameters()[i] + m_IsoCenter[i] * 10.);
+
+        // NOTE: In order to get the transform to generate the same transform as the
+        // matrix-offset version (RotationMatrix3x3,TranslationVector), the isocenter
+        // obviously must not be added.
+        stfpars += StreamConvert(m_Transform->GetFixedParameters()[i]);
       }
       QString pf = "";
       for (unsigned int i = 0; i < 3; i++) // rotations
@@ -5822,6 +5880,33 @@ bool REG23Model::WriteIntelligentMaskAndInfo(std::size_t index, ITKVTKImage *fin
   }
 
   infFile.Update();
+  return true;
+}
+
+bool REG23Model::ConvertRawParametersToEulerParameters(
+    const double fixedRawPars[3], const double rawPars[6],
+    double convertedPars[6])
+{
+  TransformType::ParametersType praw(6);
+  for (int i = 0; i < 6; i++)
+    praw[i] = rawPars[i];
+  TransformType::ParametersType pfraw(6);
+  for (int i = 0; i < 3; i++)
+    pfraw[i] = fixedRawPars[i];
+
+  TransformPointer transform = TransformType::New();
+  transform->SetFixedParameters(pfraw);
+  transform->SetParameters(praw);
+  EulerTransformPointer euler = EulerTransformType::New();
+  euler->SetMatrix(transform->GetMatrix());
+  euler->SetOffset(transform->GetOffset());
+  convertedPars[0] = euler->GetAngleX();
+  convertedPars[1] = euler->GetAngleY();
+  convertedPars[2] = euler->GetAngleZ();
+  convertedPars[3] = euler->GetTranslation()[0];
+  convertedPars[4] = euler->GetTranslation()[1];
+  convertedPars[5] = euler->GetTranslation()[2];
+
   return true;
 }
 

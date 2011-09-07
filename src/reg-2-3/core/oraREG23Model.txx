@@ -17,6 +17,7 @@
 // ORAIFNReg2D3DAlgorithm
 #include <oraMultiResolutionNWay2D3DRegistrationMethod.h>
 #include <itkAmoebaOptimizerEx.h>
+#include <itkPowellOptimizerEx.h>
 // ORAIFNReg2D3DDRREngine
 #include <oraProjectionProperties.h>
 // ORAIFNReg2D3DMetrics
@@ -427,6 +428,8 @@ bool REG23Model::InstantiateOptimizer(GenericRegistrationPointer nreg)
   typedef EvolOptimizerType::Pointer EvolOptimizerPointer;
   typedef itk::AmoebaOptimizerEx AmoebaOptimizerType;
   typedef AmoebaOptimizerType::Pointer AmoebaOptimizerPointer;
+  typedef itk::PowellOptimizerEx PowellOptimizerType;
+  typedef PowellOptimizerType::Pointer PowellOptimizerPointer;
   typedef itk::Statistics::NormalVariateGenerator NVGeneratorType;
   typedef NVGeneratorType::Pointer NVGeneratorPointer;
   typedef typename RegistrationType::MetricType CompositeMetricType;
@@ -488,6 +491,21 @@ bool REG23Model::InstantiateOptimizer(GenericRegistrationPointer nreg)
     amoeba->AddObserver(itk::FunctionEvaluationIterationEvent(), m_OptimizerCommand);
     // (SetCallbackFunction() must be called externally from a task)
     opt = amoeba;
+  }
+  else if (oargs[0] == "POWELL")
+  {
+    PowellOptimizerPointer powell = PowellOptimizerType::New();
+    powell->SetMaximumIteration(atoi(oargs[1].c_str()));
+    powell->SetMaximumLineIteration(atoi(oargs[2].c_str()));
+    m_NumberOfIterations = powell->GetMaximumIteration() *
+        powell->GetMaximumLineIteration() * 6;
+    powell->SetStepLength(atof(oargs[3].c_str()));
+    powell->SetStepTolerance(atof(oargs[4].c_str()));
+    powell->SetValueTolerance(atof(oargs[5].c_str()));
+    powell->SetMaximize(false); // we always minimize!
+    powell->AddObserver(itk::IterationEvent(), m_OptimizerCommand);
+    // (SetCallbackFunction() must be called externally from a task)
+    opt = powell;
   }
   BaseOptimizerType::ScalesType scales;
   scales.SetSize(6);
@@ -1814,12 +1832,14 @@ void REG23Model::UpdateCurrentRegistrationParameters(bool stopRegistration,
       DRR2DImageType, VolumeImageType> RegistrationType;
   typedef itk::OnePlusOneEvolutionaryOptimizer EvolOptimizerType;
   typedef itk::AmoebaOptimizerEx AmoebaOptimizerType;
+  typedef itk::PowellOptimizerEx PowellOptimizerType;
   typedef itk::CastImageFilter<DRR2DImageType, DRR3DImageType> CastFilterType;
 
   typename RegistrationType::Pointer cnreg =
       static_cast<RegistrationType *>(m_NReg.GetPointer());
 
   m_CurrentParameters = m_Transform->GetParameters();
+  m_CurrentFixedParameters = m_Transform->GetFixedParameters();
 
   if (stopRegistration)
   {
@@ -1842,6 +1862,15 @@ void REG23Model::UpdateCurrentRegistrationParameters(bool stopRegistration,
     if (stopRegistration)
      opt->StopOptimization();
   }
+  else if (m_CurrentOptimizerTypeID == "POWELL")
+  {
+    PowellOptimizerType *opt = dynamic_cast<PowellOptimizerType *>(cnreg->GetOptimizer());
+    m_CurrentOptimizationMeasure = opt->GetValue();
+    m_CurrentOptimizationParameters = opt->GetCurrentPosition();
+    if (stopRegistration)
+     opt->StopOptimization();
+  }
+
 
   m_LastMetricMeasure = cnreg->GetLastMetricValue();
 

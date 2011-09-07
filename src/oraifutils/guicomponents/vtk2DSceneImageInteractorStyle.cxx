@@ -19,10 +19,11 @@
 #include <math.h>
 
 // default VTK config:
-vtkCxxRevisionMacro(vtk2DSceneImageInteractorStyle, "2.1")
+vtkCxxRevisionMacro(vtk2DSceneImageInteractorStyle, "2.3")
 vtkStandardNewMacro(vtk2DSceneImageInteractorStyle)
 
 const double vtk2DSceneImageInteractorStyle::F_EPSILON = 1e-6;
+const double vtk2DSceneImageInteractorStyle::F_WEAK_EPSILON = 1e-4;
 
 vtk2DSceneImageInteractorStyle::vtk2DSceneImageInteractorStyle()
   : vtkInteractorStyleImage()
@@ -72,6 +73,12 @@ vtk2DSceneImageInteractorStyle::vtk2DSceneImageInteractorStyle()
   UseMinimumMaximumSpacingForZoom = false;
   UseMouseWheelForZoomingInOut = true;
   SecondaryTriggeredMouseWheel = false;
+  SupportCursoring = false;
+  CurrentInPlaneCursorPosition[0] = 0;
+  CurrentInPlaneCursorPosition[1] = 0;
+  CurrentWorldCursorPosition[0] = 0.0;
+  CurrentWorldCursorPosition[1] = 0.0;
+  CurrentWorldCursorPosition[2] = 0.0;
   ResetFlipStates();
   vtkSmartPointer<vtkCallbackCommand> cbc =
       vtkSmartPointer<vtkCallbackCommand>::New();
@@ -387,9 +394,13 @@ void vtk2DSceneImageInteractorStyle::FitImagePortionToRenderWindow(
   v3[2] = ResliceOrientation->GetElement(2, 2);
   double p0[3];
   this->Magnifier->GetResliceAxesOrigin(p0);
-  if (vtkPlane::DistanceToPlane(point1, v3, p0) > F_EPSILON)
+
+  // NOTE: Here, the error tolerance should not be too narrow. Especially, for
+  // reformatted planes in 3D space, relatively large deviations can follow
+  // (depending on the orientation axes accuracy)!
+  if (vtkPlane::DistanceToPlane(point1, v3, p0) > F_WEAK_EPSILON)
     return; // point1 not on plane!
-  if (vtkPlane::DistanceToPlane(point2, v3, p0) > F_EPSILON)
+  if (vtkPlane::DistanceToPlane(point2, v3, p0) > F_WEAK_EPSILON)
     return; // point2 not on plane!
 
   double v1[3];
@@ -696,13 +707,26 @@ void vtk2DSceneImageInteractorStyle::OnLeftButtonDown()
   {
     this->FindPokedRenderer(this->Interactor->GetEventPosition()[0],
                             this->Interactor->GetEventPosition()[1]);
-    if (this->CurrentRenderer == NULL)
-    {
+    if (!this->CurrentRenderer)
       return;
-    }
 
     this->GrabFocus(this->EventCallbackCommand);
     this->StartPan();
+  }
+  else if (SupportCursoring)
+  {
+    int x = this->Interactor->GetEventPosition()[0];
+    int y = this->Interactor->GetEventPosition()[1];
+    this->FindPokedRenderer(x, y);
+    if (!this->CurrentRenderer)
+      return;
+
+    this->GrabFocus(this->EventCallbackCommand);
+  	CurrentInPlaneCursorPosition[0] = x;
+  	CurrentInPlaneCursorPosition[1] = y;
+  	this->MapInPlaneCoordinatesIntoWorldCoordinates(CurrentInPlaneCursorPosition,
+  			CurrentWorldCursorPosition);
+    this->StartCursor();
   }
 }
 
@@ -713,9 +737,22 @@ void vtk2DSceneImageInteractorStyle::OnLeftButtonUp()
     case VTKIS_PAN:
       this->EndPan();
       if (this->Interactor)
-      {
         this->ReleaseFocus();
-      }
+      break;
+    case VTKIS_CURSOR:
+    	int x = 0, y = 0;
+    	if (this->Interactor)
+    	{
+        x = this->Interactor->GetEventPosition()[0];
+        y = this->Interactor->GetEventPosition()[1];
+    	}
+    	CurrentInPlaneCursorPosition[0] = x;
+    	CurrentInPlaneCursorPosition[1] = y;
+    	this->MapInPlaneCoordinatesIntoWorldCoordinates(CurrentInPlaneCursorPosition,
+    			CurrentWorldCursorPosition);
+      this->EndCursor();
+      if (this->Interactor)
+        this->ReleaseFocus();
       break;
   }
 }
@@ -965,10 +1002,8 @@ void vtk2DSceneImageInteractorStyle::OnMouseWheelForward()
     return;
   this->FindPokedRenderer(this->Interactor->GetEventPosition()[0],
       this->Interactor->GetEventPosition()[1]);
-  if (this->CurrentRenderer == NULL)
-  {
+  if (!this->CurrentRenderer)
     return;
-  }
   double factor = this->MotionFactor * 0.2 * this->MouseWheelMotionFactor;
   factor = pow(1.1, factor);
   this->GrabFocus(this->EventCallbackCommand);
@@ -985,10 +1020,8 @@ void vtk2DSceneImageInteractorStyle::OnMouseWheelBackward()
       return;
   this->FindPokedRenderer(this->Interactor->GetEventPosition()[0],
       this->Interactor->GetEventPosition()[1]);
-  if (this->CurrentRenderer == NULL)
-  {
+  if (!this->CurrentRenderer)
     return;
-  }
   double factor = this->MotionFactor * -0.2 * this->MouseWheelMotionFactor;
   factor = pow(1.1, factor);
   this->GrabFocus(this->EventCallbackCommand);
@@ -1060,7 +1093,7 @@ void vtk2DSceneImageInteractorStyle::OnMiddleButtonDown()
     int x = this->Interactor->GetEventPosition()[0];
     int y = this->Interactor->GetEventPosition()[1];
     this->FindPokedRenderer(x, y);
-    if (this->CurrentRenderer == NULL)
+    if (!this->CurrentRenderer)
       return;
     this->GrabFocus(this->EventCallbackCommand);
     this->WindowLevelStartPosition[0] = x;
@@ -1090,6 +1123,7 @@ void vtk2DSceneImageInteractorStyle::OnMouseMove()
   {
     case VTKIS_PAN:
     case VTKIS_ZOOM:
+    case VTKIS_CURSOR:
       break;
     default:
       this->vtkInteractorStyleImage::OnMouseMove(); // forward
@@ -1118,6 +1152,13 @@ void vtk2DSceneImageInteractorStyle::OnMouseMove()
       Zoom(pow(1.1, dyf));
       this->InvokeEvent(vtkCommand::InteractionEvent, NULL);
       break;
+    case VTKIS_CURSOR:
+    	CurrentInPlaneCursorPosition[0] = x;
+    	CurrentInPlaneCursorPosition[1] = y;
+    	this->MapInPlaneCoordinatesIntoWorldCoordinates(CurrentInPlaneCursorPosition,
+    			CurrentWorldCursorPosition);
+    	this->InvokeEvent(Cursoring, NULL);
+    	break;
   }
 }
 
@@ -1694,9 +1735,43 @@ void vtk2DSceneImageInteractorStyle::EndPan()
   this->vtkInteractorStyleImage::EndPan();
 }
 
+void vtk2DSceneImageInteractorStyle::StartCursor()
+{
+  if (this->State != VTKIS_NONE)
+    return;
+  this->StartState(VTKIS_CURSOR);
+  this->InvokeEvent(vtk2DSceneImageInteractorStyle::StartCursoring, this);
+}
+
+void vtk2DSceneImageInteractorStyle::EndCursor()
+{
+  this->InvokeEvent(vtk2DSceneImageInteractorStyle::EndCursoring, this);
+  if (this->State != VTKIS_CURSOR)
+    return;
+  this->StopState();
+}
+
 void vtk2DSceneImageInteractorStyle::ResetFlipStates()
 {
 	FlippedAlongColumn = false;
 	FlippedAlongRow = false;
 }
 
+void vtk2DSceneImageInteractorStyle::MapInPlaneCoordinatesIntoWorldCoordinates(
+		const int ic[2], double wc[3])
+{
+	// NOTE: Dummy implementation - should be overridden and implemented in
+	// subclasses that support image orientation in higher dimensions!
+	wc[0] = ic[0];
+	wc[1] = ic[1];
+	wc[2] = 0;
+}
+
+void vtk2DSceneImageInteractorStyle::MapWorldCoordinatesIntoInPlaneCoordinates(
+		const double wc[3], int ic[2])
+{
+	// NOTE: Dummy implementation - should be overridden and implemented in
+	// subclasses that support image orientation in higher dimensions!
+	ic[0] = wc[0];
+	ic[1] = wc[1];
+}

@@ -15,6 +15,7 @@
 #include <itkProcessObject.h>
 #include <itkImage.h>
 #include <itkEuler3DTransform.h>
+#include <itkVersorRigid3DTransform.h>
 #include <itkCommand.h>
 
 #include <vector>
@@ -57,8 +58,10 @@ public:
   typedef itk::ProcessObject::Pointer GenericRegistrationPointer;
   typedef float DRRPixelType; // DRR pixel type is statically float!
   typedef unsigned char MaskPixelType; // Mask pixel type is statically uchar!
-  typedef itk::Euler3DTransform<double> TransformType;
+
+  typedef itk::VersorRigid3DTransform<double> TransformType;
   typedef TransformType::Pointer TransformPointer;
+
   typedef TransformType::ParametersType ParametersType;
   // NOTE: Must include "oraTask.h" for Visual Studio, otherwise callbacks fail
   typedef itk::MemberCommand<ora::Task> CommandType;
@@ -385,6 +388,14 @@ public:
   ParametersType GetReferenceParameters()
   {
     return m_ReferenceParameters;
+  }
+  /**
+   * Get current fixed transform parameters.
+   * @see UpdateCurrentRegistrationParameters()
+   **/
+  ParametersType GetCurrentFixedParameters()
+  {
+    return m_CurrentFixedParameters;
   }
   /**
    * Override and apply the specified current transformation parameters (mainly
@@ -823,9 +834,24 @@ public:
    */
   bool WriteIntelligentMaskAndInfo(std::size_t index, ITKVTKImage *finalMask);
 
+  /** Convert a sequence of raw transform parameters (according to
+   * registration's internal transform type) into a easily interpretable Euler
+   * sequence of transform parameters.
+   * @param fixedRawPars fixed raw parameters (center of rotation)
+   * @param rawPars raw parameters (rotation, translation)
+   * @param convertedPars the parameters in Euler representation
+   * @return TRUE if successful **/
+  bool ConvertRawParametersToEulerParameters(
+      const double fixedRawPars[3], const double rawPars[6],
+      double convertedPars[6]);
+
 protected:
   /** Intensity transfer function definition type. **/
   typedef vtkSmartPointer<vtkColorTransferFunction> ITFPointer;
+
+  /** Euler transformation type **/
+  typedef itk::Euler3DTransform<double> EulerTransformType;
+  typedef EulerTransformType::Pointer EulerTransformPointer;
 
   /** Give some tasks exclusive access to all components of this model.
    * @see REG23RegistrationInitializationTask
@@ -901,6 +927,11 @@ protected:
    * @see UpdateCurrentRegistrationParameters()
    **/
   ParametersType m_CurrentParameters;
+  /**
+   * Current fixed transform parameters
+   * @see UpdateCurrentRegistrationParameters()
+   **/
+  ParametersType m_CurrentFixedParameters;
   /** Reference transform parameters (scientific mode). These is a reference
    * transform where the final transform is compared to. **/
   ParametersType m_ReferenceParameters;
@@ -1421,7 +1452,8 @@ protected:
   /**
    * Updates some of the current registration parameters during automatic
    * registration:
-   * m_CurrentParameters, m_CurrentOptimizationParameters, m_CurrentMeasure.
+   * m_CurrentParameters, m_CurrentOptimizationParameters, m_CurrentMeasure,
+   * m_CurrentFixedParameters.
    * This method should be called from the registration and the optimization
    * callbacks!
    * @param stopRegistration if this flag is set to TRUE, the registration

@@ -224,7 +224,7 @@ protected:
   mutable GradientPixelType m_FixedVariance[ImageDimension];
   /** The filter for transforming the moving image. **/
   TransformMovingImageFilterPointer m_TransformMovingImageFilter;
-  /** The Sobel gradients of the fixed image **/
+  /** The caster of the fixed image **/
   CastFixedImageFilterPointer m_CastFixedImageFilter;
   /** Fixed sobel operator **/
   SobelOperatorType m_FixedSobelOperators[ImageDimension];
@@ -235,7 +235,7 @@ protected:
   BoundaryConditionType m_MovingCondition;
   /** Fixed boundary condition **/
   BoundaryConditionType m_FixedCondition;
-  /** The Sobel gradients of the moving image **/
+  /** The caster of the moving image **/
   CastMovingImageFilterPointer m_CastMovingImageFilter;
   /** Moving sobel operator **/
   SobelOperatorType m_MovingSobelOperators[ImageDimension];

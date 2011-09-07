@@ -404,6 +404,41 @@ ITKVTKImage
 }
 
 template <typename TComponentType>
+void
+ITKVTKImage
+::OverrideBasicImageGeometry(double spacing[3], double origin[3],
+     double orientation[9])
+{
+  typedef itk::Image<TComponentType, ITKVTKImage::Dimensions> InputImageType;
+
+  if (!m_ITKImage)
+    GetAsITKImage<TComponentType>(); // generate representation on demand
+  if (!m_ITKImage) // not available
+    return;
+
+  if (m_VTKImage) // be sure the VTK image is reset
+    m_VTKImage->Delete();
+  m_VTKImage = NULL; // set back
+
+  typename InputImageType::Pointer i = static_cast<InputImageType *>(m_ITKImage.GetPointer());
+  typename InputImageType::PointType iorig;
+  iorig[0] = origin[0];
+  iorig[1] = origin[1];
+  iorig[2] = origin[2];
+  i->SetOrigin(iorig);
+  typename InputImageType::DirectionType iorient;
+  iorient[0][0] = orientation[0]; iorient[0][1] = orientation[3]; iorient[0][2] = orientation[6];
+  iorient[1][0] = orientation[1]; iorient[1][1] = orientation[4]; iorient[1][2] = orientation[7];
+  iorient[2][0] = orientation[2]; iorient[2][1] = orientation[5]; iorient[2][2] = orientation[8];
+  i->SetDirection(iorient);
+  typename InputImageType::SpacingType isp;
+  isp[0] = spacing[0];
+  isp[1] = spacing[1];
+  isp[2] = spacing[2];
+  i->SetSpacing(isp);
+}
+
+template <typename TComponentType>
 bool
 ITKVTKImage
 ::ExtractBasicImageGeometry(double spacing[3], int size[3], double origin[3],

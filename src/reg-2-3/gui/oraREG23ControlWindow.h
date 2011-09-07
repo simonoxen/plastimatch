@@ -131,8 +131,10 @@ protected:
   QString m_RotationsText;
   /** Basic transformation (translation) output string **/
   QString m_TranslationsText;
-  /** Current registration parameters (EULER, in raw-format) **/
+  /** Current registration parameters (in raw-format) **/
   double m_CurrentRawParameters[6];
+  /** Current fixed registration parameters (in raw-format) **/
+  double m_CurrentFixedRawParameters[3];
   /** Flag indicating that current parameters should be refreshed **/
   bool m_UpdateCurrentParameters;
   /** Current windows style **/

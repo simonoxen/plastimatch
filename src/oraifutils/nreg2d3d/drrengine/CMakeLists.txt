@@ -5,6 +5,7 @@ SET(OWN_LIB_NAME ORAIFNReg2D3DDRREngine)
 INCLUDE_DIRECTORIES(
   ${ORAIFUTILS_SOURCE_DIR}/${ORAIFUTILS_NREG2D3D_MATHS_SUBDIR} 
   ${ORAIFUTILS_SOURCE_DIR}/${ORAIFUTILS_NREG2D3D_TRANSFORM_SUBDIR}
+  ${ORAIFUTILS_SOURCE_DIR}/${ORAIFUTILS_IMAGETOOLS_SUBDIR}
 )
 
 SET(${OWN_LIB_NAME}_HDRS
@@ -18,6 +19,22 @@ SET(${OWN_LIB_NAME}_HDRS
   
   oraITKVTKDRRFilter.h
   oraITKVTKDRRFilter.txx
+  
+  oraProjectionGeometry.h
+  oraImageBasedProjectionGeometry.h
+  oraImageBasedProjectionGeometry.txx
+  
+  oraIntensityTransferFunction.h
+  oraIntensityTransferFunction.txx
+  
+  oraDRRFilter.h
+  oraDRRFilter.txx
+  
+  oraCPUSiddonDRRFilter.h
+  oraCPUSiddonDRRFilter.txx
+  
+  oraGLSLRayCastingDRRFilter.h
+  oraGLSLRayCastingDRRFilter.txx
   
   oraProjectionProperties.h
   oraProjectionProperties.txx
@@ -35,6 +52,10 @@ SET(${OWN_LIB_NAME}_SRCS
   oraGLSLDRRRayCastMapper.cxx  
   oraRGBTableManager.cxx
   oraScalarFieldManager.cxx
+  oraProjectionGeometry.cxx
+  oraIntensityTransferFunction.cxx
+  ${ORAIFUTILS_SOURCE_DIR}/${ORAIFUTILS_IMAGETOOLS_SUBDIR}/oraVTKUnsharpMaskingImageFilter.h
+  ${ORAIFUTILS_SOURCE_DIR}/${ORAIFUTILS_IMAGETOOLS_SUBDIR}/oraVTKUnsharpMaskingImageFilter.cxx
 )
 
 # Convince MSVC that txx files are also C++ files!
@@ -42,10 +63,15 @@ IF(MSVC)
   SET_SOURCE_FILES_PROPERTIES(
     oraITKVTKDRRFilter.txx
     oraProjectionProperties.txx
+    oraIntensityTransferFunction.txx
     oraFlexMapCorrection.txx
     oraTranslationScaleFlexMapCorrection.txx
     oraLinacMountedImagingDeviceProjectionProperties.txx
     oraPortalImagingDeviceProjectionProperties.txx
+    oraIntensityTransferFunction.txx
+    oraDRRFilter.txx
+    oraCPUSiddonDRRFilter.txx
+    oraImageBasedProjectionGeometry.txx
     PROPERTIES 
     LANGUAGE "CXX" 
     HEADER_FILE_ONLY FALSE
@@ -69,6 +95,7 @@ SET_TARGET_PROPERTIES(${OWN_LIB_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 TARGET_LINK_LIBRARIES(${OWN_LIB_NAME} 
   ITKCommon ITKIO ITKAlgorithms ITKBasicFilters ITKNumerics
   vtkCommon vtkVolumeRendering vtkFiltering vtkRendering
+  ORAIFImageTools
 )
 
 # Add headers to export-set. NOTE: Quotes are important here otherwise only the first header is installed!

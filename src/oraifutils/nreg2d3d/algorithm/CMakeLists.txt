@@ -12,6 +12,12 @@ SET(${OWN_LIB_NAME}_HDRS
   oraMultiResolutionNWay2D3DRegistrationMethod.h
   oraMultiResolutionNWay2D3DRegistrationMethod.txx
   
+  oraMultiResolutionNWay2D3DRegistrationFramework.h
+  oraMultiResolutionNWay2D3DRegistrationFramework.txx
+  
+  oraMultiResolutionPyramidMaskFilter.h
+  oraMultiResolutionPyramidMaskFilter.txx
+  
   oraMetricEvents.hxx
   oraCompositeImageToImageMetric.h
   oraCompositeImageToImageMetric.txx
@@ -20,17 +26,21 @@ SET(${OWN_LIB_NAME}_HDRS
   
   vnl_amoeba_ex.h
   itkAmoebaOptimizerEx.h
+  itkPowellOptimizerEx.h
 )
 
 SET(${OWN_LIB_NAME}_SRCS
   vnl_amoeba_ex.cxx
   itkAmoebaOptimizerEx.cxx
+  itkPowellOptimizerEx.cxx
 )
 
 # Convince MSVC that txx files are also C++ files!
 IF(MSVC)
   SET_SOURCE_FILES_PROPERTIES(
     oraMultiResolutionNWay2D3DRegistrationMethod.txx
+    oraMultiResolutionNWay2D3DRegistrationFramework.txx
+    oraMultiResolutionPyramidMaskFilter.txx
     oraCompositeImageToImageMetric.txx
     oraMultiImageToImageMetric.txx
     PROPERTIES 
