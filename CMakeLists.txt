@@ -70,6 +70,7 @@ option (PLM_CONFIG_DISABLE_CUDA "Set to ON to build without CUDA" OFF)
 option (PLM_CONFIG_DISABLE_DCMTK "Set to ON to build without DCMTK" OFF)
 option (PLM_CONFIG_DISABLE_OPENCL "Set to ON to build without OpenCL" OFF)
 option (PLM_CONFIG_DISABLE_SSE2 "Set to ON to build without SSE" OFF)
+option (PLM_CONFIG_DISABLE_REG23 "Build REG-2-3" OFF)
 set (PLM_CONFIG_VERSION_STRING "" CACHE STRING "Version string")
 option (PLM_CONFIG_KEYHOLIZE "Enable RT structure keyholization" OFF)
 option (PLM_CONFIG_PREFER_DCMTK 
@@ -78,7 +79,6 @@ option (PLM_CONFIG_PREFER_DCMTK
 # Optional components
 option (PLM_BUILD_ISE "Build ISE fluoro program" OFF)
 option (PLM_BUILD_RTK "Build RTK" OFF)
-option (PLM_BUILD_REG23 "Build REG-2-3" OFF)
 option (PLM_BUILD_SLICER_LOADABLE "Build slicer loadable module" OFF)
 
 # Compile and link options
