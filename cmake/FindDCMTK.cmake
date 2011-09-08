@@ -7,7 +7,6 @@
 #  DCMTK_DIR           - (optional) Source directory for DCMTK
 #
 #  DCMTK_VERSION_STRING - Like "3.5.4" or "3.6.0"
-#  DCMTK_VERSION_NUMBER - Like 354 or 360
 #
 # DCMTK_DIR can be used to make it simpler to find the various include
 # directories and compiled libraries if you've just compiled it in the
@@ -210,45 +209,32 @@ if (DCMTK_INCLUDE_DIR
 endif ()
 
 if (DCMTK_FOUND)
+  if (EXISTS "${DCMTK_INCLUDE_DIR}/dcmtk/dcmdata/dcuid.h")
     file (STRINGS "${DCMTK_INCLUDE_DIR}/dcmtk/dcmdata/dcuid.h" 
       DCMTK_VERSION_STRING
       REGEX "^#define OFFIS_DCMTK_VERSION_STRING *\"([^\"]*)\"")
-    if (NOT DCMTK_VERSION_STRING)
+  endif ()
+  if (NOT DCMTK_VERSION_STRING)
+    if (EXISTS "${DCMTK_INCLUDE_DIR}/dcmtk/config/osconfig.h")
       file (STRINGS "${DCMTK_INCLUDE_DIR}/dcmtk/config/osconfig.h"
-        DCMTK_VERSION_STRING
-        REGEX "^#define PACKAGE_VERSION *\"([^\"]*)\"")
+	DCMTK_VERSION_STRING
+	REGEX "^#define PACKAGE_VERSION *\"([^\"]*)\"")
     endif ()
-    if (NOT DCMTK_VERSION_STRING)
+  endif ()
+  if (NOT DCMTK_VERSION_STRING)
+    if (EXISTS "${DCMTK_INCLUDE_DIR}/dcmtk/config/cfunix.h")
       file (STRINGS "${DCMTK_INCLUDE_DIR}/dcmtk/config/cfunix.h"
         DCMTK_VERSION_STRING
         REGEX "^#define PACKAGE_VERSION *\"([^\"]*)\"")
+      if (DCMTK_VERSION_STRING)
+	# GCS: The below doesn't seem to work on Mac CMake 2.6.4.
+	#  SET (DCMTK_VERSION_STRING "${CMAKE_MATCH_1}")
+	string (REGEX REPLACE "[^\"]*\"([^\"]*)\".*" "\\1"
+	  DCMTK_VERSION_STRING "${DCMTK_VERSION_STRING}")
+      endif ()
     endif ()
-    if (DCMTK_VERSION_STRING)
-       # GCS: The below doesn't seem to work on Mac CMake 2.6.4.
-       #  SET (DCMTK_VERSION_STRING "${CMAKE_MATCH_1}")
-       string (REGEX REPLACE "[^\"]*\"([^\"]*)\".*" "\\1"
-         DCMTK_VERSION_STRING "${DCMTK_VERSION_STRING}")
-    endif ()
-
-    file (STRINGS "${DCMTK_INCLUDE_DIR}/dcmtk/dcmdata/dcuid.h" 
-      DCMTK_VERSION_NUMBER
-      REGEX "^#define OFFIS_DCMTK_VERSION_NUMBER *([0-9]+)")
-    if (NOT DCMTK_VERSION_NUMBER)
-      file (STRINGS "${DCMTK_INCLUDE_DIR}/dcmtk/config/osconfig.h"
-        DCMTK_VERSION_NUMBER
-        REGEX "^#define PACKAGE_VERSION_NUMBER *\"([0-9]+)\"")
-    endif ()
-    if (NOT DCMTK_VERSION_NUMBER)
-      file (STRINGS "${DCMTK_INCLUDE_DIR}/dcmtk/config/cfunix.h"
-        DCMTK_VERSION_NUMBER
-        REGEX "^#define PACKAGE_VERSION_NUMBER *\"([0-9]+)\"")
-    endif ()
-    if (DCMTK_VERSION_NUMBER)
-      string (REGEX REPLACE "[^0-9]*([0-9]+).*" "\\1"
-        DCMTK_VERSION_NUMBER "${DCMTK_VERSION_NUMBER}")
-    endif ()
-
-    message (STATUS "DCMTK version is ${DCMTK_VERSION_STRING}")
+  endif ()
+  message (STATUS "DCMTK version is ${DCMTK_VERSION_STRING}")
 endif ()
 
 if (DCMTK_FOUND)
