@@ -1839,7 +1839,6 @@ void REG23Model::UpdateCurrentRegistrationParameters(bool stopRegistration,
       static_cast<RegistrationType *>(m_NReg.GetPointer());
 
   m_CurrentParameters = m_Transform->GetParameters();
-  m_CurrentFixedParameters = m_Transform->GetFixedParameters();
 
   if (stopRegistration)
   {

@@ -118,8 +118,6 @@ REG23Model::REG23Model() :
   m_Transform = TransformType::New();
   m_CurrentParameters.SetSize(m_Transform->GetNumberOfParameters()); // =6
   m_CurrentParameters.Fill(0);
-  m_CurrentFixedParameters.SetSize(3);
-  m_CurrentFixedParameters.Fill(0);
   m_InitialParameters.SetSize(m_Transform->GetNumberOfParameters());
   m_InitialParameters.Fill(0);
   m_ReferenceParameters.SetSize(0); // invalid!
@@ -3356,12 +3354,7 @@ bool REG23Model::SaveTransformToFile()
       {
         if (i > 0)
           stfpars += ",";
-        // stfpars += StreamConvert(m_Transform->GetFixedParameters()[i] + m_IsoCenter[i] * 10.);
-
-        // NOTE: In order to get the transform to generate the same transform as the
-        // matrix-offset version (RotationMatrix3x3,TranslationVector), the isocenter
-        // obviously must not be added.
-        stfpars += StreamConvert(m_Transform->GetFixedParameters()[i]);
+        stfpars += StreamConvert(m_Transform->GetFixedParameters()[i] + m_IsoCenter[i] * 10.);
       }
       QString pf = "";
       for (unsigned int i = 0; i < 3; i++) // rotations
@@ -5880,33 +5873,6 @@ bool REG23Model::WriteIntelligentMaskAndInfo(std::size_t index, ITKVTKImage *fin
   }
 
   infFile.Update();
-  return true;
-}
-
-bool REG23Model::ConvertRawParametersToEulerParameters(
-    const double fixedRawPars[3], const double rawPars[6],
-    double convertedPars[6])
-{
-  TransformType::ParametersType praw(6);
-  for (int i = 0; i < 6; i++)
-    praw[i] = rawPars[i];
-  TransformType::ParametersType pfraw(6);
-  for (int i = 0; i < 3; i++)
-    pfraw[i] = fixedRawPars[i];
-
-  TransformPointer transform = TransformType::New();
-  transform->SetFixedParameters(pfraw);
-  transform->SetParameters(praw);
-  EulerTransformPointer euler = EulerTransformType::New();
-  euler->SetMatrix(transform->GetMatrix());
-  euler->SetOffset(transform->GetOffset());
-  convertedPars[0] = euler->GetAngleX();
-  convertedPars[1] = euler->GetAngleY();
-  convertedPars[2] = euler->GetAngleZ();
-  convertedPars[3] = euler->GetTranslation()[0];
-  convertedPars[4] = euler->GetTranslation()[1];
-  convertedPars[5] = euler->GetTranslation()[2];
-
   return true;
 }
 

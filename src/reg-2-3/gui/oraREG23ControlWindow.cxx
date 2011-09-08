@@ -60,8 +60,6 @@ REG23ControlWindow::REG23ControlWindow(QWidget *parent) :
   m_GUIUpdateIntervalMS = 200;
   for (unsigned int i = 0; i < 6; i++)
     m_CurrentRawParameters[i] = 0;
-  for (unsigned int i = 0; i < 3; i++)
-    m_CurrentFixedRawParameters[i] = 0;
   m_UpdateCurrentParameters = false;
   m_CurrentStyle = "plastique"; // default
   m_VolumeStudyInfoFormatString = "";
@@ -253,9 +251,6 @@ void REG23ControlWindow::Update(int id)
     REG23Model::ParametersType pars = m_CastedModel->GetCurrentParameters();
     for (unsigned int i = 0; i < pars.size(); i++)
       m_CurrentRawParameters[i] = pars[i];
-    pars = m_CastedModel->GetCurrentFixedParameters();
-    for (unsigned int i = 0; i < pars.size(); i++)
-      m_CurrentFixedRawParameters[i] = pars[i];
     m_UpdateCurrentParameters = true;
   }
 }
@@ -1071,20 +1066,16 @@ void REG23ControlWindow::OnGUIUpdateTimerTimeout()
   {
     QLocale loc;
     QString pf[6];
-    double eulerPars[6];
-    m_CastedModel->ConvertRawParametersToEulerParameters(
-        m_CurrentFixedRawParameters, m_CurrentRawParameters, eulerPars);
-
     for (unsigned int i = 0; i < 3; i++) // rotations
     {
-      pf[i] = loc.toString(eulerPars[i] /
+      pf[i] = loc.toString(m_CurrentRawParameters[i] /
           vtkMath::Pi() * 180., 'f', 1);
       if (pf[i].left(1) != "-") // add an explicit "+"-sign
         pf[i] = "+" + pf[i];
     }
     for (unsigned int i = 3; i < 6; i++) // translations
     {
-      pf[i] = loc.toString(eulerPars[i] / 10., 'f', 1);
+      pf[i] = loc.toString(m_CurrentRawParameters[i] / 10., 'f', 1);
       if (pf[i].left(1) != "-") // add an explicit "+"-sign
         pf[i] = "+" + pf[i];
     }
