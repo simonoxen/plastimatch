@@ -21,5 +21,5 @@ ITK_DIR:PATH=/home/gcs6/build/itk-3.20.0
 VTK_DIR:PATH=/PHShome/gcs6/build/vtk-5.6.1
 
 //Build with shared libraries.
-BUILD_SHARED_LIBS:BOOL=ON
+BUILD_SHARED_LIBS:BOOL=OFF
 ")
