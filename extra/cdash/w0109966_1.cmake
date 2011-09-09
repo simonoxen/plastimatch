@@ -15,6 +15,11 @@ SITE:STRING=w0109966_1
 //Build with shared libraries.
 BUILD_SHARED_LIBS:BOOL=ON
 
+//The directory containing ITKConfig.cmake.  This is either the
+// root of the build tree, or PREFIX/lib/InsightToolkit for an
+// installation.
+ITK_DIR:PATH=C:/gcs6/build/vs2008/itk-3.20.0
+
 //Path to the CVS
 CVSCOMMAND:FILEPATH=C:/cygwin/bin/cvs.exe
 SVNCOMMAND:FILEPATH=C:/cygwin/bin/svn.exe
