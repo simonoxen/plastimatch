@@ -13,6 +13,7 @@
 #include "pcmd_compose.h"
 #include "pcmd_crop.h"
 #include "pcmd_diff.h"
+#include "pcmd_drr.h"
 #include "pcmd_dvh.h"
 #include "pcmd_xio_dvh.h"
 #include "pcmd_mask.h"
@@ -51,21 +52,22 @@ print_usage (int return_code)
 	"  compose     "
 	"  convert     "
 	"  diff        "
+	"  drr         "
 	"  dvh         "
-	"  fill        "
 	"\n"
+	"  fill        "
 	"  header      "
 	"  mask        "
 	"  probe       "
 	"  register    "
-	"  resample    "
 	"\n"
+	"  resample    "
 	"  segment     "
 	"  stats       "
 	"  synth       "
 	"  thumbnail   "
-	"  warp        "
 	"\n"
+	"  warp        "
 	"  xf-convert  "
 	"  xio-dvh     "
 	"\n"
@@ -138,6 +140,9 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "diff")) {
 	do_command_diff (argc, argv);
+    }
+    else if (!strcmp (command, "drr")) {
+	do_command_drr (argc, argv);
     }
     else if (!strcmp (command, "dvh")) {
 	do_command_dvh (argc, argv);

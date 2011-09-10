@@ -509,6 +509,7 @@ set (PLASTIMATCH_SRC
   pcmd_compose.cxx pcmd_compose.h
   pcmd_crop.cxx pcmd_crop.h
   pcmd_diff.cxx pcmd_diff.h
+  pcmd_drr.cxx pcmd_drr.h 
   pcmd_dvh.cxx pcmd_dvh.h
   pcmd_header.cxx pcmd_header.h
   pcmd_mask.cxx pcmd_mask.h
