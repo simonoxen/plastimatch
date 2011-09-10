@@ -8,6 +8,7 @@
 #include "SimpleDebugger.h"
 
 #include <itkImage.h>
+#include <cstddef> /* Workaround bug in ITK 3.20 */
 #include <itkImageIOBase.h>
 #include <itkDataObject.h>
 #include <vtkImageData.h>

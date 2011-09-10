@@ -5,6 +5,7 @@
 
 
 #include <itkObjectFactoryBase.h>
+#include <cstddef> /* Workaround bug in ITK 3.20 */
 #include <itkImageIOBase.h>
 
 

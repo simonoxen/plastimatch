@@ -22,6 +22,7 @@
 #include <time.h>
 
 #include <itkImage.h>
+#include <cstddef> /* Workaround bug in ITK 3.20 */
 #include <itkImageFileWriter.h>
 #include <itkImageRegionIteratorWithIndex.h>
 #include <itkEuler3DTransform.h>

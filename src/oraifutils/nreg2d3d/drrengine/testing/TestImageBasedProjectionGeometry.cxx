@@ -6,6 +6,7 @@
 #include <vnl/vnl_matrix.h>
 #include <itkMatrix.h>
 #include <itkImage.h>
+#include <cstddef> /* Workaround bug in ITK 3.20 */
 #include <itkImageFileWriter.h>
 //C
 #include <math.h>
