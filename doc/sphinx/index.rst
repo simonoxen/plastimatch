@@ -25,6 +25,20 @@ and positron emission tomography (PET). Software features include:
 * XiO import and export
 * Plugin to 3D Slicer
 
+Reg-2-3, included in the plastimatch download, is a full-featured 
+2D-3D rigid registration program.  Features include:
+
+* Automatic registration using several cost functions, 
+  including 
+  normalized mutual information (NMI), 
+  normalized correlation (NCC),
+  mean reciprocal square differences (MRSD),
+  mean squared difference (MS), 
+  and gradient difference (GD)
+* Interactive initialization
+* Programmable pre-processing and post-processing
+* Regular and irregular regions of interest
+
 Plastimatch also features two handy utilities which are not
 directly related to image registration:
 
@@ -38,13 +52,14 @@ Plastimatch lacks the following:
 * Viscous fluid registration
 * FEM registration
 * Surface matching registration
-* Non-volumetric registration (e.g. 2D-2D or 2D-3D)
+* 2D-2D registration
 
 For more information:
 
 * `Download page (svn) <http://forge.abcd.harvard.edu/gf/project/plastimatch/scmsvn/?action=AccessInfo>`_
-* `License (BSD-style) <http://forge.abcd.harvard.edu/gf/project/plastimatch/scmsvn/?action=browse&path=%2F*checkout*%2Fplastimatch%2Ftrunk%2FLICENSE.TXT&revision=1>`_
-* `E-mail list <http://groups.google.com/group/plastimatch>`_ (new!)
+* `Plastimatch license (BSD-style) <http://forge.abcd.harvard.edu/gf/project/plastimatch/scmsvn/?action=browse&path=%2F*checkout*%2Fplastimatch%2Ftrunk%2Fsrc%2Fplastimatch%2FLICENSE.TXT&revision=2388>`_
+* `Reg-2-3 license (BSD) <http://forge.abcd.harvard.edu/gf/project/plastimatch/scmsvn/?action=browse&path=%2F*checkout*%2Fplastimatch%2Ftrunk%2Fsrc%2Freg-2-3%2FLICENSE.txt>`_
+* `E-mail list <http://groups.google.com/group/plastimatch>`_
 
 Documentation:
 
