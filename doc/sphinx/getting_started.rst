@@ -46,7 +46,7 @@ before you can build plastimatch.  Download from here:
   http://cmake.org/
 
 Cmake 2.6 or higher is required.  Cmake 2.8 is required if you 
-want to build the Slicer plugin.
+want to build the Slicer plugin, or if you want to compile reg-2-3.
 
 C/C++ Compiler (required)
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -61,6 +61,8 @@ from here:
 Microsoft Visual Studio 2010 is also fine, but you will not 
 be able to use CUDA.  
 
+You may also use the MinGW compiler.
+
 ITK (required)
 ^^^^^^^^^^^^^^
 ITK is required for the main plastimatch program.  But if you only 
@@ -68,20 +70,8 @@ want the DRR and FDK programs, you don't need it.  Get ITK from here:
 
   http://itk.org/
 
-Be careful of versions when using ITK.  We recommend the 
-following versions:
-
-+--------------------+-----------------------------+---------------------------+
-|ITK Version         |Windows                      |Linux                      |
-+====================+=============================+===========================+
-|3.14.0 and earlier  |Not recommended              |Not recommended            |
-+--------------------+-----------------------------+---------------------------+
-|3.16.0              |Recommended                  |Recommended                |
-+--------------------+-----------------------------+---------------------------+
-|3.18.0              |Not recommended              |Recommended                |
-+--------------------+-----------------------------+---------------------------+
-|3.20.0              |Recommended                  |Recommended                |
-+--------------------+-----------------------------+---------------------------+
+Be careful of versions when using ITK.  We recommend version 3.20.0.
+Specifically, ITK version 4.0 is not supported.
 
 When you build ITK, the following settings are recommended::
 
@@ -92,8 +82,34 @@ When you build ITK, the following settings are recommended::
   ITK_USE_REVIEW                            ON
   ITK_USE_OPTIMIZED_REGITRATION_METHODS     ON
 
-CUDA (recommended)
-^^^^^^^^^^^^^^^^^^
+Note, if you are using Debian, Ubuntu, or related distributions, 
+the ITK package provided by the repository is compiled against 
+GDCM 2.X instead of GDCM 1.X.  You can use this ITK, but you 
+will not be able to import or export DICOM-RT.
+
+VTK (optional)
+^^^^^^^^^^^^^^
+VTK is required for compiling reg-2-3, for 2D-3D image registration.  
+You don't need VTK if you only need plastimatch.
+Get VTK from here:
+
+  http://vtk.org/
+
+Only VTK version 5.6.1 is supported.  On linux x86_64 platforms, 
+you will need to adjust the compile flags, and add "-fPIC" to 
+CMAKE_CXX_FLAGS and CMAKE_C_FLAGS.  
+
+In addition, VTK 5.6.1 has a small bug which prevents it from compiling 
+on gcc version 4.6.  You will need to edit the VTK source code.  
+Specifically, you need to 
+edit the file 
+Utilities/vtkmetaio/metaUtils.cxx, and add the following line
+somewhere near the top of the file (for example after line 20)::
+
+  #include <cstddef>
+
+CUDA (optional)
+^^^^^^^^^^^^^^^
 CUDA is needed if you want GPU acceleration of the DRR, FDK, and B-Spline 
 registration codes.  
 You need to install the driver and toolkit, but the SDK is not needed.
@@ -120,6 +136,7 @@ Download Slicer from here:
 
   http://slicer.org/
 
+Slicer version 3.6 and 4.0 are supported.
 See the section below for detailed instructions on how to build the 
 3D Slicer plugin.
 
