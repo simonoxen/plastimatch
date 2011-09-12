@@ -20,6 +20,9 @@ BUILD_SHARED_LIBS:BOOL=ON
 // installation.
 ITK_DIR:PATH=C:/gcs6/build/vs2008/itk-3.20.0
 
+//Build REG-2-3
+PLM_CONFIG_DISABLE_REG23:BOOL=ON
+
 //Path to the CVS
 CVSCOMMAND:FILEPATH=C:/cygwin/bin/cvs.exe
 SVNCOMMAND:FILEPATH=C:/cygwin/bin/svn.exe
