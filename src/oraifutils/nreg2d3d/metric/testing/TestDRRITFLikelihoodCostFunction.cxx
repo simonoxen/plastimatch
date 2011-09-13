@@ -5,10 +5,10 @@
 #include <fstream>
 #include <math.h>
 #include <time.h>
+#include <cstddef> /* Workaround bug in ITK 3.20 */
 
 #include <itkImage.h>
 #include <itkImageRegionIterator.h>
-#include <cstddef> /* Workaround bug in ITK 3.20 */
 #include <itkImageFileWriter.h>
 #include <itkImageFileReader.h>
 #include <itkRealTimeClock.h>

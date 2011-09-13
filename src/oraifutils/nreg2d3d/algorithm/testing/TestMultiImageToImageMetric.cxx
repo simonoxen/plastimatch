@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <time.h>
+#include <cstddef> /* Workaround bug in ITK 3.20 */
 
 #include <itkImage.h>
 #include <itkMeanSquaresImageToImageMetric.h>
@@ -10,7 +11,6 @@
 #include <itkVersorRigid3DTransform.h>
 #include <itkResampleImageFilter.h>
 #include <itkLinearInterpolateImageFunction.h>
-#include <cstddef> /* Workaround bug in ITK 3.20 */
 #include <itkImageFileWriter.h>
 #include <itkRealTimeClock.h>
 #include <itkMath.h>

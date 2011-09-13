@@ -67,6 +67,16 @@ message (STATUS "ORAIFUTILS_INCLUDE_DIRS = ${ORAIFUTILS_INCLUDE_DIRS}")
 
 ### DEFINITIONS ###
 
+# Build static libraries by default
+# Build ONLY static libraries in MSVC because no exports are defined yet
+# FIXME: Add __declspec(dllexport) for MSVC SHARED library support
+SET(REG23_LIBRARY_TYPE STATIC)
+IF(BUILD_SHARED_LIBS AND NOT MSVC)
+  SET(REG23_LIBRARY_TYPE SHARED)
+ELSE(BUILD_SHARED_LIBS AND NOT MSVC)
+  MESSAGE(STATUS "Building REG23 with SHARED libs in MSVC is currently not supported. -> Building STATIC libs.")
+ENDIF(BUILD_SHARED_LIBS AND NOT MSVC)
+
 # Build unit tests
 OPTION(REG23_BUILD_TESTING "Build REG23 unit tests for regression tests and automatic software verification." OFF)
 IF(REG23_BUILD_TESTING)

@@ -4,6 +4,7 @@
 #define ITKRTIIMAGEIO_H
 
 #include <cstddef> /* Workaround bug in ITK 3.20 */
+
 #include <itkImageIOBase.h>
 
 #include "oraITKVTKImageMetaInformation.h"

@@ -11,7 +11,7 @@ QT4_WRAP_CPP(MOC_SRCS
   oraReferenceTransformTask.h
 )
 
-ADD_LIBRARY(${LIB_NAME} 
+ADD_LIBRARY(${LIB_NAME} ${REG23_LIBRARY_TYPE}
   ${MOC_SRCS}
   itkImageKernelOperator.h
   itkImageKernelOperator.txx

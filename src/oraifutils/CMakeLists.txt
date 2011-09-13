@@ -47,8 +47,10 @@ ENDIF(ORAIFUTILS_USE_QT)
 OPTION(ORAIFUTILS_USE_OPENCL "Build parts of ORAIFUTILS with OpenCL dependencies" OFF)
 IF(ORAIFUTILS_USE_OPENCL)
   # Add FindOpenCL.cmake to CMAKE_MODULE_PATH
-  SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/opencl 
-      CACHE STATIC "CMake module path")
+  IF(NOT PLM_BUILD_REG23)
+    SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/opencl 
+        CACHE STATIC "CMake module path")
+  ENDIF(NOT PLM_BUILD_REG23)
   # Require OpenCL 4.0.0 or later
   SET(OPENCL_MIN_VERSION "4.0.0")
   FIND_PACKAGE(OpenCL ${OPENCL_MIN_VERSION})
@@ -60,7 +62,14 @@ IF(ORAIFUTILS_USE_OPENCL)
 ENDIF(ORAIFUTILS_USE_OPENCL)
 
 # Build static libraries by default
-OPTION(BUILD_SHARED_LIBS "Build ORAIFUTILS with shared libraries." OFF)
+# Build ONLY static libraries in MSVC because no exports are defined yet
+# FIXME: Add __declspec(dllexport) for MSVC SHARED library support
+SET(ORAIFUTILS_LIBRARY_TYPE STATIC)
+IF(BUILD_SHARED_LIBS AND NOT MSVC)
+  SET(ORAIFUTILS_LIBRARY_TYPE SHARED)
+ELSE(BUILD_SHARED_LIBS AND NOT MSVC)
+  MESSAGE(STATUS "Building ORAIFUTILS with SHARED libs in MSVC is currently not supported. -> Building STATIC libs.")
+ENDIF(BUILD_SHARED_LIBS AND NOT MSVC)
 
 # Offer the user the choice of overriding the installation directories
 SET(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")

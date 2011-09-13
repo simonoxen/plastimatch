@@ -1,15 +1,16 @@
 //
+#include <time.h>
+#include <cstddef> /* Workaround bug in ITK 3.20 */
+//
 #include "BasicUnitTestIncludes.hxx"
 
 #include "oraMultiResolutionPyramidMaskFilter.h"
 //ITK
 #include <itkImageRegionIterator.h>
-#include <cstddef> /* Workaround bug in ITK 3.20 */
 #include <itkImageFileWriter.h>
 #include <itkImage.h>
 #include <itkEuler3DTransform.h>
-//
-#include <time.h>
+
 
 // dot product of vector x and direction-matrix y (i-th column is considered)
 #define DOT_dir(x, y, i) \

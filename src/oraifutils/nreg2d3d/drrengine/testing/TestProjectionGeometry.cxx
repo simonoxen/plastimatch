@@ -139,6 +139,7 @@ int main(int argc, char *argv[])
     }
     else
     {
+      /* FIXME: Add working test, the matrix below is obsolete and only a stub
       double *projMatrix = geom->Compute3x4ProjectionMatrix();
       double projmatrixReference[12] =
          {0.00710838, -1.21989e-013, -0.000971478, 0.971478,
@@ -158,7 +159,7 @@ int main(int argc, char *argv[])
       Pv.copy_in(geom->Compute3x4ProjectionMatrix());
       itk::Matrix<double, 3, 4> P;
       P = Pv;
-
+      */
     }
 
   	geom = NULL;

@@ -1211,21 +1211,22 @@ ITKVTKMetaInformationXMLFileWriter
 
   char hexbuf[3];
   std::string md5Hash = "";
-  for (unsigned int i = 0; i < md5length; ++i)
+  std::string s(md5result, md5length);
+  for (std::string::const_iterator it=s.begin() ; it < s.end(); it++ )
   {
-    sprintf(hexbuf, "%02x", (((int)md5result[i]) + 128));
-    md5Hash += hexbuf;
+    sprintf(hexbuf, "%02x", 128 + *it);
+    md5Hash.append(hexbuf);
   }
-
-  /* DEBUG output:
+  // DEBUG output:
+  /*
   printf("          0   1   2   3   4   5   6   7   8   9   10  11  12  13  14  15\n"
          "md5sum:  [%i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i]\n"
          "md5Hash: [%s]\n",
          md5result[0], md5result[1], md5result[2], md5result[3], md5result[4],
          md5result[5], md5result[6], md5result[7], md5result[8], md5result[9],
          md5result[10], md5result[11], md5result[12], md5result[13], md5result[14],
-         md5result[15], md5Hash);
-   */
+         md5result[15], md5Hash.c_str());
+  */
   return md5Hash;
 }
 
