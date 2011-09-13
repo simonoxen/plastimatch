@@ -68,7 +68,9 @@ SET(ORAIFUTILS_LIBRARY_TYPE STATIC)
 IF(BUILD_SHARED_LIBS AND NOT MSVC)
   SET(ORAIFUTILS_LIBRARY_TYPE SHARED)
 ELSE(BUILD_SHARED_LIBS AND NOT MSVC)
-  MESSAGE(STATUS "Building ORAIFUTILS with SHARED libs in MSVC is currently not supported. -> Building STATIC libs.")
+  IF(MSVC)
+    MESSAGE(STATUS "Building ORAIFUTILS with SHARED libs in MSVC is currently not supported. -> Building STATIC libs.")
+  ENDIF(MSVC)
 ENDIF(BUILD_SHARED_LIBS AND NOT MSVC)
 
 # Offer the user the choice of overriding the installation directories
