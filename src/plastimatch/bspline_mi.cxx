@@ -108,17 +108,10 @@ vopt_bin_error (int start, int end, double* s_lut, double* ssq_lut, double* cnt_
     n = cnt_lut[end] - cnt_lut[start];
     v = sq_diff - (diff*diff)/delta;
 
-    /* JAS 2011.08.31
-     * This produces a histogram with "better utilized" bins, but the resulting
-     * registration is worse in my experience ...but, then again, I only have 1
-     * multi-modal data set.  I believe this may be better overall, so I will
-     * leave it enabled for now. */
-#if 1
     /* Penalize solutions that have bins with less than one voxel */
     if (n < 1.0) {
         return DBL_MAX;
     }
-#endif
 
     return v;
 } 
