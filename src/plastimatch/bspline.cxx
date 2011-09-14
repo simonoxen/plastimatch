@@ -144,10 +144,27 @@ bspline_state_create (
         bspline_regularize_initialize (reg_parms, rst, bxf);
     }
 
+    /* JAS Fix 2011.09.14
+     *   The MI algorithm will get stuck for a set of coefficients all equaling
+     *   zero due to the method we use to compute the cost function gradient.
+     *   However, it is possible we could be inheriting coefficients from a
+     *   prior stage, so we must check for inherited coefficients before
+     *   applying an initial offset to the coefficient array. */
     if (parms->metric == BMET_MI) {
-        int i;
-        for (i = 0; i < bxf->num_coeff; i++) {
-            bxf->coeff[i] = 0.5f;
+        bool first_iteration = true;
+
+        for (int i=0; i<bxf->num_coeff; i++) {
+            if (bxf->coeff[i] != 0.0f) {
+                first_iteration = false;
+                break;
+            }
+        }
+
+        if (first_iteration) {
+            printf ("Intializing 1st MI Stage\n");
+            for (int i = 0; i < bxf->num_coeff; i++) {
+                bxf->coeff[i] = 0.5f;
+            }
         }
     }
 
