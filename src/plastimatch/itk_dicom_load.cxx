@@ -39,9 +39,48 @@ typedef itk::ImageSeriesReader < UInt32ImageType > DicomUInt32ReaderType;
 typedef itk::ImageSeriesReader < FloatImageType > DicomFloatReaderType;
 typedef itk::ImageSeriesReader < DoubleImageType > DicomDoubleReaderType;
 
+
 /* -----------------------------------------------------------------------
-   Reading Dicom
+   functions
    ----------------------------------------------------------------------- */
+static bool
+test_dicom_ok (const std::string& fn)
+{
+    gdcm::File header;
+    header.SetLoadMode (0);
+    header.SetFileName (fn);
+    header.Load ();
+
+    if (!header.IsReadable()) {
+	return false;
+    }
+    std::string s;
+
+    /* Reject GE Scouts */
+    s = header.GetEntryValue (0x0018, 0x0022);
+    if (s == "SCOUT MODE") {
+	logfile_printf ("Rejecting GE scout\n");
+	return false;
+    }
+
+    /* Reject GE Dose reports */
+    s = header.GetEntryValue (0x0008, 0x103e);
+    if (s == "Dose Report" || s == "Dose Report ") {
+	logfile_printf ("Rejecting GE dose report\n");
+	return false;
+    }
+
+    /* Reject RTDOSE, which can get interpreted as an image (and gets 
+       read incorretly anyway).  Dose is read by rtds.cxx instead. */
+    s = header.GetEntryValue (0x0008, 0x0060);
+    if (s == "RTDOSE") {
+	logfile_printf ("Rejecting RTDOSE\n");
+	return false;
+    }
+
+    return true;
+}
+
 template<class T>
 void
 load_dicom_dir_rdr(T rdr, const char *dicom_dir)
@@ -56,15 +95,17 @@ load_dicom_dir_rdr(T rdr, const char *dicom_dir)
 
     nameGenerator->SetUseSeriesDetails (true);
 
+    /* GCS 2011-09-16.  AddRestriction() causes seg fault when reading 
+       DICOM files with empty fields.  Wow.  Anyway, we can't use them. */
+
     /* Reject RTDOSE, which can get interpreted as an image (and gets 
        read incorretly anyway).  Dose is read by rtds.cxx instead. */
-    gdcm::SerieHelper* gsh = nameGenerator->GetSeriesHelper ();
-    gsh->AddRestriction (0x0008, 0x0060, "RTDOSE", gdcm::GDCM_DIFFERENT);
-
+    //gdcm::SerieHelper* gsh = nameGenerator->GetSeriesHelper ();
+    //gsh->AddRestriction (0x0008, 0x0060, "RTDOSE", gdcm::GDCM_DIFFERENT);
     /* Reject GE Scouts */
-    gsh->AddRestriction (0x0018, 0x0022, "SCOUT MODE", gdcm::GDCM_DIFFERENT);
+    //gsh->AddRestriction (0x0018, 0x0022, "SCOUT MODE", gdcm::GDCM_DIFFERENT);
     /* Reject GE Dose reports */
-    gsh->AddRestriction (0x0008, 0x103e, "Dose Report", gdcm::GDCM_DIFFERENT);
+    //gsh->AddRestriction (0x0008, 0x103e, "Dose Report", gdcm::GDCM_DIFFERENT);
 
     nameGenerator->SetDirectory (dicom_dir);
     try {
@@ -95,20 +136,29 @@ load_dicom_dir_rdr(T rdr, const char *dicom_dir)
 
 	    /* Read the files */
 	    typedef std::vector< std::string > FileNamesContainer;
-	    FileNamesContainer fileNames;
-	    fileNames = nameGenerator->GetFileNames (seriesIdentifier);
+	    FileNamesContainer file_names;
+	    file_names = nameGenerator->GetFileNames (seriesIdentifier);
+
+	    /* Get the first filename */
+	    std::string first_fn = *(file_names.begin());
+
+	    /* Test against restrictions */
+	    if (!test_dicom_ok (first_fn)) {
+		seriesItr++;
+		continue;
+	    }
 
 #if defined (commentout)
 	    /* Print out the file names */
-	    FileNamesContainer::const_iterator fn_it = fileNames.begin();
+	    FileNamesContainer::const_iterator fn_it = file_names.begin();
 	    printf ("File names are:\n");
-	    while (fn_it != fileNames.end()) {
+	    while (fn_it != file_names.end()) {
 		printf ("  %s\n", fn_it->c_str());
 		fn_it ++;
 	    }
 #endif
 
-	    rdr->SetFileNames (fileNames);
+	    rdr->SetFileNames (file_names);
 	    try {
 		rdr->Update();
 		dicom_load_succeeded = true;
