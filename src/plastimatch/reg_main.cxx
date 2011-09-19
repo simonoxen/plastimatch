@@ -6,13 +6,16 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include "mha_io.h"
-#include "volume.h"
-#include "plm_timer.h"
-#include "bspline_xform.h"
+
 #include "bspline.h"
+#include "bspline_xform.h"
+#include "bspline_regularize_analytic.h"
+#include "bspline_regularize_numeric.h"
+#include "bspline_regularize_state.h"
+#include "mha_io.h"
+#include "plm_timer.h"
 #include "reg_opts.h"
-#include "reg.h"
+#include "volume.h"
 
 #define NUMERICAL 0
 #define ANALYTIC  1
@@ -117,7 +120,7 @@ main (int argc, char* argv[])
     double time;
     Reg_options options;
     Reg_parms *parms = &options.parms;
-    Reg_state rst;
+    Bspline_regularize_state rst;
     Volume *vf = NULL;
     Bspline_score bscore;
     Bspline_xform *bxf = NULL;
@@ -165,6 +168,18 @@ main (int argc, char* argv[])
         exit (0);
 #endif
         break;
+    case 'd':
+        bxf = (Bspline_xform*)load (&options, ANALYTIC);
+        init_bscore (bxf, &bscore);
+
+        plm_timer_start (&timer);
+	bspline_regularize_numeric_init (&rst, bxf);
+        bspline_regularize_score (&bscore, parms, &rst, bxf);
+	bspline_regularize_numeric_destroy (&rst, bxf);
+        time = plm_timer_report (&timer);
+
+        S = bscore.score;
+        break;
     default:
         printf ("Warning: Using implementation 'a'\n");
         vf = (Volume*)load (&options, NUMERICAL);
@@ -174,7 +189,7 @@ main (int argc, char* argv[])
         break;
     } /* switch(implementation) */
 
-
+    printf ("Printing stats.\n");
     print_stats (bxf, &bscore, S, time);
 
     if (vf) {

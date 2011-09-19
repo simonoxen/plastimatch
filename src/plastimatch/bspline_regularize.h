@@ -9,6 +9,7 @@
 #include "volume.h"
 
 class Bspline_score;
+class Bspline_regularize_state;
 
 class Reg_parms
 {
@@ -22,30 +23,11 @@ public:
     }
 };
 
-
-typedef struct reg_state_struct Reg_state;
-struct reg_state_struct {
-    /* carry volume addresses here for now */
-    Volume* fixed;
-    Volume* moving;
-
-    /* analytic methods */
-    double* QX_mats;    /* Three 4x4 matrices */
-    double* QY_mats;    /* Three 4x4 matrices */
-    double* QZ_mats;    /* Three 4x4 matrices */
-    double** QX;
-    double** QY;
-    double** QZ;
-    double* V_mats;     /* The 6 64x64 V matricies */
-    double** V;
-    double* cond;
-};
-
 gpuit_EXPORT
 void
 bspline_regularize_initialize (
     Reg_parms* reg_parms,
-    Reg_state* rst,
+    Bspline_regularize_state* rst,
     Bspline_xform* bxf
 );
 
@@ -53,7 +35,7 @@ gpuit_EXPORT
 void
 bspline_regularize_destroy (
     Reg_parms* reg_parms,
-    Reg_state* rst,
+    Bspline_regularize_state* rst,
     Bspline_xform* bxf
 );
 
@@ -61,10 +43,9 @@ gpuit_EXPORT
 void
 bspline_regularize (
     Bspline_score* bsp_score,    /* Gets updated */
-    Reg_state* rst,
-    Reg_parms* reg_parms,
-    Bspline_xform* bxf
+    Bspline_regularize_state* rst,
+    const Reg_parms* reg_parms,
+    const Bspline_xform* bxf
 );
-
 
 #endif

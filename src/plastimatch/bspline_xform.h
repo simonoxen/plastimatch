@@ -70,16 +70,6 @@ gpuit_EXPORT
 void bspline_xform_free (Bspline_xform* bxf);
 
 gpuit_EXPORT
-void bspline_xform_create_qlut_grad 
-(
-    Bspline_xform* bxf,         /* Output: bxf with new LUTs */
-    float img_spacing[3],       /* Image spacing (in mm) */
-    int vox_per_rgn[3]);        /* Knot spacing (in vox) */
-
-void
-bspline_xform_free_qlut_grad (Bspline_xform* bxf);
-
-gpuit_EXPORT
 Bspline_xform* bspline_xform_load (const char* filename);
 
 gpuit_EXPORT

@@ -8,6 +8,7 @@
 #include "bspline_xform.h"
 #include "volume.h"
 
+class Bspline_regularize_state;
 class Bspline_score;
 
 gpuit_EXPORT
@@ -19,20 +20,16 @@ void
 compute_coeff_from_vf (Bspline_xform* bxf, Volume* vol);
 
 gpuit_EXPORT
-float
-vf_regularize_numerical (Volume* vol);
-
-gpuit_EXPORT
 void
 vf_regularize_analytic_init (
-    Reg_state* rst,
+    Bspline_regularize_state* rst,
     const Bspline_xform* bxf
 );
 
 gpuit_EXPORT
 void
 vf_regularize_analytic_destroy (
-    Reg_state* rst
+    Bspline_regularize_state* rst
 );
 
 gpuit_EXPORT
@@ -40,7 +37,7 @@ void
 vf_regularize_analytic_omp (
     Bspline_score *bspline_score, 
     const Reg_parms* reg_parms,
-    const Reg_state* rst,
+    const Bspline_regularize_state* rst,
     const Bspline_xform* bxf
 );
 
@@ -49,7 +46,7 @@ void
 vf_regularize_analytic (
     Bspline_score *bspline_score, 
     const Reg_parms* reg_parms,
-    const Reg_state* rst,
+    const Bspline_regularize_state* rst,
     const Bspline_xform* bxf
 );
 

@@ -736,9 +736,9 @@ plm_add_executable (dlib_train "${DLIB_TRAIN_SRC}"
 plm_add_executable (fdk "${FDK_SRC}" 
   "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_ALWAYS})
-#plm_add_executable (reg "${REG_SRC}" 
-#  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
-#  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+plm_add_executable (reg "${REG_SRC}" 
+  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 plm_add_executable (hnd_to_pfm "${HND_TO_PFM_SRC}" 
   "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})

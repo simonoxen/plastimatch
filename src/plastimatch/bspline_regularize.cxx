@@ -9,12 +9,10 @@
 #include "bspline_xform.h"
 #include "print_and_exit.h"
 
-
-
 void
 bspline_regularize_initialize (
     Reg_parms* reg_parms,
-    Reg_state* rst,
+    Bspline_regularize_state* rst,
     Bspline_xform* bxf
 )
 {
@@ -30,7 +28,7 @@ bspline_regularize_initialize (
         vf_regularize_analytic_init (rst, bxf);
         break;
     case 'd':
-        bspline_xform_create_qlut_grad (bxf, bxf->img_spacing, bxf->vox_per_rgn);
+	bspline_regularize_numeric_init (rst, bxf);
         break;
     default:
         print_and_exit (
@@ -44,7 +42,7 @@ bspline_regularize_initialize (
 void
 bspline_regularize_destroy (
     Reg_parms* reg_parms,
-    Reg_state* rst,
+    Bspline_regularize_state* rst,
     Bspline_xform* bxf
 )
 {
@@ -60,7 +58,7 @@ bspline_regularize_destroy (
         vf_regularize_analytic_destroy (rst);
         break;
     case 'd':
-        bspline_xform_free_qlut_grad (bxf);
+	bspline_regularize_numeric_destroy (rst, bxf);
         break;
     default:
         print_and_exit (
@@ -74,9 +72,9 @@ bspline_regularize_destroy (
 void
 bspline_regularize (
     Bspline_score *bspline_score,    /* Gets updated */
-    Reg_state* rst,
-    Reg_parms* reg_parms,
-    Bspline_xform* bxf
+    Bspline_regularize_state* rst,
+    const Reg_parms* reg_parms,
+    const Bspline_xform* bxf
 )
 {
     switch (reg_parms->implementation) {

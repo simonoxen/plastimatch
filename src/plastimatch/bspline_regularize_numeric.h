@@ -6,16 +6,34 @@
 
 #include "plm_config.h"
 
+class Bspline_regularize_state;
+
 #if defined __cplusplus
 extern "C" {
 #endif
 
+gpuit_EXPORT
+float
+vf_regularize_numerical (Volume* vol);
+
+void
+bspline_regularize_numeric_init (
+    Bspline_regularize_state* rst,
+    Bspline_xform* bxf
+);
+
+void
+bspline_regularize_numeric_destroy (
+    Bspline_regularize_state* rst,
+    Bspline_xform* bxf
+);
+
 void
 bspline_regularize_score (
     Bspline_score *ssd, 
-    Reg_parms *parms, 
-    Reg_state *rst,
-    Bspline_xform *bxf
+    const Reg_parms *parms, 
+    const Bspline_regularize_state *rst,
+    const Bspline_xform *bxf
 );
 
 #if defined __cplusplus

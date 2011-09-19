@@ -130,7 +130,7 @@ bspline_state_create (
 {
     Bspline_state *bst = (Bspline_state*) malloc (sizeof (Bspline_state));
     Reg_parms* reg_parms = &parms->reg_parms;
-    Reg_state* rst = &bst->rst;
+    Bspline_regularize_state* rst = &bst->rst;
 
     memset (bst, 0, sizeof (Bspline_state));
     bst->ssd.grad = (float*) malloc (bxf->num_coeff * sizeof(float));

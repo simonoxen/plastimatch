@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "reg_opts.h"
-#include "reg.h"
 
 void
 print_usage (void)
