@@ -16,18 +16,21 @@ gpuit_EXPORT
 float
 vf_regularize_numerical (Volume* vol);
 
+gpuit_EXPORT
 void
 bspline_regularize_numeric_init (
     Bspline_regularize_state* rst,
     Bspline_xform* bxf
 );
 
+gpuit_EXPORT
 void
 bspline_regularize_numeric_destroy (
     Bspline_regularize_state* rst,
     Bspline_xform* bxf
 );
 
+gpuit_EXPORT
 void
 bspline_regularize_score (
     Bspline_score *ssd, 
