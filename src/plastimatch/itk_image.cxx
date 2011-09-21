@@ -35,24 +35,25 @@
    ----------------------------------------------------------------------- */
 void
 itk_image_get_props (
-    std::string fileName,
+    const std::string& fileName,
     int *num_dimensions, 
-    itk::ImageIOBase::IOPixelType &pixel_type, 
-    itk::ImageIOBase::IOComponentType &component_type, 
+    itk::ImageIOBase::IOPixelType *pixel_type, 
+    itk::ImageIOBase::IOComponentType *component_type, 
     int *num_components
 )
 {
-    pixel_type = itk::ImageIOBase::UNKNOWNPIXELTYPE;
-    component_type = itk::ImageIOBase::UNKNOWNCOMPONENTTYPE;
+    *pixel_type = itk::ImageIOBase::UNKNOWNPIXELTYPE;
+    *component_type = itk::ImageIOBase::UNKNOWNCOMPONENTTYPE;
     *num_dimensions = 0;
+    *num_components = 0;
     typedef itk::Image<short, 3> ImageType;
     itk::ImageFileReader<ImageType>::Pointer imageReader =
 	itk::ImageFileReader<ImageType>::New();
     imageReader->SetFileName(fileName.c_str());
     try {
 	imageReader->UpdateOutputInformation();
-	pixel_type = imageReader->GetImageIO()->GetPixelType();
-	component_type = imageReader->GetImageIO()->GetComponentType();
+	*pixel_type = imageReader->GetImageIO()->GetPixelType();
+	*component_type = imageReader->GetImageIO()->GetComponentType();
 	*num_dimensions = imageReader->GetImageIO()->GetNumberOfDimensions();
 	*num_components = imageReader->GetImageIO()->GetNumberOfComponents();
     } catch (itk::ExceptionObject &ex) {

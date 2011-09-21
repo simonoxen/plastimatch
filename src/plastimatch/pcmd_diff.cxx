@@ -9,6 +9,7 @@
 #include "getopt.h"
 #include "itk_image.h"
 #include "itk_image_save.h"
+#include "itk_image_stats.h"
 #include "pcmd_diff.h"
 #include "plm_image.h"
 
@@ -28,6 +29,26 @@ diff_main (Diff_parms* parms)
 	    (const char*) parms->img_in_2_fn);
     }
 
+#if defined (commentout)
+    /* Debugging Nami's problem */
+    printf ("Img type: %s, %s\n",
+	plm_image_type_string (img1->m_type),
+	plm_image_type_string (img2->m_type));
+#endif
+
+#if defined (commentout)
+    /* Debugging Nami's problem */
+    if (img1->m_type == PLM_IMG_TYPE_ITK_SHORT) {
+	double min_val, max_val, avg;
+	int non_zero, num_vox;
+	itk_image_stats (img1->m_itk_short, 
+	    &min_val, &max_val, &avg, &non_zero, &num_vox);
+	printf ("MIN %f AVE %f MAX %f NONZERO %d NUMVOX %d\n", 
+	    (float) min_val, (float) avg, (float) max_val, non_zero, num_vox);
+
+    }
+#endif
+
     if (!Plm_image::compare_headers (img1, img2)) {
 	print_and_exit ("Error: image sizes do not match\n");
     }
@@ -35,8 +56,24 @@ diff_main (Diff_parms* parms)
     FloatImageType::Pointer fi1 = img1->itk_float ();
     FloatImageType::Pointer fi2 = img2->itk_float ();
 
+#if defined (commentout)
+    {
+	/* Debugging Nami's problem */
+	double min_val, max_val, avg;
+	int non_zero, num_vox;
+	itk_image_stats (fi1,
+	    &min_val, &max_val, &avg, &non_zero, &num_vox);
+	printf ("MIN %f AVE %f MAX %f NONZERO %d NUMVOX %d\n", 
+	    (float) min_val, (float) avg, (float) max_val, non_zero, num_vox);
+	itk_image_stats (fi2,
+	    &min_val, &max_val, &avg, &non_zero, &num_vox);
+	printf ("MIN %f AVE %f MAX %f NONZERO %d NUMVOX %d\n", 
+	    (float) min_val, (float) avg, (float) max_val, non_zero, num_vox);
+    }
+#endif
+
     typedef itk::SubtractImageFilter< FloatImageType, FloatImageType, 
-	FloatImageType > SubtractFilterType;
+				      FloatImageType > SubtractFilterType;
     SubtractFilterType::Pointer sub_filter = SubtractFilterType::New();
 
     sub_filter->SetInput1 (fi1);

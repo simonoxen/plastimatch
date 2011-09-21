@@ -109,11 +109,8 @@ stats_ss_image_main (Stats_parms* parms)
 static void
 stats_img_main (Stats_parms* parms)
 {
-    typedef itk::ImageRegionIterator< FloatImageType > FloatIteratorType;
     FloatImageType::Pointer img = itk_image_load_float (
 	(const char*) parms->img_in_fn, 0);
-    FloatImageType::RegionType rg = img->GetLargestPossibleRegion ();
-    FloatIteratorType it (img, rg);
 
     double min_val, max_val, avg;
     int non_zero, num_vox;

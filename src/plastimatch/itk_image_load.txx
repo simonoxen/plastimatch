@@ -20,7 +20,6 @@ static
 typename T::Pointer
 itk_image_load (const char *fn)
 {
-
     typedef typename itk::ImageFileReader < T > ReaderType;
     typename ReaderType::Pointer reader = ReaderType::New();
     reader->SetFileName(fn);
@@ -92,8 +91,8 @@ itk_image_load_any (
     itk::ImageIOBase::IOComponentType componentType;
     int num_components;
     try {
-	itk_image_get_props (fname, &num_dimensions, 
-	    pixelType, componentType, &num_components);
+	itk_image_get_props (std::string (fname), &num_dimensions, 
+	    &pixelType, &componentType, &num_components);
 	switch (componentType) {
 	case itk::ImageIOBase::UCHAR:
 	    set_original_type (original_type, PLM_IMG_TYPE_ITK_UCHAR);

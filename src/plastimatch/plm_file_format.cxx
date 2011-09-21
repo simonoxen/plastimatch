@@ -98,8 +98,8 @@ plm_file_format_deduce (const char* path)
     itk::ImageIOBase::IOPixelType pixel_type;
     itk::ImageIOBase::IOComponentType component_type;
     int num_dimensions, num_components;
-    itk_image_get_props (std::string (path), &num_dimensions, pixel_type, 
-	component_type, &num_components);
+    itk_image_get_props (std::string (path), &num_dimensions, &pixel_type, 
+	&component_type, &num_components);
     if (pixel_type == itk::ImageIOBase::VECTOR) {
 	/* Maybe vector field? */
 	if (component_type == itk::ImageIOBase::FLOAT) {

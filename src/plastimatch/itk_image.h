@@ -25,10 +25,10 @@ typedef itk::ImageRegion < 3 > ImageRegionType;
 plastimatch1_EXPORT 
 void
 itk_image_get_props (
-    std::string fileName,
+    const std::string& fileName,
     int *num_dimensions, 
-    itk::ImageIOBase::IOPixelType &pixel_type, 
-    itk::ImageIOBase::IOComponentType &component_type, 
+    itk::ImageIOBase::IOPixelType *pixel_type, 
+    itk::ImageIOBase::IOComponentType *component_type, 
     int *num_components
 );
 

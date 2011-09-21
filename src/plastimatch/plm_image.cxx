@@ -133,8 +133,9 @@ Plm_image::load_native (const char* fname)
 	print_and_exit ("Couldn't open %s for read\n", fname);
     }
 
-    itk_image_get_props (fname, &num_dimensions, pixel_type, 
-	component_type, &num_components);
+    std::string fn = fname;
+    itk_image_get_props (fname, &num_dimensions, &pixel_type, 
+	&component_type, &num_components);
 
     /* Handle ss_image as a special case */
     if (num_components > 1 && component_type == itk::ImageIOBase::UCHAR) {
