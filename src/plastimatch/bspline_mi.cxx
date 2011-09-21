@@ -360,7 +360,7 @@ static void
 bspline_initialize_mi_hist (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
 {
     /* If user wants more than VOPT can offer, fallback to EQSP */
-    if (hparms->bins > VOPT_RES) {
+    if ((hparms->bins > VOPT_RES) && (hparms->type == HIST_VOPT)) {
         printf ("WARNING: Falling back to EQSP histograms.\n"
                 "         (Reason: # bins > %i)\n", VOPT_RES);
         hparms->type = HIST_EQSP;
