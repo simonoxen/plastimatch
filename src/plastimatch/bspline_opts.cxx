@@ -356,7 +356,6 @@ bspline_opts_parse_args (Bspline_options* options, int argc, char* argv[])
 	else if (!strcmp (argv[i], "--vopt")) {
         parms->mi_hist.fixed.type = HIST_VOPT;
         parms->mi_hist.moving.type = HIST_VOPT;
-        parms->mi_hist.joint.type = HIST_VOPT;
     }
 	else if (!strcmp (argv[i], "--list-gpu")) {
 #if (CUDA_FOUND)

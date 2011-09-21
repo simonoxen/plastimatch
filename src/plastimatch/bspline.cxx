@@ -370,8 +370,10 @@ bspline_save_debug_state (
 void
 bspline_parms_free (Bspline_parms* parms)
 {
-    if (parms->mi_hist.joint.type == HIST_VOPT) {
+    if (parms->mi_hist.fixed.type == HIST_VOPT) {
         free (parms->mi_hist.fixed.key_lut);
+    }
+    if (parms->mi_hist.moving.type == HIST_VOPT) {
         free (parms->mi_hist.moving.key_lut);
     }
 

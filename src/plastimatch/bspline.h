@@ -169,7 +169,6 @@ public:
 	this->mi_hist.j_hist = 0;
     this->mi_hist.fixed.type = HIST_EQSP;
     this->mi_hist.moving.type = HIST_EQSP;
-    this->mi_hist.joint.type = HIST_EQSP;
 	this->mi_hist.fixed.bins = 32;
 	this->mi_hist.moving.bins = 32;
 	this->mi_hist.joint.bins 

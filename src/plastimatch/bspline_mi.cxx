@@ -29,6 +29,7 @@
 #include "xpm.h"
 #include "mha_io.h"
 
+/* Maximum # of bins for a vopt histogram */
 #define VOPT_RES 1000
 
 /* Some neat debug facilities
@@ -358,6 +359,13 @@ bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
 static void
 bspline_initialize_mi_hist (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
 {
+    /* If user wants more than VOPT can offer, fallback to EQSP */
+    if (hparms->bins > VOPT_RES) {
+        printf ("WARNING: Falling back to EQSP histograms.\n"
+                "         (Reason: # bins > %i)\n", VOPT_RES);
+        hparms->type = HIST_EQSP;
+    }
+
     /* Histogram type specific init procedures */
     if (hparms->type == HIST_EQSP) {
         bspline_initialize_mi_hist_eqsp (hparms, vol);

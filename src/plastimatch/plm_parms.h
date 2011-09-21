@@ -45,6 +45,9 @@
 #define IMG_OUT_FMT_AUTO		    0
 #define IMG_OUT_FMT_DICOM		    1
 
+#define HISTOGRAM_EQSP 0
+#define HISTOGRAM_VOPT 1
+
 enum Subsampling_type {
     SUBSAMPLING_AUTO,
     SUBSAMPLING_VOXEL_RATE
@@ -90,6 +93,7 @@ public:
     int mi_histogram_bins_fixed;
     int mi_histogram_bins_moving;
     int mi_num_spatial_samples;
+    int mi_histogram_type;
     /* ITK & GPUIT demons */
     float demons_std;
     /* GPUIT demons */

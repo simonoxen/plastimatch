@@ -250,6 +250,18 @@ set_key_val (
 	    goto error_exit;
 	}
     }
+    else if (!strcmp (key, "histogram_type")) {
+	if (section == 0) goto error_not_global;
+	if (!strcmp(val,"eqsp") || !strcmp(val,"EQSP")) {
+	    stage->mi_histogram_type = HISTOGRAM_EQSP;
+	}
+	else if (!strcmp(val,"vopt") || !strcmp(val,"VOPT")) {
+	    stage->mi_histogram_type = HISTOGRAM_VOPT;
+	}
+	else {
+	    goto error_exit;
+	}
+    }
     else if (!strcmp (key, "regularization"))
     {
 	if (section == 0) goto error_not_global;
