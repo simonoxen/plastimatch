@@ -35,7 +35,7 @@ int main ()
    printf ("%ld < %lu == %s\n", sl1, min_ulong, 
        (sl1 < min_ulong) ? "true" : "false");
 
-   unsigned long ul1 = 9223372036854775899;
+   unsigned long ul1 = max_long + 100;
    printf ("%lu > %ld == %s\n", ul1, max_long, 
        (ul1 > max_long) ? "true" : "false");
 }
