@@ -601,8 +601,8 @@ set (SIFTnD_SRC
 set (SYNTHETIC_VF_SRC
   synthetic_vf_main.cxx 
   )
-set (TEST2_SRC
-  test2.cxx
+set (TEST_LIMITS_SRC
+  test_limits.cxx
   )
 set (VMATRIX_SRC
   Vmatrix.c
@@ -753,7 +753,7 @@ plm_add_executable (proton_dose "${PROTON_DOSE_SRC}"
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 plm_add_executable (raw_to_mha raw_to_mha.c "" "" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-plm_add_executable (test2 "${TEST2_SRC}" "" "" 
+plm_add_executable (test_limits "${TEST_LIMITS_SRC}" "" "" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
 plm_add_executable (Vmatrix "${VMATRIX_SRC}" "" "" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})

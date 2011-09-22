@@ -15,7 +15,7 @@ namespace itk
 {
 
 template <class TInputImage, class TOutputImage>
-ClampCastImageFilter<TInputImage,TOutputImage>
+ClampCastImageFilter<TInputImage, TOutputImage>
 ::ClampCastImageFilter()
 {
     /* Do nothing */
@@ -23,7 +23,7 @@ ClampCastImageFilter<TInputImage,TOutputImage>
 
 template <class TInputImage, class TOutputImage>
 void 
-ClampCastImageFilter<TInputImage,TOutputImage>
+ClampCastImageFilter<TInputImage, TOutputImage>
 ::PrintSelf(std::ostream& os, Indent indent) const
 {
     /* Do nothing */
@@ -31,7 +31,7 @@ ClampCastImageFilter<TInputImage,TOutputImage>
 
 template <class TInputImage, class TOutputImage>
 void 
-ClampCastImageFilter<TInputImage,TOutputImage>
+ClampCastImageFilter<TInputImage, TOutputImage>
 ::ThreadedGenerateData (
     const OutputImageRegionType& outputRegionForThread,
     int threadId)
@@ -62,18 +62,35 @@ ClampCastImageFilter<TInputImage,TOutputImage>
     while (!outIt.IsAtEnd())
     {
 	const InputImagePixelType value = inIt.Get();
-	if (value > static_cast<InputImagePixelType>(max_value)) {
+
+	if (value > max_value)
+	{
 	    outIt.Set (max_value);
-	} else if (value < static_cast<InputImagePixelType>(min_value)) {
+	}
+	else if (value < min_value) {
+	    outIt.Set (min_value);
+	}
+        else {
+	    outIt.Set (static_cast<OutputImagePixelType> (inIt.Get()));
+	}
+#if defined (commentout)
+	    /* GCS - why do I think I need static_cast ?? */
+	if (clamp
+	    && value > static_cast<InputImagePixelType>(max_value))
+	{
+	    outIt.Set (max_value);
+	} else if (clamp 
+	    && value < static_cast<InputImagePixelType>(min_value))
+	{
 	    outIt.Set (min_value);
 	} else {
 	    outIt.Set (static_cast<OutputImagePixelType> (inIt.Get()));
 	}
+#endif
 	++inIt;
 	++outIt;
 	progress.CompletedPixel();
     }
-  
 }
 
 } // end namespace itk
