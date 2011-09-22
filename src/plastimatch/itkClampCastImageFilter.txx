@@ -45,13 +45,13 @@ ClampCastImageFilter<TInputImage, TOutputImage>
     /* Get iterators */
     typedef ImageRegionConstIterator<TInputImage> InputIterator;
     typedef ImageRegionIterator<TOutputImage> OutputIterator;
-    InputIterator  inIt(inputPtr, outputRegionForThread);
-    OutputIterator outIt(outputPtr, outputRegionForThread);
+    InputIterator  in_it(inputPtr, outputRegionForThread);
+    OutputIterator out_it(outputPtr, outputRegionForThread);
 
     /* Get min and max values of output pixel type */
-    OutputImagePixelType min_value = NumericTraits<
+    OutputImagePixelType out_min = NumericTraits<
 	OutputImagePixelType>::NonpositiveMin();
-    OutputImagePixelType max_value = NumericTraits<
+    OutputImagePixelType out_max = NumericTraits<
 	OutputImagePixelType>::max();
           
     /* support progress methods/callbacks */
@@ -59,36 +59,36 @@ ClampCastImageFilter<TInputImage, TOutputImage>
 	outputRegionForThread.GetNumberOfPixels());
 
     /* walk through image, clamping and casting each pixel */
-    while (!outIt.IsAtEnd())
+    while (!out_it.IsAtEnd())
     {
-	const InputImagePixelType value = inIt.Get();
-
-	if (value > max_value)
+	const InputImagePixelType in_value = in_it.Get();
+	if (!NumericTraits<OutputImagePixelType>::is_signed && in_value < 0)
 	{
-	    outIt.Set (max_value);
+	    out_it.Set (0);
 	}
-	else if (value < min_value) {
-	    outIt.Set (min_value);
-	}
-        else {
-	    outIt.Set (static_cast<OutputImagePixelType> (inIt.Get()));
+	else if (in_value > out_max) {
+	    out_it.Set (out_max);
+	} else if (in_value < out_min) {
+	    out_it.Set (out_min);
+	} else {
+	    out_it.Set (static_cast<OutputImagePixelType> (in_it.Get()));
 	}
 #if defined (commentout)
 	    /* GCS - why do I think I need static_cast ?? */
 	if (clamp
 	    && value > static_cast<InputImagePixelType>(max_value))
 	{
-	    outIt.Set (max_value);
+	    out_it.Set (max_value);
 	} else if (clamp 
 	    && value < static_cast<InputImagePixelType>(min_value))
 	{
-	    outIt.Set (min_value);
+	    out_it.Set (min_value);
 	} else {
-	    outIt.Set (static_cast<OutputImagePixelType> (inIt.Get()));
+	    out_it.Set (static_cast<OutputImagePixelType> (in_it.Get()));
 	}
 #endif
-	++inIt;
-	++outIt;
+	++in_it;
+	++out_it;
 	progress.CompletedPixel();
     }
 }
