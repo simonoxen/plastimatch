@@ -322,6 +322,7 @@ set (PLASTIMATCH1_LIBRARY_SRC
   itk_volume_header.cxx itk_volume_header.h
   itk_warp.cxx itk_warp.h 
   landmark_warp.cxx landmark_warp.h 
+  landmark_diff.cxx landmark_diff.h
   mc_dose.cxx mc_dose.h
   plm_clp.h
   plm_drr_api.cxx plm_drr_api.h 
@@ -581,6 +582,9 @@ set (PROTON_DOSE_SRC
 set (LANDMARK_WARP_SRC
   landmark_warp_main.cxx
   )
+set (LANDMARK_DIFF_SRC
+  landmark_diff_main.cxx
+  )
 set (RANSAC_TEST_SRC 
   ransac_test.cxx
   )
@@ -782,6 +786,9 @@ if (FULL_PLASTIMATCH_BUILD)
   plm_add_executable (landmark_warp "${LANDMARK_WARP_SRC}" 
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_ALWAYS})
+  plm_add_executable (landmark_diff "${LANDMARK_DIFF_SRC}" 
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   plm_add_executable (merge_vfs merge_vector_fields.cxx
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
