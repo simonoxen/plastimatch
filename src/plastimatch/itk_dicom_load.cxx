@@ -43,6 +43,7 @@ typedef itk::ImageSeriesReader < DoubleImageType > DicomDoubleReaderType;
 /* -----------------------------------------------------------------------
    functions
    ----------------------------------------------------------------------- */
+#if GDCM_MAJOR_VERSION < 2
 static bool
 test_dicom_ok (const std::string& fn)
 {
@@ -80,6 +81,7 @@ test_dicom_ok (const std::string& fn)
 
     return true;
 }
+#endif
 
 template<class T>
 void
@@ -96,16 +98,18 @@ load_dicom_dir_rdr(T rdr, const char *dicom_dir)
     nameGenerator->SetUseSeriesDetails (true);
 
     /* GCS 2011-09-16.  AddRestriction() causes seg fault when reading 
-       DICOM files with empty fields.  Wow.  Anyway, we can't use them. */
-
+       DICOM files with empty fields.  Wow.  Anyway, we can't use them. 
+       Possibly only with GDCM 1.X? */
+#if GDCM_MAJOR_VERSION == 2
     /* Reject RTDOSE, which can get interpreted as an image (and gets 
        read incorretly anyway).  Dose is read by rtds.cxx instead. */
-    //gdcm::SerieHelper* gsh = nameGenerator->GetSeriesHelper ();
-    //gsh->AddRestriction (0x0008, 0x0060, "RTDOSE", gdcm::GDCM_DIFFERENT);
+    gdcm::SerieHelper* gsh = nameGenerator->GetSeriesHelper ();
+    gsh->AddRestriction (0x0008, 0x0060, "RTDOSE", gdcm::GDCM_DIFFERENT);
     /* Reject GE Scouts */
-    //gsh->AddRestriction (0x0018, 0x0022, "SCOUT MODE", gdcm::GDCM_DIFFERENT);
+    gsh->AddRestriction (0x0018, 0x0022, "SCOUT MODE", gdcm::GDCM_DIFFERENT);
     /* Reject GE Dose reports */
-    //gsh->AddRestriction (0x0008, 0x103e, "Dose Report", gdcm::GDCM_DIFFERENT);
+    gsh->AddRestriction (0x0008, 0x103e, "Dose Report", gdcm::GDCM_DIFFERENT);
+#endif
 
     nameGenerator->SetDirectory (dicom_dir);
     try {
@@ -143,10 +147,12 @@ load_dicom_dir_rdr(T rdr, const char *dicom_dir)
 	    std::string first_fn = *(file_names.begin());
 
 	    /* Test against restrictions */
+#if GDCM_MAJOR_VERSION < 2
 	    if (!test_dicom_ok (first_fn)) {
 		seriesItr++;
 		continue;
 	    }
+#endif
 
 #if defined (commentout)
 	    /* Print out the file names */
