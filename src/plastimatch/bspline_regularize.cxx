@@ -28,7 +28,7 @@ bspline_regularize_initialize (
         vf_regularize_analytic_init (rst, bxf);
         break;
     case 'd':
-	bspline_regularize_numeric_init (rst, bxf);
+	bspline_regularize_numeric_d_init (rst, bxf);
         break;
     default:
         print_and_exit (
@@ -58,7 +58,7 @@ bspline_regularize_destroy (
         vf_regularize_analytic_destroy (rst);
         break;
     case 'd':
-	bspline_regularize_numeric_destroy (rst, bxf);
+	bspline_regularize_numeric_d_destroy (rst, bxf);
         break;
     default:
         print_and_exit (
@@ -79,7 +79,8 @@ bspline_regularize (
 {
     switch (reg_parms->implementation) {
     case 'a':
-//        S = vf_regularize_numerical (compute_vf_from_coeff (bxf));
+        bspline_regularize_numeric_a (bspline_score, reg_parms, rst, bxf);
+        //S = vf_regularize_numerical (compute_vf_from_coeff (bxf));
         print_and_exit (
             "Sorry, regularization implementation (%c) is currently unavailable.\n",
             reg_parms->implementation
@@ -96,7 +97,7 @@ bspline_regularize (
 #endif
         break;
     case 'd':
-        bspline_regularize_score (bspline_score, reg_parms, rst, bxf);
+        bspline_regularize_numeric_d (bspline_score, reg_parms, rst, bxf);
         break;
     default:
         print_and_exit (

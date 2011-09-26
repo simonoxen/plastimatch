@@ -232,6 +232,10 @@ void
 bspline_interpolate_vf (Volume* interp, 
     const Bspline_xform* bxf);
 
+gpuit_EXPORT
+Volume*
+bspline_compute_vf (const Bspline_xform* bxf);
+
 /* Used internally */
 void
 bspline_interp_pix (float out[3], const Bspline_xform* bxf, 
@@ -276,8 +280,19 @@ bspline_update_grad (
     Bspline_xform* bxf, 
     int p[3], int qidx, float dc_dv[3]);
 void
-bspline_update_grad_b (Bspline_state* bst, Bspline_xform* bxf, 
-		       int pidx, int qidx, float dc_dv[3]);
+bspline_update_grad_b (
+    Bspline_state* bst, 
+    const Bspline_xform* bxf, 
+    int pidx, 
+    int qidx, 
+    const float dc_dv[3]);
+void
+bspline_update_grad_b (
+    Bspline_state* bst, 
+    const Bspline_xform* bxf, 
+    int pidx, 
+    int qidx, 
+    const float dc_dv[3]);
 int* calc_offsets (int* tile_dims, int* cdims);
 
 void find_knots (int* knots, int tile_num, int* rdims, int* cdims);

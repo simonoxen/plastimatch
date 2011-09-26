@@ -22,29 +22,15 @@ static void bspline_xform_create_qlut_grad (
     Bspline_xform* bxf, float img_spacing[3], int vox_per_rgn[3]);
 static void bspline_xform_free_qlut_grad (Bspline_xform* bxf);
 
-/* API functions */
-void
-bspline_regularize_numeric_init (
-    Bspline_regularize_state* rst,
-    Bspline_xform* bxf
-)
-{
-    bspline_xform_create_qlut_grad (bxf, bxf->img_spacing, bxf->vox_per_rgn);
-}
-
-void
-bspline_regularize_numeric_destroy (
-    Bspline_regularize_state* rst,
-    Bspline_xform* bxf
-)
-{
-    bspline_xform_free_qlut_grad (bxf);
-}
-
-
-/* flavor 'a' */
+/* Flavor 'a' */
 float
-vf_regularize_numerical (Volume* vol)
+vf_regularize_numerical (
+    Bspline_score *ssd, 
+    const Reg_parms *parms, 
+    const Bspline_regularize_state *rst,
+    const Bspline_xform* bxf,
+    const Volume* vol
+)
 {
 #if defined (DEBUG)
     FILE* fp[3];
@@ -65,6 +51,8 @@ vf_regularize_numerical (Volume* vol)
     float inv_dxdz = 0.25f / (dx*dz);
     float inv_dydz = 0.25f / (dy*dz);
 
+    /* LUT indices */
+    int p[3], q[3];
 
     /* Index of current point-of-interest (POI) */
     int idx_poi;
@@ -115,8 +103,14 @@ vf_regularize_numerical (Volume* vol)
 
     S = 0.0f, SS=0.0f;
     for (k = 1; k < vol->dim[2]-1; k++) {
+	p[2] = k / bxf->vox_per_rgn[2];
+	q[2] = k % bxf->vox_per_rgn[2];
         for (j = 1; j < vol->dim[1]-1; j++) {
+	    p[1] = j / bxf->vox_per_rgn[1];
+	    q[1] = j % bxf->vox_per_rgn[1];
             for (i = 1; i < vol->dim[0]-1; i++) {
+		p[0] = i / bxf->vox_per_rgn[0];
+		q[0] = i % bxf->vox_per_rgn[0];
 
                 /* Load indicies relevant to current POI */
                 idx_poi = volume_index (vol->dim, i, j, k);
@@ -158,9 +152,12 @@ vf_regularize_numerical (Volume* vol)
                 /* Compute components */
                 d2_sq = 0.0f, dd2_dxdy=0.0f;
                 for (c=0; c<3; c++) {
-                    d2_dx2[c] = inv_dxdx * (vec_ip[c] - 2.0f*vec_poi[c] + vec_in[c]);
-                    d2_dy2[c] = inv_dydy * (vec_jp[c] - 2.0f*vec_poi[c] + vec_jn[c]);
-                    d2_dz2[c] = inv_dzdz * (vec_kp[c] - 2.0f*vec_poi[c] + vec_kn[c]);
+                    d2_dx2[c] = inv_dxdx 
+			* (vec_ip[c] - 2.0f*vec_poi[c] + vec_in[c]);
+                    d2_dy2[c] = inv_dydy 
+			* (vec_jp[c] - 2.0f*vec_poi[c] + vec_jn[c]);
+                    d2_dz2[c] = inv_dzdz 
+			* (vec_kp[c] - 2.0f*vec_poi[c] + vec_kn[c]);
 
                     d2_dxdy[c] = inv_dxdy * (
                         vec_injn[c] - vec_injp[c] - vec_ipjn[c] + vec_ipjp[c]);
@@ -169,21 +166,28 @@ vf_regularize_numerical (Volume* vol)
                     d2_dydz[c] = inv_dydz * (
                         vec_jnkn[c] - vec_jnkp[c] - vec_jpkn[c] + vec_jpkp[c]);
 
-                    d2_sq += d2_dx2[c]*d2_dx2[c] + d2_dy2[c]*d2_dy2[c] +
-                             d2_dz2[c]*d2_dz2[c] + 2.0f * (
-                                d2_dxdy[c]*d2_dxdy[c] +
-                                d2_dxdz[c]*d2_dxdz[c] +
-                                d2_dydz[c]*d2_dydz[c]
+		    /* Accumulate score for this component, for this voxel */
+                    d2_sq += 
+			d2_dx2[c]*d2_dx2[c] + 
+			d2_dy2[c]*d2_dy2[c] +
+			d2_dz2[c]*d2_dz2[c] + 
+			2.0f * (
+			    d2_dxdy[c]*d2_dxdy[c] +
+			    d2_dxdz[c]*d2_dxdz[c] +
+			    d2_dydz[c]*d2_dydz[c]
                         );
-					
-
 #if defined (DEBUG)
-                    fprintf (fp[c], "(%i,%i,%i) : %15e\n", i,j,k, (d2_dxdy[c]*d2_dxdy[c]));
+                    fprintf (fp[c], "(%i,%i,%i) : %15e\n", 
+			i,j,k, (d2_dxdy[c]*d2_dxdy[c]));
+#endif
+		    /* Accumulate grad for this component, for this voxel */
+		    int pidx = volume_index (bxf->rdims, p);
+		    int qidx = volume_index (bxf->vox_per_rgn, q);
+#if defined (commentout)
+		    bspline_update_grad_b (bst, bxf, pidx, qidx, dc_dv);
 #endif
                 }
-
                 S += d2_sq;
-				
             }
         }
     }
@@ -200,8 +204,38 @@ vf_regularize_numerical (Volume* vol)
     return S;
 }
 
+void
+bspline_regularize_numeric_a (
+    Bspline_score *ssd, 
+    const Reg_parms *parms, 
+    const Bspline_regularize_state *rst,
+    const Bspline_xform* bxf
+)
+{
+    Volume *vf = bspline_compute_vf (bxf);
 
-/* The below functions comprise flavor 'd' */
+    float S = vf_regularize_numerical (ssd, parms, rst, bxf, vf);
+
+    delete vf;
+}
+
+void
+bspline_regularize_numeric_a_init (
+    Bspline_regularize_state* rst,
+    Bspline_xform* bxf
+)
+{
+}
+
+void
+bspline_regularize_numeric_a_destroy (
+    Bspline_regularize_state* rst,
+    Bspline_xform* bxf
+)
+{
+}
+
+/* Flavor 'd' */
 static
 void bspline_xform_create_qlut_grad 
 (
@@ -509,7 +543,6 @@ bspline_regularize_hessian_component_b (
     }
 }
 
-
 void
 bspline_regularize_hessian_update_grad (
     Bspline_score *ssd, 
@@ -554,7 +587,6 @@ bspline_regularize_hessian_update_grad (
 	}
     }
 }
-
 
 void
 bspline_regularize_hessian_update_grad_b (
@@ -617,7 +649,7 @@ update_score_and_grad (
 #endif
 
 void
-bspline_regularize_score (
+bspline_regularize_numeric_d (
     Bspline_score *ssd, 
     const Reg_parms *parms, 
     const Bspline_regularize_state *rst,
@@ -629,16 +661,12 @@ bspline_regularize_score (
     int fi, fj, fk;
     int p[3];
     int q[3];
-    float dxyz[3];
     int qidx;
-    float dc_dv[3];
     int num_vox;
-    int d1,d2,d3;
     Plm_timer timer;
     double interval;
     float grad_coeff;
     float raw_score;
-    float weight;
 
     grad_score = 0;
     num_vox = bxf->roi_dim[0] * bxf->roi_dim[1] * bxf->roi_dim[2];
@@ -679,14 +707,19 @@ bspline_regularize_score (
 		    ssd, bxf, p, qidx, grad_coeff, 2,
 		    &bxf->q_xdydz_lut[qidx*64]);
 #else
-		for (d1=0;d1<3;d1++) {
-		    for (d2=d1;d2<3;d2++) { //six different components only
+		for (int d1=0;d1<3;d1++) {
+		    for (int d2=d1;d2<3;d2++) { //six different components only
+			float dxyz[3];
+			float dc_dv[3];
 			bspline_regularize_hessian_component (
 			    dxyz, bxf, p, qidx, d1, d2);
-			//dxyz[i] = du_i/(dx_d1 dx_d2)
+
+			/* Note: dxyz[i] = du_i/(dx_d1 dx_d2) */
+			float weight;
 			if (d1!=d2) weight = 2 ; else weight = 1;
-			for(d3=0;d3<3;d3++) grad_score += weight*(dxyz[d3]*dxyz[d3]);
-	
+			for (int d3=0;d3<3;d3++) {
+			    grad_score += weight*(dxyz[d3]*dxyz[d3]);
+			}	
 			dc_dv[0] = weight * grad_coeff * dxyz[0];
 			dc_dv[1] = weight * grad_coeff * dxyz[1];
 			dc_dv[2] = weight * grad_coeff * dxyz[2];
@@ -706,4 +739,22 @@ bspline_regularize_score (
 	ssd->score += grad_score;
     }
     printf ("SCORE=%.4f\n", ssd->score);
+}
+
+void
+bspline_regularize_numeric_d_init (
+    Bspline_regularize_state* rst,
+    Bspline_xform* bxf
+)
+{
+    bspline_xform_create_qlut_grad (bxf, bxf->img_spacing, bxf->vox_per_rgn);
+}
+
+void
+bspline_regularize_numeric_d_destroy (
+    Bspline_regularize_state* rst,
+    Bspline_xform* bxf
+)
+{
+    bspline_xform_free_qlut_grad (bxf);
 }

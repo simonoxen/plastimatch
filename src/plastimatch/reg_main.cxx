@@ -74,7 +74,7 @@ load (Reg_options* options, int mode)
             bxf = bspline_xform_load (options->input_xf_fn);
             if (!bxf) { exit (-1); }
             printf ("Computing vector field from: %s\n", options->input_xf_fn);
-            vf = compute_vf_from_coeff (bxf);
+            vf = bspline_compute_vf (bxf);
             bspline_xform_free (bxf);
         /* Simply load vf volume if supplied */
         } else {
@@ -132,14 +132,30 @@ main (int argc, char* argv[])
 
     /* algorithm selection */
     switch (parms->implementation) {
+    default:
+        printf ("Warning: Using implementation 'a'\n");
+	/* Fall through */
     case 'a':
-        vf = (Volume*)load (&options, NUMERICAL);
+#if defined (commentout)
+        vf = (Volume*) load (&options, NUMERICAL);
         plm_timer_start (&timer);
         S = vf_regularize_numerical (vf);
         time = plm_timer_report (&timer);
         break;
+#endif
+        bxf = (Bspline_xform*) load (&options, ANALYTIC);
+        init_bscore (bxf, &bscore);
+
+        plm_timer_start (&timer);
+        bspline_regularize_numeric_a_init (&rst, bxf);
+        bspline_regularize_numeric_a (&bscore, parms, &rst, bxf);
+        bspline_regularize_numeric_a_destroy (&rst, bxf);
+        time = plm_timer_report (&timer);
+
+        S = bscore.rmetric;
+        break;
     case 'b':
-        bxf = (Bspline_xform*)load (&options, ANALYTIC);
+        bxf = (Bspline_xform*) load (&options, ANALYTIC);
         init_bscore (bxf, &bscore);
 
         plm_timer_start (&timer);
@@ -152,7 +168,7 @@ main (int argc, char* argv[])
         break;
     case 'c':
 #if (OPENMP_FOUND)
-        bxf = (Bspline_xform*)load (&options, ANALYTIC);
+        bxf = (Bspline_xform*) load (&options, ANALYTIC);
         init_bscore (bxf, &bscore);
 
         plm_timer_start (&timer);
@@ -169,23 +185,16 @@ main (int argc, char* argv[])
 #endif
         break;
     case 'd':
-        bxf = (Bspline_xform*)load (&options, ANALYTIC);
+        bxf = (Bspline_xform*) load (&options, ANALYTIC);
         init_bscore (bxf, &bscore);
 
         plm_timer_start (&timer);
-	bspline_regularize_numeric_init (&rst, bxf);
-        bspline_regularize_score (&bscore, parms, &rst, bxf);
-	bspline_regularize_numeric_destroy (&rst, bxf);
+	bspline_regularize_numeric_d_init (&rst, bxf);
+        bspline_regularize_numeric_d (&bscore, parms, &rst, bxf);
+	bspline_regularize_numeric_d_destroy (&rst, bxf);
         time = plm_timer_report (&timer);
 
         S = bscore.score;
-        break;
-    default:
-        printf ("Warning: Using implementation 'a'\n");
-        vf = (Volume*)load (&options, NUMERICAL);
-        plm_timer_start (&timer);
-        S = vf_regularize_numerical (vf);
-        time = plm_timer_report (&timer);
         break;
     } /* switch(implementation) */
 

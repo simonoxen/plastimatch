@@ -519,6 +519,19 @@ bspline_interpolate_vf (Volume* interp,
     }
 }
 
+Volume*
+bspline_compute_vf (const Bspline_xform* bxf)
+{
+    Volume* vf = new Volume (
+	bxf->img_dim, bxf->img_origin, 
+	bxf->img_spacing, 0, 
+	PT_VF_FLOAT_INTERLEAVED, 3
+    );
+    bspline_interpolate_vf (vf, bxf);
+
+    return vf;
+}
+
 void
 bspline_update_sets (float* sets_x, float* sets_y, float* sets_z,
     int qidx, float* dc_dv, Bspline_xform* bxf)
@@ -589,10 +602,13 @@ bspline_update_grad (
 }
 
 void
-bspline_update_grad_b (Bspline_state* bst, Bspline_xform* bxf, 
-    int pidx, int qidx, float dc_dv[3])
+bspline_update_grad_b (
+    Bspline_score* bscore,
+    const Bspline_xform* bxf, 
+    int pidx, 
+    int qidx, 
+    const float dc_dv[3])
 {
-    Bspline_score* ssd = &bst->ssd;
     int i, j, k, m;
     int cidx;
     float* q_lut = &bxf->q_lut[qidx*64];
@@ -603,13 +619,25 @@ bspline_update_grad_b (Bspline_state* bst, Bspline_xform* bxf,
 	for (j = 0; j < 4; j++) {
 	    for (i = 0; i < 4; i++) {
 		cidx = 3 * c_lut[m];
-		ssd->grad[cidx+0] += dc_dv[0] * q_lut[m];
-		ssd->grad[cidx+1] += dc_dv[1] * q_lut[m];
-		ssd->grad[cidx+2] += dc_dv[2] * q_lut[m];
+		bscore->grad[cidx+0] += dc_dv[0] * q_lut[m];
+		bscore->grad[cidx+1] += dc_dv[1] * q_lut[m];
+		bscore->grad[cidx+2] += dc_dv[2] * q_lut[m];
 		m ++;
 	    }
 	}
     }
+}
+
+/* This is just so you can use either a Bspline_state or a Bspline_score */
+void
+bspline_update_grad_b (
+    Bspline_state* bst, 
+    const Bspline_xform* bxf, 
+    int pidx, 
+    int qidx, 
+    const float dc_dv[3])
+{
+    bspline_update_grad_b (&bst->ssd, bxf, pidx, qidx, dc_dv);
 }
 
 void

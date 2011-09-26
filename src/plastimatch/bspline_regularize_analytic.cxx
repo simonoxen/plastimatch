@@ -32,19 +32,6 @@ print_matrix (double* mat, int m, int n)
     }
 }
 
-Volume*
-compute_vf_from_coeff (const Bspline_xform* bxf)
-{
-    Volume* vf = new Volume (
-	bxf->img_dim, bxf->img_origin, 
-	bxf->img_spacing, 0, 
-	PT_VF_FLOAT_INTERLEAVED, 3
-    );
-    bspline_interpolate_vf (vf, bxf);
-
-    return vf;
-}
-
 void
 compute_coeff_from_vf (Bspline_xform* bxf, Volume* vol)
 {
