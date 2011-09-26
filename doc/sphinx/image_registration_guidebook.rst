@@ -124,23 +124,35 @@ The following example performs a B-spline registration::
   [STAGE]
   xform=bspline
   optim=lbfgsb
+  # Run for at most 30 iterations
   max_its=30
+  # Subsample the image 4x4x2 voxels
   res=4 4 2
   # B-spline grid spacing (in mm)
   grid_spac=30 30 30
+  # Smoothness term
+  regularization_lambda=0.005
 
-Just like demons, b-spline has several options.  The most important one 
-is the grid spacing, which defines how far apart the control points are 
-spaced.  
+Just like demons, b-spline has several options.  The most important ones 
+are shown above:
+res is used to subsample both input volumes prior to running the registration; 
+max_its is used to determine how many iterations to run; 
+grid_spac defines how far apart the control points are spaced; 
+and regularization_lambda is used to increase the smoothness of the 
+registration. 
 The following example illustrates some additional options::
 
   [STAGE]
   xform=bspline
   optim=lbfgsb
-  max_its=50
+  # Run for at most 30 iterations
+  max_its=30
+  # Subsample the image 4x4x2 voxels
   res=4 4 2
   # B-spline grid spacing (in mm)
   grid_spac=30 30 30
+  # Smoothness term
+  regularization_lambda=0.005
   # Quit if change in score differs by less than 3
   convergence_tol=3
   # Quit if gradient norm is less than 0.1
@@ -189,6 +201,7 @@ mutual information metric with the B-spline transform::
   [STAGE]
   xform=bspline
   impl=plastimatch
+  regularization_lambda=0.005
   metric=mi
   max_its=30
   res=4 4 2

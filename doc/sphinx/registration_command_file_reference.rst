@@ -187,6 +187,13 @@ specific parameters are available.
      - voxels
      - Number of voxels to randomly sample to score the cost function. 
        Only used for itk mattes metric.
+   * - regularization_lambda
+     - bspline+any+plastimatch
+     - 0
+     - unitless
+     - Relative contribution of second derivative regularization 
+       as compared to metric.  A typical value would range between 0.005 
+       and 0.1.
    * - res
      -
      -

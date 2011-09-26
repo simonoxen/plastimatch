@@ -8,6 +8,7 @@ Technical reference
    packaging
    api
    mutual_information
+   regularization
    dicom_conformance
    dicom_tutorial
    dicom_comparison

@@ -14,6 +14,7 @@ B-spline registration, create a command file like this::
   impl=plastimatch
   threading=openmp
   max_its=30
+  regularization_lambda=0.005
   grid_spac=100 100 100
   res=4 4 2
 
@@ -37,6 +38,7 @@ Like this::
   impl=plastimatch
   threading=openmp
   max_its=30
+  regularization_lambda=0.005
   grid_spac=100 100 100
   res=4 4 2
 

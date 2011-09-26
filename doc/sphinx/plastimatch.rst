@@ -17,13 +17,14 @@ The list of possible commands can be seen by simply typing "plastimatch"
 without any additional command line arguments::
 
  $ plastimatch
- plastimatch version 1.4-beta (2372)
- Usage: plastimatch command [options]
- Commands:
-   add           adjust        autolabel     crop          compare     
-   compose       convert       diff          dvh           fill        
-   header        mask          register      resample      segment     
-   stats         thumbnail     warp          xf-convert    xio-dvh     
+plastimatch version 1.5.4-beta (2802)
+Usage: plastimatch command [options]
+Commands:
+  add           adjust        autolabel     crop          compare     
+  compose       convert       diff          drr           dvh         
+  fill          header        mask          probe         register    
+  resample      segment       stats         synth         thumbnail   
+  warp          xf-convert    xio-dvh     
 
  For detailed usage of a specific command, type:
    plastimatch command
@@ -349,6 +350,10 @@ the result in outfile.nrrd::
 
   plastimatch diff file1.nrrd file2.nrrd outfile.nrrd
 
+plastimatch drr
+---------------
+This command is under construction.
+
 plastimatch dvh
 ---------------
 The *dvh* command creates a dose value histogram (DVH) 
@@ -495,6 +500,50 @@ outside of the patient with value -1000, we use the following command. ::
     --negate-mask \
     --mask-value -1000 \
     --mask patient.nrrd
+
+plastimatch probe
+-----------------
+The plastimatch *probe* command is used to examine the image intensity 
+or vector field displacement at one or more positions within a volume.
+The probe positions can be specified in world coordinates (in mm), using 
+the --location option, or as image indices using the --index option.
+The locations or indices are linearly interpolated if they lie between 
+voxels.
+
+The command line usage is given as follows::
+
+ Usage: plastimatch probe [options] file
+ Options:
+  -h, --help             display this help message 
+  -i, --index <arg>      List of voxel indices, such as "i j k;i j k;..." 
+  -l, --location <arg>   List of spatial locations, such as "i j k;i j k;..." 
+      --version          display the program version 
+
+The command will output one line for each probe requested.  
+Each output line includes the following fields.::
+
+  PROBE#        The probe number, starting with zero
+  INDEX         The (fractional) position of the probe as a voxel index
+  LOC           The position of the probe in world coordinates
+  VALUE         The intensity (for volumes) or displacement (for vector fields)
+
+Example
+^^^^^^^
+We use the index option to see an image intensity at coordinate (2,3,4), 
+and the location option to see image intensities at two different 
+locations::
+
+  plastimatch probe \
+     --index "2 3 4" \
+     --location "0 0 0; 0.5 0.5 0.5" \
+     infile.nrrd
+
+The output will include three probe results.  Each probe shows the 
+probe index, voxel index, voxel location, and intensity. ::
+
+  0:    2.00,    3.00,    4.00;  -22.37,  -21.05,  -19.74; -998.725891
+  1:   19.00,   19.00,   19.00;    0.00,    0.00,    0.00; -0.000197
+  2:   19.38,   19.38,   19.38;    0.50,    0.50,    0.50; -9.793450
 
 plastimatch register
 --------------------
@@ -649,6 +698,10 @@ The remaining statistics are described as follows::
   TOTSECDER     Total second derivative
   INTSECDER     Integral second derivative
 
+plastimatch synth
+-----------------
+Documentation has not yet been written for this command.
+
 plastimatch thumbnail
 ---------------------
 The *thumbnail* command generates a two-dimensional thumbnail image of an 
@@ -759,4 +812,3 @@ geometry is defined by the values found in the transform header.::
     --input bspline.txt \
     --output vf.mha \
     --output-type vf
-
