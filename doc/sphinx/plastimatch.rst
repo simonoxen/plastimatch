@@ -255,7 +255,6 @@ The command line usage is given as follows::
                                  from output polylines 
       --spacing <arg>           voxel spacing in mm "x [y z]" 
       --version                 display the program version 
-      --vf <arg>                input vector field used to warp image(s) 
       --xf <arg>                input transform used to warp image(s) 
 
 Examples
@@ -778,6 +777,25 @@ value for these areas using the --default-val option. ::
     --xf bspline.txt \
     --default-val -1000
 
+In addition to images and structures, landmarks exported from 3D Slicer can
+also be warped. ::
+
+  plastimatch warp \
+    --input fixed_landmarks.fcsv \
+    --output-pointset warped_landmarks.fcsv \
+    --xf bspline.txt
+
+Sometimes, it may be desirable to apply a transform explicitly defined by a
+vector field instead of using B-spline coefficients.  To allow this, the --xf
+option also accepts vector field volumes.  For example, the previous example
+would become.  ::
+
+  plastimatch warp \
+    --input fixed_landmarks.fcsv \
+    --output-pointset warped_landmarks.fcsv \
+    --xf vf.mha
+
+
 plastimatch xf-convert
 ----------------------
 The *xf-convert* command converts between transform types.  
@@ -812,3 +830,12 @@ geometry is defined by the values found in the transform header.::
     --input bspline.txt \
     --output vf.mha \
     --output-type vf
+
+Likewise, if we want to convert a vector field into a set of B-spline
+coefficients with a control-point spacing of 30 mm in each direction. ::
+
+  plastimatch xf-convert \
+    --input vf.mha \
+    --output bspline.txt \
+    --output-type bspline \
+    --grid-spacing 30
