@@ -17,9 +17,9 @@ The list of possible commands can be seen by simply typing "plastimatch"
 without any additional command line arguments::
 
  $ plastimatch
-plastimatch version 1.5.4-beta (2802)
-Usage: plastimatch command [options]
-Commands:
+ plastimatch version 1.5.4-beta (2802)
+ Usage: plastimatch command [options]
+ Commands:
   add           adjust        autolabel     crop          compare     
   compose       convert       diff          drr           dvh         
   fill          header        mask          probe         register    
