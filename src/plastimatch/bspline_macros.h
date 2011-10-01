@@ -5,6 +5,7 @@
 #define _bspline_macros_h_
 
 #include "plm_config.h"
+#include "volume_macros.h"
 
 /***************************************************************
  * MACROS FOR VOXEL CENTRIC ALGORITHMS                         *
@@ -36,6 +37,38 @@
 #define REGION_INDEX_Z(ijk, bxf) \
     (ijk[2] / bxf->vox_per_rgn[2])
 
+static inline void
+get_region_index_3 (int p[3], const int ijk[3], const Bspline_xform *bxf) {
+    p[0] = ijk[0] / bxf->vox_per_rgn[0];
+    p[1] = ijk[1] / bxf->vox_per_rgn[1];
+    p[2] = ijk[2] / bxf->vox_per_rgn[2];
+}
+
+static inline void
+get_region_index_3 (int p[3], int i, int j, int k, const Bspline_xform *bxf) {
+    p[0] = i / bxf->vox_per_rgn[0];
+    p[1] = j / bxf->vox_per_rgn[1];
+    p[2] = k / bxf->vox_per_rgn[2];
+}
+
+static inline int
+get_region_index (const int ijk[3], const Bspline_xform *bxf) {
+    int p[3];
+    p[0] = ijk[0] / bxf->vox_per_rgn[0];
+    p[1] = ijk[1] / bxf->vox_per_rgn[1];
+    p[2] = ijk[2] / bxf->vox_per_rgn[2];
+    return volume_index (bxf->rdims, p);
+}
+
+static inline int
+get_region_index (int i, int j, int k, const Bspline_xform *bxf) {
+    int p[3];
+    p[0] = i / bxf->vox_per_rgn[0];
+    p[1] = j / bxf->vox_per_rgn[1];
+    p[2] = k / bxf->vox_per_rgn[2];
+    return volume_index (bxf->rdims, p);
+}
+
 #define REGION_OFFSET_X(ijk, bxf) \
     (ijk[0] % bxf->vox_per_rgn[0]) 
 
@@ -44,6 +77,38 @@
 
 #define REGION_OFFSET_Z(ijk, bxf) \
     (ijk[2] % bxf->vox_per_rgn[2]) 
+
+static inline void
+get_region_offset (int q[3], const int ijk[3], const Bspline_xform *bxf) {
+    q[0] = ijk[0] % bxf->vox_per_rgn[0];
+    q[1] = ijk[1] % bxf->vox_per_rgn[1];
+    q[2] = ijk[2] % bxf->vox_per_rgn[2];
+}
+
+static inline void
+get_region_offset (int q[3], int i, int j, int k, const Bspline_xform *bxf) {
+    q[0] = i % bxf->vox_per_rgn[0];
+    q[1] = j % bxf->vox_per_rgn[1];
+    q[2] = k % bxf->vox_per_rgn[2];
+}
+
+static inline int
+get_region_offset (const int ijk[3], const Bspline_xform *bxf) {
+    int q[3];
+    q[0] = ijk[0] % bxf->vox_per_rgn[0];
+    q[1] = ijk[1] % bxf->vox_per_rgn[1];
+    q[2] = ijk[2] % bxf->vox_per_rgn[2];
+    return volume_index (bxf->vox_per_rgn, q);
+}
+
+static inline int
+get_region_offset (int i, int j, int k, const Bspline_xform *bxf) {
+    int q[3];
+    q[0] = i % bxf->vox_per_rgn[0];
+    q[1] = j % bxf->vox_per_rgn[1];
+    q[2] = k % bxf->vox_per_rgn[2];
+    return volume_index (bxf->vox_per_rgn, q);
+}
 
 #define GET_REAL_SPACE_COORD_X(ijk_vol, bxf)                \
     (bxf->img_origin[0] + bxf->img_spacing[0] * ijk_vol[0])
@@ -90,13 +155,11 @@
 
 
 /* Get real-space coordinates from a set of volume coordinates */
-#define GET_REAL_SPACE_COORDS(xyz_vol, ijk_vol, bxf)                     \
-    do {                                                                 \
-    xyz_vol[0] = bxf->img_origin[0] + bxf->img_spacing[0] * ijk_vol[0];  \
-    xyz_vol[1] = bxf->img_origin[1] + bxf->img_spacing[1] * ijk_vol[1];  \
-    xyz_vol[2] = bxf->img_origin[2] + bxf->img_spacing[2] * ijk_vol[2];  \
+#define GET_REAL_SPACE_COORDS(xyz_vol, ijk_vol, bxf)			\
+    do {								\
+	xyz_vol[0] = bxf->img_origin[0] + bxf->img_spacing[0] * ijk_vol[0]; \
+	xyz_vol[1] = bxf->img_origin[1] + bxf->img_spacing[1] * ijk_vol[1]; \
+	xyz_vol[2] = bxf->img_origin[2] + bxf->img_spacing[2] * ijk_vol[2]; \
     } while (0);
-
-
 
 #endif /* _bspline_macros_h_ */

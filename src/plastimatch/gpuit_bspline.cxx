@@ -133,6 +133,9 @@ do_gpuit_bspline_stage_internal (
             parms.reg_parms.implementation = 'b';
         }
         break;
+    case REGULARIZATION_BSPLINE_SEMI_ANALYTIC:
+        parms.reg_parms.implementation = 'd';
+        break;
     case REGULARIZATION_BSPLINE_NUMERIC:
         parms.reg_parms.implementation = 'a';
         break;

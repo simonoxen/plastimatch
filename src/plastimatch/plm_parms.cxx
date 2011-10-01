@@ -271,6 +271,10 @@ set_key_val (
 	else if (!strcmp(val,"analytic")) {
 	    stage->regularization_type = REGULARIZATION_BSPLINE_ANALYTIC;
 	}
+	else if (!strcmp(val,"semi-analytic")
+	    || !strcmp(val,"semi_analytic")) {
+	    stage->regularization_type = REGULARIZATION_BSPLINE_SEMI_ANALYTIC;
+	}
 	else if (!strcmp(val,"numeric")) {
 	    stage->regularization_type = REGULARIZATION_BSPLINE_NUMERIC;
 	}
@@ -279,7 +283,7 @@ set_key_val (
 	}
     }
     else if (!strcmp (key, "regularization_lambda")
-	|| (!strcmp (key, "young_modulus"))) {
+	|| !strcmp (key, "young_modulus")) {
 	if (section == 0) goto error_not_global;
 	if (sscanf (val, "%f", &stage->regularization_lambda) != 1) {
 	    goto error_exit;
