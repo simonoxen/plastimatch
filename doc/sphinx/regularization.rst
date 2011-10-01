@@ -58,7 +58,7 @@ The method works tile by tile.  Each tile is influenced
 by 64 control points, which are formed into a vector :math:`v`.
 Or to be more precise, there are 192 control points, three in each 
 direction, which are formed into three vectors: 
-math:`v_x`, math:`v_y`, and math:`v_z`.  
+:math:`v_x`, :math:`v_y`, and :math:`v_z`.  
 The smoothness is computed directly from the control points 
 using a 64x64 matrix :math:`K`, 
 as a quadratic form:

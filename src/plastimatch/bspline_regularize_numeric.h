@@ -13,7 +13,7 @@ extern "C" {
 #endif
 
 gpuit_EXPORT
-float
+void
 vf_regularize_numerical (
     Bspline_score *ssd, 
     const Reg_parms *parms, 

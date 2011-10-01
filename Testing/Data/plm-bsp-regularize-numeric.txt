@@ -1,9 +1,9 @@
 [GLOBAL]
 fixed=rect-3.mha
 moving=sphere-2.mha
-vf_out=plm-bsp-regularize-analytic-vf.mha
-xform_out=plm-bsp-regularize-analytic-xf.txt
-img_out=plm-bsp-regularize-analytic-img.mha
+vf_out=plm-bsp-regularize-numeric-vf.mha
+xform_out=plm-bsp-regularize-numeric-xf.txt
+img_out=plm-bsp-regularize-numeric-img.mha
 
 [STAGE]
 xform=bspline

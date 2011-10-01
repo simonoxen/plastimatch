@@ -281,14 +281,7 @@ bspline_update_grad (
     int p[3], int qidx, float dc_dv[3]);
 void
 bspline_update_grad_b (
-    Bspline_state* bst, 
-    const Bspline_xform* bxf, 
-    int pidx, 
-    int qidx, 
-    const float dc_dv[3]);
-void
-bspline_update_grad_b (
-    Bspline_state* bst, 
+    Bspline_score* bscore,
     const Bspline_xform* bxf, 
     int pidx, 
     int qidx, 

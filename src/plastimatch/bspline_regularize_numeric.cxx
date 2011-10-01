@@ -23,7 +23,7 @@ static void bspline_xform_create_qlut_grad (
 static void bspline_xform_free_qlut_grad (Bspline_xform* bxf);
 
 /* Flavor 'a' */
-float
+void
 vf_regularize_numerical (
     Bspline_score *ssd, 
     const Reg_parms *parms, 
@@ -89,10 +89,10 @@ vf_regularize_numerical (
     float d2_dz2[3],  d2_dydz[3];
 
     /* Square of 2nd derivative */
-    float d2_sq, dd2_dxdy;
+    float d2_sq;
 
     /* Smoothness */
-    float S, SS;
+    float S;
 
 #if defined (DEBUG)
     printf ("Warning: compiled with DEBUG : writing to to files:\n");
@@ -101,7 +101,7 @@ vf_regularize_numerical (
     printf ("  d2uz_dxy_sq.txt\n"); fp[2] = fopen ("d2uz_dxdy_sq.txt", "w");
 #endif
 
-    S = 0.0f, SS=0.0f;
+    S = 0.0f;
     for (k = 1; k < vol->dim[2]-1; k++) {
 	p[2] = k / bxf->vox_per_rgn[2];
 	q[2] = k % bxf->vox_per_rgn[2];
@@ -111,8 +111,9 @@ vf_regularize_numerical (
             for (i = 1; i < vol->dim[0]-1; i++) {
 		p[0] = i / bxf->vox_per_rgn[0];
 		q[0] = i % bxf->vox_per_rgn[0];
+		float dc_dv[3] = { 0, 0, 0 };
 
-                /* Load indicies relevant to current POI */
+		/* Load indicies relevant to current POI */
                 idx_poi = volume_index (vol->dim, i, j, k);
 
                 idx_in = volume_index (vol->dim, i-1  , j,   k);
@@ -150,7 +151,7 @@ vf_regularize_numerical (
                 vec_jpkn = &img[3*idx_jpkn]; vec_jpkp = &img[3*idx_jpkp];
 
                 /* Compute components */
-                d2_sq = 0.0f, dd2_dxdy=0.0f;
+                d2_sq = 0.0f;
                 for (c=0; c<3; c++) {
                     d2_dx2[c] = inv_dxdx 
 			* (vec_ip[c] - 2.0f*vec_poi[c] + vec_in[c]);
@@ -176,17 +177,21 @@ vf_regularize_numerical (
 			    d2_dxdz[c]*d2_dxdz[c] +
 			    d2_dydz[c]*d2_dydz[c]
                         );
+
+		    /* Accumulate grad for this component, for this voxel */
+		    dc_dv[c] = -4 * ( d2_dx2[c] + d2_dy2[c] + d2_dy2[c] );
+
+		    /* GCS FIX: I should accumulate grad for mixed 
+		       derivative portion... */
+
 #if defined (DEBUG)
                     fprintf (fp[c], "(%i,%i,%i) : %15e\n", 
 			i,j,k, (d2_dxdy[c]*d2_dxdy[c]));
 #endif
-		    /* Accumulate grad for this component, for this voxel */
-		    int pidx = volume_index (bxf->rdims, p);
-		    int qidx = volume_index (bxf->vox_per_rgn, q);
-#if defined (commentout)
-		    bspline_update_grad_b (bst, bxf, pidx, qidx, dc_dv);
-#endif
                 }
+		int pidx = volume_index (bxf->rdims, p);
+		int qidx = volume_index (bxf->vox_per_rgn, q);
+		bspline_update_grad_b (ssd, bxf, pidx, qidx, dc_dv);
                 S += d2_sq;
             }
         }
@@ -201,7 +206,7 @@ vf_regularize_numerical (
     }
 #endif
 
-    return S;
+    ssd->score += S;
 }
 
 void
@@ -213,9 +218,7 @@ bspline_regularize_numeric_a (
 )
 {
     Volume *vf = bspline_compute_vf (bxf);
-
-    float S = vf_regularize_numerical (ssd, parms, rst, bxf, vf);
-
+    vf_regularize_numerical (ssd, parms, rst, bxf, vf);
     delete vf;
 }
 

@@ -18,10 +18,7 @@ bspline_regularize_initialize (
 {
     switch (reg_parms->implementation) {
     case 'a':
-        print_and_exit (
-            "Sorry, regularization implementation (%c) is currently unavailable.\n",
-            reg_parms->implementation
-        );
+	bspline_regularize_numeric_a_init (rst, bxf);
         break;
     case 'b':
     case 'c':
@@ -48,10 +45,7 @@ bspline_regularize_destroy (
 {
     switch (reg_parms->implementation) {
     case 'a':
-        print_and_exit (
-            "Sorry, regularization implementation (%c) is currently unavailable.\n",
-            reg_parms->implementation
-        );
+	bspline_regularize_numeric_a_destroy (rst, bxf);
         break;
     case 'b':
     case 'c':
@@ -80,11 +74,6 @@ bspline_regularize (
     switch (reg_parms->implementation) {
     case 'a':
         bspline_regularize_numeric_a (bspline_score, reg_parms, rst, bxf);
-        //S = vf_regularize_numerical (compute_vf_from_coeff (bxf));
-        print_and_exit (
-            "Sorry, regularization implementation (%c) is currently unavailable.\n",
-            reg_parms->implementation
-        );
         break;
     case 'b':
         vf_regularize_analytic (bspline_score, reg_parms, rst, bxf);

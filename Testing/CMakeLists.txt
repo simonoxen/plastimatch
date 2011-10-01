@@ -1566,8 +1566,7 @@ plm_add_test (
   "plm-bsp-regularize-numeric-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-bsp-regularize-none-vf.
-ha"
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-bsp-regularize-numeric-vf.mha"
   )
 plmtest_check_interval (
   "plm-bsp-regularize-numeric-check"

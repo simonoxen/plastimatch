@@ -628,18 +628,6 @@ bspline_update_grad_b (
     }
 }
 
-/* This is just so you can use either a Bspline_state or a Bspline_score */
-void
-bspline_update_grad_b (
-    Bspline_state* bst, 
-    const Bspline_xform* bxf, 
-    int pidx, 
-    int qidx, 
-    const float dc_dv[3])
-{
-    bspline_update_grad_b (&bst->ssd, bxf, pidx, qidx, dc_dv);
-}
-
 void
 bspline_make_grad (float* cond_x, float* cond_y, float* cond_z,
                    Bspline_xform* bxf, Bspline_score* ssd)

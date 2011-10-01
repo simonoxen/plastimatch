@@ -2609,7 +2609,7 @@ bspline_score_c_mi (Bspline_parms *parms,
                 );
 #endif
 
-                bspline_update_grad_b (bst, bxf, pidx, qidx, dc_dv);
+                bspline_update_grad_b (&bst->ssd, bxf, pidx, qidx, dc_dv);
 
             } /* LOOP_THRU_ROI_X */
         } /* LOOP_THRU_ROI_Y */
