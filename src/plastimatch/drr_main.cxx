@@ -162,7 +162,6 @@ void
 drr_render_volume (Volume* vol, Drr_options* options)
 {
     Proj_image *proj;
-    Proj_matrix *pmat;
     int a;
     Plm_timer timer;
     void *dev_state = 0;
@@ -179,7 +178,6 @@ drr_render_volume (Volume* vol, Drr_options* options)
     proj = proj_image_create ();
     proj_image_create_pmat (proj);
     proj_image_create_img (proj, options->image_resolution);
-    pmat = proj->pmat;
 
     /* Allocate memory on the gpu device */
     dev_state = allocate_gpu_memory (proj, vol, options);
