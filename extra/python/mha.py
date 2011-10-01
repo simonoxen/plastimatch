@@ -114,6 +114,12 @@ def read(fn):
 		
 	else:
 		print ('The input file is not a mha file!')
+		raw=None
+		siz=None
+		spacing=None
+		offset=None
+		data_type=None
+		return (raw, siz, spacing, offset, data_type)
 
 	# raw=3D/4D matrix
 	# siz=size
