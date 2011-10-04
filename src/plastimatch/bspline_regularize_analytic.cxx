@@ -179,7 +179,7 @@ eval_integral (double* V, double* Qn, double gs)
         (1.0/7.0) * (gs * gs * gs * gs * gs * gs * gs)
     };
 
-    // Generate 4 4x4 matrix by taking the outer
+    // Generate 16 4x4 matrix by taking the outer
     // product of the each row in the Q matrix with
     // every other row in the Q matrix. We use these
     // to generate each element in V.
