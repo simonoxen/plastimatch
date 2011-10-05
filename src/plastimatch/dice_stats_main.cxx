@@ -27,6 +27,7 @@ void check_resolution (
         Plm_image_header pih;
         Resample_parms parms;
 
+        parms.interp_lin = false;
         pih.set_from_itk_image (*image_1);
         *image_2 = resample_image (
                     *image_2,
