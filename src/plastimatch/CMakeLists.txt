@@ -601,6 +601,9 @@ set (SIFTnD_SRC
 set (SYNTHETIC_VF_SRC
   synthetic_vf_main.cxx 
   )
+set (TEST_EPS_SRC
+  test_eps.cxx
+  )
 set (TEST_LIMITS_SRC
   test_limits.cxx
   )
@@ -752,6 +755,8 @@ plm_add_executable (proton_dose "${PROTON_DOSE_SRC}"
   "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 plm_add_executable (raw_to_mha raw_to_mha.c "" "" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+plm_add_executable (test_eps "${TEST_EPS_SRC}" "" "" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
 plm_add_executable (test_limits "${TEST_LIMITS_SRC}" "" "" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
