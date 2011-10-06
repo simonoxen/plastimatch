@@ -219,6 +219,7 @@ template plastimatch1_EXPORT UInt32ImageType::Pointer cast_uint32 (ShortImageTyp
 template plastimatch1_EXPORT UInt32ImageType::Pointer cast_uint32 (FloatImageType::Pointer);
 template plastimatch1_EXPORT FloatImageType::Pointer cast_float (UCharImageType::Pointer);
 template plastimatch1_EXPORT FloatImageType::Pointer cast_float (ShortImageType::Pointer);
+template plastimatch1_EXPORT FloatImageType::Pointer cast_float (UShortImageType::Pointer);
 template plastimatch1_EXPORT FloatImageType::Pointer cast_float (UInt32ImageType::Pointer);
 template plastimatch1_EXPORT FloatImageType::Pointer cast_float (FloatImageType::Pointer);
 template plastimatch1_EXPORT DoubleImageType::Pointer cast_double (UCharImageType::Pointer);
