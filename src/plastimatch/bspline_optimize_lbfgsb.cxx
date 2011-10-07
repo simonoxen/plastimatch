@@ -82,8 +82,8 @@ Nocedal_optimizer::Nocedal_optimizer (Bspline_optimize_data *bod)
        First guess based on heuristic. */
     if (bxf->num_coeff >= 20) {
 	mmax = 20 + (int) floor (sqrt ((float) (bxf->num_coeff - 20)));
-	if (mmax > std::numeric_limits<int>::max() / nmax / 2) {
-	    mmax = std::numeric_limits<int>::max() / nmax / 2;
+	if (mmax > std::numeric_limits<int>::max() / nmax / 10) {
+	    mmax = std::numeric_limits<int>::max() / nmax / 10;
 	}
 	if (mmax > 500) {
 	    mmax = 500;
