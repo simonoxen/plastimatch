@@ -140,6 +140,7 @@ set (GPUIT_LIBRARY_SRC
   volume_header.cxx volume_header.h 
   volume_limit.cxx volume_limit.h
   volume_macros.h
+  volume_resample.cxx volume_resample.h
   xpm.cxx xpm.h
   )
 

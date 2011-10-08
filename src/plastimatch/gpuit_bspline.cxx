@@ -14,6 +14,7 @@
 #include "plm_image_header.h"
 #include "plm_parms.h"
 #include "volume.h"
+#include "volume_resample.h"
 #include "xform.h"
 
 static void

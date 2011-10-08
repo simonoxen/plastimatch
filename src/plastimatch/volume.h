@@ -131,10 +131,6 @@ Volume* volume_difference (Volume* vol, Volume* warped);
 gpuit_EXPORT
 Volume* volume_warp (Volume* vout, Volume* vin, Volume* vf);
 gpuit_EXPORT
-Volume* volume_resample (Volume* vol_in, int* dim, float* offset, float* spacing);
-gpuit_EXPORT
-Volume* volume_subsample (Volume* vol_in, int* sampling_rate);
-gpuit_EXPORT
 void volume_scale (Volume *vol, float scale);
 
 gpuit_EXPORT

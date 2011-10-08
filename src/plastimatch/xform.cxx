@@ -23,6 +23,7 @@
 #include "print_and_exit.h"
 #include "string_util.h"
 #include "volume.h"
+#include "volume_resample.h"
 #include "xform.h"
 #include "xform_legacy.h"
 
