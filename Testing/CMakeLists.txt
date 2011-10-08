@@ -1672,7 +1672,9 @@ plmtest_check_interval ("plm-compose-c-check"
   )
 
 ## -------------------------------------------------------------------------
-## plastimatch resample
+## plm-resample-a    Image, subsample
+## plm-resample-b    Image, resample to fixed
+## plm-resample-c    Vector field, resample to fixed
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-resample-a" 
