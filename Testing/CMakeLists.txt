@@ -1232,8 +1232,8 @@ plm_add_test (
 ## -------------------------------------------------------------------------
 if (CMAKE_Fortran_COMPILER_WORKS OR F2C_LIBRARY)
   # For Nocedal optimizer
-  set (PLM_BSPLINE_TEST_LOWER_THRESH "-750.0")
-  set (PLM_BSPLINE_TEST_UPPER_THRESH "-748.5")
+  set (PLM_BSPLINE_TEST_LOWER_THRESH "-746.0")
+  set (PLM_BSPLINE_TEST_UPPER_THRESH "-744.5")
 else ()
   # For Liblbfgs optimizer
   set (PLM_BSPLINE_TEST_LOWER_THRESH "-706.0")
@@ -1455,8 +1455,8 @@ plm_add_test (
 plmtest_check_interval ("plm-reg-bspline-ushort-check"
   "${PLM_TESTING_BUILD_DIR}/plm-reg-bspline-ushort-stats.stdout.txt"
   "AVE *([-0-9.]*)"
+  "106.6"
   "107.6"
-  "108.6"
   )
 
 plm_add_test (
@@ -1474,8 +1474,8 @@ plm_add_test (
 plmtest_check_interval ("plm-reg-bspline-double-check"
   "${PLM_TESTING_BUILD_DIR}/plm-reg-bspline-double-stats.stdout.txt"
   "AVE *([-0-9.]*)"
+  "107.6"
   "108.6"
-  "109.6"
   )
 
 plm_add_test (
@@ -1667,8 +1667,8 @@ plm_add_test (
 plmtest_check_interval ("plm-compose-c-check"
   "${PLM_TESTING_BUILD_DIR}/plm-compose-c-stats.stdout.txt"
   "Mean: *([-0-9.]*)"
-  "12.4"
   "12.5"
+  "12.6"
   )
 
 ## -------------------------------------------------------------------------
@@ -2068,8 +2068,8 @@ plmtest_check_interval (
   "plm-xf-convert-d-warp-1-check"
   "${PLM_TESTING_BUILD_DIR}/plm-xf-convert-d-warp-1-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "-749.2"
-  "-748.8"
+  "-745.8"
+  "-744.8"
   )
 plm_add_test (
   "plm-xf-convert-d-warp-2" 
@@ -2087,8 +2087,8 @@ plmtest_check_interval (
   "plm-xf-convert-d-warp-2-check"
   "${PLM_TESTING_BUILD_DIR}/plm-xf-convert-d-warp-2-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "-749.4"
-  "-749.0"
+  "-745.5"
+  "-745.1"
   )
 
 ## -------------------------------------------------------------------------
