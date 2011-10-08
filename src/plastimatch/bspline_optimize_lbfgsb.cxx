@@ -17,6 +17,11 @@
 #include "volume.h"
 #include "print_and_exit.h"
 
+/* Defined in f2c.h, conflicts with std::numeric_limits::max */
+#if defined max
+#undef max
+#endif
+
 #if defined __cplusplus
 extern "C" {
 #endif
