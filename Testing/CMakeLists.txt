@@ -2050,13 +2050,13 @@ plm_add_test (
   "plm-xf-convert-d" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "xf-convert;--input;${PLM_TESTING_BUILD_DIR}/plm-bspline-single-h-xf.txt;--output;${PLM_TESTING_BUILD_DIR}/plm-xf-convert-d-xf.tfm;--output-type;itk_bspline"
+  "xf-convert;--input;${PLM_TESTING_DATA_DIR}/plm-xf-convert.txt;--output;${PLM_TESTING_BUILD_DIR}/plm-xf-convert-d-xf.tfm;--output-type;itk_bspline"
   )
 plm_add_test (
   "plm-xf-convert-d-warp-1" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--input;${PLM_TESTING_BUILD_DIR}/gauss-2.mha;--xf;${PLM_TESTING_BUILD_DIR}/plm-bspline-single-h-xf.txt;--output-img;${PLM_TESTING_BUILD_DIR}/plm-xf-convert-d-warp-1.nrrd"
+  "warp;--input;${PLM_TESTING_BUILD_DIR}/gauss-2.mha;--xf;${PLM_TESTING_DATA_DIR}/plm-xf-convert.txt;--output-img;${PLM_TESTING_BUILD_DIR}/plm-xf-convert-d-warp-1.nrrd"
   )
 plm_add_test (
   "plm-xf-convert-d-warp-1-stats"
@@ -2087,8 +2087,8 @@ plmtest_check_interval (
   "plm-xf-convert-d-warp-2-check"
   "${PLM_TESTING_BUILD_DIR}/plm-xf-convert-d-warp-2-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "-745.5"
-  "-745.1"
+  "-745.8"
+  "-744.8"
   )
 
 ## -------------------------------------------------------------------------
