@@ -1,10 +1,22 @@
 Version 1.5.4 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
+* Include reg-2-3 in default build
+* Add plastimatch probe command
+* Add landmark_diff program
+* Add support for numeric implementation of B-spline regularization
+* Add support for different image resolutions to Dice
+* Remove automatic parsing of current directory for dicom images
+* Early support for optimized histogram binning for mutual information
+* Early support for reading images with irregular slice spacing
+* Fix bug in converting between image types, where values were being 
+  incorrectly clamped
 * Fix bug in Nocedal optimizer where wrong answer is returned when 
    optimization ends during partial line search
 * Fix bug where Nocedal optimizer would run out of memory during 
   initialization of large problems
 * Fix bug where --fixed option was ignored when resampling vector fields
+* Fix bug in image resampling between stages of multi-resolution registration
+* Fix bug with mutual information during multi-resolution registration
 
 Version 1.5.3 (build 2678)
 Sun Aug 14 21:56:51 EDT 2011
