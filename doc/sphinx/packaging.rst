@@ -25,6 +25,21 @@ Pay special attention to the following::
   PLM_USE_GPU_PLUGINS         ON      (this is default)
   PLM_USE_SS_IMAGE_VEC        ON      (change this, but should be OFF for slicer plugin)
 
+Building a tarball
+------------------
+Official tarballs are built on my home computer: wormwood
+
+#. Make sure the changelog is up-to-date
+#. Update source into plastimatch-pristene
+#. Run make package_source
+#. Unpack and test tarball
+#. Upload to web site
+
+Then, do a few small things to get ready for next time
+
+#. Add version number and date to changelog
+#. Bump version number in CMakeLists
+
 Building a windows binary
 -------------------------
 
