@@ -48,6 +48,10 @@ include (InstallRequiredSystemLibraries)
 # http://www.cmake.org/Bug/view.php?id=9220
 include (cmake/language_support.cmake)
 
+if (NOT ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} VERSION_LESS 2.8)
+  include (ExternalProject)
+endif ()
+
 ##-----------------------------------------------------------------------------
 ##  Plastimatch configuration variables
 ##-----------------------------------------------------------------------------
@@ -82,6 +86,10 @@ option (PLM_BUILD_RTK "Build RTK" OFF)
 option (PLM_BUILD_SLICER_LOADABLE "Build slicer loadable module" OFF)
 
 # Compile and link options
+option (PLM_SUPERBUILD
+  "Download missing external libraries" OFF)
+option (PLM_PREFER_EXTERNAL_ITK
+  "Prefer external ITK to local one" OFF)
 option (BUILD_SHARED_LIBS 
   "Build plastimatch as shared library" OFF)
 option (PLM_PREFER_F2C 
@@ -102,8 +110,6 @@ option (PLM_BUILD_TESTING
   "Enable regression testing" ON)
 option (PLM_REDUCED_TESTS 
   "Run fewer tests (used when debugging tests)" OFF)
-option (PLM_TEST_BSPLINE_FLAVORS 
-  "Regression tests for seldom used b-spline implementations" OFF)
 option (PLM_DOWNLOAD_HEADPHANTOM
   "Additional testing data (download from internet)" OFF)
 option (PLM_DOWNLOAD_DICOMRT_AW
@@ -538,6 +544,14 @@ endif ()
 ##  ITK
 ##-----------------------------------------------------------------------------
 find_package (ITK)
+if (PLM_SUPERBUILD)
+  if (NOT ITK_FOUND OR PLM_PREFER_EXTERNAL_ITK)
+    message (STATUS "ITK_DIR = ${ITK_DIR}")
+    include (cmake/ExternalITK.cmake)
+    message (STATUS "ITK_DIR = ${ITK_DIR}")
+    find_package (ITK)
+  endif ()
+endif ()
 if (ITK_FOUND)
   include (${ITK_USE_FILE})
   set (ITK_VERSION 
