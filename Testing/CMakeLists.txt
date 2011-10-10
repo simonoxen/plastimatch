@@ -1,16 +1,7 @@
 project (PLM_Testing)
 
-
 ## -------------------------------------------------------------------------
-## Note on test dependencies.  This is needed to run tests in parallel 
-## (e.g. ctest -j 4), which the debian system does by default.
-## Note further that seemingly you can't set multiple dependencies
-## with a single command, as proposed by David Cole.  
-## http://www.cmake.org/pipermail/cmake/2010-March/035800.html
-## -------------------------------------------------------------------------
-
-## -------------------------------------------------------------------------
-## Note, you can create targets like "make check plm-reg-bspline-a". Wow!
+## TODO: create targets like "make check plm-reg-bspline-a"
 ## http://stackoverflow.com/questions/733475/cmake-ctest-make-test-doesnt-build-tests
 ## -------------------------------------------------------------------------
 
@@ -843,7 +834,7 @@ set_tests_properties (landmark-warp-b-check-1 PROPERTIES
   DEPENDS landmark-warp-b-stats-1)
 set_tests_properties (landmark-warp-b-stats-2 PROPERTIES 
   DEPENDS landmark-warp-b)
-set_tests_properties (landmark-warp-b-check-1 PROPERTIES 
+set_tests_properties (landmark-warp-b-check-2 PROPERTIES 
   DEPENDS landmark-warp-b-stats-2)
 
 plm_add_test (
@@ -883,7 +874,7 @@ set_tests_properties (landmark-warp-c-check-1 PROPERTIES
   DEPENDS landmark-warp-c-stats-1)
 set_tests_properties (landmark-warp-c-stats-2 PROPERTIES 
   DEPENDS landmark-warp-c)
-set_tests_properties (landmark-warp-c-check-1 PROPERTIES 
+set_tests_properties (landmark-warp-c-check-2 PROPERTIES 
   DEPENDS landmark-warp-c-stats-2)
 
 ## -------------------------------------------------------------------------
