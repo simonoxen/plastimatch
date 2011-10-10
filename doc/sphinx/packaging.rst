@@ -40,6 +40,21 @@ Then, do a few small things to get ready for next time
 #. Add version number and date to changelog
 #. Bump version number in CMakeLists
 
+Making debian version (upgrading tarball)
+-----------------------------------------
+This is done on wormwood as well.
+
+#. Go to plastimatch/trunk
+#. Update changelog by running dch, such as "dch -v 1.5.4+dfsg0-1"
+#. Repackage tarballs, by running "debian/get_orig_source"
+#. Test out by running debuild, such as "run_debuild.pl"
+#. Test out again by running pbuilder, such as "run_pbuilder.sh"
+
+Note:
+
+#. Sometimes you have to refresh your pbuilder environment, such as 
+   "sudo pbuilder --clean && sudo pbuilder --update"
+
 Building a windows binary
 -------------------------
 

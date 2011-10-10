@@ -1,5 +1,19 @@
 project (PLM_Testing)
 
+
+## -------------------------------------------------------------------------
+## Note on test dependencies.  This is needed to run tests in parallel 
+## (e.g. ctest -j 4), which the debian system does by default.
+## Note further that seemingly you can't set multiple dependencies
+## with a single command, as proposed by David Cole.  
+## http://www.cmake.org/pipermail/cmake/2010-March/035800.html
+## -------------------------------------------------------------------------
+
+## -------------------------------------------------------------------------
+## Note, you can create targets like "make check plm-reg-bspline-a". Wow!
+## http://stackoverflow.com/questions/733475/cmake-ctest-make-test-doesnt-build-tests
+## -------------------------------------------------------------------------
+
 ## -------------------------------------------------------------------------
 ## Testing macros
 ## -------------------------------------------------------------------------
@@ -323,32 +337,6 @@ plm_add_test (
 ## bspline - bspline algorithm flavors
 ## -------------------------------------------------------------------------
 plm_add_test (
-  "bspline-a"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/bspline
-  "-a;steepest;-m;10;-f;a;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
-  )
-plmtest_check_interval (bspline-a-check
-  "${PLM_TESTING_BUILD_DIR}/bspline-a.stdout.txt"
-  "^\\\\[.*, 10] MSE *([0-9.]*)"
-  "18945.5"
-  "18945.7"
-  )
-
-plm_add_test (
-  "bspline-b"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/bspline
-  "-a;steepest;-m;10;-f;b;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
-  )
-plmtest_check_interval (bspline-b-check
-  "${PLM_TESTING_BUILD_DIR}/bspline-b.stdout.txt"
-  "^\\\\[.*, 10] MSE *([0-9.]*)"
-  "18945.5"
-  "18945.7"
-  )
-
-plm_add_test (
   "bspline-c"
   ""
   ${PLM_PLASTIMATCH_PATH}/bspline
@@ -360,45 +348,8 @@ plmtest_check_interval (bspline-c-check
   "1168.25"
   "1168.35"
   )
-
-plm_add_test (
-  "bspline-d"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/bspline
-  "-a;steepest;-m;10;-f;d;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
-  )
-plmtest_check_interval (bspline-d-check
-  "${PLM_TESTING_BUILD_DIR}/bspline-d.stdout.txt"
-  "^\\\\[.*, 10] MSE *([0-9.]*)"
-  "1168.25"
-  "1168.35"
-  )
-
-plm_add_test (
-  "bspline-e"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/bspline
-  "-a;steepest;-m;10;-f;e;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
-  )
-plmtest_check_interval (bspline-e-check
-  "${PLM_TESTING_BUILD_DIR}/bspline-e.stdout.txt"
-  "^\\\\[.*, 10] MSE *([0-9.]*)"
-  "1168.25"
-  "1168.35"
-  )
-
-plm_add_test (
-  "bspline-f"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/bspline
-  "-a;steepest;-m;10;-f;f;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
-  )
-plmtest_check_interval (bspline-f-check
-  "${PLM_TESTING_BUILD_DIR}/bspline-f.stdout.txt"
-  "^\\\\[.*, 10] MSE *([0-9.]*)"
-  "1168.25"
-  "1168.35"
-  )
+set_tests_properties (bspline-c PROPERTIES DEPENDS "gauss-1;gauss-2")
+set_tests_properties (bspline-c-check PROPERTIES DEPENDS bspline-c)
 
 plm_add_test (
   "bspline-g"
@@ -412,6 +363,8 @@ plmtest_check_interval (bspline-g-check
   "1168.25"
   "1168.35"
   )
+set_tests_properties (bspline-g PROPERTIES DEPENDS "gauss-1;gauss-2")
+set_tests_properties (bspline-g-check PROPERTIES DEPENDS bspline-g)
 
 plm_add_test (
   "bspline-h"
@@ -425,6 +378,8 @@ plmtest_check_interval (bspline-h-check
   "1168.25"
   "1168.35"
   )
+set_tests_properties (bspline-h PROPERTIES DEPENDS "gauss-1;gauss-2")
+set_tests_properties (bspline-h-check PROPERTIES DEPENDS bspline-g)
 
 plm_add_test (
   "bspline-mi-c-1"
@@ -438,6 +393,8 @@ plmtest_check_interval (bspline-mi-c-1-check
   "-0.800"
   "-0.796"
   )
+set_tests_properties (bspline-mi-c-1 PROPERTIES DEPENDS "gauss-1;gauss-3")
+set_tests_properties (bspline-mi-c-1-check PROPERTIES DEPENDS bspline-mi-c-1)
 
 plm_add_test (
   "bspline-mi-c-2"
@@ -453,6 +410,8 @@ plmtest_check_interval (bspline-mi-c-2-check
   "-0.035"
   "-0.031"
   )
+set_tests_properties (bspline-mi-c-2 PROPERTIES DEPENDS "rect-1;rect-2")
+set_tests_properties (bspline-mi-c-2-check PROPERTIES DEPENDS bspline-mi-c-2)
 
 ## -------------------------------------------------------------------------
 ## demons
@@ -471,6 +430,8 @@ plmtest_check_interval (demons-a-check
   "2.1"
   "2.2"
   )
+set_tests_properties (demons-a PROPERTIES DEPENDS "gauss-1;gauss-2")
+set_tests_properties (demons-a-check PROPERTIES DEPENDS demons-a)
 
 plm_add_test (
   "demons-cuda-a"
@@ -484,7 +445,8 @@ plmtest_check_interval (demons-cuda-a-check
   "2.1"
   "2.2"
   )
-
+set_tests_properties (demons-cuda-a PROPERTIES DEPENDS "gauss-1;gauss-2")
+set_tests_properties (demons-cuda-a-check PROPERTIES DEPENDS demons-cuda-a)
 
 ## -------------------------------------------------------------------------
 ## drr
@@ -513,6 +475,9 @@ plmtest_check_interval ("drr-a-check"
   "0.045"
   "0.055"
   )
+set_tests_properties (drr-a PROPERTIES DEPENDS gauss-1)
+set_tests_properties (drr-a-stats PROPERTIES DEPENDS drr-a)
+set_tests_properties (drr-a-check PROPERTIES DEPENDS drr-a-stats)
 
 plm_add_test (
   "drr-b"
@@ -532,6 +497,9 @@ plmtest_check_interval ("drr-b-check"
   "0.045"
   "0.055"
   )
+set_tests_properties (drr-b PROPERTIES DEPENDS gauss-1)
+set_tests_properties (drr-b-stats PROPERTIES DEPENDS drr-b)
+set_tests_properties (drr-b-check PROPERTIES DEPENDS drr-b-stats)
 
 plm_add_test (
   "drr-c"
@@ -551,6 +519,9 @@ plmtest_check_interval ("drr-c-check"
   "0.045"
   "0.055"
   )
+set_tests_properties (drr-c PROPERTIES DEPENDS gauss-4)
+set_tests_properties (drr-c-stats PROPERTIES DEPENDS drr-c)
+set_tests_properties (drr-c-check PROPERTIES DEPENDS drr-c-stats)
 
 plm_add_test (
   "drr-d"
@@ -570,6 +541,9 @@ plmtest_check_interval ("drr-d-check"
   "0.045"
   "0.055"
   )
+set_tests_properties (drr-d PROPERTIES DEPENDS gauss-1)
+set_tests_properties (drr-d-stats PROPERTIES DEPENDS drr-d)
+set_tests_properties (drr-d-check PROPERTIES DEPENDS drr-d-stats)
 
 plm_add_test (
   "drr-cuda"
@@ -589,6 +563,9 @@ plmtest_check_interval ("drr-cuda-check"
   "0.045"
   "0.055"
   )
+set_tests_properties (drr-cuda PROPERTIES DEPENDS gauss-1)
+set_tests_properties (drr-cuda-stats PROPERTIES DEPENDS drr-cuda)
+set_tests_properties (drr-cuda-check PROPERTIES DEPENDS drr-cuda-stats)
 
 plm_add_test (
   "drr-opencl"
@@ -608,6 +585,9 @@ plmtest_check_interval ("drr-opencl-check"
   "0.045"
   "0.055"
   )
+set_tests_properties (drr-opencl PROPERTIES DEPENDS gauss-1)
+set_tests_properties (drr-opencl-stats PROPERTIES DEPENDS drr-opencl)
+set_tests_properties (drr-opencl-check PROPERTIES DEPENDS drr-opencl-stats)
 
 ## -------------------------------------------------------------------------
 ## fdk - all tests using fdk filtered backprojection
@@ -637,6 +617,10 @@ plmtest_check_interval ("fdk-cpu-a-check"
   "-987.5"
   "-986.5"
   )
+set_tests_properties (fdk-cpu-a PROPERTIES DEPENDS drr-a)
+set_tests_properties (fdk-cpu-a-stats PROPERTIES DEPENDS fdk-cpu-a)
+set_tests_properties (fdk-cpu-a-check PROPERTIES DEPENDS fdk-cpu-a-stats)
+
 plm_add_test (
   "fdk-cpu-b"
   ""
@@ -655,6 +639,9 @@ plmtest_check_interval ("fdk-cpu-b-check"
   "-821.5"
   "-820.5"
   )
+set_tests_properties (fdk-cpu-b-stats PROPERTIES DEPENDS fdk-cpu-b)
+set_tests_properties (fdk-cpu-b-check PROPERTIES DEPENDS fdk-cpu-b-stats)
+
 plm_add_test (
   "fdk-cpu-c"
   ""
@@ -673,25 +660,8 @@ plmtest_check_interval ("fdk-cpu-c-check"
   "-990.0"
   "-989.0"
   )
-
-plm_add_test (
-  "fdk-brook"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/fdk
-  "-I;${PLM_TESTING_BUILD_DIR}/drr-a;-f;none;-A;brook;-a;0 19;-O;${PLM_TESTING_BUILD_DIR}/fdk_brook_output.mha"
-  )
-plm_add_test (
-  "fdk-brook-stats"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;${PLM_TESTING_BUILD_DIR}/fdk_brook_output.mha"
-  )
-plmtest_check_interval ("fdk-brook-check"
-  "${PLM_TESTING_BUILD_DIR}/fdk-brook-stats.stdout.txt"
-  "MAX *([-0-9.]*)"
-  "-987.5"
-  "-986.5"
-  )
+set_tests_properties (fdk-cpu-c-stats PROPERTIES DEPENDS fdk-cpu-c)
+set_tests_properties (fdk-cpu-c-check PROPERTIES DEPENDS fdk-cpu-c-stats)
 
 plm_add_test (
   "fdk-cuda-a"
@@ -711,6 +681,9 @@ plmtest_check_interval ("fdk-cuda-a-check"
   "-987.5"
   "-986.5"
   )
+set_tests_properties (fdk-cuda-a PROPERTIES DEPENDS drr-a)
+set_tests_properties (fdk-cuda-a-stats PROPERTIES DEPENDS fdk-cuda-a)
+set_tests_properties (fdk-cuda-a-check PROPERTIES DEPENDS fdk-cuda-a-stats)
 
 plm_add_test (
   "fdk-opencl-a"
@@ -730,6 +703,9 @@ plmtest_check_interval ("fdk-opencl-a-check"
   "-987.5"
   "-986.5"
   )
+set_tests_properties (fdk-opencl-a PROPERTIES DEPENDS drr-a)
+set_tests_properties (fdk-opencl-a-stats PROPERTIES DEPENDS fdk-opencl-a)
+set_tests_properties (fdk-opencl-a-check PROPERTIES DEPENDS fdk-opencl-a-stats)
 
 ## -------------------------------------------------------------------------
 ## fdk_tutorial - run the fdk tutorial
@@ -776,6 +752,14 @@ plmtest_check_interval ("fdk-tutorial-c-check-1"
   "-999.0"
   "-998.0"
   )
+set_tests_properties (fdk-tutorial-b PROPERTIES DEPENDS fdk-tutorial-a)
+set_tests_properties (fdk-tutorial-b-stats-1 PROPERTIES DEPENDS fdk-tutorial-b)
+set_tests_properties (fdk-tutorial-b-check-1 PROPERTIES 
+  DEPENDS fdk-tutorial-b-stats-1)
+set_tests_properties (fdk-tutorial-c PROPERTIES DEPENDS fdk-tutorial-a)
+set_tests_properties (fdk-tutorial-c-stats-1 PROPERTIES DEPENDS fdk-tutorial-c)
+set_tests_properties (fdk-tutorial-c-check-1 PROPERTIES 
+  DEPENDS fdk-tutorial-c-stats-1)
 
 ## -------------------------------------------------------------------------
 ## landmark_warp a: itk tps, slicer fcsv
@@ -812,6 +796,15 @@ plmtest_check_interval ("landmark-warp-a-check-2"
   "-23.2"
   "-22.7"
   )
+set_tests_properties (landmark-warp-a PROPERTIES DEPENDS rect-3)
+set_tests_properties (landmark-warp-a-stats-1 PROPERTIES 
+  DEPENDS landmark-warp-a)
+set_tests_properties (landmark-warp-a-check-1 PROPERTIES 
+  DEPENDS landmark-warp-a-stats-1)
+set_tests_properties (landmark-warp-a-stats-2 PROPERTIES 
+  DEPENDS landmark-warp-a)
+set_tests_properties (landmark-warp-a-check-1 PROPERTIES 
+  DEPENDS landmark-warp-a-stats-2)
 
 plm_add_test (
   "landmark-warp-b" 
@@ -843,6 +836,15 @@ plmtest_check_interval ("landmark-warp-b-check-2"
   "-1.55"
   "-1.4"
   )
+set_tests_properties (landmark-warp-b PROPERTIES DEPENDS rect-3)
+set_tests_properties (landmark-warp-b-stats-1 PROPERTIES 
+  DEPENDS landmark-warp-b)
+set_tests_properties (landmark-warp-b-check-1 PROPERTIES 
+  DEPENDS landmark-warp-b-stats-1)
+set_tests_properties (landmark-warp-b-stats-2 PROPERTIES 
+  DEPENDS landmark-warp-b)
+set_tests_properties (landmark-warp-b-check-1 PROPERTIES 
+  DEPENDS landmark-warp-b-stats-2)
 
 plm_add_test (
   "landmark-warp-c" 
@@ -874,6 +876,15 @@ plmtest_check_interval ("landmark-warp-c-check-2"
   "-1.6"
   "-1.5"
   )
+set_tests_properties (landmark-warp-c PROPERTIES DEPENDS rect-3)
+set_tests_properties (landmark-warp-c-stats-1 PROPERTIES 
+  DEPENDS landmark-warp-c)
+set_tests_properties (landmark-warp-c-check-1 PROPERTIES 
+  DEPENDS landmark-warp-c-stats-1)
+set_tests_properties (landmark-warp-c-stats-2 PROPERTIES 
+  DEPENDS landmark-warp-c)
+set_tests_properties (landmark-warp-c-check-1 PROPERTIES 
+  DEPENDS landmark-warp-c-stats-2)
 
 ## -------------------------------------------------------------------------
 ## plastimatch convert dicom (and dicom rt)
@@ -904,6 +915,10 @@ plmtest_check_interval ("plm-convert-dicom-a-check"
   "-667.5"
   "-666.6"
   )
+set_tests_properties (plm-convert-dicom-a-stats PROPERTIES 
+  DEPENDS plm-convert-dicom-a)
+set_tests_properties (plm-convert-dicom-a-check PROPERTIES 
+  DEPENDS plm-convert-dicom-a-stats)
 
 plm_add_test (
   "plm-convert-dicom-b"
@@ -932,6 +947,11 @@ plmtest_check_interval ("plm-convert-dicom-b-check"
   "1.06"
   )
 endif ()
+set_tests_properties (plm-convert-dicom-b-stats PROPERTIES 
+  DEPENDS plm-convert-dicom-b)
+set_tests_properties (plm-convert-dicom-b-check PROPERTIES 
+  DEPENDS plm-convert-dicom-b-stats)
+
 plm_add_test (
   "plm-convert-dicom-c"
   ""
@@ -960,6 +980,13 @@ plmtest_check_interval ("plm-convert-dicom-c-check"
   "1.06"
   )
 ENDIF ()
+set_tests_properties (plm-convert-dicom-c PROPERTIES 
+  DEPENDS plm-convert-dicom-a)
+set_tests_properties (plm-convert-dicom-c-stats PROPERTIES 
+  DEPENDS plm-convert-dicom-c)
+set_tests_properties (plm-convert-dicom-c-check PROPERTIES 
+  DEPENDS plm-convert-dicom-c-stats)
+
 plm_add_test (
   "plm-convert-dicom-d"
   ""
@@ -978,12 +1005,18 @@ plmtest_check_interval ("plm-convert-dicom-d-check"
   "42.1"
   "42.2"
   )
+set_tests_properties (plm-convert-dicom-d-stats PROPERTIES 
+  DEPENDS plm-convert-dicom-d)
+set_tests_properties (plm-convert-dicom-d-check PROPERTIES 
+  DEPENDS plm-convert-dicom-d-stats)
+
 plm_add_test (
   "plm-convert-dicom-e" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output-dicom;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-e-dicom;--output-dose-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-e-dose-img.mha"
   )
+
 plm_add_test (
   "plm-convert-dicom-f" 
   ""
@@ -1002,12 +1035,21 @@ plmtest_check_interval ("plm-convert-dicom-f-check"
   "0.000"
   "0.005"
   )
+set_tests_properties (plm-convert-dicom-f PROPERTIES 
+  DEPENDS plm-convert-dicom-e)
+set_tests_properties (plm-convert-dicom-f-stats PROPERTIES 
+  DEPENDS plm-convert-dicom-f)
+set_tests_properties (plm-convert-dicom-f-check PROPERTIES 
+  DEPENDS plm-convert-dicom-f-stats)
+
 plm_add_test (
   "plm-convert-dicom-g" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "convert;--input;${PLM_TESTING_BUILD_DIR}/rect-1-dicom/ss.dcm;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-g.mha;--output-ss-list;plm-convert-dicom-g.txt;--output-cxt;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-g.cxt"
   )
+set_tests_properties (plm-convert-dicom-g PROPERTIES DEPENDS rect-1)
+
 plm_add_test (
   "plm-convert-dicom-h"
   ""
@@ -1025,6 +1067,11 @@ plmtest_check_string ("plm-convert-dicom-h-check"
   "Patient Position . (.*[^ ]) *$"
   "FFS"
   )
+set_tests_properties (plm-convert-dicom-h PROPERTIES DEPENDS rect-1)
+set_tests_properties (plm-convert-dicom-h-stats PROPERTIES 
+  DEPENDS plm-convert-dicom-h)
+set_tests_properties (plm-convert-dicom-h-check PROPERTIES 
+  DEPENDS plm-convert-dicom-h-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch-convert-dicom-donut
@@ -1041,6 +1088,9 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-donut-ss.nrrd"
   )
+set_tests_properties (plm-convert-dicom-donut PROPERTIES DEPENDS donut-1)
+set_tests_properties (plm-convert-dicom-donut-stats PROPERTIES 
+  DEPENDS plm-convert-dicom-donut)
 
 ## -------------------------------------------------------------------------
 ## plastimatch convert dicom-rt (aw)
@@ -1068,6 +1118,10 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "convert;--input;${PLM_TESTING_BUILD_DIR}/foot-dicomrt-aw-4.4/20101202FFS;--output-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-b.mha;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-b-ss.mha;--output-ss-list;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-b-ss.txt;--output-dose-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-b-dose.mha"
   )
+set_tests_properties (plm-convert-dicom-aw-a-stats PROPERTIES 
+  DEPENDS plm-convert-dicom-aw-a)
+set_tests_properties (plm-convert-dicom-aw-a-check PROPERTIES 
+  DEPENDS plm-convert-dicom-aw-a-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch convert dicom-rt (cerr)
@@ -1139,6 +1193,10 @@ plmtest_check_interval ("plm-convert-cxt-check"
   "1.06"
   )
 ENDIF ()
+set_tests_properties (plm-convert-cxt PROPERTIES DEPENDS plm-convert-dicom-c)
+set_tests_properties (plm-convert-cxt-stats PROPERTIES DEPENDS plm-convert-cxt)
+set_tests_properties (plm-convert-cxt-check PROPERTIES 
+  DEPENDS plm-convert-cxt-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch convert xio
@@ -1161,6 +1219,9 @@ plmtest_check_interval ("plm-convert-xio-check"
   "-667.5"
   "-666.6"
   )
+set_tests_properties (plm-convert-xio-stats PROPERTIES DEPENDS plm-convert-xio)
+set_tests_properties (plm-convert-xio-check PROPERTIES 
+  DEPENDS plm-convert-xio-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch-convert-prefix-fcsv
@@ -1171,6 +1232,7 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "convert;--input-ss-img;${PLM_TESTING_BUILD_DIR}/donut-ss-1.mha;--output-prefix-fcsv;${PLM_TESTING_BUILD_DIR}/plm-convert-prefix-fcsv"
   )
+set_tests_properties (plm-convert-prefix-fcsv PROPERTIES DEPENDS donut-1)
 
 ## -------------------------------------------------------------------------
 ## plastimatch fill/mask
@@ -1193,6 +1255,10 @@ plmtest_check_interval ("plm-fill-a-check"
   "-0.1"
   "+0.1"
   )
+set_tests_properties (plm-fill-a PROPERTIES DEPENDS "rect-1;rect-4")
+set_tests_properties (plm-fill-a-stats PROPERTIES DEPENDS plm-fill-a)
+set_tests_properties (plm-fill-a-check PROPERTIES DEPENDS plm-fill-a-stats)
+
 plm_add_test (
   "plm-mask-a"
   ""
@@ -1211,6 +1277,9 @@ plmtest_check_interval ("plm-mask-a-check"
   "-1000.1"
   "-999.9"
   )
+set_tests_properties (plm-mask-a PROPERTIES DEPENDS "rect-1;rect-4")
+set_tests_properties (plm-mask-a-stats PROPERTIES DEPENDS plm-mask-a)
+set_tests_properties (plm-mask-a-check PROPERTIES DEPENDS plm-mask-a-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch usage
@@ -1258,6 +1327,12 @@ plmtest_check_interval ("plm-reg-align-center-check"
   "-0.005"
   "0.005"
   )
+set_tests_properties (plm-reg-align-center PROPERTIES 
+  DEPENDS "gauss-1;gauss-6")
+set_tests_properties (plm-reg-align-center-stats PROPERTIES 
+  DEPENDS plm-reg-align-center)
+set_tests_properties (plm-reg-align-center-check PROPERTIES 
+  DEPENDS plm-reg-align-center-stats)
 
 plm_add_test (
   "plm-reg-itk-translation"
@@ -1277,6 +1352,12 @@ plmtest_check_interval ("plm-reg-itk-translation-check"
   "-637.0"
   "-636.9"
   )
+set_tests_properties (plm-reg-itk-translation PROPERTIES 
+  DEPENDS "gauss-1;gauss-2")
+set_tests_properties (plm-reg-itk-translation-stats PROPERTIES 
+  DEPENDS plm-reg-itk-translation)
+set_tests_properties (plm-reg-itk-translation-check PROPERTIES 
+  DEPENDS plm-reg-itk-translation-stats)
 
 plm_add_test (
   "plm-reg-itk-rigid"
@@ -1308,6 +1389,16 @@ plmtest_check_interval ("plm-reg-itk-rigid-check-2"
   "-965.7"
   "-965.4"
   )
+set_tests_properties (plm-reg-itk-rigid PROPERTIES 
+  DEPENDS "rect-2;rect-3")
+set_tests_properties (plm-reg-itk-rigid-stats-1 PROPERTIES 
+  DEPENDS plm-reg-itk-rigid)
+set_tests_properties (plm-reg-itk-rigid-check-1 PROPERTIES 
+  DEPENDS plm-reg-itk-rigid-stats-1)
+set_tests_properties (plm-reg-itk-rigid-stats-2 PROPERTIES 
+  DEPENDS plm-reg-itk-rigid)
+set_tests_properties (plm-reg-itk-rigid-check-2 PROPERTIES 
+  DEPENDS plm-reg-itk-rigid-stats-2)
 
 plm_add_test (
   "plm-reg-itk-bspline"
@@ -1327,6 +1418,12 @@ plmtest_check_interval ("plm-reg-itk-bspline-check-1"
   "-763.85"
   "-763.75"
   )
+set_tests_properties (plm-reg-itk-bspline PROPERTIES 
+  DEPENDS "gauss-1;gauss-2")
+set_tests_properties (plm-reg-itk-bspline-stats-1 PROPERTIES 
+  DEPENDS plm-reg-itk-bspline)
+set_tests_properties (plm-reg-itk-bspline-check-1 PROPERTIES 
+  DEPENDS plm-reg-itk-bspline-stats-1)
 
 plm_add_test (
   "plm-reg-itk-demons"
@@ -1352,6 +1449,14 @@ plmtest_check_interval ("plm-reg-itk-demons-check-2"
   "-853.0"
   "-852.6"
   )
+set_tests_properties (plm-reg-itk-demons PROPERTIES 
+  DEPENDS "gauss-1;gauss-2")
+set_tests_properties (plm-reg-itk-demons-check-1 PROPERTIES 
+  DEPENDS plm-reg-itk-demons)
+set_tests_properties (plm-reg-itk-demons-stats-2 PROPERTIES 
+  DEPENDS plm-reg-itk-demons)
+set_tests_properties (plm-reg-itk-demons-check-2 PROPERTIES 
+  DEPENDS plm-reg-itk-demons-stats-2)
 
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 2)
@@ -1382,6 +1487,12 @@ plmtest_check_interval ("plm-bspline-single-c-check"
   "${PLM_BSPLINE_TEST_LOWER_THRESH}"
   "${PLM_BSPLINE_TEST_UPPER_THRESH}"
   )
+set_tests_properties (plm-bspline-single-c PROPERTIES 
+  DEPENDS "gauss-1;gauss-2")
+set_tests_properties (plm-bspline-single-c-stats PROPERTIES 
+  DEPENDS plm-bspline-single-c)
+set_tests_properties (plm-bspline-single-c-check PROPERTIES 
+  DEPENDS plm-bspline-single-c-stats)
 
 plm_add_test (
   "plm-bspline-single-h" 
@@ -1401,6 +1512,12 @@ plmtest_check_interval ("plm-bspline-single-h-check"
   "${PLM_BSPLINE_TEST_LOWER_THRESH}"
   "${PLM_BSPLINE_TEST_UPPER_THRESH}"
   )
+set_tests_properties (plm-bspline-single-h PROPERTIES 
+  DEPENDS "gauss-1;gauss-2")
+set_tests_properties (plm-bspline-single-h-stats PROPERTIES 
+  DEPENDS plm-bspline-single-h)
+set_tests_properties (plm-bspline-single-h-check PROPERTIES 
+  DEPENDS plm-bspline-single-h-stats)
 
 plm_add_test (
   "plm-bspline-openmp" 
@@ -1420,6 +1537,12 @@ plmtest_check_interval ("plm-bspline-openmp-check"
   "${PLM_BSPLINE_TEST_LOWER_THRESH}"
   "${PLM_BSPLINE_TEST_UPPER_THRESH}"
   )
+set_tests_properties (plm-bspline-openmp PROPERTIES 
+  DEPENDS "gauss-1;gauss-2")
+set_tests_properties (plm-bspline-openmp-stats PROPERTIES 
+  DEPENDS plm-bspline-openmp)
+set_tests_properties (plm-bspline-openmp-check PROPERTIES 
+  DEPENDS plm-bspline-openmp-stats)
 
 plm_add_test (
   "plm-bspline-cuda" 
@@ -1439,6 +1562,12 @@ plmtest_check_interval ("plm-bspline-cuda-check"
   "${PLM_BSPLINE_TEST_LOWER_THRESH}"
   "${PLM_BSPLINE_TEST_UPPER_THRESH}"
   )
+set_tests_properties (plm-bspline-cuda PROPERTIES 
+  DEPENDS "gauss-1;gauss-2")
+set_tests_properties (plm-bspline-cuda-stats PROPERTIES 
+  DEPENDS plm-bspline-cuda)
+set_tests_properties (plm-bspline-cuda-check PROPERTIES 
+  DEPENDS plm-bspline-cuda-stats)
 
 plm_add_test (
   "plm-reg-bspline-ushort"
@@ -1458,6 +1587,12 @@ plmtest_check_interval ("plm-reg-bspline-ushort-check"
   "106.6"
   "107.6"
   )
+set_tests_properties (plm-reg-bspline-ushort PROPERTIES 
+  DEPENDS "gauss-ushort-1;gauss-ushort-2")
+set_tests_properties (plm-reg-bspline-ushort-stats PROPERTIES 
+  DEPENDS plm-reg-bspline-ushort)
+set_tests_properties (plm-reg-bspline-ushort-check PROPERTIES 
+  DEPENDS plm-reg-bspline-ushort-stats)
 
 plm_add_test (
   "plm-reg-bspline-double"
@@ -1477,6 +1612,12 @@ plmtest_check_interval ("plm-reg-bspline-double-check"
   "107.6"
   "108.6"
   )
+set_tests_properties (plm-reg-bspline-double PROPERTIES 
+  DEPENDS "gauss-double-1;gauss-double-2")
+set_tests_properties (plm-reg-bspline-double-stats PROPERTIES 
+  DEPENDS plm-reg-bspline-double)
+set_tests_properties (plm-reg-bspline-double-check PROPERTIES 
+  DEPENDS plm-reg-bspline-double-stats)
 
 plm_add_test (
   "plm-reg-bspline-itk-output"
@@ -1484,6 +1625,8 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "${PLM_TESTING_DATA_DIR}/plm-reg-bspline-itk-output.txt"
   )
+set_tests_properties (plm-reg-bspline-itk-output PROPERTIES 
+  DEPENDS "gauss-1;gauss-2")
 
 plm_add_test (
   "plm-reg-bspline-char-output"
@@ -1504,6 +1647,12 @@ plmtest_check_interval (
   "-128.1"
   "-127.9"
   )
+set_tests_properties (plm-reg-bspline-char-output PROPERTIES 
+  DEPENDS "rect-2;rect-3")
+set_tests_properties (plm-reg-bspline-char-output-stats PROPERTIES 
+  DEPENDS plm-reg-bspline-char-output)
+set_tests_properties (plm-reg-bspline-char-output-check PROPERTIES 
+  DEPENDS plm-reg-bspline-char-output-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 3)
@@ -1518,6 +1667,8 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "${PLM_TESTING_DATA_DIR}/plm-bsp-rect.txt"
   )
+set_tests_properties (plm-bsp-rect PROPERTIES DEPENDS "rect-2;rect-3")
+
 plm_add_test (
   "plm-bsp-regularize-none" 
   ""
@@ -1537,6 +1688,13 @@ plmtest_check_interval (
   "0.31"
   "0.32"
   )
+set_tests_properties (plm-bsp-regularize-none PROPERTIES 
+  DEPENDS "rect-3;sphere-2")
+set_tests_properties (plm-bsp-regularize-none-stats PROPERTIES 
+  DEPENDS plm-bsp-regularize-none)
+set_tests_properties (plm-bsp-regularize-none-check PROPERTIES 
+  DEPENDS plm-bsp-regularize-none-stats)
+
 plm_add_test (
   "plm-bsp-regularize-analytic" 
   ""
@@ -1556,6 +1714,13 @@ plmtest_check_interval (
   "0.415"
   "0.425"
   )
+set_tests_properties (plm-bsp-regularize-analytic PROPERTIES 
+  DEPENDS "rect-3;sphere-2")
+set_tests_properties (plm-bsp-regularize-analytic-stats PROPERTIES 
+  DEPENDS plm-bsp-regularize-analytic)
+set_tests_properties (plm-bsp-regularize-analytic-check PROPERTIES 
+  DEPENDS plm-bsp-regularize-analytic-stats)
+
 plm_add_test (
   "plm-bsp-regularize-numeric" 
   ""
@@ -1575,6 +1740,12 @@ plmtest_check_interval (
   "0.440"
   "0.445"
   )
+set_tests_properties (plm-bsp-regularize-numeric PROPERTIES 
+  DEPENDS "rect-3;sphere-2")
+set_tests_properties (plm-bsp-regularize-numeric-stats PROPERTIES 
+  DEPENDS plm-bsp-regularize-numeric)
+set_tests_properties (plm-bsp-regularize-numeric-check PROPERTIES 
+  DEPENDS plm-bsp-regularize-numeric-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch compose
@@ -1598,6 +1769,8 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "${PLM_TESTING_DATA_DIR}/plm-reg-compose.txt"
   )
+set_tests_properties (plm-reg-compose PROPERTIES DEPENDS "gauss-2;gauss-5")
+
 plm_add_test (
   "plm-compose-a" 
   ""
@@ -1622,6 +1795,13 @@ plmtest_check_interval ("plm-compose-a-check"
   "13.1"
   "13.3"
   )
+set_tests_properties (plm-compose-a PROPERTIES 
+  DEPENDS "plm-reg-itk-translation;plm-reg-compose")
+set_tests_properties (plm-compose-a-warp PROPERTIES DEPENDS plm-compose-a)
+set_tests_properties (plm-compose-a-stats PROPERTIES DEPENDS plm-compose-a)
+set_tests_properties (plm-compose-a-check PROPERTIES 
+  DEPENDS plm-compose-a-stats)
+
 plm_add_test (
   "plm-compose-b" 
   ""
@@ -1646,6 +1826,13 @@ plmtest_check_interval ("plm-compose-b-check"
   "13.1"
   "13.3"
   )
+set_tests_properties (plm-compose-b PROPERTIES 
+  DEPENDS "plm-reg-itk-translation;plm-reg-compose")
+set_tests_properties (plm-compose-b-warp PROPERTIES DEPENDS plm-compose-b)
+set_tests_properties (plm-compose-b-stats PROPERTIES DEPENDS plm-compose-b)
+set_tests_properties (plm-compose-b-check PROPERTIES 
+  DEPENDS plm-compose-b-stats)
+
 plm_add_test (
   "plm-compose-c" 
   ""
@@ -1670,6 +1857,12 @@ plmtest_check_interval ("plm-compose-c-check"
   "12.5"
   "12.6"
   )
+set_tests_properties (plm-compose-c PROPERTIES 
+  DEPENDS "plm-reg-itk-translation;plm-reg-compose")
+set_tests_properties (plm-compose-c-warp PROPERTIES DEPENDS plm-compose-c)
+set_tests_properties (plm-compose-c-stats PROPERTIES DEPENDS plm-compose-c)
+set_tests_properties (plm-compose-c-check PROPERTIES 
+  DEPENDS plm-compose-c-stats)
 
 ## -------------------------------------------------------------------------
 ## plm-resample-a    Image, subsample
@@ -1694,6 +1887,11 @@ plmtest_check_interval ("plm-resample-a-check"
   "-879.0"
   "-878.0"
   )
+set_tests_properties (plm-resample-a PROPERTIES DEPENDS gauss-1)
+set_tests_properties (plm-resample-a-stats PROPERTIES DEPENDS plm-resample-a)
+set_tests_properties (plm-resample-a-check PROPERTIES 
+  DEPENDS plm-resample-a-stats)
+
 plm_add_test (
   "plm-resample-b" 
   ""
@@ -1712,6 +1910,11 @@ plmtest_check_interval ("plm-resample-b-check"
   "-879.0"
   "-878.0"
   )
+set_tests_properties (plm-resample-b PROPERTIES DEPENDS "gauss-1;black-1")
+set_tests_properties (plm-resample-b-stats PROPERTIES DEPENDS plm-resample-b)
+set_tests_properties (plm-resample-b-check PROPERTIES 
+  DEPENDS plm-resample-b-stats)
+
 plm_add_test (
   "plm-resample-c" 
   ""
@@ -1730,6 +1933,11 @@ plmtest_check_interval ("plm-resample-c-check"
   "6.73"
   "6.8"
   )
+set_tests_properties (plm-resample-c PROPERTIES 
+  DEPENDS "bspline-mi-c-1;black-1")
+set_tests_properties (plm-resample-c-stats PROPERTIES DEPENDS plm-resample-c)
+set_tests_properties (plm-resample-c-check PROPERTIES 
+  DEPENDS plm-resample-c-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch warp pointset
@@ -1753,9 +1961,11 @@ plm_add_test (
   "plm-warp-pointset-c" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--input;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;--output-pointset;${PLM_TESTING_BUILD_DIR}/plm-warp-landmark-a.fcsv;--xf;${PLM_TESTING_BUILD_DIR}/landmark-warp-c-vf.mha"
+  "warp;--xf;${PLM_TESTING_BUILD_DIR}/landmark-warp-c-vf.mha;--input;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;--output-pointset;${PLM_TESTING_BUILD_DIR}/plm-warp-landmark-c.fcsv"
   )
-
+set_tests_properties (plm-warp-pointset-a PROPERTIES DEPENDS plm-bsp-rect)
+set_tests_properties (plm-warp-pointset-b PROPERTIES DEPENDS plm-bsp-rect)
+set_tests_properties (plm-warp-pointset-c PROPERTIES DEPENDS landmark-warp-c)
 
 ## -------------------------------------------------------------------------
 ## plastimatch warp
@@ -1787,6 +1997,9 @@ plmtest_check_interval ("plm-warp-a-check"
   "5.77"
   "5.78"
   )
+set_tests_properties (plm-warp-a PROPERTIES DEPENDS "bspline-c;gauss-1")
+set_tests_properties (plm-warp-a-stats PROPERTIES DEPENDS plm-warp-a)
+set_tests_properties (plm-warp-a-check PROPERTIES DEPENDS plm-warp-a-stats)
 
 plm_add_test (
   "plm-warp-b" 
@@ -1818,6 +2031,11 @@ plmtest_check_interval ("plm-warp-b-check-2"
   "-775.7"
   "-775.6"
   )
+set_tests_properties (plm-warp-b PROPERTIES DEPENDS "bspline-c;gauss-1")
+set_tests_properties (plm-warp-b-stats-1 PROPERTIES DEPENDS plm-warp-b-1)
+set_tests_properties (plm-warp-b-check-1 PROPERTIES DEPENDS plm-warp-b-stats-1)
+set_tests_properties (plm-warp-b-stats-2 PROPERTIES DEPENDS plm-warp-b-2)
+set_tests_properties (plm-warp-b-check-2 PROPERTIES DEPENDS plm-warp-b-stats-2)
 
 plm_add_test (
   "plm-warp-c" 
@@ -1837,6 +2055,9 @@ plmtest_check_interval ("plm-warp-c-check"
   "9.2"
   "9.3"
   )
+set_tests_properties (plm-warp-c PROPERTIES DEPENDS "bspline-c;sphere-1")
+set_tests_properties (plm-warp-c-stats PROPERTIES DEPENDS plm-warp-c)
+set_tests_properties (plm-warp-c-check PROPERTIES DEPENDS plm-warp-c-stats)
 
 plm_add_test (
   "plm-warp-d" 
@@ -1856,6 +2077,9 @@ plmtest_check_interval ("plm-warp-d-check"
   "9.2"
   "9.3"
   )
+set_tests_properties (plm-warp-d PROPERTIES DEPENDS "bspline-d;sphere-1")
+set_tests_properties (plm-warp-d-stats PROPERTIES DEPENDS plm-warp-d)
+set_tests_properties (plm-warp-d-check PROPERTIES DEPENDS plm-warp-d-stats)
 
 plm_add_test (
   "plm-warp-e" 
@@ -1926,6 +2150,16 @@ add_test ("plm-warp-e-check-5" ${CMAKE_COMMAND} -E compare_files
 add_test ("plm-warp-e-check-6" ${CMAKE_COMMAND} -E compare_files
   "${PLM_TESTING_DATA_DIR}/plm-warp-e.ctbl"
   "${PLM_TESTING_BUILD_DIR}/plm-warp-e.ctbl")
+set_tests_properties (plm-warp-e-stats-1 PROPERTIES DEPENDS plm-warp-e)
+set_tests_properties (plm-warp-e-check-1 PROPERTIES DEPENDS plm-warp-e-stats-1)
+set_tests_properties (plm-warp-e-stats-2 PROPERTIES DEPENDS plm-warp-e)
+set_tests_properties (plm-warp-e-check-2 PROPERTIES DEPENDS plm-warp-e-stats-2)
+set_tests_properties (plm-warp-e-stats-3 PROPERTIES DEPENDS plm-warp-e)
+set_tests_properties (plm-warp-e-check-3 PROPERTIES DEPENDS plm-warp-e-stats-3)
+set_tests_properties (plm-warp-e-stats-4 PROPERTIES DEPENDS plm-warp-e)
+set_tests_properties (plm-warp-e-check-4 PROPERTIES DEPENDS plm-warp-e-stats-4)
+set_tests_properties (plm-warp-e-check-5 PROPERTIES DEPENDS plm-warp-e)
+set_tests_properties (plm-warp-e-check-6 PROPERTIES DEPENDS plm-warp-e)
 
 plm_add_test (
   "plm-warp-f" 
@@ -1958,9 +2192,13 @@ if (PLM_USE_SS_IMAGE_VEC)
     "1971"
     "1971"
     )
+set_tests_properties (plm-warp-f-stats-2 PROPERTIES DEPENDS plm-warp-f)
+set_tests_properties (plm-warp-f-check-2 PROPERTIES DEPENDS plm-warp-f-stats-2)
 else ()
   # Don't bother
 endif ()
+set_tests_properties (plm-warp-f-stats-1 PROPERTIES DEPENDS plm-warp-f)
+set_tests_properties (plm-warp-f-check-1 PROPERTIES DEPENDS plm-warp-f-stats-1)
 
 plm_add_test (
   "plm-warp-g" 
@@ -1980,6 +2218,9 @@ plmtest_check_interval ("plm-warp-g-check-1"
   "-675.5"
   "-674.5"
   )
+set_tests_properties (plm-warp-g PROPERTIES DEPENDS gauss-1)
+set_tests_properties (plm-warp-g-stats-1 PROPERTIES DEPENDS plm-warp-g)
+set_tests_properties (plm-warp-g-check-1 PROPERTIES DEPENDS plm-warp-g-stats-1)
 
 plm_add_test (
   "plm-warp-h" 
@@ -1999,6 +2240,9 @@ plmtest_check_interval ("plm-warp-h-check-1"
   "113.5"
   "114.0"
   )
+set_tests_properties (plm-warp-h PROPERTIES DEPENDS gauss-ushort-1)
+set_tests_properties (plm-warp-h-stats-1 PROPERTIES DEPENDS plm-warp-h)
+set_tests_properties (plm-warp-h-check-1 PROPERTIES DEPENDS plm-warp-h-stats-1)
 
 plm_add_test (
   "plm-warp-i" 
@@ -2018,6 +2262,9 @@ plmtest_check_interval ("plm-warp-i-check-1"
   "114.4"
   "114.7"
   )
+set_tests_properties (plm-warp-i PROPERTIES DEPENDS gauss-double-1)
+set_tests_properties (plm-warp-i-stats-1 PROPERTIES DEPENDS plm-warp-i)
+set_tests_properties (plm-warp-i-check-1 PROPERTIES DEPENDS plm-warp-i-stats-1)
 
 ## -------------------------------------------------------------------------
 ## plm-xf-convert-a    plm bspline to vf
@@ -2038,6 +2285,7 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "xf-convert;--input;${PLM_TESTING_BUILD_DIR}/plm-xf-convert-a-vf.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-xf-convert-b.txt;--output-type;bspline;--dim;4 4 4;--origin;-187.5 -187.5 -187.5;--spacing;125 125 125;--grid-spacing;10 10 10"
   )
+set_tests_properties (plm-xf-convert-b PROPERTIES DEPENDS plm-xf-convert-a)
 
 plm_add_test (
   "plm-xf-convert-c"
@@ -2045,6 +2293,7 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "xf-convert;--input;${PLM_TESTING_BUILD_DIR}/plm-xf-convert-b.txt;--output;${PLM_TESTING_BUILD_DIR}/plm-xf-convert-c-vf.mha;--output-type;vf;--dim;4 4 4;--origin;-187.5 -187.5 -187.5;--spacing;125 125 125"
   )
+set_tests_properties (plm-xf-convert-c PROPERTIES DEPENDS plm-xf-convert-b)
 
 plm_add_test (
   "plm-xf-convert-d" 
@@ -2095,6 +2344,17 @@ plmtest_check_interval (
   #  "-745.8"
   "-744.8"
   )
+set_tests_properties (plm-xf-convert-d-warp-1 PROPERTIES DEPENDS gauss-2)
+set_tests_properties (plm-xf-convert-d-warp-1-stats PROPERTIES 
+  DEPENDS plm-xf-convert-d-warp-1)
+set_tests_properties (plm-xf-convert-d-warp-1-check PROPERTIES 
+  DEPENDS plm-xf-convert-d-warp-1-stats)
+set_tests_properties (plm-xf-convert-d-warp-2 PROPERTIES 
+  DEPENDS "gauss-2;plm-xf-convert-d")
+set_tests_properties (plm-xf-convert-d-warp-2-stats PROPERTIES 
+  DEPENDS plm-xf-convert-d-warp-2)
+set_tests_properties (plm-xf-convert-d-warp-2-check PROPERTIES 
+  DEPENDS plm-xf-convert-d-warp-2-stats)
 
 ## -------------------------------------------------------------------------
 ## plm-api - Tests of plastimatch API
@@ -2127,6 +2387,7 @@ plm_add_test (
 add_test (bragg-curve-check ${CMAKE_COMMAND} -E compare_files
   "${PLM_TESTING_DATA_DIR}/bragg-curve.txt"
   "${PLM_TESTING_BUILD_DIR}/bragg-curve.txt")
+set_tests_properties (bragg-curve-check PROPERTIES DEPENDS bragg-curve)
 
 plm_add_test (
   "proton-dose"
@@ -2134,6 +2395,7 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/proton_dose
   "-src;1 0 0;-iso;0 0 0;-vup;0 0 1;-u;1;-p;${PLM_TESTING_DATA_DIR}/bragg-curve.txt;--debug;${PLM_TESTING_BUILD_DIR}/rect-2.mha;${PLM_TESTING_BUILD_DIR}/proton-dose.mha"
   )
+set_tests_properties (proton-dose PROPERTIES DEPENDS rect-2)
 
 ## -------------------------------------------------------------------------
 ## slicer tests

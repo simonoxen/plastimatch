@@ -8,7 +8,6 @@ set (PLM_DCM_USE_DCMTK "@PLM_DCM_USE_DCMTK@")
 set (PLM_PLASTIMATCH_PATH "@PLM_PLASTIMATCH_PATH@")
 set (PLM_PLASTIMATCH_PATH_HACK "@PLM_PLASTIMATCH_PATH_HACK@")
 set (PLM_REDUCED_TESTS @PLM_REDUCED_TESTS@)
-set (PLM_TEST_BSPLINE_FLAVORS @PLM_TEST_BSPLINE_FLAVORS@)
 set (PLM_TEST_DICOM @PLM_TEST_DICOM@)
 set (PLM_TESTING_BUILD_DIR "@PLM_TESTING_BUILD_DIR@")
 
@@ -271,23 +270,6 @@ if (BUILD_DEBIAN)
     )
 endif ()
 
-## Don't test unused algorithms
-if (NOT PLM_TEST_BSPLINE_FLAVORS)
-  set (CTEST_CUSTOM_TESTS_IGNORE
-    ${CTEST_CUSTOM_TESTS_IGNORE}
-    "bspline-a"
-    "bspline-a-check"
-    "bspline-b"
-    "bspline-b-check"
-    "bspline-d"
-    "bspline-d-check"
-    "bspline-e"
-    "bspline-e-check"
-    "bspline-f"
-    "bspline-f-check"
-    )
-endif ()
-
 ## Don't delete from the list, comment out instead.
 if (PLM_REDUCED_TESTS)
   set (CTEST_CUSTOM_TESTS_IGNORE
@@ -310,20 +292,8 @@ if (PLM_REDUCED_TESTS)
     "rect-5"
     "sphere-1"
     "sphere-2"
-    "bspline-bxf"
-    "bspline-bxf-check"
-    "bspline-a"
-    "bspline-a-check"
-    "bspline-b"
-    "bspline-b-check"
     "bspline-c"
     "bspline-c-check"
-    "bspline-d"
-    "bspline-d-check"
-    "bspline-e"
-    "bspline-e-check"
-    "bspline-f"
-    "bspline-f-check"
     "bspline-g"
     "bspline-g-check"
     "bspline-h"
