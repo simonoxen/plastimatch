@@ -794,7 +794,7 @@ set_tests_properties (landmark-warp-a-check-1 PROPERTIES
   DEPENDS landmark-warp-a-stats-1)
 set_tests_properties (landmark-warp-a-stats-2 PROPERTIES 
   DEPENDS landmark-warp-a)
-set_tests_properties (landmark-warp-a-check-1 PROPERTIES 
+set_tests_properties (landmark-warp-a-check-2 PROPERTIES 
   DEPENDS landmark-warp-a-stats-2)
 
 plm_add_test (
@@ -2023,9 +2023,9 @@ plmtest_check_interval ("plm-warp-b-check-2"
   "-775.6"
   )
 set_tests_properties (plm-warp-b PROPERTIES DEPENDS "bspline-c;gauss-1")
-set_tests_properties (plm-warp-b-stats-1 PROPERTIES DEPENDS plm-warp-b-1)
+set_tests_properties (plm-warp-b-stats-1 PROPERTIES DEPENDS plm-warp-b)
 set_tests_properties (plm-warp-b-check-1 PROPERTIES DEPENDS plm-warp-b-stats-1)
-set_tests_properties (plm-warp-b-stats-2 PROPERTIES DEPENDS plm-warp-b-2)
+set_tests_properties (plm-warp-b-stats-2 PROPERTIES DEPENDS plm-warp-b)
 set_tests_properties (plm-warp-b-check-2 PROPERTIES DEPENDS plm-warp-b-stats-2)
 
 plm_add_test (
