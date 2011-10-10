@@ -1,5 +1,8 @@
-Version 1.5.4 (build @PLASTIMATCH_SVN_VERSION@)
+Version 1.5.5 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
+
+Version 1.5.4 (build 2832)
+Mon Oct 10 00:20:35 EDT 2011
 * Include reg-2-3 in default build
 * Add plastimatch probe command
 * Add landmark_diff program
