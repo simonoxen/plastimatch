@@ -16,7 +16,7 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QInputDialog>
-#include <QtWebKit/QWebView>
+#include <QWebView>
 
 #include "oraREG23ControlWindow.h"
 #include "oraREG23Model.h"

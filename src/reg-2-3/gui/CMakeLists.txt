@@ -4,6 +4,7 @@ SET(LIB_NAME REG23GUI)
 INCLUDE_DIRECTORIES(
   ${REG23_SOURCE_DIR}      # For reg23info.h (oraREG23AboutDialog.h)
   ${CMAKE_CURRENT_BINARY_DIR} # For headers produced by UIC
+  ${QT_QTWEBKIT_INCLUDE_DIR} # For QtWebKit/QWebView
 )
 
 QT4_ADD_RESOURCES(RCC_SRCS
