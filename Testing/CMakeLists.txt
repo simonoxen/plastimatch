@@ -5,6 +5,13 @@ project (PLM_Testing)
 ## http://stackoverflow.com/questions/733475/cmake-ctest-make-test-doesnt-build-tests
 ## -------------------------------------------------------------------------
 
+## -------------------------------------------------------------------------
+## Note on test dependencies.  Some versions of cmake (e.g. Windows cmake 
+## version 2.8.2) have a bug where the dependency graph is created 
+## incorrectly.  Specifically, if B depends on A, and C depends on 
+## both A and B, the graph will be generated incorrectly.  
+## -------------------------------------------------------------------------
+
 ##-----------------------------------------------------------------------------
 ## Configure test input files
 ##-----------------------------------------------------------------------------
@@ -346,7 +353,8 @@ plmtest_check_interval (bspline-c-check
   "1168.25"
   "1168.35"
   )
-set_tests_properties (bspline-c PROPERTIES DEPENDS "gauss-1;gauss-2")
+set_property (TEST bspline-c APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST bspline-c APPEND PROPERTY DEPENDS gauss-2)
 set_tests_properties (bspline-c-check PROPERTIES DEPENDS bspline-c)
 
 plm_add_test (
@@ -361,7 +369,8 @@ plmtest_check_interval (bspline-g-check
   "1168.25"
   "1168.35"
   )
-set_tests_properties (bspline-g PROPERTIES DEPENDS "gauss-1;gauss-2")
+set_property (TEST bspline-g APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST bspline-g APPEND PROPERTY DEPENDS gauss-2)
 set_tests_properties (bspline-g-check PROPERTIES DEPENDS bspline-g)
 
 plm_add_test (
@@ -376,7 +385,8 @@ plmtest_check_interval (bspline-h-check
   "1168.25"
   "1168.35"
   )
-set_tests_properties (bspline-h PROPERTIES DEPENDS "gauss-1;gauss-2")
+set_property (TEST bspline-h APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST bspline-h APPEND PROPERTY DEPENDS gauss-2)
 set_tests_properties (bspline-h-check PROPERTIES DEPENDS bspline-g)
 
 plm_add_test (
@@ -391,7 +401,8 @@ plmtest_check_interval (bspline-mi-c-1-check
   "-0.800"
   "-0.796"
   )
-set_tests_properties (bspline-mi-c-1 PROPERTIES DEPENDS "gauss-1;gauss-3")
+set_property (TEST bspline-mi-c-1 APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST bspline-mi-c-1 APPEND PROPERTY DEPENDS gauss-3)
 set_tests_properties (bspline-mi-c-1-check PROPERTIES DEPENDS bspline-mi-c-1)
 
 plm_add_test (
@@ -428,7 +439,8 @@ plmtest_check_interval (demons-a-check
   "2.1"
   "2.2"
   )
-set_tests_properties (demons-a PROPERTIES DEPENDS "gauss-1;gauss-2")
+set_property (TEST demons-a APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST demons-a APPEND PROPERTY DEPENDS gauss-2)
 set_tests_properties (demons-a-check PROPERTIES DEPENDS demons-a)
 
 plm_add_test (
@@ -443,7 +455,8 @@ plmtest_check_interval (demons-cuda-a-check
   "2.1"
   "2.2"
   )
-set_tests_properties (demons-cuda-a PROPERTIES DEPENDS "gauss-1;gauss-2")
+set_property (TEST demons-cuda-a APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST demons-cuda-a APPEND PROPERTY DEPENDS gauss-2)
 set_tests_properties (demons-cuda-a-check PROPERTIES DEPENDS demons-cuda-a)
 
 ## -------------------------------------------------------------------------
@@ -1325,8 +1338,8 @@ plmtest_check_interval ("plm-reg-align-center-check"
   "-0.005"
   "0.005"
   )
-set_tests_properties (plm-reg-align-center PROPERTIES 
-  DEPENDS "gauss-1;gauss-6")
+set_property (TEST plm-reg-align-center APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-reg-align-center APPEND PROPERTY DEPENDS gauss-6)
 set_tests_properties (plm-reg-align-center-stats PROPERTIES 
   DEPENDS plm-reg-align-center)
 set_tests_properties (plm-reg-align-center-check PROPERTIES 
@@ -1350,8 +1363,8 @@ plmtest_check_interval ("plm-reg-itk-translation-check"
   "-637.0"
   "-636.9"
   )
-set_tests_properties (plm-reg-itk-translation PROPERTIES 
-  DEPENDS "gauss-1;gauss-2")
+set_property (TEST plm-reg-itk-translation APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-reg-itk-translation APPEND PROPERTY DEPENDS gauss-2)
 set_tests_properties (plm-reg-itk-translation-stats PROPERTIES 
   DEPENDS plm-reg-itk-translation)
 set_tests_properties (plm-reg-itk-translation-check PROPERTIES 
@@ -1416,8 +1429,8 @@ plmtest_check_interval ("plm-reg-itk-bspline-check-1"
   "-763.85"
   "-763.75"
   )
-set_tests_properties (plm-reg-itk-bspline PROPERTIES 
-  DEPENDS "gauss-1;gauss-2")
+set_property (TEST plm-reg-itk-bspline APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-reg-itk-bspline APPEND PROPERTY DEPENDS gauss-2)
 set_tests_properties (plm-reg-itk-bspline-stats-1 PROPERTIES 
   DEPENDS plm-reg-itk-bspline)
 set_tests_properties (plm-reg-itk-bspline-check-1 PROPERTIES 
@@ -1447,8 +1460,8 @@ plmtest_check_interval ("plm-reg-itk-demons-check-2"
   "-853.0"
   "-852.6"
   )
-set_tests_properties (plm-reg-itk-demons PROPERTIES 
-  DEPENDS "gauss-1;gauss-2")
+set_property (TEST plm-reg-itk-demons APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-reg-itk-demons APPEND PROPERTY DEPENDS gauss-2)
 set_tests_properties (plm-reg-itk-demons-check-1 PROPERTIES 
   DEPENDS plm-reg-itk-demons)
 set_tests_properties (plm-reg-itk-demons-stats-2 PROPERTIES 
@@ -1485,8 +1498,8 @@ plmtest_check_interval ("plm-bspline-single-c-check"
   "${PLM_BSPLINE_TEST_LOWER_THRESH}"
   "${PLM_BSPLINE_TEST_UPPER_THRESH}"
   )
-set_tests_properties (plm-bspline-single-c PROPERTIES 
-  DEPENDS "gauss-1;gauss-2")
+set_property (TEST plm-bspline-single-c APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-bspline-single-c APPEND PROPERTY DEPENDS gauss-2)
 set_tests_properties (plm-bspline-single-c-stats PROPERTIES 
   DEPENDS plm-bspline-single-c)
 set_tests_properties (plm-bspline-single-c-check PROPERTIES 
@@ -1510,8 +1523,8 @@ plmtest_check_interval ("plm-bspline-single-h-check"
   "${PLM_BSPLINE_TEST_LOWER_THRESH}"
   "${PLM_BSPLINE_TEST_UPPER_THRESH}"
   )
-set_tests_properties (plm-bspline-single-h PROPERTIES 
-  DEPENDS "gauss-1;gauss-2")
+set_property (TEST plm-bspline-single-h APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-bspline-single-h APPEND PROPERTY DEPENDS gauss-2)
 set_tests_properties (plm-bspline-single-h-stats PROPERTIES 
   DEPENDS plm-bspline-single-h)
 set_tests_properties (plm-bspline-single-h-check PROPERTIES 
@@ -1535,8 +1548,8 @@ plmtest_check_interval ("plm-bspline-openmp-check"
   "${PLM_BSPLINE_TEST_LOWER_THRESH}"
   "${PLM_BSPLINE_TEST_UPPER_THRESH}"
   )
-set_tests_properties (plm-bspline-openmp PROPERTIES 
-  DEPENDS "gauss-1;gauss-2")
+set_property (TEST plm-bspline-openmp APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-bspline-openmp APPEND PROPERTY DEPENDS gauss-2)
 set_tests_properties (plm-bspline-openmp-stats PROPERTIES 
   DEPENDS plm-bspline-openmp)
 set_tests_properties (plm-bspline-openmp-check PROPERTIES 
@@ -1560,8 +1573,8 @@ plmtest_check_interval ("plm-bspline-cuda-check"
   "${PLM_BSPLINE_TEST_LOWER_THRESH}"
   "${PLM_BSPLINE_TEST_UPPER_THRESH}"
   )
-set_tests_properties (plm-bspline-cuda PROPERTIES 
-  DEPENDS "gauss-1;gauss-2")
+set_property (TEST plm-bspline-cuda APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-bspline-cuda APPEND PROPERTY DEPENDS gauss-2)
 set_tests_properties (plm-bspline-cuda-stats PROPERTIES 
   DEPENDS plm-bspline-cuda)
 set_tests_properties (plm-bspline-cuda-check PROPERTIES 
@@ -1587,6 +1600,10 @@ plmtest_check_interval ("plm-reg-bspline-ushort-check"
   )
 set_tests_properties (plm-reg-bspline-ushort PROPERTIES 
   DEPENDS "gauss-ushort-1;gauss-ushort-2")
+set_property (TEST plm-reg-bspline-ushort 
+  APPEND PROPERTY DEPENDS gauss-ushort-1)
+set_property (TEST plm-reg-bspline-ushort 
+  APPEND PROPERTY DEPENDS gauss-ushort-2)
 set_tests_properties (plm-reg-bspline-ushort-stats PROPERTIES 
   DEPENDS plm-reg-bspline-ushort)
 set_tests_properties (plm-reg-bspline-ushort-check PROPERTIES 
@@ -1623,8 +1640,8 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "${PLM_TESTING_DATA_DIR}/plm-reg-bspline-itk-output.txt"
   )
-set_tests_properties (plm-reg-bspline-itk-output PROPERTIES 
-  DEPENDS "gauss-1;gauss-2")
+set_property (TEST plm-reg-bspline-itk-output APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-reg-bspline-itk-output APPEND PROPERTY DEPENDS gauss-2)
 
 plm_add_test (
   "plm-reg-bspline-char-output"
@@ -1920,7 +1937,8 @@ plmtest_check_interval ("plm-resample-b-check"
   "-879.0"
   "-878.0"
   )
-set_tests_properties (plm-resample-b PROPERTIES DEPENDS "gauss-1;black-1")
+set_property (TEST plm-resample-b APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-resample-b APPEND PROPERTY DEPENDS black-1)
 set_tests_properties (plm-resample-b-stats PROPERTIES DEPENDS plm-resample-b)
 set_tests_properties (plm-resample-b-check PROPERTIES 
   DEPENDS plm-resample-b-stats)
@@ -2007,7 +2025,9 @@ plmtest_check_interval ("plm-warp-a-check"
   "5.77"
   "5.78"
   )
-set_tests_properties (plm-warp-a PROPERTIES DEPENDS "bspline-c;gauss-1")
+## Note: don't include dependency on gauss-1 as workaround for cmake bug.
+set_property (TEST plm-warp-a APPEND PROPERTY DEPENDS bspline-c)
+#set_property (TEST plm-warp-a APPEND PROPERTY DEPENDS gauss-1)
 set_tests_properties (plm-warp-a-stats PROPERTIES DEPENDS plm-warp-a)
 set_tests_properties (plm-warp-a-check PROPERTIES DEPENDS plm-warp-a-stats)
 
@@ -2041,7 +2061,9 @@ plmtest_check_interval ("plm-warp-b-check-2"
   "-775.7"
   "-775.6"
   )
-set_tests_properties (plm-warp-b PROPERTIES DEPENDS "bspline-c;gauss-1")
+## Note: don't include dependency on gauss-1 as workaround for cmake bug.
+set_property (TEST plm-warp-b APPEND PROPERTY DEPENDS bspline-c)
+#set_property (TEST plm-warp-b APPEND PROPERTY DEPENDS gauss-1)
 set_tests_properties (plm-warp-b-stats-1 PROPERTIES DEPENDS plm-warp-b)
 set_tests_properties (plm-warp-b-check-1 PROPERTIES DEPENDS plm-warp-b-stats-1)
 set_tests_properties (plm-warp-b-stats-2 PROPERTIES DEPENDS plm-warp-b)
