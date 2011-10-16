@@ -55,6 +55,8 @@ class gpuit_EXPORT Pointset {
     void save_fcsv (const char *fn);
     void insert_lps (const std::string& label, float x, float y, float z);
     void insert_ras (const std::string& label, float x, float y, float z);
+    size_t count (void) const;
+    void truncate (size_t new_length);
 };
 
 typedef Pointset<Labeled_point> Labeled_pointset;

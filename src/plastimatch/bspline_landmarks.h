@@ -5,21 +5,44 @@
 #define _bspline_landmarks_h_
 
 #include "plm_config.h"
-#include "raw_pointset.h"
+#include "pointset.h"
 #include "volume.h"
 
-typedef struct bspline_landmarks Bspline_landmarks;
-struct bspline_landmarks {
+class Bspline_parms;
+class Bspline_state;
+
+class Bspline_landmarks {
+public:
     int num_landmarks;
-    
-    Raw_pointset *fixed_landmarks;
-    Raw_pointset *moving_landmarks;
-    float *warped_landmarks; //moving landmarks displaced by current vector field
+    Labeled_pointset *fixed_landmarks;
+    Labeled_pointset *moving_landmarks;
+    float landmark_stiffness;
+    char landmark_implementation;
+
+    //float *warped_landmarks;
     int *landvox_mov;
     int *landvox_fix;
     int *landvox_warp;
-    float *rbf_coeff;
-    float *landmark_dxyz; //temporary array used in RBF
+    //float *rbf_coeff;
+    //float *landmark_dxyz;
+public:
+    Bspline_landmarks () {
+	num_landmarks = 0;
+	fixed_landmarks = 0;
+	moving_landmarks = 0;
+	landmark_stiffness = 0.01;
+	landmark_implementation = 'a';
+    }
+    ~Bspline_landmarks () {
+	/* Do not delete fixed_landmarks and moving_landmarks, they are 
+	   owned by the caller. */
+    }
+    void set_landmarks (Labeled_pointset *fixed_landmarks, 
+	Labeled_pointset *moving_landmarks)
+    {
+	this->fixed_landmarks = fixed_landmarks;
+	this->moving_landmarks = moving_landmarks;
+    }
 };
 
 #if defined __cplusplus

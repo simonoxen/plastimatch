@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "file_util.h"
+#include "registration_data.h"
 #include "pcmd_add.h"
 #include "pcmd_adjust.h"
 #include "pcmd_autolabel.h"
@@ -82,7 +83,7 @@ void
 do_command_register (int argc, char* argv[])
 {
     char * command_filename;
-    Registration_Parms regp;
+    Registration_parms regp;
 
     if (!strcmp (argv[1], "register")) {
 	if (argc > 2) {

@@ -12,6 +12,6 @@
    ----------------------------------------------------------------------- */
 plastimatch1_EXPORT
 void
-do_registration (Registration_Parms* regp);
+do_registration (Registration_parms* regp);
 
 #endif

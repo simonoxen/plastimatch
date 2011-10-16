@@ -826,6 +826,7 @@ bspline_score (
 {
 
     Reg_parms* reg_parms = &parms->reg_parms;
+    Bspline_landmarks* blm = &parms->blm;
 
 #if (CUDA_FOUND)
     if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
@@ -927,8 +928,8 @@ bspline_score (
     report_score (parms, bxf, bst);
 
     /* Add landmark score/gradient to image score/gradient */
-    if (parms->landmarks) {
-	printf ("comuting landmarks\n");
+    if (blm->num_landmarks > 0) {
+	printf ("computing landmarks\n");
 	bspline_landmarks_score (parms, bst, bxf, fixed, moving);
     }
 #if defined (commentout)

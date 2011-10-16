@@ -9,6 +9,7 @@
 #include "pointset.h"
 
 class Plm_image;
+class Registration_parms;
 
 class Registration_data {
 public:
@@ -29,6 +30,7 @@ public:
 public:
     Registration_data ();
     ~Registration_data ();
+    void load_input_files (Registration_parms* regp);
 };
 
 #endif

@@ -17,6 +17,7 @@
 #include "print_and_exit.h"
 #include "volume_macros.h"
 
+#if defined (commentout)
 Bspline_landmarks*
 bspline_landmarks_create (void)
 {
@@ -55,6 +56,7 @@ bspline_landmarks_destroy (Bspline_landmarks* blm)
     }
     free (blm);
 }
+#endif
 
 #if defined (commentout)
 static void
@@ -102,6 +104,7 @@ bspline_landmarks_load_file (float **landmarks, int *num_landmarks, char *fn)
 }
 #endif
 
+#if defined (commentout)
 void
 bspline_landmarks_adjust (Bspline_landmarks *blm, Volume *fixed, Volume *moving)
 {
@@ -359,14 +362,8 @@ bspline_landmarks_score_b (
     printf ("        LM DIST %.4f COST %.4f\n", land_rawdist, land_score);
     ssd->score += land_score;
 }
+#endif
 
-
-/*
-Implementation "a" 
-GCS version from rev. 1118
-M = moving landmark, F = fixed landmark
-diff = ( F + dx - M )
-*/
 void
 bspline_landmarks_score_a (
     Bspline_parms *parms, 
@@ -377,20 +374,21 @@ bspline_landmarks_score_a (
 )
 {
     Bspline_score* ssd = &bst->ssd;
-    Bspline_landmarks *blm = parms->landmarks;
+    Bspline_landmarks *blm = &parms->blm;
     int lidx;
     FILE *fp, *fp2;
     float land_score, land_grad_coeff, land_rawdist;
 
     land_score = 0;
     land_rawdist = 0;
-    land_grad_coeff = parms->landmark_stiffness / blm->num_landmarks;
+    //land_grad_coeff = parms->landmark_stiffness / blm->num_landmarks;
+    land_grad_coeff = blm->landmark_stiffness / blm->num_landmarks;
 
-    logfile_printf("landmark stiffness is %f\n", parms->landmark_stiffness);
+    logfile_printf ("landmark stiffness is %f\n", blm->landmark_stiffness);
 
-    fp  = fopen("warplist_a.fcsv","w");
-    fp2 = fopen("distlist_a.dat","w");
-    fprintf(fp,"# name = warped\n");
+    fp  = fopen ("warplist_a.fcsv","w");
+    fp2 = fopen ("distlist_a.dat","w");
+    fprintf (fp,"# name = warped\n");
 
     for (lidx=0; lidx < blm->num_landmarks; lidx++)
     {
@@ -411,10 +409,13 @@ bspline_landmarks_score_a (
         qidx = volume_index (bxf->vox_per_rgn, q);
         bspline_interp_pix (dxyz, bxf, p, qidx);
 
+#if defined (commentout)
+	/* FIX */
 	for (d = 0; d < 3; d++) {
 	    mxyz[d] = blm->fixed_landmarks->points[lidx*3+d] + dxyz[d];
 	    diff[d] = blm->moving_landmarks->points[lidx*3+d] - mxyz[d];
 	}
+#endif
 
 #if defined (commentout)
 	printf ("    flm = %f %f %f\n", blm->fixed_landmarks[lidx*3+0], 
@@ -442,7 +443,7 @@ bspline_landmarks_score_a (
     fclose(fp);
     fclose(fp2);
 
-    land_score = land_score * parms->landmark_stiffness / blm->num_landmarks;
+    land_score = land_score * blm->landmark_stiffness / blm->num_landmarks;
     printf ("        LM DIST %.4f COST %.4f\n", land_rawdist, land_score);
     ssd->score += land_score;
 }
@@ -456,12 +457,11 @@ bspline_landmarks_score (
     Volume *moving
 )
 {
-    if (parms->landmark_implementation=='b') 
-	bspline_landmarks_score_b (parms, bst, bxf, fixed, moving);
-    else //default is 'a'
-	bspline_landmarks_score_a (parms, bst, bxf, fixed, moving);
+    /* Only 'a' is supported at this time */
+    bspline_landmarks_score_a (parms, bst, bxf, fixed, moving);
 }
 
+#if defined (commentout)
 /*
 Moves moving landmarks according to the current vector field.
 Output goes into warped_landmarks and landvox_warp
@@ -545,7 +545,7 @@ void bspline_landmarks_warp (
 	    blm->landvox_warp[lidx*3 + d] 
 		= ROUND_INT ((blm->warped_landmarks[lidx*3 + d] 
 			- fixed->offset[d]) / fixed->spacing[d]);
-	    if (blm->landvox_warp[lidx*3 + d] < 0 
+pp	    if (blm->landvox_warp[lidx*3 + d] < 0 
 		|| blm->landvox_warp[lidx*3 + d] >= fixed->dim[d])
 	    {
 		print_and_exit (
@@ -558,3 +558,4 @@ void bspline_landmarks_warp (
     }
     free (dd_min);
 }
+#endif

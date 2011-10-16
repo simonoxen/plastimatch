@@ -235,7 +235,7 @@ save_output (
 
 static void
 do_registration_stage (
-    Registration_Parms* regp, 
+    Registration_parms* regp, 
     Registration_data* regd, 
     Xform *xf_out, Xform *xf_in, 
     Stage_parms* stage)
@@ -276,50 +276,6 @@ do_registration_stage (
 }
 
 static void
-load_input_files (Registration_data* regd, Registration_Parms* regp)
-{
-    Plm_image_type image_type = PLM_IMG_TYPE_ITK_FLOAT;
-
-    /* Always load as ITK so we can find the ROI */
-    logfile_printf ("fixed image=%s\n", regp->fixed_fn);
-    logfile_printf ("Loading fixed image...\n");
-    regd->fixed_image = plm_image_load (regp->fixed_fn, image_type);
-    logfile_printf ("done!\n");
-
-    logfile_printf ("moving image=%s\n", regp->moving_fn);
-    logfile_printf ("Loading moving image...\n");
-    regd->moving_image = plm_image_load (regp->moving_fn, image_type);
-    logfile_printf ("done!\n");
-
-    if (regp->fixed_mask_fn[0]) {
-	logfile_printf ("Loading fixed mask...\n");
-	regd->fixed_mask = itk_image_load_uchar (regp->fixed_mask_fn, 0);
-	logfile_printf ("done!\n");
-    } else {
-	regd->fixed_mask = 0;
-    }
-    if (regp->moving_mask_fn[0]) {
-	logfile_printf ("Loading moving mask...\n");
-	regd->moving_mask = itk_image_load_uchar (regp->moving_mask_fn, 0);
-	logfile_printf ("done!\n");
-    } else {
-	regd->moving_mask = 0;
-    }
-
-    if (regp->fixed_landmarks_fn.not_empty()) {
-	if (regp->moving_landmarks_fn.not_empty()) {
-	    
-	} else {
-	    print_and_exit (
-		"Sorry, you need to specify both fixed and moving landmarks");
-	}
-    } else if (regp->moving_landmarks_fn.not_empty()) {
-	print_and_exit (
-	    "Sorry, you need to specify both fixed and moving landmarks");
-    }
-}
-
-static void
 set_auto_subsampling (int subsample_rate[], Plm_image *pli)
 {
     Plm_image_header pih (pli);
@@ -330,7 +286,7 @@ set_auto_subsampling (int subsample_rate[], Plm_image *pli)
 }
 
 static void
-set_automatic_parameters (Registration_data* regd, Registration_Parms* regp)
+set_automatic_parameters (Registration_data* regd, Registration_parms* regp)
 {
     for (int i = 0; i < regp->num_stages; i++) {
 	Stage_parms *stagep = regp->stages[i];
@@ -344,7 +300,7 @@ set_automatic_parameters (Registration_data* regd, Registration_Parms* regp)
 }
 
 void
-do_registration (Registration_Parms* regp)
+do_registration (Registration_parms* regp)
 {
     int i;
     Registration_data regd;
@@ -360,7 +316,7 @@ do_registration (Registration_Parms* regp)
 
     /* Load images */
     timer1.Start();
-    load_input_files (&regd, regp);
+    regd.load_input_files (regp);
 
     /* Load initial guess of xform */
     if (regp->xf_in_fn[0]) {

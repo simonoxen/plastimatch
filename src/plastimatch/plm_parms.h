@@ -110,10 +110,8 @@ public:
     int grid_method;     // num control points (0) or absolute spacing (1)
     int histoeq;         // histogram matching flag on (1) or off (0)
     /* Landmarks */
-    //float young_modulus; // regularization (cost of vector field gradient)
     float landmark_stiffness; //strength of attraction between landmarks
     char landmark_flavor;
-    //char warped_landmarks_fn[_MAX_PATH];
     /* Output files */
     int img_out_fmt;
     Plm_image_type img_out_type;
@@ -181,16 +179,15 @@ public:
 	grid_spac[2] = 20.; 
 	grid_method = 1;     // by default goes to the absolute spacing
 	histoeq = 0;         // by default, don't do it
-	landmark_stiffness = 0;
+	/* Landmarks */
+	landmark_stiffness = 0.01;
+	landmark_flavor = 'a';
 	/* Output files */
 	img_out_fmt = IMG_OUT_FMT_AUTO;
 	img_out_type = PLM_IMG_TYPE_UNDEFINED;
 	*img_out_fn = 0;
 	xf_out_itk = false;
 	*vf_out_fn = 0;
-	/* Landmarks */
-	landmark_stiffness = 0;
-	landmark_flavor = 'a';
     }
     Stage_parms (Stage_parms& s) {
 	/* Copy all the parameters except the file names */
@@ -202,7 +199,7 @@ public:
     }
 };
 
-class plastimatch1_EXPORT Registration_Parms {
+class plastimatch1_EXPORT Registration_parms {
 public:
     char moving_fn[_MAX_PATH];
     char fixed_fn[_MAX_PATH];
@@ -227,7 +224,7 @@ public:
     Stage_parms** stages;
 
 public:
-    Registration_Parms() {
+    Registration_parms() {
 	*moving_fn = 0;
 	*fixed_fn = 0;
 	*moving_mask_fn = 0;
@@ -243,7 +240,7 @@ public:
 	num_stages = 0;
 	stages = 0;
     }
-    ~Registration_Parms() {
+    ~Registration_parms() {
 	for (int i = 0; i < num_stages; i++) {
 	    delete stages[i];
 	}
@@ -255,9 +252,9 @@ public:
 
 void not_implemented (void);
 plastimatch1_EXPORT int 
-plm_parms_parse_command_file (Registration_Parms* regp, 
+plm_parms_parse_command_file (Registration_parms* regp, 
 			      const char* options_fn);
 plastimatch1_EXPORT int
-plm_parms_process_command_file (Registration_Parms *regp, FILE *fp);
+plm_parms_process_command_file (Registration_parms *regp, FILE *fp);
 
 #endif

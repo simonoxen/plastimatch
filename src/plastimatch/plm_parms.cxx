@@ -18,7 +18,7 @@
 
 int
 set_key_val (
-    Registration_Parms* regp, 
+    Registration_parms* regp, 
     const char* key, 
     const char* val, 
     int section
@@ -400,7 +400,10 @@ set_key_val (
     }
     else if (!strcmp (key, "demons_filter_width")) {
 	if (section == 0) goto error_not_global;
-	if (sscanf (val, "%d %d %d", &(stage->demons_filter_width[0]), &(stage->demons_filter_width[1]), &(stage->demons_filter_width[2])) != 3) {
+	if (sscanf (val, "%d %d %d", 
+		&(stage->demons_filter_width[0]), 
+		&(stage->demons_filter_width[1]), 
+		&(stage->demons_filter_width[2])) != 3) {
 	    goto error_exit;
 	}
     }
@@ -508,7 +511,7 @@ set_key_val (
 }
 
 int
-Registration_Parms::set_command_string (
+Registration_parms::set_command_string (
     const std::string& command_string
 )
 {
@@ -578,62 +581,8 @@ Registration_Parms::set_command_string (
     return 0;
 }
 
-
-#if defined (commentout)
 int
-plm_parms_process_command_file (Registration_Parms *regp, FILE *fp)
-{
-    char buf_ori[BUFLEN];    /* An extra copy for diagnostics */
-    char buf[BUFLEN];
-    char *p, *key, *val;
-    int section = 0;
-
-    while (fgets (buf, BUFLEN, fp)) {
-	strcpy (buf_ori,buf);
-	p = buf;
-	p += strspn (p, " \t\n\r");
-	if (!p) continue;
-	if (*p == '#') continue;
-	if (*p == '[') {
-	    p += strspn (p, " \t\n\r[");
-	    p = strtok (p, "]");
-	    if (!strcmp (p, "GLOBAL") || !strcmp (p, "global")) {
-		section = 0;
-		continue;
-	    } else if (!strcmp (p, "STAGE") || !strcmp (p, "stage")) {
-		section = 1;
-		regp->num_stages ++;
-		regp->stages = (Stage_parms**) realloc (regp->stages, regp->num_stages * sizeof(Stage_parms*));
-		if (regp->num_stages == 1) {
-		    regp->stages[regp->num_stages-1] = new Stage_parms();
-		} else {
-		    regp->stages[regp->num_stages-1] = new Stage_parms(*(regp->stages[regp->num_stages-2]));
-		}
-		continue;
-	    } else if (!strcmp (p, "COMMENT") || !strcmp (p, "comment")) {
-		section = 2;
-		continue;
-	    } else {
-		printf ("Parse error: %s\n", buf_ori);
-		return -1;
-	    }
-	}
-	if (section == 2) continue;
-	key = strtok (p, "=");
-	val = strtok (NULL, "\n\r");
-	if (key && val) {
-	    if (set_key_val (regp, key, val, section) < 0) {
-		printf ("Parse error: %s\n", buf_ori);
-		return -1;
-	    }
-	}
-    }
-    return 0;
-}
-#endif
-
-int
-plm_parms_parse_command_file (Registration_Parms* regp, const char* options_fn)
+plm_parms_parse_command_file (Registration_parms* regp, const char* options_fn)
 {
     /* Read file into string */
     std::ifstream t (options_fn);

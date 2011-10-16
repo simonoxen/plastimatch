@@ -6,9 +6,11 @@
 
 #include "plm_config.h"
 #include <string>
+#include "bspline_landmarks.h"
 #include "bspline_regularize.h"
 #include "bspline_regularize_state.h"
 #include "bspline_xform.h"
+#include "pointset.h"
 #include "volume.h"
 
 #define DOUBLE_HISTS	// Use doubles for histogram accumulation
@@ -32,8 +34,6 @@
 /* -----------------------------------------------------------------------
    Types
    ----------------------------------------------------------------------- */
-struct bspline_landmarks;
-
 enum BsplineOptimization {
     BOPT_LBFGSB,
     BOPT_STEEPEST,
@@ -81,8 +81,8 @@ public:
     }
 };
 
-typedef struct bspline_state_struct Bspline_state;
-struct bspline_state_struct {
+class Bspline_state {
+public:
     int it;              /* Number of iterations */
     int feval;           /* Number of function evaluations */
     Bspline_score ssd;   /* Score and Gradient  */
@@ -128,7 +128,7 @@ public:
     int debug_stage;             /* Used to tag debug files by stage */
     int gpuid;                   /* Sets GPU to use for multi-gpu machines */
     int gpu_zcpy;                /* Use zero-copy when possible? */
-    double_align8 convergence_tol;      /* When to stop iterations based on score */
+    double_align8 convergence_tol; /* When to stop iterations based on score */
     int convergence_tol_its;     /* How many iterations to check for 
 				    convergence tol */
     BSPLINE_MI_Hist mi_hist;     /* Histogram for MI score */
@@ -136,20 +136,20 @@ public:
 				    data stored on the GPU */
     void *data_from_gpu;         /* Pointer to structure that stores the 
 				    data returned from the GPU */
-    double_align8 lbfgsb_factr;         /* Function value tolerance for L-BFGS-B */
-    double_align8 lbfgsb_pgtol;         /* Projected grad tolerance for L-BFGS-B */
+    double_align8 lbfgsb_factr;  /* Function value tolerance for L-BFGS-B */
+    double_align8 lbfgsb_pgtol;  /* Projected grad tolerance for L-BFGS-B */
 
-    struct bspline_landmarks* landmarks;  /* The landmarks themselves */
-    float landmark_stiffness;    /* Attraction of landmarks (0 == no 
-				    attraction) */
-    char landmark_implementation; /*Landmark score implementation, 'a' or 'b' */
+    /* Regularization */
+    Reg_parms reg_parms;         /* Regularization Parameters */
+
+    /* Landmarks */
+    Bspline_landmarks blm;       /* Landmarks parameters */
 
     float rbf_radius;            /* Radius of RBF; if rbf_radius>0, RBF 
 				    are used */
     float rbf_young_modulus;     /* Penalty for the large 2nd derivative 
 				    of RBF vector field */
     char *xpm_hist_dump;         /* Pointer to base string of hist dumps */
-    Reg_parms reg_parms;         /* Regularization Parameters */
 public:
     Bspline_parms () {
 	this->threading = BTHR_CPU;
@@ -167,8 +167,8 @@ public:
 	this->mi_hist.f_hist = 0;
 	this->mi_hist.m_hist = 0;
 	this->mi_hist.j_hist = 0;
-    this->mi_hist.fixed.type = HIST_EQSP;
-    this->mi_hist.moving.type = HIST_EQSP;
+	this->mi_hist.fixed.type = HIST_EQSP;
+	this->mi_hist.moving.type = HIST_EQSP;
 	this->mi_hist.fixed.bins = 32;
 	this->mi_hist.moving.bins = 32;
 	this->mi_hist.joint.bins 
@@ -180,9 +180,7 @@ public:
 	this->data_from_gpu = 0;
 	this->lbfgsb_factr = 1.0e+7;
 	this->lbfgsb_pgtol = 1.0e-5;
-	this->landmarks = 0;
-	this->landmark_stiffness = 0;
-	this->landmark_implementation = 'a';
+
 	this->rbf_radius = 0;
 	this->rbf_young_modulus = 0;
 	this->xpm_hist_dump = 0;

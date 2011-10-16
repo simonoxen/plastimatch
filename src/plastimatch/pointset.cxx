@@ -141,5 +141,19 @@ Pointset<T>::save_fcsv (const char *fn)
     fclose (fp);
 }
 
+template<class T>
+size_t
+Pointset<T>::count (void) const
+{
+    return (size_t) this->point_list.size();
+}
+
+template<class T>
+void
+Pointset<T>::truncate (size_t new_length)
+{
+    this->point_list.resize (new_length);
+}
+
 template class Pointset<Labeled_point>;
 template class Pointset<Point>;

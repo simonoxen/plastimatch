@@ -20,7 +20,7 @@
 
 static void
 do_gpuit_bspline_stage_internal (
-    Registration_Parms* regp, 
+    Registration_parms* regp, 
     Registration_data* regd, 
     Xform *xf_out, 
     Xform *xf_in, 
@@ -37,7 +37,6 @@ do_gpuit_bspline_stage_internal (
 
     Volume *moving_ss, *fixed_ss;
     Volume *moving_grad = 0;
-    Volume *vector_field = 0;
 
     /* Confirm grid method.  This should go away? */
     if (stage->grid_method != 1) {
@@ -151,7 +150,7 @@ do_gpuit_bspline_stage_internal (
 	parms.reg_parms.lambda = stage->regularization_lambda;
     }
 
-    printf ("Regularization: %c %f\n", 
+    logfile_printf ("Regularization: flavor = %c lambda = %f\n", 
 	parms.reg_parms.implementation,
 	parms.reg_parms.lambda);
 
@@ -167,21 +166,17 @@ do_gpuit_bspline_stage_internal (
     parms.max_its = stage->max_its;
     parms.max_feval = stage->max_its;
 
-    /* Load and adjust landmarks, if needed */
-#if defined (commentout)
-    if (stage->fixed_landmarks_fn[0] && stage->moving_landmarks_fn[0]) {
-	parms.landmark_stiffness = stage->landmark_stiffness;
-	parms.landmarks = bspline_landmarks_load (
-	    stage->fixed_landmarks_fn, stage->moving_landmarks_fn);
-	bspline_landmarks_adjust ( parms.landmarks, fixed_ss, moving_ss );
-	if ( stage->landmark_flavor == 0 ) 
-	    parms.landmark_implementation='a';
-	else parms.landmark_implementation = stage->landmark_flavor;
-	logfile_printf("Loaded %d landmarks, fix %s, mov %s\n",
-	    parms.landmarks->num_landmarks,
-	    stage->moving_landmarks_fn, stage->fixed_landmarks_fn);
+    /* Landmarks */
+    if (regd->fixed_landmarks && regd->moving_landmarks) {
+	logfile_printf ("Landmarks: %d fixed, %d moving, lambda = %f\n",
+	    regd->fixed_landmarks->count(),
+	    regd->moving_landmarks->count(),
+	    stage->landmark_stiffness);
+	parms.blm.set_landmarks (regd->fixed_landmarks, 
+	    regd->moving_landmarks);
+	parms.blm.landmark_implementation = stage->landmark_flavor;
+	parms.blm.landmark_stiffness = stage->landmark_stiffness;
     }
-#endif
 
     /* Transform input xform to gpuit vector field */
     pih.set_from_gpuit (fixed_ss->dim, 
@@ -236,7 +231,7 @@ do_gpuit_bspline_stage_internal (
 
 void
 do_gpuit_bspline_stage (
-    Registration_Parms* regp, 
+    Registration_parms* regp, 
     Registration_data* regd, 
     Xform *xf_out, 
     Xform *xf_in,

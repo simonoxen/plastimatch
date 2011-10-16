@@ -65,6 +65,7 @@ bspline_opts_parse_args (Bspline_options* options, int argc, char* argv[])
     int i, rc;
     Bspline_parms* parms = &options->parms;
     Reg_parms* reg_parms = &parms->reg_parms;
+    Bspline_landmarks* blm = &parms->blm;
 
 #if (CUDA_FOUND)
     LOAD_LIBRARY(libplmcuda);
@@ -307,7 +308,7 @@ bspline_opts_parse_args (Bspline_options* options, int argc, char* argv[])
 		exit(1);
 	    }
 	    i++;
-	    rc = sscanf (argv[i], "%g", &parms->landmark_stiffness);
+	    rc = sscanf (argv[i], "%g", &blm->landmark_stiffness);
 	    if (rc != 1) {
 		print_usage ();
 	    }
@@ -318,7 +319,7 @@ bspline_opts_parse_args (Bspline_options* options, int argc, char* argv[])
 		exit(1);
 	    }
 	    i++;
-	    parms->landmark_implementation = argv[i][0];
+	    blm->landmark_implementation = argv[i][0];
 	}
 	else if (!strcmp (argv[i], "--young-modulus")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {
