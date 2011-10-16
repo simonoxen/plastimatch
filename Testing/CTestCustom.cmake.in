@@ -274,6 +274,7 @@ endif ()
 if (PLM_REDUCED_TESTS)
   set (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
+    "black-1"
     "donut-1"
     "gauss-1"
     "gauss-2"
@@ -453,8 +454,18 @@ if (PLM_REDUCED_TESTS)
     "plm-reg-bspline-char-output-stats"
     "plm-reg-bspline-char-output-check"
 
-    "plm-reg-rect-bspline" 
-    "plm-reg-regularization" 
+    "plm-bsp-rect"
+    "plm-bsp-regularize-none"
+    "plm-bsp-regularize-none-stats"
+    "plm-bsp-regularize-none-check"
+    "plm-bsp-regularize-analytic"
+    "plm-bsp-regularize-analytic-stats"
+    "plm-bsp-regularize-analytic-check"
+    "plm-bsp-regularize-numeric"
+    "plm-bsp-regularize-numeric-stats"
+    "plm-bsp-regularize-numeric-check"
+
+#    "plm-bsp-landmark-a"
 
     "plm-reg-compose" 
     "plm-compose-a" 
@@ -471,6 +482,14 @@ if (PLM_REDUCED_TESTS)
     "plm-compose-c-check"
 
     "plm-resample-a"
+    "plm-resample-a-stats"
+    "plm-resample-a-check"
+    "plm-resample-b"
+    "plm-resample-b-stats"
+    "plm-resample-b-check"
+    "plm-resample-c"
+    "plm-resample-c-stats"
+    "plm-resample-c-check"
 
     "plm-warp-pointset-a" 
     "plm-warp-pointset-b" 

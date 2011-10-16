@@ -30,6 +30,7 @@
 #include "plm_int.h"
 #include "plm_parms.h"
 #include "plm_timer.h"
+#include "registration_data.h"
 #include "xform.h"
 
 typedef itk::MeanSquaresImageToImageMetric <

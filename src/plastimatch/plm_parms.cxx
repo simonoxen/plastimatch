@@ -55,6 +55,14 @@ set_key_val (
 	if (section != 0) goto error_not_stages;
 	strncpy (regp->log_fn, val, _MAX_PATH);
     }
+    else if (!strcmp (key, "fixed_landmarks")) {
+	if (section != 0) goto error_not_global;
+	regp->fixed_landmarks_fn = val;
+    }
+    else if (!strcmp (key, "moving_landmarks")) {
+	if (section != 0) goto error_not_global;
+	regp->moving_landmarks_fn = val;
+    }
 
     /* The following keywords are allowed either globally or in stages */
     else if (!strcmp (key, "img_out") || !strcmp (key, "image_out")) {
@@ -120,6 +128,13 @@ set_key_val (
 	    regp->xf_out_fn.push_back (val);
 	} else {
 	    stage->xf_out_fn.push_back (val);
+	}
+    }
+    else if (!strcmp (key, "warped_landmarks")) {
+	if (section == 0) {
+	    regp->warped_landmarks_fn = val;
+	} else {
+	    stage->warped_landmarks_fn = val;
 	}
     }
 
@@ -407,18 +422,6 @@ set_key_val (
 	    goto error_exit;
 	}
     }	
-    else if (!strcmp (key, "fixed_landmarks")) {
-	if (section == 0) goto error_not_global;
-	strncpy (stage->fixed_landmarks_fn, val, _MAX_PATH);
-    }
-    else if (!strcmp (key, "moving_landmarks")) {
-	if (section == 0) goto error_not_global;
-	strncpy (stage->moving_landmarks_fn, val, _MAX_PATH);
-    }
-    else if (!strcmp (key, "warped_landmarks")) {
-	if (section == 0) goto error_not_global;
-	strncpy (stage->warped_landmarks_fn, val, _MAX_PATH);
-    }
     else if (!strcmp (key, "res") || !strcmp (key, "ss")) {
 	if (section == 0) goto error_not_global;
 	stage->subsampling_type = SUBSAMPLING_VOXEL_RATE;

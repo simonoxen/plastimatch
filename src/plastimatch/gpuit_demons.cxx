@@ -10,6 +10,7 @@
 #include "mha_io.h"
 #include "plm_config.h"
 #include "plm_stages.h"
+#include "registration_data.h"
 #include "volume.h"
 #include "volume_resample.h"
 #include "xform.h"

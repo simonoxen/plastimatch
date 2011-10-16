@@ -5,12 +5,13 @@
 #define _plm_parms_h_
 
 #include "plm_config.h"
-#include <stdlib.h>
-#include <ctype.h>
 #include <list>
 #include <string>
-#include "plm_path.h"
+#include <ctype.h>
+#include <stdlib.h>
 #include "plm_image.h"
+#include "plm_path.h"
+#include "pstring.h"
 #include "threading.h"
 
 #define STAGE_TRANSFORM_NONE                0
@@ -112,9 +113,7 @@ public:
     //float young_modulus; // regularization (cost of vector field gradient)
     float landmark_stiffness; //strength of attraction between landmarks
     char landmark_flavor;
-    char fixed_landmarks_fn[_MAX_PATH]; //fixed landmarks filename
-    char moving_landmarks_fn[_MAX_PATH]; //moving landmarks filename
-    char warped_landmarks_fn[_MAX_PATH];
+    //char warped_landmarks_fn[_MAX_PATH];
     /* Output files */
     int img_out_fmt;
     Plm_image_type img_out_type;
@@ -123,6 +122,7 @@ public:
     std::list<std::string> xf_out_fn;
     char vf_out_fn[_MAX_PATH];
     std::string debug_dir;
+    Pstring warped_landmarks_fn;
 
 public:
     Stage_parms () {
@@ -191,9 +191,6 @@ public:
 	/* Landmarks */
 	landmark_stiffness = 0;
 	landmark_flavor = 'a';
-	*fixed_landmarks_fn = 0;
-	*moving_landmarks_fn = 0;
-	*warped_landmarks_fn = 0;
     }
     Stage_parms (Stage_parms& s) {
 	/* Copy all the parameters except the file names */
@@ -218,6 +215,9 @@ public:
     bool xf_out_itk;
     //char xf_out_fn[_MAX_PATH];
     std::list<std::string> xf_out_fn;
+    Pstring warped_landmarks_fn;
+    Pstring fixed_landmarks_fn;
+    Pstring moving_landmarks_fn;
     char vf_out_fn[_MAX_PATH];
     char log_fn[_MAX_PATH];
     int init_type;
@@ -251,20 +251,6 @@ public:
     }
 public:
     int set_command_string (const std::string& command_string);
-};
-
-class Registration_data {
-public:
-    /* Input images */
-    Plm_image *fixed_image;
-    Plm_image *moving_image;
-    UCharImageType::Pointer fixed_mask;
-    UCharImageType::Pointer moving_mask;
-
-    /* Region of interest */
-    FloatImageType::RegionType fixed_region;
-    FloatImageType::PointType fixed_region_origin;
-    FloatImageType::SpacingType fixed_region_spacing;
 };
 
 void not_implemented (void);

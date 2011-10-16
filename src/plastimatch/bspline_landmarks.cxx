@@ -192,7 +192,8 @@ bspline_landmarks_load (char *fixed_fn, char *moving_fn)
     return blm;
 }
 
-void bspline_landmarks_write_file( char *fn, char *title, float *coords, int n )
+void bspline_landmarks_write_file (
+    const char *fn, char *title, float *coords, int n)
 {
     FILE *fp;
     int lidx;

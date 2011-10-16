@@ -346,6 +346,7 @@ set (PLASTIMATCH1_LIBRARY_SRC
   rbf_wendland.cxx rbf_wendland.h
   rbf_cluster.cxx rbf_cluster.h
   referenced_dicom_dir.cxx referenced_dicom_dir.h 
+  registration_data.cxx registration_data.h
   rtds.cxx rtds.h
   rtds_dcmtk.cxx
   rtds_dicom.cxx rtds_dicom.h

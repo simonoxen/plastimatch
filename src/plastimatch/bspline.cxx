@@ -926,11 +926,11 @@ bspline_score (
     /* Report results of this iteration */
     report_score (parms, bxf, bst);
 
-#if defined (commentout)
     /* Add landmark score/gradient to image score/gradient */
     if (parms->landmarks) {
 	printf ("comuting landmarks\n");
 	bspline_landmarks_score (parms, bst, bxf, fixed, moving);
     }
+#if defined (commentout)
 #endif
 }

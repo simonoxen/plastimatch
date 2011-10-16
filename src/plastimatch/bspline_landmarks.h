@@ -52,7 +52,8 @@ void bspline_landmarks_warp (
     Volume *moving);
 
 gpuit_EXPORT
-void bspline_landmarks_write_file( char *fn, char *title, float *coords, int n);
+void bspline_landmarks_write_file (const char *fn, char *title, 
+    float *coords, int n);
 
 #if defined __cplusplus
 }

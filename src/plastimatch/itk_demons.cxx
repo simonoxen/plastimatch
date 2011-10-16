@@ -2,10 +2,10 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
-#include <time.h>
+#include <iostream>
 #include <stdlib.h>
 #include <string.h>
-#include <iostream>   // Note: gcc prefers c++-style includes
+#include <time.h>
 #include "itkArray.h"
 #include "itkCommand.h"
 #include "itkHistogramMatchingImageFilter.h"
@@ -19,6 +19,7 @@
 #include "logfile.h"
 #include "plm_parms.h"
 #include "plm_timer.h"
+#include "registration_data.h"
 #include "xform.h"
 
 typedef itk::DemonsRegistrationFilter<

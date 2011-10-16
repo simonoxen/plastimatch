@@ -1,0 +1,21 @@
+[GLOBAL]
+fixed=@PLM_TESTING_BUILD_DIR@/rect-2.mha
+moving=@PLM_TESTING_BUILD_DIR@/sphere-2.mha
+fixed_landmarks=@PLM_TESTING_DATA_DIR@/fiducials-rect-2.fcsv
+moving_landmarks=@PLM_TESTING_DATA_DIR@/fiducials-rect-3.fcsv
+
+vf_out=@PLM_TESTING_BUILD_DIR@/plm-reg-bsp-landmark-a-vf.mha
+xform_out=@PLM_TESTING_BUILD_DIR@/plm-reg-bsp-landmark-a-xf.txt
+img_out=@PLM_TESTING_BUILD_DIR@/plm-reg-bsp-landmark-a-img.mha
+warped_landmarks=@PLM_TESTING_BUILD_DIR@/plm-bsp-landmark-a-warped.fcsv
+
+[STAGE]
+xform=bspline
+optim=lbfgsb
+impl=plastimatch
+threading=single
+max_its=5
+convergence_tol=3
+grad_tol=0.1
+grid_spac=30 30 30
+res=2 2 2

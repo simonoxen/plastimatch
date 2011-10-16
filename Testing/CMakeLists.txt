@@ -5,6 +5,13 @@ project (PLM_Testing)
 ## http://stackoverflow.com/questions/733475/cmake-ctest-make-test-doesnt-build-tests
 ## -------------------------------------------------------------------------
 
+##-----------------------------------------------------------------------------
+## Configure test input files
+##-----------------------------------------------------------------------------
+configure_file ("${PLM_TESTING_DATA_DIR}/plm-bsp-landmark-a.txt"
+  "${PLM_TESTING_BUILD_DIR}/plm-bsp-landmark-a.txt"
+  @ONLY)
+
 ## -------------------------------------------------------------------------
 ## Testing macros
 ## -------------------------------------------------------------------------
@@ -1737,6 +1744,18 @@ set_tests_properties (plm-bsp-regularize-numeric-stats PROPERTIES
   DEPENDS plm-bsp-regularize-numeric)
 set_tests_properties (plm-bsp-regularize-numeric-check PROPERTIES 
   DEPENDS plm-bsp-regularize-numeric-stats)
+
+## -------------------------------------------------------------------------
+## plastimatch register (group 4)
+##   plm-bsp-landmark-a
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-bsp-landmark-a"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_TESTING_BUILD_DIR}/plm-bsp-landmark-a.txt"
+  )
+set_tests_properties (plm-bsp-landmark-a PROPERTIES DEPENDS "rect-2;sphere-2")
 
 ## -------------------------------------------------------------------------
 ## plastimatch compose

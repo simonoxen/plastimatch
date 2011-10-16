@@ -23,6 +23,7 @@
 #include "plm_parms.h"
 #include "plm_stages.h"
 #include "plm_warp.h"
+#include "registration_data.h"
 #include "vf.h"
 #include "xform.h"
 
@@ -70,16 +71,13 @@ set_fixed_image_region_global (Registration_data* regd)
 		    valid_size[1] = 1;
 		    valid_size[2] = 1;
 		} else {
-		    int updated = 0;
 		    for (int i = 0; i < 3; i++) {
 			if (valid_index[i] > idx[i]) {
 			    valid_size[i] += valid_index[i] - idx[i];
 			    valid_index[i] = idx[i];
-			    updated = 1;
 			}
 			if (idx[i] - valid_index[i] >= (long) valid_size[i]) {
 			    valid_size[i] = idx[i] - valid_index[i] + 1;
-			    updated = 1;
 			}
 		    }
 		}
@@ -119,16 +117,13 @@ set_fixed_image_region_global (Registration_data* regd)
 		    valid_size[1] = 1;
 		    valid_size[2] = 1;
 		} else {
-		    int updated = 0;
 		    for (int i = 0; i < 3; i++) {
 			if (valid_index[i] > idx[i]) {
 			    valid_size[i] += valid_index[i] - idx[i];
 			    valid_index[i] = idx[i];
-			    updated = 1;
 			}
 			if (idx[i] - valid_index[i] >= (long) valid_size[i]) {
 			    valid_size[i] = idx[i] - valid_index[i] + 1;
-			    updated = 1;
 			}
 		    }
 		}
@@ -309,6 +304,18 @@ load_input_files (Registration_data* regd, Registration_Parms* regp)
 	logfile_printf ("done!\n");
     } else {
 	regd->moving_mask = 0;
+    }
+
+    if (regp->fixed_landmarks_fn.not_empty()) {
+	if (regp->moving_landmarks_fn.not_empty()) {
+	    
+	} else {
+	    print_and_exit (
+		"Sorry, you need to specify both fixed and moving landmarks");
+	}
+    } else if (regp->moving_landmarks_fn.not_empty()) {
+	print_and_exit (
+	    "Sorry, you need to specify both fixed and moving landmarks");
     }
 }
 

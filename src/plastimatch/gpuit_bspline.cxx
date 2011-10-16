@@ -13,6 +13,7 @@
 #include "mha_io.h"
 #include "plm_image_header.h"
 #include "plm_parms.h"
+#include "registration_data.h"
 #include "volume.h"
 #include "volume_resample.h"
 #include "xform.h"
@@ -167,6 +168,7 @@ do_gpuit_bspline_stage_internal (
     parms.max_feval = stage->max_its;
 
     /* Load and adjust landmarks, if needed */
+#if defined (commentout)
     if (stage->fixed_landmarks_fn[0] && stage->moving_landmarks_fn[0]) {
 	parms.landmark_stiffness = stage->landmark_stiffness;
 	parms.landmarks = bspline_landmarks_load (
@@ -179,6 +181,7 @@ do_gpuit_bspline_stage_internal (
 	    parms.landmarks->num_landmarks,
 	    stage->moving_landmarks_fn, stage->fixed_landmarks_fn);
     }
+#endif
 
     /* Transform input xform to gpuit vector field */
     pih.set_from_gpuit (fixed_ss->dim, 
@@ -200,11 +203,12 @@ do_gpuit_bspline_stage_internal (
 	moving_ss, moving_grad);
 
     /* Warp landmarks and write them out */
+#if defined (commentout)
     if (stage->fixed_landmarks_fn[0] 
 	&& stage->moving_landmarks_fn[0]
 	&& stage->warped_landmarks_fn[0]) {
 	logfile_printf("Trying to warp landmarks, output file: %s\n",
-	    stage->warped_landmarks_fn);
+	    (const char*) stage->warped_landmarks_fn);
 	vector_field = new Volume (fixed_ss->dim, fixed_ss->offset, 
 	    fixed_ss->spacing, fixed_ss->direction_cosines, 
 	    PT_VF_FLOAT_INTERLEAVED, 3);
@@ -212,13 +216,16 @@ do_gpuit_bspline_stage_internal (
 	if (vector_field) {
 	    bspline_landmarks_warp (vector_field, &parms, 
 		xf_out->get_gpuit_bsp(), fixed_ss, moving_ss );
-	    bspline_landmarks_write_file( stage->warped_landmarks_fn, "warped", 
+	    bspline_landmarks_write_file (
+		(const char*) stage->warped_landmarks_fn, 
+		"warped", 
 		parms.landmarks->warped_landmarks, 
 		parms.landmarks->num_landmarks);
 	    delete vector_field;
 	} else 
 	    print_and_exit ("Could not interpolate vector field for landmark warping\n");
     }
+#endif
 
     /* Free up temporary memory */
     delete fixed_ss;
