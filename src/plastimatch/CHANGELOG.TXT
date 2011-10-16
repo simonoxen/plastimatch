@@ -1,5 +1,6 @@
 Version 1.5.5 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
+* Add support for landmark penalty to B-spline registration
 
 Version 1.5.4 (build 2832)
 Mon Oct 10 00:20:35 EDT 2011

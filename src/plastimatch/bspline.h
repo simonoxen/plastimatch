@@ -61,18 +61,21 @@ enum BsplineHistType {
 class Bspline_score {
 public:
     float score;         /* Total Score (sent to optimizer) */
-    float smetric;       /* Similarity metric */
+    float lmetric;       /* Landmark metric */
     float rmetric;       /* Regularization metric */
+    float smetric;       /* Similarity metric */
     int num_vox;         /* Number of voxel with correspondence */
-    float* grad;         /* Change in score wrt control coeff */
+
+    float* grad;         /* Gradient score wrt control coeff */
 
     double time_smetric;   /* Time to compute similarity metric */
     double time_rmetric;   /* Time to compute regularization metric */
 public:
     Bspline_score () {
         this->score = 0;
-        this->smetric = 0;
+        this->lmetric = 0;
         this->rmetric = 0;
+        this->smetric = 0;
         this->num_vox = 0;
         this->grad = 0;
 

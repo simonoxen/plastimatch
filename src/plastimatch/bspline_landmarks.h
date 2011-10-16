@@ -14,35 +14,37 @@ class Bspline_state;
 class Bspline_landmarks {
 public:
     int num_landmarks;
-    Labeled_pointset *fixed_landmarks;
-    Labeled_pointset *moving_landmarks;
+    const Labeled_pointset *fixed_landmarks;
+    const Labeled_pointset *moving_landmarks;
     float landmark_stiffness;
     char landmark_implementation;
 
-    //float *warped_landmarks;
-    int *landvox_mov;
-    int *landvox_fix;
-    int *landvox_warp;
-    //float *rbf_coeff;
-    //float *landmark_dxyz;
+    int *fixed_landmarks_p;
+    int *fixed_landmarks_q;
 public:
     Bspline_landmarks () {
 	num_landmarks = 0;
 	fixed_landmarks = 0;
 	moving_landmarks = 0;
-	landmark_stiffness = 0.01;
+	landmark_stiffness = 1.0;
 	landmark_implementation = 'a';
+	fixed_landmarks_p = 0;
+	fixed_landmarks_q = 0;
     }
     ~Bspline_landmarks () {
 	/* Do not delete fixed_landmarks and moving_landmarks, they are 
 	   owned by the caller. */
+	if (fixed_landmarks_p) {
+	    delete[] fixed_landmarks_p;
+	}
+	if (fixed_landmarks_q) {
+	    delete[] fixed_landmarks_q;
+	}
     }
-    void set_landmarks (Labeled_pointset *fixed_landmarks, 
-	Labeled_pointset *moving_landmarks)
-    {
-	this->fixed_landmarks = fixed_landmarks;
-	this->moving_landmarks = moving_landmarks;
-    }
+    void set_landmarks (
+	const Labeled_pointset *fixed_landmarks, 
+	const Labeled_pointset *moving_landmarks);
+    void initialize (const Bspline_xform* bxf);
 };
 
 #if defined __cplusplus

@@ -14,6 +14,7 @@ xform=bspline
 optim=lbfgsb
 impl=plastimatch
 threading=single
+landmark_stiffness=1.0
 max_its=5
 convergence_tol=3
 grad_tol=0.1

@@ -131,6 +131,7 @@ bspline_state_create (
     Bspline_state *bst = (Bspline_state*) malloc (sizeof (Bspline_state));
     Reg_parms* reg_parms = &parms->reg_parms;
     Bspline_regularize_state* rst = &bst->rst;
+    Bspline_landmarks* blm = &parms->blm;
 
     memset (bst, 0, sizeof (Bspline_state));
     bst->ssd.grad = (float*) malloc (bxf->num_coeff * sizeof(float));
@@ -167,6 +168,9 @@ bspline_state_create (
             }
         }
     }
+
+    /* Landmarks */
+    blm->initialize (bxf);
 
     return bst;
 }
@@ -650,8 +654,9 @@ report_score (
     Bspline_state *bst
 ) 
 {
-    Reg_parms* reg_parms = &parms->reg_parms;
     Bspline_score* ssd = &bst->ssd;
+    Reg_parms* reg_parms = &parms->reg_parms;
+    Bspline_landmarks* blm = &parms->blm;
 
     int i;
     float ssd_grad_norm, ssd_grad_mean;
@@ -670,7 +675,7 @@ report_score (
        JAS 04.19.2010 MI scores are between 0 and 1
        The extra decimal point resolution helps in seeing
        if the optimizer is performing adequately. */
-    if (reg_parms->lambda > 0) {
+    if (reg_parms->lambda > 0 || blm->num_landmarks > 0) {
 	logfile_printf ("SCORE ");
     } else if (parms->metric == BMET_MI) {
 	logfile_printf ("MI  ");
@@ -689,12 +694,26 @@ report_score (
 	    ssd->time_smetric + ssd->time_rmetric);
 
     /* Second line - extra stats if regularization is enabled */
-    if (reg_parms->lambda > 0) {
+    if (reg_parms->lambda > 0 || blm->num_landmarks > 0) {
+	/* Part 1 - similarity metric */
 	logfile_printf (
-	    "         %s %9.3f RM %9.3f       %3.3f s | %3.3f s\n",
-	    (parms->metric == BMET_MI) ? "MI   " : "MSE  ",
-	    ssd->smetric, ssd->rmetric,
-	    ssd->time_smetric, ssd->time_rmetric);
+	    "         %s %9.3f ", 
+	    (parms->metric == BMET_MI) ? "MI   " : "MSE  ", ssd->smetric);
+	/* Part 2 - regularization metric */
+	if (reg_parms->lambda > 0) {
+	    logfile_printf ("RM %9.3f ", 
+		reg_parms->lambda * bst->ssd.rmetric);
+	}
+	/* Part 3 - landmark metric */
+	if (blm->num_landmarks > 0) {
+	    logfile_printf ("LM %9.3f ", 
+		blm->landmark_stiffness * bst->ssd.lmetric);
+	}
+	/* Part 4 - timing */
+	if (reg_parms->lambda > 0) {
+	    logfile_printf ("[ %9.3f | %9.3f ]", 
+		ssd->time_smetric, ssd->time_rmetric);
+	}
     }
 }
 
@@ -824,7 +843,6 @@ bspline_score (
     Volume *moving, 
     Volume *moving_grad)
 {
-
     Reg_parms* reg_parms = &parms->reg_parms;
     Bspline_landmarks* blm = &parms->blm;
 
@@ -909,7 +927,6 @@ bspline_score (
 #if (OPENMP_FOUND)
 	    bspline_score_d_mi (parms, bst, bxf, fixed, moving, moving_grad);
 #else
-	    printf ("OpenMP not available. Defaulting to single core...\n");
 	    bspline_score_c_mi (parms, bst, bxf, fixed, moving, moving_grad);
 #endif
 	    break;
@@ -921,17 +938,18 @@ bspline_score (
         bspline_regularize (&bst->ssd, &bst->rst, reg_parms, bxf);
     }
 
+    /* Compute landmark score/gradient to image score/gradient */
+    if (blm->num_landmarks > 0) {
+	bspline_landmarks_score (parms, bst, bxf, fixed, moving);
+    }
+
     /* Compute total score to send of optimizer */
-    bst->ssd.score = bst->ssd.smetric + reg_parms->lambda * bst->ssd.rmetric;
+    bst->ssd.score = bst->ssd.smetric 
+	+ reg_parms->lambda * bst->ssd.rmetric;
+    if (blm->num_landmarks > 0) {
+	bst->ssd.score += blm->landmark_stiffness * bst->ssd.lmetric;
+    }
 
     /* Report results of this iteration */
     report_score (parms, bxf, bst);
-
-    /* Add landmark score/gradient to image score/gradient */
-    if (blm->num_landmarks > 0) {
-	printf ("computing landmarks\n");
-	bspline_landmarks_score (parms, bst, bxf, fixed, moving);
-    }
-#if defined (commentout)
-#endif
 }

@@ -18,47 +18,6 @@
 #include "volume_macros.h"
 
 #if defined (commentout)
-Bspline_landmarks*
-bspline_landmarks_create (void)
-{
-    Bspline_landmarks *blm;
-    blm = (Bspline_landmarks*) malloc (sizeof (Bspline_landmarks));
-    memset (blm, 0, sizeof (Bspline_landmarks));
-    return blm;
-}
-
-void
-bspline_landmarks_destroy (Bspline_landmarks* blm)
-{
-    if (blm->fixed_landmarks) {
-	pointset_destroy (blm->fixed_landmarks);
-    }
-    if (blm->moving_landmarks) {
-	pointset_destroy (blm->moving_landmarks);
-    }
-    if (blm->landvox_mov) {
-	free (blm->landvox_mov);
-    }
-    if (blm->landvox_fix) {
-	free (blm->landvox_fix);
-    }
-    if (blm->landvox_warp) {
-	free (blm->landvox_warp);
-    }
-    if (blm->warped_landmarks) {
-	free (blm->warped_landmarks);
-    }
-    if (blm->rbf_coeff) {
-	free (blm->rbf_coeff);
-    }
-    if (blm->landmark_dxyz) {
-	free (blm->landmark_dxyz);
-    }
-    free (blm);
-}
-#endif
-
-#if defined (commentout)
 static void
 bspline_landmarks_load_file (float **landmarks, int *num_landmarks, char *fn)
 {
@@ -377,22 +336,19 @@ bspline_landmarks_score_a (
     Bspline_landmarks *blm = &parms->blm;
     int lidx;
     FILE *fp, *fp2;
-    float land_score, land_grad_coeff, land_rawdist;
+    float land_score, land_grad_coeff;
 
     land_score = 0;
-    land_rawdist = 0;
-    //land_grad_coeff = parms->landmark_stiffness / blm->num_landmarks;
     land_grad_coeff = blm->landmark_stiffness / blm->num_landmarks;
 
-    logfile_printf ("landmark stiffness is %f\n", blm->landmark_stiffness);
-
+#if defined (commentout)
     fp  = fopen ("warplist_a.fcsv","w");
     fp2 = fopen ("distlist_a.dat","w");
-    fprintf (fp,"# name = warped\n");
+    fprintf (fp, "# name = warped\n");
+#endif
 
     for (lidx=0; lidx < blm->num_landmarks; lidx++)
     {
-	int d;
 	int p[3], q[3];
 	int qidx;
 	float mxyz[3];   /* Location of fixed landmark in moving image */
@@ -401,21 +357,18 @@ bspline_landmarks_score_a (
 	float dxyz[3];
 	float l_dist=0;
 
-	for (d = 0; d < 3; d++) {
-	    p[d] = blm->landvox_fix[lidx*3+d] / bxf->vox_per_rgn[d];
-	    q[d] = blm->landvox_fix[lidx*3+d] % bxf->vox_per_rgn[d];
+	for (int d = 0; d < 3; d++) {
+	    p[d] = blm->fixed_landmarks_p[lidx*3+d];
+	    q[d] = blm->fixed_landmarks_q[lidx*3+d];
 	}
 
         qidx = volume_index (bxf->vox_per_rgn, q);
         bspline_interp_pix (dxyz, bxf, p, qidx);
 
-#if defined (commentout)
-	/* FIX */
-	for (d = 0; d < 3; d++) {
-	    mxyz[d] = blm->fixed_landmarks->points[lidx*3+d] + dxyz[d];
-	    diff[d] = blm->moving_landmarks->points[lidx*3+d] - mxyz[d];
+	for (int d = 0; d < 3; d++) {
+	    mxyz[d] = blm->fixed_landmarks->point_list[lidx].p[d] + dxyz[d];
+	    diff[d] = blm->moving_landmarks->point_list[lidx].p[d] - mxyz[d];
 	}
-#endif
 
 #if defined (commentout)
 	printf ("    flm = %f %f %f\n", blm->fixed_landmarks[lidx*3+0], 
@@ -428,7 +381,6 @@ bspline_landmarks_score_a (
         l_dist = diff[0]*diff[0] + diff[1]*diff[1] + diff[2]*diff[2];
 
         land_score += l_dist;
-        land_rawdist += sqrt(l_dist);
 
         // calculating gradients
         dc_dv[0] = - land_grad_coeff * diff[0];
@@ -436,16 +388,18 @@ bspline_landmarks_score_a (
         dc_dv[2] = - land_grad_coeff * diff[2];
         bspline_update_grad (bst, bxf, p, qidx, dc_dv);
 
+#if defined (commentout)
 	/* Note: Slicer landmarks are in RAS coordinates. Change LPS to RAS */
         fprintf (fp, "W%d,%f,%f,%f,1,1\n", lidx, -mxyz[0], -mxyz[1], mxyz[2]);
         fprintf (fp2,"W%d %.3f\n", lidx, sqrt(l_dist));
+#endif
     }
+#if defined (commentout)
     fclose(fp);
     fclose(fp2);
+#endif
 
-    land_score = land_score * blm->landmark_stiffness / blm->num_landmarks;
-    printf ("        LM DIST %.4f COST %.4f\n", land_rawdist, land_score);
-    ssd->score += land_score;
+    ssd->lmetric = land_score / blm->num_landmarks;
 }
 
 void
@@ -459,6 +413,53 @@ bspline_landmarks_score (
 {
     /* Only 'a' is supported at this time */
     bspline_landmarks_score_a (parms, bst, bxf, fixed, moving);
+}
+
+void 
+Bspline_landmarks::initialize (const Bspline_xform* bxf)
+{
+    if (!this->fixed_landmarks 
+	|| !this->moving_landmarks 
+	|| this->num_landmarks == 0)
+    {
+	return;
+    }
+
+    this->fixed_landmarks_p = new int[3*this->num_landmarks];
+    this->fixed_landmarks_q = new int[3*this->num_landmarks];
+    for (int i = 0; i < num_landmarks; i++) {
+	for (int d = 0; d < 3; d++) {
+	    int v;
+	    v = ROUND_INT ((this->fixed_landmarks->point_list[i].p[d] 
+		    - bxf->img_origin[d]) / bxf->img_spacing[d]);
+	    printf ("(%f - %f) / %f = %d\n",
+		this->fixed_landmarks->point_list[i].p[d], 
+		bxf->img_origin[d], bxf->img_spacing[d], v);
+	    if (v < 0 || v >= bxf->img_dim[d])
+	    {
+		print_and_exit (
+		    "Error: fixed landmark %d outside of fixed image.\n", i);
+	    }
+	    this->fixed_landmarks_p[i*3+d] = v / bxf->vox_per_rgn[d];
+	    this->fixed_landmarks_q[i*3+d] = v % bxf->vox_per_rgn[d];
+	}
+    }
+}
+
+void 
+Bspline_landmarks::set_landmarks (
+    const Labeled_pointset *fixed_landmarks, 
+    const Labeled_pointset *moving_landmarks)
+{
+    this->fixed_landmarks = fixed_landmarks;
+    this->moving_landmarks = moving_landmarks;
+
+    /* Find list with fewer landmarks */
+    if (moving_landmarks->count() > fixed_landmarks->count()) {
+	this->num_landmarks = fixed_landmarks->count();
+    } else {
+	this->num_landmarks = moving_landmarks->count();
+    }
 }
 
 #if defined (commentout)

@@ -62,13 +62,6 @@ Registration_data::load_input_files (Registration_parms* regp)
 	    moving_landmarks = new Labeled_pointset;
 	    moving_landmarks->load_fcsv (
 		(const char*) regp->moving_landmarks_fn);
-	    /* Truncate the longer list, so that both lists have 
-	       the same number of landmarks */
-	    if (moving_landmarks->count() > fixed_landmarks->count()) {
-		moving_landmarks->truncate (fixed_landmarks->count());
-	    } else {
-		fixed_landmarks->truncate (moving_landmarks->count());
-	    }
 	} else {
 	    print_and_exit (
 		"Sorry, you need to specify both fixed and moving landmarks");

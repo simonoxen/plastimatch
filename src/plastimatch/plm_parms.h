@@ -180,7 +180,7 @@ public:
 	grid_method = 1;     // by default goes to the absolute spacing
 	histoeq = 0;         // by default, don't do it
 	/* Landmarks */
-	landmark_stiffness = 0.01;
+	landmark_stiffness = 1.0;
 	landmark_flavor = 'a';
 	/* Output files */
 	img_out_fmt = IMG_OUT_FMT_AUTO;
