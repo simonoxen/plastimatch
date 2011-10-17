@@ -114,7 +114,7 @@ main (int argc, char * argv [])
 
     std::cout << command_string.str() << "\n";
 
-    Registration_Parms regp;
+    Registration_parms regp;
     if (regp.set_command_string (command_string.str()) < 0) {
 	return EXIT_FAILURE;
     }

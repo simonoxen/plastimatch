@@ -11,7 +11,7 @@
 class Bspline_parms;
 class Bspline_state;
 
-class Bspline_landmarks {
+class gpuit_EXPORT Bspline_landmarks {
 public:
     int num_landmarks;
     const Labeled_pointset *fixed_landmarks;
