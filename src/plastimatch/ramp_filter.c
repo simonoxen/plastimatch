@@ -3,10 +3,12 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include <math.h>
-#include <string.h>
 #include <stdlib.h>
-#include "ramp_filter.h"
+#include <string.h>
 #include "fftw3.h"
+
+#include "ramp_filter.h"
+#include "print_and_exit.h"
 
 #ifndef PI
 static const double PI = 3.14159265;

@@ -335,7 +335,9 @@ bspline_landmarks_score_a (
     Bspline_score* ssd = &bst->ssd;
     Bspline_landmarks *blm = &parms->blm;
     int lidx;
+#if defined (commentout)
     FILE *fp, *fp2;
+#endif
     float land_score, land_grad_coeff;
 
     land_score = 0;
