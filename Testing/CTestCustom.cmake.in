@@ -105,9 +105,12 @@ endif ()
 if (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02")
   set (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
-    "plm-convert-xio"
-    "plm-convert-xio-stats"
-    "plm-convert-xio-check"
+    "plm-convert-xio-a"
+    "plm-convert-xio-a-stats"
+    "plm-convert-xio-a-check"
+    "plm-convert-xio-b"
+    "plm-convert-xio-b-stats"
+    "plm-convert-xio-b-check"
     "plm-warp-e"
     "plm-warp-e-stats-1"
     "plm-warp-e-check-1"
@@ -397,9 +400,13 @@ if (PLM_REDUCED_TESTS)
     "plm-convert-cxt"
     "plm-convert-cxt-stats"
     "plm-convert-cxt-check"
-    "plm-convert-xio"
-    "plm-convert-xio-stats"
-    "plm-convert-xio-check"
+
+    "plm-convert-xio-a"
+    "plm-convert-xio-a-stats"
+    "plm-convert-xio-a-check"
+#    "plm-convert-xio-b"
+#    "plm-convert-xio-b-stats"
+#    "plm-convert-xio-b-check"
 
     "plm-convert-prefix-fcsv"
 
@@ -465,7 +472,7 @@ if (PLM_REDUCED_TESTS)
     "plm-bsp-regularize-numeric-stats"
     "plm-bsp-regularize-numeric-check"
 
-#    "plm-bsp-landmark-a"
+    "plm-bsp-landmark-a"
 
     "plm-reg-compose" 
     "plm-compose-a" 

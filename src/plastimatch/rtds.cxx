@@ -102,18 +102,19 @@ Rtds::load_xio (
 )
 {
     Xio_dir xd (xio_dir);
-    Xio_patient_dir *xpd;
+    Xio_patient *xpd;
     Xio_studyset_dir *xsd;
     Xio_plan_dir *xtpd;
 
-    if (xd.num_patient_dir <= 0) {
+    if (xd.num_patients() <= 0) {
 	print_and_exit ("Error, xio num_patient_dir = %d\n", 
-	    xd.num_patient_dir);
+	    xd.num_patients());
     }
-    xpd = &xd.patient_dir[0];
-    if (xd.num_patient_dir > 1) {
+    xpd = xd.patient_dir[0];
+    if (xd.num_patients() > 1) {
 	printf ("Warning: multiple patients found in xio directory.\n"
-	    "Defaulting to first directory: %s\n", xpd->path);
+	    "Defaulting to first directory: %s\n", 
+	    (const char*) xpd->m_path);
     }
 
     if (xpd->num_plan_dir > 0) {
@@ -173,13 +174,13 @@ Rtds::load_xio (
     }
 
     /* Load demographics */
-    if (bstring_not_empty (xd.m_demographic_fn)) {
-	Xio_demographic demographic ((const char*) xd.m_demographic_fn);
-	if (bstring_not_empty (demographic.m_patient_name)) {
+    if (xpd->m_demographic_fn.not_empty()) {
+	Xio_demographic demographic ((const char*) xpd->m_demographic_fn);
+	if (demographic.m_patient_name.not_empty()) {
 	    this->m_img_metadata.set_metadata (0x0010, 0x0010, 
 		(const char*) demographic.m_patient_name);
 	}
-	if (bstring_not_empty (demographic.m_patient_id)) {
+	if (demographic.m_patient_id.not_empty()) {
 	    this->m_img_metadata.set_metadata (0x0010, 0x0020, 
 		(const char*) demographic.m_patient_id);
 	}

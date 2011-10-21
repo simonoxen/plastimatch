@@ -22,7 +22,7 @@ static int
 is_xio_directory (const char* path)
 {
     Xio_dir xd (path);
-    if (xio_dir_num_patients (&xd) > 0) {
+    if (xd.num_patients () > 0) {
 	printf ("Found an XiO directory!!!!\n");
 	return 1;
     } else {

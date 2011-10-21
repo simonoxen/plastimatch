@@ -1210,29 +1210,54 @@ set_tests_properties (plm-convert-cxt-check PROPERTIES
   DEPENDS plm-convert-cxt-stats)
 
 ## -------------------------------------------------------------------------
-## plastimatch convert xio
+## plastimatch convert xio-a
+## plastimatch convert xio-b
 ## -------------------------------------------------------------------------
 plm_add_test (
-  "plm-convert-xio"
+  "plm-convert-xio-a"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02;--output-img;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio.mha;--output-xio;${PLM_TESTING_BUILD_DIR}/plm-convert-xio-xio-output;--output-dicom;${PLM_TESTING_BUILD_DIR}/plm-convert-xio-dicom"
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02;--output-img;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-a.mha;--output-xio;${PLM_TESTING_BUILD_DIR}/plm-convert-xio-a-xio-output;--output-dicom;${PLM_TESTING_BUILD_DIR}/plm-convert-xio-a-dicom"
   )
 plm_add_test (
-  "plm-convert-xio-stats"
+  "plm-convert-xio-a-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio.mha"
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-a.mha"
   )
-plmtest_check_interval ("plm-convert-xio-check"
-  "${PLM_TESTING_BUILD_DIR}/plm-convert-xio-stats.stdout.txt"
+plmtest_check_interval ("plm-convert-xio-a-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-convert-xio-a-stats.stdout.txt"
   "AVE *([-0-9.]*)"
   "-667.5"
   "-666.6"
   )
-set_tests_properties (plm-convert-xio-stats PROPERTIES DEPENDS plm-convert-xio)
-set_tests_properties (plm-convert-xio-check PROPERTIES 
-  DEPENDS plm-convert-xio-stats)
+set_tests_properties (plm-convert-xio-a-stats PROPERTIES 
+  DEPENDS plm-convert-xio-a)
+set_tests_properties (plm-convert-xio-a-check PROPERTIES 
+  DEPENDS plm-convert-xio-a-stats)
+
+plm_add_test (
+  "plm-convert-xio-b"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02/20080627A/plan/TRAINING4FLD;--output-img;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-b.mha;--output-xio;${PLM_TESTING_BUILD_DIR}/plm-convert-xio-b-xio-output;--output-dicom;${PLM_TESTING_BUILD_DIR}/plm-convert-xio-b-dicom"
+  )
+plm_add_test (
+  "plm-convert-xio-b-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-b.mha"
+  )
+plmtest_check_interval ("plm-convert-xio-b-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-convert-xio-b-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-667.5"
+  "-666.6"
+  )
+set_tests_properties (plm-convert-xio-b-stats PROPERTIES 
+  DEPENDS plm-convert-xio-b)
+set_tests_properties (plm-convert-xio-b-check PROPERTIES 
+  DEPENDS plm-convert-xio-b-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch-convert-prefix-fcsv

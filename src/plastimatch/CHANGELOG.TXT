@@ -1,6 +1,8 @@
 Version 1.5.5 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
 * Add support for landmark penalty to B-spline registration
+* Fix bug where demographics weren't loaded when converting Xio dose
+* Fix bug loading pointsets in txt format
 
 Version 1.5.4 (build 2832)
 Mon Oct 10 00:20:35 EDT 2011

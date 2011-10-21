@@ -5,41 +5,28 @@
 #define _xio_dir_h
 
 #include "plm_config.h"
-#include "plm_path.h"
+#include <vector>
+#include "xio_patient.h"
 
-typedef struct xio_studyset_dir Xio_studyset_dir;
-struct xio_studyset_dir {
-    char path[_MAX_PATH];
-};
-
-typedef struct xio_plan_dir Xio_plan_dir;
-struct xio_plan_dir {
-    char path[_MAX_PATH];
-};
-
-typedef struct xio_patient_dir Xio_patient_dir;
-struct xio_patient_dir {
-    char path[_MAX_PATH];
-    int num_studyset_dir;
-    int num_plan_dir;
-    Xio_studyset_dir *studyset_dir;
-    Xio_plan_dir *plan_dir;
-};
-
+/* This class represents the input directory, which could be a 
+   patient directory, plan directory, or even a directory which 
+   contains multiple patients */
 class plastimatch1_EXPORT Xio_dir {
 public:
     Pstring path;
-    Pstring m_demographic_fn;
-    int num_patient_dir;
-    Xio_patient_dir *patient_dir;
+    std::vector<Xio_patient*> patient_dir;
 public:
     Xio_dir (const char *input_dir);
     ~Xio_dir ();
+    void analyze ();
+    void analyze_recursive (std::string dir);
+    Xio_patient* add_patient_dir (std::string dir);
+    int num_patients () const;
+public:
+    static int is_xio_patient_dir (std::string dir);
+    static int is_xio_studyset_dir (std::string dir);
+    static int is_xio_plan_dir (std::string dir);
 };
-
-plastimatch1_EXPORT
-void
-xio_dir_analyze (Xio_dir *xd);
 
 plastimatch1_EXPORT
 int

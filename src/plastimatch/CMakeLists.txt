@@ -369,6 +369,7 @@ set (PLASTIMATCH1_LIBRARY_SRC
   xio_dir.cxx xio_dir.h
   xio_dose.cxx xio_dose.h
   xio_studyset.cxx xio_studyset.h
+  xio_patient.cxx xio_patient.h 
   xio_plan.cxx xio_plan.h
   xio_structures.cxx xio_structures.h
   xform.cxx xform.h 
