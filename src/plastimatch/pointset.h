@@ -51,8 +51,12 @@ class gpuit_EXPORT Pointset {
   public:
     std::vector<T> point_list;
   public:
+    void load (const char *fn);
+    void load_txt (const char *fn);
     void load_fcsv (const char *fn);
+    void save (const char *fn);
     void save_fcsv (const char *fn);
+    void save_txt (const char *fn);
     void insert_lps (const std::string& label, float x, float y, float z);
     void insert_ras (const std::string& label, float x, float y, float z);
     size_t count (void) const;

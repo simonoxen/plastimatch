@@ -30,10 +30,10 @@ template<class T> void itk_pointset_load (T pointset, const char* fn);
 template<class T> T itk_pointset_warp (T ps_in, Xform* xf);
 template<class T> void itk_pointset_debug (T pointset);
 plastimatch1_EXPORT
-FloatPointSetType::Pointer itk_float_pointset_from_pointset (Raw_pointset *ps);
-DoublePointSetType::Pointer itk_double_pointset_from_pointset (Raw_pointset *ps);
+FloatPointSetType::Pointer itk_float_pointset_from_raw_pointset (Raw_pointset *ps);
+DoublePointSetType::Pointer itk_double_pointset_from_raw_pointset (Raw_pointset *ps);
 plastimatch1_EXPORT
 Raw_pointset*
-pointset_from_itk_float_pointset (FloatPointSetType::Pointer itk_ps);
+raw_pointset_from_itk_float_pointset (FloatPointSetType::Pointer itk_ps);
 
 #endif

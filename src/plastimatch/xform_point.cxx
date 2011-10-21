@@ -45,14 +45,18 @@ xform_point_transform_itk_vf (
     bool isInside = vf->TransformPhysicalPointToIndex (point_in, idx);
     if (isInside) {
 	DeformationFieldType::PixelType pixelValue = vf->GetPixel (idx);
+#if defined (commentout)
 	printf ("pi [%g %g %g]\n", point_in[0], point_in[1], point_in[2]);
 	printf ("idx [%ld %ld %ld]\n", idx[0], idx[1], idx[2]);
 	printf ("vf [%g %g %g]\n", pixelValue[0], pixelValue[1], pixelValue[2]);
+#endif
 	for (int d = 0; d < 3; d++) {
 	    (*point_out)[d] = point_in[d] + pixelValue[d];
 	}
+#if defined (commentout)
 	printf ("po [%g %g %g]\n", 
 	    (*point_out)[0], (*point_out)[1], (*point_out)[2]);
+#endif
     } else {
 	(*point_out) = point_in;
     }

@@ -22,13 +22,13 @@ warp_pointset_main (Warp_parms* parms)
     xform_load (&xf, parms->xf_in_fn);
 
     FloatPointSetType::Pointer itk_ps_in 
-	= itk_float_pointset_from_pointset (ps);
+	= itk_float_pointset_from_raw_pointset (ps);
 
-    pointset_debug (ps);
-    printf ("---\n");
+    //pointset_debug (ps);
+    //printf ("---\n");
 
-    itk_pointset_debug (itk_ps_in);
-    printf ("---\n");
+    //itk_pointset_debug (itk_ps_in);
+    //printf ("---\n");
 
     FloatPointSetType::Pointer itk_ps_out 
 	= itk_pointset_warp (itk_ps_in, &xf);
@@ -36,7 +36,7 @@ warp_pointset_main (Warp_parms* parms)
     itk_pointset_debug (itk_ps_out);
 
     if (bstring_not_empty (parms->output_pointset_fn)) {
-	Raw_pointset *ps_out = pointset_from_itk_float_pointset (itk_ps_out);
+	Raw_pointset *ps_out = raw_pointset_from_itk_float_pointset (itk_ps_out);
 	pointset_save (ps_out, (const char*) parms->output_pointset_fn);
 	pointset_destroy (ps_out);
     }

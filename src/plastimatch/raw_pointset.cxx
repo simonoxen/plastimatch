@@ -84,7 +84,13 @@ pointset_load_fcsv (const char *fn)
 
 	// skip the label field assuming it does not contain commas
         s2 = strchr(s,',');
-	
+	if (!s2) {
+	    /* If there is no comma, it is not an fcsv file */
+	    pointset_destroy (ps);
+	    fclose (fp);
+	    return 0;
+	}
+
         rc = sscanf (s2, ",%f,%f,%f,%d,%d\n", 
 	    &lm[0], &lm[1], &lm[2], &land_sel, &land_vis);
 	if (rc != 5) {

@@ -152,9 +152,9 @@ itk_tps_warp (
 
     /* Convert pointsets to itk pointsets */
     DoublePointSetType::Pointer mov_lm = 
-	itk_double_pointset_from_pointset (lw->m_moving_landmarks);
+	itk_double_pointset_from_raw_pointset (lw->m_moving_landmarks);
     DoublePointSetType::Pointer fix_lm = 
-	itk_double_pointset_from_pointset (lw->m_fixed_landmarks);
+	itk_double_pointset_from_raw_pointset (lw->m_fixed_landmarks);
 
     printf ("Conversion complete.\n");
     itk_pointset_debug (fix_lm);

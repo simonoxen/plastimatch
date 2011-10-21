@@ -15,6 +15,17 @@
 
 template<class T>
 void
+Pointset<T>::load (const char *fn)
+{
+    if (extension_is (fn, ".fcsv")) {
+	this->load_fcsv (fn);
+    } else {
+	this->load_txt (fn);
+    }
+}
+
+template<class T>
+void
 Pointset<T>::load_fcsv (const char *fn)
 {
     FILE *fp;
@@ -66,6 +77,46 @@ Pointset<T>::load_fcsv (const char *fn)
 
 template<class T>
 void
+Pointset<T>::load_txt (const char *fn)
+{
+    FILE *fp;
+    char s[1024];
+
+    fp = fopen (fn, "r");
+    if (!fp) {
+	return;
+    }
+
+    /* Parse as txt file */
+    while (!feof(fp)) {
+	float lm[3];
+	int rc;
+
+        fgets (s, 1024, fp);
+	if (feof(fp)) break;
+        if (s[0]=='#') continue;
+
+        rc = sscanf (s, "%f , %f , %f\n", &lm[0], &lm[1], &lm[2]);
+	if (rc != 3) {
+	    rc = sscanf (s, "%f %f %f\n", &lm[0], &lm[1], &lm[2]);
+	}
+	if (rc != 3) {
+	    print_and_exit ("Error parsing landmark file: %s\n", fn);
+	}
+
+	/* Assume LPS */
+	T lp;
+	lp.set_label ("");
+	lp.p[0] = lm[0];
+	lp.p[1] = lm[1];
+	lp.p[2] = lm[2];
+	point_list.push_back (lp);
+    }
+    fclose (fp);
+}
+
+template<class T>
+void
 Pointset<T>::insert_ras (
     const std::string& label,
     float x,
@@ -88,6 +139,17 @@ Pointset<T>::insert_lps (
 {
     /* Noo RAS to LPS adjustment */
     this->point_list.push_back (T (label, x, y, z));
+}
+
+template<class T>
+void
+Pointset<T>::save (const char *fn)
+{
+    if (extension_is (fn, ".fcsv")) {
+	this->save_fcsv (fn);
+    } else {
+	this->save_txt (fn);
+    }
 }
 
 template<class T>
@@ -137,6 +199,24 @@ Pointset<T>::save_fcsv (const char *fn)
 	    - lp.p[0], 
 	    - lp.p[1], 
 	    lp.p[2]);
+    }
+    fclose (fp);
+}
+
+template<class T>
+void
+Pointset<T>::save_txt (const char *fn)
+{
+    FILE *fp;
+
+    printf ("Trying to save: %s\n", (const char*) fn);
+    make_directory_recursive (fn);
+    fp = fopen (fn, "w");
+    if (!fp) return;
+
+    for (unsigned int i = 0; i < this->point_list.size(); i++) {
+	const T& lp = this->point_list[i];
+	fprintf (fp, "%f %f %f\n", lp.p[0], lp.p[1], lp.p[2]);
     }
     fclose (fp);
 }

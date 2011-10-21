@@ -13,7 +13,7 @@
    type used to represent the coordinate location */
 
 Raw_pointset*
-pointset_from_itk_float_pointset (FloatPointSetType::Pointer itk_ps)
+raw_pointset_from_itk_float_pointset (FloatPointSetType::Pointer itk_ps)
 {
     typedef FloatPointSetType::PointsContainer PointsContainerType;
     typedef PointsContainerType::Iterator PointsIteratorType;
@@ -38,7 +38,7 @@ pointset_from_itk_float_pointset (FloatPointSetType::Pointer itk_ps)
 }
 
 FloatPointSetType::Pointer
-itk_float_pointset_from_pointset (Raw_pointset *ps)
+itk_float_pointset_from_raw_pointset (Raw_pointset *ps)
 {
     FloatPointSetType::Pointer itk_ps = FloatPointSetType::New ();
     FloatPointSetType::PointsContainer::Pointer itk_ps_c 
@@ -56,7 +56,7 @@ itk_float_pointset_from_pointset (Raw_pointset *ps)
 }
 
 DoublePointSetType::Pointer
-itk_double_pointset_from_pointset (Raw_pointset *ps)
+itk_double_pointset_from_raw_pointset (Raw_pointset *ps)
 {
     DoublePointSetType::Pointer itk_ps = DoublePointSetType::New ();
     DoublePointSetType::PointsContainer::Pointer itk_ps_c 
