@@ -387,7 +387,7 @@ plmtest_check_interval (bspline-h-check
   )
 set_property (TEST bspline-h APPEND PROPERTY DEPENDS gauss-1)
 set_property (TEST bspline-h APPEND PROPERTY DEPENDS gauss-2)
-set_tests_properties (bspline-h-check PROPERTIES DEPENDS bspline-g)
+set_tests_properties (bspline-h-check PROPERTIES DEPENDS bspline-h)
 
 plm_add_test (
   "bspline-mi-c-1"
