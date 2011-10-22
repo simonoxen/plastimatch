@@ -66,5 +66,14 @@
       <description>Write a file containing the names of all the structures in the structure set (absolute path)</description>
       <channel>input</channel>
     </string>
+    <string-enumeration>
+      <name>overlapping_contours</name>
+      <longflag>overlapping_contours</longflag>
+      <description>How should overlapping contours be rasterized? Choose OR if voxel is always included when contained in any contour; choose XOR if voxel should be included when contained in odd number of contours.</description>
+      <label>Overlapping contours</label>
+      <default>OR</default>
+      <element>OR</element>
+      <element>XOR</element>
+    </string-enumeration>
   </parameters>
 </executable>

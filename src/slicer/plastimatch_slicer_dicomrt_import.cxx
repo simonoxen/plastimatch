@@ -44,6 +44,12 @@ main (int argc, char * argv [])
 	parms.output_ss_list_fn = output_ss_list.c_str();
     }
 
+    if (overlapping_contours == "XOR") {
+	parms.xor_contours = true;
+    } else {
+	parms.xor_contours = false;
+    }
+
     /* Process warp */
     file_type = PLM_FILE_FMT_DICOM_DIR;
     rtds_warp (&rtds, file_type, &parms);
