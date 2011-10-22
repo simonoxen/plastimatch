@@ -12,9 +12,16 @@
 
 class plastimatch1_EXPORT Rasterizer {
   public:
+    Rasterizer ();
+    ~Rasterizer ();
+  public:
     bool want_prefix_imgs;
     bool want_labelmap;
     bool want_ss_img;
+
+    /* The default behavior is to "or" overlapping contours.  Set 
+       this member to true if you want to "xor" instead */
+    bool xor_overlapping;
 
     float origin[3];
     float spacing[3];
@@ -31,16 +38,15 @@ class plastimatch1_EXPORT Rasterizer {
 
     int curr_struct_no;
     int curr_bit;
-  public:
-    Rasterizer () {}
-    ~Rasterizer ();
+
   public:
     void rasterize (
 	Rtss_polyline_set *cxt,
 	Plm_image_header *pih,
 	bool want_prefix_imgs,
 	bool want_labelmap,
-	bool want_ss_img
+	bool want_ss_img,
+	bool xor_overlapping
     );
   private:
     void init (
@@ -48,7 +54,8 @@ class plastimatch1_EXPORT Rasterizer {
 	Plm_image_header *pih,             /* Input */
 	bool want_prefix_imgs,             /* Input */
 	bool want_labelmap,                /* Input */
-	bool want_ss_img                   /* Input */
+	bool want_ss_img,                  /* Input */
+	bool xor_overlapping               /* Input */
     );
     bool process_next (
 	Rtss_polyline_set *cxt                          /* In/out */

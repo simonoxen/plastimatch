@@ -328,8 +328,6 @@ Rtss::apply_dicom_dir (const Referenced_dicom_dir *rdd)
 void
 Rtss::convert_ss_img_to_cxt (void)
 {
-    int num_structs = -1;
-
     /* Only convert if ss_img found */
     if (!this->m_ss_img) {
 	return;
@@ -344,10 +342,6 @@ Rtss::convert_ss_img_to_cxt (void)
     /* Copy geometry from ss_img to cxt */
     this->m_cxt->set_geometry_from_plm_image (
 	this->m_ss_img);
-
-    /* Extract polylines */
-    printf ("Running marching squares\n");
-    num_structs = this->m_ss_list->num_structures;
 
 #if (PLM_USE_SS_IMAGE_VEC)
     /* Image type must be uchar vector */
@@ -403,14 +397,16 @@ Rtss::prune_empty (void)
 void
 Rtss::rasterize (
     Plm_image_header *pih,
-    bool want_labelmap
+    bool want_labelmap,
+    bool xor_overlapping
 )
 {
     /* Rasterize structure sets */
     Rasterizer rasterizer;
 
     printf ("Rasterizing...\n");
-    rasterizer.rasterize (this->m_cxt, pih, false, want_labelmap, true);
+    rasterizer.rasterize (this->m_cxt, pih, false, want_labelmap, true,
+	xor_overlapping);
 
     /* Convert rasterized structure sets from vol to plm_image */
     printf ("Converting...\n");

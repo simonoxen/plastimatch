@@ -22,13 +22,49 @@
 #include "rtss_structure.h"
 #include "volume.h"
 
+Rasterizer::Rasterizer ()
+{
+    want_prefix_imgs = false;
+    want_labelmap = false;
+    want_ss_img = false;
+
+    acc_img = 0;
+    uchar_vol = 0;
+    labelmap_vol = 0;
+#if (PLM_USE_SS_IMAGE_VEC)
+#else
+    ss_img_vol = 0;
+#endif
+
+    curr_struct_no = 0;
+    curr_bit = 0;
+    xor_overlapping = false;
+}
+
+Rasterizer::~Rasterizer (void)
+{
+    if (this->uchar_vol) {
+	delete this->uchar_vol;
+    }
+    if (this->labelmap_vol) {
+	delete this->labelmap_vol;
+    }
+#if (!PLM_USE_SS_IMAGE_VEC)
+    if (this->ss_img_vol) {
+	delete this->ss_img_vol;
+    }
+#endif
+    free (this->acc_img);
+}
+
 void
 Rasterizer::init (
     Rtss_polyline_set *cxt,            /* Input */
     Plm_image_header *pih,             /* Input */
     bool want_prefix_imgs,             /* Input */
     bool want_labelmap,                /* Input */
-    bool want_ss_img                   /* Input */
+    bool want_ss_img,                  /* Input */
+    bool xor_overlapping               /* Input */
 )
 {
     int slice_voxels;
@@ -42,6 +78,7 @@ Rasterizer::init (
     this->want_prefix_imgs = want_prefix_imgs;
     this->want_labelmap = want_labelmap;
     this->want_ss_img = want_ss_img;
+    this->xor_overlapping = xor_overlapping;
 
     this->acc_img = (unsigned char*) malloc (
 	slice_voxels * sizeof(unsigned char));
@@ -184,7 +221,11 @@ Rasterizer::process_next (
 		    if (this->acc_img[k]) {
 			itk::VariableLengthVector<unsigned char> v 
 			    = this->m_ss_img->GetPixel (idx);
-			v[uchar_no] |= bit_mask;
+			if (this->xor_overlapping) {
+			    v[uchar_no] ^= bit_mask;
+			} else {
+			    v[uchar_no] |= bit_mask;
+			}
 			this->m_ss_img->SetPixel (idx, v);
 		    }
 		    k++;
@@ -193,11 +234,16 @@ Rasterizer::process_next (
 #else
 	    uint32_t* ss_img_img = 0;
 	    uint32_t* uint32_slice;
+	    unsigned char bit_mask = 1 << this->curr_bit;
 	    ss_img_img = (uint32_t*) this->ss_img_vol->img;
 	    uint32_slice = &ss_img_img[slice_no * slice_voxels];
 	    for (int k = 0; k < slice_voxels; k++) {
 		if (this->acc_img[k]) {
-		    uint32_slice[k] |= (1 << this->curr_bit);
+		    if (this->xor_overlapping) {
+			uint32_slice[k] ^= bit_mask;
+		    } else {
+			uint32_slice[k] |= bit_mask;
+		    }
 		}
 	    }
 #endif
@@ -227,31 +273,16 @@ Rasterizer::current_name (
     }
 }
 
-Rasterizer::~Rasterizer (void)
-{
-    if (this->uchar_vol) {
-	delete this->uchar_vol;
-    }
-    if (this->labelmap_vol) {
-	delete this->labelmap_vol;
-    }
-#if (!PLM_USE_SS_IMAGE_VEC)
-    if (this->ss_img_vol) {
-	delete this->ss_img_vol;
-    }
-#endif
-    free (this->acc_img);
-}
-
 void
 Rasterizer::rasterize (
     Rtss_polyline_set *cxt,            /* Input */
     Plm_image_header *pih,             /* Input */
     bool want_prefix_imgs,             /* Input */
     bool want_labelmap,                /* Input */
-    bool want_ss_img                   /* Input */
+    bool want_ss_img,                  /* Input */
+    bool xor_overlapping               /* Input */
 )
 {
-    this->init (cxt, pih, false, true, true);
+    this->init (cxt, pih, false, true, true, xor_overlapping);
     while (this->process_next (cxt)) {}
 }

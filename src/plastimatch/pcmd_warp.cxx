@@ -125,6 +125,8 @@ parse_fn (
 	"delete empty structures from output", 0);
     parser->add_long_option ("", "simplify-perc", 
 	"delete <arg> percent of the vertices from output polylines", 1, "0");
+    parser->add_long_option ("", "xor-contours", 
+	"overlapping contours should be xor'd instead of or'd", 0);
 
     /* Geometry options */
     parser->add_long_option ("F", "fixed", 
@@ -244,6 +246,9 @@ parse_fn (
 	parms->prune_empty = 1;
     }
     parms->simplify_perc = parser->get_float("simplify-perc");
+    if (parser->option("xor-contours")) {
+	parms->xor_contours = true;
+    }
 
     /* Geometry options */
     if (parser->option ("origin")) {

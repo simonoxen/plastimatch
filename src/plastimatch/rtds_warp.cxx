@@ -246,7 +246,8 @@ warp_and_save_ss (
 	}
 	printf ("Warp_and_save_ss: m_ss_image->rasterize\n");
 	rtds->m_ss_image->rasterize (&pih,
-	    bstring_not_empty (parms->output_labelmap_fn));
+	    parms->output_labelmap_fn.not_empty(),
+	    parms->xor_contours);
     }
 
     /* Do the warp */

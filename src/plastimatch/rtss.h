@@ -55,7 +55,8 @@ public:
     void convert_ss_img_to_cxt (void);
     void cxt_re_extract (void);
     void prune_empty (void);
-    void rasterize (Plm_image_header *pih, bool want_labelmap);
+    void rasterize (Plm_image_header *pih, bool want_labelmap, 
+	bool xor_overlapping);
     void set_geometry_from_plm_image_header (Plm_image_header *pih);
     void find_rasterization_geometry (Plm_image_header *pih);
     void warp (Xform *xf, Plm_image_header *pih, Warp_parms *parms);

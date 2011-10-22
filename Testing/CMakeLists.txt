@@ -1085,23 +1085,60 @@ set_tests_properties (plm-convert-dicom-h-check PROPERTIES
   DEPENDS plm-convert-dicom-h-stats)
 
 ## -------------------------------------------------------------------------
-## plastimatch-convert-dicom-donut
+## These tests are designed to check the handling of overlapping structures 
+## in DICOM-RT format.  The tests assume that the original synthetic donut 
+## DICOM-RT files are generated without keyholing.
+##   plastimatch-convert-dicom-donut-a   From DICOM to ss-img (or semantics)
+##   plastimatch-convert-dicom-donut-b   From DICOM to ss-img (xor semantics)
 ## -------------------------------------------------------------------------
 plm_add_test (
-  "plm-convert-dicom-donut"
+  "plm-convert-dicom-donut-a"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_TESTING_BUILD_DIR}/donut-1-dicom;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-donut-ss.nrrd"
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/donut-1-dicom;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-donut-a-ss.nrrd"
   )
 plm_add_test (
-  "plm-convert-dicom-donut-stats" 
+  "plm-convert-dicom-donut-a-stats" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-donut-ss.nrrd"
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-donut-a-ss.nrrd"
   )
-set_tests_properties (plm-convert-dicom-donut PROPERTIES DEPENDS donut-1)
-set_tests_properties (plm-convert-dicom-donut-stats PROPERTIES 
-  DEPENDS plm-convert-dicom-donut)
+plmtest_check_interval (
+  "plm-convert-dicom-donut-a-check" 
+  "${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-donut-a-stats.stdout.txt"
+  "NONZERO *([-0-9.]*)"
+  "2623"
+  "2623"
+  )
+plm_add_test (
+  "plm-convert-dicom-donut-b"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/donut-1-dicom;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-donut-b-ss.nrrd;--xor-contours"
+  )
+plm_add_test (
+  "plm-convert-dicom-donut-b-stats" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-donut-b-ss.nrrd"
+  )
+plmtest_check_interval (
+  "plm-convert-dicom-donut-b-check" 
+  "${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-donut-b-stats.stdout.txt"
+  "NONZERO *([-0-9.]*)"
+  "1924"
+  "1924"
+  )
+set_tests_properties (plm-convert-dicom-donut-a PROPERTIES DEPENDS donut-1)
+set_tests_properties (plm-convert-dicom-donut-a-stats PROPERTIES 
+  DEPENDS plm-convert-dicom-a-donut)
+set_tests_properties (plm-convert-dicom-donut-a-check PROPERTIES 
+  DEPENDS plm-convert-dicom-a-donut-stats)
+set_tests_properties (plm-convert-dicom-donut-b PROPERTIES DEPENDS donut-1)
+set_tests_properties (plm-convert-dicom-donut-b-stats PROPERTIES 
+  DEPENDS plm-convert-dicom-b-donut)
+set_tests_properties (plm-convert-dicom-donut-b-check PROPERTIES 
+  DEPENDS plm-convert-dicom-b-donut-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch convert dicom-rt (aw)

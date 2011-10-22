@@ -54,10 +54,11 @@ public:
 
     /* Algorithm options */
     float default_val;
-    int interp_lin;              /* trilinear (1) or nn (0) */
-    int prune_empty;             /* remove empty structures (1) or not (0) */
-    int use_itk;                 /* force use of itk (1) or not (0) */
-    int simplify_perc;	 /* percentage of points to be purged */
+    int interp_lin;             /* trilinear (1) or nn (0) */
+    int prune_empty;            /* remove empty structures (1) or not (0) */
+    int use_itk;                /* force use of itk (1) or not (0) */
+    int simplify_perc;          /* percentage of points to be purged */
+    bool xor_contours;          /* or/xor overlapping structure contours */
 
     /* Geometry options */
     bool m_have_dim;
@@ -87,6 +88,7 @@ public:
 	prune_empty = 0;
 	use_itk = 0;
 	simplify_perc = 0;
+	xor_contours = false;
 	patient_pos = PATIENT_POSITION_UNKNOWN;
     }
 };
