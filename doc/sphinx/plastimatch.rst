@@ -203,9 +203,9 @@ The command line usage is given as follows::
   -F, --fixed <arg>             fixed image (match output size to this 
                                  image) 
   -h, --help                    display this help message 
-      --input <arg>             input directory or filename (required); 
-                                 can be an image, structure set file (cxt
-                                 or dicom-rt), dose file (dicom-rt, 
+      --input <arg>             input directory or filename; can be an 
+                                 image, structure set file (cxt or 
+                                 dicom-rt), dose file (dicom-rt, 
                                  monte-carlo or xio), dicom directory, or
                                  xio directory 
       --input-cxt <arg>         input a cxt file 
@@ -220,6 +220,8 @@ The command line usage is given as follows::
                                  either "nn" for nearest neighbors or 
                                  "linear" for tri-linear, default is 
                                  linear 
+      --metadata <arg>          patient metadata (you may use this 
+                                 option multiple times) 
       --origin <arg>            location of first image voxel in mm "x y
                                  z" 
       --output-colormap <arg>   create a colormap file that can be used 
@@ -237,6 +239,9 @@ The command line usage is given as follows::
                                  with 3d slicer 
       --output-prefix <arg>     create a directory with a separate image
                                  for each structure 
+      --output-prefix-fcsv <arg>   
+                                create a directory with a separate fcsv 
+                                 pointset file for each structure 
       --output-ss-img <arg>     create a structure set image which 
                                  allows overlapping structures 
       --output-ss-list <arg>    create a structure set list file 
@@ -246,7 +251,9 @@ The command line usage is given as follows::
       --output-vf <arg>         create a vector field from the input xf 
       --output-xio <arg>        create a directory containing xio-format
                                  files 
-      --patient-pos <arg>       patient position in metadata, one of 
+      --patient-id <arg>        patient id metadata: string 
+      --patient-name <arg>      patient name metadata: string 
+      --patient-pos <arg>       patient position metadata: one of 
                                  {hfs,hfp,ffs,ffp} 
       --prune-empty             delete empty structures from output 
       --referenced-ct <arg>     dicom directory used to set UIDs and 
@@ -256,6 +263,8 @@ The command line usage is given as follows::
       --spacing <arg>           voxel spacing in mm "x [y z]" 
       --version                 display the program version 
       --xf <arg>                input transform used to warp image(s) 
+      --xor-contours            overlapping contours should be xor'd 
+                                 instead of or'd 
 
 Examples
 ^^^^^^^^
