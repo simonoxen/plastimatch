@@ -55,35 +55,18 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Plastimatch configuration variables
 ##-----------------------------------------------------------------------------
-# Building little test programs
-option (PLM_BUILD_CUDA_TEST "Build CUDA test program" OFF)
-option (PLM_BUILD_DCMTK_TEST "Build DCMTK test program" OFF)
-option (PLM_BUILD_DLIB_TEST "Build dlib test program" OFF)
-option (PLM_BUILD_FANN_TEST "Build fann test program" OFF)
-option (PLM_BUILD_GDCM1_TEST "Build GDCM test program" OFF)
-option (PLM_BUILD_MEX_TEST "Build mex test program" OFF)
-option (PLM_BUILD_NLOPT_TEST "Build NLopt test program" OFF)
-option (PLM_BUILD_OPENCL_TEST "Build OpenCL test program" OFF)
-option (PLM_BUILD_OPENMP_TEST "Build OpenMP test program" OFF)
-option (PLM_BUILD_QT_TEST "Build Qt test program" OFF)
-
-# Plastimatch software configuration options
-option (PLM_USE_SS_IMAGE_VEC
-  "Save structure sets as ITK UCHAR VEC images (in development)" OFF)
 option (PLM_CONFIG_DISABLE_CUDA "Set to ON to build without CUDA" OFF)
 option (PLM_CONFIG_DISABLE_DCMTK "Set to ON to build without DCMTK" OFF)
 option (PLM_CONFIG_DISABLE_OPENCL "Set to ON to build without OpenCL" OFF)
-option (PLM_CONFIG_DISABLE_SSE2 "Set to ON to build without SSE" OFF)
+option (PLM_CONFIG_DISABLE_PLASTIMATCH "Build plastimatch" OFF)
 option (PLM_CONFIG_DISABLE_REG23 "Build REG-2-3" OFF)
+option (PLM_CONFIG_DISABLE_SSE2 "Set to ON to build without SSE" OFF)
 set (PLM_CONFIG_VERSION_STRING "" CACHE STRING "Version string")
-option (PLM_CONFIG_KEYHOLIZE "Enable RT structure keyholization" OFF)
-option (PLM_CONFIG_PREFER_DCMTK 
-  "Use DCMTK instead of GDCM for DICOM operations" OFF)
 
 # Optional components
 option (PLM_BUILD_ISE "Build ISE fluoro program" OFF)
-option (PLM_BUILD_RTK "Build RTK" OFF)
-option (PLM_BUILD_SLICER_LOADABLE "Build slicer loadable module" OFF)
+#option (PLM_BUILD_RTK "Build RTK" OFF)
+#option (PLM_BUILD_SLICER_LOADABLE "Build slicer loadable module" OFF)
 
 # Compile and link options
 option (PLM_SUPERBUILD
@@ -567,16 +550,12 @@ if (ITK_FOUND)
     message (FATAL_ERROR 
       "Fatal Error. ITK must be compiled with ITK_USE_REVIEW set to ON")
   endif ()
-  #  if (ITK_USE_SYSTEM_GDCM)
-  #    message (FATAL_ERROR 
-  #      "Fatal Error. ITK must be compiled with ITK_USE_SYSTEM_GDCM set to OFF")
-  #  endif ()
 endif ()
 
 ##-----------------------------------------------------------------------------
 ##  GDCM
 ##-----------------------------------------------------------------------------
-# If we have ITK, then we will use GDCM
+# If we have ITK, then we will use GDCM 
 if (ITK_FOUND)
 
   # The default case is that ITK_USE_SYSTEM_GDCM was used, 
@@ -909,25 +888,25 @@ set (CPACK_GENERATOR "ZIP")
 set (CPACK_SOURCE_GENERATOR "TBZ2")
 
 # Deb specific stuff
-set (CPACK_DEBIAN_PACKAGE_NAME "plastimatch")
-if (PLM_PACKAGE_32BIT)
-  set (CPACK_DEBIAN_PACKAGE_ARCHITECTURE "i386")
-else ()
-  if (HAVE_32_BIT)
-    set (CPACK_DEBIAN_PACKAGE_ARCHITECTURE "i386")
-  else ()
-    set (CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
-  endif ()
-endif ()
+#set (CPACK_DEBIAN_PACKAGE_NAME "plastimatch")
+#if (PLM_PACKAGE_32BIT)
+#  set (CPACK_DEBIAN_PACKAGE_ARCHITECTURE "i386")
+#else ()
+#  if (HAVE_32_BIT)
+#    set (CPACK_DEBIAN_PACKAGE_ARCHITECTURE "i386")
+#  else ()
+#    set (CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+#  endif ()
+#endif ()
 #set (CPACK_DEBIAN_PACKAGE_DEPENDS "put depends here")
-set (CPACK_DEBIAN_PACKAGE_SECTION "science")
-set (CPACK_DEBIAN_PACKAGE_HOMEPAGE "www.plastimatch.org")
-set (CPACK_DEBIAN_PACKAGE_DESCRIPTION 
-  "plastimatch\n Plastimatch is an open source software for deformable image
-    registration. It is designed for high-performance volumetric registration
-    of medical images, such as X-ray computed tomography, magnetic resonance
-    imaging, and positron emission tomography."
-)
+#set (CPACK_DEBIAN_PACKAGE_SECTION "science")
+#set (CPACK_DEBIAN_PACKAGE_HOMEPAGE "www.plastimatch.org")
+#set (CPACK_DEBIAN_PACKAGE_DESCRIPTION 
+#  "plastimatch\n Plastimatch is an open source software for deformable image
+#    registration. It is designed for high-performance volumetric registration
+#    of medical images, such as X-ray computed tomography, magnetic resonance
+#    imaging, and positron emission tomography."
+#)
 
 # General Stuff
 set (CPACK_PACKAGE_CONTACT "gcsharp@partners.org")

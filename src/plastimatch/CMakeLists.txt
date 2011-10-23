@@ -8,7 +8,25 @@ project (src_plastimatch)
 ##-----------------------------------------------------------------------------
 ##  Local options
 ##-----------------------------------------------------------------------------
+# Building little test programs
+option (PLM_BUILD_CUDA_TEST "Build CUDA test program" OFF)
+option (PLM_BUILD_DCMTK_TEST "Build DCMTK test program" OFF)
+option (PLM_BUILD_DLIB_TEST "Build dlib test program" OFF)
+option (PLM_BUILD_FANN_TEST "Build fann test program" OFF)
+option (PLM_BUILD_GDCM1_TEST "Build GDCM test program" OFF)
+option (PLM_BUILD_MEX_TEST "Build mex test program" OFF)
+option (PLM_BUILD_NLOPT_TEST "Build NLopt test program" OFF)
+option (PLM_BUILD_OPENCL_TEST "Build OpenCL test program" OFF)
+option (PLM_BUILD_OPENMP_TEST "Build OpenMP test program" OFF)
+option (PLM_BUILD_QT_TEST "Build Qt test program" OFF)
+
 option (PLM_BUILD_SIFTND "Build siftnD program" ON)
+# Plastimatch software configuration options
+option (PLM_CONFIG_KEYHOLIZE "Enable RT structure keyholization" OFF)
+option (PLM_CONFIG_PREFER_DCMTK 
+  "Use DCMTK instead of GDCM for DICOM operations" OFF)
+option (PLM_USE_SS_IMAGE_VEC
+  "Save structure sets as ITK UCHAR VEC images (in development)" OFF)
 
 ##-----------------------------------------------------------------------------
 ##  Include directories
