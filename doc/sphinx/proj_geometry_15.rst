@@ -1,6 +1,8 @@
 Projection geometry
 ===================
 
+Plastimatch uses the same internal geometry for the DRR and FDK codes.
+
 The DRR code generates images from a volume, using the following
 geometry description:
 

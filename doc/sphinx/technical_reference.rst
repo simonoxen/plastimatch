@@ -13,7 +13,7 @@ Technical reference
    dicom_tutorial
    dicom_comparison
    registration_command_file_reference
-   proj_geometry
+   proj_geometry_15
    cxt_file_format
    proj_mat_file_format
    Project dashboard (regression testing) <http://my.cdash.org/index.php?project=Plastimatch>
