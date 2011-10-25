@@ -4,6 +4,7 @@ INCLUDE_DIRECTORIES(
   ${ORAIFUTILS_SOURCE_DIR}/${ORAIFUTILS_BASICTESTING_SUBDIR}
   ${ORAIFUTILS_SOURCE_DIR}/${ORAIFUTILS_NREG2D3D_DRRENGINE_SUBDIR}
 )
+IF(VTK_FOUND)
 ADD_EXECUTABLE(TestProjectionProperties
    
   TestProjectionProperties.cxx
@@ -15,7 +16,6 @@ TARGET_LINK_LIBRARIES(TestProjectionProperties
   ORAIFNReg2D3DDRREngine
 )
 ADD_TEST(TestProjectionProperties ${EXECUTABLE_OUTPUT_PATH}/TestProjectionProperties -v)
-
 
 # DRR filter test
 INCLUDE_DIRECTORIES(
@@ -83,6 +83,7 @@ TARGET_LINK_LIBRARIES(TestPortalImagingDeviceProjectionProperties
   ORAIFNReg2D3DMathMethods
 )
 ADD_TEST(TestPortalImagingDeviceProjectionProperties ${EXECUTABLE_OUTPUT_PATH}/TestPortalImagingDeviceProjectionProperties -v)
+ENDIF(VTK_FOUND)
 
 # DRR API: projection geometry verification
 INCLUDE_DIRECTORIES(
@@ -172,12 +173,12 @@ ADD_EXECUTABLE(TestCPUSiddonDRRFilterProjectionGeometry
   ${ORAIFUTILS_SOURCE_DIR}/${ORAIFUTILS_NREG2D3D_DRRENGINE_SUBDIR}/oraCPUSiddonDRRFilter.h
   ${ORAIFUTILS_SOURCE_DIR}/${ORAIFUTILS_NREG2D3D_DRRENGINE_SUBDIR}/oraCPUSiddonDRRFilter.txx
   
-  ${ORAIFUTILS_SOURCE_DIR}/${ORAIFUTILS_NREG2D3D_TRANSFORM_SUBDIR}/oraITKVTKLinearTransformConnector.h
-  ${ORAIFUTILS_SOURCE_DIR}/${ORAIFUTILS_NREG2D3D_TRANSFORM_SUBDIR}/oraITKVTKLinearTransformConnector.cxx
+  #${ORAIFUTILS_SOURCE_DIR}/${ORAIFUTILS_NREG2D3D_TRANSFORM_SUBDIR}/oraITKVTKLinearTransformConnector.h
+  #${ORAIFUTILS_SOURCE_DIR}/${ORAIFUTILS_NREG2D3D_TRANSFORM_SUBDIR}/oraITKVTKLinearTransformConnector.cxx
 )
 TARGET_LINK_LIBRARIES(TestCPUSiddonDRRFilterProjectionGeometry
   ORAIFNReg2D3DDRREngine
-  ORAIFNReg2D3DTransform
+  #ORAIFNReg2D3DTransform
 )
 ADD_TEST(TestCPUSiddonDRRFilterProjectionGeometry ${EXECUTABLE_OUTPUT_PATH}/TestCPUSiddonDRRFilterProjectionGeometry -v -xo)
 

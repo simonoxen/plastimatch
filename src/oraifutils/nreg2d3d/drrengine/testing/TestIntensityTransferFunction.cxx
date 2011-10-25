@@ -70,9 +70,9 @@ int main(int argc, char *argv[])
   itf->RemoveSupportingPoint(1);
   supportingPointValues = itf->GetSupportingPoints();
   if((*supportingPointValues)[0].inValue != 0.0 ||
-		  (*supportingPointValues)[2].inValue != 100.0 ||
+		  (*supportingPointValues)[1].inValue != 100.0 ||
 		  (*supportingPointValues)[0].outValue != 0.0 ||
-		  (*supportingPointValues)[2].outValue != 100.0)
+		  (*supportingPointValues)[1].outValue != 100.0)
     lok = false;
   //add new supporting point and check mapping
   itf->AddSupportingPoint(70.0, 50.0);

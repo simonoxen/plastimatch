@@ -10,16 +10,8 @@ INCLUDE_DIRECTORIES(
 
 SET(${OWN_LIB_NAME}_HDRS
   oraGLSLDRRRayCasterDevMethods.hxx
-  oraGLSLDRRRayCastMapper.h
   oraGLSLRayCastingCodeFragments.hxx
-  
-  oraRGBTableManager.h
-  
-  oraScalarFieldManager.h
-  
-  oraITKVTKDRRFilter.h
-  oraITKVTKDRRFilter.txx
-  
+    
   oraProjectionGeometry.h
   oraImageBasedProjectionGeometry.h
   oraImageBasedProjectionGeometry.txx
@@ -27,25 +19,11 @@ SET(${OWN_LIB_NAME}_HDRS
   oraIntensityTransferFunction.h
   oraIntensityTransferFunction.txx
   
-  oraDRRFilter.h
-  oraDRRFilter.txx
-  
   oraCPUSiddonDRRFilter.h
   oraCPUSiddonDRRFilter.txx
   
   oraGLSLRayCastingDRRFilter.h
   oraGLSLRayCastingDRRFilter.txx
-  
-  oraProjectionProperties.h
-  oraProjectionProperties.txx
-  oraFlexMapCorrection.h
-  oraFlexMapCorrection.txx
-  oraTranslationScaleFlexMapCorrection.h
-  oraTranslationScaleFlexMapCorrection.txx
-  oraLinacMountedImagingDeviceProjectionProperties.h
-  oraLinacMountedImagingDeviceProjectionProperties.txx
-  oraPortalImagingDeviceProjectionProperties.h
-  oraPortalImagingDeviceProjectionProperties.txx
 )
 
 SET(${OWN_LIB_NAME}_SRCS
@@ -54,12 +32,35 @@ SET(${OWN_LIB_NAME}_SRCS
 )
 
 IF(VTK_FOUND)
+SET(${OWN_LIB_NAME}_HDRS
+    ${${OWN_LIB_NAME}_HDRS}
+        
+    oraDRRFilter.h
+    oraDRRFilter.txx
+       
+    oraGLSLDRRRayCastMapper.h
+    oraRGBTableManager.h
+    oraITKVTKDRRFilter.h
+    oraITKVTKDRRFilter.txx
+    oraScalarFieldManager.h
+    oraProjectionProperties.h
+    oraProjectionProperties.txx
+    
+    oraFlexMapCorrection.h
+    oraFlexMapCorrection.txx
+    oraTranslationScaleFlexMapCorrection.h
+    oraTranslationScaleFlexMapCorrection.txx
+    oraLinacMountedImagingDeviceProjectionProperties.h
+    oraLinacMountedImagingDeviceProjectionProperties.txx
+    oraPortalImagingDeviceProjectionProperties.h
+    oraPortalImagingDeviceProjectionProperties.txx
+    ${ORAIFUTILS_SOURCE_DIR}/${ORAIFUTILS_IMAGETOOLS_SUBDIR}/oraVTKUnsharpMaskingImageFilter.h
+    )
   SET(${OWN_LIB_NAME}_SRCS
     ${${OWN_LIB_NAME}_SRCS}
     oraGLSLDRRRayCastMapper.cxx  
     oraRGBTableManager.cxx
     oraScalarFieldManager.cxx
-    ${ORAIFUTILS_SOURCE_DIR}/${ORAIFUTILS_IMAGETOOLS_SUBDIR}/oraVTKUnsharpMaskingImageFilter.h
     ${ORAIFUTILS_SOURCE_DIR}/${ORAIFUTILS_IMAGETOOLS_SUBDIR}/oraVTKUnsharpMaskingImageFilter.cxx
     )
 ENDIF(VTK_FOUND)
@@ -98,11 +99,13 @@ ENDIF(VTK_FOUND AND UNIX AND NOT WIN32)
 
 ADD_LIBRARY(${OWN_LIB_NAME} ${ORAIFUTILS_LIBRARY_TYPE} ${${OWN_LIB_NAME}_SRCS} ${${OWN_LIB_NAME}_HDRS})
 SET_TARGET_PROPERTIES(${OWN_LIB_NAME} PROPERTIES LINKER_LANGUAGE CXX)
-TARGET_LINK_LIBRARIES(${OWN_LIB_NAME} 
-  ITKCommon ITKIO ITKAlgorithms ITKBasicFilters ITKNumerics
-  vtkCommon vtkVolumeRendering vtkFiltering vtkRendering
-  ORAIFImageTools
-)
+SET(${OWN_LIB_NAME}_LIBRARIES ITKCommon ITKIO ITKAlgorithms ITKBasicFilters ITKNumerics)
+IF(VTK_FOUND)
+  SET(${OWN_LIB_NAME}_LIBRARIES ${${OWN_LIB_NAME}_LIBRARIES}
+    vtkCommon vtkVolumeRendering vtkFiltering vtkRendering
+    ORAIFImageTools)
+ENDIF(VTK_FOUND)
+TARGET_LINK_LIBRARIES(${OWN_LIB_NAME} ${${OWN_LIB_NAME}_LIBRARIES})
 
 # Add headers to export-set. NOTE: Quotes are important here otherwise only the first header is installed!
 SET_TARGET_PROPERTIES(${OWN_LIB_NAME} PROPERTIES PUBLIC_HEADER "${${OWN_LIB_NAME}_HDRS}")
@@ -117,6 +120,6 @@ INSTALL(TARGETS ${OWN_LIB_NAME}
   COMPONENT dev)
 
 # UNIT TEST
-IF (VTK_FOUND AND ORAIFUTILS_BUILD_TESTING)
+IF (ORAIFUTILS_BUILD_TESTING)
   ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/testing)
-ENDIF (VTK_FOUND AND ORAIFUTILS_BUILD_TESTING)
+ENDIF (ORAIFUTILS_BUILD_TESTING)
