@@ -21,13 +21,14 @@ struct synthetic_vf_main_parms {
     Synthetic_vf_parms sv_parms;
 };
 
-void
-do_synthetic_vf (Pstring& fn, Synthetic_vf_parms *parms)
+static void
+do_synthetic_vf (const Pstring& fn, Synthetic_vf_parms *parms)
 {
-#if defined (commentout)
     /* Create vf */
-    FloatImageType::Pointer img = synthetic_vf (parms);
-#endif
+    DeformationFieldType::Pointer img = synthetic_vf (parms);
+
+    /* Save it */
+    itk_image_save (img, (const char*) fn);
 }
 
 static void
@@ -109,10 +110,14 @@ parse_fn (
     }
 
     /* Patterns */
-    if (parser->option("xf-trans")) {
-	sv_parms->pattern = Synthetic_vf_parms::PATTERN_TRANS;
-    } else if (parser->option("xf-zero")) {
+    if (parser->option("xf-zero")) {
 	sv_parms->pattern = Synthetic_vf_parms::PATTERN_ZERO;
+    } else if (parser->option("xf-trans")) {
+	sv_parms->pattern = Synthetic_vf_parms::PATTERN_TRANSLATION;
+	parser->assign_float13 (sv_parms->translation, "xf-trans");
+    } else if (parser->option("xf-radial")) {
+	sv_parms->pattern = Synthetic_vf_parms::PATTERN_RADIAL;
+	throw (dlib::error ("Sorry, --xf-radial is not yet implemented."));
     } else {
 	throw (dlib::error ("Error. Unknown --xf argument."));
     }

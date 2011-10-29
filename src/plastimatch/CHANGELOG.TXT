@@ -2,6 +2,7 @@ Version 1.5.5 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
 * Add support for landmark penalty to B-spline registration
 * Add --xor-contours option for converting DICOM-RT structure sets
+* Implement a primative synthetic_vf command
 * Fix bug where demographics weren't loaded when converting Xio dose
 * Fix bug loading pointsets in txt format
 

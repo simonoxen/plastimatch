@@ -12,17 +12,17 @@
 #include "itk_image.h"
 #include "getopt.h"
 
-FloatImageType::Pointer
+DeformationFieldType::Pointer
 synthetic_vf (Synthetic_vf_parms* parms)
 {
 
     /* Create ITK image */
-    FloatImageType::SizeType sz;
-    FloatImageType::IndexType st;
-    FloatImageType::RegionType rg;
-    FloatImageType::PointType og;
-    FloatImageType::SpacingType sp;
-    FloatImageType::DirectionType dc;
+    DeformationFieldType::SizeType sz;
+    DeformationFieldType::IndexType st;
+    DeformationFieldType::RegionType rg;
+    DeformationFieldType::PointType og;
+    DeformationFieldType::SpacingType sp;
+    DeformationFieldType::DirectionType dc;
     for (int d1 = 0; d1 < 3; d1++) {
 	st[d1] = 0;
 	sz[d1] = parms->dim[d1];
@@ -32,65 +32,47 @@ synthetic_vf (Synthetic_vf_parms* parms)
     rg.SetSize (sz);
     rg.SetIndex (st);
 
-    FloatImageType::Pointer im_out = FloatImageType::New();
+    DeformationFieldType::Pointer im_out = DeformationFieldType::New();
     im_out->SetRegions(rg);
     im_out->SetOrigin(og);
     im_out->SetSpacing(sp);
     im_out->Allocate();
 
-#if defined (commentout)
-    /* Iterate through image, setting values */
-    typedef itk::ImageRegionIteratorWithIndex< FloatImageType > IteratorType;
+    /* Iterate through vf, setting values */
+    typedef itk::ImageRegionIteratorWithIndex< DeformationFieldType > 
+	IteratorType;
     IteratorType it_out (im_out, im_out->GetRequestedRegion());
-    for (it_out.GoToBegin(); !it_out.IsAtEnd(); ++it_out) {
-	FloatPointType phys;
-	float f = 0.0f;
 
-	FloatImageType::IndexType idx = it_out.GetIndex ();
-	im_out->TransformIndexToPhysicalPoint (idx, phys);
+    /* Stock displacements can be initialized outside of loop */
+    FloatVector3DType disp;
+    for (int d = 0; d < 3; d++) {
 	switch (parms->pattern) {
-	case PATTERN_GAUSS:
-	    f = 0;
-	    for (int d = 0; d < 3; d++) {
-		float f1 = phys[d] - parms->gauss_center[d];
-		f1 = f1 / parms->gauss_std[d];
-		f += f1 * f1;
-	    }
-	    f = exp (-0.5 * f);	    /* f \in (0,1] */
-	    f = (1 - f) * parms->background + f * parms->foreground;
-	    break;
-	case PATTERN_RECT:
-	    if (phys[0] >= parms->rect_size[0] 
-		&& phys[0] <= parms->rect_size[1] 
-		&& phys[1] >= parms->rect_size[2] 
-		&& phys[1] <= parms->rect_size[3] 
-		&& phys[2] >= parms->rect_size[4] 
-		&& phys[2] <= parms->rect_size[5])
-	    {
-		f = parms->foreground;
-	    } else {
-		f = parms->background;
-	    }
-	    break;
-	case PATTERN_SPHERE:
-	    f = 0;
-	    for (int d = 0; d < 3; d++) {
-		float f1 = phys[d] - parms->sphere_center[d];
-		f1 = f1 / parms->sphere_radius[d];
-		f += f1 * f1;
-	    }
-	    if (f > 1.0) {
-		f = parms->background;
-	    } else {
-		f = parms->foreground;
-	    }
-	    break;
+	case Synthetic_vf_parms::PATTERN_ZERO:
 	default:
-	    f = 0.0f;
+	    disp[d] = 0;
+	    break;
+	case Synthetic_vf_parms::PATTERN_TRANSLATION:
+	    disp[d] = parms->translation[d];
 	    break;
 	}
-	it_out.Set (f);
     }
-#endif
+
+    for (it_out.GoToBegin(); !it_out.IsAtEnd(); ++it_out) {
+	FloatPoint3DType phys;
+
+	DeformationFieldType::IndexType idx = it_out.GetIndex ();
+	im_out->TransformIndexToPhysicalPoint (idx, phys);
+	switch (parms->pattern) {
+	case Synthetic_vf_parms::PATTERN_ZERO:
+	case Synthetic_vf_parms::PATTERN_TRANSLATION:
+	default:
+	    /* Do nothing */
+	    break;
+	case Synthetic_vf_parms::PATTERN_RADIAL:
+	    /* Do something (when implemented) */
+	    break;
+	}
+	it_out.Set (disp);
+    }
     return im_out;
 }

@@ -10,8 +10,9 @@
 class Synthetic_vf_parms {
 public:
     enum Pattern {
-	PATTERN_TRANS,
 	PATTERN_ZERO,
+	PATTERN_TRANSLATION,
+	PATTERN_RADIAL,
 	PATTERN_UNKNOWN
     };
 
@@ -21,6 +22,8 @@ public:
     float origin[3];
     float spacing[3];
 
+    float translation[3];
+
 public:
     Synthetic_vf_parms () {
 	pattern = PATTERN_UNKNOWN;
@@ -28,9 +31,12 @@ public:
 	    spacing[i] = 5.0f;
 	    dim[i] = 100;
 	    origin[i] = 0.0f;
+	    translation[i] = 0.0f;
 	}
     }
 };
 
-plastimatch1_EXPORT FloatImageType::Pointer synthetic_vf (Synthetic_vf_parms* parms);
+plastimatch1_EXPORT 
+DeformationFieldType::Pointer synthetic_vf (Synthetic_vf_parms* parms);
+
 #endif
