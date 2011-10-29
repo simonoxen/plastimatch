@@ -4,6 +4,7 @@ Version 1.5.5 (build @PLASTIMATCH_SVN_VERSION@)
 * Add --xor-contours option for converting DICOM-RT structure sets
 * Implement a primative synthetic_vf command
 * Fix bug where demographics weren't loaded when converting Xio dose
+* Fix bug where Xio dose was not converted due to version mismatch
 * Fix bug loading pointsets in txt format
 
 Version 1.5.4 (build 2832)
