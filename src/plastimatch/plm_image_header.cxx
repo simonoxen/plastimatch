@@ -70,7 +70,13 @@ Plm_image_header::set_direction_cosines (const float direction_cosines[9])
 }
 
 void
-Plm_image_header::set_from_gpuit (
+Plm_image_header::set_direction_cosines (const Direction_cosines& dc)
+{
+    itk_direction_from_gpuit (&m_direction, dc.m_direction_cosines);
+}
+
+void
+Plm_image_header::set (
     const int dim[3],
     const float origin[3],
     const float spacing[3],
@@ -80,6 +86,26 @@ Plm_image_header::set_from_gpuit (
     this->set_origin (origin);
     this->set_spacing (spacing);
     this->set_direction_cosines (direction_cosines);
+}
+
+void
+Plm_image_header::set (
+    const int dim[3],
+    const float origin[3],
+    const float spacing[3],
+    const Direction_cosines& dc)
+{
+    this->set (dim, origin, spacing, dc.m_direction_cosines);
+}
+
+void
+Plm_image_header::set_from_gpuit (
+    const int dim[3],
+    const float origin[3],
+    const float spacing[3],
+    const float direction_cosines[9])
+{
+    this->set (dim, origin, spacing, direction_cosines);
 }
 
 void

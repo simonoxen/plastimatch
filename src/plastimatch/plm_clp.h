@@ -252,6 +252,21 @@ public:
 	    throw dlib::error (error_string);
 	}
     }
+    void assign_float9 (float *arr, const string_type& name) {
+	float rc;
+	rc = sscanf (get_string(name).c_str(), 
+	    "%g %g %g %g %g %g %g %g %g", 
+	    &arr[0], &arr[1], &arr[2], 
+	    &arr[3], &arr[4], &arr[5],
+	    &arr[6], &arr[7], &arr[8]);
+	if (rc != 9) {
+	    string_type error_string = 
+		"Error. Option "
+		+ get_option_string (name) 
+		+ " takes nine float arguments.";
+	    throw dlib::error (error_string);
+	}
+    }
     int get_int (const string_type& name) {
 	int out;
 	get_value (out, name);

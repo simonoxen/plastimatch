@@ -25,9 +25,9 @@ synthetic_vf (Synthetic_vf_parms* parms)
     DeformationFieldType::DirectionType dc;
     for (int d1 = 0; d1 < 3; d1++) {
 	st[d1] = 0;
-	sz[d1] = parms->dim[d1];
-	sp[d1] = parms->spacing[d1];
-	og[d1] = parms->origin[d1];
+	sz[d1] = parms->pih.Size(d1);
+	sp[d1] = parms->pih.m_spacing[d1];
+	og[d1] = parms->pih.m_origin[d1];
     }
     rg.SetSize (sz);
     rg.SetIndex (st);

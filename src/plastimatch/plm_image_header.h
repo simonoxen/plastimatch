@@ -5,9 +5,10 @@
 #define _plm_image_header_h_
 
 #include "plm_config.h"
-#include "volume.h"
+#include "direction_cosines.h"
 #include "itk_image.h"
 #include "print_and_exit.h"
+#include "volume.h"
 
 class Bspline_xform;
 class Plm_image_header;
@@ -49,6 +50,18 @@ class plastimatch1_EXPORT Plm_image_header {
     void set_origin (const float origin[3]);
     void set_spacing (const float spacing[3]);
     void set_direction_cosines (
+	const float direction_cosines[9]);
+    void set_direction_cosines (
+	const Direction_cosines& dc);
+    void set (
+	const int dim[3],
+	const float origin[3],
+	const float spacing[3],
+	const Direction_cosines& dc);
+    void set (
+	const int dim[3],
+	const float origin[3],
+	const float spacing[3],
 	const float direction_cosines[9]);
     void set_from_gpuit (
 	const int dim[3],

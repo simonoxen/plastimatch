@@ -5,7 +5,7 @@
 #define _synthetic_vf_h_
 
 #include "plm_config.h"
-#include "itk_image.h"
+#include "plm_image_header.h"
 
 class Synthetic_vf_parms {
 public:
@@ -18,19 +18,13 @@ public:
 
 public:
     Pattern pattern;
-    int dim[3];
-    float origin[3];
-    float spacing[3];
-
+    Plm_image_header pih;
     float translation[3];
 
 public:
     Synthetic_vf_parms () {
 	pattern = PATTERN_UNKNOWN;
 	for (int i = 0; i < 3; i++) {
-	    spacing[i] = 5.0f;
-	    dim[i] = 100;
-	    origin[i] = 0.0f;
 	    translation[i] = 0.0f;
 	}
     }

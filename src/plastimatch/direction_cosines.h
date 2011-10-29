@@ -7,6 +7,7 @@
 #include "plm_config.h"
 #include <string>
 #include "math_util.h"
+#include "itk_image.h"
 
 #define DIRECTION_COSINES_IDENTITY_THRESH 1e-9
 

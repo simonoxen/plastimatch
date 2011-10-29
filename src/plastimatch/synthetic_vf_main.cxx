@@ -7,7 +7,9 @@
 #include <stdlib.h>
 #include <vector>
 
+#include "direction_cosines.h"
 #include "itk_image.h"
+#include "itk_image_load.h"
 #include "itk_image_save.h"
 #include "math_util.h"
 #include "plm_clp.h"
@@ -19,13 +21,41 @@ struct synthetic_vf_main_parms {
     Pstring output_fn;
     Pstring fixed_fn;
     Synthetic_vf_parms sv_parms;
+    int dim[3];
+    float origin[3];
+    float spacing[3];
+    Direction_cosines dc;
 };
 
 static void
-do_synthetic_vf (const Pstring& fn, Synthetic_vf_parms *parms)
+deduce_geometry (
+    Plm_image_header *pih,           /* Output */
+    Synthetic_vf_main_parms *parms   /* Input */
+)
 {
+    /* Try to guess the proper dimensions and spacing for output image */
+    if (parms->fixed_fn.not_empty ()) {
+	/* use the spacing of user-supplied fixed image */
+	printf ("Setting PIH from FIXED\n");
+	FloatImageType::Pointer fixed = itk_image_load_float (
+	    parms->fixed_fn, 0);
+	pih->set_from_itk_image (fixed);
+    } else {
+	/* use user-supplied or default values */
+	pih->set (parms->dim, parms->origin, parms->spacing, parms->dc);
+    }
+}
+
+static void
+do_synthetic_vf (const Pstring& fn, Synthetic_vf_main_parms *parms)
+{
+    Synthetic_vf_parms *sv_parms = &parms->sv_parms;
+
+    /* Deduce output geometry */
+    deduce_geometry (&sv_parms->pih, parms);
+
     /* Create vf */
-    DeformationFieldType::Pointer img = synthetic_vf (parms);
+    DeformationFieldType::Pointer img = synthetic_vf (sv_parms);
 
     /* Save it */
     itk_image_save (img, (const char*) fn);
@@ -63,6 +93,10 @@ parse_fn (
 	"Size of output image in voxels \"x [y z]\"", 1, "100");
     parser->add_long_option ("", "spacing", 
 	"Voxel spacing in mm \"x [y z]\"", 1, "5");
+    parser->add_long_option ("", "direction-cosines", 
+	"oriention of x, y, and z axes; Specify either preset value,"
+	" {identity,rotated,sheared},"
+	" or 9 digit matrix string \"a b c d e f g h i\"", 1, "");
     parser->add_long_option ("", "fixed", 
 	"An input image used to set the size of the output ", 1, "");
 
@@ -102,11 +136,15 @@ parse_fn (
     parms->output_fn = parser->get_string("output").c_str();
 
     /* Image geometry */
-    parser->assign_int13 (sv_parms->dim, "dim");
-    parser->assign_float13 (sv_parms->origin, "origin");
-    parser->assign_float13 (sv_parms->spacing, "spacing");
+    parser->assign_int13 (parms->dim, "dim");
+    parser->assign_float13 (parms->origin, "origin");
+    parser->assign_float13 (parms->spacing, "spacing");
+    if (parser->option ("direction-cosines")) {
+	parser->assign_float9 (parms->dc.m_direction_cosines, 
+	    "direction-cosines");
+    }
     if (parser->option ("fixed")) {
-	parms->output_fn = parser->get_string("fixed").c_str();
+	parms->fixed_fn = parser->get_string("fixed").c_str();
     }
 
     /* Patterns */
@@ -130,7 +168,7 @@ main (int argc, char* argv[])
 
     plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv);
 
-    do_synthetic_vf (parms.output_fn, &parms.sv_parms);
+    do_synthetic_vf (parms.output_fn, &parms);
 
     return 0;
 }
