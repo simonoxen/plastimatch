@@ -10,7 +10,7 @@
 #endif
 
 // Needed for delay loading windows DLLs
-#if _WIN32
+#if _MSC_VER
     #pragma comment(lib, "delayimp")
     #pragma comment(lib, "user32")
 #endif
