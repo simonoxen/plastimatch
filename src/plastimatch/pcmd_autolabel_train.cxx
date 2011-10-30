@@ -22,8 +22,9 @@
 class Autolabel_train_parms {
 public:
     Pstring input_dir;
-    Pstring output_libsvm_fn;
-    Pstring output_network_fn;
+    Pstring output_csv_fn;
+    Pstring output_net_fn;
+    Pstring output_tsacc_fn;
     Pstring task;
 };
 
@@ -42,9 +43,17 @@ do_autolabel_train (Autolabel_train_parms *parms)
 {
     Autolabel_trainer at;
 
-    at.load_input_dir ((const char*) parms->input_dir);
+    at.set_input_dir ((const char*) parms->input_dir);
     at.set_task ((const char*) parms->task);
-    at.save_libsvm ((const char*) parms->output_libsvm_fn);
+    if (parms->output_csv_fn.not_empty()) {
+	at.save_csv ((const char*) parms->output_csv_fn);
+    }
+    if (parms->output_net_fn.not_empty()) {
+	at.train ((const char*) parms->output_net_fn);
+	if (parms->output_tsacc_fn.not_empty()) {
+	    at.save_tsacc ((const char*) parms->output_tsacc_fn);
+	}
+    }
 }
 
 static void
@@ -68,10 +77,12 @@ parse_fn (
     /* Basic options */
     parser->add_long_option ("", "input", 
 	"Input directory (required)", 1, "");
-    parser->add_long_option ("", "output-libsvm", 
-	"Output libsvm training file (required)", 1, "");
-    parser->add_long_option ("", "output-network", 
+    parser->add_long_option ("", "output-csv", 
+	"Output csv file of training data", 1, "");
+    parser->add_long_option ("", "output-net", 
 	"Output trained network filename", 1, "");
+    parser->add_long_option ("", "output-tsacc", 
+	"Output text file showing training set accuraccy", 1, "");
     parser->add_long_option ("", "task", 
 	"Training task (required), choices are "
 	"{la,tsv1,tsv2}", 1, "");
@@ -86,15 +97,16 @@ parse_fn (
     parser->check_required ("input");
 
     /* Check that a task was given */
-    parser->check_required ("output-libsvm");
+    parser->check_required ("output-csv");
 
     /* Check that a task was given */
     parser->check_required ("task");
 
     /* Copy values into output struct */
     parms->input_dir = parser->get_string("input").c_str();
-    parms->output_libsvm_fn = parser->get_string("output-libsvm").c_str();
-    parms->output_network_fn = parser->get_string("output-network").c_str();
+    parms->output_csv_fn = parser->get_string("output-csv").c_str();
+    parms->output_net_fn = parser->get_string("output-net").c_str();
+    parms->output_tsacc_fn = parser->get_string("output-tsacc").c_str();
     parms->task = parser->get_string("task").c_str();
 }
 

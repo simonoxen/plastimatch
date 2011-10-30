@@ -9,6 +9,7 @@
 
 #include "autolabel_ransac_est.h"
 #include "bstring_util.h"
+#include "dlib_trainer.h"
 #include "itk_image.h"
 #include "plm_clp.h"
 #include "plm_image.h"
@@ -34,11 +35,14 @@ public:
 typedef itk::ImageRegionConstIterator< FloatImageType > FloatIteratorType;
 
 /* Dlib typedefs */
+#if defined (commentout)
 typedef std::map < unsigned long, double > sparse_sample_type;
 typedef dlib::matrix < 
     sparse_sample_type::value_type::second_type, 256, 1
     > dense_sample_type;
-typedef dlib::radial_basis_kernel < dense_sample_type > kernel_type;
+typedef dlib::radial_basis_kernel < 
+    dense_sample_type > kernel_type;
+#endif
 
 void
 do_autolabel (Autolabel_parms *parms)
@@ -46,7 +50,8 @@ do_autolabel (Autolabel_parms *parms)
     FILE *fp;
 
     /* Load network */
-    dlib::decision_function<kernel_type> dlib_network;
+    //dlib::decision_function<kernel_type> dlib_network;
+    dlib::decision_function< Dlib_trainer::Kernel_type > dlib_network;
     std::ifstream fin ((const char*) parms->network_fn, std::ios::binary);
     printf ("Trying to deserialize...\n");
     deserialize (dlib_network, fin);
@@ -80,7 +85,8 @@ do_autolabel (Autolabel_parms *parms)
 	FloatImageType::Pointer thumb_img = thumbnail.make_thumbnail ();
 
 	/* Convert to dlib sample type */
-	dense_sample_type d;
+	//dense_sample_type d;
+	Dlib_trainer::Dense_sample_type d;
 	FloatIteratorType it (thumb_img, thumb_img->GetLargestPossibleRegion());
 	for (int j = 0; j < 256; j++) {
 	    d(j) = it.Get();

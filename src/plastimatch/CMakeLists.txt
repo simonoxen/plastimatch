@@ -308,6 +308,7 @@ set (PLASTIMATCH1_LIBRARY_SRC
   cxt_io.cxx cxt_io.h 
   dcm_util.cxx dcm_util.h
   direction_cosines.h
+  dlib_trainer.cxx dlib_trainer.h 
   dvh.cxx dvh.h
   gpuit_bspline.cxx gpuit_bspline.h 
   gpuit_demons.cxx gpuit_demons.h 

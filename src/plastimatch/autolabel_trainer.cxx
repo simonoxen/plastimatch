@@ -12,7 +12,7 @@
 #include "itkRegularExpressionSeriesFileNames.h"
 
 #include "autolabel_trainer.h"
-#include "bstrlib.h"
+#include "dlib_trainer.h"
 #include "file_util.h"
 #include "itk_image.h"
 #include "plm_image.h"
@@ -20,8 +20,18 @@
 #include "print_and_exit.h"
 #include "thumbnail.h"
 
+Autolabel_trainer::Autolabel_trainer ()
+{
+    m_dt = 0;
+}
+
+Autolabel_trainer::~Autolabel_trainer ()
+{
+    if (m_dt) delete m_dt;
+}
+
 void
-Autolabel_trainer::load_input_dir (const char* input_dir)
+Autolabel_trainer::set_input_dir (const char* input_dir)
 {
     if (!itksys::SystemTools::FileIsDirectory (input_dir)) {
 	print_and_exit ("Error: \'%s\' is not a directory\n", input_dir);
@@ -138,63 +148,35 @@ Autolabel_trainer::load_input_file_tsv1 (
     const char* nrrd_fn,
     const char* fcsv_fn)
 {
-    Labeled_pointset ps;
-    ps.load_fcsv (fcsv_fn);
-
-    /* Generate map from t-spine # to z pos */
-    std::map<float, float> t_map;
-    for (unsigned int i = 0; i < ps.point_list.size(); i++) {
-	if (ps.point_list[i].label == "C7") {
-	    t_map.insert (std::pair<float,float> (0, ps.point_list[i].p[2]));
-	}
-	else if (ps.point_list[i].label == "L1") {
-	    t_map.insert (std::pair<float,float> (13, ps.point_list[i].p[2]));
-	}
-	else {
-	    float t;
-	    int rc = sscanf (ps.point_list[i].label.c_str(), "T%f", &t);
-	    if (rc != 1) {
-		/* Not a vertebra point */
-		continue;
-	    }
-	    if (t > 0.25 && t < 12.75) {
-		t_map.insert (std::pair<float,float> (
-			t, ps.point_list[i].p[2]));
-	    }
-	}
-    }
-
-#if defined (commentout)
-    /* Print out map */
-    std::map<float, float>::iterator it;
-    for (it = t_map.begin(); it != t_map.end(); it++) {
-	printf ("Map: %f %f\n", it->first, it->second);
-    }
-#endif
+    /* Create map from spine # to point from fcsv file */
+    std::map<float,Point> t_map = load_tspine_map (fcsv_fn);
 
     /* If we want to use interpolation, we need to sort, and make 
-      a "back-map" from z-pos to t-spine */
+       a "back-map" from z-pos to t-spine */
 
-    /* Otherwise, for the simple case, we're good to go. */
+    /* Otherwise, for the simple case, we're good to go. 
+       Load the input image. */
     Plm_image *pli;
     pli = plm_image_load (nrrd_fn, PLM_IMG_TYPE_ITK_FLOAT);
-    std::map<float, float>::iterator it;
+    Thumbnail thumb;
+    thumb.set_input_image (pli);
+    thumb.set_thumbnail_dim (16);
+    thumb.set_thumbnail_spacing (25.0f);
+
+    /* Get the samples and labels */
+    std::map<float, Point>::iterator it;
     for (it = t_map.begin(); it != t_map.end(); ++it) {
-	Thumbnail thumb;
-	thumb.set_input_image (pli);
-	thumb.set_thumbnail_dim (16);
-	thumb.set_thumbnail_spacing (25.0f);
-	thumb.set_slice_loc (it->second);
+	thumb.set_slice_loc (it->second.p[2]);
 	FloatImageType::Pointer thumb_img = thumb.make_thumbnail ();
 	itk::ImageRegionIterator< FloatImageType > thumb_it (
 	    thumb_img, thumb_img->GetLargestPossibleRegion());
-	fprintf (this->fp, "%f", it->first);
-	int i;
-	for (i = 0, thumb_it.GoToBegin(); !thumb_it.IsAtEnd(); ++i, ++thumb_it)
-	{
-	    fprintf (this->fp, " %d:%f", i, thumb_it.Get ());
+	Dlib_trainer::Dense_sample_type d;
+	for (int j = 0; j < 256; j++) {
+	    d(j) = thumb_it.Get();
+	    ++thumb_it;
 	}
-	fprintf (this->fp, "\n");
+	this->m_dt->m_samples.push_back (d);
+	this->m_dt->m_labels.push_back (it->first);
     }
 
     delete pli;
@@ -209,31 +191,33 @@ Autolabel_trainer::load_input_file_tsv2 (
     std::map<float,Point> t_map = load_tspine_map (fcsv_fn);
 
     /* If we want to use interpolation, we need to sort, and make 
-      a "back-map" from z-pos to t-spine */
+       a "back-map" from z-pos to t-spine */
 
     /* Otherwise, for the simple case, we're good to go. 
-       Here, for testing, we'll make a "y" map. */
+       Load the input image. */
     Plm_image *pli;
     pli = plm_image_load (nrrd_fn, PLM_IMG_TYPE_ITK_FLOAT);
+    Thumbnail thumb;
+    thumb.set_input_image (pli);
+    thumb.set_thumbnail_dim (16);
+    thumb.set_thumbnail_spacing (25.0f);
+
+    /* Get the samples.  For testing, we'll make a "y" map. */
     std::map<float, Point>::iterator it;
     for (it = t_map.begin(); it != t_map.end(); ++it) {
-	Thumbnail thumb;
-	thumb.set_input_image (pli);
-	thumb.set_thumbnail_dim (16);
-	thumb.set_thumbnail_spacing (25.0f);
 	thumb.set_slice_loc (it->second.p[2]);
 	FloatImageType::Pointer thumb_img = thumb.make_thumbnail ();
 	itk::ImageRegionIterator< FloatImageType > thumb_it (
 	    thumb_img, thumb_img->GetLargestPossibleRegion());
 	//fprintf (this->fp, "%f", it->first);
 	//fprintf (this->fp, "%f", it->second.p[0]);
-	fprintf (this->fp, "%f", it->second.p[1]);
+	//fprintf (this->fp, "%f", it->second.p[1]);
 	int i;
 	for (i = 0, thumb_it.GoToBegin(); !thumb_it.IsAtEnd(); ++i, ++thumb_it)
 	{
-	    fprintf (this->fp, " %d:%f", i, thumb_it.Get ());
+	    //fprintf (this->fp, " %d:%f", i, thumb_it.Get ());
 	}
-	fprintf (this->fp, "\n");
+	//fprintf (this->fp, "\n");
     }
 
     delete pli;
@@ -261,22 +245,68 @@ Autolabel_trainer::load_input_file (
 }
 
 void
+Autolabel_trainer::load_inputs ()
+{
+    if (m_task == "" || m_input_dir == "") {
+	print_and_exit ("Error: inputs not fully specified.\n");
+    }
+
+    if (!m_dt) {
+	/* Load the data according to task specification */
+	m_dt = new Dlib_trainer;
+	load_input_dir_recursive (m_input_dir);
+    }
+}
+
+void
 Autolabel_trainer::set_task (const char* task)
 {
     m_task = task;
 }
 
 void
-Autolabel_trainer::save_libsvm (const char* output_libsvm_fn)
+Autolabel_trainer::train (const Pstring& output_net_fn)
 {
-    this->fp = fopen (output_libsvm_fn, "w");
+    /* Load input directory */
+    this->load_inputs ();
 
-    if (m_task == "" || m_input_dir == "") {
-	print_and_exit ("Error saving libsvm, inputs not fully specified.\n");
+    m_dt->set_krr_gamma (-9, -5, 0.5);
+    m_dt->train_krr ();
+
+    m_dt->save_net (output_net_fn);
+}
+
+void
+Autolabel_trainer::save_csv (const char* output_csv_fn)
+{
+    /* Load input directory */
+    this->load_inputs ();
+
+    /* Save the output file */
+    printf ("Saving csv...\n");
+    FILE *fp = fopen (output_csv_fn, "w");
+    std::vector<Dlib_trainer::Dense_sample_type>::iterator s_it
+	= this->m_dt->m_samples.begin();
+    std::vector<Dlib_trainer::Label_type>::iterator l_it
+	= this->m_dt->m_labels.begin();
+    while (s_it != this->m_dt->m_samples.end()) {
+	fprintf (fp, "%f,", *l_it);
+	for (int i = 0; i < 256; i++) {
+	    fprintf (fp, ",%f", (*s_it)(i));
+	}
+	fprintf (fp, "\n");
+	++s_it, ++l_it;
     }
+    fclose (fp);
+    printf ("Done.\n");
+}
 
-    /* Load the data according to task specification */
-    load_input_dir_recursive (m_input_dir);
+void
+Autolabel_trainer::save_tsacc (const Pstring& output_tsacc_fn)
+{
+    /* Load input directory */
+    this->load_inputs ();
 
-    fclose (this->fp);
+    /* Save the output file */
+    this->m_dt->save_tsacc (output_tsacc_fn);
 }

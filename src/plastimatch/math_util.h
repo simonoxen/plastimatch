@@ -48,6 +48,11 @@
 #endif
 #endif
 
+/* exp10() is not in C/C++ standard */
+static inline double exp10_ (double m) {
+    return exp (2.3025850929940456840179914546844 * m);
+}
+
 /* Primatives */
 static inline void vec2_add2 (double* v1, const double* v2) {
     v1[0] += v2[0]; v1[1] += v2[1];
