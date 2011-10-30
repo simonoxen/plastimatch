@@ -5,16 +5,20 @@
 #define _autolabel_trainer_h_
 
 #include "plm_config.h"
+#include <map>
 
 class plastimatch1_EXPORT Autolabel_trainer
 {
   public:
+    Autolabel_trainer () {}
+    ~Autolabel_trainer () {}
+
+  public:
     std::string m_input_dir;
     std::string m_task;
 
-  public:
-    Autolabel_trainer () {}
-    ~Autolabel_trainer () {}
+  private:
+    FILE *fp;
 
   public:
     void load_input_dir (const char* input_dir);

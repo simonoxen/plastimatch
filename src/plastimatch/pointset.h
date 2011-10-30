@@ -16,6 +16,11 @@ public:
 	p[1] = y;
 	p[2] = z;
     }
+    Point (float x, float y, float z) {
+	p[0] = x;
+	p[1] = y;
+	p[2] = z;
+    }
 public:
     float p[3];
 public:

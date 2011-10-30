@@ -20,9 +20,14 @@
 
 class Autolabel_parms {
 public:
+    Autolabel_parms () {
+	enforce_anatomic_constraints = false;
+    }
+public:
     Pstring input_fn;
     Pstring output_fn;
     Pstring network_fn;
+    bool enforce_anatomic_constraints;
 };
 
 /* ITK typedefs */
@@ -91,7 +96,9 @@ do_autolabel (Autolabel_parms *parms)
     }
 
     /* Run RANSAC to refine the estimate */
-    autolabel_ransac_est (apv);
+    if (parms->enforce_anatomic_constraints) {
+	autolabel_ransac_est (apv);
+    }
 
     /* Save the output to a file */
     Autolabel_point_vector::iterator it;
@@ -118,7 +125,8 @@ parse_fn (
     char* argv[]
 )
 {
-    parser->add_long_option ("h", "help", "Display this help message");
+    /* Add --help, --version */
+    parser->add_default_options ();
 
     /* Basic options */
     parser->add_long_option ("", "output", 
@@ -127,12 +135,14 @@ parse_fn (
 	"Input image filename (required)", 1, "");
     parser->add_long_option ("", "network", 
 	"Input trained network filename (required)", 1, "");
+    parser->add_long_option ("", "eac", 
+	"Enforce anatomic constraints", 0);
 
     /* Parse options */
     parser->parse (argc,argv);
 
-    /* Check if the -h option was given */
-    parser->check_help ();
+    /* Handle --help, --version */
+    parser->check_default_options ();
 
     /* Check that an input file was given */
     parser->check_required ("input");
@@ -147,6 +157,9 @@ parse_fn (
     parms->output_fn = parser->get_string("output").c_str();
     parms->input_fn = parser->get_string("input").c_str();
     parms->network_fn = parser->get_string("network").c_str();
+    if (parser->option("eac")) {
+	parms->enforce_anatomic_constraints = true;
+    }
 }
 
 void

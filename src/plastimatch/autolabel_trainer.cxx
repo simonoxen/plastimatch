@@ -94,6 +94,45 @@ Autolabel_trainer::load_input_file_la (
     /* Still need to load file & generate learning vectors here */
 }
 
+static std::map<float, Point> 
+load_tspine_map (const char* fcsv_fn)
+{
+    Labeled_pointset ps;
+    ps.load_fcsv (fcsv_fn);
+
+    /* Generate map from t-spine # to (x,y,z) point */
+    std::map<float, Point> t_map;
+    for (unsigned int i = 0; i < ps.point_list.size(); i++) {
+	if (ps.point_list[i].label == "C7") {
+	    t_map.insert (std::pair<float,Point> (0, 
+		    Point (ps.point_list[i].p[0],
+			ps.point_list[i].p[1],
+			ps.point_list[i].p[2])));
+	}
+	else if (ps.point_list[i].label == "L1") {
+	    t_map.insert (std::pair<float,Point> (13, 
+		    Point (ps.point_list[i].p[0],
+			ps.point_list[i].p[1],
+			ps.point_list[i].p[2])));
+	}
+	else {
+	    float t;
+	    int rc = sscanf (ps.point_list[i].label.c_str(), "T%f", &t);
+	    if (rc != 1) {
+		/* Not a vertebra point */
+		continue;
+	    }
+	    if (t > 0.25 && t < 12.75) {
+		t_map.insert (std::pair<float,Point> (t, 
+			Point (ps.point_list[i].p[0],
+			    ps.point_list[i].p[1],
+			    ps.point_list[i].p[2])));
+	    }
+	}
+    }
+    return t_map;
+}
+
 void
 Autolabel_trainer::load_input_file_tsv1 (
     const char* nrrd_fn,
@@ -115,7 +154,8 @@ Autolabel_trainer::load_input_file_tsv1 (
 	    float t;
 	    int rc = sscanf (ps.point_list[i].label.c_str(), "T%f", &t);
 	    if (rc != 1) {
-		print_and_exit ("Error parsing file %s\n", fcsv_fn);
+		/* Not a vertebra point */
+		continue;
 	    }
 	    if (t > 0.25 && t < 12.75) {
 		t_map.insert (std::pair<float,float> (
@@ -133,29 +173,31 @@ Autolabel_trainer::load_input_file_tsv1 (
 #endif
 
     /* If we want to use interpolation, we need to sort, and make 
-       a "back-map" from z-pos to t-spine */
+      a "back-map" from z-pos to t-spine */
 
     /* Otherwise, for the simple case, we're good to go. */
     Plm_image *pli;
     pli = plm_image_load (nrrd_fn, PLM_IMG_TYPE_ITK_FLOAT);
     std::map<float, float>::iterator it;
-    for (it = t_map.begin(); it != t_map.end(); it++) {
+    for (it = t_map.begin(); it != t_map.end(); ++it) {
 	Thumbnail thumb;
 	thumb.set_input_image (pli);
+	thumb.set_thumbnail_dim (16);
+	thumb.set_thumbnail_spacing (25.0f);
 	thumb.set_slice_loc (it->second);
 	FloatImageType::Pointer thumb_img = thumb.make_thumbnail ();
 	itk::ImageRegionIterator< FloatImageType > thumb_it (
 	    thumb_img, thumb_img->GetLargestPossibleRegion());
-	for (thumb_it.GoToBegin(); !thumb_it.IsAtEnd(); ++thumb_it) {
-	    printf ("%f,", thumb_it.Get ());
-	    //break;
+	fprintf (this->fp, "%f", it->first);
+	int i;
+	for (i = 0, thumb_it.GoToBegin(); !thumb_it.IsAtEnd(); ++i, ++thumb_it)
+	{
+	    fprintf (this->fp, " %d:%f", i, thumb_it.Get ());
 	}
-	printf ("%f\n", it->first);
+	fprintf (this->fp, "\n");
     }
 
     delete pli;
-
-    exit (0);
 }
 
 void
@@ -163,7 +205,38 @@ Autolabel_trainer::load_input_file_tsv2 (
     const char* nrrd_fn,
     const char* fcsv_fn)
 {
-    print_and_exit ("Error: load_input_file_tsv2 not yet implemented\n");
+    /* Create map from spine # to point from fcsv file */
+    std::map<float,Point> t_map = load_tspine_map (fcsv_fn);
+
+    /* If we want to use interpolation, we need to sort, and make 
+      a "back-map" from z-pos to t-spine */
+
+    /* Otherwise, for the simple case, we're good to go. 
+       Here, for testing, we'll make a "y" map. */
+    Plm_image *pli;
+    pli = plm_image_load (nrrd_fn, PLM_IMG_TYPE_ITK_FLOAT);
+    std::map<float, Point>::iterator it;
+    for (it = t_map.begin(); it != t_map.end(); ++it) {
+	Thumbnail thumb;
+	thumb.set_input_image (pli);
+	thumb.set_thumbnail_dim (16);
+	thumb.set_thumbnail_spacing (25.0f);
+	thumb.set_slice_loc (it->second.p[2]);
+	FloatImageType::Pointer thumb_img = thumb.make_thumbnail ();
+	itk::ImageRegionIterator< FloatImageType > thumb_it (
+	    thumb_img, thumb_img->GetLargestPossibleRegion());
+	//fprintf (this->fp, "%f", it->first);
+	//fprintf (this->fp, "%f", it->second.p[0]);
+	fprintf (this->fp, "%f", it->second.p[1]);
+	int i;
+	for (i = 0, thumb_it.GoToBegin(); !thumb_it.IsAtEnd(); ++i, ++thumb_it)
+	{
+	    fprintf (this->fp, " %d:%f", i, thumb_it.Get ());
+	}
+	fprintf (this->fp, "\n");
+    }
+
+    delete pli;
 }
 
 void
@@ -196,10 +269,14 @@ Autolabel_trainer::set_task (const char* task)
 void
 Autolabel_trainer::save_libsvm (const char* output_libsvm_fn)
 {
+    this->fp = fopen (output_libsvm_fn, "w");
+
     if (m_task == "" || m_input_dir == "") {
 	print_and_exit ("Error saving libsvm, inputs not fully specified.\n");
     }
 
     /* Load the data according to task specification */
     load_input_dir_recursive (m_input_dir);
+
+    fclose (this->fp);
 }

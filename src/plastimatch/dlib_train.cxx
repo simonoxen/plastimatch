@@ -21,6 +21,7 @@ typedef dlib::cmd_line_parser<char>::check_1a_c clp;
 typedef std::map<unsigned long, double> sparse_sample_type;
 typedef dlib::matrix< sparse_sample_type::value_type::second_type,0,1
 		> dense_sample_type;
+typedef double label_type;
 
 /* exp10() is not in C/C++ standard */
 double
@@ -291,7 +292,7 @@ static void
 krls_test (
     clp& parser,
     std::vector<dense_sample_type>& dense_samples,
-    std::vector<double>& labels
+    std::vector<label_type>& labels
 )
 {
     typedef radial_basis_kernel<dense_sample_type> kernel_type;
@@ -340,7 +341,7 @@ static void
 krr_rbk_test (
     clp& parser,
     std::vector<dense_sample_type>& dense_samples,
-    std::vector<double>& labels
+    std::vector<label_type>& labels
 )
 {
     typedef radial_basis_kernel<dense_sample_type> kernel_type;
@@ -384,9 +385,11 @@ krr_rbk_test (
 	serialize (best_network, fout);
 	fout.close();
 
+#if defined (commentout)
 	for (unsigned int j = 0; j < dense_samples.size(); j++) {
 	    printf ("%g %g\n", labels[j], best_network(dense_samples[j]));
 	}
+#endif
     }
 }
 
@@ -394,7 +397,7 @@ static void
 krr_lin_test (
     clp& parser,
     std::vector<dense_sample_type>& dense_samples,
-    std::vector<double>& labels
+    std::vector<label_type>& labels
 )
 {
     typedef linear_kernel<dense_sample_type> kernel_type;
@@ -410,7 +413,7 @@ static void
 krr_test (
     clp& parser,
     std::vector<dense_sample_type>& dense_samples,
-    std::vector<double>& labels
+    std::vector<label_type>& labels
 )
 {
     const char* kernel = get_kernel (parser);
@@ -429,7 +432,7 @@ static void
 mlp_test (
     clp& parser,
     std::vector<dense_sample_type>& dense_samples,
-    std::vector<double>& labels
+    std::vector<label_type>& labels
 )
 {
     // Create a multi-layer perceptron network.
@@ -441,7 +444,7 @@ mlp_test (
     // Dlib barfs if output values are not normalized to [0,1]
     double label_min = *(std::min_element (labels.begin(), labels.end()));
     double label_max = *(std::max_element (labels.begin(), labels.end()));
-    std::vector<double>::iterator it;
+    std::vector<label_type>::iterator it;
     for (it = labels.begin(); it != labels.end(); it++) {
 	(*it) = ((*it) - label_min) / (label_max - label_min);
     }
@@ -477,7 +480,7 @@ static void
 svr_lin_test (
     clp& parser,
     std::vector<dense_sample_type>& dense_samples,
-    std::vector<double>& labels
+    std::vector<label_type>& labels
 )
 {
     option_range svr_c_range;
@@ -531,7 +534,7 @@ static void
 svr_rbk_test (
     clp& parser,
     std::vector<dense_sample_type>& dense_samples,
-    std::vector<double>& labels
+    std::vector<label_type>& labels
 )
 {
     typedef radial_basis_kernel<dense_sample_type> kernel_type;
@@ -594,7 +597,7 @@ svr_rbk_test (
 static void svr_test  (
     clp& parser,
     std::vector<dense_sample_type>& dense_samples,
-    std::vector<double>& labels
+    std::vector<label_type>& labels
 )
 {
     const char* kernel = get_kernel (parser);
@@ -620,7 +623,7 @@ main (int argc, char* argv[])
     const clp::option_type& option_in = parser.option("in");
 
     std::vector<sparse_sample_type> sparse_samples;
-    std::vector<double> labels;
+    std::vector<label_type> labels;
 
     load_libsvm_formatted_data (
 	option_in.argument(), 
