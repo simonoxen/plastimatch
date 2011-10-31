@@ -194,6 +194,7 @@ get_pixel_value_c (Proj_image* cbi, double r, double c)
     return cbi->img[rr*cbi->dim[0] + cc];
 }
 
+/* Nearest neighbor interpolation of intensity value on image */
 inline float
 get_pixel_value_b (Proj_image* cbi, double r, double c)
 {
@@ -529,6 +530,8 @@ project_volume_onto_image_a (Volume* vol, Proj_image* cbi, float scale)
     free (zip);
 }
 
+/* Reference implementation is the most straightforward implementation, 
+    also it is the slowest */
 void
 project_volume_onto_image_reference (
     Volume* vol, 
@@ -539,10 +542,11 @@ project_volume_onto_image_reference (
     int i, j, k, p;
     double vp[4];   /* vp = voxel position */
     float* img = (float*) vol->img;
-    Proj_matrix *pmat = cbi->pmat;
-    
+    Proj_matrix *pmat = cbi->pmat; /* projection matrix 3D -> 2D 
+				      in homogenous coordinates */
     p = 0;
     vp[3] = 1.0;
+    /* Loop k (slices), j (rows), i (cols) */
     for (k = 0; k < vol->dim[2]; k++) {
 	vp[2] = (double) (vol->offset[2] + k * vol->spacing[2]);
 	for (j = 0; j < vol->dim[1]; j++) {
@@ -551,10 +555,11 @@ project_volume_onto_image_reference (
 		double ip[3];        /* ip = image position */
 		double s;            /* s = projection of vp onto s axis */
 		vp[0] = (double) (vol->offset[0] + i * vol->spacing[0]);
-		mat43_mult_vec3 (ip, pmat->matrix, vp);
+		mat43_mult_vec3 (ip, pmat->matrix, vp);  /* ip = matrix * vp */
 		ip[0] = pmat->ic[0] + ip[0] / ip[2];
 		ip[1] = pmat->ic[1] + ip[1] / ip[2];
-		/* Distance on axis from ctr to source */
+		/* Distance on cenral axis from voxel center to source */
+		/* pmat->nrm is normal of panel */
 		s = vec3_dot (pmat->nrm, vp);
 		/* Conebeam weighting factor */
 		s = pmat->sad - s;
@@ -565,6 +570,8 @@ project_volume_onto_image_reference (
     }
 }
 
+/* Main reconstruction loop - Loop over images, and backproject each 
+    image into the volume. */
 void
 reconstruct_conebeam (
     Volume* vol, 
@@ -578,9 +585,10 @@ reconstruct_conebeam (
     double filter_time = 0.0;
     double backproject_time = 0.0;
     double io_time = 0.0;
-    Proj_image* cbi;
+    Proj_image* cbi;    /* cbi == cone beam image */
     Plm_timer timer;
 
+    /* Arbitrary scale applied to each image */
     scale = (float) (sqrt(3.f) / (double) num_imgs);
     scale = scale * options->scale;
 
@@ -591,6 +599,7 @@ reconstruct_conebeam (
         cbi = proj_image_dir_load_image (proj_dir, i);
         io_time += plm_timer_report (&timer);
 
+	/* Apply ramp filter */
         if (options->filter == FDK_FILTER_TYPE_RAMP) {
             plm_timer_start (&timer);
             proj_image_filter (cbi);

@@ -76,7 +76,7 @@ ramp_filter (
             data[r * width + c] = data[r * width + width - MARGIN - 1];
     }
 
-    // Fill in
+    /* Fill in ramp filter in frequency space */
     for (i = 0; i < N; ++i) {
         in[i][0] = (double)(data[i]);
         //in[i][0] /= 65535;
@@ -85,6 +85,7 @@ ramp_filter (
         in[i][1] = 0.0;
     }
 
+    /* To be investigated further */
     for (i = 0; i < width / 2; ++i)
         ramp[i] = i;
 
