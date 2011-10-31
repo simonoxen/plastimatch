@@ -1167,14 +1167,14 @@ plmtest_check_interval (
   )
 set_tests_properties (plm-convert-dicom-donut-a PROPERTIES DEPENDS donut-1)
 set_tests_properties (plm-convert-dicom-donut-a-stats PROPERTIES 
-  DEPENDS plm-convert-dicom-a-donut)
+  DEPENDS plm-convert-dicom-donut-a)
 set_tests_properties (plm-convert-dicom-donut-a-check PROPERTIES 
-  DEPENDS plm-convert-dicom-a-donut-stats)
+  DEPENDS plm-convert-dicom-donut-a-stats)
 set_tests_properties (plm-convert-dicom-donut-b PROPERTIES DEPENDS donut-1)
 set_tests_properties (plm-convert-dicom-donut-b-stats PROPERTIES 
-  DEPENDS plm-convert-dicom-b-donut)
+  DEPENDS plm-convert-dicom-donut-b)
 set_tests_properties (plm-convert-dicom-donut-b-check PROPERTIES 
-  DEPENDS plm-convert-dicom-b-donut-stats)
+  DEPENDS plm-convert-dicom-donut-b-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch convert dicom-rt (aw)
