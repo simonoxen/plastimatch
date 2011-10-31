@@ -259,8 +259,12 @@ endif ()
 if (NOT GDCM_VERSION_1)
   set (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
-    "plm-convert-dicom-donut" 
-    "plm-convert-dicom-donut-stats" 
+    "plm-convert-dicom-donut-a" 
+    "plm-convert-dicom-donut-a-stats" 
+    "plm-convert-dicom-donut-a-check" 
+    "plm-convert-dicom-donut-b" 
+    "plm-convert-dicom-donut-b-stats" 
+    "plm-convert-dicom-donut-b-check" 
     )
 endif ()
 
