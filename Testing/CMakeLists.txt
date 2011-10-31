@@ -2530,16 +2530,39 @@ set_tests_properties (proton-dose PROPERTIES DEPENDS rect-2)
 ## -------------------------------------------------------------------------
 ## i hate myself
 ## -------------------------------------------------------------------------
-if (${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL ppc)
+if (${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "^(ppc|powerpc)")
   plmtest_debug (debug-fdk-cpu-a
     "${PLM_TESTING_BUILD_DIR}/fdk-cpu-a.stdout.txt"
     "${PLM_TESTING_BUILD_DIR}/fdk-cpu-a.stderr.txt")
-  set_tests_properties (debug-fdk-cpu-a PROPERTIES DEPENDS fdk-cpu-a)
-  plmtest_debug (debug_landmark_warp_b
+  plmtest_debug (debug-fdk-cpu-a-stats
+    "${PLM_TESTING_BUILD_DIR}/fdk-cpu-a-stats.stdout.txt"
+    "${PLM_TESTING_BUILD_DIR}/fdk-cpu-a-stats.stderr.txt")
+  set_tests_properties (debug-fdk-cpu-a PROPERTIES 
+    DEPENDS fdk-cpu-a)
+  set_tests_properties (debug-fdk-cpu-a-stats PROPERTIES 
+    DEPENDS fdk-cpu-a-stats)
+
+  plmtest_debug (debug-landmark-warp-b
     "${PLM_TESTING_BUILD_DIR}/landmark-warp-b.stdout.txt"
     "${PLM_TESTING_BUILD_DIR}/landmark-warp-b.stderr.txt")
+  plmtest_debug (debug-landmark-warp-b-stats
+    "${PLM_TESTING_BUILD_DIR}/landmark-warp-b-stats.stdout.txt"
+    "${PLM_TESTING_BUILD_DIR}/landmark-warp-b-stats.stderr.txt")
   set_tests_properties (debug-landmark-warp-b PROPERTIES 
     DEPENDS landmark-warp-b)
+  set_tests_properties (debug-landmark-warp-b-stats PROPERTIES 
+    DEPENDS landmark-warp-b-stats)
+
+  plmtest_debug (debug-plm-reg-bspline-char-output
+    "${PLM_TESTING_BUILD_DIR}/plm-reg-bspline-char-output.stdout.txt"
+    "${PLM_TESTING_BUILD_DIR}/plm-reg-bspline-char-output.stderr.txt")
+  plmtest_debug (debug-plm-reg-bspline-char-output-stats
+    "${PLM_TESTING_BUILD_DIR}/plm-reg-bspline-char-output-stats.stdout.txt"
+    "${PLM_TESTING_BUILD_DIR}/plm-reg-bspline-char-output-stats.stderr.txt")
+  set_tests_properties (debug-plm-reg-bspline-char-output PROPERTIES 
+    DEPENDS plm-reg-bspline-char-output)
+  set_tests_properties (debug-plm-reg-bspline-char-output-stats PROPERTIES 
+    DEPENDS plm-reg-bspline-char-output-stats)
 endif ()
 
 ## -------------------------------------------------------------------------
