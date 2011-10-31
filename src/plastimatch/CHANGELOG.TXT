@@ -1,5 +1,8 @@
-Version 1.5.5 (build @PLASTIMATCH_SVN_VERSION@)
+Version 1.5.6 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
+
+Version 1.5.5 (build 2868)
+Mon Oct 31 00:35:29 EDT 2011
 * Add support for landmark penalty to B-spline registration
 * First working version of plastimatch autolabel
 * Add --xor-contours option for converting DICOM-RT structure sets
