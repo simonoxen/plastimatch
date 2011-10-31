@@ -2,10 +2,12 @@
 #include <limits>
 //#include "itkNumericTraits.h"
 
-int main ()
+int main 
+(
+    int argc,
+    char* argv[]
+)
 {
-   printf ("Hello world\n");
-
    short min_short = std::numeric_limits<short>::min();
    short max_short = std::numeric_limits<short>::max();
    unsigned short min_ushort = std::numeric_limits<unsigned short>::min();

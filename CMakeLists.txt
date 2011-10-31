@@ -48,9 +48,13 @@ include (InstallRequiredSystemLibraries)
 # http://www.cmake.org/Bug/view.php?id=9220
 include (cmake/language_support.cmake)
 
+# Superbuild
 if (NOT ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} VERSION_LESS 2.8)
   include (ExternalProject)
 endif ()
+
+# Machine precision
+include (cmake/CheckEpsilon)
 
 ##-----------------------------------------------------------------------------
 ##  Plastimatch configuration variables
@@ -151,9 +155,11 @@ if (NOT APPLE)
 endif ()
 
 ##-----------------------------------------------------------------------------
-##  Detect endian
+##  Detect endian, machine precision
 ##-----------------------------------------------------------------------------
 test_big_endian (CMAKE_WORDS_BIGENDIAN)
+check_epsilon (MACHINE_EPS)
+message (STATUS "Checking epsilon: ${MACHINE_EPS}")
 
 ##-----------------------------------------------------------------------------
 ##  I can't remember why this is necessary.  But at one time I needed 
