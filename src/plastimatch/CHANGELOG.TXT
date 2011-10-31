@@ -1,6 +1,7 @@
 Version 1.5.5 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
 * Add support for landmark penalty to B-spline registration
+* First working version of plastimatch autolabel
 * Add --xor-contours option for converting DICOM-RT structure sets
 * Implement a primative synthetic_vf command
 * Fix bug where demographics weren't loaded when converting Xio dose
