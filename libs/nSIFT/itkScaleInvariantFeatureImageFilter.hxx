@@ -116,13 +116,15 @@ namespace itk
 #endif
     m_HistogramBinsNumber = 36;      
     m_ErrorThreshold = 0.0;
-    m_MaxFeatureDistanceRatio = 0.8;
+    m_MaxFeatureDistanceRatio = 0.9; //0.8
 	//m_SigmaAliasing=0.5;
-    m_GaussianSigma = 1.5;  
+
+    //m_GaussianSigma = 1.5;
+	
     m_MinKeypointValue = 0.03; // if we assume image pixel value in the range [0,1] (otherwise 72)
-    m_SIFTHalfWidth = 8;  // This MUST be a multiple of m_SIFTSubfeatureWidth
-    m_SIFTSubfeatureWidth = 4;
-    m_SIFTSubfeatureBins = 8;
+    m_SIFTHalfWidth = 12.0; //8.0;  // This MUST be a multiple of m_SIFTSubfeatureWidth: it is half the size of the descriptor
+    m_SIFTSubfeatureWidth = 4; //number of subregions along the dimension of the descriptor
+    m_SIFTSubfeatureBins = 8; //bins of the descriptor
     
 	m_ThresholdPrincipalCurve = 172.3025; //1612.00; //412.1204(50); //172.3025(20); //53.24(5); //92.61(10);
 
@@ -132,6 +134,13 @@ namespace itk
     m_IdentityTransform = IdentityTransformType::New();
   }
 
+  template <class TFixedImageType, int VDimension> 
+  void
+  ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
+  ::SetInitialSigma( float InitialSigma) 
+  {
+    m_GaussianSigma = InitialSigma;
+  }    
     
   template <class TFixedImageType, int VDimension> 
   double
@@ -274,19 +283,12 @@ namespace itk
       unsigned int tmp =  (delta[i] + m_SIFTHalfWidth) / m_SIFTSubfeatureWidth;
       
       bin += tmp * binpos;
-      binpos *= (m_SIFTHalfWidth * 2 / m_SIFTSubfeatureWidth );
-      
-      
-      //std::cout << "... tmp,bin,binpos( ";
-	  //std::cout << tmp << " \n";
-	  //std::cout << bin << " \n";
-	  //std::cout << binpos<< " \n";      
+      binpos *= (m_SIFTHalfWidth * 2 / m_SIFTSubfeatureWidth );     
     }
     
     for (unsigned int i = 1; i < VDimension; ++i)
     {
       bin *= m_SIFTSubfeatureBins;
-      //std::cout << "bin_end: "<< bin << std::endl;
       }
     
     
@@ -310,14 +312,13 @@ namespace itk
 #endif
     FeatureType sifthistogram(this->SiftFeatureSize());
     sifthistogram.Fill(0);
+	
 
     // delta iterates from  -m_SIFTHalfWidth to m_SIFTHalfWidth-1 
     // in each dimensions
     int delta[VDimension];
     for (int k = 0; k < VDimension; ++k) {
-      delta[k] = -m_SIFTHalfWidth;
-      //std::cout << "delta: "<< delta[k] << std::endl;
-      
+      delta[k] = -m_SIFTHalfWidth;    
     }
 
     typename GradientImageType::SizeType regionSize = 
@@ -333,6 +334,7 @@ namespace itk
      // std::cerr << "Siftbin:" << siftbin << std::endl; 
       // Get pixel index
       // Clamp to image edges
+	  
       IndexType tmpIndex;
       for (int k=0; k < VDimension; ++k) {
 	if ((pixelIndex[k] + delta[k]) < 0) {
@@ -371,14 +373,11 @@ namespace itk
 #endif
 	  binpos *= m_SIFTSubfeatureBins;
 	  //std::cout << "p: "<< p << std::endl;
-	  //std::cout << "bin: "<< bin << std::endl;
-	  //std::cout << "binpos: "<< binpos << std::endl;
-	  
+
 	}
       
       bin += siftbin;
-       //std::cout << "bin_aggiornato: "<< bin << std::endl;
-      
+        
       
       // Fill Sift Index bin
       if (bin > this->SiftFeatureSize()) {
@@ -386,17 +385,22 @@ namespace itk
 	std::cerr << bin << " > " << this->SiftFeatureSize() << " Warning -- Overload2\n";
       }
       sifthistogram[bin] += x[0] * multImg->GetPixel(tmpIndex);
-      
+		//std::cerr << "x0: "<<x[0]<<std::endl;
+		//std::cerr << "GaussCircle: "<<multImg->GetPixel(tmpIndex)<<std::endl;
+		//std::cerr << "hist: "<<sifthistogram[bin]<<std::endl;
+
 #ifdef DEBUG_VERBOSE
       std::cerr << "Incrementing\n";
 #endif	  
       // Increment delta
       bool resetdelta=false;
       for(int k=0; k <= VDimension; ++k) {
+
 #ifdef DEBUG_VERBOSE
 	std::cerr << delta[k];
 #endif
 	if (k == VDimension) {
+
 #ifdef DEBUG_VERBOSE
 	  std::cerr << "done\n";
 #endif
@@ -411,7 +415,7 @@ namespace itk
       }
       if(resetdelta) break;	  
     }
-    
+	    
 #ifdef DEBUG_VERBOSE
     std::cerr << "SIFT key: " << sifthistogram << "\n";
 #endif
@@ -494,6 +498,7 @@ namespace itk
 #ifdef DEBUG
     // Print the Histogram
     std::cout << histogram << std::endl;
+
 #endif
     
     // Since we are going to use this as a feature
@@ -664,14 +669,16 @@ namespace itk
     typedef GaussianImageSource<TFixedImageType> GaussianImageSourceType;
     typename GaussianImageSourceType::Pointer gaussImgSource;
     typename GaussianImageSourceType::ArrayType sigma;
-
-    gaussImgSource = GaussianImageSourceType::New();
+	
+	gaussImgSource = GaussianImageSourceType::New();
     gaussImgSource->SetNormalized(true);
     //gaussImgSource->SetNormalized(false);
     //gaussImgSource->SetScale(255);  
     gaussImgSource->SetSpacing(fixedImage->GetSpacing());
     gaussImgSource->SetSize(fixedImage->GetLargestPossibleRegion().GetSize());
-    gaussImgSource->SetMean(point);
+	gaussImgSource->SetDirection(fixedImage->GetDirection());
+	gaussImgSource->SetOrigin(fixedImage->GetOrigin());
+	gaussImgSource->SetMean(point);
     
 #if 0
     // If we wanted to find the orientation,  we would use this
@@ -683,13 +690,18 @@ namespace itk
     // Simulate the 16x16 Gaussian window descriptor
     // use sigma equal to half the descriptor window width
     for (int i = 0; i < VDimension; ++i)
-      sigma[i] = 8.00;
+      //sigma[i] = 8.00;
+	  sigma[i]=m_SIFTHalfWidth;
     gaussImgSource->SetSigma(sigma);
-    
     gaussImgSource->Update();
+
+	/*char filename[256];
+	sprintf(filename, "GaussianCircle.mha");
+	this->writeImage(gaussImgSource->GetOutput(), filename);*/
     
-    IndexType pixelIndex;
+	IndexType pixelIndex;
     fixedImage->TransformPhysicalPointToIndex(point, pixelIndex);
+    
     
 #if 0
     // Only iterate through the region that is within 3 sigma of the mean
@@ -893,6 +905,7 @@ scaler->SetOutputDirection( fixedImage->GetDirection() );
   ::SetSigma( double tmp) 
   {
     m_GaussianSigma = tmp;
+	//std::cout<<"TMP: "<<tmp<<std::endl;
   }      
 
   template <class TFixedImageType, int VDimension> 
@@ -925,8 +938,8 @@ template <class TFixedImageType, int VDimension>
 	/*std::cout<<"Global Hessian "<<std::endl;
     std::cout<<" ,"<<hessian<<std::endl;*/
 	
-	FILE* pFileH;
-	pFileH=fopen("curve_parameter.txt","a");	
+	/*FILE* pFileH;
+	pFileH=fopen("curve_parameter.txt","a");*/	
 	float Tr=0;
     float Det=1;
     float PrincipalCurve=0;
@@ -969,8 +982,8 @@ template <class TFixedImageType, int VDimension>
 	Curvature=1;
 	 
 
-	fprintf(pFileH, " %d,%d,%d, %f, %f, %f, %d\n",i,j,maxmin,Product,Minors,PrincipalCurve,Curvature);
-	fclose(pFileH);
+	/*fprintf(pFileH, " %d,%d,%d, %f, %f, %f, %d\n",i,j,maxmin,Product,Minors,PrincipalCurve,Curvature);
+	fclose(pFileH);*/
 		/*std::cout << "P:" << Product << " M:" << Minors << " C:" << PrincipalCurve << " cond:" << Curvature << std::endl;
 		std::cout << "P:" << P << " M:" << M << " C:" << C << " cond:" << Curvature << std::endl;*/
 			
@@ -1096,7 +1109,7 @@ template <class TFixedImageType, int VDimension>
   template <class TFixedImageType, int VDimension> 
   typename ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>::PointSetTypePointer
   ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
-  ::getSiftFeatures(FixedImagePointer fixedImageInput, const char *filename_phy_max, const char *filename_phy_min,const char *filename_im_max, const char *filename_im_min) 
+  ::getSiftFeatures(FixedImagePointer fixedImageInput, const char *filename_phy_max, const char *filename_phy_min,const char *filename_im_max, const char *filename_im_min,const char *filename_rej_contrast,const char *filename_rej_curvature)
   {
 	unsigned int numMin = 0, numMax = 0, numReject = 0;
     m_KeypointSet = PointSetType::New();
@@ -1381,6 +1394,10 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
 		//gaussianImage[j] = tmpGaussianFilter->GetOutput();
 		gaussianImage_start= tmpGaussianFilter->GetOutput();
 		gaussianImage_start->DisconnectPipeline();
+		/*char filename[256];
+		sprintf(filename, "gauss-%d-%d.mha", i, j);
+		this->writeImage(gaussianImage_start, filename);*/
+
 		//tmpGaussianFilter->ReleaseDataFlagOff();
 	}
 	
@@ -1459,7 +1476,7 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
 			typename DifferenceFilterType::Pointer tmpDogFilter = DifferenceFilterType::New();
 			//tmpDogFilter->SetInput1( gaussianImage[j] );
 			//tmpDogFilter->SetInput2( gaussianImage[j+1] );
-			tmpDogFilter->ReleaseDataFlagOn();
+			//tmpDogFilter->ReleaseDataFlagOn();
 			tmpDogFilter->SetInput1( gaussianImage_old );
 			tmpDogFilter->SetInput2( gaussianImage_new );
 			tmpDogFilter->Update();	
@@ -1467,7 +1484,7 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
 			dogImage[j-1] = tmpDogFilter->GetOutput();
 			//tmpDogFilter->ReleaseDataFlagOff();
 		
-			typename TFixedImageType::SpacingType spacing = dogImage[j-1]->GetSpacing();
+			//typename TFixedImageType::SpacingType spacing = dogImage[j-1]->GetSpacing();
 			//std::cout << " SPACING DOG IMAGE: " << spacing[0] << " " << spacing[1] << std::endl;
 	
 			//dogFilter[j] = DifferenceFilterType::New();
@@ -1476,9 +1493,9 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
 			//dogFilter[j]->Update();
 			//dogImage[j] = dogFilter[j]->GetOutput();
 	
-			char filename[256];
-			sprintf(filename, "dog-%d-%d.mha", i, j-1);
-			this->writeImage(dogImage[j-1], filename);
+			//char filename[256];
+			//sprintf(filename, "dog-%d-%d.mha", i, j-1);
+			//this->writeImage(dogImage[j-1], filename);
 	
 			}
 	
@@ -1571,10 +1588,11 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
 	//typename TFixedImageType::OriginType origin;
 	PointType vertex;
 	FILE* pFile;
-	FILE* pFile1;
+	//FILE* pFile1;
 	FILE* pFileRejectContrast;
 	FILE* pFileRejectCurvature;
 	dogImage[j]->TransformIndexToPhysicalPoint (pixelIndex, point); 
+	
 
 	  
 #ifdef ERROR_CHECK
@@ -1628,11 +1646,9 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
 	  if (fabs(pixelValue) < m_MinKeypointValue) {
 		  //std::cout<< "modulo: "<<fabs(pixelValue)<<std::endl;
 	    ++numReject;
-		pFileRejectContrast=fopen("point_rejected_contrast.fcsv","a");
-		
+		pFileRejectContrast=fopen(filename_rej_contrast,"a");
 		point[0]=-1.0*point[0];
 		point[1]=-1.0*point[1];
-
 		if(isMax){
 			fprintf(pFileRejectContrast,"M");
 			}
@@ -1658,12 +1674,10 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
 	 
 	if ( Curvature==0 ){
 		++numReject;
-
-		pFileRejectCurvature=fopen("point_rejected_curvature.fcsv","a");
-		
 		point[0]=-1.0*point[0];
 		point[1]=-1.0*point[1];
-
+		pFileRejectCurvature=fopen(filename_rej_curvature,"a");
+		
 		if(isMax){
 			fprintf(pFileRejectCurvature,"M");
 			}
@@ -1688,7 +1702,9 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
 #ifdef DEBUG
 	  std::cout << point << std::endl;
 #endif
+	 
 	  m_KeypointSet->SetPoint( m_PointsCount, point);
+	  
 #ifdef GENERATE_KEYS
 	  // Generate features
 	  // Space used is the (smoothed) original image)
@@ -1696,10 +1712,10 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
 	//			   this->GetFeatures( gaussianImage[0], 
 						//      hgradImage[i], point,
 						//      this->GetGaussianScale(j)));
-	 m_KeypointSet->SetPointData( m_PointsCount, 
-				   this->GetFeatures( gaussianImage_start, 
+	 m_KeypointSet->SetPointData( m_PointsCount, this->GetFeatures( gaussianImage_start, 
 						      hgradImage[i], point,
 						      this->GetGaussianScale(j)));
+	 
 #else
 	  m_KeypointSet->SetPointData( m_PointsCount, currScale);
 #endif
@@ -1712,11 +1728,9 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
 	   //std::cout << "max image coord: "<< pixelIndex << std::endl;
 	      
 	    pFile=fopen(filename_phy_max,"a");
-		pFile1=fopen(filename_im_max,"a");
-		
+		//pFile1=fopen(filename_im_max,"a");
 		point[0]=-1.0*point[0];
-		point[1]=-1.0*point[1];
-		
+		point[1]=-1.0*point[1];	
 		fprintf(pFile, "M-%d-%d-%d,", numMax,i,j);
 		for(int k=0; k<VDimension; k++)
 	  	  {
@@ -1726,7 +1740,7 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
 	  		fprintf(pFile,"\n");
 	  		fclose(pFile);
 	  		
-	  	point[0]=-1.0*point[0];
+	  	/*point[0]=-1.0*point[0];
 		point[1]=-1.0*point[1];
 	  		 	  
 	  	  fprintf(pFile1, "%d,", numMax);
@@ -1736,7 +1750,7 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
 	  		 fprintf(pFile1,"%.3f, ",vertex[k]);
 		  }
 		fprintf(pFile1,"\n");
-		fclose(pFile1);
+		fclose(pFile1);*/
 	   
 #ifdef DEBUG
 	    std::cout << "Found Maxima! ";
@@ -1749,11 +1763,9 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
 	    //std::cout << "min image coord: "<< pixelIndex << std::endl;
 	   	    
 	    pFile=fopen(filename_phy_min,"a");
-		pFile1=fopen(filename_im_min,"a");
-		
+		//pFile1=fopen(filename_im_min,"a");
 		point[0]=-1.0*point[0];
-		point[1]=-1.0*point[1];
-		
+		point[1]=-1.0*point[1];	
 		fprintf(pFile, "m-%d-%d-%d,", numMin,i,j);
 		for(int k=0; k<VDimension; k++)
 	  	  {
@@ -1762,7 +1774,7 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
 	  		fprintf(pFile,"\n");
 	  		fclose(pFile);
 	  	
-	  	point[0]=-1.0*point[0];
+	  	/*point[0]=-1.0*point[0];
 		point[1]=-1.0*point[1];
 	  		  		
 	  	  fprintf(pFile1, "%d,", numMin);
@@ -1773,13 +1785,14 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
 	  		 fprintf(pFile1,"%.3f, ",vertex[k]);
 		  }
 		fprintf(pFile1,"\n");
-		fclose(pFile1);
+		fclose(pFile1);*/
 
 #ifdef DEBUG
 	    std::cout << "Found Minima! ";
 #endif
 	  }
 	  //std::cout << "current scale: "<< currScale << std::endl;
+
 	}
 #ifdef VERBOSE
 	std::cout << "Acc. Num Max: " << numMax 
@@ -1799,17 +1812,12 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
 	      << std::endl;	
     std::cout.flush();
 #endif
-    return m_KeypointSet;
-
-
-  }
-
-
-	  	  
 	
+	return m_KeypointSet;
 
 
-
+  } 
+	
 
   template <class TFixedImageType, int VDimension> 
   void
@@ -1854,19 +1862,24 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
 	keypoints1->GetPoint(j, &tmpp);
 	pp = inverse_transform->TransformPoint(tmpp);
 	//	    for (int k = 0; k < VDimension; ++k)
-	//	      pp[k] *= scale_test;	      
-	if(!match  && pp.EuclideanDistanceTo(pp2) <= MATCH_THRESHOLD)
+	//	      pp[k] *= scale_test;	
+
+	double distance1=pp.EuclideanDistanceTo(pp2);
+	if(!match  && distance1 <= MATCH_THRESHOLD)
 	  {
+		//std::cout<<"dist: "<<distance1<<std::endl;
 	    ++numMatches;
 	    match = true;
 	  }
-	if(!match2 && pp.EuclideanDistanceTo(pp2) <= 2*MATCH_THRESHOLD)
+	if(!match2 && distance1 <= 2*MATCH_THRESHOLD)
 	  {
+		//std::cout<<"dist2: "<<distance1<<std::endl;
 	    ++numMatches2;
 	    match2 = true;
 	  }
-	if(!match5 && pp.EuclideanDistanceTo(pp2) <= 5*MATCH_THRESHOLD)
+	if(!match5 && distance1 <= 5*MATCH_THRESHOLD)
 	  {
+		//std::cout<<"dist5: "<<distance1<<std::endl;
 	    ++numMatches5;
 	    match5 = true;
 	  }
@@ -1900,18 +1913,20 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
 	PointType pp2;
 	pp2.Fill(0.0);
 	keypoints2->GetPoint(i, &pp2);	
+	//std::cout<<"pp2: "<<pp2<<std::endl;
 
-	if(!match  && pp.EuclideanDistanceTo(pp2) <= MATCH_THRESHOLD)
+	double distance2=pp.EuclideanDistanceTo(pp2);
+	if(!match  && distance2 <= MATCH_THRESHOLD)
 	  {
 	    ++numMatches;
 	    match = true;
 	  }
-	if(!match2 && pp.EuclideanDistanceTo(pp2) <= 2*MATCH_THRESHOLD)
+	if(!match2 && distance2 <= 2*MATCH_THRESHOLD)
 	  {
 	    ++numMatches2;
 	    match2 = true;
 	  }
-	if(!match5 && pp.EuclideanDistanceTo(pp2) <= 5*MATCH_THRESHOLD)
+	if(!match5 && distance2 <= 5*MATCH_THRESHOLD)
 	  {
 	    ++numMatches5;
 	    match5 = true;
@@ -1942,12 +1957,16 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
     // # of points that match which will tell us
     // # of points that did not scale
     // # of points created by the scale
+    FILE* pFileMatch1;
+	FILE* pFileMatch2;
+	FILE* pFileMatch1_rej;
+	FILE* pFileMatch2_rej;
     unsigned int numMatches;
     unsigned int numMatchesTried;
     unsigned int numMatches2;
     unsigned int numMatches5;
     const double MATCH_THRESHOLD = 1.5;
-    typename PointSetType::PointsContainer::Pointer keyps1, keyps2;
+	typename PointSetType::PointsContainer::Pointer keyps1, keyps2;
 
     unsigned long numpoints1, numpoints2;
     numpoints1 = keypoints1->GetNumberOfPoints();
@@ -1956,7 +1975,7 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
     std::cout << "Keypoints2 Found: " << numpoints2 << std::endl;
 
     std::cout << "***Keypoint Matches***\n";
-
+	
     numMatches = 0;
     numMatches2 = 0;
     numMatches5 = 0;
@@ -1980,7 +1999,11 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
 
 	float dist = 0.0;
 	for (unsigned int k = 0; k < ft.Size(); ++k)
-	  dist += (ft[k] - ft2[k])*(ft[k] - ft2[k]);
+	{
+		dist += (ft[k] - ft2[k])*(ft[k] - ft2[k]);
+	}
+
+	//std::cout<<"dist: "<<dist<<std::endl;
 	  
 	if (nextbestdist < 0.0 || dist < bestdist)
 	  {
@@ -1988,12 +2011,54 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
 	    bestdist=dist;
 	    bestft = ft;
 	    bestj = j;
-	  }	  
+	  }	 
+
+	//std::cout << "bestdist= "<<bestdist<<std::endl;
+	//std::cout << "nextbestdist= "<<nextbestdist<<std::endl;
+
       }
 
       /* Reject "too close" matches */
       if ((bestdist / nextbestdist) >  m_MaxFeatureDistanceRatio)
-	continue;	
+	  {
+		//  //std::cout << "MATCH REJECTED 1:" << std::endl;
+		////std::cout << "bestdist= "<<bestdist<<std::endl;
+		////std::cout << "nextbestdist= "<<nextbestdist<<std::endl;
+		PointType pp;
+		keypoints1->GetPoint(bestj, &pp);
+		////std::cout << pp << std::endl;
+		pFileMatch1_rej=fopen("point_match1_rej.fcsv","a");
+		pp[0]=-1.0*pp[0];
+	    pp[1]=-1.0*pp[1];
+	    fprintf(pFileMatch1_rej, "p1-%d,",bestj);
+		for(int k=0; k<VDimension; k++)
+	  	 {
+	  		fprintf(pFileMatch1_rej,"%.3f, ",pp[k]);
+	  		} 	  
+	  		fprintf(pFileMatch1_rej,"\n");
+	  		fclose(pFileMatch1_rej);
+
+
+		////std::cout << "MATCH REJECTED 2:" << std::endl;
+		////std::cout << "bestdist= "<<bestdist<<std::endl;
+		////std::cout << "nextbestdist= "<<nextbestdist<<std::endl;
+		////std::cout << pp2 << std::endl;
+		pFileMatch2_rej=fopen("point_match2_rej.fcsv","a");
+		pp2[0]=-1.0*pp2[0];
+	    pp2[1]=-1.0*pp2[1];
+	    fprintf(pFileMatch2_rej, "p2-%d,",bestj);
+		for(int k=0; k<VDimension; k++)
+	  	 {
+	  		fprintf(pFileMatch2_rej,"%.3f, ",pp2[k]);
+	  		} 	  
+	  		fprintf(pFileMatch2_rej,"\n");
+	  		fclose(pFileMatch2_rej);
+
+		////std::cout << "MATCH REJECTED:" << std::endl;
+		////std::cout << pp << " => " << pp2 << std::endl;
+
+	  continue;
+	  }	
 
       /* NEW IDEA -- look to make sure it is a reciprocal best match */
       /* Take the best feature found,  see if pp2 makes the cut */
@@ -2034,6 +2099,28 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
 
       // Print the match
       std::cout << tmpp << " => " << pp2 << std::endl;
+
+	  pFileMatch1=fopen("point_match1.fcsv","a");
+	  tmpp[0]=-1.0*tmpp[0];
+	  tmpp[1]=-1.0*tmpp[1];
+	  fprintf(pFileMatch1, "p1-%d,",bestj);
+		for(int k=0; k<VDimension; k++)
+	  	 {
+	  		fprintf(pFileMatch1,"%.3f, ",tmpp[k]);
+	  		} 	  
+	  		fprintf(pFileMatch1,"\n");
+	  		fclose(pFileMatch1);
+
+	  pFileMatch2=fopen("point_match2.fcsv","a");
+	  pp2[0]=-1.0*pp2[0];
+	  pp2[1]=-1.0*pp2[1];
+	  fprintf(pFileMatch2, "p2-%d,",bestj2);
+		for(int k=0; k<VDimension; k++)
+	  	  {
+	  		fprintf(pFileMatch2,"%.3f, ",pp2[k]);
+	  		} 	  
+	  		fprintf(pFileMatch2,"\n");
+	  		fclose(pFileMatch2);
 
       if (!inverse_transform)
 	continue;

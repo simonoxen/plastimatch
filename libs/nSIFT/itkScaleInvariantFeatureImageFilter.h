@@ -85,6 +85,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "itkAffineTransform.h"
 #include "itkIdentityTransform.h"
 #include "itkResampleImageFilter.h"
+//#include "itkScaleVersor3DTransform.h"
+
 
 #include "itkDiscreteGaussianImageFilter.h"
 #include "itkSubtractImageFilter.h"
@@ -141,7 +143,9 @@ namespace itk
       typedef typename TFixedImageType::IndexType  IndexType;
 
       /** used for validating results from synthetic images */
-      typedef typename itk::ScalableAffineTransform< double, VDimension > TransformType;
+      //typedef typename itk::ScalableAffineTransform< double, VDimension > TransformType;
+	  //typedef typename itk::ScaleVersor3DTransform< double> TransformType;
+	  typedef typename itk::AffineTransform< double,VDimension> TransformType;
 
 #ifdef GENERATE_KEYS    
       /** multidimensional histogram for the features */
@@ -173,9 +177,10 @@ namespace itk
       void SetSigma( double tmp);
       void SetNumScales ( unsigned int tmp);
       void SetMatchRatio ( float tmp);
+	  void SetInitialSigma(float InitialSigma);
 
       /** Generate and return the scale invariant keypoints and features */
-      PointSetTypePointer getSiftFeatures(FixedImagePointer fixedImageInput, const char *filename_phy_max, const char *filename_phy_min, const char *filename_im_max, const char *filename_im_min);
+      PointSetTypePointer getSiftFeatures(FixedImagePointer fixedImageInput, const char *filename_phy_max, const char *filename_phy_min, const char *filename_im_max, const char *filename_im_min,const char *filename_rej_contrast,const char *filename_rej_curvature);
 
       /** Match keypoints purely based on position.  Upper bounds
        *  the performance when matching using features. Supply
