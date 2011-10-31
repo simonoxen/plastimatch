@@ -749,7 +749,7 @@ Dlib_trainer::train_krr (void)
 	    trainer.set_search_lambdas(logspace(-9, 4, 100));
 	    trainer.be_verbose();
 	}
-	double gamma = exp10 (log_gamma);
+	double gamma = exp10_ (log_gamma);
 	trainer.set_kernel (Kernel_type (gamma));
 	dlib::decision_function<Kernel_type> krr_df = 
 	    trainer.train (m_samples, m_labels, loo_error);
