@@ -47,6 +47,15 @@ macro (plmtest_check_string
     )
 endmacro ()
 
+macro (plmtest_debug test_name stdout_file stderr_file)
+  add_test (${test_name}
+    ${CMAKE_COMMAND} 
+    "-DSTDOUT_FILE=${stdout_file}"
+    "-DSTDERR_FILE=${stderr_file}"
+    -P "${PLM_TESTING_SOURCE_DIR}/PlmTestDebug.cmake"
+    )
+endmacro ()
+
 ## -------------------------------------------------------------------------
 ## Download data sets
 ## -------------------------------------------------------------------------
@@ -607,10 +616,10 @@ set_tests_properties (drr-opencl-check PROPERTIES DEPENDS drr-opencl-stats)
 
 ## -------------------------------------------------------------------------
 ## fdk - all tests using fdk filtered backprojection
-##   fdk-cpu-a     CPU reconstruction of synthetic data
+##   fdk-cpu-a     CPU reconstruction of synthetic data, flavor a
 ##   fdk-cpu-b     CPU reconstruction of Varian data, no filtering
 ##   fdk-cpu-c     CPU reconstruction of Varian data, fftw filtering
-##   fdk-brook     GPU reconstruction of synthetic data using BROOK
+##   fdk-cpu-d     CPU reconstruction of synthetic data, flavor 0
 ##   fdk-cuda-a    GPU reconstruction of synthetic data using CUDA
 ##    [fdk-cuda-b  GPU reconstruction of Varian data using CUDA
 ##   fdk-opencl-a  GPU reconstruction of synthetic data using OpenCL
@@ -678,6 +687,28 @@ plmtest_check_interval ("fdk-cpu-c-check"
   )
 set_tests_properties (fdk-cpu-c-stats PROPERTIES DEPENDS fdk-cpu-c)
 set_tests_properties (fdk-cpu-c-check PROPERTIES DEPENDS fdk-cpu-c-stats)
+
+plm_add_test (
+  "fdk-cpu-d"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/fdk
+  "-I;${PLM_TESTING_BUILD_DIR}/drr-a;-X;0;-f;none;-a;0 19;-O;${PLM_TESTING_BUILD_DIR}/fdk-cpu-d.mha"
+  )
+plm_add_test (
+  "fdk-cpu-d-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/fdk-cpu-d.mha"
+  )
+plmtest_check_interval ("fdk-cpu-d-check"
+  "${PLM_TESTING_BUILD_DIR}/fdk-cpu-d-stats.stdout.txt"
+  "MAX *([-0-9.]*)"
+  "-987.5"
+  "-986.5"
+  )
+set_tests_properties (fdk-cpu-d PROPERTIES DEPENDS drr-a)
+set_tests_properties (fdk-cpu-d-stats PROPERTIES DEPENDS fdk-cpu-d)
+set_tests_properties (fdk-cpu-d-check PROPERTIES DEPENDS fdk-cpu-d-stats)
 
 plm_add_test (
   "fdk-cuda-a"
@@ -2495,6 +2526,21 @@ plm_add_test (
   "-src;1 0 0;-iso;0 0 0;-vup;0 0 1;-u;1;-p;${PLM_TESTING_DATA_DIR}/bragg-curve.txt;--debug;${PLM_TESTING_BUILD_DIR}/rect-2.mha;${PLM_TESTING_BUILD_DIR}/proton-dose.mha"
   )
 set_tests_properties (proton-dose PROPERTIES DEPENDS rect-2)
+
+## -------------------------------------------------------------------------
+## i hate myself
+## -------------------------------------------------------------------------
+if (${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL ppc)
+  plmtest_debug (debug-fdk-cpu-a
+    "${PLM_TESTING_BUILD_DIR}/fdk-cpu-a.stdout.txt"
+    "${PLM_TESTING_BUILD_DIR}/fdk-cpu-a.stderr.txt")
+  set_tests_properties (debug-fdk-cpu-a PROPERTIES DEPENDS fdk-cpu-a)
+  plmtest_debug (debug_landmark_warp_b
+    "${PLM_TESTING_BUILD_DIR}/landmark-warp-b.stdout.txt"
+    "${PLM_TESTING_BUILD_DIR}/landmark-warp-b.stderr.txt")
+  set_tests_properties (debug-landmark-warp-b PROPERTIES 
+    DEPENDS landmark-warp-b)
+endif ()
 
 ## -------------------------------------------------------------------------
 ## slicer tests

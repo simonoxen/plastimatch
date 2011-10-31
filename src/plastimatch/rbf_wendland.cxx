@@ -203,7 +203,7 @@ rbf_wendland_warp (Landmark_warp *lw)
     float *coeff;
     float origin[3], spacing[3];
     int dim[3];
-	float direction_cosines[9];
+    float direction_cosines[9];
     int i;
     Volume *moving, *vf_out, *warped_out;
 
@@ -213,22 +213,22 @@ rbf_wendland_warp (Landmark_warp *lw)
     lw->cluster_id = (int *)malloc(lw->m_fixed_landmarks->num_points * sizeof(int));
 
     if (lw->num_clusters > 0) {
-    rbf_cluster_kmeans_plusplus( lw ); // cluster the landmarks; result in lw->cluster_id
-    rbf_cluster_find_adapt_radius( lw ); // using cluster_id, fill in lw->adapt_radius
+	rbf_cluster_kmeans_plusplus( lw ); // cluster the landmarks; result in lw->cluster_id
+	rbf_cluster_find_adapt_radius( lw ); // using cluster_id, fill in lw->adapt_radius
     }
     else { // use the specified radius
 	for(i = 0; i < lw->m_fixed_landmarks->num_points; i++) 
-		lw->adapt_radius[i]=lw->rbf_radius;
+	    lw->adapt_radius[i]=lw->rbf_radius;
     }
 
 
-	for(i = 0; i < lw->m_fixed_landmarks->num_points; i++){ 
+    for(i = 0; i < lw->m_fixed_landmarks->num_points; i++){ 
 	lw->adapt_radius[i]*=2;
 	printf("%f\n", lw->adapt_radius[i]);
-	}
+    }
 
 
-	/* Solve for RBF weights */
+    /* Solve for RBF weights */
     coeff = (float*) malloc (
 	3 * lw->m_fixed_landmarks->num_points * sizeof(float));
     bspline_rbf_find_coeffs (coeff, lw);
@@ -238,7 +238,7 @@ rbf_wendland_warp (Landmark_warp *lw)
     lw->m_pih.get_origin (origin);
     lw->m_pih.get_spacing (spacing);
     lw->m_pih.get_dim (dim);
-	lw->m_pih.get_direction_cosines (direction_cosines);
+    lw->m_pih.get_direction_cosines (direction_cosines);
     vf_out = new Volume (dim, origin, spacing, direction_cosines, 
 	PT_VF_FLOAT_INTERLEAVED, 3);
 

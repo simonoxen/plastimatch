@@ -55,7 +55,7 @@ Volume::allocate (void)
 		fprintf (stderr, "Memory allocation failed.\n");
 		exit(1);
 	    }
-	    memset(der[i], 0, alloc_size*sizeof(float));
+	    memset (der[i], 0, alloc_size*sizeof(float));
 	}
 	this->img = (void*) der;
     } else {

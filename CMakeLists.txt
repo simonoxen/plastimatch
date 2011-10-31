@@ -138,7 +138,11 @@ if (APPLE AND BUILD_AGAINST_SLICER3)
 endif ()
 
 ##-----------------------------------------------------------------------------
-##  Detect 32-bit or 64-bit machine
+##  Processor and OS characteristics
+##    32-bit or 64-bit machine
+##    Endian-ness
+##    Machine precision
+##    Processor type
 ##-----------------------------------------------------------------------------
 check_type_size ("unsigned int"    CMAKE_SIZEOF_UINT)
 check_type_size ("unsigned long"   CMAKE_SIZEOF_ULONG)
@@ -154,11 +158,10 @@ if (NOT APPLE)
   endif ()
 endif ()
 
-##-----------------------------------------------------------------------------
-##  Detect endian, machine precision
-##-----------------------------------------------------------------------------
 test_big_endian (CMAKE_WORDS_BIGENDIAN)
 check_epsilon (MACHINE_EPS)
+message (STATUS "Checking host processor: ${CMAKE_HOST_SYSTEM_PROCESSOR}")
+message (STATUS "Checking target processor: ${CMAKE_SYSTEM_PROCESSOR}")
 message (STATUS "Checking epsilon: ${MACHINE_EPS}")
 
 ##-----------------------------------------------------------------------------

@@ -22,7 +22,7 @@ print_usage (void)
 	" -z \"s1 s2 s3\"          Physical size of the reconstruction (in mm)\n"
 	" -I indir               The input directory\n"
 	" -O outfile             The output file\n"
-        " -F {F,H}               Full or half fan bow-tie filter correction\n"
+        " -X flavor              Implementation flavor (0,a,b,c,d) (default=c)\n"
     );
     exit (1);
 }
@@ -45,7 +45,7 @@ set_default_options (Fdk_options* options)
     options->filter = FDK_FILTER_TYPE_RAMP;
     options->input_dir = ".";
     options->output_file = "output.mha";
-
+    options->flavor = 'c';
     options->full_fan=1;
     options->Full_normCBCT_name="Full_norm.mh5";
     options->Full_radius=120;
@@ -122,19 +122,16 @@ fdk_parse_args (Fdk_options* options, int argc, char* argv[])
 		print_usage ();
 	    }
 	}
-	else if (!strcmp (argv[i], "-F")) {
+	else if (!strcmp (argv[i], "-X")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {
 		fprintf(stderr, "option %s requires an argument\n", argv[i]);
 		exit(1);
 	    }
 	    i++;
-	    if (argv[i][0] == 'F' ||argv[i][0] == 'f') {
-		options->full_fan = 1;
-	    }
-	    else if (argv[i][0] == 'H' ||argv[i][0] == 'h') {
-		options->full_fan = 0;
-	    }
-	    else {
+	    options->flavor = argv[i][0];
+	    if (options->flavor != '0' && options->flavor != 'a'
+		&& options->flavor != 'b' && options->flavor != 'c'
+		&& options->flavor != 'd') {
 		print_usage ();
 	    }
 	}

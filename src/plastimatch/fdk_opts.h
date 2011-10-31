@@ -39,6 +39,8 @@ struct fdk_options {
     float scale;
     enum Fdk_filter_type filter;
 
+    char flavor;
+
     char* input_dir;
     char* output_file;
 

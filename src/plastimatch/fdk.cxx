@@ -599,11 +599,26 @@ reconstruct_conebeam (
     
         // printf ("Projecting Image %d\n", i);
         plm_timer_start (&timer);
-        // project_volume_onto_image_reference (vol, cbi, scale);
-        // project_volume_onto_image_a (vol, cbi, scale);
-        // project_volume_onto_image_b (vol, cbi, scale);
-        project_volume_onto_image_c (vol, cbi, scale);
-        // project_volume_onto_image_d (vol, cbi, scale);
+
+	switch (options->flavor) {
+	case '0':
+	    project_volume_onto_image_reference (vol, cbi, scale);
+	    break;
+	case 'a':
+	    project_volume_onto_image_a (vol, cbi, scale);
+	    break;
+	case 'b':
+	    project_volume_onto_image_b (vol, cbi, scale);
+	    break;
+	default:
+	case 'c':
+	    project_volume_onto_image_c (vol, cbi, scale);
+	    break;
+	case 'd':
+	    project_volume_onto_image_d (vol, cbi, scale);
+	    break;
+	}
+
         backproject_time += plm_timer_report (&timer);
 
         proj_image_destroy (cbi);
