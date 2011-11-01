@@ -1,21 +1,38 @@
 Packaging plastimatch
 =====================
-
 This section describes the recommended build configuration for 
-building and packaging the official plastimatch binaries.
+building and packaging the official plastimatch tarballs 
+and binaries.
 
-Plastimatch binaries should not include the 3D Slicer plugins.  
-Those will be handled by the Slicer extension system.
+Building a tarball
+------------------
+Official tarballs are built on my home computer: wormwood
 
+#. Make sure the changelog is up-to-date
+#. Update source into plastimatch-pristene
+#. Run make package_source
+#. Unpack and test tarball (don't skip this step)
+#. Reboot and test tarball on windows (don't skip this step)
+#. Upload to web site
+
+Then, do a few small things to get ready for next time
+
+#. Add version number and date to changelog
+#. Bump version number in CMakeLists
+
+Library versions for binaries
+-----------------------------
 Third party libraries to be used (Plastimatch 1.5.0)::
 
   CUDA            3.0.14
-  DCMTK           3.5.4             (Windows only)
+  DCMTK           ??                (3.5.4 for Mondoshot, otherwise 3.6.0)
   FFTW            3.2.2             (Windows only)
-  ITK             3.20.0
+  ITK             3.20.1
   wxWidgets       2.8.12            (Windows only)
 
-Configuration settings - leave at default unless otherwise specified.
+Configuration settings for binaries
+-----------------------------------
+Leave all values at default unless otherwise specified.
 Pay special attention to the following::
 
   BUILD_SHARED_LIBS           ??      (ON for windows, OFF for unix)
@@ -25,30 +42,27 @@ Pay special attention to the following::
   PLM_USE_GPU_PLUGINS         ON      (this is default)
   PLM_USE_SS_IMAGE_VEC        ON      (change this, but should be OFF for slicer plugin)
 
-Building a tarball
-------------------
-Official tarballs are built on my home computer: wormwood
-
-#. Make sure the changelog is up-to-date
-#. Update source into plastimatch-pristene
-#. Run make package_source
-#. Unpack and test tarball
-#. Upload to web site
-
-Then, do a few small things to get ready for next time
-
-#. Add version number and date to changelog
-#. Bump version number in CMakeLists
-
 Making debian version (upgrading tarball)
 -----------------------------------------
-This is done on wormwood as well.
+This is done on wormwood as well.  There are two workflows.  
+One which uses the local source tree, and one which downloads 
+the official tarball.
 
 #. Go to plastimatch/trunk
+#. Run rebundle.pl until satisfied
 #. Update changelog by running dch, such as "dch -v 1.5.4+dfsg0-1"
 #. Repackage tarballs, by running "debian/get_orig_source"
 #. Test out by running debuild, such as "run_debuild.pl"
 #. Test out again by running pbuilder, such as "run_pbuilder.sh"
+
+From official tarball:
+
+#. Clean up files from previous version
+#. Go to plastimatch/trunk
+#. Update changelog by running dch, such as "dch -v 1.5.4+dfsg0-1"
+#. Repackage tarballs, by running "debian/get_orig_source"
+#. Test out by running debuild, such as "run_debuild.pl"
+#. Test out again by running pbuilder, such as "run_pbuilder.pl"
 
 Note:
 
@@ -57,7 +71,6 @@ Note:
 
 Building a windows binary
 -------------------------
-
 The Windows build uses the MSVC 2008 express compiler.  
 This means 32-bit (only), and no OpenMP.
 
@@ -69,9 +82,11 @@ This means 32-bit (only), and no OpenMP.
 #. Build package
 #. Test package for missing dlls by making sure plastimatch runs
 
+Windows binaries should not include the 3D Slicer plugins.  
+Those will be handled by the Slicer extension system.
+
 Building a plastimatch deb package using cpack
 ----------------------------------------------
-
 This “How to” describes the way for build and 
 sign a deb package of plastimatch using the cpack tool.
 The deb files that are on the website are builded 
