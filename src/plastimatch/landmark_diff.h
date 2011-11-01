@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-gpuit_EXPORT
+plastimatch1_EXPORT
 int
 landmark_diff (
     Raw_pointset *rps0,
