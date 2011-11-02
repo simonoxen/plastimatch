@@ -74,6 +74,45 @@ itk_double_pointset_from_raw_pointset (Raw_pointset *ps)
 }
 
 template<class T>
+FloatPointSetType::Pointer
+itk_float_pointset_from_pointset (const Pointset<T> *ps)
+{
+    FloatPointSetType::Pointer itk_ps = FloatPointSetType::New ();
+    FloatPointSetType::PointsContainer::Pointer itk_ps_c 
+	= itk_ps->GetPoints ();
+
+    FloatPointIdType id = itk::NumericTraits< FloatPointIdType >::Zero;
+    for (unsigned int i = 0; i < ps->count(); i++) {
+	FloatPoint3DType p1;
+	p1[0] = ps->point_list[i].p[0];
+	p1[1] = ps->point_list[i].p[1];
+	p1[2] = ps->point_list[i].p[2];
+	itk_ps_c->InsertElement (id++, p1);
+    }
+    return itk_ps;
+}
+
+Unlabeled_pointset*
+unlabeled_pointset_from_itk_float_pointset (FloatPointSetType::Pointer itk_ps)
+{
+    typedef FloatPointSetType::PointsContainer PointsContainerType;
+    typedef PointsContainerType::Iterator PointsIteratorType;
+
+    Unlabeled_pointset *ps = new Unlabeled_pointset;
+    PointsContainerType::Pointer itk_ps_c 
+	= itk_ps->GetPoints ();
+
+    PointsIteratorType it = itk_ps_c->Begin();
+    PointsIteratorType end = itk_ps_c->End();
+    while (it != end) {
+	FloatPoint3DType p = it.Value();
+	ps->insert_lps ("", p[0], p[1], p[2]);
+	++it;
+    }
+    return ps;
+}
+
+template<class T>
 void
 itk_pointset_load (T pointset, const char* fn)
 {
@@ -164,3 +203,4 @@ template plastimatch1_EXPORT void itk_pointset_debug (FloatPointSetType::Pointer
 template plastimatch1_EXPORT void itk_pointset_debug (DoublePointSetType::Pointer pointset);
 template plastimatch1_EXPORT void itk_pointset_load (FloatPointSetType::Pointer pointset, const char* fn);
 template plastimatch1_EXPORT FloatPointSetType::Pointer itk_pointset_warp (FloatPointSetType::Pointer ps_in, Xform* xf);
+template plastimatch1_EXPORT FloatPointSetType::Pointer itk_float_pointset_from_pointset (const Unlabeled_pointset *ps);

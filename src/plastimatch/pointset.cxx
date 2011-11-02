@@ -36,14 +36,6 @@ Pointset<T>::load_fcsv (const char *fn)
 	return;
     }
 
-    /* Check if this file is an fcsv file */
-    fgets (s, 1024, fp);
-    if (strncmp (s, "# Fiducial List file", strlen ("# Fiducial List file")))
-    {
-	fclose (fp);
-	return;
-    }
-
     /* Got an fcsv file.  Parse it. */
     while (!feof(fp)) {
 	float lm[3];
@@ -57,9 +49,10 @@ Pointset<T>::load_fcsv (const char *fn)
 	char buf[1024];
         rc = sscanf (s, "%1023[^,],%f,%f,%f,%d,%d\n", buf, 
 	    &lm[0], &lm[1], &lm[2], &land_sel, &land_vis);
-	if (rc != 6) {
-	    print_and_exit ("Error parsing landmark file: %s "
-		"(rc=%d,str=%s,buf=%s)\n", fn, rc, buf);
+	if (rc < 4) {
+	    /* Error parsing file */
+	    point_list.clear();
+	    return;
 	}
 
 	/* Note: Plastimatch landmarks are in LPS coordinates. 

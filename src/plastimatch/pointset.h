@@ -62,9 +62,15 @@ class gpuit_EXPORT Pointset {
     void save (const char *fn);
     void save_fcsv (const char *fn);
     void save_txt (const char *fn);
+
+    /* Insert single points */
     void insert_lps (const std::string& label, float x, float y, float z);
     void insert_ras (const std::string& label, float x, float y, float z);
+
+    /* Return the number of points */
     size_t count (void) const;
+
+    /* Truncate points at the end of the list */
     void truncate (size_t new_length);
 };
 

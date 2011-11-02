@@ -17,12 +17,17 @@ warp_pointset_main (Warp_parms* parms)
     //itk_pointset_load (ps_in, (const char*) parms->input_fn);
     //itk_pointset_debug (ps_in);
 
-    Raw_pointset *ps = pointset_load ((const char*) parms->input_fn);
+    //Raw_pointset *ps = pointset_load ((const char*) parms->input_fn);
+    Unlabeled_pointset ps;
+    ps.load ((const char*) parms->input_fn);
 
     xform_load (&xf, parms->xf_in_fn);
 
+    //FloatPointSetType::Pointer itk_ps_in 
+    //= itk_float_pointset_from_raw_pointset (ps);
+
     FloatPointSetType::Pointer itk_ps_in 
-	= itk_float_pointset_from_raw_pointset (ps);
+	= itk_float_pointset_from_pointset (&ps);
 
     //pointset_debug (ps);
     //printf ("---\n");
@@ -33,13 +38,16 @@ warp_pointset_main (Warp_parms* parms)
     FloatPointSetType::Pointer itk_ps_out 
 	= itk_pointset_warp (itk_ps_in, &xf);
 
-    itk_pointset_debug (itk_ps_out);
+    //itk_pointset_debug (itk_ps_out);
 
     if (bstring_not_empty (parms->output_pointset_fn)) {
-	Raw_pointset *ps_out = raw_pointset_from_itk_float_pointset (itk_ps_out);
-	pointset_save (ps_out, (const char*) parms->output_pointset_fn);
-	pointset_destroy (ps_out);
-    }
+	//Raw_pointset *ps_out = raw_pointset_from_itk_float_pointset (itk_ps_out);
+	//pointset_save (ps_out, (const char*) parms->output_pointset_fn);
+	//pointset_destroy (ps_out);
 
-    pointset_destroy (ps);
+	Unlabeled_pointset *ps_out =
+	    unlabeled_pointset_from_itk_float_pointset (itk_ps_out);
+	ps_out->save ((const char*) parms->output_pointset_fn);
+	delete ps_out;
+    }
 }

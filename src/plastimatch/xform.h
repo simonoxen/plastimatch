@@ -13,6 +13,7 @@
 #include "itkThinPlateSplineKernelTransform.h"
 
 #include "bspline.h"
+#include "bspline_xform.h"
 #include "itk_image.h"
 #include "print_and_exit.h"
 #include "volume.h"
