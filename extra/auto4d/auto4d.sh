@@ -113,7 +113,7 @@ if [ ! -f $REF ]; then
 fi
 
 if [ ! -d $PHASE_PATH ]; then
-    echo "PATH_PHASE: Invalid directory"
+    echo "PHASE_PATH: Invalid directory"
     let "ERROR++"
 fi
 
@@ -140,7 +140,10 @@ fi
 
 if [ $ERROR != 0 ]; then
     echo
-    echo "$ERROR Error(s) encountered.  Exiting..."
+    echo "$ERROR Error(s) encountered."
+    echo "  Please edit this script to resolve these issues."
+    echo
+    echo "Exiting..."
     echo
     exit
 fi

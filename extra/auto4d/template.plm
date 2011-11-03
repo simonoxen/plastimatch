@@ -21,7 +21,7 @@ img_out=<WARP>
 # --------------------------------------------
 [STAGE]
 xform=bspline
-optim=liblbfgs
+optim=lbfgsb
 impl=plastimatch
 threading=cuda
 max_its=20
@@ -31,7 +31,7 @@ regularization_lambda=0.00001
 
 [STAGE]
 xform=bspline
-optim=liblbfgs
+optim=lbfgsb
 impl=plastimatch
 threading=cuda
 max_its=20
