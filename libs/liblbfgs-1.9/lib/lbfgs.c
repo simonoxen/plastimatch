@@ -242,6 +242,17 @@ void lbfgs_parameter_init(lbfgs_parameter_t *param)
     memcpy(param, &_defparam, sizeof(*param));
 }
 
+/******************************************************************/
+/* JAS 2011.11.03
+ *   Making k global was the easiest way to make it available to
+ *   line_search_morethuente due to the callback architecture.
+ *   I didn't want to reprototype all the callbacks... Sorry.
+ *
+ *   Needed to make liblbfgs report on every morethuente evaluation
+ *   in order to enforce max_feval */
+int k;
+/******************************************************************/
+
 int lbfgs(
     int n,
     lbfgsfloatval_t *x,
@@ -250,10 +261,10 @@ int lbfgs(
     lbfgs_progress_t proc_progress,
     void *instance,
     lbfgs_parameter_t *_param
-    )
+)
 {
     int ret;
-    int i, j, k, ls, end, bound;
+    int i, j, /* k, */ ls, end, bound;
     lbfgsfloatval_t step;
 
     /* Constant parameters and their default values. */
@@ -833,6 +844,12 @@ static int line_search_morethuente(
     lbfgsfloatval_t width, prev_width;
     lbfgsfloatval_t stmin, stmax;
 
+    /******************************************************************/
+    /* JAS 2011.11.03
+     *   Used to make liblbfgs report on every morethuente evaluation */
+    lbfgsfloatval_t xnorm, gnorm;
+    /******************************************************************/
+
     /* Check the input parameters for errors. */
     if (*stp <= 0.) {
         return LBFGSERR_INVALIDPARAMETERS;
@@ -902,6 +919,23 @@ static int line_search_morethuente(
         /* Evaluate the function and gradient values. */
         *f = cd->proc_evaluate(cd->instance, x, g, cd->n, *stp);
         vecdot(&dg, g, s, n);
+
+        /******************************************************************/
+        /* JAS 2011.11.03
+         *   Used to make liblbfgs report on every morethuente evaluation
+         *   so that max_feval can be encfored */
+
+        /* Compute x and g norms. */
+        vec2norm(&xnorm, x, n);
+        vec2norm(&gnorm, g, n);
+
+        if (cd->proc_progress) {
+            /* plm does not use ls, so setting it to zero should be ok */
+            if (cd->proc_progress(cd->instance, x, g, fx, xnorm, gnorm, *stp, cd->n, k, 0)) {
+                return LBFGSERR_MAXIMUMLINESEARCH;
+            }
+        }
+        /******************************************************************/
 
         ftest1 = finit + *stp * dgtest;
         ++count;
