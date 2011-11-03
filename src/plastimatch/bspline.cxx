@@ -711,7 +711,7 @@ report_score (
 	}
 	/* Part 4 - timing */
 	if (reg_parms->lambda > 0) {
-	    logfile_printf ("[ %9.3f | %9.3f ]", 
+	    logfile_printf ("[ %9.3f | %9.3f ]\n", 
 		ssd->time_smetric, ssd->time_rmetric);
 	}
     }
