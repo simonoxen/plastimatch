@@ -79,14 +79,15 @@ convert_dose (Program_Parms* parms)
 {
     Volume* vol;
     FILE* fp;
-    int i, slice_voxels;
+    size_t i;
+    int slice_voxels;
     unsigned short *img_us, *p;
     float *img_f;
 
     vol = read_mha (parms->mha_in_fn);
     if (!vol) exit (-1);
 
-    printf ("Scaling and converting (%d pix)...\n", vol->npix);
+    printf ("Scaling and converting (%u pix)...\n", vol->npix);
     img_f = (float*) vol->img;
     img_us = (unsigned short*) malloc (vol->npix * sizeof(unsigned short));
     for (i = 0; i < vol->npix; i++) {

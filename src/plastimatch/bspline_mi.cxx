@@ -38,7 +38,7 @@
 Volume*
 volume_clip_intensity (Volume* vin, float bot, float top)
 {
-    int i, j, N;
+    size_t i, j, N;
     int* marks;
     float* imgin;
     float* imgout;
@@ -124,7 +124,8 @@ bspline_initialize_mi_bigbin (
     Volume* vol
 )
 {
-    int i, idx_bin;
+    size_t i;
+    int idx_bin;
     float* img = (float*) vol->img;
 
     if (!img) {
@@ -153,7 +154,7 @@ bspline_initialize_mi_bigbin (
 static void
 bspline_initialize_mi_hist_eqsp (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
 {
-    int i;
+    size_t i;
     float min_vox, max_vox;
     float* img = (float*) vol->img;
 
@@ -227,7 +228,8 @@ bspline_mi_hist_vopt_dump_ranges (
 static void
 bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
 {
-    int i, j, k, idx_bin;
+    size_t i;
+    int j, k, idx_bin;
     int curr, next, bottom;
     float min_vox, max_vox;
 

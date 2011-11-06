@@ -103,7 +103,7 @@ read_mha_internal (
     int mh5                  /* Input: force 512 byte header */
 )
 {
-    int rc;
+    size_t rc;
     char linebuf[LINELEN];
     Volume* vol;
     int tmp;

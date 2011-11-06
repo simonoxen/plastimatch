@@ -37,7 +37,7 @@ lookup_rgdepth (
     double dist
 )
 {
-    int idx1, idx2;
+    size_t idx1, idx2;
     int ijk[3];
     double rg1, rg2, rgdepth, frac;
     float* d_img = (float*) rpl_vol->vol->img;
@@ -441,7 +441,7 @@ rpl_volume_compute_unified (
         vec3_add2 (r_tgt, tmp);
 
         for (c = 0; c < ires[1]; c++) {
-            int ap_idx;
+            size_t ap_idx;
 	    double ray[3];
 	    double ip1[3];
 	    double ip2[3];

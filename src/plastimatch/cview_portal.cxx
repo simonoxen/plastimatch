@@ -433,7 +433,7 @@ PortalWidget::setVolume (Volume* vol)
     /* Obtain value range */
     min_intensity = FLT_MAX;
     max_intensity = FLT_MIN;
-    for (int i=0; i<vol->npix; i++) {
+    for (size_t i=0; i<vol->npix; i++) {
         if ( img[i] < min_intensity ) {
             min_intensity = img[i];
         }

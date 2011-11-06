@@ -61,7 +61,7 @@ Volume::allocate (void)
     } else {
 	this->img = (void*) malloc (this->pix_size * this->npix);
 	if (!this->img) {
-	    fprintf (stderr, "Memory allocation failed (alloc size = %d).\n",
+	    fprintf (stderr, "Memory allocation failed (alloc size = %u).\n",
 		this->pix_size * this->npix);
 	    exit(1);
 	}
@@ -340,7 +340,7 @@ vf_convert_to_interleaved (Volume* vf)
 	break;
     case PT_VF_FLOAT_PLANAR:
 	{
-	    int v;
+	    size_t v;
 	    float** planar = (float**) vf->img;
 	    float* inter = (float*) malloc (3*sizeof(float*)*vf->npix);
 	    if (!inter) {
@@ -381,7 +381,7 @@ vf_convert_to_planar (Volume* ref)
     switch (ref->pix_type) {
     case PT_VF_FLOAT_INTERLEAVED:
 	{
-	    int i;
+	    size_t i;
 	    float* img = (float*) ref->img;
 	    float** der = (float**) malloc (3*sizeof(float*));
 	    if (!der) {
@@ -425,7 +425,7 @@ vf_convert_to_planar (Volume* ref)
 void
 volume_scale (Volume* vol, float scale)
 {
-    int i;
+    size_t i;
     float *img;
 
     if (vol->pix_type != PT_FLOAT) {

@@ -60,7 +60,8 @@ vf_analyze (Volume* vol)
 void
 vf_print_stats (Volume* vol)
 {
-    int i, d, v;
+    size_t i, v;
+    int d;
     float mins[3], maxs[3], mean[3];
 
 

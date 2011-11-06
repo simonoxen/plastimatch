@@ -36,7 +36,7 @@ bspline_warp_internal (
 )
 {
     int d;
-    int vidx;
+    size_t vidx;
     T* vout_img = (T*) vout->img;
 
     int rijk[3];             /* Indices within fixed image region (vox) */
