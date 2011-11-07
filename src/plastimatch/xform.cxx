@@ -1094,6 +1094,19 @@ xform_gpuit_bsp_to_gpuit_bsp (
     xf_out->set_gpuit_bsp (bxf_new);
 }
 
+void
+xform_gpuit_vf_to_gpuit_bsp (
+    Xform* xf_out, 
+    Xform* xf_in, 
+    Plm_image_header* pih, 
+    float* grid_spac
+)
+{
+    /* Convert gpuit_vf to itk_vf, then convert itk_vf to gpuit_bsp */
+    Xform tmp;
+    xform_to_itk_vf (&tmp, xf_in, pih);
+    xform_any_to_gpuit_bsp (xf_out, &tmp, pih, grid_spac);
+}
 
 /* -----------------------------------------------------------------------
    Conversion to gpuit_vf
@@ -1456,7 +1469,7 @@ xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih,
 	xform_gpuit_bsp_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
 	break;
     case XFORM_GPUIT_VECTOR_FIELD:
-	print_and_exit ("Sorry, gpuit_vf to gpuit_bsp not implemented\n");
+	xform_gpuit_vf_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
 	break;
     default:
 	print_and_exit ("Program error.  Bad xform type.\n");
