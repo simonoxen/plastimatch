@@ -16,9 +16,9 @@
 #include "itkRegularExpressionSeriesFileNames.h"
 
 #include "file_util.h"
+#include "img_metadata.h"
 #include "plm_image.h"
 #include "plm_image_type.h"
-#include "plm_image_patient_position.h"
 #include "print_and_exit.h"
 #include "rtss_polyline_set.h"
 #include "xio_ct.h"
@@ -287,18 +287,26 @@ xio_dose_create_volume (
 }
 
 void
-xio_dose_load (Plm_image *pli, const char *filename)
+xio_dose_load (
+    Plm_image *pli,
+    Img_metadata *img_metadata,
+    const char *filename
+)
 {
     Xio_dose_header xdh;
     
     xio_dose_load_header (&xdh, filename);
     xio_dose_create_volume (pli, &xdh);
     xio_dose_load_cube (pli, &xdh, filename);
+
+    /* XiO dose is in Gy RBE */
+    img_metadata->set_metadata(0x3004, 0x0004, "EFFECTIVE");
 }
 
 void
 xio_dose_save (
-    Plm_image *pli,  
+    Plm_image *pli,
+    Img_metadata *img_metadata,
     Xio_ct_transform *transform,
     const char *filename,
     const char *filename_template
@@ -361,20 +369,21 @@ xio_dose_save (
     oy = (v->offset[2] + (ry / 2)) - transform->y_offset;
     oz = - (v->offset[1] + (rz / 2));
 
-    if ( (transform->patient_pos == PATIENT_POSITION_HFS) ||
-	 (transform->patient_pos == PATIENT_POSITION_UNKNOWN) ) {
+    std::string patient_pos = img_metadata->get_metadata(0x0018, 0x5100);
+
+    if (patient_pos == "HFS" ||	patient_pos == "") {
 	ox =   ox * v->direction_cosines[0];
 	oy =   oy * v->direction_cosines[8];
 	oz =   oz * v->direction_cosines[4];
-    } else if (transform->patient_pos == PATIENT_POSITION_HFP) {
+    } else if (patient_pos == "HFP") {
 	ox = - ox * v->direction_cosines[0];
 	oy =   oy * v->direction_cosines[8];
 	oz = - oz * v->direction_cosines[4];
-    } else if (transform->patient_pos == PATIENT_POSITION_FFS) {
+    } else if (patient_pos == "FFS") {
 	ox = - ox * v->direction_cosines[0];
 	oy = - oy * v->direction_cosines[8];
 	oz =  oz * v->direction_cosines[4];
-    } else if (transform->patient_pos == PATIENT_POSITION_FFP) {
+    } else if (patient_pos == "FFP") {
 	ox =   ox * v->direction_cosines[0];
 	oy = - oy * v->direction_cosines[8];
 	oz = - oz * v->direction_cosines[4];
@@ -452,20 +461,17 @@ xio_dose_save (
 void
 xio_dose_apply_transform (Plm_image *pli, Xio_ct_transform *transform)
 {
-    int i;
+    /* Transform coordinates of XiO dose cube to DICOM coordinates */
 
     Volume *v;
     v = (Volume*) pli->m_gpuit;
-
-    /* Set patient position */
-    pli->m_patient_pos = transform->patient_pos;
 
     /* Set offsets */
     v->offset[0] = (v->offset[0] * transform->direction_cosines[0]) + transform->x_offset;
     v->offset[1] = (v->offset[1] * transform->direction_cosines[4]) + transform->y_offset;
 
     /* Set direction cosines */
-    for (i = 0; i <= 8; i++) {
+    for (int i = 0; i <= 8; i++) {
     	v->direction_cosines[i] = transform->direction_cosines[i];
     }
 }

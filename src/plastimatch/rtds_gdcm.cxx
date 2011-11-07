@@ -13,7 +13,6 @@
 #include "gdcm1_series.h"
 #endif
 #include "logfile.h"
-#include "plm_image_patient_position.h"
 #include "print_and_exit.h"
 #include "rtds_dicom.h"
 #include "rtss.h"

@@ -18,7 +18,6 @@
 #include "file_util.h"
 #include "print_and_exit.h"
 #include "logfile.h"
-#include "plm_image_patient_position.h"
 
 #if (defined(_WIN32) || defined(WIN32))
 #define snprintf _snprintf
@@ -94,11 +93,11 @@ itk_image_save_short_dicom (
     T image, 
     const char* dir_name, 
     Referenced_dicom_dir *rdd, 
-    const Img_metadata *img_metadata, 
-    Plm_image_patient_position patient_pos)
+    const Img_metadata *img_metadata
+)
 {
     ShortImageType::Pointer short_img = cast_short (image);
-    itk_dicom_save (short_img, dir_name, rdd, img_metadata, patient_pos);
+    itk_dicom_save (short_img, dir_name, rdd, img_metadata);
 }
 
 template<class T> 
@@ -147,9 +146,9 @@ template plastimatch1_EXPORT void itk_image_save_uint32 (FloatImageType::Pointer
 template plastimatch1_EXPORT void itk_image_save_float (FloatImageType::Pointer, const char*);
 template plastimatch1_EXPORT void itk_image_save_double (FloatImageType::Pointer, const char*);
 
-template plastimatch1_EXPORT void itk_image_save_short_dicom (UCharImageType::Pointer, const char*, Referenced_dicom_dir *, const Img_metadata *img_metadata, Plm_image_patient_position);
-template plastimatch1_EXPORT void itk_image_save_short_dicom (ShortImageType::Pointer, const char*, Referenced_dicom_dir *, const Img_metadata *img_metadata, Plm_image_patient_position);
-template plastimatch1_EXPORT void itk_image_save_short_dicom (UShortImageType::Pointer, const char*, Referenced_dicom_dir *, const Img_metadata *img_metadata, Plm_image_patient_position);
-template plastimatch1_EXPORT void itk_image_save_short_dicom (UInt32ImageType::Pointer, const char*, Referenced_dicom_dir *, const Img_metadata *img_metadata, Plm_image_patient_position);
-template plastimatch1_EXPORT void itk_image_save_short_dicom (FloatImageType::Pointer, const char*, Referenced_dicom_dir *, const Img_metadata *img_metadata, Plm_image_patient_position);
+template plastimatch1_EXPORT void itk_image_save_short_dicom (UCharImageType::Pointer, const char*, Referenced_dicom_dir *, const Img_metadata *img_metadata);
+template plastimatch1_EXPORT void itk_image_save_short_dicom (ShortImageType::Pointer, const char*, Referenced_dicom_dir *, const Img_metadata *img_metadata);
+template plastimatch1_EXPORT void itk_image_save_short_dicom (UShortImageType::Pointer, const char*, Referenced_dicom_dir *, const Img_metadata *img_metadata);
+template plastimatch1_EXPORT void itk_image_save_short_dicom (UInt32ImageType::Pointer, const char*, Referenced_dicom_dir *, const Img_metadata *img_metadata);
+template plastimatch1_EXPORT void itk_image_save_short_dicom (FloatImageType::Pointer, const char*, Referenced_dicom_dir *, const Img_metadata *img_metadata);
 

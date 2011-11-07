@@ -268,7 +268,7 @@ void
 Rtss::save_xio (Xio_ct_transform *xio_transform, Xio_version xio_version, 
     const Pstring &output_dir)
 {
-    xio_structures_save (this->m_cxt, xio_transform,
+    xio_structures_save (this->m_cxt, &m_img_metadata, xio_transform,
 	xio_version, (const char*) output_dir);
 }
 

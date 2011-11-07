@@ -350,7 +350,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   plm_image.cxx plm_image.h 
   plm_image_convert.cxx plm_image_convert.h 
   plm_image_header.cxx plm_image_header.h 
-  plm_image_patient_position.cxx plm_image_patient_position.h 
   plm_image_type.cxx plm_image_type.h 
   plm_int.h
   plm_parms.cxx plm_parms.h 

@@ -4,6 +4,7 @@
 #ifndef _xio_structures_h_
 #define _xio_structures_h_
 
+#include "img_metadata.h"
 #include "plm_config.h"
 #include "cxt_io.h"
 #include "xio_ct.h"
@@ -15,6 +16,7 @@ plastimatch1_EXPORT
 void
 xio_structures_save (
     Rtss_polyline_set *cxt, 
+    Img_metadata *img_metadata,
     Xio_ct_transform *transform, 
     Xio_version xio_version, 
     const char *output_dir

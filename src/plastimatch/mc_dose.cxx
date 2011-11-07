@@ -8,7 +8,6 @@
 
 #include "plm_image.h"
 #include "plm_image_type.h"
-#include "plm_image_patient_position.h"
 #include "print_and_exit.h"
 #include "xio_ct.h"
 
@@ -155,20 +154,17 @@ mc_dose_load (Plm_image *pli, const char *filename)
 void
 mc_dose_apply_transform (Plm_image *pli, Xio_ct_transform *transform)
 {
-    int i;
+    /* Transform coordinates of MC dose cube to DICOM coordinates */
 
     Volume *v;
     v = (Volume*) pli->m_gpuit;
-
-    /* Set patient position */
-    pli->m_patient_pos = transform->patient_pos;
 
     /* Set offsets */
     v->offset[0] = (v->offset[0] * transform->direction_cosines[0]) + transform->x_offset;
     v->offset[1] = (v->offset[1] * transform->direction_cosines[4]) + transform->y_offset;
 
     /* Set direction cosines */
-    for (i = 0; i <= 8; i++) {
+    for (int i = 0; i <= 8; i++) {
     	v->direction_cosines[i] = transform->direction_cosines[i];
     }
 }

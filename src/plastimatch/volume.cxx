@@ -116,6 +116,9 @@ Volume::create (
     case PT_UINT32:
 	this->pix_size = sizeof(uint32_t);
 	break;
+    case PT_INT32:
+	this->pix_size = sizeof(int32_t);
+	break;
     case PT_FLOAT:
 	this->pix_size = sizeof(float);
 	break;
@@ -198,6 +201,7 @@ volume_clone (Volume* ref)
     case PT_SHORT:
     case PT_UINT16:
     case PT_UINT32:
+    case PT_INT32:
     case PT_FLOAT:
     case PT_VF_FLOAT_INTERLEAVED:
     case PT_UCHAR_VEC_INTERLEAVED:
@@ -228,6 +232,9 @@ volume_convert_to_float (Volume* ref)
     case PT_UINT32:
 	CONVERT_VOLUME (uint32_t, float, PT_FLOAT);
 	break;
+    case PT_INT32:
+	CONVERT_VOLUME (int32_t, float, PT_FLOAT);
+	break;
     case PT_FLOAT:
 	/* Nothing to do */
 	break;
@@ -255,7 +262,8 @@ volume_convert_to_short (Volume* ref)
 	break;
     case PT_UINT16:
     case PT_UINT32:
-	fprintf (stderr, "Sorry, UINT16/UINT32 to SHORT is not implemented\n");
+    case PT_INT32:
+	fprintf (stderr, "Sorry, UINT16/UINT32/INT32 to SHORT is not implemented\n");
 	exit (-1);
 	break;
     case PT_FLOAT:
@@ -287,6 +295,9 @@ volume_convert_to_uint16 (Volume* ref)
     case PT_UINT32:
 	fprintf (stderr, "Sorry, UINT32 to UINT16 is not implemented\n");
 	break;
+    case PT_INT32:
+	fprintf (stderr, "Sorry, UINT32 to INT32 is not implemented\n");
+	break;
     case PT_FLOAT:
 	CONVERT_VOLUME (float, uint16_t, PT_UINT32);
 	break;
@@ -316,6 +327,10 @@ volume_convert_to_uint32 (Volume* ref)
 	break;
     case PT_UINT32:
 	/* Nothing to do */
+	break;
+    case PT_INT32:
+	fprintf (stderr, "Sorry, INT32 to UINT32 is not implemented\n");
+	exit (-1);
 	break;
     case PT_FLOAT:
 	CONVERT_VOLUME (float, uint32_t, PT_UINT32);
@@ -365,6 +380,7 @@ vf_convert_to_interleaved (Volume* vf)
     case PT_SHORT:
     case PT_UINT16:
     case PT_UINT32:
+    case PT_INT32:
     case PT_FLOAT:
     case PT_UCHAR_VEC_INTERLEAVED:
     default:
@@ -412,6 +428,7 @@ vf_convert_to_planar (Volume* ref)
     case PT_UCHAR:
     case PT_SHORT:
     case PT_UINT32:
+    case PT_INT32:
     case PT_FLOAT:
     case PT_UCHAR_VEC_INTERLEAVED:
     default:

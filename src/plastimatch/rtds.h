@@ -35,19 +35,12 @@ public:
     Rtds ();
     ~Rtds ();
     void load_dicom_dir (const char *dicom_dir);
-    void load_xio (
-	const char *xio_dir,
-	const char *dicom_dir,
-	Plm_image_patient_position patient_pos
-    );
+    void load_xio (const char *xio_dir,	Referenced_dicom_dir *rdd);
     void load_ss_img (const char *ss_img, const char *ss_list);
     void load_dose_img (const char *dose_img);
-    void load_dose_xio (const char *dose_xio, 
-	Plm_image_patient_position patient_pos);
-    void load_dose_astroid (const char *dose_astroid, 
-	Plm_image_patient_position patient_pos);
-    void load_dose_mc (const char *dose_mc, 
-	Plm_image_patient_position patient_pos);
+    void load_dose_xio (const char *dose_xio);
+    void load_dose_astroid (const char *dose_astroid);
+    void load_dose_mc (const char *dose_mc);
     void load_rdd (const char *rdd);
     void load_dicom (const char *dicom_dir); 
     void load_dcmtk (const char *dicom_dir); 

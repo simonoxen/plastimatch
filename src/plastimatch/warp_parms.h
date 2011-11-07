@@ -9,7 +9,6 @@
 
 #include "plm_file_format.h"
 #include "plm_image_type.h"
-#include "plm_image_patient_position.h"
 #include "pstring.h"
 #include "xio_studyset.h"
 
@@ -70,7 +69,6 @@ public:
 
     /* Metadata options */
     std::vector<std::string> m_metadata;
-    Plm_image_patient_position patient_pos;
 
 public:
     Warp_parms () {
@@ -89,7 +87,6 @@ public:
 	use_itk = 0;
 	simplify_perc = 0;
 	xor_contours = false;
-	patient_pos = PATIENT_POSITION_UNKNOWN;
     }
 };
 

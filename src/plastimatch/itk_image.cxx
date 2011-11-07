@@ -18,7 +18,6 @@
 #include "logfile.h"
 #include "plm_image_header.h"
 #include "plm_int.h"
-#include "plm_image_patient_position.h"
 #include "print_and_exit.h"
 #include "volume_header.h"
 

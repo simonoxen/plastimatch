@@ -13,7 +13,6 @@
 #include "plm_clp.h"
 #include "plm_file_format.h"
 #include "plm_image_header.h"
-#include "plm_image_patient_position.h"
 #include "plm_warp.h"
 #include "print_and_exit.h"
 #include "rtds.h"
@@ -282,11 +281,6 @@ parse_fn (
     }
     if (parser->option ("patient-pos")) {
 	std::string arg = parser->get_string ("patient-pos");
-	parms->patient_pos = plm_image_patient_position_parse (arg.c_str());
-	if (parms->patient_pos == PATIENT_POSITION_UNKNOWN) {
-	    throw (dlib::error (
-		    "Error. Unknown --patient-pos argument: " + arg));
-	}
 	std::transform (arg.begin(), arg.end(), arg.begin(), 
 	    (int(*)(int)) toupper);
 	std::string metadata_string = "0018,5100=" + arg;

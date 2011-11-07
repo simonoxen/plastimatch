@@ -14,7 +14,6 @@
 #include "plm_clp.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
-#include "plm_image_patient_position.h"
 #include "print_and_exit.h"
 #include "pstring.h"
 #include "thumbnail.h"

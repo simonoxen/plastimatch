@@ -10,7 +10,11 @@
 
 plastimatch1_EXPORT 
 void
-astroid_dose_load (Plm_image *plm, const char *filename);
+astroid_dose_load (
+    Plm_image *plm,
+    Img_metadata *img_metadata,
+    const char *filename
+);
 plastimatch1_EXPORT 
 void
 astroid_dose_apply_transform (Plm_image *plm, Xio_ct_transform *transform);

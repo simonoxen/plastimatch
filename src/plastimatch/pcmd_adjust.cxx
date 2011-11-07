@@ -9,7 +9,6 @@
 #include "itk_image_save.h"
 #include "pcmd_adjust.h"
 #include "plm_image.h"
-#include "plm_image_patient_position.h"
 
 static void
 adjust_main (Adjust_Parms* parms)
@@ -85,8 +84,7 @@ adjust_main (Adjust_Parms* parms)
 
     if (parms->output_dicom) {
 	itk_image_save_short_dicom (
-	    img, (const char*) parms->img_out_fn, 
-	    0, 0, PATIENT_POSITION_UNKNOWN);
+	    img, (const char*) parms->img_out_fn, 0, 0);
     } else {
 	if (parms->output_type) {
 	    plm_image->convert (parms->output_type);

@@ -6,7 +6,6 @@
 
 #include "plm_config.h"
 #include "itk_image.h"
-#include "plm_image_patient_position.h"
 
 CharImageType::Pointer load_dicom_char (const char *dicom_dir);
 UCharImageType::Pointer load_dicom_uchar (const char *dicom_dir);

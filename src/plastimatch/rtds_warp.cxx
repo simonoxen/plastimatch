@@ -38,23 +38,13 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	case PLM_FILE_FMT_UNKNOWN:
 	case PLM_FILE_FMT_IMG:
 	    rtds->m_img = plm_image_load_native (parms->input_fn);
-	    if (parms->patient_pos == PATIENT_POSITION_UNKNOWN 
-		&& bstring_not_empty (parms->referenced_dicom_dir))
-	    {
-		rtds_patient_pos_from_dicom_dir (
-		    rtds, parms->referenced_dicom_dir);
-	    } else {
-		rtds->m_img->m_patient_pos = parms->patient_pos;
-	    }
 	    break;
 	case PLM_FILE_FMT_DICOM_DIR:
 	    rtds->load_dicom_dir ((const char*) parms->input_fn);
 	    break;
 	case PLM_FILE_FMT_XIO_DIR:
 	    rtds->load_xio (
-		(const char*) parms->input_fn, 
-		(const char*) parms->referenced_dicom_dir, 
-		parms->patient_pos);
+		(const char*) parms->input_fn, &rtds->m_rdd);
 	    break;
 	case PLM_FILE_FMT_DIJ:
 	    print_and_exit (
@@ -87,24 +77,6 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	}
     }
 
-    if (bstring_not_empty (parms->referenced_dicom_dir)) {
-	logfile_printf ("Loading RDD\n");
-	rtds->load_rdd ((const char*) parms->referenced_dicom_dir);
-    } else {
-	/* GCS: 2011-09-05.  I think it is better to ask the user 
-	   to explicitly choose a referenced dicom dir than load 
-	   a directory by default. */
-#if defined (commentout)
-	/* Look for referenced CT in input directory */
-	if (bstring_not_empty (parms->input_fn)) {
-	    logfile_printf ("Loading RDD\n");
-	    char* dirname = file_util_dirname ((const char*) parms->input_fn);
-	    rtds->load_rdd (dirname);
-	    free (dirname);
-	}
-#endif
-    }
-
     if (bstring_not_empty (parms->input_cxt_fn)) {
 	if (rtds->m_ss_image) delete rtds->m_ss_image;
 	rtds->m_ss_image = new Rtss (rtds);
@@ -126,18 +98,15 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     }
 
     if (bstring_not_empty (parms->input_dose_xio_fn)) {
-	rtds->load_dose_xio ((const char*) parms->input_dose_xio_fn,
-	    parms->patient_pos);
+	rtds->load_dose_xio ((const char*) parms->input_dose_xio_fn);
     }
 
     if (bstring_not_empty (parms->input_dose_ast_fn)) {
-	rtds->load_dose_astroid ((const char*) parms->input_dose_ast_fn,
-	    parms->patient_pos);
+	rtds->load_dose_astroid ((const char*) parms->input_dose_ast_fn);
     }
 
     if (bstring_not_empty (parms->input_dose_mc_fn)) {
-	rtds->load_dose_mc ((const char*) parms->input_dose_mc_fn,
-	    parms->patient_pos);
+	rtds->load_dose_mc ((const char*) parms->input_dose_mc_fn);
     }
 }
 
@@ -283,6 +252,29 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     Xform xform;
     Plm_image_header pih;
 
+    /* Load referenced DICOM directory */
+
+    if (bstring_not_empty (parms->referenced_dicom_dir)) {
+	logfile_printf ("Loading RDD\n");
+	rtds->load_rdd ((const char*) parms->referenced_dicom_dir);
+    } else {
+	/* GCS: 2011-09-05.  I think it is better to ask the user
+	   to explicitly choose a referenced dicom dir than load
+	   a directory by default. */
+#if defined (commentout)
+	/* Look for referenced CT in input directory */
+	if (bstring_not_empty (parms->input_fn)) {
+	    logfile_printf ("Loading RDD\n");
+	    char* dirname = file_util_dirname ((const char*) parms->input_fn);
+	    rtds->load_rdd (dirname);
+	    free (dirname);
+	}
+#endif
+    }
+
+    /* Set user-supplied metadata */
+    rtds->set_user_metadata (parms->m_metadata);
+
     /* Load input file(s) */
     load_input_files (rtds, file_type, parms);
 
@@ -372,9 +364,6 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	rtds->m_img = im_out;
     }
 
-    /* Set user-supplied metadata */
-    rtds->set_user_metadata (parms->m_metadata);
-
     /* Save output image */
     if (bstring_not_empty (parms->output_img_fn) && rtds->m_img) {
 	printf ("Rtds_warp: Saving m_img (%s)\n",
@@ -420,7 +409,8 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	printf ("Rtds_warp: Saving xio dose.\n");
 	fn.format ("%s/%s", (const char*) parms->output_xio_dirname, "dose");
 	xio_dose_save (
-	    rtds->m_dose, 
+	    rtds->m_dose,
+	    &(rtds->m_img_metadata),
 	    rtds->m_xio_transform, 
 	    (const char*) fn, 
 	    rtds->m_xio_dose_input);

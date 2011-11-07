@@ -7,7 +7,6 @@
 #include "plm_config.h"
 
 #include "itk_image.h"
-#include "plm_image_patient_position.h"
 
 class Img_metadata;
 class Referenced_dicom_dir;
@@ -16,7 +15,7 @@ class Referenced_dicom_dir;
    Function prototypes
    ----------------------------------------------------------------------- */
 template<class T> void itk_image_save (T img_ptr, const char* fname);
-template<class T> void itk_image_save_short_dicom (T image, const char* dir_name, Referenced_dicom_dir *, const Img_metadata *demographics, Plm_image_patient_position);
+template<class T> void itk_image_save_short_dicom (T image, const char* dir_name, Referenced_dicom_dir *, const Img_metadata *demographics);
 template<class T> plastimatch1_EXPORT void itk_image_save_char (T img_ptr, const char* fname);
 template<class T> plastimatch1_EXPORT void itk_image_save_uchar (T img_ptr, const char* fname);
 template<class T> plastimatch1_EXPORT void itk_image_save_short (T img_ptr, const char* fname);

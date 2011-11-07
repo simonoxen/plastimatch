@@ -12,7 +12,6 @@
 #include "img_metadata.h"
 #include "itk_dicom_load.h"
 #include "logfile.h"
-#include "plm_image_patient_position.h"
 #include "print_and_exit.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */

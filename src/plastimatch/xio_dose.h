@@ -4,17 +4,23 @@
 #ifndef _xio_dose_h_
 #define _xio_dose_h_
 
+#include "img_metadata.h"
 #include "plm_config.h"
 #include "plm_image.h"
 #include "xio_ct.h"
 
 plastimatch1_EXPORT 
 void
-xio_dose_load (Plm_image *plm, const char *filename);
+xio_dose_load (
+    Plm_image *plm,
+    Img_metadata* img_metadata,
+    const char *filename
+);
 plastimatch1_EXPORT 
 void
 xio_dose_save (
     Plm_image *plm,
+    Img_metadata* img_metadata,
     Xio_ct_transform *transform,
     const char *filename,
     const char *filename_template

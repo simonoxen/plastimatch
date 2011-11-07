@@ -64,6 +64,9 @@ gdcm1_load_rdd (
     /* PatientSex */
     set_metadata_from_gdcm_file (&rdd->m_demographics, file, 0x0010, 0x0040);
 
+    /* PatientPosition */
+    set_metadata_from_gdcm_file (&rdd->m_demographics, file, 0x0018, 0x5100);
+
     /* StudyID */
     tmp = gdcm_file_GetEntryValue (file, 0x0020, 0x0010);
     if (tmp != gdcm_file_GDCM_UNFOUND()) {

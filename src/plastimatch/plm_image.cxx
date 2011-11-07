@@ -34,7 +34,6 @@ Plm_image::clone (void)
 
     pli->m_original_type = this->m_original_type;
     pli->m_type = this->m_type;
-    pli->m_patient_pos = this->m_patient_pos;
 
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
@@ -232,35 +231,35 @@ Plm_image::save_short_dicom (
 {
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
-	itk_image_save_short_dicom (this->m_itk_uchar, fname, rdd, img_metadata, this->m_patient_pos);
+	itk_image_save_short_dicom (this->m_itk_uchar, fname, rdd, img_metadata);
 	break;
     case PLM_IMG_TYPE_ITK_SHORT:
-	itk_image_save_short_dicom (this->m_itk_short, fname, rdd, img_metadata, this->m_patient_pos);
+	itk_image_save_short_dicom (this->m_itk_short, fname, rdd, img_metadata);
 	break;
     case PLM_IMG_TYPE_ITK_USHORT:
-	itk_image_save_short_dicom (this->m_itk_ushort, fname, rdd, img_metadata, this->m_patient_pos);
+	itk_image_save_short_dicom (this->m_itk_ushort, fname, rdd, img_metadata);
 	break;
     case PLM_IMG_TYPE_ITK_ULONG:
-	itk_image_save_short_dicom (this->m_itk_uint32, fname, rdd, img_metadata, this->m_patient_pos);
+	itk_image_save_short_dicom (this->m_itk_uint32, fname, rdd, img_metadata);
 	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
-	itk_image_save_short_dicom (this->m_itk_float, fname, rdd, img_metadata, this->m_patient_pos);
+	itk_image_save_short_dicom (this->m_itk_float, fname, rdd, img_metadata);
 	break;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
 	this->convert_to_itk_uchar ();
-	itk_image_save_short_dicom (this->m_itk_uchar, fname, rdd, img_metadata, this->m_patient_pos);
+	itk_image_save_short_dicom (this->m_itk_uchar, fname, rdd, img_metadata);
 	break;
     case PLM_IMG_TYPE_GPUIT_SHORT:
 	this->convert_to_itk_short ();
-	itk_image_save_short_dicom (this->m_itk_short, fname, rdd, img_metadata, this->m_patient_pos);
+	itk_image_save_short_dicom (this->m_itk_short, fname, rdd, img_metadata);
 	break;
     case PLM_IMG_TYPE_GPUIT_UINT32:
 	this->convert_to_itk_uint32 ();
-	itk_image_save_short_dicom (this->m_itk_uint32, fname, rdd, img_metadata, this->m_patient_pos);
+	itk_image_save_short_dicom (this->m_itk_uint32, fname, rdd, img_metadata);
 	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
 	this->convert_to_itk_float ();
-	itk_image_save_short_dicom (this->m_itk_float, fname, rdd, img_metadata, this->m_patient_pos);
+	itk_image_save_short_dicom (this->m_itk_float, fname, rdd, img_metadata);
 	break;
     case PLM_IMG_TYPE_GPUIT_UINT16:
     default:
@@ -349,6 +348,10 @@ Plm_image::set_gpuit (Volume *v)
     case PT_UINT32:
 	m_original_type = PLM_IMG_TYPE_GPUIT_UINT32;
 	m_type = PLM_IMG_TYPE_GPUIT_UINT32;
+	break;
+    case PT_INT32:
+	m_original_type = PLM_IMG_TYPE_GPUIT_INT32;
+	m_type = PLM_IMG_TYPE_GPUIT_INT32;
 	break;
     case PT_FLOAT:
 	m_original_type = PLM_IMG_TYPE_GPUIT_FLOAT;
@@ -839,6 +842,9 @@ Plm_image::convert_to_gpuit_float ()
     case PLM_IMG_TYPE_GPUIT_UCHAR:
     case PLM_IMG_TYPE_GPUIT_SHORT:
     case PLM_IMG_TYPE_GPUIT_UINT32:
+	volume_convert_to_float ((Volume *) this->m_gpuit);
+	return;
+    case PLM_IMG_TYPE_GPUIT_INT32:
 	volume_convert_to_float ((Volume *) this->m_gpuit);
 	return;
     case PLM_IMG_TYPE_GPUIT_FLOAT:

@@ -14,6 +14,7 @@ enum Volume_pixel_type {
     PT_SHORT,
     PT_UINT16,
     PT_UINT32,
+    PT_INT32,
     PT_FLOAT,
     PT_VF_FLOAT_INTERLEAVED,
     PT_VF_FLOAT_PLANAR,

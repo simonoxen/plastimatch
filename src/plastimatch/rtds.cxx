@@ -16,7 +16,6 @@
 #include "gdcm1_rtss.h"
 #endif
 #include "mc_dose.h"
-#include "plm_image_patient_position.h"
 #include "referenced_dicom_dir.h"
 #include "rtds.h"
 #include "rtds_dicom.h"
@@ -31,8 +30,6 @@
 
 Rtds::Rtds ()
 {
-    int i;
-
     m_img = 0;
     m_ss_image = 0;
     m_dose = 0;
@@ -42,15 +39,7 @@ Rtds::Rtds ()
     m_img_metadata.create_anonymous ();
 
     m_xio_transform = (Xio_ct_transform*) malloc (sizeof (Xio_ct_transform));
-    m_xio_transform->patient_pos = PATIENT_POSITION_UNKNOWN;
-    m_xio_transform->x_offset = 0;
-    m_xio_transform->y_offset = 0;
-    for (i = 0; i <= 8; i++) {
-	m_xio_transform->direction_cosines[i] = 0;
-    }
-    m_xio_transform->direction_cosines[0] = 1;
-    m_xio_transform->direction_cosines[4] = 1;
-    m_xio_transform->direction_cosines[8] = 1;
+    xio_ct_get_transform(&m_img_metadata, m_xio_transform);
 
     strcpy (m_xio_dose_input, "\0");
 }
@@ -97,8 +86,7 @@ Rtds::load_dicom_dir (const char *dicom_dir)
 void
 Rtds::load_xio (
     const char *xio_dir,
-    const char *dicom_dir,
-    Plm_image_patient_position patient_pos
+    Referenced_dicom_dir *rdd
 )
 {
     Xio_dir xd (xio_dir);
@@ -131,7 +119,7 @@ Rtds::load_xio (
 	printf ("calling xio_dose_load\n");
 	std::string xio_dose_file = std::string(xtpd->path) + "/dose.1";
 	strncpy(this->m_xio_dose_input, xio_dose_file.c_str(), _MAX_PATH);
-	xio_dose_load (this->m_dose, xio_dose_file.c_str());
+	xio_dose_load (this->m_dose, &m_img_metadata, xio_dose_file.c_str());
 
 	/* Find studyset associated with plan */
 	xsd = xio_plan_dir_get_studyset_dir (xtpd);
@@ -186,31 +174,23 @@ Rtds::load_xio (
 	}
     }
 
-    /* Set patient position */
-    if (patient_pos == PATIENT_POSITION_UNKNOWN && dicom_dir[0]) {
-	rtds_patient_pos_from_dicom_dir (this, dicom_dir);
-    } else {
-	if (this->m_img) this->m_img->m_patient_pos = patient_pos;
-	if (this->m_dose) this->m_dose->m_patient_pos = patient_pos;
-    }
-
-    /* If a directory with original DICOM CT is provided,
-       the structures will be associated with the original CT UIDs.
-       The coordinates will be transformed from XiO to DICOM LPS
-       with the same origin as the original CT.
+    /* If referenced DICOM CT is provided,  the coordinates will be
+       transformed from XiO to DICOM LPS  with the same origin as the
+       original CT.
 
        Otherwise, the XiO CT will be saved as DICOM and the structures
        will be associated to those slices. The coordinates will be
-       transformed to DICOM LPS based on the --patient-pos command
-       line parameter and the origin will remain the same. */
+       transformed to DICOM LPS based on the patient position metadata
+       and the origin will remain the same. */
+
     if (this->m_img) {
-	if (dicom_dir[0]) {
+	if (m_rdd.m_loaded) {
 	    /* Determine transformation based original DICOM */
-	    xio_ct_get_transform_from_dicom_dir (
-	    this->m_img, this->m_xio_transform, dicom_dir);
+	    xio_ct_get_transform_from_rdd
+		(this->m_img, &m_img_metadata, rdd, this->m_xio_transform);
 	} else {
     	    /* Determine transformation based on patient position */
-	    xio_ct_get_transform (this->m_img, this->m_xio_transform);
+	    xio_ct_get_transform (&m_img_metadata, this->m_xio_transform);
 	}
     }
 
@@ -248,13 +228,17 @@ void
 Rtds::load_rdd (const char *rdd)
 {
     m_rdd.load (rdd);
+
+    /* Default to patient position in referenced DICOM */
+    if (m_rdd.m_loaded) {
+	m_img_metadata.set_metadata(0x0018, 0x5100,
+	    m_rdd.m_demographics.get_metadata(0x0018, 0x5100));
+	xio_ct_get_transform(&m_img_metadata, m_xio_transform);
+    }
 }
 
 void
-Rtds::load_dose_xio (
-    const char *dose_xio,
-    Plm_image_patient_position patient_pos
-)
+Rtds::load_dose_xio (const char *dose_xio)
 {
     if (this->m_dose) {
 	delete this->m_dose;
@@ -262,46 +246,26 @@ Rtds::load_dose_xio (
     if (dose_xio) {
 	strncpy(this->m_xio_dose_input, dose_xio, _MAX_PATH);
 	this->m_dose = new Plm_image ();
-	xio_dose_load (this->m_dose, dose_xio);
-	this->m_dose->m_patient_pos = patient_pos;
-
-	if (this->m_xio_transform->patient_pos == PATIENT_POSITION_UNKNOWN) {
-	    /* No transform determined previously, meaning we don't have XiO CT.
-	       Use patient position with XiO origin from dose file. */
-	    xio_ct_get_transform (this->m_dose, this->m_xio_transform);
-	}
+	xio_dose_load (this->m_dose, &m_img_metadata, dose_xio);
 	xio_dose_apply_transform (this->m_dose, this->m_xio_transform);
     }
 }
 
 void
-Rtds::load_dose_astroid (
-    const char *dose_astroid,
-    Plm_image_patient_position patient_pos
-)
+Rtds::load_dose_astroid (const char *dose_astroid)
 {
     if (this->m_dose) {
 	delete this->m_dose;
     }
     if (dose_astroid) {
 	this->m_dose = new Plm_image ();
-	astroid_dose_load (this->m_dose, dose_astroid);
-	this->m_dose->m_patient_pos = patient_pos;
-
-	if (this->m_xio_transform->patient_pos == PATIENT_POSITION_UNKNOWN) {
-	    /* No transform determined previously, meaning we don't have XiO CT.
-	       Use patient position with XiO origin from dose file. */
-	    xio_ct_get_transform (this->m_dose, this->m_xio_transform);
-	}
+	astroid_dose_load (this->m_dose, &m_img_metadata, dose_astroid);
 	astroid_dose_apply_transform (this->m_dose, this->m_xio_transform);
     }
 }
 
 void
-Rtds::load_dose_mc (
-    const char *dose_mc,
-    Plm_image_patient_position patient_pos
-)
+Rtds::load_dose_mc (const char *dose_mc)
 {
     if (this->m_dose) {
 	delete this->m_dose;
@@ -309,13 +273,6 @@ Rtds::load_dose_mc (
     if (dose_mc) {
 	this->m_dose = new Plm_image ();
 	mc_dose_load (this->m_dose, dose_mc);
-	this->m_dose->m_patient_pos = patient_pos;
-
-	if (this->m_xio_transform->patient_pos == PATIENT_POSITION_UNKNOWN) {
-	    /* No transform determined previously, meaning we don't have XiO CT.
-	       Use patient position with XiO origin from dose file. */
-	    xio_ct_get_transform (this->m_dose, this->m_xio_transform);
-	}
 	mc_dose_apply_transform (this->m_dose, this->m_xio_transform);
     }
 }
@@ -355,4 +312,6 @@ Rtds::set_user_metadata (std::vector<std::string>& metadata)
 	}
 	++it;
     }
+
+    xio_ct_get_transform(&(m_img_metadata), m_xio_transform);
 }

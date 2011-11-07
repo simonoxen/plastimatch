@@ -4,6 +4,7 @@
 #include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <algorithm>
 #include "gdcmBinEntry.h"
 #include "gdcmFile.h"
 #include "gdcmFileHelper.h"
@@ -370,14 +371,23 @@ gdcm1_dose_save (
     /* HighBit */
     gf->InsertValEntry ("31", 0x0028, 0x0102);
     /* PixelRepresentation */
-    gf->InsertValEntry ("0", 0x0028, 0x0103);
+    if (meta->get_metadata(0x3004, 0x0004) != "ERROR") {
+	gf->InsertValEntry ("0", 0x0028, 0x0103);
+    } else {
+	gf->InsertValEntry ("1", 0x0028, 0x0103);
+    }
 
     /* Do I need SmallestImagePixelValue, LargestImagePixelValue? */
 
     /* DoseUnits */
     gf->InsertValEntry ("GY", 0x3004, 0x0002);
     /* DoseType */
-    gf->InsertValEntry ("PHYSICAL", 0x3004, 0x0004);
+    if (meta->get_metadata(0x3004, 0x0004) != "") {
+	set_gdcm_file_from_metadata (gf, meta, 0x3004, 0x0004);
+    } else {
+	gf->InsertValEntry ("PHYSICAL", 0x3004, 0x0004);
+    }
+
     /* DoseSummationType */
     gf->InsertValEntry ("PLAN", 0x3004, 0x000a);
 
@@ -407,16 +417,41 @@ gdcm1_dose_save (
     tmp->convert (PLM_IMG_TYPE_ITK_FLOAT);
     itk_image_stats (tmp->m_itk_float, &min_val, &max_val, &avg, 
 	&non_zero, &num_vox);
+
 #ifndef UINT32_T_MAX
 #define UINT32_T_MAX (0xffffffff)
 #endif
-    //float dose_scale = 0.04;
-    float dose_scale = 10.0 * max_val / UINT32_T_MAX;
-    /* Scale the image and convert to uint32_t */
+#ifndef INT32_T_MAX
+#define INT32_T_MAX (0x7fffffff)
+#endif
+#ifndef INT32_T_MIN
+#define INT32_T_MIN (-0x7fffffff - 1)
+#endif
+
+    float dose_scale;
+
+    if (meta->get_metadata(0x3004, 0x0004) != "ERROR") {
+	/* Dose is unsigned integer */
+	dose_scale = max_val / UINT32_T_MAX;
+    } else {
+	/* Dose error is signed integer */
+	float dose_scale_min = min_val / INT32_T_MIN;
+	float dose_scale_max = min_val / INT32_T_MIN;
+	 dose_scale = std::max(dose_scale_min, dose_scale_max);
+    }
+
+    /* Scale the image */
     tmp->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
     Volume *vol = (Volume*) tmp->m_gpuit;
     volume_scale (vol, 1 / dose_scale);
-    tmp->convert (PLM_IMG_TYPE_GPUIT_UINT32);
+
+    /* Convert to integer */
+    if (meta->get_metadata(0x3004, 0x0004) != "ERROR") {
+	tmp->convert (PLM_IMG_TYPE_GPUIT_UINT32);
+    } else {
+	tmp->convert (PLM_IMG_TYPE_GPUIT_INT32);
+    }
+
     vol = (Volume*) tmp->m_gpuit;
 
     /* DoseGridScaling */

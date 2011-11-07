@@ -4,9 +4,9 @@
 #include "plm_config.h"
 #include <string.h>
 
+#include "img_metadata.h"
 #include "plm_image.h"
 #include "plm_image_type.h"
-#include "plm_image_patient_position.h"
 #include "plm_int.h"
 #include "print_and_exit.h"
 #include "xio_ct.h"
@@ -16,6 +16,7 @@ struct astroid_dose_header {
     int dim[3];
     float offset[3];
     float spacing[3];
+    std::string dose_type;
 };
 
 static void
@@ -35,21 +36,20 @@ astroid_dose_load_header (Astroid_dose_header *adh, const char *filename)
     double topx; double topy; double topz;
 
     char line1[1024];
+    char line2[1024];
 
     /* Astroid doesn't include the geometry in the dose export file.
        Therefore an additional <filename>.geometry file will be loaded which
-       should contains a single line that defines the geometry with 9 values
+       should contains a line that defines the geometry with 9 values
        in XiO coordinates:
 
        rx, rz, ry, ox, oz, oy, nx, nz, ny
 
-       Coordinates in Astroid are the same as in the imported XiO plans.
-       To transform to DICOM coordinates, both the XiO studyset and original CT
-       need to be loaded:
+       The second line of the geometry file may contain the dose type:
+       PHYSICAL, EFFECTIVE or ERROR
 
-       --input-dose-ast <astroid-dose>
-       --input <xio-studyset-dir>
-       --dicom-dir <original-ct>
+       Default dose type is EFFECTIVE. If dose type = ERROR, the dose cube
+       should contain signed instead of unsigned integers.
     */
 
     std::string filename_geometry = std::string(filename) + ".geometry";
@@ -60,7 +60,7 @@ astroid_dose_load_header (Astroid_dose_header *adh, const char *filename)
 	    filename_geometry.c_str());
     }
 
-    /* Dose cube definition */
+    /* Dose grid */
     fgets (line1, sizeof(line1), fp);
 
     rc = sscanf (line1, "%lf,%lf,%lf,%lf,%lf,%lf,%d,%d,%d",
@@ -97,6 +97,13 @@ astroid_dose_load_header (Astroid_dose_header *adh, const char *filename)
     adh->offset[1] = topz;
     adh->offset[2] = topy;
 
+    if (fgets(line2, sizeof(line2), fp)) {
+	adh->dose_type = line2;
+    } else {
+	/* Standard is Gy RBE */
+	adh->dose_type = "EFFECTIVE";
+    }
+
     fclose (fp);
 }
 
@@ -109,11 +116,10 @@ astroid_dose_load_cube (
 {
     FILE *fp;
     Volume *v;
-    uint32_t *cube_img_read;
     int i, j, k, rc;
 
     v = (Volume*) pli->m_gpuit;
-    cube_img_read = (uint32_t*) v->img;
+    char* cube_img_read = (char*) v->img;
 
     fp = fopen (filename, "rb");
     if (!fp) {
@@ -121,7 +127,7 @@ astroid_dose_load_cube (
     }
 
     /* Read dose cube */
-    rc = fread (cube_img_read, sizeof(uint32_t), v->dim[0] * v->dim[1] * v->dim[2], fp);
+    rc = fread (cube_img_read, 4, v->dim[0] * v->dim[1] * v->dim[2], fp);
     if (rc != v->dim[0] * v->dim[1] * v->dim[2]) {
 	perror ("File error: ");
 	print_and_exit (
@@ -134,10 +140,10 @@ astroid_dose_load_cube (
     for (i = 0; i < v->dim[0] * v->dim[1] * v->dim[2]; i++) {
 	char lenbuf[4];
 	char tmpc;
-	memcpy (lenbuf, (char*) &cube_img_read[i], 4);
+	memcpy (lenbuf, &cube_img_read[i*4], 4);
 	tmpc = lenbuf[0]; lenbuf[0] = lenbuf[3]; lenbuf[3] = tmpc;
 	tmpc = lenbuf[1]; lenbuf[1] = lenbuf[2]; lenbuf[2] = tmpc;
-	memcpy ((char*) &cube_img_read[i], lenbuf, 4);
+	memcpy (&cube_img_read[i*4], lenbuf, 4);
     }
 
     /* Flip XiO Z axis */
@@ -175,8 +181,13 @@ astroid_dose_create_volume (
 {
     Volume *v;
 
-    v = new Volume (adh->dim, adh->offset, adh->spacing, 0, 
-	PT_UINT32, 1);
+    if (adh->dose_type != "ERROR") {
+	v = new Volume (adh->dim, adh->offset, adh->spacing, 0,
+	    PT_UINT32, 1);
+    } else {
+	v = new Volume (adh->dim, adh->offset, adh->spacing, 0,
+	    PT_INT32, 1);
+    }
     pli->set_gpuit (v);
 
     printf ("img: %p\n", v->img);
@@ -184,32 +195,35 @@ astroid_dose_create_volume (
 }
 
 void
-astroid_dose_load (Plm_image *pli, const char *filename)
+astroid_dose_load (
+    Plm_image *pli,
+    Img_metadata *img_metadata,
+    const char *filename
+)
 {
     Astroid_dose_header adh;
     
     astroid_dose_load_header(&adh, filename);
     astroid_dose_create_volume(pli, &adh);
     astroid_dose_load_cube(pli, &adh, filename);
+
+    img_metadata->set_metadata(0x3004, 0x0004, adh.dose_type);
 }
 
 void
 astroid_dose_apply_transform (Plm_image *pli, Xio_ct_transform *transform)
 {
-    int i;
+    /* Transform coordinates of Astroid dose cube to DICOM coordinates */
 
     Volume *v;
     v = (Volume*) pli->m_gpuit;
-
-    /* Set patient position */
-    pli->m_patient_pos = transform->patient_pos;
 
     /* Set offsets */
     v->offset[0] = (v->offset[0] * transform->direction_cosines[0]) + transform->x_offset;
     v->offset[1] = (v->offset[1] * transform->direction_cosines[4]) + transform->y_offset;
 
     /* Set direction cosines */
-    for (i = 0; i <= 8; i++) {
+    for (int i = 0; i <= 8; i++) {
     	v->direction_cosines[i] = transform->direction_cosines[i];
     }
 }
