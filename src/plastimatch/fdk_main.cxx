@@ -83,7 +83,7 @@ main (int argc, char* argv[])
     convert_to_hu (vol, &options);
 
     /* Do bowtie filter corrections */
-    fdk_do_bowtie (vol, &options);
+    //fdk_do_bowtie (vol, &options);
 
     /* Write output */
     printf ("Writing output volume(s)...\n");
