@@ -98,6 +98,10 @@ astroid_dose_load_header (Astroid_dose_header *adh, const char *filename)
     adh->offset[2] = topy;
 
     if (fgets(line2, sizeof(line2), fp)) {
+	/* Remove newline if exists */
+	unsigned int len = strlen(line2);
+	if (line2[len - 1] == '\n') line2[len - 1] = '\0';
+
 	adh->dose_type = line2;
     } else {
 	/* Standard is Gy RBE */
