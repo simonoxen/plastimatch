@@ -119,6 +119,9 @@ gpuit_EXPORT
 void
 volume_convert_to_uint32 (Volume* ref);
 gpuit_EXPORT
+void
+volume_convert_to_int32 (Volume* ref);
+gpuit_EXPORT
 void vf_convert_to_interleaved (Volume* ref);
 void vf_convert_to_planar (Volume* ref, int min_size);
 void vf_pad_planar (Volume* vol, int size);

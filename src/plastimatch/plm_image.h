@@ -54,6 +54,7 @@ private:
     void convert_to_gpuit_short ();
     void convert_to_gpuit_uint16 ();
     void convert_to_gpuit_uint32 ();
+    void convert_to_gpuit_int32 ();
     void convert_to_gpuit_float ();
     void convert_to_gpuit_uchar_vec ();
 

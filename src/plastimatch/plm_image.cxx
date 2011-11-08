@@ -811,6 +811,29 @@ Plm_image::convert_to_gpuit_uint32 ()
 }
 
 void
+Plm_image::convert_to_gpuit_int32 ()
+{
+    switch (this->m_type) {
+    case PLM_IMG_TYPE_GPUIT_INT32:
+	return;
+    case PLM_IMG_TYPE_GPUIT_FLOAT:
+	volume_convert_to_int32 ((Volume *) this->m_gpuit);
+	return;
+    case PLM_IMG_TYPE_GPUIT_UCHAR:
+    case PLM_IMG_TYPE_GPUIT_SHORT:
+    case PLM_IMG_TYPE_ITK_UCHAR:
+    case PLM_IMG_TYPE_ITK_SHORT:
+    case PLM_IMG_TYPE_ITK_ULONG:
+    case PLM_IMG_TYPE_ITK_FLOAT:
+    default:
+	print_and_exit (
+	    "Error: unhandled conversion from %s to gpuit_int32\n",
+	    plm_image_type_string (this->m_type));
+	return;
+    }
+}
+
+void
 Plm_image::convert_to_gpuit_float ()
 {
     switch (this->m_type) {
@@ -922,6 +945,9 @@ Plm_image::convert (Plm_image_type new_type)
 	break;
     case PLM_IMG_TYPE_GPUIT_UINT32:
 	this->convert_to_gpuit_uint32 ();
+	break;
+    case PLM_IMG_TYPE_GPUIT_INT32:
+	this->convert_to_gpuit_int32 ();
 	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
 	this->convert_to_gpuit_float ();

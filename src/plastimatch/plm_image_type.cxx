@@ -80,6 +80,8 @@ plm_image_type_string (Plm_image_type type)
 	return "PLM_IMG_TYPE_GPUIT_UINT16";
     case PLM_IMG_TYPE_GPUIT_UINT32:
 	return "PLM_IMG_TYPE_GPUIT_UINT32";
+    case PLM_IMG_TYPE_GPUIT_INT32:
+	return "PLM_IMG_TYPE_GPUIT_INT32";
     case PLM_IMG_TYPE_GPUIT_FLOAT:
 	return "PLM_IMG_TYPE_GPUIT_FLOAT";
     case PLM_IMG_TYPE_GPUIT_FLOAT_FIELD:

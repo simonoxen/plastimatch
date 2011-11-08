@@ -347,6 +347,40 @@ volume_convert_to_uint32 (Volume* ref)
 }
 
 void
+volume_convert_to_int32 (Volume* ref)
+{
+    switch (ref->pix_type) {
+    case PT_UCHAR:
+    case PT_SHORT:
+	fprintf (stderr, "Sorry, UCHAR/SHORT to INT32 is not implemented\n");
+	exit (-1);
+	break;
+    case PT_UINT16:
+	fprintf (stderr, "Sorry, UINT16 to INT32 is not implemented\n");
+	exit (-1);
+	break;
+    case PT_INT32:
+	/* Nothing to do */
+	break;
+    case PT_UINT32:
+	fprintf (stderr, "Sorry, UINT32 to INT32 is not implemented\n");
+	exit (-1);
+	break;
+    case PT_FLOAT:
+	CONVERT_VOLUME (float, int32_t, PT_INT32);
+	break;
+    case PT_VF_FLOAT_INTERLEAVED:
+    case PT_VF_FLOAT_PLANAR:
+    case PT_UCHAR_VEC_INTERLEAVED:
+    default:
+	/* Can't convert this */
+	fprintf (stderr, "Sorry, unsupported conversion to INT32\n");
+	exit (-1);
+	break;
+    }
+}
+
+void
 vf_convert_to_interleaved (Volume* vf)
 {
     switch (vf->pix_type) {
