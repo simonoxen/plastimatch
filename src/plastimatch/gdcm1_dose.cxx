@@ -436,8 +436,8 @@ gdcm1_dose_save (
     } else {
 	/* Dose error is signed integer */
 	float dose_scale_min = min_val / INT32_T_MIN;
-	float dose_scale_max = min_val / INT32_T_MIN;
-	 dose_scale = std::max(dose_scale_min, dose_scale_max);
+	float dose_scale_max = max_val / INT32_T_MAX;
+	dose_scale = std::max(dose_scale_min, dose_scale_max);
     }
 
     /* Scale the image */
