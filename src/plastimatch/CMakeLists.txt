@@ -381,6 +381,7 @@ set (PLASTIMATCH1_LIBRARY_SRC
   ss_list_io.cxx ss_list_io.h
   synthetic_mha.cxx synthetic_mha.h
   synthetic_vf.cxx synthetic_vf.h
+  threshbox.cxx threshbox.h
   thumbnail.cxx thumbnail.h
   xio_ct.cxx xio_ct.h
   xio_demographic.cxx xio_demographic.h

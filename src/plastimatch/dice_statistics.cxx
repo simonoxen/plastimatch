@@ -33,6 +33,7 @@ float do_dice (
 
     k[0]=0;
     float dice=0;
+    float overlap_PET=0;
     int sizeRef=0;
     int sizeWarp=0;
     int FP=0;
@@ -153,6 +154,11 @@ float do_dice (
     dice=((float)(2*TP))/((float)(sizeRef+sizeWarp));
     //printf("DICE COEFFICIENT: %f\n",dice);
     fprintf(output,"DICE: %f\n",dice);
+    if (sizeRef < sizeWarp)
+	overlap_PET = ((float)(2*TP))/((float)(sizeRef));
+    else
+	overlap_PET = ((float)(2*TP))/((float)(sizeWarp));
+    fprintf(output,"OVERLAP_PET: %f\n",overlap_PET);
     //printf("\n\n");
     fprintf(output,"\n");
 

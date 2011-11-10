@@ -52,6 +52,9 @@ set (PLASTIMATCH_SLICER_SYNTH_SRC
 set (PLASTIMATCH_SLICER_XFORMWARP_SRC
   plastimatch_slicer_xformwarp.cxx
   )
+set (PLASTIMATCH_SLICER_THRESHBOX_SRC
+  plastimatch_slicer_threshbox.cxx
+  )
 
 ##-----------------------------------------------------------------------------
 ##  Executable targets
@@ -76,6 +79,9 @@ plm_add_slicer_executable (plastimatch_slicer_synth
   "${GPUIT_EXE_LDFLAGS}")
 plm_add_slicer_executable (plastimatch_slicer_xformwarp
   "${PLASTIMATCH_SLICER_XFORMWARP_SRC}" "${PLASTIMATCH_LIBS}" 
+  "${GPUIT_EXE_LDFLAGS}")
+plm_add_slicer_executable (plastimatch_slicer_threshbox
+  "${PLASTIMATCH_SLICER_THRESHBOX_SRC}" "${PLASTIMATCH_LIBS}" 
   "${GPUIT_EXE_LDFLAGS}")
 
 ##-----------------------------------------------------------------------------
