@@ -18,6 +18,7 @@
 #if GDCM_VERSION_1
 #include "gdcm1_series.h"
 #endif
+#include "plm_endian.h"
 #include "plm_image.h"
 #include "plm_image_type.h"
 #include "print_and_exit.h"
@@ -159,13 +160,16 @@ xio_ct_load_image (
 	    filename, rc, ferror (fp));
     }
 
-    /* Switch big-endian to little-endian */
+    /* Switch big-endian to native */
+#if defined (commentout)
     for (i = 0; i < v->dim[0] * v->dim[1]; i++) {
 	char *byte = (char*) &slice_img[i];
 	char tmp = byte[0];
 	byte[0] = byte[1];
 	byte[1] = tmp;
     }
+#endif
+    endian2_big_to_native ((void*) slice_img, v->dim[0] * v->dim[1]);
 
     fclose (fp);
 }
@@ -211,12 +215,15 @@ xio_ct_load (Plm_image *pli, const Xio_studyset *studyset)
     string ct_file;
 
     if (studyset->number_slices > 0) {
-	ct_file = studyset->studyset_dir + "/" + studyset->slices[0].filename_scan.c_str();
+	ct_file = studyset->studyset_dir 
+	    + "/" + studyset->slices[0].filename_scan.c_str();
         xio_ct_load_header (&xch, ct_file.c_str());
-	xio_ct_create_volume (pli, &xch, studyset->number_slices, studyset->thickness);
+	xio_ct_create_volume (pli, &xch, studyset->number_slices, 
+	    studyset->thickness);
 
 	for (i = 0; i < studyset->number_slices; i++) {
-	    ct_file = studyset->studyset_dir + "/" + studyset->slices[i].filename_scan.c_str();
+	    ct_file = studyset->studyset_dir 
+		+ "/" + studyset->slices[i].filename_scan.c_str();
 	    xio_ct_load_image (pli, i, ct_file.c_str());
 	}
     }

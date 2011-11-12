@@ -227,7 +227,8 @@ xio_structures_load (
 )
 {
     /* Get the index file */
-    std::string index_file = std::string(studyset.studyset_dir) + "/" + "contournames";
+    std::string index_file = std::string(studyset.studyset_dir) 
+	+ "/" + "contournames";
     if (!itksys::SystemTools::FileExists (index_file.c_str(), true)) {
 	print_and_exit ("No xio contournames file found in directory %s\n", 
 	    studyset.studyset_dir.c_str());
@@ -240,8 +241,10 @@ xio_structures_load (
     /* Load all .WC files, adding data to CXT */
     std::string contour_file;
     for (int i = 0; i < studyset.number_slices; i++) {
-	contour_file = studyset.studyset_dir + "/" + studyset.slices[i].filename_contours;
-	add_cms_structure (rtss, contour_file.c_str(), studyset.slices[i].location);
+	contour_file = studyset.studyset_dir 
+	    + "/" + studyset.slices[i].filename_contours;
+	add_cms_structure (rtss, contour_file.c_str(), 
+	    studyset.slices[i].location);
     }
 
     rtss->debug ();

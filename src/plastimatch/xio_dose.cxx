@@ -17,6 +17,7 @@
 
 #include "file_util.h"
 #include "img_metadata.h"
+#include "plm_endian.h"
 #include "plm_image.h"
 #include "plm_image_type.h"
 #include "print_and_exit.h"
@@ -230,7 +231,8 @@ xio_dose_load_cube (
 	    filename, rc, ferror (fp));
     }
 
-    /* Switch big-endian to little-endian */
+    /* Switch big-endian to native */
+#if defined (commentout)
     for (i = 0; i < v->dim[0] * v->dim[1] * v->dim[2]; i++) {
 	char lenbuf[4];
 	char tmpc;
@@ -239,6 +241,9 @@ xio_dose_load_cube (
 	tmpc = lenbuf[1]; lenbuf[1] = lenbuf[2]; lenbuf[2] = tmpc;
 	memcpy ((char*) &cube_img_read[i], lenbuf, 4);
     }
+#endif
+    endian4_big_to_native ((void*) cube_img_read, 
+	v->dim[0] * v->dim[1] * v->dim[2]);
 
     /* Flip XiO Z axis */
     Volume* vflip;
@@ -294,7 +299,7 @@ xio_dose_load (
 )
 {
     Xio_dose_header xdh;
-    
+
     xio_dose_load_header (&xdh, filename);
     xio_dose_create_volume (pli, &xdh);
     xio_dose_load_cube (pli, &xdh, filename);
@@ -331,7 +336,7 @@ xio_dose_save (
     Xio_dose_header xdh;
 
     Volume *v;
-    v = (Volume*) pli->m_gpuit;
+    v = (Volume*) pli->gpuit_float ();
 
     /* Dose cube definition */
     double rx; double ry; double rz;
@@ -434,7 +439,8 @@ xio_dose_save (
     volume_convert_to_uint32 (v_write);
     uint32_t *cube_img_write = (uint32_t*) v_write->img;
 
-    /* Switch little-endian to big-endian */
+    /* Switch native to big-endian */
+#if defined (commentout)
     for (i = 0; i < v_write->dim[0] * v_write->dim[1] * v_write->dim[2]; i++) {
 	char lenbuf[4];
 	char tmpc;
@@ -443,6 +449,9 @@ xio_dose_save (
 	tmpc = lenbuf[1]; lenbuf[1] = lenbuf[2]; lenbuf[2] = tmpc;
 	memcpy ((char*) &cube_img_write[i], lenbuf, 4);
     }
+#endif
+    endian4_native_to_big ((void*) cube_img_write, 
+	v->dim[0] * v->dim[1] * v->dim[2]);
 
     /* Write dose cube */
     /* FIX: Not taking direction cosines into account */

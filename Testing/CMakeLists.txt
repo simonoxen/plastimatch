@@ -1290,7 +1290,7 @@ plm_add_test (
   "plm-convert-xio-a"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02;--output-img;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-a.mha;--output-xio;${PLM_TESTING_BUILD_DIR}/plm-convert-xio-a-xio-output;--output-dicom;${PLM_TESTING_BUILD_DIR}/plm-convert-xio-a-dicom"
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02;--output-img;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-a.mha;--output-xio;${PLM_TESTING_BUILD_DIR}/plm-convert-xio-a-xio-output;--output-dicom;${PLM_TESTING_BUILD_DIR}/plm-convert-xio-a-dicom;--output-dose-img;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-dose-a.mha"
   )
 plm_add_test (
   "plm-convert-xio-a-stats"

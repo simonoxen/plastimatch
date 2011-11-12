@@ -2,7 +2,6 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
-#include "plm_path.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,6 +10,7 @@
 #endif
 #include "fwrite_block.h"
 #include "mha_io.h"
+#include "plm_path.h"
 #include "string_util.h"
 #include "volume.h"
 

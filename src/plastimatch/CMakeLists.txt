@@ -140,6 +140,7 @@ set (GPUIT_LIBRARY_SRC
   math_util.h
   mha_io.cxx mha_io.h
   rpl_volume.cxx rpl_volume.h
+  plm_endian.cxx plm_endian.h 
   pointset.cxx pointset.h 
   proj_image.cxx proj_image.h
   proj_image_dir.cxx proj_image_dir.h

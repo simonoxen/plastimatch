@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "img_metadata.h"
+#include "plm_endian.h"
 #include "plm_image.h"
 #include "plm_image_type.h"
 #include "plm_int.h"
@@ -140,15 +141,9 @@ astroid_dose_load_cube (
 	    filename, rc, ferror (fp));
     }
 
-    /* Switch big-endian to little-endian */
-    for (i = 0; i < v->dim[0] * v->dim[1] * v->dim[2]; i++) {
-	char lenbuf[4];
-	char tmpc;
-	memcpy (lenbuf, &cube_img_read[i*4], 4);
-	tmpc = lenbuf[0]; lenbuf[0] = lenbuf[3]; lenbuf[3] = tmpc;
-	tmpc = lenbuf[1]; lenbuf[1] = lenbuf[2]; lenbuf[2] = tmpc;
-	memcpy (&cube_img_read[i*4], lenbuf, 4);
-    }
+    /* Switch big-endian to native */
+    endian4_big_to_native ((void*) cube_img_read, 
+	v->dim[0] * v->dim[1] * v->dim[2]);
 
     /* Flip XiO Z axis */
     Volume* vflip;

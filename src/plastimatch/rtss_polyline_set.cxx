@@ -169,12 +169,16 @@ Rtss_polyline_set::debug (void)
     int i;
     Rtss_structure* curr_structure;
 
-    printf ("dim = %d %d %d\n", 
-	this->m_dim[0], this->m_dim[1], this->m_dim[2]);
-    printf ("offset = %g %g %g\n", 
-	this->m_offset[0], this->m_offset[1], this->m_offset[2]);
-    printf ("spacing = %g %g %g\n", 
-	this->m_spacing[0], this->m_spacing[1], this->m_spacing[2]);
+    if (this->have_geometry) {
+	printf ("rps::dim = %d %d %d\n", 
+	    this->m_dim[0], this->m_dim[1], this->m_dim[2]);
+	printf ("rps::offset = %g %g %g\n", 
+	    this->m_offset[0], this->m_offset[1], this->m_offset[2]);
+	printf ("rps::spacing = %g %g %g\n", 
+	    this->m_spacing[0], this->m_spacing[1], this->m_spacing[2]);
+    } else {
+	printf ("rps has no geometry\n");
+    }
 
     for (i = 0; i < this->num_structures; i++) {
         curr_structure = this->slist[i];
@@ -183,7 +187,7 @@ Rtss_polyline_set::debug (void)
 	    curr_structure->id, 
 	    (const char*) curr_structure->name, 
 	    bstring_empty (curr_structure->color) 
-	      ? "none" : (const char*) curr_structure->color, 
+	    ? "none" : (const char*) curr_structure->color, 
 	    curr_structure->pslist, 
 	    curr_structure->num_contours
 	);
