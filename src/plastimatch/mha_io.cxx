@@ -8,9 +8,11 @@
 #if (defined(_WIN32) || defined(WIN32))
 #include <io.h>        // windows //
 #endif
-#include "plm_fwrite.h"
 #include "mha_io.h"
+#include "plm_endian.h"
+#include "plm_fwrite.h"
 #include "plm_path.h"
+#include "print_and_exit.h"
 #include "string_util.h"
 #include "volume.h"
 
@@ -101,6 +103,7 @@ read_mha_internal (
     int tmp;
     FILE* fp;
     bool have_direction_cosines = false;
+    bool big_endian_input = false;
 
     fp = fopen (filename,"rb");
     if (!fp) {
@@ -174,6 +177,9 @@ read_mha_internal (
 	    vol->pix_size = sizeof(unsigned char);
 	    continue;
 	}
+	if (strcmp (linebuf, "BinaryDataByteOrderMSB = True") == 0) {
+	    big_endian_input = true;
+	}
     }
 
     if (vol->pix_size <= 0) {
@@ -199,6 +205,30 @@ read_mha_internal (
 	printf ("Oops, bad read from file (%u)\n", (unsigned int) rc);
 	exit (-1);
     }
+
+    /* Swap endian-ness if necessary */
+    if (vol->pix_type == PT_VF_FLOAT_INTERLEAVED) {
+	if (big_endian_input) {
+	    endian4_big_to_native (vol->img, 3 * vol->npix);
+	} else {
+	    endian4_little_to_native (vol->img, 3 * vol->npix);
+	}
+    } else if (vol->pix_size == 2) {
+	if (big_endian_input) {
+	    endian2_big_to_native (vol->img, vol->npix);
+	} else {
+	    endian2_little_to_native (vol->img, vol->npix);
+	}
+    } else if (vol->pix_size == 4) {
+	if (big_endian_input) {
+	    endian4_big_to_native (vol->img, vol->npix);
+	} else {
+	    endian4_little_to_native (vol->img, vol->npix);
+	}
+    } else if (vol->pix_size != 1) {
+	print_and_exit ("Unknown pixel size: %u\n", vol->pix_size);
+    }
+
     fclose (fp);
 
     return vol;
