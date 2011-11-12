@@ -135,12 +135,12 @@ set (GPUIT_LIBRARY_SRC
   drr.cxx drr.h
   drr_trilin.cxx drr_trilin.h
   fdk.cxx fdk.h
-  fwrite_block.cxx fwrite_block.h
   hnd_io.cxx hnd_io.h
   math_util.h
   mha_io.cxx mha_io.h
   rpl_volume.cxx rpl_volume.h
   plm_endian.cxx plm_endian.h 
+  plm_fwrite.cxx plm_fwrite.h
   pointset.cxx pointset.h 
   proj_image.cxx proj_image.h
   proj_image_dir.cxx proj_image_dir.h

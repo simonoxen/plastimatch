@@ -62,7 +62,7 @@ Volume::allocate (void)
 	this->img = (void*) malloc (this->pix_size * this->npix);
 	if (!this->img) {
 	    fprintf (stderr, "Memory allocation failed (alloc size = %u).\n",
-		this->pix_size * this->npix);
+		(int) (this->pix_size * this->npix));
 	    exit(1);
 	}
 	memset (this->img, 0, this->pix_size * this->npix);

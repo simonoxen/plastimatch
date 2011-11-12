@@ -8,15 +8,13 @@
 #if (defined(_WIN32) || defined(WIN32))
 #include <io.h>        // windows //
 #endif
-#include "fwrite_block.h"
+#include "plm_fwrite.h"
 #include "mha_io.h"
 #include "plm_path.h"
 #include "string_util.h"
 #include "volume.h"
 
-#define LINELEN 128
-#define MIN_SHORT -32768
-#define MAX_SHORT 32767
+#define LINELEN 512
 
 /* -----------------------------------------------------------------------
    Private functions
@@ -24,8 +22,7 @@
 static void 
 write_mha_internal (
     const char* filename,    /* Input: filename to write to */
-    Volume* vol,             /* Input: volume to write */
-    int mh5                  /* Input: force 512 byte header */
+    Volume* vol              /* Input: volume to write */
 )
 {
     FILE* fp;
@@ -44,7 +41,6 @@ write_mha_internal (
 	"ElementType = %s\n"
 	"ElementDataFile = LOCAL\n";
     char* element_type;
-    int bytes_written;
 
     if (vol->pix_type == PT_VF_FLOAT_PLANAR) {
 	fprintf (stderr, "Error, PT_VF_FLOAT_PLANAR not implemented\n");
@@ -76,31 +72,27 @@ write_mha_internal (
 	fprintf (stderr, "Unhandled type in write_mha().\n");
 	exit (-1);
     }
-    bytes_written = fprintf (fp, mha_header, 
-	     vol->offset[0], vol->offset[1], vol->offset[2], 
-	     vol->spacing[0], vol->spacing[1], vol->spacing[2], 
-	     vol->dim[0], vol->dim[1], vol->dim[2],
-	     (vol->pix_type == PT_VF_FLOAT_INTERLEAVED) 
-	     ? "ElementNumberOfChannels = 3\n" : "",
-	     element_type);
+    fprintf (fp, mha_header, 
+	vol->offset[0], vol->offset[1], vol->offset[2], 
+	vol->spacing[0], vol->spacing[1], vol->spacing[2], 
+	vol->dim[0], vol->dim[1], vol->dim[2],
+	(vol->pix_type == PT_VF_FLOAT_INTERLEAVED) 
+	? "ElementNumberOfChannels = 3\n" : "",
+	element_type);
     fflush (fp);
 
-    if (mh5) {
-	while (bytes_written < 512) {
-	    fprintf(fp,"\n");
-	    bytes_written ++;
-	}
+    if (vol->pix_type == PT_VF_FLOAT_INTERLEAVED) {
+	plm_fwrite (vol->img, sizeof(float), 3 * vol->npix, fp, true);
+    } else {
+	plm_fwrite (vol->img, vol->pix_size, vol->npix, fp, true);
     }
-
-    fwrite_block (vol->img, vol->pix_size, vol->npix, fp);
 
     fclose (fp);
 }
 
 static Volume* 
 read_mha_internal (
-    const char* filename,    /* Input: filename to read from */
-    int mh5                  /* Input: force 512 byte header */
+    const char* filename     /* Input: filename to read from */
 )
 {
     size_t rc;
@@ -196,10 +188,6 @@ read_mha_internal (
 	vol->set_direction_cosines (0);
     }
 
-    if (mh5) {
-	fseek(fp, 512, SEEK_SET);
-    }
-
     vol->img = malloc (vol->pix_size*vol->npix);
     if (!vol->img) {
 	printf ("Oops, out of memory\n");
@@ -208,7 +196,7 @@ read_mha_internal (
 
     rc = fread (vol->img, vol->pix_size, vol->npix, fp);
     if (rc != vol->npix) {
-	printf ("Oops, bad read from file (%d)\n", rc);
+	printf ("Oops, bad read from file (%u)\n", (unsigned int) rc);
 	exit (-1);
     }
     fclose (fp);
@@ -216,37 +204,17 @@ read_mha_internal (
     return vol;
 }
 
-/* Return 1 if filename ends in ".mh5" */
-static int 
-is_mh5 (const char* filename)
-{
-    int len = strlen (filename);
-    if (len < 4) return 0;
-    if (!strcmp (&filename[len-4], ".mh5")) return 1;
-    if (!strcmp (&filename[len-4], ".MH5")) return 1;
-    return 0;
-}
-
-
 /* -----------------------------------------------------------------------
    Public functions
    ----------------------------------------------------------------------- */
 void 
 write_mha (const char* filename, Volume* vol)
 {
-    if (is_mh5 (filename)) {
-	write_mha_internal (filename, vol, 1);
-    } else {
-	write_mha_internal (filename, vol, 0);
-    }
+    write_mha_internal (filename, vol);
 }
 
 Volume* 
 read_mha (const char* filename)
 {
-    if (is_mh5 (filename)) {
-	return read_mha_internal (filename, 1);
-    } else {
-	return read_mha_internal (filename, 0);
-    }
+    return read_mha_internal (filename);
 }
