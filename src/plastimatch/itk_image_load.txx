@@ -6,9 +6,10 @@
 
 #include "plm_config.h"
 #include "itkImage.h"
+#include "itkCastImageFilter.h"
 #include "itkImageFileReader.h"
 #include "itkMetaDataDictionary.h"
-#include "itkOrientImageFilter.h"
+//#include "itkOrientImageFilter.h"
 #include "file_util.h"
 #include "print_and_exit.h"
 
@@ -140,6 +141,12 @@ itk_image_load_any (
     }
 }
 
+/* GCS 2011-11-13.  The ITK filter fails with exception when direction 
+   cosines are non-orthogonal.  Looking at the code, it does not seem 
+   that this function even works as expected.  Perhaps we should just
+   omit it.
+*/
+#if defined (commentout)
 /* -----------------------------------------------------------------------
    Orienting Images
    ----------------------------------------------------------------------- */
@@ -149,16 +156,23 @@ orient_image (T img)
 {
     typedef typename T::ObjectType ImageType;
     typedef typename itk::OrientImageFilter<ImageType,ImageType> OrienterType;
-    
-    typename OrienterType::Pointer orienter = OrienterType::New();
-    orienter->UseImageDirectionOn ();
-    orienter->SetDesiredCoordinateOrientation (
-	itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI);
-    orienter->SetInput (img);
-    orienter->Update ();
-    T output_img = orienter->GetOutput ();
-    output_img->SetMetaDataDictionary (img->GetMetaDataDictionary());
-    return output_img;
+
+    try {    
+	typename OrienterType::Pointer orienter = OrienterType::New();
+	orienter->UseImageDirectionOn ();
+	orienter->SetDesiredCoordinateOrientation (
+	    itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI);
+	orienter->SetInput (img);
+	orienter->Update ();
+	T output_img = orienter->GetOutput ();
+	output_img->SetMetaDataDictionary (img->GetMetaDataDictionary());
+	return output_img;
+    } catch (itk::ExceptionObject &e) {
+	std::cerr << "ITK exception orienting image." << std::endl;
+	std::cerr << e << std::endl;
+	exit (-1);
+    }
 }
+#endif
 
 #endif

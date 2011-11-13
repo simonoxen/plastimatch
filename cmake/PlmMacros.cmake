@@ -102,12 +102,12 @@ macro (PLM_ADD_OPENCL_FILE SRCS CL_FILE)
     "${CMAKE_BINARY_DIR}/${CL_FILE}" 
     DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${CL_FILE}")
   # Need in the testing directory too :(
-  set (${SRCS} ${${SRCS}} "${PLM_TESTING_BUILD_DIR}/${CL_FILE}")
+  set (${SRCS} ${${SRCS}} "${PLM_BUILD_TESTING_DIR}/${CL_FILE}")
   add_custom_command (
-    OUTPUT "${PLM_TESTING_BUILD_DIR}/${CL_FILE}"
+    OUTPUT "${PLM_BUILD_TESTING_DIR}/${CL_FILE}"
     COMMAND ${CMAKE_COMMAND} "-E" "copy" 
     "${CMAKE_CURRENT_SOURCE_DIR}/${CL_FILE}" 
-    "${PLM_TESTING_BUILD_DIR}/${CL_FILE}" 
+    "${PLM_BUILD_TESTING_DIR}/${CL_FILE}" 
     DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${CL_FILE}")
 endmacro ()
 

@@ -18,5 +18,6 @@ itk_image_load_short (const char* fname, Plm_image_type* original_type)
     } else {
 	img = itk_image_load_any (fname, original_type, static_cast<short>(0));
     }
-    return orient_image (img);
+    //return orient_image (img);
+    return img;
 }

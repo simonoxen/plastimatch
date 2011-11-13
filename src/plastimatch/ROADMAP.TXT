@@ -1,20 +1,17 @@
-1.5.0
-
-*  Debian binary w/ CUDA interface
-
 1.6.0
 
-*  Autolabel (la,tsv1,tsv2)
 *  B-spline auto-parameters
 *  B-spline direction cosines
 *  B-spline regularization
 *  B-spline ROI
-*  CUDA demons
+*  DCMTK support
 *  plastimatch threshold
+*  Large image support
 
 Unspecified future release
 
-*  DCMTK support
+*  Autolabel (la,tsv1,tsv2)
+*  CUDA demons
 *  Native translation registration
 *  Native rigid registration
 *  Normalized MI
