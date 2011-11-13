@@ -56,6 +56,9 @@ endif ()
 # Machine precision
 include (cmake/CheckEpsilon)
 
+# Is char signed or unsigned?
+include (cmake/CheckCharSign)
+
 ##-----------------------------------------------------------------------------
 ##  Plastimatch configuration variables
 ##-----------------------------------------------------------------------------
@@ -160,9 +163,11 @@ endif ()
 
 test_big_endian (CMAKE_WORDS_BIGENDIAN)
 check_epsilon (MACHINE_EPS)
+check_char_sign (CHAR_SIGN)
 message (STATUS "Checking host processor: ${CMAKE_HOST_SYSTEM_PROCESSOR}")
 message (STATUS "Checking target processor: ${CMAKE_SYSTEM_PROCESSOR}")
 message (STATUS "Checking epsilon: ${MACHINE_EPS}")
+message (STATUS "Checking sign of char: ${CHAR_SIGN}")
 
 ##-----------------------------------------------------------------------------
 ##  I can't remember why this is necessary.  But at one time I needed 

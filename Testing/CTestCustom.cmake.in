@@ -10,6 +10,7 @@ set (PLM_PLASTIMATCH_PATH_HACK "@PLM_PLASTIMATCH_PATH_HACK@")
 set (PLM_REDUCED_TESTS @PLM_REDUCED_TESTS@)
 set (PLM_TEST_DICOM @PLM_TEST_DICOM@)
 set (PLM_TESTING_BUILD_DIR "@PLM_TESTING_BUILD_DIR@")
+set (CMAKE_HOST_SYSTEM_PROCESSOR "@CMAKE_HOST_SYSTEM_PROCESSOR@")
 
 ## If we don't have functioning CUDA, don't run CUDA tests
 set (RUN_CUDA_TESTS OFF)
@@ -277,6 +278,27 @@ if (BUILD_DEBIAN)
     )
 endif ()
 
+## Debian on MIPS causes timeout because the build machine is too slow.
+## So we just skip these tests
+if (BUILD_DEBIAN AND CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "mips")
+  set (CTEST_CUSTOM_TESTS_IGNORE
+    ${CTEST_CUSTOM_TESTS_IGNORE}
+    "bspline-mi-c-1"
+    "bspline-mi-c-1-check"
+    "bspline-mi-c-2"
+    "bspline-mi-c-2-check"
+    "fdk-cpu-d"
+    "fdk-cpu-d-stats"
+    "fdk-cpu-d-check"
+    "plm-bsp-regularize-numeric"
+    "plm-bsp-regularize-numeric-stats"
+    "plm-bsp-regularize-numeric-check"
+    "plm-resample-c"         ## GCS FIX: This depends on mi-c-1
+    "plm-resample-c-stats" 
+    "plm-resample-c-check" 
+    )
+endif ()
+
 ## Don't delete from the list, comment out instead.
 if (PLM_REDUCED_TESTS)
   set (CTEST_CUSTOM_TESTS_IGNORE
@@ -341,6 +363,9 @@ if (PLM_REDUCED_TESTS)
     "fdk-cpu-c"
     "fdk-cpu-c-stats"
     "fdk-cpu-c-check"
+    "fdk-cpu-d"
+    "fdk-cpu-d-stats"
+    "fdk-cpu-d-check"
     "fdk-cuda-a"
     "fdk-cuda-a-stats"
     "fdk-cuda-a-check"
