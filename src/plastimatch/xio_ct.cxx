@@ -135,7 +135,7 @@ xio_ct_load_image (
     FILE *fp;
     Volume *v;
     short *img, *slice_img;
-    int i, rc;
+    int rc;
 
     v = (Volume*) pli->m_gpuit;
     img = (short*) v->img;
@@ -162,7 +162,7 @@ xio_ct_load_image (
 
     /* Switch big-endian to native */
 #if defined (commentout)
-    for (i = 0; i < v->dim[0] * v->dim[1]; i++) {
+    for (int i = 0; i < v->dim[0] * v->dim[1]; i++) {
 	char *byte = (char*) &slice_img[i];
 	char tmp = byte[0];
 	byte[0] = byte[1];

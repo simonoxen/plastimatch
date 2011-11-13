@@ -73,20 +73,6 @@ ClampCastImageFilter<TInputImage, TOutputImage>
 	} else {
 	    out_it.Set (static_cast<OutputImagePixelType> (in_it.Get()));
 	}
-#if defined (commentout)
-	/* GCS - why do I think I need static_cast ?? */
-	if (clamp
-	    && value > static_cast<InputImagePixelType>(max_value))
-	{
-	    out_it.Set (max_value);
-	} else if (clamp 
-	    && value < static_cast<InputImagePixelType>(min_value))
-	{
-	    out_it.Set (min_value);
-	} else {
-	    out_it.Set (static_cast<OutputImagePixelType> (in_it.Get()));
-	}
-#endif
 	++in_it;
 	++out_it;
 	progress.CompletedPixel();

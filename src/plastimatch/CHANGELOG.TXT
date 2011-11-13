@@ -2,6 +2,7 @@ Version 1.5.6 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
 * Fix memory error with large image sizes
 * Fix problem putting bspline stage after demons stage
+* Improve portability to big-endian, unsigned char platforms
 
 Version 1.5.5 (build 2868)
 Mon Oct 31 00:35:29 EDT 2011

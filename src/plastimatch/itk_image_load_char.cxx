@@ -17,7 +17,7 @@ itk_image_load_char (const char* fname, Plm_image_type* original_type)
 	img = load_dicom_char (fname);
     } else {
 	img = itk_image_load_any (fname, original_type, 
-	    static_cast<char>(0));
+	    static_cast<int8_t>(0));
     }
     return orient_image (img);
 }
