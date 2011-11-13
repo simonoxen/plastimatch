@@ -143,7 +143,7 @@ bspline_initialize_mi_bigbin (
     }
 
     /* look for biggest bin */
-    for(i=0; i<hparms->bins; i++) {
+    for (i=0; i<hparms->bins; i++) {
         if (hist[i] > hist[hparms->big_bin]) {
             hparms->big_bin = i;
         }
@@ -2117,7 +2117,8 @@ bspline_score_d_mi (Bspline_parms *parms,
     Plm_timer timer;
     float m_val;
 
-    int fijk[3], fv;
+    int fijk[3];
+    size_t fv;
     float mijk[3];
     float fxyz[3];
     float mxyz[3];

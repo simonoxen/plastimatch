@@ -17,7 +17,8 @@
 Volume*
 vf_warp (Volume *vout, Volume *vin, Volume *vf)
 {
-    int d, v, ijk[3];
+    int d, ijk[3];
+    size_t v;
     float fxyz[3];
     float* vf_img = (float*) vf->img;
     float* vout_img;

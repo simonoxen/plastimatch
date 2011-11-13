@@ -9,13 +9,13 @@
 /* -----------------------------------------------------------------------
    Macros
    ----------------------------------------------------------------------- */
-static inline int 
+static inline size_t 
 volume_index (const int dims[3], int i, int j, int k)
 {
     return i + (dims[0] * (j + dims[1] * k));
 }
 
-static inline int 
+static inline size_t 
 volume_index (const int dims[3], const int ijk[3])
 {
     return ijk[0] + (dims[0] * (ijk[1] + dims[1] * ijk[2]));

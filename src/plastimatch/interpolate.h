@@ -74,8 +74,8 @@
 #define LI_VALUE_INTERLEAVED(m_val, fx1, fx2, fy1, fy2, fz1, fz2,	\
     mvf, m_img, moving, plane)						\
     do {								\
-	int idx_x1y1z1, idx_x2y1z1, idx_x1y2z1, idx_x2y2z1;		\
-	int idx_x1y1z2, idx_x2y1z2, idx_x1y2z2, idx_x2y2z2;		\
+	size_t idx_x1y1z1, idx_x2y1z1, idx_x1y2z1, idx_x2y2z1;		\
+	size_t idx_x1y1z2, idx_x2y1z2, idx_x1y2z2, idx_x2y2z2;		\
 	float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;			\
 	float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;			\
 									\
@@ -129,7 +129,7 @@ li_clamp_3d (float mijk[3], int mijk_f[3], int mijk_r[3],
 plmsys_EXPORT
 float
 li_value (float fx1, float fx2, float fy1, float fy2, 
-    float fz1, float fz2, int mvf, 
+    float fz1, float fz2, size_t mvf, 
     float *m_img, Volume *moving);
 
 #if defined __cplusplus

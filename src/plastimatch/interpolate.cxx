@@ -58,9 +58,13 @@ li_clamp_3d (
 
 float
 li_value (
-    float fx1, float fx2, float fy1, float fy2, 
-    float fz1, float fz2, int mvf, 
-    float *m_img, Volume *moving)
+    float fx1, float fx2,  /* Input:  Fraction of upper, lower x voxel */
+    float fy1, float fy2,  /* Input:  Fraction of upper, lower y voxel */
+    float fz1, float fz2,  /* Input:  Fraction of upper, lower z voxel */
+    size_t mvf,            /* Input:  Index of lower-left voxel in 8-group */
+    float *m_img,          /* Input:  Pointer to raw data */
+    Volume *moving         /* Input:  Volume (for dimensions) */
+)
 {
     float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
     float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;

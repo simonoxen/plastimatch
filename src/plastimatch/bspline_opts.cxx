@@ -161,23 +161,23 @@ bspline_opts_parse_args (Bspline_options* options, int argc, char* argv[])
 		print_usage ();
 	    }
 	}
-    else if (!strcmp (argv[i], "-B")) {
-        if (i == (argc-1) || argv[i+1][0] == '-') {
-            fprintf(stderr, "option %s requires an argument\n", argv[i]);
-            exit(1);
-        }
-        i++;
-        rc = sscanf (argv[i], "%d %d", 
-            &parms->mi_hist.fixed.bins,
-            &parms->mi_hist.moving.bins);
-        if (rc == 1) {
+	else if (!strcmp (argv[i], "-B")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    rc = sscanf (argv[i], "%d %d", 
+		&parms->mi_hist.fixed.bins,
+		&parms->mi_hist.moving.bins);
+	    if (rc == 1) {
     		parms->mi_hist.moving.bins = parms->mi_hist.fixed.bins;
-        } else if (rc != 2) {
-            print_usage ();
-        }
-        parms->mi_hist.joint.bins = parms->mi_hist.fixed.bins
-                                  * parms->mi_hist.moving.bins;
-    }
+	    } else if (rc != 2) {
+		print_usage ();
+	    }
+	    parms->mi_hist.joint.bins = parms->mi_hist.fixed.bins
+		* parms->mi_hist.moving.bins;
+	}
 	else if (!strcmp (argv[i], "-M")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {
 		fprintf(stderr, "option %s requires an argument\n", argv[i]);
@@ -355,9 +355,9 @@ bspline_opts_parse_args (Bspline_options* options, int argc, char* argv[])
 	    }
 	}
 	else if (!strcmp (argv[i], "--vopt")) {
-        parms->mi_hist.fixed.type = HIST_VOPT;
-        parms->mi_hist.moving.type = HIST_VOPT;
-    }
+	    parms->mi_hist.fixed.type = HIST_VOPT;
+	    parms->mi_hist.moving.type = HIST_VOPT;
+	}
 	else if (!strcmp (argv[i], "--list-gpu")) {
 #if (CUDA_FOUND)
 	    printf ("Enumerating available GPUs:\n\n");

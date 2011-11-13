@@ -13,7 +13,7 @@
 
 #define CONVERT_VOLUME(old_type,new_type,new_type_enum)			\
     {									\
-	int v;								\
+	size_t v;							\
 	old_type* old_img;						\
 	new_type* new_img;						\
 	old_img = (old_type*) ref->img;					\
@@ -42,14 +42,13 @@ void
 Volume::allocate (void)
 {
     if (this->pix_type == PT_VF_FLOAT_PLANAR) {
-	int i;
 	float** der = (float**) malloc (3*sizeof(float*));
 	if (!der) {
 	    fprintf (stderr, "Memory allocation failed.\n");
 	    exit(1);
 	}
 	int alloc_size = this->npix;
-	for (i=0; i < 3; i++) {
+	for (int i=0; i < 3; i++) {
 	    der[i] = (float*) malloc (alloc_size*sizeof(float));
 	    if (!der[i]) {
 		fprintf (stderr, "Memory allocation failed.\n");
@@ -90,9 +89,7 @@ Volume::create (
     int vox_planes
 )
 {
-    int i;
-
-    for (i = 0; i < 3; i++) {
+    for (int i = 0; i < 3; i++) {
 	this->dim[i] = dim[i];
 	this->offset[i] = offset[i];
 	this->spacing[i] = spacing[i];
@@ -431,7 +428,6 @@ vf_convert_to_planar (Volume* ref)
     switch (ref->pix_type) {
     case PT_VF_FLOAT_INTERLEAVED:
 	{
-	    size_t i;
 	    float* img = (float*) ref->img;
 	    float** der = (float**) malloc (3*sizeof(float*));
 	    if (!der) {
@@ -439,13 +435,13 @@ vf_convert_to_planar (Volume* ref)
 		exit(1);
 	    }
 	    int alloc_size = ref->npix;
-	    for (i=0; i < 3; i++) {
+	    for (int i=0; i < 3; i++) {
 		der[i] = (float*) malloc (alloc_size*sizeof(float));
 		if (!der[i]) {
 		    print_and_exit ("Memory allocation failed.\n");
 		}
 	    }
-	    for (i = 0; i < ref->npix; i++) {
+	    for (size_t i = 0; i < ref->npix; i++) {
 		der[0][i] = img[3*i + 0];
 		der[1][i] = img[3*i + 1];
 		der[2][i] = img[3*i + 2];
@@ -476,7 +472,6 @@ vf_convert_to_planar (Volume* ref)
 void
 volume_scale (Volume* vol, float scale)
 {
-    size_t i;
     float *img;
 
     if (vol->pix_type != PT_FLOAT) {
@@ -484,7 +479,7 @@ volume_scale (Volume* vol, float scale)
     }
 
     img = (float*) vol->img;
-    for (i = 0; i < vol->npix; i++) {
+    for (size_t i = 0; i < vol->npix; i++) {
 	img[i] = img[i] * scale;
     }
 }
