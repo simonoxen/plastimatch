@@ -319,6 +319,7 @@ set (PLASTIMATCH1_LIBRARY_SRC
   itk_demons.cxx itk_demons.h 
   itk_dicom_load.cxx itk_dicom_load.h 
   itk_dicom_save.cxx itk_dicom_save.h 
+  itk_directions.cxx itk_directions.h 
   itk_image.cxx itk_image.h 
   itk_image_cast.cxx itk_image_cast.h 
   itk_image_load.h itk_image_load.txx

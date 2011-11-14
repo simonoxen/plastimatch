@@ -11,7 +11,7 @@
 
 #define DIRECTION_COSINES_IDENTITY_THRESH 1e-9
 
-class plastimatch1_EXPORT Direction_cosines {
+class gpuit_EXPORT Direction_cosines {
   public:
     float m_direction_cosines[9];
 
