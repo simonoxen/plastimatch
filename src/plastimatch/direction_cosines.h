@@ -6,8 +6,8 @@
 
 #include "plm_config.h"
 #include <string>
+#include <stdio.h>
 #include "math_util.h"
-#include "itk_image.h"
 
 #define DIRECTION_COSINES_IDENTITY_THRESH 1e-9
 
@@ -94,6 +94,7 @@ class plastimatch1_EXPORT Direction_cosines {
 	this->set (dc);
 	return true;
     }
+#if defined (commentout)
     void copy_to_itk (DirectionType *itk_direction) {
 	for (unsigned int d1 = 0; d1 < 3; d1++) {
 	    for (unsigned int d2 = 0; d2 < 3; d2++) {
@@ -101,6 +102,7 @@ class plastimatch1_EXPORT Direction_cosines {
 	    }
 	}
     }
+#endif
     bool is_identity () {
 	Direction_cosines id;
 	float frob = 0.;
