@@ -15,32 +15,42 @@
 #include "itk_point.h"
 #include "plm_int.h"
 
+
 /* 4D images */
 typedef itk::Image < unsigned char, 4 > UCharImage4DType;
 
 /* 3D images */
-typedef itk::Image < int8_t, 3 > CharImageType;
-typedef itk::Image < uint8_t, 3 > UCharImageType;
-typedef itk::Image < int16_t, 3 > ShortImageType;
-typedef itk::Image < uint16_t, 3 > UShortImageType;
-typedef itk::Image < int32_t, 3 > Int32ImageType;
-typedef itk::Image < uint32_t, 3 > UInt32ImageType;
+typedef itk::Image < char, 3 > CharImageType;
+typedef itk::Image < unsigned char, 3 > UCharImageType;
+typedef itk::Image < short, 3 > ShortImageType;
+typedef itk::Image < unsigned short, 3 > UShortImageType;
+#if (CMAKE_SIZEOF_UINT == 4)
+typedef itk::Image < int, 3 > Int32ImageType;
+typedef itk::Image < unsigned int, 3 > UInt32ImageType;
+#else
+typedef itk::Image < long, 3 > Int32ImageType;
+typedef itk::Image < unsigned long, 3 > UInt32ImageType;
+#endif
 typedef itk::Image < float, 3 > FloatImageType;
 typedef itk::Image < double, 3 > DoubleImageType;
 
-typedef itk::VectorImage < uint8_t, 3 > UCharVecImageType;
+typedef itk::VectorImage < unsigned char, 3 > UCharVecImageType;
 
 /* 2D images */
-typedef itk::Image < int8_t, 2 > CharImage2DType;
-typedef itk::Image < uint8_t, 2 > UCharImage2DType;
-typedef itk::Image < int16_t, 2 > ShortImage2DType;
-typedef itk::Image < uint16_t, 2 > UShortImage2DType;
-typedef itk::Image < int32_t, 2 > Int32Image2DType;
-typedef itk::Image < uint32_t, 2 > UInt32Image2DType;
+typedef itk::Image < unsigned char, 2 > UCharImage2DType;
+typedef itk::Image < short, 2 > ShortImage2DType;
+typedef itk::Image < unsigned short, 2 > UShortImage2DType;
+#if (CMAKE_SIZEOF_UINT == 4)
+typedef itk::Image < int, 2 > Int32Image2DType;
+typedef itk::Image < unsigned int, 2 > UInt32Image2DType;
+#else
+typedef itk::Image < long, 2 > Int32Image2DType;
+typedef itk::Image < unsigned long, 2 > UInt32Image2DType;
+#endif
 typedef itk::Image < float, 2 > FloatImage2DType;
 typedef itk::Image < double, 2 > DoubleImage2DType;
 
-typedef itk::VectorImage < uint8_t, 2 > UCharVecImage2DType;
+typedef itk::VectorImage < unsigned char, 2 > UCharVecImage2DType;
 
 /* Vector field */
 typedef itk::Image < FloatVector3DType, 3 > DeformationFieldType;
