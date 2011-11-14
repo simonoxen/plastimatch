@@ -13,7 +13,6 @@
 #include "itkVectorImage.h"
 
 #include "itk_point.h"
-#include "plm_int.h"
 
 
 /* 4D images */

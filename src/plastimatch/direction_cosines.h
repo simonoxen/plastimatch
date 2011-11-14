@@ -24,12 +24,20 @@ class plastimatch1_EXPORT Direction_cosines {
     operator const float* () const {
 	return m_direction_cosines;
     }
+    operator float* () {
+	return m_direction_cosines;
+    }
+#if defined (commentout)
+    operator const float* () const {
+	return m_direction_cosines;
+    }
     float operator[] (size_t a) const {
 	return m_direction_cosines[a];
     }
     float& operator[] (size_t a) {
 	return m_direction_cosines[a];
     }
+#endif
   public:
     void set_identity () {
 	m_direction_cosines[0] = 1.;
