@@ -28,7 +28,7 @@ typedef itk::Image < uint32_t, 3 > UInt32ImageType;
 typedef itk::Image < float, 3 > FloatImageType;
 typedef itk::Image < double, 3 > DoubleImageType;
 
-typedef itk::VectorImage < unsigned char, 3 > UCharVecImageType;
+typedef itk::VectorImage < uint8_t, 3 > UCharVecImageType;
 
 /* 2D images */
 typedef itk::Image < int8_t, 2 > CharImage2DType;

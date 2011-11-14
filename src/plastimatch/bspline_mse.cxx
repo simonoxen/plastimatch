@@ -2,6 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
+#include <string>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -20,6 +21,7 @@
 #endif
 #include "bspline_mse.h"
 #include "bspline_opts.h"
+#include "file_util.h"
 #include "interpolate.h"
 #include "logfile.h"
 #include "math_util.h"
@@ -575,12 +577,13 @@ bspline_score_c_mse (
     ssd->time_smetric = plm_timer_report (&timer);
 }
 
-//////////////////////////////////////////////////////////////////////////////
-// FUNCTION: bspline_score_c_dcos_mse()
-//
-// Modified "c" algorithm that respects direction cosines.  This 
-// implementation uses pure world coordinates
-//////////////////////////////////////////////////////////////////////////////
+/* -----------------------------------------------------------------------
+   FUNCTION: bspline_score_i_dcos_mse()
+
+   Based on the "c" algorithm, but respects direction cosines.  
+   This implementation computes both forward projection from fixed to 
+   world, as well as backward projection from world to moving.
+   ----------------------------------------------------------------------- */
 void
 bspline_score_i_mse (
     Bspline_parms *parms, 
@@ -592,7 +595,6 @@ bspline_score_i_mse (
 )
 {
     Bspline_score* ssd = &bst->ssd;
-    int rijk[3];             /* Indices within fixed image region (vox) */
     int fijk[3], fv;         /* Indices within fixed image (vox) */
     float mijk[3];           /* Indices within moving image (vox) */
     float fxyz[3];           /* Position within fixed image (mm) */
@@ -618,12 +620,20 @@ bspline_score_i_mse (
     double score_acc = 0.;
 
     static int it = 0;
-    char debug_fn[1024];
-    FILE* fp = 0;
+    FILE* dc_dv_fp = 0;
+    FILE* corr_fp = 0;
 
     if (parms->debug) {
-	sprintf (debug_fn, "dc_dv_mse_%02d.txt", it++);
-	fp = fopen (debug_fn, "wb");
+	char buf[1024];
+	sprintf (buf, "dc_dv_mse_%02d.txt", it);
+	std::string fn = parms->debug_dir + "/" + buf;
+	make_directory_recursive (fn.c_str());
+	dc_dv_fp = fopen (fn.c_str(), "wb");
+
+	sprintf (buf, "corr_mse_%02d.txt", it);
+	fn = parms->debug_dir + "/" + buf;
+	corr_fp = fopen (fn.c_str(), "wb");
+	it ++;
     }
 
     plm_timer_start (&timer);
@@ -632,15 +642,16 @@ bspline_score_i_mse (
     ssd->smetric = 0.0f;
     memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
 
-    for (LOOP_Z (rijk, fxyz, fixed)) {
-        p[2] = REGION_INDEX_Z (rijk, bxf);
-        q[2] = REGION_OFFSET_Z (rijk, bxf);
-	for (LOOP_Y (rijk, fxyz, fixed)) {
-            p[1] = REGION_INDEX_Y (rijk, bxf);
-            q[1] = REGION_OFFSET_Y (rijk, bxf);
-	    for (LOOP_X (rijk, fxyz, fixed)) {
-                p[0] = REGION_INDEX_X (rijk, bxf);
-                q[0] = REGION_OFFSET_X (rijk, bxf);
+    /* GCS FIX: region of interest is not used */
+    for (LOOP_Z (fijk, fxyz, fixed)) {
+        p[2] = REGION_INDEX_Z (fijk, bxf);
+        q[2] = REGION_OFFSET_Z (fijk, bxf);
+	for (LOOP_Y (fijk, fxyz, fixed)) {
+            p[1] = REGION_INDEX_Y (fijk, bxf);
+            q[1] = REGION_OFFSET_Y (fijk, bxf);
+	    for (LOOP_X (fijk, fxyz, fixed)) {
+                p[0] = REGION_INDEX_X (fijk, bxf);
+                q[0] = REGION_OFFSET_X (fijk, bxf);
 
                 /* Get B-spline deformation vector */
                 pidx = volume_index (bxf->rdims, p);
@@ -648,13 +659,23 @@ bspline_score_i_mse (
                 bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
 
                 /* Compute moving image coordinate of fixed image voxel */
-                int rc = bspline_find_correspondence (mxyz, mijk, fxyz, 
-		    dxyz, moving);
+		mxyz[2] = fxyz[2] + dxyz[2] - moving->offset[2];
+		mxyz[1] = fxyz[1] + dxyz[1] - moving->offset[1];
+		mxyz[0] = fxyz[0] + dxyz[0] - moving->offset[0];
+		mijk[2] = PROJECT_Z (mxyz, moving->proj);
+		mijk[1] = PROJECT_Y (mxyz, moving->proj);
+		mijk[0] = PROJECT_X (mxyz, moving->proj);
 
-                /* If voxel is not inside moving image */
-                if (!rc) {
-                    continue;
+                if (parms->debug) {
+                    fprintf (corr_fp, 
+			"%d %d %d %f %f %f\n",
+			fijk[0], fijk[1], fijk[2], 
+			mijk[0], mijk[1], mijk[2]);
                 }
+
+		if (mijk[2] < -0.5 || mijk[2] > moving->dim[2] - 0.5) continue;
+		if (mijk[1] < -0.5 || mijk[1] > moving->dim[1] - 0.5) continue;
+		if (mijk[0] < -0.5 || mijk[0] > moving->dim[0] - 0.5) continue;
 
                 /* Compute interpolation fractions */
                 li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
@@ -677,6 +698,7 @@ bspline_score_i_mse (
                 float diff = m_val - f_img[fv];
 
                 /* Compute spatial gradient using nearest neighbors */
+		/* GCS FIX: Gradient image should use world coordinates */
                 mvr = volume_index (moving->dim, mijk_r);
                 dc_dv[0] = diff * m_grad[3*mvr+0];  /* x component */
                 dc_dv[1] = diff * m_grad[3*mvr+1];  /* y component */
@@ -684,8 +706,9 @@ bspline_score_i_mse (
 		bspline_update_grad_b (&bst->ssd, bxf, pidx, qidx, dc_dv);
         
                 if (parms->debug) {
-                    fprintf (fp, "%d %d %d %g %g %g\n", 
-			rijk[0], rijk[1], rijk[2], 
+                    fprintf (dc_dv_fp, 
+			"%d %d %d %g %g %g %g\n", 
+			fijk[0], fijk[1], fijk[2], diff, 
 			dc_dv[0], dc_dv[1], dc_dv[2]);
                 }
 
@@ -697,7 +720,8 @@ bspline_score_i_mse (
     } /* LOOP_THRU_ROI_Z */
 
     if (parms->debug) {
-        fclose (fp);
+        fclose (dc_dv_fp);
+        fclose (corr_fp);
     }
 
     /* Normalize score for MSE */
