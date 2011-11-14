@@ -901,6 +901,9 @@ bspline_score (
 	case 'h':
 	    bspline_score_h_mse (parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
+	case 'i':
+	    bspline_score_i_mse (parms, bst, bxf, fixed, moving, moving_grad);
+	    break;
 	default:
 	    bspline_score_g_mse (parms, bst, bxf, fixed, moving, moving_grad);
 	    break;

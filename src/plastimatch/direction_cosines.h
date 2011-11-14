@@ -21,6 +21,16 @@ class plastimatch1_EXPORT Direction_cosines {
     }
 
   public:
+    operator const float* () const {
+	return m_direction_cosines;
+    }
+    float operator[] (size_t a) const {
+	return m_direction_cosines[a];
+    }
+    float& operator[] (size_t a) {
+	return m_direction_cosines[a];
+    }
+  public:
     void set_identity () {
 	m_direction_cosines[0] = 1.;
 	m_direction_cosines[1] = 0.;
@@ -65,6 +75,11 @@ class plastimatch1_EXPORT Direction_cosines {
 	m_direction_cosines[7] = 0.;
 	m_direction_cosines[8] = 1.;
     }
+    void set (const float dc[]) {
+	for (int i = 0; i < 9; i++) {
+	    m_direction_cosines[i] = dc[i];
+	}
+    }
     bool set_from_string (std::string& str) {
 	float dc[9];
 	int rc;
@@ -76,9 +91,7 @@ class plastimatch1_EXPORT Direction_cosines {
 	if (rc != 9) {
 	    return false;
 	}
-	for (int i = 0; i < 9; i++) {
-	    m_direction_cosines[i] = dc[i];
-	}
+	this->set (dc);
 	return true;
     }
     void copy_to_itk (DirectionType *itk_direction) {

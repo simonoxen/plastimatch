@@ -14,6 +14,7 @@ class gpuit_EXPORT Bspline_xform {
     float img_origin[3];         /* Image origin (in mm) */
     float img_spacing[3];        /* Image spacing (in mm) */
     int img_dim[3];              /* Image size (in vox) */
+    Direction_cosines dc;        /* Image direction cosines */
     int roi_offset[3];	         /* Position of first vox in ROI (in vox) */
     int roi_dim[3];		 /* Dimension of ROI (in vox) */
     int vox_per_rgn[3];	         /* Knot spacing (in vox) */

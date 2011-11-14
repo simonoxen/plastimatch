@@ -29,7 +29,7 @@ class gpuit_EXPORT Volume
 				// = dim[0] * dim[1] * dim[2] 
     float offset[3];
     float spacing[3];
-    float direction_cosines[9];
+    Direction_cosines direction_cosines;
     float inverse_direction_cosines[9];
     float step[3][3];           // direction_cosines * spacing
     float proj[3][3];           // inv direction_cosines / spacing
@@ -71,7 +71,6 @@ class gpuit_EXPORT Volume
 	    spacing[d] = 0;
 	}
 	for (int d = 0; d < 9; d++) {
-	    direction_cosines[d] = 0;
 	    inverse_direction_cosines[d] = 0;
 	}
 	for (int i = 0; i < 3; i++) {
@@ -138,7 +137,7 @@ gpuit_EXPORT
 void volume_scale (Volume *vol, float scale);
 
 gpuit_EXPORT
-void volume_matrix3x3inverse(float *out, float *m);
+void volume_matrix3x3inverse (float *out, const float *m);
 gpuit_EXPORT
 void
 directions_cosine_debug (float *m);

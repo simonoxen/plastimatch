@@ -84,7 +84,7 @@ get_image_header (int dim[3], float offset[3], float spacing[3], T image)
 template<class T>
 void
 itk_image_get_image_header (int dim[3], float offset[3], float spacing[3], 
-    float direction_cosines[9], const T image)
+    Direction_cosines& dc, const T image)
 {
     typename T::ObjectType::RegionType rg = image->GetLargestPossibleRegion ();
     typename T::ObjectType::PointType og = image->GetOrigin();
@@ -96,6 +96,14 @@ itk_image_get_image_header (int dim[3], float offset[3], float spacing[3],
 	dim[d] = sz[d];
 	offset[d] = og[d];
 	spacing[d] = sp[d];
+    }
+
+    /* Copy direction cosines */
+    DirectionType itk_dc = image->GetDirection ();
+    for (int a = 0; a < 3; a++) {
+	for (int b = 0; b < 3; b++) {
+	    dc[a*3+b] = itk_dc[a][b];
+	}
     }
 }
 

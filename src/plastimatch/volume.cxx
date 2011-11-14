@@ -32,7 +32,7 @@
     }
 
 void
-directions_cosine_debug (float *m)
+directions_cosine_debug (const float *m)
 {
     printf ("%8f %8f %8f\n%8f %8f %8f\n%8f %8f %8f\n",
 	m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8]);
@@ -160,7 +160,7 @@ Volume::set_direction_cosines (
 	dc = identity;
     }
 
-    memcpy (this->direction_cosines, dc, sizeof(this->direction_cosines));
+    this->direction_cosines.set (dc);
 
     // NSH version of step and proj
     // works ok for matrix, still needs testing for spacing
@@ -597,7 +597,8 @@ volume_difference (Volume* vol, Volume* warped)
     return temp;
 }
 
-void volume_matrix3x3inverse (float *out, float *m)
+void 
+volume_matrix3x3inverse (float *out, const float *m)
 {
     float det;
 

@@ -39,23 +39,19 @@ Volume_header::set_spacing (const float spacing[3])
 void
 Volume_header::set_direction_cosines (const float direction_cosines[9])
 {
-    for (unsigned int d = 0; d < 9; d++) {
-	this->m_direction_cosines[d] = direction_cosines[d];
-    }
+    this->m_direction_cosines.set (direction_cosines);
+}
+
+void
+Volume_header::set_direction_cosines (const Direction_cosines& dc)
+{
+    this->m_direction_cosines.set (dc);
 }
 
 void
 Volume_header::set_direction_cosines_identity ()
 {
-    this->m_direction_cosines[0] = 1.f;
-    this->m_direction_cosines[1] = 0.f;
-    this->m_direction_cosines[2] = 0.f;
-    this->m_direction_cosines[3] = 0.f;
-    this->m_direction_cosines[4] = 1.f;
-    this->m_direction_cosines[5] = 0.f;
-    this->m_direction_cosines[6] = 0.f;
-    this->m_direction_cosines[7] = 0.f;
-    this->m_direction_cosines[8] = 1.f;
+    this->m_direction_cosines.set_identity ();
 }
 
 void
@@ -69,6 +65,19 @@ Volume_header::set (
     this->set_origin (origin);
     this->set_spacing (spacing);
     this->set_direction_cosines (direction_cosines);
+}
+
+void
+Volume_header::set (
+    const int dim[3],
+    const float origin[3],
+    const float spacing[3],
+    const Direction_cosines& dc)
+{
+    this->set_dim (dim);
+    this->set_origin (origin);
+    this->set_spacing (spacing);
+    this->set_direction_cosines (dc);
 }
 
 void

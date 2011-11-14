@@ -5,6 +5,7 @@
 #define _volume_header_h_
 
 #include "plm_config.h"
+#include "direction_cosines.h"
 
 class Bspline_xform;
 class Volume;
@@ -14,7 +15,7 @@ public:
     int m_dim[3];
     float m_origin[3];
     float m_spacing[3];
-    float m_direction_cosines[9];
+    Direction_cosines m_direction_cosines;
 
 public:
     Volume_header ()
@@ -28,7 +29,9 @@ public:
     }
     Volume_header (int dim[3], float origin[3], float spacing[3])
     {
-	this->set (dim, origin, spacing, 0);
+	this->set_dim (dim);
+	this->set_origin (origin);
+	this->set_spacing (spacing);
 	this->set_direction_cosines_identity ();
     }
     Volume_header (int dim[3], float origin[3], float spacing[3],
@@ -46,10 +49,13 @@ public:
     void set_origin (const float origin[3]);
     void set_spacing (const float spacing[3]);
     void set_direction_cosines (const float direction_cosines[9]);
+    void set_direction_cosines (const Direction_cosines& dc);
     void set_direction_cosines_identity ();
 
     void set (const int dim[3], const float origin[3], const float spacing[3],
-	const float direction_cosines[9]);
+	const float dc[9]);
+    void set (const int dim[3], const float origin[3], const float spacing[3],
+	const Direction_cosines& dc);
     void set_from_bxf (Bspline_xform *bxf);
 
     static void clone (Volume_header *dest, Volume_header *src) {

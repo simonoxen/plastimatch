@@ -104,6 +104,7 @@ read_mha_internal (
     FILE* fp;
     bool have_direction_cosines = false;
     bool big_endian_input = false;
+    float dc[9];
 
     fp = fopen (filename,"rb");
     if (!fp) {
@@ -141,15 +142,9 @@ read_mha_internal (
 	    continue;
 	}
 	if (sscanf (linebuf, "TransformMatrix = %g %g %g %g %g %g %g %g %g",
-		&vol->direction_cosines[0],
-		&vol->direction_cosines[1],
-		&vol->direction_cosines[2],
-		&vol->direction_cosines[3],
-		&vol->direction_cosines[4],
-		&vol->direction_cosines[5],
-		&vol->direction_cosines[6],
-		&vol->direction_cosines[7],
-		&vol->direction_cosines[8]) == 9) {
+		&dc[0], &dc[1], &dc[2], &dc[3], &dc[4], &dc[5], 
+		&dc[6], &dc[7], &dc[8]) == 9)
+	{
 	    have_direction_cosines = true;
 	    continue;
 	}
@@ -189,7 +184,7 @@ read_mha_internal (
 
     /* Update proj and step matrices */
     if (have_direction_cosines) {
-	vol->set_direction_cosines (vol->direction_cosines);
+	vol->set_direction_cosines (dc);
     } else {
 	vol->set_direction_cosines (0);
     }

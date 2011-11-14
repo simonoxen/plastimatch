@@ -178,7 +178,7 @@ landmark_convert_mm_to_voxel(
     float *offset, 
     float *pix_spacing,
     int *dim,
-    float *direction_cosines)
+    const float *direction_cosines)
 {
     for (int i = 0; i < landmarks_mm->num_points; i++) {
 	for (int d = 0; d < 3; d++) {
@@ -249,9 +249,9 @@ calculate_warped_landmarks( Landmark_warp *lw )
     vf = (float *)vector_field->img;
 
     /* fill in landvox'es */
-    landmark_convert_mm_to_voxel( landvox_fix, lw->m_fixed_landmarks, 
+    landmark_convert_mm_to_voxel (landvox_fix, lw->m_fixed_landmarks, 
 	fixed_offset, fixed_spacing, fixed_dim, fixed_direction_cosines );
-    landmark_convert_mm_to_voxel( landvox_mov, lw->m_moving_landmarks, 
+    landmark_convert_mm_to_voxel (landvox_mov, lw->m_moving_landmarks, 
 	moving->offset, moving->spacing, moving->dim, moving->direction_cosines );
     
     dd_min = (float *)malloc( num_landmarks * sizeof(float));

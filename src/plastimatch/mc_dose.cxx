@@ -164,7 +164,5 @@ mc_dose_apply_transform (Plm_image *pli, Xio_ct_transform *transform)
     v->offset[1] = (v->offset[1] * transform->direction_cosines[4]) + transform->y_offset;
 
     /* Set direction cosines */
-    for (int i = 0; i <= 8; i++) {
-    	v->direction_cosines[i] = transform->direction_cosines[i];
-    }
+    v->set_direction_cosines (transform->direction_cosines);
 }
