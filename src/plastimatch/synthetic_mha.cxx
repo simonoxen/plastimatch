@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include "itkImageRegionIteratorWithIndex.h"
 
+#include "itk_directions.h"
 #include "itk_image.h"
 #include "math_util.h"
 #include "rtds.h"
@@ -384,7 +385,7 @@ synthetic_mha (
     FloatImageType::RegionType rg;
     FloatImageType::PointType og;
     FloatImageType::SpacingType sp;
-    FloatImageType::DirectionType dc;
+    FloatImageType::DirectionType itk_dc;
     for (int d1 = 0; d1 < 3; d1++) {
 	st[d1] = 0;
 	sz[d1] = parms->dim[d1];
@@ -393,13 +394,13 @@ synthetic_mha (
     }
     rg.SetSize (sz);
     rg.SetIndex (st);
-    parms->dc.copy_to_itk (&dc);
+    itk_direction_from_dc (&itk_dc, parms->dc);
 
     FloatImageType::Pointer im_out = FloatImageType::New();
     im_out->SetRegions (rg);
     im_out->SetOrigin (og);
     im_out->SetSpacing (sp);
-    im_out->SetDirection (dc);
+    im_out->SetDirection (itk_dc);
     im_out->Allocate();
 
     UCharImageType::Pointer uchar_img = UCharImageType::New();

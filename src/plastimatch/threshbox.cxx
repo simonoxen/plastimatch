@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include "itkImageRegionIteratorWithIndex.h"
 
+#include "itk_directions.h"
 #include "itk_image.h"
 #include "math_util.h"
 #include "threshbox.h"
@@ -26,7 +27,7 @@ void do_threshbox( Threshbox_parms *parms) {
     pih.get_dim( dim_in);
     pih.get_origin( origin_in );
     pih.get_spacing( spacing_in );
-// direction cosines??
+    // direction cosines??
 
     /* Create ITK image for labelmap */
     FloatImageType::SizeType sz;
@@ -34,7 +35,7 @@ void do_threshbox( Threshbox_parms *parms) {
     FloatImageType::RegionType rg;
     FloatImageType::PointType og;
     FloatImageType::SpacingType sp;
-    FloatImageType::DirectionType dc;
+    FloatImageType::DirectionType itk_dc;
     for (int d1 = 0; d1 < 3; d1++) {
 	st[d1] = 0;
 	sz[d1] = dim_in[d1];
@@ -43,83 +44,83 @@ void do_threshbox( Threshbox_parms *parms) {
     }
     rg.SetSize (sz);
     rg.SetIndex (st);
-    parms->dc.copy_to_itk (&dc);
+    itk_direction_from_dc (&itk_dc, parms->dc);
 
     // labelmap thresholded image
-        UCharImageType::Pointer uchar_img = UCharImageType::New();
-	uchar_img->SetRegions (rg);
-	uchar_img->SetOrigin (og);
-	uchar_img->SetSpacing (sp);
-	uchar_img->Allocate();
+    UCharImageType::Pointer uchar_img = UCharImageType::New();
+    uchar_img->SetRegions (rg);
+    uchar_img->SetOrigin (og);
+    uchar_img->SetSpacing (sp);
+    uchar_img->Allocate();
 
     // box image
-        UCharImageType::Pointer box_img = UCharImageType::New();
-	box_img->SetRegions (rg);
-	box_img->SetOrigin (og);
-	box_img->SetSpacing (sp);
-	box_img->Allocate();
+    UCharImageType::Pointer box_img = UCharImageType::New();
+    box_img->SetRegions (rg);
+    box_img->SetOrigin (og);
+    box_img->SetSpacing (sp);
+    box_img->Allocate();
 
-	typedef itk::ImageRegionIteratorWithIndex< UCharImageType > UCharIteratorType;
-	UCharIteratorType uchar_img_iterator;
-	uchar_img_iterator = UCharIteratorType (uchar_img, uchar_img->GetLargestPossibleRegion());
-	uchar_img_iterator.GoToBegin();
+    typedef itk::ImageRegionIteratorWithIndex< UCharImageType > UCharIteratorType;
+    UCharIteratorType uchar_img_iterator;
+    uchar_img_iterator = UCharIteratorType (uchar_img, uchar_img->GetLargestPossibleRegion());
+    uchar_img_iterator.GoToBegin();
 
-	UCharIteratorType box_img_iterator;
-	box_img_iterator = UCharIteratorType (box_img, box_img->GetLargestPossibleRegion());
-	box_img_iterator.GoToBegin();
+    UCharIteratorType box_img_iterator;
+    box_img_iterator = UCharIteratorType (box_img, box_img->GetLargestPossibleRegion());
+    box_img_iterator.GoToBegin();
 
-        typedef itk::ImageRegionIteratorWithIndex< FloatImageType > FloatIteratorType;
-	FloatIteratorType img_in_iterator (img_in, img_in->GetLargestPossibleRegion());
+    typedef itk::ImageRegionIteratorWithIndex< FloatImageType > FloatIteratorType;
+    FloatIteratorType img_in_iterator (img_in, img_in->GetLargestPossibleRegion());
 
-	FloatImageType::IndexType k;
-	FloatPoint3DType phys;
+    FloatImageType::IndexType k;
+    FloatPoint3DType phys;
 
-	float level, maxlevel=-1e20;
-	for (img_in_iterator.GoToBegin(); !img_in_iterator.IsAtEnd(); ++img_in_iterator) {
+    float level, maxlevel=-1e20;
+    for (img_in_iterator.GoToBegin(); !img_in_iterator.IsAtEnd(); ++img_in_iterator) {
 	    
-	    k=img_in_iterator.GetIndex();
+	k=img_in_iterator.GetIndex();
 //	    img_in->TransformIndexToPhysicalPoint( k, phys );
 
-	    level = img_in_iterator.Get();
+	level = img_in_iterator.Get();
 	    
-	    if ( (parms->center[0]- parms->boxsize[0]/2 <= k[0] && k[0] < parms->center[0]+parms->boxsize[0]/2) &&
-		 (parms->center[1]- parms->boxsize[1]/2 <= k[1] && k[1] < parms->center[1]+parms->boxsize[1]/2) &&
-		 (parms->center[2]- parms->boxsize[2]/2 <= k[2] && k[2] < parms->center[2]+parms->boxsize[2]/2) )
-		    {
-		    if (level> maxlevel) maxlevel = level;
-		    }
+	if ( (parms->center[0]- parms->boxsize[0]/2 <= k[0] && k[0] < parms->center[0]+parms->boxsize[0]/2) &&
+	    (parms->center[1]- parms->boxsize[1]/2 <= k[1] && k[1] < parms->center[1]+parms->boxsize[1]/2) &&
+	    (parms->center[2]- parms->boxsize[2]/2 <= k[2] && k[2] < parms->center[2]+parms->boxsize[2]/2) )
+	{
+	    if (level> maxlevel) maxlevel = level;
 	}
+    }
 
-	for (img_in_iterator.GoToBegin(); !img_in_iterator.IsAtEnd(); ++img_in_iterator) {
+    for (img_in_iterator.GoToBegin(); !img_in_iterator.IsAtEnd(); ++img_in_iterator) {
 	    
-	    level = img_in_iterator.Get();
-	    k=img_in_iterator.GetIndex();
-	    //img_in->TransformIndexToPhysicalPoint( k, phys );
+	level = img_in_iterator.Get();
+	k=img_in_iterator.GetIndex();
+	//img_in->TransformIndexToPhysicalPoint( k, phys );
 
-	    label_uchar = 0;
-	    label_box = 0;
+	label_uchar = 0;
+	label_box = 0;
             
-	    if ( (parms->center[0]- parms->boxsize[0]/2 <= k[0] && k[0] < parms->center[0]+parms->boxsize[0]/2) &&
-		 (parms->center[1]- parms->boxsize[1]/2 <= k[1] && k[1] < parms->center[1]+parms->boxsize[1]/2) &&
-		 (parms->center[2]- parms->boxsize[2]/2 <= k[2] && k[2] < parms->center[2]+parms->boxsize[2]/2) ) 
-		    { /* label_uchar = 2; */ label_box=1; } 
+	if ( (parms->center[0]- parms->boxsize[0]/2 <= k[0] && k[0] < parms->center[0]+parms->boxsize[0]/2) &&
+	    (parms->center[1]- parms->boxsize[1]/2 <= k[1] && k[1] < parms->center[1]+parms->boxsize[1]/2) &&
+	    (parms->center[2]- parms->boxsize[2]/2 <= k[2] && k[2] < parms->center[2]+parms->boxsize[2]/2) ) 
+	{ /* label_uchar = 2; */ label_box=1; } 
             
-	    if ( (parms->center[0] - parms->boxsize[0]/2 <= k[0] && k[0] < parms->center[0]+parms->boxsize[0]/2) &&
-		 (parms->center[1] - parms->boxsize[1]/2 <= k[1] && k[1] < parms->center[1]+parms->boxsize[1]/2) &&
-		 (parms->center[2] - parms->boxsize[2]/2 <= k[2] && k[2] < parms->center[2]+parms->boxsize[2]/2) )	
+	if ( (parms->center[0] - parms->boxsize[0]/2 <= k[0] && k[0] < parms->center[0]+parms->boxsize[0]/2) &&
+	    (parms->center[1] - parms->boxsize[1]/2 <= k[1] && k[1] < parms->center[1]+parms->boxsize[1]/2) &&
+	    (parms->center[2] - parms->boxsize[2]/2 <= k[2] && k[2] < parms->center[2]+parms->boxsize[2]/2) )	
 	    if	(level > parms->threshold/100.*maxlevel) label_uchar = 1;
 	    
-	    uchar_img_iterator.Set ( label_uchar );
-	    box_img_iterator.Set ( label_box );
-	    ++uchar_img_iterator;
-	    ++box_img_iterator;
-	}
+	uchar_img_iterator.Set ( label_uchar );
+	box_img_iterator.Set ( label_box );
+	++uchar_img_iterator;
+	++box_img_iterator;
+    }
 
-	parms->img_out = new Plm_image;
-	parms->img_out->set_itk( uchar_img);
+    parms->img_out = new Plm_image;
+    parms->img_out->set_itk( uchar_img);
 
-	parms->img_box = new Plm_image;
-	parms->img_box->set_itk( box_img);
+    parms->img_box = new Plm_image;
+    parms->img_box->set_itk( box_img);
 
 }
 
