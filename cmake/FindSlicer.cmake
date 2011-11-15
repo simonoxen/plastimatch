@@ -19,7 +19,7 @@ if (NOT ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION} VER
 endif ()
 if (Slicer_DIR OR Slicer3_DIR)
   find_file (SLICER_CONFIG_FILE SlicerConfig.cmake
-    "${Slicer_DIR}" "${Slicer3_DIR}")
+    "${Slicer_DIR}" "${Slicer3_DIR}" "${Slicer_DIR}/Slicer-build")
   if (SLICER_CONFIG_FILE)
     set (SLICER_IS_SLICER3 FALSE)
     set (SLICER_IS_SLICER4 TRUE)

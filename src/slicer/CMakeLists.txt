@@ -88,5 +88,5 @@ plm_add_slicer_executable (plastimatch_slicer_threshbox
 ##  Loadable modules
 ##-----------------------------------------------------------------------------
 if (SLICER_IS_SLICER4)
-  add_subdirectory (PlastimatchDVH_Slicer4Plugin)
+  #add_subdirectory (PlastimatchDVH_Slicer4Plugin)
 endif ()

@@ -49,7 +49,7 @@
 #cmakedefine HAVE_GETOPT_LONG 1
 
 /* User options */
-#cmakedefine BUILD_SHARED_LIBS 1
+#cmakedefine PLM_BUILD_SHARED_LIBS 1
 #cmakedefine PLM_USE_SS_IMAGE_VEC 1
 #cmakedefine PLM_CONFIG_KEYHOLIZE 1
 #cmakedefine PLM_CONFIG_PREFER_DCMTK 1
@@ -109,7 +109,7 @@
 #endif
 
 /* This code is for exporting symbols when building DLLs on windows */
-#if (!defined (BUILD_AGAINST_SLICER3) && (defined(_WIN32) || defined(WIN32)) && (defined (BUILD_SHARED_LIBS)))
+#if (!defined (BUILD_AGAINST_SLICER3) && (defined(_WIN32) || defined(WIN32)) && (defined (PLM_BUILD_SHARED_LIBS)))
 # ifdef gpuit_EXPORTS
 #  define gpuit_EXPORT __declspec(dllexport)
 # else
@@ -160,8 +160,5 @@
 #define plmopencl_EXPORT(f, ...)                \
     f (__VA_ARGS__); typedef f##_t(__VA_ARGS__); 
 #endif
-
-
-#undef BUILD_SHARED_LIBS
 
 #endif /* __plm_config_h__ */
