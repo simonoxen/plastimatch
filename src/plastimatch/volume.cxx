@@ -484,9 +484,10 @@ volume_scale (Volume* vol, float scale)
     }
 }
 
+/* This is the old algorithm which doesn't respect direction cosines */
 /* In mm coordinates */
 void
-volume_calc_grad (Volume* vout, Volume* vref)
+volume_calc_grad_no_dcos (Volume* vout, Volume* vref)
 {
     int v;
     int i_p, i, i_n, j_p, j, j_n, k_p, k, k_n; /* p is prev, n is next */
@@ -527,6 +528,112 @@ volume_calc_grad (Volume* vout, Volume* vref)
 		idx_p = volume_index (vref->dim, i, j, k_p);
 		idx_n = volume_index (vref->dim, i, j, k_n);
 		out_img[gk] = (float) (ref_img[idx_n] - ref_img[idx_p]) / 2.0 / vref->spacing[2];
+	    }
+	}
+    }
+}
+
+void
+volume_calc_grad (Volume* vout, Volume* vref)
+{
+    int v;
+    int i_p, i, i_n, j_p, j, j_n, k_p, k, k_n; /* p is prev, n is next */
+    int gi, gj, gk;
+    int idx_p, idx_n;
+    float *out_img, *ref_img;
+
+    out_img = (float*) vout->img;
+    ref_img = (float*) vref->img;
+
+    printf ("Direction cosines: "
+	"vout = %f %f %f ...\n"
+	"vref = %f %f %f ...\n",
+	vout->direction_cosines[0],
+	vout->direction_cosines[1],
+	vout->direction_cosines[2],
+	vref->direction_cosines[0],
+	vref->direction_cosines[1],
+	vref->direction_cosines[2]
+    );
+    printf ("spac: "
+	"vout = %f %f %f ...\n"
+	"vref = %f %f %f ...\n",
+	vout->spacing[0],
+	vout->spacing[1],
+	vout->spacing[2],
+	vref->spacing[0],
+	vref->spacing[1],
+	vref->spacing[2]
+    );
+    printf ("proj: "
+	"vout = %f %f %f ...\n"
+	"vref = %f %f %f ...\n",
+	vout->proj[0][0],
+	vout->proj[0][1],
+	vout->proj[0][2],
+	vref->proj[0][0],
+	vref->proj[0][1],
+	vref->proj[0][2]
+    );
+    printf ("step: "
+	"vout = %f %f %f ...\n"
+	"vref = %f %f %f ...\n",
+	vout->step[0][0],
+	vout->step[0][1],
+	vout->step[0][2],
+	vref->step[0][0],
+	vref->step[0][1],
+	vref->step[0][2]
+    );
+
+    v = 0;
+    for (k = 0; k < vref->dim[2]; k++) {
+	k_p = k - 1;
+	k_n = k + 1;
+	if (k == 0) k_p = 0;
+	if (k == vref->dim[2]-1) k_n = vref->dim[2]-1;
+	for (j = 0; j < vref->dim[1]; j++) {
+	    j_p = j - 1;
+	    j_n = j + 1;
+	    if (j == 0) j_p = 0;
+	    if (j == vref->dim[1]-1) j_n = vref->dim[1]-1;
+	    for (i = 0; i < vref->dim[0]; i++, v++) {
+		float diff;
+		i_p = i - 1;
+		i_n = i + 1;
+		if (i == 0) i_p = 0;
+		if (i == vref->dim[0]-1) i_n = vref->dim[0]-1;
+		
+		gi = 3 * v + 0;
+		gj = 3 * v + 1;
+		gk = 3 * v + 2;
+		out_img[gi] = 0.f;
+		out_img[gj] = 0.f;
+		out_img[gk] = 0.f;
+		
+		idx_p = volume_index (vref->dim, i_p, j, k);
+		idx_n = volume_index (vref->dim, i_n, j, k);
+		diff = (float) (ref_img[idx_n] - ref_img[idx_p]) 
+		    / 2.0 / vref->spacing[0];
+		out_img[gi] += diff * vref->direction_cosines[0*3+0];
+		out_img[gj] += diff * vref->direction_cosines[0*3+1];
+		out_img[gk] += diff * vref->direction_cosines[0*3+2];
+
+		idx_p = volume_index (vref->dim, i, j_p, k);
+		idx_n = volume_index (vref->dim, i, j_n, k);
+		diff = (float) (ref_img[idx_n] - ref_img[idx_p]) 
+		    / 2.0 / vref->spacing[1];
+		out_img[gi] += diff * vref->direction_cosines[1*3+0];
+		out_img[gj] += diff * vref->direction_cosines[1*3+1];
+		out_img[gk] += diff * vref->direction_cosines[1*3+2];
+
+		idx_p = volume_index (vref->dim, i, j, k_p);
+		idx_n = volume_index (vref->dim, i, j, k_n);
+		diff = (float) (ref_img[idx_n] - ref_img[idx_p]) 
+		    / 2.0 / vref->spacing[2];
+		out_img[gi] += diff * vref->direction_cosines[2*3+0];
+		out_img[gj] += diff * vref->direction_cosines[2*3+1];
+		out_img[gk] += diff * vref->direction_cosines[2*3+2];
 	    }
 	}
     }
