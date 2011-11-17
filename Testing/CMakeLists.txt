@@ -1899,9 +1899,9 @@ plm_add_test (
 plmtest_check_interval (
   "plm-bsp-dcos-a-check"
   "${PLM_BUILD_TESTING_DIR}/plm-bsp-dcos-a-stats.stdout.txt"
-  "MIN *([-0-9.]*)"
-  "-128.1"
-  "-127.9"
+  "AVE *([-0-9.]*)"
+  "-825"
+  "-824"
   )
 set_tests_properties (plm-bsp-dcos-a PROPERTIES 
   DEPENDS "rect-2;rect-5")
@@ -1925,9 +1925,9 @@ plm_add_test (
 plmtest_check_interval (
   "plm-bsp-dcos-b-check"
   "${PLM_BUILD_TESTING_DIR}/plm-bsp-dcos-b-stats.stdout.txt"
-  "MIN *([-0-9.]*)"
-  "-128.1"
-  "-127.9"
+  "AVE *([-0-9.]*)"
+  "-787.5"
+  "-786.5"
   )
 set_tests_properties (plm-bsp-dcos-b PROPERTIES 
   DEPENDS "rect-2;rect-5")
