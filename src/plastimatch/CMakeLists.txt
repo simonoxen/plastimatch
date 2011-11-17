@@ -654,6 +654,8 @@ if (OPENMP_FOUND)
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
   set_source_files_properties (bspline_mse.cxx
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
+  set_source_files_properties (bspline_warp.cxx
+    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
   set_source_files_properties (drr.cxx
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
   set_source_files_properties (fdk.cxx

@@ -32,6 +32,10 @@ volume_index (const int dims[3], const int ijk[3])
     ijk[2] < vol->dim[2];						\
     ++ijk[2],								\
 	fxyz[2] = vol->offset[2] + ijk[2]*vol->step[2][2]
+#define LOOP_Z_OMP(k,vol)						\
+    int k = 0;								\
+    k < vol->dim[2];							\
+    ++k
 #define LOOP_Y(ijk,fxyz,vol)						\
     ijk[1] = 0,								\
 	fxyz[1] = vol->offset[1] + ijk[2]*vol->step[1][2];		\

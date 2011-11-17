@@ -182,19 +182,6 @@ bspline_warp_dcos (
     int d;
     size_t vidx;
     T* vout_img = (T*) vout->img;
-
-    int fijk[3], fv;         /* Indices within fixed image (vox) */
-    float mijk[3];           /* Indices within moving image (vox) */
-    float fxyz[3];           /* Position within fixed image (mm) */
-    float mxyz[3];           /* Position within moving image (mm) */
-    int mijk_f[3], mvf;      /* Floor */
-    int mijk_r[3];           /* Round */
-    int p[3];
-    int q[3];
-    int pidx, qidx;
-    float dxyz[3];
-    float li_1[3];           /* Fraction of interpolant in lower index */
-    float li_2[3];           /* Fraction of interpolant in upper index */
     T* m_img = (T*) moving->img;
     T m_val;
 
@@ -271,13 +258,31 @@ bspline_warp_dcos (
 	memset (vf_out->img, 0, vf_out->pix_size * vf_out->npix);
     }
 	
-    for (LOOP_Z (fijk, fxyz, vout)) {
+#pragma omp parallel for 
+    for (LOOP_Z_OMP (k, vout)) {
+	int fijk[3];           /* Index within fixed image (vox) */
+	float fxyz[3];         /* Position within fixed image (mm) */
+	int p[3];
+	int q[3];
+	int pidx, qidx;
+	float dxyz[3];
+
+	fijk[2] = k;
+	fxyz[2] = vout->offset[2] + fijk[2] * vout->step[2][2];
         p[2] = REGION_INDEX_Z (fijk, bxf);
         q[2] = REGION_OFFSET_Z (fijk, bxf);
 	for (LOOP_Y (fijk, fxyz, vout)) {
             p[1] = REGION_INDEX_Y (fijk, bxf);
             q[1] = REGION_OFFSET_Y (fijk, bxf);
 	    for (LOOP_X (fijk, fxyz, vout)) {
+		size_t fv;       /* Linear index within fixed image (vox) */
+		float mxyz[3];   /* Position within moving image (mm) */
+		float mijk[3];   /* Index within moving image (vox) */
+		int mijk_f[3];   /* Floor index within moving image (vox) */
+		int mijk_r[3];   /* Round index within moving image (vox) */
+		size_t mvf;      /* Floor linear index within moving image */
+		float li_1[3];   /* Fraction of interpolant in lower index */
+		float li_2[3];   /* Fraction of interpolant in upper index */
                 p[0] = REGION_INDEX_X (fijk, bxf);
                 q[0] = REGION_OFFSET_X (fijk, bxf);
 
@@ -304,10 +309,6 @@ bspline_warp_dcos (
 		mijk[2] = PROJECT_Z (mxyz, moving->proj);
 		mijk[1] = PROJECT_Y (mxyz, moving->proj);
 		mijk[0] = PROJECT_X (mxyz, moving->proj);
-
-		if (fijk[0] == 16 && fijk[1] == 16 && fijk[2] == 19) {
-		    printf ("mijk = %g %g %g\n", mijk[0], mijk[1], mijk[2]);
-		}
 
 		if (mijk[2] < -0.5 || mijk[2] > moving->dim[2] - 0.5) continue;
 		if (mijk[1] < -0.5 || mijk[1] > moving->dim[1] - 0.5) continue;
@@ -339,7 +340,7 @@ bspline_warp_dcos (
 		    /* Note: We omit looping through planes when linear 
 		       interpolation is enabled, with the understanding 
 		       that this is only used for warping structure sets */
-		    for (int plane = 0; plane < moving->vox_planes; plane ++)
+		    for (int plane = 0; plane < moving->vox_planes; plane++)
 		    {
 			/* Get moving image value */
 			m_val = m_img[mvf*moving->vox_planes+plane];
@@ -351,6 +352,7 @@ bspline_warp_dcos (
 	    }
 	}
     }
+    printf ("bspline_warp complete.\n");
 }
 
 void
