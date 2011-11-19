@@ -131,7 +131,7 @@ opencl_reconstruct_conebeam (
     scale = scale * options->scale;
 
     /* Free proj image */
-    proj_image_destroy (proj);
+    delete proj;
 
     /* Project each image into the volume one at a time */
     for (image_num = options->first_img; 

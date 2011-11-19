@@ -33,13 +33,14 @@ main (int argc, char* argv[])
     free (tmp);
 
     /* Read image */
-    proj = proj_image_load (hnd_fn, 0);
-    if (!proj) {
+    proj = new Proj_image (hnd_fn, 0);
+    if (!proj->have_image ()) {
 	print_and_exit ("Couldn't load file for read: %s\n", hnd_fn);
     }
 
     /* Write image and header */
     proj_image_save (proj, pfm_fn, mat_fn);
 
+    delete proj;
     return 0;
 }

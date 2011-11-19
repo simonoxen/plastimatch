@@ -15,6 +15,50 @@
 #include "ramp_filter.h"
 #include "volume.h"
 
+Proj_image::Proj_image ()
+{
+    this->init ();
+}
+
+Proj_image::Proj_image (
+    const char* img_filename,
+    const char* mat_filename
+)
+{
+    this->init ();
+    this->load (img_filename, mat_filename);
+}
+
+Proj_image::~Proj_image ()
+{
+    this->clear ();
+}
+
+void
+Proj_image::init ()
+{
+    dim[0] = dim[1] = 0;
+    pmat = 0;
+    img = 0;
+}
+
+void
+Proj_image::clear ()
+{
+    if (this->pmat) {
+	free (this->pmat);
+    }
+    if (this->img) {
+	free (this->img);
+    }
+}
+
+bool
+Proj_image::have_image ()
+{
+    return (this->img != 0);
+}
+
 /* -----------------------------------------------------------------------
    Private functions
    ----------------------------------------------------------------------- */
@@ -77,7 +121,7 @@ raw_load (Proj_image *proj, const char* img_filename)
 }
 
 static void
-raw_save (Proj_image *proj, char* img_filename)
+raw_save (Proj_image *proj, const char* img_filename)
 {
     FILE* fp;
     
@@ -142,7 +186,7 @@ pfm_load (Proj_image *proj, const char* img_filename)
 }
 
 static void
-pfm_save (Proj_image *proj, char* img_filename)
+pfm_save (Proj_image *proj, const char* img_filename)
 {
     FILE* fp;
     
@@ -164,7 +208,7 @@ pfm_save (Proj_image *proj, char* img_filename)
 }
 
 static void
-pgm_save (Proj_image *proj, char* img_filename)
+pgm_save (Proj_image *proj, const char* img_filename)
 {
     FILE* fp;
     int i;
@@ -201,7 +245,7 @@ pgm_save (Proj_image *proj, char* img_filename)
 }
 
 static void
-mat_load (Proj_image *proj, char* mat_filename)
+mat_load (Proj_image *proj, const char* mat_filename)
 {
     FILE* fp;
     int i;
@@ -278,89 +322,48 @@ mat_load_by_img_filename (Proj_image* proj, const char* img_filename)
     }
 }
 
-static Proj_image* 
-proj_image_load_pfm (const char* img_filename, char* mat_filename)
+void
+Proj_image::load_pfm (const char* img_filename, const char* mat_filename)
 {
-    Proj_image* proj;
+    if (!img_filename) return;
 
-    if (!img_filename) return 0;
-
-    proj = proj_image_create ();
-    if (!proj) return 0;
-
-    pfm_load (proj, img_filename);
+    pfm_load (this, img_filename);
 
     if (mat_filename) {
-	mat_load (proj, mat_filename);
+	mat_load (this, mat_filename);
     } else {
-	mat_load_by_img_filename (proj, img_filename);
+	mat_load_by_img_filename (this, img_filename);
     }
-
-    return proj;
 }
 
-static Proj_image* 
-proj_image_load_raw (const char* img_filename, char* mat_filename)
+void
+Proj_image::load_raw (const char* img_filename, const char* mat_filename)
 {
-    Proj_image* proj;
+    if (!img_filename) return;
 
-    if (!img_filename) return 0;
-
-    proj = proj_image_create ();
-    if (!proj) return 0;
-
-    raw_load (proj, img_filename);
+    raw_load (this, img_filename);
 
     if (mat_filename) {
-	mat_load (proj, mat_filename);
+	mat_load (this, mat_filename);
     } else {
-	mat_load_by_img_filename (proj, img_filename);
+	mat_load_by_img_filename (this, img_filename);
     }
-
-    return proj;
 }
 
-static Proj_image* 
-proj_image_load_hnd (const char* img_filename)
+void
+Proj_image::load_hnd (const char* img_filename)
 {
-    Proj_image* proj;
+    if (!img_filename) return;
 
-    if (!img_filename) return 0;
-
-    proj = proj_image_create ();
-    if (!proj) return 0;
-
-    hnd_load (proj, img_filename);
-    if (proj->img == 0) {
-	proj_image_destroy (proj);
-	return 0;
+    hnd_load (this, img_filename);
+    if (this->img == 0) {
+	this->clear ();
     }
-
-    return proj;
 }
 
 /* -----------------------------------------------------------------------
    Public functions
    ----------------------------------------------------------------------- */
-void
-proj_image_init (Proj_image *proj)
-{
-    memset (proj, 0, sizeof(Proj_image));
-}
-
-Proj_image*
-proj_image_create (void)
-{
-    Proj_image *proj;
-
-    proj = (Proj_image*) malloc (sizeof(Proj_image));
-    if (!proj) return 0;
-
-    proj_image_init (proj);
-
-    return proj;
-}
-
 void
 proj_image_create_pmat (Proj_image *proj)
 {
@@ -418,10 +421,10 @@ proj_image_stats (Proj_image *proj)
 	    min_val, (float) (sum / num), max_val, num);
 }
 
-Proj_image* 
-proj_image_load (
+void
+Proj_image::load (
     const char* img_filename,
-    char* mat_filename
+    const char* mat_filename
 )
 {
     char tmp[_MAX_PATH];
@@ -437,22 +440,21 @@ proj_image_load (
     }
 
     if (extension_is (img_filename, ".pfm")) {
-	return proj_image_load_pfm (img_filename, mat_filename);
+	load_pfm (img_filename, mat_filename);
     }
     else if (extension_is (img_filename, ".raw")) {
-	return proj_image_load_raw (img_filename, mat_filename);
+	load_raw (img_filename, mat_filename);
     }
     else if (extension_is (img_filename, ".hnd")) {
-	return proj_image_load_hnd (img_filename);
+	load_hnd (img_filename);
     }
-    return 0;
 }
 
 void
 proj_image_save (
     Proj_image *proj,
-    char *img_filename,
-    char *mat_filename
+    const char *img_filename,
+    const char *mat_filename
 )
 {
     if (img_filename) {
@@ -477,23 +479,4 @@ proj_image_filter (Proj_image *proj)
 #if (FFTW_FOUND)
     ramp_filter (proj->img, proj->dim[0], proj->dim[1]);
 #endif
-}
-
-void
-proj_image_free (Proj_image* proj)
-{
-    if (!proj) return;
-    if (proj->pmat) {
-	free (proj->pmat);
-    }
-    if (proj->img) {
-	free (proj->img);
-    }
-}
-
-void
-proj_image_destroy (Proj_image* proj)
-{
-    proj_image_free (proj);
-    free (proj);
 }

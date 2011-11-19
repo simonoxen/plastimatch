@@ -9,21 +9,37 @@
 #include "proj_matrix.h"
 #include "volume.h"
 
-typedef struct proj_image Proj_image;
-struct proj_image
+class gpuit_EXPORT Proj_image
 {
+public:
+    Proj_image (void);
+    Proj_image (const char* img_filename, const char* mat_filename);
+    ~Proj_image (void);
+
+public:
     int dim[2];              /* dim[0] = cols, dim[1] = rows */
     Proj_matrix *pmat;       /* Geometry of panel and source */
     float* img;		     /* Pixel data */
+
+public:
+    void clear ();
+    bool have_image ();
+    void init ();
+    void load (const char* img_filename, const char* mat_filename);
+    void load_pfm (const char* img_filename, const char* mat_filename);
+    void load_raw (const char* img_filename, const char* mat_filename);
+    void load_hnd (const char* img_filename);
 };
 
 #if defined __cplusplus
 extern "C" {
 #endif
 
+#if defined (commentout)
 gpuit_EXPORT
 Proj_image*
 proj_image_create (void);
+#endif
 
 gpuit_EXPORT 
 void 
@@ -36,23 +52,23 @@ proj_image_destroy (Proj_image* proj);
 gpuit_EXPORT Proj_image* 
 proj_image_load_and_filter (
     Fdk_options * options, 
-    char* img_filename, 
-    char* mat_filename
+    const char* img_filename, 
+    const char* mat_filename
 );
 
 gpuit_EXPORT 
 Proj_image* 
 proj_image_load (
     const char* img_filename,
-    char* mat_filename
+    const char* mat_filename
 );
 
 gpuit_EXPORT 
 void
 proj_image_save (
     Proj_image *proj,
-    char *img_filename,
-    char *mat_filename
+    const char *img_filename,
+    const char *mat_filename
 );
 
 gpuit_EXPORT

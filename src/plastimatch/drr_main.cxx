@@ -175,7 +175,7 @@ drr_render_volume (Volume* vol, Drr_options* options)
     plm_timer_start (&timer);
 
     /* Allocate data for image and matrix */
-    proj = proj_image_create ();
+    proj = new Proj_image;
     proj_image_create_pmat (proj);
     proj_image_create_img (proj, options->image_resolution);
 
@@ -224,7 +224,7 @@ drr_render_volume (Volume* vol, Drr_options* options)
 		dev_state, options);
 	}
     }
-    proj_image_destroy (proj);
+    delete proj;
 
     free_gpu_memory (dev_state, options);
 

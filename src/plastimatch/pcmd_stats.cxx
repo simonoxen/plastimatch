@@ -85,10 +85,10 @@ stats_proj_image_main (Stats_parms* parms)
 {
     Proj_image *proj;
 
-    proj = proj_image_load ((const char*) parms->img_in_fn, 0);
+    proj = new Proj_image ((const char*) parms->img_in_fn, 0);
     proj_image_debug_header (proj);
     proj_image_stats (proj);
-    proj_image_destroy (proj);
+    delete proj;
 }
 
 static void

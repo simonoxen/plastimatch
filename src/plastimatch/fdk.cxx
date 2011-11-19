@@ -630,7 +630,7 @@ reconstruct_conebeam (
 
         backproject_time += plm_timer_report (&timer);
 
-        proj_image_destroy (cbi);
+        delete cbi;
     }
 
     printf ("I/O time (total) = %g\n", io_time);

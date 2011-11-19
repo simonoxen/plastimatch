@@ -229,5 +229,5 @@ proj_image_dir_load_image (Proj_image_dir* pid, int index)
     }
 
     /* mat file load not yet implemented -- only works for hnd files */
-    return proj_image_load (pid->proj_image_list[index], 0);
+    return new Proj_image (pid->proj_image_list[index], 0);
 }
