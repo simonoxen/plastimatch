@@ -25,7 +25,7 @@ format.  The command line usage is::
 
  Usage: drr [options] [infile]
  Options:
-  -A hardware       Either "cpu" or "brook" or "cuda" (default=cpu)
+  -A hardware       Either "cpu" or "cuda" (default=cpu)
   -a num            Generate num equally spaced angles
   -N ang            Difference between neighboring angles (in degrees)
   -nrm "x y z"      Set the normal vector for the panel

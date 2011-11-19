@@ -70,8 +70,7 @@ want the DRR and FDK programs, you don't need it.  Get ITK from here:
 
   http://itk.org/
 
-Be careful of versions when using ITK.  We recommend version 3.20.0.
-Specifically, ITK version 4.0 is not supported.
+We recommend version ITK 3.20.X.  ITK version 4.0 is not supported.
 
 When you build ITK, the following settings are recommended::
 

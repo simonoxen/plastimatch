@@ -224,6 +224,6 @@ specific parameters are available.
      - openmp
      - string
      - Threading method used for parallel cost and gradient computations. 
-       The choices are {brook, cuda, openmp, single}.  
-       If an unsupported threading choice is made (such as brook with 
-       b-spline), the nearest valid choice will be used.
+       The choices are {cuda, opencl, openmp, single}.  
+       If an unsupported threading choice is made (such as cuda with 
+       demons), the nearest valid choice will be used.

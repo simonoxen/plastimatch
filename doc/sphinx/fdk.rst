@@ -16,7 +16,7 @@ The command line usage is::
 
   Usage: fdk [options]
   Options:
-   -A hardware            Either "cpu" or "brook" or "cuda" (default=cpu)
+   -A hardware            Either "cpu" or "cuda" (default=cpu)
    -a "num ((num) num)"   Use this range of images
    -r "r1 r2 r3"          Set output resolution (in voxels)
    -f filter              Either "none" or "ramp" (default=ramp)

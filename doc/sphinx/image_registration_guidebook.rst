@@ -82,7 +82,6 @@ The following example performs a demons registration::
 The demons code has several parameters which can be optimized.
 The following example illustrates their use::
 
-  # GPU acceleration requires brook
   [STAGE]
   xform=vf
   optim=demons
@@ -98,17 +97,6 @@ The following example illustrates their use::
   demons_homogenization=30
   # This is the size of the filter (in voxels)
   demons_filter_width=5 5 5
-
-If you have brook installed, you can use GPU-accelerated demons::
-
-  # GPU acceleration requires brook
-  [STAGE]
-  optim=demons
-  xform=vf
-  impl=plastimatch
-  threading=brook
-  res=4 4 2
-  max_its=200
 
 B-spline registration
 ---------------------
