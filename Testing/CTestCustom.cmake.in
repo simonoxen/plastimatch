@@ -56,6 +56,12 @@ if (OPENCL_FOUND)
   endif ()
 endif ()
 
+# plm-convert-rtog-corvus-a doen't work yet
+set (CTEST_CUSTOM_TESTS_IGNORE
+  ${CTEST_CUSTOM_TESTS_IGNORE}
+  "plm-convert-rtog-corvus-a"
+  )
+
 # drr-d doen't work yet
 set (CTEST_CUSTOM_TESTS_IGNORE
   ${CTEST_CUSTOM_TESTS_IGNORE}
@@ -131,6 +137,14 @@ if (NOT EXISTS "${PLM_BUILD_TESTING_DIR}/chest-phantom-xio-4.33.02")
     )
 endif ()
 
+## If we didn't get rtog (corvus) test data, don't run these tests
+if (NOT EXISTS "${PLM_BUILD_TESTING_DIR}/rtog-corvus-6.2.2")
+  set (CTEST_CUSTOM_TESTS_IGNORE
+    ${CTEST_CUSTOM_TESTS_IGNORE}
+    "plm-convert-rtog-corvus-a" 
+    )
+endif ()
+
 ## If we didn't get aw (foot) test data, don't run these tests
 if (NOT EXISTS "${PLM_BUILD_TESTING_DIR}/foot-dicomrt-aw-4.4")
   set (CTEST_CUSTOM_TESTS_IGNORE
@@ -147,6 +161,14 @@ if (NOT EXISTS "${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-CERR4pt0beta2_25_
   set (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
     "plm-convert-dicom-cerr-a" 
+    )
+endif ()
+
+## If we didn't get cerr test data, don't run these tests
+if (NOT EXISTS "${PLM_BUILD_TESTING_DIR}/dicomrt-corvus-6.2.2")
+  set (CTEST_CUSTOM_TESTS_IGNORE
+    ${CTEST_CUSTOM_TESTS_IGNORE}
+    "plm-convert-dicom-corvus-a" 
     )
 endif ()
 

@@ -107,6 +107,13 @@ if (PLM_DOWNLOAD_DICOMRT_CERR)
     "${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-CERR4pt0beta2_25_Jan_2011")
 endif ()
 
+if (PLM_DOWNLOAD_DICOMRT_CORVUS)
+  plm_download_and_extract (
+    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/2160/dicomrt-corvus-6.2.2.tar.gz"
+    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/dicomrt-corvus-6.2.2.tar.gz"
+    "${PLM_BUILD_TESTING_DIR}/dicomrt-corvus-6.2.2")
+endif ()
+
 if (PLM_DOWNLOAD_DICOMRT_IRREGULAR)
   plm_download_and_extract (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1827/xio-4.60-irregular-spacing.tar.gz"
@@ -133,6 +140,13 @@ if (PLM_DOWNLOAD_FDK_VARIAN)
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1127/varian-catphan.tar.gz"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/varian-catphan.tar.gz"
     "${PLM_BUILD_TESTING_DIR}/varian-catphan")
+endif ()
+
+if (PLM_DOWNLOAD_RTOG_CORVUS)
+  plm_download_and_extract (
+    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/2159/rtog-corvus-6.2.2.tar.gz"
+    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/rtog-corvus-6.2.2.tar.gz"
+    "${PLM_BUILD_TESTING_DIR}/rtog-corvus-6.2.2")
 endif ()
 
 if (PLM_DOWNLOAD_XIO)
@@ -1183,6 +1197,16 @@ set_tests_properties (plm-convert-dicom-donut-b-check PROPERTIES
   DEPENDS plm-convert-dicom-donut-b-stats)
 
 ## -------------------------------------------------------------------------
+## plastimatch convert rtog (corvus)
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-convert-rtog-corvus-a" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/rtog-corvus-6.2.2;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-rtog-corvus-a.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-rtog-corvus-a-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-convert-rtog-corvus-a-ss.txt;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-rtog-corvus-a-dose.mha"
+  )
+
+## -------------------------------------------------------------------------
 ## plastimatch convert dicom-rt (aw)
 ## -------------------------------------------------------------------------
 plm_add_test (
@@ -1221,6 +1245,16 @@ plm_add_test (
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-CERR4pt0beta2_25_Jan_2011;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-cerr-a.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-cerr-a-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-cerr-a-ss.txt;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-cerr-a-dose.mha"
+  )
+
+## -------------------------------------------------------------------------
+## plastimatch convert dicom-rt (corvus)
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-convert-dicom-corvus-a" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/dicomrt-corvus-6.2.2;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-corvus-a.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-corvus-a-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-corvus-a-ss.txt;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-corvus-a-dose.mha"
   )
 
 ## -------------------------------------------------------------------------

@@ -106,11 +106,15 @@ option (PLM_DOWNLOAD_DICOMRT_AW
   "Additional testing data (download from internet)" OFF)
 option (PLM_DOWNLOAD_DICOMRT_CERR
   "Additional testing data (download from internet)" OFF)
+option (PLM_DOWNLOAD_DICOMRT_CORVUS
+  "Additional testing data (download from internet)" OFF)
 option (PLM_DOWNLOAD_DICOMRT_IRREGULAR
   "Additional testing data (download from internet)" OFF)
 option (PLM_DOWNLOAD_DICOMRT_PINNACLE 
   "Additional testing data (download from internet)" OFF)
 option (PLM_DOWNLOAD_DICOMRT_XIO 
+  "Additional testing data (download from internet)" OFF)
+option (PLM_DOWNLOAD_RTOG_CORVUS
   "Additional testing data (download from internet)" OFF)
 option (PLM_DOWNLOAD_FDK_VARIAN 
   "Additional testing data (download from internet)" OFF)
