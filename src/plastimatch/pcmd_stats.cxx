@@ -85,7 +85,7 @@ stats_proj_image_main (Stats_parms* parms)
 {
     Proj_image *proj;
 
-    proj = new Proj_image ((const char*) parms->img_in_fn, 0);
+    proj = new Proj_image ((const char*) parms->img_in_fn, (const char*) 0);
     proj_image_debug_header (proj);
     proj_image_stats (proj);
     delete proj;

@@ -58,7 +58,7 @@ opencl_reconstruct_conebeam (
     opencl_kernel_create (&ocl_dev, "kernel_2");
 
     /* Retrieve 2D image to get dimensions */
-    proj = proj_image_dir_load_image (proj_dir, 0);
+    proj = proj_dir->load_image (0);
 
     /* Set up device memory */
     ocl_buf_vol = opencl_buf_create (
@@ -142,7 +142,7 @@ opencl_reconstruct_conebeam (
 	float matrix[12], nrm[3], ic[2], sad;
 
 	/* Load the current image and properties */
-	proj = proj_image_dir_load_image(proj_dir, image_num);
+	proj = proj_dir->load_image (image_num);
 
 	/* Apply ramp filter */
         if (options->filter == FDK_FILTER_TYPE_RAMP) {

@@ -78,7 +78,7 @@ extern "C" {
 #endif
 
 void
-hnd_load (Proj_image *proj, const char *fn);
+hnd_load (Proj_image *proj, const char *fn, const double xy_offset[2]);
 
 #if defined __cplusplus
 }

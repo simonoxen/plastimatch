@@ -41,16 +41,20 @@ main (int argc, char* argv[])
     fdk_parse_args (&options, argc, argv);
 
     /* Look for input files */
-    proj_dir = proj_image_dir_create (options.input_dir);
-    if (!proj_dir) {
+    proj_dir = new Proj_image_dir (options.input_dir);
+    if (proj_dir->num_proj_images < 1) {
 	print_and_exit ("Error: couldn't find input files in directory %s\n",
 	    options.input_dir);
     }
 
+    /* Set the panel offset */
+    double xy_offset[2] = { options.xy_offset[0], options.xy_offset[1] };
+    proj_dir->set_xy_offset (xy_offset);
+
     /* Choose subset of input files if requested */
     if (options.image_range_requested) {
-	proj_image_dir_select (proj_dir, options.first_img, 
-	    options.skip_img, options.last_img);
+	proj_dir->select (options.first_img, options.skip_img, 
+	    options.last_img);
     }
 
     /* Allocate memory */
@@ -77,7 +81,7 @@ main (int argc, char* argv[])
     }
 
     /* Free memory */
-    proj_image_dir_destroy (proj_dir);
+    delete proj_dir;
 
     /* Prepare HU values in output volume */
     convert_to_hu (vol, &options);

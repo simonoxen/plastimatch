@@ -7,9 +7,13 @@
 #include "plm_config.h"
 #include "proj_image.h"
 
-typedef struct proj_image_dir Proj_image_dir;
-struct proj_image_dir {
+class gpuit_EXPORT Proj_image_dir
+{
+public:
+    Proj_image_dir (const char *dir);
+    ~Proj_image_dir ();
 
+public:
     char *dir;             /* Dir containing images, maybe not xml file */
     int num_proj_images;
     char **proj_image_list;
@@ -17,30 +21,19 @@ struct proj_image_dir {
     char *xml_file;
     char *img_pat;
     char *mat_pat;
+
+    double xy_offset[2];
+
+public:
+    Proj_image* load_image (int index);
+    void select (int first, int skip, int last);
+    void set_xy_offset (const double xy_offset[2]);
+
+private:
+    void clear_filenames ();
+    void find_pattern (void);
+    void harden_filenames ();
+    void load_filenames (const char *dir);
 };
-
-#if defined __cplusplus
-extern "C" {
-#endif
-
-gpuit_EXPORT
-Proj_image_dir*
-proj_image_dir_create (char *dir);
-
-gpuit_EXPORT
-void
-proj_image_dir_destroy (Proj_image_dir *pid);
-
-gpuit_EXPORT
-Proj_image* 
-proj_image_dir_load_image (Proj_image_dir* pid, int index);
-
-gpuit_EXPORT
-void
-proj_image_dir_select (Proj_image_dir *pid, int first, int skip, int last);
-
-#if defined __cplusplus
-}
-#endif
 
 #endif

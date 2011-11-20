@@ -33,7 +33,8 @@ main (int argc, char* argv[])
     free (tmp);
 
     /* Read image */
-    proj = new Proj_image (hnd_fn, 0);
+    double xy_offset[2] = {0., 0.};
+    proj = new Proj_image (hnd_fn, xy_offset);
     if (!proj->have_image ()) {
 	print_and_exit ("Couldn't load file for read: %s\n", hnd_fn);
     }

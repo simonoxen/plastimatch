@@ -22,6 +22,17 @@ Proj_image::Proj_image ()
 
 Proj_image::Proj_image (
     const char* img_filename,
+    const double xy_offset[2]
+)
+{
+    this->init ();
+    this->xy_offset[0] = xy_offset[0];
+    this->xy_offset[1] = xy_offset[1];
+    this->load (img_filename, 0);
+}
+
+Proj_image::Proj_image (
+    const char* img_filename,
     const char* mat_filename
 )
 {
@@ -38,6 +49,7 @@ void
 Proj_image::init ()
 {
     dim[0] = dim[1] = 0;
+    xy_offset[0] = xy_offset[1] = 0;
     pmat = 0;
     img = 0;
 }
@@ -255,7 +267,7 @@ mat_load (Proj_image *proj, const char* mat_filename)
     if (!proj) return;
 
     /* Allocate memory */
-    pmat = proj_matrix_create ();
+    pmat = new Proj_matrix;
 
     /* Open file */
     fp = fopen (mat_filename,"r");
@@ -355,7 +367,7 @@ Proj_image::load_hnd (const char* img_filename)
 {
     if (!img_filename) return;
 
-    hnd_load (this, img_filename);
+    hnd_load (this, img_filename, this->xy_offset);
     if (this->img == 0) {
 	this->clear ();
     }
@@ -368,7 +380,7 @@ void
 proj_image_create_pmat (Proj_image *proj)
 {
     /* Allocate memory */
-    proj->pmat = proj_matrix_create ();
+    proj->pmat = new Proj_matrix;
 }
 
 void
@@ -467,6 +479,11 @@ proj_image_save (
 	else if (extension_is (img_filename, ".pgm")) {
 	    pgm_save (proj, img_filename);
 	}
+#if defined (commentout)
+	else if (extension_is (img_filename, "mha.")) {
+	    mha_save (proj, img_filename);
+	}
+#endif
     }
     if (mat_filename) {
 	proj_matrix_save (proj->pmat, mat_filename);

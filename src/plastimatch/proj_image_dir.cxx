@@ -10,6 +10,57 @@
 #include "plm_path.h"
 #include "proj_image_dir.h"
 
+Proj_image_dir::Proj_image_dir (const char *dir)
+{
+    char xml_file[_MAX_PATH];
+
+    /* Initialize members */
+    this->dir = 0;
+    this->num_proj_images = 0;
+    this->proj_image_list = 0;
+    this->xml_file = 0;
+    this->img_pat = 0;
+    this->mat_pat = 0;
+    this->xy_offset[0] = this->xy_offset[1] = 0;
+
+    /* Look for ProjectionInfo.xml */
+    snprintf (xml_file, _MAX_PATH, "%s/%s", dir, "ProjectionInfo.xml");
+    if (file_exists (xml_file)) {
+	this->xml_file = strdup (xml_file);
+    }
+
+    /* Load list of file names */
+    this->load_filenames (dir);
+
+    /* If base directory doesn't contain images, look in Scan0 directory */
+    if (this->num_proj_images == 0) {
+	char scan0_dir[_MAX_PATH];
+	snprintf (scan0_dir, _MAX_PATH, "%s/%s", dir, "Scan0");
+
+	/* Load list of file names */
+	this->load_filenames (scan0_dir);
+    }
+
+    /* No images in either base directory or Scan 0, so give up. */
+    if (this->num_proj_images == 0) {
+	return;
+    }
+
+    /* Found images, try to find pattern */
+    this->find_pattern ();
+
+    /* Convert relative paths to absolute paths */
+    this->harden_filenames ();
+}
+
+Proj_image_dir::~Proj_image_dir ()
+{
+    if (this->img_pat) free (this->img_pat);
+    if (this->xml_file) free (this->xml_file);
+    this->clear_filenames ();
+}
+
+
 /* -----------------------------------------------------------------------
    Private functions
    ----------------------------------------------------------------------- */
@@ -27,16 +78,14 @@
 
    Caller must free patterns.
 */
-static void
-proj_image_dir_find_pattern (
-    Proj_image_dir *pid
-)
+void
+Proj_image_dir::find_pattern ()
 {
     int i;
 
     /* Search for appropriate entry */
-    for (i = 0; i < pid->num_proj_images; i++) {
-	char *entry = pid->proj_image_list[i];
+    for (i = 0; i < this->num_proj_images; i++) {
+	char *entry = this->proj_image_list[i];
 	int rc;
 	char prefix[2048], num[2048];
 
@@ -59,10 +108,10 @@ proj_image_dir_find_pattern (
 	    suffix = &entry[strlen(prefix) + strlen(num)];
 		
 	    /* Create pattern */
-	    pid->img_pat = (char*) malloc (
-		strlen (pid->dir) + 1 + strlen (prefix) 
+	    this->img_pat = (char*) malloc (
+		strlen (this->dir) + 1 + strlen (prefix) 
 		+ strlen (num_pat) + strlen (suffix) + 1);
-	    sprintf (pid->img_pat, "%s/%s%s%s", pid->dir, 
+	    sprintf (this->img_pat, "%s/%s%s%s", this->dir, 
 		prefix, num_pat, suffix);
 
 	    /* Done! */
@@ -72,18 +121,17 @@ proj_image_dir_find_pattern (
     return;
 }
 
-static void
-proj_image_dir_load_filenames (
-    Proj_image_dir *pid,
-    char *dir
+void
+Proj_image_dir::load_filenames (
+    const char *dir
 )
 {
     int i;
     Dir_list *dir_list;
 
-    if (pid->dir) {
-	free (pid->dir);
-	pid->dir = 0;
+    if (this->dir) {
+	free (this->dir);
+	this->dir = 0;
     }
 
     dir_list = dir_list_load (0, dir);
@@ -91,143 +139,94 @@ proj_image_dir_load_filenames (
 	return;
     }
 
-    pid->dir = strdup (dir);
-    pid->num_proj_images = 0;
-    pid->proj_image_list = 0;
+    this->dir = strdup (dir);
+    this->num_proj_images = 0;
+    this->proj_image_list = 0;
 
     for (i = 0; i < dir_list->num_entries; i++) {
 	char *entry = dir_list->entries[i];
 	if (extension_is (entry, ".hnd") || extension_is (entry, ".pfm") 
 	    || extension_is (entry, ".raw"))
 	{
-	    pid->num_proj_images ++;
-	    pid->proj_image_list = (char**) realloc (
-		pid->proj_image_list,
-		pid->num_proj_images * sizeof (char*));
-	    pid->proj_image_list[pid->num_proj_images-1] = strdup (entry);
+	    this->num_proj_images ++;
+	    this->proj_image_list = (char**) realloc (
+		this->proj_image_list,
+		this->num_proj_images * sizeof (char*));
+	    this->proj_image_list[this->num_proj_images-1] = strdup (entry);
 	}
     }
 
     dir_list_destroy (dir_list);
 }
 
-static void
-proj_image_dir_harden_filenames (
-    Proj_image_dir *pid
-)
+void
+Proj_image_dir::harden_filenames ()
 {
     int i;
 
-    for (i = 0; i < pid->num_proj_images; i++) {
+    for (i = 0; i < this->num_proj_images; i++) {
 	char img_file[_MAX_PATH];
-	char *entry = pid->proj_image_list[i];
-	snprintf (img_file, _MAX_PATH, "%s/%s", pid->dir, entry);
-	pid->proj_image_list[i] = strdup (img_file);
+	char *entry = this->proj_image_list[i];
+	snprintf (img_file, _MAX_PATH, "%s/%s", this->dir, entry);
+	this->proj_image_list[i] = strdup (img_file);
 	free (entry);
     }
 }
 
-static void
-proj_image_dir_clear_filenames (
-    Proj_image_dir *pid
-)
+void
+Proj_image_dir::clear_filenames ()
 {
     int i;
-    for (i = 0; i < pid->num_proj_images; i++) {
-	char *entry = pid->proj_image_list[i];
+    for (i = 0; i < this->num_proj_images; i++) {
+	char *entry = this->proj_image_list[i];
 	free (entry);
     }
-    if (pid->proj_image_list) free (pid->proj_image_list);
-    pid->num_proj_images = 0;
-    pid->proj_image_list = 0;
+    if (this->proj_image_list) free (this->proj_image_list);
+    this->num_proj_images = 0;
+    this->proj_image_list = 0;
 }
 
 /* -----------------------------------------------------------------------
    Public functions
    ----------------------------------------------------------------------- */
-Proj_image_dir*
-proj_image_dir_create (char *dir)
+void
+Proj_image_dir::set_xy_offset (const double xy_offset[2])
 {
-    Proj_image_dir *pid;
-    char xml_file[_MAX_PATH];
-
-    pid = (Proj_image_dir*) malloc (sizeof (Proj_image_dir));
-    memset (pid, 0, sizeof (Proj_image_dir));
-
-    /* Look for ProjectionInfo.xml */
-    snprintf (xml_file, _MAX_PATH, "%s/%s", dir, "ProjectionInfo.xml");
-    if (file_exists (xml_file)) {
-	pid->xml_file = strdup (xml_file);
-    }
-
-    /* Load list of file names */
-    proj_image_dir_load_filenames (pid, dir);
-
-    /* If base directory doesn't contain images, look in Scan0 directory */
-    if (pid->num_proj_images == 0) {
-	char scan0_dir[_MAX_PATH];
-	snprintf (scan0_dir, _MAX_PATH, "%s/%s", dir, "Scan0");
-
-	/* Load list of file names */
-	proj_image_dir_load_filenames (pid, scan0_dir);
-    }
-
-    /* No images in either base directory or Scan 0, so give up. */
-    if (pid->num_proj_images == 0) {
-	proj_image_dir_destroy (pid);
-	return 0;
-    }
-
-    /* Found images, try to find pattern */
-    proj_image_dir_find_pattern (pid);
-
-    /* Convert relative paths to absolute paths */
-    proj_image_dir_harden_filenames (pid);
-
-    return pid;
+    this->xy_offset[0] = xy_offset[0];
+    this->xy_offset[1] = xy_offset[1];
 }
 
 void
-proj_image_dir_select (Proj_image_dir *pid, int first, int skip, int last)
+Proj_image_dir::select (int first, int skip, int last)
 {
     int i;
 
-    if (!pid || pid->num_proj_images == 0 || !pid->img_pat) {
+    if (this->num_proj_images == 0 || !this->img_pat) {
 	return;
     }
 
-    proj_image_dir_clear_filenames (pid);
+    this->clear_filenames ();
     for (i = first; i <= last; i += skip) {
 	char img_file[_MAX_PATH];
-	snprintf (img_file, _MAX_PATH, pid->img_pat, i);
+	snprintf (img_file, _MAX_PATH, this->img_pat, i);
 	if (file_exists (img_file)) {
-	    pid->num_proj_images ++;
-	    pid->proj_image_list = (char**) realloc (
-		pid->proj_image_list, 
-		pid->num_proj_images * sizeof (char*));
-	    pid->proj_image_list[pid->num_proj_images-1] = strdup (img_file);
+	    this->num_proj_images ++;
+	    this->proj_image_list = (char**) realloc (
+		this->proj_image_list, 
+		this->num_proj_images * sizeof (char*));
+	    this->proj_image_list[this->num_proj_images-1] = strdup (img_file);
 	}
     }
 }
 
-
-void
-proj_image_dir_destroy (Proj_image_dir *pid)
-{
-    if (pid->img_pat) free (pid->img_pat);
-    if (pid->xml_file) free (pid->xml_file);
-    proj_image_dir_clear_filenames (pid);
-
-    free (pid);
-}
-
 Proj_image* 
-proj_image_dir_load_image (Proj_image_dir* pid, int index)
+Proj_image_dir::load_image (int index)
 {
-    if (index < 0 || index >= pid->num_proj_images) {
+    if (index < 0 || index >= this->num_proj_images) {
 	return 0;
     }
 
-    /* mat file load not yet implemented -- only works for hnd files */
-    return new Proj_image (pid->proj_image_list[index], 0);
+    /* mat file load not yet implemented -- Proj_image_dir only works 
+       for hnd files */
+    return new Proj_image (this->proj_image_list[index], this->xy_offset);
 }

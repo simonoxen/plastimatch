@@ -14,10 +14,12 @@ class gpuit_EXPORT Proj_image
 public:
     Proj_image (void);
     Proj_image (const char* img_filename, const char* mat_filename);
+    Proj_image (const char* img_filename, const double xy_offset[2]);
     ~Proj_image (void);
 
 public:
     int dim[2];              /* dim[0] = cols, dim[1] = rows */
+    double xy_offset[2];     /* Offset of center pixel */
     Proj_matrix *pmat;       /* Geometry of panel and source */
     float* img;		     /* Pixel data */
 
@@ -29,6 +31,7 @@ public:
     void load_pfm (const char* img_filename, const char* mat_filename);
     void load_raw (const char* img_filename, const char* mat_filename);
     void load_hnd (const char* img_filename);
+    void set_xy_offset (const double xy_offset[2]);
 };
 
 #if defined __cplusplus

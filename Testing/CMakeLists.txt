@@ -681,8 +681,8 @@ plm_add_test (
 plmtest_check_interval ("fdk-cpu-b-check"
   "${PLM_BUILD_TESTING_DIR}/fdk-cpu-b-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "-821.5"
-  "-820.5"
+  "-708.1"
+  "-707.5"
   )
 set_tests_properties (fdk-cpu-b-stats PROPERTIES DEPENDS fdk-cpu-b)
 set_tests_properties (fdk-cpu-b-check PROPERTIES DEPENDS fdk-cpu-b-stats)
@@ -702,8 +702,8 @@ plm_add_test (
 plmtest_check_interval ("fdk-cpu-c-check"
   "${PLM_BUILD_TESTING_DIR}/fdk-cpu-c-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "-990.0"
-  "-989.0"
+  "-982.3"
+  "-981.5"
   )
 set_tests_properties (fdk-cpu-c-stats PROPERTIES DEPENDS fdk-cpu-c)
 set_tests_properties (fdk-cpu-c-check PROPERTIES DEPENDS fdk-cpu-c-stats)

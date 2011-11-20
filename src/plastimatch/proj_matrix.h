@@ -4,9 +4,12 @@
 #ifndef _proj_matrix_h_
 #define _proj_matrix_h_
 
-typedef struct proj_matrix Proj_matrix;
-struct proj_matrix
+class Proj_matrix
 {
+public:
+    Proj_matrix ();
+
+public:
     double ic[2];	  /* Image Center:  ic[0] = x, ic[1] = y */
     double matrix[12];	  /* Projection matrix */
     double sad;		  /* Distance: Source To Axis */
@@ -25,19 +28,7 @@ extern "C" {
 
 gpuit_EXPORT 
 Proj_matrix*
-proj_matrix_create ();
-
-gpuit_EXPORT 
-Proj_matrix*
 proj_matrix_clone (Proj_matrix* pmat_in);
-
-gpuit_EXPORT 
-void
-proj_matrix_init (Proj_matrix* matrix);
-
-gpuit_EXPORT 
-void
-proj_matrix_destroy (Proj_matrix* pmat);
 
 gpuit_EXPORT
 void

@@ -22,6 +22,7 @@ print_usage (void)
 	" -z \"s1 s2 s3\"          Physical size of the reconstruction (in mm)\n"
 	" -I indir               The input directory\n"
 	" -O outfile             The output file\n"
+        " -x \"x0 y0\"           Panel offset (in pixels)\n"
         " -X flavor              Implementation flavor (0,a,b,c,d) (default=c)\n"
     );
     exit (1);
@@ -41,6 +42,8 @@ set_default_options (Fdk_options* options)
     options->vol_size[0] = 300.0f;
     options->vol_size[1] = 300.0f;
     options->vol_size[2] = 150.0f;
+    options->xy_offset[0] = 0.f;
+    options->xy_offset[1] = 0.f;
     options->scale = 1.0f;
     options->filter = FDK_FILTER_TYPE_RAMP;
     options->input_dir = ".";
@@ -176,6 +179,19 @@ fdk_parse_args (Fdk_options* options, int argc, char* argv[])
 	    i++;
 	    rc = sscanf (argv[i], "%g" , &options->scale);
 	    if (rc != 1) {
+		print_usage ();
+	    }
+	}
+	else if (!strcmp (argv[i], "-x")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    rc = sscanf (argv[i], "%f %f", 
+		&options->xy_offset[0],
+		&options->xy_offset[1]);
+	    if (rc != 2) {
 		print_usage ();
 	    }
 	}

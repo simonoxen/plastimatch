@@ -10,29 +10,16 @@
 #include "proj_matrix.h"
 #include "volume.h"
 
-/* -----------------------------------------------------------------------
-   Private functions
-   ----------------------------------------------------------------------- */
-/* -----------------------------------------------------------------------
-   Public functions
-   ----------------------------------------------------------------------- */
-void
-proj_matrix_init (Proj_matrix *pmat)
+
+Proj_matrix::Proj_matrix ()
 {
-    memset (pmat, 0, sizeof(Proj_matrix));
-}
-
-Proj_matrix*
-proj_matrix_create (void)
-{
-    Proj_matrix *pmat;
-    
-    pmat = (Proj_matrix*) malloc (sizeof(Proj_matrix));
-    if (!pmat) return 0;
-
-    proj_matrix_init (pmat);
-
-    return pmat;
+    ic[0] = ic[1] = 0.;
+    vec_zero (matrix, 12);
+    sad = sid = 0.;
+    vec_zero (cam, 3);
+    vec_zero (nrm, 3);
+    vec_zero (extrinsic, 16);
+    vec_zero (intrinsic, 12);
 }
 
 Proj_matrix*
@@ -40,19 +27,13 @@ proj_matrix_clone (Proj_matrix* pmat_in)
 {
     Proj_matrix *pmat;
     
-    pmat = proj_matrix_create ();
+    pmat = new Proj_matrix;
     if (!pmat) return 0;
 
     /* No dynamically allocated memory in proj_matrix */
     memcpy (pmat, pmat_in, sizeof (Proj_matrix));
 
     return pmat;
-}
-
-void
-proj_matrix_destroy (Proj_matrix* pmat)
-{
-    free (pmat);
 }
 
 static

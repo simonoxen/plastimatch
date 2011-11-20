@@ -272,7 +272,7 @@ void
 rpl_volume_destroy (Rpl_volume *rpl_vol)
 {
     free (rpl_vol->depth_offset);
-    proj_matrix_destroy (rpl_vol->pmat);
+    delete rpl_vol->pmat;
     delete rpl_vol->vol;
     free (rpl_vol);
 }

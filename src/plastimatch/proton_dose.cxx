@@ -824,7 +824,7 @@ proton_dose_compute (
     double ps[2] = { 1., 1. };
     Proton_Depth_Dose* pep;
 
-    pmat = proj_matrix_create ();
+    pmat = new Proj_matrix;
     proj_matrix_set (pmat, cam, tgt, vup, ap_dist, ic, ps, ires);
 
     proj_matrix_get_nrm (pmat, nrm);
@@ -953,6 +953,6 @@ proton_dose_compute (
     }
 
     free (pep);
-    proj_matrix_destroy (pmat);
+    delete pmat;
     rpl_volume_destroy (rpl_vol);
 }

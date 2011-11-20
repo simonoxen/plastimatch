@@ -29,6 +29,8 @@ hnd_adjust_intensity (Proj_image *proj)
 	img[i] = img[i] / HND_INTENSITY_MAX;
 	img[i] = 1.0 - img[i];
 	if (img[i] < 0.0f) img[i] = 0.0;
+	/* Exponential mapping -- maybe this helps a little */
+	img[i] = exp(img[i]) - 1;
     }
 }
 
@@ -37,7 +39,8 @@ hnd_set_proj_matrix (
     Proj_image *proj, 
     double angle, 
     double sad, 
-    double sid
+    double sid, 
+    const double xy_offset[2]  /* Offset from center position by how much? */
 )
 {
     double vup[3] = {0, 0, 1};
@@ -60,6 +63,10 @@ hnd_set_proj_matrix (
     /* Set ic = image center (in pixels) */
     pmat->ic[0] = 0.5 * proj->dim[0] - 0.5;
     pmat->ic[1] = 0.5 * proj->dim[1] - 0.5;
+    if (xy_offset) {
+	pmat->ic[0] += xy_offset[0];
+	pmat->ic[1] += xy_offset[1];
+    }
 
     /* Change from varian angles to plastimatch angles */
     cam[0] = sad * cos ((angle + 270) * M_PI / 180.0);
@@ -80,7 +87,7 @@ hnd_set_proj_matrix (
    Public functions
    ----------------------------------------------------------------------- */
 void
-hnd_load (Proj_image *proj, const char *fn)
+hnd_load (Proj_image *proj, const char *fn, const double xy_offset[2])
 {
     Hnd_header hnd;
     FILE *fp;
@@ -97,6 +104,8 @@ hnd_load (Proj_image *proj, const char *fn)
     long dl, diff = 0l;
     uint32_t i;
 
+    /* GCS FIX: This is hard coded during debug */
+    //double xy_offset[2] = { -2.21 * 4, 0.24 * 4 };  // Good values for test
 
     if (!proj) return;
 
@@ -263,8 +272,9 @@ hnd_load (Proj_image *proj, const char *fn)
     /* Set the matrix */
     /* Note: Varian HND seems to give 0 for the SFD.  We will hard code 
        the sid to 1500 until told otherwise. */
-    proj->pmat = proj_matrix_create ();
-    hnd_set_proj_matrix (proj, hnd.dCTProjectionAngle, hnd.dSAD, 1500);
+    proj->pmat = new Proj_matrix;
+    hnd_set_proj_matrix (proj, hnd.dCTProjectionAngle, hnd.dSAD, 1500,
+	xy_offset);
 
     /* Clean up */
     free (pt_lut);

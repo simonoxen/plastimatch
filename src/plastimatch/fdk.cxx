@@ -596,7 +596,7 @@ reconstruct_conebeam (
         printf ("Processing image %d\n", i);
 
         plm_timer_start (&timer);
-        cbi = proj_image_dir_load_image (proj_dir, i);
+        cbi = proj_dir->load_image (i);
         io_time += plm_timer_report (&timer);
 
 	/* Apply ramp filter */

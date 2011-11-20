@@ -35,6 +35,7 @@ struct fdk_options {
 
     int resolution[3];
     float vol_size[3];
+    float xy_offset[2];
 
     float scale;
     enum Fdk_filter_type filter;

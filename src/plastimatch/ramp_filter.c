@@ -85,13 +85,14 @@ ramp_filter (
         in[i][1] = 0.0;
     }
 
-    /* To be investigated further */
+    /* Add padding */
     for (i = 0; i < width / 2; ++i)
         ramp[i] = i;
 
     for (i = width / 2; i < (int) width; ++i)
         ramp[i] = width - i;
 
+    /* Roll off ramp filter */
     for (i = 0; i < width; ++i)
         ramp[i] *= (cos (i * DEGTORAD * 360 / width) + 1) / 2;
 
