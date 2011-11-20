@@ -66,7 +66,7 @@ CUDA_reconstruct_conebeam (
     scale = scale * options->scale;
 
     // This is just to retrieve the 2D image dimensions
-    cbi = proj_image_dir_load_image (proj_dir, 0);
+    cbi = proj_dir->load_image (0);
 
     dev_state = fdk_cuda_state_create (
                     vol, 
@@ -76,7 +76,7 @@ CUDA_reconstruct_conebeam (
                 );
 
     // Free image (we will re-load it in the main loop)
-    proj_image_destroy (cbi);
+    delete cbi;
 
     // Project each image into the volume one at a time
     for (i = 0; i < proj_dir->num_proj_images; i++)
@@ -86,7 +86,7 @@ CUDA_reconstruct_conebeam (
 #endif
 
         // load the next 2D projection
-        cbi = proj_image_dir_load_image (proj_dir, i);
+        cbi = proj_dir->load_image (i);
         pmat = cbi->pmat;
 
 #if FDK_CUDA_TIME_KERNEL
@@ -117,7 +117,7 @@ CUDA_reconstruct_conebeam (
 	);
 
         /* Free the current image */
-        proj_image_destroy ( cbi );
+        delete cbi;
 
 #if defined (VERBOSE)
         printf ("Executing kernel... ");

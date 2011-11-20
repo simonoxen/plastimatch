@@ -48,10 +48,6 @@ gpuit_EXPORT
 void 
 proj_image_free (Proj_image* proj);
 
-gpuit_EXPORT 
-void
-proj_image_destroy (Proj_image* proj);
-
 gpuit_EXPORT Proj_image* 
 proj_image_load_and_filter (
     Fdk_options * options, 
