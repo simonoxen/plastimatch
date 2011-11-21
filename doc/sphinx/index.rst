@@ -54,6 +54,20 @@ Plastimatch lacks the following:
 * Surface matching registration
 * 2D-2D registration
 
+Acknowledgments:
+
+* An Ira J Spiro translational research grant (2009)
+* NIH / NCI 6-PO1 CA 21239
+* The Federal share of program income earned by MGH on C06CA059267
+* Progetto Rocca Foundation -- 
+  A collaboration between MIT and Politecnico di Milano 
+* The National Alliance for Medical Image
+  Computing (NAMIC), funded by the National Institutes of Health
+  through the NIH Roadmap for Medical Research, Grant 2-U54-EB005149;
+  information on the National Centers for Biomedical Computing
+  can be obtained from http://nihroadmap.nih.gov/bioinformatics
+* NSF ERC Innovation Award EEC-0946463
+
 For more information:
 
 * `Download page (svn) <http://forge.abcd.harvard.edu/gf/project/plastimatch/scmsvn/?action=AccessInfo>`_
