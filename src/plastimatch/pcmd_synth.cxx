@@ -142,7 +142,7 @@ parse_fn (
 	"voxel spacing in mm \"x [y z]\"", 1, "5");
     parser->add_long_option ("", "direction-cosines", 
 	"oriention of x, y, and z axes; Specify either preset value,"
-	" {identity,rotated,sheared},"
+	" {identity,rotated-{1,2,3},sheared},"
 	" or 9 digit matrix string \"a b c d e f g h i\"", 1, "");
     parser->add_long_option ("", "volume-size", 
 	"size of output image in mm \"x [y z]\"", 1, "500");
@@ -239,8 +239,14 @@ parse_fn (
 	if (arg == "identity") {
 	    /* do nothing */
 	}
-	else if (arg == "rotated") {
-	    sm_parms->dc.set_rotated ();
+	else if (arg == "rotated-1") {
+	    sm_parms->dc.set_rotated_1 ();
+	}
+	else if (arg == "rotated-2") {
+	    sm_parms->dc.set_rotated_2 ();
+	}
+	else if (arg == "rotated-3") {
+	    sm_parms->dc.set_rotated_3 ();
 	}
 	else if (arg == "skewed") {
 	    sm_parms->dc.set_skewed ();

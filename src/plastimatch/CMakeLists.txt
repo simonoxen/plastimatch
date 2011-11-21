@@ -21,7 +21,9 @@ option (PLM_BUILD_OPENMP_TEST "Build OpenMP test program" OFF)
 option (PLM_BUILD_QT_TEST "Build Qt test program" OFF)
 
 option (PLM_BUILD_SIFTND "Build siftnD program" ON)
+
 # Plastimatch software configuration options
+option (PLM_CONFIG_ALT_DCOS "Use alternative direction cosines rules" OFF)
 option (PLM_CONFIG_KEYHOLIZE "Enable RT structure keyholization" OFF)
 option (PLM_CONFIG_PREFER_DCMTK 
   "Use DCMTK instead of GDCM for DICOM operations" OFF)

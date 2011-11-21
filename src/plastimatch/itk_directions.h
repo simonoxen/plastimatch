@@ -10,5 +10,11 @@
 
 void
 itk_direction_from_dc (DirectionType* itk_dc, const Direction_cosines& dc);
+void
+itk_direction_from_dc (DirectionType* itk_direction, const float dc[9]);
+void 
+dc_from_itk_direction (float dc[9], const DirectionType* itk_direction);
+void
+itk_direction_set_identity (DirectionType* itk_direction);
 
 #endif

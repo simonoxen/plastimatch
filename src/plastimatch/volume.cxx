@@ -169,10 +169,17 @@ Volume::set_direction_cosines (
 
     for (int i = 0; i < 3; i++) {
 	for (int j = 0; j < 3; j++) {
+#if defined (PLM_CONFIG_ALT_DCOS)
+	    this->step[i][j] = this->direction_cosines[3*i+j] 
+		* this->spacing[i];
+	    this->proj[i][j] = this->inverse_direction_cosines[3*i+j] 
+		/ this->spacing[j];
+#else
 	    this->step[i][j] = this->direction_cosines[3*i+j] 
 		* this->spacing[j];
 	    this->proj[i][j] = this->inverse_direction_cosines[3*i+j] 
 		/ this->spacing[i];
+#endif
 	}
     }
 
@@ -487,7 +494,7 @@ volume_scale (Volume* vol, float scale)
 /* This is the old algorithm which doesn't respect direction cosines */
 /* In mm coordinates */
 void
-volume_calc_grad_no_dcos (Volume* vout, Volume* vref)
+volume_calc_grad_no_dcos (Volume* vout, const Volume* vref)
 {
     int v;
     int i_p, i, i_n, j_p, j, j_n, k_p, k, k_n; /* p is prev, n is next */
@@ -534,7 +541,7 @@ volume_calc_grad_no_dcos (Volume* vout, Volume* vref)
 }
 
 void
-volume_calc_grad (Volume* vout, Volume* vref)
+volume_calc_grad_dcos (Volume* vout, const Volume* vref)
 {
     int v;
     int i_p, i, i_n, j_p, j, j_n, k_p, k, k_n; /* p is prev, n is next */
@@ -546,14 +553,20 @@ volume_calc_grad (Volume* vout, Volume* vref)
     ref_img = (float*) vref->img;
 
     printf ("Direction cosines: "
-	"vout = %f %f %f ...\n"
-	"vref = %f %f %f ...\n",
+	"vout = %f %f %f %f %f %f\n"
+	"vref = %f %f %f %f %f %f\n",
 	vout->direction_cosines[0],
 	vout->direction_cosines[1],
 	vout->direction_cosines[2],
+	vout->direction_cosines[3],
+	vout->direction_cosines[4],
+	vout->direction_cosines[5],
 	vref->direction_cosines[0],
 	vref->direction_cosines[1],
-	vref->direction_cosines[2]
+	vref->direction_cosines[2],
+	vref->direction_cosines[3],
+	vref->direction_cosines[4],
+	vref->direction_cosines[5]
     );
     printf ("spac: "
 	"vout = %f %f %f ...\n"
@@ -637,6 +650,12 @@ volume_calc_grad (Volume* vout, Volume* vref)
 	    }
 	}
     }
+}
+
+void
+volume_calc_grad (Volume* vout, Volume* vref)
+{
+    volume_calc_grad_dcos (vout, vref);
 }
 
 Volume* 

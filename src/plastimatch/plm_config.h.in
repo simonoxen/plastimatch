@@ -51,6 +51,7 @@
 /* User options */
 #cmakedefine PLM_BUILD_SHARED_LIBS 1
 #cmakedefine PLM_USE_SS_IMAGE_VEC 1
+#cmakedefine PLM_CONFIG_ALT_DCOS 1
 #cmakedefine PLM_CONFIG_KEYHOLIZE 1
 #cmakedefine PLM_CONFIG_PREFER_DCMTK 1
 

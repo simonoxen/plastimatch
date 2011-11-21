@@ -27,17 +27,6 @@ class gpuit_EXPORT Direction_cosines {
     operator float* () {
 	return m_direction_cosines;
     }
-#if defined (commentout)
-    operator const float* () const {
-	return m_direction_cosines;
-    }
-    float operator[] (size_t a) const {
-	return m_direction_cosines[a];
-    }
-    float& operator[] (size_t a) {
-	return m_direction_cosines[a];
-    }
-#endif
   public:
     void set_identity () {
 	m_direction_cosines[0] = 1.;
@@ -50,7 +39,18 @@ class gpuit_EXPORT Direction_cosines {
 	m_direction_cosines[7] = 0.;
 	m_direction_cosines[8] = 1.;
     }
-    void set_rotated () {
+    void set_rotated_1 () {
+	m_direction_cosines[0] = 0.894427190999916;
+	m_direction_cosines[1] = 0.447213595499958;
+	m_direction_cosines[2] = 0.;
+	m_direction_cosines[3] = -0.447213595499958;
+	m_direction_cosines[4] = 0.894427190999916;
+	m_direction_cosines[5] = 0.;
+	m_direction_cosines[6] = 0.;
+	m_direction_cosines[7] = 0.;
+	m_direction_cosines[8] = 1.;
+    }
+    void set_rotated_2 () {
 	m_direction_cosines[0] = M_SQRT1_2;
 	m_direction_cosines[1] = -M_SQRT1_2;
 	m_direction_cosines[2] = 0.;
@@ -61,7 +61,7 @@ class gpuit_EXPORT Direction_cosines {
 	m_direction_cosines[7] = 0.;
 	m_direction_cosines[8] = 1.;
     }
-    void set_rotated_alt () {
+    void set_rotated_3 () {
 	m_direction_cosines[0] = -0.855063803257865;
 	m_direction_cosines[1] = 0.498361271551590;
 	m_direction_cosines[2] = -0.143184969098287;
@@ -102,15 +102,6 @@ class gpuit_EXPORT Direction_cosines {
 	this->set (dc);
 	return true;
     }
-#if defined (commentout)
-    void copy_to_itk (DirectionType *itk_direction) {
-	for (unsigned int d1 = 0; d1 < 3; d1++) {
-	    for (unsigned int d2 = 0; d2 < 3; d2++) {
-		(*itk_direction)[d1][d2] = m_direction_cosines[d1*3+d2];
-	    }
-	}
-    }
-#endif
     bool is_identity () {
 	Direction_cosines id;
 	float frob = 0.;
@@ -121,6 +112,5 @@ class gpuit_EXPORT Direction_cosines {
 	return frob < DIRECTION_COSINES_IDENTITY_THRESH;
     }
 };
-
 
 #endif

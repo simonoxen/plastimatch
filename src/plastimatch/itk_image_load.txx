@@ -9,7 +9,7 @@
 #include "itkCastImageFilter.h"
 #include "itkImageFileReader.h"
 #include "itkMetaDataDictionary.h"
-//#include "itkOrientImageFilter.h"
+#include "itkOrientImageFilter.h"
 #include "file_util.h"
 #include "print_and_exit.h"
 
@@ -146,7 +146,6 @@ itk_image_load_any (
    that this function even works as expected.  Perhaps we should just
    omit it.
 */
-#if defined (commentout)
 /* -----------------------------------------------------------------------
    Orienting Images
    ----------------------------------------------------------------------- */
@@ -173,6 +172,7 @@ orient_image (T img)
 	exit (-1);
     }
 }
+#if defined (commentout)
 #endif
 
 #endif

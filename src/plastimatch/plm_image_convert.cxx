@@ -5,6 +5,7 @@
 #include <itkImage.h>
 #include <itkImageRegionIterator.h>
 
+#include "itk_directions.h"
 #include "itk_image.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
@@ -86,7 +87,7 @@ plm_image_convert_itk_to_gpuit_float (Plm_image* pli, T img)
 	offset[d1] = og[d1];
 	spacing[d1] = sp[d1];
     }
-    direction_cosines_from_itk (direction_cosines, &dc);
+    dc_from_itk_direction (direction_cosines, &dc);
     Volume* vol = new Volume (dim, offset, spacing, direction_cosines, 
 	PT_FLOAT, 1);
 
@@ -298,7 +299,7 @@ plm_image_convert_itk_uchar_vec_to_gpuit_uchar_vec (Plm_image* pli,
     UCharVecImageType::PointType og = itk_img->GetOrigin();
     UCharVecImageType::SpacingType sp = itk_img->GetSpacing();
     UCharVecImageType::SizeType sz = rg.GetSize();
-    UCharVecImageType::DirectionType dc = itk_img->GetDirection();
+    UCharVecImageType::DirectionType itk_dc = itk_img->GetDirection();
     int dim[3];
     float offset[3];
     float spacing[3];
@@ -308,7 +309,7 @@ plm_image_convert_itk_uchar_vec_to_gpuit_uchar_vec (Plm_image* pli,
 	offset[d] = og[d];
 	spacing[d] = sp[d];
     }
-    direction_cosines_from_itk (direction_cosines, &dc);
+    dc_from_itk_direction (direction_cosines, &itk_dc);
     int vox_planes = itk_img->GetVectorLength ();
 
     Volume* vol = new Volume (dim, offset, spacing, direction_cosines, 

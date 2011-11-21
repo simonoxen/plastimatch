@@ -164,7 +164,7 @@ if (NOT EXISTS "${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-CERR4pt0beta2_25_
     )
 endif ()
 
-## If we didn't get cerr test data, don't run these tests
+## If we didn't get corvus test data, don't run these tests
 if (NOT EXISTS "${PLM_BUILD_TESTING_DIR}/dicomrt-corvus-6.2.2")
   set (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
@@ -338,10 +338,12 @@ if (PLM_REDUCED_TESTS)
     "gauss-double-1"
     "gauss-double-2"
     "rect-1"
-    "rect-2"
+#    "rect-2"
     "rect-3"
     "rect-4"
-    "rect-5"
+#    "rect-5"
+#    "rect-6"
+#    "rect-7"
     "sphere-1"
     "sphere-2"
     "bspline-c"
@@ -440,11 +442,13 @@ if (PLM_REDUCED_TESTS)
     "plm-convert-dicom-h-stats"
     "plm-convert-dicom-h-check"
 
+    "plm-convert-rtog-corvus-a"
     "plm-convert-dicom-aw-a"
     "plm-convert-dicom-aw-a-stats"
     "plm-convert-dicom-aw-a-check"
     "plm-convert-dicom-aw-b"
     "plm-convert-dicom-cerr-a"
+    "plm-convert-dicom-corvus-a" 
     "plm-convert-dicom-pinnacle-a"
     "plm-convert-dicom-xio-a"
 
@@ -524,6 +528,13 @@ if (PLM_REDUCED_TESTS)
     "plm-bsp-regularize-numeric-check"
 
     "plm-bsp-landmark-a"
+
+#    "plm-bsp-dcos-a"
+#    "plm-bsp-dcos-a-stats"
+#    "plm-bsp-dcos-a-check"
+    "plm-bsp-dcos-b"
+    "plm-bsp-dcos-b-stats"
+    "plm-bsp-dcos-b-check"
 
     "plm-reg-compose" 
     "plm-compose-a" 

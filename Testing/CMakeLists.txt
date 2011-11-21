@@ -244,6 +244,7 @@ endif ()
 ##   rect-3.mha    Standard rect, centered
 ##   rect-4.mha    Uchar rect, centered
 ##   rect-5.mha    Standard rect, centered, direction cosines rotated
+##   rect-6.mha    Standard rect, centered, direction cosines alt-rotated
 ##   sphere-1.mha  Uchar sphere, bg=0, fg=255
 ##   sphere-2.mha  Standard sphere, centered
 ##   rtds-ct-1.mha    Synthetic ct
@@ -348,12 +349,45 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-4.mha;--output-type;uchar;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;1;--rect-size;-50 50 -50 50 -50 50"
   )
+if (PLM_CONFIG_ALT_DCOS)
 plm_add_test (
   "rect-5"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-5.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-50 50 -50 50 -50 50;--origin;0 -353.553 -250;--direction-cosines;rotated"
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-5.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-50 50 -50 50 -50 50;--origin;-150 -300 -250;--direction-cosines;rotated-1"
   )
+plm_add_test (
+  "rect-6"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-6.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-50 50 -50 50 -50 50;--origin;-300 0 -200;--direction-cosines;rotated-2"
+  )
+plm_add_test (
+  "rect-7"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-7.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-50 50 -50 50 -50 50;--origin;400 100 -100;--direction-cosines;rotated-3"
+  )
+else ()
+plm_add_test (
+  "rect-5"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-5.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-50 50 -50 50 -50 50;--origin;-300 -150 -250;--direction-cosines;rotated-1"
+  )
+plm_add_test (
+  "rect-6"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-6.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-50 50 -50 50 -50 50;--origin;0 -300 -200;--direction-cosines;rotated-2"
+  )
+plm_add_test (
+  "rect-7"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-7.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-50 50 -50 50 -50 50;--origin;100 300 -100;--direction-cosines;rotated-3"
+  )
+endif ()
 plm_add_test (
   "sphere-1"
   ""
@@ -1617,7 +1651,6 @@ set_tests_properties (plm-reg-itk-demons-check-2 PROPERTIES
 ##   plm-reg-bspline-double
 ##   plm-reg-bspline-itk-output
 ##   plm-reg-bspline-char-output
-##   plm-bsp-dcos
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-bspline-single-c" 

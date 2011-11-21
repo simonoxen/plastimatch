@@ -8,24 +8,13 @@
 #include "itkImageRegionIterator.h"
 
 #include "bspline_xform.h"
+#include "itk_directions.h"
 #include "mha_io.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "print_and_exit.h"
 #include "volume.h"
 #include "volume_header.h"
-
-/* -----------------------------------------------------------------------
-   prototypes
-   ----------------------------------------------------------------------- */
-static void
-itk_direction_from_gpuit (
-    DirectionType* itk_direction,
-    const float gpuit_direction_cosines[9]
-);
-
-static void
-itk_direction_identity (DirectionType* itk_direction);
 
 /* -----------------------------------------------------------------------
    functions
@@ -63,16 +52,16 @@ void
 Plm_image_header::set_direction_cosines (const float direction_cosines[9])
 {
     if (direction_cosines) {
-	itk_direction_from_gpuit (&m_direction, direction_cosines);
+	itk_direction_from_dc (&m_direction, direction_cosines);
     } else {
-	itk_direction_identity (&m_direction);
+	itk_direction_set_identity (&m_direction);
     }
 }
 
 void
 Plm_image_header::set_direction_cosines (const Direction_cosines& dc)
 {
-    itk_direction_from_gpuit (&m_direction, dc.m_direction_cosines);
+    itk_direction_from_dc (&m_direction, dc.m_direction_cosines);
 }
 
 void
@@ -201,7 +190,7 @@ Plm_image_header::get_dim (int dim[3])
 void 
 Plm_image_header::get_direction_cosines (float direction_cosines[9])
 {
-    direction_cosines_from_itk (direction_cosines, &m_direction);
+    dc_from_itk_direction (direction_cosines, &m_direction);
 }
 
 void
@@ -225,7 +214,11 @@ Plm_image_header::print (void) const
     printf ("\nDirection =");
     for (unsigned int d1 = 0; d1 < 3; d1++) {
 	for (unsigned int d2 = 0; d2 < 3; d2++) {
+#if defined (PLM_CONFIG_ALT_DCOS)
+	    printf (" %g", m_direction[d2][d1]);
+#else
 	    printf (" %g", m_direction[d1][d2]);
+#endif
 	}
     }
     printf ("\n");
@@ -271,43 +264,4 @@ Plm_image_header::compare (Plm_image_header *pli1, Plm_image_header *pli2)
     /* GCS FIX: check direction cosines */
 
     return 1;
-}
-
-/* -----------------------------------------------------------------------
-   global functions
-   ----------------------------------------------------------------------- */
-void
-direction_cosines_from_itk (
-    float direction_cosines[9],
-    DirectionType* itk_direction
-)
-{
-    for (unsigned int d1 = 0; d1 < 3; d1++) {
-	for (unsigned int d2 = 0; d2 < 3; d2++) {
-	    direction_cosines[d1*3+d2] = (*itk_direction)[d1][d2];
-	}
-    }
-}
-
-static void
-itk_direction_from_gpuit (
-    DirectionType* itk_direction,
-    const float gpuit_direction_cosines[9]
-)
-{
-    for (unsigned int d1 = 0; d1 < 3; d1++) {
-	for (unsigned int d2 = 0; d2 < 3; d2++) {
-	    (*itk_direction)[d1][d2] = gpuit_direction_cosines[d1*3+d2];
-	}
-    }
-}
-
-static void
-itk_direction_identity (DirectionType* itk_direction)
-{
-    for (unsigned int d1 = 0; d1 < 3; d1++) {
-	for (unsigned int d2 = 0; d2 < 3; d2++) {
-	    (*itk_direction)[d1][d2] = (float) (d1 == d2);
-	}
-    }
 }
