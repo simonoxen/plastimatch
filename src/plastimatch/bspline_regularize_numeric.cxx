@@ -37,6 +37,8 @@ vf_regularize_numerical (
     FILE* fp[3];
 #endif
 
+    Plm_timer timer;
+
     int i,j,k,c;
     float *img = (float*) vol->img;
 
@@ -100,6 +102,8 @@ vf_regularize_numerical (
     printf ("  d2uy_dxy_sq.txt\n"); fp[1] = fopen ("d2uy_dxdy_sq.txt", "w");
     printf ("  d2uz_dxy_sq.txt\n"); fp[2] = fopen ("d2uz_dxdy_sq.txt", "w");
 #endif
+
+    plm_timer_start (&timer);
 
     S = 0.0f;
     for (k = 1; k < vol->dim[2]-1; k++) {
@@ -301,6 +305,7 @@ vf_regularize_numerical (
 #endif
 
     bscore->rmetric += S;
+    bscore->time_rmetric = plm_timer_report (&timer);
 }
 
 void
@@ -832,7 +837,7 @@ bspline_regularize_numeric_d (
 	    }
 	}
 
-	//interval = plm_timer_report (&timer);
+	bscore->time_rmetric = plm_timer_report (&timer);
 	//raw_score = grad_score / num_vox;
 	grad_score *= (parms->lambda / num_vox);
 	//printf ("        GRAD_COST %.4f   RAW_GRAD %.4f   [%.3f secs]\n", grad_score, raw_score, interval);
