@@ -8,13 +8,13 @@
 #include "direction_cosines.h"
 #include "itk_image.h"
 
-void
+plastimatch1_EXPORT void
 itk_direction_from_dc (DirectionType* itk_dc, const Direction_cosines& dc);
-void
+plastimatch1_EXPORT void
 itk_direction_from_dc (DirectionType* itk_direction, const float dc[9]);
-void 
+plastimatch1_EXPORT void 
 dc_from_itk_direction (float dc[9], const DirectionType* itk_direction);
-void
+plastimatch1_EXPORT void
 itk_direction_set_identity (DirectionType* itk_direction);
 
 #endif

@@ -7,6 +7,7 @@
 #include <time.h>
 #include "itkImageRegionIterator.h"
 
+#include "itk_directions.h"
 #include "itk_volume_header.h"
 #include "mha_io.h"
 #include "plm_image.h"
@@ -120,7 +121,7 @@ Itk_volume_header::get_dim (int dim[3])
 void 
 Itk_volume_header::get_direction_cosines (float direction_cosines[9])
 {
-    direction_cosines_from_itk (direction_cosines, &m_direction);
+    dc_from_itk_direction (direction_cosines, &m_direction);
 }
 
 void
