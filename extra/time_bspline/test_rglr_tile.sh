@@ -10,7 +10,7 @@
 # Configuration & Test Parameters
 ######################################
 # Name of CSV output file
-outfile="./reg_godzilla_tile.csv"
+outfile="./reg_avarice_tile.csv"
 
 # Location of bspline executable
 bspline='/home/tshack/src/plastimatch/trunk/build/bspline'
@@ -122,9 +122,9 @@ disp_settings ()
 
 check_input ()
 {
+    if [ `false` ]; then
     echo Sanity Check:
 
-    if [ `false` ]; then
 
     # check for bspline executable existance
     if [ -f $bspline ]
@@ -194,13 +194,13 @@ echo
 echo "Starting Test..."
 
 # Insert comment into CSV indicating test type
-echo "#B-spline execution time vs control grid size" >> $outfile
-echo "#volume size is constant: $vol_size x $vol_size x $vol_size" >> $outfile
+echo "#B-spline execution time vs tile size" >> $outfile
+echo "#volume size is equal to tile size" >> $outfile
 echo "#$machine" >> $outfile
 echo "#" >> $outfile
 
 # Print the field header to CSV file
-out="#grid,"
+out="#tile_size,"
 for f in $(seq 0 $((${#flavors[@]} - 1)))
 do
     out=$out${flavors[$f]}','
@@ -223,7 +223,7 @@ do
     # for each cpu flavor we are testing
     for f in $(seq 0 $((${#flavors[@]} - 1)))
     do
-        tmp=`$bspline -m 0 -S 0.01 -R ${flavors[$f]}  $test_vol_fix $test_vol_mov | grep "\[" | grep "MSE" | awk '{ print $8}'`
+        tmp=`$bspline -m 0 -S 0.01 -s $i -R ${flavors[$f]}  $test_vol_fix $test_vol_mov | grep "\[" | grep "MSE" | awk '{ print $8}'`
         out=$out$tmp','
     done
 

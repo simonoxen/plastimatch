@@ -11,7 +11,7 @@
 # Configuration & Test Parameters
 ######################################
 # Name of CSV output file
-outfile="./reg_godzilla_grid.csv"
+outfile="./reg_avarice_grid.csv"
 
 # Location of bspline executable
 bspline='/home/tshack/src/plastimatch/trunk/build/bspline'
@@ -20,7 +20,7 @@ bspline='/home/tshack/src/plastimatch/trunk/build/bspline'
 synth_mha='/home/tshack/src/plastimatch/trunk/build/plastimatch synth'
 
 # Test volume size
-vol_size=322
+vol_size=320
 
 # Similarity Metric (mse, mi)
 metric='mse'
@@ -29,7 +29,7 @@ metric='mse'
 hardware='cpu'
 
 # Algorithm flavors to test
-flavors=( b c )
+flavors=( a b c )
 
 # GPU Selection
 gpuid='0'

@@ -10,7 +10,7 @@
 # Configuration & Test Parameters
 ######################################
 # Name of CSV output file
-outfile="./reg_godzilla_size.csv"
+outfile="./reg_avarice_size.csv"
 #outfile="./gpu_mi_size_zcpy.csv"
 
 # Location of bspline executable
@@ -21,7 +21,7 @@ synth_mha='/home/tshack/src/plastimatch/trunk/build/plastimatch synth'
 
 # Test Volume sizes
 min_size=100
-max_size=560
+max_size=500
 size_step=10
 
 # Similarity Metric (mse, mi)
@@ -32,7 +32,7 @@ hardware='cpu'
 #hardware='cuda'
 
 # Algorithm flavors to test
-flavors=( b c)
+flavors=( a b c )
 # Reg 'b' is serial
 #     'c' is openmp
 #flavors=( a )
