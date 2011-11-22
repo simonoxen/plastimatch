@@ -228,7 +228,7 @@ do
     # for each cpu flavor we are testing
     for f in $(seq 0 $((${#flavors[@]} - 1)))
     do
-        tmp=`$bspline -m 0 -S 0.01 -R ${flavors[$f]}  $test_vol_fix $test_vol_mov | grep "\[" | grep "MSE" | awk '{ print $8}'`
+        tmp=`$bspline -m 0 -S 0.01 -s $i -R ${flavors[$f]}  $test_vol_fix $test_vol_mov | grep "\[" | grep "MSE" | awk '{ print $8}'`
         out=$out$tmp','
     done
 
