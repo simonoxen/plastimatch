@@ -633,6 +633,9 @@ set (TEST_EPS_SRC
 set (TEST_LIMITS_SRC
   test_limits.cxx
   )
+set (TEST_OVERFLOW_SRC
+  test_overflow.cxx
+  )
 set (VMATRIX_SRC
   Vmatrix.c
   )
@@ -787,6 +790,8 @@ plm_add_executable (raw_to_mha raw_to_mha.c "" ""
 plm_add_executable (test_eps "${TEST_EPS_SRC}" "" "" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
 plm_add_executable (test_limits "${TEST_LIMITS_SRC}" "" "" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+plm_add_executable (test_overflow "${TEST_OVERFLOW_SRC}" "" "" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
 plm_add_executable (Vmatrix "${VMATRIX_SRC}" "" "" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})

@@ -12,6 +12,10 @@ int main
    short max_short = std::numeric_limits<short>::max();
    unsigned short min_ushort = std::numeric_limits<unsigned short>::min();
    unsigned short max_ushort = std::numeric_limits<unsigned short>::max();
+   int min_int = std::numeric_limits<int>::min();
+   int max_int = std::numeric_limits<int>::max();
+   unsigned int min_uint = std::numeric_limits<unsigned int>::min();
+   unsigned int max_uint = std::numeric_limits<unsigned int>::max();
    long min_long = std::numeric_limits<long>::min();
    long max_long = std::numeric_limits<long>::max();
    unsigned long min_ulong = std::numeric_limits<unsigned long>::min();
@@ -21,6 +25,8 @@ int main
 
    printf ("short %ld %ld\n", (long) min_short, (long) max_short);
    printf ("ushort %ld %ld\n", (long) min_ushort, (long) max_ushort);
+   printf ("int %ld %ld\n", min_int, max_int);
+   printf ("uint %lu %lu\n", min_uint, max_uint);
    printf ("long %ld %ld\n", min_long, max_long);
    printf ("ulong %lu %lu\n", min_ulong, max_ulong);
    printf ("float %e %e\n", min_float, max_float);
