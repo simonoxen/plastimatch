@@ -905,7 +905,7 @@ if (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
 endif ()
 
 # matlab mex files
-if (MATLAB_FOUND AND PLM_BUILD_MEX_TEST)
+if (MATLAB_FOUND)
   mex_target (mex_drr 
     "${MEX_DRR_SRC}" "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}")
 endif ()
