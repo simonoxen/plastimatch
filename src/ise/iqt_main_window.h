@@ -30,6 +30,8 @@ public:
     Iqt_main_window ();
     ~Iqt_main_window ();
 
+    void render_sphere ();
+
     //Iqt_data_source_dialog *m_data_source_dialog;
 
     //Iqt_patient_list_model *m_patient_list_model;

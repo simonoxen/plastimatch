@@ -21,7 +21,7 @@ include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 ##-----------------------------------------------------------------------------
 ## QT configuration
 ##-----------------------------------------------------------------------------
-if (QT4_FOUND AND QT_QTSQL_FOUND)
+if (QT4_FOUND AND QT_QTSQL_FOUND AND VTK_FOUND AND VTK_USE_QT)
   set (BUILD_ISE_QT TRUE)
 else ()
   set (BUILD_ISE_QT FALSE)
@@ -145,6 +145,7 @@ endif ()
 
 if (QT4_FOUND)
   set (ISE_QT_LIBRARIES ${QT_LIBRARIES} ${QT_QTSQL_LIBRARIES})
+  set (ISE_QT_LIBRARIES QVTK)  ## Hard-coded "for now"...
   if (ADVANTECH_FOUND)
     set (ISE_QT_LIBRARIES ${ISE_QT_LIBRARIES} ${ADVANTECH_LIBRARIES})
   endif ()
