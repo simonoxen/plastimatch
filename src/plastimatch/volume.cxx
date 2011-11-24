@@ -498,8 +498,8 @@ volume_calc_grad_no_dcos (Volume* vout, const Volume* vref)
 {
     int v;
     int i_p, i, i_n, j_p, j, j_n, k_p, k, k_n; /* p is prev, n is next */
-    int gi, gj, gk;
-    int idx_p, idx_n;
+    size_t gi, gj, gk;
+    size_t idx_p, idx_n;
     float *out_img, *ref_img;
 
     out_img = (float*) vout->img;
@@ -545,8 +545,8 @@ volume_calc_grad_dcos (Volume* vout, const Volume* vref)
 {
     int v;
     int i_p, i, i_n, j_p, j, j_n, k_p, k, k_n; /* p is prev, n is next */
-    int gi, gj, gk;
-    int idx_p, idx_n;
+    size_t gi, gj, gk;
+    size_t idx_p, idx_n;
     float *out_img, *ref_img;
 
     out_img = (float*) vout->img;
@@ -653,7 +653,7 @@ volume_calc_grad_dcos (Volume* vout, const Volume* vref)
 }
 
 void
-volume_calc_grad (Volume* vout, Volume* vref)
+volume_calc_grad (Volume* vout, const Volume* vref)
 {
     volume_calc_grad_dcos (vout, vref);
 }
