@@ -150,10 +150,10 @@ Rasterizer::process_next (
 	* this->dim[2] * sizeof(unsigned char));
 
     /* Loop through polylines in this structure */
-    for (int i = 0; i < curr_structure->num_contours; i++) {
+    for (size_t i = 0; i < curr_structure->num_contours; i++) {
 	Rtss_polyline* curr_contour;
 	unsigned char* uchar_slice;
-	int slice_no;
+	size_t slice_no;
 
 	curr_contour = curr_structure->pslist[i];
 	if (curr_contour->num_vertices == 0) {
@@ -179,7 +179,7 @@ Rasterizer::process_next (
 	/* Copy from acc_img into mask image */
 	if (this->want_prefix_imgs) {
 	    uchar_slice = &uchar_img[slice_no * slice_voxels];
-	    for (int k = 0; k < slice_voxels; k++) {
+	    for (size_t k = 0; k < slice_voxels; k++) {
 		uchar_slice[k] ^= this->acc_img[k];
 	    }
 	}
@@ -190,7 +190,7 @@ Rasterizer::process_next (
 	    uint32_t* uint32_slice;
 	    labelmap_img = (uint32_t*) this->labelmap_vol->img;
 	    uint32_slice = &labelmap_img[slice_no * slice_voxels];
-	    for (int k = 0; k < slice_voxels; k++) {
+	    for (size_t k = 0; k < slice_voxels; k++) {
 		if (this->acc_img[k]) {
 		    uint32_slice[k] = this->curr_bit + 1;
 		}
@@ -211,7 +211,7 @@ Rasterizer::process_next (
 	    /* GCS FIX: This is inefficient, due to undesirable construct 
 	       and destruct of itk::VariableLengthVector of each pixel */
 	    UCharVecImageType::IndexType idx = {{0, 0, slice_no}};
-	    int k = 0;
+	    size_t k = 0;
 	    for (idx.m_Index[1] = 0; 
 		 idx.m_Index[1] < this->dim[1]; 
 		 idx.m_Index[1]++) {
@@ -237,7 +237,7 @@ Rasterizer::process_next (
 	    unsigned char bit_mask = 1 << this->curr_bit;
 	    ss_img_img = (uint32_t*) this->ss_img_vol->img;
 	    uint32_slice = &ss_img_img[slice_no * slice_voxels];
-	    for (int k = 0; k < slice_voxels; k++) {
+	    for (size_t k = 0; k < slice_voxels; k++) {
 		if (this->acc_img[k]) {
 		    if (this->xor_overlapping) {
 			uint32_slice[k] ^= bit_mask;

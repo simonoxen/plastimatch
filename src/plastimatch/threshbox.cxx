@@ -17,16 +17,16 @@
 void do_threshbox( Threshbox_parms *parms) {
 
     float spacing_in[3], origin_in[3];
-    int dim_in[3];
+    size_t dim_in[3];
     Plm_image_header pih;
     unsigned char label_uchar, label_box;
 
     FloatImageType::Pointer img_in = parms->img_in->itk_float();
 
     pih.set_from_itk_image (img_in);
-    pih.get_dim( dim_in);
-    pih.get_origin( origin_in );
-    pih.get_spacing( spacing_in );
+    pih.get_dim (dim_in);
+    pih.get_origin (origin_in );
+    pih.get_spacing (spacing_in );
     // direction cosines??
 
     /* Create ITK image for labelmap */

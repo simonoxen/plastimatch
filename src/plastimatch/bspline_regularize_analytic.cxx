@@ -35,16 +35,16 @@ print_matrix (double* mat, int m, int n)
 void
 compute_coeff_from_vf (Bspline_xform* bxf, Volume* vol)
 {
-    int i,j,k;
+    size_t i, j, k;
     int a,b,c,z;
     int idx_poi, cidx, pidx, qidx;
     float *vec_poi;
     float *img = (float*) vol->img;
 
-    int p[3];
+    size_t p[3];
     float q[3];
     float* q_lut;
-    int* c_lut;
+    size_t* c_lut;
 
     for (k = 0; k < vol->dim[2]; k++) {
         p[2] = k / bxf->vox_per_rgn[2];
@@ -88,7 +88,7 @@ void
 reg_sort_sets (
     double* cond,
     double* sets,
-    int* k_lut,
+    size_t* k_lut,
     const Bspline_xform* bxf
 )
 {
@@ -128,7 +128,7 @@ reg_update_grad (
 
 
 void 
-find_knots (int* knots, int tile_num, const int* cdims)
+find_knots_3 (size_t* knots, size_t tile_num, const size_t* cdims)
 {
     int tile_loc[3];
     int i, j, k;
@@ -337,14 +337,14 @@ region_smoothness_omp (
     const Reg_parms* reg_parms,    
     const Bspline_xform* bxf,
     double* V, 
-    int* knots
+    size_t* knots
 )
 {
     double S = 0.0;         /* Region smoothness */
     double X[64] = {0};
     double Y[64] = {0};
     double Z[64] = {0};
-    int i,j;
+    int i, j;
 
     for (j=0; j<64; j++) {
     	/* S = pVp operation ----------------------------- */
@@ -375,7 +375,7 @@ region_smoothness (
     const Reg_parms* reg_parms,    
     const Bspline_xform* bxf,
     double* V, 
-    int* knots)
+    size_t* knots)
 {
     double S = 0.0;         /* Region smoothness */
     double X[64] = {0};
@@ -523,7 +523,7 @@ vf_regularize_analytic_omp (
     const Bspline_regularize_state* rst,
     const Bspline_xform* bxf)
 {
-    int i,n;
+    size_t i, n;
     Plm_timer timer;
 
     double S = 0.0;
@@ -539,12 +539,12 @@ vf_regularize_analytic_omp (
 
 #pragma omp parallel for reduction(+:S)
     for (i=0; i<n; i++) {
-        int knots[64];
+        size_t knots[64];
         double sets[3*64];
 
         memset (sets, 0, 3*64*sizeof (double));
 
-        find_knots (knots, i, bxf->cdims);
+        find_knots_3 (knots, i, bxf->cdims);
 
         S += region_smoothness_omp (sets, reg_parms, bxf, rst->V[0], knots);
         S += region_smoothness_omp (sets, reg_parms, bxf, rst->V[1], knots);
@@ -572,8 +572,8 @@ vf_regularize_analytic (
     const Bspline_regularize_state* rst,
     const Bspline_xform* bxf)
 {
-    int i,n;
-    int knots[64];
+    size_t i, n;
+    size_t knots[64];
     Plm_timer timer;
 
     plm_timer_start (&timer);
@@ -585,7 +585,7 @@ vf_regularize_analytic (
 
     for (i=0; i<n; i++) {
         // Get the set of 64 control points for this region
-        find_knots (knots, i, bxf->cdims);
+        find_knots_3 (knots, i, bxf->cdims);
 
         region_smoothness (bspline_score, reg_parms, bxf, rst->V[0], knots);
         region_smoothness (bspline_score, reg_parms, bxf, rst->V[1], knots);

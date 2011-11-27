@@ -23,7 +23,7 @@ public:
     float pgtol;
     float step_size;
     int line_range[2];
-    int vox_per_rgn[3];
+    size_t vox_per_rgn[3];
     int process;
     int random;
     float random_range[2];

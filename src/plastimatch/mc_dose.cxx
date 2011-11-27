@@ -23,7 +23,7 @@
 
 typedef struct mc_dose_header MC_dose_header;
 struct mc_dose_header {
-    int dim[3];
+    size_t dim[3];
     float offset[3];
     float spacing[3];
     int header_size;
@@ -109,9 +109,9 @@ mc_dose_load_cube (
     }
 
     /* Read dose cube */
-    for (int z=0; z < mcdh->dim[2]; z++) {
-	for (int y=0; y < mcdh->dim[1]; y++) {
-	    for (int x=0; x < mcdh->dim[0]; x++) {
+    for (size_t z=0; z < mcdh->dim[2]; z++) {
+	for (size_t y=0; y < mcdh->dim[1]; y++) {
+	    for (size_t x=0; x < mcdh->dim[0]; x++) {
 		if (input >> value) {
 		    cube_img_read[x + y*mcdh->dim[0]
 			+ z*mcdh->dim[0]*mcdh->dim[1]] = value;
@@ -138,7 +138,8 @@ mc_dose_create_volume (
     pli->set_gpuit (v);
 
     printf ("img: %p\n", v->img);
-    printf ("Image dim: %d %d %d\n", v->dim[0], v->dim[1], v->dim[2]);
+    printf ("Image dim: %u %u %u\n", (unsigned int) v->dim[0], 
+	(unsigned int) v->dim[1], (unsigned int) v->dim[2]);
 }
 
 void

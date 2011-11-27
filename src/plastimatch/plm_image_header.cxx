@@ -20,7 +20,7 @@
    functions
    ----------------------------------------------------------------------- */
 void
-Plm_image_header::set_dim (const int dim[3])
+Plm_image_header::set_dim (const size_t dim[3])
 {
     ImageRegionType::SizeType itk_size;
     ImageRegionType::IndexType itk_index;
@@ -66,7 +66,7 @@ Plm_image_header::set_direction_cosines (const Direction_cosines& dc)
 
 void
 Plm_image_header::set (
-    const int dim[3],
+    const size_t dim[3],
     const float origin[3],
     const float spacing[3],
     const float direction_cosines[9])
@@ -79,7 +79,7 @@ Plm_image_header::set (
 
 void
 Plm_image_header::set (
-    const int dim[3],
+    const size_t dim[3],
     const float origin[3],
     const float spacing[3],
     const Direction_cosines& dc)
@@ -89,7 +89,7 @@ Plm_image_header::set (
 
 void
 Plm_image_header::set_from_gpuit (
-    const int dim[3],
+    const size_t dim[3],
     const float origin[3],
     const float spacing[3],
     const float direction_cosines[9])
@@ -179,7 +179,7 @@ Plm_image_header::get_spacing (float spacing[3])
 }
 
 void 
-Plm_image_header::get_dim (int dim[3])
+Plm_image_header::get_dim (size_t dim[3])
 {
     ImageRegionType::SizeType itk_size = m_region.GetSize ();
     for (unsigned int d = 0; d < 3; d++) {
@@ -227,7 +227,7 @@ Plm_image_header::print (void) const
 void
 itk_roi_from_gpuit (
     ImageRegionType* roi,
-    int roi_offset[3], int roi_dim[3])
+    size_t roi_offset[3], size_t roi_dim[3])
 {
     ImageRegionType::SizeType itk_size;
     ImageRegionType::IndexType itk_index;

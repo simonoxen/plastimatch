@@ -31,6 +31,12 @@
 /* Returns integer data type */
 #define ROUND_INT(x) (((x) >= 0) ? ((long)((x)+0.5)) : (long)(-(-(x)+0.5)))
 
+/* Returns unsigned integer data type */
+#define FLOOR_SIZE_T(x) (((x) >= 0) ? ((size_t)(x)) : 0)
+
+/* Returns unsigned integer data type */
+#define ROUND_SIZE_T(x) (((x) >= 0) ? ((size_t)((x)+0.5)) : 0)
+
 /* Returns double data type -- note MSVC does not have C99 round(). */
 #define ROUND(x) ((double) (ROUND_INT(x)))
 

@@ -40,16 +40,16 @@ bspline_warp_internal (
     size_t vidx;
     T* vout_img = (T*) vout->img;
 
-    int rijk[3];             /* Indices within fixed image region (vox) */
-    int fijk[3], fv;         /* Indices within fixed image (vox) */
+    size_t rijk[3];             /* Indices within fixed image region (vox) */
+    size_t fijk[3], fv;         /* Indices within fixed image (vox) */
     float mijk[3];           /* Indices within moving image (vox) */
     float fxyz[3];           /* Position within fixed image (mm) */
     float mxyz[3];           /* Position within moving image (mm) */
-    int mijk_f[3], mvf;      /* Floor */
-    int mijk_r[3];           /* Round */
-    int p[3];
-    int q[3];
-    int pidx, qidx;
+    size_t mijk_f[3], mvf;      /* Floor */
+    size_t mijk_r[3];           /* Round */
+    size_t p[3];
+    size_t q[3];
+    size_t pidx, qidx;
     float dxyz[3];
     float li_1[3];           /* Fraction of interpolant in lower index */
     float li_2[3];           /* Fraction of interpolant in upper index */
@@ -260,11 +260,11 @@ bspline_warp_dcos (
 	
 #pragma omp parallel for 
     for (LOOP_Z_OMP (k, vout)) {
-	int fijk[3];           /* Index within fixed image (vox) */
+	size_t fijk[3];           /* Index within fixed image (vox) */
 	float fxyz[3];         /* Position within fixed image (mm) */
-	int p[3];
-	int q[3];
-	int pidx, qidx;
+	size_t p[3];
+	size_t q[3];
+	size_t pidx, qidx;
 	float dxyz[3];
 
 	fijk[2] = k;
@@ -278,8 +278,8 @@ bspline_warp_dcos (
 		size_t fv;       /* Linear index within fixed image (vox) */
 		float mxyz[3];   /* Position within moving image (mm) */
 		float mijk[3];   /* Index within moving image (vox) */
-		int mijk_f[3];   /* Floor index within moving image (vox) */
-		int mijk_r[3];   /* Round index within moving image (vox) */
+		size_t mijk_f[3];   /* Floor index within moving image (vox) */
+		size_t mijk_r[3];   /* Round index within moving image (vox) */
 		size_t mvf;      /* Floor linear index within moving image */
 		float li_1[3];   /* Fraction of interpolant in lower index */
 		float li_2[3];   /* Fraction of interpolant in upper index */

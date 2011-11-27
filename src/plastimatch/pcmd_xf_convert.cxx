@@ -74,10 +74,10 @@ do_xf_convert (Xf_convert_parms *parms)
     }
     if (xfc->m_xf_in->m_type == XFORM_GPUIT_BSPLINE) {
 	Bspline_xform* bxf = xfc->m_xf_in->get_gpuit_bsp();
-	printf ("vox_per_rgn = %d %d %d\n", 
-	    bxf->vox_per_rgn[0],
-	    bxf->vox_per_rgn[1],
-	    bxf->vox_per_rgn[2]
+	printf ("vox_per_rgn = %u %u %u\n", 
+	    (unsigned int) bxf->vox_per_rgn[0],
+	    (unsigned int) bxf->vox_per_rgn[1],
+	    (unsigned int) bxf->vox_per_rgn[2]
 	);
 	printf ("grid_spac = %g %g %g\n", 
 	    bxf->grid_spac[0],
@@ -173,7 +173,7 @@ parse_fn (
     /* Geometry options */
     if (parser->option ("dim")) {
 	parms->m_have_dim = true;
-	parser->assign_int13 (parms->m_vh.m_dim, "dim");
+	parser->assign_size_t_13 (parms->m_vh.m_dim, "dim");
     }
     if (parser->option ("origin")) {
 	parms->m_have_origin = true;

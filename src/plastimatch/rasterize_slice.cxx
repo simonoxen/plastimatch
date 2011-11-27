@@ -111,10 +111,10 @@ point_in_polygon (
 void
 rasterize_slice (
     unsigned char* acc_img,
-    int* dims,
+    size_t* dims,
     float* spacing,
     float* offset,
-    int num_vertices,
+    size_t num_vertices,
     const float* x_in,          /* polygon vertices in mm */
     const float* y_in           /* polygon vertices in mm */
 )
@@ -123,7 +123,7 @@ rasterize_slice (
     Edge** edge_table;
     Edge* edge_list;	    /* Global edge list */
     Edge* ael;  		    /* Active edge list */
-    int i;
+    size_t i;
     float *x, *y;           /* vertices in pixel coordinates */
 
     /* Check if last vertex == first vertex.  If so, remove it. */

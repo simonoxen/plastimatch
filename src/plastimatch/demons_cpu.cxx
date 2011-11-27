@@ -19,6 +19,7 @@ round_int (float f)
     return (f > 0) ? (int)(f+0.5) : (int)(ceil(f-0.5));
 }
 
+
 /* Vector fields are all in mm units */
 Volume*
 demons_c (
@@ -28,16 +29,17 @@ demons_c (
     Volume* vf_init, 
     DEMONS_Parms* parms)
 {
-    int i, j, k, v;
-    int	it;			    /* Iterations */
-    int fi, fj, fk, fv;		    /* Indices into fixed image */
-    float mi, mj, mk;		    /* Indices into moving image */
-    float f2mo[3];		    /* Offset difference (in cm) from fixed to moving */
-    float f2ms[3];		    /* Slope to convert fixed to moving */
-    float invmps[3];		    /* 1/pixel spacing of moving image */
+    size_t i, j, k, v;
+    int	it;	           /* Iterations */
+    size_t fi, fj, fk, fv; /* Indices into fixed image */
+    float f2mo[3];         /* Offset difference (in mm) from fixed to moving */
+    float f2ms[3];         /* Slope to convert fixed to moving */
+    float invmps[3];       /* 1/pixel spacing of moving image */
     float *kerx, *kery, *kerz;
     float *dxyz;
-    int mv, mx, my, mz;
+    float mi, mj, mk;
+    int mx, my, mz;
+    size_t mv;
     int fw[3];
     double diff_run;
     Volume *vf_est, *vf_smooth;
@@ -49,7 +51,7 @@ demons_c (
     float *vox_grad, vox_grad_mag;
     float diff, mult, denom;
     float *vf_est_img, *vf_smooth_img;
-    int inliers;
+    size_t inliers;
     float ssd;
     Plm_timer timer, it_timer;
 
@@ -120,7 +122,7 @@ demons_c (
 		    if (my < 0 || my >= moving->dim[1]) continue;
 		    mx = round_int(mi + invmps[0] * dxyz[0]);		/* pixels (moving) */
 		    if (mx < 0 || mx >= moving->dim[0]) continue;
-		    mv = (mz * moving->dim[1] + my) * moving->dim[0] + mx;
+		    mv = moving->index (mx, my, mz);
 
 		    /* Find image difference at this correspondence */
 		    diff = f_img[fv] - m_img[mv];			/* intensity */

@@ -13,7 +13,7 @@
 
 class Rtss_polyline {
 public:
-    int slice_no;
+    int slice_no;           /* Can be "-1" */
     Pstring ct_slice_uid;
     int num_vertices;
     float* x;

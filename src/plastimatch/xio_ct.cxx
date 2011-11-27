@@ -135,7 +135,8 @@ xio_ct_load_image (
     FILE *fp;
     Volume *v;
     short *img, *slice_img;
-    int rc;
+    int rc1;
+    size_t rc2;
 
     v = (Volume*) pli->m_gpuit;
     img = (short*) v->img;
@@ -147,17 +148,17 @@ xio_ct_load_image (
     }
 
     /* Load image */
-    rc = fseek (fp, - v->dim[0] * v->dim[1] * sizeof(short), SEEK_END);
-    if (rc == -1) {
+    rc1 = fseek (fp, - v->dim[0] * v->dim[1] * sizeof(short), SEEK_END);
+    if (rc1 == -1) {
 	print_and_exit ("Error seeking backward when reading image file\n");
     }
-    rc = fread (slice_img, sizeof(short), v->dim[0] * v->dim[1], fp);
-    if (rc != v->dim[0] * v->dim[1]) {
+    rc2 = fread (slice_img, sizeof(short), v->dim[0] * v->dim[1], fp);
+    if (rc2 != v->dim[0] * v->dim[1]) {
 	perror ("File error: ");
 	print_and_exit (
 	    "Error reading xio ct image (%s)\n"
-	    "  rc = %d, ferror = %d\n", 
-	    filename, rc, ferror (fp));
+	    "  rc = %u, ferror = %d\n", 
+	    filename, (unsigned int) rc2, ferror (fp));
     }
 
     /* Switch big-endian to native */
@@ -183,7 +184,7 @@ xio_ct_create_volume (
 )
 {
     Volume *v;
-    int dim[3];
+    size_t dim[3];
     float offset[3];
     float spacing[3];
 
@@ -203,7 +204,8 @@ xio_ct_create_volume (
     pli->set_gpuit (v);
 
     printf ("img: %p\n", v->img);
-    printf ("Image dim: %d %d %d\n", v->dim[0], v->dim[1], v->dim[2]);
+    printf ("Image dim: %u %u %u\n", (unsigned int) v->dim[0], 
+	(unsigned int) v->dim[1], (unsigned int) v->dim[2]);
 }
 
 void

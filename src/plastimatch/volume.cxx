@@ -81,7 +81,7 @@ Volume::~Volume ()
 
 void 
 Volume::create (
-    const int dim[3], 
+    const size_t dim[3], 
     const float offset[3], 
     const float spacing[3], 
     const float direction_cosines[9], 
@@ -685,11 +685,6 @@ volume_difference (Volume* vol, Volume* warped)
 	exit(1);
     }
 
-    if(!temp){
-	printf("Memory allocation failed for volume...Exiting\n");
-	exit(1);
-    }
-	
     for(i=0;i<3; i++){
 	temp->dim[i] = vol->dim[i];
 	temp->offset[i] = vol->offset[i];

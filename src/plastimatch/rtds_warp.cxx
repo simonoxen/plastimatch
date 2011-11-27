@@ -330,7 +330,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	rtds->m_ss_image->find_rasterization_geometry (&pih);
     } else {
 	/* use some generic default parameters */
-	int dim[3] = { 500, 500, 500 };
+	size_t dim[3] = { 500, 500, 500 };
 	float origin[3] = { -249.5, -249.5, -249.5 };
 	float spacing[3] = { 1., 1., 1. };
 	pih.set_from_gpuit (dim, origin, spacing, 0);

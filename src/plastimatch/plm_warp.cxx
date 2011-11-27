@@ -142,7 +142,7 @@ plm_warp_native (
     Bspline_xform* bxf_in = xf_in->get_gpuit_bsp ();
     Volume *vf_out = 0;     /* Output vector field */
     Volume *v_out = 0;      /* Output warped image */
-    int dim[3];
+    size_t dim[3];
     float origin[3];
     float spacing[3];
     float direction_cosines[9];
@@ -217,7 +217,7 @@ plm_warp_native_vec (
     Bspline_xform* bxf_in = xf_in->get_gpuit_bsp ();
     Volume *vf_out = 0;     /* Output vector field */
     Volume *v_out = 0;      /* Output warped image */
-    int dim[3];
+    size_t dim[3];
     float origin[3];
     float spacing[3];
     float direction_cosines[9];

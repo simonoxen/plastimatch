@@ -123,7 +123,7 @@ Dcmtk_file::load_header (const char *fn) {
     if (ofrc.good()) {
 	ofrc = dset->findAndGetUint16 (DCM_Columns, cols);
 	if (ofrc.good()) {
-	    int dim[3];
+	    size_t dim[3];
 	    dim[0] = cols;
 	    dim[1] = rows;
 	    dim[2] = 1;

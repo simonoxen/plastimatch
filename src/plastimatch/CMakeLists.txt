@@ -458,9 +458,6 @@ set (COMPUTE_DISTANCE_SRC
 set (COMPUTE_MEAN_IMAGE_SRC
   compute_mean_image_main.cxx
   )
-set (EXTRACT_SLICE_SRC
-  extract_slice.cxx
-  )
 set (CUDA_PROBE_SRC
   cuda_probe_main.c
   cuda_probe.cu
@@ -806,9 +803,6 @@ if (FULL_PLASTIMATCH_BUILD)
   plm_add_executable (compute_mean_image "${COMPUTE_MEAN_IMAGE_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-  plm_add_executable (extract_slice "${EXTRACT_SLICE_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   plm_add_executable (dice_stats "${DICE_STATS_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})

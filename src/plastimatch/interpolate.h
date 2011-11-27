@@ -119,11 +119,11 @@ extern "C" {
 
 plmsys_EXPORT
 void
-li_clamp (float ma, int dmax, int* maf, int* mar, 
+li_clamp (float ma, size_t dmax, size_t* maf, size_t* mar, 
     float* fa1, float* fa2);
 plmsys_EXPORT
 void
-li_clamp_3d (float mijk[3], int mijk_f[3], int mijk_r[3],
+li_clamp_3d (float mijk[3], size_t mijk_f[3], size_t mijk_r[3],
     float li_frac_1[3], float li_frac_2[3],
     Volume *moving);
 plmsys_EXPORT

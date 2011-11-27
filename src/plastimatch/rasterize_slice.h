@@ -14,10 +14,10 @@ plastimatch1_EXPORT
 void
 rasterize_slice (
     unsigned char* acc_img,
-    int* dims,
+    size_t* dims,
     float* spacing,
     float* offset,
-    int num_vertices,
+    size_t num_vertices,
     const float* x_in,           /* polygon vertices in mm */
     const float* y_in            /* polygon vertices in mm */
 );
@@ -26,7 +26,7 @@ bool
 point_in_polygon (
     const float* x_in,           /* polygon vertices in mm */
     const float* y_in,           /* polygon vertices in mm */
-    int num_vertices,
+    size_t num_vertices,
     float x_test,
     float y_test
 );

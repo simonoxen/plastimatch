@@ -58,7 +58,7 @@ public:
 
 	if (this->option("version")) {
 	    std::cout << "Plastimatch version " << PLASTIMATCH_VERSION_STRING
-		      << std::endl;
+		<< std::endl;
 	    exit (0);
 	}
     }
@@ -238,6 +238,26 @@ public:
 	    throw dlib::error (error_string);
 	}
     }
+    void assign_size_t_13 (size_t *arr, const string_type& name) {
+	int rc;
+	unsigned int a, b, c;
+	rc = sscanf (get_string(name).c_str(), "%d %d %d", &a, &b, &c);
+	if (rc == 1) {
+	    arr[0] = a;
+	    arr[1] = a;
+	    arr[2] = a;
+	} else if (rc == 3) {
+	    arr[0] = a;
+	    arr[1] = b;
+	    arr[2] = c;
+	} else {
+	    string_type error_string = 
+		"Error. Option "
+		+ get_option_string (name) 
+		+ " takes one or three integer arguments.";
+	    throw dlib::error (error_string);
+	}
+    }
     void assign_float13 (float *arr, const string_type& name) {
 	float rc;
 	rc = sscanf (get_string(name).c_str(), "%g %g %g", 
@@ -283,20 +303,20 @@ public:
 
     void 
     print_options (
-        std::basic_ostream<char>& out
+	std::basic_ostream<char>& out
     ) {
-        typedef char ct;
-        typedef std::basic_string<ct> string;
-        typedef string::size_type size_type;
+	typedef char ct;
+	typedef std::basic_string<ct> string;
+	typedef string::size_type size_type;
 
-        try {
-            out << _dT(ct,"Options:");
+	try {
+	    out << _dT(ct,"Options:");
 
-            // this loop here is just the bottom loop but without the print 
+	    // this loop here is just the bottom loop but without the print 
 	    // statements.  I'm doing this to figure out what len should be.
-            size_type max_len = 0; 
-            this->reset();
-            while (this->move_next()) 
+	    size_type max_len = 0; 
+	    this->reset();
+	    while (this->move_next()) 
 	    {
 		/* Skip past options which aren't in the map */
 		const std::string name = this->element().name();
@@ -306,29 +326,29 @@ public:
 		    continue;
 		}
 
-                size_type len = 0; 
+		size_type len = 0; 
 		len = it->second.size();
 
-                if (this->element().number_of_arguments() == 1) {
-                    len += 6;
-                } else {
-                    for (unsigned long i = 0; 
+		if (this->element().number_of_arguments() == 1) {
+		    len += 6;
+		} else {
+		    for (unsigned long i = 0; 
 			 i < this->element().number_of_arguments(); ++i)
-                    {
-                        len += 7;
-                        if (i+1 > 9)
-                            ++len;
-                    }
-                }
+		    {
+			len += 7;
+			if (i+1 > 9)
+			    ++len;
+		    }
+		}
 
-                len += 3;
-                if (len < 33)
-                    max_len = std::max(max_len,len);
-            }
+		len += 3;
+		if (len < 33)
+		    max_len = std::max(max_len,len);
+	    }
 
-            this->reset();
-            while (this->move_next())
-            {
+	    this->reset();
+	    while (this->move_next())
+	    {
 		/* Skip past options which aren't in the map */
 		const std::string name = this->element().name();
 		std::map<string_type,string_type>::iterator it;
@@ -337,51 +357,51 @@ public:
 		    continue;
 		}
 
-                size_type len = 0; 
+		size_type len = 0; 
 		out << _dT(ct,"\n");
 		out << it->second;
 		len = it->second.size();
 
-                if (this->element().number_of_arguments() == 1) {
-                    out << _dT(ct," <arg>");
-                    len += 6;
-                } else {
-                    for (unsigned long i = 0; 
+		if (this->element().number_of_arguments() == 1) {
+		    out << _dT(ct," <arg>");
+		    len += 6;
+		} else {
+		    for (unsigned long i = 0; 
 			 i < this->element().number_of_arguments(); ++i)
-                    {
-                        out << _dT(ct," <arg") << i+1 << _dT(ct,">");
-                        len += 7;
-                        if (i+1 > 9)
-                            ++len;
-                    }
-                }
+		    {
+			out << _dT(ct," <arg") << i+1 << _dT(ct,">");
+			len += 7;
+			if (i+1 > 9)
+			    ++len;
+		    }
+		}
 
-                out << "   ";
-                len += 3;
+		out << "   ";
+		len += 3;
 
-                while (len < max_len) {
-                    ++len;
-                    out << " ";
-                }
+		while (len < max_len) {
+		    ++len;
+		    out << " ";
+		}
 
-                const unsigned long ml = static_cast<unsigned long>(max_len);
-                // now print the description but make it wrap around 
+		const unsigned long ml = static_cast<unsigned long>(max_len);
+		// now print the description but make it wrap around 
 		// nicely if it is to long to fit on one line.
-                if (len <= max_len)
-                    out << wrap_string(this->element().description(),
+		if (len <= max_len)
+		    out << wrap_string(this->element().description(),
 			0, ml+1, wrap_len);
-                else
-                    out << "\n" 
+		else
+		    out << "\n" 
 			<< wrap_string(this->element().description(),
 			    ml, ml+1, wrap_len);
-            }
-            this->reset();
-        }
-        catch (...)
-        {
-            this->reset();
-            throw;
-        }
+	    }
+	    this->reset();
+	}
+	catch (...)
+	{
+	    this->reset();
+	    throw;
+	}
     }
 
     void check_help (void) {
@@ -408,9 +428,9 @@ public:
 	}
     }
 
-    /* Throws an exception if none of the arguments are specified 
-       on the command line.  The last argument should be zero, 
-       to satisfy variable argument list macros. */
+/* Throws an exception if none of the arguments are specified 
+   on the command line.  The last argument should be zero, 
+   to satisfy variable argument list macros. */
     void check_required_any (const char* first_opt, ...) {
 	int option_exists = 0;
 	va_list argptr;

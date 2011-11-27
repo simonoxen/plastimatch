@@ -25,8 +25,8 @@ int main
 
    printf ("short %ld %ld\n", (long) min_short, (long) max_short);
    printf ("ushort %ld %ld\n", (long) min_ushort, (long) max_ushort);
-   printf ("int %ld %ld\n", min_int, max_int);
-   printf ("uint %lu %lu\n", min_uint, max_uint);
+   printf ("int %d %d\n", min_int, max_int);
+   printf ("uint %u %u\n", min_uint, max_uint);
    printf ("long %ld %ld\n", min_long, max_long);
    printf ("ulong %lu %lu\n", min_ulong, max_ulong);
    printf ("float %e %e\n", min_float, max_float);

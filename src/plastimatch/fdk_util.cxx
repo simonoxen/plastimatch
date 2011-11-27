@@ -20,17 +20,17 @@ my_create_volume (Fdk_options* options)
     float offset[3];
     float spacing[3];
     float* vol_size = options->vol_size;
-    int* resolution = options->resolution;
+    size_t* dim = options->dim;
 
-    spacing[0] = vol_size[0] / resolution[0];
-    spacing[1] = vol_size[1] / resolution[1];
-    spacing[2] = vol_size[2] / resolution[2];
+    spacing[0] = vol_size[0] / dim[0];
+    spacing[1] = vol_size[1] / dim[1];
+    spacing[2] = vol_size[2] / dim[2];
 
     offset[0] = -vol_size[0] / 2.0f + spacing[0] / 2.0f;
     offset[1] = -vol_size[1] / 2.0f + spacing[1] / 2.0f;
     offset[2] = -vol_size[2] / 2.0f + spacing[2] / 2.0f;
 
-    return new Volume (resolution, offset, spacing, 0, PT_FLOAT, 1);
+    return new Volume (dim, offset, spacing, 0, PT_FLOAT, 1);
 }
 
 float
@@ -45,7 +45,7 @@ convert_to_hu_pixel (float in_value)
 void
 convert_to_hu (Volume* vol, Fdk_options* options)
 {
-    int i, j, k, p;
+    size_t i, j, k, p;
     float* img = (float*) vol->img;
     
     p = 0;

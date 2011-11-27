@@ -268,7 +268,6 @@ cxt_save (
     bool prune_empty             /* Input: Should we prune empty structures? */
 )
 {
-    int i;
     FILE *fp;
     Rtss_polyline_set *cxt = rtss->m_cxt;
 
@@ -313,15 +312,15 @@ cxt_save (
     if (cxt->have_geometry) {
 	fprintf (fp, "OFFSET %g %g %g\n", cxt->m_offset[0],
 	    cxt->m_offset[1], cxt->m_offset[2]);
-	fprintf (fp, "DIMENSION %d %d %d\n", cxt->m_dim[0], 
-	    cxt->m_dim[1], cxt->m_dim[2]);
+	fprintf (fp, "DIMENSION %u %u %u\n", (unsigned int) cxt->m_dim[0], 
+	    (unsigned int) cxt->m_dim[1], (unsigned int) cxt->m_dim[2]);
 	fprintf (fp, "SPACING %g %g %g\n", cxt->m_spacing[0], 
 	    cxt->m_spacing[1], cxt->m_spacing[2]);
     }
 
     /* Part 2: Structures info */
     fprintf (fp, "ROI_NAMES\n");
-    for (i = 0; i < cxt->num_structures; i++) {
+    for (size_t i = 0; i < cxt->num_structures; i++) {
 	Rtss_structure *curr_structure = cxt->slist[i];
 	if (prune_empty && curr_structure->num_contours <= 0) {
 	    continue;
@@ -336,7 +335,7 @@ cxt_save (
     fprintf (fp, "END_OF_ROI_NAMES\n");
 
     /* Part 3: Contour info */
-    for (i = 0; i < cxt->num_structures; i++) {
+    for (size_t i = 0; i < cxt->num_structures; i++) {
 	int j;
 	Rtss_structure *curr_structure = cxt->slist[i];
 	if (prune_empty && curr_structure->num_contours <= 0) {

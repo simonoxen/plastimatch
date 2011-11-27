@@ -1001,10 +1001,10 @@ create_gpuit_bxf (Plm_image_header* pih, float* grid_spac)
     Bspline_xform* bxf = (Bspline_xform*) malloc (sizeof(Bspline_xform));
     float img_origin[3];
     float img_spacing[3];
-    int img_dim[3];
-    int roi_offset[3];
-    int roi_dim[3];
-    int vox_per_rgn[3];
+    size_t img_dim[3];
+    size_t roi_offset[3];
+    size_t roi_dim[3];
+    size_t vox_per_rgn[3];
 
     pih->get_origin (img_origin);
     pih->get_dim (img_dim);
@@ -1022,7 +1022,7 @@ create_gpuit_bxf (Plm_image_header* pih, float* grid_spac)
 	}
     }
     bspline_xform_initialize (bxf, img_origin, img_spacing, img_dim, 
-		roi_offset, roi_dim, vox_per_rgn);
+	roi_offset, roi_dim, vox_per_rgn);
     return bxf;
 }
 
@@ -1113,7 +1113,7 @@ xform_gpuit_vf_to_gpuit_bsp (
    ----------------------------------------------------------------------- */
 Volume*
 xform_gpuit_vf_to_gpuit_vf (
-    Volume* vf_in, int* dim, float* offset, float* spacing)
+    Volume* vf_in, size_t* dim, float* offset, float* spacing)
 {
     Volume* vf_out;
     vf_out = volume_resample (vf_in, dim, offset, spacing);
@@ -1122,7 +1122,7 @@ xform_gpuit_vf_to_gpuit_vf (
 
 Volume*
 xform_gpuit_bsp_to_gpuit_vf (
-    Xform* xf_in, int* dim, float* offset, float* spacing)
+    Xform* xf_in, size_t* dim, float* offset, float* spacing)
 {
     Bspline_xform* bxf = xf_in->get_gpuit_bsp();
     Volume* vf_out;
@@ -1137,7 +1137,7 @@ xform_gpuit_bsp_to_gpuit_vf (
 Volume*
 xform_itk_vf_to_gpuit_vf (
     DeformationFieldType::Pointer itk_vf, 
-    int* dim, float* offset, float* spacing)
+    size_t* dim, float* offset, float* spacing)
 {
     /* GCS FIX: Need direction cosines */
     Volume* vf_out = new Volume (dim, offset, spacing, 0, 
@@ -1480,7 +1480,7 @@ xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih,
 void
 xform_to_gpuit_vf (
     Xform* xf_out, Xform *xf_in, 
-    int* dim, float* offset, float* spacing)
+    size_t* dim, float* offset, float* spacing)
 {
     Volume* vf = 0;
 
@@ -1513,7 +1513,8 @@ xform_to_gpuit_vf (
 	vf = xform_gpuit_bsp_to_gpuit_vf (xf_in, dim, offset, spacing);
 	break;
     case XFORM_GPUIT_VECTOR_FIELD:
-	vf = xform_gpuit_vf_to_gpuit_vf (xf_in->get_gpuit_vf(), dim, offset, spacing);
+	vf = xform_gpuit_vf_to_gpuit_vf (xf_in->get_gpuit_vf(), 
+	    dim, offset, spacing);
 	break;
     default:
 	print_and_exit ("Program error.  Bad xform type.\n");

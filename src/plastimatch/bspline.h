@@ -97,13 +97,13 @@ typedef struct BSPLINE_MI_Hist_Parms_struct BSPLINE_MI_Hist_Parms;
 struct BSPLINE_MI_Hist_Parms_struct {
     /* Used by all histogram types */
     enum BsplineHistType type;  /* Type of histograms */
-    long bins;                  /* # of bins in histogram  */
+    size_t bins;                /* # of bins in histogram  */
     float offset;               /* minimum voxel intensity */
-    int big_bin;                /* fullest bin index       */
+    size_t big_bin;             /* fullest bin index       */
     float delta;                /* bin OR key spacing   */
 
     /* For V-Optimal Histograms */
-    long keys;              /* # of keys               */
+    size_t keys;              /* # of keys               */
     int* key_lut;           /* bin keys lookup table   */
 };
 
@@ -240,13 +240,13 @@ bspline_compute_vf (const Bspline_xform* bxf);
 /* Used internally */
 void
 bspline_interp_pix (float out[3], const Bspline_xform* bxf, 
-    int p[3], int qidx);
+    size_t p[3], size_t qidx);
 void
 bspline_interp_pix_b (
     float out[3], 
     Bspline_xform* bxf, 
-    int pidx, 
-    int qidx
+    size_t pidx, 
+    size_t qidx
 );
 int
 bspline_find_correspondence 
@@ -279,17 +279,17 @@ void
 bspline_update_grad (
     Bspline_state *bst, 
     Bspline_xform* bxf, 
-    int p[3], int qidx, float dc_dv[3]);
+    size_t p[3], size_t qidx, float dc_dv[3]);
 void
 bspline_update_grad_b (
     Bspline_score* bscore,
     const Bspline_xform* bxf, 
-    int pidx, 
-    int qidx, 
+    size_t pidx, 
+    size_t qidx, 
     const float dc_dv[3]);
 int* calc_offsets (int* tile_dims, int* cdims);
 
-void find_knots (int* knots, int tile_num, int* rdims, int* cdims);
+void find_knots (size_t* knots, size_t tile_num, size_t* rdims, size_t* cdims);
 void
 dump_hist (BSPLINE_MI_Hist* mi_hist, int it);
 
@@ -325,7 +325,7 @@ bspline_update_sets (float* sets_x, float* sets_y, float* sets_z,
 void
 bspline_sort_sets (float* cond_x, float* cond_y, float* cond_z,
     float* sets_x, float* sets_y, float* sets_z,
-    int pidx, Bspline_xform* bxf);
+    size_t pidx, Bspline_xform* bxf);
 
 #if defined __cplusplus
 }

@@ -218,8 +218,12 @@ int* calc_offsets(int* tile_dims, int* cdims)
 // Author: James Shackleford
 // Data: July 13th, 2009
 ////////////////////////////////////////////////////////////////////////////////
-void find_knots(int* knots, int tile_num, int* rdims, int* cdims)
-{
+void find_knots (
+    size_t* knots, 
+    size_t tile_num, 
+    size_t* rdims, 
+    size_t* cdims
+) {
     int tile_loc[3];
     int i, j, k;
     int idx = 0;
@@ -278,7 +282,7 @@ dump_hist (BSPLINE_MI_Hist* mi_hist, int it, const std::string& prefix)
     double* f_hist = mi_hist->f_hist;
     double* m_hist = mi_hist->m_hist;
     double* j_hist = mi_hist->j_hist;
-    int i, j, v;
+    size_t i, j, v;
     FILE *fp;
     //char fn[_MAX_PATH];
     std::string fn;
@@ -290,7 +294,7 @@ dump_hist (BSPLINE_MI_Hist* mi_hist, int it, const std::string& prefix)
     fp = fopen (fn.c_str(), "wb");
     if (!fp) return;
     for (i = 0; i < mi_hist->fixed.bins; i++) {
-        fprintf (fp, "%d %f\n", i, f_hist[i]);
+        fprintf (fp, "%u %f\n", (unsigned int) i, f_hist[i]);
     }
     fclose (fp);
 
@@ -300,7 +304,7 @@ dump_hist (BSPLINE_MI_Hist* mi_hist, int it, const std::string& prefix)
     fp = fopen (fn.c_str(), "wb");
     if (!fp) return;
     for (i = 0; i < mi_hist->moving.bins; i++) {
-        fprintf (fp, "%d %f\n", i, m_hist[i]);
+        fprintf (fp, "%u %f\n", (unsigned int) i, m_hist[i]);
     }
     fclose (fp);
 
@@ -312,7 +316,8 @@ dump_hist (BSPLINE_MI_Hist* mi_hist, int it, const std::string& prefix)
     for (i = 0, v = 0; i < mi_hist->fixed.bins; i++) {
 	for (j = 0; j < mi_hist->moving.bins; j++, v++) {
 	    if (j_hist[v] > 0) {
-            fprintf (fp, "%d %d %d %g\n", i, j, v, j_hist[v]);
+		fprintf (fp, "%u %u %u %g\n", (unsigned int) i, 
+		    (unsigned int) j, (unsigned int) v, j_hist[v]);
 	    }
 	}
     }
@@ -439,10 +444,14 @@ bspline_state_destroy (
 }
 
 void
-bspline_interp_pix (float out[3], const Bspline_xform* bxf, int p[3], int qidx)
-{
+bspline_interp_pix (
+    float out[3], 
+    const Bspline_xform* bxf, 
+    size_t p[3], 
+    size_t qidx
+) {
     int i, j, k, m;
-    int cidx;
+    size_t cidx;
     float* q_lut = &bxf->q_lut[qidx*64];
 
     out[0] = out[1] = out[2] = 0;
@@ -467,14 +476,14 @@ void
 bspline_interp_pix_b (
     float out[3], 
     Bspline_xform* bxf, 
-    int pidx, 
-    int qidx
+    size_t pidx, 
+    size_t qidx
 )
 {
     int i, j, k, m;
-    int cidx;
+    size_t cidx;
     float* q_lut = &bxf->q_lut[qidx*64];
-    int* c_lut = &bxf->c_lut[pidx*64];
+    size_t* c_lut = &bxf->c_lut[pidx*64];
 
     out[0] = out[1] = out[2] = 0;
     m = 0;
@@ -495,12 +504,12 @@ void
 bspline_interpolate_vf (Volume* interp, 
     const Bspline_xform* bxf)
 {
-    int i, j, k, v;
-    int p[3];
-    int q[3];
+    size_t i, j, k, v;
+    size_t p[3];
+    size_t q[3];
     float* out;
     float* img = (float*) interp->img;
-    int qidx;
+    size_t qidx;
 
     memset (img, 0, interp->npix*3*sizeof(float));
     for (k = 0; k < bxf->roi_dim[2]; k++) {
@@ -557,10 +566,10 @@ bspline_update_sets (float* sets_x, float* sets_y, float* sets_z,
 void
 bspline_sort_sets (float* cond_x, float* cond_y, float* cond_z,
     float* sets_x, float* sets_y, float* sets_z,
-    int pidx, Bspline_xform* bxf)
+    size_t pidx, Bspline_xform* bxf)
 {
     int sidx, kidx;
-    int* k_lut = (int*)malloc(64*sizeof(int));
+    size_t* k_lut = (size_t*) malloc (64*sizeof(size_t));
 
     /* Generate the knot index lut */
     find_knots (k_lut, pidx, bxf->rdims, bxf->cdims);
@@ -581,11 +590,11 @@ void
 bspline_update_grad (
     Bspline_state *bst, 
     Bspline_xform* bxf, 
-    int p[3], int qidx, float dc_dv[3])
+    size_t p[3], size_t qidx, float dc_dv[3])
 {
     Bspline_score* ssd = &bst->ssd;
-    int i, j, k, m;
-    int cidx;
+    size_t i, j, k, m;
+    size_t cidx;
     float* q_lut = &bxf->q_lut[qidx*64];
 
     m = 0;
@@ -609,14 +618,14 @@ void
 bspline_update_grad_b (
     Bspline_score* bscore,
     const Bspline_xform* bxf, 
-    int pidx, 
-    int qidx, 
+    size_t pidx, 
+    size_t qidx, 
     const float dc_dv[3])
 {
-    int i, j, k, m;
-    int cidx;
+    size_t i, j, k, m;
+    size_t cidx;
     float* q_lut = &bxf->q_lut[qidx*64];
-    int* c_lut = &bxf->c_lut[pidx*64];
+    size_t* c_lut = &bxf->c_lut[pidx*64];
 
     m = 0;
     for (k = 0; k < 4; k++) {
@@ -636,7 +645,7 @@ void
 bspline_make_grad (float* cond_x, float* cond_y, float* cond_z,
                    Bspline_xform* bxf, Bspline_score* ssd)
 {
-    int kidx, sidx;
+    size_t kidx, sidx;
 
     for (kidx=0; kidx < (bxf->cdims[0] * bxf->cdims[1] * bxf->cdims[2]); kidx++) {
         for (sidx=0; sidx<64; sidx++) {
@@ -759,8 +768,8 @@ bspline_transform_point (
     int linear_interp   /* 1 = trilinear, 0 = nearest neighbors */
 )
 {
-    int d, i, j, k;
-    int p[3];                    /* Index of tile */
+    size_t d, i, j, k;
+    size_t p[3];                    /* Index of tile */
     float q[3];                  /* Fractional offset within tile */
     float q_mini[3][4];          /* "miniature" q-lut, just for this point */
 

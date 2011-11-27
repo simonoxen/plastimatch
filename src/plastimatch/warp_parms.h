@@ -63,7 +63,7 @@ public:
     bool m_have_dim;
     bool m_have_origin;
     bool m_have_spacing;
-    int m_dim[3];
+    size_t m_dim[3];
     float m_origin[3];
     float m_spacing[3];
 

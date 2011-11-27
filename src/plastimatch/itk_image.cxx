@@ -66,7 +66,7 @@ itk_image_get_props (
    ----------------------------------------------------------------------- */
 template<class T>
 void
-get_image_header (int dim[3], float offset[3], float spacing[3], T image)
+get_image_header (size_t dim[3], float offset[3], float spacing[3], T image)
 {
     typename T::ObjectType::RegionType rg = image->GetLargestPossibleRegion ();
     typename T::ObjectType::PointType og = image->GetOrigin();
@@ -83,7 +83,7 @@ get_image_header (int dim[3], float offset[3], float spacing[3], T image)
 
 template<class T>
 void
-itk_image_get_image_header (int dim[3], float offset[3], float spacing[3], 
+itk_image_get_image_header (size_t dim[3], float offset[3], float spacing[3], 
     Direction_cosines& dc, const T image)
 {
     typename T::ObjectType::RegionType rg = image->GetLargestPossibleRegion ();
@@ -145,10 +145,10 @@ itk_image_header_copy (T dest, U src)
 }
 
 /* Explicit instantiations */
-template plastimatch1_EXPORT void get_image_header (int dim[3], float offset[3], float spacing[3], UCharImageType::Pointer image);
-template plastimatch1_EXPORT void get_image_header (int dim[3], float offset[3], float spacing[3], ShortImageType::Pointer image);
-template plastimatch1_EXPORT void get_image_header (int dim[3], float offset[3], float spacing[3], UShortImageType::Pointer image);
-template plastimatch1_EXPORT void get_image_header (int dim[3], float offset[3], float spacing[3], FloatImageType::Pointer image);
+template plastimatch1_EXPORT void get_image_header (size_t dim[3], float offset[3], float spacing[3], UCharImageType::Pointer image);
+template plastimatch1_EXPORT void get_image_header (size_t dim[3], float offset[3], float spacing[3], ShortImageType::Pointer image);
+template plastimatch1_EXPORT void get_image_header (size_t dim[3], float offset[3], float spacing[3], UShortImageType::Pointer image);
+template plastimatch1_EXPORT void get_image_header (size_t dim[3], float offset[3], float spacing[3], FloatImageType::Pointer image);
 template plastimatch1_EXPORT void itk_image_set_header (UCharVecImageType::Pointer, Plm_image_header *pih);
 template plastimatch1_EXPORT void itk_image_header_copy (UCharVecImageType::Pointer, UCharImageType::Pointer);
 template plastimatch1_EXPORT void itk_image_header_copy (UCharVecImageType::Pointer, UInt32ImageType::Pointer);

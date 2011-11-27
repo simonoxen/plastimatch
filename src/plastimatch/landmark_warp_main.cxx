@@ -32,7 +32,7 @@ public:
 
     Pstring fixed_img_fn;
     bool have_dim;
-    int dim[3];
+    size_t dim[3];
     bool have_origin;
     float origin[3];
     bool have_spacing;
@@ -172,12 +172,12 @@ save_output_files (Landmark_warp_main_parms *parms)
   NOTE: ROTATION IS NOT SUPPORTED! direction_cosines assumed to be 100 010 001.
 */
 static void 
-landmark_convert_mm_to_voxel(
+landmark_convert_mm_to_voxel (
     int *landvox, 
     Raw_pointset *landmarks_mm, 
     float *offset, 
     float *pix_spacing,
-    int *dim,
+    size_t *dim,
     const float *direction_cosines)
 {
     for (int i = 0; i < landmarks_mm->num_points; i++) {
@@ -210,12 +210,12 @@ calculate_warped_landmarks( Landmark_warp *lw )
 
 */
 {
-    int ri, rj, rk;
-    int fi, fj, fk;
-    int mi, mj, mk;
+    size_t ri, rj, rk;
+    size_t fi, fj, fk, fv;
+    size_t mi, mj, mk;
     float fx, fy, fz;
     float mx, my, mz;
-    int i,d,fv, lidx;
+    int i, d, lidx;
     float dd, *vf, dxyz[3], *dd_min;
     
     int num_landmarks;
@@ -224,7 +224,7 @@ calculate_warped_landmarks( Landmark_warp *lw )
     float *landmark_dxyz;
     Volume *vector_field;
     Volume *moving;
-    int fixed_dim[3];
+    size_t fixed_dim[3];
     float fixed_spacing[3], fixed_offset[3], fixed_direction_cosines[9];
 
     num_landmarks = lw->m_fixed_landmarks->num_points;
@@ -239,10 +239,10 @@ calculate_warped_landmarks( Landmark_warp *lw )
     moving = lw->m_input_img->gpuit_float();
 
     /* fixed dimensions set come from lw->m_pih */
-    lw->m_pih.get_dim( fixed_dim);
-    lw->m_pih.get_spacing( fixed_spacing );
-    lw->m_pih.get_origin( fixed_offset );
-    lw->m_pih.get_direction_cosines( fixed_direction_cosines );
+    lw->m_pih.get_dim (fixed_dim);
+    lw->m_pih.get_spacing (fixed_spacing);
+    lw->m_pih.get_origin (fixed_offset);
+    lw->m_pih.get_direction_cosines (fixed_direction_cosines);
 
     if (vector_field->pix_type != PT_VF_FLOAT_INTERLEAVED)
 	print_and_exit ("Sorry, this type of vector field is not supported in landmarks_warp\n");	
@@ -250,9 +250,10 @@ calculate_warped_landmarks( Landmark_warp *lw )
 
     /* fill in landvox'es */
     landmark_convert_mm_to_voxel (landvox_fix, lw->m_fixed_landmarks, 
-	fixed_offset, fixed_spacing, fixed_dim, fixed_direction_cosines );
+	fixed_offset, fixed_spacing, fixed_dim, fixed_direction_cosines);
     landmark_convert_mm_to_voxel (landvox_mov, lw->m_moving_landmarks, 
-	moving->offset, moving->spacing, moving->dim, moving->direction_cosines );
+	moving->offset, moving->spacing, moving->dim, 
+	moving->direction_cosines);
     
     dd_min = (float *)malloc( num_landmarks * sizeof(float));
     for (d=0;d<num_landmarks;d++) dd_min[d] = 1e20F; //a very large number
@@ -299,7 +300,7 @@ calculate_warped_landmarks( Landmark_warp *lw )
 	}
     }
 
-    for (i=0;i<num_landmarks;i++)  {
+    for (i = 0; i < num_landmarks; i++) {
 	for (d=0; d<3; d++) {
 	    warped_landmarks[3*i+d]
 		= lw->m_moving_landmarks->points[3*i+d]
@@ -328,10 +329,10 @@ calculate_warped_landmarks( Landmark_warp *lw )
 
 //debug only
     fy = 0;
-    for(lidx=0;lidx<num_landmarks;lidx++)
+    for (lidx = 0; lidx < num_landmarks; lidx++)
     {
 	fx=0;
-	for(d=0;d<3;d++) { 
+	for (d = 0; d < 3; d++) { 
 	    fz = (lw->m_fixed_landmarks->points[3*lidx+d] - lw->m_warped_landmarks->points[3*lidx+d] );
 	    fx += fz*fz;
 	}
@@ -461,7 +462,7 @@ parse_fn (
     }
     if (parser->option ("dim")) {
 	parms->have_dim = 1;
-	parser->assign_int13 (parms->dim, "dim");
+	parser->assign_size_t_13 (parms->dim, "dim");
     }
     parms->fixed_img_fn = parser->get_string("fixed").c_str();
 

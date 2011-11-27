@@ -55,7 +55,7 @@ vf_invert_main (Vf_Invert_Parms* parms)
 void
 vf_invert_main (Vf_Invert_Parms* parms)
 {
-    int i, j, k, v;
+    size_t i, j, k, v;
     int its;
     float x, y, z;
     Plm_image_header pih;

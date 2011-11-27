@@ -13,7 +13,7 @@ public:
     char* input_vf_fn;
     char* input_xf_fn;
     Reg_parms parms;
-    int vox_per_rgn[3];
+    size_t vox_per_rgn[3];
 public:
     Reg_options () {
         /* Init */

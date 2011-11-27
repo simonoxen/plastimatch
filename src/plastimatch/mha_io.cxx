@@ -109,6 +109,7 @@ read_mha_internal (
     FILE* fp;
     bool have_direction_cosines = false;
     bool big_endian_input = false;
+    unsigned int a, b, c;
     float dc[9];
 
     fp = fopen (filename,"rb");
@@ -127,10 +128,10 @@ read_mha_internal (
 	if (strcmp (linebuf, "ElementDataFile = LOCAL") == 0) {
 	    break;
 	}
-	if (sscanf (linebuf, "DimSize = %d %d %d",
-		&vol->dim[0],
-		&vol->dim[1],
-		&vol->dim[2]) == 3) {
+	if (sscanf (linebuf, "DimSize = %d %d %d", &a, &b, &c) == 3) {
+	    vol->dim[0] = a;
+	    vol->dim[1] = b;
+	    vol->dim[2] = c;
 	    vol->npix = vol->dim[0] * vol->dim[1] * vol->dim[2];
 	    continue;
 	}

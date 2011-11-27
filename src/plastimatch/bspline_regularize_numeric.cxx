@@ -20,7 +20,7 @@
 
 /* Prototypes */
 static void bspline_xform_create_qlut_grad (
-    Bspline_xform* bxf, float img_spacing[3], int vox_per_rgn[3]);
+    Bspline_xform* bxf, float img_spacing[3], size_t vox_per_rgn[3]);
 static void bspline_xform_free_qlut_grad (Bspline_xform* bxf);
 
 /* Flavor 'a' */
@@ -39,7 +39,8 @@ vf_regularize_numerical (
 
     Plm_timer timer;
 
-    int i,j,k,c;
+    size_t i, j, k;
+    int c;
     float *img = (float*) vol->img;
 
     float dx = vol->spacing[0];
@@ -344,9 +345,9 @@ void bspline_xform_create_qlut_grad
 (
     Bspline_xform* bxf,         /* Output: bxf with new LUTs */
     float img_spacing[3],       /* Image spacing (in mm) */
-    int vox_per_rgn[3])         /* Knot spacing (in vox) */
+    size_t vox_per_rgn[3])         /* Knot spacing (in vox) */
 {
-    int i, j, k, p;
+    size_t i, j, k, p;
     int tx, ty, tz;
     float *A, *B, *C;
     float *Ax, *By, *Cz, *Axx, *Byy, *Czz;
@@ -575,8 +576,8 @@ void
 bspline_regularize_hessian_component (
     float out[3], 
     const Bspline_xform* bxf, 
-    int p[3], 
-    int qidx, 
+    size_t p[3], 
+    size_t qidx, 
     int derive1, 
     int derive2
 )
@@ -620,8 +621,8 @@ void
 bspline_regularize_hessian_component_b (
     float out[3], 
     const Bspline_xform* bxf, 
-    int p[3], 
-    int qidx, 
+    size_t p[3], 
+    size_t qidx, 
     float *q_lut
 )
 {
@@ -650,8 +651,8 @@ void
 bspline_regularize_hessian_update_grad (
     Bspline_score *bscore, 
     const Bspline_xform* bxf, 
-    int p[3], 
-    int qidx, 
+    size_t p[3], 
+    size_t qidx, 
     float dc_dv[3], 
     int derive1, 
     int derive2
@@ -695,8 +696,8 @@ void
 bspline_regularize_hessian_update_grad_b (
     Bspline_score *bscore, 
     const Bspline_xform* bxf, 
-    int p[3], 
-    int qidx, 
+    size_t p[3], 
+    size_t qidx, 
     float dc_dv[3], 
     float *q_lut
 )
@@ -726,8 +727,8 @@ static double
 update_score_and_grad (
     Bspline_score *bscore, 
     const Bspline_xform* bxf, 
-    int p[3], 
-    int qidx, 
+    size_t p[3], 
+    size_t qidx, 
     float grad_coeff, 
     float weight, // 2 or 1 for cross/non-cross derivatives
     float *qlut
@@ -745,7 +746,8 @@ update_score_and_grad (
 	dc_dv[d3] = weight * grad_coeff * dxyz[d3];
     }
 
-    bspline_regularize_hessian_update_grad_b (bscore, bxf, p, qidx, dc_dv, qlut);
+    bspline_regularize_hessian_update_grad_b (bscore, bxf, p, qidx, 
+	dc_dv, qlut);
 
     return score;
 }
@@ -760,12 +762,12 @@ bspline_regularize_numeric_d (
 )
 {
     double grad_score;
-    int ri, rj, rk;
-    int fi, fj, fk;
-    int p[3];
-    int q[3];
-    int qidx;
-    int num_vox;
+    size_t ri, rj, rk;
+    size_t fi, fj, fk;
+    size_t p[3];
+    size_t q[3];
+    size_t qidx;
+    size_t num_vox;
     Plm_timer timer;
     //double interval;
     float grad_coeff;

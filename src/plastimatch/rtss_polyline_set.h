@@ -19,15 +19,15 @@ class plastimatch1_EXPORT Rtss_polyline_set {
 public:
     /* Output geometry */
     int have_geometry;
-    int m_dim[3];
+    size_t m_dim[3];
     float m_spacing[3];
     float m_offset[3];
     /* Rasterization geometry */
-    int rast_dim[3];
+    size_t rast_dim[3];
     float rast_spacing[3];
     float rast_offset[3];
     /* Structures */
-    int num_structures;
+    size_t num_structures;
     Rtss_structure **slist;
 public:
     Rtss_polyline_set ();
@@ -46,7 +46,7 @@ public:
 	Rtss_polyline_set* cxt_in);
     void find_default_geometry (Plm_image_header *pih);
     void find_rasterization_geometry (float offset[3], 
-	float spacing[3], int dims[3]);
+	float spacing[3], size_t dims[3]);
     void find_rasterization_geometry (Plm_image_header *pih);
     Pstring find_unused_structure_name (void);
     void fix_polyline_slice_numbers (void);

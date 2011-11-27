@@ -89,21 +89,21 @@ bspline_score_h_mse (
         int rc;
 
         int ijk_tile[3];
-        int ijk_local[3];
-        int idx_local;
+        size_t ijk_local[3];
+        size_t idx_local;
 
         float xyz_fixed[3];
-        int ijk_fixed[3];
-        int idx_fixed;
+        size_t ijk_fixed[3];
+        size_t idx_fixed;
 
         float dxyz[3];
 
         float xyz_moving[3];
         float ijk_moving[3];
-        int ijk_moving_floor[3];
-	int ijk_moving_round[3];
-        int idx_moving_floor;
-        int idx_moving_round;
+        size_t ijk_moving_floor[3];
+	size_t ijk_moving_round[3];
+        size_t idx_moving_floor;
+        size_t idx_moving_round;
 
         float li_1[3], li_2[3];
         float m_val, diff;
@@ -291,22 +291,22 @@ bspline_score_g_mse (
     LOOP_THRU_VOL_TILES (idx_tile, bxf) {
         int rc;
 
-        int ijk_tile[3];
-        int ijk_local[3];
-        int idx_local;
+        size_t ijk_tile[3];
+        size_t ijk_local[3];
+        size_t idx_local;
 
         float xyz_fixed[3];
-        int ijk_fixed[3];
-        int idx_fixed;
+        size_t ijk_fixed[3];
+        size_t idx_fixed;
 
         float dxyz[3];
 
         float xyz_moving[3];
         float ijk_moving[3];
-        int ijk_moving_floor[3];
-        int ijk_moving_round[3];
-        int idx_moving_floor;
-        int idx_moving_round;
+        size_t ijk_moving_floor[3];
+        size_t ijk_moving_round[3];
+        size_t idx_moving_floor;
+        size_t idx_moving_round;
 
         float li_1[3], li_2[3];
         float m_val, diff;
@@ -453,16 +453,15 @@ bspline_score_c_mse (
 )
 {
     Bspline_score* ssd = &bst->ssd;
-    int i;
-    int rijk[3];             /* Indices within fixed image region (vox) */
-    int fijk[3], fv;         /* Indices within fixed image (vox) */
+    size_t rijk[3];             /* Indices within fixed image region (vox) */
+    size_t fijk[3], fv;         /* Indices within fixed image (vox) */
     float mijk[3];           /* Indices within moving image (vox) */
     float fxyz[3];           /* Position within fixed image (mm) */
     float mxyz[3];           /* Position within moving image (mm) */
-    int mijk_f[3], mvf;      /* Floor */
-    int mijk_r[3], mvr;      /* Round */
-    int p[3];
-    int q[3];
+    size_t mijk_f[3], mvf;      /* Floor */
+    size_t mijk_r[3], mvr;      /* Round */
+    size_t p[3];
+    size_t q[3];
     float diff;
     float dc_dv[3];
     float li_1[3];           /* Fraction of interpolant in lower index */
@@ -471,7 +470,7 @@ bspline_score_c_mse (
     float* m_img = (float*) moving->img;
     float* m_grad = (float*) moving_grad->img;
     float dxyz[3];
-    int pidx, qidx;
+    size_t pidx, qidx;
     Plm_timer timer;
     float m_val;
 
@@ -552,9 +551,12 @@ bspline_score_c_mse (
 		bspline_update_grad_b (&bst->ssd, bxf, pidx, qidx, dc_dv);
         
                 if (parms->debug) {
-                    fprintf (fp, "%d %d %d %g %g %g\n", 
-			rijk[0], rijk[1], rijk[2], 
-			dc_dv[0], dc_dv[1], dc_dv[2]);
+                    fprintf (fp, "%u %u %u %g %g %g [%g]\n", 
+			(unsigned int) rijk[0], 
+			(unsigned int) rijk[1], 
+			(unsigned int) rijk[2], 
+			dc_dv[0], dc_dv[1], dc_dv[2],
+			diff);
                 }
 
                 score_acc += diff * diff;
@@ -570,7 +572,7 @@ bspline_score_c_mse (
 
     /* Normalize score for MSE */
     ssd->smetric = score_acc / ssd->num_vox;
-    for (i = 0; i < bxf->num_coeff; i++) {
+    for (int i = 0; i < bxf->num_coeff; i++) {
         ssd->grad[i] = 2 * ssd->grad[i] / ssd->num_vox;
     }
 
@@ -595,14 +597,14 @@ bspline_score_i_mse (
 )
 {
     Bspline_score* ssd = &bst->ssd;
-    int fijk[3], fv;         /* Indices within fixed image (vox) */
-    float mijk[3];           /* Indices within moving image (vox) */
-    float fxyz[3];           /* Position within fixed image (mm) */
-    float mxyz[3];           /* Position within moving image (mm) */
-    int mijk_f[3], mvf;      /* Floor */
-    int mijk_r[3], mvr;      /* Round */
-    int p[3], pidx;          /* Region index of fixed voxel */
-    int q[3], qidx;          /* Offset index of fixed voxel */
+    size_t fijk[3], fv;         /* Indices within fixed image (vox) */
+    float mijk[3];              /* Indices within moving image (vox) */
+    float fxyz[3];              /* Position within fixed image (mm) */
+    float mxyz[3];              /* Position within moving image (mm) */
+    size_t mijk_f[3], mvf;      /* Floor */
+    size_t mijk_r[3], mvr;      /* Round */
+    size_t p[3], pidx;          /* Region index of fixed voxel */
+    size_t q[3], qidx;          /* Offset index of fixed voxel */
 
     float dc_dv[3];
     float li_1[3];           /* Fraction of interpolant in lower index */
@@ -669,8 +671,8 @@ bspline_score_i_mse (
                 if (parms->debug) {
                     fprintf (corr_fp, 
 			"%d %d %d %f %f %f\n",
-			fijk[0], fijk[1], fijk[2], 
-			mijk[0], mijk[1], mijk[2]);
+			(unsigned int) fijk[0], (unsigned int) fijk[1], 
+			(unsigned int) fijk[2], mijk[0], mijk[1], mijk[2]);
                 }
 
 		if (mijk[2] < -0.5 || mijk[2] > moving->dim[2] - 0.5) continue;
@@ -707,9 +709,10 @@ bspline_score_i_mse (
         
                 if (parms->debug) {
                     fprintf (dc_dv_fp, 
-			"%d %d %d %g %g %g %g\n", 
-			fijk[0], fijk[1], fijk[2], diff, 
-			dc_dv[0], dc_dv[1], dc_dv[2]);
+			"%u %u %u %g %g %g %g\n", 
+			(unsigned int) fijk[0], (unsigned int) fijk[1], 
+			(unsigned int) fijk[2], diff, dc_dv[0], 
+			dc_dv[1], dc_dv[2]);
                 }
 
                 score_acc += diff * diff;

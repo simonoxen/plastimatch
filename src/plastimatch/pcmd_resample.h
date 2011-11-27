@@ -15,7 +15,7 @@ public:
     Pstring output_fn;
     Pstring fixed_fn;
     Plm_image_type output_type;
-    int dim[3];
+    size_t dim[3];
     bool m_have_dim;
     float origin[3];
     bool m_have_origin;

@@ -11,29 +11,31 @@
 #include "math_util.h"
 #include "volume.h"
 
-/* Clipping is done using clamping.  */
+/* Clipping is done using clamping.  
+   Note: the value of *maf can be at most dim[x]-2, because the linear 
+   interpolation code assumes that the "lower" pixel is always valid. */
 void
 li_clamp (
     float ma,     /* Input:  (Unrounded) pixel coordinate (in vox) */
-    int dmax,	  /* Input:  Maximum coordinate in this dimension */
-    int* maf,	  /* Output: x, y, or z coord of "floor" pixel in moving img */
-    int* mar,	  /* Output: x, y, or z coord of "round" pixel in moving img */
+    size_t dmax,  /* Input:  Maximum coordinate in this dimension */
+    size_t* maf,  /* Output: x, y, or z coord of "floor" pixel in moving img */
+    size_t* mar,  /* Output: x, y, or z coord of "round" pixel in moving img */
     float* fa1,	  /* Output: Fraction of interpolant for lower index voxel */
     float* fa2	  /* Output: Fraction of interpolant for upper index voxel */
 )
 {
-    float maff = floor(ma);
-    *maf = (int) maff;
-    *mar = ROUND_INT (ma);
-    *fa2 = ma - maff;
-    if (*maf < 0) {
+    if (ma < 0.f) {
 	*maf = 0;
 	*mar = 0;
 	*fa2 = 0.0f;
-    } else if (*maf >= dmax) {
+    } else if (ma > dmax) {
 	*maf = dmax - 1;
 	*mar = dmax;
 	*fa2 = 1.0f;
+    } else {
+	*maf = FLOOR_SIZE_T (ma);
+	*mar = ROUND_SIZE_T (ma);
+	*fa2 = ma - *maf;
     }
     *fa1 = 1.0f - *fa2;
 }
@@ -41,8 +43,8 @@ li_clamp (
 void
 li_clamp_3d (
     float mijk[3],         /* Input:  Unrounded pixel coordinates in vox */
-    int mijk_f[3],         /* Output: "floor" pixel in moving img in vox*/
-    int mijk_r[3],         /* Ouptut: "round" pixel in moving img in vox*/
+    size_t mijk_f[3],      /* Output: "floor" pixel in moving img in vox*/
+    size_t mijk_r[3],      /* Ouptut: "round" pixel in moving img in vox*/
     float li_frac_1[3],    /* Output: Fraction for upper index voxel */
     float li_frac_2[3],    /* Output: Fraction for lower index voxel */
     Volume *moving         /* Input:  Volume (for dims) */

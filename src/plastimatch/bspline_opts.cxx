@@ -167,12 +167,15 @@ bspline_opts_parse_args (Bspline_options* options, int argc, char* argv[])
 		exit(1);
 	    }
 	    i++;
-	    rc = sscanf (argv[i], "%d %d", 
-		&parms->mi_hist.fixed.bins,
-		&parms->mi_hist.moving.bins);
+	    unsigned int a, b;
+	    rc = sscanf (argv[i], "%u %u", &a, &b);
 	    if (rc == 1) {
-    		parms->mi_hist.moving.bins = parms->mi_hist.fixed.bins;
-	    } else if (rc != 2) {
+		parms->mi_hist.fixed.bins = a;
+    		parms->mi_hist.moving.bins = a;
+	    } else if (rc == 2) {
+		parms->mi_hist.fixed.bins = a;
+    		parms->mi_hist.moving.bins = b;
+	    } else {
 		print_usage ();
 	    }
 	    parms->mi_hist.joint.bins = parms->mi_hist.fixed.bins
@@ -198,14 +201,17 @@ bspline_opts_parse_args (Bspline_options* options, int argc, char* argv[])
 		exit(1);
 	    }
 	    i++;
-	    rc = sscanf (argv[i], "%d %d %d", 
-		&options->vox_per_rgn[0],
-		&options->vox_per_rgn[1],
-		&options->vox_per_rgn[2]);
+	    unsigned int a, b, c;
+	    rc = sscanf (argv[i], "%d %d %d", &a, &b, &c);
 	    if (rc == 1) {
-		options->vox_per_rgn[1] = options->vox_per_rgn[0];
-		options->vox_per_rgn[2] = options->vox_per_rgn[0];
-	    } else if (rc != 3) {
+		options->vox_per_rgn[0] = a;
+		options->vox_per_rgn[1] = a;
+		options->vox_per_rgn[2] = a;
+	    } else if (rc == 3) {
+		options->vox_per_rgn[0] = a;
+		options->vox_per_rgn[1] = b;
+		options->vox_per_rgn[2] = c;
+	    } else {
 		print_usage ();
 	    }
 	}

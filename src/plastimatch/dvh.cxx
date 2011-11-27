@@ -38,7 +38,6 @@ dvh_execute_internal (
     Rtds *rtds,
     Dvh_parms *parms)
 {
-    int sno;
     int *hist;
     int *struct_vox;
     int bin;
@@ -153,7 +152,7 @@ dvh_execute_internal (
 	    bin = parms->num_bins - 1;
 	}
 
-	for (sno = 0; sno < ss_list->num_structures; sno++) {
+	for (size_t sno = 0; sno < ss_list->num_structures; sno++) {
 	    Rtss_structure *curr_structure = ss_list->slist[sno];
 		    
 	    /* Is this pixel in the current structure? */
@@ -169,7 +168,7 @@ dvh_execute_internal (
 
     /* Convert histogram to cumulative histogram */
     if (parms->cumulative) {
-	for (sno = 0; sno < ss_list->num_structures; sno++) {
+	for (size_t sno = 0; sno < ss_list->num_structures; sno++) {
 	    int cum = 0;
 	    for (bin = parms->num_bins - 1; bin >= 0; bin--) {
 		cum = cum + hist[bin*ss_list->num_structures + sno];
@@ -180,15 +179,15 @@ dvh_execute_internal (
 
     /* Create output string */
     output_string = "Dose (cGy)";
-    for (sno = 0; sno < ss_list->num_structures; sno++) {
+    for (size_t sno = 0; sno < ss_list->num_structures; sno++) {
 	Rtss_structure *curr_structure = ss_list->slist[sno];
 	output_string += ",";
 	output_string += (const char*) curr_structure->name;
     }
     output_string += "\n";
-    for (bin = 0; bin < parms->num_bins; bin++) {
+    for (size_t bin = 0; bin < parms->num_bins; bin++) {
 	output_string += make_string (bin * parms->bin_width);
-	for (sno = 0; sno < ss_list->num_structures; sno++) {
+	for (size_t sno = 0; sno < ss_list->num_structures; sno++) {
 	    int val = hist[bin*ss_list->num_structures + sno];
 	    output_string += ",";
 	    if (struct_vox[sno] == 0) {

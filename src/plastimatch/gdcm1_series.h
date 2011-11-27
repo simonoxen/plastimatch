@@ -40,7 +40,7 @@ public:
     gdcm::FileList *m_ct_file_list;
     gdcm::FileList *m_rtdose_file_list;
     gdcm::FileList *m_rtstruct_file_list;
-    int m_dim[3];
+    size_t m_dim[3];
     double m_origin[3];
     double m_spacing[3];
 };

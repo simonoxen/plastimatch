@@ -51,18 +51,18 @@ get_region_index_3 (int p[3], int i, int j, int k, const Bspline_xform *bxf) {
     p[2] = k / bxf->vox_per_rgn[2];
 }
 
-static inline int
-get_region_index (const int ijk[3], const Bspline_xform *bxf) {
-    int p[3];
+static inline size_t
+get_region_index (const size_t ijk[3], const Bspline_xform *bxf) {
+    size_t p[3];
     p[0] = ijk[0] / bxf->vox_per_rgn[0];
     p[1] = ijk[1] / bxf->vox_per_rgn[1];
     p[2] = ijk[2] / bxf->vox_per_rgn[2];
     return volume_index (bxf->rdims, p);
 }
 
-static inline int
-get_region_index (int i, int j, int k, const Bspline_xform *bxf) {
-    int p[3];
+static inline size_t
+get_region_index (size_t i, size_t j, size_t k, const Bspline_xform *bxf) {
+    size_t p[3];
     p[0] = i / bxf->vox_per_rgn[0];
     p[1] = j / bxf->vox_per_rgn[1];
     p[2] = k / bxf->vox_per_rgn[2];
@@ -92,18 +92,18 @@ get_region_offset (int q[3], int i, int j, int k, const Bspline_xform *bxf) {
     q[2] = k % bxf->vox_per_rgn[2];
 }
 
-static inline int
-get_region_offset (const int ijk[3], const Bspline_xform *bxf) {
-    int q[3];
+static inline size_t
+get_region_offset (const size_t ijk[3], const Bspline_xform *bxf) {
+    size_t q[3];
     q[0] = ijk[0] % bxf->vox_per_rgn[0];
     q[1] = ijk[1] % bxf->vox_per_rgn[1];
     q[2] = ijk[2] % bxf->vox_per_rgn[2];
     return volume_index (bxf->vox_per_rgn, q);
 }
 
-static inline int
-get_region_offset (int i, int j, int k, const Bspline_xform *bxf) {
-    int q[3];
+static inline size_t
+get_region_offset (size_t i, size_t j, size_t k, const Bspline_xform *bxf) {
+    size_t q[3];
     q[0] = i % bxf->vox_per_rgn[0];
     q[1] = j % bxf->vox_per_rgn[1];
     q[2] = k % bxf->vox_per_rgn[2];

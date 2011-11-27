@@ -24,7 +24,7 @@ enum Volume_pixel_type {
 class gpuit_EXPORT Volume
 {
   public:
-    int dim[3];		        // x, y, z Dims
+    size_t dim[3];		        // x, y, z Dims
     size_t npix;		// # of voxels in volume
 				// = dim[0] * dim[1] * dim[2] 
     float offset[3];
@@ -43,7 +43,7 @@ class gpuit_EXPORT Volume
 	init ();
     }
     Volume (
-	const int dim[3], 
+	const size_t dim[3], 
 	const float offset[3], 
 	const float spacing[3], 
 	const float direction_cosines[9], 
@@ -85,8 +85,11 @@ class gpuit_EXPORT Volume
 	pix_size = 0;
 	img = 0;
     }
+    size_t index (size_t i, size_t j, size_t k) {
+	return volume_index (this->dim, i, j, k);
+    }
     void create (
-	const int dim[3], 
+	const size_t dim[3], 
 	const float offset[3], 
 	const float spacing[3], 
 	const float direction_cosines[9], 

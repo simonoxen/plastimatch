@@ -15,7 +15,7 @@ public:
     char vf_out_fn[_MAX_PATH];
     float origin[3];
     float spacing[3];
-    int dim[3];
+    size_t dim[3];
     char fixed_img_fn[_MAX_PATH];
 public:
     Vf_Invert_Parms () {

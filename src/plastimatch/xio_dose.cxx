@@ -31,7 +31,7 @@
 
 typedef struct xio_dose_header Xio_dose_header;
 struct xio_dose_header {
-    int dim[3];
+    size_t dim[3];
     float offset[3];
     float spacing[3];
     double dose_scale_factor;
@@ -205,7 +205,10 @@ xio_dose_load_cube (
     FILE *fp;
     Volume *v;
     uint32_t *cube_img_read;
-    int i, j, k, rc;
+    size_t i, j, k;
+    int rc1;
+    size_t rc2;
+    
 
     v = (Volume*) pli->m_gpuit;
     cube_img_read = (uint32_t*) v->img;
@@ -216,19 +219,19 @@ xio_dose_load_cube (
     }
 
     /* Read dose cube */
-    rc = fseek (fp, 
+    rc1 = fseek (fp, 
 	- v->dim[0] * v->dim[1] * v->dim[2] * sizeof(uint32_t), SEEK_END);
-    if (rc == -1) {
+    if (rc1 == -1) {
 	print_and_exit ("Error seeking backward when reading image file\n");
     }
-    rc = fread (cube_img_read, 
+    rc2 = fread (cube_img_read, 
 	sizeof(uint32_t), v->dim[0] * v->dim[1] * v->dim[2], fp);
-    if (rc != v->dim[0] * v->dim[1] * v->dim[2]) {
+    if (rc2 != v->dim[0] * v->dim[1] * v->dim[2]) {
 	perror ("File error: ");
 	print_and_exit (
 	    "Error reading xio dose cube (%s)\n"
-	    "  rc = %d, ferror = %d\n", 
-	    filename, rc, ferror (fp));
+	    "  rc = %u, ferror = %d\n", 
+	    filename, (unsigned int) rc2, ferror (fp));
     }
 
     /* Switch big-endian to native */
@@ -327,13 +330,11 @@ xio_dose_save (
        adjusted to the new geometry */
 
     FILE *fp, *fpt;
+    Xio_dose_header xdh;
 
-    int i, j, k;
-
+    size_t i, j, k;
     char header;
     size_t result;
-
-    Xio_dose_header xdh;
 
     Volume *v;
     v = (Volume*) pli->gpuit_float ();
@@ -417,7 +418,7 @@ xio_dose_save (
 	v->direction_cosines, v->pix_type, v->vox_planes);
 
     /* Clone volume and flip XiO Z axis */
-    for (k=0;k<v->dim[2];k++) {
+    for (k = 0; k < v->dim[2]; k++) {
 	for (j=0;j<v->dim[1];j++) {
 	    for (i=0;i<v->dim[0];i++) {
 		memcpy ((float*)v_write->img

@@ -28,12 +28,12 @@ check_gradient (
     Bspline_state *bst;
     FILE *fp;
     Bspline_xform *bxf;
-    int roi_offset[3];
+    size_t roi_offset[3];
     Bspline_parms* parms = &options->parms;
 
     /* Allocate memory and build lookup tables */
     printf ("Allocating lookup tables\n");
-    memset (roi_offset, 0, 3*sizeof(int));
+    memset (roi_offset, 0, 3*sizeof(size_t));
     if (options->input_xf_fn) {
 	bxf = bspline_xform_load (options->input_xf_fn);
     } else {

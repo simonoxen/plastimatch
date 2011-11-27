@@ -36,9 +36,9 @@ set_default_options (Fdk_options* options)
     options->first_img = 0;
     options->last_img = 119;
     options->skip_img = 1;
-    options->resolution[0] = 256;
-    options->resolution[1] = 256;
-    options->resolution[2] = 100;
+    options->dim[0] = 256;
+    options->dim[1] = 256;
+    options->dim[2] = 100;
     options->vol_size[0] = 300.0f;
     options->vol_size[1] = 300.0f;
     options->vol_size[2] = 150.0f;
@@ -160,14 +160,17 @@ fdk_parse_args (Fdk_options* options, int argc, char* argv[])
 		exit(1);
 	    }
 	    i++;
-	    rc = sscanf (argv[i], "%d %d %d", 
-		&options->resolution[0], 
-		&options->resolution[1],
-		&options->resolution[2]);
+	    unsigned int a, b, c;
+	    rc = sscanf (argv[i], "%d %d %d", &a, &b, &c);
 	    if (rc == 1) {
-		options->resolution[1] = options->resolution[0];
-		options->resolution[2] = options->resolution[0];
-	    } else if (rc != 3) {
+		options->dim[0] = a;
+		options->dim[1] = a;
+		options->dim[2] = a;
+	    } else if (rc == 3) {
+		options->dim[0] = a;
+		options->dim[1] = c;
+		options->dim[2] = c;
+	    } else {
 		print_usage ();
 	    }
 	}

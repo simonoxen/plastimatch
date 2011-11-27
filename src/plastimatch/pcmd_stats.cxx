@@ -34,7 +34,7 @@ stats_vf_main (Stats_parms* parms)
     }
     else if (xf1.m_type == XFORM_ITK_VECTOR_FIELD) {
 	/* GCS FIX: This logic should be moved inside of xform class */
-	int dim[3];
+	size_t dim[3];
 	float origin[3], spacing[3];
 	Plm_image_header pih;
 

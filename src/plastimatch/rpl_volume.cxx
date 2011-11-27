@@ -223,7 +223,7 @@ rpl_volume_create (
     float ray_step        // uniform ray step size
 )
 {
-    int dv_dims[3];
+    size_t dv_dims[3];
     float dv_off[3] = {0.0f, 0.0f, 0.0f};   // arbitrary
     float dv_ps[3] = {1.0f, 1.0f, 1.0f};    //
     float ct_diag;

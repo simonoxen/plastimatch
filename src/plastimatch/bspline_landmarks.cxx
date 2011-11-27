@@ -351,8 +351,8 @@ bspline_landmarks_score_a (
 
     for (lidx=0; lidx < blm->num_landmarks; lidx++)
     {
-	int p[3], q[3];
-	int qidx;
+	size_t p[3], q[3];
+	size_t qidx;
 	float mxyz[3];   /* Location of fixed landmark in moving image */
 	float diff[3];   /* mxyz - moving_landmark */
 	float dc_dv[3];
@@ -431,12 +431,13 @@ Bspline_landmarks::initialize (const Bspline_xform* bxf)
     this->fixed_landmarks_q = new int[3*this->num_landmarks];
     for (int i = 0; i < num_landmarks; i++) {
 	for (int d = 0; d < 3; d++) {
-	    int v;
+	    size_t v;
 	    v = ROUND_INT ((this->fixed_landmarks->point_list[i].p[d] 
 		    - bxf->img_origin[d]) / bxf->img_spacing[d]);
-	    printf ("(%f - %f) / %f = %d\n",
+	    printf ("(%f - %f) / %f = %u\n",
 		this->fixed_landmarks->point_list[i].p[d], 
-		bxf->img_origin[d], bxf->img_spacing[d], v);
+		bxf->img_origin[d], bxf->img_spacing[d], 
+		(unsigned int) v);
 	    if (v < 0 || v >= bxf->img_dim[d])
 	    {
 		print_and_exit (

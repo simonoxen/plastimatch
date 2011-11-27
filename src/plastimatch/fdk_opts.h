@@ -33,7 +33,7 @@ struct fdk_options {
     int skip_img;
     int last_img;
 
-    int resolution[3];
+    size_t dim[3];
     float vol_size[3];
     float xy_offset[2];
 

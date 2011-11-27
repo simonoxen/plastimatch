@@ -455,8 +455,8 @@ rbf_gauss_update_vf (
     float *coeff                 /* Input */
 )
 {
-    int lidx, d, v;
-    int ijk[3];
+    int lidx, d;
+    size_t ijk[3], v;
     float fxyz[3];
     float *vf_img;
     float rbf;
@@ -510,8 +510,8 @@ rbf_gauss_update_vf_no_dircos (
     float *coeff                 /* Input */
 )
 {
-    int lidx, d, fv;
-    int fi, fj, fk;
+    int lidx, d;
+    size_t fi, fj, fk, fv;
     float fxyz[3];
     float *vf_img;
     float rbf;
@@ -562,7 +562,7 @@ rbf_gauss_warp (Landmark_warp *lw)
     float *coeff;
     float origin[3], spacing[3];
     float direction_cosines[9];
-    int dim[3];
+    size_t dim[3];
     int i;
     Volume *moving, *vf_out, *warped_out;
 
@@ -578,7 +578,7 @@ rbf_gauss_warp (Landmark_warp *lw)
 	    lw->adapt_radius[i]=lw->rbf_radius;
     }
 
-    for(i = 0; i < lw->m_fixed_landmarks->num_points; i++) 
+    for (i = 0; i < lw->m_fixed_landmarks->num_points; i++) 
 	printf("%f\n", lw->adapt_radius[i]);
 
     /* Solve for RBF weights */

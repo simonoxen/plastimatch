@@ -180,14 +180,12 @@ Rtss::save_fcsv (
 void
 Rtss::save_prefix_fcsv (const Pstring &output_prefix)
 {
-    int i;
-
     if (!this->m_cxt) {
 	print_and_exit (
 	    "Error: save_prefix_fcsv() tried to save a RTSS without a CXT\n");
     }
 
-    for (i = 0; i < m_cxt->num_structures; i++)
+    for (size_t i = 0; i < m_cxt->num_structures; i++)
     {
 	Pstring fn;
 	Rtss_structure *curr_structure = m_cxt->slist[i];
@@ -227,8 +225,6 @@ Rtss::save_labelmap (const Pstring &labelmap_fn)
 void
 Rtss::save_prefix (const Pstring &output_prefix)
 {
-    int i;
-
     if (!m_ss_img) {
 	return;
     }
@@ -237,7 +233,7 @@ Rtss::save_prefix (const Pstring &output_prefix)
 	printf ("WTF???\n");
     }
 
-    for (i = 0; i < m_ss_list->num_structures; i++)
+    for (size_t i = 0; i < m_ss_list->num_structures; i++)
     {
 	Pstring fn;
 	Rtss_structure *curr_structure = m_ss_list->slist[i];
@@ -310,7 +306,7 @@ Rtss::apply_dicom_dir (const Referenced_dicom_dir *rdd)
     }
 
     /* Slice numbers and slice uids */
-    for (int i = 0; i < this->m_cxt->num_structures; i++) {
+    for (size_t i = 0; i < this->m_cxt->num_structures; i++) {
 	Rtss_structure *curr_structure = this->m_cxt->slist[i];
 	for (int j = 0; j < curr_structure->num_contours; j++) {
 	    Rtss_polyline *curr_polyline = curr_structure->pslist[j];

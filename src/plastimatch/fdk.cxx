@@ -212,7 +212,7 @@ get_pixel_value_b (Proj_image* cbi, double r, double c)
 void
 project_volume_onto_image_d (Volume* vol, Proj_image* cbi, float scale)
 {
-    int i, j, k, p;
+    size_t i, j, k, p;
     float* img = (float*) vol->img;
     double *xip, *yip, *zip;
     double acc2[3],acc3[3];
@@ -308,7 +308,7 @@ project_volume_onto_image_d (Volume* vol, Proj_image* cbi, float scale)
 void
 project_volume_onto_image_c (Volume* vol, Proj_image* cbi, float scale)
 {
-    int i, j, k;
+    size_t i, j, k;
     float* img = (float*) vol->img;
     double *xip, *yip, *zip;
     double sad_sid_2;
@@ -350,10 +350,10 @@ project_volume_onto_image_c (Volume* vol, Proj_image* cbi, float scale)
     /* Main loop */
 #pragma omp parallel for
     for (k = 0; k < vol->dim[2]; k++) {
-	int p = k * vol->dim[1] * vol->dim[0];
-	int j;
+	size_t p = k * vol->dim[1] * vol->dim[0];
+	size_t j;
 	for (j = 0; j < vol->dim[1]; j++) {
-	    int i;
+	    size_t i;
 	    double acc2[3];
 	    vec3_add3 (acc2, &zip[3*k], &yip[3*j]);
 	    for (i = 0; i < vol->dim[0]; i++) {
@@ -376,7 +376,7 @@ project_volume_onto_image_c (Volume* vol, Proj_image* cbi, float scale)
 void
 project_volume_onto_image_b (Volume* vol, Proj_image* cbi, float scale)
 {
-    int i, j, k, p;
+    size_t i, j, k, p;
     float* img = (float*) vol->img;
     double wip[3];
     double *xip, *yip, *zip;
@@ -453,7 +453,7 @@ project_volume_onto_image_b (Volume* vol, Proj_image* cbi, float scale)
 void
 project_volume_onto_image_a (Volume* vol, Proj_image* cbi, float scale)
 {
-    int i, j, k, p;
+    size_t i, j, k, p;
     float* img = (float*) vol->img;
     double wip[3];
     double *xip, *yip, *zip;
@@ -539,7 +539,7 @@ project_volume_onto_image_reference (
     float scale
 )
 {
-    int i, j, k, p;
+    size_t i, j, k, p;
     double vp[4];   /* vp = voxel position */
     float* img = (float*) vol->img;
     Proj_matrix *pmat = cbi->pmat; /* projection matrix 3D -> 2D 

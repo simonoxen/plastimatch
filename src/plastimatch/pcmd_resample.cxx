@@ -252,7 +252,7 @@ parse_fn (
     /* Geometry options */
     if (parser->option ("dim")) {
 	parms->m_have_dim = 1;
-	parser->assign_int13 (parms->dim, "dim");
+	parser->assign_size_t_13 (parms->dim, "dim");
     }
     if (parser->option ("origin")) {
 	parms->m_have_origin = 1;

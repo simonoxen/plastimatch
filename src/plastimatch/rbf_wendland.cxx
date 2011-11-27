@@ -156,8 +156,8 @@ rbf_wendland_update_vf (
     float *coeff                 /* Input */
 )
 {
-    int lidx, d, v;
-    int ijk[3];
+    int lidx, d;
+    size_t v, ijk[3];
     float fxyz[3];
     float *vf_img;
     float rbf;
@@ -202,7 +202,7 @@ rbf_wendland_warp (Landmark_warp *lw)
 {
     float *coeff;
     float origin[3], spacing[3];
-    int dim[3];
+    size_t dim[3];
     float direction_cosines[9];
     int i;
     Volume *moving, *vf_out, *warped_out;

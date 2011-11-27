@@ -926,7 +926,7 @@ render_slice (RTOG_Header* rtog_header, unsigned char* slice_img,
 	rtog_header->ct.grid_1_units,
 	rtog_header->ct.grid_2_units
     };
-    int dims[2] = {
+    size_t dims[2] = {
 	rtog_header->ct.size_of_dimension_2,
 	rtog_header->ct.size_of_dimension_1
     };

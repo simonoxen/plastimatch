@@ -88,10 +88,10 @@ gdcm1_dose_load (Plm_image *pli, const char *dose_fn, const char *dicom_dir)
     Gdcm_series gs;
     std::string tmp;
     float ipp[3];
-    int dim[3];
+    size_t dim[3];
     float spacing[3];
     float *gfov;    /* gfov = GridFrameOffsetVector */
-    int gfov_len;
+    size_t gfov_len;
     const char *gfov_str;
     float dose_scaling;
 
@@ -117,17 +117,19 @@ gdcm1_dose_load (Plm_image *pli, const char *dose_fn, const char *dicom_dir)
 
     /* Rows */
     tmp = gdcm_file->GetEntryValue (0x0028, 0x0010);
-    rc = sscanf (tmp.c_str(), "%d", &dim[1]);
+    rc = sscanf (tmp.c_str(), "%d", &i);
     if (rc != 1) {
 	print_and_exit ("Error parsing RTDOSE rows.\n");
     }
+    dim[1] = i;
 
     /* Columns */
     tmp = gdcm_file->GetEntryValue (0x0028, 0x0011);
-    rc = sscanf (tmp.c_str(), "%d", &dim[0]);
+    rc = sscanf (tmp.c_str(), "%d", &i);
     if (rc != 1) {
 	print_and_exit ("Error parsing RTDOSE columns.\n");
     }
+    dim[0] = i;
 
     /* PixelSpacing */
     tmp = gdcm_file->GetEntryValue (0x0028, 0x0030);

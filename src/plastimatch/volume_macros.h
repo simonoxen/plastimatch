@@ -10,13 +10,13 @@
    Macros
    ----------------------------------------------------------------------- */
 static inline size_t 
-volume_index (const int dims[3], int i, int j, int k)
+volume_index (const size_t dims[3], size_t i, size_t j, size_t k)
 {
     return i + (dims[0] * (j + dims[1] * k));
 }
 
 static inline size_t 
-volume_index (const int dims[3], const int ijk[3])
+volume_index (const size_t dims[3], const size_t ijk[3])
 {
     return ijk[0] + (dims[0] * (ijk[1] + dims[1] * ijk[2]));
 }
@@ -33,7 +33,7 @@ volume_index (const int dims[3], const int ijk[3])
     ++ijk[2],								\
 	fxyz[2] = vol->offset[2] + ijk[2]*vol->step[2][2]
 #define LOOP_Z_OMP(k,vol)						\
-    int k = 0;								\
+    size_t k = 0;							\
     k < vol->dim[2];							\
     ++k
 #define LOOP_Y(ijk,fxyz,vol)						\

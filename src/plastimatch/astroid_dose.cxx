@@ -14,7 +14,7 @@
 
 typedef struct astroid_dose_header Astroid_dose_header;
 struct astroid_dose_header {
-    int dim[3];
+    size_t dim[3];
     float offset[3];
     float spacing[3];
     std::string dose_type;
@@ -121,7 +121,7 @@ astroid_dose_load_cube (
 {
     FILE *fp;
     Volume *v;
-    int i, j, k, rc;
+    size_t i, j, k, rc;
 
     v = (Volume*) pli->m_gpuit;
     char* cube_img_read = (char*) v->img;
@@ -190,7 +190,8 @@ astroid_dose_create_volume (
     pli->set_gpuit (v);
 
     printf ("img: %p\n", v->img);
-    printf ("Image dim: %d %d %d\n", v->dim[0], v->dim[1], v->dim[2]);
+    printf ("Image dim: %u %u %u\n", (unsigned int) v->dim[0], 
+	(unsigned int) v->dim[1], (unsigned int) v->dim[2]);
 }
 
 void

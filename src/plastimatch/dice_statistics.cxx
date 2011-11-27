@@ -40,10 +40,9 @@ float do_dice (
     int TN=0;
     int TP=0;
 	
-    int dim[3];
+    size_t dim[3];
     float offset[3];
     float spacing[3];
-    int i=0;
 
     DoubleVector3DType c_ref;
     DoubleVector3DType c_warp;
@@ -51,7 +50,9 @@ float do_dice (
     double vol_warp;
 	
 
-    if(reference->GetLargestPossibleRegion().GetSize() != warped->GetLargestPossibleRegion().GetSize()){
+    if (reference->GetLargestPossibleRegion().GetSize() 
+	!= warped->GetLargestPossibleRegion().GetSize())
+    {
 	fprintf(stderr,"ERROR: The 2 volumes have different sizes. \n");
 	fprintf(stderr, "Size Reference: %lu %lu %lu \n ",
 	    reference->GetLargestPossibleRegion().GetSize()[0],
@@ -67,11 +68,11 @@ float do_dice (
     sizeRef=0;
     sizeWarp=0;
     TP=TN=FP=FN=0;
-    get_image_header(dim, offset, spacing, reference);
+    get_image_header (dim, offset, spacing, reference);
 
     ItTypeVolPixel it(reference, reference->GetLargestPossibleRegion());
 
-    while(!it.IsAtEnd())
+    while (!it.IsAtEnd())
     {
 	k=it.GetIndex();
 	if(reference->GetPixel(k)){
@@ -91,7 +92,6 @@ float do_dice (
 	    sizeWarp++;
 		
 	it.operator ++();
-	i++;
     }
 
 

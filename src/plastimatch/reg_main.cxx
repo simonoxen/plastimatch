@@ -40,10 +40,10 @@ print_stats (Bspline_xform* bxf, Bspline_score* bscore, float score, double time
 }
 
 Bspline_xform*
-bxf_from_vf (Volume* vf, int* vox_per_rgn)
+bxf_from_vf (Volume* vf, size_t* vox_per_rgn)
 {
     Bspline_xform* bxf;
-    int roi_offset[3] = {0, 0, 0};
+    size_t roi_offset[3] = {0, 0, 0};
 
     bxf = (Bspline_xform*) malloc (sizeof (Bspline_xform));
     bspline_xform_initialize (

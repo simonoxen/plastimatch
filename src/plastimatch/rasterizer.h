@@ -25,7 +25,7 @@ class plastimatch1_EXPORT Rasterizer {
 
     float origin[3];
     float spacing[3];
-    int dim[3];
+    size_t dim[3];
 
     unsigned char* acc_img;
     Volume* uchar_vol;

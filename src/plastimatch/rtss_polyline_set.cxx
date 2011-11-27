@@ -77,9 +77,7 @@ Rtss_polyline_set::init (void)
 void
 Rtss_polyline_set::clear (void)
 {
-    int i;
-
-    for (i = 0; i < this->num_structures; i++) {
+    for (size_t i = 0; i < this->num_structures; i++) {
 	delete (this->slist[i]);
     }
     free (this->slist);
@@ -94,7 +92,7 @@ Rtss_polyline_set::find_unused_structure_name (void)
     for (int n = 1; n < std::numeric_limits<int>::max(); ++n) {
 	test_name.format ("%s (%d)", "Unknown structure", n);
 	bool dup_found = 0;
-	for (int i = 0; i < this->num_structures; ++i) {
+	for (size_t i = 0; i < this->num_structures; ++i) {
 	    Rtss_structure* curr_structure = this->slist[i];
 	    if (test_name == curr_structure->name) {
 		dup_found = true;
@@ -151,9 +149,7 @@ Rtss_polyline_set::add_structure (
 Rtss_structure*
 Rtss_polyline_set::find_structure_by_id (int structure_id)
 {
-    int i;
-
-    for (i = 0; i < this->num_structures; i++) {
+    for (size_t i = 0; i < this->num_structures; i++) {
 	Rtss_structure* curr_structure;
 	curr_structure = this->slist[i];
 	if (curr_structure->id == structure_id) {
@@ -166,12 +162,13 @@ Rtss_polyline_set::find_structure_by_id (int structure_id)
 void
 Rtss_polyline_set::debug (void)
 {
-    int i;
     Rtss_structure* curr_structure;
 
     if (this->have_geometry) {
-	printf ("rps::dim = %d %d %d\n", 
-	    this->m_dim[0], this->m_dim[1], this->m_dim[2]);
+	printf ("rps::dim = %u %u %u\n", 
+	    (unsigned int) this->m_dim[0], 
+	    (unsigned int) this->m_dim[1], 
+	    (unsigned int) this->m_dim[2]);
 	printf ("rps::offset = %g %g %g\n", 
 	    this->m_offset[0], this->m_offset[1], this->m_offset[2]);
 	printf ("rps::spacing = %g %g %g\n", 
@@ -180,10 +177,10 @@ Rtss_polyline_set::debug (void)
 	printf ("rps has no geometry\n");
     }
 
-    for (i = 0; i < this->num_structures; i++) {
+    for (size_t i = 0; i < this->num_structures; i++) {
         curr_structure = this->slist[i];
-	printf ("%d %d %s [%s] (%p) (%d contours)", 
-	    i, 
+	printf ("%u %d %s [%s] (%p) (%d contours)", 
+	    (unsigned int) i, 
 	    curr_structure->id, 
 	    (const char*) curr_structure->name, 
 	    bstring_empty (curr_structure->color) 
@@ -208,14 +205,13 @@ Rtss_polyline_set::debug (void)
 void
 Rtss_polyline_set::adjust_structure_names (void)
 {
-    int i, j;
     Rtss_structure* curr_structure;
 
-    for (i = 0; i < this->num_structures; i++) {
+    for (size_t i = 0; i < this->num_structures; i++) {
         curr_structure = this->slist[i];
 	bool changed = false;
 	Pstring tmp = curr_structure->name;
-	for (j = 0; j < curr_structure->name.length(); j++) {
+	for (int j = 0; j < curr_structure->name.length(); j++) {
 	    /* GE Adv sim doesn't like names with strange punctuation. */
 	    if (! isalnum (curr_structure->name[j])) {
 		curr_structure->name[j] = '_';
@@ -232,9 +228,7 @@ Rtss_polyline_set::adjust_structure_names (void)
 void
 Rtss_polyline_set::prune_empty (void)
 {
-    int i;
-
-    for (i = 0; i < this->num_structures; i++) {
+    for (size_t i = 0; i < this->num_structures; i++) {
 	Rtss_structure* curr_structure;
 	curr_structure = this->slist[i];
 	if (curr_structure->num_contours == 0) {
@@ -256,8 +250,6 @@ Rtss_polyline_set::clone_empty (
     Rtss_polyline_set* cxt_in
 )
 {
-    int i;
-
     /* Initialize output cxt */
     if (cxt_out) {
 	cxt_out->clear ();
@@ -265,7 +257,7 @@ Rtss_polyline_set::clone_empty (
 	cxt_out = new Rtss_polyline_set;
     }
 
-    for (i = 0; i < cxt_in->num_structures; i++) {
+    for (size_t i = 0; i < cxt_in->num_structures; i++) {
 	Rtss_structure *old_structure = cxt_in->slist[i];
 	Rtss_structure *new_structure = cxt_out->add_structure (
 	    old_structure->name, old_structure->color, old_structure->id);
@@ -280,8 +272,7 @@ Rtss_polyline_set::clone_empty (
 void
 Rtss_polyline_set::free_all_polylines (void)
 {
-    int i;
-    for (i = 0; i < this->num_structures; i++) {
+    for (size_t i = 0; i < this->num_structures; i++) {
 	int j;
 	Rtss_structure *curr_structure = this->slist[i];
 	for (j = 0; j < curr_structure->num_contours; j++) {
@@ -298,7 +289,7 @@ void
 Rtss_polyline_set::find_rasterization_geometry (
     float offset[3],
     float spacing[3],
-    int dims[3]
+    size_t dims[3]
 )
 {
     int first = 1;
@@ -308,7 +299,7 @@ Rtss_polyline_set::find_rasterization_geometry (
     std::set<float> z_values;
 
     /* Scan points to find image size, spacing */
-    for (int i = 0; i < this->num_structures; i++) {
+    for (size_t i = 0; i < this->num_structures; i++) {
 	Rtss_structure *curr_structure = this->slist[i];
 	for (int j = 0; j < curr_structure->num_contours; j++) {
 	    Rtss_polyline *curr_polyline = curr_structure->pslist[j];
@@ -404,7 +395,7 @@ void
 Rtss_polyline_set::find_rasterization_geometry (Plm_image_header *pih)
 {
     /* use some generic default parameters */
-    int dim[3];
+    size_t dim[3];
     float origin[3];
     float spacing[3];
 
@@ -421,8 +412,10 @@ Rtss_polyline_set::set_rasterization_geometry (void)
 	this->rast_spacing,
 	this->rast_dim
     );
-    printf ("rast_dim = %d %d %d\n", 
-	this->rast_dim[0], this->rast_dim[1], this->rast_dim[2]);
+    printf ("rast_dim = %u %u %u\n", 
+	(unsigned int) this->rast_dim[0], 
+	(unsigned int) this->rast_dim[1], 
+	(unsigned int) this->rast_dim[2]);
     printf ("rast_offset = %g %g %g\n", 
 	this->rast_offset[0], this->rast_offset[1], this->rast_offset[2]);
     printf ("rast_spacing = %g %g %g\n", 
@@ -432,13 +425,11 @@ Rtss_polyline_set::set_rasterization_geometry (void)
 void
 Rtss_polyline_set::fix_polyline_slice_numbers (void)
 {
-    int i, j;
-
     if (!this->have_geometry) return;
 
-    for (i = 0; i < this->num_structures; i++) {
+    for (size_t i = 0; i < this->num_structures; i++) {
 	Rtss_structure *curr_structure = this->slist[i];
-	for (j = 0; j < curr_structure->num_contours; j++) {
+	for (int j = 0; j < curr_structure->num_contours; j++) {
 	    Rtss_polyline *curr_polyline = curr_structure->pslist[j];
 	    if (curr_polyline->num_vertices == 0) {
 		curr_polyline->slice_no = -1;

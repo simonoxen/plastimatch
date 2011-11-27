@@ -17,7 +17,8 @@
 Volume*
 vf_warp (Volume *vout, Volume *vin, Volume *vf)
 {
-    int d, ijk[3];
+    int d;
+    size_t ijk[3];
     size_t v;
     float fxyz[3];
     float* vf_img = (float*) vf->img;
@@ -99,8 +100,8 @@ vf_warp (Volume *vout, Volume *vin, Volume *vf)
 		float li_1[3];  /* Fraction of interpolant in lower index */
 		float li_2[3];  /* Fraction of interpolant in upper index */
 		float mijk[3];
-		int mijk_r[3], mijk_f[3];
-		int mvf;
+		size_t mijk_r[3], mijk_f[3];
+		size_t mvf;
 
 		mijk[2] = PROJECT_Z(mo_xyz,vin->proj);
 		if (mijk[2] < -0.5 || mijk[2] > vin->dim[2] - 0.5) continue;

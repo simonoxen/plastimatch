@@ -30,66 +30,69 @@ reg_opts_parse_args (Reg_options* options, int argc, char* argv[])
     Reg_parms* parms = &options->parms;
 
     for (i=1; i < argc; i++) {
-    if (argv[i][0] != '-') break;
-    /* BEHAVIOR OPTIONS */
-    if (!strcmp (argv[i], "-f")) {
-        if (i == (argc-1) || argv[i+1][0] == '-') {
-        fprintf(stderr, "option %s requires an argument\n", argv[i]);
-        exit(1);
-        }
-        i++;
-        parms->implementation = argv[i][0];
-    }
-    else if (!strcmp (argv[i], "-s")) {
-        if (i == (argc-1) || argv[i+1][0] == '-') {
-        fprintf(stderr, "option %s requires an argument\n", argv[i]);
-        exit(1);
-        }
-        i++;
-        rc = sscanf (argv[i], "%d %d %d", 
-        &options->vox_per_rgn[0],
-        &options->vox_per_rgn[1],
-        &options->vox_per_rgn[2]);
-        if (rc == 1) {
-        options->vox_per_rgn[1] = options->vox_per_rgn[0];
-        options->vox_per_rgn[2] = options->vox_per_rgn[0];
-        } else if (rc != 3) {
-        print_usage ();
-        }
-    }
-    /* INPUT OPTIONS */
-    else if (!strcmp (argv[i], "-V")) {
-        if (i == (argc-1) || argv[i+1][0] == '-') {
-        fprintf(stderr, "option %s expects path to mha file\n", argv[i]);
-        exit(1);
-        }
-        i++;
-        options->input_vf_fn = strdup (argv[i]);
-        if (options->input_xf_fn != 0) {
-            printf ("Error: Cannot specify both vector field AND coefficient input\n");
-            exit (1);
-        } else {
-            printf ("Using Vector Field: %s\n", options->input_vf_fn);
-        }
-    }
-    else if (!strcmp (argv[i], "-C")) {
-        if (i == (argc-1) || argv[i+1][0] == '-') {
-        fprintf(stderr, "option %s expects path to xform file\n", argv[i]);
-        exit(1);
-        }
-        i++;
-        options->input_xf_fn = strdup (argv[i]);
-        if (options->input_vf_fn != 0) {
-            printf ("Error: Cannot specify both vector field AND coefficient input\n");
-            exit (1);
-        } else {
-            printf ("Using Coefficients: %s\n", options->input_xf_fn);
-        }
-    }
-    else {
-        print_usage ();
-        break;
-    }
+	if (argv[i][0] != '-') break;
+	/* BEHAVIOR OPTIONS */
+	if (!strcmp (argv[i], "-f")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    parms->implementation = argv[i][0];
+	}
+	else if (!strcmp (argv[i], "-s")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    unsigned int a, b, c;
+	    rc = sscanf (argv[i], "%d %d %d", &a, &b, &c);
+	    if (rc == 1) {
+		options->vox_per_rgn[0] = a;
+		options->vox_per_rgn[1] = a;
+		options->vox_per_rgn[2] = a;
+	    } else if (rc == 3) {
+		options->vox_per_rgn[0] = a;
+		options->vox_per_rgn[1] = b;
+		options->vox_per_rgn[2] = c;
+	    } else {
+		print_usage ();
+	    }
+	}
+	/* INPUT OPTIONS */
+	else if (!strcmp (argv[i], "-V")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s expects path to mha file\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    options->input_vf_fn = strdup (argv[i]);
+	    if (options->input_xf_fn != 0) {
+		printf ("Error: Cannot specify both vector field AND coefficient input\n");
+		exit (1);
+	    } else {
+		printf ("Using Vector Field: %s\n", options->input_vf_fn);
+	    }
+	}
+	else if (!strcmp (argv[i], "-C")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s expects path to xform file\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    options->input_xf_fn = strdup (argv[i]);
+	    if (options->input_vf_fn != 0) {
+		printf ("Error: Cannot specify both vector field AND coefficient input\n");
+		exit (1);
+	    } else {
+		printf ("Using Coefficients: %s\n", options->input_xf_fn);
+	    }
+	}
+	else {
+	    print_usage ();
+	    break;
+	}
     } /* for (i < argc) */
 
     if (options->input_xf_fn == 0 && options->input_vf_fn == 0) {

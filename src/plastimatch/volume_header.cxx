@@ -13,7 +13,7 @@
 #include "volume_header.h"
 
 void
-Volume_header::set_dim (const int dim[3])
+Volume_header::set_dim (const size_t dim[3])
 {
     for (unsigned int d = 0; d < 3; d++) {
 	m_dim[d] = dim[d];
@@ -56,7 +56,7 @@ Volume_header::set_direction_cosines_identity ()
 
 void
 Volume_header::set (
-    const int dim[3],
+    const size_t dim[3],
     const float origin[3],
     const float spacing[3],
     const float direction_cosines[9])
@@ -69,7 +69,7 @@ Volume_header::set (
 
 void
 Volume_header::set (
-    const int dim[3],
+    const size_t dim[3],
     const float origin[3],
     const float spacing[3],
     const Direction_cosines& dc)
