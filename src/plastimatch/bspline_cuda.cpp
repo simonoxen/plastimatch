@@ -106,27 +106,27 @@ void
 bspline_interp_pix_b (
     float out[3], 
     Bspline_xform* bxf, 
-    int pidx, 
-    int qidx
+    size_t pidx, 
+    size_t qidx
 )
 {
-    int i, j, k, m;
-    int cidx;
+    size_t i, j, k, m;
+    size_t cidx;
     float* q_lut = &bxf->q_lut[qidx*64];
-    int* c_lut = &bxf->c_lut[pidx*64];
+    size_t* c_lut = &bxf->c_lut[pidx*64];
 
     out[0] = out[1] = out[2] = 0;
     m = 0;
     for (k = 0; k < 4; k++) {
-    for (j = 0; j < 4; j++) {
-        for (i = 0; i < 4; i++) {
-        cidx = 3 * c_lut[m];
-        out[0] += q_lut[m] * bxf->coeff[cidx+0];
-        out[1] += q_lut[m] * bxf->coeff[cidx+1];
-        out[2] += q_lut[m] * bxf->coeff[cidx+2];
-        m ++;
-        }
-    }
+	for (j = 0; j < 4; j++) {
+	    for (i = 0; i < 4; i++) {
+		cidx = 3 * c_lut[m];
+		out[0] += q_lut[m] * bxf->coeff[cidx+0];
+		out[1] += q_lut[m] * bxf->coeff[cidx+1];
+		out[2] += q_lut[m] * bxf->coeff[cidx+2];
+		m ++;
+	    }
+	}
     }
 }
 
