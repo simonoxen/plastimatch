@@ -163,8 +163,8 @@ extern "C" {
         Bspline_parms* parms,
         Bspline_xform* bxf,
         Volume* fixed,
-        int* vox_per_rgn,
-        int* volume_dim,
+        size_t* vox_per_rgn,
+        size_t* volume_dim,
         float* host_score,
         float* host_grad,
         float* host_grad_mean,
@@ -226,7 +226,7 @@ extern "C" {
     void
     CUDA_bspline_condense (
         Dev_Pointers_Bspline* dev_ptrs,
-        int* vox_per_rgn,
+        size_t* vox_per_rgn,
         int num_tiles
     );
 
@@ -247,14 +247,14 @@ extern "C" {
     CPU_find_knots (
         int* knots,
         int tile_num,
-        int* rdims,
-        int* cdims
+        size_t* rdims,
+        size_t* cdims
     );
 
     int*
     CPU_calc_offsets (
-        int* tile_dims,
-        int* cdims
+        size_t* tile_dims,
+        size_t* cdims
     );
 
     plmcuda_EXPORT (

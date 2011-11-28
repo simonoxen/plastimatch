@@ -2,10 +2,10 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 #if defined (_WIN32)
 #include <windows.h>
 #endif
@@ -21,6 +21,7 @@
 #include "bspline_optimize_lbfgsb.h"
 #include "bspline_opts.h"
 #include "interpolate.h"
+#include "math_util.h"
 #include "mha_io.h"
 #include "plm_timer.h"
 #include "volume.h"
@@ -31,7 +32,7 @@
  * Once the CPU code is removed from the functions below, these
  * functions can be deleted.
  ***********************************************************************/
-#define ROUND_INT(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
+// #define ROUND_INT(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
 
 // JAS 2010.11.23
 // Sorry about this... these functions are reproductions of stuff that lives in
@@ -413,6 +414,7 @@ bspline_mi_pvi_8_dc_dv (
     dc_dv[2] = dc_dv[2] / num_vox_f / moving->spacing[2];
 }
 
+#if defined (MI_GRAD_CPU)
 inline void
 bspline_update_grad_b_inline (Bspline_state* bst, Bspline_xform* bxf, 
              int pidx, int qidx, float dc_dv[3])
@@ -436,6 +438,7 @@ bspline_update_grad_b_inline (Bspline_state* bst, Bspline_xform* bxf,
     }
     }
 }
+#endif
 
 static void display_hist_totals (BSPLINE_MI_Hist *mi_hist)
 {
@@ -461,28 +464,28 @@ static void display_hist_totals (BSPLINE_MI_Hist *mi_hist)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-int
+size_t
 CPU_MI_Hist (BSPLINE_MI_Hist *mi_hist,  // OUTPUT: Histograms
     Bspline_xform *bxf,                 //  INPUT: Bspline X-Form
     Volume* fixed,                      //  INPUT: Fixed Image
-   Volume* moving)                      //  INPUT: Moving Image
+    Volume* moving)                     //  INPUT: Moving Image
 {
-    int rijk[3];
-    int fijk[3];
-    int fv;
-    int p[3];
-    int q[3];
+    size_t rijk[3];
+    size_t fijk[3];
+    size_t fv;
+    size_t p[3];
+    size_t q[3];
     float fxyz[3];
-    int pidx, qidx;
+    size_t pidx, qidx;
     float dxyz[3];
     float mxyz[3];
     float mijk[3];
-    int mijk_f[3];  // floor: mijk
-    int mijk_r[3];  // round: mijk
-    int mvf;        // floor: mv
+    size_t mijk_f[3];  // floor: mijk
+    size_t mijk_r[3];  // round: mijk
+    size_t mvf;        // floor: mv
     float li_1[3];
     float li_2[3];
-    int num_vox = 0;
+    size_t num_vox = 0;
 
     for (rijk[2] = 0, fijk[2] = bxf->roi_offset[2]; rijk[2] < bxf->roi_dim[2]; rijk[2]++, fijk[2]++) {
         p[2] = rijk[2] / bxf->vox_per_rgn[2];
@@ -557,6 +560,7 @@ CPU_MI_Score (BSPLINE_MI_Hist* mi_hist, int num_vox)
     return (float) score;
 }
 
+#if defined (MI_GRAD_CPU)
 void
 CPU_MI_Grad (BSPLINE_MI_Hist *mi_hist, // OUTPUT: Histograms
         Bspline_state *bst,     //  INPUT: Bspline State
@@ -630,7 +634,7 @@ CPU_MI_Grad (BSPLINE_MI_Hist *mi_hist, // OUTPUT: Histograms
         }
     }
 }
-
+#endif
 
 void
 CUDA_bspline_mi_a (

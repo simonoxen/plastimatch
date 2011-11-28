@@ -241,7 +241,7 @@ CUDA_bspline_mi_init_a (
 
     // Tile Offset LUT
     // ----------------------------------------------------------
-    int* offsets = CPU_calc_offsets(bxf->vox_per_rgn, bxf->cdims);
+    int* offsets = CPU_calc_offsets (bxf->vox_per_rgn, bxf->cdims);
     int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
 
     dev_ptrs->LUT_Offsets_size = num_tiles*sizeof(int);
@@ -1453,8 +1453,8 @@ CUDA_bspline_mse_pt2 (
     Bspline_parms* parms, 
     Bspline_xform* bxf,
     Volume* fixed,
-    int*   vox_per_rgn,
-    int*   volume_dim,
+    size_t*   vox_per_rgn,
+    size_t*   volume_dim,
     float* host_score,
     float* host_grad,
     float* host_grad_mean,
@@ -1681,7 +1681,7 @@ CUDA_bspline_mse_score_dc_dv (
 void
 CUDA_bspline_condense (
     Dev_Pointers_Bspline* dev_ptrs,
-    int* vox_per_rgn,
+    size_t* vox_per_rgn,
     int num_tiles
 )
 {
@@ -1689,10 +1689,11 @@ CUDA_bspline_condense (
     dim3 dimBlock;
 
     int4 vox_per_region;
-    vox_per_region.x = vox_per_rgn[0];
-    vox_per_region.y = vox_per_rgn[1];
-    vox_per_region.z = vox_per_rgn[2];
-    vox_per_region.w = vox_per_region.x * vox_per_region.y * vox_per_region.z;
+    vox_per_region.x = (int) vox_per_rgn[0];
+    vox_per_region.y = (int) vox_per_rgn[1];
+    vox_per_region.z = (int) vox_per_rgn[2];
+    vox_per_region.w = 
+	(int) vox_per_region.x * vox_per_region.y * vox_per_region.z;
 
     int pad = 64 - (vox_per_region.w % 64);
 
@@ -3352,7 +3353,7 @@ CPU_obtain_bspline_basis_function (
 // Author: James Shackleford
 // Data: July 30th, 2009
 ////////////////////////////////////////////////////////////////////////////////
-int* CPU_calc_offsets(int* tile_dims, int* cdims)
+int* CPU_calc_offsets (size_t* tile_dims, size_t* cdims)
 {
     int vox_per_tile = (tile_dims[0] * tile_dims[1] * tile_dims[2]);
     int pad = 32 - (vox_per_tile % 32);
@@ -3393,7 +3394,7 @@ int* CPU_calc_offsets(int* tile_dims, int* cdims)
 // Author: James Shackleford
 // Data: July 13th, 2009
 ////////////////////////////////////////////////////////////////////////////////
-void CPU_find_knots(int* knots, int tile_num, int* rdims, int* cdims)
+void CPU_find_knots(int* knots, int tile_num, size_t* rdims, size_t* cdims)
 {
     int tile_loc[3];
     int i, j, k;

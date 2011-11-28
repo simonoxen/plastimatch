@@ -9,6 +9,7 @@
 #include "demons_misc.h"
 #include "demons_opts.h"
 #include "demons_state.h"
+#include "plm_cuda_math.h"
 #include "plm_timer.h"
 #include "volume.h"
 
@@ -44,14 +45,19 @@ __constant__ float c_invmps[3];
 /*
 Constant Memory Functions
 */
-void setConstantDimension(int *h_dim)
+void 
+setConstantDimension (size_t *h_dim)
 {
-	cudaMemcpyToSymbol(c_dim, h_dim, sizeof(int3));
+    int i_dim[3] = { h_dim[0], h_dim[1], h_dim[2] };
+    cudaMemcpyToSymbol (c_dim, i_dim, sizeof(int3));
+    //cudaMemcpyToSymbol(c_dim, h_dim, sizeof(int3));
 }
 
-void setConstantMovingDimension(int *h_moving_dim)
+void 
+setConstantMovingDimension (size_t *h_dim)
 {
-	cudaMemcpyToSymbol(c_moving_dim, h_moving_dim, sizeof(int3));
+    int i_dim[3] = { h_dim[0], h_dim[1], h_dim[2] };
+    cudaMemcpyToSymbol (c_moving_dim, i_dim, sizeof(int3));
 }
 
 void setConstantPixelSpacing(float *h_spacing_div2)
