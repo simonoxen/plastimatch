@@ -372,7 +372,9 @@ set (MSINTTYPES_INCLUDE_DIR
 ##-----------------------------------------------------------------------------
 ##  Special CUDA processing
 ##-----------------------------------------------------------------------------
-if (NOT PLM_CONFIG_DISABLE_CUDA)
+if (PLM_CONFIG_DISABLE_CUDA)
+  set (CUDA_FOUND false)
+else ()
   find_package (CUDA_wrap)
   set (CUDA_FOUND ${CUDA_FOUND} CACHE BOOL "Did we find cuda?")
   if (CUDA_FOUND)
