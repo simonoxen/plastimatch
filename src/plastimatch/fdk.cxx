@@ -212,7 +212,7 @@ get_pixel_value_b (Proj_image* cbi, double r, double c)
 void
 project_volume_onto_image_d (Volume* vol, Proj_image* cbi, float scale)
 {
-    size_t i, j, k, p;
+    long i, j, k, p;
     float* img = (float*) vol->img;
     double *xip, *yip, *zip;
     double acc2[3],acc3[3];

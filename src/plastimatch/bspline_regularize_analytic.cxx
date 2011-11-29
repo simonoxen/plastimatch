@@ -523,7 +523,8 @@ vf_regularize_analytic_omp (
     const Bspline_regularize_state* rst,
     const Bspline_xform* bxf)
 {
-    size_t i, n;
+    long i;
+    size_t n;
     Plm_timer timer;
 
     double S = 0.0;

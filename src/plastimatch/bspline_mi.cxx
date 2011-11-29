@@ -1768,7 +1768,7 @@ bspline_score_e_mi (
 {
     Bspline_score* ssd = &bst->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
-    int pidx;
+    long pidx;
     float num_vox_f;
     Plm_timer timer;
 
@@ -1778,7 +1778,7 @@ bspline_score_e_mi (
     double* j_hist = mi_hist->j_hist;
     double mhis = 0.0f;      /* Moving histogram incomplete sum */
     double jhis = 0.0f;      /* Joint  histogram incomplete sum */
-    size_t i, j, zz;
+    //size_t i, j, zz;
     omp_lock_t *f_locks, *m_locks, *j_locks;
 
     size_t cond_size = 64*bxf->num_knots*sizeof(float);
@@ -1813,17 +1813,17 @@ bspline_score_e_mi (
     j_locks = (omp_lock_t*) malloc (mi_hist->fixed.bins * mi_hist->moving.bins * sizeof(omp_lock_t));
 
 #pragma omp parallel for
-    for (i=0; i < mi_hist->fixed.bins; i++) {
+    for (long i=0; i < mi_hist->fixed.bins; i++) {
         omp_init_lock(&f_locks[i]);
     }
 
 #pragma omp parallel for
-    for (i=0; i < mi_hist->moving.bins; i++) {
+    for (long i=0; i < mi_hist->moving.bins; i++) {
         omp_init_lock(&m_locks[i]);
     }
 
 #pragma omp parallel for
-    for (i=0; i < mi_hist->fixed.bins * mi_hist->moving.bins; i++) {
+    for (long i=0; i < mi_hist->fixed.bins * mi_hist->moving.bins; i++) {
         omp_init_lock(&j_locks[i]);
     }
     /* ---------------------------------------------------- */
@@ -1900,7 +1900,7 @@ bspline_score_e_mi (
     }   // openmp
 
     /* Compute num_vox and find fullest fixed hist bin */
-    for(i=0; i<mi_hist->fixed.bins; i++) {
+    for (long i=0; i<mi_hist->fixed.bins; i++) {
         if (f_hist[i] > f_hist[mi_hist->fixed.big_bin]) {
             mi_hist->fixed.big_bin = i;
         }
@@ -1908,7 +1908,7 @@ bspline_score_e_mi (
     }
 
     /* Fill in the missing histogram bin */
-    for(i=0; i<mi_hist->moving.bins; i++) {
+    for (long i=0; i<mi_hist->moving.bins; i++) {
         mhis += m_hist[i];
     }
     m_hist[mi_hist->moving.big_bin] = (double)ssd->num_vox - mhis;
@@ -1916,7 +1916,7 @@ bspline_score_e_mi (
 
     /* Look for the biggest moving histogram bin */
 //    printf ("moving.big_bin [%i -> ", mi_hist->moving.big_bin);
-    for(i=0; i<mi_hist->moving.bins; i++) {
+    for (long i=0; i<mi_hist->moving.bins; i++) {
         if (m_hist[i] > m_hist[mi_hist->moving.big_bin]) {
             mi_hist->moving.big_bin = i;
         }
@@ -1925,8 +1925,8 @@ bspline_score_e_mi (
 
 
     /* Fill in the missing jnt hist bin */
-    for(j=0; j<mi_hist->fixed.bins; j++) {
-        for(i=0; i<mi_hist->moving.bins; i++) {
+    for (long j=0; j<mi_hist->fixed.bins; j++) {
+        for (long i=0; i<mi_hist->moving.bins; i++) {
             jhis += j_hist[j*mi_hist->moving.bins + i];
         }
     }
@@ -1935,8 +1935,8 @@ bspline_score_e_mi (
     
     /* Look for the biggest joint histogram bin */
 //    printf ("joint.big_bin [%i -> ", mi_hist->joint.big_bin);
-    for(j=0; j<mi_hist->fixed.bins; j++) {
-        for(i=0; i<mi_hist->moving.bins; i++) {
+    for (long j=0; j<mi_hist->fixed.bins; j++) {
+        for (long i=0; i<mi_hist->moving.bins; i++) {
             if (j_hist[j*mi_hist->moving.bins + i] > j_hist[mi_hist->joint.big_bin]) {
                 mi_hist->joint.big_bin = j*mi_hist->moving.bins + i;
             }
@@ -1954,6 +1954,7 @@ bspline_score_e_mi (
     /* Display histrogram stats in debug mode */
     if (parms->debug) {
         double tmp;
+	long zz;
         for (zz=0,tmp=0; zz < mi_hist->fixed.bins; zz++) {
             tmp += f_hist[zz];
         }
@@ -2071,17 +2072,17 @@ bspline_score_e_mi (
 
 
 #pragma omp parallel for
-    for (i=0; i < mi_hist->fixed.bins; i++) {
+    for (long i=0; i < mi_hist->fixed.bins; i++) {
         omp_destroy_lock(&f_locks[i]);
     }
 
 #pragma omp parallel for
-    for (i=0; i < mi_hist->moving.bins; i++) {
+    for (long i=0; i < mi_hist->moving.bins; i++) {
         omp_destroy_lock(&m_locks[i]);
     }
 
 #pragma omp parallel for
-    for (i=0; i < mi_hist->fixed.bins * mi_hist->moving.bins; i++) {
+    for (long i=0; i < mi_hist->fixed.bins * mi_hist->moving.bins; i++) {
         omp_destroy_lock(&j_locks[i]);
     }
 
