@@ -46,6 +46,9 @@ IF(CUDA_FOUND)
                 ENDIF(GCCVER_MINOR MATCHES "3")
             ENDIF(GCCVER_MAJOR MATCHES "4")
 
+        # For CUDA 3.2: surface_functions.h does some non-compliant things...
+        #               so we tell g++ to ignore them when called via nvcc
+        SET (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --compiler-options='-fpermissive')
 
         ENDIF(CMAKE_COMPILER_IS_GNUCC)
     ENDIF(CMAKE_SYSTEM_NAME MATCHES "Linux")
