@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Plastimatch</category>
+  <category>Plastimatch.Developer Tools</category>
   <title>Dose Volume Histogram (DVH) Export</title>
   <description>Dose Volume Histogram (DVH) Export</description>
   <version>0.0</version>

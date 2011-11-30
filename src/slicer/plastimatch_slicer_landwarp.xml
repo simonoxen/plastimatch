@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Plastimatch</category>
+  <category>Plastimatch.Registration</category>
   <title>LANDWARP Landmark deformable registration</title>
   <description>Plastimatch deformable registration software (landmark deformation)</description>
   <version>0.0</version>

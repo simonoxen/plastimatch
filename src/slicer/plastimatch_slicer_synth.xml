@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Plastimatch</category>
+  <category>Plastimatch.Developer Tools</category>
   <title>Synthetic image generation</title>
   <description>This module is used to make synthetic test images for experimentation and debugging.</description>
   <version>0.0</version>

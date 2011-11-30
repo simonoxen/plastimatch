@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Plastimatch</category>
+  <category>Plastimatch.Utilities</category>
   <title>Thresholding in a box</title>
   <description>This module is used to make a labelmap by thresholding input image in a user-defined box</description>
   <version>0.0</version>

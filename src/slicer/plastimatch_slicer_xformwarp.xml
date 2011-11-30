@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Plastimatch</category>
+  <category>Plastimatch.Registration</category>
   <title>XFORMWARP Warping with transform</title>
   <description>Universal warper</description>
   <version>0.0</version>

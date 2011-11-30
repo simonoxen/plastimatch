@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Plastimatch</category>
+  <category>Plastimatch.Utilities</category>
   <title>DICOM / DICOM-RT Export</title>
   <description>DICOM / DICOM-RT Export</description>
   <version>0.0</version>

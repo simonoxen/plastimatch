@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Plastimatch</category>
+  <category>Plastimatch.Registration</category>
   <title>B-spline deformable registration</title>
   <description>The plastimatch deformable registration extension will register two images using a high performance multi-stage B-spline deformable registration algorithm.  The algorithm runs in three stages: an optional initial alignment using a translation, rigid, or affine registration, and then one or two stages of B-spline registration.  The optimizer can use mean-squared error (MSE) for unimodal registration, or mutual information (MI) for multi-modal registration, and can run on multicore (CPU) or GPU hardware (if so compiled).</description>
   <version>0.0</version>

@@ -20,4 +20,10 @@ template<class T> float
 do_dice (typename itk::Image<T,3>::Pointer reference, 
     typename itk::Image<T,3>::Pointer warped, FILE* output);
 
+
+template<class T> float 
+do_dice_nsh (typename itk::Image<T,3>::Pointer reference, 
+    typename itk::Image<T,3>::Pointer warped, FILE* output);
+
+
 #endif
