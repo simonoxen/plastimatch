@@ -2120,7 +2120,7 @@ bspline_score_d_mi (Bspline_parms *parms,
     float* f_img = (float*) fixed->img;
     float* m_img = (float*) moving->img;
     float num_vox_f;
-    size_t pidx;
+    long pidx;
     Plm_timer timer;
     float m_val;
 

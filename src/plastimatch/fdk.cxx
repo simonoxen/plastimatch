@@ -308,7 +308,7 @@ project_volume_onto_image_d (Volume* vol, Proj_image* cbi, float scale)
 void
 project_volume_onto_image_c (Volume* vol, Proj_image* cbi, float scale)
 {
-    size_t i, j, k;
+    long i, j, k;
     float* img = (float*) vol->img;
     double *xip, *yip, *zip;
     double sad_sid_2;

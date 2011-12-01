@@ -33,7 +33,7 @@ volume_index (const size_t dims[3], const size_t ijk[3])
     ++ijk[2],								\
 	fxyz[2] = vol->offset[2] + ijk[2]*vol->step[2][2]
 #define LOOP_Z_OMP(k,vol)						\
-    size_t k = 0;							\
+    long k = 0;							\
     k < vol->dim[2];							\
     ++k
 #define LOOP_Y(ijk,fxyz,vol)						\
