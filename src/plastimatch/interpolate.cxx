@@ -28,7 +28,7 @@ li_clamp (
 	*maf = 0;
 	*mar = 0;
 	*fa2 = 0.0f;
-    } else if (ma > dmax) {
+    } else if (ma >= dmax) {
 	*maf = dmax - 1;
 	*mar = dmax;
 	*fa2 = 1.0f;

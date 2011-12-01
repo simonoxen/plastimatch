@@ -61,7 +61,7 @@ bspline_score_h_mse (
     float* m_img = (float*)moving->img;
     float* m_grad = (float*)moving_grad->img;
 
-    int idx_tile;
+    size_t idx_tile;
 
     Plm_timer timer;
 
