@@ -171,6 +171,8 @@ itk_dicom_save (
 	encapsulate (dict, "0010|0020", meta->get_metadata (0x0010, 0x0020));
 	/* Patient sex */
 	encapsulate (dict, "0010|0040", meta->get_metadata (0x0010, 0x0040));
+	/* Series description */
+	encapsulate (dict, "0008|103e", meta->get_metadata (0x0008, 0x103e));
     } else {
 	/* Patient name */
 	encapsulate (dict, "0010|0010", "ANONYMOUS");

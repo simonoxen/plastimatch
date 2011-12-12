@@ -299,6 +299,8 @@ gdcm1_dose_save (
     gf->InsertValEntry ("Plastimatch", 0x0008, 0x0070);
     /* ReferringPhysiciansName */
     gf->InsertValEntry ("", 0x0008, 0x0090);
+    /* SeriesDescription */
+    set_gdcm_file_from_metadata (gf, meta, 0x0008, 0x103e);
     /* ManufacturersModelName */
     gf->InsertValEntry ("Plastimatch", 0x0008, 0x1090);
     /* PatientsName */

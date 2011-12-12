@@ -385,7 +385,7 @@ gdcm_rtss_save (
     /* StationName */
     gf->InsertValEntry ("", 0x0008, 0x1010);
     /* SeriesDescription */
-    gf->InsertValEntry ("Plastimatch structure set", 0x0008, 0x103e);
+    set_gdcm_file_from_metadata (gf, &rtss->m_img_metadata, 0x0008, 0x103e);
     /* ManufacturersModelName */
     gf->InsertValEntry ("Plastimatch", 0x0008, 0x1090);
     /* PatientsName */

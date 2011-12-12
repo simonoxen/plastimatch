@@ -137,7 +137,7 @@ Xio_dir::analyze_recursive (std::string dir)
 	Xio_patient *xpd = this->add_patient_dir (dir);
 	xpd->add_studyset_dir (dir);
 
-	std::string demographic_file = dir + "/../../demographic";
+	std::string demographic_file = dir + "/../../../demographic";
 	if (file_exists (demographic_file.c_str())) {
 	    xpd->m_demographic_fn = demographic_file.c_str();
 	}
