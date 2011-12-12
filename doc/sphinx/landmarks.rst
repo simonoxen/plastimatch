@@ -46,7 +46,7 @@ The command line usage is given as follows::
 Options "-a", "-r", "-Y", "-d" are set by default to::
 
       -a=gauss		Gaussian RBFs with infinite support
-      -r=50.0		Gaussian width 50 cm
+      -r=50.0		Gaussian width 50 mm
       -Y=0.0		No regularization of vector field
       -d=-1000		Air
 
