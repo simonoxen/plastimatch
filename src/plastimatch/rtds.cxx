@@ -229,11 +229,19 @@ Rtds::load_rdd (const char *rdd)
 {
     m_rdd.load (rdd);
 
-    /* Default to patient position in referenced DICOM */
     if (m_rdd.m_loaded) {
+	/* Default to patient position in referenced DICOM */
 	m_img_metadata.set_metadata(0x0018, 0x5100,
 	    m_rdd.m_demographics.get_metadata(0x0018, 0x5100));
 	xio_ct_get_transform(&m_img_metadata, m_xio_transform);
+
+	/* Default to patient name/ID/sex in referenced DICOM */
+	m_img_metadata.set_metadata(0x0010, 0x0010,
+	    m_rdd.m_demographics.get_metadata(0x0010, 0x0010));
+	m_img_metadata.set_metadata(0x0010, 0x0020,
+	    m_rdd.m_demographics.get_metadata(0x0010, 0x0020));
+	m_img_metadata.set_metadata(0x0010, 0x0040,
+	    m_rdd.m_demographics.get_metadata(0x0010, 0x0040));
     }
 }
 
