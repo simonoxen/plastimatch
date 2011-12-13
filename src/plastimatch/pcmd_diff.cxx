@@ -13,7 +13,7 @@
 #include "pcmd_diff.h"
 #include "plm_image.h"
 
-static void
+void
 diff_main (Diff_parms* parms)
 {
     Plm_image *img1, *img2;

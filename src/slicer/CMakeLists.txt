@@ -55,7 +55,9 @@ set (PLASTIMATCH_SLICER_XFORMWARP_SRC
 set (PLASTIMATCH_SLICER_THRESHBOX_SRC
   plastimatch_slicer_threshbox.cxx
   )
-
+set (PLASTIMATCH_SLICER_DOSE_COMPARISON_SRC
+  plastimatch_slicer_dose_comparison.cxx
+  )
 ##-----------------------------------------------------------------------------
 ##  Executable targets
 ##-----------------------------------------------------------------------------
@@ -83,7 +85,9 @@ plm_add_slicer_executable (plastimatch_slicer_xformwarp
 plm_add_slicer_executable (plastimatch_slicer_threshbox
   "${PLASTIMATCH_SLICER_THRESHBOX_SRC}" "${PLASTIMATCH_LIBS}" 
   "${GPUIT_EXE_LDFLAGS}")
-
+plm_add_slicer_executable (plastimatch_slicer_dose_comparison
+  "${PLASTIMATCH_SLICER_DOSE_COMPARISON_SRC}" "${PLASTIMATCH_LIBS}" 
+  "${GPUIT_EXE_LDFLAGS}")
 ##-----------------------------------------------------------------------------
 ##  Loadable modules
 ##-----------------------------------------------------------------------------

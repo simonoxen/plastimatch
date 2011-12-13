@@ -348,6 +348,7 @@ set (PLASTIMATCH1_LIBRARY_SRC
   landmark_warp.cxx landmark_warp.h 
   landmark_diff.cxx landmark_diff.h
   mc_dose.cxx mc_dose.h
+  pcmd_diff.cxx pcmd_diff.h
   plm_clp.h
   plm_drr_api.cxx plm_drr_api.h 
   plm_file_format.cxx plm_file_format.h 

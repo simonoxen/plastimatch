@@ -10,7 +10,7 @@
 #include "itk_image.h"
 #include "pstring.h"
 
-class Diff_parms {
+class plastimatch1_EXPORT Diff_parms {
 public:
     Pstring img_in_1_fn;
     Pstring img_in_2_fn;
@@ -18,5 +18,8 @@ public:
 };
 
 void do_command_diff (int argc, char *argv[]);
+
+plastimatch1_EXPORT
+void diff_main (Diff_parms* parms);
 
 #endif
