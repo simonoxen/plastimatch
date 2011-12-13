@@ -400,6 +400,12 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_BUILD_TESTING_DIR}/sphere-2.mha;--output-type;float;--pattern;sphere;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--sphere-center;0 0 0;--sphere-radius;50 50 50"
   )
+plm_add_test (
+  "sphere-3"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/sphere-3.mha;--output-type;float;--pattern;sphere;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;1;--sphere-center;0 0 0;--sphere-radius;50 50 50"
+  )
 
 ## -------------------------------------------------------------------------
 ## bspline - bspline algorithm flavors
@@ -1416,6 +1422,34 @@ plm_add_test (
   "convert;--input-ss-img;${PLM_BUILD_TESTING_DIR}/donut-ss-1.mha;--output-prefix-fcsv;${PLM_BUILD_TESTING_DIR}/plm-convert-prefix-fcsv"
   )
 set_tests_properties (plm-convert-prefix-fcsv PROPERTIES DEPENDS donut-1)
+
+## -------------------------------------------------------------------------
+## plastimatch-convert-dose-scale
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-convert-dose-scale"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "convert;--input-dose-img;${PLM_BUILD_TESTING_DIR}/sphere-3.mha;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dose-scale.mha;--dose-scale;77.7"
+  )
+plm_add_test (
+  "plm-convert-dose-scale-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-convert-dose-scale.mha"
+  )
+plmtest_check_interval ("plm-convert-dose-scale-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-convert-dose-scale-stats.stdout.txt"
+  "MAX *([-0-9.]*)"
+  "77.699"
+  "77.7"
+  )
+set_tests_properties (plm-convert-dose-scale PROPERTIES 
+  DEPENDS sphere-3)
+set_tests_properties (plm-convert-dose-scale-stats PROPERTIES 
+  DEPENDS plm-convert-dose-scale)
+set_tests_properties (plm-convert-dose-scale-check PROPERTIES 
+  DEPENDS plm-convert-dose-scale-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch fill/mask
