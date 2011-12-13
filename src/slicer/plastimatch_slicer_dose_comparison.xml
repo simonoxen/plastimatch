@@ -36,4 +36,64 @@
       <description>Output dose difference</description>
     </image>
   </parameters>
+  <parameters>
+    <label>Create Isodose</label>
+    <description>Option for creating isodose lines</description>
+    <boolean>
+      <name>plmslc_need_isodose</name>
+      <label>Create isodose?</label>
+      <default>false</default>
+      <longflag>--isodose</longflag>
+      <description>Check this box if you want to create isodose lines</description>
+    </boolean>
+    <image>
+      <name>plmslc_input_dose_image</name>
+      <label>Input Dose Image</label>
+      <channel>input</channel>
+      <longflag>--dose_image</longflag>
+      <default>None</default>
+    </image>
+    <image type="label">
+      <name>plmslc_isodose_img_out</name>
+      <label>Output Labelmap</label>
+      <channel>output</channel>
+      <default>None</default>
+      <description>Output labelmap, isodose image</description>
+    </image>
+    <integer>
+      <name>plmslc_isodose_value1</name>
+      <longflag>--value1</longflag>
+      <description>Isodose value</description>
+      <label>Isodose Value 1</label>
+      <default>10</default>
+    </integer>
+    <integer>
+      <name>plmslc_isodose_value2</name>
+      <longflag>--value2</longflag>
+      <description>Isodose value</description>
+      <label>Isodose Value 2</label>
+      <default>20</default>
+    </integer>
+    <integer>
+      <name>plmslc_isodose_value3</name>
+      <longflag>--value3</longflag>
+      <description>Isodose value</description>
+      <label>Isodose Value 3</label>
+      <default>30</default>
+    </integer>
+    <integer>
+      <name>plmslc_isodose_value4</name>
+      <longflag>--value4</longflag>
+      <description>Isodose value</description>
+      <label>Isodose Value 4</label>
+      <default>40</default>
+    </integer>
+    <integer>
+      <name>plmslc_isodose_value5</name>
+      <longflag>--value5</longflag>
+      <description>Isodose value</description>
+      <label>Isodose Value 5</label>
+      <default>50</default>
+    </integer>
+  </parameters>
 </executable>
