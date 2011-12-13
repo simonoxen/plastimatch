@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Plastimatch.Developer Tools</category>
+  <title>Dose Comparison</title>
+  <description>Analyse RT dose difference</description>
+  <version>0.0</version>
+  <documentation-url>http://plastimatch.org</documentation-url>
+  <license>BSD-style</license>
+  <contributor>Please direct questions or suggestions to http://groups.google.com/group/plastimatch</contributor>
+  <acknowledgements>Funding for this project has been provided by NIH 2-U54-EB005149 (NA-MIC), NIH/NCI 6-PO1 CA 21239, the Federal share of program income earned by MGH on C06CA059267, and the Progetto Rocca Foundation, a collaboration between MIT and Politecnico di Milano.</acknowledgements>
+  <parameters>
+    <label>Input/Output</label>
+    <description>Input parameters</description>
+    <image>
+      <longflag>plmslc_dose1_input_img</longflag>
+      <name>plmslc_dose1_input_img</name>
+      <label>Input dose image1</label>
+      <channel>input</channel>
+      <default>None</default>
+      <description>Input dose image 1</description>
+    </image>
+    <image>
+      <longflag>plmslc_dose2_input_img</longflag>
+      <name>plmslc_dose2_input_img</name>
+      <label>Input dose image2</label>
+      <channel>input</channel>
+      <default>None</default>
+      <description>Input dose image 2</description>
+    </image>
+    <image>
+      <longflag>plmslc_dose_diff_output_img</longflag>
+      <name>plmslc_dose_diff_output_img</name>
+      <label>Output dose difference</label>
+      <channel>output</channel>
+      <default>None</default>
+      <description>Output dose difference</description>
+    </image>
+  </parameters>
+</executable>
