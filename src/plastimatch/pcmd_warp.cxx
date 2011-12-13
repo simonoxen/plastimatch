@@ -114,6 +114,8 @@ parse_fn (
     parser->add_long_option ("", "algorithm", 
 	"algorithm to use for warping, either \"itk\" or \"native\", "
 	"default is native", 1, "native");
+    parser->add_long_option ("", "dose-scale", 
+	"scale the dose by this value", 1, "");
     parser->add_long_option ("", "interpolation", 
 	"interpolation to use when resampling, either \"nn\" for "
 	"nearest neighbors or \"linear\" for tri-linear, default is linear", 
@@ -217,9 +219,6 @@ parse_fn (
     }
 
     /* Algorithm options */
-    if (parser->option("default-value")) {
-	parms->default_val = parser->get_float("default-value");
-    }
     std::string arg = parser->get_string ("algorithm");
     if (arg == "itk") {
 	parms->use_itk = 1;
@@ -230,6 +229,17 @@ parse_fn (
     else {
 	throw (dlib::error ("Error. Unknown --algorithm argument: " + arg));
     }
+
+    if (parser->option("default-value")) {
+	parms->default_val = parser->get_float("default-value");
+    }
+
+    parms->have_dose_scale = false;
+    if (parser->option("dose-scale")) {
+	parms->have_dose_scale = true;
+	parms->dose_scale = parser->get_float("dose-scale");
+    }
+
     arg = parser->get_string ("interpolation");
     if (arg == "nn") {
 	parms->interp_lin = 0;
@@ -241,10 +251,12 @@ parse_fn (
 	throw (dlib::error ("Error. Unknown --interpolation argument: " 
 		+ arg));
     }
+
     if (parser->option("prune-empty")) {
 	parms->prune_empty = 1;
     }
     parms->simplify_perc = parser->get_float("simplify-perc");
+
     if (parser->option("xor-contours")) {
 	parms->xor_contours = true;
     }

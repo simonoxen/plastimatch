@@ -53,6 +53,8 @@ public:
 
     /* Algorithm options */
     float default_val;
+    bool have_dose_scale;       /* should we scale the dose image? */
+    float dose_scale;           /* how much to scale the dose image */
     int interp_lin;             /* trilinear (1) or nn (0) */
     int prune_empty;            /* remove empty structures (1) or not (0) */
     int use_itk;                /* force use of itk (1) or not (0) */
@@ -79,6 +81,8 @@ public:
 	m_have_spacing = 0;
 
 	/* Misc options */
+	have_dose_scale = false;
+	dose_scale = 1.0f;
 	default_val = 0.0f;
 	interp_lin = 1;
 	output_type = PLM_IMG_TYPE_UNDEFINED;

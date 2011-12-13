@@ -389,6 +389,11 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	rtds->m_dose = im_out;
     }
 
+    /* Scale the dose image */
+    if (rtds->m_dose && parms->have_dose_scale) {
+	volume_scale (rtds->m_dose->gpuit_float(), parms->dose_scale);
+    }
+
     /* Save output dose image */
     if (bstring_not_empty (parms->output_dose_img_fn) && rtds->m_dose)
     {
