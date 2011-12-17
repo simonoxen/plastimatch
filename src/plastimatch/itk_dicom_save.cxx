@@ -187,13 +187,17 @@ itk_dicom_save (
     encapsulate (dict, "0018|0050", value);
 
     /* Patient position */
-    value = meta->get_metadata (0x0018, 0x5100);
-    if (value == "HFS" || value == "FFS" 
-	|| value == "HFP" || value == "FFP" 
-	|| value == "HFDL" || value == "HFDR" 
-	|| value == "FFDL" || value == "FFDR")
-    {
-	encapsulate (dict, "0018|5100", value);
+    if (meta) {
+	value = meta->get_metadata (0x0018, 0x5100);
+	if (value == "HFS" || value == "FFS" 
+	    || value == "HFP" || value == "FFP" 
+	    || value == "HFDL" || value == "HFDR" 
+	    || value == "FFDL" || value == "FFDR")
+	{
+	    encapsulate (dict, "0018|5100", value);
+	} else {
+	    encapsulate (dict, "0018|5100", "HFS");
+	}
     } else {
 	encapsulate (dict, "0018|5100", "HFS");
     }
