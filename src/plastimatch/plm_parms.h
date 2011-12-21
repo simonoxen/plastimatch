@@ -9,6 +9,7 @@
 #include <string>
 #include <ctype.h>
 #include <stdlib.h>
+#include "bspline.h"
 #include "plm_image.h"
 #include "plm_path.h"
 #include "pstring.h"
@@ -45,9 +46,6 @@
 
 #define IMG_OUT_FMT_AUTO		    0
 #define IMG_OUT_FMT_DICOM		    1
-
-#define HISTOGRAM_EQSP 0
-#define HISTOGRAM_VOPT 1
 
 enum Subsampling_type {
     SUBSAMPLING_AUTO,
@@ -95,7 +93,7 @@ public:
     int mi_histogram_bins_fixed;
     int mi_histogram_bins_moving;
     int mi_num_spatial_samples;
-    int mi_histogram_type;
+    enum BsplineHistType mi_histogram_type;
     /* ITK & GPUIT demons */
     float demons_std;
     /* GPUIT demons */
@@ -160,6 +158,7 @@ public:
 	mi_histogram_bins_fixed = 20;
 	mi_histogram_bins_moving = 20;
 	mi_num_spatial_samples = 10000;
+	mi_histogram_type = HIST_EQSP;
 	/* ITK & GPUIT demons */
 	demons_std = 6.0;
 	/* GPUIT demons */
