@@ -25,13 +25,13 @@ class plastimatch1_EXPORT Plm_image_header {
   public:
     Plm_image_header () {}
     Plm_image_header (
-	float origin[3], float spacing[3], size_t dim[3])
+	size_t dim[3], float origin[3], float spacing[3])
     {
 	this->set_from_gpuit (dim, origin, spacing, 0);
     }
     Plm_image_header (
-	float origin[3], float spacing[3],
-	size_t dim[3], float direction_cosines[9])
+	size_t dim[3], float origin[3], float spacing[3],
+	float direction_cosines[9])
     {
 	this->set_from_gpuit (dim, origin, spacing, direction_cosines);
     }

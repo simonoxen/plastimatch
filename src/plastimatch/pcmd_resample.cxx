@@ -41,7 +41,12 @@ deduce_geometry (Plm_image_header *pih, const Resample_parms* parms)
     else if (parms->m_have_dim && parms->m_have_origin 
 	&& parms->m_have_spacing)
     {
-	pih->set_from_gpuit (parms->dim, parms->origin, parms->spacing, 0);
+	if (parms->m_have_direction_cosines) {
+	    pih->set_from_gpuit (parms->dim, parms->origin, parms->spacing, 
+		parms->m_dc);
+	} else {
+	    pih->set_from_gpuit (parms->dim, parms->origin, parms->spacing, 0);
+	}
 	return true;
     }
 
@@ -188,6 +193,10 @@ parse_fn (
 	"size of output image in voxels \"x [y z]\"", 1, "");
     parser->add_long_option ("", "spacing", 
 	"voxel spacing in mm \"x [y z]\"", 1, "");
+    parser->add_long_option ("", "direction-cosines", 
+	"oriention of x, y, and z axes; Specify either preset value,"
+	" {identity,rotated-{1,2,3},sheared},"
+	" or 9 digit matrix string \"a b c d e f g h i\"", 1, "");
     parser->add_long_option ("", "subsample", 
 	"bin voxels together at integer subsampling rate \"x [y z]\"", 1, "");
 
@@ -266,6 +275,16 @@ parse_fn (
 	parms->m_have_subsample = 1;
 	parser->assign_int13 (parms->subsample, "subsample");
     }
+    /* Direction cosines */
+    if (parser->option ("direction-cosines")) {
+	parms->m_have_direction_cosines = true;
+	std::string arg = parser->get_string("direction-cosines");
+	if (!parms->m_dc.set_from_string (arg)) {
+	    throw (dlib::error ("Error parsing --direction-cosines "
+		    "(should have nine numbers)\n"));
+	}
+    }
+
     parms->fixed_fn = parser->get_string("fixed").c_str();
 }
 

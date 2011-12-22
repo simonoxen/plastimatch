@@ -66,5 +66,6 @@ FloatImageType::Pointer
 Thumbnail::make_thumbnail ()
 {
     /* Resample the image */
-    return resample_image (pli->m_itk_float, origin, spacing, dim, -1000, 1);
+    Plm_image_header pih (dim, origin, spacing);
+    return resample_image (pli->m_itk_float, &pih, -1000, 1);
 }

@@ -6,7 +6,7 @@
 
 #include "plm_config.h"
 #include <string.h>
-
+#include "direction_cosines.h"
 #include "plm_file_format.h"
 #include "plm_image_type.h"
 #include "pstring.h"
@@ -65,9 +65,11 @@ public:
     bool m_have_dim;
     bool m_have_origin;
     bool m_have_spacing;
+    bool m_have_direction_cosines;
     size_t m_dim[3];
     float m_origin[3];
     float m_spacing[3];
+    Direction_cosines m_dc;
 
     /* Metadata options */
     std::vector<std::string> m_metadata;
@@ -76,9 +78,10 @@ public:
     Warp_parms () {
 
 	/* Geometry options */
-	m_have_dim = 0;
-	m_have_origin = 0;
-	m_have_spacing = 0;
+	m_have_dim = false;
+	m_have_origin = false;
+	m_have_spacing = false;
+	m_have_direction_cosines = false;
 
 	/* Misc options */
 	have_dose_scale = false;

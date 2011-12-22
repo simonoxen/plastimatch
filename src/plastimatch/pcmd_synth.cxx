@@ -236,27 +236,9 @@ parse_fn (
     /* Direction cosines */
     if (parser->option ("direction-cosines")) {
 	std::string arg = parser->get_string("direction-cosines");
-	if (arg == "identity") {
-	    /* do nothing */
-	}
-	else if (arg == "rotated-1") {
-	    sm_parms->dc.set_rotated_1 ();
-	}
-	else if (arg == "rotated-2") {
-	    sm_parms->dc.set_rotated_2 ();
-	}
-	else if (arg == "rotated-3") {
-	    sm_parms->dc.set_rotated_3 ();
-	}
-	else if (arg == "skewed") {
-	    sm_parms->dc.set_skewed ();
-	}
-	else {
-	    /* Must be 9 digit string */
-	    if (!sm_parms->dc.set_from_string (arg)) {
-		throw (dlib::error ("Error. Option --direction-cosines "
-			"should have nine numbers\n"));
-	    }
+	if (!sm_parms->dc.set_from_string (arg)) {
+	    throw (dlib::error ("Error parsing --direction-cosines "
+		    "(should have nine numbers)\n"));
 	}
     }
 

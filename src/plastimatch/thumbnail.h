@@ -14,7 +14,7 @@ public:
     float origin[3];
     float center[3];
     float spacing[3];
-    int dim[3];
+    size_t dim[3];
 
     int thumbnail_dim;
     float thumbnail_spacing;

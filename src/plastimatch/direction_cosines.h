@@ -92,6 +92,29 @@ class gpuit_EXPORT Direction_cosines {
 	float dc[9];
 	int rc;
 
+	/* First check presets */
+	if (str == "identity") {
+	    this->set_identity ();
+	    return true;
+	}
+	else if (str == "rotated-1") {
+	    this->set_rotated_1 ();
+	    return true;
+	}
+	else if (str == "rotated-2") {
+	    this->set_rotated_2 ();
+	    return true;
+	}
+	else if (str == "rotated-3") {
+	    this->set_rotated_3 ();
+	    return true;
+	}
+	else if (str == "skewed") {
+	    this->set_skewed ();
+	    return true;
+	}
+
+	/* Not a preset, must be 9 digit string */
 	rc = sscanf (str.c_str(), "%g %g %g %g %g %g %g %g %g", 
 	    &dc[0], &dc[1], &dc[2],
 	    &dc[3], &dc[4], &dc[5],

@@ -41,10 +41,10 @@ dvh_execute_internal (
     int *hist;
     int *struct_vox;
     int bin;
-    float dose_vox[3];
-    float ss_vox[3];
+    float dose_spacing[3];
+    float ss_spacing[3];
     float ss_ori[3];
-    int ss_size[3];
+    size_t ss_dim[3];
     std::string output_string = "";
 
     FloatImageType::Pointer dose_img = rtds->m_dose->itk_float ();
@@ -81,42 +81,44 @@ dvh_execute_internal (
    
     /* Is voxel size the same? */
     std::cout << "checking voxel size..." << std::endl;
-    dose_vox[0]=dose_img->GetSpacing()[0];
-    dose_vox[1]=dose_img->GetSpacing()[1];
-    dose_vox[2]=dose_img->GetSpacing()[2];
-    std::cout << dose_vox[0] << " " 
-	<< dose_vox[1] << " " << dose_vox[2] << "\n";
-    ss_vox[0]=ss_img->GetSpacing()[0];
-    ss_vox[1]=ss_img->GetSpacing()[1];
-    ss_vox[2]=ss_img->GetSpacing()[2];
-    std::cout << ss_vox[0] << " " 
-	<< ss_vox[1] << " " << ss_vox[2] << "\n";
+    dose_spacing[0]=dose_img->GetSpacing()[0];
+    dose_spacing[1]=dose_img->GetSpacing()[1];
+    dose_spacing[2]=dose_img->GetSpacing()[2];
+    std::cout << dose_spacing[0] << " " 
+	<< dose_spacing[1] << " " << dose_spacing[2] << "\n";
+    ss_spacing[0]=ss_img->GetSpacing()[0];
+    ss_spacing[1]=ss_img->GetSpacing()[1];
+    ss_spacing[2]=ss_img->GetSpacing()[2];
+    std::cout << ss_spacing[0] << " " 
+	<< ss_spacing[1] << " " << ss_spacing[2] << "\n";
 
-    if (dose_vox[0] != ss_vox[0] 
-	|| dose_vox[1] != ss_vox[1] 
-	|| dose_vox[2] != ss_vox[2])
+    if (dose_spacing[0] != ss_spacing[0] 
+	|| dose_spacing[1] != ss_spacing[1] 
+	|| dose_spacing[2] != ss_spacing[2])
     {
 	std::cout << "dose voxel " 
-	    << dose_vox[0] << " " 
-	    << dose_vox[1] << " " 
-	    << dose_vox[2] << std::endl;
+	    << dose_spacing[0] << " " 
+	    << dose_spacing[1] << " " 
+	    << dose_spacing[2] << std::endl;
 	std::cout << "ss voxel " 
-	    << ss_vox[0] << " " 
-	    << ss_vox[1] << " " 
-	    << ss_vox[2] << std::endl;
+	    << ss_spacing[0] << " " 
+	    << ss_spacing[1] << " " 
+	    << ss_spacing[2] << std::endl;
 	std::cout << "Resampling" << std::endl;
 
 	/*resample volume*/
 	ss_ori[0]=ss_img->GetOrigin()[0];
 	ss_ori[1]=ss_img->GetOrigin()[1];
 	ss_ori[2]=ss_img->GetOrigin()[2];
-	ss_size[0]=ss_img->GetLargestPossibleRegion().GetSize()[0];
-	ss_size[1]=ss_img->GetLargestPossibleRegion().GetSize()[1];
-	ss_size[2]=ss_img->GetLargestPossibleRegion().GetSize()[2];
+	ss_dim[0]=ss_img->GetLargestPossibleRegion().GetSize()[0];
+	ss_dim[1]=ss_img->GetLargestPossibleRegion().GetSize()[1];
+	ss_dim[2]=ss_img->GetLargestPossibleRegion().GetSize()[2];
+
+	/* GCS FIX: Direction cosines */
+	Plm_image_header pih (ss_dim, ss_ori, ss_spacing, 0);
 	FloatImageType::Pointer resampled 
-	    = resample_image (dose_img, ss_ori, ss_vox, ss_size , 0, 1);
+	    = resample_image (dose_img, &pih, 0, 1);
 	dose_img=resampled;
-	/*create correct volume*/
 
     } else {
 	std::cout 

@@ -6,6 +6,7 @@
 
 #include "plm_config.h"
 #include <stdlib.h>
+#include "direction_cosines.h"
 #include "plm_image_type.h"
 #include "pstring.h"
 
@@ -23,6 +24,8 @@ public:
     bool m_have_spacing;
     int subsample[3];
     bool m_have_subsample;
+    Direction_cosines m_dc;
+    bool m_have_direction_cosines;
     float default_val;
     bool have_default_val;
     int adjust;

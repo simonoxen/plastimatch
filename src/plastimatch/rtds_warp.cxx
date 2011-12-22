@@ -345,6 +345,11 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     if (parms->m_have_spacing) {
 	pih.set_spacing (parms->m_spacing);
     }
+    if (parms->m_have_direction_cosines) {
+	/* GCS FIX: This will do illogical things unless the user 
+	   sets the origin properly */
+	pih.set_direction_cosines (parms->m_dc);
+    }
 
     printf ("PIH is:\n");
     pih.print ();

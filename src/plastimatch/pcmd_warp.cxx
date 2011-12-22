@@ -138,6 +138,10 @@ parse_fn (
 	"size of output image in voxels \"x [y z]\"", 1, "");
     parser->add_long_option ("", "spacing", 
 	"voxel spacing in mm \"x [y z]\"", 1, "");
+    parser->add_long_option ("", "direction-cosines", 
+	"oriention of x, y, and z axes; Specify either preset value,"
+	" {identity,rotated-{1,2,3},sheared},"
+	" or 9 digit matrix string \"a b c d e f g h i\"", 1, "");
 
     /* Metadata options */
     parser->add_long_option ("", "metadata",
@@ -263,18 +267,28 @@ parse_fn (
 
     /* Geometry options */
     if (parser->option ("origin")) {
-	parms->m_have_origin = 1;
+	parms->m_have_origin = true;
 	parser->assign_float13 (parms->m_origin, "origin");
     }
     if (parser->option ("spacing")) {
-	parms->m_have_spacing = 1;
+	parms->m_have_spacing = true;
 	parser->assign_float13 (parms->m_spacing, "spacing");
     }
     if (parser->option ("dim")) {
-	parms->m_have_dim = 1;
+	parms->m_have_dim = true;
 	parser->assign_size_t_13 (parms->m_dim, "dim");
     }
     parms->fixed_img_fn = parser->get_string("fixed").c_str();
+
+    /* Direction cosines */
+    if (parser->option ("direction-cosines")) {
+	parms->m_have_direction_cosines = true;
+	std::string arg = parser->get_string("direction-cosines");
+	if (!parms->m_dc.set_from_string (arg)) {
+	    throw (dlib::error ("Error parsing --direction-cosines "
+		    "(should have nine numbers)\n"));
+	}
+    }
 
     /* Metadata options */
     for (unsigned int i = 0; i < parser->option("metadata").count(); i++) {
