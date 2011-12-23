@@ -144,7 +144,7 @@ if (COMMENTOUT)
   install (TARGETS ise DESTINATION bin)
 endif ()
 
-if (QT4_FOUND)
+if (BUILD_ISE_QT)
   set (ISE_QT_LIBRARIES ${QT_LIBRARIES} ${QT_QTSQL_LIBRARIES})
   set (ISE_QT_LIBRARIES QVTK)  ## Hard-coded "for now"...
   if (ADVANTECH_FOUND)
