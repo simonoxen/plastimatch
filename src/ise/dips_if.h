@@ -2,6 +2,8 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #ifndef _dips_if_h_
+#define _dips_if_h_
+
 #define _USE_32BIT_TIME_T 1
 #include <time.h>
 

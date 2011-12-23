@@ -700,8 +700,6 @@ int  PerformRadAcquisition()
 	printf("*** returns error %d\n", result);
 	return result;
     }
-#if defined (commentout)
-#endif
 
     printf("Calling vip_io_enable(HS_ACTIVE)\n");
     result = vip_io_enable(HS_ACTIVE);
@@ -830,10 +828,12 @@ main(int argc, char* argv[])
     SSysInfo sysInfo;
 
     memset (&orl, 0, sizeof(SOpenReceptorLink));
-    printf ("RadTest - Sample Code for Radiographic Image Acquisition\n\n");
+    printf ("Welcome to acquire_4030e\n");
 
-    if (argc > 1)			// Check for receptor path on the command line
+    // Check for receptor path on the command line
+    if (argc > 1) {
 	path = argv[1];
+    }
 
     orl.StructSize = sizeof(SOpenReceptorLink);
     strcpy(orl.RecDirPath, path);

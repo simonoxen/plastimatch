@@ -12,13 +12,13 @@
 #include <time.h>
 #include <windows.h>
 #include <io.h>
-#include "dips.h"
+#include "dips_if.h"
 
 #define FLUORO_MODE 0
-//#define HIRES_IMAGE_HEIGHT 1536
-//#define HIRES_IMAGE_WIDTH 2048
-#define HIRES_IMAGE_HEIGHT 2304
-#define HIRES_IMAGE_WIDTH 3200
+#define HIRES_IMAGE_HEIGHT 1536
+#define HIRES_IMAGE_WIDTH 2048
+//#define HIRES_IMAGE_HEIGHT 2304
+//#define HIRES_IMAGE_WIDTH 3200
 
 void igpax_poll_images (PANEL* panelp, unsigned short* pixelp);
 
