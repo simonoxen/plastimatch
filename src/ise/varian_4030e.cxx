@@ -14,6 +14,7 @@
 #include "HcpFuncDefs.h"
 #include "iostatus.h"
 
+#include "dips_panel.h"
 #include "varian_4030e.h"
 
 
@@ -596,6 +597,36 @@ Varian_4030e::get_image_to_file (int xSize, int ySize,
 }
 
 
+int 
+Varian_4030e::get_image_to_dips (Dips_panel *dp, int xSize, int ySize)
+{
+    int result;
+    int mode_num = this->current_mode;
+
+    int npixels = xSize * ySize;
+
+    USHORT *image_ptr = (USHORT *)malloc(npixels * sizeof(USHORT));
+
+    result = vip_get_image(mode_num, VIP_CURRENT_IMAGE, 
+	xSize, ySize, image_ptr);
+
+    if (result == HCP_NO_ERR) {
+	ShowImageStatistics(npixels, image_ptr);
+    } else {
+	printf("*** vip_get_image returned error %d\n", result);
+	return HCP_NO_ERR;
+    }
+
+    for (int i = 0; i < xSize * ySize; i++) {
+	dp->pixelp[i] = image_ptr[i];
+    }
+
+    dp->send_image ();
+
+    free(image_ptr);
+    return HCP_NO_ERR;
+}
+
 //----------------------------------------------------------------------
 //
 //  PerformGainCalibration
@@ -722,6 +753,78 @@ Varian_4030e::perform_rad_acquisition ()
 		result = this->get_image_to_file (modeInfo.ColsPerFrame,
 		    modeInfo.LinesPerFrame,
 		    "newimage.raw");
+		ShowReceptorData();
+		ShowFrameData();
+		ShowTemperatureData();
+		ShowVoltageData();
+	    }
+	    else if (result == HCP_SIGNAL_KEY_PRESSED)
+	    {
+		printf("Calling vip_io_enable(HS_STANDBY)\n");
+		vip_io_enable(HS_STANDBY);
+		result = QueryWaitOnReadyForPulse(crntStatus, 5000, FALSE);
+	    }
+	    else
+		printf("*** Acquisition terminated with error %d\n", result);
+	    vip_io_enable(HS_STANDBY);
+	}
+    }
+    else
+    {
+	printf("*** returns error %d - acquisition not enabled\n", result);
+    }
+
+    printf("Acquisition complete\n");
+    return result;
+}
+
+int 
+Varian_4030e::perform_rad_acquisition_dips (Dips_panel *dp)
+{
+    int  result;
+    UQueryProgInfo crntStatus;
+    SModeInfo  modeInfo;
+
+    GetModeInfo (modeInfo, this->current_mode);
+
+    printf ("Calling vip_enable_sw_handshaking(FALSE)\n");
+    result = vip_enable_sw_handshaking(FALSE);
+    if (result != HCP_NO_ERR)
+    {
+	printf("*** returns error %d\n", result);
+	return result;
+    }
+
+    printf("Calling vip_io_enable(HS_ACTIVE)\n");
+    result = vip_io_enable(HS_ACTIVE);
+    if (result == HCP_NO_ERR)
+    {
+	result = QueryWaitOnReadyForPulse(crntStatus, 5000);
+	if (result == HCP_NO_ERR)
+	{
+	    printf("READY FOR X-RAYS - EXPOSE AT ANY TIME\n");
+	    result = QueryWaitOnNumPulsesChange(crntStatus, 0);
+	    if (result == HCP_NO_ERR)
+	    {
+		QueryWaitOnNumFrames(crntStatus, 1, 0);
+#if defined (commentout)
+		result = this->get_image_to_file (modeInfo.ColsPerFrame,
+		    modeInfo.LinesPerFrame,
+		    "preview.raw", VIP_PREVIEW_IMAGE);
+#endif
+		result = this->get_image_to_dips (
+		    dp, modeInfo.ColsPerFrame,
+		    modeInfo.LinesPerFrame);
+		result = QueryWaitOnComplete(crntStatus, 0);
+		
+	    }
+	    if (result == HCP_NO_ERR)
+	    {
+#if defined (commentout)
+		result = this->get_image_to_file (modeInfo.ColsPerFrame,
+		    modeInfo.LinesPerFrame,
+		    "newimage.raw");
+#endif
 		ShowReceptorData();
 		ShowFrameData();
 		ShowTemperatureData();

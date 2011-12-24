@@ -57,6 +57,11 @@ main(int argc, char* argv[])
     SOpenReceptorLink orl;
     Dips_panel dp;
 
+#define HIRES_IMAGE_HEIGHT 3200
+#define HIRES_IMAGE_WIDTH 2304
+
+    dp.open_panel (0, HIRES_IMAGE_HEIGHT, HIRES_IMAGE_WIDTH);
+
     Varian_4030e vp;
 
     memset (&orl, 0, sizeof(SOpenReceptorLink));
@@ -103,7 +108,8 @@ main(int argc, char* argv[])
 		    switch (keyCode)
 		    {
 		    case '1':
-			vp.perform_rad_acquisition();
+			//vp.perform_rad_acquisition();
+			vp.perform_rad_acquisition_dips (&dp);
 			break;
 		    case '2':
 			vp.perform_sw_rad_acquisition ();

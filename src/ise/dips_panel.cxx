@@ -82,6 +82,16 @@ Dips_panel::open_panel (int panel_no, int height, int width)
     srand ((unsigned) time(NULL));
 }
 
+void
+Dips_panel::send_image (void)
+{
+    /* Set timestamp */
+    time (&panelp->time);
+
+    /* Let DIPS know we have an image */
+    panelp->status = VALID;
+}
+
 /* A READ value of 1 means that DIPS has read the image. */
 void
 Dips_panel::poll_dummy (void)
