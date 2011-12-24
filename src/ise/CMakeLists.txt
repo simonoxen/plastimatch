@@ -68,7 +68,8 @@ set (ISE_SRC
 set (ACQUIRE_4030E_SRC
   acquire_4030e.cxx
   advantech.cxx
-  dips.cxx
+  dips_panel.cxx dips_panel.h
+  varian_4030e.cxx varian_4030e.h 
   )
 
 set (ISE_QT_SRC
@@ -170,7 +171,9 @@ if (PAXSCAN_FOUND)
 endif ()
 
 if (WIN32)
-  set (DIPS_TEST_SRC dips_test.cxx dips.cxx)
+  set (DIPS_TEST_SRC 
+    dips_test.cxx
+    dips_panel.cxx dips_panel.h)
   plm_add_executable (dips_test "${DIPS_TEST_SRC}" "" ""
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
