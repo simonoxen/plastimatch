@@ -234,7 +234,7 @@ Rasterizer::process_next (
 #else
 	    uint32_t* ss_img_img = 0;
 	    uint32_t* uint32_slice;
-	    unsigned char bit_mask = 1 << this->curr_bit;
+	    uint32_t bit_mask = 1 << this->curr_bit;
 	    ss_img_img = (uint32_t*) this->ss_img_vol->img;
 	    uint32_slice = &ss_img_img[slice_no * slice_voxels];
 	    for (size_t k = 0; k < slice_voxels; k++) {
