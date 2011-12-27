@@ -226,3 +226,119 @@ delete filter
 subtract 1 from nonzero pixels in src
 
 */
+
+
+
+
+
+
+/* thresholders for dose comparison plugin*/
+
+static void do_single_threshold( Threshbox_parms *parms ,int thresh_id ) 
+    {
+
+    float spacing_in[3], origin_in[3];
+    size_t dim_in[3];
+    Plm_image_header pih;
+    unsigned char label_uchar;
+    float cutoff;
+
+    if (thresh_id == 1 ) cutoff = parms->isodose_value1;
+    if (thresh_id == 2 ) cutoff = parms->isodose_value2;
+    if (thresh_id == 3 ) cutoff = parms->isodose_value3;
+    if (thresh_id == 4 ) cutoff = parms->isodose_value4;
+    if (thresh_id == 5 ) cutoff = parms->isodose_value5;
+
+    FloatImageType::Pointer img_in = parms->img_in->itk_float();
+
+    pih.set_from_itk_image (img_in);
+    pih.get_dim (dim_in);
+    pih.get_origin (origin_in );
+    pih.get_spacing (spacing_in );
+    // direction cosines??
+
+    /* Create ITK image for labelmap */
+    FloatImageType::SizeType sz;
+    FloatImageType::IndexType st;
+    FloatImageType::RegionType rg;
+    FloatImageType::PointType og;
+    FloatImageType::SpacingType sp;
+    FloatImageType::DirectionType itk_dc;
+    for (int d1 = 0; d1 < 3; d1++) {
+	st[d1] = 0;
+	sz[d1] = dim_in[d1];
+	sp[d1] = spacing_in[d1];
+	og[d1] = origin_in[d1];
+    }
+    rg.SetSize (sz);
+    rg.SetIndex (st);
+    itk_direction_from_dc (&itk_dc, parms->dc);
+
+    // labelmap thresholded image
+    UCharImageType::Pointer uchar_img = UCharImageType::New();
+    uchar_img->SetRegions (rg);
+    uchar_img->SetOrigin (og);
+    uchar_img->SetSpacing (sp);
+    uchar_img->Allocate();
+
+    typedef itk::ImageRegionIteratorWithIndex< UCharImageType > UCharIteratorType;
+    UCharIteratorType uchar_img_iterator;
+    uchar_img_iterator = UCharIteratorType (uchar_img, uchar_img->GetLargestPossibleRegion());
+    uchar_img_iterator.GoToBegin();
+
+    typedef itk::ImageRegionIteratorWithIndex< FloatImageType > FloatIteratorType;
+    FloatIteratorType img_in_iterator (img_in, img_in->GetLargestPossibleRegion());
+
+    FloatImageType::IndexType k;
+    FloatPoint3DType phys;
+    float level;
+
+    for (img_in_iterator.GoToBegin(); !img_in_iterator.IsAtEnd(); ++img_in_iterator) {
+	    
+	level = img_in_iterator.Get();
+	k=img_in_iterator.GetIndex();
+	//img_in->TransformIndexToPhysicalPoint( k, phys );
+
+	label_uchar = 0;
+	if (level > cutoff ) label_uchar = thresh_id;
+	    
+	uchar_img_iterator.Set ( label_uchar );
+	++uchar_img_iterator;
+
+    }
+
+
+    if (thresh_id == 1 ) {
+    parms->dose_labelmap1 = new Plm_image; 
+    parms->dose_labelmap1->set_itk( uchar_img); }
+
+    if (thresh_id == 2 ) {
+    parms->dose_labelmap2 = new Plm_image; 
+    parms->dose_labelmap2->set_itk( uchar_img); }
+
+    if (thresh_id == 3 ) {
+    parms->dose_labelmap3 = new Plm_image; 
+    parms->dose_labelmap3->set_itk( uchar_img); }
+
+    if (thresh_id == 4 ) {
+    parms->dose_labelmap4 = new Plm_image; 
+    parms->dose_labelmap4->set_itk( uchar_img); }
+
+    if (thresh_id == 5 ) {
+    parms->dose_labelmap5 = new Plm_image; 
+    parms->dose_labelmap5->set_itk( uchar_img); }
+
+}
+
+
+void do_multi_threshold (Threshbox_parms *parms) 
+{ 
+
+do_single_threshold( parms, 1);
+do_single_threshold( parms, 2);
+do_single_threshold( parms, 3);
+do_single_threshold( parms, 4);
+do_single_threshold( parms, 5);
+
+
+}

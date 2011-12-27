@@ -9,8 +9,15 @@
   <contributor>Please direct questions or suggestions to http://groups.google.com/group/plastimatch</contributor>
   <acknowledgements>Funding for this project has been provided by NIH 2-U54-EB005149 (NA-MIC), NIH/NCI 6-PO1 CA 21239, the Federal share of program income earned by MGH on C06CA059267, and the Progetto Rocca Foundation, a collaboration between MIT and Politecnico di Milano.</acknowledgements>
   <parameters>
-    <label>Input/Output</label>
+    <label>Dose difference</label>
     <description>Input parameters</description>
+    <boolean>
+      <name>plmslc_need_dosediff</name>
+      <label>Create dose difference?</label>
+      <default>false</default>
+      <longflag>--needdiff</longflag>
+      <description>Check this box if you want to create isodose lines</description>
+    </boolean>
     <image>
       <longflag>plmslc_dose1_input_img</longflag>
       <name>plmslc_dose1_input_img</name>
@@ -53,13 +60,53 @@
       <longflag>--dose_image</longflag>
       <default>None</default>
     </image>
+
     <image type="label">
-      <name>plmslc_isodose_img_out</name>
-      <label>Output Labelmap</label>
+      <name>plmslc_isodose_img_out1</name>
+      <label>Output Labelmap 1</label>
       <channel>output</channel>
+      <longflag>--labelmap1</longflag>
       <default>None</default>
-      <description>Output labelmap, isodose image</description>
+      <description>Output labelmap for threshold1</description>
     </image>
+
+    <image type="label">
+      <name>plmslc_isodose_img_out2</name>
+      <label>Output Labelmap 2</label>
+      <channel>output</channel>
+      <longflag>--labelmap2</longflag>
+      <default>None</default>
+      <description>Output labelmap for threshold2</description>
+    </image>
+
+    <image type="label">
+      <name>plmslc_isodose_img_out3</name>
+      <label>Output Labelmap 3</label>
+      <channel>output</channel>
+      <longflag>--labelmap3</longflag>
+      <default>None</default>
+      <description>Output labelmap for threshold3</description>
+    </image>
+
+    <image type="label">
+      <name>plmslc_isodose_img_out4</name>
+      <label>Output Labelmap 4</label>
+      <channel>output</channel>
+      <longflag>--labelmap4</longflag>
+      <default>None</default>
+      <description>Output labelmap for threshold4</description>
+    </image>
+
+    <image type="label">
+      <name>plmslc_isodose_img_out5</name>
+      <label>Output Labelmap 5</label>
+      <channel>output</channel>
+      <longflag>--labelmap5</longflag>
+      <default>None</default>
+      <description>Output labelmap for threshold5</description>
+    </image>
+
+
     <integer>
       <name>plmslc_isodose_value1</name>
       <longflag>--value1</longflag>

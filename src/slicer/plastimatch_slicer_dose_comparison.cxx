@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include "pcmd_diff.h"
 
-
+#include "threshbox.h"
 
 int
 main (int argc, char * argv [])
@@ -22,12 +22,17 @@ main (int argc, char * argv [])
 	PARSE_ARGS;
 	
 	Diff_parms parms;
-	
+	Threshbox_parms tparms;
+
 	bool have_dose1_img_input = false;
 	bool have_dose2_img_input = false;
-    bool have_dose_diff_output = false;
+        bool have_dose_diff_output = false;
 
     /* Input dose */
+
+
+    if (plmslc_need_dosediff) {
+
     if (plmslc_dose1_input_img != "" 
 	&& plmslc_dose1_input_img != "None")
     {
@@ -67,9 +72,45 @@ main (int argc, char * argv [])
     file_type = plm_file_format_deduce ((const char*) parms.input_fn);
 	*/
 
-    /* Process diff */
+    /* Process diff; output image is set in diff_main */
+    diff_main (&parms);
 
-	diff_main (&parms);
+    } //end if need dosediff
 
+    if ( plmslc_need_isodose ) {
+
+	if ( plmslc_input_dose_image == "" || plmslc_input_dose_image == "None" ) {
+	    printf("Error. No input specified for dose multithresholding!\n");
+	    return EXIT_FAILURE;
+	    }
+
+	tparms.img_in = plm_image_load_native ( plmslc_input_dose_image.c_str() );
+
+	// can be changed into arrays if needed 
+	tparms.isodose_value1 = plmslc_isodose_value1;
+	tparms.isodose_value2 = plmslc_isodose_value2;
+	tparms.isodose_value3 = plmslc_isodose_value3;
+	tparms.isodose_value4 = plmslc_isodose_value4;
+	tparms.isodose_value5 = plmslc_isodose_value5;
+
+	do_multi_threshold( &tparms );
+
+	UCharImageType::Pointer img1 = tparms.dose_labelmap1->itk_uchar();
+	itk_image_save (img1, plmslc_isodose_img_out1.c_str());
+	
+	UCharImageType::Pointer img2 = tparms.dose_labelmap2->itk_uchar();
+	itk_image_save (img2, plmslc_isodose_img_out2.c_str());
+	
+	UCharImageType::Pointer img3 = tparms.dose_labelmap3->itk_uchar();
+	itk_image_save (img3, plmslc_isodose_img_out3.c_str());
+	
+	UCharImageType::Pointer img4 = tparms.dose_labelmap4->itk_uchar();
+	itk_image_save (img4, plmslc_isodose_img_out4.c_str());
+	
+	UCharImageType::Pointer img5 = tparms.dose_labelmap5->itk_uchar();
+	itk_image_save (img5, plmslc_isodose_img_out5.c_str());
+
+    } //end if need isodose
+    
     return EXIT_SUCCESS;
 }

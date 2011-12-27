@@ -25,6 +25,13 @@ public:
     Plm_image *overlap_labelmap2;
     char overlap_fn[1024];
 
+    /* for dose comparison plugin */
+    int isodose_value1, isodose_value2, 
+	isodose_value3, isodose_value4, isodose_value5;
+    Plm_image *dose_labelmap1, *dose_labelmap2,
+	      *dose_labelmap3, *dose_labelmap4,
+	      *dose_labelmap5;
+
 public:
     Threshbox_parms () {
     center[0]=100;
@@ -40,6 +47,6 @@ public:
 
 plastimatch1_EXPORT void do_threshbox (Threshbox_parms *parms);
 plastimatch1_EXPORT void do_overlap_fraction (Threshbox_parms *parms);
-
+plastimatch1_EXPORT void do_multi_threshold (Threshbox_parms *parms);
 
 #endif
