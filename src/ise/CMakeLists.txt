@@ -67,7 +67,7 @@ set (ISE_SRC
 
 set (ACQUIRE_4030E_SRC
   acquire_4030e.cxx
-  advantech.cxx
+  advantech.cxx advantech.h
   dips_panel.cxx dips_panel.h
   varian_4030e.cxx varian_4030e.h 
   )
@@ -164,9 +164,9 @@ if (BUILD_ISE_QT)
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
 
-if (PAXSCAN_FOUND)
+if (PAXSCAN_FOUND AND ADVANTECH_FOUND)
   plm_add_executable (acquire_4030e "${ACQUIRE_4030E_SRC}" 
-    "${PAXSCAN_LIBRARIES}" "" 
+    "${PAXSCAN_LIBRARIES} ${ADVANTECH_LIBRARIES}" "" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
 
@@ -175,6 +175,15 @@ if (WIN32)
     dips_test.cxx
     dips_panel.cxx dips_panel.h)
   plm_add_executable (dips_test "${DIPS_TEST_SRC}" "" ""
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+endif ()
+
+if (ADVANTECH_FOUND)
+  set (ADVANTECH_TEST_SRC 
+    advantech.cxx advantech.h 
+    advantech_test.cxx)
+  plm_add_executable (advantech_test "${ADVANTECH_TEST_SRC}" 
+    "${ADVANTECH_LIBRARIES}" ""
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
 
