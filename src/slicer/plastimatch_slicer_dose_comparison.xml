@@ -143,4 +143,67 @@
       <default>50</default>
     </integer>
   </parameters>
+
+<parameters>
+    <label>Gamma analysis of dose difference</label>
+    <description>Input parameters</description>
+    <boolean>
+      <name>plmslc_need_gamma</name>
+      <label>Calculate gamma index?</label>
+      <default>false</default>
+      <longflag>--needgamma</longflag>
+      <description>Check this box if you want to calculate gamma index</description>
+    </boolean>
+    <image>
+      <longflag>plmslc_gamma_input_img1</longflag>
+      <name>plmslc_gamma_input_img1</name>
+      <label>Input dose image1</label>
+      <channel>input</channel>
+      <default>None</default>
+      <description>Input dose image 1</description>
+    </image>
+    <image>
+      <longflag>plmslc_gamma_input_img2</longflag>
+      <name>plmslc_gamma_input_img2</name>
+      <label>Input dose image2</label>
+      <channel>input</channel>
+      <default>None</default>
+      <description>Input dose image 2</description>
+    </image>
+    <image>
+      <longflag>plmslc_gamma_output_img</longflag>
+      <name>plmslc_gamma_output_img</name>
+      <label>Output gamma image</label>
+      <channel>output</channel>
+      <default>None</default>
+      <description>Output gamma image</description>
+    </image>
+
+  <double>
+    <name>plmslc_gamma_r_tol</name>
+    <longflag>--gamma_r</longflag>
+    <description>Distance tolerance, mm</description>
+    <label>Distance tolerance, mm</label>
+    <default>3</default>
+  </double>
+
+  <double>
+    <name>plmslc_gamma_d_tol</name>
+    <longflag>--gamma_d</longflag>
+    <description>Dose tolerance, percent?</description>
+    <label>Dose tolerance, percent?</label>
+    <default>3</default>
+  </double>
+
+  <double>
+    <name>plmslc_gamma_g</name>
+    <longflag>--gamma_g</longflag>
+    <description>Max gamma to calculate</description>
+    <label>Max gamma to calculate</label>
+    <default>3</default>
+  </double>
+
+</parameters>
+
+
 </executable>

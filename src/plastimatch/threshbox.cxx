@@ -340,5 +340,4 @@ do_single_threshold( parms, 3);
 do_single_threshold( parms, 4);
 do_single_threshold( parms, 5);
 
-
 }

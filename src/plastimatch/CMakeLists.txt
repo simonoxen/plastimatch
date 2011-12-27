@@ -313,6 +313,7 @@ set (PLASTIMATCH1_LIBRARY_SRC
   direction_cosines.h
   dlib_trainer.cxx dlib_trainer.h 
   dvh.cxx dvh.h
+  gamma_analysis.cxx gamma_analysis.h
   gpuit_bspline.cxx gpuit_bspline.h 
   gpuit_demons.cxx gpuit_demons.h 
   img_metadata.cxx img_metadata.h 

@@ -12,9 +12,10 @@
 #include "pstring.h"
 #include <string.h>
 #include <stdlib.h>
-#include "pcmd_diff.h"
 
+#include "pcmd_diff.h"
 #include "threshbox.h"
+#include "gamma_analysis.h"
 
 int
 main (int argc, char * argv [])
@@ -23,13 +24,13 @@ main (int argc, char * argv [])
 	
 	Diff_parms parms;
 	Threshbox_parms tparms;
+	Gamma_parms gparms;
 
 	bool have_dose1_img_input = false;
 	bool have_dose2_img_input = false;
         bool have_dose_diff_output = false;
 
     /* Input dose */
-
 
     if (plmslc_need_dosediff) {
 
@@ -112,5 +113,27 @@ main (int argc, char * argv [])
 
     } //end if need isodose
     
+    if ( plmslc_need_gamma ) {
+
+	if ( plmslc_gamma_input_img1 == "" || plmslc_gamma_input_img1 == "None" ||
+	     plmslc_gamma_input_img2 == "" || plmslc_gamma_input_img2 == "None"  ) {
+	    printf("Error. No input specified for dose multithresholding!\n");
+	    return EXIT_FAILURE;
+	    }
+
+	gparms.img_in1 = plm_image_load_native ( plmslc_gamma_input_img1.c_str() );
+	gparms.img_in2 = plm_image_load_native ( plmslc_gamma_input_img2.c_str() );
+
+	gparms.r_tol = plmslc_gamma_r_tol;
+	gparms.d_tol = plmslc_gamma_d_tol;
+	gparms.gamma_max = plmslc_gamma_g;
+
+	do_gamma_analysis( &gparms ); 
+
+	FloatImageType::Pointer imgg = gparms.img_out->itk_float();
+	itk_image_save (imgg, plmslc_gamma_output_img.c_str());
+
+    } // end if need gamma
+
     return EXIT_SUCCESS;
 }
