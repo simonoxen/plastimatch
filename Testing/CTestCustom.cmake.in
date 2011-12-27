@@ -105,6 +105,12 @@ if (NOT EXISTS "${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02")
     "plm-convert-cxt"
     "plm-convert-cxt-stats"
     "plm-convert-cxt-check"
+
+    "plm-warp-f"
+    "plm-warp-f-stats-1"
+    "plm-warp-f-check-1"
+    "plm-warp-f-stats-2"
+    "plm-warp-f-check-2"
     )
 endif ()
 
@@ -129,11 +135,6 @@ if (NOT EXISTS "${PLM_BUILD_TESTING_DIR}/chest-phantom-xio-4.33.02")
     "plm-warp-e-check-4"
     "plm-warp-e-check-5"
     "plm-warp-e-check-6"
-    "plm-warp-f"
-    "plm-warp-f-stats-1"
-    "plm-warp-f-check-1"
-    "plm-warp-f-stats-2"
-    "plm-warp-f-check-2"
     )
 endif ()
 
