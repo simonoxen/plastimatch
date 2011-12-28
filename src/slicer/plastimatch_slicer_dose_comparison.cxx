@@ -96,20 +96,29 @@ main (int argc, char * argv [])
 
 	do_multi_threshold( &tparms );
 
+	UCharImageType::Pointer imgcompo = tparms.composite_labelmap->itk_uchar();
+	if ( plmslc_isodose_composite != "" && plmslc_isodose_composite != "None" ) 
+		itk_image_save (imgcompo, plmslc_isodose_composite.c_str());
+
 	UCharImageType::Pointer img1 = tparms.dose_labelmap1->itk_uchar();
-	itk_image_save (img1, plmslc_isodose_img_out1.c_str());
+	if ( plmslc_isodose_img_out1 != "" && plmslc_isodose_img_out1 != "None" ) 
+	    itk_image_save (img1, plmslc_isodose_img_out1.c_str());
 	
 	UCharImageType::Pointer img2 = tparms.dose_labelmap2->itk_uchar();
-	itk_image_save (img2, plmslc_isodose_img_out2.c_str());
+	if ( plmslc_isodose_img_out2 != "" && plmslc_isodose_img_out2 != "None" ) 
+		itk_image_save (img2, plmslc_isodose_img_out2.c_str());
 	
 	UCharImageType::Pointer img3 = tparms.dose_labelmap3->itk_uchar();
-	itk_image_save (img3, plmslc_isodose_img_out3.c_str());
+	if ( plmslc_isodose_img_out3 != "" && plmslc_isodose_img_out3 != "None" ) 
+		itk_image_save (img3, plmslc_isodose_img_out3.c_str());
 	
 	UCharImageType::Pointer img4 = tparms.dose_labelmap4->itk_uchar();
-	itk_image_save (img4, plmslc_isodose_img_out4.c_str());
+	if ( plmslc_isodose_img_out4 != "" && plmslc_isodose_img_out4 != "None" ) 
+		itk_image_save (img4, plmslc_isodose_img_out4.c_str());
 	
 	UCharImageType::Pointer img5 = tparms.dose_labelmap5->itk_uchar();
-	itk_image_save (img5, plmslc_isodose_img_out5.c_str());
+	if ( plmslc_isodose_img_out5 != "" && plmslc_isodose_img_out5 != "None" ) 
+		itk_image_save (img5, plmslc_isodose_img_out5.c_str());
 
     } //end if need isodose
     

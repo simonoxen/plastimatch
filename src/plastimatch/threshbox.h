@@ -30,7 +30,7 @@ public:
 	isodose_value3, isodose_value4, isodose_value5;
     Plm_image *dose_labelmap1, *dose_labelmap2,
 	      *dose_labelmap3, *dose_labelmap4,
-	      *dose_labelmap5;
+	      *dose_labelmap5, *composite_labelmap;
 
 public:
     Threshbox_parms () {

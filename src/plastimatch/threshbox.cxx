@@ -300,11 +300,12 @@ static void do_single_threshold( Threshbox_parms *parms ,int thresh_id )
 	//img_in->TransformIndexToPhysicalPoint( k, phys );
 
 	label_uchar = 0;
+
 	if (level > cutoff ) label_uchar = thresh_id;
 	    
 	uchar_img_iterator.Set ( label_uchar );
 	++uchar_img_iterator;
-
+	
     }
 
 
@@ -330,6 +331,87 @@ static void do_single_threshold( Threshbox_parms *parms ,int thresh_id )
 
 }
 
+void do_composite_labelmap( Threshbox_parms *parms)
+{
+    float spacing_in[3], origin_in[3];
+    size_t dim_in[3];
+    Plm_image_header pih;
+
+    unsigned char label_uchar;
+    unsigned char level[5];
+
+    UCharImageType::Pointer map1 = parms->dose_labelmap1->itk_uchar();
+    UCharImageType::Pointer map2 = parms->dose_labelmap2->itk_uchar();
+    UCharImageType::Pointer map3 = parms->dose_labelmap3->itk_uchar();
+    UCharImageType::Pointer map4 = parms->dose_labelmap4->itk_uchar();
+    UCharImageType::Pointer map5 = parms->dose_labelmap5->itk_uchar();
+
+    pih.set_from_itk_image (map1);
+    pih.get_dim (dim_in);
+    pih.get_origin (origin_in );
+    pih.get_spacing (spacing_in );
+    // direction cosines??
+
+    /* Create ITK image for labelmap */
+    FloatImageType::SizeType sz;
+    FloatImageType::IndexType st;
+    FloatImageType::RegionType rg;
+    FloatImageType::PointType og;
+    FloatImageType::SpacingType sp;
+    FloatImageType::DirectionType itk_dc;
+    for (int d1 = 0; d1 < 3; d1++) {
+	st[d1] = 0;
+	sz[d1] = dim_in[d1];
+	sp[d1] = spacing_in[d1];
+	og[d1] = origin_in[d1];
+    }
+    rg.SetSize (sz);
+    rg.SetIndex (st);
+    itk_direction_from_dc (&itk_dc, parms->dc);
+
+    // labelmap thresholded image
+    UCharImageType::Pointer uchar_img = UCharImageType::New();
+    uchar_img->SetRegions (rg);
+    uchar_img->SetOrigin (og);
+    uchar_img->SetSpacing (sp);
+    uchar_img->Allocate();
+
+    typedef itk::ImageRegionIteratorWithIndex< UCharImageType > UCharIteratorType;
+    UCharIteratorType it1, it2, it3, it4, it5, it_compo;
+    it1 = UCharIteratorType (map1, map1->GetLargestPossibleRegion());
+    it2 = UCharIteratorType (map2, map2->GetLargestPossibleRegion());
+    it3 = UCharIteratorType (map3, map3->GetLargestPossibleRegion());
+    it4 = UCharIteratorType (map4, map4->GetLargestPossibleRegion());
+    it5 = UCharIteratorType (map5, map5->GetLargestPossibleRegion());
+
+    it_compo = UCharIteratorType (uchar_img, uchar_img->GetLargestPossibleRegion());
+
+    it1.GoToBegin(); it2.GoToBegin();it3.GoToBegin();it4.GoToBegin();it5.GoToBegin();
+    it_compo.GoToBegin();
+
+        for (it1.GoToBegin(); !it1.IsAtEnd(); ++it1) {
+	    
+	level[0] = it1.Get();
+	level[1] = it2.Get();
+	level[2] = it3.Get();
+	level[3] = it4.Get();
+	level[4] = it5.Get();
+
+	label_uchar = level[0];
+
+	int i;
+	for(i=0; i<5; i++) { if (level[i]>label_uchar) label_uchar = level[i]; }
+
+	it_compo.Set ( label_uchar );	
+	++it2; ++it3; ++it4; ++it5;
+	++it_compo;
+
+    }
+
+    parms->composite_labelmap = new Plm_image; 
+    parms->composite_labelmap->set_itk( uchar_img); 
+
+}
 
 void do_multi_threshold (Threshbox_parms *parms) 
 { 
@@ -339,5 +421,8 @@ do_single_threshold( parms, 2);
 do_single_threshold( parms, 3);
 do_single_threshold( parms, 4);
 do_single_threshold( parms, 5);
+
+/* assumes that threshold increases with thresh_id!! */
+do_composite_labelmap( parms );
 
 }

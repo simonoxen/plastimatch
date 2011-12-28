@@ -62,6 +62,15 @@
     </image>
 
     <image type="label">
+      <name>plmslc_isodose_composite</name>
+      <label>Output composite labelmap</label>
+      <channel>output</channel>
+      <longflag>--compomap</longflag>
+      <default>None</default>
+      <description>Output composite labelmap for all thresholds</description>
+    </image>
+
+    <image type="label">
       <name>plmslc_isodose_img_out1</name>
       <label>Output Labelmap 1</label>
       <channel>output</channel>
