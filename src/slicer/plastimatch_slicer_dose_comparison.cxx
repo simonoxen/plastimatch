@@ -99,7 +99,7 @@ main (int argc, char * argv [])
 	UCharImageType::Pointer imgcompo = tparms.composite_labelmap->itk_uchar();
 	if ( plmslc_isodose_composite != "" && plmslc_isodose_composite != "None" ) 
 		itk_image_save (imgcompo, plmslc_isodose_composite.c_str());
-
+/*
 	UCharImageType::Pointer img1 = tparms.dose_labelmap1->itk_uchar();
 	if ( plmslc_isodose_img_out1 != "" && plmslc_isodose_img_out1 != "None" ) 
 	    itk_image_save (img1, plmslc_isodose_img_out1.c_str());
@@ -119,7 +119,7 @@ main (int argc, char * argv [])
 	UCharImageType::Pointer img5 = tparms.dose_labelmap5->itk_uchar();
 	if ( plmslc_isodose_img_out5 != "" && plmslc_isodose_img_out5 != "None" ) 
 		itk_image_save (img5, plmslc_isodose_img_out5.c_str());
-
+*/
     } //end if need isodose
     
     if ( plmslc_need_gamma ) {

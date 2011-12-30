@@ -13,10 +13,10 @@
     <description>Input parameters</description>
     <boolean>
       <name>plmslc_need_dosediff</name>
-      <label>Create dose difference?</label>
+      <label>Display dose image difference</label>
       <default>false</default>
       <longflag>--needdiff</longflag>
-      <description>Check this box if you want to create isodose lines</description>
+      <description>Check this box if you want to display voxel by voxel dose image difference</description>
     </boolean>
     <image>
       <longflag>plmslc_dose1_input_img</longflag>
@@ -63,91 +63,44 @@
 
     <image type="label">
       <name>plmslc_isodose_composite</name>
-      <label>Output composite labelmap</label>
+      <label>Output labelmap</label>
       <channel>output</channel>
       <longflag>--compomap</longflag>
       <default>None</default>
-      <description>Output composite labelmap for all thresholds</description>
+      <description>Output labelmap for all thresholds</description>
     </image>
-
-    <image type="label">
-      <name>plmslc_isodose_img_out1</name>
-      <label>Output Labelmap 1</label>
-      <channel>output</channel>
-      <longflag>--labelmap1</longflag>
-      <default>None</default>
-      <description>Output labelmap for threshold1</description>
-    </image>
-
-    <image type="label">
-      <name>plmslc_isodose_img_out2</name>
-      <label>Output Labelmap 2</label>
-      <channel>output</channel>
-      <longflag>--labelmap2</longflag>
-      <default>None</default>
-      <description>Output labelmap for threshold2</description>
-    </image>
-
-    <image type="label">
-      <name>plmslc_isodose_img_out3</name>
-      <label>Output Labelmap 3</label>
-      <channel>output</channel>
-      <longflag>--labelmap3</longflag>
-      <default>None</default>
-      <description>Output labelmap for threshold3</description>
-    </image>
-
-    <image type="label">
-      <name>plmslc_isodose_img_out4</name>
-      <label>Output Labelmap 4</label>
-      <channel>output</channel>
-      <longflag>--labelmap4</longflag>
-      <default>None</default>
-      <description>Output labelmap for threshold4</description>
-    </image>
-
-    <image type="label">
-      <name>plmslc_isodose_img_out5</name>
-      <label>Output Labelmap 5</label>
-      <channel>output</channel>
-      <longflag>--labelmap5</longflag>
-      <default>None</default>
-      <description>Output labelmap for threshold5</description>
-    </image>
-
-
     <integer>
       <name>plmslc_isodose_value1</name>
       <longflag>--value1</longflag>
-      <description>Isodose value</description>
+      <description>Isodose value in Gy</description>
       <label>Isodose Value 1</label>
       <default>10</default>
     </integer>
     <integer>
       <name>plmslc_isodose_value2</name>
       <longflag>--value2</longflag>
-      <description>Isodose value</description>
+      <description>Isodose value in Gy</description>
       <label>Isodose Value 2</label>
       <default>20</default>
     </integer>
     <integer>
       <name>plmslc_isodose_value3</name>
       <longflag>--value3</longflag>
-      <description>Isodose value</description>
+      <description>Isodose value in Gy</description>
       <label>Isodose Value 3</label>
       <default>30</default>
     </integer>
     <integer>
       <name>plmslc_isodose_value4</name>
       <longflag>--value4</longflag>
-      <description>Isodose value</description>
+      <description>Isodose value in Gy</description>
       <label>Isodose Value 4</label>
       <default>40</default>
     </integer>
     <integer>
       <name>plmslc_isodose_value5</name>
       <longflag>--value5</longflag>
-      <description>Isodose value</description>
+      <description>Isodose value in Gy</description>
       <label>Isodose Value 5</label>
       <default>50</default>
     </integer>
@@ -199,8 +152,8 @@
   <double>
     <name>plmslc_gamma_d_tol</name>
     <longflag>--gamma_d</longflag>
-    <description>Dose tolerance, percent?</description>
-    <label>Dose tolerance, percent?</label>
+    <description>Dose tolerance, Gy</description>
+    <label>Dose tolerance in Gy</label>
     <default>3</default>
   </double>
 
