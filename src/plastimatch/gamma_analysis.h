@@ -19,6 +19,8 @@ public:
     Plm_image *img_in1;
     Plm_image *img_in2;
     Plm_image *img_out;
+    Plm_image *img_out_pass;
+    Plm_image *img_out_fail;
 
 public:
     Gamma_parms () {

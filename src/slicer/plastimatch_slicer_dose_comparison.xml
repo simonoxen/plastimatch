@@ -140,7 +140,23 @@
       <default>None</default>
       <description>Output gamma image</description>
     </image>
-
+  <image>
+    <longflag>plmslc_gamma_output_img_pass</longflag>
+    <name>plmslc_gamma_output_img_pass</name>
+    <label>Output accepted gamma image</label>
+    <channel>output</channel>
+    <default>None</default>
+    <description>Output accepted gamma image</description>
+  </image>
+  <image>
+    <longflag>plmslc_gamma_output_img_fail</longflag>
+    <name>plmslc_gamma_output_img_fail</name>
+    <label>Output failed gamma image</label>
+    <channel>output</channel>
+    <default>None</default>
+    <description>Output failed gamma image</description>
+  </image>
+  
   <double>
     <name>plmslc_gamma_r_tol</name>
     <longflag>--gamma_r</longflag>

@@ -31,7 +31,7 @@ void do_gamma_analysis( Gamma_parms *parms ) {
     pih.get_spacing (spacing_in );
     // direction cosines??
 
-    // Create ITK image for gamma output 
+    // Create ITK image for gamma output, "pass", "fail" and combined 
     FloatImageType::SizeType sz;
     FloatImageType::IndexType st;
     FloatImageType::RegionType rg;
@@ -48,12 +48,26 @@ void do_gamma_analysis( Gamma_parms *parms ) {
     rg.SetIndex (st);
     itk_direction_from_dc (&itk_dc, parms->dc);
 
-    // output gamma image
+    // output gamma image, combined
     FloatImageType::Pointer gamma_img = FloatImageType::New();
     gamma_img->SetRegions (rg);
     gamma_img->SetOrigin (og);
     gamma_img->SetSpacing (sp);
     gamma_img->Allocate();
+
+	// output gamma image "pass"
+    FloatImageType::Pointer gamma_img_pass = FloatImageType::New();
+    gamma_img_pass->SetRegions (rg);
+    gamma_img_pass->SetOrigin (og);
+    gamma_img_pass->SetSpacing (sp);
+    gamma_img_pass->Allocate();
+
+// output gamma image "fail"
+    FloatImageType::Pointer gamma_img_fail = FloatImageType::New();
+    gamma_img_fail->SetRegions (rg);
+    gamma_img_fail->SetOrigin (og);
+    gamma_img_fail->SetSpacing (sp);
+    gamma_img_fail->Allocate();
 
     typedef itk::ImageRegionIteratorWithIndex< FloatImageType > FloatIteratorType;
     
@@ -65,8 +79,10 @@ void do_gamma_analysis( Gamma_parms *parms ) {
 
     FloatIteratorType img_in1_iterator (img_in1, all_of_img1);
     FloatIteratorType gamma_img_iterator (gamma_img, gamma_img->GetLargestPossibleRegion());
-
-    FloatImageType::IndexType k1, k2, k3;
+	FloatIteratorType gamma_img_pass_iterator (gamma_img_pass, gamma_img_pass->GetLargestPossibleRegion());
+	FloatIteratorType gamma_img_fail_iterator (gamma_img_fail, gamma_img_fail->GetLargestPossibleRegion());
+    
+	FloatImageType::IndexType k1, k2, k3;
     FloatImageType::OffsetType offset;
     FloatImageType::SizeType region_size;
     FloatPoint3DType phys;
@@ -95,6 +111,8 @@ void do_gamma_analysis( Gamma_parms *parms ) {
     offset[2]=reg_pixsize;
 
     gamma_img_iterator.GoToBegin();
+	gamma_img_pass_iterator.GoToBegin();
+	gamma_img_fail_iterator.GoToBegin();
 
     for (img_in1_iterator.GoToBegin(); !img_in1_iterator.IsAtEnd(); ++img_in1_iterator) {
     
@@ -148,10 +166,24 @@ void do_gamma_analysis( Gamma_parms *parms ) {
 
     gamma_img_iterator.Set ( gamma );
     ++gamma_img_iterator;
-    }
+
+	if (gamma <= 1)
+	gamma_img_pass_iterator.Set ( gamma );
+    ++gamma_img_pass_iterator;
+
+    if (gamma > 1)
+	gamma_img_fail_iterator.Set ( gamma );
+    ++gamma_img_fail_iterator;
+	}
 
     parms->img_out = new Plm_image;
     parms->img_out->set_itk( gamma_img);
+
+	parms->img_out_pass = new Plm_image;
+    parms->img_out_pass->set_itk( gamma_img_pass);
+
+	parms->img_out_fail = new Plm_image;
+    parms->img_out_fail->set_itk( gamma_img_fail);
 
 }
 

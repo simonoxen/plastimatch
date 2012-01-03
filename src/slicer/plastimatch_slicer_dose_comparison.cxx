@@ -142,6 +142,12 @@ main (int argc, char * argv [])
 	FloatImageType::Pointer imgg = gparms.img_out->itk_float();
 	itk_image_save (imgg, plmslc_gamma_output_img.c_str());
 
+	FloatImageType::Pointer imggp = gparms.img_out_pass->itk_float();
+	itk_image_save (imggp, plmslc_gamma_output_img_pass.c_str());
+
+	FloatImageType::Pointer imggf = gparms.img_out_fail->itk_float();
+	itk_image_save (imggf, plmslc_gamma_output_img_fail.c_str());
+
     } // end if need gamma
 
     return EXIT_SUCCESS;
