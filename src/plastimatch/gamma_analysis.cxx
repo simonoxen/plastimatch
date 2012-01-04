@@ -16,18 +16,9 @@
 #include "plm_image_header.h"
 
 void find_dose_threshold( Gamma_parms *parms ) { 	
-	float spacing_in[3], origin_in[3];
-    size_t dim_in[3];
-    Plm_image_header pih;
-    
+	
     FloatImageType::Pointer img_in1 = parms->img_in1->itk_float();
     
-    pih.set_from_itk_image (img_in1);
-    pih.get_dim (dim_in );
-    pih.get_origin (origin_in );
-    pih.get_spacing (spacing_in );
-    // direction cosines??
-
     typedef itk::ImageRegionIteratorWithIndex< FloatImageType > FloatIteratorType;
     typedef itk::ImageRegion<3> FloatRegionType;
     
