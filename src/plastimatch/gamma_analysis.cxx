@@ -124,12 +124,17 @@ void do_gamma_analysis( Gamma_parms *parms ) {
 	gamma_img_fail_iterator.GoToBegin();
 	labelmap_fail_iterator.GoToBegin();
 
+	float maxlevel1=-1e20;
     for (img_in1_iterator.GoToBegin(); !img_in1_iterator.IsAtEnd(); ++img_in1_iterator) {
     
     //calculate gamma for this voxel of input image
     
     level1 = img_in1_iterator.Get();
-    	
+    
+	if (level1 > maxlevel1) maxlevel1 = level1; 
+
+    parms->dose_max = maxlevel1;
+
     k1=img_in1_iterator.GetIndex();
     img_in1->TransformIndexToPhysicalPoint( k1, phys );
     img_in2->TransformPhysicalPointToIndex( phys, k2 );

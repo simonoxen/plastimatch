@@ -174,13 +174,19 @@
   </double>
 
   <double>
-    <name>plmslc_gamma_d_tol</name>
-    <longflag>--gamma_d</longflag>
+    <name>plmslc_gamma_d_tol_gy</name>
+    <longflag>--gamma_d_gy</longflag>
     <description>Dose tolerance, Gy</description>
     <label>Dose tolerance in Gy</label>
-    <default>3</default>
+    <default>0</default>
   </double>
-
+  <double>
+    <name>plmslc_gamma_d_tol_percent</name>
+    <longflag>--gamma_d_p</longflag>
+    <description>Dose tolerance, percent of maximum dose</description>
+    <label>Dose tolerance in percent</label>
+    <default>0</default>
+  </double>
   <double>
     <name>plmslc_gamma_g</name>
     <longflag>--gamma_g</longflag>

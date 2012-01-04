@@ -12,7 +12,7 @@
 class Gamma_parms {
 public:
     
-    float r_tol, d_tol, gamma_max;
+    float r_tol, d_tol, dose_max, gamma_max;
 
     Direction_cosines dc;
 

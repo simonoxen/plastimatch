@@ -134,8 +134,18 @@ main (int argc, char * argv [])
 	gparms.img_in2 = plm_image_load_native ( plmslc_gamma_input_img2.c_str() );
 
 	gparms.r_tol = plmslc_gamma_r_tol;
-	gparms.d_tol = plmslc_gamma_d_tol;
 	gparms.gamma_max = plmslc_gamma_g;
+
+//   if (plmslc_gamma_d_tol_gy != "" )
+	 if (plmslc_gamma_d_tol_gy != 0)
+    {
+	gparms.d_tol = plmslc_gamma_d_tol_gy;
+    }
+//  else if (plmslc_gamma_d_tol_percent != "" )
+	else if (plmslc_gamma_d_tol_percent != 0)
+    {
+	gparms.d_tol = plmslc_gamma_d_tol_percent/100.*gparms.dose_max;
+    }
 
 	do_gamma_analysis( &gparms ); 
 
@@ -148,8 +158,8 @@ main (int argc, char * argv [])
 	FloatImageType::Pointer imggf = gparms.img_out_fail->itk_float();
 	itk_image_save (imggf, plmslc_gamma_output_img_fail.c_str());
 
-	FloatImageType::Pointer labp = gparms.labelmap_out->itk_float();
-	itk_image_save (labp, plmslc_gamma_output_labelmap.c_str());
+	FloatImageType::Pointer labf = gparms.labelmap_out->itk_float();
+	itk_image_save (labf, plmslc_gamma_output_labelmap.c_str());
 
     } // end if need gamma
 
