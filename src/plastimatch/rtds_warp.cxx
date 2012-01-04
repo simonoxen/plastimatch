@@ -272,11 +272,11 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 #endif
     }
 
-    /* Set user-supplied metadata */
-    rtds->set_user_metadata (parms->m_metadata);
-
     /* Load input file(s) */
     load_input_files (rtds, file_type, parms);
+
+    /* Set user-supplied metadata (overrides metadata in input files) */
+    rtds->set_user_metadata (parms->m_metadata);
 
     /* Load transform */
     if (bstring_not_empty (parms->xf_in_fn)) {
