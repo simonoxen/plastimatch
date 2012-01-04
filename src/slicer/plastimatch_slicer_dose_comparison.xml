@@ -156,6 +156,14 @@
     <default>None</default>
     <description>Output failed gamma image</description>
   </image>
+  <image type="label">
+    <name>plmslc_gamma_output_labelmap</name>
+    <label>Output labelmap for failed gamma</label>
+    <channel>output</channel>
+    <longflag>--failmap</longflag>
+    <default>None</default>
+    <description>Output labelmap for gamma greater than 1</description>
+  </image>
   
   <double>
     <name>plmslc_gamma_r_tol</name>

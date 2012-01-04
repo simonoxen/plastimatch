@@ -148,6 +148,9 @@ main (int argc, char * argv [])
 	FloatImageType::Pointer imggf = gparms.img_out_fail->itk_float();
 	itk_image_save (imggf, plmslc_gamma_output_img_fail.c_str());
 
+	FloatImageType::Pointer labp = gparms.labelmap_out->itk_float();
+	itk_image_save (labp, plmslc_gamma_output_labelmap.c_str());
+
     } // end if need gamma
 
     return EXIT_SUCCESS;

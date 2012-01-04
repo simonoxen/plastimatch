@@ -21,6 +21,7 @@ void do_gamma_analysis( Gamma_parms *parms ) {
     size_t dim_in[3];
     Plm_image_header pih;
     float gamma;
+	unsigned char label_fail;
 
     FloatImageType::Pointer img_in1 = parms->img_in1->itk_float();
     FloatImageType::Pointer img_in2 = parms->img_in2->itk_float();
@@ -62,15 +63,22 @@ void do_gamma_analysis( Gamma_parms *parms ) {
     gamma_img_pass->SetSpacing (sp);
     gamma_img_pass->Allocate();
 
-// output gamma image "fail"
+	// output gamma image "fail"
     FloatImageType::Pointer gamma_img_fail = FloatImageType::New();
     gamma_img_fail->SetRegions (rg);
     gamma_img_fail->SetOrigin (og);
     gamma_img_fail->SetSpacing (sp);
     gamma_img_fail->Allocate();
 
+	// output labelmap "fail"
+    UCharImageType::Pointer labelmap_fail = UCharImageType::New();
+    labelmap_fail->SetRegions (rg);
+    labelmap_fail->SetOrigin (og);
+    labelmap_fail->SetSpacing (sp);
+    labelmap_fail->Allocate();
+
+    typedef itk::ImageRegionIteratorWithIndex< UCharImageType > UCharIteratorType;
     typedef itk::ImageRegionIteratorWithIndex< FloatImageType > FloatIteratorType;
-    
     typedef itk::ImageRegion<3> FloatRegionType;
     
     FloatRegionType all_of_img1 = img_in1->GetLargestPossibleRegion();
@@ -81,7 +89,8 @@ void do_gamma_analysis( Gamma_parms *parms ) {
     FloatIteratorType gamma_img_iterator (gamma_img, gamma_img->GetLargestPossibleRegion());
 	FloatIteratorType gamma_img_pass_iterator (gamma_img_pass, gamma_img_pass->GetLargestPossibleRegion());
 	FloatIteratorType gamma_img_fail_iterator (gamma_img_fail, gamma_img_fail->GetLargestPossibleRegion());
-    
+	UCharIteratorType labelmap_fail_iterator (labelmap_fail, labelmap_fail->GetLargestPossibleRegion());
+
 	FloatImageType::IndexType k1, k2, k3;
     FloatImageType::OffsetType offset;
     FloatImageType::SizeType region_size;
@@ -113,6 +122,7 @@ void do_gamma_analysis( Gamma_parms *parms ) {
     gamma_img_iterator.GoToBegin();
 	gamma_img_pass_iterator.GoToBegin();
 	gamma_img_fail_iterator.GoToBegin();
+	labelmap_fail_iterator.GoToBegin();
 
     for (img_in1_iterator.GoToBegin(); !img_in1_iterator.IsAtEnd(); ++img_in1_iterator) {
     
@@ -166,14 +176,21 @@ void do_gamma_analysis( Gamma_parms *parms ) {
 
     gamma_img_iterator.Set ( gamma );
     ++gamma_img_iterator;
+	
+    label_fail = 0;
+
+	if (gamma > 1) label_fail = 1;
 
 	if (gamma <= 1)
 	gamma_img_pass_iterator.Set ( gamma );
     ++gamma_img_pass_iterator;
-
+	
     if (gamma > 1)
 	gamma_img_fail_iterator.Set ( gamma );
     ++gamma_img_fail_iterator;
+
+	labelmap_fail_iterator.Set ( label_fail );
+	++labelmap_fail_iterator;
 	}
 
     parms->img_out = new Plm_image;
@@ -185,6 +202,8 @@ void do_gamma_analysis( Gamma_parms *parms ) {
 	parms->img_out_fail = new Plm_image;
     parms->img_out_fail->set_itk( gamma_img_fail);
 
+	parms->labelmap_out = new Plm_image;
+    parms->labelmap_out->set_itk( labelmap_fail);
 }
 
 

@@ -21,6 +21,7 @@ public:
     Plm_image *img_out;
     Plm_image *img_out_pass;
     Plm_image *img_out_fail;
+	Plm_image *labelmap_out;
 
 public:
     Gamma_parms () {
