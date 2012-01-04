@@ -31,6 +31,7 @@ public:
     }
 };
 
+plastimatch1_EXPORT void find_dose_threshold (Gamma_parms *parms);
 plastimatch1_EXPORT void do_gamma_analysis (Gamma_parms *parms);
 
 #endif

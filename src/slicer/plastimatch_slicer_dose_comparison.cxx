@@ -136,6 +136,8 @@ main (int argc, char * argv [])
 	gparms.r_tol = plmslc_gamma_r_tol;
 	gparms.gamma_max = plmslc_gamma_g;
 
+	find_dose_threshold( &gparms ); 
+
 //   if (plmslc_gamma_d_tol_gy != "" )
 	 if (plmslc_gamma_d_tol_gy != 0)
     {

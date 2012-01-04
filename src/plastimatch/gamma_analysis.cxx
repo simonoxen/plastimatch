@@ -15,6 +15,33 @@
 #include "gamma_analysis.h"
 #include "plm_image_header.h"
 
+void find_dose_threshold( Gamma_parms *parms ) { 	
+	float spacing_in[3], origin_in[3];
+    size_t dim_in[3];
+    Plm_image_header pih;
+    
+    FloatImageType::Pointer img_in1 = parms->img_in1->itk_float();
+    
+    pih.set_from_itk_image (img_in1);
+    pih.get_dim (dim_in );
+    pih.get_origin (origin_in );
+    pih.get_spacing (spacing_in );
+    // direction cosines??
+
+    typedef itk::ImageRegionIteratorWithIndex< FloatImageType > FloatIteratorType;
+    typedef itk::ImageRegion<3> FloatRegionType;
+    
+    FloatRegionType all_of_img1 = img_in1->GetLargestPossibleRegion();
+    
+    FloatIteratorType img_in1_iterator (img_in1, all_of_img1);
+   
+    float level1, maxlevel1=-1e20;
+	for (img_in1_iterator.GoToBegin(); !img_in1_iterator.IsAtEnd(); ++img_in1_iterator) {
+	level1 = img_in1_iterator.Get();
+    if (level1 > maxlevel1) maxlevel1 = level1; 	
+	} 
+	parms->dose_max = maxlevel1;
+}
 void do_gamma_analysis( Gamma_parms *parms ) { 
 
     float spacing_in[3], origin_in[3];
@@ -99,8 +126,8 @@ void do_gamma_analysis( Gamma_parms *parms ) {
     int reg_pixsize; 
     float level1, level2, dr2, dd2, gg;
     float f0,f1,f2,f3;
-    
-    //vox-to-mm-to-gamma conversion factors; strictly, these should come from IMAGE2, not 1
+
+	//vox-to-mm-to-gamma conversion factors; strictly, these should come from IMAGE2, not 1
     f0 = spacing_in[0]/parms->r_tol; f0=f0*f0;
     f1 = spacing_in[1]/parms->r_tol; f1=f1*f1;
     f2 = spacing_in[2]/parms->r_tol; f2=f2*f2;
@@ -124,16 +151,13 @@ void do_gamma_analysis( Gamma_parms *parms ) {
 	gamma_img_fail_iterator.GoToBegin();
 	labelmap_fail_iterator.GoToBegin();
 
-	float maxlevel1=-1e20;
+	
+
     for (img_in1_iterator.GoToBegin(); !img_in1_iterator.IsAtEnd(); ++img_in1_iterator) {
     
     //calculate gamma for this voxel of input image
     
     level1 = img_in1_iterator.Get();
-    
-	if (level1 > maxlevel1) maxlevel1 = level1; 
-
-    parms->dose_max = maxlevel1;
 
     k1=img_in1_iterator.GetIndex();
     img_in1->TransformIndexToPhysicalPoint( k1, phys );
