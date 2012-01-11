@@ -1,0 +1,1 @@
+c:\gcs6\build\slicer-4\Slicer4-build\python-build\PCbuild\python.exe c:\gcs6\build\slicer-4\Slicer4\Utilities\Scripts\ModuleWizard.py --template c:\gcs6\build\slicer-4\Slicer4\Extensions\Testing\LoadableExtensionTemplate --target PlmSlicerBspline PlmSlicerBspline 

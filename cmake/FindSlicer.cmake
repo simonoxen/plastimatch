@@ -71,6 +71,7 @@ if (SLICER_FOUND)
     set (Slicer_Libs_LIBRARIES "${Slicer3_Libs_LIBRARIES}")
     set (Slicer_USE_FILE "${Slicer3_USE_FILE}")
   else ()
+# 2012-01-10: JC says these aren't needed any more
     ## Slicer 4: include missing cmake scripts (Slicer3 stuff)
     include (Slicer3Macros)
     include (Slicer3PluginsMacros)

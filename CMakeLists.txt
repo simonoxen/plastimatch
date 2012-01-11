@@ -211,8 +211,11 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Search for languages and language features
 ##-----------------------------------------------------------------------------
-# Always check for fortran, whether we use it or not
-if (NOT MINGW)
+if (BUILD_AGAINST_SLICER3)
+  # Never use fortran for slicer extension build, because end users
+  # might not have it installed
+  set (PLM_PREFER_F2C TRUE)
+elseif (NOT MINGW)
   # For some reason, CMake tries to invoke devenv instead of gfortran
   # for mingw.
   include (cmake/PLM_FindFortran.cmake)
