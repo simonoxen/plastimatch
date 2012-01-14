@@ -124,6 +124,7 @@ parse_fn (
 	    throw (dlib::error ("Error. Unknown --output-format argument: " 
 		    + arg));
 	}
+        parms->output_dicom = true;
     }
     if (parser->option("output-type")) {
 	std::string arg = parser->get_string ("output-type");
