@@ -358,7 +358,8 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     if (rtds->m_img 
 	&& bstring_not_empty (parms->xf_in_fn)
 	&& (bstring_not_empty (parms->output_img_fn)
-	    || bstring_not_empty (parms->output_vf_fn)))
+	    || bstring_not_empty (parms->output_vf_fn)
+	    || bstring_not_empty (parms->output_dicom)))
     {
 	Plm_image *im_out;
 	im_out = new Plm_image;
