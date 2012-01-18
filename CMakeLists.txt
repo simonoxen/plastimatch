@@ -175,6 +175,24 @@ message (STATUS "Checking epsilon: ${MACHINE_EPS}")
 message (STATUS "Checking sign of char: ${CHAR_SIGN}")
 
 ##-----------------------------------------------------------------------------
+##  Disable spurious warnings on MSVC (version 8 & higher)
+##-----------------------------------------------------------------------------
+if (WIN32 AND NOT CYGWIN AND NOT MINGW)
+  add_definitions(
+    -D_CRT_FAR_MAPPINGS_NO_DEPRECATE
+    -D_CRT_IS_WCTYPE_NO_DEPRECATE
+    -D_CRT_MANAGED_FP_NO_DEPRECATE
+    -D_CRT_NONSTDC_NO_DEPRECATE
+    -D_CRT_SECURE_NO_DEPRECATE
+    -D_CRT_SECURE_NO_DEPRECATE_GLOBALS
+    -D_CRT_SETERRORMODE_BEEP_SLEEP_NO_DEPRECATE
+    -D_CRT_TIME_FUNCTIONS_NO_DEPRECATE
+    -D_CRT_VCCLRIT_NO_DEPRECATE
+    -D_SCL_SECURE_NO_DEPRECATE
+    )
+endif ()
+
+##-----------------------------------------------------------------------------
 ##  I can't remember why this is necessary.  But at one time I needed 
 ##  it for compiling on AMD linux 64-bit.
 ##-----------------------------------------------------------------------------
