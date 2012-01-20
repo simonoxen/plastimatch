@@ -59,5 +59,53 @@ void qSlicerPlmSlicerBsplineModuleWidget::setup()
   Q_D(qSlicerPlmSlicerBsplineModuleWidget);
   d->setupUi(this);
   this->Superclass::setup();
+
+  connect(d->fixedImageMRMLNodeComboBox, 
+      SIGNAL(currentNodeChanged(vtkMRMLNode*)),
+      this, SLOT(onInputVolumeChanged()));
+  connect(d->movingImageMRMLNodeComboBox, 
+      SIGNAL(currentNodeChanged(vtkMRMLNode*)),
+      this, SLOT(onInputVolumeChanged()));
 }
 
+void qSlicerPlmSlicerBsplineModuleWidget::enter()
+{
+#if defined (commentout)
+  this->onInputVolumeChanged();
+  this->onInputROIChanged();
+#endif
+}
+
+void qSlicerPlmSlicerBsplineModuleWidget::setMRMLScene(vtkMRMLScene* scene){
+
+  this->Superclass::setMRMLScene(scene);
+  if(scene == NULL)
+    return;
+
+#if defined (commentout)
+  vtkCollection* parameterNodes = scene->GetNodesByClass("vtkMRMLPlmSlicerBsplineParametersNode");
+
+  if(parameterNodes->GetNumberOfItems() > 0)
+    {
+    this->parametersNode = vtkMRMLPlmSlicerBsplineParametersNode::SafeDownCast(parameterNodes->GetItemAsObject(0));
+    if(!this->parametersNode)
+      {
+      qCritical() << "FATAL ERROR: Cannot instantiate PlmSlicerBsplineParameterNode";
+      Q_ASSERT(this->parametersNode);
+      }
+    //InitializeEventListeners(this->parametersNode);
+    }
+  else
+    {
+    qDebug() << "No PlmSlicerBspline parameter nodes found!";
+    this->parametersNode = vtkMRMLPlmSlicerBsplineParametersNode::New();
+    scene->AddNodeNoNotify(this->parametersNode);
+    this->parametersNode->Delete();
+    }
+
+  parameterNodes->Delete();
+
+  this->updateWidget();
+
+#endif
+}

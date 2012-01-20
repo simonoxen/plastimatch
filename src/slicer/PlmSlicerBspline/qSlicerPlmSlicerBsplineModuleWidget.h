@@ -45,6 +45,8 @@ protected:
   QScopedPointer<qSlicerPlmSlicerBsplineModuleWidgetPrivate> d_ptr;
   
   virtual void setup();
+  virtual void enter();
+  virtual void setMRMLScene(vtkMRMLScene*);
 
 private:
   Q_DECLARE_PRIVATE(qSlicerPlmSlicerBsplineModuleWidget);
