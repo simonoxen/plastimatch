@@ -25,6 +25,7 @@
 
 class qSlicerPlmSlicerBsplineModuleWidgetPrivate;
 class vtkMRMLNode;
+class vtkMRMLPlmSlicerBsplineParametersNode;
 
 /// \ingroup Slicer_QtModules_ExtensionTemplate
 class Q_SLICER_QTMODULES_PLMSLICERBSPLINE_EXPORT qSlicerPlmSlicerBsplineModuleWidget :
@@ -51,6 +52,10 @@ protected:
 private:
   Q_DECLARE_PRIVATE(qSlicerPlmSlicerBsplineModuleWidget);
   Q_DISABLE_COPY(qSlicerPlmSlicerBsplineModuleWidget);
+
+private:
+  vtkMRMLPlmSlicerBsplineParametersNode *parametersNode;
+
 };
 
 #endif

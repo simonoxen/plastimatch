@@ -14,7 +14,8 @@ endif()
 #   - Usually identique to the directory name)
 #   - You shouldn't call 'project(...)'. See SlicerConfig.cmake for more details.
 #-----------------------------------------------------------------------------
-set(EXTENSION_NAME PlmSlicerBspline)
+set (EXTENSION_NAME PlmSlicerBspline)
+set (qt_module_name "PlmSlicerBspline")
 
 #-----------------------------------------------------------------------------
 # Prerequisites
@@ -44,6 +45,7 @@ endif()
 
 # Add subdirectories
 add_subdirectory(Logic)
+add_subdirectory(MRML)
 
 #-----------------------------------------------------------------------------
 # Sources

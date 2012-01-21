@@ -46,6 +46,7 @@ qSlicerPlmSlicerBsplineModuleWidget::qSlicerPlmSlicerBsplineModuleWidget(QWidget
   : Superclass( _parent )
   , d_ptr( new qSlicerPlmSlicerBsplineModuleWidgetPrivate )
 {
+  this->parametersNode = NULL;
 }
 
 //-----------------------------------------------------------------------------
