@@ -1,22 +1,6 @@
-/*=auto=========================================================================
-
-  Portions (c) Copyright 2005 Brigham and Women's Hospital (BWH) All Rights Reserved.
-
-  See COPYRIGHT.txt
-  or http://www.slicer.org/copyright/copyright.txt for details.
-
-  Program:   3D Slicer
-  Module:    $RCSfile: vtkMRMLVolumeRenderingParametersNode.h,v $
-  Date:      $Date: 2006/03/19 17:12:29 $
-  Version:   $Revision: 1.3 $
-
-=========================================================================auto=*/
-// .NAME vtkMRMLVolumeRenderingParametersNode - MRML node for storing a slice through RAS space
-// .SECTION Description
-// This node stores the information about the currently selected volume
-//
-//
-
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 #ifndef __vtkMRMLPlmSlicerBsplineParametersNode_h
 #define __vtkMRMLPlmSlicerBsplineParametersNode_h
 

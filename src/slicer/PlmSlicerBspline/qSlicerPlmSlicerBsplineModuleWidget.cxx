@@ -1,30 +1,17 @@
-/*==============================================================================
-
-  Program: 3D Slicer
-
-  Portions (c) Copyright Brigham and Women's Hospital (BWH) All Rights Reserved.
-
-  See COPYRIGHT.txt
-  or http://www.slicer.org/copyright/copyright.txt for details.
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
-
-==============================================================================*/
-
-// Qt includes
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 #include <QDebug>
 
-// SlicerQt includes
 #include "qSlicerPlmSlicerBsplineModuleWidget.h"
 #include "ui_qSlicerPlmSlicerBsplineModule.h"
+#include "vtkMRMLPlmSlicerBsplineParametersNode.h"
+#include "vtkSlicerPlmSlicerBsplineLogic.h"
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_ExtensionTemplate
-class qSlicerPlmSlicerBsplineModuleWidgetPrivate: public Ui_qSlicerPlmSlicerBsplineModule
+class qSlicerPlmSlicerBsplineModuleWidgetPrivate
+  : public Ui_qSlicerPlmSlicerBsplineModule
 {
 public:
   qSlicerPlmSlicerBsplineModuleWidgetPrivate();
@@ -62,11 +49,14 @@ void qSlicerPlmSlicerBsplineModuleWidget::setup()
   this->Superclass::setup();
 
   connect(d->fixedImageMRMLNodeComboBox, 
-      SIGNAL(currentNodeChanged(vtkMRMLNode*)),
-      this, SLOT(onInputVolumeChanged()));
+          SIGNAL(currentNodeChanged(vtkMRMLNode*)),
+          this, SLOT(onInputVolumeChanged()));
   connect(d->movingImageMRMLNodeComboBox, 
-      SIGNAL(currentNodeChanged(vtkMRMLNode*)),
-      this, SLOT(onInputVolumeChanged()));
+          SIGNAL(currentNodeChanged(vtkMRMLNode*)),
+          this, SLOT(onInputVolumeChanged()));
+
+  connect(d->registerPushButton, SIGNAL(clicked()),
+          this, SLOT(onApply()));
 }
 
 void qSlicerPlmSlicerBsplineModuleWidget::enter()
@@ -77,8 +67,8 @@ void qSlicerPlmSlicerBsplineModuleWidget::enter()
 #endif
 }
 
-void qSlicerPlmSlicerBsplineModuleWidget::setMRMLScene(vtkMRMLScene* scene){
-
+void qSlicerPlmSlicerBsplineModuleWidget::setMRMLScene(vtkMRMLScene* scene)
+{
   this->Superclass::setMRMLScene(scene);
   if(scene == NULL)
     return;
@@ -108,5 +98,28 @@ void qSlicerPlmSlicerBsplineModuleWidget::setMRMLScene(vtkMRMLScene* scene){
 
   this->updateWidget();
 
+#endif
+}
+
+void qSlicerPlmSlicerBsplineModuleWidget::onApply()
+{
+  Q_D(const qSlicerPlmSlicerBsplineModuleWidget);
+
+  /* GCS 2012-01-21: This seems simpler/better than the CropVolume 
+     example code which adds a logic() member to the Q_D class */
+  vtkSlicerPlmSlicerBsplineLogic *logic = 
+    vtkSlicerPlmSlicerBsplineLogic::SafeDownCast(this->logic());
+
+#if defined (commentout)
+  vtkSlicerPlmSlicerBsplineLogic *logic = d->logic();
+  if(!logic->Apply(this->parametersNode))
+    {
+    std::cerr << "Propagating to the selection node" << std::endl;
+    vtkSlicerApplicationLogic *appLogic = this->module()->appLogic();
+    vtkMRMLSelectionNode *selectionNode = appLogic->GetSelectionNode();
+    selectionNode->SetReferenceActiveVolumeID (
+      this->parametersNode->GetOutputVolumeNodeID());
+    appLogic->PropagateVolumeSelection();
+    }
 #endif
 }
