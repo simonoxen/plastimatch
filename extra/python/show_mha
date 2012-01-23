@@ -2,7 +2,7 @@
 
 ## This is an easy command line mha file viewer 
 ## Author: Paolo Zaffino  (p.zaffino@yahoo.it)
-## rev 3
+## rev 4
 ## If your python version is < 2.7 you must install the argparse library
 ## NOT TESTED ON PYTHON 3
 ## "show_mha -h" shows the guide
@@ -37,13 +37,13 @@ else:
 ## View settings
 if args.view == 'c':
 	slice=np.fliplr(np.rot90(img[:,slice_number],-1))
-	pixel_ratio=img_spacing[2]/img_spacing[1]
+	pixel_ratio=img_spacing[2]/img_spacing[0]
 elif args.view == 's':
 	slice=np.fliplr(np.rot90(img[slice_number,:],-1))
 	pixel_ratio=img_spacing[2]/img_spacing[1]
 elif args.view == 'a':
 	slice=np.rot90(img[:,:,slice_number],1)
-	pixel_ratio=1
+	pixel_ratio=img_spacing[1]/img_spacing[0]
 
 del img
 
