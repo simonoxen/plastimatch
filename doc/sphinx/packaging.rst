@@ -4,9 +4,34 @@ This section describes the recommended build configuration for
 building and packaging the official plastimatch tarballs 
 and binaries.
 
-Building a tarball
-------------------
-Official tarballs are built on my home computer: wormwood
+Making tarball and debian package
+---------------------------------
+This is done on wormwood.  
+
+Step 1: Preliminary testing
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The preliminary testing will make sure that the tarball will 
+build under debian in step 3.
+
+#. Run rebundle.pl until satisfied
+#. Update changelog (in an terminal, not emacs)::
+
+     cd plastimatch/trunk
+     dch -v 1.5.4+dfsg0-1
+
+#. Repackage tarball::
+
+     ./debian/get-orig-source plastimatch_1.5.4.orig.tar.bz2
+
+#. Test out by running debuild, such as "run_debuild.pl"
+#. Test out again by running pbuilder, such as "run_pbuilder.pl"
+#. Test parallel regression tests::
+
+      cd ~/build/plastimatch-3.20.0
+      ctest -j 4
+
+Step 2: Build the tarball
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 #. Make sure the changelog is up-to-date
 #. Update source into plastimatch-pristene
@@ -20,59 +45,49 @@ Then, do a few small things to get ready for next time
 #. Add version number and date to changelog
 #. Bump version number in CMakeLists
 
-Library versions for binaries
------------------------------
-Third party libraries to be used (Plastimatch 1.5.0)::
+Step 3: Build the debian package
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-  CUDA            3.0.14
-  DCMTK           ??                (3.5.4 for Mondoshot, otherwise 3.6.0)
-  FFTW            3.2.2             (Windows only)
-  ITK             3.20.1
-  wxWidgets       2.8.12            (Windows only)
+#. Refresh your pbuilder environment (if needed)::
 
-Configuration settings for binaries
------------------------------------
-Leave all values at default unless otherwise specified.
-Pay special attention to the following::
+   sudo pbuilder --clean && sudo pbuilder --update
 
-  BUILD_SHARED_LIBS           ??      (ON for windows, OFF for unix)
-  PLM_CONFIG_VERSION_STRING   1.5.0   (change this)
-  PLM_CUDA_ALL_DEVICES        ON      (this is default)
-  PLM_INSTALL_RPATH           OFF     (change this, only relevant for Unix)
-  PLM_USE_GPU_PLUGINS         ON      (this is default)
-  PLM_USE_SS_IMAGE_VEC        ON      (change this, but should be OFF for slicer plugin)
+#. Clean up files from previous version::
 
-Making debian version (upgrading tarball)
------------------------------------------
-This is done on wormwood as well.  There are two workflows.  
-One which uses the local source tree, and one which downloads 
-the official tarball.
+     rm *.gz *.bz2
 
-#. Go to plastimatch/trunk
-#. Run rebundle.pl until satisfied
-#. Update changelog by running dch, such as "dch -v 1.5.4+dfsg0-1"
-#. Repackage tarballs, by running "debian/get_orig_source"
-#. Test out by running debuild, such as "run_debuild.pl"
-#. Test out again by running pbuilder, such as "run_pbuilder.sh"
+#. Update changelog (in an terminal, not emacs)::
 
-From official tarball:
+     cd plastimatch/trunk
+     dch -v 1.5.4+dfsg0-1
 
-#. Clean up files from previous version
-#. Go to plastimatch/trunk
-#. Update changelog by running dch, such as "dch -v 1.5.4+dfsg0-1"
-#. Repackage tarballs, by running "debian/get_orig_source"
+#. Repackage tarball::
+
+     ./debian/get-orig-source
+
 #. Test out by running debuild, such as "run_debuild.pl"
 #. Test out again by running pbuilder, such as "run_pbuilder.pl"
 
-Note:
-
-#. Sometimes you have to refresh your pbuilder environment, such as 
-   "sudo pbuilder --clean && sudo pbuilder --update"
 
 Building a windows binary
 -------------------------
 The Windows build uses the MSVC 2008 express compiler.  
 This means 32-bit (only), and no OpenMP.
+
+Third party libraries to be used::
+
+  CUDA            3.0.14
+  DCMTK           3.6.0             (Nb. Mondoshot used 3.5.4)
+  FFTW            3.2.2
+  ITK             3.20.1
+  wxWidgets       2.8.12            (If mondoshot is built)
+
+Configuration settings::
+
+  PLM_CUDA_ALL_DEVICES        ON      (this is default)
+  PLM_INSTALL_RPATH           OFF     (change this, only relevant for Unix)
+  PLM_USE_GPU_PLUGINS         ON      (this is default)
+  PLM_USE_SS_IMAGE_VEC        ON      (change this, but should be OFF for slicer plugin)
 
 #. Build/install all required 3rd party libraries.
 #. Double check CPACK version number (at bottom of CMakeLists.txt)
@@ -84,50 +99,3 @@ This means 32-bit (only), and no OpenMP.
 
 Windows binaries should not include the 3D Slicer plugins.  
 Those will be handled by the Slicer extension system.
-
-Building a plastimatch deb package using cpack
-----------------------------------------------
-This “How to” describes the way for build and 
-sign a deb package of plastimatch using the cpack tool.
-The deb files that are on the website are builded 
-into two GNU/Linux Ubuntu 10.04.1 OSs (32 and
-64 bits) virtualized by Virtualbox in a GNU/Linux Fedora 14 64 bits.
-
-Packages needed::
-
-  build-essential
-  cmake
-  dpkg-sig
-  fftw
-  gfortran
-  libsqlite3-dev
-  sqlite3
-  uuid-dev
-
-*Dependences*
-
-The only one dependence for the packages that will be builded 
-is libgfortran3, but it'll be manage 
-from the manager package system of the OS.
-
-*Build the package*
-
-- Download the code via svn and choose the plastimatch folder as working directory
-- Create a folder called “build”
-- Copy the man page files (locate in plastimatch/doc/man) into the working directory
-- Copy the bash completion file (locate in plastimatch/extra/bash_completion) into the working directory
-- Choose the folder “build” as working directory and run::
-
-    cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release ..
-
-- And then::
-
-    cpack ..
-
-- wait a few of minuts for the creation of deb file
-- finally use dpkg-sig tool for sign the deb file (a gpg key must be alredy created)::
-
-    dpkg-sig --sign USERNAME plastimatch_1930_ARCH_TYPE.deb
-
-For questions, clarifications, corrections or comments please write to:
-p.zaffino@yahoo.it
