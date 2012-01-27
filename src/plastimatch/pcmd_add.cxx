@@ -2,61 +2,97 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
+#include <list>
 #include "itkAddImageFilter.h"
 #include "itkNaryAddImageFilter.h"
 #include "itkDivideByConstantImageFilter.h"
-#include "getopt.h"
+#include "itkMultiplyByConstantImageFilter.h"
+
 #include "itk_image.h"
 #include "itk_image_load.h"
+#include "plm_clp.h"
 #include "plm_image.h"
-#include "plm_path.h"
+#include "pstring.h"
 
 class Add_parms {
 public:
-    
+    Pstring output_fn;
+    std::vector<float> weight_vector;
+    std::list<Pstring> input_fns;
+public:
+    Add_parms () {}
 };
 
-
-static void
-print_usage (void)
-{
-    printf (
-	//	"Usage: plastimatch add [options]"
-	"Usage: plastimatch add"
-	" input_file [input_file ...] output_file\n"
-    );
-    exit (1);
-}
-
 void
-add_main (int argc, char *argv[])
+add_main (Add_parms *parms)
 {
-    int i;
-    typedef itk::AddImageFilter< FloatImageType, FloatImageType, 
-	FloatImageType > AddFilterType;
-    typedef itk::DivideByConstantImageFilter< FloatImageType, int, 
-	FloatImageType > DivFilterType;
-
-    FloatImageType::Pointer tmp;
+    typedef itk::AddImageFilter< 
+        FloatImageType, FloatImageType, FloatImageType > AddFilterType;
+    typedef itk::DivideByConstantImageFilter< 
+        FloatImageType, int, FloatImageType > DivFilterType;
+    typedef itk::MultiplyByConstantImageFilter< 
+        FloatImageType, int, FloatImageType > MulFilterType;
 
     AddFilterType::Pointer addition = AddFilterType::New();
     DivFilterType::Pointer division = DivFilterType::New();
 
-    /* Load the first input image */
-    Plm_image *sum = plm_image_load (argv[2], PLM_IMG_TYPE_ITK_FLOAT);
+    /* Make sure we got the same number of input files and weights */
+    if (parms->weight_vector.size() > 0 
+        && parms->weight_vector.size() != parms->input_fns.size())
+    {
+        print_and_exit (
+            "Error, you specified %d input files and %d weights\n",
+            parms->input_fns.size(),
+            parms->weight_vector.size());
+    }
 
-    /* Load and add remaining input images */
-    for (i = 3; i < argc - 1; i++) {
-	tmp = itk_image_load_float (argv[i], 0);
-	addition->SetInput1 (sum->m_itk_float);
+    /* Load the first input image */
+    std::list<Pstring>::iterator it = parms->input_fns.begin();
+    Plm_image *sum = plm_image_load ((*it), PLM_IMG_TYPE_ITK_FLOAT);
+    ++it;
+
+    /* Weigh the first input image */
+    int widx = 0;
+    if (parms->weight_vector.size() > 0) {
+        /* GCS 2012-01-27 -- If you re-use the multiply filter 
+           with new inputs, it gives the wrong answer. 
+           Or maybe it has some default behavior you need to 
+           override?? */
+        MulFilterType::Pointer multiply = MulFilterType::New();
+        multiply->SetConstant (parms->weight_vector[widx]);
+        multiply->SetInput (sum->itk_float());
+        multiply->Update();
+        sum->set_itk (multiply->GetOutput());
+        ++widx;
+    }
+
+    /* Loop through remaining images */
+    while (it != parms->input_fns.end()) {
+        /* Load the images */
+        FloatImageType::Pointer tmp;
+	tmp = itk_image_load_float ((*it), 0);
+
+        /* Weigh it */
+        if (parms->weight_vector.size() > 0) {
+            MulFilterType::Pointer multiply = MulFilterType::New();
+            multiply->SetConstant (parms->weight_vector[widx]);
+            multiply->SetInput (tmp);
+            multiply->Update();
+            tmp = multiply->GetOutput();
+            ++widx;
+        }
+
+        /* Add it to running sum */
+	addition->SetInput1 (sum->itk_float());
 	addition->SetInput2 (tmp);
 	addition->Update();
 	sum->m_itk_float = addition->GetOutput ();
+        ++it;
     }
 
     /* Save the sum image */
     sum->convert_to_original_type ();
-    sum->save_image (argv[argc-1]);
+    sum->save_image (parms->output_fn);
 
 #if defined (commentout)
     // divide by the total number of input images
@@ -81,21 +117,11 @@ add_main (int argc, char *argv[])
 #endif
 }
 
-void
-do_command_add (int argc, char *argv[])
-{
-    if (argc < 4) {
-	print_usage ();
-    }
-
-    add_main (argc, argv);
-}
-
-#if defined (commentout)
 static void
 usage_fn (dlib::Plm_clp* parser, int argc, char *argv[])
 {
-    printf ("Usage: plastimatch %s [options]\n", argv[1]);
+    printf ("Usage: plastimatch %s [options] input_file [input_file ...]\n", 
+        argv[1]);
     parser->print_options (std::cout);
     std::cout << std::endl;
 }
@@ -111,41 +137,11 @@ parse_fn (
     /* Add --help, --version */
     parser->add_default_options ();
 
-    /* Input files */
-    parser->add_long_option ("", "input", 
-	"input directory or filename; "
-	"can be an image or vector field", 1, "");
-    
     /* Output files */
-    parser->add_long_option ("", "output", 
-	"output image or vector field", 1, "");
+    parser->add_long_option ("", "output", "output image", 1, "");
 
-    /* Output options */
-    parser->add_long_option ("", "output-type", 
-	"type of output image, one of {uchar, short, float, ...}", 1, "");
-
-    /* Algorithm options */
-    parser->add_long_option ("", "default-value", 
-	"value to set for pixels with unknown value, default is 0", 1, "");
-    parser->add_long_option ("", "interpolation", 
-	"interpolation type, either \"nn\" or \"linear\", "
-	"default is linear", 1, "linear");
-
-    /* Geometry options */
-    parser->add_long_option ("F", "fixed", 
-	"fixed image (match output size to this image)", 1, "");
-    parser->add_long_option ("", "origin", 
-	"location of first image voxel in mm \"x y z\"", 1, "");
-    parser->add_long_option ("", "dim", 
-	"size of output image in voxels \"x [y z]\"", 1, "");
-    parser->add_long_option ("", "spacing", 
-	"voxel spacing in mm \"x [y z]\"", 1, "");
-    parser->add_long_option ("", "direction-cosines", 
-	"oriention of x, y, and z axes; Specify either preset value,"
-	" {identity,rotated-{1,2,3},sheared},"
-	" or 9 digit matrix string \"a b c d e f g h i\"", 1, "");
-    parser->add_long_option ("", "subsample", 
-	"bin voxels together at integer subsampling rate \"x [y z]\"", 1, "");
+    /* Weight vector */
+    parser->add_long_option ("", "weight", "", 1, "");
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -153,86 +149,28 @@ parse_fn (
     /* Handle --help, --version */
     parser->check_default_options ();
 
-    /* Check that an input file was given */
-    if (!parser->option ("input"))
-    {
-	throw (dlib::error ("Error.  Please specify an input file "
-		"using the --input option"));
-    }
-
     /* Check that an output file was given */
-    if (!parser->option ("output"))
-    {
+    if (!parser->option ("output")) {
 	throw (dlib::error ("Error.  Please specify an output file "
 		"using the --output option"));
     }
 
     /* Check that no extraneous options were given */
-    if (parser->number_of_arguments() != 0) {
-	std::string extra_arg = (*parser)[0];
-	throw (dlib::error ("Error.  Unknown option " + extra_arg));
+    if (parser->number_of_arguments() == 0) {
+	throw (dlib::error ("Error.  You must specify at least one "
+                "file to add."));
     }
 
-    /* Input files */
-    parms->input_fn = parser->get_string("input").c_str();
+    /* Copy input filenames to parms struct */
+    for (unsigned long i = 0; i < parser->number_of_arguments(); i++) {
+        parms->input_fns.push_back (Pstring((*parser)[i].c_str()));
+    }
 
     /* Output files */
     parms->output_fn = parser->get_string("output").c_str();
-
-    /* Output options */
-    if (parser->option("output-type")) {
-	std::string arg = parser->get_string ("output-type");
-	parms->output_type = plm_image_type_parse (arg.c_str());
-	if (parms->output_type == PLM_IMG_TYPE_UNDEFINED) {
-	    throw (dlib::error ("Error. Unknown --output-type argument: " 
-		    + parser->get_string("output-type")));
-	}
+    if (parser->option ("weight")) {
+        parser->assign_float_vec (&parms->weight_vector, "weight");
     }
-
-    /* Algorithm options */
-    if (parser->option("default-value")) {
-	parms->default_val = parser->get_float("default-value");
-    }
-    std::string arg = parser->get_string ("interpolation");
-    if (arg == "nn") {
-	parms->interp_lin = 0;
-    }
-    else if (arg == "linear") {
-	parms->interp_lin = 1;
-    }
-    else {
-	throw (dlib::error ("Error. Unknown --interpolation argument: " 
-		+ arg));
-    }
-
-    /* Geometry options */
-    if (parser->option ("dim")) {
-	parms->m_have_dim = 1;
-	parser->assign_size_t_13 (parms->dim, "dim");
-    }
-    if (parser->option ("origin")) {
-	parms->m_have_origin = 1;
-	parser->assign_float13 (parms->origin, "origin");
-    }
-    if (parser->option ("spacing")) {
-	parms->m_have_spacing = 1;
-	parser->assign_float13 (parms->spacing, "spacing");
-    }
-    if (parser->option ("subsample")) {
-	parms->m_have_subsample = 1;
-	parser->assign_int13 (parms->subsample, "subsample");
-    }
-    /* Direction cosines */
-    if (parser->option ("direction-cosines")) {
-	parms->m_have_direction_cosines = true;
-	std::string arg = parser->get_string("direction-cosines");
-	if (!parms->m_dc.set_from_string (arg)) {
-	    throw (dlib::error ("Error parsing --direction-cosines "
-		    "(should have nine numbers)\n"));
-	}
-    }
-
-    parms->fixed_fn = parser->get_string("fixed").c_str();
 }
 
 void
@@ -245,4 +183,3 @@ do_command_add (int argc, char *argv[])
 
     add_main (&parms);
 }
-#endif

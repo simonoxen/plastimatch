@@ -21,7 +21,29 @@
 #include "plm_image_convert.h"
 #include "plm_image_header.h"
 #include "print_and_exit.h"
+#include "pstring.h"
 #include "volume.h"
+
+Plm_image::Plm_image () {
+    this->init ();
+}
+Plm_image::Plm_image (const Pstring& fname)
+{
+    this->init ();
+    this->load_native (fname.c_str());
+}
+Plm_image::Plm_image (const char* fname) {
+    this->init ();
+    this->load_native (fname);
+}
+Plm_image::Plm_image (const char* fname, Plm_image_type type)
+{
+    this->init ();
+    this->load (fname, type);
+}
+Plm_image::~Plm_image () {
+    this->free ();
+}
 
 /* -----------------------------------------------------------------------
    Cloning
@@ -267,6 +289,12 @@ Plm_image::save_short_dicom (
 			" (type = %d)\n", this->m_type);
 	break;
     }
+}
+
+void
+Plm_image::save_image (const Pstring& fname)
+{
+    this->save_image (fname.c_str());
 }
 
 void

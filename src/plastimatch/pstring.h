@@ -26,6 +26,9 @@ class Pstring : public CBString
     bool not_empty (void) const {
 	return this->length() != 0;
     }
+    const char* c_str (void) const {
+        return ((const char*) *this);
+    }
     /* Asymmetric comparison.  Return true if first section of Pstring 
        match prefix string.  */
     bool has_prefix (const char* prefix) const {

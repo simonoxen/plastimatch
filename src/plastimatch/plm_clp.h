@@ -21,7 +21,7 @@ namespace dlib {
 class Plm_clp
     : public cmd_line_parser<char>::check_1a_c 
 {
-public:
+    public:
     std::map<string_type,string_type> default_value_map;
     std::map<string_type,string_type> option_map;
     std::map<string_type,string_type> description_map;
@@ -31,84 +31,17 @@ public:
     int argc;
     char **argv;
     unsigned long wrap_len;
-public:
+    public:
     
-    void 
-    add_default_options (void)
-    {
-	this->add_long_option ("h", "help", "display this help message");
-	this->add_long_option ("", "version", "display the program version");
-    }
-    void
-    check_default_options (void)
-    {
-	/* Check if the -h option was given */
-	if (this->option("h") || this->option("help")) {
-	    if (this->number_of_arguments()) {
-		/* Secret option.  If you use "--help something", then you 
-		   get a help with narrower format, which can be pasted 
-		   into sphinx documentation. */
-		this->wrap_len = 73;
-		usage_fn (this, argc, argv);
-	    } else {
-		usage_fn (this, argc, argv);
-	    }
-	    exit (0);
-	}
-
-	if (this->option("version")) {
-	    std::cout << "Plastimatch version " << PLASTIMATCH_VERSION_STRING
-		<< std::endl;
-	    exit (0);
-	}
-    }
-
-    void 
-    add_long_option (
+    void add_default_options (void);
+    void check_default_options (void);
+    void add_long_option (
 	const string_type& short_name,
 	const string_type& long_name,
 	const string_type& description,
 	unsigned long number_of_arguments = 0,
 	const string_type& default_value = ""
-    ) {
-	if (short_name == "" && long_name == "") return;
-
-	std::string key;
-	std::string option_val;
-	std::string description_val;
-	if (long_name == "") {
-	    /* Only short */
-	    key = short_name;
-	    option_val = "  -" + short_name;
-	    this->add_option_with_default (short_name, description, 
-		number_of_arguments, default_value);
-	} 
-	else if (short_name == "") {
-	    /* Only long */
-	    key = long_name;
-	    option_val = "      --" + long_name;
-	    this->add_option_with_default (long_name, description, 
-		number_of_arguments, default_value);
-	}
-	else {
-	    /* Both long and short */
-	    key = long_name;
-	    option_val = "  -" + short_name + ", --" + long_name;
-	    this->add_option_with_default (short_name, description, 
-		number_of_arguments, "");
-	    this->add_option_with_default (long_name, description, 
-		number_of_arguments, default_value);
-	    this->long_to_short_map.insert (
-		std::pair<string_type,string_type> (long_name, short_name));
-	    this->short_to_long_map.insert (
-		std::pair<string_type,string_type> (short_name, long_name));
-	}
-
-	option_map.insert (
-	    std::pair<string_type,string_type> (key, option_val));
-	description_map.insert (
-	    std::pair<string_type,string_type> (key, description));
-    }
+    );
 
     const string_type&
     long_option_name (const string_type& name)
@@ -287,6 +220,9 @@ public:
 	    throw dlib::error (error_string);
 	}
     }
+    void assign_float_vec (
+        std::vector<float>* float_vec, 
+        const string_type& name);
     int get_int (const string_type& name) {
 	int out;
 	get_value (out, name);

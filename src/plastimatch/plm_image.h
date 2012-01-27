@@ -13,9 +13,17 @@
 class Img_metadata;
 class Plm_image_header;
 class Plm_image;
+class Pstring;
 class Referenced_dicom_dir;
 
 class plastimatch1_EXPORT Plm_image {
+
+public:
+    Plm_image ();
+    Plm_image (const Pstring& fname);
+    Plm_image (const char* fname);
+    Plm_image (const char* fname, Plm_image_type type);
+    ~Plm_image ();
 
 public:
 
@@ -59,22 +67,6 @@ private:
     void convert_to_gpuit_uchar_vec ();
 
 public:
-    Plm_image () {
-	this->init ();
-    }
-    Plm_image (const char* fname) {
-	this->init ();
-	this->load_native (fname);
-    }
-    Plm_image (const char* fname, Plm_image_type type)
-    {
-	this->init ();
-	this->load (fname, type);
-    }
-    ~Plm_image () {
-	this->free ();
-    }
-
     void init () {
 	m_original_type = PLM_IMG_TYPE_UNDEFINED;
 	m_type = PLM_IMG_TYPE_UNDEFINED;
@@ -108,6 +100,7 @@ public:
     /* Saving */
     void save_short_dicom (const char* fname, Referenced_dicom_dir *rdd, 
 	Img_metadata *img_metadata);
+    void save_image (const Pstring& fname);
     void save_image (const char* fname);
     void convert_and_save (const char* fname, Plm_image_type new_type);
 
