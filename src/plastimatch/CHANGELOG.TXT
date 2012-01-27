@@ -1,5 +1,8 @@
-Version 1.5.6 (build @PLASTIMATCH_SVN_VERSION@)
+Version 1.5.7 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
+
+Version 1.5.6 (build 2984)
+Wed Jan 25 22:47:55 EST 2012
 * Partial fix for B-spline registration problems when direction cosines 
   are not identity
 * B-spline warper is now multi-threaded
