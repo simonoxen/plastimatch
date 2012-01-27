@@ -91,6 +91,7 @@ do_command_add (int argc, char *argv[])
     add_main (argc, argv);
 }
 
+#if defined (commentout)
 static void
 usage_fn (dlib::Plm_clp* parser, int argc, char *argv[])
 {
@@ -244,3 +245,4 @@ do_command_add (int argc, char *argv[])
 
     add_main (&parms);
 }
+#endif
