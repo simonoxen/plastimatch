@@ -13,7 +13,10 @@ Step 1: Preliminary testing
 The preliminary testing will make sure that the tarball will 
 build under debian in step 3.
 
-#. Run rebundle.pl until satisfied
+#. Run rebundle.pl until satisfied::
+
+     rebundle.pl
+
 #. Update changelog (in an terminal, not emacs)::
 
      cd plastimatch/trunk
@@ -23,8 +26,18 @@ build under debian in step 3.
 
      ./debian/get-orig-source plastimatch_1.5.4.orig.tar.bz2
 
-#. Test out by running debuild, such as "run_debuild.pl"
-#. Test out again by running pbuilder, such as "run_pbuilder.pl"
+#. Refresh your pbuilder environment (if needed)::
+
+     sudo pbuilder --clean && sudo pbuilder --update
+
+#. Test out by running debuild::
+
+     run_debuild.pl
+
+#. Test out again by running pbuilder::
+
+     run_pbuilder.pl
+
 #. Test parallel regression tests::
 
       cd ~/build/plastimatch-3.20.0
@@ -42,32 +55,31 @@ Step 2: Build the tarball
 
 Then, do a few small things to get ready for next time
 
-#. Add version number and date to changelog
+#. Add version number and date to changelog.  This is found in::
+
+     ~/build/plastimatch-pristene/extra_stuff
+
 #. Bump version number in CMakeLists
 
 Step 3: Build the debian package
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-#. Refresh your pbuilder environment (if needed)::
-
-   sudo pbuilder --clean && sudo pbuilder --update
-
 #. Clean up files from previous version::
 
-     rm *.gz *.bz2
-
-#. Update changelog (in an terminal, not emacs)::
-
-     cd plastimatch/trunk
-     dch -v 1.5.4+dfsg0-1
+     ./clean_directory.sh
 
 #. Repackage tarball::
 
+     cd trunk
      ./debian/get-orig-source
 
-#. Test out by running debuild, such as "run_debuild.pl"
-#. Test out again by running pbuilder, such as "run_pbuilder.pl"
+#. Test out by running debuild::
 
+     run_debuild.pl
+
+#. Test out again by running pbuilder::
+
+     run_pbuilder.pl
 
 Building a windows binary
 -------------------------
