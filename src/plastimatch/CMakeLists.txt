@@ -510,6 +510,9 @@ set (FDK_SRC
 set (HND_TO_PFM_SRC
   hnd_to_pfm.cxx 
   )
+set (GABOR_TEST_SRC 
+  gabor_test.cxx
+  )
 set (MEX_DRR_SRC
   mex_drr.c
   )
@@ -721,7 +724,8 @@ if (FULL_PLASTIMATCH_BUILD)
   # with the same name as the executable.  What happens is the executable 
   # tries to create a temporary library with the same name.  [MSVC 2005]
   # That is why the library is called plastimatch1 instead of plastimatch.
-  set (PLASTIMATCH1_LIBRARY_DEPENDENCIES ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
+  set (PLASTIMATCH1_LIBRARY_DEPENDENCIES 
+    ${ITK_LIBRARIES} ITKIOReview ${GPUIT_LIBRARIES})
 
   # Add dcmtk libraries, if that is what the user configured
   if (DCMTK_FOUND AND NOT DCMTK_VERSION_STRING VERSION_LESS 3.6.0)
@@ -816,6 +820,9 @@ if (FULL_PLASTIMATCH_BUILD)
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   plm_add_executable (extract_contour "${EXTRACT_CONTOUR_SRC}"
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+  plm_add_executable (gabor_test "${GABOR_TEST_SRC}" 
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   plm_add_executable (landmark_warp "${LANDMARK_WARP_SRC}" 

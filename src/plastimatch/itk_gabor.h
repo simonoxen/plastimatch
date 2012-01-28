@@ -5,6 +5,7 @@
 #define _itk_gabor_h_
 
 #include "plm_config.h"
+#include "itk_image.h"
 
 void itk_gabor (FloatImageType::Pointer image);
 
