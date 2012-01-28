@@ -7,6 +7,7 @@
 #include "plm_config.h"
 #include "itk_image.h"
 
+plastimatch1_EXPORT 
 void itk_gabor (FloatImageType::Pointer image);
 
 #endif

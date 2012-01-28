@@ -18,7 +18,7 @@
 typedef dlib::cmd_line_parser<char>::check_1a_c Clp;
 
 namespace dlib {
-class Plm_clp
+class plastimatch1_EXPORT Plm_clp
     : public cmd_line_parser<char>::check_1a_c 
 {
     public:
