@@ -37,8 +37,8 @@ parse_fn (
 	"Output fcsv filename", 1, "");
     parser->add_long_option ("", "input", 
 	"Input image filename (required)", 1, "");
-    parser->add_long_option ("", "network", 
-	"Input trained network filename (required)", 1, "");
+    parser->add_long_option ("", "network-dir", 
+	"Input directory containing training files (required)", 1, "");
     parser->add_long_option ("", "eac", 
 	"Enforce anatomic constraints", 0);
     parser->add_long_option ("", "task", 
@@ -61,7 +61,7 @@ parse_fn (
     }
 
     /* Check that an network file was given */
-    parser->check_required ("network");
+    parser->check_required ("network-dir");
 
     /* Check that a task was given */
     parser->check_required ("task");
@@ -70,7 +70,7 @@ parse_fn (
     parms->output_csv_fn = parser->get_string("output-csv").c_str();
     parms->output_fcsv_fn = parser->get_string("output-fcsv").c_str();
     parms->input_fn = parser->get_string("input").c_str();
-    parms->network_fn = parser->get_string("network").c_str();
+    parms->network_dir = parser->get_string("network-dir").c_str();
     if (parser->option("eac")) {
 	parms->enforce_anatomic_constraints = true;
     }

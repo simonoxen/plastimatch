@@ -21,17 +21,26 @@
 /* ITK typedefs */
 typedef itk::ImageRegionConstIterator< FloatImageType > FloatIteratorType;
 
+/* Load the network into "dlib_network" (first argument) */
+static void
+load_dlib_network (
+    dlib::decision_function< Dlib_trainer::Kernel_type > *dlib_network,
+    const Pstring& network_fn)
+{
+    std::ifstream fin ((const char*) network_fn, std::ios::binary);
+    deserialize (*dlib_network, fin);
+}
+
 static void
 autolabel_tsv1 (Autolabel_parms *parms)
 {
     FILE *fp;
+    Pstring network_fn;
 
     /* Load network */
+    network_fn.format ("%s/tsv1.net", parms->network_dir.c_str());
     dlib::decision_function< Dlib_trainer::Kernel_type > dlib_network;
-    std::ifstream fin ((const char*) parms->network_fn, std::ios::binary);
-    printf ("Trying to deserialize...\n");
-    deserialize (dlib_network, fin);
-    printf ("Done.\n");
+    load_dlib_network (&dlib_network, network_fn);
 
     /* Load input image */
     Plm_image pli ((const char*) parms->input_fn, PLM_IMG_TYPE_ITK_FLOAT);
@@ -94,13 +103,15 @@ static void
 autolabel_tsv2 (Autolabel_parms *parms)
 {
     Labeled_pointset points;
+    Pstring network_fn;
 
-    /* Load network */
-    dlib::decision_function< Dlib_trainer::Kernel_type > dlib_network;
-    std::ifstream fin ((const char*) parms->network_fn, std::ios::binary);
-    printf ("Trying to deserialize...\n");
-    deserialize (dlib_network, fin);
-    printf ("Done.\n");
+    /* Load x & y networks */
+    network_fn.format ("%s/tsv2_x.net", parms->network_dir.c_str());
+    dlib::decision_function< Dlib_trainer::Kernel_type > dlib_network_x;
+    load_dlib_network (&dlib_network_x, network_fn);
+    network_fn.format ("%s/tsv2_y.net", parms->network_dir.c_str());
+    dlib::decision_function< Dlib_trainer::Kernel_type > dlib_network_y;
+    load_dlib_network (&dlib_network_y, network_fn);
 
     /* Load input image */
     Plm_image pli ((const char*) parms->input_fn, PLM_IMG_TYPE_ITK_FLOAT);
@@ -109,9 +120,6 @@ autolabel_tsv2 (Autolabel_parms *parms)
     thumbnail.set_input_image (&pli);
     thumbnail.set_thumbnail_dim (16);
     thumbnail.set_thumbnail_spacing (25.0f);
-
-    /* Create a vector to hold the results */
-    Autolabel_point_vector apv;
 
     /* Loop through slices, and predict location for each slice */
     Plm_image_header pih (&pli);
@@ -134,7 +142,8 @@ autolabel_tsv2 (Autolabel_parms *parms)
         /* Predict the value */
         Pstring label;
         label.format ("P_%02d", i);
-        points.insert_lps (label.c_str(), 0., dlib_network (d), loc);
+        points.insert_lps (label.c_str(), 
+            dlib_network_x (d), dlib_network_y (d), loc);
     }
     printf ("Done.\n");
 

@@ -42,6 +42,7 @@ class plastimatch1_EXPORT Dlib_trainer
     dlib::decision_function<Kernel_type> m_krr_df;
 
   public:
+    void save_csv (const Pstring& out_csv_fn);
     void save_net (const Pstring& out_net_fn);
     void save_tsacc (const Pstring& out_net_fn);
     void set_krr_gamma (

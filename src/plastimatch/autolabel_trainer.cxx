@@ -22,12 +22,16 @@
 
 Autolabel_trainer::Autolabel_trainer ()
 {
-    m_dt = 0;
+    m_dt_tsv1 = 0;
+    m_dt_tsv2_x = 0;
+    m_dt_tsv2_y = 0;
 }
 
 Autolabel_trainer::~Autolabel_trainer ()
 {
-    if (m_dt) delete m_dt;
+    if (m_dt_tsv1) delete m_dt_tsv1;
+    if (m_dt_tsv2_x) delete m_dt_tsv2_x;
+    if (m_dt_tsv2_y) delete m_dt_tsv2_y;
 }
 
 void
@@ -81,29 +85,6 @@ Autolabel_trainer::load_input_dir_recursive (std::string input_dir)
 
 }
 
-void
-Autolabel_trainer::load_input_file_la (
-    const char* nrrd_fn,
-    const char* fcsv_fn)
-{
-    Plm_image pi;
-    Labeled_pointset ps;
-
-    ps.load_fcsv (fcsv_fn);
-
-    bool found = false;
-    for (unsigned int i = 0; i < ps.point_list.size(); i++) {
-	if (ps.point_list[i].label == "LLA") {
-	    printf ("%s, found label LLA\n", fcsv_fn);
-	    found = true;
-	}
-    }
-
-    (void) found;  /* Suppress compiler warning */
-
-    /* Still need to load file & generate learning vectors here */
-}
-
 static std::map<float, Point> 
 load_tspine_map (const char* fcsv_fn)
 {
@@ -144,10 +125,12 @@ load_tspine_map (const char* fcsv_fn)
 }
 
 void
-Autolabel_trainer::load_input_file_tsv1 (
+Autolabel_trainer::load_input_file (
     const char* nrrd_fn,
     const char* fcsv_fn)
 {
+    printf ("Loading %s\nLoading %s\n---\n", nrrd_fn, fcsv_fn);
+
     /* Create map from spine # to point from fcsv file */
     std::map<float,Point> t_map = load_tspine_map (fcsv_fn);
 
@@ -175,83 +158,22 @@ Autolabel_trainer::load_input_file_tsv1 (
 	    d(j) = thumb_it.Get();
 	    ++thumb_it;
 	}
-	this->m_dt->m_samples.push_back (d);
-	this->m_dt->m_labels.push_back (it->first);
+
+        if (this->m_dt_tsv1) {
+            this->m_dt_tsv1->m_samples.push_back (d);
+            this->m_dt_tsv1->m_labels.push_back (it->first);
+        }
+        if (this->m_dt_tsv2_x) {
+            this->m_dt_tsv2_x->m_samples.push_back (d);
+            this->m_dt_tsv2_x->m_labels.push_back (it->second.p[0]);
+        }
+        if (this->m_dt_tsv2_y) {
+            this->m_dt_tsv2_y->m_samples.push_back (d);
+            this->m_dt_tsv2_y->m_labels.push_back (it->second.p[1]);
+        }
     }
 
     delete pli;
-}
-
-void
-Autolabel_trainer::load_input_file_tsv2 (
-    const char* nrrd_fn,
-    const char* fcsv_fn)
-{
-    /* Create map from spine # to point from fcsv file */
-    std::map<float,Point> t_map = load_tspine_map (fcsv_fn);
-
-    /* If we want to use interpolation, we need to sort, and make 
-       a "back-map" from z-pos to t-spine */
-
-    /* Otherwise, for the simple case, we're good to go. 
-       Load the input image. */
-    Plm_image *pli;
-    pli = plm_image_load (nrrd_fn, PLM_IMG_TYPE_ITK_FLOAT);
-    Thumbnail thumb;
-    thumb.set_input_image (pli);
-    thumb.set_thumbnail_dim (16);
-    thumb.set_thumbnail_spacing (25.0f);
-
-    /* Get the samples.  For testing, we'll make a "y" map. */
-    std::map<float, Point>::iterator it;
-    for (it = t_map.begin(); it != t_map.end(); ++it) {
-	thumb.set_slice_loc (it->second.p[2]);
-	FloatImageType::Pointer thumb_img = thumb.make_thumbnail ();
-	itk::ImageRegionIterator< FloatImageType > thumb_it (
-	    thumb_img, thumb_img->GetLargestPossibleRegion());
-
-#if defined (commentout)
-	printf ("%f ", it->first);
-	printf ("%f ", it->second.p[0]);
-	printf ("%f\n", it->second.p[1]);
-	int i;
-	for (i = 0, thumb_it.GoToBegin(); !thumb_it.IsAtEnd(); ++i, ++thumb_it)
-	{
-	    //fprintf (this->fp, " %d:%f", i, thumb_it.Get ());
-	}
-#endif
-
-	Dlib_trainer::Dense_sample_type d;
-	for (int j = 0; j < 256; j++) {
-	    d(j) = thumb_it.Get();
-	    ++thumb_it;
-	}
-	this->m_dt->m_samples.push_back (d);
-	this->m_dt->m_labels.push_back (it->second.p[1]);
-    }
-
-    delete pli;
-}
-
-void
-Autolabel_trainer::load_input_file (
-    const char* nrrd_fn,
-    const char* fcsv_fn)
-{
-    printf ("Loading\n  %s\n  %s\n", nrrd_fn, fcsv_fn);
-    if (m_task == "la") {
-	load_input_file_la (nrrd_fn, fcsv_fn);
-    }
-    else if (m_task == "tsv1") {
-	load_input_file_tsv1 (nrrd_fn, fcsv_fn);
-    }
-    else if (m_task == "tsv2") {
-	load_input_file_tsv2 (nrrd_fn, fcsv_fn);
-    }
-    else {
-	print_and_exit ("Error: unsupported autolabel-train task (%s)\n",
-	    m_task.c_str());
-    }
 }
 
 void
@@ -261,11 +183,22 @@ Autolabel_trainer::load_inputs ()
 	print_and_exit ("Error: inputs not fully specified.\n");
     }
 
-    if (!m_dt) {
-	/* Load the data according to task specification */
-	m_dt = new Dlib_trainer;
-	load_input_dir_recursive (m_input_dir);
+    if (m_task == "la") {
+        /* Not yet implemented */
     }
+    else if (m_task == "tsv1") {
+	m_dt_tsv1 = new Dlib_trainer;
+    }
+    else if (m_task == "tsv2") {
+	m_dt_tsv2_x = new Dlib_trainer;
+	m_dt_tsv2_y = new Dlib_trainer;
+    }
+    else {
+	print_and_exit ("Error: unsupported autolabel-train task (%s)\n",
+	    m_task.c_str());
+    }
+
+    load_input_dir_recursive (m_input_dir);
 }
 
 void
@@ -275,48 +208,83 @@ Autolabel_trainer::set_task (const char* task)
 }
 
 void
-Autolabel_trainer::train (const Pstring& output_net_fn)
+Autolabel_trainer::train ()
 {
-    /* Load input directory */
-    this->load_inputs ();
-
-    m_dt->set_krr_gamma (-9, -5, 0.5);
-    m_dt->train_krr ();
-
-    m_dt->save_net (output_net_fn);
-}
-
-void
-Autolabel_trainer::save_csv (const char* output_csv_fn)
-{
-    /* Load input directory */
-    this->load_inputs ();
-
-    /* Save the output file */
-    printf ("Saving csv...\n");
-    FILE *fp = fopen (output_csv_fn, "w");
-    std::vector<Dlib_trainer::Dense_sample_type>::iterator s_it
-	= this->m_dt->m_samples.begin();
-    std::vector<Dlib_trainer::Label_type>::iterator l_it
-	= this->m_dt->m_labels.begin();
-    while (s_it != this->m_dt->m_samples.end()) {
-	fprintf (fp, "%f,", *l_it);
-	for (int i = 0; i < 256; i++) {
-	    fprintf (fp, ",%f", (*s_it)(i));
-	}
-	fprintf (fp, "\n");
-	++s_it, ++l_it;
+    if (this->m_dt_tsv1) {
+        Pstring output_net_fn;
+        output_net_fn.format ("%s/tsv1.net", m_output_dir.c_str());
+        m_dt_tsv1->set_krr_gamma (-9, -5, 0.5);
+        m_dt_tsv1->train_krr ();
+        m_dt_tsv1->save_net (output_net_fn);
     }
-    fclose (fp);
-    printf ("Done.\n");
+    if (this->m_dt_tsv2_x) {
+        Pstring output_net_fn;
+        output_net_fn.format ("%s/tsv2_x.net", m_output_dir.c_str());
+        m_dt_tsv2_x->set_krr_gamma (-9, -5, 0.5);
+        m_dt_tsv2_x->train_krr ();
+        m_dt_tsv2_x->save_net (output_net_fn);
+    }
+    if (this->m_dt_tsv2_y) {
+        Pstring output_net_fn;
+        output_net_fn.format ("%s/tsv2_y.net", m_output_dir.c_str());
+        m_dt_tsv2_y->set_krr_gamma (-9, -5, 0.5);
+        m_dt_tsv2_y->train_krr ();
+        m_dt_tsv2_y->save_net (output_net_fn);
+    }
 }
 
 void
-Autolabel_trainer::save_tsacc (const Pstring& output_tsacc_fn)
+Autolabel_trainer::save_csv ()
 {
-    /* Load input directory */
-    this->load_inputs ();
+    if (this->m_dt_tsv1) {
+        Pstring output_csv_fn;
+        output_csv_fn.format ("%s/tsv1.csv", m_output_dir.c_str());
+        this->m_dt_tsv1->save_csv (output_csv_fn);
+    }
+    if (this->m_dt_tsv2_x) {
+        Pstring output_csv_fn;
+        output_csv_fn.format ("%s/tsv2_x.csv", m_output_dir.c_str());
+        this->m_dt_tsv2_x->save_csv (output_csv_fn);
+    }
+    if (this->m_dt_tsv2_y) {
+        Pstring output_csv_fn;
+        output_csv_fn.format ("%s/tsv2_y.csv", m_output_dir.c_str());
+        this->m_dt_tsv2_y->save_csv (output_csv_fn);
+    }
+}
 
-    /* Save the output file */
-    this->m_dt->save_tsacc (output_tsacc_fn);
+/* tsacc = testset accuracy */
+void
+Autolabel_trainer::save_tsacc ()
+{
+    /* Save the output files */
+    if (this->m_dt_tsv1) {
+        Pstring output_tsacc_fn;
+        output_tsacc_fn.format ("%s/tsv1_tsacc.txt", m_output_dir.c_str());
+        this->m_dt_tsv1->save_tsacc (output_tsacc_fn);
+    }
+    if (this->m_dt_tsv2_x) {
+        Pstring output_tsacc_fn;
+        output_tsacc_fn.format ("%s/tsv2_x_tsacc.txt", m_output_dir.c_str());
+        this->m_dt_tsv2_x->save_tsacc (output_tsacc_fn);
+    }
+    if (this->m_dt_tsv2_y) {
+        Pstring output_tsacc_fn;
+        output_tsacc_fn.format ("%s/tsv2_y_tsacc.txt", m_output_dir.c_str());
+        this->m_dt_tsv2_y->save_tsacc (output_tsacc_fn);
+    }
+}
+
+void
+autolabel_train (Autolabel_train_parms *parms)
+{
+    Autolabel_trainer at;
+
+    at.set_input_dir ((const char*) parms->input_dir);
+    at.m_output_dir = parms->output_dir;
+    at.set_task ((const char*) parms->task);
+    at.load_inputs ();
+    at.train ();
+    at.save_csv ();
+    at.save_tsacc ();
 }

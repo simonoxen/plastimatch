@@ -14,9 +14,9 @@ public:
     }
 public:
     Pstring input_fn;
+    Pstring network_dir;
     Pstring output_csv_fn;
     Pstring output_fcsv_fn;
-    Pstring network_fn;
     Pstring task;
     bool enforce_anatomic_constraints;
 };
