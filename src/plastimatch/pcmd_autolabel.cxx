@@ -31,8 +31,10 @@ parse_fn (
     parser->add_default_options ();
 
     /* Basic options */
-    parser->add_long_option ("", "output", 
-	"Output csv filename (required)", 1, "");
+    parser->add_long_option ("", "output-csv", 
+	"Output csv filename", 1, "");
+    parser->add_long_option ("", "output-fcsv", 
+	"Output fcsv filename", 1, "");
     parser->add_long_option ("", "input", 
 	"Input image filename (required)", 1, "");
     parser->add_long_option ("", "network", 
@@ -53,7 +55,10 @@ parse_fn (
     parser->check_required ("input");
 
     /* Check that an output file was given */
-    parser->check_required ("output");
+    if (!parser->option("output-csv") && !parser->option("output-fcsv")) {
+	throw (dlib::error ("Error.  Please specify an output file "
+		"using one of the --output options"));
+    }
 
     /* Check that an network file was given */
     parser->check_required ("network");
@@ -62,7 +67,8 @@ parse_fn (
     parser->check_required ("task");
 
     /* Copy values into output struct */
-    parms->output_fn = parser->get_string("output").c_str();
+    parms->output_csv_fn = parser->get_string("output-csv").c_str();
+    parms->output_fcsv_fn = parser->get_string("output-fcsv").c_str();
     parms->input_fn = parser->get_string("input").c_str();
     parms->network_fn = parser->get_string("network").c_str();
     if (parser->option("eac")) {

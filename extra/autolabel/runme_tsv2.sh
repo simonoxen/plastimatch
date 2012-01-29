@@ -14,8 +14,9 @@ fi
 if test $test != 0; then
     plastimatch autolabel \
 	--task tsv2 \
-	--input /home/gsharp/Dropbox/autolabel/rider-pilot/0021_9771.nrrd \
 	--network tsv2/tsv2.net \
-	--output tsv2/tsv2_a.csv
+	--output-fcsv tsv2/tsv2_out.fcsv \
+	--input /home/gsharp/Dropbox/autolabel/rider-pilot/0022_10109.nrrd
+#	--input /home/gsharp/Dropbox/autolabel/rider-pilot/0021_9771.nrrd \
 #	--input /home/gsharp/Dropbox/autolabel/gold/rider-pilot/0001_144.nrrd \
 fi
