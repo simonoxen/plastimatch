@@ -4,6 +4,8 @@
 int MMultip(int r1, int c1, float **M1, int r2, int c2, float **M2, float **P);
 float getv(float **S);
 int printM(int r, int c, float **A);
+int IInt(float **Q1, float **VXX);
+int trans(int r, int c, float **A, float **B);
 
 // function to calculate the individual integration of the 4-by-4 matrices of vx, vy, vz
 
