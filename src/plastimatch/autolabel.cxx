@@ -11,7 +11,6 @@
 #include "bstring_util.h"
 #include "dlib_trainer.h"
 #include "itk_image.h"
-#include "plm_clp.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "print_and_exit.h"
@@ -62,7 +61,6 @@ autolabel_tsv1 (Autolabel_parms *parms)
 	FloatImageType::Pointer thumb_img = thumbnail.make_thumbnail ();
 
 	/* Convert to dlib sample type */
-	//dense_sample_type d;
 	Dlib_trainer::Dense_sample_type d;
 	FloatIteratorType it (thumb_img, thumb_img->GetLargestPossibleRegion());
 	for (int j = 0; j < 256; j++) {
@@ -99,6 +97,7 @@ autolabel (Autolabel_parms *parms)
         autolabel_tsv1 (parms);
     }
     else if (parms->task == "tsv2") {
+        autolabel_tsv1 (parms);
     }
     else {
         printf ("Error, unknown autolabel task?\n");
