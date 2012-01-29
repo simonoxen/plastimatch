@@ -3,10 +3,11 @@
    ----------------------------------------------------------------------- */
 #include <time.h>
 #include "plm_config.h"
+#include "itkConfigure.h"
 #include "itkImage.h"
-#include "itkWarpImageFilter.h"
 #include "itkLinearInterpolateImageFunction.h"
 #include "itkNearestNeighborInterpolateImageFunction.h"
+#include "itkWarpImageFilter.h"
 
 #include "itk_image.h"
 #include "itk_image_stats.h"
@@ -54,7 +55,11 @@ itk_warp_image (
     filter->SetOutputSpacing (sp);
     filter->SetOutputOrigin (og);
     filter->SetOutputDirection (di);
+#if ITK_VERSION_MAJOR == 3
     filter->SetDeformationField (vf);
+#else /* ITK 4 */
+    filter->SetDisplacementField (vf);
+#endif
     filter->SetInput (im_in);
 
     filter->SetEdgePaddingValue ((PixelType) default_val);

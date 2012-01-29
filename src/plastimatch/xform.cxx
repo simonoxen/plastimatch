@@ -687,7 +687,11 @@ xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
 	typedef itk::IdentityTransform<double, 3> IdentityTransformType;
 	IdentityTransformType::Pointer identity = IdentityTransformType::New();
 
+#if ITK_VERSION_MAJOR == 3
 	resampler->SetInput (bsp_old->GetCoefficientImage()[k]);
+#else /* ITK 4 */
+	resampler->SetInput (bsp_old->GetCoefficientImages()[k]);
+#endif
 	resampler->SetInterpolator (fptr);
 	resampler->SetTransform (identity);
 	resampler->SetSize (bsp_out->GetGridRegion().GetSize());

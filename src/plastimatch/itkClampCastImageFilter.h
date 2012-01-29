@@ -4,6 +4,7 @@
 #ifndef __itkClampCastImageFilter_h
 #define __itkClampCastImageFilter_h
 
+#include "itkConfigure.h"
 #include "itkImageToImageFilter.h"
 
 namespace itk
@@ -41,9 +42,15 @@ class ITK_EXPORT ClampCastImageFilter
     ~ClampCastImageFilter() {};
     void PrintSelf(std::ostream& os, Indent indent) const;
 
+#if ITK_VERSION_MAJOR == 3
     void ThreadedGenerateData (
 	const OutputImageRegionType& outputRegionForThread,
 	int threadId);
+#else /* ITK 4 */
+    void ThreadedGenerateData (
+	const OutputImageRegionType& outputRegionForThread,
+	ThreadIdType threadId);
+#endif
 
   private:
     ClampCastImageFilter(const Self&); //purposely not implemented

@@ -4,8 +4,6 @@
 #include "plm_config.h"
 #include <time.h>
 #include "itkImage.h"
-#include "itkInverseDeformationFieldImageFilter.h"
-#include "itkIterativeInverseDeformationFieldImageFilter.h"
 #include "getopt.h"
 
 #include "itk_image.h"

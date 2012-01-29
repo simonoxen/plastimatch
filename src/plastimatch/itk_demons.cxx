@@ -8,10 +8,10 @@
 #include <time.h>
 #include "itkArray.h"
 #include "itkCommand.h"
+#include "itkDemonsRegistrationFilter.h"
 #include "itkHistogramMatchingImageFilter.h"
 #include "itkIdentityTransform.h"
 #include "itkImage.h"
-#include "itkDemonsRegistrationFilter.h"
 #include "itkLinearInterpolateImageFunction.h"
 
 #include "itk_image.h"
@@ -130,7 +130,8 @@ do_demons_stage_internal (
     /* Get vector field of matching resolution */
     if (xf_in->m_type != STAGE_TRANSFORM_NONE) {
 	xform_to_itk_vf (xf_out, xf_in, fixed_ss);
-	filter->SetInitialDeformationField (xf_out->get_itk_vf());
+	//filter->SetInitialDeformationField (xf_out->get_itk_vf());
+	filter->SetInput (xf_out->get_itk_vf());
     }
 
     if (stage->max_its <= 0) {

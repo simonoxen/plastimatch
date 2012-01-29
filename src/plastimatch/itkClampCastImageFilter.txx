@@ -34,8 +34,12 @@ void
 ClampCastImageFilter<TInputImage, TOutputImage>
 ::ThreadedGenerateData (
     const OutputImageRegionType& outputRegionForThread,
-    int threadId)
-{
+#if ITK_VERSION_MAJOR == 3
+	int threadId
+#else /* ITK 4 */
+	ThreadIdType threadId
+#endif
+) {
     itkDebugMacro(<<"Actually executing");
 
     // Get the input and output pointers
