@@ -40,7 +40,7 @@ class plastimatch1_EXPORT Plm_image_header {
     }
   public:
     int Size (int d) const { return m_region.GetSize()[d]; }
-
+    const SizeType& GetSize (void) const { return m_region.GetSize (); }
   public:
     /* Return 1 if the two headers are the same */
     static int compare (Plm_image_header *pli1, Plm_image_header *pli2);

@@ -10,6 +10,7 @@
 #include "dlib/cmd_line_parser.h"
 #include "dlib/data_io.h"
 #include "dlib/mlp.h"
+#include "dlib/revision.h"
 #include "dlib/svm.h"
 
 #include "dlib_trainer.h"
@@ -359,7 +360,20 @@ krr_rbk_test (
 	    trainer.be_verbose();
 	}
 	trainer.set_kernel (kernel_type (gamma));
+
+#if DLIB_REVISION == 4093
+        /* dlib 17.34 */
 	trainer.train (dense_samples, labels, loo_error);
+#elif DLIB_MAJOR_VERSION == 17 && DLIB_MINOR_VERSION == 44
+        /* dlib 17.44 */
+        /* GCS FIX: How to get loo_error from loo_values? */
+        std::vector<double> loo_values;
+	double lambda_used;
+	trainer.train (dense_samples, labels, loo_values, lambda_used);
+#else
+        error, unknown DLIB version!;
+#endif
+
 	if (loo_error < best_loo) {
 	    best_loo = loo_error;
 	    best_gamma = gamma;
@@ -400,7 +414,18 @@ krr_lin_test (
 
     // LOO cross validation
     double loo_error;
+#if DLIB_REVISION == 4093
+    /* dlib 17.34 */
     trainer.train(dense_samples, labels, loo_error);
+#elif DLIB_MAJOR_VERSION == 17 && DLIB_MINOR_VERSION == 44
+    /* dlib 17.44 */
+    /* GCS FIX: How to get loo_error from loo_values? */
+    std::vector<double> loo_values;
+    double lambda_used;
+    trainer.train (dense_samples, labels, loo_values, lambda_used);
+#else
+    error, unknown DLIB version!;
+#endif
     std::cout << "mean squared LOO error: " << loo_error << std::endl;
 }
 
@@ -471,225 +496,6 @@ mlp_test (
 	<< total_err / (dense_samples.size() - training_samples) << std::endl;
 }
 
-static void
-svr_lin_test (
-    clp& parser,
-    std::vector<dense_sample_type>& dense_samples,
-    std::vector<label_type>& labels
-)
-{
-    option_range svr_c_range;
-    double best_svr_c = DBL_MAX;
-    float best_cv_error = FLT_MAX;
-
-    typedef linear_kernel<dense_sample_type> kernel_type;
-    svr_trainer<kernel_type> trainer;
-
-    double epsilon_insensitivity = get_svr_epsilon_insensitivity (
-        parser, dense_samples);
-    trainer.set_epsilon_insensitivity (epsilon_insensitivity);
-
-    double cv_error;
-    for (float svr_c = svr_c_range.get_min_value();
-	 svr_c <= svr_c_range.get_max_value();
-         svr_c = svr_c_range.get_next_value(svr_c))
-    {
-        trainer.set_c (svr_c);
-        cv_error = cross_validate_regression_trainer (trainer,
-            dense_samples, labels, 10);
-        if (cv_error < best_cv_error) {
-            best_cv_error = cv_error;
-            best_svr_c = svr_c;
-	}
-        printf ("%3.6f %3.9f\n", svr_c, cv_error);
-    }
-
-    printf ("Best result: svr_c=%3.6f, cv_error=%9.6f\n",
-         best_svr_c, best_cv_error);
-
-    if (parser.option("train-best")) {
-        printf ("Training network with best parameters\n");
-        trainer.set_c (best_svr_c);
-        decision_function<kernel_type> best_network =
-            trainer.train (dense_samples, labels);
-
-        std::ofstream fout (parser.option("train-best").argument().c_str(),
-            std::ios::binary);
-        serialize (best_network, fout);
-        fout.close();
-
-        for (unsigned int j = 0; j < dense_samples.size(); j++) {
-            printf ("%g %g\n", labels[j], best_network(dense_samples[j]));
-        }
-    }
-}
-
-
-static void
-svr_rbk_test (
-    clp& parser,
-    std::vector<dense_sample_type>& dense_samples,
-    std::vector<label_type>& labels
-)
-{
-    typedef radial_basis_kernel<dense_sample_type> kernel_type;
-    svr_trainer<kernel_type> trainer;
-    option_range gamma_range, svr_c_range;
-    double best_gamma = DBL_MAX;
-    double best_svr_c = DBL_MAX;
-    float best_cv_error = FLT_MAX;
-
-    get_rbk_gamma (parser, dense_samples, gamma_range);
-    get_svr_c (parser, dense_samples, svr_c_range);
-
-    double epsilon_insensitivity = get_svr_epsilon_insensitivity (
-	parser, dense_samples);
-    trainer.set_epsilon_insensitivity (epsilon_insensitivity);
-
-    for (float svr_c = svr_c_range.get_min_value(); 
-	 svr_c <= svr_c_range.get_max_value();
-	 svr_c = svr_c_range.get_next_value (svr_c))
-    {
-	trainer.set_c (svr_c);
-	for (float gamma = gamma_range.get_min_value(); 
-	     gamma <= gamma_range.get_max_value();
-	     gamma = gamma_range.get_next_value (gamma))
-	{
-	    double cv_error;
-	    trainer.set_kernel (kernel_type (gamma));
-	    cv_error = cross_validate_regression_trainer (trainer, 
-		dense_samples, labels, 10);
-            if (cv_error < best_cv_error) {
-                best_cv_error = cv_error;
-                best_gamma = gamma;
-                best_svr_c = svr_c;
-            }
-	    printf ("%3.6f %3.6f %3.9f\n", svr_c, gamma, cv_error);
-	}
-    }
-    printf ("Best result: svr_c=%3.6f gamma=10^%f (%g), cv_error=%9.6f\n",
-         best_svr_c, log10(best_gamma), best_gamma, best_cv_error);
- 
-    if (parser.option("train-best")) {
-        printf ("Training network with best parameters\n");
-	trainer.set_c (best_svr_c);
-        trainer.set_kernel (kernel_type (best_gamma));
-        decision_function<kernel_type> best_network =
-            trainer.train (dense_samples, labels);
-
-        std::ofstream fout (parser.option("train-best").argument().c_str(),
-            std::ios::binary);
-        serialize (best_network, fout);
-        fout.close();
-
-        for (unsigned int j = 0; j < dense_samples.size(); j++) {
-            printf ("%g %g\n", labels[j], best_network(dense_samples[j]));
-        }
-    }
-
-}
-
-static void svr_test  (
-    clp& parser,
-    std::vector<dense_sample_type>& dense_samples,
-    std::vector<label_type>& labels
-)
-{
-    const char* kernel = get_kernel (parser);
-
-    if (!strcmp (kernel, "lin")) {
-        svr_lin_test (parser, dense_samples, labels);
-    } else if (!strcmp (kernel, "rbk")) {
-        svr_rbk_test (parser, dense_samples, labels);
-    } else {
-        fprintf (stderr, "Unknown kernel type: %s\n", kernel);
-        exit (-1);
-    }
-}
-
-//void
-//Dlib_trainer::set (
-//);
-
-#if defined (commentout)
-int 
-NOT_main (int argc, char* argv[])
-{
-    clp parser;
-
-    parse_args(parser, argc, argv);
-
-    const clp::option_type& option_alg = parser.option("a");
-    const clp::option_type& option_in = parser.option("in");
-
-    std::vector<sparse_sample_type> sparse_samples;
-    std::vector<label_type> labels;
-
-    load_libsvm_formatted_data (
-	option_in.argument(), 
-	sparse_samples, 
-	labels
-    );
-
-    if (sparse_samples.size() < 1) {
-	std::cout 
-	    << "Sorry, I couldn't find any samples in your data set.\n"
-	    << "Aborting the operation.\n";
-	exit (0);
-    }
-
-    std::vector<dense_sample_type> dense_samples;
-    dense_samples = sparse_to_dense (sparse_samples);
-
-    /* GCS FIX: The sparse_to_dense converter adds an extra column, 
-       because libsvm files are indexed starting with "1". */
-    std::cout 
-	<< "Loaded " << sparse_samples.size() << " samples"
-	<< std::endl
-	<< "Each sample has size " << sparse_samples[0].size() 
-	<< std::endl
-	<< "Each dense sample has size " << dense_samples[0].size() 
-	<< std::endl;
-
-    // Normalize inputs to N(0,1)
-    if (parser.option ("normalize")) {
-	vector_normalizer<dense_sample_type> normalizer;
-	normalizer.train (dense_samples);
-	for (unsigned long i = 0; i < dense_samples.size(); ++i) {
-	    dense_samples[i] = normalizer (dense_samples[i]);
-	}
-    }
-
-    // Randomize the order of the samples, labels
-    randomize_samples (dense_samples, labels);
-
-    if (!option_alg) {
-	// Do KRR if user didn't specify an algorithm
-	std::cout << "No algorithm specified, default to KRR\n";
-	krr_test (parser, dense_samples, labels);
-    }
-    else if (option_alg.argument() == "krls") {
-	krls_test (parser, dense_samples, labels);
-    }
-    else if (option_alg.argument() == "krr") {
-	krr_test (parser, dense_samples, labels);
-    }
-    else if (option_alg.argument() == "mlp") {
-	mlp_test (parser, dense_samples, labels);
-    }
-    else if (option_alg.argument() == "svr") {
-	svr_test (parser, dense_samples, labels);
-    }
-    else {
-	fprintf (stderr, 
-	    "Error, algorithm \"%s\" is unknown.\n"
-	    "Please use -h to see the command line options\n",
-	    option_alg.argument().c_str());
-	exit (-1);
-    }
-}
-#endif
-
 /* ---------------------------------------------------------------------
    training functions
    --------------------------------------------------------------------- */
@@ -751,8 +557,21 @@ Dlib_trainer::train_krr (void)
 	}
 	double gamma = exp10_ (log_gamma);
 	trainer.set_kernel (Kernel_type (gamma));
+#if DLIB_REVISION == 4093
+        /* dlib 17.34 */
 	dlib::decision_function<Kernel_type> krr_df = 
 	    trainer.train (m_samples, m_labels, loo_error);
+#elif DLIB_MAJOR_VERSION == 17 && DLIB_MINOR_VERSION == 44
+        /* dlib 17.44 */
+        /* GCS FIX: How to get loo_error from loo_values? */
+        std::vector<double> loo_values;
+	double lambda_used;
+	dlib::decision_function<Kernel_type> krr_df = 
+            trainer.train (m_samples, m_labels, loo_values, lambda_used);
+#else
+        error, unknown DLIB version!;
+#endif
+
 	if (loo_error < best_loo) {
 	    best_loo = loo_error;
 	    best_gamma = gamma;

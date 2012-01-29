@@ -9,5 +9,8 @@
 
 plastimatch1_EXPORT 
 void itk_gabor (FloatImageType::Pointer image);
+plastimatch1_EXPORT 
+FloatImageType::Pointer
+itk_gabor_create (const Plm_image_header *pih);
 
 #endif

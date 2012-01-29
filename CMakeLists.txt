@@ -277,7 +277,7 @@ if (PLM_CONFIG_DISABLE_DCMTK)
 else ()
   find_package (DCMTK)
 endif ()
-#FIND_PACKAGE (Dlib)
+find_package (Dlib)
 find_package (Etags)
 find_package (Fann)
 find_package (FFTW)
@@ -369,7 +369,9 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Only use local dlib
 ##-----------------------------------------------------------------------------
-set (DLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/dlib-17.34")
+if (NOT DLIB_INCLUDE_DIR)
+  set (DLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/dlib-17.34")
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Only use local nocedal

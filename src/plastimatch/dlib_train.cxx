@@ -13,6 +13,7 @@
 #include "dlib/cmd_line_parser.h"
 #include "dlib/data_io.h"
 #include "dlib/mlp.h"
+#include "dlib/revision.h"
 #include "dlib/svm.h"
 
 using namespace dlib;
@@ -357,14 +358,27 @@ krr_rbk_test (
 	 gamma = gamma_range.get_next_value (gamma))
     {
 	// LOO cross validation
-	double loo_error;
-
+	double loo_error = 0.;
 	if (parser.option("verbose")) {
 	    trainer.set_search_lambdas(logspace(-9, 4, 100));
 	    trainer.be_verbose();
 	}
 	trainer.set_kernel (kernel_type (gamma));
+
+#if DLIB_REVISION == 4093
+        /* dlib 17.34 */
 	trainer.train (dense_samples, labels, loo_error);
+
+#elif DLIB_MAJOR_VERSION == 17 && DLIB_MINOR_VERSION == 44
+        /* dlib 17.44 */
+        /* GCS FIX: How to get loo_error from loo_values? */
+        std::vector<double> loo_values;
+	double lambda_used;
+	trainer.train (dense_samples, labels, loo_values, lambda_used);
+#else
+        error, unknown DLIB version!;
+#endif
+
 	if (loo_error < best_loo) {
 	    best_loo = loo_error;
 	    best_gamma = gamma;
@@ -405,7 +419,20 @@ krr_lin_test (
 
     // LOO cross validation
     double loo_error;
-    trainer.train(dense_samples, labels, loo_error);
+
+#if DLIB_REVISION == 4093
+        /* dlib 17.34 */
+	trainer.train (dense_samples, labels, loo_error);
+
+#elif DLIB_MAJOR_VERSION == 17 && DLIB_MINOR_VERSION == 44
+        /* dlib 17.44 */
+        /* GCS FIX: How to get loo_error from loo_values? */
+        std::vector<double> loo_values;
+	double lambda_used;
+	trainer.train (dense_samples, labels, loo_values, lambda_used);
+#else
+        error, unknown DLIB version!;
+#endif
     std::cout << "mean squared LOO error: " << loo_error << std::endl;
 }
 
@@ -487,6 +514,8 @@ svr_lin_test (
     double best_svr_c = DBL_MAX;
     float best_cv_error = FLT_MAX;
 
+#if DLIB_REVISION == 4093
+    /* dlib 17.34 */
     typedef linear_kernel<dense_sample_type> kernel_type;
     svr_trainer<kernel_type> trainer;
 
@@ -510,7 +539,7 @@ svr_lin_test (
     }
 
     printf ("Best result: svr_c=%3.6f, cv_error=%9.6f\n",
-         best_svr_c, best_cv_error);
+        best_svr_c, best_cv_error);
 
     if (parser.option("train-best")) {
         printf ("Training network with best parameters\n");
@@ -527,6 +556,12 @@ svr_lin_test (
             printf ("%g %g\n", labels[j], best_network(dense_samples[j]));
         }
     }
+#elif DLIB_MAJOR_VERSION == 17 && DLIB_MINOR_VERSION == 44
+    /* dlib 17.44 */
+    /* GCS FIX: The above doesn't compile. */
+#else
+    error, unknown DLIB version!;
+#endif
 }
 
 
@@ -544,6 +579,7 @@ svr_rbk_test (
     double best_svr_c = DBL_MAX;
     float best_cv_error = FLT_MAX;
 
+#if DLIB_REVISION == 4093
     get_rbk_gamma (parser, dense_samples, gamma_range);
     get_svr_c (parser, dense_samples, svr_c_range);
 
@@ -573,7 +609,7 @@ svr_rbk_test (
 	}
     }
     printf ("Best result: svr_c=%3.6f gamma=10^%f (%g), cv_error=%9.6f\n",
-         best_svr_c, log10(best_gamma), best_gamma, best_cv_error);
+        best_svr_c, log10(best_gamma), best_gamma, best_cv_error);
  
     if (parser.option("train-best")) {
         printf ("Training network with best parameters\n");
@@ -591,7 +627,12 @@ svr_rbk_test (
             printf ("%g %g\n", labels[j], best_network(dense_samples[j]));
         }
     }
-
+#elif DLIB_MAJOR_VERSION == 17 && DLIB_MINOR_VERSION == 44
+    /* dlib 17.44 */
+    /* GCS FIX: The above doesn't compile. */
+#else
+    error, unknown DLIB version!;
+#endif
 }
 
 static void svr_test  (
