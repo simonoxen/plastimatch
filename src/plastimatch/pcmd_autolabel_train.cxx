@@ -95,7 +95,7 @@ parse_fn (
     /* Check that an input file was given */
     parser->check_required ("input");
 
-    /* Check that a task was given */
+    /* Check that a csv output was given */
     parser->check_required ("output-csv");
 
     /* Check that a task was given */

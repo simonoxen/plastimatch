@@ -209,15 +209,25 @@ Autolabel_trainer::load_input_file_tsv2 (
 	FloatImageType::Pointer thumb_img = thumb.make_thumbnail ();
 	itk::ImageRegionIterator< FloatImageType > thumb_it (
 	    thumb_img, thumb_img->GetLargestPossibleRegion());
-	//fprintf (this->fp, "%f", it->first);
-	//fprintf (this->fp, "%f", it->second.p[0]);
-	//fprintf (this->fp, "%f", it->second.p[1]);
+
+#if defined (commentout)
+	printf ("%f ", it->first);
+	printf ("%f ", it->second.p[0]);
+	printf ("%f\n", it->second.p[1]);
 	int i;
 	for (i = 0, thumb_it.GoToBegin(); !thumb_it.IsAtEnd(); ++i, ++thumb_it)
 	{
 	    //fprintf (this->fp, " %d:%f", i, thumb_it.Get ());
 	}
-	//fprintf (this->fp, "\n");
+#endif
+
+	Dlib_trainer::Dense_sample_type d;
+	for (int j = 0; j < 256; j++) {
+	    d(j) = thumb_it.Get();
+	    ++thumb_it;
+	}
+	this->m_dt->m_samples.push_back (d);
+	this->m_dt->m_labels.push_back (it->second.p[1]);
     }
 
     delete pli;

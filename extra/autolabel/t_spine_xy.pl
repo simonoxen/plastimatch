@@ -1,3 +1,4 @@
+#!/usr/bin/perl
 # Special thanks to perlmonks
 # http://www.perlmonks.org/?node_id=136482
 # http://www.perlmonks.org/?node_id=584507
