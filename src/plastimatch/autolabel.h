@@ -21,6 +21,7 @@ public:
     bool enforce_anatomic_constraints;
 };
 
+plastimatch1_EXPORT
 void autolabel (Autolabel_parms *parms);
 
 #endif
