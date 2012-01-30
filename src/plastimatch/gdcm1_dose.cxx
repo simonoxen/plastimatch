@@ -436,11 +436,11 @@ gdcm1_dose_save (
 
     if (meta->get_metadata(0x3004, 0x0004) != "ERROR") {
 	/* Dose is unsigned integer */
-	dose_scale = max_val / UINT32_T_MAX;
+	dose_scale = max_val / UINT32_T_MAX * 1.001;
     } else {
 	/* Dose error is signed integer */
-	float dose_scale_min = min_val / INT32_T_MIN;
-	float dose_scale_max = max_val / INT32_T_MAX;
+	float dose_scale_min = min_val / INT32_T_MIN * 1.001;
+	float dose_scale_max = max_val / INT32_T_MAX * 1.001;
 	dose_scale = std::max(dose_scale_min, dose_scale_max);
     }
 
