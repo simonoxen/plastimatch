@@ -1000,6 +1000,118 @@ Plm_image::convert_and_save (const char* fname, Plm_image_type new_type)
     this->save_image (fname);
 }
 
+/* geometry */
+size_t 
+Plm_image::dim (size_t d)
+{
+    switch (m_type) {
+    case PLM_IMG_TYPE_UNDEFINED:
+	return 0;
+    case PLM_IMG_TYPE_ITK_CHAR:
+        return this->m_itk_char->GetLargestPossibleRegion().GetSize()[d];
+    case PLM_IMG_TYPE_ITK_UCHAR:
+        return this->m_itk_uchar->GetLargestPossibleRegion().GetSize()[d];
+    case PLM_IMG_TYPE_ITK_SHORT:
+        return this->m_itk_short->GetLargestPossibleRegion().GetSize()[d];
+    case PLM_IMG_TYPE_ITK_USHORT:
+        return this->m_itk_ushort->GetLargestPossibleRegion().GetSize()[d];
+    case PLM_IMG_TYPE_ITK_LONG:
+        return this->m_itk_int32->GetLargestPossibleRegion().GetSize()[d];
+    case PLM_IMG_TYPE_ITK_ULONG:
+        return this->m_itk_uint32->GetLargestPossibleRegion().GetSize()[d];
+    case PLM_IMG_TYPE_ITK_FLOAT:
+        return this->m_itk_float->GetLargestPossibleRegion().GetSize()[d];
+    case PLM_IMG_TYPE_ITK_DOUBLE:
+        return this->m_itk_double->GetLargestPossibleRegion().GetSize()[d];
+    case PLM_IMG_TYPE_GPUIT_SHORT:
+    case PLM_IMG_TYPE_GPUIT_UINT16:
+    case PLM_IMG_TYPE_GPUIT_UINT32:
+    case PLM_IMG_TYPE_GPUIT_INT32:
+    case PLM_IMG_TYPE_GPUIT_FLOAT:
+    case PLM_IMG_TYPE_ITK_UCHAR_VEC:
+    default:
+	print_and_exit (
+	    "Unhandled call to Plm_image::dim (type = %s)\n", 
+	    plm_image_type_string (this->m_type));
+	break;
+    }
+    return 0;
+}
+
+float 
+Plm_image::origin (size_t d)
+{
+    switch (m_type) {
+    case PLM_IMG_TYPE_UNDEFINED:
+	return 0;
+    case PLM_IMG_TYPE_ITK_CHAR:
+        return this->m_itk_char->GetOrigin()[d];
+    case PLM_IMG_TYPE_ITK_UCHAR:
+        return this->m_itk_uchar->GetOrigin()[d];
+    case PLM_IMG_TYPE_ITK_SHORT:
+        return this->m_itk_short->GetOrigin()[d];
+    case PLM_IMG_TYPE_ITK_USHORT:
+        return this->m_itk_ushort->GetOrigin()[d];
+    case PLM_IMG_TYPE_ITK_LONG:
+        return this->m_itk_int32->GetOrigin()[d];
+    case PLM_IMG_TYPE_ITK_ULONG:
+        return this->m_itk_uint32->GetOrigin()[d];
+    case PLM_IMG_TYPE_ITK_FLOAT:
+        return this->m_itk_float->GetOrigin()[d];
+    case PLM_IMG_TYPE_ITK_DOUBLE:
+        return this->m_itk_double->GetOrigin()[d];
+    case PLM_IMG_TYPE_GPUIT_SHORT:
+    case PLM_IMG_TYPE_GPUIT_UINT16:
+    case PLM_IMG_TYPE_GPUIT_UINT32:
+    case PLM_IMG_TYPE_GPUIT_INT32:
+    case PLM_IMG_TYPE_GPUIT_FLOAT:
+    case PLM_IMG_TYPE_ITK_UCHAR_VEC:
+    default:
+	print_and_exit (
+	    "Unhandled call to Plm_image::origin (type = %s)\n", 
+	    plm_image_type_string (this->m_type));
+	break;
+    }
+    return 0.f;
+}
+
+float 
+Plm_image::spacing (size_t d)
+{
+    switch (m_type) {
+    case PLM_IMG_TYPE_UNDEFINED:
+	return 0;
+    case PLM_IMG_TYPE_ITK_CHAR:
+        return this->m_itk_char->GetSpacing()[d];
+    case PLM_IMG_TYPE_ITK_UCHAR:
+        return this->m_itk_uchar->GetSpacing()[d];
+    case PLM_IMG_TYPE_ITK_SHORT:
+        return this->m_itk_short->GetSpacing()[d];
+    case PLM_IMG_TYPE_ITK_USHORT:
+        return this->m_itk_ushort->GetSpacing()[d];
+    case PLM_IMG_TYPE_ITK_LONG:
+        return this->m_itk_int32->GetSpacing()[d];
+    case PLM_IMG_TYPE_ITK_ULONG:
+        return this->m_itk_uint32->GetSpacing()[d];
+    case PLM_IMG_TYPE_ITK_FLOAT:
+        return this->m_itk_float->GetSpacing()[d];
+    case PLM_IMG_TYPE_ITK_DOUBLE:
+        return this->m_itk_double->GetSpacing()[d];
+    case PLM_IMG_TYPE_GPUIT_SHORT:
+    case PLM_IMG_TYPE_GPUIT_UINT16:
+    case PLM_IMG_TYPE_GPUIT_UINT32:
+    case PLM_IMG_TYPE_GPUIT_INT32:
+    case PLM_IMG_TYPE_GPUIT_FLOAT:
+    case PLM_IMG_TYPE_ITK_UCHAR_VEC:
+    default:
+	print_and_exit (
+	    "Unhandled call to Plm_image::spacing (type = %s)\n", 
+	    plm_image_type_string (this->m_type));
+	break;
+    }
+    return 0.f;
+}
+
 /* Return 1 if the two headers are the same */
 int
 Plm_image::compare_headers (Plm_image *pli1, Plm_image *pli2)

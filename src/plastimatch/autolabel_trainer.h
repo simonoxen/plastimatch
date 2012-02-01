@@ -26,6 +26,7 @@ class plastimatch1_EXPORT Autolabel_trainer
     Dlib_trainer *m_dt_tsv1;
     Dlib_trainer *m_dt_tsv2_x;
     Dlib_trainer *m_dt_tsv2_y;
+    Dlib_trainer *m_dt_la1;
 
   public:
     void load_inputs ();

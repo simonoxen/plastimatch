@@ -135,6 +135,11 @@ public:
     void convert_to_itk (void);
     void convert_to_itk_uchar_vec (void);
 
+    /* geometry */
+    size_t dim (size_t);
+    float origin (size_t);
+    float spacing (size_t);
+
     /* metadata */
     void set_metadata (char *tag, char *value);
 

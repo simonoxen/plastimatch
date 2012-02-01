@@ -85,13 +85,10 @@ Autolabel_trainer::load_input_dir_recursive (std::string input_dir)
 
 }
 
+/* This function creates "t_map", a map from t-spine # to (x,y,z) point */
 static std::map<float, Point> 
-load_tspine_map (const char* fcsv_fn)
+load_tspine_map (const Labeled_pointset& ps)
 {
-    Labeled_pointset ps;
-    ps.load_fcsv (fcsv_fn);
-
-    /* Generate map from t-spine # to (x,y,z) point */
     std::map<float, Point> t_map;
     for (unsigned int i = 0; i < ps.point_list.size(); i++) {
 	if (ps.point_list[i].label == "C7") {
@@ -130,46 +127,87 @@ Autolabel_trainer::load_input_file (
     const char* fcsv_fn)
 {
     printf ("Loading %s\nLoading %s\n---\n", nrrd_fn, fcsv_fn);
+    Labeled_pointset ps;
+    ps.load_fcsv (fcsv_fn);
 
-    /* Create map from spine # to point from fcsv file */
-    std::map<float,Point> t_map = load_tspine_map (fcsv_fn);
-
-    /* If we want to use interpolation, we need to sort, and make 
-       a "back-map" from z-pos to t-spine */
-
-    /* Otherwise, for the simple case, we're good to go. 
-       Load the input image. */
+    /* Load the input image. */
     Plm_image *pli;
     pli = plm_image_load (nrrd_fn, PLM_IMG_TYPE_ITK_FLOAT);
+
+    /* Create thumbnail to be filled in */
     Thumbnail thumb;
     thumb.set_input_image (pli);
     thumb.set_thumbnail_dim (16);
     thumb.set_thumbnail_spacing (25.0f);
 
-    /* Get the samples and labels */
-    std::map<float, Point>::iterator it;
-    for (it = t_map.begin(); it != t_map.end(); ++it) {
-	thumb.set_slice_loc (it->second.p[2]);
-	FloatImageType::Pointer thumb_img = thumb.make_thumbnail ();
-	itk::ImageRegionIterator< FloatImageType > thumb_it (
-	    thumb_img, thumb_img->GetLargestPossibleRegion());
-	Dlib_trainer::Dense_sample_type d;
-	for (int j = 0; j < 256; j++) {
-	    d(j) = thumb_it.Get();
-	    ++thumb_it;
-	}
+    /* Get the samples and labels for learning tasks that convert 
+       slice to location */
+    if (this->m_dt_tsv1 || this->m_dt_tsv2_x || this->m_dt_tsv2_y) {
 
-        if (this->m_dt_tsv1) {
-            this->m_dt_tsv1->m_samples.push_back (d);
-            this->m_dt_tsv1->m_labels.push_back (it->first);
+        /* Create map from spine # to point from fcsv file */
+        std::map<float,Point> t_map = load_tspine_map (ps);
+
+        /* If we want to use interpolation, we need to sort, and make 
+           a "back-map" from z-pos to t-spine here.  But this is 
+           not currently implemented. */
+
+        std::map<float, Point>::iterator it;
+        for (it = t_map.begin(); it != t_map.end(); ++it) {
+            thumb.set_slice_loc (it->second.p[2]);
+            FloatImageType::Pointer thumb_img = thumb.make_thumbnail ();
+            itk::ImageRegionIterator< FloatImageType > thumb_it (
+                thumb_img, thumb_img->GetLargestPossibleRegion());
+            Dlib_trainer::Dense_sample_type d;
+            for (int j = 0; j < 256; j++) {
+                d(j) = thumb_it.Get();
+                ++thumb_it;
+            }
+
+            if (this->m_dt_tsv1) {
+                this->m_dt_tsv1->m_samples.push_back (d);
+                this->m_dt_tsv1->m_labels.push_back (it->first);
+            }
+            if (this->m_dt_tsv2_x) {
+                this->m_dt_tsv2_x->m_samples.push_back (d);
+                this->m_dt_tsv2_x->m_labels.push_back (it->second.p[0]);
+            }
+            if (this->m_dt_tsv2_y) {
+                this->m_dt_tsv2_y->m_samples.push_back (d);
+                this->m_dt_tsv2_y->m_labels.push_back (it->second.p[1]);
+            }
         }
-        if (this->m_dt_tsv2_x) {
-            this->m_dt_tsv2_x->m_samples.push_back (d);
-            this->m_dt_tsv2_x->m_labels.push_back (it->second.p[0]);
+    }
+
+    /* Get the samples and labels for learning tasks that iterate 
+       through all slices */
+    if (this->m_dt_la1) {
+        bool have_lla = false;
+        float *lla_point = 0;
+        for (unsigned int i = 0; i < ps.point_list.size(); i++) {
+            if (ps.point_list[i].label == "LLA") {
+                have_lla = true;
+                lla_point = ps.point_list[i].p;
+            }
         }
-        if (this->m_dt_tsv2_y) {
-            this->m_dt_tsv2_y->m_samples.push_back (d);
-            this->m_dt_tsv2_y->m_labels.push_back (it->second.p[1]);
+        if (have_lla) {
+            for (size_t i = 0; i < pli->dim(2); i++) {
+                float loc = pli->origin(2) + i * pli->spacing(2);
+                thumb.set_slice_loc (loc);
+                FloatImageType::Pointer thumb_img = thumb.make_thumbnail ();
+                itk::ImageRegionIterator< FloatImageType > thumb_it (
+                    thumb_img, thumb_img->GetLargestPossibleRegion());
+                Dlib_trainer::Dense_sample_type d;
+                for (int j = 0; j < 256; j++) {
+                    d(j) = thumb_it.Get();
+                    ++thumb_it;
+                }
+                float score = fabs(loc - lla_point[2]);
+                if (score > 30) score = 30;
+                if (this->m_dt_la1) {
+                    this->m_dt_la1->m_samples.push_back (d);
+                    this->m_dt_la1->m_labels.push_back (score);
+                }
+            }
         }
     }
 
@@ -184,7 +222,7 @@ Autolabel_trainer::load_inputs ()
     }
 
     if (m_task == "la") {
-        /* Not yet implemented */
+        m_dt_la1 = new Dlib_trainer;
     }
     else if (m_task == "tsv1") {
 	m_dt_tsv1 = new Dlib_trainer;
@@ -231,6 +269,13 @@ Autolabel_trainer::train ()
         m_dt_tsv2_y->train_krr ();
         m_dt_tsv2_y->save_net (output_net_fn);
     }
+    if (this->m_dt_la1) {
+        Pstring output_net_fn;
+        output_net_fn.format ("%s/la1.net", m_output_dir.c_str());
+        m_dt_la1->set_krr_gamma (-9, -5, 0.5);
+        m_dt_la1->train_krr ();
+        m_dt_la1->save_net (output_net_fn);
+    }
 }
 
 void
@@ -250,6 +295,11 @@ Autolabel_trainer::save_csv ()
         Pstring output_csv_fn;
         output_csv_fn.format ("%s/tsv2_y.csv", m_output_dir.c_str());
         this->m_dt_tsv2_y->save_csv (output_csv_fn);
+    }
+    if (this->m_dt_la1) {
+        Pstring output_csv_fn;
+        output_csv_fn.format ("%s/la1.csv", m_output_dir.c_str());
+        this->m_dt_la1->save_csv (output_csv_fn);
     }
 }
 
@@ -272,6 +322,11 @@ Autolabel_trainer::save_tsacc ()
         Pstring output_tsacc_fn;
         output_tsacc_fn.format ("%s/tsv2_y_tsacc.txt", m_output_dir.c_str());
         this->m_dt_tsv2_y->save_tsacc (output_tsacc_fn);
+    }
+    if (this->m_dt_la1) {
+        Pstring output_tsacc_fn;
+        output_tsacc_fn.format ("%s/la1_tsacc.txt", m_output_dir.c_str());
+        this->m_dt_la1->save_tsacc (output_tsacc_fn);
     }
 }
 
