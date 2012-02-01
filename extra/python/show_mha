@@ -1,17 +1,30 @@
 #! /usr/bin/env python
 
-## This is an easy command line mha file viewer 
-## Author: Paolo Zaffino  (p.zaffino@yahoo.it)
-## rev 4
-## If your python version is < 2.7 you must install the argparse library
+## This is an easy command line mha file viewer
+##
+## FUNCTION STILL IN TESTING
+##
+## Author: Paolo Zaffino (p.zaffino@yahoo.it)
+##
+## rev 5
+##
+## Required libraries:
+## 1) Numpy
+## 2) Matplotlib
+## 3) Argparse (only if your python version is < 2.7)
+## 4) mha.py file
+##
 ## NOT TESTED ON PYTHON 3
+##
 ## "show_mha -h" shows the guide
 
+
 import argparse
-import numpy as np
-from matplotlib.pyplot import imshow, show, hold
 import matplotlib.cm as cm
+from matplotlib.pyplot import imshow, show, hold
+import numpy as np
 from mha import read
+
 
 ## Parser settings
 parser = argparse.ArgumentParser(description='Command line mha file viewer')
@@ -20,11 +33,24 @@ parser.add_argument('--slice', help='Slice number, default slice is the middle o
 parser.add_argument('--view', help='View, default is coronal',type=str, default='c', choices=('a','c','s'))
 parser.add_argument('--overlay_image', help='Overlay mha image', type=str)
 parser.add_argument('--gain_overlay_image', help='Gain of overlay image', type=int, default=1)
+parser.add_argument('--windowing', help='Windowing interval as "-100 100"', type=str, default='')
+parser.add_argument('--vf', help='Plots the phase map of the vector field', type=str)
+parser.add_argument('--checkerboard', help='Sets the checkerboard in the overlay mode', action='store_true')
+parser.add_argument('--check_size', help='Size of the check (in voxel)', type=int, default=100)
 parser.add_argument('--diff', help='Shows the difference between the input image and the overlay one', action='store_true')
 parser.add_argument('--colours', help='Sets the colours in the overlay mode', action='store_true')
+
 args = parser.parse_args()
 
+
+## Read the input image
 (img, img_size, img_spacing, img_offset, img_data_type)=read(args.input)
+
+
+## Read the vector field
+if args.vf != None:
+	(vf, vf_size, vf_spacing, vf_offset, vf_data_type)=read(args.vf)
+
 
 ## Slice number settings
 if args.slice == None and (args.view == 'c' or args.view == 's'):
@@ -34,18 +60,28 @@ elif args.slice == None and args.view == 'a':
 else:
 	slice_number=args.slice
 
+
 ## View settings
 if args.view == 'c':
-	slice=np.fliplr(np.rot90(img[:,slice_number],-1))
+	slice=img[:,slice_number].T
 	pixel_ratio=img_spacing[2]/img_spacing[0]
+	if args.vf != None:
+		phase_vf=np.arctan(vf[:,slice_number,:,0], vf[:,slice_number,:,2]).T
+		del vf		
 elif args.view == 's':
-	slice=np.fliplr(np.rot90(img[slice_number,:],-1))
+	slice=img[slice_number,:].T
 	pixel_ratio=img_spacing[2]/img_spacing[1]
+	if args.vf != None:
+		phase_vf=np.arctan(vf[slice_number,:,:,1], vf[slice_number,:,:,2]).T
+		del vf
 elif args.view == 'a':
 	slice=np.rot90(img[:,:,slice_number],1)
 	pixel_ratio=img_spacing[1]/img_spacing[0]
-
+	if args.vf != None:
+		phase_vf=np.rot90(np.arctan(vf[:,:,slice_number,0], vf[:,:,slice_number,1]), 1)
+		del vf
 del img
+	
 
 ## Overlay settings
 if args.overlay_image != None:
@@ -59,30 +95,85 @@ if args.overlay_image != None:
 		print "Warning: the two images don't have the same offset!"
 	
 	if args.view == 'c':
-		slice2=np.fliplr(np.rot90(img2[:,slice_number],-1))
+		slice2=img2[:,slice_number].T
 	elif args.view == 's':
-		slice2=np.fliplr(np.rot90(img2[slice_number,:],-1))
+		slice2=img2[slice_number,:].T
 	elif args.view == 'a':
 		slice2=np.rot90(img2[:,:,slice_number],1)
 	del img2
 
+
+## Windowing settings
+if args.windowing != '':
+	
+	windowing_low_value=int(args.windowing.split(' ')[0])
+	windowing_hi_value=int(args.windowing.split(' ')[1])
+	slice[slice<windowing_low_value]=0
+	slice[slice>windowing_hi_value]=0
+	
+	if args.overlay_image != None:
+		slice2[slice2<windowing_low_value]=0
+		slice2[slice2>windowing_hi_value]=0
+
+
 ## Shows diff or normal image
 if args.diff == False:
-	if args.colours == True:
+	if args.colours == True and args.overlay_image != None: ## Overlay images in colours mode
 		imshow(slice, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
-		if args.overlay_image != None:
-			imshow(slice2, aspect=pixel_ratio, origin='lower', alpha=0.5)
+		imshow(slice2, aspect=pixel_ratio, origin='lower', alpha=0.5)
 		show()
 	elif args.colours == False:
-		if args.overlay_image != None:
+		if args.overlay_image != None and args.checkerboard == False: ## Overlay images NO checkerboard, NO colours
 			slice_sum=np.add(np.multiply(slice2, args.gain_overlay_image), slice)
 			del slice, slice2
 			imshow(slice_sum, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
-		else:
+		elif args.overlay_image != None and args.checkerboard == True: ## Overlay images in checkerboard mode
+			check_white=np.ones((np.rint(args.check_size/pixel_ratio), args.check_size))
+			check_black=np.zeros((np.rint(args.check_size/pixel_ratio), args.check_size))
+			check_number_x=slice.shape[1]/args.check_size
+			check_number_y=slice.shape[0]/np.rint(args.check_size/pixel_ratio)
+			
+			x=y=0
+			while x <= check_number_x:
+				if x == 0:
+					row=np.concatenate((check_white, check_black), axis=1)
+					row_neg=np.concatenate((check_black, check_white), axis=1)
+				else:
+					row=np.concatenate((row, check_white), axis=1)
+					row=np.concatenate((row, check_black), axis=1)
+				x=x+2
+			
+			row_neg=np.ones(row.shape)
+			row_neg=np.subtract(row_neg, row)
+			
+			while y <= check_number_y:
+				if y == 0:
+					checkerboard=np.concatenate((row, row_neg), axis=0)
+				else:
+					checkerboard=np.concatenate((checkerboard, row), axis=0)
+					checkerboard=np.concatenate((checkerboard, row_neg), axis=0)
+				y=y+2
+			
+			checkerboard=np.delete(checkerboard, np.s_[slice.shape[0]:checkerboard.shape[0]], axis=0)
+			checkerboard=np.delete(checkerboard, np.s_[slice.shape[1]:checkerboard.shape[1]], axis=1)
+			
+			checkerboard_neg=np.ones(checkerboard.shape)
+			checkerboard_neg=np.subtract(checkerboard_neg, checkerboard)
+			
+			slice=np.multiply(slice, checkerboard)
+			slice2=np.multiply(slice2, checkerboard_neg)
+			
+			imshow(slice, cmap=cm.get_cmap('bone'), aspect=pixel_ratio, origin='lower')
+			imshow(slice2, cmap=cm.get_cmap('reds'), aspect=pixel_ratio, origin='lower', alpha=0.70)
+			
+		elif args.overlay_image == None and args.vf == None and args.checkerboard == False: ## One image, NO options
 			imshow(slice, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
+		elif args.overlay_image == None and args.vf != None and args.checkerboard == False: ## Image and vector field
+			imshow(slice, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
+			imshow(phase_vf, aspect=pixel_ratio, origin='lower', alpha=0.5)	
 		show()
 	
-elif args.diff == True and args.overlay_image != None:
+elif args.diff == True and args.overlay_image != None: ## Two images in diff mode
 	diff_slice=np.subtract(slice, np.multiply(slice2, args.gain_overlay_image))
 	del slice, slice2
 	imshow(diff_slice, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
