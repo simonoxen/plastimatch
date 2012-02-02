@@ -12,6 +12,7 @@
 #endif
 
 #include "bspline.h"
+#include "file_util.h"
 #include "interpolate.h"
 #include "logfile.h"
 #include "math_util.h"
@@ -46,7 +47,8 @@ void
 bspline_xform_save (Bspline_xform* bxf, const char* filename)
 {
     FILE* fp;
-	
+
+    make_directory_recursive (filename);
     fp = fopen (filename, "wb");
     if (!fp) return;
 
