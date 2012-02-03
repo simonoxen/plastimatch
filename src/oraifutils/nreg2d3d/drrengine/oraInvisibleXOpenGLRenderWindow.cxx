@@ -7,6 +7,9 @@
 #include <vtkgl.h>
 
 #include <GL/glx.h>
+#if defined( VTK_OPENGL_HAS_OSMESA )
+#include <GL/osmesa.h>
+#endif
 
 #include <X11/Xlib.h>
 
