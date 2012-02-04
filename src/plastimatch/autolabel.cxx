@@ -32,6 +32,70 @@ load_dlib_network (
 }
 
 static void
+autolabel_la1 (Autolabel_parms *parms)
+{
+    FILE *fp;
+    Pstring network_fn;
+
+    /* Load network */
+    network_fn.format ("%s/la1.net", parms->network_dir.c_str());
+    dlib::decision_function< Dlib_trainer::Kernel_type > dlib_network;
+    load_dlib_network (&dlib_network, network_fn);
+
+    /* Load input image */
+    Plm_image pli ((const char*) parms->input_fn, PLM_IMG_TYPE_ITK_FLOAT);
+
+    Thumbnail thumbnail;
+    thumbnail.set_input_image (&pli);
+    thumbnail.set_thumbnail_dim (16);
+    thumbnail.set_thumbnail_spacing (25.0f);
+
+    /* Open output file (txt format) */
+    fp = fopen ((const char*) parms->output_csv_fn, "w");
+    if (!fp) {
+        print_and_exit ("Failure to open file for write: %s\n", 
+            (const char*) parms->output_csv_fn);
+    }
+
+
+    /* Loop through slices, and compute score for each slice */
+    Plm_image_header pih (&pli);
+    float best_score = FLT_MAX;
+    float best_slice = 0.f;
+    for (int i = 0; i < pih.Size(2); i++) {
+
+        /* Create slice thumbnail */
+        float loc = pih.m_origin[2] + i * pih.m_spacing[2];
+        thumbnail.set_slice_loc (loc);
+        FloatImageType::Pointer thumb_img = thumbnail.make_thumbnail ();
+
+        /* Convert to dlib sample type */
+        Dlib_trainer::Dense_sample_type d;
+        FloatIteratorType it (thumb_img, thumb_img->GetLargestPossibleRegion());
+        for (int j = 0; j < 256; j++) {
+            d(j) = it.Get();
+            ++it;
+        }
+
+
+        /* Predict the value */
+        Pstring label;
+        float this_score = dlib_network (d);
+
+        /* Save the (debugging) output to a file */
+        fprintf (fp, "%g,%g\n", loc, this_score);
+    
+        /* Look for lowest score */
+        if (this_score < best_score) {
+            best_slice = loc;
+            best_score = this_score;
+        }
+    }
+
+    fclose (fp);
+}
+
+static void
 autolabel_tsv1 (Autolabel_parms *parms)
 {
     FILE *fp;
@@ -156,7 +220,10 @@ autolabel_tsv2 (Autolabel_parms *parms)
 void
 autolabel (Autolabel_parms *parms)
 {
-    if (parms->task == "tsv1") {
+    if (parms->task == "la1") {
+        autolabel_la1 (parms);
+    }
+    else if (parms->task == "tsv1") {
         autolabel_tsv1 (parms);
     }
     else if (parms->task == "tsv2") {
