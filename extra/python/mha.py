@@ -1,7 +1,7 @@
 ########################################################################
 ## These functions read and write mha files (images or vector fields)
 ## Author: Paolo Zaffino  (p.zaffino@yahoo.it)
-## Rev 12
+## Rev 13
 ## NOT TESTED ON PYTHON 3
 ########################################################################
 
@@ -30,7 +30,7 @@ def write (A, fn, spacing, offset, data_type):
 		elif A.ndim == 4:
 			data='vf'
 			
-		f=open(fn, 'w')
+		f=open(fn, 'wb')
 		
 		## Write mha header
 		f.write('ObjectType = Image\n')
@@ -93,7 +93,7 @@ def read(fn):
 	
 	if fn.endswith('.mha'): ## Check if the file extension is ".mha"
 		
-		f = open(fn,'r')
+		f = open(fn,'rb')
 		data='img' ## On default the matrix is considered to be an image
 
 		## Read mha header
