@@ -8,7 +8,7 @@
 
 #include "autolabel.h"
 #include "autolabel_ransac_est.h"
-#include "autolabel_task.h"
+#include "autolabel_thumbnailer.h"
 #include "bstring_util.h"
 #include "dlib_trainer.h"
 #include "itk_image.h"
@@ -17,7 +17,6 @@
 #include "pointset.h"
 #include "print_and_exit.h"
 #include "pstring.h"
-#include "thumbnail.h"
 
 /* ITK typedefs */
 typedef itk::ImageRegionConstIterator< FloatImageType > FloatIteratorType;
@@ -44,12 +43,8 @@ autolabel_la1 (Autolabel_parms *parms)
     load_dlib_network (&dlib_network, network_fn);
 
     /* Load input image */
-    Plm_image pli ((const char*) parms->input_fn, PLM_IMG_TYPE_ITK_FLOAT);
-
-    Thumbnail thumbnail;
-    thumbnail.set_input_image (&pli);
-    thumbnail.set_thumbnail_dim (16);
-    thumbnail.set_thumbnail_spacing (25.0f);
+    Autolabel_thumbnailer thumb;
+    thumb.set_input_image ((const char*) parms->input_fn);
 
     /* Open output file (txt format) */
     fp = fopen ((const char*) parms->output_csv_fn, "w");
@@ -60,17 +55,14 @@ autolabel_la1 (Autolabel_parms *parms)
 
 
     /* Loop through slices, and compute score for each slice */
-    Plm_image_header pih (&pli);
+    Plm_image_header pih (thumb.pli);
     float best_score = FLT_MAX;
     float best_slice = 0.f;
     for (int i = 0; i < pih.Size(2); i++) {
 
         /* Create slice thumbnail and dlib sample */
         float loc = pih.m_origin[2] + i * pih.m_spacing[2];
-        thumbnail.set_slice_loc (loc);
-        FloatImageType::Pointer thumb_img = thumbnail.make_thumbnail ();
-        Dlib_trainer::Dense_sample_type d 
-            = Autolabel_task::make_sample (thumb_img);
+        Dlib_trainer::Dense_sample_type d = thumb.make_sample (loc);
 
         /* Predict the value */
         Pstring label;
@@ -101,12 +93,8 @@ autolabel_tsv1 (Autolabel_parms *parms)
     load_dlib_network (&dlib_network, network_fn);
 
     /* Load input image */
-    Plm_image pli ((const char*) parms->input_fn, PLM_IMG_TYPE_ITK_FLOAT);
-
-    Thumbnail thumbnail;
-    thumbnail.set_input_image (&pli);
-    thumbnail.set_thumbnail_dim (16);
-    thumbnail.set_thumbnail_spacing (25.0f);
+    Autolabel_thumbnailer thumb;
+    thumb.set_input_image ((const char*) parms->input_fn);
 
     /* Open output file (txt format) */
     fp = fopen ((const char*) parms->output_csv_fn, "w");
@@ -119,15 +107,12 @@ autolabel_tsv1 (Autolabel_parms *parms)
     Autolabel_point_vector apv;
 
     /* Loop through slices, and predict location for each slice */
-    Plm_image_header pih (&pli);
+    Plm_image_header pih (thumb.pli);
     for (int i = 0; i < pih.Size(2); i++) {
 
         /* Create slice thumbnail and dlib sample */
         float loc = pih.m_origin[2] + i * pih.m_spacing[2];
-        thumbnail.set_slice_loc (loc);
-        FloatImageType::Pointer thumb_img = thumbnail.make_thumbnail ();
-        Dlib_trainer::Dense_sample_type d 
-            = Autolabel_task::make_sample (thumb_img);
+        Dlib_trainer::Dense_sample_type d = thumb.make_sample (loc);
 
         /* Predict the value */
         Autolabel_point ap;
@@ -166,24 +151,16 @@ autolabel_tsv2 (Autolabel_parms *parms)
     load_dlib_network (&dlib_network_y, network_fn);
 
     /* Load input image */
-    Plm_image pli ((const char*) parms->input_fn, PLM_IMG_TYPE_ITK_FLOAT);
-
-    Thumbnail thumbnail;
-    thumbnail.set_input_image (&pli);
-    thumbnail.set_thumbnail_dim (16);
-    thumbnail.set_thumbnail_spacing (25.0f);
+    Autolabel_thumbnailer thumb;
+    thumb.set_input_image ((const char*) parms->input_fn);
 
     /* Loop through slices, and predict location for each slice */
-    Plm_image_header pih (&pli);
-    printf ("Looping...\n");
+    Plm_image_header pih (thumb.pli);
     for (int i = 0; i < pih.Size(2); i++) {
 
         /* Create slice thumbnail and dlib sample */
         float loc = pih.m_origin[2] + i * pih.m_spacing[2];
-        thumbnail.set_slice_loc (loc);
-        FloatImageType::Pointer thumb_img = thumbnail.make_thumbnail ();
-        Dlib_trainer::Dense_sample_type d 
-            = Autolabel_task::make_sample (thumb_img);
+        Dlib_trainer::Dense_sample_type d = thumb.make_sample (loc);
 
         /* Predict the value */
         Pstring label;
@@ -191,7 +168,6 @@ autolabel_tsv2 (Autolabel_parms *parms)
         points.insert_lps (label.c_str(), 
             dlib_network_x (d), dlib_network_y (d), loc);
     }
-    printf ("Done.\n");
 
     /* Save the pointset output to a file */
     if (parms->output_fcsv_fn.not_empty()) {

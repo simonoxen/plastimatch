@@ -12,6 +12,7 @@
 #include "itkRegularExpressionSeriesFileNames.h"
 
 #include "autolabel_task.h"
+#include "autolabel_thumbnailer.h"
 #include "autolabel_trainer.h"
 #include "dlib_trainer.h"
 #include "file_util.h"
@@ -19,7 +20,6 @@
 #include "plm_image.h"
 #include "pointset.h"
 #include "print_and_exit.h"
-#include "thumbnail.h"
 
 Autolabel_trainer::Autolabel_trainer ()
 {
@@ -136,14 +136,20 @@ Autolabel_trainer::load_input_file (
     ps.load_fcsv (fcsv_fn);
 
     /* Load the input image */
+#if defined (commentout)
     Plm_image *pli;
     pli = plm_image_load (nrrd_fn, PLM_IMG_TYPE_ITK_FLOAT);
+#endif
 
     /* Create thumbnail to be filled in */
+    Autolabel_thumbnailer thumb;
+    thumb.set_input_image (nrrd_fn);
+#if defined (commentout)
     Thumbnail thumb;
     thumb.set_input_image (pli);
     thumb.set_thumbnail_dim (16);
     thumb.set_thumbnail_spacing (25.0f);
+#endif
 
     /* Get the samples and labels for learning tasks that convert 
        slice to location */
@@ -158,10 +164,14 @@ Autolabel_trainer::load_input_file (
 
         std::map<float, Point>::iterator it;
         for (it = t_map.begin(); it != t_map.end(); ++it) {
+#if defined (commentout)
             thumb.set_slice_loc (it->second.p[2]);
             FloatImageType::Pointer thumb_img = thumb.make_thumbnail ();
             Dlib_trainer::Dense_sample_type d 
                 = Autolabel_task::make_sample (thumb_img);
+#endif
+            Dlib_trainer::Dense_sample_type d 
+                = thumb.make_sample (it->second.p[2]);
 
             if (this->m_dt_tsv1) {
                 this->m_dt_tsv1->m_samples.push_back (d);
@@ -190,12 +200,15 @@ Autolabel_trainer::load_input_file (
             }
         }
         if (have_lla) {
-            for (size_t i = 0; i < pli->dim(2); i++) {
-                float loc = pli->origin(2) + i * pli->spacing(2);
+            for (size_t i = 0; i < thumb.pli->dim(2); i++) {
+                float loc = thumb.pli->origin(2) + i * thumb.pli->spacing(2);
+#if defined (commentout)
                 thumb.set_slice_loc (loc);
                 FloatImageType::Pointer thumb_img = thumb.make_thumbnail ();
                 Dlib_trainer::Dense_sample_type d 
                     = Autolabel_task::make_sample (thumb_img);
+#endif
+                Dlib_trainer::Dense_sample_type d = thumb.make_sample (loc);
 
                 float score = fabs(loc - lla_point[2]);
                 if (score > 30) score = 30;
@@ -206,7 +219,7 @@ Autolabel_trainer::load_input_file (
             }
         }
     }
-    delete pli;
+    //delete pli;
 }
 
 void
@@ -246,28 +259,28 @@ Autolabel_trainer::train ()
     if (this->m_dt_tsv1) {
         Pstring output_net_fn;
         output_net_fn.format ("%s/tsv1.net", m_output_dir.c_str());
-        m_dt_tsv1->set_krr_gamma (-9, -5, 0.5);
+        m_dt_tsv1->set_krr_gamma (-9, -6, 0.5);
         m_dt_tsv1->train_krr ();
         m_dt_tsv1->save_net (output_net_fn);
     }
     if (this->m_dt_tsv2_x) {
         Pstring output_net_fn;
         output_net_fn.format ("%s/tsv2_x.net", m_output_dir.c_str());
-        m_dt_tsv2_x->set_krr_gamma (-9, -5, 0.5);
+        m_dt_tsv2_x->set_krr_gamma (-9, -6, 0.5);
         m_dt_tsv2_x->train_krr ();
         m_dt_tsv2_x->save_net (output_net_fn);
     }
     if (this->m_dt_tsv2_y) {
         Pstring output_net_fn;
         output_net_fn.format ("%s/tsv2_y.net", m_output_dir.c_str());
-        m_dt_tsv2_y->set_krr_gamma (-9, -5, 0.5);
+        m_dt_tsv2_y->set_krr_gamma (-9, -6, 0.5);
         m_dt_tsv2_y->train_krr ();
         m_dt_tsv2_y->save_net (output_net_fn);
     }
     if (this->m_dt_la1) {
         Pstring output_net_fn;
         output_net_fn.format ("%s/la1.net", m_output_dir.c_str());
-        m_dt_la1->set_krr_gamma (-9, -5, 0.5);
+        m_dt_la1->set_krr_gamma (-9, -6, 0.5);
         m_dt_la1->train_krr ();
         m_dt_la1->save_net (output_net_fn);
     }

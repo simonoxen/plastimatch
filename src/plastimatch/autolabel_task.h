@@ -21,10 +21,6 @@ public:
     };
 public:
     Task_type task_type;
-public:
-    static Dlib_trainer::Dense_sample_type make_sample (
-        const FloatImageType::Pointer& thumb_img);
-
 };
 
 #endif
