@@ -11,6 +11,7 @@
 #include "itkImageRegionIterator.h"
 #include "itkRegularExpressionSeriesFileNames.h"
 
+#include "autolabel_task.h"
 #include "autolabel_trainer.h"
 #include "dlib_trainer.h"
 #include "file_util.h"
@@ -22,6 +23,7 @@
 
 Autolabel_trainer::Autolabel_trainer ()
 {
+    m_dt_la1 = 0;
     m_dt_tsv1 = 0;
     m_dt_tsv2_x = 0;
     m_dt_tsv2_y = 0;
@@ -29,6 +31,7 @@ Autolabel_trainer::Autolabel_trainer ()
 
 Autolabel_trainer::~Autolabel_trainer ()
 {
+    if (m_dt_la1) delete m_dt_la1;
     if (m_dt_tsv1) delete m_dt_tsv1;
     if (m_dt_tsv2_x) delete m_dt_tsv2_x;
     if (m_dt_tsv2_y) delete m_dt_tsv2_y;
@@ -127,10 +130,12 @@ Autolabel_trainer::load_input_file (
     const char* fcsv_fn)
 {
     printf ("Loading %s\nLoading %s\n---\n", nrrd_fn, fcsv_fn);
+
+    /* Load the pointset */
     Labeled_pointset ps;
     ps.load_fcsv (fcsv_fn);
 
-    /* Load the input image. */
+    /* Load the input image */
     Plm_image *pli;
     pli = plm_image_load (nrrd_fn, PLM_IMG_TYPE_ITK_FLOAT);
 
@@ -155,13 +160,8 @@ Autolabel_trainer::load_input_file (
         for (it = t_map.begin(); it != t_map.end(); ++it) {
             thumb.set_slice_loc (it->second.p[2]);
             FloatImageType::Pointer thumb_img = thumb.make_thumbnail ();
-            itk::ImageRegionIterator< FloatImageType > thumb_it (
-                thumb_img, thumb_img->GetLargestPossibleRegion());
-            Dlib_trainer::Dense_sample_type d;
-            for (int j = 0; j < 256; j++) {
-                d(j) = thumb_it.Get();
-                ++thumb_it;
-            }
+            Dlib_trainer::Dense_sample_type d 
+                = Autolabel_task::make_sample (thumb_img);
 
             if (this->m_dt_tsv1) {
                 this->m_dt_tsv1->m_samples.push_back (d);
@@ -194,13 +194,9 @@ Autolabel_trainer::load_input_file (
                 float loc = pli->origin(2) + i * pli->spacing(2);
                 thumb.set_slice_loc (loc);
                 FloatImageType::Pointer thumb_img = thumb.make_thumbnail ();
-                itk::ImageRegionIterator< FloatImageType > thumb_it (
-                    thumb_img, thumb_img->GetLargestPossibleRegion());
-                Dlib_trainer::Dense_sample_type d;
-                for (int j = 0; j < 256; j++) {
-                    d(j) = thumb_it.Get();
-                    ++thumb_it;
-                }
+                Dlib_trainer::Dense_sample_type d 
+                    = Autolabel_task::make_sample (thumb_img);
+
                 float score = fabs(loc - lla_point[2]);
                 if (score > 30) score = 30;
                 if (this->m_dt_la1) {
@@ -210,7 +206,6 @@ Autolabel_trainer::load_input_file (
             }
         }
     }
-
     delete pli;
 }
 

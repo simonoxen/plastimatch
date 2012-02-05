@@ -8,6 +8,7 @@
 
 #include "autolabel.h"
 #include "autolabel_ransac_est.h"
+#include "autolabel_task.h"
 #include "bstring_util.h"
 #include "dlib_trainer.h"
 #include "itk_image.h"
@@ -64,19 +65,12 @@ autolabel_la1 (Autolabel_parms *parms)
     float best_slice = 0.f;
     for (int i = 0; i < pih.Size(2); i++) {
 
-        /* Create slice thumbnail */
+        /* Create slice thumbnail and dlib sample */
         float loc = pih.m_origin[2] + i * pih.m_spacing[2];
         thumbnail.set_slice_loc (loc);
         FloatImageType::Pointer thumb_img = thumbnail.make_thumbnail ();
-
-        /* Convert to dlib sample type */
-        Dlib_trainer::Dense_sample_type d;
-        FloatIteratorType it (thumb_img, thumb_img->GetLargestPossibleRegion());
-        for (int j = 0; j < 256; j++) {
-            d(j) = it.Get();
-            ++it;
-        }
-
+        Dlib_trainer::Dense_sample_type d 
+            = Autolabel_task::make_sample (thumb_img);
 
         /* Predict the value */
         Pstring label;
@@ -128,18 +122,12 @@ autolabel_tsv1 (Autolabel_parms *parms)
     Plm_image_header pih (&pli);
     for (int i = 0; i < pih.Size(2); i++) {
 
-        /* Create slice thumbnail */
+        /* Create slice thumbnail and dlib sample */
         float loc = pih.m_origin[2] + i * pih.m_spacing[2];
         thumbnail.set_slice_loc (loc);
         FloatImageType::Pointer thumb_img = thumbnail.make_thumbnail ();
-
-        /* Convert to dlib sample type */
-        Dlib_trainer::Dense_sample_type d;
-        FloatIteratorType it (thumb_img, thumb_img->GetLargestPossibleRegion());
-        for (int j = 0; j < 256; j++) {
-            d(j) = it.Get();
-            ++it;
-        }
+        Dlib_trainer::Dense_sample_type d 
+            = Autolabel_task::make_sample (thumb_img);
 
         /* Predict the value */
         Autolabel_point ap;
@@ -190,18 +178,12 @@ autolabel_tsv2 (Autolabel_parms *parms)
     printf ("Looping...\n");
     for (int i = 0; i < pih.Size(2); i++) {
 
-        /* Create slice thumbnail */
+        /* Create slice thumbnail and dlib sample */
         float loc = pih.m_origin[2] + i * pih.m_spacing[2];
         thumbnail.set_slice_loc (loc);
         FloatImageType::Pointer thumb_img = thumbnail.make_thumbnail ();
-
-        /* Convert to dlib sample type */
-        Dlib_trainer::Dense_sample_type d;
-        FloatIteratorType it (thumb_img, thumb_img->GetLargestPossibleRegion());
-        for (int j = 0; j < 256; j++) {
-            d(j) = it.Get();
-            ++it;
-        }
+        Dlib_trainer::Dense_sample_type d 
+            = Autolabel_task::make_sample (thumb_img);
 
         /* Predict the value */
         Pstring label;

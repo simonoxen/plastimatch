@@ -83,6 +83,29 @@ synth_sphere (
 }
 
 static void 
+synth_multi_sphere (
+    float *intens, 
+    unsigned char *label,
+    const FloatPoint3DType& phys, 
+    const Synthetic_mha_parms *parms
+)
+{
+    float f = 0;
+    for (int d = 0; d < 3; d++) {
+	float f1 = phys[d] - parms->sphere_center[d];
+	f1 = f1 / parms->sphere_radius[d];
+	f += f1 * f1;
+    }
+    if (f > 1.0) {
+	*intens = parms->background;
+	*label = 0;
+    } else {
+	*intens = parms->foreground;
+	*label = 1;
+    }
+}
+
+static void 
 synth_enclosed_rect (
     float *intens, 
     unsigned char *label,
@@ -403,18 +426,35 @@ synthetic_mha (
     im_out->SetDirection (itk_dc);
     im_out->Allocate();
 
-    UCharImageType::Pointer uchar_img = UCharImageType::New();
+#if PLM_USE_SS_IMAGE_VEC
+    UCharVecImageType::Pointer ss_img
+        = UCharVecImageType::New();
+    typedef itk::ImageRegionIteratorWithIndex< UCharVecImageType > 
+	UCharVecIteratorType;
+    UCharVecIteratorType ss_img_it;
+#else
+    UCharImageType::Pointer ss_img = UCharImageType::New();
     typedef itk::ImageRegionIteratorWithIndex< UCharImageType > 
 	UCharIteratorType;
-    UCharIteratorType uchar_img_it;
+    UCharIteratorType ss_img_it;
+#endif
     if (parms->m_want_ss_img) {
-	uchar_img->SetRegions (rg);
-	uchar_img->SetOrigin (og);
-	uchar_img->SetSpacing (sp);
-	uchar_img->Allocate();
-	uchar_img_it = UCharIteratorType (uchar_img, 
-	    uchar_img->GetLargestPossibleRegion());
-	uchar_img_it.GoToBegin();
+	ss_img->SetRegions (rg);
+	ss_img->SetOrigin (og);
+	ss_img->SetSpacing (sp);
+#if PLM_USE_SS_IMAGE_VEC
+        int num_uchar = 5;
+	ss_img->SetVectorLength (num_uchar);
+	ss_img->Allocate();
+	ss_img_it = UCharVecIteratorType (ss_img, 
+	    ss_img->GetLargestPossibleRegion());
+	ss_img_it.GoToBegin();
+#else
+	ss_img->Allocate();
+	ss_img_it = UCharIteratorType (ss_img, 
+	    ss_img->GetLargestPossibleRegion());
+	ss_img_it.GoToBegin();
+#endif
     }
 
     FloatImageType::Pointer dose_img = FloatImageType::New();
@@ -454,6 +494,9 @@ synthetic_mha (
 	case PATTERN_SPHERE:
 	    synth_sphere (&intens, &label_uchar, phys, parms);
 	    break;
+	case PATTERN_MULTI_SPHERE:
+	    synth_multi_sphere (&intens, &label_uchar, phys, parms);
+	    break;
 	case PATTERN_ENCLOSED_RECT:
 	    synth_enclosed_rect (&intens, &label_uchar, phys, parms);
 	    break;
@@ -474,8 +517,8 @@ synthetic_mha (
 
 	/* Set structure */
 	if (parms->m_want_ss_img) {
-	    uchar_img_it.Set (label_uchar); 
-	    ++uchar_img_it;
+	    ss_img_it.Set (label_uchar); 
+	    ++ss_img_it;
 	}
 
 	/* Set dose */
@@ -512,7 +555,7 @@ synthetic_mha (
     if (parms->m_want_ss_img) {
 	rtds->m_ss_image = new Rtss (rtds);
 	rtds->m_ss_image->m_ss_img = new Plm_image;
-	rtds->m_ss_image->m_ss_img->set_itk (uchar_img);
+	rtds->m_ss_image->m_ss_img->set_itk (ss_img);
     }
     if (parms->m_want_dose_img) {
 	rtds->m_dose = new Plm_image;

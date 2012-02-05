@@ -217,6 +217,9 @@ parse_fn (
     else if (arg == "sphere") {
 	sm_parms->pattern = PATTERN_SPHERE;
     }
+    else if (arg == "multi-sphere") {
+	sm_parms->pattern = PATTERN_MULTI_SPHERE;
+    }
     else if (arg == "osd") {
 	sm_parms->pattern = PATTERN_OBJSTRUCTDOSE;
     }

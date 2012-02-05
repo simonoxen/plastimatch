@@ -305,6 +305,7 @@ endif ()
 
 set (PLASTIMATCH1_LIBRARY_SRC
   autolabel.cxx autolabel.h 
+  autolabel_task.cxx autolabel_task.h 
   autolabel_trainer.cxx autolabel_trainer.h 
   autolabel_ransac_est.cxx autolabel_ransac_est.h 
   astroid_dose.cxx astroid_dose.h

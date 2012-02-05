@@ -2488,8 +2488,8 @@ if (PLM_USE_SS_IMAGE_VEC)
     "1971"
     "1971"
     )
-set_tests_properties (plm-warp-f-stats-2 PROPERTIES DEPENDS plm-warp-f)
-set_tests_properties (plm-warp-f-check-2 PROPERTIES DEPENDS plm-warp-f-stats-2)
+  set_tests_properties (plm-warp-f-stats-2 PROPERTIES DEPENDS plm-warp-f)
+  set_tests_properties (plm-warp-f-check-2 PROPERTIES DEPENDS plm-warp-f-stats-2)
 else ()
   # Don't bother
 endif ()

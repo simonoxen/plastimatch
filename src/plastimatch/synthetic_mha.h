@@ -14,6 +14,7 @@ enum Pattern_type {
     PATTERN_GAUSS,
     PATTERN_RECT,
     PATTERN_SPHERE,
+    PATTERN_MULTI_SPHERE,
     PATTERN_ENCLOSED_RECT,
     PATTERN_OBJSTRUCTDOSE,
     PATTERN_DONUT
@@ -37,6 +38,9 @@ public:
 
     float background;
     float foreground;
+    bool m_want_ss_img;
+    bool m_want_dose_img;
+
     float gauss_center[3];
     float gauss_std[3];
     float rect_size[6];
@@ -49,10 +53,9 @@ public:
     float enclosed_intens_f1, enclosed_intens_f2;
     float enclosed_xlat1[3], enclosed_xlat2[3];
 
-    bool m_want_ss_img;
-    bool m_want_dose_img;
-
     Pattern_structset_type pattern_ss;
+
+    int num_multi_sphere;
 
 public:
     Synthetic_mha_parms () {
@@ -70,19 +73,20 @@ public:
 	}
 	background = -1000.0f;
 	foreground = 0.0f;
+	m_want_ss_img = false;
+	m_want_dose_img = false;
 	rect_size[0] = -50.0f;
 	rect_size[1] = +50.0f;
 	rect_size[2] = -50.0f;
 	rect_size[3] = +50.0f;
 	rect_size[4] = -50.0f;
 	rect_size[5] = +50.0f;
-	m_want_ss_img = false;
-	m_want_dose_img = false;
 	donut_radius[0] = 50.0f;
 	donut_radius[1] = 50.0f;
 	donut_radius[2] = 20.0f;
 	donut_rings = 2;
 	pattern_ss = PATTERN_SS_ONE;
+        num_multi_sphere = 33;
     }
 };
 
