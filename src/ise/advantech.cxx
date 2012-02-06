@@ -28,10 +28,8 @@ Advantech::Advantech ()
     /* Find number of devices */
     rc = DRV_DeviceGetNumOfList(&num_devices);
     if (rc != SUCCESS) {
-	char error_msg[80];
-	DRV_GetErrorMessage (rc, error_msg);
-	printf ("DRV_DeviceGetNumOfList returned %d (%s)\n",
-	    rc, error_msg);
+	printf ("Error enumerating Advantech devices (1)\n");
+	Advantech::print_error (rc);
 	exit (-1);
     }
     printf ("Advantech: %d devices found.\n", (int) num_devices);
@@ -41,10 +39,8 @@ Advantech::Advantech ()
     SHORT num_out_entries;
     rc = DRV_DeviceGetList (device_list, num_devices, &num_out_entries);
     if (rc != SUCCESS) {
-	char error_msg[80];
-	DRV_GetErrorMessage (rc, (LPSTR)error_msg);
-	printf ("DRV_DeviceGetNumOfList returned %d (%s)\n",
-	    rc, error_msg);
+	printf ("Error enumerating Advantech devices (2)\n");
+	Advantech::print_error (rc);
 	exit (-1);
     }
 
@@ -57,7 +53,7 @@ Advantech::Advantech ()
 	if (!device_name.compare (0, usb_device_name.size(), usb_device_name))
 	{
 	    if (!this->have_device) {
-		printf ("  >> found USB-4761 at device %d\n", 
+		printf ("  >> Trying to connect to USB-4761 at device %d\n", 
 		    device_list[i].dwDeviceNum);
 		this->have_device = true;
 		this->device_number = device_list[i].dwDeviceNum;
@@ -72,6 +68,16 @@ Advantech::Advantech ()
 
     /* Open the device */
     rc = DRV_DeviceOpen (this->device_number, &this->driver_handle);
+    if (rc != SUCCESS) {
+	this->have_device = false;
+	printf ("Error opening Advantech device\n");
+	Advantech::print_error (rc);
+	if (rc == 8193) {
+	    printf ("USB device not connected?\n");
+	}
+	exit (-1);
+    }
+    printf ("Connected to USB-4761.\n");
 }
 
 Advantech::~Advantech ()
@@ -79,6 +85,38 @@ Advantech::~Advantech ()
     if (this->have_device) {
 	DRV_DeviceClose (&this->driver_handle);
     }
+}
+
+void 
+Advantech::relay_close ()
+{
+    LRESULT rc;
+    PT_DioWriteBit ptDioWriteBit;
+    ptDioWriteBit.port  = 0;
+    ptDioWriteBit.bit   = 0;
+    ptDioWriteBit.state = 0;
+    rc = DRV_DioWriteBit(
+	this->driver_handle, (LPT_DioWriteBit)&ptDioWriteBit);
+}
+
+void 
+Advantech::relay_open ()
+{
+    LRESULT rc;
+    PT_DioWriteBit ptDioWriteBit;
+    ptDioWriteBit.port  = 0;
+    ptDioWriteBit.bit   = 0;
+    ptDioWriteBit.state = 1;
+    rc = DRV_DioWriteBit (
+	this->driver_handle, (LPT_DioWriteBit)&ptDioWriteBit);
+}
+
+void 
+Advantech::print_error (LRESULT ErrorCode)
+{
+    char error_msg[80];
+    DRV_GetErrorMessage (ErrorCode, error_msg);
+    printf ("Error %d: %s\n", ErrorCode, error_msg);
 }
 
 void

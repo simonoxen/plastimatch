@@ -15,6 +15,10 @@ public:
     bool have_device;
     ULONG device_number;
     LONG driver_handle;
+public:
+    void relay_open ();
+    void relay_close ();
+    static void print_error (LRESULT ErrorCode);
 };
 
 #endif
