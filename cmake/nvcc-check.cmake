@@ -9,6 +9,8 @@
 #   * If not 4.3, we look for gcc-4.3 on the system
 #   * If found we tell nvcc to use it
 #   * If not found, we kill CMake and tell user to install gcc-4.3
+#   * Checks for NVCC 3.2
+#   * If found, we add -fpermissive to NVCCFLAGS
 # 
 # NOTE: If nvcc tries to use gcc-4.4 (for example) the build simply
 #       fails.  Ending things at CMake with a request for gcc-4.3
@@ -21,12 +23,12 @@ IF(CUDA_FOUND)
             # Get the gcc version number
             EXEC_PROGRAM(gcc ARGS "-dumpversion" OUTPUT_VARIABLE GCCVER)
 
-            # Get major and minor revs
+            # Get gcc's major and minor revs
             STRING(REGEX REPLACE "([0-9]+).[0-9]+.[0-9]+" "\\1" GCCVER_MAJOR "${GCCVER}")
             STRING(REGEX REPLACE "[0-9]+.([0-9]+).[0-9]+" "\\1" GCCVER_MINOR "${GCCVER}")
             STRING(REGEX REPLACE "[0-9]+.[0-9]+.([0-9]+)" "\\1" GCCVER_PATCH "${GCCVER}")
 
-#            MESSAGE(STATUS "nvcc-check: GCC Version is ${GCCVER_MAJOR}.${GCCVER_MINOR}.${GCCVER_PATCH}")
+            #            MESSAGE(STATUS "nvcc-check: GCC Version is ${GCCVER_MAJOR}.${GCCVER_MINOR}.${GCCVER_PATCH}")
 
             IF(GCCVER_MAJOR MATCHES "4")
                 IF(GCCVER_MINOR MATCHES "3")
@@ -48,7 +50,26 @@ IF(CUDA_FOUND)
 
         # For CUDA 3.2: surface_functions.h does some non-compliant things...
         #               so we tell g++ to ignore them when called via nvcc
-        SET (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --compiler-options='-fpermissive')
+        #               by passing the -fpermissive flag through the nvcc
+        #               build trajectory.  Unfortunately, nvcc will also
+        #               blindly pass this flag to gcc, even though it is not
+        #               valid... resulting in TONS of warnings.  So, we go
+        #               version checking again, this time nvcc...
+        # Get the nvcc version number
+        EXEC_PROGRAM(nvcc ARGS "--version" OUTPUT_VARIABLE NVCCVER)
+
+        # Get gcc's major and minor revs
+        STRING(REGEX REPLACE ".*release ([0-9]+).[0-9].*" "\\1" NVCCVER_MAJOR "${NVCCVER}")
+        STRING(REGEX REPLACE ".*release [0-9]+.([0-9]).*" "\\1" NVCCVER_MINOR "${NVCCVER}")
+        #        MESSAGE(STATUS "nvcc-check: NVCC Version is ${NVCCVER_MAJOR}.${NVCCVER_MINOR}")
+
+        IF(NVCCVER_MAJOR MATCHES "3")
+            IF(NVCCVER_MINOR MATCHES "2")
+                MESSAGE(STATUS "nvcc-check: Found nvcc-${NVCCVER_MAJOR}.${NVCCVER_MINOR}...")
+                SET (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --compiler-options='-fpermissive')
+                MESSAGE(STATUS "nvcc-check: CUDA_NVCC_FLAGS set to \"${CUDA_NVCC_FLAGS}\"")
+            ENDIF()
+        ENDIF()
 
         ENDIF(CMAKE_COMPILER_IS_GNUCC)
     ENDIF(CMAKE_SYSTEM_NAME MATCHES "Linux")
