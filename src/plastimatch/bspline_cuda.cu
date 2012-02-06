@@ -18,6 +18,11 @@
 #include "mha_io.h"
 #include "volume.h"
 
+// For CUDA Toolkits < 4.0
+#ifndef cudaTextureType1D
+    #define cudaTextureType1D 0x01
+#endif
+
 // Define file-scope textures
 texture<float, cudaTextureType1D, cudaReadModeElementType> tex_moving_image;
 texture<float, cudaTextureType1D, cudaReadModeElementType> tex_coeff;
