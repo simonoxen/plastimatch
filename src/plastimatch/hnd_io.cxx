@@ -104,6 +104,9 @@ hnd_load (Proj_image *proj, const char *fn, const double xy_offset[2])
     long dl, diff = 0l;
     uint32_t i;
 
+    /* JAS 2012.02.06 -- Use a bit bucket to supress compiler warnings */
+    size_t bit_bucket;
+
     /* GCS FIX: This is hard coded during debug */
     //double xy_offset[2] = { -2.21 * 4, 0.24 * 4 };  // Good values for test
 
@@ -118,66 +121,66 @@ hnd_load (Proj_image *proj, const char *fn, const double xy_offset[2])
         print_and_exit ("Cannot open %s for read\n", fn);
     }
 
-    fread ((void *) hnd.sFileType, sizeof(char), 32, fp);
-    fread ((void *) &hnd.FileLength, sizeof(uint32_t), 1, fp);
-    fread ((void *) hnd.sChecksumSpec, sizeof(char), 4, fp);
-    fread ((void *) &hnd.nCheckSum, sizeof(uint32_t), 1, fp);
-    fread ((void *) hnd.sCreationDate, sizeof(char), 8, fp);
-    fread ((void *) hnd.sCreationTime, sizeof(char), 8, fp);
-    fread ((void *) hnd.sPatientID, sizeof(char), 16, fp);
-    fread ((void *) &hnd.nPatientSer, sizeof(uint32_t), 1, fp);
-    fread ((void *) hnd.sSeriesID, sizeof(char), 16, fp);
-    fread ((void *) &hnd.nSeriesSer, sizeof(uint32_t), 1, fp);
-    fread ((void *) hnd.sSliceID, sizeof(char), 16, fp);
-    fread ((void *) &hnd.nSliceSer, sizeof(uint32_t), 1, fp);
-    fread ((void *) &hnd.SizeX, sizeof(uint32_t), 1, fp);
-    fread ((void *) &hnd.SizeY, sizeof(uint32_t), 1, fp);
-    fread ((void *) &hnd.dSliceZPos, sizeof(double), 1, fp);
-    fread ((void *) hnd.sModality, sizeof(char), 16, fp);
-    fread ((void *) &hnd.nWindow, sizeof(uint32_t), 1, fp);
-    fread ((void *) &hnd.nLevel, sizeof(uint32_t), 1, fp);
-    fread ((void *) &hnd.nPixelOffset, sizeof(uint32_t), 1, fp);
-    fread ((void *) hnd.sImageType, sizeof(char), 4, fp);
-    fread ((void *) &hnd.dGantryRtn, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dSAD, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dSFD, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dCollX1, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dCollX2, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dCollY1, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dCollY2, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dCollRtn, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dFieldX, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dFieldY, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dBladeX1, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dBladeX2, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dBladeY1, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dBladeY2, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dIDUPosLng, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dIDUPosLat, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dIDUPosVrt, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dIDUPosRtn, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dPatientSupportAngle, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dTableTopEccentricAngle, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dCouchVrt, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dCouchLng, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dCouchLat, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dIDUResolutionX, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dIDUResolutionY, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dImageResolutionX, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dImageResolutionY, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dEnergy, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dDoseRate, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dXRayKV, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dXRayMA, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dMetersetExposure, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dAcqAdjustment, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dCTProjectionAngle, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dCTNormChamber, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dGatingTimeTag, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dGating4DInfoX, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dGating4DInfoY, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dGating4DInfoZ, sizeof(double), 1, fp);
-    fread ((void *) &hnd.dGating4DInfoTime, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) hnd.sFileType, sizeof(char), 32, fp);
+    bit_bucket = fread ((void *) &hnd.FileLength, sizeof(uint32_t), 1, fp);
+    bit_bucket = fread ((void *) hnd.sChecksumSpec, sizeof(char), 4, fp);
+    bit_bucket = fread ((void *) &hnd.nCheckSum, sizeof(uint32_t), 1, fp);
+    bit_bucket = fread ((void *) hnd.sCreationDate, sizeof(char), 8, fp);
+    bit_bucket = fread ((void *) hnd.sCreationTime, sizeof(char), 8, fp);
+    bit_bucket = fread ((void *) hnd.sPatientID, sizeof(char), 16, fp);
+    bit_bucket = fread ((void *) &hnd.nPatientSer, sizeof(uint32_t), 1, fp);
+    bit_bucket = fread ((void *) hnd.sSeriesID, sizeof(char), 16, fp);
+    bit_bucket = fread ((void *) &hnd.nSeriesSer, sizeof(uint32_t), 1, fp);
+    bit_bucket = fread ((void *) hnd.sSliceID, sizeof(char), 16, fp);
+    bit_bucket = fread ((void *) &hnd.nSliceSer, sizeof(uint32_t), 1, fp);
+    bit_bucket = fread ((void *) &hnd.SizeX, sizeof(uint32_t), 1, fp);
+    bit_bucket = fread ((void *) &hnd.SizeY, sizeof(uint32_t), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dSliceZPos, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) hnd.sModality, sizeof(char), 16, fp);
+    bit_bucket = fread ((void *) &hnd.nWindow, sizeof(uint32_t), 1, fp);
+    bit_bucket = fread ((void *) &hnd.nLevel, sizeof(uint32_t), 1, fp);
+    bit_bucket = fread ((void *) &hnd.nPixelOffset, sizeof(uint32_t), 1, fp);
+    bit_bucket = fread ((void *) hnd.sImageType, sizeof(char), 4, fp);
+    bit_bucket = fread ((void *) &hnd.dGantryRtn, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dSAD, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dSFD, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dCollX1, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dCollX2, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dCollY1, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dCollY2, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dCollRtn, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dFieldX, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dFieldY, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dBladeX1, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dBladeX2, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dBladeY1, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dBladeY2, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dIDUPosLng, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dIDUPosLat, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dIDUPosVrt, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dIDUPosRtn, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dPatientSupportAngle, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dTableTopEccentricAngle, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dCouchVrt, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dCouchLng, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dCouchLat, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dIDUResolutionX, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dIDUResolutionY, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dImageResolutionX, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dImageResolutionY, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dEnergy, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dDoseRate, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dXRayKV, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dXRayMA, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dMetersetExposure, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dAcqAdjustment, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dCTProjectionAngle, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dCTNormChamber, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dGatingTimeTag, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dGating4DInfoX, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dGating4DInfoY, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dGating4DInfoZ, sizeof(double), 1, fp);
+    bit_bucket = fread ((void *) &hnd.dGating4DInfoTime, sizeof(double), 1, fp);
 
     printf ("%s %f\n",  fn, hnd.dCTProjectionAngle);
 
@@ -188,17 +191,17 @@ hnd_load (Proj_image *proj, const char *fn, const double xy_offset[2])
 
     /* Read LUT */
     fseek (fp, 1024, SEEK_SET);
-    fread (pt_lut, sizeof(unsigned char), (hnd.SizeY-1)*hnd.SizeX / 4, fp);
+    bit_bucket = fread (pt_lut, sizeof(unsigned char), (hnd.SizeY-1)*hnd.SizeX / 4, fp);
 
     /* Read first row */
     for (i = 0; i < hnd.SizeX; i++) {
-	fread (&a, sizeof(uint32_t), 1, fp);
+	bit_bucket = fread (&a, sizeof(uint32_t), 1, fp);
 	buf[i] = a;
 	b = a;
     }
 
     /* Read first pixel of second row */
-    fread (&a, sizeof(uint32_t), 1, fp);
+    bit_bucket = fread (&a, sizeof(uint32_t), 1, fp);
     buf[i++] = a;
     b = a;
     

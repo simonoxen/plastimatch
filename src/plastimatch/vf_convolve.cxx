@@ -25,7 +25,7 @@ vf_convolve_x (Volume* vf_out, Volume* vf_in, float* ker, int width)
 		size_t i, i1;	    /* i is the offset in the vf */
 		size_t j, j1, j2;   /* j is the index of the kernel */
 		int d;		    /* d is the vector field direction */
-		float *vin = &in_img[3*v];
+//		float *vin = &in_img[3*v];
 		float *vout = &out_img[3*v];
 
 		if (x < half_width) {

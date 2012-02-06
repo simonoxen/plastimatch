@@ -42,7 +42,9 @@ demons (
     DEMONS_Parms* parms
 )
 {
+#if (CUDA_FOUND || OPENCL_FOUND)
     Volume* tmp;
+#endif
     Demons_state demons_state;
 
     LOAD_LIBRARY (libplmcuda);

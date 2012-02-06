@@ -14,7 +14,7 @@
 void
 vf_analyze (Volume* vol)
 {
-    int d, i, j, k, v;
+    size_t d, i, j, k, v;
     float* img = (float*) vol->img;
     float mean_av[3], mean_v[3];
     float mins[3];
@@ -114,7 +114,7 @@ vf_print_stats (Volume* vol)
 void
 vf_analyze_strain (Volume* vol)
 {
-    int i, j, k;
+    size_t i, j, k;
     float* img = (float*) vol->img;
     float total_energy, max_energy;
     float min_dilation = 0.f, max_dilation = 0.f;
@@ -206,7 +206,7 @@ vf_analyze_strain (Volume* vol)
 void
 vf_analyze_jacobian (Volume* vol)
 {
-    int i, j, k;
+    size_t i, j, k;
     float* img = (float*) vol->img;
     float min_jacobian = 0.f, max_jacobian = 0.f, min_abs_jacobian = 0.f;
     int min_abs_jacobian_loc[3] = {0, 0, 0};;
@@ -282,7 +282,7 @@ vf_analyze_jacobian (Volume* vol)
 void
 vf_analyze_second_deriv (Volume* vol)
 {
-    int i, j, k;
+    size_t i, j, k;
     float* img = (float*) vol->img;
     
     float min_sec_der = 0.f, max_sec_der = 0.f, total_sec_der = 0.f;
@@ -409,7 +409,7 @@ vf_analyze_second_deriv (Volume* vol)
 void
 vf_analyze_mask (Volume* vol, Volume *mask)
 {
-    int d, i, j, k, v;
+    size_t d, i, j, k, v;
     int mask_npixels = 0;
     float* img = (float*) vol->img;
     unsigned char* maskimg = (unsigned char*) mask->img;
@@ -456,7 +456,7 @@ vf_analyze_mask (Volume* vol, Volume *mask)
 void
 vf_analyze_strain_mask (Volume* vol, Volume* mask)
 {
-    int i, j, k;
+    size_t i, j, k;
     float* img = (float*) vol->img;
     unsigned char*  maskimg = (unsigned char*) mask->img;
     float min_dilation = 0.f, max_dilation = 0.f;

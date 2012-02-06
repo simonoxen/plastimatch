@@ -17,8 +17,6 @@
 //       * Add: Multi-Volume / Layered Rendering System
 //       * Add: Qt Designer hooks
 
-#define ROUND_INT(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
-
 /* This just determines the amount of black space
  * a portal has within it */
 #define FIELD_RES 4096

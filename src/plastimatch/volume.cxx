@@ -496,7 +496,9 @@ volume_scale (Volume* vol, float scale)
 void
 volume_calc_grad_no_dcos (Volume* vout, const Volume* vref)
 {
-    int i_p, i, i_n, j_p, j, j_n, k_p, k, k_n; /* p is prev, n is next */
+    size_t i, j, k;
+    size_t i_n, j_n, k_n;       /* n is next */
+    int i_p, j_p, k_p;          /* p is prev */
     size_t gi, gj, gk;
     size_t idx_p, idx_n;
     float *out_img, *ref_img;
@@ -542,7 +544,9 @@ volume_calc_grad_no_dcos (Volume* vout, const Volume* vref)
 void
 volume_calc_grad_dcos (Volume* vout, const Volume* vref)
 {
-    int i_p, i, i_n, j_p, j, j_n, k_p, k, k_n; /* p is prev, n is next */
+    size_t i, j, k;
+    size_t i_n, j_n, k_n;       /* n is next */
+    int i_p, j_p, k_p;          /* p is prev */
     size_t gi, gj, gk;
     size_t idx_p, idx_n;
     float *out_img, *ref_img;
@@ -672,7 +676,7 @@ volume_make_gradient (Volume* ref)
 Volume*
 volume_difference (Volume* vol, Volume* warped)
 {
-    int i, j, k;
+    size_t i, j, k;
     int p = 0; // Voxel index
     short* temp2;
     short* temp1;

@@ -114,7 +114,7 @@ reg_update_grad (
     const Bspline_xform* bxf
 )
 {
-    int kidx, sidx;
+    size_t kidx, sidx;
 
     for (kidx=0; kidx < (bxf->cdims[0] * bxf->cdims[1] * bxf->cdims[2]); kidx++) {
         for (sidx=0; sidx<64; sidx++) {
@@ -523,7 +523,7 @@ vf_regularize_analytic_omp (
     const Bspline_regularize_state* rst,
     const Bspline_xform* bxf)
 {
-    long i;
+    unsigned long i;
     size_t n;
     Plm_timer timer;
 

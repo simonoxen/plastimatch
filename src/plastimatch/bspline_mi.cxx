@@ -631,7 +631,7 @@ mi_hist_score_omp (BSPLINE_MI_Hist* mi_hist, int num_vox)
     double* m_hist = mi_hist->m_hist;
     double* j_hist = mi_hist->j_hist;
 
-    int f_bin, m_bin, j_bin;
+    size_t f_bin, m_bin, j_bin;
     double fnv = (double) num_vox;
     double score = 0;
     double hist_thresh = 0.001 / (mi_hist->moving.bins * mi_hist->fixed.bins);
@@ -711,11 +711,11 @@ void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_base, int iter)
     int graph_bar_height = 100;
     int graph_bar_width = 5;
     int graph_bar_spacing = (int)((float)graph_bar_width * (7.0/5.0));
-    int graph_color_levels = 22;
+    size_t graph_color_levels = 22;
 
     //  int fixed_bar_height;   // max bar height (pixels)
     //  int moving_bar_height;
-    int joint_color;
+    size_t joint_color;
 
     float fixed_scale;  // pixels per amt
     float moving_scale;
@@ -859,7 +859,7 @@ void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_base, int iter)
     z = 0;
     for(j=0; j<mi_hist->fixed.bins; j++) {
         for(i=0; i<mi_hist->moving.bins; i++) {
-            joint_color = (int)(j_hist[z++] * joint_scale);
+            joint_color = (size_t)(j_hist[z++] * joint_scale);
             if (joint_color > 0) {
                 // special handling for bin 0
                 if (joint_color > graph_color_levels) {
@@ -1442,8 +1442,7 @@ bspline_mi_pvi_6_dc_dv (
    ----------------------------------------------------------------------- */
 
 /* JAS 2010.11.30
- * This is an intentionally bad idea and will be removed as soon the paper I'm
- * writing sees some ink.
+ * This is an intentionally bad idea -- proof of concept code
  * 
  * B-Spline Registration using Mutual Information
  * Implementation F (not good... only for comparison to E)
@@ -1464,7 +1463,7 @@ bspline_score_f_mi (Bspline_parms *parms,
 {
     Bspline_score* ssd = &bst->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
-    int pidx;
+    size_t pidx;
     float num_vox_f;
     Plm_timer timer;
 
@@ -1813,17 +1812,17 @@ bspline_score_e_mi (
     j_locks = (omp_lock_t*) malloc (mi_hist->fixed.bins * mi_hist->moving.bins * sizeof(omp_lock_t));
 
 #pragma omp parallel for
-    for (long i=0; i < mi_hist->fixed.bins; i++) {
+    for (unsigned long i=0; i < mi_hist->fixed.bins; i++) {
         omp_init_lock(&f_locks[i]);
     }
 
 #pragma omp parallel for
-    for (long i=0; i < mi_hist->moving.bins; i++) {
+    for (unsigned long i=0; i < mi_hist->moving.bins; i++) {
         omp_init_lock(&m_locks[i]);
     }
 
 #pragma omp parallel for
-    for (long i=0; i < mi_hist->fixed.bins * mi_hist->moving.bins; i++) {
+    for (unsigned long i=0; i < mi_hist->fixed.bins * mi_hist->moving.bins; i++) {
         omp_init_lock(&j_locks[i]);
     }
     /* ---------------------------------------------------- */
@@ -1900,7 +1899,7 @@ bspline_score_e_mi (
     }   // openmp
 
     /* Compute num_vox and find fullest fixed hist bin */
-    for (long i=0; i<mi_hist->fixed.bins; i++) {
+    for (unsigned long i=0; i<mi_hist->fixed.bins; i++) {
         if (f_hist[i] > f_hist[mi_hist->fixed.big_bin]) {
             mi_hist->fixed.big_bin = i;
         }
@@ -1908,7 +1907,7 @@ bspline_score_e_mi (
     }
 
     /* Fill in the missing histogram bin */
-    for (long i=0; i<mi_hist->moving.bins; i++) {
+    for (unsigned long i=0; i<mi_hist->moving.bins; i++) {
         mhis += m_hist[i];
     }
     m_hist[mi_hist->moving.big_bin] = (double)ssd->num_vox - mhis;
@@ -1916,7 +1915,7 @@ bspline_score_e_mi (
 
     /* Look for the biggest moving histogram bin */
 //    printf ("moving.big_bin [%i -> ", mi_hist->moving.big_bin);
-    for (long i=0; i<mi_hist->moving.bins; i++) {
+    for (unsigned long i=0; i<mi_hist->moving.bins; i++) {
         if (m_hist[i] > m_hist[mi_hist->moving.big_bin]) {
             mi_hist->moving.big_bin = i;
         }
@@ -1925,8 +1924,8 @@ bspline_score_e_mi (
 
 
     /* Fill in the missing jnt hist bin */
-    for (long j=0; j<mi_hist->fixed.bins; j++) {
-        for (long i=0; i<mi_hist->moving.bins; i++) {
+    for (unsigned long j=0; j<mi_hist->fixed.bins; j++) {
+        for (unsigned long i=0; i<mi_hist->moving.bins; i++) {
             jhis += j_hist[j*mi_hist->moving.bins + i];
         }
     }
@@ -1935,8 +1934,8 @@ bspline_score_e_mi (
     
     /* Look for the biggest joint histogram bin */
 //    printf ("joint.big_bin [%i -> ", mi_hist->joint.big_bin);
-    for (long j=0; j<mi_hist->fixed.bins; j++) {
-        for (long i=0; i<mi_hist->moving.bins; i++) {
+    for (unsigned long j=0; j<mi_hist->fixed.bins; j++) {
+        for (unsigned long i=0; i<mi_hist->moving.bins; i++) {
             if (j_hist[j*mi_hist->moving.bins + i] > j_hist[mi_hist->joint.big_bin]) {
                 mi_hist->joint.big_bin = j*mi_hist->moving.bins + i;
             }
@@ -1954,7 +1953,7 @@ bspline_score_e_mi (
     /* Display histrogram stats in debug mode */
     if (parms->debug) {
         double tmp;
-	long zz;
+        unsigned long zz;
         for (zz=0,tmp=0; zz < mi_hist->fixed.bins; zz++) {
             tmp += f_hist[zz];
         }
@@ -2072,17 +2071,17 @@ bspline_score_e_mi (
 
 
 #pragma omp parallel for
-    for (long i=0; i < mi_hist->fixed.bins; i++) {
+    for (unsigned long i=0; i < mi_hist->fixed.bins; i++) {
         omp_destroy_lock(&f_locks[i]);
     }
 
 #pragma omp parallel for
-    for (long i=0; i < mi_hist->moving.bins; i++) {
+    for (unsigned long i=0; i < mi_hist->moving.bins; i++) {
         omp_destroy_lock(&m_locks[i]);
     }
 
 #pragma omp parallel for
-    for (long i=0; i < mi_hist->fixed.bins * mi_hist->moving.bins; i++) {
+    for (unsigned long i=0; i < mi_hist->fixed.bins * mi_hist->moving.bins; i++) {
         omp_destroy_lock(&j_locks[i]);
     }
 

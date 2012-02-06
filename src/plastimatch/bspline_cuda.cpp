@@ -442,7 +442,7 @@ bspline_update_grad_b_inline (Bspline_state* bst, Bspline_xform* bxf,
 
 static void display_hist_totals (BSPLINE_MI_Hist *mi_hist)
 {
-    int i;
+    size_t i;
     double tmp = 0;
 
     for (i=0, tmp=0; i < mi_hist->fixed.bins; i++) {
@@ -542,7 +542,7 @@ CPU_MI_Score (BSPLINE_MI_Hist* mi_hist, int num_vox)
     double* m_hist = mi_hist->m_hist;
     double* j_hist = mi_hist->j_hist;
 
-    int i, j, v;
+    size_t i, j, v;
     double fnv = (double) num_vox;
     double score = 0;
     float hist_thresh = 0.001 / (mi_hist->moving.bins * mi_hist->fixed.bins);
