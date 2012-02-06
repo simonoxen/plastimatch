@@ -52,6 +52,23 @@ stog_memcpy (
     int set_size
 );
 
+void
+CUDA_array2vec_3D (
+    int3* vec,
+    int* array
+);
+
+void
+CUDA_array2vec_3D (
+    int3* vec,
+    size_t* array
+);
+
+void
+CUDA_array2vec_3D (
+    float3* vec,
+    float* array
+);
 
 #if defined __cplusplus
 extern "C" {

@@ -20,7 +20,38 @@
 //       __device__ functions cannot be placed in here due to nvcc limitations.
 //       Please place __device__ functions in cuda_kernel_util.inc
 
+void
+CUDA_array2vec_3D (
+    int3* vec,
+    int* array
+)
+{
+    vec->x = array[0];
+    vec->y = array[1];
+    vec->z = array[2];
+}
 
+void
+CUDA_array2vec_3D (
+    int3* vec,
+    size_t* array
+)
+{
+    vec->x = array[0];
+    vec->y = array[1];
+    vec->z = array[2];
+}
+
+void
+CUDA_array2vec_3D (
+    float3* vec,
+    float* array
+)
+{
+    vec->x = array[0];
+    vec->y = array[1];
+    vec->z = array[2];
+}
 
 // Builds execution configurations for kernels that
 // assign one thread per element (1tpe).

@@ -19,11 +19,11 @@
 #include "volume.h"
 
 // Define file-scope textures
-texture<float, 1, cudaReadModeElementType> tex_moving_image;
-texture<float, 1, cudaReadModeElementType> tex_coeff;
-texture<float, 1, cudaReadModeElementType> tex_LUT_Bspline_x;
-texture<float, 1, cudaReadModeElementType> tex_LUT_Bspline_y;
-texture<float, 1, cudaReadModeElementType> tex_LUT_Bspline_z;
+texture<float, cudaTextureType1D, cudaReadModeElementType> tex_moving_image;
+texture<float, cudaTextureType1D, cudaReadModeElementType> tex_coeff;
+texture<float, cudaTextureType1D, cudaReadModeElementType> tex_LUT_Bspline_x;
+texture<float, cudaTextureType1D, cudaReadModeElementType> tex_LUT_Bspline_y;
+texture<float, cudaTextureType1D, cudaReadModeElementType> tex_LUT_Bspline_z;
 ////////////////////////////////////////////////////////////
 
 
@@ -37,25 +37,25 @@ build_gbd (
 {
     if (bxf != NULL) {
         // populate bxf entries
-        memcpy (&gbd->rdims, bxf->rdims, 3*sizeof(int));
-        memcpy (&gbd->cdims, bxf->cdims, 3*sizeof(int));
-        memcpy (&gbd->img_origin, bxf->img_origin, 3*sizeof(float));
-        memcpy (&gbd->img_spacing, bxf->img_spacing, 3*sizeof(float));
-        memcpy (&gbd->roi_dim, bxf->roi_dim, 3*sizeof(int));
-        memcpy (&gbd->roi_offset, bxf->roi_offset, 3*sizeof(int));
-        memcpy (&gbd->vox_per_rgn, bxf->vox_per_rgn, 3*sizeof(int));
+        CUDA_array2vec_3D (&gbd->rdims, bxf->rdims);
+        CUDA_array2vec_3D (&gbd->cdims, bxf->cdims);
+        CUDA_array2vec_3D (&gbd->img_origin, bxf->img_origin);
+        CUDA_array2vec_3D (&gbd->img_spacing, bxf->img_spacing);
+        CUDA_array2vec_3D (&gbd->roi_dim, bxf->roi_dim);
+        CUDA_array2vec_3D (&gbd->roi_offset, bxf->roi_offset);
+        CUDA_array2vec_3D (&gbd->vox_per_rgn, bxf->vox_per_rgn);
     }
 
     if (fixed != NULL) {
         // populate fixed volume entries
-        memcpy (&gbd->fix_dim, fixed->dim, 3*sizeof(int));
+        CUDA_array2vec_3D (&gbd->fix_dim, fixed->dim);
     }
 
     if (moving != NULL) {
         // populate moving volume entries
-        memcpy (&gbd->mov_dim, moving->dim, 3*sizeof(int));
-        memcpy (&gbd->mov_offset, moving->offset, 3*sizeof(float));
-        memcpy (&gbd->mov_spacing, moving->spacing, 3*sizeof(float));
+        CUDA_array2vec_3D (&gbd->mov_dim, moving->dim);
+        CUDA_array2vec_3D (&gbd->mov_offset, moving->offset);
+        CUDA_array2vec_3D (&gbd->mov_spacing, moving->spacing);
     }
     
 }
@@ -1513,7 +1513,7 @@ CUDA_bspline_mse_pt2 (
 #endif
 
     // --- RETREIVE THE SCORE FROM GPU --------------------------
-    cudaMemcpy(host_score, dev_ptrs->score,  sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(host_score, dev_ptrs->score, sizeof(float), cudaMemcpyDeviceToHost);
     CUDA_check_error("Failed to copy score from GPU to host");
     // ----------------------------------------------------------
 
@@ -1845,10 +1845,10 @@ CUDA_bspline_interpolate_vf (
     // Get things ready for the kernel
     // ---------------------------------------------------------------
     int3 vol_dim, rdim, cdim, vpr;
-    memcpy (&vol_dim, interp->dim, 3*sizeof(int));
-    memcpy (&rdim, bxf->rdims, 3*sizeof(int));
-    memcpy (&cdim, bxf->cdims, 3*sizeof(int));
-    memcpy (&vpr, bxf->vox_per_rgn, 3*sizeof(int));
+    CUDA_array2vec_3D (&vol_dim, interp->dim);
+    CUDA_array2vec_3D (&rdim, bxf->rdims);
+    CUDA_array2vec_3D (&cdim, bxf->cdims);
+    CUDA_array2vec_3D (&vpr, bxf->vox_per_rgn);
 
     size_t vf_size = interp->npix * 3*sizeof(float);
 
