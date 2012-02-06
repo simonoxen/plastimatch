@@ -119,10 +119,10 @@ The following table will help you with selecting the
 correct CUDA version to install/upgrade::
 
   CUDA 2.X              Not supported
-  CUDA 3.0              Recommended
-  CUDA 3.1              Recommended
-  CUDA 3.2              Recommended
-  CUDA 4.0              Not supported
+  CUDA 3.0              Supported
+  CUDA 3.1              Supported
+  CUDA 3.2              Supported
+  CUDA 4.0              Supported
 
 Download CUDA from here:
 
