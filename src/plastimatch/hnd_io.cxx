@@ -104,7 +104,10 @@ hnd_load (Proj_image *proj, const char *fn, const double xy_offset[2])
     long dl, diff = 0l;
     uint32_t i;
 
-    /* JAS 2012.02.06 -- Use a bit bucket to supress compiler warnings */
+    /* JAS 2012.02.06
+     * Use a bit bucket to supress compiler warnings for now.
+     * TODO: Implement proper error checking instead
+     */
     size_t bit_bucket;
 
     /* GCS FIX: This is hard coded during debug */
