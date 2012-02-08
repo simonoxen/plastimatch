@@ -1,5 +1,8 @@
-Version 1.5.7 (build @PLASTIMATCH_SVN_VERSION@)
+Version 1.5.8 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
+
+Version 1.5.7 (build 3020)
+Mon Feb  6 22:21:36 EST 2012
 * Add weighted addition to plastimatch add command
 * Improve compatibility for CUDA 4.X
 * Fix bug creating directory when writing bspline xform file
