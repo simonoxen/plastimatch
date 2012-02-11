@@ -7,10 +7,10 @@ SET (CTEST_INITIAL_CACHE "
 CMAKE_GENERATOR:INTERNAL=Unix Makefiles
 
 //Name of the build
-BUILDNAME:STRING=lin64-Pisr-Cd-gcc4.4.3
+BUILDNAME:STRING=lin64-Pisr-Cd-gcc4.4.3-cuda3.2.16
 
 //Name of the computer/site where compile is being run
-SITE:STRING=newspeak
+SITE:STRING=newspeak_1
 
 //Build with shared libraries.
 BUILD_SHARED_LIBS:BOOL=OFF
