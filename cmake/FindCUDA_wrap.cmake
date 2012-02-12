@@ -40,13 +40,21 @@ set (PLM_CUDA_ALL_DEVICES ON CACHE BOOL
   "Generate GPU code for all compute capabilities?")
 if (PLM_CUDA_ALL_DEVICES)
   message (STATUS "CUDA Build Level: ALL Compute Capabilities")
+
   set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
         -gencode arch=compute_10,code=sm_10
         -gencode arch=compute_11,code=sm_11
         -gencode arch=compute_12,code=sm_12
         -gencode arch=compute_13,code=sm_13
+    )
+
+  if(NVCCVER_MAJOR GREATER "2")
+    set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
         -gencode arch=compute_20,code=sm_20
     )
+  endif()
+
+  #MESSAGE(STATUS "<<-->>: CUDA_NVCC_FLAGS set to \"${CUDA_NVCC_FLAGS}\"")
 else ()
   message (STATUS "CUDA Build Level: Build system Compute Capability ONLY!")
 endif ()
