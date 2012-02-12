@@ -48,7 +48,7 @@ CUDA_REPO="$HOME/nvidia"
 
 
 
-FILE_CMAKE="/tmp/$(uname -n)-cuda$CUDA_VER.cmake"
+FILE_CMAKE="$DIR_LOG/$(uname -n)-cuda$CUDA_VER.cmake"
 
 function check_perlsuid() {
     if [ ! $(which suidperl) ]; then
@@ -260,7 +260,7 @@ function install_cuda() {
 function build_and_test() {
     echo ""
     echo -n "Building and testing... "
-    $(which ctest) --build-makeprogram "$(which make) -j8" -S $FILE_CMAKE -V > $DIR_LOG/tests.log 2>&1
+    $(which time) $(which ctest) --build-makeprogram "$(which make) -j8" -S $FILE_CMAKE -V > $DIR_LOG/tests.log 2>&1
     echo "done."
 }
 
@@ -271,10 +271,11 @@ if [ "$2" == "suid" ]; then
     exit
 fi
 
+date
 check_perlsuid
 check_installer
-generate_ctest
 generate_build_dir
+generate_ctest
 install_cuda
 build_and_test
 exit

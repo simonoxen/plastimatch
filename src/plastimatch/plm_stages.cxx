@@ -320,7 +320,7 @@ do_registration (Registration_parms* regp)
 
     /* Load initial guess of xform */
     if (regp->xf_in_fn[0]) {
-	xform_load (xf_out, regp->xf_in_fn);
+        xform_load (xf_out, regp->xf_in_fn);
     }
 
     /* Set fixed image region */
@@ -333,10 +333,10 @@ do_registration (Registration_parms* regp)
 
     timer2.Start();
     for (i = 0; i < regp->num_stages; i++) {
-	/* Swap xf_in and xf_out */
-	xf_tmp = xf_out; xf_out = xf_in; xf_in = xf_tmp;
-	/* Run registation, results are stored in xf_out */
-	do_registration_stage (regp, &regd, xf_out, xf_in, regp->stages[i]);
+        /* Swap xf_in and xf_out */
+        xf_tmp = xf_out; xf_out = xf_in; xf_in = xf_tmp;
+        /* Run registation, results are stored in xf_out */
+        do_registration_stage (regp, &regd, xf_out, xf_in, regp->stages[i]);
     }
     timer2.Stop();
 
@@ -344,21 +344,21 @@ do_registration (Registration_parms* regp)
 
     timer3.Start();
     save_output (&regd, xf_out, regp->xf_out_fn, regp->xf_out_itk, 
-	regp->img_out_fmt, regp->img_out_type, regp->img_out_fn, 
-	regp->vf_out_fn);
+        regp->img_out_fmt, regp->img_out_type, regp->img_out_fn, 
+        regp->vf_out_fn);
     timer3.Stop();
 
     logfile_printf (
-	"Load:   %g\n"
-	"Run:    %g\n"
-	"Save:   %g\n"
-	"Total:  %g\n",
-	(double) timer1.GetMeanTime(),
-	(double) timer2.GetMeanTime(),
-	(double) timer3.GetMeanTime(),
-	(double) timer1.GetMeanTime() + 
-	(double) timer2.GetMeanTime() +
-	(double) timer3.GetMeanTime());
+        "Load:   %g\n"
+        "Run:    %g\n"
+        "Save:   %g\n"
+        "Total:  %g\n",
+        (double) timer1.GetMeanTime(),
+        (double) timer2.GetMeanTime(),
+        (double) timer3.GetMeanTime(),
+        (double) timer1.GetMeanTime() + 
+        (double) timer2.GetMeanTime() +
+        (double) timer3.GetMeanTime());
 
     /* Done logging */
     logfile_printf ("Finished!\n");
