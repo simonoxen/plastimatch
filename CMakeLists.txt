@@ -166,7 +166,7 @@ if (NOT APPLE)
   endif ()
 endif ()
 
-test_big_endian (CMAKE_WORDS_BIGENDIAN)
+test_big_endian (PLM_BIG_ENDIAN)
 check_epsilon (MACHINE_EPS)
 check_char_sign (CHAR_SIGN)
 message (STATUS "Checking host processor: ${CMAKE_HOST_SYSTEM_PROCESSOR}")

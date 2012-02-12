@@ -42,7 +42,7 @@ endian4_swap (void* buf, unsigned long len)
 void
 endian2_big_to_native (void* buf, unsigned long len)
 {
-#if CMAKE_WORDS_BIGENDIAN
+#if PLM_BIG_ENDIAN
     /* do nothing */
 #else
     endian2_swap (buf, len);
@@ -53,7 +53,7 @@ endian2_big_to_native (void* buf, unsigned long len)
 void
 endian2_native_to_big (void* buf, unsigned long len)
 {
-#if CMAKE_WORDS_BIGENDIAN
+#if PLM_BIG_ENDIAN
     /* do nothing */
 #else
     endian2_swap (buf, len);
@@ -64,7 +64,7 @@ endian2_native_to_big (void* buf, unsigned long len)
 void
 endian2_little_to_native (void* buf, unsigned long len)
 {
-#if CMAKE_WORDS_BIGENDIAN
+#if PLM_BIG_ENDIAN
     endian2_swap (buf, len);
 #endif
 }
@@ -73,7 +73,7 @@ endian2_little_to_native (void* buf, unsigned long len)
 void
 endian2_native_to_little (void* buf, unsigned long len)
 {
-#if CMAKE_WORDS_BIGENDIAN
+#if PLM_BIG_ENDIAN
     endian2_swap (buf, len);
 #endif
 }
@@ -82,7 +82,7 @@ endian2_native_to_little (void* buf, unsigned long len)
 void
 endian4_big_to_native (void* buf, unsigned long len)
 {
-#if CMAKE_WORDS_BIGENDIAN
+#if PLM_BIG_ENDIAN
     /* do nothing */
 #else
     endian4_swap (buf, len);
@@ -93,7 +93,7 @@ endian4_big_to_native (void* buf, unsigned long len)
 void
 endian4_native_to_big (void* buf, unsigned long len)
 {
-#if CMAKE_WORDS_BIGENDIAN
+#if PLM_BIG_ENDIAN
     /* do nothing */
 #else
     endian4_swap (buf, len);
@@ -104,7 +104,7 @@ endian4_native_to_big (void* buf, unsigned long len)
 void
 endian4_little_to_native (void* buf, unsigned long len)
 {
-#if CMAKE_WORDS_BIGENDIAN
+#if PLM_BIG_ENDIAN
     endian4_swap (buf, len);
 #endif
 }
@@ -113,7 +113,7 @@ endian4_little_to_native (void* buf, unsigned long len)
 void
 endian4_native_to_little (void* buf, unsigned long len)
 {
-#if CMAKE_WORDS_BIGENDIAN
+#if PLM_BIG_ENDIAN
     endian4_swap (buf, len);
 #endif
 }
