@@ -1,5 +1,6 @@
 Version 1.5.8 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
+* Attempt to fix big-endian build on debian (again)
 
 Version 1.5.7 (build 3020)
 Mon Feb  6 22:21:36 EST 2012
