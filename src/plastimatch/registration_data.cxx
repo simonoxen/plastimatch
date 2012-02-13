@@ -35,8 +35,6 @@ Registration_data::load_input_files (Registration_parms* regp)
     logfile_printf ("Loading moving image: %s\n", regp->moving_fn);
     this->moving_image = plm_image_load (regp->moving_fn, image_type);
 
-    regp->job_idx++;
-
     /* Load masks */
     if (regp->fixed_mask_fn[0]) {
 	logfile_printf ("Loading fixed mask: %s\n", regp->fixed_mask_fn);

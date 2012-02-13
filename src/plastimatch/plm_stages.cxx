@@ -30,39 +30,6 @@
 
 #define FIXME_BACKGROUND_MAX (-1200)
 
-/* JAS: utility function (to be moved) */
-static int
-get_path_offset (const char* str)
-{
-    int offset;
-
-    int i=0;
-    while (str[i] != '\0') {
-        if (!strncmp (&str[i], "/", 1)) {
-            offset = i;
-        }
-        i++;
-    }
-    return offset+1;
-}
-
-/* JAS: utility function (to be moved) */
-static void
-append_output_path (char* s, const char* a)
-{
-    char buffer[_MAX_PATH];
-    int offset;
-
-    memset (buffer, 0, _MAX_PATH);
-    offset = get_path_offset (s);
-    strncpy (buffer, s, offset);
-    strcat (buffer, a);
-    if (!is_directory (buffer)) {
-        make_directory (buffer);
-    }
-    strcat (buffer, s+offset);
-    strcpy (s, buffer);
-}
 
 /* JAS 2012.03.13
  *  This is a temp solution */
@@ -390,9 +357,7 @@ set_automatic_parameters (Registration_data* regd, Registration_parms* regp)
 void
 do_registration (Registration_parms* regp)
 {
-    int i, job;
-    char img_out_bak[_MAX_PATH]; /* JAS: sorry, temporary */
-    char vf_out_bak[_MAX_PATH];
+    int i;
     Registration_data regd;
     Xform xf1, xf2;
     Xform *xf_in, *xf_out, *xf_tmp;
@@ -405,12 +370,14 @@ do_registration (Registration_parms* regp)
     logfile_open (regp->log_fn);
 
     /* Load images */
-    for (job=0; job < regp->num_jobs; job++) {
+    printf ("Performing < %i > registrations.\n", regp->num_jobs);
+    for (regp->job_idx=0; regp->job_idx < regp->num_jobs; regp->job_idx++) {
 
         if (regp->num_jobs > 1) {
-            strcpy (img_out_bak, regp->img_out_fn);
-            strcpy (vf_out_bak, regp->vf_out_fn);
             set_job_paths (regp);
+            if (!strcmp (regp->fixed_fn, regp->moving_fn)) {
+                continue;
+            }
         }
 
         regd.load_input_files (regp);
@@ -457,11 +424,6 @@ do_registration (Registration_parms* regp)
             (double) timer1.GetMeanTime() + 
             (double) timer2.GetMeanTime() +
             (double) timer3.GetMeanTime());
-
-        if (regp->num_jobs > 1) {
-            strcpy (regp->img_out_fn, img_out_bak);
-            strcpy (regp->vf_out_fn, vf_out_bak);
-        }
     }
 
     /* Done logging */
