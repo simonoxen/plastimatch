@@ -7,6 +7,7 @@
 #include <string.h>
 #include "itkTimeProbe.h"
 
+#include "file_util.h"
 #include "gpuit_bspline.h"
 #include "gpuit_demons.h"
 #include "itk_demons.h"
@@ -28,6 +29,59 @@
 #include "xform.h"
 
 #define FIXME_BACKGROUND_MAX (-1200)
+
+/* JAS: utility function (to be moved) */
+static int
+get_path_offset (const char* str)
+{
+    int offset;
+
+    int i=0;
+    while (str[i] != '\0') {
+        if (!strncmp (&str[i], "/", 1)) {
+            offset = i;
+        }
+        i++;
+    }
+    return offset+1;
+}
+
+/* JAS: utility function (to be moved) */
+static void
+append_output_path (char* s, const char* a)
+{
+    char buffer[_MAX_PATH];
+    int offset;
+
+    memset (buffer, 0, _MAX_PATH);
+    offset = get_path_offset (s);
+    strncpy (buffer, s, offset);
+    strcat (buffer, a);
+    if (!is_directory (buffer)) {
+        make_directory (buffer);
+    }
+    strcat (buffer, s+offset);
+    strcpy (s, buffer);
+}
+
+/* JAS 2012.03.13
+ *  This is a temp solution... using job
+ *  numbers is easy because they are unique
+ *  identifiers within plastimatch, but they
+ *  mean absolutely nothing to the user.  */
+static void
+set_job_out_paths (Registration_parms* regp)
+{
+    if (*(regp->img_out_fn)) {
+        strcpy (regp->img_out_fn, regp->moving_jobs[regp->job_idx]);
+        append_output_path (regp->img_out_fn, "warp/");
+    }
+
+    if (*(regp->vf_out_fn)) {
+        strcpy (regp->vf_out_fn, regp->moving_jobs[regp->job_idx]);
+        append_output_path (regp->vf_out_fn, "vf/");
+    }
+}
 
 /* This helps speed up the registration, by setting the bounding box to the 
    smallest size needed.  To find the bounding box, either use the extent 
@@ -302,7 +356,9 @@ set_automatic_parameters (Registration_data* regd, Registration_parms* regp)
 void
 do_registration (Registration_parms* regp)
 {
-    int i;
+    int i, job;
+    char img_out_bak[_MAX_PATH]; /* JAS: sorry, temporary */
+    char vf_out_bak[_MAX_PATH];
     Registration_data regd;
     Xform xf1, xf2;
     Xform *xf_in, *xf_out, *xf_tmp;
@@ -315,50 +371,64 @@ do_registration (Registration_parms* regp)
     logfile_open (regp->log_fn);
 
     /* Load images */
-    timer1.Start();
-    regd.load_input_files (regp);
+    for (job=0; job < regp->num_jobs; job++) {
 
-    /* Load initial guess of xform */
-    if (regp->xf_in_fn[0]) {
-        xform_load (xf_out, regp->xf_in_fn);
+        if (regp->num_jobs > 1) {
+            strcpy (img_out_bak, regp->img_out_fn);
+            strcpy (vf_out_bak, regp->vf_out_fn);
+            set_job_out_paths (regp);
+        }
+
+        regd.load_input_files (regp);
+        timer1.Start();
+
+        /* Load initial guess of xform */
+        if (regp->xf_in_fn[0]) {
+            xform_load (xf_out, regp->xf_in_fn);
+        }
+
+        /* Set fixed image region */
+        set_fixed_image_region_global (&regd);
+
+        /* Set automatic parameters based on image size */
+        set_automatic_parameters (&regd, regp);
+
+        timer1.Stop();
+
+        timer2.Start();
+        for (i = 0; i < regp->num_stages; i++) {
+            /* Swap xf_in and xf_out */
+            xf_tmp = xf_out; xf_out = xf_in; xf_in = xf_tmp;
+            /* Run registation, results are stored in xf_out */
+            do_registration_stage (regp, &regd, xf_out, xf_in, regp->stages[i]);
+        }
+        timer2.Stop();
+
+        /* RMK: If no stages, we still generate output (same as input) */
+
+        timer3.Start();
+        save_output (&regd, xf_out, regp->xf_out_fn, regp->xf_out_itk, 
+            regp->img_out_fmt, regp->img_out_type, regp->img_out_fn, 
+            regp->vf_out_fn);
+        timer3.Stop();
+
+        logfile_printf (
+            "Load:   %g\n"
+            "Run:    %g\n"
+            "Save:   %g\n"
+            "Total:  %g\n",
+            (double) timer1.GetMeanTime(),
+            (double) timer2.GetMeanTime(),
+            (double) timer3.GetMeanTime(),
+            (double) timer1.GetMeanTime() + 
+            (double) timer2.GetMeanTime() +
+            (double) timer3.GetMeanTime());
+
+        if (regp->num_jobs > 1) {
+            strcpy (regp->img_out_fn, img_out_bak);
+            strcpy (regp->vf_out_fn, vf_out_bak);
+        }
     }
-
-    /* Set fixed image region */
-    set_fixed_image_region_global (&regd);
-
-    /* Set automatic parameters based on image size */
-    set_automatic_parameters (&regd, regp);
-
-    timer1.Stop();
-
-    timer2.Start();
-    for (i = 0; i < regp->num_stages; i++) {
-        /* Swap xf_in and xf_out */
-        xf_tmp = xf_out; xf_out = xf_in; xf_in = xf_tmp;
-        /* Run registation, results are stored in xf_out */
-        do_registration_stage (regp, &regd, xf_out, xf_in, regp->stages[i]);
-    }
-    timer2.Stop();
-
-    /* RMK: If no stages, we still generate output (same as input) */
-
-    timer3.Start();
-    save_output (&regd, xf_out, regp->xf_out_fn, regp->xf_out_itk, 
-        regp->img_out_fmt, regp->img_out_type, regp->img_out_fn, 
-        regp->vf_out_fn);
-    timer3.Stop();
-
-    logfile_printf (
-        "Load:   %g\n"
-        "Run:    %g\n"
-        "Save:   %g\n"
-        "Total:  %g\n",
-        (double) timer1.GetMeanTime(),
-        (double) timer2.GetMeanTime(),
-        (double) timer3.GetMeanTime(),
-        (double) timer1.GetMeanTime() + 
-        (double) timer2.GetMeanTime() +
-        (double) timer3.GetMeanTime());
 
     /* Done logging */
     logfile_printf ("Finished!\n");

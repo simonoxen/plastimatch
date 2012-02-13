@@ -29,11 +29,19 @@ Registration_data::load_input_files (Registration_parms* regp)
     Plm_image_type image_type = PLM_IMG_TYPE_ITK_FLOAT;
 
     /* Load images */
+    if (*(regp->fixed_dir) != 0) {
+        strncpy (regp->fixed_fn, regp->fixed_jobs[regp->job_idx], _MAX_PATH);
+    }
     logfile_printf ("Loading fixed image: %s\n", regp->fixed_fn);
     this->fixed_image = plm_image_load (regp->fixed_fn, image_type);
 
+    if (*(regp->moving_dir) != 0) {
+        strncpy (regp->moving_fn, regp->moving_jobs[regp->job_idx], _MAX_PATH);
+    }
     logfile_printf ("Loading moving image: %s\n", regp->moving_fn);
     this->moving_image = plm_image_load (regp->moving_fn, image_type);
+
+    regp->job_idx++;
 
     /* Load masks */
     if (regp->fixed_mask_fn[0]) {
