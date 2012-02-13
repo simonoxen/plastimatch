@@ -24,6 +24,17 @@
 #define BUFLEN 2048
 
 // JAS 2012.02.13 -- TODO: Move somewhere more appropriate
+static void
+check_trailing_slash (char* s)
+{
+    int i=0;
+    while (s[i++] != '\0');
+
+    if (s[i-2] != '/') {
+        strcat (s, "/");
+    }
+}
+
 int
 populate_jobs (char jobs[255][_MAX_PATH], char* dir)
 {
@@ -39,7 +50,6 @@ populate_jobs (char jobs[255][_MAX_PATH], char* dir)
     dp = opendir (dir);
 
     if (dp != NULL) {
-        printf ("Listing for %s\n", dir);
         while ((ep=readdir(dp))) {
             memset (buffer, 0, _MAX_PATH);
             if (!strcmp(ep->d_name, ".")) {
@@ -47,10 +57,7 @@ populate_jobs (char jobs[255][_MAX_PATH], char* dir)
             } else if (!strcmp(ep->d_name, "..")) {
                 continue;
             }
-            strcpy (buffer, dir);
-            strcat (buffer, ep->d_name);
-            strncpy (jobs[z++], buffer, _MAX_PATH);
-            printf ("  %s\n", jobs[z-1]);
+            strncpy (jobs[z++], ep->d_name, _MAX_PATH);
         }
         (void) closedir (dp);
     } else {
@@ -87,12 +94,24 @@ set_key_val (
     else if (!strcmp (key, "fixed_dir")) {
         if (section != 0) goto error_not_stages;
         strncpy (regp->fixed_dir, val, _MAX_PATH);
+        check_trailing_slash (regp->fixed_dir);
         regp->num_jobs = populate_jobs (regp->fixed_jobs, regp->fixed_dir);
     }
     else if (!strcmp (key, "moving_dir")) {
         if (section != 0) goto error_not_stages;
         strncpy (regp->moving_dir, val, _MAX_PATH);
+        check_trailing_slash (regp->moving_dir);
         regp->num_jobs = populate_jobs (regp->moving_jobs, regp->moving_dir);
+    }
+    else if (!strcmp (key, "img_out_dir")) {
+        if (section != 0) goto error_not_stages;
+        strncpy (regp->img_out_dir, val, _MAX_PATH);
+        check_trailing_slash (regp->img_out_dir);
+    }
+    else if (!strcmp (key, "vf_out_dir")) {
+        if (section != 0) goto error_not_stages;
+        strncpy (regp->vf_out_dir, val, _MAX_PATH);
+        check_trailing_slash (regp->vf_out_dir);
     }
     else if (!strcmp (key, "fixed_mask")) {
         if (section != 0) goto error_not_stages;

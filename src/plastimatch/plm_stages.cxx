@@ -65,21 +65,55 @@ append_output_path (char* s, const char* a)
 }
 
 /* JAS 2012.03.13
- *  This is a temp solution... using job
- *  numbers is easy because they are unique
- *  identifiers within plastimatch, but they
- *  mean absolutely nothing to the user.  */
+ *  This is a temp solution */
 static void
-set_job_out_paths (Registration_parms* regp)
+set_job_paths (Registration_parms* regp)
 {
-    if (*(regp->img_out_fn)) {
-        strcpy (regp->img_out_fn, regp->moving_jobs[regp->job_idx]);
-        append_output_path (regp->img_out_fn, "warp/");
+    /* Setup input paths */
+    if (*(regp->fixed_dir)) {
+        strcpy (regp->fixed_fn, regp->fixed_dir);
+        strcat (regp->fixed_fn, regp->fixed_jobs[regp->job_idx]);
+    }
+    if (*(regp->moving_dir)) {
+        strcpy (regp->moving_fn, regp->moving_dir);
+        strcat (regp->moving_fn, regp->moving_jobs[regp->job_idx]);
     }
 
-    if (*(regp->vf_out_fn)) {
-        strcpy (regp->vf_out_fn, regp->moving_jobs[regp->job_idx]);
-        append_output_path (regp->vf_out_fn, "vf/");
+    /* Setup output paths */
+    /*   NOTE: For now, output files inherit moving image names */
+    if (*(regp->img_out_dir)) {
+        if (!strcmp (regp->img_out_dir, regp->moving_dir)) {
+            strcpy (regp->img_out_fn, regp->img_out_dir);
+            strcat (regp->img_out_fn, "warp/");
+            strcat (regp->img_out_fn, regp->moving_jobs[regp->job_idx]);
+        } else {
+            strcpy (regp->img_out_fn, regp->img_out_dir);
+            strcat (regp->img_out_fn, regp->moving_jobs[regp->job_idx]);
+        }
+    } else {
+        /* Output directory not specifed but img_out was... smart fallback*/
+        if (*(regp->img_out_fn)) {
+            strcpy (regp->img_out_fn, regp->moving_dir);
+            strcat (regp->img_out_fn, "warp/");
+            strcat (regp->img_out_fn, regp->moving_jobs[regp->job_idx]);
+        }
+    }
+    if (*(regp->vf_out_dir)) {
+        if (!strcmp (regp->vf_out_dir, regp->moving_dir)) {
+            strcpy (regp->vf_out_fn, regp->img_out_dir);
+            strcat (regp->vf_out_fn, "vf/");
+            strcat (regp->vf_out_fn, regp->moving_jobs[regp->job_idx]);
+        } else {
+            strcpy (regp->vf_out_fn, regp->vf_out_dir);
+            strcat (regp->vf_out_fn, regp->moving_jobs[regp->job_idx]);
+        }
+    } else {
+        /* Output directory not specifed but vf_out was... smart fallback*/
+        if (*(regp->vf_out_fn)) {
+            strcpy (regp->vf_out_fn, regp->moving_dir);
+            strcat (regp->vf_out_fn, "vf/");
+            strcat (regp->vf_out_fn, regp->moving_jobs[regp->job_idx]);
+        }
     }
 }
 
@@ -376,7 +410,7 @@ do_registration (Registration_parms* regp)
         if (regp->num_jobs > 1) {
             strcpy (img_out_bak, regp->img_out_fn);
             strcpy (vf_out_bak, regp->vf_out_fn);
-            set_job_out_paths (regp);
+            set_job_paths (regp);
         }
 
         regd.load_input_files (regp);

@@ -225,6 +225,8 @@ public:
     /* for 4D and atlas */
     char moving_dir[_MAX_PATH];
     char fixed_dir[_MAX_PATH];
+    char img_out_dir[_MAX_PATH];
+    char vf_out_dir[_MAX_PATH];
     char moving_jobs[255][_MAX_PATH];
     char fixed_jobs[255][_MAX_PATH];
     int job_idx;
@@ -248,6 +250,8 @@ public:
         stages = 0;
         *moving_dir = 0;
         *fixed_dir = 0;
+        *img_out_dir = 0;
+        *vf_out_dir = 0;
         for (int i=0; i<256; i++) {
             moving_jobs[i][0] = '\0';
             fixed_jobs[i][0] = '\0';
