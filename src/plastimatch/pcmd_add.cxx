@@ -31,7 +31,7 @@ add_main (Add_parms *parms)
     typedef itk::DivideByConstantImageFilter< 
         FloatImageType, int, FloatImageType > DivFilterType;
     typedef itk::MultiplyByConstantImageFilter< 
-        FloatImageType, int, FloatImageType > MulFilterType;
+        FloatImageType, float, FloatImageType > MulFilterType;
 
     AddFilterType::Pointer addition = AddFilterType::New();
     DivFilterType::Pointer division = DivFilterType::New();
