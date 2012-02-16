@@ -10,7 +10,7 @@ CMAKE_GENERATOR:INTERNAL=Visual Studio 9 2008
 BUILDNAME:STRING=wxp32-PisR-Cd-vse9
 
 //Name of the computer/site where compile is being run
-SITE:STRING=w0109966_2
+SITE:STRING=w0109966
 
 //Build with shared libraries.
 BUILD_SHARED_LIBS:BOOL=ON
