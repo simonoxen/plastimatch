@@ -13,6 +13,9 @@
 #cmakedefine HAVE_32_BIT 1
 #cmakedefine HAVE_64_BIT 1
 
+/* #ifndef (_WIN32) doesn't just mean linux anymore */
+#cmakedefine APPLE 1
+
 /* Compiler attributes */
 #cmakedefine FORTRAN_COMPILER_FOUND 1
 #cmakedefine HAVE_SYS_STAT_H 1

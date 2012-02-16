@@ -48,6 +48,12 @@ IF(CUDA_FOUND)
                 ENDIF(GCCVER_MINOR MATCHES "3")
             ENDIF(GCCVER_MAJOR MATCHES "4")
 
+        ENDIF(CMAKE_COMPILER_IS_GNUCC)
+    ENDIF(CMAKE_SYSTEM_NAME MATCHES "Linux")
+
+
+    IF(CMAKE_SYSTEM_NAME MATCHES "Linux" OR "APPLE")
+
         # For CUDA 3.2: surface_functions.h does some non-compliant things...
         #               so we tell g++ to ignore them when called via nvcc
         #               by passing the -fpermissive flag through the nvcc
@@ -61,7 +67,7 @@ IF(CUDA_FOUND)
         # Get gcc's major and minor revs
         STRING(REGEX REPLACE ".*release ([0-9]+).[0-9].*" "\\1" NVCCVER_MAJOR "${NVCCVER}")
         STRING(REGEX REPLACE ".*release [0-9]+.([0-9]).*" "\\1" NVCCVER_MINOR "${NVCCVER}")
-        #        MESSAGE(STATUS "nvcc-check: NVCC Version is ${NVCCVER_MAJOR}.${NVCCVER_MINOR}")
+        MESSAGE(STATUS "nvcc-check: NVCC Version is ${NVCCVER_MAJOR}.${NVCCVER_MINOR}")
 
         IF(NVCCVER_MAJOR MATCHES "3")
             IF(NVCCVER_MINOR MATCHES "2")
@@ -70,7 +76,6 @@ IF(CUDA_FOUND)
                 MESSAGE(STATUS "nvcc-check: CUDA_NVCC_FLAGS set to \"${CUDA_NVCC_FLAGS}\"")
             ENDIF()
         ENDIF()
+    ENDIF(CMAKE_SYSTEM_NAME MATCHES "Linux" OR "APPLE")
 
-        ENDIF(CMAKE_COMPILER_IS_GNUCC)
-    ENDIF(CMAKE_SYSTEM_NAME MATCHES "Linux")
 ENDIF(CUDA_FOUND)

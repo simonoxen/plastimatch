@@ -148,6 +148,14 @@ delayload_cuda (void)
         // success
         return 1;
     }
+#elif defined (APPLE)
+
+#if defined (PLM_USE_GPU_PLUGINS)
+    printf ("CUDA support of OS X is currently not available when building\n");
+    printf ("Plastimatch with BUILD_SHARED_LIBS enabled. Sorry.\n\n");
+    return 0;
+#endif
+    return 1;
 #else
     // NOT Windows (most likely a POSIX compliant OS though...)
     //
