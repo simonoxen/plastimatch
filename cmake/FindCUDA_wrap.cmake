@@ -41,7 +41,7 @@ set (PLM_CUDA_ALL_DEVICES ON CACHE BOOL
 if (PLM_CUDA_ALL_DEVICES)
   message (STATUS "CUDA Build Level: ALL Compute Capabilities")
 
-  message (STATUS "  >> Generation 1")
+  message (STATUS "  >> Generation 1: [X]")
   set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}
         -gencode arch=compute_10,code=sm_10
         -gencode arch=compute_11,code=sm_11
@@ -49,12 +49,14 @@ if (PLM_CUDA_ALL_DEVICES)
         -gencode arch=compute_13,code=sm_13"
     )
 
-  if(NVCCVER_MAJOR GREATER "2")
-  message (STATUS "  >> Generation 2")
+if(CUDA_VERSION_MAJOR GREATER "2")
+  message (STATUS "  >> Generation 2: [X]")
     set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}
         -gencode arch=compute_20,code=sm_20"
     )
-  endif()
+else()
+  message (STATUS "  >> Generation 2: [ ]")
+endif()
 
   #MESSAGE(STATUS "<<-->>: CUDA_NVCC_FLAGS set to \"${CUDA_NVCC_FLAGS}\"")
 else ()

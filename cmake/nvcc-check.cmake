@@ -62,18 +62,12 @@ IF(CUDA_FOUND)
         #               valid... resulting in TONS of warnings.  So, we go
         #               version checking again, this time nvcc...
         # Get the nvcc version number
-        EXEC_PROGRAM(nvcc ARGS "--version" OUTPUT_VARIABLE NVCCVER)
+        MESSAGE(STATUS "nvcc-check: NVCC Version is ${CUDA_VERSION_MAJOR}.${CUDA_VERSION_MINOR}")
 
-        # Get gcc's major and minor revs
-        STRING(REGEX REPLACE ".*release ([0-9]+).[0-9].*" "\\1" NVCCVER_MAJOR "${NVCCVER}")
-        STRING(REGEX REPLACE ".*release [0-9]+.([0-9]).*" "\\1" NVCCVER_MINOR "${NVCCVER}")
-        MESSAGE(STATUS "nvcc-check: NVCC Version is ${NVCCVER_MAJOR}.${NVCCVER_MINOR}")
-
-        IF(NVCCVER_MAJOR MATCHES "3")
-            IF(NVCCVER_MINOR MATCHES "2")
-                MESSAGE(STATUS "nvcc-check: Found nvcc-${NVCCVER_MAJOR}.${NVCCVER_MINOR}...")
+        IF(CUDA_VERSION_MAJOR MATCHES "3")
+            IF(CUDA_VERSION_MINOR MATCHES "2")
                 SET (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --compiler-options='-fpermissive')
-                MESSAGE(STATUS "nvcc-check: CUDA_NVCC_FLAGS set to \"${CUDA_NVCC_FLAGS}\"")
+                MESSAGE(STATUS "nvcc-check: CUDA 3.2 exception: CUDA_NVCC_FLAGS set to \"${CUDA_NVCC_FLAGS}\"")
             ENDIF()
         ENDIF()
     ENDIF(CMAKE_SYSTEM_NAME MATCHES "Linux" OR "APPLE")
