@@ -42,17 +42,17 @@ if (PLM_CUDA_ALL_DEVICES)
   message (STATUS "CUDA Build Level: ALL Compute Capabilities")
 
   message (STATUS "  >> Generation 1: [X]")
-  set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}
+  set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
         -gencode arch=compute_10,code=sm_10
         -gencode arch=compute_11,code=sm_11
         -gencode arch=compute_12,code=sm_12
-        -gencode arch=compute_13,code=sm_13"
+        -gencode arch=compute_13,code=sm_13
     )
 
 if(CUDA_VERSION_MAJOR GREATER "2")
   message (STATUS "  >> Generation 2: [X]")
-    set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}
-        -gencode arch=compute_20,code=sm_20"
+    set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
+        -gencode arch=compute_20,code=sm_20
     )
 else()
   message (STATUS "  >> Generation 2: [ ]")
