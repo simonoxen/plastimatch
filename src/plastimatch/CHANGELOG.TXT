@@ -1,5 +1,8 @@
-Version 1.5.9 (build @PLASTIMATCH_SVN_VERSION@)
+Version 1.5.10 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
+
+Version 1.5.9 (build 3050)
+Sat Feb 18 10:10:22 EST 2012
 * New auto-4D feature introduced to command file
 * Attempt to fix big-endian build on debian (yet again)
 
