@@ -12,6 +12,7 @@
 #include "img_metadata.h"
 #include "math_util.h"
 #include "plm_image_header.h"
+#include "pstring.h"
 #include "referenced_dicom_dir.h"
 #include "rtss.h"
 #include "rtss_polyline_set.h"
@@ -91,22 +92,22 @@ cxt_load (
 		(const char*) val->data);
 	}
         else if (biseqcstr (tag, "STUDY_ID")) {
-	    if (bstring_empty (rdd->m_study_id)) {
+	    if (rdd->m_study_id.empty()) {
 		rdd->m_study_id = (const char*) val->data;
 	    }
 	}
         else if (biseqcstr (tag, "CT_STUDY_UID")) {
-	    if (bstring_empty (rdd->m_ct_study_uid)) {
+	    if (rdd->m_ct_study_uid.empty()) {
 		rdd->m_ct_study_uid = (const char*) val->data;
 	    }
 	}
         else if (biseqcstr (tag, "CT_SERIES_UID")) {
-	    if (bstring_empty (rdd->m_ct_series_uid)) {
+	    if (rdd->m_ct_series_uid.empty()) {
 		rdd->m_ct_series_uid = (const char*) val->data;
 	    }
 	}
         else if (biseqcstr (tag, "CT_FRAME_OF_REFERENCE_UID")) {
-	    if (bstring_empty (rdd->m_ct_fref_uid)) {
+	    if (rdd->m_ct_fref_uid.empty()) {
 		rdd->m_ct_fref_uid = (const char*) val->data;
 	    }
 	}
@@ -327,7 +328,7 @@ cxt_save (
 	}
 	fprintf (fp, "%d|%s|%s\n", 
 	    curr_structure->id, 
-	    (bstring_empty (curr_structure->color) 
+	    (curr_structure->color.empty() 
 		? "255\\0\\0"
 		: (const char*) curr_structure->color), 
 	    (const char*) curr_structure->name);

@@ -183,8 +183,8 @@ Rtss_polyline_set::debug (void)
 	    (unsigned int) i, 
 	    curr_structure->id, 
 	    (const char*) curr_structure->name, 
-	    bstring_empty (curr_structure->color) 
-	    ? "none" : (const char*) curr_structure->color, 
+	    (curr_structure->color.empty() 
+                ? "none" : (const char*) curr_structure->color), 
 	    curr_structure->pslist, 
 	    curr_structure->num_contours
 	);

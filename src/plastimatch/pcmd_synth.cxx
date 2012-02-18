@@ -7,11 +7,11 @@
 #include <stdlib.h>
 #include <vector>
 
-#include "bstring_util.h"
 #include "itk_image.h"
 #include "itk_image_save.h"
 #include "math_util.h"
 #include "plm_clp.h"
+#include "pstring.h"
 #include "rtds.h"
 #include "rtss.h"
 #include "synthetic_mha.h"
@@ -32,13 +32,13 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
 
     /* Create image */
     Rtds rtds;
-    if (!bstring_empty (parms->output_dicom) 
-	|| !bstring_empty (parms->output_ss_img_fn))
+    if (parms->output_dicom.not_empty() 
+	|| parms->output_ss_img_fn.not_empty())
     {
 	sm_parms->m_want_ss_img = true;
     }
-    if (!bstring_empty (parms->output_dicom) 
-	|| !bstring_empty (parms->output_dose_img_fn))
+    if (parms->output_dicom.not_empty() 
+	|| parms->output_dose_img_fn.not_empty())
     {
 	sm_parms->m_want_dose_img = true;
     }
@@ -46,7 +46,7 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
 
     /* Save to file */
     FloatImageType::Pointer img = rtds.m_img->itk_float();
-    if (!bstring_empty (parms->output_fn)) {
+    if (parms->output_fn.not_empty()) {
 	switch (sm_parms->output_type) {
 	case PLM_IMG_TYPE_ITK_UCHAR:
 	    itk_image_save_uchar (img, (const char*) parms->output_fn);
@@ -70,12 +70,12 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
     }
 
     /* ss_img */
-    if (bstring_not_empty (parms->output_ss_img_fn)) {
+    if (parms->output_ss_img_fn.not_empty()) {
 	rtds.m_ss_image->save_ss_image (parms->output_ss_img_fn);
     }
 
     /* dose_img */
-    if (bstring_not_empty (parms->output_dose_img_fn)) {
+    if (parms->output_dose_img_fn.not_empty()) {
 	rtds.m_dose->save_image (parms->output_dose_img_fn);
     }
 
@@ -87,7 +87,7 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
     }
 #endif
 
-    if (!bstring_empty (parms->output_dicom)) {
+    if (parms->output_dicom.not_empty()) {
 	rtds.m_ss_image->convert_ss_img_to_cxt ();
 	rtds.save_dicom ((const char*) parms->output_dicom);
     }

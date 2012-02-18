@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "bstring_util.h"
 #include "file_util.h"
 #include "math_util.h"
 #include "plm_image_header.h"
@@ -133,7 +132,7 @@ Rtss_structure::structure_rgb (int *r, int *g, int *b) const
     *r = 255;
     *g = 0;
     *b = 0;
-    if (bstring_empty (this->color)) {
+    if (this->color.empty()) {
 	return;
     }
 

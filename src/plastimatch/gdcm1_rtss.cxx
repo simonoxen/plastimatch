@@ -99,7 +99,7 @@ gdcm_rtss_load (
     set_metadata_from_gdcm_file (meta, rtss_file, 0x0010, 0x0040);
 
     /* StudyID */
-    if (bstring_empty (rdd->m_study_id)) {
+    if (rdd->m_study_id.empty()) {
 	tmp = rtss_file->GetEntryValue (0x0020, 0x0010);
 	if (tmp != gdcm::GDCM_UNFOUND) {
 	    rdd->m_study_id = tmp.c_str();
@@ -107,7 +107,7 @@ gdcm_rtss_load (
     }
 
     /* StudyInstanceUID */
-    if (bstring_empty (rdd->m_ct_study_uid)) {
+    if (rdd->m_ct_study_uid.empty()) {
 	tmp = rtss_file->GetEntryValue (0x0020, 0x000d);
 	rdd->m_ct_study_uid = tmp.c_str();
     }
@@ -120,7 +120,7 @@ gdcm_rtss_load (
 	item = rfor_seq->GetFirstSQItem ();
 	if (item) {
 	    tmp = item->GetEntryValue (0x0020,0x0052);
-	    if (bstring_empty (rdd->m_ct_fref_uid)) {
+	    if (rdd->m_ct_fref_uid.empty()) {
 		if (tmp != gdcm::GDCM_UNFOUND) {
 		    rdd->m_ct_fref_uid = tmp.c_str();
 		}
@@ -142,7 +142,7 @@ gdcm_rtss_load (
 			/* SeriesInstanceUID */
 			if (item) {
 			    tmp = item->GetEntryValue (0x0020, 0x000e);
-			    if (bstring_empty (rdd->m_ct_series_uid)) {
+			    if (rdd->m_ct_series_uid.empty()) {
 				if (tmp != gdcm::GDCM_UNFOUND) {
 				    rdd->m_ct_series_uid = tmp.c_str();
 				}
@@ -522,7 +522,7 @@ gdcm_rtss_save (
 
 	    /* GE -> XiO transfer does not work if contour does not have 
 	       corresponding slice uid */
-	    if (bstring_empty (curr_contour->ct_slice_uid)) {
+	    if (curr_contour->ct_slice_uid.empty()) {
 		printf ("Warning: Omitting contour (%d,%d)\n", i, j);
 		continue;
 	    }
@@ -530,7 +530,7 @@ gdcm_rtss_save (
 	    gdcm::SQItem *c_item = new gdcm::SQItem (c_seq->GetDepthLevel());
 	    c_seq->AddSQItem (c_item, j+1);
 	    /* ContourImageSequence */
-	    if (bstring_not_empty (curr_contour->ct_slice_uid)) {
+	    if (curr_contour->ct_slice_uid.not_empty()) {
 		gdcm::SeqEntry *ci_seq 
 		    = c_item->InsertSeqEntry (0x3006, 0x0016);
 		gdcm::SQItem *ci_item 

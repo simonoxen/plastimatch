@@ -114,9 +114,9 @@ parse_args (Dvh_parms_pcmd* parms, int argc, char* argv[])
 	    break;
 	}
     }
-    if (bstring_empty (parms->input_ss_img_fn)
-	|| bstring_empty (parms->input_dose_fn)
-	|| bstring_empty (parms->output_csv_fn))
+    if (parms->input_ss_img_fn.empty()
+	|| parms->input_dose_fn.empty()
+        || parms->output_csv_fn.empty())
     {
 	fprintf (stderr, 
 	    "Error.  Must specify input for dose, ss_img, and output file.\n");

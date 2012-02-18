@@ -78,7 +78,7 @@ ss_list_save (Rtss_polyline_set* cxt, const char* ss_list_fn)
 	curr_structure = cxt->slist[i];
 	fprintf (fp, "%d|%s|%s\n", 
 	    curr_structure->bit, 
-	    (bstring_empty (curr_structure->color) 
+	    (curr_structure->color.empty() 
 		? "255\\0\\0"
 		: (const char*) curr_structure->color),
 	    (const char*) curr_structure->name);
