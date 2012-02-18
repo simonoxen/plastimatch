@@ -57,11 +57,11 @@ void
 plm_fwrite (void* buf, size_t size, size_t count, FILE* fp, 
     bool force_little_endian)
 {
-#if CMAKE_WORDS_BIGENDIAN
+#if PLM_BIG_ENDIAN
     /* If we need to swap bytes, do it while writing into OS fwrite buffer */
-    if (force_little_endian && size_t > 1) {
+    if (force_little_endian && size > 1) {
 	uint8_t *cbuf = (uint8_t*) buf;
-	if (size_t == 2) {
+	if (size == 2) {
 	    for (size_t i = 0; i < count; i++) {
 		char tmp[2] = { cbuf[2*i+1], cbuf[2*i+1] };
 		size_t rc = fwrite (tmp, 1, 2, fp);
@@ -70,7 +70,7 @@ plm_fwrite (void* buf, size_t size, size_t count, FILE* fp,
 		}
 	    }
 	    return;
-	} else if (size_t == 4) {
+	} else if (size == 4) {
 	    for (size_t i = 0; i < count; i++) {
 		char tmp[4] = { cbuf[2*i+3], cbuf[2*i+1], 
 				cbuf[2*i+1], cbuf[2*i+0] };
