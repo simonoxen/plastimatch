@@ -21,6 +21,7 @@
 #include "pcmd_header.h"
 #include "pcmd_probe.h"
 #include "pcmd_resample.h"
+#include "pcmd_script.h"
 #include "pcmd_segment.h"
 #include "pcmd_stats.h"
 #include "pcmd_synth.h"
@@ -42,39 +43,39 @@ print_usage (int return_code)
 {
     printf ("plastimatch version %s\n", PLASTIMATCH_VERSION_STRING);
     printf (
-	"Usage: plastimatch command [options]\n"
-	"Commands:\n"
-	"  add         "
-	"  adjust      "
-	"  autolabel   "
-	"  crop        "
-	"  compare     "
-	"\n"
-	"  compose     "
-	"  convert     "
-	"  diff        "
-	"  drr         "
-	"  dvh         "
-	"\n"
-	"  fill        "
-	"  header      "
-	"  mask        "
-	"  probe       "
-	"  register    "
-	"\n"
-	"  resample    "
-	"  segment     "
-	"  stats       "
-	"  synth       "
-	"  thumbnail   "
-	"\n"
-	"  warp        "
-	"  xf-convert  "
-	"  xio-dvh     "
-	"\n"
-	"\n"
-	"For detailed usage of a specific command, type:\n"
-	"  plastimatch command\n"
+        "Usage: plastimatch command [options]\n"
+        "Commands:\n"
+        "  add         "
+        "  adjust      "
+        "  autolabel   "
+        "  crop        "
+        "  compare     "
+        "\n"
+        "  compose     "
+        "  convert     "
+        "  diff        "
+        "  drr         "
+        "  dvh         "
+        "\n"
+        "  fill        "
+        "  header      "
+        "  mask        "
+        "  probe       "
+        "  register    "
+        "\n"
+        "  resample    "
+        "  segment     "
+        "  stats       "
+        "  synth       "
+        "  thumbnail   "
+        "\n"
+        "  warp        "
+        "  xf-convert  "
+        "  xio-dvh     "
+        "\n"
+        "\n"
+        "For detailed usage of a specific command, type:\n"
+        "  plastimatch command\n"
     );
     exit (return_code);
 }
@@ -86,18 +87,18 @@ do_command_register (int argc, char* argv[])
     Registration_parms regp;
 
     if (!strcmp (argv[1], "register")) {
-	if (argc > 2) {
-	    command_filename = argv[2];
-	} else {
-	    printf ("Usage: plastimatch register command_file\n");
-	    exit (1);
-	}
+        if (argc > 2) {
+            command_filename = argv[2];
+        } else {
+            printf ("Usage: plastimatch register command_file\n");
+            exit (1);
+        }
     } else {
-	command_filename = argv[1];
+        command_filename = argv[1];
     }
 
     if (plm_parms_parse_command_file (&regp, command_filename) < 0) {
-	print_usage (1);
+        print_usage (1);
     }
     do_registration (&regp);
 }
@@ -108,100 +109,105 @@ do_command (int argc, char* argv[])
     char* command;
 
     if (argc == 1) {
-	print_usage (0);
+        print_usage (0);
     }
     command = argv[1];
 
     if (!strcmp (command, "--version")) {
-	print_version ();
+        print_version ();
     } else if (!strcmp (command, "add")) {
-	do_command_add (argc, argv);
+        do_command_add (argc, argv);
     }
     else if (!strcmp (command, "adjust")) {
-	do_command_adjust (argc, argv);
+        do_command_adjust (argc, argv);
     }
     else if (!strcmp (command, "autolabel")) {
-	do_command_autolabel (argc, argv);
+        do_command_autolabel (argc, argv);
     }
     else if (!strcmp (command, "autolabel-train")) {
-	do_command_autolabel_train (argc, argv);
+        do_command_autolabel_train (argc, argv);
     }
     else if (!strcmp (command, "compare")) {
-	do_command_compare (argc, argv);
+        do_command_compare (argc, argv);
     }
     else if (!strcmp (command, "compose")) {
-	do_command_compose (argc, argv);
+        do_command_compose (argc, argv);
     }
     else if (!strcmp (command, "convert")) {
-	/* convert and warp are the same */
-	do_command_warp (argc, argv);
+        /* convert and warp are the same */
+        do_command_warp (argc, argv);
     }
     else if (!strcmp (command, "crop")) {
-	do_command_crop (argc, argv);
+        do_command_crop (argc, argv);
     }
     else if (!strcmp (command, "diff")) {
-	do_command_diff (argc, argv);
+        do_command_diff (argc, argv);
     }
     else if (!strcmp (command, "drr")) {
-	do_command_drr (argc, argv);
+        do_command_drr (argc, argv);
     }
     else if (!strcmp (command, "dvh")) {
-	do_command_dvh (argc, argv);
+        do_command_dvh (argc, argv);
     }
     else if (!strcmp (command, "header")) {
-	do_command_header (argc, argv);
+        do_command_header (argc, argv);
     }
     else if (!strcmp (command, "fill")) {
-	/* fill and mask are the same */
-	do_command_mask (argc, argv);
+        /* fill and mask are the same */
+        do_command_mask (argc, argv);
     }
     else if (!strcmp (command, "mask")) {
-	/* fill and mask are the same */
-	do_command_mask (argc, argv);
+        /* fill and mask are the same */
+        do_command_mask (argc, argv);
     }
     else if (!strcmp (command, "probe")) {
-	do_command_probe (argc, argv);
+        do_command_probe (argc, argv);
     }
     else if (!strcmp (command, "register")) {
-	do_command_register (argc, argv);
+        do_command_register (argc, argv);
     }
     else if (!strcmp (command, "resample")) {
-	do_command_resample (argc, argv);
+        do_command_resample (argc, argv);
     }
     else if (!strcmp (command, "segment")) {
-	do_command_segment (argc, argv);
+        do_command_segment (argc, argv);
     }
     else if (!strcmp (command, "slice")) {
-	print_and_exit ("Error: slice command is now called thumbnail.\n");
+        print_and_exit ("Error: slice command is now called thumbnail.\n");
     }
     else if (!strcmp (command, "thumbnail")) {
-	do_command_thumbnail (argc, argv);
+        do_command_thumbnail (argc, argv);
     }
+#if (LUA51_FOUND)
+    else if (!strcmp (command, "script")) {
+        do_command_script (argc, argv);
+    }
+#endif
     else if (!strcmp (command, "stats")) {
-	do_command_stats (argc, argv);
+        do_command_stats (argc, argv);
     }
     else if (!strcmp (command, "synth")) {
-	do_command_synth (argc, argv);
+        do_command_synth (argc, argv);
     }
     else if (!strcmp (command, "warp")) {
-	/* convert and warp are the same */
-	do_command_warp (argc, argv);
+        /* convert and warp are the same */
+        do_command_warp (argc, argv);
     }
     else if (!strcmp (command, "xf-convert")) {
-	do_command_xf_convert (argc, argv);
+        do_command_xf_convert (argc, argv);
     }
     else if (!strcmp (command, "xio-dvh")) {
-	do_command_xio_dvh (argc, argv);
+        do_command_xio_dvh (argc, argv);
     }
     else if (argc == 2) {
-	if (!file_exists (argv[1])) {
-	    print_usage (1);
-	}
-	/* Older usage, just "plastimatch parms.txt" */
-	do_command_register (argc, argv);
+        if (!file_exists (argv[1])) {
+            print_usage (1);
+        }
+        /* Older usage, just "plastimatch parms.txt" */
+        do_command_register (argc, argv);
     }
     else {
-	print_usage (1);
+        print_usage (1);
     }
 }
 

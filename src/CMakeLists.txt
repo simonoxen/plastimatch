@@ -153,6 +153,13 @@ set (GPUIT_LIBRARIES gpuit ${GPUIT_LIBRARY_DEPENDENCIES})
 set (PLASTIMATCH_LIBS plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
 set (SLICER_PLUGIN_LIBS ${ITK_LIBRARIES} ${GPUIT_LIBRARY_DEPENDENCIES})
 
+if (LUA51_FOUND)
+  set (PLASTIMATCH_LIBS
+    ${PLASTIMATCH_LIBS}
+    ${LUA_LIBRARIES}
+    )
+endif()
+
 ##-----------------------------------------------------------------------------
 ##  Determine linker flags
 ##    GPUIT.DLL should link with GPUIT_LIB_LDFLAGS

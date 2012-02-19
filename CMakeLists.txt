@@ -69,6 +69,7 @@ option (PLM_CONFIG_DISABLE_PLASTIMATCH "Build plastimatch" OFF)
 option (PLM_CONFIG_DISABLE_REG23 "Build REG-2-3" OFF)
 option (PLM_CONFIG_DISABLE_SSE2 "Set to ON to build without SSE" OFF)
 option (PLM_CONFIG_ENABLE_MATLAB "Set to ON to build Matlab plugins" OFF)
+option (PLM_CONFIG_ENABLE_LUA "Set to ON to embed LUA scripting engine" OFF)
 set (PLM_CONFIG_VERSION_STRING "" CACHE STRING "Version string")
 
 # Optional components
@@ -312,6 +313,10 @@ else ()
 endif ()
 find_package (Subversion)
 find_package (wxWidgets)
+
+if (PLM_CONFIG_ENABLE_LUA)
+  find_package (Lua51)
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Use local getopt if not found

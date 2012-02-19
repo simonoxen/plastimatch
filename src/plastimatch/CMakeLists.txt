@@ -75,6 +75,10 @@ if (OPENCL_FOUND)
   include_directories (BEFORE ${OPENCL_INCLUDE_DIR})
 endif ()
 
+if (LUA51_FOUND)
+  include_directories(AFTER ${LUA_INCLUDE_DIR} )
+endif ()
+
 if (MATLAB_FOUND)
   include_directories (AFTER ${MATLAB_INCLUDE_DIRS})
 endif ()
@@ -560,6 +564,12 @@ set (PLASTIMATCH_SRC
   pcmd_xf_convert.cxx pcmd_xf_convert.h 
   plastimatch_main.cxx
   )
+if (LUA51_FOUND)
+  set (PLASTIMATCH_SRC
+    ${PLASTIMATCH_SRC}
+    pcmd_script.cxx pcmd_script.h
+    )
+endif()
 set (PLASTIMATCH_SLICER_BSPLINE_SRC
   plastimatch_slicer_bspline.cxx
   )
