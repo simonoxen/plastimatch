@@ -11,6 +11,8 @@
 -- invoke this script with: ./plastimatch script example.lua
 --
 
+
+-- You can write to the screen with io.write()
 io.write ("Hi!  I'm a LUA script.  I'm going to be making your\n")
 io.write ("life much better by (eventually) allowing you to pipline\n")
 io.write ("everything plastimatch can do... not just registration!\n")
@@ -18,7 +20,7 @@ io.write ("Let's get started!\n\n")
 
 
 -- Registration Parameters
-regp = {
+global = {
     fixed = "/home/tshack/data/reg/set01/hi_gcs.mha",
     moving = "/home/tshack/data/reg/set01/synth_radial_img.mha",
     vf_out = "/home/tshack/lua_test/vf.mha",
@@ -31,16 +33,7 @@ stage_1 = {
     optim = "lbfgsb",
     impl = "plastimatch",
     threading = "openmp",
-    iterations = 21
-}
-
-stage_1 = {
-    xform = "bspline",
-    metric = "mse",
-    optim = "lbfgsb",
-    impl = "plastimatch",
-    threading = "openmp",
-    iterations = 21
+    max_its = 10
 }
 
 stage_2 = {
@@ -49,17 +42,24 @@ stage_2 = {
     optim = "lbfgsb",
     impl = "plastimatch",
     threading = "openmp",
-    iterations = 40
+    grid_spac = {20.0, 20.0, 20.0},
+    max_its = 21
 }
 
--- Notice how call stack is pascal style,
--- C receives &regp @ the top of the stack
--- This will probably be reversed in the future
--- so that it is less confusing for the user,
--- but it is easier for the developer; so it stays
--- for now ;-)
-a = register(stage_2, stage_1, regp)
+stage_3 = {
+    xform = "bspline",
+    metric = "mse",
+    optim = "lbfgsb",
+    impl = "plastimatch",
+    threading = "openmp",
+    grid_spac = {10.0, 10.0, 10.0},
+    max_its = 40
+}
+
+-- NOTE: register() is VARIADIC, so you can keep adding stages
+a = register(stage_3, stage_2, stage_1, global)
 
 
+-- Display return values with io.write() like this
 io.write ("Return value (", a, ").\n")
 io.write ("See, now.  Wasn't that swell?\n")

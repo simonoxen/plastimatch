@@ -47,6 +47,85 @@ from_lua_getint (lua_State* L, int* dest, const char* var_name)
     }
 }
 
+inline int
+from_lua_getfloat (lua_State* L, float* dest, const char* var_name)
+{
+    lua_pushstring (L, var_name);
+    lua_gettable (L, -2);
+
+    if (lua_isnumber (L, -1)) {
+        *dest = lua_tonumber (L, -1);
+        lua_pop (L, 1);
+        return 1;
+    } else {
+        lua_pop (L, 1);
+        return 0;
+    }
+}
+
+
+inline int
+from_lua_getint3 (lua_State* L, int* dest, const char* var_name)
+{
+    /* Get nested table by outer table key */
+    lua_pushstring (L, var_name);
+    lua_gettable (L, -2);   /* outer table */
+
+    /* Does nested table exist? */
+    if (!lua_istable (L, -1)) {
+        lua_pop (L, 1);     /* outer table */
+        return 0;
+    }
+
+    /* Iterate through nested table */
+    for (int i=0; i<3; i++) {
+        lua_pushnumber (L, i+1);
+        lua_gettable (L, -2);   /* inner table */
+        if (lua_isnumber (L, -1)) {
+            dest[i] = lua_tointeger (L, -1);
+        } else {
+            lua_pop (L, 1); /* inner table */
+            lua_pop (L, 1); /* outer table */
+            return 0;
+        }
+        lua_pop (L, 1);  /* inner table */
+    }
+    lua_pop (L, 1); /* outer table */
+
+    return 1;
+}
+
+inline int
+from_lua_getfloat3 (lua_State* L, float* dest, const char* var_name)
+{
+    /* Get nested table by outer table key */
+    lua_pushstring (L, var_name);
+    lua_gettable (L, -2);   /* outer table */
+
+    /* Does nested table exist? */
+    if (!lua_istable (L, -1)) {
+        lua_pop (L, 1);     /* outer table */
+        return 0;
+    }
+
+    /* Iterate through nested table */
+    for (int i=0; i<3; i++) {
+        lua_pushnumber (L, i+1);
+        lua_gettable (L, -2);   /* inner table */
+        if (lua_isnumber (L, -1)) {
+            dest[i] = lua_tonumber (L, -1);
+        } else {
+            lua_pop (L, 1); /* inner table */
+            lua_pop (L, 1); /* outer table */
+            return 0;
+        }
+        lua_pop (L, 1);  /* inner table */
+    }
+    lua_pop (L, 1); /* outer table */
+
+    return 1;
+}
+
 int
 lua_abort_stage (lua_State* L, int num, const char* bad_key)
 {
@@ -62,8 +141,8 @@ PAPI_register (lua_State* L)
 {
     Registration_parms regp;
 
-	/* Get # of args */
-	int argc = lua_gettop (L);
+    /* Get # of args */
+    int argc = lua_gettop (L);
     regp.num_stages = argc-1;
 
     if (regp.num_stages < 1) {
@@ -116,6 +195,8 @@ PAPI_register (lua_State* L)
         /* Stage Parms */
         char ret[255];
         int ret_int = 0;
+        float ret_float;
+        float ret_float3[3];
 
         lua_pop (L, 1);
 
@@ -236,8 +317,43 @@ PAPI_register (lua_State* L)
                 return lua_abort_stage (L, i, "metric");
             }
         }
-        if (from_lua_getint (L, &ret_int, "iterations")) {
+        if (from_lua_getstring (L, ret, "regularization")) {
+            if (!strcmp(ret,"none")) {
+                stage->regularization_type = REGULARIZATION_NONE;
+            }
+            else if (!strcmp(ret,"analytic")) {
+                stage->regularization_type = REGULARIZATION_BSPLINE_ANALYTIC;
+            }
+            else if (!strcmp(ret,"semi-analytic")
+                || !strcmp(ret,"semi_analytic")) {
+                stage->regularization_type = REGULARIZATION_BSPLINE_SEMI_ANALYTIC;
+            }
+            else if (!strcmp(ret,"numeric")) {
+                stage->regularization_type = REGULARIZATION_BSPLINE_NUMERIC;
+            }
+            else {
+                return lua_abort_stage (L, i, "regularization");
+            }
+        }
+        if (from_lua_getfloat (L, &ret_float, "regularization_lambda")) {
+            stage->regularization_lambda = ret_float;
+        }
+        if (from_lua_getfloat (L, &ret_float, "background_val")) {
+            stage->background_val = ret_float;
+        }
+        if (from_lua_getfloat (L, &ret_float, "background_max")) {
+            stage->background_max = ret_float;
+        }
+        if (from_lua_getint (L, &ret_int, "min_its")) {
+            stage->min_its = ret_int;
+        }
+        if (from_lua_getint (L, &ret_int, "max_its")) {
             stage->max_its = ret_int;
+        }
+        if (from_lua_getfloat3 (L, ret_float3, "grid_spac")) {
+            stage->grid_spac[0] = ret_float3[0];
+            stage->grid_spac[1] = ret_float3[1];
+            stage->grid_spac[2] = ret_float3[2];
         }
 
 #if 0
@@ -247,6 +363,7 @@ PAPI_register (lua_State* L)
         printf ("   STAGE %i: threading:  %i\n", i, stage->threading_type);
         printf ("   STAGE %i: metric:  %i\n", i, stage->metric_type);
         printf ("   STAGE %i: iterations:  %i\n", i, stage->max_its);
+        printf ("   STAGE %i: grid_spac:  %f, %f, %f\n", i, stage->grid_spac[0], stage->grid_spac[1], stage->grid_spac[2]);
 #endif
     
     }
@@ -261,7 +378,7 @@ PAPI_register (lua_State* L)
 static void
 register_PAPI (lua_State* L)
 {
-	lua_register (L, "register", PAPI_register);
+    lua_register (L, "register", PAPI_register);
 }
 
 
@@ -282,7 +399,7 @@ do_command_script (int argc, char *argv[])
 
 //    printf ("Opening: %s\n", script_fn);
     L = lua_open();
-	luaL_openlibs(L);
+    luaL_openlibs(L);
     register_PAPI (L);
     luaL_dofile (L, script_fn);
     lua_close (L);
