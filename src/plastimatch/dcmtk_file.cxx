@@ -90,6 +90,13 @@ Dcmtk_file::get_element (const DcmTagKey& tag_key, DcmElement* val) const
     return m_dfile->getDataset()->findAndGetElement(tag_key, val).good();
 }
 
+bool
+Dcmtk_file::get_sequence (const DcmTagKey& tag_key, 
+    DcmSequenceOfItems*& seq) const
+{
+    return m_dfile->getDataset()->findAndGetSequence (tag_key, seq).good();
+}
+
 void
 Dcmtk_file::load_header (const char *fn) {
     /* Save a copy of the filename */

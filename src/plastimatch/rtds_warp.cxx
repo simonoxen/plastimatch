@@ -2,7 +2,6 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
-#include "bstring_util.h"
 #include "cxt_extract.h"
 #include "file_util.h"
 #if GDCM_VERSION_1
@@ -29,7 +28,7 @@
 static void
 load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 {
-    if (bstring_not_empty (parms->input_fn)) {
+    if (parms->input_fn.not_empty ()) {
 	switch (file_type) {
 	case PLM_FILE_FMT_NO_FILE:
 	    print_and_exit ("Could not open input file %s for read\n",
@@ -77,13 +76,13 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	}
     }
 
-    if (bstring_not_empty (parms->input_cxt_fn)) {
+    if (parms->input_cxt_fn.not_empty()) {
 	if (rtds->m_ss_image) delete rtds->m_ss_image;
 	rtds->m_ss_image = new Rtss (rtds);
 	rtds->m_ss_image->load_cxt (parms->input_cxt_fn, &rtds->m_rdd);
     }
 
-    if (bstring_not_empty (parms->input_ss_img_fn)) {
+    if (parms->input_ss_img_fn.not_empty()) {
 	if (!file_exists (parms->input_ss_img_fn)) {
 	    print_and_exit ("Error: cannot open file %s for read\n",
 		(const char*) parms->input_ss_img_fn);
@@ -93,19 +92,19 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	    (const char*) parms->input_ss_list_fn);
     }
 
-    if (bstring_not_empty (parms->input_dose_img_fn)) {
+    if (parms->input_dose_img_fn.not_empty()) {
 	rtds->load_dose_img ((const char*) parms->input_dose_img_fn);
     }
 
-    if (bstring_not_empty (parms->input_dose_xio_fn)) {
+    if (parms->input_dose_xio_fn.not_empty()) {
 	rtds->load_dose_xio ((const char*) parms->input_dose_xio_fn);
     }
 
-    if (bstring_not_empty (parms->input_dose_ast_fn)) {
+    if (parms->input_dose_ast_fn.not_empty()) {
 	rtds->load_dose_astroid ((const char*) parms->input_dose_ast_fn);
     }
 
-    if (bstring_not_empty (parms->input_dose_mc_fn)) {
+    if (parms->input_dose_mc_fn.not_empty()) {
 	rtds->load_dose_mc ((const char*) parms->input_dose_mc_fn);
     }
 }
@@ -119,31 +118,31 @@ save_ss_img (
 )
 {
     /* labelmap */
-    if (bstring_not_empty (parms->output_labelmap_fn)) {
+    if (parms->output_labelmap_fn.not_empty()) {
 	printf ("save_ss_img: save_labelmap\n");
 	rtds->m_ss_image->save_labelmap (parms->output_labelmap_fn);
     }
 
     /* ss_img */
-    if (bstring_not_empty (parms->output_ss_img_fn)) {
+    if (parms->output_ss_img_fn.not_empty()) {
 	printf ("save_ss_img: save_ss_image\n");
 	rtds->m_ss_image->save_ss_image (parms->output_ss_img_fn);
     }
 
     /* list of structure names */
-    if (bstring_not_empty (parms->output_ss_list_fn)) {
+    if (parms->output_ss_list_fn.not_empty()) {
 	printf ("save_ss_img: save_ss_list\n");
 	rtds->m_ss_image->save_ss_list (parms->output_ss_list_fn);
     }
 
     /* prefix images */
-    if (bstring_not_empty (parms->output_prefix)) {
+    if (parms->output_prefix.not_empty()) {
 	printf ("save_ss_img: save_prefix\n");
 	rtds->m_ss_image->save_prefix (parms->output_prefix);
     }
 
     /* prefix fcsv files */
-    if (bstring_not_empty (parms->output_prefix_fcsv)) {
+    if (parms->output_prefix_fcsv.not_empty()) {
 	printf ("save_ss_img: save_prefix_fcsv\n");
 	printf ("save_ss_img: save_prefix_fcsv (%s)\n",
 	    (const char*) parms->output_prefix_fcsv);
@@ -151,19 +150,19 @@ save_ss_img (
     }
 
     /* 3D Slicer color table */
-    if (bstring_not_empty (parms->output_colormap_fn)) {
+    if (parms->output_colormap_fn.not_empty()) {
 	printf ("save_ss_img: save_colormap\n");
 	rtds->m_ss_image->save_colormap (parms->output_colormap_fn);
     }
 
     /* cxt */
-    if (bstring_not_empty (parms->output_cxt_fn)) {
+    if (parms->output_cxt_fn.not_empty()) {
 	printf ("save_ss_img: save_cxt\n");
 	rtds->m_ss_image->save_cxt (&rtds->m_rdd, parms->output_cxt_fn, false);
     }
 
     /* xio */
-    if (bstring_not_empty (parms->output_xio_dirname)) {
+    if (parms->output_xio_dirname.not_empty()) {
 	logfile_printf ("save_ss_img: save_xio (dirname = %s)\n", 
 	    (const char*) parms->output_xio_dirname);
 	rtds->m_ss_image->save_xio (
@@ -188,10 +187,10 @@ warp_and_save_ss (
        warp something, then we need to rasterize the volume */
     /* GCS FIX: If there is an input m_ss_img, we still do this 
        because we might need the labelmap */
-    if (bstring_not_empty (parms->output_labelmap_fn)
-	|| bstring_not_empty (parms->output_ss_img_fn)
-	|| bstring_not_empty (parms->xf_in_fn)
-	|| bstring_not_empty (parms->output_prefix))
+    if (parms->output_labelmap_fn.not_empty()
+	|| parms->output_ss_img_fn.not_empty()
+	|| parms->xf_in_fn.not_empty()
+	|| parms->output_prefix.not_empty())
     {
 
 	/* In the following cases, we should use the default 
@@ -207,7 +206,7 @@ warp_and_save_ss (
 	*/
 	Plm_image_header pih;
 	Rtss_polyline_set *cxt = rtds->m_ss_image->m_cxt;
-	if (bstring_not_empty (parms->xf_in_fn)) {
+	if (parms->xf_in_fn.not_empty()) {
 	    pih.set_from_gpuit (cxt->rast_dim, cxt->rast_offset, 
 		cxt->rast_spacing, 0);
 	} else {
@@ -220,7 +219,7 @@ warp_and_save_ss (
     }
 
     /* Do the warp */
-    if (bstring_not_empty (parms->xf_in_fn)) {
+    if (parms->xf_in_fn.not_empty()) {
 	printf ("Warp_and_save_ss: m_ss_image->warp\n");
 	rtds->m_ss_image->warp (xf, pih, parms);
     }
@@ -228,7 +227,7 @@ warp_and_save_ss (
     /* If we are warping, re-extract polylines into cxt */
     /* GCS FIX: This is only necessary if we are outputting polylines. 
        Otherwise it is wasting users time. */
-    if (bstring_not_empty (parms->xf_in_fn)) {
+    if (parms->xf_in_fn.not_empty()) {
 	printf ("Warp_and_save_ss: m_ss_image->cxt_re_extract\n");
 	rtds->m_ss_image->cxt_re_extract ();
     }
@@ -254,7 +253,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 
     /* Load referenced DICOM directory */
 
-    if (bstring_not_empty (parms->referenced_dicom_dir)) {
+    if (parms->referenced_dicom_dir.not_empty()) {
 	logfile_printf ("Loading RDD\n");
 	rtds->load_rdd ((const char*) parms->referenced_dicom_dir);
     } else {
@@ -263,7 +262,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	   a directory by default. */
 #if defined (commentout)
 	/* Look for referenced CT in input directory */
-	if (bstring_not_empty (parms->input_fn)) {
+	if (parms->input_fn.not_empty()) {
 	    logfile_printf ("Loading RDD\n");
 	    char* dirname = file_util_dirname ((const char*) parms->input_fn);
 	    rtds->load_rdd (dirname);
@@ -279,13 +278,13 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     rtds->set_user_metadata (parms->m_metadata);
 
     /* Load transform */
-    if (bstring_not_empty (parms->xf_in_fn)) {
+    if (parms->xf_in_fn.not_empty()) {
 	logfile_printf ("Loading xform (%s)\n", (const char*) parms->xf_in_fn);
 	xform_load (&xform, (const char*) parms->xf_in_fn);
     }
 
     /* Try to guess the proper dimensions and spacing for output image */
-    if (bstring_not_empty (parms->fixed_img_fn)) {
+    if (parms->fixed_img_fn.not_empty()) {
 	/* use the spacing of user-supplied fixed image */
 	printf ("Setting PIH from FIXED\n");
 	FloatImageType::Pointer fixed = itk_image_load_float (
@@ -356,10 +355,10 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 
     /* Warp the image and create vf */
     if (rtds->m_img 
-	&& bstring_not_empty (parms->xf_in_fn)
-	&& (bstring_not_empty (parms->output_img_fn)
-	    || bstring_not_empty (parms->output_vf_fn)
-	    || bstring_not_empty (parms->output_dicom)))
+	&& parms->xf_in_fn.not_empty()
+	&& (parms->output_img_fn.not_empty()
+	    || parms->output_vf_fn.not_empty()
+	    || parms->output_dicom.not_empty()))
     {
 	Plm_image *im_out;
 	im_out = new Plm_image;
@@ -371,7 +370,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     }
 
     /* Save output image */
-    if (bstring_not_empty (parms->output_img_fn) && rtds->m_img) {
+    if (parms->output_img_fn.not_empty() && rtds->m_img) {
 	printf ("Rtds_warp: Saving m_img (%s)\n",
 	    (const char*) parms->output_img_fn);
 	rtds->m_img->convert_and_save (
@@ -381,10 +380,10 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 
     /* Warp the dose image */
     if (rtds->m_dose
-	&& bstring_not_empty (parms->xf_in_fn)
-	&& (bstring_not_empty (parms->output_dose_img_fn)
-	    || bstring_not_empty (parms->output_xio_dirname)
-	    || bstring_not_empty (parms->output_dicom)))
+	&& parms->xf_in_fn.not_empty()
+	&& (parms->output_dose_img_fn.not_empty()
+	    || parms->output_xio_dirname.not_empty()
+	    || parms->output_dicom.not_empty()))
     {
 	printf ("Rtds_warp: Warping dose\n");
 	Plm_image *im_out;
@@ -401,7 +400,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     }
 
     /* Save output dose image */
-    if (bstring_not_empty (parms->output_dose_img_fn) && rtds->m_dose)
+    if (parms->output_dose_img_fn.not_empty() && rtds->m_dose)
     {
 	printf ("Rtds_warp: Saving dose image (%s)\n", 
 	    (const char*) parms->output_dose_img_fn);
@@ -411,7 +410,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     }
 
     /* Save output XiO dose */
-    if (bstring_not_empty (parms->output_xio_dirname)
+    if (parms->output_xio_dirname.not_empty()
 	&& rtds->m_xio_dose_input
 	&& rtds->m_dose)
     {
@@ -428,8 +427,8 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     }
 
     /* Save output vector field */
-    if (bstring_not_empty (parms->xf_in_fn) 
-	&& bstring_not_empty (parms->output_vf_fn))
+    if (parms->xf_in_fn.not_empty() 
+	&& parms->output_vf_fn.not_empty())
     {
 	printf ("Rtds_warp: Saving vf.\n");
 	itk_image_save (vf, (const char*) parms->output_vf_fn);
@@ -467,7 +466,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     warp_and_save_ss (rtds, &xform, &pih, parms);
 
     /* Save dicom */
-    if (bstring_not_empty (parms->output_dicom)) {
+    if (parms->output_dicom.not_empty()) {
 	printf ("Rtds_warp: Save dicom.\n");
 	rtds->save_dicom ((const char*) parms->output_dicom);
     }

@@ -40,11 +40,17 @@ Dcmtk_series::debug (void) const
 }
 
 std::string 
-Dcmtk_series::get_modality (void) const
+Dcmtk_series::get_string (const DcmTagKey& tag_key) const
 {
-    const char* c = m_flist.front()->get_cstr (DCM_Modality);
+    const char* c = m_flist.front()->get_cstr(tag_key);
     if (!c) c = "";
     return std::string(c);
+}
+
+std::string 
+Dcmtk_series::get_modality (void) const
+{
+    return get_string (DCM_Modality);
 }
 
 std::string 
@@ -109,7 +115,6 @@ Dcmtk_series::load_plm_image (void)
 	return 0;
     }
     
-
     /* Get first slice */
     std::list<Dcmtk_file*>::iterator it = m_flist.begin();
     Dcmtk_file *df = (*it);

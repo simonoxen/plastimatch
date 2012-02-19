@@ -64,6 +64,7 @@ Dcmtk_series_set::insert_file (const char* fn)
 void
 Dcmtk_series_set::insert_directory (const char* dir)
 {
+    printf ("** Dcmtk_series_set::insert_directory (started) **\n");
     OFBool recurse = OFFalse;
     OFList<OFString> input_files;
 
@@ -76,6 +77,7 @@ Dcmtk_series_set::insert_directory (const char* dir)
 	const char *current = (*if_iter++).c_str();
 	this->insert_file (current);
     }
+    printf ("** Dcmtk_series_set::insert_directory (complete) **\n");
 }
 
 void
@@ -155,14 +157,17 @@ Dcmtk_series_set::load_rtds (Rtds *rtds)
 	    continue;
 	}
 
-#if defined (commentout)
 	if (ds->get_modality() == "CT") {
 	    printf ("LOADING CT\n");
 	    rtds->m_img = ds->load_plm_image ();
 	    continue;
 	}
-#endif
     }
+
+    if (ds_rtss) {
+        ds_rtss->rtss_load (rtds);
+    }
+
     printf ("Done.\n");
 }
 
@@ -173,5 +178,12 @@ dcmtk_series_set_test (char *dicom_dir)
     printf ("Searching directory: %s\n", dicom_dir);
     dss.insert_directory (dicom_dir);
     dss.sort_all ();
-    dss.debug ();
+    //dss.debug ();
+
+    Rtds rtds;
+    dss.load_rtds (&rtds);
+
+    if (rtds.m_img) {
+        rtds.m_img->save_image ("img.mha");
+    }
 }

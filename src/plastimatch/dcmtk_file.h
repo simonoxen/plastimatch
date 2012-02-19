@@ -11,6 +11,7 @@
 
 class DcmDataset;
 class DcmElement;
+class DcmSequenceOfItems;
 class DcmTagKey;
 
 class Dcmtk_file
@@ -34,6 +35,8 @@ public:
     bool get_uint16_array (const DcmTagKey& tag_key, 
 	const uint16_t** val, unsigned long* count) const;
     bool get_element (const DcmTagKey& tag_key, DcmElement* val) const;
+    bool get_sequence (const DcmTagKey& tag_key, 
+        DcmSequenceOfItems*& seq) const;
     void init ();
     void load_header (const char *fn);
 };
