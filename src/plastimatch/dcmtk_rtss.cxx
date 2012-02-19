@@ -14,6 +14,7 @@
 #include "print_and_exit.h"
 #include "rtds.h"
 #include "rtss.h"
+#include "rtss_structure.h"
 
 void
 Dcmtk_series::rtss_load (
@@ -32,16 +33,16 @@ Dcmtk_series::rtss_load (
         print_and_exit ("Oops.\n");
     }
 
+    /* FIX: load metadata such as patient name, etc. */
+
     /* ReferencedFrameOfReferenceSequence */
     DcmSequenceOfItems *seq = 0;
     bool rc = m_flist.front()->get_sequence (
         DCM_ReferencedFrameOfReferenceSequence, seq);
     if (!rc) {
-        printf ("Huh? No RFOR sequence???\n");
-    } else {
-        printf ("Found RFOR sequence.\n");
+        printf ("Huh? Why no RFOR sequence???\n");
     }
-    /* Here we would stash the slice UIDs */
+    /* FIX: need to stash the slice UIDs */
 
     /* StructureSetROISequence */
     seq = 0;
@@ -60,27 +61,44 @@ Dcmtk_series::rtss_load (
             }
             val = 0;
             orc = seq->getItem(i)->findAndGetString (DCM_ROIName, val);
-            printf ("Adding structure (%d), %s\n",
-                structure_id, val);
+            printf ("Adding structure (%d), %s\n", structure_id, val);
             cxt->add_structure (Pstring (val), Pstring (), structure_id);
         }
     }
 
-#if defined (commentout)
-    /* StructureSetROISequence */
-    seq = rtss_file->GetSeqEntry (0x3006,0x0020);
-    for (item = seq->GetFirstSQItem (); item; item = seq->GetNextSQItem ()) {
-	int structure_id;
-	std::string roi_number, roi_name;
-	roi_number = item->GetEntryValue (0x3006,0x0022);
-	roi_name = item->GetEntryValue (0x3006,0x0026);
-	if (1 != sscanf (roi_number.c_str(), "%d", &structure_id)) {
-	    continue;
-	}
-	cxt->add_structure (Pstring (roi_name.c_str()), 
-	    Pstring (), structure_id);
+    /* ROIContourSequence */
+    seq = 0;
+    rc = m_flist.front()->get_sequence (DCM_ROIContourSequence, seq);
+    if (rc) {
+        for (unsigned long i = 0; i < seq->card(); i++) {
+            Rtss_structure *curr_structure;
+            int structure_id;
+            OFCondition orc;
+            const char *val = 0;
+
+            /* Get ID and color */
+            orc = seq->getItem(i)->findAndGetString (
+                DCM_ReferencedROINumber, val);
+            if (!orc.good()) {
+                continue;
+            }
+            if (1 != sscanf (val, "%d", &structure_id)) {
+                continue;
+            }
+            val = 0;
+            orc = seq->getItem(i)->findAndGetString (DCM_ROIDisplayColor, val);
+            printf ("Structure %d has color %s\n", structure_id, val);
+            curr_structure = cxt->find_structure_by_id (structure_id);
+            if (!curr_structure) {
+                printf ("Couldn't reference structure with id %d\n", 
+                    structure_id);
+                continue;
+            }
+            curr_structure->set_color (val);
+        }
     }
 
+#if defined (commentout)
     /* ROIContourSequence */
     seq = rtss_file->GetSeqEntry (0x3006,0x0039);
     for (item = seq->GetFirstSQItem (); item; item = seq->GetNextSQItem ()) {
