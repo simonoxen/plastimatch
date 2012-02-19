@@ -22,7 +22,8 @@ Dcmtk_series::rtss_load (
 {
     Rtss *rtss = new Rtss (rtds);
     rtds->m_ss_image = rtss;
-    Rtss_polyline_set *cxt = rtss->m_cxt;
+    Rtss_polyline_set *cxt = new Rtss_polyline_set;
+    rtss->m_cxt = cxt;
     
     std::string modality = this->get_modality();
     if (modality == "RTSTRUCT") {
@@ -36,53 +37,36 @@ Dcmtk_series::rtss_load (
     bool rc = m_flist.front()->get_sequence (
         DCM_ReferencedFrameOfReferenceSequence, seq);
     if (!rc) {
-        printf ("Huh?  No sequence?? %p\n", seq);
+        printf ("Huh? No RFOR sequence???\n");
     } else {
-        printf ("Wow... cool!\n");
+        printf ("Found RFOR sequence.\n");
+    }
+    /* Here we would stash the slice UIDs */
+
+    /* StructureSetROISequence */
+    seq = 0;
+    rc = m_flist.front()->get_sequence (DCM_StructureSetROISequence, seq);
+    if (rc) {
+        for (unsigned long i = 0; i < seq->card(); i++) {
+            int structure_id;
+            OFCondition orc;
+            const char *val = 0;
+            orc = seq->getItem(i)->findAndGetString (DCM_ROINumber, val);
+            if (!orc.good()) {
+                continue;
+            }
+            if (1 != sscanf (val, "%d", &structure_id)) {
+                continue;
+            }
+            val = 0;
+            orc = seq->getItem(i)->findAndGetString (DCM_ROIName, val);
+            printf ("Adding structure (%d), %s\n",
+                structure_id, val);
+            cxt->add_structure (Pstring (val), Pstring (), structure_id);
+        }
     }
 
 #if defined (commentout)
-    gdcm::SeqEntry *rfor_seq = rtss_file->GetSeqEntry (0x3006,0x0010);
-    if (rfor_seq) {
-
-	/* FrameOfReferenceUID */
-	item = rfor_seq->GetFirstSQItem ();
-	if (item) {
-	    tmp = item->GetEntryValue (0x0020,0x0052);
-	    if (rdd->m_ct_fref_uid.empty()) {
-		if (tmp != gdcm::GDCM_UNFOUND) {
-		    rdd->m_ct_fref_uid = tmp.c_str();
-		}
-	    }
-	
-	    /* RTReferencedStudySequence */
-	    gdcm::SeqEntry *rtrstudy_seq 
-		= item->GetSeqEntry (0x3006, 0x0012);
-	    if (rtrstudy_seq) {
-	
-		/* RTReferencedSeriesSequence */
-		item = rtrstudy_seq->GetFirstSQItem ();
-		if (item) {
-		    gdcm::SeqEntry *rtrseries_seq 
-			= item->GetSeqEntry (0x3006, 0x0014);
-		    if (rtrseries_seq) {
-			item = rtrseries_seq->GetFirstSQItem ();
-
-			/* SeriesInstanceUID */
-			if (item) {
-			    tmp = item->GetEntryValue (0x0020, 0x000e);
-			    if (rdd->m_ct_series_uid.empty()) {
-				if (tmp != gdcm::GDCM_UNFOUND) {
-				    rdd->m_ct_series_uid = tmp.c_str();
-				}
-			    }
-			}
-		    }
-		}
-	    }
-	}
-    }
-
     /* StructureSetROISequence */
     seq = rtss_file->GetSeqEntry (0x3006,0x0020);
     for (item = seq->GetFirstSQItem (); item; item = seq->GetNextSQItem ()) {
