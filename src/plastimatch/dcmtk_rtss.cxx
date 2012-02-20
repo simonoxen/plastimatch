@@ -75,19 +75,22 @@ Dcmtk_series::rtss_load (
             int structure_id;
             OFCondition orc;
             const char *val = 0;
+            DcmItem *item = seq->getItem(i);
 
             /* Get ID and color */
-            orc = seq->getItem(i)->findAndGetString (
-                DCM_ReferencedROINumber, val);
+            orc = item->findAndGetString (DCM_ReferencedROINumber, val);
             if (!orc.good()) {
+                printf ("Error finding DCM_ReferencedROINumber.\n");
                 continue;
             }
             if (1 != sscanf (val, "%d", &structure_id)) {
                 continue;
             }
             val = 0;
-            orc = seq->getItem(i)->findAndGetString (DCM_ROIDisplayColor, val);
+            orc = item->findAndGetString (DCM_ROIDisplayColor, val);
             printf ("Structure %d has color %s\n", structure_id, val);
+
+            /* Look up the structure for this id and set color */
             curr_structure = cxt->find_structure_by_id (structure_id);
             if (!curr_structure) {
                 printf ("Couldn't reference structure with id %d\n", 
@@ -95,57 +98,46 @@ Dcmtk_series::rtss_load (
                 continue;
             }
             curr_structure->set_color (val);
-        }
-    }
 
-#if defined (commentout)
-    /* ROIContourSequence */
-    seq = rtss_file->GetSeqEntry (0x3006,0x0039);
-    for (item = seq->GetFirstSQItem (); item; item = seq->GetNextSQItem ()) {
-	int structure_id;
-	std::string roi_display_color, referenced_roi_number;
-	gdcm::SeqEntry *c_seq;
-	gdcm::SQItem *c_item;
-	Rtss_structure *curr_structure;
-
-	/* Get id and color */
-	referenced_roi_number = item->GetEntryValue (0x3006,0x0084);
-	roi_display_color = item->GetEntryValue (0x3006,0x002a);
-	printf ("RRN = [%s], RDC = [%s]\n", referenced_roi_number.c_str(), roi_display_color.c_str());
-
-	if (1 != sscanf (referenced_roi_number.c_str(), "%d", &structure_id)) {
-	    printf ("Error parsing rrn...\n");
-	    continue;
-	}
-
-	/* Look up the cxt structure for this id */
-	curr_structure = cxt->find_structure_by_id (structure_id);
-	if (!curr_structure) {
-	    printf ("Couldn't reference structure with id %d\n", structure_id);
-	    exit (-1);
-	}
-	curr_structure->set_color (roi_display_color.c_str());
-
-	/* ContourSequence */
-	c_seq = item->GetSeqEntry (0x3006,0x0040);
-	if (c_seq) {
-	    for (c_item = c_seq->GetFirstSQItem (); c_item; c_item = c_seq->GetNextSQItem ()) {
+            /* ContourSequence */
+            DcmSequenceOfItems *c_seq = 0;
+            orc = item->findAndGetSequence (DCM_ContourSequence, c_seq);
+            if (!orc.good()) {
+                printf ("Error finding DCM_ContourSequence.\n");
+                continue;
+            }
+            for (unsigned long j = 0; j < c_seq->card(); j++) {
 		int i, p, n, contour_data_len;
 		int num_points;
-		std::string contour_geometric_type;
-		std::string contour_data;
-		std::string number_of_contour_points;
+		const char *contour_geometric_type;
+		const char *contour_data;
+		const char *number_of_contour_points;
 		Rtss_polyline *curr_polyline;
+                DcmItem *c_item = c_seq->getItem(j);
 
-		/* Grab data from dicom */
-		contour_geometric_type = c_item->GetEntryValue (0x3006,0x0042);
-		if (strncmp (contour_geometric_type.c_str(), "CLOSED_PLANAR", strlen("CLOSED_PLANAR"))) {
+		/* ContourGeometricType */
+                orc = c_item->findAndGetString (DCM_ContourGeometricType, 
+                    contour_geometric_type);
+                if (!orc.good()) {
+		    printf ("Error finding DCM_ContourGeometricType.\n");
+                    continue;
+                }
+		if (strncmp (contour_geometric_type, "CLOSED_PLANAR", 
+                        strlen("CLOSED_PLANAR"))) {
 		    /* Might be "POINT".  Do I want to preserve this? */
-		    printf ("Skipping geometric type: [%s]\n", contour_geometric_type.c_str());
+		    printf ("Skipping geometric type: [%s]\n", 
+                        contour_geometric_type);
 		    continue;
 		}
-		number_of_contour_points = c_item->GetEntryValue (0x3006,0x0046);
-		if (1 != sscanf (number_of_contour_points.c_str(), "%d", &num_points)) {
+
+                /* NumberOfContourPoints */
+                orc = c_item->findAndGetString (DCM_NumberOfContourPoints,
+                    number_of_contour_points);
+                if (!orc.good()) {
+		    printf ("Error finding DCM_NumberOfContourPoints.\n");
+                    continue;
+                }
+		if (1 != sscanf (number_of_contour_points, "%d", &num_points)) {
 		    printf ("Error parsing number_of_contour_points...\n");
 		    continue;
 		}
@@ -153,9 +145,12 @@ Dcmtk_series::rtss_load (
 		    /* Polyline with zero points?  Skip it. */
 		    continue;
 		}
-		contour_data = c_item->GetEntryValue (0x3006,0x0050);
-		if (contour_data == gdcm::GDCM_UNFOUND) {
-		    printf ("Error grabbing contour data.\n");
+                printf ("Contour %d points\n", num_points);
+
+                /* ContourData */
+                orc = c_item->findAndGetString (DCM_ContourData, contour_data);
+                if (!orc.good()) {
+		    printf ("Error finding DCM_ContourData.\n");
 		    continue;
 		}
 
@@ -171,14 +166,14 @@ Dcmtk_series::rtss_load (
 		/* Parse dicom data string */
 		i = 0;
 		n = 0;
-		contour_data_len = strlen (contour_data.c_str());
+		contour_data_len = strlen (contour_data);
 		for (p = 0; p < 3 * num_points; p++) {
 		    float f;
 		    int this_n;
 		
 		    /* Skip \\ */
 		    if (n < contour_data_len) {
-			if (contour_data.c_str()[n] == '\\') {
+			if (contour_data[n] == '\\') {
 			    n++;
 			}
 		    }
@@ -204,10 +199,10 @@ Dcmtk_series::rtss_load (
 		    }
 		    i = (i + 1) % 3;
 		}
-	    }
-	}
+            }
+        }
     }
-    printf ("Loading complete.\n");
-    delete rtss_file;
-#endif
+    printf ("%p %p %p\n", rtds,
+        rtds->m_ss_image, rtds->m_ss_image->m_cxt);
+
 }

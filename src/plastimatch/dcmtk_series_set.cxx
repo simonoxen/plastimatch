@@ -13,6 +13,7 @@
 #include "dcmtk_series_set.h"
 #include "print_and_exit.h"
 #include "rtds.h"
+#include "rtss.h"
 
 Dcmtk_series_set::Dcmtk_series_set ()
 {
@@ -183,7 +184,14 @@ dcmtk_series_set_test (char *dicom_dir)
     Rtds rtds;
     dss.load_rtds (&rtds);
 
+    printf ("%p %p %p\n", &rtds,
+        rtds.m_ss_image, rtds.m_ss_image->m_cxt);
+
     if (rtds.m_img) {
         rtds.m_img->save_image ("img.mha");
+    }
+    if (rtds.m_ss_image) {
+        printf ("Trying to save?\n");
+        rtds.m_ss_image->save_cxt (0, Pstring("ss.cxt"), false);
     }
 }

@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "bstring_util.h"
 #include "cxt_io.h"
 #include "file_util.h"
 #include "img_metadata.h"
@@ -39,6 +38,8 @@ cxt_load (
     float x = 0;
     float y = 0;
     float z = 0;
+
+    printf ("1\n");
 
     fp = fopen (cxt_fn, "r");
 
@@ -283,21 +284,21 @@ cxt_save (
     }
 
     /* Part 1: Dicom info */
-    if (bstring_not_empty (rdd->m_ct_series_uid)) {
-	fprintf (fp, "CT_SERIES_UID %s\n", (const char*) rdd->m_ct_series_uid);
-    } else {
+    if (rdd->m_ct_series_uid.empty()) {
 	fprintf (fp, "CT_SERIES_UID\n");
-    }
-    if (bstring_not_empty (rdd->m_ct_study_uid)) {
-	fprintf (fp, "CT_STUDY_UID %s\n", (const char*) rdd->m_ct_study_uid);
     } else {
-	fprintf (fp, "CT_STUDY_UID\n");
+	fprintf (fp, "CT_SERIES_UID %s\n", (const char*) rdd->m_ct_series_uid);
     }
-    if (bstring_not_empty (rdd->m_ct_fref_uid)) {
+    if (rdd->m_ct_study_uid.empty()) {
+	fprintf (fp, "CT_STUDY_UID\n");
+    } else {
+	fprintf (fp, "CT_STUDY_UID %s\n", (const char*) rdd->m_ct_study_uid);
+    }
+    if (rdd->m_ct_fref_uid.empty()) {
+	fprintf (fp, "CT_FRAME_OF_REFERENCE_UID\n");
+    } else {
 	fprintf (fp, "CT_FRAME_OF_REFERENCE_UID %s\n", 
 	    (const char*) rdd->m_ct_fref_uid);
-    } else {
-	fprintf (fp, "CT_FRAME_OF_REFERENCE_UID\n");
     }
     fprintf (fp, "PATIENT_NAME %s\n",
 	rtss->m_img_metadata.get_metadata (0x0010, 0x0010).c_str());
@@ -305,10 +306,10 @@ cxt_save (
 	rtss->m_img_metadata.get_metadata (0x0010, 0x0020).c_str());
     fprintf (fp, "PATIENT_SEX %s\n",
 	rtss->m_img_metadata.get_metadata (0x0010, 0x0040).c_str());
-    if (bstring_not_empty (rdd->m_study_id)) {
-	fprintf (fp, "STUDY_ID %s\n", (const char*) rdd->m_study_id);
-    } else {
+    if (rdd->m_study_id.empty()) {
 	fprintf (fp, "STUDY_ID\n");
+    } else {
+	fprintf (fp, "STUDY_ID %s\n", (const char*) rdd->m_study_id);
     }
     if (cxt->have_geometry) {
 	fprintf (fp, "OFFSET %g %g %g\n", cxt->m_offset[0],
@@ -356,10 +357,10 @@ cxt_save (
 	    } else {
 		fprintf (fp, "|");
 	    }
-	    if (bstring_not_empty (curr_polyline->ct_slice_uid)) {
-		fprintf (fp, "%s|", (const char*) curr_polyline->ct_slice_uid);
-	    } else {
+	    if (curr_polyline->ct_slice_uid.empty()) {
 		fprintf (fp, "|");
+	    } else {
+		fprintf (fp, "%s|", (const char*) curr_polyline->ct_slice_uid);
 	    }
 	    for (k = 0; k < curr_polyline->num_vertices; k++) {
 		if (k > 0) {
