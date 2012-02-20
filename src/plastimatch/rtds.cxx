@@ -323,3 +323,10 @@ Rtds::set_user_metadata (std::vector<std::string>& metadata)
 
     xio_ct_get_transform(&(m_img_metadata), m_xio_transform);
 }
+
+void 
+Rtds::set_dose (Plm_image *pli)
+{
+    if (m_dose) delete m_dose;
+    m_dose = pli;
+}

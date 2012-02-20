@@ -48,6 +48,7 @@ public:
     void save_dicom (const char *output_dir);
     void convert_ss_img_to_cxt (void);
     void set_user_metadata (std::vector<std::string>& metadata);
+    void set_dose (Plm_image *pli);
 };
 
 #endif

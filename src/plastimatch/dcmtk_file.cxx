@@ -70,13 +70,20 @@ Dcmtk_file::get_uint16 (const DcmTagKey& tag_key, uint16_t* val) const
 }
 
 bool
+Dcmtk_file::get_int16_array (const DcmTagKey& tag_key, 
+    const int16_t** val, unsigned long* count) const
+{
+    const Sint16* foo;
+    OFCondition rc = m_dfile->getDataset()->findAndGetSint16Array(
+	tag_key, foo, count, OFFalse);
+    *val = foo;
+    return rc.good();
+}
+
+bool
 Dcmtk_file::get_uint16_array (const DcmTagKey& tag_key, 
     const uint16_t** val, unsigned long* count) const
 {
-#if defined (commentout)
-    return m_dfile->getDataset()->findAndGetUint16Array(
-	tag_key, (const Uint16*) (*val), (long unsigned int*) 0, OFFalse).good();
-#endif
     const Uint16* foo;
     OFCondition rc = m_dfile->getDataset()->findAndGetUint16Array(
 	tag_key, foo, count, OFFalse);

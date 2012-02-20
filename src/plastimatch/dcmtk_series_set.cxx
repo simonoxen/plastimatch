@@ -65,7 +65,6 @@ Dcmtk_series_set::insert_file (const char* fn)
 void
 Dcmtk_series_set::insert_directory (const char* dir)
 {
-    printf ("** Dcmtk_series_set::insert_directory (started) **\n");
     OFBool recurse = OFFalse;
     OFList<OFString> input_files;
 
@@ -78,7 +77,6 @@ Dcmtk_series_set::insert_directory (const char* dir)
 	const char *current = (*if_iter++).c_str();
 	this->insert_file (current);
     }
-    printf ("** Dcmtk_series_set::insert_directory (complete) **\n");
 }
 
 void
@@ -110,7 +108,6 @@ void
 Dcmtk_series_set::load_rtds (Rtds *rtds)
 {
     Dcmtk_series_map::iterator it;
-    Dcmtk_series *ds_img = 0;
     Dcmtk_series *ds_rtdose = 0;
     Dcmtk_series *ds_rtss = 0;
 
@@ -169,6 +166,10 @@ Dcmtk_series_set::load_rtds (Rtds *rtds)
         ds_rtss->rtss_load (rtds);
     }
 
+    if (ds_rtdose) {
+        ds_rtdose->rtdose_load (rtds);
+    }
+
     printf ("Done.\n");
 }
 
@@ -184,14 +185,14 @@ dcmtk_series_set_test (char *dicom_dir)
     Rtds rtds;
     dss.load_rtds (&rtds);
 
-    printf ("%p %p %p\n", &rtds,
-        rtds.m_ss_image, rtds.m_ss_image->m_cxt);
-
     if (rtds.m_img) {
         rtds.m_img->save_image ("img.mha");
     }
     if (rtds.m_ss_image) {
-        printf ("Trying to save?\n");
+        printf ("Trying to save ss.cxt\n");
         rtds.m_ss_image->save_cxt (0, Pstring("ss.cxt"), false);
+    }
+    if (rtds.m_dose) {
+        rtds.m_dose->save_image ("dose.mha");
     }
 }

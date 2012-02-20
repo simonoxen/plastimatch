@@ -34,6 +34,12 @@ public:
     bool get_uint16 (const DcmTagKey& tag_key, uint16_t* val) const;
     bool get_uint16_array (const DcmTagKey& tag_key, 
 	const uint16_t** val, unsigned long* count) const;
+    bool get_int16_array (const DcmTagKey& tag_key, 
+	const int16_t** val, unsigned long* count) const;
+    bool get_uint32_array (const DcmTagKey& tag_key, 
+	const uint32_t** val, unsigned long* count) const;
+    bool get_int32_array (const DcmTagKey& tag_key, 
+	const int32_t** val, unsigned long* count) const;
     bool get_element (const DcmTagKey& tag_key, DcmElement* val) const;
     bool get_sequence (const DcmTagKey& tag_key, 
         DcmSequenceOfItems*& seq) const;

@@ -73,7 +73,7 @@ gdcm1_dose_probe (const char *dose_fn)
 
 template <class T> 
 void
-dose_copy_raw (float *img_out, T *img_in, int nvox, float scale)
+gdcm1_dose_copy_raw (float *img_out, T *img_in, int nvox, float scale)
 {
     for (int i = 0; i < nvox; i++) {
 	img_out[i] = img_in[i] * scale;
@@ -83,7 +83,7 @@ dose_copy_raw (float *img_out, T *img_in, int nvox, float scale)
 Plm_image*
 gdcm1_dose_load (Plm_image *pli, const char *dose_fn, const char *dicom_dir)
 {
-    int i, rc;
+    int d, rc;
     gdcm::File *gdcm_file = new gdcm::File;
     Gdcm_series gs;
     std::string tmp;
@@ -117,19 +117,19 @@ gdcm1_dose_load (Plm_image *pli, const char *dose_fn, const char *dicom_dir)
 
     /* Rows */
     tmp = gdcm_file->GetEntryValue (0x0028, 0x0010);
-    rc = sscanf (tmp.c_str(), "%d", &i);
+    rc = sscanf (tmp.c_str(), "%d", &d);
     if (rc != 1) {
 	print_and_exit ("Error parsing RTDOSE rows.\n");
     }
-    dim[1] = i;
+    dim[1] = d;
 
     /* Columns */
     tmp = gdcm_file->GetEntryValue (0x0028, 0x0011);
-    rc = sscanf (tmp.c_str(), "%d", &i);
+    rc = sscanf (tmp.c_str(), "%d", &d);
     if (rc != 1) {
 	print_and_exit ("Error parsing RTDOSE columns.\n");
     }
-    dim[0] = i;
+    dim[0] = d;
 
     /* PixelSpacing */
     tmp = gdcm_file->GetEntryValue (0x0028, 0x0030);
@@ -184,7 +184,7 @@ gdcm1_dose_load (Plm_image *pli, const char *dose_fn, const char *dicom_dir)
     }
 
     /* (3) Check to make sure spacing is regular. */
-    for (i = 1; i < gfov_len; i++) {
+    for (size_t i = 1; i < gfov_len; i++) {
 	if (i == 1) {
 	    spacing[2] = gfov[1] - gfov[0];
 	} else {
@@ -216,22 +216,16 @@ gdcm1_dose_load (Plm_image *pli, const char *dose_fn, const char *dicom_dir)
     //size_t image_data_size = gdcm_file_helper.GetImageDataSize();
     if (strcmp (gdcm_file->GetPixelType().c_str(), "16U")==0) {
 	unsigned short* image_data = (unsigned short*) gdcm_file_helper.GetImageData();
-	dose_copy_raw (img, image_data, vol->npix, dose_scaling);
+	gdcm1_dose_copy_raw (img, image_data, vol->npix, dose_scaling);
     } else if (strcmp(gdcm_file->GetPixelType().c_str(),"32U")==0){
 	printf ("Got 32U.\n");
 	uint32_t* image_data = (uint32_t*) gdcm_file_helper.GetImageData ();
-	dose_copy_raw (img, image_data, vol->npix, dose_scaling);
+	gdcm1_dose_copy_raw (img, image_data, vol->npix, dose_scaling);
     } else {
 	print_and_exit ("Error RTDOSE not type 16U and 32U (type=%s)\n",gdcm_file->GetPixelType().c_str());
     }
 
     /* GCS FIX: Do I need to do something about endian-ness? */
-
-    /* Copy data to volume */
-    //   float *img = (float*) vol->img;
-    //   for (i = 0; i < vol->npix; i++) {
-    //img[i] = image_data[i] * dose_scaling;
-    //   }
 
     /* Bind volume to plm_image */
     pli->set_gpuit (vol);
@@ -472,5 +466,5 @@ gdcm1_dose_save (
 }
 
 /* Explicit instantiations */
-template plastimatch1_EXPORT void dose_copy_raw (float *img_out, unsigned short *img_in, int nvox, float scale);
-template plastimatch1_EXPORT void dose_copy_raw (float *img_out, unsigned long int *img_in, int nvox, float scale);
+template plastimatch1_EXPORT void gdcm1_dose_copy_raw (float *img_out, unsigned short *img_in, int nvox, float scale);
+template plastimatch1_EXPORT void gdcm1_dose_copy_raw (float *img_out, unsigned long int *img_in, int nvox, float scale);

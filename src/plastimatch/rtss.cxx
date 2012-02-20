@@ -127,7 +127,6 @@ Rtss::save_cxt (
     bool prune_empty
 )
 {
-    printf ("this = %p\n", this);
     cxt_save (this, rdd, (const char*) cxt_fn, prune_empty);
 }
 

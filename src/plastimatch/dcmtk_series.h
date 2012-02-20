@@ -6,6 +6,7 @@
 
 #include "plm_config.h"
 #include <list>
+#include "plm_int.h"
 
 class DcmTagKey;
 
@@ -25,12 +26,15 @@ public:
 
 public:
     void debug (void) const;
+    const char* get_cstr (const DcmTagKey& tag_key) const;
     std::string get_string (const DcmTagKey& tag_key) const;
+    bool get_uint16 (const DcmTagKey& tag_key, uint16_t* val) const;
     std::string get_modality (void) const;
     std::string get_referenced_uid (void) const;
     void insert (Dcmtk_file* df);
     Plm_image* load_plm_image ();
     void rtss_load (Rtds *rtds);
+    void rtdose_load (Rtds *rtds);
     void sort (void);
 };
 

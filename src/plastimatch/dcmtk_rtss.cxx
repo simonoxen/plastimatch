@@ -26,6 +26,7 @@ Dcmtk_series::rtss_load (
     Rtss_polyline_set *cxt = new Rtss_polyline_set;
     rtss->m_cxt = cxt;
     
+    /* Modality -- better be RTSTRUCT */
     std::string modality = this->get_modality();
     if (modality == "RTSTRUCT") {
         printf ("Trying to load rt structure set.\n");
