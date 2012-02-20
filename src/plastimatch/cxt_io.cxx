@@ -39,8 +39,6 @@ cxt_load (
     float y = 0;
     float z = 0;
 
-    printf ("1\n");
-
     fp = fopen (cxt_fn, "r");
 
     if (!fp) {
@@ -56,8 +54,8 @@ cxt_load (
 	tag = bgets ((bNgetc) fgetc, fp, '\n');
         if (!tag) {
             fprintf (stderr, 
-		     "Error. cxt file is not formatted correctly: %s\n",
-		     cxt_fn);
+                "Error. cxt file is not formatted correctly: %s\n",
+                cxt_fn);
             exit (-1);
         }
 
@@ -124,7 +122,7 @@ cxt_load (
         else if (biseqcstr (tag, "DIMENSION")) {
 	    int int_x, int_y, int_z;
 	    if (3 == sscanf ((const char*) val->data, "%d %d %d", 
-			     &int_x, &int_y, &int_z)) {
+                    &int_x, &int_y, &int_z)) {
 		have_dim = 1;
 		cxt->m_dim[0] = int_x;
 		cxt->m_dim[1] = int_y;
@@ -160,8 +158,8 @@ cxt_load (
         p = fgets (buf, CXT_BUFLEN, fp);
         if (!p) {
             fprintf (stderr, 
-		     "Error. cxt file is not formatted correctly: %s\n",
-		     cxt_fn);
+                "Error. cxt file is not formatted correctly: %s\n",
+                cxt_fn);
             exit (-1);
         }
         rc = sscanf (buf, "%d|%[^|]|%[^\r\n]", &struct_id, color, name);
@@ -256,7 +254,7 @@ cxt_load (
     }
     fclose (fp);
     return;
- not_successful:
+not_successful:
     fclose (fp);
     fprintf (stderr, "Error parsing input file: %s\n", cxt_fn);
     exit (1);
@@ -284,21 +282,21 @@ cxt_save (
     }
 
     /* Part 1: Dicom info */
-    if (rdd->m_ct_series_uid.empty()) {
-	fprintf (fp, "CT_SERIES_UID\n");
-    } else {
+    if (rdd && rdd->m_ct_series_uid.not_empty()) {
 	fprintf (fp, "CT_SERIES_UID %s\n", (const char*) rdd->m_ct_series_uid);
-    }
-    if (rdd->m_ct_study_uid.empty()) {
-	fprintf (fp, "CT_STUDY_UID\n");
     } else {
+	fprintf (fp, "CT_SERIES_UID\n");
+    }
+    if (rdd && rdd->m_ct_study_uid.not_empty()) {
 	fprintf (fp, "CT_STUDY_UID %s\n", (const char*) rdd->m_ct_study_uid);
-    }
-    if (rdd->m_ct_fref_uid.empty()) {
-	fprintf (fp, "CT_FRAME_OF_REFERENCE_UID\n");
     } else {
+	fprintf (fp, "CT_STUDY_UID\n");
+    }
+    if (rdd && rdd->m_ct_fref_uid.not_empty()) {
 	fprintf (fp, "CT_FRAME_OF_REFERENCE_UID %s\n", 
 	    (const char*) rdd->m_ct_fref_uid);
+    } else {
+	fprintf (fp, "CT_FRAME_OF_REFERENCE_UID\n");
     }
     fprintf (fp, "PATIENT_NAME %s\n",
 	rtss->m_img_metadata.get_metadata (0x0010, 0x0010).c_str());
@@ -306,10 +304,10 @@ cxt_save (
 	rtss->m_img_metadata.get_metadata (0x0010, 0x0020).c_str());
     fprintf (fp, "PATIENT_SEX %s\n",
 	rtss->m_img_metadata.get_metadata (0x0010, 0x0040).c_str());
-    if (rdd->m_study_id.empty()) {
-	fprintf (fp, "STUDY_ID\n");
-    } else {
+    if (rdd && rdd->m_study_id.not_empty()) {
 	fprintf (fp, "STUDY_ID %s\n", (const char*) rdd->m_study_id);
+    } else {
+	fprintf (fp, "STUDY_ID\n");
     }
     if (cxt->have_geometry) {
 	fprintf (fp, "OFFSET %g %g %g\n", cxt->m_offset[0],
