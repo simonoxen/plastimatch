@@ -50,9 +50,10 @@ synth_grid (
     ijk[2] = (phys[2]/parms->spacing[2]) + (parms->dim[2]/2);
 
     if (
-        (ijk[0] % parms->grid_spacing[0] == 0) ||
-        (ijk[1] % parms->grid_spacing[1] == 0) ||
-        (ijk[2] % parms->grid_spacing[2] == 0)
+        ((ijk[0] % parms->grid_spacing[0] == 0) && (ijk[1] % parms->grid_spacing[1] == 0)) ||
+        ((ijk[1] % parms->grid_spacing[1] == 0) && (ijk[2] % parms->grid_spacing[2] == 0)) ||
+        ((ijk[2] % parms->grid_spacing[2] == 0) && (ijk[1] % parms->grid_spacing[1] == 0)) ||
+        ((ijk[2] % parms->grid_spacing[2] == 0) && (ijk[0] % parms->grid_spacing[0] == 0))
     )
     {
         *intens = parms->foreground;
