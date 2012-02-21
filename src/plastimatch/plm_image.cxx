@@ -1125,6 +1125,9 @@ Plm_image::compare_headers (Plm_image *pli1, Plm_image *pli2)
 }
 
 /* Note: this works for NRRD (and dicom?), but not MHA/MHD */
+/* GCS 2012-02-20: This function is not actually called anywhere, 
+   but might become useful if/when we start saving metadata
+   in mha/nrrd files */
 void 
 Plm_image::set_metadata (char *tag, char *value)
 {

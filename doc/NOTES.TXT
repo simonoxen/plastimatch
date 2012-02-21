@@ -1,3 +1,30 @@
+***** Metadata Mark II *****
+
+Do we need separate metadata items for image, dose, and rtstruct?
+Not sure.  Here are the considerations:
+
+- ITK dicom write (image) requires setting metadata into itk image
+- CXT, xio formats need somewhere to store the metadata
+- RDD has its own metadata
+
+Where does RTSS metadata get used (version 1.5.9)
+
+- cxt_io.cxx
+  - name, id, sex (rtss meta)
+  - study id, ct study id, ct series id, ct for id (rdd)
+- gdcm1_rtss.cxx
+  - name, id, sex, series description
+  - study id, ct study id, ct series id, ct for, ct slice ids (rdd)
+
+Where RDD metadata get used (version 1.5.9)
+
+- rtds.cxx
+  - name, id, sex, patient position
+  - (xio ct transform -- this should be part of metadata??)
+- gdcm1_rdd.cxx
+  - name, id, sex, patient position
+
+
 ***** Debian notes *****
 
 In order to install ITK 3.20, you need to use unstable repository.
