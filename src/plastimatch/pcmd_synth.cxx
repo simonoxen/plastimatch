@@ -179,6 +179,11 @@ parse_fn (
     parser->add_long_option ("", "sphere-radius", 
 	"radius of sphere in mm \"x [y z]\"", 1, "50");
 
+    /* Grid pattern options */
+    parser->add_long_option ("", "grid-pattern", 
+	"grid pattern spacing in voxels \"x [y z]\"", 1, "10");
+
+
     /* Parse the command line arguments */
     parser->parse (argc,argv);
 
@@ -228,6 +233,9 @@ parse_fn (
     }
     else if (arg == "donut") {
 	sm_parms->pattern = PATTERN_DONUT;
+    }
+    else if (arg == "grid") {
+	sm_parms->pattern = PATTERN_GRID;
     }
     else {
 	throw (dlib::error ("Error. Unknown --pattern argument: " + arg));
@@ -314,6 +322,10 @@ parse_fn (
     /* Sphere options */
     parser->assign_float13 (sm_parms->sphere_center, "sphere-center");
     parser->assign_float13 (sm_parms->sphere_radius, "sphere-radius");
+
+
+    /* Grid pattern options */
+    parser->assign_int13 (sm_parms->grid_spacing, "grid-pattern");
 }
 
 void

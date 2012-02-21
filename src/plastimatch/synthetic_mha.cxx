@@ -37,6 +37,34 @@ synth_gauss (
 }
 
 static void 
+synth_grid (
+    float *intens, 
+    unsigned char *label,
+    const FloatPoint3DType& phys, 
+    const Synthetic_mha_parms *parms
+)
+{
+    int ijk[3];
+    ijk[0] = (phys[0]/parms->spacing[0]) + (parms->dim[0]/2);
+    ijk[1] = (phys[1]/parms->spacing[1]) + (parms->dim[1]/2);
+    ijk[2] = (phys[2]/parms->spacing[2]) + (parms->dim[2]/2);
+
+    if (
+        (ijk[0] % parms->grid_spacing[0] == 0) ||
+        (ijk[1] % parms->grid_spacing[1] == 0) ||
+        (ijk[2] % parms->grid_spacing[2] == 0)
+    )
+    {
+        *intens = parms->foreground;
+        *label = 1;
+   } else {
+        *intens = parms->background;
+        *label = 0;
+    }
+}
+
+
+static void 
 synth_rect (
     float *intens, 
     unsigned char *label,
@@ -505,6 +533,9 @@ synthetic_mha (
 	    break;
 	case PATTERN_DONUT:
 	    synth_donut (&intens, &label_uchar, phys, parms);
+	    break;
+	case PATTERN_GRID:
+	    synth_grid (&intens, &label_uchar, phys, parms);
 	    break;
 	default:
 	    intens = 0.0f;

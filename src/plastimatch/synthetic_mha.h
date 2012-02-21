@@ -17,7 +17,8 @@ enum Pattern_type {
     PATTERN_MULTI_SPHERE,
     PATTERN_ENCLOSED_RECT,
     PATTERN_OBJSTRUCTDOSE,
-    PATTERN_DONUT
+    PATTERN_DONUT,
+    PATTERN_GRID
 };
 
 enum Pattern_structset_type {
@@ -49,6 +50,7 @@ public:
     float donut_center[3];
     float donut_radius[3];
     int donut_rings;
+    int grid_spacing[3];
     
     float enclosed_intens_f1, enclosed_intens_f2;
     float enclosed_xlat1[3], enclosed_xlat2[3];
@@ -85,6 +87,9 @@ public:
 	donut_radius[1] = 50.0f;
 	donut_radius[2] = 20.0f;
 	donut_rings = 2;
+    grid_spacing[0] = 10;
+    grid_spacing[1] = 10;
+    grid_spacing[2] = 10;
 	pattern_ss = PATTERN_SS_ONE;
         num_multi_sphere = 33;
     }
