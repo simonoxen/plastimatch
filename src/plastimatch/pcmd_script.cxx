@@ -172,11 +172,15 @@ PAPI_register (lua_State* L)
     from_lua_getstring (L, regp.moving_mask_fn,      "moving_mask");
     from_lua_getstring (L, regp.xf_in_fn,            "xf_in");
     from_lua_getstring (L, regp.log_fn,              "log");
-//    from_lua_getstring (L, regp.fixed_landmarks_fn,  "fixed_landmarks");
-//    from_lua_getstring (L, regp.moving_landmarks_fn, "moving_landmarks");
     from_lua_getstring (L, regp.img_out_fn,          "img_out");
     from_lua_getstring (L, regp.vf_out_fn,           "vf_out");
 
+    if (from_lua_getstring (L, ret, "fixed_landmarks")) {
+        regp.fixed_landmarks_fn = ret;
+    }
+    if (from_lua_getstring (L, ret, "moving_landmarks")) {
+        regp.moving_landmarks_fn = ret;
+    }
     if (from_lua_getstring (L, ret, "img_out_fmt")) {
         int fmt = IMG_OUT_FMT_AUTO;
         if (!strcmp (ret, "dicom")) {
