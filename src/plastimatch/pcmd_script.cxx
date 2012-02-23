@@ -127,6 +127,14 @@ from_lua_getfloat3 (lua_State* L, float* dest, const char* var_name)
 }
 
 int
+lua_abort_global (lua_State* L, const char* bad_key)
+{
+    fprintf (stderr, "error -- global -- bad value specifed for %s -- aborted\n", bad_key);
+    lua_pushnumber (L, -1);
+    return 1; // # of return values
+}
+
+int
 lua_abort_stage (lua_State* L, int num, const char* bad_key)
 {
     fprintf (stderr, "error -- stage %i -- bad value specifed for %s -- aborted\n", num, bad_key);
@@ -151,15 +159,56 @@ PAPI_register (lua_State* L)
         return 1;
     }
 
+
+    char ret[255];
+    int ret_int = 0;
+    float ret_float;
+    float ret_float3[3];
+
     /* Global Parms */
-    from_lua_getstring (L, regp.fixed_fn,       "fixed");
-    from_lua_getstring (L, regp.moving_fn,      "moving");
-    from_lua_getstring (L, regp.fixed_mask_fn,  "fixed_mask");
-    from_lua_getstring (L, regp.moving_mask_fn, "moving_mask");
-    from_lua_getstring (L, regp.xf_in_fn,       "xf_in");
-    from_lua_getstring (L, regp.log_fn,         "log");
-    from_lua_getstring (L, regp.img_out_fn,     "img_out");
-    from_lua_getstring (L, regp.vf_out_fn,      "vf_out");
+    from_lua_getstring (L, regp.fixed_fn,            "fixed");
+    from_lua_getstring (L, regp.moving_fn,           "moving");
+    from_lua_getstring (L, regp.fixed_mask_fn,       "fixed_mask");
+    from_lua_getstring (L, regp.moving_mask_fn,      "moving_mask");
+    from_lua_getstring (L, regp.xf_in_fn,            "xf_in");
+    from_lua_getstring (L, regp.log_fn,              "log");
+//    from_lua_getstring (L, regp.fixed_landmarks_fn,  "fixed_landmarks");
+//    from_lua_getstring (L, regp.moving_landmarks_fn, "moving_landmarks");
+    from_lua_getstring (L, regp.img_out_fn,          "img_out");
+    from_lua_getstring (L, regp.vf_out_fn,           "vf_out");
+
+    if (from_lua_getstring (L, ret, "img_out_fmt")) {
+        int fmt = IMG_OUT_FMT_AUTO;
+        if (!strcmp (ret, "dicom")) {
+            fmt = IMG_OUT_FMT_DICOM;
+        } else {
+            return lua_abort_global (L, "img_out_fmt");
+        }
+        regp.img_out_fmt = fmt;
+    }
+    if (from_lua_getstring (L, ret, "img_out_type")) {
+        Plm_image_type type = plm_image_type_parse (ret);
+        if (type == PLM_IMG_TYPE_UNDEFINED) {
+            return lua_abort_global (L, "img_out_type");
+        }
+        regp.img_out_type = type;
+    }
+    if (from_lua_getstring (L, ret, "xf_out_itk")) {
+        bool value = true;
+        if (!strcmp (ret, "false")) {
+            value = false;
+        }
+        regp.xf_out_itk = value;
+    }
+    if (from_lua_getstring (L, ret, "xf_out")) {
+        /* xf_out is special.  You can have more than one of these.  
+           This capability is used by the slicer plugin. */
+        regp.xf_out_fn.push_back (ret);
+    }
+    if (from_lua_getstring (L, ret, "warped_landmarks")) {
+        regp.warped_landmarks_fn = ret;
+    }
+    
 
 #if 0
     printf ("   GLOBAL: fixed: %s\n", regp.fixed_fn);
@@ -193,11 +242,6 @@ PAPI_register (lua_State* L)
 
 
         /* Stage Parms */
-        char ret[255];
-        int ret_int = 0;
-        float ret_float;
-        float ret_float3[3];
-
         lua_pop (L, 1);
 
         if (from_lua_getstring (L, ret, "xform")) {
