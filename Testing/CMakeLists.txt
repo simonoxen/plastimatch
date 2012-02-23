@@ -995,12 +995,12 @@ set_tests_properties (landmark-warp-c-check-2 PROPERTIES
 
 ## -------------------------------------------------------------------------
 ## plastimatch convert dicom (and dicom rt)
-##   plm convert dicom a: ct only
-##   plm convert dicom b: rtss only, with referenced-ct
-##   plm convert dicom c: rtss only, with fixed image reference
-##   plm convert dicom d: dose only, native sampling rate
-##   plm convert dicom e: input xio dicom, output plastimatch dicom
-##   plm convert dicom f: input plastimatch dicom, output plastimatch dicom
+##   plm convert dicom a: ct only (xio)
+##   plm convert dicom b: rtss only, with referenced-ct (xio)
+##   plm convert dicom c: rtss only, with fixed image reference (xio)
+##   plm convert dicom d: dose only, native sampling rate (xio)
+##   plm convert dicom e: input xio dicom, output plastimatch dicom (xio)
+##   plm convert dicom f: input plastimatch dicom, output plm dicom (xio)
 ##   plm convert dicom g: input rtss, no fixed image, no ct reference
 ##   plm convert dicom h: set metadata
 ## -------------------------------------------------------------------------

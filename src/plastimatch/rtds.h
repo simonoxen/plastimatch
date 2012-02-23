@@ -46,6 +46,8 @@ public:
     void load_dcmtk (const char *dicom_dir); 
     void load_gdcm (const char *dicom_dir); 
     void save_dicom (const char *output_dir);
+    void save_dcmtk (const char *dicom_dir);
+    void save_gdcm (const char *dicom_dir); 
     void convert_ss_img_to_cxt (void);
     void set_user_metadata (std::vector<std::string>& metadata);
     void set_dose (Plm_image *pli);

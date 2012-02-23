@@ -53,3 +53,24 @@ Rtds::load_gdcm (const char *dicom_dir)
     m_gdcm_series->get_img_metadata (&m_img_metadata);
 #endif
 }
+
+void
+Rtds::save_gdcm (const char *output_dir)
+{
+    if (this->m_img) {
+	printf ("Rtds::save_dicom: save_short_dicom()\n");
+	this->m_img->save_short_dicom (output_dir, &m_rdd, &m_img_metadata);
+    }
+#if GDCM_VERSION_1
+    if (this->m_ss_image) {
+	printf ("Rtds::save_dicom: save_gdcm_rtss()\n");
+	this->m_ss_image->save_gdcm_rtss (output_dir, &m_rdd);
+    }
+    if (this->m_dose) {
+	char fn[_MAX_PATH];
+	printf ("Rtds::save_dicom: gdcm_save_dose()\n");
+	snprintf (fn, _MAX_PATH, "%s/%s", output_dir, "dose.dcm");
+	gdcm1_dose_save (m_dose, &m_img_metadata, &m_rdd, fn);
+    }
+#endif
+}

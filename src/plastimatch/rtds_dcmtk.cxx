@@ -13,3 +13,8 @@ Rtds::load_dcmtk (const char *dicom_dir)
     dcmtk_load_rtds (this, dicom_dir);
 #endif
 }
+
+void
+Rtds::save_dcmtk (const char *dicom_dir)
+{
+}

@@ -2,19 +2,25 @@
 
 *  B-spline auto-parameters
 *  B-spline direction cosines
-*  B-spline regularization
+*  B-spline regularization (done)
 *  B-spline ROI
 *  DCMTK support
+*  Irregular slice spacing
+*  Large image support (done)
+*  plastimatch average
+*  plastimatch dice
+*  plastimatch dmap
 *  plastimatch threshold
-*  Large image support
 
 Unspecified future release
 
 *  Autolabel (la,tsv1,tsv2)
 *  CUDA demons
+*  DRR/FDK dicom
 *  Native translation registration
 *  Native rigid registration
 *  Normalized MI
 *  Proton/photon/electron dose calculation
+*  RTOG support
 *  RTPLAN support
 *  Standalone GUI
