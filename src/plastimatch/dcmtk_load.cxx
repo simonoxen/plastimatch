@@ -20,10 +20,3 @@ dcmtk_load_rtds (Rtds *rtds, const char *dicom_dir)
     Dcmtk_series_set dss (dicom_dir);
     dss.load_rtds (rtds);
 }
-
-void
-dcmtk_save_rtds (Rtds *rtds, const char *dicom_dir)
-{
-    Dcmtk_series_set dss (dicom_dir);
-    dss.load_rtds (rtds);
-}
