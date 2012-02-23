@@ -30,81 +30,36 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =========================================================================*/
 
-//#define VERBOSE
-//#define DEBUG
-//#define DEBUG_VERBOSE
+#define VERBOSE
 
-//#define GENERATE_KEYS 
-//#define REORIENT
-
-//#define SIFT_FEATURE
-
-//Generate histograms
-//compare gradient histograms
-//
-
-// Min DoG value for keypoints
-// Fix Gaussian Scale
-// Only iterate through the region up to 3 sigma from the point
-
-//More advanced features for better matching?
-//Simple quadrant system?
-
-
-/* Based on example code from the ITK Toolkit
- * TODO:  Use resampler+identity transform+spacing change instead of scaling
- * arbitrary downscale between pyramid levels
- * may need to have a threshold
- * Gaussian filtration may fail if input image format is integer
- * Generate Pointset
- * Get Orientation
- * Generate Features
-
- * Test vs Noise (no need to for orientation)
- * vs Stretch 
- * vs Scale
- */
 #if defined(_MSC_VER)
 #pragma warning ( disable : 4786 )
 #endif
 
 #ifndef __itkScaleInvariantFeatureImageFilter_h
 #define __itkScaleInvariantFeatureImageFilter_h
-//#ifndef SIFTKEY_H
-//#define SIFTKEY_H
 
 #include "itkImageRegistrationMethod.h"
-
 #include "itkLinearInterpolateImageFunction.h"
 #include "itkNearestNeighborInterpolateImageFunction.h"
 #include "itkImage.h"
-
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
-
 #include "itkAffineTransform.h"
 #include "itkIdentityTransform.h"
 #include "itkResampleImageFilter.h"
-//#include "itkScaleVersor3DTransform.h"
-
-
 #include "itkDiscreteGaussianImageFilter.h"
 #include "itkSubtractImageFilter.h"
 #include "itkGradientImageFilter.h"
 #include "itkGradientMagnitudeImageFilter.h"
 #include "itkMultiplyImageFilter.h"
-
 #include "itkGaussianImageSource.h"
-
 #include "itkConstNeighborhoodIterator.h"
-
 #include "itkPointSet.h"
 #include "itkVector.h"
 #include "itkDiscreteHessianGaussianImageFunction.h"
-#include <itkHessianRecursiveGaussianImageFilter.h>  //compute Hessian
+#include <itkHessianRecursiveGaussianImageFilter.h> 
 #include "itkRescaleIntensityImageFilter.h"
-
-
 
 #include <cstdio>
 
@@ -121,18 +76,9 @@ namespace itk
  * can then be matched, to determine which points in the sets are likely
  * to correspond, by comparing feature vectors.
  *
- * Three different features can be compiled from this source using
- * preprocessor \#define commands: 
- * 
- * - default (no special \#define)
- *    - Histogram Feature
- * - \#define REORIENT 
- *    - Histogram Feature with reoriented to the highest magnitude histogram bin
- * - \#define SIFT_FEATURE
- *    - n-Dimensional adaptation of the SIFT feature.
  */
 
-  template <class TFixedImageType, int VDimension=2> 
+  template <class TFixedImageType, int VDimension=3> 
     class ITK_EXPORT ScaleInvariantFeatureImageFilter
     {
       public:
@@ -143,20 +89,14 @@ namespace itk
       typedef typename TFixedImageType::IndexType  IndexType;
 
       /** used for validating results from synthetic images */
-      //typedef typename itk::ScalableAffineTransform< double, VDimension > TransformType;
-	  //typedef typename itk::ScaleVersor3DTransform< double> TransformType;
-	  typedef typename itk::AffineTransform< double,VDimension> TransformType;
+       typedef typename itk::AffineTransform< double,VDimension> TransformType;
 
-#ifdef GENERATE_KEYS    
       /** multidimensional histogram for the features */
       typedef Array< float > FeatureType;
+
       /** keypoints, storing the associated feature as well */
       typedef PointSet< FeatureType, VDimension,
       	      DefaultStaticMeshTraits< FeatureType, VDimension, VDimension, double > > PointSetType;
-#else
-      typedef PointSet< float, VDimension,
-      	      DefaultStaticMeshTraits< FeatureType, VDimension, VDimension, double > > PointSetType;
-#endif 
       typedef typename PointSetType::PointType PointType;
       typedef typename PointSetType::Pointer PointSetTypePointer;
 
@@ -166,38 +106,30 @@ namespace itk
       /** Constructor to set default values */
       ScaleInvariantFeatureImageFilter();
 
-      /** Used for debugging. Writes an image to disk */
+      /** Writes an image to disk */
       void writeImage(FixedImagePointer fixedImage, const char *filename);
 
       /** Create a filter that resamples the image (scale up or down)  */
       typename ResampleFilterType::Pointer getScaleResampleFilter ( typename TFixedImageType::Pointer fixedImage, float scale );
 
-      void SetDoubling (bool tmp);
-      void SetNumBins( unsigned int tmp);
-      void SetSigma( double tmp);
+      /** Set Parameters */
+	  void SetDoubling (bool tmp);
       void SetNumScales ( unsigned int tmp);
       void SetMatchRatio ( float tmp);
 	  void SetInitialSigma(float InitialSigma);
+	  void SetDescriptorDimension (float descriptor_dim);
+	  void SetContrast (float contrast);
+	  void SetCurvature (float curvature);
 
       /** Generate and return the scale invariant keypoints and features */
-      PointSetTypePointer getSiftFeatures(FixedImagePointer fixedImageInput, const char *filename_phy_max, const char *filename_phy_min, const char *filename_im_max, const char *filename_im_min,const char *filename_rej_contrast,const char *filename_rej_curvature);
+      PointSetTypePointer getSiftFeatures(FixedImagePointer fixedImageInput, bool flag_curve, bool normalization, const char *filename_phy_max, const char *filename_phy_min, const char *filename_im_max, const char *filename_im_min,const char *filename_rej_contrast,const char *filename_rej_curvature);
 
-      /** Match keypoints purely based on position.  Upper bounds
-       *  the performance when matching using features. Supply
-       *  the inverse transform to get performance measures.
-       *  Mainly used with synthetic tests.
-       */
-      void MatchKeypointsPos(PointSetTypePointer keypoints1, PointSetTypePointer keypoints2,
-			     typename TransformType::Pointer inverse_transform);
 
-#ifdef GENERATE_KEYS
       /** Match keypoints based on similarity of features. Matches are printed
        *  to standard out.  Supply the inverse transform to get performance 
-       *  measures.
-       */
+       *  measures.*/
       void MatchKeypointsFeatures(PointSetTypePointer keypoints1, PointSetTypePointer keypoints2,
-			     typename TransformType::Pointer inverse_transform);
-#endif
+			     char *filename_phy_match1, char *filename_phy_match2);
 
 
       private:
@@ -213,132 +145,95 @@ namespace itk
 
       /** Scale up the original image by a factor of 2 before processing */
       bool m_DoubleOriginalImage;
-      /** Number of image pyramid levels (scales) to test */
+
+      /** Number of image pyramid levels (octaves) to test */
       unsigned int    m_ImageScalesTestedNumber;
+
       /** Factor by which the images are scaled between pyramid levels */
       float  m_ScalingFactor;
 
       /** The range of Gaussian sigma that will be tested */
       float m_GaussianSigma; 
-	  double m_SigmaAliasing; // sigma aliasing
+
       /** Number of Gaussian Images that will be used to sample the range of 
-        * sigma values ...
-        */
+        * sigma values ... */
       unsigned int    m_GaussianImagesNumber;
+
       /** ... determining the number of difference of gaussian images ... */
       unsigned int    m_DifferenceOfGaussianImagesNumber;
+
       /** ... determining the number of sets of images we can test for 
-        * feature points  
-        */
+        * feature points */
       unsigned int m_DifferenceOfGaussianTestsNumber;
 
-      /** Number of bins to cover 2pi radians
-        * Note that the multidimensional histogram has this many bins 
-        * for each dimension when describing the angle in hyperspherical
- 	* coordinates
-        */
-      unsigned int m_HistogramBinsNumber;
-      /** Minimum voxel intensity for a feature point */
+      /** Threshold on image contrast. Minimum voxel intensity for a feature point */
       float m_MinKeypointValue;
+
 	  /** Threshold on image curvature */
 	  float m_ThresholdPrincipalCurve;
 
       /** When looking for difference of Gaussian extrema in the images, 
         * consider a voxel to be extremal even if there are voxels 
-        * that are this much more extreme.
-        */
+        * that are this much more extreme.*/
       float m_ErrorThreshold;
 
       /** When matching points, reject a match if the ratio: 
-        * \f[	
-        *   \frac{\textrm{distance to best match}}{\textrm{distance to second-best match}}
-	* \f]
- 	* is greater than this value
-        */
+        * \frac{\textrm{distance to best match}}{\textrm{distance to second-best match}}
+ 		* is greater than this value*/
       float m_MaxFeatureDistanceRatio;
 
       PointSetTypePointer m_KeypointSet;
       long m_PointsCount;
 
       /** Distance from the centre to the edge of the hypercube
-        * summarised by the nSIFT feature
-        */
+        * summarised by the nSIFT feature*/
       unsigned int m_SIFTHalfWidth;
+
       /** The hypercube edge length (in voxels) of the subregion summarised
-        * by each multidimensional histogram of the nSIFT feature
-	*/
+        * by each multidimensional histogram of the nSIFT feature*/
       unsigned int m_SIFTSubfeatureWidth;
+
       /** Number of bin used to summarise the hyperspherical coordinates
-        * of the voxels in each subregion
-        */
+        * of the voxels in each subregion*/
       unsigned int m_SIFTSubfeatureBins;
-  
     
       /** The sigma for the Gaussian filtering for the j-th image on a level
-        * of the image pyramid
-        */
+        * of the image pyramid*/
       double GetGaussianScale( int j ); 
 
-      /** The total size of the (reoriented) histogram feature */
-      unsigned int HistFeatureSize();
-
       /** Returns an image where all gradients are converted to hyperspherical
-        * coordinates
-	*/
+        * coordinates*/
       typename GradientImageType::Pointer GetHypersphericalCoordinates(typename GradientImageType::Pointer inputImg);
 
        /** Returns the value of the principal curvature - thresholding on image curvature */
 	      typedef itk::DiscreteHessianGaussianImageFunction<  TFixedImageType, PixelType > HessianGaussianImageFunctionType;
 		  typedef itk::HessianRecursiveGaussianImageFilter< TFixedImageType >  myFilterType;
 		  typedef typename myFilterType::OutputImageType myHessianImageType;
-		  
 		  unsigned int GetHessian(typename myHessianImageType::Pointer ImgInput, IndexType pixelIndex, bool isMax, bool isMin, int i, int j);
-		  unsigned int GetHessianLocal(typename TFixedImageType::Pointer ImgInput, IndexType pixelIndex);
-
-      /** Convert a histogram bin number into an angle in hyperspherical 
-        * coordinates 
-	*/
-      typename GradientImageType::PixelType BinToVector (unsigned int maxbin);
 
       /** Size of the nSIFT feature */
       unsigned int SiftFeatureSize();
 
       /** Used when generating nSIFT features to figure out what portion
-        * of the nSIFT feature vector the current summary histogram starts at
-	*/ 
+        * of the nSIFT feature vector the current summary histogram starts at*/ 
       unsigned int DeltaToSiftIndex (int delta[]);
 
-#ifdef GENERATE_KEYS
       /** Generate nSIFT feature for pixel at pixelIndex */
       FeatureType GetSiftKey(typename GradientImageType::Pointer inputImg,
 			     FixedImagePointer multImg,
 			     IndexType pixelIndex);
 
-
-      /** Generate weighted histogram feature for voxel at pixelIndex 
-        * Feature point is weighted due to the Gaussian.
-        */
-      FeatureType GetHistogram(typename GradientImageType::Pointer inputImg,
-			       FixedImagePointer multImg);
-#endif
-
-
       /** Determine whether voxel at pixelIndex with intensity
-        * pixelvalue is the local max/min
-        */
+        * pixelvalue is the local max/min*/
       void CheckLocalExtrema(FixedImagePointer image, IndexType pixelIndex,
 			     PixelType pixelValue,
 			     bool &isMax, bool &isMin,
 			     bool checkCentre);
 
-#ifdef GENERATE_KEYS
-      /** Generate the (reoriented)histogram/nSIFT feature at a point
-        */
+      /** Generate the nSIFT feature at a point*/
       FeatureType GetFeatures( FixedImagePointer fixedImage, 
 			       typename GradientImageType::Pointer hgradImage,
 			       PointType &point, float currScale);
-#endif
-
    };
 }
 
