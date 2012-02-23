@@ -381,7 +381,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   registration_data.cxx registration_data.h
   rtds.cxx rtds.h
   rtds_dcmtk.cxx
-  rtds_dicom.cxx rtds_dicom.h
   rtds_gdcm.cxx
   rtds_warp.cxx rtds_warp.h
   rtss.cxx rtss.h

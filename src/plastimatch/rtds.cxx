@@ -66,6 +66,20 @@ Rtds::~Rtds ()
 }
 
 void
+Rtds::load_dicom (const char *dicom_dir)
+{
+    if (!dicom_dir) {
+	return;
+    }
+
+#if PLM_DCM_USE_DCMTK
+    this->load_dcmtk (dicom_dir);
+#else
+    this->load_gdcm (dicom_dir);
+#endif
+}
+
+void
 Rtds::load_dicom_dir (const char *dicom_dir)
 {
     const char *dicom_dir_tmp;  /* In case dicom_dir is a file, not dir */
@@ -283,6 +297,20 @@ Rtds::load_dose_mc (const char *dose_mc)
 	mc_dose_load (this->m_dose, dose_mc);
 	mc_dose_apply_transform (this->m_dose, this->m_xio_transform);
     }
+}
+
+void
+Rtds::save_dicom (const char *dicom_dir)
+{
+    if (!dicom_dir) {
+	return;
+    }
+
+#if PLM_DCM_USE_DCMTK
+    this->save_dcmtk (dicom_dir);
+#else
+    this->save_gdcm (dicom_dir);
+#endif
 }
 
 void 
