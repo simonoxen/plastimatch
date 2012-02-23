@@ -18,7 +18,6 @@
 #include "mc_dose.h"
 #include "referenced_dicom_dir.h"
 #include "rtds.h"
-#include "rtds_dicom.h"
 #include "rtss.h"
 #include "ss_list_io.h"
 #include "xio_ct.h"

@@ -14,7 +14,7 @@
 #endif
 #include "logfile.h"
 #include "print_and_exit.h"
-#include "rtds_dicom.h"
+#include "rtds.h"
 #include "rtss.h"
 
 void
