@@ -7,7 +7,7 @@ SET (CTEST_INITIAL_CACHE "
 CMAKE_GENERATOR:INTERNAL=Visual Studio 9 2008
 
 //Name of the build
-BUILDNAME:STRING=wxp32-Pisr-Cd-vse9
+BUILDNAME:STRING=01-wxp32-Pisr-Cd-vse9
 
 //Name of the computer/site where compile is being run
 SITE:STRING=w0109966
