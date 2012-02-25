@@ -13,12 +13,6 @@ extern "C"
 #include "pcmd_script.h"
 #include "pcmd_synth.h"
 
-// JAS 2012.02.25
-//   This is currently an issue with variables containing
-//   dashing not being valid in LUA.  One option is to
-//   filter all - to _ and then convert back be before
-//   constructing the command line parms.
-
 // USAGE INSIDE LUA:
 //    
 //    parms = {
@@ -43,26 +37,26 @@ LUAIFACE_synth (lua_State* L)
 
     char* opt[] = {
         "output",
-        "output-dicom",
-        "output-dose-img",
-        "output-ss-img",
-        "output-type",
+        "output_dicom",
+        "output_dose_img",
+        "output_ss_img",
+        "output_type",
         "pattern",
         "origin",
         "dim",
         "spacing",
-        "direction-cosines",
-        "volume-size",
+        "direction_cosines",
+        "volume_size",
         "background",
         "foreground",
-        "donut-center",
-        "donut-radius",
-        "donut-rings",
-        "gauss-center",
-        "rect-size",
-        "sphere-center",
-        "grid-pattern",
-        "lung-tumor-pos"
+        "donut_center",
+        "donut_radius",
+        "donut_rings",
+        "gauss_center",
+        "rect_size",
+        "sphere_center",
+        "grid_pattern",
+        "lung_tumor_pos"
     };
     int num_opt = sizeof (opt)/sizeof (char*);
 
@@ -70,6 +64,7 @@ LUAIFACE_synth (lua_State* L)
     for (int i=0; i<num_opt; i++) {
         if (from_lua_getstring (L, arg, opt[i])) {
             sprintf (buf, "--%s", opt[i]);
+            replace_char ('_', '-', buf);
             lua_cli_glue_add (L, buf, &argv[argc++]);
             lua_cli_glue_add (L, arg, &argv[argc++]);
         }

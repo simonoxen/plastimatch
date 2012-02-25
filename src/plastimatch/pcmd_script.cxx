@@ -200,6 +200,17 @@ from_lua_getfloat3 (lua_State* L, float* dest, const char* var_name)
     return 1;
 }
 
+void
+replace_char (char from, char to, char* str)
+{
+    int n=0;
+    while (str[n] != '\0') {
+        if (str[n] == from) {
+            str[n] = to;
+        }
+        n++;
+    }
+}
 
 
 

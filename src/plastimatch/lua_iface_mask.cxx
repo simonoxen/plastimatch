@@ -26,20 +26,21 @@ mask_or_fill (lua_State* L, char* mode)
     char arg[_MAX_PATH];
     char buf[_MAX_PATH];
 
-    char* mask_opt[] = {
+    char* opt[] = {
         "output",
         "input",
         "mask",
-        "output-format",
-        "output-type",
-        "mask-value"
+        "output_format",
+        "output_type",
+        "mask_value"
     };
-    int num_mask_opt = sizeof (mask_opt)/sizeof (char*);
+    int num_opt = sizeof (opt)/sizeof (char*);
 
     argc=2;
-    for (int i=0; i<num_mask_opt; i++) {
-        if (from_lua_getstring (L, arg, mask_opt[i])) {
-            sprintf (buf, "--%s", mask_opt[i]);
+    for (int i=0; i<num_opt; i++) {
+        if (from_lua_getstring (L, arg, opt[i])) {
+            sprintf (buf, "--%s", opt[i]);
+            replace_char ('_', '-', buf);
             lua_cli_glue_add (L, buf, &argv[argc++]);
             lua_cli_glue_add (L, arg, &argv[argc++]);
         }

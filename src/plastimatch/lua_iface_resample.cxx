@@ -39,14 +39,14 @@ LUAIFACE_resample (lua_State* L)
     char* opt[] = {
         "input",
         "output",
-        "output-type",
-        "default-value",
+        "output_type",
+        "default_value",
         "interpolation",
         "fixed",
         "origin",
         "dim",
         "spacing",
-        "direction-cosines",
+        "direction_cosines",
         "subsample"
     };
     int num_opt = sizeof (opt)/sizeof (char*);
@@ -55,6 +55,7 @@ LUAIFACE_resample (lua_State* L)
     for (int i=0; i<num_opt; i++) {
         if (from_lua_getstring (L, arg, opt[i])) {
             sprintf (buf, "--%s", opt[i]);
+            replace_char ('_', '-', buf);
             lua_cli_glue_add (L, buf, &argv[argc++]);
             lua_cli_glue_add (L, arg, &argv[argc++]);
         }
