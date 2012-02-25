@@ -11,6 +11,7 @@ extern "C"
 }
 #include "pcmd_script.h"
 #include "lua_iface_add.h"
+#include "lua_iface_crop.h"
 #include "lua_iface_mask.h"     /* also contains fill() */
 #include "lua_iface_register.h"
 
@@ -205,6 +206,7 @@ static void
 register_lua_interfaces (lua_State* L)
 {
     lua_register (L, "add",      LUAIFACE_add);
+    lua_register (L, "crop",     LUAIFACE_crop);
     lua_register (L, "mask",     LUAIFACE_mask);
     lua_register (L, "fill",     LUAIFACE_fill);
     lua_register (L, "register", LUAIFACE_register);
