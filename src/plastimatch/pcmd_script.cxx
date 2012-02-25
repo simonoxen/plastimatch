@@ -192,6 +192,7 @@ static void
 register_lua_interfaces (lua_State* L)
 {
     lua_register (L, "mask",     LUAIFACE_mask);
+    lua_register (L, "fill",     LUAIFACE_fill);
     lua_register (L, "register", LUAIFACE_register);
 }
 

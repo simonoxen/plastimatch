@@ -11,5 +11,6 @@
 #include "lauxlib.h"
 
 int LUAIFACE_mask (lua_State* L);
+int LUAIFACE_fill (lua_State* L);
 
 #endif

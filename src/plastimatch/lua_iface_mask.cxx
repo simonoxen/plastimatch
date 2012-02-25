@@ -13,15 +13,15 @@ extern "C"
 #include "pcmd_script.h"
 #include "pcmd_mask.h"
 
-int
-LUAIFACE_mask (lua_State* L)
+static int
+mask_or_fill (lua_State* L, char* mode)
 {
     char** argv;
     int argc;
     int argn;  /* # of struct entries (!necessarily = argc) */
 
     lua_cli_glue_init (L, &argv, &argn);
-    lua_cli_glue_add  (L, "mask", &argv[1]);
+    lua_cli_glue_add  (L, mode, &argv[1]);
 
     char arg[_MAX_PATH];
     char buf[_MAX_PATH];
@@ -57,3 +57,18 @@ LUAIFACE_mask (lua_State* L)
     lua_pushnumber (L, 0);
     return 1; // # of return values
 }
+
+int
+LUAIFACE_mask (lua_State* L)
+{
+    return mask_or_fill (L, "mask");
+}
+
+
+
+int
+LUAIFACE_fill (lua_State* L)
+{
+    return mask_or_fill (L, "fill");
+}
+
