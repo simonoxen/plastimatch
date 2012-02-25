@@ -21,7 +21,9 @@
 #include "pcmd_header.h"
 #include "pcmd_probe.h"
 #include "pcmd_resample.h"
+#if (LUA51_FOUND)
 #include "pcmd_script.h"
+#endif
 #include "pcmd_segment.h"
 #include "pcmd_stats.h"
 #include "pcmd_synth.h"
