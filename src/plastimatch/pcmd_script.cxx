@@ -10,10 +10,64 @@ extern "C"
 #include "lauxlib.h"
 }
 #include "pcmd_script.h"
+#include "lua_iface_mask.h"
 #include "lua_iface_register.h"
 
 
+/* Command Line Glue */
+void
+lua_cli_glue_init (lua_State* L, char*** argv, int* argc)
+{
+    /* # of parameters passed via lua stack + 2 */
+    /*     1 for argv[0] = "plastimatch"        */
+    /*     1 for argv[1] = specified pcmd       */
+    luaL_checktype(L, 1, LUA_TTABLE);
+    *argc = 2*from_lua_count_struct_members (L) + 2;
+    *argv = (char**)malloc (*argc * sizeof(char*));
+
+    for (int i=0; i<*argc; i++) {
+        (*argv)[i] = NULL;
+    }
+    
+    (*argv)[0] = (char*)malloc (strlen("plastimatch") * sizeof(char)); 
+    strcpy ((*argv)[0], "plastimatch");
+}
+
+void
+lua_cli_glue_add (lua_State* L, char* arg, int arg_idx, char** argv)
+{
+    argv[arg_idx] = (char*)malloc (strlen(arg) * sizeof(char)); 
+    strcpy (argv[arg_idx], arg);
+}
+
+void
+lua_cli_glue_solvent (lua_State* L, char** argv, int argn)
+{
+    for (int i=0; i<argn; i++) {
+        free (argv[i]);
+    }
+    free (argv);
+}
+
+
+
 /* LUA Helpers */
+
+/* Returns the # of members for a table organized
+ * like a C struct.  Must be on the top of the lua stack */
+int
+from_lua_count_struct_members (lua_State* L)
+{
+    int n=0;
+    lua_pushnil (L);
+    while (lua_next (L, -2)) {
+        luaL_checktype(L, 1, LUA_TTABLE);
+        n++;
+        lua_pop (L, 1);
+    }
+    return n;
+}
+
 int
 from_lua_getstring (lua_State* L, char* dest, const char* var_name)
 {
@@ -132,6 +186,7 @@ from_lua_getfloat3 (lua_State* L, float* dest, const char* var_name)
 static void
 register_lua_interfaces (lua_State* L)
 {
+    lua_register (L, "mask",     LUAIFACE_mask);
     lua_register (L, "register", LUAIFACE_register);
 }
 
