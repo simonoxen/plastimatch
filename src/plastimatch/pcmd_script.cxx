@@ -34,10 +34,15 @@ lua_cli_glue_init (lua_State* L, char*** argv, int* argc)
 }
 
 void
-lua_cli_glue_add (lua_State* L, char* arg, int arg_idx, char** argv)
+lua_cli_glue_add (lua_State* L, char* arg, char** argv)
 {
-    argv[arg_idx] = (char*)malloc (strlen(arg) * sizeof(char)); 
-    strcpy (argv[arg_idx], arg);
+    if (*argv == NULL) {
+        *argv = (char*)malloc (strlen(arg) * sizeof(char)); 
+    } else {
+        char* p = (char*)realloc (*argv, strlen(arg) * sizeof(char));
+        if (p) { *argv = p; }
+    }
+    strcpy (*argv, arg);
 }
 
 void

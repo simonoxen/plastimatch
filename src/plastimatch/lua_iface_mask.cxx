@@ -21,7 +21,7 @@ LUAIFACE_mask (lua_State* L)
     int argn;  /* # of struct entries (!necessarily = argc) */
 
     lua_cli_glue_init (L, &argv, &argn);
-    lua_cli_glue_add  (L, "mask", 1, argv);
+    lua_cli_glue_add  (L, "mask", &argv[1]);
 
     char arg[_MAX_PATH];
     char buf[_MAX_PATH];
@@ -40,8 +40,8 @@ LUAIFACE_mask (lua_State* L)
     for (int i=0; i<num_mask_opt; i++) {
         if (from_lua_getstring (L, arg, mask_opt[i])) {
             sprintf (buf, "--%s", mask_opt[i]);
-            lua_cli_glue_add (L, buf, argc++, argv);
-            lua_cli_glue_add (L, arg, argc++, argv);
+            lua_cli_glue_add (L, buf, &argv[argc++]);
+            lua_cli_glue_add (L, arg, &argv[argc++]);
         }
     }
 #if 0

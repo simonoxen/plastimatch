@@ -12,7 +12,7 @@
 
 
 void lua_cli_glue_init (lua_State* L, char*** argv, int* argc);
-void lua_cli_glue_add (lua_State* L, char* arg, int arg_idx, char** argv);
+void lua_cli_glue_add (lua_State* L, char* arg, char** argv);
 void lua_cli_glue_solvent (lua_State* L, char** argv, int argn);
 
 int from_lua_count_struct_members (lua_State* L);
