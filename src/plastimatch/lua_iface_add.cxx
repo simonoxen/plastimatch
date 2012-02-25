@@ -41,17 +41,17 @@ LUAIFACE_add (lua_State* L)
     char arg[_MAX_PATH];
     char buf[_MAX_PATH];
 
-    char* mask_opt[] = {
+    char* opt[] = {
         "output",
         "weight"
     };
-    int num_mask_opt = sizeof (mask_opt)/sizeof (char*);
+    int num_opt = sizeof (opt)/sizeof (char*);
 
     // Process parms
     argc=2;
-    for (int i=0; i<num_mask_opt; i++) {
-        if (from_lua_getstring (L, arg, mask_opt[i])) {
-            sprintf (buf, "--%s", mask_opt[i]);
+    for (int i=0; i<num_opt; i++) {
+        if (from_lua_getstring (L, arg, opt[i])) {
+            sprintf (buf, "--%s", opt[i]);
             lua_cli_glue_add (L, buf, &argv[argc++]);
             lua_cli_glue_add (L, arg, &argv[argc++]);
         }
