@@ -129,7 +129,7 @@ parse_fn (
     /* Main pattern */
     parser->add_long_option ("", "pattern",
 	"synthetic pattern to create: {"
-	"donut, enclosed_rect, gauss, osd, rect, sphere"
+	"donut, enclosed_rect, gauss, grid, lung, osd, rect, sphere"
 	"}, default is gauss", 
 	1, "gauss");
 
@@ -183,6 +183,9 @@ parse_fn (
     parser->add_long_option ("", "grid-pattern", 
 	"grid pattern spacing in voxels \"x [y z]\"", 1, "10");
 
+    /* Lung options */
+    parser->add_long_option ("", "lung-tumor-pos", 
+	"position of tumor in mm \"z\" or \"x y z\"", 1, "0");
 
     /* Parse the command line arguments */
     parser->parse (argc,argv);
@@ -236,6 +239,9 @@ parse_fn (
     }
     else if (arg == "grid") {
 	sm_parms->pattern = PATTERN_GRID;
+    }
+    else if (arg == "lung") {
+	sm_parms->pattern = PATTERN_LUNG;
     }
     else {
 	throw (dlib::error ("Error. Unknown --pattern argument: " + arg));
@@ -323,9 +329,24 @@ parse_fn (
     parser->assign_float13 (sm_parms->sphere_center, "sphere-center");
     parser->assign_float13 (sm_parms->sphere_radius, "sphere-radius");
 
-
     /* Grid pattern options */
     parser->assign_int13 (sm_parms->grid_spacing, "grid-pattern");
+
+    /* Lung options */
+    rc = sscanf (parser->get_string("lung-tumor-pos").c_str(), 
+	"%g %g %g", 
+	&(sm_parms->lung_tumor_pos[0]), 
+	&(sm_parms->lung_tumor_pos[1]), 
+	&(sm_parms->lung_tumor_pos[2]));
+    if (rc == 1) {
+	sm_parms->lung_tumor_pos[2] = sm_parms->lung_tumor_pos[0];
+	sm_parms->lung_tumor_pos[0] = 0;
+	sm_parms->lung_tumor_pos[1] = 0;
+    }
+    else if (rc != 3) {
+	throw (dlib::error ("Error. Option --lung-tumor-pos must have "
+		"one or three arguments\n"));
+    }
 }
 
 void

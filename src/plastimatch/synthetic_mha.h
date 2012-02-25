@@ -18,7 +18,8 @@ enum Pattern_type {
     PATTERN_ENCLOSED_RECT,
     PATTERN_OBJSTRUCTDOSE,
     PATTERN_DONUT,
-    PATTERN_GRID
+    PATTERN_GRID,
+    PATTERN_LUNG
 };
 
 enum Pattern_structset_type {
@@ -51,6 +52,7 @@ public:
     float donut_radius[3];
     int donut_rings;
     int grid_spacing[3];
+    float lung_tumor_pos[3];
     
     float enclosed_intens_f1, enclosed_intens_f2;
     float enclosed_xlat1[3], enclosed_xlat2[3];
@@ -61,36 +63,37 @@ public:
 
 public:
     Synthetic_mha_parms () {
-	output_type = PLM_IMG_TYPE_ITK_FLOAT;
-	pattern = PATTERN_GAUSS;
-	for (int i = 0; i < 3; i++) {
-	    spacing[i] = 5.0f;
-	    dim[i] = 100;
-	    origin[i] = 0.0f;
-	    gauss_center[i] = 0.0f;
-	    gauss_std[i] = 100.0f;
-	    sphere_center[i] = 0.0f;
-	    sphere_radius[i] = 50.0f;
-	    donut_center[i] = 0.0f;
-	}
-	background = -1000.0f;
-	foreground = 0.0f;
-	m_want_ss_img = false;
-	m_want_dose_img = false;
-	rect_size[0] = -50.0f;
-	rect_size[1] = +50.0f;
-	rect_size[2] = -50.0f;
-	rect_size[3] = +50.0f;
-	rect_size[4] = -50.0f;
-	rect_size[5] = +50.0f;
-	donut_radius[0] = 50.0f;
-	donut_radius[1] = 50.0f;
-	donut_radius[2] = 20.0f;
-	donut_rings = 2;
-    grid_spacing[0] = 10;
-    grid_spacing[1] = 10;
-    grid_spacing[2] = 10;
-	pattern_ss = PATTERN_SS_ONE;
+        output_type = PLM_IMG_TYPE_ITK_FLOAT;
+        pattern = PATTERN_GAUSS;
+        for (int i = 0; i < 3; i++) {
+            spacing[i] = 5.0f;
+            dim[i] = 100;
+            origin[i] = 0.0f;
+            gauss_center[i] = 0.0f;
+            gauss_std[i] = 100.0f;
+            sphere_center[i] = 0.0f;
+            sphere_radius[i] = 50.0f;
+            donut_center[i] = 0.0f;
+            lung_tumor_pos[i] = 0.0f;
+        }
+        background = -1000.0f;
+        foreground = 0.0f;
+        m_want_ss_img = false;
+        m_want_dose_img = false;
+        rect_size[0] = -50.0f;
+        rect_size[1] = +50.0f;
+        rect_size[2] = -50.0f;
+        rect_size[3] = +50.0f;
+        rect_size[4] = -50.0f;
+        rect_size[5] = +50.0f;
+        donut_radius[0] = 50.0f;
+        donut_radius[1] = 50.0f;
+        donut_radius[2] = 20.0f;
+        donut_rings = 2;
+        grid_spacing[0] = 10;
+        grid_spacing[1] = 10;
+        grid_spacing[2] = 10;
+        pattern_ss = PATTERN_SS_ONE;
         num_multi_sphere = 33;
     }
 };
