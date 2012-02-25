@@ -570,6 +570,7 @@ if (LUA51_FOUND)
   set (PLASTIMATCH_SRC
     ${PLASTIMATCH_SRC}
     pcmd_script.cxx pcmd_script.h
+    lua_iface_add.cxx lua_iface_add.h
     lua_iface_mask.cxx lua_iface_mask.h
     lua_iface_register.cxx lua_iface_register.h
     )

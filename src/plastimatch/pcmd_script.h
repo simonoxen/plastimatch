@@ -11,7 +11,8 @@
 #include "lauxlib.h"
 
 
-void lua_cli_glue_init (lua_State* L, char*** argv, int* argc);
+void lua_cli_glue_init (lua_State* L, int* argc, char*** argv);
+void lua_cli_glue_grow (lua_State* L, int n, int* argc, char*** argv);
 void lua_cli_glue_add (lua_State* L, char* arg, char** argv);
 void lua_cli_glue_solvent (lua_State* L, char** argv, int argn);
 

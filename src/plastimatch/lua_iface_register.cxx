@@ -32,6 +32,31 @@ lua_abort_stage (lua_State* L, int num, const char* bad_key)
 }
 
 
+// USAGE INSIDE LUA:
+//    
+//    global = {
+//       fixed  = "fixed.mha",
+//       moving = "moving.mha",
+//             .
+//             .
+//    }
+//
+//    stage_1 = {
+//       xform = "bspline",
+//       metric = "mse",
+//       optim = "lbfgsb",
+//       impl = "plastimatch",
+//       threading = "openmp",
+//       max_its = 10
+//    }
+//
+//    stage_2 = {
+//            .
+//            .
+//    }
+//
+//    register (stage_2, stage_1, global)
+//
 int
 LUAIFACE_register (lua_State* L)
 {

@@ -10,13 +10,14 @@ extern "C"
 #include "lauxlib.h"
 }
 #include "pcmd_script.h"
-#include "lua_iface_mask.h"
+#include "lua_iface_add.h"
+#include "lua_iface_mask.h"     /* also contains fill() */
 #include "lua_iface_register.h"
 
 
 /* Command Line Glue */
 void
-lua_cli_glue_init (lua_State* L, char*** argv, int* argc)
+lua_cli_glue_init (lua_State* L, int* argc, char*** argv)
 {
     /* # of parameters passed via lua stack + 2 */
     /*     1 for argv[0] = "plastimatch"        */
@@ -31,6 +32,18 @@ lua_cli_glue_init (lua_State* L, char*** argv, int* argc)
     
     (*argv)[0] = (char*)malloc (strlen("plastimatch") * sizeof(char)); 
     strcpy ((*argv)[0], "plastimatch");
+}
+
+void
+lua_cli_glue_grow (lua_State* L, int n, int* argc, char*** argv)
+{
+    char** p = (char**)realloc (*argv, (*argc+n) * sizeof(char*));
+    if (p) { *argv = p; }
+
+    for (int i=*argc; i<(*argc)+n; i++) {
+        (*argv)[i] = NULL;
+    }
+    *argc += n;
 }
 
 void
@@ -66,7 +79,7 @@ from_lua_count_struct_members (lua_State* L)
     int n=0;
     lua_pushnil (L);
     while (lua_next (L, -2)) {
-        luaL_checktype(L, 1, LUA_TTABLE);
+        luaL_checktype (L, 1, LUA_TTABLE);
         n++;
         lua_pop (L, 1);
     }
@@ -191,6 +204,7 @@ from_lua_getfloat3 (lua_State* L, float* dest, const char* var_name)
 static void
 register_lua_interfaces (lua_State* L)
 {
+    lua_register (L, "add",      LUAIFACE_add);
     lua_register (L, "mask",     LUAIFACE_mask);
     lua_register (L, "fill",     LUAIFACE_fill);
     lua_register (L, "register", LUAIFACE_register);

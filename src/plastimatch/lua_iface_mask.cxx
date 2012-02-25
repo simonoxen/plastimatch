@@ -20,7 +20,7 @@ mask_or_fill (lua_State* L, char* mode)
     int argc;
     int argn;  /* # of struct entries (!necessarily = argc) */
 
-    lua_cli_glue_init (L, &argv, &argn);
+    lua_cli_glue_init (L, &argn, &argv);
     lua_cli_glue_add  (L, mode, &argv[1]);
 
     char arg[_MAX_PATH];
@@ -58,6 +58,23 @@ mask_or_fill (lua_State* L, char* mode)
     return 1; // # of return values
 }
 
+
+
+
+
+
+// USAGE INSIDE LUA:
+//    
+//    parms = {
+//       output = "out.mha",
+//       input  = "in.mha",
+//             .
+//             .
+//             .
+//    }
+//
+//    mask (parms)
+//
 int
 LUAIFACE_mask (lua_State* L)
 {
@@ -65,7 +82,18 @@ LUAIFACE_mask (lua_State* L)
 }
 
 
-
+// USAGE INSIDE LUA:
+//    
+//    parms = {
+//       output = "out.mha",
+//       input  = "in.mha",
+//             .
+//             .
+//             .
+//    }
+//
+//    fill(parms)
+//
 int
 LUAIFACE_fill (lua_State* L)
 {
