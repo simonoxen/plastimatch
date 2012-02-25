@@ -574,6 +574,7 @@ if (LUA51_FOUND)
     lua_iface_crop.cxx lua_iface_crop.h
     lua_iface_mask.cxx lua_iface_mask.h
     lua_iface_register.cxx lua_iface_register.h
+    lua_iface_resample.cxx lua_iface_resample.h
     lua_iface_synth.cxx lua_iface_synth.h
     )
 endif()
