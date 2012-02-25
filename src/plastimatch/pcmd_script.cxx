@@ -14,6 +14,7 @@ extern "C"
 #include "lua_iface_crop.h"
 #include "lua_iface_mask.h"     /* also contains fill() */
 #include "lua_iface_register.h"
+#include "lua_iface_synth.h"
 
 
 /* Command Line Glue */
@@ -210,6 +211,7 @@ register_lua_interfaces (lua_State* L)
     lua_register (L, "mask",     LUAIFACE_mask);
     lua_register (L, "fill",     LUAIFACE_fill);
     lua_register (L, "register", LUAIFACE_register);
+    lua_register (L, "synth",    LUAIFACE_synth);
 }
 
 
