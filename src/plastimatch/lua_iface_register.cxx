@@ -322,6 +322,9 @@ LUAIFACE_register (lua_State* L)
             stage->fixed_subsample_rate[0] = ret_int3[0];
             stage->fixed_subsample_rate[1] = ret_int3[1];
             stage->fixed_subsample_rate[2] = ret_int3[2];
+            stage->moving_subsample_rate[0] = ret_int3[0];
+            stage->moving_subsample_rate[1] = ret_int3[1];
+            stage->moving_subsample_rate[2] = ret_int3[2];
         }
 
 #if 0
