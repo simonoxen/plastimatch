@@ -74,7 +74,8 @@ LUAIFACE_register (lua_State* L)
 
 
     char ret[255];
-    int ret_int = 0;
+    int ret_int;
+    int ret_int3[3];
     float ret_float;
     float ret_float3[3];
 
@@ -315,6 +316,12 @@ LUAIFACE_register (lua_State* L)
             stage->grid_spac[0] = ret_float3[0];
             stage->grid_spac[1] = ret_float3[1];
             stage->grid_spac[2] = ret_float3[2];
+        }
+        if (from_lua_getint3 (L, ret_int3, "res")) {
+            stage->subsampling_type = SUBSAMPLING_VOXEL_RATE;
+            stage->fixed_subsample_rate[0] = ret_int3[0];
+            stage->fixed_subsample_rate[1] = ret_int3[1];
+            stage->fixed_subsample_rate[2] = ret_int3[2];
         }
 
 #if 0
