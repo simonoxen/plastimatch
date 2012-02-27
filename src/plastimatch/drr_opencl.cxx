@@ -99,6 +99,8 @@ drr_opencl_ray_trace_image (
     cl_float4 ocl_p1, ocl_ul_room, ocl_incr_r, ocl_incr_c;
     cl_float4 ocl_nrm, ocl_lower_limit, ocl_upper_limit;
     cl_float ocl_sad;
+    cl_int4 ocl_vol_dim;
+    cl_int2 ocl_proj_dim;
 
     /* Copy ic to device (convert from double to float) */
     opencl_idx(ocl_ic,0) = proj->pmat->ic[0];
@@ -142,12 +144,21 @@ drr_opencl_ray_trace_image (
     /* Convert sad from double to float */
     ocl_sad = proj->pmat->sad;
 
+    /* Copy volume dim (convert from size_t to int) */
+    opencl_idx(ocl_vol_dim,0) = vol->dim[0];
+    opencl_idx(ocl_vol_dim,1) = vol->dim[1];
+    opencl_idx(ocl_vol_dim,2) = vol->dim[2];
+    
+    /* Copy projection image dim (convert from size_t to int) */
+    opencl_idx(ocl_proj_dim,0) = proj->dim[0];
+    opencl_idx(ocl_proj_dim,1) = proj->dim[1];
+    
     /* Set drr kernel arguments */
     opencl_set_kernel_args (
 	&dev_state->ocl_dev, 
 	sizeof (cl_mem), &dev_state->ocl_buf_img[0], 
 	sizeof (cl_mem), &dev_state->ocl_buf_vol[0], 
-	sizeof (cl_int4), vol->dim, 
+	sizeof (cl_int4), &ocl_vol_dim, 
 	sizeof (cl_float4), vol->offset, 
 	sizeof (cl_float4), vol->spacing, 
 	sizeof (cl_int2), proj->dim, 

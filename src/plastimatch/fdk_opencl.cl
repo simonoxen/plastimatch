@@ -10,7 +10,7 @@ __kernel void convert_to_hu_cl(
     int p = get_global_id(0);
 
     if (p < nvoxels)
-	img[p] = (149.70059880239520958083832335329 * img[p]) - 1000;
+        img[p] = (149.70059880239520958083832335329 * img[p]) - 1000;
 }
 
 
@@ -29,7 +29,7 @@ __kernel void kernel_fdk(
     __constant float4 *vol_pix_spacing,
     __constant int4 *vol_dim,
     __constant float2 *ic,
-    __constant int2 *img_dim,
+    __constant int2 *proj_dim,
     __constant float *sad,
     __constant float *scale,
     __constant int4 *ndevice,
@@ -40,7 +40,7 @@ __kernel void kernel_fdk(
     uint k = get_global_id(2);
 
     if (i >= (*ndevice).x || j >= (*ndevice).y || k >= (*ndevice).z)
-	return;
+        return;
 
     // Index row major into the volume
     long vol_idx = i + (j * (*vol_dim).x) + (k * (*vol_dim).x * (*vol_dim).y);
@@ -51,9 +51,9 @@ __kernel void kernel_fdk(
 
     // Offset volume coordinates
     float4 vp;
-    vp.x = (*vol_offset).x + (i * (*vol_pix_spacing).x);	// Compiler should combine into 1 FMAD.
-    vp.y = (*vol_offset).y + (j * (*vol_pix_spacing).y);	// Compiler should combine into 1 FMAD.
-    vp.z = (*vol_offset).z + (k * (*vol_pix_spacing).z);	// Compiler should combine into 1 FMAD.
+    vp.x = (*vol_offset).x + (i * (*vol_pix_spacing).x);        // Compiler should combine into 1 FMAD.
+    vp.y = (*vol_offset).y + (j * (*vol_pix_spacing).y);        // Compiler should combine into 1 FMAD.
+    vp.z = (*vol_offset).z + (k * (*vol_pix_spacing).z);        // Compiler should combine into 1 FMAD.
 
     // Matrix multiplication
     float4 ip;
@@ -71,8 +71,8 @@ __kernel void kernel_fdk(
     pos.x = convert_int_rtn(ip.y);
 
     // Clip against image dimensions
-    if (pos.x < 0 || pos.x >= (*img_dim).x || pos.y < 0 || pos.y >= (*img_dim).y)
-	return;
+    if (pos.x < 0 || pos.x >= (*proj_dim).x || pos.y < 0 || pos.y >= (*proj_dim).y)
+        return;
 
     // Get pixel from texture memory
     float4 voxel_data = read_imagef(dev_img, dev_img_sampler, pos);
@@ -97,9 +97,9 @@ __kernel void kernel_fdk_bilinear(
     __constant float4 *nrm,
     __constant float4 *vol_offset,
     __constant float4 *vol_pix_spacing,
-    __constant int4 *vol_dim,
+    int4 vol_dim,
     __constant float2 *ic,
-    __constant int2 *img_dim,
+    int2 proj_dim,
     __constant float *sad,
     __constant float *scale,
     __constant int4 *ndevice,
@@ -110,7 +110,7 @@ __kernel void kernel_fdk_bilinear(
     uint k = get_global_id(2);
 
     if (i >= (*ndevice).x || j >= (*ndevice).y || k >= (*ndevice).z)
-	return;
+        return;
 
     // Index row major into the volume
     long vol_idx = i + (j * (*vol_dim).x) + (k * (*vol_dim).x * (*vol_dim).y);
@@ -121,9 +121,9 @@ __kernel void kernel_fdk_bilinear(
 
     // offset volume coords
     float4 vp;
-    vp.x = (*vol_offset).x + (i * (*vol_pix_spacing).x);	// Compiler should combine into 1 FMAD.
-    vp.y = (*vol_offset).y + (j * (*vol_pix_spacing).y);	// Compiler should combine into 1 FMAD.
-    vp.z = (*vol_offset).z + (k * (*vol_pix_spacing).z);	// Compiler should combine into 1 FMAD.
+    vp.x = (*vol_offset).x + (i * (*vol_pix_spacing).x);        // Compiler should combine into 1 FMAD.
+    vp.y = (*vol_offset).y + (j * (*vol_pix_spacing).y);        // Compiler should combine into 1 FMAD.
+    vp.z = (*vol_offset).z + (k * (*vol_pix_spacing).z);        // Compiler should combine into 1 FMAD.
 
     // matrix multiply
     float4 ip;
@@ -141,8 +141,8 @@ __kernel void kernel_fdk_bilinear(
     pos.x = ip.y;
 
     // Clip against image dimensions
-    if (pos.x < 0 || pos.x >= (*img_dim).x || pos.y < 0 || pos.y >= (*img_dim).y)
-	return;
+    if (pos.x < 0 || pos.x >= (*proj_dim).x || pos.y < 0 || pos.y >= (*proj_dim).y)
+        return;
 
     // Dot product
     float s = ((*nrm).x * vp.x) + ((*nrm).y * vp.y) + ((*nrm).z * vp.z);
@@ -169,23 +169,23 @@ __kernel void kernel_fdk_bilinear(
 
     for (int i=0; i < 2; i++)
     {
-	for (int j = 0; j < 2; j++)
-	{
-	    interp_pos.x = bilinear_pos.x + i;
-	    interp_pos.y = bilinear_pos.y + j;
+        for (int j = 0; j < 2; j++)
+        {
+            interp_pos.x = bilinear_pos.x + i;
+            interp_pos.y = bilinear_pos.y + j;
 
-	    // Checks if pixel is outside image
-	    if (interp_pos.x < 0)
-		interp_pos.x = 0;
-	    else if(interp_pos.x >= (*img_dim).x)
-		interp_pos.x = (*img_dim).x - 1;
-	    if (interp_pos.y < 0)
-		interp_pos.y = 0;
-	    else if(interp_pos.y >= (*img_dim).y)
-		interp_pos.y = (*img_dim).y - 1;
+            // Checks if pixel is outside image
+            if (interp_pos.x < 0)
+                interp_pos.x = 0;
+            else if(interp_pos.x >= (*proj_dim).x)
+                interp_pos.x = (*proj_dim).x - 1;
+            if (interp_pos.y < 0)
+                interp_pos.y = 0;
+            else if(interp_pos.y >= (*proj_dim).y)
+                interp_pos.y = (*proj_dim).y - 1;
 
-	    p[i][j] = read_imagef(dev_img, dev_img_sampler, interp_pos);
-	}
+            p[i][j] = read_imagef(dev_img, dev_img_sampler, interp_pos);
+        }
     }
 
     float intensity = p[0][0].x * (1 - dist.x) * (1  - dist.y) + p[0][1].x * (1 - dist.x) * dist.y + p[1][0].x * dist.x * (1 - dist.y) + p[1][1].x * dist.x * dist.y;
@@ -205,7 +205,7 @@ __kernel void kernel_fdk_bicubic(
     __constant float4 *vol_pix_spacing,
     __constant int4 *vol_dim,
     __constant float2 *ic,
-    __constant int2 *img_dim,
+    __constant int2 *proj_dim,
     __constant float *sad,
     __constant float *scale,
     __constant int4 *ndevice,
@@ -216,7 +216,7 @@ __kernel void kernel_fdk_bicubic(
     uint k = get_global_id(2);
 
     if (i >= (*ndevice).x || j >= (*ndevice).y || k >= (*ndevice).z)
-	return;
+        return;
 
     // Index row major into the volume
     long vol_idx = i + (j * (*vol_dim).x) + (k * (*vol_dim).x * (*vol_dim).y);
@@ -227,9 +227,9 @@ __kernel void kernel_fdk_bicubic(
 
     // offset volume coords
     float4 vp;
-    vp.x = (*vol_offset).x + (i * (*vol_pix_spacing).x);	// Compiler should combine into 1 FMAD.
-    vp.y = (*vol_offset).y + (j * (*vol_pix_spacing).y);	// Compiler should combine into 1 FMAD.
-    vp.z = (*vol_offset).z + (k * (*vol_pix_spacing).z);	// Compiler should combine into 1 FMAD.
+    vp.x = (*vol_offset).x + (i * (*vol_pix_spacing).x);        // Compiler should combine into 1 FMAD.
+    vp.y = (*vol_offset).y + (j * (*vol_pix_spacing).y);        // Compiler should combine into 1 FMAD.
+    vp.z = (*vol_offset).z + (k * (*vol_pix_spacing).z);        // Compiler should combine into 1 FMAD.
 
     // matrix multiply
     float4 ip;
@@ -247,8 +247,8 @@ __kernel void kernel_fdk_bicubic(
     pos.x = ip.y;
 
     // Clip against image dimensions
-    if (pos.x < 0 || pos.x >= (*img_dim).x || pos.y < 0 || pos.y >= (*img_dim).y)
-	return;
+    if (pos.x < 0 || pos.x >= (*proj_dim).x || pos.y < 0 || pos.y >= (*proj_dim).y)
+        return;
 
     // Dot product
     float s = ((*nrm).x * vp.x) + ((*nrm).y * vp.y) + ((*nrm).z * vp.z);
@@ -275,110 +275,77 @@ __kernel void kernel_fdk_bicubic(
 
     for (int i = -1; i < 3; i++)
     {
-	for (int j = -1; j < 3; j++)
-	{
-	    interp_pos.x = bicubic_pos.x + i;
-	    interp_pos.y = bicubic_pos.y + j;
+        for (int j = -1; j < 3; j++)
+        {
+            interp_pos.x = bicubic_pos.x + i;
+            interp_pos.y = bicubic_pos.y + j;
 
-	    // Checks if pixel is outside image
-	    if (interp_pos.x < 0)
-		interp_pos.x = 0;
-	    else if(interp_pos.x >= (*img_dim).x)
-		interp_pos.x = (*img_dim).x - 1;
-	    if (interp_pos.y < 0)
-		interp_pos.y = 0;
-	    else if(interp_pos.y >= (*img_dim).y)
-		interp_pos.y = (*img_dim).y - 1;
+            // Checks if pixel is outside image
+            if (interp_pos.x < 0)
+                interp_pos.x = 0;
+            else if(interp_pos.x >= (*proj_dim).x)
+                interp_pos.x = (*proj_dim).x - 1;
+            if (interp_pos.y < 0)
+                interp_pos.y = 0;
+            else if(interp_pos.y >= (*proj_dim).y)
+                interp_pos.y = (*proj_dim).y - 1;
 
-	    p[i + 1][j + 1] = read_imagef(dev_img, dev_img_sampler, interp_pos);
-	}
+            p[i + 1][j + 1] = read_imagef(dev_img, dev_img_sampler, interp_pos);
+        }
     }
 
     float16 a;
-    a.s0 = 
-
-	p[1][1].x;
-
-    a.s1 = 
-
-	-   (0.5 * p[1][0].x)                     +  (0.5 * p[1][2].x);
-
-
-    a.s2 = 
-
-	p[1][0].x -  (2.5 * p[1][1].x) +    (2 * p[1][2].x) -  (0.5 * p[1][3].x);
-
-
-    a.s3 = 
-
-	-   (0.5 * p[1][0].x) + (1.5 * p[1][1].x) -  (1.5 * p[1][2].x) +  (0.5 * p[1][3].x);
-
-
-    a.s4 = 
-	(0.5 * p[2][1].x)
-
-	-  (0.5 * p[0][1].x);
-
-    a.s5 = 
-	- (0.25 * p[2][0].x)                      + (0.25 * p[2][2].x)
-
-	+ (0.25 * p[0][0].x)                      - (0.25 * p[0][2].x);
-
+    a.s0 = p[1][1].x;
+    a.s1 = -   (0.5 * p[1][0].x)                     +  (0.5 * p[1][2].x);
+    a.s2 = p[1][0].x -  (2.5 * p[1][1].x) +    (2 * p[1][2].x) -  (0.5 * p[1][3].x);
+    a.s3 = -   (0.5 * p[1][0].x) + (1.5 * p[1][1].x) -  (1.5 * p[1][2].x) +  (0.5 * p[1][3].x);
+    a.s4 = (0.5 * p[2][1].x) -  (0.5 * p[0][1].x);
+    a.s5 = - (0.25 * p[2][0].x)                      + (0.25 * p[2][2].x)
+        + (0.25 * p[0][0].x)                      - (0.25 * p[0][2].x);
     a.s6 = 
-	(0.5 * p[2][0].x) - (1.25 * p[2][1].x) +         p[2][2].x  - (0.25 * p[2][3].x)
-
-	-  (0.5 * p[0][0].x) + (1.25 * p[0][1].x) -         p[0][2].x  + (0.25 * p[0][3].x);
-
+        (0.5 * p[2][0].x) - (1.25 * p[2][1].x) +         p[2][2].x  - (0.25 * p[2][3].x)
+        -  (0.5 * p[0][0].x) + (1.25 * p[0][1].x) -         p[0][2].x  + (0.25 * p[0][3].x);
     a.s7 = 
-	- (0.25 * p[2][0].x) + (0.75 * p[2][1].x) - (0.75 * p[2][2].x) + (0.25 * p[2][3].x)
-
-	+ (0.25 * p[0][0].x) - (0.75 * p[0][1].x) + (0.75 * p[0][2].x) - (0.25 * p[0][3].x);
-
+        - (0.25 * p[2][0].x) + (0.75 * p[2][1].x) - (0.75 * p[2][2].x) + (0.25 * p[2][3].x)
+        + (0.25 * p[0][0].x) - (0.75 * p[0][1].x) + (0.75 * p[0][2].x) - (0.25 * p[0][3].x);
     a.s8 =                      -  (0.5 * p[3][1].x)
-	+    (2 * p[2][1].x)
-	-  (2.5 * p[1][1].x)
-	+         p[0][1].x;
-
+        +    (2 * p[2][1].x)
+        -  (2.5 * p[1][1].x)
+        +         p[0][1].x;
     a.s9 =   (0.25 * p[3][0].x)                      - (0.25 * p[3][2].x)
-	-         p[2][0].x                       +         p[2][2].x
-	+ (1.25 * p[1][0].x)                      - (1.25 * p[1][2].x)
-	-  (0.5 * p[0][0].x)                      +  (0.5 * p[0][2].x);
-
+        -         p[2][0].x                       +         p[2][2].x
+        + (1.25 * p[1][0].x)                      - (1.25 * p[1][2].x)
+        -  (0.5 * p[0][0].x)                      +  (0.5 * p[0][2].x);
     a.sa = -  (0.5 * p[3][0].x) + (1.25 * p[3][1].x) -         p[3][2].x  + (0.25 * p[3][3].x)
-	+    (2 * p[2][0].x) -    (5 * p[2][1].x) +    (4 * p[2][2].x) -         p[2][3].x
-	-  (2.5 * p[1][0].x) + (6.25 * p[1][1].x) -    (5 * p[1][2].x) + (1.25 * p[1][3].x)
-	+         p[0][0].x  -  (2.5 * p[0][1].x) +    (2 * p[0][2].x) -  (0.5 * p[0][3].x);
-
+        +    (2 * p[2][0].x) -    (5 * p[2][1].x) +    (4 * p[2][2].x) -         p[2][3].x
+        -  (2.5 * p[1][0].x) + (6.25 * p[1][1].x) -    (5 * p[1][2].x) + (1.25 * p[1][3].x)
+        +         p[0][0].x  -  (2.5 * p[0][1].x) +    (2 * p[0][2].x) -  (0.5 * p[0][3].x);
     a.sb =   (0.25 * p[3][0].x) - (0.75 * p[3][1].x) + (0.75 * p[3][2].x) - (0.25 * p[3][3].x)
-	-         p[2][0].x  +    (3 * p[2][1].x) -    (3 * p[2][2].x) +         p[2][3].x
-	+ (1.25 * p[1][0].x) - (3.75 * p[1][1].x) + (3.75 * p[1][2].x) - (1.25 * p[1][3].x)
-	-  (0.5 * p[0][0].x) +  (1.5 * p[0][1].x) -  (1.5 * p[0][2].x) +  (0.5 * p[0][3].x);
-
+        -         p[2][0].x  +    (3 * p[2][1].x) -    (3 * p[2][2].x) +         p[2][3].x
+        + (1.25 * p[1][0].x) - (3.75 * p[1][1].x) + (3.75 * p[1][2].x) - (1.25 * p[1][3].x)
+        -  (0.5 * p[0][0].x) +  (1.5 * p[0][1].x) -  (1.5 * p[0][2].x) +  (0.5 * p[0][3].x);
     a.sc =                         (0.5 * p[3][1].x)
-	-  (1.5 * p[2][1].x)
-	+  (1.5 * p[1][1].x)
-	-  (0.5 * p[0][1].x);
-
+        -  (1.5 * p[2][1].x)
+        +  (1.5 * p[1][1].x)
+        -  (0.5 * p[0][1].x);
     a.sd = - (0.25 * p[3][0].x)                      + (0.25 * p[3][2].x)
-	+ (0.75 * p[2][0].x)                      - (0.75 * p[2][2].x)
-	- (0.75 * p[1][0].x)                      + (0.75 * p[1][2].x)
-	+ (0.25 * p[0][0].x)                      - (0.25 * p[0][2].x);
-
+        + (0.75 * p[2][0].x)                      - (0.75 * p[2][2].x)
+        - (0.75 * p[1][0].x)                      + (0.75 * p[1][2].x)
+        + (0.25 * p[0][0].x)                      - (0.25 * p[0][2].x);
     a.se =    (0.5 * p[3][0].x) - (1.25 * p[3][1].x) +         p[3][2].x  - (0.25 * p[3][3].x)
-	-  (1.5 * p[2][0].x) + (3.75 * p[2][1].x) -    (3 * p[2][2].x) + (0.75 * p[2][3].x)
-	+  (1.5 * p[1][0].x) - (3.75 * p[1][1].x) +    (3 * p[1][2].x) - (0.75 * p[1][3].x)
-	-  (0.5 * p[0][0].x) + (1.25 * p[0][1].x) -         p[0][2].x  + (0.25 * p[0][3].x);
-
+        -  (1.5 * p[2][0].x) + (3.75 * p[2][1].x) -    (3 * p[2][2].x) + (0.75 * p[2][3].x)
+        +  (1.5 * p[1][0].x) - (3.75 * p[1][1].x) +    (3 * p[1][2].x) - (0.75 * p[1][3].x)
+        -  (0.5 * p[0][0].x) + (1.25 * p[0][1].x) -         p[0][2].x  + (0.25 * p[0][3].x);
     a.sf = - (0.25 * p[3][0].x) + (0.75 * p[3][1].x) - (0.75 * p[3][2].x) + (0.25 * p[3][3].x)
-	+ (0.75 * p[2][0].x) - (2.25 * p[2][1].x) + (2.25 * p[2][2].x) - (0.75 * p[2][3].x)
-	- (0.75 * p[1][0].x) + (2.25 * p[1][1].x) - (2.25 * p[1][2].x) + (0.75 * p[1][3].x)
-	+ (0.25 * p[0][0].x) - (0.75 * p[0][1].x) + (0.75 * p[0][2].x) - (0.25 * p[0][3].x);
+        + (0.75 * p[2][0].x) - (2.25 * p[2][1].x) + (2.25 * p[2][2].x) - (0.75 * p[2][3].x)
+        - (0.75 * p[1][0].x) + (2.25 * p[1][1].x) - (2.25 * p[1][2].x) + (0.75 * p[1][3].x)
+        + (0.25 * p[0][0].x) - (0.75 * p[0][1].x) + (0.75 * p[0][2].x) - (0.25 * p[0][3].x);
 
     float intensity =
-	a.s0                             + (a.s1 * dist.y)                            + (a.s2 * dist.y * dist.y)                            + (a.s3 * dist.y * dist.y * dist.y) +
-	(a.s4 * dist.x)                   + (a.s5 * dist.x * dist.y)                   + (a.s6 * dist.x * dist.y * dist.y)                   + (a.s7 * dist.x * dist.y * dist.y * dist.y) +
-	(a.s8 * dist.x * dist.x)          + (a.s9 * dist.x * dist.x * dist.y)          + (a.sa * dist.x * dist.x * dist.y * dist.y)          + (a.sb * dist.x * dist.x * dist.y * dist.y * dist.y) +
-	(a.sc * dist.x * dist.x * dist.x) + (a.sd * dist.x * dist.x * dist.x * dist.y) + (a.se * dist.x * dist.x * dist.x * dist.y * dist.y) + (a.sf * dist.x * dist.x * dist.x * dist.y * dist.y * dist.y);
+        a.s0                             + (a.s1 * dist.y)                            + (a.s2 * dist.y * dist.y)                            + (a.s3 * dist.y * dist.y * dist.y) +
+        (a.s4 * dist.x)                   + (a.s5 * dist.x * dist.y)                   + (a.s6 * dist.x * dist.y * dist.y)                   + (a.s7 * dist.x * dist.y * dist.y * dist.y) +
+        (a.s8 * dist.x * dist.x)          + (a.s9 * dist.x * dist.x * dist.y)          + (a.sa * dist.x * dist.x * dist.y * dist.y)          + (a.sb * dist.x * dist.x * dist.y * dist.y * dist.y) +
+        (a.sc * dist.x * dist.x * dist.x) + (a.sd * dist.x * dist.x * dist.x * dist.y) + (a.se * dist.x * dist.x * dist.x * dist.y * dist.y) + (a.sf * dist.x * dist.x * dist.x * dist.y * dist.y * dist.y);
 
     // Place it into the volume
     dev_vol[vol_idx] = dev_vol_value + ((*scale) * s * intensity);
@@ -394,7 +361,7 @@ kernel_fdk (
     __constant float4 *vol_pix_spacing,
     __constant int4 *vol_dim,
     __constant float2 *ic,
-    __constant int2 *img_dim,
+    __constant int2 *proj_dim,
     __constant float *sad,
     __constant float *scale,
     __constant int4 *ndevice,
@@ -406,14 +373,14 @@ kernel_fdk (
 #endif
 
 __kernel void 
-kernel_2 (
+fdk_kernel_nn (
     __global float *dev_vol,
     __global float *dev_img,
     __constant float *dev_matrix,
-    __constant int *vol_dim,
+    int4 vol_dim,
     __constant float *vol_offset,
     __constant float *vol_spacing,
-    __constant int *img_dim,
+    int2 proj_dim,
     __constant float *nrm,
     __constant float *ic,
     const float sad,
@@ -423,12 +390,12 @@ kernel_2 (
     uint id = get_global_id(0);
     uint id_l = get_local_id(0);
 
-    int k = id / vol_dim[0] / vol_dim[1];
-    int j = (id - (k * vol_dim[0] * vol_dim[1])) / vol_dim[0];
-    int i = id - k * vol_dim[0] * vol_dim[1] - j * vol_dim[0];
+    int k = id / vol_dim.x / vol_dim.y;
+    int j = (id - (k * vol_dim.x * vol_dim.y)) / vol_dim.x;
+    int i = id - k * vol_dim.x * vol_dim.y - j * vol_dim.x;
 
-    if (k >= vol_dim[2]) {
-	return;
+    if (k >= vol_dim.z) {
+        return;
     }
 
     // Get volume value from global memory
@@ -456,14 +423,14 @@ kernel_2 (
     pos.x = convert_int_rtn (ip.y);
 
     // Clip against image dimensions
-    if (pos.x < 0 || pos.x >= img_dim[0] || pos.y < 0 || pos.y >= img_dim[1])
+    if (pos.x < 0 || pos.x >= proj_dim.x || pos.y < 0 || pos.y >= proj_dim.y)
     {
-	return;
+        return;
     }
 
     // Get pixel from image
     //float4 voxel_data = read_imagef(dev_img, dev_img_sampler, pos);
-    float pix_val = dev_img[pos.y * img_dim[0] + pos.x];
+    float pix_val = dev_img[pos.y * proj_dim.x + pos.x];
 
     // Get distance to voxel projected to panel normal 
     float s = (nrm[0] * vp.x) + (nrm[1] * vp.y) + (nrm[2] * vp.z);
