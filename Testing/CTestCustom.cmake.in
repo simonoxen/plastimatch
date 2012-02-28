@@ -195,7 +195,9 @@ if (NOT EXISTS "${PLM_BUILD_TESTING_DIR}/dicomrt-33-structures")
     ${CTEST_CUSTOM_TESTS_IGNORE}
     "plm-convert-dicom-33-a" 
     "plm-convert-dicom-33-a-stats-1" 
+    "plm-convert-dicom-33-a-stats-2" 
     "plm-convert-dicom-33-a-check-1" 
+    "plm-convert-dicom-33-a-check-2" 
     )
 endif ()
 
