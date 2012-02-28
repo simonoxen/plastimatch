@@ -75,7 +75,7 @@ if (OPENCL_FOUND)
   include_directories (BEFORE ${OPENCL_INCLUDE_DIR})
 endif ()
 
-if (LUA51_FOUND)
+if (PLM_CONFIG_ENABLE_LUA)
   include_directories(AFTER ${LUA_INCLUDE_DIR} )
 endif ()
 
@@ -566,7 +566,7 @@ set (PLASTIMATCH_SRC
   pcmd_xf_convert.cxx pcmd_xf_convert.h 
   plastimatch_main.cxx
   )
-if (LUA51_FOUND)
+if (PLM_CONFIG_ENABLE_LUA)
   set (PLASTIMATCH_SRC
     ${PLASTIMATCH_SRC}
     pcmd_script.cxx pcmd_script.h

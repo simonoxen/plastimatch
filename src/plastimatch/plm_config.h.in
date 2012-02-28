@@ -50,7 +50,6 @@
 #cmakedefine OPENCL_FOUND 1
 #cmakedefine PANTHEIOS_FOUND 1
 #cmakedefine HAVE_GETOPT_LONG 1
-#cmakedefine LUA51_FOUND 1
 
 /* User options */
 #cmakedefine PLM_BUILD_SHARED_LIBS 1
@@ -58,6 +57,7 @@
 #cmakedefine PLM_CONFIG_ALT_DCOS 1
 #cmakedefine PLM_CONFIG_KEYHOLIZE 1
 #cmakedefine PLM_CONFIG_PREFER_DCMTK 1
+#cmakedefine PLM_CONFIG_ENABLE_LUA 1
 
 /* Needed for dynamic linking */
 #cmakedefine PLM_USE_GPU_PLUGINS 1

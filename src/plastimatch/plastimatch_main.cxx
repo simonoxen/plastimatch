@@ -21,7 +21,7 @@
 #include "pcmd_header.h"
 #include "pcmd_probe.h"
 #include "pcmd_resample.h"
-#if (LUA51_FOUND)
+#if (PLM_CONFIG_ENABLE_LUA)
 #include "pcmd_script.h"
 #endif
 #include "pcmd_segment.h"
@@ -180,7 +180,7 @@ do_command (int argc, char* argv[])
     else if (!strcmp (command, "thumbnail")) {
         do_command_thumbnail (argc, argv);
     }
-#if (LUA51_FOUND)
+#if (PLM_CONFIG_ENABLE_LUA)
     else if (!strcmp (command, "script")) {
         do_command_script (argc, argv);
     }
