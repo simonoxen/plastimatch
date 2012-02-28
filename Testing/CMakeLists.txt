@@ -135,6 +135,13 @@ if (PLM_DOWNLOAD_DICOMRT_XIO)
     "${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02")
 endif ()
 
+if (PLM_DOWNLOAD_DICOMRT_33_STRUCTURES)
+  plm_download_and_extract (
+    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/2227/dicomrt-33-structures.tar.gz"
+    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/dicomrt-33-structures.tar.gz"
+    "${PLM_BUILD_TESTING_DIR}/dicomrt-33-structures")
+endif ()
+
 if (PLM_DOWNLOAD_FDK_VARIAN)
   plm_download_and_extract (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1127/varian-catphan.tar.gz"
@@ -1046,7 +1053,7 @@ plmtest_check_interval ("plm-convert-dicom-b-check"
   "62767"
   "62767"
   )
-ELSE ()
+else ()
 plmtest_check_interval ("plm-convert-dicom-b-check"
   "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-b-stats.stdout.txt"
   "AVE *([-0-9.]*)"
@@ -1071,7 +1078,7 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-c-ss-img.mha"
   )
-IF (PLM_USE_SS_IMAGE_VEC)
+if (PLM_USE_SS_IMAGE_VEC)
 # To be resolved.  Why do dicom-b and dicom-c give different answers?
 plmtest_check_interval ("plm-convert-dicom-c-check"
   "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-c-stats.stdout.txt"
@@ -1079,14 +1086,14 @@ plmtest_check_interval ("plm-convert-dicom-c-check"
   "62769"
   "62769"
   )
-ELSE ()
+else ()
 plmtest_check_interval ("plm-convert-dicom-c-check"
   "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-c-stats.stdout.txt"
   "AVE *([-0-9.]*)"
   "1.05"
   "1.06"
   )
-ENDIF ()
+endif ()
 set_tests_properties (plm-convert-dicom-c PROPERTIES 
   DEPENDS plm-convert-dicom-a)
 set_tests_properties (plm-convert-dicom-c-stats PROPERTIES 
@@ -1326,6 +1333,63 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-a.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-a-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-a-ss.txt;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-a-dose.mha"
   )
+
+## -------------------------------------------------------------------------
+## plm-convert-dicom-33-a (native method, depends on configuration)
+## plm-convert-dicom-33-b (force unsigned long)
+## plm-convert-dicom-33-c (force uchar_vec)
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-convert-dicom-33-a" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/dicomrt-33-structures;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-33-a.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-33-a-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-33-a-ss.txt;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-33-a-dicom"
+  )
+plm_add_test (
+  "plm-convert-dicom-33-a-stats-1" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch 
+  "header;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-33-a-ss.mha"
+  )
+plm_add_test (
+  "plm-convert-dicom-33-a-stats-2" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch 
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-33-a-ss.mha"
+  )
+if (PLM_USE_SS_IMAGE_VEC)
+plmtest_check_string ("plm-convert-dicom-33-a-check-1" 
+  "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-33-a-stats-1.stdout.txt"
+  "^Planes . (.*[^ ]) *$"
+  "5"
+  )
+plmtest_check_interval ("plm-convert-dicom-33-a-check-2"
+  "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-33-a-stats-2.stdout.txt"
+  "S *28 *NVOX *([-0-9.]*)"
+  "130"
+  "130"
+  )
+else ()
+plmtest_check_string ("plm-convert-dicom-33-a-check-1" 
+  "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-33-a-stats-1.stdout.txt"
+  "^Planes . (.*[^ ]) *$"
+  "1"
+  )
+plmtest_check_interval ("plm-convert-dicom-33-a-check-2"
+  "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-33-a-stats-2.stdout.txt"
+  "MAX *([-0-9.]*)"
+  "2147483648.000000"
+  "2147483648.000000"
+  )
+endif ()
+set_tests_properties (plm-convert-dicom-33-a-stats-1 PROPERTIES 
+  DEPENDS plm-convert-dicom-33-a)
+set_tests_properties (plm-convert-dicom-33-a-stats-2 PROPERTIES 
+  DEPENDS plm-convert-dicom-33-a)
+set_tests_properties (plm-convert-dicom-33-a-check-1 PROPERTIES 
+  DEPENDS plm-convert-dicom-33-a-stats-1)
+set_tests_properties (plm-convert-dicom-33-a-check-2 PROPERTIES 
+  DEPENDS plm-convert-dicom-33-a-stats-2)
 
 ## -------------------------------------------------------------------------
 ## plastimatch-convert-cxt

@@ -63,7 +63,6 @@ ss_list_load (Rtss_polyline_set* cxt, const char* ss_list_fn)
 void
 ss_list_save (Rtss_polyline_set* cxt, const char* ss_list_fn)
 {
-    int i;
     FILE *fp;
 	
     make_directory_recursive (ss_list_fn);
@@ -73,7 +72,7 @@ ss_list_save (Rtss_polyline_set* cxt, const char* ss_list_fn)
 	    "Could not open ss_list file for write: %s\n", ss_list_fn);
     }
 
-    for (i = 0; i < cxt->num_structures; i++) {
+    for (size_t i = 0; i < cxt->num_structures; i++) {
 	Rtss_structure *curr_structure;
 	curr_structure = cxt->slist[i];
 	fprintf (fp, "%d|%s|%s\n", 
@@ -90,7 +89,7 @@ ss_list_save (Rtss_polyline_set* cxt, const char* ss_list_fn)
 void
 ss_list_save_colormap (Rtss_polyline_set* cxt, const char* colormap_fn)
 {
-    int i, color_no;
+    int color_no;
     FILE *fp;
 	
     make_directory_recursive (colormap_fn);
@@ -106,7 +105,7 @@ ss_list_save_colormap (Rtss_polyline_set* cxt, const char* colormap_fn)
        are numbered before empty structures.  We accomplish this by running 
        two passes: filled structures, then empty structures. */
     color_no = 0;
-    for (i = 0; i < cxt->num_structures; i++) {
+    for (size_t i = 0; i < cxt->num_structures; i++) {
 	int r, g, b;
 	Rtss_structure *curr_structure;
 	Pstring adjusted_name;
@@ -121,7 +120,7 @@ ss_list_save_colormap (Rtss_polyline_set* cxt, const char* colormap_fn)
 	}
     }
 
-    for (i = 0; i < cxt->num_structures; i++) {
+    for (size_t i = 0; i < cxt->num_structures; i++) {
 	int r, g, b;
 	Rtss_structure *curr_structure;
 	Pstring adjusted_name;

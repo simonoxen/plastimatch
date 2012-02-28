@@ -36,5 +36,8 @@ plm_image_type_parse (const char* string);
 plastimatch1_EXPORT
 char* 
 plm_image_type_string (Plm_image_type type);
+plastimatch1_EXPORT
+char* 
+plm_image_type_string_simple (Plm_image_type type);
 
 #endif

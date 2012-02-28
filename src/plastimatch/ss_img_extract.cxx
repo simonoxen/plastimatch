@@ -5,11 +5,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "plm_int.h"
 #include "itkImage.h"
 #include "itk_image.h"
 #include "itkAndConstantToImageFilter.h"
+#include "plm_image.h"
 #include "plm_image_header.h"
+#include "plm_int.h"
 
 UCharImageType::Pointer
 ss_img_extract_bit (UInt32ImageType::Pointer image, unsigned int bit)
@@ -71,6 +72,24 @@ ss_img_extract_bit (
 	it_out.Set ((v_in_uchar & bit_mask) ? 1 : 0);
     }
     return im_out;
+}
+
+UCharImageType::Pointer
+ss_img_extract_bit (
+    Plm_image *image,
+    unsigned int bit
+)
+{
+    if (image->m_type == PLM_IMG_TYPE_GPUIT_UCHAR_VEC
+        || image->m_type == PLM_IMG_TYPE_ITK_UCHAR_VEC) 
+    {
+	image->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
+        return ss_img_extract_bit (image->m_itk_uchar_vec, bit);
+    }
+    else {
+	image->convert (PLM_IMG_TYPE_ITK_ULONG);
+        return ss_img_extract_bit (image->m_itk_uint32, bit);
+    }
 }
 
 template<class T>

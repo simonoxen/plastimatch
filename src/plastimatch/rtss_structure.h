@@ -32,7 +32,7 @@ public:
     Pstring color;
     int id;                    /* Used for import/export (must be >= 1) */
     int bit;                   /* Used for ss-img (-1 for no bit) */
-    int num_contours;
+    size_t num_contours;
     Rtss_polyline** pslist;
 public:
     plastimatch1_EXPORT

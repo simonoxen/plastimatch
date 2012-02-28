@@ -221,6 +221,7 @@ Plm_image_header::print (void) const
 #endif
 	}
     }
+
     printf ("\n");
 }
 

@@ -122,6 +122,9 @@ public:
 	convert_to_itk_uchar ();
 	return m_itk_uchar;
     }
+    Volume* vol () {
+	return (Volume*) m_gpuit;
+    }
     Volume* gpuit_float () {
 	convert_to_gpuit_float ();
 	return (Volume*) m_gpuit;
@@ -136,12 +139,16 @@ public:
     void convert_to_itk_uchar_vec (void);
 
     /* geometry */
+    int planes ();
     size_t dim (size_t);
     float origin (size_t);
     float spacing (size_t);
 
     /* metadata */
     void set_metadata (char *tag, char *value);
+
+    /* debug */
+    void print ();
 
     /* Other */
     static int compare_headers (Plm_image *pli1, Plm_image *pli2);

@@ -1001,6 +1001,24 @@ Plm_image::convert_and_save (const char* fname, Plm_image_type new_type)
 }
 
 /* geometry */
+int 
+Plm_image::planes ()
+{
+    switch (m_type) {
+    case PLM_IMG_TYPE_UNDEFINED:
+	return 0;
+    case PLM_IMG_TYPE_ITK_FLOAT_FIELD:
+    case PLM_IMG_TYPE_GPUIT_FLOAT_FIELD:
+        return 3;
+    case PLM_IMG_TYPE_ITK_UCHAR_VEC:
+        return this->m_itk_uchar_vec->GetVectorLength();
+    case PLM_IMG_TYPE_GPUIT_UCHAR_VEC:
+        return this->vol()->vox_planes;
+    default:
+        return 1;
+    }
+}
+
 size_t 
 Plm_image::dim (size_t d)
 {
@@ -1110,6 +1128,17 @@ Plm_image::spacing (size_t d)
 	break;
     }
     return 0.f;
+}
+
+/* Printing debug information */
+void
+Plm_image::print ()
+{
+    printf ("Type = %s\n", plm_image_type_string_simple (this->m_type));
+    printf ("Planes = %d\n", this->planes());
+    Plm_image_header pih;
+    pih.set_from_plm_image (this);
+    pih.print ();
 }
 
 /* Return 1 if the two headers are the same */

@@ -13,11 +13,9 @@ static void
 header_main (Header_parms* parms)
 {
     Plm_image pli;
-    Plm_image_header pih;
 
     pli.load_native ((const char*) parms->img_in_fn);
-    pih.set_from_plm_image (&pli);
-    pih.print ();
+    pli.print ();
 }
 
 static void

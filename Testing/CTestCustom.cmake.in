@@ -189,6 +189,16 @@ if (NOT EXISTS "${PLM_BUILD_TESTING_DIR}//rando-dicomrt-pinnacle3-8.2g")
     )
 endif ()
 
+## If we didn't get test data w 33 structures, don't run these tests
+if (NOT EXISTS "${PLM_BUILD_TESTING_DIR}/dicomrt-33-structures")
+  set (CTEST_CUSTOM_TESTS_IGNORE
+    ${CTEST_CUSTOM_TESTS_IGNORE}
+    "plm-convert-dicom-33-a" 
+    "plm-convert-dicom-33-a-stats-1" 
+    "plm-convert-dicom-33-a-check-1" 
+    )
+endif ()
+
 ## If we didn't get varian fdk test data, don't run these tests
 if (NOT EXISTS "${PLM_BUILD_TESTING_DIR}/varian-catphan")
   set (CTEST_CUSTOM_TESTS_IGNORE

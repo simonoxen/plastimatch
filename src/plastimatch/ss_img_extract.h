@@ -7,6 +7,10 @@
 #include "plm_config.h"
 #include "itk_image.h"
 
+class Plm_image;
+
+plastimatch1_EXPORT UCharImageType::Pointer
+ss_img_extract_bit (Plm_image *image, unsigned int bit);
 plastimatch1_EXPORT UCharImageType::Pointer
 ss_img_extract_bit (UInt32ImageType::Pointer image, unsigned int bit);
 plastimatch1_EXPORT UCharImageType::Pointer

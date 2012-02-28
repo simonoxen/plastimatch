@@ -31,11 +31,14 @@ Rasterizer::Rasterizer ()
     acc_img = 0;
     uchar_vol = 0;
     labelmap_vol = 0;
+#if defined (commentout)
 #if (PLM_USE_SS_IMAGE_VEC)
 #else
     ss_img_vol = 0;
 #endif
-
+#endif
+    m_ss_img = 0;
+    m_use_ss_img_vec = true;
     curr_struct_no = 0;
     curr_bit = 0;
     xor_overlapping = false;
@@ -49,11 +52,16 @@ Rasterizer::~Rasterizer (void)
     if (this->labelmap_vol) {
 	delete this->labelmap_vol;
     }
+#if defined (commentout)
 #if (!PLM_USE_SS_IMAGE_VEC)
     if (this->ss_img_vol) {
 	delete this->ss_img_vol;
     }
 #endif
+#endif
+    if (this->m_ss_img) {
+	delete this->m_ss_img;
+    }
     free (this->acc_img);
 }
 
@@ -64,6 +72,7 @@ Rasterizer::init (
     bool want_prefix_imgs,             /* Input */
     bool want_labelmap,                /* Input */
     bool want_ss_img,                  /* Input */
+    bool use_ss_img_vec,               /* Input */
     bool xor_overlapping               /* Input */
 )
 {
@@ -79,6 +88,7 @@ Rasterizer::init (
     this->want_labelmap = want_labelmap;
     this->want_ss_img = want_ss_img;
     this->xor_overlapping = xor_overlapping;
+    this->m_use_ss_img_vec = use_ss_img_vec;
 
     this->acc_img = (unsigned char*) malloc (
 	slice_voxels * sizeof(unsigned char));
@@ -102,6 +112,7 @@ Rasterizer::init (
     }
 
     /* Create output volume for ss_img */
+#if defined (commentout)
 #if (PLM_USE_SS_IMAGE_VEC)
     if (want_ss_img) {
 	this->m_ss_img = UCharVecImageType::New ();
@@ -121,6 +132,27 @@ Rasterizer::init (
 	}
     }
 #endif
+#endif
+    if (want_ss_img) {
+        this->m_ss_img = new Plm_image;
+        if (use_ss_img_vec) {
+            UCharVecImageType::Pointer ss_img = UCharVecImageType::New ();
+            itk_image_set_header (ss_img, pih);
+            int num_uchar = 1 + (cxt->num_structures-1) / 8;
+            if (num_uchar < 2) num_uchar = 2;
+            ss_img->SetVectorLength (num_uchar);
+            ss_img->Allocate ();
+            this->m_ss_img->set_itk (ss_img);
+        }
+        else {
+            Volume *vol = new Volume (this->dim, 
+                this->origin, this->spacing, 0, PT_UINT32, 1);
+            if (vol == 0) {
+                print_and_exit ("ERROR: failed allocating ss_img volume");
+            }
+            this->m_ss_img->set_gpuit (vol);
+        }
+    }
 
     /* Initialize to start with first structure */
     this->curr_struct_no = 0;
@@ -135,14 +167,21 @@ Rasterizer::process_next (
 {
     Rtss_structure* curr_structure;
     unsigned char* uchar_img = (unsigned char*) this->uchar_vol->img;
-    int slice_voxels;
+    size_t slice_voxels;
 
     /* If done, return false */
     if (this->curr_struct_no >= cxt->num_structures) {
 	this->curr_struct_no = cxt->num_structures + 1;
 	return false;
     }
-    
+
+    /* If not using ss_img_vec, stop at 32 structures */
+    if (!this->m_use_ss_img_vec && this->curr_struct_no >= 32) {
+        printf ("Warning: too many structures.  Dropping some...\n");
+	this->curr_struct_no = cxt->num_structures + 1;
+	return false;
+    }
+
     curr_structure = cxt->slist[this->curr_struct_no];
     slice_voxels = this->dim[0] * this->dim[1];
 
@@ -184,7 +223,7 @@ Rasterizer::process_next (
 	    }
 	}
 
-	/* Copy from acc_img into labelmask and xormap images */
+	/* Copy from acc_img into labelmask image */
 	if (this->want_labelmap) {
 	    uint32_t* labelmap_img;
 	    uint32_t* uint32_slice;
@@ -196,7 +235,10 @@ Rasterizer::process_next (
 		}
 	    }
 	}
+
+        /* Copy from acc_img into ss_img */
 	if (this->want_ss_img) {
+#if defined (commentout)
 #if (PLM_USE_SS_IMAGE_VEC)
 	    /* GCS FIX: This code is replicated in ss_img_extract */
 	    unsigned int uchar_no = this->curr_bit / 8;
@@ -247,6 +289,63 @@ Rasterizer::process_next (
 		}
 	    }
 #endif
+#endif
+
+            if (this->m_use_ss_img_vec) {
+                UCharVecImageType::Pointer ss_img = 
+                    this->m_ss_img->m_itk_uchar_vec;
+
+                /* GCS FIX: This code is replicated in ss_img_extract */
+                unsigned int uchar_no = this->curr_bit / 8;
+                unsigned int bit_no = this->curr_bit % 8;
+                unsigned char bit_mask = 1 << bit_no;
+                if (uchar_no > ss_img->GetVectorLength()) {
+                    print_and_exit (
+                        "Error: bit %d was requested from image of %d bits\n", 
+                        this->curr_bit, 
+                        ss_img->GetVectorLength() * 8);
+                }
+                /* GCS FIX: This is inefficient, due to undesirable construct 
+                   and destruct of itk::VariableLengthVector of each pixel */
+                UCharVecImageType::IndexType idx = {{0, 0, slice_no}};
+                size_t k = 0;
+                for (idx.m_Index[1] = 0; 
+                     idx.m_Index[1] < this->dim[1]; 
+                     idx.m_Index[1]++) {
+                    for (idx.m_Index[0] = 0; 
+                         idx.m_Index[0] < this->dim[0]; 
+                         idx.m_Index[0]++) {
+                        if (this->acc_img[k]) {
+                            itk::VariableLengthVector<unsigned char> v 
+                                = ss_img->GetPixel (idx);
+                            if (this->xor_overlapping) {
+                                v[uchar_no] ^= bit_mask;
+                            } else {
+                                v[uchar_no] |= bit_mask;
+                            }
+                            ss_img->SetPixel (idx, v);
+                        }
+                        k++;
+                    }
+                }
+            }
+            else {
+                uint32_t* ss_img = 0;
+                uint32_t* uint32_slice;
+                uint32_t bit_mask = 1 << this->curr_bit;
+                ss_img = (uint32_t*) this->m_ss_img->vol()->img;
+                uint32_slice = &ss_img[slice_no * slice_voxels];
+                for (size_t k = 0; k < slice_voxels; k++) {
+                    if (this->acc_img[k]) {
+                        if (this->xor_overlapping) {
+                            uint32_slice[k] ^= bit_mask;
+                        } else {
+                            uint32_slice[k] |= bit_mask;
+                        }
+                    }
+                }
+            }
+
 	}
     }
 
@@ -280,9 +379,10 @@ Rasterizer::rasterize (
     bool want_prefix_imgs,             /* Input */
     bool want_labelmap,                /* Input */
     bool want_ss_img,                  /* Input */
+    bool use_ss_img_vec,               /* Input */
     bool xor_overlapping               /* Input */
 )
 {
-    this->init (cxt, pih, false, true, true, xor_overlapping);
+    this->init (cxt, pih, false, true, true, use_ss_img_vec, xor_overlapping);
     while (this->process_next (cxt)) {}
 }

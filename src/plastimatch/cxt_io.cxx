@@ -336,12 +336,11 @@ cxt_save (
 
     /* Part 3: Contour info */
     for (size_t i = 0; i < cxt->num_structures; i++) {
-	int j;
 	Rtss_structure *curr_structure = cxt->slist[i];
 	if (prune_empty && curr_structure->num_contours <= 0) {
 	    continue;
 	}
-	for (j = 0; j < curr_structure->num_contours; j++) {
+	for (size_t j = 0; j < curr_structure->num_contours; j++) {
 	    int k;
 	    Rtss_polyline *curr_polyline = curr_structure->pslist[j];
 
