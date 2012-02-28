@@ -39,7 +39,7 @@ master_doc = 'contents'
 
 # General information about the project.
 project = u'Plastimatch'
-copyright = u'Plastimatch development team (C) 2010-2011.  You are free to use, modify, and distribute plastimatch according to a BSD-style license.  Please see LICENSE.TXT for details.'
+copyright = u'Plastimatch development team (C) 2010-2012.  You are free to use, modify, and distribute plastimatch according to a BSD-style license.  Please see LICENSE.TXT for details.'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

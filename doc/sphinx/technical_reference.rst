@@ -16,4 +16,5 @@ Technical reference
    proj_geometry_15
    cxt_file_format
    proj_mat_file_format
+   gsoc_2012
    Project dashboard (regression testing) <http://cdash.tshack.net/index.php?project=Plastimatch>
