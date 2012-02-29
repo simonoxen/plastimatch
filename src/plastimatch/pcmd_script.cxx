@@ -16,8 +16,12 @@ extern "C"
 #include "lua_iface_register.h"
 #include "lua_iface_resample.h"
 #include "lua_iface_synth.h"
+#include "lua_class_image.h"
 
 
+// JAS 2012.02.2 - Planned for removal in favor of
+//                 more elegant Lua objects and classes
+//-------------------------------------------------------------------
 /* Command Line Glue */
 void
 lua_cli_glue_init (lua_State* L, int* argc, char*** argv)
@@ -69,11 +73,68 @@ lua_cli_glue_solvent (lua_State* L, char** argv, int argn)
     }
     free (argv);
 }
+//-------------------------------------------------------------------
 
+
+
+//-------------------------------------------------------------------
+void*
+lua_new_instance (lua_State *L, const char* class_name, size_t size)
+{
+    void *tmp = (void*)lua_newuserdata (L, size);
+    luaL_getmetatable (L, class_name);
+    lua_setmetatable (L, -2);
+    return tmp;
+}
+
+void*
+get_obj_ptr (lua_State *L, const char* class_name, int index)
+{
+    void* ptr;
+    luaL_checktype (L, index, LUA_TUSERDATA);
+    ptr = (void*)luaL_checkudata (L, index, class_name);
+    if (ptr == NULL) {
+        luaL_typerror (L, index, class_name);
+    }
+    return ptr;
+}
+
+
+int
+register_lua_class (
+    lua_State *L,
+    const char* class_name,
+    const luaL_reg* methods,
+    const luaL_reg* metatable
+)
+{
+    /* create methods table, add it to the globals */
+    luaL_openlib (L, class_name, methods, 0);
+
+    /* create metatable and add it to the Lua registry */
+    luaL_newmetatable (L, class_name);
+
+    /* fill metatable */
+    luaL_openlib (L, 0, metatable, 0);
+
+    /* direct calls to non-existant members to methods table */
+    lua_pushliteral (L, "__index");
+    lua_pushvalue (L, -3);               /* push methods table */
+    lua_rawset (L, -3);                  /* metatable.__index = methods */
+
+    /* protect our metatable */
+    lua_pushliteral (L, "__metatable");
+    lua_pushvalue (L, -3);               /* push methods table */
+    lua_rawset (L, -3);                  /* metatable.__metatable = methods */
+
+    lua_pop (L, 1);                      /* pop metatable */
+    lua_pop (L, 1);                      /* pop methods */
+    return 0;
+}
+//-------------------------------------------------------------------
 
 
 /* LUA Helpers */
-
 /* Returns the # of members for a table organized
  * like a C struct.  Must be on the top of the lua stack */
 int
@@ -227,6 +288,12 @@ register_lua_interfaces (lua_State* L)
     lua_register (L, "synth",    LUAIFACE_synth);
 }
 
+static void
+register_lua_objects (lua_State* L)
+{
+    register_lua_class_image (L);
+}
+
 
 /* Hook into plastmatch commandline */
 void
@@ -248,6 +315,7 @@ do_command_script (int argc, char *argv[])
     L = lua_open();
     luaL_openlibs(L);
     register_lua_interfaces (L);
+    register_lua_objects (L);
     luaL_dofile (L, script_fn);
     lua_close (L);
     printf ("\nDone.\n");

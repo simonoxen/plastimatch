@@ -576,6 +576,7 @@ if (PLM_CONFIG_ENABLE_LUA)
     lua_iface_register.cxx lua_iface_register.h
     lua_iface_resample.cxx lua_iface_resample.h
     lua_iface_synth.cxx lua_iface_synth.h
+    lua_class_image.cxx lua_class_image.h
     )
 endif()
 set (PLASTIMATCH_SLICER_BSPLINE_SRC
