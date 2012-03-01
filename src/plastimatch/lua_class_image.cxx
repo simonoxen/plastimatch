@@ -21,12 +21,12 @@ extern "C"
 #include "volume.h"
 
 /* Name of class as exposed to Lua */
-#define CLASS_NAME "image"
+#define THIS_CLASS LUA_CLASS_IMAGE
 
 
 /* Helpers */
-static void
-init_instance (lua_image* limg)
+void
+init_image_instance (lua_image* limg)
 {
     memset (limg->fn, '\0', sizeof(limg->fn));
     limg->pli = NULL;
@@ -52,9 +52,9 @@ image_load (lua_State *L)
     }
 
     lua_image *tmp = (lua_image*)lua_new_instance (L,
-                                    CLASS_NAME,
+                                    THIS_CLASS,
                                     sizeof(lua_image));
-    init_instance (tmp);
+    init_image_instance (tmp);
 
     strcpy (tmp->fn, fn);
     tmp->pli = pli;
@@ -65,7 +65,7 @@ image_load (lua_State *L)
 static int
 image_save (lua_State *L)
 {
-    lua_image *limg = (lua_image*)get_obj_ptr (L, CLASS_NAME, 1);
+    lua_image *limg = (lua_image*)get_obj_ptr (L, THIS_CLASS, 1);
 
     const char* fn = luaL_optlstring (L, 2, NULL, NULL);
     Plm_image *pli = limg->pli;
@@ -97,7 +97,7 @@ image_save (lua_State *L)
 static int
 image_action_gc (lua_State *L)
 {
-    lua_image *tmp = (lua_image*)get_obj_ptr (L, CLASS_NAME, 1);
+    lua_image *tmp = (lua_image*)get_obj_ptr (L, THIS_CLASS, 1);
 //    fprintf (stderr, "debug -- releasing %s [%p]\n", tmp->fn, tmp);
     delete tmp->pli;
     return 0;
@@ -112,10 +112,10 @@ image_action_mul (lua_State *L)
 
     if (lua_isnumber (L, 1) && lua_isuserdata (L, 2)) {
         factor = lua_tonumber (L, 1);
-        limg = (lua_image*)get_obj_ptr (L, CLASS_NAME, 2);
+        limg = (lua_image*)get_obj_ptr (L, THIS_CLASS, 2);
     } else if (lua_isnumber (L, 2) && lua_isuserdata (L, 1)) {
         factor = lua_tonumber (L, 2);
-        limg = (lua_image*)get_obj_ptr (L, CLASS_NAME, 1);
+        limg = (lua_image*)get_obj_ptr (L, THIS_CLASS, 1);
     } else {
         fprintf (stderr, "warning -- image.__mul() -- cannot multiply two images: returning (nil)\n");
         return 0;
@@ -127,9 +127,9 @@ image_action_mul (lua_State *L)
     MulFilterType::Pointer multiply = MulFilterType::New();
 
     lua_image *out =
-        (lua_image*)lua_new_instance (L, CLASS_NAME, sizeof(lua_image));
+        (lua_image*)lua_new_instance (L, THIS_CLASS, sizeof(lua_image));
 
-    init_instance (out);
+    init_image_instance (out);
 
     out->pli = limg->pli->clone();
     multiply->SetConstant (factor);
@@ -166,5 +166,5 @@ static const luaL_reg image_meta[] = {
 int
 register_lua_class_image (lua_State *L)
 {
-    return register_lua_class (L, CLASS_NAME, image_methods, image_meta);
+    return register_lua_class (L, THIS_CLASS, image_methods, image_meta);
 }

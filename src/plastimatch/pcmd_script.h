@@ -10,6 +10,10 @@
 #include "lualib.h"
 #include "lauxlib.h"
 
+/* exposed class names */
+#define LUA_CLASS_IMAGE "image"
+#define LUA_CLASS_XFORM "xform"
+
 
 /* Old CLI Glue */
 void lua_cli_glue_init (lua_State* L, int* argc, char*** argv);
@@ -21,6 +25,7 @@ void lua_cli_glue_solvent (lua_State* L, char** argv, int argn);
 void replace_char (char from, char to, char* str);
 
 /* Class Stuff */
+int lua_check_type (lua_State *L, const char* class_name, int index);
 void* lua_new_instance (lua_State *L, const char* class_name, size_t size);
 void* get_obj_ptr (lua_State *L, const char* class_name, int index);
 int register_lua_class (

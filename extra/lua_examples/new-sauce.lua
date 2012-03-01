@@ -1,10 +1,13 @@
 -- James Shackleford
 -- Feb. 29th, 2012
 -------------------------
--- Examples of classes and their functionality
--- as I develop them.  This serves as both
--- documentation and a testbed.
---------------------------------------------------
+-- Examples of classes and their functionality as I develop them.
+-- This serves as both documentation and a testbed.
+----------------------------------------------------------------------
+
+--------------------
+-- Act 1 : Images --
+--------------------
 
 -- load an image
 my_image = image.load ("test.mha")
@@ -23,29 +26,51 @@ w1:save ("w1.mha");
 w2 = my_image*0.9
 w2:save ("w2.mha");
 
--- multiplying 2 volumes is illegal and will
--- return (nil) & print a warning to stderr
+-- multiplying 2 volumes is illegal and will return (nil) & print
+-- a warning to stderr.
 foo = w1*w2
 print ("foo:", foo)
 
--- derived images cannot be saved without
--- explicitly specifying a filename.  this
--- will generate an error to stderr
+-- derived images cannot be saved without explicitly specifying a
+-- filename.  this will generate an error to stderr.
 w3 = 2.5*w1
 w3:save ();
 
--- but once a filename is specifed, you can
--- save without specifying a name.  the last
--- explicitly specified filename sticks to
--- the image
+-- but once a filename is specifed, you can save without specifying
+-- a name.  the last explicitly specified filename sticks to the image
 w3:save ("w3.mha");
 w3:save ();
 
--- you can save memory by deleting volumes
--- that are no longer needed. just set them
--- to (nil) and call collectgarbage()
+-- you can save memory by deleting volumes that are no longer needed.
+-- just set them to (nil) and call collectgarbage()
 w1 = nil
 w2 = nil
 w3 = nil
 
 collectgarbage()
+
+
+------------------------
+-- Act 2 : Transforms --
+------------------------
+
+-- you can load a deformation transform like this
+my_xform = xform.load ("vf.mha")
+
+-- and you can warp an image by adding a compatible
+-- transform to it
+my_warp = my_image + my_xform
+
+-- and, of course, you can save the warp
+my_warp:save ("warp.mha")
+
+-- you cannot add transforms ...yet
+-- currently, this will print an error to stderr and return (nil)
+new_xform = my_xform + my_xform
+
+
+
+
+print ("----------------")
+print ("   [THE END]")
+print ("----------------")

@@ -10,13 +10,14 @@ extern "C"
 #include "lauxlib.h"
 }
 #include "pcmd_script.h"
+#include "lua_class_image.h"
+#include "lua_class_xform.h"
 #include "lua_iface_add.h"
 #include "lua_iface_crop.h"
 #include "lua_iface_mask.h"     /* also contains fill() */
 #include "lua_iface_register.h"
 #include "lua_iface_resample.h"
 #include "lua_iface_synth.h"
-#include "lua_class_image.h"
 
 
 // JAS 2012.02.2 - Planned for removal in favor of
@@ -78,6 +79,22 @@ lua_cli_glue_solvent (lua_State* L, char** argv, int argn)
 
 
 //-------------------------------------------------------------------
+int
+lua_check_type (lua_State *L, const char* class_name, int index)
+{
+    void *p = lua_touserdata (L, index);
+    if (p) {
+        if (lua_getmetatable (L, index)) {
+            lua_getfield (L, LUA_REGISTRYINDEX, class_name);
+            if (lua_rawequal(L, -1, -2)) {
+                lua_pop(L, 2);
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
 void*
 lua_new_instance (lua_State *L, const char* class_name, size_t size)
 {
@@ -291,6 +308,7 @@ static void
 register_lua_objects (lua_State* L)
 {
     register_lua_class_image (L);
+    register_lua_class_xform (L);
 }
 
 
