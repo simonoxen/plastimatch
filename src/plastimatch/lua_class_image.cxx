@@ -61,11 +61,17 @@ image_save (lua_State *L)
     Plm_image *pli = limg->pli;
     
     if (!fn) {
-        /* Save over current volume on disk */
-        pli->save_image (limg->fn);
+        if (!limg->fn) {
+            fprintf (stderr, "warning -- image:save() -- filename must be specified when saving derived images\n");
+            return 0;
+        } else {
+            /* Save over current volume on disk */
+            pli->save_image (limg->fn);
+        }
     } else {
         /* "Save-As" new volume on disk */
         pli->save_image (fn);
+        limg->fn = fn;
     }
 
     return 0;
@@ -100,7 +106,7 @@ image_action_mul (lua_State *L)
         factor = lua_tonumber (L, 2);
         limg = (lua_image*)get_obj_ptr (L, CLASS_NAME, 1);
     } else {
-        fprintf (stderr, "warning -- image.__mul() -- cannot multiply to images: returning (nil)\n");
+        fprintf (stderr, "warning -- image.__mul() -- cannot multiply two images: returning (nil)\n");
         return 0;
     }
 
@@ -111,6 +117,8 @@ image_action_mul (lua_State *L)
 
     lua_image *out =
         (lua_image*)lua_new_instance (L, CLASS_NAME, sizeof(lua_image));
+
+    out->fn = NULL;
 
     out->pli = limg->pli->clone();
     multiply->SetConstant (factor);
@@ -137,7 +145,7 @@ image_methods[] = {
   {0, 0}
 };
 
-/* Metatable of Actions */
+/* metatable of actions */
 static const luaL_reg image_meta[] = {
   {"__gc",       image_action_gc},
   {"__mul",      image_action_mul},

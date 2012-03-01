@@ -28,10 +28,24 @@ w2:save ("w2.mha");
 foo = w1*w2
 print ("foo:", foo)
 
+-- derived images cannot be saved without
+-- explicitly specifying a filename.  this
+-- will generate an error to stderr
+w3 = 2.5*w1
+w3:save ();
+
+-- but once a filename is specifed, you can
+-- save without specifying a name.  the last
+-- explicitly specified filename sticks to
+-- the image
+w3:save ("w3.mha");
+w3:save ();
+
 -- you can save memory by deleting volumes
 -- that are no longer needed. just set them
 -- to (nil) and call collectgarbage()
 w1 = nil
 w2 = nil
+w3 = nil
 
 collectgarbage()
