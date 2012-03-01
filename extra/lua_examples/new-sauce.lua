@@ -1,5 +1,6 @@
--- James Shackleford
--- Feb. 29th, 2012
+--  Author: James Shackleford
+-- Created: Feb. 29th, 2012
+-- Updated: Mar.  1st, 2012
 -------------------------
 -- Examples of classes and their functionality as I develop them.
 -- This serves as both documentation and a testbed.
@@ -55,20 +56,22 @@ collectgarbage()
 ------------------------
 
 -- you can load a deformation transform like this
-my_xform = xform.load ("vf.mha")
+xf1 = xform.load ("vf.mha")
 
--- and you can warp an image by adding a compatible
--- transform to it
-my_warp = my_image + my_xform
+-- or like this...
+xf2 = xform.load ("xf.txt")
+
+-- and you can warp an image by adding a compatible transform
+warp1 = my_image + xf1
+warp2 = my_image + xf2
 
 -- and, of course, you can save the warp
-my_warp:save ("warp.mha")
+warp1:save ("warp1.mha")
+warp2:save ("warp2.mha")
 
--- you cannot add transforms ...yet
--- currently, this will print an error to stderr and return (nil)
-new_xform = my_xform + my_xform
-
-
+-- you cannot add transforms to make composites...yet
+-- currently, this will print a warning to stderr and return (nil)
+new_xform = xf1 + xf2
 
 
 print ("----------------")
