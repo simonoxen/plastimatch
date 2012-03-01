@@ -2,7 +2,8 @@
 
 Google Summer of Code 2012: Project Ideas
 -----------------------------------------
-Plastimatch is a medical image computation project, focusing on 
+Plastimatch is an open source 
+medical image computation project, focusing on 
 high-performance algorithms for image registration, 
 image segmentation, and image reconstruction.  
 
