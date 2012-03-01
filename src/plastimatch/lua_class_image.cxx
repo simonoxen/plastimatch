@@ -12,6 +12,9 @@ extern "C"
 #include "lualib.h"
 #include "lauxlib.h"
 }
+#include "itkAddImageFilter.h"
+#include "itkMultiplyByConstantImageFilter.h"
+
 #include "lua_class_image.h"
 #include "pcmd_script.h"
 #include "plm_image.h"
@@ -19,13 +22,6 @@ extern "C"
 
 /* Name of class as exposed to Lua */
 #define CLASS_NAME "image"
-
-/*-----------------------------------------------------*/
-/*  Utility Functions                                  */
-/*-----------------------------------------------------*/
-/*-----------------------------------------------------*/
-
-
 
 /*******************************************************/
 /* Object Methods                                      */
@@ -52,7 +48,6 @@ image_load (lua_State *L)
 
     tmp->fn = fn;
     tmp->pli = pli;
-    tmp->vol = pli->gpuit_float();
 
     return 1;
 }
@@ -61,30 +56,78 @@ static int
 image_save (lua_State *L)
 {
     lua_image *limg = (lua_image*)get_obj_ptr (L, CLASS_NAME, 1);
+
     const char* fn = luaL_optlstring (L, 2, NULL, NULL);
     Plm_image *pli = limg->pli;
     
-    fprintf (stderr, "debug -- image.save() -- called\n");
     if (!fn) {
         /* Save over current volume on disk */
-        fprintf (stderr, "debug -- image.save() -- overwriting\n");
         pli->save_image (limg->fn);
     } else {
         /* "Save-As" new volume on disk */
-        fprintf (stderr, "debug -- image.save() -- save-as\n");
         pli->save_image (fn);
     }
 
     return 0;
 }
-
 /*******************************************************/
 
 
+/*+++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+/* Object Actions                                      */
+/*+++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-/*-----------------------------------------------------*/
-/* Object Registration & Creation                      */
-/*-----------------------------------------------------*/
+/* Action: garbage collection */
+static int
+image_action_gc (lua_State *L)
+{
+    lua_image *tmp = (lua_image*)get_obj_ptr (L, CLASS_NAME, 1);
+    delete tmp->pli;
+    return 0;
+}
+
+/* Action: multiplication on volumes */
+static int
+image_action_mul (lua_State *L)
+{
+    float factor;
+    lua_image* limg;
+
+    if (lua_isnumber (L, 1) && lua_isuserdata (L, 2)) {
+        factor = lua_tonumber (L, 1);
+        limg = (lua_image*)get_obj_ptr (L, CLASS_NAME, 2);
+    } else if (lua_isnumber (L, 2) && lua_isuserdata (L, 1)) {
+        factor = lua_tonumber (L, 2);
+        limg = (lua_image*)get_obj_ptr (L, CLASS_NAME, 1);
+    } else {
+        fprintf (stderr, "warning -- image.__mul() -- cannot multiply to images: returning (nil)\n");
+        return 0;
+    }
+
+
+    typedef itk::MultiplyByConstantImageFilter< 
+        FloatImageType, float, FloatImageType > MulFilterType;
+    MulFilterType::Pointer multiply = MulFilterType::New();
+
+    lua_image *out =
+        (lua_image*)lua_new_instance (L, CLASS_NAME, sizeof(lua_image));
+
+    out->pli = limg->pli->clone();
+    multiply->SetConstant (factor);
+    multiply->SetInput (out->pli->itk_float());
+    multiply->Update();
+    out->pli->m_itk_float = multiply->GetOutput();
+
+    return 1;
+}
+/*+++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+
+
+
+
+
+/* Object Creation */
 
 /* methods table for object */
 static const luaL_reg
@@ -94,28 +137,13 @@ image_methods[] = {
   {0, 0}
 };
 
-//-------------------------------------------------------
-/* Action: garbage collection */
-static int
-image_gc (lua_State *L)
-{
-    lua_image *tmp = (lua_image*)get_obj_ptr (L, CLASS_NAME, 1);
-
-    fprintf (stderr, "debug -- unloading %s\n", tmp->fn);
-    delete tmp->pli;
-
-    return 0;
-}
-
 /* Metatable of Actions */
 static const luaL_reg image_meta[] = {
-  {"__gc",       image_gc},
+  {"__gc",       image_action_gc},
+  {"__mul",      image_action_mul},
   {0, 0}
 };
-//-------------------------------------------------------
 
-
-/* Object Creation */
 int
 register_lua_class_image (lua_State *L)
 {

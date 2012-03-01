@@ -15,7 +15,6 @@ typedef struct lua_image_struct lua_image;
 struct lua_image_struct {
     const char* fn;
     Plm_image* pli;
-    Volume* vol;
 };
 
 int register_lua_class_image (lua_State *L);

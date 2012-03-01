@@ -318,5 +318,5 @@ do_command_script (int argc, char *argv[])
     register_lua_objects (L);
     luaL_dofile (L, script_fn);
     lua_close (L);
-    printf ("\nDone.\n");
+    printf ("\n[Script Terminated]\n\n");
 }
