@@ -35,7 +35,7 @@ source and target positions using Slicer's 3D viewer.
 
 **Skills:** C++
 
-**Mentors:** TBD
+**Mentors:** Greg Sharp
 
 OpenCL-accelerated FDK tomographic reconstruction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -53,7 +53,24 @@ to DRR generation.
 
 **Skills:** C++
 
-**Mentors:** TBD
+**Mentors:** James Shackleford
+
+Running registration with python
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Description:**  Python is a becoming a useful and popular language for 
+scientific computing.  This project is to design a framework to
+use python for imaging pre-processing with plastimatch 
+for registration.  Ideally, the images can be loaded and manipulated 
+in python, and then registered with plastimatch directly in 
+shared memory.  This project could be expanded to give python fine 
+grain control over registration stage parameters.
+
+**Difficulty:** Basic to intermediate
+
+**Skills:** C++, python
+
+**Mentors:** Paolo Zaffino
 
 Your project here
 ^^^^^^^^^^^^^^^^^
