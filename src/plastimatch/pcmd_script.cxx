@@ -99,7 +99,6 @@ get_obj_ptr (lua_State *L, const char* class_name, int index)
     return ptr;
 }
 
-
 int
 register_lua_class (
     lua_State *L,

@@ -23,6 +23,15 @@ extern "C"
 /* Name of class as exposed to Lua */
 #define CLASS_NAME "image"
 
+
+/* Helpers */
+static void
+init_instance (lua_image* limg)
+{
+    memset (limg->fn, '\0', sizeof(limg->fn));
+    limg->pli = NULL;
+}
+
 /*******************************************************/
 /* Object Methods                                      */
 /*******************************************************/
@@ -45,8 +54,9 @@ image_load (lua_State *L)
     lua_image *tmp = (lua_image*)lua_new_instance (L,
                                     CLASS_NAME,
                                     sizeof(lua_image));
+    init_instance (tmp);
 
-    tmp->fn = fn;
+    strcpy (tmp->fn, fn);
     tmp->pli = pli;
 
     return 1;
@@ -61,7 +71,7 @@ image_save (lua_State *L)
     Plm_image *pli = limg->pli;
     
     if (!fn) {
-        if (!limg->fn) {
+        if (limg->fn[0] == '\0') {
             fprintf (stderr, "warning -- image:save() -- filename must be specified when saving derived images\n");
             return 0;
         } else {
@@ -71,7 +81,7 @@ image_save (lua_State *L)
     } else {
         /* "Save-As" new volume on disk */
         pli->save_image (fn);
-        limg->fn = fn;
+        strcpy (limg->fn, fn);
     }
 
     return 0;
@@ -88,6 +98,7 @@ static int
 image_action_gc (lua_State *L)
 {
     lua_image *tmp = (lua_image*)get_obj_ptr (L, CLASS_NAME, 1);
+//    fprintf (stderr, "debug -- releasing %s [%p]\n", tmp->fn, tmp);
     delete tmp->pli;
     return 0;
 }
@@ -118,7 +129,7 @@ image_action_mul (lua_State *L)
     lua_image *out =
         (lua_image*)lua_new_instance (L, CLASS_NAME, sizeof(lua_image));
 
-    out->fn = NULL;
+    init_instance (out);
 
     out->pli = limg->pli->clone();
     multiply->SetConstant (factor);

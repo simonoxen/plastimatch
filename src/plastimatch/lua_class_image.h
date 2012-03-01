@@ -6,6 +6,7 @@
 
 #include "plm_config.h"
 #include "plm_image.h"
+#include "plm_path.h"
 
 #include "lua.h"
 #include "lualib.h"
@@ -13,7 +14,7 @@
 
 typedef struct lua_image_struct lua_image;
 struct lua_image_struct {
-    const char* fn;
+    char fn[_MAX_PATH];
     Plm_image* pli;
 };
 
