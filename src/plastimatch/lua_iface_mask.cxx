@@ -9,9 +9,9 @@ extern "C"
 #include "lauxlib.h"
 }
 
-#include "plm_path.h"
-#include "pcmd_script.h"
+#include "lua_cli_glue.h"
 #include "pcmd_mask.h"
+#include "plm_path.h"
 
 static int
 mask_or_fill (lua_State* L, char* mode)

@@ -12,6 +12,8 @@
 #include "lualib.h"
 #include "lauxlib.h"
 
+#define LUA_CLASS_IMAGE "image"
+
 typedef struct lua_image_struct lua_image;
 struct lua_image_struct {
     char fn[_MAX_PATH];

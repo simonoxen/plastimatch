@@ -16,7 +16,7 @@ extern "C"
 #include "itkMultiplyByConstantImageFilter.h"
 
 #include "lua_class_image.h"
-#include "pcmd_script.h"
+#include "lua_util.h"
 #include "plm_image.h"
 #include "volume.h"
 

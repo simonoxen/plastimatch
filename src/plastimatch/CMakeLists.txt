@@ -572,12 +572,14 @@ if (PLM_CONFIG_ENABLE_LUA)
     pcmd_script.cxx pcmd_script.h
     lua_class_image.cxx lua_class_image.h
     lua_class_xform.cxx lua_class_xform.h
+    lua_cli_glue.cxx lua_cli_glue.h
     lua_iface_add.cxx lua_iface_add.h
     lua_iface_crop.cxx lua_iface_crop.h
     lua_iface_mask.cxx lua_iface_mask.h
     lua_iface_register.cxx lua_iface_register.h
     lua_iface_resample.cxx lua_iface_resample.h
     lua_iface_synth.cxx lua_iface_synth.h
+    lua_util.cxx lua_util.h
     )
 endif()
 set (PLASTIMATCH_SLICER_BSPLINE_SRC

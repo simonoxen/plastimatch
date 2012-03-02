@@ -11,7 +11,7 @@ extern "C"
 #include "lauxlib.h"
 }
 
-#include "pcmd_script.h"
+#include "lua_cli_glue.h"
 #include "plm_parms.h"
 #include "plm_stages.h"
 

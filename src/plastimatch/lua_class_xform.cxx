@@ -14,6 +14,7 @@ extern "C"
 }
 #include "lua_class_image.h"
 #include "lua_class_xform.h"
+#include "lua_util.h"
 #include "pcmd_script.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
@@ -85,6 +86,24 @@ xform_save (lua_State *L)
         xform_save (lxf->pxf, fn);
         strcpy (lxf->fn, fn);
     }
+
+    return 0;
+}
+
+static int
+xform_save_vf (lua_State *L)
+{
+    lua_xform *lxf = (lua_xform*)get_obj_ptr (L, THIS_CLASS, 1);
+
+    const char* fn = luaL_optlstring (L, 2, NULL, NULL);
+
+    if (!fn) {
+        fprintf (stderr, "warning -- xform:save_vf() -- filename must be specified\n");
+        return 0;
+    }
+
+    // TODO
+    fprintf (stderr, "warning -- xform:save_vf() -- developer too tired to implement feature\n");
 
     return 0;
 }
