@@ -22,8 +22,6 @@ static const char *tty_prompt  = "% ";
 static const char *tty_prompt2 = "> ";
 
 
-//---- FIRST LEVEL DEPENDS ------------
-
 /* SIGNAL HANDLERS */
 static void lstop (lua_State *L, lua_Debug *ar) {
   (void)ar;  /* unused arg. */
@@ -153,8 +151,6 @@ get_prompt (lua_State *L, int firstline)
     lua_pop(L, 1);  /* remove global */
     return p;
 }
-
-//---- ZEROTH LEVEL DEPENDS -----------
 
 static int
 pushline (lua_State *L, int firstline)
