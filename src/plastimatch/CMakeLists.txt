@@ -579,6 +579,7 @@ if (PLM_CONFIG_ENABLE_LUA)
     lua_iface_register.cxx lua_iface_register.h
     lua_iface_resample.cxx lua_iface_resample.h
     lua_iface_synth.cxx lua_iface_synth.h
+    lua_tty.c lua_tty.h
     lua_util.cxx lua_util.h
     )
 endif()

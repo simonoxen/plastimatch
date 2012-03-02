@@ -12,6 +12,7 @@ extern "C"
 #include "lualib.h"
 #include "lauxlib.h"
 }
+#include "file_util.h"
 #include "pcmd_script.h"
 #include "lua_class_image.h"
 #include "lua_class_xform.h"
@@ -22,7 +23,20 @@ extern "C"
 #include "lua_iface_register.h"
 #include "lua_iface_resample.h"
 #include "lua_iface_synth.h"
+#include "lua_tty.h"
 #include "lua_util.h"
+
+
+void
+print_usage ()
+{
+    printf ("Usage: plastimatch script [ script_file | -i | - ]\n\n" \
+            " script_file    execute specified script_file\n"        \
+            " -i             run in interactive mode\n"              \
+            " -              execute commands piped from stdin\n"    \
+            "\n");
+    exit (1);
+}
 
 
 /* Register your LUA interface here */
@@ -52,22 +66,45 @@ do_command_script (int argc, char *argv[])
 {
     lua_State *L;
     char *script_fn = NULL;
+    bool tty_mode   = false;
+    bool stdin_mode = false;
 
     if (!strcmp (argv[1], "script")) {
         if (argc > 2) {
-            script_fn = argv[2];
+            if (!strcmp (argv[2], "-i")) {
+                tty_mode = true;
+            }
+            else if (!strcmp (argv[2], "-")) {
+                stdin_mode = true;
+            }
+            else {
+                script_fn = argv[2];
+            }
         } else {
-            printf ("Usage: plastimatch script script_file\n");
-            exit (1);
+            print_usage ();
         }
     }
 
-//    printf ("Opening: %s\n", script_fn);
     L = lua_open();
     luaL_openlibs(L);
     register_lua_interfaces (L);
     register_lua_objects (L);
-    luaL_dofile (L, script_fn);
+
+    if (tty_mode) {
+        do_tty (L);
+    } else if (stdin_mode) {
+        do_stdin (L);
+    } else if (script_fn) {
+        if (file_exists (script_fn)) {
+            printf ("-- running script : %s\n\n", script_fn);
+            luaL_dofile (L, script_fn);
+        } else {
+            printf ("unable to load script: %s\n", script_fn);
+        }
+    } else {
+        print_usage ();
+    }
+
     lua_close (L);
     printf ("\n[Script Terminated]\n\n");
 }
