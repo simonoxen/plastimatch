@@ -13,6 +13,8 @@
 #define TTY_QL(x)	LUA_QL(x)
 #define TTY_PROGNAME		"plastimatch"
 #define TTY_MAXINPUT 255
+#define TTY_PROMPT "% "
+#define TTY_PROMPT2 "> "
 
 
 #if defined __cplusplus

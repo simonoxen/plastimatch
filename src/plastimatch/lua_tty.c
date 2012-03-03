@@ -18,8 +18,8 @@
 
 static lua_State *globalL = NULL;
 static const char *progname = TTY_PROGNAME;
-static const char *tty_prompt  = "% ";
-static const char *tty_prompt2 = "> ";
+static const char *tty_prompt  = TTY_PROMPT;
+static const char *tty_prompt2 = TTY_PROMPT2;
 
 
 /* SIGNAL HANDLERS */
@@ -226,43 +226,51 @@ loadline (lua_State *L)
 }
 
 void
+engine (lua_State *L, int status)
+{
+    if (status == 0) {
+        status = do_call (L, 0, 0);
+    }
+    report (L, status);
+
+    /* any result to print? */
+    if (status == 0 && lua_gettop(L) > 0) {
+        lua_getglobal(L, "print");
+        lua_insert(L, 1);
+
+        /* error handler */
+        if (lua_pcall(L, lua_gettop(L)-1, 0, 0) != 0) {
+            l_message (
+                progname,
+                lua_pushfstring (
+                    L,
+                    "error calling " TTY_QL("print") " (%s)",
+                    lua_tostring(L, -1)
+                )
+            );
+        }
+    }
+
+}
+
+
+void
 do_tty (lua_State *L)
 {
     int status;
-    const char *oldprogname = progname;
-    progname = NULL;
 
     fprintf (stdout, "Plastimatch " PLM_DEFAULT_VERSION_STRING "    Type 'exit' or ^C to quit\n\n");
 
+    tty_prompt  = TTY_PROMPT;
+    tty_prompt2 = TTY_PROMPT2;
+
     while ((status = loadline (L)) != -1) {
-        if (status == 0) {
-            status = do_call (L, 0, 0);
-        }
-        report (L, status);
-
-        /* any result to print? */
-        if (status == 0 && lua_gettop(L) > 0) {
-            lua_getglobal(L, "print");
-            lua_insert(L, 1);
-
-            /* error handler */
-            if (lua_pcall(L, lua_gettop(L)-1, 0, 0) != 0) {
-                l_message (
-                    progname,
-                    lua_pushfstring (
-                        L,
-                        "error calling " TTY_QL("print") " (%s)",
-                         lua_tostring(L, -1)
-                    )
-                );
-            }
-        }
-    } /* while */
+        engine (L, status);
+    }
 
     /* clear stack */
     lua_settop(L, 0);
     fflush(stdout);
-    progname = oldprogname;
 }
 
 void
@@ -272,5 +280,11 @@ do_stdin (lua_State *L)
     tty_prompt  = "";
     tty_prompt2 = "";
 
-    do_tty (L);
+    while (1) {
+        engine (L, loadline (L));
+    }
+
+    /* clear stack */
+    lua_settop(L, 0);
+    fflush(stdout);
 }
