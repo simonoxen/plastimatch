@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _lua_object_image_h_
-#define _lua_object_image_h_
+#ifndef _lua_class_image_h_
+#define _lua_class_image_h_
 
 #include "plm_config.h"
 #include "plm_image.h"

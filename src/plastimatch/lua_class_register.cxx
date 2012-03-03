@@ -14,6 +14,7 @@ extern "C"
 }
 
 #include "lua_class_register.h"
+#include "lua_class_stage.h"
 #include "lua_util.h"
 
 /* Name of class as exposed to Lua */
@@ -26,15 +27,7 @@ init_register_instance (lua_register* lregister)
 {
 
     lregister->stages = (lua_stage**)malloc (_MAX_STAGES*sizeof(lua_stage*));
-    lua_stage** lstages = lregister->stages;
 
-    /* build & initialize the stages array */
-    for (int i=0; i<_MAX_STAGES; i++) {
-        lstages[i] = (lua_stage*)malloc (sizeof(lua_stage));
-        fprintf (stderr, "Allocating [%i] %p\n", i, lstages[i]);
-        lstages[i]->active = false;
-        lstages[i]->foo = 0;
-    }
 }
 
 /*******************************************************/
@@ -47,6 +40,24 @@ register_new (lua_State *L)
         (lua_register*)lua_new_instance (L, THIS_CLASS, sizeof(lua_register));
 
     init_register_instance (lregister);
+
+    /* build & initialize the stages array */
+    lua_stage** lstages = lregister->stages;
+    for (int i=0; i<_MAX_STAGES; i++) {
+        lstages[i] = NULL;
+    }
+
+#if 0
+    /* Need to build a special pointer handler for something this cool... */
+    lua_stage** lstages = lregister->stages;
+    for (int i=0; i<_MAX_STAGES; i++) {
+        lstages[i] =
+            (lua_stage*)lua_new_instance (L, LUA_CLASS_STAGE, sizeof(lua_stage));
+        lua_pop (L, 1);  /* don't return lstage userdata to Lua */
+        fprintf (stderr, "Allocating [%i] %p\n", i, lstages[i]);
+        init_stage_instance (lstages[i]);
+    }
+#endif
 
     return 1;
 }
@@ -105,27 +116,28 @@ register_action_gc (lua_State *L)
 
 
 
-/* Object Creation */
+/* Class Creation */
 
 /* methods table for object */
 static const luaL_reg
-stage_methods[] = {
-  {"new",   register_new},
-  {"stage", register_select_stage},
-  {"set",   register_set_foo},
-  {"get",   register_get_foo},
-  {0, 0}
+register_methods[] = {
+    {"new",   register_new},
+    {"stage", register_select_stage},
+    {"set",   register_set_foo},
+    {"get",   register_get_foo},
+    {0, 0}
 };
 
 /* metatable of actions */
 static const luaL_reg
-stage_meta[] = {
-  {"__gc",       register_action_gc},
-  {0, 0}
+register_meta[] = {
+    {"__gc",       register_action_gc},
+    {0, 0}
 };
+
 
 int
 register_lua_class_register (lua_State *L)
 {
-    return register_lua_class (L, THIS_CLASS, stage_methods, stage_meta);
+    return register_lua_class (L, THIS_CLASS, register_methods, register_meta);
 }

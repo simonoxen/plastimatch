@@ -1,25 +1,20 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _lua_object_register_h_
-#define _lua_object_register_h_
+#ifndef _lua_class_register_h_
+#define _lua_class_register_h_
 
 #include "plm_config.h"
-#include "plm_image.h"
 #include "plm_path.h"
 
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
 
+#include "lua_class_stage.h"
+
 #define LUA_CLASS_REGISTER "register"
 #define _MAX_STAGES 20
-
-typedef struct lua_stage_struct lua_stage;
-struct lua_stage_struct {
-    bool active;
-    int foo;
-};
 
 typedef struct lua_register_struct lua_register;
 struct lua_register_struct {
