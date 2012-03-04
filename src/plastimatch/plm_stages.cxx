@@ -354,23 +354,56 @@ set_automatic_parameters (Registration_data* regd, Registration_parms* regp)
     }
 }
 
+
+void
+do_registration_pure (
+    Xform** xf_result,
+    Registration_data* regd,
+    Registration_parms* regp
+)
+{
+    int i;
+    Xform *xf1 = new Xform;
+    Xform *xf2 = new Xform;
+    Xform *xf_in, *xf_out, *xf_tmp;
+
+    xf_in = xf1;
+    xf_out = xf2;
+
+    /* Load initial guess of xform */
+    if (regp->xf_in_fn[0]) {
+        xform_load (xf_out, regp->xf_in_fn);
+    }
+
+    /* Set fixed image region */
+    set_fixed_image_region_global (regd);
+
+    /* Set automatic parameters based on image size */
+    set_automatic_parameters (regd, regp);
+
+    for (i = 0; i < regp->num_stages; i++) {
+        /* Swap xf_in and xf_out */
+        xf_tmp = xf_out; xf_out = xf_in; xf_in = xf_tmp;
+        /* Run registation, results are stored in xf_out */
+        do_registration_stage (regp, regd, xf_out, xf_in, regp->stages[i]);
+    }
+
+    *xf_result = xf_out;
+    delete xf_in;
+}
+
 void
 do_registration (Registration_parms* regp)
 {
-    int i;
     Registration_data regd;
-    Xform xf1, xf2;
-    Xform *xf_in, *xf_out, *xf_tmp;
+    Xform* xf_out = NULL;
     itk::TimeProbe timer1, timer2, timer3;
-
-    xf_in = &xf1;
-    xf_out = &xf2;
 
     /* Start logging */
     logfile_open (regp->log_fn);
 
     /* Load images */
-    printf ("Performing < %i > registrations.\n", regp->num_jobs);
+//    printf ("Performing < %i > registrations.\n", regp->num_jobs);
     for (regp->job_idx=0; regp->job_idx < regp->num_jobs; regp->job_idx++) {
 
         if (regp->num_jobs > 1) {
@@ -380,39 +413,25 @@ do_registration (Registration_parms* regp)
             }
         }
 
-        regd.load_input_files (regp);
         timer1.Start();
-
-        /* Load initial guess of xform */
-        if (regp->xf_in_fn[0]) {
-            xform_load (xf_out, regp->xf_in_fn);
-        }
-
-        /* Set fixed image region */
-        set_fixed_image_region_global (&regd);
-
-        /* Set automatic parameters based on image size */
-        set_automatic_parameters (&regd, regp);
-
+        regd.load_input_files (regp);
         timer1.Stop();
-
+    
         timer2.Start();
-        for (i = 0; i < regp->num_stages; i++) {
-            /* Swap xf_in and xf_out */
-            xf_tmp = xf_out; xf_out = xf_in; xf_in = xf_tmp;
-            /* Run registation, results are stored in xf_out */
-            do_registration_stage (regp, &regd, xf_out, xf_in, regp->stages[i]);
-        }
+        do_registration_pure (&xf_out, &regd, regp);
         timer2.Stop();
-
+    
         /* RMK: If no stages, we still generate output (same as input) */
-
+    
         timer3.Start();
         save_output (&regd, xf_out, regp->xf_out_fn, regp->xf_out_itk, 
             regp->img_out_fmt, regp->img_out_type, regp->img_out_fn, 
             regp->vf_out_fn);
         timer3.Stop();
-
+    
+        delete xf_out;
+    
+        logfile_open (regp->log_fn);
         logfile_printf (
             "Load:   %g\n"
             "Run:    %g\n"
@@ -422,11 +441,11 @@ do_registration (Registration_parms* regp)
             (double) timer2.GetMeanTime(),
             (double) timer3.GetMeanTime(),
             (double) timer1.GetMeanTime() + 
-            (double) timer2.GetMeanTime() +
+            (double) timer2.GetMeanTime() + 
             (double) timer3.GetMeanTime());
+    
+        /* Done logging */
+        logfile_printf ("Finished!\n");
+        logfile_close ();
     }
-
-    /* Done logging */
-    logfile_printf ("Finished!\n");
-    logfile_close ();
 }
