@@ -500,20 +500,6 @@ synthetic_mha (
     im_out->SetDirection (itk_dc);
     im_out->Allocate();
 
-#if defined (commentout)
-#if PLM_USE_SS_IMAGE_VEC
-    UCharVecImageType::Pointer ss_img
-        = UCharVecImageType::New();
-    typedef itk::ImageRegionIteratorWithIndex< UCharVecImageType > 
-        UCharVecIteratorType;
-    UCharVecIteratorType ss_img_it;
-#else
-    UCharImageType::Pointer ss_img = UCharImageType::New();
-    typedef itk::ImageRegionIteratorWithIndex< UCharImageType > 
-        UCharIteratorType;
-    UCharIteratorType ss_img_it;
-#endif
-#endif
     UCharImageType::Pointer ss_img = UCharImageType::New();
     typedef itk::ImageRegionIteratorWithIndex< UCharImageType > 
         UCharIteratorType;
@@ -523,21 +509,6 @@ synthetic_mha (
         ss_img->SetRegions (rg);
         ss_img->SetOrigin (og);
         ss_img->SetSpacing (sp);
-#if defined (commentout)
-#if PLM_USE_SS_IMAGE_VEC
-        int num_uchar = 5;
-        ss_img->SetVectorLength (num_uchar);
-        ss_img->Allocate();
-        ss_img_it = UCharVecIteratorType (ss_img, 
-            ss_img->GetLargestPossibleRegion());
-        ss_img_it.GoToBegin();
-#else
-        ss_img->Allocate();
-        ss_img_it = UCharIteratorType (ss_img, 
-            ss_img->GetLargestPossibleRegion());
-        ss_img_it.GoToBegin();
-#endif
-#endif
         ss_img->Allocate();
         ss_img_it = UCharIteratorType (ss_img, 
             ss_img->GetLargestPossibleRegion());

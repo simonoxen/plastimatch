@@ -202,15 +202,6 @@ Rtss::save_ss_image (const Pstring &ss_img_fn)
         print_and_exit (
             "Error: save_ss_image() tried to write a non-existant file");
     }
-#if defined (commentout)
-#if (PLM_USE_SS_IMAGE_VEC)
-    /* Image type must be uchar vector */
-    this->m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
-#else
-    /* Image type must be uint32_t */
-    this->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
-#endif
-#endif
     if (this->m_ss_img->m_type == PLM_IMG_TYPE_GPUIT_UCHAR_VEC
         || this->m_ss_img->m_type == PLM_IMG_TYPE_ITK_UCHAR_VEC) 
     {
@@ -252,17 +243,6 @@ Rtss::save_prefix (const Pstring &output_prefix)
         int bit = curr_structure->bit;
 
         if (bit == -1) continue;
-#if defined(commentout)
-#if (PLM_USE_SS_IMAGE_VEC)
-        m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
-        UCharImageType::Pointer prefix_img = ss_img_extract_bit (
-            m_ss_img->m_itk_uchar_vec, bit);
-#else
-        m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
-        UCharImageType::Pointer prefix_img = ss_img_extract_bit (
-            m_ss_img->m_itk_uint32, bit);
-#endif
-#endif
         UCharImageType::Pointer prefix_img 
             = ss_img_extract_bit (m_ss_img, bit);
 
@@ -356,34 +336,6 @@ Rtss::convert_ss_img_to_cxt (void)
     this->m_cxt->set_geometry_from_plm_image (
         this->m_ss_img);
 
-#if defined (commentout)
-#if (PLM_USE_SS_IMAGE_VEC)
-    /* Image type must be uchar vector */
-    this->m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
-
-    /* Do extraction */
-    if (this->m_ss_list) {
-        this->m_cxt = Rtss_polyline_set::clone_empty (
-            this->m_cxt, this->m_ss_list);
-        cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uchar_vec, -1, true);
-    } else {
-        cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uchar_vec, -1, false);
-    }
-
-#else
-    /* Image type must be uint32_t */
-    this->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
-
-    /* Do extraction */
-    if (this->m_ss_list) {
-        this->m_cxt = Rtss_polyline_set::clone_empty (
-            this->m_cxt, this->m_ss_list);
-        cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uint32, -1, true);
-    } else {
-        cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uint32, -1, false);
-    }
-#endif
-#endif
     if (this->m_ss_img->m_type == PLM_IMG_TYPE_GPUIT_UCHAR_VEC
         || this->m_ss_img->m_type == PLM_IMG_TYPE_ITK_UCHAR_VEC) 
     {
@@ -430,17 +382,6 @@ void
 Rtss::cxt_re_extract (void)
 {
     this->m_cxt->free_all_polylines ();
-#if defined (commentout)
-#if (PLM_USE_SS_IMAGE_VEC)
-    this->m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
-    cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uchar_vec, 
-        this->m_cxt->num_structures, true);
-#else
-    this->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
-    cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uint32, 
-        this->m_cxt->num_structures, true);
-#endif
-#endif
     if (this->m_ss_img->m_type == PLM_IMG_TYPE_GPUIT_UCHAR_VEC
         || this->m_ss_img->m_type == PLM_IMG_TYPE_ITK_UCHAR_VEC) 
     {
@@ -496,14 +437,6 @@ Rtss::rasterize (
     }
     this->m_ss_img = new Plm_image;
 
-#if defined (commentout)
-#if (PLM_USE_SS_IMAGE_VEC)
-    this->m_ss_img->set_itk (rasterizer.m_ss_img);
-#else
-    this->m_ss_img->set_gpuit (rasterizer.ss_img_vol);
-    rasterizer.ss_img_vol = 0;
-#endif
-#endif
     if (use_ss_img_vec) {
         this->m_ss_img->set_itk (rasterizer.m_ss_img->m_itk_uchar_vec);
     }
@@ -558,11 +491,6 @@ Rtss::warp (
         plm_warp (tmp, 0, xf, pih, this->m_ss_img, 0, parms->use_itk, 0);
         delete this->m_ss_img;
         this->m_ss_img = tmp;
-#if defined (commentout)
-#if (!PLM_USE_SS_IMAGE_VEC)
-        this->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
-#endif
-#endif
     }
 
     /* The cxt polylines are now obsolete, but we can't delete it because 
