@@ -5,6 +5,8 @@
 #define _lua_class_register_h_
 
 #include "plm_config.h"
+#include "plm_image.h"
+#include "plm_parms.h"
 #include "plm_path.h"
 
 #include "lua.h"
@@ -18,8 +20,10 @@
 
 typedef struct lua_register_struct lua_register;
 struct lua_register_struct {
-    int stage_idx;          /* set stage current access */
-    lua_stage** stages;
+    char fn[_MAX_PATH];
+    Registration_parms *regp;
+    Plm_image *moving;    
+    Plm_image *fixed;    
 };
 
 

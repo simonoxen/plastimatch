@@ -11,6 +11,7 @@ extern "C"
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
+#include "lobject.h"
 }
 #include "lua_util.h"
 
@@ -52,48 +53,65 @@ get_obj_ptr (lua_State *L, const char* class_name, int index)
     return ptr;
 }
 
+#if 0
+static void
+stack_dump (lua_State *L)
+{
+    const char* str;
+    const char* typ;
+    float num;
+
+    for (int i=-1; i>-21; i--) {
+        num = lua_tonumber (L, i);
+        str = lua_tostring (L, i);
+        typ = lua_typename (L, lua_type(L, i));
+        printf ("[%i] %s \t %s \t %f \n", i, typ, str, num);
+    }
+}
+#endif
 
 /* --- Super Class Helpers -------------------------- */
 int
 sc_get_int (lua_State *L, void *v)
 {
-  lua_pushnumber (L, *(int*)v);
-  return 1;
+    lua_pushnumber (L, *(int*)v);
+    return 1;
 }
 
 int
 sc_set_int (lua_State *L, void *v)
 {
-  *(int*)v = luaL_checkint (L, 3);
-  return 0;
+    printf ("sc_set_int\n");
+    *(int*)v = luaL_checkint (L, 3);
+    return 0;
 }
 
 int
 sc_get_number (lua_State *L, void *v)
 {
-  lua_pushnumber (L, *(lua_Number*)v);
-  return 1;
+    lua_pushnumber (L, *(lua_Number*)v);
+    return 1;
 }
 
 int
 sc_set_number (lua_State *L, void *v)
 {
-  *(lua_Number*)v = luaL_checknumber (L, 3);
-  return 0;
+    *(lua_Number*)v = luaL_checknumber (L, 3);
+    return 0;
 }
 
 int
 sc_get_string (lua_State *L, void *v)
 {
-  lua_pushstring(L, (char*)v );
-  return 1;
+    lua_pushstring(L, (char*)v );
+    return 1;
 }
 
 int
 sc_set_string (lua_State *L, void *v)
 {
-  strcpy ((char*)v, luaL_checkstring (L, 3));
-  return 0;
+    strcpy ((char*)v, luaL_checkstring (L, 3));
+    return 0;
 }
 
 
@@ -110,12 +128,13 @@ super_class_glue_init (lua_State *L, const lua_sc_glue *scg)
 static int
 super_class_call (lua_State *L)
 {
-  /* for get: stack has userdata, index, lightuserdata */
-  /* for set: stack has userdata, index, value, lightuserdata */
-  lua_sc_glue* m = (lua_sc_glue*)lua_touserdata (L, -1);  /* member info */
-  lua_pop (L, 1);                               /* drop lightuserdata */
-  luaL_checktype (L, 1, LUA_TUSERDATA);
-  return m->func(L, (void *)((char *)lua_touserdata(L, 1) + m->offset));
+//    stack_dump (L);
+    /* for get: stack has userdata, index, lightuserdata */
+    /* for set: stack has userdata, index, value, lightuserdata */
+    lua_sc_glue* m = (lua_sc_glue*)lua_touserdata (L, -1);  /* member info */
+    lua_pop (L, 1);                               /* drop lightuserdata */
+    luaL_checktype (L, 1, LUA_TUSERDATA);
+    return m->func(L, (void *)((char *)lua_touserdata(L, 1) + m->offset));
 }
 
 

@@ -16,6 +16,8 @@ extern "C"
 #include "lua_class_register.h"
 #include "lua_class_stage.h"
 #include "lua_util.h"
+#include "plm_parms.h"
+#include "plm_stages.h"
 
 /* Name of class as exposed to Lua */
 #define THIS_CLASS LUA_CLASS_REGISTER
@@ -25,76 +27,58 @@ extern "C"
 void
 init_register_instance (lua_register* lregister)
 {
-
-    lregister->stages = (lua_stage**)malloc (_MAX_STAGES*sizeof(lua_stage*));
-
+    memset (lregister->fn, '\0', sizeof (lregister->fn));
+    lregister->regp = NULL;
+    lregister->moving = NULL;
+    lregister->fixed = NULL;
 }
 
 /*******************************************************/
 /* Object Methods                                      */
 /*******************************************************/
 static int
-register_new (lua_State *L)
+register_load (lua_State *L)
 {
-    lua_register *lregister =
-        (lua_register*)lua_new_instance (L, THIS_CLASS, sizeof(lua_register));
+    const char* fn = luaL_optlstring (L, 1, NULL, NULL);
 
-    init_register_instance (lregister);
-
-    /* build & initialize the stages array */
-    lua_stage** lstages = lregister->stages;
-    for (int i=0; i<_MAX_STAGES; i++) {
-        lstages[i] = NULL;
+    if (!fn) {
+        fprintf (stderr, "error -- register.load() -- no file specified\n");
+        return 0;
     }
 
-#if 0
-    /* Need to build a special pointer handler for something this cool... */
-    lua_stage** lstages = lregister->stages;
-    for (int i=0; i<_MAX_STAGES; i++) {
-        lstages[i] =
-            (lua_stage*)lua_new_instance (L, LUA_CLASS_STAGE, sizeof(lua_stage));
-        lua_pop (L, 1);  /* don't return lstage userdata to Lua */
-        fprintf (stderr, "Allocating [%i] %p\n", i, lstages[i]);
-        init_stage_instance (lstages[i]);
+    Registration_parms *regp = new Registration_parms; //(Registration_parms*)malloc (sizeof(Registration_parms));
+    if (plm_parms_parse_command_file (regp, fn) < 0) {
+        fprintf (stderr, "error -- register.load() -- unable to load %s\n", fn);
+        return 0;
     }
-#endif
+
+    lua_register *lreg = (lua_register*)lua_new_instance (L,
+                                    THIS_CLASS,
+                                    sizeof(lua_register));
+
+    init_register_instance (lreg);
+
+    strcpy (lreg->fn, fn);
+    lreg->regp = regp;
 
     return 1;
 }
 
 static int
-register_select_stage (lua_State *L)
+register_update (lua_State *L)
 {
-    lua_register *lregister = (lua_register*)get_obj_ptr (L, THIS_CLASS, 1);
-    int idx = luaL_checkint (L, 2);
+    // We will have to pull file loads outside of the registration
+    // algorithms before this can go any further.
+    //    They will need to be altered to receive Plm_images
+    //    instead of file names... or something similar.
 
-    lregister->stage_idx = idx;
+//    lua_register *lreg = (lua_register*)get_obj_ptr (L, THIS_CLASS, 1);
+//    lreg->regp->moving = lreg->moving;
+//    lreg->regp->fixed  = lreg->fixed;   /* Can't do this ...yet */
 
-    return 1;
+    return 0;
 }
 
-static int
-register_set_foo (lua_State *L)
-{
-    lua_register *lregister = (lua_register*)get_obj_ptr (L, THIS_CLASS, 1);
-    int foo = luaL_checkint (L, 2);
-
-    lregister->stages[lregister->stage_idx]->foo = foo;
-
-    return 1;
-}
-
-static int
-register_get_foo (lua_State *L)
-{
-    lua_register *lregister = (lua_register*)get_obj_ptr (L, THIS_CLASS, 1);
-
-    int foo = lregister->stages[lregister->stage_idx]->foo;
-
-    lua_pushnumber (L, foo);
-
-    return 1;
-}
 /*******************************************************/
 
 
@@ -106,7 +90,6 @@ register_get_foo (lua_State *L)
 static int
 register_action_gc (lua_State *L)
 {
-    // TODO
     return 0;
 }
 /*+++++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -116,15 +99,13 @@ register_action_gc (lua_State *L)
 
 
 
-/* Class Creation */
+/* Super Class Creation */
 
 /* methods table for object */
 static const luaL_reg
 register_methods[] = {
-    {"new",   register_new},
-    {"stage", register_select_stage},
-    {"set",   register_set_foo},
-    {"get",   register_get_foo},
+    {"load",   register_load},
+    {"update", register_update},
     {0, 0}
 };
 
@@ -135,9 +116,24 @@ register_meta[] = {
     {0, 0}
 };
 
+/* glue to C struct */
+static const lua_sc_glue
+getters[] = {
+    {"moving",   sc_get_string,  offsetof (lua_register, moving)    },
+    {"fixed",    sc_get_string,  offsetof (lua_register, fixed)    },
+    {0, 0}
+};
+
+static const lua_sc_glue
+setters[] = {
+    {"moving",   sc_set_string,  offsetof (lua_register, moving)    },
+    {"fixed",    sc_set_string,  offsetof (lua_register, fixed)    },
+    {0, 0}
+};
+
 
 int
 register_lua_class_register (lua_State *L)
 {
-    return register_lua_class (L, THIS_CLASS, register_methods, register_meta);
+    return register_lua_super_class (L, THIS_CLASS, register_methods, register_meta, getters, setters);
 }
