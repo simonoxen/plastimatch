@@ -236,27 +236,24 @@ endif ()
 
 ## -------------------------------------------------------------------------
 ## synth-test - create synthetic mha files
-##   black-1.mha   All black, slightly different geometry
-##   donut-1.mha   Centered donut
-##   gauss-1.mha   Centered gauss
-##   gauss-2.mha   Off-center gauss
-##   gauss-3.mha   Inverted gauss
-##   gauss-4.mha   Gauss with inverted pixel spacing
-##   gauss-5.mha   Even more off-center gauss
-##   gauss-6.mha   Off-center gauss, in off-center world coordinates
-##   gauss-ushort-1.mha   Centered gauss, ushort
-##   gauss-ushort-2.mha   Off-center gauss, ushort
-##   rect-1.mha    Inverted rect, centered
-##   rect-2.mha    Standard rect, off-center
-##   rect-3.mha    Standard rect, centered
-##   rect-4.mha    Uchar rect, centered
-##   rect-5.mha    Standard rect, centered, direction cosines rotated
-##   rect-6.mha    Standard rect, centered, direction cosines alt-rotated
-##   sphere-1.mha  Uchar sphere, bg=0, fg=255
-##   sphere-2.mha  Standard sphere, centered
-##   rtds-ct-1.mha    Synthetic ct
-##   rtds-dose-1.mha  Synthetic dose
-##   rtds-s-1.mha     Synthetic ss
+##   black-1           All black, slightly different geometry
+##   donut-1           Centered donut
+##   gauss-1           Centered gauss
+##   gauss-2           Off-center gauss
+##   gauss-3           Inverted gauss
+##   gauss-4           Gauss with inverted pixel spacing
+##   gauss-5           Even more off-center gauss
+##   gauss-6           Off-center gauss, in off-center world coordinates
+##   gauss-ushort-1    Centered gauss, ushort
+##   gauss-ushort-2    Off-center gauss, ushort
+##   rect-1            Inverted rect, centered
+##   rect-2            Standard rect, off-center
+##   rect-3            Standard rect, centered
+##   rect-4            Uchar rect, centered
+##   rect-5            Standard rect, centered, direction cosines rotated
+##   rect-6            Standard rect, centered, direction cosines alt-rotated
+##   sphere-1          Uchar sphere, bg=0, fg=255
+##   sphere-2          Standard sphere, centered
 ## -------------------------------------------------------------------------
 set (SYNTH_MHA_SIZE 38)
 
@@ -336,7 +333,7 @@ plm_add_test (
   "rect-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-1.mha;--output-type;float;--output-dose-img;${PLM_BUILD_TESTING_DIR}/rect-1-dose-img.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/rect-1-ss-img.mha;--output-dicom;${PLM_BUILD_TESTING_DIR}/rect-1-dicom;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;-1000"
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-1.mha;--output-type;float;--output-dose-img;${PLM_BUILD_TESTING_DIR}/rect-1-dose-img.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/rect-1-ss.mha;--output-dicom;${PLM_BUILD_TESTING_DIR}/rect-1-dicom;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;-1000"
   )
 plm_add_test (
   "rect-2"
@@ -1002,190 +999,39 @@ set_tests_properties (landmark-warp-c-check-2 PROPERTIES
 
 ## -------------------------------------------------------------------------
 ## plastimatch convert dicom (and dicom rt)
-##   plm convert dicom a: ct only (xio)
-##   plm convert dicom b: rtss only, with referenced-ct (xio)
-##   plm convert dicom c: rtss only, with fixed image reference (xio)
-##   plm convert dicom d: dose only, native sampling rate (xio)
-##   plm convert dicom e: input xio dicom, output plastimatch dicom (xio)
-##   plm convert dicom f: input plastimatch dicom, output plm dicom (xio)
-##   plm convert dicom g: input rtss, no fixed image, no ct reference
-##   plm convert dicom h: set metadata
+##   plm convert dicom a: (rect) input rtss, no fixed image, no ct reference
+##   plm convert dicom b: set metadata
 ## -------------------------------------------------------------------------
 plm_add_test (
-  "plm-convert-dicom-a"
+  "plm-convert-dicom-a" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-a.mha"
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/rect-1-dicom/ss.dcm;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-a-ss.mha;--output-ss-list;plm-convert-dicom-a-ss.txt;--output-cxt;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-a.cxt"
   )
-plm_add_test (
-  "plm-convert-dicom-a-stats"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-a.mha"
-  )
-plmtest_check_interval ("plm-convert-dicom-a-check"
-  "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-a-stats.stdout.txt"
-  "AVE *([-0-9.]*)"
-  "-667.5"
-  "-666.6"
-  )
-set_tests_properties (plm-convert-dicom-a-stats PROPERTIES 
-  DEPENDS plm-convert-dicom-a)
-set_tests_properties (plm-convert-dicom-a-check PROPERTIES 
-  DEPENDS plm-convert-dicom-a-stats)
+set_tests_properties (plm-convert-dicom-a PROPERTIES DEPENDS rect-1)
 
 plm_add_test (
   "plm-convert-dicom-b"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02/SS.rtp1.12.20080627A.5.dcm;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-b-ss-img.mha;--referenced-ct;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02"
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/rect-1-dicom;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-b-dicom;--metadata;0018,5100=FFS"
   )
 plm_add_test (
-  "plm-convert-dicom-b-stats"
+  "plm-convert-dicom-b-stats" 
   ""
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-b-ss-img.mha"
+  ${PLM_PLASTIMATCH_PATH}/dicom_info
+  "--input;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-b-dicom/image000.dcm"
   )
-if (PLM_USE_SS_IMAGE_VEC)
-plmtest_check_interval ("plm-convert-dicom-b-check"
+plmtest_check_string ("plm-convert-dicom-b-check" 
   "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-b-stats.stdout.txt"
-  "S *1 *NVOX *([-0-9.]*)"
-  "62767"
-  "62767"
+  "Patient Position . (.*[^ ]) *$"
+  "FFS"
   )
-else ()
-plmtest_check_interval ("plm-convert-dicom-b-check"
-  "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-b-stats.stdout.txt"
-  "AVE *([-0-9.]*)"
-  "1.05"
-  "1.06"
-  )
-endif ()
+set_tests_properties (plm-convert-dicom-b PROPERTIES DEPENDS rect-1)
 set_tests_properties (plm-convert-dicom-b-stats PROPERTIES 
   DEPENDS plm-convert-dicom-b)
 set_tests_properties (plm-convert-dicom-b-check PROPERTIES 
   DEPENDS plm-convert-dicom-b-stats)
-
-plm_add_test (
-  "plm-convert-dicom-c"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02/SS.rtp1.12.20080627A.5.dcm;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-c-ss-img.mha;--fixed;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-a.mha;--output-cxt;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-c.cxt"
-  )
-plm_add_test (
-  "plm-convert-dicom-c-stats"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-c-ss-img.mha"
-  )
-if (PLM_USE_SS_IMAGE_VEC)
-# To be resolved.  Why do dicom-b and dicom-c give different answers?
-plmtest_check_interval ("plm-convert-dicom-c-check"
-  "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-c-stats.stdout.txt"
-  "S *1 *NVOX *([-0-9.]*)"
-  "62769"
-  "62769"
-  )
-else ()
-plmtest_check_interval ("plm-convert-dicom-c-check"
-  "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-c-stats.stdout.txt"
-  "AVE *([-0-9.]*)"
-  "1.05"
-  "1.06"
-  )
-endif ()
-set_tests_properties (plm-convert-dicom-c PROPERTIES 
-  DEPENDS plm-convert-dicom-a)
-set_tests_properties (plm-convert-dicom-c-stats PROPERTIES 
-  DEPENDS plm-convert-dicom-c)
-set_tests_properties (plm-convert-dicom-c-check PROPERTIES 
-  DEPENDS plm-convert-dicom-c-stats)
-
-plm_add_test (
-  "plm-convert-dicom-d"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02/DOSE.20080627A.TRAINING4FLD.dcm;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-d-dose-img.mha"
-  )
-plm_add_test (
-  "plm-convert-dicom-d-stats"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-d-dose-img.mha"
-  )
-plmtest_check_interval ("plm-convert-dicom-d-check"
-  "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-d-stats.stdout.txt"
-  "MAX *([-0-9.]*)"
-  "42.1"
-  "42.2"
-  )
-set_tests_properties (plm-convert-dicom-d-stats PROPERTIES 
-  DEPENDS plm-convert-dicom-d)
-set_tests_properties (plm-convert-dicom-d-check PROPERTIES 
-  DEPENDS plm-convert-dicom-d-stats)
-
-plm_add_test (
-  "plm-convert-dicom-e" 
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-e-dicom;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-e-dose-img.mha"
-  )
-
-plm_add_test (
-  "plm-convert-dicom-f" 
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-e-dicom;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-f-dicom;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-f-dose-img.mha"
-  )
-plm_add_test (
-  "plm-convert-dicom-f-stats" 
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "compare;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-e-dose-img.mha;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-f-dose-img.mha"
-  )
-plmtest_check_interval ("plm-convert-dicom-f-check"
-  "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-f-stats.stdout.txt"
-  "MAE *([-0-9.]*)"
-  "0.000"
-  "0.005"
-  )
-set_tests_properties (plm-convert-dicom-f PROPERTIES 
-  DEPENDS plm-convert-dicom-e)
-set_tests_properties (plm-convert-dicom-f-stats PROPERTIES 
-  DEPENDS plm-convert-dicom-f)
-set_tests_properties (plm-convert-dicom-f-check PROPERTIES 
-  DEPENDS plm-convert-dicom-f-stats)
-
-plm_add_test (
-  "plm-convert-dicom-g" 
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/rect-1-dicom/ss.dcm;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-g.mha;--output-ss-list;plm-convert-dicom-g.txt;--output-cxt;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-g.cxt"
-  )
-set_tests_properties (plm-convert-dicom-g PROPERTIES DEPENDS rect-1)
-
-plm_add_test (
-  "plm-convert-dicom-h"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/rect-1-dicom;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-h-dicom;--metadata;0018,5100=FFS"
-  )
-plm_add_test (
-  "plm-convert-dicom-h-stats" 
-  ""
-  ${PLM_PLASTIMATCH_PATH}/dicom_info
-  "--input;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-h-dicom/image000.dcm"
-  )
-plmtest_check_string ("plm-convert-dicom-h-check" 
-  "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-h-stats.stdout.txt"
-  "Patient Position . (.*[^ ]) *$"
-  "FFS"
-  )
-set_tests_properties (plm-convert-dicom-h PROPERTIES DEPENDS rect-1)
-set_tests_properties (plm-convert-dicom-h-stats PROPERTIES 
-  DEPENDS plm-convert-dicom-h)
-set_tests_properties (plm-convert-dicom-h-check PROPERTIES 
-  DEPENDS plm-convert-dicom-h-stats)
 
 ## -------------------------------------------------------------------------
 ## These tests are designed to check the handling of overlapping structures 
@@ -1305,16 +1151,6 @@ plm_add_test (
   )
 
 ## -------------------------------------------------------------------------
-## plastimatch convert dicom-rt (xio, irregular)
-## -------------------------------------------------------------------------
-plm_add_test (
-  "plm-convert-dicom-irregular-a"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/xio-4.60-irregular-spacing;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-irregular-a.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-irregular-a-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-irregular-a-ss.txt;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-irregular-a-dose.mha"
-  )
-
-## -------------------------------------------------------------------------
 ## plastimatch convert dicom-rt (pinnacle)
 ## -------------------------------------------------------------------------
 plm_add_test (
@@ -1325,19 +1161,227 @@ plm_add_test (
   )
 
 ## -------------------------------------------------------------------------
-## plastimatch convert dicom-rt (xio)
+## plastimatch-convert-dicom-xio (xio)
+##   plm-convert-dicom-xio-a: ct only
+##   plm-convert-dicom-xio-b: rtss only, with referenced-ct
+##   plm-convert-dicom-xio-c: rtss only, with fixed image reference
+##   plm-convert-dicom-xio-d: dose only, native sampling rate
+##   plm-convert-dicom-xio-e: input xio dicom, output plastimatch dicom
+##   plm-convert-dicom-xio-f: input plastimatch dicom, output plm dicom
+##   plm-convert-dicom-xio-g: all inputs, image outputs
+##   plm-warp-dicom-xio-a:    all inputs, with transform, all outputs
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-convert-dicom-xio-a"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-a.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-a-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-a-ss.txt;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-a-dose.mha"
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-a.mha"
+  )
+plm_add_test (
+  "plm-convert-dicom-xio-a-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-a.mha"
+  )
+plmtest_check_interval ("plm-convert-dicom-xio-a-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-a-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-667.5"
+  "-666.6"
+  )
+set_tests_properties (plm-convert-dicom-xio-a-stats PROPERTIES 
+  DEPENDS plm-convert-dicom-xio-a)
+set_tests_properties (plm-convert-dicom-xio-a-check PROPERTIES 
+  DEPENDS plm-convert-dicom-xio-a-stats)
+
+plm_add_test (
+  "plm-convert-dicom-xio-b"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02/SS.rtp1.12.20080627A.5.dcm;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-b-ss.mha;--referenced-ct;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02"
+  )
+plm_add_test (
+  "plm-convert-dicom-xio-b-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-b-ss.mha"
+  )
+if (PLM_USE_SS_IMAGE_VEC)
+plmtest_check_interval ("plm-convert-dicom-xio-b-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-b-stats.stdout.txt"
+  "S *1 *NVOX *([-0-9.]*)"
+  "62767"
+  "62767"
+  )
+else ()
+plmtest_check_interval ("plm-convert-dicom-xio-b-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-b-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "1.05"
+  "1.06"
+  )
+endif ()
+set_tests_properties (plm-convert-dicom-xio-b-stats PROPERTIES 
+  DEPENDS plm-convert-dicom-xio-b)
+set_tests_properties (plm-convert-dicom-xio-b-check PROPERTIES 
+  DEPENDS plm-convert-dicom-xio-b-stats)
+
+plm_add_test (
+  "plm-convert-dicom-xio-c"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02/SS.rtp1.12.20080627A.5.dcm;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-c-ss.mha;--fixed;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-a.mha;--output-cxt;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-c.cxt"
+  )
+plm_add_test (
+  "plm-convert-dicom-xio-c-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-c-ss.mha"
+  )
+if (PLM_USE_SS_IMAGE_VEC)
+# To be resolved.  Why do dicom-xio-b and dicom-xio-c give different answers?
+plmtest_check_interval ("plm-convert-dicom-xio-c-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-c-stats.stdout.txt"
+  "S *1 *NVOX *([-0-9.]*)"
+  "62769"
+  "62769"
+  )
+else ()
+plmtest_check_interval ("plm-convert-dicom-xio-c-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-c-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "1.05"
+  "1.06"
+  )
+endif ()
+set_tests_properties (plm-convert-dicom-xio-c PROPERTIES 
+  DEPENDS plm-convert-dicom-xio-a)
+set_tests_properties (plm-convert-dicom-xio-c-stats PROPERTIES 
+  DEPENDS plm-convert-dicom-xio-c)
+set_tests_properties (plm-convert-dicom-xio-c-check PROPERTIES 
+  DEPENDS plm-convert-dicom-xio-c-stats)
+
+plm_add_test (
+  "plm-convert-dicom-xio-d"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02/DOSE.20080627A.TRAINING4FLD.dcm;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-d-dose-img.mha"
+  )
+plm_add_test (
+  "plm-convert-dicom-xio-d-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-d-dose-img.mha"
+  )
+plmtest_check_interval ("plm-convert-dicom-xio-d-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-d-stats.stdout.txt"
+  "MAX *([-0-9.]*)"
+  "42.1"
+  "42.2"
+  )
+set_tests_properties (plm-convert-dicom-xio-d-stats PROPERTIES 
+  DEPENDS plm-convert-dicom-xio-d)
+set_tests_properties (plm-convert-dicom-xio-d-check PROPERTIES 
+  DEPENDS plm-convert-dicom-xio-d-stats)
+
+plm_add_test (
+  "plm-convert-dicom-xio-e" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-e-dicom;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-e-dose-img.mha"
+  )
+
+plm_add_test (
+  "plm-convert-dicom-xio-f" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-e-dicom;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-f-dicom;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-f-dose-img.mha"
+  )
+plm_add_test (
+  "plm-convert-dicom-xio-f-stats" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "compare;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-e-dose-img.mha;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-f-dose-img.mha"
+  )
+plmtest_check_interval ("plm-convert-dicom-xio-f-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-f-stats.stdout.txt"
+  "MAE *([-0-9.]*)"
+  "0.000"
+  "0.005"
+  )
+set_tests_properties (plm-convert-dicom-xio-f PROPERTIES 
+  DEPENDS plm-convert-dicom-xio-e)
+set_tests_properties (plm-convert-dicom-xio-f-stats PROPERTIES 
+  DEPENDS plm-convert-dicom-xio-f)
+set_tests_properties (plm-convert-dicom-xio-f-check PROPERTIES 
+  DEPENDS plm-convert-dicom-xio-f-stats)
+
+plm_add_test (
+  "plm-convert-dicom-xio-g"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-g.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-g-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-g-ss.txt;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-g-dose.mha"
+  )
+
+plm_add_test (
+  "plm-warp-dicom-xio-a" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-bspline-chest-phantom.txt;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-warp-dicom-xio-a-dicom;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-warp-dicom-xio-a-ss.nrrd;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-warp-dicom-xio-a-ss.txt;--output-labelmap;${PLM_BUILD_TESTING_DIR}/plm-warp-dicom-xio-a-labelmap.nrrd;--output-img;${PLM_BUILD_TESTING_DIR}/plm-warp-dicom-xio-a-img.nrrd;--output-prefix;${PLM_BUILD_TESTING_DIR}/plm-warp-dicom-xio-a;--output-cxt;${PLM_BUILD_TESTING_DIR}/plm-warp-dicom-xio-a.cxt;--default-value;0"
+  )
+plm_add_test (
+  "plm-warp-dicom-xio-a-stats-1"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;plm-warp-dicom-xio-a-img.nrrd"
+  )
+plmtest_check_interval ("plm-warp-dicom-xio-a-check-1"
+  "${PLM_BUILD_TESTING_DIR}/plm-warp-dicom-xio-a-stats-1.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-661.5"
+  "-661.4"
+  )
+if (PLM_USE_SS_IMAGE_VEC)
+  plm_add_test (
+    "plm-warp-dicom-xio-a-stats-2"
+    ""
+    ${PLM_PLASTIMATCH_PATH}/plastimatch
+    "stats;--input;plm-warp-dicom-xio-a-ss.nrrd"
+    )
+  plmtest_check_interval ("plm-warp-dicom-xio-a-check-2"
+    "${PLM_BUILD_TESTING_DIR}/plm-warp-dicom-xio-a-stats-2.stdout.txt"
+    "S *1 *NVOX *([-0-9.]*)"
+    "1971"
+    "1971"
+    )
+  set_tests_properties (plm-warp-dicom-xio-a-stats-2 
+    PROPERTIES DEPENDS plm-warp-dicom-xio-a)
+  set_tests_properties (plm-warp-dicom-xio-a-check-2 
+    PROPERTIES DEPENDS plm-warp-dicom-xio-a-stats-2)
+else ()
+  # Don't bother
+endif ()
+set_tests_properties (plm-warp-dicom-xio-a-stats-1 
+  PROPERTIES DEPENDS plm-warp-dicom-xio-a)
+set_tests_properties (plm-warp-dicom-xio-a-check-1 
+  PROPERTIES DEPENDS plm-warp-dicom-xio-a-stats-1)
+
+
+## -------------------------------------------------------------------------
+## plastimatch-convert-dicom-irregular (xio, irregular slice spacing)
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-convert-dicom-irregular-a"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/xio-4.60-irregular-spacing;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-irregular-a.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-irregular-a-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-irregular-a-ss.txt;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-irregular-a-dose.mha"
   )
 
 ## -------------------------------------------------------------------------
-## plm-convert-dicom-33-a (native method, depends on configuration)
-## plm-convert-dicom-33-b (force unsigned long)
-## plm-convert-dicom-33-c (force uchar_vec)
+## plm-convert-dicom-33 (mim, 33 structures)
+##  plm-convert-dicom-33-a (native method, depends on configuration)
+##  plm-convert-dicom-33-b (force unsigned long)
+##  plm-convert-dicom-33-c (force uchar_vec)
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-convert-dicom-33-a" 
@@ -1406,21 +1450,21 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-convert-cxt.mha"
   )
-IF (PLM_USE_SS_IMAGE_VEC)
+if (PLM_USE_SS_IMAGE_VEC)
 plmtest_check_interval ("plm-convert-cxt-check"
   "${PLM_BUILD_TESTING_DIR}/plm-convert-cxt-stats.stdout.txt"
   "S *1 *NVOX *([-0-9.]*)"
   "62769"
   "62769"
   )
-ELSE ()
+else ()
 plmtest_check_interval ("plm-convert-cxt-check"
   "${PLM_BUILD_TESTING_DIR}/plm-convert-cxt-stats.stdout.txt"
   "AVE *([-0-9.]*)"
   "1.05"
   "1.06"
   )
-ENDIF ()
+endif ()
 set_tests_properties (plm-convert-cxt PROPERTIES DEPENDS plm-convert-dicom-c)
 set_tests_properties (plm-convert-cxt-stats PROPERTIES DEPENDS plm-convert-cxt)
 set_tests_properties (plm-convert-cxt-check PROPERTIES 
@@ -2445,7 +2489,7 @@ plm_add_test (
   "plm-warp-e" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-bspline-chest-phantom.txt;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-xio-4.33.02;--output-xio;${PLM_BUILD_TESTING_DIR}/plm-warp-e-xio;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-warp-e-ss-img.nrrd;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-warp-e-ss-list.txt;--output-labelmap;${PLM_BUILD_TESTING_DIR}/plm-warp-e-labelmap.nrrd;--output-img;${PLM_BUILD_TESTING_DIR}/plm-warp-e-img.nrrd;--output-prefix;${PLM_BUILD_TESTING_DIR}/plm-warp-e;--output-cxt;${PLM_BUILD_TESTING_DIR}/plm-warp-e.cxt;--output-colormap;${PLM_BUILD_TESTING_DIR}/plm-warp-e.ctbl;--default-value;0"
+  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-bspline-chest-phantom.txt;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-xio-4.33.02;--output-xio;${PLM_BUILD_TESTING_DIR}/plm-warp-e-xio;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-warp-e-ss.nrrd;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-warp-e-ss.txt;--output-labelmap;${PLM_BUILD_TESTING_DIR}/plm-warp-e-labelmap.nrrd;--output-img;${PLM_BUILD_TESTING_DIR}/plm-warp-e-img.nrrd;--output-prefix;${PLM_BUILD_TESTING_DIR}/plm-warp-e;--output-cxt;${PLM_BUILD_TESTING_DIR}/plm-warp-e.cxt;--output-colormap;${PLM_BUILD_TESTING_DIR}/plm-warp-e.ctbl;--default-value;0"
   )
 plm_add_test (
   "plm-warp-e-stats-1"
@@ -2487,7 +2531,7 @@ plm_add_test (
   "plm-warp-e-stats-4"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;plm-warp-e-ss-img.nrrd"
+  "stats;--input;plm-warp-e-ss.nrrd"
   )
 if (PLM_USE_SS_IMAGE_VEC)
   plmtest_check_interval ("plm-warp-e-check-4"
@@ -2505,8 +2549,8 @@ else ()
     )
 endif ()
 add_test ("plm-warp-e-check-5" ${CMAKE_COMMAND} -E compare_files
-  "${PLM_TESTING_DATA_DIR}/plm-warp-e-ss-list.txt"
-  "${PLM_BUILD_TESTING_DIR}/plm-warp-e-ss-list.txt")
+  "${PLM_TESTING_DATA_DIR}/plm-warp-e-ss.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-warp-e-ss.txt")
 add_test ("plm-warp-e-check-6" ${CMAKE_COMMAND} -E compare_files
   "${PLM_TESTING_DATA_DIR}/plm-warp-e.ctbl"
   "${PLM_BUILD_TESTING_DIR}/plm-warp-e.ctbl")
@@ -2520,45 +2564,6 @@ set_tests_properties (plm-warp-e-stats-4 PROPERTIES DEPENDS plm-warp-e)
 set_tests_properties (plm-warp-e-check-4 PROPERTIES DEPENDS plm-warp-e-stats-4)
 set_tests_properties (plm-warp-e-check-5 PROPERTIES DEPENDS plm-warp-e)
 set_tests_properties (plm-warp-e-check-6 PROPERTIES DEPENDS plm-warp-e)
-
-plm_add_test (
-  "plm-warp-f" 
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-bspline-chest-phantom.txt;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-warp-f-dicom;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-warp-f-ss-img.nrrd;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-warp-f-ss-list.txt;--output-labelmap;${PLM_BUILD_TESTING_DIR}/plm-warp-f-labelmap.nrrd;--output-img;${PLM_BUILD_TESTING_DIR}/plm-warp-f-img.nrrd;--output-prefix;${PLM_BUILD_TESTING_DIR}/plm-warp-f;--output-cxt;${PLM_BUILD_TESTING_DIR}/plm-warp-f.cxt;--default-value;0"
-  )
-plm_add_test (
-  "plm-warp-f-stats-1"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;plm-warp-f-img.nrrd"
-  )
-plmtest_check_interval ("plm-warp-f-check-1"
-  "${PLM_BUILD_TESTING_DIR}/plm-warp-f-stats-1.stdout.txt"
-  "AVE *([-0-9.]*)"
-  "-661.5"
-  "-661.4"
-  )
-if (PLM_USE_SS_IMAGE_VEC)
-  plm_add_test (
-    "plm-warp-f-stats-2"
-    ""
-    ${PLM_PLASTIMATCH_PATH}/plastimatch
-    "stats;--input;plm-warp-f-ss-img.nrrd"
-    )
-  plmtest_check_interval ("plm-warp-f-check-2"
-    "${PLM_BUILD_TESTING_DIR}/plm-warp-f-stats-2.stdout.txt"
-    "S *1 *NVOX *([-0-9.]*)"
-    "1971"
-    "1971"
-    )
-  set_tests_properties (plm-warp-f-stats-2 PROPERTIES DEPENDS plm-warp-f)
-  set_tests_properties (plm-warp-f-check-2 PROPERTIES DEPENDS plm-warp-f-stats-2)
-else ()
-  # Don't bother
-endif ()
-set_tests_properties (plm-warp-f-stats-1 PROPERTIES DEPENDS plm-warp-f)
-set_tests_properties (plm-warp-f-check-1 PROPERTIES DEPENDS plm-warp-f-stats-1)
 
 plm_add_test (
   "plm-warp-g" 

@@ -53,6 +53,7 @@ public:
 
     void apply_dicom_dir (const Referenced_dicom_dir *rdd);
     void convert_ss_img_to_cxt (void);
+    void convert_to_uchar_vec (void);
     void cxt_re_extract (void);
     void prune_empty (void);
     void rasterize (Plm_image_header *pih, bool want_labelmap, 

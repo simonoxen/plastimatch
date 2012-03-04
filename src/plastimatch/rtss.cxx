@@ -417,6 +417,16 @@ Rtss::convert_ss_img_to_cxt (void)
 }
 
 void
+Rtss::convert_to_uchar_vec (void)
+{
+    if (!this->m_ss_img) {
+        print_and_exit (
+            "Error: convert_to_uchar_vec() requires an image");
+    }
+    this->m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
+}
+
+void
 Rtss::cxt_re_extract (void)
 {
     this->m_cxt->free_all_polylines ();
