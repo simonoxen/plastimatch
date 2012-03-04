@@ -393,6 +393,9 @@ if (PLM_CONFIG_ENABLE_LUA)
     add_subdirectory (libs/lua-5.1.4)
     set (LUA_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/lua-5.1.4/src")
     link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/lua-5.1.4)
+
+    # for history, etc in plastimatch tty mode
+    find_package (Readline)
 endif ()
 
 ##-----------------------------------------------------------------------------
