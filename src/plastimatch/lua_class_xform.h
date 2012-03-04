@@ -12,7 +12,7 @@
 #include "lualib.h"
 #include "lauxlib.h"
 
-#define LUA_CLASS_XFORM "xform"
+#define LUA_CLASS_XFORM "XForm"
 
 typedef struct lua_xform_struct lua_xform;
 struct lua_xform_struct {

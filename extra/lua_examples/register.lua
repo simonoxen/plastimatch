@@ -1,65 +1,60 @@
--- James Shackleford
--- Feb. 19th, 2012
--- Example of LUA scripted registration
---
---   This is still under active development.  Not
---   all registration parameters have been exposed
---   to the LUA interface, so not all features are
---   available.  Your millage may vary.
---
--- Install LUA 5.1 and build with PLM_CONFIG_ENABLE_LUA = ON
--- invoke this script with: ./plastimatch script example.lua
---
+--  Author: James Shackleford
+-- Created: Feb. 29th, 2012
+-- Updated: Mar.  4th, 2012
+
+-------------------------------------
+--            TUTORIAL             --
+-- Working with the Register class --
+-- ----------------------------------
+
+-- if we want to register two files, we must first load them
+-- here, we will be registering the "moving image" (img_01.mha)
+-- to the "fixed image" (img_03.mha)
+fimg = Image.load ("data/img_03.mha")
+mimg = Image.load ("data/img_01.mha")
+
+-- we can setup a registration by loading registration stage
+-- parameters from a standard plastimatch command file
+r = Register.load ("data/stages.txt")
+
+-- we must attach the fixed and moving images to the registration
+r.fixed = fimg
+r.moving = mimg
+
+-- perform the registration. the result is a transform
+xf = r:go()
+
+-- of course, we can use this transform to warp the moving image
+warp = mimg + xf
+
+-- which we can save
+warp:save ("my_warp.mha")
+
+-- now, let's get ready for something more complex
+mimg = nil
+warp = nil
+xf = nil
+collectgarbage()
 
 
--- You can write to the screen with io.write()
-io.write ("Hi!  I'm a LUA script.  I'm going to be making your\n")
-io.write ("life much better by (eventually) allowing you to pipline\n")
-io.write ("everything plastimatch can do... not just registration!\n")
-io.write ("Let's get started!\n\n")
+-- let's do a 4D registration
 
-
--- Registration Parameters
-global = {
-    fixed = "/home/tshack/data/reg/set01/hi_gcs.mha",
-    moving = "/home/tshack/data/reg/set01/synth_radial_img.mha",
-    vf_out = "/home/tshack/lua_test/vf.mha",
-    img_out = "/home/tshack/lua_test/warp.mha"
+-- first, build an associative array of inputs and outputs
+phases = {
+    { moving = Image.load ("data/img_01.mha"), warp = "warp_01.mha" },
+    { moving = Image.load ("data/img_02.mha"), warp = "warp_02.mha" },
+    { moving = Image.load ("data/img_04.mha"), warp = "warp_04.mha" },
+    { moving = Image.load ("data/img_05.mha"), warp = "warp_05.mha" }
 }
 
-stage_1 = {
-    xform = "bspline",
-    metric = "mse",
-    optim = "lbfgsb",
-    impl = "plastimatch",
-    threading = "openmp",
-    max_its = 10
-}
+-- let's loop through every input/output pair in our phases array
+--    p is the current phase
+for _,p in pairs(phases) do
+    r.moving = p.moving
+    xf = r:go()
+    warp = p.moving + xf
+    warp:save (p.warp);
+end
 
-stage_2 = {
-    xform = "bspline",
-    metric = "mse",
-    optim = "lbfgsb",
-    impl = "plastimatch",
-    threading = "openmp",
-    grid_spac = {20.0, 20.0, 20.0},
-    max_its = 21
-}
-
-stage_3 = {
-    xform = "bspline",
-    metric = "mse",
-    optim = "lbfgsb",
-    impl = "plastimatch",
-    threading = "openmp",
-    grid_spac = {10.0, 10.0, 10.0},
-    max_its = 40
-}
-
--- NOTE: register() is VARIADIC, so you can keep adding stages
-a = register(stage_3, stage_2, stage_1, global)
-
-
--- Display return values with io.write() like this
-io.write ("Return value (", a, ").\n")
-io.write ("See, now.  Wasn't that swell?\n")
+print ("Tutorial: Register Class -- Completed")
+print ("-------------------------------------")
