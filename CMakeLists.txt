@@ -13,11 +13,15 @@ set (PLM_VERSION_PATCH "10")
 ##-----------------------------------------------------------------------------
 cmake_minimum_required (VERSION 2.6.0)
 
-# Tell CMake to be quiet
+# CMP0003: Libraries linked via full path no longer produce linker search
+#  paths.
+cmake_policy (SET CMP0003 NEW)
+# CMP0012: if() recognizes numbers and boolean constants.
+# GCS 2012-03-04: This is added to suppress ITK warning
+cmake_policy (SET CMP0012 NEW)
 # Note: it is ok to use CMake FindZLIB for 2.8.4.  Therefore setting 
 # policy CMP0017 to NEW is safe.  But we do want the OLD policy for 
 # older CMake versions.
-cmake_policy (SET CMP0003 NEW)
 if (NOT ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION} VERSION_LESS 2.8.4)
   cmake_policy (SET CMP0017 NEW)
 endif ()
@@ -575,19 +579,17 @@ else ()
 endif ()
 
 ##-----------------------------------------------------------------------------
-##  QT
+##  DCMTK
 ##-----------------------------------------------------------------------------
-if (MINGW)
-  set (QT4_FOUND FALSE)
-else ()
-  #find_package (Qt4 4.6.2 COMPONENTS QtCore QtGui OPTIONAL)
-  find_package (Qt4 4.6.2 COMPONENTS QtCore QtGui)
+if (DCMTK_FOUND)
+  if (NOT DCMTK_VERSION_STRING VERSION_LESS 3.6.0)
+    set (DCMTK_VERSION_36 1)
+  endif ()
 endif ()
-if (QT4_FOUND)
-  message (STATUS "Looking for Qt4 - found")
-  include (${QT_USE_FILE})
+if (DCMTK_FOUND AND DCMTK_VERSION_36 AND PLM_CONFIG_PREFER_DCMTK)
+  set (PLM_DCM_USE_DCMTK 1)
 else ()
-  message (STATUS "Looking for Qt4 - not found")
+  set (PLM_DCM_USE_DCMTK 0)
 endif ()
 
 ##-----------------------------------------------------------------------------
@@ -624,7 +626,6 @@ endif ()
 ##-----------------------------------------------------------------------------
 # If we have ITK, then we will use GDCM 
 if (ITK_FOUND)
-
   # The default case is that ITK_USE_SYSTEM_GDCM was used, 
   # the gdcm use file was already loaded from UseITK.cmake, and therefore
   # GDCM_VERSION is already known.  If this is not the case, we look 
@@ -657,25 +658,27 @@ else ()
 endif ()
 
 ##-----------------------------------------------------------------------------
-##  DCMTK
-##-----------------------------------------------------------------------------
-if (DCMTK_FOUND)
-  if (NOT DCMTK_VERSION_STRING VERSION_LESS 3.6.0)
-    set (DCMTK_VERSION_36 1)
-  endif ()
-endif ()
-if (DCMTK_FOUND AND DCMTK_VERSION_36 AND PLM_CONFIG_PREFER_DCMTK)
-  set (PLM_DCM_USE_DCMTK 1)
-else ()
-  set (PLM_DCM_USE_DCMTK 0)
-endif ()
-
-##-----------------------------------------------------------------------------
 ##  VTK
 ##-----------------------------------------------------------------------------
 find_package (VTK)
 if (VTK_FOUND)
   include (${VTK_USE_FILE})
+endif ()
+
+##-----------------------------------------------------------------------------
+##  QT
+##-----------------------------------------------------------------------------
+if (MINGW)
+  set (QT4_FOUND FALSE)
+else ()
+  #find_package (Qt4 4.6.2 COMPONENTS QtCore QtGui OPTIONAL)
+  find_package (Qt4 4.6.2 COMPONENTS QtCore QtGui)
+endif ()
+if (QT4_FOUND)
+  message (STATUS "Looking for Qt4 - found")
+  include (${QT_USE_FILE})
+else ()
+  message (STATUS "Looking for Qt4 - not found")
 endif ()
 
 ##-----------------------------------------------------------------------------
