@@ -81,7 +81,6 @@ sc_get_int (lua_State *L, void *v)
 int
 sc_set_int (lua_State *L, void *v)
 {
-    printf ("sc_set_int\n");
     *(int*)v = luaL_checkint (L, 3);
     return 0;
 }
@@ -111,6 +110,20 @@ int
 sc_set_string (lua_State *L, void *v)
 {
     strcpy ((char*)v, luaL_checkstring (L, 3));
+    return 0;
+}
+
+int
+sc_get_ptr (lua_State *L, void *v)
+{
+    lua_pushlightuserdata (L, *(void**)v);
+    return 1;
+}
+
+int
+sc_set_ptr (lua_State *L, void *v)
+{
+    *(void**)v = (size_t*)lua_touserdata (L, 3);
     return 0;
 }
 

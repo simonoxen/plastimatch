@@ -14,10 +14,12 @@ extern "C"
 }
 
 #include "lua_class_register.h"
-#include "lua_class_stage.h"
+//#include "lua_class_stage.h"
+#include "lua_class_xform.h"
 #include "lua_util.h"
 #include "plm_parms.h"
 #include "plm_stages.h"
+#include "registration_data.h"
 
 /* Name of class as exposed to Lua */
 #define THIS_CLASS LUA_CLASS_REGISTER
@@ -64,19 +66,38 @@ register_load (lua_State *L)
     return 1;
 }
 
+/* returns a lua_xform to Lua */
 static int
-register_update (lua_State *L)
+register_go (lua_State *L)
 {
-    // We will have to pull file loads outside of the registration
-    // algorithms before this can go any further.
-    //    They will need to be altered to receive Plm_images
-    //    instead of file names... or something similar.
+    lua_register *lreg = (lua_register*)get_obj_ptr (L, THIS_CLASS, 1);
 
-//    lua_register *lreg = (lua_register*)get_obj_ptr (L, THIS_CLASS, 1);
-//    lreg->regp->moving = lreg->moving;
-//    lreg->regp->fixed  = lreg->fixed;   /* Can't do this ...yet */
+    Registration_data regd;
+    Registration_parms* regp;
 
-    return 0;
+    if (!lreg->moving) {
+        fprintf (stderr, "warning -- register:go() -- moving image not specified\n");
+        return 0;
+    }
+
+    if (!lreg->fixed) {
+        fprintf (stderr, "warning -- register:go() -- fixed image not specified\n");
+        return 0;
+    }
+
+    regp = lreg->regp;
+    regd.moving_image = lreg->moving->pli;
+    regd.fixed_image  = lreg->fixed->pli;
+    /* Masks not yet implemented      - no class */
+    /* Landmarks not yet implemented  - no class */
+
+    lua_xform *lxf = (lua_xform*)lua_new_instance (L,
+                                    LUA_CLASS_XFORM,
+                                    sizeof(lua_xform));
+
+    do_registration_pure (&(lxf->pxf), &regd, regp);
+
+    return 1;
 }
 
 /*******************************************************/
@@ -105,7 +126,7 @@ register_action_gc (lua_State *L)
 static const luaL_reg
 register_methods[] = {
     {"load",   register_load},
-    {"update", register_update},
+    {"go",     register_go},
     {0, 0}
 };
 
@@ -119,15 +140,15 @@ register_meta[] = {
 /* glue to C struct */
 static const lua_sc_glue
 getters[] = {
-    {"moving",   sc_get_string,  offsetof (lua_register, moving)    },
-    {"fixed",    sc_get_string,  offsetof (lua_register, fixed)    },
+    {"moving",   sc_get_ptr,  offsetof (lua_register, moving)   },
+    {"fixed",    sc_get_ptr,  offsetof (lua_register, fixed)    },
     {0, 0}
 };
 
 static const lua_sc_glue
 setters[] = {
-    {"moving",   sc_set_string,  offsetof (lua_register, moving)    },
-    {"fixed",    sc_set_string,  offsetof (lua_register, fixed)    },
+    {"moving",   sc_set_ptr,  offsetof (lua_register, moving)   },
+    {"fixed",    sc_set_ptr,  offsetof (lua_register, fixed)    },
     {0, 0}
 };
 

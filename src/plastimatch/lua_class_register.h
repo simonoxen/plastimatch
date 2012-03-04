@@ -13,6 +13,7 @@
 #include "lualib.h"
 #include "lauxlib.h"
 
+#include "lua_class_image.h"
 #include "lua_class_stage.h"
 
 #define LUA_CLASS_REGISTER "register"
@@ -22,8 +23,8 @@ typedef struct lua_register_struct lua_register;
 struct lua_register_struct {
     char fn[_MAX_PATH];
     Registration_parms *regp;
-    Plm_image *moving;    
-    Plm_image *fixed;    
+    lua_image *moving;    
+    lua_image *fixed;    
 };
 
 

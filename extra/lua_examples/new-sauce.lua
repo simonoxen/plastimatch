@@ -1,6 +1,6 @@
 --  Author: James Shackleford
 -- Created: Feb. 29th, 2012
--- Updated: Mar.  1st, 2012
+-- Updated: Mar.  4th, 2012
 -------------------------
 -- Examples of classes and their functionality as I develop them.
 -- This serves as both documentation and a testbed.
@@ -72,6 +72,43 @@ warp2:save ("warp2.mha")
 -- you cannot add transforms to make composites...yet
 -- currently, this will print a warning to stderr and return (nil)
 new_xform = xf1 + xf2
+
+xf1 = nil
+xf2 = nil
+warp1 = nil
+warp2 = nil
+
+collectgarbage()
+
+
+--------------------------
+-- Act 3 : Registration --
+--------------------------
+
+-- if we want to register two files, we must first load them
+fimg = image.load ("fixed.mha")
+mimg = image.load ("moving.mha")
+
+-- we can setup a registration by loading registration stage
+-- parameters from a standard plastimatch command file
+my_reg = register.load ("commandfile.txt")
+
+-- we must attach the fixed and moving images to the registration
+my_reg.fixed = fimg
+my_reg.moving = mimg
+
+-- perform the registration. the result is a transform, here
+-- we save it into xf
+xf = my_reg:go()
+
+-- of course, we can use this transform to warp images
+my_warp = mimg + xf
+
+-- which we can save
+my_warp:save ("my_warp.mha")
+
+-- you can see how powerful this becomes when combined
+-- with a simple loop
 
 
 print ("----------------")

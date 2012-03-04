@@ -25,6 +25,8 @@ int sc_get_number (lua_State *L, void *v);
 int sc_set_number (lua_State *L, void *v);
 int sc_get_string (lua_State *L, void *v);
 int sc_set_string (lua_State *L, void *v);
+int sc_get_ptr (lua_State *L, void *v);
+int sc_set_ptr (lua_State *L, void *v);
 
 int lua_check_type (lua_State *L, const char* class_name, int index);
 void* lua_new_instance (lua_State *L, const char* class_name, size_t size);
