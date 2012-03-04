@@ -1456,7 +1456,7 @@ plm_add_test (
 if (PLM_USE_SS_IMAGE_VEC)
 plmtest_check_interval ("plm-convert-cxt-check"
   "${PLM_BUILD_TESTING_DIR}/plm-convert-cxt-stats.stdout.txt"
-  "S *1 *NVOX *([-0-9.]*)"
+  "S *0 *NVOX *([-0-9.]*)"
   "1648003"
   "1648003"
   )
@@ -1474,8 +1474,10 @@ set_tests_properties (plm-convert-cxt-check PROPERTIES
   DEPENDS plm-convert-cxt-stats)
 
 ## -------------------------------------------------------------------------
-## plastimatch convert xio-a
-## plastimatch convert xio-b
+## plm-convert-xio
+##  plm-convert-xio-a
+##  plm-convert-xio-b
+##  plm-warp-xio-a
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-convert-xio-a"
@@ -1522,6 +1524,90 @@ set_tests_properties (plm-convert-xio-b-stats PROPERTIES
   DEPENDS plm-convert-xio-b)
 set_tests_properties (plm-convert-xio-b-check PROPERTIES 
   DEPENDS plm-convert-xio-b-stats)
+
+plm_add_test (
+  "plm-warp-xio-a" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-bspline-chest-phantom.txt;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-xio-4.33.02;--output-xio;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-xio;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-ss.nrrd;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-ss.txt;--output-labelmap;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-labelmap.nrrd;--output-img;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-img.nrrd;--output-prefix;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a;--output-cxt;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a.cxt;--output-colormap;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a.ctbl;--default-value;0"
+  )
+plm_add_test (
+  "plm-warp-xio-a-stats-1"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;plm-warp-xio-a-img.nrrd"
+  )
+plmtest_check_interval ("plm-warp-xio-a-check-1"
+  "${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-stats-1.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-661.5"
+  "-661.4"
+  )
+plm_add_test (
+  "plm-warp-xio-a-stats-2"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a/Patient.mha"
+  )
+plmtest_check_interval ("plm-warp-xio-a-check-2"
+  "${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-stats-2.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "0.385"
+  "0.395"
+  )
+plm_add_test (
+  "plm-warp-xio-a-stats-3"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;plm-warp-xio-a-labelmap.nrrd"
+  )
+plmtest_check_interval ("plm-warp-xio-a-check-3"
+  "${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-stats-3.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "0.67"
+  "0.68"
+  )
+plm_add_test (
+  "plm-warp-xio-a-stats-4"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;plm-warp-xio-a-ss.nrrd"
+  )
+if (PLM_USE_SS_IMAGE_VEC)
+  plmtest_check_interval ("plm-warp-xio-a-check-4"
+    "${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-stats-4.stdout.txt"
+    "S *1 *NVOX *([-0-9.]*)"
+    "1971"
+    "1971"
+    )
+else ()
+  plmtest_check_interval ("plm-warp-xio-a-check-4"
+    "${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-stats-4.stdout.txt"
+    "AVE *([-0-9.]*)"
+    "1.05"
+    "1.15"
+    )
+endif ()
+add_test ("plm-warp-xio-a-check-5" ${CMAKE_COMMAND} -E compare_files
+  "${PLM_TESTING_DATA_DIR}/plm-warp-xio-a-ss.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-ss.txt")
+add_test ("plm-warp-xio-a-check-6" ${CMAKE_COMMAND} -E compare_files
+  "${PLM_TESTING_DATA_DIR}/plm-warp-xio-a.ctbl"
+  "${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a.ctbl")
+set_tests_properties (plm-warp-xio-a-stats-1 PROPERTIES DEPENDS plm-warp-xio-a)
+set_tests_properties (plm-warp-xio-a-check-1 
+  PROPERTIES DEPENDS plm-warp-xio-a-stats-1)
+set_tests_properties (plm-warp-xio-a-stats-2 PROPERTIES DEPENDS plm-warp-xio-a)
+set_tests_properties (plm-warp-xio-a-check-2 
+  PROPERTIES DEPENDS plm-warp-xio-a-stats-2)
+set_tests_properties (plm-warp-xio-a-stats-3 PROPERTIES DEPENDS plm-warp-xio-a)
+set_tests_properties (plm-warp-xio-a-check-3 
+  PROPERTIES DEPENDS plm-warp-xio-a-stats-3)
+set_tests_properties (plm-warp-xio-a-stats-4 PROPERTIES DEPENDS plm-warp-xio-a)
+set_tests_properties (plm-warp-xio-a-check-4 
+  PROPERTIES DEPENDS plm-warp-xio-a-stats-4)
+set_tests_properties (plm-warp-xio-a-check-5 PROPERTIES DEPENDS plm-warp-xio-a)
+set_tests_properties (plm-warp-xio-a-check-6 PROPERTIES DEPENDS plm-warp-xio-a)
 
 ## -------------------------------------------------------------------------
 ## plastimatch-convert-prefix-fcsv
@@ -2487,86 +2573,6 @@ plmtest_check_interval ("plm-warp-d-check"
 set_tests_properties (plm-warp-d PROPERTIES DEPENDS "bspline-d;sphere-1")
 set_tests_properties (plm-warp-d-stats PROPERTIES DEPENDS plm-warp-d)
 set_tests_properties (plm-warp-d-check PROPERTIES DEPENDS plm-warp-d-stats)
-
-plm_add_test (
-  "plm-warp-e" 
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-bspline-chest-phantom.txt;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-xio-4.33.02;--output-xio;${PLM_BUILD_TESTING_DIR}/plm-warp-e-xio;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-warp-e-ss.nrrd;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-warp-e-ss.txt;--output-labelmap;${PLM_BUILD_TESTING_DIR}/plm-warp-e-labelmap.nrrd;--output-img;${PLM_BUILD_TESTING_DIR}/plm-warp-e-img.nrrd;--output-prefix;${PLM_BUILD_TESTING_DIR}/plm-warp-e;--output-cxt;${PLM_BUILD_TESTING_DIR}/plm-warp-e.cxt;--output-colormap;${PLM_BUILD_TESTING_DIR}/plm-warp-e.ctbl;--default-value;0"
-  )
-plm_add_test (
-  "plm-warp-e-stats-1"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;plm-warp-e-img.nrrd"
-  )
-plmtest_check_interval ("plm-warp-e-check-1"
-  "${PLM_BUILD_TESTING_DIR}/plm-warp-e-stats-1.stdout.txt"
-  "AVE *([-0-9.]*)"
-  "-661.5"
-  "-661.4"
-  )
-plm_add_test (
-  "plm-warp-e-stats-2"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-warp-e/Patient.mha"
-  )
-plmtest_check_interval ("plm-warp-e-check-2"
-  "${PLM_BUILD_TESTING_DIR}/plm-warp-e-stats-2.stdout.txt"
-  "AVE *([-0-9.]*)"
-  "0.385"
-  "0.395"
-  )
-plm_add_test (
-  "plm-warp-e-stats-3"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;plm-warp-e-labelmap.nrrd"
-  )
-plmtest_check_interval ("plm-warp-e-check-3"
-  "${PLM_BUILD_TESTING_DIR}/plm-warp-e-stats-3.stdout.txt"
-  "AVE *([-0-9.]*)"
-  "0.67"
-  "0.68"
-  )
-plm_add_test (
-  "plm-warp-e-stats-4"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;plm-warp-e-ss.nrrd"
-  )
-if (PLM_USE_SS_IMAGE_VEC)
-  plmtest_check_interval ("plm-warp-e-check-4"
-    "${PLM_BUILD_TESTING_DIR}/plm-warp-e-stats-4.stdout.txt"
-    "S *1 *NVOX *([-0-9.]*)"
-    "1971"
-    "1971"
-    )
-else ()
-  plmtest_check_interval ("plm-warp-e-check-4"
-    "${PLM_BUILD_TESTING_DIR}/plm-warp-e-stats-4.stdout.txt"
-    "AVE *([-0-9.]*)"
-    "1.05"
-    "1.15"
-    )
-endif ()
-add_test ("plm-warp-e-check-5" ${CMAKE_COMMAND} -E compare_files
-  "${PLM_TESTING_DATA_DIR}/plm-warp-e-ss.txt"
-  "${PLM_BUILD_TESTING_DIR}/plm-warp-e-ss.txt")
-add_test ("plm-warp-e-check-6" ${CMAKE_COMMAND} -E compare_files
-  "${PLM_TESTING_DATA_DIR}/plm-warp-e.ctbl"
-  "${PLM_BUILD_TESTING_DIR}/plm-warp-e.ctbl")
-set_tests_properties (plm-warp-e-stats-1 PROPERTIES DEPENDS plm-warp-e)
-set_tests_properties (plm-warp-e-check-1 PROPERTIES DEPENDS plm-warp-e-stats-1)
-set_tests_properties (plm-warp-e-stats-2 PROPERTIES DEPENDS plm-warp-e)
-set_tests_properties (plm-warp-e-check-2 PROPERTIES DEPENDS plm-warp-e-stats-2)
-set_tests_properties (plm-warp-e-stats-3 PROPERTIES DEPENDS plm-warp-e)
-set_tests_properties (plm-warp-e-check-3 PROPERTIES DEPENDS plm-warp-e-stats-3)
-set_tests_properties (plm-warp-e-stats-4 PROPERTIES DEPENDS plm-warp-e)
-set_tests_properties (plm-warp-e-check-4 PROPERTIES DEPENDS plm-warp-e-stats-4)
-set_tests_properties (plm-warp-e-check-5 PROPERTIES DEPENDS plm-warp-e)
-set_tests_properties (plm-warp-e-check-6 PROPERTIES DEPENDS plm-warp-e)
 
 plm_add_test (
   "plm-warp-g" 
