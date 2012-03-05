@@ -157,8 +157,13 @@ if (PLM_CONFIG_ENABLE_LUA)
   set (PLASTIMATCH_LIBS
     ${PLASTIMATCH_LIBS}
     lua
-    ${READLINE_LIBRARY}
     )
+  if (READLINE_FOUND)
+    set (PLASTIMATCH_LIBS
+        ${PLASTIMATCH_LIBS}
+        ${READLINE_LIBRARY}
+        )
+  endif()
 endif()
 
 ##-----------------------------------------------------------------------------
