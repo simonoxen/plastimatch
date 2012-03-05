@@ -16,6 +16,14 @@
 #define TTY_PROMPT "% "
 #define TTY_PROMPT2 "> "
 
+/* 
+ * Supplement to valid status return codes
+ * found in lua.h -- for catching non-lua
+ * commands so we can extend the TTY functionality
+ */
+#define LUA_COMMAND 0
+#define TTY_COMMAND 101
+
 
 #if defined __cplusplus
 extern "C" {

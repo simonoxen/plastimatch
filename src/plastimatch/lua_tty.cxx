@@ -8,11 +8,14 @@
 #include <stdio.h>
 #include <string.h>
 
+extern "C" {
 #include "lua.h"
 #include "lauxlib.h"
 #include "lualib.h"
+}
 
 #include "lua_tty.h"
+#include "lua_tty_commands.h"
 
 
 
@@ -20,7 +23,6 @@ static lua_State *globalL = NULL;
 static const char *progname = TTY_PROGNAME;
 static const char *tty_prompt  = TTY_PROMPT;
 static const char *tty_prompt2 = TTY_PROMPT2;
-
 
 /* SIGNAL HANDLERS */
 static void lstop (lua_State *L, lua_Debug *ar) {
@@ -91,7 +93,6 @@ traceback (lua_State *L)
 }
 
 
-
 static int
 do_call (lua_State *L, int narg, int clear)
 {
@@ -155,8 +156,11 @@ get_prompt (lua_State *L, int firstline)
 static int
 pushline (lua_State *L, int firstline)
 {
+    int i;
     char buffer[TTY_MAXINPUT];
     char *b = buffer;
+    char tb[TTY_MAXINPUT];
+    char *token;
     size_t l;
     const char *prmt = get_prompt (L, firstline);
 
@@ -171,18 +175,33 @@ pushline (lua_State *L, int firstline)
         b[l-1] = '\0';
     }
 
-    /* SHORTCUTS */
-    if (firstline && b[0] == '=') {
-        lua_pushfstring(L, "return %s", b+1);
-    }
-    else if (firstline && !strcmp (b, "exit")) {
-        return 0;
-    }
-    else {
-        lua_pushstring(L, b);
+    if (firstline) {
+        /* check for TTY commands */
+        strcpy (tb, b);
+        token = strtok (tb, " ");
+        for (i=0; i<num_tty_cmds; i++) {
+            if (!strcmp (token, tty_cmds[i])) {
+                lua_pushstring (L, b);
+                return TTY_COMMAND;
+            }
+        }
+        /* 'exit' command is special */
+        if (!strcmp (b, TTY_CMD_EXIT)) {
+            return 0;
+        }
+        /* make = a shortcut for 'return' */
+        else if (b[0] == '=') {
+            lua_pushfstring (L, "return %s", b+1);
+        }
+        /* normal lua command, just push it */
+        else {
+            lua_pushstring (L, b);
+        }
+    } else {
+        lua_pushstring (L, b);
     }
 
-    lua_freeline(L, b);
+    lua_freeline (L, b);
     return 1;
 }
 
@@ -192,8 +211,13 @@ loadline (lua_State *L)
     int status;
     lua_settop (L, 0);
 
-    if (!pushline (L, 1)) {
+    int ret = pushline (L, 1);
+    if (!ret) {
         return -1;  /* no input */
+    }
+    else if (ret == TTY_COMMAND) {
+        lua_saveline (L, 1);
+        return TTY_COMMAND;
     }
 
     /* repeat until gets a complete line */
@@ -205,12 +229,10 @@ loadline (lua_State *L)
                     "=stdin"
                  );
 
-        /* cannot try to add lines? */
         if (!incomplete (L, status)) {
             break;
         }
 
-        /* no more input? */
         if (!pushline (L, 0)) {
             return -1;
         }
@@ -228,10 +250,18 @@ loadline (lua_State *L)
 void
 engine (lua_State *L, int status)
 {
-    if (status == 0) {
+    switch (status) {
+    case LUA_COMMAND:
         status = do_call (L, 0, 0);
+        report (L, status);
+        break;
+    case TTY_COMMAND:
+        do_tty_command (L);
+        break;
+    case LUA_ERRSYNTAX:
+    default:
+        report (L, status);
     }
-    report (L, status);
 
     /* any result to print? */
     if (status == 0 && lua_gettop(L) > 0) {
@@ -250,7 +280,6 @@ engine (lua_State *L, int status)
             );
         }
     }
-
 }
 
 
