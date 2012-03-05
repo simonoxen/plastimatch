@@ -119,6 +119,12 @@ make_directory_recursive (const char *dirname)
     free (tmp);
 }
 
+void
+make_directory_recursive (const Pstring& filename)
+{
+    make_directory_recursive (filename.c_str());
+}
+
 FILE*
 make_tempfile (void)
 {

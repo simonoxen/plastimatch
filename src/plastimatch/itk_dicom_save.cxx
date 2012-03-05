@@ -11,6 +11,7 @@
 #include "itkGDCMSeriesFileNames.h"
 #include "itkNumericSeriesFileNames.h"
 #include "itkImageSeriesWriter.h"
+
 #include "dcm_util.h"
 #include "gdcm1_util.h"
 #include "gdcm2_util.h"
@@ -19,6 +20,7 @@
 #include "itk_image.h"
 #include "logfile.h"
 #include "make_string.h"
+#include "plm_uid_prefix.h"
 #include "print_and_exit.h"
 #include "referenced_dicom_dir.h"
 
@@ -113,7 +115,7 @@ itk_dicom_save (
     itksys::SystemTools::MakeDirectory (dir_name);
 
     ImageIOType::Pointer gdcmIO = ImageIOType::New();
-    gdcmIO->SetUIDPrefix ("1.2.826.0.1.3680043.8.274.1.2"); 
+    gdcmIO->SetUIDPrefix (PLM_UID_PREFIX);
 
     /* There is apparently no way to get the ITK-generated UIDs 
        out of ITK without re-reading the files.  So we tell ITK not 

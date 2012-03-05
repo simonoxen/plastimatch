@@ -14,10 +14,6 @@
 #define ISSLASH(c) ((c) == '/')
 #endif
 
-#if defined __cplusplus
-extern "C" {
-#endif
-
 plmsys_EXPORT
 int extension_is (const char* fname, const char* ext);
 plmsys_EXPORT
@@ -45,10 +41,8 @@ file_util_parent (const char *filename);
 plmsys_EXPORT
 Pstring*
 file_load (const char* filename);
-#endif
-
-#if defined __cplusplus
-}
+plmsys_EXPORT
+void make_directory_recursive (const Pstring& filename);
 #endif
 
 #endif

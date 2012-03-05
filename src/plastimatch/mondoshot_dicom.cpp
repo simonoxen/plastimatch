@@ -12,6 +12,7 @@
 #include "dcmtk/dcmdata/dctag.h"
 #include "dcmtk/dcmdata/dcdeftag.h"
 #include "dicom_uid.h"
+#include "plm_uid_prefix.h"
 
 /* DCMTK changed some defines between 3.5.4 and 3.6.0 */
 #ifndef DCM_PatientName
@@ -36,7 +37,7 @@ mondoshot_dicom_create_file (
     char uid[100];
     DcmFileFormat fileformat;
     DcmDataset *dataset = fileformat.getDataset();
-    const char *uid_root = "1.2.826.0.1.3680043.8.274.1.1.200";
+    const char *uid_root = MONDOSHOT_UID_PREFIX;
 
     OFString date_string, time_string;
     DcmDate::getCurrentDate (date_string);

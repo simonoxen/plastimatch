@@ -39,12 +39,10 @@
    way that conflicts with plm_int.h (which also fixes missing C99 types).  
    The workaround is to separately define the functions in flie_util.h 
    that we need. */
-extern "C" {
-gpuit_EXPORT
+plmsys_EXPORT
 char* file_util_dirname (const char *filename);
-gpuit_EXPORT
+plmsys_EXPORT
 void make_directory_recursive (const char *dirname);
-}
 
 /* This is the tolerance on irregularity of the grid spacing (in mm) */
 #define GFOV_SPACING_TOL (1e-1)

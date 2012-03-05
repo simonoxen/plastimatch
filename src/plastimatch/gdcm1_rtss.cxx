@@ -36,9 +36,9 @@
    way that conflicts with plm_int.h (which also fixes missing C99 types).  
    The workaround is to separately define the functions in flie_util.h 
    that we need. */
-extern "C" gpuit_EXPORT
+plmsys_EXPORT
 char* file_util_dirname (const char *filename);
-extern "C" gpuit_EXPORT 
+plmsys_EXPORT 
 void make_directory_recursive (const char *dirname);
 
 /* This function probes whether or not the file is a dicom rtss format */
@@ -329,7 +329,7 @@ gdcm_rtss_save (
     char *rtss_fn                  /* Input: name of file to write to */
 )
 {
-    int j, k;
+    int k;
     gdcm::File *gf = new gdcm::File ();
     const std::string &current_date = gdcm::Util::GetCurrentDate();
     const std::string &current_time = gdcm::Util::GetCurrentTime();
@@ -479,7 +479,7 @@ gdcm_rtss_save (
 
     /* StructureSetROISequence */
     gdcm::SeqEntry *ssroi_seq = gf->InsertSeqEntry (0x3006, 0x0020);
-    for (int i = 0; i < cxt->num_structures; i++) {
+    for (size_t i = 0; i < cxt->num_structures; i++) {
 	gdcm::SQItem *ssroi_item 
 	    = new gdcm::SQItem (ssroi_seq->GetDepthLevel());
 	ssroi_seq->AddSQItem (ssroi_item, i+1);
@@ -503,7 +503,7 @@ gdcm_rtss_save (
 
     /* ROIContourSequence */
     gdcm::SeqEntry *roic_seq = gf->InsertSeqEntry (0x3006, 0x0039);
-    for (int i = 0; i < cxt->num_structures; i++) {
+    for (size_t i = 0; i < cxt->num_structures; i++) {
 	Rtss_structure *curr_structure = cxt->slist[i];
 	gdcm::SQItem *roic_item 
 	    = new gdcm::SQItem (roic_seq->GetDepthLevel());
@@ -516,14 +516,15 @@ gdcm_rtss_save (
 
 	/* ContourSequence */
 	gdcm::SeqEntry *c_seq = roic_item->InsertSeqEntry (0x3006, 0x0040);
-	for (j = 0; j < curr_structure->num_contours; j++) {
+	for (size_t j = 0; j < curr_structure->num_contours; j++) {
 	    Rtss_polyline *curr_contour = curr_structure->pslist[j];
 	    if (curr_contour->num_vertices <= 0) continue;
 
 	    /* GE -> XiO transfer does not work if contour does not have 
 	       corresponding slice uid */
 	    if (curr_contour->ct_slice_uid.empty()) {
-		printf ("Warning: Omitting contour (%d,%d)\n", i, j);
+		printf ("Warning: Omitting contour (%ld,%ld)\n", 
+                    (long) i, (long) j);
 		continue;
 	    }
 
@@ -576,7 +577,7 @@ gdcm_rtss_save (
 
     /* RTROIObservationsSequence */
     gdcm::SeqEntry *rtroio_seq = gf->InsertSeqEntry (0x3006, 0x0080);
-    for (int i = 0; i < cxt->num_structures; i++) {
+    for (size_t i = 0; i < cxt->num_structures; i++) {
 	Rtss_structure *curr_structure = cxt->slist[i];
 	gdcm::SQItem *rtroio_item 
 	    = new gdcm::SQItem (rtroio_seq->GetDepthLevel());

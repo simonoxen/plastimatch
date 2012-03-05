@@ -10,6 +10,7 @@
 #include "dcmtk_config.h"
 #include "dcmtk/dcmdata/dcuid.h"
 #include "dcmtk/ofstd/ofstream.h"
+#include "dcmtk_uid.h"
 
 #if defined (_WIN32)
 static bool
@@ -54,7 +55,6 @@ gen_random (unsigned char* buf, unsigned long buf_len)
 }
 #endif
 
-
 /*  Unfortunately, the dcmtk uid generator suffers from non-randomness on 
     win32, because process id's are reused.  For example, here is the 
     output from win32 dicom_uid using the default generator:
@@ -67,7 +67,6 @@ gen_random (unsigned char* buf, unsigned long buf_len)
     This routine fixes this problem using the Win32 system cryptographic 
     entropy source (above).
 */
-extern "C" {
 char*
 plm_generate_dicom_uid (char *uid, const char *uid_root)
 {
@@ -100,5 +99,4 @@ plm_generate_dicom_uid (char *uid, const char *uid_root)
 	}
     }
     return uid;
-}
 }

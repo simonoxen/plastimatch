@@ -441,6 +441,7 @@ if (DCMTK_FOUND AND NOT DCMTK_VERSION_STRING VERSION_LESS 3.6.0)
     dcmtk_rtdose.cxx 
     dcmtk_rtss.cxx 
     dcmtk_series_set.cxx dcmtk_series_set.h
+    dcmtk_uid.cxx dcmtk_uid.h 
     dcmtk_util.cxx dcmtk_util.h
     )
 endif ()
@@ -496,8 +497,8 @@ set (DICOM_INFO_SRC
   dicom_info.cxx)
 set (DICOM_UID_SRC
   dicom_uid_main.cxx
-  dicom_uid.cxx
-  dicom_uid.h
+  dcmtk_uid.cxx
+  dcmtk_uid.h
   )
 set (DISTANCE_MAP_SRC
   distance_map.cxx
@@ -530,7 +531,7 @@ set (MHA_TO_RTOG_DOSE_SRC
   mha_to_rtog_dose.cxx
   )
 set (MONDOSHOT_SRC
-  dicom_uid.cxx dicom_uid.h
+  dcmtk_uid.cxx dcmtk_uid.h
   mondoshot_dicom.cpp mondoshot_dicom.h
   mondoshot_main.cpp mondoshot_main.h
   )

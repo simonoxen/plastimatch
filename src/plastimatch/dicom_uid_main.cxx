@@ -7,7 +7,7 @@
 #include "dcmtk/dcmdata/dcuid.h"
 #include "dcmtk/ofstd/ofstream.h"
 
-#include "dicom_uid.h"
+#include "dcmtk_uid.h"
 
 void
 print_usage (void)
