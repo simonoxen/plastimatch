@@ -11,7 +11,7 @@
 #include "dcmtk/dcmdata/dcfilefo.h"
 #include "dcmtk/dcmdata/dctag.h"
 #include "dcmtk/dcmdata/dcdeftag.h"
-#include "dicom_uid.h"
+#include "dcmtk_uid.h"
 #include "plm_uid_prefix.h"
 
 /* DCMTK changed some defines between 3.5.4 and 3.6.0 */
