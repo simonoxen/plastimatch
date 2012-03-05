@@ -7,7 +7,7 @@ SET (CTEST_INITIAL_CACHE "
 CMAKE_GENERATOR:INTERNAL=Visual Studio 9 2008
 
 //Name of the build
-BUILDNAME:STRING=02-wxp32-PisR-Cd-vse9
+BUILDNAME:STRING=w-02-wxp32-PisR-Cd-vse9
 
 //Name of the computer/site where compile is being run
 SITE:STRING=w0109966
@@ -22,6 +22,9 @@ ITK_DIR:PATH=C:/gcs6/build/vs2008/itk-3.20.0
 
 //The directory containing a CMake configuration file for VTK.
 VTK_DIR:PATH=C:/gcs6/build/vs2008/vtk-5.6.1
+
+//Disable reg23 testing (it builds, but doesn't run on this computer)
+REG23_BUILD_TESTING:BOOL=OFF
 
 //Path to the CVS
 CVSCOMMAND:FILEPATH=C:/cygwin/bin/cvs.exe
