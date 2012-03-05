@@ -291,7 +291,6 @@ xio_structures_save (
 )
 {
     FILE *fp;
-    int i, j, k, z;
     char fn[_MAX_PATH];
 
     printf ("X_S_S: output_dir = %s\n", output_dir);
@@ -314,9 +313,9 @@ xio_structures_save (
 	fprintf (fp, "00041027\n");
     }
 
-    fprintf (fp, "%d\n", cxt->num_structures);
+    fprintf (fp, "%lu\n", (unsigned long) cxt->num_structures);
 
-    for (i = 0; i < cxt->num_structures; i++) {
+    for (size_t i = 0; i < cxt->num_structures; i++) {
 	Rtss_structure *curr_structure = cxt->slist[i];
 	int color = 1 + (i % 8);
 	int pen = 1;
@@ -325,8 +324,8 @@ xio_structures_save (
 	/* Name */
 	fprintf (fp, "%s\n", (const char*) curr_structure->name);
 	/* Structure no, density, ??, class [, date] */
-	fprintf (fp, "%d,1.000000,0,%d%s\n", 
-	    i+1, structure_class, 
+	fprintf (fp, "%lu,1.000000,0,%d%s\n", 
+	    (unsigned long) (i+1), structure_class, 
 	    (xio_version == XIO_VERSION_4_2_1) ? "" : ",19691231.190000");
 	/* Grouping */
 	fprintf (fp, "General\n");
@@ -336,7 +335,7 @@ xio_structures_save (
     fclose (fp);
 
     /* Write WC files */
-    for (z = 0; z < cxt->m_dim[2]; z++) {
+    for (size_t z = 0; z < cxt->m_dim[2]; z++) {
 	char fn[_MAX_PATH];
 
 	float z_offset = 0.0f;
@@ -360,16 +359,16 @@ xio_structures_save (
 	fprintf (fp, "0\n0.000,0.000,0.000\n");
 	/* GCS FIX: These seem to be min/max */
 	fprintf (fp, "-158.1,-135.6, 147.7,  81.6\n");
-	for (i = 0; i < cxt->num_structures; i++) {
+	for (size_t i = 0; i < cxt->num_structures; i++) {
 	    Rtss_structure *curr_structure = cxt->slist[i];
-	    for (j = 0; j < curr_structure->num_contours; j++) {
+	    for (size_t j = 0; j < curr_structure->num_contours; j++) {
 		Rtss_polyline *curr_polyline = curr_structure->pslist[j];
 		if (z != curr_polyline->slice_no) {
 		    continue;
 		}
 		fprintf (fp, "%d\n", curr_polyline->num_vertices);
-		fprintf (fp, "%d\n", i+1);
-		for (k = 0; k < curr_polyline->num_vertices; k++) {
+		fprintf (fp, "%lu\n", (unsigned long) (i+1));
+		for (int k = 0; k < curr_polyline->num_vertices; k++) {
 		    fprintf (fp, "%6.1f,%6.1f", 
 			curr_polyline->x[k] * transform->direction_cosines[0]
 			    - transform->x_offset,
@@ -398,8 +397,6 @@ xio_structures_apply_transform (
     Xio_ct_transform *transform
 )
 {
-    int i, j, k;
-
     /* Set offsets */
     rtss->m_offset[0] = (rtss->m_offset[0] * transform->direction_cosines[0])
 	+ transform->x_offset;
@@ -407,11 +404,11 @@ xio_structures_apply_transform (
 	+ transform->y_offset;
 
     /* Transform structures */
-    for (i = 0; i < rtss->num_structures; i++) {
+    for (size_t i = 0; i < rtss->num_structures; i++) {
 	Rtss_structure *curr_structure = rtss->slist[i];
-	for (j = 0; j < curr_structure->num_contours; j++) {
+	for (size_t j = 0; j < curr_structure->num_contours; j++) {
 	    Rtss_polyline *curr_polyline = curr_structure->pslist[j];
-	    for (k = 0; k < curr_polyline->num_vertices; k++) {
+	    for (int k = 0; k < curr_polyline->num_vertices; k++) {
 		curr_polyline->x[k] =
 		    (curr_polyline->x[k] * transform->direction_cosines[0])
 		    + transform->x_offset;
@@ -421,5 +418,4 @@ xio_structures_apply_transform (
 	    }
 	}
     }
-
 }
