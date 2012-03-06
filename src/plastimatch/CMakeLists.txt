@@ -585,6 +585,7 @@ if (PLM_CONFIG_ENABLE_LUA)
     lua_tty.cxx lua_tty.h
     lua_tty_commands.cxx lua_tty_commands.h
     lua_tty_commands_pcmd.cxx lua_tty_commands_pcmd.h
+    lua_tty_commands_util.cxx lua_tty_commands_util.h
     lua_util.cxx lua_util.h
     )
 endif()

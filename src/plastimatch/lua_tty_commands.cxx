@@ -14,76 +14,41 @@ extern "C" {
 }
 
 #include "file_util.h"
+#include "lua_class_image.h"
+#include "lua_class_xform.h"
 #include "lua_tty.h"
 #include "lua_tty_commands.h"
 #include "lua_tty_commands_pcmd.h"
+#include "lua_tty_commands_util.h"
+#include "lua_util.h"
 
 
 static void
-print_command_table (
-    const char* cmds[], /* command array   */
-    unsigned int nc,    /* # of commands   */
-    unsigned int tw,    /* table width     */
-    unsigned int sp     /* minimum spacing */
-)
+do_tty_command_help (lua_State* L, int argc, char** argv)
 {
-    unsigned int i;
-    unsigned int c,w,n;     /* col, word, command # */
-    unsigned int lc;        /* longest command      */
-
-    lc = 0;
-    for (i=0; i<nc; i++) {
-        if (strlen (cmds[i]) > lc) {
-            lc = strlen (cmds[i]);
+    if (argc == 1) {
+        print_command_table (tty_cmds, num_tty_cmds, 60, 3);
+    } else {
+        if (!strcmp (argv[1], TTY_CMD_PCMD)) {
+            print_command_table (pcmds, num_pcmds, 60, 3);
+        }
+        else if (!strcmp (argv[1], TTY_CMD_RUN)) {
+            fprintf (stdout, "execute a script from disk\n");
+            fprintf (stdout, "  Usage: " TTY_CMD_RUN " script_name\n");
+        }
+        else if (!strcmp (argv[1], TTY_CMD_DIR)) {
+            fprintf (stdout, "get listing for current directory\n");
+        }
+        else if (!strcmp (argv[1], TTY_CMD_LS)) {
+            fprintf (stdout, "get listing for current directory\n");
+        }
+        else if (!strcmp (argv[1], TTY_CMD_LIST)) {
+            fprintf (stdout, "display allocated Plastimatch objects\n");
+            fprintf (stdout, "  (images, xforms, structures, etc)\n");
         }
     }
 
-    c=0;w=0;n=0;
-    while (n<nc) {
-        while (c<tw) {
-            while (w<strlen(cmds[n])) {
-                fprintf (stdout, "%c", cmds[n][w++]);
-                c++;
-            }
-            w=0;
-            while (w<(lc-strlen(cmds[n])+sp)) {
-                fprintf (stdout, " ");
-                w++;c++;
-            }
-            n++; w=0;
-            if (n>=nc) break;
-        }
-        printf ("\n"); c=0;
-    }
-
-}
-
-static void
-build_args (int* argc, char*** argv, char* cmd)
-{
-    int i;
-    char tmp[TTY_MAXINPUT];
-    char* token;
-
-    /* get argc */
-    strcpy (tmp, cmd);
-    token = strtok (tmp, " ");
-    *argc=0;
-    while (token) {
-        token = strtok (NULL, " ");
-        (*argc)++;
-    }
-    *argv = (char**)malloc (*argc * sizeof(char*));
-
-    /* populate argv */
-    token = strtok (cmd, " ");
-    (*argv)[0] = (char*)malloc (strlen(token)*sizeof(char));
-    strcpy ((*argv)[0], token);
-    for (i=1; i<*argc; i++) {
-        token = strtok (NULL, " ");
-        (*argv)[i] = (char*)malloc (strlen(token)*sizeof(char));
-        strcpy ((*argv)[i], token);
-    }
+    fprintf (stdout, "\n");
 }
 
 static void
@@ -99,29 +64,15 @@ do_tty_command_run (lua_State* L, int argc, char** argv)
     }
 }
 
-
 static void
-do_tty_command_help (lua_State* L, int argc, char** argv)
+do_tty_command_list (lua_State* L, int argc, char** argv)
 {
-    if (argc == 1) {
-        print_command_table (tty_cmds, num_tty_cmds, 75, 3);
-    } else {
-        if (!strcmp (argv[1], TTY_CMD_PCMD)) {
-            print_command_table (pcmds, num_pcmds, 75, 3);
-        }
-        else if (!strcmp (argv[1], TTY_CMD_RUN)) {
-            fprintf (stdout, "execute a script from disk\n");
-            fprintf (stdout, "  Usage: " TTY_CMD_RUN " script_name\n");
-        }
-        else if (!strcmp (argv[1], TTY_CMD_DIR)) {
-            fprintf (stdout, "get listing for current directory\n");
-        }
-        else if (!strcmp (argv[1], TTY_CMD_LS)) {
-            fprintf (stdout, "get listing for current directory\n");
-        }
-    }
-
-    fprintf (stdout, "\n");
+    fprintf (stdout, "[IMAGES] - ");
+    list_vars_of_class (L, LUA_CLASS_IMAGE);
+    printf ("\n");
+    fprintf (stdout, "[TRANSFORMS] - ");
+    list_vars_of_class (L, LUA_CLASS_XFORM);
+    printf ("\n");
 }
 
 void
@@ -142,6 +93,9 @@ do_tty_command (lua_State *L)
     }
     else if (!strcmp (argv[0], TTY_CMD_RUN)) {
         do_tty_command_run (L, argc, argv);
+    }
+    else if (!strcmp (argv[0], TTY_CMD_LIST)) {
+        do_tty_command_list (L, argc, argv);
     }
     else if (!strcmp (argv[0], TTY_CMD_DIR) ||
              !strcmp (argv[0], TTY_CMD_LS)) {

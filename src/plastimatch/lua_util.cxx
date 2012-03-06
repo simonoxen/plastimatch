@@ -27,7 +27,9 @@ lua_check_type (lua_State *L, const char* class_name, int index)
                 lua_pop(L, 2);
                 return 1;
             }
+            lua_pop (L, 1);
         }
+        lua_pop (L, 1);
     }
     return 0;
 }
