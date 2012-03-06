@@ -86,7 +86,7 @@ build_args (int* argc, char*** argv, char* cmd)
 }
 
 void
-list_vars_of_class (lua_State* L, char* class_name)
+list_vars_of_class (lua_State* L, const char* class_name)
 {
     int argc;
     char** argv;

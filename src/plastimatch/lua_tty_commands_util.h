@@ -19,7 +19,7 @@ print_command_table (
 );
 
 void build_args (int* argc, char*** argv, char* cmd);
-void list_vars_of_class (lua_State* L, char* class_name);
+void list_vars_of_class (lua_State* L, const char* class_name);
 
 #if defined __cplusplus
 }

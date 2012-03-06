@@ -16,7 +16,6 @@
 #include "lua_class_image.h"
 #include "lua_class_stage.h"
 
-#define LUA_CLASS_REGISTER "Register"
 #define _MAX_STAGES 20
 
 typedef struct lua_register_struct lua_register;

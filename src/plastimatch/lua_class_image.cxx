@@ -15,6 +15,7 @@ extern "C"
 #include "itkAddImageFilter.h"
 #include "itkMultiplyByConstantImageFilter.h"
 
+#include "lua_classes.h"
 #include "lua_class_image.h"
 #include "lua_util.h"
 #include "plm_image.h"

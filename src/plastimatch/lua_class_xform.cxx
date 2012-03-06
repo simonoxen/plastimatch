@@ -12,7 +12,7 @@ extern "C"
 #include "lualib.h"
 #include "lauxlib.h"
 }
-#include "lua_class_image.h"
+#include "lua_classes.h"
 #include "lua_class_xform.h"
 #include "lua_util.h"
 #include "pcmd_script.h"

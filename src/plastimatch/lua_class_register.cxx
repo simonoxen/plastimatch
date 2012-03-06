@@ -13,9 +13,8 @@ extern "C"
 #include "lauxlib.h"
 }
 
+#include "lua_classes.h"
 #include "lua_class_register.h"
-//#include "lua_class_stage.h"
-#include "lua_class_xform.h"
 #include "lua_util.h"
 #include "plm_parms.h"
 #include "plm_stages.h"

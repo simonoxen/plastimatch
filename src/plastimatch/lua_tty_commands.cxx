@@ -14,8 +14,7 @@ extern "C" {
 }
 
 #include "file_util.h"
-#include "lua_class_image.h"
-#include "lua_class_xform.h"
+#include "lua_classes.h"
 #include "lua_tty.h"
 #include "lua_tty_commands.h"
 #include "lua_tty_commands_pcmd.h"
@@ -32,19 +31,22 @@ do_tty_command_help (lua_State* L, int argc, char** argv)
         if (!strcmp (argv[1], TTY_CMD_PCMD)) {
             print_command_table (pcmds, num_pcmds, 60, 3);
         }
+        else if (!strcmp (argv[1], TTY_CMD_CD)) {
+            fprintf (stdout, "change current working directory\n");
+        }
         else if (!strcmp (argv[1], TTY_CMD_RUN)) {
             fprintf (stdout, "execute a script from disk\n");
             fprintf (stdout, "  Usage: " TTY_CMD_RUN " script_name\n");
         }
-        else if (!strcmp (argv[1], TTY_CMD_DIR)) {
-            fprintf (stdout, "get listing for current directory\n");
-        }
-        else if (!strcmp (argv[1], TTY_CMD_LS)) {
+        else if ( (!strcmp (argv[1], TTY_CMD_DIR)) ||
+                  (!strcmp (argv[1], TTY_CMD_LS)) ) {
             fprintf (stdout, "get listing for current directory\n");
         }
         else if (!strcmp (argv[1], TTY_CMD_LIST)) {
-            fprintf (stdout, "display allocated Plastimatch objects\n");
-            fprintf (stdout, "  (images, xforms, structures, etc)\n");
+            fprintf (stdout, "display allocated Plastimatch objects.\n");
+            fprintf (stdout, "  Usage: " TTY_CMD_LIST " [type]\n\n");
+            fprintf (stdout, "valid types:\n");
+            print_command_table (lua_classes, num_lua_classes, 60, 3);
         }
     }
 
@@ -67,12 +69,24 @@ do_tty_command_run (lua_State* L, int argc, char** argv)
 static void
 do_tty_command_list (lua_State* L, int argc, char** argv)
 {
-    fprintf (stdout, "[IMAGES] - ");
-    list_vars_of_class (L, LUA_CLASS_IMAGE);
-    printf ("\n");
-    fprintf (stdout, "[TRANSFORMS] - ");
-    list_vars_of_class (L, LUA_CLASS_XFORM);
-    printf ("\n");
+    if (argc < 2) {
+        /* no arguments -- list everything */
+        for (int i=0; i<num_lua_classes; i++) {
+            fprintf (stdout, "'%s' - ", lua_classes[i]);
+            list_vars_of_class (L, lua_classes[i]);
+            printf ("\n");
+        }
+    } else {
+        char* ct = argv[1]; /* class type */
+        for (int i=0; i<num_lua_classes; i++) {
+            if (!strcmp (ct, lua_classes[i])) {
+                fprintf (stdout, "'%s' - ", lua_classes[i]);
+                list_vars_of_class (L, lua_classes[i]);
+                printf ("\n");
+            }
+        }
+    }
+
 }
 
 void
