@@ -20,6 +20,7 @@ extern "C"
 #include "plm_image_header.h"
 #include "plm_warp.h"
 #include "xform.h"
+#include "xform_convert.h"
 
 /* Name of class as exposed to Lua */
 #define THIS_CLASS LUA_CLASS_XFORM
@@ -91,7 +92,7 @@ xform_save (lua_State *L)
 }
 
 static int
-xform_save_vf (lua_State *L)
+xform_export_vf (lua_State *L)
 {
     lua_xform *lxf = (lua_xform*)get_obj_ptr (L, THIS_CLASS, 1);
 
@@ -102,8 +103,23 @@ xform_save_vf (lua_State *L)
         return 0;
     }
 
-    // TODO
-    fprintf (stderr, "warning -- xform:save_vf() -- developer too tired to implement feature\n");
+    Xform_convert xfc;
+
+	xfc.m_xf_out_type = XFORM_ITK_VECTOR_FIELD;
+    xfc.m_xf_out = new Xform;
+    xfc.m_xf_in = lxf->pxf;
+    (xfc.m_xf_in)->get_volume_header (&(xfc.m_volume_header));
+    xform_convert (&xfc);
+    xform_save (xfc.m_xf_out, fn);
+
+    /* JAS 2012.03.06 -- m_xf_out is automatically deleted in the Xform_convert
+     * destructor.  I feel that if that is the case, then m_xf_out should
+     * probably be handled by the constructor as well. I just lost an hour
+     * debugging a backtrace due to this asymmetric design.  Furthermore, I
+     * have to do strange looking things like this to prevent stuff I want to
+     * keep from magically disappearing... ::ugh:: */
+
+    xfc.m_xf_in = NULL;
 
     return 0;
 }
@@ -195,6 +211,7 @@ static const luaL_reg
 xform_methods[] = {
   {"load",          xform_load},
   {"save",          xform_save},
+  {"export_vf",     xform_export_vf},
   {0, 0}
 };
 
