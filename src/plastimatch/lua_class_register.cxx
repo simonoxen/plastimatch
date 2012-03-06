@@ -110,6 +110,8 @@ register_go (lua_State *L)
 static int
 register_action_gc (lua_State *L)
 {
+    lua_register *lreg = (lua_register*)get_obj_ptr (L, THIS_CLASS, 1);
+    delete lreg->regp;
     return 0;
 }
 /*+++++++++++++++++++++++++++++++++++++++++++++++++++++*/
