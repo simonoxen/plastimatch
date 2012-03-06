@@ -14,6 +14,7 @@
 #include "HcpFuncDefs.h"
 #include "iostatus.h"
 
+#include "advantech.h"
 #include "dips_panel.h"
 #include "varian_4030e.h"
 
@@ -33,24 +34,12 @@ char *default_path = "C:\\IMAGERs\\A422-07"; // Path to IMAGER tables
 #define HCP_SIGNAL_KEY_PRESSED    (-1)
 
 //----------------------------------------------------------------------
-//  DisplayPrompt
-//----------------------------------------------------------------------
-void DisplayPrompt()
-{
-    printf("\n------------------------------\n");
-    printf("Select operation:\n");
-    printf("1 - Acquire radiographic image\n");
-    printf("2 - Acquire dark image using SwHandshaking calls\n");
-    printf("3 - Perform gain calibration\n");
-    printf("0 - Exit\n");
-}
-
-//----------------------------------------------------------------------
 //  main
 //----------------------------------------------------------------------
 int 
 main(int argc, char* argv[])
 {
+    Advantech advantech;
     char *path = default_path;
     int choice = 0;
     int result;
@@ -86,59 +75,37 @@ main(int argc, char* argv[])
     // The following call is for test purposes only
     result = DisableMissingCorrections(result);
 
-    printf("Calling vip_check_link\n");
-    result = CheckRecLink();
-    printf("vip_check_link returns %d\n", result);
-
-    if (result == HCP_NO_ERR)
-    {
-	vp.print_sys_info ();
-
-	result = vip_select_mode (vp.current_mode);
-
-	if (result == HCP_NO_ERR)
-	{
-	    DisplayPrompt();
-	    for (bool running = true; running;)
-	    {
-		if (_kbhit())
-		{
-		    int keyCode = _getch();
-		    printf("%c\n", keyCode);
-		    switch (keyCode)
-		    {
-		    case '1':
-			//vp.perform_rad_acquisition();
-			vp.perform_rad_acquisition_dips (&dp);
-			break;
-		    case '2':
-			vp.perform_sw_rad_acquisition ();
-			break;
-		    case '3':
-			vp.perform_gain_calibration ();
-			break;
-		    case '0':
-			running = false;
-			break;
-		    }
-		    if (running)
-			DisplayPrompt();
-		}
-	    }
-	}
-	else {
-	    printf ("vip_select_mode(%d) returns error %d\n", 
-		vp.current_mode, result);
-	}
-
-	vip_close_link();
-    }
-    else
+    result = vp.check_link ();
+    if (result != HCP_NO_ERR) {
 	printf("vip_open_receptor_link returns error %d\n", result);
+        vip_close_link();
+        return -1;
+    }
 
-    //printf("\n**Hit any key to exit");
-    //_getch();
-    //while(!_kbhit()) Sleep (100);
+    vp.print_sys_info ();
+
+    result = vip_select_mode (vp.current_mode);
+
+    if (result != HCP_NO_ERR) {
+        printf ("vip_select_mode(%d) returns error %d\n", 
+            vp.current_mode, result);
+        vip_close_link();
+        return -1;
+    }
+
+    while (true) {
+#if defined (commentout)
+        /* Wait for generator expose request */
+        while (!advantech.ready_for_expose ()) {
+            Sleep (10);
+        }
+#endif
+        /* Get frame from panel */
+        printf ("Waiting for image.\n");
+        vp.rad_acquisition (&dp);
+    }
+
+    vip_close_link();
 
     return 0;
 }

@@ -111,7 +111,6 @@ if (ADVANTECH_FOUND)
   include_directories (AFTER ${ADVANTECH_INCLUDE_DIR})
 endif ()
 
-## INCLUDE_DIRECTORIES(AFTER "C:/Program Files/NVIDIA Corporation/Cg/include")
 include_directories (AFTER "${CMAKE_SOURCE_DIR}/src/fatm/include")
 
 ##-----------------------------------------------------------------------------
@@ -127,7 +126,6 @@ if (BITFLOW_FOUND)
   link_directories (${BITFLOW_ROOT_DIR}/lib)
 endif ()
 
-## LINK_DIRECTORIES("C:/Program Files/NVIDIA Corporation/Cg/lib")
 link_directories ("${CMAKE_BINARY_DIR}/src/fatm")
 
 ##-----------------------------------------------------------------------------

@@ -37,17 +37,27 @@ Varian_4030e::~Varian_4030e (void)
 {
 }
 
-int  CheckRecLink()
+const char*
+Varian_4030e::error_string (int error_code)
+{
+    if (error_code <= 128) {
+        return HcpErrStrList[error_code];
+    } else {
+        return "";
+    }
+}
+
+int
+Varian_4030e::check_link()
 {
     SCheckLink clk;
     memset (&clk, 0, sizeof(SCheckLink));
     clk.StructSize = sizeof(SCheckLink);
     int result = vip_check_link (&clk);
-    while (result != HCP_NO_ERR)
-    {
-	printf ("Retry (%d)\n", result);
-	Sleep(1000);
-	result = vip_check_link (&clk);
+    while (result != HCP_NO_ERR) {
+        printf ("Retry (%d)\n", result);
+        Sleep(1000);
+        result = vip_check_link (&clk);
     }
     return result;
 }
@@ -71,21 +81,21 @@ int DisableMissingCorrections(int result)
 
     // If caller has no error, try to fetch the correction error
     if (result == HCP_NO_ERR)
-	result = vip_get_correction_settings(&corr);
+        result = vip_get_correction_settings(&corr);
 
     switch (result)
     {
     case HCP_OFST_ERR:
-	printf("Requested corrections not available: offset file missing\n");
-	break;
+        printf("Requested corrections not available: offset file missing\n");
+        break;
     case HCP_GAIN_ERR:
-	printf("Requested corrections not available: gain file missing\n");
-	break;
+        printf("Requested corrections not available: gain file missing\n");
+        break;
     case HCP_DFCT_ERR:
-	printf("Requested corrections not available: defect file missing\n");
-	break;
+        printf("Requested corrections not available: defect file missing\n");
+        break;
     default:
-	return result;
+        return result;
     }
 
     memset(&corr, 0, sizeof(SCorrections));
@@ -95,18 +105,20 @@ int DisableMissingCorrections(int result)
     // here we will just turn corrections off but IN REAL APPLICATION
     // WE MUST BE SURE CORRECTIONS ARE ON AND THE RECEPTOR IS CALIBRATED
     result = vip_set_correction_settings(&corr);
-    if(result == VIP_NO_ERR) printf("\n\nCORRECTIONS ARE OFF!!");
+    if (result == VIP_NO_ERR) {
+        printf("Corrections are off.\n");
+    }
 
     return result;
 }
 
 //----------------------------------------------------------------------
 //
-//  GetModeInfo
+//  PrintModeInfo
 //
 //----------------------------------------------------------------------
 static 
-int GetModeInfo (SModeInfo &modeInfo, int current_mode)
+int PrintModeInfo (SModeInfo &modeInfo, int current_mode)
 {
     int result = HCP_NO_ERR;
 
@@ -118,17 +130,17 @@ int GetModeInfo (SModeInfo &modeInfo, int current_mode)
 
     if (result == HCP_NO_ERR)
     {
-	printf("  >> ModeDescription=\"%s\"\n", modeInfo.ModeDescription);
-	printf("  >> AcqType=             %5d\n", modeInfo.AcqType);
-	printf("  >> FrameRate=          %6.3f, AnalogGain=         %6.3f\n",
-	    modeInfo.FrameRate, modeInfo.AnalogGain);
-	printf("  >> LinesPerFrame=       %5d, ColsPerFrame=        %5d\n",
-	    modeInfo.LinesPerFrame, modeInfo.ColsPerFrame);
-	printf("  >> LinesPerPixel=       %5d, ColsPerPixel=        %5d\n",
-	    modeInfo.LinesPerPixel, modeInfo.ColsPerPixel);
+        printf("  >> ModeDescription=\"%s\"\n", modeInfo.ModeDescription);
+        printf("  >> AcqType=             %5d\n", modeInfo.AcqType);
+        printf("  >> FrameRate=          %6.3f, AnalogGain=         %6.3f\n",
+            modeInfo.FrameRate, modeInfo.AnalogGain);
+        printf("  >> LinesPerFrame=       %5d, ColsPerFrame=        %5d\n",
+            modeInfo.LinesPerFrame, modeInfo.ColsPerFrame);
+        printf("  >> LinesPerPixel=       %5d, ColsPerPixel=        %5d\n",
+            modeInfo.LinesPerPixel, modeInfo.ColsPerPixel);
+    } else {
+        printf("**** vip_get_mode_info returns error %d\n", result);
     }
-    else
-	printf("**** vip_get_mode_info returns error %d\n", result);
     return result;
 }
 
@@ -144,62 +156,51 @@ Varian_4030e::print_sys_info (void)
     sysInfo.StructSize = sizeof(SSysInfo);
     result = vip_get_sys_info(&sysInfo);
     if (result == HCP_NO_ERR) {
-	printf("  >> SysDescription=\"%s\"\n", sysInfo.SysDescription);
-	printf("  >> NumModes=         %5d,   DfltModeNum=   %5d\n",
-	    sysInfo.NumModes, sysInfo.DfltModeNum);
-	printf("  >> MxLinesPerFrame=  %5d,   MxColsPerFrame=%5d\n",
-	    sysInfo.MxLinesPerFrame, sysInfo.MxColsPerFrame);
-	printf("  >> MxPixelValue=     %5d,   HasVideo=      %5d\n",
-	    sysInfo.MxPixelValue, sysInfo.HasVideo);
-	printf("  >> StartUpConfig=    %5d,   NumAsics=      %5d\n",
-	    sysInfo.StartUpConfig, sysInfo.NumAsics);
-	printf("  >> ReceptorType=     %5d\n", sysInfo.ReceptorType);
+        printf("  >> SysDescription=\"%s\"\n", sysInfo.SysDescription);
+        printf("  >> NumModes=         %5d,   DfltModeNum=   %5d\n",
+            sysInfo.NumModes, sysInfo.DfltModeNum);
+        printf("  >> MxLinesPerFrame=  %5d,   MxColsPerFrame=%5d\n",
+            sysInfo.MxLinesPerFrame, sysInfo.MxColsPerFrame);
+        printf("  >> MxPixelValue=     %5d,   HasVideo=      %5d\n",
+            sysInfo.MxPixelValue, sysInfo.HasVideo);
+        printf("  >> StartUpConfig=    %5d,   NumAsics=      %5d\n",
+            sysInfo.StartUpConfig, sysInfo.NumAsics);
+        printf("  >> ReceptorType=     %5d\n", sysInfo.ReceptorType);
     } else {
-	printf("**** vip_get_sys_info returns error %d\n", result);
+        printf("**** vip_get_sys_info returns error %d\n", result);
     }
 }
 
 
 //----------------------------------------------------------------------
-//
 //  QueryProgress
-//
 //----------------------------------------------------------------------
-
-int QueryProgress(UQueryProgInfo &crntStatus, bool showAll = false)
+int 
+QueryProgress(UQueryProgInfo &crntStatus, bool showAll = false)
 {
     UQueryProgInfo prevStatus = crntStatus;
     memset(&crntStatus, 0, sizeof(SQueryProgInfo));
     crntStatus.qpi.StructSize = sizeof(SQueryProgInfo);
-    int result = vip_query_prog_info(HCP_U_QPI, &crntStatus);
 
-    if (result == HCP_NO_ERR)
-    {
-	if (showAll
-	    || (prevStatus.qpi.NumFrames != crntStatus.qpi.NumFrames)
-	    || (prevStatus.qpi.Complete != crntStatus.qpi.Complete)
-	    || (prevStatus.qpi.NumPulses != crntStatus.qpi.NumPulses)
-	    || (prevStatus.qpi.ReadyForPulse != crntStatus.qpi.ReadyForPulse))
-	{
-	    printf("vip_query_prog_info: frames=%d complete=%d pulses=%d ready=%d\n",
-		crntStatus.qpi.NumFrames,
-		crntStatus.qpi.Complete,
-		crntStatus.qpi.NumPulses,
-		crntStatus.qpi.ReadyForPulse);
-	}
-	if (_kbhit())
-	{
-	    int ch = _getch();
-	    if (ch == ESC_KEY)
-	    {
-		printf("<esc> key - cancelling operation\n");
-		return HCP_SIGNAL_KEY_PRESSED;
-	    }
-	}
+    int result = vip_query_prog_info (HCP_U_QPI, &crntStatus);
+    if (result != HCP_NO_ERR) {
+        printf ("**** vip_query_prog_info returns error %d\n", result);
+        return result;
     }
-    else
-	printf("**** vip_query_prog_info returns error %d\n", result);
 
+    if (showAll
+        || (prevStatus.qpi.NumFrames != crntStatus.qpi.NumFrames)
+        || (prevStatus.qpi.Complete != crntStatus.qpi.Complete)
+        || (prevStatus.qpi.NumPulses != crntStatus.qpi.NumPulses)
+        || (prevStatus.qpi.ReadyForPulse != crntStatus.qpi.ReadyForPulse))
+    {
+        printf("vip_query_prog_info: "
+            "frames=%d complete=%d pulses=%d ready=%d\n",
+            crntStatus.qpi.NumFrames,
+            crntStatus.qpi.Complete,
+            crntStatus.qpi.NumPulses,
+            crntStatus.qpi.ReadyForPulse);
+    }
     return result;
 }
 
@@ -218,18 +219,18 @@ int QueryWaitOnComplete(UQueryProgInfo &crntStatus, int timeoutMsec=0)
     printf("Waiting for Complete == TRUE...\n");
     while (result == HCP_NO_ERR)
     {
-	result = QueryProgress(crntStatus);
-	if(crntStatus.qpi.Complete == TRUE) break;
-	if (timeoutMsec > 0)
-	{
-	    totalMsec += 100;
-	    if (totalMsec >= timeoutMsec)
-	    {
-		printf("*** TIMEOUT ***\n");
-		return HCP_SIGNAL_TIMEOUT;
-	    }
-	}
-	Sleep(100);
+        result = QueryProgress(crntStatus);
+        if(crntStatus.qpi.Complete == TRUE) break;
+        if (timeoutMsec > 0)
+        {
+            totalMsec += 100;
+            if (totalMsec >= timeoutMsec)
+            {
+                printf("*** TIMEOUT ***\n");
+                return HCP_SIGNAL_TIMEOUT;
+            }
+        }
+        Sleep(100);
     }
     return result;
 }
@@ -250,19 +251,19 @@ int QueryWaitOnNumFrames (
     printf("Waiting for Complete == TRUE...\n");
     while (result == HCP_NO_ERR)
     {
-	result = QueryProgress(crntStatus);
-	if(crntStatus.qpi.NumFrames >= numRequested)
-	    break;
-	if (timeoutMsec > 0)
-	{
-	    totalMsec += 100;
-	    if (totalMsec >= timeoutMsec)
-	    {
-		printf("*** TIMEOUT ***\n");
-		return HCP_SIGNAL_TIMEOUT;
-	    }
-	}
-	Sleep(100);
+        result = QueryProgress(crntStatus);
+        if(crntStatus.qpi.NumFrames >= numRequested)
+            break;
+        if (timeoutMsec > 0)
+        {
+            totalMsec += 100;
+            if (totalMsec >= timeoutMsec)
+            {
+                printf("*** TIMEOUT ***\n");
+                return HCP_SIGNAL_TIMEOUT;
+            }
+        }
+        Sleep(100);
     }
     return result;
 }
@@ -282,53 +283,58 @@ int QueryWaitOnNumPulsesChange(UQueryProgInfo &crntStatus, int timeoutMsec=0)
     printf("Waiting for Complete == TRUE...\n");
     while (result == HCP_NO_ERR)
     {
-	result = QueryProgress(crntStatus);
-	if(crntStatus.qpi.NumPulses != numPulses)
-	    break;
-	if (timeoutMsec > 0)
-	{
-	    totalMsec += 100;
-	    if (totalMsec >= timeoutMsec)
-	    {
-		printf("*** TIMEOUT ***\n");
-		return HCP_SIGNAL_TIMEOUT;
-	    }
-	}
-	Sleep(100);
+        result = QueryProgress(crntStatus);
+        if(crntStatus.qpi.NumPulses != numPulses)
+            break;
+        if (timeoutMsec > 0)
+        {
+            totalMsec += 100;
+            if (totalMsec >= timeoutMsec)
+            {
+                printf("*** TIMEOUT ***\n");
+                return HCP_SIGNAL_TIMEOUT;
+            }
+        }
+        Sleep(100);
     }
     return result;
 }
 
 //----------------------------------------------------------------------
-//
 //  QueryWaitOnReadyForPulse
-//
+//  - busy / wait loop until panel is ready for pulse
 //----------------------------------------------------------------------
-
-int QueryWaitOnReadyForPulse(UQueryProgInfo &crntStatus, int timeoutMsec=0, int expectedState=TRUE)
+int 
+QueryWaitOnReadyForPulse (
+    UQueryProgInfo &crntStatus, 
+    int timeoutMsec=0, 
+    int expectedState=TRUE
+)
 {
     int result = HCP_NO_ERR;
     int totalMsec = 0;
 
     crntStatus.qpi.ReadyForPulse = FALSE;
-    if (expectedState)
-	printf("Waiting for ReadyForPulse == TRUE...\n");
-    else
-	printf("Waiting for ReadyForPulse == FALSE...\n");
-    while (result == HCP_NO_ERR)
-    {
-	result = QueryProgress(crntStatus);
-	if(crntStatus.qpi.ReadyForPulse == expectedState) break;
-	if (timeoutMsec > 0)
-	{
-	    totalMsec += 100;
-	    if (totalMsec >= timeoutMsec)
-	    {
-		printf("*** TIMEOUT ***\n");
-		return HCP_SIGNAL_TIMEOUT;
-	    }
-	}
-	Sleep(100);
+    if (expectedState) {
+        printf("Waiting for ReadyForPulse == TRUE...\n");
+    } else {
+        printf("Waiting for ReadyForPulse == FALSE...\n");
+    }
+
+    while (result == HCP_NO_ERR) {
+        // call vip_query_prog_info
+        result = QueryProgress (crntStatus, TRUE);
+        if (crntStatus.qpi.ReadyForPulse == expectedState) {
+            break;
+        }
+        if (timeoutMsec > 0) {
+            totalMsec += 100;
+            if (totalMsec >= timeoutMsec) {
+                printf("*** TIMEOUT ***\n");
+                return HCP_SIGNAL_TIMEOUT;
+            }
+        }
+        Sleep(100);
     }
     return result;
 }
@@ -348,20 +354,20 @@ void ShowDllVersions()
     int result = vip_get_dll_version(version, dllName, 512);
     if (result == HCP_NO_ERR)
     {
-	char *v = version;
-	char *n = dllName;
-	int vLen = strlen(v);
-	int nLen = strlen(n);
-	printf("--------------------------------------------------------\n");
-	while ((vLen > 0) && (nLen > 0))
-	{
-	    printf("%-24s %s\n", n, v);
-	    v += (vLen + 1);
-	    n += (nLen + 1);
-	    vLen = strlen(v);
-	    nLen = strlen(n);
-	}
-	printf("--------------------------------------------------------\n");
+        char *v = version;
+        char *n = dllName;
+        int vLen = strlen(v);
+        int nLen = strlen(n);
+        printf("--------------------------------------------------------\n");
+        while ((vLen > 0) && (nLen > 0))
+        {
+            printf("%-24s %s\n", n, v);
+            v += (vLen + 1);
+            n += (nLen + 1);
+            vLen = strlen(v);
+            nLen = strlen(n);
+        }
+        printf("--------------------------------------------------------\n");
     }
 }
 
@@ -386,17 +392,17 @@ void ShowDiagData()
     int result = vip_query_prog_info(HCP_U_QPIDIAGDATA, &uqpi);
     if (result == HCP_NO_ERR)
     {
-	printf("  Receptor PanelType=%d, FwVersion=0x%.3X BoardId=%.4X %.4X %.4X\n",
-	    uqpi.qpidiag.PanelType,
-	    uqpi.qpidiag.FwVersion,
-	    uqpi.qpidiag.BoardSNbr[2],
-	    uqpi.qpidiag.BoardSNbr[1],
-	    uqpi.qpidiag.BoardSNbr[0]);
-	printf("  RcptFrameId=%d ExposureStatus=0x%.4X\n",
-	    uqpi.qpidiag.RcptFrameId, uqpi.qpidiag.Exposed);
+        printf("  Receptor PanelType=%d, FwVersion=0x%.3X BoardId=%.4X %.4X %.4X\n",
+            uqpi.qpidiag.PanelType,
+            uqpi.qpidiag.FwVersion,
+            uqpi.qpidiag.BoardSNbr[2],
+            uqpi.qpidiag.BoardSNbr[1],
+            uqpi.qpidiag.BoardSNbr[0]);
+        printf("  RcptFrameId=%d ExposureStatus=0x%.4X\n",
+            uqpi.qpidiag.RcptFrameId, uqpi.qpidiag.Exposed);
     }
     else
-	printf("Diag data returns %d\n", result);
+        printf("Diag data returns %d\n", result);
 }
 
 //----------------------------------------------------------------------
@@ -414,7 +420,7 @@ void ShowFrameData(int crntReq=0)
     UQueryProgInfo  uqpi;
     int  uType = HCP_U_QPIFRAME;
     if (crntReq)
-	uType |= HCP_U_QPI_CRNT_DIAG_DATA;
+        uType |= HCP_U_QPI_CRNT_DIAG_DATA;
 
     memset(&uqpi.qpitemps, 0, sizeof(SQueryProgInfoFrame));
     uqpi.qpitemps.StructSize = sizeof(SQueryProgInfoFrame);
@@ -422,8 +428,8 @@ void ShowFrameData(int crntReq=0)
     int result = vip_query_prog_info(uType, &uqpi);
     if (result == HCP_NO_ERR)
     {
-	printf("RcptFrameId=%d ExposureStatus=0x%.4X\n",
-	    uqpi.qpiframe.RcptFrameId, uqpi.qpiframe.Exposed);
+        printf("RcptFrameId=%d ExposureStatus=0x%.4X\n",
+            uqpi.qpiframe.RcptFrameId, uqpi.qpiframe.Exposed);
     }
 }
 
@@ -447,17 +453,17 @@ void ShowReceptorData()
 
     printf("Calling vip_query_prog_info(HCP_U_QPIRCPT, %d)\n", sizeof(SQueryProgInfoRcpt));
     int result = vip_query_prog_info(uType, &uqpi);
-    if (result == HCP_NO_ERR)
-    {
-	printf("Receptor PanelType=%d, FwVersion=0x%.3X BoardId=%.2X%.2X%.2X\n",
-	    uqpi.qpircpt.PanelType,
-	    uqpi.qpircpt.FwVersion,
-	    uqpi.qpircpt.BoardSNbr[1],
-	    uqpi.qpircpt.BoardSNbr[1],
-	    uqpi.qpircpt.BoardSNbr[0]);
+    if (result == HCP_NO_ERR) {
+        printf("Receptor PanelType=%d, FwVersion=0x%.3X BoardId=%.2X%.2X%.2X\n",
+            uqpi.qpircpt.PanelType,
+            uqpi.qpircpt.FwVersion,
+            uqpi.qpircpt.BoardSNbr[1],
+            uqpi.qpircpt.BoardSNbr[1],
+            uqpi.qpircpt.BoardSNbr[0]);
+    } else {
+        printf ("*** vip_query_prog_info returns %d (%s)\n", result,
+            Varian_4030e::error_string (result));
     }
-    else
-	printf("returns %d\n", result);
 }
 
 //----------------------------------------------------------------------
@@ -475,7 +481,7 @@ void ShowTemperatureData(int crntReq=0)
     UQueryProgInfo  uqpi;
     int  uType = HCP_U_QPITEMPS;
     if (crntReq)
-	uType |= HCP_U_QPI_CRNT_DIAG_DATA;
+        uType |= HCP_U_QPI_CRNT_DIAG_DATA;
 
     memset(&uqpi.qpitemps, 0, sizeof(SQueryProgInfoTemps));
     uqpi.qpitemps.StructSize = sizeof(SQueryProgInfoTemps);
@@ -483,8 +489,8 @@ void ShowTemperatureData(int crntReq=0)
     int result = vip_query_prog_info(uType, &uqpi);
     if (result == HCP_NO_ERR)
     {
-	for (int i = 0; i < uqpi.qpitemps.NumSensors; i++)
-	    printf("T[%d]=%5.2f\n", i, uqpi.qpitemps.Celsius[i]);
+        for (int i = 0; i < uqpi.qpitemps.NumSensors; i++)
+            printf("T[%d]=%5.2f\n", i, uqpi.qpitemps.Celsius[i]);
     }
 }
 
@@ -503,7 +509,7 @@ void ShowVoltageData(int crntReq=0)
     UQueryProgInfo  uqpi;
     int  uType = HCP_U_QPIVOLTS;
     if (crntReq)
-	uType |= HCP_U_QPI_CRNT_DIAG_DATA;
+        uType |= HCP_U_QPI_CRNT_DIAG_DATA;
 
     memset(&uqpi.qpitemps, 0, sizeof(SQueryProgInfoVolts));
     uqpi.qpitemps.StructSize = sizeof(SQueryProgInfoVolts);
@@ -511,8 +517,8 @@ void ShowVoltageData(int crntReq=0)
     int result = vip_query_prog_info(uType, &uqpi);
     if (result == HCP_NO_ERR)
     {
-	for (int i = 0; i < uqpi.qpitemps.NumSensors; i++)
-	    printf("V[%2d]=%f\n", i, uqpi.qpivolts.Volts[i]);
+        for (int i = 0; i < uqpi.qpitemps.NumSensors; i++)
+            printf("V[%2d]=%f\n", i, uqpi.qpivolts.Volts[i]);
     }
 }
 
@@ -538,17 +544,17 @@ void ShowImageStatistics(int npixels, USHORT *image_ptr)
 
     for (i = 0; i < npixels; i++)
     {
-	pixel = (double) image_ptr[i];
-	sumPixel += pixel;
-	if (image_ptr[i] > maxPixel)
-	    maxPixel = image_ptr[i];
-	if (image_ptr[i] < minPixel)
-	    minPixel = image_ptr[i];
-	nTotal++;
+        pixel = (double) image_ptr[i];
+        sumPixel += pixel;
+        if (image_ptr[i] > maxPixel)
+            maxPixel = image_ptr[i];
+        if (image_ptr[i] < minPixel)
+            minPixel = image_ptr[i];
+        nTotal++;
     }
 
     printf("Image: %d pixels, average=%9.2f min=%d max=%d\n",
-	nTotal, sumPixel / nTotal, minPixel, maxPixel);
+        nTotal, sumPixel / nTotal, minPixel, maxPixel);
 }
 
 
@@ -573,23 +579,23 @@ Varian_4030e::get_image_to_file (int xSize, int ySize,
 
     if(result == HCP_NO_ERR)
     {
-	ShowImageStatistics(npixels, image_ptr);
+        ShowImageStatistics(npixels, image_ptr);
 
-	// file on the host computer for storing the image
-	FILE *finput = fopen(filename, "wb");
-	if (finput == NULL)
-	{
-	    printf("Error opening image file to put file.");
-	    exit(-1);
-	}
+        // file on the host computer for storing the image
+        FILE *finput = fopen(filename, "wb");
+        if (finput == NULL)
+        {
+            printf("Error opening image file to put file.");
+            exit(-1);
+        }
 
-	fwrite(image_ptr, sizeof(USHORT), npixels, finput);
-	fclose(finput);
+        fwrite(image_ptr, sizeof(USHORT), npixels, finput);
+        fclose(finput);
 
     }
     else
     {
-	printf("*** vip_get_image returned error %d\n", result);
+        printf("*** vip_get_image returned error %d\n", result);
     }
 
     free(image_ptr);
@@ -608,17 +614,17 @@ Varian_4030e::get_image_to_dips (Dips_panel *dp, int xSize, int ySize)
     USHORT *image_ptr = (USHORT *)malloc(npixels * sizeof(USHORT));
 
     result = vip_get_image(mode_num, VIP_CURRENT_IMAGE, 
-	xSize, ySize, image_ptr);
+        xSize, ySize, image_ptr);
 
     if (result == HCP_NO_ERR) {
-	ShowImageStatistics(npixels, image_ptr);
+        ShowImageStatistics(npixels, image_ptr);
     } else {
-	printf("*** vip_get_image returned error %d\n", result);
-	return HCP_NO_ERR;
+        printf("*** vip_get_image returned error %d\n", result);
+        return HCP_NO_ERR;
     }
 
     for (int i = 0; i < xSize * ySize; i++) {
-	dp->pixelp[i] = image_ptr[i];
+        dp->pixelp[i] = image_ptr[i];
     }
 
     dp->send_image ();
@@ -649,15 +655,15 @@ Varian_4030e::perform_gain_calibration ()
     result = vip_gain_cal_prepare (this->current_mode, false);
     if (result != HCP_NO_ERR)
     {
-	printf("*** vip_gain_cal_prepare returns error %d\n", result);
-	return result;
+        printf("*** vip_gain_cal_prepare returns error %d\n", result);
+        return result;
     }
 
     result = vip_sw_handshaking(VIP_SW_PREPARE, 1);
     if (result != HCP_NO_ERR)
     {
-	printf("*** vip_sw_handshaking(VIP_SW_PREPARE, 1) returns error %d\n", result);
-	return result;
+        printf("*** vip_sw_handshaking(VIP_SW_PREPARE, 1) returns error %d\n", result);
+        return result;
     }
 
     printf("INITIAL DARK-FIELD IMAGES - DO NOT EXPOSE TO X-RAYS\n");
@@ -667,32 +673,32 @@ Varian_4030e::perform_gain_calibration ()
     int numPulses=0;
     vip_enable_sw_handshaking(TRUE);
 
-    //	printf("\nPress any key to begin flat field acquisition\n");
-    //	while(!_kbhit()) Sleep (100);
+    // printf("\nPress any key to begin flat field acquisition\n");
+    // while(!_kbhit()) Sleep (100);
 
     for (numPulses = 0; numPulses < numGainCalImages; )
     {
-	printf("FLAT FIELD EXPOSURE %d\n", numPulses);
-	QueryWaitOnReadyForPulse(crntStatus, 5000);
-	vip_sw_handshaking(VIP_SW_VALID_XRAYS, TRUE);
-	Sleep(300);
-	printf("READY FOR X-RAYS - EXPOSE NOW =============>\n");
-	result = QueryWaitOnNumPulsesChange(crntStatus, 0);
-	if (result != HCP_NO_ERR)
-	{
-	    vip_reset_state();
-	    return result;
-	}
-	vip_sw_handshaking(VIP_SW_VALID_XRAYS, FALSE);
-	numPulses = crntStatus.qpi.NumPulses;
+        printf("FLAT FIELD EXPOSURE %d\n", numPulses);
+        QueryWaitOnReadyForPulse(crntStatus, 5000);
+        vip_sw_handshaking(VIP_SW_VALID_XRAYS, TRUE);
+        Sleep(300);
+        printf("READY FOR X-RAYS - EXPOSE NOW =============>\n");
+        result = QueryWaitOnNumPulsesChange(crntStatus, 0);
+        if (result != HCP_NO_ERR)
+        {
+            vip_reset_state();
+            return result;
+        }
+        vip_sw_handshaking(VIP_SW_VALID_XRAYS, FALSE);
+        numPulses = crntStatus.qpi.NumPulses;
     }
 
     printf("Setting PREPARE=0\n");
     result = vip_sw_handshaking(VIP_SW_PREPARE, 0);
     if (QueryWaitOnComplete(crntStatus, 10000) != HCP_NO_ERR)
     {
-	vip_reset_state();
-	return result;
+        vip_reset_state();
+        return result;
     }
 
     printf("Gain calibration complete\n");
@@ -705,145 +711,66 @@ Varian_4030e::perform_gain_calibration ()
 
 
 //----------------------------------------------------------------------
-//
 //  PerformRadAcquisition
-//  ---------------------
-//  This is the recommended method for radiographic acquisition.
-//  The "Hardware Handshaking" calls are used to initiate the
-//  acquisition.
-//
 //----------------------------------------------------------------------
-
 int 
-Varian_4030e::perform_rad_acquisition ()
+Varian_4030e::rad_acquisition (Dips_panel *dp)
 {
     int  result;
     UQueryProgInfo crntStatus;
     SModeInfo  modeInfo;
 
-    GetModeInfo (modeInfo, this->current_mode);
+    PrintModeInfo (modeInfo, this->current_mode);
 
     printf ("Calling vip_enable_sw_handshaking(FALSE)\n");
-    result = vip_enable_sw_handshaking(FALSE);
-    if (result != HCP_NO_ERR)
-    {
-	printf("*** returns error %d\n", result);
-	return result;
+    result = vip_enable_sw_handshaking (FALSE);
+    if (result != HCP_NO_ERR) {
+        printf ("*** vip_enable_sw_handshaking returns error %d\n", result);
+        return result;
     }
 
     printf("Calling vip_io_enable(HS_ACTIVE)\n");
     result = vip_io_enable(HS_ACTIVE);
-    if (result == HCP_NO_ERR)
-    {
-	result = QueryWaitOnReadyForPulse(crntStatus, 5000);
-	if (result == HCP_NO_ERR)
-	{
-	    printf("READY FOR X-RAYS - EXPOSE AT ANY TIME\n");
-	    result = QueryWaitOnNumPulsesChange(crntStatus, 0);
-	    if (result == HCP_NO_ERR)
-	    {
-		QueryWaitOnNumFrames(crntStatus, 1, 0);
-		result = this->get_image_to_file (modeInfo.ColsPerFrame,
-		    modeInfo.LinesPerFrame,
-		    "preview.raw", VIP_PREVIEW_IMAGE);
-		result = QueryWaitOnComplete(crntStatus, 0);
-	    }
-	    if (result == HCP_NO_ERR)
-	    {
-		result = this->get_image_to_file (modeInfo.ColsPerFrame,
-		    modeInfo.LinesPerFrame,
-		    "newimage.raw");
-		ShowReceptorData();
-		ShowFrameData();
-		ShowTemperatureData();
-		ShowVoltageData();
-	    }
-	    else if (result == HCP_SIGNAL_KEY_PRESSED)
-	    {
-		printf("Calling vip_io_enable(HS_STANDBY)\n");
-		vip_io_enable(HS_STANDBY);
-		result = QueryWaitOnReadyForPulse(crntStatus, 5000, FALSE);
-	    }
-	    else
-		printf("*** Acquisition terminated with error %d\n", result);
-	    vip_io_enable(HS_STANDBY);
-	}
-    }
-    else
-    {
-	printf("*** returns error %d - acquisition not enabled\n", result);
+    if (result != HCP_NO_ERR) {
+        printf("*** returns error %d - acquisition not enabled\n", result);
+        return result;
     }
 
-    printf("Acquisition complete\n");
-    return result;
-}
+    result = QueryWaitOnReadyForPulse (crntStatus, 5000, TRUE);
+    if (result == HCP_NO_ERR) {
 
-int 
-Varian_4030e::perform_rad_acquisition_dips (Dips_panel *dp)
-{
-    int  result;
-    UQueryProgInfo crntStatus;
-    SModeInfo  modeInfo;
+        printf("READY FOR X-RAYS - EXPOSE AT ANY TIME\n");
+        /* Close relay to generator */
+        /* Poll generator pins 8/26, look for de-assert */
+        /* Close, then open pins 3/4 to paxscan */
 
-    GetModeInfo (modeInfo, this->current_mode);
+        result = QueryWaitOnNumPulsesChange (crntStatus, 0);
+        if (result == HCP_NO_ERR) {
+            QueryWaitOnNumFrames(crntStatus, 1, 0);
+            result = this->get_image_to_dips (
+                dp, modeInfo.ColsPerFrame,
+                modeInfo.LinesPerFrame);
+            result = QueryWaitOnComplete(crntStatus, 0);
+        }
 
-    printf ("Calling vip_enable_sw_handshaking(FALSE)\n");
-    result = vip_enable_sw_handshaking(FALSE);
-    if (result != HCP_NO_ERR)
-    {
-	printf("*** returns error %d\n", result);
-	return result;
-    }
-
-    printf("Calling vip_io_enable(HS_ACTIVE)\n");
-    result = vip_io_enable(HS_ACTIVE);
-    if (result == HCP_NO_ERR)
-    {
-	result = QueryWaitOnReadyForPulse(crntStatus, 5000);
-	if (result == HCP_NO_ERR)
-	{
-	    printf("READY FOR X-RAYS - EXPOSE AT ANY TIME\n");
-	    result = QueryWaitOnNumPulsesChange(crntStatus, 0);
-	    if (result == HCP_NO_ERR)
-	    {
-		QueryWaitOnNumFrames(crntStatus, 1, 0);
+        if (result == HCP_NO_ERR) {
 #if defined (commentout)
-		result = this->get_image_to_file (modeInfo.ColsPerFrame,
-		    modeInfo.LinesPerFrame,
-		    "preview.raw", VIP_PREVIEW_IMAGE);
+            result = this->get_image_to_file (modeInfo.ColsPerFrame,
+                modeInfo.LinesPerFrame,
+                "newimage.raw");
 #endif
-		result = this->get_image_to_dips (
-		    dp, modeInfo.ColsPerFrame,
-		    modeInfo.LinesPerFrame);
-		result = QueryWaitOnComplete(crntStatus, 0);
-		
-	    }
-	    if (result == HCP_NO_ERR)
-	    {
-#if defined (commentout)
-		result = this->get_image_to_file (modeInfo.ColsPerFrame,
-		    modeInfo.LinesPerFrame,
-		    "newimage.raw");
-#endif
-		ShowReceptorData();
-		ShowFrameData();
-		ShowTemperatureData();
-		ShowVoltageData();
-	    }
-	    else if (result == HCP_SIGNAL_KEY_PRESSED)
-	    {
-		printf("Calling vip_io_enable(HS_STANDBY)\n");
-		vip_io_enable(HS_STANDBY);
-		result = QueryWaitOnReadyForPulse(crntStatus, 5000, FALSE);
-	    }
-	    else
-		printf("*** Acquisition terminated with error %d\n", result);
-	    vip_io_enable(HS_STANDBY);
-	}
-    }
-    else
-    {
-	printf("*** returns error %d - acquisition not enabled\n", result);
+            ShowReceptorData();
+            ShowFrameData();
+            ShowTemperatureData();
+            ShowVoltageData();
+        }
+        else {
+            printf("*** Acquisition terminated with error %d\n", result);
+        }
+        vip_io_enable(HS_STANDBY);
+    } else if (result == HCP_TIMEOUT) {
+        printf("Calling vip_io_enable(HS_STANDBY)\n");
+        vip_io_enable(HS_STANDBY);
     }
 
     printf("Acquisition complete\n");
@@ -868,34 +795,36 @@ Varian_4030e::perform_sw_rad_acquisition ()
     UQueryProgInfo crntStatus;
     SModeInfo  modeInfo;
 
-    result = GetModeInfo (modeInfo, this->current_mode);
+    result = PrintModeInfo (modeInfo, this->current_mode);
     if (result != HCP_NO_ERR)
     {
-	printf("*** unable to get mode info\n");
-	return result;
+        printf("*** unable to get mode info\n");
+        return result;
     }
 
     printf("Enabling software handshaking...\n");
     result = vip_enable_sw_handshaking(TRUE);
     if (result != HCP_NO_ERR)
     {
-	printf("*** vip_enable_sw_handshaking returned error %d\n", result);
-	return result;
+        printf("*** vip_enable_sw_handshaking returned error %d\n", result);
+        return result;
     }
     result = vip_sw_handshaking(VIP_SW_PREPARE, 1);
     if (result == HCP_NO_ERR)
     {
-	result = vip_sw_handshaking(VIP_SW_VALID_XRAYS, 1);
-	if (result == HCP_NO_ERR)
-	{
-	    result = QueryWaitOnComplete(crntStatus, 0);
-	    result = vip_sw_handshaking(VIP_SW_VALID_XRAYS, 0);
-	}
-	result = vip_sw_handshaking(VIP_SW_PREPARE, 0);
+        result = vip_sw_handshaking(VIP_SW_VALID_XRAYS, 1);
+        if (result == HCP_NO_ERR)
+        {
+            result = QueryWaitOnComplete(crntStatus, 0);
+            result = vip_sw_handshaking(VIP_SW_VALID_XRAYS, 0);
+        }
+        result = vip_sw_handshaking(VIP_SW_PREPARE, 0);
     }
 
-    if (result == HCP_NO_ERR)
-	result = this->get_image_to_file (modeInfo.ColsPerFrame, modeInfo.LinesPerFrame, "newimage.raw");
+    if (result == HCP_NO_ERR) {
+        result = this->get_image_to_file (
+            modeInfo.ColsPerFrame, modeInfo.LinesPerFrame, "newimage.raw");
+    }
 
     // no need to do this if not using Hw handshaking at all
     vip_enable_sw_handshaking(FALSE);

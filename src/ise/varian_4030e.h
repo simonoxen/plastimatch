@@ -11,12 +11,13 @@ public:
     Varian_4030e ();
     ~Varian_4030e ();
 
+    static const char* error_string (int error_code);
+
+    int check_link();
     void print_sys_info ();
     int perform_gain_calibration ();
-    int perform_rad_acquisition ();
-    int perform_rad_acquisition_dips (Dips_panel *dp);
+    int rad_acquisition (Dips_panel *dp);
     int perform_sw_rad_acquisition ();
-
     int get_image_to_file (int xSize, int ySize, 
 	char *filename, int imageType=VIP_CURRENT_IMAGE);
     int get_image_to_dips (Dips_panel *dp, int xSize, int ySize);

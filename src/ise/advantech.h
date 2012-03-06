@@ -19,6 +19,7 @@ public:
     void relay_open ();
     void relay_close ();
     static void print_error (LRESULT ErrorCode);
+    bool ready_for_expose ();
 };
 
 #endif
