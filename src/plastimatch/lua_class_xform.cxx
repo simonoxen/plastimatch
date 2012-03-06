@@ -13,6 +13,7 @@ extern "C"
 #include "lauxlib.h"
 }
 #include "lua_classes.h"
+#include "lua_class_image.h"
 #include "lua_class_xform.h"
 #include "lua_util.h"
 #include "pcmd_script.h"
@@ -105,7 +106,7 @@ xform_export_vf (lua_State *L)
 
     Xform_convert xfc;
 
-	xfc.m_xf_out_type = XFORM_ITK_VECTOR_FIELD;
+    xfc.m_xf_out_type = XFORM_ITK_VECTOR_FIELD;
     xfc.m_xf_out = new Xform;
     xfc.m_xf_in = lxf->pxf;
     (xfc.m_xf_in)->get_volume_header (&(xfc.m_volume_header));
