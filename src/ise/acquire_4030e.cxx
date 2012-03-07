@@ -2,18 +2,18 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "ise_config.h"
-#include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <conio.h>
-#include <dos.h>
 #include <math.h>
-
+#include <windows.h>
 #include "HcpErrors.h"
 #include "HcpFuncDefs.h"
 #include "iostatus.h"
+#include <QApplication>
+#include <QThread>
 
+#include "acquire_thread.h"
 #include "advantech.h"
 #include "dips_panel.h"
 #include "varian_4030e.h"
@@ -23,21 +23,11 @@
 char *default_path_1 = "C:\\IMAGERs\\A422-07"; // Path to IMAGER tables
 char *default_path_2 = "C:\\IMAGERs\\A663-11"; // Path to IMAGER tables
 
-// In the following the mode number for the rad mode required should be set
-//int  crntModeSelect = 0;
-
-
-#define ESC_KEY   (0x1B)
-#define ENTER_KEY (0x0D)
-
-#define HCP_SIGNAL_TIMEOUT        (-2)
-#define HCP_SIGNAL_KEY_PRESSED    (-1)
-
 //----------------------------------------------------------------------
 //  main
 //----------------------------------------------------------------------
 int 
-main(int argc, char* argv[])
+main (int argc, char* argv[])
 {
     Advantech advantech;
     char *path_1 = default_path_1;
@@ -48,6 +38,8 @@ main(int argc, char* argv[])
 #define HIRES_IMAGE_HEIGHT 3200
 #define HIRES_IMAGE_WIDTH 2304
 
+    QApplication app (argc, argv);
+
     printf ("Welcome to acquire_4030e\n");
 
     // Check for receptor path on the command line
@@ -57,6 +49,12 @@ main(int argc, char* argv[])
     if (argc > 2) {
 	path_2 = argv[2];
     }
+
+    QThread thread;
+    Acquire_thread aq;
+    aq.moveToThread (&thread);
+    thread.start ();
+    QMetaObject::invokeMethod (&aq, "run", Qt::QueuedConnection);
 
     Dips_panel dp;
     dp.open_panel (0, HIRES_IMAGE_HEIGHT, HIRES_IMAGE_WIDTH);

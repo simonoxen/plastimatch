@@ -21,6 +21,11 @@ include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 ##-----------------------------------------------------------------------------
 ## QT configuration
 ##-----------------------------------------------------------------------------
+if (QT4_FOUND)
+  set (BUILD_AQUIRE_4030E TRUE)
+else ()
+  set (BUILD_AQUIRE_4030E TRUE)
+endif ()
 if (QT4_FOUND AND QT_QTSQL_FOUND AND VTK_FOUND AND VTK_USE_QT)
   set (BUILD_ISE_QT TRUE)
 else ()
@@ -67,10 +72,16 @@ set (ISE_SRC
 
 set (ACQUIRE_4030E_SRC
   acquire_4030e.cxx
+  acquire_thread.cxx acquire_thread.h
   advantech.cxx advantech.h
   dips_panel.cxx dips_panel.h
   varian_4030e.cxx varian_4030e.h 
   )
+if (BUILD_AQUIRE_4030E)
+  qt4_wrap_cpp (ACQUIRE_4030E_SRC 
+    acquire_thread.h
+    )
+endif ()
 
 set (ISE_QT_SRC
   iqt_main.cxx
@@ -163,9 +174,9 @@ if (BUILD_ISE_QT)
 endif ()
 
 set (ACQUIRE_4030E_LIBRARIES
-  ${PAXSCAN_LIBRARIES} ${ADVANTECH_LIBRARIES})
+  ${PAXSCAN_LIBRARIES} ${ADVANTECH_LIBRARIES} ${QT_LIBRARIES})
 
-if (PAXSCAN_FOUND AND ADVANTECH_FOUND)
+if (PAXSCAN_FOUND AND ADVANTECH_FOUND AND QT_FOUND)
   plm_add_executable (acquire_4030e "${ACQUIRE_4030E_SRC}" 
     "${ACQUIRE_4030E_LIBRARIES}" "" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})

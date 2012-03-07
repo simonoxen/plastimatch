@@ -31,6 +31,7 @@ if "%COMPUTERNAME%"=="COTTONTAIL" (
   SET ITK_PATH=%HOME%\build\itk-3.20.0\bin\Release
   SET PLASTIMATCH_BASE=%HOME%\build\plastimatch-3.20.0
   SET FFTW_PATH=%HOME%\build\fftw-3.2.2
+  SET QT_PATH=C:\QT\4.6.3\bin
 ) else (
   echo "Sorry, couldn't recognize host"
   exit /b
@@ -41,6 +42,7 @@ SET PLASTIMATCH_PATH=%PLASTIMATCH_BASE%\Release
 PATH=%PATH%;%FFTW_PATH%
 PATH=%PATH%;%ITK_PATH%
 PATH=%PATH%;%PLASTIMATCH_PATH%
+PATH=%PATH%;%QT_PATH%
 
 echo PATH set to:
 PATH
