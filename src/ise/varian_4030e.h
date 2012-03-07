@@ -22,12 +22,12 @@ public:
     int get_image_to_file (int xSize, int ySize, 
 	char *filename, int imageType=VIP_CURRENT_IMAGE);
     int get_image_to_dips (Dips_panel *dp, int xSize, int ySize);
+    int disable_missing_corrections (int result);
 
 public:
     int current_mode;
 };
 
 int CheckRecLink();
-int DisableMissingCorrections (int result);
 
 #endif

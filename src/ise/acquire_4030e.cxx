@@ -61,15 +61,15 @@ main(int argc, char* argv[])
     Dips_panel dp;
     dp.open_panel (0, HIRES_IMAGE_HEIGHT, HIRES_IMAGE_WIDTH);
 
+    /* Initialize link to panel */
     Varian_4030e vp;
     result = vp.open_receptor_link (path_1);
+    result = vp.disable_missing_corrections (result);
     if (result != HCP_NO_ERR) {
-	printf ("vp.open_receptor_link returns error %d\n", result);
+	printf ("vp.open_receptor_link returns error (%d): %s\n", result, 
+	    Varian_4030e::error_string(result));
         return -1;
     }
-
-    // The following call is for test purposes only
-    result = DisableMissingCorrections(result);
 
     result = vp.check_link ();
     if (result != HCP_NO_ERR) {

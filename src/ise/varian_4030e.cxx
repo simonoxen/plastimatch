@@ -91,7 +91,8 @@ Varian_4030e::open_receptor_link (char *path)
 //
 //----------------------------------------------------------------------
 
-int DisableMissingCorrections(int result)
+int 
+Varian_4030e::disable_missing_corrections (int result)
 {
     SCorrections corr;
     memset(&corr, 0, sizeof(SCorrections));
