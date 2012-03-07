@@ -13,6 +13,7 @@ public:
 
     static const char* error_string (int error_code);
 
+    int open_receptor_link (char *path);
     int check_link();
     void print_sys_info ();
     int perform_gain_calibration ();

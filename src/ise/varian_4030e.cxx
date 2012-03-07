@@ -62,6 +62,24 @@ Varian_4030e::check_link()
     return result;
 }
 
+int 
+Varian_4030e::open_receptor_link (char *path)
+{
+    int result;
+    SOpenReceptorLink orl;
+    memset (&orl, 0, sizeof(SOpenReceptorLink));
+    orl.StructSize = sizeof(SOpenReceptorLink);
+    strcpy (orl.RecDirPath, path);
+
+    // if we want to turn debug on so that it flushes to a file ..
+    // or other settings see Virtual CP Communications Manual uncomment
+    // and modify the following line if required
+    //	orl.DebugMode = HCP_DBG_ON_FLSH;
+    printf("Opening link to %s\n", orl.RecDirPath);
+    result = vip_open_receptor_link (&orl);
+    return result;
+}
+
 //----------------------------------------------------------------------
 //
 //  DisableMissingCorrections

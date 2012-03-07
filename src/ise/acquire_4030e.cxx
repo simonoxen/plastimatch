@@ -20,8 +20,8 @@
 
 
 // The string such as "A422-07" is the imager serial number
-char *default_path = "C:\\IMAGERs\\A422-07"; // Path to IMAGER tables
-//char *default_path = "C:\\IMAGERs\\A663-11"; // Path to IMAGER tables
+char *default_path_1 = "C:\\IMAGERs\\A422-07"; // Path to IMAGER tables
+char *default_path_2 = "C:\\IMAGERs\\A663-11"; // Path to IMAGER tables
 
 // In the following the mode number for the rad mode required should be set
 //int  crntModeSelect = 0;
@@ -40,44 +40,40 @@ int
 main(int argc, char* argv[])
 {
     Advantech advantech;
-    char *path = default_path;
+    char *path_1 = default_path_1;
+    char *path_2 = default_path_2;
     int choice = 0;
     int result;
-    SOpenReceptorLink orl;
-    Dips_panel dp;
 
 #define HIRES_IMAGE_HEIGHT 3200
 #define HIRES_IMAGE_WIDTH 2304
 
-    dp.open_panel (0, HIRES_IMAGE_HEIGHT, HIRES_IMAGE_WIDTH);
-
-    Varian_4030e vp;
-
-    memset (&orl, 0, sizeof(SOpenReceptorLink));
     printf ("Welcome to acquire_4030e\n");
 
     // Check for receptor path on the command line
     if (argc > 1) {
-	path = argv[1];
+	path_1 = argv[1];
+    }
+    if (argc > 2) {
+	path_2 = argv[2];
     }
 
-    orl.StructSize = sizeof(SOpenReceptorLink);
-    strcpy(orl.RecDirPath, path);
+    Dips_panel dp;
+    dp.open_panel (0, HIRES_IMAGE_HEIGHT, HIRES_IMAGE_WIDTH);
 
-    // if we want to turn debug on so that it flushes to a file ..
-    // or other settings see Virtual CP Communications Manual uncomment
-    // and modify the following line if required
-    //	orl.DebugMode = HCP_DBG_ON_FLSH;
-    printf("Opening link to %s\n", orl.RecDirPath);
-    result = vip_open_receptor_link (&orl);
-    printf ("Result = %04x\n", result);
+    Varian_4030e vp;
+    result = vp.open_receptor_link (path_1);
+    if (result != HCP_NO_ERR) {
+	printf ("vp.open_receptor_link returns error %d\n", result);
+        return -1;
+    }
 
     // The following call is for test purposes only
     result = DisableMissingCorrections(result);
 
     result = vp.check_link ();
     if (result != HCP_NO_ERR) {
-	printf("vip_open_receptor_link returns error %d\n", result);
+	printf ("vp.check_link returns error %d\n", result);
         vip_close_link();
         return -1;
     }
