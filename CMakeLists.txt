@@ -15,10 +15,14 @@ cmake_minimum_required (VERSION 2.6.0)
 
 # CMP0003: Libraries linked via full path no longer produce linker search
 #  paths.
-cmake_policy (SET CMP0003 NEW)
+if (POLICY CMP0003)
+  cmake_policy (SET CMP0003 NEW)
+endif ()
 # CMP0012: if() recognizes numbers and boolean constants.
 # GCS 2012-03-04: This is added to suppress ITK warning
-cmake_policy (SET CMP0012 NEW)
+if (POLICY CMP0012)
+  cmake_policy (SET CMP0012 NEW)
+endif ()
 # Note: it is ok to use CMake FindZLIB for 2.8.4.  Therefore setting 
 # policy CMP0017 to NEW is safe.  But we do want the OLD policy for 
 # older CMake versions.
