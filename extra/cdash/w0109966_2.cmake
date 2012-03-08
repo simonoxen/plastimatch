@@ -24,6 +24,7 @@ ITK_DIR:PATH=C:/gcs6/build/vs2008/itk-3.20.0
 VTK_DIR:PATH=C:/gcs6/build/vs2008/vtk-5.6.1
 
 //Disable reg23 testing (it builds, but doesn't run on this computer)
+ORAIFUTILS_BUILD_TESTING:BOOL=OFF
 REG23_BUILD_TESTING:BOOL=OFF
 
 //Path to the CVS
