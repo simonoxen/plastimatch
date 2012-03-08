@@ -772,18 +772,19 @@ bspline_find_correspondence_dcos
  )
 {
     mxyz[0] = fxyz[0] + dxyz[0];
-    mijk[0] = mxyz[0] - moving->offset[0];
-    mijk[0] = PROJECT_X (mijk, moving->proj);
-    if (mijk[0] < -0.5 || mijk[0] > moving->dim[0] - 0.5) return 0;
-
     mxyz[1] = fxyz[1] + dxyz[1];
-    mijk[1] = mxyz[1] - moving->offset[1];
-    mijk[1] = PROJECT_Y (mijk, moving->proj);
-    if (mijk[1] < -0.5 || mijk[1] > moving->dim[1] - 0.5) return 0;
-
     mxyz[2] = fxyz[2] + dxyz[2];
+
+    mijk[0] = mxyz[0] - moving->offset[0];
+    mijk[1] = mxyz[1] - moving->offset[1];
     mijk[2] = mxyz[2] - moving->offset[2];
+
+    mijk[0] = PROJECT_X (mijk, moving->proj);
+    mijk[1] = PROJECT_Y (mijk, moving->proj);
     mijk[2] = PROJECT_Z (mijk, moving->proj);
+
+    if (mijk[0] < -0.5 || mijk[0] > moving->dim[0] - 0.5) return 0;
+    if (mijk[1] < -0.5 || mijk[1] > moving->dim[1] - 0.5) return 0;
     if (mijk[2] < -0.5 || mijk[2] > moving->dim[2] - 0.5) return 0;
 
     return 1;
