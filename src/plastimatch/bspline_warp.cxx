@@ -259,7 +259,7 @@ bspline_warp_dcos (
     }
 	
 #pragma omp parallel for 
-    for (LOOP_Z_OMP (k, vout)) {
+    LOOP_Z_OMP (k, vout) {
 	size_t fijk[3];           /* Index within fixed image (vox) */
 	float fxyz[3];         /* Position within fixed image (mm) */
 	size_t p[3];
@@ -271,10 +271,10 @@ bspline_warp_dcos (
 	fxyz[2] = vout->offset[2] + fijk[2] * vout->step[2][2];
         p[2] = REGION_INDEX_Z (fijk, bxf);
         q[2] = REGION_OFFSET_Z (fijk, bxf);
-	for (LOOP_Y (fijk, fxyz, vout)) {
+	LOOP_Y (fijk, fxyz, vout) {
             p[1] = REGION_INDEX_Y (fijk, bxf);
             q[1] = REGION_OFFSET_Y (fijk, bxf);
-	    for (LOOP_X (fijk, fxyz, vout)) {
+	    LOOP_X (fijk, fxyz, vout) {
 		size_t fv;       /* Linear index within fixed image (vox) */
 		float mxyz[3];   /* Position within moving image (mm) */
 		float mijk[3];   /* Index within moving image (vox) */

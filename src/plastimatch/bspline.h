@@ -258,6 +258,16 @@ bspline_find_correspondence
  const Volume *moving     /* Input:  moving image */
 );
 
+int
+bspline_find_correspondence_dcos
+(
+ float *mxyz,             /* Output: xyz coordinates in moving image (mm) */
+ float *mijk,             /* Output: ijk indices in moving image (vox) */
+ const float *fxyz,       /* Input:  xyz coordinates in fixed image (mm) */
+ const float *dxyz,       /* Input:  displacement from fixed to moving (mm) */
+ const Volume *moving     /* Input:  moving image */
+);
+
 
 gpuit_EXPORT
 void

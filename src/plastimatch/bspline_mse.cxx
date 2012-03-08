@@ -101,7 +101,7 @@ bspline_score_h_mse (
         float xyz_moving[3];
         float ijk_moving[3];
         size_t ijk_moving_floor[3];
-	size_t ijk_moving_round[3];
+        size_t ijk_moving_round[3];
         size_t idx_moving_floor;
         size_t idx_moving_round;
 
@@ -126,75 +126,75 @@ bspline_score_h_mse (
             LOOP_THRU_TILE_Y (ijk_local, bxf) {
                 LOOP_THRU_TILE_X (ijk_local, bxf) {
 
-		    // Construct coordinates into fixed image volume
-		    GET_VOL_COORDS (ijk_fixed, ijk_tile, ijk_local, bxf);
+                    // Construct coordinates into fixed image volume
+                    GET_VOL_COORDS (ijk_fixed, ijk_tile, ijk_local, bxf);
 
-		    // Make sure we are inside the region of interest
-		    if (ijk_fixed[0] >= bxf->roi_offset[0] + bxf->roi_dim[0])
-			continue;
-		    if (ijk_fixed[1] >= bxf->roi_offset[1] + bxf->roi_dim[1])
-			continue;
-		    if (ijk_fixed[2] >= bxf->roi_offset[2] + bxf->roi_dim[2])
-			continue;
+                    // Make sure we are inside the region of interest
+                    if (ijk_fixed[0] >= bxf->roi_offset[0] + bxf->roi_dim[0])
+                        continue;
+                    if (ijk_fixed[1] >= bxf->roi_offset[1] + bxf->roi_dim[1])
+                        continue;
+                    if (ijk_fixed[2] >= bxf->roi_offset[2] + bxf->roi_dim[2])
+                        continue;
 
-		    // Compute physical coordinates of fixed image voxel
-		    GET_REAL_SPACE_COORDS (xyz_fixed, ijk_fixed, bxf);
+                    // Compute physical coordinates of fixed image voxel
+                    GET_REAL_SPACE_COORDS (xyz_fixed, ijk_fixed, bxf);
 
-		    // Construct the local index within the tile
-		    idx_local = volume_index (bxf->vox_per_rgn, ijk_local);
+                    // Construct the local index within the tile
+                    idx_local = volume_index (bxf->vox_per_rgn, ijk_local);
 
-		    // Construct the image volume index
-		    idx_fixed = volume_index (fixed->dim, ijk_fixed);
+                    // Construct the image volume index
+                    idx_fixed = volume_index (fixed->dim, ijk_fixed);
 
-		    // Calc. deformation vector (dxyz) for voxel
-		    bspline_interp_pix_b (dxyz, bxf, idx_tile, idx_local);
+                    // Calc. deformation vector (dxyz) for voxel
+                    bspline_interp_pix_b (dxyz, bxf, idx_tile, idx_local);
 
-		    // Calc. moving image coordinate from the deformation vector
-		    rc = bspline_find_correspondence (xyz_moving, ijk_moving,
-			xyz_fixed, dxyz, moving);
+                    // Calc. moving image coordinate from the deformation vector
+                    rc = bspline_find_correspondence (xyz_moving, ijk_moving,
+                        xyz_fixed, dxyz, moving);
 
-		    // Return code is 0 if voxel is pushed outside of moving image
-		    if (!rc) continue;
+                    // Return code is 0 if voxel is pushed outside of moving image
+                    if (!rc) continue;
 
-		    // Compute linear interpolation fractions
-		    li_clamp_3d (
-			ijk_moving,
-			ijk_moving_floor,
-			ijk_moving_round,
-			li_1,
-			li_2,
-			moving
-		    );
+                    // Compute linear interpolation fractions
+                    li_clamp_3d (
+                        ijk_moving,
+                        ijk_moving_floor,
+                        ijk_moving_round,
+                        li_1,
+                        li_2,
+                        moving
+                    );
 
-		    // Find linear indices for moving image
-		    idx_moving_floor = volume_index (moving->dim, ijk_moving_floor);
-		    idx_moving_round = volume_index (moving->dim, ijk_moving_round);
+                    // Find linear indices for moving image
+                    idx_moving_floor = volume_index (moving->dim, ijk_moving_floor);
+                    idx_moving_round = volume_index (moving->dim, ijk_moving_round);
 
-		    // Calc. moving voxel intensity via linear interpolation
-		    LI_VALUE (
-			m_val, 
-			li_1[0], li_2[0],
-			li_1[1], li_2[1],
-			li_1[2], li_2[2],
-			idx_moving_floor,
-			m_img, moving
-		    );
+                    // Calc. moving voxel intensity via linear interpolation
+                    LI_VALUE (
+                        m_val, 
+                        li_1[0], li_2[0],
+                        li_1[1], li_2[1],
+                        li_1[2], li_2[2],
+                        idx_moving_floor,
+                        m_img, moving
+                    );
 
-		    // Compute intensity difference
-		    diff = m_val - f_img[idx_fixed];
+                    // Compute intensity difference
+                    diff = m_val - f_img[idx_fixed];
 
-		    // Store the score!
-		    score_tile += diff * diff;
-		    ssd->num_vox++;
+                    // Store the score!
+                    score_tile += diff * diff;
+                    ssd->num_vox++;
 
-		    // Compute dc_dv
-		    dc_dv[0] = diff * m_grad[3 * idx_moving_round + 0];
-		    dc_dv[1] = diff * m_grad[3 * idx_moving_round + 1];
-		    dc_dv[2] = diff * m_grad[3 * idx_moving_round + 2];
+                    // Compute dc_dv
+                    dc_dv[0] = diff * m_grad[3 * idx_moving_round + 0];
+                    dc_dv[1] = diff * m_grad[3 * idx_moving_round + 1];
+                    dc_dv[2] = diff * m_grad[3 * idx_moving_round + 2];
 
-		    /* Generate condensed tile */
-		    bspline_update_sets (sets_x, sets_y, sets_z,
-			idx_local, dc_dv, bxf);
+                    /* Generate condensed tile */
+                    bspline_update_sets (sets_x, sets_y, sets_z,
+                        idx_local, dc_dv, bxf);
 
                 } /* LOOP_THRU_TILE_X */
             } /* LOOP_THRU_TILE_Y */
@@ -329,78 +329,78 @@ bspline_score_g_mse (
             LOOP_THRU_TILE_Y (ijk_local, bxf) {
                 LOOP_THRU_TILE_X (ijk_local, bxf) {
 
-		    // Construct coordinates into fixed image volume
-		    GET_VOL_COORDS (ijk_fixed, ijk_tile, ijk_local, bxf);
+                    // Construct coordinates into fixed image volume
+                    GET_VOL_COORDS (ijk_fixed, ijk_tile, ijk_local, bxf);
 
-		    // Make sure we are inside the image volume
-		    if (ijk_fixed[0] >= bxf->roi_offset[0] + bxf->roi_dim[0])
-			continue;
-		    if (ijk_fixed[1] >= bxf->roi_offset[1] + bxf->roi_dim[1])
-			continue;
-		    if (ijk_fixed[2] >= bxf->roi_offset[2] + bxf->roi_dim[2])
-			continue;
+                    // Make sure we are inside the image volume
+                    if (ijk_fixed[0] >= bxf->roi_offset[0] + bxf->roi_dim[0])
+                        continue;
+                    if (ijk_fixed[1] >= bxf->roi_offset[1] + bxf->roi_dim[1])
+                        continue;
+                    if (ijk_fixed[2] >= bxf->roi_offset[2] + bxf->roi_dim[2])
+                        continue;
 
-		    // Compute physical coordinates of fixed image voxel
-		    GET_REAL_SPACE_COORDS (xyz_fixed, ijk_fixed, bxf);
+                    // Compute physical coordinates of fixed image voxel
+                    GET_REAL_SPACE_COORDS (xyz_fixed, ijk_fixed, bxf);
                     
-		    // Construct the local index within the tile
-		    idx_local = volume_index (bxf->vox_per_rgn, ijk_local);
+                    // Construct the local index within the tile
+                    idx_local = volume_index (bxf->vox_per_rgn, ijk_local);
 
-		    // Construct the image volume index
-		    idx_fixed = volume_index (fixed->dim, ijk_fixed);
+                    // Construct the image volume index
+                    idx_fixed = volume_index (fixed->dim, ijk_fixed);
 
-		    // Calc. deformation vector (dxyz) for voxel
-		    bspline_interp_pix_b (dxyz, bxf, idx_tile, idx_local);
+                    // Calc. deformation vector (dxyz) for voxel
+                    bspline_interp_pix_b (dxyz, bxf, idx_tile, idx_local);
 
-		    // Calc. moving image coordinate from the deformation vector
-		    rc = bspline_find_correspondence (xyz_moving, ijk_moving,
-			xyz_fixed, dxyz, moving);
+                    // Calc. moving image coordinate from the deformation vector
+                    rc = bspline_find_correspondence (xyz_moving, ijk_moving,
+                        xyz_fixed, dxyz, moving);
 
-		    // Return code is 0 if voxel is pushed outside of 
-		    // moving image
-		    if (!rc) continue;
+                    // Return code is 0 if voxel is pushed outside of 
+                    // moving image
+                    if (!rc) continue;
 
-		    // Compute linear interpolation fractions
-		    li_clamp_3d (
-			ijk_moving,
-			ijk_moving_floor,
-			ijk_moving_round,
-			li_1,
-			li_2,
-			moving
-		    );
+                    // Compute linear interpolation fractions
+                    li_clamp_3d (
+                        ijk_moving,
+                        ijk_moving_floor,
+                        ijk_moving_round,
+                        li_1,
+                        li_2,
+                        moving
+                    );
 
-		    // Find linear indices for moving image
-		    idx_moving_floor = volume_index (moving->dim, ijk_moving_floor);
-		    idx_moving_round = volume_index (moving->dim, ijk_moving_round);
+                    // Find linear indices for moving image
+                    idx_moving_floor = volume_index (moving->dim, ijk_moving_floor);
+                    idx_moving_round = volume_index (moving->dim, ijk_moving_round);
 
-		    // Calc. moving voxel intensity via linear interpolation
-		    LI_VALUE (
-			m_val, 
-			li_1[0], li_2[0],
-			li_1[1], li_2[1],
-			li_1[2], li_2[2],
-			idx_moving_floor,
-			m_img, moving
-		    );
+                    // Calc. moving voxel intensity via linear interpolation
+                    LI_VALUE (
+                        m_val, 
+                        li_1[0], li_2[0],
+                        li_1[1], li_2[1],
+                        li_1[2], li_2[2],
+                        idx_moving_floor,
+                        m_img, moving
+                    );
 
-		    // Compute intensity difference
-		    diff = m_val - f_img[idx_fixed];
+                    // Compute intensity difference
+                    diff = m_val - f_img[idx_fixed];
 
-		    // Store the score!
-		    score_tile += diff * diff;
-		    num_vox++;
+                    // Store the score!
+                    score_tile += diff * diff;
+                    num_vox++;
 
-		    // Compute dc_dv
-		    dc_dv[0] = diff * m_grad[3 * idx_moving_round + 0];
-		    dc_dv[1] = diff * m_grad[3 * idx_moving_round + 1];
-		    dc_dv[2] = diff * m_grad[3 * idx_moving_round + 2];
+                    // Compute dc_dv
+                    dc_dv[0] = diff * m_grad[3 * idx_moving_round + 0];
+                    dc_dv[1] = diff * m_grad[3 * idx_moving_round + 1];
+                    dc_dv[2] = diff * m_grad[3 * idx_moving_round + 2];
 
-		    /* Generate condensed tile */
-		    bspline_update_sets (
-			sets_x, sets_y, sets_z,
-			idx_local, dc_dv, bxf
-		    );
+                    /* Generate condensed tile */
+                    bspline_update_sets (
+                        sets_x, sets_y, sets_z,
+                        idx_local, dc_dv, bxf
+                    );
 
                 } /* LOOP_THRU_TILE_X */
             } /* LOOP_THRU_TILE_Y */
@@ -484,8 +484,8 @@ bspline_score_c_mse (
     FILE* fp = 0;
 
     if (parms->debug) {
-	sprintf (debug_fn, "dc_dv_mse_%02d.txt", it++);
-	fp = fopen (debug_fn, "wb");
+        sprintf (debug_fn, "dc_dv_mse_%02d.txt", it++);
+        fp = fopen (debug_fn, "wb");
     }
 
     plm_timer_start (&timer);
@@ -516,7 +516,7 @@ bspline_score_c_mse (
 
                 /* Compute moving image coordinate of fixed image voxel */
                 rc = bspline_find_correspondence (mxyz, mijk, fxyz, 
-		    dxyz, moving);
+                    dxyz, moving);
 
                 /* If voxel is not inside moving image */
                 if (!rc) {
@@ -548,15 +548,15 @@ bspline_score_c_mse (
                 dc_dv[0] = diff * m_grad[3*mvr+0];  /* x component */
                 dc_dv[1] = diff * m_grad[3*mvr+1];  /* y component */
                 dc_dv[2] = diff * m_grad[3*mvr+2];  /* z component */
-		bspline_update_grad_b (&bst->ssd, bxf, pidx, qidx, dc_dv);
+                bspline_update_grad_b (&bst->ssd, bxf, pidx, qidx, dc_dv);
         
                 if (parms->debug) {
                     fprintf (fp, "%u %u %u %g %g %g [%g]\n", 
-			(unsigned int) rijk[0], 
-			(unsigned int) rijk[1], 
-			(unsigned int) rijk[2], 
-			dc_dv[0], dc_dv[1], dc_dv[2],
-			diff);
+                        (unsigned int) rijk[0], 
+                        (unsigned int) rijk[1], 
+                        (unsigned int) rijk[2], 
+                        dc_dv[0], dc_dv[1], dc_dv[2],
+                        diff);
                 }
 
                 score_acc += diff * diff;
@@ -626,16 +626,16 @@ bspline_score_i_mse (
     FILE* corr_fp = 0;
 
     if (parms->debug) {
-	char buf[1024];
-	sprintf (buf, "dc_dv_mse_%02d.txt", it);
-	std::string fn = parms->debug_dir + "/" + buf;
-	make_directory_recursive (fn.c_str());
-	dc_dv_fp = fopen (fn.c_str(), "wb");
+        char buf[1024];
+        sprintf (buf, "dc_dv_mse_%02d.txt", it);
+        std::string fn = parms->debug_dir + "/" + buf;
+        make_directory_recursive (fn.c_str());
+        dc_dv_fp = fopen (fn.c_str(), "wb");
 
-	sprintf (buf, "corr_mse_%02d.txt", it);
-	fn = parms->debug_dir + "/" + buf;
-	corr_fp = fopen (fn.c_str(), "wb");
-	it ++;
+        sprintf (buf, "corr_mse_%02d.txt", it);
+        fn = parms->debug_dir + "/" + buf;
+        corr_fp = fopen (fn.c_str(), "wb");
+        it ++;
     }
 
     plm_timer_start (&timer);
@@ -645,13 +645,13 @@ bspline_score_i_mse (
     memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
 
     /* GCS FIX: region of interest is not used */
-    for (LOOP_Z (fijk, fxyz, fixed)) {
+    LOOP_Z (fijk, fxyz, fixed) {
         p[2] = REGION_INDEX_Z (fijk, bxf);
         q[2] = REGION_OFFSET_Z (fijk, bxf);
-	for (LOOP_Y (fijk, fxyz, fixed)) {
+        LOOP_Y (fijk, fxyz, fixed) {
             p[1] = REGION_INDEX_Y (fijk, bxf);
             q[1] = REGION_OFFSET_Y (fijk, bxf);
-	    for (LOOP_X (fijk, fxyz, fixed)) {
+            LOOP_X (fijk, fxyz, fixed) {
                 p[0] = REGION_INDEX_X (fijk, bxf);
                 q[0] = REGION_OFFSET_X (fijk, bxf);
 
@@ -661,23 +661,23 @@ bspline_score_i_mse (
                 bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
 
                 /* Compute moving image coordinate of fixed image voxel */
-		mxyz[2] = fxyz[2] + dxyz[2] - moving->offset[2];
-		mxyz[1] = fxyz[1] + dxyz[1] - moving->offset[1];
-		mxyz[0] = fxyz[0] + dxyz[0] - moving->offset[0];
-		mijk[2] = PROJECT_Z (mxyz, moving->proj);
-		mijk[1] = PROJECT_Y (mxyz, moving->proj);
-		mijk[0] = PROJECT_X (mxyz, moving->proj);
+                mxyz[2] = fxyz[2] + dxyz[2] - moving->offset[2];
+                mxyz[1] = fxyz[1] + dxyz[1] - moving->offset[1];
+                mxyz[0] = fxyz[0] + dxyz[0] - moving->offset[0];
+                mijk[2] = PROJECT_Z (mxyz, moving->proj);
+                mijk[1] = PROJECT_Y (mxyz, moving->proj);
+                mijk[0] = PROJECT_X (mxyz, moving->proj);
 
                 if (parms->debug) {
                     fprintf (corr_fp, 
-			"%d %d %d %f %f %f\n",
-			(unsigned int) fijk[0], (unsigned int) fijk[1], 
-			(unsigned int) fijk[2], mijk[0], mijk[1], mijk[2]);
+                        "%d %d %d %f %f %f\n",
+                        (unsigned int) fijk[0], (unsigned int) fijk[1], 
+                        (unsigned int) fijk[2], mijk[0], mijk[1], mijk[2]);
                 }
 
-		if (mijk[2] < -0.5 || mijk[2] > moving->dim[2] - 0.5) continue;
-		if (mijk[1] < -0.5 || mijk[1] > moving->dim[1] - 0.5) continue;
-		if (mijk[0] < -0.5 || mijk[0] > moving->dim[0] - 0.5) continue;
+                if (mijk[2] < -0.5 || mijk[2] > moving->dim[2] - 0.5) continue;
+                if (mijk[1] < -0.5 || mijk[1] > moving->dim[1] - 0.5) continue;
+                if (mijk[0] < -0.5 || mijk[0] > moving->dim[0] - 0.5) continue;
 
                 /* Compute interpolation fractions */
                 li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
@@ -700,19 +700,18 @@ bspline_score_i_mse (
                 float diff = m_val - f_img[fv];
 
                 /* Compute spatial gradient using nearest neighbors */
-		/* GCS FIX: Gradient image should use world coordinates */
                 mvr = volume_index (moving->dim, mijk_r);
                 dc_dv[0] = diff * m_grad[3*mvr+0];  /* x component */
                 dc_dv[1] = diff * m_grad[3*mvr+1];  /* y component */
                 dc_dv[2] = diff * m_grad[3*mvr+2];  /* z component */
-		bspline_update_grad_b (&bst->ssd, bxf, pidx, qidx, dc_dv);
+                bspline_update_grad_b (&bst->ssd, bxf, pidx, qidx, dc_dv);
         
                 if (parms->debug) {
                     fprintf (dc_dv_fp, 
-			"%u %u %u %g %g %g %g\n", 
-			(unsigned int) fijk[0], (unsigned int) fijk[1], 
-			(unsigned int) fijk[2], diff, dc_dv[0], 
-			dc_dv[1], dc_dv[2]);
+                        "%u %u %u %g %g %g %g\n", 
+                        (unsigned int) fijk[0], (unsigned int) fijk[1], 
+                        (unsigned int) fijk[2], diff, dc_dv[0], 
+                        dc_dv[1], dc_dv[2]);
                 }
 
                 score_acc += diff * diff;

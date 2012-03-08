@@ -469,10 +469,11 @@ rbf_gauss_update_vf (
 
     vf_img = (float*) vf->img;
 
-    for (v = 0, LOOP_Z (ijk, fxyz, vf)) {
-	for (LOOP_Y (ijk, fxyz, vf)) {
-	    for (LOOP_X (ijk, fxyz, vf), v++) {
-
+    v=0;
+    LOOP_Z (ijk, fxyz, vf) {
+	LOOP_Y (ijk, fxyz, vf) {
+	    LOOP_X (ijk, fxyz, vf) {
+                v++;
 		for (lidx=0; lidx < num_landmarks; lidx++) {
 			
 		    rbf = rbf_value (

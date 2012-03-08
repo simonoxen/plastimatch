@@ -87,9 +87,11 @@ vf_warp (Volume *vout, Volume *vin, Volume *vf)
 	}
     }
 
-    for (v = 0, LOOP_Z (ijk, fxyz, vf)) {
-	for (LOOP_Y (ijk, fxyz, vf)) {
-	    for (LOOP_X (ijk, fxyz, vf), v++) {
+    v=0;
+    LOOP_Z (ijk, fxyz, vf) {
+	LOOP_Y (ijk, fxyz, vf) {
+	    LOOP_X (ijk, fxyz, vf) {
+                v++;
 		float *dxyz = &vf_img[3*v];
 		float mo_xyz[3] = {
 		    fxyz[0] + dxyz[0] - vin->offset[0],
