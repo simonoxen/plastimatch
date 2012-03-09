@@ -6,6 +6,12 @@
 
 #include "plm_config.h"
 
+extern "C" {
+#include "lua.h"
+#include "lauxlib.h"
+#include "lualib.h"
+}
+
 #if defined __cplusplus
 extern "C" {
 #endif
@@ -21,6 +27,7 @@ print_command_table (
 void build_args (int* argc, char*** argv, char* cmd);
 void list_vars_of_class (lua_State* L, const char* class_name);
 void sort_list (char** c, int n);
+void* get_obj_ptr_from_name (lua_State* L, const char* name);
 
 #if defined __cplusplus
 }

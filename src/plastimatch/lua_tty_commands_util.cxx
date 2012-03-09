@@ -134,3 +134,23 @@ sort_list (char** c, int n)
         }
     }
 }
+
+/* given a variable name, returns ptr */
+void*
+get_obj_ptr_from_name (lua_State* L, const char* name)
+{
+    int argc;
+    char** argv;
+
+    void* ptr;
+    lua_pushvalue (L, LUA_GLOBALSINDEX);
+    lua_pushnil (L);
+    while (lua_next (L, -2)) {
+        if (!strcmp (lua_tostring (L, 2), name)) {
+            ptr = lua_touserdata (L, 3);
+        }
+        lua_pop (L, 1);
+    }
+    lua_pop (L, 1);
+    return ptr;
+}

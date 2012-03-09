@@ -20,6 +20,7 @@ extern "C" {
 #include "lua_tty_commands.h"
 #include "lua_tty_commands_pcmd.h"
 #include "lua_tty_commands_util.h"
+#include "lua_tty_preview.h"
 #include "lua_util.h"
 
 static void do_tty_command_pwd (lua_State* L, int argc, char** argv);
@@ -152,6 +153,13 @@ do_tty_command_ls (lua_State* L, int argc, char** argv)
     print_command_table (f_list, n, 60, 3);
 }
 
+static void
+do_tty_command_preview (lua_State* L, int argc, char** argv)
+{
+#if 0
+    preview_portal (L, argc, argv);
+#endif
+}
 
 static void
 do_tty_command_pwd (lua_State* L, int argc, char** argv)
@@ -194,6 +202,9 @@ do_tty_command (lua_State *L)
     }
     else if (!strcmp (argv[0], TTY_CMD_PCMD)) {
         do_tty_command_pcmd (argc, argv);
+    }
+    else if (!strcmp (argv[0], TTY_CMD_PREVIEW)) {
+        do_tty_command_preview (L, argc, argv);
     }
     else if (!strcmp (argv[0], TTY_CMD_PWD)) {
         do_tty_command_pwd (L, argc, argv);
