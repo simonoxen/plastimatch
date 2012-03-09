@@ -41,6 +41,9 @@ char*
 plm_getcwd (char* s, int len);
 plmsys_EXPORT
 int
+plm_chdir (char* s);
+plmsys_EXPORT
+int
 plm_get_dir_list (const char*** f_list);
 
 #if defined __cplusplus

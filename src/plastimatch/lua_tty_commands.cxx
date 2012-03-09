@@ -72,11 +72,7 @@ do_tty_command_cd (lua_State* L, int argc, char** argv)
         path = argv[1];
     }
 
-#if (UNIX)
-    ret = chdir (path);
-#elif (WIN32)
-    ret = _chdir (path);
-#endif
+    ret = plm_chdir (path);
 
     if (ret == -1) {
         switch (errno) {
@@ -122,7 +118,6 @@ do_tty_command_list (lua_State* L, int argc, char** argv)
     if (argc < 2) {
         /* no arguments -- list everything */
         for (int i=0; i<num_lua_classes; i++) {
-//            fprintf (stdout, "'%s' - ", lua_classes[i]);
             list_vars_of_class (L, lua_classes[i]);
             printf ("\n");
         }
@@ -130,7 +125,6 @@ do_tty_command_list (lua_State* L, int argc, char** argv)
         char* ct = argv[1]; /* class type */
         for (int i=0; i<num_lua_classes; i++) {
             if (!strcmp (ct, lua_classes[i])) {
-//                fprintf (stdout, "'%s' - ", lua_classes[i]);
                 list_vars_of_class (L, lua_classes[i]);
                 printf ("\n");
             }

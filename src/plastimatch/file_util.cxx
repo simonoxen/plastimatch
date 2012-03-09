@@ -239,6 +239,18 @@ plm_getcwd (char* s, int len)
 #endif
 }
 
+/* cross platform chdir */
+int
+plm_chdir (char* s)
+{
+#if (UNIX)
+    return chdir (s);
+#elif (WIN32)
+    /* Microsoft declares POSIX as "deprecated" */
+    return _chdir (s);
+#endif
+}
+
 /* cross platform directory list */
 int
 plm_get_dir_list (const char*** f_list)
