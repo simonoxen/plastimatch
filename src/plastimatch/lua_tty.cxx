@@ -175,7 +175,7 @@ pushline (lua_State *L, int firstline)
         b[l-1] = '\0';
     }
 
-    if (firstline) {
+    if (firstline && l>0) {
         /* check for TTY commands */
         strcpy (tb, b);
         token = strtok (tb, " ");
