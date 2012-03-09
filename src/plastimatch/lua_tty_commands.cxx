@@ -22,12 +22,7 @@ extern "C" {
 #include "lua_tty_commands_util.h"
 #include "lua_util.h"
 
-#include <dirent.h>
-#include <unistd.h>
-
 static void do_tty_command_pwd (lua_State* L, int argc, char** argv);
-
-
 
 
 /* displays commands available to user */
