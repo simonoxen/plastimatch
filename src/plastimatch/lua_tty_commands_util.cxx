@@ -109,11 +109,28 @@ list_vars_of_class (lua_State* L, const char* class_name)
     }
     lua_pop (L, 1);
 
+    fprintf (stdout, "[%s] ", class_name);
     if (b[0] != '\0') {
         build_args (&argc, &argv, b);
         fprintf (stdout, "%i item(s)\n", argc);
         print_command_table ((const char**)argv, argc, 60, 3);
     } else {
         fprintf (stdout, "0 items\n");
+    }
+}
+
+void
+sort_list (char** c, int n)
+{
+    int i, j;
+    char* tmp;
+    for (j=0; j<(n-1); j++) {
+        for (i=0; i<(n-(1+j)); i++) {
+            if (c[i][0] > c[i+1][0]) {
+                tmp = c[i+1];
+                c[i+1] = c[i];
+                c[i] = tmp;
+            }
+        }
     }
 }

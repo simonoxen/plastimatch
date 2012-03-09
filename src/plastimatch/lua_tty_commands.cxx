@@ -3,6 +3,7 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 
+#include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -21,7 +22,15 @@ extern "C" {
 #include "lua_tty_commands_util.h"
 #include "lua_util.h"
 
+#include <dirent.h>
+#include <unistd.h>
 
+static void do_tty_command_pwd (lua_State* L, int argc, char** argv);
+
+
+
+
+/* displays commands available to user */
 static void
 do_tty_command_help (lua_State* L, int argc, char** argv)
 {
@@ -53,6 +62,51 @@ do_tty_command_help (lua_State* L, int argc, char** argv)
     fprintf (stdout, "\n");
 }
 
+/* change current working directory */
+static void
+do_tty_command_cd (lua_State* L, int argc, char** argv)
+{
+    int ret;
+    char* path;
+
+    /* if no arguments, just pwd */
+    if (argc < 2) {
+        do_tty_command_pwd (L, argc, argv);
+        return;
+    } else {
+        path = argv[1];
+    }
+
+#if (UNIX)
+    ret = chdir (path);
+#elif (WIN32)
+    ret = _chdir (path);
+#endif
+
+    if (ret == -1) {
+        switch (errno) {
+        case EACCES:
+            fprintf (stdout, "cd -- permission denied\n");
+            break;
+        case ENAMETOOLONG:
+            fprintf (stdout, "cd -- specified path exceeds allowed length\n");
+            break;
+        case ENOENT:
+            fprintf (stdout, "cd -- specified directory not found\n");
+            break;
+        case ENOTDIR:
+            fprintf (stdout, "cd -- specified path not a directory\n");
+            break;
+        case ELOOP:
+            fprintf (stdout, "cd -- encountered too many symbolic links\n");
+            break;
+        }
+    }
+
+}
+
+
+/* run a lua script from within the tty environment */
 static void
 do_tty_command_run (lua_State* L, int argc, char** argv)
 {
@@ -66,13 +120,14 @@ do_tty_command_run (lua_State* L, int argc, char** argv)
     }
 }
 
+/* dispaly count and names of allocated Plastimatch objects */
 static void
 do_tty_command_list (lua_State* L, int argc, char** argv)
 {
     if (argc < 2) {
         /* no arguments -- list everything */
         for (int i=0; i<num_lua_classes; i++) {
-            fprintf (stdout, "'%s' - ", lua_classes[i]);
+//            fprintf (stdout, "'%s' - ", lua_classes[i]);
             list_vars_of_class (L, lua_classes[i]);
             printf ("\n");
         }
@@ -80,7 +135,7 @@ do_tty_command_list (lua_State* L, int argc, char** argv)
         char* ct = argv[1]; /* class type */
         for (int i=0; i<num_lua_classes; i++) {
             if (!strcmp (ct, lua_classes[i])) {
-                fprintf (stdout, "'%s' - ", lua_classes[i]);
+//                fprintf (stdout, "'%s' - ", lua_classes[i]);
                 list_vars_of_class (L, lua_classes[i]);
                 printf ("\n");
             }
@@ -89,6 +144,39 @@ do_tty_command_list (lua_State* L, int argc, char** argv)
 
 }
 
+/* print a directory listing */
+static void
+do_tty_command_ls (lua_State* L, int argc, char** argv)
+{
+    int n;
+    const char** f_list;
+
+    n = plm_get_dir_list (&f_list);
+
+    if (n == -1) {
+        fprintf (stdout, "unable to get directory listing\n");
+        return;
+    }
+    sort_list ((char**)f_list, n);
+
+    printf ("%i items\n", n);
+    print_command_table (f_list, n, 60, 3);
+}
+
+
+static void
+do_tty_command_pwd (lua_State* L, int argc, char** argv)
+{
+    char* b = NULL;
+
+    b = plm_getcwd (NULL, 0);
+
+    printf ("%s\n", b);
+    free (b);
+}
+
+/* main tty command parser. if you hit this, then
+ * the Lua 'interpreter' is bypassed entirely */
 void
 do_tty_command (lua_State *L)
 {
@@ -105,20 +193,23 @@ do_tty_command (lua_State *L)
     if (!strcmp (argv[0], TTY_CMD_HELP)) {
         do_tty_command_help (L, argc, argv);
     }
-    else if (!strcmp (argv[0], TTY_CMD_RUN)) {
-        do_tty_command_run (L, argc, argv);
+    else if (!strcmp (argv[0], TTY_CMD_CD)) {
+        do_tty_command_cd (L, argc, argv);
+    }
+    else if (!strcmp (argv[0], TTY_CMD_DIR) ||
+             !strcmp (argv[0], TTY_CMD_LS)) {
+        do_tty_command_ls (L, argc, argv);
     }
     else if (!strcmp (argv[0], TTY_CMD_LIST)) {
         do_tty_command_list (L, argc, argv);
     }
-    else if (!strcmp (argv[0], TTY_CMD_DIR) ||
-             !strcmp (argv[0], TTY_CMD_LS)) {
-        /* run some OS dependent code */
-    }
-    else if (!strcmp (argv[0], TTY_CMD_CD)) {
-        /* run some OS dependent code */
-    }
     else if (!strcmp (argv[0], TTY_CMD_PCMD)) {
         do_tty_command_pcmd (argc, argv);
+    }
+    else if (!strcmp (argv[0], TTY_CMD_PWD)) {
+        do_tty_command_pwd (L, argc, argv);
+    }
+    else if (!strcmp (argv[0], TTY_CMD_RUN)) {
+        do_tty_command_run (L, argc, argv);
     }
 }

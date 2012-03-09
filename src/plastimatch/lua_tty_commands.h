@@ -18,6 +18,7 @@ extern "C" {
 #define TTY_CMD_LS   "ls"
 #define TTY_CMD_LIST "list"
 #define TTY_CMD_PCMD "pcmd"
+#define TTY_CMD_PWD  "pwd"
 #define TTY_CMD_RUN  "run"
 
 static const char* tty_cmds[] = {
@@ -27,6 +28,7 @@ static const char* tty_cmds[] = {
     TTY_CMD_LS,
     TTY_CMD_LIST,
     TTY_CMD_PCMD,
+    TTY_CMD_PWD,
     TTY_CMD_RUN
 };
 static const int num_tty_cmds = sizeof (tty_cmds)/sizeof(char*);
