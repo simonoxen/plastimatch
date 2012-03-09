@@ -36,6 +36,12 @@ file_util_dirname (const char *filename);
 plmsys_EXPORT
 char*
 file_util_parent (const char *filename);
+plmsys_EXPORT
+char*
+plm_getcwd (char* s, int len);
+plmsys_EXPORT
+int
+plm_get_dir_list (const char*** f_list);
 
 #if defined __cplusplus
 plmsys_EXPORT
