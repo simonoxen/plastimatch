@@ -13,8 +13,14 @@
 #cmakedefine HAVE_32_BIT 1
 #cmakedefine HAVE_64_BIT 1
 
-/* #ifndef (_WIN32) doesn't just mean linux anymore */
-#cmakedefine APPLE 1
+/* Major OSes */
+#cmakedefine WIN32 1
+#cmakedefine UNIX  1
+
+/* "Special" subclasses of UNIX */
+#cmakedefine APPLE  1
+#cmakedefine CYGWIN 1
+#cmakedefine GNU    1
 
 /* Compiler attributes */
 #cmakedefine FORTRAN_COMPILER_FOUND 1
