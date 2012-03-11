@@ -20,6 +20,10 @@ ITK_DIR:PATH=/home/gcs6/build/itk-3.20.0
 //The directory containing a CMake configuration file for VTK.
 VTK_DIR:PATH=/PHShome/gcs6/build/vtk-5.6.1
 
+//Disable reg23 testing (it builds, but doesn't run on this computer)
+ORAIFUTILS_BUILD_TESTING:BOOL=OFF
+REG23_BUILD_TESTING:BOOL=OFF
+
 //Build with shared libraries.
 BUILD_SHARED_LIBS:BOOL=OFF
 ")
