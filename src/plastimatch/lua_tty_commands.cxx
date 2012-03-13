@@ -16,6 +16,7 @@ extern "C" {
 
 #include "file_util.h"
 #include "lua_classes.h"
+#include "lua_class_image.h"
 #include "lua_tty.h"
 #include "lua_tty_commands.h"
 #include "lua_tty_commands_pcmd.h"
@@ -156,8 +157,24 @@ do_tty_command_ls (lua_State* L, int argc, char** argv)
 static void
 do_tty_command_preview (lua_State* L, int argc, char** argv)
 {
-#if 0
-    preview_portal (L, argc, argv);
+#if (QT4_FOUND)
+    lua_image* limg;
+    char* img_obj_name;
+
+    if (argc < 2) {
+        return;
+    } else {
+        img_obj_name = argv[1];
+    }
+
+    limg = (lua_image*)get_obj_ptr_from_name (L, img_obj_name);
+    if (limg) {
+        preview_portal (limg->pli);
+    } else {
+        fprintf (stdout, "%s does not exist\n", img_obj_name);
+    }
+#else
+    fprintf (stdout, "preview not available -- plastimatch not compiled against QT4.\n");
 #endif
 }
 

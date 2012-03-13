@@ -227,6 +227,15 @@ if (CUDA_FOUND)
   endif ()
 endif ()
 
+if (QT4_FOUND)
+  qt4_wrap_cpp (PORTAL_MOC_SRC
+      cview_portal.h
+  )
+  qt4_wrap_cpp (CRYSTALVIEW_MOC_SRC
+    cview_main.h
+    )
+endif ()
+
 if (FFTW_FOUND)
   set (GPUIT_LIBRARY_SRC
     ${GPUIT_LIBRARY_SRC}
@@ -541,6 +550,33 @@ set (OPENCL_PROBE_SRC
 if (OPENCL_FOUND)
   plm_add_opencl_file (GPUIT_LIBRARY_SRC opencl_probe.cl)
 endif ()
+set (LUA_INTERFACE_SRC
+    pcmd_script.cxx pcmd_script.h
+    lua_class_image.cxx lua_class_image.h
+    lua_class_register.cxx lua_class_register.h
+    lua_class_stage.cxx lua_class_stage.h
+    lua_class_xform.cxx lua_class_xform.h
+    lua_cli_glue.cxx lua_cli_glue.h
+    lua_iface_add.cxx lua_iface_add.h
+    lua_iface_crop.cxx lua_iface_crop.h
+    lua_iface_mask.cxx lua_iface_mask.h
+#    lua_iface_register.cxx lua_iface_register.h
+    lua_iface_resample.cxx lua_iface_resample.h
+    lua_iface_synth.cxx lua_iface_synth.h
+    lua_tty.cxx lua_tty.h
+    lua_tty_commands.cxx lua_tty_commands.h
+    lua_tty_commands_pcmd.cxx lua_tty_commands_pcmd.h
+    lua_tty_commands_util.cxx lua_tty_commands_util.h
+    lua_util.cxx lua_util.h
+)
+if (QT4_FOUND)
+    set (LUA_INTERFACE_SRC
+      ${LUA_INTERFACE_SRC}
+      ${PORTAL_MOC_SRC}
+      cview_portal.cxx cview_portal.h
+      lua_tty_preview.cxx lua_tty_preview.h
+    )
+endif ()
 set (PLASTIMATCH_SRC
   pcmd_add.cxx pcmd_add.h
   pcmd_adjust.cxx pcmd_adjust.h
@@ -570,23 +606,7 @@ set (PLASTIMATCH_SRC
 if (PLM_CONFIG_ENABLE_LUA)
   set (PLASTIMATCH_SRC
     ${PLASTIMATCH_SRC}
-    pcmd_script.cxx pcmd_script.h
-    lua_class_image.cxx lua_class_image.h
-    lua_class_register.cxx lua_class_register.h
-    lua_class_stage.cxx lua_class_stage.h
-    lua_class_xform.cxx lua_class_xform.h
-    lua_cli_glue.cxx lua_cli_glue.h
-    lua_iface_add.cxx lua_iface_add.h
-    lua_iface_crop.cxx lua_iface_crop.h
-    lua_iface_mask.cxx lua_iface_mask.h
-#    lua_iface_register.cxx lua_iface_register.h
-    lua_iface_resample.cxx lua_iface_resample.h
-    lua_iface_synth.cxx lua_iface_synth.h
-    lua_tty.cxx lua_tty.h
-    lua_tty_commands.cxx lua_tty_commands.h
-    lua_tty_commands_pcmd.cxx lua_tty_commands_pcmd.h
-    lua_tty_commands_util.cxx lua_tty_commands_util.h
-    lua_util.cxx lua_util.h
+    ${LUA_INTERFACE_SRC}
     )
 endif()
 set (PLASTIMATCH_SLICER_BSPLINE_SRC
@@ -628,15 +648,11 @@ if (QT4_FOUND AND QT_QTSQL_FOUND)
     )
 endif ()
 set (CRYSTALVIEW_SRC
+  ${CRYSTALVIEW_MOC_SRC}
+  ${PORTAL_MOC_SRC}
   cview_portal.cxx cview_portal.h
   cview_main.cxx cview_main.h
   )
-if (QT4_FOUND)
-  qt4_wrap_cpp (CRYSTALVIEW_SRC
-    cview_portal.h
-    cview_main.h
-    )
-endif ()
 set (PROTON_DOSE_SRC
   proton_dose_main.cxx 
   proton_dose_opts.cxx proton_dose_opts.h

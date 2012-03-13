@@ -142,7 +142,7 @@ get_obj_ptr_from_name (lua_State* L, const char* name)
     int argc;
     char** argv;
 
-    void* ptr;
+    void* ptr = NULL;
     lua_pushvalue (L, LUA_GLOBALSINDEX);
     lua_pushnil (L);
     while (lua_next (L, -2)) {

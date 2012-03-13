@@ -48,25 +48,14 @@ CrystalWindow::CrystalWindow (int argc, char** argv, QWidget *parent)
 #endif
 
 
-int
-preview_portal (lua_State* L, int argc, char** argv)
+int preview_portal (void* pli_in)
 {
-    lua_image* limg = NULL;
-    Plm_image* pli;
-    char* img_obj_name;
+#if (UNIX)
+    int argc = 0;
+    char** argv = NULL;
+    Plm_image* pli = (Plm_image*)pli_in;
 
-    if (argc < 2) {
-        return -1;
-    } else {
-        img_obj_name = argv[1];
-    }
-
-    limg = (lua_image*)get_obj_ptr_from_name (L, img_obj_name);
-
-#if 0
-    printf (">>>%p\n", limg);
-
-    if (!limg->pli) return -1;
+    if (!pli) return -1;
 
     pid_t child_pid;
     switch (child_pid = fork()) {
@@ -79,12 +68,15 @@ preview_portal (lua_State* L, int argc, char** argv)
 
             //attach pli to portal
             portal->resetPortal();
-            portal->setVolume (limg->pli->gpuit_float());
+            portal->setVolume (pli->gpuit_float());
             portal->setView (PortalWidget::Axial);
-
-            exit (1);
+            portal->show();
+            app.exec();
+            exit (0);
     }
-#endif
 
     return 0;
+#else
+    fprintf (stdout, "preview not available for non-unix... yet.\n");
+#endif
 }

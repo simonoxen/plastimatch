@@ -164,6 +164,12 @@ if (PLM_CONFIG_ENABLE_LUA)
         ${READLINE_LIBRARY}
         )
   endif()
+  if (QT4_FOUND)
+    set (PLASTIMATCH_LIBS
+        ${PLASTIMATCH_LIBS}
+        ${QT_LIBRARIES}
+        )
+  endif()
 endif()
 
 ##-----------------------------------------------------------------------------

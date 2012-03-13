@@ -10,7 +10,7 @@
 extern "C" {
 #endif
 
-int preview_portal (lua_State* L, int argc, char** argv);
+int preview_portal (void* pli);
 
 #if defined __cplusplus
 }
