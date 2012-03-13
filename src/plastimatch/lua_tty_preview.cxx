@@ -7,6 +7,7 @@
 
 #if (UNIX)
 #include <unistd.h>
+#include <signal.h>
 #endif
 
 extern "C" {
@@ -56,6 +57,15 @@ int preview_portal (void* pli_in)
     Plm_image* pli = (Plm_image*)pli_in;
 
     if (!pli) return -1;
+
+    /* prevent zombies */
+    struct sigaction sa;
+    sa.sa_handler = SIG_IGN;
+    sa.sa_flags = SA_NOCLDWAIT;
+    if (sigaction (SIGCHLD, &sa, NULL) == -1) {
+        perror ("sigaction()");
+        exit (1);
+    }
 
     pid_t child_pid;
     switch (child_pid = fork()) {
