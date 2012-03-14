@@ -8,7 +8,7 @@
 
 
 import plastimatch as plm
-
+"""
 ## EXAMPLE TO WARP AN IMAGE
 warp=plm.warp() ## Another way to create this objcet is: warp=plm.warp(log_file="log_warp.txt")
 warp.log_file="log_warp.txt" ## Log file is not indispensable
@@ -22,7 +22,7 @@ conv=plm.convert() ## Another way to create this objcet is: conv=plm.convert(log
 conv.log_file="log_convert.txt" ## Log file is not indispensable
 conv.option['input']="dicom_dir"
 conv.option['output-img']="img_from_dicom.mha"
-conv.run_convert()
+conv.run_convert()"""
 
 ## EXAMPLE TO REGISTER AN IMAGE
 reg=plm.register()## Another way to create this objcet is: reg=plm.register(par_file="par.txt", log_file="log.txt")

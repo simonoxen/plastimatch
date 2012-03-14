@@ -1,7 +1,7 @@
 ########################################################################
 ## These functions read and write mha files (images or vector fields)
 ## Author: Paolo Zaffino  (p.zaffino@yahoo.it)
-## Rev 13
+## Rev 14
 ## NOT TESTED ON PYTHON 3
 ########################################################################
 
@@ -17,10 +17,9 @@ import numpy as np
 ## spacing=voxel size
 ## offset=spatial offset of raw data
 ## data_type='short', 'float' or 'uchar'
-	
+
 def write (A, fn, spacing, offset, data_type):
 	
-
 	
 	if fn.endswith('.mha'): ## Check if the file extension is ".mha"
 		
@@ -84,7 +83,7 @@ def write (A, fn, spacing, offset, data_type):
 def read(fn):
 	
 	## Utility function - START -
-	def _cast2int (l):
+	def __cast2int (l):
 		for i in range(3):
 			if l[i].is_integer():
 				l[i]=int(l[i])
@@ -98,22 +97,22 @@ def read(fn):
 
 		## Read mha header
 		for r in range(20):
-	
+			
 			row=f.readline()
-	
+			
 			if row.startswith('Offset ='):
-				row=row[9:]
-				offset=_cast2int(map(float, row.split()))
+				row=row.split('=')[1].strip()
+				offset=__cast2int(map(float, row.split()))
 			elif row.startswith('ElementSpacing ='):
-				row=row[17:]
-				spacing=_cast2int(map(float, row.split()))
+				row=row.split('=')[1].strip()
+				spacing=__cast2int(map(float, row.split()))
 			elif row.startswith('DimSize ='):
-				row=row[10:]
+				row=row.split('=')[1].strip()
 				siz=map(int, row.split())
 			elif row.startswith('ElementNumberOfChannels = 3'):
 				data='vf' ## The matrix is a vf
 			elif row.startswith('ElementType ='):
-				data_type=row[14:-1]
+				data_type=row.split('=')[1].strip()
 			elif row.startswith('ElementDataFile ='):
 				break
 		
@@ -132,13 +131,13 @@ def read(fn):
 		elif data_type == 'MET_UCHAR':
 			raw=np.fromstring(raw, dtype=np.uint8)
 			data_type = 'uchar'
-	
+		
 		## Reshape array
 		if data == 'img':
 			raw=raw.reshape(siz[2],siz[1],siz[0]).T
 		elif data == 'vf':
 			raw=raw.reshape(siz[2],siz[1],siz[0],3)
-			raw=_shiftdim(raw, 3).T
+			raw=__shiftdim(raw, 3).T
 			siz=siz+[3]
 		
 		return (raw, siz, spacing, offset, data_type)
@@ -158,7 +157,7 @@ def read(fn):
 #################### UTILITY FUNCTION - START - ########################
 ############ PRIVATE UTILITY FUNCTION, NOT FOR PUBLIC USE ##############
 
-def _shiftdim (x, n):
+def __shiftdim (x, n):
 		return x.transpose(np.roll(range(x.ndim), -n))
 
 ##################### UTILITY FUNCTION - END - #########################
