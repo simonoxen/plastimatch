@@ -1330,6 +1330,119 @@ bspline_mi_pvi_8_dc_dv (
     dc_dv[1] = dc_dv[1] / num_vox_f / moving->spacing[1];
     dc_dv[2] = dc_dv[2] / num_vox_f / moving->spacing[2];
 
+#if defined (commentout)
+    for (idx_pv=0; idx_pv<8; idx_pv++) {
+        printf ("dw%i [ %2.5f %2.5f %2.5f ]\n", idx_pv, dw[3*idx_pv+0], dw[3*idx_pv+1], dw[3*idx_pv+2]);
+    }
+
+    printf ("S [ %2.5f %2.5f %2.5f ]\n\n\n", dc_dv[0], dc_dv[1], dc_dv[2]);
+    exit(0);
+#endif
+}
+
+static inline void
+bspline_mi_pvi_8_dc_dv_dcos (
+    float dc_dv[3],                /* Output */
+    BSPLINE_MI_Hist* mi_hist,      /* Input */
+    Bspline_state *bst,            /* Input */
+    Volume *fixed,                 /* Input */
+    Volume *moving,                /* Input */
+    int fv,                        /* Input */
+    int mvf,                       /* Input */
+    float mijk[3],                 /* Input */
+    float num_vox_f,               /* Input */
+    float li_1[3],                 /* Input */
+    float li_2[3]                  /* Input */
+)
+{
+    float dS_dP;
+    float* f_img = (float*) fixed->img;
+    float* m_img = (float*) moving->img;
+    double* f_hist = mi_hist->f_hist;
+    double* m_hist = mi_hist->m_hist;
+    double* j_hist = mi_hist->j_hist;
+        
+    Bspline_score* ssd = &bst->ssd;
+    int idx_fbin, idx_mbin, idx_jbin, idx_pv;
+    int offset_fbin;
+    int n[8];
+    float dw[24];
+
+    dc_dv[0] = dc_dv[1] = dc_dv[2] = 0.0f;
+
+    /* Calculate Point Indices for 8 neighborhood */
+    n[0] = mvf;
+    n[1] = n[0] + 1;
+    n[2] = n[0] + moving->dim[0];
+    n[3] = n[2] + 1;
+    n[4] = n[0] + moving->dim[0]*moving->dim[1];
+    n[5] = n[4] + 1;
+    n[6] = n[4] + moving->dim[0];
+    n[7] = n[6] + 1;
+
+    /* Pre-compute differential PV slices */
+    dw[3*0+0] = (  -1 ) * li_1[1] * li_1[2];    // dw0
+    dw[3*0+1] = li_1[0] * (  -1 ) * li_1[2];
+    dw[3*0+2] = li_1[0] * li_1[1] * (  -1 );
+
+    dw[3*1+0] = (  +1 ) * li_1[1] * li_1[2];    // dw1
+    dw[3*1+1] = li_2[0] * (  -1 ) * li_1[2];
+    dw[3*1+2] = li_2[0] * li_1[1] * (  -1 );
+
+    dw[3*2+0] = (  -1 ) * li_2[1] * li_1[2];    // dw2
+    dw[3*2+1] = li_1[0] * (  +1 ) * li_1[2];
+    dw[3*2+2] = li_1[0] * li_2[1] * (  -1 );
+
+    dw[3*3+0] = (  +1 ) * li_2[1] * li_1[2];    // dw3
+    dw[3*3+1] = li_2[0] * (  +1 ) * li_1[2];
+    dw[3*3+2] = li_2[0] * li_2[1] * (  -1 );
+
+    dw[3*4+0] = (  -1 ) * li_1[1] * li_2[2];    // dw4
+    dw[3*4+1] = li_1[0] * (  -1 ) * li_2[2];
+    dw[3*4+2] = li_1[0] * li_1[1] * (  +1 );
+
+    dw[3*5+0] = (  +1 ) * li_1[1] * li_2[2];    // dw5
+    dw[3*5+1] = li_2[0] * (  -1 ) * li_2[2];
+    dw[3*5+2] = li_2[0] * li_1[1] * (  +1 );
+
+    dw[3*6+0] = (  -1 ) * li_2[1] * li_2[2];    // dw6
+    dw[3*6+1] = li_1[0] * (  +1 ) * li_2[2];
+    dw[3*6+2] = li_1[0] * li_2[1] * (  +1 );
+
+    dw[3*7+0] = (  +1 ) * li_2[1] * li_2[2];    // dw7
+    dw[3*7+1] = li_2[0] * (  +1 ) * li_2[2];
+    dw[3*7+2] = li_2[0] * li_2[1] * (  +1 );
+
+
+    /* Fixed image voxel's histogram index */
+    idx_fbin = floor ((f_img[fv] - mi_hist->fixed.offset) / mi_hist->fixed.delta);
+    if (mi_hist->fixed.type == HIST_VOPT) {
+        idx_fbin = mi_hist->fixed.key_lut[idx_fbin];
+    }
+    offset_fbin = idx_fbin * mi_hist->moving.bins;
+
+    /* Partial Volume Contributions */
+    for (idx_pv=0; idx_pv<8; idx_pv++) {
+        idx_mbin = floor ((m_img[n[idx_pv]] - mi_hist->moving.offset) / mi_hist->moving.delta);
+        if (mi_hist->moving.type == HIST_VOPT) {
+            idx_mbin = mi_hist->moving.key_lut[idx_mbin];
+        }
+        idx_jbin = offset_fbin + idx_mbin;
+        if (j_hist[idx_jbin] > 0.0001) {
+            dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->smetric;
+            dc_dv[0] -= dw[3*idx_pv+0] * dS_dP;
+            dc_dv[1] -= dw[3*idx_pv+1] * dS_dP;
+            dc_dv[2] -= dw[3*idx_pv+2] * dS_dP;
+        }
+    }
+
+    dc_dv[0] = dc_dv[0] / num_vox_f;
+    dc_dv[1] = dc_dv[1] / num_vox_f;
+    dc_dv[2] = dc_dv[2] / num_vox_f;
+    dc_dv[0] = PROJECT_X (dc_dv, moving->proj);
+    dc_dv[1] = PROJECT_Y (dc_dv, moving->proj);
+    dc_dv[2] = PROJECT_Z (dc_dv, moving->proj);
+
 
 #if defined (commentout)
     for (idx_pv=0; idx_pv<8; idx_pv++) {
@@ -1340,6 +1453,7 @@ bspline_mi_pvi_8_dc_dv (
     exit(0);
 #endif
 }
+
 
 static inline void
 bspline_mi_pvi_6_dc_dv (
@@ -1649,7 +1763,7 @@ bspline_score_g_mi (Bspline_parms *parms,
                     mvf = volume_index (moving->dim, mijk_f);
 
                     /* Compute dc_dv */
-                    bspline_mi_pvi_8_dc_dv (
+                    bspline_mi_pvi_8_dc_dv_dcos (
                         dc_dv, mi_hist, bst,
                         fixed, moving, 
                         fv, mvf, mijk,
