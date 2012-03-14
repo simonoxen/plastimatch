@@ -471,8 +471,8 @@ plm_add_test (
 plmtest_check_interval (bspline-mi-c-1-check
   "${PLM_BUILD_TESTING_DIR}/bspline-mi-c-1.stdout.txt"
   "^\\\\[.*, 10] *MI *([-0-9.]*)"
-  "-0.800"
-  "-0.796"
+  "-0.795"
+  "-0.791"
   )
 set_property (TEST bspline-mi-c-1 APPEND PROPERTY DEPENDS gauss-1)
 set_property (TEST bspline-mi-c-1 APPEND PROPERTY DEPENDS gauss-3)
@@ -2419,8 +2419,8 @@ plm_add_test (
 plmtest_check_interval ("plm-resample-c-check"
   "${PLM_BUILD_TESTING_DIR}/plm-resample-c-stats.stdout.txt"
   "Mean: *([-0-9.]*)"
-  "6.73"
-  "6.8"
+  "6.67"
+  "6.74"
   )
 set_tests_properties (plm-resample-c PROPERTIES 
   DEPENDS "bspline-mi-c-1;black-1")
