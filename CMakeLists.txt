@@ -93,7 +93,7 @@ option (PLM_PREFER_EXTERNAL_ITK
 option (BUILD_SHARED_LIBS 
   "Build plastimatch as shared library" OFF)
 option (PLM_PREFER_F2C 
-  "Prefer using f2c over native fortran compiler" OFF)
+  "Prefer using f2c over native fortran compiler" ON)
 option (PLM_PREFER_SYSTEM_F2C 
   "Prefer the system f2c over the included f2c" ON)
 
