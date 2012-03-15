@@ -35,8 +35,20 @@ do_gpuit_bspline_stage_internal (
     Volume *moving = regd->moving_image->gpuit_float();
     logfile_printf ("Done.\n");
 
-    Volume *moving_ss, *fixed_ss;
+    Volume *m_mask = NULL;
+    Volume *f_mask = NULL;
+    Volume *moving_ss, *fixed_ss, *m_mask_ss, *f_mask_ss;
     Volume *moving_grad = 0;
+
+    /* prepare masks if provided */
+    if (regd->moving_mask) {
+        m_mask = regd->moving_mask->gpuit_float();
+    }
+    if (regd->fixed_mask) {
+        f_mask = regd->fixed_mask->gpuit_float();
+    }
+
+
 
     /* Confirm grid method.  This should go away? */
     if (stage->grid_method != 1) {
@@ -49,6 +61,8 @@ do_gpuit_bspline_stage_internal (
     /* Convert images to gpuit format */
     volume_convert_to_float (moving);		    /* Maybe not necessary? */
     volume_convert_to_float (fixed);		    /* Maybe not necessary? */
+    if (m_mask) volume_convert_to_float (m_mask);
+    if (f_mask) volume_convert_to_float (f_mask);
 
     /* Subsample images */
     logfile_printf ("SUBSAMPLE: (%d %d %d), (%d %d %d)\n", 
@@ -58,6 +72,12 @@ do_gpuit_bspline_stage_internal (
     );
     moving_ss = volume_subsample (moving, stage->moving_subsample_rate);
     fixed_ss = volume_subsample (fixed, stage->fixed_subsample_rate);
+    if (m_mask) {
+        m_mask_ss = volume_subsample_nn (m_mask, stage->moving_subsample_rate);
+    }
+    if (f_mask) {
+        f_mask_ss = volume_subsample_nn (f_mask, stage->fixed_subsample_rate);
+    }
 
     logfile_printf ("moving_ss size = %d %d %d\n", moving_ss->dim[0], 
 	moving_ss->dim[1], moving_ss->dim[2]);
@@ -193,14 +213,9 @@ do_gpuit_bspline_stage_internal (
 	    parms.debug_dir.c_str(), parms.debug_stage);
     }
 
-    /* JAS 2012.3.14 - using float b/c its late...
-     *   need to add gpuit_uchar() to plm_image */
-    if (regd->fixed_mask) {
-        parms.fixed_mask = regd->fixed_mask->gpuit_float();
-    }
-    if (regd->moving_mask) {
-        parms.moving_mask = regd->moving_mask->gpuit_float();
-    }
+    /* JAS 2012.3.14 - using float for masks here is lazy, sry */
+    if (f_mask) parms.fixed_mask = f_mask_ss;
+    if (m_mask) parms.moving_mask = m_mask_ss;
 
     /* Run bspline optimization */
     bspline_optimize (xf_out->get_gpuit_bsp(), 0, &parms, fixed_ss, 

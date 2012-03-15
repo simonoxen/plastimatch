@@ -821,15 +821,24 @@ bspline_find_correspondence_dcos_mask
     if (mijk[1] < -0.5 || mijk[1] > moving->dim[1] - 0.5) return 0;
     if (mijk[2] < -0.5 || mijk[2] > moving->dim[2] - 0.5) return 0;
 
-    /* JAS 2012.03.14 - I have not yet been able to test moving
-     *   masks as working properly... perhaps I generated a faulty mask */
-
     /* assumes mask has same geometry as moving image */
     if (moving_mask) {
+        float p_f[3];
+        size_t p[3];
+        p_f[0] = floorf (mijk[0]);
+        p_f[1] = floorf (mijk[1]);
+        p_f[2] = floorf (mijk[2]);
+        if (p_f[0] < 0) p_f[0] = 0;
+        if (p_f[1] < 0) p_f[1] = 0;
+        if (p_f[2] < 0) p_f[2] = 0;
+        p[0] = (size_t)p_f[0];
+        p[1] = (size_t)p_f[1];
+        p[2] = (size_t)p_f[2];
         float* m = (float*)moving_mask->img;
-        size_t i = (size_t)(floorf(mijk[0] + (moving->dim[0]*(mijk[1]) + moving->dim[1]*mijk[2])));
+        size_t i = volume_index (moving_mask->dim, p);
         if (m[i] < 0.5) return 0;
     }
+
 
     return 1;
 }

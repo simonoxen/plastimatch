@@ -276,3 +276,23 @@ volume_subsample (Volume* vol_in, int* sampling_rate)
     }
     return volume_resample (vol_in, dim, offset, spacing);
 }
+
+Volume*
+volume_subsample_nn (Volume* vol_in, int* sampling_rate)
+{
+    int d;
+    size_t dim[3];
+    float offset[3];
+    float spacing[3];
+
+    for (d = 0; d < 3; d++) {
+	float in_size = vol_in->dim[d] * vol_in->spacing[d];
+
+	dim[d] = vol_in->dim[d] / sampling_rate[d];
+	if (dim[d] < 1) dim[d] = 1;
+	spacing[d] = in_size / dim[d];
+	offset[d] = (float) (vol_in->offset[d] - 0.5 * vol_in->spacing[d] 
+	    + 0.5 * spacing[d]);
+    }
+    return volume_resample_nn (vol_in, dim, offset, spacing);
+}
