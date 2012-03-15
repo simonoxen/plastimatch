@@ -104,8 +104,8 @@ set_fixed_image_region_global (Registration_data* regd)
 	typedef itk::ImageRegionConstIteratorWithIndex< 
 	    UCharImageType > IteratorType;
 	UCharImageType::RegionType region 
-	    = regd->fixed_mask->GetLargestPossibleRegion();
-	IteratorType it (regd->fixed_mask, region);
+	    = regd->fixed_mask->itk_uchar()->GetLargestPossibleRegion();
+	IteratorType it (regd->fixed_mask->itk_uchar(), region);
 
 	int first = 1;
 	valid_index[0] = 0;

@@ -1555,6 +1555,289 @@ bspline_mi_pvi_6_dc_dv (
    Scoring functions
    ----------------------------------------------------------------------- */
 
+/* B-Spline Registration using Mutual Information
+ * Implementation H  (D w/ direction cosines & true mask support)
+ *   -- Uses OpenMP for Cost & dc_dv computation
+ *   -- Uses methods introduced in bspline_score_g_mse
+ *        to compute dc_dp more rapidly.
+ */
+void
+bspline_score_h_mi (
+    Bspline_parms *parms, 
+    Bspline_state *bst,
+    Bspline_xform *bxf, 
+    Volume *fixed, 
+    Volume *moving, 
+    Volume *moving_grad)
+{
+    Bspline_score* ssd = &bst->ssd;
+    BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
+    size_t rijk[3];
+    float diff;
+    float* f_img = (float*) fixed->img;
+    float* m_img = (float*) moving->img;
+    float num_vox_f;
+    long pidx;
+    Plm_timer timer;
+    float m_val;
+
+    size_t fijk[3] = {0};
+    size_t fv;
+    float mijk[3];
+    float fxyz[3];
+    float mxyz[3];
+    size_t mijk_f[3], mvf;      /* Floor */
+    size_t mijk_r[3];           /* Round */
+    size_t p[3];
+    size_t q[3];
+    float dxyz[3];
+    size_t qidx;
+    float li_1[3];           /* Fraction of interpolant in lower index */
+    float li_2[3];           /* Fraction of interpolant in upper index */
+
+    float mse_score = 0.0f;
+    double* f_hist = mi_hist->f_hist;
+    double* m_hist = mi_hist->m_hist;
+    double* j_hist = mi_hist->j_hist;
+    size_t zz;
+
+    size_t cond_size = 64*bxf->num_knots*sizeof(float);
+    float* cond_x = (float*)malloc(cond_size);
+    float* cond_y = (float*)malloc(cond_size);
+    float* cond_z = (float*)malloc(cond_size);
+
+    Volume* fixed_mask  = parms->fixed_mask;
+    Volume* moving_mask = parms->moving_mask;
+
+    float* fixed_mask_img;  
+    float* moving_mask_img;
+
+    if (fixed_mask) {
+        fixed_mask_img = (float*)fixed_mask->img;
+    }
+    if (moving_mask) {
+        moving_mask_img = (float*)moving_mask->img;
+    }
+
+#if 0
+    FILE* fp = 0;
+    char debug_fn[1024];
+    static int it = 0;
+    if (parms->debug) {
+        sprintf (debug_fn, "dump_mi_%02d.txt", it++);
+        fp = fopen (debug_fn, "w");
+    }
+#endif
+
+    plm_timer_start (&timer);
+
+    memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
+    memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
+    memset (m_hist, 0, mi_hist->moving.bins * sizeof(double));
+    memset (j_hist, 0, mi_hist->fixed.bins * mi_hist->moving.bins * sizeof(double));
+    memset(cond_x, 0, cond_size);
+    memset(cond_y, 0, cond_size);
+    memset(cond_z, 0, cond_size);
+    ssd->num_vox = 0;
+
+    /* PASS 1 - Accumulate histogram */
+    LOOP_THRU_ROI_Z (rijk, fijk, bxf) {
+        p[2] = REGION_INDEX_Z (rijk, bxf);
+        q[2] = REGION_OFFSET_Z (rijk, bxf);
+        fxyz[2] = GET_COMMON_REAL_SPACE_COORD_Z (fijk, fixed, bxf);
+
+        LOOP_THRU_ROI_Y (rijk, fijk, bxf) {
+            p[1] = REGION_INDEX_Y (rijk, bxf);
+            q[1] = REGION_OFFSET_Y (rijk, bxf);
+            fxyz[1] = GET_COMMON_REAL_SPACE_COORD_Y (fijk, fixed, bxf);
+
+            LOOP_THRU_ROI_X (rijk, fijk, bxf) {
+                int rc;
+                p[0] = REGION_INDEX_X (rijk, bxf);
+                q[0] = REGION_OFFSET_X (rijk, bxf);
+                fxyz[0] = GET_COMMON_REAL_SPACE_COORD_X (fijk, fixed, bxf);
+
+                /* Check to make sure the indices are valid (inside mask) */
+                if (fixed_mask_img) {
+                    int mask_idx = volume_index (fixed->dim, fijk);
+                    if (fixed_mask_img[mask_idx] < 0.5) continue;
+                }
+
+                /* Get B-spline deformation vector */
+                pidx = volume_index (bxf->rdims, p);
+                qidx = volume_index (bxf->vox_per_rgn, q);
+                bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
+
+                rc = bspline_find_correspondence_dcos_mask (mxyz, mijk, fxyz, dxyz, moving, moving_mask);
+
+                /* If voxel is not inside moving image */
+                if (!rc) continue;
+
+                li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
+
+                /* Find linear index of fixed image voxel */
+                fv = volume_index (fixed->dim, fijk);
+
+                /* Find linear index of "corner voxel" in moving image */
+                mvf = volume_index (moving->dim, mijk_f);
+
+                /* Compute moving image intensity using linear interpolation */
+                // NOTE: Not used by MI PVI8
+                LI_VALUE (m_val, 
+                    li_1[0], li_2[0],
+                    li_1[1], li_2[1],
+                    li_1[2], li_2[2],
+                    mvf, m_img, moving
+                );
+
+                /* PARTIAL VALUE INTERPOLATION - 8 neighborhood */
+                bspline_mi_hist_add_pvi_8 (
+                    mi_hist, fixed, moving, 
+                    fv, mvf, li_1, li_2
+                );
+
+                /* Compute intensity difference */
+                diff = m_val - f_img[fv];
+                mse_score += diff * diff;
+                ssd->num_vox ++;
+
+            } /* LOOP_THRU_ROI_X */
+        } /* LOOP_THRU_ROI_Y */
+    } /* LOOP_TRHU_ROI_Z */
+
+    /* Draw histogram images if user wants them */
+    if (parms->xpm_hist_dump) {
+        dump_xpm_hist (mi_hist, parms->xpm_hist_dump, bst->it);
+    }
+
+    /* Compute score */
+    ssd->smetric = mi_hist_score_omp (mi_hist, ssd->num_vox);
+    num_vox_f = (float) ssd->num_vox;
+
+    /* PASS 2 - Compute Gradient (Parallel across tiles) */
+#pragma omp parallel for
+    LOOP_THRU_VOL_TILES (pidx, bxf) {
+        int rc;
+        size_t fijk[3], fv;
+        float mijk[3];
+        float fxyz[3];
+        float mxyz[3];
+        size_t mijk_f[3], mvf;      /* Floor */
+        size_t mijk_r[3];           /* Round */
+        size_t p[3];
+        size_t q[3];
+        float dxyz[3];
+        size_t qidx;
+        float li_1[3];           /* Fraction of interpolant in lower index */
+        float li_2[3];           /* Fraction of interpolant in upper index */
+        float dc_dv[3];
+        float sets_x[64];
+        float sets_y[64];
+        float sets_z[64];
+
+        memset(sets_x, 0, 64*sizeof(float));
+        memset(sets_y, 0, 64*sizeof(float));
+        memset(sets_z, 0, 64*sizeof(float));
+
+        /* Get tile indices from linear index */
+        COORDS_FROM_INDEX (p, pidx, bxf->rdims);
+
+        /* Serial through the voxels in a tile */
+        LOOP_THRU_TILE_Z (q, bxf) {
+            LOOP_THRU_TILE_Y (q, bxf) {
+                LOOP_THRU_TILE_X (q, bxf) {
+                    
+                    /* Construct ijk indices into fixed image volume */
+                    GET_VOL_COORDS (fijk, p, q, bxf);
+
+                    /* Check to make sure the indices are valid (inside volume) */
+                    if (fijk[0] >= bxf->roi_offset[0] + bxf->roi_dim[0]) { continue; }
+                    if (fijk[1] >= bxf->roi_offset[1] + bxf->roi_dim[1]) { continue; }
+                    if (fijk[2] >= bxf->roi_offset[2] + bxf->roi_dim[2]) { continue; }
+
+                    /* Check to make sure the indices are valid (inside mask) */
+                    if (fixed_mask_img) {
+                        int mask_idx = volume_index (fixed->dim, fijk);
+                        if (fixed_mask_img[mask_idx] < 0.5) continue;
+                    }
+
+                    /* Compute space coordinates of fixed image voxel */
+                    GET_COMMON_REAL_SPACE_COORDS (fxyz, fijk, fixed, bxf);
+
+                    /* Construct the linear index within tile space */
+                    qidx = volume_index (bxf->vox_per_rgn, q);
+
+                    /* Compute deformation vector (dxyz) for voxel */
+                    bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
+
+                    /* Find correspondence in moving image */
+                    rc = bspline_find_correspondence_dcos_mask (mxyz, mijk, fxyz, dxyz, moving, moving_mask);
+
+                    /* If voxel is not inside moving image */
+                    if (!rc) continue;
+
+                    /* Get tri-linear interpolation fractions */
+                    li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
+                    
+                    /* Constrcut the fixed image linear index within volume space */
+                    fv = volume_index (fixed->dim, fijk);
+
+                    /* Find linear index the corner voxel used to identifiy the
+                     * neighborhood of the moving image voxels corresponding
+                     * to the current fixed image voxel */
+                    mvf = volume_index (moving->dim, mijk_f);
+
+                    /* Compute dc_dv */
+                    bspline_mi_pvi_8_dc_dv_dcos (
+                        dc_dv, mi_hist, bst,
+                        fixed, moving, 
+                        fv, mvf, mijk,
+                        num_vox_f, li_1, li_2
+                    );
+
+                    /* Update condensed tile sets */
+                    bspline_update_sets (
+                        sets_x, sets_y, sets_z,
+                        qidx, dc_dv, bxf
+                    );
+
+                } /* LOOP_THRU_TILE_X */
+            } /* LOOP_THRU_TILE_Y */
+        } /* LOOP_THRU_TILE_Z */
+
+
+        /* We now have a tile of condensed dc_dv values (64 values).
+         * Let's put each one in the proper slot within the control
+         * point bin its belogs to */
+        bspline_sort_sets (cond_x, cond_y, cond_z,
+	    sets_x, sets_y, sets_z,
+	    pidx, bxf);
+
+    } /* LOOP_THRU_VOL_TILES */
+
+
+    /* Now we have a ton of bins and each bin's 64 slots are full.
+     * Let's sum each bin's 64 slots.  The result will be dc_dp. */
+    bspline_make_grad (cond_x, cond_y, cond_z, bxf, ssd);
+
+    free (cond_x);
+    free (cond_y);
+    free (cond_z);
+
+#if 0
+    if (parms->debug) {
+        fclose (fp);
+    }
+#endif
+
+    mse_score = mse_score / ssd->num_vox;
+    if (parms->debug) {
+        printf ("<< MSE %3.3f >>\n", mse_score);
+    }
+
+    ssd->time_smetric = plm_timer_report (&timer);
+}
+
 
 /* B-Spline Registration using Mutual Information
  * Implementation G  (D w/ direction cosines)

@@ -193,6 +193,15 @@ do_gpuit_bspline_stage_internal (
 	    parms.debug_dir.c_str(), parms.debug_stage);
     }
 
+    /* JAS 2012.3.14 - using float b/c its late...
+     *   need to add gpuit_uchar() to plm_image */
+    if (regd->fixed_mask) {
+        parms.fixed_mask = regd->fixed_mask->gpuit_float();
+    }
+    if (regd->moving_mask) {
+        parms.moving_mask = regd->moving_mask->gpuit_float();
+    }
+
     /* Run bspline optimization */
     bspline_optimize (xf_out->get_gpuit_bsp(), 0, &parms, fixed_ss, 
 	moving_ss, moving_grad);

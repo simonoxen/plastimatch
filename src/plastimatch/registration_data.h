@@ -16,8 +16,8 @@ public:
     /* Input images */
     Plm_image *fixed_image;
     Plm_image *moving_image;
-    UCharImageType::Pointer fixed_mask;
-    UCharImageType::Pointer moving_mask;
+    Plm_image *fixed_mask;
+    Plm_image *moving_mask;
 
     /* Input landmarks */
     Labeled_pointset *fixed_landmarks;

@@ -238,13 +238,13 @@ set_mask_images (RegistrationType::Pointer registration,
 {
     if (regd->fixed_mask) {
 	Mask_SOType::Pointer mask_so = Mask_SOType::New();
-	mask_so->SetImage(regd->fixed_mask);
+	mask_so->SetImage(regd->fixed_mask->itk_uchar());
 	mask_so->Update();
 	registration->GetMetric()->SetFixedImageMask (mask_so);
     }
     if (regd->moving_mask) {
 	Mask_SOType::Pointer mask_so = Mask_SOType::New();
-	mask_so->SetImage(regd->moving_mask);
+	mask_so->SetImage(regd->moving_mask->itk_uchar());
 	mask_so->Update();
 	registration->GetMetric()->SetMovingImageMask (mask_so);
     }

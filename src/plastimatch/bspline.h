@@ -153,6 +153,11 @@ public:
     float rbf_young_modulus;     /* Penalty for the large 2nd derivative 
 				    of RBF vector field */
     char *xpm_hist_dump;         /* Pointer to base string of hist dumps */
+
+    /* JAS - temporary home for these */
+    Volume* fixed_mask;
+    Volume* moving_mask;
+
 public:
     Bspline_parms () {
 	this->threading = BTHR_CPU;
@@ -187,6 +192,8 @@ public:
 	this->rbf_radius = 0;
 	this->rbf_young_modulus = 0;
 	this->xpm_hist_dump = 0;
+    this->fixed_mask = NULL;
+    this->moving_mask = NULL;
     }
 };
 
@@ -268,6 +275,16 @@ bspline_find_correspondence_dcos
  const Volume *moving     /* Input:  moving image */
 );
 
+int
+bspline_find_correspondence_dcos_mask
+(
+ float *mxyz,               /* Output: xyz coordinates in moving image (mm) */
+ float *mijk,               /* Output: ijk indices in moving image (vox) */
+ const float *fxyz,         /* Input:  xyz coordinates in fixed image (mm) */
+ const float *dxyz,         /* Input:  displacement from fixed to moving (mm) */
+ const Volume *moving,      /* Input:  moving image */
+ const Volume *moving_mask  /* Input:  moving image mask */
+);
 
 gpuit_EXPORT
 void
