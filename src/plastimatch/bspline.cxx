@@ -259,6 +259,45 @@ void find_knots (
 
 }
 
+int
+inside_mask (float* xyz, const Volume* mask)
+{
+    float p_f[3];
+    size_t p[3];
+
+    p_f[0] = xyz[0] - mask->offset[0];
+    p_f[1] = xyz[1] - mask->offset[1];
+    p_f[2] = xyz[2] - mask->offset[2];
+
+    p_f[0] = PROJECT_X (p_f, mask->proj);
+    p_f[1] = PROJECT_Y (p_f, mask->proj);
+    p_f[2] = PROJECT_Z (p_f, mask->proj);
+
+    if (p_f[0] < -0.5 || p_f[0] > mask->dim[0] - 0.5) return 0;
+    if (p_f[1] < -0.5 || p_f[1] > mask->dim[1] - 0.5) return 0;
+    if (p_f[2] < -0.5 || p_f[2] > mask->dim[2] - 0.5) return 0;
+
+    p_f[0] = floorf (p_f[0]);
+    p_f[1] = floorf (p_f[1]);
+    p_f[2] = floorf (p_f[2]);
+    if (p_f[0] < 0) p_f[0] = 0;
+    if (p_f[1] < 0) p_f[1] = 0;
+    if (p_f[2] < 0) p_f[2] = 0;
+    p[0] = (size_t)p_f[0];
+    p[1] = (size_t)p_f[1];
+    p[2] = (size_t)p_f[2];
+
+    float* m = (float*)mask->img;
+    size_t i = volume_index (mask->dim, p);
+
+    if (m[i] < 0.5) {
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
+
 /* -----------------------------------------------------------------------
    Debugging routines
    ----------------------------------------------------------------------- */
@@ -821,24 +860,9 @@ bspline_find_correspondence_dcos_mask
     if (mijk[1] < -0.5 || mijk[1] > moving->dim[1] - 0.5) return 0;
     if (mijk[2] < -0.5 || mijk[2] > moving->dim[2] - 0.5) return 0;
 
-    /* assumes mask has same geometry as moving image */
     if (moving_mask) {
-        float p_f[3];
-        size_t p[3];
-        p_f[0] = floorf (mijk[0]);
-        p_f[1] = floorf (mijk[1]);
-        p_f[2] = floorf (mijk[2]);
-        if (p_f[0] < 0) p_f[0] = 0;
-        if (p_f[1] < 0) p_f[1] = 0;
-        if (p_f[2] < 0) p_f[2] = 0;
-        p[0] = (size_t)p_f[0];
-        p[1] = (size_t)p_f[1];
-        p[2] = (size_t)p_f[2];
-        float* m = (float*)moving_mask->img;
-        size_t i = volume_index (moving_mask->dim, p);
-        if (m[i] < 0.5) return 0;
+        return inside_mask (mxyz, moving_mask);
     }
-
 
     return 1;
 }

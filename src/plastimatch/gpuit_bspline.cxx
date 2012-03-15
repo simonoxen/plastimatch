@@ -36,8 +36,10 @@ do_gpuit_bspline_stage_internal (
     logfile_printf ("Done.\n");
 
     Volume *m_mask = NULL;
+    Volume *m_mask_ss = NULL;
     Volume *f_mask = NULL;
-    Volume *moving_ss, *fixed_ss, *m_mask_ss, *f_mask_ss;
+    Volume *f_mask_ss = NULL;
+    Volume *moving_ss, *fixed_ss;
     Volume *moving_grad = 0;
 
     /* prepare masks if provided */

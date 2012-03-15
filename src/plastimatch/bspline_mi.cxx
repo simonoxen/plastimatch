@@ -1609,15 +1609,10 @@ bspline_score_h_mi (
     Volume* fixed_mask  = parms->fixed_mask;
     Volume* moving_mask = parms->moving_mask;
 
-    float* fixed_mask_img;  
-    float* moving_mask_img;
-
-    if (fixed_mask) {
-        fixed_mask_img = (float*)fixed_mask->img;
-    }
-    if (moving_mask) {
-        moving_mask_img = (float*)moving_mask->img;
-    }
+#if 0
+    Volume* dbg_vol = volume_clone_empty (moving);
+    float* dbg_img = (float*) dbg_vol->img;
+#endif
 
 #if 0
     FILE* fp = 0;
@@ -1658,9 +1653,8 @@ bspline_score_h_mi (
                 fxyz[0] = GET_COMMON_REAL_SPACE_COORD_X (fijk, fixed, bxf);
 
                 /* Check to make sure the indices are valid (inside mask) */
-                if (fixed_mask_img) {
-                    int mask_idx = volume_index (fixed->dim, fijk);
-                    if (fixed_mask_img[mask_idx] < 0.5) continue;
+                if (fixed_mask) {
+                    if (!inside_mask (fxyz, fixed_mask)) continue;
                 }
 
                 /* Get B-spline deformation vector */
@@ -1704,6 +1698,11 @@ bspline_score_h_mi (
             } /* LOOP_THRU_ROI_X */
         } /* LOOP_THRU_ROI_Y */
     } /* LOOP_TRHU_ROI_Z */
+
+#if 0
+    write_mha ("dbg_vol.mha", dbg_vol);
+    exit (0);
+#endif
 
     /* Draw histogram images if user wants them */
     if (parms->xpm_hist_dump) {
@@ -1756,9 +1755,8 @@ bspline_score_h_mi (
                     if (fijk[2] >= bxf->roi_offset[2] + bxf->roi_dim[2]) { continue; }
 
                     /* Check to make sure the indices are valid (inside mask) */
-                    if (fixed_mask_img) {
-                        int mask_idx = volume_index (fixed->dim, fijk);
-                        if (fixed_mask_img[mask_idx] < 0.5) continue;
+                    if (fixed_mask) {
+                        if (!inside_mask (fxyz, fixed_mask)) continue;
                     }
 
                     /* Compute space coordinates of fixed image voxel */

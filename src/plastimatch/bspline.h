@@ -317,6 +317,9 @@ bspline_update_grad_b (
 int* calc_offsets (int* tile_dims, int* cdims);
 
 void find_knots (size_t* knots, size_t tile_num, size_t* rdims, size_t* cdims);
+
+int inside_mask (float* xyz, const Volume* mask);
+
 void
 dump_hist (BSPLINE_MI_Hist* mi_hist, int it);
 
