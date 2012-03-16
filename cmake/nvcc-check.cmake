@@ -44,7 +44,7 @@ IF(CUDA_FOUND)
                         MESSAGE(STATUS "nvcc-check: Found gcc-${GCCVER_MAJOR}.${GCCVER_MINOR}... searching for gcc-4.3")
                         EXEC_PROGRAM(which ARGS "gcc-4.3" OUTPUT_VARIABLE GCC43 RETURN_VALUE GCC43_EXIST)
     
-                        IF()
+                        IF(GCC43_EXIST EQUAL 0)
                             MESSAGE(STATUS "nvcc-check: Found gcc-4.3... telling nvcc to use it!")
                             MESSAGE(STATUS "nvcc-check: CUDA_NVCC_FLAGS set to \"${CUDA_NVCC_FLAGS} --compiler-bindir=${GCC43}\"")
                             SET (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --compiler-bindir=${GCC43})
@@ -57,6 +57,7 @@ IF(CUDA_FOUND)
             ENDIF ()
 
             # CUDA 4.X NEEDS GCC-4.4 or GCC-4.3
+            #    ...this begs to be re-written
             IF (CUDA_VERSION_MAJOR MATCHES "4")
                 IF(GCCVER_MAJOR MATCHES "4")
                     # GCC 4.4 is okay
