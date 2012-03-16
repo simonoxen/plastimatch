@@ -1,7 +1,7 @@
 ########################################################################
 ## This is a Python wrapper for Plastimatch
 ## Author: Paolo Zaffino  (p.zaffino@yahoo.it)
-## Rev 2
+## Rev 3
 ## NOT TESTED ON PYTHON 3
 ########################################################################
 
@@ -9,6 +9,7 @@ import os
 import subprocess
 
 ####################### PUBLIC CLASSES - START - #######################
+
 
 print ("WARNING: Plastimatch Python wrapper is still in alpha version!")
 
@@ -44,6 +45,22 @@ class add:
 
 
 
+class adjust:
+	
+	def __init__ (self, log_file=""):
+		self.log_file=log_file
+	
+	option={}
+	
+	_adjust_keys=("input", "output", "output-type", "scale", "ab-scale",\
+	"stretch", "truncate-above", "truncate-below")
+	
+	def run_adjust(self):
+		_run_plm_command("adjust", self.option, self._adjust_keys, self.log_file)
+
+
+
+
 class convert:
 	
 	def __init__ (self, log_file=""):
@@ -62,15 +79,22 @@ class convert:
 	"spacing","xf","xor-contours")
 	
 	def run_convert(self):
-		if self.log_file == "":
-			self.log=open(os.devnull, "w")
-		else:
-			self.log=open(self.log_file, "w")
+		_run_plm_command("convert", self.option, self._convert_keys, self.log_file)
+
+
+
+
+class crop:
+	
+	def __init__ (self, log_file=""):
+		self.log_file=log_file
 		
-		subprocess.call('plastimatch convert ' + _scan_options(self.option, self._convert_keys),\
-		shell=True, stdout=self.log, stderr=self.log)
-		
-		self.log.close()
+	option={}
+	
+	_crop_keys=("input", "output", "voxels")
+	
+	def run_crop(self):
+		_run_plm_command("crop", self.option, self._crop_keys, self.log_file)
 
 
 
@@ -111,15 +135,7 @@ class fill:
 	_fill_keys=("input", "mask", "mask-value", "output", "output-format", "output-type")
 	
 	def run_fill(self):
-		if self.log_file == "":
-			self.log=open(os.devnull, "w")
-		else:
-			self.log=open(self.log_file, "w")
-		
-		subprocess.call('plastimatch fill ' + _scan_options(self.option, self._fill_keys),\
-		shell=True, stdout=self.log, stderr=self.log)
-		
-		self.log.close()
+		_run_plm_command("fill", self.option, self._fill_keys, self.log_file)
 
 
 
@@ -134,15 +150,7 @@ class mask:
 	_mask_keys=("input", "mask", "mask-value", "output", "output-format", "output-type")
 	
 	def run_mask(self):
-		if self.log_file == "":
-			self.log=open(os.devnull, "w")
-		else:
-			self.log=open(self.log_file, "w")
-		
-		subprocess.call('plastimatch mask ' + _scan_options(self.option, self._mask_keys),\
-		shell=True, stdout=self.log, stderr=self.log)
-		
-		self.log.close()
+		_run_plm_command("mask", self.option, self._mask_keys, self.log_file)
 
 
 
@@ -231,15 +239,22 @@ class resample:
 	"origin", "output", "output-type", "spacing", "subsample")
 	
 	def run_resample(self):
-		if self.log_file == "":
-			self.log=open(os.devnull, "w")
-		else:
-			self.log=open(self.log_file, "w")
+		_run_plm_command("resample", self.option, self._resample_keys, self.log_file)
+
+
+
+
+class segment:
+	
+	def __init__ (self, log_file=""):
+		self.log_file=log_file
 		
-		subprocess.call('plastimatch resample ' + _scan_options(self.option, self._resample_keys),\
-		shell=True, stdout=self.log, stderr=self.log)
-		
-		self.log.close()
+	option={}
+	
+	_segment_keys=("bottom", "debug", "fast", "input", "lower-treshold", "output-img")
+	
+	def run_segment(self):
+		_run_plm_command("segment", self.option, self._segment_keys, self.log_file)
 
 
 
@@ -262,15 +277,23 @@ class warp:
 	"spacing","xf","xor-contours")
 	
 	def run_warp(self):
-		if self.log_file == "":
-			self.log=open(os.devnull, "w")
-		else:
-			self.log=open(self.log_file, "w")
-		
-		subprocess.call('plastimatch warp ' + _scan_options(self.option, self._warp_keys),\
-		shell=True, stdout=self.log, stderr=self.log)
-		
-		self.log.close()
+		_run_plm_command("warp", self.option, self._warp_keys, self.log_file)
+
+
+
+
+class xfconvert:
+	
+	def __init__ (self, log_file=""):
+		self.log_file=log_file
+	
+	option={}
+	
+	_xfconvert_keys=("dim", "grid-spacing", "input", "nobulk", "origin",\
+	"output", "output-type", "spacing")
+	
+	def run_xfconvert(self):
+		_run_plm_command("xf-convert", self.option, self._xfconvert_keys, self.log_file)
 
 
 
@@ -284,17 +307,44 @@ class warp:
 ############ PRIVATE UTILITY FUNCTION, NOT FOR PUBLIC USE ##############
 
 def _clean_parms (d, t):
-		return dict((k, v) for k, v in d.iteritems() if k in t)
+	
+	return dict((k, v) for k, v in d.iteritems() if k in t)
+
+
+def _run_plm_command(command_type, command_options, command_keys, command_log_file):
+	
+	if command_log_file == "":
+		log=open(os.devnull, "w")
+	else:
+		log=open(command_log_file, "w")
+	
+	subprocess.call('plastimatch '+ command_type + _scan_options(command_options, command_keys),\
+	shell=True, stdout=log, stderr=log)
+	
+	log.close()
 
 
 def _scan_options (d, t):
+	
 		d=_clean_parms(d, t)
+		
+		special_keys=("voxels", "scale", "ab-scale", "stretch", "dim",\
+		"grid-spacing", "origin", "spacing")
+		
 		opt_str=""
+		
 		for key, value in dict.items(d):
-			opt_str+=" --"+key+"="+value
+			if value!="Enabled" and value!="Disabled" and key not in special_keys:
+				opt_str+=" --"+key+"="+value
+			elif key in special_keys:
+				opt_str+=" --"+key+"="+'"'+value+'"'
+			elif value=="Enabled":
+				opt_str+=" --"+key
+			elif value == "Disabled":
+				pass				
+		
 		return opt_str
 
 
 ############ PRIVATE UTILITY FUNCTION, NOT FOR PUBLIC USE ##############
 ##################### UTILITY FUNCTION - END - #########################
-
