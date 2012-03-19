@@ -129,6 +129,6 @@ IF(CUDA_FOUND)
         ENDIF()
     ENDIF()
 
-    message(STATUS "using nvcc flags ${CUDA_NVCC_FLAGS}")
+    #    message(STATUS "using nvcc flags ${CUDA_NVCC_FLAGS}")
 
 ENDIF(CUDA_FOUND)
