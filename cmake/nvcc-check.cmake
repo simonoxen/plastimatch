@@ -30,6 +30,12 @@ IF(CUDA_FOUND)
 
             #            MESSAGE(STATUS "nvcc-check: GCC Version is ${GCCVER_MAJOR}.${GCCVER_MINOR}.${GCCVER_PATCH}")
 
+            # We have to get NVCC version ourselves... the FindCUDA.cmake version # checks are
+            # skipped for non-initial CMake configuration runs
+            exec_program(${CUDA_NVCC_EXECUTABLE} ARGS "--version" OUTPUT_VARIABLE NVCC_OUT)
+            string(REGEX REPLACE ".*release ([0-9]+)\\.([0-9]+).*" "\\1" CUDA_VERSION_MAJOR ${NVCC_OUT})
+            string(REGEX REPLACE ".*release ([0-9]+)\\.([0-9]+).*" "\\2" CUDA_VERSION_MINOR ${NVCC_OUT})
+
             # CUDA 2.X IS UNSUPPORTED
             IF (CUDA_VERSION_MAJOR MATCHES "2")
                 MESSAGE(FATAL_ERROR "nvcc-check: Plastimatch only supports CUDA 3.0+\n")
@@ -64,24 +70,26 @@ IF(CUDA_FOUND)
                     IF(GCCVER_MINOR MATCHES "4")
                         MESSAGE(STATUS "nvcc-check: Found gcc-${GCCVER_MAJOR}.${GCCVER_MINOR}... success.")
                     ELSE()
-                        # GCC 4.3 is okay
-                        IF(GCCVER_MINOR MATCHES "4")
+                        # GCC 4.3 is also okay
+                        IF(GCCVER_MINOR MATCHES "3")
                             MESSAGE(STATUS "nvcc-check: Found gcc-${GCCVER_MAJOR}.${GCCVER_MINOR}... success.")
                         ELSE()
-                            # search for GCC-4.4
+                            # neither 4.4 or 4.3 are default, see if GCC-4.4 is also installed somewhere in the PATH
                             MESSAGE(STATUS "nvcc-check: Found gcc-${GCCVER_MAJOR}.${GCCVER_MINOR}... searching for gcc-4.4")
                             EXEC_PROGRAM(which ARGS "gcc-4.4" OUTPUT_VARIABLE GCC44 RETURN_VALUE GCC44_EXIST)
     
+                            # found gcc-4.4.  cool, let's use it
                             IF(GCC44_EXIST EQUAL 0)
                                 MESSAGE(STATUS "nvcc-check: Found gcc-4.4... telling nvcc to use it!")
                                 MESSAGE(STATUS "nvcc-check: CUDA_NVCC_FLAGS set to \"${CUDA_NVCC_FLAGS} --compiler-bindir=${GCC44}\"")
                                 SET (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --compiler-bindir=${GCC44})
                             ELSE()
 
-                                # search for GCC-4.3
+                                # didn't find gcc-4.4, let's look for for gcc-4.3
                                 MESSAGE(STATUS "nvcc-check: Found gcc-${GCCVER_MAJOR}.${GCCVER_MINOR}... searching for gcc-4.3")
                                 EXEC_PROGRAM(which ARGS "gcc-4.3" OUTPUT_VARIABLE GCC43 RETURN_VALUE GCC43_EXIST)
     
+                                # found gcc-4.3... use it.
                                 IF(GCC43_EXIST EQUAL 0)
                                     MESSAGE(STATUS "nvcc-check: Found gcc-4.3... telling nvcc to use it!")
                                     MESSAGE(STATUS "nvcc-check: CUDA_NVCC_FLAGS set to \"${CUDA_NVCC_FLAGS} --compiler-bindir=${GCC43}\"")
@@ -120,5 +128,7 @@ IF(CUDA_FOUND)
             ENDIF()
         ENDIF()
     ENDIF()
+
+    message(STATUS "using nvcc flags ${CUDA_NVCC_FLAGS}")
 
 ENDIF(CUDA_FOUND)
