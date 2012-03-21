@@ -6,7 +6,7 @@
 ##
 ## Author: Paolo Zaffino (p.zaffino@yahoo.it)
 ##
-## rev 5
+## rev 6
 ##
 ## Required libraries:
 ## 1) Numpy
@@ -21,7 +21,7 @@
 
 import argparse
 import matplotlib.cm as cm
-from matplotlib.pyplot import imshow, show, hold
+from matplotlib.pyplot import imshow, show, hold, savefig
 import numpy as np
 from mha import read
 
@@ -34,11 +34,13 @@ parser.add_argument('--view', help='View, default is coronal',type=str, default=
 parser.add_argument('--overlay_image', help='Overlay mha image', type=str)
 parser.add_argument('--gain_overlay_image', help='Gain of overlay image', type=int, default=1)
 parser.add_argument('--windowing', help='Windowing interval as "-100 100"', type=str, default='')
+parser.add_argument('--windowing_overlay_img', help='Windowing interval for the overlay image', type=str, default='')
 parser.add_argument('--vf', help='Plots the phase map of the vector field', type=str)
 parser.add_argument('--checkerboard', help='Sets the checkerboard in the overlay mode', action='store_true')
 parser.add_argument('--check_size', help='Size of the check (in voxel)', type=int, default=100)
 parser.add_argument('--diff', help='Shows the difference between the input image and the overlay one', action='store_true')
 parser.add_argument('--colours', help='Sets the colours in the overlay mode', action='store_true')
+parser.add_argument('--screenshot_file_name', help='Screenshot file name', type=str)
 
 args = parser.parse_args()
 
@@ -111,70 +113,84 @@ if args.windowing != '':
 	slice[slice<windowing_low_value]=0
 	slice[slice>windowing_hi_value]=0
 	
-	if args.overlay_image != None:
-		slice2[slice2<windowing_low_value]=0
-		slice2[slice2>windowing_hi_value]=0
+if args.windowing_overlay_img != '' and args.overlay_image != None:
+	slice2[slice2<windowing_low_value]=0
+	slice2[slice2>windowing_hi_value]=0
 
 
-## Shows diff or normal image
-if args.diff == False:
-	if args.colours == True and args.overlay_image != None: ## Overlay images in colours mode
-		imshow(slice, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
-		imshow(slice2, aspect=pixel_ratio, origin='lower', alpha=0.5)
-		show()
-	elif args.colours == False:
-		if args.overlay_image != None and args.checkerboard == False: ## Overlay images NO checkerboard, NO colours
-			slice_sum=np.add(np.multiply(slice2, args.gain_overlay_image), slice)
-			del slice, slice2
-			imshow(slice_sum, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
-		elif args.overlay_image != None and args.checkerboard == True: ## Overlay images in checkerboard mode
-			check_white=np.ones((np.rint(args.check_size/pixel_ratio), args.check_size))
-			check_black=np.zeros((np.rint(args.check_size/pixel_ratio), args.check_size))
-			check_number_x=slice.shape[1]/args.check_size
-			check_number_y=slice.shape[0]/np.rint(args.check_size/pixel_ratio)
-			
-			x=y=0
-			while x <= check_number_x:
-				if x == 0:
-					row=np.concatenate((check_white, check_black), axis=1)
-					row_neg=np.concatenate((check_black, check_white), axis=1)
-				else:
-					row=np.concatenate((row, check_white), axis=1)
-					row=np.concatenate((row, check_black), axis=1)
-				x=x+2
-			
-			row_neg=np.ones(row.shape)
-			row_neg=np.subtract(row_neg, row)
-			
-			while y <= check_number_y:
-				if y == 0:
-					checkerboard=np.concatenate((row, row_neg), axis=0)
-				else:
-					checkerboard=np.concatenate((checkerboard, row), axis=0)
-					checkerboard=np.concatenate((checkerboard, row_neg), axis=0)
-				y=y+2
-			
-			checkerboard=np.delete(checkerboard, np.s_[slice.shape[0]:checkerboard.shape[0]], axis=0)
-			checkerboard=np.delete(checkerboard, np.s_[slice.shape[1]:checkerboard.shape[1]], axis=1)
-			
-			checkerboard_neg=np.ones(checkerboard.shape)
-			checkerboard_neg=np.subtract(checkerboard_neg, checkerboard)
-			
-			slice=np.multiply(slice, checkerboard)
-			slice2=np.multiply(slice2, checkerboard_neg)
-			
-			imshow(slice, cmap=cm.get_cmap('bone'), aspect=pixel_ratio, origin='lower')
-			imshow(slice2, cmap=cm.get_cmap('reds'), aspect=pixel_ratio, origin='lower', alpha=0.70)
-			
-		elif args.overlay_image == None and args.vf == None and args.checkerboard == False: ## One image, NO options
-			imshow(slice, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
-		elif args.overlay_image == None and args.vf != None and args.checkerboard == False: ## Image and vector field
-			imshow(slice, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
-			imshow(phase_vf, aspect=pixel_ratio, origin='lower', alpha=0.5)	
-		show()
+## Show options
+if args.diff == False and args.colours == False and args.overlay_image == None and args.vf == None and args.checkerboard == False: ## One image, NO options
+	imshow(slice, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
 	
-elif args.diff == True and args.overlay_image != None: ## Two images in diff mode
+elif args.diff == False and args.colours == True and args.overlay_image != None and args.vf == None and args.checkerboard == False: ## Overlay images in colours mode, NO checkerboard, NO vf
+	imshow(slice, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
+	imshow(slice2, aspect=pixel_ratio, origin='lower', alpha=0.5)
+	
+elif args.diff == False and args.colours == False and args.overlay_image != None and args.vf == None and args.checkerboard == False: ## Overlay images, NO checkerboard, NO colours, NO vf
+	slice_sum=np.add(np.multiply(slice2, args.gain_overlay_image), slice)
+	del slice, slice2
+	imshow(slice_sum, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
+	
+elif args.diff == False and args.overlay_image != None and args.checkerboard == True: ## Overlay images in checkerboard mode
+	check_white=np.ones((np.rint(args.check_size/pixel_ratio), args.check_size))
+	check_black=np.zeros((np.rint(args.check_size/pixel_ratio), args.check_size))
+	check_number_x=slice.shape[1]/args.check_size
+	check_number_y=slice.shape[0]/np.rint(args.check_size/pixel_ratio)
+	
+	x=y=0
+	while x <= check_number_x:
+		if x == 0:
+			row=np.concatenate((check_white, check_black), axis=1)
+			row_neg=np.concatenate((check_black, check_white), axis=1)
+		else:
+			row=np.concatenate((row, check_white), axis=1)
+			row=np.concatenate((row, check_black), axis=1)
+		x=x+2
+		
+	row_neg=np.ones(row.shape)
+	row_neg=np.subtract(row_neg, row)
+	
+	while y <= check_number_y:
+		if y == 0:
+			checkerboard=np.concatenate((row, row_neg), axis=0)
+		else:
+			checkerboard=np.concatenate((checkerboard, row), axis=0)
+			checkerboard=np.concatenate((checkerboard, row_neg), axis=0)
+		y=y+2
+	
+	checkerboard=np.delete(checkerboard, np.s_[slice.shape[0]:checkerboard.shape[0]], axis=0)
+	checkerboard=np.delete(checkerboard, np.s_[slice.shape[1]:checkerboard.shape[1]], axis=1)
+	
+	checkerboard_neg=np.ones(checkerboard.shape)
+	checkerboard_neg=np.subtract(checkerboard_neg, checkerboard)
+	
+	slice=np.multiply(slice, checkerboard)
+	slice2=np.multiply(slice2, checkerboard_neg)
+	
+	if args.colours == True: ## Checkerboad color mode
+		imshow(slice, cmap=cm.get_cmap('bone'), aspect=pixel_ratio, origin='lower')
+		imshow(slice2, cmap=cm.get_cmap('reds'), aspect=pixel_ratio, origin='lower', alpha=0.70)
+	elif args.colours == False: ## Checkerboad NO color mode
+		imshow(slice, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
+		imshow(slice2, cmap=cm.gray, aspect=pixel_ratio, origin='lower', alpha=0.50)
+		if args.vf != None: ## Checkerboad NO color mode + vf
+			imshow(phase_vf, aspect=pixel_ratio, origin='lower', alpha=0.5)
+
+
+elif args.diff == False and args.colours == False and args.overlay_image == None and args.vf != None and args.checkerboard == False: ## Image and vector field
+	imshow(slice, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
+	imshow(phase_vf, aspect=pixel_ratio, origin='lower', alpha=0.5)
+	
+elif args.diff == True and args.colours == False and args.overlay_image != None and args.vf == None and args.checkerboard == False: ## Two images in diff mode
 	diff_slice=np.subtract(slice, np.multiply(slice2, args.gain_overlay_image))
 	del slice, slice2
 	imshow(diff_slice, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
+
+
+## Print the result on the screen or into a file
+if args.screenshot_file_name==None:
 	show()
+else:
+	savefig(args.screenshot_file_name)
+	print ("Screenshot saved into the file: " + args.screenshot_file_name)
+	
