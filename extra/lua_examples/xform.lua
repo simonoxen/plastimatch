@@ -1,6 +1,6 @@
 --  Author: James Shackleford
 -- Created: Feb. 29th, 2012
--- Updated: Mar.  4th, 2012
+-- Updated: Mar. 23rd, 2012
 
 ----------------------------------
 --          TUTORIAL            --
@@ -24,8 +24,8 @@ warp1 = img + xf1
 warp2 = img + xf2
 
 -- and, of course, you can save the warp
-warp1:save ("warp1.mha")
-warp2:save ("warp2.mha")
+warp1:save ("out/xform/warp1.mha")
+warp2:save ("out/xform/warp2.mha")
 
 -- you cannot add transforms to make composites...yet
 -- currently, this will print a warning to stderr and return (nil)
