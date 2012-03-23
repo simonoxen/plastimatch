@@ -67,6 +67,17 @@ image_automask (lua_State *L)
 }
 
 static int
+image_info (lua_State *L)
+{
+    /* 1st arg should be "this" */
+    lua_image *limg = (lua_image*)get_obj_ptr (L, THIS_CLASS, 1);
+
+    limg->pli->print ();
+
+    return 0;
+}
+
+static int
 image_load (lua_State *L)
 {
     const char* fn = luaL_optlstring (L, 1, NULL, NULL);
@@ -182,9 +193,10 @@ image_action_mul (lua_State *L)
 /* methods table for object */
 static const luaL_reg
 image_methods[] = {
+  {"automask",      image_automask},
+  {"info",          image_info},
   {"load",          image_load},
   {"save",          image_save},
-  {"automask",      image_automask},
   {0, 0}
 };
 
