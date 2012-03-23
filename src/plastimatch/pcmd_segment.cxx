@@ -25,16 +25,21 @@ public:
 static void
 do_segment (Segment_parms *parms)
 {
+    Plm_image in;
+    Plm_image out;
+
     Segment_body *sb = &parms->sb;
 
     /* Load the input image */
-    sb->img_in.load_native (parms->input_fn);
+    in.load_native (parms->input_fn); 
+    sb->img_in = &in;
+    sb->img_out = &out;
 
     /* Do segmentation */
     sb->do_segmentation ();
 
     /* Save output file */
-    sb->img_out.save_image (parms->output_fn);
+    sb->img_out->save_image (parms->output_fn);
 }
 
 static void

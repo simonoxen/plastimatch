@@ -20,6 +20,7 @@ extern "C"
 #include "lua_util.h"
 #include "plm_image.h"
 #include "volume.h"
+#include "segment_body.h"
 
 /* Name of class as exposed to Lua */
 #define THIS_CLASS LUA_CLASS_IMAGE
@@ -36,6 +37,35 @@ init_image_instance (lua_image* limg)
 /*******************************************************/
 /* Object Methods                                      */
 /*******************************************************/
+static int
+image_automask (lua_State *L)
+{
+    Segment_body automask;
+
+    /* 1st arg should be "this" */
+    lua_image *limg = (lua_image*)get_obj_ptr (L, THIS_CLASS, 1);
+
+    /* 2nd arg should be threshold */
+    float thres = (float)luaL_optnumber (L, 2, automask.m_lower_threshold);
+
+    /* TODO - Using lua_image for now, but may want to create a new class
+     * lua_mask that is very similar to lua_image that doesn't use floats */
+    lua_image *tmp = (lua_image*)lua_new_instance (L,
+                                    THIS_CLASS,
+                                    sizeof(lua_image));
+    init_image_instance (tmp);
+    tmp->pli = new Plm_image;
+
+    automask.img_in  = limg->pli;
+    automask.img_out = tmp->pli;
+    automask.m_lower_threshold = thres;
+    automask.do_segmentation ();
+
+    tmp->pli = automask.img_out;
+
+    return 1;
+}
+
 static int
 image_load (lua_State *L)
 {
@@ -154,6 +184,7 @@ static const luaL_reg
 image_methods[] = {
   {"load",          image_load},
   {"save",          image_save},
+  {"automask",      image_automask},
   {0, 0}
 };
 

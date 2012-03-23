@@ -10,8 +10,8 @@
 
 class plastimatch1_EXPORT Segment_body {
   public:
-    Plm_image img_in;
-    Plm_image img_out;
+    Plm_image *img_in;
+    Plm_image *img_out;
 
     bool m_bot_given;
     float m_bot;
@@ -26,7 +26,7 @@ class plastimatch1_EXPORT Segment_body {
 	m_bot_given = false;
 	m_debug = false;
 	m_fast = false;
-	m_lower_threshold = -1000;
+	m_lower_threshold = -300;
     }
     void do_segmentation ();
     UCharImageType::Pointer threshold_patient (FloatImageType::Pointer i1);
