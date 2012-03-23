@@ -13,6 +13,8 @@ Registration_data::Registration_data ()
 {
     fixed_image = 0;
     moving_image = 0;
+    fixed_mask = 0;
+    moving_mask = 0;
     fixed_landmarks = 0;
     moving_landmarks = 0;
 }
