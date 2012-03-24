@@ -115,8 +115,6 @@ plm_image_convert_itk_to_gpuit (Plm_image* pli, T img, U)
         exit (0);
     }
     pli->m_gpuit = vol;
-
-    exit (0);
 }
 
 
