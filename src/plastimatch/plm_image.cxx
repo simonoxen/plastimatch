@@ -121,18 +121,23 @@ Plm_image::load (const char* fname, Plm_image_type type)
     this->free ();
     switch (type) {
     case PLM_IMG_TYPE_GPUIT_FLOAT:
-	this->m_type = type;
-	this->m_original_type = type;
-	this->m_gpuit = read_mha (fname);
-	break;
+        this->m_type = type;
+        this->m_original_type = type;
+        this->m_gpuit = read_mha (fname);
+        break;
     case PLM_IMG_TYPE_ITK_FLOAT:
-	this->m_type = type;
-	this->m_itk_float = itk_image_load_float (fname, 
-	    &this->m_original_type);
-	break;
+        this->m_type = type;
+        this->m_itk_float = itk_image_load_float (fname, 
+            &this->m_original_type);
+        break;
+    case PLM_IMG_TYPE_ITK_UCHAR:
+        this->m_type = type;
+        this->m_original_type = type;
+	    this->m_itk_uchar = itk_image_load_uchar (fname, 0);
+        break;
     default:
-	print_and_exit ("Unhandled image load in plm_image_load\n");
-	break;
+        print_and_exit ("Unhandled image load in plm_image_load\n");
+        break;
     }
 }
 
@@ -496,6 +501,36 @@ Plm_image::convert_to_itk_uchar (void)
     }
     this->m_type = PLM_IMG_TYPE_ITK_UCHAR;
 }
+
+void
+Plm_image::convert_to_gpuit_uchar (void)
+{
+    switch (this->m_type) {
+    case PLM_IMG_TYPE_ITK_UCHAR:
+        return;
+    case PLM_IMG_TYPE_ITK_SHORT:
+        plm_image_convert_itk_to_gpuit (this, this->m_itk_short, (unsigned char) 0);
+        this->m_itk_short = 0;
+        break;
+    case PLM_IMG_TYPE_ITK_FLOAT:
+        plm_image_convert_itk_to_gpuit (this, this->m_itk_float, (unsigned char) 0);
+        this->m_itk_float = 0;
+        break;
+    case PLM_IMG_TYPE_GPUIT_SHORT:
+        volume_convert_to_uchar ((Volume *) this->m_gpuit);
+        break;
+    case PLM_IMG_TYPE_GPUIT_FLOAT:
+        volume_convert_to_uchar ((Volume *) this->m_gpuit);
+        break;
+    default:
+        print_and_exit (
+            "Error: unhandled conversion from %s to itk_uchar\n",
+            plm_image_type_string (this->m_type));
+        return;
+    }
+    this->m_type = PLM_IMG_TYPE_ITK_UCHAR;
+}
+
 
 void
 Plm_image::convert_to_itk_short (void)

@@ -65,6 +65,61 @@ plm_image_convert_gpuit_to_itk (Plm_image* pli, T itk_img, U)
     return itk_img;
 }
 
+template<class T, class U> 
+plastimatch1_EXPORT void
+plm_image_convert_itk_to_gpuit (Plm_image* pli, T img, U)
+{
+    typedef typename T::ObjectType ImageType;
+    int i, d1;
+    typename ImageType::RegionType rg = img->GetLargestPossibleRegion ();
+    typename ImageType::PointType og = img->GetOrigin();
+    typename ImageType::SpacingType sp = img->GetSpacing();
+    typename ImageType::SizeType sz = rg.GetSize();
+    typename ImageType::DirectionType dc = img->GetDirection();
+
+    /* Copy header & allocate data for gpuit float */
+    size_t dim[3];
+    float offset[3];
+    float spacing[3];
+    float direction_cosines[9];
+    for (d1 = 0; d1 < 3; d1++) {
+        dim[d1] = sz[d1];
+        offset[d1] = og[d1];
+        spacing[d1] = sp[d1];
+    }
+    dc_from_itk_direction (direction_cosines, &dc);
+    Volume* vol = new Volume (dim, offset, spacing, direction_cosines, 
+        PT_UCHAR, 1);
+
+    U *vol_img = (U*) vol->img;
+
+    /* Copy data into gpuit */
+    typedef typename itk::ImageRegionIterator< ImageType > IteratorType;
+    IteratorType it (img, rg);
+    for (it.GoToBegin(), i=0; !it.IsAtEnd(); ++it, ++i) {
+        vol_img[i] = it.Get();
+    }
+
+    /* Set data type */
+    if (typeid (U) == typeid (unsigned char)){
+        pli->m_type = PLM_IMG_TYPE_GPUIT_UCHAR;
+    }
+    else if (typeid (U) == typeid (short)){
+        pli->m_type = PLM_IMG_TYPE_GPUIT_SHORT;
+    }
+    else if (typeid (U) == typeid (float)) {
+        pli->m_type = PLM_IMG_TYPE_GPUIT_FLOAT;
+    }
+    else {
+        printf ("unknown type conversion from itk to gpuit!\n");
+        exit (0);
+    }
+    pli->m_gpuit = vol;
+
+    exit (0);
+}
+
+
 template<class T> 
 void
 plm_image_convert_itk_to_gpuit_float (Plm_image* pli, T img)
@@ -104,6 +159,7 @@ plm_image_convert_itk_to_gpuit_float (Plm_image* pli, T img)
     pli->m_gpuit = vol;
     pli->m_type = PLM_IMG_TYPE_GPUIT_FLOAT;
 }
+
 
 /* -----------------------------------------------------------------------
    UCharVec image conversion
@@ -407,3 +463,22 @@ plm_image_convert_itk_to_gpuit_float (Plm_image* pli, FloatImageType::Pointer im
 template plastimatch1_EXPORT 
 void
 plm_image_convert_itk_to_gpuit_float (Plm_image* pli, DoubleImageType::Pointer img);
+
+template plastimatch1_EXPORT
+void
+plm_image_convert_itk_to_gpuit (Plm_image* pli, ShortImageType::Pointer img, unsigned char);
+template plastimatch1_EXPORT
+void
+plm_image_convert_itk_to_gpuit (Plm_image* pli, FloatImageType::Pointer img, unsigned char);
+template plastimatch1_EXPORT
+void
+plm_image_convert_itk_to_gpuit (Plm_image* pli, UCharImageType::Pointer img, short);
+template plastimatch1_EXPORT
+void
+plm_image_convert_itk_to_gpuit (Plm_image* pli, FloatImageType::Pointer img, short);
+template plastimatch1_EXPORT
+void
+plm_image_convert_itk_to_gpuit (Plm_image* pli, UCharImageType::Pointer img, float);
+template plastimatch1_EXPORT
+void
+plm_image_convert_itk_to_gpuit (Plm_image* pli, ShortImageType::Pointer img, float);

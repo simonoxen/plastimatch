@@ -115,6 +115,8 @@ void volume_convert_to_float (Volume* ref);
 gpuit_EXPORT
 void volume_convert_to_short (Volume* ref);
 gpuit_EXPORT
+void volume_convert_to_uchar (Volume* ref);
+gpuit_EXPORT
 void
 volume_convert_to_uint16 (Volume* ref);
 gpuit_EXPORT

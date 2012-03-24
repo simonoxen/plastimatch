@@ -285,6 +285,39 @@ volume_convert_to_short (Volume* ref)
 }
 
 void
+volume_convert_to_uchar (Volume* ref)
+{
+    switch (ref->pix_type) {
+    case PT_UCHAR:
+	/* Nothing to do */
+	break;
+    case PT_SHORT:
+	CONVERT_VOLUME (short, unsigned char, PT_UCHAR);
+	break;
+    case PT_UINT16:
+	CONVERT_VOLUME (uint16_t, unsigned char, PT_UCHAR);
+	break;
+    case PT_UINT32:
+	CONVERT_VOLUME (uint32_t, unsigned char, PT_UCHAR);
+	break;
+    case PT_INT32:
+	CONVERT_VOLUME (int32_t, unsigned char, PT_UCHAR);
+	break;
+    case PT_FLOAT:
+	CONVERT_VOLUME (unsigned char, unsigned char, PT_UCHAR);
+	break;
+    case PT_VF_FLOAT_INTERLEAVED:
+    case PT_VF_FLOAT_PLANAR:
+    case PT_UCHAR_VEC_INTERLEAVED:
+    default:
+	/* Can't convert this */
+	fprintf (stderr, "Sorry, unsupported conversion to UCHAR\n");
+	exit (-1);
+	break;
+    }
+}
+
+void
 volume_convert_to_uint16 (Volume* ref)
 {
     switch (ref->pix_type) {

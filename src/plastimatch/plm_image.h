@@ -64,6 +64,7 @@ private:
     void convert_to_gpuit_uint32 ();
     void convert_to_gpuit_int32 ();
     void convert_to_gpuit_float ();
+    void convert_to_gpuit_uchar ();
     void convert_to_gpuit_uchar_vec ();
 
 public:
@@ -114,24 +115,28 @@ public:
 
     /* conversion */
     FloatImageType::Pointer& itk_float () {
-	convert_to_itk_float ();
-	return m_itk_float;
+        convert_to_itk_float ();
+        return m_itk_float;
     }
     /* NSh 6/22/2011 */
     UCharImageType::Pointer& itk_uchar () {
-	convert_to_itk_uchar ();
-	return m_itk_uchar;
+        convert_to_itk_uchar ();
+        return m_itk_uchar;
     }
     Volume* vol () {
-	return (Volume*) m_gpuit;
+        return (Volume*) m_gpuit;
     }
     Volume* gpuit_float () {
-	convert_to_gpuit_float ();
-	return (Volume*) m_gpuit;
+        convert_to_gpuit_float ();
+        return (Volume*) m_gpuit;
+    }
+    Volume* gpuit_uchar () {
+        convert_to_gpuit_uchar ();
+        return (Volume*) m_gpuit;
     }
     Volume* gpuit_uchar_vec () {
-	convert_to_gpuit_uchar_vec ();
-	return (Volume*) m_gpuit;
+        convert_to_gpuit_uchar_vec ();
+        return (Volume*) m_gpuit;
     }
     void convert (Plm_image_type new_type);
     void convert_to_original_type (void);
