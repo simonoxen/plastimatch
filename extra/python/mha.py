@@ -1,7 +1,7 @@
 ########################################################################
 ## These functions read and write mha files (images or vector fields)
 ## Author: Paolo Zaffino  (p.zaffino@yahoo.it)
-## Rev 14
+## Rev 15
 ## NOT TESTED ON PYTHON 3
 ########################################################################
 
@@ -12,21 +12,22 @@ import numpy as np
 ## This function writes a mha file
 ##
 ## INPUT PARAMETERS:
-## A=3D/4D matrix
+## stru=data_structure, it includes:
+##			raw=3D/4D matrix
+##			spacing=voxel size
+##			offset=spatial offset of raw data
+##			data_type='short', 'float' or 'uchar'
 ## fn=file name
-## spacing=voxel size
-## offset=spatial offset of raw data
-## data_type='short', 'float' or 'uchar'
 
-def write (A, fn, spacing, offset, data_type):
+def write (stru, fn):
 	
 	
 	if fn.endswith('.mha'): ## Check if the file extension is ".mha"
 		
 		## Check if the input matrix is an image or a vf
-		if A.ndim == 3:
+		if stru['raw'].ndim == 3:
 			data='img'
-		elif A.ndim == 4:
+		elif stru['raw'].ndim == 4:
 			data='vf'
 			
 		f=open(fn, 'wb')
@@ -38,29 +39,29 @@ def write (A, fn, spacing, offset, data_type):
 		f.write('BinaryDataByteOrderMSB = False\n')
 		f.write('CompressedData = False\n')
 		f.write('TransformMatrix = 1 0 0 0 1 0 0 0 1\n')
-		f.write('Offset = '+str(offset[0])+' '+str(offset[1])+' '+str(offset[2])+'\n')
+		f.write('Offset = '+str(stru['offset'][0])+' '+str(stru['offset'][1])+' '+str(stru['offset'][2])+'\n')
 		f.write('CenterOfRotation = 0 0 0\n')
 		f.write('AnatomicalOrientation = RAI\n')
-		f.write('ElementSpacing = '+str(spacing[0])+' '+str(spacing[1])+' '+str(spacing[2])+'\n')
-		f.write('DimSize = '+str(A.shape[0])+' '+str(A.shape[1])+ ' '+str(A.shape[2])+'\n')
+		f.write('ElementSpacing = '+str(stru['spacing'][0])+' '+str(stru['spacing'][1])+' '+str(stru['spacing'][2])+'\n')
+		f.write('DimSize = '+str(stru['raw'].shape[0])+' '+str(stru['raw'].shape[1])+ ' '+str(stru['raw'].shape[2])+'\n')
 		if data == 'vf':
 			f.write('ElementNumberOfChannels = 3\n')
-			A=_shiftdim(A, 3) ## Shift dimensions if the input matrix is a vf
-		if data_type == 'short':
+			stru['raw']=_shiftdim(stru['raw'], 3) ## Shift dimensions if the input matrix is a vf
+		if stru['data_type'] == 'short':
 			f.write('ElementType = MET_SHORT\n')
-		elif data_type == 'float':
+		elif stru['data_type'] == 'float':
 			f.write('ElementType = MET_FLOAT\n')
-		elif data_type == 'uchar':
+		elif stru['data_type'] == 'uchar':
 			f.write('ElementType = MET_UCHAR\n')
 		f.write('ElementDataFile = LOCAL\n')
 		
 		## Write matrix
-		f.write(A)
+		f.write(stru['raw'])
 				
 		f.close()
 		
-	else: ## File extension is not ".mha"
-		print ('The input file name is not a mha file!')
+	elif not fn.endswith('.mha'): ## File extension is not ".mha"
+		raise NameError('The input file name is not a mha file!')
 
 ######################## WRITE MHA - END - #############################
 
@@ -74,11 +75,12 @@ def write (A, fn, spacing, offset, data_type):
 ## fn=file name
 ##
 ## RETURNED PARAMETERS:
-## raw=3D/4D matrix
-## siz=matrix size
-## spacing=voxel size
-## offset=spatial offset of raw data
-## data_type='short', 'float' or 'uchar'
+## stru=data_structure, it includes:
+##			raw=3D/4D matrix
+##			size=3D/4D matrix dimension
+##			spacing=voxel size
+##			offset=spatial offset of raw data
+##			data_type='short', 'float' or 'uchar'
 
 def read(fn):
 	
@@ -89,6 +91,8 @@ def read(fn):
 				l[i]=int(l[i])
 		return l
 	## Utility function - END -
+	
+	stru={'raw':None, 'size':None, 'spacing':None, 'offset':None, 'data_type':None}
 	
 	if fn.endswith('.mha'): ## Check if the file extension is ".mha"
 		
@@ -102,13 +106,13 @@ def read(fn):
 			
 			if row.startswith('Offset ='):
 				row=row.split('=')[1].strip()
-				offset=__cast2int(map(float, row.split()))
+				stru['offset']=__cast2int(map(float, row.split()))
 			elif row.startswith('ElementSpacing ='):
 				row=row.split('=')[1].strip()
-				spacing=__cast2int(map(float, row.split()))
+				stru['spacing']=__cast2int(map(float, row.split()))
 			elif row.startswith('DimSize ='):
 				row=row.split('=')[1].strip()
-				siz=map(int, row.split())
+				stru['size']=map(int, row.split())
 			elif row.startswith('ElementNumberOfChannels = 3'):
 				data='vf' ## The matrix is a vf
 			elif row.startswith('ElementType ='):
@@ -117,39 +121,33 @@ def read(fn):
 				break
 		
 		## Read raw data
-		raw=''.join(f.readlines())
+		stru['raw']=''.join(f.readlines())
 		
 		f.close()
 		
 		## Raw data from string to array
 		if data_type == 'MET_SHORT':
-			raw=np.fromstring(raw, dtype=np.int16)
-			data_type = 'short'
+			stru['raw']=np.fromstring(stru['raw'], dtype=np.int16)
+			stru['data_type'] = 'short'
 		elif data_type == 'MET_FLOAT':
-			raw=np.fromstring(raw, dtype=np.float32)
-			data_type = 'float'
+			stru['raw']=np.fromstring(stru['raw'], dtype=np.float32)
+			stru['data_type'] = 'float'
 		elif data_type == 'MET_UCHAR':
-			raw=np.fromstring(raw, dtype=np.uint8)
-			data_type = 'uchar'
+			stru['raw']=np.fromstring(stru['raw'], dtype=np.uint8)
+			stru['data_type'] = 'uchar'
 		
 		## Reshape array
 		if data == 'img':
-			raw=raw.reshape(siz[2],siz[1],siz[0]).T
+			stru['raw']=stru['raw'].reshape(stru['size'][2],stru['size'][1],stru['size'][0]).T
 		elif data == 'vf':
-			raw=raw.reshape(siz[2],siz[1],siz[0],3)
-			raw=__shiftdim(raw, 3).T
-			siz=siz+[3]
+			stru['raw']=stru['raw'].reshape(stru['size'][2],stru['size'][1],stru['size'][0],3)
+			stru['raw']=__shiftdim(stru['raw'], 3).T
+			stru['size']=stru['size']+[3]
 		
-		return (raw, siz, spacing, offset, data_type)
-		
-	else: ## Extension file is not ".mha". It returns all null values
-		print ('The input file is not a mha file!')
-		raw=None
-		siz=None
-		spacing=None
-		offset=None
-		data_type=None
-		return (raw, siz, spacing, offset, data_type)
+	elif not fn.endswith('.mha'): ## Extension file is not ".mha". It returns all null values
+		raise NameError('The input file is not a mha file!')
+	
+	return stru
 
 ######################### READ MHA - END - #############################
 
