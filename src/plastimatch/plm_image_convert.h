@@ -16,9 +16,6 @@ plm_image_convert_itk_to_gpuit (Plm_image* pli, T img, U);
 template<class T> 
 plastimatch1_EXPORT void
 plm_image_convert_itk_to_gpuit_float (Plm_image* pli, T img);
-template<class T> 
-plastimatch1_EXPORT void
-plm_image_convert_itk_to_gpuit_uchar (Plm_image* pli, T img);
 
 plastimatch1_EXPORT UCharVecImageType::Pointer
 plm_image_convert_itk_uchar_to_itk_uchar_vec (UCharImageType::Pointer im_in);
