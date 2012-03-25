@@ -5,18 +5,19 @@
 #define _volume_macros_h_
 
 #include "plm_config.h"
+#include "plm_int.h"
 
 /* -----------------------------------------------------------------------
    Macros
    ----------------------------------------------------------------------- */
-static inline size_t 
-volume_index (const size_t dims[3], size_t i, size_t j, size_t k)
+static inline plm_long 
+volume_index (const plm_long dims[3], plm_long i, plm_long j, plm_long k)
 {
     return i + (dims[0] * (j + dims[1] * k));
 }
 
-static inline size_t 
-volume_index (const size_t dims[3], const size_t ijk[3])
+static inline plm_long 
+volume_index (const plm_long dims[3], const plm_long ijk[3])
 {
     return ijk[0] + (dims[0] * (ijk[1] + dims[1] * ijk[2]));
 }

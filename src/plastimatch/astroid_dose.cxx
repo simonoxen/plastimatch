@@ -14,7 +14,7 @@
 
 typedef struct astroid_dose_header Astroid_dose_header;
 struct astroid_dose_header {
-    size_t dim[3];
+    plm_long dim[3];
     float offset[3];
     float spacing[3];
     std::string dose_type;
@@ -121,7 +121,8 @@ astroid_dose_load_cube (
 {
     FILE *fp;
     Volume *v;
-    size_t i, j, k, rc;
+    plm_long i, j, k;
+    size_t rc;
 
     v = (Volume*) pli->m_gpuit;
     char* cube_img_read = (char*) v->img;
@@ -133,7 +134,7 @@ astroid_dose_load_cube (
 
     /* Read dose cube */
     rc = fread (cube_img_read, 4, v->dim[0] * v->dim[1] * v->dim[2], fp);
-    if (rc != v->dim[0] * v->dim[1] * v->dim[2]) {
+    if (rc != (size_t) (v->dim[0] * v->dim[1] * v->dim[2])) {
 	perror ("File error: ");
 	print_and_exit (
 	    "Error reading astroid dose cube (%s)\n"

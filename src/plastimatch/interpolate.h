@@ -74,8 +74,8 @@
 #define LI_VALUE_INTERLEAVED(m_val, fx1, fx2, fy1, fy2, fz1, fz2,	\
     mvf, m_img, moving, plane)						\
     do {								\
-	size_t idx_x1y1z1, idx_x2y1z1, idx_x1y2z1, idx_x2y2z1;		\
-	size_t idx_x1y1z2, idx_x2y1z2, idx_x1y2z2, idx_x2y2z2;		\
+	plm_ssize_t idx_x1y1z1, idx_x2y1z1, idx_x1y2z1, idx_x2y2z1;     \
+	plm_ssize_t idx_x1y1z2, idx_x2y1z2, idx_x1y2z2, idx_x2y2z2;     \
 	float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;			\
 	float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;			\
 									\
@@ -119,17 +119,17 @@ extern "C" {
 
 plmsys_EXPORT
 void
-li_clamp (float ma, size_t dmax, size_t* maf, size_t* mar, 
+li_clamp (float ma, plm_long dmax, plm_long* maf, plm_long* mar, 
     float* fa1, float* fa2);
 plmsys_EXPORT
 void
-li_clamp_3d (float mijk[3], size_t mijk_f[3], size_t mijk_r[3],
+li_clamp_3d (float mijk[3], plm_long mijk_f[3], plm_long mijk_r[3],
     float li_frac_1[3], float li_frac_2[3],
     Volume *moving);
 plmsys_EXPORT
 float
 li_value (float fx1, float fx2, float fy1, float fy2, 
-    float fz1, float fz2, size_t mvf, 
+    float fz1, float fz2, plm_long mvf, 
     float *m_img, Volume *moving);
 
 #if defined __cplusplus

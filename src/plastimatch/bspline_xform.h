@@ -13,14 +13,14 @@ class gpuit_EXPORT Bspline_xform {
   public:
     float img_origin[3];         /* Image origin (in mm) */
     float img_spacing[3];        /* Image spacing (in mm) */
-    size_t img_dim[3];           /* Image size (in vox) */
+    plm_long img_dim[3];           /* Image size (in vox) */
     Direction_cosines dc;        /* Image direction cosines */
-    size_t roi_offset[3];	 /* Position of first vox in ROI (in vox) */
-    size_t roi_dim[3];		 /* Dimension of ROI (in vox) */
-    size_t vox_per_rgn[3];	 /* Knot spacing (in vox) */
+    plm_long roi_offset[3];	 /* Position of first vox in ROI (in vox) */
+    plm_long roi_dim[3];		 /* Dimension of ROI (in vox) */
+    plm_long vox_per_rgn[3];	 /* Knot spacing (in vox) */
     float grid_spac[3];          /* Knot spacing (in mm) */
-    size_t rdims[3];             /* # of regions in (x,y,z) */
-    size_t cdims[3];             /* # of knots in (x,y,z) */
+    plm_long rdims[3];             /* # of regions in (x,y,z) */
+    plm_long cdims[3];             /* # of knots in (x,y,z) */
     int num_knots;               /* Total number of knots (= product(cdims)) */
     int num_coeff;               /* Total number of coefficents 
 				    (= product(cdims) * 3) */
@@ -28,9 +28,9 @@ class gpuit_EXPORT Bspline_xform {
 				    interleaved. */
 
     /* Aligned grid (3D) LUTs */
-    size_t* cidx_lut;            /* Lookup volume for region number */
-    size_t* c_lut;               /* Lookup table for control point indices */
-    size_t* qidx_lut;            /* Lookup volume for region offset */
+    plm_long* cidx_lut;            /* Lookup volume for region number */
+    plm_long* c_lut;               /* Lookup table for control point indices */
+    plm_long* qidx_lut;            /* Lookup volume for region offset */
     float* q_lut;                /* Lookup table for influence multipliers */
 
     /* Non-aligned grid (1D) LUTs */
@@ -59,13 +59,13 @@ void bspline_xform_set_default (Bspline_xform* bxf);
 gpuit_EXPORT
 void
 bspline_xform_initialize (
-    Bspline_xform* bxf,	         /* Output: bxf is initialized */
-    float img_origin[3],         /* Image origin (in mm) */
-    float img_spacing[3],        /* Image spacing (in mm) */
-    size_t img_dim[3],           /* Image size (in vox) */
-    size_t roi_offset[3],        /* Position of first vox in ROI (in vox) */
-    size_t roi_dim[3],		 /* Dimension of ROI (in vox) */
-    size_t vox_per_rgn[3]);	 /* Knot spacing (in vox) */
+    Bspline_xform* bxf,	            /* Output: bxf is initialized */
+    float img_origin[3],            /* Image origin (in mm) */
+    float img_spacing[3],           /* Image spacing (in mm) */
+    plm_long img_dim[3],         /* Image size (in vox) */
+    plm_long roi_offset[3],      /* Position of first vox in ROI (in vox) */
+    plm_long roi_dim[3],	    /* Dimension of ROI (in vox) */
+    plm_long vox_per_rgn[3]);    /* Knot spacing (in vox) */
 
 gpuit_EXPORT
 void bspline_xform_free (Bspline_xform* bxf);

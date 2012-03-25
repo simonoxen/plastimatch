@@ -44,7 +44,7 @@ dvh_execute_internal (
     float dose_spacing[3];
     float ss_spacing[3];
     float ss_ori[3];
-    size_t ss_dim[3];
+    plm_long ss_dim[3];
     std::string output_string = "";
 
     FloatImageType::Pointer dose_img = rtds->m_dose->itk_float ();
@@ -187,7 +187,7 @@ dvh_execute_internal (
 	output_string += (const char*) curr_structure->name;
     }
     output_string += "\n";
-    for (size_t bin = 0; bin < parms->num_bins; bin++) {
+    for (plm_long bin = 0; bin < parms->num_bins; bin++) {
 	output_string += make_string (bin * parms->bin_width);
 	for (size_t sno = 0; sno < ss_list->num_structures; sno++) {
 	    int val = hist[bin*ss_list->num_structures + sno];

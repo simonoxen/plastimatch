@@ -25,12 +25,12 @@ class plastimatch1_EXPORT Plm_image_header {
   public:
     Plm_image_header () {}
     Plm_image_header (
-	size_t dim[3], float origin[3], float spacing[3])
+	plm_long dim[3], float origin[3], float spacing[3])
     {
 	this->set_from_gpuit (dim, origin, spacing, 0);
     }
     Plm_image_header (
-	size_t dim[3], float origin[3], float spacing[3],
+	plm_long dim[3], float origin[3], float spacing[3],
 	float direction_cosines[9])
     {
 	this->set_from_gpuit (dim, origin, spacing, direction_cosines);
@@ -46,7 +46,7 @@ class plastimatch1_EXPORT Plm_image_header {
     static int compare (Plm_image_header *pli1, Plm_image_header *pli2);
 
   public:
-    void set_dim (const size_t dim[3]);
+    void set_dim (const plm_long dim[3]);
     void set_origin (const float origin[3]);
     void set_spacing (const float spacing[3]);
     void set_direction_cosines (
@@ -54,17 +54,17 @@ class plastimatch1_EXPORT Plm_image_header {
     void set_direction_cosines (
 	const Direction_cosines& dc);
     void set (
-	const size_t dim[3],
+	const plm_long dim[3],
 	const float origin[3],
 	const float spacing[3],
 	const Direction_cosines& dc);
     void set (
-	const size_t dim[3],
+	const plm_long dim[3],
 	const float origin[3],
 	const float spacing[3],
 	const float direction_cosines[9]);
     void set_from_gpuit (
-	const size_t dim[3],
+	const plm_long dim[3],
 	const float origin[3],
 	const float spacing[3],
 	const float direction_cosines[9]);
@@ -88,7 +88,7 @@ class plastimatch1_EXPORT Plm_image_header {
 
     void get_origin (float origin[3]);
     void get_spacing (float spacing[3]);
-    void get_dim (size_t dim[3]);
+    void get_dim (plm_long dim[3]);
     void get_direction_cosines (
 	float direction_cosines[9]);
 

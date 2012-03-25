@@ -40,7 +40,7 @@ do_simplify(Rtds *rtds, float percentage)
 
     for(int j=0;j<num_structures;j++){
 	curr_struct=rtds->m_ss_image->m_cxt->slist[j];
-	for(int k=0;k<curr_struct->num_contours;k++){
+	for(size_t k=0;k<curr_struct->num_contours;k++){
 	    int *index, *ordered_index;
 	    gnr.restart();
 	    curr_polyline=curr_struct->pslist[k];

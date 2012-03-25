@@ -10,6 +10,7 @@
 #include "bspline_regularize.h"
 #include "bspline_regularize_state.h"
 #include "bspline_xform.h"
+#include "plm_int.h"
 #include "pointset.h"
 #include "volume.h"
 
@@ -25,7 +26,7 @@
  * compatibility is because Slicer's ITK does not come compiled with
  * the -malign-double flag on 32-bit systems... so, believe it or not
  * this might be the cleanest solution */
-#if (__GNUC__) && (HAVE_32_BIT) && (CUDA_FOUND)
+#if (__GNUC__) && (MACHINE_IS_32_BIT) && (CUDA_FOUND)
     typedef double double_align8 __attribute__ ((aligned(8)));
 #else 
     typedef double double_align8;
@@ -97,14 +98,14 @@ typedef struct BSPLINE_MI_Hist_Parms_struct BSPLINE_MI_Hist_Parms;
 struct BSPLINE_MI_Hist_Parms_struct {
     /* Used by all histogram types */
     enum BsplineHistType type;  /* Type of histograms */
-    size_t bins;                /* # of bins in histogram  */
+    plm_long bins;           /* # of bins in histogram  */
     float offset;               /* minimum voxel intensity */
-    size_t big_bin;             /* fullest bin index       */
+    plm_long big_bin;             /* fullest bin index       */
     float delta;                /* bin OR key spacing   */
 
     /* For V-Optimal Histograms */
-    size_t keys;              /* # of keys               */
-    int* key_lut;           /* bin keys lookup table   */
+    plm_long keys;                /* # of keys               */
+    int* key_lut;               /* bin keys lookup table   */
 };
 
 typedef struct BSPLINE_MI_Hist_struct BSPLINE_MI_Hist;
@@ -247,13 +248,13 @@ bspline_compute_vf (const Bspline_xform* bxf);
 /* Used internally */
 void
 bspline_interp_pix (float out[3], const Bspline_xform* bxf, 
-    size_t p[3], size_t qidx);
+    plm_long p[3], plm_long qidx);
 void
 bspline_interp_pix_b (
     float out[3], 
     Bspline_xform* bxf, 
-    size_t pidx, 
-    size_t qidx
+    plm_long pidx, 
+    plm_long qidx
 );
 int
 bspline_find_correspondence 
@@ -306,17 +307,17 @@ void
 bspline_update_grad (
     Bspline_state *bst, 
     Bspline_xform* bxf, 
-    size_t p[3], size_t qidx, float dc_dv[3]);
+    plm_long p[3], plm_long qidx, float dc_dv[3]);
 void
 bspline_update_grad_b (
     Bspline_score* bscore,
     const Bspline_xform* bxf, 
-    size_t pidx, 
-    size_t qidx, 
+    plm_long pidx, 
+    plm_long qidx, 
     const float dc_dv[3]);
 int* calc_offsets (int* tile_dims, int* cdims);
 
-void find_knots (size_t* knots, size_t tile_num, size_t* rdims, size_t* cdims);
+void find_knots (plm_long* knots, plm_long tile_num, plm_long* rdims, plm_long* cdims);
 
 int inside_mask (float* xyz, const Volume* mask);
 
@@ -355,7 +356,7 @@ bspline_update_sets (float* sets_x, float* sets_y, float* sets_z,
 void
 bspline_sort_sets (float* cond_x, float* cond_y, float* cond_z,
     float* sets_x, float* sets_y, float* sets_z,
-    size_t pidx, Bspline_xform* bxf);
+    plm_long pidx, Bspline_xform* bxf);
 
 #if defined __cplusplus
 }

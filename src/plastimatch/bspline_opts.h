@@ -28,7 +28,7 @@ public:
     char* method;
     float landmark_stiffness;
     float young_modulus;
-    size_t vox_per_rgn[3];
+    plm_long vox_per_rgn[3];
     Bspline_parms parms;
 public:
     Bspline_options () {

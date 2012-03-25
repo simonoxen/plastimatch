@@ -123,7 +123,7 @@ Dcmtk_series::load_plm_image (void)
 
     /* Still more debugging info */
     printf ("Resamples slices: ");
-    for (size_t i = 0; i < vh.m_dim[2]; i++) {
+    for (plm_long i = 0; i < vh.m_dim[2]; i++) {
 	printf ("%f ", vh.m_origin[2] + i * vh.m_spacing[2]);
     }
     printf ("\n");
@@ -193,7 +193,7 @@ Dcmtk_series::load_plm_image (void)
     Volume* vol = (Volume*) pli->m_gpuit;
     uint16_t* img = (uint16_t*) vol->img;
 
-    for (size_t i = 0; i < vh.m_dim[2]; i++) {
+    for (plm_long i = 0; i < vh.m_dim[2]; i++) {
 	/* Find the best slice, using nearest neighbor interpolation */
 	std::list<Dcmtk_file*>::iterator best_slice_it = m_flist.begin();
 	float best_z_dist = FLT_MAX;

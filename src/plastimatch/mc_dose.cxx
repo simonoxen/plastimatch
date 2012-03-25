@@ -8,6 +8,7 @@
 
 #include "plm_image.h"
 #include "plm_image_type.h"
+#include "plm_int.h"
 #include "print_and_exit.h"
 #include "xio_ct.h"
 
@@ -23,7 +24,7 @@
 
 typedef struct mc_dose_header MC_dose_header;
 struct mc_dose_header {
-    size_t dim[3];
+    plm_long dim[3];
     float offset[3];
     float spacing[3];
     int header_size;
@@ -109,9 +110,9 @@ mc_dose_load_cube (
     }
 
     /* Read dose cube */
-    for (size_t z=0; z < mcdh->dim[2]; z++) {
-	for (size_t y=0; y < mcdh->dim[1]; y++) {
-	    for (size_t x=0; x < mcdh->dim[0]; x++) {
+    for (plm_long z=0; z < mcdh->dim[2]; z++) {
+	for (plm_long y=0; y < mcdh->dim[1]; y++) {
+	    for (plm_long x=0; x < mcdh->dim[0]; x++) {
 		if (input >> value) {
 		    cube_img_read[x + y*mcdh->dim[0]
 			+ z*mcdh->dim[0]*mcdh->dim[1]] = value;

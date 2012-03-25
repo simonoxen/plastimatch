@@ -12,4 +12,12 @@
 #include <stdint.h>
 #endif
 
+#if (CMAKE_SIZEOF_SIZE_T == 8)
+typedef int64_t plm_long;
+#elif (CMAKE_SIZEOF_SIZE_T == 4)
+typedef int32_t plm_long;
+#else
+#error "Unexpected value for sizeof(size_t)"
+#endif
+
 #endif

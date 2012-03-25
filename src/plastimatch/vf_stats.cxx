@@ -8,19 +8,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "mha_io.h"
+#include "plm_int.h"
 #include "vf_stats.h"
 
 void
 vf_analyze (Volume* vol)
 {
-    size_t d, i, j, k, v;
+    plm_long i, j, k, v;
     float* img = (float*) vol->img;
     float mean_av[3], mean_v[3];
     float mins[3];
     float maxs[3];
 
-    for (d = 0; d < 3; d++) {
+    for (int d = 0; d < 3; d++) {
 	mean_av[d] = mean_v[d] = 0.0;
 	mins[d] = maxs[d] = img[d];
     }
@@ -29,7 +29,7 @@ vf_analyze (Volume* vol)
 	for (j = 0; j < vol->dim[1]; j++) {
 	    for (i = 0; i < vol->dim[0]; i++, v++) {
 		float* dxyz = &img[3*v];
-		for (d = 0; d < 3; d++) {
+		for (int d = 0; d < 3; d++) {
 		    mean_v[d] += dxyz[d];
 		    mean_av[d] += fabs(dxyz[d]);
 		    if (dxyz[d] > maxs[d]) {
@@ -41,7 +41,7 @@ vf_analyze (Volume* vol)
 	    }
 	}
     }
-    for (d = 0; d < 3; d++) {
+    for (int d = 0; d < 3; d++) {
 	mean_v[d] /= vol->npix;
 	mean_av[d] /= vol->npix;
     }
@@ -60,7 +60,7 @@ vf_analyze (Volume* vol)
 void
 vf_print_stats (Volume* vol)
 {
-    size_t i, v;
+    plm_long i, v;
     int d;
     float mins[3], maxs[3], mean[3];
 
@@ -114,7 +114,7 @@ vf_print_stats (Volume* vol)
 void
 vf_analyze_strain (Volume* vol)
 {
-    size_t i, j, k;
+    plm_long i, j, k;
     float* img = (float*) vol->img;
     float total_energy, max_energy;
     float min_dilation = 0.f, max_dilation = 0.f;
@@ -206,7 +206,7 @@ vf_analyze_strain (Volume* vol)
 void
 vf_analyze_jacobian (Volume* vol)
 {
-    size_t i, j, k;
+    plm_long i, j, k;
     float* img = (float*) vol->img;
     float min_jacobian = 0.f, max_jacobian = 0.f, min_abs_jacobian = 0.f;
     int min_abs_jacobian_loc[3] = {0, 0, 0};;
@@ -282,7 +282,7 @@ vf_analyze_jacobian (Volume* vol)
 void
 vf_analyze_second_deriv (Volume* vol)
 {
-    size_t i, j, k;
+    plm_long i, j, k;
     float* img = (float*) vol->img;
     
     float min_sec_der = 0.f, max_sec_der = 0.f, total_sec_der = 0.f;
@@ -409,7 +409,7 @@ vf_analyze_second_deriv (Volume* vol)
 void
 vf_analyze_mask (Volume* vol, Volume *mask)
 {
-    size_t d, i, j, k, v;
+    plm_long d, i, j, k, v;
     int mask_npixels = 0;
     float* img = (float*) vol->img;
     unsigned char* maskimg = (unsigned char*) mask->img;
@@ -456,7 +456,7 @@ vf_analyze_mask (Volume* vol, Volume *mask)
 void
 vf_analyze_strain_mask (Volume* vol, Volume* mask)
 {
-    size_t i, j, k;
+    plm_long i, j, k;
     float* img = (float*) vol->img;
     unsigned char*  maskimg = (unsigned char*) mask->img;
     float min_dilation = 0.f, max_dilation = 0.f;
@@ -474,7 +474,8 @@ vf_analyze_strain_mask (Volume* vol, Volume* mask)
     max_energy = 0.0f;
 
     printf ("di = %f dj = %f dk = %f \n", di, dj, dk);
-    printf ("vol->dim %d %d %d\n", vol->dim[0], vol->dim[1], vol->dim[2]);
+    printf ("vol->dim %ld %ld %ld\n", 
+        (long) vol->dim[0], (long) vol->dim[1], (long) vol->dim[2]);
     for (k = 1; k < vol->dim[2]-1; k++) {
 	for (j = 1; j < vol->dim[1]-1; j++) {
 	    for (i = 1; i < vol->dim[0]-1; i++) {

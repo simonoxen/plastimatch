@@ -12,6 +12,7 @@
 #include "bspline.h"
 #include "bspline_landmarks.h"
 #include "bspline_opts.h"
+#include "compiler_warnings.h"
 #include "landmark_warp.h"
 #include "logfile.h"
 #include "math_util.h"
@@ -45,6 +46,9 @@ rbf_cluster_kmeans_plusplus(Landmark_warp *lw)
     xmin = xmax = lw->m_fixed_landmarks->points[0*3+0];
     ymin = ymax = lw->m_fixed_landmarks->points[0*3+1];
     zmin = zmax = lw->m_fixed_landmarks->points[0*3+2];
+    UNUSED_VARIABLE (xmin);
+    UNUSED_VARIABLE (ymin);
+    UNUSED_VARIABLE (zmin);
 
     //kmeans++ initialization
 

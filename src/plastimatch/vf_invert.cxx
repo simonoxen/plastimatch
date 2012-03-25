@@ -53,7 +53,7 @@ vf_invert_main (Vf_Invert_Parms* parms)
 void
 vf_invert_main (Vf_Invert_Parms* parms)
 {
-    size_t i, j, k, v;
+    plm_long i, j, k, v;
     int its;
     float x, y, z;
     Plm_image_header pih;
@@ -95,7 +95,7 @@ vf_invert_main (Vf_Invert_Parms* parms)
     for (z = vf_in->offset[2], k = 0, v = 0; k < vf_in->dim[2]; k++, z+=vf_in->spacing[2]) {
         for (y = vf_in->offset[1], j = 0; j < vf_in->dim[1]; j++, y+=vf_in->spacing[1]) {
             for (x = vf_in->offset[0], i = 0; i < vf_in->dim[0]; v++, i++, x+=vf_in->spacing[0]) {
-                size_t mijk[3], midx;
+                plm_long mijk[3], midx;
                 float mxyz[3];
                 mxyz[0] = x + img_in[3*v+0];
                 mijk[0] = round_int ((mxyz[0] - vf_inv->offset[0]) / vf_inv->spacing[0]);

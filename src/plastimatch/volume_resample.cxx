@@ -16,12 +16,12 @@
 /* Nearest neighbor interpolation */
 static Volume*
 volume_resample_float_nn (
-    Volume* vol_in, size_t* dim, float* offset, float* spacing)
+    Volume* vol_in, plm_long* dim, float* offset, float* spacing)
 {
-    size_t i, j, k, v;
+    plm_long i, j, k, v;
     float x, y, z;
     float x_in, y_in, z_in;
-    size_t xidx, yidx, zidx;
+    plm_long xidx, yidx, zidx;
     Volume* vol_out;
     float *in_img, *out_img;
     float val;
@@ -58,12 +58,12 @@ volume_resample_float_nn (
 /* Linear interpolation */
 static Volume*
 volume_resample_float_li (
-    Volume* vol_in, size_t* dim, float* offset, float* spacing)
+    Volume* vol_in, plm_long* dim, float* offset, float* spacing)
 {
-    size_t i, j, k, v;
+    plm_long i, j, k, v;
     float x, y, z;
     //float x_in, y_in, z_in;
-    size_t xidx, yidx, zidx;
+    plm_long xidx, yidx, zidx;
     Volume* vol_out;
     float *in_img, *out_img;
     float val;
@@ -90,10 +90,10 @@ volume_resample_float_li (
 		{
 		    val = default_val;
 		} else {
-		    size_t ijk_floor[3];
-		    size_t ijk_round[3];
+		    plm_long ijk_floor[3];
+		    plm_long ijk_round[3];
 		    float li_1[3], li_2[3];
-		    size_t idx_floor;
+		    plm_long idx_floor;
 
 		    // Compute linear interpolation fractions
 		    li_clamp_3d (ijk, ijk_floor, ijk_round,
@@ -123,13 +123,13 @@ volume_resample_float_li (
 /* Nearest neighbor interpolation */
 static Volume*
 volume_resample_vf_float_interleaved (
-    Volume* vol_in, size_t* dim, 
+    Volume* vol_in, plm_long* dim, 
     float* offset, float* spacing)
 {
-    size_t d, i, j, k, v;
+    plm_long d, i, j, k, v;
     float x, y, z;
     float x_in, y_in, z_in;
-    size_t xidx, yidx, zidx;
+    plm_long xidx, yidx, zidx;
     Volume* vol_out;
     float *in_img, *out_img;
     float* val;
@@ -152,7 +152,7 @@ volume_resample_vf_float_interleaved (
 		if (zidx < 0 || zidx >= vol_in->dim[2] || yidx < 0 || yidx >= vol_in->dim[1] || xidx < 0 || xidx >= vol_in->dim[0]) {
 		    val = default_val;
 		} else {
-		    size_t idx = zidx*vol_in->dim[1]*vol_in->dim[0] + yidx*vol_in->dim[0] + xidx;
+		    plm_long idx = zidx*vol_in->dim[1]*vol_in->dim[0] + yidx*vol_in->dim[0] + xidx;
 		    val = &in_img[idx*3];
 		}
 		for (d = 0; d < 3; d++, v++) {
@@ -168,13 +168,13 @@ volume_resample_vf_float_interleaved (
 /* Nearest neighbor interpolation */
 static Volume*
 volume_resample_vf_float_planar (
-    Volume* vol_in, size_t* dim, 
+    Volume* vol_in, plm_long* dim, 
     float* offset, float* spacing)
 {
-    size_t d, i, j, k, v;
+    plm_long d, i, j, k, v;
     float x, y, z;
     float x_in, y_in, z_in;
-    size_t xidx, yidx, zidx;
+    plm_long xidx, yidx, zidx;
     Volume* vol_out;
     float **in_img, **out_img;
 
@@ -198,7 +198,7 @@ volume_resample_vf_float_planar (
 		    }
 		} else {
 		    for (d = 0; d < 3; d++) {
-			size_t idx = zidx*vol_in->dim[1]*vol_in->dim[0] + yidx*vol_in->dim[0] + xidx;
+			plm_long idx = zidx*vol_in->dim[1]*vol_in->dim[0] + yidx*vol_in->dim[0] + xidx;
 			out_img[d][v] = in_img[d][idx];
 		    }
 		}
@@ -210,7 +210,7 @@ volume_resample_vf_float_planar (
 }
 
 Volume*
-volume_resample (Volume* vol_in, size_t* dim, float* offset, float* spacing)
+volume_resample (Volume* vol_in, plm_long* dim, float* offset, float* spacing)
 {
     switch (vol_in->pix_type) {
     case PT_UCHAR:
@@ -234,7 +234,7 @@ volume_resample (Volume* vol_in, size_t* dim, float* offset, float* spacing)
 }
 
 Volume*
-volume_resample_nn (Volume* vol_in, size_t* dim, float* offset, float* spacing)
+volume_resample_nn (Volume* vol_in, plm_long* dim, float* offset, float* spacing)
 {
     switch (vol_in->pix_type) {
     case PT_UCHAR:
@@ -261,7 +261,7 @@ Volume*
 volume_subsample (Volume* vol_in, int* sampling_rate)
 {
     int d;
-    size_t dim[3];
+    plm_long dim[3];
     float offset[3];
     float spacing[3];
 
@@ -281,7 +281,7 @@ Volume*
 volume_subsample_nn (Volume* vol_in, int* sampling_rate)
 {
     int d;
-    size_t dim[3];
+    plm_long dim[3];
     float offset[3];
     float spacing[3];
 

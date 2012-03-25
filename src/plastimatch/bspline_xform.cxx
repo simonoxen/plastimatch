@@ -105,10 +105,10 @@ bspline_xform_load (const char* filename)
     float img_origin[3];         /* Image origin (in mm) */
     float img_spacing[3];        /* Image spacing (in mm) */
     unsigned int a, b, c;        /* For fscanf */
-    size_t img_dim[3];           /* Image size (in vox) */
-    size_t roi_offset[3];	 /* Position of first vox in ROI (in vox) */
-    size_t roi_dim[3];		 /* Dimension of ROI (in vox) */
-    size_t vox_per_rgn[3];	 /* Knot spacing (in vox) */
+    plm_long img_dim[3];           /* Image size (in vox) */
+    plm_long roi_offset[3];	 /* Position of first vox in ROI (in vox) */
+    plm_long roi_dim[3];		 /* Dimension of ROI (in vox) */
+    plm_long vox_per_rgn[3];	 /* Knot spacing (in vox) */
 
     fp = fopen (filename, "r");
     if (!fp) return 0;
@@ -215,7 +215,7 @@ bspline_xform_dump_coeff (Bspline_xform* bxf, const char* fn)
 void
 bspline_xform_dump_luts (Bspline_xform* bxf)
 {
-    size_t i, j, k, p;
+    plm_long i, j, k, p;
     int tx, ty, tz;
     FILE* fp = fopen ("qlut.txt","wb");
 
@@ -294,14 +294,14 @@ bspline_xform_initialize
     Bspline_xform* bxf,         /* Output: bxf is initialized */
     float img_origin[3],        /* Image origin (in mm) */
     float img_spacing[3],       /* Image spacing (in mm) */
-    size_t img_dim[3],          /* Image size (in vox) */
-    size_t roi_offset[3],       /* Position of first vox in ROI (in vox) */
-    size_t roi_dim[3],          /* Dimension of ROI (in vox) */
-    size_t vox_per_rgn[3])      /* Knot spacing (in vox) */
+    plm_long img_dim[3],          /* Image size (in vox) */
+    plm_long roi_offset[3],       /* Position of first vox in ROI (in vox) */
+    plm_long roi_dim[3],          /* Dimension of ROI (in vox) */
+    plm_long vox_per_rgn[3])      /* Knot spacing (in vox) */
 {
-    size_t d;
-    size_t i, j, k, p;
-    size_t tx, ty, tz;
+    plm_long d;
+    plm_long i, j, k, p;
+    plm_long tx, ty, tz;
     float *A, *B, *C;
 
     logfile_printf ("bspline_xform_initialize\n");
@@ -398,7 +398,7 @@ bspline_xform_initialize
     free (A);
 	
     /* Create c_lut */
-    bxf->c_lut = (size_t*) malloc (sizeof(size_t) 
+    bxf->c_lut = (plm_long*) malloc (sizeof(plm_long) 
 	* bxf->rdims[0] 
 	* bxf->rdims[1] 
 	* bxf->rdims[2] 
@@ -453,11 +453,11 @@ bspline_xform_extend (
     int extend_needed = 0;
     int new_rdims[3];
     int new_cdims[3];
-    size_t new_num_knots;
-    size_t new_num_coeff;
+    plm_long new_num_knots;
+    plm_long new_num_coeff;
     float* new_coeff;
-    size_t old_idx;
-    size_t i, j, k;
+    plm_long old_idx;
+    plm_long i, j, k;
 
     for (d = 0; d < 3; d++) {
 	roi_offset_diff[d] = new_roi_offset[d] - bxf->roi_offset[d];
@@ -495,7 +495,7 @@ bspline_xform_extend (
 	for (old_idx = 0, k = 0; k < bxf->cdims[2]; k++) {
 	    for (j = 0; j < bxf->cdims[1]; j++) {
 		for (i = 0; i < bxf->cdims[0]; i++) {
-		    size_t new_idx = 3 * (((((k + eb[2]) * new_cdims[1]) + (j + eb[1])) * new_cdims[0]) + (i + eb[0]));
+		    plm_long new_idx = 3 * (((((k + eb[2]) * new_cdims[1]) + (j + eb[1])) * new_cdims[0]) + (i + eb[0]));
 		    for (d = 0; d < 3; d++, old_idx++, new_idx++) {
 			new_coeff[new_idx] = bxf->coeff[old_idx];
 		    }

@@ -4,6 +4,8 @@
 #ifndef _fdk_opts_h_
 #define _fdk_opts_h_
 
+#include "plm_config.h"
+#include "plm_int.h"
 #include "threading.h"
 
 enum Fdk_filter_type {
@@ -33,7 +35,7 @@ struct fdk_options {
     int skip_img;
     int last_img;
 
-    size_t dim[3];
+    plm_long dim[3];
     float vol_size[3];
     float xy_offset[2];
 

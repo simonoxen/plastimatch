@@ -21,7 +21,7 @@ struct synthetic_vf_main_parms {
     Pstring output_fn;
     Pstring fixed_fn;
     Synthetic_vf_parms sv_parms;
-    size_t dim[3];
+    plm_long dim[3];
     float origin[3];
     float spacing[3];
     Direction_cosines dc;
@@ -136,7 +136,7 @@ parse_fn (
     parms->output_fn = parser->get_string("output").c_str();
 
     /* Image geometry */
-    parser->assign_size_t_13 (parms->dim, "dim");
+    parser->assign_plm_long_13 (parms->dim, "dim");
     parser->assign_float13 (parms->origin, "origin");
     parser->assign_float13 (parms->spacing, "spacing");
     if (parser->option ("direction-cosines")) {

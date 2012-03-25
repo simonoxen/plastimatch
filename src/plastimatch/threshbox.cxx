@@ -17,7 +17,7 @@
 void do_threshbox( Threshbox_parms *parms) {
 
     float spacing_in[3], origin_in[3];
-    size_t dim_in[3];
+    plm_long dim_in[3];
     Plm_image_header pih;
     unsigned char label_uchar, label_box;
 
@@ -238,10 +238,10 @@ static void do_single_threshold( Threshbox_parms *parms ,int thresh_id )
     {
 
     float spacing_in[3], origin_in[3];
-    size_t dim_in[3];
+    plm_long dim_in[3];
     Plm_image_header pih;
     unsigned char label_uchar;
-    float cutoff;
+    float cutoff = 0;
 
     if (thresh_id == 1 ) cutoff = parms->isodose_value1;
     if (thresh_id == 2 ) cutoff = parms->isodose_value2;
@@ -334,7 +334,7 @@ static void do_single_threshold( Threshbox_parms *parms ,int thresh_id )
 void do_composite_labelmap( Threshbox_parms *parms)
 {
     float spacing_in[3], origin_in[3];
-    size_t dim_in[3];
+    plm_long dim_in[3];
     Plm_image_header pih;
 
     unsigned char label_uchar;

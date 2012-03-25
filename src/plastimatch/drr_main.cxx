@@ -31,7 +31,9 @@ allocate_gpu_memory (
     Drr_options *options
 )
 {
+#if CUDA_FOUND || OPENCL_FOUND
     void* tmp;
+#endif
 
 #if CUDA_FOUND
     LOAD_LIBRARY (libplmcuda);

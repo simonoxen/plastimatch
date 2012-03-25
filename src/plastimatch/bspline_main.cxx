@@ -35,7 +35,7 @@ main (int argc, char* argv[])
     Volume *moving, *fixed, *moving_grad;
     Volume *vector_field = 0;
     Volume *moving_warped = 0;
-    size_t roi_offset[3];
+    plm_long roi_offset[3];
 
     bspline_opts_parse_args (&options, argc, argv);
 
@@ -74,7 +74,7 @@ main (int argc, char* argv[])
 
     /* Allocate memory and build lookup tables */
     printf ("Allocating lookup tables\n");
-    memset (roi_offset, 0, 3*sizeof(size_t));
+    memset (roi_offset, 0, 3*sizeof(plm_long));
     if (options.input_xf_fn) {
 	bxf = bspline_xform_load (options.input_xf_fn);
 	if (!bxf) {

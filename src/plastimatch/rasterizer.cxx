@@ -158,14 +158,14 @@ Rasterizer::process_next (
     for (size_t i = 0; i < curr_structure->num_contours; i++) {
 	Rtss_polyline* curr_contour;
 	unsigned char* uchar_slice;
-	size_t slice_no;
+	plm_long slice_no;
 
 	curr_contour = curr_structure->pslist[i];
 	if (curr_contour->num_vertices == 0) {
 	    continue;
 	}
-	slice_no = ROUND_INT((curr_contour->z[0] - this->origin[2]) 
-	    / this->spacing[2]);
+	slice_no = ROUND_PLM_LONG(
+            (curr_contour->z[0] - this->origin[2]) / this->spacing[2]);
 	if (slice_no < 0 || slice_no >= this->dim[2]) {
 	    continue;
 	}

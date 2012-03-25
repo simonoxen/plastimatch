@@ -4,6 +4,7 @@
 #include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "compiler_warnings.h"
 #include "file_util.h"
 #include "hnd_io.h"
 #include "math_util.h"
@@ -95,7 +96,6 @@ hnd_load (Proj_image *proj, const char *fn, const double xy_offset[2])
     uint32_t* buf;
     unsigned char *pt_lut;
     uint32_t a;
-    float b;
     unsigned char v;
     int lut_idx, lut_off;
     size_t num_read;
@@ -109,6 +109,7 @@ hnd_load (Proj_image *proj, const char *fn, const double xy_offset[2])
      * TODO: Implement proper error checking instead
      */
     size_t bit_bucket;
+    UNUSED_VARIABLE (bit_bucket);
 
     /* GCS FIX: This is hard coded during debug */
     //double xy_offset[2] = { -2.21 * 4, 0.24 * 4 };  // Good values for test
@@ -200,13 +201,11 @@ hnd_load (Proj_image *proj, const char *fn, const double xy_offset[2])
     for (i = 0; i < hnd.SizeX; i++) {
 	bit_bucket = fread (&a, sizeof(uint32_t), 1, fp);
 	buf[i] = a;
-	b = a;
     }
 
     /* Read first pixel of second row */
     bit_bucket = fread (&a, sizeof(uint32_t), 1, fp);
     buf[i++] = a;
-    b = a;
     
     /* Decompress the rest */
     lut_idx = 0;
@@ -256,7 +255,6 @@ hnd_load (Proj_image *proj, const char *fn, const double xy_offset[2])
 	}
 
 	buf[i] = r21 + r12 + diff - r11;
-	b = buf[i];
 	i++;
     }
 

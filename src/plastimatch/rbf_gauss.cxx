@@ -456,7 +456,7 @@ rbf_gauss_update_vf (
 )
 {
     int lidx, d;
-    size_t ijk[3], v;
+    plm_long ijk[3], v;
     float fxyz[3];
     float *vf_img;
     float rbf;
@@ -512,7 +512,7 @@ rbf_gauss_update_vf_no_dircos (
 )
 {
     int lidx, d;
-    size_t fi, fj, fk, fv;
+    plm_long fi, fj, fk, fv;
     float fxyz[3];
     float *vf_img;
     float rbf;
@@ -563,7 +563,7 @@ rbf_gauss_warp (Landmark_warp *lw)
     float *coeff;
     float origin[3], spacing[3];
     float direction_cosines[9];
-    size_t dim[3];
+    plm_long dim[3];
     int i;
     Volume *moving, *vf_out, *warped_out;
 

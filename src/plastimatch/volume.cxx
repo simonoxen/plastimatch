@@ -13,7 +13,7 @@
 
 #define CONVERT_VOLUME(old_type,new_type,new_type_enum)			\
     {									\
-	size_t v;							\
+	plm_long v;							\
 	old_type* old_img;						\
 	new_type* new_img;						\
 	old_img = (old_type*) ref->img;					\
@@ -81,7 +81,7 @@ Volume::~Volume ()
 
 void 
 Volume::create (
-    const size_t dim[3], 
+    const plm_long dim[3], 
     const float offset[3], 
     const float spacing[3], 
     const float direction_cosines[9], 
@@ -426,7 +426,7 @@ vf_convert_to_interleaved (Volume* vf)
 	break;
     case PT_VF_FLOAT_PLANAR:
 	{
-	    size_t v;
+	    plm_long v;
 	    float** planar = (float**) vf->img;
 	    float* inter = (float*) malloc (3*sizeof(float*)*vf->npix);
 	    if (!inter) {
@@ -481,7 +481,7 @@ vf_convert_to_planar (Volume* ref)
 		    print_and_exit ("Memory allocation failed.\n");
 		}
 	    }
-	    for (size_t i = 0; i < ref->npix; i++) {
+	    for (plm_long i = 0; i < ref->npix; i++) {
 		der[0][i] = img[3*i + 0];
 		der[1][i] = img[3*i + 1];
 		der[2][i] = img[3*i + 2];
@@ -519,7 +519,7 @@ volume_scale (Volume* vol, float scale)
     }
 
     img = (float*) vol->img;
-    for (size_t i = 0; i < vol->npix; i++) {
+    for (plm_long i = 0; i < vol->npix; i++) {
 	img[i] = img[i] * scale;
     }
 }
@@ -529,17 +529,17 @@ volume_scale (Volume* vol, float scale)
 void
 volume_calc_grad_no_dcos (Volume* vout, const Volume* vref)
 {
-    size_t i, j, k;
-    size_t i_n, j_n, k_n;       /* n is next */
+    plm_long i, j, k;
+    plm_long i_n, j_n, k_n;       /* n is next */
     int i_p, j_p, k_p;          /* p is prev */
-    size_t gi, gj, gk;
-    size_t idx_p, idx_n;
+    plm_long gi, gj, gk;
+    plm_long idx_p, idx_n;
     float *out_img, *ref_img;
 
     out_img = (float*) vout->img;
     ref_img = (float*) vref->img;
 
-    size_t v = 0;
+    plm_long v = 0;
     for (k = 0; k < vref->dim[2]; k++) {
 	k_p = k - 1;
 	k_n = k + 1;
@@ -577,11 +577,11 @@ volume_calc_grad_no_dcos (Volume* vout, const Volume* vref)
 void
 volume_calc_grad_dcos (Volume* vout, const Volume* vref)
 {
-    size_t i, j, k;
-    size_t i_n, j_n, k_n;       /* n is next */
+    plm_long i, j, k;
+    plm_long i_n, j_n, k_n;       /* n is next */
     int i_p, j_p, k_p;          /* p is prev */
-    size_t gi, gj, gk;
-    size_t idx_p, idx_n;
+    plm_long gi, gj, gk;
+    plm_long idx_p, idx_n;
     float *out_img, *ref_img;
 
     out_img = (float*) vout->img;
@@ -634,7 +634,7 @@ volume_calc_grad_dcos (Volume* vout, const Volume* vref)
 	vref->step[0][2]
     );
 
-    size_t v = 0;
+    plm_long v = 0;
     for (k = 0; k < vref->dim[2]; k++) {
 	k_p = k - 1;
 	k_n = k + 1;
@@ -709,7 +709,7 @@ volume_make_gradient (Volume* ref)
 Volume*
 volume_difference (Volume* vol, Volume* warped)
 {
-    size_t i, j, k;
+    plm_long i, j, k;
     int p = 0; // Voxel index
     short* temp2;
     short* temp1;

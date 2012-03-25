@@ -36,11 +36,11 @@ Dcmtk_series::rtdose_load (
     int rc;
     const char *val;
     uint16_t val_u16;
-    size_t dim[3];
+    plm_long dim[3];
     float ipp[3];
     float spacing[3];
     float *gfov;    /* gfov = GridFrameOffsetVector */
-    size_t gfov_len;
+    plm_long gfov_len;
     const char *gfov_str;
 
     /* Modality -- better be RTDOSE */
@@ -133,7 +133,7 @@ Dcmtk_series::rtdose_load (
     }
 
     /* (3) Check to make sure spacing is regular. */
-    for (size_t i = 1; i < gfov_len; i++) {
+    for (plm_long i = 1; i < gfov_len; i++) {
 	if (i == 1) {
 	    spacing[2] = gfov[1] - gfov[0];
 	} else {
@@ -198,7 +198,8 @@ Dcmtk_series::rtdose_load (
         const uint16_t* pixel_data;
         rc = this->m_flist.front()->get_uint16_array (
             DCM_PixelData, &pixel_data, &length);
-        printf ("rc = %d, length = %d, npix = %d\n", rc, length, vol->npix);
+        printf ("rc = %d, length = %lu, npix = %ld\n", 
+            rc, length, (long) vol->npix);
         if (bits_stored == 16) {
             dcmtk_dose_copy (img, (const uint16_t*) pixel_data, 
                 vol->npix, dose_scaling);

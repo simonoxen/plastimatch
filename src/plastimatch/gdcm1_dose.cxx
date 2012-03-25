@@ -86,10 +86,10 @@ gdcm1_dose_load (Plm_image *pli, const char *dose_fn, const char *dicom_dir)
     Gdcm_series gs;
     std::string tmp;
     float ipp[3];
-    size_t dim[3];
+    plm_long dim[3];
     float spacing[3];
     float *gfov;    /* gfov = GridFrameOffsetVector */
-    size_t gfov_len;
+    plm_long gfov_len;
     const char *gfov_str;
     float dose_scaling;
 
@@ -182,7 +182,7 @@ gdcm1_dose_load (Plm_image *pli, const char *dose_fn, const char *dicom_dir)
     }
 
     /* (3) Check to make sure spacing is regular. */
-    for (size_t i = 1; i < gfov_len; i++) {
+    for (plm_long i = 1; i < gfov_len; i++) {
 	if (i == 1) {
 	    spacing[2] = gfov[1] - gfov[0];
 	} else {
@@ -211,7 +211,7 @@ gdcm1_dose_load (Plm_image *pli, const char *dose_fn, const char *dicom_dir)
     /* PixelData */
     gdcm::FileHelper gdcm_file_helper (gdcm_file);
 
-    //size_t image_data_size = gdcm_file_helper.GetImageDataSize();
+    //plm_long image_data_size = gdcm_file_helper.GetImageDataSize();
     if (strcmp (gdcm_file->GetPixelType().c_str(), "16U")==0) {
 	unsigned short* image_data = (unsigned short*) gdcm_file_helper.GetImageData();
 	gdcm1_dose_copy_raw (img, image_data, vol->npix, dose_scaling);

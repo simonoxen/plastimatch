@@ -129,7 +129,7 @@ namespace itk
        *  to standard out.  Supply the inverse transform to get performance 
        *  measures.*/
       void MatchKeypointsFeatures(PointSetTypePointer keypoints1, PointSetTypePointer keypoints2,
-			     char *filename_phy_match1, char *filename_phy_match2);
+          const char *filename_phy_match1, const char *filename_phy_match2);
 
 
       private:

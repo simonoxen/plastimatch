@@ -17,9 +17,9 @@
 void
 li_clamp (
     float ma,     /* Input:  (Unrounded) pixel coordinate (in vox) */
-    size_t dmax,  /* Input:  Maximum coordinate in this dimension */
-    size_t* maf,  /* Output: x, y, or z coord of "floor" pixel in moving img */
-    size_t* mar,  /* Output: x, y, or z coord of "round" pixel in moving img */
+    plm_long dmax,  /* Input:  Maximum coordinate in this dimension */
+    plm_long* maf,  /* Output: x, y, or z coord of "floor" pixel in moving img */
+    plm_long* mar,  /* Output: x, y, or z coord of "round" pixel in moving img */
     float* fa1,	  /* Output: Fraction of interpolant for lower index voxel */
     float* fa2	  /* Output: Fraction of interpolant for upper index voxel */
 )
@@ -33,8 +33,8 @@ li_clamp (
 	*mar = dmax;
 	*fa2 = 1.0f;
     } else {
-	*maf = FLOOR_SIZE_T (ma);
-	*mar = ROUND_SIZE_T (ma);
+	*maf = FLOOR_PLM_LONG (ma);
+	*mar = ROUND_PLM_LONG (ma);
 	*fa2 = ma - *maf;
     }
     *fa1 = 1.0f - *fa2;
@@ -43,8 +43,8 @@ li_clamp (
 void
 li_clamp_3d (
     float mijk[3],         /* Input:  Unrounded pixel coordinates in vox */
-    size_t mijk_f[3],      /* Output: "floor" pixel in moving img in vox*/
-    size_t mijk_r[3],      /* Ouptut: "round" pixel in moving img in vox*/
+    plm_long mijk_f[3],      /* Output: "floor" pixel in moving img in vox*/
+    plm_long mijk_r[3],      /* Ouptut: "round" pixel in moving img in vox*/
     float li_frac_1[3],    /* Output: Fraction for upper index voxel */
     float li_frac_2[3],    /* Output: Fraction for lower index voxel */
     Volume *moving         /* Input:  Volume (for dims) */
@@ -63,7 +63,7 @@ li_value (
     float fx1, float fx2,  /* Input:  Fraction of upper, lower x voxel */
     float fy1, float fy2,  /* Input:  Fraction of upper, lower y voxel */
     float fz1, float fz2,  /* Input:  Fraction of upper, lower z voxel */
-    size_t mvf,            /* Input:  Index of lower-left voxel in 8-group */
+    plm_long mvf,            /* Input:  Index of lower-left voxel in 8-group */
     float *m_img,          /* Input:  Pointer to raw data */
     Volume *moving         /* Input:  Volume (for dimensions) */
 )

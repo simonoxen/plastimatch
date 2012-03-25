@@ -7,6 +7,7 @@
 #include "plm_config.h"
 #include <list>
 #include <vector>
+#include "plm_int.h"
 #include "pstring.h"
 
 class Plm_image;
@@ -19,11 +20,11 @@ class plastimatch1_EXPORT Rtss_polyline_set {
 public:
     /* Output geometry */
     int have_geometry;
-    size_t m_dim[3];
+    plm_long m_dim[3];
     float m_spacing[3];
     float m_offset[3];
     /* Rasterization geometry */
-    size_t rast_dim[3];
+    plm_long rast_dim[3];
     float rast_spacing[3];
     float rast_offset[3];
     /* Structures */
@@ -46,7 +47,7 @@ public:
 	Rtss_polyline_set* cxt_in);
     void find_default_geometry (Plm_image_header *pih);
     void find_rasterization_geometry (float offset[3], 
-	float spacing[3], size_t dims[3]);
+	float spacing[3], plm_long dims[3]);
     void find_rasterization_geometry (Plm_image_header *pih);
     Pstring find_unused_structure_name (void);
     void fix_polyline_slice_numbers (void);

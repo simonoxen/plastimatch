@@ -335,7 +335,7 @@ xio_structures_save (
     fclose (fp);
 
     /* Write WC files */
-    for (size_t z = 0; z < cxt->m_dim[2]; z++) {
+    for (plm_long z = 0; z < cxt->m_dim[2]; z++) {
 	char fn[_MAX_PATH];
 
 	float z_offset = 0.0f;

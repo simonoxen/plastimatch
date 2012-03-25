@@ -111,7 +111,7 @@ point_in_polygon (
 void
 rasterize_slice (
     unsigned char* acc_img,
-    size_t* dims,
+    plm_long* dims,
     float* spacing,
     float* offset,
     size_t num_vertices,
@@ -123,7 +123,6 @@ rasterize_slice (
     Edge** edge_table;
     Edge* edge_list;	    /* Global edge list */
     Edge* ael;  		    /* Active edge list */
-    size_t i;
     float *x, *y;           /* vertices in pixel coordinates */
 
     /* Check if last vertex == first vertex.  If so, remove it. */
@@ -134,7 +133,7 @@ rasterize_slice (
     /* Convert from mm to pixel coordinates */
     x = (float*) malloc (sizeof (float) * num_vertices);
     y = (float*) malloc (sizeof (float) * num_vertices);
-    for (i = 0; i < num_vertices; i++) {
+    for (size_t i = 0; i < num_vertices; i++) {
 	x[i] = (x_in[i] - offset[0]) / spacing[0];
 	y[i] = (y_in[i] - offset[1]) / spacing[1];
     }
@@ -143,7 +142,7 @@ rasterize_slice (
     edge_table = (Edge**) malloc (dims[1] * sizeof(Edge*));
     edge_list = (Edge*) malloc (num_vertices * sizeof(Edge));
     memset (edge_table, 0, dims[1] * sizeof(Edge*));
-    for (i = 0; i < num_vertices; i++) {
+    for (size_t i = 0; i < num_vertices; i++) {
 	int ymin, ymax;
 	int a = i, b = (i==num_vertices-1 ? 0 : i+1);
 	/* Reorder segment so that y[a] > y[b] */
@@ -178,7 +177,7 @@ rasterize_slice (
     /* Debug edge table */
 #if defined (commentout)
     printf ("-------------------------------------------\n");
-    for (i = 0; i < dims[1]; i++) {
+    for (plm_long i = 0; i < dims[1]; i++) {
 	if (edge_table[i]) {
 	    printf ("%d: ", i);
 	    print_edges (edge_table[i]);
@@ -190,7 +189,7 @@ rasterize_slice (
     /* Loop through scanline, rendering each */
     imgp = acc_img;
     ael = 0;
-    for (i = 0; i < dims[1]; i++) {
+    for (plm_long i = 0; i < dims[1]; i++) {
 	int x, num_crossings;
 	Edge *n, *c;
 	/* Remove old edges from AEL */

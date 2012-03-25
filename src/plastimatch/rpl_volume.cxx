@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "compiler_warnings.h"
 #include "math_util.h"
 #include "mha_io.h"
 #include "proj_matrix.h"
@@ -37,7 +38,7 @@ lookup_rgdepth (
     double dist
 )
 {
-    size_t idx1, idx2;
+    plm_long idx1, idx2;
     int ijk[3];
     double rg1, rg2, rgdepth, frac;
     float* d_img = (float*) rpl_vol->vol->img;
@@ -223,7 +224,7 @@ rpl_volume_create (
     float ray_step        // uniform ray step size
 )
 {
-    size_t dv_dims[3];
+    plm_long dv_dims[3];
     float dv_off[3] = {0.0f, 0.0f, 0.0f};   // arbitrary
     float dv_ps[3] = {1.0f, 1.0f, 1.0f};    //
     float ct_diag;
@@ -441,7 +442,8 @@ rpl_volume_compute_unified (
         vec3_add2 (r_tgt, tmp);
 
         for (c = 0; c < ires[1]; c++) {
-            size_t ap_idx;
+            plm_long ap_idx;
+            UNUSED_VARIABLE (ap_idx);
 	    double ray[3];
 	    double ip1[3];
 	    double ip2[3];

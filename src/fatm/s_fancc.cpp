@@ -329,6 +329,7 @@ s_fancc_score_point (FATM_Options* options,
     /* Compute window means */
     double p_mean = 0, s_mean = 0;
     double num_pix = d[0] * d[1];
+    ((void) p_mean); /* Suppress compiler warning for unused variable */
     p_mean = p_stats->p_mean;
     ii = image_data(&udp->integral_image);
     s_mean = ii[image_index_pt(udp->integral_image.dims,p_ul)]
@@ -353,7 +354,9 @@ s_fancc_score_point (FATM_Options* options,
     //mexPrintf ("3\n");
 
     for (y = 0; y < d[0]; y++) {
+#if defined (USE_EXCHANGE)
 	int old_bin = 0;
+#endif
 	for (x = 0; x < udp->row_ops[y].num_ops; x++) {
 	    //mexPrintf ("    %d %d \n", y, x);
 	    int type = udp->row_ops[y].ops[x].type;
@@ -395,7 +398,9 @@ s_fancc_score_point (FATM_Options* options,
 		break;
 	    }
 #endif
+#if defined (USE_EXCHANGE)
 	    old_bin = bin;
+#endif
 	}
 	li += udp->line_integral_image.dims[1];
     }

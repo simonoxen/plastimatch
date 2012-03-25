@@ -31,10 +31,13 @@
 /* Returns integer data type */
 #define ROUND_INT(x) (((x) >= 0) ? ((long)((x)+0.5)) : (long)(-(-(x)+0.5)))
 
-/* Returns unsigned integer data type */
-#define FLOOR_SIZE_T(x) (((x) >= 0) ? ((size_t)(x)) : 0)
+/* Returns plm_long data type */
+#define FLOOR_PLM_LONG(x) ((plm_long) floor (x))
+#define ROUND_PLM_LONG(x) \
+    (((x) >= 0) ? ((plm_long)((x)+0.5)) : (plm_long)(-(-(x)+0.5)))
 
 /* Returns unsigned integer data type */
+#define FLOOR_SIZE_T(x) (((x) >= 0) ? ((size_t)(x)) : 0)
 #define ROUND_SIZE_T(x) (((x) >= 0) ? ((size_t)((x)+0.5)) : 0)
 
 /* Returns double data type -- note MSVC does not have C99 round(). */

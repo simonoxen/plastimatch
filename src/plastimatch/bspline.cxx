@@ -219,10 +219,10 @@ int* calc_offsets(int* tile_dims, int* cdims)
 // Data: July 13th, 2009
 ////////////////////////////////////////////////////////////////////////////////
 void find_knots (
-    size_t* knots, 
-    size_t tile_num, 
-    size_t* rdims, 
-    size_t* cdims
+    plm_long* knots, 
+    plm_long tile_num, 
+    plm_long* rdims, 
+    plm_long* cdims
 ) {
     int tile_loc[3];
     int i, j, k;
@@ -263,7 +263,7 @@ int
 inside_mask (float* xyz, const Volume* mask)
 {
     float p_f[3];
-    size_t p[3];
+    plm_long p[3];
 
     p_f[0] = xyz[0] - mask->offset[0];
     p_f[1] = xyz[1] - mask->offset[1];
@@ -283,12 +283,12 @@ inside_mask (float* xyz, const Volume* mask)
     if (p_f[0] < 0) p_f[0] = 0;
     if (p_f[1] < 0) p_f[1] = 0;
     if (p_f[2] < 0) p_f[2] = 0;
-    p[0] = (size_t)p_f[0];
-    p[1] = (size_t)p_f[1];
-    p[2] = (size_t)p_f[2];
+    p[0] = (plm_long)p_f[0];
+    p[1] = (plm_long)p_f[1];
+    p[2] = (plm_long)p_f[2];
 
     float* m = (float*)mask->img;
-    size_t i = volume_index (mask->dim, p);
+    plm_long i = volume_index (mask->dim, p);
 
     if (m[i] < 0.5) {
         return 0;
@@ -321,7 +321,7 @@ dump_hist (BSPLINE_MI_Hist* mi_hist, int it, const std::string& prefix)
     double* f_hist = mi_hist->f_hist;
     double* m_hist = mi_hist->m_hist;
     double* j_hist = mi_hist->j_hist;
-    size_t i, j, v;
+    plm_long i, j, v;
     FILE *fp;
     //char fn[_MAX_PATH];
     std::string fn;
@@ -332,7 +332,7 @@ dump_hist (BSPLINE_MI_Hist* mi_hist, int it, const std::string& prefix)
     make_directory_recursive (fn.c_str());
     fp = fopen (fn.c_str(), "wb");
     if (!fp) return;
-    for (i = 0; i < mi_hist->fixed.bins; i++) {
+    for (plm_long i = 0; i < mi_hist->fixed.bins; i++) {
         fprintf (fp, "%u %f\n", (unsigned int) i, f_hist[i]);
     }
     fclose (fp);
@@ -486,11 +486,11 @@ void
 bspline_interp_pix (
     float out[3], 
     const Bspline_xform* bxf, 
-    size_t p[3], 
-    size_t qidx
+    plm_long p[3], 
+    plm_long qidx
 ) {
     int i, j, k, m;
-    size_t cidx;
+    plm_long cidx;
     float* q_lut = &bxf->q_lut[qidx*64];
 
     out[0] = out[1] = out[2] = 0;
@@ -515,14 +515,14 @@ void
 bspline_interp_pix_b (
     float out[3], 
     Bspline_xform* bxf, 
-    size_t pidx, 
-    size_t qidx
+    plm_long pidx, 
+    plm_long qidx
 )
 {
     int i, j, k, m;
-    size_t cidx;
+    plm_long cidx;
     float* q_lut = &bxf->q_lut[qidx*64];
-    size_t* c_lut = &bxf->c_lut[pidx*64];
+    plm_long* c_lut = &bxf->c_lut[pidx*64];
 
     out[0] = out[1] = out[2] = 0;
     m = 0;
@@ -543,12 +543,12 @@ void
 bspline_interpolate_vf (Volume* interp, 
     const Bspline_xform* bxf)
 {
-    size_t i, j, k, v;
-    size_t p[3];
-    size_t q[3];
+    plm_long i, j, k, v;
+    plm_long p[3];
+    plm_long q[3];
     float* out;
     float* img = (float*) interp->img;
-    size_t qidx;
+    plm_long qidx;
 
     memset (img, 0, interp->npix*3*sizeof(float));
     for (k = 0; k < bxf->roi_dim[2]; k++) {
@@ -605,10 +605,10 @@ bspline_update_sets (float* sets_x, float* sets_y, float* sets_z,
 void
 bspline_sort_sets (float* cond_x, float* cond_y, float* cond_z,
     float* sets_x, float* sets_y, float* sets_z,
-    size_t pidx, Bspline_xform* bxf)
+    plm_long pidx, Bspline_xform* bxf)
 {
     int sidx, kidx;
-    size_t* k_lut = (size_t*) malloc (64*sizeof(size_t));
+    plm_long* k_lut = (plm_long*) malloc (64*sizeof(plm_long));
 
     /* Generate the knot index lut */
     find_knots (k_lut, pidx, bxf->rdims, bxf->cdims);
@@ -629,11 +629,11 @@ void
 bspline_update_grad (
     Bspline_state *bst, 
     Bspline_xform* bxf, 
-    size_t p[3], size_t qidx, float dc_dv[3])
+    plm_long p[3], plm_long qidx, float dc_dv[3])
 {
     Bspline_score* ssd = &bst->ssd;
-    size_t i, j, k, m;
-    size_t cidx;
+    plm_long i, j, k, m;
+    plm_long cidx;
     float* q_lut = &bxf->q_lut[qidx*64];
 
     m = 0;
@@ -657,14 +657,14 @@ void
 bspline_update_grad_b (
     Bspline_score* bscore,
     const Bspline_xform* bxf, 
-    size_t pidx, 
-    size_t qidx, 
+    plm_long pidx, 
+    plm_long qidx, 
     const float dc_dv[3])
 {
-    size_t i, j, k, m;
-    size_t cidx;
+    plm_long i, j, k, m;
+    plm_long cidx;
     float* q_lut = &bxf->q_lut[qidx*64];
-    size_t* c_lut = &bxf->c_lut[pidx*64];
+    plm_long* c_lut = &bxf->c_lut[pidx*64];
 
     m = 0;
     for (k = 0; k < 4; k++) {
@@ -684,7 +684,7 @@ void
 bspline_make_grad (float* cond_x, float* cond_y, float* cond_z,
                    Bspline_xform* bxf, Bspline_score* ssd)
 {
-    size_t kidx, sidx;
+    plm_long kidx, sidx;
 
     for (kidx=0; kidx < (bxf->cdims[0] * bxf->cdims[1] * bxf->cdims[2]); kidx++) {
         for (sidx=0; sidx<64; sidx++) {
@@ -879,8 +879,8 @@ bspline_transform_point (
     int linear_interp   /* 1 = trilinear, 0 = nearest neighbors */
 )
 {
-    size_t d, i, j, k;
-    size_t p[3];                    /* Index of tile */
+    plm_long d, i, j, k;
+    plm_long p[3];                    /* Index of tile */
     float q[3];                  /* Fractional offset within tile */
     float q_mini[3][4];          /* "miniature" q-lut, just for this point */
 

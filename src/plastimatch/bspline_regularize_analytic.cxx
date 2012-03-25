@@ -35,16 +35,16 @@ print_matrix (double* mat, int m, int n)
 void
 compute_coeff_from_vf (Bspline_xform* bxf, Volume* vol)
 {
-    size_t i, j, k;
+    plm_long i, j, k;
     int a,b,c,z;
     int idx_poi, cidx, pidx, qidx;
     float *vec_poi;
     float *img = (float*) vol->img;
 
-    size_t p[3];
+    plm_long p[3];
     float q[3];
     float* q_lut;
-    size_t* c_lut;
+    plm_long* c_lut;
 
     for (k = 0; k < vol->dim[2]; k++) {
         p[2] = k / bxf->vox_per_rgn[2];
@@ -88,7 +88,7 @@ void
 reg_sort_sets (
     double* cond,
     double* sets,
-    size_t* k_lut,
+    plm_long* k_lut,
     const Bspline_xform* bxf
 )
 {
@@ -128,7 +128,7 @@ reg_update_grad (
 
 
 void 
-find_knots_3 (size_t* knots, size_t tile_num, const size_t* cdims)
+find_knots_3 (plm_long* knots, plm_long tile_num, const plm_long* cdims)
 {
     int tile_loc[3];
     int i, j, k;
@@ -337,7 +337,7 @@ region_smoothness_omp (
     const Reg_parms* reg_parms,    
     const Bspline_xform* bxf,
     double* V, 
-    size_t* knots
+    plm_long* knots
 )
 {
     double S = 0.0;         /* Region smoothness */
@@ -375,7 +375,7 @@ region_smoothness (
     const Reg_parms* reg_parms,    
     const Bspline_xform* bxf,
     double* V, 
-    size_t* knots)
+    plm_long* knots)
 {
     double S = 0.0;         /* Region smoothness */
     double X[64] = {0};
@@ -523,8 +523,7 @@ vf_regularize_analytic_omp (
     const Bspline_regularize_state* rst,
     const Bspline_xform* bxf)
 {
-    long i;
-    size_t n;
+    plm_long i, n;
     Plm_timer timer;
 
     double S = 0.0;
@@ -540,7 +539,7 @@ vf_regularize_analytic_omp (
 
 #pragma omp parallel for reduction(+:S)
     for (i=0; i<n; i++) {
-        size_t knots[64];
+        plm_long knots[64];
         double sets[3*64];
 
         memset (sets, 0, 3*64*sizeof (double));
@@ -573,8 +572,8 @@ vf_regularize_analytic (
     const Bspline_regularize_state* rst,
     const Bspline_xform* bxf)
 {
-    size_t i, n;
-    size_t knots[64];
+    plm_long i, n;
+    plm_long knots[64];
     Plm_timer timer;
 
     plm_timer_start (&timer);

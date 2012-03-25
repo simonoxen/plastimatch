@@ -29,9 +29,9 @@ demons_c (
     Volume* vf_init, 
     DEMONS_Parms* parms)
 {
-    size_t i, j, k, v;
+    plm_long i, j, k, v;
     int	it;	           /* Iterations */
-    size_t fi, fj, fk, fv; /* Indices into fixed image */
+    plm_long fi, fj, fk, fv; /* Indices into fixed image */
     float f2mo[3];         /* Offset difference (in mm) from fixed to moving */
     float f2ms[3];         /* Slope to convert fixed to moving */
     float invmps[3];       /* 1/pixel spacing of moving image */
@@ -39,7 +39,7 @@ demons_c (
     float *dxyz;
     float mi, mj, mk;
     int mx, my, mz;
-    size_t mv;
+    plm_long mv;
     int fw[3];
     double diff_run;
     Volume *vf_est, *vf_smooth;

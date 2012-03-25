@@ -10,8 +10,8 @@
 #endif
 
 /* Architecture attributes */
-#cmakedefine HAVE_32_BIT 1
-#cmakedefine HAVE_64_BIT 1
+#cmakedefine MACHINE_IS_32_BIT 1
+#cmakedefine MACHINE_IS_64_BIT 1
 
 /* Major OSes */
 #cmakedefine WIN32 1
@@ -31,6 +31,7 @@
 #cmakedefine SSE2_FOUND 1
 #define CMAKE_SIZEOF_UINT @CMAKE_SIZEOF_UINT@
 #define CMAKE_SIZEOF_ULONG @CMAKE_SIZEOF_ULONG@
+#define CMAKE_SIZEOF_SIZE_T @CMAKE_SIZEOF_SIZE_T@
 #define PLM_BIG_ENDIAN @PLM_BIG_ENDIAN@
 
 /* Plastimatch version attributes */

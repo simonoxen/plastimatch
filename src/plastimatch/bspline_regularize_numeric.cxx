@@ -19,8 +19,6 @@
 #include "volume_macros.h"
 
 /* Prototypes */
-static void bspline_xform_create_qlut_grad (
-    Bspline_xform* bxf, float img_spacing[3], size_t vox_per_rgn[3]);
 static void bspline_xform_free_qlut_grad (Bspline_xform* bxf);
 
 /* Flavor 'a' */
@@ -39,7 +37,7 @@ vf_regularize_numerical (
 
     Plm_timer timer;
 
-    size_t i, j, k;
+    plm_long i, j, k;
     int c;
     float *img = (float*) vol->img;
 
@@ -345,9 +343,9 @@ void bspline_xform_create_qlut_grad
 (
     Bspline_xform* bxf,         /* Output: bxf with new LUTs */
     float img_spacing[3],       /* Image spacing (in mm) */
-    size_t vox_per_rgn[3])         /* Knot spacing (in vox) */
+    plm_long vox_per_rgn[3])         /* Knot spacing (in vox) */
 {
-    size_t i, j, k, p;
+    plm_long i, j, k, p;
     int tx, ty, tz;
     float *A, *B, *C;
     float *Ax, *By, *Cz, *Axx, *Byy, *Czz;
@@ -576,8 +574,8 @@ void
 bspline_regularize_hessian_component (
     float out[3], 
     const Bspline_xform* bxf, 
-    size_t p[3], 
-    size_t qidx, 
+    plm_long p[3], 
+    plm_long qidx, 
     int derive1, 
     int derive2
 )
@@ -621,8 +619,8 @@ void
 bspline_regularize_hessian_component_b (
     float out[3], 
     const Bspline_xform* bxf, 
-    size_t p[3], 
-    size_t qidx, 
+    plm_long p[3], 
+    plm_long qidx, 
     float *q_lut
 )
 {
@@ -651,8 +649,8 @@ void
 bspline_regularize_hessian_update_grad (
     Bspline_score *bscore, 
     const Bspline_xform* bxf, 
-    size_t p[3], 
-    size_t qidx, 
+    plm_long p[3], 
+    plm_long qidx, 
     float dc_dv[3], 
     int derive1, 
     int derive2
@@ -696,8 +694,8 @@ void
 bspline_regularize_hessian_update_grad_b (
     Bspline_score *bscore, 
     const Bspline_xform* bxf, 
-    size_t p[3], 
-    size_t qidx, 
+    plm_long p[3], 
+    plm_long qidx, 
     float dc_dv[3], 
     float *q_lut
 )
@@ -727,8 +725,8 @@ static double
 update_score_and_grad (
     Bspline_score *bscore, 
     const Bspline_xform* bxf, 
-    size_t p[3], 
-    size_t qidx, 
+    plm_long p[3], 
+    plm_long qidx, 
     float grad_coeff, 
     float weight, // 2 or 1 for cross/non-cross derivatives
     float *qlut
@@ -762,12 +760,12 @@ bspline_regularize_numeric_d (
 )
 {
     double grad_score;
-    size_t ri, rj, rk;
-    size_t fi, fj, fk;
-    size_t p[3];
-    size_t q[3];
-    size_t qidx;
-    size_t num_vox;
+    plm_long ri, rj, rk;
+    plm_long fi, fj, fk;
+    plm_long p[3];
+    plm_long q[3];
+    plm_long qidx;
+    plm_long num_vox;
     Plm_timer timer;
     //double interval;
     float grad_coeff;

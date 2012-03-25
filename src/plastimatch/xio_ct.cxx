@@ -153,7 +153,7 @@ xio_ct_load_image (
 	print_and_exit ("Error seeking backward when reading image file\n");
     }
     rc2 = fread (slice_img, sizeof(short), v->dim[0] * v->dim[1], fp);
-    if (rc2 != v->dim[0] * v->dim[1]) {
+    if (rc2 != (size_t) (v->dim[0] * v->dim[1])) {
 	perror ("File error: ");
 	print_and_exit (
 	    "Error reading xio ct image (%s)\n"
@@ -184,7 +184,7 @@ xio_ct_create_volume (
 )
 {
     Volume *v;
-    size_t dim[3];
+    plm_long dim[3];
     float offset[3];
     float spacing[3];
 

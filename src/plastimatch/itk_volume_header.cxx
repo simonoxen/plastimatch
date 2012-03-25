@@ -46,7 +46,7 @@ Itk_volume_header::set_spacing (float spacing[3])
 }
 
 void
-Itk_volume_header::set_dim (size_t dim[3])
+Itk_volume_header::set_dim (plm_long dim[3])
 {
     ImageRegionType::SizeType itk_size;
     ImageRegionType::IndexType itk_index;
@@ -62,7 +62,7 @@ void
 Itk_volume_header::set_from_gpuit (
     float gpuit_origin[3],
     float gpuit_spacing[3],
-    size_t gpuit_dim[3],
+    plm_long gpuit_dim[3],
     float gpuit_direction_cosines[9])
 {
     ImageRegionType::SizeType itk_size;
@@ -110,7 +110,7 @@ Itk_volume_header::get_spacing (float spacing[3])
 }
 
 void 
-Itk_volume_header::get_dim (size_t dim[3])
+Itk_volume_header::get_dim (plm_long dim[3])
 {
     ImageRegionType::SizeType itk_size = m_region.GetSize ();
     for (unsigned int d = 0; d < 3; d++) {

@@ -2,19 +2,19 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
-
-#include "plm_config.h"
-#include "itkImageFileReader.h"
 #include "itkImage.h"
-#include "itk_image.h"
+#include "itkImageFileReader.h"
+#include "itkImageMomentsCalculator.h"
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkImageSliceConstIteratorWithIndex.h"
-#include "itkImageMomentsCalculator.h"
+
+#include "compiler_warnings.h"
 #include "dice_statistics.h"
+#include "itk_image.h"
 
 template<class T>
 float do_dice (
@@ -40,7 +40,7 @@ float do_dice (
     int TN=0;
     int TP=0;
 	
-    size_t dim[3];
+    plm_long dim[3];
     float offset[3];
     float spacing[3];
 
@@ -48,7 +48,8 @@ float do_dice (
     DoubleVector3DType c_warp;
     double vol_ref;
     double vol_warp;
-	
+    UNUSED_VARIABLE (vol_ref);
+    UNUSED_VARIABLE (vol_warp);
 
     if (reference->GetLargestPossibleRegion().GetSize() 
 	!= warped->GetLargestPossibleRegion().GetSize())
@@ -194,6 +195,8 @@ float do_dice_nsh (
     DoubleVector3DType c_warp;
     double vol_ref;
     double vol_warp;
+    UNUSED_VARIABLE (vol_ref);
+    UNUSED_VARIABLE (vol_warp);
 	
 
     if(reference->GetLargestPossibleRegion().GetSize() != warped->GetLargestPossibleRegion().GetSize()){
@@ -231,8 +234,8 @@ float do_dice_nsh (
 	    
 	    if (in_image) {
 		if(warped->GetPixel(k_warp)==reference->GetPixel(k)){ TP++; }
-		    else if (warped->GetPixel(k_warp)!=reference->GetPixel(k)){ FN++; }
-		 }
+                else if (warped->GetPixel(k_warp)!=reference->GetPixel(k)){ FN++; }
+            }
 
 	}else{
 	    if (in_image) { if(warped->GetPixel(k_warp)==0) TN++; else FP++; }
@@ -245,15 +248,15 @@ float do_dice_nsh (
     }
 
 /*
-    i=0; sizeWarp = 0;
-    ItTypeVolPixel it_warp(warped, warped->GetLargestPossibleRegion());
-    while(!it_warp.IsAtEnd()) 
-    {
-	k=it_warp.GetIndex();
-	if(warped->GetPixel(k)) sizeWarp++;
-	it_warp.operator ++();
-	i++;
-    }
+  i=0; sizeWarp = 0;
+  ItTypeVolPixel it_warp(warped, warped->GetLargestPossibleRegion());
+  while(!it_warp.IsAtEnd()) 
+  {
+  k=it_warp.GetIndex();
+  if(warped->GetPixel(k)) sizeWarp++;
+  it_warp.operator ++();
+  i++;
+  }
 */
 	
     //computes moments for reference image

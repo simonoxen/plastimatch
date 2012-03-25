@@ -5,6 +5,7 @@
 #define _bspline_macros_h_
 
 #include "plm_config.h"
+#include "plm_int.h"
 #include "volume_macros.h"
 
 /***************************************************************
@@ -51,18 +52,18 @@ get_region_index_3 (int p[3], int i, int j, int k, const Bspline_xform *bxf) {
     p[2] = k / bxf->vox_per_rgn[2];
 }
 
-static inline size_t
-get_region_index (const size_t ijk[3], const Bspline_xform *bxf) {
-    size_t p[3];
+static inline plm_long
+get_region_index (const plm_long ijk[3], const Bspline_xform *bxf) {
+    plm_long p[3];
     p[0] = ijk[0] / bxf->vox_per_rgn[0];
     p[1] = ijk[1] / bxf->vox_per_rgn[1];
     p[2] = ijk[2] / bxf->vox_per_rgn[2];
     return volume_index (bxf->rdims, p);
 }
 
-static inline size_t
-get_region_index (size_t i, size_t j, size_t k, const Bspline_xform *bxf) {
-    size_t p[3];
+static inline plm_long
+get_region_index (plm_long i, plm_long j, plm_long k, const Bspline_xform *bxf) {
+    plm_long p[3];
     p[0] = i / bxf->vox_per_rgn[0];
     p[1] = j / bxf->vox_per_rgn[1];
     p[2] = k / bxf->vox_per_rgn[2];
@@ -92,18 +93,18 @@ get_region_offset (int q[3], int i, int j, int k, const Bspline_xform *bxf) {
     q[2] = k % bxf->vox_per_rgn[2];
 }
 
-static inline size_t
-get_region_offset (const size_t ijk[3], const Bspline_xform *bxf) {
-    size_t q[3];
+static inline plm_long
+get_region_offset (const plm_long ijk[3], const Bspline_xform *bxf) {
+    plm_long q[3];
     q[0] = ijk[0] % bxf->vox_per_rgn[0];
     q[1] = ijk[1] % bxf->vox_per_rgn[1];
     q[2] = ijk[2] % bxf->vox_per_rgn[2];
     return volume_index (bxf->vox_per_rgn, q);
 }
 
-static inline size_t
-get_region_offset (size_t i, size_t j, size_t k, const Bspline_xform *bxf) {
-    size_t q[3];
+static inline plm_long
+get_region_offset (plm_long i, plm_long j, plm_long k, const Bspline_xform *bxf) {
+    plm_long q[3];
     q[0] = i % bxf->vox_per_rgn[0];
     q[1] = j % bxf->vox_per_rgn[1];
     q[2] = k % bxf->vox_per_rgn[2];

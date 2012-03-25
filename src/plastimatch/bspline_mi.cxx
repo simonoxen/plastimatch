@@ -38,7 +38,7 @@
 Volume*
 volume_clip_intensity (Volume* vin, float bot, float top)
 {
-    size_t i, j, N;
+    plm_long i, j, N;
     int* marks;
     float* imgin;
     float* imgout;
@@ -124,7 +124,6 @@ bspline_initialize_mi_bigbin (
     Volume* vol
 )
 {
-    size_t i;
     int idx_bin;
     float* img = (float*) vol->img;
 
@@ -134,7 +133,7 @@ bspline_initialize_mi_bigbin (
     }
 
     /* build a quick histogram */
-    for (i=0; i<vol->npix; i++) {
+    for (plm_long i=0; i<vol->npix; i++) {
         idx_bin = floor ((img[i] - hparms->offset) / hparms->delta);
         if (hparms->type == HIST_VOPT) {
             idx_bin = hparms->key_lut[idx_bin];
@@ -143,7 +142,7 @@ bspline_initialize_mi_bigbin (
     }
 
     /* look for biggest bin */
-    for (i=0; i<hparms->bins; i++) {
+    for (plm_long i=0; i<hparms->bins; i++) {
         if (hist[i] > hist[hparms->big_bin]) {
             hparms->big_bin = i;
         }
@@ -154,7 +153,7 @@ bspline_initialize_mi_bigbin (
 static void
 bspline_initialize_mi_hist_eqsp (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
 {
-    size_t i;
+    plm_long i;
     float min_vox, max_vox;
     float* img = (float*) vol->img;
 
@@ -187,7 +186,7 @@ bspline_mi_hist_vopt_dump_ranges (
     FILE* fp;
     std::string fn;
     char buff[1024];
-    size_t i, j;
+    plm_long i, j;
 
     fn = prefix + "_vopt_ranges.txt";
     fp = fopen (fn.c_str(), "wb");
@@ -232,9 +231,8 @@ bspline_mi_hist_vopt_dump_ranges (
 static void
 bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
 {
-    size_t i, j, k;
     int idx_bin;
-    size_t curr, next, bottom;
+    plm_long curr, next, bottom;
     float min_vox, max_vox;
 
     int* tracker;
@@ -269,7 +267,7 @@ bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
 
     /* Determine input image value range */
     min_vox = max_vox = img[0];
-    for (i=1; i < vol->npix; i++) {
+    for (plm_long i=1; i < vol->npix; i++) {
         if (img[i] < min_vox) {
             min_vox = img[i];
         } else if (img[i] > max_vox) {
@@ -282,14 +280,14 @@ bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
     hparms->offset = min_vox - 0.5 * hparms->delta;
 
     /* Construct high resolution histogram w/ bin contribution averages*/
-    for (i=0; i<vol->npix; i++) {
+    for (plm_long i=0; i<vol->npix; i++) {
         idx_bin = floor ((img[i] - hparms->offset) / hparms->delta);
         tmp_hist[idx_bin]++;
         tmp_avg[idx_bin] += img[i] - hparms->offset;
     }
 
     /* Sorted estimation table */
-    for (i=0; i<hparms->keys; i++) {
+    for (plm_long i=0; i<hparms->keys; i++) {
         if (tmp_hist[i] > 0) {
             tmp_avg[i] = tmp_avg[i] / tmp_hist[i];
         }
@@ -302,7 +300,7 @@ bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
     s_lut[0] = tmp_avg[0];
     ssq_lut[0] = (tmp_avg[0] * tmp_avg[0]);
     cnt_lut[0] = tmp_hist[0];
-    for (i=1; i<hparms->keys; i++) {
+    for (plm_long i=1; i<hparms->keys; i++) {
         s_lut[i] = s_lut[i-1] + tmp_avg[i];
         ssq_lut[i] = ssq_lut[i-1] + (tmp_avg[i] * tmp_avg[i]);
         cnt_lut[i] = cnt_lut[i-1] + tmp_hist[i];
@@ -313,18 +311,18 @@ bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
     free (tmp_hist);
 
     /* Compute the one-bin scores */
-    for (i=0; i<hparms->keys; i++) {
+    for (plm_long i=0; i<hparms->keys; i++) {
         err_lut[i] = vopt_bin_error (0, i, s_lut, ssq_lut, cnt_lut);
     }
 
     /* Compute best multi-bin scores */
-    for (j=1; j<hparms->bins; j++) {
-        for (i=0; i<hparms->keys; i++) {
+    for (plm_long j=1; j<hparms->bins; j++) {
+        for (plm_long i=0; i<hparms->keys; i++) {
 
             err_lut[hparms->keys*j+i] = DBL_MAX;
             tracker[hparms->keys*j+i] = 0;
 
-            for (k=0; k<i; k++) {
+            for (plm_long k=0; k<i; k++) {
                 candidate = err_lut[hparms->keys*(j-1)+k] + vopt_bin_error (k+1, i, s_lut, ssq_lut, cnt_lut);
                 if (candidate <= err_lut[hparms->keys*j+i]) {
                     err_lut[hparms->keys*j+i] = candidate;
@@ -344,14 +342,14 @@ bspline_initialize_mi_hist_vopt (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
     memset (hparms->key_lut, 0, hparms->keys * sizeof (int));
 
     curr = hparms->keys-1;
-    for (j=hparms->bins-1; j>=0; j--) {
+    for (plm_long j=hparms->bins-1; j>=0; j--) {
         next = tracker[hparms->keys*j+curr];
         bottom = next+1;
         if (j == 0) { bottom = 0; }
 
 //        printf ("[%i] from %i to %i\tErr: %6.2e\n",
 //                  j, bottom, curr, err_lut[hparms->keys*j+curr]);
-        for (i=bottom; i<=curr; i++) {
+        for (plm_long i=bottom; i<=curr; i++) {
             hparms->key_lut[i] = j;
         }
 
@@ -511,11 +509,11 @@ bspline_mi_hist_lookup (
     float m_val             /* Input:  Intensity of moving image */
 )
 {
-    size_t fl;
+    plm_long fl;
     float midx, midx_trunc;
-    size_t ml_1, ml_2;      /* 1-d index of bin 1, bin 2 */
-    float mf_1, mf_2;       /* fraction to bin 1, bin 2 */
-    long f_idx; /* Index into 2-d histogram */
+    plm_long ml_1, ml_2;      /* 1-d index of bin 1, bin 2 */
+    float mf_1, mf_2;            /* fraction to bin 1, bin 2 */
+    long f_idx;                  /* Index into 2-d histogram */
 
     /* Fixed image is binned */
     fl = (long) floor ((f_val - mi_hist->fixed.offset) / mi_hist->fixed.delta);
@@ -603,7 +601,8 @@ mi_hist_score (BSPLINE_MI_Hist* mi_hist, int num_vox)
     double* m_hist = mi_hist->m_hist;
     double* j_hist = mi_hist->j_hist;
 
-    size_t i, j, v;
+    plm_long i, j;
+    plm_long v;
     double fnv = (double) num_vox;
     double score = 0;
     double hist_thresh = 0.001 / (mi_hist->moving.bins * mi_hist->fixed.bins);
@@ -700,7 +699,6 @@ compute_dS_dP (
 
 void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_base, int iter)
 {
-    size_t i, j;
     int z;
     char c;
 
@@ -711,11 +709,11 @@ void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_base, int iter)
     int graph_bar_height = 100;
     int graph_bar_width = 5;
     int graph_bar_spacing = (int)((float)graph_bar_width * (7.0/5.0));
-    size_t graph_color_levels = 22;
+    plm_long graph_color_levels = 22;
 
     //  int fixed_bar_height;   // max bar height (pixels)
     //  int moving_bar_height;
-    size_t joint_color;
+    plm_long joint_color;
 
     float fixed_scale;  // pixels per amt
     float moving_scale;
@@ -757,19 +755,19 @@ void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_base, int iter)
 
     // ----------------------------------------------
     // Find max value for fixed
-    for(i=0; i<mi_hist->fixed.bins; i++)
+    for(plm_long i=0; i<mi_hist->fixed.bins; i++)
 	if (f_hist[i] > fixed_max_val)
 	    fixed_max_val = f_hist[i];
     
     // Find max value for moving
-    for(i=0; i<mi_hist->moving.bins; i++)
+    for(plm_long i=0; i<mi_hist->moving.bins; i++)
 	if (m_hist[i] > moving_max_val)
 	    moving_max_val = m_hist[i];
     
     // Find max value for joint
     // (Ignoring bin 0)
-    for(j=0; j<mi_hist->fixed.bins; j++) {
-	for(i=0; i<mi_hist->moving.bins; i++) {
+    for(plm_long j=0; j<mi_hist->fixed.bins; j++) {
+	for(plm_long i=0; i<mi_hist->moving.bins; i++) {
 	    if ( (i > 0) && (j > 1) )
 		if (j_hist[j*mi_hist->moving.bins + i] > joint_max_val)
 		    joint_max_val = j_hist[j*mi_hist->moving.bins + i];
@@ -797,7 +795,7 @@ void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_base, int iter)
     // generate a nice BLUE->RED gradient
     c = 'c';
     z = 0x0000FF;
-    for (i=0; i<(graph_color_levels+1); i++)
+    for (plm_long i=0; i<(graph_color_levels+1); i++)
     {
 	xpm_add_color (&xpm, c, z);
 
@@ -823,7 +821,7 @@ void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_base, int iter)
     brush.width = graph_bar_width;
     brush.height = 0;
 
-    for(i=0; i<mi_hist->moving.bins; i++)
+    for(plm_long i=0; i<mi_hist->moving.bins; i++)
     {
         brush.height = (int)(m_hist[i] * moving_scale);
         brush.y_pos = graph_moving_y_pos - brush.height;
@@ -840,7 +838,7 @@ void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_base, int iter)
     brush.width = 0;
     brush.height = graph_bar_width;
 
-    for(i=0; i<mi_hist->fixed.bins; i++)
+    for(plm_long i=0; i<mi_hist->fixed.bins; i++)
     {
         brush.width = (int)(f_hist[i] * fixed_scale);
         xpm_draw(&xpm, &brush);
@@ -857,8 +855,8 @@ void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_base, int iter)
     brush.height = graph_bar_width;
 
     z = 0;
-    for(j=0; j<mi_hist->fixed.bins; j++) {
-        for(i=0; i<mi_hist->moving.bins; i++) {
+    for(plm_long j=0; j<mi_hist->fixed.bins; j++) {
+        for(plm_long i=0; i<mi_hist->moving.bins; i++) {
             joint_color = (size_t)(j_hist[z++] * joint_scale);
             if (joint_color > 0) {
                 // special handling for bin 0
@@ -929,7 +927,7 @@ bspline_mi_hist_add_pvi_8_omp_crits (
 {
     float w[8];
     int n[8];
-    size_t idx_fbin, idx_mbin, idx_jbin, idx_pv;
+    plm_long idx_fbin, idx_mbin, idx_jbin, idx_pv;
     int offset_fbin;
     float* f_img = (float*) fixed->img;
     float* m_img = (float*) moving->img;
@@ -1012,7 +1010,7 @@ bspline_mi_hist_add_pvi_8_omp (
 {
     float w[8];
     int n[8];
-    size_t idx_fbin, idx_mbin, idx_jbin, idx_pv;
+    plm_long idx_fbin, idx_mbin, idx_jbin, idx_pv;
     int offset_fbin;
     float* f_img = (float*) fixed->img;
     float* m_img = (float*) moving->img;
@@ -1572,7 +1570,7 @@ bspline_score_h_mi (
 {
     Bspline_score* ssd = &bst->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
-    size_t rijk[3];
+    plm_long rijk[3];
     float diff;
     float* f_img = (float*) fixed->img;
     float* m_img = (float*) moving->img;
@@ -1581,17 +1579,17 @@ bspline_score_h_mi (
     Plm_timer timer;
     float m_val;
 
-    size_t fijk[3] = {0};
-    size_t fv;
+    plm_long fijk[3] = {0};
+    plm_long fv;
     float mijk[3];
     float fxyz[3];
     float mxyz[3];
-    size_t mijk_f[3], mvf;      /* Floor */
-    size_t mijk_r[3];           /* Round */
-    size_t p[3];
-    size_t q[3];
+    plm_long mijk_f[3], mvf;      /* Floor */
+    plm_long mijk_r[3];           /* Round */
+    plm_long p[3];
+    plm_long q[3];
     float dxyz[3];
-    size_t qidx;
+    plm_long qidx;
     float li_1[3];           /* Fraction of interpolant in lower index */
     float li_2[3];           /* Fraction of interpolant in upper index */
 
@@ -1599,9 +1597,8 @@ bspline_score_h_mi (
     double* f_hist = mi_hist->f_hist;
     double* m_hist = mi_hist->m_hist;
     double* j_hist = mi_hist->j_hist;
-    size_t zz;
 
-    size_t cond_size = 64*bxf->num_knots*sizeof(float);
+    plm_long cond_size = 64*bxf->num_knots*sizeof(float);
     float* cond_x = (float*)malloc(cond_size);
     float* cond_y = (float*)malloc(cond_size);
     float* cond_z = (float*)malloc(cond_size);
@@ -1717,16 +1714,16 @@ bspline_score_h_mi (
 #pragma omp parallel for
     LOOP_THRU_VOL_TILES (pidx, bxf) {
         int rc;
-        size_t fijk[3], fv;
+        plm_long fijk[3], fv;
         float mijk[3];
         float fxyz[3];
         float mxyz[3];
-        size_t mijk_f[3], mvf;      /* Floor */
-        size_t mijk_r[3];           /* Round */
-        size_t p[3];
-        size_t q[3];
+        plm_long mijk_f[3], mvf;      /* Floor */
+        plm_long mijk_r[3];           /* Round */
+        plm_long p[3];
+        plm_long q[3];
         float dxyz[3];
-        size_t qidx;
+        plm_long qidx;
         float li_1[3];           /* Fraction of interpolant in lower index */
         float li_2[3];           /* Fraction of interpolant in upper index */
         float dc_dv[3];
@@ -1853,7 +1850,7 @@ bspline_score_g_mi (Bspline_parms *parms,
 {
     Bspline_score* ssd = &bst->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
-    size_t rijk[3];
+    plm_long rijk[3];
     float diff;
     float* f_img = (float*) fixed->img;
     float* m_img = (float*) moving->img;
@@ -1862,17 +1859,17 @@ bspline_score_g_mi (Bspline_parms *parms,
     Plm_timer timer;
     float m_val;
 
-    size_t fijk[3] = {0};
-    size_t fv;
+    plm_long fijk[3] = {0};
+    plm_long fv;
     float mijk[3];
     float fxyz[3];
     float mxyz[3];
-    size_t mijk_f[3], mvf;      /* Floor */
-    size_t mijk_r[3];           /* Round */
-    size_t p[3];
-    size_t q[3];
+    plm_long mijk_f[3], mvf;      /* Floor */
+    plm_long mijk_r[3];           /* Round */
+    plm_long p[3];
+    plm_long q[3];
     float dxyz[3];
-    size_t qidx;
+    plm_long qidx;
     float li_1[3];           /* Fraction of interpolant in lower index */
     float li_2[3];           /* Fraction of interpolant in upper index */
 
@@ -1880,9 +1877,8 @@ bspline_score_g_mi (Bspline_parms *parms,
     double* f_hist = mi_hist->f_hist;
     double* m_hist = mi_hist->m_hist;
     double* j_hist = mi_hist->j_hist;
-    size_t zz;
 
-    size_t cond_size = 64*bxf->num_knots*sizeof(float);
+    plm_long cond_size = 64*bxf->num_knots*sizeof(float);
     float* cond_x = (float*)malloc(cond_size);
     float* cond_y = (float*)malloc(cond_size);
     float* cond_z = (float*)malloc(cond_size);
@@ -1980,16 +1976,16 @@ bspline_score_g_mi (Bspline_parms *parms,
 #pragma omp parallel for
     LOOP_THRU_VOL_TILES (pidx, bxf) {
         int rc;
-        size_t fijk[3], fv;
+        plm_long fijk[3], fv;
         float mijk[3];
         float fxyz[3];
         float mxyz[3];
-        size_t mijk_f[3], mvf;      /* Floor */
-        size_t mijk_r[3];           /* Round */
-        size_t p[3];
-        size_t q[3];
+        plm_long mijk_f[3], mvf;      /* Floor */
+        plm_long mijk_r[3];           /* Round */
+        plm_long p[3];
+        plm_long q[3];
         float dxyz[3];
-        size_t qidx;
+        plm_long qidx;
         float li_1[3];           /* Fraction of interpolant in lower index */
         float li_2[3];           /* Fraction of interpolant in upper index */
         float dc_dv[3];
@@ -2128,9 +2124,8 @@ bspline_score_f_mi (Bspline_parms *parms,
     double* j_hist = mi_hist->j_hist;
     double mhis = 0.0f;      /* Moving histogram incomplete sum */
     double jhis = 0.0f;      /* Joint  histogram incomplete sum */
-    size_t i, j, zz;
 
-    size_t cond_size = 64*bxf->num_knots*sizeof(float);
+    plm_long cond_size = 64*bxf->num_knots*sizeof(float);
     float* cond_x = (float*)malloc(cond_size);
     float* cond_y = (float*)malloc(cond_size);
     float* cond_z = (float*)malloc(cond_size);
@@ -2160,16 +2155,16 @@ bspline_score_f_mi (Bspline_parms *parms,
 #pragma omp parallel for
     LOOP_THRU_VOL_TILES (pidx, bxf) {
         int rc;
-        size_t fijk[3], fv;
+        plm_long fijk[3], fv;
         float mijk[3];
         float fxyz[3];
         float mxyz[3];
-        size_t mijk_f[3], mvf;      /* Floor */
-        size_t mijk_r[3];           /* Round */
-        size_t p[3];
-        size_t q[3];
+        plm_long mijk_f[3], mvf;      /* Floor */
+        plm_long mijk_r[3];           /* Round */
+        plm_long p[3];
+        plm_long q[3];
         float dxyz[3];
-        size_t qidx;
+        plm_long qidx;
         float li_1[3];           /* Fraction of interpolant in lower index */
         float li_2[3];           /* Fraction of interpolant in upper index */
 
@@ -2225,7 +2220,7 @@ bspline_score_f_mi (Bspline_parms *parms,
     }   // openmp
 
     /* Compute num_vox and find fullest fixed hist bin */
-    for (i=0; i<mi_hist->fixed.bins; i++) {
+    for (plm_long i=0; i<mi_hist->fixed.bins; i++) {
         if (f_hist[i] > f_hist[mi_hist->fixed.big_bin]) {
             mi_hist->fixed.big_bin = i;
         }
@@ -2233,14 +2228,14 @@ bspline_score_f_mi (Bspline_parms *parms,
     }
 
     /* Fill in the missing histogram bin */
-    for(i=0; i<mi_hist->moving.bins; i++) {
+    for(plm_long i=0; i<mi_hist->moving.bins; i++) {
         mhis += m_hist[i];
     }
     m_hist[mi_hist->moving.big_bin] = (double)ssd->num_vox - mhis;
 
 
     /* Look for the biggest moving histogram bin */
-    for(i=0; i<mi_hist->moving.bins; i++) {
+    for(plm_long i=0; i<mi_hist->moving.bins; i++) {
         if (m_hist[i] > m_hist[mi_hist->moving.big_bin]) {
             mi_hist->moving.big_bin = i;
         }
@@ -2248,8 +2243,8 @@ bspline_score_f_mi (Bspline_parms *parms,
 
 
     /* Fill in the missing jnt hist bin */
-    for(j=0; j<mi_hist->fixed.bins; j++) {
-        for(i=0; i<mi_hist->moving.bins; i++) {
+    for(plm_long j=0; j<mi_hist->fixed.bins; j++) {
+        for(plm_long i=0; i<mi_hist->moving.bins; i++) {
             jhis += j_hist[j*mi_hist->moving.bins + i];
         }
     }
@@ -2257,8 +2252,8 @@ bspline_score_f_mi (Bspline_parms *parms,
 
     
     /* Look for the biggest joint histogram bin */
-    for(j=0; j<mi_hist->fixed.bins; j++) {
-        for(i=0; i<mi_hist->moving.bins; i++) {
+    for(plm_long j=0; j<mi_hist->fixed.bins; j++) {
+        for(plm_long i=0; i<mi_hist->moving.bins; i++) {
             if (j_hist[j*mi_hist->moving.bins + i] > j_hist[mi_hist->joint.big_bin]) {
                 mi_hist->joint.big_bin = j*mi_hist->moving.bins + i;
             }
@@ -2272,6 +2267,7 @@ bspline_score_f_mi (Bspline_parms *parms,
 
     /* Display histrogram stats in debug mode */
     if (parms->debug) {
+        plm_long zz;
         double tmp;
         for (zz=0,tmp=0; zz < mi_hist->fixed.bins; zz++) {
             tmp += f_hist[zz];
@@ -2297,16 +2293,16 @@ bspline_score_f_mi (Bspline_parms *parms,
 #pragma omp parallel for
     LOOP_THRU_VOL_TILES (pidx, bxf) {
         int rc;
-        size_t fijk[3], fv;
+        plm_long fijk[3], fv;
         float mijk[3];
         float fxyz[3];
         float mxyz[3];
-        size_t mijk_f[3], mvf;      /* Floor */
-        size_t mijk_r[3];           /* Round */
-        size_t p[3];
-        size_t q[3];
+        plm_long mijk_f[3], mvf;      /* Floor */
+        plm_long mijk_r[3];           /* Round */
+        plm_long p[3];
+        plm_long q[3];
         float dxyz[3];
-        size_t qidx;
+        plm_long qidx;
         float li_1[3];           /* Fraction of interpolant in lower index */
         float li_2[3];           /* Fraction of interpolant in upper index */
         float dc_dv[3];
@@ -2432,10 +2428,9 @@ bspline_score_e_mi (
     double* j_hist = mi_hist->j_hist;
     double mhis = 0.0f;      /* Moving histogram incomplete sum */
     double jhis = 0.0f;      /* Joint  histogram incomplete sum */
-    //size_t i, j, zz;
     omp_lock_t *f_locks, *m_locks, *j_locks;
 
-    size_t cond_size = 64*bxf->num_knots*sizeof(float);
+    plm_long cond_size = 64*bxf->num_knots*sizeof(float);
     float* cond_x = (float*)malloc(cond_size);
     float* cond_y = (float*)malloc(cond_size);
     float* cond_z = (float*)malloc(cond_size);
@@ -2467,17 +2462,17 @@ bspline_score_e_mi (
     j_locks = (omp_lock_t*) malloc (mi_hist->fixed.bins * mi_hist->moving.bins * sizeof(omp_lock_t));
 
 #pragma omp parallel for
-    for (long i=0; i < mi_hist->fixed.bins; i++) {
+    for (plm_long i=0; i < mi_hist->fixed.bins; i++) {
         omp_init_lock(&f_locks[i]);
     }
 
 #pragma omp parallel for
-    for (long i=0; i < mi_hist->moving.bins; i++) {
+    for (plm_long i=0; i < mi_hist->moving.bins; i++) {
         omp_init_lock(&m_locks[i]);
     }
 
 #pragma omp parallel for
-    for (long i=0; i < mi_hist->fixed.bins * mi_hist->moving.bins; i++) {
+    for (plm_long i=0; i < mi_hist->fixed.bins * mi_hist->moving.bins; i++) {
         omp_init_lock(&j_locks[i]);
     }
     /* ---------------------------------------------------- */
@@ -2486,16 +2481,16 @@ bspline_score_e_mi (
 #pragma omp parallel for
     LOOP_THRU_VOL_TILES (pidx, bxf) {
         int rc;
-        size_t fijk[3], fv;
+        plm_long fijk[3], fv;
         float mijk[3];
         float fxyz[3];
         float mxyz[3];
-        size_t mijk_f[3], mvf;      /* Floor */
-        size_t mijk_r[3];           /* Round */
-        size_t p[3];
-        size_t q[3];
+        plm_long mijk_f[3], mvf;      /* Floor */
+        plm_long mijk_r[3];           /* Round */
+        plm_long p[3];
+        plm_long q[3];
         float dxyz[3];
-        size_t qidx;
+        plm_long qidx;
         float li_1[3];           /* Fraction of interpolant in lower index */
         float li_2[3];           /* Fraction of interpolant in upper index */
 
@@ -2554,7 +2549,7 @@ bspline_score_e_mi (
     }   // openmp
 
     /* Compute num_vox and find fullest fixed hist bin */
-    for (long i=0; i<mi_hist->fixed.bins; i++) {
+    for (plm_long i=0; i<mi_hist->fixed.bins; i++) {
         if (f_hist[i] > f_hist[mi_hist->fixed.big_bin]) {
             mi_hist->fixed.big_bin = i;
         }
@@ -2562,7 +2557,7 @@ bspline_score_e_mi (
     }
 
     /* Fill in the missing histogram bin */
-    for (long i=0; i<mi_hist->moving.bins; i++) {
+    for (plm_long i=0; i<mi_hist->moving.bins; i++) {
         mhis += m_hist[i];
     }
     m_hist[mi_hist->moving.big_bin] = (double)ssd->num_vox - mhis;
@@ -2570,7 +2565,7 @@ bspline_score_e_mi (
 
     /* Look for the biggest moving histogram bin */
 //    printf ("moving.big_bin [%i -> ", mi_hist->moving.big_bin);
-    for (long i=0; i<mi_hist->moving.bins; i++) {
+    for (plm_long i=0; i<mi_hist->moving.bins; i++) {
         if (m_hist[i] > m_hist[mi_hist->moving.big_bin]) {
             mi_hist->moving.big_bin = i;
         }
@@ -2579,8 +2574,8 @@ bspline_score_e_mi (
 
 
     /* Fill in the missing jnt hist bin */
-    for (long j=0; j<mi_hist->fixed.bins; j++) {
-        for (unsigned long i=0; i<mi_hist->moving.bins; i++) {
+    for (plm_long j=0; j<mi_hist->fixed.bins; j++) {
+        for (plm_long i=0; i<mi_hist->moving.bins; i++) {
             jhis += j_hist[j*mi_hist->moving.bins + i];
         }
     }
@@ -2589,8 +2584,8 @@ bspline_score_e_mi (
     
     /* Look for the biggest joint histogram bin */
 //    printf ("joint.big_bin [%i -> ", mi_hist->joint.big_bin);
-    for (long j=0; j<mi_hist->fixed.bins; j++) {
-        for (unsigned long i=0; i<mi_hist->moving.bins; i++) {
+    for (plm_long j=0; j<mi_hist->fixed.bins; j++) {
+        for (plm_long i=0; i<mi_hist->moving.bins; i++) {
             if (j_hist[j*mi_hist->moving.bins + i] > j_hist[mi_hist->joint.big_bin]) {
                 mi_hist->joint.big_bin = j*mi_hist->moving.bins + i;
             }
@@ -2633,16 +2628,16 @@ bspline_score_e_mi (
 #pragma omp parallel for
     LOOP_THRU_VOL_TILES (pidx, bxf) {
         int rc;
-        size_t fijk[3], fv;
+        plm_long fijk[3], fv;
         float mijk[3];
         float fxyz[3];
         float mxyz[3];
-        size_t mijk_f[3], mvf;      /* Floor */
-        size_t mijk_r[3];           /* Round */
-        size_t p[3];
-        size_t q[3];
+        plm_long mijk_f[3], mvf;      /* Floor */
+        plm_long mijk_r[3];           /* Round */
+        plm_long p[3];
+        plm_long q[3];
         float dxyz[3];
-        size_t qidx;
+        plm_long qidx;
         float li_1[3];           /* Fraction of interpolant in lower index */
         float li_2[3];           /* Fraction of interpolant in upper index */
         float dc_dv[3];
@@ -2769,7 +2764,7 @@ bspline_score_d_mi (Bspline_parms *parms,
 {
     Bspline_score* ssd = &bst->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
-    size_t rijk[3];
+    plm_long rijk[3];
     float diff;
     float* f_img = (float*) fixed->img;
     float* m_img = (float*) moving->img;
@@ -2778,17 +2773,17 @@ bspline_score_d_mi (Bspline_parms *parms,
     Plm_timer timer;
     float m_val;
 
-    size_t fijk[3];
-    size_t fv;
+    plm_long fijk[3];
+    plm_long fv;
     float mijk[3];
     float fxyz[3];
     float mxyz[3];
-    size_t mijk_f[3], mvf;      /* Floor */
-    size_t mijk_r[3];           /* Round */
-    size_t p[3];
-    size_t q[3];
+    plm_long mijk_f[3], mvf;      /* Floor */
+    plm_long mijk_r[3];           /* Round */
+    plm_long p[3];
+    plm_long q[3];
     float dxyz[3];
-    size_t qidx;
+    plm_long qidx;
     float li_1[3];           /* Fraction of interpolant in lower index */
     float li_2[3];           /* Fraction of interpolant in upper index */
 
@@ -2796,9 +2791,8 @@ bspline_score_d_mi (Bspline_parms *parms,
     double* f_hist = mi_hist->f_hist;
     double* m_hist = mi_hist->m_hist;
     double* j_hist = mi_hist->j_hist;
-    size_t zz;
 
-    size_t cond_size = 64*bxf->num_knots*sizeof(float);
+    plm_long cond_size = 64*bxf->num_knots*sizeof(float);
     float* cond_x = (float*)malloc(cond_size);
     float* cond_y = (float*)malloc(cond_size);
     float* cond_z = (float*)malloc(cond_size);
@@ -2909,6 +2903,7 @@ bspline_score_d_mi (Bspline_parms *parms,
 
     /* Display histrogram stats in debug mode */
     if (parms->debug) {
+        plm_long zz;
         double tmp;
         for (zz=0,tmp=0; zz < mi_hist->fixed.bins; zz++) {
             tmp += f_hist[zz];
@@ -2934,16 +2929,16 @@ bspline_score_d_mi (Bspline_parms *parms,
 #pragma omp parallel for
     LOOP_THRU_VOL_TILES (pidx, bxf) {
         int rc;
-        size_t fijk[3], fv;
+        plm_long fijk[3], fv;
         float mijk[3];
         float fxyz[3];
         float mxyz[3];
-        size_t mijk_f[3], mvf;      /* Floor */
-        size_t mijk_r[3];           /* Round */
-        size_t p[3];
-        size_t q[3];
+        plm_long mijk_f[3], mvf;      /* Floor */
+        plm_long mijk_r[3];           /* Round */
+        plm_long p[3];
+        plm_long q[3];
         float dxyz[3];
-        size_t qidx;
+        plm_long qidx;
         float li_1[3];           /* Fraction of interpolant in lower index */
         float li_2[3];           /* Fraction of interpolant in upper index */
         float dc_dv[3];
@@ -3061,22 +3056,22 @@ bspline_score_c_mi (Bspline_parms *parms,
 {
     Bspline_score* ssd = &bst->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
-    size_t rijk[3];
-    size_t fijk[3], fv;
+    plm_long rijk[3];
+    plm_long fijk[3], fv;
     float mijk[3];
     float fxyz[3];
     float mxyz[3];
-    size_t mijk_f[3], mvf;      /* Floor */
-    size_t mijk_r[3];           /* Round */
-    size_t p[3];
-    size_t q[3];
+    plm_long mijk_f[3], mvf;      /* Floor */
+    plm_long mijk_r[3];           /* Round */
+    plm_long p[3];
+    plm_long q[3];
     float diff;
     float dc_dv[3];
     float* f_img = (float*) fixed->img;
     float* m_img = (float*) moving->img;
     float dxyz[3];
     float num_vox_f;
-    size_t pidx, qidx;
+    plm_long pidx, qidx;
     Plm_timer timer;
     float li_1[3];           /* Fraction of interpolant in lower index */
     float li_2[3];           /* Fraction of interpolant in upper index */
@@ -3086,7 +3081,6 @@ bspline_score_c_mi (Bspline_parms *parms,
     double* f_hist = mi_hist->f_hist;
     double* m_hist = mi_hist->m_hist;
     double* j_hist = mi_hist->j_hist;
-    size_t zz;
 
 #if 0
     FILE* fp = 0;
@@ -3190,6 +3184,7 @@ bspline_score_c_mi (Bspline_parms *parms,
 
     /* Display histrogram stats in debug mode */
     if (parms->debug) {
+        plm_long zz;
         double tmp;
         for (zz=0,tmp=0; zz < mi_hist->fixed.bins; zz++) {
             tmp += f_hist[zz];

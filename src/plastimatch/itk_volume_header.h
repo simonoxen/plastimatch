@@ -20,13 +20,13 @@ public:
 public:
     Itk_volume_header () {}
     Itk_volume_header (
-	float origin[3], float spacing[3], size_t dim[3])
+	float origin[3], float spacing[3], plm_long dim[3])
     {
 	this->set_from_gpuit (origin, spacing, dim, 0);
     }
     Itk_volume_header (
 	float origin[3], float spacing[3],
-	size_t dim[3], float direction_cosines[9])
+	plm_long dim[3], float direction_cosines[9])
     {
 	this->set_from_gpuit (origin, spacing, dim, direction_cosines);
     }
@@ -40,11 +40,11 @@ public:
 public:
     void set_origin (float origin[3]);
     void set_spacing (float spacing[3]);
-    void set_dim (size_t dim[3]);
+    void set_dim (plm_long dim[3]);
     void 
     set_from_gpuit (float gpuit_origin[3],
 		    float gpuit_spacing[3],
-		    size_t gpuit_dim[3],
+		    plm_long gpuit_dim[3],
 		    float gpuit_direction_cosines[9]);
     void 
     set_from_gpuit_bspline (Bspline_xform *bxf);
@@ -64,7 +64,7 @@ public:
 
     void get_origin (float origin[3]);
     void get_spacing (float spacing[3]);
-    void get_dim (size_t dim[3]);
+    void get_dim (plm_long dim[3]);
     void get_direction_cosines (
 	float direction_cosines[9]);
 

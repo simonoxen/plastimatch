@@ -9,6 +9,7 @@
 #include <list>
 #include <vector>
 #include "img_metadata.h"
+#include "plm_int.h"
 #include "pstring.h"
 
 /* Forward declarations */
@@ -40,7 +41,7 @@ public:
     gdcm::FileList *m_ct_file_list;
     gdcm::FileList *m_rtdose_file_list;
     gdcm::FileList *m_rtstruct_file_list;
-    size_t m_dim[3];
+    plm_long m_dim[3];
     double m_origin[3];
     double m_spacing[3];
 };

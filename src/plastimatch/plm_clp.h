@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <vector>
 #include "dlib/cmd_line_parser.h"
+#include "plm_int.h"
 #include "plm_version.h"
 
 typedef dlib::cmd_line_parser<char>::check_1a_c Clp;
@@ -171,26 +172,7 @@ class plastimatch1_EXPORT Plm_clp
 	    throw dlib::error (error_string);
 	}
     }
-    void assign_size_t_13 (size_t *arr, const string_type& name) {
-	int rc;
-	unsigned int a, b, c;
-	rc = sscanf (get_string(name).c_str(), "%d %d %d", &a, &b, &c);
-	if (rc == 1) {
-	    arr[0] = a;
-	    arr[1] = a;
-	    arr[2] = a;
-	} else if (rc == 3) {
-	    arr[0] = a;
-	    arr[1] = b;
-	    arr[2] = c;
-	} else {
-	    string_type error_string = 
-		"Error. Option "
-		+ get_option_string (name) 
-		+ " takes one or three integer arguments.";
-	    throw dlib::error (error_string);
-	}
-    }
+    void assign_plm_long_13 (plm_long *arr, const string_type& name);
     void assign_float13 (float *arr, const string_type& name) {
 	float rc;
 	rc = sscanf (get_string(name).c_str(), "%g %g %g", 

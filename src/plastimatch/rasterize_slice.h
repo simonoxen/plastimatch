@@ -5,6 +5,7 @@
 #define _rasterize_slice_h_
 
 #include "plm_config.h"
+#include "plm_int.h"
 
 #if defined __cplusplus
 extern "C" {
@@ -14,7 +15,7 @@ plastimatch1_EXPORT
 void
 rasterize_slice (
     unsigned char* acc_img,
-    size_t* dims,
+    plm_long* dims,
     float* spacing,
     float* offset,
     size_t num_vertices,

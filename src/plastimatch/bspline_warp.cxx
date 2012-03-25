@@ -37,19 +37,19 @@ bspline_warp_internal (
 )
 {
     int d;
-    size_t vidx;
+    plm_long vidx;
     T* vout_img = (T*) vout->img;
 
-    size_t rijk[3];             /* Indices within fixed image region (vox) */
-    size_t fijk[3], fv;         /* Indices within fixed image (vox) */
+    plm_long rijk[3];             /* Indices within fixed image region (vox) */
+    plm_long fijk[3], fv;         /* Indices within fixed image (vox) */
     float mijk[3];           /* Indices within moving image (vox) */
     float fxyz[3];           /* Position within fixed image (mm) */
     float mxyz[3];           /* Position within moving image (mm) */
-    size_t mijk_f[3], mvf;      /* Floor */
-    size_t mijk_r[3];           /* Round */
-    size_t p[3];
-    size_t q[3];
-    size_t pidx, qidx;
+    plm_long mijk_f[3], mvf;      /* Floor */
+    plm_long mijk_r[3];           /* Round */
+    plm_long p[3];
+    plm_long q[3];
+    plm_long pidx, qidx;
     float dxyz[3];
     float li_1[3];           /* Fraction of interpolant in lower index */
     float li_2[3];           /* Fraction of interpolant in upper index */
@@ -180,7 +180,7 @@ bspline_warp_dcos (
 )
 {
     int d;
-    size_t vidx;
+    plm_long vidx;
     T* vout_img = (T*) vout->img;
     T* m_img = (T*) moving->img;
     T m_val;
@@ -260,11 +260,11 @@ bspline_warp_dcos (
 	
 #pragma omp parallel for 
     LOOP_Z_OMP (k, vout) {
-	size_t fijk[3];           /* Index within fixed image (vox) */
+	plm_long fijk[3];           /* Index within fixed image (vox) */
 	float fxyz[3];         /* Position within fixed image (mm) */
-	size_t p[3];
-	size_t q[3];
-	size_t pidx, qidx;
+	plm_long p[3];
+	plm_long q[3];
+	plm_long pidx, qidx;
 	float dxyz[3];
 
 	fijk[2] = k;
@@ -275,12 +275,12 @@ bspline_warp_dcos (
             p[1] = REGION_INDEX_Y (fijk, bxf);
             q[1] = REGION_OFFSET_Y (fijk, bxf);
 	    LOOP_X (fijk, fxyz, vout) {
-		size_t fv;       /* Linear index within fixed image (vox) */
+		plm_long fv;     /* Linear index within fixed image (vox) */
 		float mxyz[3];   /* Position within moving image (mm) */
 		float mijk[3];   /* Index within moving image (vox) */
-		size_t mijk_f[3];   /* Floor index within moving image (vox) */
-		size_t mijk_r[3];   /* Round index within moving image (vox) */
-		size_t mvf;      /* Floor linear index within moving image */
+		plm_long mijk_f[3]; /* Floor index within moving image (vox) */
+		plm_long mijk_r[3]; /* Round index within moving image (vox) */
+		plm_long mvf;    /* Floor linear index within moving image */
 		float li_1[3];   /* Fraction of interpolant in lower index */
 		float li_2[3];   /* Fraction of interpolant in upper index */
                 p[0] = REGION_INDEX_X (fijk, bxf);

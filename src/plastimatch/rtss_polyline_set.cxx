@@ -186,7 +186,7 @@ Rtss_polyline_set::debug (void)
 	    (curr_structure->color.empty() 
                 ? "none" : (const char*) curr_structure->color), 
 	    curr_structure->pslist, 
-	    curr_structure->num_contours
+	    (int) curr_structure->num_contours
 	);
 	if (curr_structure->num_contours) {
 	    if (curr_structure->pslist[0]->num_vertices) {
@@ -273,9 +273,8 @@ void
 Rtss_polyline_set::free_all_polylines (void)
 {
     for (size_t i = 0; i < this->num_structures; i++) {
-	int j;
 	Rtss_structure *curr_structure = this->slist[i];
-	for (j = 0; j < curr_structure->num_contours; j++) {
+	for (size_t j = 0; j < curr_structure->num_contours; j++) {
 	    delete curr_structure->pslist[j];
 	}
 	free (curr_structure->pslist);
@@ -289,7 +288,7 @@ void
 Rtss_polyline_set::find_rasterization_geometry (
     float offset[3],
     float spacing[3],
-    size_t dims[3]
+    plm_long dims[3]
 )
 {
     int first = 1;
@@ -301,7 +300,7 @@ Rtss_polyline_set::find_rasterization_geometry (
     /* Scan points to find image size, spacing */
     for (size_t i = 0; i < this->num_structures; i++) {
 	Rtss_structure *curr_structure = this->slist[i];
-	for (int j = 0; j < curr_structure->num_contours; j++) {
+	for (size_t j = 0; j < curr_structure->num_contours; j++) {
 	    Rtss_polyline *curr_polyline = curr_structure->pslist[j];
 	    for (int k = 0; k < curr_polyline->num_vertices; k++) {
 		z_values.insert (curr_polyline->z[k]);
@@ -395,7 +394,7 @@ void
 Rtss_polyline_set::find_rasterization_geometry (Plm_image_header *pih)
 {
     /* use some generic default parameters */
-    size_t dim[3];
+    plm_long dim[3];
     float origin[3];
     float spacing[3];
 
@@ -429,7 +428,7 @@ Rtss_polyline_set::fix_polyline_slice_numbers (void)
 
     for (size_t i = 0; i < this->num_structures; i++) {
 	Rtss_structure *curr_structure = this->slist[i];
-	for (int j = 0; j < curr_structure->num_contours; j++) {
+	for (size_t j = 0; j < curr_structure->num_contours; j++) {
 	    Rtss_polyline *curr_polyline = curr_structure->pslist[j];
 	    if (curr_polyline->num_vertices == 0) {
 		curr_polyline->slice_no = -1;

@@ -53,8 +53,7 @@ Rtss_structure::~Rtss_structure ()
 void
 Rtss_structure::clear ()
 {
-    int i;
-    for (i = 0; i < this->num_contours; i++) {
+    for (size_t i = 0; i < this->num_contours; i++) {
 	delete this->pslist[i];
     }
     free (this->pslist);

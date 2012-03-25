@@ -46,8 +46,10 @@ clip_pat_generate (Image* image,
 {
     int i, x, y;
     double icx, icy;       /* Image center */
+#if defined (commentout)
     double len_x, len_y;   /* End-point offset (length) */
     double wid_x, wid_y;   /* End-point offset (width) */
+#endif
     double costh, sinth;
 
     length = 0.5 * length;  /* Convert to half-lengths */
@@ -57,10 +59,12 @@ clip_pat_generate (Image* image,
     icy = image->dims[1] / 2.0 - 0.5;
     costh = cos (angle);
     sinth = sin (angle);
+#if defined (commentout)
     len_x = length * costh;
     len_y = length * sinth;
     wid_x = - width * sinth;
     wid_y = width * costh;
+#endif
 
     for (i = 0, y = 0; y < image->dims[1]; y++) {
         for (x = 0; x < image->dims[0]; x++, i++) {

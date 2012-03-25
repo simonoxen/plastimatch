@@ -133,7 +133,7 @@ dcmtk_save_image (Rtds *rtds, const char *dicom_dir)
     plm_generate_dicom_uid (dsd.series_uid, PLM_UID_PREFIX);
     plm_generate_dicom_uid (dsd.for_uid, PLM_UID_PREFIX);
 
-    for (size_t k = 0; k < dsd.vol->dim[2]; k++) {
+    for (plm_long k = 0; k < dsd.vol->dim[2]; k++) {
         dsd.fn.format ("%s/image%03d.dcm", dicom_dir, (int) k);
         make_directory_recursive (dsd.fn);
         /* GCS FIX: direction cosines */

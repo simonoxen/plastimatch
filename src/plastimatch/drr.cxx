@@ -60,7 +60,7 @@ attenuation_lookup (float pix_density)
 void
 drr_preprocess_attenuation (Volume* vol)
 {
-    size_t i;
+    plm_long i;
     float* new_img;
     float* old_img;
 

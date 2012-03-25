@@ -32,7 +32,7 @@ public:
 
     Pstring fixed_img_fn;
     bool have_dim;
-    size_t dim[3];
+    plm_long dim[3];
     bool have_origin;
     float origin[3];
     bool have_spacing;
@@ -177,7 +177,7 @@ landmark_convert_mm_to_voxel (
     Raw_pointset *landmarks_mm, 
     float *offset, 
     float *pix_spacing,
-    size_t *dim,
+    plm_long *dim,
     const float *direction_cosines)
 {
     for (int i = 0; i < landmarks_mm->num_points; i++) {
@@ -210,9 +210,9 @@ calculate_warped_landmarks( Landmark_warp *lw )
 
 */
 {
-    size_t ri, rj, rk;
-    size_t fi, fj, fk, fv;
-    size_t mi, mj, mk;
+    plm_long ri, rj, rk;
+    plm_long fi, fj, fk, fv;
+    plm_long mi, mj, mk;
     float fx, fy, fz;
     float mx, my, mz;
     int i, d, lidx;
@@ -224,7 +224,7 @@ calculate_warped_landmarks( Landmark_warp *lw )
     float *landmark_dxyz;
     Volume *vector_field;
     Volume *moving;
-    size_t fixed_dim[3];
+    plm_long fixed_dim[3];
     float fixed_spacing[3], fixed_offset[3], fixed_direction_cosines[9];
 
     num_landmarks = lw->m_fixed_landmarks->num_points;
@@ -462,7 +462,7 @@ parse_fn (
     }
     if (parser->option ("dim")) {
 	parms->have_dim = 1;
-	parser->assign_size_t_13 (parms->dim, "dim");
+	parser->assign_plm_long_13 (parms->dim, "dim");
     }
     parms->fixed_img_fn = parser->get_string("fixed").c_str();
 

@@ -31,7 +31,7 @@
 
 typedef struct xio_dose_header Xio_dose_header;
 struct xio_dose_header {
-    size_t dim[3];
+    plm_long dim[3];
     float offset[3];
     float spacing[3];
     double dose_scale_factor;
@@ -205,7 +205,7 @@ xio_dose_load_cube (
     FILE *fp;
     Volume *v;
     uint32_t *cube_img_read;
-    size_t i, j, k;
+    plm_long i, j, k;
     int rc1;
     size_t rc2;
     
@@ -226,7 +226,7 @@ xio_dose_load_cube (
     }
     rc2 = fread (cube_img_read, 
 	sizeof(uint32_t), v->dim[0] * v->dim[1] * v->dim[2], fp);
-    if (rc2 != v->dim[0] * v->dim[1] * v->dim[2]) {
+    if (rc2 != (size_t) (v->dim[0] * v->dim[1] * v->dim[2])) {
 	perror ("File error: ");
 	print_and_exit (
 	    "Error reading xio dose cube (%s)\n"
@@ -291,7 +291,8 @@ xio_dose_create_volume (
     pli->set_gpuit (v);
 
     printf ("img: %p\n", v->img);
-    printf ("Image dim: %d %d %d\n", v->dim[0], v->dim[1], v->dim[2]);
+    printf ("Image dim: %ld %ld %ld\n", 
+        (long) v->dim[0], (long) v->dim[1], (long) v->dim[2]);
 }
 
 void
@@ -332,7 +333,7 @@ xio_dose_save (
     FILE *fp, *fpt;
     Xio_dose_header xdh;
 
-    size_t i, j, k;
+    plm_long i, j, k;
     char header;
     size_t result;
 

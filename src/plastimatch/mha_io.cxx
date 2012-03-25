@@ -202,7 +202,7 @@ read_mha_internal (
     }
 
     rc = fread (vol->img, vol->pix_size, vol->npix, fp);
-    if (rc != vol->npix) {
+    if (rc != (size_t) vol->npix) {
 	printf ("Oops, bad read from file (%u)\n", (unsigned int) rc);
 	exit (-1);
     }

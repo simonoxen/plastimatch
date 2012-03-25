@@ -49,7 +49,7 @@ LowPass (int n, double * v)
 static void
 process_norm_CBCT (Volume * norm_CBCT, Fdk_options* options)
 {
-    size_t ni, nj, nk;
+    plm_long ni, nj, nk;
     double norm_radius;
     double radius;
     int radius_r;
@@ -97,7 +97,7 @@ process_norm_CBCT (Volume * norm_CBCT, Fdk_options* options)
             radius_r = (int)(radius / norm_CBCT->spacing[0] + 0.5);
             for (nk = 0; nk < norm_CBCT->dim[2]; nk++) {
                 if (radius > norm_radius - 20 && radius < norm_radius) {
-                    size_t pi = volume_index (norm_CBCT->dim, ni, nj, nk);
+                    plm_long pi = volume_index (norm_CBCT->dim, ni, nj, nk);
                     average += norm[pi];
                     pixels++;
                 }
@@ -143,8 +143,8 @@ bowtie_correction (Volume *vol, Fdk_options *options)
 {
     Volume *norm_CBCT;
     float *img, *norm;
-    size_t ni, nj, nk;
-    size_t i, j, k;
+    plm_long ni, nj, nk;
+    plm_long i, j, k;
 
     if (options->full_fan) {
         norm_CBCT = read_mha (options->Full_normCBCT_name);

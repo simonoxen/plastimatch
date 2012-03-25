@@ -78,7 +78,7 @@ plm_image_convert_itk_to_gpuit (Plm_image* pli, T img, U)
     typename ImageType::DirectionType dc = img->GetDirection();
 
     /* Copy header & allocate data for gpuit float */
-    size_t dim[3];
+    plm_long dim[3];
     float offset[3];
     float spacing[3];
     float direction_cosines[9];
@@ -131,7 +131,7 @@ plm_image_convert_itk_to_gpuit_float (Plm_image* pli, T img)
     typename ImageType::DirectionType dc = img->GetDirection();
 
     /* Copy header & allocate data for gpuit float */
-    size_t dim[3];
+    plm_long dim[3];
     float offset[3];
     float spacing[3];
     float direction_cosines[9];
@@ -354,7 +354,7 @@ plm_image_convert_itk_uchar_vec_to_gpuit_uchar_vec (Plm_image* pli,
     UCharVecImageType::SpacingType sp = itk_img->GetSpacing();
     UCharVecImageType::SizeType sz = rg.GetSize();
     UCharVecImageType::DirectionType itk_dc = itk_img->GetDirection();
-    size_t dim[3];
+    plm_long dim[3];
     float offset[3];
     float spacing[3];
     float direction_cosines[9];

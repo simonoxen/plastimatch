@@ -276,7 +276,7 @@ parse_fn (
     }
     if (parser->option ("dim")) {
 	parms->m_have_dim = true;
-	parser->assign_size_t_13 (parms->m_dim, "dim");
+	parser->assign_plm_long_13 (parms->m_dim, "dim");
     }
     parms->fixed_img_fn = parser->get_string("fixed").c_str();
 

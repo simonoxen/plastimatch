@@ -24,7 +24,7 @@ main (int argc, char *argv[])
     FloatImageType::Pointer image = itk_image_load_float (argv[1], 0);
 #endif
 
-    size_t dim[3] = { 11, 11, 11 };
+    plm_long dim[3] = { 11, 11, 11 };
     float origin[3] = { -2.5, -2.5, -2.5 };
     float spacing[3] = { .5, .5, .5 };
     Plm_image_header pih (dim, origin, spacing);

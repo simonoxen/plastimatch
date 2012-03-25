@@ -36,7 +36,7 @@ void find_dose_threshold( Gamma_parms *parms ) {
 void do_gamma_analysis( Gamma_parms *parms ) { 
 
     float spacing_in[3], origin_in[3];
-    size_t dim_in[3];
+    plm_long dim_in[3];
     Plm_image_header pih;
     float gamma;
 	unsigned char label_fail;
