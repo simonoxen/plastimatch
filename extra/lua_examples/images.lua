@@ -16,6 +16,9 @@ my_image:save ()
 -- "Save-As" (write it to disk as a new file)
 my_image:save ("out/images/img_01_copy.mha")
 
+-- get image header information
+my_image:info ();
+
 -- scale total volume intensity by a constant
 w1 = 0.1*my_image
 w1:save ("out/images/w1.mha");
@@ -44,6 +47,10 @@ w3:save ();
 w3:save ("out/images/w3.mha");
 w3:save ();
 
+-- you can also automatically generate masks based on a threshold.
+-- everything *above* the threshold will be masked
+my_mask = my_image:automask (-900);
+my_mask:save ("out/images/mask.mha");
 
 print ("Tutorial: Image Class -- Completed")
 print ("----------------------------------")
