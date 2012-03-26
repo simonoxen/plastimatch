@@ -442,7 +442,7 @@ bspline_update_grad_b_inline (Bspline_state* bst, Bspline_xform* bxf,
 
 static void display_hist_totals (BSPLINE_MI_Hist *mi_hist)
 {
-    size_t i;
+    plm_long i;
     double tmp = 0;
 
     for (i=0, tmp=0; i < mi_hist->fixed.bins; i++) {
@@ -470,22 +470,22 @@ CPU_MI_Hist (BSPLINE_MI_Hist *mi_hist,  // OUTPUT: Histograms
     Volume* fixed,                      //  INPUT: Fixed Image
     Volume* moving)                     //  INPUT: Moving Image
 {
-    size_t rijk[3];
-    size_t fijk[3];
-    size_t fv;
-    size_t p[3];
-    size_t q[3];
+    plm_long rijk[3];
+    plm_long fijk[3];
+    plm_long fv;
+    plm_long p[3];
+    plm_long q[3];
     float fxyz[3];
-    size_t pidx, qidx;
+    plm_long pidx, qidx;
     float dxyz[3];
     float mxyz[3];
     float mijk[3];
-    size_t mijk_f[3];  // floor: mijk
-    size_t mijk_r[3];  // round: mijk
-    size_t mvf;        // floor: mv
+    plm_long mijk_f[3];  // floor: mijk
+    plm_long mijk_r[3];  // round: mijk
+    plm_long mvf;        // floor: mv
     float li_1[3];
     float li_2[3];
-    size_t num_vox = 0;
+    plm_long num_vox = 0;
 
     for (rijk[2] = 0, fijk[2] = bxf->roi_offset[2]; rijk[2] < bxf->roi_dim[2]; rijk[2]++, fijk[2]++) {
         p[2] = rijk[2] / bxf->vox_per_rgn[2];
@@ -542,7 +542,7 @@ CPU_MI_Score (BSPLINE_MI_Hist* mi_hist, int num_vox)
     double* m_hist = mi_hist->m_hist;
     double* j_hist = mi_hist->j_hist;
 
-    size_t i, j, v;
+    plm_long i, j, v;
     double fnv = (double) num_vox;
     double score = 0;
     float hist_thresh = 0.001 / (mi_hist->moving.bins * mi_hist->fixed.bins);

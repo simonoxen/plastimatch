@@ -13,6 +13,7 @@
 
 #include "plm_config.h"
 #include <cuda.h>
+#include "plm_int.h"
 
 #define GRID_LIMIT_X 65535
 #define GRID_LIMIT_Y 65535
@@ -61,7 +62,7 @@ CUDA_array2vec_3D (
 void
 CUDA_array2vec_3D (
     int3* vec,
-    size_t* array
+    plm_long* array
 );
 
 void

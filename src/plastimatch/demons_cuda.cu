@@ -10,6 +10,7 @@
 #include "demons_opts.h"
 #include "demons_state.h"
 #include "plm_cuda_math.h"
+#include "plm_int.h"
 #include "plm_timer.h"
 #include "volume.h"
 
@@ -46,7 +47,7 @@ __constant__ float c_invmps[3];
 Constant Memory Functions
 */
 void 
-setConstantDimension (size_t *h_dim)
+setConstantDimension (plm_long *h_dim)
 {
     int i_dim[3] = { h_dim[0], h_dim[1], h_dim[2] };
     cudaMemcpyToSymbol (c_dim, i_dim, sizeof(int3));
@@ -54,7 +55,7 @@ setConstantDimension (size_t *h_dim)
 }
 
 void 
-setConstantMovingDimension (size_t *h_dim)
+setConstantMovingDimension (plm_long *h_dim)
 {
     int i_dim[3] = { h_dim[0], h_dim[1], h_dim[2] };
     cudaMemcpyToSymbol (c_moving_dim, i_dim, sizeof(int3));

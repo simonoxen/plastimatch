@@ -1458,8 +1458,8 @@ CUDA_bspline_mse_pt2 (
     Bspline_parms* parms, 
     Bspline_xform* bxf,
     Volume* fixed,
-    size_t*   vox_per_rgn,
-    size_t*   volume_dim,
+    plm_long*   vox_per_rgn,
+    plm_long*   volume_dim,
     float* host_score,
     float* host_grad,
     float* host_grad_mean,
@@ -1686,7 +1686,7 @@ CUDA_bspline_mse_score_dc_dv (
 void
 CUDA_bspline_condense (
     Dev_Pointers_Bspline* dev_ptrs,
-    size_t* vox_per_rgn,
+    plm_long* vox_per_rgn,
     int num_tiles
 )
 {
@@ -1781,7 +1781,7 @@ CUDA_bspline_interpolate_vf (
     // Coefficient LUT
     // ----------------------------------------------------------
     float* coeff;
-    size_t coeff_size = sizeof(float) * bxf->num_coeff;
+    plm_long coeff_size = sizeof(float) * bxf->num_coeff;
 
     CUDA_alloc_copy ((void **)&coeff,
                      (void **)&bxf->coeff,
@@ -1796,9 +1796,9 @@ CUDA_bspline_interpolate_vf (
 
     // Build B-spline LUTs & attach to textures
     // ----------------------------------------------------------
-    size_t LUT_Bspline_x_size = 4*bxf->vox_per_rgn[0]* sizeof(float);
-    size_t LUT_Bspline_y_size = 4*bxf->vox_per_rgn[1]* sizeof(float);
-    size_t LUT_Bspline_z_size = 4*bxf->vox_per_rgn[2]* sizeof(float);
+    plm_long LUT_Bspline_x_size = 4*bxf->vox_per_rgn[0]* sizeof(float);
+    plm_long LUT_Bspline_y_size = 4*bxf->vox_per_rgn[1]* sizeof(float);
+    plm_long LUT_Bspline_z_size = 4*bxf->vox_per_rgn[2]* sizeof(float);
 
     float* LUT_Bspline_x_cpu = (float*)malloc(LUT_Bspline_x_size);
     float* LUT_Bspline_y_cpu = (float*)malloc(LUT_Bspline_y_size);
@@ -1855,7 +1855,7 @@ CUDA_bspline_interpolate_vf (
     CUDA_array2vec_3D (&cdim, bxf->cdims);
     CUDA_array2vec_3D (&vpr, bxf->vox_per_rgn);
 
-    size_t vf_size = interp->npix * 3*sizeof(float);
+    plm_long vf_size = interp->npix * 3*sizeof(float);
 
 
 
@@ -3358,7 +3358,7 @@ CPU_obtain_bspline_basis_function (
 // Author: James Shackleford
 // Data: July 30th, 2009
 ////////////////////////////////////////////////////////////////////////////////
-int* CPU_calc_offsets (size_t* tile_dims, size_t* cdims)
+int* CPU_calc_offsets (plm_long* tile_dims, plm_long* cdims)
 {
     int vox_per_tile = (tile_dims[0] * tile_dims[1] * tile_dims[2]);
     int pad = 32 - (vox_per_tile % 32);
@@ -3399,7 +3399,7 @@ int* CPU_calc_offsets (size_t* tile_dims, size_t* cdims)
 // Author: James Shackleford
 // Data: July 13th, 2009
 ////////////////////////////////////////////////////////////////////////////////
-void CPU_find_knots(int* knots, int tile_num, size_t* rdims, size_t* cdims)
+void CPU_find_knots(int* knots, int tile_num, plm_long* rdims, plm_long* cdims)
 {
     int tile_loc[3];
     int i, j, k;

@@ -1,25 +1,33 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _cuda_math_h_
-#define _cuda_math_h_
+#ifndef _plm_cuda_math_h_
+#define _plm_cuda_math_h_
 
 #include "plm_config.h"
 #include <cuda.h>
+#include "plm_int.h"
 
 /* Host to device operators */
-inline __host__
-int3
-make_int3 (size_t *a)
-{
-    return make_int3 ((int) a[0], (int) a[1], (int) a[2]);
-}
-
 inline __host__
 int3
 make_int3 (int *a)
 {
     return make_int3 (a[0], a[1], a[2]);
+}
+
+inline __host__
+int3
+make_int3 (plm_long *a)
+{
+    return make_int3 (a[0], a[1], a[2]);
+}
+
+inline __host__
+int3
+make_int3 (size_t *a)
+{
+    return make_int3 ((int) a[0], (int) a[1], (int) a[2]);
 }
 
 inline __host__

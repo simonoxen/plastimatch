@@ -34,7 +34,7 @@ CUDA_array2vec_3D (
 void
 CUDA_array2vec_3D (
     int3* vec,
-    size_t* array
+    plm_long* array
 )
 {
     vec->x = array[0];

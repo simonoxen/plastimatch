@@ -77,37 +77,37 @@ struct dev_pointers_bspline
     Vmem_Entry* vmem_list;
 
     // Sizes of allocations for above pointers.
-    size_t fixed_image_size;
-    size_t moving_image_size;
-    size_t moving_grad_size;
+    plm_long fixed_image_size;
+    plm_long moving_image_size;
+    plm_long moving_grad_size;
 
-    size_t coeff_size;
-    size_t score_size;
+    plm_long coeff_size;
+    plm_long score_size;
 
-    size_t dc_dv_x_size;
-    size_t dc_dv_y_size;
-    size_t dc_dv_z_size;
+    plm_long dc_dv_x_size;
+    plm_long dc_dv_y_size;
+    plm_long dc_dv_z_size;
 
-    size_t cond_x_size;
-    size_t cond_y_size;
-    size_t cond_z_size;
+    plm_long cond_x_size;
+    plm_long cond_y_size;
+    plm_long cond_z_size;
 
-    size_t grad_size;
+    plm_long grad_size;
 
-    size_t f_hist_seg_size;
-    size_t m_hist_seg_size;
-    size_t j_hist_seg_size;
+    plm_long f_hist_seg_size;
+    plm_long m_hist_seg_size;
+    plm_long j_hist_seg_size;
 
-    size_t f_hist_size;
-    size_t m_hist_size;
-    size_t j_hist_size;
+    plm_long f_hist_size;
+    plm_long m_hist_size;
+    plm_long j_hist_size;
 
-    size_t LUT_Knot_size;
-    size_t LUT_Offsets_size;
-    size_t LUT_Bspline_x_size;
-    size_t LUT_Bspline_y_size;
-    size_t LUT_Bspline_z_size;
-    size_t skipped_size;
+    plm_long LUT_Knot_size;
+    plm_long LUT_Offsets_size;
+    plm_long LUT_Bspline_x_size;
+    plm_long LUT_Bspline_y_size;
+    plm_long LUT_Bspline_z_size;
+    plm_long skipped_size;
 };
 
 #if defined __cplusplus
@@ -163,8 +163,8 @@ extern "C" {
         Bspline_parms* parms,
         Bspline_xform* bxf,
         Volume* fixed,
-        size_t* vox_per_rgn,
-        size_t* volume_dim,
+        plm_long* vox_per_rgn,
+        plm_long* volume_dim,
         float* host_score,
         float* host_grad,
         float* host_grad_mean,
@@ -226,7 +226,7 @@ extern "C" {
     void
     CUDA_bspline_condense (
         Dev_Pointers_Bspline* dev_ptrs,
-        size_t* vox_per_rgn,
+        plm_long* vox_per_rgn,
         int num_tiles
     );
 
@@ -247,14 +247,14 @@ extern "C" {
     CPU_find_knots (
         int* knots,
         int tile_num,
-        size_t* rdims,
-        size_t* cdims
+        plm_long* rdims,
+        plm_long* cdims
     );
 
     int*
     CPU_calc_offsets (
-        size_t* tile_dims,
-        size_t* cdims
+        plm_long* tile_dims,
+        plm_long* cdims
     );
 
     plmcuda_EXPORT (

@@ -9,6 +9,7 @@
 #include "direction_cosines.h"
 #include "plm_image_type.h"
 #include "pstring.h"
+#include "plm_int.h"
 
 class Resample_parms {
 public:
