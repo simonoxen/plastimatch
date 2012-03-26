@@ -157,7 +157,7 @@ rbf_wendland_update_vf (
 )
 {
     int lidx, d;
-    plm_long v, ijk[3];
+    plm_long ijk[3];
     float fxyz[3];
     float *vf_img;
     float rbf;
@@ -170,11 +170,11 @@ rbf_wendland_update_vf (
 
     vf_img = (float*) vf->img;
 
-    v=0;
     LOOP_Z (ijk, fxyz, vf) {
 	LOOP_Y (ijk, fxyz, vf) {
 	    LOOP_X (ijk, fxyz, vf) {
-                v++;
+		/* Compute linear index of voxel */
+		plm_long fv = volume_index (vf->dim, ijk);
 
 		for (lidx=0; lidx < num_landmarks; lidx++) {
 			
@@ -184,7 +184,7 @@ rbf_wendland_update_vf (
 			lw->adapt_radius[lidx]);
 
 		    for (d=0; d<3; d++) {
-			vf_img[3*v+d] += coeff[3*lidx+d] * rbf;
+			vf_img[3*fv+d] += coeff[3*lidx+d] * rbf;
 #if defined (commentout)
 			printf ("Adding: %d (%d %d %d) (%g * %g) %g\n", 
 			    lidx, 

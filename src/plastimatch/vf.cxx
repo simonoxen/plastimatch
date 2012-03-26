@@ -19,7 +19,6 @@ vf_warp (Volume *vout, Volume *vin, Volume *vf)
 {
     int d;
     plm_long ijk[3];
-    plm_long v;
     float fxyz[3];
     float* vf_img = (float*) vf->img;
     float* vout_img;
@@ -87,12 +86,13 @@ vf_warp (Volume *vout, Volume *vin, Volume *vf)
 	}
     }
 
-    v=0;
     LOOP_Z (ijk, fxyz, vf) {
 	LOOP_Y (ijk, fxyz, vf) {
 	    LOOP_X (ijk, fxyz, vf) {
-                v++;
-		float *dxyz = &vf_img[3*v];
+		/* Compute linear index of voxel */
+		plm_long fv = volume_index (vf->dim, ijk);
+
+		float *dxyz = &vf_img[3*fv];
 		float mo_xyz[3] = {
 		    fxyz[0] + dxyz[0] - vin->offset[0],
 		    fxyz[1] + dxyz[1] - vin->offset[1],
@@ -121,7 +121,7 @@ vf_warp (Volume *vout, Volume *vin, Volume *vf)
 		if (mk < 0 || mk >= vin->dim[2]) continue;
 		if (mj < 0 || mj >= vin->dim[1]) continue;
 		if (mi < 0 || mi >= vin->dim[0]) continue;
-		vout_img[v] = vin_img[mv];
+		vout_img[fv] = vin_img[mv];
 #endif
 
 		/* Get tri-linear interpolation fractions */
@@ -138,7 +138,7 @@ vf_warp (Volume *vout, Volume *vin, Volume *vf)
 		    mvf, m_img, vin);
 
 		/* Assign the value */
-		vout_img[v] = m_val;
+		vout_img[fv] = m_val;
 	    }
 	}
     }
