@@ -40,14 +40,12 @@ Registration_data::load_input_files (Registration_parms* regp)
     /* Load masks */
     if (regp->fixed_mask_fn[0]) {
         logfile_printf ("Loading fixed mask: %s\n", regp->fixed_mask_fn);
-//      this->fixed_mask = plm_image_load (regp->fixed_mask_fn, PLM_IMG_TYPE_ITK_FLOAT);
         this->fixed_mask = plm_image_load (regp->fixed_mask_fn, PLM_IMG_TYPE_ITK_UCHAR);
     } else {
         this->fixed_mask = 0;
     }
     if (regp->moving_mask_fn[0]) {
         logfile_printf ("Loading moving mask: %s\n", regp->moving_mask_fn);
-//      this->moving_mask = plm_image_load (regp->moving_mask_fn, PLM_IMG_TYPE_ITK_FLOAT);
         this->moving_mask = plm_image_load (regp->moving_mask_fn, PLM_IMG_TYPE_ITK_UCHAR);
     } else {
         this->moving_mask = 0;

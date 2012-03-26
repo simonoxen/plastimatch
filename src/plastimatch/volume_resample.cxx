@@ -238,10 +238,11 @@ volume_resample_nn (Volume* vol_in, plm_long* dim, float* offset, float* spacing
 {
     switch (vol_in->pix_type) {
     case PT_UCHAR:
+        Volume* rvol;
         volume_convert_to_float (vol_in);
-        vol_in = volume_resample_float_nn (vol_in, dim, offset, spacing);
-        volume_convert_to_uchar (vol_in);
-        return vol_in;
+        rvol = volume_resample_float_nn (vol_in, dim, offset, spacing);
+        volume_convert_to_uchar (rvol);
+        return rvol;
     case PT_SHORT:
     case PT_UINT32:
         fprintf (stderr, "Error, resampling PT_SHORT and PT_UINT32 is unsupported\n");

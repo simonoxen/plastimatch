@@ -249,6 +249,8 @@ do_gpuit_bspline_stage_internal (
     delete fixed_ss;
     delete moving_ss;
     delete moving_grad;
+    delete f_mask_ss;
+    delete m_mask_ss;
     bspline_parms_free (&parms);
 }
 

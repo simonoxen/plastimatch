@@ -1048,9 +1048,11 @@ bspline_score (
 	case 'h':
 	    bspline_score_h_mi (parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
+#if 0
     case 'i':
 	    bspline_score_i_mi (parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
+#endif
 #endif
 	default:
 #if (OPENMP_FOUND)
