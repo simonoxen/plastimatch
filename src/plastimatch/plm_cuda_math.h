@@ -9,12 +9,14 @@
 #include "plm_int.h"
 
 /* Host to device operators */
+#if defined (commentout)
 inline __host__
 int3
 make_int3 (int *a)
 {
     return make_int3 (a[0], a[1], a[2]);
 }
+#endif
 
 inline __host__
 int3
@@ -27,7 +29,7 @@ inline __host__
 int3
 make_int3 (size_t *a)
 {
-    return make_int3 ((int) a[0], (int) a[1], (int) a[2]);
+    return make_int3 ((plm_long) a[0], (plm_long) a[1], (plm_long) a[2]);
 }
 
 inline __host__

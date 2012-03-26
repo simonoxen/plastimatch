@@ -61,11 +61,11 @@ bspline_score_h_mse (
     float* m_img = (float*)moving->img;
     float* m_grad = (float*)moving_grad->img;
 
-    size_t idx_tile;
+    plm_long idx_tile;
 
     Plm_timer timer;
 
-    size_t cond_size = 64*bxf->num_knots*sizeof(float);
+    plm_long cond_size = 64*bxf->num_knots*sizeof(float);
     float* cond_x = (float*)malloc(cond_size);
     float* cond_y = (float*)malloc(cond_size);
     float* cond_z = (float*)malloc(cond_size);

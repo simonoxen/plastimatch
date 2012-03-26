@@ -20,6 +20,7 @@
 //       __device__ functions cannot be placed in here due to nvcc limitations.
 //       Please place __device__ functions in cuda_kernel_util.inc
 
+#if defined (commentout)
 void
 CUDA_array2vec_3D (
     int3* vec,
@@ -30,6 +31,7 @@ CUDA_array2vec_3D (
     vec->y = array[1];
     vec->z = array[2];
 }
+#endif
 
 void
 CUDA_array2vec_3D (

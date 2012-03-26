@@ -21,7 +21,6 @@
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "print_and_exit.h"
-#include "rtss_polyline_set.h"
 
 void
 gdcm1_series_test (char *dicom_dir)
