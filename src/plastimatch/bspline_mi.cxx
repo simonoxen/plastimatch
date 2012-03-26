@@ -46,8 +46,8 @@ volume_clip_intensity (Volume* vin, float bot, float top)
     Volume* vout;
 
     vout = volume_clone (vin);
-	imgin  = (float*) vin->img;
-	imgout = (float*) vout->img;
+        imgin  = (float*) vin->img;
+        imgout = (float*) vout->img;
 
     N=0;
     min = FLT_MAX;
@@ -203,9 +203,9 @@ bspline_mi_hist_vopt_dump_ranges (
             right += hparms->delta;
         } else {
             fprintf (fp, "Bin %u [%6.2f .. %6.2f]\n", (unsigned int) j, 
-		left, right);
+                left, right);
             sprintf (buff, "%s_vopt_lvl_%03u.mha", prefix.c_str(), 
-		(unsigned int) j);
+                (unsigned int) j);
             dump_vol_clipped (buff, vol, left, right);
 
             old_bin = hparms->key_lut[i];
@@ -216,9 +216,9 @@ bspline_mi_hist_vopt_dump_ranges (
     }
     /* Pick up the last bin */
     fprintf (fp, "Bin %u [%6.2f .. %6.2f]\n", (unsigned int) j, 
-	left, right);
+        left, right);
     sprintf (buff, "%s_vopt_lvl_%03u.mha", prefix.c_str(), 
-	(unsigned int) j);
+        (unsigned int) j);
     dump_vol_clipped (buff, vol, left, right);
     fclose (fp);
 }
@@ -521,11 +521,11 @@ bspline_mi_hist_lookup (
 
     /* This had better not happen! */
     if (fl < 0 || fl >= mi_hist->fixed.bins) {
-	fprintf (stderr, "Error: fixed image binning problem.\n"
-	    "Bin %ld from val %g parms [off=%g, delt=%g, (%ld bins)]\n",
-	    fl, f_val, mi_hist->fixed.offset, mi_hist->fixed.delta,
-	    mi_hist->fixed.bins);
-	exit (-1);
+        fprintf (stderr, "Error: fixed image binning problem.\n"
+            "Bin %ld from val %g parms [off=%g, delt=%g, (%ld bins)]\n",
+            fl, f_val, mi_hist->fixed.offset, mi_hist->fixed.delta,
+            mi_hist->fixed.bins);
+        exit (-1);
     }
     
     /* Moving image binning is interpolated (linear, not b-spline) */
@@ -537,20 +537,20 @@ bspline_mi_hist_lookup (
     mf_2 = 1.0 - mf_1;
 
     if (ml_1 < 0) {
-	/* This had better not happen! */
-	fprintf (stderr, "Error: moving image binning problem\n");
-	exit (-1);
+        /* This had better not happen! */
+        fprintf (stderr, "Error: moving image binning problem\n");
+        exit (-1);
     } else if (ml_2 >= mi_hist->moving.bins) {
-	/* This could happen due to rounding */
-	ml_1 = mi_hist->moving.bins - 2;
-	ml_2 = mi_hist->moving.bins - 1;
-	mf_1 = 0.0;
-	mf_2 = 1.0;
+        /* This could happen due to rounding */
+        ml_1 = mi_hist->moving.bins - 2;
+        ml_2 = mi_hist->moving.bins - 1;
+        mf_1 = 0.0;
+        mf_2 = 1.0;
     }
 
     if (mf_1 < 0.0 || mf_1 > 1.0 || mf_2 < 0.0 || mf_2 > 1.0) {
-	fprintf (stderr, "Error: MI interpolation problem\n");
-	exit (-1);
+        fprintf (stderr, "Error: MI interpolation problem\n");
+        exit (-1);
     }
 
     j_idxs[0] = f_idx + ml_1;
@@ -609,12 +609,12 @@ mi_hist_score (BSPLINE_MI_Hist* mi_hist, int num_vox)
 
     /* Compute cost */
     for (i = 0, v = 0; i < mi_hist->fixed.bins; i++) {
-	for (j = 0; j < mi_hist->moving.bins; j++, v++) {
-	    if (j_hist[v] > hist_thresh) {
-		score -= j_hist[v] 
-		    * logf (fnv * j_hist[v] / (m_hist[j] * f_hist[i]));
-	    }
-	}
+        for (j = 0; j < mi_hist->moving.bins; j++, v++) {
+            if (j_hist[v] > hist_thresh) {
+                score -= j_hist[v] 
+                    * logf (fnv * j_hist[v] / (m_hist[j] * f_hist[i]));
+            }
+        }
     }
 
     score = score / fnv;
@@ -756,22 +756,22 @@ void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_base, int iter)
     // ----------------------------------------------
     // Find max value for fixed
     for(plm_long i=0; i<mi_hist->fixed.bins; i++)
-	if (f_hist[i] > fixed_max_val)
-	    fixed_max_val = f_hist[i];
+        if (f_hist[i] > fixed_max_val)
+            fixed_max_val = f_hist[i];
     
     // Find max value for moving
     for(plm_long i=0; i<mi_hist->moving.bins; i++)
-	if (m_hist[i] > moving_max_val)
-	    moving_max_val = m_hist[i];
+        if (m_hist[i] > moving_max_val)
+            moving_max_val = m_hist[i];
     
     // Find max value for joint
     // (Ignoring bin 0)
     for(plm_long j=0; j<mi_hist->fixed.bins; j++) {
-	for(plm_long i=0; i<mi_hist->moving.bins; i++) {
-	    if ( (i > 0) && (j > 1) )
-		if (j_hist[j*mi_hist->moving.bins + i] > joint_max_val)
-		    joint_max_val = j_hist[j*mi_hist->moving.bins + i];
-	}
+        for(plm_long i=0; i<mi_hist->moving.bins; i++) {
+            if ( (i > 0) && (j > 1) )
+                if (j_hist[j*mi_hist->moving.bins + i] > joint_max_val)
+                    joint_max_val = j_hist[j*mi_hist->moving.bins + i];
+        }
     }
 
 
@@ -797,12 +797,12 @@ void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_base, int iter)
     z = 0x0000FF;
     for (plm_long i=0; i<(graph_color_levels+1); i++)
     {
-	xpm_add_color (&xpm, c, z);
+        xpm_add_color (&xpm, c, z);
 
-	z -= 0x00000B;      // BLUE--
-	z += 0x0B0000;      //  RED++
+        z -= 0x00000B;      // BLUE--
+        z += 0x0B0000;      //  RED++
 
-	c = (char)((int)c + 1); // LETTER++
+        c = (char)((int)c + 1); // LETTER++
     }
 
     // Prime the XPM Canvas
@@ -972,7 +972,7 @@ bspline_mi_hist_add_pvi_8_omp_crits (
     for (idx_pv=0; idx_pv<8; idx_pv++) {
 
         idx_mbin = floor ((m_img[n[idx_pv]] 
-		- mi_hist->moving.offset) / mi_hist->moving.delta);
+                - mi_hist->moving.offset) / mi_hist->moving.delta);
         idx_jbin = offset_fbin + idx_mbin;
 
         if (idx_mbin != mi_hist->moving.big_bin) {
@@ -1633,21 +1633,16 @@ bspline_score_h_mi (
     ssd->num_vox = 0;
 
     /* PASS 1 - Accumulate histogram */
-    LOOP_THRU_ROI_Z (rijk, fijk, bxf) {
-        p[2] = REGION_INDEX_Z (rijk, bxf);
-        q[2] = REGION_OFFSET_Z (rijk, bxf);
-        fxyz[2] = GET_COMMON_REAL_SPACE_COORD_Z (fijk, fixed, bxf);
-
-        LOOP_THRU_ROI_Y (rijk, fijk, bxf) {
-            p[1] = REGION_INDEX_Y (rijk, bxf);
-            q[1] = REGION_OFFSET_Y (rijk, bxf);
-            fxyz[1] = GET_COMMON_REAL_SPACE_COORD_Y (fijk, fixed, bxf);
-
-            LOOP_THRU_ROI_X (rijk, fijk, bxf) {
+    LOOP_Z (fijk, fxyz, fixed) {
+        p[2] = REGION_INDEX_Z (fijk, bxf);
+        q[2] = REGION_OFFSET_Z (fijk, bxf);
+        LOOP_Y (fijk, fxyz, fixed) {
+            p[1] = REGION_INDEX_Y (fijk, bxf);
+            q[1] = REGION_OFFSET_Y (fijk, bxf);
+            LOOP_X (fijk, fxyz, fixed) {
                 int rc;
-                p[0] = REGION_INDEX_X (rijk, bxf);
-                q[0] = REGION_OFFSET_X (rijk, bxf);
-                fxyz[0] = GET_COMMON_REAL_SPACE_COORD_X (fijk, fixed, bxf);
+                p[0] = REGION_INDEX_X (fijk, bxf);
+                q[0] = REGION_OFFSET_X (fijk, bxf);
 
                 /* Check to make sure the indices are valid (inside mask) */
                 if (fixed_mask) {
@@ -1805,8 +1800,8 @@ bspline_score_h_mi (
          * Let's put each one in the proper slot within the control
          * point bin its belogs to */
         bspline_sort_sets (cond_x, cond_y, cond_z,
-	    sets_x, sets_y, sets_z,
-	    pidx, bxf);
+            sets_x, sets_y, sets_z,
+            pidx, bxf);
 
     } /* LOOP_THRU_VOL_TILES */
 
@@ -1905,21 +1900,16 @@ bspline_score_g_mi (Bspline_parms *parms,
     ssd->num_vox = 0;
 
     /* PASS 1 - Accumulate histogram */
-    LOOP_THRU_ROI_Z (rijk, fijk, bxf) {
-        p[2] = REGION_INDEX_Z (rijk, bxf);
-        q[2] = REGION_OFFSET_Z (rijk, bxf);
-        fxyz[2] = GET_COMMON_REAL_SPACE_COORD_Z (fijk, fixed, bxf);
-
-        LOOP_THRU_ROI_Y (rijk, fijk, bxf) {
-            p[1] = REGION_INDEX_Y (rijk, bxf);
-            q[1] = REGION_OFFSET_Y (rijk, bxf);
-            fxyz[1] = GET_COMMON_REAL_SPACE_COORD_Y (fijk, fixed, bxf);
-
-            LOOP_THRU_ROI_X (rijk, fijk, bxf) {
+    LOOP_Z (fijk, fxyz, fixed) {
+        p[2] = REGION_INDEX_Z (fijk, bxf);
+        q[2] = REGION_OFFSET_Z (fijk, bxf);
+        LOOP_Y (fijk, fxyz, fixed) {
+            p[1] = REGION_INDEX_Y (fijk, bxf);
+            q[1] = REGION_OFFSET_Y (fijk, bxf);
+            LOOP_X (fijk, fxyz, fixed) {
                 int rc;
-                p[0] = REGION_INDEX_X (rijk, bxf);
-                q[0] = REGION_OFFSET_X (rijk, bxf);
-                fxyz[0] = GET_COMMON_REAL_SPACE_COORD_X (fijk, fixed, bxf);
+                p[0] = REGION_INDEX_X (fijk, bxf);
+                q[0] = REGION_OFFSET_X (fijk, bxf);
 
                 /* Get B-spline deformation vector */
                 pidx = volume_index (bxf->rdims, p);
@@ -1958,6 +1948,10 @@ bspline_score_g_mi (Bspline_parms *parms,
                 diff = m_val - f_img[fv];
                 mse_score += diff * diff;
                 ssd->num_vox ++;
+#if 0
+                printf ("%f\t->\t%f\t<%f %f %f | %f %f %f>\n", f_img[fv], m_val,
+                                       li_1[0], li_1[1], li_1[2], li_2[0], li_2[1], li_2[2]);
+#endif
 
             } /* LOOP_THRU_ROI_X */
         } /* LOOP_THRU_ROI_Y */
@@ -2062,8 +2056,8 @@ bspline_score_g_mi (Bspline_parms *parms,
          * Let's put each one in the proper slot within the control
          * point bin its belogs to */
         bspline_sort_sets (cond_x, cond_y, cond_z,
-	    sets_x, sets_y, sets_z,
-	    pidx, bxf);
+            sets_x, sets_y, sets_z,
+            pidx, bxf);
 
     } /* LOOP_THRU_VOL_TILES */
 
@@ -2083,9 +2077,9 @@ bspline_score_g_mi (Bspline_parms *parms,
 #endif
 
     mse_score = mse_score / ssd->num_vox;
-    if (parms->debug) {
+//    if (parms->debug) {
         printf ("<< MSE %3.3f >>\n", mse_score);
-    }
+//    }
 
     ssd->time_smetric = plm_timer_report (&timer);
 }
@@ -3016,8 +3010,8 @@ bspline_score_d_mi (Bspline_parms *parms,
          * Let's put each one in the proper slot within the control
          * point bin its belogs to */
         bspline_sort_sets (cond_x, cond_y, cond_z,
-	    sets_x, sets_y, sets_z,
-	    pidx, bxf);
+            sets_x, sets_y, sets_z,
+            pidx, bxf);
 
     } /* LOOP_THRU_VOL_TILES */
 

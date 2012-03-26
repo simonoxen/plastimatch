@@ -164,7 +164,7 @@ bspline_state_create (
         if (first_iteration) {
             printf ("Intializing 1st MI Stage\n");
             for (int i = 0; i < bxf->num_coeff; i++) {
-                bxf->coeff[i] = 0.0001f;
+                bxf->coeff[i] = 0.01f;
             }
         }
     }
@@ -807,17 +807,19 @@ bspline_find_correspondence_dcos
  const Volume *moving     /* Input:  moving image */
  )
 {
-    mxyz[0] = fxyz[0] + dxyz[0];
-    mxyz[1] = fxyz[1] + dxyz[1];
-    mxyz[2] = fxyz[2] + dxyz[2];
+    float tmp[3];
 
-    mijk[0] = mxyz[0] - moving->offset[0];
-    mijk[1] = mxyz[1] - moving->offset[1];
-    mijk[2] = mxyz[2] - moving->offset[2];
+    mxyz[0] = fxyz[0];// + dxyz[0];
+    mxyz[1] = fxyz[1];// + dxyz[1];
+    mxyz[2] = fxyz[2];// + dxyz[2];
 
-    mijk[0] = PROJECT_X (mijk, moving->proj);
-    mijk[1] = PROJECT_Y (mijk, moving->proj);
-    mijk[2] = PROJECT_Z (mijk, moving->proj);
+    tmp[0] = mxyz[0] - moving->offset[0];
+    tmp[1] = mxyz[1] - moving->offset[1];
+    tmp[2] = mxyz[2] - moving->offset[2];
+
+    mijk[0] = PROJECT_X (tmp, moving->proj);
+    mijk[1] = PROJECT_Y (tmp, moving->proj);
+    mijk[2] = PROJECT_Z (tmp, moving->proj);
 
     if (mijk[0] < -0.5 || mijk[0] > moving->dim[0] - 0.5) return 0;
     if (mijk[1] < -0.5 || mijk[1] > moving->dim[1] - 0.5) return 0;
@@ -841,17 +843,19 @@ bspline_find_correspondence_dcos_mask
  const Volume *moving_mask  /* Input:  moving image mask */
  )
 {
+    float tmp[3];
+
     mxyz[0] = fxyz[0] + dxyz[0];
     mxyz[1] = fxyz[1] + dxyz[1];
     mxyz[2] = fxyz[2] + dxyz[2];
 
-    mijk[0] = mxyz[0] - moving->offset[0];
-    mijk[1] = mxyz[1] - moving->offset[1];
-    mijk[2] = mxyz[2] - moving->offset[2];
+    tmp[0] = mxyz[0] - moving->offset[0];
+    tmp[1] = mxyz[1] - moving->offset[1];
+    tmp[2] = mxyz[2] - moving->offset[2];
 
-    mijk[0] = PROJECT_X (mijk, moving->proj);
-    mijk[1] = PROJECT_Y (mijk, moving->proj);
-    mijk[2] = PROJECT_Z (mijk, moving->proj);
+    mijk[0] = PROJECT_X (tmp, moving->proj);
+    mijk[1] = PROJECT_Y (tmp, moving->proj);
+    mijk[2] = PROJECT_Z (tmp, moving->proj);
 
     if (mijk[0] < -0.5 || mijk[0] > moving->dim[0] - 0.5) return 0;
     if (mijk[1] < -0.5 || mijk[1] > moving->dim[1] - 0.5) return 0;
