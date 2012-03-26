@@ -507,7 +507,9 @@ Plm_image::convert_to_gpuit_uchar (void)
 {
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
-        return;
+        plm_image_convert_itk_to_gpuit (this, this->m_itk_uchar, (unsigned char) 0);
+        this->m_itk_uchar = 0;
+        break;
     case PLM_IMG_TYPE_ITK_SHORT:
         plm_image_convert_itk_to_gpuit (this, this->m_itk_short, (unsigned char) 0);
         this->m_itk_short = 0;

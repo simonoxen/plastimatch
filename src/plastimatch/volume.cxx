@@ -304,7 +304,7 @@ volume_convert_to_uchar (Volume* ref)
 	CONVERT_VOLUME (int32_t, unsigned char, PT_UCHAR);
 	break;
     case PT_FLOAT:
-	CONVERT_VOLUME (unsigned char, unsigned char, PT_UCHAR);
+	CONVERT_VOLUME (float, unsigned char, PT_UCHAR);
 	break;
     case PT_VF_FLOAT_INTERLEAVED:
     case PT_VF_FLOAT_PLANAR:

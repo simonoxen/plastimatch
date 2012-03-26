@@ -287,14 +287,11 @@ inside_mask (float* xyz, const Volume* mask)
     p[1] = (plm_long)p_f[1];
     p[2] = (plm_long)p_f[2];
 
-    float* m = (float*)mask->img;
+    unsigned char *m = (unsigned char*)mask->img;
     plm_long i = volume_index (mask->dim, p);
 
-    if (m[i] < 0.5) {
-        return 0;
-    } else {
-        return 1;
-    }
+    /* 0 outside mask, 1 inside */
+    return (int)m[i];
 }
 
 
@@ -1050,6 +1047,9 @@ bspline_score (
 	    break;
 	case 'h':
 	    bspline_score_h_mi (parms, bst, bxf, fixed, moving, moving_grad);
+	    break;
+    case 'i':
+	    bspline_score_i_mi (parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
 #endif
 	default:
