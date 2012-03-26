@@ -1644,6 +1644,7 @@ bspline_score_h_mi (
                 p[0] = REGION_INDEX_X (fijk, bxf);
                 q[0] = REGION_OFFSET_X (fijk, bxf);
 
+                /* JAS 2012.03.26: Tends to break the optimizer (PGTOL)   */
                 /* Check to make sure the indices are valid (inside mask) */
                 if (fixed_mask) {
                     if (!inside_mask (fxyz, fixed_mask)) continue;
@@ -1746,6 +1747,7 @@ bspline_score_h_mi (
                     if (fijk[1] >= bxf->roi_offset[1] + bxf->roi_dim[1]) { continue; }
                     if (fijk[2] >= bxf->roi_offset[2] + bxf->roi_dim[2]) { continue; }
 
+                    /* JAS 2012.03.26: Tends to break the optimizer (PGTOL)   */
                     /* Check to make sure the indices are valid (inside mask) */
                     if (fixed_mask) {
                         if (!inside_mask (fxyz, fixed_mask)) continue;
@@ -1948,10 +1950,6 @@ bspline_score_g_mi (Bspline_parms *parms,
                 diff = m_val - f_img[fv];
                 mse_score += diff * diff;
                 ssd->num_vox ++;
-#if 0
-                printf ("%f\t->\t%f\t<%f %f %f | %f %f %f>\n", f_img[fv], m_val,
-                                       li_1[0], li_1[1], li_1[2], li_2[0], li_2[1], li_2[2]);
-#endif
 
             } /* LOOP_THRU_ROI_X */
         } /* LOOP_THRU_ROI_Y */
@@ -2077,9 +2075,9 @@ bspline_score_g_mi (Bspline_parms *parms,
 #endif
 
     mse_score = mse_score / ssd->num_vox;
-//    if (parms->debug) {
+    if (parms->debug) {
         printf ("<< MSE %3.3f >>\n", mse_score);
-//    }
+    }
 
     ssd->time_smetric = plm_timer_report (&timer);
 }
