@@ -5,28 +5,32 @@
 #  NLOPT_LIBRARIES   - List of libraries when using zlib.
 #  NLOPT_FOUND       - True if zlib found.
 
+set (NLOPT_DIR "" CACHE PATH "Root of NLopt install tree (optional).")
 
-IF (NLOPT_INCLUDE_DIR)
+if (NLOPT_INCLUDE_DIR)
   # Already in cache, be silent
-  SET (nlopt_FIND_QUIETLY TRUE)
-ENDIF (NLOPT_INCLUDE_DIR)
+  set (nlopt_FIND_QUIETLY TRUE)
+endif (NLOPT_INCLUDE_DIR)
 
-FIND_PATH(NLOPT_INCLUDE_DIR nlopt.h)
+find_path (NLOPT_INCLUDE_DIR nlopt.h
+  ${NLOPT_DIR}/include)
 
-SET (NLOPT_NAMES nlopt nlopt_cxx)
-FIND_LIBRARY (NLOPT_LIBRARY NAMES ${NLOPT_NAMES})
+set (NLOPT_NAMES nlopt nlopt_cxx)
+find_library (NLOPT_LIBRARY NAMES ${NLOPT_NAMES}
+  PATHS
+  ${NLOPT_DIR}/lib)
 
 # handle the QUIETLY and REQUIRED arguments and set NLOPT_FOUND to TRUE if 
 # all listed variables are TRUE
-INCLUDE (FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS (NLOPT DEFAULT_MSG 
+include (FindPackageHandleStandardArgs)
+find_package_handle_standard_args (NLOPT DEFAULT_MSG 
   NLOPT_LIBRARY 
   NLOPT_INCLUDE_DIR)
 
-IF(NLOPT_FOUND)
-  SET (NLOPT_LIBRARIES ${NLOPT_LIBRARY})
-ELSE (NLOPT_FOUND)
-  SET (NLOPT_LIBRARIES)
-ENDIF (NLOPT_FOUND)
+if (NLOPT_FOUND)
+  set (NLOPT_LIBRARIES ${NLOPT_LIBRARY})
+else ()
+  set (NLOPT_LIBRARIES)
+endif ()
 
-MARK_AS_ADVANCED (NLOPT_LIBRARY NLOPT_INCLUDE_DIR)
+mark_as_advanced (NLOPT_LIBRARY NLOPT_INCLUDE_DIR)
