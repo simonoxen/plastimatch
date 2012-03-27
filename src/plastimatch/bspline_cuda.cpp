@@ -106,14 +106,14 @@ void
 bspline_interp_pix_b (
     float out[3], 
     Bspline_xform* bxf, 
-    size_t pidx, 
-    size_t qidx
+    plm_long pidx, 
+    plm_long qidx
 )
 {
-    size_t i, j, k, m;
-    size_t cidx;
+    plm_long i, j, k, m;
+    plm_long cidx;
     float* q_lut = &bxf->q_lut[qidx*64];
-    size_t* c_lut = &bxf->c_lut[pidx*64];
+    plm_long* c_lut = &bxf->c_lut[pidx*64];
 
     out[0] = out[1] = out[2] = 0;
     m = 0;
