@@ -17,6 +17,7 @@ extern "C"
 
 #include "lua_classes.h"
 #include "lua_class_image.h"
+#include "lua_class_structs.h"
 #include "lua_util.h"
 #include "plm_image.h"
 #include "volume.h"
@@ -48,20 +49,16 @@ image_automask (lua_State *L)
     /* 2nd arg should be threshold */
     float thres = (float)luaL_optnumber (L, 2, automask.m_lower_threshold);
 
-    /* TODO - Using lua_image for now, but may want to create a new class
-     * lua_mask that is very similar to lua_image that doesn't use floats */
-    lua_image *tmp = (lua_image*)lua_new_instance (L,
-                                    THIS_CLASS,
-                                    sizeof(lua_image));
-    init_image_instance (tmp);
-    tmp->pli = new Plm_image;
+    lua_ss *lss = (lua_ss*)lua_new_instance (L, LUA_CLASS_SS, sizeof(lua_ss));
+    init_ss_instance (lss);
+    lss->ss_img = new Plm_image;
 
     automask.img_in  = limg->pli;
-    automask.img_out = tmp->pli;
+    automask.img_out = lss->ss_img;
     automask.m_lower_threshold = thres;
     automask.do_segmentation ();
 
-    tmp->pli = automask.img_out;
+    lss->ss_img = automask.img_out;
 
     return 1;
 }

@@ -17,6 +17,7 @@ extern "C"
 #include "lua_class_image.h"
 #include "lua_class_register.h"
 #include "lua_class_stage.h"
+#include "lua_class_structs.h"
 #include "lua_class_xform.h"
 #include "lua_cli_glue.h"
 #include "lua_iface_add.h"
@@ -60,6 +61,7 @@ register_lua_objects (lua_State* L)
     register_lua_class_image (L);
     register_lua_class_register (L);
     register_lua_class_stage (L);
+    register_lua_class_ss (L);
     register_lua_class_xform (L);
 }
 

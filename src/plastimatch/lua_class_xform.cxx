@@ -14,6 +14,7 @@ extern "C"
 }
 #include "lua_classes.h"
 #include "lua_class_image.h"
+#include "lua_class_structs.h"
 #include "lua_class_xform.h"
 #include "lua_util.h"
 #include "pcmd_script.h"
@@ -151,9 +152,11 @@ xform_action_add (lua_State *L)
     lua_xform* lxf;
     lua_image* limg_in;
     lua_image* limg_out;
+    lua_ss *lss_in;
+    lua_ss *lss_out;
     Plm_image_header pih;
 
-    /* xform * image */
+    /* xform + image */
     if ( (lua_check_type (L, THIS_CLASS, 1) && lua_check_type (L, LUA_CLASS_IMAGE, 2)) ||
          (lua_check_type (L, THIS_CLASS, 2) && lua_check_type (L, LUA_CLASS_IMAGE, 1))
     ) {
@@ -177,7 +180,7 @@ xform_action_add (lua_State *L)
 
         init_image_instance (limg_out);
         limg_out->pli = new Plm_image;
-        pih.set_from_plm_image (limg_in->pli);
+        pih.set_from_gpuit_bspline (lxf->pxf->get_gpuit_bsp());
 
         plm_warp (
             limg_out->pli,  /* output image       */
@@ -189,6 +192,45 @@ xform_action_add (lua_State *L)
             0,              /* 1: force ITK warp  */
             1               /* 1: Trilinear 0: nn */
         );
+
+        return 1;
+    }
+    /* xform + ss_img */
+    if ( (lua_check_type (L, THIS_CLASS, 1) && lua_check_type (L, LUA_CLASS_SS, 2)) ||
+         (lua_check_type (L, THIS_CLASS, 2) && lua_check_type (L, LUA_CLASS_SS, 1))
+    ) {
+
+        /* Load the parms, but which is which? */
+        if (lua_check_type (L, THIS_CLASS, 1)) {
+            lxf     = (lua_xform*)get_obj_ptr (L, THIS_CLASS, 1);
+            lss_in =  (lua_ss*)get_obj_ptr (L, LUA_CLASS_SS, 2);
+        }
+        else if (lua_check_type (L, LUA_CLASS_SS, 1)) {
+            lxf     = (lua_xform*)get_obj_ptr (L, THIS_CLASS, 2);
+            lss_in = (lua_ss*)get_obj_ptr (L, LUA_CLASS_SS, 1);
+        }
+        else {
+            fprintf (stderr, "internal error -- xform.__add() -- please file bug report\n");
+            exit (0);
+        }
+
+        lss_out = (lua_ss*)lua_new_instance (L, LUA_CLASS_SS, sizeof(lua_ss));
+
+        init_ss_instance (lss_out);
+        lss_out->ss_img = new Plm_image;
+        pih.set_from_plm_image (lss_in->ss_img);
+#if 0
+        plm_warp (
+            lss_out->ss_img, /* output image       */
+            NULL,            /* output vf          */
+            lxf->pxf,        /* xform              */
+            &pih,            /* ouput geometry     */
+            lss_in->ss_img,  /* input image        */
+            0,               /* default hu value   */
+            0,               /* 1: force ITK warp  */
+            0                /* 1: Trilinear 0: nn */
+        );
+#endif
 
         return 1;
     }

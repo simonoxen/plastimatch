@@ -14,7 +14,7 @@
 #include "lauxlib.h"
 
 #include "lua_class_image.h"
-#include "lua_class_stage.h"
+#include "lua_class_structs.h"
 
 #define _MAX_STAGES 20
 
@@ -24,6 +24,8 @@ struct lua_register_struct {
     Registration_parms *regp;
     lua_image *moving;    
     lua_image *fixed;    
+    lua_ss *moving_mask;
+    lua_ss *fixed_mask;
 };
 
 

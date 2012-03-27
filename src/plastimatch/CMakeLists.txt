@@ -558,6 +558,7 @@ set (LUA_INTERFACE_SRC
     lua_class_image.cxx lua_class_image.h
     lua_class_register.cxx lua_class_register.h
     lua_class_stage.cxx lua_class_stage.h
+    lua_class_structs.cxx lua_class_structs.h
     lua_class_xform.cxx lua_class_xform.h
     lua_cli_glue.cxx lua_cli_glue.h
     lua_iface_add.cxx lua_iface_add.h
