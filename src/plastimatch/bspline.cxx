@@ -259,33 +259,64 @@ void find_knots (
 
 }
 
+static void
+float_to_plm_long_clamp (plm_long* p, float* f, const plm_long* max)
+{
+    float p_f[3];
+    p_f[0] = f[0];
+    p_f[1] = f[1];
+    p_f[2] = f[2];
+
+    /* x */
+    if (p_f[0] < 0.f) {
+        p[0] = 0;
+    }
+    else if (p_f[0] >= max[0]) {
+        p[0] = max[0] - 1;
+    }
+    else {
+        p[0] = FLOOR_PLM_LONG (p_f[0]);
+    }
+
+    /* y */
+    if (p_f[1] < 0.f) {
+        p[1] = 0;
+    }
+    else if (p_f[1] >= max[1]) {
+        p[1] = max[1] - 1;
+    }
+    else {
+        p[1] = FLOOR_PLM_LONG (p_f[1]);
+    }
+
+    /* z */
+    if (p_f[2] < 0.f) {
+        p[2] = 0;
+    }
+    else if (p_f[2] >= max[2]) {
+        p[2] = max[2] - 1;
+    }
+    else {
+        p[2] = FLOOR_PLM_LONG (p_f[2]);
+    }
+}
+
 int
 inside_mask (float* xyz, const Volume* mask)
 {
     float p_f[3];
+    float tmp[3];
     plm_long p[3];
 
-    p_f[0] = xyz[0] - mask->offset[0];
-    p_f[1] = xyz[1] - mask->offset[1];
-    p_f[2] = xyz[2] - mask->offset[2];
+    tmp[0] = xyz[0] - mask->offset[0];
+    tmp[1] = xyz[1] - mask->offset[1];
+    tmp[2] = xyz[2] - mask->offset[2];
 
-    p_f[0] = PROJECT_X (p_f, mask->proj);
-    p_f[1] = PROJECT_Y (p_f, mask->proj);
-    p_f[2] = PROJECT_Z (p_f, mask->proj);
+    p_f[0] = PROJECT_X (tmp, mask->proj);
+    p_f[1] = PROJECT_Y (tmp, mask->proj);
+    p_f[2] = PROJECT_Z (tmp, mask->proj);
 
-    if (p_f[0] < -0.5 || p_f[0] > mask->dim[0] - 0.5) return 0;
-    if (p_f[1] < -0.5 || p_f[1] > mask->dim[1] - 0.5) return 0;
-    if (p_f[2] < -0.5 || p_f[2] > mask->dim[2] - 0.5) return 0;
-
-    p_f[0] = floorf (p_f[0]);
-    p_f[1] = floorf (p_f[1]);
-    p_f[2] = floorf (p_f[2]);
-    if (p_f[0] < 0) p_f[0] = 0;
-    if (p_f[1] < 0) p_f[1] = 0;
-    if (p_f[2] < 0) p_f[2] = 0;
-    p[0] = (plm_long)p_f[0];
-    p[1] = (plm_long)p_f[1];
-    p[2] = (plm_long)p_f[2];
+    float_to_plm_long_clamp (p, p_f, mask->dim);
 
     unsigned char *m = (unsigned char*)mask->img;
     plm_long i = volume_index (mask->dim, p);
@@ -809,9 +840,9 @@ bspline_find_correspondence_dcos
 {
     float tmp[3];
 
-    mxyz[0] = fxyz[0];// + dxyz[0];
-    mxyz[1] = fxyz[1];// + dxyz[1];
-    mxyz[2] = fxyz[2];// + dxyz[2];
+    mxyz[0] = fxyz[0] + dxyz[0];
+    mxyz[1] = fxyz[1] + dxyz[1];
+    mxyz[2] = fxyz[2] + dxyz[2];
 
     tmp[0] = mxyz[0] - moving->offset[0];
     tmp[1] = mxyz[1] - moving->offset[1];

@@ -1647,6 +1647,7 @@ bspline_score_h_mi (
                 /* JAS 2012.03.26: Tends to break the optimizer (PGTOL)   */
                 /* Check to make sure the indices are valid (inside mask) */
                 if (fixed_mask) {
+//                    printf ("[%i %i %i]\t->\t", fijk[0], fijk[1], fijk[2]);
                     if (!inside_mask (fxyz, fixed_mask)) continue;
                 }
 
