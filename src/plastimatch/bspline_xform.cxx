@@ -33,13 +33,13 @@ bspline_xform_set_default (Bspline_xform* bxf)
     memset (bxf, 0, sizeof (Bspline_xform));
 
     for (d = 0; d < 3; d++) {
-	bxf->img_origin[d] = 0.0f;
-	bxf->img_spacing[d] = 1.0f;
-	bxf->img_dim[d] = 0;
-	bxf->roi_offset[d] = 0;
-	bxf->roi_dim[d] = 0;
-	bxf->vox_per_rgn[d] = 30;
-	bxf->grid_spac[d] = 30.0f;
+        bxf->img_origin[d] = 0.0f;
+        bxf->img_spacing[d] = 1.0f;
+        bxf->img_dim[d] = 0;
+        bxf->roi_offset[d] = 0;
+        bxf->roi_dim[d] = 0;
+        bxf->vox_per_rgn[d] = 30;
+        bxf->grid_spac[d] = 30.0f;
     }
 }
 
@@ -54,43 +54,53 @@ bspline_xform_save (Bspline_xform* bxf, const char* filename)
 
     fprintf (fp, "MGH_GPUIT_BSP <experimental>\n");
     fprintf (fp, "img_origin = %f %f %f\n", 
-	bxf->img_origin[0], bxf->img_origin[1], bxf->img_origin[2]);
+        bxf->img_origin[0], bxf->img_origin[1], bxf->img_origin[2]);
     fprintf (fp, "img_spacing = %f %f %f\n", 
-	bxf->img_spacing[0], bxf->img_spacing[1], bxf->img_spacing[2]);
+        bxf->img_spacing[0], bxf->img_spacing[1], bxf->img_spacing[2]);
     fprintf (fp, "img_dim = %u %u %u\n", 
-	(unsigned int) bxf->img_dim[0], (unsigned int) bxf->img_dim[1], 
-	(unsigned int) bxf->img_dim[2]);
+        (unsigned int) bxf->img_dim[0], (unsigned int) bxf->img_dim[1], 
+        (unsigned int) bxf->img_dim[2]);
     fprintf (fp, "roi_offset = %d %d %d\n", 
-	(unsigned int) bxf->roi_offset[0], (unsigned int) bxf->roi_offset[1], 
-	(unsigned int) bxf->roi_offset[2]);
+        (unsigned int) bxf->roi_offset[0], (unsigned int) bxf->roi_offset[1], 
+        (unsigned int) bxf->roi_offset[2]);
     fprintf (fp, "roi_dim = %d %d %d\n", 
-	(unsigned int) bxf->roi_dim[0], (unsigned int) bxf->roi_dim[1], 
-	(unsigned int) bxf->roi_dim[2]);
+        (unsigned int) bxf->roi_dim[0], (unsigned int) bxf->roi_dim[1], 
+        (unsigned int) bxf->roi_dim[2]);
     fprintf (fp, "vox_per_rgn = %d %d %d\n", 
-	(unsigned int) bxf->vox_per_rgn[0], 
-	(unsigned int) bxf->vox_per_rgn[1], 
-	(unsigned int) bxf->vox_per_rgn[2]);
+        (unsigned int) bxf->vox_per_rgn[0], 
+        (unsigned int) bxf->vox_per_rgn[1], 
+        (unsigned int) bxf->vox_per_rgn[2]);
+    fprintf (fp, "direction_cosines = %f %f %f %f %f %f %f %f %f\n", 
+        (bxf->dc).m_direction_cosines[0], 
+        (bxf->dc).m_direction_cosines[1], 
+        (bxf->dc).m_direction_cosines[2], 
+        (bxf->dc).m_direction_cosines[3], 
+        (bxf->dc).m_direction_cosines[4], 
+        (bxf->dc).m_direction_cosines[5], 
+        (bxf->dc).m_direction_cosines[6], 
+        (bxf->dc).m_direction_cosines[7], 
+        (bxf->dc).m_direction_cosines[8]);
     /* No need to save grid_spac */
 
 #if defined (commentout)
     {
-	/* This dumps in native, interleaved format */
-	for (i = 0; i < bxf->num_coeff; i++) {
-	    fprintf (fp, "%6.3f\n", bxf->coeff[i]);
-	}
+        /* This dumps in native, interleaved format */
+        for (i = 0; i < bxf->num_coeff; i++) {
+            fprintf (fp, "%6.3f\n", bxf->coeff[i]);
+        }
     }
 #endif
 
     /* This dumps in itk-like planar format */
     {
-	int i, j;
-	for (i = 0; i < 3; i++) {
-	    for (j = 0; j < bxf->num_coeff / 3; j++) {
-		//fprintf (fp, "%6.3f\n", bxf->coeff[j*3 + i]);
-		fprintf (fp, "%.20f\n", bxf->coeff[j*3 + i]);
-	    }
-	}
-    }		
+        int i, j;
+        for (i = 0; i < 3; i++) {
+            for (j = 0; j < bxf->num_coeff / 3; j++) {
+                //fprintf (fp, "%6.3f\n", bxf->coeff[j*3 + i]);
+                fprintf (fp, "%.20f\n", bxf->coeff[j*3 + i]);
+            }
+        }
+    }           
 
     fclose (fp);
 }
@@ -106,9 +116,10 @@ bspline_xform_load (const char* filename)
     float img_spacing[3];        /* Image spacing (in mm) */
     unsigned int a, b, c;        /* For fscanf */
     plm_long img_dim[3];           /* Image size (in vox) */
-    plm_long roi_offset[3];	 /* Position of first vox in ROI (in vox) */
-    plm_long roi_dim[3];		 /* Dimension of ROI (in vox) */
-    plm_long vox_per_rgn[3];	 /* Knot spacing (in vox) */
+    plm_long roi_offset[3];      /* Position of first vox in ROI (in vox) */
+    plm_long roi_dim[3];                 /* Dimension of ROI (in vox) */
+    plm_long vox_per_rgn[3];     /* Knot spacing (in vox) */
+    float dc[9];                 /* Direction cosines */
 
     fp = fopen (filename, "r");
     if (!fp) return 0;
@@ -122,21 +133,21 @@ bspline_xform_load (const char* filename)
 
     /* Read header */
     rc = fscanf (fp, "img_origin = %f %f %f\n", 
-	&img_origin[0], &img_origin[1], &img_origin[2]);
+        &img_origin[0], &img_origin[1], &img_origin[2]);
     if (rc != 3) {
-	logfile_printf ("Error parsing input xform (img_origin): %s\n", filename);
-	goto free_exit;
+        logfile_printf ("Error parsing input xform (img_origin): %s\n", filename);
+        goto free_exit;
     }
     rc = fscanf (fp, "img_spacing = %f %f %f\n", 
-	&img_spacing[0], &img_spacing[1], &img_spacing[2]);
+        &img_spacing[0], &img_spacing[1], &img_spacing[2]);
     if (rc != 3) {
-	logfile_printf ("Error parsing input xform (img_spacing): %s\n", filename);
-	goto free_exit;
+        logfile_printf ("Error parsing input xform (img_spacing): %s\n", filename);
+        goto free_exit;
     }
     rc = fscanf (fp, "img_dim = %d %d %d\n", &a, &b, &c);
     if (rc != 3) {
-	logfile_printf ("Error parsing input xform (img_dim): %s\n", filename);
-	goto free_exit;
+        logfile_printf ("Error parsing input xform (img_dim): %s\n", filename);
+        goto free_exit;
     }
     img_dim[0] = a;
     img_dim[1] = b;
@@ -144,8 +155,8 @@ bspline_xform_load (const char* filename)
 
     rc = fscanf (fp, "roi_offset = %d %d %d\n", &a, &b, &c);
     if (rc != 3) {
-	logfile_printf ("Error parsing input xform (roi_offset): %s\n", filename);
-	goto free_exit;
+        logfile_printf ("Error parsing input xform (roi_offset): %s\n", filename);
+        goto free_exit;
     }
     roi_offset[0] = a;
     roi_offset[1] = b;
@@ -153,8 +164,8 @@ bspline_xform_load (const char* filename)
 
     rc = fscanf (fp, "roi_dim = %d %d %d\n", &a, &b, &c);
     if (rc != 3) {
-	logfile_printf ("Error parsing input xform (roi_dim): %s\n", filename);
-	goto free_exit;
+        logfile_printf ("Error parsing input xform (roi_dim): %s\n", filename);
+        goto free_exit;
     }
     roi_dim[0] = a;
     roi_dim[1] = b;
@@ -162,30 +173,42 @@ bspline_xform_load (const char* filename)
 
     rc = fscanf (fp, "vox_per_rgn = %d %d %d\n", &a, &b, &c);
     if (rc != 3) {
-	logfile_printf ("Error parsing input xform (vox_per_rgn): %s\n", filename);
-	goto free_exit;
+        logfile_printf ("Error parsing input xform (vox_per_rgn): %s\n", filename);
+        goto free_exit;
     }
     vox_per_rgn[0] = a;
     vox_per_rgn[1] = b;
     vox_per_rgn[2] = c;
 
+    /* JAS 2012.03.29 : check for direction cosines
+     * we must be careful because older plastimatch xforms do not have this */
+    rc = fscanf (fp, "direction_cosines = %f %f %f %f %f %f %f %f %f\n",
+            &dc[0], &dc[1], &dc[2], &dc[3], &dc[4],
+            &dc[5], &dc[6], &dc[7], &dc[8]);
+    if (rc != 9) {
+        dc[0] = 1.; dc[3] = 0.; dc[6] = 0.;
+        dc[1] = 0.; dc[4] = 1.; dc[7] = 0.;
+        dc[2] = 0.; dc[5] = 0.; dc[8] = 1.;
+    }
+    
+
     /* Allocate memory and build LUTs */
     bspline_xform_initialize (bxf, img_origin, img_spacing, img_dim,
-	roi_offset, roi_dim, vox_per_rgn);
+        roi_offset, roi_dim, vox_per_rgn, dc);
 
     /* This loads from itk-like planar format */
     {
-	int i, j;
-	for (i = 0; i < 3; i++) {
-	    for (j = 0; j < bxf->num_coeff / 3; j++) {
-		rc = fscanf (fp, "%f\n", &bxf->coeff[j*3 + i]);
-		if (rc != 1) {
-		    logfile_printf ("Error parsing input xform (idx = %d,%d): %s\n", i, j, filename);
-		    bspline_xform_free (bxf);
-		    goto free_exit;
-		}
-	    }
-	}
+        int i, j;
+        for (i = 0; i < 3; i++) {
+            for (j = 0; j < bxf->num_coeff / 3; j++) {
+                rc = fscanf (fp, "%f\n", &bxf->coeff[j*3 + i]);
+                if (rc != 1) {
+                    logfile_printf ("Error parsing input xform (idx = %d,%d): %s\n", i, j, filename);
+                    bspline_xform_free (bxf);
+                    goto free_exit;
+                }
+            }
+        }
     }
 
     fclose (fp);
@@ -207,7 +230,7 @@ bspline_xform_dump_coeff (Bspline_xform* bxf, const char* fn)
     int i;
     FILE* fp = fopen (fn,"wb");
     for (i = 0; i < bxf->num_coeff; i++) {
-	fprintf (fp, "%20.20f\n", bxf->coeff[i]);
+        fprintf (fp, "%20.20f\n", bxf->coeff[i]);
     }
     fclose (fp);
 }
@@ -221,20 +244,20 @@ bspline_xform_dump_luts (Bspline_xform* bxf)
 
     /* Dump q_lut */
     for (k = 0, p = 0; k < bxf->vox_per_rgn[2]; k++) {
-	for (j = 0; j < bxf->vox_per_rgn[1]; j++) {
-	    for (i = 0; i < bxf->vox_per_rgn[0]; i++) {
-		fprintf (fp, "%3d %3d %3d\n", 
-		    (unsigned int) k, (unsigned int) j, (unsigned int) i);
-		for (tz = 0; tz < 4; tz++) {
-		    for (ty = 0; ty < 4; ty++) {
-			for (tx = 0; tx < 4; tx++) {
-			    fprintf (fp, " %f", bxf->q_lut[p++]);
-			}
-		    }
-		}
-		fprintf (fp, "\n");
-	    }
-	}
+        for (j = 0; j < bxf->vox_per_rgn[1]; j++) {
+            for (i = 0; i < bxf->vox_per_rgn[0]; i++) {
+                fprintf (fp, "%3d %3d %3d\n", 
+                    (unsigned int) k, (unsigned int) j, (unsigned int) i);
+                for (tz = 0; tz < 4; tz++) {
+                    for (ty = 0; ty < 4; ty++) {
+                        for (tx = 0; tx < 4; tx++) {
+                            fprintf (fp, " %f", bxf->q_lut[p++]);
+                        }
+                    }
+                }
+                fprintf (fp, "\n");
+            }
+        }
     }
     fclose (fp);
 
@@ -242,15 +265,15 @@ bspline_xform_dump_luts (Bspline_xform* bxf)
 #if defined (commentout)
     printf ("Testing q_lut\n");
     for (j = 0; j < bxf->vox_per_rgn[2] 
-		 * bxf->vox_per_rgn[1] 
-		 * bxf->vox_per_rgn[0]; j++) {
-	float sum = 0.0;
-	for (i = j*64; i < (j+1)*64; i++) {
-	    sum += bxf->q_lut[i];
-	}
-	if (fabs(sum-1.0) > 1.e-7) {
-	    printf ("%g ", fabs(sum-1.0));
-	}
+                 * bxf->vox_per_rgn[1] 
+                 * bxf->vox_per_rgn[0]; j++) {
+        float sum = 0.0;
+        for (i = j*64; i < (j+1)*64; i++) {
+            sum += bxf->q_lut[i];
+        }
+        if (fabs(sum-1.0) > 1.e-7) {
+            printf ("%g ", fabs(sum-1.0));
+        }
     }
     printf ("\n");
 #endif
@@ -258,22 +281,22 @@ bspline_xform_dump_luts (Bspline_xform* bxf)
     fp = fopen ("clut.txt","wb");
     p = 0;
     for (k = 0; k < bxf->rdims[2]; k++) {
-	for (j = 0; j < bxf->rdims[1]; j++) {
-	    for (i = 0; i < bxf->rdims[0]; i++) {
-				
-		fprintf (fp, "%3u %3u %3u\n", 
-		    (unsigned int) k, (unsigned int) j, (unsigned int) i);
-		
-		for (tz = 0; tz < 4; tz++) {
-		    for (ty = 0; ty < 4; ty++) {
-			for (tx = 0; tx < 4; tx++) {
-			    fprintf (fp, " %u", (unsigned int) bxf->c_lut[p++]);
-			}
-		    }
-		}
-		fprintf (fp, "\n");
-	    }
-	}
+        for (j = 0; j < bxf->rdims[1]; j++) {
+            for (i = 0; i < bxf->rdims[0]; i++) {
+                                
+                fprintf (fp, "%3u %3u %3u\n", 
+                    (unsigned int) k, (unsigned int) j, (unsigned int) i);
+                
+                for (tz = 0; tz < 4; tz++) {
+                    for (ty = 0; ty < 4; ty++) {
+                        for (tx = 0; tx < 4; tx++) {
+                            fprintf (fp, " %u", (unsigned int) bxf->c_lut[p++]);
+                        }
+                    }
+                }
+                fprintf (fp, "\n");
+            }
+        }
     }
     fclose (fp);
 }
@@ -284,20 +307,22 @@ bspline_xform_set_coefficients (Bspline_xform* bxf, float val)
     int i;
 
     for (i = 0; i < bxf->num_coeff; i++) {
-	bxf->coeff[i] = val;
+        bxf->coeff[i] = val;
     }
 }
 
 void
 bspline_xform_initialize 
 (
-    Bspline_xform* bxf,         /* Output: bxf is initialized */
-    float img_origin[3],        /* Image origin (in mm) */
-    float img_spacing[3],       /* Image spacing (in mm) */
+    Bspline_xform* bxf,           /* Output: bxf is initialized */
+    float img_origin[3],          /* Image origin (in mm) */
+    float img_spacing[3],         /* Image spacing (in mm) */
     plm_long img_dim[3],          /* Image size (in vox) */
     plm_long roi_offset[3],       /* Position of first vox in ROI (in vox) */
     plm_long roi_dim[3],          /* Dimension of ROI (in vox) */
-    plm_long vox_per_rgn[3])      /* Knot spacing (in vox) */
+    plm_long vox_per_rgn[3],      /* Knot spacing (in vox) */
+    float direction_cosines[9]    /* Direction cosines */
+)
 {
     plm_long d;
     plm_long i, j, k, p;
@@ -306,22 +331,23 @@ bspline_xform_initialize
 
     logfile_printf ("bspline_xform_initialize\n");
     for (d = 0; d < 3; d++) {
-	/* copy input parameters over */
-	bxf->img_origin[d] = img_origin[d];
-	bxf->img_spacing[d] = img_spacing[d];
-	bxf->img_dim[d] = img_dim[d];
-	bxf->roi_offset[d] = roi_offset[d];
-	bxf->roi_dim[d] = roi_dim[d];
-	bxf->vox_per_rgn[d] = vox_per_rgn[d];
+        /* copy input parameters over */
+        bxf->img_origin[d] = img_origin[d];
+        bxf->img_spacing[d] = img_spacing[d];
+        bxf->img_dim[d] = img_dim[d];
+        bxf->roi_offset[d] = roi_offset[d];
+        bxf->roi_dim[d] = roi_dim[d];
+        bxf->vox_per_rgn[d] = vox_per_rgn[d];
+        bxf->dc.set (direction_cosines);
 
-	/* grid spacing is in mm */
-	bxf->grid_spac[d] = bxf->vox_per_rgn[d] * fabs (bxf->img_spacing[d]);
+        /* grid spacing is in mm */
+        bxf->grid_spac[d] = bxf->vox_per_rgn[d] * fabs (bxf->img_spacing[d]);
 
-	/* rdims is the number of regions */
-	bxf->rdims[d] = 1 + (bxf->roi_dim[d] - 1) / bxf->vox_per_rgn[d];
+        /* rdims is the number of regions */
+        bxf->rdims[d] = 1 + (bxf->roi_dim[d] - 1) / bxf->vox_per_rgn[d];
 
-	/* cdims is the number of control points */
-	bxf->cdims[d] = 3 + bxf->rdims[d];
+        /* cdims is the number of control points */
+        bxf->cdims[d] = 3 + bxf->rdims[d];
     }
 
     /* total number of control points & coefficients */
@@ -334,12 +360,12 @@ bspline_xform_initialize
 
     /* Create q_lut */
     bxf->q_lut = (float*) malloc (sizeof(float) 
-	* bxf->vox_per_rgn[0] 
-	* bxf->vox_per_rgn[1] 
-	* bxf->vox_per_rgn[2] 
-	* 64);
+        * bxf->vox_per_rgn[0] 
+        * bxf->vox_per_rgn[1] 
+        * bxf->vox_per_rgn[2] 
+        * 64);
     if (!bxf->q_lut) {
-	print_and_exit ("Error allocating memory for q_lut\n");
+        print_and_exit ("Error allocating memory for q_lut\n");
     }
 
     A = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[0] * 4);
@@ -347,88 +373,88 @@ bspline_xform_initialize
     C = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[2] * 4);
 
     for (i = 0; i < bxf->vox_per_rgn[0]; i++) {
-	float ii = ((float) i) / bxf->vox_per_rgn[0];
-	float t3 = ii*ii*ii;
-	float t2 = ii*ii;
-	float t1 = ii;
-	A[i*4+0] = (1.0/6.0) * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
-	A[i*4+1] = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
-	A[i*4+2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
-	A[i*4+3] = (1.0/6.0) * (+ 1.0 * t3);
+        float ii = ((float) i) / bxf->vox_per_rgn[0];
+        float t3 = ii*ii*ii;
+        float t2 = ii*ii;
+        float t1 = ii;
+        A[i*4+0] = (1.0/6.0) * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
+        A[i*4+1] = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
+        A[i*4+2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
+        A[i*4+3] = (1.0/6.0) * (+ 1.0 * t3);
     }
 
     for (j = 0; j < bxf->vox_per_rgn[1]; j++) {
-	float jj = ((float) j) / bxf->vox_per_rgn[1];
-	float t3 = jj*jj*jj;
-	float t2 = jj*jj;
-	float t1 = jj;
-	B[j*4+0] = (1.0/6.0) * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
-	B[j*4+1] = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
-	B[j*4+2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
-	B[j*4+3] = (1.0/6.0) * (+ 1.0 * t3);
+        float jj = ((float) j) / bxf->vox_per_rgn[1];
+        float t3 = jj*jj*jj;
+        float t2 = jj*jj;
+        float t1 = jj;
+        B[j*4+0] = (1.0/6.0) * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
+        B[j*4+1] = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
+        B[j*4+2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
+        B[j*4+3] = (1.0/6.0) * (+ 1.0 * t3);
     }
 
     for (k = 0; k < bxf->vox_per_rgn[2]; k++) {
-	float kk = ((float) k) / bxf->vox_per_rgn[2];
-	float t3 = kk*kk*kk;
-	float t2 = kk*kk;
-	float t1 = kk;
-	C[k*4+0] = (1.0/6.0) * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
-	C[k*4+1] = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
-	C[k*4+2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
-	C[k*4+3] = (1.0/6.0) * (+ 1.0 * t3);
+        float kk = ((float) k) / bxf->vox_per_rgn[2];
+        float t3 = kk*kk*kk;
+        float t2 = kk*kk;
+        float t1 = kk;
+        C[k*4+0] = (1.0/6.0) * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
+        C[k*4+1] = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
+        C[k*4+2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
+        C[k*4+3] = (1.0/6.0) * (+ 1.0 * t3);
     }
 
     p = 0;
     for (k = 0; k < bxf->vox_per_rgn[2]; k++) {
-	for (j = 0; j < bxf->vox_per_rgn[1]; j++) {
-	    for (i = 0; i < bxf->vox_per_rgn[0]; i++) {
-		for (tz = 0; tz < 4; tz++) {
-		    for (ty = 0; ty < 4; ty++) {
-			for (tx = 0; tx < 4; tx++) {
-			    bxf->q_lut[p++] = A[i*4+tx] * B[j*4+ty] * C[k*4+tz];
-			}
-		    }
-		}
-	    }
-	}
+        for (j = 0; j < bxf->vox_per_rgn[1]; j++) {
+            for (i = 0; i < bxf->vox_per_rgn[0]; i++) {
+                for (tz = 0; tz < 4; tz++) {
+                    for (ty = 0; ty < 4; ty++) {
+                        for (tx = 0; tx < 4; tx++) {
+                            bxf->q_lut[p++] = A[i*4+tx] * B[j*4+ty] * C[k*4+tz];
+                        }
+                    }
+                }
+            }
+        }
     }
     free (C);
     free (B);
     free (A);
-	
+        
     /* Create c_lut */
     bxf->c_lut = (plm_long*) malloc (sizeof(plm_long) 
-	* bxf->rdims[0] 
-	* bxf->rdims[1] 
-	* bxf->rdims[2] 
-	* 64);
+        * bxf->rdims[0] 
+        * bxf->rdims[1] 
+        * bxf->rdims[2] 
+        * 64);
     p = 0;
     for (k = 0; k < bxf->rdims[2]; k++) {
-	for (j = 0; j < bxf->rdims[1]; j++) {
-	    for (i = 0; i < bxf->rdims[0]; i++) {
-		for (tz = 0; tz < 4; tz++) {
-		    for (ty = 0; ty < 4; ty++) {
-			for (tx = 0; tx < 4; tx++) {
-			    bxf->c_lut[p++] = 
-				+ (k + tz) * bxf->cdims[0] * bxf->cdims[1]
-				+ (j + ty) * bxf->cdims[0] 
-				+ (i + tx);
-			}
-		    }
-		}
-	    }
-	}
+        for (j = 0; j < bxf->rdims[1]; j++) {
+            for (i = 0; i < bxf->rdims[0]; i++) {
+                for (tz = 0; tz < 4; tz++) {
+                    for (ty = 0; ty < 4; ty++) {
+                        for (tx = 0; tx < 4; tx++) {
+                            bxf->c_lut[p++] = 
+                                + (k + tz) * bxf->cdims[0] * bxf->cdims[1]
+                                + (j + ty) * bxf->cdims[0] 
+                                + (i + tx);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     //dump_luts (bxf);
 
     logfile_printf ("rdims = (%d,%d,%d)\n", 
-	bxf->rdims[0], bxf->rdims[1], bxf->rdims[2]);
+        bxf->rdims[0], bxf->rdims[1], bxf->rdims[2]);
     logfile_printf ("vox_per_rgn = (%d,%d,%d)\n", 
-	bxf->vox_per_rgn[0], bxf->vox_per_rgn[1], bxf->vox_per_rgn[2]);
+        bxf->vox_per_rgn[0], bxf->vox_per_rgn[1], bxf->vox_per_rgn[2]);
     logfile_printf ("cdims = (%d %d %d)\n", 
-	bxf->cdims[0], bxf->cdims[1], bxf->cdims[2]);
+        bxf->cdims[0], bxf->cdims[1], bxf->cdims[2]);
 }
 
 /* -----------------------------------------------------------------------
@@ -440,9 +466,9 @@ bspline_xform_initialize
 /* GCS -- Is there an implicit assumption that the roi_origin > 0? */
 void
 bspline_xform_extend (
-    Bspline_xform* bxf,	     /* Output: bxf is initialized */
+    Bspline_xform* bxf,      /* Output: bxf is initialized */
     int new_roi_offset[3],   /* Position of first vox in ROI (in vox) */
-    int new_roi_dim[3]	     /* Dimension of ROI (in vox) */
+    int new_roi_dim[3]       /* Dimension of ROI (in vox) */
 )
 {
     int d;
@@ -460,66 +486,66 @@ bspline_xform_extend (
     plm_long i, j, k;
 
     for (d = 0; d < 3; d++) {
-	roi_offset_diff[d] = new_roi_offset[d] - bxf->roi_offset[d];
-	roi_corner_diff[d] = (new_roi_offset[d] + new_roi_dim[d]) 
-	    - (bxf->roi_offset[d] + bxf->roi_offset[d]);
+        roi_offset_diff[d] = new_roi_offset[d] - bxf->roi_offset[d];
+        roi_corner_diff[d] = (new_roi_offset[d] + new_roi_dim[d]) 
+            - (bxf->roi_offset[d] + bxf->roi_offset[d]);
 
-	if (roi_offset_diff[d] < 0) {
-	    eb[d] = (bxf->vox_per_rgn[d] - roi_offset_diff[d] - 1) 
-		/ bxf->vox_per_rgn[d];
-	    extend_needed = 1;
-	} else {
-	    eb[d] = 0;
-	}
-	if (roi_corner_diff[d] > 0) {
-	    ea[d] = (bxf->vox_per_rgn[d] + roi_corner_diff[d] - 1) 
-		/ bxf->vox_per_rgn[d];
-	    extend_needed = 1;
-	} else {
-	    ea[d] = 0;
-	}
+        if (roi_offset_diff[d] < 0) {
+            eb[d] = (bxf->vox_per_rgn[d] - roi_offset_diff[d] - 1) 
+                / bxf->vox_per_rgn[d];
+            extend_needed = 1;
+        } else {
+            eb[d] = 0;
+        }
+        if (roi_corner_diff[d] > 0) {
+            ea[d] = (bxf->vox_per_rgn[d] + roi_corner_diff[d] - 1) 
+                / bxf->vox_per_rgn[d];
+            extend_needed = 1;
+        } else {
+            ea[d] = 0;
+        }
     }
 
     if (extend_needed) {
-	/* Allocate new memory */
-	for (d = 0; d < 3; d++) {
-	    new_rdims[d] = bxf->rdims[d] + ea[d] + eb[d];
-	    new_cdims[d] = bxf->cdims[d] + ea[d] + eb[d];
-	}
-	new_num_knots = bxf->cdims[0] * bxf->cdims[1] * bxf->cdims[2];
-	new_num_coeff = bxf->cdims[0] * bxf->cdims[1] * bxf->cdims[2] * 3;
-	new_coeff = (float*) malloc (sizeof(float) * new_num_coeff);
-	memset (new_coeff, 0, sizeof(float) * new_num_coeff);
+        /* Allocate new memory */
+        for (d = 0; d < 3; d++) {
+            new_rdims[d] = bxf->rdims[d] + ea[d] + eb[d];
+            new_cdims[d] = bxf->cdims[d] + ea[d] + eb[d];
+        }
+        new_num_knots = bxf->cdims[0] * bxf->cdims[1] * bxf->cdims[2];
+        new_num_coeff = bxf->cdims[0] * bxf->cdims[1] * bxf->cdims[2] * 3;
+        new_coeff = (float*) malloc (sizeof(float) * new_num_coeff);
+        memset (new_coeff, 0, sizeof(float) * new_num_coeff);
 
-	/* Copy coefficients to new memory */
-	for (old_idx = 0, k = 0; k < bxf->cdims[2]; k++) {
-	    for (j = 0; j < bxf->cdims[1]; j++) {
-		for (i = 0; i < bxf->cdims[0]; i++) {
-		    plm_long new_idx = 3 * (((((k + eb[2]) * new_cdims[1]) + (j + eb[1])) * new_cdims[0]) + (i + eb[0]));
-		    for (d = 0; d < 3; d++, old_idx++, new_idx++) {
-			new_coeff[new_idx] = bxf->coeff[old_idx];
-		    }
-		}
-	    }
-	}
+        /* Copy coefficients to new memory */
+        for (old_idx = 0, k = 0; k < bxf->cdims[2]; k++) {
+            for (j = 0; j < bxf->cdims[1]; j++) {
+                for (i = 0; i < bxf->cdims[0]; i++) {
+                    plm_long new_idx = 3 * (((((k + eb[2]) * new_cdims[1]) + (j + eb[1])) * new_cdims[0]) + (i + eb[0]));
+                    for (d = 0; d < 3; d++, old_idx++, new_idx++) {
+                        new_coeff[new_idx] = bxf->coeff[old_idx];
+                    }
+                }
+            }
+        }
 
-	/* Free old memory */
-	free (bxf->coeff);
+        /* Free old memory */
+        free (bxf->coeff);
 
-	/* Copy over new data into bxf */
-	for (d = 0; d < 3; d++) {
-	    bxf->rdims[d] = new_rdims[d];
-	    bxf->cdims[d] = new_cdims[d];
-	}
-	bxf->num_knots = new_num_knots;
-	bxf->num_coeff = new_num_coeff;
-	bxf->coeff = new_coeff;
+        /* Copy over new data into bxf */
+        for (d = 0; d < 3; d++) {
+            bxf->rdims[d] = new_rdims[d];
+            bxf->cdims[d] = new_cdims[d];
+        }
+        bxf->num_knots = new_num_knots;
+        bxf->num_coeff = new_num_coeff;
+        bxf->coeff = new_coeff;
 
-	/* Special consideration to ROI */
-	for (d = 0; d < 3; d++) {
-	    bxf->roi_offset[d] = bxf->roi_offset[d] - eb[d] * bxf->vox_per_rgn[d];
-	    bxf->roi_dim[d] = new_roi_dim[d] + (new_roi_offset[d] - bxf->roi_offset[d]);
-	}
+        /* Special consideration to ROI */
+        for (d = 0; d < 3; d++) {
+            bxf->roi_offset[d] = bxf->roi_offset[d] - eb[d] * bxf->vox_per_rgn[d];
+            bxf->roi_dim[d] = new_roi_dim[d] + (new_roi_offset[d] - bxf->roi_offset[d]);
+        }
     }
 }
 
@@ -531,11 +557,15 @@ bspline_xform_free (Bspline_xform* bxf)
     free (bxf->c_lut);
 }
 
+/* Set volume header from B-spline Xform */
 void 
 Bspline_xform::get_volume_header (Volume_header *vh)
 {
+#if 0
     vh->set_dim (this->img_dim);
     vh->set_origin (this->img_origin);
     vh->set_spacing (this->img_spacing);
-    /* GCS FIX: No direction cosines */
+#endif
+
+    vh->set (this->img_dim, this->img_origin, this->img_spacing, (this->dc).m_direction_cosines);
 }

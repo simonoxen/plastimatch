@@ -53,7 +53,8 @@ bxf_from_vf (Volume* vf, plm_long* vox_per_rgn)
         vf->dim,
         roi_offset,
         vf->dim,
-        vox_per_rgn
+        vox_per_rgn,
+        (vf->direction_cosines).m_direction_cosines
     );
     compute_coeff_from_vf (bxf, vf);
 

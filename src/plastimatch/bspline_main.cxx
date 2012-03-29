@@ -90,7 +90,8 @@ main (int argc, char* argv[])
 	    fixed->dim,
 	    roi_offset,
 	    fixed->dim,
-	    options.vox_per_rgn
+	    options.vox_per_rgn,
+        (fixed->direction_cosines).m_direction_cosines
 	);
     }
 

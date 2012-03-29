@@ -20,24 +20,24 @@ public:
 public:
     Volume_header ()
     {
-	for (int d = 0; d < 3; d++) {
-	    m_dim[d] = 0;
-	    m_origin[d] = 0.;
-	    m_spacing[d] = 0.;
-	}
-	this->set_direction_cosines_identity ();
+        for (int d = 0; d < 3; d++) {
+            m_dim[d] = 0;
+            m_origin[d] = 0.;
+            m_spacing[d] = 0.;
+        }
+        this->set_direction_cosines_identity ();
     }
     Volume_header (plm_long dim[3], float origin[3], float spacing[3])
     {
-	this->set_dim (dim);
-	this->set_origin (origin);
-	this->set_spacing (spacing);
-	this->set_direction_cosines_identity ();
+        this->set_dim (dim);
+        this->set_origin (origin);
+        this->set_spacing (spacing);
+        this->set_direction_cosines_identity ();
     }
     Volume_header (plm_long dim[3], float origin[3], float spacing[3],
-	float direction_cosines[9])
+        float direction_cosines[9])
     {
-	this->set (dim, origin, spacing, direction_cosines);
+        this->set (dim, origin, spacing, direction_cosines);
     }
 
 public:
@@ -53,19 +53,19 @@ public:
     void set_direction_cosines_identity ();
 
     void set (const plm_long dim[3], const float origin[3], 
-	const float spacing[3], const float dc[9]);
+        const float spacing[3], const float dc[9]);
     void set (const plm_long dim[3], const float origin[3], 
-	const float spacing[3], const Direction_cosines& dc);
+        const float spacing[3], const Direction_cosines& dc);
     void set_from_bxf (Bspline_xform *bxf);
 
     static void clone (Volume_header *dest, Volume_header *src) {
-	dest->set (src->m_dim, src->m_origin, src->m_spacing, 
-	    src->m_direction_cosines);
+        dest->set (src->m_dim, src->m_origin, src->m_spacing, 
+            src->m_direction_cosines);
     }
 
     void clone (const Volume_header *src) {
-	this->set (src->m_dim, src->m_origin, src->m_spacing, 
-	    src->m_direction_cosines);
+        this->set (src->m_dim, src->m_origin, src->m_spacing, 
+            src->m_direction_cosines);
     }
 
     void print (void) const;

@@ -45,30 +45,30 @@ xform_load (Xform *xf, const char* fn)
 
     fp = fopen (fn, "r");
     if (!fp) {
-	print_and_exit ("Error: xf_in file %s not found\n", fn);
+        print_and_exit ("Error: xf_in file %s not found\n", fn);
     }
     if (!fgets(buf,1024,fp)) {
-	print_and_exit ("Error reading from xf_in file.\n");
+        print_and_exit ("Error reading from xf_in file.\n");
     }
 
     if (plm_strcmp (buf, "#Insight Transform File V1.0") == 0) {
-	fclose(fp);
-	itk_xform_load (xf, fn);
+        fclose(fp);
+        itk_xform_load (xf, fn);
     } else if (plm_strcmp (buf,"ObjectType = MGH_XFORM") == 0) {
-	xform_legacy_load (xf, fp);
-	fclose(fp);
+        xform_legacy_load (xf, fp);
+        fclose(fp);
     } else if (plm_strcmp(buf,"MGH_GPUIT_BSP <experimental>")==0) {
-	fclose (fp);
-	load_gpuit_bsp (xf, fn);
+        fclose (fp);
+        load_gpuit_bsp (xf, fn);
     } else {
-	/* Close the file and try again, it is probably a vector field */
-	fclose (fp);
-	DeformationFieldType::Pointer vf = DeformationFieldType::New();
-	vf = itk_image_load_float_field (fn);
-	if (!vf) {
-	    print_and_exit ("Unexpected file format for xf_in file.\n");
-	}
-	xf->set_itk_vf (vf);
+        /* Close the file and try again, it is probably a vector field */
+        fclose (fp);
+        DeformationFieldType::Pointer vf = DeformationFieldType::New();
+        vf = itk_image_load_float_field (fn);
+        if (!vf) {
+            print_and_exit ("Unexpected file format for xf_in file.\n");
+        }
+        xf->set_itk_vf (vf);
     }
 }
 
@@ -79,7 +79,7 @@ load_gpuit_bsp (Xform *xf, const char* fn)
 
     bxf = bspline_xform_load ((char*)fn);
     if (!bxf) {
-	print_and_exit ("Error loading bxf format file: %s\n", fn);
+        print_and_exit ("Error loading bxf format file: %s\n", fn);
     }
 
     /* Tell Xform that it is gpuit_bsp */
@@ -92,18 +92,18 @@ itk_xform_save (T transform, const char *filename)
 {
     typedef itk::TransformFileWriter TransformWriterType;
     TransformWriterType::Pointer outputTransformWriter;
-	
+        
     outputTransformWriter= TransformWriterType::New();
     outputTransformWriter->SetFileName( filename );
     outputTransformWriter->SetInput( transform );
     try
     {
-	outputTransformWriter->Update();
+        outputTransformWriter->Update();
     }
     catch (itk::ExceptionObject &err)
     {
-	std::cerr << err << std::endl;
-	print_and_exit ("Error writing file: %s\n", filename);
+        std::cerr << err << std::endl;
+        print_and_exit ("Error writing file: %s\n", filename);
     }
 }
 
@@ -115,11 +115,11 @@ itk_xform_load (Xform *xf, const char* fn)
     transfReader = itk::TransformFileReader::New();
     transfReader->SetFileName(fn);
     try {
-	transfReader->Update();
+        transfReader->Update();
     }
     catch (itk::ExceptionObject& excp) {
-	std::cerr << excp << std::endl;
-	print_and_exit ("Error reading ITK transform file: %s\n", fn);
+        std::cerr << excp << std::endl;
+        print_and_exit ("Error reading ITK transform file: %s\n", fn);
     }
  
     /* Confirm that there is only one xform in the file */
@@ -127,65 +127,65 @@ itk_xform_load (Xform *xf, const char* fn)
     TransformListType transfList = transfReader->GetTransformList();
     std::cout << "Number of transforms = " << transfList->size() << std::endl;
     if (transfList->size() != 1) {
-	print_and_exit ("Error. ITK transform file has multiple "
-	    "transforms: %s\n", fn);
+        print_and_exit ("Error. ITK transform file has multiple "
+            "transforms: %s\n", fn);
     }
 
     /* Deduce transform type, and copy into Xform structure */
     itk::TransformFileReader::TransformListType::const_iterator 
-	itTrasf = transfList->begin();
+        itTrasf = transfList->begin();
     printf ("ITK transform type = %s\n", (*itTrasf)->GetNameOfClass());
     if (!strcmp((*itTrasf)->GetNameOfClass(), "TranslationTransform")) {
-	TranslationTransformType::Pointer itk_xf
-	    = TranslationTransformType::New();
-	itk_xf = static_cast<TranslationTransformType*>(
-	    (*itTrasf).GetPointer());
-	xf->set_trn (itk_xf);
+        TranslationTransformType::Pointer itk_xf
+            = TranslationTransformType::New();
+        itk_xf = static_cast<TranslationTransformType*>(
+            (*itTrasf).GetPointer());
+        xf->set_trn (itk_xf);
     }
     else if (!strcmp((*itTrasf)->GetNameOfClass(), "VersorRigid3DTransform"))
     {
-	VersorTransformType::Pointer itk_xf
-	    = VersorTransformType::New();
-	VersorTransformType::InputPointType cor;
-	cor.Fill(12);
-	itk_xf->SetCenter(cor);
-	itk_xf = static_cast<VersorTransformType*>(
-	    (*itTrasf).GetPointer());
-	xf->set_vrs (itk_xf);
+        VersorTransformType::Pointer itk_xf
+            = VersorTransformType::New();
+        VersorTransformType::InputPointType cor;
+        cor.Fill(12);
+        itk_xf->SetCenter(cor);
+        itk_xf = static_cast<VersorTransformType*>(
+            (*itTrasf).GetPointer());
+        xf->set_vrs (itk_xf);
     }
     else if (!strcmp((*itTrasf)->GetNameOfClass(), "QuaternionRigidTransform"))
     {
-	QuaternionTransformType::Pointer quatTransf 
-	    = QuaternionTransformType::New();
-	QuaternionTransformType::InputPointType cor;
-	cor.Fill(12);
-	quatTransf->SetCenter(cor);
-	quatTransf = static_cast<QuaternionTransformType*>(
-	    (*itTrasf).GetPointer());
-	//quatTransf->Print(std::cout);
-	xf->set_quat (quatTransf);
+        QuaternionTransformType::Pointer quatTransf 
+            = QuaternionTransformType::New();
+        QuaternionTransformType::InputPointType cor;
+        cor.Fill(12);
+        quatTransf->SetCenter(cor);
+        quatTransf = static_cast<QuaternionTransformType*>(
+            (*itTrasf).GetPointer());
+        //quatTransf->Print(std::cout);
+        xf->set_quat (quatTransf);
     }
     else if (!strcmp((*itTrasf)->GetNameOfClass(), "AffineTransform"))
     {
-	AffineTransformType::Pointer affineTransf
-	    = AffineTransformType::New();
-	AffineTransformType::InputPointType cor;
-	cor.Fill(12);
-	affineTransf->SetCenter(cor);
-	affineTransf = static_cast<AffineTransformType*>(
-	    (*itTrasf).GetPointer());
-	//affineTransf->Print(std::cout);
-	xf->set_aff (affineTransf);
+        AffineTransformType::Pointer affineTransf
+            = AffineTransformType::New();
+        AffineTransformType::InputPointType cor;
+        cor.Fill(12);
+        affineTransf->SetCenter(cor);
+        affineTransf = static_cast<AffineTransformType*>(
+            (*itTrasf).GetPointer());
+        //affineTransf->Print(std::cout);
+        xf->set_aff (affineTransf);
     }
     else if (!strcmp((*itTrasf)->GetNameOfClass(), 
-	    "BSplineDeformableTransform"))
+            "BSplineDeformableTransform"))
     {
-	BsplineTransformType::Pointer bsp
-	    = BsplineTransformType::New();
-	bsp = static_cast<BsplineTransformType*>(
-	    (*itTrasf).GetPointer());
-	bsp->Print(std::cout);
-	xf->set_itk_bsp (bsp);
+        BsplineTransformType::Pointer bsp
+            = BsplineTransformType::New();
+        bsp = static_cast<BsplineTransformType*>(
+            (*itTrasf).GetPointer());
+        bsp->Print(std::cout);
+        xf->set_itk_bsp (bsp);
     }
 }
 
@@ -194,47 +194,47 @@ xform_save (Xform *xf, const char* fn)
 {
     switch (xf->m_type) {
     case XFORM_ITK_TRANSLATION:
-	itk_xform_save (xf->get_trn(), fn);
-	break;
+        itk_xform_save (xf->get_trn(), fn);
+        break;
     case XFORM_ITK_VERSOR:
-	itk_xform_save (xf->get_vrs(), fn);
-	break;
+        itk_xform_save (xf->get_vrs(), fn);
+        break;
     case XFORM_ITK_QUATERNION:
-	itk_xform_save (xf->get_quat(), fn);
-	break;
+        itk_xform_save (xf->get_quat(), fn);
+        break;
     case XFORM_ITK_AFFINE:
-	itk_xform_save (xf->get_aff(), fn);
-	break;
+        itk_xform_save (xf->get_aff(), fn);
+        break;
     case XFORM_ITK_BSPLINE:
-	itk_xform_save (xf->get_itk_bsp(), fn);
-	break;
+        itk_xform_save (xf->get_itk_bsp(), fn);
+        break;
     case XFORM_ITK_VECTOR_FIELD:
-	itk_image_save (xf->get_itk_vf(), fn);
-	break;
+        itk_image_save (xf->get_itk_vf(), fn);
+        break;
     case XFORM_GPUIT_BSPLINE:
-	bspline_xform_save (xf->get_gpuit_bsp(), fn);
-	break;
+        bspline_xform_save (xf->get_gpuit_bsp(), fn);
+        break;
     case XFORM_GPUIT_VECTOR_FIELD:
-	write_mha (fn, xf->get_gpuit_vf());
-	break;
+        write_mha (fn, xf->get_gpuit_vf());
+        break;
     case XFORM_NONE:
-	print_and_exit ("Error trying to save null transform\n");
-	break;
+        print_and_exit ("Error trying to save null transform\n");
+        break;
     default:
-	print_and_exit ("Unhandled case trying to save transform\n");
-	break;
+        print_and_exit ("Unhandled case trying to save transform\n");
+        break;
     }
 }
 
 #if defined (GCS_REARRANGING_STUFF)
 void
 init_versor_moments (RegistrationType::Pointer registration,
-		       VersorTransformType* versor)
+                       VersorTransformType* versor)
 {
     typedef itk::CenteredTransformInitializer < VersorTransformType,
-	FloatImageType, FloatImageType > TransformInitializerType;
+        FloatImageType, FloatImageType > TransformInitializerType;
     TransformInitializerType::Pointer initializer =
-	TransformInitializerType::New();
+        TransformInitializerType::New();
 
     initializer->SetTransform(versor);
     initializer->SetFixedImage(registration->GetFixedImage());
@@ -340,9 +340,9 @@ xform_itk_bsp_set_grid (Xform *xf,
     std::cout << bsp_region;
     printf ("Setting bsp_direction = ");
     for (int d1 = 0; d1 < 3; d1++) {
-	for (int d2 = 0; d2 < 3; d2++) {
-	    printf ("%g ", bsp_direction[d1][d2]);
-	}
+        for (int d2 = 0; d2 < 3; d2++) {
+            printf ("%g ", bsp_direction[d1][d2]);
+        }
     }
     printf ("\n");
 #endif
@@ -365,21 +365,21 @@ bsp_grid_from_img_grid (
     BsplineTransformType::OriginType& bsp_origin,    /* Output */
     BsplineTransformType::SpacingType& bsp_spacing,  /* Output */
     BsplineTransformType::RegionType& bsp_region,    /* Output */
-    const Plm_image_header* pih,		     /* Input */
-    float* grid_spac)				     /* Input */
+    const Plm_image_header* pih,                     /* Input */
+    float* grid_spac)                                /* Input */
 {
     BsplineTransformType::RegionType::SizeType bsp_size;
 
     /* Convert image specifications to grid specifications */
     for (int d=0; d<3; d++) {
-	float img_ext = (pih->Size(d) - 1) * fabs (pih->m_spacing[d]);
+        float img_ext = (pih->Size(d) - 1) * fabs (pih->m_spacing[d]);
 #if defined (commentout)
-	printf ("img_ext[%d] %g <- (%d - 1) * %g\n", 
-	    d, img_ext, pih->Size(d), pih->m_spacing[d]);
+        printf ("img_ext[%d] %g <- (%d - 1) * %g\n", 
+            d, img_ext, pih->Size(d), pih->m_spacing[d]);
 #endif
-	bsp_origin[d] = pih->m_origin[d] - grid_spac[d];
-	bsp_spacing[d] = grid_spac[d];
-	bsp_size[d] = 4 + (int) floor (img_ext / grid_spac[d]);
+        bsp_origin[d] = pih->m_origin[d] - grid_spac[d];
+        bsp_spacing[d] = grid_spac[d];
+        bsp_size[d] = 4 + (int) floor (img_ext / grid_spac[d]);
     }
     bsp_region.SetSize (bsp_size);
 }
@@ -399,11 +399,11 @@ itk_bsp_set_grid_img (
     /* Compute bspline grid specifications */
     bsp_direction = pih->m_direction;
     bsp_grid_from_img_grid (bsp_origin, bsp_spacing, bsp_region, 
-	pih, grid_spac);
+        pih, grid_spac);
 
     /* Set grid specifications into xf structure */
     xform_itk_bsp_set_grid (xf, bsp_origin, bsp_spacing, bsp_region, 
-	bsp_direction);
+        bsp_direction);
 }
 
 static void
@@ -477,7 +477,7 @@ xform_any_to_itk_bsp_nobulk (
     BsplineTransformType::RegionType bsp_region;
     BsplineTransformType::DirectionType bsp_direction;
     bsp_grid_from_img_grid (bsp_origin, bsp_spacing, 
-	bsp_region, pih, grid_spac);
+        bsp_region, pih, grid_spac);
 
     /* GCS FIX: above should set m_direction */
     bsp_direction[0][0] = bsp_direction[1][1] = bsp_direction[2][2] = 1.0;
@@ -500,37 +500,37 @@ xform_any_to_itk_bsp_nobulk (
     /* Loop through planes */
     unsigned int counter = 0;
     for (d = 0; d < 3; d++) {
-	/* Copy a single VF plane into img */
-	typedef itk::ImageRegionIterator< FloatImageType > FloatIteratorType;
-	typedef itk::ImageRegionIterator< DeformationFieldType > VFIteratorType;
-	FloatIteratorType img_it (img, pih_bsp.m_region);
-	VFIteratorType vf_it (xf_tmp.get_itk_vf(), pih_bsp.m_region);
-	for (img_it.GoToBegin(), vf_it.GoToBegin(); 
-	     !img_it.IsAtEnd(); 
-	     ++img_it, ++vf_it) 
-	{
-	    img_it.Set(vf_it.Get()[d]);
-	}
+        /* Copy a single VF plane into img */
+        typedef itk::ImageRegionIterator< FloatImageType > FloatIteratorType;
+        typedef itk::ImageRegionIterator< DeformationFieldType > VFIteratorType;
+        FloatIteratorType img_it (img, pih_bsp.m_region);
+        VFIteratorType vf_it (xf_tmp.get_itk_vf(), pih_bsp.m_region);
+        for (img_it.GoToBegin(), vf_it.GoToBegin(); 
+             !img_it.IsAtEnd(); 
+             ++img_it, ++vf_it) 
+        {
+            img_it.Set(vf_it.Get()[d]);
+        }
 
-	/* Decompose into bpline coefficient image */
-	typedef itk::BSplineDecompositionImageFilter <FloatImageType, 
-	    DoubleImageType> DecompositionType;
-	DecompositionType::Pointer decomposition = DecompositionType::New();
-	decomposition->SetSplineOrder (SplineOrder);
-	decomposition->SetInput (img);
-	decomposition->Update ();
+        /* Decompose into bpline coefficient image */
+        typedef itk::BSplineDecompositionImageFilter <FloatImageType, 
+            DoubleImageType> DecompositionType;
+        DecompositionType::Pointer decomposition = DecompositionType::New();
+        decomposition->SetSplineOrder (SplineOrder);
+        decomposition->SetInput (img);
+        decomposition->Update ();
 
-	/* Copy the coefficients into a temporary parameter array */
-	typedef BsplineTransformType::ImageType ParametersImageType;
-	ParametersImageType::Pointer newCoefficients 
-	    = decomposition->GetOutput();
-	typedef itk::ImageRegionIterator<ParametersImageType> Iterator;
-	Iterator co_it (newCoefficients, bsp_out->GetGridRegion());
-	co_it.GoToBegin();
-	while (!co_it.IsAtEnd()) {
-	    bsp_coeff[counter++] = co_it.Get();
-	    ++co_it;
-	}
+        /* Copy the coefficients into a temporary parameter array */
+        typedef BsplineTransformType::ImageType ParametersImageType;
+        ParametersImageType::Pointer newCoefficients 
+            = decomposition->GetOutput();
+        typedef itk::ImageRegionIterator<ParametersImageType> Iterator;
+        Iterator co_it (newCoefficients, bsp_out->GetGridRegion());
+        co_it.GoToBegin();
+        while (!co_it.IsAtEnd()) {
+            bsp_coeff[counter++] = co_it.Get();
+            ++co_it;
+        }
     }
 
     /* Finally fixate coefficients into recently created bsp structure */
@@ -543,9 +543,9 @@ xform_any_to_itk_bsp_nobulk (
     the b-spline with extra coefficients such that all pixels fall 
     within the valid region. */
 void
-itk_bsp_extend_to_region (Xform* xf,		    
-	const Plm_image_header* pih,
-	const ImageRegionType* roi)
+itk_bsp_extend_to_region (Xform* xf,                
+        const Plm_image_header* pih,
+        const ImageRegionType* roi)
 {
     int d, old_idx;
     unsigned long i, j, k;
@@ -559,89 +559,89 @@ itk_bsp_extend_to_region (Xform* xf,
     /* Figure out if we need to extend the bspline grid.  If so, compute ea & eb, 
        as well as new values of bsp_region and bsp_origin. */
     for (d = 0; d < 3; d++) {
-	float old_roi_origin = bsp->GetGridOrigin()[d] + bsp->GetGridSpacing()[d];
-	float old_roi_corner = old_roi_origin + (bsp->GetGridRegion().GetSize()[d] - 3) * bsp->GetGridSpacing()[d];
-	float new_roi_origin = pih->m_origin[d] + roi->GetIndex()[d] * pih->m_spacing[d];
-	float new_roi_corner = new_roi_origin + (roi->GetSize()[d] - 1) * pih->m_spacing[d];
+        float old_roi_origin = bsp->GetGridOrigin()[d] + bsp->GetGridSpacing()[d];
+        float old_roi_corner = old_roi_origin + (bsp->GetGridRegion().GetSize()[d] - 3) * bsp->GetGridSpacing()[d];
+        float new_roi_origin = pih->m_origin[d] + roi->GetIndex()[d] * pih->m_spacing[d];
+        float new_roi_corner = new_roi_origin + (roi->GetSize()[d] - 1) * pih->m_spacing[d];
 #if defined (commentout)
-	printf ("extend? [%d]: (%g,%g) -> (%g,%g)\n", d,
-		old_roi_origin, old_roi_corner, new_roi_origin, new_roi_corner);
-	printf ("img_siz = %d, img_spac = %g\n", img_region.GetSize()[d], img_spacing[d]);
+        printf ("extend? [%d]: (%g,%g) -> (%g,%g)\n", d,
+                old_roi_origin, old_roi_corner, new_roi_origin, new_roi_corner);
+        printf ("img_siz = %d, img_spac = %g\n", img_region.GetSize()[d], img_spacing[d]);
 #endif
-	ea[d] = eb[d] = 0;
-	if (old_roi_origin > new_roi_origin) {
-	    float diff = old_roi_origin - new_roi_origin;
-	    eb[d] = (int) ceil (diff / bsp->GetGridSpacing()[d]);
-	    bsp_origin[d] -= eb[d] * bsp->GetGridSpacing()[d];
-	    bsp_size[d] += eb[d];
-	    extend_needed = 1;
-	}
-	if (old_roi_corner < new_roi_corner) {
-	    float diff = new_roi_origin - old_roi_origin;
-	    ea[d] = (int) ceil (diff / bsp->GetGridSpacing()[d]);
-	    bsp_size[d] += ea[d];
-	    extend_needed = 1;
-	}
+        ea[d] = eb[d] = 0;
+        if (old_roi_origin > new_roi_origin) {
+            float diff = old_roi_origin - new_roi_origin;
+            eb[d] = (int) ceil (diff / bsp->GetGridSpacing()[d]);
+            bsp_origin[d] -= eb[d] * bsp->GetGridSpacing()[d];
+            bsp_size[d] += eb[d];
+            extend_needed = 1;
+        }
+        if (old_roi_corner < new_roi_corner) {
+            float diff = new_roi_origin - old_roi_origin;
+            ea[d] = (int) ceil (diff / bsp->GetGridSpacing()[d]);
+            bsp_size[d] += ea[d];
+            extend_needed = 1;
+        }
     }
 #if defined (commentout)
     printf ("ea = %d %d %d, eb = %d %d %d\n", ea[0], ea[1], ea[2], eb[0], eb[1], eb[2]);
 #endif
     if (extend_needed) {
 
-	/* Allocate new parameter array */
-	BsplineTransformType::Pointer bsp_new = BsplineTransformType::New();
-	BsplineTransformType::RegionType old_region = bsp->GetGridRegion();
-	bsp_region.SetSize (bsp_size);
-	bsp_new->SetGridOrigin (bsp_origin);
-	bsp_new->SetGridRegion (bsp_region);
-	bsp_new->SetGridSpacing (bsp->GetGridSpacing());
+        /* Allocate new parameter array */
+        BsplineTransformType::Pointer bsp_new = BsplineTransformType::New();
+        BsplineTransformType::RegionType old_region = bsp->GetGridRegion();
+        bsp_region.SetSize (bsp_size);
+        bsp_new->SetGridOrigin (bsp_origin);
+        bsp_new->SetGridRegion (bsp_region);
+        bsp_new->SetGridSpacing (bsp->GetGridSpacing());
 
 #if defined (commentout)
-	std::cout << "OLD BSpline Region = "
-		  << bsp->GetGridRegion();
-	std::cout << "NEW BSpline Region = "
-		  << bsp_new->GetGridRegion();
-	std::cout << "OLD BSpline Grid Origin = "
-		  << bsp->GetGridOrigin()
-		  << std::endl;
-	std::cout << "NEW BSpline Grid Origin = "
-		  << bsp_new->GetGridOrigin()
-		  << std::endl;
-	std::cout << "BSpline Grid Spacing = "
-		  << bsp_new->GetGridSpacing()
-		  << std::endl;
+        std::cout << "OLD BSpline Region = "
+                  << bsp->GetGridRegion();
+        std::cout << "NEW BSpline Region = "
+                  << bsp_new->GetGridRegion();
+        std::cout << "OLD BSpline Grid Origin = "
+                  << bsp->GetGridOrigin()
+                  << std::endl;
+        std::cout << "NEW BSpline Grid Origin = "
+                  << bsp_new->GetGridOrigin()
+                  << std::endl;
+        std::cout << "BSpline Grid Spacing = "
+                  << bsp_new->GetGridSpacing()
+                  << std::endl;
 #endif
 
-	/* Copy current parameters in... */
-	const unsigned int num_parms = bsp_new->GetNumberOfParameters();
-	BsplineTransformType::ParametersType bsp_coeff;
-	bsp_coeff.SetSize (num_parms);
-	for (old_idx = 0, d = 0; d < 3; d++) {
-	    for (k = 0; k < old_region.GetSize()[2]; k++) {
-		for (j = 0; j < old_region.GetSize()[1]; j++) {
-		    for (i = 0; i < old_region.GetSize()[0]; i++, old_idx++) {
-			int new_idx;
-			new_idx = ((((d * bsp_size[2]) + k + eb[2]) * bsp_size[1] + (j + eb[1])) * bsp_size[0]) + (i + eb[0]);
-			/* GCS FIX - use GetParameters() */
-//			printf ("[%4d <- %4d] %g\n", new_idx, old_idx, bsp_parms_old[old_idx]);
-			bsp_coeff[new_idx] = bsp->GetParameters()[old_idx];
-		    }
-		}
-	    }
-	}
+        /* Copy current parameters in... */
+        const unsigned int num_parms = bsp_new->GetNumberOfParameters();
+        BsplineTransformType::ParametersType bsp_coeff;
+        bsp_coeff.SetSize (num_parms);
+        for (old_idx = 0, d = 0; d < 3; d++) {
+            for (k = 0; k < old_region.GetSize()[2]; k++) {
+                for (j = 0; j < old_region.GetSize()[1]; j++) {
+                    for (i = 0; i < old_region.GetSize()[0]; i++, old_idx++) {
+                        int new_idx;
+                        new_idx = ((((d * bsp_size[2]) + k + eb[2]) * bsp_size[1] + (j + eb[1])) * bsp_size[0]) + (i + eb[0]);
+                        /* GCS FIX - use GetParameters() */
+//                      printf ("[%4d <- %4d] %g\n", new_idx, old_idx, bsp_parms_old[old_idx]);
+                        bsp_coeff[new_idx] = bsp->GetParameters()[old_idx];
+                    }
+                }
+            }
+        }
 
-	/* Copy coefficients into recently created bsp struct */
-	bsp_new->SetParametersByValue (bsp_coeff);
+        /* Copy coefficients into recently created bsp struct */
+        bsp_new->SetParametersByValue (bsp_coeff);
 
-	/* Fixate xf with new bsp */
-	xf->set_itk_bsp (bsp_new);
+        /* Fixate xf with new bsp */
+        xf->set_itk_bsp (bsp_new);
     }
 }
 
 static void
 xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
-		      const Plm_image_header* pih,
-		      float* grid_spac)
+                      const Plm_image_header* pih,
+                      float* grid_spac)
 {
     BsplineTransformType::Pointer bsp_old = xf_in->get_itk_bsp();
 
@@ -658,63 +658,63 @@ xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
     bsp_coeff.SetSize (num_parms);
 
     /* GCS May 12, 2008.  I feel like the below algorithm suggested 
-	by ITK is wrong.  If BSplineResampleImageFunction interpolates the 
-	coefficient image, the resulting resampled B-spline will be smoother 
-	than the original.  But maybe the algorithm is OK, just a problem with 
-	the lack of proper ITK documentation.  Need to test this.
+        by ITK is wrong.  If BSplineResampleImageFunction interpolates the 
+        coefficient image, the resulting resampled B-spline will be smoother 
+        than the original.  But maybe the algorithm is OK, just a problem with 
+        the lack of proper ITK documentation.  Need to test this.
 
        What this code does is this:
          1) Resample coefficient image using B-Spline interpolator
-	 2) Pass resampled image to decomposition filter
-	 3) Copy decomposition filter output into new coefficient image
+         2) Pass resampled image to decomposition filter
+         3) Copy decomposition filter output into new coefficient image
 
        This is the original comment from the ITK code:
-	 Now we need to initialize the BSpline coefficients of the higher 
-	 resolution transform. This is done by first computing the actual 
-	 deformation field at the higher resolution from the lower 
-	 resolution BSpline coefficients. Then a BSpline decomposition 
-	 is done to obtain the BSpline coefficient of the higher 
-	 resolution transform. */
+         Now we need to initialize the BSpline coefficients of the higher 
+         resolution transform. This is done by first computing the actual 
+         deformation field at the higher resolution from the lower 
+         resolution BSpline coefficients. Then a BSpline decomposition 
+         is done to obtain the BSpline coefficient of the higher 
+         resolution transform. */
     unsigned int counter = 0;
     for (unsigned int k = 0; k < 3; k++) {
-	typedef BsplineTransformType::ImageType ParametersImageType;
-	typedef itk::ResampleImageFilter<ParametersImageType, ParametersImageType> ResamplerType;
-	ResamplerType::Pointer resampler = ResamplerType::New();
+        typedef BsplineTransformType::ImageType ParametersImageType;
+        typedef itk::ResampleImageFilter<ParametersImageType, ParametersImageType> ResamplerType;
+        ResamplerType::Pointer resampler = ResamplerType::New();
 
-	typedef itk::BSplineResampleImageFunction<ParametersImageType, double> FunctionType;
-	FunctionType::Pointer fptr = FunctionType::New();
+        typedef itk::BSplineResampleImageFunction<ParametersImageType, double> FunctionType;
+        FunctionType::Pointer fptr = FunctionType::New();
 
-	typedef itk::IdentityTransform<double, 3> IdentityTransformType;
-	IdentityTransformType::Pointer identity = IdentityTransformType::New();
+        typedef itk::IdentityTransform<double, 3> IdentityTransformType;
+        IdentityTransformType::Pointer identity = IdentityTransformType::New();
 
 #if ITK_VERSION_MAJOR == 3
-	resampler->SetInput (bsp_old->GetCoefficientImage()[k]);
+        resampler->SetInput (bsp_old->GetCoefficientImage()[k]);
 #else /* ITK 4 */
-	resampler->SetInput (bsp_old->GetCoefficientImages()[k]);
+        resampler->SetInput (bsp_old->GetCoefficientImages()[k]);
 #endif
-	resampler->SetInterpolator (fptr);
-	resampler->SetTransform (identity);
-	resampler->SetSize (bsp_out->GetGridRegion().GetSize());
-	resampler->SetOutputSpacing (bsp_out->GetGridSpacing());
-	resampler->SetOutputOrigin (bsp_out->GetGridOrigin());
-	resampler->SetOutputDirection (bsp_out->GetGridDirection());
+        resampler->SetInterpolator (fptr);
+        resampler->SetTransform (identity);
+        resampler->SetSize (bsp_out->GetGridRegion().GetSize());
+        resampler->SetOutputSpacing (bsp_out->GetGridSpacing());
+        resampler->SetOutputOrigin (bsp_out->GetGridOrigin());
+        resampler->SetOutputDirection (bsp_out->GetGridDirection());
 
-	typedef itk::BSplineDecompositionImageFilter<ParametersImageType, ParametersImageType> DecompositionType;
-	DecompositionType::Pointer decomposition = DecompositionType::New();
+        typedef itk::BSplineDecompositionImageFilter<ParametersImageType, ParametersImageType> DecompositionType;
+        DecompositionType::Pointer decomposition = DecompositionType::New();
 
-	decomposition->SetSplineOrder (SplineOrder);
-	decomposition->SetInput (resampler->GetOutput());
-	decomposition->Update();
+        decomposition->SetSplineOrder (SplineOrder);
+        decomposition->SetInput (resampler->GetOutput());
+        decomposition->Update();
 
-	ParametersImageType::Pointer newCoefficients = decomposition->GetOutput();
+        ParametersImageType::Pointer newCoefficients = decomposition->GetOutput();
 
-	// copy the coefficients into a temporary parameter array
-	typedef itk::ImageRegionIterator<ParametersImageType> Iterator;
-	Iterator it (newCoefficients, bsp_out->GetGridRegion());
-	while (!it.IsAtEnd()) {
-	    bsp_coeff[counter++] = it.Get();
-	    ++it;
-	}
+        // copy the coefficients into a temporary parameter array
+        typedef itk::ImageRegionIterator<ParametersImageType> Iterator;
+        Iterator it (newCoefficients, bsp_out->GetGridRegion());
+        while (!it.IsAtEnd()) {
+            bsp_coeff[counter++] = it.Get();
+            ++it;
+        }
     }
 
     /* Finally fixate coefficients into recently created bsp structure */
@@ -724,18 +724,18 @@ xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
 /* Compute itk_bsp grid specifications from gpuit specifications */
 static void
 gpuit_bsp_grid_to_itk_bsp_grid (
-	BsplineTransformType::OriginType& bsp_origin,	    /* Output */
-	BsplineTransformType::SpacingType& bsp_spacing,	    /* Output */
-	BsplineTransformType::RegionType& bsp_region,  /* Output */
-	Bspline_xform* bxf)			    /* Input */
+        BsplineTransformType::OriginType& bsp_origin,       /* Output */
+        BsplineTransformType::SpacingType& bsp_spacing,     /* Output */
+        BsplineTransformType::RegionType& bsp_region,  /* Output */
+        Bspline_xform* bxf)                         /* Input */
 {
     BsplineTransformType::SizeType bsp_size;
 
     for (int d = 0; d < 3; d++) {
-	bsp_size[d] = bxf->cdims[d];
-	bsp_origin[d] = bxf->img_origin[d] 
-	    + bxf->roi_offset[d] * bxf->img_spacing[d] - bxf->grid_spac[d];
-	bsp_spacing[d] = bxf->grid_spac[d];
+        bsp_size[d] = bxf->cdims[d];
+        bsp_origin[d] = bxf->img_origin[d] 
+            + bxf->roi_offset[d] * bxf->img_spacing[d] - bxf->grid_spac[d];
+        bsp_spacing[d] = bxf->grid_spac[d];
     }
     bsp_region.SetSize (bsp_size);
 }
@@ -760,23 +760,23 @@ gpuit_bsp_to_itk_bsp_raw (
     /* Create itk bspline structure */
     xform_itk_bsp_init_default (xf_out);
     xform_itk_bsp_set_grid (xf_out, bsp_origin, bsp_spacing, 
-	bsp_region, bsp_direction);
+        bsp_region, bsp_direction);
 
     /* RMK: bulk transform is Identity (not supported by GPUIT) */
 
     /* Create temporary array for output coefficients */
     const unsigned int num_parms 
-	= xf_out->get_itk_bsp()->GetNumberOfParameters();
+        = xf_out->get_itk_bsp()->GetNumberOfParameters();
     BsplineTransformType::ParametersType bsp_coeff;
     bsp_coeff.SetSize (num_parms);
 
     /* Copy from GPUIT coefficient array to ITK coefficient array */
     int k = 0;
     for (int d = 0; d < 3; d++) {
-	for (int i = 0; i < bxf->num_knots; i++) {
-	    bsp_coeff[k] = bxf->coeff[3*i+d];
-	    k++;
-	}
+        for (int i = 0; i < bxf->num_knots; i++) {
+            bsp_coeff[k] = bxf->coeff[3*i+d];
+            k++;
+        }
     }
 
     /* Fixate coefficients into bsp structure */
@@ -807,17 +807,17 @@ xform_gpuit_bsp_to_itk_bsp (
     std::cout << pih->m_region;
 
     if (grid_spac) {
-	/* Convert to itk data structure */
-	printf ("Running: gpuit_bsp_to_itk_bsp_raw\n");
-	gpuit_bsp_to_itk_bsp_raw (&xf_tmp, xf_in, pih);
+        /* Convert to itk data structure */
+        printf ("Running: gpuit_bsp_to_itk_bsp_raw\n");
+        gpuit_bsp_to_itk_bsp_raw (&xf_tmp, xf_in, pih);
 
-	/* Then, resample the xform to the desired grid spacing */
-	printf ("Running: xform_itk_bsp_to_itk_bsp\n");
-	xform_itk_bsp_to_itk_bsp (xf_out, &xf_tmp, pih, grid_spac);
+        /* Then, resample the xform to the desired grid spacing */
+        printf ("Running: xform_itk_bsp_to_itk_bsp\n");
+        xform_itk_bsp_to_itk_bsp (xf_out, &xf_tmp, pih, grid_spac);
     } else {
-	/* Convert to itk data structure only */
-	printf ("Running: gpuit_bsp_to_itk_bsp_raw\n");
-	gpuit_bsp_to_itk_bsp_raw (xf_out, xf_in, pih);
+        /* Convert to itk data structure only */
+        printf ("Running: gpuit_bsp_to_itk_bsp_raw\n");
+        gpuit_bsp_to_itk_bsp_raw (xf_out, xf_in, pih);
     }
 
     printf ("Completed: xform_itk_bsp_to_itk_bsp\n");
@@ -841,7 +841,7 @@ xform_itk_any_to_itk_vf (
     itk_vf->Allocate ();
 
     typedef itk::ImageRegionIteratorWithIndex< 
-	DeformationFieldType > FieldIterator;
+        DeformationFieldType > FieldIterator;
     FieldIterator fi (itk_vf, itk_vf->GetLargestPossibleRegion());
 
     fi.GoToBegin();
@@ -853,14 +853,14 @@ xform_itk_any_to_itk_vf (
     FloatVector3DType displacement;
 
     while (!fi.IsAtEnd()) {
-	index = fi.GetIndex();
-	itk_vf->TransformIndexToPhysicalPoint (index, fixed_point);
-	moving_point = xf->TransformPoint (fixed_point);
-	for (int r = 0; r < 3; r++) {
-	    displacement[r] = moving_point[r] - fixed_point[r];
-	}
-	fi.Set (displacement);
-	++fi;
+        index = fi.GetIndex();
+        itk_vf->TransformIndexToPhysicalPoint (index, fixed_point);
+        moving_point = xf->TransformPoint (fixed_point);
+        for (int r = 0; r < 3; r++) {
+            displacement[r] = moving_point[r] - fixed_point[r];
+        }
+        fi.Set (displacement);
+        ++fi;
     }
     return itk_vf;
 }
@@ -876,7 +876,7 @@ xform_itk_bsp_to_itk_vf (Xform* xf_in, const Plm_image_header* pih)
 
     /* Deep copy of itk_bsp */
     for (d = 0; d < 3; d++) {
-	grid_spac[d] = xf_in->get_itk_bsp()->GetGridSpacing()[d];
+        grid_spac[d] = xf_in->get_itk_bsp()->GetGridSpacing()[d];
     }
     xform_itk_bsp_to_itk_bsp (&xf_tmp, xf_in, pih, grid_spac);
 
@@ -947,10 +947,10 @@ xform_gpuit_vf_to_itk_vf (
 
     /* Copy header & allocate data for itk */
     for (i = 0; i < 3; i++) {
-	st[i] = 0;
-	sz[i] = vf->dim[i];
-	sp[i] = vf->spacing[i];
-	og[i] = vf->offset[i];
+        st[i] = 0;
+        sz[i] = vf->dim[i];
+        sp[i] = vf->spacing[i];
+        og[i] = vf->offset[i];
     }
     rg.SetSize (sz);
     rg.SetIndex (st);
@@ -965,31 +965,31 @@ xform_gpuit_vf_to_itk_vf (
     FieldIterator fi (itk_vf, itk_vf->GetLargestPossibleRegion());
 
     if (vf->pix_type == PT_VF_FLOAT_INTERLEAVED) {
-	float* img = (float*) vf->img;
-	int i = 0;
-	for (fi.GoToBegin(); !fi.IsAtEnd(); ++fi) {
-	    for (int r = 0; r < 3; r++) {
-		displacement[r] = img[i++];
-	    }
-	    fi.Set (displacement);
-	}
+        float* img = (float*) vf->img;
+        int i = 0;
+        for (fi.GoToBegin(); !fi.IsAtEnd(); ++fi) {
+            for (int r = 0; r < 3; r++) {
+                displacement[r] = img[i++];
+            }
+            fi.Set (displacement);
+        }
     }
     else if (vf->pix_type == PT_VF_FLOAT_PLANAR) {
-	float** img = (float**) vf->img;
-	int i = 0;
-	for (fi.GoToBegin(); !fi.IsAtEnd(); ++fi, ++i) {
-	    for (int r = 0; r < 3; r++) {
-		displacement[r] = img[r][i];
-	    }
-	    fi.Set (displacement);
-	}
+        float** img = (float**) vf->img;
+        int i = 0;
+        for (fi.GoToBegin(); !fi.IsAtEnd(); ++fi, ++i) {
+            for (int r = 0; r < 3; r++) {
+                displacement[r] = img[r][i];
+            }
+            fi.Set (displacement);
+        }
     } else {
-	print_and_exit ("Irregular pix_type used converting gpuit_xf -> itk\n");
+        print_and_exit ("Irregular pix_type used converting gpuit_xf -> itk\n");
     }
 
     /* Resample to requested resolution */
     if (pih) {
-	itk_vf = xform_itk_vf_to_itk_vf (itk_vf, pih);
+        itk_vf = xform_itk_vf_to_itk_vf (itk_vf, pih);
     }
 
     return itk_vf;
@@ -1009,24 +1009,26 @@ create_gpuit_bxf (Plm_image_header* pih, float* grid_spac)
     plm_long roi_offset[3];
     plm_long roi_dim[3];
     plm_long vox_per_rgn[3];
+    float direction_cosines[9];
 
     pih->get_origin (img_origin);
     pih->get_dim (img_dim);
     pih->get_spacing (img_spacing);
+    pih->get_direction_cosines (direction_cosines);
 
     for (d = 0; d < 3; d++) {
-	/* Old ROI was whole image */
-	roi_offset[d] = 0;
-	roi_dim[d] = img_dim[d];
-	/* Compute vox_per_rgn */
-	vox_per_rgn[d] = ROUND_INT (grid_spac[d] / fabs(img_spacing[d]));
-	if (vox_per_rgn[d] < 4) {
-	    printf ("Warning: vox_per_rgn was less than 4.\n");
-	    vox_per_rgn[d] = 4;
-	}
+        /* Old ROI was whole image */
+        roi_offset[d] = 0;
+        roi_dim[d] = img_dim[d];
+        /* Compute vox_per_rgn */
+        vox_per_rgn[d] = ROUND_INT (grid_spac[d] / fabs(img_spacing[d]));
+        if (vox_per_rgn[d] < 4) {
+            printf ("Warning: vox_per_rgn was less than 4.\n");
+            vox_per_rgn[d] = 4;
+        }
     }
     bspline_xform_initialize (bxf, img_origin, img_spacing, img_dim, 
-	roi_offset, roi_dim, vox_per_rgn);
+        roi_offset, roi_dim, vox_per_rgn, direction_cosines);
     return bxf;
 }
 
@@ -1043,20 +1045,20 @@ xform_any_to_gpuit_bsp (
     Bspline_xform* bxf_new = create_gpuit_bxf (pih, grid_spac);
 
     if (xf_in->m_type != XFORM_NONE) {
-	/* Output ROI is going to be whole image */
-	roi = pih->m_region;
+        /* Output ROI is going to be whole image */
+        roi = pih->m_region;
 
-	/* Create itk_bsp xf using image specifications */
-	xform_any_to_itk_bsp_nobulk (&xf_tmp, xf_in, pih, bxf_new->grid_spac);
+        /* Create itk_bsp xf using image specifications */
+        xform_any_to_itk_bsp_nobulk (&xf_tmp, xf_in, pih, bxf_new->grid_spac);
 
-	/* Copy from ITK coefficient array to gpuit coefficient array */
-	int k = 0;
-	for (int d = 0; d < 3; d++) {
-	    for (int i = 0; i < bxf_new->num_knots; i++) {
-		bxf_new->coeff[3*i+d] = xf_tmp.get_itk_bsp()->GetParameters()[k];
-		k++;
-	    }
-	}
+        /* Copy from ITK coefficient array to gpuit coefficient array */
+        int k = 0;
+        for (int d = 0; d < 3; d++) {
+            for (int i = 0; i < bxf_new->num_knots; i++) {
+                bxf_new->coeff[3*i+d] = xf_tmp.get_itk_bsp()->GetParameters()[k];
+                k++;
+            }
+        }
     }
 
     /* Fixate gpuit bsp to xf */
@@ -1088,10 +1090,10 @@ xform_gpuit_bsp_to_gpuit_bsp (
     /* Copy from ITK coefficient array to gpuit coefficient array */
     int k = 0;
     for (int d = 0; d < 3; d++) {
-	for (int i = 0; i < bxf_new->num_knots; i++) {
-	    bxf_new->coeff[3*i+d] = xf_tmp.get_itk_bsp()->GetParameters()[k];
-	    k++;
-	}
+        for (int i = 0; i < bxf_new->num_knots; i++) {
+            bxf_new->coeff[3*i+d] = xf_tmp.get_itk_bsp()->GetParameters()[k];
+            k++;
+        }
     }
 
     /* Fixate gpuit bsp to xf */
@@ -1133,7 +1135,7 @@ xform_gpuit_bsp_to_gpuit_vf (
 
     /* GCS FIX: Need direction cosines */
     vf_out = new Volume (dim, offset, spacing, 0, 
-	PT_VF_FLOAT_INTERLEAVED, 3);
+        PT_VF_FLOAT_INTERLEAVED, 3);
     bspline_interpolate_vf (vf_out, bxf);
     return vf_out;
 }
@@ -1145,7 +1147,7 @@ xform_itk_vf_to_gpuit_vf (
 {
     /* GCS FIX: Need direction cosines */
     Volume* vf_out = new Volume (dim, offset, spacing, 0, 
-	PT_VF_FLOAT_INTERLEAVED, 3);
+        PT_VF_FLOAT_INTERLEAVED, 3);
     float* img = (float*) vf_out->img;
     FloatVector3DType displacement;
 
@@ -1153,10 +1155,10 @@ xform_itk_vf_to_gpuit_vf (
     typedef itk::ImageRegionIterator< DeformationFieldType > FieldIterator;
     FieldIterator fi (itk_vf, itk_vf->GetLargestPossibleRegion());
     for (fi.GoToBegin(); !fi.IsAtEnd(); ++fi) {
-	displacement = fi.Get ();
-	for (int r = 0; r < 3; r++) {
-	    img[i++] = displacement[r];
-	}
+        displacement = fi.Get ();
+        for (int r = 0; r < 3; r++) {
+            img[i++] = displacement[r];
+        }
     }
     return vf_out;
 }
@@ -1172,26 +1174,26 @@ xform_to_trn (
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:
-	init_translation_default (xf_out);
-	break;
+        init_translation_default (xf_out);
+        break;
     case XFORM_ITK_TRANSLATION:
-	*xf_out = *xf_in;
-	break;
+        *xf_out = *xf_in;
+        break;
     case XFORM_ITK_VERSOR:
     case XFORM_ITK_QUATERNION:
     case XFORM_ITK_AFFINE:
     case XFORM_ITK_BSPLINE:
     case XFORM_ITK_TPS:
     case XFORM_ITK_VECTOR_FIELD:
-	print_and_exit ("Sorry, couldn't convert to trn\n");
-	break;
+        print_and_exit ("Sorry, couldn't convert to trn\n");
+        break;
     case XFORM_GPUIT_BSPLINE:
     case XFORM_GPUIT_VECTOR_FIELD:
-	print_and_exit ("Sorry, gpuit xforms not fully implemented\n");
-	break;
+        print_and_exit ("Sorry, gpuit xforms not fully implemented\n");
+        break;
     default:
-	print_and_exit ("Program error.  Bad xform type.\n");
-	break;
+        print_and_exit ("Program error.  Bad xform type.\n");
+        break;
     }
 }
 
@@ -1202,28 +1204,28 @@ xform_to_vrs (
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:
-	init_versor_default (xf_out);
-	break;
+        init_versor_default (xf_out);
+        break;
     case XFORM_ITK_TRANSLATION:
-	xform_trn_to_vrs (xf_out, xf_in);
-	break;
+        xform_trn_to_vrs (xf_out, xf_in);
+        break;
     case XFORM_ITK_VERSOR:
-	*xf_out = *xf_in;
-	break;
+        *xf_out = *xf_in;
+        break;
     case XFORM_ITK_AFFINE:
     case XFORM_ITK_QUATERNION:
     case XFORM_ITK_BSPLINE:
     case XFORM_ITK_TPS:
     case XFORM_ITK_VECTOR_FIELD:
-	print_and_exit ("Sorry, couldn't convert to vrs\n");
-	break;
+        print_and_exit ("Sorry, couldn't convert to vrs\n");
+        break;
     case XFORM_GPUIT_BSPLINE:
     case XFORM_GPUIT_VECTOR_FIELD:
-	print_and_exit ("Sorry, gpuit xforms not fully implemented\n");
-	break;
+        print_and_exit ("Sorry, gpuit xforms not fully implemented\n");
+        break;
     default:
-	print_and_exit ("Program error.  Bad xform type.\n");
-	break;
+        print_and_exit ("Program error.  Bad xform type.\n");
+        break;
     }
 }
 
@@ -1234,28 +1236,28 @@ xform_to_quat (
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:
-	init_quaternion_default (xf_out);
-	break;
+        init_quaternion_default (xf_out);
+        break;
     case XFORM_ITK_TRANSLATION:
-	print_and_exit ("Sorry, couldn't convert to quaternion\n");
-	break;
+        print_and_exit ("Sorry, couldn't convert to quaternion\n");
+        break;
     case XFORM_ITK_VERSOR:
-	xform_vrs_to_quat (xf_out, xf_in);
-	break;
+        xform_vrs_to_quat (xf_out, xf_in);
+        break;
     case XFORM_ITK_QUATERNION:
-	*xf_out = *xf_in;
-	break;
+        *xf_out = *xf_in;
+        break;
     case XFORM_ITK_AFFINE:
     case XFORM_ITK_BSPLINE:
     case XFORM_ITK_TPS:
     case XFORM_ITK_VECTOR_FIELD:
     case XFORM_GPUIT_BSPLINE:
     case XFORM_GPUIT_VECTOR_FIELD:
-	print_and_exit ("Sorry, couldn't convert to quaternion\n");
-	break;
+        print_and_exit ("Sorry, couldn't convert to quaternion\n");
+        break;
     default:
-	print_and_exit ("Program error.  Bad xform type.\n");
-	break;
+        print_and_exit ("Program error.  Bad xform type.\n");
+        break;
     }
 }
 
@@ -1266,32 +1268,32 @@ xform_to_aff (
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:
-	init_affine_default (xf_out);
-	break;
+        init_affine_default (xf_out);
+        break;
     case XFORM_ITK_TRANSLATION:
-	xform_trn_to_aff (xf_out, xf_in);
-	break;
+        xform_trn_to_aff (xf_out, xf_in);
+        break;
     case XFORM_ITK_VERSOR:
-	xform_vrs_to_aff (xf_out, xf_in);
-	break;
+        xform_vrs_to_aff (xf_out, xf_in);
+        break;
     case XFORM_ITK_QUATERNION:
-	print_and_exit ("Sorry, couldn't convert to aff\n");
-	break;
+        print_and_exit ("Sorry, couldn't convert to aff\n");
+        break;
     case XFORM_ITK_AFFINE:
-	*xf_out = *xf_in;
-	break;
+        *xf_out = *xf_in;
+        break;
     case XFORM_ITK_BSPLINE:
     case XFORM_ITK_TPS:
     case XFORM_ITK_VECTOR_FIELD:
-	print_and_exit ("Sorry, couldn't convert to aff\n");
-	break;
+        print_and_exit ("Sorry, couldn't convert to aff\n");
+        break;
     case XFORM_GPUIT_BSPLINE:
     case XFORM_GPUIT_VECTOR_FIELD:
-	print_and_exit ("Sorry, gpuit xforms not fully implemented\n");
-	break;
+        print_and_exit ("Sorry, gpuit xforms not fully implemented\n");
+        break;
     default:
-	print_and_exit ("Program error.  Bad xform type.\n");
-	break;
+        print_and_exit ("Program error.  Bad xform type.\n");
+        break;
     }
 }
 
@@ -1307,40 +1309,40 @@ xform_to_itk_bsp (
 
     switch (xf_in->m_type) {
     case XFORM_NONE:
-	xform_itk_bsp_init_default (xf_out);
-	itk_bsp_set_grid_img (xf_out, pih, grid_spac);
-	break;
+        xform_itk_bsp_init_default (xf_out);
+        itk_bsp_set_grid_img (xf_out, pih, grid_spac);
+        break;
     case XFORM_ITK_TRANSLATION:
-	xform_trn_to_itk_bsp_bulk (xf_out, xf_in, pih, grid_spac);
-	break;
+        xform_trn_to_itk_bsp_bulk (xf_out, xf_in, pih, grid_spac);
+        break;
     case XFORM_ITK_VERSOR:
-	xform_vrs_to_itk_bsp_bulk (xf_out, xf_in, pih, grid_spac);
-	break;
+        xform_vrs_to_itk_bsp_bulk (xf_out, xf_in, pih, grid_spac);
+        break;
     case XFORM_ITK_QUATERNION:
-	xform_quat_to_itk_bsp_bulk (xf_out, xf_in, pih, grid_spac);
-	break;
+        xform_quat_to_itk_bsp_bulk (xf_out, xf_in, pih, grid_spac);
+        break;
     case XFORM_ITK_AFFINE:
-	xform_aff_to_itk_bsp_bulk (xf_out, xf_in, pih, grid_spac);
-	break;
+        xform_aff_to_itk_bsp_bulk (xf_out, xf_in, pih, grid_spac);
+        break;
     case XFORM_ITK_BSPLINE:
-	xform_itk_bsp_to_itk_bsp (xf_out, xf_in, pih, grid_spac);
-	break;
+        xform_itk_bsp_to_itk_bsp (xf_out, xf_in, pih, grid_spac);
+        break;
     case XFORM_ITK_TPS:
-	print_and_exit ("Sorry, couldn't convert itk_tps to itk_bsp\n");
-	break;
+        print_and_exit ("Sorry, couldn't convert itk_tps to itk_bsp\n");
+        break;
     case XFORM_ITK_VECTOR_FIELD:
-	print_and_exit ("Sorry, couldn't convert itk_vf to itk_bsp\n");
-	break;
+        print_and_exit ("Sorry, couldn't convert itk_vf to itk_bsp\n");
+        break;
     case XFORM_GPUIT_BSPLINE:
-	xform_gpuit_bsp_to_itk_bsp (xf_out, xf_in, pih, 
-	    &pih->m_region, grid_spac);
-	break;
+        xform_gpuit_bsp_to_itk_bsp (xf_out, xf_in, pih, 
+            &pih->m_region, grid_spac);
+        break;
     case XFORM_GPUIT_VECTOR_FIELD:
-	print_and_exit ("Sorry, couldn't convert gpuit_vf to itk_bsp\n");
-	break;
+        print_and_exit ("Sorry, couldn't convert gpuit_vf to itk_bsp\n");
+        break;
     default:
-	print_and_exit ("Program error.  Bad xform type.\n");
-	break;
+        print_and_exit ("Program error.  Bad xform type.\n");
+        break;
     }
 }
 
@@ -1352,39 +1354,39 @@ xform_to_itk_bsp_nobulk (
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:
-	xform_itk_bsp_init_default (xf_out);
-	itk_bsp_set_grid_img (xf_out, pih, grid_spac);
-	break;
+        xform_itk_bsp_init_default (xf_out);
+        itk_bsp_set_grid_img (xf_out, pih, grid_spac);
+        break;
     case XFORM_ITK_TRANSLATION:
-	xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
-	break;
+        xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
+        break;
     case XFORM_ITK_VERSOR:
-	xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
-	break;
+        xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
+        break;
     case XFORM_ITK_QUATERNION:
-	xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
-	break;
+        xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
+        break;
     case XFORM_ITK_AFFINE:
-	xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
-	break;
+        xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
+        break;
     case XFORM_ITK_BSPLINE:
-	xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
-	break;
+        xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
+        break;
     case XFORM_ITK_TPS:
-	xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
-	break;
+        xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
+        break;
     case XFORM_ITK_VECTOR_FIELD:
-	xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
-	break;
+        xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
+        break;
     case XFORM_GPUIT_BSPLINE:
-	xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
-	break;
+        xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
+        break;
     case XFORM_GPUIT_VECTOR_FIELD:
-	xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
-	break;
+        xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
+        break;
     default:
-	print_and_exit ("Program error.  Bad xform type.\n");
-	break;
+        print_and_exit ("Program error.  Bad xform type.\n");
+        break;
     }
 }
 
@@ -1395,38 +1397,38 @@ xform_to_itk_vf (Xform* xf_out, Xform *xf_in, Plm_image_header* pih)
 
     switch (xf_in->m_type) {
     case XFORM_NONE:
-	print_and_exit ("Sorry, couldn't convert to vf\n");
-	break;
+        print_and_exit ("Sorry, couldn't convert to vf\n");
+        break;
     case XFORM_ITK_TRANSLATION:
-	vf = xform_itk_any_to_itk_vf (xf_in->get_trn(), pih);
-	break;
+        vf = xform_itk_any_to_itk_vf (xf_in->get_trn(), pih);
+        break;
     case XFORM_ITK_VERSOR:
-	vf = xform_itk_any_to_itk_vf (xf_in->get_vrs(), pih);
-	break;
+        vf = xform_itk_any_to_itk_vf (xf_in->get_vrs(), pih);
+        break;
     case XFORM_ITK_QUATERNION:
-	vf = xform_itk_any_to_itk_vf (xf_in->get_quat(), pih);
-	break;
+        vf = xform_itk_any_to_itk_vf (xf_in->get_quat(), pih);
+        break;
     case XFORM_ITK_AFFINE:
-	vf = xform_itk_any_to_itk_vf (xf_in->get_aff(), pih);
-	break;
+        vf = xform_itk_any_to_itk_vf (xf_in->get_aff(), pih);
+        break;
     case XFORM_ITK_BSPLINE:
-	vf = xform_itk_bsp_to_itk_vf (xf_in, pih);
-	break;
+        vf = xform_itk_bsp_to_itk_vf (xf_in, pih);
+        break;
     case XFORM_ITK_TPS:
-	vf = xform_itk_any_to_itk_vf (xf_in->get_itk_tps(), pih);
-	break;
+        vf = xform_itk_any_to_itk_vf (xf_in->get_itk_tps(), pih);
+        break;
     case XFORM_ITK_VECTOR_FIELD:
-	vf = xform_itk_vf_to_itk_vf (xf_in->get_itk_vf(), pih);
-	break;
+        vf = xform_itk_vf_to_itk_vf (xf_in->get_itk_vf(), pih);
+        break;
     case XFORM_GPUIT_BSPLINE:
-	vf = xform_gpuit_bsp_to_itk_vf (xf_in, pih);
-	break;
+        vf = xform_gpuit_bsp_to_itk_vf (xf_in, pih);
+        break;
     case XFORM_GPUIT_VECTOR_FIELD:
-	vf = xform_gpuit_vf_to_itk_vf (xf_in->get_gpuit_vf(), pih);
-	break;
+        vf = xform_gpuit_vf_to_itk_vf (xf_in->get_gpuit_vf(), pih);
+        break;
     default:
-	print_and_exit ("Program error.  Bad xform type.\n");
-	break;
+        print_and_exit ("Program error.  Bad xform type.\n");
+        break;
     }
     xf_out->set_itk_vf (vf);
 }
@@ -1446,38 +1448,38 @@ xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih,
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:
-	xform_any_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
-	break;
+        xform_any_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
+        break;
     case XFORM_ITK_TRANSLATION:
-	xform_any_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
-	break;
+        xform_any_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
+        break;
     case XFORM_ITK_VERSOR:
-	xform_any_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
-	break;
+        xform_any_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
+        break;
     case XFORM_ITK_QUATERNION:
-	xform_any_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
-	break;
+        xform_any_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
+        break;
     case XFORM_ITK_AFFINE:
-	xform_any_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
-	break;
+        xform_any_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
+        break;
     case XFORM_ITK_BSPLINE:
-	xform_any_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
-	break;
+        xform_any_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
+        break;
     case XFORM_ITK_TPS:
-	xform_any_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
-	break;
+        xform_any_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
+        break;
     case XFORM_ITK_VECTOR_FIELD:
-	xform_any_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
-	break;
+        xform_any_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
+        break;
     case XFORM_GPUIT_BSPLINE:
-	xform_gpuit_bsp_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
-	break;
+        xform_gpuit_bsp_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
+        break;
     case XFORM_GPUIT_VECTOR_FIELD:
-	xform_gpuit_vf_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
-	break;
+        xform_gpuit_vf_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
+        break;
     default:
-	print_and_exit ("Program error.  Bad xform type.\n");
-	break;
+        print_and_exit ("Program error.  Bad xform type.\n");
+        break;
     }
 }
 
@@ -1490,39 +1492,39 @@ xform_to_gpuit_vf (
 
     switch (xf_in->m_type) {
     case XFORM_NONE:
-	print_and_exit ("Sorry, couldn't convert NONE to gpuit_vf\n");
-	break;
+        print_and_exit ("Sorry, couldn't convert NONE to gpuit_vf\n");
+        break;
     case XFORM_ITK_TRANSLATION:
-	print_and_exit ("Sorry, itk_translation to gpuit_vf not implemented\n");
-	break;
+        print_and_exit ("Sorry, itk_translation to gpuit_vf not implemented\n");
+        break;
     case XFORM_ITK_VERSOR:
-	print_and_exit ("Sorry, itk_versor to gpuit_vf not implemented\n");
-	break;
+        print_and_exit ("Sorry, itk_versor to gpuit_vf not implemented\n");
+        break;
     case XFORM_ITK_QUATERNION:
-	print_and_exit ("Sorry, couldn't convert to gpuit vf\n");
-	break;
+        print_and_exit ("Sorry, couldn't convert to gpuit vf\n");
+        break;
     case XFORM_ITK_AFFINE:
-	print_and_exit ("Sorry, itk_affine to gpuit_vf not implemented\n");
-	break;
+        print_and_exit ("Sorry, itk_affine to gpuit_vf not implemented\n");
+        break;
     case XFORM_ITK_BSPLINE:
-	print_and_exit ("Sorry, itk_bspline to gpuit_vf not implemented\n");
-	break;
+        print_and_exit ("Sorry, itk_bspline to gpuit_vf not implemented\n");
+        break;
     case XFORM_ITK_TPS:
-	print_and_exit ("Sorry, itk_tps to gpuit_vf not implemented\n");
-	break;
+        print_and_exit ("Sorry, itk_tps to gpuit_vf not implemented\n");
+        break;
     case XFORM_ITK_VECTOR_FIELD:
-	vf = xform_itk_vf_to_gpuit_vf (xf_in->get_itk_vf(), dim, offset, spacing);
-	break;
+        vf = xform_itk_vf_to_gpuit_vf (xf_in->get_itk_vf(), dim, offset, spacing);
+        break;
     case XFORM_GPUIT_BSPLINE:
-	vf = xform_gpuit_bsp_to_gpuit_vf (xf_in, dim, offset, spacing);
-	break;
+        vf = xform_gpuit_bsp_to_gpuit_vf (xf_in, dim, offset, spacing);
+        break;
     case XFORM_GPUIT_VECTOR_FIELD:
-	vf = xform_gpuit_vf_to_gpuit_vf (xf_in->get_gpuit_vf(), 
-	    dim, offset, spacing);
-	break;
+        vf = xform_gpuit_vf_to_gpuit_vf (xf_in->get_gpuit_vf(), 
+            dim, offset, spacing);
+        break;
     default:
-	print_and_exit ("Program error.  Bad xform type.\n");
-	break;
+        print_and_exit ("Program error.  Bad xform type.\n");
+        break;
     }
 
     xf_out->set_gpuit_vf (vf);
@@ -1539,25 +1541,25 @@ Xform::get_volume_header (Volume_header *vh)
     case XFORM_ITK_AFFINE:
     case XFORM_ITK_BSPLINE:
     case XFORM_ITK_TPS:
-	/* Do nothing */
-	break;
+        /* Do nothing */
+        break;
     case XFORM_ITK_VECTOR_FIELD:
-	itk_image_get_volume_header (vh, this->get_itk_vf());
-	break;
+        itk_image_get_volume_header (vh, this->get_itk_vf());
+        break;
     case XFORM_GPUIT_BSPLINE: {
-	Bspline_xform* bxf = this->get_gpuit_bsp();
-	bxf->get_volume_header (vh);
-	break;
+        Bspline_xform* bxf = this->get_gpuit_bsp();
+        bxf->get_volume_header (vh);
+        break;
     }
     case XFORM_GPUIT_VECTOR_FIELD:
-	print_and_exit (
-	    "Sorry, didn't implement get_volume_header (type = %d)\n",
-	    this->m_type);
-	break;
+        print_and_exit (
+            "Sorry, didn't implement get_volume_header (type = %d)\n",
+            this->m_type);
+        break;
     default:
-	print_and_exit ("Sorry, couldn't get_volume_header (type = %d)\n",
-	    this->m_type);
-	break;
+        print_and_exit ("Sorry, couldn't get_volume_header (type = %d)\n",
+            this->m_type);
+        break;
     }
 }
 
@@ -1570,30 +1572,30 @@ Xform::get_grid_spacing (float grid_spacing[3])
     case XFORM_ITK_VERSOR:
     case XFORM_ITK_QUATERNION:
     case XFORM_ITK_AFFINE:
-	/* Do nothing */
-	break;
+        /* Do nothing */
+        break;
     case XFORM_ITK_BSPLINE:
-	print_and_exit (
-	    "Sorry, didn't implement get_grid_spacing (type = %d)\n",
-	    this->m_type);
-	break;
+        print_and_exit (
+            "Sorry, didn't implement get_grid_spacing (type = %d)\n",
+            this->m_type);
+        break;
     case XFORM_ITK_TPS:
     case XFORM_ITK_VECTOR_FIELD:
-	/* Do nothing */
-	break;
+        /* Do nothing */
+        break;
     case XFORM_GPUIT_BSPLINE: {
-	Bspline_xform* bxf = this->get_gpuit_bsp();
-	for (int d = 0; d < 3; d++) {
-	    grid_spacing[d] = bxf->grid_spac[d];
-	}
-	break;
+        Bspline_xform* bxf = this->get_gpuit_bsp();
+        for (int d = 0; d < 3; d++) {
+            grid_spacing[d] = bxf->grid_spac[d];
+        }
+        break;
     }
     case XFORM_GPUIT_VECTOR_FIELD:
-	/* Do nothing */
-	break;
+        /* Do nothing */
+        break;
     default:
-	print_and_exit ("Sorry, couldn't get_volume_header (type = %d)\n",
-	    this->m_type);
-	break;
+        print_and_exit ("Sorry, couldn't get_volume_header (type = %d)\n",
+            this->m_type);
+        break;
     }
 }
