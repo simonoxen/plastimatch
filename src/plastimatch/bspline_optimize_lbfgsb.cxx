@@ -216,7 +216,7 @@ bspline_optimize_lbfgsb (
             }
 
             /* Compute cost and gradient */
-            bspline_score (parms, bst, bxf, fixed, moving, moving_grad);
+            bspline_score (bod);
 
             /* Save coeff if best score */
             if (ssd->score < best_score) {

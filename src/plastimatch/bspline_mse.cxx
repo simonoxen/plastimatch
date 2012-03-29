@@ -20,6 +20,7 @@
 #include "bspline_cuda.h"
 #endif
 #include "bspline_mse.h"
+#include "bspline_optimize.h"
 #include "bspline_opts.h"
 #include "file_util.h"
 #include "interpolate.h"
@@ -47,11 +48,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 void
 bspline_score_h_mse (
-    Bspline_parms *parms,
-    Bspline_state *bst, 
-    Bspline_xform *bxf
+    Bspline_optimize_data *bod
 )
 {
+    Bspline_parms *parms = bod->parms;
+    Bspline_state *bst = bod->bst;
+    Bspline_xform *bxf = bod->bxf;
+
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
     Volume *moving_grad = parms->moving_grad;
@@ -251,11 +254,13 @@ bspline_score_h_mse (
 ////////////////////////////////////////////////////////////////////////////////
 void
 bspline_score_g_mse (
-    Bspline_parms *parms,
-    Bspline_state *bst, 
-    Bspline_xform *bxf
+    Bspline_optimize_data *bod
 )
 {
+    Bspline_parms *parms = bod->parms;
+    Bspline_state *bst = bod->bst;
+    Bspline_xform *bxf = bod->bxf;
+
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
     Volume *moving_grad = parms->moving_grad;
@@ -448,11 +453,13 @@ bspline_score_g_mse (
 ////////////////////////////////////////////////////////////////////////////////
 void
 bspline_score_c_mse (
-    Bspline_parms *parms, 
-    Bspline_state *bst,
-    Bspline_xform *bxf
+    Bspline_optimize_data *bod
 )
 {
+    Bspline_parms *parms = bod->parms;
+    Bspline_state *bst = bod->bst;
+    Bspline_xform *bxf = bod->bxf;
+
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
     Volume *moving_grad = parms->moving_grad;
@@ -593,11 +600,13 @@ bspline_score_c_mse (
    ----------------------------------------------------------------------- */
 void
 bspline_score_i_mse (
-    Bspline_parms *parms, 
-    Bspline_state *bst,
-    Bspline_xform *bxf
+    Bspline_optimize_data *bod
 )
 {
+    Bspline_parms *parms = bod->parms;
+    Bspline_state *bst = bod->bst;
+    Bspline_xform *bxf = bod->bxf;
+
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
     Volume *moving_grad = parms->moving_grad;

@@ -9,6 +9,7 @@
 #include <time.h>
 #include "bspline.h"
 #include "bspline_mi.h"
+#include "bspline_optimize.h"
 #if defined (HAVE_F2C_LIBRARY)
 #include "bspline_optimize_lbfgsb.h"
 #endif
@@ -26,12 +27,17 @@ check_gradient (
     int i, j;
     float *x, *grad, *grad_fd;
     float score;
-    Bspline_state *bst;
-    FILE *fp;
-    Bspline_xform *bxf;
-    plm_long roi_offset[3];
-    Bspline_parms* parms = &options->parms;
 
+    FILE *fp;
+
+    plm_long roi_offset[3];
+
+    Bspline_optimize_data bod;
+    Bspline_state *bst = bod.bst;
+    Bspline_xform *bxf = bod.bxf;
+    Bspline_parms *parms = bod.parms;
+
+    parms = &options->parms;
     parms->fixed = fixed;
     parms->moving = moving;
     parms->moving_grad = moving_grad;
@@ -79,7 +85,7 @@ check_gradient (
     }
 
     /* Get score and gradient */
-    bspline_score (parms, bst, bxf, fixed, moving, moving_grad);
+    bspline_score (&bod);
 
     /* Save a copy of score and gradient */
     for (i = 0; i < bxf->num_coeff; i++) {
@@ -105,7 +111,7 @@ check_gradient (
             }
 
             /* Get score */
-            bspline_score (parms, bst, bxf, fixed, moving, moving_grad);
+            bspline_score (&bod);
         
             /* Compute difference between grad and grad_fd */
             fprintf (fp, "%4d, %12.12f\n", i, bst->ssd.score);
@@ -127,7 +133,7 @@ check_gradient (
             bxf->coeff[i] = bxf->coeff[i] + options->step_size;
 
             /* Get score */
-            bspline_score (parms, bst, bxf, fixed, moving, moving_grad);
+            bspline_score (&bod);
         
             /* Stash score difference in grad_fd */
             grad_fd[i] = (bst->ssd.score - score) / options->step_size;

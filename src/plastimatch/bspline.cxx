@@ -988,22 +988,23 @@ bspline_transform_point (
 }
 
 void
-bspline_score (
-    Bspline_parms *parms, 
-    Bspline_state *bst,
-    Bspline_xform* bxf, 
-    Volume *fixed, 
-    Volume *moving, 
-    Volume *moving_grad)
+bspline_score (Bspline_optimize_data *bod)
 {
+    Bspline_parms *parms = bod->parms;
+    Bspline_state *bst   = bod->bst;
+    Bspline_xform *bxf   = bod->bxf;
+
     Reg_parms* reg_parms = &parms->reg_parms;
     Bspline_landmarks* blm = &parms->blm;
 
     /* JAS 2012.03.29 -- Temporary...
      *   pulling it back to here before hitting the optimizers */
+
+#if 0
     parms->fixed = fixed;
     parms->moving = moving;
     parms->moving_grad = moving_grad;
+#endif
 
 #if (CUDA_FOUND)
     if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
@@ -1015,10 +1016,10 @@ bspline_score (
 
         switch (parms->implementation) {
         case 'j':
-            CUDA_bspline_mse_j (parms, bst, bxf);
+            CUDA_bspline_mse_j (bod);
             break;
         default:
-            CUDA_bspline_mse_j (parms, bst, bxf);
+            CUDA_bspline_mse_j (bod);
             break;
         }
 
@@ -1034,10 +1035,10 @@ bspline_score (
 
         switch (parms->implementation) {
         case 'a':
-            CUDA_bspline_mi_a (parms, bst, bxf);
+            CUDA_bspline_mi_a (bod);
             break;
         default: 
-            CUDA_bspline_mi_a (parms, bst, bxf);
+            CUDA_bspline_mi_a (bod);
             break;
         }
 
@@ -1048,19 +1049,19 @@ bspline_score (
     if ((parms->threading == BTHR_CPU) && (parms->metric == BMET_MSE)) {
         switch (parms->implementation) {
         case 'c':
-            bspline_score_c_mse (parms, bst, bxf);
+            bspline_score_c_mse (bod);
             break;
         case 'g':
-            bspline_score_g_mse (parms, bst, bxf);
+            bspline_score_g_mse (bod);
             break;
         case 'h':
-            bspline_score_h_mse (parms, bst, bxf);
+            bspline_score_h_mse (bod);
             break;
         case 'i':
-            bspline_score_i_mse (parms, bst, bxf);
+            bspline_score_i_mse (bod);
             break;
         default:
-            bspline_score_g_mse (parms, bst, bxf);
+            bspline_score_g_mse (bod);
             break;
         }
     }
@@ -1068,23 +1069,23 @@ bspline_score (
     if ((parms->threading == BTHR_CPU) && (parms->metric == BMET_MI)) {
         switch (parms->implementation) {
         case 'c':
-            bspline_score_c_mi (parms, bst, bxf);
+            bspline_score_c_mi (bod);
             break;
 #if (OPENMP_FOUND)
         case 'd':
-            bspline_score_d_mi (parms, bst, bxf);
+            bspline_score_d_mi (bod);
             break;
         case 'e':
-            bspline_score_e_mi (parms, bst, bxf);
+            bspline_score_e_mi (bod);
             break;
         case 'f':
-            bspline_score_f_mi (parms, bst, bxf);
+            bspline_score_f_mi (bod);
             break;
         case 'g':
-            bspline_score_g_mi (parms, bst, bxf);
+            bspline_score_g_mi (bod);
             break;
         case 'h':
-            bspline_score_h_mi (parms, bst, bxf);
+            bspline_score_h_mi (bod);
             break;
 #if 0
     case 'i':
@@ -1094,9 +1095,9 @@ bspline_score (
 #endif
         default:
 #if (OPENMP_FOUND)
-            bspline_score_d_mi (parms, bst, bxf);
+            bspline_score_d_mi (bod);
 #else
-            bspline_score_c_mi (parms, bst, bxf);
+            bspline_score_c_mi (bod);
 #endif
             break;
         }
@@ -1113,8 +1114,7 @@ bspline_score (
     }
 
     /* Compute total score to send of optimizer */
-    bst->ssd.score = bst->ssd.smetric 
-        + reg_parms->lambda * bst->ssd.rmetric;
+    bst->ssd.score = bst->ssd.smetric + reg_parms->lambda * bst->ssd.rmetric;
     if (blm->num_landmarks > 0) {
         bst->ssd.score += blm->landmark_stiffness * bst->ssd.lmetric;
     }

@@ -8,16 +8,6 @@
 #include "bspline.h"
 #include "volume.h"
 
-typedef struct bspline_optimize_data Bspline_optimize_data;
-struct bspline_optimize_data
-{
-    Bspline_xform* bxf;
-    Bspline_state *bst;
-    Bspline_parms *parms;
-    Volume *fixed;
-    Volume *moving;
-    Volume *moving_grad;
-};
 
 #if defined __cplusplus
 extern "C" {

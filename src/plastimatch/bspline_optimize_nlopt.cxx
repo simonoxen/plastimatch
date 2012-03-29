@@ -38,8 +38,7 @@ bspline_optimize_nlopt_score (
     }
 
     /* Compute cost and gradient */
-    bspline_score (bod->parms, bod->bst, bod->bxf, bod->fixed, 
-	bod->moving, bod->moving_grad);
+    bspline_score (bod);
 
     /* Copy gradient out */
     for (i = 0; i < bod->bxf->num_coeff; i++) {

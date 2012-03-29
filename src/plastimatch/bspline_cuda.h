@@ -119,16 +119,12 @@ extern "C" {
 
     plmcuda_EXPORT (
     void CUDA_bspline_mi_a,
-        Bspline_parms *parms,
-        Bspline_state *bst,
-        Bspline_xform *bxf
+        Bspline_optimize_data *bod
     );
 
     plmcuda_EXPORT (
     void CUDA_bspline_mse_j,
-        Bspline_parms* parms,
-        Bspline_state *bst,
-        Bspline_xform* bxf
+        Bspline_optimize_data *bod
     );
 
     //

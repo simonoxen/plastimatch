@@ -7,6 +7,7 @@
 #include "plm_config.h"
 #include <string>
 #include "bspline_landmarks.h"
+#include "bspline_optimize.h"
 #include "bspline_regularize.h"
 #include "bspline_regularize_state.h"
 #include "bspline_xform.h"
@@ -203,6 +204,16 @@ public:
     }
 };
 
+typedef struct bspline_optimize_data Bspline_optimize_data;
+struct bspline_optimize_data
+{
+    Bspline_xform* bxf;
+    Bspline_state *bst;
+    Bspline_parms *parms;
+    Volume *fixed;
+    Volume *moving;
+    Volume *moving_grad;
+};
 /* -----------------------------------------------------------------------
    Function declarations
    ----------------------------------------------------------------------- */
@@ -294,12 +305,7 @@ bspline_display_coeff_stats (Bspline_xform* bxf);
 
 gpuit_EXPORT
 void
-bspline_score (Bspline_parms *parms, 
-	       Bspline_state *bst,
-	       Bspline_xform* bxf, 
-	       Volume *fixed, 
-	       Volume *moving, 
-	       Volume *moving_grad);
+bspline_score (Bspline_optimize_data *bod);
 
 void
 bspline_update_grad (

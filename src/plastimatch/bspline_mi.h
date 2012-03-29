@@ -6,6 +6,7 @@
 
 #include "plm_config.h"
 #include "bspline.h"
+#include "bspline_optimize.h"
 #include "volume.h"
 
 /* -----------------------------------------------------------------------
@@ -22,49 +23,37 @@ bspline_initialize_mi (Bspline_parms* parms);
 gpuit_EXPORT
 void
 bspline_score_c_mi (
-    Bspline_parms *parms,
-    Bspline_state *bst, 
-    Bspline_xform *bxf
+    Bspline_optimize_data *bod
 );
 
 gpuit_EXPORT
 void
 bspline_score_d_mi (
-    Bspline_parms *parms,
-    Bspline_state *bst, 
-    Bspline_xform *bxf
+    Bspline_optimize_data *bod
 );
 
 gpuit_EXPORT
 void
 bspline_score_e_mi (
-    Bspline_parms *parms,
-    Bspline_state *bst, 
-    Bspline_xform *bxf
+    Bspline_optimize_data *bod
 );
 
 gpuit_EXPORT
 void
 bspline_score_f_mi (
-    Bspline_parms *parms,
-    Bspline_state *bst, 
-    Bspline_xform *bxf
+    Bspline_optimize_data *bod
 );
 
 gpuit_EXPORT
 void
 bspline_score_g_mi (
-    Bspline_parms *parms, 
-    Bspline_state *bst,
-    Bspline_xform *bxf
+    Bspline_optimize_data *bod
 );
 
 gpuit_EXPORT
 void
 bspline_score_h_mi (
-    Bspline_parms *parms, 
-    Bspline_state *bst,
-    Bspline_xform *bxf
+    Bspline_optimize_data *bod
 );
 
 #if defined __cplusplus

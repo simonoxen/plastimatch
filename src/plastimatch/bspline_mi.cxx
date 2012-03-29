@@ -17,6 +17,7 @@
 #if (CUDA_FOUND)
 #include "bspline_cuda.h"
 #endif
+#include "bspline_optimize.h"
 #include "bspline_opts.h"
 #include "interpolate.h"
 #include "logfile.h"
@@ -1564,11 +1565,13 @@ bspline_mi_pvi_6_dc_dv (
  */
 void
 bspline_score_h_mi (
-    Bspline_parms *parms, 
-    Bspline_state *bst,
-    Bspline_xform *bxf
+    Bspline_optimize_data *bod
 )
 {
+    Bspline_parms *parms = bod->parms;
+    Bspline_state *bst = bod->bst;
+    Bspline_xform *bxf = bod->bxf;
+
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
     Volume *moving_grad = parms->moving_grad;
@@ -1845,11 +1848,13 @@ bspline_score_h_mi (
  */
 void
 bspline_score_g_mi (
-    Bspline_parms *parms, 
-    Bspline_state *bst,
-    Bspline_xform *bxf
+    Bspline_optimize_data *bod
 )
 {
+    Bspline_parms *parms = bod->parms;
+    Bspline_state *bst = bod->bst;
+    Bspline_xform *bxf = bod->bxf;
+
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
     Volume *moving_grad = parms->moving_grad;
@@ -2107,11 +2112,13 @@ bspline_score_g_mi (
 #if (OPENMP_FOUND)
 void
 bspline_score_f_mi (
-    Bspline_parms *parms, 
-    Bspline_state *bst,
-    Bspline_xform *bxf
+    Bspline_optimize_data *bod
 )
 {
+    Bspline_parms *parms = bod->parms;
+    Bspline_state *bst = bod->bst;
+    Bspline_xform *bxf = bod->bxf;
+
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
     Volume *moving_grad = parms->moving_grad;
@@ -2413,11 +2420,13 @@ bspline_score_f_mi (
 #if (OPENMP_FOUND)
 void
 bspline_score_e_mi (
-    Bspline_parms *parms, 
-    Bspline_state *bst,
-    Bspline_xform *bxf
+    Bspline_optimize_data *bod
 )
 {
+    Bspline_parms *parms = bod->parms;
+    Bspline_state *bst = bod->bst;
+    Bspline_xform *bxf = bod->bxf;
+
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
     Volume *moving_grad = parms->moving_grad;
@@ -2762,11 +2771,13 @@ bspline_score_e_mi (
  */
 void
 bspline_score_d_mi (
-    Bspline_parms *parms, 
-    Bspline_state *bst,
-    Bspline_xform *bxf
+    Bspline_optimize_data *bod
 )
 {
+    Bspline_parms *parms = bod->parms;
+    Bspline_state *bst = bod->bst;
+    Bspline_xform *bxf = bod->bxf;
+
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
     Volume *moving_grad = parms->moving_grad;
@@ -3057,11 +3068,13 @@ bspline_score_d_mi (
 /* Mutual information version of implementation "C" */
 void
 bspline_score_c_mi (
-    Bspline_parms *parms, 
-    Bspline_state *bst,
-    Bspline_xform *bxf
+    Bspline_optimize_data *bod
 )
 {
+    Bspline_parms *parms = bod->parms;
+    Bspline_state *bst = bod->bst;
+    Bspline_xform *bxf = bod->bxf;
+
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
     Volume *moving_grad = parms->moving_grad;
