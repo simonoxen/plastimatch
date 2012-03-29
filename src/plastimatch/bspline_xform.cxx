@@ -186,6 +186,7 @@ bspline_xform_load (const char* filename)
             &dc[0], &dc[1], &dc[2], &dc[3], &dc[4],
             &dc[5], &dc[6], &dc[7], &dc[8]);
     if (rc != 9) {
+        printf ("** Notice: xform does not contain direction cosines\n");
         dc[0] = 1.; dc[3] = 0.; dc[6] = 0.;
         dc[1] = 0.; dc[4] = 1.; dc[7] = 0.;
         dc[2] = 0.; dc[5] = 0.; dc[8] = 1.;

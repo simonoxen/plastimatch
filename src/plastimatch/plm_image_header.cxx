@@ -104,7 +104,7 @@ Plm_image_header::set_from_gpuit_bspline (Bspline_xform *bxf)
 	bxf->img_dim,
 	bxf->img_origin,
 	bxf->img_spacing,
-	0);
+	(bxf->dc).m_direction_cosines);
 }
 
 void
