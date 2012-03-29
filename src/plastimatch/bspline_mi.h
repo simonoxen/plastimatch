@@ -17,62 +17,55 @@ extern "C" {
 
 gpuit_EXPORT
 void
-bspline_score_h_mi (
-    Bspline_parms *parms, 
-    Bspline_state *bst,
-    Bspline_xform *bxf, 
-    Volume *fixed, 
-    Volume *moving, 
-    Volume *moving_grad);
-
-gpuit_EXPORT
-void
-bspline_score_g_mi (Bspline_parms *parms, 
-    Bspline_state *bst,
-    Bspline_xform *bxf, 
-    Volume *fixed, 
-    Volume *moving, 
-    Volume *moving_grad);
+bspline_initialize_mi (Bspline_parms* parms);
 
 gpuit_EXPORT
 void
 bspline_score_c_mi (
     Bspline_parms *parms,
     Bspline_state *bst, 
-    Bspline_xform *bxf,
-    Volume *fixed,
-    Volume *moving,
-    Volume *moving_grad);
+    Bspline_xform *bxf
+);
 
 gpuit_EXPORT
 void
 bspline_score_d_mi (
     Bspline_parms *parms,
     Bspline_state *bst, 
-    Bspline_xform *bxf,
-    Volume *fixed,
-    Volume *moving,
-    Volume *moving_grad);
+    Bspline_xform *bxf
+);
 
 gpuit_EXPORT
 void
 bspline_score_e_mi (
     Bspline_parms *parms,
     Bspline_state *bst, 
-    Bspline_xform *bxf,
-    Volume *fixed,
-    Volume *moving,
-    Volume *moving_grad);
+    Bspline_xform *bxf
+);
 
 gpuit_EXPORT
 void
 bspline_score_f_mi (
     Bspline_parms *parms,
     Bspline_state *bst, 
-    Bspline_xform *bxf,
-    Volume *fixed,
-    Volume *moving,
-    Volume *moving_grad);
+    Bspline_xform *bxf
+);
+
+gpuit_EXPORT
+void
+bspline_score_g_mi (
+    Bspline_parms *parms, 
+    Bspline_state *bst,
+    Bspline_xform *bxf
+);
+
+gpuit_EXPORT
+void
+bspline_score_h_mi (
+    Bspline_parms *parms, 
+    Bspline_state *bst,
+    Bspline_xform *bxf
+);
 
 #if defined __cplusplus
 }

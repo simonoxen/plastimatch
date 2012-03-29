@@ -8,6 +8,7 @@
 #include <string.h>
 #include <time.h>
 #include "bspline.h"
+#include "bspline_mi.h"
 #if defined (HAVE_F2C_LIBRARY)
 #include "bspline_optimize_lbfgsb.h"
 #endif
@@ -31,33 +32,37 @@ check_gradient (
     plm_long roi_offset[3];
     Bspline_parms* parms = &options->parms;
 
+    parms->fixed = fixed;
+    parms->moving = moving;
+    parms->moving_grad = moving_grad;
+
     /* Allocate memory and build lookup tables */
     printf ("Allocating lookup tables\n");
     memset (roi_offset, 0, 3*sizeof(plm_long));
     if (options->input_xf_fn) {
-	bxf = bspline_xform_load (options->input_xf_fn);
+        bxf = bspline_xform_load (options->input_xf_fn);
     } else {
-	bxf = (Bspline_xform*) malloc (sizeof (Bspline_xform));
-	bspline_xform_initialize (
-	    bxf,
-	    fixed->offset,
-	    fixed->spacing,
-	    fixed->dim,
-	    roi_offset,
-	    fixed->dim,
-	    options->vox_per_rgn,
+        bxf = (Bspline_xform*) malloc (sizeof (Bspline_xform));
+        bspline_xform_initialize (
+            bxf,
+            fixed->offset,
+            fixed->spacing,
+            fixed->dim,
+            roi_offset,
+            fixed->dim,
+            options->vox_per_rgn,
         (fixed->direction_cosines).m_direction_cosines
-	);
-	if (options->random) {
-	    srand (time (0));
-	    for (i = 0; i < bxf->num_coeff; i++) {
-		bxf->coeff[i] = options->random_range[0]
-		    + (options->random_range[1] - options->random_range[0])
-		    * rand () / (double) RAND_MAX;
-	    }
-	}
+        );
+        if (options->random) {
+            srand (time (0));
+            for (i = 0; i < bxf->num_coeff; i++) {
+                bxf->coeff[i] = options->random_range[0]
+                    + (options->random_range[1] - options->random_range[0])
+                    * rand () / (double) RAND_MAX;
+            }
+        }
     }
-    bst = bspline_state_create (bxf, parms, fixed, moving, moving_grad);
+    bst = bspline_state_create (bxf, parms);
 
     /* Create scratch variables */
     x = (float*) malloc (sizeof(float) * bxf->num_coeff);
@@ -66,11 +71,11 @@ check_gradient (
 
     /* Save a copy of x */
     for (i = 0; i < bxf->num_coeff; i++) {
-	x[i] = bxf->coeff[i];
+        x[i] = bxf->coeff[i];
     }
 
     if (parms->metric == BMET_MI) {
-	bspline_initialize_mi (parms, fixed, moving);
+        bspline_initialize_mi (parms);
     }
 
     /* Get score and gradient */
@@ -78,65 +83,65 @@ check_gradient (
 
     /* Save a copy of score and gradient */
     for (i = 0; i < bxf->num_coeff; i++) {
-	grad[i] = bst->ssd.grad[i];
+        grad[i] = bst->ssd.grad[i];
     }
     score = bst->ssd.score;
 
     fp = fopen (options->output_fn, "w");
     if (options->process == CHECK_GRAD_PROCESS_LINE) {
-	/* For each step along line */
-	for (i = options->line_range[0]; i < options->line_range[1]; i++) {
-	    bst->it = i;
+        /* For each step along line */
+        for (i = options->line_range[0]; i < options->line_range[1]; i++) {
+            bst->it = i;
 
-	    /* Already computed for i = 0 */
-	    if (i == 0) {
-		fprintf (fp, "%4d, %12.12f\n", i, score);
-		continue;
-	    }
+            /* Already computed for i = 0 */
+            if (i == 0) {
+                fprintf (fp, "%4d, %12.12f\n", i, score);
+                continue;
+            }
 
-	    /* Create new location for x */
-	    for (j = 0; j < bxf->num_coeff; j++) {
-		bxf->coeff[j] = x[j] + i * options->step_size * grad[j];
-	    }
+            /* Create new location for x */
+            for (j = 0; j < bxf->num_coeff; j++) {
+                bxf->coeff[j] = x[j] + i * options->step_size * grad[j];
+            }
 
-	    /* Get score */
-	    bspline_score (parms, bst, bxf, fixed, moving, moving_grad);
-	
-	    /* Compute difference between grad and grad_fd */
-	    fprintf (fp, "%4d, %12.12f\n", i, bst->ssd.score);
+            /* Get score */
+            bspline_score (parms, bst, bxf, fixed, moving, moving_grad);
+        
+            /* Compute difference between grad and grad_fd */
+            fprintf (fp, "%4d, %12.12f\n", i, bst->ssd.score);
 
-	    // JAS 04.19.2010
-	    // This loop could take a while to exit.  This will
-	    // flush the buffer so that we will at least get the data
-	    // that we worked for if we get sick of waiting and opt
-	    // for early program termination.
-	    fflush(fp);
-	}
+            // JAS 04.19.2010
+            // This loop could take a while to exit.  This will
+            // flush the buffer so that we will at least get the data
+            // that we worked for if we get sick of waiting and opt
+            // for early program termination.
+            fflush(fp);
+        }
     } else {
-	/* Loop through directions */
-	for (i = 0; i < bxf->num_coeff; i++) {
-	    /* Take a step in this direction */
-	    for (j = 0; j < bxf->num_coeff; j++) {
-		bxf->coeff[j] = x[j];
-	    }
-	    bxf->coeff[i] = bxf->coeff[i] + options->step_size;
+        /* Loop through directions */
+        for (i = 0; i < bxf->num_coeff; i++) {
+            /* Take a step in this direction */
+            for (j = 0; j < bxf->num_coeff; j++) {
+                bxf->coeff[j] = x[j];
+            }
+            bxf->coeff[i] = bxf->coeff[i] + options->step_size;
 
-	    /* Get score */
-	    bspline_score (parms, bst, bxf, fixed, moving, moving_grad);
-	
-	    /* Stash score difference in grad_fd */
-	    grad_fd[i] = (bst->ssd.score - score) / options->step_size;
+            /* Get score */
+            bspline_score (parms, bst, bxf, fixed, moving, moving_grad);
+        
+            /* Stash score difference in grad_fd */
+            grad_fd[i] = (bst->ssd.score - score) / options->step_size;
 
-	    /* Compute difference between grad and grad_fd */
-	    fprintf (fp, "%12.12f %12.12f\n", grad[i], grad_fd[i]);
-	}
+            /* Compute difference between grad and grad_fd */
+            fprintf (fp, "%12.12f %12.12f\n", grad[i], grad_fd[i]);
+        }
     }
 
     fclose (fp);
     free (x);
     free (grad);
     free (grad_fd);
-    bspline_state_destroy (bst, parms, bxf, fixed, moving, moving_grad);
+    bspline_state_destroy (bst, parms, bxf);
     bspline_xform_free (bxf);
     free (bxf);
     bspline_parms_free (parms);

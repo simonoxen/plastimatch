@@ -9,6 +9,7 @@
 #include <math.h>
 
 #include "bspline.h"
+#include "bspline_mi.h"
 #include "bspline_optimize.h"
 #include "bspline_optimize_liblbfgs.h"
 #include "bspline_optimize_lbfgsb.h"
@@ -44,18 +45,16 @@ static void
 bspline_optimize_select (
     Bspline_xform* bxf, 
     Bspline_state *bst, 
-    Bspline_parms *parms, 
-    Volume *fixed, 
-    Volume *moving, 
-    Volume *moving_grad)
+    Bspline_parms *parms
+)
 {
     Bspline_optimize_data bod;
     bod.bxf = bxf;
     bod.bst = bst;
     bod.parms = parms;
-    bod.fixed = fixed;
-    bod.moving = moving;
-    bod.moving_grad = moving_grad;
+    bod.fixed = parms->fixed;
+    bod.moving = parms->moving;
+    bod.moving_grad = parms->moving_grad;
 
     switch (parms->optimization) {
     case BOPT_LBFGSB:
@@ -112,22 +111,26 @@ bspline_optimize (
     Volume *moving, 
     Volume *moving_grad)
 {
+    parms->fixed = fixed;
+    parms->moving = moving;
+    parms->moving_grad = moving_grad;
+
     Bspline_state *bst;
 
-    bst = bspline_state_create (bxf, parms, fixed, moving, moving_grad);
+    bst = bspline_state_create (bxf, parms);
     log_parms (parms);
     log_bxf_header (bxf);
 
     if (parms->metric == BMET_MI) {
-        bspline_initialize_mi (parms, fixed, moving);
+        bspline_initialize_mi (parms);
     }
 
     /* Do the optimization */
-    bspline_optimize_select (bxf, bst, parms, fixed, moving, moving_grad);
+    bspline_optimize_select (bxf, bst, parms);
 
     if (bst_in) {
         *bst_in = bst;
     } else {
-        bspline_state_destroy (bst, parms, bxf, fixed, moving, moving_grad);
+        bspline_state_destroy (bst, parms, bxf);
     }
 }

@@ -3,16 +3,16 @@
    ----------------------------------------------------------------------- */
 /* -----------------------------------------------------------------------
     Proposed variable naming guide:
-	Fixed image voxel                (f[3]), fidx <currently (fi,fj,fk),fv>
-	Moving image voxel               (m[3]), midx < ditto >
-	    - what about ROI's              ?
-	    - what about physical coords    ?
-	Tile (fixed)                        (t[3]), tidx <currently p[3]>
-	Offset within tile (fixed)          (o[3]), oidx <currently q[3]>
-	Control point                       (c[3]), cidx <currently (i,j,k), m>
-	Coefficient array                   ?                <currently cidx>
-	Multiplier LUT                      qidx
-	Index LUT                           pidx
+        Fixed image voxel                (f[3]), fidx <currently (fi,fj,fk),fv>
+        Moving image voxel               (m[3]), midx < ditto >
+            - what about ROI's              ?
+            - what about physical coords    ?
+        Tile (fixed)                        (t[3]), tidx <currently p[3]>
+        Offset within tile (fixed)          (o[3]), oidx <currently q[3]>
+        Control point                       (c[3]), cidx <currently (i,j,k), m>
+        Coefficient array                   ?                <currently cidx>
+        Multiplier LUT                      qidx
+        Index LUT                           pidx
 
     qlut = Multiplier LUT
     clut = Index LUT
@@ -64,11 +64,13 @@ static void
 bspline_cuda_state_create (
     Bspline_state *bst,           /* Modified in routine */
     Bspline_xform* bxf,
-    Bspline_parms *parms,
-    Volume *fixed, 
-    Volume *moving, 
-    Volume *moving_grad)
+    Bspline_parms *parms
+)
 {
+    Volume *fixed = parms->fixed;
+    Volume *moving = parms->moving;
+    Volume *moving_grad = parms->moving_grad;
+
 #if (CUDA_FOUND)
     Dev_Pointers_Bspline* dev_ptrs 
         = (Dev_Pointers_Bspline*) malloc (sizeof (Dev_Pointers_Bspline));
@@ -87,7 +89,7 @@ bspline_cuda_state_create (
             break;
         default:
             printf ("Warning: option -f %c unavailble.  Switching to -f j\n",
-		parms->implementation);
+                parms->implementation);
             CUDA_bspline_mse_init_j (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
             break;
         }
@@ -123,10 +125,8 @@ bspline_cuda_state_create (
 Bspline_state *
 bspline_state_create (
     Bspline_xform *bxf, 
-    Bspline_parms *parms, 
-    Volume *fixed, 
-    Volume *moving, 
-    Volume *moving_grad)
+    Bspline_parms *parms
+)
 {
     Bspline_state *bst = (Bspline_state*) malloc (sizeof (Bspline_state));
     Reg_parms* reg_parms = &parms->reg_parms;
@@ -137,11 +137,11 @@ bspline_state_create (
     bst->ssd.grad = (float*) malloc (bxf->num_coeff * sizeof(float));
     memset (bst->ssd.grad, 0, bxf->num_coeff * sizeof(float));
 
-    bspline_cuda_state_create (bst, bxf, parms, fixed, moving, moving_grad);
+    bspline_cuda_state_create (bst, bxf, parms);
 
     if (reg_parms->lambda > 0.0f) {
-        rst->fixed = fixed;
-        rst->moving = moving;
+        rst->fixed = parms->fixed;
+        rst->moving = parms->moving;
         bspline_regularize_initialize (reg_parms, rst, bxf);
     }
 
@@ -197,7 +197,7 @@ int* calc_offsets(int* tile_dims, int* cdims)
 
     int i;
     for(i = 0; i < num_tiles; i++)
-	output[i] = (vox_per_tile + pad) * i;
+        output[i] = (vox_per_tile + pad) * i;
 
     return output;
 }
@@ -230,7 +230,7 @@ void find_knots (
     int num_tiles_x = cdims[0] - 3;
     int num_tiles_y = cdims[1] - 3;
     int num_tiles_z = cdims[2] - 3;
-	
+        
     // First get the [x,y,z] coordinate of
     // the tile in the control grid.
     tile_loc[0] = tile_num % num_tiles_x;
@@ -251,11 +251,11 @@ void find_knots (
     // Find 64 knots' [x,y,z] coordinates
     // and convert into a linear knot index
     for (k = -1; k < 3; k++)
-	for (j = -1; j < 3; j++)
-	    for (i = -1; i < 3; i++)
-	    {
-		knots[idx++] = (cdims[0]*cdims[1]*(tile_loc[2]+k)) + (cdims[0]*(tile_loc[1]+j)) + (tile_loc[0]+i);
-	    }
+        for (j = -1; j < 3; j++)
+            for (i = -1; i < 3; i++)
+            {
+                knots[idx++] = (cdims[0]*cdims[1]*(tile_loc[2]+k)) + (cdims[0]*(tile_loc[1]+j)) + (tile_loc[0]+i);
+            }
 
 }
 
@@ -338,7 +338,7 @@ dump_gradient (Bspline_xform* bxf, Bspline_score* ssd, const char* fn)
     make_directory_recursive (fn);
     fp = fopen (fn, "wb");
     for (i = 0; i < bxf->num_coeff; i++) {
-	fprintf (fp, "%20.20f\n", ssd->grad[i]);
+        fprintf (fp, "%20.20f\n", ssd->grad[i]);
     }
     fclose (fp);
 }
@@ -381,12 +381,12 @@ dump_hist (BSPLINE_MI_Hist* mi_hist, int it, const std::string& prefix)
     fp = fopen (fn.c_str(), "wb");
     if (!fp) return;
     for (i = 0, v = 0; i < mi_hist->fixed.bins; i++) {
-	for (j = 0; j < mi_hist->moving.bins; j++, v++) {
-	    if (j_hist[v] > 0) {
-		fprintf (fp, "%u %u %u %g\n", (unsigned int) i, 
-		    (unsigned int) j, (unsigned int) v, j_hist[v]);
-	    }
-	}
+        for (j = 0; j < mi_hist->moving.bins; j++, v++) {
+            if (j_hist[v] > 0) {
+                fprintf (fp, "%u %u %u %g\n", (unsigned int) i, 
+                    (unsigned int) j, (unsigned int) v, j_hist[v]);
+            }
+        }
     }
     fclose (fp);
 }
@@ -400,13 +400,13 @@ bspline_display_coeff_stats (Bspline_xform* bxf)
     cf_avg = 0.0;
     cf_min = cf_max = bxf->coeff[0];
     for (i = 0; i < bxf->num_coeff; i++) {
-	cf_avg += bxf->coeff[i];
-	if (cf_min > bxf->coeff[i]) cf_min = bxf->coeff[i];
-	if (cf_max < bxf->coeff[i]) cf_max = bxf->coeff[i];
+        cf_avg += bxf->coeff[i];
+        if (cf_min > bxf->coeff[i]) cf_min = bxf->coeff[i];
+        if (cf_max < bxf->coeff[i]) cf_max = bxf->coeff[i];
     }
     logfile_printf ("                    "
-		    "CMIN %6.2f CAVG %6.2f CMAX %6.2f\n", 
-		    cf_min, cf_avg / bxf->num_coeff, cf_max);
+                    "CMIN %6.2f CAVG %6.2f CMAX %6.2f\n", 
+                    cf_min, cf_avg / bxf->num_coeff, cf_max);
 }
 
 void
@@ -417,29 +417,29 @@ bspline_save_debug_state (
 )
 {
     if (parms->debug) {
-	std::string fn;
-	char buf[1024];
+        std::string fn;
+        char buf[1024];
 
-	if (parms->metric == BMET_MI) {
-	    sprintf (buf, "%02d_grad_mi_%03d_%03d.txt", 
-		parms->debug_stage, bst->it, bst->feval);
-	} else {
-	    sprintf (buf, "%02d_grad_mse_%03d_%03d.txt", 
-		parms->debug_stage, bst->it, bst->feval);
-	}
-	fn = parms->debug_dir + "/" + buf;
-	dump_gradient (bxf, &bst->ssd, fn.c_str());
+        if (parms->metric == BMET_MI) {
+            sprintf (buf, "%02d_grad_mi_%03d_%03d.txt", 
+                parms->debug_stage, bst->it, bst->feval);
+        } else {
+            sprintf (buf, "%02d_grad_mse_%03d_%03d.txt", 
+                parms->debug_stage, bst->it, bst->feval);
+        }
+        fn = parms->debug_dir + "/" + buf;
+        dump_gradient (bxf, &bst->ssd, fn.c_str());
 
-	sprintf (buf, "%02d_coeff_%03d_%03d.txt", 
-	    parms->debug_stage, bst->it, bst->feval);
-	fn = parms->debug_dir + "/" + buf;
-	bspline_xform_save (bxf, fn.c_str());
+        sprintf (buf, "%02d_coeff_%03d_%03d.txt", 
+            parms->debug_stage, bst->it, bst->feval);
+        fn = parms->debug_dir + "/" + buf;
+        bspline_xform_save (bxf, fn.c_str());
 
-	if (parms->metric == BMET_MI) {
-	    sprintf (buf, "%02d_", parms->debug_stage);
-	    fn = parms->debug_dir + "/" + buf;
-	    dump_hist (&parms->mi_hist, bst->it, fn);
-	}
+        if (parms->metric == BMET_MI) {
+            sprintf (buf, "%02d_", parms->debug_stage);
+            fn = parms->debug_dir + "/" + buf;
+            dump_hist (&parms->mi_hist, bst->it, fn);
+        }
     }
 }
 
@@ -464,12 +464,13 @@ void
 bspline_state_destroy (
     Bspline_state *bst,
     Bspline_parms *parms, 
-    Bspline_xform *bxf, 
-    Volume* fixed,
-    Volume* moving,
-    Volume* moving_grad
+    Bspline_xform *bxf
 )
 {
+    Volume *fixed = parms->fixed;
+    Volume *moving = parms->moving;
+    Volume *moving_grad = parms->moving_grad;
+
     Reg_parms* reg_parms = &parms->reg_parms;
 
     if (bst->ssd.grad) {
@@ -524,18 +525,18 @@ bspline_interp_pix (
     out[0] = out[1] = out[2] = 0;
     m = 0;
     for (k = 0; k < 4; k++) {
-	for (j = 0; j < 4; j++) {
-	    for (i = 0; i < 4; i++) {
-		cidx = (p[2] + k) * bxf->cdims[1] * bxf->cdims[0]
-			+ (p[1] + j) * bxf->cdims[0]
-			+ (p[0] + i);
-		cidx = cidx * 3;
-		out[0] += q_lut[m] * bxf->coeff[cidx+0];
-		out[1] += q_lut[m] * bxf->coeff[cidx+1];
-		out[2] += q_lut[m] * bxf->coeff[cidx+2];
-		m ++;
-	    }
-	}
+        for (j = 0; j < 4; j++) {
+            for (i = 0; i < 4; i++) {
+                cidx = (p[2] + k) * bxf->cdims[1] * bxf->cdims[0]
+                        + (p[1] + j) * bxf->cdims[0]
+                        + (p[0] + i);
+                cidx = cidx * 3;
+                out[0] += q_lut[m] * bxf->coeff[cidx+0];
+                out[1] += q_lut[m] * bxf->coeff[cidx+1];
+                out[2] += q_lut[m] * bxf->coeff[cidx+2];
+                m ++;
+            }
+        }
     }
 }
 
@@ -555,15 +556,15 @@ bspline_interp_pix_b (
     out[0] = out[1] = out[2] = 0;
     m = 0;
     for (k = 0; k < 4; k++) {
-	for (j = 0; j < 4; j++) {
-	    for (i = 0; i < 4; i++) {
-		cidx = 3 * c_lut[m];
-		out[0] += q_lut[m] * bxf->coeff[cidx+0];
-		out[1] += q_lut[m] * bxf->coeff[cidx+1];
-		out[2] += q_lut[m] * bxf->coeff[cidx+2];
-		m ++;
-	    }
-	}
+        for (j = 0; j < 4; j++) {
+            for (i = 0; i < 4; i++) {
+                cidx = 3 * c_lut[m];
+                out[0] += q_lut[m] * bxf->coeff[cidx+0];
+                out[1] += q_lut[m] * bxf->coeff[cidx+1];
+                out[2] += q_lut[m] * bxf->coeff[cidx+2];
+                m ++;
+            }
+        }
     }
 }
 
@@ -580,22 +581,22 @@ bspline_interpolate_vf (Volume* interp,
 
     memset (img, 0, interp->npix*3*sizeof(float));
     for (k = 0; k < bxf->roi_dim[2]; k++) {
-	p[2] = k / bxf->vox_per_rgn[2];
-	q[2] = k % bxf->vox_per_rgn[2];
-	for (j = 0; j < bxf->roi_dim[1]; j++) {
-	    p[1] = j / bxf->vox_per_rgn[1];
-	    q[1] = j % bxf->vox_per_rgn[1];
-	    for (i = 0; i < bxf->roi_dim[0]; i++) {
-		p[0] = i / bxf->vox_per_rgn[0];
-		q[0] = i % bxf->vox_per_rgn[0];
-		qidx = volume_index (bxf->vox_per_rgn, q);
-		v = (k+bxf->roi_offset[2]) * interp->dim[0] * interp->dim[1]
-		    + (j+bxf->roi_offset[1]) * interp->dim[0] 
-		    + (i+bxf->roi_offset[0]);
-		out = &img[3*v];
-		bspline_interp_pix (out, bxf, p, qidx);
-	    }
-	}
+        p[2] = k / bxf->vox_per_rgn[2];
+        q[2] = k % bxf->vox_per_rgn[2];
+        for (j = 0; j < bxf->roi_dim[1]; j++) {
+            p[1] = j / bxf->vox_per_rgn[1];
+            q[1] = j % bxf->vox_per_rgn[1];
+            for (i = 0; i < bxf->roi_dim[0]; i++) {
+                p[0] = i / bxf->vox_per_rgn[0];
+                q[0] = i % bxf->vox_per_rgn[0];
+                qidx = volume_index (bxf->vox_per_rgn, q);
+                v = (k+bxf->roi_offset[2]) * interp->dim[0] * interp->dim[1]
+                    + (j+bxf->roi_offset[1]) * interp->dim[0] 
+                    + (i+bxf->roi_offset[0]);
+                out = &img[3*v];
+                bspline_interp_pix (out, bxf, p, qidx);
+            }
+        }
     }
 }
 
@@ -603,9 +604,9 @@ Volume*
 bspline_compute_vf (const Bspline_xform* bxf)
 {
     Volume* vf = new Volume (
-	bxf->img_dim, bxf->img_origin, 
-	bxf->img_spacing, 0, 
-	PT_VF_FLOAT_INTERLEAVED, 3
+        bxf->img_dim, bxf->img_origin, 
+        bxf->img_spacing, 0, 
+        PT_VF_FLOAT_INTERLEAVED, 3
     );
     bspline_interpolate_vf (vf, bxf);
 
@@ -643,11 +644,11 @@ bspline_sort_sets (float* cond_x, float* cond_y, float* cond_z,
 
     /* Rackem' Up */
     for (sidx=0; sidx<64; sidx++) {
-	kidx = k_lut[sidx];
+        kidx = k_lut[sidx];
 
-	cond_x[ (64*kidx) + sidx ] = sets_x[sidx];
-	cond_y[ (64*kidx) + sidx ] = sets_y[sidx];
-	cond_z[ (64*kidx) + sidx ] = sets_z[sidx];
+        cond_x[ (64*kidx) + sidx ] = sets_x[sidx];
+        cond_y[ (64*kidx) + sidx ] = sets_y[sidx];
+        cond_z[ (64*kidx) + sidx ] = sets_z[sidx];
     }
 
     free (k_lut);
@@ -666,18 +667,18 @@ bspline_update_grad (
 
     m = 0;
     for (k = 0; k < 4; k++) {
-	for (j = 0; j < 4; j++) {
-	    for (i = 0; i < 4; i++) {
-		cidx = (p[2] + k) * bxf->cdims[1] * bxf->cdims[0]
-			+ (p[1] + j) * bxf->cdims[0]
-			+ (p[0] + i);
-		cidx = cidx * 3;
-		ssd->grad[cidx+0] += dc_dv[0] * q_lut[m];
-		ssd->grad[cidx+1] += dc_dv[1] * q_lut[m];
-		ssd->grad[cidx+2] += dc_dv[2] * q_lut[m];
-		m ++;
-	    }
-	}
+        for (j = 0; j < 4; j++) {
+            for (i = 0; i < 4; i++) {
+                cidx = (p[2] + k) * bxf->cdims[1] * bxf->cdims[0]
+                        + (p[1] + j) * bxf->cdims[0]
+                        + (p[0] + i);
+                cidx = cidx * 3;
+                ssd->grad[cidx+0] += dc_dv[0] * q_lut[m];
+                ssd->grad[cidx+1] += dc_dv[1] * q_lut[m];
+                ssd->grad[cidx+2] += dc_dv[2] * q_lut[m];
+                m ++;
+            }
+        }
     }
 }
 
@@ -696,15 +697,15 @@ bspline_update_grad_b (
 
     m = 0;
     for (k = 0; k < 4; k++) {
-	for (j = 0; j < 4; j++) {
-	    for (i = 0; i < 4; i++) {
-		cidx = 3 * c_lut[m];
-		bscore->grad[cidx+0] += dc_dv[0] * q_lut[m];
-		bscore->grad[cidx+1] += dc_dv[1] * q_lut[m];
-		bscore->grad[cidx+2] += dc_dv[2] * q_lut[m];
-		m ++;
-	    }
-	}
+        for (j = 0; j < 4; j++) {
+            for (i = 0; i < 4; i++) {
+                cidx = 3 * c_lut[m];
+                bscore->grad[cidx+0] += dc_dv[0] * q_lut[m];
+                bscore->grad[cidx+1] += dc_dv[1] * q_lut[m];
+                bscore->grad[cidx+2] += dc_dv[2] * q_lut[m];
+                m ++;
+            }
+        }
     }
 }
 
@@ -741,8 +742,8 @@ report_score (
     ssd_grad_norm = 0;
     ssd_grad_mean = 0;
     for (i = 0; i < bxf->num_coeff; i++) {
-	ssd_grad_mean += bst->ssd.grad[i];
-	ssd_grad_norm += fabs (bst->ssd.grad[i]);
+        ssd_grad_mean += bst->ssd.grad[i];
+        ssd_grad_norm += fabs (bst->ssd.grad[i]);
     }
 
     /* First line, part 1 - iterations */
@@ -752,44 +753,44 @@ report_score (
        The extra decimal point resolution helps in seeing
        if the optimizer is performing adequately. */
     if (reg_parms->lambda > 0 || blm->num_landmarks > 0) {
-	logfile_printf ("SCORE ");
+        logfile_printf ("SCORE ");
     } else if (parms->metric == BMET_MI) {
-	logfile_printf ("MI  ");
+        logfile_printf ("MI  ");
     } else {
-	logfile_printf ("MSE ");
+        logfile_printf ("MSE ");
     }
     if (parms->metric == BMET_MI) {
-	logfile_printf ("%1.8f ", ssd->score);
+        logfile_printf ("%1.8f ", ssd->score);
     } else {
-	logfile_printf ("%9.3f ", ssd->score);
+        logfile_printf ("%9.3f ", ssd->score);
     }
     /* First line, part 3 - misc stats */
     logfile_printf (
-	    "NV %6d GM %9.3f GN %9.3f [ %9.3f s ]\n",
-	    ssd->num_vox, ssd_grad_mean, ssd_grad_norm, 
-	    ssd->time_smetric + ssd->time_rmetric);
+            "NV %6d GM %9.3f GN %9.3f [ %9.3f s ]\n",
+            ssd->num_vox, ssd_grad_mean, ssd_grad_norm, 
+            ssd->time_smetric + ssd->time_rmetric);
 
     /* Second line - extra stats if regularization is enabled */
     if (reg_parms->lambda > 0 || blm->num_landmarks > 0) {
-	/* Part 1 - similarity metric */
-	logfile_printf (
-	    "         %s %9.3f ", 
-	    (parms->metric == BMET_MI) ? "MI   " : "MSE  ", ssd->smetric);
-	/* Part 2 - regularization metric */
-	if (reg_parms->lambda > 0) {
-	    logfile_printf ("RM %9.3f ", 
-		reg_parms->lambda * bst->ssd.rmetric);
-	}
-	/* Part 3 - landmark metric */
-	if (blm->num_landmarks > 0) {
-	    logfile_printf ("LM %9.3f ", 
-		blm->landmark_stiffness * bst->ssd.lmetric);
-	}
-	/* Part 4 - timing */
-	if (reg_parms->lambda > 0) {
-	    logfile_printf ("[ %9.3f | %9.3f ]\n", 
-		ssd->time_smetric, ssd->time_rmetric);
-	}
+        /* Part 1 - similarity metric */
+        logfile_printf (
+            "         %s %9.3f ", 
+            (parms->metric == BMET_MI) ? "MI   " : "MSE  ", ssd->smetric);
+        /* Part 2 - regularization metric */
+        if (reg_parms->lambda > 0) {
+            logfile_printf ("RM %9.3f ", 
+                reg_parms->lambda * bst->ssd.rmetric);
+        }
+        /* Part 3 - landmark metric */
+        if (blm->num_landmarks > 0) {
+            logfile_printf ("LM %9.3f ", 
+                blm->landmark_stiffness * bst->ssd.lmetric);
+        }
+        /* Part 4 - timing */
+        if (reg_parms->lambda > 0) {
+            logfile_printf ("[ %9.3f | %9.3f ]\n", 
+                ssd->time_smetric, ssd->time_rmetric);
+        }
     }
 }
 
@@ -918,39 +919,39 @@ bspline_transform_point (
 
     /* Default value is untransformed point */
     for (d = 0; d < 3; d++) {
-	point_out[d] = point_in[d];
+        point_out[d] = point_in[d];
     }
 
     /* Compute tile and offset within tile */
     for (d = 0; d < 3; d++) {
-	float img_ijk[3];         /* Voxel coordinate of point_in */
-	img_ijk[d] = (point_in[d] - bxf->img_origin[d]) / bxf->img_spacing[d];
-	p[d] = (int) floorf (
-	    (img_ijk[d] - bxf->roi_offset[d]) / bxf->vox_per_rgn[d]);
-	/* If point lies outside of B-spline domain, return point_in */
-	if (p[d] < 0 || p[d] >= bxf->rdims[d]) {
-	    printf ("Unwarped point, outside roi: %f %f %f\n", 
-		point_out[0], point_out[1], point_out[2]);
-	    return;
-	}
-	q[d] = ((img_ijk[d] - bxf->roi_offset[d])
-	    - p[d] * bxf->vox_per_rgn[d]) / bxf->vox_per_rgn[d];
+        float img_ijk[3];         /* Voxel coordinate of point_in */
+        img_ijk[d] = (point_in[d] - bxf->img_origin[d]) / bxf->img_spacing[d];
+        p[d] = (int) floorf (
+            (img_ijk[d] - bxf->roi_offset[d]) / bxf->vox_per_rgn[d]);
+        /* If point lies outside of B-spline domain, return point_in */
+        if (p[d] < 0 || p[d] >= bxf->rdims[d]) {
+            printf ("Unwarped point, outside roi: %f %f %f\n", 
+                point_out[0], point_out[1], point_out[2]);
+            return;
+        }
+        q[d] = ((img_ijk[d] - bxf->roi_offset[d])
+            - p[d] * bxf->vox_per_rgn[d]) / bxf->vox_per_rgn[d];
     }
 
 #if defined (commentout)
     printf ("p = [%d, %d, %d], q = [%f, %f, %f]\n", 
-	p[0], p[1], p[2], q[0], q[1], q[2]);
+        p[0], p[1], p[2], q[0], q[1], q[2]);
 #endif
 
     /* Compute basis function values for this offset */
     for (d = 0; d < 3; d++) {
-	float t3 = q[d]*q[d]*q[d];
-	float t2 = q[d]*q[d];
-	float t1 = q[d];
-	q_mini[d][0] = (1.0/6.0) * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
-	q_mini[d][1] = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
-	q_mini[d][2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
-	q_mini[d][3] = (1.0/6.0) * (+ 1.0 * t3);
+        float t3 = q[d]*q[d]*q[d];
+        float t2 = q[d]*q[d];
+        float t1 = q[d];
+        q_mini[d][0] = (1.0/6.0) * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
+        q_mini[d][1] = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
+        q_mini[d][2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
+        q_mini[d][3] = (1.0/6.0) * (+ 1.0 * t3);
     }
 
     /* Compute displacement vector and add to point_out */
@@ -958,31 +959,31 @@ bspline_transform_point (
     printf ("---\n");
 #endif
     for (k = 0; k < 4; k++) {
-	for (j = 0; j < 4; j++) {
-	    for (i = 0; i < 4; i++) {
-		float ql;
-		int cidx;
+        for (j = 0; j < 4; j++) {
+            for (i = 0; i < 4; i++) {
+                float ql;
+                int cidx;
 
-		cidx = (p[2] + k) * bxf->cdims[1] * bxf->cdims[0]
-		    + (p[1] + j) * bxf->cdims[0]
-		    + (p[0] + i);
-		cidx = cidx * 3;
-		ql = q_mini[0][i] * q_mini[1][j] * q_mini[2][k];
-
-#if defined (commentout)
-		printf ("(%f) + [%f] + [%f] = ", point_out[0],
-		    ql, bxf->coeff[cidx+0]);
-#endif
-
-		point_out[0] += ql * bxf->coeff[cidx+0];
-		point_out[1] += ql * bxf->coeff[cidx+1];
-		point_out[2] += ql * bxf->coeff[cidx+2];
+                cidx = (p[2] + k) * bxf->cdims[1] * bxf->cdims[0]
+                    + (p[1] + j) * bxf->cdims[0]
+                    + (p[0] + i);
+                cidx = cidx * 3;
+                ql = q_mini[0][i] * q_mini[1][j] * q_mini[2][k];
 
 #if defined (commentout)
-		printf (" = (%f)\n", point_out[0]);
+                printf ("(%f) + [%f] + [%f] = ", point_out[0],
+                    ql, bxf->coeff[cidx+0]);
 #endif
-	    }
-	}
+
+                point_out[0] += ql * bxf->coeff[cidx+0];
+                point_out[1] += ql * bxf->coeff[cidx+1];
+                point_out[2] += ql * bxf->coeff[cidx+2];
+
+#if defined (commentout)
+                printf (" = (%f)\n", point_out[0]);
+#endif
+            }
+        }
     }
 }
 
@@ -998,105 +999,111 @@ bspline_score (
     Reg_parms* reg_parms = &parms->reg_parms;
     Bspline_landmarks* blm = &parms->blm;
 
+    /* JAS 2012.03.29 -- Temporary...
+     *   pulling it back to here before hitting the optimizers */
+    parms->fixed = fixed;
+    parms->moving = moving;
+    parms->moving_grad = moving_grad;
+
 #if (CUDA_FOUND)
     if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
 
-	/* Be sure we loaded the CUDA plugin */
-	if (!delayload_cuda ()) { exit (0); }
-	LOAD_LIBRARY (libplmcuda);
-	LOAD_SYMBOL (CUDA_bspline_mse_j, libplmcuda);
+        /* Be sure we loaded the CUDA plugin */
+        if (!delayload_cuda ()) { exit (0); }
+        LOAD_LIBRARY (libplmcuda);
+        LOAD_SYMBOL (CUDA_bspline_mse_j, libplmcuda);
 
-	switch (parms->implementation) {
-	case 'j':
-	    CUDA_bspline_mse_j (parms, bst, bxf, fixed, moving, 
-		moving_grad, (Dev_Pointers_Bspline *) bst->dev_ptrs);
-	    break;
-	default:
-	    CUDA_bspline_mse_j (parms, bst, bxf, fixed, moving, 
-		moving_grad, (Dev_Pointers_Bspline *) bst->dev_ptrs);
-	    break;
-	}
+        switch (parms->implementation) {
+        case 'j':
+            CUDA_bspline_mse_j (parms, bst, bxf, fixed, moving, 
+                moving_grad, (Dev_Pointers_Bspline *) bst->dev_ptrs);
+            break;
+        default:
+            CUDA_bspline_mse_j (parms, bst, bxf, fixed, moving, 
+                moving_grad, (Dev_Pointers_Bspline *) bst->dev_ptrs);
+            break;
+        }
 
-	UNLOAD_LIBRARY (libplmcuda);
+        UNLOAD_LIBRARY (libplmcuda);
 
     }
     else if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MI)) {
 
-	/* Be sure we loaded the CUDA plugin */
-	if (!delayload_cuda ()) { exit (0); }
-	LOAD_LIBRARY (libplmcuda);
-	LOAD_SYMBOL (CUDA_bspline_mi_a, libplmcuda);
+        /* Be sure we loaded the CUDA plugin */
+        if (!delayload_cuda ()) { exit (0); }
+        LOAD_LIBRARY (libplmcuda);
+        LOAD_SYMBOL (CUDA_bspline_mi_a, libplmcuda);
 
-	switch (parms->implementation) {
-	case 'a':
-	    CUDA_bspline_mi_a (parms, bst, bxf, fixed, moving, 
-		moving_grad, (Dev_Pointers_Bspline *) bst->dev_ptrs);
-	    break;
-	default: 
-	    CUDA_bspline_mi_a (parms, bst, bxf, fixed, moving, 
-		moving_grad, (Dev_Pointers_Bspline *) bst->dev_ptrs);
-	    break;
-	}
+        switch (parms->implementation) {
+        case 'a':
+            CUDA_bspline_mi_a (parms, bst, bxf, fixed, moving, 
+                moving_grad, (Dev_Pointers_Bspline *) bst->dev_ptrs);
+            break;
+        default: 
+            CUDA_bspline_mi_a (parms, bst, bxf, fixed, moving, 
+                moving_grad, (Dev_Pointers_Bspline *) bst->dev_ptrs);
+            break;
+        }
 
-	UNLOAD_LIBRARY (libplmcuda);
+        UNLOAD_LIBRARY (libplmcuda);
     }
 #endif
 
     if ((parms->threading == BTHR_CPU) && (parms->metric == BMET_MSE)) {
-	switch (parms->implementation) {
-	case 'c':
-	    bspline_score_c_mse (parms, bst, bxf, fixed, moving, moving_grad);
-	    break;
-	case 'g':
-	    bspline_score_g_mse (parms, bst, bxf, fixed, moving, moving_grad);
-	    break;
-	case 'h':
-	    bspline_score_h_mse (parms, bst, bxf, fixed, moving, moving_grad);
-	    break;
-	case 'i':
-	    bspline_score_i_mse (parms, bst, bxf, fixed, moving, moving_grad);
-	    break;
-	default:
-	    bspline_score_g_mse (parms, bst, bxf, fixed, moving, moving_grad);
-	    break;
-	}
+        switch (parms->implementation) {
+        case 'c':
+            bspline_score_c_mse (parms, bst, bxf);
+            break;
+        case 'g':
+            bspline_score_g_mse (parms, bst, bxf);
+            break;
+        case 'h':
+            bspline_score_h_mse (parms, bst, bxf);
+            break;
+        case 'i':
+            bspline_score_i_mse (parms, bst, bxf);
+            break;
+        default:
+            bspline_score_g_mse (parms, bst, bxf);
+            break;
+        }
     }
 
     if ((parms->threading == BTHR_CPU) && (parms->metric == BMET_MI)) {
-	switch (parms->implementation) {
-	case 'c':
-	    bspline_score_c_mi (parms, bst, bxf, fixed, moving, moving_grad);
-	    break;
+        switch (parms->implementation) {
+        case 'c':
+            bspline_score_c_mi (parms, bst, bxf);
+            break;
 #if (OPENMP_FOUND)
-	case 'd':
-	    bspline_score_d_mi (parms, bst, bxf, fixed, moving, moving_grad);
-	    break;
-	case 'e':
-	    bspline_score_e_mi (parms, bst, bxf, fixed, moving, moving_grad);
-	    break;
-	case 'f':
-	    bspline_score_f_mi (parms, bst, bxf, fixed, moving, moving_grad);
-	    break;
-	case 'g':
-	    bspline_score_g_mi (parms, bst, bxf, fixed, moving, moving_grad);
-	    break;
-	case 'h':
-	    bspline_score_h_mi (parms, bst, bxf, fixed, moving, moving_grad);
-	    break;
+        case 'd':
+            bspline_score_d_mi (parms, bst, bxf);
+            break;
+        case 'e':
+            bspline_score_e_mi (parms, bst, bxf);
+            break;
+        case 'f':
+            bspline_score_f_mi (parms, bst, bxf);
+            break;
+        case 'g':
+            bspline_score_g_mi (parms, bst, bxf);
+            break;
+        case 'h':
+            bspline_score_h_mi (parms, bst, bxf);
+            break;
 #if 0
     case 'i':
-	    bspline_score_i_mi (parms, bst, bxf, fixed, moving, moving_grad);
-	    break;
+            bspline_score_i_mi (parms, bst, bxf, fixed, moving, moving_grad);
+            break;
 #endif
 #endif
-	default:
+        default:
 #if (OPENMP_FOUND)
-	    bspline_score_d_mi (parms, bst, bxf, fixed, moving, moving_grad);
+            bspline_score_d_mi (parms, bst, bxf);
 #else
-	    bspline_score_c_mi (parms, bst, bxf, fixed, moving, moving_grad);
+            bspline_score_c_mi (parms, bst, bxf);
 #endif
-	    break;
-	}
+            break;
+        }
     }
 
     /* Regularize */
@@ -1106,14 +1113,14 @@ bspline_score (
 
     /* Compute landmark score/gradient to image score/gradient */
     if (blm->num_landmarks > 0) {
-	bspline_landmarks_score (parms, bst, bxf, fixed, moving);
+        bspline_landmarks_score (parms, bst, bxf, fixed, moving);
     }
 
     /* Compute total score to send of optimizer */
     bst->ssd.score = bst->ssd.smetric 
-	+ reg_parms->lambda * bst->ssd.rmetric;
+        + reg_parms->lambda * bst->ssd.rmetric;
     if (blm->num_landmarks > 0) {
-	bst->ssd.score += blm->landmark_stiffness * bst->ssd.lmetric;
+        bst->ssd.score += blm->landmark_stiffness * bst->ssd.lmetric;
     }
 
     /* Report results of this iteration */

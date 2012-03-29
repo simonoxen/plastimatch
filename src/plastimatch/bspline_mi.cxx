@@ -384,8 +384,11 @@ bspline_initialize_mi_hist (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
 }
 
 void
-bspline_initialize_mi (Bspline_parms* parms, Volume* fixed, Volume* moving)
+bspline_initialize_mi (Bspline_parms* parms)
 {
+    Volume *fixed = parms->fixed;
+    Volume *moving = parms->moving;
+
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
     mi_hist->m_hist = (double*) malloc (sizeof (double) * mi_hist->moving.bins);
     mi_hist->f_hist = (double*) malloc (sizeof (double) * mi_hist->fixed.bins);
@@ -1563,11 +1566,13 @@ void
 bspline_score_h_mi (
     Bspline_parms *parms, 
     Bspline_state *bst,
-    Bspline_xform *bxf, 
-    Volume *fixed, 
-    Volume *moving, 
-    Volume *moving_grad)
+    Bspline_xform *bxf
+)
 {
+    Volume *fixed = parms->fixed;
+    Volume *moving = parms->moving;
+    Volume *moving_grad = parms->moving_grad;
+
     Bspline_score* ssd = &bst->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
     plm_long rijk[3];
@@ -1839,13 +1844,16 @@ bspline_score_h_mi (
  *        to compute dc_dp more rapidly.
  */
 void
-bspline_score_g_mi (Bspline_parms *parms, 
+bspline_score_g_mi (
+    Bspline_parms *parms, 
     Bspline_state *bst,
-    Bspline_xform *bxf, 
-    Volume *fixed, 
-    Volume *moving, 
-    Volume *moving_grad)
+    Bspline_xform *bxf
+)
 {
+    Volume *fixed = parms->fixed;
+    Volume *moving = parms->moving;
+    Volume *moving_grad = parms->moving_grad;
+
     Bspline_score* ssd = &bst->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
     plm_long rijk[3];
@@ -2098,13 +2106,16 @@ bspline_score_g_mi (Bspline_parms *parms,
  */
 #if (OPENMP_FOUND)
 void
-bspline_score_f_mi (Bspline_parms *parms, 
+bspline_score_f_mi (
+    Bspline_parms *parms, 
     Bspline_state *bst,
-    Bspline_xform *bxf, 
-    Volume *fixed, 
-    Volume *moving, 
-    Volume *moving_grad)
+    Bspline_xform *bxf
+)
 {
+    Volume *fixed = parms->fixed;
+    Volume *moving = parms->moving;
+    Volume *moving_grad = parms->moving_grad;
+
     Bspline_score* ssd = &bst->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
     int pidx;
@@ -2404,11 +2415,13 @@ void
 bspline_score_e_mi (
     Bspline_parms *parms, 
     Bspline_state *bst,
-    Bspline_xform *bxf, 
-    Volume *fixed, 
-    Volume *moving, 
-    Volume *moving_grad)
+    Bspline_xform *bxf
+)
 {
+    Volume *fixed = parms->fixed;
+    Volume *moving = parms->moving;
+    Volume *moving_grad = parms->moving_grad;
+
     Bspline_score* ssd = &bst->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
     long pidx;
@@ -2748,13 +2761,16 @@ bspline_score_e_mi (
  *        to compute dc_dp more rapidly.
  */
 void
-bspline_score_d_mi (Bspline_parms *parms, 
+bspline_score_d_mi (
+    Bspline_parms *parms, 
     Bspline_state *bst,
-    Bspline_xform *bxf, 
-    Volume *fixed, 
-    Volume *moving, 
-    Volume *moving_grad)
+    Bspline_xform *bxf
+)
 {
+    Volume *fixed = parms->fixed;
+    Volume *moving = parms->moving;
+    Volume *moving_grad = parms->moving_grad;
+
     Bspline_score* ssd = &bst->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
     plm_long rijk[3];
@@ -3040,13 +3056,16 @@ bspline_score_d_mi (Bspline_parms *parms,
 
 /* Mutual information version of implementation "C" */
 void
-bspline_score_c_mi (Bspline_parms *parms, 
+bspline_score_c_mi (
+    Bspline_parms *parms, 
     Bspline_state *bst,
-    Bspline_xform *bxf, 
-    Volume *fixed, 
-    Volume *moving, 
-    Volume *moving_grad)
+    Bspline_xform *bxf
+)
 {
+    Volume *fixed = parms->fixed;
+    Volume *moving = parms->moving;
+    Volume *moving_grad = parms->moving_grad;
+
     Bspline_score* ssd = &bst->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
     plm_long rijk[3];

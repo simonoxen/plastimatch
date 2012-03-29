@@ -49,11 +49,13 @@ void
 bspline_score_h_mse (
     Bspline_parms *parms,
     Bspline_state *bst, 
-    Bspline_xform *bxf,
-    Volume *fixed,
-    Volume *moving,
-    Volume *moving_grad)
+    Bspline_xform *bxf
+)
 {
+    Volume *fixed = parms->fixed;
+    Volume *moving = parms->moving;
+    Volume *moving_grad = parms->moving_grad;
+
     Bspline_score* ssd = &bst->ssd;
     double score_tile;
 
@@ -251,11 +253,13 @@ void
 bspline_score_g_mse (
     Bspline_parms *parms,
     Bspline_state *bst, 
-    Bspline_xform *bxf,
-    Volume *fixed,
-    Volume *moving,
-    Volume *moving_grad)
+    Bspline_xform *bxf
+)
 {
+    Volume *fixed = parms->fixed;
+    Volume *moving = parms->moving;
+    Volume *moving_grad = parms->moving_grad;
+
     Bspline_score* ssd = &bst->ssd;
     double score_tile;
 
@@ -446,12 +450,13 @@ void
 bspline_score_c_mse (
     Bspline_parms *parms, 
     Bspline_state *bst,
-    Bspline_xform* bxf, 
-    Volume *fixed, 
-    Volume *moving, 
-    Volume *moving_grad
+    Bspline_xform *bxf
 )
 {
+    Volume *fixed = parms->fixed;
+    Volume *moving = parms->moving;
+    Volume *moving_grad = parms->moving_grad;
+
     Bspline_score* ssd = &bst->ssd;
     plm_long rijk[3];             /* Indices within fixed image region (vox) */
     plm_long fijk[3], fv;         /* Indices within fixed image (vox) */
@@ -590,12 +595,13 @@ void
 bspline_score_i_mse (
     Bspline_parms *parms, 
     Bspline_state *bst,
-    Bspline_xform* bxf, 
-    Volume *fixed, 
-    Volume *moving, 
-    Volume *moving_grad
+    Bspline_xform *bxf
 )
 {
+    Volume *fixed = parms->fixed;
+    Volume *moving = parms->moving;
+    Volume *moving_grad = parms->moving_grad;
+
     Bspline_score* ssd = &bst->ssd;
     plm_long fijk[3], fv;         /* Indices within fixed image (vox) */
     float mijk[3];              /* Indices within moving image (vox) */

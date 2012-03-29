@@ -143,6 +143,11 @@ public:
     double_align8 lbfgsb_factr;  /* Function value tolerance for L-BFGS-B */
     double_align8 lbfgsb_pgtol;  /* Projected grad tolerance for L-BFGS-B */
 
+    /* Image Volumes */
+    Volume *fixed;
+    Volume *moving;
+    Volume *moving_grad;
+
     /* Regularization */
     Reg_parms reg_parms;         /* Regularization Parameters */
 
@@ -209,10 +214,8 @@ gpuit_EXPORT
 Bspline_state *
 bspline_state_create (
     Bspline_xform *bxf, 
-    Bspline_parms *parms, 
-    Volume *fixed, 
-    Volume *moving, 
-    Volume *moving_grad);
+    Bspline_parms *parms
+);
 
 gpuit_EXPORT
 void bspline_parms_free (Bspline_parms* parms);
@@ -222,10 +225,8 @@ void
 bspline_state_destroy (
     Bspline_state *bst,
     Bspline_parms *parms,
-    Bspline_xform *bxf, 
-    Volume* fixed,
-    Volume* moving,
-    Volume* moving_grad);
+    Bspline_xform *bxf
+);
 
 gpuit_EXPORT
 void
@@ -287,9 +288,6 @@ bspline_find_correspondence_dcos_mask
  const Volume *moving_mask  /* Input:  moving image mask */
 );
 
-gpuit_EXPORT
-void
-bspline_initialize_mi (Bspline_parms* parms, Volume* fixed, Volume* moving);
 
 void
 bspline_display_coeff_stats (Bspline_xform* bxf);
