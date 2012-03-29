@@ -97,110 +97,110 @@ set_fixed_image_region_global (Registration_data* regd)
     regd->fixed_region_spacing = regd->fixed_image->itk_float()->GetSpacing();
 
     if (regd->fixed_mask) {
-	FloatImageType::RegionType::IndexType valid_index;
-	FloatImageType::RegionType::SizeType valid_size;
+        FloatImageType::RegionType::IndexType valid_index;
+        FloatImageType::RegionType::SizeType valid_size;
 
-	/* Search for bounding box of fixed mask */
-	typedef itk::ImageRegionConstIteratorWithIndex< 
-	    UCharImageType > IteratorType;
-	UCharImageType::RegionType region 
-	    = regd->fixed_mask->itk_uchar()->GetLargestPossibleRegion();
-	IteratorType it (regd->fixed_mask->itk_uchar(), region);
+        /* Search for bounding box of fixed mask */
+        typedef itk::ImageRegionConstIteratorWithIndex< 
+            UCharImageType > IteratorType;
+        UCharImageType::RegionType region 
+            = regd->fixed_mask->itk_uchar()->GetLargestPossibleRegion();
+        IteratorType it (regd->fixed_mask->itk_uchar(), region);
 
-	int first = 1;
-	valid_index[0] = 0;
-	valid_index[1] = 0;
-	valid_index[2] = 0;
-	valid_size[0] = 0;
-	valid_size[1] = 0;
-	valid_size[2] = 0;
+        int first = 1;
+        valid_index[0] = 0;
+        valid_index[1] = 0;
+        valid_index[2] = 0;
+        valid_size[0] = 0;
+        valid_size[1] = 0;
+        valid_size[2] = 0;
 
-	for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
-	    unsigned char c = it.Get();
-	    if (c) {
-		UCharImageType::RegionType::IndexType idx = it.GetIndex();
-		if (first) {
-		    first = 0;
-		    valid_index = idx;
-		    valid_size[0] = 1;
-		    valid_size[1] = 1;
-		    valid_size[2] = 1;
-		} else {
-		    for (int i = 0; i < 3; i++) {
-			if (valid_index[i] > idx[i]) {
-			    valid_size[i] += valid_index[i] - idx[i];
-			    valid_index[i] = idx[i];
-			}
-			if (idx[i] - valid_index[i] >= (long) valid_size[i]) {
-			    valid_size[i] = idx[i] - valid_index[i] + 1;
-			}
-		    }
-		}
-	    }
-	}
-	regd->fixed_region.SetIndex(valid_index);
-	regd->fixed_region.SetSize(valid_size);
+        for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
+            unsigned char c = it.Get();
+            if (c) {
+                UCharImageType::RegionType::IndexType idx = it.GetIndex();
+                if (first) {
+                    first = 0;
+                    valid_index = idx;
+                    valid_size[0] = 1;
+                    valid_size[1] = 1;
+                    valid_size[2] = 1;
+                } else {
+                    for (int i = 0; i < 3; i++) {
+                        if (valid_index[i] > idx[i]) {
+                            valid_size[i] += valid_index[i] - idx[i];
+                            valid_index[i] = idx[i];
+                        }
+                        if (idx[i] - valid_index[i] >= (long) valid_size[i]) {
+                            valid_size[i] = idx[i] - valid_index[i] + 1;
+                        }
+                    }
+                }
+            }
+        }
+        regd->fixed_region.SetIndex(valid_index);
+        regd->fixed_region.SetSize(valid_size);
     } else if (use_magic_value) {
-	FloatImageType::RegionType::IndexType valid_index;
-	FloatImageType::RegionType::SizeType valid_size;
-	valid_index[0] = 0;
-	valid_index[1] = 0;
-	valid_index[2] = 0;
-	valid_size[0] = 1;
-	valid_size[1] = 1;
-	valid_size[2] = 1;
+        FloatImageType::RegionType::IndexType valid_index;
+        FloatImageType::RegionType::SizeType valid_size;
+        valid_index[0] = 0;
+        valid_index[1] = 0;
+        valid_index[2] = 0;
+        valid_size[0] = 1;
+        valid_size[1] = 1;
+        valid_size[2] = 1;
 
-	/* Make sure the image is ITK float */
-	FloatImageType::Pointer fixed_image = regd->fixed_image->itk_float();
+        /* Make sure the image is ITK float */
+        FloatImageType::Pointer fixed_image = regd->fixed_image->itk_float();
 
-	/* Search for bounding box of patient */
-	typedef itk::ImageRegionConstIteratorWithIndex <
-	    FloatImageType > IteratorType;
-	FloatImageType::RegionType region 
-	    = fixed_image->GetLargestPossibleRegion();
-	IteratorType it (fixed_image, region);
+        /* Search for bounding box of patient */
+        typedef itk::ImageRegionConstIteratorWithIndex <
+            FloatImageType > IteratorType;
+        FloatImageType::RegionType region 
+            = fixed_image->GetLargestPossibleRegion();
+        IteratorType it (fixed_image, region);
 
-	int first = 1;
-	for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
-	    float c = it.Get();
-	    if (c > FIXME_BACKGROUND_MAX) {
-		FloatImageType::RegionType::IndexType idx = it.GetIndex();
-		if (first) {
-		    first = 0;
-		    valid_index = idx;
-		    valid_size[0] = 1;
-		    valid_size[1] = 1;
-		    valid_size[2] = 1;
-		} else {
-		    for (int i = 0; i < 3; i++) {
-			if (valid_index[i] > idx[i]) {
-			    valid_size[i] += valid_index[i] - idx[i];
-			    valid_index[i] = idx[i];
-			}
-			if (idx[i] - valid_index[i] >= (long) valid_size[i]) {
-			    valid_size[i] = idx[i] - valid_index[i] + 1;
-			}
-		    }
-		}
-	    }
-	}
-	/* Try to include a margin of at least one air pixel everywhere */
-	for (int i = 0; i < 3; i++) {
-	    if (valid_index[i] > 0) {
-		valid_index[i]--;
-		valid_size[i]++;
-	    }
-	    if (valid_size[i] + valid_index[i] 
-		< fixed_image->GetLargestPossibleRegion().GetSize()[i])
-	    {
-		valid_size[i]++;
-	    }
-	}
-	regd->fixed_region.SetIndex(valid_index);
-	regd->fixed_region.SetSize(valid_size);
+        int first = 1;
+        for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
+            float c = it.Get();
+            if (c > FIXME_BACKGROUND_MAX) {
+                FloatImageType::RegionType::IndexType idx = it.GetIndex();
+                if (first) {
+                    first = 0;
+                    valid_index = idx;
+                    valid_size[0] = 1;
+                    valid_size[1] = 1;
+                    valid_size[2] = 1;
+                } else {
+                    for (int i = 0; i < 3; i++) {
+                        if (valid_index[i] > idx[i]) {
+                            valid_size[i] += valid_index[i] - idx[i];
+                            valid_index[i] = idx[i];
+                        }
+                        if (idx[i] - valid_index[i] >= (long) valid_size[i]) {
+                            valid_size[i] = idx[i] - valid_index[i] + 1;
+                        }
+                    }
+                }
+            }
+        }
+        /* Try to include a margin of at least one air pixel everywhere */
+        for (int i = 0; i < 3; i++) {
+            if (valid_index[i] > 0) {
+                valid_index[i]--;
+                valid_size[i]++;
+            }
+            if (valid_size[i] + valid_index[i] 
+                < fixed_image->GetLargestPossibleRegion().GetSize()[i])
+            {
+                valid_size[i]++;
+            }
+        }
+        regd->fixed_region.SetIndex(valid_index);
+        regd->fixed_region.SetSize(valid_size);
     } else {
-	regd->fixed_region 
-	    = regd->fixed_image->itk_float()->GetLargestPossibleRegion();
+        regd->fixed_region 
+            = regd->fixed_image->itk_float()->GetLargestPossibleRegion();
     }
 }
 
@@ -210,9 +210,9 @@ choose_image_type (int xform_type, int optim_type, int impl_type)
 {
     switch (impl_type) {
     case IMPLEMENTATION_PLASTIMATCH:
-	return PLM_IMG_TYPE_GPUIT_FLOAT;
+        return PLM_IMG_TYPE_GPUIT_FLOAT;
     default:
-	return PLM_IMG_TYPE_ITK_FLOAT;
+        return PLM_IMG_TYPE_ITK_FLOAT;
     }
 }
 #endif
@@ -232,59 +232,59 @@ save_output (
     /* Save xf to all filenames in list */
     std::list<std::string>::const_iterator it;
     for (it = xf_out_fn.begin(); it != xf_out_fn.end(); ++it) {
-	logfile_printf ("Writing transformation ...\n");
-	if (xf_out_itk && xf_out->m_type == XFORM_GPUIT_BSPLINE) {
-	    Xform xf_tmp;
-	    Plm_image_header pih;
-	    pih.set_from_plm_image (regd->fixed_image);
-	    xform_to_itk_bsp (&xf_tmp, xf_out, &pih, 0);
-	    xform_save (&xf_tmp, (*it).c_str());
-	} else {
-	    xform_save (xf_out, (*it).c_str());
-	}
+        logfile_printf ("Writing transformation ...\n");
+        if (xf_out_itk && xf_out->m_type == XFORM_GPUIT_BSPLINE) {
+            Xform xf_tmp;
+            Plm_image_header pih;
+            pih.set_from_plm_image (regd->fixed_image);
+            xform_to_itk_bsp (&xf_tmp, xf_out, &pih, 0);
+            xform_save (&xf_tmp, (*it).c_str());
+        } else {
+            xform_save (xf_out, (*it).c_str());
+        }
     }
 
     if (img_out_fn[0] || vf_out_fn[0]) {
-	DeformationFieldType::Pointer vf;
-	DeformationFieldType::Pointer *vfp;
-	Plm_image im_warped;
-	Plm_image *imp;
-	Plm_image_header pih;
-	float default_val = 0.0f;   /* GCS FIX: hard coded. */
+        DeformationFieldType::Pointer vf;
+        DeformationFieldType::Pointer *vfp;
+        Plm_image im_warped;
+        Plm_image *imp;
+        Plm_image_header pih;
+        float default_val = 0.0f;   /* GCS FIX: hard coded. */
 
-	if (vf_out_fn[0]) {
-	    vfp = &vf;
-	} else {
-	    vfp = 0;
-	}
-	if (img_out_fn[0]) {
-	    imp = &im_warped;
-	} else {
-	    imp = 0;
-	}
-	
-	pih.set_from_plm_image (regd->fixed_image);
+        if (vf_out_fn[0]) {
+            vfp = &vf;
+        } else {
+            vfp = 0;
+        }
+        if (img_out_fn[0]) {
+            imp = &im_warped;
+        } else {
+            imp = 0;
+        }
+        
+        pih.set_from_plm_image (regd->fixed_image);
 
-	logfile_printf ("Warping...\n");
-	plm_warp (imp, vfp, xf_out, &pih, regd->moving_image, 
-	    default_val, 0, 1);
+        logfile_printf ("Warping...\n");
+        plm_warp (imp, vfp, xf_out, &pih, regd->moving_image, 
+            default_val, 0, 1);
 
-	if (img_out_fn[0]) {
-	    logfile_printf ("Saving image...\n");
-	    if (img_out_fmt == IMG_OUT_FMT_AUTO) {
-		if (img_out_type == PLM_IMG_TYPE_UNDEFINED) {
-		    im_warped.save_image (img_out_fn);
-		} else {
-		    im_warped.convert_and_save (img_out_fn, img_out_type);
-		}
-	    } else {
-		im_warped.save_short_dicom (img_out_fn, 0, 0);
-	    }
-	}
-	if (vf_out_fn[0]) {
-	    logfile_printf ("Saving vf...\n");
-	    itk_image_save (vf, vf_out_fn);
-	}
+        if (img_out_fn[0]) {
+            logfile_printf ("Saving image...\n");
+            if (img_out_fmt == IMG_OUT_FMT_AUTO) {
+                if (img_out_type == PLM_IMG_TYPE_UNDEFINED) {
+                    im_warped.save_image (img_out_fn);
+                } else {
+                    im_warped.convert_and_save (img_out_fn, img_out_type);
+                }
+            } else {
+                im_warped.save_short_dicom (img_out_fn, 0, 0);
+            }
+        }
+        if (vf_out_fn[0]) {
+            logfile_printf ("Saving vf...\n");
+            itk_image_save (vf, vf_out_fn);
+        }
     }
 }
 
@@ -296,38 +296,38 @@ do_registration_stage (
     Stage_parms* stage)
 {
     logfile_printf ("[1] xf_in->m_type = %d, xf_out->m_type = %d\n", 
-	xf_in->m_type, xf_out->m_type);
+        xf_in->m_type, xf_out->m_type);
 
     /* Run registration */
     if (stage->optim_type == OPTIMIZATION_DEMONS) {
-	if (stage->impl_type == IMPLEMENTATION_ITK) {
-	    do_demons_stage (regd, xf_out, xf_in, stage);
-	} else {
-	    do_gpuit_demons_stage (regd, xf_out, xf_in, stage);
-	}
+        if (stage->impl_type == IMPLEMENTATION_ITK) {
+            do_demons_stage (regd, xf_out, xf_in, stage);
+        } else {
+            do_gpuit_demons_stage (regd, xf_out, xf_in, stage);
+        }
     }
     else if (stage->xform_type == STAGE_TRANSFORM_BSPLINE) {
-	if (stage->impl_type == IMPLEMENTATION_ITK) {
-	    do_itk_registration_stage (regd, xf_out, xf_in, stage);
-	} else {
-	    do_gpuit_bspline_stage (regp, regd, xf_out, xf_in, stage);
-	}
+        if (stage->impl_type == IMPLEMENTATION_ITK) {
+            do_itk_registration_stage (regd, xf_out, xf_in, stage);
+        } else {
+            do_gpuit_bspline_stage (regp, regd, xf_out, xf_in, stage);
+        }
     }
     else if (stage->xform_type == STAGE_TRANSFORM_ALIGN_CENTER) {
-	do_itk_center_stage (regd, xf_out, xf_in, stage);
-	std::cout << "Centering done" << std::endl;
+        do_itk_center_stage (regd, xf_out, xf_in, stage);
+        std::cout << "Centering done" << std::endl;
     }
     else {
-	do_itk_registration_stage (regd, xf_out, xf_in, stage);
+        do_itk_registration_stage (regd, xf_out, xf_in, stage);
     }
 
     logfile_printf ("[2] xf_out->m_type = %d, xf_in->m_type = %d\n", 
-	xf_out->m_type, xf_in->m_type);
+        xf_out->m_type, xf_in->m_type);
 
     /* Save intermediate output */
     save_output (regd, xf_out, stage->xf_out_fn, stage->xf_out_itk, 
-	stage->img_out_fmt, stage->img_out_type, stage->img_out_fn, 
-	stage->vf_out_fn);
+        stage->img_out_fmt, stage->img_out_type, stage->img_out_fn, 
+        stage->vf_out_fn);
 }
 
 static void
@@ -336,7 +336,7 @@ set_auto_subsampling (int subsample_rate[], Plm_image *pli)
     Plm_image_header pih (pli);
     
     for (int d = 0; d < 3; d++) {
-	subsample_rate[d] = (pih.Size(d)+99) / 100;
+        subsample_rate[d] = (pih.Size(d)+99) / 100;
     }
 }
 
@@ -344,13 +344,50 @@ static void
 set_automatic_parameters (Registration_data* regd, Registration_parms* regp)
 {
     for (int i = 0; i < regp->num_stages; i++) {
-	Stage_parms *stagep = regp->stages[i];
-	if (stagep->subsampling_type == SUBSAMPLING_AUTO) {
-	    set_auto_subsampling (
-		stagep->fixed_subsample_rate, regd->fixed_image);
-	    set_auto_subsampling (
-		stagep->moving_subsample_rate, regd->moving_image);
-	}
+        Stage_parms *stagep = regp->stages[i];
+        if (stagep->subsampling_type == SUBSAMPLING_AUTO) {
+            set_auto_subsampling (
+                stagep->fixed_subsample_rate, regd->fixed_image);
+            set_auto_subsampling (
+                stagep->moving_subsample_rate, regd->moving_image);
+        }
+    }
+}
+
+static void
+check_output_resolution (Xform* xf_out, Registration_data* regd)
+{
+    Volume *fixed = (Volume*) regd->fixed_image->m_gpuit;
+    int ss[3];
+    Plm_image_header pih;
+    float grid_spacing[3];
+    Bspline_xform *bxf_out = xf_out->get_gpuit_bsp();
+
+    if (xf_out->m_type != XFORM_GPUIT_BSPLINE) {
+        return;
+    }
+
+    if ( (bxf_out->img_dim[0] != fixed->dim[0]) ||
+         (bxf_out->img_dim[1] != fixed->dim[1]) ||
+         (bxf_out->img_dim[2] != fixed->dim[2]) ) {
+
+        ss[0] = fixed->dim[0] / bxf_out->img_dim[0];
+        ss[1] = fixed->dim[1] / bxf_out->img_dim[1];
+        ss[2] = fixed->dim[2] / bxf_out->img_dim[2];
+
+        /* last stage was not [1 1 1], un-subsample the final xform */
+        logfile_printf ("UN-SUBSAMPLE: (%d %d %d), (1 1 1)\n",
+                ss[0], ss[1], ss[2]);
+
+        /* Transform input xform to gpuit vector field */
+        pih.set_from_gpuit (
+            fixed->dim, 
+            fixed->offset,
+            fixed->spacing, 
+            fixed->direction_cosines
+        );
+        xf_out->get_grid_spacing (grid_spacing);
+        xform_to_gpuit_bsp (xf_out, xf_out, &pih, grid_spacing);
     }
 }
 
@@ -388,6 +425,14 @@ do_registration_pure (
         do_registration_stage (regp, regd, xf_out, xf_in, regp->stages[i]);
     }
 
+    /* JAS 2012.03.29
+     *   For GPUIT Bspline, make output match input resolution instead
+     *   of final stage resolution */
+    if ((regp->stages[regp->num_stages-1]->xform_type == STAGE_TRANSFORM_BSPLINE)
+        && (regp->stages[regp->num_stages-1]->impl_type != IMPLEMENTATION_ITK)) {
+        check_output_resolution (xf_out, regd);
+    }
+
     *xf_result = xf_out;
     delete xf_in;
 }
@@ -420,7 +465,7 @@ do_registration (Registration_parms* regp)
         timer2.Start();
         do_registration_pure (&xf_out, &regd, regp);
         timer2.Stop();
-    
+
         /* RMK: If no stages, we still generate output (same as input) */
     
         timer3.Start();

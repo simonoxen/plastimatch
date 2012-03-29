@@ -60,46 +60,46 @@ bspline_optimize_select (
     switch (parms->optimization) {
     case BOPT_LBFGSB:
 #if (FORTRAN_FOUND)
-	//bspline_optimize_lbfgsb (bxf, bst, parms, fixed, moving, moving_grad);
-	bspline_optimize_lbfgsb (&bod);
+        //bspline_optimize_lbfgsb (bxf, bst, parms, fixed, moving, moving_grad);
+        bspline_optimize_lbfgsb (&bod);
 #else
-	logfile_printf (
-	    "Plastimatch was not compiled against Nocedal LBFGSB.\n"
-	    "Reverting to liblbfgs.\n"
-	);
-	bspline_optimize_liblbfgs (&bod);
+        logfile_printf (
+            "Plastimatch was not compiled against Nocedal LBFGSB.\n"
+            "Reverting to liblbfgs.\n"
+        );
+        bspline_optimize_liblbfgs (&bod);
 #endif
-	break;
+        break;
     case BOPT_STEEPEST:
-	bspline_optimize_steepest (&bod);
-	break;
+        bspline_optimize_steepest (&bod);
+        break;
     case BOPT_LIBLBFGS:
-	bspline_optimize_liblbfgs (&bod);
-	break;
+        bspline_optimize_liblbfgs (&bod);
+        break;
 #if (NLOPT_FOUND)
     case BOPT_NLOPT_LBFGS:
-	bspline_optimize_nlopt (&bod, NLOPT_LD_LBFGS);
-	break;
+        bspline_optimize_nlopt (&bod, NLOPT_LD_LBFGS);
+        break;
     case BOPT_NLOPT_LD_MMA:
-	bspline_optimize_nlopt (&bod, NLOPT_LD_MMA);
-	break;
+        bspline_optimize_nlopt (&bod, NLOPT_LD_MMA);
+        break;
     case BOPT_NLOPT_PTN_1:
-	//bspline_optimize_nlopt (&bod, NLOPT_LD_TNEWTON_PRECOND_RESTART);
-	bspline_optimize_nlopt (&bod, NLOPT_LD_VAR2);
-	break;
+        //bspline_optimize_nlopt (&bod, NLOPT_LD_TNEWTON_PRECOND_RESTART);
+        bspline_optimize_nlopt (&bod, NLOPT_LD_VAR2);
+        break;
 #else
     case BOPT_NLOPT_LBFGS:
     case BOPT_NLOPT_LD_MMA:
     case BOPT_NLOPT_PTN_1:
-	logfile_printf (
-	    "Plastimatch was not compiled against NLopt.\n"
-	    "Reverting to liblbfgs.\n"
-	);
-	bspline_optimize_liblbfgs (&bod);
+        logfile_printf (
+            "Plastimatch was not compiled against NLopt.\n"
+            "Reverting to liblbfgs.\n"
+        );
+        bspline_optimize_liblbfgs (&bod);
 #endif
     default:
-	bspline_optimize_liblbfgs (&bod);
-	break;
+        bspline_optimize_liblbfgs (&bod);
+        break;
     }
 }
 
@@ -119,15 +119,15 @@ bspline_optimize (
     log_bxf_header (bxf);
 
     if (parms->metric == BMET_MI) {
-	bspline_initialize_mi (parms, fixed, moving);
+        bspline_initialize_mi (parms, fixed, moving);
     }
 
     /* Do the optimization */
     bspline_optimize_select (bxf, bst, parms, fixed, moving, moving_grad);
 
     if (bst_in) {
-	*bst_in = bst;
+        *bst_in = bst;
     } else {
-	bspline_state_destroy (bst, parms, bxf, fixed, moving, moving_grad);
+        bspline_state_destroy (bst, parms, bxf, fixed, moving, moving_grad);
     }
 }
