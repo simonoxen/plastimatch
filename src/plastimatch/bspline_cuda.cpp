@@ -640,13 +640,14 @@ void
 CUDA_bspline_mi_a (
     Bspline_parms *parms,
     Bspline_state *bst,
-    Bspline_xform *bxf,
-    Volume *fixed,
-    Volume *moving,
-    Volume *moving_grad,
-    Dev_Pointers_Bspline *dev_ptrs
+    Bspline_xform *bxf
 )
 {
+    Volume *fixed = parms->fixed;
+    Volume *moving = parms->moving;
+    Volume *moving_grad = parms->moving_grad;
+
+    Dev_Pointers_Bspline* dev_ptrs = (Dev_Pointers_Bspline*)bst->dev_ptrs;
 
     // --- DECLARE LOCAL VARIABLES ------------------------------
     Bspline_score* ssd; // Holds the SSD "Score" information
@@ -777,13 +778,15 @@ void
 CUDA_bspline_mse_j (
     Bspline_parms* parms,
     Bspline_state *bst,
-    Bspline_xform* bxf,
-    Volume* fixed,
-    Volume* moving,
-    Volume* moving_grad,
-    Dev_Pointers_Bspline* dev_ptrs
+    Bspline_xform* bxf
 )
 {
+    Volume *fixed = parms->fixed;
+    Volume *moving = parms->moving;
+    Volume *moving_grad = parms->moving_grad;
+
+    Dev_Pointers_Bspline* dev_ptrs = (Dev_Pointers_Bspline*)bst->dev_ptrs;
+
     // --- DECLARE LOCAL VARIABLES ------------------------------
     Bspline_score* ssd;     // Holds the SSD "Score" information
     float ssd_grad_norm;    // Holds the SSD Gradient's Norm

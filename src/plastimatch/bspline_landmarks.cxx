@@ -327,9 +327,7 @@ void
 bspline_landmarks_score_a (
     Bspline_parms *parms, 
     Bspline_state *bst, 
-    Bspline_xform* bxf, 
-    Volume *fixed, 
-    Volume *moving
+    Bspline_xform* bxf
 )
 {
     Bspline_score* ssd = &bst->ssd;
@@ -408,13 +406,11 @@ void
 bspline_landmarks_score (
     Bspline_parms *parms, 
     Bspline_state *bst, 
-    Bspline_xform* bxf, 
-    Volume *fixed, 
-    Volume *moving
+    Bspline_xform* bxf
 )
 {
     /* Only 'a' is supported at this time */
-    bspline_landmarks_score_a (parms, bst, bxf, fixed, moving);
+    bspline_landmarks_score_a (parms, bst, bxf);
 }
 
 void 

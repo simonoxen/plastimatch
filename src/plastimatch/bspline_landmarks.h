@@ -63,9 +63,7 @@ void
 bspline_landmarks_score (
     Bspline_parms *parms, 
     Bspline_state *bst, 
-    Bspline_xform *bxf, 
-    Volume *fixed, 
-    Volume *moving
+    Bspline_xform *bxf
 );
 
 gpuit_EXPORT

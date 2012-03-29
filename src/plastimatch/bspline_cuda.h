@@ -121,22 +121,14 @@ extern "C" {
     void CUDA_bspline_mi_a,
         Bspline_parms *parms,
         Bspline_state *bst,
-        Bspline_xform *bxf,
-        Volume *fixed,
-        Volume *moving,
-        Volume *moving_grad,
-        Dev_Pointers_Bspline *dev_ptrs
+        Bspline_xform *bxf
     );
 
     plmcuda_EXPORT (
     void CUDA_bspline_mse_j,
         Bspline_parms* parms,
         Bspline_state *bst,
-        Bspline_xform* bxf,
-        Volume* fixed,
-        Volume* moving,
-        Volume* moving_grad,
-        Dev_Pointers_Bspline* dev_ptrs
+        Bspline_xform* bxf
     );
 
     //

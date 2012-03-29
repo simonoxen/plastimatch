@@ -467,10 +467,6 @@ bspline_state_destroy (
     Bspline_xform *bxf
 )
 {
-    Volume *fixed = parms->fixed;
-    Volume *moving = parms->moving;
-    Volume *moving_grad = parms->moving_grad;
-
     Reg_parms* reg_parms = &parms->reg_parms;
 
     if (bst->ssd.grad) {
@@ -482,6 +478,10 @@ bspline_state_destroy (
     }
 
 #if (CUDA_FOUND)
+    Volume *fixed = parms->fixed;
+    Volume *moving = parms->moving;
+    Volume *moving_grad = parms->moving_grad;
+
     if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
         /* Be sure we loaded the CUDA plugin! */
         if (!delayload_cuda ()) { exit (0); }
@@ -1015,12 +1015,10 @@ bspline_score (
 
         switch (parms->implementation) {
         case 'j':
-            CUDA_bspline_mse_j (parms, bst, bxf, fixed, moving, 
-                moving_grad, (Dev_Pointers_Bspline *) bst->dev_ptrs);
+            CUDA_bspline_mse_j (parms, bst, bxf);
             break;
         default:
-            CUDA_bspline_mse_j (parms, bst, bxf, fixed, moving, 
-                moving_grad, (Dev_Pointers_Bspline *) bst->dev_ptrs);
+            CUDA_bspline_mse_j (parms, bst, bxf);
             break;
         }
 
@@ -1036,12 +1034,10 @@ bspline_score (
 
         switch (parms->implementation) {
         case 'a':
-            CUDA_bspline_mi_a (parms, bst, bxf, fixed, moving, 
-                moving_grad, (Dev_Pointers_Bspline *) bst->dev_ptrs);
+            CUDA_bspline_mi_a (parms, bst, bxf);
             break;
         default: 
-            CUDA_bspline_mi_a (parms, bst, bxf, fixed, moving, 
-                moving_grad, (Dev_Pointers_Bspline *) bst->dev_ptrs);
+            CUDA_bspline_mi_a (parms, bst, bxf);
             break;
         }
 
@@ -1092,7 +1088,7 @@ bspline_score (
             break;
 #if 0
     case 'i':
-            bspline_score_i_mi (parms, bst, bxf, fixed, moving, moving_grad);
+            bspline_score_i_mi (parms, bst, bxf);
             break;
 #endif
 #endif
@@ -1113,7 +1109,7 @@ bspline_score (
 
     /* Compute landmark score/gradient to image score/gradient */
     if (blm->num_landmarks > 0) {
-        bspline_landmarks_score (parms, bst, bxf, fixed, moving);
+        bspline_landmarks_score (parms, bst, bxf);
     }
 
     /* Compute total score to send of optimizer */
