@@ -89,6 +89,13 @@ do_gpuit_bspline_stage_internal (
 
     /* --- Initialize parms --- */
 
+    /* Images */
+    parms.fixed = fixed_ss;
+    parms.moving = moving_ss;
+    parms.moving_grad = moving_grad;
+    if (f_mask) parms.fixed_mask = f_mask_ss;
+    if (m_mask) parms.moving_mask = m_mask_ss;
+
     /* Optimization */
     if (stage->optim_type == OPTIMIZATION_STEEPEST) {
         parms.optimization = BOPT_STEEPEST;
@@ -213,12 +220,8 @@ do_gpuit_bspline_stage_internal (
             parms.debug_dir.c_str(), parms.debug_stage);
     }
 
-    if (f_mask) parms.fixed_mask = f_mask_ss;
-    if (m_mask) parms.moving_mask = m_mask_ss;
-
     /* Run bspline optimization */
-    bspline_optimize (xf_out->get_gpuit_bsp(), 0, &parms, fixed_ss, 
-        moving_ss, moving_grad);
+    bspline_optimize (xf_out->get_gpuit_bsp(), 0, &parms);
 
     /* Warp landmarks and write them out */
 #if defined (commentout)

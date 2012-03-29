@@ -54,11 +54,16 @@ main (int argc, char* argv[])
     moving = read_mha (options.moving_fn);
     if (!moving) exit (-1);
 
+    parms->fixed = fixed;
+    parms->moving = moving;
+
     volume_convert_to_float (moving);
     volume_convert_to_float (fixed);
 
     printf ("Making gradient\n");
     moving_grad = volume_make_gradient (moving);
+
+    parms->moving_grad = moving_grad;
 
 #if defined (commentout)
     /* Load and adjust landmarks */
@@ -97,7 +102,7 @@ main (int argc, char* argv[])
 
     /* Run the optimization */
     printf ("Running optimization.\n");
-    bspline_optimize (bxf, 0, parms, fixed, moving, moving_grad);
+    bspline_optimize (bxf, 0, parms);
     printf ("Done running optimization.\n");
 
     /* Save output transform */

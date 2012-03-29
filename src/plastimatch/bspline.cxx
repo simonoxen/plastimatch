@@ -997,15 +997,6 @@ bspline_score (Bspline_optimize_data *bod)
     Reg_parms* reg_parms = &parms->reg_parms;
     Bspline_landmarks* blm = &parms->blm;
 
-    /* JAS 2012.03.29 -- Temporary...
-     *   pulling it back to here before hitting the optimizers */
-
-#if 0
-    parms->fixed = fixed;
-    parms->moving = moving;
-    parms->moving_grad = moving_grad;
-#endif
-
 #if (CUDA_FOUND)
     if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
 
@@ -1089,7 +1080,7 @@ bspline_score (Bspline_optimize_data *bod)
             break;
 #if 0
     case 'i':
-            bspline_score_i_mi (parms, bst, bxf);
+            bspline_score_i_mi (bod);
             break;
 #endif
 #endif

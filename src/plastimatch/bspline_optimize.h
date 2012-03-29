@@ -17,10 +17,7 @@ gpuit_EXPORT
 void bspline_optimize (
     Bspline_xform* bxf, 
     Bspline_state **bst,
-    Bspline_parms *parms, 
-    Volume *fixed, 
-    Volume *moving, 
-    Volume *moving_grad);
+    Bspline_parms *parms);
 
 #if defined __cplusplus
 }
