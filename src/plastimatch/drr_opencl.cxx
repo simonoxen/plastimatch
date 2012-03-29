@@ -28,7 +28,7 @@ drr_opencl_state_create (
 )
 {
     printf ("drr_opencl_state_create: 1\n");
-    LOAD_LIBRARY (libplmopencl);
+    LOAD_LIBRARY_SAFE (libplmopencl);
     printf ("drr_opencl_state_create: 2\n");
     LOAD_SYMBOL (opencl_open_device, libplmopencl);
     LOAD_SYMBOL (opencl_load_programs, libplmopencl);
@@ -88,7 +88,7 @@ drr_opencl_ray_trace_image (
     Drr_options *options
 )
 {
-    LOAD_LIBRARY (libplmopencl);
+    LOAD_LIBRARY_SAFE (libplmopencl);
     LOAD_SYMBOL (opencl_set_kernel_args, libplmopencl);
     LOAD_SYMBOL (opencl_kernel_enqueue, libplmopencl);
     LOAD_SYMBOL (opencl_buf_read, libplmopencl);

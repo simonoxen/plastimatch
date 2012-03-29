@@ -14,10 +14,8 @@ main (int argc, char* argv[])
 {
     int opencl_works;
 
-    LOAD_LIBRARY (libplmopencl);
+    LOAD_LIBRARY_SAFE (libplmopencl);
     LOAD_SYMBOL (opencl_probe, libplmopencl);
-
-    if (!delayload_opencl()) { exit (0); };
 
     opencl_works = opencl_probe ();
 

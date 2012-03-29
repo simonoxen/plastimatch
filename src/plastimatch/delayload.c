@@ -112,7 +112,7 @@ void* dlopen_ex (char* lib)
 
 // Note: We need special cases for Windows and POSIX compliant OSes
 int 
-delayload_cuda (void)
+delayload_libplmcuda (void)
 {
 #if defined (_WIN32)
     // Windows
@@ -190,7 +190,7 @@ delayload_cuda (void)
 }
 
 int 
-delayload_opencl (void)
+delayload_libplmopencl (void)
 {
 #if defined (_WIN32)
     if (!find_lib ("opencl.dll")) {
@@ -204,7 +204,7 @@ delayload_opencl (void)
     }
 #else
     if (!find_lib ("libOpenCL.so")) {
-        printf ("Failed to load CUDA runtime! (err: OpenCL)\n");
+        printf ("Failed to load GPU Plugins! (err: OpenCL)\n");
         printf ("Visit http://www.plastimatch.org/contents.html for more information.\n");
         printf ("OR email <plastimatch@googlegroups.com> for support.\n\n");
         return 0;

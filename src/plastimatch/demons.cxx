@@ -47,7 +47,8 @@ demons (
 #endif
     Demons_state demons_state;
 
-    LOAD_LIBRARY (libplmcuda);
+
+    LOAD_LIBRARY_SAFE (libplmcuda);
     LOAD_SYMBOL (demons_cuda, libplmcuda);
     // LOAD_LIBRARY (libplmopencl);
     // LOAD_SYMBOL (demons_opencl, libplmopencl);
@@ -60,7 +61,6 @@ demons (
     switch (parms->threading) {
 #if CUDA_FOUND
     case THREADING_CUDA:
-    	if (!delayload_cuda ()) { exit (0); }
         demons_cuda (&demons_state, fixed, moving, moving_grad, 
 	    vf_init, parms);
         UNLOAD_LIBRARY (libplmcuda);

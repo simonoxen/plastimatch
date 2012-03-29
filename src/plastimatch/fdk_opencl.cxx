@@ -40,7 +40,7 @@ opencl_reconstruct_conebeam (
     int image_num;
     float scale;
 
-    LOAD_LIBRARY (libplmopencl);
+    LOAD_LIBRARY_SAFE (libplmopencl);
     LOAD_SYMBOL (opencl_open_device, libplmopencl);
     LOAD_SYMBOL (opencl_load_programs, libplmopencl);
     LOAD_SYMBOL (opencl_kernel_create, libplmopencl);

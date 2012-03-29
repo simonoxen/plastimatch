@@ -50,7 +50,7 @@ CUDA_reconstruct_conebeam (
     double io_time = 0.0;
 #endif
 
-    LOAD_LIBRARY (libplmcuda);
+    LOAD_LIBRARY_SAFE (libplmcuda);
     LOAD_SYMBOL (fdk_cuda_state_create, libplmcuda);
     LOAD_SYMBOL (fdk_cuda_queue_image, libplmcuda);
     LOAD_SYMBOL (fdk_cuda_fetch_volume, libplmcuda);
@@ -104,7 +104,6 @@ CUDA_reconstruct_conebeam (
         }
 
 	/* Send projection image to device */
-    if (!delayload_cuda ()) { exit (0); }
 	fdk_cuda_queue_image (
 	    dev_state, 
 	    cbi->dim, 
@@ -128,7 +127,6 @@ CUDA_reconstruct_conebeam (
 #endif
 
 	/* Execute backprojection kernel */
-    if (!delayload_cuda ()) { exit (0); }
 	fdk_cuda_backproject (dev_state);
 
 #if FDK_CUDA_TIME_KERNEL
@@ -142,12 +140,10 @@ CUDA_reconstruct_conebeam (
 #endif
 
     /* Retrieve reconstructed volume from device */
-    if (!delayload_cuda ()) { exit (0); }
     fdk_cuda_fetch_volume (dev_state, vol->img, vol->npix * vol->pix_size);
 
 
     /* Free memory on device */
-    if (!delayload_cuda ()) { exit (0); }
     fdk_cuda_state_destroy (dev_state);
     
     UNLOAD_LIBRARY (libplmcuda);

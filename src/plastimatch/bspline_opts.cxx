@@ -67,11 +67,6 @@ bspline_opts_parse_args (Bspline_options* options, int argc, char* argv[])
     Reg_parms* reg_parms = &parms->reg_parms;
     Bspline_landmarks* blm = &parms->blm;
 
-#if (CUDA_FOUND)
-    LOAD_LIBRARY(libplmcuda);
-    LOAD_SYMBOL(CUDA_listgpu, libplmcuda);
-#endif
-
     for (i = 1; i < argc; i++) {
 	if (argv[i][0] != '-') break;
 	if (!strcmp (argv[i], "-A")) {
@@ -367,10 +362,10 @@ bspline_opts_parse_args (Bspline_options* options, int argc, char* argv[])
 	else if (!strcmp (argv[i], "--list-gpu")) {
 #if (CUDA_FOUND)
 	    printf ("Enumerating available GPUs:\n\n");
-	    if (!delayload_cuda()) {
-		exit(0);
-	    }
+        LOAD_LIBRARY_SAFE (libplmcuda);
+        LOAD_SYMBOL(CUDA_listgpu, libplmcuda);
 	    CUDA_listgpu ();
+        UNLOAD_LIBRARY (libplmcuda);
 #else
 	    printf ("\nPlastimatch was not compiled with CUDA support!\n\n");
 #endif
@@ -385,9 +380,6 @@ bspline_opts_parse_args (Bspline_options* options, int argc, char* argv[])
 	print_usage ();
     }
 
-#if (CUDA_FOUND)
-    UNLOAD_LIBRARY (libplmcuda);
-#endif
 
     options->fixed_fn = argv[i];
     options->moving_fn = argv[i+1];

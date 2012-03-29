@@ -78,8 +78,7 @@ bspline_cuda_state_create (
     bst->dev_ptrs = dev_ptrs;
     if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
         /* Be sure we loaded the CUDA plugin */
-        if (!delayload_cuda ()) { exit (0); }
-        LOAD_LIBRARY (libplmcuda);
+        LOAD_LIBRARY_SAFE (libplmcuda);
         LOAD_SYMBOL (CUDA_bspline_mse_init_j, libplmcuda);
 
         switch (parms->implementation) {
@@ -99,8 +98,7 @@ bspline_cuda_state_create (
     else if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MI)) {
 
         /* Be sure we loaded the CUDA plugin */
-        if (!delayload_cuda ()) { exit (0); }
-        LOAD_LIBRARY (libplmcuda);
+        LOAD_LIBRARY_SAFE (libplmcuda);
         LOAD_SYMBOL (CUDA_bspline_mi_init_a, libplmcuda);
 
         switch (parms->implementation) {
@@ -483,25 +481,13 @@ bspline_state_destroy (
     Volume *moving_grad = parms->moving_grad;
 
     if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
-        /* Be sure we loaded the CUDA plugin! */
-        if (!delayload_cuda ()) { exit (0); }
-
-        // JAS 10.27.2010
-        // CUDA zero-paging could have replaced the fixed, moving, or moving_grad
-        // pointers with pointers to pinned CPU memory, which must be freed using
-        // cudaFreeHost().  So, to prevent a segfault, we must free and NULL
-        // these pointers before they are attempted to be free()ed in the standard
-        // fashion.  Remember, free(NULL) is okay!
-        LOAD_LIBRARY (libplmcuda);
+        LOAD_LIBRARY_SAFE (libplmcuda);
         LOAD_SYMBOL (CUDA_bspline_mse_cleanup_j, libplmcuda);
         CUDA_bspline_mse_cleanup_j ((Dev_Pointers_Bspline *) bst->dev_ptrs, fixed, moving, moving_grad);
         UNLOAD_LIBRARY (libplmcuda);
     }
     else if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MI)) {
-        /* Be sure we loaded the CUDA plugin! */
-        if (!delayload_cuda ()) { exit (0); }
-
-        LOAD_LIBRARY (libplmcuda);
+        LOAD_LIBRARY_SAFE (libplmcuda);
         LOAD_SYMBOL (CUDA_bspline_mi_cleanup_a, libplmcuda);
         CUDA_bspline_mi_cleanup_a ((Dev_Pointers_Bspline *) bst->dev_ptrs, fixed, moving, moving_grad);
         UNLOAD_LIBRARY (libplmcuda);
@@ -1001,8 +987,7 @@ bspline_score (Bspline_optimize_data *bod)
     if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
 
         /* Be sure we loaded the CUDA plugin */
-        if (!delayload_cuda ()) { exit (0); }
-        LOAD_LIBRARY (libplmcuda);
+        LOAD_LIBRARY_SAFE (libplmcuda);
         LOAD_SYMBOL (CUDA_bspline_mse_j, libplmcuda);
 
         switch (parms->implementation) {
@@ -1020,8 +1005,7 @@ bspline_score (Bspline_optimize_data *bod)
     else if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MI)) {
 
         /* Be sure we loaded the CUDA plugin */
-        if (!delayload_cuda ()) { exit (0); }
-        LOAD_LIBRARY (libplmcuda);
+        LOAD_LIBRARY_SAFE (libplmcuda);
         LOAD_SYMBOL (CUDA_bspline_mi_a, libplmcuda);
 
         switch (parms->implementation) {

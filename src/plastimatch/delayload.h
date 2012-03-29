@@ -48,6 +48,22 @@
 
 // ------------------------------------------------------------
 
+
+// JAS 2012.03.29
+// ------------------------------------------------------------
+// Now that plastimatch is officially C++, we can now safely
+// define this macro, which reduces programmer error.  This
+// should be used instead of LOAD_LIBRARY
+#if !defined(_WIN32) && defined(PLM_USE_GPU_PLUGINS)
+    #define LOAD_LIBRARY_SAFE(lib)                 \
+        if (!delayload_##lib()) { exit (0); }      \
+        void* lib = dlopen_ex (#lib".so");          
+#else
+    #define LOAD_LIBRARY_SAFE(lib)                 \
+        if (!delayload_##lib()) { exit (0); }      \
+        ;
+#endif
+
 // JAS 2010.12.09
 // Despite what the man pages say, dlclose()ing NULL
 // was resulting in segfaults!  So, now we check 1st.
@@ -68,11 +84,11 @@ extern "C" {
 
 gpuit_EXPORT
 int
-delayload_cuda (void);
+delayload_libplmcuda (void);
 
 gpuit_EXPORT
 int
-delayload_opencl (void);
+delayload_libplmopencl (void);
 
 gpuit_EXPORT
 void* dlopen_ex (char* lib);

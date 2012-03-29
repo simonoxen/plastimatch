@@ -1574,7 +1574,6 @@ bspline_score_h_mi (
 
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
-    Volume *moving_grad = parms->moving_grad;
 
     Bspline_score* ssd = &bst->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
@@ -1857,7 +1856,6 @@ bspline_score_g_mi (
 
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
-    Volume *moving_grad = parms->moving_grad;
 
     Bspline_score* ssd = &bst->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
@@ -2121,7 +2119,6 @@ bspline_score_f_mi (
 
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
-    Volume *moving_grad = parms->moving_grad;
 
     Bspline_score* ssd = &bst->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
@@ -2429,7 +2426,6 @@ bspline_score_e_mi (
 
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
-    Volume *moving_grad = parms->moving_grad;
 
     Bspline_score* ssd = &bst->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
@@ -2780,7 +2776,6 @@ bspline_score_d_mi (
 
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
-    Volume *moving_grad = parms->moving_grad;
 
     Bspline_score* ssd = &bst->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
@@ -3077,7 +3072,6 @@ bspline_score_c_mi (
 
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
-    Volume *moving_grad = parms->moving_grad;
 
     Bspline_score* ssd = &bst->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;

@@ -41,8 +41,7 @@ main (int argc, char* argv[])
 
 #if (CUDA_FOUND)
     if (parms->threading == BTHR_CUDA) {
-        if (!delayload_cuda()) { exit(0); }
-        LOAD_LIBRARY (libplmcuda);
+        LOAD_LIBRARY_SAFE (libplmcuda);
         LOAD_SYMBOL (CUDA_selectgpu, libplmcuda);
         CUDA_selectgpu (parms->gpuid);
         UNLOAD_LIBRARY (libplmcuda);
@@ -68,9 +67,9 @@ main (int argc, char* argv[])
 #if defined (commentout)
     /* Load and adjust landmarks */
     if (options.fixed_landmarks && options.moving_landmarks) {
-	parms->landmarks = bspline_landmarks_load (
-	    options.fixed_landmarks, options.moving_landmarks);
-	bspline_landmarks_adjust (parms->landmarks, fixed, moving);
+        parms->landmarks = bspline_landmarks_load (
+            options.fixed_landmarks, options.moving_landmarks);
+        bspline_landmarks_adjust (parms->landmarks, fixed, moving);
     }
 #endif
 
@@ -81,23 +80,23 @@ main (int argc, char* argv[])
     printf ("Allocating lookup tables\n");
     memset (roi_offset, 0, 3*sizeof(plm_long));
     if (options.input_xf_fn) {
-	bxf = bspline_xform_load (options.input_xf_fn);
-	if (!bxf) {
-	    fprintf (stderr, "Failed to load %s\n", options.input_xf_fn);
-	    exit (-1);
-	}
+        bxf = bspline_xform_load (options.input_xf_fn);
+        if (!bxf) {
+            fprintf (stderr, "Failed to load %s\n", options.input_xf_fn);
+            exit (-1);
+        }
     } else {
-	bxf = (Bspline_xform*) malloc (sizeof (Bspline_xform));
-	bspline_xform_initialize (
-	    bxf,
-	    fixed->offset,
-	    fixed->spacing,
-	    fixed->dim,
-	    roi_offset,
-	    fixed->dim,
-	    options.vox_per_rgn,
+        bxf = (Bspline_xform*) malloc (sizeof (Bspline_xform));
+        bspline_xform_initialize (
+            bxf,
+            fixed->offset,
+            fixed->spacing,
+            fixed->dim,
+            roi_offset,
+            fixed->dim,
+            options.vox_per_rgn,
         (fixed->direction_cosines).m_direction_cosines
-	);
+        );
     }
 
     /* Run the optimization */
@@ -107,52 +106,52 @@ main (int argc, char* argv[])
 
     /* Save output transform */
     if (options.output_xf_fn) {
-	bspline_xform_save (bxf, options.output_xf_fn);
+        bspline_xform_save (bxf, options.output_xf_fn);
     }
 
     /* Create vector field from bspline coefficients and save */
     if (options.output_vf_fn 
-	|| options.output_warped_fn 
+        || options.output_warped_fn 
 #if defined (commentout)
-	|| (options.warped_landmarks && options.fixed_landmarks 
-	    && options.moving_landmarks)
+        || (options.warped_landmarks && options.fixed_landmarks 
+            && options.moving_landmarks)
 #endif
     )
     {
-	printf ("Creating vector field.\n");
-	vector_field = new Volume (fixed->dim, fixed->offset, 
-	    fixed->spacing, fixed->direction_cosines, 
-	    PT_VF_FLOAT_INTERLEAVED, 3);
-	if (parms->threading == BTHR_CUDA) {
+        printf ("Creating vector field.\n");
+        vector_field = new Volume (fixed->dim, fixed->offset, 
+            fixed->spacing, fixed->direction_cosines, 
+            PT_VF_FLOAT_INTERLEAVED, 3);
+        if (parms->threading == BTHR_CUDA) {
 #if (CUDA_FOUND)
-	    LOAD_LIBRARY (libplmcuda);
-	    LOAD_SYMBOL (CUDA_bspline_interpolate_vf, libplmcuda);
-	    CUDA_bspline_interpolate_vf (vector_field, bxf);
-	    UNLOAD_LIBRARY (libplmcuda);
+            LOAD_LIBRARY_SAFE (libplmcuda);
+            LOAD_SYMBOL (CUDA_bspline_interpolate_vf, libplmcuda);
+            CUDA_bspline_interpolate_vf (vector_field, bxf);
+            UNLOAD_LIBRARY (libplmcuda);
 #else
-	    bspline_interpolate_vf (vector_field, bxf);
+            bspline_interpolate_vf (vector_field, bxf);
 #endif
-	} else {
-	    bspline_interpolate_vf (vector_field, bxf);
-	}
+        } else {
+            bspline_interpolate_vf (vector_field, bxf);
+        }
     }
 
     /* Create warped output image and save */
     if (options.output_warped_fn) {
-	printf ("Warping image.\n");
-	moving_warped = vf_warp (0, moving, vector_field);
-	if (moving_warped) {
-	    printf ("Writing warped image.\n");
-	    write_mha (options.output_warped_fn, moving_warped);
-	} else {
-	    printf ("Sorry, couldn't create warped image.\n");
-	}
+        printf ("Warping image.\n");
+        moving_warped = vf_warp (0, moving, vector_field);
+        if (moving_warped) {
+            printf ("Writing warped image.\n");
+            write_mha (options.output_warped_fn, moving_warped);
+        } else {
+            printf ("Sorry, couldn't create warped image.\n");
+        }
     }
 
     /* Write the vector field */
     if (options.output_vf_fn) {
-	printf ("Writing vector field.\n");
-	write_mha (options.output_vf_fn, vector_field);
+        printf ("Writing vector field.\n");
+        write_mha (options.output_vf_fn, vector_field);
     }
 
     /* Free memory */
