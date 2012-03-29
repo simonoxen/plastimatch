@@ -16,8 +16,8 @@
 #include "dips_panel.h"
 
 #define FLUORO_MODE 0
-#define HIRES_IMAGE_HEIGHT 1536
-#define HIRES_IMAGE_WIDTH 2048
+//#define HIRES_IMAGE_HEIGHT 1536
+//#define HIRES_IMAGE_WIDTH 2048
 
 void igpax_poll_images (PANEL* panelp, unsigned short* pixelp);
 

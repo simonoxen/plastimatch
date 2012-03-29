@@ -4,6 +4,9 @@
 #ifndef _dips_panel_h_
 #define _dips_panel_h_
 
+#define HIRES_IMAGE_HEIGHT 3200
+#define HIRES_IMAGE_WIDTH 2304
+
 class Dips_panel {
 public:
     Dips_panel ();

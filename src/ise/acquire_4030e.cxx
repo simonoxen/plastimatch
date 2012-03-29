@@ -30,32 +30,40 @@ int
 main (int argc, char* argv[])
 {
     Advantech advantech;
-    char *path_1 = default_path_1;
-    char *path_2 = default_path_2;
+    char *paths[2];
     int choice = 0;
-    int result;
-
-#define HIRES_IMAGE_HEIGHT 3200
-#define HIRES_IMAGE_WIDTH 2304
 
     QApplication app (argc, argv);
 
     printf ("Welcome to acquire_4030e\n");
 
     // Check for receptor path on the command line
+    paths[0] = default_path_1;
+    paths[1] = default_path_2;
     if (argc > 1) {
-	path_1 = argv[1];
+	paths[0] = argv[1];
     }
     if (argc > 2) {
-	path_2 = argv[2];
+	paths[1] = argv[2];
     }
 
-    QThread thread;
-    Acquire_thread aq;
-    aq.moveToThread (&thread);
-    thread.start ();
-    QMetaObject::invokeMethod (&aq, "run", Qt::QueuedConnection);
+    /* Start acquisition threads */
+    QThread thread[2];
+    Acquire_thread aq[2];
+    for (int i = 0; i < 1; i++) {
+        aq[i].idx = i;
+        aq[i].open_receptor (paths[i]);
+        aq[i].moveToThread (&thread[i]);
+        thread[i].start ();
+        QMetaObject::invokeMethod (&aq[i], "run", Qt::QueuedConnection);
+    }
 
+    /* Wait (forever) for threads to complete */
+    app.exec();
+    thread[0].wait();
+    //thread[1].wait();
+
+#if defined (commentout)
     Dips_panel dp;
     dp.open_panel (0, HIRES_IMAGE_HEIGHT, HIRES_IMAGE_WIDTH);
 
@@ -100,6 +108,7 @@ main (int argc, char* argv[])
     }
 
     vip_close_link();
+#endif
 
     return 0;
 }
