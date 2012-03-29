@@ -22,9 +22,9 @@ include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 ## QT configuration
 ##-----------------------------------------------------------------------------
 if (QT4_FOUND)
-  set (BUILD_AQUIRE_4030E TRUE)
+  set (BUILD_ACQUIRE_4030E TRUE)
 else ()
-  set (BUILD_AQUIRE_4030E TRUE)
+  set (BUILD_ACQUIRE_4030E TRUE)
 endif ()
 if (QT4_FOUND AND QT_QTSQL_FOUND AND VTK_FOUND AND VTK_USE_QT)
   set (BUILD_ISE_QT TRUE)
@@ -71,14 +71,16 @@ set (ISE_SRC
   )
 
 set (ACQUIRE_4030E_SRC
-  acquire_4030e.cxx
+  acquire_4030e_main.cxx
+  acquire_4030e_parent.cxx acquire_4030e_parent.h
   acquire_thread.cxx acquire_thread.h
   advantech.cxx advantech.h
   dips_panel.cxx dips_panel.h
   varian_4030e.cxx varian_4030e.h 
   )
-if (BUILD_AQUIRE_4030E)
+if (BUILD_ACQUIRE_4030E)
   qt4_wrap_cpp (ACQUIRE_4030E_SRC 
+    acquire_4030e_parent.h
     acquire_thread.h
     )
 endif ()

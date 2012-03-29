@@ -6,40 +6,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <windows.h>
-#include "HcpErrors.h"
-#include "HcpFuncDefs.h"
-#include "iostatus.h"
 #include <QApplication>
-#include <QThread>
+#include <QProcess>
 
-#include "acquire_thread.h"
-#include "advantech.h"
-#include "dips_panel.h"
-#include "varian_4030e.h"
+#include "acquire_4030e_parent.h"
 
-
-// The string such as "A422-07" is the imager serial number
-char *default_path_1 = "C:\\IMAGERs\\A422-07"; // Path to IMAGER tables
-char *default_path_2 = "C:\\IMAGERs\\A663-11"; // Path to IMAGER tables
-
-//----------------------------------------------------------------------
-//  main
-//----------------------------------------------------------------------
-int 
-main (int argc, char* argv[])
+void 
+Acquire_4030e_parent::initialize (int argc, char* argv[])
 {
-    Advantech advantech;
     char *paths[2];
-    int choice = 0;
-
-    QApplication app (argc, argv);
-
-    printf ("Welcome to acquire_4030e\n");
 
     // Check for receptor path on the command line
-    paths[0] = default_path_1;
-    paths[1] = default_path_2;
     if (argc > 1) {
 	paths[0] = argv[1];
     }
@@ -47,7 +24,18 @@ main (int argc, char* argv[])
 	paths[1] = argv[2];
     }
 
-    /* Start acquisition threads */
+    /* Start acquisition processes */
+    for (int i = 0; i < 1; i++) {
+        QString program = argv[0];
+        QStringList arguments;
+        arguments << "--child" << paths[i];
+        this->process[i].start(program, arguments);
+
+	connect (&this->process[i], SIGNAL(readyReadStandardOutput()),
+            this, SLOT(log_output()));  
+    }
+
+#if defined (commentout)
     QThread thread[2];
     Acquire_thread aq[2];
     for (int i = 0; i < 1; i++) {
@@ -62,6 +50,7 @@ main (int argc, char* argv[])
     app.exec();
     thread[0].wait();
     //thread[1].wait();
+#endif
 
 #if defined (commentout)
     Dips_panel dp;
@@ -109,6 +98,10 @@ main (int argc, char* argv[])
 
     vip_close_link();
 #endif
+}
 
-    return 0;
+void 
+Acquire_4030e_parent::log_output ()
+{
+    printf ("Output was logged\n");
 }
