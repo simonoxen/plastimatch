@@ -13,6 +13,7 @@
 #include "HcpFuncDefs.h"
 #include "iostatus.h"
 
+#include "aqprintf.h"
 #include "dips_panel.h"
 #include "varian_4030e.h"
 
@@ -53,7 +54,7 @@ Varian_4030e::check_link()
     while (result != HCP_NO_ERR) {
         vip_mutex.unlock ();
         Sleep (1000);
-        printf ("[vp %d] Retry vip_check_link.\n", this->idx);
+        aqprintf ("Retry vip_check_link.\n");
         vip_mutex.lock ();
         vip_select_receptor (this->receptor_no);
         result = vip_check_link (&clk);
@@ -75,11 +76,11 @@ Varian_4030e::open_link (const char *path)
     // or other settings see Virtual CP Communications Manual uncomment
     // and modify the following line if required
     //	orl.DebugMode = HCP_DBG_ON_FLSH;
-    printf("[vp %d] Opening link to %s\n", this->idx, orl.RecDirPath);
+    aqprintf("Opening link to %s\n", orl.RecDirPath);
     result = vip_open_receptor_link (&orl);
 
     this->receptor_no = orl.RcptNum;
-    printf ("[vp %d] Receptor number %d\n", this->idx, this->receptor_no);
+    aqprintf ("Receptor number %d\n", this->receptor_no);
     return result;
 }
 
@@ -116,13 +117,13 @@ Varian_4030e::disable_missing_corrections (int result)
     switch (result)
     {
     case HCP_OFST_ERR:
-        printf ("Requested corrections not available: offset file missing\n");
+        aqprintf ("Requested corrections not available: offset file missing\n");
         break;
     case HCP_GAIN_ERR:
-        printf ("Requested corrections not available: gain file missing\n");
+        aqprintf ("Requested corrections not available: gain file missing\n");
         break;
     case HCP_DFCT_ERR:
-        printf ("Requested corrections not available: defect file missing\n");
+        aqprintf ("Requested corrections not available: defect file missing\n");
         break;
     default:
         return result;
@@ -136,7 +137,7 @@ Varian_4030e::disable_missing_corrections (int result)
     corr.StructSize = sizeof(SCorrections);
     result = vip_set_correction_settings(&corr);
     if (result == VIP_NO_ERR) {
-        printf("[vp %d] Corrections are off\n", this->idx);
+        aqprintf("Corrections are off\n");
     }
 
     return result;
@@ -163,22 +164,22 @@ Varian_4030e::print_mode_info ()
     int result = get_mode_info (modeInfo, this->current_mode);
 
     if (result == HCP_NO_ERR) {
-        printf ("[vp %d]>> ModeDescription=\"%s\"\n", 
-            this->idx, modeInfo.ModeDescription);
-        printf ("[vp %d]>> AcqType=             %5d\n", 
-            this->idx, modeInfo.AcqType);
-        printf ("[vp %d]>> FrameRate=          %6.3f,"
+        aqprintf (">> ModeDescription=\"%s\"\n", 
+            modeInfo.ModeDescription);
+        aqprintf (">> AcqType=             %5d\n", 
+            modeInfo.AcqType);
+        aqprintf (">> FrameRate=          %6.3f,"
             " AnalogGain=         %6.3f\n",
-            this->idx, modeInfo.FrameRate, modeInfo.AnalogGain);
-        printf ("[vp %d]>> LinesPerFrame=       %5d,"
+            modeInfo.FrameRate, modeInfo.AnalogGain);
+        aqprintf (">> LinesPerFrame=       %5d,"
             " ColsPerFrame=        %5d\n",
-            this->idx, modeInfo.LinesPerFrame, modeInfo.ColsPerFrame);
-        printf ("[vp %d]>> LinesPerPixel=       %5d,"
+            modeInfo.LinesPerFrame, modeInfo.ColsPerFrame);
+        aqprintf (">> LinesPerPixel=       %5d,"
             " ColsPerPixel=        %5d\n",
-            this->idx, modeInfo.LinesPerPixel, modeInfo.ColsPerPixel);
+            modeInfo.LinesPerPixel, modeInfo.ColsPerPixel);
     } else {
-        printf ("[vp %d]**** vip_get_mode_info returns error %d\n", 
-            this->idx, result);
+        aqprintf ("**** vip_get_mode_info returns error %d\n", 
+            result);
     }
     return result;
 }
@@ -196,21 +197,20 @@ Varian_4030e::print_sys_info (void)
     result = vip_get_sys_info (&sysInfo);
     vip_mutex.unlock ();
     if (result == HCP_NO_ERR) {
-        printf("[vp %d]> SysDescription=\"%s\"\n", 
-            this->idx, sysInfo.SysDescription);
-        printf("[vp %d]> NumModes=         %5d,   DfltModeNum=   %5d\n", 
-            this->idx, sysInfo.NumModes, sysInfo.DfltModeNum);
-        printf("[vp %d]> MxLinesPerFrame=  %5d,   MxColsPerFrame=%5d\n", 
-            this->idx, sysInfo.MxLinesPerFrame, sysInfo.MxColsPerFrame);
-        printf("[vp %d]> MxPixelValue=     %5d,   HasVideo=      %5d\n",
-            this->idx, sysInfo.MxPixelValue, sysInfo.HasVideo);
-        printf("[vp %d]> StartUpConfig=    %5d,   NumAsics=      %5d\n",
-            this->idx, sysInfo.StartUpConfig, sysInfo.NumAsics);
-        printf("[vp %d]> ReceptorType=     %5d\n", 
-            this->idx, sysInfo.ReceptorType);
+        aqprintf("> SysDescription=\"%s\"\n", 
+            sysInfo.SysDescription);
+        aqprintf("> NumModes=         %5d,   DfltModeNum=   %5d\n", 
+            sysInfo.NumModes, sysInfo.DfltModeNum);
+        aqprintf("> MxLinesPerFrame=  %5d,   MxColsPerFrame=%5d\n", 
+            sysInfo.MxLinesPerFrame, sysInfo.MxColsPerFrame);
+        aqprintf("> MxPixelValue=     %5d,   HasVideo=      %5d\n",
+            sysInfo.MxPixelValue, sysInfo.HasVideo);
+        aqprintf("> StartUpConfig=    %5d,   NumAsics=      %5d\n",
+            sysInfo.StartUpConfig, sysInfo.NumAsics);
+        aqprintf("> ReceptorType=     %5d\n", 
+            sysInfo.ReceptorType);
     } else {
-        printf("[vp %d]**** vip_get_sys_info returns error %d\n", 
-            this->idx, result);
+        aqprintf("**** vip_get_sys_info returns error %d\n", result);
     }
 }
 
@@ -225,8 +225,7 @@ Varian_4030e::query_prog_info (UQueryProgInfo &crntStatus, bool showAll)
 //    vip_select_receptor (this->receptor_no);
     int result = vip_query_prog_info (HCP_U_QPI, &crntStatus);
     if (result != HCP_NO_ERR) {
-        printf ("[vp %d]**** vip_query_prog_info returns error %d\n", 
-            this->idx, result);
+        aqprintf ("**** vip_query_prog_info returns error %d\n", result);
         return result;
     }
 
@@ -236,8 +235,7 @@ Varian_4030e::query_prog_info (UQueryProgInfo &crntStatus, bool showAll)
         || (prevStatus.qpi.NumPulses != crntStatus.qpi.NumPulses)
         || (prevStatus.qpi.ReadyForPulse != crntStatus.qpi.ReadyForPulse))
     {
-        printf("[vp %d] frames=%d complete=%d pulses=%d ready=%d\n",
-            this->idx, 
+        aqprintf("frames=%d complete=%d pulses=%d ready=%d\n",
             crntStatus.qpi.NumFrames,
             crntStatus.qpi.Complete,
             crntStatus.qpi.NumPulses,
@@ -253,7 +251,7 @@ Varian_4030e::wait_on_complete (UQueryProgInfo &crntStatus, int timeoutMsec)
     int totalMsec = 0;
 
     crntStatus.qpi.Complete = FALSE;
-    printf("Waiting for Complete == TRUE...\n");
+    aqprintf("Waiting for Complete == TRUE...\n");
     while (result == HCP_NO_ERR)
     {
         result = query_prog_info (crntStatus);
@@ -263,7 +261,7 @@ Varian_4030e::wait_on_complete (UQueryProgInfo &crntStatus, int timeoutMsec)
             totalMsec += 100;
             if (totalMsec >= timeoutMsec)
             {
-                printf("*** TIMEOUT ***\n");
+                aqprintf("*** TIMEOUT ***\n");
                 return HCP_SIGNAL_TIMEOUT;
             }
         }
@@ -280,7 +278,7 @@ Varian_4030e::wait_on_num_frames (
     int totalMsec = 0;
 
     crntStatus.qpi.Complete = FALSE;
-    printf("Waiting for Complete == TRUE...\n");
+    aqprintf("Waiting for Complete == TRUE...\n");
     while (result == HCP_NO_ERR)
     {
         result = query_prog_info (crntStatus);
@@ -291,7 +289,7 @@ Varian_4030e::wait_on_num_frames (
             totalMsec += 100;
             if (totalMsec >= timeoutMsec)
             {
-                printf("*** TIMEOUT ***\n");
+                aqprintf("*** TIMEOUT ***\n");
                 return HCP_SIGNAL_TIMEOUT;
             }
         }
@@ -307,7 +305,7 @@ Varian_4030e::wait_on_num_pulses (UQueryProgInfo &crntStatus, int timeoutMsec)
     int totalMsec = 0;
 
     int numPulses = crntStatus.qpi.NumPulses;
-    printf("Waiting for Complete == TRUE...\n");
+    aqprintf("Waiting for Complete == TRUE...\n");
     while (result == HCP_NO_ERR)
     {
         result = query_prog_info (crntStatus);
@@ -318,7 +316,7 @@ Varian_4030e::wait_on_num_pulses (UQueryProgInfo &crntStatus, int timeoutMsec)
             totalMsec += 100;
             if (totalMsec >= timeoutMsec)
             {
-                printf("*** TIMEOUT ***\n");
+                aqprintf("*** TIMEOUT ***\n");
                 return HCP_SIGNAL_TIMEOUT;
             }
         }
@@ -340,11 +338,9 @@ Varian_4030e::wait_on_ready_for_pulse (
 
     crntStatus.qpi.ReadyForPulse = FALSE;
     if (expectedState) {
-        printf ("[vp %d] Waiting for ReadyForPulse == TRUE...\n",
-            this->idx);
+        aqprintf ("Waiting for ReadyForPulse == TRUE...\n");
     } else {
-        printf ("[vp %d] Waiting for ReadyForPulse == FALSE...\n",
-            this->idx);
+        aqprintf ("Waiting for ReadyForPulse == FALSE...\n");
     }
 
     while (result == HCP_NO_ERR) {
@@ -355,7 +351,7 @@ Varian_4030e::wait_on_ready_for_pulse (
         if (timeoutMsec > 0) {
             totalMsec += 100;
             if (totalMsec >= timeoutMsec) {
-                printf("*** TIMEOUT ***\n");
+                aqprintf("*** TIMEOUT ***\n");
                 return HCP_SIGNAL_TIMEOUT;
             }
         }
@@ -375,7 +371,7 @@ void ShowDllVersions()
     static char version[512];
     static char dllName[512];
 
-    printf("calling vip_get_dlls_versions\n");
+    aqprintf("calling vip_get_dlls_versions\n");
     int result = vip_get_dll_version(version, dllName, 512);
     if (result == HCP_NO_ERR)
     {
@@ -383,16 +379,16 @@ void ShowDllVersions()
         char *n = dllName;
         int vLen = strlen(v);
         int nLen = strlen(n);
-        printf("--------------------------------------------------------\n");
+        aqprintf("--------------------------------------------------------\n");
         while ((vLen > 0) && (nLen > 0))
         {
-            printf("%-24s %s\n", n, v);
+            aqprintf("%-24s %s\n", n, v);
             v += (vLen + 1);
             n += (nLen + 1);
             vLen = strlen(v);
             nLen = strlen(n);
         }
-        printf("--------------------------------------------------------\n");
+        aqprintf("--------------------------------------------------------\n");
     }
 }
 
@@ -417,17 +413,17 @@ void ShowDiagData()
     int result = vip_query_prog_info(HCP_U_QPIDIAGDATA, &uqpi);
     if (result == HCP_NO_ERR)
     {
-        printf("  Receptor PanelType=%d, FwVersion=0x%.3X BoardId=%.4X %.4X %.4X\n",
+        aqprintf("  Receptor PanelType=%d, FwVersion=0x%.3X BoardId=%.4X %.4X %.4X\n",
             uqpi.qpidiag.PanelType,
             uqpi.qpidiag.FwVersion,
             uqpi.qpidiag.BoardSNbr[2],
             uqpi.qpidiag.BoardSNbr[1],
             uqpi.qpidiag.BoardSNbr[0]);
-        printf("  RcptFrameId=%d ExposureStatus=0x%.4X\n",
+        aqprintf("  RcptFrameId=%d ExposureStatus=0x%.4X\n",
             uqpi.qpidiag.RcptFrameId, uqpi.qpidiag.Exposed);
     }
     else
-        printf("Diag data returns %d\n", result);
+        aqprintf("Diag data returns %d\n", result);
 }
 
 //----------------------------------------------------------------------
@@ -453,7 +449,7 @@ void ShowFrameData(int crntReq=0)
     int result = vip_query_prog_info(uType, &uqpi);
     if (result == HCP_NO_ERR)
     {
-        printf("RcptFrameId=%d ExposureStatus=0x%.4X\n",
+        aqprintf("RcptFrameId=%d ExposureStatus=0x%.4X\n",
             uqpi.qpiframe.RcptFrameId, uqpi.qpiframe.Exposed);
     }
 }
@@ -476,17 +472,17 @@ void ShowReceptorData()
     memset(&uqpi.qpircpt, 0, sizeof(SQueryProgInfoRcpt));
     uqpi.qpircpt.StructSize = 28; // sizeof(SQueryProgInfoRcpt);
 
-    printf("Calling vip_query_prog_info(HCP_U_QPIRCPT, %d)\n", sizeof(SQueryProgInfoRcpt));
+    aqprintf("Calling vip_query_prog_info(HCP_U_QPIRCPT, %d)\n", sizeof(SQueryProgInfoRcpt));
     int result = vip_query_prog_info(uType, &uqpi);
     if (result == HCP_NO_ERR) {
-        printf("Receptor PanelType=%d, FwVersion=0x%.3X BoardId=%.2X%.2X%.2X\n",
+        aqprintf("Receptor PanelType=%d, FwVersion=0x%.3X BoardId=%.2X%.2X%.2X\n",
             uqpi.qpircpt.PanelType,
             uqpi.qpircpt.FwVersion,
             uqpi.qpircpt.BoardSNbr[1],
             uqpi.qpircpt.BoardSNbr[1],
             uqpi.qpircpt.BoardSNbr[0]);
     } else {
-        printf ("*** vip_query_prog_info returns %d (%s)\n", result,
+        aqprintf ("*** vip_query_prog_info returns %d (%s)\n", result,
             Varian_4030e::error_string (result));
     }
 }
@@ -515,7 +511,7 @@ void ShowTemperatureData(int crntReq=0)
     if (result == HCP_NO_ERR)
     {
         for (int i = 0; i < uqpi.qpitemps.NumSensors; i++)
-            printf("T[%d]=%5.2f\n", i, uqpi.qpitemps.Celsius[i]);
+            aqprintf("T[%d]=%5.2f\n", i, uqpi.qpitemps.Celsius[i]);
     }
 }
 
@@ -543,7 +539,7 @@ void ShowVoltageData(int crntReq=0)
     if (result == HCP_NO_ERR)
     {
         for (int i = 0; i < uqpi.qpitemps.NumSensors; i++)
-            printf("V[%2d]=%f\n", i, uqpi.qpivolts.Volts[i]);
+            aqprintf("V[%2d]=%f\n", i, uqpi.qpivolts.Volts[i]);
     }
 }
 
@@ -578,7 +574,7 @@ void ShowImageStatistics(int npixels, USHORT *image_ptr)
         nTotal++;
     }
 
-    printf("Image: %d pixels, average=%9.2f min=%d max=%d\n",
+    aqprintf("Image: %d pixels, average=%9.2f min=%d max=%d\n",
         nTotal, sumPixel / nTotal, minPixel, maxPixel);
 }
 
@@ -610,7 +606,7 @@ Varian_4030e::get_image_to_file (int xSize, int ySize,
         FILE *finput = fopen(filename, "wb");
         if (finput == NULL)
         {
-            printf("Error opening image file to put file.");
+            aqprintf("Error opening image file to put file.");
             exit(-1);
         }
 
@@ -620,7 +616,7 @@ Varian_4030e::get_image_to_file (int xSize, int ySize,
     }
     else
     {
-        printf("*** vip_get_image returned error %d\n", result);
+        aqprintf("*** vip_get_image returned error %d\n", result);
     }
 
     free(image_ptr);
@@ -644,7 +640,7 @@ Varian_4030e::get_image_to_dips (Dips_panel *dp, int xSize, int ySize)
     if (result == HCP_NO_ERR) {
         ShowImageStatistics(npixels, image_ptr);
     } else {
-        printf("*** vip_get_image returned error %d\n", result);
+        aqprintf("*** vip_get_image returned error %d\n", result);
         return HCP_NO_ERR;
     }
 
@@ -667,29 +663,28 @@ Varian_4030e::rad_acquisition (Dips_panel *dp)
 
     this->get_mode_info (modeInfo, this->current_mode);
 
-    // printf ("Calling vip_enable_sw_handshaking(FALSE)\n");
+    // aqprintf ("Calling vip_enable_sw_handshaking(FALSE)\n");
     result = vip_enable_sw_handshaking (FALSE);
     if (result != HCP_NO_ERR) {
-        printf ("[vp %d]**** vip_enable_sw_handshaking returns error %d\n", 
-            this->idx, result);
+        aqprintf ("**** vip_enable_sw_handshaking returns error %d\n", 
+            result);
         return result;
     }
 
-    //printf("Calling vip_io_enable(HS_ACTIVE)\n");
+    //aqprintf("Calling vip_io_enable(HS_ACTIVE)\n");
     vip_mutex.lock ();
     vip_select_receptor (this->receptor_no);
     result = vip_io_enable (HS_ACTIVE);
     vip_mutex.unlock ();
     if (result != HCP_NO_ERR) {
-        printf("[vp %d]**** returns error %d - acquisition not enabled\n", 
-            this->idx, result);
+        aqprintf("**** returns error %d - acquisition not enabled\n", result);
         return result;
     }
 
     result = wait_on_ready_for_pulse (crntStatus, 5000, TRUE);
     if (result == HCP_NO_ERR) {
 
-        printf("READY FOR X-RAYS - EXPOSE AT ANY TIME\n");
+        aqprintf("READY FOR X-RAYS - EXPOSE AT ANY TIME\n");
         /* Close relay to generator */
         /* Poll generator pins 8/26, look for de-assert */
         /* Close, then open pins 3/4 to paxscan */
@@ -698,7 +693,7 @@ Varian_4030e::rad_acquisition (Dips_panel *dp)
         if (result == HCP_NO_ERR) {
             result = this->wait_on_num_frames (crntStatus, 1, 0);
             if (result != HCP_NO_ERR) {
-                printf ("***** Didn't find expected NUM FRAMES?\n");
+                aqprintf ("***** Didn't find expected NUM FRAMES?\n");
             }
             result = this->get_image_to_dips (
                 dp, modeInfo.ColsPerFrame,
@@ -718,7 +713,7 @@ Varian_4030e::rad_acquisition (Dips_panel *dp)
             ShowVoltageData();
         }
         else {
-            printf("*** Acquisition terminated with error %d\n", result);
+            aqprintf("*** Acquisition terminated with error %d\n", result);
         }
         vip_io_enable(HS_STANDBY);
     }

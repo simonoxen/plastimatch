@@ -11,6 +11,14 @@
 
 #include "acquire_4030e_parent.h"
 
+Acquire_4030e_parent::Acquire_4030e_parent (int argc, char* argv[]) 
+  : QApplication (argc, argv)
+{
+    printf ("Welcome to acquire_4030e\n");
+    printf ("Creating child processes.\n");
+    this->initialize (argc, argv);
+}
+
 void 
 Acquire_4030e_parent::initialize (int argc, char* argv[])
 {
@@ -29,7 +37,7 @@ Acquire_4030e_parent::initialize (int argc, char* argv[])
     for (int i = 0; i < 1; i++) {
         QString program = argv[0];
         QStringList arguments;
-        arguments << "--child" << paths[i];
+	arguments << "--child" << QString("%1").arg(i).toUtf8() << paths[i];
 	connect (&this->process[i], SIGNAL(readyReadStandardOutput()),
             this, SLOT(log_output()));
         this->process[i].start(program, arguments);

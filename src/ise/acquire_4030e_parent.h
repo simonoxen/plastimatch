@@ -12,7 +12,7 @@ class Acquire_4030e_parent : public QApplication
     Q_OBJECT
     ;
 public:
-    Acquire_4030e_parent(int argc, char* argv[]) : QApplication (argc, argv) {}
+    Acquire_4030e_parent (int argc, char* argv[]);
 public:
     void initialize (int argc, char* argv[]);
 public slots:

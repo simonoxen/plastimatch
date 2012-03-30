@@ -19,6 +19,7 @@
 //#include "advantech.h"
 //#include "dips_panel.h"
 //#include "varian_4030e.h"
+#include "acquire_4030e_child.h"
 #include "acquire_4030e_parent.h"
 
 class SleeperThread : public QThread {
@@ -50,24 +51,32 @@ main (int argc, char* argv[])
 
     if (argc > 1) {
         if (!strcmp (argv[1], "--child")) {
-            /* Child process */
+            /*** Child process ***/
+            printf ("A child is born.\n");
+            Acquire_4030e_child *child
+                = new Acquire_4030e_child (argc, argv);
+
+            /* Wait forever */
+            printf ("Waiting forever.\n");
+            child->run();
+            printf ("Wait complete.\n");
+
+#if defined (commentout)
             for (int i = 0; i < 10; i++) {
                 printf ("A child is born.\n");
 		fflush (stdout);
                 SleeperThread::msleep(1000);
             }
+#endif
         } else {
-            /* Parent process */
+            /*** Parent process ***/
             Acquire_4030e_parent *parent 
                 = new Acquire_4030e_parent (argc, argv);
-            /* Create child process(es) */
-            printf ("Welcome to acquire_4030e\n");
-            printf ("Creating child processes.\n");
-            parent->initialize (argc, argv);
+
             /* Wait forever */
             printf ("Waiting forever.\n");
             parent->exec ();
-            printf ("Exec complete.\n");
+            printf ("Wait complete.\n");
         }
     } else {
         printf ("Usage: acquire_4030e image-path-1 [image-path-2]\n");

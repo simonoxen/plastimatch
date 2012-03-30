@@ -72,16 +72,17 @@ set (ISE_SRC
 
 set (ACQUIRE_4030E_SRC
   acquire_4030e_main.cxx
+  acquire_4030e_child.cxx acquire_4030e_child.h 
   acquire_4030e_parent.cxx acquire_4030e_parent.h
-  acquire_thread.cxx acquire_thread.h
   advantech.cxx advantech.h
+  aqprintf.cxx aqprintf.h 
   dips_panel.cxx dips_panel.h
   varian_4030e.cxx varian_4030e.h 
   )
 if (BUILD_ACQUIRE_4030E)
   qt4_wrap_cpp (ACQUIRE_4030E_SRC 
     acquire_4030e_parent.h
-    acquire_thread.h
+    acquire_4030e_child.h
     )
 endif ()
 

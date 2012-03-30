@@ -8,6 +8,7 @@
 #include <time.h>
 #include <windows.h>
 #include <io.h>
+#include "aqprintf.h"
 #include "dips_if.h"
 #include "dips_panel.h"
 
@@ -119,7 +120,7 @@ Dips_panel::poll_dummy (void)
 		p++;
 	    }
         }
-	printf ("\"Captured\" image!\n");
+	aqprintf ("\"Captured\" image!\n");
 
 	/* Set timestamp */
 	time (&panelp->time);
@@ -127,7 +128,7 @@ Dips_panel::poll_dummy (void)
 	/* For DIPS 3, we don't want so often ;-) */
 	SleepEx (5000, FALSE);
 
-	printf ("Hit any key to send another image to dips\n");
+	aqprintf ("Hit any key to send another image to dips\n");
 	getchar ();
 
 	/* Let DIPS know we have an image */
