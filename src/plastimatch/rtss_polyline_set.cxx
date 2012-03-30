@@ -10,8 +10,8 @@
 
 #include "bstring_util.h"
 #include "file_util.h"
-#include "img_metadata.h"
 #include "math_util.h"
+#include "metadata.h"
 #include "plm_image_header.h"
 #include "pstring.h"
 #include "rtss_polyline_set.h"

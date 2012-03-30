@@ -234,7 +234,7 @@ xio_ct_load (Plm_image *pli, const Xio_studyset *studyset)
 void
 xio_ct_get_transform_from_rdd (
     Plm_image *pli,
-    Img_metadata *img_metadata,
+    Metadata *meta,
     Referenced_dicom_dir *rdd,
     Xio_ct_transform *transform
 )
@@ -257,7 +257,7 @@ xio_ct_get_transform_from_rdd (
     transform->direction_cosines[4] = 1.0f;
     transform->direction_cosines[8] = 1.0f;
 
-    std::string patient_pos = img_metadata->get_metadata(0x0018, 0x5100);
+    std::string patient_pos = meta->get_metadata(0x0018, 0x5100);
 
     if (patient_pos == "HFS" ||	patient_pos == "") {
 
@@ -308,7 +308,7 @@ xio_ct_get_transform_from_rdd (
 
 void
 xio_ct_get_transform (
-    Img_metadata *img_metadata,
+    Metadata *meta,
     Xio_ct_transform *transform
 )
 {
@@ -330,7 +330,7 @@ xio_ct_get_transform (
     transform->direction_cosines[4] = 1.0f;
     transform->direction_cosines[8] = 1.0f;
 
-    std::string patient_pos = img_metadata->get_metadata(0x0018, 0x5100);
+    std::string patient_pos = meta->get_metadata(0x0018, 0x5100);
 
     if (patient_pos == "HFS" ||	patient_pos == "") {
 

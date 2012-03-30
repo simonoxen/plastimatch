@@ -7,7 +7,7 @@
 #include "plm_config.h"
 #include "cxt_io.h"
 
-class Img_metadata;
+class Metadata;
 class Rtss_polyline_set;
 
 #if defined __cplusplus
@@ -22,7 +22,7 @@ void
 gdcm_rtss_load (
     Rtss *rtss,                      /* Output: this gets loaded into */
     Referenced_dicom_dir *rdd,       /* Output: this gets updated too */
-    Img_metadata *meta,              /* Output: this gets updated too */
+    Metadata *meta,              /* Output: this gets updated too */
     const char *rtss_fn              /* Input: the file that gets read */
 );
 plastimatch1_EXPORT

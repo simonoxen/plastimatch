@@ -6,7 +6,7 @@
 
 #include "plm_config.h"
 
-class Img_metadata;
+class Metadata;
 class Plm_image;
 class Referenced_dicom_dir;
 
@@ -24,7 +24,7 @@ plastimatch1_EXPORT
 void
 gdcm1_dose_save (
     Plm_image *pli, 
-    const Img_metadata *meta, 
+    const Metadata *meta, 
     const Referenced_dicom_dir *rdd, 
     const char *dose_fn);
 

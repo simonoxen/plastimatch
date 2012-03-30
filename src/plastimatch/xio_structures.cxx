@@ -15,8 +15,8 @@
 #include "bstrlib.h"
 
 #include "file_util.h"
-#include "img_metadata.h"
 #include "math_util.h"
+#include "metadata.h"
 #include "plm_path.h"
 #include "print_and_exit.h"
 #include "pstring.h"
@@ -284,7 +284,7 @@ format_xio_filename (char *fn, const char *output_dir, float z_loc)
 void
 xio_structures_save (
     Rtss_polyline_set *cxt,
-    Img_metadata *img_metadata,
+    Metadata *meta,
     Xio_ct_transform *transform,
     Xio_version xio_version,
     const char *output_dir
@@ -340,7 +340,7 @@ xio_structures_save (
 
 	float z_offset = 0.0f;
 
-	std::string patient_pos = img_metadata->get_metadata(0x0018, 0x5100);
+	std::string patient_pos = meta->get_metadata(0x0018, 0x5100);
 
 	if (patient_pos == "HFS" || patient_pos == "HFP" || patient_pos == "") {
 	    z_offset = cxt->m_offset[2];

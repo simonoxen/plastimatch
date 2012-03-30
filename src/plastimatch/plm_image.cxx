@@ -253,40 +253,40 @@ void
 Plm_image::save_short_dicom (
     const char* fname, 
     Referenced_dicom_dir *rdd,
-    Img_metadata *img_metadata
+    Metadata *meta
 )
 {
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
-	itk_image_save_short_dicom (this->m_itk_uchar, fname, rdd, img_metadata);
+	itk_image_save_short_dicom (this->m_itk_uchar, fname, rdd, meta);
 	break;
     case PLM_IMG_TYPE_ITK_SHORT:
-	itk_image_save_short_dicom (this->m_itk_short, fname, rdd, img_metadata);
+	itk_image_save_short_dicom (this->m_itk_short, fname, rdd, meta);
 	break;
     case PLM_IMG_TYPE_ITK_USHORT:
-	itk_image_save_short_dicom (this->m_itk_ushort, fname, rdd, img_metadata);
+	itk_image_save_short_dicom (this->m_itk_ushort, fname, rdd, meta);
 	break;
     case PLM_IMG_TYPE_ITK_ULONG:
-	itk_image_save_short_dicom (this->m_itk_uint32, fname, rdd, img_metadata);
+	itk_image_save_short_dicom (this->m_itk_uint32, fname, rdd, meta);
 	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
-	itk_image_save_short_dicom (this->m_itk_float, fname, rdd, img_metadata);
+	itk_image_save_short_dicom (this->m_itk_float, fname, rdd, meta);
 	break;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
 	this->convert_to_itk_uchar ();
-	itk_image_save_short_dicom (this->m_itk_uchar, fname, rdd, img_metadata);
+	itk_image_save_short_dicom (this->m_itk_uchar, fname, rdd, meta);
 	break;
     case PLM_IMG_TYPE_GPUIT_SHORT:
 	this->convert_to_itk_short ();
-	itk_image_save_short_dicom (this->m_itk_short, fname, rdd, img_metadata);
+	itk_image_save_short_dicom (this->m_itk_short, fname, rdd, meta);
 	break;
     case PLM_IMG_TYPE_GPUIT_UINT32:
 	this->convert_to_itk_uint32 ();
-	itk_image_save_short_dicom (this->m_itk_uint32, fname, rdd, img_metadata);
+	itk_image_save_short_dicom (this->m_itk_uint32, fname, rdd, meta);
 	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
 	this->convert_to_itk_float ();
-	itk_image_save_short_dicom (this->m_itk_float, fname, rdd, img_metadata);
+	itk_image_save_short_dicom (this->m_itk_float, fname, rdd, meta);
 	break;
     case PLM_IMG_TYPE_GPUIT_UINT16:
     default:

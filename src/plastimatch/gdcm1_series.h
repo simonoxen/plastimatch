@@ -8,7 +8,7 @@
 #include <map>
 #include <list>
 #include <vector>
-#include "img_metadata.h"
+#include "metadata.h"
 #include "plm_int.h"
 #include "pstring.h"
 
@@ -33,7 +33,7 @@ public:
     std::string get_patient_position ();
     const std::string& get_rtdose_filename ();
     const std::string& get_rtstruct_filename ();
-    void get_img_metadata (Img_metadata *img_metadata);
+    void get_metadata (Metadata *meta);
 
     gdcm::SerieHelper2 *m_gsh2;
 

@@ -8,7 +8,7 @@
 #include "gdcmFile.h"
 #include "gdcmUtil.h"
 
-#include "img_metadata.h"
+#include "metadata.h"
 
 void
 gdcm1_get_date_time (
@@ -22,7 +22,7 @@ gdcm1_get_date_time (
 
 void
 set_metadata_from_gdcm_file (
-    Img_metadata *img_metadata, 
+    Metadata *meta, 
     /* const */ gdcm::File *gdcm_file, 
     unsigned short group,
     unsigned short elem
@@ -30,18 +30,18 @@ set_metadata_from_gdcm_file (
 {
     std::string tmp = gdcm_file->GetEntryValue (group, elem);
     if (tmp != gdcm::GDCM_UNFOUND) {
-	img_metadata->set_metadata (group, elem, tmp);
+	meta->set_metadata (group, elem, tmp);
     }
 }
 
 void
 set_gdcm_file_from_metadata (
     gdcm::File *gdcm_file, 
-    const Img_metadata *img_metadata, 
+    const Metadata *meta, 
     unsigned short group, 
     unsigned short elem
 )
 {
     gdcm_file->InsertValEntry (
-	img_metadata->get_metadata (group, elem), group, elem);
+	meta->get_metadata (group, elem), group, elem);
 }

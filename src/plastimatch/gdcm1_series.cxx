@@ -324,26 +324,26 @@ Gdcm_series::get_patient_position ()
 }
 
 void
-Gdcm_series::get_img_metadata (Img_metadata *img_metadata)
+Gdcm_series::get_metadata (Metadata *meta)
 {
     if (m_have_ct) {
 	gdcm::File *file = (*this->m_ct_file_list)[0];
 #if defined (commentout)
-	img_metadata->m_patient_name = 
+	meta->m_patient_name = 
 	    file->GetEntryValue(0x0010, 0x0010).c_str();
-	img_metadata->m_patient_id = 
+	meta->m_patient_id = 
 	    file->GetEntryValue(0x0010, 0x0020).c_str();
-	img_metadata->m_patient_sex = 
+	meta->m_patient_sex = 
 	    file->GetEntryValue(0x0010, 0x0040).c_str();
 #endif
-	img_metadata->set_metadata (
-	    img_metadata->make_key (0x0010, 0x0010),
+	meta->set_metadata (
+	    meta->make_key (0x0010, 0x0010),
 	    file->GetEntryValue(0x0010, 0x0010));
-	img_metadata->set_metadata (
-	    img_metadata->make_key (0x0010, 0x0020),
+	meta->set_metadata (
+	    meta->make_key (0x0010, 0x0020),
 	    file->GetEntryValue(0x0010, 0x0020));
-	img_metadata->set_metadata (
-	    img_metadata->make_key (0x0010, 0x0040),
+	meta->set_metadata (
+	    meta->make_key (0x0010, 0x0040),
 	    file->GetEntryValue(0x0010, 0x0040));
     }
 }

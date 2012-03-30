@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include "gdcmSystem.h"
 
-#include "img_metadata.h"
+#include "metadata.h"
 
 void
 gdcm2_get_date_time (
@@ -27,7 +27,7 @@ gdcm2_get_date_time (
 
 void
 set_metadata_from_gdcm_file (
-    Img_metadata *img_metadata, 
+    Metadata *meta, 
     /* const */ gdcm::File *gdcm_file, 
     unsigned short group,
     unsigned short elem
@@ -38,7 +38,7 @@ set_metadata_from_gdcm_file (
 void
 set_gdcm_file_from_metadata (
     gdcm::File *gdcm_file, 
-    const Img_metadata *img_metadata, 
+    const Metadata *meta, 
     unsigned short group, 
     unsigned short elem
 )

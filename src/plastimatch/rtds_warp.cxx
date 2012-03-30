@@ -419,7 +419,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
         fn.format ("%s/%s", (const char*) parms->output_xio_dirname, "dose");
         xio_dose_save (
             rtds->m_dose,
-            &(rtds->m_img_metadata),
+            &(rtds->m_meta),
             rtds->m_xio_transform, 
             (const char*) fn, 
             rtds->m_xio_dose_input);

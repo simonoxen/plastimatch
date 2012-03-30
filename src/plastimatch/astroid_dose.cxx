@@ -4,7 +4,7 @@
 #include "plm_config.h"
 #include <string.h>
 
-#include "img_metadata.h"
+#include "metadata.h"
 #include "plm_endian.h"
 #include "plm_image.h"
 #include "plm_image_type.h"
@@ -198,7 +198,7 @@ astroid_dose_create_volume (
 void
 astroid_dose_load (
     Plm_image *pli,
-    Img_metadata *img_metadata,
+    Metadata *meta,
     const char *filename
 )
 {
@@ -208,7 +208,7 @@ astroid_dose_load (
     astroid_dose_create_volume(pli, &adh);
     astroid_dose_load_cube(pli, &adh, filename);
 
-    img_metadata->set_metadata(0x3004, 0x0004, adh.dose_type);
+    meta->set_metadata(0x3004, 0x0004, adh.dose_type);
 }
 
 void

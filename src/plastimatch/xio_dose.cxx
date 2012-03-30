@@ -16,7 +16,7 @@
 #include "itkRegularExpressionSeriesFileNames.h"
 
 #include "file_util.h"
-#include "img_metadata.h"
+#include "metadata.h"
 #include "plm_endian.h"
 #include "plm_image.h"
 #include "plm_image_type.h"
@@ -298,7 +298,7 @@ xio_dose_create_volume (
 void
 xio_dose_load (
     Plm_image *pli,
-    Img_metadata *img_metadata,
+    Metadata *meta,
     const char *filename
 )
 {
@@ -309,13 +309,13 @@ xio_dose_load (
     xio_dose_load_cube (pli, &xdh, filename);
 
     /* XiO dose is in Gy RBE */
-    img_metadata->set_metadata(0x3004, 0x0004, "EFFECTIVE");
+    meta->set_metadata(0x3004, 0x0004, "EFFECTIVE");
 }
 
 void
 xio_dose_save (
     Plm_image *pli,
-    Img_metadata *img_metadata,
+    Metadata *meta,
     Xio_ct_transform *transform,
     const char *filename,
     const char *filename_template
@@ -376,7 +376,7 @@ xio_dose_save (
     oy = (v->offset[2] + (ry / 2)) - transform->y_offset;
     oz = - (v->offset[1] + (rz / 2));
 
-    std::string patient_pos = img_metadata->get_metadata(0x0018, 0x5100);
+    std::string patient_pos = meta->get_metadata(0x0018, 0x5100);
 
     if (patient_pos == "HFS" ||	patient_pos == "") {
 	ox =   ox * v->direction_cosines[0];

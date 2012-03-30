@@ -35,10 +35,10 @@ Rtds::Rtds ()
 #if GDCM_VERSION_1
     m_gdcm_series = 0;
 #endif
-    m_img_metadata.create_anonymous ();
+    m_meta.create_anonymous ();
 
     m_xio_transform = (Xio_ct_transform*) malloc (sizeof (Xio_ct_transform));
-    xio_ct_get_transform(&m_img_metadata, m_xio_transform);
+    xio_ct_get_transform(&m_meta, m_xio_transform);
 
     strcpy (m_xio_dose_input, "\0");
 }
@@ -132,7 +132,7 @@ Rtds::load_xio (
 	printf ("calling xio_dose_load\n");
 	std::string xio_dose_file = std::string(xtpd->path) + "/dose.1";
 	strncpy(this->m_xio_dose_input, xio_dose_file.c_str(), _MAX_PATH);
-	xio_dose_load (this->m_dose, &m_img_metadata, xio_dose_file.c_str());
+	xio_dose_load (this->m_dose, &m_meta, xio_dose_file.c_str());
 
 	/* Find studyset associated with plan */
 	xsd = xio_plan_dir_get_studyset_dir (xtpd);
@@ -178,11 +178,11 @@ Rtds::load_xio (
     if (xpd->m_demographic_fn.not_empty()) {
 	Xio_demographic demographic ((const char*) xpd->m_demographic_fn);
 	if (demographic.m_patient_name.not_empty()) {
-	    this->m_img_metadata.set_metadata (0x0010, 0x0010, 
+	    this->m_meta.set_metadata (0x0010, 0x0010, 
 		(const char*) demographic.m_patient_name);
 	}
 	if (demographic.m_patient_id.not_empty()) {
-	    this->m_img_metadata.set_metadata (0x0010, 0x0020, 
+	    this->m_meta.set_metadata (0x0010, 0x0020, 
 		(const char*) demographic.m_patient_id);
 	}
     }
@@ -200,10 +200,10 @@ Rtds::load_xio (
 	if (m_rdd.m_loaded) {
 	    /* Determine transformation based original DICOM */
 	    xio_ct_get_transform_from_rdd
-		(this->m_img, &m_img_metadata, rdd, this->m_xio_transform);
+		(this->m_img, &m_meta, rdd, this->m_xio_transform);
 	} else {
     	    /* Determine transformation based on patient position */
-	    xio_ct_get_transform (&m_img_metadata, this->m_xio_transform);
+	    xio_ct_get_transform (&m_meta, this->m_xio_transform);
 	}
     }
 
@@ -244,16 +244,16 @@ Rtds::load_rdd (const char *rdd)
 
     if (m_rdd.m_loaded) {
 	/* Default to patient position in referenced DICOM */
-	m_img_metadata.set_metadata(0x0018, 0x5100,
+	m_meta.set_metadata(0x0018, 0x5100,
 	    m_rdd.m_demographics.get_metadata(0x0018, 0x5100));
-	xio_ct_get_transform(&m_img_metadata, m_xio_transform);
+	xio_ct_get_transform(&m_meta, m_xio_transform);
 
 	/* Default to patient name/ID/sex in referenced DICOM */
-	m_img_metadata.set_metadata(0x0010, 0x0010,
+	m_meta.set_metadata(0x0010, 0x0010,
 	    m_rdd.m_demographics.get_metadata(0x0010, 0x0010));
-	m_img_metadata.set_metadata(0x0010, 0x0020,
+	m_meta.set_metadata(0x0010, 0x0020,
 	    m_rdd.m_demographics.get_metadata(0x0010, 0x0020));
-	m_img_metadata.set_metadata(0x0010, 0x0040,
+	m_meta.set_metadata(0x0010, 0x0040,
 	    m_rdd.m_demographics.get_metadata(0x0010, 0x0040));
     }
 }
@@ -267,7 +267,7 @@ Rtds::load_dose_xio (const char *dose_xio)
     if (dose_xio) {
 	strncpy(this->m_xio_dose_input, dose_xio, _MAX_PATH);
 	this->m_dose = new Plm_image ();
-	xio_dose_load (this->m_dose, &m_img_metadata, dose_xio);
+	xio_dose_load (this->m_dose, &m_meta, dose_xio);
 	xio_dose_apply_transform (this->m_dose, this->m_xio_transform);
     }
 }
@@ -280,7 +280,7 @@ Rtds::load_dose_astroid (const char *dose_astroid)
     }
     if (dose_astroid) {
 	this->m_dose = new Plm_image ();
-	astroid_dose_load (this->m_dose, &m_img_metadata, dose_astroid);
+	astroid_dose_load (this->m_dose, &m_meta, dose_astroid);
 	astroid_dose_apply_transform (this->m_dose, this->m_xio_transform);
     }
 }
@@ -322,12 +322,12 @@ Rtds::set_user_metadata (std::vector<std::string>& metadata)
 	if (eq_pos != std::string::npos) {
 	    std::string key = str.substr (0, eq_pos);
 	    std::string val = str.substr (eq_pos+1);
-	    m_img_metadata.set_metadata (key, val);
+	    m_meta.set_metadata (key, val);
 	}
 	++it;
     }
 
-    xio_ct_get_transform(&(m_img_metadata), m_xio_transform);
+    xio_ct_get_transform(&(m_meta), m_xio_transform);
 }
 
 void 

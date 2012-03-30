@@ -6,11 +6,11 @@
 #include <stdlib.h>
 #include "gdcmFile.h"
 #include "gdcmFileHelper.h"
-#include "img_metadata.h"
+#include "metadata.h"
 
 void
 meta_from_gdcm_file (
-    Img_metadata *meta, 
+    Metadata *meta, 
     gdcm::File gdcm_file, 
     unsigned short group, 
     unsigned short elem)

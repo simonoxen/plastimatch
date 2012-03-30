@@ -58,7 +58,7 @@ void
 gdcm_rtss_load (
     Rtss *rtss,                      /* Output: this gets loaded into */
     Referenced_dicom_dir *rdd,       /* Output: this gets updated too */
-    Img_metadata *meta,              /* Output: this gets updated too */
+    Metadata *meta,              /* Output: this gets updated too */
     const char *rtss_fn              /* Input: the file that gets read */
 )
 {
@@ -376,17 +376,17 @@ gdcm_rtss_save (
     /* StationName */
     gf->InsertValEntry ("", 0x0008, 0x1010);
     /* SeriesDescription */
-    set_gdcm_file_from_metadata (gf, &rtss->m_img_metadata, 0x0008, 0x103e);
+    set_gdcm_file_from_metadata (gf, &rtss->m_meta, 0x0008, 0x103e);
     /* ManufacturersModelName */
     gf->InsertValEntry ("Plastimatch", 0x0008, 0x1090);
     /* PatientsName */
-    set_gdcm_file_from_metadata (gf, &rtss->m_img_metadata, 0x0010, 0x0010);
+    set_gdcm_file_from_metadata (gf, &rtss->m_meta, 0x0010, 0x0010);
     /* PatientID */
-    set_gdcm_file_from_metadata (gf, &rtss->m_img_metadata, 0x0010, 0x0020);
+    set_gdcm_file_from_metadata (gf, &rtss->m_meta, 0x0010, 0x0020);
     /* PatientsBirthDate */
     gf->InsertValEntry ("", 0x0010, 0x0030);
     /* PatientsSex */
-    set_gdcm_file_from_metadata (gf, &rtss->m_img_metadata, 0x0010, 0x0040);
+    set_gdcm_file_from_metadata (gf, &rtss->m_meta, 0x0010, 0x0040);
     /* SoftwareVersions */
     gf->InsertValEntry (PLASTIMATCH_VERSION_STRING, 0x0018, 0x1020);
     /* PatientPosition */

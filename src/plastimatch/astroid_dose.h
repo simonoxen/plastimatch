@@ -5,14 +5,16 @@
 #define _astroid_dose_h_
 
 #include "plm_config.h"
-#include "plm_image.h"
 #include "xio_ct.h"
+
+class Metadata;
+class Plm_image;
 
 plastimatch1_EXPORT 
 void
 astroid_dose_load (
     Plm_image *plm,
-    Img_metadata *img_metadata,
+    Metadata *meta,
     const char *filename
 );
 plastimatch1_EXPORT 

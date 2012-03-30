@@ -42,7 +42,7 @@ Rtss::Rtss (Rtds *rtds) {
     m_cxt = 0;
     m_ss_img = 0;
     m_labelmap = 0;
-    m_img_metadata.set_parent (&rtds->m_img_metadata);
+    m_meta.set_parent (&rtds->m_meta);
 }
 
 Rtss::~Rtss () {
@@ -102,7 +102,7 @@ Rtss::load_gdcm_rtss (const char *input_fn, Referenced_dicom_dir *rdd)
 {
 #if GDCM_VERSION_1
     this->m_cxt = new Rtss_polyline_set;
-    gdcm_rtss_load (this, rdd, &this->m_img_metadata, input_fn);
+    gdcm_rtss_load (this, rdd, &this->m_meta, input_fn);
 #endif
 }
 
@@ -261,7 +261,7 @@ void
 Rtss::save_xio (Xio_ct_transform *xio_transform, Xio_version xio_version, 
     const Pstring &output_dir)
 {
-    xio_structures_save (this->m_cxt, &m_img_metadata, xio_transform,
+    xio_structures_save (this->m_cxt, &m_meta, xio_transform,
         xio_version, (const char*) output_dir);
 }
 

@@ -335,7 +335,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   gamma_analysis.cxx gamma_analysis.h
   gpuit_bspline.cxx gpuit_bspline.h 
   gpuit_demons.cxx gpuit_demons.h 
-  img_metadata.cxx img_metadata.h 
   itkAndConstantToImageFilter.h
   itk_crop.cxx itk_crop.h 
   itk_demons.cxx itk_demons.h 
@@ -369,6 +368,7 @@ set (PLASTIMATCH1_LIBRARY_SRC
   landmark_warp.cxx landmark_warp.h 
   landmark_diff.cxx landmark_diff.h
   mc_dose.cxx mc_dose.h
+  metadata.cxx metadata.h 
   pcmd_diff.cxx pcmd_diff.h
   plm_clp.cxx plm_clp.h
   plm_drr_api.cxx plm_drr_api.h 

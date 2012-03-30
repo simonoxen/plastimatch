@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "cxt_io.h"
-#include "img_metadata.h"
+#include "metadata.h"
 #include "plm_image.h"
 #include "plm_path.h"
 #include "referenced_dicom_dir.h"
@@ -26,7 +26,7 @@ public:
 
     Gdcm_series *m_gdcm_series;        /* Input dicom parse info */
     Referenced_dicom_dir m_rdd;        /* UIDs, etc */
-    Img_metadata m_img_metadata;       /* Patient name, patient id, etc. */
+    Metadata m_meta;       /* Patient name, patient id, etc. */
     Xio_ct_transform *m_xio_transform; /* Transformation from XiO to DICOM
 					  coordinates */
     char m_xio_dose_input[_MAX_PATH];  /* Input XiO dose file to use as 

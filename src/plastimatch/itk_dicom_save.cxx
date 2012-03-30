@@ -15,7 +15,7 @@
 #include "dcm_util.h"
 #include "gdcm1_util.h"
 #include "gdcm2_util.h"
-#include "img_metadata.h"
+#include "metadata.h"
 #include "itk_dicom_save.h"
 #include "itk_image.h"
 #include "logfile.h"
@@ -94,7 +94,7 @@ itk_dicom_save (
     ShortImageType::Pointer short_img,    /* Input: image to write */
     const char *dir_name,                 /* Input: name of output dir */
     Referenced_dicom_dir *rdd,            /* Output: gets filled in */
-    const Img_metadata *meta              /* Input: output files get these */
+    const Metadata *meta              /* Input: output files get these */
 )
 {
     typedef itk::NumericSeriesFileNames NamesGeneratorType;

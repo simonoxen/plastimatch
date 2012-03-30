@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _img_metadata_h_
-#define _img_metadata_h_
+#ifndef _metadata_h_
+#define _metadata_h_
 
 #include "plm_config.h"
 #include <map>
@@ -12,11 +12,11 @@ namespace gdcm {
     class File;
 };
 
-class plastimatch1_EXPORT Img_metadata
+class plastimatch1_EXPORT Metadata
 {
 public:
-    Img_metadata ();
-    ~Img_metadata ();
+    Metadata ();
+    ~Metadata ();
 
 public:
     /* GCS: This is idiotic, but I guess it is what it is.  To avoid string 
@@ -52,13 +52,13 @@ public:
 	unsigned short elem) const;
 #endif
 
-    void set_parent (Img_metadata *parent) {
+    void set_parent (Metadata *parent) {
 	m_parent = parent;
     }
     void create_anonymous ();
 
 public:
-    Img_metadata *m_parent;
+    Metadata *m_parent;
     std::map<std::string, std::string> m_data;
 
 public:

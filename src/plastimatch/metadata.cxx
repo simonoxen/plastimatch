@@ -8,22 +8,22 @@
 #include <gdcmFile.h>
 #include "bstrlib.h"
 #include "dcm_util.h"
-#include "img_metadata.h"
+#include "metadata.h"
 #include "make_string.h"
 
-std::string Img_metadata::KEY_NOT_FOUND = "";
+std::string Metadata::KEY_NOT_FOUND = "";
 
-Img_metadata::Img_metadata ()
+Metadata::Metadata ()
 {
     m_parent = 0;
 }
 
-Img_metadata::~Img_metadata ()
+Metadata::~Metadata ()
 {
 }
 
 void
-Img_metadata::create_anonymous ()
+Metadata::create_anonymous ()
 {
     /* PatientsName */
     this->set_metadata (0x0010, 0x0010, "ANONYMOUS");
@@ -36,14 +36,14 @@ Img_metadata::create_anonymous ()
 }
 
 std::string
-Img_metadata::make_key (unsigned short key1, unsigned short key2) const
+Metadata::make_key (unsigned short key1, unsigned short key2) const
 {
     return make_string (key1, 4, '0', std::hex) 
 	+ ',' + make_string (key2, 4, '0', std::hex);
 }
 
 const std::string&
-Img_metadata::get_metadata (const std::string& key) const
+Metadata::get_metadata (const std::string& key) const
 {
     std::map<std::string, std::string>::const_iterator it;
     it = m_data.find (key);
@@ -61,20 +61,20 @@ Img_metadata::get_metadata (const std::string& key) const
 }
 
 const std::string&
-Img_metadata::get_metadata (unsigned short key1, unsigned short key2) const
+Metadata::get_metadata (unsigned short key1, unsigned short key2) const
 {
     return get_metadata (make_key (key1, key2));
 }
 
 void
-Img_metadata::set_metadata (const std::string& key, const std::string& val)
+Metadata::set_metadata (const std::string& key, const std::string& val)
 {
     //std::cout << "Setting metadata: " << key << " to " << val << std::endl;
     m_data[key] = val;
 }
 
 void
-Img_metadata::set_metadata (unsigned short key1, unsigned short key2, 
+Metadata::set_metadata (unsigned short key1, unsigned short key2, 
     const std::string& val)
 {
     set_metadata (make_key (key1, key2), val);
@@ -82,7 +82,7 @@ Img_metadata::set_metadata (unsigned short key1, unsigned short key2,
 
 #if defined (commentout)
 void
-Img_metadata::set_from_gdcm_file (
+Metadata::set_from_gdcm_file (
     gdcm::File *gdcm_file, 
     unsigned short group,
     unsigned short elem
@@ -95,7 +95,7 @@ Img_metadata::set_from_gdcm_file (
 }
 
 void
-Img_metadata::copy_to_gdcm_file (
+Metadata::copy_to_gdcm_file (
     gdcm::File *gdcm_file, 
     unsigned short group,
     unsigned short elem

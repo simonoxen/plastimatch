@@ -10,7 +10,7 @@
 #include "print_and_exit.h"
 #include "volume.h"
 
-class Img_metadata;
+class Metadata;
 class Plm_image_header;
 class Plm_image;
 class Pstring;
@@ -100,7 +100,7 @@ public:
 
     /* Saving */
     void save_short_dicom (const char* fname, Referenced_dicom_dir *rdd, 
-	Img_metadata *img_metadata);
+	Metadata *meta);
     void save_image (const Pstring& fname);
     void save_image (const char* fname);
     void convert_and_save (const char* fname, Plm_image_type new_type);

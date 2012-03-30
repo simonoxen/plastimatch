@@ -17,9 +17,9 @@
 #include "gdcm1_dose.h"
 #include "gdcm1_series.h"
 #include "gdcm1_util.h"
-#include "logfile.h"
 #include "itk_image_stats.h"
-#include "img_metadata.h"
+#include "logfile.h"
+#include "metadata.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "plm_image_type.h"
@@ -236,7 +236,7 @@ gdcm1_dose_load (Plm_image *pli, const char *dose_fn, const char *dicom_dir)
 void
 gdcm1_dose_save (
     Plm_image *pli,                     /* Input: dose image */
-    const Img_metadata *meta,           /* Input: patient name, etc. */
+    const Metadata *meta,           /* Input: patient name, etc. */
     const Referenced_dicom_dir *rdd,    /* Input: CT series info */
     const char *dose_fn                 /* Input: file to write to */
 )

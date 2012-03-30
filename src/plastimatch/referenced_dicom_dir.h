@@ -6,7 +6,7 @@
 
 #include "plm_config.h"
 #include <vector>
-#include "img_metadata.h"
+#include "metadata.h"
 #include "plm_image_header.h"
 #include "pstring.h"
 
@@ -16,7 +16,7 @@ public:
     bool m_loaded;
 
     Plm_image_header m_pih;
-    Img_metadata m_demographics;
+    Metadata m_demographics;
     Pstring m_study_id;
     Pstring m_ct_study_uid;
     Pstring m_ct_series_uid;

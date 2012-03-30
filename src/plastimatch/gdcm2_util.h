@@ -7,7 +7,7 @@
 #include "plm_config.h"
 #if GDCM_VERSION_2
 
-class Img_metadata;
+class Metadata;
 namespace gdcm { class File; };
 
 void
@@ -17,7 +17,7 @@ gdcm2_get_date_time (
 );
 void
 set_metadata_from_gdcm_file (
-    Img_metadata *img_metadata, 
+    Metadata *meta, 
     /* const */ gdcm::File *gdcm_file, 
     unsigned short group,
     unsigned short elem
@@ -25,7 +25,7 @@ set_metadata_from_gdcm_file (
 void
 set_gdcm_file_from_metadata (
     gdcm::File *gdcm_file, 
-    const Img_metadata *img_metadata, 
+    const Metadata *meta, 
     unsigned short group, 
     unsigned short elem
 );

@@ -23,13 +23,13 @@ plastimatch1_EXPORT
 void
 xio_ct_get_transform_from_rdd (
     Plm_image *plm,
-    Img_metadata *img_metadata,
+    Metadata *meta,
     Referenced_dicom_dir *rdd,
     Xio_ct_transform *transform
 );
 plastimatch1_EXPORT 
 void xio_ct_get_transform (
-    Img_metadata *img_metadata,
+    Metadata *meta,
     Xio_ct_transform *transform
 );
 plastimatch1_EXPORT 

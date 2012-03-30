@@ -8,7 +8,7 @@
 
 #include "cxt_io.h"
 #include "file_util.h"
-#include "img_metadata.h"
+#include "metadata.h"
 #include "math_util.h"
 #include "plm_image_header.h"
 #include "pstring.h"
@@ -79,15 +79,15 @@ cxt_load (
 	    /* fall through */
 	}
         else if (biseqcstr (tag, "PATIENT_NAME")) {
-	    rtss->m_img_metadata.set_metadata (0x0010, 0x0010, 
+	    rtss->m_meta.set_metadata (0x0010, 0x0010, 
 		(const char*) val->data);
 	}
         else if (biseqcstr (tag, "PATIENT_ID")) {
-	    rtss->m_img_metadata.set_metadata (0x0010, 0x0020, 
+	    rtss->m_meta.set_metadata (0x0010, 0x0020, 
 		(const char*) val->data);
 	}
         else if (biseqcstr (tag, "PATIENT_SEX")) {
-	    rtss->m_img_metadata.set_metadata (0x0010, 0x0040, 
+	    rtss->m_meta.set_metadata (0x0010, 0x0040, 
 		(const char*) val->data);
 	}
         else if (biseqcstr (tag, "STUDY_ID")) {
@@ -299,11 +299,11 @@ cxt_save (
 	fprintf (fp, "CT_FRAME_OF_REFERENCE_UID\n");
     }
     fprintf (fp, "PATIENT_NAME %s\n",
-	rtss->m_img_metadata.get_metadata (0x0010, 0x0010).c_str());
+	rtss->m_meta.get_metadata (0x0010, 0x0010).c_str());
     fprintf (fp, "PATIENT_ID %s\n",
-	rtss->m_img_metadata.get_metadata (0x0010, 0x0020).c_str());
+	rtss->m_meta.get_metadata (0x0010, 0x0020).c_str());
     fprintf (fp, "PATIENT_SEX %s\n",
-	rtss->m_img_metadata.get_metadata (0x0010, 0x0040).c_str());
+	rtss->m_meta.get_metadata (0x0010, 0x0040).c_str());
     if (rdd && rdd->m_study_id.not_empty()) {
 	fprintf (fp, "STUDY_ID %s\n", (const char*) rdd->m_study_id);
     } else {
