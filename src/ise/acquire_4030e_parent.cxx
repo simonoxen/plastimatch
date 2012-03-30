@@ -29,10 +29,11 @@ Acquire_4030e_parent::initialize (int argc, char* argv[])
         QString program = argv[0];
         QStringList arguments;
         arguments << "--child" << paths[i];
-        this->process[i].start(program, arguments);
-
 	connect (&this->process[i], SIGNAL(readyReadStandardOutput()),
-            this, SLOT(log_output()));  
+            this, SLOT(log_output()));
+#if defined (commentout)
+#endif
+        this->process[i].start(program, arguments);
     }
 
 #if defined (commentout)

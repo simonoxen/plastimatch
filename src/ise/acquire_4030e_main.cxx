@@ -12,12 +12,21 @@
 //#include "iostatus.h"
 #include <QApplication>
 #include <QProcess>
+#include <QThread>
+//#include <QTest>
 
 //#include "acquire_thread.h"
 //#include "advantech.h"
 //#include "dips_panel.h"
 //#include "varian_4030e.h"
 #include "acquire_4030e_parent.h"
+
+class SleeperThread : public QThread {
+public:
+    static void msleep(unsigned long msecs) {
+        QThread::msleep(msecs);
+    }
+};
 
 //----------------------------------------------------------------------
 //  main
@@ -35,13 +44,15 @@ main (int argc, char* argv[])
         char** argv_tmp = (char**) malloc (2 * sizeof(char*));
         argv_tmp[0] = argv[0];
         argv_tmp[1] = default_path_1;
+	argv = argv_tmp;
         argc = 2;
     }
 
     if (argc > 1) {
-        if (!strcmp (argv[0], "--child")) {
+        if (!strcmp (argv[1], "--child")) {
             /* Child process */
             printf ("A child is born.\n");
+            //SleeperThread::msleep(10000);
         } else {
             /* Parent process */
             Acquire_4030e_parent *parent 
