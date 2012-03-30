@@ -51,8 +51,11 @@ main (int argc, char* argv[])
     if (argc > 1) {
         if (!strcmp (argv[1], "--child")) {
             /* Child process */
-            printf ("A child is born.\n");
-            //SleeperThread::msleep(10000);
+            for (int i = 0; i < 10; i++) {
+                printf ("A child is born.\n");
+		fflush (stdout);
+                SleeperThread::msleep(1000);
+            }
         } else {
             /* Parent process */
             Acquire_4030e_parent *parent 

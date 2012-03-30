@@ -18,6 +18,7 @@ public:
 public slots:
     void log_output ();
 public:
+    int num_process;
     QProcess process[2];
 };
 

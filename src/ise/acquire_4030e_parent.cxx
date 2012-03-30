@@ -25,14 +25,13 @@ Acquire_4030e_parent::initialize (int argc, char* argv[])
     }
 
     /* Start acquisition processes */
+    num_process = 1;
     for (int i = 0; i < 1; i++) {
         QString program = argv[0];
         QStringList arguments;
         arguments << "--child" << paths[i];
 	connect (&this->process[i], SIGNAL(readyReadStandardOutput()),
             this, SLOT(log_output()));
-#if defined (commentout)
-#endif
         this->process[i].start(program, arguments);
     }
 
@@ -104,5 +103,15 @@ Acquire_4030e_parent::initialize (int argc, char* argv[])
 void 
 Acquire_4030e_parent::log_output ()
 {
-    printf ("Output was logged\n");
+    for (int i = 0; i < num_process; i++) {
+        QByteArray result = process[i].readAllStandardOutput();
+        QStringList lines = QString(result).split("\n");
+        foreach (QString line, lines) {
+            line = line.trimmed();
+            if (!line.isEmpty()) {
+                QByteArray line_ba = line.toAscii ();
+                printf ("[%d] %s\n", i, (const char*) line_ba);
+            }
+        }
+    }
 }
