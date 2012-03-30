@@ -983,100 +983,113 @@ bspline_score (Bspline_optimize_data *bod)
     Reg_parms* reg_parms = &parms->reg_parms;
     Bspline_landmarks* blm = &parms->blm;
 
-#if (CUDA_FOUND)
-    if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
+    /* CPU Implementations */
+    if (parms->threading == BTHR_CPU) {
+            
+        /* Metric: Mean Squared Error */
+        if (parms->metric == BMET_MSE) {
+            switch (parms->implementation) {
+            case 'c':
+                bspline_score_c_mse (bod);
+                break;
+            case 'g':
+                bspline_score_g_mse (bod);
+                break;
+            case 'h':
+                bspline_score_h_mse (bod);
+                break;
+            case 'i':
+                bspline_score_i_mse (bod);
+                break;
+            default:
+                bspline_score_g_mse (bod);
+                break;
+            }
+        } /* end MSE */
 
-        /* Be sure we loaded the CUDA plugin */
-        LOAD_LIBRARY_SAFE (libplmcuda);
-        LOAD_SYMBOL (CUDA_bspline_mse_j, libplmcuda);
-
-        switch (parms->implementation) {
-        case 'j':
-            CUDA_bspline_mse_j (bod);
-            break;
-        default:
-            CUDA_bspline_mse_j (bod);
-            break;
-        }
-
-        UNLOAD_LIBRARY (libplmcuda);
-
-    }
-    else if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MI)) {
-
-        /* Be sure we loaded the CUDA plugin */
-        LOAD_LIBRARY_SAFE (libplmcuda);
-        LOAD_SYMBOL (CUDA_bspline_mi_a, libplmcuda);
-
-        switch (parms->implementation) {
-        case 'a':
-            CUDA_bspline_mi_a (bod);
-            break;
-        default: 
-            CUDA_bspline_mi_a (bod);
-            break;
-        }
-
-        UNLOAD_LIBRARY (libplmcuda);
-    }
-#endif
-
-    if ((parms->threading == BTHR_CPU) && (parms->metric == BMET_MSE)) {
-        switch (parms->implementation) {
-        case 'c':
-            bspline_score_c_mse (bod);
-            break;
-        case 'g':
-            bspline_score_g_mse (bod);
-            break;
-        case 'h':
-            bspline_score_h_mse (bod);
-            break;
-        case 'i':
-            bspline_score_i_mse (bod);
-            break;
-        default:
-            bspline_score_g_mse (bod);
-            break;
-        }
-    }
-
-    if ((parms->threading == BTHR_CPU) && (parms->metric == BMET_MI)) {
-        switch (parms->implementation) {
-        case 'c':
-            bspline_score_c_mi (bod);
-            break;
+        /* Metric: Mutual Information */
+        else if (parms->metric == BMET_MI) {
+            switch (parms->implementation) {
+            case 'c':
+                bspline_score_c_mi (bod);
+                break;
 #if (OPENMP_FOUND)
-        case 'd':
-            bspline_score_d_mi (bod);
-            break;
-        case 'e':
-            bspline_score_e_mi (bod);
-            break;
-        case 'f':
-            bspline_score_f_mi (bod);
-            break;
-        case 'g':
-            bspline_score_g_mi (bod);
-            break;
-        case 'h':
-            bspline_score_h_mi (bod);
-            break;
-#if 0
-    case 'i':
-            bspline_score_i_mi (bod);
-            break;
+            case 'd':
+                bspline_score_d_mi (bod);
+                break;
+            case 'e':
+                bspline_score_e_mi (bod);
+                break;
+            case 'f':
+                bspline_score_f_mi (bod);
+                break;
+            case 'g':
+                bspline_score_g_mi (bod);
+                break;
+            case 'h':
+                bspline_score_h_mi (bod);
+                break;
 #endif
-#endif
-        default:
+            default:
 #if (OPENMP_FOUND)
-            bspline_score_d_mi (bod);
+                bspline_score_d_mi (bod);
 #else
-            bspline_score_c_mi (bod);
+                bspline_score_c_mi (bod);
 #endif
-            break;
-        }
-    }
+                break;
+            }
+        } /* end MI */
+
+    } /* end CPU Implementations */
+
+
+    /* CUDA Implementations */
+#if (CUDA_FOUND)
+    else if (parms->threading == BTHR_CUDA) {
+            
+        /* Metric: Mean Squared Error */
+        if (parms->metric == BMET_MSE) {
+
+            /* Be sure we loaded the CUDA plugin */
+            LOAD_LIBRARY_SAFE (libplmcuda);
+            LOAD_SYMBOL (CUDA_bspline_mse_j, libplmcuda);
+
+            switch (parms->implementation) {
+            case 'j':
+                CUDA_bspline_mse_j (bod);
+                break;
+            default:
+                CUDA_bspline_mse_j (bod);
+                break;
+            }
+
+            /* Unload plugin when done */
+            UNLOAD_LIBRARY (libplmcuda);
+        } /* end MSE */
+
+        /* Metric: Mutual Information */
+        else if (parms->metric == BMET_MI) {
+
+            /* Be sure we loaded the CUDA plugin */
+            LOAD_LIBRARY_SAFE (libplmcuda);
+            LOAD_SYMBOL (CUDA_bspline_mi_a, libplmcuda);
+
+            switch (parms->implementation) {
+            case 'a':
+                CUDA_bspline_mi_a (bod);
+                break;
+            default: 
+                CUDA_bspline_mi_a (bod);
+                break;
+            }
+
+            UNLOAD_LIBRARY (libplmcuda);
+        } /* end MI */
+
+    } /* CUDA Implementations */
+#endif
+
+
 
     /* Regularize */
     if (reg_parms->lambda > 0.0f) {

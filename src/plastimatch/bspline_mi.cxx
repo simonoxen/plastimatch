@@ -1577,7 +1577,7 @@ bspline_score_h_mi (
 
     Bspline_score* ssd = &bst->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
-    plm_long rijk[3];
+//    plm_long rijk[3];
     float diff;
     float* f_img = (float*) fixed->img;
     float* m_img = (float*) moving->img;
@@ -1859,7 +1859,7 @@ bspline_score_g_mi (
 
     Bspline_score* ssd = &bst->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
-    plm_long rijk[3];
+//    plm_long rijk[3];
     float diff;
     float* f_img = (float*) fixed->img;
     float* m_img = (float*) moving->img;

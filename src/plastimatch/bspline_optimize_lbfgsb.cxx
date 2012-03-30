@@ -185,9 +185,6 @@ bspline_optimize_lbfgsb (
     Bspline_xform *bxf = bod->bxf;
     Bspline_state *bst = bod->bst;
     Bspline_parms *parms = bod->parms;
-    Volume *fixed = bod->fixed;
-    Volume *moving = bod->moving;
-    Volume *moving_grad = bod->moving_grad;
     Bspline_score* ssd = &bst->ssd;
     FILE *fp = 0;
     double best_score = DBL_MAX;

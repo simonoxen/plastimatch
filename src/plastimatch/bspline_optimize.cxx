@@ -101,8 +101,6 @@ bspline_optimize (
     Bspline_parms *parms
 )
 {
-    Bspline_state *bst;
-
     Bspline_optimize_data bod;
     bod.bxf = bxf;
     bod.parms = parms;

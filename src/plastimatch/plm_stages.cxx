@@ -361,22 +361,22 @@ check_output_resolution (Xform* xf_out, Registration_data* regd)
     int ss[3];
     Plm_image_header pih;
     float grid_spacing[3];
-    Bspline_xform *bxf_out = xf_out->get_gpuit_bsp();
 
     if (xf_out->m_type != XFORM_GPUIT_BSPLINE) {
         return;
     }
 
+    Bspline_xform *bxf_out = xf_out->get_gpuit_bsp();
     if ( (bxf_out->img_dim[0] != fixed->dim[0]) ||
          (bxf_out->img_dim[1] != fixed->dim[1]) ||
          (bxf_out->img_dim[2] != fixed->dim[2]) ) {
 
         ss[0] = fixed->dim[0] / bxf_out->img_dim[0];
-        ss[1] = fixed->dim[1] / bxf_out->img_dim[1];
+        ss[2] = fixed->dim[1] / bxf_out->img_dim[1];
         ss[2] = fixed->dim[2] / bxf_out->img_dim[2];
 
         /* last stage was not [1 1 1], un-subsample the final xform */
-        logfile_printf ("UN-SUBSAMPLE: (%d %d %d), (1 1 1)\n",
+        logfile_printf ("RESTORE NATIVE RESOLUTION: (%d %d %d), (1 1 1)\n",
                 ss[0], ss[1], ss[2]);
 
         /* Transform input xform to gpuit vector field */
@@ -425,13 +425,9 @@ do_registration_pure (
         do_registration_stage (regp, regd, xf_out, xf_in, regp->stages[i]);
     }
 
-    /* JAS 2012.03.29
-     *   For GPUIT Bspline, make output match input resolution instead
-     *   of final stage resolution */
-    if ((regp->stages[regp->num_stages-1]->xform_type == STAGE_TRANSFORM_BSPLINE)
-        && (regp->stages[regp->num_stages-1]->impl_type != IMPLEMENTATION_ITK)) {
-        check_output_resolution (xf_out, regd);
-    }
+    /* JAS 2012.03.29 - for GPUIT Bspline
+     * make output match input resolution - not final stage resolution */
+    check_output_resolution (xf_out, regd);
 
     *xf_result = xf_out;
     delete xf_in;

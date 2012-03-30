@@ -453,13 +453,6 @@ bspline_optimize_steepest (
     Bspline_optimize_data *bod
 )
 {
-    Bspline_xform *bxf = bod->bxf;
-    Bspline_state *bst = bod->bst;
-    Bspline_parms *parms = bod->parms;
-    Volume *fixed = bod->fixed;
-    Volume *moving = bod->moving;
-    Volume *moving_grad = bod->moving_grad;
-
     const int USE_NAIVE = 0;
 
     if (USE_NAIVE) {
