@@ -372,7 +372,7 @@ check_output_resolution (Xform* xf_out, Registration_data* regd)
          (bxf_out->img_dim[2] != fixed->dim[2]) ) {
 
         ss[0] = fixed->dim[0] / bxf_out->img_dim[0];
-        ss[2] = fixed->dim[1] / bxf_out->img_dim[1];
+        ss[1] = fixed->dim[1] / bxf_out->img_dim[1];
         ss[2] = fixed->dim[2] / bxf_out->img_dim[2];
 
         /* last stage was not [1 1 1], un-subsample the final xform */
