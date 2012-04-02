@@ -5,7 +5,7 @@
 ##
 ## Author: Paolo Zaffino (p.zaffino@yahoo.it)
 ##
-## rev 1
+## rev 2
 ##
 ## Required libraries:
 ## 1) Numpy
@@ -17,14 +17,16 @@
 ##
 ## BRIEF DOCUMENTATION:
 ##
-## input = Input image, it can be a mha file or a mha.read object (from mha.py)
+## input = Input image, it can be a mha file or a mha object (from mha.py)
 ## slice = Slice number, default slice is the middle one
 ## view = View, default is coronal, choices='a','c' and 's'
-## overlay_image = Overlay image, it can be a mha file or a mha.read object (from mha.py)
+## overlay_image = Overlay image, it can be a mha file or a mha object (from mha.py)
 ## gain_overlay_image = Gain of overlay image
+## image_trasparency = Image trasparency of the overlap image (0.0 transparent, 1.0 opaque)
 ## windowing = Windowing interval as "-100 100"
 ## windowing_overlay_img = Windowing interval for the overlay image
-## vf = Input vector field in order to plot the phase map, it can be a mha file or a mha.read object (from mha.py)
+## vf = Input vector field in order to plot the phase map, it can be a mha file or a mha object (from mha.py)
+## vf_trasparency = Vector field trasparency in overlap mode (0.0 transparent, 1.0 opaque)
 ## checkerboard = Checkerboard mode, to enable set on True
 ## check_size = Size of the check (in voxel), default is 100
 ## diff = Shows the difference between the input image and the overlay one. To enable set on True
@@ -35,89 +37,91 @@
 
 import matplotlib.cm as cm
 from matplotlib.pyplot import imshow, show, hold, savefig
-from mha import read
+import mha
 import numpy as np
+import types
 
 
 ########################################################################
 
 
-def show_img(input='', slice=None, view='c', overlay_image=None, gain_overlay_image=1, windowing='', windowing_overlay_img='',\
-vf=None, checkerboard=False, check_size=100, diff=False, colours=False, screenshot_file_name=None):
+def show_img(input='', slice=None, view='c', overlay_image=None, gain_overlay_image=1, image_trasparency=0.5,\
+windowing='', windowing_overlay_img='',vf=None, vf_trasparency=0.5, checkerboard=False, check_size=100, diff=False,\
+colours=False, screenshot_file_name=None):
 	
 	## Read the input image
 	if type(input)==str:
-		img=read(input)
-	elif type(input)==dict:
+		img=mha.new(input_file=input)
+	elif type(input)==types.InstanceType:
 		img=input
 		
 	## Read the vector field
 	if vf != None:
 		
 		if type(vf)==str:
-			vf_data=read(vf)
-		elif type(vf)==dict:
+			vf_data=mha.new(input_file=vf)
+		elif type(vf)==types.InstanceType:
 			vf_data=vf
 	
 	## Slice number settings
 	if slice == None and (view == 'c' or view == 's'):
-		slice_number=np.rint(img['size'][1]/2)
+		slice_number=np.rint(img.size[1]/2)
 	elif slice == None and view == 'a':
-		slice_number=np.rint(img['size'][2]/2)
+		slice_number=np.rint(img.size[2]/2)
 	else:
 		slice_number=slice
 	
 	
 	## View settings
 	if view == 'c':
-		slice=img['raw'][:,slice_number].T
-		pixel_ratio=img['spacing'][2]/img['spacing'][0]
+		slice=img.data[:,slice_number].T
+		pixel_ratio=img.spacing[2]/img.spacing[0]
 		if vf != None:
-			phase_vf=np.arctan(vf_data['raw'][:,slice_number,:,0], vf_data['raw'][:,slice_number,:,2]).T
+			phase_vf=np.arctan(vf_data.data[:,slice_number,:,0], vf_data.data[:,slice_number,:,2]).T
 			
 	elif view == 's':
-		slice=img['raw'][slice_number,:].T
-		pixel_ratio=img['spacing'][2]/['img_spacing'][1]
+		slice=img.data[slice_number,:].T
+		pixel_ratio=img.spacing[2]/img.spacing[1]
 		if vf != None:
-			phase_vf=np.arctan(vf_data['raw'][slice_number,:,:,1], vf_data['raw'][slice_number,:,:,2]).T
+			phase_vf=np.arctan(vf_data.data[slice_number,:,:,1], vf_data.data[slice_number,:,:,2]).T
 			
 	elif view == 'a':
-		slice=np.rot90(img['raw'][:,:,slice_number],1)
-		pixel_ratio=img['spacing'][1]/['img_spacing'][0]
+		slice=np.rot90(img.data[:,:,slice_number],1)
+		pixel_ratio=img.spacing[1]/img.spacing[0]
 		if vf != None:
-			phase_vf=np.rot90(np.arctan(vf_data['raw'][:,:,slice_number,0], vf_data['raw'][:,:,slice_number,1]), 1)
+			phase_vf=np.rot90(np.arctan(vf_data.data[:,:,slice_number,0], vf_data.data[:,:,slice_number,1]), 1)
 		
 	if type(vf)==str:
-		del vf_data['raw']
+		del vf_data.data
 	
 	if type(input)==str:
-		del img['raw']
+		del img.data
 	
 	
 	## Overlay settings
 	if overlay_image != None:
 		
 		if type(overlay_image)==str:
-			img2=read(overlay_image)
-		elif type(overlay_image)==dict:
+			img2=mha.new(input_file=overlay_image)
+		elif type(overlay_image)==types.InstanceType:
 			img2=overlay_image
 			
-		if img['size'] != img2['size']:
+		if img.size != img2.size:
 			print "Warning: the two images don't have the same dimensions!"
-		if img['spacing'] != img2['spacing']:
+		if img.spacing != img2.spacing:
 			print "Warning: the two images don't have the same pixel spacing!"
-		if img['offset'] != img2['offset']:
+		if img.offset != img2.offset:
 			print "Warning: the two images don't have the same offset!"
 	
 		if view == 'c':
-			slice2=img2['raw'][:,slice_number].T
+			slice2=img2.data[:,slice_number].T
 		elif view == 's':
-			slice2=img2['raw'][slice_number,:].T
+			slice2=img2.data[slice_number,:].T
 		elif view == 'a':
-			slice2=np.rot90(img2['raw'][:,:,slice_number],1)
+			slice2=np.rot90(img2.data[:,:,slice_number],1)
 		
 		if type(overlay_image)==str:
-			del img2['raw']
+			del img2.data
 	
 	
 	## Windowing settings
@@ -139,7 +143,7 @@ vf=None, checkerboard=False, check_size=100, diff=False, colours=False, screensh
 	
 	elif diff == False and colours == True and overlay_image != None and vf == None and checkerboard == False: ## Overlay images in colours mode, NO checkerboard, NO vf
 		imshow(slice, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
-		imshow(slice2, aspect=pixel_ratio, origin='lower', alpha=0.5)
+		imshow(slice2, aspect=pixel_ratio, origin='lower', alpha=image_trasparency)
 	
 	elif diff == False and colours == False and overlay_image != None and vf == None and checkerboard == False: ## Overlay images, NO checkerboard, NO colours, NO vf
 		slice_sum=np.add(np.multiply(slice2, gain_overlay_image), slice)
@@ -184,17 +188,17 @@ vf=None, checkerboard=False, check_size=100, diff=False, colours=False, screensh
 		
 		if colours == True: ## Checkerboad color mode
 			imshow(slice, cmap=cm.get_cmap('bone'), aspect=pixel_ratio, origin='lower')
-			imshow(slice2, cmap=cm.get_cmap('reds'), aspect=pixel_ratio, origin='lower', alpha=0.70)
+			imshow(slice2, cmap=cm.get_cmap('reds'), aspect=pixel_ratio, origin='lower', alpha=image_trasparency)
 		elif colours == False: ## Checkerboad NO color mode
 			imshow(slice, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
-			imshow(slice2, cmap=cm.gray, aspect=pixel_ratio, origin='lower', alpha=0.50)
+			imshow(slice2, cmap=cm.gray, aspect=pixel_ratio, origin='lower', alpha=image_trasparency)
 			if vf != None: ## Checkerboad NO color mode + vf
-				imshow(phase_vf, aspect=pixel_ratio, origin='lower', alpha=0.5)
+				imshow(phase_vf, aspect=pixel_ratio, origin='lower', alpha=vf_trasparency)
 	
 	
 	elif diff == False and colours == False and overlay_image == None and vf != None and checkerboard == False: ## Image and vector field
 		imshow(slice, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
-		imshow(phase_vf, aspect=pixel_ratio, origin='lower', alpha=0.5)
+		imshow(phase_vf, aspect=pixel_ratio, origin='lower', alpha=vf_trasparency)
 	
 	elif diff == True and colours == False and overlay_image != None and vf == None and checkerboard == False: ## Two images in diff mode
 		diff_slice=np.subtract(slice, np.multiply(slice2, gain_overlay_image))

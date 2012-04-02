@@ -5,7 +5,7 @@
 ##
 ## Author: Paolo Zaffino (p.zaffino@yahoo.it)
 ##
-## rev 1
+## rev 2
 ##
 ## Required libraries:
 ## 1) Argparse (only if your python version is < 2.7)
@@ -31,9 +31,11 @@ parser.add_argument('--slice', help='Slice number, default slice is the middle o
 parser.add_argument('--view', help='View, default is coronal',type=str, default='c', choices=('a','c','s'))
 parser.add_argument('--overlay_image', help='Overlay image', type=str)
 parser.add_argument('--gain_overlay_image', help='Gain of overlay image', type=int, default=1)
+parser.add_argument('--image_trasparency', help='Image trasparency of the overlap image (0.0 transparent, 1.0 opaque)', type=float, default=0.5)
 parser.add_argument('--windowing', help='Windowing interval as "-100 100"', type=str, default='')
 parser.add_argument('--windowing_overlay_img', help='Windowing interval for the overlay image', type=str, default='')
 parser.add_argument('--vf', help='Vector field file name. The viewer plots the phase map of the vector field', type=str)
+parser.add_argument('--vf_trasparency', help='Vector field trasparency in overlap mode (0.0 transparent, 1.0 opaque)', type=float, default=0.5)
 parser.add_argument('--checkerboard', help='Sets the checkerboard in the overlay mode', action='store_true')
 parser.add_argument('--check_size', help='Size of the check (in voxel)', type=int, default=100)
 parser.add_argument('--diff', help='Shows the difference between the input image and the overlay one', action='store_true')
@@ -43,6 +45,6 @@ parser.add_argument('--screenshot_file_name', help='Screenshot file name', type=
 args = parser.parse_args()
 
 pypla_viewer.show_img(input=args.input, slice=args.slice, view=args.view, overlay_image=args.overlay_image,\
-gain_overlay_image=args.gain_overlay_image, windowing=args.windowing, windowing_overlay_img=args.windowing_overlay_img,\
-vf=args.vf, checkerboard=args.checkerboard, check_size=args.check_size, diff=args.diff, colours=args.colours,\
-screenshot_file_name=args.screenshot_file_name)
+gain_overlay_image=args.gain_overlay_image, image_trasparency=args.image_trasparency, windowing=args.windowing,\
+windowing_overlay_img=args.windowing_overlay_img,vf=args.vf, vf_trasparency=args.vf_trasparency, checkerboard=args.checkerboard,\
+check_size=args.check_size, diff=args.diff, colours=args.colours, screenshot_file_name=args.screenshot_file_name)

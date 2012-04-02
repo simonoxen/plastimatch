@@ -628,10 +628,10 @@ if (ITK_FOUND)
   if (${ITK_VERSION_MAJOR} VERSION_EQUAL "4")
     message (STATUS "ITK is version 4.  You are brave!")
   endif ()
-  if (${ITK_VERSION_MAJOR} VERSION_EQUAL "3" AND NOT ITK_USE_REVIEW)
-    message (FATAL_ERROR 
-      "Fatal Error. ITK must be compiled with ITK_USE_REVIEW set to ON")
-  endif ()
+  ###if (${ITK_VERSION_MAJOR} VERSION_EQUAL "3" AND NOT ITK_USE_REVIEW)
+  ###  message (FATAL_ERROR 
+  ###    "Fatal Error. ITK must be compiled with ITK_USE_REVIEW set to ON")
+  ###endif ()
 endif ()
 
 ##-----------------------------------------------------------------------------
@@ -655,11 +655,11 @@ if (ITK_FOUND)
     set (GDCM_FOUND 1)
   endif ()
 
-  if (GDCM_VERSION)
-    message (STATUS "GDCM version ${GDCM_VERSION} found")
-  else ()
-    message (FATAL_ERROR "Found ITK, but didn't find GDCM")
-  endif ()
+  ###if (GDCM_VERSION)
+  ###  message (STATUS "GDCM version ${GDCM_VERSION} found")
+  ###else ()
+  ###  message (FATAL_ERROR "Found ITK, but didn't find GDCM")
+  ###endif ()
 
   if (GDCM_VERSION VERSION_LESS "2.0")
     set (GDCM_VERSION_1 1)
