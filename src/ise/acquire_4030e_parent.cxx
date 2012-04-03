@@ -26,15 +26,16 @@ Acquire_4030e_parent::initialize (int argc, char* argv[])
 
     // Check for receptor path on the command line
     if (argc > 1) {
+        this->num_process = 1;
 	paths[0] = argv[1];
     }
     if (argc > 2) {
+	this->num_process = 2;
 	paths[1] = argv[2];
     }
 
     /* Start acquisition processes */
-    num_process = 1;
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < this->num_process; i++) {
         QString program = argv[0];
         QStringList arguments;
 	arguments << "--child" << QString("%1").arg(i).toUtf8() << paths[i];
@@ -111,7 +112,7 @@ Acquire_4030e_parent::initialize (int argc, char* argv[])
 void 
 Acquire_4030e_parent::log_output ()
 {
-    for (int i = 0; i < num_process; i++) {
+    for (int i = 0; i < this->num_process; i++) {
         QByteArray result = process[i].readAllStandardOutput();
         QStringList lines = QString(result).split("\n");
         foreach (QString line, lines) {

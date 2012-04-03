@@ -187,6 +187,7 @@ endif ()
 
 if (WIN32)
   set (DIPS_TEST_SRC 
+    aqprintf.cxx aqprintf.h 
     dips_test.cxx
     dips_panel.cxx dips_panel.h)
   plm_add_executable (dips_test "${DIPS_TEST_SRC}" "" ""
