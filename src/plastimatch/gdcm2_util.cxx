@@ -4,9 +4,14 @@
 #include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "gdcmSystem.h"
 
 #include "metadata.h"
+
+namespace gdcm {
+    class File;
+};
 
 void
 gdcm2_get_date_time (

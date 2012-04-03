@@ -6,7 +6,7 @@
 #include "dcmtk/ofstd/ofstream.h"
 #include "dcmtk/dcmdata/dctk.h"
 
-#include "dcmtk_load.h"
+#include "dcmtk_save.h"
 #include "dcmtk_series_set.h"
 #include "dcmtk_uid.h"
 #include "file_util.h"
@@ -14,40 +14,12 @@
 #include "plm_version.h"
 #include "rtds.h"
 
-typedef
-struct dcmtk_slice_data
-{
-    Pstring fn;
-    Rtds *rtds;
-    Volume *vol;
-
-    size_t slice_size;
-    float *slice_float;
-    int16_t *slice_int16;
-
-    OFString date_string;
-    OFString time_string;
-    char study_uid[100];
-    char series_uid[100];
-    char for_uid[100];
-    Pstring ipp;
-    Pstring iop;
-    Pstring sloc;
-    Pstring sthk;
-} Dcmtk_slice_data;
-
 void
 dcmtk_save_slice (Dcmtk_slice_data *dsd)
 {
-    char uid[100];
     Pstring tmp;
     DcmFileFormat fileformat;
     DcmDataset *dataset = fileformat.getDataset();
-
-    dataset->putAndInsertString (DCM_SOPClassUID, 
-        UID_SecondaryCaptureImageStorage);
-    dataset->putAndInsertString (DCM_SOPInstanceUID, 
-        dcmGenerateUniqueIdentifier (uid, SITE_INSTANCE_UID_ROOT));
 
     dataset->putAndInsertString (DCM_ImageType, 
         "DERIVED\\SECONDARY\\REFORMATTED");
@@ -56,8 +28,7 @@ dcmtk_save_slice (Dcmtk_slice_data *dsd)
     dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, 
         dsd->time_string);
     dataset->putAndInsertString (DCM_SOPClassUID, UID_CTImageStorage);
-    dataset->putAndInsertString (DCM_SOPInstanceUID, 
-        plm_generate_dicom_uid (uid, PLM_UID_PREFIX));
+    dataset->putAndInsertString (DCM_SOPInstanceUID, dsd->slice_uid);
     dataset->putAndInsertOFStringArray (DCM_StudyDate, dsd->date_string);
     dataset->putAndInsertOFStringArray (DCM_StudyTime, dsd->time_string);
     dataset->putAndInsertString (DCM_AccessionNumber, "");
@@ -115,7 +86,10 @@ dcmtk_save_slice (Dcmtk_slice_data *dsd)
 }
 
 void
-dcmtk_save_image (Rtds *rtds, const char *dicom_dir)
+dcmtk_save_image (
+    std::vector<Dcmtk_slice_data> *slice_data,
+    Rtds *rtds, 
+    const char *dicom_dir)
 {
     Dcmtk_slice_data dsd;
     DcmDate::getCurrentDate (dsd.date_string);
@@ -141,6 +115,7 @@ dcmtk_save_image (Rtds *rtds, const char *dicom_dir)
         dsd.sloc.format ("%f", dsd.vol->offset[2] + k * dsd.vol->spacing[2]);
         dsd.ipp.format ("%f\\%f\\%f", dsd.vol->offset[0], dsd.vol->offset[1], 
             dsd.vol->offset[2] + k * dsd.vol->spacing[2]);
+        plm_generate_dicom_uid (dsd.slice_uid, PLM_UID_PREFIX);
 
         dsd.slice_float = &((float*)dsd.vol->img)[k*dsd.slice_size];
         dcmtk_save_slice (&dsd);
@@ -151,7 +126,11 @@ dcmtk_save_image (Rtds *rtds, const char *dicom_dir)
 void
 dcmtk_save_rtds (Rtds *rtds, const char *dicom_dir)
 {
+    std::vector<Dcmtk_slice_data> slice_data;
     if (rtds->m_img) {
-        dcmtk_save_image (rtds, dicom_dir);
+        dcmtk_save_image (&slice_data, rtds, dicom_dir);
+    }
+    if (rtds->m_ss_image) {
+        dcmtk_rtss_save (&slice_data, rtds, dicom_dir);
     }
 }

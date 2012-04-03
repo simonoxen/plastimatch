@@ -6,6 +6,7 @@
 
 #include "plm_config.h"
 #include "itk_image.h"
+#include "metadata.h"
 #include "plm_image_type.h"
 #include "print_and_exit.h"
 #include "volume.h"
@@ -26,7 +27,7 @@ public:
     ~Plm_image ();
 
 public:
-
+    Metadata m_meta;
     Plm_image_type m_original_type;
     Plm_image_type m_type;
 

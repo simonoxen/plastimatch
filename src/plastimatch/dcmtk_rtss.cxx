@@ -9,6 +9,7 @@
 #include "dcmtk/dcmdata/dctk.h"
 
 #include "dcmtk_file.h"
+#include "dcmtk_save.h"
 #include "dcmtk_series.h"
 #include "math_util.h"
 #include "print_and_exit.h"
@@ -206,4 +207,13 @@ Dcmtk_series::rtss_load (
     printf ("%p %p %p\n", rtds,
         rtds->m_ss_image, rtds->m_ss_image->m_cxt);
 
+}
+
+void
+dcmtk_rtss_save (
+    const std::vector<Dcmtk_slice_data> *slice_data,
+    const Rtds *rtds,
+    const char *dicom_dir
+)
+{
 }

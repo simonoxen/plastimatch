@@ -155,6 +155,8 @@ Rtss::save_gdcm_rtss (
 
 #if GDCM_VERSION_1
     gdcm_rtss_save (this, rdd, fn);
+#else
+    /* GDCM 2 not implemented -- you're out of luck. */
 #endif
 }
 

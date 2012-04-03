@@ -6,11 +6,14 @@
 
 #include "plm_config.h"
 #include <map>
-#include "bstrwrap.h"
+#include <string>
+//#include "bstrwrap.h"
 
+#if defined (commentout)
 namespace gdcm {
     class File;
 };
+#endif
 
 class plastimatch1_EXPORT Metadata
 {
