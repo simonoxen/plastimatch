@@ -12,6 +12,7 @@
 #define TTY_MULTRET	(-1)
 #define TTY_QL(x)	LUA_QL(x)
 #define TTY_PROGNAME		"plastimatch"
+#define TTY_BANNER TTY_PROGNAME " " PLM_DEFAULT_VERSION_STRING " (build " PLASTIMATCH_BUILD_NUMBER ")    Type 'exit' or ^C to quit\n\n"
 #define TTY_MAXINPUT 255
 #define TTY_PROMPT "% "
 #define TTY_PROMPT2 "> "

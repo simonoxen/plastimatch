@@ -288,7 +288,7 @@ do_tty (lua_State *L)
 {
     int status;
 
-    fprintf (stdout, "Plastimatch " PLM_DEFAULT_VERSION_STRING "    Type 'exit' or ^C to quit\n\n");
+    fprintf (stdout, TTY_BANNER);
 
     tty_prompt  = TTY_PROMPT;
     tty_prompt2 = TTY_PROMPT2;
