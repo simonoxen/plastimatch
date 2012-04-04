@@ -7,12 +7,15 @@
 #include <QApplication>
 #include <QProcess>
 
+class Acquire_4030e_window;
+
 class Acquire_4030e_parent : public QApplication
 {
     Q_OBJECT
     ;
 public:
     Acquire_4030e_parent (int argc, char* argv[]);
+    ~Acquire_4030e_parent ();
 public:
     void initialize (int argc, char* argv[]);
 public slots:
@@ -20,6 +23,7 @@ public slots:
 public:
     int num_process;
     QProcess process[2];
+    Acquire_4030e_window *window;
 };
 
 #endif

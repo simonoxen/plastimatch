@@ -4,6 +4,7 @@
 #ifndef __kill_h__
 #define __kill_h__
 
-void kill_igpax (void);
+void
+kill_process (const char* process_name);
 
 #endif

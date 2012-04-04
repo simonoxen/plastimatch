@@ -59,7 +59,7 @@ set (ISE_COMMON_SRC
   ise_sw_config.h
   ise_structs.h
   isewatch_client.c isewatch_client.h
-  kill.c kill.h
+  kill.cxx kill.h
   matrox_source.c matrox_source.h
   synthetic_source.c synthetic_source.h
   tracker.c tracker.h
@@ -74,15 +74,24 @@ set (ACQUIRE_4030E_SRC
   acquire_4030e_main.cxx
   acquire_4030e_child.cxx acquire_4030e_child.h 
   acquire_4030e_parent.cxx acquire_4030e_parent.h
+  acquire_4030e_window.cxx acquire_4030e_window.h
   advantech.cxx advantech.h
   aqprintf.cxx aqprintf.h 
   dips_panel.cxx dips_panel.h
+  kill.cxx kill.h
   varian_4030e.cxx varian_4030e.h 
   )
 if (BUILD_ACQUIRE_4030E)
   qt4_wrap_cpp (ACQUIRE_4030E_SRC 
-    acquire_4030e_parent.h
     acquire_4030e_child.h
+    acquire_4030e_parent.h
+    acquire_4030e_window.h
+    )
+  qt4_wrap_ui (ACQUIRE_4030E_SRC 
+    acquire_4030e_window.ui
+    )
+  qt4_add_resources (ACQUIRE_4030E_SRC 
+    acquire_4030e.qrc
     )
 endif ()
 

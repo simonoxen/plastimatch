@@ -21,6 +21,7 @@
 //#include "varian_4030e.h"
 #include "acquire_4030e_child.h"
 #include "acquire_4030e_parent.h"
+#include "kill.h"
 
 class SleeperThread : public QThread {
 public:
@@ -38,7 +39,6 @@ main (int argc, char* argv[])
     // The string such as "A422-07" is the imager serial number
     char *default_path_1 = "C:\\IMAGERs\\A422-07"; // Path to IMAGER tables
     char *default_path_2 = "C:\\IMAGERs\\A663-11"; // Path to IMAGER tables
-
 
     /* During debugging, use hard-coded path */
     if (argc < 2) {
@@ -70,6 +70,11 @@ main (int argc, char* argv[])
 #endif
         } else {
             /*** Parent process ***/
+
+            /* Kill any leftover rogue processes */
+            kill_process ("acquire_4030e.exe");
+
+            /* Spawn child processes */
             Acquire_4030e_parent *parent 
                 = new Acquire_4030e_parent (argc, argv);
 
@@ -93,7 +98,7 @@ main (int argc, char* argv[])
         process[i].start(program, arguments);
 
 	connect (&process[i], SIGNAL(readyReadStandardOutput()),
-		app, SLOT(log_output()));  
+            app, SLOT(log_output()));  
 
     }
 

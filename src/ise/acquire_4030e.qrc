@@ -1,0 +1,6 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/">
+   <file>green_ball.svg</file>
+   <file>red_ball.svg</file>
+</qresource>
+</RCC>
