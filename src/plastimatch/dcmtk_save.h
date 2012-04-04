@@ -5,6 +5,7 @@
 #define _dcmtk_save_h_
 
 #include "plm_config.h"
+#if (DCMTK_FOUND)
 #include "dcmtk_config.h"
 #include "dcmtk/ofstd/ofstream.h"
 #include "dcmtk/dcmdata/dctk.h"
@@ -42,6 +43,7 @@ dcmtk_rtss_save (
     const std::vector<Dcmtk_slice_data> *slice_data,
     const Rtds *rtds,
     const char *dicom_dir);
+#endif
 void
 dcmtk_save_rtds (Rtds *rtds, const char *dicom_dir);
 
