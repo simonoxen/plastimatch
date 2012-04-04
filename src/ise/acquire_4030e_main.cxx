@@ -71,9 +71,6 @@ main (int argc, char* argv[])
         } else {
             /*** Parent process ***/
 
-            /* Kill any leftover rogue processes */
-            kill_process ("acquire_4030e.exe");
-
             /* Spawn child processes */
             Acquire_4030e_parent *parent 
                 = new Acquire_4030e_parent (argc, argv);

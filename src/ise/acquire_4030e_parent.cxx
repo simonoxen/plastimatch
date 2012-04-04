@@ -7,6 +7,7 @@
 #include <string.h>
 #include <math.h>
 #include <QApplication>
+#include <QDebug>
 #include <QMessageBox>
 #include <QProcess>
 #include <QSystemTrayIcon>
@@ -25,9 +26,6 @@ Acquire_4030e_parent::Acquire_4030e_parent (int argc, char* argv[])
 
 Acquire_4030e_parent::~Acquire_4030e_parent ()
 {
-    /* Kill child processes */
-    kill_process ("acquire_4030e.exe");
-
     /* Destroy window */
     delete this->window;
 }
@@ -36,6 +34,12 @@ void
 Acquire_4030e_parent::initialize (int argc, char* argv[])
 {
     char *paths[2];
+
+    /* Set up event handler for cleanup */
+    connect (this, SIGNAL(aboutToQuit()), this, SLOT(about_to_quit()));
+
+    /* Kill any leftover rogue processes */
+    kill_rogue_processes ();
 
     /* Check for system tray to store the UI */
     if (QSystemTrayIcon::isSystemTrayAvailable()) {
@@ -60,7 +64,6 @@ Acquire_4030e_parent::initialize (int argc, char* argv[])
 	paths[1] = argv[2];
     }
 
-#if defined (commentout)
     /* Start child processes */
     for (int i = 0; i < this->num_process; i++) {
         QString program = argv[0];
@@ -70,7 +73,22 @@ Acquire_4030e_parent::initialize (int argc, char* argv[])
             this, SLOT(log_output()));
         this->process[i].start(program, arguments);
     }
+#if defined (commentout)
 #endif
+}
+
+void 
+Acquire_4030e_parent::kill_rogue_processes ()
+{
+    /* Kill child processes (either ours, or from previous instances) */
+    kill_process ("acquire_4030e.exe");
+}
+
+void 
+Acquire_4030e_parent::about_to_quit ()
+{
+    /* Kill children before we die */
+    kill_rogue_processes ();
 }
 
 void 
@@ -81,10 +99,17 @@ Acquire_4030e_parent::log_output ()
         QStringList lines = QString(result).split("\n");
         foreach (QString line, lines) {
             line = line.trimmed();
-            if (!line.isEmpty()) {
-                QByteArray line_ba = line.toAscii ();
-                printf ("[%d] %s\n", i, (const char*) line_ba);
+            if (line.isEmpty()) {
+                continue;
             }
+            line = QString("[%1] %2").arg(i).arg(line);
+
+            /* Dump to window log */
+            window->log_output (line);
+            
+            /* Dump to stdout */
+            QByteArray line_ba = line.toAscii ();
+            printf ("%s\n", (const char*) line_ba);
         }
     }
 }

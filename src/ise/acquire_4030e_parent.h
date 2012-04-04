@@ -18,8 +18,10 @@ public:
     ~Acquire_4030e_parent ();
 public:
     void initialize (int argc, char* argv[]);
+    void kill_rogue_processes ();
 public slots:
     void log_output ();
+    void about_to_quit ();
 public:
     int num_process;
     QProcess process[2];

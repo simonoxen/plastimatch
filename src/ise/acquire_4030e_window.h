@@ -10,6 +10,9 @@
 #include <QSystemTrayIcon>
 #include "ui_acquire_4030e_window.h"
 
+class QString;
+class QSystemTrayIcon;
+
 class Acquire_4030e_window : public QMainWindow,
                              private Ui::ui_acquire_4030e_window
 {
@@ -17,18 +20,23 @@ class Acquire_4030e_window : public QMainWindow,
     ;
 public:
     Acquire_4030e_window ();
-public:
-    QAction *minimize_action;
-    QAction *maximize_action;
-    QAction *restore_action;
-    QAction *quit_action;
-    QSystemTrayIcon *tray_icon;
-    QMenu *tray_icon_menu;
+protected:
+    void closeEvent(QCloseEvent *event);
 public:
     void create_actions ();
     void create_tray_icon ();
     void set_icon ();
+    void log_output (const QString& log);
 
+public slots:
+    void request_quit ();
+    void systray_activated (QSystemTrayIcon::ActivationReason reason);
+
+public:
+    QAction *show_action;
+    QAction *quit_action;
+    QSystemTrayIcon *tray_icon;
+    QMenu *tray_icon_menu;
 };
 
 #endif
