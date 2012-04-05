@@ -3,7 +3,7 @@ SET (CTEST_BINARY_DIRECTORY "D:/build/plastimatch-continuous")
 SET (CTEST_CMAKE_COMMAND "c:/Program Files (x86)/CMake 2.8/bin/cmake.exe")
 SET (CTEST_COMMAND "c:/Program Files (x86)/CMake 2.8/bin/ctest.exe -D Continuous")
 SET (CTEST_INITIAL_CACHE "
-//Name of generator.
+//Name of generator
 CMAKE_GENERATOR:INTERNAL=Visual Studio 8 2005
 
 //Name of the build
