@@ -15,7 +15,7 @@ SITE:STRING=gelato
 //The directory containing ITKConfig.cmake.  This is either the
 // root of the build tree, or PREFIX/lib/InsightToolkit for an
 // installation.
-ITK_DIR:PATH=/home/gcs6/build/itk-3.20.0
+ITK_DIR:PATH=/home/gcs6/build/itk-3.20.1
 
 //The directory containing a CMake configuration file for VTK.
 VTK_DIR:PATH=/PHShome/gcs6/build/vtk-5.6.1

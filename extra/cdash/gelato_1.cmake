@@ -15,7 +15,7 @@ SITE:STRING=gelato
 //The directory containing ITKConfig.cmake.  This is either the
 // root of the build tree, or PREFIX/lib/InsightToolkit for an
 // installation.
-ITK_DIR:PATH=/home/gcs6/build/itk-3.20.0
+ITK_DIR:PATH=/home/gcs6/build/itk-3.20.1
 
 //Build with shared libraries.
 BUILD_SHARED_LIBS:BOOL=ON
