@@ -263,8 +263,8 @@ dcmtk_save_slice (const Dcmtk_study_writer *dsw, Dcmtk_slice_data *dsd)
         PLASTIMATCH_VERSION_STRING);
     /* GCS FIX: PatientPosition */
     dataset->putAndInsertString (DCM_PatientPosition, "HFS");
-    dataset->putAndInsertString (DCM_StudyInstanceUID, dsd->study_uid);
-    dataset->putAndInsertString (DCM_SeriesInstanceUID, dsd->series_uid);
+    dataset->putAndInsertString (DCM_StudyInstanceUID, dsw->study_uid);
+    dataset->putAndInsertString (DCM_SeriesInstanceUID, dsw->ct_series_uid);
     dataset->putAndInsertString (DCM_StudyID, "10001");
     dataset->putAndInsertString (DCM_SeriesNumber, "303");
     dataset->putAndInsertString (DCM_InstanceNumber, "0");
@@ -272,7 +272,7 @@ dcmtk_save_slice (const Dcmtk_study_writer *dsw, Dcmtk_slice_data *dsd)
     dataset->putAndInsertString (DCM_PatientOrientation, "L/P");
     dataset->putAndInsertString (DCM_ImagePositionPatient, dsd->ipp);
     dataset->putAndInsertString (DCM_ImageOrientationPatient, dsd->iop);
-    dataset->putAndInsertString (DCM_FrameOfReferenceUID, dsd->for_uid);
+    dataset->putAndInsertString (DCM_FrameOfReferenceUID, dsw->for_uid);
     dataset->putAndInsertString (DCM_SliceLocation, dsd->sloc.c_str());
     dataset->putAndInsertString (DCM_SamplesPerPixel, "1");
     dataset->putAndInsertString (DCM_PhotometricInterpretation, "MONOCHROME2");
@@ -319,10 +319,6 @@ dcmtk_image_save (
     float *dc = dsd.vol->direction_cosines.m_direction_cosines;
     dsd.iop.format ("%f\\%f\\%f\\%f\\%f\\%f",
         dc[0], dc[1], dc[2], dc[3], dc[4], dc[5]);
-
-    plm_generate_dicom_uid (dsd.study_uid, PLM_UID_PREFIX);
-    plm_generate_dicom_uid (dsd.series_uid, PLM_UID_PREFIX);
-    plm_generate_dicom_uid (dsd.for_uid, PLM_UID_PREFIX);
 
     for (plm_long k = 0; k < dsd.vol->dim[2]; k++) {
         dsd.fn.format ("%s/image%03d.dcm", dicom_dir, (int) k);

@@ -13,6 +13,8 @@
 #include "dcmtk_series.h"
 #include "file_util.h"
 #include "math_util.h"
+#include "plm_uid_prefix.h"
+#include "plm_version.h"
 #include "print_and_exit.h"
 #include "rtds.h"
 #include "rtss.h"
@@ -228,7 +230,79 @@ dcmtk_rtss_save (
     DcmFileFormat fileformat;
     DcmDataset *dataset = fileformat.getDataset();
 
-    /* InstanceCreationDate */
+    /* Part 1: General Header */
     dataset->putAndInsertOFStringArray(DCM_InstanceCreationDate, 
         dsw->date_string);
+    dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, 
+        dsw->time_string);
+    dataset->putAndInsertOFStringArray(DCM_InstanceCreatorUID, 
+        PLM_UID_PREFIX);
+    dataset->putAndInsertString (DCM_SOPClassUID, UID_RTStructureSetStorage);
+    dataset->putAndInsertString (DCM_SOPInstanceUID, dsw->rtss_uid);
+    dataset->putAndInsertOFStringArray (DCM_StudyDate, dsw->date_string);
+    dataset->putAndInsertOFStringArray (DCM_StudyTime, dsw->time_string);
+    dataset->putAndInsertOFStringArray (DCM_AccessionNumber, "");
+    dataset->putAndInsertOFStringArray (DCM_Modality, "RTSTRUCT");
+    dataset->putAndInsertString (DCM_Manufacturer, "Plastimatch");
+    dataset->putAndInsertString (DCM_InstitutionName, "");
+    dataset->putAndInsertString (DCM_ReferringPhysicianName, "");
+    dataset->putAndInsertString (DCM_StationName, "");
+
+#if defined (commentout)
+    /* SeriesDescription */
+    set_gdcm_file_from_metadata (gf, &rtss->m_meta, 0x0008, 0x103e);
+#endif
+
+    dataset->putAndInsertString (DCM_ManufacturerModelName, "Plastimatch");
+
+#if defined (commentout)
+    /* PatientsName */
+    set_gdcm_file_from_metadata (gf, &rtss->m_meta, 0x0010, 0x0010);
+    /* PatientID */
+    set_gdcm_file_from_metadata (gf, &rtss->m_meta, 0x0010, 0x0020);
+#endif
+
+    dataset->putAndInsertString (DCM_PatientBirthDate, "");
+
+#if defined (commentout)
+    /* PatientsSex */
+    set_gdcm_file_from_metadata (gf, &rtss->m_meta, 0x0010, 0x0040);
+#endif
+
+    dataset->putAndInsertString (DCM_SoftwareVersions,
+        PLASTIMATCH_VERSION_STRING);
+#if defined (commentout)
+    /* PatientPosition */
+    // gf->InsertValEntry (xxx, 0x0018, 0x5100);
+#endif
+
+#if defined (commentout)
+    /* StudyInstanceUID */
+    gf->InsertValEntry ((const char*) rdd->m_ct_study_uid, 0x0020, 0x000d);
+    /* SeriesInstanceUID */
+    gf->InsertValEntry (gdcm::Util::CreateUniqueUID (PLM_UID_PREFIX), 
+	0x0020, 0x000e);
+    /* StudyID */
+    gf->InsertValEntry ((const char*) rdd->m_study_id, 0x0020, 0x0010);
+    /* SeriesNumber */
+    gf->InsertValEntry ("103", 0x0020, 0x0011);
+    /* InstanceNumber */
+    gf->InsertValEntry ("1", 0x0020, 0x0013);
+    /* StructureSetLabel */
+    gf->InsertValEntry ("AutoSS", 0x3006, 0x0002);
+    /* StructureSetName */
+    gf->InsertValEntry ("AutoSS", 0x3006, 0x0004);
+    /* StructureSetDate */
+    gf->InsertValEntry (current_date, 0x3006, 0x0008);
+    /* StructureSetTime */
+    gf->InsertValEntry (current_time, 0x3006, 0x0009);
+#endif
+
+    /* Write the output file */
+    OFCondition status = fileformat.saveFile (rtss_fn.c_str(), 
+        EXS_LittleEndianExplicit);
+    if (status.bad()) {
+        print_and_exit ("Error: cannot write DICOM RTSTRUCT (%s)\n", 
+            status.text());
+    }
 }

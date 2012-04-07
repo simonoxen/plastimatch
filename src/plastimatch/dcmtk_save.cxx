@@ -22,6 +22,10 @@ dcmtk_rtds_save (Rtds *rtds, const char *dicom_dir)
     Dcmtk_study_writer dsw;
     DcmDate::getCurrentDate (dsw.date_string);
     DcmTime::getCurrentTime (dsw.time_string);
+    plm_generate_dicom_uid (dsw.study_uid, PLM_UID_PREFIX);
+    plm_generate_dicom_uid (dsw.for_uid, PLM_UID_PREFIX);
+    plm_generate_dicom_uid (dsw.ct_series_uid, PLM_UID_PREFIX);
+    plm_generate_dicom_uid (dsw.rtss_uid, PLM_UID_PREFIX);
 
     if (rtds->m_img) {
         dcmtk_image_save (&dsw, rtds, dicom_dir);

@@ -33,9 +33,6 @@ struct dcmtk_slice_data
 
 //    OFString date_string;
 //    OFString time_string;
-    char study_uid[100];
-    char series_uid[100];
-    char for_uid[100];
     char slice_uid[100];
     Pstring ipp;
     Pstring iop;
@@ -47,6 +44,10 @@ class Dcmtk_study_writer {
 public:
     OFString date_string;
     OFString time_string;
+    char study_uid[100];
+    char for_uid[100];
+    char ct_series_uid[100];
+    char rtss_uid[100];
     std::vector<Dcmtk_slice_data> slice_data;
 };
 
