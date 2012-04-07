@@ -67,11 +67,11 @@ bspline_cuda_state_create (
     Bspline_parms *parms
 )
 {
+#if (CUDA_FOUND)
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
     Volume *moving_grad = parms->moving_grad;
 
-#if (CUDA_FOUND)
     Dev_Pointers_Bspline* dev_ptrs 
         = (Dev_Pointers_Bspline*) malloc (sizeof (Dev_Pointers_Bspline));
 
