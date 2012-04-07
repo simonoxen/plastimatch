@@ -81,8 +81,10 @@
 #cmakedefine ITK_FOUND 1
 #cmakedefine ITK_USE_SYSTEM_GDCM 1
 #if (ITK_FOUND && !PLM_CUDA_COMPILE)
-#define ITK_LEGACY_REMOVE 1 /* Silence MSVC+ITK compiler warnings */
 #include "itkConfigure.h"
+#if !defined (ITK_LEGACY_REMOVE)
+#define ITK_LEGACY_REMOVE 1 /* Silence MSVC+ITK compiler warnings */
+#endif
 #if (ITK_VERSION_MAJOR >= 3) && (ITK_VERSION_MINOR >= 10) && defined (ITK_USE_ORIENTED_IMAGE_DIRECTION)
 #define PLM_ITK_ORIENTED_IMAGES 1
 #endif
