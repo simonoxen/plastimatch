@@ -37,6 +37,10 @@ public:
        broken stdint implementation in gdcm. */
     std::string
     make_key (unsigned short key1, unsigned short key2) const;
+    const char*
+    get_metadata_ (const std::string& key) const;
+    const char*
+    get_metadata_ (unsigned short key1, unsigned short key2) const;
     const std::string&
     get_metadata (const std::string& key) const;
     const std::string&
@@ -46,14 +50,6 @@ public:
     void
     set_metadata (unsigned short key1, unsigned short key2,
 	const std::string& val);
-#if defined (commentout)
-    void
-    set_from_gdcm_file (gdcm::File *gdcm_file, unsigned short key1, 
-	unsigned short key2);
-    void
-    copy_to_gdcm_file (gdcm::File *gdcm_file, unsigned short group,
-	unsigned short elem) const;
-#endif
 
     void set_parent (Metadata *parent) {
 	m_parent = parent;

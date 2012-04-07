@@ -448,6 +448,7 @@ if (DCMTK_FOUND AND NOT DCMTK_VERSION_STRING VERSION_LESS 3.6.0)
     dcmtk_file.cxx dcmtk_file.h
     dcmtk_image.cxx dcmtk_image.h
     dcmtk_load.cxx dcmtk_load.h
+    dcmtk_metadata.cxx dcmtk_metadata.h 
     dcmtk_save.cxx dcmtk_save.h
     dcmtk_series.cxx dcmtk_series.h
     dcmtk_rtdose.cxx 

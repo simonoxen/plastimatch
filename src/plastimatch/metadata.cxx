@@ -42,6 +42,30 @@ Metadata::make_key (unsigned short key1, unsigned short key2) const
 	+ ',' + make_string (key2, 4, '0', std::hex);
 }
 
+const char*
+Metadata::get_metadata_ (const std::string& key) const
+{
+    std::map<std::string, std::string>::const_iterator it;
+    it = m_data.find (key);
+    if (it == m_data.end()) {
+	/* key not found in map -- check parent */
+	if (m_parent) {
+	    return m_parent->get_metadata_ (key);
+	}
+	/* key not found */
+	return 0;
+    } else {
+	/* key found in map */
+	return (it->second).c_str();
+    }
+}
+
+const char*
+Metadata::get_metadata_ (unsigned short key1, unsigned short key2) const
+{
+    return get_metadata_ (make_key (key1, key2));
+}
+
 const std::string&
 Metadata::get_metadata (const std::string& key) const
 {

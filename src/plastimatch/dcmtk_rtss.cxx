@@ -9,6 +9,7 @@
 #include "dcmtk/dcmdata/dctk.h"
 
 #include "dcmtk_file.h"
+#include "dcmtk_metadata.h"
 #include "dcmtk_save.h"
 #include "dcmtk_series.h"
 #include "file_util.h"
@@ -220,7 +221,8 @@ dcmtk_rtss_save (
 )
 {
     Pstring rtss_fn;
-    Rtss_polyline_set *cxt = rtds->m_rtss->m_cxt;
+    Rtss *rtss = rtds->m_rtss;
+    Rtss_polyline_set *cxt = rtss->m_cxt;
 
     /* Prepare output file */
     rtss_fn.format ("%s/rtss.dcm", dicom_dir);
@@ -247,28 +249,12 @@ dcmtk_rtss_save (
     dataset->putAndInsertString (DCM_InstitutionName, "");
     dataset->putAndInsertString (DCM_ReferringPhysicianName, "");
     dataset->putAndInsertString (DCM_StationName, "");
-
-#if defined (commentout)
-    /* SeriesDescription */
-    set_gdcm_file_from_metadata (gf, &rtss->m_meta, 0x0008, 0x103e);
-#endif
-
+    dcmtk_set_metadata (dataset, &rtss->m_meta, DCM_SeriesDescription, "");
     dataset->putAndInsertString (DCM_ManufacturerModelName, "Plastimatch");
-
-#if defined (commentout)
-    /* PatientsName */
-    set_gdcm_file_from_metadata (gf, &rtss->m_meta, 0x0010, 0x0010);
-    /* PatientID */
-    set_gdcm_file_from_metadata (gf, &rtss->m_meta, 0x0010, 0x0020);
-#endif
-
+    dcmtk_set_metadata (dataset, &rtss->m_meta, DCM_PatientName, "");
+    dcmtk_set_metadata (dataset, &rtss->m_meta, DCM_PatientID, "");
     dataset->putAndInsertString (DCM_PatientBirthDate, "");
-
-#if defined (commentout)
-    /* PatientsSex */
-    set_gdcm_file_from_metadata (gf, &rtss->m_meta, 0x0010, 0x0040);
-#endif
-
+    dcmtk_set_metadata (dataset, &rtss->m_meta, DCM_PatientSex, "O");
     dataset->putAndInsertString (DCM_SoftwareVersions,
         PLASTIMATCH_VERSION_STRING);
 
@@ -279,12 +265,7 @@ dcmtk_rtss_save (
 
     dataset->putAndInsertString (DCM_StudyInstanceUID, dsw->study_uid);
     dataset->putAndInsertString (DCM_SeriesInstanceUID, dsw->rtss_series_uid);
-
-#if defined (commentout)
-    /* StudyID */
-    gf->InsertValEntry ((const char*) rdd->m_study_id, 0x0020, 0x0010);
-#endif
-
+    dcmtk_set_metadata (dataset, &rtss->m_meta, DCM_StudyID, "");
     dataset->putAndInsertString (DCM_SeriesNumber, "103");
     dataset->putAndInsertString (DCM_InstanceNumber, "103");
     dataset->putAndInsertString (DCM_StructureSetLabel, "AutoSS");
