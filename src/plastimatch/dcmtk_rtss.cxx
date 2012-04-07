@@ -11,6 +11,7 @@
 #include "dcmtk_file.h"
 #include "dcmtk_save.h"
 #include "dcmtk_series.h"
+#include "file_util.h"
 #include "math_util.h"
 #include "print_and_exit.h"
 #include "rtds.h"
@@ -23,7 +24,7 @@ Dcmtk_series::rtss_load (
 )
 {
     Rtss *rtss = new Rtss (rtds);
-    rtds->m_ss_image = rtss;
+    rtds->m_rtss = rtss;
     Rtss_polyline_set *cxt = new Rtss_polyline_set;
     rtss->m_cxt = cxt;
     
@@ -205,15 +206,29 @@ Dcmtk_series::rtss_load (
         }
     }
     printf ("%p %p %p\n", rtds,
-        rtds->m_ss_image, rtds->m_ss_image->m_cxt);
+        rtds->m_rtss, rtds->m_rtss->m_cxt);
 
 }
 
 void
 dcmtk_rtss_save (
-    const std::vector<Dcmtk_slice_data> *slice_data,
+    Dcmtk_study_writer *dsw, 
     const Rtds *rtds,
     const char *dicom_dir
 )
 {
+    Pstring rtss_fn;
+    Rtss_polyline_set *cxt = rtds->m_rtss->m_cxt;
+
+    /* Prepare output file */
+    rtss_fn.format ("%s/rtss.dcm", dicom_dir);
+    make_directory_recursive (rtss_fn);
+
+    /* Prepare dcmtk */
+    DcmFileFormat fileformat;
+    DcmDataset *dataset = fileformat.getDataset();
+
+    /* InstanceCreationDate */
+    dataset->putAndInsertOFStringArray(DCM_InstanceCreationDate, 
+        dsw->date_string);
 }

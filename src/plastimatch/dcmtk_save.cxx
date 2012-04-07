@@ -7,6 +7,7 @@
 #include "dcmtk/dcmdata/dctk.h"
 
 #include "dcmtk_image.h"
+#include "dcmtk_rtss.h"
 #include "dcmtk_save.h"
 #include "dcmtk_series_set.h"
 #include "dcmtk_uid.h"
@@ -18,11 +19,14 @@
 void
 dcmtk_rtds_save (Rtds *rtds, const char *dicom_dir)
 {
-    std::vector<Dcmtk_slice_data> slice_data;
+    Dcmtk_study_writer dsw;
+    DcmDate::getCurrentDate (dsw.date_string);
+    DcmTime::getCurrentTime (dsw.time_string);
+
     if (rtds->m_img) {
-        dcmtk_image_save (&slice_data, rtds, dicom_dir);
+        dcmtk_image_save (&dsw, rtds, dicom_dir);
     }
-    if (rtds->m_ss_image) {
-        dcmtk_rtss_save (&slice_data, rtds, dicom_dir);
+    if (rtds->m_rtss) {
+        dcmtk_rtss_save (&dsw, rtds, dicom_dir);
     }
 }

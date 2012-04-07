@@ -31,8 +31,8 @@ struct dcmtk_slice_data
     float *slice_float;
     int16_t *slice_int16;
 
-    OFString date_string;
-    OFString time_string;
+//    OFString date_string;
+//    OFString time_string;
     char study_uid[100];
     char series_uid[100];
     char for_uid[100];
@@ -43,11 +43,12 @@ struct dcmtk_slice_data
     Pstring sthk;
 } Dcmtk_slice_data;
 
-void
-dcmtk_rtss_save (
-    const std::vector<Dcmtk_slice_data> *slice_data,
-    const Rtds *rtds,
-    const char *dicom_dir);
+class Dcmtk_study_writer {
+public:
+    OFString date_string;
+    OFString time_string;
+    std::vector<Dcmtk_slice_data> slice_data;
+};
 
 class Dcmtk_series 
 {

@@ -5,11 +5,13 @@
 #define _dcmtk_rtss_h_
 
 #include "plm_config.h"
-#include "dcmtk_series.h"
+
+class Dcmtk_study_writer;
+class Rtds;
 
 void
 dcmtk_rtss_save (
-    const std::vector<Dcmtk_slice_data> *slice_data,
+    Dcmtk_study_writer *dsw, 
     const Rtds *rtds,
     const char *dicom_dir);
 

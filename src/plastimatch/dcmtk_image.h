@@ -5,11 +5,13 @@
 #define _dcmtk_image_h_
 
 #include "plm_config.h"
-#include "dcmtk_series.h"
+
+class Dcmtk_study_writer;
+class Rtds;
 
 void
 dcmtk_image_save (
-    std::vector<Dcmtk_slice_data> *slice_data,
+    Dcmtk_study_writer *dsw, 
     Rtds *rtds, 
     const char *dicom_dir);
 

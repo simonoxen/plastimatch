@@ -30,7 +30,7 @@
 Rtds::Rtds ()
 {
     m_img = 0;
-    m_ss_image = 0;
+    m_rtss = 0;
     m_dose = 0;
 #if GDCM_VERSION_1
     m_gdcm_series = 0;
@@ -48,8 +48,8 @@ Rtds::~Rtds ()
     if (m_img) {
 	delete m_img;
     }
-    if (m_ss_image) {
-	delete m_ss_image;
+    if (m_rtss) {
+	delete m_rtss;
     }
     if (m_dose) {
 	delete m_dose;
@@ -165,13 +165,13 @@ Rtds::load_xio (
     xio_ct_load (this->m_img, &xst);
 
     /* Load the XiO studyset structure set */
-    this->m_ss_image = new Rtss (this);
-    this->m_ss_image->load_xio (xst);
+    this->m_rtss = new Rtss (this);
+    this->m_rtss->load_xio (xst);
 
     /* Apply XiO CT geometry to structures */
-    if (this->m_ss_image->m_cxt) {
+    if (this->m_rtss->m_cxt) {
 	printf ("calling cxt_set_geometry_from_plm_image\n");
-	this->m_ss_image->m_cxt->set_geometry_from_plm_image (this->m_img);
+	this->m_rtss->m_cxt->set_geometry_from_plm_image (this->m_img);
     }
 
     /* Load demographics */
@@ -210,8 +210,8 @@ Rtds::load_xio (
     if (this->m_img) {
 	xio_ct_apply_transform (this->m_img, this->m_xio_transform);
     }
-    if (this->m_ss_image->m_cxt) {
-	xio_structures_apply_transform (this->m_ss_image->m_cxt, 
+    if (this->m_rtss->m_cxt) {
+	xio_structures_apply_transform (this->m_rtss->m_cxt, 
 	    this->m_xio_transform);
     }
     if (this->m_dose) {
@@ -222,8 +222,8 @@ Rtds::load_xio (
 void
 Rtds::load_ss_img (const char *ss_img, const char *ss_list)
 {
-    this->m_ss_image = new Rtss (this);
-    this->m_ss_image->load (ss_img, ss_list);
+    this->m_rtss = new Rtss (this);
+    this->m_rtss->load (ss_img, ss_list);
 }
 
 void

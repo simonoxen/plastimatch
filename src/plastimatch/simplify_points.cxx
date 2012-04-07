@@ -36,10 +36,10 @@ do_simplify(Rtds *rtds, float percentage)
 //    	exit(-1);
 //    }
 
-    num_structures=rtds->m_ss_image->m_cxt->num_structures;
+    num_structures=rtds->m_rtss->m_cxt->num_structures;
 
     for(int j=0;j<num_structures;j++){
-	curr_struct=rtds->m_ss_image->m_cxt->slist[j];
+	curr_struct=rtds->m_rtss->m_cxt->slist[j];
 	for(size_t k=0;k<curr_struct->num_contours;k++){
 	    int *index, *ordered_index;
 	    gnr.restart();

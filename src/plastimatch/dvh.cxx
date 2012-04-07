@@ -48,15 +48,15 @@ dvh_execute_internal (
     std::string output_string = "";
 
     FloatImageType::Pointer dose_img = rtds->m_dose->itk_float ();
-    UInt32ImageType::Pointer ss_img = rtds->m_ss_image->get_ss_img();
+    UInt32ImageType::Pointer ss_img = rtds->m_rtss->get_ss_img();
 
     /* GCS HACK: This should go into rtss.cxx */
     Rtss_polyline_set *ss_list;
-    if (rtds->m_ss_image->m_ss_list) {
-	ss_list = rtds->m_ss_image->get_ss_list();
+    if (rtds->m_rtss->m_ss_list) {
+	ss_list = rtds->m_rtss->get_ss_list();
     } else {
-	if (rtds->m_ss_image->m_cxt) {
-	    ss_list = rtds->m_ss_image->m_cxt;
+	if (rtds->m_rtss->m_cxt) {
+	    ss_list = rtds->m_rtss->m_cxt;
 	} else {
 	    ss_list = new Rtss_polyline_set;
 	    for (int i = 0; i < 32; i++) {
@@ -218,14 +218,14 @@ dvh_execute (
     std::string output_string;
 
     rtds.m_dose = input_dose_img;
-    rtds.m_ss_image = new Rtss (&rtds);
-    rtds.m_ss_image->m_ss_img = input_ss_img;
+    rtds.m_rtss = new Rtss (&rtds);
+    rtds.m_rtss->m_ss_img = input_ss_img;
     output_string = dvh_execute_internal (&rtds, parms);
 
     /* Rtds will delete these in the destructor, but we want 
        to let the caller delete */
     rtds.m_dose = 0;
-    rtds.m_ss_image->m_ss_img = 0;
+    rtds.m_rtss->m_ss_img = 0;
 
     return output_string;
 }
@@ -247,8 +247,8 @@ dvh_execute (
     Plm_image *plm_ss_img = new Plm_image;
     plm_ss_img->set_itk (input_ss_img);
 
-    rtds.m_ss_image = new Rtss (&rtds);
-    rtds.m_ss_image->m_ss_img = plm_ss_img;
+    rtds.m_rtss = new Rtss (&rtds);
+    rtds.m_rtss->m_ss_img = plm_ss_img;
 
     output_string = dvh_execute_internal (&rtds, parms);
 

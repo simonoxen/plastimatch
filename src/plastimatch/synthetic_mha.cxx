@@ -617,9 +617,9 @@ synthetic_mha (
     rtds->m_img = new Plm_image;
     rtds->m_img->set_itk (im_out);
     if (parms->m_want_ss_img) {
-        rtds->m_ss_image = new Rtss (rtds);
-        rtds->m_ss_image->m_ss_img = new Plm_image;
-        rtds->m_ss_image->m_ss_img->set_itk (ss_img);
+        rtds->m_rtss = new Rtss (rtds);
+        rtds->m_rtss->m_ss_img = new Plm_image;
+        rtds->m_rtss->m_ss_img->set_itk (ss_img);
     }
     if (parms->m_want_dose_img) {
         rtds->m_dose = new Plm_image;

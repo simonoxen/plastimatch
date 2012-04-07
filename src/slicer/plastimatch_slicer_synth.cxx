@@ -160,7 +160,7 @@ main (int argc, char * argv [])
 	}
 
 	if (create_objstrucmha && create_objstructdose && plmslc_output_ssmha != "" && plmslc_output_ssmha != "None") {
-	    rtds.m_ss_image->save_ss_image (plmslc_output_ssmha.c_str());
+	    rtds.m_rtss->save_ss_image (plmslc_output_ssmha.c_str());
 	}
     }
 

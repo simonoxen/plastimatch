@@ -50,8 +50,8 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
             break;
 #if GDCM_VERSION_1
         case PLM_FILE_FMT_DICOM_RTSS:
-            rtds->m_ss_image = new Rtss (rtds);
-            rtds->m_ss_image->load_gdcm_rtss (
+            rtds->m_rtss = new Rtss (rtds);
+            rtds->m_rtss->load_gdcm_rtss (
                 (const char*) parms->input_fn, &rtds->m_rdd);
             break;
         case PLM_FILE_FMT_DICOM_DOSE:
@@ -62,8 +62,8 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
             break;
 #endif
         case PLM_FILE_FMT_CXT:
-            rtds->m_ss_image = new Rtss (rtds);
-            rtds->m_ss_image->load_cxt (parms->input_fn, &rtds->m_rdd);
+            rtds->m_rtss = new Rtss (rtds);
+            rtds->m_rtss->load_cxt (parms->input_fn, &rtds->m_rdd);
             break;
         case PLM_FILE_FMT_SS_IMG_VEC:
         default:
@@ -76,9 +76,9 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     }
 
     if (parms->input_cxt_fn.not_empty()) {
-        if (rtds->m_ss_image) delete rtds->m_ss_image;
-        rtds->m_ss_image = new Rtss (rtds);
-        rtds->m_ss_image->load_cxt (parms->input_cxt_fn, &rtds->m_rdd);
+        if (rtds->m_rtss) delete rtds->m_rtss;
+        rtds->m_rtss = new Rtss (rtds);
+        rtds->m_rtss->load_cxt (parms->input_cxt_fn, &rtds->m_rdd);
     }
 
     if (parms->input_ss_img_fn.not_empty()) {
@@ -119,25 +119,25 @@ save_ss_img (
     /* labelmap */
     if (parms->output_labelmap_fn.not_empty()) {
         printf ("save_ss_img: save_labelmap\n");
-        rtds->m_ss_image->save_labelmap (parms->output_labelmap_fn);
+        rtds->m_rtss->save_labelmap (parms->output_labelmap_fn);
     }
 
     /* ss_img */
     if (parms->output_ss_img_fn.not_empty()) {
         printf ("save_ss_img: save_ss_image\n");
-        rtds->m_ss_image->save_ss_image (parms->output_ss_img_fn);
+        rtds->m_rtss->save_ss_image (parms->output_ss_img_fn);
     }
 
     /* list of structure names */
     if (parms->output_ss_list_fn.not_empty()) {
         printf ("save_ss_img: save_ss_list\n");
-        rtds->m_ss_image->save_ss_list (parms->output_ss_list_fn);
+        rtds->m_rtss->save_ss_list (parms->output_ss_list_fn);
     }
 
     /* prefix images */
     if (parms->output_prefix.not_empty()) {
         printf ("save_ss_img: save_prefix\n");
-        rtds->m_ss_image->save_prefix (parms->output_prefix);
+        rtds->m_rtss->save_prefix (parms->output_prefix);
     }
 
     /* prefix fcsv files */
@@ -145,26 +145,26 @@ save_ss_img (
         printf ("save_ss_img: save_prefix_fcsv\n");
         printf ("save_ss_img: save_prefix_fcsv (%s)\n",
             (const char*) parms->output_prefix_fcsv);
-        rtds->m_ss_image->save_prefix_fcsv (parms->output_prefix_fcsv);
+        rtds->m_rtss->save_prefix_fcsv (parms->output_prefix_fcsv);
     }
 
     /* 3D Slicer color table */
     if (parms->output_colormap_fn.not_empty()) {
         printf ("save_ss_img: save_colormap\n");
-        rtds->m_ss_image->save_colormap (parms->output_colormap_fn);
+        rtds->m_rtss->save_colormap (parms->output_colormap_fn);
     }
 
     /* cxt */
     if (parms->output_cxt_fn.not_empty()) {
         printf ("save_ss_img: save_cxt\n");
-        rtds->m_ss_image->save_cxt (&rtds->m_rdd, parms->output_cxt_fn, false);
+        rtds->m_rtss->save_cxt (&rtds->m_rdd, parms->output_cxt_fn, false);
     }
 
     /* xio */
     if (parms->output_xio_dirname.not_empty()) {
         logfile_printf ("save_ss_img: save_xio (dirname = %s)\n", 
             (const char*) parms->output_xio_dirname);
-        rtds->m_ss_image->save_xio (
+        rtds->m_rtss->save_xio (
             rtds->m_xio_transform,
             parms->output_xio_version,
             parms->output_xio_dirname);
@@ -178,7 +178,7 @@ warp_and_save_ss (
     Plm_image_header *pih, 
     Warp_parms *parms)
 {
-    if (!rtds->m_ss_image) {
+    if (!rtds->m_rtss) {
         return;
     }
 
@@ -204,31 +204,31 @@ warp_and_save_ss (
            geometry.
         */
         Plm_image_header pih;
-        Rtss_polyline_set *cxt = rtds->m_ss_image->m_cxt;
+        Rtss_polyline_set *cxt = rtds->m_rtss->m_cxt;
         if (parms->xf_in_fn.not_empty()) {
             pih.set_from_gpuit (cxt->rast_dim, cxt->rast_offset, 
                 cxt->rast_spacing, 0);
         } else {
             pih.set_from_gpuit (cxt->m_dim, cxt->m_offset, cxt->m_spacing, 0);
         }
-        printf ("Warp_and_save_ss: m_ss_image->rasterize\n");
-        rtds->m_ss_image->rasterize (&pih,
+        printf ("Warp_and_save_ss: m_rtss->rasterize\n");
+        rtds->m_rtss->rasterize (&pih,
             parms->output_labelmap_fn.not_empty(),
             parms->xor_contours);
     }
 
     /* Do the warp */
     if (parms->xf_in_fn.not_empty()) {
-        printf ("Warp_and_save_ss: m_ss_image->warp\n");
-        rtds->m_ss_image->warp (xf, pih, parms);
+        printf ("Warp_and_save_ss: m_rtss->warp\n");
+        rtds->m_rtss->warp (xf, pih, parms);
     }
 
     /* If we are warping, re-extract polylines into cxt */
     /* GCS FIX: This is only necessary if we are outputting polylines. 
        Otherwise it is wasting users time. */
     if (parms->xf_in_fn.not_empty()) {
-        printf ("Warp_and_save_ss: m_ss_image->cxt_re_extract\n");
-        rtds->m_ss_image->cxt_re_extract ();
+        printf ("Warp_and_save_ss: m_rtss->cxt_re_extract\n");
+        rtds->m_rtss->cxt_re_extract ();
     }
 
     /* If we need to reduce the number of points (aka if simplify-perc 
@@ -304,28 +304,28 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
         /* use the spacing of the input image */
         printf ("Setting PIH from M_IMG\n");
         pih.set_from_plm_image (rtds->m_img);
-    } else if (rtds->m_ss_image && rtds->m_ss_image->m_ss_img) {
+    } else if (rtds->m_rtss && rtds->m_rtss->m_ss_img) {
         /* use the spacing of the input image */
         printf ("Setting PIH from M_SS_IMG\n");
-        pih.set_from_plm_image (rtds->m_ss_image->m_ss_img);
+        pih.set_from_plm_image (rtds->m_rtss->m_ss_img);
     }
-    else if (rtds->m_ss_image &&
-        rtds->m_ss_image->m_cxt && 
-        rtds->m_ss_image->m_cxt->have_geometry) {
+    else if (rtds->m_rtss &&
+        rtds->m_rtss->m_cxt && 
+        rtds->m_rtss->m_cxt->have_geometry) {
         /* use the spacing of the structure set */
         pih.set_from_gpuit (
-            rtds->m_ss_image->m_cxt->m_dim, 
-            rtds->m_ss_image->m_cxt->m_offset, 
-            rtds->m_ss_image->m_cxt->m_spacing, 
+            rtds->m_rtss->m_cxt->m_dim, 
+            rtds->m_rtss->m_cxt->m_offset, 
+            rtds->m_rtss->m_cxt->m_spacing, 
             0);
     } else if (rtds->m_dose) {
         /* use the spacing of dose */
         printf ("Setting PIH from DOSE\n");
         pih.set_from_plm_image (rtds->m_dose);
-    } else if (rtds->m_ss_image && rtds->m_ss_image->m_cxt) {
+    } else if (rtds->m_rtss && rtds->m_rtss->m_cxt) {
         /* we have structure set, but without geometry.  use 
            heuristics to find a good geometry for rasterization */
-        rtds->m_ss_image->find_rasterization_geometry (&pih);
+        rtds->m_rtss->find_rasterization_geometry (&pih);
     } else {
         /* use some generic default parameters */
         plm_long dim[3] = { 500, 500, 500 };
@@ -434,30 +434,30 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     }
 
     /* Preprocess structure sets */
-    if (rtds->m_ss_image) {
+    if (rtds->m_rtss) {
 
         /* Convert ss_img to cxt */
         printf ("Rtds_warp: Convert ss_img to cxt.\n");
-        rtds->m_ss_image->convert_ss_img_to_cxt ();
+        rtds->m_rtss->convert_ss_img_to_cxt ();
 
         /* Delete empty structures */
         if (parms->prune_empty) {
             printf ("Rtds_warp: Prune empty structures.\n");
-            rtds->m_ss_image->prune_empty ();
+            rtds->m_rtss->prune_empty ();
         }
 
         /* Set the DICOM reference info -- this sets the internal geometry 
            of the ss_image so we rasterize on the same slices as the CT? */
         printf ("Rtds_warp: Apply dicom_dir.\n");
-        rtds->m_ss_image->apply_dicom_dir (&rtds->m_rdd);
+        rtds->m_rtss->apply_dicom_dir (&rtds->m_rdd);
         
         /* Set the output geometry */
         printf ("Rtds_warp: Set geometry from PIH.\n");
-        rtds->m_ss_image->set_geometry_from_plm_image_header (&pih);
+        rtds->m_rtss->set_geometry_from_plm_image_header (&pih);
 
         /* Set rasterization geometry */
         printf ("Rtds_warp: Set rasterization geometry.\n");
-        rtds->m_ss_image->m_cxt->set_rasterization_geometry ();
+        rtds->m_rtss->m_cxt->set_rasterization_geometry ();
     }
 
     /* Warp and save structure set (except dicom) */

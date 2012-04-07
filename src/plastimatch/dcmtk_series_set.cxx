@@ -188,9 +188,9 @@ dcmtk_series_set_test (char *dicom_dir)
     if (rtds.m_img) {
         rtds.m_img->save_image ("img.mha");
     }
-    if (rtds.m_ss_image) {
+    if (rtds.m_rtss) {
         printf ("Trying to save ss.cxt\n");
-        rtds.m_ss_image->save_cxt (0, Pstring("ss.cxt"), false);
+        rtds.m_rtss->save_cxt (0, Pstring("ss.cxt"), false);
     }
     if (rtds.m_dose) {
         rtds.m_dose->save_image ("dose.mha");

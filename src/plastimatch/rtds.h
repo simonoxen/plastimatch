@@ -21,7 +21,7 @@ class Rtss;
 class plastimatch1_EXPORT Rtds {
 public:
     Plm_image *m_img;                  /* CT image */
-    Rtss *m_ss_image;                  /* RT structure set */
+    Rtss *m_rtss;                      /* RT structure set */
     Plm_image *m_dose;                 /* RT dose */
 
     Gdcm_series *m_gdcm_series;        /* Input dicom parse info */

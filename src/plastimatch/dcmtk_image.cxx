@@ -234,7 +234,7 @@ Dcmtk_series::load_plm_image (void)
 }
 
 static void
-dcmtk_save_slice (Dcmtk_slice_data *dsd)
+dcmtk_save_slice (const Dcmtk_study_writer *dsw, Dcmtk_slice_data *dsd)
 {
     Pstring tmp;
     DcmFileFormat fileformat;
@@ -243,13 +243,13 @@ dcmtk_save_slice (Dcmtk_slice_data *dsd)
     dataset->putAndInsertString (DCM_ImageType, 
         "DERIVED\\SECONDARY\\REFORMATTED");
     dataset->putAndInsertOFStringArray(DCM_InstanceCreationDate, 
-        dsd->date_string);
+        dsw->date_string);
     dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, 
-        dsd->time_string);
+        dsw->time_string);
     dataset->putAndInsertString (DCM_SOPClassUID, UID_CTImageStorage);
     dataset->putAndInsertString (DCM_SOPInstanceUID, dsd->slice_uid);
-    dataset->putAndInsertOFStringArray (DCM_StudyDate, dsd->date_string);
-    dataset->putAndInsertOFStringArray (DCM_StudyTime, dsd->time_string);
+    dataset->putAndInsertOFStringArray (DCM_StudyDate, dsw->date_string);
+    dataset->putAndInsertOFStringArray (DCM_StudyTime, dsw->time_string);
     dataset->putAndInsertString (DCM_AccessionNumber, "");
     dataset->putAndInsertString (DCM_Modality, "CT");
     dataset->putAndInsertString (DCM_Manufacturer, "Plastimatch");
@@ -306,13 +306,11 @@ dcmtk_save_slice (Dcmtk_slice_data *dsd)
 
 void
 dcmtk_image_save (
-    std::vector<Dcmtk_slice_data> *slice_data,
+    Dcmtk_study_writer *dsw, 
     Rtds *rtds, 
     const char *dicom_dir)
 {
     Dcmtk_slice_data dsd;
-    DcmDate::getCurrentDate (dsd.date_string);
-    DcmTime::getCurrentTime (dsd.time_string);
     dsd.rtds = rtds;
     dsd.vol = rtds->m_img->gpuit_float();
 
@@ -337,7 +335,7 @@ dcmtk_image_save (
         plm_generate_dicom_uid (dsd.slice_uid, PLM_UID_PREFIX);
 
         dsd.slice_float = &((float*)dsd.vol->img)[k*dsd.slice_size];
-        dcmtk_save_slice (&dsd);
+        dcmtk_save_slice (dsw, &dsd);
     }
     delete[] dsd.slice_int16;
 }
