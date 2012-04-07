@@ -332,6 +332,7 @@ dcmtk_image_save (
 
         dsd.slice_float = &((float*)dsd.vol->img)[k*dsd.slice_size];
         dcmtk_save_slice (dsw, &dsd);
+        dsw->slice_data.push_back (dsd);
     }
     delete[] dsd.slice_int16;
 }

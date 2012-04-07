@@ -220,11 +220,12 @@ dcmtk_rtss_save (
     const char *dicom_dir
 )
 {
-    Pstring rtss_fn;
+    OFCondition ofc;
     Rtss *rtss = rtds->m_rtss;
     Rtss_polyline_set *cxt = rtss->m_cxt;
 
     /* Prepare output file */
+    Pstring rtss_fn;
     rtss_fn.format ("%s/rtss.dcm", dicom_dir);
     make_directory_recursive (rtss_fn);
 
@@ -232,7 +233,9 @@ dcmtk_rtss_save (
     DcmFileFormat fileformat;
     DcmDataset *dataset = fileformat.getDataset();
 
-    /* Part 1: General Header */
+    /* ----------------------------------------------------------------- */
+    /*     Part 1  -- General header                                     */
+    /* ----------------------------------------------------------------- */
     dataset->putAndInsertOFStringArray(DCM_InstanceCreationDate, 
         dsw->date_string);
     dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, 
@@ -259,6 +262,7 @@ dcmtk_rtss_save (
         PLASTIMATCH_VERSION_STRING);
 
 #if defined (commentout)
+    /* GCS FIX */
     /* PatientPosition */
     // gf->InsertValEntry (xxx, 0x0018, 0x5100);
 #endif
@@ -267,7 +271,7 @@ dcmtk_rtss_save (
     dataset->putAndInsertString (DCM_SeriesInstanceUID, dsw->rtss_series_uid);
     dcmtk_set_metadata (dataset, &rtss->m_meta, DCM_StudyID, "");
     dataset->putAndInsertString (DCM_SeriesNumber, "103");
-    dataset->putAndInsertString (DCM_InstanceNumber, "103");
+    dataset->putAndInsertString (DCM_InstanceNumber, "1");
     dataset->putAndInsertString (DCM_StructureSetLabel, "AutoSS");
     dataset->putAndInsertString (DCM_StructureSetName, "AutoSS");
     dataset->putAndInsertOFStringArray (DCM_StructureSetDate, 
@@ -275,11 +279,43 @@ dcmtk_rtss_save (
     dataset->putAndInsertOFStringArray (DCM_StructureSetTime, 
         dsw->time_string);
 
+    /* ----------------------------------------------------------------- */
+    /*     Part 2  -- UID's for CT series                                */
+    /* ----------------------------------------------------------------- */
+    DcmSequenceOfItems *rfor_seq = 0;
+    DcmItem *rfor_item = 0;
+    dataset->findOrCreateSequenceItem (
+        DCM_ReferencedFrameOfReferenceSequence, rfor_item, -2);
+    rfor_item->putAndInsertString (DCM_FrameOfReferenceUID, dsw->for_uid);
+    dataset->findAndGetSequence (
+        DCM_ReferencedFrameOfReferenceSequence, rfor_seq);
+    DcmItem *rtrstudy_item = 0;
+    rfor_item->findOrCreateSequenceItem (
+        DCM_RTReferencedStudySequence, rtrstudy_item, -2);
+    rtrstudy_item->putAndInsertString (
+        DCM_ReferencedSOPClassUID, 
+        UID_RETIRED_StudyComponentManagementSOPClass);
+    rtrstudy_item->putAndInsertString (
+        DCM_ReferencedSOPInstanceUID, dsw->study_uid);
+    DcmItem *rtrseries_item = 0;
+    rtrstudy_item->findOrCreateSequenceItem (
+        DCM_RTReferencedSeriesSequence, rtrseries_item, -2);
+    rtrseries_item->putAndInsertString (
+        DCM_SeriesInstanceUID, dsw->ct_series_uid);
+
+    std::vector<Dcmtk_slice_data>::iterator it;
+    for (it = dsw->slice_data.begin(); it < dsw->slice_data.end(); it++) {
+        DcmItem *ci_item = 0;
+        rtrseries_item->findOrCreateSequenceItem (
+            DCM_ContourImageSequence, ci_item, -2);
+        ci_item->putAndInsertString (
+            DCM_ReferencedSOPInstanceUID, (*it).slice_uid);
+    }
+
     /* Write the output file */
-    OFCondition status = fileformat.saveFile (rtss_fn.c_str(), 
-        EXS_LittleEndianExplicit);
-    if (status.bad()) {
+    ofc = fileformat.saveFile (rtss_fn.c_str(), EXS_LittleEndianExplicit);
+    if (ofc.bad()) {
         print_and_exit ("Error: cannot write DICOM RTSTRUCT (%s)\n", 
-            status.text());
+            ofc.text());
     }
 }
