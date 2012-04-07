@@ -124,7 +124,7 @@ dcmtk_save_image (
 }
 
 void
-dcmtk_save_rtds (Rtds *rtds, const char *dicom_dir)
+dcmtk_rtds_save (Rtds *rtds, const char *dicom_dir)
 {
     std::vector<Dcmtk_slice_data> slice_data;
     if (rtds->m_img) {

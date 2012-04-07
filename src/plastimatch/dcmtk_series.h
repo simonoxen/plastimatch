@@ -6,13 +6,48 @@
 
 #include "plm_config.h"
 #include <list>
+#include "dcmtk_config.h"
+#include "dcmtk/ofstd/ofstream.h"
+#include "dcmtk/dcmdata/dctk.h"
+
 #include "plm_int.h"
+#include "pstring.h"
 
 class DcmTagKey;
 
 class Dcmtk_file;
 class Plm_image;
 class Rtds;
+class Volume;
+
+typedef
+struct dcmtk_slice_data
+{
+    Pstring fn;
+    Rtds *rtds;
+    Volume *vol;
+
+    size_t slice_size;
+    float *slice_float;
+    int16_t *slice_int16;
+
+    OFString date_string;
+    OFString time_string;
+    char study_uid[100];
+    char series_uid[100];
+    char for_uid[100];
+    char slice_uid[100];
+    Pstring ipp;
+    Pstring iop;
+    Pstring sloc;
+    Pstring sthk;
+} Dcmtk_slice_data;
+
+void
+dcmtk_rtss_save (
+    const std::vector<Dcmtk_slice_data> *slice_data,
+    const Rtds *rtds,
+    const char *dicom_dir);
 
 class Dcmtk_series 
 {

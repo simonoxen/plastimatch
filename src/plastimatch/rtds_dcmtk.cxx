@@ -11,7 +11,7 @@ void
 Rtds::load_dcmtk (const char *dicom_dir)
 {
 #if PLM_DCM_USE_DCMTK
-    dcmtk_load_rtds (this, dicom_dir);
+    dcmtk_rtds_load (this, dicom_dir);
 #endif
 }
 
@@ -19,6 +19,6 @@ void
 Rtds::save_dcmtk (const char *dicom_dir)
 {
 #if PLM_DCM_USE_DCMTK
-    dcmtk_save_rtds (this, dicom_dir);
+    dcmtk_rtds_save (this, dicom_dir);
 #endif
 }

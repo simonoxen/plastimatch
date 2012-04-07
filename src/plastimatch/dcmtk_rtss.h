@@ -1,18 +1,16 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _dcmtk_load_h_
-#define _dcmtk_load_h_
+#ifndef _dcmtk_rtss_h_
+#define _dcmtk_rtss_h_
 
 #include "plm_config.h"
-#include "itk_image.h"
-
-class Rtds;
-
-plastimatch1_EXPORT
-ShortImageType::Pointer dcmtk_load (const char *dicom_dir);
+#include "dcmtk_series.h"
 
 void
-dcmtk_rtds_load (Rtds *rtds, const char *dicom_dir);
+dcmtk_rtss_save (
+    const std::vector<Dcmtk_slice_data> *slice_data,
+    const Rtds *rtds,
+    const char *dicom_dir);
 
 #endif
