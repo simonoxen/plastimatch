@@ -25,7 +25,8 @@ dcmtk_rtds_save (Rtds *rtds, const char *dicom_dir)
     plm_generate_dicom_uid (dsw.study_uid, PLM_UID_PREFIX);
     plm_generate_dicom_uid (dsw.for_uid, PLM_UID_PREFIX);
     plm_generate_dicom_uid (dsw.ct_series_uid, PLM_UID_PREFIX);
-    plm_generate_dicom_uid (dsw.rtss_uid, PLM_UID_PREFIX);
+    plm_generate_dicom_uid (dsw.rtss_series_uid, PLM_UID_PREFIX);
+    plm_generate_dicom_uid (dsw.rtss_instance_uid, PLM_UID_PREFIX);
 
     if (rtds->m_img) {
         dcmtk_image_save (&dsw, rtds, dicom_dir);

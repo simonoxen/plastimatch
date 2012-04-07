@@ -31,8 +31,6 @@ struct dcmtk_slice_data
     float *slice_float;
     int16_t *slice_int16;
 
-//    OFString date_string;
-//    OFString time_string;
     char slice_uid[100];
     Pstring ipp;
     Pstring iop;
@@ -47,7 +45,8 @@ public:
     char study_uid[100];
     char for_uid[100];
     char ct_series_uid[100];
-    char rtss_uid[100];
+    char rtss_instance_uid[100];
+    char rtss_series_uid[100];
     std::vector<Dcmtk_slice_data> slice_data;
 };
 

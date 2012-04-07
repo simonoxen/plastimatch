@@ -238,7 +238,7 @@ dcmtk_rtss_save (
     dataset->putAndInsertOFStringArray(DCM_InstanceCreatorUID, 
         PLM_UID_PREFIX);
     dataset->putAndInsertString (DCM_SOPClassUID, UID_RTStructureSetStorage);
-    dataset->putAndInsertString (DCM_SOPInstanceUID, dsw->rtss_uid);
+    dataset->putAndInsertString (DCM_SOPInstanceUID, dsw->rtss_instance_uid);
     dataset->putAndInsertOFStringArray (DCM_StudyDate, dsw->date_string);
     dataset->putAndInsertOFStringArray (DCM_StudyTime, dsw->time_string);
     dataset->putAndInsertOFStringArray (DCM_AccessionNumber, "");
@@ -271,32 +271,28 @@ dcmtk_rtss_save (
 
     dataset->putAndInsertString (DCM_SoftwareVersions,
         PLASTIMATCH_VERSION_STRING);
+
 #if defined (commentout)
     /* PatientPosition */
     // gf->InsertValEntry (xxx, 0x0018, 0x5100);
 #endif
 
+    dataset->putAndInsertString (DCM_StudyInstanceUID, dsw->study_uid);
+    dataset->putAndInsertString (DCM_SeriesInstanceUID, dsw->rtss_series_uid);
+
 #if defined (commentout)
-    /* StudyInstanceUID */
-    gf->InsertValEntry ((const char*) rdd->m_ct_study_uid, 0x0020, 0x000d);
-    /* SeriesInstanceUID */
-    gf->InsertValEntry (gdcm::Util::CreateUniqueUID (PLM_UID_PREFIX), 
-	0x0020, 0x000e);
     /* StudyID */
     gf->InsertValEntry ((const char*) rdd->m_study_id, 0x0020, 0x0010);
-    /* SeriesNumber */
-    gf->InsertValEntry ("103", 0x0020, 0x0011);
-    /* InstanceNumber */
-    gf->InsertValEntry ("1", 0x0020, 0x0013);
-    /* StructureSetLabel */
-    gf->InsertValEntry ("AutoSS", 0x3006, 0x0002);
-    /* StructureSetName */
-    gf->InsertValEntry ("AutoSS", 0x3006, 0x0004);
-    /* StructureSetDate */
-    gf->InsertValEntry (current_date, 0x3006, 0x0008);
-    /* StructureSetTime */
-    gf->InsertValEntry (current_time, 0x3006, 0x0009);
 #endif
+
+    dataset->putAndInsertString (DCM_SeriesNumber, "103");
+    dataset->putAndInsertString (DCM_InstanceNumber, "103");
+    dataset->putAndInsertString (DCM_StructureSetLabel, "AutoSS");
+    dataset->putAndInsertString (DCM_StructureSetName, "AutoSS");
+    dataset->putAndInsertOFStringArray (DCM_StructureSetDate, 
+        dsw->date_string);
+    dataset->putAndInsertOFStringArray (DCM_StructureSetTime, 
+        dsw->time_string);
 
     /* Write the output file */
     OFCondition status = fileformat.saveFile (rtss_fn.c_str(), 
