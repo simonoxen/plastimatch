@@ -13,7 +13,6 @@
 #include "dcmtk_save.h"
 #include "dcmtk_series.h"
 #include "file_util.h"
-#include "math_util.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "print_and_exit.h"
@@ -302,17 +301,85 @@ dcmtk_rtss_save (
         DCM_RTReferencedSeriesSequence, rtrseries_item, -2);
     rtrseries_item->putAndInsertString (
         DCM_SeriesInstanceUID, dsw->ct_series_uid);
-
     std::vector<Dcmtk_slice_data>::iterator it;
     for (it = dsw->slice_data.begin(); it < dsw->slice_data.end(); it++) {
         DcmItem *ci_item = 0;
         rtrseries_item->findOrCreateSequenceItem (
             DCM_ContourImageSequence, ci_item, -2);
         ci_item->putAndInsertString (
+            DCM_ReferencedSOPClassUID, UID_CTImageStorage);
+        ci_item->putAndInsertString (
             DCM_ReferencedSOPInstanceUID, (*it).slice_uid);
     }
 
-    /* Write the output file */
+    /* ----------------------------------------------------------------- */
+    /*     Part 3  -- Structure info                                     */
+    /* ----------------------------------------------------------------- */
+    for (size_t i = 0; i < cxt->num_structures; i++) {
+        DcmItem *ssroi_item = 0;
+        Pstring tmp;
+        dataset->findOrCreateSequenceItem (
+            DCM_StructureSetROISequence, ssroi_item, -2);
+        tmp.format ("%d", cxt->slist[i]->id);
+        ssroi_item->putAndInsertString (DCM_ROINumber, tmp.c_str());
+        ssroi_item->putAndInsertString (DCM_ReferencedFrameOfReferenceUID,
+            dsw->for_uid);
+        ssroi_item->putAndInsertString (DCM_ROIName, cxt->slist[i]->name);
+        ssroi_item->putAndInsertString (DCM_ROIGenerationAlgorithm, "");
+    }
+
+    /* ----------------------------------------------------------------- */
+    /*     Part 4  -- Contour info                                       */
+    /* ----------------------------------------------------------------- */
+    for (size_t i = 0; i < cxt->num_structures; i++) {
+	Rtss_structure *curr_structure = cxt->slist[i];
+        DcmItem *roic_item = 0;
+	Pstring tmp;
+        dataset->findOrCreateSequenceItem (
+            DCM_ROIContourSequence, roic_item, -2);
+        curr_structure->get_dcm_color_string (&tmp);
+        roic_item->putAndInsertString (DCM_ROIDisplayColor, tmp.c_str());
+	for (size_t j = 0; j < curr_structure->num_contours; j++) {
+	    Rtss_polyline *curr_contour = curr_structure->pslist[j];
+	    if (curr_contour->num_vertices <= 0) continue;
+
+	    /* GE -> XiO transfer does not work if contour does not have 
+	       corresponding slice uid */
+	    if (curr_contour->ct_slice_uid.empty()) {
+		printf ("Warning: Omitting contour (%ld,%ld)\n", 
+                    (long) i, (long) j);
+		continue;
+	    }
+
+            DcmItem *c_item = 0;
+            roic_item->findOrCreateSequenceItem (
+                DCM_ROIContourSequence, c_item, -2);
+
+            /* GCS FIX:  In the gdcm1 code, the ITK dicom writer 
+               stores slice uids in Rdd */
+#if defined (commentout)
+	    /* ContourImageSequence */
+	    if (curr_contour->ct_slice_uid.not_empty()) {
+		gdcm::SeqEntry *ci_seq 
+		    = c_item->InsertSeqEntry (0x3006, 0x0016);
+		gdcm::SQItem *ci_item 
+		    = new gdcm::SQItem (ci_seq->GetDepthLevel());
+		ci_seq->AddSQItem (ci_item, 1);
+		/* ReferencedSOPClassUID = CTImageStorage */
+		ci_item->InsertValEntry ("1.2.840.10008.5.1.4.1.1.2", 
+		    0x0008, 0x1150);
+		/* ReferencedSOPInstanceUID */
+		ci_item->InsertValEntry (
+		    (const char*) curr_contour->ct_slice_uid,
+		    0x0008, 0x1155);
+	    }
+#endif
+        }       
+    }
+
+    /* ----------------------------------------------------------------- */
+    /*     Write the output file                                         */
+    /* ----------------------------------------------------------------- */
     ofc = fileformat.saveFile (rtss_fn.c_str(), EXS_LittleEndianExplicit);
     if (ofc.bad()) {
         print_and_exit ("Error: cannot write DICOM RTSTRUCT (%s)\n", 
