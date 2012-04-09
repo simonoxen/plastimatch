@@ -1,4 +1,4 @@
-SET (CTEST_SOURCE_DIRECTORY "$ENV{HOME}/work/plastimatch")
+SET (CTEST_SOURCE_DIRECTORY "$ENV{HOME}/build/nightly/src/plastimatch")
 SET (CTEST_BINARY_DIRECTORY "$ENV{HOME}/build/nightly/gelato_6/plastimatch")
 SET (CTEST_CMAKE_COMMAND "/usr/local/bin/cmake")
 SET (CTEST_COMMAND "/usr/local/bin/ctest -D Nightly")
@@ -23,6 +23,9 @@ DCMTK_DIR:PATH=/PHShome/gcs6/build/install/dcmtk-3.6.0
 //Coverage flags
 CMAKE_BUILD_TYPE:STRING=Debug
 CMAKE_CXX_FLAGS:STRING=-fprofile-arcs -ftest-coverage
+
+// Use anonymous checkout
+SVN_UPDATE_OPTIONS:STRING=--username anonymous --password \\\"\\\"
 
 //Build with shared libraries.
 BUILD_SHARED_LIBS:BOOL=OFF

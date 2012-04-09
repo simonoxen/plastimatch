@@ -1,4 +1,4 @@
-SET (CTEST_SOURCE_DIRECTORY "$ENV{HOME}/work/plastimatch")
+SET (CTEST_SOURCE_DIRECTORY "$ENV{HOME}/build/nightly/src/plastimatch")
 SET (CTEST_BINARY_DIRECTORY "$ENV{HOME}/build/nightly/gelato_2/plastimatch")
 SET (CTEST_CMAKE_COMMAND "/usr/local/bin/cmake")
 SET (CTEST_COMMAND "/usr/local/bin/ctest -D Nightly")
@@ -19,6 +19,9 @@ ITK_DIR:PATH=/home/gcs6/build/itk-3.20.1
 
 //Directory with SlicerConfig.cmake or Slicer3Config.cmake
 Slicer_DIR:PATH=/PHShome/gcs6/build/slicer-3.6/Slicer3-build
+
+// Use anonymous checkout
+SVN_UPDATE_OPTIONS:STRING=--username anonymous --password \\\"\\\"
 
 //Build with shared libraries.
 BUILD_SHARED_LIBS:BOOL=ON

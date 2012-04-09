@@ -1,4 +1,4 @@
-SET (CTEST_SOURCE_DIRECTORY "$ENV{HOME}/work/plastimatch")
+SET (CTEST_SOURCE_DIRECTORY "$ENV{HOME}/build/nightly/src/plastimatch")
 SET (CTEST_BINARY_DIRECTORY "$ENV{HOME}/build/nightly/gelato_5/plastimatch")
 SET (CTEST_CMAKE_COMMAND "/usr/local/bin/cmake")
 SET (CTEST_COMMAND "/usr/local/bin/ctest -D Nightly")
@@ -26,6 +26,9 @@ DCMTK_DIR:PATH=/PHShome/gcs6/build/install/dcmtk-3.6.0
 //Disable reg23 testing (it builds, but doesn't run on this computer)
 ORAIFUTILS_BUILD_TESTING:BOOL=OFF
 REG23_BUILD_TESTING:BOOL=OFF
+
+// Use anonymous checkout
+SVN_UPDATE_OPTIONS:STRING=--username anonymous --password \\\"\\\"
 
 //Build with shared libraries.
 BUILD_SHARED_LIBS:BOOL=OFF
