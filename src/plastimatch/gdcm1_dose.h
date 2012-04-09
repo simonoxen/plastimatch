@@ -8,7 +8,7 @@
 
 class Metadata;
 class Plm_image;
-class Referenced_dicom_dir;
+class Slice_index;
 
 #if defined __cplusplus
 extern "C" {
@@ -25,7 +25,7 @@ void
 gdcm1_dose_save (
     Plm_image *pli, 
     const Metadata *meta, 
-    const Referenced_dicom_dir *rdd, 
+    const Slice_index *rdd, 
     const char *dose_fn);
 
 #if defined __cplusplus

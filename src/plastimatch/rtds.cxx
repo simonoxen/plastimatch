@@ -16,7 +16,7 @@
 #include "gdcm1_rtss.h"
 #endif
 #include "mc_dose.h"
-#include "referenced_dicom_dir.h"
+#include "slice_index.h"
 #include "rtds.h"
 #include "rtss.h"
 #include "ss_list_io.h"
@@ -99,7 +99,7 @@ Rtds::load_dicom_dir (const char *dicom_dir)
 void
 Rtds::load_xio (
     const char *xio_dir,
-    Referenced_dicom_dir *rdd
+    Slice_index *rdd
 )
 {
     Xio_dir xd (xio_dir);

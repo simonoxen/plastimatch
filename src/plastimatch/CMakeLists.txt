@@ -389,7 +389,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   rbf_gauss.cxx rbf_gauss.h
   rbf_wendland.cxx rbf_wendland.h
   rbf_cluster.cxx rbf_cluster.h
-  referenced_dicom_dir.cxx referenced_dicom_dir.h 
   registration_data.cxx registration_data.h
   rtds.cxx rtds.h
   rtds_dcmtk.cxx
@@ -401,6 +400,7 @@ set (PLASTIMATCH1_LIBRARY_SRC
   segment_body.cxx segment_body.h
   simplify_points.cxx simplify_points.h
   slice_extract.cxx slice_extract.h
+  slice_index.cxx slice_index.h
   ss_img_extract.cxx ss_img_extract.h
   ss_img_stats.cxx ss_img_stats.h 
   ss_list_io.cxx ss_list_io.h

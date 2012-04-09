@@ -22,7 +22,7 @@
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "print_and_exit.h"
-#include "referenced_dicom_dir.h"
+#include "slice_index.h"
 #include "rtss.h"
 #include "rtss_polyline_set.h"
 #include "rtss_structure.h"
@@ -57,7 +57,7 @@ gdcm_rtss_probe (const char *rtss_fn)
 void
 gdcm_rtss_load (
     Rtss *rtss,                      /* Output: this gets loaded into */
-    Referenced_dicom_dir *rdd,       /* Output: this gets updated too */
+    Slice_index *rdd,       /* Output: this gets updated too */
     Metadata *meta,              /* Output: this gets updated too */
     const char *rtss_fn              /* Input: the file that gets read */
 )
@@ -316,7 +316,7 @@ plm_ComputeGroup0002Length (gdcm::File *gf)
 void
 gdcm_rtss_save (
     Rtss *rtss,                    /* Input: this is what gets saved */
-    Referenced_dicom_dir *rdd,     /* Input: need to look at this too */
+    Slice_index *rdd,     /* Input: need to look at this too */
     char *rtss_fn                  /* Input: name of file to write to */
 )
 {

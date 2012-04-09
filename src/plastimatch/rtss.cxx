@@ -13,7 +13,7 @@
 #include "plm_warp.h"
 #include "pointset.h"
 #include "rasterizer.h"
-#include "referenced_dicom_dir.h"
+#include "slice_index.h"
 #include "rtds.h"
 #include "rtss.h"
 #include "rtss_polyline_set.h"
@@ -91,14 +91,14 @@ Rtss::load (const char *ss_img, const char *ss_list)
 }
 
 void
-Rtss::load_cxt (const Pstring &input_fn, Referenced_dicom_dir *rdd)
+Rtss::load_cxt (const Pstring &input_fn, Slice_index *rdd)
 {
     this->m_cxt = new Rtss_polyline_set;
     cxt_load (this, rdd, (const char*) input_fn);
 }
 
 void
-Rtss::load_gdcm_rtss (const char *input_fn, Referenced_dicom_dir *rdd)
+Rtss::load_gdcm_rtss (const char *input_fn, Slice_index *rdd)
 {
 #if GDCM_VERSION_1
     this->m_cxt = new Rtss_polyline_set;
@@ -122,7 +122,7 @@ Rtss::save_colormap (const Pstring &colormap_fn)
 
 void
 Rtss::save_cxt (
-    Referenced_dicom_dir *rdd, 
+    Slice_index *rdd, 
     const Pstring &cxt_fn, 
     bool prune_empty
 )
@@ -133,7 +133,7 @@ Rtss::save_cxt (
 void
 Rtss::save_gdcm_rtss (
     const char *output_dir, 
-    Referenced_dicom_dir *rdd
+    Slice_index *rdd
 )
 {
     char fn[_MAX_PATH];
@@ -287,7 +287,7 @@ Rtss::get_ss_list (void)
 }
 
 void
-Rtss::apply_dicom_dir (const Referenced_dicom_dir *rdd)
+Rtss::apply_dicom_dir (const Slice_index *rdd)
 {
     if (!this->m_cxt) {
         return;

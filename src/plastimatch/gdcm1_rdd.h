@@ -7,11 +7,11 @@
 #include "plm_config.h"
 #if GDCM_VERSION_1
 
-class Referenced_dicom_dir;
+class Slice_index;
 
 void
 gdcm1_load_rdd (
-    Referenced_dicom_dir *rdd,
+    Slice_index *rdd,
     const char *dicom_dir
 );
 

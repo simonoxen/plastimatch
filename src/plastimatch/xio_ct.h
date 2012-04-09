@@ -6,7 +6,7 @@
 
 #include "plm_config.h"
 #include "plm_image.h"
-#include "referenced_dicom_dir.h"
+#include "slice_index.h"
 #include "xio_studyset.h"
 
 typedef struct xio_ct_transform Xio_ct_transform;
@@ -24,7 +24,7 @@ void
 xio_ct_get_transform_from_rdd (
     Plm_image *plm,
     Metadata *meta,
-    Referenced_dicom_dir *rdd,
+    Slice_index *rdd,
     Xio_ct_transform *transform
 );
 plastimatch1_EXPORT 

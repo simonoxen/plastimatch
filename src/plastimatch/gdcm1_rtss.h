@@ -21,7 +21,7 @@ plastimatch1_EXPORT
 void
 gdcm_rtss_load (
     Rtss *rtss,                      /* Output: this gets loaded into */
-    Referenced_dicom_dir *rdd,       /* Output: this gets updated too */
+    Slice_index *rdd,       /* Output: this gets updated too */
     Metadata *meta,              /* Output: this gets updated too */
     const char *rtss_fn              /* Input: the file that gets read */
 );
@@ -29,7 +29,7 @@ plastimatch1_EXPORT
 void
 gdcm_rtss_save (
     Rtss *rtss,                    /* Input: this is what gets saved */
-    Referenced_dicom_dir *rdd,     /* Input: need to look at this too */
+    Slice_index *rdd,     /* Input: need to look at this too */
     char *rtss_fn                  /* Input: name of file to write to */
 );
 

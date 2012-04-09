@@ -41,7 +41,7 @@ dcm_anon_patient_id (void)
 }
 
 void
-dcm_load_rdd (Referenced_dicom_dir* rdd, const char* dicom_dir)
+dcm_load_rdd (Slice_index* rdd, const char* dicom_dir)
 {
 #if PLM_USE_DCMTK
     /* Do nothing */

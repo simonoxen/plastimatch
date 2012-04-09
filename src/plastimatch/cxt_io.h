@@ -6,7 +6,7 @@
 
 #include "plm_config.h"
 
-class Referenced_dicom_dir;
+class Slice_index;
 class Rtss;
 class Rtss_polyline_set;
 
@@ -21,14 +21,14 @@ plastimatch1_EXPORT
 void
 cxt_load (
     Rtss *rtss,                    /* Output: load into this object */
-    Referenced_dicom_dir *rdd,     /* Output: Also set some values here */
+    Slice_index *rdd,     /* Output: Also set some values here */
     const char *cxt_fn             /* Input: file to load from */
 );
 plastimatch1_EXPORT
 void
 cxt_save (
     Rtss *rtss,                  /* Input: Structure set to save from */
-    Referenced_dicom_dir *rdd,   /* Input: Also save some values from here */
+    Slice_index *rdd,   /* Input: Also save some values from here */
     const char* cxt_fn,          /* Input: File to save to */
     bool prune_empty             /* Input: Should we prune empty structures? */
 );

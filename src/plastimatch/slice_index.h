@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _referenced_dicom_dir_h_
-#define _referenced_dicom_dir_h_
+#ifndef _slice_index_h_
+#define _slice_index_h_
 
 #include "plm_config.h"
 #include <vector>
@@ -10,7 +10,7 @@
 #include "plm_image_header.h"
 #include "pstring.h"
 
-class Referenced_dicom_dir {
+class Slice_index {
 public:
     /* Set this if we have m_pih && ct slice uids */
     bool m_loaded;
@@ -27,9 +27,9 @@ public:
 
 public:
     plastimatch1_EXPORT
-    Referenced_dicom_dir ();
+    Slice_index ();
     plastimatch1_EXPORT
-    ~Referenced_dicom_dir ();
+    ~Slice_index ();
     void load (const char *dicom_dir);
     void get_slice_info (int *slice_no, Pstring *ct_slice_uid, float z) const;
 

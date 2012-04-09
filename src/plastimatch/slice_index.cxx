@@ -10,26 +10,26 @@
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "print_and_exit.h"
-#include "referenced_dicom_dir.h"
+#include "slice_index.h"
 #include "rtss_polyline_set.h"
 
-Referenced_dicom_dir::Referenced_dicom_dir ()
+Slice_index::Slice_index ()
 {
     this->m_loaded = 0;
 }
 
-Referenced_dicom_dir::~Referenced_dicom_dir ()
+Slice_index::~Slice_index ()
 {
 }
 
 void
-Referenced_dicom_dir::load (const char *dicom_dir)
+Slice_index::load (const char *dicom_dir)
 {
     dcm_load_rdd (this, dicom_dir);
 }
 
 void
-Referenced_dicom_dir::get_slice_info (
+Slice_index::get_slice_info (
     int *slice_no,                  /* Output */
     Pstring *ct_slice_uid,          /* Output */
     float z                         /* Input */

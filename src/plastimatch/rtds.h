@@ -11,7 +11,7 @@
 #include "metadata.h"
 #include "plm_image.h"
 #include "plm_path.h"
-#include "referenced_dicom_dir.h"
+#include "slice_index.h"
 #include "xio_ct.h"
 
 class Gdcm_series;
@@ -25,7 +25,7 @@ public:
     Plm_image *m_dose;                 /* RT dose */
 
     Gdcm_series *m_gdcm_series;        /* Input dicom parse info */
-    Referenced_dicom_dir m_rdd;        /* UIDs, etc */
+    Slice_index m_rdd;        /* UIDs, etc */
     Metadata m_meta;       /* Patient name, patient id, etc. */
     Xio_ct_transform *m_xio_transform; /* Transformation from XiO to DICOM
 					  coordinates */
@@ -35,7 +35,7 @@ public:
     Rtds ();
     ~Rtds ();
     void load_dicom_dir (const char *dicom_dir);
-    void load_xio (const char *xio_dir,	Referenced_dicom_dir *rdd);
+    void load_xio (const char *xio_dir,	Slice_index *rdd);
     void load_ss_img (const char *ss_img, const char *ss_list);
     void load_dose_img (const char *dose_img);
     void load_dose_xio (const char *dose_xio);

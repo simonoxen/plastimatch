@@ -22,7 +22,7 @@
 #include "make_string.h"
 #include "plm_uid_prefix.h"
 #include "print_and_exit.h"
-#include "referenced_dicom_dir.h"
+#include "slice_index.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */
 #if defined GetCurrentTime
@@ -93,7 +93,7 @@ void
 itk_dicom_save (
     ShortImageType::Pointer short_img,    /* Input: image to write */
     const char *dir_name,                 /* Input: name of output dir */
-    Referenced_dicom_dir *rdd,            /* Output: gets filled in */
+    Slice_index *rdd,            /* Output: gets filled in */
     const Metadata *meta              /* Input: output files get these */
 )
 {

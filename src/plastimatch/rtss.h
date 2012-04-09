@@ -9,7 +9,7 @@
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "pstring.h"
-#include "referenced_dicom_dir.h"
+#include "slice_index.h"
 #include "rtss_polyline_set.h"
 #include "warp_parms.h"
 #include "xform.h"
@@ -32,14 +32,14 @@ public:
 
     void clear ();
     void load (const char *ss_img, const char *ss_list);
-    void load_cxt (const Pstring &input_fn, Referenced_dicom_dir *rdd);
+    void load_cxt (const Pstring &input_fn, Slice_index *rdd);
     void load_xio (const Xio_studyset& xio_studyset);
-    void load_gdcm_rtss (const char *input_fn,  Referenced_dicom_dir *rdd);
+    void load_gdcm_rtss (const char *input_fn,  Slice_index *rdd);
 
     void save_colormap (const Pstring &colormap_fn);
-    void save_cxt (Referenced_dicom_dir *rdd, const Pstring &cxt_fn, 
+    void save_cxt (Slice_index *rdd, const Pstring &cxt_fn, 
 	bool prune_empty);
-    void save_gdcm_rtss (const char *output_dir, Referenced_dicom_dir *rdd);
+    void save_gdcm_rtss (const char *output_dir, Slice_index *rdd);
     void save_fcsv (const Rtss_structure *curr_structure, const Pstring& fn);
     void save_prefix_fcsv (const Pstring &output_prefix);
     void save_ss_image (const Pstring &ss_img_fn);
@@ -51,7 +51,7 @@ public:
     UInt32ImageType::Pointer get_ss_img (void);
     Rtss_polyline_set *get_ss_list (void);
 
-    void apply_dicom_dir (const Referenced_dicom_dir *rdd);
+    void apply_dicom_dir (const Slice_index *rdd);
     void convert_ss_img_to_cxt (void);
     void convert_to_uchar_vec (void);
     void cxt_re_extract (void);

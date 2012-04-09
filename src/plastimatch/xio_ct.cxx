@@ -22,7 +22,7 @@
 #include "plm_image.h"
 #include "plm_image_type.h"
 #include "print_and_exit.h"
-#include "referenced_dicom_dir.h"
+#include "slice_index.h"
 #include "rtss_polyline_set.h"
 #include "xio_ct.h"
 #include "xio_studyset.h"
@@ -235,7 +235,7 @@ void
 xio_ct_get_transform_from_rdd (
     Plm_image *pli,
     Metadata *meta,
-    Referenced_dicom_dir *rdd,
+    Slice_index *rdd,
     Xio_ct_transform *transform
 )
 {

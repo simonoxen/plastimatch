@@ -15,7 +15,7 @@ class Metadata;
 class Plm_image_header;
 class Plm_image;
 class Pstring;
-class Referenced_dicom_dir;
+class Slice_index;
 
 class plastimatch1_EXPORT Plm_image {
 
@@ -100,7 +100,7 @@ public:
     void load_native_dicom (const char* fname);
 
     /* Saving */
-    void save_short_dicom (const char* fname, Referenced_dicom_dir *rdd, 
+    void save_short_dicom (const char* fname, Slice_index *rdd, 
 	Metadata *meta);
     void save_image (const Pstring& fname);
     void save_image (const char* fname);

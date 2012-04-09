@@ -24,6 +24,22 @@ Where RDD metadata get used (version 1.5.9)
 - gdcm1_rdd.cxx
   - name, id, sex, patient position
 
+Options: 
+
+(a) All in rtds.
+    PRO: simple, heterogenous data structure makes sense
+    CON: registration code (and other code which doesn't use rtds) 
+    	 still needs somewhere to store metadata
+(b) Separate metadata for each item
+    PRO: more similar to dicom, works well with registration code
+    CON: difficult to synchronize
+
+Final choice:
+
+- Separate metadata for image, struct, dose
+- Special structure for ct uids, etc.  These go in rtds instead of image
+  (as they are now), because we might have a referenced dicom dir, without 
+  an actual image.
 
 ***** Debian notes *****
 

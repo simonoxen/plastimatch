@@ -26,7 +26,7 @@
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "print_and_exit.h"
-#include "referenced_dicom_dir.h"
+#include "slice_index.h"
 #include "rtss_polyline_set.h"
 #include "volume.h"
 
@@ -237,7 +237,7 @@ void
 gdcm1_dose_save (
     Plm_image *pli,                     /* Input: dose image */
     const Metadata *meta,           /* Input: patient name, etc. */
-    const Referenced_dicom_dir *rdd,    /* Input: CT series info */
+    const Slice_index *rdd,    /* Input: CT series info */
     const char *dose_fn                 /* Input: file to write to */
 )
 {

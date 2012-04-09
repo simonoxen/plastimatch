@@ -252,7 +252,7 @@ Plm_image::load_native_dicom (const char* fname)
 void
 Plm_image::save_short_dicom (
     const char* fname, 
-    Referenced_dicom_dir *rdd,
+    Slice_index *rdd,
     Metadata *meta
 )
 {

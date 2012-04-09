@@ -8,13 +8,13 @@
 #include "itk_image.h"
 
 class Metadata;
-class Referenced_dicom_dir;
+class Slice_index;
 
 void
 itk_dicom_save (
     ShortImageType::Pointer short_img,      /* Input: image to write */
     const char *dir_name,                   /* Input: name of output dir */
-    Referenced_dicom_dir *rdd,              /* Output: gets filled in */
+    Slice_index *rdd,              /* Output: gets filled in */
     const Metadata *meta                /* Input: output files get these */
 );
 

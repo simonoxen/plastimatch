@@ -14,7 +14,7 @@
 #include "plm_image_type.h"
 #include "plm_warp.h"
 #include "pstring.h"
-#include "referenced_dicom_dir.h"
+#include "slice_index.h"
 #include "rtds_warp.h"
 #include "rtss.h"
 #include "simplify_points.h"
