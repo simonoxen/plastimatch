@@ -23,6 +23,9 @@ VTK_DIR:PATH=/PHShome/gcs6/build/vtk-5.6.1
 //The install directory for dcmtk
 DCMTK_DIR:PATH=/PHShome/gcs6/build/install/dcmtk-3.6.0
 
+//Use DCMTK instead of GDCM for DICOM operations
+PLM_CONFIG_PREFER_DCMTK:BOOL=ON
+
 //Disable reg23 testing (it builds, but doesn't run on this computer)
 ORAIFUTILS_BUILD_TESTING:BOOL=OFF
 REG23_BUILD_TESTING:BOOL=OFF
