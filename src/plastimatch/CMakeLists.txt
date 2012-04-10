@@ -779,7 +779,7 @@ if (FULL_PLASTIMATCH_BUILD)
   # tries to create a temporary library with the same name.  [MSVC 2005]
   # That is why the library is called plastimatch1 instead of plastimatch.
   set (PLASTIMATCH1_LIBRARY_DEPENDENCIES 
-    ${ITK_LIBRARIES} ITKIOReview ${GPUIT_LIBRARIES})
+    ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
 
   # Add dcmtk libraries, if that is what the user configured
   if (DCMTK_FOUND AND NOT DCMTK_VERSION_STRING VERSION_LESS 3.6.0)

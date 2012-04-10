@@ -625,12 +625,17 @@ if (ITK_FOUND)
     message (FATAL_ERROR 
       "Fatal Error. ITK must be version 3.16.0 or higher")
   endif ()
-  if (${ITK_VERSION_MAJOR} VERSION_EQUAL "4")
+  if (${ITK_VERSION_MAJOR} VERSION_EQUAL "3")
+    if (NOT ITK_USE_REVIEW)
+      message (FATAL_ERROR 
+	"Fatal Error. ITK must be compiled with ITK_USE_REVIEW set to ON")
+    endif ()
+    set (ITK_LIBRARIES ${ITK_LIBRARIES} ITKIOReview)
+  elseif (${ITK_VERSION_MAJOR} VERSION_EQUAL "4")
     message (STATUS "ITK is version 4.  You are brave!")
-  endif ()
-  if (${ITK_VERSION_MAJOR} VERSION_EQUAL "3" AND NOT ITK_USE_REVIEW)
+  else ()
     message (FATAL_ERROR 
-      "Fatal Error. ITK must be compiled with ITK_USE_REVIEW set to ON")
+      "Fatal Error. ITK version should be either 3.X.X or 4.X.X")
   endif ()
 endif ()
 
