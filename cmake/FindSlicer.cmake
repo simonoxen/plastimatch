@@ -73,7 +73,7 @@ if (SLICER_FOUND)
   else ()
 # 2012-01-10: JC says these aren't needed any more
     ## Slicer 4: include missing cmake scripts (Slicer3 stuff)
-    include (Slicer3Macros)
+#    include (Slicer3Macros)
     include (Slicer3PluginsMacros)
     ## Slicer 4: include missing cmake scripts (loadable module stuff)
     include (vtkMacroKitPythonWrap)
