@@ -63,6 +63,17 @@ find_package_handle_standard_args (SLICER DEFAULT_MSG Slicer_DIR)
 
 if (SLICER_FOUND)
 
+  # For Slicer 3: convert old names to new names
+  if (SLICER_IS_SLICER3)
+    set (Slicer_Base_INCLUDE_DIRS "${Slicer3_Base_INCLUDE_DIRS}")
+    set (Slicer_Libs_INCLUDE_DIRS "${Slicer3_Libs_INCLUDE_DIRS}")
+    set (Slicer_Base_LIBRARIES "${Slicer3_Base_LIBRARIES}")
+    set (Slicer_Libs_LIBRARIES "${Slicer3_Libs_LIBRARIES}")
+    set (Slicer_USE_FILE "${Slicer3_USE_FILE}")
+  endif ()
+
+  # Load the Slicer configuration files
+  #
   # Strangely, the Slicer use file (both Slicer 3 and Slicer 4) 
   # appends the Slicer directories to our include path.  
   # This causes nvcc.exe to barf on windows, so we can't let it do this.
@@ -84,13 +95,6 @@ if (SLICER_FOUND)
   endif ()
 
   if (SLICER_IS_SLICER3)
-    # Slicer 3: convert old names to new names
-    set (Slicer_Base_INCLUDE_DIRS "${Slicer3_Base_INCLUDE_DIRS}")
-    set (Slicer_Libs_INCLUDE_DIRS "${Slicer3_Libs_INCLUDE_DIRS}")
-    set (Slicer_Base_LIBRARIES "${Slicer3_Base_LIBRARIES}")
-    set (Slicer_Libs_LIBRARIES "${Slicer3_Libs_LIBRARIES}")
-    set (Slicer_USE_FILE "${Slicer3_USE_FILE}")
-
     # Set reasonable default install prefix and output paths
     # (after setting Slicer3_DIR, delete CMAKE_INSTALL_PREFIX and re-configure)
     slicer3_set_default_install_prefix_for_external_projects ()
