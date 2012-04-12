@@ -45,21 +45,16 @@ demons (
 #if (CUDA_FOUND || OPENCL_FOUND)
     Volume* tmp;
 #endif
+
+    /* Eventually, all implementation should use demons_state */
     Demons_state demons_state;
-
-#if CUDA_FOUND
-    LOAD_LIBRARY_SAFE (libplmcuda);
-    LOAD_SYMBOL (demons_cuda, libplmcuda);
-    // LOAD_LIBRARY (libplmopencl);
-    // LOAD_SYMBOL (demons_opencl, libplmopencl);
-
-    /* Eventually all of the implementations will use this */
-    demons_state.init (fixed, moving, moving_grad, vf_init, parms);
-#endif
 
     switch (parms->threading) {
 #if CUDA_FOUND
     case THREADING_CUDA:
+        demons_state.init (fixed, moving, moving_grad, vf_init, parms);
+        LOAD_LIBRARY_SAFE (libplmcuda);
+        LOAD_SYMBOL (demons_cuda, libplmcuda);
         demons_cuda (&demons_state, fixed, moving, moving_grad, 
 	    vf_init, parms);
         UNLOAD_LIBRARY (libplmcuda);
