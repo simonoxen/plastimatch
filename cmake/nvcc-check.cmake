@@ -20,21 +20,26 @@ IF(CUDA_FOUND)
     IF(CMAKE_SYSTEM_NAME MATCHES "Linux")
         IF(CMAKE_COMPILER_IS_GNUCC)
 
-            # Get the gcc version number
-            EXEC_PROGRAM(gcc ARGS "-dumpversion" OUTPUT_VARIABLE GCCVER)
-
-            # Get gcc's major and minor revs
-            STRING(REGEX REPLACE "([0-9]+).[0-9]+.[0-9]+" "\\1" GCCVER_MAJOR "${GCCVER}")
-            STRING(REGEX REPLACE "[0-9]+.([0-9]+).[0-9]+" "\\1" GCCVER_MINOR "${GCCVER}")
-            STRING(REGEX REPLACE "[0-9]+.[0-9]+.([0-9]+)" "\\1" GCCVER_PATCH "${GCCVER}")
-
-            #            MESSAGE(STATUS "nvcc-check: GCC Version is ${GCCVER_MAJOR}.${GCCVER_MINOR}.${GCCVER_PATCH}")
-
             # We have to get NVCC version ourselves... the FindCUDA.cmake version # checks are
             # skipped for non-initial CMake configuration runs
             exec_program(${CUDA_NVCC_EXECUTABLE} ARGS "--version" OUTPUT_VARIABLE NVCC_OUT)
             string(REGEX REPLACE ".*release ([0-9]+)\\.([0-9]+).*" "\\1" CUDA_VERSION_MAJOR ${NVCC_OUT})
             string(REGEX REPLACE ".*release ([0-9]+)\\.([0-9]+).*" "\\2" CUDA_VERSION_MINOR ${NVCC_OUT})
+            MESSAGE(STATUS "nvcc-check: NVCC Version is ${CUDA_VERSION_MAJOR}.${CUDA_VERSION_MINOR}")
+
+            # Get the gcc version number
+            EXEC_PROGRAM(gcc ARGS "-dumpversion" OUTPUT_VARIABLE GCCVER)
+
+            # Get gcc's major and minor revs
+            # JAS 2012.04.12 -- not all gcc verions provide a patch revision
+            #   please feel free to design a "real" regex for this
+            STRING(REGEX REPLACE "([0-9]+)\\.[0-9]+" "\\1" GCCVER_MAJOR "${GCCVER}")
+            STRING(REGEX REPLACE "[0-9]+\\.([0-9]+)" "\\1" GCCVER_MINOR "${GCCVER}")
+            MESSAGE(STATUS "nvcc-check: GCC Version is ${GCCVER_MAJOR}.${GCCVER_MINOR}")
+#            STRING(REGEX REPLACE "([0-9]+)\\.[0-9]+\\.[0-9]+" "\\1" GCCVER_MAJOR "${GCCVER}")
+#            STRING(REGEX REPLACE "[0-9]+\\.([0-9]+)\\.[0-9]+" "\\1" GCCVER_MINOR "${GCCVER}")
+#            STRING(REGEX REPLACE "[0-9]+\\.[0-9]+\\.([0-9]+)" "\\1" GCCVER_PATCH "${GCCVER}")
+#            MESSAGE(STATUS "nvcc-check: GCC Version is ${GCCVER_MAJOR}.${GCCVER_MINOR}.${GCCVER_PATCH}")
 
             # CUDA 2.X IS UNSUPPORTED
             IF (CUDA_VERSION_MAJOR MATCHES "2")
@@ -55,7 +60,7 @@ IF(CUDA_FOUND)
                             MESSAGE(STATUS "nvcc-check: CUDA_NVCC_FLAGS set to \"${CUDA_NVCC_FLAGS} --compiler-bindir=${GCC43}\"")
                             SET (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --compiler-bindir=${GCC43})
                         ELSE()
-                            MESSAGE(FATAL_ERROR "nvcc-check: Please install gcc-4.3, it is needed by nvcc \(CUDA\).\nNote that gcc-4.3 can be installed side-by-side with your current version of gcc (${GCCVER_MAJOR}.${GCCVER_MINOR}.${GCCVER_PATCH}).\nYou need not replace your current version of gcc; just make gcc-4.3 available as well so that nvcc can use it.\nDebian/Ubuntu users with root privilages may simply enter the following at a terminal prompt:\n  sudo apt-get install gcc-4.3 g++-4.3\n")
+                            MESSAGE(FATAL_ERROR "nvcc-check: Please install gcc-4.3, it is needed by nvcc \(CUDA\).\nNote that gcc-4.3 can be installed side-by-side with your current version of gcc (${GCCVER_MAJOR}.${GCCVER_MINOR}).\nYou need not replace your current version of gcc; just make gcc-4.3 available as well so that nvcc can use it.\nDebian/Ubuntu users with root privilages may simply enter the following at a terminal prompt:\n  sudo apt-get install gcc-4.3 g++-4.3\n")
                         ENDIF()
     
                     ENDIF()
@@ -96,7 +101,7 @@ IF(CUDA_FOUND)
                                     SET (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --compiler-bindir=${GCC43})
                                 ELSE()
                                     # didn't find anything useful
-                                    MESSAGE(FATAL_ERROR "nvcc-check: Please install gcc-4.3, it is needed by nvcc \(CUDA\).\nNote that gcc-4.3 can be installed side-by-side with your current version of gcc (${GCCVER_MAJOR}.${GCCVER_MINOR}.${GCCVER_PATCH}).\nYou need not replace your current version of gcc; just make gcc-4.3 available as well so that nvcc can use it.\nDebian/Ubuntu users with root privilages may simply enter the following at a terminal prompt:\n  sudo apt-get install gcc-4.3 g++-4.3\n")
+                                    MESSAGE(FATAL_ERROR "nvcc-check: Please install gcc-4.3, it is needed by nvcc \(CUDA\).\nNote that gcc-4.3 can be installed side-by-side with your current version of gcc (${GCCVER_MAJOR}.${GCCVER_MINOR}).\nYou need not replace your current version of gcc; just make gcc-4.3 available as well so that nvcc can use it.\nDebian/Ubuntu users with root privilages may simply enter the following at a terminal prompt:\n  sudo apt-get install gcc-4.3 g++-4.3\n")
                                 ENDIF()
                             ENDIF()
                         ENDIF()
@@ -119,7 +124,6 @@ IF(CUDA_FOUND)
         #               valid... resulting in TONS of warnings.  So, we go
         #               version checking again, this time nvcc...
         # Get the nvcc version number
-        MESSAGE(STATUS "nvcc-check: NVCC Version is ${CUDA_VERSION_MAJOR}.${CUDA_VERSION_MINOR}")
 
         IF(CUDA_VERSION_MAJOR MATCHES "3")
             IF(CUDA_VERSION_MINOR MATCHES "2")
