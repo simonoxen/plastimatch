@@ -47,13 +47,12 @@ demons (
 #endif
     Demons_state demons_state;
 
-
+#if CUDA_FOUND
     LOAD_LIBRARY_SAFE (libplmcuda);
     LOAD_SYMBOL (demons_cuda, libplmcuda);
     // LOAD_LIBRARY (libplmopencl);
     // LOAD_SYMBOL (demons_opencl, libplmopencl);
 
-#if CUDA_FOUND
     /* Eventually all of the implementations will use this */
     demons_state.init (fixed, moving, moving_grad, vf_init, parms);
 #endif
