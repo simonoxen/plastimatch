@@ -46,12 +46,12 @@ demons (
     Volume* tmp;
 #endif
 
-    /* Eventually, all implementation should use demons_state */
-    Demons_state demons_state;
-
     switch (parms->threading) {
 #if CUDA_FOUND
-    case THREADING_CUDA:
+    case THREADING_CUDA: {
+        /* Eventually, all implementation should use demons_state */
+        Demons_state demons_state;
+
         demons_state.init (fixed, moving, moving_grad, vf_init, parms);
         LOAD_LIBRARY_SAFE (libplmcuda);
         LOAD_SYMBOL (demons_cuda, libplmcuda);
@@ -61,6 +61,7 @@ demons (
 	/* GCS FIX: This leaks vf_est... */
 	tmp = demons_state.vf_smooth;
 	return tmp;
+    }
 #endif
 
 #if OPENCL_FOUND
