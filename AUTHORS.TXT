@@ -13,5 +13,7 @@ radART/Salzburg: Phil Steininger, Markus Neuner, Heinz Deutschmann
 
 UNICZ: Paolo Zaffino
 
+POLIMI: Chiara Paganelli
+
 If you have contributed to plastimatch, and you would like to add your 
 name, please email to Greg Sharp, gcsharp a@t partners dot org.

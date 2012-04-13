@@ -28,6 +28,11 @@ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+This routine was modified by Chiara Paganelli and Marta Peroni from the one 
+proposed by Warren Cheung in:
+http://www.insight-journal.org/browse/publication/207
+
 =========================================================================*/
 
 #define VERBOSE
@@ -129,7 +134,7 @@ namespace itk
        *  to standard out.  Supply the inverse transform to get performance 
        *  measures.*/
       void MatchKeypointsFeatures(PointSetTypePointer keypoints1, PointSetTypePointer keypoints2,
-          const char *filename_phy_match1, const char *filename_phy_match2);
+			     char *filename_phy_match1, char *filename_phy_match2);
 
 
       private:
