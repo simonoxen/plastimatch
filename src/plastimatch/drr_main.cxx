@@ -35,18 +35,13 @@ allocate_gpu_memory (
     void* tmp;
 #endif
 
-#if CUDA_FOUND
-    LOAD_LIBRARY_SAFE (libplmcuda);
-    LOAD_SYMBOL (drr_cuda_state_create, libplmcuda);
-#endif
-
     switch (options->threading) {
 #if CUDA_FOUND
     case THREADING_CUDA:
+        LOAD_LIBRARY_SAFE (libplmcuda);
+        LOAD_SYMBOL (drr_cuda_state_create, libplmcuda);
         tmp = drr_cuda_state_create (proj, vol, options);
-
         UNLOAD_LIBRARY (libplmcuda);
-
         return tmp;
 #endif
 #if OPENCL_FOUND
@@ -67,13 +62,12 @@ free_gpu_memory (
     Drr_options *options
 )
 {
-    LOAD_LIBRARY_SAFE (libplmcuda);
-    LOAD_SYMBOL (drr_cuda_state_destroy, libplmcuda);
 
     switch (options->threading) {
 #if CUDA_FOUND
     case THREADING_CUDA:
-
+        LOAD_LIBRARY_SAFE (libplmcuda);
+        LOAD_SYMBOL (drr_cuda_state_destroy, libplmcuda);
 	if (dev_state) {
 	    drr_cuda_state_destroy (dev_state);
 	}

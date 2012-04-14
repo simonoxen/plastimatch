@@ -272,17 +272,15 @@ drr_render_volume_perspective (
     /* Compute volume boundary box */
     volume_limit_set (&vol_limit, vol);
 
-#if CUDA_FOUND
-    LOAD_LIBRARY_SAFE (libplmcuda);
-    LOAD_SYMBOL (drr_cuda_ray_trace_image, libplmcuda);
-#endif
-
     /* Trace the set of rays */
     switch (options->threading) {
     case THREADING_CUDA:
 #if CUDA_FOUND
+        LOAD_LIBRARY_SAFE (libplmcuda);
+        LOAD_SYMBOL (drr_cuda_ray_trace_image, libplmcuda);
 	drr_cuda_ray_trace_image (proj, vol, &vol_limit, 
 	    p1, ul_room, incr_r, incr_c, dev_state, options);
+        UNLOAD_LIBRARY (libplmcuda);
 	break;
 #else
 	/* Fall through */
@@ -303,8 +301,4 @@ drr_render_volume_perspective (
 	    p1, ul_room, incr_r, incr_c, options);
 	break;
     }
-
-#if CUDA_FOUND
-    UNLOAD_LIBRARY (libplmcuda);
-#endif
 }
