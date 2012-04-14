@@ -1,5 +1,12 @@
 Version 1.5.10 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
+* Embedded lua-based scripting engine
+* Final version of sift code
+* Improved direction-cosine support in B-spline registration
+* Image masking support for B-spline registration
+* Fix memory error in vector field warper
+* Incomplete support of dcmtk 3.6 for dicom file i/o
+* New synthetic image generators: grid, lung
 
 Version 1.5.9 (build 3050)
 Sat Feb 18 10:10:22 EST 2012
