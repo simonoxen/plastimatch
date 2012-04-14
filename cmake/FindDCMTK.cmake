@@ -145,11 +145,14 @@ if (DCMTK_INCLUDE_DIR
 
   set (DCMTK_LIBRARIES "")
 
+  ## The libraries dcmtls, dcmnet, dcmimgle are not used by plastimatch.  
+  ## Including them increases the number of required dependencies
+  ## for debian.
   set (DCMTK_LIBRARIES 
     ${DCMTK_LIBRARIES}
-    ${DCMTK_dcmtls_LIBRARY}
-    ${DCMTK_dcmnet_LIBRARY}
-    ${DCMTK_dcmimgle_LIBRARY}
+#    ${DCMTK_dcmtls_LIBRARY}
+#    ${DCMTK_dcmnet_LIBRARY}
+#    ${DCMTK_dcmimgle_LIBRARY}
     ${DCMTK_dcmdata_LIBRARY}
     )
 

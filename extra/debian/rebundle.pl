@@ -4,17 +4,29 @@
 # (2) Copy tarball to debian-med directory
 # (3) Run get-orig-source
 
+use Getopt::Long;
+
+my $working;
+$result = GetOptions (
+    "working" => \$working
+    );
+
 $debmed_dir = $ENV{HOME} . "/debian-med/packages/plastimatch";
-$pristine = 1;
+my $pristine = 1;
 $run_cmake = 1;
 $make_tarball = 1;
+
+if ($working) {
+    print "NOT using pristine.\n";
+    $pristine = 0;
+}
 
 if (${pristine}) {
     $src_dir = $ENV{HOME} . "/work/plastimatch-pristine";
     $build_dir = $ENV{HOME} . "/build/plastimatch-pristine";
 } else {
     $src_dir = $ENV{HOME} . "/work/plastimatch";
-    $build_dir = $ENV{HOME} . "/build/plastimatch-3.20.0";
+    $build_dir = $ENV{HOME} . "/build/plastimatch-3.20.1";
 }
 
 if ($run_cmake) {
