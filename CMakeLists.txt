@@ -266,7 +266,7 @@ endif ()
 
 # Choose between f2c or fortran
 set (PLM_USE_F2C FALSE)
-if (PLM_PREFER_F2C OR NOT CMAKE_Fortran_COMPILER_WORKS)
+if (NOT BUILD_DEBIAN AND (PLM_PREFER_F2C OR NOT CMAKE_Fortran_COMPILER_WORKS))
   set (PLM_USE_F2C TRUE)
 endif ()
 
