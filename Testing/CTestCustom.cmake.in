@@ -296,6 +296,13 @@ if (NOT GDCM_VERSION_1)
     "plm-convert-dicom-donut-b" 
     "plm-convert-dicom-donut-b-stats" 
     "plm-convert-dicom-donut-b-check" 
+    "plm-convert-dicom-a"
+    "plm-convert-dicom-b"
+    "plm-convert-dicom-b-stats"
+    "plm-convert-dicom-b-check"
+    "plm-convert-cxt"
+    "plm-convert-cxt-stats"
+    "plm-convert-cxt-check"
     )
 endif ()
 

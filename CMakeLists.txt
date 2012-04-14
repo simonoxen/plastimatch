@@ -581,6 +581,9 @@ if (DCMTK_FOUND AND DCMTK_VERSION_36 AND PLM_CONFIG_PREFER_DCMTK)
 else ()
   set (PLM_DCM_USE_DCMTK 0)
 endif ()
+if (BUILD_DEBIAN)
+  set (PLM_DCM_USE_DCMTK 1)
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  ITK
