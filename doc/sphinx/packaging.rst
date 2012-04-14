@@ -13,18 +13,14 @@ Step 1: Preliminary testing
 The preliminary testing will make sure that the tarball will 
 build under debian in step 3.
 
-#. Run rebundle.pl until satisfied::
-
-     rebundle.pl
-
 #. Update changelog (in an terminal, not emacs)::
 
      cd plastimatch/trunk
      dch -v 1.5.4+dfsg0-1
 
-#. Repackage tarball::
+#. Run rebundle.pl until satisfied::
 
-     ./debian/get-orig-source plastimatch_1.5.4.orig.tar.bz2
+     rebundle.pl
 
 #. Refresh your pbuilder environment (if needed)::
 

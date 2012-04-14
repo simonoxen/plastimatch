@@ -47,4 +47,6 @@ print "deb_bz2 = $deb_bz2\n";
 chdir ${debmed_dir};
 system ("rm ${deb_bz2} 2> /dev/null");
 system ("ln -s ${source_bz2} ${deb_bz2}");
+
 chdir "trunk";
+system ("./debian/get-orig-source ${deb_ver}.orig.tar.bz2");
