@@ -1,5 +1,8 @@
-Version 1.5.10 (build @PLASTIMATCH_SVN_VERSION@)
+Version 1.5.11 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
+
+Version 1.5.10 (build 3259)
+Sat Apr 14 19:18:41 EDT 2012
 * Embedded lua-based scripting engine
 * Final version of sift code
 * Improved direction-cosine support in B-spline registration

@@ -60,6 +60,8 @@ Then, do a few small things to get ready for next time
 Step 3: Build the debian package
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+#. Commit changes to debian files
+
 #. Clean up files from previous version::
 
      ./clean_directory.sh
