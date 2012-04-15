@@ -15,6 +15,7 @@
 #include "itk_image_load.h"
 #include "itk_image_save.h"
 #include "itk_resample.h"
+#include "logfile.h"
 #include "math_util.h"
 #include "mha_io.h"
 #include "plm_image.h"
@@ -544,8 +545,8 @@ xform_any_to_itk_bsp_nobulk (
     within the valid region. */
 void
 itk_bsp_extend_to_region (Xform* xf,                
-        const Plm_image_header* pih,
-        const ImageRegionType* roi)
+    const Plm_image_header* pih,
+    const ImageRegionType* roi)
 {
     int d, old_idx;
     unsigned long i, j, k;
@@ -565,7 +566,7 @@ itk_bsp_extend_to_region (Xform* xf,
         float new_roi_corner = new_roi_origin + (roi->GetSize()[d] - 1) * pih->m_spacing[d];
 #if defined (commentout)
         printf ("extend? [%d]: (%g,%g) -> (%g,%g)\n", d,
-                old_roi_origin, old_roi_corner, new_roi_origin, new_roi_corner);
+            old_roi_origin, old_roi_corner, new_roi_origin, new_roi_corner);
         printf ("img_siz = %d, img_spac = %g\n", img_region.GetSize()[d], img_spacing[d]);
 #endif
         ea[d] = eb[d] = 0;
@@ -598,24 +599,25 @@ itk_bsp_extend_to_region (Xform* xf,
 
 #if defined (commentout)
         std::cout << "OLD BSpline Region = "
-                  << bsp->GetGridRegion();
+            << bsp->GetGridRegion();
         std::cout << "NEW BSpline Region = "
-                  << bsp_new->GetGridRegion();
+            << bsp_new->GetGridRegion();
         std::cout << "OLD BSpline Grid Origin = "
-                  << bsp->GetGridOrigin()
-                  << std::endl;
+            << bsp->GetGridOrigin()
+            << std::endl;
         std::cout << "NEW BSpline Grid Origin = "
-                  << bsp_new->GetGridOrigin()
-                  << std::endl;
+            << bsp_new->GetGridOrigin()
+            << std::endl;
         std::cout << "BSpline Grid Spacing = "
-                  << bsp_new->GetGridSpacing()
-                  << std::endl;
+            << bsp_new->GetGridSpacing()
+            << std::endl;
 #endif
 
         /* Copy current parameters in... */
         const unsigned int num_parms = bsp_new->GetNumberOfParameters();
         BsplineTransformType::ParametersType bsp_coeff;
         bsp_coeff.SetSize (num_parms);
+        bsp_coeff.Fill (0.f);
         for (old_idx = 0, d = 0; d < 3; d++) {
             for (k = 0; k < old_region.GetSize()[2]; k++) {
                 for (j = 0; j < old_region.GetSize()[1]; j++) {
@@ -836,7 +838,6 @@ xform_itk_any_to_itk_vf (
     itk_vf->SetOrigin (pih->m_origin);
     itk_vf->SetSpacing (pih->m_spacing);
     itk_vf->SetRegions (pih->m_region);
-    //std::cout << pih->m_direction;
     itk_vf->SetDirection (pih->m_direction);
     itk_vf->Allocate ();
 
@@ -914,15 +915,15 @@ xform_gpuit_bsp_to_itk_vf (Xform* xf_in, Plm_image_header* pih)
     ImageRegionType img_region;
 
     /* Copy from GPUIT coefficient array to ITK coefficient array */
-    printf ("gpuit_bsp_to_itk_bsp_raw\n");
+    lprintf ("gpuit_bsp_to_itk_bsp_raw\n");
     gpuit_bsp_to_itk_bsp_raw (&xf_tmp, xf_in, pih);
 
     /* Resize itk array to span image */
-    printf ("itk_bsp_extend_to_region\n");
+    lprintf ("itk_bsp_extend_to_region\n");
     itk_bsp_extend_to_region (&xf_tmp, pih, &pih->m_region);
 
     /* Render to vector field */
-    printf ("xform_itk_any_to_itk_vf\n");
+    lprintf ("xform_itk_any_to_itk_vf\n");
     itk_vf = xform_itk_any_to_itk_vf (xf_tmp.get_itk_bsp(), pih);
 
     return itk_vf;

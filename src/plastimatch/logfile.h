@@ -7,6 +7,8 @@
 #include "plm_config.h"
 #include <stdio.h>
 
+#define lprintf logfile_printf
+
 #if defined __cplusplus
 extern "C" {
 #endif

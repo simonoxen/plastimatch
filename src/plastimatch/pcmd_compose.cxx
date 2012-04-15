@@ -29,24 +29,22 @@ vf_compose (
 
     /* No one should ever have to write code like this */
     typedef itk::ImageRegionIterator< DeformationFieldType > FieldIterator;
-    FieldIterator vf1_it (vf1, vf1->GetBufferedRegion());
-    FieldIterator vf_out_it (vf_out, vf_out->GetBufferedRegion());
+    FieldIterator vf1_it (vf1, vf1->GetRequestedRegion());
+    FieldIterator vf_out_it (vf_out, vf_out->GetRequestedRegion());
     DeformationFieldType::IndexType index;
     FloatPoint3DType point_1, point_2, point_3;
-    typedef itk::Vector< float, 3 > VectorType;
-    VectorType displacement_1;
+    FloatVector3DType displacement_1;
     typedef itk::VectorLinearInterpolateImageFunction < 
 	DeformationFieldType, float > VectorInterpolatorType;
     VectorInterpolatorType::Pointer interpolator = VectorInterpolatorType::New();
     interpolator->SetInputImage (vf2);
     VectorInterpolatorType::OutputType displacement_2;
-    VectorType displacement_3;
+    FloatVector3DType displacement_3;
 
     vf1_it.GoToBegin();
     vf_out_it.GoToBegin();
     while (!vf1_it.IsAtEnd()) {
 	index = vf1_it.GetIndex();
-//	printf ("%d %d %d\n", index[0], index[1], index[2]); fflush(stdout);
 	vf1->TransformIndexToPhysicalPoint (index, point_1);
 	displacement_1 = vf1_it.Get ();
 	for (int r = 0; r < 3; r++) {
