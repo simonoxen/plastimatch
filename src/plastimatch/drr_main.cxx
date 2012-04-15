@@ -37,12 +37,13 @@ allocate_gpu_memory (
 
     switch (options->threading) {
 #if CUDA_FOUND
-    case THREADING_CUDA:
+    case THREADING_CUDA: {
         LOAD_LIBRARY_SAFE (libplmcuda);
         LOAD_SYMBOL (drr_cuda_state_create, libplmcuda);
         tmp = drr_cuda_state_create (proj, vol, options);
         UNLOAD_LIBRARY (libplmcuda);
         return tmp;
+    }
 #endif
 #if OPENCL_FOUND
     case THREADING_OPENCL:

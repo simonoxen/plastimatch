@@ -274,7 +274,7 @@ drr_render_volume_perspective (
 
     /* Trace the set of rays */
     switch (options->threading) {
-    case THREADING_CUDA:
+    case THREADING_CUDA: {
 #if CUDA_FOUND
         LOAD_LIBRARY_SAFE (libplmcuda);
         LOAD_SYMBOL (drr_cuda_ray_trace_image, libplmcuda);
@@ -285,6 +285,7 @@ drr_render_volume_perspective (
 #else
 	/* Fall through */
 #endif
+    }
 
 #if OPENCL_FOUND
     case THREADING_OPENCL:
