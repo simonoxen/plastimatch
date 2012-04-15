@@ -315,14 +315,6 @@ if (BUILD_DEBIAN)
     )
 endif ()
 
-## This test fails, I'll fix it soon!
-if (BUILD_DEBIAN)
-  set (CTEST_CUSTOM_TESTS_IGNORE
-    ${CTEST_CUSTOM_TESTS_IGNORE}
-    "plm-compose-c-check"
-    )
-endif ()
-
 ## Debian on MIPS causes timeout because the build machine is too slow.
 ## So we just skip these tests
 if (BUILD_DEBIAN AND CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "mips")
