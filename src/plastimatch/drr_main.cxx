@@ -66,7 +66,7 @@ free_gpu_memory (
 
     switch (options->threading) {
 #if CUDA_FOUND
-    case THREADING_CUDA:
+    case THREADING_CUDA: {
         LOAD_LIBRARY_SAFE (libplmcuda);
         LOAD_SYMBOL (drr_cuda_state_destroy, libplmcuda);
 	if (dev_state) {
@@ -74,6 +74,7 @@ free_gpu_memory (
 	}
 	UNLOAD_LIBRARY (libplmcuda);
 	return;
+    }
 #endif
 #if OPENCL_FOUND
     case THREADING_OPENCL:
