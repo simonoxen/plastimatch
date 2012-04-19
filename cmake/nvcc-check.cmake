@@ -31,15 +31,10 @@ IF(CUDA_FOUND)
             EXEC_PROGRAM(gcc ARGS "-dumpversion" OUTPUT_VARIABLE GCCVER)
 
             # Get gcc's major and minor revs
-            # JAS 2012.04.12 -- not all gcc verions provide a patch revision
-            #   please feel free to design a "real" regex for this
-            STRING(REGEX REPLACE "([0-9]+)\\.[0-9]+" "\\1" GCCVER_MAJOR "${GCCVER}")
-            STRING(REGEX REPLACE "[0-9]+\\.([0-9]+)" "\\1" GCCVER_MINOR "${GCCVER}")
-            MESSAGE(STATUS "nvcc-check: GCC Version is ${GCCVER_MAJOR}.${GCCVER_MINOR}")
-#            STRING(REGEX REPLACE "([0-9]+)\\.[0-9]+\\.[0-9]+" "\\1" GCCVER_MAJOR "${GCCVER}")
-#            STRING(REGEX REPLACE "[0-9]+\\.([0-9]+)\\.[0-9]+" "\\1" GCCVER_MINOR "${GCCVER}")
-#            STRING(REGEX REPLACE "[0-9]+\\.[0-9]+\\.([0-9]+)" "\\1" GCCVER_PATCH "${GCCVER}")
-#            MESSAGE(STATUS "nvcc-check: GCC Version is ${GCCVER_MAJOR}.${GCCVER_MINOR}.${GCCVER_PATCH}")
+            STRING(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+).*" "\\1" GCCVER_MAJOR "${GCCVER}")
+            STRING(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+).*" "\\2" GCCVER_MINOR "${GCCVER}")
+            STRING(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+).*" "\\3" GCCVER_PATCH "${GCCVER}")
+            MESSAGE(STATUS "nvcc-check: GCC Version is ${GCCVER_MAJOR}.${GCCVER_MINOR}.${GCCVER_PATCH}")
 
             # CUDA 2.X IS UNSUPPORTED
             IF (CUDA_VERSION_MAJOR MATCHES "2")
