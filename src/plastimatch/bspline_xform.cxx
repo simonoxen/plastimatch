@@ -25,6 +25,35 @@
 #include "volume_macros.h"
 #include "xpm.h"
 
+
+static float
+bspline_basis_eval (
+    int t_idx, 
+    int vox_idx, 
+    int vox_per_rgn)
+{
+                                
+    float i = (float)vox_idx / vox_per_rgn;
+
+    switch(t_idx) {
+    case 0:
+        return (1.0/6.0) * (- 1.0 * i*i*i + 3.0 * i*i - 3.0 * i + 1.0);
+        break;
+    case 1:
+        return (1.0/6.0) * (+ 3.0 * i*i*i - 6.0 * i*i           + 4.0);
+        break;
+    case 2:
+        return (1.0/6.0) * (- 3.0 * i*i*i + 3.0 * i*i + 3.0 * i + 1.0);
+        break;
+    case 3:
+        return (1.0/6.0) * (+ 1.0 * i*i*i);
+        break;
+    default:
+        return 0.0;
+        break;
+    }
+}
+
 void
 bspline_xform_set_default (Bspline_xform* bxf)
 {
@@ -447,6 +476,23 @@ bspline_xform_initialize
         }
     }
 
+    /* Create b_luts */
+    bxf->bx_lut = (float*)malloc(4*bxf->vox_per_rgn[0]*sizeof(float));
+    bxf->by_lut = (float*)malloc(4*bxf->vox_per_rgn[1]*sizeof(float));
+    bxf->bz_lut = (float*)malloc(4*bxf->vox_per_rgn[2]*sizeof(float));
+
+    for (int j=0; j<4; j++) {
+        for (int i=0; i<bxf->vox_per_rgn[0]; i++) {
+            bxf->bx_lut[i*4+j] = bspline_basis_eval (j, i, bxf->vox_per_rgn[0]);
+        }
+        for (int i=0; i<bxf->vox_per_rgn[1]; i++) {
+            bxf->by_lut[i*4+j] = bspline_basis_eval (j, i, bxf->vox_per_rgn[1]);
+        }
+        for (int i=0; i<bxf->vox_per_rgn[2]; i++) {
+            bxf->bz_lut[i*4+j] = bspline_basis_eval (j, i, bxf->vox_per_rgn[2]);
+        }
+    }
+
     //dump_luts (bxf);
 
     logfile_printf ("rdims = (%d,%d,%d)\n", 
@@ -555,6 +601,9 @@ bspline_xform_free (Bspline_xform* bxf)
     free (bxf->coeff);
     free (bxf->q_lut);
     free (bxf->c_lut);
+    free (bxf->bx_lut);
+    free (bxf->by_lut);
+    free (bxf->bz_lut);
 }
 
 /* Set volume header from B-spline Xform */

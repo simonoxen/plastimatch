@@ -145,14 +145,11 @@ bspline_score_h_mse (
                     // Compute physical coordinates of fixed image voxel
                     GET_REAL_SPACE_COORDS (xyz_fixed, ijk_fixed, bxf);
 
-                    // Construct the local index within the tile
-                    idx_local = volume_index (bxf->vox_per_rgn, ijk_local);
-
                     // Construct the image volume index
                     idx_fixed = volume_index (fixed->dim, ijk_fixed);
 
                     // Calc. deformation vector (dxyz) for voxel
-                    bspline_interp_pix_b (dxyz, bxf, idx_tile, idx_local);
+                    bspline_interp_pix_c (dxyz, bxf, idx_tile, ijk_local);
 
                     // Calc. moving image coordinate from the deformation vector
                     rc = bspline_find_correspondence (xyz_moving, ijk_moving,
@@ -198,8 +195,8 @@ bspline_score_h_mse (
                     dc_dv[2] = diff * m_grad[3 * idx_moving_round + 2];
 
                     /* Generate condensed tile */
-                    bspline_update_sets (sets_x, sets_y, sets_z,
-                        idx_local, dc_dv, bxf);
+                    bspline_update_sets_b (sets_x, sets_y, sets_z,
+                        ijk_local, dc_dv, bxf);
 
                 } /* LOOP_THRU_TILE_X */
             } /* LOOP_THRU_TILE_Y */
@@ -352,14 +349,11 @@ bspline_score_g_mse (
                     // Compute physical coordinates of fixed image voxel
                     GET_REAL_SPACE_COORDS (xyz_fixed, ijk_fixed, bxf);
                     
-                    // Construct the local index within the tile
-                    idx_local = volume_index (bxf->vox_per_rgn, ijk_local);
-
                     // Construct the image volume index
                     idx_fixed = volume_index (fixed->dim, ijk_fixed);
 
                     // Calc. deformation vector (dxyz) for voxel
-                    bspline_interp_pix_b (dxyz, bxf, idx_tile, idx_local);
+                    bspline_interp_pix_c (dxyz, bxf, idx_tile, ijk_local);
 
                     // Calc. moving image coordinate from the deformation vector
                     rc = bspline_find_correspondence (xyz_moving, ijk_moving,
@@ -406,9 +400,9 @@ bspline_score_g_mse (
                     dc_dv[2] = diff * m_grad[3 * idx_moving_round + 2];
 
                     /* Generate condensed tile */
-                    bspline_update_sets (
+                    bspline_update_sets_b (
                         sets_x, sets_y, sets_z,
-                        idx_local, dc_dv, bxf
+                        ijk_local, dc_dv, bxf
                     );
 
                 } /* LOOP_THRU_TILE_X */

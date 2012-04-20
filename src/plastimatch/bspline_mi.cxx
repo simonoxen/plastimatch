@@ -1596,7 +1596,6 @@ bspline_score_h_mi (
     plm_long p[3];
     plm_long q[3];
     float dxyz[3];
-    plm_long qidx;
     float li_1[3];           /* Fraction of interpolant in lower index */
     float li_2[3];           /* Fraction of interpolant in upper index */
 
@@ -1660,8 +1659,7 @@ bspline_score_h_mi (
 
                 /* Get B-spline deformation vector */
                 pidx = volume_index (bxf->rdims, p);
-                qidx = volume_index (bxf->vox_per_rgn, q);
-                bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
+                bspline_interp_pix_c (dxyz, bxf, pidx, q);
 
                 rc = bspline_find_correspondence_dcos_mask (mxyz, mijk, fxyz, dxyz, moving, moving_mask);
 
@@ -1727,7 +1725,6 @@ bspline_score_h_mi (
         plm_long p[3];
         plm_long q[3];
         float dxyz[3];
-        plm_long qidx;
         float li_1[3];           /* Fraction of interpolant in lower index */
         float li_2[3];           /* Fraction of interpolant in upper index */
         float dc_dv[3];
@@ -1764,11 +1761,8 @@ bspline_score_h_mi (
                     /* Compute space coordinates of fixed image voxel */
                     GET_COMMON_REAL_SPACE_COORDS (fxyz, fijk, fixed, bxf);
 
-                    /* Construct the linear index within tile space */
-                    qidx = volume_index (bxf->vox_per_rgn, q);
-
                     /* Compute deformation vector (dxyz) for voxel */
-                    bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
+                    bspline_interp_pix_c (dxyz, bxf, pidx, q);
 
                     /* Find correspondence in moving image */
                     rc = bspline_find_correspondence_dcos_mask (mxyz, mijk, fxyz, dxyz, moving, moving_mask);
@@ -1796,9 +1790,9 @@ bspline_score_h_mi (
                     );
 
                     /* Update condensed tile sets */
-                    bspline_update_sets (
+                    bspline_update_sets_b (
                         sets_x, sets_y, sets_z,
-                        qidx, dc_dv, bxf
+                        q, dc_dv, bxf
                     );
 
                 } /* LOOP_THRU_TILE_X */
@@ -1878,7 +1872,6 @@ bspline_score_g_mi (
     plm_long p[3];
     plm_long q[3];
     float dxyz[3];
-    plm_long qidx;
     float li_1[3];           /* Fraction of interpolant in lower index */
     float li_2[3];           /* Fraction of interpolant in upper index */
 
@@ -1927,8 +1920,7 @@ bspline_score_g_mi (
 
                 /* Get B-spline deformation vector */
                 pidx = volume_index (bxf->rdims, p);
-                qidx = volume_index (bxf->vox_per_rgn, q);
-                bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
+                bspline_interp_pix_c (dxyz, bxf, pidx, q);
 
                 rc = bspline_find_correspondence_dcos (mxyz, mijk, fxyz, dxyz, moving);
 
@@ -1989,7 +1981,6 @@ bspline_score_g_mi (
         plm_long p[3];
         plm_long q[3];
         float dxyz[3];
-        plm_long qidx;
         float li_1[3];           /* Fraction of interpolant in lower index */
         float li_2[3];           /* Fraction of interpolant in upper index */
         float dc_dv[3];
@@ -2020,11 +2011,8 @@ bspline_score_g_mi (
                     /* Compute space coordinates of fixed image voxel */
                     GET_COMMON_REAL_SPACE_COORDS (fxyz, fijk, fixed, bxf);
 
-                    /* Construct the linear index within tile space */
-                    qidx = volume_index (bxf->vox_per_rgn, q);
-
                     /* Compute deformation vector (dxyz) for voxel */
-                    bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
+                    bspline_interp_pix_c (dxyz, bxf, pidx, q);
 
                     /* Find correspondence in moving image */
                     rc = bspline_find_correspondence_dcos (mxyz, mijk, fxyz, dxyz, moving);
@@ -2052,9 +2040,9 @@ bspline_score_g_mi (
                     );
 
                     /* Update condensed tile sets */
-                    bspline_update_sets (
+                    bspline_update_sets_b (
                         sets_x, sets_y, sets_z,
-                        qidx, dc_dv, bxf
+                        q, dc_dv, bxf
                     );
 
                 } /* LOOP_THRU_TILE_X */
@@ -2172,7 +2160,6 @@ bspline_score_f_mi (
         plm_long p[3];
         plm_long q[3];
         float dxyz[3];
-        plm_long qidx;
         float li_1[3];           /* Fraction of interpolant in lower index */
         float li_2[3];           /* Fraction of interpolant in upper index */
 
@@ -2195,11 +2182,8 @@ bspline_score_f_mi (
                     /* Compute space coordinates of fixed image voxel */
                     GET_REAL_SPACE_COORDS (fxyz, fijk, bxf);
 
-                    /* Construct the linear index within tile space */
-                    qidx = volume_index (bxf->vox_per_rgn, q);
-
                     /* Compute deformation vector (dxyz) for voxel */
-                    bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
+                    bspline_interp_pix_c (dxyz, bxf, pidx, q);
 
                     /* Find correspondence in moving image */
                     rc = bspline_find_correspondence (mxyz, mijk, fxyz, dxyz, moving);
@@ -2310,7 +2294,6 @@ bspline_score_f_mi (
         plm_long p[3];
         plm_long q[3];
         float dxyz[3];
-        plm_long qidx;
         float li_1[3];           /* Fraction of interpolant in lower index */
         float li_2[3];           /* Fraction of interpolant in upper index */
         float dc_dv[3];
@@ -2341,11 +2324,8 @@ bspline_score_f_mi (
                     /* Compute space coordinates of fixed image voxel */
                     GET_REAL_SPACE_COORDS (fxyz, fijk, bxf);
 
-                    /* Construct the linear index within tile space */
-                    qidx = volume_index (bxf->vox_per_rgn, q);
-
                     /* Compute deformation vector (dxyz) for voxel */
-                    bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
+                    bspline_interp_pix_c (dxyz, bxf, pidx, q);
 
                     /* Find correspondence in moving image */
                     rc = bspline_find_correspondence (mxyz, mijk, fxyz, dxyz, moving);
@@ -2369,8 +2349,8 @@ bspline_score_f_mi (
                         fv, mvf, mijk, num_vox_f, li_1, li_2);
 
                     /* Update condensed tile sets */
-                    bspline_update_sets (sets_x, sets_y, sets_z,
-                                         qidx, dc_dv, bxf);
+                    bspline_update_sets_b (sets_x, sets_y, sets_z,
+                                         q, dc_dv, bxf);
                 }
             }
         }   // tile
@@ -2501,7 +2481,6 @@ bspline_score_e_mi (
         plm_long p[3];
         plm_long q[3];
         float dxyz[3];
-        plm_long qidx;
         float li_1[3];           /* Fraction of interpolant in lower index */
         float li_2[3];           /* Fraction of interpolant in upper index */
 
@@ -2524,11 +2503,8 @@ bspline_score_e_mi (
                     /* Compute space coordinates of fixed image voxel */
                     GET_REAL_SPACE_COORDS (fxyz, fijk, bxf);
 
-                    /* Construct the linear index within tile space */
-                    qidx = volume_index (bxf->vox_per_rgn, q);
-
                     /* Compute deformation vector (dxyz) for voxel */
-                    bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
+                    bspline_interp_pix_c (dxyz, bxf, pidx, q);
 
                     /* Find correspondence in moving image */
                     rc = bspline_find_correspondence (mxyz, mijk, fxyz, dxyz, moving);
@@ -2648,7 +2624,6 @@ bspline_score_e_mi (
         plm_long p[3];
         plm_long q[3];
         float dxyz[3];
-        plm_long qidx;
         float li_1[3];           /* Fraction of interpolant in lower index */
         float li_2[3];           /* Fraction of interpolant in upper index */
         float dc_dv[3];
@@ -2679,11 +2654,8 @@ bspline_score_e_mi (
                     /* Compute space coordinates of fixed image voxel */
                     GET_REAL_SPACE_COORDS (fxyz, fijk, bxf);
 
-                    /* Construct the linear index within tile space */
-                    qidx = volume_index (bxf->vox_per_rgn, q);
-
                     /* Compute deformation vector (dxyz) for voxel */
-                    bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
+                    bspline_interp_pix_c (dxyz, bxf, pidx, q);
 
                     /* Find correspondence in moving image */
                     rc = bspline_find_correspondence (mxyz, mijk, fxyz, dxyz, moving);
@@ -2707,8 +2679,8 @@ bspline_score_e_mi (
                         fv, mvf, mijk, num_vox_f, li_1, li_2);
 
                     /* Update condensed tile sets */
-                    bspline_update_sets (sets_x, sets_y, sets_z,
-            qidx, dc_dv, bxf);
+                    bspline_update_sets_b (sets_x, sets_y, sets_z,
+                        q, dc_dv, bxf);
                 }
             }
         }   // tile
@@ -2798,7 +2770,6 @@ bspline_score_d_mi (
     plm_long p[3];
     plm_long q[3];
     float dxyz[3];
-    plm_long qidx;
     float li_1[3];           /* Fraction of interpolant in lower index */
     float li_2[3];           /* Fraction of interpolant in upper index */
 
@@ -2853,8 +2824,7 @@ bspline_score_d_mi (
 
                 /* Get B-spline deformation vector */
                 pidx = volume_index (bxf->rdims, p);
-                qidx = volume_index (bxf->vox_per_rgn, q);
-                bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
+                bspline_interp_pix_c (dxyz, bxf, pidx, q);
 
                 /* Find correspondence in moving image */
                 rc = bspline_find_correspondence (
@@ -2953,7 +2923,6 @@ bspline_score_d_mi (
         plm_long p[3];
         plm_long q[3];
         float dxyz[3];
-        plm_long qidx;
         float li_1[3];           /* Fraction of interpolant in lower index */
         float li_2[3];           /* Fraction of interpolant in upper index */
         float dc_dv[3];
@@ -2985,11 +2954,8 @@ bspline_score_d_mi (
                     /* Compute space coordinates of fixed image voxel */
                     GET_REAL_SPACE_COORDS (fxyz, fijk, bxf);
 
-                    /* Construct the linear index within tile space */
-                    qidx = volume_index (bxf->vox_per_rgn, q);
-
                     /* Compute deformation vector (dxyz) for voxel */
-                    bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
+                    bspline_interp_pix_c (dxyz, bxf, pidx, q);
 
                     /* Find correspondence in moving image */
                     rc = bspline_find_correspondence (mxyz, mijk, fxyz, dxyz, moving);
@@ -3017,9 +2983,9 @@ bspline_score_d_mi (
                     );
 
                     /* Update condensed tile sets */
-                    bspline_update_sets (
+                    bspline_update_sets_b (
                         sets_x, sets_y, sets_z,
-                        qidx, dc_dv, bxf
+                        q, dc_dv, bxf
                     );
 
                 } /* LOOP_THRU_TILE_X */

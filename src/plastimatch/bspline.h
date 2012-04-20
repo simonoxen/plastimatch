@@ -268,6 +268,16 @@ bspline_interp_pix_b (
     plm_long pidx, 
     plm_long qidx
 );
+
+void
+bspline_interp_pix_c (
+    float out[3], 
+    Bspline_xform* bxf, 
+    plm_long pidx, 
+    plm_long *q
+);
+
+
 int
 bspline_find_correspondence 
 (
@@ -356,6 +366,11 @@ bspline_make_grad (float* cond_x, float* cond_y, float* cond_z,
 void
 bspline_update_sets (float* sets_x, float* sets_y, float* sets_z,
     int qidx, float* dc_dv, Bspline_xform* bxf);
+
+void
+bspline_update_sets_b (float* sets_x, float* sets_y, float* sets_z,
+    plm_long *q, float* dc_dv, Bspline_xform* bxf);
+
 
 void
 bspline_sort_sets (float* cond_x, float* cond_y, float* cond_z,

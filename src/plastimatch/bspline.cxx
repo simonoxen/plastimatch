@@ -555,6 +555,41 @@ bspline_interp_pix_b (
 }
 
 void
+bspline_interp_pix_c (
+    float out[3],
+    Bspline_xform* bxf,
+    plm_long pidx,
+    plm_long *q
+)
+{
+    int i,j,k,m;
+    plm_long cidx;
+    float A,B,C;
+    plm_long* c_lut = &bxf->c_lut[pidx*64];
+    float* bx_lut = &bxf->bx_lut[q[0]*4];
+    float* by_lut = &bxf->by_lut[q[1]*4];
+    float* bz_lut = &bxf->bz_lut[q[2]*4];
+
+    out[0] = out[1] = out[2] = 0;
+    m=0;
+    for (k=0; k<4; k++) {
+        C = bz_lut[k];
+        for (j=0; j<4; j++) {
+            B = by_lut[j] * C;
+            for (i=0; i<4; i++) {
+                A = bx_lut[i] * B;
+
+                cidx = 3*c_lut[m++];
+                out[0] += A * bxf->coeff[cidx+0];
+                out[1] += A * bxf->coeff[cidx+1];
+                out[2] += A * bxf->coeff[cidx+2];
+            }
+        }
+    }
+}
+
+
+void
 bspline_interpolate_vf (Volume* interp, 
     const Bspline_xform* bxf)
 {
@@ -613,6 +648,35 @@ bspline_update_sets (float* sets_x, float* sets_y, float* sets_z,
         sets_x[sidx] += dc_dv[0] * q_lut[sidx];
         sets_y[sidx] += dc_dv[1] * q_lut[sidx];
         sets_z[sidx] += dc_dv[2] * q_lut[sidx];
+    }
+}
+
+void
+bspline_update_sets_b (float* sets_x, float* sets_y, float* sets_z,
+    plm_long *q, float* dc_dv, Bspline_xform* bxf)
+{
+    int i,j,k,m;
+    float A,B,C;
+
+    /* Initialize b_luts */
+    float* bx_lut = &bxf->bx_lut[q[0]*4];
+    float* by_lut = &bxf->by_lut[q[1]*4];
+    float* bz_lut = &bxf->bz_lut[q[2]*4];
+
+    /* Condense dc_dv & commit to sets for tile */
+    m=0;
+    for (k=0; k<4; k++) {
+        C = bz_lut[k];
+        for (j=0; j<4; j++) {
+            B = by_lut[j] * C;
+            for (i=0; i<4; i++) {
+                A = bx_lut[i] * B;
+                sets_x[m] += dc_dv[0] * A;
+                sets_y[m] += dc_dv[1] * A;
+                sets_z[m] += dc_dv[2] * A;
+                m++;
+            }
+        }
     }
 }
 
