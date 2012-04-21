@@ -1118,37 +1118,71 @@ xform_gpuit_vf_to_gpuit_bsp (
 /* -----------------------------------------------------------------------
    Conversion to gpuit_vf
    ----------------------------------------------------------------------- */
-Volume*
-xform_gpuit_vf_to_gpuit_vf (
-    Volume* vf_in, plm_long* dim, float* offset, float* spacing)
+static Volume*
+xform_itk_any_to_gpuit_vf (
+    itk::Transform<double,3,3>* xf,
+    const Plm_image_header* pih)
 {
-    Volume* vf_out;
-    vf_out = volume_resample (vf_in, dim, offset, spacing);
+    Volume_header vh = pih->get_volume_header();
+    Volume* vf_out = new Volume (vh, PT_VF_FLOAT_INTERLEAVED, 3);
+#if defined (commentout)
+    float* img = (float*) vf_out->img;
+
+    DoublePoint3DType fixed_point;
+    DoublePoint3DType moving_point;
+    DeformationFieldType::IndexType index;
+
+    FloatVector3DType displacement;
+
+    int i = 0;
+    while (!fi.IsAtEnd()) {
+        index = fi.GetIndex();
+        itk_vf->TransformIndexToPhysicalPoint (index, fixed_point);
+        moving_point = xf->TransformPoint (fixed_point);
+        for (int r = 0; r < 3; r++) {
+            img[i++] = moving_point[r] - fixed_point[r];
+        }
+    }
+
+    typedef itk::ImageRegionIterator< DeformationFieldType > FieldIterator;
+    FieldIterator fi (itk_vf, itk_vf->GetLargestPossibleRegion());
+    for (fi.GoToBegin(); !fi.IsAtEnd(); ++fi) {
+        displacement = fi.Get ();
+        for (int r = 0; r < 3; r++) {
+            img[i++] = displacement[r];
+        }
+    }
+#endif
     return vf_out;
 }
 
 Volume*
-xform_gpuit_bsp_to_gpuit_vf (
-    Xform* xf_in, plm_long* dim, float* offset, float* spacing)
+xform_gpuit_vf_to_gpuit_vf (Volume* vf_in, Plm_image_header *pih)
+{
+    Volume* vf_out;
+    Volume_header vh = pih->get_volume_header();
+    vf_out = volume_resample (vf_in, &vh);
+    return vf_out;
+}
+
+Volume*
+xform_gpuit_bsp_to_gpuit_vf (Xform *xf_in, Plm_image_header *pih)
 {
     Bspline_xform* bxf = xf_in->get_gpuit_bsp();
     Volume* vf_out;
 
-    /* GCS FIX: Need direction cosines */
-    vf_out = new Volume (dim, offset, spacing, 0, 
-        PT_VF_FLOAT_INTERLEAVED, 3);
+    Volume_header vh = pih->get_volume_header ();
+    vf_out = new Volume (vh, PT_VF_FLOAT_INTERLEAVED, 3);
     bspline_interpolate_vf (vf_out, bxf);
     return vf_out;
 }
 
 Volume*
 xform_itk_vf_to_gpuit_vf (
-    DeformationFieldType::Pointer itk_vf, 
-    plm_long* dim, float* offset, float* spacing)
+    DeformationFieldType::Pointer itk_vf, Plm_image_header *pih)
 {
-    /* GCS FIX: Need direction cosines */
-    Volume* vf_out = new Volume (dim, offset, spacing, 0, 
-        PT_VF_FLOAT_INTERLEAVED, 3);
+    Volume_header vh = pih->get_volume_header();
+    Volume* vf_out = new Volume (vh, PT_VF_FLOAT_INTERLEAVED, 3);
     float* img = (float*) vf_out->img;
     FloatVector3DType displacement;
 
@@ -1486,8 +1520,7 @@ xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih,
 
 void
 xform_to_gpuit_vf (
-    Xform* xf_out, Xform *xf_in, 
-    plm_long* dim, float* offset, float* spacing)
+    Xform* xf_out, Xform *xf_in, Plm_image_header* pih)
 {
     Volume* vf = 0;
 
@@ -1514,14 +1547,13 @@ xform_to_gpuit_vf (
         print_and_exit ("Sorry, itk_tps to gpuit_vf not implemented\n");
         break;
     case XFORM_ITK_VECTOR_FIELD:
-        vf = xform_itk_vf_to_gpuit_vf (xf_in->get_itk_vf(), dim, offset, spacing);
+        vf = xform_itk_vf_to_gpuit_vf (xf_in->get_itk_vf(), pih);
         break;
     case XFORM_GPUIT_BSPLINE:
-        vf = xform_gpuit_bsp_to_gpuit_vf (xf_in, dim, offset, spacing);
+        vf = xform_gpuit_bsp_to_gpuit_vf (xf_in, pih);
         break;
     case XFORM_GPUIT_VECTOR_FIELD:
-        vf = xform_gpuit_vf_to_gpuit_vf (xf_in->get_gpuit_vf(), 
-            dim, offset, spacing);
+        vf = xform_gpuit_vf_to_gpuit_vf (xf_in->get_gpuit_vf(), pih);
         break;
     default:
         print_and_exit ("Program error.  Bad xform type.\n");

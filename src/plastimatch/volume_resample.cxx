@@ -16,7 +16,7 @@
 /* Nearest neighbor interpolation */
 static Volume*
 volume_resample_float_nn (
-    Volume* vol_in, plm_long* dim, float* offset, float* spacing)
+    Volume* vol_in, const plm_long* dim, const float* offset, const float* spacing)
 {
     plm_long i, j, k, v;
     float x, y, z;
@@ -58,7 +58,7 @@ volume_resample_float_nn (
 /* Linear interpolation */
 static Volume*
 volume_resample_float_li (
-    Volume* vol_in, plm_long* dim, float* offset, float* spacing)
+    Volume* vol_in, const plm_long* dim, const float* offset, const float* spacing)
 {
     plm_long i, j, k, v;
     float x, y, z;
@@ -123,8 +123,8 @@ volume_resample_float_li (
 /* Nearest neighbor interpolation */
 static Volume*
 volume_resample_vf_float_interleaved (
-    Volume* vol_in, plm_long* dim, 
-    float* offset, float* spacing)
+    Volume* vol_in, const plm_long* dim, 
+    const float* offset, const float* spacing)
 {
     plm_long d, i, j, k, v;
     float x, y, z;
@@ -168,8 +168,8 @@ volume_resample_vf_float_interleaved (
 /* Nearest neighbor interpolation */
 static Volume*
 volume_resample_vf_float_planar (
-    Volume* vol_in, plm_long* dim, 
-    float* offset, float* spacing)
+    Volume* vol_in, const plm_long* dim, 
+    const float* offset, const float* spacing)
 {
     plm_long d, i, j, k, v;
     float x, y, z;
@@ -210,7 +210,7 @@ volume_resample_vf_float_planar (
 }
 
 Volume*
-volume_resample (Volume* vol_in, plm_long* dim, float* offset, float* spacing)
+volume_resample (Volume* vol_in, const plm_long* dim, const float* offset, const float* spacing)
 {
     switch (vol_in->pix_type) {
     case PT_UCHAR:
@@ -234,7 +234,14 @@ volume_resample (Volume* vol_in, plm_long* dim, float* offset, float* spacing)
 }
 
 Volume*
-volume_resample_nn (Volume* vol_in, plm_long* dim, float* offset, float* spacing)
+volume_resample (Volume* vol_in, const Volume_header *vh)
+{
+    /* GCS FIX: direction cosines */
+    return volume_resample (vol_in, vh->m_dim, vh->m_origin, vh->m_spacing);
+}
+
+Volume*
+volume_resample_nn (Volume* vol_in, const plm_long* dim, const float* offset, const float* spacing)
 {
     switch (vol_in->pix_type) {
     case PT_UCHAR:

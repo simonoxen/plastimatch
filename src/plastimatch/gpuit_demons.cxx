@@ -9,6 +9,7 @@
 #include "demons.h"
 #include "mha_io.h"
 #include "plm_config.h"
+#include "plm_image_header.h"
 #include "plm_stages.h"
 #include "registration_data.h"
 #include "volume.h"
@@ -24,6 +25,8 @@ do_gpuit_demons_stage_internal (
 {
     int d;
     DEMONS_Parms parms;
+    Plm_image_header pih;
+
     Volume* fixed = regd->fixed_image->gpuit_float();
     Volume* moving = regd->moving_image->gpuit_float();
     Volume *moving_ss, *fixed_ss;
@@ -58,8 +61,10 @@ do_gpuit_demons_stage_internal (
     if (xf_out->m_type == STAGE_TRANSFORM_NONE) {
 	vf_in = 0;
     } else {
-	xform_to_gpuit_vf (xf_out, xf_in, fixed_ss->dim, fixed_ss->offset, 
-	    fixed_ss->spacing);
+        pih.set_from_gpuit (fixed_ss->dim, 
+            fixed_ss->offset, fixed_ss->spacing, 
+            fixed_ss->direction_cosines);
+	xform_to_gpuit_vf (xf_out, xf_in, &pih);
 	vf_in = xf_out->get_gpuit_vf();
     }
 

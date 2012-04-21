@@ -86,14 +86,15 @@ class plastimatch1_EXPORT Plm_image_header {
         dest->m_direction = src->m_direction;
     }
 
-    void get_origin (float origin[3]);
-    void get_spacing (float spacing[3]);
-    void get_dim (plm_long dim[3]);
-    void get_direction_cosines (
-        float direction_cosines[9]);
+    Volume_header get_volume_header () const;
+    void get_volume_header (Volume_header *vh) const;
+    void get_origin (float origin[3]) const;
+    void get_spacing (float spacing[3]) const;
+    void get_dim (plm_long dim[3]) const;
+    void get_direction_cosines (float direction_cosines[9]) const;
 
     void print (void) const;
-    void get_image_center (float center[3]);
+    void get_image_center (float center[3]) const;
 };
 
 /* -----------------------------------------------------------------------

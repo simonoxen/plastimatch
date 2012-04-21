@@ -162,8 +162,28 @@ Plm_image_header::set_from_volume_header (const Volume_header& vh)
 	vh.m_spacing, vh.m_direction_cosines);
 }
 
+void
+Plm_image_header::get_volume_header (Volume_header *vh) const
+{
+    this->get_origin (vh->m_origin);
+    this->get_dim (vh->m_dim);
+    this->get_spacing (vh->m_spacing);
+    this->get_direction_cosines (vh->m_direction_cosines);
+}
+
+Volume_header
+Plm_image_header::get_volume_header () const
+{
+    Volume_header vh;
+    this->get_origin (vh.m_origin);
+    this->get_dim (vh.m_dim);
+    this->get_spacing (vh.m_spacing);
+    this->get_direction_cosines (vh.m_direction_cosines);
+    return vh;
+}
+
 void 
-Plm_image_header::get_origin (float origin[3])
+Plm_image_header::get_origin (float origin[3]) const
 {
     for (unsigned int d = 0; d < 3; d++) {
 	origin[d] = m_origin[d];
@@ -171,7 +191,7 @@ Plm_image_header::get_origin (float origin[3])
 }
 
 void 
-Plm_image_header::get_spacing (float spacing[3])
+Plm_image_header::get_spacing (float spacing[3]) const
 {
     for (unsigned int d = 0; d < 3; d++) {
 	spacing[d] = m_spacing[d];
@@ -179,7 +199,7 @@ Plm_image_header::get_spacing (float spacing[3])
 }
 
 void 
-Plm_image_header::get_dim (plm_long dim[3])
+Plm_image_header::get_dim (plm_long dim[3]) const
 {
     ImageRegionType::SizeType itk_size = m_region.GetSize ();
     for (unsigned int d = 0; d < 3; d++) {
@@ -188,7 +208,7 @@ Plm_image_header::get_dim (plm_long dim[3])
 }
 
 void 
-Plm_image_header::get_direction_cosines (float direction_cosines[9])
+Plm_image_header::get_direction_cosines (float direction_cosines[9]) const
 {
     dc_from_itk_direction (direction_cosines, &m_direction);
 }
@@ -242,7 +262,7 @@ itk_roi_from_gpuit (
 }
 
 void 
-Plm_image_header::get_image_center (float center[3])
+Plm_image_header::get_image_center (float center[3]) const
 {
     int d;
     for (d = 0; d < 3; d++) {

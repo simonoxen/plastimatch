@@ -34,16 +34,9 @@ stats_vf_main (Stats_parms* parms)
     }
     else if (xf1.m_type == XFORM_ITK_VECTOR_FIELD) {
 	/* GCS FIX: This logic should be moved inside of xform class */
-	plm_long dim[3];
-	float origin[3], spacing[3];
 	Plm_image_header pih;
-
 	pih.set_from_itk_image (xf1.get_itk_vf ());
-	pih.get_origin (origin);
-	pih.get_spacing (spacing);
-	pih.get_dim (dim);
-
-	xform_to_gpuit_vf (&xf2, &xf1, dim, origin, spacing);
+	xform_to_gpuit_vf (&xf2, &xf1, &pih);
 	vol = xf2.get_gpuit_vf();
     }
     else 
