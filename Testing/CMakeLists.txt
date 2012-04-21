@@ -427,14 +427,62 @@ plm_add_test (
   "vf-trans-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth-vf;--output;${PLM_BUILD_TESTING_DIR}/vf-zero.mha;--xf-trans;10 0 0;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE}"
+  "synth-vf;--output;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha;--xf-trans;10 0 0;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE}"
   )
 plm_add_test (
   "vf-radial-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth-vf;--output;${PLM_BUILD_TESTING_DIR}/vf-zero.mha;--xf-radial;--radial-center;0 0 0;--radial-mag;10;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE}"
+  "synth-vf;--output;${PLM_BUILD_TESTING_DIR}/vf-radial-1.mha;--xf-radial;--radial-center;0 0 0;--radial-mag;10;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE}"
   )
+
+## -------------------------------------------------------------------------
+## Test synthetic vector fields
+## -------------------------------------------------------------------------
+plm_add_test (
+  "vf-zero-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_BUILD_TESTING_DIR}/vf-zero.mha"
+  )
+plmtest_check_interval ("vf-zero-check"
+  "${PLM_BUILD_TESTING_DIR}/vf-zero-stats.stdout.txt"
+  "Mean abs: *([-0-9.]*)"
+  "0.000"
+  "0.000"
+  )
+set_property (TEST vf-zero-stats APPEND PROPERTY DEPENDS vf-zero)
+set_property (TEST vf-zero-check APPEND PROPERTY DEPENDS vf-zero-stats)
+
+plm_add_test (
+  "vf-trans-1-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha"
+  )
+plmtest_check_interval ("vf-trans-1-check"
+  "${PLM_BUILD_TESTING_DIR}/vf-trans-1-stats.stdout.txt"
+  "Mean: *([-0-9.]*)"
+  "10.000"
+  "10.000"
+  )
+set_property (TEST vf-trans-1-stats APPEND PROPERTY DEPENDS vf-trans-1)
+set_property (TEST vf-trans-1-check APPEND PROPERTY DEPENDS vf-trans-1-stats)
+
+plm_add_test (
+  "vf-radial-1-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_BUILD_TESTING_DIR}/vf-radial-1.mha"
+  )
+plmtest_check_interval ("vf-radial-1-check"
+  "${PLM_BUILD_TESTING_DIR}/vf-radial-1-stats.stdout.txt"
+  "Mean abs: *([-0-9.]*)"
+  "5.15"
+  "5.16"
+  )
+set_property (TEST vf-radial-1-stats APPEND PROPERTY DEPENDS vf-radial-1)
+set_property (TEST vf-radial-1-check APPEND PROPERTY DEPENDS vf-radial-1-stats)
 
 ## -------------------------------------------------------------------------
 ## bspline - bspline algorithm flavors

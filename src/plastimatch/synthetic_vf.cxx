@@ -45,17 +45,32 @@ synthetic_vf (Synthetic_vf_parms* parms)
     for (it_out.GoToBegin(); !it_out.IsAtEnd(); ++it_out) {
 	FloatPoint3DType phys;
 
+        /* Get 3D coordinate of voxel */
 	DeformationFieldType::IndexType idx = it_out.GetIndex ();
 	vf_out->TransformIndexToPhysicalPoint (idx, phys);
+
 	switch (parms->pattern) {
 	case Synthetic_vf_parms::PATTERN_ZERO:
 	case Synthetic_vf_parms::PATTERN_TRANSLATION:
 	default:
             /* Don't change disp */
 	    break;
-	case Synthetic_vf_parms::PATTERN_RADIAL:
-	    /* Do something (when implemented) */
+	case Synthetic_vf_parms::PATTERN_RADIAL: {
+            float diff[3];
+            float dist_2 = 0;
+            for (int d = 0; d < 3; d++) {
+                diff[d] = (phys[d] - parms->radial_center[d]) 
+                    / parms->radial_mag[d] / 3;
+                dist_2 += diff[d] * diff[d];
+            }
+            for (int d = 0; d < 3; d++) {
+                if (dist_2 > 1.) {
+                    diff[d] = diff[d] / sqrt(dist_2);
+                }
+                disp[d] = parms->radial_mag[d] * diff[d];
+            }
 	    break;
+        }
 	}
 	it_out.Set (disp);
     }

@@ -353,14 +353,27 @@ if (PLM_REDUCED_TESTS)
     "gauss-double-1"
     "gauss-double-2"
     "rect-1"
-#    "rect-2"
+    "rect-2"
     "rect-3"
     "rect-4"
-#    "rect-5"
-#    "rect-6"
-#    "rect-7"
+    "rect-5"
+    "rect-6"
+    "rect-7"
     "sphere-1"
     "sphere-2"
+    "sphere-3"
+
+    "vf-zero"
+    "vf-trans-1"
+    "vf-radial-1"
+
+    "vf-zero-stats"
+    "vf-zero-check"
+    "vf-trans-1-stats"
+    "vf-trans-1-check"
+    "vf-radial-1-stats"
+    "vf-radial-1-check"
+
     "bspline-c"
     "bspline-c-check"
     "bspline-g"
@@ -638,6 +651,5 @@ if (PLM_REDUCED_TESTS)
     "bragg-curve"
     "bragg-curve-check"
     "proton-dose"
-    "tps-warp"
     )
 endif ()
