@@ -1125,34 +1125,27 @@ xform_itk_any_to_gpuit_vf (
 {
     Volume_header vh = pih->get_volume_header();
     Volume* vf_out = new Volume (vh, PT_VF_FLOAT_INTERLEAVED, 3);
-#if defined (commentout)
     float* img = (float*) vf_out->img;
 
     DoublePoint3DType fixed_point;
     DoublePoint3DType moving_point;
-    DeformationFieldType::IndexType index;
-
-    FloatVector3DType displacement;
 
     int i = 0;
-    while (!fi.IsAtEnd()) {
-        index = fi.GetIndex();
-        itk_vf->TransformIndexToPhysicalPoint (index, fixed_point);
-        moving_point = xf->TransformPoint (fixed_point);
-        for (int r = 0; r < 3; r++) {
-            img[i++] = moving_point[r] - fixed_point[r];
+    plm_long fijk[3] = {0};
+    float fxyz[3];
+    LOOP_Z(fijk,fxyz,vf_out) {
+        LOOP_Y(fijk,fxyz,vf_out) {
+            LOOP_X(fijk,fxyz,vf_out) {
+                fixed_point[0] = fxyz[0];
+                fixed_point[1] = fxyz[1];
+                fixed_point[2] = fxyz[2];
+                moving_point = xf->TransformPoint (fixed_point);
+                for (int r = 0; r < 3; r++) {
+                    img[i++] = moving_point[r] - fixed_point[r];
+                }
+            }
         }
     }
-
-    typedef itk::ImageRegionIterator< DeformationFieldType > FieldIterator;
-    FieldIterator fi (itk_vf, itk_vf->GetLargestPossibleRegion());
-    for (fi.GoToBegin(); !fi.IsAtEnd(); ++fi) {
-        displacement = fi.Get ();
-        for (int r = 0; r < 3; r++) {
-            img[i++] = displacement[r];
-        }
-    }
-#endif
     return vf_out;
 }
 
@@ -1523,28 +1516,27 @@ xform_to_gpuit_vf (
     Xform* xf_out, Xform *xf_in, Plm_image_header* pih)
 {
     Volume* vf = 0;
-
     switch (xf_in->m_type) {
     case XFORM_NONE:
         print_and_exit ("Sorry, couldn't convert NONE to gpuit_vf\n");
         break;
     case XFORM_ITK_TRANSLATION:
-        print_and_exit ("Sorry, itk_translation to gpuit_vf not implemented\n");
+        vf = xform_itk_any_to_gpuit_vf (xf_in->get_trn(), pih);
         break;
     case XFORM_ITK_VERSOR:
-        print_and_exit ("Sorry, itk_versor to gpuit_vf not implemented\n");
+        vf = xform_itk_any_to_gpuit_vf (xf_in->get_vrs(), pih);
         break;
     case XFORM_ITK_QUATERNION:
-        print_and_exit ("Sorry, couldn't convert to gpuit vf\n");
+        vf = xform_itk_any_to_gpuit_vf (xf_in->get_quat(), pih);
         break;
     case XFORM_ITK_AFFINE:
-        print_and_exit ("Sorry, itk_affine to gpuit_vf not implemented\n");
+        vf = xform_itk_any_to_gpuit_vf (xf_in->get_aff(), pih);
         break;
     case XFORM_ITK_BSPLINE:
-        print_and_exit ("Sorry, itk_bspline to gpuit_vf not implemented\n");
+        vf = xform_itk_any_to_gpuit_vf (xf_in->get_itk_bsp(), pih);
         break;
     case XFORM_ITK_TPS:
-        print_and_exit ("Sorry, itk_tps to gpuit_vf not implemented\n");
+        vf = xform_itk_any_to_gpuit_vf (xf_in->get_itk_tps(), pih);
         break;
     case XFORM_ITK_VECTOR_FIELD:
         vf = xform_itk_vf_to_gpuit_vf (xf_in->get_itk_vf(), pih);
