@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "itk_image.h"
+#include "itk_image_load.h"
 #include "itk_image_save.h"
 #include "math_util.h"
 #include "plm_clp.h"
@@ -20,15 +21,37 @@
 typedef struct synthetic_vf_main_parms Synthetic_vf_main_parms;
 struct synthetic_vf_main_parms {
     Pstring output_fn;
+    Pstring fixed_fn;
     Synthetic_vf_parms sv_parms;
 };
+
+static void
+deduce_geometry (
+    Plm_image_header *pih,           /* Output */
+    Synthetic_vf_main_parms *parms   /* Input */
+)
+{
+    /* Try to guess the proper dimensions and spacing for output image */
+    if (parms->fixed_fn.not_empty ()) {
+	/* use the spacing of user-supplied fixed image */
+	printf ("Setting PIH from FIXED\n");
+	FloatImageType::Pointer fixed = itk_image_load_float (
+	    parms->fixed_fn, 0);
+	pih->set_from_itk_image (fixed);
+    } else {
+	/* use user-supplied or default values, which are already set */
+    }
+}
 
 void
 do_synthetic_vf (Synthetic_vf_main_parms *parms)
 {
     Synthetic_vf_parms *sv_parms = &parms->sv_parms;
 
-    /* Create image */
+    /* Deduce output geometry */
+    deduce_geometry (&sv_parms->pih, parms);
+
+    /* Create vf */
     DeformationFieldType::Pointer vf = synthetic_vf (sv_parms);
 
     /* Save to file */
@@ -59,23 +82,6 @@ parse_fn (
     /* Output files */
     parser->add_long_option ("", "output", 
 	"output filename", 1, "");
-    parser->add_long_option ("", "output-dicom", 
-	"output dicom directory", 1, "");
-    parser->add_long_option ("", "output-dose-img", 
-	"filename for output dose image", 1, "");
-    parser->add_long_option ("", "output-ss-img", 
-	"filename for output structure set image", 1, "");
-    parser->add_long_option ("", "output-type", 
-	"data type for output image: {uchar,short,ushort, ulong,float},"
-	" default is float", 
-	1, "float");
-
-    /* Main pattern */
-    parser->add_long_option ("", "pattern",
-	"synthetic pattern to create: {"
-	"donut, enclosed_rect, gauss, grid, lung, osd, rect, sphere"
-	"}, default is gauss", 
-	1, "gauss");
 
     /* Image size */
     parser->add_long_option ("", "origin", 
@@ -90,46 +96,22 @@ parse_fn (
 	" or 9 digit matrix string \"a b c d e f g h i\"", 1, "");
     parser->add_long_option ("", "volume-size", 
 	"size of output image in mm \"x [y z]\"", 1, "500");
+    parser->add_long_option ("", "fixed", 
+	"An input image used to set the size of the output ", 1, "");
 
-    /* Image intensities */
-    parser->add_long_option ("", "background", 
-	"intensity of background region", 1, "-1000");
-    parser->add_long_option ("", "foreground", 
-	"intensity of foreground region", 1, "0");
 
-    /* Donut options */
-    parser->add_long_option ("", "donut-center", 
-	"location of donut center in mm \"x [y z]\"", 1, "0 0 0");
-    parser->add_long_option ("", "donut-radius", 
-	"size of donut in mm \"x [y z]\"", 1, "50 50 20");
-    parser->add_long_option ("", "donut-rings", 
-	"number of donut rings (2 rings for traditional donut)", 1, "2");
-	
-    /* Gaussian options */
-    parser->add_long_option ("", "gauss-center", 
-	"location of Gaussian center in mm \"x [y z]\"", 1, "0 0 0");
-    parser->add_long_option ("", "gauss-std", 
-	"width of Gaussian in mm \"x [y z]\"", 1, "100");
+    /* Patterns */
+    parser->add_long_option ("", "xf-radial",
+	"Radial expansion (or contraction)", 1);
+    parser->add_long_option ("", "xf-trans",
+	"Uniform translation in mm \"x y z\"", 1);
+    parser->add_long_option ("", "xf-zero", "Null transform");
 
-    /* Rect options */
-    parser->add_long_option ("", "rect-size", 
-	"width of rectangle in mm \"x [y z]\","
-	" or locations of rectangle corners in mm"
-	" \"x1 x2 y1 y2 z1 z2\"", 1, "-50 50 -50 50 -50 50");
-
-    /* Sphere options */
-    parser->add_long_option ("", "sphere-center", 
-	"location of sphere center in mm \"x y z\"", 1, "0 0 0");
-    parser->add_long_option ("", "sphere-radius", 
-	"radius of sphere in mm \"x [y z]\"", 1, "50");
-
-    /* Grid pattern options */
-    parser->add_long_option ("", "grid-pattern", 
-	"grid pattern spacing in voxels \"x [y z]\"", 1, "10");
-
-    /* Lung options */
-    parser->add_long_option ("", "lung-tumor-pos", 
-	"position of tumor in mm \"z\" or \"x y z\"", 1, "0");
+    /* Pattern options */
+    parser->add_long_option ("", "radial-center", 
+	"location of center of radial warp \"x [y z]\"", 1, "0 0 0");
+    parser->add_long_option ("", "radial-mag", 
+	"displacment magnitude for radial warp in mm \"x [y z]\"", 1, "10");
 
     /* Parse the command line arguments */
     parser->parse (argc,argv);
@@ -138,10 +120,21 @@ parse_fn (
     parser->check_default_options ();
 
     /* Check that an output file was given */
-    if (!parser->option("output") && !parser->option("output-dicom")) {
+    if (!parser->option("output")) {
 	throw dlib::error (
-	    "Error, you must specify either --output or --output-dicom.\n"
+	    "Error, you must specify an --output option.\n"
 	);
+    }
+
+    /* Check that a xf option was given */
+    if (!parser->option("xf-radial") && 
+	!parser->option("xf-trans") && 
+	!parser->option("xf-zero"))
+    {
+	std::cout << 
+	    "Error, you must specify one of the --xf-*** options.\n";
+	usage_fn (parser, argc, argv);
+	exit (1);
     }
 
     /* Copy values into output struct */
@@ -150,19 +143,16 @@ parse_fn (
     /* Basic options */
     parms->output_fn = parser->get_string("output").c_str();
 
-    /* Main pattern */
-    std::string arg = parser->get_string ("pattern");
-    if (arg == "translation") {
-	sv_parms->pattern = Synthetic_vf_parms::PATTERN_TRANSLATION;
-    }
-    else if (arg == "radial") {
-	sv_parms->pattern = Synthetic_vf_parms::PATTERN_RADIAL;
-    }
-    else if (arg == "zero") {
+    /* Patterns */
+    if (parser->option("xf-zero")) {
 	sv_parms->pattern = Synthetic_vf_parms::PATTERN_ZERO;
-    }
-    else {
-	throw (dlib::error ("Error. Unknown --pattern argument: " + arg));
+    } else if (parser->option("xf-trans")) {
+	sv_parms->pattern = Synthetic_vf_parms::PATTERN_TRANSLATION;
+	parser->assign_float13 (sv_parms->translation, "xf-trans");
+    } else if (parser->option("xf-radial")) {
+	sv_parms->pattern = Synthetic_vf_parms::PATTERN_RADIAL;
+    } else {
+	throw (dlib::error ("Error. Unknown --xf argument."));
     }
 
     /* Image size */
@@ -200,54 +190,12 @@ parse_fn (
 	}
     }
 
-#if defined (commentout)
-    /* Image intensities */
-    sv_parms->background = parser->get_float ("background");
-    sv_parms->foreground = parser->get_float ("foreground");
+    /* Set the pih */
+    sv_parms->pih.set (vh);
 
-    /* Donut options */
-    parser->assign_float13 (sv_parms->donut_center, "donut-center");
-    parser->assign_float13 (sv_parms->donut_radius, "donut-radius");
-    sv_parms->donut_rings = parser->get_int ("donut-rings");
-
-    /* Gaussian options */
-    parser->assign_float13 (sv_parms->gauss_center, "gauss-center");
-    parser->assign_float13 (sv_parms->gauss_std, "gauss-std");
-
-    /* Rect options */
-    int rc = sscanf (parser->get_string("rect-size").c_str(), 
-	"%g %g %g %g %g %g", 
-	&(sv_parms->rect_size[0]), 
-	&(sv_parms->rect_size[1]), 
-	&(sv_parms->rect_size[2]), 
-	&(sv_parms->rect_size[3]), 
-	&(sv_parms->rect_size[4]), 
-	&(sv_parms->rect_size[5]));
-    if (rc == 1) {
-	sv_parms->rect_size[0] = - 0.5 * sv_parms->rect_size[0];
-	sv_parms->rect_size[1] = - sv_parms->rect_size[0];
-	sv_parms->rect_size[2] = + sv_parms->rect_size[0];
-	sv_parms->rect_size[3] = - sv_parms->rect_size[0];
-	sv_parms->rect_size[4] = + sv_parms->rect_size[0];
-	sv_parms->rect_size[5] = - sv_parms->rect_size[0];
-    }
-    else if (rc == 3) {
-	sv_parms->rect_size[4] = - 0.5 * sv_parms->rect_size[2];
-	sv_parms->rect_size[2] = - 0.5 * sv_parms->rect_size[1];
-	sv_parms->rect_size[0] = - 0.5 * sv_parms->rect_size[0];
-	sv_parms->rect_size[1] = - sv_parms->rect_size[0];
-	sv_parms->rect_size[3] = - sv_parms->rect_size[2];
-	sv_parms->rect_size[5] = - sv_parms->rect_size[4];
-    }
-    else if (rc != 6) {
-	throw (dlib::error ("Error. Option --rect_size must have "
-		"one, three, or six arguments\n"));
-    }
-
-    /* Sphere options */
-    parser->assign_float13 (sv_parms->sphere_center, "sphere-center");
-    parser->assign_float13 (sv_parms->sphere_radius, "sphere-radius");
-#endif
+    /* Radial options */
+    parser->assign_float13 (sv_parms->radial_center, "radial-center");
+    parser->assign_float13 (sv_parms->radial_mag, "radial-mag");
 }
 
 void

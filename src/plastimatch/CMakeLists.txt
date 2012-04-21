@@ -682,9 +682,6 @@ set (SHUFFLE_MHA_SRC
 set (SIFTnD_SRC
   siftnD.cxx
   )
-set (SYNTHETIC_VF_SRC
-  synthetic_vf_main.cxx 
-  )
 set (TEST_EPS_SRC
   test_eps.cxx
   )
@@ -923,9 +920,6 @@ if (FULL_PLASTIMATCH_BUILD)
       "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
       ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   endif ()
-  plm_add_executable (synthetic_vf "${SYNTHETIC_VF_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   plm_add_executable (union_mask union_mask.cxx
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})

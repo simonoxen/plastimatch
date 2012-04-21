@@ -156,10 +156,16 @@ Plm_image_header::set_from_plm_image (Plm_image *pli)
 }
 
 void
-Plm_image_header::set_from_volume_header (const Volume_header& vh)
+Plm_image_header::set (const Volume_header& vh)
 {
     this->set_from_gpuit (vh.m_dim, vh.m_origin, 
 	vh.m_spacing, vh.m_direction_cosines);
+}
+
+void
+Plm_image_header::set_from_volume_header (const Volume_header& vh)
+{
+    this->set (vh);
 }
 
 void

@@ -20,12 +20,16 @@ public:
     Pattern pattern;
     Plm_image_header pih;
     float translation[3];
+    float radial_center[3];
+    float radial_mag[3];
 
 public:
     Synthetic_vf_parms () {
 	pattern = PATTERN_UNKNOWN;
 	for (int i = 0; i < 3; i++) {
 	    translation[i] = 0.0f;
+	    radial_center[i] = 0.0f;
+	    radial_mag[i] = 0.0f;
 	}
     }
 };

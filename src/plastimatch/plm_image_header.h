@@ -71,6 +71,7 @@ class plastimatch1_EXPORT Plm_image_header {
     void set_from_gpuit_bspline (Bspline_xform *bxf);
     void set_from_plm_image (Plm_image *pli);
     void set_from_volume_header (const Volume_header& vh);
+    void set (const Volume_header& vh);
 
     template<class T> 
         void set_from_itk_image (T image) {

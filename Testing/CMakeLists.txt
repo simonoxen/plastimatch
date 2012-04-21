@@ -235,7 +235,7 @@ if (PLM_USE_GPU_PLUGINS)
 endif ()
 
 ## -------------------------------------------------------------------------
-## synth-test - create synthetic mha files
+## Create synthetic images
 ##   black-1           All black, slightly different geometry
 ##   donut-1           Centered donut
 ##   gauss-1           Centered gauss
@@ -409,6 +409,31 @@ plm_add_test (
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_BUILD_TESTING_DIR}/sphere-3.mha;--output-type;float;--pattern;sphere;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;1;--sphere-center;0 0 0;--sphere-radius;50 50 50"
+  )
+
+## -------------------------------------------------------------------------
+## Create synthetic vector fields
+##   vf-zero         Zero vector field
+##   vf-trans-1      Translation x direction, 1cm
+##   vf-radial-1     Radial warp, 1cm
+## -------------------------------------------------------------------------
+plm_add_test (
+  "vf-zero"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth-vf;--output;${PLM_BUILD_TESTING_DIR}/vf-zero.mha;--xf-zero;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE}"
+  )
+plm_add_test (
+  "vf-trans-1"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth-vf;--output;${PLM_BUILD_TESTING_DIR}/vf-zero.mha;--xf-trans;10 0 0;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE}"
+  )
+plm_add_test (
+  "vf-radial-1"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth-vf;--output;${PLM_BUILD_TESTING_DIR}/vf-zero.mha;--xf-radial;--radial-center;0 0 0;--radial-mag;10;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE}"
   )
 
 ## -------------------------------------------------------------------------
