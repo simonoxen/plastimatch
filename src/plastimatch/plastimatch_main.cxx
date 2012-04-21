@@ -27,6 +27,7 @@
 #include "pcmd_segment.h"
 #include "pcmd_stats.h"
 #include "pcmd_synth.h"
+#include "pcmd_synth_vf.h"
 #include "pcmd_thumbnail.h"
 #include "pcmd_warp.h"
 #include "pcmd_xf_convert.h"
@@ -170,25 +171,28 @@ do_command (int argc, char* argv[])
     else if (!strcmp (command, "resample")) {
         do_command_resample (argc, argv);
     }
+#if (PLM_CONFIG_ENABLE_LUA)
+    else if (!strcmp (command, "script")) {
+        do_command_script (argc, argv);
+    }
+#endif
     else if (!strcmp (command, "segment")) {
         do_command_segment (argc, argv);
     }
     else if (!strcmp (command, "slice")) {
         print_and_exit ("Error: slice command is now called thumbnail.\n");
     }
-    else if (!strcmp (command, "thumbnail")) {
-        do_command_thumbnail (argc, argv);
-    }
-#if (PLM_CONFIG_ENABLE_LUA)
-    else if (!strcmp (command, "script")) {
-        do_command_script (argc, argv);
-    }
-#endif
     else if (!strcmp (command, "stats")) {
         do_command_stats (argc, argv);
     }
     else if (!strcmp (command, "synth")) {
         do_command_synth (argc, argv);
+    }
+    else if (!strcmp (command, "synth-vf")) {
+        do_command_synth_vf (argc, argv);
+    }
+    else if (!strcmp (command, "thumbnail")) {
+        do_command_thumbnail (argc, argv);
     }
     else if (!strcmp (command, "warp")) {
         /* convert and warp are the same */

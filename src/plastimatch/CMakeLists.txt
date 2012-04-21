@@ -600,6 +600,7 @@ set (PLASTIMATCH_SRC
   pcmd_segment.cxx pcmd_segment.h
   pcmd_stats.cxx pcmd_stats.h
   pcmd_synth.cxx pcmd_synth.h
+  pcmd_synth_vf.cxx pcmd_synth_vf.h
   pcmd_thumbnail.cxx pcmd_thumbnail.h 
   pcmd_warp.cxx pcmd_warp.h 
   pcmd_warp_dij.cxx 
