@@ -8,6 +8,37 @@ Making tarball and debian package
 ---------------------------------
 This is done on wormwood.  
 
+Setting up a build system for the first time
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+#. Install the requisite packages::
+
+     sudo apt-get install devscripts pbuilder 
+
+#. Make and register ssh keys::
+
+     ssh-keygen -f ~/.ssh/id_rsa_alioth
+
+   Then go to https://alioth.debian.org/account/editsshkeys.php to register the public key.  Wait up to one hour for the key to be registered.
+
+#. Download the debian-med repository::
+
+     debcheckout --user <username> svn://svn.debian.org/debian-med/trunk/packages/<package> <package>
+
+#. Link the helper scripts to the debian plastimatch directory::
+
+     cd debian-med/plastimatch
+     ln -s ~/work/plastimatch/extra/debian/* .
+
+#. Initial setup of pbuilder environment::
+
+     sudo apt-get install debian-archive-keyring
+     sudo pbuilder create --distribution sid --mirror ftp://ftp.us.debian.org/debian/ --debootstrapopts "--keyring=/usr/share/keyrings/debian-archive-keyring.gpg"
+
+   See this link for an explanation https://wiki.ubuntu.com/PbuilderHowto, 
+   though I use sid distribution instead of squeeze.
+
+
 Step 1: Preliminary testing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The preliminary testing will make sure that the tarball will 
