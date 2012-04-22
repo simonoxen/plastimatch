@@ -2,6 +2,8 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
+#include <iomanip>
+#include <sstream>
 #include <stdlib.h>
 #include <string.h>
 #include "itkCenteredTransformInitializer.h"
@@ -84,32 +86,32 @@ public:
 	if (typeid(event) == typeid(itk::StartEvent)) {
 	    m_feval = 0;
 	    last_value = -1.0;
-	    std::cout << "StartEvent: ";
+            lprintf ("StartEvent: ");
 	    if (m_stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
-		std::cout << optimizer_get_current_position (
-		    m_registration, m_stage);
+                std::stringstream ss;
+                ss << optimizer_get_current_position (m_registration, m_stage);
+                lprintf (ss.str().c_str());
 	    }
-	    std::cout << std::endl;
+            lprintf ("\n");
 	    plm_timer_start (&timer);
 	}
 	else if (typeid(event) == typeid(itk::InitializeEvent)) {
-	    std::cout << "InitializeEvent: ";
-	    std::cout << std::endl;
+            lprintf ("InitializeEvent: \n");
 	    plm_timer_start (&timer);
 	}
 	else if (typeid(event) == typeid(itk::EndEvent)) {
-	    std::cout << "EndEvent: ";
+	    lprintf ("EndEvent: ");
 	    if (m_stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
-		std::cout << optimizer_get_current_position (
-		    m_registration, m_stage);
-		std::cout << std::endl;
+                std::stringstream ss;
+                ss << optimizer_get_current_position (m_registration, m_stage);
+                lprintf (ss.str().c_str());
 	    }
-	    std::cout << std::endl;
+	    lprintf ("\n");
 	}
 	else if (typeid(event) 
 	    == typeid(itk::FunctionEvaluationIterationEvent))
 	{
-	    std::cout << "FunctionEvaluationIterationEvent\n";
+	    lprintf ("FunctionEvaluationIterationEvent\n");
 	}
 	else if (typeid(event) 
 	    == typeid(itk::FunctionAndGradientEvaluationIterationEvent))
@@ -118,7 +120,7 @@ public:
 	    double val = optimizer_get_value(m_registration, m_stage);
 	    double duration = plm_timer_report (&timer);
 
-	    logfile_printf ("MSE [%2d,%3d] %9.3f [%6.3f secs]\n", 
+	    lprintf ("MSE [%2d,%3d] %9.3f [%6.3f secs]\n", 
 		it, m_feval, val, duration);
 	    plm_timer_start (&timer);
 	    m_feval++;
@@ -128,17 +130,18 @@ public:
 	    double val = optimizer_get_value(m_registration, m_stage);
 	    double ss = optimizer_get_step_length(m_registration, m_stage);
 	    
-	    printf ("              SS %5.2f ", ss);
+	    lprintf ("              SS %5.2f ", ss);
 
 	    if (m_stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
-		std::cout << optimizer_get_current_position (
-		    m_registration, m_stage);
+                std::stringstream ss;
+                ss << optimizer_get_current_position (m_registration, m_stage);
+                lprintf (ss.str().c_str());
 	    }
 
 	    if (last_value >= 0.0) {
 		double diff = fabs(last_value - val);
 		if (it >= m_stage->min_its && diff < m_stage->convergence_tol) {
-		    printf (" %10.2f (tol)", diff);
+		    lprintf (" %10.2f (tol)", diff);
 		    /* calling optimizer_set_max_iterations () doesn't 
 		       seem to always stop rsg. */
 
@@ -153,23 +156,23 @@ public:
 			    m_stage, 1);
 		    }
 		} else {
-		    printf (" %10.2f", diff);
+		    lprintf (" %10.2f", diff);
 		}
 	    }
 	    last_value = val;
-	    std::cout << std::endl;
+	    lprintf ("\n");
 	}
 	else if (typeid(event) == typeid(itk::ProgressEvent)) {
-	    std::cout << "ProgressEvent: ";
+	    lprintf ("ProgressEvent: ");
 	    if (m_stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
-		std::cout << optimizer_get_current_position (
-		    m_registration, m_stage);
+                std::stringstream ss;
+                ss << optimizer_get_current_position (m_registration, m_stage);
+                lprintf (ss.str().c_str());
 	    }
-	    std::cout << std::endl;
+	    lprintf ("\n");
 	}
 	else {
-	    std::cout << "Unknown event type." << std::endl;
-	    event.Print(std::cout);
+            lprintf ("Unknown event type: %s\n", event.GetEventName());
 	}
     }
 };
@@ -412,26 +415,25 @@ set_fixed_image_region (RegistrationType::Pointer registration,
     }
 }
 
-template<class ImgP>
+template<class T>
 void
-show_image_stats (ImgP image)
+show_image_stats (T image)
 {
-    typedef typename ImgP::ObjectType Img;
-
+    typedef typename T::ObjectType Img;
     const typename Img::SizeType& sz = image->GetLargestPossibleRegion().GetSize();
     const typename Img::PointType& ori = image->GetOrigin();
     const typename Img::SpacingType& sp = image->GetSpacing();
     const typename Img::DirectionType& di = image->GetDirection();
 
-    printf ("Origin = %g %g %g\n", ori[0], ori[1], ori[2]);
-    printf ("Spacing = %g %g %g\n", sp[0], sp[1], sp[2]);
-    std::cout << "Size = " << sz[0] << " " << sz[1] << " " << sz[2] << std::endl;
-    printf ("Direction Cosines =\n");
+    lprintf ("Origin = %g %g %g\n", ori[0], ori[1], ori[2]);
+    lprintf ("Dim = %g %g %g\n", sp[0], sp[1], sp[2]);
+    lprintf ("Spacing = %d %d %d\n", sz[0], sz[1], sz[2]);
+    lprintf ("Direction Cosines =\n");
     for (unsigned int d1 = 0; d1 < 3; d1++) {
 	for (unsigned int d2 = 0; d2 < 3; d2++) {
-	    printf (" %g", di[d1][d2]);
+	    lprintf (" %g", di[d1][d2]);
 	}
-	printf ("\n");
+	lprintf ("\n");
     }
 }
 
@@ -540,8 +542,10 @@ set_transform (
 	registration->GetTransform()->GetParameters());
 
     if (stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
-	std::cout << "Intial Parameters = " 
-		  << registration->GetTransform()->GetParameters() << std::endl;
+        std::stringstream ss;
+        ss << "Intial Parameters = " 
+            << registration->GetTransform()->GetParameters() << "\n";
+        lprintf (ss.str().c_str());
     }
 }
 
@@ -651,14 +655,16 @@ do_itk_registration_stage (
 
     try {
 	if (stage->optim_type != OPTIMIZATION_NO_REGISTRATION) {
-	    std::cout << std::endl << "Starting Registration" << std::endl;
+            lprintf ("Starting ITK registration\n");
 	    registration->Update ();
-	    std::cout << std::endl << "Registration done." << std::endl;
+            lprintf ("ITK registration complete\n");
 	}
     }
     catch (itk::ExceptionObject & err) {
-	std::cerr << "Exception caught in itk registration." << std::endl;
-	std::cerr << err << std::endl;
+        lprintf ("Exception caught in itk registration.\n");
+        std::stringstream ss;
+        ss << err << "\n";
+        lprintf (ss.str().c_str());
 	exit (-1);
     }
 
@@ -686,7 +692,7 @@ do_itk_center_stage (
     initializer->SetMovingImage(registration->GetMovingImage());
     initializer->GeometryOn();
 
-    std::cout << "Centering images" << std::endl;
+    lprintf ("Centering images\n");
     initializer->InitializeTransform();
     registration->SetTransform(trn);
     set_xf_out (xf_out, registration, stage);

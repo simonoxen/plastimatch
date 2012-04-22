@@ -81,7 +81,7 @@ logfile_close (void)
 }
 
 void
-logfile_printf (char* fmt, ...)
+logfile_printf (const char* fmt, ...)
 {
     va_list argptr;
     va_start (argptr, fmt);

@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "logfile.h"
 #include "math_util.h"
 #include "plm_int.h"
 #include "print_and_exit.h"
@@ -34,7 +35,7 @@
 void
 directions_cosine_debug (const float *m)
 {
-    printf ("%8f %8f %8f\n%8f %8f %8f\n%8f %8f %8f\n",
+    lprintf ("%8f %8f %8f\n%8f %8f %8f\n%8f %8f %8f\n",
 	m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8]);
 }
 
@@ -587,7 +588,7 @@ volume_calc_grad_dcos (Volume* vout, const Volume* vref)
     out_img = (float*) vout->img;
     ref_img = (float*) vref->img;
 
-    printf ("Direction cosines: "
+    lprintf ("Direction cosines: "
 	"vout = %f %f %f %f %f %f\n"
 	"vref = %f %f %f %f %f %f\n",
 	vout->direction_cosines[0],
@@ -603,7 +604,7 @@ volume_calc_grad_dcos (Volume* vout, const Volume* vref)
 	vref->direction_cosines[4],
 	vref->direction_cosines[5]
     );
-    printf ("spac: "
+    lprintf ("spac: "
 	"vout = %f %f %f ...\n"
 	"vref = %f %f %f ...\n",
 	vout->spacing[0],
@@ -613,7 +614,7 @@ volume_calc_grad_dcos (Volume* vout, const Volume* vref)
 	vref->spacing[1],
 	vref->spacing[2]
     );
-    printf ("proj: "
+    lprintf ("proj: "
 	"vout = %f %f %f ...\n"
 	"vref = %f %f %f ...\n",
 	vout->proj[0][0],
@@ -623,7 +624,7 @@ volume_calc_grad_dcos (Volume* vout, const Volume* vref)
 	vref->proj[0][1],
 	vref->proj[0][2]
     );
-    printf ("step: "
+    lprintf ("step: "
 	"vout = %f %f %f ...\n"
 	"vref = %f %f %f ...\n",
 	vout->step[0][0],
@@ -685,7 +686,7 @@ volume_calc_grad_dcos (Volume* vout, const Volume* vref)
 	    }
 	}
     }
-    printf ("volume_calc_grad_dcos complete.\n");
+    lprintf ("volume_calc_grad_dcos complete.\n");
 }
 
 void

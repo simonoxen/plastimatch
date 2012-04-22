@@ -315,7 +315,7 @@ do_registration_stage (
     }
     else if (stage->xform_type == STAGE_TRANSFORM_ALIGN_CENTER) {
         do_itk_center_stage (regd, xf_out, xf_in, stage);
-        std::cout << "Centering done" << std::endl;
+        lprintf ("Centering done\n");
     }
     else {
         do_itk_registration_stage (regd, xf_out, xf_in, stage);

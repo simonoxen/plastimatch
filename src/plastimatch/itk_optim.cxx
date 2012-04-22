@@ -19,6 +19,7 @@
 #include "itkLBFGSBOptimizer.h"
 
 #include "itk_registration.h"
+#include "logfile.h"
 #include "plm_stages.h"
 #include "print_and_exit.h"
 
@@ -305,7 +306,8 @@ set_optimization_quat (RegistrationType::Pointer registration,
 {
     QuatOptimizerType::Pointer optimizer = QuatOptimizerType::New();
     optimizer->SetLearningRate(stage->learn_rate);
-	std::cout << "Learning Rate was set to : " << optimizer->GetLearningRate() <<std::endl;
+    lprintf ("Learning Rate was set to : %f\n", 
+        optimizer->GetLearningRate());
     optimizer->SetNumberOfIterations(stage->max_its);
     registration->SetOptimizer(optimizer);
 }

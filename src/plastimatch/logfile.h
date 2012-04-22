@@ -17,7 +17,7 @@ void logfile_open (char* log_fn);
 plmsys_EXPORT
 void logfile_close (void);
 plmsys_EXPORT
-void logfile_printf (char* fmt, ...);
+void logfile_printf (const char* fmt, ...);
 #if defined __cplusplus
 }
 #endif

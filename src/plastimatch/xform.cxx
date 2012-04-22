@@ -126,16 +126,14 @@ itk_xform_load (Xform *xf, const char* fn)
     /* Confirm that there is only one xform in the file */
     typedef itk::TransformFileReader::TransformListType* TransformListType;
     TransformListType transfList = transfReader->GetTransformList();
-    std::cout << "Number of transforms = " << transfList->size() << std::endl;
     if (transfList->size() != 1) {
         print_and_exit ("Error. ITK transform file has multiple "
-            "transforms: %s\n", fn);
+            "(%d) transforms: %s\n", transfList->size(), fn);
     }
 
     /* Deduce transform type, and copy into Xform structure */
     itk::TransformFileReader::TransformListType::const_iterator 
         itTrasf = transfList->begin();
-    printf ("ITK transform type = %s\n", (*itTrasf)->GetNameOfClass());
     if (!strcmp((*itTrasf)->GetNameOfClass(), "TranslationTransform")) {
         TranslationTransformType::Pointer itk_xf
             = TranslationTransformType::New();
@@ -243,7 +241,6 @@ init_versor_moments (RegistrationType::Pointer registration,
 
     initializer->GeometryOn();
 
-    printf ("Calling Initialize Transform\n");
     initializer->InitializeTransform();
 
     std::cout << "Transform is " << registration->GetTransform()->GetParameters() << std::endl;
@@ -332,22 +329,6 @@ xform_itk_bsp_set_grid (Xform *xf,
     const BsplineTransformType::RegionType bsp_region,
     const BsplineTransformType::DirectionType bsp_direction)
 {
-#if defined (commentout)
-    printf ("Setting bsp_spacing\n");
-    std::cout << bsp_spacing << std::endl;
-    printf ("Setting bsp_origin\n");
-    std::cout << bsp_origin << std::endl;
-    printf ("Setting bsp_region\n");
-    std::cout << bsp_region;
-    printf ("Setting bsp_direction = ");
-    for (int d1 = 0; d1 < 3; d1++) {
-        for (int d2 = 0; d2 < 3; d2++) {
-            printf ("%g ", bsp_direction[d1][d2]);
-        }
-    }
-    printf ("\n");
-#endif
-
     /* Set grid specifications to bsp struct */
     xf->get_itk_bsp()->SetGridSpacing (bsp_spacing);
     xf->get_itk_bsp()->SetGridOrigin (bsp_origin);
@@ -374,10 +355,6 @@ bsp_grid_from_img_grid (
     /* Convert image specifications to grid specifications */
     for (int d=0; d<3; d++) {
         float img_ext = (pih->Size(d) - 1) * fabs (pih->m_spacing[d]);
-#if defined (commentout)
-        printf ("img_ext[%d] %g <- (%d - 1) * %g\n", 
-            d, img_ext, pih->Size(d), pih->m_spacing[d]);
-#endif
         bsp_origin[d] = pih->m_origin[d] - grid_spac[d];
         bsp_spacing[d] = grid_spac[d];
         bsp_size[d] = 4 + (int) floor (img_ext / grid_spac[d]);
@@ -564,11 +541,6 @@ itk_bsp_extend_to_region (Xform* xf,
         float old_roi_corner = old_roi_origin + (bsp->GetGridRegion().GetSize()[d] - 3) * bsp->GetGridSpacing()[d];
         float new_roi_origin = pih->m_origin[d] + roi->GetIndex()[d] * pih->m_spacing[d];
         float new_roi_corner = new_roi_origin + (roi->GetSize()[d] - 1) * pih->m_spacing[d];
-#if defined (commentout)
-        printf ("extend? [%d]: (%g,%g) -> (%g,%g)\n", d,
-            old_roi_origin, old_roi_corner, new_roi_origin, new_roi_corner);
-        printf ("img_siz = %d, img_spac = %g\n", img_region.GetSize()[d], img_spacing[d]);
-#endif
         ea[d] = eb[d] = 0;
         if (old_roi_origin > new_roi_origin) {
             float diff = old_roi_origin - new_roi_origin;
@@ -584,9 +556,6 @@ itk_bsp_extend_to_region (Xform* xf,
             extend_needed = 1;
         }
     }
-#if defined (commentout)
-    printf ("ea = %d %d %d, eb = %d %d %d\n", ea[0], ea[1], ea[2], eb[0], eb[1], eb[2]);
-#endif
     if (extend_needed) {
 
         /* Allocate new parameter array */
@@ -596,22 +565,6 @@ itk_bsp_extend_to_region (Xform* xf,
         bsp_new->SetGridOrigin (bsp_origin);
         bsp_new->SetGridRegion (bsp_region);
         bsp_new->SetGridSpacing (bsp->GetGridSpacing());
-
-#if defined (commentout)
-        std::cout << "OLD BSpline Region = "
-            << bsp->GetGridRegion();
-        std::cout << "NEW BSpline Region = "
-            << bsp_new->GetGridRegion();
-        std::cout << "OLD BSpline Grid Origin = "
-            << bsp->GetGridOrigin()
-            << std::endl;
-        std::cout << "NEW BSpline Grid Origin = "
-            << bsp_new->GetGridOrigin()
-            << std::endl;
-        std::cout << "BSpline Grid Spacing = "
-            << bsp_new->GetGridSpacing()
-            << std::endl;
-#endif
 
         /* Copy current parameters in... */
         const unsigned int num_parms = bsp_new->GetNumberOfParameters();
@@ -624,8 +577,6 @@ itk_bsp_extend_to_region (Xform* xf,
                     for (i = 0; i < old_region.GetSize()[0]; i++, old_idx++) {
                         int new_idx;
                         new_idx = ((((d * bsp_size[2]) + k + eb[2]) * bsp_size[1] + (j + eb[1])) * bsp_size[0]) + (i + eb[0]);
-                        /* GCS FIX - use GetParameters() */
-//                      printf ("[%4d <- %4d] %g\n", new_idx, old_idx, bsp_parms_old[old_idx]);
                         bsp_coeff[new_idx] = bsp->GetParameters()[old_idx];
                     }
                 }
@@ -800,29 +751,16 @@ xform_gpuit_bsp_to_itk_bsp (
     SpacingType img_spacing_old;
     ImageRegionType img_region_old;
 
-    printf ("Input pih\n");
-    printf ("Origin\n");
-    std::cout << pih->m_origin << std::endl;
-    printf ("Spacing\n");
-    std::cout << pih->m_spacing << std::endl;
-    printf ("Region\n");
-    std::cout << pih->m_region;
-
     if (grid_spac) {
         /* Convert to itk data structure */
-        printf ("Running: gpuit_bsp_to_itk_bsp_raw\n");
         gpuit_bsp_to_itk_bsp_raw (&xf_tmp, xf_in, pih);
 
         /* Then, resample the xform to the desired grid spacing */
-        printf ("Running: xform_itk_bsp_to_itk_bsp\n");
         xform_itk_bsp_to_itk_bsp (xf_out, &xf_tmp, pih, grid_spac);
     } else {
         /* Convert to itk data structure only */
-        printf ("Running: gpuit_bsp_to_itk_bsp_raw\n");
         gpuit_bsp_to_itk_bsp_raw (xf_out, xf_in, pih);
     }
-
-    printf ("Completed: xform_itk_bsp_to_itk_bsp\n");
 }
 
 /* -----------------------------------------------------------------------
@@ -915,15 +853,12 @@ xform_gpuit_bsp_to_itk_vf (Xform* xf_in, Plm_image_header* pih)
     ImageRegionType img_region;
 
     /* Copy from GPUIT coefficient array to ITK coefficient array */
-    lprintf ("gpuit_bsp_to_itk_bsp_raw\n");
     gpuit_bsp_to_itk_bsp_raw (&xf_tmp, xf_in, pih);
 
     /* Resize itk array to span image */
-    lprintf ("itk_bsp_extend_to_region\n");
     itk_bsp_extend_to_region (&xf_tmp, pih, &pih->m_region);
 
     /* Render to vector field */
-    lprintf ("xform_itk_any_to_itk_vf\n");
     itk_vf = xform_itk_any_to_itk_vf (xf_tmp.get_itk_bsp(), pih);
 
     return itk_vf;
@@ -1024,7 +959,7 @@ create_gpuit_bxf (Plm_image_header* pih, float* grid_spac)
         /* Compute vox_per_rgn */
         vox_per_rgn[d] = ROUND_INT (grid_spac[d] / fabs(img_spacing[d]));
         if (vox_per_rgn[d] < 4) {
-            printf ("Warning: vox_per_rgn was less than 4.\n");
+            lprintf ("Warning: vox_per_rgn was less than 4.\n");
             vox_per_rgn[d] = 4;
         }
     }
@@ -1064,8 +999,6 @@ xform_any_to_gpuit_bsp (
 
     /* Fixate gpuit bsp to xf */
     xf_out->set_gpuit_bsp (bxf_new);
-
-    printf ("xform_any_to_gpuit_bsp complete\n");
 }
 
 void

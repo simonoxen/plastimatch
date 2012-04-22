@@ -248,11 +248,8 @@ set_key_val (
         else if (!strcmp(val,"amoeba")) {
             stage->optim_type = OPTIMIZATION_AMOEBA;
         }
-        else if (!strcmp(val,"rsg")) {
-            stage->optim_type = OPTIMIZATION_RSG;
-        }
-        else if (!strcmp(val,"versor")) {
-            stage->optim_type = OPTIMIZATION_VERSOR;
+        else if (!strcmp(val,"demons")) {
+            stage->optim_type = OPTIMIZATION_DEMONS;
         }
         else if (!strcmp(val,"lbfgs")) {
             stage->optim_type = OPTIMIZATION_LBFGS;
@@ -263,11 +260,17 @@ set_key_val (
         else if (!strcmp(val,"liblbfgs")) {
             stage->optim_type = OPTIMIZATION_LIBLBFGS;
         }
-        else if (!strcmp(val,"demons")) {
-            stage->optim_type = OPTIMIZATION_DEMONS;
+        else if (!strcmp(val,"nocedal")) {
+            stage->optim_type = OPTIMIZATION_LBFGSB;
+        }
+        else if (!strcmp(val,"rsg")) {
+            stage->optim_type = OPTIMIZATION_RSG;
         }
         else if (!strcmp(val,"steepest")) {
             stage->optim_type = OPTIMIZATION_STEEPEST;
+        }
+        else if (!strcmp(val,"versor")) {
+            stage->optim_type = OPTIMIZATION_VERSOR;
         }
         else {
             goto error_exit;
