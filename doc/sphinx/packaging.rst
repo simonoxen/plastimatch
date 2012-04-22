@@ -11,9 +11,11 @@ This is done on wormwood.
 Setting up a build system for the first time
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+#. Set DEBEMAIL and DEBFULLNAME environment variables (see http://www.debian.org/doc/manuals/maint-guide/first.en.html)
+
 #. Install the requisite packages::
 
-     sudo apt-get install devscripts pbuilder 
+     sudo apt-get install devscripts pbuilder debhelper
 
 #. Make and register ssh keys::
 
@@ -36,7 +38,7 @@ Setting up a build system for the first time
      sudo pbuilder create --distribution sid --mirror ftp://ftp.us.debian.org/debian/ --debootstrapopts "--keyring=/usr/share/keyrings/debian-archive-keyring.gpg"
 
    See this link for an explanation https://wiki.ubuntu.com/PbuilderHowto, 
-   though I use sid distribution instead of squeeze.
+   but use the sid distribution instead of squeeze.
 
 
 Step 1: Preliminary testing
