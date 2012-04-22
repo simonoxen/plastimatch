@@ -58,7 +58,7 @@ do_gpuit_demons_stage_internal (
     }
 
     /* Transform input xform to gpuit vector field */
-    if (xf_out->m_type == STAGE_TRANSFORM_NONE) {
+    if (xf_in->m_type == STAGE_TRANSFORM_NONE) {
 	vf_in = 0;
     } else {
         pih.set_from_gpuit (fixed_ss->dim, 

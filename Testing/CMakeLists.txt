@@ -24,6 +24,9 @@ configure_file ("${PLM_TESTING_DATA_DIR}/plm-bsp-dcos-b.txt"
 configure_file ("${PLM_TESTING_DATA_DIR}/plm-bsp-landmark-a.txt"
   "${PLM_BUILD_TESTING_DIR}/plm-bsp-landmark-a.txt"
   @ONLY)
+configure_file ("${PLM_TESTING_DATA_DIR}/plm-reg-multi-a.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-multi-a.txt"
+  @ONLY)
 
 ## -------------------------------------------------------------------------
 ## Testing macros
@@ -244,14 +247,16 @@ endif ()
 ##   gauss-4           Gauss with inverted pixel spacing
 ##   gauss-5           Even more off-center gauss
 ##   gauss-6           Off-center gauss, in off-center world coordinates
+##   gauss-7           Off-center gauss with wider sigma
 ##   gauss-ushort-1    Centered gauss, ushort
 ##   gauss-ushort-2    Off-center gauss, ushort
 ##   rect-1            Inverted rect, centered
 ##   rect-2            Standard rect, off-center
 ##   rect-3            Standard rect, centered
 ##   rect-4            Uchar rect, centered
-##   rect-5            Standard rect, centered, direction cosines rotated
-##   rect-6            Standard rect, centered, direction cosines alt-rotated
+##   rect-5            Standard rect, centered, direction cosines alt-1
+##   rect-6            Standard rect, centered, direction cosines alt-2
+##   rect-7            Standard rect, centered, direction cosines alt-3
 ##   sphere-1          Uchar sphere, bg=0, fg=255
 ##   sphere-2          Standard sphere, centered
 ## -------------------------------------------------------------------------
@@ -304,6 +309,12 @@ plm_add_test (
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_BUILD_TESTING_DIR}/gauss-6.mha;--output-type;float;--pattern;gauss;--origin;-15 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;10 0 0;--gauss-std;10 10 10"
+  )
+plm_add_test (
+  "gauss-7"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/gauss-7.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;10 0 0;--gauss-std;20 20 20"
   )
 plm_add_test (
   "gauss-ushort-1"
@@ -2307,6 +2318,35 @@ set_tests_properties (plm-bsp-dcos-b-stats PROPERTIES
 set_tests_properties (plm-bsp-dcos-b-check PROPERTIES 
   DEPENDS plm-bsp-dcos-b-stats)
 
+## -------------------------------------------------------------------------
+## plastimatch register (group 5)
+##   plm-reg-multi-a      versor, then demons
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-reg-multi-a"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-multi-a.txt"
+  )
+plm_add_test (
+  "plm-reg-multi-a-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-reg-multi-a-vf.nrrd"
+  )
+plmtest_check_interval (
+  "plm-reg-multi-a-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-multi-a-stats.stdout.txt"
+  "Mean: *([-0-9.]*)"
+  "-19.05"
+  "-18.85"
+  )
+set_tests_properties (plm-reg-multi-a PROPERTIES 
+  DEPENDS "rect-2;sphere-2")
+set_tests_properties (plm-reg-multi-a-stats PROPERTIES 
+  DEPENDS plm-reg-multi-a)
+set_tests_properties (plm-reg-multi-a-check PROPERTIES 
+  DEPENDS plm-reg-multi-a-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch compose
