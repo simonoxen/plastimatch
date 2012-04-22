@@ -69,7 +69,7 @@ for $file (@foundfiles) {
 #    last;
 }
 
-# Set the axes
+# Set the axes // there is a function "tick_values" that could be used too
 $cc->get_context('default')->range_axis->range->min(0);
 $cc->get_context('default')->range_axis->range->max(500000);
 
