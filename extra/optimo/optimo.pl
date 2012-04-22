@@ -35,6 +35,14 @@ impl=plastimatch
 max_its=100
 grid_spac=100 100 100
 res=4 4 2
+
+[STAGE]
+xform=bspline
+optim=OPTIM
+impl=plastimatch
+max_its=100
+grid_spac=70 70 70
+res=2 2 1
 EODATA
   ;
 
@@ -60,18 +68,15 @@ for (@list) {
 }
 closedir (DIR);
 
-@optim_settings = ("nocedal");
+@optim_settings = ("nocedal", "steepest");
 
 # For each image pair, create and run a script
-while (($prefix, $f2) = each(%file2)) {
-    $f1 = $file1{$prefix};
-
-    for $optim (@optim_settings) {
-
-	print "$optim\n";
+for $optim (@optim_settings) {
+    while (($prefix, $f2) = each(%file2)) {
+	$f1 = $file1{$prefix};
 
 	# Create the script file
-	$scratch_dir = catfile ($scratch_base, $prefix, $optim);
+	$scratch_dir = catfile ($scratch_base, $optim, $prefix);
 	mkpath ($scratch_dir);
 	$script = $script_template;
 	$script =~ s/FIXED/$f1/g;

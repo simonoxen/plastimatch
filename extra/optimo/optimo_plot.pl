@@ -15,11 +15,12 @@ use Chart::Clicker::Data::DataSet;
 
 use POSIX qw(FLT_MAX DBL_MAX);
 
-$scratch_base = "/dosf/scratch/optimo";
+$scratch_base = "/dosf/scratch/optimo/steepest";
 
 #########################################################################
 #  Main
 #########################################################################
+my @list = sort readdir(DIR);
 find (sub { push @foundfiles, $File::Find::name if /-log.txt$/ },
       $scratch_base);
 #print join("\n",@foundfiles), "\n";
@@ -46,11 +47,13 @@ for $file (@foundfiles) {
     print join (" ", @values), "\n";
 
     # normalize the series
-    my $vmax = $values[0];
-    my $vmin = $values[-1];
-    @values = map { ($_ - $vmin) / ($vmax - $vmin) } @values;
-    $e = 2.7182818284590452354;
-    @values = map { log ($_ + 1) / log (2) } @values;
+    $normalize = 0;
+    if ($normalize) {
+	my $vmax = $values[0];
+	my $vmin = $values[-1];
+	@values = map { ($_ - $vmin) / ($vmax - $vmin) } @values;
+	@values = map { log ($_ + 1) / log (2) } @values;
+    }
 
     # add the array of series data to the dataset
     my $series = Chart::Clicker::Data::Series->new(
@@ -65,5 +68,9 @@ for $file (@foundfiles) {
     close (FP);
 #    last;
 }
+
+# Set the axes
+$cc->get_context('default')->range_axis->range->min(0);
+$cc->get_context('default')->range_axis->range->max(500000);
 
 $cc->write_output('foo.png');
