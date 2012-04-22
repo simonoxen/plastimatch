@@ -130,7 +130,7 @@ public:
 	    double val = optimizer_get_value(m_registration, m_stage);
 	    double ss = optimizer_get_step_length(m_registration, m_stage);
 	    
-	    lprintf ("              SS %5.2f ", ss);
+	    lprintf (" VAL %9.3f SS %5.2f ", val, ss);
 
 	    if (m_stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
                 std::stringstream ss;
@@ -141,7 +141,7 @@ public:
 	    if (last_value >= 0.0) {
 		double diff = fabs(last_value - val);
 		if (it >= m_stage->min_its && diff < m_stage->convergence_tol) {
-		    lprintf (" %10.2f (tol)", diff);
+		    lprintf (" %10.2f (tol)", val - last_value);
 		    /* calling optimizer_set_max_iterations () doesn't 
 		       seem to always stop rsg. */
 
@@ -156,7 +156,7 @@ public:
 			    m_stage, 1);
 		    }
 		} else {
-		    lprintf (" %10.2f", diff);
+		    lprintf (" %10.2f", val - last_value);
 		}
 	    }
 	    last_value = val;

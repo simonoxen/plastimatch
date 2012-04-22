@@ -20,19 +20,19 @@ xform_out=SCRATCH/PREFIX-xf.txt
 logfile=SCRATCH/PREFIX-log.txt
 
 [STAGE]
-xform=rigid
-optim=versor
+xform=translation
+optim=rsg
 impl=itk
-max_its=5
+max_its=10
 convergence_tol=3
 grad_tol=0.1
-res=2 2 2
+res=4 4 2
 
 [STAGE]
 xform=bspline
 optim=OPTIM
 impl=plastimatch
-max_its=5
+max_its=100
 grid_spac=100 100 100
 res=4 4 2
 EODATA
@@ -41,6 +41,9 @@ EODATA
 #########################################################################
 #  Main
 #########################################################################
+
+# Clean the scratch directory
+rmtree ($scratch_base, {keep_root => 1});
 
 # Look for image pairs to register
 $in_base = $base_dir;
@@ -57,27 +60,34 @@ for (@list) {
 }
 closedir (DIR);
 
+@optim_settings = ("nocedal");
+
 # For each image pair, create and run a script
 while (($prefix, $f2) = each(%file2)) {
     $f1 = $file1{$prefix};
 
-    # Create the script file
-    $scratch_dir = catfile ($scratch_base, $prefix);
-    mkpath ($scratch_dir);
-    $script = $script_template;
-    $script =~ s/FIXED/$f1/g;
-    $script =~ s/MOVING/$f2/g;
-    $script =~ s/PREFIX/$prefix/g;
-    $script =~ s/SCRATCH/$scratch_dir/g;
-    $script =~ s/OPTIM/nocedal/g;
-    $script_fn = catfile ($scratch_dir, "parms.txt");
-    open (SCR, ">$script_fn");
-    print SCR $script;
-    close (SCR);
+    for $optim (@optim_settings) {
 
-    # Run the script file
-    $cmd = "plastimatch register $script_fn";
-    print "$cmd\n";
-    system ($cmd);
-    last;
+	print "$optim\n";
+
+	# Create the script file
+	$scratch_dir = catfile ($scratch_base, $prefix, $optim);
+	mkpath ($scratch_dir);
+	$script = $script_template;
+	$script =~ s/FIXED/$f1/g;
+	$script =~ s/MOVING/$f2/g;
+	$script =~ s/PREFIX/$prefix/g;
+	$script =~ s/SCRATCH/$scratch_dir/g;
+	$script =~ s/OPTIM/$optim/g;
+	$script_fn = catfile ($scratch_dir, "parms.txt");
+	open (SCR, ">$script_fn");
+	print SCR $script;
+	close (SCR);
+
+	# Run the script file
+	$cmd = "plastimatch register $script_fn";
+	print "$cmd\n";
+	system ($cmd);
+    }
+#    last;
 }
