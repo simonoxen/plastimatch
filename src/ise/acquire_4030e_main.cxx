@@ -16,7 +16,7 @@
 //#include <QTest>
 
 //#include "acquire_thread.h"
-//#include "advantech.h"
+#include "advantech.h"
 //#include "dips_panel.h"
 //#include "varian_4030e.h"
 #include "acquire_4030e_child.h"
@@ -42,11 +42,13 @@ main (int argc, char* argv[])
 
     /* During debugging, use hard-coded path */
     if (argc < 2) {
-        char** argv_tmp = (char**) malloc (2 * sizeof(char*));
+        char** argv_tmp = (char**) malloc (3 * sizeof(char*));
         argv_tmp[0] = argv[0];
         argv_tmp[1] = default_path_1;
+        argv_tmp[2] = default_path_2;
 	argv = argv_tmp;
-        argc = 2;
+        //argc = 2;
+        argc = 3;
     }
 
     if (argc > 1) {

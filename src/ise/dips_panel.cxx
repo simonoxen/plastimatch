@@ -84,13 +84,22 @@ Dips_panel::open_panel (int panel_no, int height, int width)
 }
 
 void
-Dips_panel::send_image (void)
+Dips_panel::wait_for_dips (void)
 {
+    int i = 0;
     while ((panelp->status & READ) == 0) {
         aqprintf ("Waiting for dips...\n");
         SleepEx (500, FALSE);
+        if (++i > 4) {
+            aqprintf ("Dips didn't read the last image?  Continuing...\n");
+            break;
+        }
     }
+}
 
+void
+Dips_panel::send_image (void)
+{
     /* Set timestamp */
     aqprintf ("Sending image to dips.\n");
     time (&panelp->time);

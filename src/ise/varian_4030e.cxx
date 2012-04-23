@@ -215,7 +215,7 @@ Varian_4030e::print_sys_info (void)
 }
 
 int 
-Varian_4030e::query_prog_info (UQueryProgInfo &crntStatus, bool showAll)
+Varian_4030e::query_prog_info (UQueryProgInfo &crntStatus, bool show_all)
 {
     UQueryProgInfo prevStatus = crntStatus;
     memset(&crntStatus, 0, sizeof(SQueryProgInfo));
@@ -229,7 +229,7 @@ Varian_4030e::query_prog_info (UQueryProgInfo &crntStatus, bool showAll)
         return result;
     }
 
-    if (showAll
+    if (show_all
         || (prevStatus.qpi.NumFrames != crntStatus.qpi.NumFrames)
         || (prevStatus.qpi.Complete != crntStatus.qpi.Complete)
         || (prevStatus.qpi.NumPulses != crntStatus.qpi.NumPulses)
@@ -343,8 +343,10 @@ Varian_4030e::wait_on_ready_for_pulse (
         aqprintf ("Waiting for ReadyForPulse == FALSE...\n");
     }
 
+    bool first = true;
     while (result == HCP_NO_ERR) {
-        result = query_prog_info (crntStatus, TRUE);
+        result = query_prog_info (crntStatus, first);
+        first = false;
         if (crntStatus.qpi.ReadyForPulse == expectedState) {
             break;
         }
@@ -472,10 +474,13 @@ void ShowReceptorData()
     memset(&uqpi.qpircpt, 0, sizeof(SQueryProgInfoRcpt));
     uqpi.qpircpt.StructSize = 28; // sizeof(SQueryProgInfoRcpt);
 
-    aqprintf("Calling vip_query_prog_info(HCP_U_QPIRCPT, %d)\n", sizeof(SQueryProgInfoRcpt));
+    aqprintf("Calling vip_query_prog_info(HCP_U_QPIRCPT, %d)\n", 
+        sizeof(SQueryProgInfoRcpt));
     int result = vip_query_prog_info(uType, &uqpi);
     if (result == HCP_NO_ERR) {
-        aqprintf("Receptor PanelType=%d, FwVersion=0x%.3X BoardId=%.2X%.2X%.2X\n",
+        aqprintf(
+            "Receptor PanelType=%d, FwVersion=0x%.3X "
+            "BoardId=%.2X%.2X%.2X\n",
             uqpi.qpircpt.PanelType,
             uqpi.qpircpt.FwVersion,
             uqpi.qpircpt.BoardSNbr[1],
@@ -643,6 +648,8 @@ Varian_4030e::get_image_to_dips (Dips_panel *dp, int xSize, int ySize)
         aqprintf("*** vip_get_image returned error %d\n", result);
         return HCP_NO_ERR;
     }
+
+    dp->wait_for_dips ();
 
     for (int i = 0; i < xSize * ySize; i++) {
         dp->pixelp[i] = image_ptr[i];

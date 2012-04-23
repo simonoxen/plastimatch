@@ -88,37 +88,37 @@ Advantech::~Advantech ()
 }
 
 void 
-Advantech::relay_close ()
+Advantech::relay_close (int bit)
 {
     LRESULT rc;
     PT_DioWriteBit ptDioWriteBit;
     ptDioWriteBit.port  = 0;
-    ptDioWriteBit.bit   = 0;
-    ptDioWriteBit.state = 0;
+    ptDioWriteBit.bit   = bit;
+    ptDioWriteBit.state = 1;
     rc = DRV_DioWriteBit(
 	this->driver_handle, (LPT_DioWriteBit)&ptDioWriteBit);
 }
 
 void 
-Advantech::relay_open ()
+Advantech::relay_open (int bit)
 {
     LRESULT rc;
     PT_DioWriteBit ptDioWriteBit;
     ptDioWriteBit.port  = 0;
-    ptDioWriteBit.bit   = 0;
-    ptDioWriteBit.state = 1;
+    ptDioWriteBit.bit   = bit;
+    ptDioWriteBit.state = 0;
     rc = DRV_DioWriteBit (
 	this->driver_handle, (LPT_DioWriteBit) &ptDioWriteBit);
 }
 
 bool
-Advantech::ready_for_expose ()
+Advantech::read_bit (int bit)
 {
     LRESULT rc;
     PT_DioReadBit ptDioReadBit;
     USHORT state = 0;
     ptDioReadBit.port  = 0;
-    ptDioReadBit.bit   = 2;
+    ptDioReadBit.bit   = bit;
     ptDioReadBit.state = &state;
     rc = DRV_DioReadBit (
 	this->driver_handle, (LPT_DioReadBit) &ptDioReadBit);
@@ -127,7 +127,6 @@ Advantech::ready_for_expose ()
 	Advantech::print_error (rc);
 	exit (-1);
     }
-    printf ("Read port 2: %d %d\n", rc, state);
     return (bool) state;
 }
 

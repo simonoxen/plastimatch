@@ -13,6 +13,7 @@ public:
     ~Dips_panel ();
     void open_panel (int panel_no, int height, int width);
     void poll_dummy (void);
+    void wait_for_dips (void);
     void send_image (void);
 
 public:

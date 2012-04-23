@@ -8,6 +8,8 @@
 #include <QProcess>
 
 class Acquire_4030e_window;
+class Advantech;
+class QTimer;
 
 class Acquire_4030e_parent : public QApplication
 {
@@ -20,12 +22,17 @@ public:
     void initialize (int argc, char* argv[]);
     void kill_rogue_processes ();
 public slots:
+    void timer_event ();
     void log_output ();
     void about_to_quit ();
 public:
+    Acquire_4030e_window *window;
     int num_process;
     QProcess process[2];
-    Acquire_4030e_window *window;
+    QTimer *timer;
+    Advantech *advantech;
+    bool generator_prep;
+    bool panel_select;
 };
 
 #endif

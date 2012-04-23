@@ -16,10 +16,10 @@ public:
     ULONG device_number;
     LONG driver_handle;
 public:
-    void relay_open ();
-    void relay_close ();
+    void relay_open (int bit);
+    void relay_close (int bit);
     static void print_error (LRESULT ErrorCode);
-    bool ready_for_expose ();
+    bool read_bit (int bit);
 };
 
 #endif
