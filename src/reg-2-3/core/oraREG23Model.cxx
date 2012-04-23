@@ -554,11 +554,11 @@ bool REG23Model::LoadConfiguration(std::string &errorSection,
       // check if we find a view info file (-> apply view name, otherwise "")
       bool haveViewInfo = false;
       std::string ext = TrimF(itksys::SystemTools::GetFilenameExtension(
-          m_FixedImageFileNames[i]));
+          m_FixedImageFileNames[k]));
       if ((ToLowerCaseF(ext) == ".rti" || ToLowerCaseF(ext) == ".rti.org"))
       {
         std::string vf = itksys::SystemTools::GetFilenamePath(
-            m_FixedImageFileNames[i]);
+            m_FixedImageFileNames[k]);
         EnsureStringEndsWith(vf, DSEP);
         vf += m_SiteInfo->ReadString("Paths", "ViewInfoFile", "");
         if (itksys::SystemTools::FileExists(vf.c_str()))
