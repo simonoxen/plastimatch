@@ -6,6 +6,7 @@ Technical reference
 
    utility_programs
    packaging
+   special_builds
    api
    mutual_information
    regularization
