@@ -146,6 +146,43 @@ set (PLMIMAGE_LIBRARY_SRC
   volume_resample.cxx volume_resample.h
   volume.cxx volume.h
   xpm.cxx xpm.h
+
+  plm_file_format.cxx plm_file_format.h 
+  xio_dir.cxx xio_dir.h
+  xio_patient.cxx xio_patient.h 
+  xio_plan.cxx xio_plan.h
+  itk_image.cxx itk_image.h 
+  rtss_polyline_set.cxx rtss_polyline_set.h 
+  rtss_structure.cxx rtss_structure.h 
+  plm_image_header.cxx plm_image_header.h 
+  itk_directions.cxx itk_directions.h 
+  metadata.cxx metadata.h 
+  dcm_util.cxx dcm_util.h
+  itk_image_stats.cxx itk_image_stats.h 
+
+  # Only need PLMIMAGE from here
+  plm_image.cxx plm_image.h 
+  plm_image_convert.cxx plm_image_convert.h 
+  plm_image_type.cxx plm_image_type.h 
+  itk_image_cast.cxx itk_image_cast.h 
+  itk_image_load.h itk_image_load.txx
+  itk_image_load_char.cxx
+  itk_image_load_double.cxx
+  itk_image_load_float.cxx
+  itk_image_load_int32.cxx
+  itk_image_load_short.cxx
+  itk_image_load_uchar.cxx
+  itk_image_load_uint32.cxx
+  itk_image_load_ushort.cxx
+  itk_image_load_vec.cxx
+  itk_image_save.cxx itk_image_save.h 
+  itk_metadata.cxx itk_metadata.h 
+
+  # Only need dicom from here
+  itk_dicom_load.cxx itk_dicom_load.h 
+  itk_dicom_save.cxx itk_dicom_save.h 
+
+  mha_io.cxx mha_io.h
   )
 
 set (GPUIT_LIBRARY_SRC
@@ -171,7 +208,6 @@ set (GPUIT_LIBRARY_SRC
   drr.cxx drr.h
   drr_trilin.cxx drr_trilin.h
   fdk.cxx fdk.h
-  mha_io.cxx mha_io.h
   proj_image.cxx proj_image.h
   proj_image_dir.cxx proj_image_dir.h
   proj_matrix.cxx proj_matrix.h 
@@ -335,7 +371,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   astroid_dose.cxx astroid_dose.h
   cxt_extract.cxx cxt_extract.h
   cxt_io.cxx cxt_io.h 
-  dcm_util.cxx dcm_util.h
   direction_cosines.h
   dlib_trainer.cxx dlib_trainer.h 
   dvh.cxx dvh.h
@@ -345,26 +380,8 @@ set (PLASTIMATCH1_LIBRARY_SRC
   itkAndConstantToImageFilter.h
   itk_crop.cxx itk_crop.h 
   itk_demons.cxx itk_demons.h 
-  itk_dicom_load.cxx itk_dicom_load.h 
-  itk_dicom_save.cxx itk_dicom_save.h 
-  itk_directions.cxx itk_directions.h 
   itk_gabor.cxx itk_gabor.h
-  itk_image.cxx itk_image.h 
-  itk_image_cast.cxx itk_image_cast.h 
-  itk_image_load.h itk_image_load.txx
-  itk_image_load_char.cxx
-  itk_image_load_double.cxx
-  itk_image_load_float.cxx
-  itk_image_load_int32.cxx
-  itk_image_load_short.cxx
-  itk_image_load_uchar.cxx
-  itk_image_load_uint32.cxx
-  itk_image_load_ushort.cxx
-  itk_image_load_vec.cxx
-  itk_image_save.cxx itk_image_save.h 
-  itk_image_stats.cxx itk_image_stats.h 
   itk_mask.cxx itk_mask.h 
-  itk_metadata.cxx itk_metadata.h 
   itk_pointset.cxx itk_pointset.h
   itk_optim.cxx itk_optim.h 
   itk_registration.cxx itk_registration.h 
@@ -375,15 +392,9 @@ set (PLASTIMATCH1_LIBRARY_SRC
   landmark_warp.cxx landmark_warp.h 
   landmark_diff.cxx landmark_diff.h
   mc_dose.cxx mc_dose.h
-  metadata.cxx metadata.h 
   pcmd_diff.cxx pcmd_diff.h
   plm_clp.cxx plm_clp.h
   plm_drr_api.cxx plm_drr_api.h 
-  plm_file_format.cxx plm_file_format.h 
-  plm_image.cxx plm_image.h 
-  plm_image_convert.cxx plm_image_convert.h 
-  plm_image_header.cxx plm_image_header.h 
-  plm_image_type.cxx plm_image_type.h 
   plm_parms.cxx plm_parms.h 
   plm_register_loadable.cxx plm_register_loadable.h 
   plm_registration_api.cxx plm_registration_api.h 
@@ -400,8 +411,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   rtds_gdcm.cxx
   rtds_warp.cxx rtds_warp.h
   rtss.cxx rtss.h
-  rtss_polyline_set.cxx rtss_polyline_set.h 
-  rtss_structure.cxx rtss_structure.h 
   segment_body.cxx segment_body.h
   simplify_points.cxx simplify_points.h
   slice_extract.cxx slice_extract.h
@@ -428,8 +437,8 @@ set (PLASTIMATCH1_LIBRARY_SRC
   )
 
 if (ITK_FOUND AND GDCM_VERSION_1)
-  set (PLASTIMATCH1_LIBRARY_SRC
-    ${PLASTIMATCH1_LIBRARY_SRC}
+  set (PLMIMAGE_LIBRARY_SRC
+    ${PLMIMAGE_LIBRARY_SRC}
     gdcm1_dose.cxx gdcm1_dose.h
     gdcm1_file.cxx gdcm1_file.h
     gdcm1_rdd.cxx gdcm1_rdd.h 
@@ -437,6 +446,14 @@ if (ITK_FOUND AND GDCM_VERSION_1)
     gdcm1_series.cxx gdcm1_series.h
     gdcm1_series_helper_2.cxx gdcm1_series_helper_2.h
     gdcm1_util.cxx gdcm1_util.h
+    )
+endif ()
+
+
+
+if (ITK_FOUND AND GDCM_VERSION_1)
+  set (PLASTIMATCH1_LIBRARY_SRC
+    ${PLASTIMATCH1_LIBRARY_SRC}
     )
 endif ()
 
