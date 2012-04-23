@@ -110,16 +110,46 @@ endif ()
 ##  PLMSYS/GPUIT/PLASTIMATCH LIBRARY SOURCE FILES
 ##-----------------------------------------------------------------------------
 set (PLMSYS_LIBRARY_SRC
+  bstring_util.cxx bstring_util.h
+  compiler_warnings.h
+  delayload.c delayload.h
+  dir_list.cxx dir_list.h
   file_util.cxx file_util.h
   logfile.c logfile.h
-  interpolate.cxx interpolate.h
+  math_util.h
+  plm_endian.cxx plm_endian.h 
+  plm_fwrite.cxx plm_fwrite.h
+  plm_int.h
+  plm_path.h
   plm_timer.cxx plm_timer.h
+  plm_version.h 
   print_and_exit.c print_and_exit.h 
+  pstring.h
+  string_util.cxx string_util.h
+  interpolate.cxx interpolate.h
+  )
+
+set (PLMIMAGE_LIBRARY_SRC
+  bspline_xform.cxx bspline_xform.h
+  hnd_io.cxx hnd_io.h
+  pointset.cxx pointset.h 
+  raw_pointset.cxx raw_pointset.h 
+  ray_trace_exact.cxx ray_trace_exact.h 
+  ray_trace_uniform.cxx ray_trace_uniform.h 
+  rpl_volume.cxx rpl_volume.h
+  vf_convolve.cxx vf_convolve.h 
+  vf_stats.cxx vf_stats.h 
+  vf.cxx vf.h
+  volume_header.cxx volume_header.h 
+  volume_limit.cxx volume_limit.h
+  volume_macros.h
+  volume_resample.cxx volume_resample.h
+  volume.cxx volume.h
+  xpm.cxx xpm.h
   )
 
 set (GPUIT_LIBRARY_SRC
   bowtie_correction.cxx bowtie_correction.h
-  bstring_util.cxx bstring_util.h
   bspline.cxx bspline.h
   bspline_mi.cxx bspline_mi.h
   bspline_mse.cxx bspline_mse.h
@@ -134,42 +164,19 @@ set (GPUIT_LIBRARY_SRC
   bspline_regularize_analytic.cxx bspline_regularize_analytic.h
   bspline_regularize_numeric.cxx bspline_regularize_numeric.h
   bspline_warp.cxx bspline_warp.h
-  bspline_xform.cxx bspline_xform.h
-  delayload.c delayload.h
   demons.cxx demons.h
   demons_cpu.cxx
   demons_misc.cxx demons_misc.h
   demons_state.cxx demons_state.h
-  dir_list.cxx dir_list.h
   drr.cxx drr.h
   drr_trilin.cxx drr_trilin.h
   fdk.cxx fdk.h
-  hnd_io.cxx hnd_io.h
-  math_util.h
   mha_io.cxx mha_io.h
-  rpl_volume.cxx rpl_volume.h
-  plm_endian.cxx plm_endian.h 
-  plm_fwrite.cxx plm_fwrite.h
-  pointset.cxx pointset.h 
   proj_image.cxx proj_image.h
   proj_image_dir.cxx proj_image_dir.h
   proj_matrix.cxx proj_matrix.h 
   proton_dose.cxx proton_dose.h 
-  pstring.h
-  raw_pointset.cxx raw_pointset.h 
-  ray_trace_exact.cxx ray_trace_exact.h 
-  ray_trace_uniform.cxx ray_trace_uniform.h 
-  string_util.cxx string_util.h
   threading.cxx threading.h
-  vf.cxx vf.h
-  vf_convolve.cxx vf_convolve.h 
-  vf_stats.cxx vf_stats.h 
-  volume.cxx volume.h
-  volume_header.cxx volume_header.h 
-  volume_limit.cxx volume_limit.h
-  volume_macros.h
-  volume_resample.cxx volume_resample.h
-  xpm.cxx xpm.h
   )
 
 if (CUDA_FOUND)
@@ -377,12 +384,10 @@ set (PLASTIMATCH1_LIBRARY_SRC
   plm_image_convert.cxx plm_image_convert.h 
   plm_image_header.cxx plm_image_header.h 
   plm_image_type.cxx plm_image_type.h 
-  plm_int.h
   plm_parms.cxx plm_parms.h 
   plm_register_loadable.cxx plm_register_loadable.h 
   plm_registration_api.cxx plm_registration_api.h 
   plm_stages.cxx plm_stages.h 
-  plm_version.h 
   plm_warp.cxx plm_warp.h 
   rasterizer.cxx rasterizer.h
   rasterize_slice.cxx rasterize_slice.h
@@ -747,6 +752,12 @@ plm_add_library (
   plmsys
   "${PLMSYS_LIBRARY_SRC}" 
   "${PLMSYS_LIBRARY_DEPENDENCIES}"
+  "")
+
+plm_add_library (
+  plmimage
+  "${PLMIMAGE_LIBRARY_SRC}" 
+  "${PLMIMAGE_LIBRARY_DEPENDENCIES}"
   "")
 
 if (F2C_LIBRARY AND UNIX)
@@ -1157,6 +1168,12 @@ if (SLICER_FOUND)
       "${OUTDIR}/plmsys.dll"
       "${QTOUTDIR}/plmsys.dll"
       plmsys
+      )
+    plm_slicer_copy_dll (plastimatch_slicer_copy_plmimage
+      "${INDIR}/plmimage.dll"
+      "${OUTDIR}/plmimage.dll"
+      "${QTOUTDIR}/plmimage.dll"
+      plmimage
       )
     if (CUDA_FOUND)
       plm_slicer_copy_dll (plastimatch_slicer_copy_plmcuda
