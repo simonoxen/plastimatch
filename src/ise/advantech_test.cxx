@@ -12,10 +12,10 @@ main (int argc, char* argv[])
     printf ("Sleeping...\n");
     Sleep (2000);
     printf ("Opening relay...\n");
-    adv.relay_open ();
+    adv.relay_open (0);
     Sleep (2000);
     printf ("Closing relay...\n");
-    adv.relay_close ();
+    adv.relay_close (0);
     Sleep (2000);
     printf ("Done sleeping.\n");
     return 0;
