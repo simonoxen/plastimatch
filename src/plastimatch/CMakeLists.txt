@@ -130,8 +130,10 @@ set (PLMSYS_LIBRARY_SRC
   )
 
 set (PLMIMAGE_LIBRARY_SRC
+  astroid_dose.cxx astroid_dose.h
   bspline_xform.cxx bspline_xform.h
   dcm_util.cxx dcm_util.h
+  dicom.dic
   direction_cosines.h
   exchkeys.cxx exchkeys.h
   hnd_io.cxx hnd_io.h
@@ -160,6 +162,7 @@ set (PLMIMAGE_LIBRARY_SRC
   itk_resample.cxx itk_resample.h 
   itk_metadata.cxx itk_metadata.h 
   itk_volume_header.cxx itk_volume_header.h
+  make_string.h
   mc_dose.cxx mc_dose.h
   metadata.cxx metadata.h 
   mha_io.cxx mha_io.h
@@ -168,6 +171,7 @@ set (PLMIMAGE_LIBRARY_SRC
   plm_image_convert.cxx plm_image_convert.h 
   plm_image_header.cxx plm_image_header.h 
   plm_image_type.cxx plm_image_type.h 
+  plm_uid_prefix.h
   pointset.cxx pointset.h 
   raw_pointset.cxx raw_pointset.h 
   ray_trace_exact.cxx ray_trace_exact.h 
@@ -396,7 +400,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   autolabel_thumbnailer.cxx autolabel_thumbnailer.h 
   autolabel_trainer.cxx autolabel_trainer.h 
   autolabel_ransac_est.cxx autolabel_ransac_est.h 
-  astroid_dose.cxx astroid_dose.h
   cxt_extract.cxx cxt_extract.h
   cxt_io.cxx cxt_io.h 
   dlib_trainer.cxx dlib_trainer.h 
