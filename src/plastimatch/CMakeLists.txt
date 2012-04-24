@@ -152,6 +152,9 @@ set (PLMIMAGE_LIBRARY_SRC
   itk_image_load_vec.cxx
   itk_image_save.cxx itk_image_save.h 
   itk_image_stats.cxx itk_image_stats.h 
+  itk_image_type.h
+  itk_point.h
+  itk_pointset.cxx itk_pointset.h
   itk_resample.cxx itk_resample.h 
   itk_metadata.cxx itk_metadata.h 
   itk_volume_header.cxx itk_volume_header.h
@@ -180,6 +183,7 @@ set (PLMIMAGE_LIBRARY_SRC
   xform.cxx xform.h 
   xform_convert.cxx xform_convert.h 
   xform_legacy.cxx xform_legacy.h
+  xform_point.cxx xform_point.h 
   xio_dir.cxx xio_dir.h
   xio_patient.cxx xio_patient.h 
   xio_plan.cxx xio_plan.h
@@ -395,7 +399,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   itk_demons.cxx itk_demons.h 
   itk_gabor.cxx itk_gabor.h
   itk_mask.cxx itk_mask.h 
-  itk_pointset.cxx itk_pointset.h
   itk_optim.cxx itk_optim.h 
   itk_registration.cxx itk_registration.h 
   itk_tps.cxx itk_tps.h 
@@ -441,7 +444,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   xio_patient.cxx xio_patient.h 
   xio_plan.cxx xio_plan.h
   xio_structures.cxx xio_structures.h
-  xform_point.cxx xform_point.h 
   )
 
 if (ITK_FOUND AND GDCM_VERSION_2)

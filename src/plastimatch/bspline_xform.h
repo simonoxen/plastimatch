@@ -57,6 +57,15 @@ bspline_interpolate_vf (Volume* interp,
     const Bspline_xform* bxf);
 
 gpuit_EXPORT
+void
+bspline_transform_point (
+    float point_out[3], /* Output coordinate of point */
+    Bspline_xform* bxf, /* Bspline transform coefficients */
+    float point_in[3],  /* Input coordinate of point */
+    int linear_interp   /* 1 = trilinear, 0 = nearest neighbors */
+);
+
+gpuit_EXPORT
 void bspline_xform_set_default (Bspline_xform* bxf);
 
 gpuit_EXPORT
@@ -93,6 +102,8 @@ bspline_xform_dump_coeff (Bspline_xform* bxf, const char* fn);
 gpuit_EXPORT
 void
 bspline_xform_dump_luts (Bspline_xform* bxf);
+
+
 
 void
 bspline_interp_pix (float out[3], const Bspline_xform* bxf, 
