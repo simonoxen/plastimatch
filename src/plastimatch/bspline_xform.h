@@ -52,6 +52,11 @@ public:
    Function declarations
    ----------------------------------------------------------------------- */
 gpuit_EXPORT
+void
+bspline_interpolate_vf (Volume* interp, 
+    const Bspline_xform* bxf);
+
+gpuit_EXPORT
 void bspline_xform_set_default (Bspline_xform* bxf);
 
 gpuit_EXPORT
@@ -88,5 +93,24 @@ bspline_xform_dump_coeff (Bspline_xform* bxf, const char* fn);
 gpuit_EXPORT
 void
 bspline_xform_dump_luts (Bspline_xform* bxf);
+
+void
+bspline_interp_pix (float out[3], const Bspline_xform* bxf, 
+    plm_long p[3], plm_long qidx);
+void
+bspline_interp_pix_b (
+    float out[3], 
+    Bspline_xform* bxf, 
+    plm_long pidx, 
+    plm_long qidx
+);
+
+void
+bspline_interp_pix_c (
+    float out[3], 
+    Bspline_xform* bxf, 
+    plm_long pidx, 
+    plm_long *q
+);
 
 #endif

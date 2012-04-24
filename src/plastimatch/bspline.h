@@ -249,35 +249,10 @@ bspline_transform_point (
 );
 
 gpuit_EXPORT
-void
-bspline_interpolate_vf (Volume* interp, 
-    const Bspline_xform* bxf);
-
-gpuit_EXPORT
 Volume*
 bspline_compute_vf (const Bspline_xform* bxf);
 
 /* Used internally */
-void
-bspline_interp_pix (float out[3], const Bspline_xform* bxf, 
-    plm_long p[3], plm_long qidx);
-void
-bspline_interp_pix_b (
-    float out[3], 
-    Bspline_xform* bxf, 
-    plm_long pidx, 
-    plm_long qidx
-);
-
-void
-bspline_interp_pix_c (
-    float out[3], 
-    Bspline_xform* bxf, 
-    plm_long pidx, 
-    plm_long *q
-);
-
-
 int
 bspline_find_correspondence 
 (

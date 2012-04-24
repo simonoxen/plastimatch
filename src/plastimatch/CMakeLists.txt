@@ -150,6 +150,7 @@ set (PLMIMAGE_LIBRARY_SRC
   itk_image_load_vec.cxx
   itk_image_save.cxx itk_image_save.h 
   itk_image_stats.cxx itk_image_stats.h 
+  itk_resample.cxx itk_resample.h 
   itk_metadata.cxx itk_metadata.h 
   metadata.cxx metadata.h 
   mha_io.cxx mha_io.h
@@ -173,6 +174,9 @@ set (PLMIMAGE_LIBRARY_SRC
   volume_macros.h
   volume_resample.cxx volume_resample.h
   volume.cxx volume.h
+  xform.cxx xform.h 
+  xform_convert.cxx xform_convert.h 
+  xform_legacy.cxx xform_legacy.h
   xio_dir.cxx xio_dir.h
   xio_patient.cxx xio_patient.h 
   xio_plan.cxx xio_plan.h
@@ -392,7 +396,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   itk_pointset.cxx itk_pointset.h
   itk_optim.cxx itk_optim.h 
   itk_registration.cxx itk_registration.h 
-  itk_resample.cxx itk_resample.h 
   itk_tps.cxx itk_tps.h 
   itk_volume_header.cxx itk_volume_header.h
   itk_warp.cxx itk_warp.h 
@@ -437,9 +440,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   xio_patient.cxx xio_patient.h 
   xio_plan.cxx xio_plan.h
   xio_structures.cxx xio_structures.h
-  xform.cxx xform.h 
-  xform_convert.cxx xform_convert.h 
-  xform_legacy.cxx xform_legacy.h
   xform_point.cxx xform_point.h 
   )
 
