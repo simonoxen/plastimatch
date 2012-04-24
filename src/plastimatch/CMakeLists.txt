@@ -132,6 +132,8 @@ set (PLMSYS_LIBRARY_SRC
 set (PLMIMAGE_LIBRARY_SRC
   bspline_xform.cxx bspline_xform.h
   dcm_util.cxx dcm_util.h
+  direction_cosines.h
+  exchkeys.cxx exchkeys.h
   hnd_io.cxx hnd_io.h
   itk_dicom_load.cxx itk_dicom_load.h 
   itk_dicom_save.cxx itk_dicom_save.h 
@@ -152,6 +154,7 @@ set (PLMIMAGE_LIBRARY_SRC
   itk_image_stats.cxx itk_image_stats.h 
   itk_resample.cxx itk_resample.h 
   itk_metadata.cxx itk_metadata.h 
+  itk_volume_header.cxx itk_volume_header.h
   metadata.cxx metadata.h 
   mha_io.cxx mha_io.h
   plm_file_format.cxx plm_file_format.h 
@@ -382,7 +385,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   astroid_dose.cxx astroid_dose.h
   cxt_extract.cxx cxt_extract.h
   cxt_io.cxx cxt_io.h 
-  direction_cosines.h
   dlib_trainer.cxx dlib_trainer.h 
   dvh.cxx dvh.h
   gamma_analysis.cxx gamma_analysis.h
@@ -397,7 +399,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   itk_optim.cxx itk_optim.h 
   itk_registration.cxx itk_registration.h 
   itk_tps.cxx itk_tps.h 
-  itk_volume_header.cxx itk_volume_header.h
   itk_warp.cxx itk_warp.h 
   landmark_warp.cxx landmark_warp.h 
   landmark_diff.cxx landmark_diff.h
@@ -681,7 +682,6 @@ set (RANSAC_TEST_SRC
   ransac_test.cxx
   )
 set (RTOG_TO_MHA_SRC
-  exchkeys.cxx exchkeys.h
   rtog_to_mha.cxx
   )
 set (SHUFFLE_MHA_SRC
