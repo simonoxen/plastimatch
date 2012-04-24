@@ -131,39 +131,12 @@ set (PLMSYS_LIBRARY_SRC
 
 set (PLMIMAGE_LIBRARY_SRC
   bspline_xform.cxx bspline_xform.h
-  hnd_io.cxx hnd_io.h
-  pointset.cxx pointset.h 
-  raw_pointset.cxx raw_pointset.h 
-  ray_trace_exact.cxx ray_trace_exact.h 
-  ray_trace_uniform.cxx ray_trace_uniform.h 
-  rpl_volume.cxx rpl_volume.h
-  vf_convolve.cxx vf_convolve.h 
-  vf_stats.cxx vf_stats.h 
-  vf.cxx vf.h
-  volume_header.cxx volume_header.h 
-  volume_limit.cxx volume_limit.h
-  volume_macros.h
-  volume_resample.cxx volume_resample.h
-  volume.cxx volume.h
-  xpm.cxx xpm.h
-
-  plm_file_format.cxx plm_file_format.h 
-  xio_dir.cxx xio_dir.h
-  xio_patient.cxx xio_patient.h 
-  xio_plan.cxx xio_plan.h
-  itk_image.cxx itk_image.h 
-  rtss_polyline_set.cxx rtss_polyline_set.h 
-  rtss_structure.cxx rtss_structure.h 
-  plm_image_header.cxx plm_image_header.h 
-  itk_directions.cxx itk_directions.h 
-  metadata.cxx metadata.h 
   dcm_util.cxx dcm_util.h
-  itk_image_stats.cxx itk_image_stats.h 
-
-  # Only need PLMIMAGE from here
-  plm_image.cxx plm_image.h 
-  plm_image_convert.cxx plm_image_convert.h 
-  plm_image_type.cxx plm_image_type.h 
+  hnd_io.cxx hnd_io.h
+  itk_dicom_load.cxx itk_dicom_load.h 
+  itk_dicom_save.cxx itk_dicom_save.h 
+  itk_directions.cxx itk_directions.h 
+  itk_image.cxx itk_image.h 
   itk_image_cast.cxx itk_image_cast.h 
   itk_image_load.h itk_image_load.txx
   itk_image_load_char.cxx
@@ -176,14 +149,48 @@ set (PLMIMAGE_LIBRARY_SRC
   itk_image_load_ushort.cxx
   itk_image_load_vec.cxx
   itk_image_save.cxx itk_image_save.h 
+  itk_image_stats.cxx itk_image_stats.h 
   itk_metadata.cxx itk_metadata.h 
-
-  # Only need dicom from here
-  itk_dicom_load.cxx itk_dicom_load.h 
-  itk_dicom_save.cxx itk_dicom_save.h 
-
+  metadata.cxx metadata.h 
   mha_io.cxx mha_io.h
+  plm_file_format.cxx plm_file_format.h 
+  plm_image.cxx plm_image.h 
+  plm_image_convert.cxx plm_image_convert.h 
+  plm_image_header.cxx plm_image_header.h 
+  plm_image_type.cxx plm_image_type.h 
+  pointset.cxx pointset.h 
+  raw_pointset.cxx raw_pointset.h 
+  ray_trace_exact.cxx ray_trace_exact.h 
+  ray_trace_uniform.cxx ray_trace_uniform.h 
+  rpl_volume.cxx rpl_volume.h
+  rtss_polyline_set.cxx rtss_polyline_set.h 
+  rtss_structure.cxx rtss_structure.h 
+  vf_convolve.cxx vf_convolve.h 
+  vf_stats.cxx vf_stats.h 
+  vf.cxx vf.h
+  volume_header.cxx volume_header.h 
+  volume_limit.cxx volume_limit.h
+  volume_macros.h
+  volume_resample.cxx volume_resample.h
+  volume.cxx volume.h
+  xio_dir.cxx xio_dir.h
+  xio_patient.cxx xio_patient.h 
+  xio_plan.cxx xio_plan.h
+  xpm.cxx xpm.h
   )
+if (ITK_FOUND AND GDCM_VERSION_1)
+  set (PLMIMAGE_LIBRARY_SRC
+    ${PLMIMAGE_LIBRARY_SRC}
+    gdcm1_dose.cxx gdcm1_dose.h
+    gdcm1_file.cxx gdcm1_file.h
+    gdcm1_rdd.cxx gdcm1_rdd.h 
+    gdcm1_rtss.cxx gdcm1_rtss.h
+    gdcm1_series.cxx gdcm1_series.h
+    gdcm1_series_helper_2.cxx gdcm1_series_helper_2.h
+    gdcm1_util.cxx gdcm1_util.h
+    )
+endif ()
+
 
 set (GPUIT_LIBRARY_SRC
   bowtie_correction.cxx bowtie_correction.h
@@ -435,27 +442,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   xform_legacy.cxx xform_legacy.h
   xform_point.cxx xform_point.h 
   )
-
-if (ITK_FOUND AND GDCM_VERSION_1)
-  set (PLMIMAGE_LIBRARY_SRC
-    ${PLMIMAGE_LIBRARY_SRC}
-    gdcm1_dose.cxx gdcm1_dose.h
-    gdcm1_file.cxx gdcm1_file.h
-    gdcm1_rdd.cxx gdcm1_rdd.h 
-    gdcm1_rtss.cxx gdcm1_rtss.h
-    gdcm1_series.cxx gdcm1_series.h
-    gdcm1_series_helper_2.cxx gdcm1_series_helper_2.h
-    gdcm1_util.cxx gdcm1_util.h
-    )
-endif ()
-
-
-
-if (ITK_FOUND AND GDCM_VERSION_1)
-  set (PLASTIMATCH1_LIBRARY_SRC
-    ${PLASTIMATCH1_LIBRARY_SRC}
-    )
-endif ()
 
 if (ITK_FOUND AND GDCM_VERSION_2)
   set (PLASTIMATCH1_LIBRARY_SRC
