@@ -3,6 +3,8 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 
+#include "libplmimage.h"
+
 #include "landmark_warp.h"
 #include "itk_image_save.h"
 #include "itk_point.h"

@@ -1211,3 +1211,13 @@ if (ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
+
+# JAS 2012.04.24
+# CMake is defines <libraryname>_EXPORTS when building a shared library
+# for each and every library.  This is silly.  If one library is shared,
+# then they are all shared.  We only need one variable for that, not one
+# for every library.  Let's call that 1 variable SHARING_EXPORTS
+SET_TARGET_PROPERTIES (plmsys PROPERTIES DEFINE_SYMBOL  "SHARING" )
+# If plmsys is being build as shared, then so is everything else.
+# So, we will only check for SHARING_EXPORTS for all libraries.
+

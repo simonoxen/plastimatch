@@ -5,12 +5,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "libplmimage.h"
+
 #include "compiler_warnings.h"
 #include "math_util.h"
 #include "mha_io.h"
 #include "proj_matrix.h"
 #include "proton_dose.h"
-#include "ray_trace_exact.h"
 #include "ray_trace_uniform.h"
 #include "rpl_volume.h"
 #include "volume.h"

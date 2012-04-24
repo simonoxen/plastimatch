@@ -6,11 +6,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+
+#include "libplmimage.h"
+
 #include "interpolate.h"
 #include "math_util.h"
 #include "plm_config.h"
 #include "plm_int.h"
-#include "vf.h"
 #include "volume.h"
 #include "volume_macros.h"
 

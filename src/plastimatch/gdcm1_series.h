@@ -45,17 +45,4 @@ public:
     double m_origin[3];
     double m_spacing[3];
 };
-
-#if defined __cplusplus
-extern "C" {
-#endif
-
-plastimatch1_EXPORT
-void
-gdcm1_series_test (char *dicom_dir);
-
-#if defined __cplusplus
-}
-#endif
-
 #endif

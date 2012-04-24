@@ -4,6 +4,8 @@
 #include "plm_config.h"
 #include <string.h>
 
+#include "libplmimage.h"
+
 #include "metadata.h"
 #include "plm_endian.h"
 #include "plm_image.h"

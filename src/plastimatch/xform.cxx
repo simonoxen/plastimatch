@@ -11,13 +11,14 @@
 #include "itkTransformFileWriter.h"
 #include "itkTransformFileReader.h"
 
+#include "libplmimage.h"
+
 #include "bspline.h"
 #include "itk_image_load.h"
 #include "itk_image_save.h"
 #include "itk_resample.h"
 #include "logfile.h"
 #include "math_util.h"
-#include "mha_io.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "plm_parms.h"

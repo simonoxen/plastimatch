@@ -7,12 +7,13 @@
 #include <string.h>
 #include <math.h>
 
+#include "libplmimage.h"
+
 #include "bspline.h"
 #include "bspline_xform.h"
 #include "bspline_regularize_analytic.h"
 #include "bspline_regularize_numeric.h"
 #include "bspline_regularize_state.h"
-#include "mha_io.h"
 #include "plm_timer.h"
 #include "reg_opts.h"
 #include "volume.h"

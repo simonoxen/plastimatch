@@ -6,6 +6,9 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
+
+#include "libplmimage.h"
+
 #include "bspline_optimize.h"
 #include "bspline_landmarks.h"
 #include "logfile.h"

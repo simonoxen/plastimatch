@@ -6,6 +6,8 @@
 #include <time.h>
 #include <math.h>
 
+#include "libplmimage.h"
+
 #include "demons.h"
 #include "mha_io.h"
 #include "plm_config.h"

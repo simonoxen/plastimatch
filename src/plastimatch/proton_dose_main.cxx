@@ -8,8 +8,10 @@
 #if (OPENMP_FOUND)
 #include <omp.h>
 #endif
+
+#include "libplmimage.h"
+
 #include "math_util.h"
-#include "mha_io.h"
 #include "plm_timer.h"
 #include "proton_dose.h"
 #include "proton_dose_opts.h"

@@ -3,6 +3,9 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include <stdio.h>
+
+#include "libplmimage.h"
+
 #include "itk_pointset.h"
 #include "pointset.h"
 #include "print_and_exit.h"

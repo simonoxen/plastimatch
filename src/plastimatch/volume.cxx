@@ -6,6 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+
+#include "libplmimage.h"
+
 #include "logfile.h"
 #include "math_util.h"
 #include "plm_int.h"

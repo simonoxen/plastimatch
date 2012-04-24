@@ -5,12 +5,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+
+#include "libplmimage.h"
+
 #include "delayload.h"
 #include "demons.h"
 #include "demons_opts.h"
-#include "mha_io.h"
-#include "vf.h"
-#include "vf_stats.h"
 #include "volume.h"
 
 int

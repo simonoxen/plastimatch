@@ -10,7 +10,8 @@
 #include <string.h>
 #include <math.h>
 
-#include "mha_io.h"
+#include "libplmimage.h"
+
 #include "volume.h"
 
 void

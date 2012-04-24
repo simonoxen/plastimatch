@@ -6,11 +6,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+
+#include "libplmimage.h"
+
 #include "demons_opts.h"
 #include "demons_misc.h"
 #include "mha_io.h"
 #include "plm_timer.h"
-#include "vf_convolve.h"
 #include "volume.h"
 
 int

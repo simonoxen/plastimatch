@@ -7,10 +7,11 @@
 #include "itkVariableLengthVector.h"
 #include "getopt.h"
 
+#include "libplmimage.h"
+
 #include "itk_image.h"
 #include "itk_image_load.h"
 #include "itk_image_stats.h"
-#include "mha_io.h"
 #include "pcmd_stats.h"
 #include "plm_file_format.h"
 #include "plm_image.h"
@@ -18,7 +19,6 @@
 #include "plm_int.h"
 #include "proj_image.h"
 #include "ss_img_stats.h"
-#include "vf_stats.h"
 #include "xform.h"
 
 static void

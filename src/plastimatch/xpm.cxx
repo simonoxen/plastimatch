@@ -4,10 +4,15 @@
 #include "plm_config.h"
 #include <stdlib.h>
 #include <stdio.h>
+
+#include "libplmimage.h"
+
 #include "xpm.h"
 
-void xpm_create(xpm_struct* xpm, int width, int height, int cpp)
+xpm_struct* xpm_create(int width, int height, int cpp)
 {
+    xpm_struct* xpm = (xpm_struct*)malloc(sizeof(xpm_struct));
+
 	// Populate the XPM struct
 	xpm->width = width;
 	xpm->height = height;
@@ -17,6 +22,24 @@ void xpm_create(xpm_struct* xpm, int width, int height, int cpp)
 
 	// Allocate memory for pixel data
 	xpm->img = (char*)malloc(width*height*sizeof(char));
+
+    return xpm;
+}
+
+void xpm_destroy (xpm_struct* xpm)
+{
+    free (xpm->img);
+    free (xpm);
+}
+
+xpm_brush* xpm_brush_create ()
+{
+    return (xpm_brush*)malloc(sizeof(xpm_brush));
+}
+
+void xpm_brush_destroy (xpm_brush* brush)
+{
+    free (brush);
 }
 
 
@@ -157,4 +180,95 @@ void xpm_write (xpm_struct* xpm, char* xpm_file)
 
 	// Done like dinner.
 	fclose(fp);
+}
+
+void xpm_brush_set_type (
+    xpm_brush* brush,
+    xpm_brushes type
+)
+{
+    brush->type = type;
+}
+
+
+void xpm_brush_set_color (
+    xpm_brush* brush,
+    char color
+)
+{
+    brush->color = color;
+}
+
+void xpm_brush_inc_x_pos (
+    xpm_brush *brush,
+    int x
+)
+{
+    brush->x_pos += x;
+}
+
+void xpm_brush_inc_y_pos (
+    xpm_brush *brush,
+    int y
+)
+{
+    brush->y_pos += y;
+}
+
+void xpm_brush_dec_x_pos (
+    xpm_brush *brush,
+    int x
+)
+{
+    brush->x_pos -= x;
+}
+
+void xpm_brush_dec_y_pos (
+    xpm_brush *brush,
+    int y
+)
+{
+    brush->y_pos -= y;
+}
+
+void xpm_brush_set_x_pos (
+    xpm_brush *brush,
+    int x
+)
+{
+    brush->x_pos = x;
+}
+
+void xpm_brush_set_y_pos (
+    xpm_brush *brush,
+    int y
+)
+{
+    brush->y_pos = y;
+}
+
+void xpm_brush_set_pos (
+    xpm_brush *brush,
+    int x,
+    int y
+)
+{
+    brush->x_pos = x;
+    brush->y_pos = y;
+}
+
+void xpm_brush_set_width (
+    xpm_brush* brush,
+    int width
+)
+{
+    brush->width = width;
+}
+
+void xpm_brush_set_height (
+    xpm_brush* brush,
+    int height
+)
+{
+    brush->height = height;
 }

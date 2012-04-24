@@ -13,6 +13,8 @@
 #include "gdcmSQItem.h"
 #include "gdcmUtil.h"
 
+#include "libplmimage.h"
+
 #include "file_util.h"
 #include "gdcm1_dose.h"
 #include "gdcm1_series.h"

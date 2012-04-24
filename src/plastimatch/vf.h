@@ -7,15 +7,4 @@
 #include "plm_config.h"
 #include "volume.h"
 
-#if defined __cplusplus
-extern "C" {
-#endif
-
-gpuit_EXPORT
-Volume* vf_warp (Volume* vout, Volume* vin, Volume* vf);
-
-#if defined __cplusplus
-}
-#endif
-
 #endif

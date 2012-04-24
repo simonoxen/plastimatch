@@ -9,10 +9,11 @@
 #include "fftw3.h"
 #endif
 
+#include "libplmimage.h"
+
 #include "bowtie_correction.h"
 #include "fdk_opts.h"
 #include "math_util.h"
-#include "mha_io.h"
 #include "volume.h"
 
 #ifndef DEGTORAD

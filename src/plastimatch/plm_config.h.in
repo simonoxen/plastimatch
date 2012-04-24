@@ -126,6 +126,30 @@
 #define snprintf _snprintf
 #endif
 
+
+/* JAS 2012.04.24
+ * Plastimatch 2.0 method for demangling symbols */
+#ifdef __cplusplus
+#define EXTERNC extern "C"
+#else
+#define EXTERNC
+#endif
+
+/* JAS 2012.04.24
+ * Plastimatch 2.0 method for exporting API symbols */
+// TODO: Switch everything to CMake's WIN32 (remove _WIN32)
+//
+#if (!defined (BUILD_AGAINST_SLICER3) && (defined(_WIN32) || defined(WIN32)) && (defined (PLM_BUILD_SHARED_LIBS)))
+# ifdef SHARING_EXPORTS
+#   define API EXTERNC __declspec(dllexport)
+# else
+#   define API EXTERNC __declspec(dllimport)
+# endif
+#else
+# define API EXTERNC
+#endif
+
+
 /* This code is for exporting symbols when building DLLs on windows */
 #if (!defined (BUILD_AGAINST_SLICER3) && (defined(_WIN32) || defined(WIN32)) && (defined (PLM_BUILD_SHARED_LIBS)))
 # ifdef gpuit_EXPORTS

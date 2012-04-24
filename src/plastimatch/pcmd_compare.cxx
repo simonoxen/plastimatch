@@ -6,9 +6,10 @@
 #include "itkSubtractImageFilter.h"
 #include "itkImageRegionIterator.h"
 
+#include "libplmimage.h"
+
 #include "getopt.h"
 #include "itk_image.h"
-#include "mha_io.h"
 #include "pcmd_compare.h"
 #include "plm_file_format.h"
 #include "plm_image.h"

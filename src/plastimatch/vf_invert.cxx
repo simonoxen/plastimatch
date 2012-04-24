@@ -6,12 +6,12 @@
 #include "itkImage.h"
 #include "getopt.h"
 
+#include "libplmimage.h"
+
 #include "itk_image.h"
 #include "itk_image_load.h"
-#include "mha_io.h"
 #include "plm_image_header.h"
 #include "print_and_exit.h"
-#include "vf_convolve.h"
 #include "vf_invert.h"
 #include "volume.h"
 #include "xform.h"

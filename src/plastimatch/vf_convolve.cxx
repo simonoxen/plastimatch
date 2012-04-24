@@ -4,10 +4,12 @@
 #include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "libplmimage.h"
+
 #include "math_util.h"
 #include "plm_int.h"
 #include "volume.h"
-#include "vf_convolve.h"
 
 void
 vf_convolve_x (Volume* vf_out, Volume* vf_in, float* ker, int width)

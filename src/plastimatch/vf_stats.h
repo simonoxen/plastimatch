@@ -7,33 +7,5 @@
 #include "plm_config.h"
 #include "volume.h"
 
-#if defined __cplusplus
-extern "C" {
-#endif
-
-gpuit_EXPORT 
-void
-vf_analyze (Volume* vol);
-gpuit_EXPORT
-void vf_print_stats (Volume* vol);
-gpuit_EXPORT 
-void
-vf_analyze_strain (Volume* vol);
-gpuit_EXPORT 
-void
-vf_analyze_jacobian (Volume* vol);
-gpuit_EXPORT 
-void
-vf_analyze_second_deriv (Volume* vol);
-gpuit_EXPORT 
-void
-vf_analyze_mask (Volume* vol, Volume* mask);
-gpuit_EXPORT 
-void
-vf_analyze_strain_mask (Volume* vol, Volume* mask);
-
-#if defined __cplusplus
-}
-#endif
 
 #endif

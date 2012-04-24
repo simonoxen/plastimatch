@@ -16,6 +16,8 @@
 #include "vnl/algo/vnl_svd.h"
 #include "vnl/vnl_sample.h"
 
+#include "libplmimage.h"
+
 #include "bspline.h"
 #include "bspline_landmarks.h"
 #include "bspline_opts.h"
@@ -25,7 +27,6 @@
 #include "print_and_exit.h"
 #include "rbf_cluster.h"
 #include "rbf_gauss.h"
-#include "vf.h"
 #include "volume.h"
 #include "volume_macros.h"
 #include "xform.h"

@@ -8,6 +8,8 @@
 #include <math.h>
 #include <time.h>
 
+#include "libplmimage.h"
+
 #include "bstring_util.h"
 #include "itk_tps.h"
 #include "math_util.h"

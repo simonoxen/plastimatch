@@ -8,6 +8,9 @@
 #if (OPENMP_FOUND)
 #include <omp.h>
 #endif
+
+#include "libplmimage.h"
+
 #include "drr.h"
 #include "drr_cuda.h"
 #include "drr_opencl.h"
@@ -19,7 +22,6 @@
 #include "print_and_exit.h"
 #include "proj_image.h"
 #include "proj_matrix.h"
-#include "ray_trace_exact.h"
 #include "ray_trace_uniform.h"
 #include "volume_limit.h"
 #include "delayload.h"

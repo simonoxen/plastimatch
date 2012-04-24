@@ -5,10 +5,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "libplmimage.h"
+
 #include "fdk_opts.h"
 #include "fdk_util.h"
 #include "file_util.h"
-#include "hnd_io.h"
 #include "math_util.h"
 #include "plm_path.h"
 #include "proj_image.h"

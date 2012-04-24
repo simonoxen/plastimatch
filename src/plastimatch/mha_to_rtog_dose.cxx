@@ -14,8 +14,10 @@
 #include <limits.h>
 #endif
 
+#include "libplmimage.h"
+
 #include "getopt.h"
-#include "mha_io.h"
+#include "volume.h"
 
 class Program_Parms {
 public:

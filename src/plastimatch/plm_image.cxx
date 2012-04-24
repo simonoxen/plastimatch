@@ -9,6 +9,8 @@
 #include "itkMetaDataDictionary.h"
 #include "itkMetaDataObject.h"
 
+#include "libplmimage.h"
+
 #include "dcmtk_load.h"
 #include "file_util.h"
 #include "itk_image.h"
@@ -16,7 +18,6 @@
 #include "itk_image_load.h"
 #include "itk_image_save.h"
 #include "itk_metadata.h"
-#include "mha_io.h"
 #include "plm_image.h"
 #include "plm_image_convert.h"
 #include "plm_image_header.h"

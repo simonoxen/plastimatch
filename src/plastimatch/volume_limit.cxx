@@ -3,6 +3,9 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include <stdio.h>
+
+#include "libplmimage.h"
+
 #include "drr.h"          /* For DRR_VERBOSE */
 #include "math_util.h"
 #include "volume.h"

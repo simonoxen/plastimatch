@@ -12,6 +12,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+
+#include "libplmimage.h"
+
 #include "bspline.h"
 #include "bspline_optimize.h"
 #include "bspline_opts.h"
@@ -20,8 +23,6 @@
 #include "cuda_util.h"
 #include "delayload.h"
 #endif
-#include "mha_io.h"
-#include "vf.h"
 #ifndef _WIN32
 #include <dlfcn.h>
 #endif

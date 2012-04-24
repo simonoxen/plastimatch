@@ -4,9 +4,8 @@
 #include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
-#if GDCM_VERSION_1
-#include "gdcm1_series.h"
-#endif
+
+#include "libplmimage.h"
 
 int
 main (int argc, char *argv[])

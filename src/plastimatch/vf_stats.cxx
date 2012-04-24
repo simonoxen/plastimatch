@@ -8,8 +8,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+
+#include "libplmimage.h"
+
 #include "plm_int.h"
-#include "vf_stats.h"
+#include "volume.h"
 
 void
 vf_analyze (Volume* vol)

@@ -8,7 +8,9 @@
 #if (defined(_WIN32) || defined(WIN32))
 #include <io.h>        // windows //
 #endif
-#include "mha_io.h"
+
+#include "libplmimage.h"
+
 #include "plm_endian.h"
 #include "plm_fwrite.h"
 #include "plm_path.h"

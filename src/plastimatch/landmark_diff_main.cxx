@@ -5,8 +5,10 @@
 #include "plm_config.h"
 #include <stdlib.h>
 #include <stdio.h>
+
+#include "libplmimage.h"
+
 #include "landmark_diff.h"
-#include "raw_pointset.h"
 
 int
 main (int argc, char** argv)

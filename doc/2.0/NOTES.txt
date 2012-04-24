@@ -1,0 +1,38 @@
+IMAGE DEPENDS
+  [many things]  NEEDS  print_and_exit.cxx (sys)
+
+
+------------------------------------------------------------
+
+
+FUNCTION MIGRATIONS
+
+bspline.cxx
+ - bspline_interp_pix()
+ - bspline_interp_pix_b()
+ - bspline_interp_pix_c()
+ - bspline_transform_point()
+ - interpolate_vf()
+
+bspline_xform.cxx
+ + bspline_interp_pix()
+ + bspline_interp_pix_b()
+ + bspline_interp_pix_c()
+ + bspline_transform_point()
+ + interpolate_vf()
+
+
+------------------------------------------------------------
+TODOS:
+
+  CHECK API tag on ray_trance_uniform in libplmimage.h
+
+  DELETE mha_io.h
+  DELETE ray_trace_uniform.h
+  DELETE ray_trace_exact.h
+  DELETE vf_stats.h
+  DELETE vf_convolve.h
+  DELETE vf.h
+
+  ADD getters and setters for volume.h
+  REMOVE all external #include "volume.h"

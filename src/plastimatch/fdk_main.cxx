@@ -11,6 +11,8 @@
 #include <omp.h>
 #endif
 
+#include "libplmimage.h"
+
 #include "bowtie_correction.h"
 #include "fdk.h"
 #include "fdk_cuda.h"
@@ -19,7 +21,6 @@
 #include "fdk_util.h"
 #include "file_util.h"
 #include "math_util.h"
-#include "mha_io.h"
 #include "print_and_exit.h"
 #include "proj_image.h"
 #include "proj_image_dir.h"

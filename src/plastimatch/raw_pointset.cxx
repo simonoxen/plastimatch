@@ -8,6 +8,8 @@
 #include <string.h>
 #include <math.h>
 
+#include "libplmimage.h"
+
 #include "file_util.h"
 #include "math_util.h"
 #include "print_and_exit.h"

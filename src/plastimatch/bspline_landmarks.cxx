@@ -8,6 +8,8 @@
 #include <string.h>
 #include <math.h>
 
+#include "libplmimage.h"
+
 #include "bspline.h"
 #include "bspline_landmarks.h"
 #include "bspline_opts.h"

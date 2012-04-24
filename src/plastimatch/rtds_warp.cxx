@@ -4,8 +4,10 @@
 #include "plm_config.h"
 #include "cxt_extract.h"
 #include "file_util.h"
+
+#include "libplmimage.h"
+
 #if GDCM_VERSION_1
-#include "gdcm1_dose.h"
 #include "gdcm1_rtss.h"
 #endif
 #include "itk_image_load.h"

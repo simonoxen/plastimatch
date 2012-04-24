@@ -6,12 +6,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#include "libplmimage.h"
+
 #include "demons_misc.h"
 #include "demons_opts.h"
 #include "demons_state.h"
 #include "mha_io.h"
 #include "plm_timer.h"
-#include "vf_convolve.h"
 #include "volume.h"
 
 Demons_state::Demons_state (void)

@@ -7,8 +7,9 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "libplmimage.h"
+
 #if GDCM_VERSION_1
-#include "gdcm1_dose.h"
 #include "gdcm1_rtss.h"
 #include "gdcm1_series.h"
 #endif

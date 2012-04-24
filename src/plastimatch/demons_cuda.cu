@@ -4,6 +4,9 @@
 #include "plm_config.h"
 #include <stdio.h>
 #include <cuda.h>
+
+#include "libplmimage.h"
+
 #include "cuda_util.h"
 #include "demons_cuda.h"
 #include "demons_misc.h"

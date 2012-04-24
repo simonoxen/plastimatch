@@ -9,11 +9,9 @@
 #include <itksys/SystemTools.hxx>
 #include <itkImageIOBase.h>
 
+#include "libplmimage.h"
+
 #include "file_util.h"
-#if GDCM_VERSION_1
-#include "gdcm1_dose.h"
-#include "gdcm1_rtss.h"
-#endif
 #include "itk_image.h"
 #include "plm_file_format.h"
 #include "xio_dir.h"

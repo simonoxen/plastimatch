@@ -6,9 +6,9 @@
 #include "cxt_extract.h"
 #include "itk_image_save.h"
 #include "file_util.h"
-#if GDCM_VERSION_1
-#include "gdcm1_rtss.h"
-#endif
+
+#include "libplmimage.h"
+
 #include "itk_metadata.h"
 #include "plm_warp.h"
 #include "pointset.h"
