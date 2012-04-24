@@ -135,6 +135,8 @@ set (PLMIMAGE_LIBRARY_SRC
   direction_cosines.h
   exchkeys.cxx exchkeys.h
   hnd_io.cxx hnd_io.h
+  itkAndConstantToImageFilter.h
+  itkClampCastImageFilter.txx itkClampCastImageFilter.h
   itk_dicom_load.cxx itk_dicom_load.h 
   itk_dicom_save.cxx itk_dicom_save.h 
   itk_directions.cxx itk_directions.h 
@@ -158,6 +160,7 @@ set (PLMIMAGE_LIBRARY_SRC
   itk_resample.cxx itk_resample.h 
   itk_metadata.cxx itk_metadata.h 
   itk_volume_header.cxx itk_volume_header.h
+  mc_dose.cxx mc_dose.h
   metadata.cxx metadata.h 
   mha_io.cxx mha_io.h
   plm_file_format.cxx plm_file_format.h 
@@ -172,6 +175,8 @@ set (PLMIMAGE_LIBRARY_SRC
   rpl_volume.cxx rpl_volume.h
   rtss_polyline_set.cxx rtss_polyline_set.h 
   rtss_structure.cxx rtss_structure.h 
+  slice_index.cxx slice_index.h
+  thumbnail.cxx thumbnail.h
   vf_convolve.cxx vf_convolve.h 
   vf_stats.cxx vf_stats.h 
   vf.cxx vf.h
@@ -184,9 +189,14 @@ set (PLMIMAGE_LIBRARY_SRC
   xform_convert.cxx xform_convert.h 
   xform_legacy.cxx xform_legacy.h
   xform_point.cxx xform_point.h 
+  xio_ct.cxx xio_ct.h
+  xio_demographic.cxx xio_demographic.h
   xio_dir.cxx xio_dir.h
+  xio_dose.cxx xio_dose.h
   xio_patient.cxx xio_patient.h 
   xio_plan.cxx xio_plan.h
+  xio_structures.cxx xio_structures.h
+  xio_studyset.cxx xio_studyset.h
   xpm.cxx xpm.h
   )
 if (ITK_FOUND AND GDCM_VERSION_1)
@@ -394,7 +404,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   gamma_analysis.cxx gamma_analysis.h
   gpuit_bspline.cxx gpuit_bspline.h 
   gpuit_demons.cxx gpuit_demons.h 
-  itkAndConstantToImageFilter.h
   itk_crop.cxx itk_crop.h 
   itk_demons.cxx itk_demons.h 
   itk_gabor.cxx itk_gabor.h
@@ -405,7 +414,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   itk_warp.cxx itk_warp.h 
   landmark_warp.cxx landmark_warp.h 
   landmark_diff.cxx landmark_diff.h
-  mc_dose.cxx mc_dose.h
   pcmd_diff.cxx pcmd_diff.h
   plm_clp.cxx plm_clp.h
   plm_drr_api.cxx plm_drr_api.h 
@@ -428,22 +436,12 @@ set (PLASTIMATCH1_LIBRARY_SRC
   segment_body.cxx segment_body.h
   simplify_points.cxx simplify_points.h
   slice_extract.cxx slice_extract.h
-  slice_index.cxx slice_index.h
   ss_img_extract.cxx ss_img_extract.h
   ss_img_stats.cxx ss_img_stats.h 
   ss_list_io.cxx ss_list_io.h
   synthetic_mha.cxx synthetic_mha.h
   synthetic_vf.cxx synthetic_vf.h
   threshbox.cxx threshbox.h
-  thumbnail.cxx thumbnail.h
-  xio_ct.cxx xio_ct.h
-  xio_demographic.cxx xio_demographic.h
-  xio_dir.cxx xio_dir.h
-  xio_dose.cxx xio_dose.h
-  xio_studyset.cxx xio_studyset.h
-  xio_patient.cxx xio_patient.h 
-  xio_plan.cxx xio_plan.h
-  xio_structures.cxx xio_structures.h
   )
 
 if (ITK_FOUND AND GDCM_VERSION_2)
