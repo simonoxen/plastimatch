@@ -71,6 +71,8 @@ Acquire_4030e_parent::initialize (int argc, char* argv[])
     this->advantech->relay_open (3);
     this->advantech->relay_open (4);
 
+    this->panel_timer = 0;
+
     /* Check for receptor path on the command line */
     if (argc > 1) {
         this->num_process = 1;
@@ -157,42 +159,58 @@ Acquire_4030e_parent::timer_event ()
 
     /* Check for new prep/expose request from generator */
     if (gen_prep_request && !this->generator_prep) {
-        /* Close relay, asking panel to begin integration */
-        if (gen_panel_select == 0) {
-            /* Axial */
-            this->window->log_output (
-                QString("[p] Closing relay to panel: axial"));
-            this->advantech->relay_close (3);
-        } else {
-            /* G90 */
-            this->window->log_output (
-                QString("[p] Closing relay to panel: g90"));
-            this->advantech->relay_close (4);
-        }
+	/* Set up timer */
+	this->panel_timer = 0;
 
-        /* Save state about which generator is active */
+	/* Save state about which generator is active */
         this->generator_prep = true;
         this->panel_select = gen_panel_select;
+    }
+
+    if (gen_prep_request && this->generator_prep) {
+	/* Check for timer wait complete */
+	if (this->panel_timer <= 0) {
+	    /* Close relay, asking panel to begin integration */
+	    if (gen_panel_select == 0) {
+		/* Axial */
+		this->window->log_output (
+		    QString("[p] Closing relay to panel: axial"));
+		this->advantech->relay_close (3);
+	    } else {
+		/* G90 */
+		this->window->log_output (
+		    QString("[p] Closing relay to panel: g90"));
+		this->advantech->relay_close (4);
+	    }
+	} else {
+	    this->window->log_output (
+		QString("[p] Timer value = %1").arg(this->panel_timer));
+	    this->panel_timer --;
+	}
     }
 
     /* Check if panel is ready */
     if (this->generator_prep) {
         /* Close relay on generator */
         if (this->panel_select == false && panel_0_ready) {
-            this->window->log_output (
-                QString("[p] Closing relay to generator"));
-            this->advantech->relay_close (0);
+		this->window->log_output (
+		    QString("[p] Closing relay to generator"));
+		this->advantech->relay_close (0);
         }
         else if (this->panel_select == true && panel_1_ready) {
-            this->window->log_output (
-                QString("[p] Closing relay to generator"));
-            this->advantech->relay_close (0);
+		this->window->log_output (
+		    QString("[p] Closing relay to generator"));
+		this->advantech->relay_close (0);
         }
         else if (panel_0_ready || panel_1_ready) {
             this->window->log_output (
                 QString("[p] Warning, panel %1 was unexpectedly ready")
                 .arg(panel_0_ready ? 0 : 1));
         }
+	else {
+	    this->window->log_output (
+		    QString("[p] Neither panel is ready"));
+	}
     }
 
     /* Check if generator prep request complete */
@@ -201,5 +219,7 @@ Acquire_4030e_parent::timer_event ()
         this->advantech->relay_open (3);
         this->advantech->relay_open (4);
         this->generator_prep = false;
+	this->window->log_output (
+		QString("[p] Reset this->generator_prep to false"));
     }
 }

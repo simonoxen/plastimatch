@@ -33,6 +33,7 @@ public:
     Advantech *advantech;
     bool generator_prep;
     bool panel_select;
+    int panel_timer;
 };
 
 #endif
