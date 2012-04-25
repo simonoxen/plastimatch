@@ -13,11 +13,15 @@
 #include "bspline.h"
 #include "bspline_landmarks.h"
 #include "bspline_opts.h"
+#include "volume_macros.h"
+
+/* EXTERNAL DEPE#NDS */
+#include "bspline_xform.h"
 #include "logfile.h"
 #include "math_util.h"
 #include "pointset.h"
 #include "print_and_exit.h"
-#include "volume_macros.h"
+
 
 #if defined (commentout)
 static void

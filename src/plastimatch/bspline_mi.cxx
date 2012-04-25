@@ -21,14 +21,17 @@
 #endif
 #include "bspline_optimize.h"
 #include "bspline_opts.h"
+#include "print_and_exit.h"
+#include "bspline_macros.h"
+
+/* EXTERNAL DEPENDS */
+#include "bspline_xform.h"
 #include "interpolate.h"
 #include "logfile.h"
 #include "math_util.h"
 #include "plm_timer.h"
-#include "print_and_exit.h"
 #include "volume.h"
 #include "volume_macros.h"
-#include "bspline_macros.h"
 
 /* Maximum # of bins for a vopt histogram */
 #define VOPT_RES 1000

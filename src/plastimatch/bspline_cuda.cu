@@ -18,6 +18,9 @@
 #include "mha_io.h"
 #include "volume.h"
 
+/* EXTERNAL DEPENDS */
+#include "bspline_xform.h"
+
 // For CUDA Toolkits < 4.0
 #ifndef cudaTextureType1D
     #define cudaTextureType1D 0x01

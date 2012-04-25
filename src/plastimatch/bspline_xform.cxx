@@ -12,6 +12,7 @@
 #endif
 
 #include "bspline.h"
+#include "bspline_xform.h"
 #include "file_util.h"
 #include "interpolate.h"
 #include "logfile.h"

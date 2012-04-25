@@ -8,6 +8,9 @@
 #include "plm_int.h"
 #include "volume_macros.h"
 
+/* EXTERNAL DEPENDS */
+#include "bspline_xform.h"
+
 /***************************************************************
  * MACROS FOR VOXEL CENTRIC ALGORITHMS                         *
  ***************************************************************/

@@ -12,10 +12,16 @@
 #include "bspline_optimize.h"
 #include "bspline_optimize_lbfgsb.h"
 #include "bspline_opts.h"
-#include "logfile.h"
 #include "plm_fortran.h"
-#include "volume.h"
+
+/* EXTERNAL DEPENDS */
+#include "bspline_xform.h"
+#include "logfile.h"
+#include "math_util.h"
 #include "print_and_exit.h"
+#include "volume.h"
+#include "xpm.h"
+
 
 /* Defined in f2c.h, conflicts with std::numeric_limits::max */
 #if defined max

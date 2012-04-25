@@ -18,6 +18,9 @@
 #endif
 #include "bspline_optimize_steepest.h"
 #include "bspline_opts.h"
+
+/* EXTERNAL DEPENDS */
+#include "bspline_xform.h"
 #include "logfile.h"
 #include "math_util.h"
 #include "print_and_exit.h"

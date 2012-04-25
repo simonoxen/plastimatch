@@ -13,10 +13,15 @@
 #include "bspline_optimize.h"
 #include "bspline_optimize_liblbfgs.h"
 #include "bspline_opts.h"
+
+/* EXTERNAL DEPENDS */
+#include "bspline_xform.h"
 #include "logfile.h"
 #include "math_util.h"
 #include "print_and_exit.h"
 #include "volume.h"
+#include "xpm.h"
+
 
 static lbfgsfloatval_t 
 evaluate (

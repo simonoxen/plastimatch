@@ -6,7 +6,6 @@
 
 #include "plm_config.h"
 #include "plmbase.h"
-#include "bspline_xform.h"
 
 class Bspline_regularize_state;
 class Bspline_score;

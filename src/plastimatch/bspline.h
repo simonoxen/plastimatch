@@ -13,9 +13,7 @@
 #include "bspline_optimize.h"
 #include "bspline_regularize.h"
 #include "bspline_regularize_state.h"
-#include "bspline_xform.h"
 #include "plm_int.h"
-#include "pointset.h"
 
 #define DOUBLE_HISTS	// Use doubles for histogram accumulation
 

@@ -6,6 +6,7 @@
 
 #include "plm_config.h"
 #include "bspline_regularize.h"
+#include "plm_int.h"
 
 class Reg_options
 {

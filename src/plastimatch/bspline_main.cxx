@@ -27,6 +27,10 @@
 #include <dlfcn.h>
 #endif
 
+/* EXTERNAL DEPENDS */
+#include "bspline_xform.h"
+#include "volume.h"
+
 int
 main (int argc, char* argv[])
 {
