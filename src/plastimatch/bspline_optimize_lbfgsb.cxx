@@ -14,9 +14,10 @@
 #include "bspline_opts.h"
 #include "plm_fortran.h"
 
+#include "plmsys.h"
+
 /* EXTERNAL DEPENDS */
 #include "bspline_xform.h"
-#include "logfile.h"
 #include "math_util.h"
 #include "print_and_exit.h"
 #include "volume.h"

@@ -25,14 +25,19 @@ bspline_xform.cxx
 ------------------------------------------------------------
 TODOS:
 
-  CHECK API tag on ray_trance_uniform in libplmimage.h
-
   DELETE mha_io.h
   DELETE ray_trace_uniform.h
   DELETE ray_trace_exact.h
   DELETE vf_stats.h
   DELETE vf_convolve.h
   DELETE vf.h
+  DELETE logfile.h
+  DELETE plm_fwrite.h
+  DELETE plm_endian.h
 
   ADD getters and setters for volume.h
   REMOVE all external #include "volume.h"
+
+  EITHER [1] merge plm_path.h -> plmsys.h
+         [2] get rid of it entirely
+      >> [3] include it in plmsys.h ::ugh::

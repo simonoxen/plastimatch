@@ -3,9 +3,10 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 
+#include "plmsys.h"
+
 #include "pointset.h"
 #include "itk_image_load.h"
-#include "logfile.h"
 #include "registration_data.h"
 #include "plm_parms.h"
 

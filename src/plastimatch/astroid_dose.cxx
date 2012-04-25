@@ -5,9 +5,9 @@
 #include <string.h>
 
 #include "plmbase.h"
+#include "plmsys.h"
 
 #include "metadata.h"
-#include "plm_endian.h"
 #include "plm_image.h"
 #include "plm_image_type.h"
 #include "plm_int.h"

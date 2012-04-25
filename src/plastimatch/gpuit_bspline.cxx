@@ -8,10 +8,10 @@
 #include <math.h>
 
 #include "plmbase.h"
+#include "plmsys.h"
 
 #include "bspline_optimize.h"
 #include "bspline_landmarks.h"
-#include "logfile.h"
 #include "math_util.h"
 #include "mha_io.h"
 #include "plm_image_header.h"

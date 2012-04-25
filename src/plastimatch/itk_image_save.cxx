@@ -11,11 +11,12 @@
 #include "itkImageFileWriter.h"
 #include "itkOrientImageFilter.h"
 
+#include "plmsys.h"
+
 #include "file_util.h"
 #include "itk_image.h"
 #include "itk_dicom_save.h"
 #include "itk_image_cast.h"
-#include "logfile.h"
 #include "metadata.h"
 #include "plm_int.h"
 #include "print_and_exit.h"

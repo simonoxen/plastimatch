@@ -13,29 +13,4 @@ struct dir_list
     char** entries;
 };
 
-
-#if defined __cplusplus
-extern "C" {
-#endif
-
-gpuit_EXPORT
-Dir_list*
-dir_list_create (void);
-
-gpuit_EXPORT
-void
-dir_list_init (Dir_list* dl);
-
-gpuit_EXPORT
-Dir_list *
-dir_list_load (Dir_list *dir_list, const char* dir);
-
-gpuit_EXPORT
-void
-dir_list_destroy (Dir_list *dir_list);
-
-#if defined __cplusplus
-}
-#endif
-
 #endif

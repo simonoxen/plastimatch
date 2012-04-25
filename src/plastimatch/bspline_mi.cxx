@@ -13,6 +13,7 @@
 #endif
 
 #include "plmbase.h"
+#include "plmsys.h"
 
 #include "bspline.h"
 #include "bspline_mi.h"
@@ -27,7 +28,6 @@
 /* EXTERNAL DEPENDS */
 #include "bspline_xform.h"
 #include "interpolate.h"
-#include "logfile.h"
 #include "math_util.h"
 #include "plm_timer.h"
 #include "volume.h"

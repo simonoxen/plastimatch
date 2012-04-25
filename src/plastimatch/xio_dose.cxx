@@ -16,6 +16,7 @@
 #include "itkRegularExpressionSeriesFileNames.h"
 
 #include "plmbase.h"
+#include "plmsys.h"
 
 #include "file_util.h"
 #include "metadata.h"

@@ -14,9 +14,10 @@
 #include "itkImage.h"
 #include "itkLinearInterpolateImageFunction.h"
 
+#include "plmsys.h"
+
 #include "itk_image.h"
 #include "itk_resample.h"
-#include "logfile.h"
 #include "plm_parms.h"
 #include "plm_timer.h"
 #include "registration_data.h"

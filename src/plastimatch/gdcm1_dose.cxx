@@ -14,13 +14,13 @@
 #include "gdcmUtil.h"
 
 #include "plmbase.h"
+#include "plmsys.h"
 
 #include "file_util.h"
 #include "gdcm1_dose.h"
 #include "gdcm1_series.h"
 #include "gdcm1_util.h"
 #include "itk_image_stats.h"
-#include "logfile.h"
 #include "metadata.h"
 #include "plm_image.h"
 #include "plm_image_header.h"

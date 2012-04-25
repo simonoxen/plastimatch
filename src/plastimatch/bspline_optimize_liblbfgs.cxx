@@ -9,6 +9,8 @@
 #include <math.h>
 #include "lbfgs.h"
 
+#include "plmsys.h"
+
 #include "bspline.h"
 #include "bspline_optimize.h"
 #include "bspline_optimize_liblbfgs.h"
@@ -16,7 +18,6 @@
 
 /* EXTERNAL DEPENDS */
 #include "bspline_xform.h"
-#include "logfile.h"
 #include "math_util.h"
 #include "print_and_exit.h"
 #include "volume.h"

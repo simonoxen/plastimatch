@@ -8,6 +8,7 @@
 #if (OPENMP_FOUND)
 #include <omp.h>
 #endif
+
 #include "bragg_curve_opts.h"
 #include "plm_fortran.h"
 

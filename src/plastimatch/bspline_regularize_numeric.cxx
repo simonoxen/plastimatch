@@ -8,11 +8,12 @@
 #include <string.h>
 #include <math.h>
 
+#include "plmsys.h"
+
 #include "bspline.h"
 #include "bspline_macros.h"
 #include "bspline_opts.h"
 #include "bspline_regularize_numeric.h"
-#include "logfile.h"
 #include "math_util.h"
 #include "plm_timer.h"
 #include "print_and_exit.h"

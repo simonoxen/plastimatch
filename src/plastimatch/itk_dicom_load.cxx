@@ -9,9 +9,10 @@
 #include "itkGDCMSeriesFileNames.h"
 #include "itkImageSeriesReader.h"
 
+#include "plmsys.h"
+
 #include "dcm_util.h"
 #include "itk_dicom_load.h"
-#include "logfile.h"
 #include "metadata.h"
 #include "print_and_exit.h"
 

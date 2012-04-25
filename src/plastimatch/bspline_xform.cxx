@@ -11,11 +11,12 @@
 #include <omp.h>
 #endif
 
+#include "plmsys.h"
+
 #include "bspline.h"
 #include "bspline_xform.h"
 #include "file_util.h"
 #include "interpolate.h"
-#include "logfile.h"
 #include "math_util.h"
 #include "mha_io.h"
 #include "plm_path.h"

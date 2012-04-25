@@ -33,6 +33,8 @@
 #include <xmmintrin.h>
 #endif
 
+#include "plmsys.h"
+
 #include "bspline.h"
 #include "bspline_mi.h"
 #include "bspline_mse.h"
@@ -46,7 +48,6 @@
 #include "bspline_opts.h"
 #include "file_util.h"
 #include "interpolate.h"
-#include "logfile.h"
 #include "math_util.h"
 
 /* EXTERNAL DEPENDS */

@@ -15,10 +15,11 @@
 #include "itkRegularExpressionSeriesFileNames.h"
 #include "bstrlib.h"
 
+#include "plmsys.h"
+
 #if GDCM_VERSION_1
 #include "gdcm1_series.h"
 #endif
-#include "plm_endian.h"
 #include "plm_image.h"
 #include "plm_image_type.h"
 #include "print_and_exit.h"

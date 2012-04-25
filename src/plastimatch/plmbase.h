@@ -117,7 +117,7 @@ API void ray_trace_exact (
 );
 
 /* ray_trace_uniform.cxx */
-void ray_trace_uniform (
+API void ray_trace_uniform (
         Volume *vol,                  /* Input: volume */
         Volume_limit *vol_limit,      /* Input: min/max coordinates of volume */
         Ray_trace_callback callback,  /* Input: callback function */

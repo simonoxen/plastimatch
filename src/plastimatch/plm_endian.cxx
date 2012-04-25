@@ -2,8 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
-#include "plm_endian.h"
-#include "plm_int.h"
+#include "plmsys.h"
 
 /* Switch buffer endian between big and little (2 byte types) */
 static void

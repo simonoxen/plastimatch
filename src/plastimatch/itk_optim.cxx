@@ -18,8 +18,9 @@
 #include "itkLBFGSOptimizer.h"
 #include "itkLBFGSBOptimizer.h"
 
+#include "plmsys.h"
+
 #include "itk_registration.h"
-#include "logfile.h"
 #include "plm_stages.h"
 #include "print_and_exit.h"
 

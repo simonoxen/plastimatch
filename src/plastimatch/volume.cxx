@@ -8,8 +8,8 @@
 #include <math.h>
 
 #include "plmbase.h"
+#include "plmsys.h"
 
-#include "logfile.h"
 #include "math_util.h"
 #include "plm_int.h"
 #include "print_and_exit.h"

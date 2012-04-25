@@ -8,8 +8,9 @@
 #if (defined(_WIN32) || defined(WIN32))
 #include <io.h>
 #endif
-#include "plm_fwrite.h"
-#include "plm_int.h"
+
+#include "plmsys.h"
+
 #include "print_and_exit.h"
 #include "volume.h"
 
