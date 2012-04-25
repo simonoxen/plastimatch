@@ -14,7 +14,6 @@
 #include "bspline_landmarks.h"
 #include "bspline_rbf.h"
 #include "bspline_opts.h"
-#include "logfile.h"
 #include "math_util.h"
 #include "volume.h"
 

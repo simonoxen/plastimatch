@@ -7,13 +7,15 @@
 #include <stdlib.h>
 #include <time.h>
 #include "plm_config.h"
+
+#include "plmsys.h"
+
 #if (PANTHEIOS_FOUND)
 #include <pantheios/pantheios.h>        /* The root header for Panthieos when using the C-API. */
 #include <pantheios/frontends/stock.h>  /* Declares the process identity symbol PANTHEIOS_FE_PROCESS_IDENTITY */
 #include <pantheios/implicit_link/fe.simple.h>
 #endif
 #include "plm_version.h"
-#include "logfile.h"
 
 #define LOGFILE_ECHO_ON 1
 

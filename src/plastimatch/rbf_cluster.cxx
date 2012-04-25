@@ -14,7 +14,6 @@
 #include "bspline_opts.h"
 #include "compiler_warnings.h"
 #include "landmark_warp.h"
-#include "logfile.h"
 #include "math_util.h"
 #include "rbf_cluster.h"
 #include "vf.h"

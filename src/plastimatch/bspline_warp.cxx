@@ -18,7 +18,6 @@
 #include "bspline_macros.h"
 #include "bspline_warp.h"
 #include "interpolate.h"
-#include "logfile.h"
 #include "math_util.h"
 #include "plm_int.h"
 #include "volume.h"

@@ -10,7 +10,6 @@
 #include "plmbase.h"
 
 #include "landmark_warp.h"
-#include "logfile.h"
 #include "pointset.h"
 #include "vf.h"
 #include "volume.h"

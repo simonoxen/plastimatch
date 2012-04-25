@@ -12,7 +12,6 @@
 
 #include "dcmtk_file.h"
 #include "dcmtk_series.h"
-#include "logfile.h"
 #include "math_util.h"
 #include "plm_int.h"
 #include "rtds.h"

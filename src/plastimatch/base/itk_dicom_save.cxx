@@ -18,7 +18,6 @@
 #include "metadata.h"
 #include "itk_dicom_save.h"
 #include "itk_image.h"
-#include "logfile.h"
 #include "make_string.h"
 #include "plm_uid_prefix.h"
 #include "slice_index.h"

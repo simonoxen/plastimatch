@@ -17,7 +17,6 @@
 #include "itkClampCastImageFilter.h"
 #include "itkOrientImageFilter.h"
 #include "itk_image.h"
-#include "logfile.h"
 
 #if (defined(_WIN32) || defined(WIN32))
 #define snprintf _snprintf

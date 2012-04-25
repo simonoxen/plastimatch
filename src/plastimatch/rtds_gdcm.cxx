@@ -13,7 +13,6 @@
 #include "gdcm1_rtss.h"
 #include "gdcm1_series.h"
 #endif
-#include "logfile.h"
 #include "rtds.h"
 #include "rtss.h"
 

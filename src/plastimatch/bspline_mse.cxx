@@ -26,7 +26,6 @@
 #include "bspline_opts.h"
 #include "file_util.h"
 #include "interpolate.h"
-#include "logfile.h"
 #include "math_util.h"
 #include "plm_timer.h"
 #include "volume.h"

@@ -15,7 +15,6 @@
 #include "itk_image.h"
 #include "itk_image_cast.h"
 #include "file_util.h"
-#include "logfile.h"
 #include "plm_image_header.h"
 #include "plm_int.h"
 #include "volume_header.h"
