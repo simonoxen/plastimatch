@@ -6,6 +6,7 @@
 #include <cuda.h>
 
 #include "plmbase.h"
+#include "plmsys.h"
 
 #include "cuda_util.h"
 #include "demons_cuda.h"
@@ -13,7 +14,6 @@
 #include "demons_opts.h"
 #include "demons_state.h"
 #include "plm_cuda_math.h"
-#include "plm_int.h"
 #include "plm_timer.h"
 #include "volume.h"
 

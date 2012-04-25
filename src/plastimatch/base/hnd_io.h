@@ -5,7 +5,9 @@
 #define _hnd_io_h_
 
 #include "plm_config.h"
-#include "plm_int.h"
+
+#include "plmsys.h"
+
 #include "proj_image.h"
 #include "proj_matrix.h"
 

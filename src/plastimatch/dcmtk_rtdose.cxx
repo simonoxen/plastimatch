@@ -13,7 +13,6 @@
 #include "dcmtk_file.h"
 #include "dcmtk_series.h"
 #include "math_util.h"
-#include "plm_int.h"
 #include "rtds.h"
 
 /* This is the tolerance on irregularity of the grid spacing (in mm) */

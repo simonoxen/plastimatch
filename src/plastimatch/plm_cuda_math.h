@@ -6,7 +6,8 @@
 
 #include "plm_config.h"
 #include <cuda.h>
-#include "plm_int.h"
+
+#include "plmsys.h"
 
 /* Host to device operators */
 #if defined (commentout)

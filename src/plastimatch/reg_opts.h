@@ -5,8 +5,10 @@
 #define _reg_opts_h_
 
 #include "plm_config.h"
+
+#include "plmsys.h"
+
 #include "bspline_regularize.h"
-#include "plm_int.h"
 
 class Reg_options
 {

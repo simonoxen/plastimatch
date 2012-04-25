@@ -8,8 +8,10 @@
 #include <map>
 #include <list>
 #include <vector>
+
+#include "plmsys.h"
+
 #include "metadata.h"
-#include "plm_int.h"
 #include "pstring.h"
 
 /* Forward declarations */

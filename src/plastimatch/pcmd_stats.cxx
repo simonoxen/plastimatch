@@ -8,6 +8,7 @@
 #include "getopt.h"
 
 #include "plmbase.h"
+#include "plmsys.h"
 
 #include "itk_image.h"
 #include "itk_image_load.h"
@@ -16,7 +17,6 @@
 #include "plm_file_format.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
-#include "plm_int.h"
 #include "proj_image.h"
 #include "ss_img_stats.h"
 #include "xform.h"

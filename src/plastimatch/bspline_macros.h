@@ -5,7 +5,9 @@
 #define _bspline_macros_h_
 
 #include "plm_config.h"
-#include "plm_int.h"
+
+#include "plmsys.h"
+
 #include "volume_macros.h"
 
 /* EXTERNAL DEPENDS */

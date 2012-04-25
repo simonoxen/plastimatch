@@ -9,9 +9,10 @@
 #include "itkNearestNeighborInterpolateImageFunction.h"
 #include "itkWarpImageFilter.h"
 
+#include "plmsys.h"
+
 #include "itk_image.h"
 #include "itk_image_stats.h"
-#include "plm_int.h"
 #include "ss_img_extract.h"
 #include "ss_img_stats.h"
 

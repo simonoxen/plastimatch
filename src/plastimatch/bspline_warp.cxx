@@ -19,7 +19,6 @@
 #include "bspline_warp.h"
 #include "interpolate.h"
 #include "math_util.h"
-#include "plm_int.h"
 #include "volume.h"
 #include "volume_macros.h"
 

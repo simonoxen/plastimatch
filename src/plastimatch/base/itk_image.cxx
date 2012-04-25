@@ -11,12 +11,13 @@
 #include "itkCastImageFilter.h"
 #include "itkOrientImageFilter.h"
 
+#include "plmsys.h"
+
 #include "itk_dicom_load.h"
 #include "itk_image.h"
 #include "itk_image_cast.h"
 #include "file_util.h"
 #include "plm_image_header.h"
-#include "plm_int.h"
 #include "volume_header.h"
 
 #if (defined(_WIN32) || defined(WIN32))

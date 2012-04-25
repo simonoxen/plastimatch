@@ -5,7 +5,8 @@
 #define _rasterize_slice_h_
 
 #include "plm_config.h"
-#include "plm_int.h"
+
+#include "plmsys.h"
 
 #if defined __cplusplus
 extern "C" {

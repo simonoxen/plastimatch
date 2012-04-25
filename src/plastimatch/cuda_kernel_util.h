@@ -13,7 +13,8 @@
 
 #include "plm_config.h"
 #include <cuda.h>
-#include "plm_int.h"
+
+#include "plmsys.h"
 
 #define GRID_LIMIT_X 65535
 #define GRID_LIMIT_Y 65535

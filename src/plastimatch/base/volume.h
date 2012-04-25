@@ -5,7 +5,9 @@
 #define _volume_h_
 
 #include "plm_config.h"
-#include "plm_int.h"
+
+#include "plmsys.h"
+
 #include "volume_header.h"
 #include "volume_macros.h"
 

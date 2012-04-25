@@ -10,8 +10,8 @@
 #include <math.h>
 
 #include "plmbase.h"
+#include "plmsys.h"
 
-#include "plm_int.h"
 #include "volume.h"
 
 void

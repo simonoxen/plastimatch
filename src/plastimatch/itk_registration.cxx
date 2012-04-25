@@ -30,7 +30,6 @@
 #include "itk_resample.h"
 #include "itk_warp.h"
 #include "plm_image_header.h"
-#include "plm_int.h"
 #include "plm_parms.h"
 #include "plm_timer.h"
 #include "registration_data.h"

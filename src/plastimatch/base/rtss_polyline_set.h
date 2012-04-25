@@ -7,7 +7,9 @@
 #include "plm_config.h"
 #include <list>
 #include <vector>
-#include "plm_int.h"
+
+#include "plmsys.h"
+
 #include "pstring.h"
 
 class Plm_image;

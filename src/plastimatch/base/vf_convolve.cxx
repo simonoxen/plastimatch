@@ -6,9 +6,9 @@
 #include <stdlib.h>
 
 #include "plmbase.h"
+#include "plmsys.h"
 
 #include "math_util.h"
-#include "plm_int.h"
 #include "volume.h"
 
 void

@@ -5,7 +5,9 @@
 #define _dcmtk_file_h_
 
 #include "plm_config.h"
-#include "plm_int.h"
+
+#include "plmsys.h"
+
 #include "string_util.h"
 #include "volume_header.h"
 

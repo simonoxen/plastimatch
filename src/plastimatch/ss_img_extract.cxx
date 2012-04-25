@@ -13,7 +13,6 @@
 #include "itkAndConstantToImageFilter.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
-#include "plm_int.h"
 
 UCharImageType::Pointer
 ss_img_extract_bit (UInt32ImageType::Pointer image, unsigned int bit)

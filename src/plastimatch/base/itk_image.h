@@ -5,8 +5,10 @@
 #define _itk_image_h_
 
 #include "plm_config.h"
+
+#include "plmsys.h"
+
 #include "itk_image_type.h"
-#include "plm_int.h"
 #include "plm_image_type.h"
 
 class Plm_image_header;

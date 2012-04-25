@@ -5,7 +5,9 @@
 #define _fdk_opts_h_
 
 #include "plm_config.h"
-#include "plm_int.h"
+
+#include "plmsys.h"
+
 #include "threading.h"
 
 enum Fdk_filter_type {

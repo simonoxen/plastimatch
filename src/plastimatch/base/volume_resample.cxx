@@ -8,10 +8,10 @@
 #include <math.h>
 
 #include "plmbase.h"
+#include "plmsys.h"
 
 #include "interpolate.h"
 #include "math_util.h"
-#include "plm_int.h"
 #include "volume.h"
 #include "volume_resample.h"
 

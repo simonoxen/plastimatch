@@ -5,11 +5,12 @@
 #include <itkImage.h>
 #include <itkImageRegionIterator.h>
 
+#include "plmsys.h"
+
 #include "itk_directions.h"
 #include "itk_image.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
-#include "plm_int.h"
 
 /* -----------------------------------------------------------------------
    Standard 3D image conversion

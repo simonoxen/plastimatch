@@ -12,7 +12,6 @@
 #include "mha_io.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
-#include "plm_int.h"
 #include "plm_warp.h"
 #include "ss_img_stats.h"
 #include "volume.h"

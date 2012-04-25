@@ -10,7 +10,6 @@
 
 #include "file_util.h"
 #include "hnd_io.h"
-#include "plm_int.h"
 #include "proj_image.h"
 
 int 

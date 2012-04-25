@@ -13,7 +13,9 @@
 #include <stdio.h>
 #include <vector>
 #include "dlib/cmd_line_parser.h"
-#include "plm_int.h"
+
+#include "plmsys.h"
+
 #include "plm_version.h"
 
 typedef dlib::cmd_line_parser<char>::check_1a_c Clp;

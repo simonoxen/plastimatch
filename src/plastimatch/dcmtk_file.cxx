@@ -11,7 +11,6 @@
 #include "plmsys.h"
 
 #include "dcmtk_file.h"
-#include "plm_int.h"
 
 Dcmtk_file::Dcmtk_file () {
     init ();

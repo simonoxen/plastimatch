@@ -8,12 +8,12 @@
 #include <string>
 
 #include "plmbase.h"
+#include "plmsys.h"
 
 #include "bspline_landmarks.h"
 #include "bspline_optimize.h"
 #include "bspline_regularize.h"
 #include "bspline_regularize_state.h"
-#include "plm_int.h"
 
 #define DOUBLE_HISTS	// Use doubles for histogram accumulation
 

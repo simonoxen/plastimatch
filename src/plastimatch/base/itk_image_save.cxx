@@ -18,7 +18,6 @@
 #include "itk_dicom_save.h"
 #include "itk_image_cast.h"
 #include "metadata.h"
-#include "plm_int.h"
 
 #if (defined(_WIN32) || defined(WIN32))
 #define snprintf _snprintf

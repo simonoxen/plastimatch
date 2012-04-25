@@ -6,10 +6,12 @@
 
 #include "plm_config.h"
 #include <stdlib.h>
+
+#include "plmsys.h"
+
 #include "direction_cosines.h"
 #include "plm_image_type.h"
 #include "pstring.h"
-#include "plm_int.h"
 
 class Resample_parms {
 public:

@@ -7,6 +7,8 @@
 #include "itkImageRegionIterator.h"
 #include "getopt.h"
 
+#include "plmsys.h"
+
 #include "bstring_util.h"
 #include "dvh.h"
 #include "file_util.h"
@@ -14,7 +16,6 @@
 #include "make_string.h"
 #include "pcmd_dvh.h"
 #include "plm_image.h"
-#include "plm_int.h"
 #include "rtds.h"
 #include "rtss.h"
 #include "rtss_structure.h"
