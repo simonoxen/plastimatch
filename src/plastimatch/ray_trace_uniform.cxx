@@ -9,7 +9,7 @@
 #include <omp.h>
 #endif
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "math_util.h"
 #include "plm_timer.h"

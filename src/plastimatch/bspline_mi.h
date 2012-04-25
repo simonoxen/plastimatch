@@ -5,9 +5,10 @@
 #define _bspline_mi_h_
 
 #include "plm_config.h"
+#include "plmbase.h"
+
 #include "bspline.h"
 #include "bspline_optimize.h"
-#include "volume.h"
 
 /* -----------------------------------------------------------------------
    Function declarations

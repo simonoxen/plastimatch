@@ -13,7 +13,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "bspline.h"
 #include "bspline_optimize.h"

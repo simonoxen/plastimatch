@@ -14,7 +14,7 @@
 #include "gdcmSQItem.h"
 #include "gdcmUtil.h"
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "bstring_util.h"
 #include "gdcm1_series.h"

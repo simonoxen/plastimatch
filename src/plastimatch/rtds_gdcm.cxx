@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #if GDCM_VERSION_1
 #include "gdcm1_rtss.h"

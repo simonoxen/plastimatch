@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <cuda.h>
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "cuda_util.h"
 #include "demons_cuda.h"

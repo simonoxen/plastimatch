@@ -9,7 +9,7 @@
 #include "itkMetaDataDictionary.h"
 #include "itkMetaDataObject.h"
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "dcmtk_load.h"
 #include "file_util.h"

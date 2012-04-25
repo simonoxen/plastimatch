@@ -5,10 +5,9 @@
 #define _drr_cuda_h_
 
 #include "plm_config.h"
+#include "plmbase.h"
 #include "drr_opts.h"
 #include "proj_image.h"
-#include "volume.h"
-#include "volume_limit.h"
 #include "delayload.h"
 
 #if defined __cplusplus

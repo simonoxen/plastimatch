@@ -12,7 +12,7 @@
 #include <omp.h>
 #endif
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "drr.h"
 #include "drr_cuda.h"
@@ -24,6 +24,7 @@
 #include "proj_image.h"
 #include "proj_matrix.h"
 #include "delayload.h"
+#include "volume.h"
 
 static void*
 allocate_gpu_memory (

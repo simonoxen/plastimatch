@@ -9,7 +9,7 @@
 #include "fftw3.h"
 #endif
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "bowtie_correction.h"
 #include "fdk_opts.h"

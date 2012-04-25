@@ -5,9 +5,9 @@
 #define _FDK_OPENCL_H_
 
 #include "plm_config.h"
+#include "plmbase.h"
 #include "fdk_opts.h"
 #include "proj_image_dir.h"
-#include "volume.h"
 #include "delayload.h"
 
 #if defined __cplusplus

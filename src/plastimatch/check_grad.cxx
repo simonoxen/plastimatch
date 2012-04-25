@@ -8,7 +8,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "bspline.h"
 #include "bspline_mi.h"

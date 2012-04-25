@@ -7,7 +7,7 @@
 #include "itk_image_save.h"
 #include "file_util.h"
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "itk_metadata.h"
 #include "plm_warp.h"

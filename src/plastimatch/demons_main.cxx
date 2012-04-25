@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "delayload.h"
 #include "demons.h"

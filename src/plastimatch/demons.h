@@ -5,9 +5,9 @@
 #define _demons_h_
 
 #include "plm_config.h"
+#include "plmbase.h"
 
 #include "threading.h"
-#include "volume.h"
 #include "delayload.h"
 
 typedef struct DEMONS_Parms_struct DEMONS_Parms;

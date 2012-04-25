@@ -5,8 +5,8 @@
 #define _bspline_landmarks_h_
 
 #include "plm_config.h"
+#include "plmbase.h"
 #include "pointset.h"
-#include "volume.h"
 
 class Bspline_parms;
 class Bspline_state;

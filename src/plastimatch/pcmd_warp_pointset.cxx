@@ -3,7 +3,7 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "bstring_util.h"
 #include "itk_pointset.h"

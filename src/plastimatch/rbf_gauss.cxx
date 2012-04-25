@@ -16,7 +16,7 @@
 #include "vnl/algo/vnl_svd.h"
 #include "vnl/vnl_sample.h"
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "bspline.h"
 #include "bspline_landmarks.h"

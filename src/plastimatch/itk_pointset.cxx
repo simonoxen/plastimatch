@@ -4,7 +4,7 @@
 #include "plm_config.h"
 #include <stdio.h>
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "itk_pointset.h"
 #include "pointset.h"

@@ -5,8 +5,8 @@
 #define _bspline_regularize_analytic_h_
 
 #include "plm_config.h"
+#include "plmbase.h"
 #include "bspline_xform.h"
-#include "volume.h"
 
 class Bspline_regularize_state;
 class Bspline_score;

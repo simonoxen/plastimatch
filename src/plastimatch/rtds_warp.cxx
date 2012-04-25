@@ -5,7 +5,7 @@
 #include "cxt_extract.h"
 #include "file_util.h"
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #if GDCM_VERSION_1
 #include "gdcm1_rtss.h"

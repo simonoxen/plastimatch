@@ -4,10 +4,11 @@
 #ifndef _drr_h_
 #define _drr_h_
 
+#include "plm_config.h"
+#include "plmbase.h"
 #include "drr_opts.h"
 #include "math_util.h"
 #include "proj_image.h"
-#include "volume.h"
 
 #define DRR_PLANE_RAY_TOLERANCE 1e-8
 #define DRR_STRIDE_TOLERANCE 1e-10

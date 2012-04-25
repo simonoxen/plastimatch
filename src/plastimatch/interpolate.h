@@ -5,7 +5,8 @@
 #define _interpolate_h_
 
 #include "plm_config.h"
-#include "volume.h"
+#include "plmbase.h"
+#include "plm_int.h"
 
 /* -----------------------------------------------------------------------
    Macros

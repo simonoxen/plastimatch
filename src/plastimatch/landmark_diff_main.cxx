@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "landmark_diff.h"
 

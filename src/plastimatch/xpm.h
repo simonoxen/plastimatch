@@ -4,7 +4,7 @@
 #ifndef _xpm_h_
 #define _xpm_h_
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 typedef struct xpm_struct_s xpm_struct;
 struct xpm_struct_s {

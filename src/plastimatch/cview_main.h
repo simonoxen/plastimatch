@@ -6,7 +6,7 @@
 
 #include <QtGui>
 #include "plm_image.h"
-#include "volume.h"
+#include "plmbase.h"
 #include "cview_portal.h"
 
 class PortalGrid : public QWidget

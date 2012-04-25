@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "math_util.h"
 #include "plm_int.h"

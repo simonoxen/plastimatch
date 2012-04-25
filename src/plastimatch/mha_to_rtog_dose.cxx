@@ -14,7 +14,7 @@
 #include <limits.h>
 #endif
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "getopt.h"
 #include "volume.h"

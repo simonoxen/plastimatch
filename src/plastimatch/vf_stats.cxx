@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "plm_int.h"
 #include "volume.h"

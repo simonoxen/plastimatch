@@ -5,10 +5,10 @@
 #define _rasterizer_h_
 
 #include "plm_config.h"
+#include "plmbase.h"
 #include "cxt_io.h"
 #include "itk_image.h"
 #include "plm_image_header.h"
-#include "volume.h"
 
 class plastimatch1_EXPORT Rasterizer {
   public:

@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "demons_misc.h"
 #include "demons_opts.h"

@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "math_util.h"
 #include "mha_io.h"

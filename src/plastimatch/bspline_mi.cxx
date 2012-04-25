@@ -12,7 +12,7 @@
 #include <xmmintrin.h>
 #endif
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "bspline.h"
 #include "bspline_mi.h"

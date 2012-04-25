@@ -14,7 +14,7 @@
 #include "gdcmUtil.h"
 #include "gdcmValEntry.h"
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "bstring_util.h"
 #include "file_util.h"

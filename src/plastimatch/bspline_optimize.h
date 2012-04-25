@@ -5,8 +5,9 @@
 #define _bspline_optimize_h_
 
 #include "plm_config.h"
+#include "plmbase.h"
 #include "bspline.h"
-#include "volume.h"
+
 
 
 #if defined __cplusplus

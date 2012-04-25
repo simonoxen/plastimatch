@@ -7,7 +7,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "interpolate.h"
 #include "math_util.h"

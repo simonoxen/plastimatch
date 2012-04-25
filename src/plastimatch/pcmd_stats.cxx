@@ -7,7 +7,7 @@
 #include "itkVariableLengthVector.h"
 #include "getopt.h"
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "itk_image.h"
 #include "itk_image_load.h"

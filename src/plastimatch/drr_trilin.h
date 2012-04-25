@@ -5,7 +5,7 @@
 #define _drr_trilin_h_
 
 #include "plm_config.h"
-#include "volume.h"
+#include "plmbase.h"
 
 gpuit_EXPORT
 double

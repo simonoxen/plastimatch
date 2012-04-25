@@ -30,7 +30,7 @@
 #include <math.h>
 #include <cuda.h>
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "cuda_util.h"
 #include "drr_cuda.h"
@@ -41,6 +41,7 @@
 #include "plm_timer.h"
 #include "proj_image.h"
 #include "volume.h"
+#include "volume_limit.h"
 
 /* Textures */
 //texture<float, 1, cudaReadModeElementType> tex_img;

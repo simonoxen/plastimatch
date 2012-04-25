@@ -12,7 +12,7 @@ set (PLMSYS_LIBRARY_DEPENDENCIES
   bstrlib
   )
 
-set (PLMIMAGE_LIBRARY_DEPENDENCIES
+set (PLMBASE_LIBRARY_DEPENDENCIES
   plmsys
   ${ITK_LIBRARIES}
   )
@@ -21,7 +21,7 @@ set (GPUIT_LIBRARY_DEPENDENCIES
   ${LIBLBFGS_LIBRARIES}
   nocedal
   plmsys
-  plmimage
+  plmbase
   )
 
 if (NOT BUILD_DEBIAN)

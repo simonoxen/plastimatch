@@ -6,7 +6,7 @@
 #include "itkSubtractImageFilter.h"
 #include "itkImageRegionIterator.h"
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "getopt.h"
 #include "itk_image.h"

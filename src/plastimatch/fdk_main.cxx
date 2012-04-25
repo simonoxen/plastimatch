@@ -11,7 +11,7 @@
 #include <omp.h>
 #endif
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "bowtie_correction.h"
 #include "fdk.h"

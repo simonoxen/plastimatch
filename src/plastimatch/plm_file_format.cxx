@@ -9,7 +9,7 @@
 #include <itksys/SystemTools.hxx>
 #include <itkImageIOBase.h>
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "file_util.h"
 #include "itk_image.h"

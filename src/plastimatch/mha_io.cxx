@@ -9,7 +9,7 @@
 #include <io.h>        // windows //
 #endif
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "plm_endian.h"
 #include "plm_fwrite.h"

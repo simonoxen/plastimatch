@@ -5,8 +5,7 @@
 #define _bspline_warp_h_
 
 #include "plm_config.h"
-#include "bspline_xform.h"
-#include "volume.h"
+#include "plmbase.h"
 
 /* -----------------------------------------------------------------------
    Function declarations

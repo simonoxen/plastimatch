@@ -5,9 +5,9 @@
 #define _proj_image_h_
 
 #include "plm_config.h"
+#include "plmbase.h"
 #include "fdk_opts.h"
 #include "proj_matrix.h"
-#include "volume.h"
 
 class gpuit_EXPORT Proj_image
 {

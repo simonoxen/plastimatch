@@ -5,10 +5,10 @@
 #define _fdk_cuda_h_
 
 #include "plm_config.h"
+#include "plmbase.h"
 #include "delayload.h"
 #include "fdk_opts.h"
 #include "proj_image_dir.h"
-#include "volume.h"
 
 #define FDK_CUDA_TIME_KERNEL 0
 

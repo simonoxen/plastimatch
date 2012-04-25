@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "astroid_dose.h"
 #include "bstring_util.h"

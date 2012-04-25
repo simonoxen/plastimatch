@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "fdk_opts.h"
 #include "fdk_util.h"

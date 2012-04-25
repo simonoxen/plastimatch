@@ -1,11 +1,13 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _plmimage_h_
-#define _plmimage_h_
+#ifndef _plmbase_h_
+#define _plmbase_h_
 
 #include "plm_config.h"
 
+// opaque types
+class Bspline_xform;
 class Metadata;
 class Plm_image;
 class Proj_image;
@@ -14,7 +16,7 @@ class Slice_index;
 class Slice_index;
 class Rtss;
 class Volume;
-
+class Volume_header;
 typedef struct raw_pointset Raw_pointset;
 typedef struct rpl_volume Rpl_volume;
 typedef struct xpm_brush_s xpm_brush;

@@ -5,8 +5,8 @@
 #define _bowtie_correction_h_
 
 #include "plm_config.h"
+#include "plmbase.h"
 #include "fdk_opts.h"
-#include "volume.h"
 
 #if defined __cplusplus
 extern "C" {

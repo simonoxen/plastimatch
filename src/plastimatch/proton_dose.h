@@ -5,8 +5,8 @@
 #define _proton_dose_h_
 
 #include "plm_config.h"
+#include "plmbase.h"
 #include "proton_dose_opts.h"
-#include "volume.h"
 
 
 #define INDEX_OF(ijk, dim) \

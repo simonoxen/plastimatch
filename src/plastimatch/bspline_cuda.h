@@ -11,7 +11,9 @@
 #include <string.h>
 #include <math.h>
 #include <cuda.h>
-#include "volume.h"
+
+#include "plmbase.h"
+
 #include "bspline.h"
 #include "cuda_mem.h"
 #include "delayload.h"

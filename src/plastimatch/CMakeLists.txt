@@ -129,7 +129,7 @@ set (PLMSYS_LIBRARY_SRC
   interpolate.cxx interpolate.h
   )
 
-set (PLMIMAGE_LIBRARY_SRC
+set (PLMBASE_LIBRARY_SRC
   astroid_dose.cxx astroid_dose.h
   bspline_xform.cxx bspline_xform.h
   dcm_util.cxx dcm_util.h
@@ -204,8 +204,8 @@ set (PLMIMAGE_LIBRARY_SRC
   xpm.cxx xpm.h
   )
 if (ITK_FOUND AND GDCM_VERSION_1)
-  set (PLMIMAGE_LIBRARY_SRC
-    ${PLMIMAGE_LIBRARY_SRC}
+  set (PLMBASE_LIBRARY_SRC
+    ${PLMBASE_LIBRARY_SRC}
     gdcm1_dose.cxx gdcm1_dose.h
     gdcm1_file.cxx gdcm1_file.h
     gdcm1_rdd.cxx gdcm1_rdd.h 
@@ -761,9 +761,9 @@ plm_add_library (
   "")
 
 plm_add_library (
-  plmimage
-  "${PLMIMAGE_LIBRARY_SRC}" 
-  "${PLMIMAGE_LIBRARY_DEPENDENCIES}"
+  plmbase
+  "${PLMBASE_LIBRARY_SRC}" 
+  "${PLMBASE_LIBRARY_DEPENDENCIES}"
   "")
 
 if (F2C_LIBRARY AND UNIX)
@@ -1175,11 +1175,11 @@ if (SLICER_FOUND)
       "${QTOUTDIR}/plmsys.dll"
       plmsys
       )
-    plm_slicer_copy_dll (plastimatch_slicer_copy_plmimage
-      "${INDIR}/plmimage.dll"
-      "${OUTDIR}/plmimage.dll"
-      "${QTOUTDIR}/plmimage.dll"
-      plmimage
+    plm_slicer_copy_dll (plastimatch_slicer_copy_plmbase
+      "${INDIR}/plmbase.dll"
+      "${OUTDIR}/plmbase.dll"
+      "${QTOUTDIR}/plmbase.dll"
+      plmbase
       )
     if (CUDA_FOUND)
       plm_slicer_copy_dll (plastimatch_slicer_copy_plmcuda

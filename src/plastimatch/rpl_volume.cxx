@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "compiler_warnings.h"
 #include "math_util.h"

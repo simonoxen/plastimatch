@@ -7,7 +7,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "landmark_warp.h"
 #include "logfile.h"

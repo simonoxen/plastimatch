@@ -2,8 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
-
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "landmark_warp.h"
 #include "itk_image_save.h"

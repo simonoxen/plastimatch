@@ -11,7 +11,7 @@
 #include "itkTransformFileWriter.h"
 #include "itkTransformFileReader.h"
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "bspline.h"
 #include "itk_image_load.h"

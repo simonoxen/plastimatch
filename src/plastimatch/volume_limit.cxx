@@ -4,7 +4,7 @@
 #include "plm_config.h"
 #include <stdio.h>
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "drr.h"          /* For DRR_VERBOSE */
 #include "math_util.h"

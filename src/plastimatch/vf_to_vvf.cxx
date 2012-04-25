@@ -10,7 +10,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "volume.h"
 

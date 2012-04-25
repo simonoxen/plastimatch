@@ -4,7 +4,7 @@
 #include "plm_config.h"
 #include <string.h>
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "metadata.h"
 #include "plm_endian.h"

@@ -15,7 +15,7 @@
 #include "itkDirectory.h"
 #include "itkRegularExpressionSeriesFileNames.h"
 
-#include "libplmimage.h"
+#include "plmbase.h"
 
 #include "file_util.h"
 #include "metadata.h"
