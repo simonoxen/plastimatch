@@ -41,3 +41,14 @@ TODOS:
   EITHER [1] merge plm_path.h -> plmsys.h
          [2] get rid of it entirely
       >> [3] include it in plmsys.h ::ugh::
+
+  SPLIT rtss.*; rtss.h -> base; 
+        {convert_ss_img_to_cxt, cxt_re_extract, rasterize, warp} 
+	rtss_rasterize, rtss_marching_squares, rtss_warp -> util
+  rtss_polyline.* -> BASE
+  rtss_structure.* -> BASE
+  ss_img_stats -> UTIL
+  ss_img_extract -> BASE
+  ss_list_io -> BASE
+  cxt_extract.cxx -> UTIL
+
