@@ -16,7 +16,6 @@
 #include "bspline_regularize_numeric.h"
 #include "math_util.h"
 #include "plm_timer.h"
-#include "print_and_exit.h"
 #include "volume_macros.h"
 
 /* Prototypes */

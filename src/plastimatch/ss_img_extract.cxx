@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "plmsys.h"
+
 #include "itkImage.h"
 #include "itk_image.h"
 #include "itkAndConstantToImageFilter.h"

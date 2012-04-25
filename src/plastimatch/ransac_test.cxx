@@ -7,10 +7,11 @@
 #include "PlaneParametersEstimator.h"
 #include "RandomNumberGenerator.h"
 
+#include "plmsys.h"
+
 #include "autolabel_ransac_est.h"
 #include "bstring_util.h"
 #include "itk_point.h"
-#include "print_and_exit.h"
 #include "pstring.h"
 
 void

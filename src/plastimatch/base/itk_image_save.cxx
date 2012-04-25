@@ -19,7 +19,6 @@
 #include "itk_image_cast.h"
 #include "metadata.h"
 #include "plm_int.h"
-#include "print_and_exit.h"
 
 #if (defined(_WIN32) || defined(WIN32))
 #define snprintf _snprintf

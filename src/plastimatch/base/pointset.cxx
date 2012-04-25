@@ -8,10 +8,11 @@
 #include <string.h>
 #include <math.h>
 
+#include "plmsys.h"
+
 #include "file_util.h"
 #include "math_util.h"
 #include "pointset.h"
-#include "print_and_exit.h"
 
 template<class T>
 void

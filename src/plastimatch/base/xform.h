@@ -12,10 +12,11 @@
 #include "itkBSplineDeformableTransform.h"
 #include "itkThinPlateSplineKernelTransform.h"
 
+#include "plmsys.h"
+
 #include "bspline.h"
 #include "bspline_xform.h"
 #include "itk_image.h"
-#include "print_and_exit.h"
 #include "volume.h"
 
 class Volume_header;

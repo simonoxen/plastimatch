@@ -7,7 +7,6 @@
 #include "autolabel_trainer.h"
 #include "pcmd_autolabel_train.h"
 #include "plm_clp.h"
-#include "print_and_exit.h"
 #include "pstring.h"
 
 static void

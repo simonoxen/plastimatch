@@ -8,6 +8,8 @@
 #include "itkDivideByConstantImageFilter.h"
 #include "itkMultiplyByConstantImageFilter.h"
 
+#include "plmsys.h"
+
 #include "itk_image.h"
 #include "itk_image_load.h"
 #include "plm_clp.h"

@@ -9,7 +9,6 @@
 #include <iostream>
 #include <fstream>
 
-#include "print_and_exit.h"
 #include "xio_studyset.h"
 
 Xio_studyset::Xio_studyset (const char *input_dir)

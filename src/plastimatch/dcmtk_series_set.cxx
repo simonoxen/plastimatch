@@ -8,10 +8,11 @@
 #include "dcmtk/ofstd/ofstream.h"
 #include "dcmtk/dcmdata/dctk.h"
 
+#include "plmsys.h"
+
 #include "compiler_warnings.h"
 #include "dcmtk_file.h"
 #include "dcmtk_series_set.h"
-#include "print_and_exit.h"
 #include "rtds.h"
 #include "rtss.h"
 

@@ -10,6 +10,7 @@
 #endif
 
 #include "plmbase.h"
+#include "plmsys.h"
 
 #include "drr.h"
 #include "drr_cuda.h"
@@ -19,7 +20,6 @@
 #include "math_util.h"
 #include "mha_io.h"
 #include "plm_timer.h"
-#include "print_and_exit.h"
 #include "proj_image.h"
 #include "proj_matrix.h"
 #include "ray_trace_uniform.h"

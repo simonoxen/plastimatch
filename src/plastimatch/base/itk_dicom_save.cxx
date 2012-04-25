@@ -21,7 +21,6 @@
 #include "logfile.h"
 #include "make_string.h"
 #include "plm_uid_prefix.h"
-#include "print_and_exit.h"
 #include "slice_index.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */

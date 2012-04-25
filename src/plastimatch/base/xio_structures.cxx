@@ -14,11 +14,12 @@
 #include "itkRegularExpressionSeriesFileNames.h"
 #include "bstrlib.h"
 
+#include "plmsys.h"
+
 #include "file_util.h"
 #include "math_util.h"
 #include "metadata.h"
 #include "plm_path.h"
-#include "print_and_exit.h"
 #include "pstring.h"
 #include "rtss_polyline_set.h"
 #include "rtss_structure.h"

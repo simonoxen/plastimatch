@@ -12,6 +12,8 @@
 #include <xmmintrin.h>
 #endif
 
+#include "plmsys.h"
+
 #include "bspline.h"
 #include "bspline_macros.h"
 #include "bspline_warp.h"
@@ -19,7 +21,6 @@
 #include "logfile.h"
 #include "math_util.h"
 #include "plm_int.h"
-#include "print_and_exit.h"
 #include "volume.h"
 #include "volume_macros.h"
 

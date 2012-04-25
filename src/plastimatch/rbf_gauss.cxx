@@ -17,6 +17,7 @@
 #include "vnl/vnl_sample.h"
 
 #include "plmbase.h"
+#include "plmsys.h"
 
 #include "bspline.h"
 #include "bspline_landmarks.h"
@@ -24,7 +25,6 @@
 #include "landmark_warp.h"
 #include "logfile.h"
 #include "math_util.h"
-#include "print_and_exit.h"
 #include "rbf_cluster.h"
 #include "rbf_gauss.h"
 #include "volume.h"

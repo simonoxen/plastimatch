@@ -12,7 +12,6 @@
 #include "interpolate.h"
 #include "math_util.h"
 #include "plm_int.h"
-#include "print_and_exit.h"
 #include "volume.h"
 #include "volume_resample.h"
 

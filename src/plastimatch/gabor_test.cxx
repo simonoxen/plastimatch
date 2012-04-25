@@ -9,7 +9,6 @@
 #include "itk_image_load.h"
 #include "itk_image_save.h"
 #include "plm_image_header.h"
-#include "print_and_exit.h"
 #include "pstring.h"
 
 

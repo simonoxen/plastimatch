@@ -22,7 +22,6 @@
 #endif
 #include "bspline_optimize.h"
 #include "bspline_opts.h"
-#include "print_and_exit.h"
 #include "bspline_macros.h"
 
 /* EXTERNAL DEPENDS */

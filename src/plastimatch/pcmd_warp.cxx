@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <time.h>
 
+#include "plmsys.h"
+
 #include "bstring_util.h"
 #include "cxt_io.h"
 #include "file_util.h"
@@ -14,7 +16,6 @@
 #include "plm_file_format.h"
 #include "plm_image_header.h"
 #include "plm_warp.h"
-#include "print_and_exit.h"
 #include "rtds.h"
 #include "rtds_warp.h"
 #include "pcmd_warp.h"

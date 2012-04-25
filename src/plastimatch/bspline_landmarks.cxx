@@ -9,6 +9,7 @@
 #include <math.h>
 
 #include "plmbase.h"
+#include "plmsys.h"
 
 #include "bspline.h"
 #include "bspline_landmarks.h"
@@ -20,7 +21,6 @@
 #include "logfile.h"
 #include "math_util.h"
 #include "pointset.h"
-#include "print_and_exit.h"
 
 
 #if defined (commentout)

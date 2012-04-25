@@ -5,11 +5,13 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "plmsys.h"
+
 #include "bstring_util.h"
 #include "file_util.h"
 #include "opencl_util.h"
 #include "plm_timer.h"
-#include "print_and_exit.h"
 #include "delayload.h"
 #include "delayload_opencl.h"
 

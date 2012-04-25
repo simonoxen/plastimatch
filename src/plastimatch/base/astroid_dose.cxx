@@ -11,7 +11,6 @@
 #include "plm_image.h"
 #include "plm_image_type.h"
 #include "plm_int.h"
-#include "print_and_exit.h"
 #include "xio_ct.h"
 
 typedef struct astroid_dose_header Astroid_dose_header;

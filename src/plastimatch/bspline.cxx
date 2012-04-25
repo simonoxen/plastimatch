@@ -55,7 +55,6 @@
 #include "delayload.h"
 #include "plm_path.h"
 #include "plm_timer.h"
-#include "print_and_exit.h"
 #include "mha_io.h"
 #include "volume.h"
 #include "volume_macros.h"

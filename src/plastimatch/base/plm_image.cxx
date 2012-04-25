@@ -10,6 +10,7 @@
 #include "itkMetaDataObject.h"
 
 #include "plmbase.h"
+#include "plmsys.h"
 
 #include "dcmtk_load.h"
 #include "file_util.h"
@@ -21,7 +22,6 @@
 #include "plm_image.h"
 #include "plm_image_convert.h"
 #include "plm_image_header.h"
-#include "print_and_exit.h"
 #include "pstring.h"
 #include "volume.h"
 

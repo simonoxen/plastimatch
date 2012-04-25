@@ -8,6 +8,8 @@
 #include "dcmtk/ofstd/ofstream.h"
 #include "dcmtk/dcmdata/dctk.h"
 
+#include "plmsys.h"
+
 #include "dcmtk_file.h"
 #include "dcmtk_metadata.h"
 #include "dcmtk_save.h"
@@ -15,7 +17,6 @@
 #include "file_util.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
-#include "print_and_exit.h"
 #include "rtds.h"
 #include "rtss.h"
 #include "rtss_structure.h"

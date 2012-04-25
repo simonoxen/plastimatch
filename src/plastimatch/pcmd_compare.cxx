@@ -7,6 +7,7 @@
 #include "itkImageRegionIterator.h"
 
 #include "plmbase.h"
+#include "plmsys.h"
 
 #include "getopt.h"
 #include "itk_image.h"

@@ -15,6 +15,7 @@
 #include "gdcmUtil.h"
 
 #include "plmbase.h"
+#include "plmsys.h"
 
 #include "bstring_util.h"
 #include "gdcm1_series.h"
@@ -22,7 +23,6 @@
 #include "math_util.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
-#include "print_and_exit.h"
 
 void
 gdcm1_series_test (char *dicom_dir)

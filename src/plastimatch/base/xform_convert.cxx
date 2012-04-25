@@ -4,9 +4,10 @@
 #include <time.h>
 #include "plm_config.h"
 
+#include "plmsys.h"
+
 #include "plm_image_header.h"
 #include "itk_image.h"
-#include "print_and_exit.h"
 #include "xform.h"
 #include "xform_convert.h"
 

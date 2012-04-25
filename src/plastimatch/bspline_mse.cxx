@@ -15,6 +15,8 @@
 #include <xmmintrin.h>
 #endif
 
+#include "plmsys.h"
+
 #include "bspline.h"
 #if (CUDA_FOUND)
 #include "bspline_cuda.h"
@@ -27,7 +29,6 @@
 #include "logfile.h"
 #include "math_util.h"
 #include "plm_timer.h"
-#include "print_and_exit.h"
 #include "volume.h"
 #include "volume_macros.h"
 #include "bspline_macros.h"

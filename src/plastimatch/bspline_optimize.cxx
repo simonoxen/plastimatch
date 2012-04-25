@@ -24,7 +24,6 @@
 /* EXTERNAL DEPENDS */
 #include "bspline_xform.h"
 #include "math_util.h"
-#include "print_and_exit.h"
 #include "volume.h"
 #include "xpm.h"
 

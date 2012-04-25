@@ -9,6 +9,7 @@
 #include <time.h>
 
 #include "plmbase.h"
+#include "plmsys.h"
 
 #include "bstring_util.h"
 #include "itk_tps.h"
@@ -17,7 +18,6 @@
 #include "landmark_warp.h"
 #include "plm_clp.h"
 #include "pointset.h"
-#include "print_and_exit.h"
 #include "pstring.h"
 #include "rbf_gauss.h"
 #include "rbf_wendland.h"

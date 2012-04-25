@@ -8,7 +8,6 @@
 #include "xform.h"
 #include "volume.h"
 #include "itk_image.h"
-#include "print_and_exit.h"
 
 class plastimatch1_EXPORT Itk_volume_header {
 public:

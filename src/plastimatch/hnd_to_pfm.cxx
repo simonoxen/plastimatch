@@ -5,10 +5,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "plmsys.h"
+
 #include "file_util.h"
 #include "hnd_io.h"
 #include "plm_int.h"
-#include "print_and_exit.h"
 #include "proj_image.h"
 
 int 

@@ -8,9 +8,10 @@
 #include "dcmtk/ofstd/ofstream.h"
 #include "dcmtk/dcmdata/dctk.h"
 
+#include "plmsys.h"
+
 #include "dcmtk_file.h"
 #include "plm_int.h"
-#include "print_and_exit.h"
 
 Dcmtk_file::Dcmtk_file () {
     init ();

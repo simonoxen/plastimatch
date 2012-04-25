@@ -4,6 +4,8 @@
 #include "plm_config.h"
 #include <time.h>
 
+#include "plmsys.h"
+
 #include "getopt.h"
 #include "itk_crop.h"
 #include "pcmd_crop.h"

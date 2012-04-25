@@ -8,7 +8,6 @@
 #include "autolabel.h"
 #include "bstring_util.h"
 #include "plm_clp.h"
-#include "print_and_exit.h"
 #include "pstring.h"
 
 static void

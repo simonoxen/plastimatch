@@ -21,7 +21,6 @@
 #include "mha_io.h"
 #include "plm_path.h"
 #include "plm_timer.h"
-#include "print_and_exit.h"
 #include "volume.h"
 #include "volume_header.h"
 #include "volume_macros.h"

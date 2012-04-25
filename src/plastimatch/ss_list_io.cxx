@@ -6,10 +6,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "plmsys.h"
+
 #include "bstring_util.h"
 #include "file_util.h"
 #include "plm_image_header.h"
-#include "print_and_exit.h"
 #include "rtss_polyline_set.h"
 #include "rtss_structure.h"
 #include "ss_list_io.h"

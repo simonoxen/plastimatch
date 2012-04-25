@@ -8,7 +8,6 @@
 #include <time.h>
 
 #include "bspline_xform.h"
-#include "print_and_exit.h"
 #include "volume.h"
 #include "volume_header.h"
 

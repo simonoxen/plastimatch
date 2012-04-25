@@ -4,6 +4,8 @@
 #include "plm_config.h"
 #include <time.h>
 
+#include "plmsys.h"
+
 #include "bspline_warp.h"
 #include "itk_image.h"
 #include "itk_warp.h"
@@ -12,7 +14,6 @@
 #include "plm_image_header.h"
 #include "plm_int.h"
 #include "plm_warp.h"
-#include "print_and_exit.h"
 #include "ss_img_stats.h"
 #include "volume.h"
 #include "xform.h"

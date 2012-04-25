@@ -14,7 +14,6 @@
 #include "gdcm1_series.h"
 #endif
 #include "logfile.h"
-#include "print_and_exit.h"
 #include "rtds.h"
 #include "rtss.h"
 

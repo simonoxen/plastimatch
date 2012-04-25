@@ -14,7 +14,6 @@
 #include "dcm_util.h"
 #include "itk_dicom_load.h"
 #include "metadata.h"
-#include "print_and_exit.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */
 #if defined GetCurrentTime

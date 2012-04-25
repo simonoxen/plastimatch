@@ -8,7 +8,6 @@
 #include "itk_image.h"
 #include "metadata.h"
 #include "plm_image_type.h"
-#include "print_and_exit.h"
 #include "volume.h"
 
 class Metadata;

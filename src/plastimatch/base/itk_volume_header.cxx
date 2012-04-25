@@ -11,7 +11,6 @@
 #include "itk_volume_header.h"
 #include "mha_io.h"
 #include "plm_image.h"
-#include "print_and_exit.h"
 #include "volume.h"
 
 /* -----------------------------------------------------------------------

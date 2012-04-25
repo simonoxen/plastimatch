@@ -27,7 +27,6 @@
 #include "plm_image_type.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
-#include "print_and_exit.h"
 #include "slice_index.h"
 #include "rtss_polyline_set.h"
 #include "volume.h"

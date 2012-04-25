@@ -12,7 +12,6 @@
 #include "landmark_warp.h"
 #include "logfile.h"
 #include "pointset.h"
-#include "print_and_exit.h"
 #include "vf.h"
 #include "volume.h"
 

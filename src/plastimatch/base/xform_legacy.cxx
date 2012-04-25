@@ -4,7 +4,8 @@
 #include "plm_config.h"
 #include <string.h>
 
-#include "print_and_exit.h"
+#include "plmsys.h"
+
 #include "string_util.h"
 #include "xform.h"
 #include "xform_legacy.h"

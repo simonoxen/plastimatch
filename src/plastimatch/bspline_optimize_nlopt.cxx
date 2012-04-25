@@ -17,7 +17,6 @@
 #include "bspline_opts.h"
 #include "logfile.h"
 #include "math_util.h"
-#include "print_and_exit.h"
 #include "volume.h"
 
 #if (NLOPT_FOUND)

@@ -43,4 +43,15 @@ API void plm_fwrite (
         FILE* fp, 
         bool force_little_endian
 );
+
+/* print_and_exit.cxx */
+API void print_and_wait (char* prompt_fmt, ...);
+API void print_and_exit (char* prompt_fmt, ...);
+#define error_printf(fmt, ...) \
+    fprintf (stderr, "\nplastimatch has encountered an issue.\n" \
+             "file: %s (line:%i)\n" fmt, __FILE__, __LINE__,##__VA_ARGS__)
+
+
+
+
 #endif

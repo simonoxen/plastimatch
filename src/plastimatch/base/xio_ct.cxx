@@ -22,7 +22,6 @@
 #endif
 #include "plm_image.h"
 #include "plm_image_type.h"
-#include "print_and_exit.h"
 #include "slice_index.h"
 #include "rtss_polyline_set.h"
 #include "xio_ct.h"

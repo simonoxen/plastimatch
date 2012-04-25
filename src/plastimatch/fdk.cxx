@@ -20,7 +20,6 @@
 #include "file_util.h"
 #include "math_util.h"
 #include "mha_io.h"
-#include "print_and_exit.h"
 #include "proj_image.h"
 #include "proj_image_dir.h"
 #include "plm_timer.h"

@@ -15,7 +15,6 @@
 #include "bstrlib.h"
 
 #include "file_util.h"
-#include "print_and_exit.h"
 #include "xio_dir.h"
 #include "xio_plan.h"
 

@@ -6,9 +6,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "plmsys.h"
+
 #include "bstrlib.h"
 #include "bstring_util.h"
-#include "print_and_exit.h"
 #include "xio_demographic.h"
 
 Xio_demographic::Xio_demographic (const char *filename)

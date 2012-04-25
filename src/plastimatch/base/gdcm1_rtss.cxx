@@ -15,6 +15,7 @@
 #include "gdcmValEntry.h"
 
 #include "plmbase.h"
+#include "plmsys.h"
 
 #include "bstring_util.h"
 #include "file_util.h"
@@ -22,7 +23,6 @@
 #include "gdcm1_util.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
-#include "print_and_exit.h"
 #include "slice_index.h"
 #include "rtss.h"
 #include "rtss_polyline_set.h"

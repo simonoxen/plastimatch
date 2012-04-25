@@ -14,7 +14,6 @@
 #include "bspline_xform.h"
 #include "math_util.h"
 #include "plm_timer.h"
-#include "print_and_exit.h"
 #include "volume.h"
 
 //#define DEBUG

@@ -12,6 +12,7 @@
 #endif
 
 #include "plmbase.h"
+#include "plmsys.h"
 
 #include "bowtie_correction.h"
 #include "fdk.h"
@@ -21,7 +22,6 @@
 #include "fdk_util.h"
 #include "file_util.h"
 #include "math_util.h"
-#include "print_and_exit.h"
 #include "proj_image.h"
 #include "proj_image_dir.h"
 #include "plm_timer.h"

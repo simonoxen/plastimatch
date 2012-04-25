@@ -18,7 +18,6 @@
 #include "itkOrientImageFilter.h"
 #include "itk_image.h"
 #include "logfile.h"
-#include "print_and_exit.h"
 
 #if (defined(_WIN32) || defined(WIN32))
 #define snprintf _snprintf

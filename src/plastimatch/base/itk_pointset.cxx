@@ -5,10 +5,10 @@
 #include <stdio.h>
 
 #include "plmbase.h"
+#include "plmsys.h"
 
 #include "itk_pointset.h"
 #include "pointset.h"
-#include "print_and_exit.h"
 #include "xform_point.h"
 
 /* Don't get confused by the parameterization of the itk pointset.  The 

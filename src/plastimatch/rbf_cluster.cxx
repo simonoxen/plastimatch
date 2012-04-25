@@ -16,7 +16,6 @@
 #include "landmark_warp.h"
 #include "logfile.h"
 #include "math_util.h"
-#include "print_and_exit.h"
 #include "rbf_cluster.h"
 #include "vf.h"
 #include "volume.h"
