@@ -4,7 +4,8 @@
 #ifndef _plmsys_h_
 #define _plmsys_h_
 
-#include "plm_config.h"
+#include "plmsys_config.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include "plm_int.h"

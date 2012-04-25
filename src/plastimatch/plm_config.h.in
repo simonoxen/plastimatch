@@ -17,11 +17,6 @@
 #cmakedefine WIN32 1
 #cmakedefine UNIX  1
 
-/* "Special" subclasses of UNIX */
-#cmakedefine APPLE  1
-#cmakedefine CYGWIN 1
-#cmakedefine GNU    1
-
 /* Compiler attributes */
 #cmakedefine FORTRAN_COMPILER_FOUND 1
 #cmakedefine HAVE_SYS_STAT_H 1
@@ -68,7 +63,7 @@
 #cmakedefine PLM_CONFIG_PREFER_DCMTK 1
 #cmakedefine PLM_CONFIG_ENABLE_LUA 1
 
-/* Needed for dynamic linking */
+/* Needed for dynamic loading */
 #cmakedefine PLM_USE_GPU_PLUGINS 1
 
 /* Did we find fortran? -- always true now. */
@@ -133,20 +128,6 @@
 #define EXTERNC extern "C"
 #else
 #define EXTERNC
-#endif
-
-/* JAS 2012.04.24
- * Plastimatch 2.0 method for exporting API symbols */
-// TODO: Switch everything to CMake's WIN32 (remove _WIN32)
-//
-#if (!defined (BUILD_AGAINST_SLICER3) && (defined(_WIN32) || defined(WIN32)) && (defined (PLM_BUILD_SHARED_LIBS)))
-# ifdef SHARING_EXPORTS
-#   define API EXTERNC __declspec(dllexport)
-# else
-#   define API EXTERNC __declspec(dllimport)
-# endif
-#else
-# define API EXTERNC
 #endif
 
 

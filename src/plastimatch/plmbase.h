@@ -4,7 +4,7 @@
 #ifndef _plmbase_h_
 #define _plmbase_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 
 // opaque types
 class Bspline_xform;
