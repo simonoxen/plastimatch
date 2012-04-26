@@ -381,10 +381,6 @@ set (CHECK_GRAD_SRC
   check_grad.cxx
   check_grad_opts.cxx check_grad_opts.h 
   )
-set (REG_SRC
-  reg_main.cxx
-  reg_opts.cxx reg_opts.h 
-  )
 set (COMPUTE_DISTANCE_SRC
   compute_distance.cxx compute_distance.h
   closest_point.cxx 
@@ -731,9 +727,6 @@ plm_add_executable (dlib_train "${DLIB_TRAIN_SRC}"
 plm_add_executable (fdk "${FDK_SRC}" 
   "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_ALWAYS})
-plm_add_executable (reg "${REG_SRC}" 
-  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 plm_add_executable (hnd_to_pfm "${HND_TO_PFM_SRC}" 
   "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
