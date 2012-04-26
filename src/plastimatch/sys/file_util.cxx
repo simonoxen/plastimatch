@@ -22,6 +22,7 @@
 
 #include "bstring_util.h"
 #include "file_util.h"
+#include "pstring.h"
 
 #if (_WIN32)
 #define ISSLASH(c) (((c) == '/') || ((c) == '\\'))
@@ -207,8 +208,8 @@ strip_extension (char* filename)
     }
 }
 
-#if 0
-Pstring*
+
+const char*
 file_load (const char* filename)
 {
     FILE *fp;
@@ -229,9 +230,8 @@ file_load (const char* filename)
     }
     printf ("\n");
 
-    return buf;
+    return buf->c_str();
 }
-#endif
 
 /* cross platform getcwd */
 char*

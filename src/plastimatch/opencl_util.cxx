@@ -11,8 +11,10 @@
 #include "bstring_util.h"
 #include "opencl_util.h"
 #include "plm_timer.h"
+#include "pstring.h"
 #include "delayload.h"
 #include "delayload_opencl.h"
+
 
 void
 opencl_device_info (
@@ -533,15 +535,14 @@ opencl_load_programs (
 )
 {
     cl_int status;
-    Pstring *buf;
-    const char *buf_cstr;
+    const char *buf;
     size_t len;
 
     /* Load the file contents into a string */
     buf = file_load (filename);
 
     /* Load and compile the programs */
-    buf_cstr = (const char*) (*buf);
+    buf = (const char*) (*buf);
     len = (size_t) buf->length ();
     ocl_dev->programs = (cl_program*) malloc (
     ocl_dev->device_count * sizeof(cl_program));
@@ -551,7 +552,7 @@ opencl_load_programs (
         ocl_dev->programs[i] = clCreateProgramWithSource (
             ocl_dev->contexts[i], 
             1, 
-            &buf_cstr, 
+            &buf, 
             &len, 
             &status
         );
@@ -588,7 +589,7 @@ opencl_load_programs (
     }
 
     /* Free the string with file contents */
-    delete buf;
+    delete (Pstring*)buf;
 }
 
 void

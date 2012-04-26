@@ -60,6 +60,7 @@ API void make_directory (const char *dirname);
 API void make_directory_recursive (const char *dirname);
 API FILE* make_tempfile (void);
 API void strip_extension (char* filename);
+API const char* file_load (const char* filename);
 API char* file_util_dirname (const char *filename);
 API char* file_util_parent (const char *filename);
 API char* plm_getcwd (char* s, int len);
