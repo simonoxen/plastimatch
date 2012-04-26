@@ -17,7 +17,6 @@
 #include "plm_parms.h"
 #include "registration_data.h"
 #include "volume.h"
-#include "volume_resample.h"
 #include "xform.h"
 
 static void

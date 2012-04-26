@@ -13,7 +13,6 @@
 #include "interpolate_macros.h"
 #include "plm_math.h"
 #include "volume.h"
-#include "volume_resample.h"
 
 /* Nearest neighbor interpolation */
 static Volume*

@@ -200,6 +200,25 @@ API int volume_limit_clip_segment (
 );
 API void volume_limit_set (Volume_limit *vol_limit, Volume *vol);
 
+/* volume_resample.h */
+XAPI Volume* volume_resample (
+        Volume* vol_in,
+        const plm_long* dim,
+        const float* offset,
+        const float* spacing
+);
+XAPI Volume* volume_resample (Volume* vol_in, const Volume_header *vh);
+API Volume* volume_resample_nn (
+        Volume* vol_in,
+        const plm_long* dim,
+        const float* offset,
+        const float* spacing
+);
+API Volume* volume_subsample (Volume* vol_in, int* sampling_rate);
+API Volume* volume_subsample_nn (Volume* vol_in, int* sampling_rate);
+
+
+
 /* vf_convolve.cxx */
 API void vf_convolve_x (Volume* vf_out, Volume* vf_in, float* ker, int width);
 API void vf_convolve_y (Volume* vf_out, Volume* vf_in, float* ker, int width);
