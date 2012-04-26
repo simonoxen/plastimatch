@@ -78,23 +78,8 @@
 #endif
 
 
-#if defined __cplusplus
-extern "C" {
-#endif
-
-gpuit_EXPORT
-int
-delayload_libplmcuda (void);
-
-gpuit_EXPORT
-int
-delayload_libplmopencl (void);
-
-gpuit_EXPORT
-void* dlopen_ex (char* lib);
-
-#if defined __cplusplus
-}
-#endif
+API int delayload_libplmcuda (void);
+API int delayload_libplmopencl (void);
+API void* dlopen_ex (char* lib); 
 
 #endif
