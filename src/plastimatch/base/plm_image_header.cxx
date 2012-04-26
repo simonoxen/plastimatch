@@ -11,7 +11,6 @@
 
 #include "bspline_xform.h"
 #include "itk_directions.h"
-#include "mha_io.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "volume.h"

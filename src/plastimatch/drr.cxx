@@ -20,7 +20,6 @@
 #include "math_util.h"
 #include "proj_image.h"
 #include "proj_matrix.h"
-#include "ray_trace_uniform.h"
 #include "volume_limit.h"
 #include "delayload.h"
 #ifndef _WIN32

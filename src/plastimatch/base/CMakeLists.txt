@@ -46,7 +46,7 @@ set (PLMBASE_LIBRARY_SRC
   make_string.h
   mc_dose.cxx mc_dose.h
   metadata.cxx metadata.h 
-  mha_io.cxx mha_io.h
+  mha_io.cxx
   plm_file_format.cxx plm_file_format.h 
   plm_image.cxx plm_image.h 
   plm_image_convert.cxx plm_image_convert.h 

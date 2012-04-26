@@ -9,7 +9,6 @@
 
 #include "itk_directions.h"
 #include "itk_volume_header.h"
-#include "mha_io.h"
 #include "plm_image.h"
 #include "volume.h"
 
