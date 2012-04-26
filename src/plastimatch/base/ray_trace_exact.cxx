@@ -13,7 +13,6 @@
 
 #include "drr.h"
 #include "math_util.h"
-#include "ray_trace_exact.h"
 #include "volume.h"
 
 void

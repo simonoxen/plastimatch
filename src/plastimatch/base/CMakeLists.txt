@@ -55,8 +55,8 @@ set (PLMBASE_LIBRARY_SRC
   plm_uid_prefix.h
   pointset.cxx pointset.h 
   raw_pointset.cxx raw_pointset.h 
-  ray_trace_exact.cxx ray_trace_exact.h 
-  ray_trace_uniform.cxx ray_trace_uniform.h 
+  ray_trace_exact.cxx
+  ray_trace_uniform.cxx
   rpl_volume.cxx rpl_volume.h
   rtss_polyline_set.cxx rtss_polyline_set.h 
   rtss_structure.cxx rtss_structure.h 
