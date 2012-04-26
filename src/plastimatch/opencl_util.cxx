@@ -15,6 +15,40 @@
 #include "delayload.h"
 #include "delayload_opencl.h"
 
+/* JAS 2012.04.26
+ * Moved from file_util.cxx in order to keep
+ * pstring.h out of the plmsys.h
+ *
+ * If we want the Plastimatch API to carry its
+ * own strings (kinda like Qt's qstring), then
+ * we can go back and do it more formally.
+ *
+ * opencl_load_program() is the only function
+ * that uses this file loader, so just moving
+ * this here.*/
+static Pstring*
+file_load (const char* filename)
+{
+    FILE *fp;
+    Pstring *buf;
+
+    fp = fopen (filename, "rb");
+    if (!fp) {
+	return 0;
+    }
+
+    /* Slurp the file into the buffer */
+    buf = new Pstring ();
+    buf->read ((bNread) fread, fp);
+    fclose (fp);
+
+    for (int i = 0; i < 20; i++) {
+	printf ("%c", (char) (*buf)[i]);
+    }
+    printf ("\n");
+
+    return buf;
+}
 
 void
 opencl_device_info (

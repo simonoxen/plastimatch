@@ -22,7 +22,6 @@
 
 #include "bstring_util.h"
 #include "file_util.h"
-#include "pstring.h"
 
 #if (_WIN32)
 #define ISSLASH(c) (((c) == '/') || ((c) == '\\'))
@@ -206,31 +205,6 @@ strip_extension (char* filename)
     if (p) {
 	*p = 0;
     }
-}
-
-
-const char*
-file_load (const char* filename)
-{
-    FILE *fp;
-    Pstring *buf;
-
-    fp = fopen (filename, "rb");
-    if (!fp) {
-	return 0;
-    }
-
-    /* Slurp the file into the buffer */
-    buf = new Pstring ();
-    buf->read ((bNread) fread, fp);
-    fclose (fp);
-
-    for (int i = 0; i < 20; i++) {
-	printf ("%c", (char) (*buf)[i]);
-    }
-    printf ("\n");
-
-    return buf->c_str();
 }
 
 /* cross platform getcwd */
