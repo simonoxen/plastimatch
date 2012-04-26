@@ -13,10 +13,10 @@
 #endif
 
 #include "plmsys.h"
+#include "plmutil.h"
 
 #include "bspline.h"
 #include "bspline_macros.h"
-#include "bspline_warp.h"
 #include "plm_math.h"
 #include "volume.h"
 #include "volume_macros.h"

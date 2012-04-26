@@ -8,20 +8,27 @@ project (src)
 ##-----------------------------------------------------------------------------
 ##  Figure out library dependencies
 ##-----------------------------------------------------------------------------
-set (PLMSYS_LIBRARY_DEPENDENCIES 
-  bstrlib
-  )
-
 set (PLMBASE_LIBRARY_DEPENDENCIES
   ${ITK_LIBRARIES}
   plmsys
   )
 
+set (PLMSYS_LIBRARY_DEPENDENCIES 
+  bstrlib
+  )
+
+set (PLMUTIL_LIBRARY_DEPENDENCIES 
+  plmbase
+  plmsys
+  )
+
+
 set (GPUIT_LIBRARY_DEPENDENCIES 
   ${LIBLBFGS_LIBRARIES}
   nocedal
-  plmsys
   plmbase
+  plmsys
+  plmutil
   )
 
 if (NOT BUILD_DEBIAN)

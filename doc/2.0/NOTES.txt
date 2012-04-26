@@ -49,6 +49,9 @@ TODOS
 
   REDESIGN compiler_warnings.h
 
+  DEAL with string_util AND
+            pstring     AND
+            bstring
 
   ADD math_util.h to plmsys.h
 

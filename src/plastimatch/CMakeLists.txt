@@ -37,6 +37,7 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 # JAS 2012.04.25 !!!!!!!!!!! TEMPORARY !!!!!!!!!!!!!!!!!!!!!!
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/base)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/sys)
+include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/util)
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 include_directories (BEFORE ${CMAKE_BINARY_DIR})
 include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
@@ -128,7 +129,6 @@ set (GPUIT_LIBRARY_SRC
   bspline_regularize.cxx bspline_regularize.h
   bspline_regularize_analytic.cxx bspline_regularize_analytic.h
   bspline_regularize_numeric.cxx bspline_regularize_numeric.h
-  bspline_warp.cxx bspline_warp.h
   demons.cxx demons.h
   demons_cpu.cxx
   demons_misc.cxx demons_misc.h
@@ -1081,3 +1081,4 @@ endif ()
 # plastimatch libraries
 add_subdirectory(base)
 add_subdirectory(sys)
+add_subdirectory(util)

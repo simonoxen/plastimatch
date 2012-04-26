@@ -12,6 +12,7 @@
 
 plastimatch1_EXPORT void
 xio_structures_load (Rtss_polyline_set *structures, const Xio_studyset& xsl);
+
 plastimatch1_EXPORT 
 void
 xio_structures_save (
@@ -21,6 +22,7 @@ xio_structures_save (
     Xio_version xio_version, 
     const char *output_dir
 );
+
 plastimatch1_EXPORT void
 xio_structures_apply_transform (Rtss_polyline_set *structures, Xio_ct_transform *transform);
 

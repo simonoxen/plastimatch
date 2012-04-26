@@ -6,8 +6,8 @@
 
 #include "plmbase.h"
 #include "plmsys.h"
+#include "plmutil.h"
 
-#include "bspline_warp.h"
 #include "itk_image.h"
 #include "itk_warp.h"
 #include "plm_image.h"
