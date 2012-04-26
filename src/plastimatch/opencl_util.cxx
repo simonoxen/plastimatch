@@ -569,14 +569,15 @@ opencl_load_programs (
 )
 {
     cl_int status;
-    const char *buf;
+    Pstring *buf;
+    const char *buf_cstr;
     size_t len;
 
     /* Load the file contents into a string */
     buf = file_load (filename);
 
     /* Load and compile the programs */
-    buf = (const char*) (*buf);
+    buf_cstr = (const char*) (*buf);
     len = (size_t) buf->length ();
     ocl_dev->programs = (cl_program*) malloc (
     ocl_dev->device_count * sizeof(cl_program));
@@ -586,7 +587,7 @@ opencl_load_programs (
         ocl_dev->programs[i] = clCreateProgramWithSource (
             ocl_dev->contexts[i], 
             1, 
-            &buf, 
+            &buf_cstr, 
             &len, 
             &status
         );
@@ -623,7 +624,7 @@ opencl_load_programs (
     }
 
     /* Free the string with file contents */
-    delete (Pstring*)buf;
+    delete buf;
 }
 
 void
