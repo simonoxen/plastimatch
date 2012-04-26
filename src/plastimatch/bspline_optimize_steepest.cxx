@@ -27,7 +27,6 @@
 #include "mha_io.h"
 #include "plm_timer.h"
 #include "volume.h"
-#include "xpm.h"
 
 /*
  * This is a simple gradient plotter based on

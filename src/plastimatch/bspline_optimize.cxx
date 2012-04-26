@@ -25,7 +25,6 @@
 #include "bspline_xform.h"
 #include "math_util.h"
 #include "volume.h"
-#include "xpm.h"
 
 static void
 log_parms (Bspline_parms* parms)

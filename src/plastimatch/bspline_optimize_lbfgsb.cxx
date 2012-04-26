@@ -20,7 +20,6 @@
 #include "bspline_xform.h"
 #include "math_util.h"
 #include "volume.h"
-#include "xpm.h"
 
 
 /* Defined in f2c.h, conflicts with std::numeric_limits::max */

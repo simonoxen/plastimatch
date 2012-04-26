@@ -57,7 +57,6 @@
 #include "mha_io.h"
 #include "volume.h"
 #include "volume_macros.h"
-#include "xpm.h"
 
 /* -----------------------------------------------------------------------
    Initialization and teardown
