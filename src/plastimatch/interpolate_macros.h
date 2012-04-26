@@ -1,15 +1,10 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _interpolate_h_
-#define _interpolate_h_
+#ifndef _interpolate_macros_h_
+#define _interpolate_macros_h_
 
-#include "plm_config.h"
-#include "plm_int.h"
 
-/* -----------------------------------------------------------------------
-   Macros
-   ----------------------------------------------------------------------- */
 #define LI_CLAMP_3D(							\
     mijk, mijk_f, mijk_r,						\
     li_frac_1, li_frac_2, moving)					\

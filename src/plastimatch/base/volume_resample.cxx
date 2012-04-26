@@ -10,7 +10,7 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "interpolate.h"
+#include "interpolate_macros.h"
 #include "plm_math.h"
 #include "volume.h"
 #include "volume_resample.h"

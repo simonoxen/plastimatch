@@ -15,7 +15,7 @@
 
 #include "bspline.h"
 #include "bspline_xform.h"
-#include "interpolate.h"
+#include "interpolate_macros.h"
 #include "plm_math.h"
 #include "plm_path.h"
 #include "volume.h"

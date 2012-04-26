@@ -21,7 +21,7 @@
 #include "volume.h"
 #include "volume_macros.h"
 
-#include "interpolate.h"
+#include "interpolate_macros.h"
 
 /* This only warps voxels within the ROI.  If you need the whole 
    image, call bspline_xform_extend. */

@@ -26,7 +26,7 @@
 
 /* EXTERNAL DEPENDS */
 #include "bspline_xform.h"
-#include "interpolate.h"
+#include "interpolate_macros.h"
 #include "volume.h"
 
 /***********************************************************************

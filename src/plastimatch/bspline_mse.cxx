@@ -29,7 +29,7 @@
 #include "volume_macros.h"
 #include "bspline_macros.h"
 
-#include "interpolate.h"
+#include "interpolate_macros.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // FUNCTION: bspline_score_h_mse()

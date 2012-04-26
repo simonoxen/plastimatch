@@ -3,8 +3,6 @@ IMAGE DEPENDS
 
 
 ------------------------------------------------------------
-
-
 FUNCTION MIGRATIONS
 
 bspline.cxx
@@ -29,7 +27,6 @@ opencl_util.cxx
 
 
 ------------------------------------------------------------
-
 NEW METHODS NEEDED
 
 bspline_xform
@@ -41,13 +38,14 @@ volume_limit
 volume
 
 ------------------------------------------------------------
+MACRO MESS
 
-THE MACRO MESS
-
-  interpolate.h
+  bspline_macros.h
+  interpolate_macros.h
+  volume_macros.h
 
 ------------------------------------------------------------
-TODOS:
+TODOS
 
   REDESIGN compiler_warnings.h
 

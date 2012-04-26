@@ -18,7 +18,7 @@ set (PLMBASE_LIBRARY_SRC
   direction_cosines.h
   exchkeys.cxx exchkeys.h
   hnd_io.cxx hnd_io.h
-  interpolate.cxx interpolate.h
+  interpolate.cxx
   itkAndConstantToImageFilter.h
   itkClampCastImageFilter.txx itkClampCastImageFilter.h
   itk_dicom_load.cxx itk_dicom_load.h 
