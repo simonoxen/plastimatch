@@ -14,6 +14,7 @@
 #include "bspline_opts.h"
 #include "plm_fortran.h"
 
+#include "plmbase.h"
 #include "plmsys.h"
 
 /* EXTERNAL DEPENDS */

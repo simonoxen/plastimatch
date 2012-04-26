@@ -9,7 +9,6 @@
 #include "plmbase.h"
 
 #include "demons.h"
-#include "mha_io.h"
 #include "plm_config.h"
 #include "plm_image_header.h"
 #include "plm_stages.h"

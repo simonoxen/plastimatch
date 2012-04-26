@@ -7,12 +7,13 @@
 #include <string.h>
 #include <math.h>
 
+#include "plmbase.h"
+
 #include "autotune_opencl.h"
 #include "fdk_opencl_p.h"
 #include "fdk_opts.h"
 #include "fdk_util.h"
 #include "math_util.h"
-#include "mha_io.h"
 #include "opencl_util.h"
 #include "plm_timer.h"
 #include "proj_image.h"

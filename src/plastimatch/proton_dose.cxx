@@ -24,7 +24,6 @@
 #include "plmsys.h"
 
 #include "math_util.h"
-#include "mha_io.h"
 #include "proj_matrix.h"
 #include "proton_dose.h"
 #include "ray_trace_uniform.h"

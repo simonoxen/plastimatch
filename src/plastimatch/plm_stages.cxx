@@ -7,6 +7,7 @@
 #include <string.h>
 #include "itkTimeProbe.h"
 
+#include "plmbase.h"
 #include "plmsys.h"
 
 #include "gpuit_bspline.h"
@@ -18,7 +19,6 @@
 #include "itk_registration.h"
 #include "itk_resample.h"
 #include "itk_warp.h"
-#include "mha_io.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "plm_parms.h"

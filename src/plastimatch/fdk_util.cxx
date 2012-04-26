@@ -6,12 +6,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "plmbase.h"
 #include "plmsys.h"
 
 #include "fdk_opts.h"
 #include "fdk_util.h"
 #include "proj_image.h"
-#include "mha_io.h"
 #include "ramp_filter.h"
 #include "volume.h"
 

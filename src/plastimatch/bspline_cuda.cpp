@@ -28,7 +28,6 @@
 
 /* EXTERNAL DEPENDS */
 #include "bspline_xform.h"
-#include "mha_io.h"
 #include "volume.h"
 
 /***********************************************************************

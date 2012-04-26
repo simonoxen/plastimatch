@@ -11,7 +11,6 @@
 
 #include "demons_opts.h"
 #include "demons_misc.h"
-#include "mha_io.h"
 #include "plm_timer.h"
 #include "volume.h"
 

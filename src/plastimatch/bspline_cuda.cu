@@ -9,13 +9,14 @@
 #include <windows.h>
 #endif
 
+#include "plmbase.h"
+
 #include "bspline_opts.h"
 #include "bspline_cuda.h"
 #include "bspline_cuda_kernels.h"
 #include "cuda_util.h"
 #include "cuda_mem.h"
 #include "cuda_kernel_util.h"
-#include "mha_io.h"
 #include "volume.h"
 
 /* EXTERNAL DEPENDS */

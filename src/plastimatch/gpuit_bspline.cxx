@@ -13,7 +13,6 @@
 #include "bspline_optimize.h"
 #include "bspline_landmarks.h"
 #include "math_util.h"
-#include "mha_io.h"
 #include "plm_image_header.h"
 #include "plm_parms.h"
 #include "registration_data.h"
