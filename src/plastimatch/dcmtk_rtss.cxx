@@ -14,7 +14,6 @@
 #include "dcmtk_metadata.h"
 #include "dcmtk_save.h"
 #include "dcmtk_series.h"
-#include "file_util.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "rtds.h"

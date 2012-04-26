@@ -18,6 +18,8 @@
 #endif
 #include <sys/stat.h>
 
+#include "plmsys.h"
+
 #include "bstring_util.h"
 #include "file_util.h"
 
@@ -119,11 +121,13 @@ make_directory_recursive (const char *dirname)
     free (tmp);
 }
 
+#if 0
 void
 make_directory_recursive (const Pstring& filename)
 {
     make_directory_recursive (filename.c_str());
 }
+#endif
 
 FILE*
 make_tempfile (void)
@@ -203,6 +207,7 @@ strip_extension (char* filename)
     }
 }
 
+#if 0
 Pstring*
 file_load (const char* filename)
 {
@@ -226,6 +231,7 @@ file_load (const char* filename)
 
     return buf;
 }
+#endif
 
 /* cross platform getcwd */
 char*

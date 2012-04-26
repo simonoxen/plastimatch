@@ -51,7 +51,20 @@ API void print_and_exit (char* prompt_fmt, ...);
     fprintf (stderr, "\nplastimatch has encountered an issue.\n" \
              "file: %s (line:%i)\n" fmt, __FILE__, __LINE__,##__VA_ARGS__)
 
-
+/* file_util.h */
+API int extension_is (const char* fname, const char* ext);
+API int file_exists (const char *filename);
+API uint64_t file_size (const char *filename);
+API int is_directory (const char *dir);
+API void make_directory (const char *dirname);
+API void make_directory_recursive (const char *dirname);
+API FILE* make_tempfile (void);
+API void strip_extension (char* filename);
+API char* file_util_dirname (const char *filename);
+API char* file_util_parent (const char *filename);
+API char* plm_getcwd (char* s, int len);
+API int plm_chdir (char* s);
+API int plm_get_dir_list (const char*** f_list);
 
 
 #endif

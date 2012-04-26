@@ -24,7 +24,6 @@
 #include "bspline_mse.h"
 #include "bspline_optimize.h"
 #include "bspline_opts.h"
-#include "file_util.h"
 #include "interpolate.h"
 #include "math_util.h"
 #include "plm_timer.h"

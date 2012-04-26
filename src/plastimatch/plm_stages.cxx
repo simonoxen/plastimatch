@@ -9,7 +9,6 @@
 
 #include "plmsys.h"
 
-#include "file_util.h"
 #include "gpuit_bspline.h"
 #include "gpuit_demons.h"
 #include "itk_demons.h"

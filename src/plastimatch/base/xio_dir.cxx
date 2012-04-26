@@ -14,7 +14,8 @@
 #include "itkDirectory.h"
 #include "bstrlib.h"
 
-#include "file_util.h"
+#include "plmsys.h"
+
 #include "xio_dir.h"
 #include "xio_plan.h"
 

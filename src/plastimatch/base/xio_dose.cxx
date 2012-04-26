@@ -18,7 +18,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "file_util.h"
 #include "metadata.h"
 #include "plm_endian.h"
 #include "plm_image.h"

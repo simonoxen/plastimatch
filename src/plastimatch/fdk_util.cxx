@@ -5,10 +5,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "plm_path.h"
+
+#include "plmsys.h"
+
 #include "fdk_opts.h"
 #include "fdk_util.h"
-#include "file_util.h"
 #include "proj_image.h"
 #include "mha_io.h"
 #include "ramp_filter.h"

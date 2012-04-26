@@ -11,7 +11,6 @@
 #include "itkImageFileReader.h"
 #include "itkMetaDataDictionary.h"
 #include "itkOrientImageFilter.h"
-#include "file_util.h"
 
 /* -----------------------------------------------------------------------
    Loading Images

@@ -12,7 +12,6 @@
 #include "dcmtk_metadata.h"
 #include "dcmtk_save.h"
 #include "dcmtk_series.h"
-#include "file_util.h"
 #include "metadata.h"
 
 void

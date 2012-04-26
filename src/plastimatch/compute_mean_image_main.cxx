@@ -22,7 +22,6 @@
 #include <dirent.h>
 #endif
 
-#include "plm_config.h"
 #include "itkImage.h"
 #include "itkImageRegion.h"
 #include "itkAddImageFilter.h"
@@ -33,11 +32,12 @@
 #include "itkImageFileWriter.h"
 #include "itkImageIOBase.h"
 
+#include "plmsys.h"
+
 #include "itk_dicom_save.h"
 #include "itk_image.h"
 #include "itk_image_load.h"
 #include "itk_image_save.h"
-#include "file_util.h"
 #include "getopt.h"
 #include "plm_path.h"
 

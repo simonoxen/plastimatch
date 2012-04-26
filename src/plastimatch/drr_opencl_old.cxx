@@ -7,12 +7,13 @@
 #include <string.h>
 #include <math.h>
 
+#include "plmsys.h"
+
 #include "autotune_opencl.h"
 #include "drr_opencl.h"
 #include "drr_opencl_p.h"
 #include "drr.h"
 #include "drr_opts.h"
-#include "file_util.h"
 #include "math_util.h"
 #include "opencl_util.h"
 #include "opencl_util_nvidia.h"

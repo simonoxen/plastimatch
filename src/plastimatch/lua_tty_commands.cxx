@@ -14,7 +14,8 @@ extern "C" {
 #include "lualib.h"
 }
 
-#include "file_util.h"
+#include "plmsys.h"
+
 #include "lua_classes.h"
 #include "lua_class_image.h"
 #include "lua_tty.h"

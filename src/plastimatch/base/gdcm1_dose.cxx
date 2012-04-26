@@ -16,7 +16,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "file_util.h"
 #include "gdcm1_dose.h"
 #include "gdcm1_series.h"
 #include "gdcm1_util.h"

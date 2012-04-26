@@ -11,7 +11,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "file_util.h"
 #include "math_util.h"
 #include "raw_pointset.h"
 

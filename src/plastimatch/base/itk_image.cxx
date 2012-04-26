@@ -16,7 +16,6 @@
 #include "itk_dicom_load.h"
 #include "itk_image.h"
 #include "itk_image_cast.h"
-#include "file_util.h"
 #include "plm_image_header.h"
 #include "volume_header.h"
 

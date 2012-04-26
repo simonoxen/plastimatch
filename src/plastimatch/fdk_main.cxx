@@ -20,7 +20,6 @@
 #include "fdk_opencl.h"
 #include "fdk_opts.h"
 #include "fdk_util.h"
-#include "file_util.h"
 #include "math_util.h"
 #include "proj_image.h"
 #include "proj_image_dir.h"

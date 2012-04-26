@@ -13,8 +13,9 @@
 #include "dlib/revision.h"
 #include "dlib/svm.h"
 
+#include "plmsys.h"
+
 #include "dlib_trainer.h"
-#include "file_util.h"
 #include "math_util.h"
 
 using namespace dlib;

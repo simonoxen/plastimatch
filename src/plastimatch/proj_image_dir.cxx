@@ -5,8 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "plmsys.h"
-#include "file_util.h"
+
 #include "plm_path.h"
 #include "proj_image_dir.h"
 

@@ -21,6 +21,7 @@
 #include <string.h>
 
 #include "plmbase.h"
+#include "plmsys.h"
 
 #include "math_util.h"
 #include "mha_io.h"

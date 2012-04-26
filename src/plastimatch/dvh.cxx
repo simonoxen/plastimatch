@@ -11,7 +11,6 @@
 
 #include "bstring_util.h"
 #include "dvh.h"
-#include "file_util.h"
 #include "itk_image.h"
 #include "make_string.h"
 #include "pcmd_dvh.h"

@@ -5,6 +5,7 @@
 #define _xio_patient_h
 
 #include "plm_config.h"
+#include "pstring.h"
 #include "plm_path.h"
 
 typedef struct xio_studyset_dir Xio_studyset_dir;

@@ -17,7 +17,6 @@
 #include "autolabel_thumbnailer.h"
 #include "autolabel_trainer.h"
 #include "dlib_trainer.h"
-#include "file_util.h"
 #include "itk_image.h"
 #include "plm_image.h"
 #include "pointset.h"

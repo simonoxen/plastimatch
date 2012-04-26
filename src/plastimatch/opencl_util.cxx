@@ -9,7 +9,6 @@
 #include "plmsys.h"
 
 #include "bstring_util.h"
-#include "file_util.h"
 #include "opencl_util.h"
 #include "plm_timer.h"
 #include "delayload.h"

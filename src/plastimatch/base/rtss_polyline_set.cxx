@@ -8,8 +8,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "plmsys.h"
+
 #include "bstring_util.h"
-#include "file_util.h"
 #include "math_util.h"
 #include "metadata.h"
 #include "plm_image_header.h"

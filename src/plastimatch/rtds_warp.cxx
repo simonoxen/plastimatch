@@ -2,12 +2,11 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
-#include "cxt_extract.h"
-#include "file_util.h"
 
 #include "plmbase.h"
 #include "plmsys.h"
 
+#include "cxt_extract.h"
 #if GDCM_VERSION_1
 #include "gdcm1_rtss.h"
 #endif

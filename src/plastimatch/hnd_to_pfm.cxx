@@ -8,7 +8,6 @@
 
 #include "plmsys.h"
 
-#include "file_util.h"
 #include "hnd_io.h"
 #include "proj_image.h"
 

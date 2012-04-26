@@ -4,7 +4,9 @@
 #include "plm_config.h"
 #include <stdlib.h>
 #include <string.h>
-#include "file_util.h"
+
+#include "plmsys.h"
+
 #include "registration_data.h"
 #include "pcmd_add.h"
 #include "pcmd_adjust.h"
