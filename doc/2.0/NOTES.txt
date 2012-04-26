@@ -33,26 +33,28 @@ opencl_util.cxx
 NEW METHODS NEEDED
 
 bspline_xform
-[ ] bxf->get_coeff_num()    [ return bxf->num_coeff (int   ) ]
-[ ] bxf->get_coeff_ptr()    [ return bxf->coeff     (float*) ]
+[ ] bxf->get_coeff_num()    < return bxf->num_coeff (int   ) >
+[ ] bxf->get_coeff_ptr()    < return bxf->coeff     (float*) >
 
+volume_limit
+
+volume
+
+------------------------------------------------------------
+
+THE MACRO MESS
+
+  interpolate.h
 
 ------------------------------------------------------------
 TODOS:
 
   REDESIGN compiler_warnings.h
 
+
   ADD math_util.h to plmsys.h
 
   RENAME plm_int.h  ->  plm_types.h
-
-  DELETE vf_stats.h
-  DELETE vf_convolve.h
-  DELETE vf.h
-  DELETE logfile.h
-  DELETE plm_fwrite.h
-  DELETE plm_endian.h
-  DELETE print_and_exit.h
 
   ADD getters and setters for volume.h
   REMOVE all external #include "volume.h"

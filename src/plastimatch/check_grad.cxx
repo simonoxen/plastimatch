@@ -20,7 +20,6 @@
 
 /* EXTERNAL DEPENDS */
 #include "bspline_xform.h"
-#include "vf.h"
 
 void
 check_gradient (

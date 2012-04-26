@@ -10,8 +10,6 @@
 #endif
 
 #include "plmsys.h"
-
-#include "print_and_exit.h"
 #include "volume.h"
 
 #define LINELEN 128

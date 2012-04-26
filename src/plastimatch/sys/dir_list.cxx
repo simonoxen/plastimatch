@@ -11,10 +11,10 @@
 #else
 #include <dirent.h>
 #endif
+
 #include "plmsys.h"
 
 #include "dir_list.h"
-#include "print_and_exit.h"
 
 Dir_list*
 dir_list_create (void)

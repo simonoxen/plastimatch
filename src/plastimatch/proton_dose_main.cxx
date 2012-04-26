@@ -15,6 +15,7 @@
 #include "proton_dose.h"
 #include "proton_dose_opts.h"
 #include "proj_matrix.h"
+#include "volume.h"
 
 int
 main (int argc, char* argv[])

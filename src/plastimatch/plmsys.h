@@ -73,5 +73,4 @@ API void plm_timer_destroy (Plm_timer *timer);
 API double plm_timer_report (Plm_timer *timer);
 API void plm_timer_start (Plm_timer *timer);
 
-
 #endif

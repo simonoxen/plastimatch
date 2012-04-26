@@ -111,13 +111,6 @@
     } while (0)
 
 
-/* -----------------------------------------------------------------------
-   Function prototypes
-   ----------------------------------------------------------------------- */
-#if defined __cplusplus
-extern "C" {
-#endif
-
 plmsys_EXPORT
 void
 li_clamp (float ma, plm_long dmax, plm_long* maf, plm_long* mar, 
@@ -132,9 +125,4 @@ float
 li_value (float fx1, float fx2, float fy1, float fy2, 
     float fz1, float fz2, plm_long mvf, 
     float *m_img, Volume *moving);
-
-#if defined __cplusplus
-}
-#endif
-
 #endif

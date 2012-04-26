@@ -62,9 +62,9 @@ set (PLMBASE_LIBRARY_SRC
   rtss_structure.cxx rtss_structure.h 
   slice_index.cxx slice_index.h
   thumbnail.cxx thumbnail.h
-  vf_convolve.cxx vf_convolve.h 
-  vf_stats.cxx vf_stats.h 
-  vf.cxx vf.h
+  vf_convolve.cxx
+  vf_stats.cxx
+  vf.cxx
   volume_header.cxx volume_header.h 
   volume_limit.cxx volume_limit.h
   volume_macros.h

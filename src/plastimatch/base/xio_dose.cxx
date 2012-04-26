@@ -19,7 +19,6 @@
 #include "plmsys.h"
 
 #include "metadata.h"
-#include "plm_endian.h"
 #include "plm_image.h"
 #include "plm_image_type.h"
 #include "rtss_polyline_set.h"

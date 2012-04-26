@@ -25,7 +25,6 @@
 #include "plm_stages.h"
 #include "plm_warp.h"
 #include "registration_data.h"
-#include "vf.h"
 #include "xform.h"
 
 #define FIXME_BACKGROUND_MAX (-1200)

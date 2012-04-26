@@ -16,14 +16,14 @@ set (PLMSYS_LIBRARY_SRC
   delayload.c delayload.h
   dir_list.cxx dir_list.h
   file_util.cxx file_util.h
-  logfile.cxx logfile.h
-  plm_endian.cxx plm_endian.h 
-  plm_fwrite.cxx plm_fwrite.h
+  logfile.cxx
+  plm_endian.cxx
+  plm_fwrite.cxx
   plm_int.h
   plm_path.h
   plm_timer.cxx plm_timer.h
   plm_version.h 
-  print_and_exit.c print_and_exit.h 
+  print_and_exit.c
   pstring.h
   string_util.cxx string_util.h
   interpolate.cxx interpolate.h
