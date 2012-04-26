@@ -15,8 +15,8 @@
 #   define XAPI __declspec(dllimport)
 # endif
 #else
-# define API EXTERNC
-# define XAPI
+# define API EXTERNC 
+# define XAPI 
 #endif
 
 #endif

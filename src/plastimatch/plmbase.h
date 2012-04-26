@@ -71,6 +71,39 @@ API void gdcm_rtss_save (
 );
 #endif
 
+/* bspline_xform.cxx */
+API void bspline_interpolate_vf (Volume* interp, const Bspline_xform* bxf);
+API void bspline_transform_point (
+        float point_out[3], /* Output coordinate of point */
+        Bspline_xform* bxf, /* Bspline transform coefficients */
+        float point_in[3],  /* Input coordinate of point */
+        int linear_interp   /* 1 = trilinear, 0 = nearest neighbors */
+);
+API void bspline_xform_set_default (Bspline_xform* bxf);
+API void bspline_xform_initialize (
+        Bspline_xform* bxf,	          /* Output: bxf is initialized */
+        float img_origin[3],          /* Image origin (in mm) */
+        float img_spacing[3],         /* Image spacing (in mm) */
+        plm_long img_dim[3],          /* Image size (in vox) */
+        plm_long roi_offset[3],       /* Position of first vox in ROI (in vox) */
+        plm_long roi_dim[3],	      /* Dimension of ROI (in vox) */
+        plm_long vox_per_rgn[3],      /* Knot spacing (in vox) */
+        float direction_cosines[9]    /* Direction cosines */
+);
+API void bspline_xform_free (Bspline_xform* bxf);
+API Bspline_xform* bspline_xform_load (const char* filename);
+API void bspline_xform_save (Bspline_xform* bxf, const char* filename);
+API void bspline_set_coefficients (Bspline_xform* bxf, float val);
+
+/* Debugging routines */
+gpuit_EXPORT
+void
+bspline_xform_dump_coeff (Bspline_xform* bxf, const char* fn);
+
+gpuit_EXPORT
+void
+bspline_xform_dump_luts (Bspline_xform* bxf);
+
 
 /* hnd_io.cxx */
 API void hnd_load (

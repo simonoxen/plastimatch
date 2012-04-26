@@ -4,12 +4,12 @@
 #ifndef _bspline_xform_h_
 #define _bspline_xform_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include "volume.h"
 
 class Volume_header;
 
-class gpuit_EXPORT Bspline_xform {
+class XAPI Bspline_xform {
   public:
     float img_origin[3];         /* Image origin (in mm) */
     float img_spacing[3];        /* Image spacing (in mm) */
@@ -51,57 +51,6 @@ public:
 /* -----------------------------------------------------------------------
    Function declarations
    ----------------------------------------------------------------------- */
-gpuit_EXPORT
-void
-bspline_interpolate_vf (Volume* interp, 
-    const Bspline_xform* bxf);
-
-gpuit_EXPORT
-void
-bspline_transform_point (
-    float point_out[3], /* Output coordinate of point */
-    Bspline_xform* bxf, /* Bspline transform coefficients */
-    float point_in[3],  /* Input coordinate of point */
-    int linear_interp   /* 1 = trilinear, 0 = nearest neighbors */
-);
-
-gpuit_EXPORT
-void bspline_xform_set_default (Bspline_xform* bxf);
-
-gpuit_EXPORT
-void
-bspline_xform_initialize (
-    Bspline_xform* bxf,	          /* Output: bxf is initialized */
-    float img_origin[3],          /* Image origin (in mm) */
-    float img_spacing[3],         /* Image spacing (in mm) */
-    plm_long img_dim[3],          /* Image size (in vox) */
-    plm_long roi_offset[3],       /* Position of first vox in ROI (in vox) */
-    plm_long roi_dim[3],	      /* Dimension of ROI (in vox) */
-    plm_long vox_per_rgn[3],      /* Knot spacing (in vox) */
-    float direction_cosines[9]    /* Direction cosines */
-);
-
-gpuit_EXPORT
-void bspline_xform_free (Bspline_xform* bxf);
-
-gpuit_EXPORT
-Bspline_xform* bspline_xform_load (const char* filename);
-
-gpuit_EXPORT
-void bspline_xform_save (Bspline_xform* bxf, const char* filename);
-
-gpuit_EXPORT
-void
-bspline_set_coefficients (Bspline_xform* bxf, float val);
-
-/* Debugging routines */
-gpuit_EXPORT
-void
-bspline_xform_dump_coeff (Bspline_xform* bxf, const char* fn);
-
-gpuit_EXPORT
-void
-bspline_xform_dump_luts (Bspline_xform* bxf);
 
 
 
