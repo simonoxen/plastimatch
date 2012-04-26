@@ -10,7 +10,6 @@
 #include "plmsys.h"
 
 #include "astroid_dose.h"
-#include "bstring_util.h"
 #include "cxt_extract.h"
 #if GDCM_VERSION_1
 #include "gdcm1_series.h"

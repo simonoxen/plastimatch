@@ -5,7 +5,6 @@
 #include <time.h>
 #include "getopt.h"
 
-#include "bstring_util.h"
 #include "dvh.h"
 #include "pcmd_dvh.h"
 

@@ -6,7 +6,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "bstring_util.h"
 #include "cxt_extract.h"
 #include "itk_image_save.h"
 #include "itk_metadata.h"

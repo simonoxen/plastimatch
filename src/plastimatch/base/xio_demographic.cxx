@@ -9,7 +9,6 @@
 #include "plmsys.h"
 
 #include "bstrlib.h"
-#include "bstring_util.h"
 #include "xio_demographic.h"
 
 Xio_demographic::Xio_demographic (const char *filename)

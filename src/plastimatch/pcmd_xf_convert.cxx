@@ -4,7 +4,6 @@
 #include "plm_config.h"
 #include <stdlib.h>
 
-#include "bstring_util.h"
 #include "pcmd_xf_convert.h"
 #include "plm_clp.h"
 #include "plm_image.h"

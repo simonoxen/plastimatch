@@ -5,9 +5,9 @@
 
 #include "plmbase.h"
 
-#include "bstring_util.h"
 #include "itk_pointset.h"
 #include "pcmd_warp.h"
+#include "pstring.h"
 #include "xform.h"
 
 void
@@ -42,7 +42,7 @@ warp_pointset_main (Warp_parms* parms)
 
     //itk_pointset_debug (itk_ps_out);
 
-    if (bstring_not_empty (parms->output_pointset_fn)) {
+    if (parms->output_pointset_fn.not_empty()) {
 	//Raw_pointset *ps_out = raw_pointset_from_itk_float_pointset (itk_ps_out);
 	//pointset_save (ps_out, (const char*) parms->output_pointset_fn);
 	//pointset_destroy (ps_out);

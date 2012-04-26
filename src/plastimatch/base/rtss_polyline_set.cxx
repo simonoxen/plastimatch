@@ -10,7 +10,6 @@
 
 #include "plmsys.h"
 
-#include "bstring_util.h"
 #include "plm_math.h"
 #include "metadata.h"
 #include "plm_image_header.h"
@@ -137,7 +136,7 @@ Rtss_polyline_set::add_structure (
     new_structure->name.trim();
     new_structure->id = structure_id;
     new_structure->bit = -1;
-    if (bstring_not_empty (color)) {
+    if (color.not_empty()) {
 	new_structure->color = color;
     } else {
 	assign_random_color (new_structure->color);

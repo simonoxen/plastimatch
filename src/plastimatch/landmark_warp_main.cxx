@@ -11,7 +11,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "bstring_util.h"
 #include "itk_tps.h"
 #include "plm_math.h"
 #include "landmark_warp.h"
@@ -84,7 +83,7 @@ load_input_files (Landmark_warp_main_parms *parms)
     }
 
     /* Load the input image */
-    if (bstring_not_empty (parms->input_img_fn)) {
+    if (parms->input_img_fn.not_empty()) {
 	lw->m_input_img = plm_image_load_native (parms->input_img_fn);
 	if (!lw->m_input_img) {
 	    print_and_exit ("Error reading input image: %s\n", 
@@ -102,7 +101,7 @@ load_input_files (Landmark_warp_main_parms *parms)
     if (!parms->have_dim || !parms->have_origin 
 	|| !parms->have_spacing || !parms->have_direction_cosines)
     {
-	if (bstring_not_empty (parms->fixed_img_fn)) {
+	if (parms->fixed_img_fn.not_empty()) {
 	    Plm_image *pli = plm_image_load_native (parms->fixed_img_fn);
 	    if (!pli) {
 		print_and_exit ("Error loading fixed image: %s\n",
@@ -132,14 +131,13 @@ save_output_files (Landmark_warp_main_parms *parms)
     Landmark_warp *lw = &parms->lw;
 
     /* GCS FIX: float output only, and no dicom. */
-    if (lw->m_warped_img && bstring_not_empty (parms->output_img_fn)) {
+    if (lw->m_warped_img && parms->output_img_fn.not_empty()) {
 	lw->m_warped_img->save_image (parms->output_img_fn);
     }
-    if (lw->m_vf && bstring_not_empty (parms->output_vf_fn)) {
+    if (lw->m_vf && parms->output_vf_fn.not_empty()) {
 	xform_save (lw->m_vf, (const char*) parms->output_vf_fn);
     }
-    if (lw->m_vf && lw->m_warped_landmarks 
-	&& bstring_not_empty (parms->output_lm_fn))
+    if (lw->m_vf && lw->m_warped_landmarks && parms->output_lm_fn.not_empty())
     {
 	
 	if ( lw->num_clusters > 0 ) {
@@ -369,7 +367,7 @@ do_landmark_warp (Landmark_warp_main_parms *parms)
 	do_landmark_warp_wendland (lw);
     }
 
-    if (bstring_not_empty (parms->output_lm_fn)) {
+    if (parms->output_lm_fn.not_empty()) {
 	lw->m_warped_landmarks = pointset_create ();
 	calculate_warped_landmarks (lw);
     }

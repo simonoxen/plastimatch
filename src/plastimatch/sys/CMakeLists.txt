@@ -11,7 +11,6 @@ configure_file (
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 
 set (PLMSYS_LIBRARY_SRC
-  bstring_util.cxx bstring_util.h
   compiler_warnings.h
   delayload.c delayload.h
   dir_list.cxx dir_list.h

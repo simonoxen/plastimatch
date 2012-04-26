@@ -6,7 +6,6 @@
 #include "itkImageRegionIterator.h"
 
 #include "autolabel.h"
-#include "bstring_util.h"
 #include "plm_clp.h"
 #include "pstring.h"
 

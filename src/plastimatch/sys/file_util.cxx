@@ -20,7 +20,6 @@
 
 #include "plmsys.h"
 
-#include "bstring_util.h"
 #include "file_util.h"
 
 #if (_WIN32)

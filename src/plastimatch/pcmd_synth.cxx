@@ -84,7 +84,7 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
 
 #if defined (commentout)
     /* -- list of structure names -- */
-    if (bstring_not_empty (parms->output_ss_list_fn)) {
+    if (parms->output_ss_list_fn.not_empty()) {
 	printf ("save_ss_img: save_ss_list\n");
 	rtds->m_rtss->save_ss_list (parms->output_ss_list_fn);
     }

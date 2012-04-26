@@ -17,7 +17,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "bstring_util.h"
 #include "gdcm1_series.h"
 #include "gdcm1_util.h"
 #include "plm_uid_prefix.h"

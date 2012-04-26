@@ -9,7 +9,7 @@
 #include "plmsys.h"
 
 #include "bstrlib.h"
-#include "bstring_util.h"
+#include "bstrwrap.h"
 #include "xio_plan.h"
 
 void

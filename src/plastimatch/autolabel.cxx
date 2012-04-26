@@ -11,7 +11,6 @@
 #include "autolabel.h"
 #include "autolabel_ransac_est.h"
 #include "autolabel_thumbnailer.h"
-#include "bstring_util.h"
 #include "dlib_trainer.h"
 #include "itk_image.h"
 #include "plm_image.h"

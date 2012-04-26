@@ -8,7 +8,6 @@
 
 #include "plmsys.h"
 
-#include "bstring_util.h"
 #include "opencl_util.h"
 #include "pstring.h"
 #include "delayload.h"

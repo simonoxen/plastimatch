@@ -8,13 +8,13 @@
 
 #include "plmsys.h"
 
-#include "bstring_util.h"
 #include "cxt_io.h"
 #include "gdcm1_rtss.h"
 #include "plm_clp.h"
 #include "plm_file_format.h"
 #include "plm_image_header.h"
 #include "plm_warp.h"
+#include "pstring.h"
 #include "rtds.h"
 #include "rtds_warp.h"
 #include "pcmd_warp.h"
@@ -325,9 +325,8 @@ do_command_warp (int argc, char* argv[])
     plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv, 1);
 
     /* Dij matrices are a special case */
-    if (bstring_not_empty (parms.output_dij_fn)) {
-        if (bstring_not_empty (parms.ctatts_in_fn)
-            && bstring_not_empty (parms.dif_in_fn))
+    if (parms.output_dij_fn.not_empty()) {
+        if (parms.ctatts_in_fn.not_empty() && parms.dif_in_fn.not_empty())
         {
             warp_dij_main (&parms);
             return;
