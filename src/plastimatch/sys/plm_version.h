@@ -4,7 +4,7 @@
 #ifndef _plm_version_h_
 #define _plm_version_h_
 
-#include "plm_config.h"
+#include "plmsys_config.h"
 
 #if defined (PLM_RELEASE_VERSION_STRING)
   #define PLASTIMATCH_VERSION PLM_RELEASE_VERSION_STRING

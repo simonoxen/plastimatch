@@ -6,7 +6,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <time.h>
-#include "plm_config.h"
+#include "plmsys_config.h"
 
 #include "plmsys.h"
 

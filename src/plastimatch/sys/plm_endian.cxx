@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include "plm_config.h"
+#include "plmsys_config.h"
 #include "plmsys.h"
 
 /* Switch buffer endian between big and little (2 byte types) */

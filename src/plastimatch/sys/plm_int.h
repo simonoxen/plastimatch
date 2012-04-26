@@ -4,7 +4,7 @@
 #ifndef _plm_int_h_
 #define _plm_int_h_
 
-#include "plm_config.h"
+#include "plmsys_config.h"
 
 #if defined (GDCMCOMMON_H)
 /* Gdcm 1.x has a broken header file gdcmCommon.h, which defines C99 types 

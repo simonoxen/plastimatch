@@ -4,7 +4,7 @@
 #ifndef _dir_list_h_
 #define _dir_list_h_
 
-#include "plm_config.h"
+#include "plmsys_config.h"
 
 typedef struct dir_list Dir_list;
 struct dir_list

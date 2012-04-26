@@ -4,7 +4,7 @@
 #ifndef _bstring_util_h_
 #define _bstring_util_h_
 
-#include "plm_config.h"
+#include "plmsys_config.h"
 #include "bstrwrap.h"
 
 gpuit_EXPORT 

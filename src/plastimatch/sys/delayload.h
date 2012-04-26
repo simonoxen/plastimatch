@@ -4,7 +4,7 @@
 #ifndef _delayload_h_
 #define _delayload_h_
 
-#include "plm_config.h"
+#include "plmsys_config.h"
 #ifndef _WIN32
 #include <dlfcn.h>
 #endif

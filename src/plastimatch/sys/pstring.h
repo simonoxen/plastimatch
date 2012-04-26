@@ -4,7 +4,7 @@
 #ifndef _pstring_h_
 #define _pstring_h_
 
-#include "plm_config.h"
+#include "plmsys_config.h"
 #include "bstrwrap.h"
 
 class Pstring : public CBString

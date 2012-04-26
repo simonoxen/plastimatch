@@ -4,7 +4,7 @@
 #ifndef _plm_timer_h_
 #define _plm_timer_h_
 
-#include "plm_config.h"
+#include "plmsys_config.h"
 #ifdef _WIN32
 #include <windows.h>
 #else

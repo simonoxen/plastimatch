@@ -4,7 +4,7 @@
 #ifndef _string_util_h_
 #define _string_util_h_
 
-#include "plm_config.h"
+#include "plmsys_config.h"
 #include <string>
 #include <vector>
 
