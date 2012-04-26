@@ -10,7 +10,7 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "math_util.h"
+#include "plm_math.h"
 #include "volume.h"
 
 #define CONVERT_VOLUME(old_type,new_type,new_type_enum)			\

@@ -14,7 +14,7 @@
 #include "bspline.h"
 #include "bspline_regularize_analytic.h"
 #include "bspline_xform.h"
-#include "math_util.h"
+#include "plm_math.h"
 #include "volume.h"
 
 //#define DEBUG

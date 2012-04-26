@@ -23,7 +23,7 @@
 
 /* EXTERNAL DEPENDS */
 #include "delayload.h"
-#include "math_util.h"
+#include "plm_math.h"
 #include "proj_image.h"
 #include "proj_image_dir.h"
 #include "volume.h"

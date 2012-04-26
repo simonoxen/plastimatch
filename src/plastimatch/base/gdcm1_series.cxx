@@ -20,7 +20,7 @@
 #include "bstring_util.h"
 #include "gdcm1_series.h"
 #include "gdcm1_series_helper_2.h"
-#include "math_util.h"
+#include "plm_math.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 

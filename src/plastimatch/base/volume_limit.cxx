@@ -7,7 +7,7 @@
 #include "plmbase.h"
 
 #include "drr.h"          /* For DRR_VERBOSE */
-#include "math_util.h"
+#include "plm_math.h"
 #include "volume.h"
 #include "volume_limit.h"
 

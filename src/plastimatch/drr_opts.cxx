@@ -7,7 +7,7 @@
 #include <string.h>
 #include <math.h>
 #include "drr_opts.h"
-#include "math_util.h"
+#include "plm_math.h"
 
 #ifndef NULL
 #define NULL ((void*)0)

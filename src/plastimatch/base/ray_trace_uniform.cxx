@@ -11,7 +11,7 @@
 
 #include "plmbase.h"
 
-#include "math_util.h"
+#include "plm_math.h"
 #include "volume.h"
 
 

@@ -17,7 +17,7 @@
 #include "gdcm1_rtss.h"
 #include "gdcm1_series.h"
 #include "gdcm1_util.h"
-#include "math_util.h"
+#include "plm_math.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "slice_index.h"

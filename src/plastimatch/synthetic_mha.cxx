@@ -10,7 +10,7 @@
 
 #include "itk_directions.h"
 #include "itk_image.h"
-#include "math_util.h"
+#include "plm_math.h"
 #include "rtds.h"
 #include "rtss.h"
 #include "synthetic_mha.h"

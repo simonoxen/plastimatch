@@ -10,7 +10,7 @@
 
 #include "plmsys.h"
 
-#include "math_util.h"
+#include "plm_math.h"
 #include "pointset.h"
 
 template<class T>

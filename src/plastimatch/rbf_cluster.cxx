@@ -14,7 +14,7 @@
 #include "bspline_opts.h"
 #include "compiler_warnings.h"
 #include "landmark_warp.h"
-#include "math_util.h"
+#include "plm_math.h"
 #include "rbf_cluster.h"
 #include "vf.h"
 #include "volume.h"

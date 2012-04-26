@@ -9,7 +9,7 @@
 #include "plmbase.h"
 
 #include "compiler_warnings.h"
-#include "math_util.h"
+#include "plm_math.h"
 #include "proj_matrix.h"
 #include "proton_dose.h"
 #include "rpl_volume.h"

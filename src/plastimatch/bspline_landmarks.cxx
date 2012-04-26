@@ -18,7 +18,7 @@
 
 /* EXTERNAL DEPE#NDS */
 #include "bspline_xform.h"
-#include "math_util.h"
+#include "plm_math.h"
 #include "pointset.h"
 
 

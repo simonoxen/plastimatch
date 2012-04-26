@@ -14,7 +14,7 @@
 #include "bspline_macros.h"
 #include "bspline_opts.h"
 #include "bspline_regularize_numeric.h"
-#include "math_util.h"
+#include "plm_math.h"
 #include "volume_macros.h"
 
 /* Prototypes */

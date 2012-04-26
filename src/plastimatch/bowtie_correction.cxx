@@ -13,7 +13,7 @@
 
 #include "bowtie_correction.h"
 #include "fdk_opts.h"
-#include "math_util.h"
+#include "plm_math.h"
 #include "volume.h"
 
 #ifndef DEGTORAD

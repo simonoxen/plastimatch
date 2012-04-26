@@ -25,7 +25,7 @@
 #include "bspline_optimize.h"
 #include "bspline_opts.h"
 #include "interpolate.h"
-#include "math_util.h"
+#include "plm_math.h"
 #include "volume.h"
 #include "volume_macros.h"
 #include "bspline_macros.h"

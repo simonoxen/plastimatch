@@ -16,7 +16,7 @@
 #include "bspline.h"
 #include "bspline_xform.h"
 #include "interpolate.h"
-#include "math_util.h"
+#include "plm_math.h"
 #include "plm_path.h"
 #include "volume.h"
 #include "volume_header.h"

@@ -7,7 +7,7 @@
 #include "plm_config.h"
 #include "plmbase.h"
 #include "drr_opts.h"
-#include "math_util.h"
+#include "plm_math.h"
 #include "proj_image.h"
 
 #define DRR_PLANE_RAY_TOLERANCE 1e-8

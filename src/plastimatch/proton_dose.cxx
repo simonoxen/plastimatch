@@ -23,7 +23,7 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "math_util.h"
+#include "plm_math.h"
 #include "proj_matrix.h"
 #include "proton_dose.h"
 #include "volume.h"

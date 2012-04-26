@@ -8,7 +8,7 @@
 
 #include "plmsys.h"
 
-#include "math_util.h"
+#include "plm_math.h"
 #include "proj_matrix.h"
 #include "volume.h"
 

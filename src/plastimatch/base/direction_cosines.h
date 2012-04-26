@@ -7,7 +7,7 @@
 #include "plm_config.h"
 #include <string>
 #include <stdio.h>
-#include "math_util.h"
+#include "plm_math.h"
 
 #define DIRECTION_COSINES_IDENTITY_THRESH 1e-9
 

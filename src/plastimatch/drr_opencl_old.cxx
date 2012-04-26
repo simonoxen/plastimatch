@@ -14,7 +14,7 @@
 #include "drr_opencl_p.h"
 #include "drr.h"
 #include "drr_opts.h"
-#include "math_util.h"
+#include "plm_math.h"
 #include "opencl_util.h"
 #include "opencl_util_nvidia.h"
 #include "proj_image.h"

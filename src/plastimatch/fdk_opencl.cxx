@@ -13,7 +13,7 @@
 #include "fdk_opencl_p.h"
 #include "fdk_opts.h"
 #include "fdk_util.h"
-#include "math_util.h"
+#include "plm_math.h"
 #include "opencl_util.h"
 #include "proj_image.h"
 #include "proj_image_dir.h"

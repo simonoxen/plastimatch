@@ -34,7 +34,7 @@
 #include "drr_cuda_p.h"
 #include "drr_opts.h"
 #include "file_util.h"
-#include "math_util.h"
+#include "plm_math.h"
 #include "proj_image.h"
 #include "volume.h"
 #include "timer.h"

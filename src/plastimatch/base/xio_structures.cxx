@@ -16,7 +16,7 @@
 
 #include "plmsys.h"
 
-#include "math_util.h"
+#include "plm_math.h"
 #include "metadata.h"
 #include "plm_path.h"
 #include "pstring.h"

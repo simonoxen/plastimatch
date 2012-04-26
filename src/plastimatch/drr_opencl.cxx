@@ -13,7 +13,7 @@
 #include "drr_opencl_p.h"
 #include "drr.h"
 #include "drr_opts.h"
-#include "math_util.h"
+#include "plm_math.h"
 #include "opencl_util.h"
 #include "proj_image.h"
 #include "proj_matrix.h"

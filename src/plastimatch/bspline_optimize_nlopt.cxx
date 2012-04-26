@@ -15,7 +15,7 @@
 #include "bspline_optimize.h"
 #include "bspline_optimize_nlopt.h"
 #include "bspline_opts.h"
-#include "math_util.h"
+#include "plm_math.h"
 #include "volume.h"
 
 #if (NLOPT_FOUND)

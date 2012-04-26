@@ -11,7 +11,7 @@
 
 #include "plmbase.h"
 
-#include "math_util.h"
+#include "plm_math.h"
 #include "proton_dose.h"
 #include "proton_dose_opts.h"
 #include "proj_matrix.h"

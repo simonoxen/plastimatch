@@ -10,7 +10,7 @@
 
 #include "compiler_warnings.h"
 #include "hnd_io.h"
-#include "math_util.h"
+#include "plm_math.h"
 
 #define HND_INTENSITY_MAX (139000)
 

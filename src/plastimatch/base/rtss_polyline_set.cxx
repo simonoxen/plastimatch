@@ -11,7 +11,7 @@
 #include "plmsys.h"
 
 #include "bstring_util.h"
-#include "math_util.h"
+#include "plm_math.h"
 #include "metadata.h"
 #include "plm_image_header.h"
 #include "pstring.h"

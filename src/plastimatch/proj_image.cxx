@@ -11,7 +11,7 @@
 
 #include "fdk_opts.h"
 #include "fdk_util.h"
-#include "math_util.h"
+#include "plm_math.h"
 #include "plm_path.h"
 #include "proj_image.h"
 #include "ramp_filter.h"

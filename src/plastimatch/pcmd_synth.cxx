@@ -9,7 +9,7 @@
 
 #include "itk_image.h"
 #include "itk_image_save.h"
-#include "math_util.h"
+#include "plm_math.h"
 #include "plm_clp.h"
 #include "pstring.h"
 #include "rtds.h"

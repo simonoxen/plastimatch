@@ -13,7 +13,7 @@
 
 #include "bstring_util.h"
 #include "itk_tps.h"
-#include "math_util.h"
+#include "plm_math.h"
 #include "landmark_warp.h"
 #include "plm_clp.h"
 #include "pointset.h"

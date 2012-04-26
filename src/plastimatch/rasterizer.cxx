@@ -12,7 +12,7 @@
 #include "plmsys.h"
 
 #include "cxt_io.h"
-#include "math_util.h"
+#include "plm_math.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "plm_path.h"

@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _math_util_h_
-#define _math_util_h_
+#ifndef _plm_math_h_
+#define _plm_math_h_
 
 #include "plm_config.h"
 #include <float.h>

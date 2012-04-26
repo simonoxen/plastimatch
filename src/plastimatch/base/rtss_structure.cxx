@@ -8,7 +8,7 @@
 
 #include "plmsys.h"
 
-#include "math_util.h"
+#include "plm_math.h"
 #include "plm_image_header.h"
 #include "pstring.h"
 #include "rtss_polyline_set.h"

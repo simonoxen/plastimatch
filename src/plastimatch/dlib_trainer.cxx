@@ -16,7 +16,7 @@
 #include "plmsys.h"
 
 #include "dlib_trainer.h"
-#include "math_util.h"
+#include "plm_math.h"
 
 using namespace dlib;
 

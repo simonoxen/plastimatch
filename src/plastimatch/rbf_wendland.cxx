@@ -23,7 +23,7 @@
 #include "bspline_landmarks.h"
 #include "bspline_opts.h"
 #include "landmark_warp.h"
-#include "math_util.h"
+#include "plm_math.h"
 #include "rbf_cluster.h"
 #include "rbf_wendland.h"
 #include "volume.h"

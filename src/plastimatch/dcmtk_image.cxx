@@ -13,7 +13,7 @@
 #include "dcmtk_file.h"
 #include "dcmtk_series.h"
 #include "dcmtk_uid.h"
-#include "math_util.h"
+#include "plm_math.h"
 #include "plm_image.h"
 #include "plm_image_type.h"
 #include "plm_uid_prefix.h"
