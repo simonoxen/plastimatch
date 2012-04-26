@@ -21,11 +21,30 @@ bspline_xform.cxx
  + bspline_transform_point()
  + interpolate_vf()
 
+file_util.cxx
+ - file_load()
+
+opencl_util.cxx
+ + file_load()
+
+
+------------------------------------------------------------
+
+NEW METHODS NEEDED
+
+bspline_xform
+[ ] bxf->get_coeff_num()    [ return bxf->num_coeff (int   ) ]
+[ ] bxf->get_coeff_ptr()    [ return bxf->coeff     (float*) ]
+
 
 ------------------------------------------------------------
 TODOS:
 
+  REDESIGN compiler_warnings.h
+
   ADD math_util.h to plmsys.h
+
+  RENAME plm_int.h  ->  plm_types.h
 
   DELETE mha_io.h
   DELETE ray_trace_uniform.h

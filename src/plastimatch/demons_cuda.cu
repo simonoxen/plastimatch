@@ -14,7 +14,6 @@
 #include "demons_opts.h"
 #include "demons_state.h"
 #include "plm_cuda_math.h"
-#include "plm_timer.h"
 #include "volume.h"
 
 
@@ -393,7 +392,10 @@ demons_cuda (
     //Volume *vf_est, *vf_smooth;
     int inliers;
     float ssd;
-    Plm_timer timer, gpu_timer, kernel_timer;
+
+    Plm_timer* timer = plm_timer_create ();
+    Plm_timer* gpu_timer = plm_timer_create ();
+    Plm_timer* kernel_timer = plm_timer_create ();
 
     int vol_size, interleaved_vol_size, inlier_size, threadX, threadY, threadZ, blockX, blockY, blockZ, num_elements, half_num_elements, reductionBlocks;
     int *d_inliers;
@@ -442,7 +444,7 @@ demons_cuda (
     inlier_size = moving->dim[0] * moving->dim[1] * moving->dim[2] * sizeof(int);
 
     /* Allocate device memory */
-    plm_timer_start(&gpu_timer);
+    plm_timer_start(gpu_timer);
     cudaMalloc((void**)&d_vf_est, interleaved_vol_size);
     cudaMalloc((void**)&d_vf_smooth, interleaved_vol_size);
     cudaMalloc((void**)&d_fixed, vol_size);
@@ -461,7 +463,7 @@ demons_cuda (
     cudaMemcpy(d_moving, moving->img, vol_size, cudaMemcpyHostToDevice);
     cudaMemset(d_m_grad, 0, interleaved_vol_size);
     cudaMemset(d_m_grad_mag, 0, vol_size);
-    gpu_time += plm_timer_report(&gpu_timer);
+    gpu_time += plm_timer_report(gpu_timer);
 
     /* Set device constant memory */
     setConstantDimension(fixed->dim);
@@ -471,34 +473,34 @@ demons_cuda (
     /* Bind device texture memory */
     cudaBindTexture(0, tex_fixed, d_fixed, vol_size);
     cudaBindTexture(0, tex_moving, d_moving, vol_size);
-    gpu_time += plm_timer_report(&gpu_timer);
+    gpu_time += plm_timer_report(gpu_timer);
 
     /* Check for any errors prekernel execution */
     CUDA_check_error("Error before kernel execution");
 
     /* Call kernel */
-    plm_timer_start(&kernel_timer);
+    plm_timer_start(kernel_timer);
     volume_calc_grad_kernel<<< grid, block>>>(d_m_grad, blockY, 1.0f / (float)blockY);
     cudaThreadSynchronize();
-    kernel_time += plm_timer_report(&kernel_timer);
+    kernel_time += plm_timer_report(kernel_timer);
 
     /* Check for any errors postkernel execution */
     CUDA_check_error("Kernel execution failed");
 
     /* Bind device texture memory */
-    plm_timer_start(&gpu_timer);
+    plm_timer_start(gpu_timer);
     cudaBindTexture(0, tex_grad, d_m_grad, interleaved_vol_size);
-    gpu_time += plm_timer_report(&gpu_timer);
+    gpu_time += plm_timer_report(gpu_timer);
 
     /* Check for any errors prekernel execution */
     CUDA_check_error("Error before kernel execution");
 
     /* Call kernel */
-    plm_timer_start(&kernel_timer);
+    plm_timer_start(kernel_timer);
     calculate_gradient_magnitude_image_kernel<<< grid, block>>> (
 	d_m_grad_mag, blockY, 1.0f / (float)blockY);
     cudaThreadSynchronize();
-    kernel_time += plm_timer_report(&kernel_timer);
+    kernel_time += plm_timer_report(kernel_timer);
 
     /* Check for any errors postkernel execution */
     CUDA_check_error("Kernel execution failed");
@@ -520,7 +522,7 @@ demons_cuda (
     }
 
     /* Allocate device memory */
-    plm_timer_start (&gpu_timer);
+    plm_timer_start (gpu_timer);
     printf ("Doing cudaMalloc\n");
     cudaMalloc ((void**)&d_kerx, fw[0] * sizeof(float));
     cudaMalloc ((void**)&d_kery, fw[1] * sizeof(float));
@@ -540,9 +542,9 @@ demons_cuda (
     /* Bind device texture memory */
     printf ("Doing cudaBindTexture\n");
     cudaBindTexture (0, tex_grad_mag, d_m_grad_mag, vol_size);
-    gpu_time += plm_timer_report (&gpu_timer);
+    gpu_time += plm_timer_report (gpu_timer);
 
-    plm_timer_start (&timer);
+    plm_timer_start (timer);
 
     /* Main loop through iterations */
     for (it = 0; it < parms->max_its; it++) {
@@ -553,14 +555,14 @@ demons_cuda (
 	/* Check for any errors prekernel execution */
 	CUDA_check_error ("Error before kernel execution");
 
-	plm_timer_start(&gpu_timer);
+	plm_timer_start(gpu_timer);
 	cudaBindTexture(0, tex_vf_smooth, d_vf_smooth, interleaved_vol_size);
 	cudaMemset(d_ssd, 0, vol_size);
 	cudaMemset(d_inliers, 0, inlier_size);
-	gpu_time += plm_timer_report(&gpu_timer);
+	gpu_time += plm_timer_report(gpu_timer);
 
 	/* Call kernel */
-	plm_timer_start (&kernel_timer);
+	plm_timer_start (kernel_timer);
 	estimate_kernel<<< grid, block >>> (
 	    d_vf_est, 
 	    d_ssd, 
@@ -571,7 +573,7 @@ demons_cuda (
 	    blockY, 
 	    1.0f / (float)blockY);
 	cudaThreadSynchronize ();
-	kernel_time += plm_timer_report (&kernel_timer);
+	kernel_time += plm_timer_report (kernel_timer);
 
 	/* Check for any errors postkernel execution */
 	CUDA_check_error ("Kernel execution failed");
@@ -583,12 +585,12 @@ demons_cuda (
 
 	    /* Invoke kernels */
 	    dim3 reductionGrid(reductionBlocks, 1);
-	    plm_timer_start(&kernel_timer);
+	    plm_timer_start(kernel_timer);
 	    reduction<float><<< reductionGrid, block >>>(d_ssd, num_elements);
 	    cudaThreadSynchronize();
 	    reduction<int><<< reductionGrid, block >>>(d_inliers, num_elements);
 	    cudaThreadSynchronize();
-	    kernel_time += plm_timer_report(&kernel_timer);
+	    kernel_time += plm_timer_report(kernel_timer);
 
 	    /* Check for any errors postkernel execution */
 	    CUDA_check_error("Kernel execution failed");
@@ -597,12 +599,12 @@ demons_cuda (
 	}
 
 	/* Smooth the estimate into vf_smooth.  The volumes are ping-ponged. */
-	plm_timer_start(&gpu_timer);
+	plm_timer_start(gpu_timer);
 	cudaUnbindTexture(tex_vf_smooth);
 	cudaBindTexture(0, tex_vf_est, d_vf_est, interleaved_vol_size);
 	cudaMemcpy(&ssd, d_ssd, sizeof(float), cudaMemcpyDeviceToHost);
 	cudaMemcpy(&inliers, d_inliers, sizeof(int), cudaMemcpyDeviceToHost);
-	gpu_time += plm_timer_report(&gpu_timer);
+	gpu_time += plm_timer_report(gpu_timer);
 
 	/* Print statistics */
 	printf ("----- SSD = %.01f (%d/%d)\n", ssd/inliers, inliers, fixed->npix);
@@ -611,38 +613,38 @@ demons_cuda (
 	CUDA_check_error("Error before kernel execution");
 
 	/* Call kernel */
-	plm_timer_start(&kernel_timer);
+	plm_timer_start(kernel_timer);
 	vf_convolve_x_kernel<<< grid, block >>>(d_vf_smooth, d_kerx, fw[0] / 2, blockY, 1.0f / (float)blockY);
 	cudaThreadSynchronize();
-	kernel_time += plm_timer_report(&kernel_timer);
+	kernel_time += plm_timer_report(kernel_timer);
 
 	/* Check for any errors postkernel execution */
 	CUDA_check_error("Kernel execution failed");
 
-	plm_timer_start(&gpu_timer);
+	plm_timer_start(gpu_timer);
 	cudaUnbindTexture(tex_vf_est);
 	cudaBindTexture(0, tex_vf_smooth, d_vf_smooth, interleaved_vol_size);
-	gpu_time += plm_timer_report(&gpu_timer);
+	gpu_time += plm_timer_report(gpu_timer);
 
 	/* Call kernel */
-	plm_timer_start(&kernel_timer);
+	plm_timer_start(kernel_timer);
 	vf_convolve_y_kernel<<< grid, block >>>(d_vf_est, d_kery, fw[1] / 2, blockY, 1.0f / (float)blockY);
 	cudaThreadSynchronize();
-	kernel_time += plm_timer_report(&kernel_timer);
+	kernel_time += plm_timer_report(kernel_timer);
 
 	/* Check for any errors postkernel execution */
 	CUDA_check_error("Kernel execution failed");
 
-	plm_timer_start(&gpu_timer);
+	plm_timer_start(gpu_timer);
 	cudaUnbindTexture(tex_vf_smooth);
 	cudaBindTexture(0, tex_vf_est, d_vf_est, interleaved_vol_size);
-	gpu_time += plm_timer_report(&gpu_timer);
+	gpu_time += plm_timer_report(gpu_timer);
 
 	/* Call kernel */
-	plm_timer_start(&kernel_timer);
+	plm_timer_start(kernel_timer);
 	vf_convolve_z_kernel<<< grid, block >>>(d_vf_smooth, d_kerz, fw[2] / 2, blockY, 1.0f / (float)blockY);
 	cudaThreadSynchronize();
-	kernel_time += plm_timer_report(&kernel_timer);
+	kernel_time += plm_timer_report(kernel_timer);
 
 	/* Check for any errors postkernel execution */
 	CUDA_check_error("Kernel execution failed");
@@ -654,17 +656,17 @@ demons_cuda (
     }
 
     /* Copy final output from device to host */
-    plm_timer_start(&gpu_timer);
+    plm_timer_start(gpu_timer);
     cudaMemcpy (demons_state->vf_smooth->img, d_vf_est, 
 	interleaved_vol_size, cudaMemcpyDeviceToHost);
-    gpu_time += plm_timer_report(&gpu_timer);
+    gpu_time += plm_timer_report(gpu_timer);
 
     free(kerx);
     free(kery);
     free(kerz);
     //delete vf_est;
 
-    diff_run = plm_timer_report(&timer);
+    diff_run = plm_timer_report(timer);
     printf("Time for %d iterations = %f (%f sec / it)\n", parms->max_its, diff_run, diff_run / parms->max_its);
 
     /* Print statistics */
@@ -672,6 +674,10 @@ demons_cuda (
     printf("\nTransfer run time: %f ms\n", gpu_time * 1000);
     printf("Kernel run time: %f ms\n", kernel_time * 1000);
     printf("Total CUDA run time: %f s\n\n", total_runtime);
+
+    plm_timer_destroy (timer);
+    plm_timer_destroy (kernel_timer);
+    plm_timer_destroy (gpu_timer);
 
     /* Unbind device texture memory */
     cudaUnbindTexture(tex_vf_est);

@@ -31,6 +31,7 @@
 #include <cuda.h>
 
 #include "plmbase.h"
+#include "plmsys.h"
 
 #include "cuda_util.h"
 #include "drr_cuda.h"
@@ -38,7 +39,6 @@
 #include "drr_opts.h"
 #include "math_util.h"
 #include "plm_cuda_math.h"
-#include "plm_timer.h"
 #include "proj_image.h"
 #include "volume.h"
 #include "volume_limit.h"

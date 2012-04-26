@@ -10,7 +10,6 @@
 
 #include "bstring_util.h"
 #include "opencl_util.h"
-#include "plm_timer.h"
 #include "pstring.h"
 #include "delayload.h"
 #include "delayload_opencl.h"

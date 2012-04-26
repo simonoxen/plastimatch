@@ -28,7 +28,6 @@
 #include "bspline_xform.h"
 #include "interpolate.h"
 #include "math_util.h"
-#include "plm_timer.h"
 #include "volume.h"
 #include "volume_macros.h"
 
@@ -1586,7 +1585,6 @@ bspline_score_h_mi (
     float* m_img = (float*) moving->img;
     float num_vox_f;
     long pidx;
-    Plm_timer timer;
     float m_val;
 
     plm_long fijk[3] = {0};
@@ -1630,7 +1628,8 @@ bspline_score_h_mi (
     }
 #endif
 
-    plm_timer_start (&timer);
+    Plm_timer* timer = plm_timer_create ();
+    plm_timer_start (timer);
 
     memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
@@ -1832,7 +1831,8 @@ bspline_score_h_mi (
         printf ("<< MSE %3.3f >>\n", mse_score);
     }
 
-    ssd->time_smetric = plm_timer_report (&timer);
+    ssd->time_smetric = plm_timer_report (timer);
+    plm_timer_destroy (timer);
 }
 
 
@@ -1862,7 +1862,6 @@ bspline_score_g_mi (
     float* m_img = (float*) moving->img;
     float num_vox_f;
     long pidx;
-    Plm_timer timer;
     float m_val;
 
     plm_long fijk[3] = {0};
@@ -1898,7 +1897,8 @@ bspline_score_g_mi (
     }
 #endif
 
-    plm_timer_start (&timer);
+    Plm_timer* timer = plm_timer_create ();
+    plm_timer_start (timer);
 
     memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
@@ -2082,7 +2082,8 @@ bspline_score_g_mi (
         printf ("<< MSE %3.3f >>\n", mse_score);
     }
 
-    ssd->time_smetric = plm_timer_report (&timer);
+    ssd->time_smetric = plm_timer_report (timer);
+    plm_timer_destroy (timer);
 }
 
 
@@ -2115,7 +2116,6 @@ bspline_score_f_mi (
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
     int pidx;
     float num_vox_f;
-    Plm_timer timer;
 
     float mse_score = 0.0f;
     double* f_hist = mi_hist->f_hist;
@@ -2139,7 +2139,8 @@ bspline_score_f_mi (
     }
 #endif
 
-    plm_timer_start (&timer);
+    Plm_timer* timer = plm_timer_create ();
+    plm_timer_start (timer);
 
     memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
@@ -2383,7 +2384,8 @@ bspline_score_f_mi (
 
     mse_score = mse_score / ssd->num_vox;
 
-    ssd->time_smetric = plm_timer_report (&timer);
+    ssd->time_smetric = plm_timer_report (timer);
+    plm_timer_destroy (timer);
 }
 #endif
 
@@ -2414,7 +2416,6 @@ bspline_score_e_mi (
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
     long pidx;
     float num_vox_f;
-    Plm_timer timer;
 
     float mse_score = 0.0f;
     double* f_hist = mi_hist->f_hist;
@@ -2439,7 +2440,8 @@ bspline_score_e_mi (
     }
 #endif
 
-    plm_timer_start (&timer);
+    Plm_timer* timer = plm_timer_create ();
+    plm_timer_start (timer);
 
     memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
@@ -2729,7 +2731,8 @@ bspline_score_e_mi (
 
     mse_score = mse_score / ssd->num_vox;
     
-    ssd->time_smetric = plm_timer_report (&timer);
+    ssd->time_smetric = plm_timer_report (timer);
+    plm_timer_destroy (timer);
 }
 #endif
 
@@ -2760,7 +2763,6 @@ bspline_score_d_mi (
     float* m_img = (float*) moving->img;
     float num_vox_f;
     long pidx;
-    Plm_timer timer;
     float m_val;
 
     plm_long fijk[3];
@@ -2797,7 +2799,8 @@ bspline_score_d_mi (
     }
 #endif
 
-    plm_timer_start (&timer);
+    Plm_timer* timer = plm_timer_create ();
+    plm_timer_start (timer);
 
     memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
@@ -3025,7 +3028,8 @@ bspline_score_d_mi (
         printf ("<< MSE %3.3f >>\n", mse_score);
     }
 
-    ssd->time_smetric = plm_timer_report (&timer);
+    ssd->time_smetric = plm_timer_report (timer);
+    plm_timer_destroy (timer);
 }
 
 
@@ -3060,7 +3064,6 @@ bspline_score_c_mi (
     float dxyz[3];
     float num_vox_f;
     plm_long pidx, qidx;
-    Plm_timer timer;
     float li_1[3];           /* Fraction of interpolant in lower index */
     float li_2[3];           /* Fraction of interpolant in upper index */
     float m_val;
@@ -3080,7 +3083,8 @@ bspline_score_c_mi (
     }
 #endif
 
-    plm_timer_start (&timer);
+    Plm_timer* timer = plm_timer_create ();
+    plm_timer_start (timer);
 
     memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
@@ -3270,5 +3274,6 @@ bspline_score_c_mi (
 
     mse_score = mse_score / ssd->num_vox;
 
-    ssd->time_smetric = plm_timer_report (&timer);
+    ssd->time_smetric = plm_timer_report (timer);
+    plm_timer_destroy (timer);
 }

@@ -12,7 +12,6 @@
 #include "demons_misc.h"
 #include "demons_opts.h"
 #include "demons_state.h"
-#include "plm_timer.h"
 #include "volume.h"
 
 Demons_state::Demons_state (void)

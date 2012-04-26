@@ -13,6 +13,7 @@
 #endif
 
 #include "plmbase.h"
+#include "plmsys.h"
 
 #include "drr.h"
 #include "drr_cuda.h"
@@ -20,7 +21,6 @@
 #include "drr_opts.h"
 #include "drr_trilin.h"
 #include "math_util.h"
-#include "plm_timer.h"
 #include "proj_image.h"
 #include "proj_matrix.h"
 #include "delayload.h"
@@ -113,7 +113,7 @@ create_matrix_and_drr (
 	options->vup[1],
 	options->vup[2] };
     double sid = options->sid;
-    Plm_timer timer;
+    Plm_timer* timer = plm_timer_create ();
 
     /* Set ic = image center (in pixels), and ps = pixel size (in mm)
        Note: pixels are numbered from 0 to ires-1 */
@@ -149,10 +149,12 @@ create_matrix_and_drr (
 	proj_image_save (proj, 0, mat_fn);
     } else {
 	drr_render_volume_perspective (proj, vol, ps, dev_state, options);
-	plm_timer_start (&timer);
+	plm_timer_start (timer);
 	proj_image_save (proj, img_fn, mat_fn);
-	printf ("I/O time: %f sec\n", plm_timer_report (&timer));
+	printf ("I/O time: %f sec\n", plm_timer_report (timer));
     }
+
+    plm_timer_destroy (timer);
 }
 
 /* All distances in mm */
@@ -161,7 +163,6 @@ drr_render_volume (Volume* vol, Drr_options* options)
 {
     Proj_image *proj;
     int a;
-    Plm_timer timer;
     void *dev_state = 0;
 
     /* tgt is isocenter */
@@ -170,7 +171,8 @@ drr_render_volume (Volume* vol, Drr_options* options)
 	options->isocenter[1],
 	options->isocenter[2] };
 
-    plm_timer_start (&timer);
+    Plm_timer* timer = plm_timer_create ();
+    plm_timer_start (timer);
 
     /* Allocate data for image and matrix */
     proj = new Proj_image;
@@ -226,7 +228,9 @@ drr_render_volume (Volume* vol, Drr_options* options)
 
     free_gpu_memory (dev_state, options);
 
-    printf ("Total time: %g secs\n", plm_timer_report (&timer));
+    printf ("Total time: %g secs\n", plm_timer_report (timer));
+
+    plm_timer_destroy (timer);
 }
 
 void

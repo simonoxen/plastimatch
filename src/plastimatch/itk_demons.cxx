@@ -19,7 +19,6 @@
 #include "itk_image.h"
 #include "itk_resample.h"
 #include "plm_parms.h"
-#include "plm_timer.h"
 #include "registration_data.h"
 #include "xform.h"
 
@@ -37,14 +36,18 @@ public:
     itkNewMacro (Demons_Observer);
 
 public:
-    Plm_timer timer;
+    Plm_timer* timer;
     int m_feval;
 
 protected:
     Demons_Observer() {
-	plm_timer_start (&timer);
-	m_feval = 0;
+        this->timer = plm_timer_create ();
+        plm_timer_start (this->timer);
+        m_feval = 0;
     };
+    ~Demons_Observer () {
+        plm_timer_destroy (this->timer);
+    }
 
 public:
     void Execute(itk::Object *caller, const itk::EventObject & event)
@@ -57,11 +60,11 @@ public:
 	const DemonsFilterType * filter =
 	    dynamic_cast< const DemonsFilterType* >(object);
 	double val = filter->GetMetric();
-	double duration = plm_timer_report (&timer);
+	double duration = plm_timer_report (timer);
 	if (typeid(event) == typeid(itk::IterationEvent)) {
 	    logfile_printf ("MSE [%4d] %9.3f [%6.3f secs]\n", 
 		m_feval, val, duration);
-	    plm_timer_start (&timer);
+	    plm_timer_start (timer);
 	    m_feval++;
 	}
 	else {

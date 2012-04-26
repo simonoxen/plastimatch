@@ -8,7 +8,8 @@
 #if (OPENMP_FOUND)
 #include <omp.h>
 #endif
-#include "plm_timer.h"
+
+#include "plmsys.h"
 
 #define LOOP1 2000
 #define LOOP2 20000
@@ -87,21 +88,23 @@ speedtest_openmp_2 (double output[LOOP1], double input[LOOP1])
 int
 main (int argc, char* argv[])
 {
-    Plm_timer timer;
+    Plm_timer* timer = plm_timer_create ();
 
     double input[LOOP1], output[LOOP1];
 
 #if (OPENMP_FOUND)
     display_num_threads ();
     initialize_vector (input);
-    plm_timer_start (&timer);
+    plm_timer_start (timer);
     speedtest_openmp_1 (output, input);
-    printf ("Time [openmp] = %f seconds\n", plm_timer_report (&timer));
+    printf ("Time [openmp] = %f seconds\n", plm_timer_report (timer));
 
     initialize_vector (input);
-    plm_timer_start (&timer);
+    plm_timer_start (timer);
     speedtest_openmp_2 (output, input);
-    printf ("Time [serial] = %f seconds\n", plm_timer_report (&timer));
+    printf ("Time [serial] = %f seconds\n", plm_timer_report (timer));
+
+    plm_timer_destroy ();
 
 #else
     printf ("Sorry, openmp was not supported by your compiler\n");

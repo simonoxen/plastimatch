@@ -11,7 +11,6 @@
 #include "compiler_warnings.h"
 #include "hnd_io.h"
 #include "math_util.h"
-#include "plm_timer.h"
 
 #define HND_INTENSITY_MAX (139000)
 

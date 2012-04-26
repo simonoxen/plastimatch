@@ -12,7 +12,6 @@
 #include "plmbase.h"
 
 #include "math_util.h"
-#include "plm_timer.h"
 #include "ray_trace_uniform.h"
 #include "volume.h"
 

@@ -17,7 +17,6 @@
 #include "math_util.h"
 #include "opencl_util.h"
 #include "opencl_util_nvidia.h"
-#include "plm_timer.h"
 #include "proj_image.h"
 #include "proj_matrix.h"
 #include "volume.h"
@@ -246,7 +245,7 @@ void create_matrix_and_drr_cl (
 	Proj_matrix *pmat = proj->pmat;
 	double vup[3] = { options->vup[0], options->vup[1], options->vup[2] };
 	double sid = options->sid;
-	Timer timer;
+	Plm_timer* timer = plm_timer_create ();
 
 	/* Set ic = image center (in pixels), and ps = pixel size (in mm)
 	   Note: pixels are numbered from 0 to ires-1 */
@@ -275,9 +274,10 @@ void create_matrix_and_drr_cl (
 
 	drr_render_volume_perspective_cl(proj, vol, ps, options, img_size, float3_size, g_dev_vol, g_dev_img, c_vol_dim, c_img_dim, c_offset, c_pix_spacing, c_vol_limits, c_p1, c_ul_room, c_incr_r, c_incr_c, c_pixel_device, drr_kernel, drr_total, img_total, drr_global_work_size, drr_local_work_size, pixels_per_device, pixel_offset, img_size_device);
 
-	plm_timer_start(&timer);
+	plm_timer_start(timer);
 	proj_image_save(proj, img_fn, mat_fn);
-	printf("I/O time: %f sec\n", plm_timer_report(&timer));
+	printf("I/O time: %f sec\n", plm_timer_report(timer));
+    plm_timer_destroy (timer);
 }
 
 #endif /* commentout */
@@ -339,7 +339,7 @@ void drr_opencl_render_volume (
 
     Proj_image *proj;
     Proj_matrix *pmat;
-    Timer timer;
+    Plm_timer timer = plm_timer_create ();
 
 #if defined (commentout)
     /* Initialize timers */
@@ -515,7 +515,7 @@ void drr_opencl_render_volume (
     /* tgt is isocenter */
     double tgt[3] = { options->isocenter[0], options->isocenter[1], options->isocenter[2] };
 
-    plm_timer_start(&timer);
+    plm_timer_start (timer);
 
     /* Allocate data for image and matrix */
     proj = proj_image_create();
@@ -620,6 +620,7 @@ void drr_opencl_render_volume (
 
     shrLog("Done DRR_OPENCL...\n\n");
     shrLog("Total OpenCL run time: %f s\n", overall_runtime);
-    printf("Total run time: %g s\n", plm_timer_report(&timer));
+    printf("Total run time: %g s\n", plm_timer_report(timer));
+    plm_timer_destroy (timer);
 #endif /* commentout */
 }

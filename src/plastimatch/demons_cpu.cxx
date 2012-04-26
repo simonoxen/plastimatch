@@ -8,10 +8,10 @@
 #include <math.h>
 
 #include "plmbase.h"
+#include "plmsys.h"
 
 #include "demons_opts.h"
 #include "demons_misc.h"
-#include "plm_timer.h"
 #include "volume.h"
 
 int
@@ -54,7 +54,6 @@ demons_c (
     float *vf_est_img, *vf_smooth_img;
     size_t inliers;
     float ssd;
-    Plm_timer timer, it_timer;
 
     /* Allocate memory for vector fields */
     if (vf_init) {
@@ -102,8 +101,11 @@ demons_c (
 	f2ms[i] = fixed->spacing[i] / moving->spacing[i];
     }
 
-    plm_timer_start (&timer);
-    plm_timer_start (&it_timer);
+    Plm_timer* timer = plm_timer_create ();
+    Plm_timer* it_timer = plm_timer_create ();
+
+    plm_timer_start (timer);
+    plm_timer_start (it_timer);
 
     /* Main loop through iterations */
     for (it = 0; it < parms->max_its; it++) {
@@ -158,10 +160,10 @@ demons_c (
 	vf_convolve_z (vf_smooth, vf_est, kerz, fw[2]);
 	//vf_print_stats (vf_smooth);
 
-	double duration = plm_timer_report (&it_timer);
+	double duration = plm_timer_report (it_timer);
 	printf ("MSE [%4d] %.01f (%.03f) [%6.3f secs]\n", it, ssd/inliers, 
 	    ((float) inliers / fixed->npix), duration);
-	plm_timer_start (&it_timer);
+	plm_timer_start (it_timer);
     }
 
     free (kerx);
@@ -170,9 +172,12 @@ demons_c (
     delete vf_est;
     delete m_grad_mag;
 
-    diff_run = plm_timer_report (&timer);
+    diff_run = plm_timer_report (timer);
     printf ("Time for %d iterations = %f (%f sec / it)\n", 
 	parms->max_its, diff_run, diff_run / parms->max_its);
+
+    plm_timer_destroy (timer);
+    plm_timer_destroy (it_timer);
 
     return vf_smooth;
 }

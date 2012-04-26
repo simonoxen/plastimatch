@@ -23,7 +23,6 @@
 #include "math_util.h"
 #include "proj_image.h"
 #include "proj_image_dir.h"
-#include "plm_timer.h"
 #include "delayload.h"
 
 int 

@@ -4,6 +4,9 @@
 #include "plm_config.h"
 #include <stdlib.h>
 #include <stdio.h>
+
+#include "plmsys.h"
+
 #include "compiler_warnings.h"
 #include "plm_timer.h"
 
@@ -21,6 +24,18 @@ plm_timer_get_time (Plm_timer *timer)
     UNUSED_VARIABLE (rc);
     return ((double) tv.tv_sec) + ((double) tv.tv_usec) / 1000000.;
 #endif
+}
+
+Plm_timer*
+plm_timer_create ()
+{
+    return new Plm_timer;
+}
+
+void
+plm_timer_destroy (Plm_timer *timer)
+{
+    delete timer;
 }
 
 void

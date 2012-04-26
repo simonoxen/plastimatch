@@ -15,7 +15,6 @@
 #include "drr_opts.h"
 #include "math_util.h"
 #include "opencl_util.h"
-#include "plm_timer.h"
 #include "proj_image.h"
 #include "proj_matrix.h"
 #include "volume.h"

@@ -26,7 +26,6 @@
 #include "bspline_opts.h"
 #include "interpolate.h"
 #include "math_util.h"
-#include "plm_timer.h"
 #include "volume.h"
 #include "volume_macros.h"
 #include "bspline_macros.h"
@@ -67,7 +66,7 @@ bspline_score_h_mse (
 
     plm_long idx_tile;
 
-    Plm_timer timer;
+    Plm_timer *timer = plm_timer_create();
 
     plm_long cond_size = 64*bxf->num_knots*sizeof(float);
     float* cond_x = (float*)malloc(cond_size);
@@ -77,7 +76,7 @@ bspline_score_h_mse (
     int i;
 
     // Start timing the code
-    plm_timer_start (&timer);
+    plm_timer_start (timer);
 
     // Zero out accumulators
     ssd->smetric = 0;
@@ -232,7 +231,8 @@ bspline_score_h_mse (
         ssd->grad[i] = 2 * ssd->grad[i] / ssd->num_vox;
     }
 
-    ssd->time_smetric = plm_timer_report (&timer);
+    ssd->time_smetric = plm_timer_report (timer);
+    plm_timer_destroy (timer);
 }
 
 
@@ -270,7 +270,7 @@ bspline_score_g_mse (
 
     int idx_tile;
 
-    Plm_timer timer;
+    Plm_timer* timer = plm_timer_create ();
 
     plm_long cond_size = 64*bxf->num_knots*sizeof(float);
     float* cond_x = (float*)malloc(cond_size);
@@ -280,7 +280,7 @@ bspline_score_g_mse (
     int i;
 
     // Start timing the code
-    plm_timer_start (&timer);
+    plm_timer_start (timer);
 
     // Zero out accumulators
     int num_vox = 0;
@@ -436,7 +436,8 @@ bspline_score_g_mse (
     }
 
     /* Save for reporting */
-    ssd->time_smetric = plm_timer_report (&timer);
+    ssd->time_smetric = plm_timer_report (timer);
+    plm_timer_destroy (timer);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -476,7 +477,6 @@ bspline_score_c_mse (
     float* m_grad = (float*) moving_grad->img;
     float dxyz[3];
     plm_long pidx, qidx;
-    Plm_timer timer;
     float m_val;
 
     /* GCS: Oct 5, 2009.  We have determined that sequential accumulation
@@ -493,7 +493,8 @@ bspline_score_c_mse (
         fp = fopen (debug_fn, "wb");
     }
 
-    plm_timer_start (&timer);
+    Plm_timer* timer = plm_timer_create ();
+    plm_timer_start (timer);
 
     ssd->num_vox = 0;
     ssd->smetric = 0.0f;
@@ -581,7 +582,8 @@ bspline_score_c_mse (
         ssd->grad[i] = 2 * ssd->grad[i] / ssd->num_vox;
     }
 
-    ssd->time_smetric = plm_timer_report (&timer);
+    ssd->time_smetric = plm_timer_report (timer);
+    plm_timer_destroy (timer);
 }
 
 /* -----------------------------------------------------------------------
@@ -621,7 +623,6 @@ bspline_score_i_mse (
     float* m_img = (float*) moving->img;
     float* m_grad = (float*) moving_grad->img;
     float dxyz[3];
-    Plm_timer timer;
     float m_val;
 
     /* GCS: Oct 5, 2009.  We have determined that sequential accumulation
@@ -646,7 +647,8 @@ bspline_score_i_mse (
         it ++;
     }
 
-    plm_timer_start (&timer);
+    Plm_timer* timer = plm_timer_create ();
+    plm_timer_start (timer);
 
     ssd->num_vox = 0;
     ssd->smetric = 0.0f;
@@ -740,5 +742,6 @@ bspline_score_i_mse (
         ssd->grad[i] = 2 * ssd->grad[i] / ssd->num_vox;
     }
 
-    ssd->time_smetric = plm_timer_report (&timer);
+    ssd->time_smetric = plm_timer_report (timer);
+    plm_timer_destroy (timer);
 }

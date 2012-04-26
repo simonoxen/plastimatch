@@ -11,6 +11,7 @@
 #include "plm_int.h"
 #include "plm_path.h"
 
+class Plm_timer;
 typedef struct dir_list Dir_list;
 
 /* dir_list.cxx */
@@ -65,6 +66,12 @@ API char* file_util_parent (const char *filename);
 API char* plm_getcwd (char* s, int len);
 API int plm_chdir (char* s);
 API int plm_get_dir_list (const char*** f_list);
+
+/* plm_timer.cxx */
+API Plm_timer* plm_timer_create ();
+API void plm_timer_destroy (Plm_timer *timer);
+API double plm_timer_report (Plm_timer *timer);
+API void plm_timer_start (Plm_timer *timer);
 
 
 #endif

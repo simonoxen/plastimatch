@@ -89,7 +89,7 @@
 
    ============================================================ */
 #include "plm_config.h"
-#include "plm_timer.h"
+#include "plmsys.h"
 #include "opencl_test.h"
 
 /*
@@ -628,8 +628,8 @@ void print1DArray(
 int 
 main(int argc, char * argv[])
 {
-    Plm_timer timer;
-    plm_timer_start (&timer);
+    Plm_timer* timer = plm_timer_create ();
+    plm_timer_start (timer);
 
     // Initialize Host application 
     if(initializeHost()==1)
@@ -639,13 +639,15 @@ main(int argc, char * argv[])
     if(initializeCL()==1)
 	return 1;
 
-    printf ("Initialization: %f seconds\n", plm_timer_report (&timer));
+    printf ("Initialization: %f seconds\n", plm_timer_report (timer));
 
     // Run the CL program
-    plm_timer_start (&timer);
+    plm_timer_start (timer);
     if(runCLKernels()==1)
 	return 1;
-    printf ("Run kernel: %f seconds\n", plm_timer_report (&timer));
+    printf ("Run kernel: %f seconds\n", plm_timer_report (timer));
+
+    plm_timer_destroy (timer);
 
     // Print output array
     print1DArray(std::string("Output"), output, width);

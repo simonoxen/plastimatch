@@ -15,7 +15,6 @@
 #include "bspline_opts.h"
 #include "bspline_regularize_numeric.h"
 #include "math_util.h"
-#include "plm_timer.h"
 #include "volume_macros.h"
 
 /* Prototypes */
@@ -34,8 +33,6 @@ vf_regularize_numerical (
 #if defined (DEBUG)
     FILE* fp[3];
 #endif
-
-    Plm_timer timer;
 
     plm_long i, j, k;
     int c;
@@ -102,7 +99,8 @@ vf_regularize_numerical (
     printf ("  d2uz_dxy_sq.txt\n"); fp[2] = fopen ("d2uz_dxdy_sq.txt", "w");
 #endif
 
-    plm_timer_start (&timer);
+    Plm_timer* timer = plm_timer_create ();
+    plm_timer_start (timer);
 
     S = 0.0f;
     for (k = 1; k < vol->dim[2]-1; k++) {
@@ -304,7 +302,8 @@ vf_regularize_numerical (
 #endif
 
     bscore->rmetric += S;
-    bscore->time_rmetric = plm_timer_report (&timer);
+    bscore->time_rmetric = plm_timer_report (timer);
+    plm_timer_destroy (timer);
 }
 
 void
@@ -766,7 +765,6 @@ bspline_regularize_numeric_d (
     plm_long q[3];
     plm_long qidx;
     plm_long num_vox;
-    Plm_timer timer;
     //double interval;
     float grad_coeff;
     //float raw_score;
@@ -775,7 +773,8 @@ bspline_regularize_numeric_d (
     num_vox = bxf->roi_dim[0] * bxf->roi_dim[1] * bxf->roi_dim[2];
     grad_coeff = parms->lambda / num_vox;
 
-    plm_timer_start (&timer);
+    Plm_timer* timer = plm_timer_create ();
+    plm_timer_start (timer);
 
     bscore->rmetric = 0.;
 
@@ -837,7 +836,7 @@ bspline_regularize_numeric_d (
 	    }
 	}
 
-	bscore->time_rmetric = plm_timer_report (&timer);
+	bscore->time_rmetric = plm_timer_report (timer);
 	//raw_score = grad_score / num_vox;
 	grad_score *= (parms->lambda / num_vox);
 	//printf ("        GRAD_COST %.4f   RAW_GRAD %.4f   [%.3f secs]\n", grad_score, raw_score, interval);
@@ -845,6 +844,7 @@ bspline_regularize_numeric_d (
 	bscore->rmetric += grad_score;
     }
     //printf ("SCORE=%.4f\n", bscore->score);
+    plm_timer_destroy (timer);
 }
 
 void

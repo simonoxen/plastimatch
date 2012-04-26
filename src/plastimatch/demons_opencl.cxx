@@ -12,7 +12,6 @@
 #include "demons_opts.h"
 #include "demons_misc.h"
 #include "opencl_util.h"
-#include "plm_timer.h"
 #include "volume.h"
 #include "demons_opencl_p.h"
 
@@ -38,7 +37,7 @@ demons_opencl (
     char device_name[256];	/* Device names */
     char *source_path, *source;
     Volume *vf_est, *vf_smooth;
-    Plm_timer timer;
+    Plm_timer* timer = plm_timer_create ();
 
     /* Declare global memory */
     cl_mem g_moving_grad_x, g_moving_grad_y, g_moving_grad_z;
@@ -451,7 +450,7 @@ demons_opencl (
     int half_width_y = fw[1] / 2;
     int half_width_z = fw[2] / 2;
 
-    plm_timer_start (&timer);
+    plm_timer_start (timer);
 
     /* Set kernel arguments */
     error |= clSetKernelArg(estimate_kernel, 0, sizeof(cl_mem), (void *) &g_vf_est_x_img);
@@ -736,7 +735,7 @@ demons_opencl (
      * STEP 3: Print statistics										* 
      ****************************************************************/
 
-    diff_run = plm_timer_report (&timer);
+    diff_run = plm_timer_report (timer);
     printf ("Time for %d iterations = %f (%f sec / it)\n", parms->max_its, diff_run, diff_run / parms->max_its);
 
     shrLog("\n");
@@ -812,6 +811,8 @@ demons_opencl (
 
     shrLog("Done Demons OpenCL...\n\n");
 	
+    plm_timer_destroy (timer);
+
     /****************************************************************/
 
     return vf_smooth;
