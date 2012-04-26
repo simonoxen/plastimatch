@@ -7,7 +7,8 @@
 #include <string.h>
 #include <math.h>
 
-#include "interpolate.h"
+#include "plmbase.h"
+
 #include "plm_math.h"
 #include "volume.h"
 

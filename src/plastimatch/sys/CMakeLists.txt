@@ -26,7 +26,6 @@ set (PLMSYS_LIBRARY_SRC
   print_and_exit.c
   pstring.h
   string_util.cxx string_util.h
-  interpolate.cxx interpolate.h
   )
 
 plm_add_library (

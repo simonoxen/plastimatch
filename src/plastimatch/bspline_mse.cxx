@@ -24,11 +24,12 @@
 #include "bspline_mse.h"
 #include "bspline_optimize.h"
 #include "bspline_opts.h"
-#include "interpolate.h"
 #include "plm_math.h"
 #include "volume.h"
 #include "volume_macros.h"
 #include "bspline_macros.h"
+
+#include "interpolate.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // FUNCTION: bspline_score_h_mse()

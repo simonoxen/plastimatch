@@ -47,12 +47,12 @@
 #include "bspline_optimize.h"
 #include "bspline_optimize_lbfgsb.h"
 #include "bspline_opts.h"
-#include "interpolate.h"
 #include "plm_math.h"
 
 /* EXTERNAL DEPENDS */
 #include "bspline_xform.h"
 #include "delayload.h"
+#include "interpolate.h"
 #include "volume.h"
 #include "volume_macros.h"
 

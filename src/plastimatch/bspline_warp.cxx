@@ -17,10 +17,11 @@
 #include "bspline.h"
 #include "bspline_macros.h"
 #include "bspline_warp.h"
-#include "interpolate.h"
 #include "plm_math.h"
 #include "volume.h"
 #include "volume_macros.h"
+
+#include "interpolate.h"
 
 /* This only warps voxels within the ROI.  If you need the whole 
    image, call bspline_xform_extend. */
