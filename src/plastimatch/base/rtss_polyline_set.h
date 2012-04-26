@@ -4,7 +4,7 @@
 #ifndef _rtss_polyline_set_h_
 #define _rtss_polyline_set_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include <list>
 #include <vector>
 

@@ -4,7 +4,7 @@
 #ifndef _itk_volume_header_h_
 #define _itk_volume_header_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include "xform.h"
 #include "volume.h"
 #include "itk_image.h"

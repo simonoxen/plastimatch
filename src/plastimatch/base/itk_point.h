@@ -4,7 +4,7 @@
 #ifndef _itk_point_h_
 #define _itk_point_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include <vector>
 #include "itkPoint.h"
 #include "itkVector.h"

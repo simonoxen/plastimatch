@@ -18,7 +18,7 @@
 #ifndef _gdcm1_series_helper_
 #define _gdcm1_series_helper_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include "gdcmCommon.h" 
 #include "gdcmDebug.h"  // for LEGACY
  

@@ -4,7 +4,7 @@
 #ifndef _xio_plan_h_
 #define _xio_plan_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 
 plastimatch1_EXPORT 
 void

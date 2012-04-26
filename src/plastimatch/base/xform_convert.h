@@ -4,7 +4,7 @@
 #ifndef _xform_convert_h_
 #define _xform_convert_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include "volume_header.h"
 #include "xform.h"
 

@@ -4,7 +4,7 @@
 #ifndef _xio_ct_h_
 #define _xio_ct_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include "plm_image.h"
 #include "slice_index.h"
 #include "xio_studyset.h"

@@ -4,7 +4,7 @@
 #ifndef _mc_dose_h_
 #define _mc_dose_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include "plm_image.h"
 #include "xio_ct.h"
 

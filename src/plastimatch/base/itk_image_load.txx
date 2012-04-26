@@ -4,7 +4,7 @@
 #ifndef _itk_image_load_txx_
 #define _itk_image_load_txx_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include "plmsys.h"
 #include "itkImage.h"
 #include "itkCastImageFilter.h"

@@ -4,7 +4,7 @@
 #ifndef _slice_index_h_
 #define _slice_index_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include <vector>
 #include "metadata.h"
 #include "plm_image_header.h"

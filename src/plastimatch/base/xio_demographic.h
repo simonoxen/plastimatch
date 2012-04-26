@@ -4,7 +4,7 @@
 #ifndef _xio_demographic_h_
 #define _xio_demographic_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include "pstring.h"
 
 class Xio_demographic

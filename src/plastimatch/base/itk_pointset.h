@@ -4,7 +4,7 @@
 #ifndef _itk_pointset_h_
 #define _itk_pointset_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include "itkPointSet.h"
 #include "itkDefaultStaticMeshTraits.h"
 

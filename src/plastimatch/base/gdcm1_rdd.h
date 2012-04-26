@@ -4,7 +4,7 @@
 #ifndef _gdcm1_rdd_h_
 #define _gdcm1_rdd_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #if GDCM_VERSION_1
 
 class Slice_index;

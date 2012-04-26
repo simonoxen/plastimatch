@@ -4,7 +4,7 @@
 #ifndef _volume_header_h_
 #define _volume_header_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include "direction_cosines.h"
 
 class Bspline_xform;

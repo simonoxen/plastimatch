@@ -4,7 +4,7 @@
 #ifndef _direction_cosines_h_
 #define _direction_cosines_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include <string>
 #include <stdio.h>
 #include "plm_math.h"

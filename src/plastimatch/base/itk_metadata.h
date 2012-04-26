@@ -4,7 +4,7 @@
 #ifndef _itk_metadata_h_
 #define _itk_metadata_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 
 /* -----------------------------------------------------------------------
    Function prototypes

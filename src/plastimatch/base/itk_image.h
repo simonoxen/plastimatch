@@ -4,7 +4,7 @@
 #ifndef _itk_image_h_
 #define _itk_image_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 
 #include "plmsys.h"
 

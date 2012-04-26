@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,7 +12,7 @@
 
 #include "interpolate_macros.h"
 #include "plm_math.h"
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include "volume.h"
 #include "volume_macros.h"
 

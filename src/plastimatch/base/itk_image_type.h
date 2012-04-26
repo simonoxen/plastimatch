@@ -4,7 +4,7 @@
 #ifndef _itk_image_type_h_
 #define _itk_image_type_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include "itkImage.h"
 #include "itkImageIOBase.h"
 #if (PLM_ITK_ORIENTED_IMAGES)

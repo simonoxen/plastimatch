@@ -4,7 +4,7 @@
 #ifndef _gdcm1_util_h_
 #define _gdcm1_util_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #if GDCM_VERSION_1
 
 class Metadata;

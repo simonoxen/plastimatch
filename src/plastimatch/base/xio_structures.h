@@ -4,7 +4,7 @@
 #ifndef _xio_structures_h_
 #define _xio_structures_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include "cxt_io.h"
 #include "metadata.h"
 #include "xio_ct.h"

@@ -4,7 +4,7 @@
 #ifndef _plm_image_h_
 #define _plm_image_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include "itk_image.h"
 #include "metadata.h"
 #include "plm_image_type.h"

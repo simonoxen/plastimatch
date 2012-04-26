@@ -4,7 +4,7 @@
 #ifndef _pointset_h_
 #define _pointset_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include <string>
 #include <vector>
 

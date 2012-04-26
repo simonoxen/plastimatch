@@ -4,7 +4,7 @@
 /* -----------------------------------------------------------------------
    Analyze a vector field for invertibility, smoothness.
    ----------------------------------------------------------------------- */
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

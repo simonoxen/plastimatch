@@ -4,7 +4,7 @@
 #ifndef _plm_file_format_h_
 #define _plm_file_format_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 
 enum Plm_file_format {
     PLM_FILE_FMT_NO_FILE,

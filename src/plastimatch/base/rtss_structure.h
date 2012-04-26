@@ -4,7 +4,7 @@
 #ifndef _rtss_structure_h_
 #define _rtss_structure_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include "bstrwrap.h"
 #include "plm_image.h"
 #include "plm_image_header.h"

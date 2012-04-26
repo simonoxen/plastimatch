@@ -4,7 +4,7 @@
 #ifndef _thumbnail_h_
 #define _thumbnail_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include "itk_image.h"
 #include "plm_image.h"
 

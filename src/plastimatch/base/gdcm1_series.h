@@ -4,7 +4,7 @@
 #ifndef _gdcm1_series_h_
 #define _gdcm1_series_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include <map>
 #include <list>
 #include <vector>

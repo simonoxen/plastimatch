@@ -4,7 +4,7 @@
 #ifndef _xio_dir_h
 #define _xio_dir_h
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include <vector>
 #include "xio_patient.h"
 

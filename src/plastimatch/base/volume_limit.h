@@ -4,7 +4,7 @@
 #ifndef _volume_limit_h_
 #define _volume_limit_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include "volume.h"
 
 typedef struct volume_limit Volume_limit;

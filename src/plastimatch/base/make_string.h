@@ -4,7 +4,7 @@
 #ifndef _make_string_h_
 #define _make_string_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include <iomanip>
 #include <sstream>
 

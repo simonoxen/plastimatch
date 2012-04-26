@@ -4,7 +4,7 @@
 #ifndef _itk_image_convert_h_
 #define _itk_image_convert_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include "itk_image.h"
 
 template<class T, class U> 

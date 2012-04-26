@@ -2,7 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include <time.h>
-#include "plm_config.h"
+#include "plmbase_config.h"
 
 #include "plmsys.h"
 

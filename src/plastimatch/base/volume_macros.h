@@ -4,7 +4,7 @@
 #ifndef _volume_macros_h_
 #define _volume_macros_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include "plmsys.h"
 
 /* -----------------------------------------------------------------------

@@ -4,7 +4,7 @@
 #ifndef _xform_h_
 #define _xform_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include "itkTranslationTransform.h"
 #include "itkVersorRigid3DTransform.h"
 #include "itkQuaternionRigidTransform.h"

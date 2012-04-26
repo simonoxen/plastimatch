@@ -4,7 +4,7 @@
 #ifndef _rpl_volume_h_
 #define _rpl_volume_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include "proj_matrix.h"
 #include "volume.h"
 

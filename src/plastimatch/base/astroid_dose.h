@@ -4,7 +4,7 @@
 #ifndef _astroid_dose_h_
 #define _astroid_dose_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include "xio_ct.h"
 
 class Metadata;

@@ -4,7 +4,7 @@
 #ifndef _hnd_io_h_
 #define _hnd_io_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 
 #include "plmsys.h"
 

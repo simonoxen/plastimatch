@@ -4,7 +4,7 @@
 #ifndef _xform_point_h_
 #define _xform_point_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 
 #include "xform.h"
 

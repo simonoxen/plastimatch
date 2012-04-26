@@ -4,7 +4,7 @@
 #ifndef _dcm_util_h_
 #define _dcm_util_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include <string>
 
 class Slice_index;

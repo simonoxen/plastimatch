@@ -4,7 +4,7 @@
 #ifndef _plm_image_header_h_
 #define _plm_image_header_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include "direction_cosines.h"
 #include "itk_image.h"
 #include "volume.h"
