@@ -214,7 +214,7 @@ endif ()
 if (FFTW_FOUND)
   set (GPUIT_LIBRARY_SRC
     ${GPUIT_LIBRARY_SRC}
-    ramp_filter.c ramp_filter.h
+    ramp_filter.cxx ramp_filter.h
    )
 endif ()
 
