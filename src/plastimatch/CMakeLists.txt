@@ -36,6 +36,7 @@ option (PLM_USE_SS_IMAGE_VEC
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 # JAS 2012.04.25 !!!!!!!!!!! TEMPORARY !!!!!!!!!!!!!!!!!!!!!!
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/base)
+include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/cli)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/sys)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/util)
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -313,7 +314,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   itk_warp.cxx itk_warp.h 
   landmark_warp.cxx landmark_warp.h 
   landmark_diff.cxx landmark_diff.h
-  pcmd_diff.cxx pcmd_diff.h
   plm_clp.cxx plm_clp.h
   plm_drr_api.cxx plm_drr_api.h 
   plm_parms.cxx plm_parms.h 
@@ -473,39 +473,6 @@ if (QT4_FOUND)
       lua_tty_preview.cxx lua_tty_preview.h
     )
 endif ()
-set (PLASTIMATCH_SRC
-  pcmd_add.cxx pcmd_add.h
-  pcmd_adjust.cxx pcmd_adjust.h
-  pcmd_autolabel_train.cxx pcmd_autolabel_train.h
-  pcmd_autolabel.cxx pcmd_autolabel.h
-  pcmd_compare.cxx pcmd_compare.h
-  pcmd_compose.cxx pcmd_compose.h
-  pcmd_crop.cxx pcmd_crop.h
-  pcmd_diff.cxx pcmd_diff.h
-  pcmd_drr.cxx pcmd_drr.h 
-  pcmd_dvh.cxx pcmd_dvh.h
-  pcmd_header.cxx pcmd_header.h
-  pcmd_mask.cxx pcmd_mask.h
-  pcmd_probe.cxx pcmd_probe.h
-  pcmd_resample.cxx pcmd_resample.h
-  pcmd_segment.cxx pcmd_segment.h
-  pcmd_stats.cxx pcmd_stats.h
-  pcmd_synth.cxx pcmd_synth.h
-  pcmd_synth_vf.cxx pcmd_synth_vf.h
-  pcmd_thumbnail.cxx pcmd_thumbnail.h 
-  pcmd_warp.cxx pcmd_warp.h 
-  pcmd_warp_dij.cxx 
-  pcmd_warp_pointset.cxx 
-  pcmd_xio_dvh.cxx pcmd_xio_dvh.h
-  pcmd_xf_convert.cxx pcmd_xf_convert.h 
-  plastimatch_main.cxx
-  )
-if (PLM_CONFIG_ENABLE_LUA)
-  set (PLASTIMATCH_SRC
-    ${PLASTIMATCH_SRC}
-    ${LUA_INTERFACE_SRC}
-    )
-endif()
 set (PLASTIMATCH_SLICER_BSPLINE_SRC
   plastimatch_slicer_bspline.cxx
   )
@@ -761,9 +728,6 @@ if (FULL_PLASTIMATCH_BUILD)
   plm_add_executable (mha_to_rtog_dose "${MHA_TO_RTOG_DOSE_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-  plm_add_executable (plastimatch "${PLASTIMATCH_SRC}"
-    "${PLASTIMATCH_LIBS}" "${PLMCUDA_EXE_LDFLAGS}" 
-    ${BUILD_ALWAYS} ${INSTALL_ALWAYS})
   if (QT4_FOUND)
     set (CRYSTALVIEW_LIBRARIES ${PLASTIMATCH_LIBS} 
       ${QT_LIBRARIES} ${QT_QTSQL_LIBRARIES})
@@ -1058,6 +1022,7 @@ endif ()
 
 # plastimatch libraries
 add_subdirectory(base)
+add_subdirectory(cli)
 add_subdirectory(standalone)
 add_subdirectory(sys)
 add_subdirectory(util)

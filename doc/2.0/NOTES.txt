@@ -53,6 +53,12 @@ TODOS
             pstring     AND
             bstring
 
+  DEAL with dice_stats_main.cxx calling
+            a parms class defined in
+            pcmd_resample.h, which should
+            definately be defined somewhere
+            else if it is going to be shared.
+
   ADD math_util.h to plmsys.h
 
   RENAME plm_int.h  ->  plm_types.h

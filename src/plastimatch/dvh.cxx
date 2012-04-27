@@ -12,7 +12,6 @@
 #include "dvh.h"
 #include "itk_image.h"
 #include "make_string.h"
-#include "pcmd_dvh.h"
 #include "plm_image.h"
 #include "rtds.h"
 #include "rtss.h"
