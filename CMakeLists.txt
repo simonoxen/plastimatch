@@ -41,6 +41,7 @@ endif ()
 ##  SETUP IMPORTANT LOCATIONS
 ##-----------------------------------------------------------------------------
 set (PLM_BUILD_ROOT "${CMAKE_CURRENT_BINARY_DIR}")
+set (PLM_SRC_ROOT   "${CMAKE_CURRENT_SOURCE_DIR}")
 
 ##-----------------------------------------------------------------------------
 ##  CMake include files

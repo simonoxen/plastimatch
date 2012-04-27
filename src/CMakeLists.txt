@@ -13,6 +13,13 @@ set (PLMBASE_LIBRARY_DEPENDENCIES
   plmsys
   )
 
+set (PLMREGISTER_LIBRARY_DEPENDENCIES 
+  ${LIBLBFGS_LIBRARIES}
+  nocedal
+  plmbase
+  plmsys
+  )
+
 set (PLMSYS_LIBRARY_DEPENDENCIES 
   bstrlib
   )
@@ -24,9 +31,8 @@ set (PLMUTIL_LIBRARY_DEPENDENCIES
 
 
 set (GPUIT_LIBRARY_DEPENDENCIES 
-  ${LIBLBFGS_LIBRARIES}
-  nocedal
   plmbase
+  plmregister
   plmsys
   plmutil
   )
@@ -102,13 +108,13 @@ endif ()
 
 # Required - your choice: fortran or f2c
 if (PLM_USE_F2C)
-  set (GPUIT_LIBRARY_DEPENDENCIES
-    ${GPUIT_LIBRARY_DEPENDENCIES}
+  set (PLMREGISTER_LIBRARY_DEPENDENCIES
+    ${PLMREGISTER_LIBRARY_DEPENDENCIES}
     ${F2C_LIBRARY}
     )
   if (UNIX)
-    set (GPUIT_LIBRARY_DEPENDENCIES
-      ${GPUIT_LIBRARY_DEPENDENCIES}
+    set (PLMREGISTER_LIBRARY_DEPENDENCIES
+      ${PLMREGISTER_LIBRARY_DEPENDENCIES}
       f2c_helper
       )
   endif ()
@@ -123,8 +129,8 @@ else ()
   message (STATUS "Fortran compiler = ${CMAKE_Fortran_COMPILER}")
   if (Fortran_COMPILER_NAME STREQUAL "gfortran" 
       OR Fortran_COMPILER_NAME STREQUAL "f95")
-    set (GPUIT_LIBRARY_DEPENDENCIES
-      ${GPUIT_LIBRARY_DEPENDENCIES}
+    set (PLMREGISTER_LIBRARY_DEPENDENCIES
+      ${PLMREGISTER_LIBRARY_DEPENDENCIES}
       gfortran
       )
   endif ()

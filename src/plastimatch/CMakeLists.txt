@@ -37,6 +37,7 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 # JAS 2012.04.25 !!!!!!!!!!! TEMPORARY !!!!!!!!!!!!!!!!!!!!!!
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/base)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/cli)
+include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/register)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/sys)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/util)
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -117,19 +118,8 @@ endif ()
 ##-----------------------------------------------------------------------------
 set (GPUIT_LIBRARY_SRC
   bowtie_correction.cxx bowtie_correction.h
-  bspline.cxx bspline.h
-  bspline_mi.cxx bspline_mi.h
-  bspline_mse.cxx bspline_mse.h
-  bspline_landmarks.cxx bspline_landmarks.h
-  bspline_optimize.cxx bspline_optimize.h
-  bspline_optimize_liblbfgs.cxx bspline_optimize_liblbfgs.h
-  bspline_optimize_lbfgsb.cxx bspline_optimize_lbfgsb.h
   bspline_optimize_nlopt.cxx bspline_optimize_nlopt.h
-  bspline_optimize_steepest.cxx bspline_optimize_steepest.h
   bspline_opts.cxx bspline_opts.h
-  bspline_regularize.cxx bspline_regularize.h
-  bspline_regularize_analytic.cxx bspline_regularize_analytic.h
-  bspline_regularize_numeric.cxx bspline_regularize_numeric.h
   demons.cxx demons.h
   demons_cpu.cxx
   demons_misc.cxx demons_misc.h
@@ -1023,6 +1013,7 @@ endif ()
 # plastimatch libraries
 add_subdirectory(base)
 add_subdirectory(cli)
+add_subdirectory(register)
 add_subdirectory(standalone)
 add_subdirectory(sys)
 add_subdirectory(util)
