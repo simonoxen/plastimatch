@@ -4,7 +4,7 @@
 #ifndef _pcmd_warp_h_
 #define _pcmd_warp_h_
 
-#include "plm_config.h"
+#include "plmcli_config.h"
 #include "warp_parms.h"
 
 void

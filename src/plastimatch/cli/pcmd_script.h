@@ -4,7 +4,7 @@
 #ifndef _pcmd_script_h_
 #define _pcmd_script_h_
 
-#include "plm_config.h"
+#include "plmcli_config.h"
 
 #include "lua.h"
 #include "lualib.h"

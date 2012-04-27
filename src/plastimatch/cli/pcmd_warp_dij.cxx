@@ -2,7 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 /*  Warp one or more dij matrices based on a vector field */
-#include "plm_config.h"
+#include "plmcli_config.h"
 #include <math.h>
 #include <time.h>
 #include "itkImage.h"

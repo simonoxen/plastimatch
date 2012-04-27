@@ -4,7 +4,7 @@
 #ifndef _pcmd_compose_h_
 #define _pcmd_compose_h_
 
-#include "plm_config.h"
+#include "plmcli_config.h"
 #include <stdlib.h>
 #include <string.h>
 #include "plm_image_type.h"

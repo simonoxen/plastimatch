@@ -4,7 +4,7 @@
 #ifndef _pcmd_crop_h_
 #define _pcmd_crop_h_
 
-#include "plm_config.h"
+#include "plmcli_config.h"
 #include <string.h>
 #include <stdlib.h>
 #include "itk_image.h"

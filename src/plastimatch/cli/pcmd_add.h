@@ -4,7 +4,7 @@
 #ifndef _pcmd_add_h_
 #define _pcmd_add_h_
 
-#include "plm_config.h"
+#include "plmcli_config.h"
 
 void do_command_add (int argc, char *argv[]);
 

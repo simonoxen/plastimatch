@@ -4,7 +4,7 @@
 #ifndef _pcmd_compare_h_
 #define _pcmd_compare_h_
 
-#include "plm_config.h"
+#include "plmcli_config.h"
 #include <string.h>
 #include <stdlib.h>
 #include "pstring.h"

@@ -4,7 +4,7 @@
 #ifndef _pcmd_autolabel_h_
 #define _pcmd_autolabel_h_
 
-#include "plm_config.h"
+#include "plmcli_config.h"
 
 void do_command_autolabel (int argc, char *argv[]);
 
