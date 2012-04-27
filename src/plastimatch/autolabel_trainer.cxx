@@ -11,6 +11,7 @@
 #include "itkImageRegionIterator.h"
 #include "itkRegularExpressionSeriesFileNames.h"
 
+#include "plmbase.h"
 #include "plmsys.h"
 
 #include "autolabel_task.h"
@@ -19,7 +20,6 @@
 #include "dlib_trainer.h"
 #include "itk_image.h"
 #include "plm_image.h"
-#include "pointset.h"
 
 Autolabel_trainer::Autolabel_trainer ()
 {

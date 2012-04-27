@@ -55,7 +55,7 @@ TODOS
 
   DEAL with dice_stats_main.cxx calling
             a parms class defined in
-            pcmd_resample.h, which should
+            pcmd_resample.h, which should most
             definately be defined somewhere
             else if it is going to be shared.
 
@@ -72,7 +72,7 @@ TODOS
 
   SPLIT rtss.*; rtss.h -> base; 
         {convert_ss_img_to_cxt, cxt_re_extract, rasterize, warp} 
-	rtss_rasterize, rtss_marching_squares, rtss_warp -> util
+  rtss_rasterize, rtss_marching_squares, rtss_warp -> util
   rtss_polyline.* -> BASE
   rtss_structure.* -> BASE
   ss_img_stats -> UTIL

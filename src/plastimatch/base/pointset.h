@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-class gpuit_EXPORT Point {
+class XAPI Point {
 public:
     Point () {}
     Point (const std::string& label, float x, float y, float z) {
@@ -30,7 +30,7 @@ public:
     }
 };
 
-class gpuit_EXPORT Labeled_point {
+class XAPI Labeled_point {
 public:
     Labeled_point () {}
     Labeled_point (const std::string& label, float x, float y, float z) {
@@ -52,7 +52,7 @@ public:
 };
 
 template<class T>
-class gpuit_EXPORT Pointset {
+class XAPI Pointset {
   public:
     std::vector<T> point_list;
   public:

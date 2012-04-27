@@ -29,6 +29,9 @@ typedef struct xpm_brush_s xpm_brush;
 typedef struct xpm_struct_s xpm_struct;
 typedef struct volume_limit Volume_limit;
 
+/* "Public for now" classes */
+#include "pointset.h"
+
 // Callback definitions 
 typedef void (*Ray_trace_callback) (
     void *callback_data, 

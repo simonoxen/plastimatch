@@ -5,8 +5,8 @@
 #define _registration_data_h_
 
 #include "plm_config.h"
+#include "plmbase.h"
 #include "itk_image.h"
-#include "pointset.h"
 
 class Plm_image;
 class Registration_parms;

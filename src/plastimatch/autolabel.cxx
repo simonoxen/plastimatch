@@ -6,6 +6,7 @@
 #include "dlib/data_io.h"
 #include "dlib/svm.h"
 
+#include "plmbase.h"
 #include "plmsys.h"
 
 #include "autolabel.h"
@@ -15,7 +16,6 @@
 #include "itk_image.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
-#include "pointset.h"
 #include "pstring.h"
 
 /* ITK typedefs */

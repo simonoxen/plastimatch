@@ -6,7 +6,6 @@
 
 #include "plm_config.h"
 #include "plmbase.h"
-#include "pointset.h"
 
 class Bspline_parms;
 class Bspline_state;

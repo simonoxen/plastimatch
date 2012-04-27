@@ -7,6 +7,8 @@
 #include "itkVectorLinearInterpolateImageFunction.h"
 #include "itkContinuousIndex.h"
 
+#include "plmbase.h"
+
 #include "pstring.h"
 #include "itk_image.h"
 #include "itk_image_load.h"
@@ -15,7 +17,6 @@
 #include "plm_file_format.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
-#include "pointset.h"
 #include "pstring.h"
 #include "string_util.h"
 

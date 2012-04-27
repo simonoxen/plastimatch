@@ -10,7 +10,6 @@
 #include "itk_image_save.h"
 #include "itk_metadata.h"
 #include "plm_warp.h"
-#include "pointset.h"
 #include "rasterizer.h"
 #include "slice_index.h"
 #include "rtds.h"

@@ -10,7 +10,6 @@
 #include "plmbase.h"
 
 #include "landmark_warp.h"
-#include "pointset.h"
 #include "volume.h"
 
 Landmark_warp::Landmark_warp (void)

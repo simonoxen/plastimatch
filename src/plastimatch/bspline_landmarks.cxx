@@ -19,7 +19,6 @@
 /* EXTERNAL DEPE#NDS */
 #include "bspline_xform.h"
 #include "plm_math.h"
-#include "pointset.h"
 
 
 #if defined (commentout)

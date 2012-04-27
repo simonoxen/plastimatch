@@ -15,7 +15,6 @@
 #include "plm_math.h"
 #include "landmark_warp.h"
 #include "plm_clp.h"
-#include "pointset.h"
 #include "pstring.h"
 #include "rbf_gauss.h"
 #include "rbf_wendland.h"
