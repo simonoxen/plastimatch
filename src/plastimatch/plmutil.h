@@ -5,8 +5,11 @@
 #define _plmutil_h_
 
 #include "plmutil_config.h"
-
 #include "plmbase.h"
+
+/* Please excuse the mess
+ *   This monolithic file is only temporary
+ */
 
 API void bspline_warp (
     Volume *vout,         /* Output image (already sized and allocated) */

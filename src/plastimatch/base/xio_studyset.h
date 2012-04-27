@@ -33,7 +33,7 @@ public:
 
     bool operator < (const Xio_studyset_slice &cmp) const
     {
-	return location < cmp.location;
+        return location < cmp.location;
     }
 };
 

@@ -55,7 +55,7 @@ typedef itk::ThinPlateSplineKernelTransform <
     double, 3 > DoubleTpsTransformType;
 typedef DoubleTpsTransformType TpsTransformType;
 
-class plastimatch1_EXPORT Xform {
+class XAPI Xform {
 public:
     XFormInternalType m_type;
     

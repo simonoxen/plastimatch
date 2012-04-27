@@ -18,7 +18,7 @@ class Rtss_structure;
 
 #define CXT_BUFLEN 2048
 
-class plastimatch1_EXPORT Rtss_polyline_set {
+class Rtss_polyline_set {
 public:
     /* Output geometry */
     int have_geometry;

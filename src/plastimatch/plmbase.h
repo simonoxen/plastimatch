@@ -7,6 +7,10 @@
 #include "plmbase_config.h"
 #include "sys/plm_int.h"
 
+/* Please excuse the mess
+ *   This monolithic file is only temporary
+ */
+
 // opaque types
 class Bspline_xform;
 class Metadata;
@@ -16,6 +20,7 @@ class Proj_matrix;
 class Slice_index;
 class Slice_index;
 class Rtss;
+class Rtss_polyline_set;
 class Volume;
 class Volume_header;
 typedef struct raw_pointset Raw_pointset;
@@ -306,5 +311,9 @@ API float li_value (
         float *m_img,
         Volume *moving
 );
+
+/* That's it for gpuit_EXPORTS <<EXCEPT VOLUME>> */
+/*   Let's start on the plastimatch1_EXPORTS     */
+
 
 #endif

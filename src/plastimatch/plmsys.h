@@ -11,6 +11,10 @@
 #include "plm_int.h"
 #include "plm_path.h"
 
+/* Please excuse the mess
+ *   This monolithic file is only temporary
+ */
+
 class Plm_timer;
 typedef struct dir_list Dir_list;
 

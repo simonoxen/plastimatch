@@ -5,6 +5,9 @@
 #define _xio_structures_h_
 
 #include "plmbase_config.h"
+
+#include "plmbase.h"
+
 #include "cxt_io.h"
 #include "metadata.h"
 #include "xio_ct.h"
