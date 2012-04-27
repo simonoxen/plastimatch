@@ -31,6 +31,9 @@ set (PLMREGISTER_LIBRARY_SRC
   itk_optim.cxx
   itk_registration.cxx
   plm_stages.cxx
+  rbf_cluster.cxx
+  rbf_gauss.cxx
+  rbf_wendland.cxx
   registration_data.cxx
   )
 

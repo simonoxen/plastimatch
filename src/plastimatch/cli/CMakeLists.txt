@@ -44,8 +44,16 @@ if (PLM_CONFIG_ENABLE_LUA)
     )
 endif()
 
+set (LANDMARK_WARP_SRC
+  landmark_warp_main.cxx
+  )
+
 if (FULL_PLASTIMATCH_BUILD)
   plm_add_executable (plastimatch "${PLASTIMATCH_SRC}"
     "${PLASTIMATCH_LIBS}" "${PLMCUDA_EXE_LDFLAGS}" 
     ${BUILD_ALWAYS} ${INSTALL_ALWAYS})
+
+  plm_add_executable (landmark_warp "${LANDMARK_WARP_SRC}" 
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_ALWAYS})
 endif ()

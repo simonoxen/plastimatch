@@ -297,9 +297,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   plm_registration_api.cxx plm_registration_api.h 
   rasterizer.cxx rasterizer.h
   rasterize_slice.cxx rasterize_slice.h
-  rbf_gauss.cxx rbf_gauss.h
-  rbf_wendland.cxx rbf_wendland.h
-  rbf_cluster.cxx rbf_cluster.h
   rtds.cxx rtds.h
   rtds_dcmtk.cxx
   rtds_gdcm.cxx
@@ -493,9 +490,6 @@ set (PROTON_DOSE_SRC
   proton_dose_main.cxx 
   proton_dose_opts.cxx proton_dose_opts.h
   )
-set (LANDMARK_WARP_SRC
-  landmark_warp_main.cxx
-  )
 set (LANDMARK_DIFF_SRC
   landmark_diff_main.cxx
   )
@@ -688,9 +682,6 @@ if (FULL_PLASTIMATCH_BUILD)
   plm_add_executable (gabor_test "${GABOR_TEST_SRC}" 
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-  plm_add_executable (landmark_warp "${LANDMARK_WARP_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_ALWAYS})
   plm_add_executable (landmark_diff "${LANDMARK_DIFF_SRC}" 
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
