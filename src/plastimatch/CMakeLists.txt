@@ -120,9 +120,6 @@ set (GPUIT_LIBRARY_SRC
   bowtie_correction.cxx bowtie_correction.h
   bspline_optimize_nlopt.cxx bspline_optimize_nlopt.h
   bspline_opts.cxx bspline_opts.h
-  demons.cxx demons.h
-  demons_cpu.cxx
-  demons_misc.cxx demons_misc.h
   demons_state.cxx demons_state.h
   drr.cxx drr.h
   drr_trilin.cxx drr_trilin.h
@@ -134,24 +131,19 @@ set (GPUIT_LIBRARY_SRC
   threading.cxx threading.h
   )
 
-if (CUDA_FOUND)
-  set (PLMCUDA_LIBRARY_SRC
-    bspline_cuda.cpp bspline_cuda.cu bspline_cuda.h
-    cuda_kernel_util.cu cuda_kernel_util.h
-    cuda_mem.cu cuda_mem.h
-    cuda_util.cu cuda_util.h
-    demons_cuda.cu demons_cuda.h
-    demons_misc.cxx demons_misc.h
-    drr_cuda.cpp drr_cuda.cu drr_cuda.h drr_cuda_p.h 
-    fdk_cuda.cpp fdk_cuda.cu fdk_cuda_p.h fdk_cuda.h
-    )
+set (PLMCUDA_LIBRARY_SRC
+  bspline_cuda.cpp bspline_cuda.cu bspline_cuda.h
+  cuda_kernel_util.cu cuda_kernel_util.h
+  cuda_mem.cu cuda_mem.h
+  cuda_util.cu cuda_util.h
+  demons_cuda.cu demons_cuda.h
+  register/demons_misc.cxx
+  drr_cuda.cpp drr_cuda.cu drr_cuda.h drr_cuda_p.h 
+  fdk_cuda.cpp fdk_cuda.cu fdk_cuda_p.h fdk_cuda.h
+  )
 
+if (CUDA_FOUND)
   if (BUILD_SHARED_LIBS)      # << Dynamic loading
-    set (PLMCUDA_LIBRARY_SRC
-      ${PLMCUDA_LIBRARY_SRC}
-#      volume.cxx          # for demons_cuda.cu
-#      volume.h            # for demons_cuda.cu
-    )
     set (PLMCUDA_LIBRARY_DEPENDENCIES
       plmsys
     )
@@ -292,16 +284,10 @@ set (PLASTIMATCH1_LIBRARY_SRC
   dlib_trainer.cxx dlib_trainer.h 
   dvh.cxx dvh.h
   gamma_analysis.cxx gamma_analysis.h
-  gpuit_bspline.cxx gpuit_bspline.h 
-  gpuit_demons.cxx gpuit_demons.h 
   itk_crop.cxx itk_crop.h 
-  itk_demons.cxx itk_demons.h 
   itk_gabor.cxx itk_gabor.h
   itk_mask.cxx itk_mask.h 
-  itk_optim.cxx itk_optim.h 
-  itk_registration.cxx itk_registration.h 
   itk_tps.cxx itk_tps.h 
-  itk_warp.cxx itk_warp.h 
   landmark_warp.cxx landmark_warp.h 
   landmark_diff.cxx landmark_diff.h
   plm_clp.cxx plm_clp.h
@@ -309,14 +295,11 @@ set (PLASTIMATCH1_LIBRARY_SRC
   plm_parms.cxx plm_parms.h 
   plm_register_loadable.cxx plm_register_loadable.h 
   plm_registration_api.cxx plm_registration_api.h 
-  plm_stages.cxx plm_stages.h 
-  plm_warp.cxx plm_warp.h 
   rasterizer.cxx rasterizer.h
   rasterize_slice.cxx rasterize_slice.h
   rbf_gauss.cxx rbf_gauss.h
   rbf_wendland.cxx rbf_wendland.h
   rbf_cluster.cxx rbf_cluster.h
-  registration_data.cxx registration_data.h
   rtds.cxx rtds.h
   rtds_dcmtk.cxx
   rtds_gdcm.cxx
@@ -325,7 +308,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   segment_body.cxx segment_body.h
   simplify_points.cxx simplify_points.h
   slice_extract.cxx slice_extract.h
-  ss_img_extract.cxx ss_img_extract.h
   ss_img_stats.cxx ss_img_stats.h 
   ss_list_io.cxx ss_list_io.h
   synthetic_mha.cxx synthetic_mha.h

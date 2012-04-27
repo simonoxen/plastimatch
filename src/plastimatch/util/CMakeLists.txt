@@ -12,6 +12,9 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 
 set (PLMUTIL_LIBRARY_SRC
   bspline_warp.cxx
+  itk_warp.cxx
+  plm_warp.cxx
+  ss_img_extract.cxx
   )
 
 plm_add_library (

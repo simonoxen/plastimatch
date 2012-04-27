@@ -22,6 +22,16 @@ set (PLMREGISTER_LIBRARY_SRC
   bspline_regularize.cxx
   bspline_regularize_analytic.cxx
   bspline_regularize_numeric.cxx
+  demons.cxx
+  demons_cpu.cxx
+  demons_misc.cxx
+  gpuit_bspline.cxx
+  gpuit_demons.cxx
+  itk_demons.cxx
+  itk_optim.cxx
+  itk_registration.cxx
+  plm_stages.cxx
+  registration_data.cxx
   )
 
 plm_add_library (

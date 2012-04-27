@@ -18,6 +18,7 @@ set (PLMREGISTER_LIBRARY_DEPENDENCIES
   nocedal
   plmbase
   plmsys
+  plmutil
   )
 
 set (PLMSYS_LIBRARY_DEPENDENCIES 
@@ -28,7 +29,6 @@ set (PLMUTIL_LIBRARY_DEPENDENCIES
   plmbase
   plmsys
   )
-
 
 set (GPUIT_LIBRARY_DEPENDENCIES 
   plmbase
