@@ -25,17 +25,47 @@ set (PLMREGISTER_LIBRARY_SRC
   demons.cxx
   demons_cpu.cxx
   demons_misc.cxx
+  demons_state.cxx
   gpuit_bspline.cxx
   gpuit_demons.cxx
   itk_demons.cxx
   itk_optim.cxx
   itk_registration.cxx
+  plm_parms.cxx
   plm_stages.cxx
   rbf_cluster.cxx
   rbf_gauss.cxx
   rbf_wendland.cxx
   registration_data.cxx
   )
+
+#set (REG_PLUGIN_SRC
+#  bspline_cuda.cpp bspline_cuda.cu bspline_cuda.h
+#  cuda_kernel_util.cu cuda_kernel_util.h
+#  cuda_mem.cu cuda_mem.h
+#  cuda_util.cu cuda_util.h
+#  demons_cuda.cu demons_cuda.h
+#  demons_misc.cxx
+#  )
+
+if (CUDA_FOUND)
+    if (NOT PLM_USE_GPU_PLUGINS)
+        set (PLM_CUDA_FILES
+          bspline_cuda.cu 
+          cuda_util.cu
+          cuda_kernel_util.cu
+          cuda_mem.cu
+          demons_cuda.cu
+        )
+        cuda_compile (CUDA_WRAPPERS ${PLM_CUDA_FILES})
+        set (PLMREGISTER_LIBRARY_SRC
+            ${PLMREGISTER_LIBRARY_SRC}
+            ${CUDA_WRAPPERS}
+            bspline_cuda.cpp
+            )
+    endif ()
+endif ()
+
 
 plm_add_library (
   plmregister

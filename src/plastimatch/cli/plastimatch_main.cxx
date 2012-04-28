@@ -23,9 +23,7 @@
 #include "pcmd_header.h"
 #include "pcmd_probe.h"
 #include "pcmd_resample.h"
-#if (PLM_CONFIG_ENABLE_LUA)
 #include "pcmd_script.h"
-#endif
 #include "pcmd_segment.h"
 #include "pcmd_stats.h"
 #include "pcmd_synth.h"
@@ -175,11 +173,9 @@ do_command (int argc, char* argv[])
     else if (!strcmp (command, "resample")) {
         do_command_resample (argc, argv);
     }
-#if (PLM_CONFIG_ENABLE_LUA)
     else if (!strcmp (command, "script")) {
         do_command_script (argc, argv);
     }
-#endif
     else if (!strcmp (command, "segment")) {
         do_command_segment (argc, argv);
     }

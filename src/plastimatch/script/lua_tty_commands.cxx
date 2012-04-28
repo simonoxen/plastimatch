@@ -20,12 +20,19 @@ extern "C" {
 #include "lua_class_image.h"
 #include "lua_tty.h"
 #include "lua_tty_commands.h"
-#include "lua_tty_commands_pcmd.h"
+//#include "lua_tty_commands_pcmd.h"
 #include "lua_tty_commands_util.h"
 #include "lua_tty_preview.h"
 #include "lua_util.h"
 
 static void do_tty_command_pwd (lua_State* L, int argc, char** argv);
+
+/* JAS 2012.04.27
+ *   pcmd interface has been disabled since the
+ *   new plastimatch architecture places the
+ *   plastimatch command line at the top of the link
+ *   dependencies tree.
+ */ 
 
 
 /* displays commands available to user */
@@ -35,10 +42,12 @@ do_tty_command_help (lua_State* L, int argc, char** argv)
     if (argc == 1) {
         print_command_table (tty_cmds, num_tty_cmds, 60, 3);
     } else {
+#if 0
         if (!strcmp (argv[1], TTY_CMD_PCMD)) {
             print_command_table (pcmds, num_pcmds, 60, 3);
         }
-        else if (!strcmp (argv[1], TTY_CMD_CD)) {
+#endif
+        if (!strcmp (argv[1], TTY_CMD_CD)) {
             fprintf (stdout, "change current working directory\n");
         }
         else if (!strcmp (argv[1], TTY_CMD_RUN)) {
@@ -218,9 +227,11 @@ do_tty_command (lua_State *L)
     else if (!strcmp (argv[0], TTY_CMD_LIST)) {
         do_tty_command_list (L, argc, argv);
     }
+#if 0
     else if (!strcmp (argv[0], TTY_CMD_PCMD)) {
         do_tty_command_pcmd (argc, argv);
     }
+#endif
     else if (!strcmp (argv[0], TTY_CMD_PREVIEW)) {
         do_tty_command_preview (L, argc, argv);
     }

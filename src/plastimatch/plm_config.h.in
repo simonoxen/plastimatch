@@ -61,7 +61,6 @@
 #cmakedefine PLM_CONFIG_ALT_DCOS 1
 #cmakedefine PLM_CONFIG_KEYHOLIZE 1
 #cmakedefine PLM_CONFIG_PREFER_DCMTK 1
-#cmakedefine PLM_CONFIG_ENABLE_LUA 1
 
 /* Needed for dynamic loading */
 #cmakedefine PLM_USE_GPU_PLUGINS 1

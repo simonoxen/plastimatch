@@ -14,12 +14,34 @@ set (PLMBASE_LIBRARY_DEPENDENCIES
   )
 
 set (PLMREGISTER_LIBRARY_DEPENDENCIES 
-  ${LIBLBFGS_LIBRARIES}
-  nocedal
   plmbase
   plmsys
   plmutil
+  ${LIBLBFGS_LIBRARIES}
+  nocedal
   )
+
+set (PLMSEGMENT_LIBRARY_DEPENDENCIES 
+  plmbase
+  plmsys
+  ${ITK_LIBRARIES}
+  )
+
+set (PLMSCRIPT_LIBRARY_DEPENDENCIES
+  plmbase
+  plmregister
+  plmsegment
+  plmsys
+  plmutil
+  ${QT_LIBRARIES}
+  lua
+  )
+if (READLINE_FOUND)
+  set (PLMSCRIPT_LIBRARY_DEPENDENCIES
+    ${PLMSCRIPT_LIBRARY_DEPENDENCIES}
+    ${READLINE_LIBRARY}
+  )
+endif()
 
 set (PLMSYS_LIBRARY_DEPENDENCIES 
   bstrlib
@@ -30,9 +52,12 @@ set (PLMUTIL_LIBRARY_DEPENDENCIES
   plmsys
   )
 
+# This will go away soon
 set (GPUIT_LIBRARY_DEPENDENCIES 
   plmbase
   plmregister
+  plmsegment
+  plmscript
   plmsys
   plmutil
   )
@@ -178,23 +203,11 @@ set (PLASTIMATCH_LIBS
 
 set (SLICER_PLUGIN_LIBS ${ITK_LIBRARIES} ${GPUIT_LIBRARY_DEPENDENCIES})
 
-if (PLM_CONFIG_ENABLE_LUA)
+if (QT4_FOUND)
   set (PLASTIMATCH_LIBS
     ${PLASTIMATCH_LIBS}
-    lua
-    )
-  if (READLINE_FOUND)
-    set (PLASTIMATCH_LIBS
-        ${PLASTIMATCH_LIBS}
-        ${READLINE_LIBRARY}
-        )
-  endif()
-  if (QT4_FOUND)
-    set (PLASTIMATCH_LIBS
-        ${PLASTIMATCH_LIBS}
-        ${QT_LIBRARIES}
-        )
-  endif()
+    ${QT_LIBRARIES}
+  )
 endif()
 
 ##-----------------------------------------------------------------------------

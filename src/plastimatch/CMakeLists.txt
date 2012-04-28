@@ -38,6 +38,8 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/base)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/cli)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/register)
+include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/script)
+include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/segment)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/sys)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/util)
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -54,6 +56,8 @@ if (SQLITE_FOUND)
 endif ()
 include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/itk-3.20.0)
 include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/nSIFT)
+include_directories (AFTER ${LUA_INCLUDE_DIR})
+
 
 # Don't do the below.  A user-built f2c directory contains ctype.h, which 
 # conflicts with the C/C++ header of the same name.
@@ -83,10 +87,6 @@ endif ()
 
 if (OPENCL_FOUND)
   include_directories (BEFORE ${OPENCL_INCLUDE_DIR})
-endif ()
-
-if (PLM_CONFIG_ENABLE_LUA)
-  include_directories(AFTER ${LUA_INCLUDE_DIR} )
 endif ()
 
 if (MATLAB_FOUND)
@@ -120,7 +120,6 @@ set (GPUIT_LIBRARY_SRC
   bowtie_correction.cxx bowtie_correction.h
   bspline_optimize_nlopt.cxx bspline_optimize_nlopt.h
   bspline_opts.cxx bspline_opts.h
-  demons_state.cxx demons_state.h
   drr.cxx drr.h
   drr_trilin.cxx drr_trilin.h
   fdk.cxx fdk.h
@@ -131,58 +130,75 @@ set (GPUIT_LIBRARY_SRC
   threading.cxx threading.h
   )
 
-set (PLMCUDA_LIBRARY_SRC
-  bspline_cuda.cpp bspline_cuda.cu bspline_cuda.h
-  cuda_kernel_util.cu cuda_kernel_util.h
-  cuda_mem.cu cuda_mem.h
-  cuda_util.cu cuda_util.h
-  demons_cuda.cu demons_cuda.h
-  register/demons_misc.cxx
-  drr_cuda.cpp drr_cuda.cu drr_cuda.h drr_cuda_p.h 
-  fdk_cuda.cpp fdk_cuda.cu fdk_cuda_p.h fdk_cuda.h
-  )
-
-if (CUDA_FOUND)
-  if (BUILD_SHARED_LIBS)      # << Dynamic loading
-    set (PLMCUDA_LIBRARY_DEPENDENCIES
-      plmsys
-    )
-    cuda_add_library (plmcuda SHARED
-      ${PLMCUDA_LIBRARY_SRC}
-      )
-    set_target_properties (plmcuda PROPERTIES 
-      ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
-      LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
-      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
-    target_link_libraries (plmcuda
-      ${PLMCUDA_LIBRARY_DEPENDENCIES}
-      )
-    install (TARGETS plmcuda
-      RUNTIME DESTINATION bin
-      LIBRARY DESTINATION lib
-      )
-  else ()        # << Static linking
-    set (GPUIT_LIBRARY_SRC
-      ${GPUIT_LIBRARY_SRC}
-      ${PLMCUDA_LIBRARY_SRC}
-      )
-    set (PLM_CUDA_FILES
-      bspline_cuda.cu 
-      cuda_util.cu
-      cuda_kernel_util.cu
-      cuda_mem.cu
-      demons_cuda.cu
+  # JAS 2012.4.27
+  #   Temporary hack until CUDA linkage gets
+  #      sorted out.
+  if (CUDA_FOUND)
+    set (GPUIT_CUDA_HACK
       drr_cuda.cu
       fdk_cuda.cu
       )
-    cuda_compile (CUDA_WRAPPERS ${PLM_CUDA_FILES})
+    cuda_compile (CUDA_WRAPPERS ${GPUIT_CUDA_HACK})
     set (GPUIT_LIBRARY_SRC
-      ${GPUIT_LIBRARY_SRC}
-      ${CUDA_WRAPPERS}
-      ${PLM_CUDA_FILES}
-      )
+        ${GPUIT_LIBRARY_SRC}
+        ${CUDA_WRAPPERS}
+        drr_cuda.cpp
+        fdk_cuda.cpp
+    )
   endif ()
-endif ()
+
+#set (PLMCUDA_LIBRARY_SRC
+#  bspline_cuda.cpp bspline_cuda.cu bspline_cuda.h
+#  cuda_kernel_util.cu cuda_kernel_util.h
+#  cuda_mem.cu cuda_mem.h
+#  cuda_util.cu cuda_util.h
+#  demons_cuda.cu demons_cuda.h
+#  register/demons_misc.cxx
+#  drr_cuda.cpp drr_cuda.cu drr_cuda.h drr_cuda_p.h 
+#  fdk_cuda.cpp fdk_cuda.cu fdk_cuda_p.h fdk_cuda.h
+#  )
+#
+#if (CUDA_FOUND)
+#  if (PLM_USE_GPU_PLUGINS)      # << Dynamic loading
+#    set (PLMCUDA_LIBRARY_DEPENDENCIES
+#      plmsys
+#    )
+#    cuda_add_library (plmcuda SHARED
+#      ${PLMCUDA_LIBRARY_SRC}
+#      )
+#    set_target_properties (plmcuda PROPERTIES 
+#      ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+#      LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+#      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+#    target_link_libraries (plmcuda
+#      ${PLMCUDA_LIBRARY_DEPENDENCIES}
+#      )
+#    install (TARGETS plmcuda
+#      RUNTIME DESTINATION bin
+#      LIBRARY DESTINATION lib
+#      )
+#  else ()        # << Static linking
+#    set (GPUIT_LIBRARY_SRC
+#      ${GPUIT_LIBRARY_SRC}
+#      ${PLMCUDA_LIBRARY_SRC}
+#      )
+#    set (PLM_CUDA_FILES
+#      bspline_cuda.cu 
+#      cuda_util.cu
+#      cuda_kernel_util.cu
+#      cuda_mem.cu
+#      demons_cuda.cu
+#      drr_cuda.cu
+#      fdk_cuda.cu
+#      )
+#    cuda_compile (CUDA_WRAPPERS ${PLM_CUDA_FILES})
+#    set (GPUIT_LIBRARY_SRC
+#      ${GPUIT_LIBRARY_SRC}
+#      ${CUDA_WRAPPERS}
+#      ${PLM_CUDA_FILES}
+#      )
+#  endif ()
+#endif ()
 
 if (QT4_FOUND)
   qt4_wrap_cpp (PORTAL_MOC_SRC
@@ -292,7 +308,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   landmark_diff.cxx landmark_diff.h
   plm_clp.cxx plm_clp.h
   plm_drr_api.cxx plm_drr_api.h 
-  plm_parms.cxx plm_parms.h 
   plm_register_loadable.cxx plm_register_loadable.h 
   plm_registration_api.cxx plm_registration_api.h 
   rasterizer.cxx rasterizer.h
@@ -302,7 +317,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   rtds_gdcm.cxx
   rtds_warp.cxx rtds_warp.h
   rtss.cxx rtss.h
-  segment_body.cxx segment_body.h
   simplify_points.cxx simplify_points.h
   slice_extract.cxx slice_extract.h
   ss_img_stats.cxx ss_img_stats.h 
@@ -413,34 +427,6 @@ set (OPENCL_PROBE_SRC
   )
 if (OPENCL_FOUND)
   plm_add_opencl_file (GPUIT_LIBRARY_SRC opencl_probe.cl)
-endif ()
-set (LUA_INTERFACE_SRC
-    pcmd_script.cxx pcmd_script.h
-    lua_class_image.cxx lua_class_image.h
-    lua_class_register.cxx lua_class_register.h
-    lua_class_stage.cxx lua_class_stage.h
-    lua_class_structs.cxx lua_class_structs.h
-    lua_class_xform.cxx lua_class_xform.h
-    lua_cli_glue.cxx lua_cli_glue.h
-    lua_iface_add.cxx lua_iface_add.h
-    lua_iface_crop.cxx lua_iface_crop.h
-    lua_iface_mask.cxx lua_iface_mask.h
-#    lua_iface_register.cxx lua_iface_register.h
-    lua_iface_resample.cxx lua_iface_resample.h
-    lua_iface_synth.cxx lua_iface_synth.h
-    lua_tty.cxx lua_tty.h
-    lua_tty_commands.cxx lua_tty_commands.h
-    lua_tty_commands_pcmd.cxx lua_tty_commands_pcmd.h
-    lua_tty_commands_util.cxx lua_tty_commands_util.h
-    lua_util.cxx lua_util.h
-)
-if (QT4_FOUND)
-    set (LUA_INTERFACE_SRC
-      ${LUA_INTERFACE_SRC}
-      ${PORTAL_MOC_SRC}
-      cview_portal.cxx cview_portal.h
-      lua_tty_preview.cxx lua_tty_preview.h
-    )
 endif ()
 set (PLASTIMATCH_SLICER_BSPLINE_SRC
   plastimatch_slicer_bspline.cxx
@@ -629,12 +615,14 @@ if (NOT BUILD_DEBIAN)
     "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
-plm_add_executable (bspline "${BSPLINE_SRC}" 
-  "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-plm_add_executable (check_grad "${CHECK_GRAD_SRC}" 
-  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+# JAS 2012.04.27 -- Disabled until CUDA
+#   linkage gets sorted out
+#plm_add_executable (bspline "${BSPLINE_SRC}" 
+#  "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
+#  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+#plm_add_executable (check_grad "${CHECK_GRAD_SRC}" 
+#  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
+#  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 plm_add_executable (demons "${DEMONS_SRC}" 
   "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
@@ -987,6 +975,8 @@ endif ()
 add_subdirectory(base)
 add_subdirectory(cli)
 add_subdirectory(register)
+add_subdirectory(segment)
 add_subdirectory(standalone)
+add_subdirectory(script)
 add_subdirectory(sys)
 add_subdirectory(util)

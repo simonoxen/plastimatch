@@ -22,12 +22,14 @@ extern "C"
 #include "lua_class_structs.h"
 #include "lua_class_xform.h"
 #include "lua_cli_glue.h"
+#if 0
 #include "lua_iface_add.h"
 #include "lua_iface_crop.h"
 #include "lua_iface_mask.h"     /* also contains fill() */
 #include "lua_iface_register.h"
 #include "lua_iface_resample.h"
 #include "lua_iface_synth.h"
+#endif
 #include "lua_tty.h"
 #include "lua_util.h"
 
@@ -44,6 +46,9 @@ print_usage ()
 }
 
 
+/* JAS 2012.04.27
+ * interfaces depricated in favor of classes */
+#if 0
 /* Register your LUA interface here */
 static void
 register_lua_interfaces (lua_State* L)
@@ -56,6 +61,7 @@ register_lua_interfaces (lua_State* L)
     lua_register (L, "resample", LUAIFACE_resample);
     lua_register (L, "synth",    LUAIFACE_synth);
 }
+#endif
 
 static void
 register_lua_objects (lua_State* L)
@@ -95,7 +101,7 @@ do_command_script (int argc, char *argv[])
 
     L = lua_open();
     luaL_openlibs(L);
-    register_lua_interfaces (L);
+//    register_lua_interfaces (L);
     register_lua_objects (L);
 
     if (tty_mode) {

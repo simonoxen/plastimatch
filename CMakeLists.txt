@@ -83,7 +83,6 @@ option (PLM_CONFIG_DISABLE_PLASTIMATCH "Build plastimatch" OFF)
 option (PLM_CONFIG_DISABLE_REG23 "Build REG-2-3" OFF)
 option (PLM_CONFIG_DISABLE_SSE2 "Set to ON to build without SSE" OFF)
 option (PLM_CONFIG_ENABLE_MATLAB "Set to ON to build Matlab plugins" OFF)
-option (PLM_CONFIG_ENABLE_LUA "Set to ON to embed LUA scripting engine" OFF)
 set (PLM_CONFIG_VERSION_STRING "" CACHE STRING "Version string")
 
 # Optional components
@@ -339,10 +338,6 @@ endif ()
 find_package (Subversion)
 find_package (wxWidgets)
 
-#if (PLM_CONFIG_ENABLE_LUA)
-#  find_package (Lua51)
-#endif ()
-
 ##-----------------------------------------------------------------------------
 ##  Use local getopt if not found
 ##-----------------------------------------------------------------------------
@@ -412,14 +407,12 @@ link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/nocedal)
 ##-----------------------------------------------------------------------------
 ##  LUA 5.1.4
 ##-----------------------------------------------------------------------------
-if (PLM_CONFIG_ENABLE_LUA)
-    add_subdirectory (libs/lua-5.1.4)
-    set (LUA_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/lua-5.1.4/src")
-    link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/lua-5.1.4)
+add_subdirectory (libs/lua-5.1.4)
+set (LUA_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/lua-5.1.4/src")
+link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/lua-5.1.4)
 
-    # for history, etc in plastimatch tty mode
-    find_package (Readline)
-endif ()
+# for history, etc in plastimatch tty mode
+find_package (Readline)
 
 ##-----------------------------------------------------------------------------
 ##  Only use local specfun
@@ -504,7 +497,8 @@ endif ()
 ##-----------------------------------------------------------------------------
 set (PLM_USE_GPU_PLUGINS OFF)
 if (BUILD_SHARED_LIBS)
-  set (PLM_USE_GPU_PLUGINS ON)
+    #  JAS 2012.04.27  -- Disabled during 2.0 migration
+    #  set (PLM_USE_GPU_PLUGINS ON)
 endif ()
 
 ##-----------------------------------------------------------------------------

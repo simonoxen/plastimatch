@@ -25,6 +25,7 @@ set (PLASTIMATCH_SRC
   pcmd_mask.cxx pcmd_mask.h
   pcmd_probe.cxx pcmd_probe.h
   pcmd_resample.cxx pcmd_resample.h
+  pcmd_script.cxx pcmd_script.h
   pcmd_segment.cxx pcmd_segment.h
   pcmd_stats.cxx pcmd_stats.h
   pcmd_synth.cxx pcmd_synth.h
@@ -37,12 +38,6 @@ set (PLASTIMATCH_SRC
   pcmd_xf_convert.cxx pcmd_xf_convert.h 
   plastimatch_main.cxx
   )
-if (PLM_CONFIG_ENABLE_LUA)
-  set (PLASTIMATCH_SRC
-    ${PLASTIMATCH_SRC}
-    ${LUA_INTERFACE_SRC}
-    )
-endif()
 
 set (LANDMARK_WARP_SRC
   landmark_warp_main.cxx
