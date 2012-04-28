@@ -100,9 +100,11 @@ do_tty_command_cd (lua_State* L, int argc, char** argv)
         case ENOTDIR:
             fprintf (stdout, "cd -- specified path not a directory\n");
             break;
+#if (UNIX)
         case ELOOP:
             fprintf (stdout, "cd -- encountered too many symbolic links\n");
             break;
+#endif
         }
     }
 

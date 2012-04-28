@@ -88,5 +88,6 @@ int preview_portal (void* pli_in)
     return 0;
 #else
     fprintf (stdout, "preview not available for non-unix... yet.\n");
+    return 0;
 #endif
 }
