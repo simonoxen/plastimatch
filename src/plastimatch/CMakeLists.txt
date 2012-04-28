@@ -565,14 +565,14 @@ plm_add_library (
 # JAS 2010.11.23
 # Because the plugins are loaded at runtime, CMake doesn't know
 # that they are needed by everything linked against gpuit.  So, we tell it.
-if (BUILD_SHARED_LIBS)      # << Dynamic loading
-  if (CUDA_FOUND)
-    add_dependencies (gpuit plmcuda)
-  endif ()
-  if (OPENCL_FOUND)
-    add_dependencies (gpuit plmopencl)
-  endif ()
-endif ()
+#if (BUILD_SHARED_LIBS)      # << Dynamic loading
+#  if (CUDA_FOUND)
+#    add_dependencies (gpuit plmcuda)
+#  endif ()
+#  if (OPENCL_FOUND)
+#    add_dependencies (gpuit plmopencl)
+#  endif ()
+#endif ()
 
 if (FULL_PLASTIMATCH_BUILD)
   # Despite claims to the contrary, you are not allowed to have a library

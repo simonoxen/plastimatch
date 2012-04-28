@@ -105,7 +105,12 @@ plm_add_library (
   "${PLMREGISTER_LIBRARY_DEPENDENCIES}"
   "${PLMREGISTER_LIBRARY_LDFLAGS}")
 
-
+# because plmregistercuda is dynamically loaded (not linked)
+# CMake needs to be told explicitly that plmregister
+# depends on it, so we tell it explicitly here
+if (CUDA_FOUND AND PLM_USE_GPU_PLUGINS)
+    add_dependencies (plmregister plmregistercuda)
+endif ()
 
 if (SLICER_FOUND)
   if (WIN32)
