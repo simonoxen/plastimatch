@@ -71,31 +71,31 @@ endif ()
 
 # JAS 2010.11.19
 # New CUDA plugin stuff
-if (CUDA_FOUND)
-  if (PLM_USE_GPU_PLUGINS)      # << Use dynamic loading
-    if (WIN32)
-      # Windows
-      set (GPUIT_LIBRARY_DEPENDENCIES
-        ${GPUIT_LIBRARY_DEPENDENCIES}
-        plmcuda
-        # shared library: cuda extensions
-        # we tell windows to "delay load" this
-      )
-    else ()
-      # Linux
-      set (GPUIT_LIBRARY_DEPENDENCIES
-        ${GPUIT_LIBRARY_DEPENDENCIES}
-        # In linux we use dlfcn.h to load plmcula
-        # in the code @ runtime.
-      )
-    endif ()
-  else ()    # << use static linking
-    set (GPUIT_LIBRARY_DEPENDENCIES
-      ${GPUIT_LIBRARY_DEPENDENCIES}
-      ${CUDA_LIBRARIES}
-    )
-  endif ()
-endif ()
+#if (CUDA_FOUND)
+#  if (PLM_USE_GPU_PLUGINS)      # << Use dynamic loading
+#    if (WIN32)
+#      # Windows
+#      set (GPUIT_LIBRARY_DEPENDENCIES
+#        ${GPUIT_LIBRARY_DEPENDENCIES}
+#        plmcuda
+#        # shared library: cuda extensions
+#        # we tell windows to "delay load" this
+#      )
+#    else ()
+#      # Linux
+#      set (GPUIT_LIBRARY_DEPENDENCIES
+#        ${GPUIT_LIBRARY_DEPENDENCIES}
+#        # In linux we use dlfcn.h to load plmcula
+#        # in the code @ runtime.
+#      )
+#    endif ()
+#  else ()    # << use static linking
+#    set (GPUIT_LIBRARY_DEPENDENCIES
+#      ${GPUIT_LIBRARY_DEPENDENCIES}
+#      ${CUDA_LIBRARIES}
+#    )
+#  endif ()
+#endif ()
 
 # JAS 2011.01.13
 # New OpenCL plugin stuff (plmopencl)

@@ -37,6 +37,7 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 # JAS 2012.04.25 !!!!!!!!!!! TEMPORARY !!!!!!!!!!!!!!!!!!!!!!
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/base)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/cli)
+include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/cuda)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/register)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/script)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/segment)
@@ -135,6 +136,7 @@ set (GPUIT_LIBRARY_SRC
   #      sorted out.
   if (CUDA_FOUND)
     set (GPUIT_CUDA_HACK
+      cuda/cuda_util.cu
       drr_cuda.cu
       fdk_cuda.cu
       )
@@ -144,6 +146,10 @@ set (GPUIT_LIBRARY_SRC
         ${CUDA_WRAPPERS}
         drr_cuda.cpp
         fdk_cuda.cpp
+    )
+    set (GPUIT_LIBRARY_DEPENDENCIES
+      ${GPUIT_LIBRARY_DEPENDENCIES}
+      ${CUDA_LIBRARIES}
     )
   endif ()
 

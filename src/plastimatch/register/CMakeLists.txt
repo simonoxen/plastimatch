@@ -40,10 +40,10 @@ set (PLMREGISTER_LIBRARY_SRC
   )
 
 set (PLMREGISTER_CUDA_SRC
+  ../cuda/cuda_kernel_util.cu
+  ../cuda/cuda_mem.cu
+  ../cuda/cuda_util.cu
   bspline_cuda.cu 
-  cuda_kernel_util.cu
-  cuda_mem.cu
-  cuda_util.cu
   demons_cuda.cu
   )
 
