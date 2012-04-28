@@ -497,8 +497,7 @@ endif ()
 ##-----------------------------------------------------------------------------
 set (PLM_USE_GPU_PLUGINS OFF)
 if (BUILD_SHARED_LIBS)
-    #  JAS 2012.04.27  -- Disabled during 2.0 migration
-    #  set (PLM_USE_GPU_PLUGINS ON)
+    set (PLM_USE_GPU_PLUGINS ON)
 endif ()
 
 ##-----------------------------------------------------------------------------

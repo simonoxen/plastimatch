@@ -189,6 +189,61 @@ delayload_libplmcuda (void)
 #endif
 }
 
+
+int 
+delayload_libplmregistercuda (void)
+{
+#if defined (_WIN32)
+    // For Windows we try to load the CUDA drivers:
+    // * If they don't exist -> we should exit upon returning from this function.
+    // * If they do exist    -> rely on Windows to properly /delayload them
+    if (   !find_lib ("nvcuda.dll")     /* CUDA Driver */
+#if defined (PLM_USE_GPU_PLUGINS)
+        || !find_lib ("plmregistercuda.dll")    /* PLM CUDA Plugin */
+#endif
+       ) {
+        printf ("Failed to load CUDA runtime!\n");
+        printf ("For GPU acceleration, please install:\n");
+        printf ("* the plastimatch GPU plugin\n");
+        printf ("* the CUDA Toolkit version needed by the GPU plugin\n\n");
+        printf ("Visit http://www.plastimatch.org/contents.html for more information.\n");
+        printf ("OR email <plastimatch@googlegroups.com> for support.\n\n");
+        return 0;
+    } else {
+        // success
+        return 1;
+    }
+#elif defined (APPLE)
+
+#if defined (PLM_USE_GPU_PLUGINS)
+    printf ("CUDA support for OS X is currently not available when building\n");
+    printf ("Plastimatch with BUILD_SHARED_LIBS enabled. Sorry.\n\n");
+    return 0;
+#endif
+    return 1;
+
+#else /* UNIX / Linux */
+    if (    !find_lib ("libcuda.so")         /* CUDA Driver */
+         || !find_lib ("libcudart.so")       /* CUDA RunTime */
+#if defined (PLM_USE_GPU_PLUGINS)
+         || !find_lib ("libplmregistercuda.so")      /* PLM CUDA Plugin */
+#endif
+       ) {
+        printf ("Failed to load CUDA runtime!\n");
+        printf ("For GPU acceleration, please install:\n");
+        printf ("* the plastimatch GPU plugin\n");
+        printf ("* the CUDA Toolkit version needed by the GPU plugin\n\n");
+        printf ("Visit http://www.plastimatch.org/contents.html for more information.\n");
+        printf ("OR email <plastimatch@googlegroups.com> for support.\n\n");
+        return 0;
+    } else {
+        // success
+        return 1;
+    }
+#endif
+}
+
+
 int 
 delayload_libplmopencl (void)
 {

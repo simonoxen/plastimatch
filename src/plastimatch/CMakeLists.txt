@@ -617,9 +617,9 @@ if (NOT BUILD_DEBIAN)
 endif ()
 # JAS 2012.04.27 -- Disabled until CUDA
 #   linkage gets sorted out
-#plm_add_executable (bspline "${BSPLINE_SRC}" 
-#  "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
-#  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+plm_add_executable (bspline "${BSPLINE_SRC}" 
+  "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 #plm_add_executable (check_grad "${CHECK_GRAD_SRC}" 
 #  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
 #  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})

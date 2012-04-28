@@ -186,8 +186,8 @@ if (PLM_USE_GPU_PLUGINS)
   if (CUDA_FOUND)
     # CMAKE_SHARED_LIBRARY_PREFIX is "" under Windows and "lib" under Linux
     # CMAKE_SHARE_LIBRARY_SUFFIX is ".dll" under Windows and ".so" under Linux
-    set (CUDA_PLUGIN_FILE
-      "${CMAKE_SHARED_LIBRARY_PREFIX}plmcuda${CMAKE_SHARED_LIBRARY_SUFFIX}")
+    set (PLMREGISTERCUDA_FILE
+      "${CMAKE_SHARED_LIBRARY_PREFIX}plmregistercuda${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
     # This tells CMake how to handle a target depending on
     # "Testing/[lib]plmcuda[.dll/.so]"
@@ -197,7 +197,7 @@ if (PLM_USE_GPU_PLUGINS)
       ${CMAKE_COMMAND} "-E" "copy"
       "${GPU_PLUGIN_BIN_DIR}/${CUDA_PLUGIN_FILE}"
       "${PLM_BUILD_TESTING_DIR}/${CUDA_PLUGIN_FILE}"
-      DEPENDS plmcuda
+      DEPENDS plmregistercuda
       )
 
     # The Phony target
@@ -206,14 +206,14 @@ if (PLM_USE_GPU_PLUGINS)
     # Testing/libplmcuda.so : libplmcuda.so  (Under Linux)
     #
     # The "rule" for handling this is the above custom command 
-    add_custom_target (plmcuda_tcpy
-      DEPENDS "${PLM_BUILD_TESTING_DIR}/${CUDA_PLUGIN_FILE}"
+    add_custom_target (plmregistercuda_tcpy
+      DEPENDS "${PLM_BUILD_TESTING_DIR}/${PLMREGISTER_FILE}"
       )
 
-    # When using the plmcuda plugin, GPUIT depends on it for GPU acceleration.
-    # So, we add it as a dependency here so that plmcuda plugin will be copied
-    # to Testing whenever the user builds GPUIT (or any target that depends on
-    # GPUIT, which is most targets).
+    # When using the plmregister cuda plugin, plmregister depends on it for GPU
+    # acceleration.  So, we add it as a dependency here so plmregistercuda will
+    # be copied to Testing whenever the user builds plmregister (or any target
+    # that depends on plmregister).
     add_dependencies (gpuit plmcuda_tcpy)
   endif ()
 

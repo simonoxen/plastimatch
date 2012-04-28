@@ -79,6 +79,7 @@
 
 
 API int delayload_libplmcuda (void);
+API int delayload_libplmregistercuda (void);
 API int delayload_libplmopencl (void);
 API void* dlopen_ex (char* lib); 
 

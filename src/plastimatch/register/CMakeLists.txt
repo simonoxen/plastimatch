@@ -39,31 +39,63 @@ set (PLMREGISTER_LIBRARY_SRC
   registration_data.cxx
   )
 
-#set (REG_PLUGIN_SRC
-#  bspline_cuda.cpp bspline_cuda.cu bspline_cuda.h
-#  cuda_kernel_util.cu cuda_kernel_util.h
-#  cuda_mem.cu cuda_mem.h
-#  cuda_util.cu cuda_util.h
-#  demons_cuda.cu demons_cuda.h
-#  demons_misc.cxx
-#  )
+set (PLMREGISTER_CUDA_SRC
+  bspline_cuda.cu 
+  cuda_kernel_util.cu
+  cuda_mem.cu
+  cuda_util.cu
+  demons_cuda.cu
+  )
+
+set (PLMREGISTER_CUDA_IFACE_SRC
+  demons_misc.cxx
+  bspline_cuda.cpp
+  )
 
 if (CUDA_FOUND)
-    if (NOT PLM_USE_GPU_PLUGINS)
-        set (PLM_CUDA_FILES
-          bspline_cuda.cu 
-          cuda_util.cu
-          cuda_kernel_util.cu
-          cuda_mem.cu
-          demons_cuda.cu
+  if (PLM_USE_GPU_PLUGINS)
+    # build CUDA as plmregistercuda
+    set (PLMREGISTERCUDA_LIBRARY_SRC
+      ${PLMREGISTER_CUDA_IFACE_SRC}
+      ${PLMREGISTER_CUDA_SRC}
+      )
+    cuda_add_library (plmregistercuda SHARED
+      ${PLMREGISTERCUDA_LIBRARY_SRC}
+      )
+    set_target_properties (plmregistercuda PROPERTIES 
+      ARCHIVE_OUTPUT_DIRECTORY "${PLM_BUILD_ROOT}"
+      LIBRARY_OUTPUT_DIRECTORY "${PLM_BUILD_ROOT}"
+      RUNTIME_OUTPUT_DIRECTORY "${PLM_BUILD_ROOT}")
+    target_link_libraries (plmregistercuda
+        plmsys
         )
-        cuda_compile (CUDA_WRAPPERS ${PLM_CUDA_FILES})
-        set (PLMREGISTER_LIBRARY_SRC
-            ${PLMREGISTER_LIBRARY_SRC}
-            ${CUDA_WRAPPERS}
-            bspline_cuda.cpp
-            )
-    endif ()
+  else ()
+    # building CUDA into plmregister
+    cuda_compile (CUDA_WRAPPERS ${PLMREGISTER_CUDA_SRC})
+    set (PLMREGISTER_LIBRARY_SRC
+      ${PLMREGISTER_LIBRARY_SRC}
+      ${PLMREGISTER_CUDA_IFACE_SRC}
+      ${CUDA_WRAPPERS}
+      )
+  endif ()
+endif ()
+
+# plmregister uses OpenMP
+set (PLMREGISTER_LIBRARY_LDFLAGS "${OPENMP_LDFLAGS}")
+
+# if building cuda support as a plugin...
+if (PLM_USE_GPU_PLUGINS)
+  # windows needs to delayload it
+  if (WIN32 AND NOT CYGWIN AND NOT MINGW)
+    set (PLMREGISTER_LIBRARY_LDFLAGS
+      "${PLMREGISTER_LIBRARY_LDFLAGS} /DELAYLOAD:plmregistercuda.dll")
+  endif ()
+  # and unix needs dlopen()
+  if (NOT WIN32 AND LIBDL_FOUND)
+    set (PLMREGISTER_LIBRARY_DEPENDENCIES
+      ${PLMREGISTER_LIBRARY_DEPENDENCIES}
+      -ldl)
+  endif ()
 endif ()
 
 
@@ -71,7 +103,9 @@ plm_add_library (
   plmregister
   "${PLMREGISTER_LIBRARY_SRC}" 
   "${PLMREGISTER_LIBRARY_DEPENDENCIES}"
-  "")
+  "${PLMREGISTER_LIBRARY_LDFLAGS}")
+
+
 
 if (SLICER_FOUND)
   if (WIN32)
@@ -80,6 +114,12 @@ if (SLICER_FOUND)
       "${OUTDIR}/plmregister.dll"
       "${QTOUTDIR}/plmregister.dll"
       plmregister
+    )
+    plm_slicer_copy_dll (plastimatch_slicer_copy_plmregistercuda
+      "${INDIR}/plmregistercuda.dll"
+      "${OUTDIR}/plmregistercuda.dll"
+      "${QTOUTDIR}/plmregistercuda.dll"
+      plmregistercuda
     )
   endif ()
 endif ()
