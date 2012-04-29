@@ -15,7 +15,6 @@
 #include "demons.h"
 #include "demons_cuda.h"
 #include "demons_state.h"
-#include "threading.h"
 #include "volume.h"
 
 void

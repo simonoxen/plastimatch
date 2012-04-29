@@ -117,7 +117,6 @@ set (GPUIT_LIBRARY_SRC
   proj_image_dir.cxx proj_image_dir.h
   proj_matrix.cxx proj_matrix.h 
   proton_dose.cxx proton_dose.h 
-  threading.cxx threading.h
   )
 
   # JAS 2012.4.27
@@ -302,8 +301,8 @@ set (PLASTIMATCH1_LIBRARY_SRC
   landmark_diff.cxx landmark_diff.h
   plm_clp.cxx plm_clp.h
   plm_drr_api.cxx plm_drr_api.h 
-  plm_register_loadable.cxx plm_register_loadable.h 
-  plm_registration_api.cxx plm_registration_api.h 
+  #  plm_register_loadable.cxx plm_register_loadable.h 
+  #  plm_registration_api.cxx plm_registration_api.h 
   rasterizer.cxx rasterizer.h
   rasterize_slice.cxx rasterize_slice.h
   rtds.cxx rtds.h
@@ -669,19 +668,6 @@ if (SLICER_FOUND)
     endif ()
   endif ()
 endif ()
-
-## -------------------------------------------------------------------------
-## Unit test targets
-## -------------------------------------------------------------------------
-if (ITK_FOUND)
-  plm_add_executable (plm_drr_api_a plm_drr_api_a.cxx
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-  plm_add_executable (plm_registration_api_a plm_registration_api_a.cxx
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-endif ()
-
 
 # plastimatch modules
 add_subdirectory(base)

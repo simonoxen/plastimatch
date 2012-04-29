@@ -7,8 +7,8 @@
 #include "plm_config.h"
 #include "plmbase.h"
 
-#include "threading.h"
 #include "delayload.h"
+#include "threading.h"
 
 typedef struct DEMONS_Parms_struct DEMONS_Parms;
 struct DEMONS_Parms_struct {

@@ -709,9 +709,6 @@ set (PLM_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/src/plastimatch/plm_config.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/plm_config.h)
 
-configure_file (${CMAKE_CURRENT_SOURCE_DIR}/src/plastimatch/plm_api_config.h.in
-  ${CMAKE_CURRENT_BINARY_DIR}/plm_api_config.h)
-
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/src/plastimatch/plm_fortran.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/plm_fortran.h)
 

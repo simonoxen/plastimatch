@@ -16,16 +16,4 @@ typedef int Threading;
 #define THREADING_CUDA            4
 #define THREADING_OPENCL          5
 
-#if defined __cplusplus
-extern "C" {
-#endif
-
-gpuit_EXPORT
-Threading
-threading_parse (const char *string);
-
-#if defined __cplusplus
-}
-#endif
-
 #endif
