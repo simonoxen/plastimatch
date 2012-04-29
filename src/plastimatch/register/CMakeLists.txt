@@ -80,7 +80,24 @@ endif ()
 #----------------
 
 # plmregister uses OpenMP
-set (PLMREGISTER_LIBRARY_LDFLAGS "${OPENMP_LDFLAGS}")
+if (OPENMP_FOUND)
+  set (PLMREGISTER_LIBRARY_LDFLAGS "${OPENMP_LDFLAGS}")
+  set_source_files_properties (bspline.cxx
+    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
+  set_source_files_properties (bspline_mi.cxx
+    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
+  set_source_files_properties (bspline_mse.cxx
+    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
+  set_source_files_properties (bspline_regularize_analytic.cxx
+    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
+  set_source_files_properties (bspline_warp.cxx
+    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
+endif ()
+
+# bspline registration benefits from SSE2
+if (SSE2_FOUND AND NOT BUILD_AGAINST_SLICER3)
+  plm_set_sse2_flags (bspline.cxx bspline_mi.cxx bspline_mse.cxx bspline_warp.cxx)
+endif ()
 
 # if building cuda support as a plugin...
 if (PLM_USE_GPU_PLUGINS)

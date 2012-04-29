@@ -436,27 +436,12 @@ set (XF_TO_EMPIREFMT_SRC
 ##  SOURCE FILE PROPERTIES
 ##-----------------------------------------------------------------------------
 if (OPENMP_FOUND)
-  set_source_files_properties (bspline.cxx
-    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
-  set_source_files_properties (bspline_mi.cxx
-    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
-  set_source_files_properties (bspline_mse.cxx
-    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
-  set_source_files_properties (bspline_warp.cxx
-    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
   set_source_files_properties (drr.cxx
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
   set_source_files_properties (fdk.cxx
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
-  set_source_files_properties (bspline_regularize_analytic.cxx
-    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
-  set_source_files_properties (openmp_test.cxx
-    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
 endif ()
 
-if (SSE2_FOUND AND NOT BUILD_AGAINST_SLICER3)
-  plm_set_sse2_flags (bspline.cxx bspline_mi.cxx bspline_mse.cxx bspline_warp.cxx)
-endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Do we build a full plastimatch?
@@ -698,7 +683,7 @@ if (ITK_FOUND)
 endif ()
 
 
-# plastimatch libraries
+# plastimatch modules
 add_subdirectory(base)
 add_subdirectory(cli)
 add_subdirectory(register)

@@ -118,6 +118,8 @@ endif ()
 
 # Test executable -- openmp
 if (PLM_BUILD_OPENMP_TEST AND OPENMP_FOUND)
+  set_source_files_properties (openmp_test.cxx
+    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
   plm_add_executable (openmp_test openmp_test.cxx
     "${GPUIT_LIBRARIES}" "${OPENMP_LDFLAGS}" 
     ${BUILD_ALWAYS} ${INSTALL_NEVER})
