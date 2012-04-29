@@ -69,15 +69,6 @@ set (PROTON_DOSE_SRC
 set (RAW_TO_MHA_SRC
   raw_to_mha.c
   )
-set (TEST_EPS_SRC
-  test_eps.cxx
-  )
-set (TEST_LIMITS_SRC
-  test_limits.cxx
-  )
-set (TEST_OVERFLOW_SRC
-  test_overflow.cxx
-  )
 
 
 if (FULL_PLASTIMATCH_BUILD)
@@ -128,12 +119,6 @@ plm_add_executable (proton_dose "${PROTON_DOSE_SRC}"
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 plm_add_executable (raw_to_mha "${RAW_TO_MHA_SRC}"
   "" "" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-plm_add_executable (test_eps "${TEST_EPS_SRC}" "" "" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-plm_add_executable (test_limits "${TEST_LIMITS_SRC}" "" "" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-plm_add_executable (test_overflow "${TEST_OVERFLOW_SRC}" "" "" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
 
 

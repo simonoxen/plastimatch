@@ -8,17 +8,6 @@ project (src_plastimatch)
 ##-----------------------------------------------------------------------------
 ##  Local options
 ##-----------------------------------------------------------------------------
-# Building little test programs
-option (PLM_BUILD_CUDA_TEST "Build CUDA test program" OFF)
-option (PLM_BUILD_DCMTK_TEST "Build DCMTK test program" OFF)
-option (PLM_BUILD_DLIB_TEST "Build dlib test program" OFF)
-option (PLM_BUILD_FANN_TEST "Build fann test program" OFF)
-option (PLM_BUILD_GDCM1_TEST "Build GDCM test program" OFF)
-option (PLM_BUILD_MEX_TEST "Build mex test program" OFF)
-option (PLM_BUILD_NLOPT_TEST "Build NLopt test program" OFF)
-option (PLM_BUILD_OPENCL_TEST "Build OpenCL test program" OFF)
-option (PLM_BUILD_OPENMP_TEST "Build OpenMP test program" OFF)
-option (PLM_BUILD_QT_TEST "Build Qt test program" OFF)
 
 option (PLM_BUILD_SIFTND "Build siftnD program" ON)
 
@@ -631,27 +620,6 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Simple test files
 ##-----------------------------------------------------------------------------
-# Test executable -- cuda
-if (CUDA_FOUND AND PLM_BUILD_CUDA_TEST)
-  cuda_compile (CUDA_TEST_WRAPPERS cuda_test.cu)
-  set (CUDA_TEST_SRC ${CUDA_TEST_WRAPPERS} cuda_test.cu)
-  message (STATUS "CUDA_TEST_SRC: ${CUDA_TEST_SRC}")
-  plm_add_executable (cuda_test "${CUDA_TEST_SRC}" 
-    "${CUDA_LIBRARIES}" "" 
-    ${BUILD_ALWAYS} ${INSTALL_NEVER})
-  set_target_properties (cuda_test PROPERTIES LINKER_LANGUAGE CXX)
-endif ()
-
-# Test executable -- dcmtk
-if (DCMTK_FOUND AND DCMTK_VERSION_36 AND PLM_BUILD_DCMTK_TEST
-    AND FULL_PLASTIMATCH_BUILD)
-  set (DCMTK_TEST_SRC
-    dcmtk_test.cxx)
-  plm_add_executable (dcmtk_test "${DCMTK_TEST_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${BUILD_ALWAYS} ${INSTALL_NEVER})
-endif ()
-
 # Test executable -- dlib
 if (PLM_BUILD_DLIB_TEST)
   set (DLIB_TEST_SRC dlib_test.cxx)
@@ -852,4 +820,5 @@ add_subdirectory(segment)
 add_subdirectory(standalone)
 add_subdirectory(script)
 add_subdirectory(sys)
+add_subdirectory(test)
 add_subdirectory(util)
