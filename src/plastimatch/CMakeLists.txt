@@ -437,12 +437,6 @@ set (SHUFFLE_MHA_SRC
 set (SIFTnD_SRC
   siftnD.cxx
   )
-set (VMATRIX_SRC
-  Vmatrix.c
-  )
-set (XYZINT_SRC
-  xyzInt.c
-  )
 set (VF_INVERT_SRC
   vf_invert.cxx
   )
@@ -547,11 +541,6 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Executable targets
 ##-----------------------------------------------------------------------------
-plm_add_executable (Vmatrix "${VMATRIX_SRC}" "" "" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-plm_add_executable (xyzInt "${XYZINT_SRC}" "" "" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-
 if (FULL_PLASTIMATCH_BUILD)
   message (STATUS "PLASTIMATCH_LIBS: ${PLASTIMATCH_LIBS}")
   plm_add_executable (extract_contour "${EXTRACT_CONTOUR_SRC}"
