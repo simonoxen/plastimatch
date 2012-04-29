@@ -56,6 +56,28 @@ set (FDK_SRC
   fdk_main.cxx 
   fdk_opts.cxx fdk_opts.h
 )
+set (HND_TO_PFM_SRC
+  hnd_to_pfm.cxx 
+  )
+set (MHA_TO_RAW_SRC
+  mha_to_raw.c
+  )
+set (PROTON_DOSE_SRC
+  proton_dose_main.cxx 
+  proton_dose_opts.cxx proton_dose_opts.h
+  )
+set (RAW_TO_MHA_SRC
+  raw_to_mha.c
+  )
+set (TEST_EPS_SRC
+  test_eps.cxx
+  )
+set (TEST_LIMITS_SRC
+  test_limits.cxx
+  )
+set (TEST_OVERFLOW_SRC
+  test_overflow.cxx
+  )
 
 
 if (FULL_PLASTIMATCH_BUILD)
@@ -95,6 +117,24 @@ plm_add_executable (drr "${DRR_SRC}"
 plm_add_executable (fdk "${FDK_SRC}" 
   "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_ALWAYS})
+plm_add_executable (hnd_to_pfm "${HND_TO_PFM_SRC}" 
+  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+plm_add_executable (mha_to_raw "${MHA_TO_RAW_SRC}"
+  "" ""
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+plm_add_executable (proton_dose "${PROTON_DOSE_SRC}" 
+  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+plm_add_executable (raw_to_mha "${RAW_TO_MHA_SRC}"
+  "" "" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+plm_add_executable (test_eps "${TEST_EPS_SRC}" "" "" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+plm_add_executable (test_limits "${TEST_LIMITS_SRC}" "" "" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+plm_add_executable (test_overflow "${TEST_OVERFLOW_SRC}" "" "" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
 
 
 if (NOT BUILD_DEBIAN)

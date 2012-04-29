@@ -358,9 +358,6 @@ endif ()
 set (EXTRACT_CONTOUR_SRC
   extract_contour.cxx
   )
-set (HND_TO_PFM_SRC
-  hnd_to_pfm.cxx 
-  )
 set (GABOR_TEST_SRC 
   gabor_test.cxx
   )
@@ -425,10 +422,6 @@ set (CRYSTALVIEW_SRC
   cview_portal.cxx cview_portal.h
   cview_main.cxx cview_main.h
   )
-set (PROTON_DOSE_SRC
-  proton_dose_main.cxx 
-  proton_dose_opts.cxx proton_dose_opts.h
-  )
 set (LANDMARK_DIFF_SRC
   landmark_diff_main.cxx
   )
@@ -443,15 +436,6 @@ set (SHUFFLE_MHA_SRC
   )
 set (SIFTnD_SRC
   siftnD.cxx
-  )
-set (TEST_EPS_SRC
-  test_eps.cxx
-  )
-set (TEST_LIMITS_SRC
-  test_limits.cxx
-  )
-set (TEST_OVERFLOW_SRC
-  test_overflow.cxx
   )
 set (VMATRIX_SRC
   Vmatrix.c
@@ -563,24 +547,6 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Executable targets
 ##-----------------------------------------------------------------------------
-# JAS 2012.04.27 -- Disabled until CUDA
-#   linkage gets sorted out
-plm_add_executable (hnd_to_pfm "${HND_TO_PFM_SRC}" 
-  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-plm_add_executable (mha_to_raw mha_to_raw.c "" "" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-plm_add_executable (proton_dose "${PROTON_DOSE_SRC}" 
-  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-plm_add_executable (raw_to_mha raw_to_mha.c "" "" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-plm_add_executable (test_eps "${TEST_EPS_SRC}" "" "" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-plm_add_executable (test_limits "${TEST_LIMITS_SRC}" "" "" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-plm_add_executable (test_overflow "${TEST_OVERFLOW_SRC}" "" "" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
 plm_add_executable (Vmatrix "${VMATRIX_SRC}" "" "" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
 plm_add_executable (xyzInt "${XYZINT_SRC}" "" "" 
