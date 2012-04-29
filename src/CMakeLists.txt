@@ -13,6 +13,11 @@ set (PLMBASE_LIBRARY_DEPENDENCIES
   plmsys
   )
 
+set (PLMRECONSTRUCT_LIBRARY_DEPENDENCIES 
+  plmbase
+  plmsys
+  )
+
 set (PLMREGISTER_LIBRARY_DEPENDENCIES 
   plmbase
   plmsys
@@ -55,6 +60,7 @@ set (PLMUTIL_LIBRARY_DEPENDENCIES
 # This will go away soon
 set (GPUIT_LIBRARY_DEPENDENCIES 
   plmbase
+  plmreconstruct
   plmregister
   plmsegment
   plmscript

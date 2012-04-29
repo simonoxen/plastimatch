@@ -27,6 +27,7 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/base)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/cli)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/cuda)
+include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/reconstruct)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/register)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/script)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/segment)
@@ -107,38 +108,10 @@ endif ()
 ##  PLMSYS/GPUIT/PLASTIMATCH LIBRARY SOURCE FILES
 ##-----------------------------------------------------------------------------
 set (GPUIT_LIBRARY_SRC
-  bowtie_correction.cxx bowtie_correction.h
   bspline_optimize_nlopt.cxx bspline_optimize_nlopt.h
-  drr.cxx drr.h
-  drr_trilin.cxx drr_trilin.h
-  fdk.cxx fdk.h
-  fdk_util.cxx fdk_util.h
-  proj_image.cxx proj_image.h
-  proj_image_dir.cxx proj_image_dir.h
-  proj_matrix.cxx proj_matrix.h 
   proton_dose.cxx proton_dose.h 
   )
 
-  # JAS 2012.4.27
-  #   Temporary hack until CUDA linkage gets sorted out.
-  if (CUDA_FOUND)
-    set (GPUIT_CUDA_HACK
-      cuda/cuda_util.cu
-      drr_cuda.cu
-      fdk_cuda.cu
-      )
-    cuda_compile (CUDA_WRAPPERS ${GPUIT_CUDA_HACK})
-    set (GPUIT_LIBRARY_SRC
-        ${GPUIT_LIBRARY_SRC}
-        ${CUDA_WRAPPERS}
-        drr_cuda.cpp
-        fdk_cuda.cpp
-    )
-    set (GPUIT_LIBRARY_DEPENDENCIES
-      ${GPUIT_LIBRARY_DEPENDENCIES}
-      ${CUDA_LIBRARIES}
-    )
-  endif ()
 
 #set (PLMCUDA_LIBRARY_SRC
 #  bspline_cuda.cpp bspline_cuda.cu bspline_cuda.h
@@ -200,13 +173,6 @@ if (QT4_FOUND)
   qt4_wrap_cpp (CRYSTALVIEW_MOC_SRC
     cview_main.h
     )
-endif ()
-
-if (FFTW_FOUND)
-  set (GPUIT_LIBRARY_SRC
-    ${GPUIT_LIBRARY_SRC}
-    ramp_filter.cxx ramp_filter.h
-   )
 endif ()
 
 if (OPENCL_FOUND)
@@ -431,12 +397,6 @@ set (XF_TO_EMPIREFMT_SRC
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILE PROPERTIES
 ##-----------------------------------------------------------------------------
-if (OPENMP_FOUND)
-  set_source_files_properties (drr.cxx
-    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
-  set_source_files_properties (fdk.cxx
-    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
-endif ()
 
 
 ##-----------------------------------------------------------------------------
@@ -669,6 +629,7 @@ endif ()
 # plastimatch modules
 add_subdirectory(base)
 add_subdirectory(cli)
+add_subdirectory(reconstruct)
 add_subdirectory(register)
 add_subdirectory(segment)
 add_subdirectory(standalone)

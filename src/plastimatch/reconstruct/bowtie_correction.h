@@ -6,7 +6,8 @@
 
 #include "plm_config.h"
 #include "plmbase.h"
-#include "fdk.h"
+
+typedef struct fdk_parms Fdk_parms;
 
 #if defined __cplusplus
 extern "C" {

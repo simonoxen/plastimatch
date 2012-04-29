@@ -12,7 +12,7 @@
 #include "plmbase.h"
 
 #include "bowtie_correction.h"
-#include "fdk_opts.h"
+#include "fdk.h"
 #include "plm_math.h"
 #include "volume.h"
 

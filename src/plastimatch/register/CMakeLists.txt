@@ -75,6 +75,10 @@ if (CUDA_FOUND)
       ${PLMREGISTER_CUDA_IFACE_SRC}
       ${CUDA_WRAPPERS}
       )
+    set (PLMREGISTER_LIBRARY_DEPENDENCIES
+      ${PLMREGISTER_LIBRARY_DEPENDENCIES}
+      ${CUDA_LIBRARIES}
+      )
   endif ()
 endif ()
 #----------------
