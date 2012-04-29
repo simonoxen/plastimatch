@@ -19,7 +19,6 @@
 #include "bspline_optimize_nlopt.h"
 #endif
 #include "bspline_optimize_steepest.h"
-#include "bspline_opts.h"
 
 /* EXTERNAL DEPENDS */
 #include "bspline_xform.h"

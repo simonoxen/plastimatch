@@ -11,7 +11,6 @@
 
 #include "bspline.h"
 #include "bspline_landmarks.h"
-#include "bspline_opts.h"
 #include "compiler_warnings.h"
 #include "landmark_warp.h"
 #include "plm_math.h"

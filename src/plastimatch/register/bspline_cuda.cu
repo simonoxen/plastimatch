@@ -11,7 +11,6 @@
 
 #include "plmbase.h"
 
-#include "bspline_opts.h"
 #include "bspline_cuda.h"
 #include "bspline_cuda_kernels.h"
 #include "cuda_util.h"

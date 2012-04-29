@@ -119,7 +119,6 @@ endif ()
 set (GPUIT_LIBRARY_SRC
   bowtie_correction.cxx bowtie_correction.h
   bspline_optimize_nlopt.cxx bspline_optimize_nlopt.h
-  bspline_opts.cxx bspline_opts.h
   drr.cxx drr.h
   drr_trilin.cxx drr_trilin.h
   fdk.cxx fdk.h
@@ -338,37 +337,10 @@ if (ITK_FOUND AND GDCM_VERSION_2)
     )
 endif ()
 
-if (DCMTK_FOUND AND NOT DCMTK_VERSION_STRING VERSION_LESS 3.6.0)
-  set (PLASTIMATCH1_LIBRARY_SRC
-    ${PLASTIMATCH1_LIBRARY_SRC}
-    dcmtk_file.cxx dcmtk_file.h
-    dcmtk_image.cxx dcmtk_image.h
-    dcmtk_load.cxx dcmtk_load.h
-    dcmtk_metadata.cxx dcmtk_metadata.h 
-    dcmtk_save.cxx dcmtk_save.h
-    dcmtk_series.cxx dcmtk_series.h
-    dcmtk_rtdose.cxx 
-    dcmtk_rtss.cxx dcmtk_rtss.h
-    dcmtk_series_set.cxx dcmtk_series_set.h
-    dcmtk_uid.cxx dcmtk_uid.h 
-    dcmtk_util.cxx dcmtk_util.h
-    )
-endif ()
 
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES (EXECUTABLES)
 ##-----------------------------------------------------------------------------
-set (BRAGG_CURVE_SRC
-  bragg_curve_main.c 
-  bragg_curve_opts.c bragg_curve_opts.h
-  )
-set (BSPLINE_SRC
-  bspline_main.cxx 
-  )
-set (CHECK_GRAD_SRC
-  check_grad.cxx
-  check_grad_opts.cxx check_grad_opts.h 
-  )
 set (COMPUTE_MEAN_IMAGE_SRC
   compute_mean_image_main.cxx
   )
@@ -384,10 +356,6 @@ if (CUDA_FOUND)
     ${CUDA_PROBE_WRAPPERS}
     )
 endif ()
-set (DEMONS_SRC
-  demons_main.cxx 
-  demons_opts.cxx demons_opts.h
-  )
 set (DICOM_INFO_SRC
   dicom_info.cxx)
 set (DICOM_UID_SRC
@@ -615,22 +583,8 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Executable targets
 ##-----------------------------------------------------------------------------
-if (NOT BUILD_DEBIAN)
-  plm_add_executable (bragg_curve "${BRAGG_CURVE_SRC}" 
-    "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-endif ()
 # JAS 2012.04.27 -- Disabled until CUDA
 #   linkage gets sorted out
-plm_add_executable (bspline "${BSPLINE_SRC}" 
-  "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-#plm_add_executable (check_grad "${CHECK_GRAD_SRC}" 
-#  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
-#  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-plm_add_executable (demons "${DEMONS_SRC}" 
-  "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 plm_add_executable (drr "${DRR_SRC}" 
   "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_ALWAYS})

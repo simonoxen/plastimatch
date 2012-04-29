@@ -9,9 +9,9 @@
 #include "plmsys.h"
 
 #include "cuda_util.h"
+#include "demons.h"
 #include "demons_cuda.h"
 #include "demons_misc.h"
-#include "demons_opts.h"
 #include "demons_state.h"
 #include "plm_cuda_math.h"
 #include "volume.h"

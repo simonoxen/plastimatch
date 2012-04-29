@@ -13,7 +13,6 @@
 
 #include "bspline.h"
 #include "bspline_landmarks.h"
-#include "bspline_opts.h"
 #include "volume_macros.h"
 
 /* EXTERNAL DEPE#NDS */

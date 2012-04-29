@@ -20,7 +20,6 @@
 #include "cuda_util.h"
 #endif
 #include "bspline_optimize_lbfgsb.h"
-#include "bspline_opts.h"
 #include "plm_math.h"
 #include "volume_macros.h"
 

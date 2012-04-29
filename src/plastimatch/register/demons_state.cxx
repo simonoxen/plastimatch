@@ -9,8 +9,8 @@
 
 #include "plmbase.h"
 
+#include "demons.h"
 #include "demons_misc.h"
-#include "demons_opts.h"
 #include "demons_state.h"
 #include "volume.h"
 

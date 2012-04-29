@@ -46,7 +46,6 @@
 #include "bspline_landmarks.h"
 #include "bspline_optimize.h"
 #include "bspline_optimize_lbfgsb.h"
-#include "bspline_opts.h"
 
 /* EXTERNAL DEPENDS */
 #include "bspline_xform.h"

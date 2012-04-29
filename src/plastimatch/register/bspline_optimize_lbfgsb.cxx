@@ -11,7 +11,6 @@
 #include "bspline.h"
 #include "bspline_optimize.h"
 #include "bspline_optimize_lbfgsb.h"
-#include "bspline_opts.h"
 #include "plm_fortran.h"
 
 #include "plmbase.h"

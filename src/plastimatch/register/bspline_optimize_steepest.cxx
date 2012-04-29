@@ -20,7 +20,6 @@
 #endif
 #include "bspline_optimize.h"
 #include "bspline_optimize_steepest.h"
-#include "bspline_opts.h"
 
 /* EXTERNAL DEPENDS */
 #include "bspline_xform.h"

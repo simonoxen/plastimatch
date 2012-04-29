@@ -10,7 +10,7 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "demons_opts.h"
+#include "demons.h"
 #include "demons_misc.h"
 #include "volume.h"
 
