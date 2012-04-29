@@ -69,7 +69,6 @@ if (CUDA_FOUND)
 endif ()
 #----------------
 
-
 # plmreconstruct uses OpenMP
 if (OPENMP_FOUND)
   set (PLMRECONSTRUCT_LIBRARY_LDFLAGS "${OPENMP_LDFLAGS}")

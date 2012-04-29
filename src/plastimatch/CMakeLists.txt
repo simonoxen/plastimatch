@@ -305,17 +305,8 @@ if (CUDA_FOUND)
     ${CUDA_PROBE_WRAPPERS}
     )
 endif ()
-set (EXTRACT_CONTOUR_SRC
-  extract_contour.cxx
-  )
-set (GABOR_TEST_SRC 
-  gabor_test.cxx
-  )
 set (MEX_DRR_SRC
   mex_drr.c
-  )
-set (MHA_TO_RTOG_DOSE_SRC
-  mha_to_rtog_dose.cxx
   )
 set (MONDOSHOT_SRC
   dcmtk_uid.cxx dcmtk_uid.h
@@ -372,26 +363,11 @@ set (CRYSTALVIEW_SRC
   cview_portal.cxx cview_portal.h
   cview_main.cxx cview_main.h
   )
-set (LANDMARK_DIFF_SRC
-  landmark_diff_main.cxx
-  )
 set (RANSAC_TEST_SRC 
   ransac_test.cxx
   )
-set (RTOG_TO_MHA_SRC
-  rtog_to_mha.cxx
-  )
-set (SHUFFLE_MHA_SRC
-  shuffle_mha_main.cxx
-  )
 set (SIFTnD_SRC
   siftnD.cxx
-  )
-set (VF_INVERT_SRC
-  vf_invert.cxx
-  )
-set (XF_TO_EMPIREFMT_SRC
-  xf_to_empirefmt.cxx
   )
 
 ##-----------------------------------------------------------------------------
@@ -472,21 +448,7 @@ endif ()
 ##-----------------------------------------------------------------------------
 if (FULL_PLASTIMATCH_BUILD)
   message (STATUS "PLASTIMATCH_LIBS: ${PLASTIMATCH_LIBS}")
-  plm_add_executable (extract_contour "${EXTRACT_CONTOUR_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-  plm_add_executable (gabor_test "${GABOR_TEST_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-  plm_add_executable (landmark_diff "${LANDMARK_DIFF_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-  plm_add_executable (merge_vfs merge_vector_fields.cxx
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-  plm_add_executable (mha_to_rtog_dose "${MHA_TO_RTOG_DOSE_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+
   if (QT4_FOUND)
     set (CRYSTALVIEW_LIBRARIES ${PLASTIMATCH_LIBS} 
       ${QT_LIBRARIES} ${QT_QTSQL_LIBRARIES})
@@ -501,29 +463,16 @@ if (FULL_PLASTIMATCH_BUILD)
       "${PLASTIMATCH_QT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
       ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   endif ()
+
   plm_add_executable (ransac_test "${RANSAC_TEST_SRC}" 
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-  plm_add_executable (rtog_to_mha "${RTOG_TO_MHA_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-  plm_add_executable (shuffle_mha "${SHUFFLE_MHA_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+
   if (PLM_BUILD_SIFTND)
     plm_add_executable (siftnD "${SIFTnD_SRC}"
       "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
       ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   endif ()
-  plm_add_executable (union_mask union_mask.cxx
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-  plm_add_executable (vf_invert "${VF_INVERT_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-  plm_add_executable (xf_to_EMPIREFMT "${XF_TO_EMPIREFMT_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
 
 # executables that require cuda

@@ -7,18 +7,18 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 
 set (BRAGG_CURVE_SRC
   bragg_curve_main.c 
-  bragg_curve_opts.c bragg_curve_opts.h
+  bragg_curve_opts.c
   )
 set (BSPLINE_SRC
   bspline_main.cxx 
-  bspline_opts.cxx bspline_opts.h
+  bspline_opts.cxx
   )
 set (CHECK_GRAD_SRC
   check_grad.cxx
-  check_grad_opts.cxx check_grad_opts.h 
+  check_grad_opts.cxx
   )
 set (COMPUTE_DISTANCE_SRC
-  compute_distance.cxx compute_distance.h
+  compute_distance.cxx
   closest_point.cxx 
   read_obj.cxx
   )
@@ -27,12 +27,12 @@ set (COMPUTE_MEAN_IMAGE_SRC
   )
 set (DEMONS_SRC
   demons_main.cxx 
-  demons_opts.cxx demons_opts.h
+  demons_opts.cxx
   )
 set (DICE_STATS_SRC
   dice_stats_main.cxx
-  dice_statistics.cxx dice_statistics.h
-  hausdorff_statistics.cxx hausdorff_statistics.h
+  dice_statistics.cxx
+  hausdorff_statistics.cxx
   )
 set (DICOM_INFO_SRC
   dicom_info.cxx
@@ -50,24 +50,54 @@ set (DLIB_TRAIN_SRC
   )
 set (DRR_SRC
   drr_main.cxx 
-  drr_opts.cxx drr_opts.h
+  drr_opts.cxx
+  )
+set (EXTRACT_CONTOUR_SRC
+  extract_contour.cxx
   )
 set (FDK_SRC
   fdk_main.cxx 
-  fdk_opts.cxx fdk_opts.h
+  fdk_opts.cxx
 )
+set (GABOR_TEST_SRC 
+  gabor_test.cxx
+  )
 set (HND_TO_PFM_SRC
   hnd_to_pfm.cxx 
+  )
+set (LANDMARK_DIFF_SRC
+  landmark_diff_main.cxx
+  )
+set (MERGE_VFS_SRC
+  merge_vector_fields.cxx
   )
 set (MHA_TO_RAW_SRC
   mha_to_raw.c
   )
+set (MHA_TO_RTOG_DOSE_SRC
+  mha_to_rtog_dose.cxx
+  )
 set (PROTON_DOSE_SRC
   proton_dose_main.cxx 
-  proton_dose_opts.cxx proton_dose_opts.h
+  proton_dose_opts.cxx
   )
 set (RAW_TO_MHA_SRC
   raw_to_mha.c
+  )
+set (RTOG_TO_MHA_SRC
+  rtog_to_mha.cxx
+  )
+set (UNION_MASK_SRC
+  union_mask.cxx
+  )
+set (SHUFFLE_MHA_SRC
+  shuffle_mha_main.cxx
+  )
+set (VF_INVERT_SRC
+  vf_invert.cxx
+  )
+set (XF_TO_EMPIREFMT_SRC
+  xf_to_empirefmt.cxx
   )
 
 
@@ -85,6 +115,36 @@ if (FULL_PLASTIMATCH_BUILD)
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   plm_add_executable (distance_map "${DISTANCE_MAP_SRC}"
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+  plm_add_executable (extract_contour "${EXTRACT_CONTOUR_SRC}"
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+  plm_add_executable (gabor_test "${GABOR_TEST_SRC}" 
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+  plm_add_executable (landmark_diff "${LANDMARK_DIFF_SRC}" 
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+  plm_add_executable (merge_vfs  "${MERGE_VFS_SRC}"
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+  plm_add_executable (mha_to_rtog_dose "${MHA_TO_RTOG_DOSE_SRC}"
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+  plm_add_executable (rtog_to_mha "${RTOG_TO_MHA_SRC}"
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+  plm_add_executable (shuffle_mha "${SHUFFLE_MHA_SRC}"
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+  plm_add_executable (union_mask "${UNION_MASK_SRC}"
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+  plm_add_executable (vf_invert "${VF_INVERT_SRC}"
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+  plm_add_executable (xf_to_EMPIREFMT "${XF_TO_EMPIREFMT_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
