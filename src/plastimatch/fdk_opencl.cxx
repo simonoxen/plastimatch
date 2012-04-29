@@ -11,7 +11,7 @@
 
 #include "autotune_opencl.h"
 #include "fdk_opencl_p.h"
-#include "fdk_opts.h"
+#include "fdk.h"
 #include "fdk_util.h"
 #include "plm_math.h"
 #include "opencl_util.h"
@@ -23,7 +23,7 @@ void
 opencl_reconstruct_conebeam (
     Volume *vol, 
     Proj_image_dir *proj_dir, 
-    Fdk_options *options
+    Fdk_parms *parms
 )
 {
     Opencl_device ocl_dev;
@@ -118,16 +118,16 @@ opencl_reconstruct_conebeam (
     );
 
     /* Calculate the scale */
-    image_num = 1 + (options->last_img - options->first_img) 
-        / options->skip_img;
+    image_num = 1 + (parms->last_img - parms->first_img) 
+        / parms->skip_img;
     scale = (float)(sqrt(3.0)/(double)image_num);
-    scale = scale * options->scale;
+    scale = scale * parms->scale;
 
     /* Free proj image */
     delete proj;
 
     /* Project each image into the volume one at a time */
-    for (image_num = options->first_img; 
+    for (image_num = parms->first_img; 
          image_num < proj_dir->num_proj_images; 
          image_num++)
     {
@@ -138,7 +138,7 @@ opencl_reconstruct_conebeam (
         proj = proj_dir->load_image (image_num);
 
         /* Apply ramp filter */
-        if (options->filter == FDK_FILTER_TYPE_RAMP) {
+        if (parms->filter == FDK_FILTER_TYPE_RAMP) {
             proj_image_filter (proj);
         }
 
