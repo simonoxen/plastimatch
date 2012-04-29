@@ -249,14 +249,8 @@ if (F2C_LIBRARY)
 endif ()
 
 set (PLASTIMATCH1_LIBRARY_SRC
-  autolabel.cxx autolabel.h 
-  autolabel_task.cxx autolabel_task.h 
-  autolabel_thumbnailer.cxx autolabel_thumbnailer.h 
-  autolabel_trainer.cxx autolabel_trainer.h 
-  autolabel_ransac_est.cxx autolabel_ransac_est.h 
   cxt_extract.cxx cxt_extract.h
   cxt_io.cxx cxt_io.h 
-  dlib_trainer.cxx dlib_trainer.h 
   dvh.cxx dvh.h
   gamma_analysis.cxx gamma_analysis.h
   itk_crop.cxx itk_crop.h 
@@ -363,9 +357,6 @@ set (CRYSTALVIEW_SRC
   cview_portal.cxx cview_portal.h
   cview_main.cxx cview_main.h
   )
-set (RANSAC_TEST_SRC 
-  ransac_test.cxx
-  )
 set (SIFTnD_SRC
   siftnD.cxx
   )
@@ -464,9 +455,6 @@ if (FULL_PLASTIMATCH_BUILD)
       ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   endif ()
 
-  plm_add_executable (ransac_test "${RANSAC_TEST_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 
   if (PLM_BUILD_SIFTND)
     plm_add_executable (siftnD "${SIFTnD_SRC}"

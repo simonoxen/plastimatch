@@ -11,6 +11,12 @@ configure_file (
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 
 set (PLMSEGMENT_LIBRARY_SRC
+  autolabel.cxx
+  autolabel_task.cxx
+  autolabel_thumbnailer.cxx
+  autolabel_trainer.cxx
+  autolabel_ransac_est.cxx
+  dlib_trainer.cxx
   segment_body.cxx
   )
 

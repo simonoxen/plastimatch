@@ -13,6 +13,7 @@ option (PLM_BUILD_NLOPT_TEST  "Build NLopt test program"  OFF)
 option (PLM_BUILD_OPENCL_TEST "Build OpenCL test program" OFF)
 option (PLM_BUILD_OPENMP_TEST "Build OpenMP test program" OFF)
 option (PLM_BUILD_QT_TEST     "Build Qt test program"     OFF)
+option (PLM_BUILD_RANSAC_TEST "Build RANSAC test program" OFF)
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -137,6 +138,11 @@ if (PLM_BUILD_QT_TEST AND QT4_FOUND)
     ${BUILD_ALWAYS} ${INSTALL_NEVER})
 endif ()
 
+if (PLM_BUILD_RANSAC_TEST)
+  plm_add_executable (ransac_test ransac_test.cxx
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+endif ()
 
 plm_add_executable (test_eps test_eps.cxx
   "" "" 
