@@ -121,8 +121,7 @@ set (GPUIT_LIBRARY_SRC
   )
 
   # JAS 2012.4.27
-  #   Temporary hack until CUDA linkage gets
-  #      sorted out.
+  #   Temporary hack until CUDA linkage gets sorted out.
   if (CUDA_FOUND)
     set (GPUIT_CUDA_HACK
       cuda/cuda_util.cu
@@ -615,119 +614,6 @@ endif ()
 if (MATLAB_FOUND)
   mex_target (mex_drr 
     "${MEX_DRR_SRC}" "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}")
-endif ()
-
-##-----------------------------------------------------------------------------
-##  Simple test files
-##-----------------------------------------------------------------------------
-# Test executable -- dlib
-if (PLM_BUILD_DLIB_TEST)
-  set (DLIB_TEST_SRC dlib_test.cxx)
-  set (DLIB_TEST_LIBS "")
-  plm_add_executable (dlib_test "${DLIB_TEST_SRC}" 
-    "${DLIB_TEST_LIBS}" "" 
-    ${BUILD_ALWAYS} ${INSTALL_NEVER})
-endif ()
-
-# Test executable -- fann
-if (FANN_FOUND AND PLM_BUILD_FANN_TEST)
-  set (FANN_TEST_SRC fann_test.c)
-  set (FANN_TEST_LIBS 
-    ${GPUIT_LIBRARIES} ${FANN_LIBRARIES})
-  plm_add_executable (fann_test "${FANN_TEST_SRC}" 
-    "${FANN_TEST_LIBS}" "${OPENMP_LDFLAGS}"
-    ${BUILD_ALWAYS} ${INSTALL_NEVER})
-endif ()
-
-# Test executable -- gdcm
-if (ITK_FOUND AND GDCM_VERSION_1 AND PLM_BUILD_GDCM1_TEST)
-  set (GDCM1_TEST_SRC
-    gdcm1_test.cxx)
-  plm_add_executable (gdcm1_test "${GDCM1_TEST_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${BUILD_ALWAYS} ${INSTALL_NEVER})
-endif ()
-
-# Test executable -- mex
-if (PLM_BUILD_MEX_TEST)
-  if (OCTAVE_FOUND)
-    add_custom_command (
-      OUTPUT "${CMAKE_BINARY_DIR}/mex_test.mex"
-      COMMAND ${OCTAVE_MKOCTFILE} --mex 
-      -o "${CMAKE_BINARY_DIR}/mex_test.mex" 
-      "${CMAKE_SOURCE_DIR}/mex_test.c"
-      DEPENDS "${CMAKE_SOURCE_DIR}/mex_test.c")
-    add_custom_target (oct_mex_test
-      DEPENDS "${CMAKE_BINARY_DIR}/mex_test.mex")
-  endif ()
-  if (MATLAB_FOUND)
-    file (WRITE "${CMAKE_BINARY_DIR}/compile_mex_test.m"
-      "mex \"${CMAKE_SOURCE_DIR}/mex_test.c\";exit;\n")
-    file (WRITE "${CMAKE_BINARY_DIR}/mex_test.cmake"
-      "EXECUTE_PROCESS (COMMAND ${MATLAB_EXE} -nosplash -nodesktop -nojvm
-       -r compile_mex_test
-       RESULT_VARIABLE RESULT
-       OUTPUT_VARIABLE STDOUT
-       ERROR_VARIABLE STDERR)\n")
-    add_custom_command (
-      OUTPUT "${CMAKE_BINARY_DIR}/mex_test${MATLAB_MEXEXT}"
-      COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/mex_test.cmake"
-      DEPENDS "${CMAKE_SOURCE_DIR}/mex_test.c")
-    add_custom_target (mat_mex_test
-      DEPENDS "${CMAKE_BINARY_DIR}/mex_test${MATLAB_MEXEXT}")
-    target_link_libraries (mex_test ${MATLAB_LIBRARIES})
-  endif ()
-endif ()
-
-# Test executable -- nlopt
-if (PLM_BUILD_NLOPT_TEST AND NLOPT_FOUND)
-  set (NLOPT_TEST_SRC nlopt_test.c)
-  set (NLOPT_TEST_LIBS 
-    ${GPUIT_LIBRARIES} ${NLOPT_LIBRARIES})
-  plm_add_executable (nlopt_test "${NLOPT_TEST_SRC}" 
-    "${NLOPT_TEST_LIBS}" "${OPENMP_LDFLAGS}" 
-    ${BUILD_ALWAYS} ${INSTALL_NEVER})
-  set_target_properties (nlopt_test PROPERTIES LINKER_LANGUAGE CXX)
-endif ()
-
-# Test executable -- opencl
-if (PLM_BUILD_OPENCL_TEST AND OPENCL_FOUND)
-  set (OPENCL_TEST_SRC opencl_test.cxx opencl_test.h opencl_test.cl
-    "${CMAKE_BINARY_DIR}/opencl_test.cl"
-    )
-  set (OPENCL_TEST_LIBS ${OPENCL_LIBRARIES} ${PLASTIMATCH_LIBS})
-  plm_add_executable (opencl_test "${OPENCL_TEST_SRC}" 
-    "${OPENCL_TEST_LIBS}" "" 
-    ${BUILD_ALWAYS} ${INSTALL_NEVER})
-
-  # I don't yet know how to bundle the .cl file within the executable.
-  # Therefore, copy the .cl into binary directory.
-  add_custom_command (
-    OUTPUT "${CMAKE_BINARY_DIR}/opencl_test.cl" 
-    COMMAND ${CMAKE_COMMAND} "-E" "copy" 
-    "${CMAKE_CURRENT_SOURCE_DIR}/opencl_test.cl" 
-    "${CMAKE_BINARY_DIR}/opencl_test.cl" 
-    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/opencl_test.cl")
-endif ()
-
-# Test executable -- openmp
-if (PLM_BUILD_OPENMP_TEST AND OPENMP_FOUND)
-  set (OPENMP_TEST_SRC openmp_test.c)
-  plm_add_executable (openmp_test "${OPENMP_TEST_SRC}" 
-    "${GPUIT_LIBRARIES}" "${OPENMP_LDFLAGS}" 
-    ${BUILD_ALWAYS} ${INSTALL_NEVER})
-endif ()
-
-# Test executable -- cuda_tex_test
-if (PLM_BUILD_CUDA_TEST AND CUDA_FOUND)
-  add_subdirectory (CUDA_tex_test)
-endif ()
-
-# Test executable -- qt
-if (PLM_BUILD_QT_TEST AND QT4_FOUND)
-  set (QT_TEST_SRC qt_test.cxx)
-  plm_add_executable (qt_test "${QT_TEST_SRC}" "${QT_LIBRARIES}" "" 
-    ${BUILD_ALWAYS} ${INSTALL_NEVER})
 endif ()
 
 ##-----------------------------------------------------------------------------
