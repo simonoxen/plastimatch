@@ -66,9 +66,6 @@ if (CUDA_FOUND)
       ARCHIVE_OUTPUT_DIRECTORY "${PLM_BUILD_ROOT}"
       LIBRARY_OUTPUT_DIRECTORY "${PLM_BUILD_ROOT}"
       RUNTIME_OUTPUT_DIRECTORY "${PLM_BUILD_ROOT}")
-    target_link_libraries (plmregistercuda
-        plmsys
-        )
   else ()
     # building CUDA into plmregister
     cuda_compile (CUDA_WRAPPERS ${PLMREGISTER_CUDA_SRC})

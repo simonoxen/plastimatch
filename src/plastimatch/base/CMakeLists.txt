@@ -97,6 +97,23 @@ if (ITK_FOUND AND GDCM_VERSION_1)
     gdcm1_util.cxx gdcm1_util.h
     )
 endif ()
+# JAS 2012.04.28 -- Commented out for Plastimatch 2.0 transition
+#if (DCMTK_FOUND AND NOT DCMTK_VERSION_STRING VERSION_LESS 3.6.0)
+#  set (PLMBASE_LIBRARY_SRC
+#    ${PLMBASE_LIBRARY_SRC}
+#    dcmtk_file.cxx dcmtk_file.h
+#    dcmtk_image.cxx dcmtk_image.h
+#    dcmtk_load.cxx dcmtk_load.h
+#    dcmtk_metadata.cxx dcmtk_metadata.h 
+#    dcmtk_save.cxx dcmtk_save.h
+#    dcmtk_series.cxx dcmtk_series.h
+#    dcmtk_rtdose.cxx 
+#    dcmtk_rtss.cxx dcmtk_rtss.h
+#    dcmtk_series_set.cxx dcmtk_series_set.h
+#    dcmtk_uid.cxx dcmtk_uid.h 
+#    dcmtk_util.cxx dcmtk_util.h
+#    )
+#endif ()
 
 plm_add_library (
   plmbase

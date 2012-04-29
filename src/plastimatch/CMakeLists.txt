@@ -68,7 +68,6 @@ include_directories (AFTER ${LUA_INCLUDE_DIR})
 
 if (CUDA_FOUND)
   include_directories (AFTER ${CUDA_INCLUDE_DIRS})
-  #INCLUDE_DIRECTORIES (AFTER ${CUDA_CUT_INCLUDE_DIR})
 endif ()
 
 if (DCMTK_FOUND)
