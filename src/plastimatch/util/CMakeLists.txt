@@ -12,8 +12,15 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 
 set (PLMUTIL_LIBRARY_SRC
   bspline_warp.cxx
+  itk_crop.cxx
+  itk_gabor.cxx
+  itk_mask.cxx
+  itk_tps.cxx
   itk_warp.cxx
+  landmark_diff.cxx
   plm_warp.cxx
+  rasterize_slice.cxx
+  slice_extract.cxx
   ss_img_extract.cxx
   )
 

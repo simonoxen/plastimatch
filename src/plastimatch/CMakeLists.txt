@@ -252,26 +252,19 @@ set (PLASTIMATCH1_LIBRARY_SRC
   cxt_io.cxx cxt_io.h 
   dvh.cxx dvh.h
   gamma_analysis.cxx gamma_analysis.h
-  itk_crop.cxx itk_crop.h 
-  itk_gabor.cxx itk_gabor.h
-  itk_mask.cxx itk_mask.h 
-  itk_tps.cxx itk_tps.h 
   landmark_warp.cxx landmark_warp.h 
-  landmark_diff.cxx landmark_diff.h
   plm_clp.cxx plm_clp.h
   rasterizer.cxx rasterizer.h
-  rasterize_slice.cxx rasterize_slice.h
   rtds.cxx rtds.h
   rtds_dcmtk.cxx
   rtds_gdcm.cxx
   rtds_warp.cxx rtds_warp.h
   rtss.cxx rtss.h
   simplify_points.cxx simplify_points.h
-  slice_extract.cxx slice_extract.h
   ss_img_stats.cxx ss_img_stats.h 
   ss_list_io.cxx ss_list_io.h
-  synthetic_mha.cxx synthetic_mha.h
-  synthetic_vf.cxx synthetic_vf.h
+  synthetic_mha.cxx
+  synthetic_vf.cxx
   threshbox.cxx threshbox.h
   )
 
