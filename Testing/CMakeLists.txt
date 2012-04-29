@@ -2844,24 +2844,6 @@ set_tests_properties (plm-xf-convert-d-warp-2-check PROPERTIES
   DEPENDS plm-xf-convert-d-warp-2-stats)
 
 ## -------------------------------------------------------------------------
-## plm-api - Tests of plastimatch API
-##   plm drr api a:
-##   plm registration api a:
-## -------------------------------------------------------------------------
-plm_add_test (
-  "plm-drr-api-a"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plm_drr_api_a
-  ""
-  )
-plm_add_test (
-  "plm-registration-api-a"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plm_registration_api_a
-  ""
-  )
-
-## -------------------------------------------------------------------------
 ## bragg-curve
 ## proton-dose
 ## -------------------------------------------------------------------------

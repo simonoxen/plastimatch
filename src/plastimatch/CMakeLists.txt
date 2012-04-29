@@ -300,9 +300,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   landmark_warp.cxx landmark_warp.h 
   landmark_diff.cxx landmark_diff.h
   plm_clp.cxx plm_clp.h
-  plm_drr_api.cxx plm_drr_api.h 
-  #  plm_register_loadable.cxx plm_register_loadable.h 
-  #  plm_registration_api.cxx plm_registration_api.h 
   rasterizer.cxx rasterizer.h
   rasterize_slice.cxx rasterize_slice.h
   rtds.cxx rtds.h
