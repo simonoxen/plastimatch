@@ -6,7 +6,8 @@
 
 #include "plm_config.h"
 #include "plmbase.h"
-#include "fdk_opts.h"
+
+#include "fdk.h"
 #include "proj_matrix.h"
 
 class gpuit_EXPORT Proj_image
@@ -48,12 +49,14 @@ gpuit_EXPORT
 void 
 proj_image_free (Proj_image* proj);
 
+#if 0
 gpuit_EXPORT Proj_image* 
 proj_image_load_and_filter (
-    Fdk_options * options, 
+    Fdk_parms* parms, 
     const char* img_filename, 
     const char* mat_filename
 );
+#endif
 
 gpuit_EXPORT 
 Proj_image* 

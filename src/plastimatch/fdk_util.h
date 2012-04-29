@@ -13,11 +13,11 @@
 extern "C" {
 #endif
 
-void convert_to_hu (Volume* vol, Fdk_options* options);
-Volume* my_create_volume (Fdk_options* options);
-Proj_image* get_image_pfm (Fdk_options* options, int image_num);
-Proj_image* get_image_raw (Fdk_options* options, int image_num);
-void write_coronal_sagittal (Fdk_options* options, Volume* vol);
+void convert_to_hu (Volume* vol, Fdk_parms* parms);
+Volume* my_create_volume (Fdk_parms* parms);
+Proj_image* get_image_pfm (Fdk_parms* parms, int image_num);
+Proj_image* get_image_raw (Fdk_parms* parms, int image_num);
+void write_coronal_sagittal (Fdk_parms* parms, Volume* vol);
 
 
 #if defined __cplusplus

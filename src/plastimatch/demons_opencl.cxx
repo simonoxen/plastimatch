@@ -9,7 +9,6 @@
 
 #include "plmbase.h"
 
-#include "demons_opts.h"
 #include "demons_misc.h"
 #include "opencl_util.h"
 #include "volume.h"

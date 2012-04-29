@@ -6,7 +6,7 @@
 
 #include "plm_config.h"
 #include "plmbase.h"
-#include "fdk_opts.h"
+#include "fdk.h"
 #include "proj_image_dir.h"
 #include "delayload.h"
 
@@ -18,7 +18,7 @@ gpuit_EXPORT
 void opencl_reconstruct_conebeam (
     Volume *vol, 
     Proj_image_dir *proj_dir, 
-    Fdk_options *options
+    Fdk_parms *parms
 );
 
 #if defined __cplusplus

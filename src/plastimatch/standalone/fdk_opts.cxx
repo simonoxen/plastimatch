@@ -29,42 +29,42 @@ print_usage (void)
 }
 
 void 
-set_default_options (Fdk_options* options)
+set_default_parms (Fdk_parms* parms)
 {
-    options->threading = THREADING_CPU_OPENMP;
-    options->image_range_requested = 0;
-    options->first_img = 0;
-    options->last_img = 119;
-    options->skip_img = 1;
-    options->dim[0] = 256;
-    options->dim[1] = 256;
-    options->dim[2] = 100;
-    options->vol_size[0] = 300.0f;
-    options->vol_size[1] = 300.0f;
-    options->vol_size[2] = 150.0f;
-    options->xy_offset[0] = 0.f;
-    options->xy_offset[1] = 0.f;
-    options->scale = 1.0f;
-    options->filter = FDK_FILTER_TYPE_RAMP;
-    options->input_dir = ".";
-    options->output_file = "output.mha";
-    options->flavor = 'c';
-    options->full_fan=1;
-    options->Full_normCBCT_name="Full_norm.mh5";
-    options->Full_radius=120;
-    options->Half_normCBCT_name="Half_norm.mh5";
-    options->Half_radius=220;
+    parms->threading = THREADING_CPU_OPENMP;
+    parms->image_range_requested = 0;
+    parms->first_img = 0;
+    parms->last_img = 119;
+    parms->skip_img = 1;
+    parms->dim[0] = 256;
+    parms->dim[1] = 256;
+    parms->dim[2] = 100;
+    parms->vol_size[0] = 300.0f;
+    parms->vol_size[1] = 300.0f;
+    parms->vol_size[2] = 150.0f;
+    parms->xy_offset[0] = 0.f;
+    parms->xy_offset[1] = 0.f;
+    parms->scale = 1.0f;
+    parms->filter = FDK_FILTER_TYPE_RAMP;
+    parms->input_dir = ".";
+    parms->output_file = "output.mha";
+    parms->flavor = 'c';
+    parms->full_fan=1;
+    parms->Full_normCBCT_name="Full_norm.mh5";
+    parms->Full_radius=120;
+    parms->Half_normCBCT_name="Half_norm.mh5";
+    parms->Half_radius=220;
 }
 
 void 
-fdk_parse_args (Fdk_options* options, int argc, char* argv[])
+fdk_parse_args (Fdk_parms* parms, int argc, char* argv[])
 {
     int i, rc;
 	
     if (argc < 2)
     { print_usage(); exit(1); }
 
-    set_default_options (options);
+    set_default_parms (parms);
     for (i = 1; i < argc; i++) {
 	if (argv[i][0] != '-') break;
 	if (!strcmp (argv[i], "-A")) {
@@ -75,18 +75,18 @@ fdk_parse_args (Fdk_options* options, int argc, char* argv[])
 	    i++;
 #if CUDA_FOUND
 	    if (!strcmp(argv[i], "cuda") || !strcmp(argv[i], "CUDA")) {
-		options->threading = THREADING_CUDA;
+		parms->threading = THREADING_CUDA;
 		continue;
 	    }
 #endif
 #if OPENCL_FOUND
 	    if (!strcmp(argv[i], "opencl") || !strcmp(argv[i], "OPENCL")) {
-		options->threading = THREADING_OPENCL;
+		parms->threading = THREADING_OPENCL;
 		continue;
 	    }
 #endif
 	    /* Default */
-	    options->threading = THREADING_CPU_OPENMP;
+	    parms->threading = THREADING_CPU_OPENMP;
 	}
 	else if (!strcmp (argv[i], "-a")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {
@@ -94,17 +94,17 @@ fdk_parse_args (Fdk_options* options, int argc, char* argv[])
 		exit(1);
 	    }
 	    i++;
-	    options->image_range_requested = 1;
+	    parms->image_range_requested = 1;
 	    rc = sscanf (argv[i], "%d %d %d" , 
-		&options->first_img,
-		&options->skip_img,
-		&options->last_img);
+		&parms->first_img,
+		&parms->skip_img,
+		&parms->last_img);
 	    if (rc == 1) {
-		options->last_img = options->first_img;
-		options->skip_img = 1;
+		parms->last_img = parms->first_img;
+		parms->skip_img = 1;
 	    } else if (rc == 2) {
-		options->last_img = options->skip_img;
-		options->skip_img = 1;
+		parms->last_img = parms->skip_img;
+		parms->skip_img = 1;
 	    } else if (rc != 3) {
 		print_usage ();
 	    }
@@ -116,10 +116,10 @@ fdk_parse_args (Fdk_options* options, int argc, char* argv[])
 	    }
 	    i++;
 	    if (!strcmp(argv[i], "none") || !strcmp(argv[i], "NONE")) {
-		options->filter = FDK_FILTER_TYPE_NONE;
+		parms->filter = FDK_FILTER_TYPE_NONE;
 	    }
 	    else if (!strcmp(argv[i], "ramp") || !strcmp(argv[i], "RAMP")) {
-		options->filter = FDK_FILTER_TYPE_RAMP;
+		parms->filter = FDK_FILTER_TYPE_RAMP;
 	    }
 	    else {
 		print_usage ();
@@ -131,10 +131,10 @@ fdk_parse_args (Fdk_options* options, int argc, char* argv[])
 		exit(1);
 	    }
 	    i++;
-	    options->flavor = argv[i][0];
-	    if (options->flavor != '0' && options->flavor != 'a'
-		&& options->flavor != 'b' && options->flavor != 'c'
-		&& options->flavor != 'd') {
+	    parms->flavor = argv[i][0];
+	    if (parms->flavor != '0' && parms->flavor != 'a'
+		&& parms->flavor != 'b' && parms->flavor != 'c'
+		&& parms->flavor != 'd') {
 		print_usage ();
 	    }
 	}
@@ -144,7 +144,7 @@ fdk_parse_args (Fdk_options* options, int argc, char* argv[])
 		exit(1);
 	    }
 	    i++;
-	    options->input_dir = strdup (argv[i]);
+	    parms->input_dir = strdup (argv[i]);
 	}
 	else if (!strcmp (argv[i], "-O")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {
@@ -152,7 +152,7 @@ fdk_parse_args (Fdk_options* options, int argc, char* argv[])
 		exit(1);
 	    }
 	    i++;
-	    options->output_file = strdup (argv[i]);
+	    parms->output_file = strdup (argv[i]);
 	}
 	else if (!strcmp (argv[i], "-r")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {
@@ -163,13 +163,13 @@ fdk_parse_args (Fdk_options* options, int argc, char* argv[])
 	    unsigned int a, b, c;
 	    rc = sscanf (argv[i], "%d %d %d", &a, &b, &c);
 	    if (rc == 1) {
-		options->dim[0] = a;
-		options->dim[1] = a;
-		options->dim[2] = a;
+		parms->dim[0] = a;
+		parms->dim[1] = a;
+		parms->dim[2] = a;
 	    } else if (rc == 3) {
-		options->dim[0] = a;
-		options->dim[1] = c;
-		options->dim[2] = c;
+		parms->dim[0] = a;
+		parms->dim[1] = c;
+		parms->dim[2] = c;
 	    } else {
 		print_usage ();
 	    }
@@ -180,7 +180,7 @@ fdk_parse_args (Fdk_options* options, int argc, char* argv[])
 		exit(1);
 	    }
 	    i++;
-	    rc = sscanf (argv[i], "%g" , &options->scale);
+	    rc = sscanf (argv[i], "%g" , &parms->scale);
 	    if (rc != 1) {
 		print_usage ();
 	    }
@@ -192,8 +192,8 @@ fdk_parse_args (Fdk_options* options, int argc, char* argv[])
 	    }
 	    i++;
 	    rc = sscanf (argv[i], "%f %f", 
-		&options->xy_offset[0],
-		&options->xy_offset[1]);
+		&parms->xy_offset[0],
+		&parms->xy_offset[1]);
 	    if (rc != 2) {
 		print_usage ();
 	    }
@@ -205,12 +205,12 @@ fdk_parse_args (Fdk_options* options, int argc, char* argv[])
 	    }
 	    i++;
 	    rc = sscanf (argv[i], "%g %g %g", 
-		&options->vol_size[0],
-		&options->vol_size[1],
-		&options->vol_size[2]);
+		&parms->vol_size[0],
+		&parms->vol_size[1],
+		&parms->vol_size[2]);
 	    if (rc == 1) {
-		options->vol_size[1] = options->vol_size[0];
-		options->vol_size[2] = options->vol_size[0];
+		parms->vol_size[1] = parms->vol_size[0];
+		parms->vol_size[2] = parms->vol_size[0];
 	    } else if (rc != 3) {
 		print_usage ();
 	    }

@@ -7,7 +7,7 @@
 #include "plm_config.h"
 #include "plmbase.h"
 #include "delayload.h"
-#include "fdk_opts.h"
+#include "fdk.h"
 #include "proj_image_dir.h"
 
 #define FDK_CUDA_TIME_KERNEL 0
@@ -23,7 +23,7 @@ void* fdk_cuda_state_create,
     Volume *vol, 
     unsigned int image_npix, 
     double scale, 
-    Fdk_options *options
+    Fdk_parms *parms
 );
 
 plmcuda_EXPORT (
@@ -63,7 +63,7 @@ fdk_cuda_state_create_cu (
     Volume *vol, 
     unsigned int image_npix, 
     float scale, 
-    Fdk_options *options
+    Fdk_parms *parms
 );
 
 void

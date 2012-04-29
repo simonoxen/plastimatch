@@ -9,7 +9,7 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "fdk_opts.h"
+#include "fdk.h"
 #include "fdk_util.h"
 #include "plm_math.h"
 #include "plm_path.h"

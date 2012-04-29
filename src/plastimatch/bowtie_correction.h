@@ -6,7 +6,7 @@
 
 #include "plm_config.h"
 #include "plmbase.h"
-#include "fdk_opts.h"
+#include "fdk.h"
 
 #if defined __cplusplus
 extern "C" {
@@ -14,7 +14,7 @@ extern "C" {
 
 gpuit_EXPORT
 void
-bowtie_correction (Volume *vol, Fdk_options *options);
+bowtie_correction (Volume *vol, Fdk_parms *parms);
 
 #if defined __cplusplus
 }

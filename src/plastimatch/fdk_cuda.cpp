@@ -12,7 +12,6 @@
 
 #include "fdk.h"
 #include "fdk_cuda.h"
-#include "fdk_opts.h"
 
 
 // JAS 2011.01.20
@@ -26,10 +25,10 @@ fdk_cuda_state_create (
     Volume *vol, 
     unsigned int image_npix, 
     double scale, 
-    Fdk_options *options
+    Fdk_parms *parms
 )
 {
-    return fdk_cuda_state_create_cu (vol, image_npix, scale, options);
+    return fdk_cuda_state_create_cu (vol, image_npix, scale, parms);
 }
 
 void

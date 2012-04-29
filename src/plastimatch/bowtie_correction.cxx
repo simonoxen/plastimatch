@@ -48,7 +48,7 @@ LowPass (int n, double * v)
 }
 
 static void
-process_norm_CBCT (Volume * norm_CBCT, Fdk_options* options)
+process_norm_CBCT (Volume * norm_CBCT, Fdk_parms* parms)
 {
     plm_long ni, nj, nk;
     double norm_radius;
@@ -82,12 +82,12 @@ process_norm_CBCT (Volume * norm_CBCT, Fdk_options* options)
 
     norm = (float *) norm_CBCT->img;
 
-    if (options->full_fan) {
-        printf ("Processing %s\n", options->Full_normCBCT_name);
-        norm_radius = options->Full_radius;
+    if (parms->full_fan) {
+        printf ("Processing %s\n", parms->Full_normCBCT_name);
+        norm_radius = parms->Full_radius;
     } else  {
-        printf ("Processing %s\n", options->Half_normCBCT_name);
-        norm_radius = options->Half_radius;
+        printf ("Processing %s\n", parms->Half_normCBCT_name);
+        norm_radius = parms->Half_radius;
     }
 
     for (nj = 0; nj < norm_CBCT->dim[1]; nj++) {
@@ -140,21 +140,21 @@ process_norm_CBCT (Volume * norm_CBCT, Fdk_options* options)
 #endif /* FFTW_FOUND */
 
 void
-bowtie_correction (Volume *vol, Fdk_options *options)
+bowtie_correction (Volume *vol, Fdk_parms *parms)
 {
     Volume *norm_CBCT;
     float *img, *norm;
     plm_long ni, nj, nk;
     plm_long i, j, k;
 
-    if (options->full_fan) {
-        norm_CBCT = read_mha (options->Full_normCBCT_name);
+    if (parms->full_fan) {
+        norm_CBCT = read_mha (parms->Full_normCBCT_name);
     } else   {
-        norm_CBCT = read_mha (options->Half_normCBCT_name);
+        norm_CBCT = read_mha (parms->Half_normCBCT_name);
     }
 
 #if FFTW_FOUND
-    process_norm_CBCT (norm_CBCT, options);
+    process_norm_CBCT (norm_CBCT, parms);
 #endif
     img = (float *) vol->img;
     norm = (float *) norm_CBCT->img;

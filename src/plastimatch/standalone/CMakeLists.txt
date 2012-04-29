@@ -22,6 +22,9 @@ set (COMPUTE_DISTANCE_SRC
   closest_point.cxx 
   read_obj.cxx
   )
+set (COMPUTE_MEAN_IMAGE_SRC
+  compute_mean_image_main.cxx
+  )
 set (DEMONS_SRC
   demons_main.cxx 
   demons_opts.cxx demons_opts.h
@@ -31,16 +34,41 @@ set (DICE_STATS_SRC
   dice_statistics.cxx dice_statistics.h
   hausdorff_statistics.cxx hausdorff_statistics.h
   )
+set (DICOM_INFO_SRC
+  dicom_info.cxx
+  )
+#set (DICOM_UID_SRC
+#  dicom_uid_main.cxx
+#  dcmtk_uid.cxx
+#  dcmtk_uid.h
+#  )
 set (DISTANCE_MAP_SRC
   distance_map.cxx
   )
+set (DLIB_TRAIN_SRC 
+  dlib_train.cxx
+  )
+set (DRR_SRC
+  drr_main.cxx 
+  drr_opts.cxx drr_opts.h
+  )
+set (FDK_SRC
+  fdk_main.cxx 
+  fdk_opts.cxx fdk_opts.h
+)
 
 
 if (FULL_PLASTIMATCH_BUILD)
   plm_add_executable (compute_distance "${COMPUTE_DISTANCE_SRC}" 
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+  plm_add_executable (compute_mean_image "${COMPUTE_MEAN_IMAGE_SRC}"
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   plm_add_executable (dice_stats "${DICE_STATS_SRC}"
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+  plm_add_executable (dicom_info "${DICOM_INFO_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   plm_add_executable (distance_map "${DISTANCE_MAP_SRC}"
@@ -58,6 +86,15 @@ plm_add_executable (check_grad "${CHECK_GRAD_SRC}"
 plm_add_executable (demons "${DEMONS_SRC}" 
   "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+plm_add_executable (dlib_train "${DLIB_TRAIN_SRC}" 
+  "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+plm_add_executable (drr "${DRR_SRC}" 
+  "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_ALWAYS})
+plm_add_executable (fdk "${FDK_SRC}" 
+  "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_ALWAYS})
 
 
 if (NOT BUILD_DEBIAN)
@@ -65,3 +102,11 @@ if (NOT BUILD_DEBIAN)
     "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
+
+
+# dicom_uid requires dcmtk
+#if (DCMTK_FOUND)
+#  plm_add_executable (dicom_uid "${DICOM_UID_SRC}" 
+#    "${DCMTK_LIBRARIES}" "" 
+#    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+#endif ()

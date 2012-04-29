@@ -9,6 +9,7 @@
 #include "plmsys.h"
 
 #include "plm_path.h"
+#include "proj_image.h"
 #include "proj_image_dir.h"
 
 /* EXTERNAL DEPENDS */

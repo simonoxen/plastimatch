@@ -9,19 +9,19 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "fdk_opts.h"
+#include "fdk.h"
 #include "fdk_util.h"
 #include "proj_image.h"
 #include "ramp_filter.h"
 #include "volume.h"
 
 Volume*
-my_create_volume (Fdk_options* options)
+my_create_volume (Fdk_parms* parms)
 {
     float offset[3];
     float spacing[3];
-    float* vol_size = options->vol_size;
-    plm_long* dim = options->dim;
+    float* vol_size = parms->vol_size;
+    plm_long* dim = parms->dim;
 
     spacing[0] = vol_size[0] / dim[0];
     spacing[1] = vol_size[1] / dim[1];
@@ -44,7 +44,7 @@ convert_to_hu_pixel (float in_value)
 }
 
 void
-convert_to_hu (Volume* vol, Fdk_options* options)
+convert_to_hu (Volume* vol, Fdk_parms* parms)
 {
     plm_long i, j, k, p;
     float* img = (float*) vol->img;

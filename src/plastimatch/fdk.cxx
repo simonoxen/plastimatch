@@ -34,7 +34,7 @@ void
 CUDA_reconstruct_conebeam (
     Volume *vol, 
     Proj_image_dir *proj_dir,
-    Fdk_options *options
+    Fdk_parms *parms
 )
 {
     void *dev_state;
@@ -66,7 +66,7 @@ CUDA_reconstruct_conebeam (
     /* Attempt to set image scale */
     num_imgs = proj_dir->num_proj_images;
     scale = (float) (sqrt(3.0) / (double) num_imgs);
-    scale = scale * options->scale;
+    scale = scale * parms->scale;
 
     // This is just to retrieve the 2D image dimensions
     cbi = proj_dir->load_image (0);
@@ -75,7 +75,7 @@ CUDA_reconstruct_conebeam (
                     vol, 
                     cbi->dim[0]*cbi->dim[1], 
                     scale, 
-                    options
+                    parms
                 );
 
     // Free image (we will re-load it in the main loop)
@@ -96,7 +96,7 @@ CUDA_reconstruct_conebeam (
         io_time += plm_timer_report (timer);
 #endif
 
-        if (options->filter == FDK_FILTER_TYPE_RAMP) {
+        if (parms->filter == FDK_FILTER_TYPE_RAMP) {
 #if FDK_CUDA_TIME_KERNEL
             plm_timer_start (timer);
 #endif
@@ -160,8 +160,8 @@ CUDA_reconstruct_conebeam (
     printf ("Filter time = %g\n", filter_time);
     printf ("Backprojection time = %g\n", backproject_time);
 #endif
-    num_imgs = 1 + (options->last_img - options->first_img) 
-	/ options->skip_img;
+    num_imgs = 1 + (parms->last_img - parms->first_img) 
+	/ parms->skip_img;
     printf ("[Average Projection Time: %.9fs ]\n", time_total / num_imgs);
 #if FDK_CUDA_TIME_KERNEL
     printf ("I/O time = %g\n", io_time / num_images);
@@ -580,7 +580,7 @@ void
 reconstruct_conebeam (
     Volume* vol, 
     Proj_image_dir *proj_dir, 
-    Fdk_options* options
+    Fdk_parms* parms
 )
 {
     int i;
@@ -594,7 +594,7 @@ reconstruct_conebeam (
 
     /* Arbitrary scale applied to each image */
     scale = (float) (sqrt(3.f) / (double) num_imgs);
-    scale = scale * options->scale;
+    scale = scale * parms->scale;
 
     for (i = 0; i < num_imgs; i++) {
         printf ("Processing image %d\n", i);
@@ -604,7 +604,7 @@ reconstruct_conebeam (
         io_time += plm_timer_report (timer);
 
 	/* Apply ramp filter */
-        if (options->filter == FDK_FILTER_TYPE_RAMP) {
+        if (parms->filter == FDK_FILTER_TYPE_RAMP) {
             plm_timer_start (timer);
             proj_image_filter (cbi);
             filter_time += plm_timer_report (timer);
@@ -613,7 +613,7 @@ reconstruct_conebeam (
         // printf ("Projecting Image %d\n", i);
         plm_timer_start (timer);
 
-	switch (options->flavor) {
+	switch (parms->flavor) {
 	case '0':
 	    project_volume_onto_image_reference (vol, cbi, scale);
 	    break;
@@ -649,20 +649,20 @@ reconstruct_conebeam (
 }
 
 void
-fdk_do_bowtie (Volume* vol, Fdk_options* options)
+fdk_do_bowtie (Volume* vol, Fdk_parms* parms)
 {
     int norm_exists;
-    if (options->full_fan)
-	norm_exists = file_exists (options->Full_normCBCT_name);
+    if (parms->full_fan)
+	norm_exists = file_exists (parms->Full_normCBCT_name);
     else
-	norm_exists = file_exists (options->Half_normCBCT_name);
+	norm_exists = file_exists (parms->Half_normCBCT_name);
 
     if (norm_exists) {
-	bowtie_correction (vol, options);
+	bowtie_correction (vol, parms);
     } else {
 	printf("%s\n%s\n", 
-	    options->Full_normCBCT_name,
-	    options->Half_normCBCT_name);
+	    parms->Full_normCBCT_name,
+	    parms->Half_normCBCT_name);
 	printf("Skip bowtie correction because norm files do not exits\n");
     }
 }

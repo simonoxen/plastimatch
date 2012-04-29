@@ -41,6 +41,7 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/cuda)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/register)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/script)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/segment)
+include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/standalone)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/sys)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/util)
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -122,6 +123,7 @@ set (GPUIT_LIBRARY_SRC
   drr.cxx drr.h
   drr_trilin.cxx drr_trilin.h
   fdk.cxx fdk.h
+  fdk_util.cxx fdk_util.h
   proj_image.cxx proj_image.h
   proj_image_dir.cxx proj_image_dir.h
   proj_matrix.cxx proj_matrix.h 
@@ -341,9 +343,6 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES (EXECUTABLES)
 ##-----------------------------------------------------------------------------
-set (COMPUTE_MEAN_IMAGE_SRC
-  compute_mean_image_main.cxx
-  )
 set (CUDA_PROBE_SRC
   cuda_probe_main.c
   cuda_probe.cu
@@ -356,28 +355,9 @@ if (CUDA_FOUND)
     ${CUDA_PROBE_WRAPPERS}
     )
 endif ()
-set (DICOM_INFO_SRC
-  dicom_info.cxx)
-set (DICOM_UID_SRC
-  dicom_uid_main.cxx
-  dcmtk_uid.cxx
-  dcmtk_uid.h
-  )
-set (DLIB_TRAIN_SRC 
-  dlib_train.cxx
-  )
-set (DRR_SRC
-  drr_main.cxx 
-  drr_opts.cxx drr_opts.h
-  )
 set (EXTRACT_CONTOUR_SRC
   extract_contour.cxx
   )
-set (FDK_SRC
-  fdk_main.cxx 
-  fdk_opts.cxx fdk_opts.h
-  fdk_util.cxx fdk_util.h
-)
 set (HND_TO_PFM_SRC
   hnd_to_pfm.cxx 
   )
@@ -585,15 +565,6 @@ endif ()
 ##-----------------------------------------------------------------------------
 # JAS 2012.04.27 -- Disabled until CUDA
 #   linkage gets sorted out
-plm_add_executable (drr "${DRR_SRC}" 
-  "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_ALWAYS})
-plm_add_executable (dlib_train "${DLIB_TRAIN_SRC}" 
-  "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-plm_add_executable (fdk "${FDK_SRC}" 
-  "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_ALWAYS})
 plm_add_executable (hnd_to_pfm "${HND_TO_PFM_SRC}" 
   "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
@@ -617,12 +588,6 @@ plm_add_executable (xyzInt "${XYZINT_SRC}" "" ""
 
 if (FULL_PLASTIMATCH_BUILD)
   message (STATUS "PLASTIMATCH_LIBS: ${PLASTIMATCH_LIBS}")
-  plm_add_executable (compute_mean_image "${COMPUTE_MEAN_IMAGE_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-  plm_add_executable (dicom_info "${DICOM_INFO_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   plm_add_executable (extract_contour "${EXTRACT_CONTOUR_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
@@ -691,12 +656,6 @@ if (OPENCL_FOUND)
     ${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
 endif ()
 
-# dicom_uid requires dcmtk
-if (DCMTK_FOUND)
-  plm_add_executable (dicom_uid "${DICOM_UID_SRC}" 
-    "${DCMTK_LIBRARIES}" "" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-endif ()
 
 # mondoshot requires WIN32, wx, dcmtk, sqlite3
 if (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)

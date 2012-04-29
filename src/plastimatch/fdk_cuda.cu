@@ -37,7 +37,7 @@
 *****************/
 #include "cuda_util.h"
 #include "fdk_cuda_p.h"
-#include "fdk_opts.h"
+#include "fdk.h"
 #include "fdk_util.h"
 #include "plm_math.h"
 #include "proj_image.h"
@@ -224,7 +224,7 @@ int
 CUDA_reconstruct_conebeam (
     Volume *vol, 
     Proj_image_dir *proj_dir,
-    Fdk_options *options
+    Fdk_parms *parms
 )
 {
     Proj_matrix *pmat;
@@ -261,7 +261,7 @@ CUDA_reconstruct_conebeam (
     cudaMalloc( (void**)&dev_kargs, sizeof(kernel_args_fdk) );
 
     float scale = (float) (sqrt(3.0) / (double) num_imgs);
-    scale = scale * options->scale;
+    scale = scale * parms->scale;
 
     // Load static kernel arguments
     kargs->scale = scale;
@@ -309,8 +309,8 @@ CUDA_reconstruct_conebeam (
 	dimGrid.x, dimGrid.y, dimGrid.x, blocksInY, blocksInZ, 
 	dimBlock.x, dimBlock.y, dimBlock.z);
     printf("%u voxels in volume\n", vol->npix);
-    printf("%u projections to process\n", 1+(options->last_img - options->first_img) / options->skip_img);
-    printf("%u Total Operations\n", vol->npix * (1+(options->last_img - options->first_img) / options->skip_img));
+    printf("%u projections to process\n", 1+(parms->last_img - parms->first_img) / parms->skip_img);
+    printf("%u Total Operations\n", vol->npix * (1+(parms->last_img - parms->first_img) / parms->skip_img));
     printf("========================================\n\n");
 
     // Start working
@@ -337,7 +337,7 @@ CUDA_reconstruct_conebeam (
         io_time += plm_timer_report (timer);
 #endif
 
-        if (options->filter == FDK_FILTER_TYPE_RAMP) {
+        if (parms->filter == FDK_FILTER_TYPE_RAMP) {
 #if defined (TIME_KERNEL)
             plm_timer_start (timer);
 #endif
@@ -438,8 +438,8 @@ CUDA_reconstruct_conebeam (
     printf ("Backprojection time = %g\n", backproject_time);
 #endif
 
-    int num_images = 1 + (options->last_img - options->first_img) 
-	/ options->skip_img;
+    int num_images = 1 + (parms->last_img - parms->first_img) 
+	/ parms->skip_img;
     printf ("[Average Projection Time: %.9fs ]\n", time_total / num_images);
 #if defined (TIME_KERNEL)
     printf ("I/O time = %g\n", io_time / num_images);
@@ -466,7 +466,7 @@ fdk_cuda_state_create_cu (
     Volume *vol, 
     unsigned int image_npix, 
     float scale, 
-    Fdk_options *options
+    Fdk_parms *parms
 )
 {
     Fdk_cuda_state *state;
@@ -531,10 +531,10 @@ fdk_cuda_state_create_cu (
         state->dimGrid.x, state->dimGrid.y,
         state->dimBlock.x, state->dimBlock.y, state->dimBlock.z);
     printf("%u voxels in volume\n", vol->npix);
-    printf ("options->last_img: %i\n", options->last_img);
+    printf ("parms->last_img: %i\n", parms->last_img);
 
-    printf("%u projections to process\n", 1+(options->last_img - options->first_img) / options->skip_img);
-    printf("%u Total Operations\n", vol->npix * (1+(options->last_img - options->first_img) / options->skip_img));
+    printf("%u projections to process\n", 1+(parms->last_img - parms->first_img) / parms->skip_img);
+    printf("%u Total Operations\n", vol->npix * (1+(parms->last_img - parms->first_img) / parms->skip_img));
     printf("========================================\n\n");
 #endif
 

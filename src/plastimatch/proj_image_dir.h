@@ -5,7 +5,8 @@
 #define _proj_image_dir_h_
 
 #include "plm_config.h"
-#include "proj_image.h"
+
+class Proj_image;
 
 class gpuit_EXPORT Proj_image_dir
 {
