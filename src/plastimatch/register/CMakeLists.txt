@@ -45,6 +45,7 @@ set (PLMREGISTER_CUDA_SRC
   ../cuda/cuda_mem.cu
   ../cuda/cuda_util.cu
   bspline_cuda.cu 
+  bspline_cuda_kernels.h
   demons_cuda.cu
   )
 

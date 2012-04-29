@@ -16,10 +16,10 @@
 #include "cuda_util.h"
 #include "cuda_mem.h"
 #include "cuda_kernel_util.h"
-#include "volume.h"
 
 /* EXTERNAL DEPENDS */
 #include "bspline_xform.h"
+#include "volume.h"
 
 // For CUDA Toolkits < 4.0
 #ifndef cudaTextureType1D
