@@ -210,72 +210,72 @@ if (FFTW_FOUND)
    )
 endif ()
 
-if (OPENCL_FOUND)
-  # Define OpenCL Plugin (plmopencl)
-  set (PLMOPENCL_LIBRARY_SRC
-    autotune_opencl.cxx autotune_opencl.h
-    opencl_probe.cxx opencl_probe.h opencl_probe.cl
-    opencl_util.cxx opencl_util.h
-    )
-
-  if (BUILD_SHARED_LIBS)      # << Dynamic loading
-
-    set (PLMOPENCL_LIBRARY_SRC
-      ${PLMOPENCL_LIBRARY_SRC}
-    )
-
-    set (PLMOPENCL_LIBRARY_DEPENDENCIES
-      plmsys
-    )
-
-    # OpenCL Plugin is ALWAYS shared!
-    add_library (plmopencl SHARED
-      ${PLMOPENCL_LIBRARY_SRC}
-      )
-    set_target_properties (plmopencl PROPERTIES 
-      ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
-      LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
-      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
-
-    # Be sure to link against libOpenCL and other depends
-    target_link_libraries (plmopencl
-      ${OPENCL_LIBRARIES}
-      ${PLMOPENCL_LIBRARY_DEPENDENCIES}
-      )
-
-    install (TARGETS plmopencl
-        RUNTIME DESTINATION bin
-        LIBRARY DESTINATION lib
-    )
-
-  else ()        # << Static linking
-
-    set (GPUIT_LIBRARY_SRC
-      ${GPUIT_LIBRARY_SRC}
-      ${PLMOPENCL_LIBRARY_SRC}
-    )
-
-  endif ()
-
-  set (GPUIT_LIBRARY_SRC
-    ${GPUIT_LIBRARY_SRC}
-    demons_opencl.cxx
-    demons_opencl_p.h
-    demons_opencl.cl
-    drr_opencl.cxx
-    drr_opencl_p.h
-    drr_opencl.h
-    drr_opencl.cl
-    fdk_opencl.cxx 
-    fdk_opencl_p.h
-    fdk_opencl.h
-    fdk_opencl.cl
-    )
-  plm_add_opencl_file (GPUIT_LIBRARY_SRC demons_opencl.cl)
-  plm_add_opencl_file (GPUIT_LIBRARY_SRC drr_opencl.cl)
-  plm_add_opencl_file (GPUIT_LIBRARY_SRC fdk_opencl.cl)
-
-endif ()
+#if (OPENCL_FOUND)
+#  # Define OpenCL Plugin (plmopencl)
+#  set (PLMOPENCL_LIBRARY_SRC
+#    autotune_opencl.cxx autotune_opencl.h
+#    opencl_probe.cxx opencl_probe.h opencl_probe.cl
+#    opencl_util.cxx opencl_util.h
+#    )
+#
+#  if (BUILD_SHARED_LIBS)      # << Dynamic loading
+#
+#    set (PLMOPENCL_LIBRARY_SRC
+#      ${PLMOPENCL_LIBRARY_SRC}
+#    )
+#
+#    set (PLMOPENCL_LIBRARY_DEPENDENCIES
+#      plmsys
+#    )
+#
+#    # OpenCL Plugin is ALWAYS shared!
+#    add_library (plmopencl SHARED
+#      ${PLMOPENCL_LIBRARY_SRC}
+#      )
+#    set_target_properties (plmopencl PROPERTIES 
+#      ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+#      LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+#      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+#
+#    # Be sure to link against libOpenCL and other depends
+#    target_link_libraries (plmopencl
+#      ${OPENCL_LIBRARIES}
+#      ${PLMOPENCL_LIBRARY_DEPENDENCIES}
+#      )
+#
+#    install (TARGETS plmopencl
+#        RUNTIME DESTINATION bin
+#        LIBRARY DESTINATION lib
+#    )
+#
+#  else ()        # << Static linking
+#
+#    set (GPUIT_LIBRARY_SRC
+#      ${GPUIT_LIBRARY_SRC}
+#      ${PLMOPENCL_LIBRARY_SRC}
+#    )
+#
+#  endif ()
+#
+#  set (GPUIT_LIBRARY_SRC
+#    ${GPUIT_LIBRARY_SRC}
+#    demons_opencl.cxx
+#    demons_opencl_p.h
+#    demons_opencl.cl
+#    drr_opencl.cxx
+#    drr_opencl_p.h
+#    drr_opencl.h
+#    drr_opencl.cl
+#    fdk_opencl.cxx 
+#    fdk_opencl_p.h
+#    fdk_opencl.h
+#    fdk_opencl.cl
+#    )
+#  plm_add_opencl_file (GPUIT_LIBRARY_SRC demons_opencl.cl)
+#  plm_add_opencl_file (GPUIT_LIBRARY_SRC drr_opencl.cl)
+#  plm_add_opencl_file (GPUIT_LIBRARY_SRC fdk_opencl.cl)
+#
+#endif ()
 
 if (F2C_LIBRARY)
   set (F2C_HELPER_LIBRARY_SRC

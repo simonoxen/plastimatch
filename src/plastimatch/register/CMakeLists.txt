@@ -51,6 +51,7 @@ set (PLMREGISTER_CUDA_IFACE_SRC
   demons_misc.cxx
   bspline_cuda.cpp
   )
+#----------------
 
 if (CUDA_FOUND)
   if (PLM_USE_GPU_PLUGINS)
@@ -76,6 +77,7 @@ if (CUDA_FOUND)
       )
   endif ()
 endif ()
+#----------------
 
 # plmregister uses OpenMP
 set (PLMREGISTER_LIBRARY_LDFLAGS "${OPENMP_LDFLAGS}")
@@ -94,13 +96,14 @@ if (PLM_USE_GPU_PLUGINS)
       -ldl)
   endif ()
 endif ()
-
+#----------------
 
 plm_add_library (
   plmregister
   "${PLMREGISTER_LIBRARY_SRC}" 
   "${PLMREGISTER_LIBRARY_DEPENDENCIES}"
   "${PLMREGISTER_LIBRARY_LDFLAGS}")
+#----------------
 
 # because plmregistercuda is dynamically loaded (not linked)
 # CMake needs to be told explicitly that plmregister
@@ -108,6 +111,7 @@ plm_add_library (
 if (CUDA_FOUND AND PLM_USE_GPU_PLUGINS)
     add_dependencies (plmregister plmregistercuda)
 endif ()
+#----------------
 
 if (SLICER_FOUND)
   if (WIN32)
