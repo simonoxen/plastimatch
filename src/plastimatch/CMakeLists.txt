@@ -108,7 +108,6 @@ endif ()
 ##  PLMSYS/GPUIT/PLASTIMATCH LIBRARY SOURCE FILES
 ##-----------------------------------------------------------------------------
 set (GPUIT_LIBRARY_SRC
-  bspline_optimize_nlopt.cxx bspline_optimize_nlopt.h
   proton_dose.cxx proton_dose.h 
   )
 

@@ -18,6 +18,7 @@ set (PLMREGISTER_LIBRARY_SRC
   bspline_optimize.cxx
   bspline_optimize_lbfgsb.cxx
   bspline_optimize_liblbfgs.cxx
+  bspline_optimize_nlopt.cxx
   bspline_optimize_steepest.cxx
   bspline_regularize.cxx
   bspline_regularize_analytic.cxx
