@@ -16,13 +16,6 @@ set (PLMSCRIPT_LIBRARY_SRC
   lua_class_stage.cxx lua_class_stage.h
   lua_class_structs.cxx lua_class_structs.h
   lua_class_xform.cxx lua_class_xform.h
-#  lua_cli_glue.cxx lua_cli_glue.h
-#  lua_iface_add.cxx lua_iface_add.h
-#  lua_iface_crop.cxx lua_iface_crop.h
-#  lua_iface_mask.cxx lua_iface_mask.h
-#  lua_iface_register.cxx lua_iface_register.h
-#  lua_iface_resample.cxx lua_iface_resample.h
-#  lua_iface_synth.cxx lua_iface_synth.h
   lua_tty.cxx lua_tty.h
   lua_tty_commands.cxx lua_tty_commands.h
 #  lua_tty_commands_pcmd.cxx lua_tty_commands_pcmd.h
@@ -37,12 +30,12 @@ set (PLMSCRIPT_LIBRARY_SRC
 #   as plmqt
 if (QT4_FOUND)
     qt4_wrap_cpp (PORTAL_MOC_SRC_HACK
-      ../cview_portal.h
+      ../qt/cview_portal.h
     )
     set (PLMSCRIPT_LIBRARY_SRC
       ${PLMSCRIPT_LIBRARY_SRC}
       ${PORTAL_MOC_SRC_HACK}
-      ../cview_portal.cxx
+      ../qt/cview_portal.cxx
       lua_tty_preview.cxx
     )
 endif ()
@@ -63,9 +56,3 @@ if (SLICER_FOUND)
     )
   endif ()
 endif ()
-
-
-
-set (LUA_INTERFACE_SRC
-
-)
