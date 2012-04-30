@@ -10,6 +10,9 @@ configure_file (
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 
+##-----------------------------------------------------------------------------
+##  SOURCE FILES
+##-----------------------------------------------------------------------------
 set (PLMRECONSTRUCT_LIBRARY_SRC
   bowtie_correction.cxx bowtie_correction.h
   drr.cxx drr.h
@@ -37,8 +40,18 @@ set (PLMRECONSTRUCT_CUDA_IFACE_SRC
   drr_cuda.cpp
   fdk_cuda.cpp
   )
-#----------------
 
+##-----------------------------------------------------------------------------
+##  LIBRARY DEPENDENCIES
+##-----------------------------------------------------------------------------
+set (PLMRECONSTRUCT_LIBRARY_DEPENDENCIES 
+  plmbase
+  plmsys
+  )
+
+##-----------------------------------------------------------------------------
+##  SPECIAL BUILD RULES: CUDA
+##-----------------------------------------------------------------------------
 if (CUDA_FOUND)
   if (PLM_USE_GPU_PLUGINS)
     # build CUDA as plmreconstructcuda
@@ -67,16 +80,6 @@ if (CUDA_FOUND)
       )
   endif ()
 endif ()
-#----------------
-
-# plmreconstruct uses OpenMP
-if (OPENMP_FOUND)
-  set (PLMRECONSTRUCT_LIBRARY_LDFLAGS "${OPENMP_LDFLAGS}")
-  set_source_files_properties (drr.cxx
-    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
-  set_source_files_properties (fdk.cxx
-    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
-endif ()
 
 # if building cuda support as a plugin...
 if (PLM_USE_GPU_PLUGINS)
@@ -92,14 +95,26 @@ if (PLM_USE_GPU_PLUGINS)
       -ldl)
   endif ()
 endif ()
-#----------------
 
+##-----------------------------------------------------------------------------
+##  SPECIAL BUILD RULES: OpenMP
+##-----------------------------------------------------------------------------
+if (OPENMP_FOUND)
+  set (PLMRECONSTRUCT_LIBRARY_LDFLAGS "${OPENMP_LDFLAGS}")
+  set_source_files_properties (drr.cxx
+    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
+  set_source_files_properties (fdk.cxx
+    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
+endif ()
+
+##-----------------------------------------------------------------------------
+##  BUILD TARGETS
+##-----------------------------------------------------------------------------
 plm_add_library (
   plmreconstruct
   "${PLMRECONSTRUCT_LIBRARY_SRC}" 
   "${PLMRECONSTRUCT_LIBRARY_DEPENDENCIES}"
   "${PLMRECONSTRUCT_LIBRARY_LDFLAGS}")
-#----------------
 
 # because plmreconstructcuda is dynamically loaded (not linked)
 # CMake needs to be told explicitly that plmreconstruct
@@ -107,8 +122,10 @@ plm_add_library (
 if (CUDA_FOUND AND PLM_USE_GPU_PLUGINS)
     add_dependencies (plmreconstruct plmreconstructcuda)
 endif ()
-#----------------
 
+##-----------------------------------------------------------------------------
+##  SPECIAL RULES FOR SLICER
+##-----------------------------------------------------------------------------
 if (SLICER_FOUND)
   if (WIN32)
     plm_slicer_copy_dll (plastimatch_slicer_copy_plmreconstruct

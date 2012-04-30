@@ -9,7 +9,11 @@ configure_file (
 )
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
+include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 
+##-----------------------------------------------------------------------------
+##  SOURCE FILES
+##-----------------------------------------------------------------------------
 set (PLMREGISTER_LIBRARY_SRC
   bspline.cxx
   bspline_landmarks.cxx
@@ -53,8 +57,51 @@ set (PLMREGISTER_CUDA_IFACE_SRC
   demons_misc.cxx
   bspline_cuda.cpp
   )
-#----------------
 
+##-----------------------------------------------------------------------------
+##  LIBRARY DEPENDENCIES
+##-----------------------------------------------------------------------------
+set (PLMREGISTER_LIBRARY_DEPENDENCIES 
+  plmbase
+  plmsys
+  plmutil
+  ${LIBLBFGS_LIBRARIES}
+  nocedal
+  )
+
+# your choice: fortran or f2c (for nocedal)
+if (PLM_USE_F2C)
+  set (PLMREGISTER_LIBRARY_DEPENDENCIES
+    ${PLMREGISTER_LIBRARY_DEPENDENCIES}
+    ${F2C_LIBRARY}
+    )
+  if (UNIX)
+    set (PLMREGISTER_LIBRARY_DEPENDENCIES
+      ${PLMREGISTER_LIBRARY_DEPENDENCIES}
+      f2c_helper
+      )
+  endif ()
+  # Apparently the below is not needed.
+  # LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/libf2c)
+else ()
+  # It would seem that mixed-language programs need to set compiler and 
+  # linker flags manually
+  #   http://www.vtk.org/Wiki/CMakeForFortranExample
+  # In theory, this is fixed in a future release
+  #   http://www.cmake.org/Bug/view.php?id=9195
+  message (STATUS "Fortran compiler = ${CMAKE_Fortran_COMPILER}")
+  if (Fortran_COMPILER_NAME STREQUAL "gfortran" 
+      OR Fortran_COMPILER_NAME STREQUAL "f95")
+    set (PLMREGISTER_LIBRARY_DEPENDENCIES
+      ${PLMREGISTER_LIBRARY_DEPENDENCIES}
+      gfortran
+      )
+  endif ()
+endif ()
+
+##-----------------------------------------------------------------------------
+##  SPECIAL BUILD RULES: CUDA
+##-----------------------------------------------------------------------------
 if (CUDA_FOUND)
   if (PLM_USE_GPU_PLUGINS)
     # build CUDA as plmregistercuda
@@ -83,9 +130,25 @@ if (CUDA_FOUND)
       )
   endif ()
 endif ()
-#----------------
 
-# plmregister uses OpenMP
+# if building cuda support as a plugin...
+if (PLM_USE_GPU_PLUGINS)
+  # windows needs to delayload it
+  if (WIN32 AND NOT CYGWIN AND NOT MINGW)
+    set (PLMREGISTER_LIBRARY_LDFLAGS
+      "${PLMREGISTER_LIBRARY_LDFLAGS} /DELAYLOAD:plmregistercuda.dll")
+  endif ()
+  # and unix needs dlopen()
+  if (NOT WIN32 AND LIBDL_FOUND)
+    set (PLMREGISTER_LIBRARY_DEPENDENCIES
+      ${PLMREGISTER_LIBRARY_DEPENDENCIES}
+      -ldl)
+  endif ()
+endif ()
+
+##-----------------------------------------------------------------------------
+##  SPECIAL BUILD RULES: OpenMP & SSE2
+##-----------------------------------------------------------------------------
 if (OPENMP_FOUND)
   set (PLMREGISTER_LIBRARY_LDFLAGS "${OPENMP_LDFLAGS}")
   set_source_files_properties (bspline.cxx
@@ -105,28 +168,14 @@ if (SSE2_FOUND AND NOT BUILD_AGAINST_SLICER3)
   plm_set_sse2_flags (bspline.cxx bspline_mi.cxx bspline_mse.cxx bspline_warp.cxx)
 endif ()
 
-# if building cuda support as a plugin...
-if (PLM_USE_GPU_PLUGINS)
-  # windows needs to delayload it
-  if (WIN32 AND NOT CYGWIN AND NOT MINGW)
-    set (PLMREGISTER_LIBRARY_LDFLAGS
-      "${PLMREGISTER_LIBRARY_LDFLAGS} /DELAYLOAD:plmregistercuda.dll")
-  endif ()
-  # and unix needs dlopen()
-  if (NOT WIN32 AND LIBDL_FOUND)
-    set (PLMREGISTER_LIBRARY_DEPENDENCIES
-      ${PLMREGISTER_LIBRARY_DEPENDENCIES}
-      -ldl)
-  endif ()
-endif ()
-#----------------
-
+##-----------------------------------------------------------------------------
+##  BUILD TARGETS
+##-----------------------------------------------------------------------------
 plm_add_library (
   plmregister
   "${PLMREGISTER_LIBRARY_SRC}" 
   "${PLMREGISTER_LIBRARY_DEPENDENCIES}"
   "${PLMREGISTER_LIBRARY_LDFLAGS}")
-#----------------
 
 # because plmregistercuda is dynamically loaded (not linked)
 # CMake needs to be told explicitly that plmregister
@@ -134,8 +183,10 @@ plm_add_library (
 if (CUDA_FOUND AND PLM_USE_GPU_PLUGINS)
     add_dependencies (plmregister plmregistercuda)
 endif ()
-#----------------
 
+##-----------------------------------------------------------------------------
+##  SPECIAL RULES FOR SLICER
+##-----------------------------------------------------------------------------
 if (SLICER_FOUND)
   if (WIN32)
     plm_slicer_copy_dll (plastimatch_slicer_copy_plmregister

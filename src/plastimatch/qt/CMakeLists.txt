@@ -11,6 +11,9 @@ configure_file (
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 
+##-----------------------------------------------------------------------------
+##  SOURCE FILES
+##-----------------------------------------------------------------------------
 set (PLASTIMATCH_QT_SRC
   # pqt_application.cxx pqt_application.h
   pqt_data_source_dialog.cxx pqt_data_source_dialog.h
@@ -27,7 +30,9 @@ set (CRYSTALVIEW_SRC
   cview_main.cxx cview_main.h
   )
 
-
+##-----------------------------------------------------------------------------
+##  SPECIAL BUILD RULES: Qt
+##-----------------------------------------------------------------------------
 if (QT4_FOUND)
   qt4_wrap_cpp (PORTAL_MOC_SRC
     cview_portal.h
@@ -56,6 +61,9 @@ if (QT4_FOUND)
   endif ()
 endif ()
 
+##-----------------------------------------------------------------------------
+##  BUILD TARGETS
+##-----------------------------------------------------------------------------
 if (FULL_PLASTIMATCH_BUILD)
   if (QT4_FOUND)
     set (CRYSTALVIEW_LIBRARIES ${PLASTIMATCH_LIBS} 

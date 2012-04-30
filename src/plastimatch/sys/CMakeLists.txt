@@ -10,6 +10,9 @@ configure_file (
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 
+##-----------------------------------------------------------------------------
+##  SOURCE FILES
+##-----------------------------------------------------------------------------
 set (PLMSYS_LIBRARY_SRC
   compiler_warnings.h
   delayload.c delayload.h
@@ -27,12 +30,25 @@ set (PLMSYS_LIBRARY_SRC
   string_util.cxx string_util.h
   )
 
+##-----------------------------------------------------------------------------
+##  LIBRARY DEPENDENCIES
+##-----------------------------------------------------------------------------
+set (PLMSYS_LIBRARY_DEPENDENCIES 
+  bstrlib
+  )
+
+##-----------------------------------------------------------------------------
+##  BUILD TARGETS
+##-----------------------------------------------------------------------------
 plm_add_library (
   plmsys
   "${PLMSYS_LIBRARY_SRC}" 
   "${PLMSYS_LIBRARY_DEPENDENCIES}"
   "")
 
+##-----------------------------------------------------------------------------
+##  SPECIAL RULES FOR SLICER
+##-----------------------------------------------------------------------------
 if (SLICER_FOUND)
   if (WIN32)
     plm_slicer_copy_dll (plastimatch_slicer_copy_plmsys

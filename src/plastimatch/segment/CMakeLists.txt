@@ -10,6 +10,15 @@ configure_file (
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 
+##-----------------------------------------------------------------------------
+##  SOURCE FILES
+##-----------------------------------------------------------------------------
+set (PLMSEGMENT_LIBRARY_DEPENDENCIES 
+  plmbase
+  plmsys
+  ${ITK_LIBRARIES}
+  )
+
 set (PLMSEGMENT_LIBRARY_SRC
   autolabel.cxx
   autolabel_task.cxx
@@ -20,12 +29,18 @@ set (PLMSEGMENT_LIBRARY_SRC
   segment_body.cxx
   )
 
+##-----------------------------------------------------------------------------
+##  BUILD TARGETS
+##-----------------------------------------------------------------------------
 plm_add_library (
   plmsegment
   "${PLMSEGMENT_LIBRARY_SRC}" 
   "${PLMSEGMENT_LIBRARY_DEPENDENCIES}"
   "")
 
+##-----------------------------------------------------------------------------
+##  SPECIAL RULES FOR SLICER
+##-----------------------------------------------------------------------------
 if (SLICER_FOUND)
   if (WIN32)
     plm_slicer_copy_dll (plastimatch_slicer_copy_plmsegment

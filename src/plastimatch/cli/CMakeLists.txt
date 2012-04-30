@@ -10,6 +10,9 @@ configure_file (
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 
+##-----------------------------------------------------------------------------
+##  SOURCE FILES
+##-----------------------------------------------------------------------------
 set (PLASTIMATCH_SRC
   pcmd_add.cxx pcmd_add.h
   pcmd_adjust.cxx pcmd_adjust.h
@@ -43,6 +46,9 @@ set (LANDMARK_WARP_SRC
   landmark_warp_main.cxx
   )
 
+##-----------------------------------------------------------------------------
+##  BUILD TARGETS
+##-----------------------------------------------------------------------------
 if (FULL_PLASTIMATCH_BUILD)
   plm_add_executable (plastimatch "${PLASTIMATCH_SRC}"
     "${PLASTIMATCH_LIBS}" "${PLMCUDA_EXE_LDFLAGS}" 

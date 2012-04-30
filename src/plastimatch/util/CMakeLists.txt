@@ -10,6 +10,9 @@ configure_file (
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 
+##-----------------------------------------------------------------------------
+##  SOURCE FILES
+##-----------------------------------------------------------------------------
 set (PLMUTIL_LIBRARY_SRC
   bspline_warp.cxx
   itk_crop.cxx
@@ -24,12 +27,23 @@ set (PLMUTIL_LIBRARY_SRC
   ss_img_extract.cxx
   )
 
+set (PLMUTIL_LIBRARY_DEPENDENCIES 
+  plmbase
+  plmsys
+  )
+
+##-----------------------------------------------------------------------------
+##  BUILD TARGETS
+##-----------------------------------------------------------------------------
 plm_add_library (
   plmutil
   "${PLMUTIL_LIBRARY_SRC}" 
   "${PLMUTIL_LIBRARY_DEPENDENCIES}"
   "")
 
+##-----------------------------------------------------------------------------
+##  SPECIAL RULES FOR SLICER
+##-----------------------------------------------------------------------------
 if (SLICER_FOUND)
   if (WIN32)
     plm_slicer_copy_dll (plastimatch_slicer_copy_plmutil

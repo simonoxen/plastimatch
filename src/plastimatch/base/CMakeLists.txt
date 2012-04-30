@@ -10,6 +10,9 @@ configure_file (
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 
+##-----------------------------------------------------------------------------
+##  SOURCE FILES
+##-----------------------------------------------------------------------------
 set (PLMBASE_LIBRARY_SRC
   astroid_dose.cxx
   bspline_xform.cxx
@@ -108,12 +111,26 @@ endif ()
 #    )
 #endif ()
 
+##-----------------------------------------------------------------------------
+##  LIBRARY DEPENDENCIES
+##-----------------------------------------------------------------------------
+set (PLMBASE_LIBRARY_DEPENDENCIES
+  ${ITK_LIBRARIES}
+  plmsys
+  )
+
+##-----------------------------------------------------------------------------
+##  BUILD TARGETS
+##-----------------------------------------------------------------------------
 plm_add_library (
   plmbase
   "${PLMBASE_LIBRARY_SRC}" 
   "${PLMBASE_LIBRARY_DEPENDENCIES}"
   "")
 
+##-----------------------------------------------------------------------------
+##  SPECIAL RULES FOR SLICER
+##-----------------------------------------------------------------------------
 if (SLICER_FOUND)
   if (WIN32)
     plm_slicer_copy_dll (plastimatch_slicer_copy_plmbase

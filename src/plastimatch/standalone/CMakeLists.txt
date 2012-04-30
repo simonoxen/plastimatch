@@ -5,6 +5,9 @@ project (src_plastimatch_standalone)
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 
+##-----------------------------------------------------------------------------
+##  SOURCE FILES
+##-----------------------------------------------------------------------------
 set (BRAGG_CURVE_SRC
   bragg_curve_main.c 
   bragg_curve_opts.c
@@ -100,7 +103,9 @@ set (XF_TO_EMPIREFMT_SRC
   xf_to_empirefmt.cxx
   )
 
-
+##-----------------------------------------------------------------------------
+##  BUILD TARGETS
+##-----------------------------------------------------------------------------
 if (FULL_PLASTIMATCH_BUILD)
   plm_add_executable (compute_distance "${COMPUTE_DISTANCE_SRC}" 
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 

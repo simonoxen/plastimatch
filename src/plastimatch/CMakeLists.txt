@@ -22,6 +22,7 @@ option (PLM_USE_SS_IMAGE_VEC
 ##-----------------------------------------------------------------------------
 ##  Include directories
 ##-----------------------------------------------------------------------------
+include_directories (BEFORE ${CMAKE_BINARY_DIR})
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 # JAS 2012.04.25 !!!!!!!!!!! TEMPORARY !!!!!!!!!!!!!!!!!!!!!!
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/base)
@@ -36,60 +37,42 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/standalone)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/sys)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/util)
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-include_directories (BEFORE ${CMAKE_BINARY_DIR})
 include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
-include_directories (AFTER ${BSTRLIB_INCLUDE_DIR})
-include_directories (AFTER ${LIBLBFGS_INCLUDE_DIR})
-include_directories (AFTER ${MSINTTYPES_INCLUDE_DIR})
-if (NLOPT_FOUND)
-  include_directories (AFTER ${NLOPT_INCLUDE_DIR})
-endif ()
-if (SQLITE_FOUND)
-  include_directories (AFTER ${SQLITE_INCLUDE_DIR})
-endif ()
 include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/itk-3.20.0)
 include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/nSIFT)
+include_directories (AFTER ${BSTRLIB_INCLUDE_DIR})
+include_directories (AFTER ${DLIB_INCLUDE_DIR})
 include_directories (AFTER ${LUA_INCLUDE_DIR})
-
-
-# Don't do the below.  A user-built f2c directory contains ctype.h, which 
-# conflicts with the C/C++ header of the same name.
-#IF (PLM_USE_F2C)
-#  INCLUDE_DIRECTORIES (BEFORE ${F2C_INCLUDE_DIR})
-#ENDIF ()
+include_directories (AFTER ${LIBLBFGS_INCLUDE_DIR})
+include_directories (AFTER ${MSINTTYPES_INCLUDE_DIR})
+include_directories (AFTER ${RANSAC_INCLUDE_DIRS})
 
 if (CUDA_FOUND)
   include_directories (AFTER ${CUDA_INCLUDE_DIRS})
 endif ()
-
 if (DCMTK_FOUND)
   include_directories (AFTER ${DCMTK_INCLUDE_DIR})
 endif ()
-
-include_directories (AFTER ${DLIB_INCLUDE_DIR})
-
 if (FFTW_FOUND)
   include_directories (BEFORE ${FFTW_INCLUDE_DIR})
   link_directories (${FFTW_DIR})
 endif ()
-
 if (NOT HAVE_GETOPT_LONG)
   include_directories (AFTER "${CMAKE_SOURCE_DIR}/libs/getopt")
 endif ()
-
-if (OPENCL_FOUND)
-  include_directories (BEFORE ${OPENCL_INCLUDE_DIR})
-endif ()
-
 if (MATLAB_FOUND)
   include_directories (AFTER ${MATLAB_INCLUDE_DIRS})
 endif ()
-
+if (NLOPT_FOUND)
+  include_directories (AFTER ${NLOPT_INCLUDE_DIR})
+endif ()
+if (OPENCL_FOUND)
+  include_directories (BEFORE ${OPENCL_INCLUDE_DIR})
+endif ()
 if (PANTHEIOS_FOUND)
   include_directories (AFTER ${STLSOFT_INCLUDE_DIR})
   include_directories (AFTER ${PANTHEIOS_INCLUDE_DIR})
 endif ()
-
 if (QT4_FOUND)
   if (QT_QTGUI_FOUND)
     include_directories (AFTER ${QT_QTGUI_INCLUDE_DIR})
@@ -98,9 +81,9 @@ if (QT4_FOUND)
     include_directories (AFTER ${QT_QTSQL_INCLUDE_DIR})
   endif ()
 endif ()
-
-include_directories (AFTER ${RANSAC_INCLUDE_DIRS})
-
+if (SQLITE_FOUND)
+  include_directories (AFTER ${SQLITE_INCLUDE_DIR})
+endif ()
 if (wxWidgets_FOUND)
   include_directories (BEFORE ${wxWidgets_INCLUDE_DIRS})
 endif ()

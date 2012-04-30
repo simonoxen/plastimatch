@@ -8,54 +8,7 @@ project (src)
 ##-----------------------------------------------------------------------------
 ##  Figure out library dependencies
 ##-----------------------------------------------------------------------------
-set (PLMBASE_LIBRARY_DEPENDENCIES
-  ${ITK_LIBRARIES}
-  plmsys
-  )
 
-set (PLMRECONSTRUCT_LIBRARY_DEPENDENCIES 
-  plmbase
-  plmsys
-  )
-
-set (PLMREGISTER_LIBRARY_DEPENDENCIES 
-  plmbase
-  plmsys
-  plmutil
-  ${LIBLBFGS_LIBRARIES}
-  nocedal
-  )
-
-set (PLMSEGMENT_LIBRARY_DEPENDENCIES 
-  plmbase
-  plmsys
-  ${ITK_LIBRARIES}
-  )
-
-set (PLMSCRIPT_LIBRARY_DEPENDENCIES
-  plmbase
-  plmregister
-  plmsegment
-  plmsys
-  plmutil
-  ${QT_LIBRARIES}
-  lua
-  )
-if (READLINE_FOUND)
-  set (PLMSCRIPT_LIBRARY_DEPENDENCIES
-    ${PLMSCRIPT_LIBRARY_DEPENDENCIES}
-    ${READLINE_LIBRARY}
-  )
-endif()
-
-set (PLMSYS_LIBRARY_DEPENDENCIES 
-  bstrlib
-  )
-
-set (PLMUTIL_LIBRARY_DEPENDENCIES 
-  plmbase
-  plmsys
-  )
 
 # This will go away soon
 set (GPUIT_LIBRARY_DEPENDENCIES 
@@ -66,6 +19,7 @@ set (GPUIT_LIBRARY_DEPENDENCIES
   plmscript
   plmsys
   plmutil
+  ${LIBLBFGS_LIBRARIES}
   )
 
 if (NOT BUILD_DEBIAN)
@@ -137,35 +91,6 @@ if (FFTW_FOUND)
     ${FFTW_LIBRARIES})
 endif ()
 
-# Required - your choice: fortran or f2c
-if (PLM_USE_F2C)
-  set (PLMREGISTER_LIBRARY_DEPENDENCIES
-    ${PLMREGISTER_LIBRARY_DEPENDENCIES}
-    ${F2C_LIBRARY}
-    )
-  if (UNIX)
-    set (PLMREGISTER_LIBRARY_DEPENDENCIES
-      ${PLMREGISTER_LIBRARY_DEPENDENCIES}
-      f2c_helper
-      )
-  endif ()
-  # Apparently the below is not needed.
-  # LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/libf2c)
-else ()
-  # It would seem that mixed-language programs need to set compiler and 
-  # linker flags manually
-  #   http://www.vtk.org/Wiki/CMakeForFortranExample
-  # In theory, this is fixed in a future release
-  #   http://www.cmake.org/Bug/view.php?id=9195
-  message (STATUS "Fortran compiler = ${CMAKE_Fortran_COMPILER}")
-  if (Fortran_COMPILER_NAME STREQUAL "gfortran" 
-      OR Fortran_COMPILER_NAME STREQUAL "f95")
-    set (PLMREGISTER_LIBRARY_DEPENDENCIES
-      ${PLMREGISTER_LIBRARY_DEPENDENCIES}
-      gfortran
-      )
-  endif ()
-endif ()
 
 if (NOT HAVE_GETOPT_LONG)
   set (GPUIT_LIBRARY_DEPENDENCIES

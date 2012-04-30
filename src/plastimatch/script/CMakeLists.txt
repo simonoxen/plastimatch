@@ -10,6 +10,9 @@ configure_file (
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 
+##-----------------------------------------------------------------------------
+##  SOURCE FILES
+##-----------------------------------------------------------------------------
 set (PLMSCRIPT_LIBRARY_SRC
   lua_class_image.cxx lua_class_image.h
   lua_class_register.cxx lua_class_register.h
@@ -23,11 +26,29 @@ set (PLMSCRIPT_LIBRARY_SRC
   lua_util.cxx lua_util.h
   )
 
+set (PLMSCRIPT_LIBRARY_DEPENDENCIES
+  plmbase
+  plmregister
+  plmsegment
+  plmsys
+  plmutil
+  ${QT_LIBRARIES}
+  lua
+  )
+if (READLINE_FOUND)
+  set (PLMSCRIPT_LIBRARY_DEPENDENCIES
+    ${PLMSCRIPT_LIBRARY_DEPENDENCIES}
+    ${READLINE_LIBRARY}
+  )
+endif()
+
+##-----------------------------------------------------------------------------
+##  SPECIAL BUILD RULES: Qt
+##-----------------------------------------------------------------------------
 # JAS 2012.04.27
-#   This Qt4 mess here is simply horrible
-#   ...note to self, remember to fix this
-#   once we have all the qt code building
-#   as plmqt
+#   This Qt4 mess here is simply horrible ...note to self,
+#   remember to fix this once we have all the qt code
+#   building as plmqt
 if (QT4_FOUND)
     qt4_wrap_cpp (PORTAL_MOC_SRC_HACK
       ../qt/cview_portal.h
@@ -40,12 +61,18 @@ if (QT4_FOUND)
     )
 endif ()
 
+##-----------------------------------------------------------------------------
+##  BUILD TARGETS
+##-----------------------------------------------------------------------------
 plm_add_library (
   plmscript
   "${PLMSCRIPT_LIBRARY_SRC}" 
   "${PLMSCRIPT_LIBRARY_DEPENDENCIES}"
   "")
 
+##-----------------------------------------------------------------------------
+##  SPECIAL RULES FOR SLICER
+##-----------------------------------------------------------------------------
 if (SLICER_FOUND)
   if (WIN32)
     plm_slicer_copy_dll (plastimatch_slicer_copy_plmscript

@@ -3,6 +3,11 @@
 ##-----------------------------------------------------------------------------
 project (src_plastimatch_test)
 
+include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
+
+##-----------------------------------------------------------------------------
+##  CMAKE FLAGS
+##-----------------------------------------------------------------------------
 option (PLM_BUILD_CUDA_TEST   "Build CUDA test program"   OFF)
 option (PLM_BUILD_DCMTK_TEST  "Build DCMTK test program"  OFF)
 option (PLM_BUILD_DLIB_TEST   "Build dlib test program"   OFF)
@@ -15,8 +20,9 @@ option (PLM_BUILD_OPENMP_TEST "Build OpenMP test program" OFF)
 option (PLM_BUILD_QT_TEST     "Build Qt test program"     OFF)
 option (PLM_BUILD_RANSAC_TEST "Build RANSAC test program" OFF)
 
-include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
-
+##-----------------------------------------------------------------------------
+##  BUILD TARGETS
+##-----------------------------------------------------------------------------
 # Test executable -- cuda
 if (CUDA_FOUND AND PLM_BUILD_CUDA_TEST)
   cuda_compile (CUDA_TEST_WRAPPERS cuda_test.cu)
