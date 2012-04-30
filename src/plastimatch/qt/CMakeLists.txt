@@ -9,6 +9,7 @@ configure_file (
 )
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
+include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 
 set (PLASTIMATCH_QT_SRC
   # pqt_application.cxx pqt_application.h
