@@ -4,30 +4,12 @@
 #ifndef _proton_dose_opts_h_
 #define _proton_dose_opts_h_
 
-#include "threading.h"
 
-typedef struct proton_dose_options Proton_dose_options;
-struct proton_dose_options {
-    Threading threading;
+typedef struct proton_dose_parms Proton_dose_parms;
 
-    char flavor;                     /* Which algorithm? */
-    float src[3];                    /* Beam source */
-    float isocenter[3];              /* Beam target */
-    float vup[3];                    /* Aperture orientation */
-
-    float scale;
-    float ray_step;                  /* Uniform ray step size (mm) */
-    char* input_pep_fn;              /* Proton energy profile */
-    char* input_fn;
-    char* output_fn;
-    int debug;
-
-    /* Speed hacks */
-    int detail;           /* 0 = full detail */
-                          /* 1 = only consider voxels in beam path */
-};
-
-void proton_dose_parse_args (Proton_dose_options* options, 
-    int argc, char* argv[]);
+void proton_dose_parse_args (
+        proton_dose_parms* parms, 
+        int argc, char* argv[]
+);
 
 #endif

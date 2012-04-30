@@ -214,7 +214,7 @@ if (PLM_USE_GPU_PLUGINS)
     # acceleration.  So, we add it as a dependency here so plmregistercuda will
     # be copied to Testing whenever the user builds plmregister (or any target
     # that depends on plmregister).
-    add_dependencies (gpuit plmcuda_tcpy)
+    add_dependencies (plmregister plmcuda_tcpy)
   endif ()
 
   if (OPENCL_FOUND)

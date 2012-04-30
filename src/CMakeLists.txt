@@ -9,17 +9,8 @@ project (src)
 ##  Figure out library dependencies
 ##-----------------------------------------------------------------------------
 
-
 # This will go away soon
 set (GPUIT_LIBRARY_DEPENDENCIES 
-  plmbase
-  plmreconstruct
-  plmregister
-  plmsegment
-  plmscript
-  plmsys
-  plmutil
-  ${LIBLBFGS_LIBRARIES}
   )
 
 if (NOT BUILD_DEBIAN)
@@ -124,12 +115,17 @@ if (LIBDL_FOUND)
     -ldl)
 endif ()
 
-set (GPUIT_LIBRARIES gpuit ${GPUIT_LIBRARY_DEPENDENCIES})
-
 set (PLASTIMATCH_LIBS
   plastimatch1
+  plmbase
+  plmdose
+  plmreconstruct
+  plmregister
+  plmsegment
+  plmscript
+  plmsys
+  plmutil
   ${ITK_LIBRARIES}
-  ${GPUIT_LIBRARIES}
   )
 
 set (SLICER_PLUGIN_LIBS ${ITK_LIBRARIES} ${GPUIT_LIBRARY_DEPENDENCIES})

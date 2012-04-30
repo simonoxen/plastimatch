@@ -156,42 +156,43 @@ endif ()
 
 
 plm_add_executable (bspline "${BSPLINE_SRC}" 
-  "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
+  "${PLASTIMATCH_LIBS}" "${PLMCUDA_EXE_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 plm_add_executable (check_grad "${CHECK_GRAD_SRC}" 
-  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
+  "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 plm_add_executable (demons "${DEMONS_SRC}" 
-  "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
+  "${PLASTIMATCH_LIBS}" "${PLMCUDA_EXE_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 plm_add_executable (dlib_train "${DLIB_TRAIN_SRC}" 
-  "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
+  "${PLASTIMATCH_LIBS}" "${PLMCUDA_EXE_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
 plm_add_executable (drr "${DRR_SRC}" 
-  "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
+  "${PLASTIMATCH_LIBS}" "${PLMCUDA_EXE_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_ALWAYS})
 plm_add_executable (fdk "${FDK_SRC}" 
-  "${GPUIT_LIBRARIES}" "${PLMCUDA_EXE_LDFLAGS}" 
+  "${PLASTIMATCH_LIBS}" "${PLMCUDA_EXE_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_ALWAYS})
 plm_add_executable (hnd_to_pfm "${HND_TO_PFM_SRC}" 
-  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
+  "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
 plm_add_executable (mha_to_raw "${MHA_TO_RAW_SRC}"
   "" ""
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
 plm_add_executable (proton_dose "${PROTON_DOSE_SRC}" 
-  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
+  "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 plm_add_executable (raw_to_mha "${RAW_TO_MHA_SRC}"
   "" "" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
 
 
-if (NOT BUILD_DEBIAN)
-  plm_add_executable (bragg_curve "${BRAGG_CURVE_SRC}" 
-    "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-endif ()
+## F2C is being difficult... commented out for now
+#if (NOT BUILD_DEBIAN)
+#  plm_add_executable (bragg_curve "${BRAGG_CURVE_SRC}" 
+#    "${PLASTIMATCH_LIBS};${PLM_FORTRAN}" "${GPUIT_EXE_LDFLAGS}" 
+#    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+#endif ()
 
 
 # dicom_uid requires dcmtk

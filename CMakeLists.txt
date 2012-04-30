@@ -442,6 +442,29 @@ else ()
   endif ()
 endif ()
 
+
+##-----------------------------------------------------------------------------
+##  Set PLM_FORTRAN (either F2C or fortran)
+##-----------------------------------------------------------------------------
+if (PLM_USE_F2C)
+  set (PLM_FORTRAN ${F2C_LIBRARY})
+  if (UNIX)
+    set (PLM_FORTRAN ${PLM_FORTRAN} f2c_helper)
+  endif ()
+else ()
+  # It would seem that mixed-language programs need to set compiler and 
+  # linker flags manually
+  #   http://www.vtk.org/Wiki/CMakeForFortranExample
+  # In theory, this is fixed in a future release
+  #   http://www.cmake.org/Bug/view.php?id=9195
+  message (STATUS "Fortran compiler = ${CMAKE_Fortran_COMPILER}")
+  if (Fortran_COMPILER_NAME STREQUAL "gfortran" 
+      OR Fortran_COMPILER_NAME STREQUAL "f95")
+    set (PLM_FORTRAN gfortran)
+  endif ()
+endif ()
+message (STATUS "PLM_FORTRAN: ${PLM_FORTRAN}")
+
 ##-----------------------------------------------------------------------------
 ## JAS 10.28.2010
 ## nvcc automatically passed the flag -malign-double to gcc when compiling .cu

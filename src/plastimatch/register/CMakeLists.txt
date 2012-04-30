@@ -62,42 +62,14 @@ set (PLMREGISTER_CUDA_IFACE_SRC
 ##  LIBRARY DEPENDENCIES
 ##-----------------------------------------------------------------------------
 set (PLMREGISTER_LIBRARY_DEPENDENCIES 
+  ${LIBLBFGS_LIBRARIES}
+  nocedal
   plmbase
   plmsys
   plmutil
-  ${LIBLBFGS_LIBRARIES}
-  nocedal
+  ${PLM_FORTRAN}
   )
 
-# your choice: fortran or f2c (for nocedal)
-if (PLM_USE_F2C)
-  set (PLMREGISTER_LIBRARY_DEPENDENCIES
-    ${PLMREGISTER_LIBRARY_DEPENDENCIES}
-    ${F2C_LIBRARY}
-    )
-  if (UNIX)
-    set (PLMREGISTER_LIBRARY_DEPENDENCIES
-      ${PLMREGISTER_LIBRARY_DEPENDENCIES}
-      f2c_helper
-      )
-  endif ()
-  # Apparently the below is not needed.
-  # LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/libf2c)
-else ()
-  # It would seem that mixed-language programs need to set compiler and 
-  # linker flags manually
-  #   http://www.vtk.org/Wiki/CMakeForFortranExample
-  # In theory, this is fixed in a future release
-  #   http://www.cmake.org/Bug/view.php?id=9195
-  message (STATUS "Fortran compiler = ${CMAKE_Fortran_COMPILER}")
-  if (Fortran_COMPILER_NAME STREQUAL "gfortran" 
-      OR Fortran_COMPILER_NAME STREQUAL "f95")
-    set (PLMREGISTER_LIBRARY_DEPENDENCIES
-      ${PLMREGISTER_LIBRARY_DEPENDENCIES}
-      gfortran
-      )
-  endif ()
-endif ()
 
 ##-----------------------------------------------------------------------------
 ##  SPECIAL BUILD RULES: CUDA

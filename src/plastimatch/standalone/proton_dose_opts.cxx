@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "proton_dose_opts.h"
+#include "proton_dose.h"
 #include "plm_math.h"
 
 #ifndef NULL
@@ -34,36 +34,36 @@ print_usage (void)
 }
 
 void
-proton_dose_opts_init (Proton_dose_options* options)
+proton_dose_parms_init (Proton_dose_parms* parms)
 {
-    options->threading = THREADING_CPU_OPENMP;
-    options->flavor = 'a';
-    options->src[0] = -2000.0f;
-    options->src[1] = 0.0f;
-    options->src[2] = 0.0f;
-    options->isocenter[0] = 0.0f;
-    options->isocenter[1] = 0.0f;
-    options->isocenter[2] = 0.0f;
-    options->vup[0] = 0.0f;
-    options->vup[1] = 0.0f;
-    options->vup[2] = 1.0f;
+    parms->threading = THREADING_CPU_OPENMP;
+    parms->flavor = 'a';
+    parms->src[0] = -2000.0f;
+    parms->src[1] = 0.0f;
+    parms->src[2] = 0.0f;
+    parms->isocenter[0] = 0.0f;
+    parms->isocenter[1] = 0.0f;
+    parms->isocenter[2] = 0.0f;
+    parms->vup[0] = 0.0f;
+    parms->vup[1] = 0.0f;
+    parms->vup[2] = 1.0f;
 
-    options->scale = 1.0f;
-    options->ray_step = 1.0f;
-    options->input_fn = 0;
-    options->input_pep_fn = 0;
-    options->output_fn = 0;
-    options->debug = 0;
+    parms->scale = 1.0f;
+    parms->ray_step = 1.0f;
+    parms->input_fn = 0;
+    parms->input_pep_fn = 0;
+    parms->output_fn = 0;
+    parms->debug = 0;
 
-    options->detail = 0;
+    parms->detail = 0;
 }
 
 void
-proton_dose_parse_args (Proton_dose_options* options, int argc, char* argv[])
+proton_dose_parse_args (Proton_dose_parms* parms, int argc, char* argv[])
 {
     int i, rc;
 
-    proton_dose_opts_init (options);
+    proton_dose_parms_init (parms);
     for (i = 1; i < argc; i++) {
 	//printf ("ARG[%d] = %s\n", i, argv[i]);
 	if (argv[i][0] != '-') break;
@@ -76,18 +76,18 @@ proton_dose_parse_args (Proton_dose_options* options, int argc, char* argv[])
 	    if (!strcmp(argv[i], "cuda") || !strcmp(argv[i], "CUDA")
 		|| !strcmp(argv[i], "gpu") || !strcmp(argv[i], "GPU"))
 	    {
-		options->threading = THREADING_CUDA;
+		parms->threading = THREADING_CUDA;
 	    }
 	    else {
-		options->threading = THREADING_CPU_OPENMP;
+		parms->threading = THREADING_CPU_OPENMP;
 	    }
 	}
 	else if (!strcmp (argv[i], "-src")) {
 	    i++;
 	    rc = sscanf (argv[i], "%f %f %f", 
-		&options->src[0],
-		&options->src[1], 
-		&options->src[2]);
+		&parms->src[0],
+		&parms->src[1], 
+		&parms->src[2]);
 	    if (rc != 3) {
 		print_usage ();
 	    }
@@ -95,9 +95,9 @@ proton_dose_parse_args (Proton_dose_options* options, int argc, char* argv[])
 	else if (!strcmp (argv[i], "-iso")) {
 	    i++;
 	    rc = sscanf (argv[i], "%f %f %f", 
-		&options->isocenter[0],
-		&options->isocenter[1], 
-		&options->isocenter[2]);
+		&parms->isocenter[0],
+		&parms->isocenter[1], 
+		&parms->isocenter[2]);
 	    if (rc != 3) {
 		print_usage ();
 	    }
@@ -105,24 +105,24 @@ proton_dose_parse_args (Proton_dose_options* options, int argc, char* argv[])
 	else if (!strcmp (argv[i], "-vup")) {
 	    i++;
 	    rc = sscanf (argv[i], "%f %f %f", 
-		&options->vup[0],
-		&options->vup[1], 
-		&options->vup[2]);
+		&parms->vup[0],
+		&parms->vup[1], 
+		&parms->vup[2]);
 	    if (rc != 3) {
 		print_usage ();
 	    }
 	}
 	else if (!strcmp (argv[i], "-d")) {
 	    i++;
-	    rc = sscanf (argv[i], "%i" , &options->detail);
+	    rc = sscanf (argv[i], "%i" , &parms->detail);
 	    if (rc != 1) {
 		print_usage ();
 	    }
 	}
 	else if (!strcmp (argv[i], "-f")) {
 	    i++;
-	    rc = sscanf (argv[i], "%c" , &options->flavor);
-	    if (rc != 1 || options->flavor < 'a' || options->flavor > 'z') {
+	    rc = sscanf (argv[i], "%c" , &parms->flavor);
+	    if (rc != 1 || parms->flavor < 'a' || parms->flavor > 'z') {
 		fprintf (stderr, 
 		    "option %s must be a character beween 'a' and 'z'\n", 
 		    argv[i-1]);
@@ -138,24 +138,24 @@ proton_dose_parse_args (Proton_dose_options* options, int argc, char* argv[])
 		exit(1);
 	    }
 	    i++;
-	    options->input_pep_fn = strdup (argv[i]);
+	    parms->input_pep_fn = strdup (argv[i]);
 	}
 	else if (!strcmp (argv[i], "-s")) {
 	    i++;
-	    rc = sscanf (argv[i], "%g" , &options->scale);
+	    rc = sscanf (argv[i], "%g" , &parms->scale);
 	    if (rc != 1) {
 		print_usage ();
 	    }
 	}
 	else if (!strcmp (argv[i], "-u")) {
 	    i++;
-	    rc = sscanf (argv[i], "%f" , &options->ray_step);
+	    rc = sscanf (argv[i], "%f" , &parms->ray_step);
 	    if (rc != 1) {
 		print_usage ();
 	    }
 	}
 	else if (!strcmp (argv[i], "--debug")) {
-	    options->debug = 1;
+	    parms->debug = 1;
 	}
 	else {
 	    print_usage ();
@@ -167,12 +167,12 @@ proton_dose_parse_args (Proton_dose_options* options, int argc, char* argv[])
 	print_usage ();
     }
 
-    if (!options->input_pep_fn) {
+    if (!parms->input_pep_fn) {
         printf ("  Must specify a proton energy profile (-p switch)\n");
         printf ("  Terminating...\n\n");
         exit(1);
     }
 
-    options->input_fn = argv[i];
-    options->output_fn = argv[i+1];
+    parms->input_fn = argv[i];
+    parms->output_fn = argv[i+1];
 }

@@ -267,7 +267,7 @@ dose_direct (
     double* ap_ul,              /* aperture upper-left */
     double* incr_r,             /* ray row to row vector */
     double* incr_c,             /* ray col to col vector */
-    Proton_dose_options *options
+    Proton_dose_parms *parms
 )
 {
     double rgdepth;
@@ -306,7 +306,7 @@ dose_debug (
     double* ap_ul,              /* aperture upper-left */
     double* incr_r,             /* ray row to row vector */
     double* incr_c,             /* ray col to col vector */
-    Proton_dose_options *options
+    Proton_dose_parms *parms
 )
 {
     return rpl_volume_get_rgdepth (rpl_vol, ct_xyz);
@@ -325,7 +325,7 @@ dose_scatter (
     double* incr_c,
     double* prt,
     double* pdn,
-    Proton_dose_options *options
+    Proton_dose_parms *parms
 )
 {
     double rgdepth;
@@ -382,10 +382,10 @@ dose_scatter (
      * a resonable estimate, so we assume the largest scattering radius.
      */
     if (rgdepth < 0.0) {
-        if (options->detail == 0) {
+        if (parms->detail == 0) {
             rgdepth = pep->dmax;
         }
-        else if (options->detail == 1) {
+        else if (parms->detail == 1) {
             /* User wants to ignore "scatter only" dose */
             if (debug) {
 //                printf ("Voxel culled by detail flag\n");
@@ -484,7 +484,7 @@ dose_hong (
     double* incr_c,
     double* prt,
     double* pdn,
-    Proton_dose_options *options
+    Proton_dose_parms *parms
 )
 {
     double rgdepth;
@@ -536,10 +536,10 @@ dose_hong (
      * a resonable estimate, so we assume the largest scattering radius.
      */
     if (rgdepth < 0.0) {
-        if (options->detail == 0) {
+        if (parms->detail == 0) {
             rgdepth = pep->dmax;
         }
-        else if (options->detail == 1) {
+        else if (parms->detail == 1) {
             /* User wants to ignore "scatter only" dose */
             if (debug) {
                 printf ("Voxel culled by detail flag\n");
@@ -791,7 +791,7 @@ void
 proton_dose_compute (
     Volume *dose_vol,
     Volume *ct_vol,
-    Proton_dose_options *options
+    Proton_dose_parms *parms
 )
 {
     Rpl_volume* rpl_vol;
@@ -811,10 +811,10 @@ proton_dose_compute (
     int idx = 0;
 
     Proj_matrix *pmat;
-    double cam[3] = { options->src[0], options->src[1], options->src[2] };
-    double tgt[3] = { options->isocenter[0], options->isocenter[1], 
-		      options->isocenter[2] };
-    double vup[3] = { options->vup[0], options->vup[1], options->vup[2] };
+    double cam[3] = { parms->src[0], parms->src[1], parms->src[2] };
+    double tgt[3] = { parms->isocenter[0], parms->isocenter[1], 
+		      parms->isocenter[2] };
+    double vup[3] = { parms->vup[0], parms->vup[1], parms->vup[2] };
 
     /* This is a 10x10 grid, with image center at 4.5 */
     //double ic[2] = { 4.5, 4.5 };
@@ -863,16 +863,16 @@ proton_dose_compute (
 #endif
 
     /* Load proton energy profile specified on commandline */
-    pep = load_pep (options->input_pep_fn);
+    pep = load_pep (parms->input_pep_fn);
 
     /* Create the depth volume */
     rpl_vol = rpl_volume_create (ct_vol, pmat, ires, pmat->cam, ul_room, 
-	incr_r, incr_c, options->ray_step);
+	incr_r, incr_c, parms->ray_step);
 
     /* Scan through aperture to fill in rpl_volume */
     rpl_volume_compute (rpl_vol, ct_vol);
 
-    if (options->debug) {
+    if (parms->debug) {
         rpl_volume_save (rpl_vol, "depth_vol.mha");
         dump_pep (pep);
         proj_matrix_debug (pmat);
@@ -890,7 +890,7 @@ proton_dose_compute (
                 ct_xyz[2] = (double) (ct_vol->offset[2] + ct_ijk[2] * ct_vol->spacing[2]);
                 ct_xyz[3] = (double) 1.0;
 
-                switch (options->flavor) {
+                switch (parms->flavor) {
                 case 'a':
                     dose = dose_direct (
                             ct_xyz,         /* voxel to dose */
@@ -900,7 +900,7 @@ proton_dose_compute (
                             ul_room,        /* aperture upper-left */
                             incr_r,         /* 3D ray row increment */
                             incr_c,         /* 3D ray col increment */
-                            options);       /* options->ray_step */
+                            parms);       /* parms->ray_step */
                     break;
                 case 'b':
                     dose = dose_scatter (
@@ -914,7 +914,7 @@ proton_dose_compute (
                             incr_c,        /* 3D ray col increment */
                             prt,           /* x-dir in ap plane uv */
                             pdn,           /* y-dir in ap plane uv */
-                            options);      /* options->ray_step */
+                            parms);      /* parms->ray_step */
                     break;
                 case 'c':
                     dose = dose_hong (
@@ -928,7 +928,7 @@ proton_dose_compute (
                             incr_c,        /* 3D ray col increment */
                             prt,           /* x-dir in ap plane uv */
                             pdn,           /* y-dir in ap plane uv */
-                            options);      /* options->ray_step */
+                            parms);      /* parms->ray_step */
                     break;
                 case 'd':
                     dose = dose_debug (
@@ -939,7 +939,7 @@ proton_dose_compute (
                             ul_room,        /* aperture upper-left */
                             incr_r,         /* 3D ray row increment */
                             incr_c,         /* 3D ray col increment */
-                            options);       /* options->ray_step */
+                            parms);       /* parms->ray_step */
                     break;
                 }
 

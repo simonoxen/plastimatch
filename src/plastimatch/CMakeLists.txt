@@ -8,7 +8,6 @@ project (src_plastimatch)
 ##-----------------------------------------------------------------------------
 ##  Local options
 ##-----------------------------------------------------------------------------
-
 option (PLM_BUILD_SIFTND "Build siftnD program" ON)
 
 # Plastimatch software configuration options
@@ -27,6 +26,7 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 # JAS 2012.04.25 !!!!!!!!!!! TEMPORARY !!!!!!!!!!!!!!!!!!!!!!
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/base)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/cli)
+include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/dose)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/qt)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/cuda)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/reconstruct)
@@ -92,9 +92,7 @@ endif ()
 ##  PLMSYS/GPUIT/PLASTIMATCH LIBRARY SOURCE FILES
 ##-----------------------------------------------------------------------------
 set (GPUIT_LIBRARY_SRC
-  proton_dose.cxx proton_dose.h 
   )
-
 
 #set (PLMCUDA_LIBRARY_SRC
 #  bspline_cuda.cpp bspline_cuda.cu bspline_cuda.h
@@ -317,11 +315,12 @@ if (F2C_LIBRARY AND UNIX)
   plm_add_library (f2c_helper "${F2C_HELPER_LIBRARY_SRC}" "" "")
 endif ()
 
-plm_add_library (
-  gpuit 
-  "${GPUIT_LIBRARY_SRC}" 
-  "${GPUIT_LIBRARY_DEPENDENCIES}"
-  "${GPUIT_LIB_LDFLAGS}")
+# JAS 2012.04.30 gpuit is now empty
+#plm_add_library (
+#  gpuit 
+#  "${GPUIT_LIBRARY_SRC}" 
+#  "${GPUIT_LIBRARY_DEPENDENCIES}"
+#  "${GPUIT_LIB_LDFLAGS}")
 
 # JAS 2010.11.23
 # Because the plugins are loaded at runtime, CMake doesn't know
@@ -482,6 +481,7 @@ endif ()
 # plastimatch modules
 add_subdirectory(base)
 add_subdirectory(cli)
+add_subdirectory(dose)
 add_subdirectory(qt)
 add_subdirectory(reconstruct)
 add_subdirectory(register)

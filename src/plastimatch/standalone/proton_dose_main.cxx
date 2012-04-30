@@ -21,11 +21,11 @@ int
 main (int argc, char* argv[])
 {
     Volume *ct, *dose;
-    Proton_dose_options options;
+    Proton_dose_parms parms;
 
-    proton_dose_parse_args (&options, argc, argv);
+    proton_dose_parse_args (&parms, argc, argv);
 
-    ct = read_mha (options.input_fn);
+    ct = read_mha (parms.input_fn);
     if (!ct) return -1;
 
     volume_convert_to_float (ct);
@@ -35,9 +35,9 @@ main (int argc, char* argv[])
 
     dose = volume_clone_empty (ct);
 
-    proton_dose_compute (dose, ct, &options);
+    proton_dose_compute (dose, ct, &parms);
 
-    write_mha (options.output_fn, dose);
+    write_mha (parms.output_fn, dose);
 
     delete ct;
     delete dose;
