@@ -124,81 +124,81 @@ set (XF_TO_EMPIREFMT_SRC
 ##-----------------------------------------------------------------------------
 if (FULL_PLASTIMATCH_BUILD)
   plm_add_executable (compute_distance "${COMPUTE_DISTANCE_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   plm_add_executable (compute_mean_image "${COMPUTE_MEAN_IMAGE_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   plm_add_executable (dice_stats "${DICE_STATS_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   plm_add_executable (dicom_info "${DICOM_INFO_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   plm_add_executable (distance_map "${DISTANCE_MAP_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   plm_add_executable (extract_contour "${EXTRACT_CONTOUR_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   plm_add_executable (landmark_diff "${LANDMARK_DIFF_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   plm_add_executable (merge_vfs  "${MERGE_VFS_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   plm_add_executable (mha_to_rtog_dose "${MHA_TO_RTOG_DOSE_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   plm_add_executable (rtog_to_mha "${RTOG_TO_MHA_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   plm_add_executable (shuffle_mha "${SHUFFLE_MHA_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   if (PLM_BUILD_SIFTND)
     plm_add_executable (siftnD "${SIFTnD_SRC}"
-      "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+      "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
       ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   endif ()
   plm_add_executable (union_mask "${UNION_MASK_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   plm_add_executable (vf_invert "${VF_INVERT_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   plm_add_executable (xf_to_EMPIREFMT "${XF_TO_EMPIREFMT_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
 
 
 plm_add_executable (bspline "${BSPLINE_SRC}" 
-  "${PLASTIMATCH_LIBS}" "${PLMCUDA_EXE_LDFLAGS}" 
+  "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 plm_add_executable (check_grad "${CHECK_GRAD_SRC}" 
-  "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+  "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 plm_add_executable (demons "${DEMONS_SRC}" 
-  "${PLASTIMATCH_LIBS}" "${PLMCUDA_EXE_LDFLAGS}" 
+  "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 plm_add_executable (dlib_train "${DLIB_TRAIN_SRC}" 
-  "${PLASTIMATCH_LIBS}" "${PLMCUDA_EXE_LDFLAGS}" 
+  "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
 plm_add_executable (drr "${DRR_SRC}" 
-  "${PLASTIMATCH_LIBS}" "${PLMCUDA_EXE_LDFLAGS}" 
+  "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_ALWAYS})
 plm_add_executable (fdk "${FDK_SRC}" 
-  "${PLASTIMATCH_LIBS}" "${PLMCUDA_EXE_LDFLAGS}" 
+  "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_ALWAYS})
 plm_add_executable (hnd_to_pfm "${HND_TO_PFM_SRC}" 
-  "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+  "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
 plm_add_executable (mha_to_raw "${MHA_TO_RAW_SRC}"
   "" ""
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
 plm_add_executable (proton_dose "${PROTON_DOSE_SRC}" 
-  "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+  "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 plm_add_executable (raw_to_mha "${RAW_TO_MHA_SRC}"
   "" "" 
@@ -208,7 +208,7 @@ plm_add_executable (raw_to_mha "${RAW_TO_MHA_SRC}"
 ## F2C is being difficult... commented out for now
 #if (NOT BUILD_DEBIAN)
 #  plm_add_executable (bragg_curve "${BRAGG_CURVE_SRC}" 
-#    "${PLASTIMATCH_LIBS};${PLM_FORTRAN}" "${GPUIT_EXE_LDFLAGS}" 
+#    "${PLASTIMATCH_LIBS};${PLM_FORTRAN}" "${PLASTIMATCH_LDFLAGS}" 
 #    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 #endif ()
 
@@ -221,7 +221,7 @@ endif ()
 
 if (MATLAB_FOUND)
   mex_target (mex_drr "${MEX_DRR_SRC}"
-  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}")
+  "${GPUIT_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}")
 endif ()
 
 

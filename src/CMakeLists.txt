@@ -6,115 +6,8 @@
 project (src)
 
 ##-----------------------------------------------------------------------------
-##  Figure out library dependencies
+##  PLASTIMATCH LIBRARIES
 ##-----------------------------------------------------------------------------
-
-# This will go away soon
-set (GPUIT_LIBRARY_DEPENDENCIES 
-  )
-
-if (NOT BUILD_DEBIAN)
-  set (GPUIT_LIBRARY_DEPENDENCIES 
-    ${GPUIT_LIBRARY_DEPENDENCIES}
-    specfun
-    )
-endif ()
-
-# JAS 2010.11.19
-# New CUDA plugin stuff
-#if (CUDA_FOUND)
-#  if (PLM_USE_GPU_PLUGINS)      # << Use dynamic loading
-#    if (WIN32)
-#      # Windows
-#      set (GPUIT_LIBRARY_DEPENDENCIES
-#        ${GPUIT_LIBRARY_DEPENDENCIES}
-#        plmcuda
-#        # shared library: cuda extensions
-#        # we tell windows to "delay load" this
-#      )
-#    else ()
-#      # Linux
-#      set (GPUIT_LIBRARY_DEPENDENCIES
-#        ${GPUIT_LIBRARY_DEPENDENCIES}
-#        # In linux we use dlfcn.h to load plmcula
-#        # in the code @ runtime.
-#      )
-#    endif ()
-#  else ()    # << use static linking
-#    set (GPUIT_LIBRARY_DEPENDENCIES
-#      ${GPUIT_LIBRARY_DEPENDENCIES}
-#      ${CUDA_LIBRARIES}
-#    )
-#  endif ()
-#endif ()
-
-# JAS 2011.01.13
-# New OpenCL plugin stuff (plmopencl)
-if (OPENCL_FOUND)
-  if (PLM_USE_GPU_PLUGINS)      # << Use dynamic loading
-    if (WIN32)
-      # Windows
-      set (GPUIT_LIBRARY_DEPENDENCIES
-        ${GPUIT_LIBRARY_DEPENDENCIES}
-        plmopencl
-        # shared library: cuda extensions
-        # we tell windows to "delay load" this
-      )
-    else ()
-      # Linux
-      set (GPUIT_LIBRARY_DEPENDENCIES
-        ${GPUIT_LIBRARY_DEPENDENCIES}
-        # In linux we use delayload.h to load plmopencl
-        # in the code @ runtime.
-      )
-    endif ()
-  else ()    # << use static linking
-    set (GPUIT_LIBRARY_DEPENDENCIES
-      ${GPUIT_LIBRARY_DEPENDENCIES}
-      ${OPENCL_LIBRARIES}
-    )
-  endif ()
-endif ()
-
-if (FFTW_FOUND)
-  set (GPUIT_LIBRARY_DEPENDENCIES 
-    ${GPUIT_LIBRARY_DEPENDENCIES}
-    ${FFTW_LIBRARIES})
-endif ()
-
-
-if (NOT HAVE_GETOPT_LONG)
-  set (GPUIT_LIBRARY_DEPENDENCIES
-    ${GPUIT_LIBRARY_DEPENDENCIES}
-    getopt
-    )
-endif ()
-
-if (NLOPT_FOUND)
-  set (GPUIT_LIBRARY_DEPENDENCIES
-    ${GPUIT_LIBRARY_DEPENDENCIES}
-    ${NLOPT_LIBRARIES}
-    )
-endif ()
-
-if (OPENMP_FOUND)
-  set (GPUIT_LIBRARY_DEPENDENCIES
-    ${GPUIT_LIBRARY_DEPENDENCIES}
-    ${OPENMP_LIBRARIES}
-    )
-endif ()
-
-set (GPUIT_LIBRARY_DEPENDENCIES
-  ${GPUIT_LIBRARY_DEPENDENCIES}
-  ${MATH_LIB}
-  )
-
-if (LIBDL_FOUND)
-  set (GPUIT_LIBRARY_DEPENDENCIES
-    ${GPUIT_LIBRARY_DEPENDENCIES}
-    -ldl)
-endif ()
-
 set (PLASTIMATCH_LIBS
   plastimatch1
   plmbase
@@ -126,55 +19,53 @@ set (PLASTIMATCH_LIBS
   plmsys
   plmutil
   ${ITK_LIBRARIES}
+  ${MATH_LIB}
   )
 
-set (SLICER_PLUGIN_LIBS ${ITK_LIBRARIES} ${GPUIT_LIBRARY_DEPENDENCIES})
+if (NOT BUILD_DEBIAN)
+  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} specfun)
+endif ()
+
+if (FFTW_FOUND)
+  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} ${FFTW_LIBRARIES})
+endif ()
+
+if (NOT HAVE_GETOPT_LONG)
+  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} getopt)
+endif ()
+
+if (NLOPT_FOUND)
+  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} ${NLOPT_LIBRARIES})
+endif ()
+
+if (OPENMP_FOUND)
+  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} ${OPENMP_LIBRARIES})
+endif ()
+
+if (LIBDL_FOUND)
+  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} -ldl)
+endif ()
 
 if (QT4_FOUND)
-  set (PLASTIMATCH_LIBS
-    ${PLASTIMATCH_LIBS}
-    ${QT_LIBRARIES}
-  )
-endif()
+  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} ${QT_LIBRARIES})
+endif ()
+
 
 ##-----------------------------------------------------------------------------
-##  Determine linker flags
-##    GPUIT.DLL should link with GPUIT_LIB_LDFLAGS
-##    Executables that call PLMCUDA functions should link PLMCUDA_EXE_LDFLAGS
-##    Other executables should link with GPUIT_EXE_LDFLAGS
-##
-##  JAS 2011.01.21
-##    I have temporarily piggybacked OpenCL flags with CUDA flags.
-##    As a result PLMCUDA_EXE_FLAGS should probably be renamed to
-##    GPUPLUGIN_EXE_FLAGS or something of the like.  Probably unnecessary
-##    to separate OpenCL and CUDA linker flags since inapplicable /DELAYLOAD
-##    flags are automatically disregarded by the MS linker anyway.
+##  SLICER LIBRARIES
 ##-----------------------------------------------------------------------------
-set (GPUIT_LIB_LDFLAGS "${OPENMP_LDFLAGS}")
-set (GPUIT_EXE_LDFLAGS "${OPENMP_LDFLAGS}")
-set (PLMCUDA_EXE_LDFLAGS "${OPENMP_LDFLAGS}")
-if (WIN32 AND NOT CYGWIN AND NOT MINGW)
-  if (PLM_USE_GPU_PLUGINS)
-    set (GPUIT_LIB_LDFLAGS 
-      "${GPUIT_LIB_LDFLAGS} /DELAYLOAD:plmcuda.dll /DELAYLOAD:plmopencl.dll")
-    set (PLMCUDA_EXE_LDFLAGS 
-      "${PLMCUDA_EXE_LDFLAGS} /DELAYLOAD:plmcuda.dll /DELAYLOAD:plmopencl.dll")
-  else ()
-    set (GPUIT_LIB_LDFLAGS 
-      "${GPUIT_LIB_LDFLAGS} /DELAYLOAD:nvcuda.dll /DELAYLOAD:opencl.dll")
-    set (PLMCUDA_EXE_LDFLAGS 
-      "${PLMCUDA_EXE_LDFLAGS} /DELAYLOAD:nvcuda.dll /DELAYLOAD:opencl.dll")
-  endif ()
-# else ()
-  # if (LIBDL_FOUND)
-  #   set (GPUIT_LIB_LDFLAGS "${GPUIT_LIB_LDFLAGS} -ldl")
-  #   set (GPUIT_EXE_LDFLAGS "${GPUIT_EXE_LDFLAGS} -ldl")
-  #   set (PLMCUDA_EXE_LDFLAGS "${PLMCUDA_EXE_LDFLAGS} -ldl")
-  # endif ()
+set (SLICER_PLUGIN_LIBS ${PLASTIMATCH_LIBS})
+
+
+##-----------------------------------------------------------------------------
+##  DETERMINE LINKER FLAGS
+##-----------------------------------------------------------------------------
+set (PLASTIMATCH_LDFLAGS "${OPENMP_LDFLAGS}")
+if (PLM_USE_GPU_PLUGINS AND WIN32 AND NOT CYGWIN AND NOT MINGW)
+  set (PLASTIMATCH_LDFLAGS
+  "${PLASTIMATCH_LDFLAGS} /DELAYLOAD:plmregistercuda.dll /DELAYLOAD:plmreconstructcuda.dll")
 endif ()
-message (STATUS "GPUIT_LIB_LDFLAGS: ${GPUIT_LIB_LDFLAGS}")
-message (STATUS "GPUIT_EXE_LDFLAGS: ${GPUIT_EXE_LDFLAGS}")
-message (STATUS "PLMCUDA_EXE_LDFLAGS: ${PLMCUDA_EXE_LDFLAGS}")
+
 
 ##-----------------------------------------------------------------------------
 ##  Add subdirectories

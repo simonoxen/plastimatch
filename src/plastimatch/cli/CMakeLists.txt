@@ -51,10 +51,10 @@ set (LANDMARK_WARP_SRC
 ##-----------------------------------------------------------------------------
 if (FULL_PLASTIMATCH_BUILD)
   plm_add_executable (plastimatch "${PLASTIMATCH_SRC}"
-    "${PLASTIMATCH_LIBS}" "${PLMCUDA_EXE_LDFLAGS}" 
+    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_ALWAYS} ${INSTALL_ALWAYS})
 
   plm_add_executable (landmark_warp "${LANDMARK_WARP_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_ALWAYS})
 endif ()

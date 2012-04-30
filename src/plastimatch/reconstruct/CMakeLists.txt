@@ -85,6 +85,9 @@ endif ()
 if (PLM_USE_GPU_PLUGINS)
   # windows needs to delayload it
   if (WIN32 AND NOT CYGWIN AND NOT MINGW)
+    set (PLMRECONSTRUCT_LIBRARY_DEPENDENCIES
+      ${PLMRECONSTRUCT_LIBRARY_DEPENDENCIES}
+      plmreconstructcuda)
     set (PLMRECONSTRUCT_LIBRARY_LDFLAGS
       "${PLMRECONSTRUCT_LIBRARY_LDFLAGS} /DELAYLOAD:plmreconstructcuda.dll")
   endif ()
