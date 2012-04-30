@@ -72,11 +72,31 @@ TODOS
 
   SPLIT rtss.*; rtss.h -> base; 
         {convert_ss_img_to_cxt, cxt_re_extract, rasterize, warp} 
-  rtss_rasterize, rtss_marching_squares, rtss_warp -> util
+
   rtss_polyline.* -> BASE
   rtss_structure.* -> BASE
-  ss_img_stats -> UTIL
   ss_img_extract -> BASE
   ss_list_io -> BASE
+
+  rtss_rasterize, rtss_marching_squares, rtss_warp -> UTIL
+  ss_img_stats -> UTIL
   cxt_extract.cxx -> UTIL
 
+
+
+
+
+[ UTIL ]  cxt_extract.cxx
+[ ?WW? ]  cxt_io.cxx
+[ UTIL ]  dvh.cxx
+[ UTIL ]  rasterizer.cxx
+[  WW  ]  rtds.cxx
+[  WW  ]  rtds_dcmtk.cxx           ------------ rtss_util.cxx
+[  WW  ]  rtds_gdcm.cxx           /               * convert_ss_img_to_cxt
+[  WW  ]  rtds_warp.cxx          /                * cxt_re_extract
+[SPLIT!]  rtss.cxx ---------------                * rasterize
+[ UTIL ]  simplify_points.cxx    \                * warp
+[ UTIL ]  ss_img_stats.cxx        \
+[  WW  ]  ss_list_io.cxx           ------------ rtss_base.cxx
+[ UTIL ]  synthetic_mha.cxx                       * everything else
+[ UTIL ]  synthetic_vf.cxx

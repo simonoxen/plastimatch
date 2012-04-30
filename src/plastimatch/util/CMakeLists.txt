@@ -25,6 +25,7 @@ set (PLMUTIL_LIBRARY_SRC
   rasterize_slice.cxx
   slice_extract.cxx
   ss_img_extract.cxx
+  threshbox.cxx
   )
 
 set (PLMUTIL_LIBRARY_DEPENDENCIES 

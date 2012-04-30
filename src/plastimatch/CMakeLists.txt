@@ -8,7 +8,6 @@ project (src_plastimatch)
 ##-----------------------------------------------------------------------------
 ##  Local options
 ##-----------------------------------------------------------------------------
-option (PLM_BUILD_SIFTND "Build siftnD program" ON)
 
 # Plastimatch software configuration options
 option (PLM_CONFIG_ALT_DCOS "Use alternative direction cosines rules" OFF)
@@ -155,17 +154,13 @@ if (OPENCL_FOUND)
     opencl_probe.cxx opencl_probe.h opencl_probe.cl
     opencl_util.cxx opencl_util.h
     )
-
   if (BUILD_SHARED_LIBS)      # << Dynamic loading
-
     set (PLMOPENCL_LIBRARY_SRC
       ${PLMOPENCL_LIBRARY_SRC}
-    )
-
+      )
     set (PLMOPENCL_LIBRARY_DEPENDENCIES
       plmsys
-    )
-
+      )
     # OpenCL Plugin is ALWAYS shared!
     add_library (plmopencl SHARED
       ${PLMOPENCL_LIBRARY_SRC}
@@ -174,27 +169,21 @@ if (OPENCL_FOUND)
       ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
       LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
       RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
-
     # Be sure to link against libOpenCL and other depends
     target_link_libraries (plmopencl
       ${OPENCL_LIBRARIES}
       ${PLMOPENCL_LIBRARY_DEPENDENCIES}
       )
-
     install (TARGETS plmopencl
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
-    )
-
+        )
   else ()        # << Static linking
-
     set (GPUIT_LIBRARY_SRC
       ${GPUIT_LIBRARY_SRC}
       ${PLMOPENCL_LIBRARY_SRC}
-    )
-
+      )
   endif ()
-
   set (GPUIT_LIBRARY_SRC
     ${GPUIT_LIBRARY_SRC}
     demons_opencl.cxx
@@ -212,8 +201,8 @@ if (OPENCL_FOUND)
   plm_add_opencl_file (GPUIT_LIBRARY_SRC demons_opencl.cl)
   plm_add_opencl_file (GPUIT_LIBRARY_SRC drr_opencl.cl)
   plm_add_opencl_file (GPUIT_LIBRARY_SRC fdk_opencl.cl)
-
 endif ()
+
 
 if (F2C_LIBRARY)
   set (F2C_HELPER_LIBRARY_SRC
@@ -238,7 +227,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   ss_list_io.cxx ss_list_io.h
   synthetic_mha.cxx
   synthetic_vf.cxx
-  threshbox.cxx threshbox.h
   )
 
 if (ITK_FOUND AND GDCM_VERSION_2)
@@ -252,9 +240,6 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES (EXECUTABLES)
 ##-----------------------------------------------------------------------------
-set (MEX_DRR_SRC
-  mex_drr.c
-  )
 set (MONDOSHOT_SRC
   dcmtk_uid.cxx dcmtk_uid.h
   mondoshot_dicom.cpp mondoshot_dicom.h
@@ -281,9 +266,6 @@ set (PLASTIMATCH_SLICER_LANDWARP_SRC
 set (PLASTIMATCH_SLICER_SYNTH_SRC
   plastimatch_slicer_synth.cxx
   )
-set (SIFTnD_SRC
-  siftnD.cxx
-  )
 
 ##-----------------------------------------------------------------------------
 ##  Do we build a full plastimatch?
@@ -301,25 +283,6 @@ endif ()
 if (F2C_LIBRARY AND UNIX)
   plm_add_library (f2c_helper "${F2C_HELPER_LIBRARY_SRC}" "" "")
 endif ()
-
-# JAS 2012.04.30 gpuit is now empty
-#plm_add_library (
-#  gpuit 
-#  "${GPUIT_LIBRARY_SRC}" 
-#  "${GPUIT_LIBRARY_DEPENDENCIES}"
-#  "${GPUIT_LIB_LDFLAGS}")
-
-# JAS 2010.11.23
-# Because the plugins are loaded at runtime, CMake doesn't know
-# that they are needed by everything linked against gpuit.  So, we tell it.
-#if (BUILD_SHARED_LIBS)      # << Dynamic loading
-#  if (CUDA_FOUND)
-#    add_dependencies (gpuit plmcuda)
-#  endif ()
-#  if (OPENCL_FOUND)
-#    add_dependencies (gpuit plmopencl)
-#  endif ()
-#endif ()
 
 if (FULL_PLASTIMATCH_BUILD)
   # Despite claims to the contrary, you are not allowed to have a library
@@ -359,11 +322,6 @@ endif ()
 ##-----------------------------------------------------------------------------
 if (FULL_PLASTIMATCH_BUILD)
   message (STATUS "PLASTIMATCH_LIBS: ${PLASTIMATCH_LIBS}")
-  if (PLM_BUILD_SIFTND)
-    plm_add_executable (siftnD "${SIFTnD_SRC}"
-      "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-      ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-  endif ()
 endif ()
 
 # executables that require opencl
@@ -381,12 +339,6 @@ if (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
   if (NOT BUILD_AGAINST_SLICER3)
     install (TARGETS mondoshot DESTINATION bin)
   endif ()
-endif ()
-
-# matlab mex files
-if (MATLAB_FOUND)
-  mex_target (mex_drr 
-    "${MEX_DRR_SRC}" "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}")
 endif ()
 
 ##-----------------------------------------------------------------------------

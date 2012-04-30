@@ -6,6 +6,11 @@ project (src_plastimatch_standalone)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 
 ##-----------------------------------------------------------------------------
+##  CMAKE FLAGS
+##-----------------------------------------------------------------------------
+option (PLM_BUILD_SIFTND "Build siftnD program" ON)
+
+##-----------------------------------------------------------------------------
 ##  SOURCE FILES
 ##-----------------------------------------------------------------------------
 set (BRAGG_CURVE_SRC
@@ -79,6 +84,9 @@ set (LANDMARK_DIFF_SRC
 set (MERGE_VFS_SRC
   merge_vector_fields.cxx
   )
+set (MEX_DRR_SRC
+  mex_drr.c
+  )
 set (MHA_TO_RAW_SRC
   mha_to_raw.c
   )
@@ -94,6 +102,9 @@ set (RAW_TO_MHA_SRC
   )
 set (RTOG_TO_MHA_SRC
   rtog_to_mha.cxx
+  )
+set (SIFTnD_SRC
+  siftnD.cxx
   )
 set (UNION_MASK_SRC
   union_mask.cxx
@@ -145,6 +156,11 @@ if (FULL_PLASTIMATCH_BUILD)
   plm_add_executable (shuffle_mha "${SHUFFLE_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+  if (PLM_BUILD_SIFTND)
+    plm_add_executable (siftnD "${SIFTnD_SRC}"
+      "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+      ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+  endif ()
   plm_add_executable (union_mask "${UNION_MASK_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
@@ -203,6 +219,10 @@ if (CUDA_FOUND)
     ${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
 endif ()
 
+if (MATLAB_FOUND)
+  mex_target (mex_drr "${MEX_DRR_SRC}"
+  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}")
+endif ()
 
 
 # dicom_uid requires dcmtk
