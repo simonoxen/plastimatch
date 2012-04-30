@@ -36,6 +36,7 @@ set (PLMREGISTER_LIBRARY_SRC
   itk_demons.cxx
   itk_optim.cxx
   itk_registration.cxx
+  itk_tps.cxx
   plm_parms.cxx
   plm_stages.cxx
   rbf_cluster.cxx

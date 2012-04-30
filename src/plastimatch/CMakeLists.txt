@@ -225,7 +225,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   cxt_extract.cxx cxt_extract.h
   cxt_io.cxx cxt_io.h 
   dvh.cxx dvh.h
-  gamma_analysis.cxx gamma_analysis.h
   landmark_warp.cxx landmark_warp.h 
   plm_clp.cxx plm_clp.h
   rasterizer.cxx rasterizer.h
@@ -253,18 +252,6 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES (EXECUTABLES)
 ##-----------------------------------------------------------------------------
-set (CUDA_PROBE_SRC
-  cuda_probe_main.c
-  cuda_probe.cu
-  cuda_probe.h
-  )
-if (CUDA_FOUND)
-  cuda_compile(CUDA_PROBE_WRAPPERS cuda_probe.cu)
-  set (CUDA_PROBE_SRC
-    ${CUDA_PROBE_SRC}
-    ${CUDA_PROBE_WRAPPERS}
-    )
-endif ()
 set (MEX_DRR_SRC
   mex_drr.c
   )
@@ -377,13 +364,6 @@ if (FULL_PLASTIMATCH_BUILD)
       "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
       ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   endif ()
-endif ()
-
-# executables that require cuda
-if (CUDA_FOUND)
-  plm_add_executable (cuda_probe "${CUDA_PROBE_SRC}" 
-    "${CUDA_LIBRARIES}" "" 
-    ${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
 endif ()
 
 # executables that require opencl

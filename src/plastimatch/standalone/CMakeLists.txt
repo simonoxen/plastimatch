@@ -28,6 +28,14 @@ set (COMPUTE_DISTANCE_SRC
 set (COMPUTE_MEAN_IMAGE_SRC
   compute_mean_image_main.cxx
   )
+set (CUDA_PROBE_SRC
+  cuda_probe_main.c
+  cuda_probe.h
+  )
+if (CUDA_FOUND)
+  cuda_compile(CUDA_PROBE_WRAP cuda_probe.cu)
+  set (CUDA_PROBE_SRC ${CUDA_PROBE_SRC} ${CUDA_PROBE_WRAP})
+endif ()
 set (DEMONS_SRC
   demons_main.cxx 
   demons_opts.cxx
@@ -62,9 +70,6 @@ set (FDK_SRC
   fdk_main.cxx 
   fdk_opts.cxx
 )
-set (GABOR_TEST_SRC 
-  gabor_test.cxx
-  )
 set (HND_TO_PFM_SRC
   hnd_to_pfm.cxx 
   )
@@ -123,9 +128,6 @@ if (FULL_PLASTIMATCH_BUILD)
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   plm_add_executable (extract_contour "${EXTRACT_CONTOUR_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-  plm_add_executable (gabor_test "${GABOR_TEST_SRC}" 
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   plm_add_executable (landmark_diff "${LANDMARK_DIFF_SRC}" 
@@ -193,6 +195,14 @@ plm_add_executable (raw_to_mha "${RAW_TO_MHA_SRC}"
 #    "${PLASTIMATCH_LIBS};${PLM_FORTRAN}" "${GPUIT_EXE_LDFLAGS}" 
 #    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 #endif ()
+
+
+if (CUDA_FOUND)
+  plm_add_executable (cuda_probe "${CUDA_PROBE_SRC}" 
+    "${CUDA_LIBRARIES}" "" 
+    ${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
+endif ()
+
 
 
 # dicom_uid requires dcmtk

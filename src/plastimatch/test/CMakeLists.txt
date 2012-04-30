@@ -12,6 +12,7 @@ option (PLM_BUILD_CUDA_TEST   "Build CUDA test program"   OFF)
 option (PLM_BUILD_DCMTK_TEST  "Build DCMTK test program"  OFF)
 option (PLM_BUILD_DLIB_TEST   "Build dlib test program"   OFF)
 option (PLM_BUILD_FANN_TEST   "Build fann test program"   OFF)
+option (PLM_BUILD_GABOR_TEST  "Build Gabor test program"  OFF)
 option (PLM_BUILD_GDCM1_TEST  "Build GDCM test program"   OFF)
 option (PLM_BUILD_MEX_TEST    "Build mex test program"    OFF)
 option (PLM_BUILD_NLOPT_TEST  "Build NLopt test program"  OFF)
@@ -53,6 +54,13 @@ if (FANN_FOUND AND PLM_BUILD_FANN_TEST)
   plm_add_executable (fann_test fann_test.c
     "${FANN_TEST_LIBS}" "${OPENMP_LDFLAGS}"
     ${BUILD_ALWAYS} ${INSTALL_NEVER})
+endif ()
+
+# Test executable -- gabor_test
+if (PLM_BUILD_GABOR_TEST)
+  plm_add_executable (gabor_test "${GABOR_TEST_SRC}" 
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
 
 # Test executable -- gdcm
