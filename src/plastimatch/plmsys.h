@@ -19,29 +19,29 @@
 typedef struct dir_list Dir_list;
 
 /* dir_list.cxx */
-API Dir_list* dir_list_create (void);
-API void dir_list_destroy (Dir_list *dir_list);
-API void dir_list_init (Dir_list* dl);
-API Dir_list * dir_list_load (Dir_list *dir_list, const char* dir);
+C_API Dir_list* dir_list_create (void);
+C_API void dir_list_destroy (Dir_list *dir_list);
+C_API void dir_list_init (Dir_list* dl);
+C_API Dir_list * dir_list_load (Dir_list *dir_list, const char* dir);
 
 /* logfile.cxx */
-API void logfile_open (char* log_fn);
-API void logfile_close (void);
-API void logfile_printf (const char* fmt, ...);
+C_API void logfile_open (char* log_fn);
+C_API void logfile_close (void);
+C_API void logfile_printf (const char* fmt, ...);
 #define lprintf logfile_printf
 
 /* plm_endian.cxx */
-API void endian2_big_to_native (void* buf, unsigned long len);
-API void endian2_native_to_big (void* buf, unsigned long len);
-API void endian2_little_to_native (void* buf, unsigned long len);
-API void endian2_native_to_little (void* buf, unsigned long len);
-API void endian4_big_to_native (void* buf, unsigned long len);
-API void endian4_native_to_big (void* buf, unsigned long len);
-API void endian4_little_to_native (void* buf, unsigned long len);
-API void endian4_native_to_little (void* buf, unsigned long len);
+C_API void endian2_big_to_native (void* buf, unsigned long len);
+C_API void endian2_native_to_big (void* buf, unsigned long len);
+C_API void endian2_little_to_native (void* buf, unsigned long len);
+C_API void endian2_native_to_little (void* buf, unsigned long len);
+C_API void endian4_big_to_native (void* buf, unsigned long len);
+C_API void endian4_native_to_big (void* buf, unsigned long len);
+C_API void endian4_little_to_native (void* buf, unsigned long len);
+C_API void endian4_native_to_little (void* buf, unsigned long len);
 
 /* plm_fwrite.cxx */
-API void plm_fwrite (
+C_API void plm_fwrite (
         void* buf,
         size_t size,
         size_t count,
@@ -50,25 +50,25 @@ API void plm_fwrite (
 );
 
 /* print_and_exit.cxx */
-API void print_and_wait (char* prompt_fmt, ...);
-API void print_and_exit (char* prompt_fmt, ...);
+C_API void print_and_wait (char* prompt_fmt, ...);
+C_API void print_and_exit (char* prompt_fmt, ...);
 #define error_printf(fmt, ...) \
     fprintf (stderr, "\nplastimatch has encountered an issue.\n" \
              "file: %s (line:%i)\n" fmt, __FILE__, __LINE__,##__VA_ARGS__)
 
 /* file_util.h */
-API int extension_is (const char* fname, const char* ext);
-API int file_exists (const char *filename);
-API uint64_t file_size (const char *filename);
-API int is_directory (const char *dir);
-API void make_directory (const char *dirname);
-API void make_directory_recursive (const char *dirname);
-API FILE* make_tempfile (void);
-API void strip_extension (char* filename);
-API char* file_util_dirname (const char *filename);
-API char* file_util_parent (const char *filename);
-API char* plm_getcwd (char* s, int len);
-API int plm_chdir (char* s);
-API int plm_get_dir_list (const char*** f_list);
+C_API int extension_is (const char* fname, const char* ext);
+C_API int file_exists (const char *filename);
+C_API uint64_t file_size (const char *filename);
+C_API int is_directory (const char *dir);
+C_API void make_directory (const char *dirname);
+C_API void make_directory_recursive (const char *dirname);
+C_API FILE* make_tempfile (void);
+C_API void strip_extension (char* filename);
+C_API char* file_util_dirname (const char *filename);
+C_API char* file_util_parent (const char *filename);
+C_API char* plm_getcwd (char* s, int len);
+C_API int plm_chdir (char* s);
+C_API int plm_get_dir_list (const char*** f_list);
 
 #endif

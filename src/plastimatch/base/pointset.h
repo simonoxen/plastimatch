@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-class XAPI Point {
+class API Point {
 public:
     Point () {}
     Point (const std::string& label, float x, float y, float z) {
@@ -30,7 +30,7 @@ public:
     }
 };
 
-class XAPI Labeled_point {
+class API Labeled_point {
 public:
     Labeled_point () {}
     Labeled_point (const std::string& label, float x, float y, float z) {
@@ -52,7 +52,7 @@ public:
 };
 
 template<class T>
-class XAPI Pointset {
+class API Pointset {
   public:
     std::vector<T> point_list;
   public:

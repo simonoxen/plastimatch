@@ -8,15 +8,15 @@
 
 #if (!defined (BUILD_AGAINST_SLICER3) && (defined(_WIN32) || defined(WIN32)) && (defined (PLM_BUILD_SHARED_LIBS)))
 # ifdef plmtregister_EXPORTS
-#   define API EXTERNC __declspec(dllexport)
-#   define XAPI __declspec(dllexport)
+#   define C_API EXTERNC __declspec(dllexport)
+#   define API __declspec(dllexport)
 # else
-#   define API EXTERNC __declspec(dllimport)
-#   define XAPI __declspec(dllimport)
+#   define C_API EXTERNC __declspec(dllimport)
+#   define API __declspec(dllimport)
 # endif
 #else
-# define API EXTERNC 
-# define XAPI 
+# define C_API EXTERNC 
+# define API 
 #endif
 
 #endif

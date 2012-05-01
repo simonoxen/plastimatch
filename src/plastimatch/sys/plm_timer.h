@@ -8,7 +8,7 @@
 
 class Plm_timer_private;
 
-class XAPI Plm_timer {
+class API Plm_timer {
 public:
     Plm_timer ();
     ~Plm_timer ();

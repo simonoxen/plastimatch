@@ -9,7 +9,7 @@
 
 class Volume_header;
 
-class XAPI Bspline_xform {
+class API Bspline_xform {
   public:
     float img_origin[3];         /* Image origin (in mm) */
     float img_spacing[3];        /* Image spacing (in mm) */
