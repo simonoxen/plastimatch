@@ -209,7 +209,6 @@ if (F2C_LIBRARY)
 endif ()
 
 set (PLASTIMATCH1_LIBRARY_SRC
-  landmark_warp.cxx landmark_warp.h 
   plm_clp.cxx plm_clp.h
   )
 
