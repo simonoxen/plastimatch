@@ -217,24 +217,24 @@ if (PLM_USE_GPU_PLUGINS)
     add_dependencies (plmregister plmcuda_tcpy)
   endif ()
 
-  if (OPENCL_FOUND)
-    set (OPENCL_PLUGIN_FILE
-      "${CMAKE_SHARED_LIBRARY_PREFIX}plmopencl${CMAKE_SHARED_LIBRARY_SUFFIX}")
-
-    add_custom_command (
-      OUTPUT "${PLM_BUILD_TESTING_DIR}/${OPENCL_PLUGIN_FILE}"
-      COMMAND
-      ${CMAKE_COMMAND} "-E" "copy"
-      "${GPU_PLUGIN_BIN_DIR}/${OPENCL_PLUGIN_FILE}"
-      "${PLM_BUILD_TESTING_DIR}/${OPENCL_PLUGIN_FILE}"
-      DEPENDS plmopencl
-      )
-
-    add_custom_target (plmopencl_tcpy
-      DEPENDS "${PLM_BUILD_TESTING_DIR}/${OPENCL_PLUGIN_FILE}"
-      )
-    add_dependencies (gpuit plmopencl_tcpy)
-  endif ()
+#  if (OPENCL_FOUND)
+#    set (OPENCL_PLUGIN_FILE
+#      "${CMAKE_SHARED_LIBRARY_PREFIX}plmopencl${CMAKE_SHARED_LIBRARY_SUFFIX}")
+#
+#    add_custom_command (
+#      OUTPUT "${PLM_BUILD_TESTING_DIR}/${OPENCL_PLUGIN_FILE}"
+#      COMMAND
+#      ${CMAKE_COMMAND} "-E" "copy"
+#      "${GPU_PLUGIN_BIN_DIR}/${OPENCL_PLUGIN_FILE}"
+#      "${PLM_BUILD_TESTING_DIR}/${OPENCL_PLUGIN_FILE}"
+#      DEPENDS plmopencl
+#      )
+#
+#    add_custom_target (plmopencl_tcpy
+#      DEPENDS "${PLM_BUILD_TESTING_DIR}/${OPENCL_PLUGIN_FILE}"
+#      )
+#    add_dependencies (gpuit plmopencl_tcpy)
+#  endif ()
 endif ()
 
 ## -------------------------------------------------------------------------
