@@ -214,14 +214,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   plm_clp.cxx plm_clp.h
   )
 
-if (ITK_FOUND AND GDCM_VERSION_2)
-  set (PLASTIMATCH1_LIBRARY_SRC
-    ${PLASTIMATCH1_LIBRARY_SRC}
-    gdcm2_util.cxx gdcm2_util.h
-    )
-endif ()
-
-
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES (EXECUTABLES)
 ##-----------------------------------------------------------------------------

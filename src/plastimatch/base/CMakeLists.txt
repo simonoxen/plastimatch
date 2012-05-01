@@ -83,6 +83,7 @@ set (PLMBASE_LIBRARY_SRC
   xio_studyset.cxx
   xpm.cxx
   )
+
 if (ITK_FOUND AND GDCM_VERSION_1)
   set (PLMBASE_LIBRARY_SRC
     ${PLMBASE_LIBRARY_SRC}
@@ -95,6 +96,14 @@ if (ITK_FOUND AND GDCM_VERSION_1)
     gdcm1_util.cxx
     )
 endif ()
+
+if (ITK_FOUND AND GDCM_VERSION_2)
+  set (PLASTIMATCH1_LIBRARY_SRC
+    ${PLASTIMATCH1_LIBRARY_SRC}
+    gdcm2_util.cxx gdcm2_util.h
+    )
+endif ()
+
 # JAS 2012.04.28 -- Commented out for Plastimatch 2.0 transition
 #if (DCMTK_FOUND AND NOT DCMTK_VERSION_STRING VERSION_LESS 3.6.0)
 #  set (PLMBASE_LIBRARY_SRC
