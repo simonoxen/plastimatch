@@ -43,11 +43,11 @@ CUDA_reconstruct_conebeam (
     int num_imgs;
     int i;
     float scale;
-    Plm_timer* timer_total = plm_timer_create ();
+    Plm_timer* timer_total = new Plm_timer;
     double time_total = 0;
 
 #if FDK_CUDA_TIME_KERNEL
-    Plm_timer* timer plm_timer_create ();
+    Plm_timer* timer = new Plm_timer;
     double backproject_time = 0.0;
     double filter_time = 0.0;
     double io_time = 0.0;
@@ -61,7 +61,7 @@ CUDA_reconstruct_conebeam (
     LOAD_SYMBOL (fdk_cuda_state_destroy, libplmcuda);
 
     // Start timing total execution
-    plm_timer_start (timer_total);
+    timer_total->start ();
 
     /* Attempt to set image scale */
     num_imgs = proj_dir->num_proj_images;
@@ -85,7 +85,7 @@ CUDA_reconstruct_conebeam (
     for (i = 0; i < proj_dir->num_proj_images; i++)
     {
 #if FDK_CUDA_TIME_KERNEL
-        plm_timer_start (timer);
+        timer->start ();
 #endif
 
         // load the next 2D projection
@@ -93,16 +93,16 @@ CUDA_reconstruct_conebeam (
         pmat = cbi->pmat;
 
 #if FDK_CUDA_TIME_KERNEL
-        io_time += plm_timer_report (timer);
+        io_time += timer->report ();
 #endif
 
         if (parms->filter == FDK_FILTER_TYPE_RAMP) {
 #if FDK_CUDA_TIME_KERNEL
-            plm_timer_start (timer);
+            timer->start ();
 #endif
             proj_image_filter (cbi);
 #if FDK_CUDA_TIME_KERNEL
-            filter_time += plm_timer_report (timer);
+            filter_time += timer->report ();
 #endif
         }
 
@@ -126,14 +126,14 @@ CUDA_reconstruct_conebeam (
 #endif
 
 #if FDK_CUDA_TIME_KERNEL
-        plm_timer_start (timer);
+        timer->start ();
 #endif
 
 	/* Execute backprojection kernel */
 	fdk_cuda_backproject (dev_state);
 
 #if FDK_CUDA_TIME_KERNEL
-        backproject_time += plm_timer_report (timer);
+        backproject_time += timer->report ();
 #endif
 
     } // next projection
@@ -152,7 +152,7 @@ CUDA_reconstruct_conebeam (
     UNLOAD_LIBRARY (libplmcuda);
 
     /* Report total time */
-    time_total = plm_timer_report (timer_total);
+    time_total = timer_total->report ();
     printf ("========================================\n");
     printf ("[Total Execution Time: %.9fs ]\n", time_total);
 #if FDK_CUDA_TIME_KERNEL
@@ -171,9 +171,9 @@ CUDA_reconstruct_conebeam (
     printf ("========================================\n");
 
 #if FDK_CUDA_TIME_KERNEL
-    plm_timer_destroy (timer);
+    delete timer;
 #endif
-    plm_timer_destroy (timer_total);
+    delete timer_total;
 
 }
 #endif
@@ -590,7 +590,7 @@ reconstruct_conebeam (
     double backproject_time = 0.0;
     double io_time = 0.0;
     Proj_image* cbi;    /* cbi == cone beam image */
-    Plm_timer* timer = plm_timer_create ();
+    Plm_timer* timer = new Plm_timer;
 
     /* Arbitrary scale applied to each image */
     scale = (float) (sqrt(3.f) / (double) num_imgs);
@@ -599,19 +599,19 @@ reconstruct_conebeam (
     for (i = 0; i < num_imgs; i++) {
         printf ("Processing image %d\n", i);
 
-        plm_timer_start (timer);
+        timer->start ();
         cbi = proj_dir->load_image (i);
-        io_time += plm_timer_report (timer);
+        io_time += timer->report ();
 
-	/* Apply ramp filter */
+        /* Apply ramp filter */
         if (parms->filter == FDK_FILTER_TYPE_RAMP) {
-            plm_timer_start (timer);
+            timer->start ();
             proj_image_filter (cbi);
-            filter_time += plm_timer_report (timer);
+            filter_time += timer->report ();
         }
     
         // printf ("Projecting Image %d\n", i);
-        plm_timer_start (timer);
+        timer->start ();
 
 	switch (parms->flavor) {
 	case '0':
@@ -632,7 +632,7 @@ reconstruct_conebeam (
 	    break;
 	}
 
-        backproject_time += plm_timer_report (timer);
+        backproject_time += timer->report ();
 
         delete cbi;
     }
@@ -645,7 +645,7 @@ reconstruct_conebeam (
     printf ("Backprojection time (per image) = %g\n", 
 	backproject_time / num_imgs);
 
-    plm_timer_destroy (timer);
+    delete timer;
 }
 
 void

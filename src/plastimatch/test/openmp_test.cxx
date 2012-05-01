@@ -88,23 +88,23 @@ speedtest_openmp_2 (double output[LOOP1], double input[LOOP1])
 int
 main (int argc, char* argv[])
 {
-    Plm_timer* timer = plm_timer_create ();
+    Plm_timer* timer = new Plm_timer;
 
     double input[LOOP1], output[LOOP1];
 
 #if (OPENMP_FOUND)
     display_num_threads ();
     initialize_vector (input);
-    plm_timer_start (timer);
+    timer->start ();
     speedtest_openmp_1 (output, input);
-    printf ("Time [openmp] = %f seconds\n", plm_timer_report (timer));
+    printf ("Time [openmp] = %f seconds\n", timer->report ());
 
     initialize_vector (input);
-    plm_timer_start (timer);
+    timer->start ();
     speedtest_openmp_2 (output, input);
-    printf ("Time [serial] = %f seconds\n", plm_timer_report (timer));
+    printf ("Time [serial] = %f seconds\n", timer->report ());
 
-    plm_timer_destroy ();
+    delete timer;
 
 #else
     printf ("Sorry, openmp was not supported by your compiler\n");

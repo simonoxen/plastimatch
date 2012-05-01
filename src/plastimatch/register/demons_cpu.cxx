@@ -101,11 +101,11 @@ demons_c (
 	f2ms[i] = fixed->spacing[i] / moving->spacing[i];
     }
 
-    Plm_timer* timer = plm_timer_create ();
-    Plm_timer* it_timer = plm_timer_create ();
+    Plm_timer* timer = new Plm_timer;
+    Plm_timer* it_timer = new Plm_timer;
 
-    plm_timer_start (timer);
-    plm_timer_start (it_timer);
+    timer->start ();
+    it_timer->start ();
 
     /* Main loop through iterations */
     for (it = 0; it < parms->max_its; it++) {
@@ -160,10 +160,10 @@ demons_c (
 	vf_convolve_z (vf_smooth, vf_est, kerz, fw[2]);
 	//vf_print_stats (vf_smooth);
 
-	double duration = plm_timer_report (it_timer);
+	double duration = it_timer->report ();
 	printf ("MSE [%4d] %.01f (%.03f) [%6.3f secs]\n", it, ssd/inliers, 
 	    ((float) inliers / fixed->npix), duration);
-	plm_timer_start (it_timer);
+	it_timer->start ();
     }
 
     free (kerx);
@@ -172,12 +172,12 @@ demons_c (
     delete vf_est;
     delete m_grad_mag;
 
-    diff_run = plm_timer_report (timer);
+    diff_run = timer->report ();
     printf ("Time for %d iterations = %f (%f sec / it)\n", 
 	parms->max_its, diff_run, diff_run / parms->max_its);
 
-    plm_timer_destroy (timer);
-    plm_timer_destroy (it_timer);
+    delete timer;
+    delete it_timer;
 
     return vf_smooth;
 }

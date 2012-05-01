@@ -1,22 +1,20 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _plm_timer_h_
-#define _plm_timer_h_
-
 #include "plmsys_config.h"
 
-class Plm_timer_private;
-
-class XAPI Plm_timer {
-public:
-    Plm_timer ();
-    ~Plm_timer ();
-
-    void start ();
-    double report ();
-private:
-    Plm_timer_private *d_ptr;
-};
-
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <sys/time.h>
 #endif
+
+class Plm_timer_private {
+public:
+    double get_time ();
+public:
+    double start_time;
+#ifdef _WIN32
+    LARGE_INTEGER clock_freq;
+#endif
+};

@@ -6,17 +6,17 @@
 #include <stdio.h>
 
 #include "plmsys.h"
+#include "plm_timer_p.h"
 
 #include "compiler_warnings.h"
-#include "plm_timer.h"
 
-static double
-plm_timer_get_time (Plm_timer *timer)
+double
+Plm_timer_private::get_time ()
 {
 #if defined (_WIN32)
     LARGE_INTEGER clock_count;
     QueryPerformanceCounter (&clock_count);
-    return ((double) (clock_count.QuadPart)) / ((double) timer->clock_freq.QuadPart);
+    return ((double) (clock_count.QuadPart)) / ((double) this->clock_freq.QuadPart);
 #else
     struct timeval tv;
     int rc;
@@ -26,32 +26,30 @@ plm_timer_get_time (Plm_timer *timer)
 #endif
 }
 
-Plm_timer*
-plm_timer_create ()
+Plm_timer::Plm_timer ()
 {
-    return new Plm_timer;
+    this->d_ptr = new Plm_timer_private;
+}
+
+Plm_timer::~Plm_timer ()
+{
+    delete this->d_ptr;
 }
 
 void
-plm_timer_destroy (Plm_timer *timer)
-{
-    delete timer;
-}
-
-void
-plm_timer_start (Plm_timer *timer)
+Plm_timer::start ()
 {
 #if defined (_WIN32)
-    QueryPerformanceFrequency (&timer->clock_freq);
+    QueryPerformanceFrequency (&d_ptr->clock_freq);
 #endif
-    timer->start_time = plm_timer_get_time (timer);
+    d_ptr->start_time = d_ptr->get_time ();
 }
 
 double
-plm_timer_report (Plm_timer *timer)
+Plm_timer::report ()
 {
     double current_time;
 
-    current_time = plm_timer_get_time (timer);
-    return current_time - timer->start_time;
+    current_time = d_ptr->get_time ();
+    return current_time - d_ptr->start_time;
 }

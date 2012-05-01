@@ -277,17 +277,17 @@ CUDA_reconstruct_conebeam (
 
 
     ////// TIMING CODE //////////////////////
-    Plm_timer* timer_total = plm_timer_create ();
+    Plm_timer* timer_total = new Plm_timer;
     double time_total = 0;
 #if defined (TIME_KERNEL)
-    Plm_timer* timer = plm_timer_create ();
+    Plm_timer* timer = new Plm_timer;
     double backproject_time = 0.0;
     double filter_time = 0.0;
     double io_time = 0.0;
 #endif
 
     // Start timing total execution
-    plm_timer_start (timer_total);
+    timer_total->start ();
 
 #if defined (VERBOSE)
     // First, we need to allocate memory on the host device
@@ -326,7 +326,7 @@ CUDA_reconstruct_conebeam (
     for (i = 0; i < proj_dir->num_proj_images; i++) {
         // Load the current image
 #if defined (TIME_KERNEL)
-        plm_timer_start (timer);
+        timer->start ();
 #endif
 
         // load the next 2D projection
@@ -334,16 +334,16 @@ CUDA_reconstruct_conebeam (
         pmat = cbi->pmat;
 
 #if defined (TIME_KERNEL)
-        io_time += plm_timer_report (timer);
+        io_time += timer->report ();
 #endif
 
         if (parms->filter == FDK_FILTER_TYPE_RAMP) {
 #if defined (TIME_KERNEL)
-            plm_timer_start (timer);
+            timer->start ();
 #endif
             proj_image_filter (cbi);
 #if defined (TIME_KERNEL)
-            filter_time += plm_timer_report (timer);
+            filter_time += timer->report ();
 #endif
         }
 
@@ -376,7 +376,7 @@ CUDA_reconstruct_conebeam (
 #endif
 
 #if defined (TIME_KERNEL)
-        plm_timer_start (timer);
+        timer->start ();
 #endif
 
         // Note: cbi->img AND cbi->matrix are passed via texture memory
@@ -414,7 +414,7 @@ CUDA_reconstruct_conebeam (
         cudaUnbindTexture (tex_matrix);
 
 #if defined (TIME_KERNEL)
-        backproject_time += plm_timer_report (timer);
+        backproject_time += timer->report ();
 #endif
 
     } // next projection
@@ -429,7 +429,7 @@ CUDA_reconstruct_conebeam (
 
     
     // Report total time
-    time_total = plm_timer_report (timer_total);
+    time_total = timer_total->report ();
     printf ("========================================\n");
     printf ("[Total Execution Time: %.9fs ]\n", time_total);
 #if defined (TIME_KERNEL)
@@ -448,8 +448,8 @@ CUDA_reconstruct_conebeam (
 #endif
     printf ("========================================\n");
 
-    plm_timer_destroy (timer);
-    plm_timer_destroy (timer_total);
+    delete timer;
+    delete timer_total;
 
     // Cleanup
     cudaFree (dev_img);

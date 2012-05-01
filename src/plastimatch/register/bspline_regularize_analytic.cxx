@@ -527,8 +527,8 @@ vf_regularize_analytic_omp (
 
     double S = 0.0;
 
-    Plm_timer* timer = plm_timer_create ();
-    plm_timer_start (timer);
+    Plm_timer* timer = new Plm_timer;
+    timer->start ();
 
     memset (rst->cond, 0, 3*64*bxf->num_knots * sizeof (double));
 
@@ -559,8 +559,8 @@ vf_regularize_analytic_omp (
     reg_update_grad (bspline_score, rst->cond, bxf);
 
     bspline_score->rmetric = S;
-    bspline_score->time_rmetric = plm_timer_report (timer);
-    plm_timer_destroy (timer);
+    bspline_score->time_rmetric = timer->report ();
+    delete timer;
 }
 #endif
 
@@ -576,8 +576,8 @@ vf_regularize_analytic (
     plm_long i, n;
     plm_long knots[64];
 
-    Plm_timer* timer = plm_timer_create ();
-    plm_timer_start (timer);
+    Plm_timer* timer = new Plm_timer;
+    timer->start ();
 
     // Total number of regions in grid
     n = bxf->rdims[0] * bxf->rdims[1] * bxf->rdims[2];
@@ -596,6 +596,6 @@ vf_regularize_analytic (
         region_smoothness (bspline_score, reg_parms, bxf, rst->V[5], knots);
     }
 
-    bspline_score->time_rmetric = plm_timer_report (timer);
-    plm_timer_destroy (timer);
+    bspline_score->time_rmetric = timer->report ();
+    delete timer;
 }

@@ -654,7 +654,7 @@ CUDA_bspline_mi_a (
 
     // --- DECLARE LOCAL VARIABLES ------------------------------
     Bspline_score* ssd; // Holds the SSD "Score" information
-    Plm_timer* timer = plm_timer_create ();
+    Plm_timer* timer = new Plm_timer;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
     double* f_hist = mi_hist->f_hist;
     double* m_hist = mi_hist->m_hist;
@@ -705,7 +705,7 @@ CUDA_bspline_mi_a (
     CUDA_bspline_zero_grad  (dev_ptrs);
     // ----------------------------------------------------------
 
-    plm_timer_start (timer);   // <=== START TIMING HERE
+    timer->start ();
 
     // --- GENERATE HISTOGRMS -----------------------------------
 //  plm_timer_start (&timer0);
@@ -768,8 +768,8 @@ CUDA_bspline_mi_a (
     // ----------------------------------------------------------
 
 
-    ssd->time_smetric = plm_timer_report (timer);
-    plm_timer_destroy (timer);
+    ssd->time_smetric = timer->report ();
+    delete timer;
 
     if (parms->debug) {
         fclose (fp);
@@ -797,7 +797,7 @@ CUDA_bspline_mse_j (
     Bspline_score* ssd;     // Holds the SSD "Score" information
     float ssd_grad_norm;    // Holds the SSD Gradient's Norm
     float ssd_grad_mean;    // Holds the SSD Gradient's Mean
-    Plm_timer* timer = plm_timer_create ();
+    Plm_timer* timer = new Plm_timer;
 
     static int it=0;        // Holds Iteration Number
     char debug_fn[1024];    // Debug message buffer
@@ -813,7 +813,7 @@ CUDA_bspline_mse_j (
     }
     // ----------------------------------------------------------
 
-    plm_timer_start (timer);   // <=== START TIMING HERE
+    timer->start ();
     
     // --- INITIALIZE GPU MEMORY --------------------------------
     CUDA_bspline_push_coeff (dev_ptrs, bxf);
@@ -856,8 +856,8 @@ CUDA_bspline_mse_j (
     }
 
     // --- USER FEEDBACK ----------------------------------------
-    ssd->time_smetric = plm_timer_report (timer);
-    plm_timer_destroy (timer);
+    ssd->time_smetric = timer->report ();
+    delete timer;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

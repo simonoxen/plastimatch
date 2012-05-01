@@ -41,12 +41,12 @@ public:
 
 protected:
     Demons_Observer() {
-        this->timer = plm_timer_create ();
-        plm_timer_start (this->timer);
+        timer = new Plm_timer;
+        timer->start ();
         m_feval = 0;
     };
     ~Demons_Observer () {
-        plm_timer_destroy (this->timer);
+        delete timer;
     }
 
 public:
@@ -60,11 +60,11 @@ public:
 	const DemonsFilterType * filter =
 	    dynamic_cast< const DemonsFilterType* >(object);
 	double val = filter->GetMetric();
-	double duration = plm_timer_report (timer);
+	double duration = timer->report ();
 	if (typeid(event) == typeid(itk::IterationEvent)) {
 	    logfile_printf ("MSE [%4d] %9.3f [%6.3f secs]\n", 
 		m_feval, val, duration);
-	    plm_timer_start (timer);
+	    timer->start ();
 	    m_feval++;
 	}
 	else {

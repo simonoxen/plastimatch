@@ -1627,8 +1627,8 @@ bspline_score_h_mi (
     }
 #endif
 
-    Plm_timer* timer = plm_timer_create ();
-    plm_timer_start (timer);
+    Plm_timer* timer = new Plm_timer;
+    timer->start ();
 
     memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
@@ -1830,8 +1830,8 @@ bspline_score_h_mi (
         printf ("<< MSE %3.3f >>\n", mse_score);
     }
 
-    ssd->time_smetric = plm_timer_report (timer);
-    plm_timer_destroy (timer);
+    ssd->time_smetric = timer->report ();
+    delete timer;
 }
 
 
@@ -1896,8 +1896,8 @@ bspline_score_g_mi (
     }
 #endif
 
-    Plm_timer* timer = plm_timer_create ();
-    plm_timer_start (timer);
+    Plm_timer* timer = new Plm_timer;
+    timer->start ();
 
     memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
@@ -2081,8 +2081,8 @@ bspline_score_g_mi (
         printf ("<< MSE %3.3f >>\n", mse_score);
     }
 
-    ssd->time_smetric = plm_timer_report (timer);
-    plm_timer_destroy (timer);
+    ssd->time_smetric = timer->report ();
+    delete timer;
 }
 
 
@@ -2138,8 +2138,8 @@ bspline_score_f_mi (
     }
 #endif
 
-    Plm_timer* timer = plm_timer_create ();
-    plm_timer_start (timer);
+    Plm_timer* timer = new Plm_timer;
+    timer->start ();
 
     memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
@@ -2383,8 +2383,8 @@ bspline_score_f_mi (
 
     mse_score = mse_score / ssd->num_vox;
 
-    ssd->time_smetric = plm_timer_report (timer);
-    plm_timer_destroy (timer);
+    ssd->time_smetric = timer->report ();
+    delete timer;
 }
 #endif
 
@@ -2439,8 +2439,8 @@ bspline_score_e_mi (
     }
 #endif
 
-    Plm_timer* timer = plm_timer_create ();
-    plm_timer_start (timer);
+    Plm_timer* timer = new Plm_timer;
+    timer->start ();
 
     memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
@@ -2730,8 +2730,8 @@ bspline_score_e_mi (
 
     mse_score = mse_score / ssd->num_vox;
     
-    ssd->time_smetric = plm_timer_report (timer);
-    plm_timer_destroy (timer);
+    ssd->time_smetric = timer->report ();
+    delete timer;
 }
 #endif
 
@@ -2798,8 +2798,8 @@ bspline_score_d_mi (
     }
 #endif
 
-    Plm_timer* timer = plm_timer_create ();
-    plm_timer_start (timer);
+    Plm_timer* timer = new Plm_timer;
+    timer->start ();
 
     memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
@@ -3027,8 +3027,8 @@ bspline_score_d_mi (
         printf ("<< MSE %3.3f >>\n", mse_score);
     }
 
-    ssd->time_smetric = plm_timer_report (timer);
-    plm_timer_destroy (timer);
+    ssd->time_smetric = timer->report ();
+    delete timer;
 }
 
 
@@ -3082,8 +3082,8 @@ bspline_score_c_mi (
     }
 #endif
 
-    Plm_timer* timer = plm_timer_create ();
-    plm_timer_start (timer);
+    Plm_timer* timer = new Plm_timer;
+    timer->start ();
 
     memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
@@ -3273,6 +3273,6 @@ bspline_score_c_mi (
 
     mse_score = mse_score / ssd->num_vox;
 
-    ssd->time_smetric = plm_timer_report (timer);
-    plm_timer_destroy (timer);
+    ssd->time_smetric = timer->report ();
+    delete timer;
 }

@@ -98,8 +98,8 @@ vf_regularize_numerical (
     printf ("  d2uz_dxy_sq.txt\n"); fp[2] = fopen ("d2uz_dxdy_sq.txt", "w");
 #endif
 
-    Plm_timer* timer = plm_timer_create ();
-    plm_timer_start (timer);
+    Plm_timer* timer = new Plm_timer;
+    timer->start ();
 
     S = 0.0f;
     for (k = 1; k < vol->dim[2]-1; k++) {
@@ -301,8 +301,8 @@ vf_regularize_numerical (
 #endif
 
     bscore->rmetric += S;
-    bscore->time_rmetric = plm_timer_report (timer);
-    plm_timer_destroy (timer);
+    bscore->time_rmetric = timer->report ();
+    delete timer;
 }
 
 void
@@ -772,8 +772,8 @@ bspline_regularize_numeric_d (
     num_vox = bxf->roi_dim[0] * bxf->roi_dim[1] * bxf->roi_dim[2];
     grad_coeff = parms->lambda / num_vox;
 
-    Plm_timer* timer = plm_timer_create ();
-    plm_timer_start (timer);
+    Plm_timer* timer = new Plm_timer;
+    timer->start ();
 
     bscore->rmetric = 0.;
 
@@ -835,7 +835,7 @@ bspline_regularize_numeric_d (
 	    }
 	}
 
-	bscore->time_rmetric = plm_timer_report (timer);
+	bscore->time_rmetric = timer->report ();
 	//raw_score = grad_score / num_vox;
 	grad_score *= (parms->lambda / num_vox);
 	//printf ("        GRAD_COST %.4f   RAW_GRAD %.4f   [%.3f secs]\n", grad_score, raw_score, interval);
@@ -843,7 +843,7 @@ bspline_regularize_numeric_d (
 	bscore->rmetric += grad_score;
     }
     //printf ("SCORE=%.4f\n", bscore->score);
-    plm_timer_destroy (timer);
+    delete timer;
 }
 
 void

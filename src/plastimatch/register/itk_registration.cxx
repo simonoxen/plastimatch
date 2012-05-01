@@ -64,11 +64,11 @@ public:
 protected:
     Optimization_Observer() {
         m_stage = 0;
-        timer = plm_timer_create ();
-        plm_timer_start (timer);
+        timer = new Plm_timer;
+        timer->start ();
     };
     ~Optimization_Observer() {
-        plm_timer_destroy (timer);
+        delete timer;
     }
 
 public:
@@ -80,7 +80,7 @@ public:
 
     void Execute (itk::Object * caller, const itk::EventObject & event) {
         Execute((const itk::Object *) caller, event);
-        plm_timer_start (timer);
+        timer->start ();
     }
 
     void
@@ -96,11 +96,11 @@ public:
                 lprintf (ss.str().c_str());
             }
             lprintf ("\n");
-            plm_timer_start (timer);
+            timer->start ();
         }
         else if (typeid(event) == typeid(itk::InitializeEvent)) {
             lprintf ("InitializeEvent: \n");
-            plm_timer_start (timer);
+            timer->start ();
         }
         else if (typeid(event) == typeid(itk::EndEvent)) {
             lprintf ("EndEvent: ");
@@ -121,11 +121,11 @@ public:
         {
             int it = optimizer_get_current_iteration(m_registration, m_stage);
             double val = optimizer_get_value(m_registration, m_stage);
-            double duration = plm_timer_report (timer);
+            double duration = timer->report ();
 
             lprintf ("MSE [%2d,%3d] %9.3f [%6.3f secs]\n", 
                 it, m_feval, val, duration);
-            plm_timer_start (timer);
+            timer->start ();
             m_feval++;
         }
         else if (typeid(event) == typeid(itk::IterationEvent)) {
