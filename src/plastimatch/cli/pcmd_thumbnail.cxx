@@ -4,11 +4,29 @@
 #include "plmcli_config.h"
 #include <time.h>
 #include "itkImageRegionIterator.h"
-#include "getopt.h"
 #include "pcmd_thumbnail.h"
+#include "plm_clp.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "thumbnail.h"
+
+class Thumbnail_parms {
+public:
+    Pstring input_fn;
+    Pstring output_fn;
+    int axis;
+    int dim;
+    float spacing;
+    float loc;
+public:
+    Thumbnail_parms () {
+	output_fn = "thumb.mhd";
+	dim = 16;
+	spacing = 30.0;
+        axis = 2;
+	loc = 0.0;
+    }
+};
 
 static void
 thumbnail_main (Thumbnail_parms* parms)
@@ -16,107 +34,116 @@ thumbnail_main (Thumbnail_parms* parms)
     Plm_image *pli;
 
     /* Load image */
-    pli = plm_image_load ((const char*) parms->img_in_fn, 
+    pli = plm_image_load ((const char*) parms->input_fn, 
 	PLM_IMG_TYPE_ITK_FLOAT);
 
     /* Make thumbnail */
     Thumbnail thumbnail;
     thumbnail.set_input_image (pli);
-    thumbnail.set_thumbnail_dim (parms->thumbnail_dim);
-    thumbnail.set_thumbnail_spacing (parms->thumbnail_spacing);
-    if (parms->have_slice_loc) {
-	thumbnail.set_slice_loc (parms->slice_loc);
-    }
+    thumbnail.set_thumbnail_dim (parms->dim);
+    thumbnail.set_thumbnail_spacing (parms->spacing);
+    thumbnail.set_axis (parms->axis);
+    thumbnail.set_slice_loc (parms->loc);
     pli->m_itk_float = thumbnail.make_thumbnail ();
 
     /* Save the output file */
-    pli->save_image ((const char*) parms->img_out_fn);
+    pli->save_image ((const char*) parms->output_fn);
 
     delete (pli);
 }
 
 static void
-thumbnail_print_usage (void)
+usage_fn (dlib::Plm_clp* parser, int argc, char *argv[])
 {
-    printf (
-	"Usage: plastimatch thumbnail [options] input-file\n"
-	"Options:\n"
-	"  --input file\n"
-	"  --output file\n"
-	"  --thumbnail-dim size\n"
-	"  --thumbnail-spacing size\n"
-	"  --thumbnail-loc location\n"
-    );
-    exit (-1);
+    printf ("Usage: plastimatch %s [options]\n", argv[1]);
+    parser->print_options (std::cout);
+    std::cout << std::endl;
 }
 
 static void
-thumbnail_parse_args (Thumbnail_parms* parms, int argc, char* argv[])
+parse_fn (
+    Thumbnail_parms* parms, 
+    dlib::Plm_clp* parser, 
+    int argc, 
+    char* argv[]
+)
 {
-    int rc, ch;
-    static struct option longopts[] = {
-	{ "input",          required_argument,      NULL,           1 },
-	{ "thumbnail-dim",  required_argument,      NULL,           2 },
-	{ "thumbnail_dim",  required_argument,      NULL,           2 },
-	{ "thumbnail-spacing",required_argument,    NULL,           3 },
-	{ "thumbnail_spacing",required_argument,    NULL,           3 },
-	{ "output",         required_argument,      NULL,           4 },
-	{ "slice-loc",      required_argument,      NULL,           5 },
-	{ "slice_loc",      required_argument,      NULL,           5 },
-	{ NULL,             0,                      NULL,           0 }
-    };
+    /* Add --help, --version */
+    parser->add_default_options ();
 
-    while ((ch = getopt_long (argc, argv, "", longopts, NULL)) != -1) {
-	switch (ch) {
-	case 1:
-	    parms->img_in_fn = optarg;
-	    break;
-	case 2:
-	    rc = sscanf (optarg, "%d", &parms->thumbnail_dim);
-	    if (rc != 1) {
-		printf ("Error: %s requires an argument", argv[optind]);
-		thumbnail_print_usage ();
-	    }
-	    break;
-	case 3:
-	    rc = sscanf (optarg, "%f", &parms->thumbnail_spacing);
-	    if (rc != 1) {
-		printf ("Error: %s requires an argument", argv[optind]);
-		thumbnail_print_usage ();
-	    }
-	    break;
-	case 4:
-	    parms->img_out_fn = optarg;
-	    break;
-	case 5:
-	    rc = sscanf (optarg, "%f", &parms->slice_loc);
-	    if (rc != 1) {
-		printf ("Error: %s requires an argument", argv[optind]);
-		thumbnail_print_usage ();
-	    }
-	    parms->have_slice_loc = true;
-	    break;
-	default:
-	    break;
-	}
+    /* Input files */
+    parser->add_long_option ("", "input", 
+        "input directory or filename of image", 1, "");
+
+    /* Output files */
+    parser->add_long_option ("", "output", 
+        "output image; can be mha, mhd, nii, nrrd, or other format "
+        "supported by ITK", 1, "");
+
+    /* Geometry options */
+    parser->add_long_option ("", "dim", 
+        "size of output image in voxels", 1, "16");
+    parser->add_long_option ("", "spacing", 
+        "voxel spacing in mm", 1, "30");
+    parser->add_long_option ("", "axis", 
+        "either \"x\", \"y\", or \"z\"", 1, "z");
+    parser->add_long_option ("", "loc", 
+        "location of thumbnail along axis", 1, "0");
+
+    /* Parse options */
+    parser->parse (argc,argv);
+
+    /* Handle --help, --version */
+    parser->check_default_options ();
+
+    /* Check that an input file was given */
+    if (!parser->option ("input")) {
+        throw (dlib::error ("Error.  Please specify an input file "));
     }
-    if (parms->img_in_fn.length() == 0) {
-	optind ++;   /* Skip plastimatch command argument */
-	if (optind < argc) {
-	    parms->img_in_fn = argv[optind];
-	} else {
-	    printf ("Error: must specify input file\n");
-	    thumbnail_print_usage ();
-	}
+
+    /* Check that an output file was given */
+    if (!parser->option ("output")) {
+        throw (dlib::error ("Error.  Please specify an output file "));
     }
+
+    /* Check that no extraneous options were given */
+    if (parser->number_of_arguments() != 0) {
+        std::string extra_arg = (*parser)[0];
+        throw (dlib::error ("Error.  Unknown option " + extra_arg));
+    }
+
+    /* Input/output files */
+    parms->input_fn = parser->get_string("input").c_str();
+    parms->output_fn = parser->get_string("output").c_str();
+
+    /* Other options */
+    std::string arg = parser->get_string ("axis");
+    if (arg == "z") {
+        parms->axis = 2;
+    }
+    else if (arg == "y") {
+        parms->axis = 1;
+    }
+    else if (arg == "x") {
+        parms->axis = 0;
+    }
+    else {
+        throw (dlib::error ("Error. Unknown --axis argument: " + arg));
+    }
+
+    parms->loc = parser->get_int ("loc");
+    parms->spacing = parser->get_float("spacing");
+    parms->dim = parser->get_int ("dim");
 }
 
 void
 do_command_thumbnail (int argc, char *argv[])
 {
     Thumbnail_parms parms;
-    
-    thumbnail_parse_args (&parms, argc, argv);
 
+    /* Parse command line parameters */
+    plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv, 1);
+
+    /* Run the thumbnailer */
     thumbnail_main (&parms);
 }
