@@ -90,8 +90,6 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  PLMSYS/GPUIT/PLASTIMATCH LIBRARY SOURCE FILES
 ##-----------------------------------------------------------------------------
-set (GPUIT_LIBRARY_SRC
-  )
 
 #set (PLMCUDA_LIBRARY_SRC
 #  bspline_cuda.cpp bspline_cuda.cu bspline_cuda.h
@@ -147,61 +145,61 @@ set (GPUIT_LIBRARY_SRC
 #endif ()
 
 
-if (OPENCL_FOUND)
-  # Define OpenCL Plugin (plmopencl)
-  set (PLMOPENCL_LIBRARY_SRC
-    autotune_opencl.cxx autotune_opencl.h
-    opencl_probe.cxx opencl_probe.h opencl_probe.cl
-    opencl_util.cxx opencl_util.h
-    )
-  if (BUILD_SHARED_LIBS)      # << Dynamic loading
-    set (PLMOPENCL_LIBRARY_SRC
-      ${PLMOPENCL_LIBRARY_SRC}
-      )
-    set (PLMOPENCL_LIBRARY_DEPENDENCIES
-      plmsys
-      )
-    # OpenCL Plugin is ALWAYS shared!
-    add_library (plmopencl SHARED
-      ${PLMOPENCL_LIBRARY_SRC}
-      )
-    set_target_properties (plmopencl PROPERTIES 
-      ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
-      LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
-      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
-    # Be sure to link against libOpenCL and other depends
-    target_link_libraries (plmopencl
-      ${OPENCL_LIBRARIES}
-      ${PLMOPENCL_LIBRARY_DEPENDENCIES}
-      )
-    install (TARGETS plmopencl
-        RUNTIME DESTINATION bin
-        LIBRARY DESTINATION lib
-        )
-  else ()        # << Static linking
-    set (GPUIT_LIBRARY_SRC
-      ${GPUIT_LIBRARY_SRC}
-      ${PLMOPENCL_LIBRARY_SRC}
-      )
-  endif ()
-  set (GPUIT_LIBRARY_SRC
-    ${GPUIT_LIBRARY_SRC}
-    demons_opencl.cxx
-    demons_opencl_p.h
-    demons_opencl.cl
-    drr_opencl.cxx
-    drr_opencl_p.h
-    drr_opencl.h
-    drr_opencl.cl
-    fdk_opencl.cxx 
-    fdk_opencl_p.h
-    fdk_opencl.h
-    fdk_opencl.cl
-    )
-  plm_add_opencl_file (GPUIT_LIBRARY_SRC demons_opencl.cl)
-  plm_add_opencl_file (GPUIT_LIBRARY_SRC drr_opencl.cl)
-  plm_add_opencl_file (GPUIT_LIBRARY_SRC fdk_opencl.cl)
-endif ()
+#if (OPENCL_FOUND)
+#  # Define OpenCL Plugin (plmopencl)
+#  set (PLMOPENCL_LIBRARY_SRC
+#    autotune_opencl.cxx autotune_opencl.h
+#    opencl_probe.cxx opencl_probe.h opencl_probe.cl
+#    opencl_util.cxx opencl_util.h
+#    )
+#  if (BUILD_SHARED_LIBS)      # << Dynamic loading
+#    set (PLMOPENCL_LIBRARY_SRC
+#      ${PLMOPENCL_LIBRARY_SRC}
+#      )
+#    set (PLMOPENCL_LIBRARY_DEPENDENCIES
+#      plmsys
+#      )
+#    # OpenCL Plugin is ALWAYS shared!
+#    add_library (plmopencl SHARED
+#      ${PLMOPENCL_LIBRARY_SRC}
+#      )
+#    set_target_properties (plmopencl PROPERTIES 
+#      ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+#      LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+#      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+#    # Be sure to link against libOpenCL and other depends
+#    target_link_libraries (plmopencl
+#      ${OPENCL_LIBRARIES}
+#      ${PLMOPENCL_LIBRARY_DEPENDENCIES}
+#      )
+#    install (TARGETS plmopencl
+#        RUNTIME DESTINATION bin
+#        LIBRARY DESTINATION lib
+#        )
+#  else ()        # << Static linking
+#    set (GPUIT_LIBRARY_SRC
+#      ${GPUIT_LIBRARY_SRC}
+#      ${PLMOPENCL_LIBRARY_SRC}
+#      )
+#  endif ()
+#  set (GPUIT_LIBRARY_SRC
+#    ${GPUIT_LIBRARY_SRC}
+#    demons_opencl.cxx
+#    demons_opencl_p.h
+#    demons_opencl.cl
+#    drr_opencl.cxx
+#    drr_opencl_p.h
+#    drr_opencl.h
+#    drr_opencl.cl
+#    fdk_opencl.cxx 
+#    fdk_opencl_p.h
+#    fdk_opencl.h
+#    fdk_opencl.cl
+#    )
+#  plm_add_opencl_file (GPUIT_LIBRARY_SRC demons_opencl.cl)
+#  plm_add_opencl_file (GPUIT_LIBRARY_SRC drr_opencl.cl)
+#  plm_add_opencl_file (GPUIT_LIBRARY_SRC fdk_opencl.cl)
+#endif ()
 
 
 if (F2C_LIBRARY)
@@ -245,12 +243,6 @@ set (MONDOSHOT_SRC
   mondoshot_dicom.cpp mondoshot_dicom.h
   mondoshot_main.cpp mondoshot_main.h
   )
-set (OPENCL_PROBE_SRC
-  opencl_probe_main.c
-  )
-if (OPENCL_FOUND)
-  plm_add_opencl_file (GPUIT_LIBRARY_SRC opencl_probe.cl)
-endif ()
 set (PLASTIMATCH_SLICER_BSPLINE_SRC
   plastimatch_slicer_bspline.cxx
   )
@@ -322,13 +314,6 @@ endif ()
 ##-----------------------------------------------------------------------------
 if (FULL_PLASTIMATCH_BUILD)
   message (STATUS "PLASTIMATCH_LIBS: ${PLASTIMATCH_LIBS}")
-endif ()
-
-# executables that require opencl
-if (OPENCL_FOUND)
-  plm_add_executable (opencl_probe "${OPENCL_PROBE_SRC}"
-    "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
-    ${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
 endif ()
 
 # mondoshot requires WIN32, wx, dcmtk, sqlite3

@@ -9,17 +9,17 @@ project (src)
 ##  PLASTIMATCH LIBRARIES
 ##-----------------------------------------------------------------------------
 set (PLASTIMATCH_LIBS
+  ${ITK_LIBRARIES}
+  ${MATH_LIB}
   plastimatch1
+  plmsys
   plmbase
   plmdose
   plmreconstruct
   plmregister
   plmsegment
-  plmscript
-  plmsys
   plmutil
-  ${ITK_LIBRARIES}
-  ${MATH_LIB}
+  plmscript
   )
 
 if (NOT BUILD_DEBIAN)

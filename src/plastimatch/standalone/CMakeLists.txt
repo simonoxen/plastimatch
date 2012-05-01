@@ -93,6 +93,13 @@ set (MHA_TO_RAW_SRC
 set (MHA_TO_RTOG_DOSE_SRC
   mha_to_rtog_dose.cxx
   )
+set (OPENCL_PROBE_SRC
+  opencl_probe_main.c
+  opencl_probe.cxx
+  )
+if (OPENCL_FOUND)
+  plm_add_opencl_file (OPENCL_PROBE_SRC opencl_probe.cl)
+endif ()
 set (PROTON_DOSE_SRC
   proton_dose_main.cxx 
   proton_dose_opts.cxx
@@ -204,14 +211,12 @@ plm_add_executable (raw_to_mha "${RAW_TO_MHA_SRC}"
   "" "" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
 
-
 ## F2C is being difficult... commented out for now
 #if (NOT BUILD_DEBIAN)
 #  plm_add_executable (bragg_curve "${BRAGG_CURVE_SRC}" 
 #    "${PLASTIMATCH_LIBS};${PLM_FORTRAN}" "${PLASTIMATCH_LDFLAGS}" 
 #    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 #endif ()
-
 
 if (CUDA_FOUND)
   plm_add_executable (cuda_probe "${CUDA_PROBE_SRC}" 
@@ -221,9 +226,14 @@ endif ()
 
 if (MATLAB_FOUND)
   mex_target (mex_drr "${MEX_DRR_SRC}"
-  "${GPUIT_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}")
+  "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}")
 endif ()
 
+if (OPENCL_FOUND)
+  plm_add_executable (opencl_probe "${OPENCL_PROBE_SRC}"
+    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
+    ${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
+endif ()
 
 # dicom_uid requires dcmtk
 #if (DCMTK_FOUND)
