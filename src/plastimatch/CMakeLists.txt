@@ -209,20 +209,9 @@ if (F2C_LIBRARY)
 endif ()
 
 set (PLASTIMATCH1_LIBRARY_SRC
-  cxt_extract.cxx cxt_extract.h
-  cxt_io.cxx cxt_io.h 
   dvh.cxx dvh.h
   landmark_warp.cxx landmark_warp.h 
   plm_clp.cxx plm_clp.h
-  rasterizer.cxx rasterizer.h
-  rtds.cxx rtds.h
-  rtds_dcmtk.cxx
-  rtds_gdcm.cxx
-  rtds_warp.cxx rtds_warp.h
-  rtss.cxx rtss.h
-  simplify_points.cxx simplify_points.h
-  ss_img_stats.cxx ss_img_stats.h 
-  ss_list_io.cxx ss_list_io.h
   synthetic_mha.cxx
   synthetic_vf.cxx
   )

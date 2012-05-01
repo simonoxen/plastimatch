@@ -15,6 +15,7 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 ##-----------------------------------------------------------------------------
 set (PLMUTIL_LIBRARY_SRC
   bspline_warp.cxx
+  cxt_extract.cxx
   gamma_analysis.cxx
   itk_crop.cxx
   itk_gabor.cxx
@@ -23,8 +24,16 @@ set (PLMUTIL_LIBRARY_SRC
   landmark_diff.cxx
   plm_warp.cxx
   rasterize_slice.cxx
+  rasterizer.cxx 
+  rtds.cxx 
+  rtds_dcmtk.cxx
+  rtds_gdcm.cxx
+  rtds_warp.cxx 
+  rtss.cxx
+  simplify_points.cxx 
   slice_extract.cxx
   ss_img_extract.cxx
+  ss_img_stats.cxx 
   threshbox.cxx
   )
 

@@ -16,6 +16,7 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 set (PLMBASE_LIBRARY_SRC
   astroid_dose.cxx
   bspline_xform.cxx
+  cxt_io.cxx
   dcm_util.cxx
   dicom.dic
   exchkeys.cxx
@@ -59,6 +60,7 @@ set (PLMBASE_LIBRARY_SRC
   rtss_polyline_set.cxx
   rtss_structure.cxx
   slice_index.cxx
+  ss_list_io.cxx
   thumbnail.cxx
   vf_convolve.cxx
   vf_stats.cxx
