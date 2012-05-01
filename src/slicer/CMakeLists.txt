@@ -16,7 +16,19 @@ endif ()
 ##  Include directories
 ##-----------------------------------------------------------------------------
 include_directories (BEFORE ${src_plastimatch_SOURCE_DIR})
-include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
+include_directories (BEFORE ${src_plastimatch_SOURCE_DIR}/base)
+include_directories (BEFORE ${src_plastimatch_SOURCE_DIR}/cli)
+include_directories (BEFORE ${src_plastimatch_SOURCE_DIR}/dose)
+include_directories (BEFORE ${src_plastimatch_SOURCE_DIR}/qt)
+include_directories (BEFORE ${src_plastimatch_SOURCE_DIR}/cuda)
+include_directories (BEFORE ${src_plastimatch_SOURCE_DIR}/reconstruct)
+include_directories (BEFORE ${src_plastimatch_SOURCE_DIR}/register)
+include_directories (BEFORE ${src_plastimatch_SOURCE_DIR}/script)
+include_directories (BEFORE ${src_plastimatch_SOURCE_DIR}/segment)
+include_directories (BEFORE ${src_plastimatch_SOURCE_DIR}/standalone)
+include_directories (BEFORE ${src_plastimatch_SOURCE_DIR}/sys)
+include_directories (BEFORE ${src_plastimatch_SOURCE_DIR}/util)
+include_directories (BEFORE ${src_plastimatch_SOURCE_DIR})
 include_directories (BEFORE ${CMAKE_BINARY_DIR})
 include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 include_directories (AFTER ${BSTRLIB_INCLUDE_DIR})
@@ -63,31 +75,31 @@ set (PLASTIMATCH_SLICER_DOSE_COMPARISON_SRC
 ##-----------------------------------------------------------------------------
 plm_add_slicer_executable (plastimatch_slicer_bspline
   "${PLASTIMATCH_SLICER_BSPLINE_SRC}" "${PLASTIMATCH_LIBS}" 
-  "${GPUIT_EXE_LDFLAGS}")
+  "${PLASTIMATCH_LDFLAGS}")
 plm_add_slicer_executable (plastimatch_slicer_dicomrt_import
   "${PLASTIMATCH_SLICER_DICOMRT_IMPORT_SRC}" "${PLASTIMATCH_LIBS}" 
-  "${GPUIT_EXE_LDFLAGS}")
+  "${PLASTIMATCH_LDFLAGS}")
 plm_add_slicer_executable (plastimatch_slicer_dicomrt_export
   "${PLASTIMATCH_SLICER_DICOMRT_EXPORT_SRC}" "${PLASTIMATCH_LIBS}" 
-  "${GPUIT_EXE_LDFLAGS}")
+  "${PLASTIMATCH_LDFLAGS}")
 plm_add_slicer_executable (plastimatch_slicer_dvh
   "${PLASTIMATCH_SLICER_DVH_SRC}" "${PLASTIMATCH_LIBS}" 
-  "${GPUIT_EXE_LDFLAGS}")
+  "${PLASTIMATCH_LDFLAGS}")
 plm_add_slicer_executable (plastimatch_slicer_landwarp 
   "${PLASTIMATCH_SLICER_LANDWARP_SRC}" "${PLASTIMATCH_LIBS}" 
-  "${GPUIT_EXE_LDFLAGS}")
+  "${PLASTIMATCH_LDFLAGS}")
 plm_add_slicer_executable (plastimatch_slicer_synth
   "${PLASTIMATCH_SLICER_SYNTH_SRC}" "${PLASTIMATCH_LIBS}" 
-  "${GPUIT_EXE_LDFLAGS}")
+  "${PLASTIMATCH_LDFLAGS}")
 plm_add_slicer_executable (plastimatch_slicer_xformwarp
   "${PLASTIMATCH_SLICER_XFORMWARP_SRC}" "${PLASTIMATCH_LIBS}" 
-  "${GPUIT_EXE_LDFLAGS}")
+  "${PLASTIMATCH_LDFLAGS}")
 plm_add_slicer_executable (plastimatch_slicer_threshbox
   "${PLASTIMATCH_SLICER_THRESHBOX_SRC}" "${PLASTIMATCH_LIBS}" 
-  "${GPUIT_EXE_LDFLAGS}")
+  "${PLASTIMATCH_LDFLAGS}")
 plm_add_slicer_executable (plastimatch_slicer_dose_comparison
   "${PLASTIMATCH_SLICER_DOSE_COMPARISON_SRC}" "${PLASTIMATCH_LIBS}" 
-  "${GPUIT_EXE_LDFLAGS}")
+  "${PLASTIMATCH_LDFLAGS}")
 ##-----------------------------------------------------------------------------
 ##  Loadable modules
 ##-----------------------------------------------------------------------------
