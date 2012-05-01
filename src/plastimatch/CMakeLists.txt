@@ -212,8 +212,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   dvh.cxx dvh.h
   landmark_warp.cxx landmark_warp.h 
   plm_clp.cxx plm_clp.h
-  synthetic_mha.cxx
-  synthetic_vf.cxx
   )
 
 if (ITK_FOUND AND GDCM_VERSION_2)

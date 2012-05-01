@@ -34,6 +34,8 @@ set (PLMUTIL_LIBRARY_SRC
   slice_extract.cxx
   ss_img_extract.cxx
   ss_img_stats.cxx 
+  synthetic_mha.cxx
+  synthetic_vf.cxx
   threshbox.cxx
   )
 
