@@ -46,6 +46,14 @@ thumbnail_main (Thumbnail_parms* parms)
     thumbnail.set_slice_loc (parms->loc);
     pli->m_itk_float = thumbnail.make_thumbnail ();
 
+    /* Can't write float for these types... */
+    if (extension_is (parms->output_fn, "png")
+        || extension_is (parms->output_fn, "tif") 
+        || extension_is (parms->output_fn, "tiff"))
+    {
+        pli->convert (PLM_IMG_TYPE_ITK_UCHAR);
+    }
+
     /* Save the output file */
     pli->save_image ((const char*) parms->output_fn);
 

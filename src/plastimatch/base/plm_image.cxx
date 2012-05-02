@@ -603,6 +603,9 @@ Plm_image::convert_to_itk_ushort (void)
 	break;
     case PLM_IMG_TYPE_ITK_USHORT:
 	return;
+    case PLM_IMG_TYPE_ITK_FLOAT:
+	CONVERT_ITK_ITK (ushort, float);
+	return;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
 	this->m_itk_ushort = plm_image_convert_gpuit_to_itk (
 	    this, this->m_itk_ushort, (float) 0);

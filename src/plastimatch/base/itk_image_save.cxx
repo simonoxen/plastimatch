@@ -42,6 +42,7 @@ itk_image_save (T image, const char* fname)
     writer->SetInput (image);
     writer->SetFileName (fname);
     make_directory_recursive (fname);
+
     if (extension_is (fname, "nrrd")) {
 	writer->SetUseCompression (true);
     }
