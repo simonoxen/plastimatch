@@ -215,11 +215,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES (EXECUTABLES)
 ##-----------------------------------------------------------------------------
-set (MONDOSHOT_SRC
-  dcmtk_uid.cxx dcmtk_uid.h
-  mondoshot_dicom.cpp mondoshot_dicom.h
-  mondoshot_main.cpp mondoshot_main.h
-  )
 set (PLASTIMATCH_SLICER_BSPLINE_SRC
   plastimatch_slicer_bspline.cxx
   )
