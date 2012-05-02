@@ -44,6 +44,12 @@ set (PLMUTIL_LIBRARY_DEPENDENCIES
   plmbase
   plmsys
   )
+##-----------------------------------------------------------------------------
+##  SPECIAL BUILD RULES: SSE2
+##-----------------------------------------------------------------------------
+if (SSE2_FOUND AND NOT BUILD_AGAINST_SLICER3)
+  plm_set_sse2_flags (bspline_warp.cxx)
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  BUILD TARGETS
