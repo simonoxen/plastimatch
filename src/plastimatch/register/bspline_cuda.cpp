@@ -26,7 +26,6 @@
 /* EXTERNAL DEPENDS */
 #include "bspline_xform.h"
 #include "interpolate_macros.h"
-#include "volume.h"
 
 /***********************************************************************
  * A few of the CPU functions are reproduced here for testing purposes.

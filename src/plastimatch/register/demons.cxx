@@ -15,7 +15,6 @@
 #include "demons.h"
 #include "demons_cuda.h"
 #include "demons_state.h"
-#include "volume.h"
 
 void
 demons_default_parms (DEMONS_Parms* parms)

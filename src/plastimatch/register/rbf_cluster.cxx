@@ -15,7 +15,6 @@
 #include "landmark_warp.h"
 #include "plm_math.h"
 #include "rbf_cluster.h"
-#include "volume.h"
 
 //k-means++ clustering algorithm to separate landmarks into user-specified number of clusters
 void

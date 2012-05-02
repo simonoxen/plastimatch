@@ -12,7 +12,6 @@
 
 #include "demons.h"
 #include "demons_misc.h"
-#include "volume.h"
 
 int
 round_int (float f)

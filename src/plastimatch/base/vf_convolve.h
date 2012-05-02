@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _hnd_io_h_
-#define _hnd_io_h_
+#ifndef _vf_convolve_h_
+#define _vf_convolve_h_
 
 /**
 *  You probably do not want to #include this header directly.
@@ -12,13 +12,8 @@
 
 #include "plmbase_config.h"
 
-class Proj_image;
-
-C_API void hnd_load (
-        Proj_image *proj,
-        const char *fn,
-        const double xy_offset[2]
-);
-
+C_API void vf_convolve_x (Volume* vf_out, Volume* vf_in, float* ker, int width);
+C_API void vf_convolve_y (Volume* vf_out, Volume* vf_in, float* ker, int width);
+C_API void vf_convolve_z (Volume* vf_out, Volume* vf_in, float* ker, int width);
 
 #endif

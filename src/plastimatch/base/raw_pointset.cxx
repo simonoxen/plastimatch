@@ -12,7 +12,6 @@
 #include "plmsys.h"
 
 #include "plm_math.h"
-#include "raw_pointset.h"
 
 Raw_pointset*
 pointset_create (void)

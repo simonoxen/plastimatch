@@ -8,6 +8,7 @@
 #include <string.h>
 #include <math.h>
 
+#include "plmbase.h"
 #include "plmsys.h"
 
 #include "bspline.h"
@@ -23,7 +24,6 @@
 /* EXTERNAL DEPENDS */
 #include "bspline_xform.h"
 #include "plm_math.h"
-#include "volume.h"
 
 static void
 log_parms (Bspline_parms* parms)

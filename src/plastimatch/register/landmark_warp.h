@@ -7,9 +7,10 @@
 #include "plm_config.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
-#include "raw_pointset.h"
 
 class Xform;
+typedef struct raw_pointset Raw_pointset;
+
 
 class plastimatch1_EXPORT Landmark_warp
 {

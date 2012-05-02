@@ -7,10 +7,12 @@
 
 #include "plmbase.h"
 #include "plmsys.h"
+#include "hnd_io_p.h"
 
 #include "compiler_warnings.h"
-#include "hnd_io.h"
 #include "plm_math.h"
+#include "proj_image.h"
+#include "proj_matrix.h"
 
 #define HND_INTENSITY_MAX (139000)
 

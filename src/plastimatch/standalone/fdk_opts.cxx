@@ -6,7 +6,6 @@
 #include <string.h>
 #include "plm_config.h"
 #include "fdk_opts.h"
-#include "volume.h"
 
 void 
 print_usage (void)

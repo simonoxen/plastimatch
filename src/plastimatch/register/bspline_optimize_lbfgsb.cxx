@@ -19,7 +19,6 @@
 /* EXTERNAL DEPENDS */
 #include "bspline_xform.h"
 #include "plm_math.h"
-#include "volume.h"
 
 
 /* Defined in f2c.h, conflicts with std::numeric_limits::max */

@@ -9,8 +9,10 @@
 #include "itkDefaultStaticMeshTraits.h"
 
 #include "itk_image.h"
-#include "raw_pointset.h"
 #include "xform.h"
+
+typedef struct raw_pointset Raw_pointset;
+
 
 typedef itk::DefaultStaticMeshTraits< 
     float, 3, 3, float, float > FloatPointSetTraitsType;

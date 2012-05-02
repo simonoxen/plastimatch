@@ -42,7 +42,6 @@
 #include "plm_math.h"
 #include "proj_image.h"
 #include "proj_image_dir.h"
-#include "volume.h"
 
 
 // P R O T O T Y P E S ////////////////////////////////////////////////////

@@ -18,7 +18,6 @@
 /* EXTERNAL DEPENDS */
 #include "bspline_xform.h"
 #include "plm_math.h"
-#include "volume.h"
 
 
 static lbfgsfloatval_t 

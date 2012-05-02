@@ -11,7 +11,6 @@
 #include "delayload.h"
 #include "demons.h"
 #include "demons_opts.h"
-#include "volume.h"
 
 int
 main (int argc, char* argv[])

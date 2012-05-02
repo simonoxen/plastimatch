@@ -26,8 +26,6 @@
 #include "plm_math.h"
 #include "proj_matrix.h"
 #include "proton_dose.h"
-#include "volume.h"
-#include "volume_limit.h"
 
 //#define VERBOSE 1
 #define PROGRESS 1

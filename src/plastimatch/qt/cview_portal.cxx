@@ -10,7 +10,8 @@
 #include <QPainter>
 #include <QWheelEvent>
 #include <QGraphicsPixmapItem>
-#include "volume.h"
+
+#include "plmbase.h"
 #include "cview_portal.h"
 
 // TODO: * Clean up this file!

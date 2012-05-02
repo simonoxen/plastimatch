@@ -7,13 +7,13 @@
 #include <time.h>
 #include "itkImageRegionIterator.h"
 
+#include "plmbase.h"
 #include "plmsys.h"
 
 #include "bspline_xform.h"
 #include "itk_directions.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
-#include "volume.h"
 #include "volume_header.h"
 
 /* -----------------------------------------------------------------------

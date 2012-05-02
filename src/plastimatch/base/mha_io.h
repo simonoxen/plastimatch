@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _hnd_io_h_
-#define _hnd_io_h_
+#ifndef _mha_io_h_
+#define _mha_io_h_
 
 /**
 *  You probably do not want to #include this header directly.
@@ -12,13 +12,9 @@
 
 #include "plmbase_config.h"
 
-class Proj_image;
+class Volume;
 
-C_API void hnd_load (
-        Proj_image *proj,
-        const char *fn,
-        const double xy_offset[2]
-);
-
+C_API Volume* read_mha (const char* filename);
+C_API void write_mha (const char* filename, Volume* vol);
 
 #endif

@@ -4,13 +4,20 @@
 #ifndef _volume_h_
 #define _volume_h_
 
+/**
+*  You probably do not want to #include this header directly.
+ *
+ *   Instead, it is preferred to #include "plmbase.h"
+ */
+
 #include "plmbase_config.h"
-
-#include "plmsys.h"
-
-#include "volume_header.h"
+#include "sys/plm_int.h"
+#include "direction_cosines.h"
 #include "volume_macros.h"
 
+//TODO: Change type of directions_cosines to Direction_cosines*
+
+class Volume_header;
 
 enum Volume_pixel_type {
     PT_UNDEFINED,
@@ -26,7 +33,7 @@ enum Volume_pixel_type {
 };
 
 
-class gpuit_EXPORT Volume
+class API Volume
 {
   public:
     plm_long dim[3];            // x, y, z Dims
@@ -110,5 +117,24 @@ class gpuit_EXPORT Volume
   protected:
     void allocate (void);
 };
+
+C_API void vf_convert_to_interleaved (Volume* ref);
+C_API void vf_convert_to_planar (Volume* ref, int min_size);
+C_API void vf_pad_planar (Volume* vol, int size);  // deprecated?
+C_API Volume* volume_clone_empty (Volume* ref);
+C_API Volume* volume_clone (Volume* ref);
+C_API void volume_convert_to_float (Volume* ref);
+C_API void volume_convert_to_int32 (Volume* ref);
+C_API void volume_convert_to_short (Volume* ref);
+C_API void volume_convert_to_uchar (Volume* ref);
+C_API void volume_convert_to_uint16 (Volume* ref);
+C_API void volume_convert_to_uint32 (Volume* ref);
+C_API Volume* volume_difference (Volume* vol, Volume* warped);
+C_API Volume* volume_make_gradient (Volume* ref);
+C_API void volume_matrix3x3inverse (float *out, const float *m);
+C_API void volume_scale (Volume *vol, float scale);
+C_API Volume* volume_warp (Volume* vout, Volume* vin, Volume* vf);
+C_API void directions_cosine_debug (float *m);
+
 
 #endif

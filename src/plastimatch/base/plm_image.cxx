@@ -22,7 +22,6 @@
 #include "plm_image_convert.h"
 #include "plm_image_header.h"
 #include "pstring.h"
-#include "volume.h"
 
 Plm_image::Plm_image () {
     this->init ();
@@ -43,6 +42,38 @@ Plm_image::Plm_image (const char* fname, Plm_image_type type)
 }
 Plm_image::~Plm_image () {
     this->free ();
+}
+
+
+/* -----------------------------------------------------------------------
+    Creation / Destruction
+   ----------------------------------------------------------------------- */
+inline void
+Plm_image::init ()
+{
+    m_original_type = PLM_IMG_TYPE_UNDEFINED;
+    m_type = PLM_IMG_TYPE_UNDEFINED;
+    m_gpuit = 0;
+}
+
+inline void
+Plm_image::free ()
+{
+    if (m_gpuit) {
+        delete (Volume*) m_gpuit;
+    }
+
+    m_original_type = PLM_IMG_TYPE_UNDEFINED;
+    m_type = PLM_IMG_TYPE_UNDEFINED;
+
+    m_itk_uchar = 0;
+    m_itk_short = 0;
+    m_itk_ushort = 0;
+    m_itk_int32 = 0;
+    m_itk_uint32 = 0;
+    m_itk_float = 0;
+    m_itk_double = 0;
+    m_gpuit = 0;
 }
 
 /* -----------------------------------------------------------------------

@@ -13,7 +13,6 @@
 #include "plm_image_header.h"
 #include "plm_stages.h"
 #include "registration_data.h"
-#include "volume.h"
 #include "xform.h"
 
 void

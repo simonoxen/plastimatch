@@ -7,7 +7,6 @@
 #include "plmbase_config.h"
 #include "direction_cosines.h"
 #include "itk_image.h"
-#include "volume.h"
 
 class Bspline_xform;
 class Plm_image_header;

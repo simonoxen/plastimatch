@@ -26,7 +26,6 @@
 #include "plm_math.h"
 #include "proj_image.h"
 #include "proj_image_dir.h"
-#include "volume.h"
 
 
 #if CUDA_FOUND

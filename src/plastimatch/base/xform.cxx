@@ -13,17 +13,17 @@
 
 #include "plmbase.h"
 #include "plmsys.h"
+#include "plm_math.h"
 
 #include "bspline.h"
 #include "itk_image_load.h"
 #include "itk_image_save.h"
 #include "itk_resample.h"
-#include "plm_math.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "plm_parms.h"
 #include "string_util.h"
-#include "volume.h"
+#include "volume_header.h"
 #include "xform.h"
 #include "xform_legacy.h"
 

@@ -22,9 +22,7 @@
 #include "bspline_optimize_steepest.h"
 
 /* EXTERNAL DEPENDS */
-#include "bspline_xform.h"
 #include "plm_math.h"
-#include "volume.h"
 
 /*
  * This is a simple gradient plotter based on

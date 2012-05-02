@@ -8,13 +8,13 @@
 #include "itk_image.h"
 #include "metadata.h"
 #include "plm_image_type.h"
-#include "volume.h"
 
 class Metadata;
 class Plm_image_header;
 class Plm_image;
 class Pstring;
 class Slice_index;
+class Volume;
 
 class plastimatch1_EXPORT Plm_image {
 
@@ -48,7 +48,7 @@ private:
     }
     /* Please don't use overloaded operators.  They suck. */
     Plm_image& operator= (Plm_image& xf) {
-	return *this;
+        return *this;
     }
     
     void convert_to_itk_char ();
@@ -68,29 +68,9 @@ private:
     void convert_to_gpuit_uchar_vec ();
 
 public:
-    void init () {
-	m_original_type = PLM_IMG_TYPE_UNDEFINED;
-	m_type = PLM_IMG_TYPE_UNDEFINED;
-	m_gpuit = 0;
-    }
-    void free () {
-	if (m_gpuit) {
-	    delete (Volume*) m_gpuit;
-	}
-
-	m_original_type = PLM_IMG_TYPE_UNDEFINED;
-	m_type = PLM_IMG_TYPE_UNDEFINED;
-
-	m_itk_uchar = 0;
-	m_itk_short = 0;
-	m_itk_ushort = 0;
-	m_itk_int32 = 0;
-	m_itk_uint32 = 0;
-	m_itk_float = 0;
-	m_itk_double = 0;
-	m_gpuit = 0;
-    }
-
+    /* creation / destruction */
+    inline void init ();
+    inline void free ();
     Plm_image* clone (void);
 
     /* Loading */
@@ -100,7 +80,7 @@ public:
 
     /* Saving */
     void save_short_dicom (const char* fname, Slice_index *rdd, 
-	Metadata *meta);
+        Metadata *meta);
     void save_image (const Pstring& fname);
     void save_image (const char* fname);
     void convert_and_save (const char* fname, Plm_image_type new_type);

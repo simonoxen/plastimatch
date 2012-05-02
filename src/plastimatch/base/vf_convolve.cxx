@@ -9,7 +9,6 @@
 #include "plmsys.h"
 
 #include "plm_math.h"
-#include "volume.h"
 
 void
 vf_convolve_x (Volume* vf_out, Volume* vf_in, float* ker, int width)

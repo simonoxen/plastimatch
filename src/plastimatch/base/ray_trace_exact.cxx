@@ -13,7 +13,6 @@
 
 #include "drr.h"
 #include "plm_math.h"
-#include "volume.h"
 
 void
 ray_trace_exact_init_loopvars (

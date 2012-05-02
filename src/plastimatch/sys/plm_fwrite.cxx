@@ -10,7 +10,6 @@
 #endif
 
 #include "plmsys.h"
-#include "volume.h"
 
 #define LINELEN 128
 #define MIN_SHORT -32768

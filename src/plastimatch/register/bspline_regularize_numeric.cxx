@@ -10,10 +10,11 @@
 
 #include "plmsys.h"
 
+#include "plm_math.h"
+
 #include "bspline.h"
 #include "bspline_macros.h"
 #include "bspline_regularize_numeric.h"
-#include "plm_math.h"
 #include "volume_macros.h"
 
 /* Prototypes */

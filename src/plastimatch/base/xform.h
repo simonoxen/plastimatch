@@ -15,12 +15,11 @@
 #include "plmsys.h"
 
 #include "bspline.h"
-#include "bspline_xform.h"
 #include "itk_image.h"
-#include "volume.h"
 
-class Volume_header;
+class Bspline_xform;
 class Xform;
+class Volume_header;
 
 enum XFormInternalType {
     XFORM_NONE			= 0,

@@ -10,12 +10,12 @@
 #include <math.h>
 #include <time.h>
 
-#include "bstring_util.h"
+#include "plmbase.h"
+#include "plmsys.h"
+#include "plm_math.h"
+
 #include "itk_tps.h"
-#include "math_util.h"
-#include "mha_io.h"
 #include "landmark_warp.h"
-#include "print_and_exit.h"
 #include "raw_pointset.h"
 #include "rbf_gauss.h"
 #include "rbf_wendland.h"

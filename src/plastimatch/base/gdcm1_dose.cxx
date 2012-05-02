@@ -16,7 +16,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "gdcm1_dose.h"
 #include "gdcm1_series.h"
 #include "gdcm1_util.h"
 #include "itk_image_stats.h"
@@ -28,7 +27,6 @@
 #include "plm_version.h"
 #include "slice_index.h"
 #include "rtss_polyline_set.h"
-#include "volume.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */
 #if defined GetCurrentTime

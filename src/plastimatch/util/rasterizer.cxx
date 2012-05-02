@@ -20,7 +20,6 @@
 #include "rasterize_slice.h"
 #include "rtss_polyline_set.h"
 #include "rtss_structure.h"
-#include "volume.h"
 
 Rasterizer::Rasterizer ()
 {

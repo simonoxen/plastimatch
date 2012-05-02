@@ -8,8 +8,6 @@
 
 #include "drr.h"          /* For DRR_VERBOSE */
 #include "plm_math.h"
-#include "volume.h"
-#include "volume_limit.h"
 
 //#define DRR_BOUNDARY_TOLERANCE 1e-6
 //#define DRR_LEN_TOLERANCE 1e-6

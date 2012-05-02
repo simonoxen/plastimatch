@@ -6,6 +6,7 @@
 #include <fstream>
 #include <iterator>
 
+#include "plmbase.h"
 #include "plmsys.h"
 
 #include "plm_image.h"

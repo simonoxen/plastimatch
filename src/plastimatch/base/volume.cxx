@@ -11,7 +11,7 @@
 #include "plmsys.h"
 
 #include "plm_math.h"
-#include "volume.h"
+#include "volume_header.h"
 
 #define CONVERT_VOLUME(old_type,new_type,new_type_enum)			\
     {									\

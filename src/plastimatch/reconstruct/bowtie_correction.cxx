@@ -14,7 +14,6 @@
 #include "bowtie_correction.h"
 #include "fdk.h"
 #include "plm_math.h"
-#include "volume.h"
 
 #ifndef DEGTORAD
 static const double DEGTORAD = 3.14159265 / 180.0;

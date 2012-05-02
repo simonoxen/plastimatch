@@ -13,7 +13,6 @@
 #include "fdk_util.h"
 #include "proj_image.h"
 #include "ramp_filter.h"
-#include "volume.h"
 
 Volume*
 my_create_volume (Fdk_parms* parms)

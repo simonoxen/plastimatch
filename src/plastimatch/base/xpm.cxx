@@ -7,7 +7,7 @@
 
 #include "plmbase.h"
 
-#include "xpm.h"
+#include "xpm_p.h"
 
 xpm_struct* xpm_create(int width, int height, int cpp)
 {

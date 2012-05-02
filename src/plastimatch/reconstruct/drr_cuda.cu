@@ -40,8 +40,6 @@
 #include "plm_math.h"
 #include "plm_cuda_math.h"
 #include "proj_image.h"
-#include "volume.h"
-#include "volume_limit.h"
 
 /* Textures */
 //texture<float, 1, cudaReadModeElementType> tex_img;

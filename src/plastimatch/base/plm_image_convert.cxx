@@ -5,6 +5,7 @@
 #include <itkImage.h>
 #include <itkImageRegionIterator.h>
 
+#include "plmbase.h"
 #include "plmsys.h"
 
 #include "itk_directions.h"

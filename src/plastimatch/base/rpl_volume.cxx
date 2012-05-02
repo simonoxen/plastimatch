@@ -7,14 +7,11 @@
 #include <string.h>
 
 #include "plmbase.h"
+#include "plm_math.h"
 
 #include "compiler_warnings.h"
-#include "plm_math.h"
 #include "proj_matrix.h"
 #include "proton_dose.h"
-#include "rpl_volume.h"
-#include "volume.h"
-#include "volume_limit.h"
 
 //#define UNIFIED_DEPTH_OFFSET 1
 

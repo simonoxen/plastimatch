@@ -7,8 +7,8 @@
 #include <string.h>
 #include <time.h>
 
-#include "bspline_xform.h"
-#include "volume.h"
+#include "plmbase.h"
+
 #include "volume_header.h"
 
 void

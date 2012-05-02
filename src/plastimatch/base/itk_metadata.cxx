@@ -18,7 +18,6 @@
 #include "plm_image.h"
 #include "plm_image_convert.h"
 #include "plm_image_header.h"
-#include "volume.h"
 
 void 
 itk_metadata_set (

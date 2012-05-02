@@ -15,7 +15,6 @@
 #include "plm_path.h"
 #include "proj_image.h"
 #include "ramp_filter.h"
-#include "volume.h"
 
 Proj_image::Proj_image ()
 {

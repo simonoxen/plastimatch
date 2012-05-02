@@ -5,8 +5,10 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+#include "plmbase.h"
+
 #include "landmark_diff.h"
-#include "raw_pointset.h"
 
 
 static float

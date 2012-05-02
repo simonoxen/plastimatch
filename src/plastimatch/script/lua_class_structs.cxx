@@ -12,11 +12,13 @@ extern "C"
 #include "lualib.h"
 #include "lauxlib.h"
 }
+
+#include "plmbase.h"
+
 #include "lua_classes.h"
 #include "lua_class_structs.h"
 #include "lua_util.h"
 #include "plm_image.h"
-#include "volume.h"
 
 /* Name of class as exposed to Lua */
 #define THIS_CLASS LUA_CLASS_SS

@@ -12,7 +12,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "volume.h"
 
 void
 vf_analyze (Volume* vol)

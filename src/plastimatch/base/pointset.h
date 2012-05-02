@@ -4,6 +4,12 @@
 #ifndef _pointset_h_
 #define _pointset_h_
 
+/**
+*  You probably do not want to #include this header directly.
+ *
+ *   Instead, it is preferred to #include "plmbase.h"
+ */
+
 #include "plmbase_config.h"
 #include <string>
 #include <vector>
@@ -12,21 +18,21 @@ class API Point {
 public:
     Point () {}
     Point (const std::string& label, float x, float y, float z) {
-	p[0] = x;
-	p[1] = y;
-	p[2] = z;
+        p[0] = x;
+        p[1] = y;
+        p[2] = z;
     }
     Point (float x, float y, float z) {
-	p[0] = x;
-	p[1] = y;
-	p[2] = z;
+        p[0] = x;
+        p[1] = y;
+        p[2] = z;
     }
 public:
     float p[3];
 public:
     void set_label (const char* s) {}
     std::string get_label (void) const {
-	return "";
+        return "";
     }
 };
 
@@ -34,20 +40,20 @@ class API Labeled_point {
 public:
     Labeled_point () {}
     Labeled_point (const std::string& label, float x, float y, float z) {
-	this->label = label;
-	p[0] = x;
-	p[1] = y;
-	p[2] = z;
+        this->label = label;
+        p[0] = x;
+        p[1] = y;
+        p[2] = z;
     }
 public:
     std::string label;
     float p[3];
 public:
     void set_label (const char* s) {
-	this->label = s;
+        this->label = s;
     }
     std::string get_label (void) const {
-	return this->label;
+        return this->label;
     }
 };
 

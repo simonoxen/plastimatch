@@ -19,7 +19,6 @@
 
 /* EXTERNAL DEPENDS */
 #include "bspline_xform.h"
-#include "volume.h"
 
 // For CUDA Toolkits < 4.0
 #ifndef cudaTextureType1D

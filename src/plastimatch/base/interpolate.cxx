@@ -10,7 +10,6 @@
 #include "plmbase.h"
 
 #include "plm_math.h"
-#include "volume.h"
 
 /* Clipping is done using clamping.  
    Note: the value of *maf can be at most dim[x]-2, because the linear 

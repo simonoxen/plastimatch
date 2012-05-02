@@ -24,7 +24,6 @@
 #include "proj_image.h"
 #include "proj_matrix.h"
 #include "delayload.h"
-#include "volume.h"
 
 static void*
 allocate_gpu_memory (

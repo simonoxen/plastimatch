@@ -27,7 +27,6 @@
 #include "bspline_xform.h"
 #include "interpolate_macros.h"
 #include "plm_math.h"
-#include "volume.h"
 #include "volume_macros.h"
 
 /* Maximum # of bins for a vopt histogram */

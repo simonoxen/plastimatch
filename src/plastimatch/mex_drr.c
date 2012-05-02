@@ -7,7 +7,6 @@
 #include "fdk_opts.h"
 #include "fdk_util.h"
 #include "file_util.h"
-#include "hnd_io.h"
 #include <math.h>
 #include "plm_math.h"
 #include "plm_path.h"

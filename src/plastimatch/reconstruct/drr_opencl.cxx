@@ -17,8 +17,6 @@
 #include "opencl_util.h"
 #include "proj_image.h"
 #include "proj_matrix.h"
-#include "volume.h"
-#include "volume_limit.h"
 
 void*
 drr_opencl_state_create (

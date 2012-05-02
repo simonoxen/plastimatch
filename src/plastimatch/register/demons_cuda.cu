@@ -14,7 +14,6 @@
 #include "demons_misc.h"
 #include "demons_state.h"
 #include "plm_cuda_math.h"
-#include "volume.h"
 
 
 /*

@@ -5,7 +5,9 @@
 #define _landmark_diff_h_
 
 #include "plm_config.h"
-#include "raw_pointset.h"
+
+typedef struct raw_pointset Raw_pointset;
+
 
 #if defined __cplusplus
 extern "C" {

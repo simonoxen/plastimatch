@@ -11,7 +11,6 @@
 
 #include "demons_misc.h"
 #include "opencl_util.h"
-#include "volume.h"
 #include "demons_opencl_p.h"
 
 // JAS 2012.04.29

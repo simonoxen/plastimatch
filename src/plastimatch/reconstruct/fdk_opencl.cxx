@@ -17,7 +17,6 @@
 #include "opencl_util.h"
 #include "proj_image.h"
 #include "proj_image_dir.h"
-#include "volume.h"
 
 void 
 opencl_reconstruct_conebeam (

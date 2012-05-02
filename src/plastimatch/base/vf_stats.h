@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _hnd_io_h_
-#define _hnd_io_h_
+#ifndef _vf_stats_h_
+#define _vf_stats_h_
 
 /**
 *  You probably do not want to #include this header directly.
@@ -12,13 +12,15 @@
 
 #include "plmbase_config.h"
 
-class Proj_image;
+class Volume;
 
-C_API void hnd_load (
-        Proj_image *proj,
-        const char *fn,
-        const double xy_offset[2]
-);
+C_API void vf_analyze (Volume* vol);
+C_API void vf_analyze_strain (Volume* vol);
+C_API void vf_analyze_jacobian (Volume* vol);
+C_API void vf_analyze_second_deriv (Volume* vol);
+C_API void vf_analyze_mask (Volume* vol, Volume* mask);
+C_API void vf_analyze_strain_mask (Volume* vol, Volume* mask);
+C_API void vf_print_stats (Volume* vol);
 
 
 #endif

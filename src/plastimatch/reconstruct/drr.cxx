@@ -20,7 +20,6 @@
 #include "plm_math.h"
 #include "proj_image.h"
 #include "proj_matrix.h"
-#include "volume_limit.h"
 #include "delayload.h"
 #ifndef _WIN32
 #include <dlfcn.h>

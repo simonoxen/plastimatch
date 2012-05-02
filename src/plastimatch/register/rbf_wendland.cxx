@@ -25,7 +25,6 @@
 #include "plm_math.h"
 #include "rbf_cluster.h"
 #include "rbf_wendland.h"
-#include "volume.h"
 #include "volume_macros.h"
 #include "xform.h"
 
