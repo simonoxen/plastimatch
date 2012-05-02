@@ -9,15 +9,14 @@
 #include <math.h>
 #include "lbfgs.h"
 
+#include "plmbase.h"
 #include "plmsys.h"
+
+#include "plm_math.h"
 
 #include "bspline.h"
 #include "bspline_optimize.h"
 #include "bspline_optimize_liblbfgs.h"
-
-/* EXTERNAL DEPENDS */
-#include "bspline_xform.h"
-#include "plm_math.h"
 
 
 static lbfgsfloatval_t 

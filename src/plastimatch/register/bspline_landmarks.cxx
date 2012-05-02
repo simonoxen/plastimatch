@@ -11,13 +11,11 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
+#include "plm_math.h"
+
 #include "bspline.h"
 #include "bspline_landmarks.h"
 #include "volume_macros.h"
-
-/* EXTERNAL DEPE#NDS */
-#include "bspline_xform.h"
-#include "plm_math.h"
 
 
 #if defined (commentout)

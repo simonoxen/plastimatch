@@ -16,7 +16,6 @@
 
 #include "itk_tps.h"
 #include "landmark_warp.h"
-#include "raw_pointset.h"
 #include "rbf_gauss.h"
 #include "rbf_wendland.h"
 

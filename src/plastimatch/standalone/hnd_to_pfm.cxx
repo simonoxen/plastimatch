@@ -6,9 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "plmbase.h"
 #include "plmsys.h"
 
-#include "hnd_io.h"
 #include "proj_image.h"
 
 int 

@@ -12,9 +12,6 @@
 #include "proj_image.h"
 #include "proj_image_dir.h"
 
-/* EXTERNAL DEPENDS */
-#include "dir_list.h"
-
 Proj_image_dir::Proj_image_dir (const char *dir)
 {
     char xml_file[_MAX_PATH];

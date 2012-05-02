@@ -28,7 +28,6 @@
 #endif
 
 /* EXTERNAL DEPENDS */
-#include "bspline_xform.h"
 
 int
 main (int argc, char* argv[])

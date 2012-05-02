@@ -19,7 +19,6 @@
 #include "check_grad_opts.h"
 
 /* EXTERNAL DEPENDS */
-#include "bspline_xform.h"
 
 void
 check_gradient (

@@ -4,6 +4,12 @@
 #ifndef _dir_list_h_
 #define _dir_list_h_
 
+/**
+*  You probably do not want to #include this header directly.
+ *
+ *   Instead, it is preferred to #include "plmsys.h"
+ */
+
 #include "plmsys_config.h"
 
 typedef struct dir_list Dir_list;

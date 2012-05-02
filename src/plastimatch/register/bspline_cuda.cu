@@ -17,9 +17,6 @@
 #include "cuda_mem.h"
 #include "cuda_kernel_util.h"
 
-/* EXTERNAL DEPENDS */
-#include "bspline_xform.h"
-
 // For CUDA Toolkits < 4.0
 #ifndef cudaTextureType1D
     #define cudaTextureType1D 0x01

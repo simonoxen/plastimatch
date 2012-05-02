@@ -9,12 +9,13 @@
 #include <omp.h>
 #endif
 
+#include "plmbase.h"
 #include "plmsys.h"
+
+#include "plm_math.h"
 
 #include "bspline.h"
 #include "bspline_regularize_analytic.h"
-#include "bspline_xform.h"
-#include "plm_math.h"
 
 //#define DEBUG
 

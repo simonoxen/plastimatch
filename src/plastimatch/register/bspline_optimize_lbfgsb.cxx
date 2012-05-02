@@ -16,8 +16,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-/* EXTERNAL DEPENDS */
-#include "bspline_xform.h"
 #include "plm_math.h"
 
 

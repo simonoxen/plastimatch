@@ -4,6 +4,12 @@
 #ifndef _file_util_h_
 #define _file_util_h_
 
+/**
+*  You probably do not want to #include this header directly.
+ *
+ *   Instead, it is preferred to #include "plmsys.h"
+ */
+
 #include "plmsys_config.h"
 #include "sys/plm_int.h"
 

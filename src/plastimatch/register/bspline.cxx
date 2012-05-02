@@ -35,6 +35,11 @@
 
 #include "plmbase.h"
 #include "plmsys.h"
+#include "delayload.h"
+
+#include "plm_math.h"
+#include "interpolate_macros.h"
+#include "volume_macros.h"
 
 #include "bspline.h"
 #include "bspline_mi.h"
@@ -47,12 +52,6 @@
 #include "bspline_optimize.h"
 #include "bspline_optimize_lbfgsb.h"
 
-/* EXTERNAL DEPENDS */
-#include "bspline_xform.h"
-#include "delayload.h"
-#include "interpolate_macros.h"
-#include "plm_math.h"
-#include "volume_macros.h"
 
 /* -----------------------------------------------------------------------
    Initialization and teardown

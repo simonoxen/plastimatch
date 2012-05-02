@@ -11,6 +11,8 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
+#include "plm_math.h"
+
 #include "bspline.h"
 #include "bspline_mi.h"
 #include "bspline_optimize.h"
@@ -21,9 +23,6 @@
 #endif
 #include "bspline_optimize_steepest.h"
 
-/* EXTERNAL DEPENDS */
-#include "bspline_xform.h"
-#include "plm_math.h"
 
 static void
 log_parms (Bspline_parms* parms)

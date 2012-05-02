@@ -15,13 +15,11 @@
 
 #include "direction_cosines.h"
 #include "bspline.h"
-#include "bspline_xform.h"
 #include "interpolate_macros.h"
 #include "plm_math.h"
 #include "plm_path.h"
 #include "volume_header.h"
 #include "volume_macros.h"
-#include "xpm.h"
 
 /* BEGIN : Functions migrated from bspline.cxx */
 void
