@@ -4,6 +4,7 @@
 #include "plmcli_config.h"
 #include <time.h>
 #include "itkImageRegionIterator.h"
+#include "itk_adjust.h"
 #include "pcmd_thumbnail.h"
 #include "plm_clp.h"
 #include "plm_image.h"
@@ -18,6 +19,7 @@ public:
     int dim;
     float spacing;
     float loc;
+    bool auto_adjust;
 public:
     Thumbnail_parms () {
 	output_fn = "thumb.mhd";
@@ -25,6 +27,7 @@ public:
 	spacing = 30.0;
         axis = 2;
 	loc = 0.0;
+        auto_adjust = false;
     }
 };
 
@@ -45,6 +48,14 @@ thumbnail_main (Thumbnail_parms* parms)
     thumbnail.set_axis (parms->axis);
     thumbnail.set_slice_loc (parms->loc);
     pli->m_itk_float = thumbnail.make_thumbnail ();
+
+    /* Adjust the intensities */
+    if (parms->auto_adjust) {
+        printf ("Auto-adjusting intensities...\n");
+        Adjustment_list al;
+        al.push_back (std::make_pair (0.0,0.0));
+        itk_adjust (pli->m_itk_float, al);
+    }
 
     /* Can't write float for these types... */
     if (extension_is (parms->output_fn, "png")
@@ -97,6 +108,8 @@ parse_fn (
         "either \"x\", \"y\", or \"z\"", 1, "z");
     parser->add_long_option ("", "loc", 
         "location of thumbnail along axis", 1, "0");
+    parser->add_long_option ("", "auto-adjust", 
+        "adjust the intensities", 0);
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -142,6 +155,9 @@ parse_fn (
     parms->loc = parser->get_int ("loc");
     parms->spacing = parser->get_float("spacing");
     parms->dim = parser->get_int ("dim");
+    if (parser->option ("auto-adjust")) {
+        parms->auto_adjust = true;
+    }
 }
 
 void

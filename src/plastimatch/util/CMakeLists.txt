@@ -18,6 +18,7 @@ set (PLMUTIL_LIBRARY_SRC
   cxt_extract.cxx
   dvh.cxx 
   gamma_analysis.cxx
+  itk_adjust.cxx
   itk_crop.cxx
   itk_gabor.cxx
   itk_mask.cxx
