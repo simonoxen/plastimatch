@@ -13,4 +13,17 @@ struct dir_list
     char** entries;
 };
 
+/* dir_list.cxx */
+C_API Dir_list* dir_list_create (void);
+C_API void dir_list_destroy (Dir_list *dir_list);
+C_API void dir_list_init (Dir_list* dl);
+C_API Dir_list * dir_list_load (Dir_list *dir_list, const char* dir);
+
+/* logfile.cxx */
+C_API void logfile_open (char* log_fn);
+C_API void logfile_close (void);
+C_API void logfile_printf (const char* fmt, ...);
+#define lprintf logfile_printf
+
+
 #endif

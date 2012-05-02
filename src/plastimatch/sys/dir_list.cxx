@@ -14,8 +14,6 @@
 
 #include "plmsys.h"
 
-#include "dir_list.h"
-
 Dir_list*
 dir_list_create (void)
 {

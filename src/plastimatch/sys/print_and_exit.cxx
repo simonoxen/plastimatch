@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+#include "plmsys.h"
+
 #if (defined(_WIN32) || defined(WIN32))
 	#define vsnprintf _vsnprintf
 #endif
