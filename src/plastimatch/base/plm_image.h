@@ -69,8 +69,8 @@ private:
 
 public:
     /* creation / destruction */
-    inline void init ();
-    inline void free ();
+    void init ();
+    void free ();
     Plm_image* clone (void);
 
     /* Loading */

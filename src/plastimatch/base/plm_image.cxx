@@ -48,7 +48,7 @@ Plm_image::~Plm_image () {
 /* -----------------------------------------------------------------------
     Creation / Destruction
    ----------------------------------------------------------------------- */
-inline void
+void
 Plm_image::init ()
 {
     m_original_type = PLM_IMG_TYPE_UNDEFINED;
@@ -56,7 +56,7 @@ Plm_image::init ()
     m_gpuit = 0;
 }
 
-inline void
+void
 Plm_image::free ()
 {
     if (m_gpuit) {

@@ -15,6 +15,10 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
+#include "plm_math.h"
+#include "interpolate_macros.h"
+#include "volume_macros.h"
+
 #include "bspline.h"
 #include "bspline_mi.h"
 #if (CUDA_FOUND)
@@ -23,11 +27,6 @@
 #include "bspline_optimize.h"
 #include "bspline_macros.h"
 
-/* EXTERNAL DEPENDS */
-#include "bspline_xform.h"
-#include "interpolate_macros.h"
-#include "plm_math.h"
-#include "volume_macros.h"
 
 /* Maximum # of bins for a vopt histogram */
 #define VOPT_RES 1000
@@ -748,10 +747,6 @@ void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_base, int iter)
     double *f_hist = mi_hist->f_hist;
     double *j_hist = mi_hist->j_hist;
     
-    // Pull out a canvas and brush!
-    xpm_struct *xpm;
-    xpm_brush *brush;
-
     char filename[20];
 
     sprintf(filename, "%s_%04i.xpm", file_base, iter);
@@ -787,21 +782,21 @@ void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_base, int iter)
 
     
     // ----------------------------------------------
-    // stretch the canvas
-    xpm = xpm_create (canvas_width, canvas_height, 1);
-    brush = xpm_brush_create ();
+    // Pull out a canvas and brush!
+    Xpm_canvas* xpm = new Xpm_canvas (canvas_width, canvas_height, 1);
+    Xpm_brush* brush = new Xpm_brush;
     
     // setup the palette
-    xpm_add_color (xpm, 'a', 0xFFFFFF);    // white
-    xpm_add_color (xpm, 'b', 0x000000);    // black
-    xpm_add_color (xpm, 'z', 0xFFCC00);    // orange
+    xpm->add_color ('a', 0xFFFFFF);    // white
+    xpm->add_color ('b', 0x000000);    // black
+    xpm->add_color ('z', 0xFFCC00);    // orange
 
     // generate a nice BLUE->RED gradient
     c = 'c';
     z = 0x0000FF;
     for (plm_long i=0; i<(graph_color_levels+1); i++)
     {
-        xpm_add_color (xpm, c, z);
+        xpm->add_color (c, z);
 
         z -= 0x00000B;      // BLUE--
         z += 0x0B0000;      //  RED++
@@ -810,7 +805,7 @@ void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_base, int iter)
     }
 
     // Prime the XPM Canvas
-    xpm_prime_canvas (xpm, 'a');
+    xpm->prime ('a');
     // ----------------------------------------------
     
 
@@ -818,44 +813,44 @@ void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_base, int iter)
 
     
     /* Generate Moving Histogram */
-    xpm_brush_set_type (brush, XPM_BOX);
-    xpm_brush_set_color (brush, 'b');
-    xpm_brush_set_pos (brush, graph_moving_x_pos, graph_moving_y_pos);
-    xpm_brush_set_width (brush, graph_bar_width);
-    xpm_brush_set_height (brush, 0);
+    brush->set_type (XPM_BOX);
+    brush->set_color ('b');
+    brush->set_pos (graph_moving_x_pos, graph_moving_y_pos);
+    brush->set_width (graph_bar_width);
+    brush->set_height (0);
 
     int tmp_h;
     for(plm_long i=0; i<mi_hist->moving.bins; i++)
     {
         tmp_h = (int)(m_hist[i] * moving_scale);
-        xpm_brush_set_height (brush, tmp_h);
-        xpm_brush_set_y_pos (brush, graph_moving_y_pos - tmp_h);
-        xpm_draw(xpm, brush);
-        xpm_brush_inc_x_pos (brush, graph_bar_spacing);
+        brush->set_height (tmp_h);
+        brush->set_y (graph_moving_y_pos - tmp_h);
+        xpm->draw (brush);
+        brush->inc_x (graph_bar_spacing);
     }
 
     
     /* Generate Fixed Histogram */
-    xpm_brush_set_type (brush, XPM_BOX);
-    xpm_brush_set_color (brush, 'b');
-    xpm_brush_set_pos (brush, graph_fixed_x_pos, graph_fixed_y_pos);
-    xpm_brush_set_width (brush, 0);
-    xpm_brush_set_height (brush, graph_bar_width);
+    brush->set_type (XPM_BOX);
+    brush->set_color ('b');
+    brush->set_pos (graph_fixed_x_pos, graph_fixed_y_pos);
+    brush->set_width (0);
+    brush->set_height (graph_bar_width);
 
-    for(plm_long i=0; i<mi_hist->fixed.bins; i++)
+    for (plm_long i=0; i<mi_hist->fixed.bins; i++)
     {
-        xpm_brush_set_width (brush, (int)(f_hist[i] * fixed_scale));
-        xpm_draw(xpm, brush);
-        xpm_brush_dec_x_pos (brush, graph_bar_spacing);
+        brush->set_width ((int)(f_hist[i] * fixed_scale));
+        xpm->draw (brush);
+        brush->inc_x ((-1)*graph_bar_spacing);
     }
 
 
     /* Generate Joint Histogram */
-    xpm_brush_set_type (brush, XPM_BOX);
-    xpm_brush_set_color (brush, 'b');
-    xpm_brush_set_pos (brush, graph_moving_x_pos, graph_fixed_y_pos);
-    xpm_brush_set_width (brush, graph_bar_width);
-    xpm_brush_set_height (brush, graph_bar_width);
+    brush->set_type (XPM_BOX);
+    brush->set_color ('b');
+    brush->set_pos (graph_moving_x_pos, graph_fixed_y_pos);
+    brush->set_width (graph_bar_width);
+    brush->set_height (graph_bar_width);
 
     z = 0;
     for(plm_long j=0; j<mi_hist->fixed.bins; j++) {
@@ -866,50 +861,50 @@ void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_base, int iter)
                 if (joint_color > graph_color_levels) {
                     //  printf ("Clamp @ P(%i,%i)\n", i, j);
                     //  brush.color = (char)(graph_color_levels + 99);
-                    xpm_brush_set_color (brush, 'z');
+                    brush->set_color ('z');
                 } else {
-                    xpm_brush_set_color (brush, (char)(joint_color + 99));
+                    brush->set_color ((char)(joint_color + 99));
                 }
             } else {
-                xpm_brush_set_color (brush, 'a');
+                brush->set_color ('a');
             }
-            xpm_draw(xpm, brush);     
-            xpm_brush_inc_x_pos (brush, graph_bar_spacing);
+            xpm->draw (brush);     
+            brush->inc_x (graph_bar_spacing);
         }
         // get ready to render new row
-        xpm_brush_set_x_pos (brush, graph_moving_x_pos);
-        xpm_brush_dec_y_pos (brush, graph_bar_spacing);
+        brush->set_x (graph_moving_x_pos);
+        brush->inc_y ((-1)*graph_bar_spacing);
     }
 
     /* Generate Joint Histogram Border */
-    xpm_brush_set_type (brush, XPM_BOX); // top
-    xpm_brush_set_color (brush, 'b');
-    xpm_brush_set_pos (brush, border_x_pos, border_y_pos);
-    xpm_brush_set_width (brush, border_width);
-    xpm_brush_set_height (brush, 1);
-    xpm_draw(xpm, brush);
+    brush->set_type (XPM_BOX); // top
+    brush->set_color ('b');
+    brush->set_pos (border_x_pos, border_y_pos);
+    brush->set_width (border_width);
+    brush->set_height (1);
+    xpm->draw (brush);
 
-    xpm_brush_set_width (brush, 1); // left
-    xpm_brush_set_height (brush, border_height);
-    xpm_draw(xpm, brush);
+    brush->set_width (1); // left
+    brush->set_height (border_height);
+    xpm->draw (brush);
 
-    xpm_brush_set_width (brush, border_width); // bottom
-    xpm_brush_set_height (brush, 1);
-    xpm_brush_inc_y_pos (brush, border_height);
-    xpm_draw(xpm, brush);
+    brush->set_width (border_width); // bottom
+    brush->set_height (1);
+    brush->inc_y (border_height);
+    xpm->draw (brush);
 
-    xpm_brush_set_width (brush, 1); // right
-    xpm_brush_set_height (brush, border_height);
-    xpm_brush_set_pos (brush, border_width, border_y_pos);
-    xpm_draw(xpm, brush);
+    brush->set_width (1); // right
+    brush->set_height (border_height);
+    brush->set_pos (border_width, border_y_pos);
+    xpm->draw (brush);
 
     printf("done.\n");
     
     // Write to file
-    xpm_write (xpm, filename);
+    xpm->write (filename);
 
-    xpm_destroy (xpm);
-    xpm_brush_destroy (brush);
+    delete xpm;
+    delete brush; 
 }
 
 /* JAS 2010.11.30

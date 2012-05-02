@@ -9,66 +9,57 @@
 
 #include "xpm_p.h"
 
-xpm_struct* xpm_create(int width, int height, int cpp)
+/* -----------
+     Canvas
+   ----------- */
+Xpm_canvas::Xpm_canvas (int width, int height, int cpp)
 {
-    xpm_struct* xpm = (xpm_struct*)malloc(sizeof(xpm_struct));
+    d_ptr = new Xpm_canvas_private;
 
-	// Populate the XPM struct
-	xpm->width = width;
-	xpm->height = height;
-	xpm->num_pix = width * height;
-	xpm->num_colors = 0;
-	xpm->cpp = cpp;
+    d_ptr->width = width;
+    d_ptr->height = height;
+    d_ptr->num_pix = width * height;
+    d_ptr->num_colors = 0;
+    d_ptr->cpp = cpp;
 
-	// Allocate memory for pixel data
-	xpm->img = (char*)malloc(width*height*sizeof(char));
-
-    return xpm;
+    // Allocate memory for pixel data
+    d_ptr->img = (char*)malloc (width*height*sizeof(char));
 }
 
-void xpm_destroy (xpm_struct* xpm)
+Xpm_canvas::~Xpm_canvas ()
 {
-    free (xpm->img);
-    free (xpm);
+    free (d_ptr->img);
+    free (d_ptr->color_code);
+    free (d_ptr->colors);
 }
 
-xpm_brush* xpm_brush_create ()
+void
+Xpm_canvas::prime (char color_code)
 {
-    return (xpm_brush*)malloc(sizeof(xpm_brush));
+    int i;
+    char* img = d_ptr->img;
+
+    for (i=0; i<d_ptr->num_pix; i++)
+        img[i] = color_code;
 }
 
-void xpm_brush_destroy (xpm_brush* brush)
+void
+Xpm_canvas::add_color (char color_code, int color)
 {
-    free (brush);
-}
+    // Increase memory usage as necessary
+    if (!d_ptr->num_colors) {
+        d_ptr->num_colors++;
+        d_ptr->colors = (int*)malloc (sizeof(int));
+        d_ptr->color_code = (char*)malloc (sizeof(char));
+    } else {
+        d_ptr->num_colors++;
+        d_ptr->colors = (int*)realloc (d_ptr->colors, d_ptr->num_colors * sizeof(int));
+        d_ptr->color_code = (char*)realloc (d_ptr->color_code, d_ptr->num_colors * sizeof(char));
+    }
 
-
-void xpm_prime_canvas(xpm_struct* xpm, char color_code)
-{
-	int i;
-	char* img = xpm->img;
-
-	for (i=0; i<xpm->num_pix; i++)
-		img[i] = color_code;
-
-}
-
-void xpm_add_color(xpm_struct* xpm, char color_code, int color)
-{
-	// Increase memory usage as necessary
-	if (!xpm->num_colors) {
-		xpm->num_colors++;
-		xpm->colors = (int*)malloc(sizeof(int));
-		xpm->color_code = (char*)malloc(sizeof(char));
-	} else {
-		xpm->num_colors++;
-		xpm->colors = (int*)realloc(xpm->colors, xpm->num_colors * sizeof(int));
-		xpm->color_code = (char*)realloc(xpm->color_code, xpm->num_colors * sizeof(char));
-	}
-
-	// Insert the color
-	xpm->colors[xpm->num_colors - 1] = color;
-	xpm->color_code[xpm->num_colors - 1] = color_code;
+    // Insert the color
+    d_ptr->colors[d_ptr->num_colors - 1] = color;
+    d_ptr->color_code[d_ptr->num_colors - 1] = color_code;
 }
 
 // Returns 0 on success
@@ -76,199 +67,218 @@ void xpm_add_color(xpm_struct* xpm, char color_code, int color)
 // 
 // I don't plan on ever needing this...
 // but perhaps you will, so here it is.
-int xpm_remove_color(xpm_struct* xpm, char color_code)
+int
+Xpm_canvas::remove_color (char color_code)
 {
-	int i;
-	char* code = xpm->color_code;
+    int i;
+    char* code = d_ptr->color_code;
 
-	// Search for the color code and remove it
-	for(i=0; i<xpm->num_colors; i++)
-	{
-		if (code[i] == color_code) {
-			
-			// Decrement palette
-			xpm->num_colors--;
+    // Search for the color code and remove it
+    for(i=0; i<d_ptr->num_colors; i++)
+    {
+        if (code[i] == color_code) {
+            
+            // Decrement palette
+            d_ptr->num_colors--;
 
-			// Did we remove the last color?
-			if (!xpm->num_colors){
-				// We have removed all the colors
-				free (xpm->colors);
-				free (xpm->color_code);
-			} else {
-				xpm->colors = (int*)realloc(xpm->colors, xpm->num_colors * sizeof(int));
-				xpm->color_code = (char*)realloc(xpm->color_code, xpm->num_colors * sizeof(char));
-			}
+            // Did we remove the last color?
+            if (!d_ptr->num_colors){
+                // We have removed all the colors
+                free (d_ptr->colors);
+                free (d_ptr->color_code);
+            } else {
+                d_ptr->colors = (int*)realloc (d_ptr->colors, d_ptr->num_colors * sizeof(int));
+                d_ptr->color_code = (char*)realloc (d_ptr->color_code, d_ptr->num_colors * sizeof(char));
+            }
 
-		} else {
-			// color code not registered
-			return 1;
-		}
-	}
-	return 0;
+        } else {
+            // color code not registered
+            return 1;
+        }
+    }
+    return 0;
 }
 
-int xpm_draw (xpm_struct* xpm, xpm_brush* brush)
+int
+Xpm_canvas::draw (Xpm_brush* brush)
 {
     int i, j;
     int x1,x2,y1,y2;
 
-    // Which brush, son?
-    switch (brush->type) {
+    // which brush, son?
+    switch (brush->get_type()) {
     case XPM_BOX:
-	// Define bounds
-	x1 = brush->x_pos;
-	x2 = brush->x_pos + brush->width;
-	y1 = brush->y_pos;
-	y2 = brush->y_pos + brush->height;
+        // define bounds
+        x1 = brush->get_x();
+        x2 = brush->get_x() + brush->get_width();
+        y1 = brush->get_y();
+        y2 = brush->get_y() + brush->get_height();
 
-	// Bound checking
-	if ( (x1 < 0) || (x2 > xpm->width) )
-	    return 1;
+        // bound checking
+        if ( (x1 < 0) || (x2 > d_ptr->width) )
+            return 1;
 
-	if ( (y1 < 0) || (y2 > xpm->height) )
-	    return 1;
+        if ( (y1 < 0) || (y2 > d_ptr->height) )
+            return 1;
 
-	// Draw the box
-	for (j=y1; j<y2; j++)
-	    for (i=x1; i<x2; i++)
-		xpm->img[j * xpm->width + i] = brush->color;
-	break;
+        // draw the box
+        for (j=y1; j<y2; j++)
+            for (i=x1; i<x2; i++)
+            d_ptr->img[j * d_ptr->width + i] = brush->get_color();
+        break;
     case XPM_CIRCLE:
-	break;
+        /* not implemented */
+        break;
     }
 
     return 0;
 }
 
-void xpm_write (xpm_struct* xpm, char* xpm_file)
+void
+Xpm_canvas::write (char* xpm_file)
 {
-	FILE *fp;
-	int i,j,p;
+    FILE *fp;
+    int i,j,p;
 
-	char* img = xpm->img;
+    char* img = d_ptr->img;
 
-	// Write the XPM file to disk
-	if ( !(fp = fopen(xpm_file, "w")) )
-		fprintf(stderr, "Error: Cannot write open XPM file for writing\n");
+    // Write the XPM file to disk
+    if ( !(fp = fopen(xpm_file, "w")) )
+        fprintf(stderr, "Error: Cannot write open XPM file for writing\n");
 
-	// Construct the XPM header
-	fprintf(fp, "/* XPM */\n");
-	fprintf(fp, "static char * plm_xpm[] = {\n");
-	fprintf(fp, "/* width  height  colors  cpp */\n");
-	fprintf(fp, "\"%i %i %i %i\",\n\n", xpm->width, xpm->height, xpm->num_colors, xpm->cpp);
+    // Construct the XPM header
+    fprintf(fp, "/* XPM */\n");
+    fprintf(fp, "static char * plm_xpm[] = {\n");
+    fprintf(fp, "/* width  height  colors  cpp */\n");
+    fprintf(fp, "\"%i %i %i %i\",\n\n", d_ptr->width, d_ptr->height, d_ptr->num_colors, d_ptr->cpp);
 
-	// Construct Palette
-	fprintf(fp, "/* color codes */\n");
-	for (i=0; i<xpm->num_colors; i++)
-		fprintf(fp, "\"%c c #%.6x\",\n", xpm->color_code[i], xpm->colors[i]);
+    // Construct Palette
+    fprintf(fp, "/* color codes */\n");
+    for (i=0; i<d_ptr->num_colors; i++)
+        fprintf(fp, "\"%c c #%.6x\",\n", d_ptr->color_code[i], d_ptr->colors[i]);
 
-	// Write Pixel Data
-	fprintf(fp, "\n/* Pixel Data */\n");
+    // Write Pixel Data
+    fprintf(fp, "\n/* Pixel Data */\n");
 
-	p=0;
-	for (j=0; j<xpm->height; j++) {
-		fprintf(fp, "\"");
+    p=0;
+    for (j=0; j<d_ptr->height; j++) {
+        fprintf(fp, "\"");
 
-		for (i=0; i<xpm->width; i++) {
-			fprintf(fp, "%c",img[p++]);
-		}
-		
-		fprintf(fp, "\",\n");
-	}
+        for (i=0; i<d_ptr->width; i++) {
+            fprintf(fp, "%c",img[p++]);
+        }
+        
+        fprintf(fp, "\",\n");
+    }
 
-	fprintf(fp, "};");
+    fprintf(fp, "};");
 
-	// Done like dinner.
-	fclose(fp);
-}
-
-void xpm_brush_set_type (
-    xpm_brush* brush,
-    xpm_brushes type
-)
-{
-    brush->type = type;
+    // Done like dinner.
+    fclose(fp);
 }
 
 
-void xpm_brush_set_color (
-    xpm_brush* brush,
-    char color
-)
+/* -----------
+      Brush 
+   ----------- */
+Xpm_brush::Xpm_brush ()
 {
-    brush->color = color;
+    d_ptr = new Xpm_brush_private;
 }
 
-void xpm_brush_inc_x_pos (
-    xpm_brush *brush,
-    int x
-)
+Xpm_brush::~Xpm_brush ()
 {
-    brush->x_pos += x;
+    delete d_ptr;
 }
 
-void xpm_brush_inc_y_pos (
-    xpm_brush *brush,
-    int y
-)
+void
+Xpm_brush::set_type (xpm_brushes type)
 {
-    brush->y_pos += y;
+    d_ptr->type = type;
 }
 
-void xpm_brush_dec_x_pos (
-    xpm_brush *brush,
-    int x
-)
+void
+Xpm_brush::set_color (char color)
 {
-    brush->x_pos -= x;
+    d_ptr->color = color;
 }
 
-void xpm_brush_dec_y_pos (
-    xpm_brush *brush,
-    int y
-)
+void
+Xpm_brush::set_pos (int x, int y)
 {
-    brush->y_pos -= y;
+    d_ptr->x_pos = x;
+    d_ptr->y_pos = y;
 }
 
-void xpm_brush_set_x_pos (
-    xpm_brush *brush,
-    int x
-)
+void
+Xpm_brush::set_width (int width)
 {
-    brush->x_pos = x;
+    d_ptr->width = width;
 }
 
-void xpm_brush_set_y_pos (
-    xpm_brush *brush,
-    int y
-)
+void
+Xpm_brush::set_height (int height)
 {
-    brush->y_pos = y;
+    d_ptr->height = height;
 }
 
-void xpm_brush_set_pos (
-    xpm_brush *brush,
-    int x,
-    int y
-)
+void
+Xpm_brush::set_x (int x)
 {
-    brush->x_pos = x;
-    brush->y_pos = y;
+    d_ptr->x_pos = x;
 }
 
-void xpm_brush_set_width (
-    xpm_brush* brush,
-    int width
-)
+void
+Xpm_brush::set_y (int y)
 {
-    brush->width = width;
+    d_ptr->y_pos = y;
 }
 
-void xpm_brush_set_height (
-    xpm_brush* brush,
-    int height
-)
+char
+Xpm_brush::get_color ()
 {
-    brush->height = height;
+    return d_ptr->color;
 }
+
+xpm_brushes
+Xpm_brush::get_type ()
+{
+    return d_ptr->type;
+}
+
+int
+Xpm_brush::get_width ()
+{
+    return d_ptr->width;
+}
+
+int
+Xpm_brush::get_height ()
+{
+    return d_ptr->height;
+}
+
+int
+Xpm_brush::get_x ()
+{
+    return d_ptr->x_pos;
+}
+
+int
+Xpm_brush::get_y ()
+{
+    return d_ptr->y_pos;
+}
+
+void
+Xpm_brush::inc_x (int dx)
+{
+    d_ptr->x_pos += dx;
+}
+
+void
+Xpm_brush::inc_y (int dy)
+{
+    d_ptr->y_pos += dy;
+}
+
