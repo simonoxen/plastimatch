@@ -123,6 +123,7 @@ correct CUDA version to install/upgrade::
   CUDA 3.1              Supported
   CUDA 3.2              Supported
   CUDA 4.0              Supported
+  CUDA 4.1              Supported
 
 Download CUDA from here:
 
