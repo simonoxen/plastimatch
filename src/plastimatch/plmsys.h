@@ -17,5 +17,6 @@
 #include "plm_timer.h"
 #include "plm_endian.h"
 #include "print_and_exit.h"
+#include "string_util.h"
 
 #endif

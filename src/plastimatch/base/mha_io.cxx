@@ -13,7 +13,6 @@
 #include "plmsys.h"
 
 #include "plm_path.h"
-#include "string_util.h"
 
 #define LINELEN 512
 

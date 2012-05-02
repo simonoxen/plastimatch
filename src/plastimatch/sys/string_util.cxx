@@ -6,7 +6,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include "string_util.h"
+
+#include "plmsys.h"
 
 int
 plm_strcmp (const char* s1, const char* s2)

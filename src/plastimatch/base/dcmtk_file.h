@@ -8,7 +8,6 @@
 
 #include "plmsys.h"
 
-#include "string_util.h"
 #include "volume_header.h"
 
 class DcmDataset;

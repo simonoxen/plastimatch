@@ -8,6 +8,7 @@
 #include "itkContinuousIndex.h"
 
 #include "plmbase.h"
+#include "plmsys.h"
 
 #include "pstring.h"
 #include "itk_image.h"
@@ -18,7 +19,7 @@
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "pstring.h"
-#include "string_util.h"
+
 
 class Probe_parms {
 public:

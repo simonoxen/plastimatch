@@ -6,7 +6,6 @@
 
 #include "plmsys.h"
 
-#include "string_util.h"
 #include "xform.h"
 #include "xform_legacy.h"
 
