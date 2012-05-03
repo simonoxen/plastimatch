@@ -15,6 +15,9 @@ SITE:STRING=zerowing
 //Build without shared libraries.
 BUILD_SHARED_LIBS:BOOL=OFF
 
+//Used statically compiled ITK
+ITK_DIR:FILEPATH=D:/build/itk-3.20.1
+
 //Don't Build REG-2-3 for now
 PLM_CONFIG_DISABLE_REG23:BOOL=OFF
 
