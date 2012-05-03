@@ -88,6 +88,15 @@ if (wxWidgets_FOUND)
 endif ()
 
 ##-----------------------------------------------------------------------------
+##  CONFIGURE INCLUDE FILES
+##-----------------------------------------------------------------------------
+configure_file (${CMAKE_CURRENT_SOURCE_DIR}/sys/plm_config.h.in
+  ${PLM_BUILD_ROOT}/plm_config.h)
+
+configure_file (${CMAKE_CURRENT_SOURCE_DIR}/sys/plm_fortran.h.in
+  ${PLM_BUILD_ROOT}/plm_fortran.h)
+
+##-----------------------------------------------------------------------------
 ##  PLMSYS/GPUIT/PLASTIMATCH LIBRARY SOURCE FILES
 ##-----------------------------------------------------------------------------
 
