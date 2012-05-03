@@ -28,6 +28,8 @@ find (sub { push @foundfiles, $File::Find::name if /-log.txt$/ },
 my $cc = Chart::Clicker->new;
 
 for $file (@foundfiles) {
+
+    # Gather the values from files
     my @keys = ();
     my @values = ();
     my $it = 0;

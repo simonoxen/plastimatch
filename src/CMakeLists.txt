@@ -11,7 +11,6 @@ project (src)
 set (PLASTIMATCH_LIBS
   ${ITK_LIBRARIES}
   ${MATH_LIB}
-  plastimatch1
   plmsys
   plmbase
   plmdose

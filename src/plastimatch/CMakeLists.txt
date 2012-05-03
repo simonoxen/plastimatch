@@ -209,7 +209,7 @@ if (F2C_LIBRARY)
 endif ()
 
 set (PLASTIMATCH1_LIBRARY_SRC
-  plm_clp.cxx plm_clp.h
+#  plm_clp.cxx plm_clp.h
   )
 
 ##-----------------------------------------------------------------------------
@@ -274,11 +274,11 @@ if (FULL_PLASTIMATCH_BUILD)
       ${PLASTIMATCH1_LIBRARY_DEPENDENCIES} gdi32)
   endif ()
 
-  plm_add_library (
-    plastimatch1 
-    "${PLASTIMATCH1_LIBRARY_SRC}"
-    "${PLASTIMATCH1_LIBRARY_DEPENDENCIES}"
-    "")
+#  plm_add_library (
+#    plastimatch1 
+#    "${PLASTIMATCH1_LIBRARY_SRC}"
+#    "${PLASTIMATCH1_LIBRARY_DEPENDENCIES}"
+#    "")
 endif ()
 
 ##-----------------------------------------------------------------------------
@@ -336,12 +336,12 @@ if (SLICER_FOUND)
       endif ()
     endmacro ()
 
-    plm_slicer_copy_dll (plastimatch_slicer_copy_plastimatch1
-      "${INDIR}/plastimatch1.dll"
-      "${OUTDIR}/plastimatch1.dll"
-      "${QTOUTDIR}/plastimatch1.dll"
-      plastimatch1
-      )
+#    plm_slicer_copy_dll (plastimatch_slicer_copy_plastimatch1
+#      "${INDIR}/plastimatch1.dll"
+#      "${OUTDIR}/plastimatch1.dll"
+#      "${QTOUTDIR}/plastimatch1.dll"
+#      plastimatch1
+#      )
     plm_slicer_copy_dll (plastimatch_slicer_copy_gpuit
       "${INDIR}/gpuit.dll"
       "${OUTDIR}/gpuit.dll"

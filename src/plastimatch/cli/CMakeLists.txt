@@ -13,6 +13,10 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES
 ##-----------------------------------------------------------------------------
+set (PLMCLP_LIBRARY_SRC
+  plm_clp.cxx plm_clp.h
+  )
+
 set (PLASTIMATCH_SRC
   pcmd_add.cxx pcmd_add.h
   pcmd_adjust.cxx pcmd_adjust.h
@@ -46,15 +50,19 @@ set (LANDMARK_WARP_SRC
   landmark_warp_main.cxx
   )
 
+set (PLM_CLI_LIBRARIES ${PLASTIMATCH_LIBS} plmclp)
+
 ##-----------------------------------------------------------------------------
 ##  BUILD TARGETS
 ##-----------------------------------------------------------------------------
-if (FULL_PLASTIMATCH_BUILD)
-  plm_add_executable (plastimatch "${PLASTIMATCH_SRC}"
-    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-    ${BUILD_ALWAYS} ${INSTALL_ALWAYS})
-
-  plm_add_executable (landmark_warp "${LANDMARK_WARP_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_ALWAYS})
-endif ()
+plm_add_library (
+  plmclp
+  "${PLMCLP_LIBRARY_SRC}" 
+  ""
+  "")
+plm_add_executable (plastimatch "${PLASTIMATCH_SRC}"
+  "${PLM_CLI_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
+  ${BUILD_ALWAYS} ${INSTALL_ALWAYS})
+plm_add_executable (landmark_warp "${LANDMARK_WARP_SRC}" 
+  "${PLM_CLI_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_ALWAYS})
