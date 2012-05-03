@@ -714,16 +714,16 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  WXWINDOWS LIBRARY
 ##-----------------------------------------------------------------------------
-if (wxWidgets_FOUND)
-  if (wxWidgets_CXX_FLAGS)
-    string (REGEX REPLACE "-D" "" wxWidgets_DEFINITIONS 
-      "${wxWidgets_DEFINITIONS}")
-    set_source_files_properties (mondoshot_main.cpp
-      PROPERTIES COMPILE_FLAGS 
-      ${wxWidgets_CXX_FLAGS}
-      )
-  endif ()
-endif ()
+# if (wxWidgets_FOUND)
+#   if (wxWidgets_CXX_FLAGS)
+#     string (REGEX REPLACE "-D" "" wxWidgets_DEFINITIONS 
+#       "${wxWidgets_DEFINITIONS}")
+#     set_source_files_properties (mondoshot_main.cpp
+#       PROPERTIES COMPILE_FLAGS 
+#       ${wxWidgets_CXX_FLAGS}
+#       )
+#   endif ()
+# endif ()
 
 ##-----------------------------------------------------------------------------
 ##  CONFIGURE INCLUDE FILES

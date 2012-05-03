@@ -83,9 +83,6 @@ endif ()
 if (SQLITE_FOUND)
   include_directories (AFTER ${SQLITE_INCLUDE_DIR})
 endif ()
-if (wxWidgets_FOUND)
-  include_directories (BEFORE ${wxWidgets_INCLUDE_DIRS})
-endif ()
 
 ##-----------------------------------------------------------------------------
 ##  CONFIGURE INCLUDE FILES
@@ -298,14 +295,14 @@ if (FULL_PLASTIMATCH_BUILD)
 endif ()
 
 # mondoshot requires WIN32, wx, dcmtk, sqlite3
-if (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
-  add_executable (mondoshot WIN32 ${MONDOSHOT_SRC})
-  target_link_libraries (mondoshot 
-    ${wxWidgets_LIBRARIES} ${DCMTK_LIBRARIES} ${SQLITE_LIBRARIES})
-  if (NOT BUILD_AGAINST_SLICER3)
-    install (TARGETS mondoshot DESTINATION bin)
-  endif ()
-endif ()
+#if (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
+#  add_executable (mondoshot WIN32 ${MONDOSHOT_SRC})
+#  target_link_libraries (mondoshot 
+#    ${wxWidgets_LIBRARIES} ${DCMTK_LIBRARIES} ${SQLITE_LIBRARIES})
+#  if (NOT BUILD_AGAINST_SLICER3)
+#    install (TARGETS mondoshot DESTINATION bin)
+#  endif ()
+#endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Special targets for slicer

@@ -5,8 +5,6 @@
 ##-----------------------------------------------------------------------------
 project (src_mondoshot)
 
-## GCS: This won't build until dcmtk_uid.cxx is moved into base
-
 ##-----------------------------------------------------------------------------
 ##  Include directories
 ##-----------------------------------------------------------------------------
@@ -15,23 +13,26 @@ include_directories (BEFORE ${src_plastimatch_SOURCE_DIR}/base)
 include_directories (BEFORE ${src_plastimatch_SOURCE_DIR}/sys)
 include_directories (BEFORE ${CMAKE_BINARY_DIR})
 include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
-include_directories (AFTER ${BSTRLIB_INCLUDE_DIR})
-include_directories (AFTER ${LIBLBFGS_INCLUDE_DIR})
 include_directories (AFTER ${MSINTTYPES_INCLUDE_DIR})
-include_directories (AFTER ${SQLITE_INCLUDE_DIR})
-include_directories (AFTER ${SLICER_INCLUDE_DIRS}
-  #${Slicer_Libs_INCLUDE_DIRS}
-  #${Slicer_Base_INCLUDE_DIRS}
-  )
+include_directories (BEFORE ${wxWidgets_INCLUDE_DIRS})
 
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES (EXECUTABLES)
 ##-----------------------------------------------------------------------------
 set (MONDOSHOT_SRC
-  dcmtk_uid.cxx dcmtk_uid.h
+#  dcmtk_uid.cxx dcmtk_uid.h
   mondoshot_dicom.cpp mondoshot_dicom.h
   mondoshot_main.cpp mondoshot_main.h
   )
+
+if (wxWidgets_CXX_FLAGS)
+  string (REGEX REPLACE "-D" "" wxWidgets_DEFINITIONS 
+    "${wxWidgets_DEFINITIONS}")
+  set_source_files_properties (mondoshot_main.cpp
+    PROPERTIES COMPILE_FLAGS 
+    ${wxWidgets_CXX_FLAGS}
+    )
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Executable targets
