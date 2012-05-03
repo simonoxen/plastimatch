@@ -202,11 +202,11 @@ endif ()
 #endif ()
 
 
-if (F2C_LIBRARY)
-  set (F2C_HELPER_LIBRARY_SRC
-    main__.c
-    )
-endif ()
+# if (F2C_LIBRARY)
+#   set (F2C_HELPER_LIBRARY_SRC
+#     main__.c
+#     )
+# endif ()
 
 set (PLASTIMATCH1_LIBRARY_SRC
 #  plm_clp.cxx plm_clp.h
@@ -244,9 +244,9 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Library targets
 ##-----------------------------------------------------------------------------
-if (F2C_LIBRARY AND UNIX)
-  plm_add_library (f2c_helper "${F2C_HELPER_LIBRARY_SRC}" "" "")
-endif ()
+# if (F2C_LIBRARY AND UNIX)
+#   plm_add_library (f2c_helper "${F2C_HELPER_LIBRARY_SRC}" "" "")
+# endif ()
 
 if (FULL_PLASTIMATCH_BUILD)
   # Despite claims to the contrary, you are not allowed to have a library

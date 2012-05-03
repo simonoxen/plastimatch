@@ -448,9 +448,9 @@ endif ()
 ##-----------------------------------------------------------------------------
 if (PLM_USE_F2C)
   set (PLM_FORTRAN ${F2C_LIBRARY})
-  if (UNIX)
-    set (PLM_FORTRAN ${PLM_FORTRAN} f2c_helper)
-  endif ()
+#  if (UNIX AND NOT PLM_USE_INCLUDED_F2C)
+#    set (PLM_FORTRAN ${PLM_FORTRAN} f2c_helper)
+#  endif ()
 else ()
   # It would seem that mixed-language programs need to set compiler and 
   # linker flags manually
