@@ -2576,6 +2576,32 @@ set_tests_properties (plm-resample-c-check PROPERTIES
   DEPENDS plm-resample-c-stats)
 
 ## -------------------------------------------------------------------------
+## plm-thumbnail-a: make png file
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-thumbnail-a" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "thumbnail;--input;${PLM_BUILD_TESTING_DIR}/sphere-1.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-thumbnail-a.png;--spacing;2"
+  )
+plm_add_test (
+  "plm-thumbnail-a-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-thumbnail-a.mha"
+  )
+plmtest_check_interval ("plm-thumbnail-a-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-thumbnail-a-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "76.8"
+  "77.0"
+  )
+set_tests_properties (plm-thumbnail-a PROPERTIES DEPENDS sphere-1)
+set_tests_properties (plm-thumbnail-a-stats PROPERTIES DEPENDS plm-thumbnail-a)
+set_tests_properties (plm-thumbnail-a-check PROPERTIES 
+  DEPENDS plm-thumbnail-a-stats)
+
+## -------------------------------------------------------------------------
 ## plastimatch warp pointset
 ##   plm-warp-pointset-a:  xf = bspline, output fcsv
 ##   plm-warp-pointset-b:  xf = bspline, output txt
