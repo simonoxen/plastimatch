@@ -634,13 +634,13 @@ do_itk_registration_stage (
         stage->fixed_subsample_rate[0], 
         stage->fixed_subsample_rate[1], 
         stage->fixed_subsample_rate[2], 
-        stage->background_val);
+        stage->default_value);
     FloatImageType::Pointer moving_ss = subsample_image (
         regd->moving_image->itk_float(), 
         stage->moving_subsample_rate[0], 
         stage->moving_subsample_rate[1], 
         stage->moving_subsample_rate[2], 
-        stage->background_val);
+        stage->default_value);
 
     registration->SetFixedImage (fixed_ss);
     registration->SetMovingImage (moving_ss);

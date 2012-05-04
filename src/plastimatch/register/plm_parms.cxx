@@ -141,6 +141,21 @@ set_key_val (
     }
 
     /* The following keywords are allowed either globally or in stages */
+    else if (!strcmp (key, "background_val")
+        || !strcmp (key, "background-val")
+        || !strcmp (key, "default_value")
+        || !strcmp (key, "default-value"))
+    {
+        float f;
+        if (sscanf (val, "%g", &f) != 1) {
+            goto error_exit;
+        }
+        if (section == 0) {
+            regp->default_value = f;
+        } else {
+            stage->default_value = f;
+        }
+    }
     else if (!strcmp (key, "img_out") || !strcmp (key, "image_out")) {
         if (section == 0) {
             strncpy (regp->img_out_fn, val, _MAX_PATH);
@@ -383,12 +398,6 @@ set_key_val (
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "background_val")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g", &stage->background_val) != 1) {
-            goto error_exit;
-        }
-    }
     else if (!strcmp (key, "background_max")) {
         if (section == 0) goto error_not_global;
         if (sscanf (val, "%g", &stage->background_max) != 1) {
@@ -618,6 +627,7 @@ Registration_parms::set_command_string (
             {
                 section = 1;
                 this->num_stages ++;
+
                 this->stages = (Stage_parms**) realloc (
                     this->stages, this->num_stages * sizeof(Stage_parms*));
                 if (this->num_stages == 1) {
@@ -627,6 +637,14 @@ Registration_parms::set_command_string (
                         *(this->stages[this->num_stages-2]));
                 }
                 this->stages[this->num_stages-1]->stage_no = this->num_stages;
+
+                /* Some parameters that should be copied from global 
+                   to the first stage. */
+                if (this->num_stages == 1) {
+                    this->stages[this->num_stages-1]->default_value
+                        = this->default_value;
+                }
+
                 continue;
             }
             else if (buf.find ("[COMMENT]") != std::string::npos

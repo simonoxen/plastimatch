@@ -78,7 +78,7 @@ public:
     int moving_subsample_rate[3];  /* In voxels */
     /* Intensity values for air */
     float background_max;          /* Threshold to find the valid region */
-    float background_val;          /* Replacement when out-of-view */
+    float default_value;           /* Replacement when out-of-view */
     /* Generic optimization parms */
     int min_its;
     int max_its;
@@ -143,7 +143,7 @@ public:
         moving_subsample_rate[2] = 1;
         /* Intensity values for air */
         background_max = -999.0;
-        background_val = -1200.0;
+        default_value = 0.0;
         /* Generic optimization parms */
         min_its = 2;
         max_its = 25;
@@ -216,6 +216,7 @@ public:
     Pstring moving_landmarks_fn;
     char vf_out_fn[_MAX_PATH];
     char log_fn[_MAX_PATH];
+    float default_value;           /* Replacement when out-of-view */
     int init_type;
     double init[12];
 
@@ -246,6 +247,7 @@ public:
         *vf_out_fn = 0;
         *log_fn = 0;
         init_type = STAGE_TRANSFORM_NONE;
+        default_value = 0.0;
         num_stages = 0;
         stages = 0;
         *moving_dir = 0;
