@@ -7,6 +7,10 @@
 #include "plm_config.h"
 #include "landmark_warp.h"
 
+class Bspline_parms;
+class Volume;
+
+
 #if defined __cplusplus
 extern "C" {
 #endif

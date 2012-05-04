@@ -9,9 +9,12 @@
 #include "itkDefaultStaticMeshTraits.h"
 
 #include "itk_image.h"
-#include "xform.h"
 
+class Point;
+template<class T> class Pointset;
+class Xform;
 typedef struct raw_pointset Raw_pointset;
+typedef Pointset<Point> Unlabeled_pointset;
 
 
 typedef itk::DefaultStaticMeshTraits< 

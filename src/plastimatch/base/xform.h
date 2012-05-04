@@ -12,26 +12,26 @@
 #include "itkBSplineDeformableTransform.h"
 #include "itkThinPlateSplineKernelTransform.h"
 
-#include "plmsys.h"
 
-#include "bspline.h"
-#include "itk_image.h"
+#include "itk_image_type.h"
 
 class Bspline_xform;
+class Plm_image_header;
 class Xform;
+class Volume;
 class Volume_header;
 
 enum XFormInternalType {
-    XFORM_NONE			= 0,
-    XFORM_ITK_TRANSLATION	= 1,
-    XFORM_ITK_VERSOR		= 2,
-    XFORM_ITK_QUATERNION	= 3,
-    XFORM_ITK_AFFINE		= 4,
-    XFORM_ITK_BSPLINE		= 5,
-    XFORM_ITK_TPS		= 6,
-    XFORM_ITK_VECTOR_FIELD	= 7,
-    XFORM_GPUIT_BSPLINE		= 8,
-    XFORM_GPUIT_VECTOR_FIELD	= 9
+    XFORM_NONE                  = 0,
+    XFORM_ITK_TRANSLATION       = 1,
+    XFORM_ITK_VERSOR            = 2,
+    XFORM_ITK_QUATERNION        = 3,
+    XFORM_ITK_AFFINE            = 4,
+    XFORM_ITK_BSPLINE           = 5,
+    XFORM_ITK_TPS               = 6,
+    XFORM_ITK_VECTOR_FIELD      = 7,
+    XFORM_GPUIT_BSPLINE         = 8,
+    XFORM_GPUIT_VECTOR_FIELD    = 9
 };
 
 
@@ -54,6 +54,7 @@ typedef itk::ThinPlateSplineKernelTransform <
     double, 3 > DoubleTpsTransformType;
 typedef DoubleTpsTransformType TpsTransformType;
 
+
 class API Xform {
 public:
     XFormInternalType m_type;
@@ -69,149 +70,48 @@ public:
     void* m_gpuit;
 
 public:
-    Xform () {
-	m_gpuit = 0;
-	clear ();
-    }
-    Xform (Xform& xf) {
-	*this = xf;
-    }
-    ~Xform () {
-	clear ();
-    }
-    Xform& operator= (Xform& xf) {
-	m_type = xf.m_type;
-	m_trn = xf.m_trn;
-	m_vrs = xf.m_vrs;
-	m_quat = xf.m_quat;
-	m_aff = xf.m_aff;
-	m_itk_vf = xf.m_itk_vf;
-	m_itk_bsp = xf.m_itk_bsp;
-	m_itk_tps = xf.m_itk_tps;
-	m_gpuit = xf.m_gpuit;                  /* Shallow copy */
-	return *this;
-    }
-    void clear () {
-	if (m_gpuit) {
-	    if (m_type == XFORM_GPUIT_VECTOR_FIELD) {
-		delete (Volume*) m_gpuit;
-	    } else {
-		bspline_xform_free ((Bspline_xform*) m_gpuit);
-	    }
-	    m_gpuit = 0;
-	}
-	m_type = XFORM_NONE;
-	m_trn = 0;
-	m_vrs = 0;
-	m_quat = 0;
-	m_aff = 0;
-	m_itk_bsp = 0;
-	m_itk_tps = 0;
-	m_itk_vf = 0;
-    }
-    TranslationTransformType::Pointer get_trn () {
-	if (m_type != XFORM_ITK_TRANSLATION) {
-	    print_and_exit ("Typecast error in get_trn()\n");
-	}
-	return m_trn;
-    }
-    VersorTransformType::Pointer get_vrs () {
-	if (m_type != XFORM_ITK_VERSOR) {
-	    printf ("Got type = %d\n", m_type);
-	    print_and_exit ("Typecast error in get_vrs ()\n");
-	}
-	return m_vrs;
-    }
-    QuaternionTransformType::Pointer get_quat () {
-	if (m_type != XFORM_ITK_QUATERNION) {
-	    print_and_exit ("Typecast error in get_quat()\n");
-	}
-	return m_quat;
-    }
-    AffineTransformType::Pointer get_aff () {
-	if (m_type != XFORM_ITK_AFFINE) {
-	    print_and_exit ("Typecast error in get_aff()\n");
-	}
-	return m_aff;
-    }
-    BsplineTransformType::Pointer get_itk_bsp () {
-	if (m_type != XFORM_ITK_BSPLINE) {
-	    print_and_exit ("Typecast error in get_itk_bsp()\n");
-	}
-	return m_itk_bsp;
-    }
-    TpsTransformType::Pointer get_itk_tps () {
-	if (m_type != XFORM_ITK_TPS) {
-	    print_and_exit ("Typecast error in get_tps()\n");
-	}
-	return m_itk_tps;
-    }
-    DeformationFieldType::Pointer get_itk_vf () {
-	if (m_type != XFORM_ITK_VECTOR_FIELD) {
-	    print_and_exit ("Typecast error in get_itk_vf()\n");
-	}
-	return m_itk_vf;
-    }
-    Bspline_xform* get_gpuit_bsp () {
-	if (m_type != XFORM_GPUIT_BSPLINE) {
-	    print_and_exit ("Typecast error in get_gpuit_bsp()\n");
-	}
-	return (Bspline_xform*) m_gpuit;
-    }
-    Volume* get_gpuit_vf () {
-	if (m_type != XFORM_GPUIT_VECTOR_FIELD) {
-	    print_and_exit ("Typecast error in get_gpuit_vf()\n");
-	}
-	return (Volume*) m_gpuit;
-    }
-    void set_trn (TranslationTransformType::Pointer trn) {
-	clear ();
-	m_type = XFORM_ITK_TRANSLATION;
-	m_trn = trn;
-    }
-    void set_vrs (VersorTransformType::Pointer vrs) {
-	clear ();
-	m_type = XFORM_ITK_VERSOR;
-	m_vrs = vrs;
-    }
-    void set_quat (QuaternionTransformType::Pointer quat) {
-	clear ();
-	m_type = XFORM_ITK_QUATERNION;
-	m_quat = quat;
-    }
-    void set_aff (AffineTransformType::Pointer aff) {
-	clear ();
-	m_type = XFORM_ITK_AFFINE;
-	m_aff = aff;
-    }
-    void set_itk_bsp (BsplineTransformType::Pointer bsp) {
-	/* Do not clear */
-	m_type = XFORM_ITK_BSPLINE;
-	m_itk_bsp = bsp;
-    }
-    void set_itk_tps (TpsTransformType::Pointer tps) {
-	clear ();
-	m_type = XFORM_ITK_TPS;
-	m_itk_tps = tps;
-    }
-    void set_itk_vf (DeformationFieldType::Pointer vf) {
-	clear ();
-	m_type = XFORM_ITK_VECTOR_FIELD;
-	m_itk_vf = vf;
-    }
-    void set_gpuit_bsp (Bspline_xform* xgb) {
-	clear ();
-	m_type = XFORM_GPUIT_BSPLINE;
-	m_gpuit = (void*) xgb;
-    }
-    void set_gpuit_vf (Volume* vf) {
-	clear ();
-	m_type = XFORM_GPUIT_VECTOR_FIELD;
-	m_gpuit = (void*) vf;
-    }
-  public:
+    Xform ();
+    Xform (Xform& xf);
+    ~Xform ();
+
+    void clear ();
+
+    TranslationTransformType::Pointer get_trn ();
+    VersorTransformType::Pointer get_vrs ();
+    QuaternionTransformType::Pointer get_quat ();
+    AffineTransformType::Pointer get_aff ();
+    BsplineTransformType::Pointer get_itk_bsp ();
+    TpsTransformType::Pointer get_itk_tps ();
+    DeformationFieldType::Pointer get_itk_vf ();
+    Bspline_xform* get_gpuit_bsp ();
+    Volume* get_gpuit_vf ();
+
+    void set_trn (TranslationTransformType::Pointer trn);
+    void set_vrs (VersorTransformType::Pointer vrs);
+    void set_quat (QuaternionTransformType::Pointer quat);
+    void set_aff (AffineTransformType::Pointer aff);
+    void set_itk_bsp (BsplineTransformType::Pointer bsp);
+    void set_itk_tps (TpsTransformType::Pointer tps);
+    void set_itk_vf (DeformationFieldType::Pointer vf);
+    void set_gpuit_bsp (Bspline_xform* xgb);
+    void set_gpuit_vf (Volume* vf);
+
     void get_volume_header (Volume_header *vh);
     void get_grid_spacing (float grid_spacing[3]);
+
+public:
+    Xform& operator= (Xform& xf) {
+        m_type = xf.m_type;
+        m_trn = xf.m_trn;
+        m_vrs = xf.m_vrs;
+        m_quat = xf.m_quat;
+        m_aff = xf.m_aff;
+        m_itk_vf = xf.m_itk_vf;
+        m_itk_bsp = xf.m_itk_bsp;
+        m_itk_tps = xf.m_itk_tps;
+        m_gpuit = xf.m_gpuit;                  /* Shallow copy */
+        return *this;
+    }
 };
 
 

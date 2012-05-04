@@ -7,6 +7,8 @@
 #include <time.h>
 #include "itkImageRegionIterator.h"
 
+#include "plmbase.h"
+
 #include "itk_directions.h"
 #include "itk_volume_header.h"
 #include "plm_image.h"

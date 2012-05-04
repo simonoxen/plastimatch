@@ -4,6 +4,7 @@
 #include "plmbase_config.h"
 #include <string.h>
 
+#include "plmbase.h"
 #include "plmsys.h"
 
 #include "xform.h"

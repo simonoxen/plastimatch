@@ -4,6 +4,8 @@
 #include "plmcli_config.h"
 #include <stdlib.h>
 
+#include "plmbase.h"
+
 #include "pcmd_xf_convert.h"
 #include "plm_clp.h"
 #include "plm_image.h"

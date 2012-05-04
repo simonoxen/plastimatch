@@ -22,6 +22,8 @@
 #include "vf.h"
 #include "vf_convolve.h"
 #include "xpm.h"
+//#include "xform.h"
+//#include "xform_legacy.h"
 
 
 /* That's it for gpuit_EXPORTS */

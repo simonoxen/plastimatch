@@ -6,7 +6,8 @@
 
 #include "plmbase_config.h"
 #include "volume_header.h"
-#include "xform.h"
+
+#include "xform.h"  /* cannot forward declare enum in C++ */
 
 class plastimatch1_EXPORT Xform_convert {
 public:

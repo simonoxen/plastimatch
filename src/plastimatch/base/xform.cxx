@@ -23,6 +23,7 @@
 #include "plm_image_header.h"
 #include "plm_parms.h"
 #include "volume_header.h"
+
 #include "xform.h"
 #include "xform_legacy.h"
 
@@ -32,6 +33,200 @@ itk_bsp_set_grid_img (Xform *xf,
     float* grid_spac);
 static void load_gpuit_bsp (Xform *xf, const char* fn);
 static void itk_xform_load (Xform *xf, const char* fn);
+
+
+Xform::Xform ()
+{
+    m_gpuit = 0;
+    clear ();
+}
+
+Xform::Xform (Xform& xf) {
+    *this = xf;
+}
+
+Xform::~Xform () {
+    clear ();
+}
+
+void
+Xform::clear ()
+{
+    if (m_gpuit) {
+        if (m_type == XFORM_GPUIT_VECTOR_FIELD) {
+            delete (Volume*) m_gpuit;
+        } else {
+            bspline_xform_free ((Bspline_xform*) m_gpuit);
+        }
+        m_gpuit = 0;
+    }
+    m_type = XFORM_NONE;
+    m_trn = 0;
+    m_vrs = 0;
+    m_quat = 0;
+    m_aff = 0;
+    m_itk_bsp = 0;
+    m_itk_tps = 0;
+    m_itk_vf = 0;
+}
+
+/* -----------------------------------------------------------------------
+   Type casting
+   ----------------------------------------------------------------------- */
+TranslationTransformType::Pointer
+Xform::get_trn ()
+{
+    if (m_type != XFORM_ITK_TRANSLATION) {
+        print_and_exit ("Typecast error in get_trn()\n");
+    }
+    return m_trn;
+}
+
+VersorTransformType::Pointer
+Xform::get_vrs ()
+{
+    if (m_type != XFORM_ITK_VERSOR) {
+        printf ("Got type = %d\n", m_type);
+        print_and_exit ("Typecast error in get_vrs ()\n");
+    }
+    return m_vrs;
+}
+
+QuaternionTransformType::Pointer
+Xform::get_quat ()
+{
+    if (m_type != XFORM_ITK_QUATERNION) {
+        print_and_exit ("Typecast error in get_quat()\n");
+    }
+    return m_quat;
+}
+
+AffineTransformType::Pointer
+Xform::get_aff ()
+{
+    if (m_type != XFORM_ITK_AFFINE) {
+        print_and_exit ("Typecast error in get_aff()\n");
+    }
+    return m_aff;
+}
+
+BsplineTransformType::Pointer
+Xform::get_itk_bsp ()
+{
+    if (m_type != XFORM_ITK_BSPLINE) {
+        print_and_exit ("Typecast error in get_itk_bsp()\n");
+    }
+    return m_itk_bsp;
+}
+
+TpsTransformType::Pointer
+Xform::get_itk_tps ()
+{
+    if (m_type != XFORM_ITK_TPS) {
+        print_and_exit ("Typecast error in get_tps()\n");
+    }
+    return m_itk_tps;
+}
+
+DeformationFieldType::Pointer
+Xform::get_itk_vf ()
+{
+    if (m_type != XFORM_ITK_VECTOR_FIELD) {
+        print_and_exit ("Typecast error in get_itk_vf()\n");
+    }
+    return m_itk_vf;
+}
+
+Bspline_xform*
+Xform::get_gpuit_bsp ()
+{
+    if (m_type != XFORM_GPUIT_BSPLINE) {
+        print_and_exit ("Typecast error in get_gpuit_bsp()\n");
+    }
+    return (Bspline_xform*) m_gpuit;
+}
+
+Volume*
+Xform::get_gpuit_vf ()
+{
+    if (m_type != XFORM_GPUIT_VECTOR_FIELD) {
+        print_and_exit ("Typecast error in get_gpuit_vf()\n");
+    }
+    return (Volume*) m_gpuit;
+}
+
+void
+Xform::set_trn (TranslationTransformType::Pointer trn)
+{
+    clear ();
+    m_type = XFORM_ITK_TRANSLATION;
+    m_trn = trn;
+}
+
+void
+Xform::set_vrs (VersorTransformType::Pointer vrs)
+{
+    clear ();
+    m_type = XFORM_ITK_VERSOR;
+    m_vrs = vrs;
+}
+
+void
+Xform::set_quat (QuaternionTransformType::Pointer quat)
+{
+    clear ();
+    m_type = XFORM_ITK_QUATERNION;
+    m_quat = quat;
+}
+
+void
+Xform::set_aff (AffineTransformType::Pointer aff)
+{
+    clear ();
+    m_type = XFORM_ITK_AFFINE;
+    m_aff = aff;
+}
+
+void
+Xform::set_itk_bsp (BsplineTransformType::Pointer bsp)
+{
+    /* Do not clear */
+    m_type = XFORM_ITK_BSPLINE;
+    m_itk_bsp = bsp;
+}
+
+void
+Xform::set_itk_tps (TpsTransformType::Pointer tps)
+{
+    clear ();
+    m_type = XFORM_ITK_TPS;
+    m_itk_tps = tps;
+}
+
+void
+Xform::set_itk_vf (DeformationFieldType::Pointer vf)
+{
+    clear ();
+    m_type = XFORM_ITK_VECTOR_FIELD;
+    m_itk_vf = vf;
+}
+
+void
+Xform::set_gpuit_bsp (Bspline_xform* xgb)
+{
+    clear ();
+    m_type = XFORM_GPUIT_BSPLINE;
+    m_gpuit = (void*) xgb;
+}
+
+void
+Xform::set_gpuit_vf (Volume* vf)
+{
+    clear ();
+    m_type = XFORM_GPUIT_VECTOR_FIELD;
+    m_gpuit = (void*) vf;
+}
+
 
 /* -----------------------------------------------------------------------
    Load/save functions

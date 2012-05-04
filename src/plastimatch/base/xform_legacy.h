@@ -6,8 +6,9 @@
 
 #include "plmbase_config.h"
 #include <stdio.h>
-#include "xform.h"
 
-plastimatch1_EXPORT void xform_legacy_load (Xform *xf, FILE* fp);
+class Xform;
+
+C_API void xform_legacy_load (Xform *xf, FILE* fp);
 
 #endif

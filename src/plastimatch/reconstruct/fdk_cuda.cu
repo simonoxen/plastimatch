@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include "plm_config.h"
+#include "plmreconstruct_config.h"
 
 /****************************************************\
 * Uncomment the line below to enable verbose output. *
@@ -16,25 +16,15 @@
 \**********************************************************/
 //#define TIME_KERNEL
 
-/*****************
-*  C   #includes *
-*****************/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-
-/*****************
-* CUDA #includes *
-*****************/
 #include <cuda.h>
 
 #include "plmbase.h"
 #include "plmsys.h"
 
-/*****************
-* FDK  #includes *
-*****************/
 #include "cuda_util.h"
 #include "fdk_cuda_p.h"
 #include "fdk.h"

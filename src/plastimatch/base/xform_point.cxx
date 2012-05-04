@@ -6,6 +6,8 @@
 #include <string.h>
 #include <time.h>
 
+#include "plmbase.h"
+
 #include "xform_point.h"
 
 /* -----------------------------------------------------------------------

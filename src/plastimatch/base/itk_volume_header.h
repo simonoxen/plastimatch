@@ -5,7 +5,6 @@
 #define _itk_volume_header_h_
 
 #include "plmbase_config.h"
-#include "xform.h"
 #include "itk_image.h"
 
 class plastimatch1_EXPORT Itk_volume_header {
