@@ -224,6 +224,7 @@ save_output (
     bool xf_out_itk,
     int img_out_fmt,
     Plm_image_type img_out_type,
+    float default_value, 
     const char *img_out_fn,
     const char *vf_out_fn
 )
@@ -249,7 +250,6 @@ save_output (
         Plm_image im_warped;
         Plm_image *imp;
         Plm_image_header pih;
-        float default_val = 0.0f;   /* GCS FIX: hard coded. */
 
         if (vf_out_fn[0]) {
             vfp = &vf;
@@ -266,7 +266,7 @@ save_output (
 
         logfile_printf ("Warping...\n");
         plm_warp (imp, vfp, xf_out, &pih, regd->moving_image, 
-            default_val, 0, 1);
+            default_value, 0, 1);
 
         if (img_out_fn[0]) {
             logfile_printf ("Saving image...\n");
@@ -325,8 +325,8 @@ do_registration_stage (
 
     /* Save intermediate output */
     save_output (regd, xf_out, stage->xf_out_fn, stage->xf_out_itk, 
-        stage->img_out_fmt, stage->img_out_type, stage->img_out_fn, 
-        stage->vf_out_fn);
+        stage->img_out_fmt, stage->img_out_type, 
+        stage->default_value, stage->img_out_fn, stage->vf_out_fn);
 }
 
 static void
@@ -465,7 +465,8 @@ do_registration (Registration_parms* regp)
     
         timer3.Start();
         save_output (&regd, xf_out, regp->xf_out_fn, regp->xf_out_itk, 
-            regp->img_out_fmt, regp->img_out_type, regp->img_out_fn, 
+            regp->img_out_fmt, regp->img_out_type, 
+            regp->default_value, regp->img_out_fn, 
             regp->vf_out_fn);
         timer3.Stop();
     

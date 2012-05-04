@@ -27,6 +27,9 @@ configure_file ("${PLM_TESTING_DATA_DIR}/plm-bsp-landmark-a.txt"
 configure_file ("${PLM_TESTING_DATA_DIR}/plm-reg-multi-a.txt"
   "${PLM_BUILD_TESTING_DIR}/plm-reg-multi-a.txt"
   @ONLY)
+configure_file ("${PLM_TESTING_DATA_DIR}/plm-reg-dv-itk-translation.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-dv-itk-translation.txt"
+  @ONLY)
 
 ## -------------------------------------------------------------------------
 ## Testing macros
@@ -1790,7 +1793,7 @@ plm_add_test (
   )
 
 ## -------------------------------------------------------------------------
-## plastimatch register (group 1)
+## plastimatch register (group 1) - basic functionality
 ##   plm-reg-align-center
 ##   plm-reg-itk-translation
 ##   plm-reg-itk-rigid
@@ -2319,7 +2322,7 @@ set_tests_properties (plm-bsp-dcos-b-check PROPERTIES
   DEPENDS plm-bsp-dcos-b-stats)
 
 ## -------------------------------------------------------------------------
-## plastimatch register (group 5)
+## plastimatch register (group 6)
 ##   plm-reg-multi-a      versor, then demons
 ## -------------------------------------------------------------------------
 plm_add_test (
@@ -2347,6 +2350,37 @@ set_tests_properties (plm-reg-multi-a-stats PROPERTIES
   DEPENDS plm-reg-multi-a)
 set_tests_properties (plm-reg-multi-a-check PROPERTIES 
   DEPENDS plm-reg-multi-a-stats)
+
+## -------------------------------------------------------------------------
+## plastimatch register (group 7) - check default value
+##   plm-reg-dv-itk-translation
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-reg-dv-itk-translation"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-dv-itk-translation.txt"
+  )
+plm_add_test (
+  "plm-reg-dv-itk-translation-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-reg-dv-itk-translation-img.nrrd"
+  )
+plmtest_check_interval ("plm-reg-dv-itk-translation-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-dv-itk-translation-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-385.6"
+  "-385.0"
+  )
+set_property (TEST plm-reg-dv-itk-translation APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-reg-dv-itk-translation APPEND PROPERTY DEPENDS gauss-2)
+set_tests_properties (plm-reg-dv-itk-translation-stats PROPERTIES 
+  DEPENDS plm-reg-dv-itk-translation)
+set_tests_properties (plm-reg-dv-itk-translation-check PROPERTIES 
+  DEPENDS plm-reg-dv-itk-translation-stats)
+
+
 
 ## -------------------------------------------------------------------------
 ## plastimatch compose
