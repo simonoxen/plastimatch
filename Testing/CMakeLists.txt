@@ -2576,7 +2576,9 @@ set_tests_properties (plm-resample-c-check PROPERTIES
   DEPENDS plm-resample-c-stats)
 
 ## -------------------------------------------------------------------------
-## plm-thumbnail-a: make png file
+## plm-thumbnail-a: make png file of sphere
+## plm-thumbnail-b: make png file of gauss
+## plm-thumbnail-c: make png file of gauss (auto-adjust)
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-thumbnail-a" 
@@ -2588,18 +2590,64 @@ plm_add_test (
   "plm-thumbnail-a-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-thumbnail-a.mha"
+  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-thumbnail-a.png"
   )
 plmtest_check_interval ("plm-thumbnail-a-check"
   "${PLM_BUILD_TESTING_DIR}/plm-thumbnail-a-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "76.8"
-  "77.0"
+  "76.85"
+  "76.95"
   )
 set_tests_properties (plm-thumbnail-a PROPERTIES DEPENDS sphere-1)
 set_tests_properties (plm-thumbnail-a-stats PROPERTIES DEPENDS plm-thumbnail-a)
 set_tests_properties (plm-thumbnail-a-check PROPERTIES 
   DEPENDS plm-thumbnail-a-stats)
+
+plm_add_test (
+  "plm-thumbnail-b" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "thumbnail;--input;${PLM_BUILD_TESTING_DIR}/gauss-1.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-thumbnail-b.png;--spacing;2"
+  )
+plm_add_test (
+  "plm-thumbnail-b-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-thumbnail-b.png"
+  )
+plmtest_check_interval ("plm-thumbnail-b-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-thumbnail-b-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "0.0"
+  "0.0"
+  )
+set_tests_properties (plm-thumbnail-b PROPERTIES DEPENDS gauss-1)
+set_tests_properties (plm-thumbnail-b-stats PROPERTIES DEPENDS plm-thumbnail-b)
+set_tests_properties (plm-thumbnail-b-check PROPERTIES 
+  DEPENDS plm-thumbnail-b-stats)
+
+plm_add_test (
+  "plm-thumbnail-c" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "thumbnail;--input;${PLM_BUILD_TESTING_DIR}/gauss-1.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-thumbnail-c.png;--spacing;2;--auto-adjust"
+  )
+plm_add_test (
+  "plm-thumbnail-c-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-thumbnail-c.png"
+  )
+plmtest_check_interval ("plm-thumbnail-c-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-thumbnail-c-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "8.1"
+  "8.3"
+  )
+set_tests_properties (plm-thumbnail-c PROPERTIES DEPENDS gauss-1)
+set_tests_properties (plm-thumbnail-c-stats PROPERTIES DEPENDS plm-thumbnail-c)
+set_tests_properties (plm-thumbnail-c-check PROPERTIES 
+  DEPENDS plm-thumbnail-c-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch warp pointset

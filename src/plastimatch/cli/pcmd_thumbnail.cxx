@@ -52,11 +52,7 @@ thumbnail_main (Thumbnail_parms* parms)
     /* Adjust the intensities */
     if (parms->auto_adjust) {
         printf ("Auto-adjusting intensities...\n");
-        Adjustment_list al;
-        al.push_back (std::make_pair (std::numeric_limits<float>::min(), 1.0));
-        al.push_back (std::make_pair (0.0,0.0));
-        al.push_back (std::make_pair (std::numeric_limits<float>::max(), 1.0));
-        itk_adjust (pli->m_itk_float, al);
+        itk_auto_adjust (pli->m_itk_float);
     }
 
     /* Can't write float for these types... */
