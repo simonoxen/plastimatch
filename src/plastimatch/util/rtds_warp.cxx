@@ -10,8 +10,6 @@
 #if GDCM_VERSION_1
 #include "gdcm1_rtss.h"
 #endif
-#include "itk_image_load.h"
-#include "itk_image_save.h"
 #include "plm_image_type.h"
 #include "plm_warp.h"
 #include "pstring.h"

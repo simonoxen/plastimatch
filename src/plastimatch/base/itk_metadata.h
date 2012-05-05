@@ -9,15 +9,13 @@
 /* -----------------------------------------------------------------------
    Function prototypes
    ----------------------------------------------------------------------- */
-plastimatch1_EXPORT void 
-itk_metadata_set (
+API void itk_metadata_set (
     itk::MetaDataDictionary *dict, 
     const char *tag, 
     const char *value
 );
 
-plastimatch1_EXPORT void 
-itk_metadata_print (
+API void itk_metadata_print (
     itk::MetaDataDictionary *dict
 );
 

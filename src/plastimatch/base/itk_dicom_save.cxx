@@ -17,7 +17,6 @@
 #include "gdcm1_util.h"
 #include "gdcm2_util.h"
 #include "metadata.h"
-#include "itk_dicom_save.h"
 #include "make_string.h"
 #include "plm_uid_prefix.h"
 #include "slice_index.h"

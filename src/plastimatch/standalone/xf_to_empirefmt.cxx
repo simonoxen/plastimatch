@@ -12,7 +12,6 @@
 
 #include "plmbase.h"
 
-#include "itk_image_load.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "plm_path.h"

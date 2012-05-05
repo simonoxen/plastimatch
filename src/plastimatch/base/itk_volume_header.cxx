@@ -9,7 +9,6 @@
 
 #include "plmbase.h"
 
-#include "itk_volume_header.h"
 #include "plm_image.h"
 
 /* -----------------------------------------------------------------------

@@ -2,11 +2,12 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
+
+#include "plmbase.h"
+
 #include "dice_statistics.h"
 #include "hausdorff_statistics.h"
-#include "itk_image_load.h"
 #include "pcmd_resample.h"
-#include "itk_resample.h"
 
 void print_usage (void)
 {

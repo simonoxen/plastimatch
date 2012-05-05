@@ -10,8 +10,6 @@
 
 #include "plmbase.h"
 
-#include "itk_image_load.h"
-#include "itk_image_save.h"
 
 int 
 main (int argc, char* argv[])

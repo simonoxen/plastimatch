@@ -4,7 +4,6 @@
 #include "plmcli_config.h"
 #include <stdlib.h>
 
-#include "itk_resample.h"
 #include "pcmd_drr.h"
 #include "plm_clp.h"
 #include "plm_image.h"

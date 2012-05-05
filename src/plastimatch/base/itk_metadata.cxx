@@ -12,9 +12,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "itk_image_cast.h"
-#include "itk_image_load.h"
-#include "itk_image_save.h"
 #include "plm_image.h"
 #include "plm_image_convert.h"
 #include "plm_image_header.h"

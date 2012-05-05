@@ -5,9 +5,7 @@
 #include "plmbase.h"
 
 #include "landmark_warp.h"
-#include "itk_image_save.h"
 #include "itk_point.h"
-#include "itk_pointset.h"
 #include "itk_tps.h"
 #include "itk_warp.h"
 #include "plm_image.h"

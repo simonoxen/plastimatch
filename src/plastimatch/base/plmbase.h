@@ -16,8 +16,18 @@
 #if (!PLM_CUDA_COMPILE)
 #include "itkClampCastImageFilter.h"
 #include "itk_directions.h"
+#include "itk_dicom_load.h"
+#include "itk_dicom_save.h"
 #include "itk_image.h"
+#include "itk_image_cast.h"
+#include "itk_image_load.h"
+#include "itk_image_save.h"
+#include "itk_image_stats.h"
 #include "itk_image_type.h"
+#include "itk_metadata.h"
+#include "itk_pointset.h"
+#include "itk_resample.h"
+#include "itk_volume_header.h"
 #endif
 #include "mha_io.h"
 #include "plm_image_type.h"
@@ -35,10 +45,7 @@
 #if (!PLM_CUDA_COMPILE)
 #include "xform.h"
 #include "xform_legacy.h"
-#endif /* end #if (!PLM_CUDA_COMPILE) */
-
-/* That's it for gpuit_EXPORTS */
-/*   Let's start on the plastimatch1_EXPORTS     */
+#endif
 
 
 #endif

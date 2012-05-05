@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include "itkImageRegionIterator.h"
 
-#include "itk_resample.h"
 #include "pcmd_segment.h"
 #include "plm_clp.h"
 #include "plm_image.h"

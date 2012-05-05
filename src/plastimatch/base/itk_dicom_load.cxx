@@ -12,7 +12,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "itk_dicom_load.h"
 #include "metadata.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */

@@ -12,7 +12,6 @@
 #include "plmbase.h"
 
 #include "plm_image_header.h"
-#include "itk_resample.h"
 
 template <class T>
 T

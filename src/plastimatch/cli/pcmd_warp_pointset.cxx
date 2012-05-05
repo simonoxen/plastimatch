@@ -5,7 +5,6 @@
 
 #include "plmbase.h"
 
-#include "itk_pointset.h"
 #include "pcmd_warp.h"
 #include "pstring.h"
 

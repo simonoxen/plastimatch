@@ -13,7 +13,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "itk_image_load.h"
 #include "pcmd_warp.h"
 #include "plm_path.h"
 

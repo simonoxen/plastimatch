@@ -32,11 +32,9 @@
 #include "itkImageFileWriter.h"
 #include "itkImageIOBase.h"
 
+#include "plmbase.h"
 #include "plmsys.h"
 
-#include "itk_dicom_save.h"
-#include "itk_image_load.h"
-#include "itk_image_save.h"
 #include "getopt.h"
 #include "plm_path.h"
 

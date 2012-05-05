@@ -6,8 +6,9 @@
 #include "itkGaborKernelFunction.h"
 #include "itkImage.h"
 
+#include "plmbase.h"
+
 #include "itk_gabor.h"
-#include "itk_image_save.h"
 #include "plm_image_header.h"
 
 void 

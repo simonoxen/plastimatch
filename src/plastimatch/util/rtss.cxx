@@ -7,8 +7,6 @@
 #include "plmsys.h"
 
 #include "cxt_extract.h"
-#include "itk_image_save.h"
-#include "itk_metadata.h"
 #include "plm_warp.h"
 #include "rasterizer.h"
 #include "slice_index.h"

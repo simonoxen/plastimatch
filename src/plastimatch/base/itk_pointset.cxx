@@ -7,7 +7,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "itk_pointset.h"
 #include "xform_point.h"
 
 /* Don't get confused by the parameterization of the itk pointset.  The 

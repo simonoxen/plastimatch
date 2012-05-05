@@ -13,8 +13,8 @@
 #include "itkBinaryDilateImageFilter.h"
 #include "itkBinaryErodeImageFilter.h"
 
-#include "itk_image_save.h"
-#include "itk_resample.h"
+#include "plmbase.h"
+
 #include "plm_path.h"
 #include "plm_image_header.h"
 #include "segment_body.h"

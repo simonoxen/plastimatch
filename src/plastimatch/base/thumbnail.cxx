@@ -3,9 +3,9 @@
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
 
+#include "plmbase.h"
 #include "plmsys.h"
 
-#include "itk_resample.h"
 #include "thumbnail.h"
 
 Thumbnail::Thumbnail ()

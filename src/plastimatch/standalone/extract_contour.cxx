@@ -12,7 +12,8 @@
 #include "itkImageLinearIteratorWithIndex.h"
 #include "itkImageSliceConstIteratorWithIndex.h"
 
-#include "itk_image_load.h"
+#include "plmbase.h"
+
 #include "slice_extract.h"
 
 /* -----------------------------------------------------------------------

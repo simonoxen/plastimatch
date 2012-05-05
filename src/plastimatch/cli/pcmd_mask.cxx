@@ -5,9 +5,9 @@
 #include <time.h>
 #include "itkImageRegionIterator.h"
 
+#include "plmbase.h"
 #include "plmsys.h"
 
-#include "itk_image_load.h"
 #include "itk_mask.h"
 #include "pcmd_mask.h"
 #include "plm_clp.h"

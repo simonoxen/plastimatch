@@ -10,9 +10,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "itk_image_load.h"
-#include "itk_image_save.h"
-#include "itk_resample.h"
 #include "pcmd_resample.h"
 #include "plm_clp.h"
 #include "plm_file_format.h"

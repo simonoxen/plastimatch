@@ -8,7 +8,6 @@
 
 #include "plmbase.h"
 
-#include "itk_image_load.h"
 #include "plm_image_header.h"
 #include "vf_invert.h"
 

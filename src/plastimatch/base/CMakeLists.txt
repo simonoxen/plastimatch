@@ -23,27 +23,27 @@ set (PLMBASE_LIBRARY_SRC
   hnd_io.cxx
   interpolate.cxx
   itkClampCastImageFilter.txx
-  itk_dicom_load.cxx               #TODO
-  itk_dicom_save.cxx               #TODO
-  itk_directions.cxx               #TODO
+  itk_dicom_load.cxx
+  itk_dicom_save.cxx
+  itk_directions.cxx
   itk_image.cxx
-  itk_image_cast.cxx               #TODO
-  itk_image_load.txx               #TODO
-  itk_image_load_char.cxx          #TODO
-  itk_image_load_double.cxx        #TODO
-  itk_image_load_float.cxx         #TODO
-  itk_image_load_int32.cxx         #TODO
-  itk_image_load_short.cxx         #TODO
-  itk_image_load_uchar.cxx         #TODO
-  itk_image_load_uint32.cxx        #TODO
-  itk_image_load_ushort.cxx        #TODO
-  itk_image_load_vec.cxx           #TODO
-  itk_image_save.cxx               #TODO
-  itk_image_stats.cxx              #TODO
-  itk_pointset.cxx                 #TODO
-  itk_resample.cxx                 #TODO
-  itk_metadata.cxx                 #TODO
-  itk_volume_header.cxx            #TODO
+  itk_image_cast.cxx
+  itk_image_load.txx
+  itk_image_load_char.cxx
+  itk_image_load_double.cxx
+  itk_image_load_float.cxx
+  itk_image_load_int32.cxx
+  itk_image_load_short.cxx
+  itk_image_load_uchar.cxx
+  itk_image_load_uint32.cxx
+  itk_image_load_ushort.cxx
+  itk_image_load_vec.cxx
+  itk_image_save.cxx
+  itk_image_stats.cxx
+  itk_metadata.cxx
+  itk_pointset.cxx
+  itk_resample.cxx
+  itk_volume_header.cxx
   mc_dose.cxx                      #TODO
   metadata.cxx                     #TODO
   mha_io.cxx

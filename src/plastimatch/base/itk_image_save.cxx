@@ -14,8 +14,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "itk_dicom_save.h"
-#include "itk_image_cast.h"
 #include "metadata.h"
 
 #if (defined(_WIN32) || defined(WIN32))

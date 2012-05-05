@@ -5,8 +5,9 @@
 #include <time.h>
 #include "itkImageRegionIterator.h"
 
+#include "plmbase.h"
+
 #include "getopt.h"
-#include "itk_image_save.h"
 #include "pcmd_adjust.h"
 #include "plm_image.h"
 
