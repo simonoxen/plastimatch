@@ -15,7 +15,6 @@
 #include "itkPointSet.h"
 #include "itkThinPlateSplineKernelTransform.h"
 
-#include "itk_image.h"
 #include "itk_warp.h"
 #include "landmark_warp.h"
 

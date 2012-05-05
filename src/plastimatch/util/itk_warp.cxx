@@ -11,7 +11,6 @@
 
 #include "plmsys.h"
 
-#include "itk_image.h"
 #include "itk_image_stats.h"
 #include "ss_img_extract.h"
 #include "ss_img_stats.h"

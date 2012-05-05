@@ -7,7 +7,6 @@
 #include "plm_config.h"
 #include <vector>
 
-#include "cxt_io.h"
 #include "metadata.h"
 #include "plm_image.h"
 #include "plm_path.h"

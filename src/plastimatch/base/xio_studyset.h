@@ -7,7 +7,6 @@
 #include "plmbase_config.h"
 #include <string>
 #include <vector>
-#include "cxt_io.h"
 
 enum Xio_version {
     XIO_VERSION_UNKNOWN,

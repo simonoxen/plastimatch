@@ -2,6 +2,9 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
+
+#include "plmsys.h"
+
 #include "itk_resample.h"
 #include "thumbnail.h"
 

@@ -10,7 +10,6 @@
 #include "plmsys.h"
 
 #include "getopt.h"
-#include "itk_image.h"
 #include "pcmd_compare.h"
 #include "plm_file_format.h"
 #include "plm_image.h"

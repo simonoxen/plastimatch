@@ -4,9 +4,11 @@
 #include "plm_config.h"
 #include "itkImageRegionIterator.h"
 
+#include "plmbase.h"
+
+#include "plm_image.h"
 #include "autolabel_thumbnailer.h"
 #include "dlib_trainer.h"
-#include "itk_image.h"
 #include "thumbnail.h"
 
 Autolabel_thumbnailer::Autolabel_thumbnailer ()

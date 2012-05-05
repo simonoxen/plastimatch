@@ -16,7 +16,6 @@
 
 #include "plmsys.h"
 
-#include "itk_image.h"
 #include "itk_resample.h"
 #include "plm_parms.h"
 #include "registration_data.h"

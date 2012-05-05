@@ -7,8 +7,8 @@
 #include "plmcli_config.h"
 #include <string.h>
 #include <stdlib.h>
-#include "itk_image.h"
 #include "pstring.h"
+#include "plm_image_type.h"
 
 class Adjust_Parms {
 public:

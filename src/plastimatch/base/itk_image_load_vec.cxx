@@ -2,7 +2,9 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
-#include "itk_image.h"
+
+#include "plmbase.h"
+
 #include "itk_image_load.h"
 #include "itk_image_load.txx"
 

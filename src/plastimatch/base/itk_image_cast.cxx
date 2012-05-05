@@ -11,12 +11,13 @@
 #else
 #include <dirent.h>
 #endif
+
+#include "plmbase.h"
+
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
-#include "itkClampCastImageFilter.h"
 #include "itkOrientImageFilter.h"
-#include "itk_image.h"
 
 #if (defined(_WIN32) || defined(WIN32))
 #define snprintf _snprintf

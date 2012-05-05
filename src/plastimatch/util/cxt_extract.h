@@ -5,9 +5,13 @@
 #define _cxt_extract_h_
 
 #include "plm_config.h"
-#include "cxt_io.h"
 
-template<class T> void cxt_extract (Rtss_polyline_set *cxt, T image,
-    int num_structs, bool check_cxt_bits);
+class Rtss_polyline_set;
+
+template<class T> void cxt_extract (
+        Rtss_polyline_set *cxt, T image,
+        int num_structs,
+        bool check_cxt_bits
+);
 
 #endif

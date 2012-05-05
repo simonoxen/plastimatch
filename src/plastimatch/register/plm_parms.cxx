@@ -18,7 +18,6 @@
 
 #include "plmsys.h"
 
-#include "itk_image.h"
 #include "itk_optim.h"
 #include "plm_parms.h"
 

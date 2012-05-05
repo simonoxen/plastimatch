@@ -7,9 +7,9 @@
 #include "itkImageFileWriter.h"
 #include "itkResampleImageFilter.h"
 
+#include "plmbase.h"
 #include "plmsys.h"
 
-#include "itk_image.h"
 #include "itk_image_load.h"
 #include "itk_image_save.h"
 #include "itk_resample.h"

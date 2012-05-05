@@ -5,7 +5,7 @@
 #define _itk_image_cast_h_
 
 #include "plmbase_config.h"
-#include "itk_image.h"
+#include "itk_image_type.h"
 
 /* -----------------------------------------------------------------------
    Function prototypes

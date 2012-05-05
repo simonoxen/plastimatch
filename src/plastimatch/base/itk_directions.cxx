@@ -2,7 +2,8 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
-#include "itk_directions.h"
+
+#include "plmbase.h"
 
 void
 itk_direction_from_dc (DirectionType* itk_dc, const Direction_cosines& dc)

@@ -8,8 +8,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "itk_directions.h"
-#include "itk_image.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 

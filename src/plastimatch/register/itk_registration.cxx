@@ -25,7 +25,6 @@
 
 #include "compiler_warnings.h"
 #include "itk_demons.h"
-#include "itk_image.h"
 #include "itk_optim.h"
 #include "itk_resample.h"
 #include "itk_warp.h"

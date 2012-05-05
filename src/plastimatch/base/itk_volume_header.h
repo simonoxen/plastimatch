@@ -5,9 +5,9 @@
 #define _itk_volume_header_h_
 
 #include "plmbase_config.h"
-#include "itk_image.h"
+#include "itk_image_type.h"
 
-class plastimatch1_EXPORT Itk_volume_header {
+class API Itk_volume_header {
 public:
     ImageRegionType m_region;
     OriginType m_origin;

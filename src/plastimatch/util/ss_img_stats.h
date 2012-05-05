@@ -4,13 +4,9 @@
 #ifndef _ss_img_stats_h_
 #define _ss_img_stats_h_
 
-#include "plm_config.h"
-#include "itk_image.h"
+#include "plmutil_config.h"
+#include "itk_image_type.h"
 
-plastimatch1_EXPORT
-void
-ss_img_stats (
-    UCharVecImageType::Pointer img
-);
+C_API void ss_img_stats (UCharVecImageType::Pointer img);
 
 #endif

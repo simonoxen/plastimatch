@@ -12,7 +12,7 @@
 #include "plm_config.h"
 #include "itkImageFileReader.h"
 #include "itkImage.h"
-#include "itk_image.h"
+#include "itk_image_type.h"
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkImageSliceConstIteratorWithIndex.h"
 //#include "slice_extract.h"

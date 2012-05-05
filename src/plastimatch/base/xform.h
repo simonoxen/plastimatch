@@ -12,7 +12,6 @@
 #include "itkBSplineDeformableTransform.h"
 #include "itkThinPlateSplineKernelTransform.h"
 
-
 #include "itk_image_type.h"
 
 class Bspline_xform;

@@ -9,7 +9,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "astroid_dose.h"
 #include "cxt_extract.h"
 #if GDCM_VERSION_1
 #include "gdcm1_series.h"

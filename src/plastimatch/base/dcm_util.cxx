@@ -6,7 +6,8 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "dcm_util.h"
+#include "plmbase.h"
+
 #include "gdcm1_rdd.h"
 #include "make_string.h"
 

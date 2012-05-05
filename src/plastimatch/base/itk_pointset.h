@@ -8,8 +8,6 @@
 #include "itkPointSet.h"
 #include "itkDefaultStaticMeshTraits.h"
 
-#include "itk_image.h"
-
 class Point;
 template<class T> class Pointset;
 class Xform;

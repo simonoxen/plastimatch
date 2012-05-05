@@ -9,9 +9,9 @@
 #include "itkMetaDataDictionary.h"
 #include "itkMetaDataObject.h"
 
+#include "plmbase.h"
 #include "plmsys.h"
 
-#include "itk_image.h"
 #include "itk_image_cast.h"
 #include "itk_image_load.h"
 #include "itk_image_save.h"

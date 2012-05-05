@@ -6,7 +6,9 @@
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
-#include "itk_image.h"
+
+#include "plmbase.h"
+
 #include "slice_extract.h"
 
 template<class T>

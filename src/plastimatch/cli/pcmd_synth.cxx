@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include <vector>
 
-#include "itk_image.h"
 #include "itk_image_save.h"
 #include "plm_math.h"
 #include "plm_clp.h"

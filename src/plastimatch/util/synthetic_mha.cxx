@@ -8,8 +8,8 @@
 #include <stdlib.h>
 #include "itkImageRegionIteratorWithIndex.h"
 
-#include "itk_directions.h"
-#include "itk_image.h"
+#include "plmbase.h"
+
 #include "plm_math.h"
 #include "rtds.h"
 #include "rtss.h"

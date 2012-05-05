@@ -4,13 +4,12 @@
 #ifndef _itk_gabor_h_
 #define _itk_gabor_h_
 
-#include "plm_config.h"
-#include "itk_image.h"
+#include "plmutil_config.h"
+#include "itk_image_type.h"
 
-plastimatch1_EXPORT 
-void itk_gabor (FloatImageType::Pointer image);
-plastimatch1_EXPORT 
-FloatImageType::Pointer
-itk_gabor_create (const Plm_image_header *pih);
+class Plm_image_header;
+
+C_API void itk_gabor (FloatImageType::Pointer image);
+C_API FloatImageType::Pointer itk_gabor_create (const Plm_image_header *pih);
 
 #endif

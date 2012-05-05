@@ -10,7 +10,6 @@
 #include "plm_HausdorffDistanceImageFilter.h"
 #include "itkImage.h"
 
-#include "itk_image.h"
 #include "hausdorff_statistics.h"
 #include "plm_ContourMeanDistanceImageFilter.h"
 

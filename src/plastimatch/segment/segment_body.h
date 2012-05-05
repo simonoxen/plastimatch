@@ -4,11 +4,11 @@
 #ifndef _segment_body_h_
 #define _segment_body_h_
 
-#include "plm_config.h"
-#include "itk_image.h"
-#include "plm_image.h"
+#include "plmsegment_config.h"
 
-class plastimatch1_EXPORT Segment_body {
+class Plm_image;
+
+class API Segment_body {
   public:
     Plm_image *img_in;
     Plm_image *img_out;
@@ -23,10 +23,10 @@ class plastimatch1_EXPORT Segment_body {
 
   public:
     Segment_body () {
-	m_bot_given = false;
-	m_debug = false;
-	m_fast = false;
-	m_lower_threshold = -300;
+        m_bot_given = false;
+        m_debug = false;
+        m_fast = false;
+        m_lower_threshold = -300;
     }
     void do_segmentation ();
     UCharImageType::Pointer threshold_patient (FloatImageType::Pointer i1);

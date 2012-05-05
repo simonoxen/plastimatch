@@ -7,7 +7,6 @@
 #include "plmcli_config.h"
 #include <string.h>
 #include <stdlib.h>
-#include "itk_image.h"
 #include "plm_path.h"
 #include "pstring.h"
 

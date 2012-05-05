@@ -12,9 +12,11 @@
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkImageSliceConstIteratorWithIndex.h"
 
+#include "plmbase.h"
+#include "plmsys.h"
+
 #include "compiler_warnings.h"
 #include "dice_statistics.h"
-#include "itk_image.h"
 
 template<class T>
 float do_dice (

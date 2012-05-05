@@ -5,7 +5,6 @@
 #define _rtss_h_
 
 #include "plm_config.h"
-#include "itk_image.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "pstring.h"

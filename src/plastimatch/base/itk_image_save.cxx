@@ -11,9 +11,9 @@
 #include "itkImageFileWriter.h"
 #include "itkOrientImageFilter.h"
 
+#include "plmbase.h"
 #include "plmsys.h"
 
-#include "itk_image.h"
 #include "itk_dicom_save.h"
 #include "itk_image_cast.h"
 #include "metadata.h"

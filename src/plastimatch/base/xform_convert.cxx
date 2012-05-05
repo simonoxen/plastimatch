@@ -8,7 +8,6 @@
 #include "plmsys.h"
 
 #include "plm_image_header.h"
-#include "itk_image.h"
 #include "xform_convert.h"
 
 void 

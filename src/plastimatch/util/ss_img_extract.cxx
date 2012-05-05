@@ -9,7 +9,6 @@
 #include "plmsys.h"
 
 #include "itkImage.h"
-#include "itk_image.h"
 #include "itkAndConstantToImageFilter.h"
 #include "plm_image.h"
 

@@ -6,9 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "plmbase.h"
 #include "plmsys.h"
 
-#include "cxt_io.h"
 #include "metadata.h"
 #include "plm_math.h"
 #include "plm_image_header.h"

@@ -4,8 +4,9 @@
 #include "plm_config.h"
 #include <stdio.h>
 
+#include "plmbase.h"
+
 #include "itk_gabor.h"
-#include "itk_image.h"
 #include "itk_image_load.h"
 #include "itk_image_save.h"
 #include "plm_image_header.h"

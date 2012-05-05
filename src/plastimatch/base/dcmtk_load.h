@@ -4,15 +4,13 @@
 #ifndef _dcmtk_load_h_
 #define _dcmtk_load_h_
 
-#include "plm_config.h"
-#include "itk_image.h"
+#include "plmbase_config.h"
+#include "itk_image_type.h"
 
 class Rtds;
 
-plastimatch1_EXPORT
-ShortImageType::Pointer dcmtk_load (const char *dicom_dir);
+API ShortImageType::Pointer dcmtk_load (const char *dicom_dir);
 
-void
-dcmtk_rtds_load (Rtds *rtds, const char *dicom_dir);
+void dcmtk_rtds_load (Rtds *rtds, const char *dicom_dir);
 
 #endif

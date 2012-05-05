@@ -10,7 +10,6 @@
 #include "plmsys.h"
 
 #include "dvh.h"
-#include "itk_image.h"
 #include "make_string.h"
 #include "plm_image.h"
 #include "rtds.h"

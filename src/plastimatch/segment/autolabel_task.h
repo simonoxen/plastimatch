@@ -6,7 +6,6 @@
 
 #include "plm_config.h"
 #include "dlib_trainer.h"
-#include "itk_image.h"
 #include "pstring.h"
 
 class Autolabel_task {

@@ -4,10 +4,10 @@
 #ifndef _gamma_analysis_h_
 #define _gamma_analysis_h_
 
-#include "plm_config.h"
+#include "plmutil_config.h"
 #include "direction_cosines.h"
-#include "itk_image.h"
-#include "plm_image.h"
+
+class Plm_image;
 
 class Gamma_parms {
 public:
@@ -31,7 +31,7 @@ public:
     }
 };
 
-plastimatch1_EXPORT void find_dose_threshold (Gamma_parms *parms);
-plastimatch1_EXPORT void do_gamma_analysis (Gamma_parms *parms);
+C_API void find_dose_threshold (Gamma_parms *parms);
+C_API void do_gamma_analysis (Gamma_parms *parms);
 
 #endif

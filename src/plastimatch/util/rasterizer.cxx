@@ -11,7 +11,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "cxt_io.h"
 #include "plm_math.h"
 #include "plm_image.h"
 #include "plm_image_header.h"

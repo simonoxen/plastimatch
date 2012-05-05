@@ -5,10 +5,11 @@
 #define _thumbnail_h_
 
 #include "plmbase_config.h"
-#include "itk_image.h"
-#include "plm_image.h"
+#include "itk_image_type.h"
 
-class plastimatch1_EXPORT Thumbnail {
+class Plm_image;
+
+class API Thumbnail {
 public:
     Plm_image *pli;
     float origin[3];

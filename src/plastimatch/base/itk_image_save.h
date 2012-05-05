@@ -6,7 +6,7 @@
 
 #include "plmbase_config.h"
 
-#include "itk_image.h"
+#include "itk_image_type.h"
 
 class Metadata;
 class Slice_index;

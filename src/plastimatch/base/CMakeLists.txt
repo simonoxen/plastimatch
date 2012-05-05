@@ -14,19 +14,19 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 ##  SOURCE FILES
 ##-----------------------------------------------------------------------------
 set (PLMBASE_LIBRARY_SRC
-  astroid_dose.cxx                 #TODO
+  astroid_dose.cxx
   bspline_xform.cxx
-  cxt_io.cxx                       #TODO
-  dcm_util.cxx                     #TODO
+  cxt_io.cxx
+  dcm_util.cxx
   dicom.dic
-  exchkeys.cxx                     #TODO
-  hnd_io.cxx                       #TODO
+  exchkeys.cxx
+  hnd_io.cxx
   interpolate.cxx
-  itkClampCastImageFilter.txx      #TODO
+  itkClampCastImageFilter.txx
   itk_dicom_load.cxx               #TODO
   itk_dicom_save.cxx               #TODO
   itk_directions.cxx               #TODO
-  itk_image.cxx                    #TODO
+  itk_image.cxx
   itk_image_cast.cxx               #TODO
   itk_image_load.txx               #TODO
   itk_image_load_char.cxx          #TODO

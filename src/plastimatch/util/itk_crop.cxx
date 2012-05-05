@@ -5,7 +5,8 @@
 #include "itkExtractImageFilter.h"
 #include "itkImage.h"
 
-#include "itk_image.h"
+#include "plmbase.h"
+
 #include "itk_crop.h"
 
 template <class T>

@@ -12,12 +12,12 @@
 #include "itkNumericSeriesFileNames.h"
 #include "itkImageSeriesWriter.h"
 
-#include "dcm_util.h"
+#include "plmbase.h"
+
 #include "gdcm1_util.h"
 #include "gdcm2_util.h"
 #include "metadata.h"
 #include "itk_dicom_save.h"
-#include "itk_image.h"
 #include "make_string.h"
 #include "plm_uid_prefix.h"
 #include "slice_index.h"

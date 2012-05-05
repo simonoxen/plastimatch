@@ -11,7 +11,6 @@
 #include "plmsys.h"
 
 #include "pstring.h"
-#include "itk_image.h"
 #include "itk_image_load.h"
 #include "pcmd_probe.h"
 #include "plm_clp.h"

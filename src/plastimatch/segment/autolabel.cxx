@@ -13,7 +13,6 @@
 #include "autolabel_ransac_est.h"
 #include "autolabel_thumbnailer.h"
 #include "dlib_trainer.h"
-#include "itk_image.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "pstring.h"

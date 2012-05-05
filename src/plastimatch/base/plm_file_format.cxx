@@ -12,7 +12,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "itk_image.h"
 #include "plm_file_format.h"
 #include "xio_dir.h"
 

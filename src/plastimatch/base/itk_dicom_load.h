@@ -5,7 +5,7 @@
 #define _itk_dicom_load_h_
 
 #include "plmbase_config.h"
-#include "itk_image.h"
+#include "itk_image_type.h"
 
 CharImageType::Pointer load_dicom_char (const char *dicom_dir);
 UCharImageType::Pointer load_dicom_uchar (const char *dicom_dir);

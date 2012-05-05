@@ -3,7 +3,6 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include "itkImageRegionIterator.h"
-#include "itk_image.h"
 #include "itk_mask.h"
 
 template <class T>

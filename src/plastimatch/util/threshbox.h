@@ -4,10 +4,10 @@
 #ifndef _threshbox_h_
 #define _threshbox_h_
 
-#include "plm_config.h"
+#include "plmutil_config.h"
 #include "direction_cosines.h"
-#include "itk_image.h"
-#include "plm_image.h"
+
+class Plm_image;
 
 class Threshbox_parms {
 public:
@@ -45,8 +45,8 @@ public:
     }
 };
 
-plastimatch1_EXPORT void do_threshbox (Threshbox_parms *parms);
-plastimatch1_EXPORT void do_overlap_fraction (Threshbox_parms *parms);
-plastimatch1_EXPORT void do_multi_threshold (Threshbox_parms *parms);
+C_API void do_threshbox (Threshbox_parms *parms);
+C_API void do_overlap_fraction (Threshbox_parms *parms);
+C_API void do_multi_threshold (Threshbox_parms *parms);
 
 #endif

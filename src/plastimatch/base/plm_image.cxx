@@ -13,7 +13,6 @@
 #include "plmsys.h"
 
 #include "dcmtk_load.h"
-#include "itk_image.h"
 #include "itk_image_cast.h"
 #include "itk_image_load.h"
 #include "itk_image_save.h"

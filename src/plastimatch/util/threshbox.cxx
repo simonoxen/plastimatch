@@ -1,15 +1,16 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include "plm_config.h"
+#include "plmutil_config.h"
 #include <algorithm>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "itkImageRegionIteratorWithIndex.h"
 
-#include "itk_directions.h"
-#include "itk_image.h"
+#include "plmbase.h"
+
+#include "plm_image.h"
 #include "plm_math.h"
 #include "threshbox.h"
 #include "plm_image_header.h"

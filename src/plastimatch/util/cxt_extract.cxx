@@ -16,7 +16,6 @@
 #include "plmsys.h"
 
 #include "cxt_extract.h"
-#include "itk_image.h"
 #include "rtss_polyline_set.h"
 #include "rtss_structure.h"
 #include "slice_extract.h"

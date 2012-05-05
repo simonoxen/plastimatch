@@ -9,7 +9,6 @@
 #include "plmsys.h"
 
 #include "getopt.h"
-#include "itk_image.h"
 #include "itk_image_save.h"
 #include "itk_image_stats.h"
 #include "pcmd_diff.h"

@@ -10,7 +10,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "itk_directions.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "volume_header.h"

@@ -6,9 +6,11 @@
 
 #include "plm_config.h"
 #include "plmbase.h"
-#include "cxt_io.h"
-#include "itk_image.h"
-#include "plm_image_header.h"
+
+#include "itk_image_type.h"
+
+class Rtss_polyline_set;
+class Plm_image_header;
 
 class plastimatch1_EXPORT Rasterizer {
   public:

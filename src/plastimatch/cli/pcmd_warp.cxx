@@ -6,9 +6,9 @@
 #include <stdio.h>
 #include <time.h>
 
+#include "plmbase.h"
 #include "plmsys.h"
 
-#include "cxt_io.h"
 #include "gdcm1_rtss.h"
 #include "plm_clp.h"
 #include "plm_file_format.h"

@@ -6,8 +6,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <gdcmFile.h>
+
+#include "plmbase.h"
+
 #include "bstrlib.h"
-#include "dcm_util.h"
 #include "metadata.h"
 #include "make_string.h"
 

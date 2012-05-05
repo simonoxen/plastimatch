@@ -5,7 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "dcm_util.h"
+#include "plmbase.h"
+
 #include "plm_math.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"

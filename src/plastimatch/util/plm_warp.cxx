@@ -8,7 +8,6 @@
 #include "plmsys.h"
 #include "plmutil.h"
 
-#include "itk_image.h"
 #include "itk_warp.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
