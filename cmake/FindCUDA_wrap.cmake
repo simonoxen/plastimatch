@@ -11,12 +11,18 @@ else ()
   # Make nvcc less whiny
   if (CMAKE_COMPILER_IS_GNUCC)
     set (CUDA_PROPAGATE_HOST_FLAGS OFF)
-    if (CMAKE_C_FLAGS)
-      set (CUDA_NVCC_FLAGS --compiler-options ${CMAKE_C_FLAGS})
-    endif ()
+    set (CUDA_CXX_FLAGS ${CUDA_CXX_FLAGS} ${CMAKE_CXX_FLAGS})
   endif ()
-
   find_package (CUDA QUIET)
+endif ()
+
+# ITK headers cannot be processed by nvcc, so we define
+# PLM_CUDA_COMPILE for the purpose of guarding
+# (see base/plmbase.h)
+set (CUDA_CXX_FLAGS ${CUDA_CXX_FLAGS};-DPLM_CUDA_COMPILE)
+
+if (CUDA_CXX_FLAGS)
+    set (CUDA_NVCC_FLAGS --compiler-options ${CUDA_CXX_FLAGS})
 endif ()
 
 set (CUDA_FOUND ${CUDA_FOUND} CACHE BOOL "Did we find cuda?")

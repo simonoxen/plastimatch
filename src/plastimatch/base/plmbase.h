@@ -22,8 +22,10 @@
 #include "vf.h"
 #include "vf_convolve.h"
 #include "xpm.h"
-//#include "xform.h"
-//#include "xform_legacy.h"
+#if (!PLM_CUDA_COMPILE)
+#include "xform.h"
+#include "xform_legacy.h"
+#endif /* end #if (!PLM_CUDA_COMPILE) */
 
 
 /* That's it for gpuit_EXPORTS */
