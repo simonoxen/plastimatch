@@ -9,7 +9,6 @@
 #include "plmsys.h"
 
 #include "plm_image.h"
-#include "plm_image_header.h"
 
 /* -----------------------------------------------------------------------
    Standard 3D image conversion

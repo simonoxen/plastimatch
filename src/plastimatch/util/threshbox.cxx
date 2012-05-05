@@ -13,7 +13,6 @@
 #include "plm_image.h"
 #include "plm_math.h"
 #include "threshbox.h"
-#include "plm_image_header.h"
 
 void do_threshbox( Threshbox_parms *parms) {
 

@@ -10,7 +10,6 @@
 #include "direction_cosines.h"
 #include "metadata.h"
 #include "plm_image.h"
-#include "plm_image_type.h"
 #include "xio_ct.h"
 
 typedef struct astroid_dose_header Astroid_dose_header;

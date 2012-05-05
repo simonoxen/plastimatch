@@ -10,7 +10,6 @@
 #if GDCM_VERSION_1
 #include "gdcm1_rtss.h"
 #endif
-#include "plm_image_type.h"
 #include "plm_warp.h"
 #include "pstring.h"
 #include "slice_index.h"

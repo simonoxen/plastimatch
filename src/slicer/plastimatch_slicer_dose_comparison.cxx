@@ -5,8 +5,9 @@
 
 #include "plastimatch_slicer_dose_comparisonCLP.h"
 
+#include "plmbase.h"
+
 #include "plm_image.h"
-#include "plm_file_format.h"
 #include "itk_image.h"
 #include "itk_image_save.h"
 #include "pstring.h"

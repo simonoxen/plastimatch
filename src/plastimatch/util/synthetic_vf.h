@@ -7,6 +7,10 @@
 #include "plm_config.h"
 #include "plm_image_header.h"
 
+// TODO: change type of pih to Plm_image_header*
+
+//class Plm_image_header;
+
 class Synthetic_vf_parms {
 public:
     enum Pattern {

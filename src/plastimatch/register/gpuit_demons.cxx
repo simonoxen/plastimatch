@@ -10,7 +10,6 @@
 
 #include "demons.h"
 #include "plm_config.h"
-#include "plm_image_header.h"
 #include "plm_stages.h"
 #include "registration_data.h"
 

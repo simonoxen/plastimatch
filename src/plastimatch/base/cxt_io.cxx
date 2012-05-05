@@ -11,7 +11,6 @@
 
 #include "metadata.h"
 #include "plm_math.h"
-#include "plm_image_header.h"
 #include "pstring.h"
 #include "rtss.h"
 #include "rtss_polyline_set.h"

@@ -15,13 +15,13 @@
 #include "itkRegularExpressionSeriesFileNames.h"
 #include "bstrlib.h"
 
+#include "plmbase.h"
 #include "plmsys.h"
 
 #if GDCM_VERSION_1
 #include "gdcm1_series.h"
 #endif
 #include "plm_image.h"
-#include "plm_image_type.h"
 #include "slice_index.h"
 #include "rtss_polyline_set.h"
 #include "xio_ct.h"

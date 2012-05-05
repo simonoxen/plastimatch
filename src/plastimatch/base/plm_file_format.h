@@ -23,17 +23,9 @@ enum Plm_file_format {
     PLM_FILE_FMT_SS_IMG_VEC
 };
 
-plastimatch1_EXPORT
-Plm_file_format
-plm_file_format_deduce (const char* path);
-plastimatch1_EXPORT
-char*
-plm_file_format_string (Plm_file_format file_type);
-plastimatch1_EXPORT
-Plm_file_format 
-plm_file_format_parse (const char* string);
-plastimatch1_EXPORT
-Plm_file_format 
-plm_file_format_from_extension (const char* filename);
+API Plm_file_format plm_file_format_deduce (const char* path);
+API char* plm_file_format_string (Plm_file_format file_type);
+API Plm_file_format plm_file_format_parse (const char* string);
+API Plm_file_format plm_file_format_from_extension (const char* filename);
 
 #endif

@@ -14,7 +14,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "plm_image_header.h"
 #include "volume_header.h"
 
 #if (defined(_WIN32) || defined(WIN32))

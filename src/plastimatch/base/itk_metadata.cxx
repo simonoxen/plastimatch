@@ -13,8 +13,6 @@
 #include "plmsys.h"
 
 #include "plm_image.h"
-#include "plm_image_convert.h"
-#include "plm_image_header.h"
 
 void 
 itk_metadata_set (

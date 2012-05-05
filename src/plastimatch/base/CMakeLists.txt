@@ -47,11 +47,11 @@ set (PLMBASE_LIBRARY_SRC
   mc_dose.cxx                      #TODO
   metadata.cxx                     #TODO
   mha_io.cxx
-  plm_file_format.cxx              #TODO
+  plm_file_format.cxx
   plm_image.cxx                    #TODO
-  plm_image_convert.cxx            #TODO
-  plm_image_header.cxx             #TODO
-  plm_image_type.cxx               #TODO
+  plm_image_convert.cxx
+  plm_image_header.cxx
+  plm_image_type.cxx
   pointset.cxx
   raw_pointset.cxx
   ray_trace_exact.cxx

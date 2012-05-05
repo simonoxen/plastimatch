@@ -8,7 +8,6 @@
 #include "pcmd_thumbnail.h"
 #include "plm_clp.h"
 #include "plm_image.h"
-#include "plm_image_header.h"
 #include "thumbnail.h"
 
 class Thumbnail_parms {

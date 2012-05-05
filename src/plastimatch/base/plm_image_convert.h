@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _itk_image_convert_h_
-#define _itk_image_convert_h_
+#ifndef _plm_image_convert_h_
+#define _plm_image_convert_h_
 
 #include "plmbase_config.h"
 

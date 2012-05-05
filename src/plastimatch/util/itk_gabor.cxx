@@ -9,7 +9,6 @@
 #include "plmbase.h"
 
 #include "itk_gabor.h"
-#include "plm_image_header.h"
 
 void 
 itk_gabor (FloatImageType::Pointer image)

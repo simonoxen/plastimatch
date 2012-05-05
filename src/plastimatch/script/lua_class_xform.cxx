@@ -22,7 +22,6 @@ extern "C"
 #include "lua_util.h"
 #include "pcmd_script.h"
 #include "plm_image.h"
-#include "plm_image_header.h"
 #include "plm_warp.h"
 #include "xform_convert.h"
 

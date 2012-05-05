@@ -8,11 +8,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "plmbase.h"
 #include "plmsys.h"
 
 #include "plm_math.h"
 #include "metadata.h"
-#include "plm_image_header.h"
 #include "pstring.h"
 #include "rtss_polyline_set.h"
 #include "rtss_structure.h"

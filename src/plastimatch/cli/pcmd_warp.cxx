@@ -11,8 +11,6 @@
 
 #include "gdcm1_rtss.h"
 #include "plm_clp.h"
-#include "plm_file_format.h"
-#include "plm_image_header.h"
 #include "plm_warp.h"
 #include "pstring.h"
 #include "rtds.h"

@@ -8,6 +8,7 @@
 #include "dcmtk/ofstd/ofstream.h"
 #include "dcmtk/dcmdata/dctk.h"
 
+#include "plmbase.h"
 #include "plmsys.h"
 
 #include "dcmtk_file.h"
@@ -15,7 +16,6 @@
 #include "dcmtk_uid.h"
 #include "plm_math.h"
 #include "plm_image.h"
-#include "plm_image_type.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "rtds.h"

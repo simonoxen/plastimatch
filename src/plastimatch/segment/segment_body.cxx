@@ -16,7 +16,6 @@
 #include "plmbase.h"
 
 #include "plm_path.h"
-#include "plm_image_header.h"
 #include "segment_body.h"
 
 /* Thresholds for finding patient & couch */

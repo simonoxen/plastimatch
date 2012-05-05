@@ -8,11 +8,14 @@
 #include "plm_image.h"
 #include "plm_image_header.h"
 
+// TODO: change type of m_pih to Plm_image_header*
+
+//class Plm_image_header;
 class Xform;
 typedef struct raw_pointset Raw_pointset;
 
 
-class plastimatch1_EXPORT Landmark_warp
+class API Landmark_warp
 {
 public:
     /* Inputs */
@@ -46,23 +49,12 @@ public:
     );
 };
 
-#if defined __cplusplus
-extern "C" {
-#endif
-
-gpuit_EXPORT Landmark_warp*
-landmark_warp_create (void);
-gpuit_EXPORT void
-landmark_warp_destroy (Landmark_warp *lw);
-gpuit_EXPORT 
-Landmark_warp*
-landmark_warp_load_xform (const char *fn);
-gpuit_EXPORT 
-Landmark_warp*
-landmark_warp_load_pointsets (const char *fixed_lm_fn, const char *moving_lm_fn);
-
-#if defined __cplusplus
-}
-#endif
+C_API Landmark_warp* landmark_warp_create (void);
+C_API void landmark_warp_destroy (Landmark_warp *lw);
+C_API Landmark_warp* landmark_warp_load_xform (const char *fn);
+C_API Landmark_warp* landmark_warp_load_pointsets (
+        const char *fixed_lm_fn,
+        const char *moving_lm_fn
+);
 
 #endif

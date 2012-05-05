@@ -11,7 +11,6 @@
 #include "plmsys.h"
 
 #include "plm_image.h"
-#include "plm_image_header.h"
 #include "volume_header.h"
 
 /* -----------------------------------------------------------------------

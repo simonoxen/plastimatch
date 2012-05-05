@@ -11,7 +11,6 @@
 
 #include "getopt.h"
 #include "pcmd_compare.h"
-#include "plm_file_format.h"
 #include "plm_image.h"
 
 void

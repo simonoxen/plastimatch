@@ -20,7 +20,6 @@
 
 #include "metadata.h"
 #include "plm_image.h"
-#include "plm_image_type.h"
 #include "rtss_polyline_set.h"
 #include "xio_ct.h"
 #include "xio_dose.h"

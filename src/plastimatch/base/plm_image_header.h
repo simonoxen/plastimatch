@@ -13,7 +13,7 @@ class Plm_image_header;
 class Plm_image;
 class Volume_header;
 
-class plastimatch1_EXPORT Plm_image_header {
+class API Plm_image_header {
   public:
     OriginType m_origin;
     SpacingType m_spacing;

@@ -8,7 +8,6 @@
 
 #include "plmbase.h"
 
-#include "plm_image_header.h"
 #include "vf_invert.h"
 
 #define round_int(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))

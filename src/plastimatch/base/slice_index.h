@@ -7,8 +7,12 @@
 #include "plmbase_config.h"
 #include <vector>
 #include "metadata.h"
-#include "plm_image_header.h"
 #include "pstring.h"
+#include "plm_image_header.h"
+
+// TODO:  change type of m_pih to Plm_image_header*
+
+//class Plm_image_header;
 
 class Slice_index {
 public:
@@ -26,21 +30,11 @@ public:
     std::vector<Pstring> m_ct_slice_uids;
 
 public:
-    plastimatch1_EXPORT
-    Slice_index ();
-    plastimatch1_EXPORT
-    ~Slice_index ();
+    API Slice_index ();
+    API ~Slice_index ();
     void load (const char *dicom_dir);
     void get_slice_info (int *slice_no, Pstring *ct_slice_uid, float z) const;
 
 };
-
-#if defined __cplusplus
-extern "C" {
-#endif
-
-#if defined __cplusplus
-}
-#endif
 
 #endif

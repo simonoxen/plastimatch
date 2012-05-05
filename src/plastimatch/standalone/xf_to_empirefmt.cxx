@@ -13,7 +13,6 @@
 #include "plmbase.h"
 
 #include "plm_image.h"
-#include "plm_image_header.h"
 #include "plm_path.h"
 
 #define BUFLEN 1024

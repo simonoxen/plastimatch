@@ -11,9 +11,7 @@
 #include "plmsys.h"
 
 #include "pcmd_stats.h"
-#include "plm_file_format.h"
 #include "plm_image.h"
-#include "plm_image_header.h"
 #include "proj_image.h"
 #include "ss_img_stats.h"
 

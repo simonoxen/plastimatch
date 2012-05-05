@@ -7,7 +7,6 @@
 #include "pcmd_drr.h"
 #include "plm_clp.h"
 #include "plm_image.h"
-#include "plm_image_header.h"
 #include "pstring.h"
 
 class Drr_parms {

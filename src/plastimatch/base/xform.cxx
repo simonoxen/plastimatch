@@ -17,7 +17,6 @@
 
 #include "bspline.h"
 #include "plm_image.h"
-#include "plm_image_header.h"
 #include "plm_parms.h"
 #include "volume_header.h"
 

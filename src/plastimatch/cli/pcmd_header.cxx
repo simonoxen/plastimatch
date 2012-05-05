@@ -7,7 +7,6 @@
 #include "getopt.h"
 #include "pcmd_header.h"
 #include "plm_image.h"
-#include "plm_image_header.h"
 
 static void
 header_main (Header_parms* parms)

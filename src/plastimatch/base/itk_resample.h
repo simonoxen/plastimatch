@@ -6,7 +6,8 @@
 
 #include "plmbase_config.h"
 #include "plm_image.h"
-#include "plm_image_header.h"
+
+class Plm_image_header;
 
 template <class T, class U>
 T
@@ -14,7 +15,7 @@ vector_resample_image (T& vf_image, U& ref_image);
 template <class T>
 T
 vector_resample_image (T& image, float x_spacing,
-			float y_spacing, float z_spacing);
+        float y_spacing, float z_spacing);
 template <class T>
 T
 vector_resample_image (T& vf_image, Plm_image_header* pih);
@@ -26,7 +27,7 @@ resample_image (T& image, Plm_image_header* pih, float default_val, int interp_l
 template <class T>
 T
 subsample_image (T& image, int x_sampling_rate,
-	        int y_sampling_rate, int z_sampling_rate,
-		float default_val);
+        int y_sampling_rate, int z_sampling_rate,
+        float default_val);
 
 #endif

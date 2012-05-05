@@ -14,7 +14,6 @@
 #include "plm_image.h"
 #include "plm_math.h"
 #include "gamma_analysis.h"
-#include "plm_image_header.h"
 
 void find_dose_threshold( Gamma_parms *parms ) { 	
 	

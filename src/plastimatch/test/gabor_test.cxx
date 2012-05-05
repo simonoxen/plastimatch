@@ -7,7 +7,6 @@
 #include "plmbase.h"
 
 #include "itk_gabor.h"
-#include "plm_image_header.h"
 #include "pstring.h"
 
 

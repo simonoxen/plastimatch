@@ -5,9 +5,9 @@
 #define _plm_image_h_
 
 #include "plmbase_config.h"
+#include "plm_image_type.h"
 #include "itk_image.h"
 #include "metadata.h"
-#include "plm_image_type.h"
 
 class Metadata;
 class Plm_image_header;

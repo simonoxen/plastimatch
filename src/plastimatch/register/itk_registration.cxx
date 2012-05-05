@@ -27,7 +27,6 @@
 #include "itk_demons.h"
 #include "itk_optim.h"
 #include "itk_warp.h"
-#include "plm_image_header.h"
 #include "plm_parms.h"
 #include "registration_data.h"
 

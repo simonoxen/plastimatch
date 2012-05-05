@@ -12,8 +12,6 @@
 
 #include "pcmd_resample.h"
 #include "plm_clp.h"
-#include "plm_file_format.h"
-#include "plm_image_header.h"
 
 /* Return true if geometry was deduced, else false */
 static bool

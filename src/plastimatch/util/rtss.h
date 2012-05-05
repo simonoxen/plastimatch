@@ -4,9 +4,8 @@
 #ifndef _rtss_h_
 #define _rtss_h_
 
-#include "plm_config.h"
+#include "plmutil_config.h"
 #include "plm_image.h"
-#include "plm_image_header.h"
 #include "pstring.h"
 #include "slice_index.h"
 #include "rtss_polyline_set.h"
@@ -14,10 +13,11 @@
 #include "xio_ct.h"
 #include "xio_studyset.h"
 
+class Plm_image_header;
 class Rtds;
 class Xform;
 
-class plastimatch1_EXPORT Rtss {
+class API Rtss {
 public:
     Rtss_polyline_set *m_ss_list; /* Names of structures */
     Rtss_polyline_set *m_cxt;     /* Structure set in polyline form */

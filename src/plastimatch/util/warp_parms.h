@@ -7,7 +7,6 @@
 #include "plm_config.h"
 #include <string.h>
 #include "direction_cosines.h"
-#include "plm_file_format.h"
 #include "plm_image_type.h"
 #include "pstring.h"
 #include "xio_studyset.h"

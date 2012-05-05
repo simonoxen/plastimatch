@@ -8,7 +8,6 @@
 
 #include "plmsys.h"
 
-#include "plm_image_header.h"
 #include "rtss_polyline_set.h"
 #include "rtss_structure.h"
 #include "ss_list_io.h"

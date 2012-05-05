@@ -30,6 +30,11 @@
 #include "itk_volume_header.h"
 #endif
 #include "mha_io.h"
+#include "plm_file_format.h"
+#if (!PLM_CUDA_COMPILE)
+#include "plm_image_convert.h"
+#include "plm_image_header.h"
+#endif
 #include "plm_image_type.h"
 #include "pointset.h"
 #include "raw_pointset.h"

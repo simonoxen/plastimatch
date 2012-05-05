@@ -12,7 +12,6 @@
 
 #include "plastimatch_slicer_xformwarpCLP.h"
 
-#include "plm_file_format.h"
 #include "rtds.h"
 #include "rtds_warp.h"
 #include "warp_parms.h"
