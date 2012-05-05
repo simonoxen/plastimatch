@@ -16,6 +16,7 @@ include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 include_directories (AFTER ${MSINTTYPES_INCLUDE_DIR})
 include_directories (BEFORE ${wxWidgets_INCLUDE_DIRS})
 include_directories (AFTER ${DCMTK_INCLUDE_DIR})
+include_directories (AFTER ${SQLITE_INCLUDE_DIR})
 
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES (EXECUTABLES)
