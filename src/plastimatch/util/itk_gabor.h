@@ -9,7 +9,7 @@
 
 class Plm_image_header;
 
-C_API void itk_gabor (FloatImageType::Pointer image);
-C_API FloatImageType::Pointer itk_gabor_create (const Plm_image_header *pih);
+API void itk_gabor (FloatImageType::Pointer image);
+API FloatImageType::Pointer itk_gabor_create (const Plm_image_header *pih);
 
 #endif
