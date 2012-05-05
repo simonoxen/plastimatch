@@ -4,7 +4,7 @@
 #ifndef _gdcm2_util_h_
 #define _gdcm2_util_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #if GDCM_VERSION_2
 
 class Metadata;

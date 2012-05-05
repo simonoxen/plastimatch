@@ -4,7 +4,7 @@
 #ifndef _dcmtk_rtss_h_
 #define _dcmtk_rtss_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 
 class Dcmtk_study_writer;
 class Rtds;

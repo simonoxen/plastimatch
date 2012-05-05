@@ -4,7 +4,7 @@
 #ifndef _dcmtk_metadata_h_
 #define _dcmtk_metadata_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 
 class DcmDataset;
 class DcmTagKey;

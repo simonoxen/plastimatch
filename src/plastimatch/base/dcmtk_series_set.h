@@ -4,7 +4,7 @@
 #ifndef _dcmtk_series_set_h_
 #define _dcmtk_series_set_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include <map>
 #include <string>
 

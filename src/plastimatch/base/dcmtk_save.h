@@ -4,7 +4,7 @@
 #ifndef _dcmtk_save_h_
 #define _dcmtk_save_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 
 class Rtds;
 

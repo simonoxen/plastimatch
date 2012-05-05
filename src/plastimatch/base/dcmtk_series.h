@@ -4,7 +4,7 @@
 #ifndef _dcmtk_series_h_
 #define _dcmtk_series_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include <list>
 #include "dcmtk_config.h"
 #include "dcmtk/ofstd/ofstream.h"

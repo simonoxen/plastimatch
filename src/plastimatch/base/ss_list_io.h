@@ -4,7 +4,7 @@
 #ifndef _ss_list_io_h_
 #define _ss_list_io_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 #include "rtss_polyline_set.h"
 
 #if defined __cplusplus

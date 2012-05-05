@@ -5,7 +5,7 @@
 #define _dcmtk_config_h_
 
 /* Debian OS install of DCMTK is broken.  This is the workaround. */
-#include "plm_config.h"
+#include "plmbase_config.h"
 #if DCMTK_HAVE_CFUNIX_H
 #define HAVE_CONFIG_H 1
 #endif

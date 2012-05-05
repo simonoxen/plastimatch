@@ -4,6 +4,6 @@
 #ifndef _dcmtk_util_h_
 #define _dcmtk_util_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 
 #endif

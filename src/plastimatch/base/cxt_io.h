@@ -4,7 +4,7 @@
 #ifndef _cxt_io_h_
 #define _cxt_io_h_
 
-#include "plm_config.h"
+#include "plmbase_config.h"
 
 class Slice_index;
 class Rtss;
