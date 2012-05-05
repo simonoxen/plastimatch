@@ -4,7 +4,7 @@
 #ifndef _pqt_main_window_h_
 #define _pqt_main_window_h_
 
-#include "plm_config.h"
+#include "plmqt_config.h"
 #include "pqt_data_source_dialog.h"
 #include "pqt_findscu.h"
 #include "pqt_patient_list_model.h"

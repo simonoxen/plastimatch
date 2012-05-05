@@ -4,7 +4,7 @@
 #ifndef _pqt_data_source_dialog_h_
 #define _pqt_data_source_dialog_h_
 
-#include "plm_config.h"
+#include "plmqt_config.h"
 #include "ui_pqt_data_source_dialog.h"
 #include "pqt_data_source_list_model.h"
 

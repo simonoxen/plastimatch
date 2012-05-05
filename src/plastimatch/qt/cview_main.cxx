@@ -8,7 +8,7 @@
  *   very early stages of development.
  */
 
-#include "plm_config.h"
+#include "plmqt_config.h"
 #include <iostream>
 #include <QtGui>
 #include "plm_image.h"

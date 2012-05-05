@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include "plm_config.h"
+#include "plmqt_config.h"
 #include <QtGui>
 #include "pqt_patient_list_model.h"
 

@@ -4,7 +4,7 @@
 #ifndef _pqt_data_source_list_model_h_
 #define _pqt_data_source_list_model_h_
 
-#include "plm_config.h"
+#include "plmqt_config.h"
 #include <QSqlQuery>
 #include "ui_pqt_main_window.h"
 

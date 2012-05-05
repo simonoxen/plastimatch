@@ -4,7 +4,7 @@
 #ifndef _pqt_patient_list_model_h_
 #define _pqt_patient_list_model_h_
 
-#include "plm_config.h"
+#include "plmqt_config.h"
 #include "ui_pqt_main_window.h"
 
 class Pqt_patient_list_model : public QAbstractTableModel {

@@ -4,7 +4,7 @@
 #ifndef _pqt_findscu_h_
 #define _pqt_findscu_h_
 
-#include "plm_config.h"
+#include "plmqt_config.h"
 #include <QList>
 #include <QString>
 

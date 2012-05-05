@@ -15,7 +15,7 @@
    a) Look up primary in RPL grid
    b) Convolve to find scatter within x-y axis of primary grid (ignoring tilt)
    ----------------------------------------------------------------------- */
-#include "plm_config.h"
+#include "plmdose_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

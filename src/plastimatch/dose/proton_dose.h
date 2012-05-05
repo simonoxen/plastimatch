@@ -4,7 +4,7 @@
 #ifndef _proton_dose_h_
 #define _proton_dose_h_
 
-#include "plm_config.h"
+#include "plmdose_config.h"
 #include "plmbase.h"
 
 #include "threading.h"

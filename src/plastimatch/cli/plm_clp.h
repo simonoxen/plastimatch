@@ -6,7 +6,7 @@
 #ifndef _plm_dlib_clp_h_
 #define _plm_dlib_clp_h_
 
-#include "plm_config.h"
+#include "plmcli_config.h"
 #include <iostream>
 #include <map>
 #include <stdarg.h>
