@@ -33,7 +33,6 @@
 #include "proj_image.h"
 #include "proj_image_dir.h"
 
-
 // P R O T O T Y P E S ////////////////////////////////////////////////////
 __global__ void kernel_fdk (float *dev_vol, int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_spacing, unsigned int Blocks_Y, float invBlocks_Y);
 ///////////////////////////////////////////////////////////////////////////

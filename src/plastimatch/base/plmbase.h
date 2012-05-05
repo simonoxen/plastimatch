@@ -13,10 +13,12 @@
 #include "gdcm1_dose.h"
 #include "hnd_io.h"
 #include "interpolate.h"
+#if (!PLM_CUDA_COMPILE)
 #include "itkClampCastImageFilter.h"
 #include "itk_directions.h"
 #include "itk_image.h"
 #include "itk_image_type.h"
+#endif
 #include "mha_io.h"
 #include "plm_image_type.h"
 #include "pointset.h"
@@ -34,7 +36,6 @@
 #include "xform.h"
 #include "xform_legacy.h"
 #endif /* end #if (!PLM_CUDA_COMPILE) */
-
 
 /* That's it for gpuit_EXPORTS */
 /*   Let's start on the plastimatch1_EXPORTS     */

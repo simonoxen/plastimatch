@@ -19,7 +19,7 @@ endif ()
 # ITK headers cannot be processed by nvcc, so we define
 # PLM_CUDA_COMPILE for the purpose of guarding
 # (see base/plmbase.h)
-set (CUDA_CXX_FLAGS ${CUDA_CXX_FLAGS};-DPLM_CUDA_COMPILE)
+set (CUDA_CXX_FLAGS ${CUDA_CXX_FLAGS};-DPLM_CUDA_COMPILE=1)
 
 if (CUDA_CXX_FLAGS)
     set (CUDA_NVCC_FLAGS --compiler-options ${CUDA_CXX_FLAGS})
