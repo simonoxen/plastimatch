@@ -21,7 +21,6 @@ extern "C"
 #include "lua_class_image.h"
 #include "lua_class_structs.h"
 #include "lua_util.h"
-#include "plm_image.h"
 #include "segment_body.h"
 
 /* Name of class as exposed to Lua */

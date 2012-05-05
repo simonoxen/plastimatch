@@ -8,7 +8,6 @@
 #include "plmsys.h"
 
 #include "direction_cosines.h"
-#include "plm_image.h"
 #include "xio_ct.h"
 
 typedef struct astroid_dose_header Astroid_dose_header;

@@ -6,7 +6,6 @@
 
 #include <stdlib.h>
 #include "plm_path.h"
-#include "plm_image.h"
 
 class Vf_Invert_Parms {
 public:

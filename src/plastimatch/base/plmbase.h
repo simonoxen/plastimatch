@@ -33,6 +33,7 @@
 #include "mha_io.h"
 #include "plm_file_format.h"
 #if (!PLM_CUDA_COMPILE)
+#include "plm_image.h"
 #include "plm_image_convert.h"
 #include "plm_image_header.h"
 #endif

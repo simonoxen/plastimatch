@@ -5,9 +5,10 @@
 #define _cview_main_h_
 
 #include <QtGui>
-#include "plm_image.h"
 #include "plmbase.h"
 #include "cview_portal.h"
+
+class Plm_image;
 
 class PortalGrid : public QWidget
 {

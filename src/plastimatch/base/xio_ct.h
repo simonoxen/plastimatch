@@ -5,9 +5,10 @@
 #define _xio_ct_h_
 
 #include "plmbase_config.h"
-#include "plm_image.h"
 #include "slice_index.h"
 #include "xio_studyset.h"
+
+class Plm_image;
 
 typedef struct xio_ct_transform Xio_ct_transform;
 struct xio_ct_transform {

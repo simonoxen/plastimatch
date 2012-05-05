@@ -9,7 +9,6 @@
 
 #include "getopt.h"
 #include "pcmd_adjust.h"
-#include "plm_image.h"
 
 static void
 adjust_main (Adjust_Parms* parms)

@@ -10,7 +10,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "plm_image.h"
 #include "volume_header.h"
 
 /* -----------------------------------------------------------------------

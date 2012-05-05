@@ -5,7 +5,6 @@
 #define _lua_class_register_h_
 
 #include "plmscript_config.h"
-#include "plm_image.h"
 #include "plm_parms.h"
 #include "plm_path.h"
 

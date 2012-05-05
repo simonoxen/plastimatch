@@ -6,10 +6,10 @@
 
 #include "plmbase_config.h"
 #include "bstrwrap.h"
-#include "plm_image.h"
 
 #define CXT_BUFLEN 2048
 
+class Plm_image;
 class Plm_image_header;
 
 class Rtss_polyline {

@@ -21,7 +21,6 @@
 #if GDCM_VERSION_1
 #include "gdcm1_series.h"
 #endif
-#include "plm_image.h"
 #include "slice_index.h"
 #include "rtss_polyline_set.h"
 #include "xio_ct.h"

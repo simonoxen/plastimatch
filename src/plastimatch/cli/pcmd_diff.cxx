@@ -11,7 +11,6 @@
 
 #include "getopt.h"
 #include "pcmd_diff.h"
-#include "plm_image.h"
 
 void
 diff_main (Diff_parms* parms)

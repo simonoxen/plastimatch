@@ -45,10 +45,10 @@ set (PLMBASE_LIBRARY_SRC
   itk_resample.cxx
   itk_volume_header.cxx
   mc_dose.cxx                      #TODO
-  metadata.cxx                     #TODO
+  metadata.cxx
   mha_io.cxx
   plm_file_format.cxx
-  plm_image.cxx                    #TODO
+  plm_image.cxx
   plm_image_convert.cxx
   plm_image_header.cxx
   plm_image_type.cxx

@@ -16,11 +16,12 @@ extern "C" {
 #include "lualib.h"
 }
 
+#include "plmbase.h"
+
 #include "cview_portal.h"
 #include "lua_class_image.h"
 #include "lua_tty_commands_util.h"
 #include "lua_tty_preview.h"
-#include "plm_image.h"
 
 /////////////////////////////////////////////////////////
 // CrystalWindow : public

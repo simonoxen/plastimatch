@@ -11,7 +11,6 @@
 
 #include "getopt.h"
 #include "pcmd_compose.h"
-#include "plm_image.h"
 
 void
 vf_compose (

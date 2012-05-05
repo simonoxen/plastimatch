@@ -5,12 +5,13 @@
 #define _lua_class_image_h_
 
 #include "plmscript_config.h"
-#include "plm_image.h"
 #include "plm_path.h"
 
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
+
+class Plm_image;
 
 typedef struct lua_image_struct lua_image;
 struct lua_image_struct {

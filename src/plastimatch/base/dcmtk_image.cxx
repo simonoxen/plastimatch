@@ -15,7 +15,6 @@
 #include "dcmtk_series.h"
 #include "dcmtk_uid.h"
 #include "plm_math.h"
-#include "plm_image.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "rtds.h"

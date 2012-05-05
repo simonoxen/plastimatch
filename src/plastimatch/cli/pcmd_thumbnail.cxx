@@ -5,9 +5,11 @@
 #include <time.h>
 #include "itkImageRegionIterator.h"
 #include "itk_adjust.h"
+
+#include "plmbase.h"
+
 #include "pcmd_thumbnail.h"
 #include "plm_clp.h"
-#include "plm_image.h"
 #include "thumbnail.h"
 
 class Thumbnail_parms {

@@ -5,10 +5,10 @@
 #define _xio_dose_h_
 
 #include "plmbase_config.h"
-#include "plm_image.h"
 #include "xio_ct.h"
 
 class Metadata;
+class Plm_image;
 
 API void xio_dose_load (
     Plm_image *plm,

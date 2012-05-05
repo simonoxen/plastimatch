@@ -4,12 +4,12 @@
 #include "plmcli_config.h"
 #include <time.h>
 
+#include "plmbase.h"
 #include "plmsys.h"
 
 #include "getopt.h"
 #include "itk_crop.h"
 #include "pcmd_crop.h"
-#include "plm_image.h"
 
 static void
 crop_main (Crop_Parms* parms)

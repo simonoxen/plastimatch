@@ -1,11 +1,10 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _resample_image_h_
-#define _resample_image_h_
+#ifndef _itk_resample_h_
+#define _itk_resample_h_
 
 #include "plmbase_config.h"
-#include "plm_image.h"
 
 class Plm_image_header;
 

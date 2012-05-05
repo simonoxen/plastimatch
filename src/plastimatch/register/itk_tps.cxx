@@ -8,7 +8,6 @@
 #include "itk_point.h"
 #include "itk_tps.h"
 #include "itk_warp.h"
-#include "plm_image.h"
 
 #define BUFLEN 2048
 

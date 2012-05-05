@@ -11,7 +11,6 @@
 
 #include "getopt.h"
 #include "pcmd_compare.h"
-#include "plm_image.h"
 
 void
 vf_analyze (Volume* vol1, Volume* vol2)

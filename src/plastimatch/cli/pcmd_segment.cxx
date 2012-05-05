@@ -5,9 +5,10 @@
 #include <stdlib.h>
 #include "itkImageRegionIterator.h"
 
+#include "plmbase.h"
+
 #include "pcmd_segment.h"
 #include "plm_clp.h"
-#include "plm_image.h"
 #include "pstring.h"
 #include "segment_body.h"
 

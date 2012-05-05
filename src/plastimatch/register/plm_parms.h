@@ -10,7 +10,6 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include "bspline.h"
-#include "plm_image.h"
 #include "plm_path.h"
 #include "pstring.h"
 #include "threading.h"

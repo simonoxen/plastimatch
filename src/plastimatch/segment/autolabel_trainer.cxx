@@ -18,7 +18,6 @@
 #include "autolabel_thumbnailer.h"
 #include "autolabel_trainer.h"
 #include "dlib_trainer.h"
-#include "plm_image.h"
 
 Autolabel_trainer::Autolabel_trainer ()
 {

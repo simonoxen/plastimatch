@@ -12,7 +12,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "plm_image.h"
 
 void 
 itk_metadata_set (

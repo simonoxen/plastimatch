@@ -5,7 +5,6 @@
 #define _rtss_h_
 
 #include "plmutil_config.h"
-#include "plm_image.h"
 #include "pstring.h"
 #include "slice_index.h"
 #include "rtss_polyline_set.h"
@@ -13,6 +12,7 @@
 #include "xio_ct.h"
 #include "xio_studyset.h"
 
+class Plm_image;
 class Plm_image_header;
 class Rtds;
 class Xform;

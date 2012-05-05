@@ -13,6 +13,7 @@
 #include "itkAndConstantToImageFilter.h"
 #include "itkImageSliceConstIteratorWithIndex.h"
 
+#include "plmbase.h"
 #include "plmsys.h"
 
 #include "cxt_extract.h"

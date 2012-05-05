@@ -13,7 +13,6 @@
 #include "pstring.h"
 #include "pcmd_probe.h"
 #include "plm_clp.h"
-#include "plm_image.h"
 #include "pstring.h"
 
 

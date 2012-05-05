@@ -6,7 +6,6 @@
 
 #include "plmbase.h"
 
-#include "plm_image.h"
 #include "autolabel_thumbnailer.h"
 #include "dlib_trainer.h"
 #include "thumbnail.h"

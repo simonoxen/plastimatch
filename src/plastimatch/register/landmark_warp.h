@@ -5,11 +5,11 @@
 #define _landmark_warp_h_
 
 #include "plmregister_config.h"
-#include "plm_image.h"
 #include "plm_image_header.h"
 
 // TODO: change type of m_pih to Plm_image_header*
 
+class Plm_image;
 //class Plm_image_header;
 class Xform;
 typedef struct raw_pointset Raw_pointset;

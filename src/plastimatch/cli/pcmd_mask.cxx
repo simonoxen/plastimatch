@@ -11,7 +11,6 @@
 #include "itk_mask.h"
 #include "pcmd_mask.h"
 #include "plm_clp.h"
-#include "plm_image.h"
 
 static void
 mask_main (Mask_parms* parms)

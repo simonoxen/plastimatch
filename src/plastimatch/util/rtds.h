@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "metadata.h"
-#include "plm_image.h"
 #include "plm_path.h"
 #include "slice_index.h"
 #include "xio_ct.h"
@@ -18,6 +17,7 @@
 
 class Gdcm_series;
 //class Metadata;
+class Plm_image;
 class Rtss;
 //class Slice_index;
 

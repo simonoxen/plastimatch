@@ -8,7 +8,6 @@
 
 #include "pcmd_xf_convert.h"
 #include "plm_clp.h"
-#include "plm_image.h"
 #include "pstring.h"
 #include "xform_convert.h"
 

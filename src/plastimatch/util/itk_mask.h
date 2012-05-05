@@ -5,7 +5,7 @@
 #define _itk_mask_h_
 
 #include "plmutil_config.h"
-#include "plm_image.h"
+#include "itk_image_type.h"
 
 enum Mask_operation {
     MASK_OPERATION_FILL,

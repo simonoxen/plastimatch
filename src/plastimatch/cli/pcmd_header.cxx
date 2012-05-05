@@ -4,9 +4,11 @@
 #include "plmcli_config.h"
 #include <time.h>
 #include "itkImageRegionIterator.h"
+
+#include "plmbase.h"
+
 #include "getopt.h"
 #include "pcmd_header.h"
-#include "plm_image.h"
 
 static void
 header_main (Header_parms* parms)

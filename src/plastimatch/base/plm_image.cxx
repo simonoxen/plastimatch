@@ -13,7 +13,6 @@
 #include "plmsys.h"
 
 #include "dcmtk_load.h"
-#include "plm_image.h"
 #include "pstring.h"
 
 Plm_image::Plm_image () {

@@ -12,7 +12,6 @@
 #include "plmsys.h"
 
 #include "plm_math.h"
-#include "plm_image.h"
 #include "plm_path.h"
 #include "rasterizer.h"
 #include "rasterize_slice.h"

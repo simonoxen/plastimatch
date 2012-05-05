@@ -11,7 +11,9 @@
 #include "plmqt_config.h"
 #include <iostream>
 #include <QtGui>
-#include "plm_image.h"
+
+#include "plmbase.h"
+
 #include "cview_portal.h"
 #include "cview_main.h"
 

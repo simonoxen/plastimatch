@@ -12,7 +12,6 @@
 #include "plmsys.h"
 
 #include "plm_clp.h"
-#include "plm_image.h"
 #include "pstring.h"
 
 class Add_parms {
