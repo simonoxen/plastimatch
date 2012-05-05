@@ -4,7 +4,7 @@
 #ifndef _itk_crop_h_
 #define _itk_crop_h_
 
-#include "plm_config.h"
+#include "plmutil_config.h"
 
 template <class T>
 plastimatch1_EXPORT

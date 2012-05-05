@@ -4,7 +4,7 @@
 #ifndef _rtds_warp_h_
 #define _rtds_warp_h_
 
-#include "plm_config.h"
+#include "plmutil_config.h"
 #include "rtds.h"
 #include "warp_parms.h"
 

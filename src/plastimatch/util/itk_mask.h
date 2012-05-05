@@ -4,7 +4,7 @@
 #ifndef _itk_mask_h_
 #define _itk_mask_h_
 
-#include "plm_config.h"
+#include "plmutil_config.h"
 #include "plm_image.h"
 
 enum Mask_operation {

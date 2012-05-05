@@ -4,7 +4,7 @@
 #ifndef _synthetic_vf_h_
 #define _synthetic_vf_h_
 
-#include "plm_config.h"
+#include "plmutil_config.h"
 #include "plm_image_header.h"
 
 // TODO: change type of pih to Plm_image_header*

@@ -4,7 +4,7 @@
 #ifndef _plm_warp_h_
 #define _plm_warp_h_
 
-#include "plm_config.h"
+#include "plmutil_config.h"
 
 class Plm_image;
 class Xform;

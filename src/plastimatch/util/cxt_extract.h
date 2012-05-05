@@ -4,7 +4,7 @@
 #ifndef _cxt_extract_h_
 #define _cxt_extract_h_
 
-#include "plm_config.h"
+#include "plmutil_config.h"
 
 class Rtss_polyline_set;
 

@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include "plm_config.h"
+#include "plmutil_config.h"
 #include <time.h>
 
 #include "plmbase.h"

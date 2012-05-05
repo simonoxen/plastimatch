@@ -4,7 +4,7 @@
 #ifndef _rtds_h_
 #define _rtds_h_
 
-#include "plm_config.h"
+#include "plmutil_config.h"
 #include <vector>
 
 #include "metadata.h"

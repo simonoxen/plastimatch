@@ -4,7 +4,7 @@
 #ifndef _rasterize_slice_h_
 #define _rasterize_slice_h_
 
-#include "plm_config.h"
+#include "plmutil_config.h"
 
 #include "plmsys.h"
 

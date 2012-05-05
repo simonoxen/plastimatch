@@ -2,7 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include <time.h>
-#include "plm_config.h"
+#include "plmutil_config.h"
 #include "itkConfigure.h"
 #include "itkImage.h"
 #include "itkLinearInterpolateImageFunction.h"

@@ -4,7 +4,7 @@
 #ifndef _landmark_diff_h_
 #define _landmark_diff_h_
 
-#include "plm_config.h"
+#include "plmutil_config.h"
 
 typedef struct raw_pointset Raw_pointset;
 

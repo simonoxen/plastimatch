@@ -4,7 +4,7 @@
 #ifndef _rasterizer_h_
 #define _rasterizer_h_
 
-#include "plm_config.h"
+#include "plmutil_config.h"
 #include "plmbase.h"
 
 #include "itk_image_type.h"

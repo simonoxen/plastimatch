@@ -4,7 +4,7 @@
 #ifndef _synthetic_mha_h_
 #define _synthetic_mha_h_
 
-#include "plm_config.h"
+#include "plmutil_config.h"
 #include "direction_cosines.h"
 
 class Rtds;

@@ -4,7 +4,7 @@
 #ifndef _warp_parms_h_
 #define _warp_parms_h_
 
-#include "plm_config.h"
+#include "plmutil_config.h"
 #include <string.h>
 #include "direction_cosines.h"
 #include "plm_image_type.h"

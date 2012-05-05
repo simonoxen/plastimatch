@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "plm_config.h"
+#include "plmutil_config.h"
 #include "plm_math.h"
 #include "itkImageRegionIteratorWithIndex.h"
 #include "synthetic_vf.h"
