@@ -12,7 +12,6 @@
 #include "itk_image_load.h"
 #include "plm_image_header.h"
 #include "vf_invert.h"
-#include "xform.h"
 
 #define round_int(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
 

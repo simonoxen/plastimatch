@@ -14,73 +14,73 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 ##  SOURCE FILES
 ##-----------------------------------------------------------------------------
 set (PLMBASE_LIBRARY_SRC
-  astroid_dose.cxx
+  astroid_dose.cxx                 #TODO
   bspline_xform.cxx
-  cxt_io.cxx
-  dcm_util.cxx
+  cxt_io.cxx                       #TODO
+  dcm_util.cxx                     #TODO
   dicom.dic
-  exchkeys.cxx
-  hnd_io.cxx
+  exchkeys.cxx                     #TODO
+  hnd_io.cxx                       #TODO
   interpolate.cxx
-  itkClampCastImageFilter.txx
-  itk_dicom_load.cxx
-  itk_dicom_save.cxx
-  itk_directions.cxx
-  itk_image.cxx
-  itk_image_cast.cxx
-  itk_image_load.txx
-  itk_image_load_char.cxx
-  itk_image_load_double.cxx
-  itk_image_load_float.cxx
-  itk_image_load_int32.cxx
-  itk_image_load_short.cxx
-  itk_image_load_uchar.cxx
-  itk_image_load_uint32.cxx
-  itk_image_load_ushort.cxx
-  itk_image_load_vec.cxx
-  itk_image_save.cxx
-  itk_image_stats.cxx
-  itk_pointset.cxx
-  itk_resample.cxx
-  itk_metadata.cxx
-  itk_volume_header.cxx
-  mc_dose.cxx
-  metadata.cxx
+  itkClampCastImageFilter.txx      #TODO
+  itk_dicom_load.cxx               #TODO
+  itk_dicom_save.cxx               #TODO
+  itk_directions.cxx               #TODO
+  itk_image.cxx                    #TODO
+  itk_image_cast.cxx               #TODO
+  itk_image_load.txx               #TODO
+  itk_image_load_char.cxx          #TODO
+  itk_image_load_double.cxx        #TODO
+  itk_image_load_float.cxx         #TODO
+  itk_image_load_int32.cxx         #TODO
+  itk_image_load_short.cxx         #TODO
+  itk_image_load_uchar.cxx         #TODO
+  itk_image_load_uint32.cxx        #TODO
+  itk_image_load_ushort.cxx        #TODO
+  itk_image_load_vec.cxx           #TODO
+  itk_image_save.cxx               #TODO
+  itk_image_stats.cxx              #TODO
+  itk_pointset.cxx                 #TODO
+  itk_resample.cxx                 #TODO
+  itk_metadata.cxx                 #TODO
+  itk_volume_header.cxx            #TODO
+  mc_dose.cxx                      #TODO
+  metadata.cxx                     #TODO
   mha_io.cxx
-  plm_file_format.cxx
-  plm_image.cxx
-  plm_image_convert.cxx
-  plm_image_header.cxx
-  plm_image_type.cxx
+  plm_file_format.cxx              #TODO
+  plm_image.cxx                    #TODO
+  plm_image_convert.cxx            #TODO
+  plm_image_header.cxx             #TODO
+  plm_image_type.cxx               #TODO
   pointset.cxx
   raw_pointset.cxx
   ray_trace_exact.cxx
   ray_trace_uniform.cxx
   rpl_volume.cxx
-  rtss_polyline_set.cxx
-  rtss_structure.cxx
-  slice_index.cxx
-  ss_list_io.cxx
-  thumbnail.cxx
+  rtss_polyline_set.cxx            #TODO
+  rtss_structure.cxx               #TODO
+  slice_index.cxx                  #TODO
+  ss_list_io.cxx                   #TODO
+  thumbnail.cxx                    #TODO
   vf_convolve.cxx
-  vf_stats.cxx
+  vf_stats.cxx                     #TODO
   vf.cxx
-  volume_header.cxx
+  volume_header.cxx                #TODO
   volume_limit.cxx
   volume_resample.cxx
   volume.cxx
   xform.cxx
-  xform_convert.cxx
+  xform_convert.cxx                #TODO
   xform_legacy.cxx
-  xform_point.cxx
-  xio_ct.cxx
-  xio_demographic.cxx
-  xio_dir.cxx
-  xio_dose.cxx
-  xio_patient.cxx
-  xio_plan.cxx
-  xio_structures.cxx
-  xio_studyset.cxx
+  xform_point.cxx                  #TODO
+  xio_ct.cxx                       #TODO
+  xio_demographic.cxx              #TODO
+  xio_dir.cxx                      #TODO
+  xio_dose.cxx                     #TODO
+  xio_patient.cxx                  #TODO
+  xio_plan.cxx                     #TODO
+  xio_structures.cxx               #TODO
+  xio_studyset.cxx                 #TODO
   xpm.cxx
   )
 

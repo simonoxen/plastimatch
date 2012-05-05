@@ -7,7 +7,6 @@
 #include "plm_config.h"
 #include "plm_parms.h"
 #include "registration_data.h"
-#include "xform.h"
 
 /* -----------------------------------------------------------------------
    Public functions

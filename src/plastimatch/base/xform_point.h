@@ -5,9 +5,10 @@
 #define _xform_point_h_
 
 #include "plmbase_config.h"
+#include "itk_point.h"
 
-#include "xform.h"
+class Xform;
 
-plastimatch1_EXPORT void xform_point_transform (FloatPoint3DType* point_out, Xform* xf_in, FloatPoint3DType point_in);
+C_API void xform_point_transform (FloatPoint3DType* point_out, Xform* xf_in, FloatPoint3DType point_in);
 
 #endif

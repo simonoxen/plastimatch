@@ -4,7 +4,6 @@
 #ifndef _demons_h_
 #define _demons_h_
 
-//#include "xform.h"
 
 class Registration_data;
 class Xform;

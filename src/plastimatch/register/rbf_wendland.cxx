@@ -26,7 +26,6 @@
 #include "rbf_cluster.h"
 #include "rbf_wendland.h"
 #include "volume_macros.h"
-#include "xform.h"
 
 typedef struct rbf_params Rbf_parms;
 struct rbf_params { // used to pass information to bspline_rbf_score

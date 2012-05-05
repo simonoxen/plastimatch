@@ -21,7 +21,6 @@
 #include "itk_image.h"
 #include "itk_optim.h"
 #include "plm_parms.h"
-#include "xform.h"
 
 #define BUFLEN 2048
 

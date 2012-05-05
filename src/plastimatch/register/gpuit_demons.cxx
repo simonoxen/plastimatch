@@ -13,7 +13,6 @@
 #include "plm_image_header.h"
 #include "plm_stages.h"
 #include "registration_data.h"
-#include "xform.h"
 
 void
 do_gpuit_demons_stage_internal (

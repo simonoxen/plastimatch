@@ -19,7 +19,6 @@
 #include "plm_image_header.h"
 #include "proj_image.h"
 #include "ss_img_stats.h"
-#include "xform.h"
 
 static void
 stats_vf_main (Stats_parms* parms)

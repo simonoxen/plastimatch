@@ -14,7 +14,6 @@
 #include "plm_image_header.h"
 #include "plm_warp.h"
 #include "ss_img_stats.h"
-#include "xform.h"
 
 static void
 plm_warp_itk (

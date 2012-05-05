@@ -6,11 +6,12 @@
 
 #include "plm_config.h"
 #include "plm_path.h"
-#include "xform.h"
 
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
+
+class Xform;
 
 typedef struct lua_xform_struct lua_xform;
 struct lua_xform_struct {

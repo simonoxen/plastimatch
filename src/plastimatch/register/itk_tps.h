@@ -18,7 +18,6 @@
 #include "itk_image.h"
 #include "itk_warp.h"
 #include "landmark_warp.h"
-#include "xform.h"
 
 typedef struct tps_parms TPS_parms;
 struct tps_parms {

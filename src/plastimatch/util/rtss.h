@@ -12,11 +12,11 @@
 #include "slice_index.h"
 #include "rtss_polyline_set.h"
 #include "warp_parms.h"
-#include "xform.h"
 #include "xio_ct.h"
 #include "xio_studyset.h"
 
 class Rtds;
+class Xform;
 
 class plastimatch1_EXPORT Rtss {
 public:

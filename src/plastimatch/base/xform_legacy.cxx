@@ -8,7 +8,6 @@
 #include "plmsys.h"
 
 #include "xform.h"
-#include "xform_legacy.h"
 
 /* -----------------------------------------------------------------------
    Utility functions

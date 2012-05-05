@@ -8,7 +8,6 @@
 #include "itk_pointset.h"
 #include "pcmd_warp.h"
 #include "pstring.h"
-#include "xform.h"
 
 void
 warp_pointset_main (Warp_parms* parms)

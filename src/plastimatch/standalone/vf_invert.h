@@ -5,7 +5,6 @@
 #define _vf_invert_h_
 
 #include <stdlib.h>
-#include "xform.h"
 #include "plm_path.h"
 #include "plm_image.h"
 

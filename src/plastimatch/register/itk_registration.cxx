@@ -32,7 +32,6 @@
 #include "plm_image_header.h"
 #include "plm_parms.h"
 #include "registration_data.h"
-#include "xform.h"
 
 typedef itk::MeanSquaresImageToImageMetric <
     FloatImageType, FloatImageType > MSEMetricType;

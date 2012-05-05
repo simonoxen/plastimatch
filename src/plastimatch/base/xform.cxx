@@ -24,9 +24,6 @@
 #include "plm_parms.h"
 #include "volume_header.h"
 
-#include "xform.h"
-#include "xform_legacy.h"
-
 static void
 itk_bsp_set_grid_img (Xform *xf,
     const Plm_image_header* pih,

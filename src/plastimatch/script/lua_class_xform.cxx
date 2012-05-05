@@ -12,6 +12,9 @@ extern "C"
 #include "lualib.h"
 #include "lauxlib.h"
 }
+
+#include "plmbase.h"
+
 #include "lua_classes.h"
 #include "lua_class_image.h"
 #include "lua_class_structs.h"
@@ -21,7 +24,6 @@ extern "C"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "plm_warp.h"
-#include "xform.h"
 #include "xform_convert.h"
 
 /* Name of class as exposed to Lua */
