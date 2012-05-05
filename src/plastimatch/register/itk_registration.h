@@ -4,7 +4,7 @@
 #ifndef _itk_registration_h_
 #define _itk_registration_h_
 
-#include "plm_config.h"
+#include "plmregister_config.h"
 #include "itkImageRegistrationMethod.h"
 #include "plm_stages.h"
 

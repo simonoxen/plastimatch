@@ -4,7 +4,7 @@
 #ifndef _bspline_optimize_nlopt_h_
 #define _bspline_optimize_nlopt_h_
 
-#include "plm_config.h"
+#include "plmregister_config.h"
 #include "bspline_optimize.h"
 #if (NLOPT_FOUND)
 #include "nlopt.h"

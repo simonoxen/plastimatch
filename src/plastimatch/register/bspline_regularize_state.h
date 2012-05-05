@@ -4,7 +4,7 @@
 #ifndef _bspline_regularize_state_h_
 #define _bspline_regularize_state_h_
 
-#include "plm_config.h"
+#include "plmregister_config.h"
 
 class Volume;
 

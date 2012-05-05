@@ -4,7 +4,7 @@
 #ifndef _bowtie_correction_h_
 #define _bowtie_correction_h_
 
-#include "plm_config.h"
+#include "plmreconstruct_config.h"
 #include "plmbase.h"
 
 typedef struct fdk_parms Fdk_parms;

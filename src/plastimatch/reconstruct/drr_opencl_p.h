@@ -4,7 +4,7 @@
 #ifndef _drr_opencl_p_h_
 #define _drr_opencl_p_h_
 
-#include "plm_config.h"
+#include "plmreconstruct_config.h"
 #include "opencl_util.h"
 
 typedef struct drr_opencl_state Drr_opencl_state;

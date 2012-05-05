@@ -9,7 +9,7 @@
 #include "plmbase.h"
 
 #include "demons.h"
-#include "plm_config.h"
+#include "plmregister_config.h"
 #include "plm_stages.h"
 #include "registration_data.h"
 

@@ -5,7 +5,7 @@
 #ifndef _itk_optim_h_
 #define _itk_optim_h_
 
-#include "plm_config.h"
+#include "plmregister_config.h"
 #include "itk_registration.h"
 #include "plm_parms.h"
 

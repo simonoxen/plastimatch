@@ -4,7 +4,7 @@
 #ifndef _autolabel_h_
 #define _autolabel_h_
 
-#include "plm_config.h"
+#include "plmsegment_config.h"
 #include "pstring.h"
 
 class Autolabel_parms {

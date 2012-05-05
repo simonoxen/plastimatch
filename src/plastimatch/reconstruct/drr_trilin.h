@@ -4,7 +4,7 @@
 #ifndef _drr_trilin_h_
 #define _drr_trilin_h_
 
-#include "plm_config.h"
+#include "plmreconstruct_config.h"
 #include "plmbase.h"
 
 gpuit_EXPORT

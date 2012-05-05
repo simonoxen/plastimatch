@@ -4,7 +4,7 @@
 #ifndef _bspline_h_
 #define _bspline_h_
 
-#include "plm_config.h"
+#include "plmregister_config.h"
 #include <string>
 
 #include "plmbase.h"

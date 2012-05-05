@@ -17,7 +17,7 @@
     qlut = Multiplier LUT
     clut = Index LUT
    ----------------------------------------------------------------------- */
-#include "plm_config.h"
+#include "plmregister_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>

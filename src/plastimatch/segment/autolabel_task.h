@@ -4,7 +4,7 @@
 #ifndef _autolabel_task_h_
 #define _autolabel_task_h_
 
-#include "plm_config.h"
+#include "plmsegment_config.h"
 #include "dlib_trainer.h"
 #include "pstring.h"
 

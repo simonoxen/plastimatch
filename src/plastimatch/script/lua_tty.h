@@ -4,7 +4,7 @@
 #ifndef _lua_tty_h_
 #define _lua_tty_h_
 
-#include "plm_config.h"
+#include "plmscript_config.h"
 
 #include <stdio.h>
 

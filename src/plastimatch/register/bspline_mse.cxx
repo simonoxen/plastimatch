@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include "plm_config.h"
+#include "plmregister_config.h"
 #include <string>
 #include <stdio.h>
 #include <stdlib.h>

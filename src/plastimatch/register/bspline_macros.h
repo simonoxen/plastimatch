@@ -4,7 +4,7 @@
 #ifndef _bspline_macros_h_
 #define _bspline_macros_h_
 
-#include "plm_config.h"
+#include "plmregister_config.h"
 #include "plmsys.h"
 #include "volume_macros.h"
 

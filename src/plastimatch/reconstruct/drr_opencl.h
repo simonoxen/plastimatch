@@ -4,7 +4,7 @@
 #ifndef _DRR_OPENCL_H_
 #define _DRR_OPENCL_H_
 
-#include "plm_config.h"
+#include "plmreconstruct_config.h"
 #include "plmbase.h"
 #include "drr_opts.h"
 #include "proj_image.h"

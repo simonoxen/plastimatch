@@ -4,7 +4,7 @@
 #ifndef _itk_tps_h_
 #define _itk_tps_h_
 
-#include "plm_config.h"
+#include "plmregister_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

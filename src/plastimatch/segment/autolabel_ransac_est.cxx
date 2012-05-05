@@ -5,7 +5,7 @@
    number (1 to 12 for T1 to T12).  Slopes are measured in units of 
    vertebra per millimeter. 
    ----------------------------------------------------------------------- */
-#include "plm_config.h"
+#include "plmsegment_config.h"
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>

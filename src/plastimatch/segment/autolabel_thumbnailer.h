@@ -4,7 +4,7 @@
 #ifndef _autolabel_thumbnailer_h_
 #define _autolabel_thumbnailer_h_
 
-#include "plm_config.h"
+#include "plmsegment_config.h"
 #include "dlib_trainer.h"
 
 class Plm_image;

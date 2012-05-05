@@ -4,7 +4,7 @@
 #ifndef _lua_class_stage_h_
 #define _lua_class_stage_h_
 
-#include "plm_config.h"
+#include "plmscript_config.h"
 #include "plm_image.h"
 #include "plm_path.h"
 

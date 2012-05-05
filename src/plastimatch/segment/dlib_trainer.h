@@ -4,7 +4,7 @@
 #ifndef _dlib_trainer_h_
 #define _dlib_trainer_h_
 
-#include "plm_config.h"
+#include "plmsegment_config.h"
 #include <vector>
 #include "dlib/svm.h"
 #include "pstring.h"

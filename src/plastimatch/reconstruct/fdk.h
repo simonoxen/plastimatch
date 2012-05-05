@@ -4,7 +4,7 @@
 #ifndef _fdk_h_
 #define _fdk_h_
 
-#include "plm_config.h"
+#include "plmreconstruct_config.h"
 #include "plmbase.h"
 #include "proj_image.h"
 #include "proj_image_dir.h"

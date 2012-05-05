@@ -4,7 +4,7 @@
 #ifndef _plm_parms_h_
 #define _plm_parms_h_
 
-#include "plm_config.h"
+#include "plmregister_config.h"
 #include <list>
 #include <string>
 #include <ctype.h>

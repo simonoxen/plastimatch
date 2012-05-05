@@ -4,7 +4,7 @@
 #ifndef _proj_image_dir_h_
 #define _proj_image_dir_h_
 
-#include "plm_config.h"
+#include "plmreconstruct_config.h"
 
 class Proj_image;
 

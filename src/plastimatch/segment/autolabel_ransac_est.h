@@ -4,7 +4,7 @@
 #ifndef _autolabel_ransac_est_h_
 #define _autolabel_ransac_est_h_
 
-#include "plm_config.h"
+#include "plmsegment_config.h"
 #include "ParametersEstimator.h"
 #include <itkObjectFactory.h>
 #include "itk_point.h"

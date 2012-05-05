@@ -4,7 +4,7 @@
 #ifndef _landmark_warp_h_
 #define _landmark_warp_h_
 
-#include "plm_config.h"
+#include "plmregister_config.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 

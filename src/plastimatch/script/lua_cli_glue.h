@@ -4,7 +4,7 @@
 #ifndef _lua_cli_glue_h_
 #define _lua_cli_glue_h_
 
-#include "plm_config.h"
+#include "plmscript_config.h"
 
 #include "lua.h"
 #include "lualib.h"

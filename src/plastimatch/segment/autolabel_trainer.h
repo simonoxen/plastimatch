@@ -4,7 +4,7 @@
 #ifndef _autolabel_trainer_h_
 #define _autolabel_trainer_h_
 
-#include "plm_config.h"
+#include "plmsegment_config.h"
 #include <map>
 #include <stdio.h>
 #include "pstring.h"

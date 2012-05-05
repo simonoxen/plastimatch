@@ -4,7 +4,7 @@
 #ifndef _plm_stages_h_
 #define _plm_stages_h_
 
-#include "plm_config.h"
+#include "plmregister_config.h"
 #include "plm_parms.h"
 #include "registration_data.h"
 

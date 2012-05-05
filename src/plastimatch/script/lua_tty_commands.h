@@ -4,7 +4,7 @@
 #ifndef _lua_tty_commands_h_
 #define _lua_tty_commands_h_
 
-#include "plm_config.h"
+#include "plmscript_config.h"
 
 #if defined __cplusplus
 extern "C" {

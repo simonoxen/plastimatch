@@ -4,7 +4,7 @@
 #ifndef _ramp_filter_h_
 #define _ramp_filter_h_
 
-#include "plm_config.h"
+#include "plmreconstruct_config.h"
 
 #if defined __cplusplus
 extern "C" {

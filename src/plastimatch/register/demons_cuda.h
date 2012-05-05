@@ -4,7 +4,7 @@
 #ifndef _demons_cuda_h_
 #define _demons_cuda_h_
 
-#include "plm_config.h"
+#include "plmregister_config.h"
 
 #include "delayload.h"
 #include "demons.h"

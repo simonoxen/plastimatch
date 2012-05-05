@@ -4,7 +4,7 @@
 #ifndef _rbf_gauss_h_
 #define _rbf_gauss_h_
 
-#include "plm_config.h"
+#include "plmregister_config.h"
 #include "landmark_warp.h"
 
 class Bspline_parms;

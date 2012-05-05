@@ -4,7 +4,7 @@
 #ifndef _drr_cuda_h_
 #define _drr_cuda_h_
 
-#include "plm_config.h"
+#include "plmreconstruct_config.h"
 #include "plmbase.h"
 #include "drr_opts.h"
 #include "proj_image.h"
