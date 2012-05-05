@@ -11,8 +11,9 @@
 
 #include "plmsys.h"
 
-#include "metadata.h"
 #include "pstring.h"
+
+class Metadata;
 
 /* Forward declarations */
 namespace gdcm {

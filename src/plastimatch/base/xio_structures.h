@@ -8,9 +8,10 @@
 
 #include "plmbase.h"
 
-#include "metadata.h"
 #include "xio_ct.h"
 #include "xio_studyset.h"
+
+class Metadata;
 
 C_API void xio_structures_load (
         Rtss_polyline_set *structures,

@@ -4,9 +4,11 @@
 #include "plmbase_config.h"
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "plmbase.h"
+
 #include "gdcmFile.h"
 #include "gdcmFileHelper.h"
-#include "metadata.h"
 
 void
 meta_from_gdcm_file (

@@ -8,11 +8,12 @@
 #include "dcmtk/ofstd/ofstream.h"
 #include "dcmtk/dcmdata/dctk.h"
 
+#include "plmbase.h"
+
 #include "dcmtk_file.h"
 #include "dcmtk_metadata.h"
 #include "dcmtk_save.h"
 #include "dcmtk_series.h"
-#include "metadata.h"
 
 void
 dcmtk_set_metadata (

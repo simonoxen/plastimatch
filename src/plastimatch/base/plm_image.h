@@ -9,6 +9,8 @@
 #include "itk_image.h"
 #include "metadata.h"
 
+// TODO: Change type of m_meta to Metadata*
+
 class Metadata;
 class Plm_image_header;
 class Plm_image;
@@ -16,7 +18,7 @@ class Pstring;
 class Slice_index;
 class Volume;
 
-class plastimatch1_EXPORT Plm_image {
+class API Plm_image {
 
 public:
     Plm_image ();
@@ -142,11 +144,8 @@ public:
 /* -----------------------------------------------------------------------
    Public functions
    ----------------------------------------------------------------------- */
-plastimatch1_EXPORT
-Plm_image* plm_image_load (const char* fname, Plm_image_type type);
-plastimatch1_EXPORT
-Plm_image* plm_image_load_native (const char* fname);
-plastimatch1_EXPORT
-void plm_image_save_vol (const char* fname, Volume *vol);
+API Plm_image* plm_image_load (const char* fname, Plm_image_type type);
+API Plm_image* plm_image_load_native (const char* fname);
+API void plm_image_save_vol (const char* fname, Volume *vol);
 
 #endif

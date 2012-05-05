@@ -10,8 +10,10 @@
 #include "pstring.h"
 #include "plm_image_header.h"
 
-// TODO:  change type of m_pih to Plm_image_header*
+// TODO: [1] change type of m_pih to Plm_image_header*
+//       [2] change type of m_demographics to Metadata* 
 
+//class Metadata;
 //class Plm_image_header;
 
 class Slice_index {

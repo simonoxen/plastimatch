@@ -18,7 +18,6 @@
 
 #include "gdcm1_series.h"
 #include "gdcm1_util.h"
-#include "metadata.h"
 #include "plm_image.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"

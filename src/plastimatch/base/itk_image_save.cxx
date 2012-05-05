@@ -14,8 +14,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "metadata.h"
-
 #if (defined(_WIN32) || defined(WIN32))
 #define snprintf _snprintf
 #define mkdir(a,b) _mkdir(a)

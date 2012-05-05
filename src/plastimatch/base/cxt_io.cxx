@@ -9,7 +9,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "metadata.h"
 #include "plm_math.h"
 #include "pstring.h"
 #include "rtss.h"

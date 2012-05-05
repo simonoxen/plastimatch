@@ -8,7 +8,6 @@
 #include "plmsys.h"
 
 #include "direction_cosines.h"
-#include "metadata.h"
 #include "plm_image.h"
 #include "xio_ct.h"
 

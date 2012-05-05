@@ -8,7 +8,7 @@
 #include "gdcmFile.h"
 #include "gdcmUtil.h"
 
-#include "metadata.h"
+#include "plmbase.h"
 
 void
 gdcm1_get_date_time (

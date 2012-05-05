@@ -10,7 +10,6 @@
 #include "plmbase.h"
 
 #include "bstrlib.h"
-#include "metadata.h"
 #include "make_string.h"
 
 std::string Metadata::KEY_NOT_FOUND = "";

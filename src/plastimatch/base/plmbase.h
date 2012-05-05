@@ -29,6 +29,7 @@
 #include "itk_resample.h"
 #include "itk_volume_header.h"
 #endif
+#include "metadata.h"
 #include "mha_io.h"
 #include "plm_file_format.h"
 #if (!PLM_CUDA_COMPILE)

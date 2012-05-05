@@ -7,7 +7,6 @@
 #include "plmbase_config.h"
 #include <map>
 #include <string>
-//#include "bstrwrap.h"
 
 #if defined (commentout)
 namespace gdcm {
@@ -15,7 +14,7 @@ namespace gdcm {
 };
 #endif
 
-class plastimatch1_EXPORT Metadata
+class API Metadata
 {
 public:
     Metadata ();
@@ -49,10 +48,10 @@ public:
     set_metadata (const std::string& key, const std::string& val);
     void
     set_metadata (unsigned short key1, unsigned short key2,
-	const std::string& val);
+        const std::string& val);
 
     void set_parent (Metadata *parent) {
-	m_parent = parent;
+        m_parent = parent;
     }
     void create_anonymous ();
 

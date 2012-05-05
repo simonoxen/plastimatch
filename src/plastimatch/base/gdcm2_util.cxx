@@ -7,7 +7,7 @@
 #include <string.h>
 #include "gdcmSystem.h"
 
-#include "metadata.h"
+#include "plmbase.h"
 
 namespace gdcm {
     class File;

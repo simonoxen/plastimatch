@@ -18,7 +18,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "metadata.h"
 #include "plm_image.h"
 #include "rtss_polyline_set.h"
 #include "xio_ct.h"

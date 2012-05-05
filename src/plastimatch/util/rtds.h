@@ -13,8 +13,13 @@
 #include "slice_index.h"
 #include "xio_ct.h"
 
+// TODO: [1] Change type of m_rdd to Slice_index*
+//       [2] Change type of m_meta to Metadata*
+
 class Gdcm_series;
+//class Metadata;
 class Rtss;
+//class Slice_index;
 
 /* rtds = RT data set */
 class plastimatch1_EXPORT Rtds {
@@ -24,17 +29,17 @@ public:
     Plm_image *m_dose;                 /* RT dose */
 
     Gdcm_series *m_gdcm_series;        /* Input dicom parse info */
-    Slice_index m_rdd;        /* UIDs, etc */
-    Metadata m_meta;       /* Patient name, patient id, etc. */
+    Slice_index m_rdd;                 /* UIDs, etc */
+    Metadata m_meta;                   /* Patient name, patient id, etc. */
     Xio_ct_transform *m_xio_transform; /* Transformation from XiO to DICOM
-					  coordinates */
+                                          coordinates */
     char m_xio_dose_input[_MAX_PATH];  /* Input XiO dose file to use as 
-					  template for XiO dose saving. */
+                                          template for XiO dose saving. */
 public:
     Rtds ();
     ~Rtds ();
     void load_dicom_dir (const char *dicom_dir);
-    void load_xio (const char *xio_dir,	Slice_index *rdd);
+    void load_xio (const char *xio_dir, Slice_index *rdd);
     void load_ss_img (const char *ss_img, const char *ss_list);
     void load_dose_img (const char *dose_img);
     void load_dose_xio (const char *dose_xio);
