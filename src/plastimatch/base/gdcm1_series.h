@@ -5,13 +5,20 @@
 #define _gdcm1_series_h_
 
 #include "plmbase_config.h"
+#include "gdcmCommon.h"
+#include "sys/plm_int.h"
 #include <map>
 #include <list>
 #include <vector>
 
-#include "plmsys.h"
-
 #include "pstring.h"
+
+/* JAS 2012.05.06
+ * Because this class uses a plm_long, we must include plm_int.h
+ * Therefore, we must also include gdcmCommon.h here (even though
+ * we don't need it) because, otherwise, the C99 integer fix imposed
+ * by gdcmCommon.h will break and result in int8_t redefinition errors
+ * under MSVC if other gdcm headers are subsequently included. */
 
 class Metadata;
 
