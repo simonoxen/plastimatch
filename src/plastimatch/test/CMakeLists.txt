@@ -37,7 +37,7 @@ endif ()
 if (DCMTK_FOUND AND DCMTK_VERSION_36 AND PLM_BUILD_DCMTK_TEST
     AND FULL_PLASTIMATCH_BUILD)
   plm_add_executable (dcmtk_test dcmtk_test.cxx
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_ALWAYS} ${INSTALL_NEVER})
 endif ()
 

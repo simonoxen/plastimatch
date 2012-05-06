@@ -12,8 +12,10 @@
 
 #include "dcmtk_file.h"
 #include "dcmtk_series.h"
+#include "plm_image.h"
 #include "plm_math.h"
 #include "rtds.h"
+#include "volume.h"
 
 /* This is the tolerance on irregularity of the grid spacing (in mm) */
 #define GFOV_SPACING_TOL (1e-1)

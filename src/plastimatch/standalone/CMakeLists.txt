@@ -53,11 +53,9 @@ set (DICE_STATS_SRC
 set (DICOM_INFO_SRC
   dicom_info.cxx
   )
-#set (DICOM_UID_SRC
-#  dicom_uid_main.cxx
-#  dcmtk_uid.cxx
-#  dcmtk_uid.h
-#  )
+set (DICOM_UID_SRC
+  dicom_uid_main.cxx
+  )
 set (DISTANCE_MAP_SRC
   distance_map.cxx
   )
@@ -235,8 +233,8 @@ if (OPENCL_FOUND)
 endif ()
 
 # dicom_uid requires dcmtk
-#if (DCMTK_FOUND)
-#  plm_add_executable (dicom_uid "${DICOM_UID_SRC}" 
-#    "${DCMTK_LIBRARIES}" "" 
-#    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-#endif ()
+if (DCMTK_FOUND)
+  plm_add_executable (dicom_uid "${DICOM_UID_SRC}" 
+    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+endif ()
