@@ -10,7 +10,7 @@
 class Bspline_xform;
 class Volume;
 
-class gpuit_EXPORT Volume_header {
+class API Volume_header {
 public:
     plm_long m_dim[3];
     float m_origin[3];

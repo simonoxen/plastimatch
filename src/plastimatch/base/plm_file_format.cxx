@@ -12,7 +12,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "xio_dir.h"
 
 static int
 is_xio_directory (const char* path)

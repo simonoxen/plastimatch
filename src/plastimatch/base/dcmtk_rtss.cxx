@@ -8,6 +8,7 @@
 #include "dcmtk/ofstd/ofstream.h"
 #include "dcmtk/dcmdata/dctk.h"
 
+#include "plmbase.h"
 #include "plmsys.h"
 
 #include "dcmtk_file.h"
@@ -18,7 +19,6 @@
 #include "plm_version.h"
 #include "rtds.h"
 #include "rtss.h"
-#include "rtss_structure.h"
 
 void
 Dcmtk_series::rtss_load (

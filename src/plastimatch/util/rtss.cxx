@@ -9,14 +9,10 @@
 #include "cxt_extract.h"
 #include "plm_warp.h"
 #include "rasterizer.h"
-#include "slice_index.h"
 #include "rtds.h"
 #include "rtss.h"
-#include "rtss_polyline_set.h"
-#include "rtss_structure.h"
 #include "ss_img_extract.h"
 #include "ss_img_stats.h"
-#include "ss_list_io.h"
 
 static void
 compose_prefix_fn (

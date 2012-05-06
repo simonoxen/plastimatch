@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "plmsys.h"
-
 #include "pstring.h"
 
 class Plm_image;

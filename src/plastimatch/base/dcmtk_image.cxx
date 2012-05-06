@@ -18,7 +18,6 @@
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "rtds.h"
-#include "volume_header.h"
 
 Plm_image*
 Dcmtk_series::load_plm_image (void)

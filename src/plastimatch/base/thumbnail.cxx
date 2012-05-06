@@ -6,7 +6,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "thumbnail.h"
 
 Thumbnail::Thumbnail ()
 {

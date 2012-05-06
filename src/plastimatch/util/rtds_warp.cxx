@@ -7,19 +7,13 @@
 #include "plmsys.h"
 
 #include "cxt_extract.h"
-#if GDCM_VERSION_1
-#include "gdcm1_rtss.h"
-#endif
 #include "plm_warp.h"
 #include "pstring.h"
-#include "slice_index.h"
 #include "rtds_warp.h"
 #include "rtss.h"
 #include "simplify_points.h"
 #include "ss_img_extract.h"
 #include "ss_img_stats.h"
-#include "ss_list_io.h"
-#include "xio_dose.h"
 
 static void
 load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)

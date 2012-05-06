@@ -16,15 +16,10 @@
 
 #include "plmbase.h"
 #include "plmsys.h"
-
-#include "gdcm1_series.h"
-#include "gdcm1_util.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
-#include "slice_index.h"
+
 #include "rtss.h"
-#include "rtss_polyline_set.h"
-#include "rtss_structure.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */
 #if defined GetCurrentTime

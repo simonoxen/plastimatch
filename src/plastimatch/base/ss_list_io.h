@@ -5,24 +5,20 @@
 #define _ss_list_io_h_
 
 #include "plmbase_config.h"
-#include "rtss_polyline_set.h"
 
-#if defined __cplusplus
-extern "C" {
-#endif
+class Rtss_polyline_set;
 
-plastimatch1_EXPORT
-Rtss_polyline_set*
-ss_list_load (Rtss_polyline_set* cxt, const char* ss_list_fn);
-plastimatch1_EXPORT
-void
-ss_list_save (Rtss_polyline_set* cxt, const char* cxt_fn);
-plastimatch1_EXPORT
-void
-ss_list_save_colormap (Rtss_polyline_set* cxt, const char* colormap_fn);
-
-#if defined __cplusplus
-}
-#endif
+C_API Rtss_polyline_set* ss_list_load (
+        Rtss_polyline_set* cxt,
+        const char* ss_list_fn
+);
+C_API void ss_list_save (
+        Rtss_polyline_set* cxt,
+        const char* cxt_fn
+);
+C_API void ss_list_save_colormap (
+        Rtss_polyline_set* cxt,
+        const char* colormap_fn
+);
 
 #endif

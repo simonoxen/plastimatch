@@ -10,7 +10,18 @@
 #include "bspline_xform.h"
 #include "cxt_io.h"
 #include "dcm_util.h"
+#if GDCM_VERSION_1
 #include "gdcm1_dose.h"
+#include "gdcm1_file.h"
+#include "gdcm1_rdd.h"
+#include "gdcm1_rtss.h"
+#include "gdcm1_series.h"
+#include "gdcm1_series_helper_2.h"
+#include "gdcm1_util.h"
+#endif
+#if GDCM_VERSION_2
+#include "gdcm2_util.h"
+#endif
 #include "hnd_io.h"
 #include "interpolate.h"
 #if (!PLM_CUDA_COMPILE)
@@ -29,6 +40,7 @@
 #include "itk_resample.h"
 #include "itk_volume_header.h"
 #endif
+#include "mc_dose.h"
 #include "metadata.h"
 #include "mha_io.h"
 #include "plm_file_format.h"
@@ -42,20 +54,34 @@
 #include "raw_pointset.h"
 #include "ray_trace.h"
 #include "rpl_volume.h"
-#include "vf_stats.h"
-#include "volume.h"
-#include "volume_limit.h"
-#include "volume_resample.h"
+#include "rtss_polyline_set.h"
+#include "rtss_structure.h"
+#include "ss_list_io.h"
+#if (!PLM_CUDA_COMPILE)
+#include "slice_index.h"
+#include "thumbnail.h"
+#endif
 #include "vf.h"
 #include "vf_convolve.h"
+#include "vf_stats.h"
+#include "volume.h"
+#include "volume_header.h"
+#include "volume_limit.h"
+#include "volume_resample.h"
 #include "xpm.h"
 #if (!PLM_CUDA_COMPILE)
 #include "xform.h"
+#include "xform_convert.h"
+#include "xform_point.h"
 #include "xform_legacy.h"
 #endif
 #include "xio_ct.h"
+#include "xio_dir.h"
+#include "xio_dose.h"
+#include "xio_demographic.h"
+#include "xio_patient.h"
+#include "xio_plan.h"
 #include "xio_structures.h"
 #include "xio_studyset.h"
-
 
 #endif

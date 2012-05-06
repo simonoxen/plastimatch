@@ -10,7 +10,6 @@
 
 #include "pcmd_thumbnail.h"
 #include "plm_clp.h"
-#include "thumbnail.h"
 
 class Thumbnail_parms {
 public:

@@ -11,14 +11,13 @@
 #include <omp.h>
 #endif
 
+#include "plmbase.h"
 #include "plmsys.h"
 
 #include "direction_cosines.h"
-#include "bspline.h"
 #include "interpolate_macros.h"
 #include "plm_math.h"
 #include "plm_path.h"
-#include "volume_header.h"
 #include "volume_macros.h"
 
 /* BEGIN : Functions migrated from bspline.cxx */

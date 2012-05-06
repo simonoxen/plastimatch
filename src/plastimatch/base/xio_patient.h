@@ -8,18 +8,16 @@
 #include "pstring.h"
 #include "plm_path.h"
 
-typedef struct xio_studyset_dir Xio_studyset_dir;
-struct xio_studyset_dir {
+struct Xio_studyset_dir {
     char path[_MAX_PATH];
 };
 
-typedef struct xio_plan_dir Xio_plan_dir;
-struct xio_plan_dir {
+struct Xio_plan_dir {
     char path[_MAX_PATH];
 };
 
 /* This class represents a toplevel patient directory */
-class plastimatch1_EXPORT Xio_patient {
+class API Xio_patient {
 public:
     Xio_patient (const char* path);
     ~Xio_patient ();

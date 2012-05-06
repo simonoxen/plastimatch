@@ -6,8 +6,6 @@
 
 #include "plmbase_config.h"
 
-plastimatch1_EXPORT 
-void
-xio_plan_get_studyset (const char *filename, char *studyset);
+API void xio_plan_get_studyset (const char *filename, char *studyset);
 
 #endif

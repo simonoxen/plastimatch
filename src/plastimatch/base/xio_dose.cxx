@@ -18,7 +18,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "rtss_polyline_set.h"
 
 #define XIO_DATATYPE_UINT32 5
 

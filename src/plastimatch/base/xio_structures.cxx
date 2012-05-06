@@ -16,12 +16,9 @@
 
 #include "plmbase.h"
 #include "plmsys.h"
-
 #include "plm_math.h"
 #include "plm_path.h"
 #include "pstring.h"
-#include "rtss_polyline_set.h"
-#include "rtss_structure.h"
 
 static void
 add_cms_contournames (Rtss_polyline_set *rtss, const char *filename)

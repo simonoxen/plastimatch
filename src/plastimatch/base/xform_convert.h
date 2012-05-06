@@ -6,10 +6,13 @@
 
 #include "plmbase_config.h"
 #include "volume_header.h"
-
 #include "xform.h"  /* cannot forward declare enum in C++ */
 
-class plastimatch1_EXPORT Xform_convert {
+// TODO: change type of m_volume_header to Volume_header*
+
+//class Volume_header;
+
+class API Xform_convert {
 public:
     Xform *m_xf_out;
     Xform *m_xf_in;
@@ -19,22 +22,21 @@ public:
     int m_nobulk;
 public:
     Xform_convert () {
-	m_xf_out = 0;
-	m_xf_in = 0;
-	m_xf_out_type = XFORM_NONE;
+        m_xf_out = 0;
+        m_xf_in = 0;
+        m_xf_out_type = XFORM_NONE;
 
-	for (int d = 0; d < 3; d++) {
-	    m_grid_spac[d] = 100.f;
-	}
-	m_nobulk = false;
+        for (int d = 0; d < 3; d++) {
+            m_grid_spac[d] = 100.f;
+        }
+        m_nobulk = false;
     }
     ~Xform_convert () {
-	if (m_xf_out) delete m_xf_out;
-	if (m_xf_in) delete m_xf_in;
+        if (m_xf_out) delete m_xf_out;
+        if (m_xf_in) delete m_xf_in;
     }
 };
 
-plastimatch1_EXPORT
-void xform_convert (Xform_convert *xfc);
+API void xform_convert (Xform_convert *xfc);
 
 #endif

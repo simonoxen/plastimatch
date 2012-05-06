@@ -9,10 +9,6 @@
 
 #include "plmbase.h"
 
-#if GDCM_VERSION_1
-#include "gdcm1_rtss.h"
-#include "gdcm1_series.h"
-#endif
 #include "rtds.h"
 #include "rtss.h"
 

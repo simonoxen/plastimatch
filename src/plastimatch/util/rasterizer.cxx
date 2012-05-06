@@ -15,8 +15,6 @@
 #include "plm_path.h"
 #include "rasterizer.h"
 #include "rasterize_slice.h"
-#include "rtss_polyline_set.h"
-#include "rtss_structure.h"
 
 Rasterizer::Rasterizer ()
 {

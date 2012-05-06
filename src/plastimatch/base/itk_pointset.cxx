@@ -7,7 +7,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "xform_point.h"
 
 /* Don't get confused by the parameterization of the itk pointset.  The 
    PixelType is the "color" of the point, whereas the PointType is the 
@@ -200,8 +199,8 @@ itk_pointset_debug (T pointset)
 }
 
 /* Explicit instantiations */
-template plastimatch1_EXPORT void itk_pointset_debug (FloatPointSetType::Pointer pointset);
-template plastimatch1_EXPORT void itk_pointset_debug (DoublePointSetType::Pointer pointset);
-template plastimatch1_EXPORT void itk_pointset_load (FloatPointSetType::Pointer pointset, const char* fn);
-template plastimatch1_EXPORT FloatPointSetType::Pointer itk_pointset_warp (FloatPointSetType::Pointer ps_in, Xform* xf);
-template plastimatch1_EXPORT FloatPointSetType::Pointer itk_float_pointset_from_pointset (const Unlabeled_pointset *ps);
+template API void itk_pointset_debug (FloatPointSetType::Pointer pointset);
+template API void itk_pointset_debug (DoublePointSetType::Pointer pointset);
+template API void itk_pointset_load (FloatPointSetType::Pointer pointset, const char* fn);
+template API FloatPointSetType::Pointer itk_pointset_warp (FloatPointSetType::Pointer ps_in, Xform* xf);
+template API FloatPointSetType::Pointer itk_float_pointset_from_pointset (const Unlabeled_pointset *ps);

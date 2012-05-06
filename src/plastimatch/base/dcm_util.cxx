@@ -8,7 +8,6 @@
 
 #include "plmbase.h"
 
-#include "gdcm1_rdd.h"
 #include "make_string.h"
 
 void

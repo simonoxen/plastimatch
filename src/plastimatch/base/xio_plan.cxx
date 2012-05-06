@@ -6,11 +6,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "plmbase.h"
 #include "plmsys.h"
 
 #include "bstrlib.h"
 #include "bstrwrap.h"
-#include "xio_plan.h"
 
 void
 xio_plan_get_studyset (const char *filename, char *studyset)

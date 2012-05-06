@@ -6,11 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "plmbase.h"
 #include "plmsys.h"
 
-#include "rtss_polyline_set.h"
-#include "rtss_structure.h"
-#include "ss_list_io.h"
 
 Rtss_polyline_set*
 ss_list_load (Rtss_polyline_set* cxt, const char* ss_list_fn)

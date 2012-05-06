@@ -13,15 +13,10 @@
 #include "gdcmUtil.h"
 #endif
 
-#include "gdcm1_file.h"
-#include "gdcm1_rtss.h"
-#include "gdcm1_series.h"
-#include "gdcm1_util.h"
+#include "plmbase.h"
 #include "plm_math.h"
 #include "plm_uid_prefix.h"
-#include "plm_version.h"
-#include "slice_index.h"
-#include "rtss_polyline_set.h"
+
 
 void
 gdcm1_load_rdd (

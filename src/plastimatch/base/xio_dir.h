@@ -6,12 +6,16 @@
 
 #include "plmbase_config.h"
 #include <vector>
-#include "xio_patient.h"
+#include "pstring.h"
+
+class Xio_patient;
+struct Xio_studyset_dir;
+struct Xio_plan_dir;
 
 /* This class represents the input directory, which could be a 
    patient directory, plan directory, or even a directory which 
    contains multiple patients */
-class plastimatch1_EXPORT Xio_dir {
+class API Xio_dir {
 public:
     Pstring path;
     std::vector<Xio_patient*> patient_dir;
@@ -28,12 +32,8 @@ public:
     static int is_xio_plan_dir (std::string dir);
 };
 
-plastimatch1_EXPORT
-int
-xio_dir_num_patients (Xio_dir* xd);
+API int xio_dir_num_patients (Xio_dir* xd);
 
-plastimatch1_EXPORT
-Xio_studyset_dir*
-xio_plan_dir_get_studyset_dir (Xio_plan_dir* xtpd);
+API Xio_studyset_dir* xio_plan_dir_get_studyset_dir (Xio_plan_dir* xtpd);
 
 #endif

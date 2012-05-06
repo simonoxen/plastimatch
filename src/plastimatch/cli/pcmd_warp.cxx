@@ -9,7 +9,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "gdcm1_rtss.h"
 #include "plm_clp.h"
 #include "plm_warp.h"
 #include "pstring.h"

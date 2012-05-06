@@ -14,8 +14,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "volume_header.h"
-
 #if (defined(_WIN32) || defined(WIN32))
 #define snprintf _snprintf
 #define mkdir(a,b) _mkdir(a)
@@ -140,16 +138,16 @@ itk_image_header_copy (T dest, U src)
 }
 
 /* Explicit instantiations */
-template plastimatch1_EXPORT void get_image_header (plm_long dim[3], float offset[3], float spacing[3], UCharImageType::Pointer image);
-template plastimatch1_EXPORT void get_image_header (plm_long dim[3], float offset[3], float spacing[3], ShortImageType::Pointer image);
-template plastimatch1_EXPORT void get_image_header (plm_long dim[3], float offset[3], float spacing[3], UShortImageType::Pointer image);
-template plastimatch1_EXPORT void get_image_header (plm_long dim[3], float offset[3], float spacing[3], FloatImageType::Pointer image);
-template plastimatch1_EXPORT void itk_image_set_header (UCharVecImageType::Pointer, Plm_image_header *pih);
-template plastimatch1_EXPORT void itk_image_set_header (DeformationFieldType::Pointer, Plm_image_header *pih);
-template plastimatch1_EXPORT void itk_image_header_copy (UCharVecImageType::Pointer, UCharImageType::Pointer);
-template plastimatch1_EXPORT void itk_image_header_copy (UCharVecImageType::Pointer, UInt32ImageType::Pointer);
-template plastimatch1_EXPORT void itk_image_header_copy (UCharVecImageType::Pointer, UCharVecImageType::Pointer);
-template plastimatch1_EXPORT void itk_image_header_copy (UCharVecImageType::Pointer, DeformationFieldType::Pointer);
-template plastimatch1_EXPORT void itk_image_header_copy (UCharImageType::Pointer, UCharVecImageType::Pointer);
-template plastimatch1_EXPORT void itk_image_header_copy (UCharImage2DType::Pointer, UCharVecImage2DType::Pointer);
-template plastimatch1_EXPORT void itk_image_get_volume_header (Volume_header *, DeformationFieldType::Pointer);
+template API void get_image_header (plm_long dim[3], float offset[3], float spacing[3], UCharImageType::Pointer image);
+template API void get_image_header (plm_long dim[3], float offset[3], float spacing[3], ShortImageType::Pointer image);
+template API void get_image_header (plm_long dim[3], float offset[3], float spacing[3], UShortImageType::Pointer image);
+template API void get_image_header (plm_long dim[3], float offset[3], float spacing[3], FloatImageType::Pointer image);
+template API void itk_image_set_header (UCharVecImageType::Pointer, Plm_image_header *pih);
+template API void itk_image_set_header (DeformationFieldType::Pointer, Plm_image_header *pih);
+template API void itk_image_header_copy (UCharVecImageType::Pointer, UCharImageType::Pointer);
+template API void itk_image_header_copy (UCharVecImageType::Pointer, UInt32ImageType::Pointer);
+template API void itk_image_header_copy (UCharVecImageType::Pointer, UCharVecImageType::Pointer);
+template API void itk_image_header_copy (UCharVecImageType::Pointer, DeformationFieldType::Pointer);
+template API void itk_image_header_copy (UCharImageType::Pointer, UCharVecImageType::Pointer);
+template API void itk_image_header_copy (UCharImage2DType::Pointer, UCharVecImage2DType::Pointer);
+template API void itk_image_get_volume_header (Volume_header *, DeformationFieldType::Pointer);

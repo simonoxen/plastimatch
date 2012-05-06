@@ -14,11 +14,8 @@
 
 #include "plmbase.h"
 
-#include "gdcm1_util.h"
-#include "gdcm2_util.h"
 #include "make_string.h"
 #include "plm_uid_prefix.h"
-#include "slice_index.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */
 #if defined GetCurrentTime

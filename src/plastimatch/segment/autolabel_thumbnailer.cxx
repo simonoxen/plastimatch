@@ -8,7 +8,6 @@
 
 #include "autolabel_thumbnailer.h"
 #include "dlib_trainer.h"
-#include "thumbnail.h"
 
 Autolabel_thumbnailer::Autolabel_thumbnailer ()
 {

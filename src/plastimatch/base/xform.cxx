@@ -17,7 +17,6 @@
 
 #include "bspline.h"
 #include "plm_parms.h"
-#include "volume_header.h"
 
 static void
 itk_bsp_set_grid_img (Xform *xf,

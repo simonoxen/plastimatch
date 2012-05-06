@@ -15,13 +15,9 @@
 
 #include "plmbase.h"
 #include "plmsys.h"
-
-#include "gdcm1_series.h"
-#include "gdcm1_util.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
-#include "slice_index.h"
-#include "rtss_polyline_set.h"
+
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */
 #if defined GetCurrentTime
@@ -448,5 +444,5 @@ gdcm1_dose_save (
 }
 
 /* Explicit instantiations */
-template plastimatch1_EXPORT void gdcm1_dose_copy_raw (float *img_out, unsigned short *img_in, int nvox, float scale);
-template plastimatch1_EXPORT void gdcm1_dose_copy_raw (float *img_out, unsigned long int *img_in, int nvox, float scale);
+template API void gdcm1_dose_copy_raw (float *img_out, unsigned short *img_in, int nvox, float scale);
+template API void gdcm1_dose_copy_raw (float *img_out, unsigned long int *img_in, int nvox, float scale);

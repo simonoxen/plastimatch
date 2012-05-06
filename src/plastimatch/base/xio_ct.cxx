@@ -18,11 +18,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#if GDCM_VERSION_1
-#include "gdcm1_series.h"
-#endif
-#include "slice_index.h"
-#include "rtss_polyline_set.h"
 
 typedef struct xio_ct_header Xio_ct_header;
 struct xio_ct_header {

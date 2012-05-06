@@ -14,11 +14,9 @@
 #include "itkDirectory.h"
 #include "bstrlib.h"
 
+#include "plmbase.h"
 #include "plmsys.h"
 
-#include "xio_dir.h"
-#include "xio_patient.h"
-#include "xio_plan.h"
 
 Xio_patient::Xio_patient (
     const char* path

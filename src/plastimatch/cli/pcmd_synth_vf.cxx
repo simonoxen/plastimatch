@@ -15,7 +15,6 @@
 #include "rtds.h"
 #include "rtss.h"
 #include "synthetic_vf.h"
-#include "volume_header.h"
 
 typedef struct synthetic_vf_main_parms Synthetic_vf_main_parms;
 struct synthetic_vf_main_parms {

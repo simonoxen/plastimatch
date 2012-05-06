@@ -13,8 +13,6 @@
 
 #include "plm_math.h"
 #include "pstring.h"
-#include "rtss_polyline_set.h"
-#include "rtss_structure.h"
 
 
 static void

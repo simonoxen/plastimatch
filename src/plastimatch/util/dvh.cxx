@@ -14,7 +14,6 @@
 #include "make_string.h"
 #include "rtds.h"
 #include "rtss.h"
-#include "rtss_structure.h"
 
 
 Dvh_parms::Dvh_parms ()

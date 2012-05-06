@@ -323,20 +323,20 @@ subsample_image (T& image, int x_sampling_rate,
 }
 
 /* Explicit instantiations */
-template plastimatch1_EXPORT DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, Plm_image_header*);
+template API DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, Plm_image_header*);
 template DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, FloatImageType::Pointer&);
 template DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, float, float, float);
 
-template plastimatch1_EXPORT UCharImageType::Pointer resample_image (UCharImageType::Pointer&, Plm_image_header*, float default_val, int interp_lin);
-template plastimatch1_EXPORT ShortImageType::Pointer resample_image (ShortImageType::Pointer&, Plm_image_header*, float default_val, int interp_lin);
-template plastimatch1_EXPORT UShortImageType::Pointer resample_image (UShortImageType::Pointer&, Plm_image_header*, float default_val, int interp_lin);
-template plastimatch1_EXPORT Int32ImageType::Pointer resample_image (Int32ImageType::Pointer&, Plm_image_header*, float default_val, int interp_lin);
-template plastimatch1_EXPORT UInt32ImageType::Pointer resample_image (UInt32ImageType::Pointer&, Plm_image_header*, float default_val, int interp_lin);
-template plastimatch1_EXPORT FloatImageType::Pointer resample_image (FloatImageType::Pointer&, Plm_image_header*, float default_val, int interp_lin);
+template API UCharImageType::Pointer resample_image (UCharImageType::Pointer&, Plm_image_header*, float default_val, int interp_lin);
+template API ShortImageType::Pointer resample_image (ShortImageType::Pointer&, Plm_image_header*, float default_val, int interp_lin);
+template API UShortImageType::Pointer resample_image (UShortImageType::Pointer&, Plm_image_header*, float default_val, int interp_lin);
+template API Int32ImageType::Pointer resample_image (Int32ImageType::Pointer&, Plm_image_header*, float default_val, int interp_lin);
+template API UInt32ImageType::Pointer resample_image (UInt32ImageType::Pointer&, Plm_image_header*, float default_val, int interp_lin);
+template API FloatImageType::Pointer resample_image (FloatImageType::Pointer&, Plm_image_header*, float default_val, int interp_lin);
 
-template plastimatch1_EXPORT UCharImageType::Pointer subsample_image (UCharImageType::Pointer&, int, int, int, float);
-template plastimatch1_EXPORT ShortImageType::Pointer subsample_image (ShortImageType::Pointer&, int, int, int, float);
-template plastimatch1_EXPORT UShortImageType::Pointer subsample_image (UShortImageType::Pointer&, int, int, int, float);
-template plastimatch1_EXPORT Int32ImageType::Pointer subsample_image (Int32ImageType::Pointer&, int, int, int, float);
-template plastimatch1_EXPORT UInt32ImageType::Pointer subsample_image (UInt32ImageType::Pointer&, int, int, int, float);
-template plastimatch1_EXPORT FloatImageType::Pointer subsample_image (FloatImageType::Pointer&, int, int, int, float);
+template API UCharImageType::Pointer subsample_image (UCharImageType::Pointer&, int, int, int, float);
+template API ShortImageType::Pointer subsample_image (ShortImageType::Pointer&, int, int, int, float);
+template API UShortImageType::Pointer subsample_image (UShortImageType::Pointer&, int, int, int, float);
+template API Int32ImageType::Pointer subsample_image (Int32ImageType::Pointer&, int, int, int, float);
+template API UInt32ImageType::Pointer subsample_image (UInt32ImageType::Pointer&, int, int, int, float);
+template API FloatImageType::Pointer subsample_image (FloatImageType::Pointer&, int, int, int, float);

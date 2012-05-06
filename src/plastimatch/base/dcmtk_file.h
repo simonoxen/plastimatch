@@ -5,15 +5,16 @@
 #define _dcmtk_file_h_
 
 #include "plmbase_config.h"
-
 #include "plmsys.h"
-
 #include "volume_header.h"
+
+// TODO: change type of m_vh to Volume_header*
 
 class DcmDataset;
 class DcmElement;
 class DcmSequenceOfItems;
 class DcmTagKey;
+//class Volume_header;
 
 class Dcmtk_file
 {
@@ -48,20 +49,12 @@ public:
     void load_header (const char *fn);
 };
 
-#if defined __cplusplus
-extern "C" {
-#endif
 
-plastimatch1_EXPORT
-void
-dcmtk_series_test (char *dicom_dir);
+C_API void dcmtk_series_test (char *dicom_dir);
+C_API bool dcmtk_file_compare_z_position (
+        const Dcmtk_file* f1,
+        const Dcmtk_file* f2
+);
 
-plastimatch1_EXPORT
-bool
-dcmtk_file_compare_z_position (const Dcmtk_file* f1, const Dcmtk_file* f2);
-
-#if defined __cplusplus
-}
-#endif
 
 #endif

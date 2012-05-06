@@ -6,10 +6,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "plmbase.h"
 #include "plmsys.h"
 
 #include "bstrlib.h"
-#include "xio_demographic.h"
 
 Xio_demographic::Xio_demographic (const char *filename)
 {

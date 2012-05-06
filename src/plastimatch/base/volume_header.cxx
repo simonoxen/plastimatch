@@ -9,7 +9,6 @@
 
 #include "plmbase.h"
 
-#include "volume_header.h"
 
 void
 Volume_header::set_dim (const plm_long dim[3])

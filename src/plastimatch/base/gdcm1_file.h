@@ -12,17 +12,17 @@ namespace gdcm
     class File;
 };
 
-plastimatch1_EXPORT
-std::string
-gdcm_file_GetEntryValue (gdcm::File *file, unsigned short group, 
-    unsigned short elem);
+API std::string
+gdcm_file_GetEntryValue (
+        gdcm::File *file,
+        unsigned short group,
+        unsigned short elem
+);
 
-plastimatch1_EXPORT
-const std::string&
+API const std::string&
 gdcm_file_GDCM_UNKNOWN ();
 
-plastimatch1_EXPORT
-const std::string&
+API const std::string&
 gdcm_file_GDCM_UNFOUND ();
 
 #endif

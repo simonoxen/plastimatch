@@ -9,8 +9,6 @@
 
 #include "rtds.h"
 #include "rtss.h"
-#include "rtss_structure.h"
-#include "rtss_polyline_set.h"
 #include "simplify_points.h"
 #include "vnl/vnl_random.h"
 

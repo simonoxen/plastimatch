@@ -63,7 +63,7 @@ plm_image_convert_gpuit_to_itk (Plm_image* pli, T itk_img, U)
 }
 
 template<class T, class U> 
-plastimatch1_EXPORT void
+API void
 plm_image_convert_itk_to_gpuit (Plm_image* pli, T img, U)
 {
     typedef typename T::ObjectType ImageType;
@@ -385,104 +385,104 @@ plm_image_convert_itk_uchar_vec_to_gpuit_uchar_vec (Plm_image* pli,
 
 
 /* Explicit instantiations */
-template plastimatch1_EXPORT 
+template API 
 UCharImageType::Pointer
 plm_image_convert_gpuit_to_itk (Plm_image* pli, UCharImageType::Pointer itk_img, unsigned char);
-template plastimatch1_EXPORT 
+template API 
 UCharImageType::Pointer
 plm_image_convert_gpuit_to_itk (Plm_image* pli, UCharImageType::Pointer itk_img, float);
-template plastimatch1_EXPORT 
+template API 
 ShortImageType::Pointer
 plm_image_convert_gpuit_to_itk (Plm_image* pli, ShortImageType::Pointer itk_img, short);
-template plastimatch1_EXPORT 
+template API 
 ShortImageType::Pointer
 plm_image_convert_gpuit_to_itk (Plm_image* pli, ShortImageType::Pointer itk_img, float);
-template plastimatch1_EXPORT 
+template API 
 UShortImageType::Pointer
 plm_image_convert_gpuit_to_itk (Plm_image* pli, UShortImageType::Pointer itk_img, unsigned short);
-template plastimatch1_EXPORT 
+template API 
 UShortImageType::Pointer
 plm_image_convert_gpuit_to_itk (Plm_image* pli, UShortImageType::Pointer itk_img, float);
-template plastimatch1_EXPORT 
+template API 
 Int32ImageType::Pointer
 plm_image_convert_gpuit_to_itk (Plm_image* pli, Int32ImageType::Pointer itk_img, unsigned char);
-template plastimatch1_EXPORT 
+template API 
 Int32ImageType::Pointer
 plm_image_convert_gpuit_to_itk (Plm_image* pli, Int32ImageType::Pointer itk_img, short);
-template plastimatch1_EXPORT 
+template API 
 Int32ImageType::Pointer
 plm_image_convert_gpuit_to_itk (Plm_image* pli, Int32ImageType::Pointer itk_img, uint32_t);
-template plastimatch1_EXPORT 
+template API 
 Int32ImageType::Pointer
 plm_image_convert_gpuit_to_itk (Plm_image* pli, Int32ImageType::Pointer itk_img, float);
-template plastimatch1_EXPORT 
+template API 
 UInt32ImageType::Pointer
 plm_image_convert_gpuit_to_itk (Plm_image* pli, UInt32ImageType::Pointer itk_img, unsigned char);
-template plastimatch1_EXPORT 
+template API 
 UInt32ImageType::Pointer
 plm_image_convert_gpuit_to_itk (Plm_image* pli, UInt32ImageType::Pointer itk_img, short);
-template plastimatch1_EXPORT 
+template API 
 UInt32ImageType::Pointer
 plm_image_convert_gpuit_to_itk (Plm_image* pli, UInt32ImageType::Pointer itk_img, uint32_t);
-template plastimatch1_EXPORT 
+template API 
 UInt32ImageType::Pointer
 plm_image_convert_gpuit_to_itk (Plm_image* pli, UInt32ImageType::Pointer itk_img, float);
-template plastimatch1_EXPORT 
+template API 
 FloatImageType::Pointer
 plm_image_convert_gpuit_to_itk (Plm_image* pli, FloatImageType::Pointer itk_img, unsigned char);
-template plastimatch1_EXPORT 
+template API 
 FloatImageType::Pointer
 plm_image_convert_gpuit_to_itk (Plm_image* pli, FloatImageType::Pointer itk_img, float);
-template plastimatch1_EXPORT 
+template API 
 DoubleImageType::Pointer
 plm_image_convert_gpuit_to_itk (Plm_image* pli, DoubleImageType::Pointer itk_img, unsigned char);
-template plastimatch1_EXPORT 
+template API 
 DoubleImageType::Pointer
 plm_image_convert_gpuit_to_itk (Plm_image* pli, DoubleImageType::Pointer itk_img, float);
 
-template plastimatch1_EXPORT 
+template API 
 void
 plm_image_convert_itk_to_gpuit_float (Plm_image* pli, UCharImageType::Pointer img);
-template plastimatch1_EXPORT 
+template API 
 void
 plm_image_convert_itk_to_gpuit_float (Plm_image* pli, ShortImageType::Pointer img);
-template plastimatch1_EXPORT 
+template API 
 void
 plm_image_convert_itk_to_gpuit_float (Plm_image* pli, UInt32ImageType::Pointer img);
-template plastimatch1_EXPORT 
+template API 
 void
 plm_image_convert_itk_to_gpuit_float (Plm_image* pli, Int32ImageType::Pointer img);
-template plastimatch1_EXPORT 
+template API 
 void
 plm_image_convert_itk_to_gpuit_float (Plm_image* pli, FloatImageType::Pointer img);
-template plastimatch1_EXPORT 
+template API 
 void
 plm_image_convert_itk_to_gpuit_float (Plm_image* pli, DoubleImageType::Pointer img);
 
-template plastimatch1_EXPORT
+template API
 void
 plm_image_convert_itk_to_gpuit (Plm_image* pli, UCharImageType::Pointer img, unsigned char);
-template plastimatch1_EXPORT
+template API
 void
 plm_image_convert_itk_to_gpuit (Plm_image* pli, ShortImageType::Pointer img, unsigned char);
-template plastimatch1_EXPORT
+template API
 void
 plm_image_convert_itk_to_gpuit (Plm_image* pli, FloatImageType::Pointer img, unsigned char);
-template plastimatch1_EXPORT
+template API
 void
 plm_image_convert_itk_to_gpuit (Plm_image* pli, UCharImageType::Pointer img, short);
-template plastimatch1_EXPORT
+template API
 void
 plm_image_convert_itk_to_gpuit (Plm_image* pli, ShortImageType::Pointer img, short);
-template plastimatch1_EXPORT
+template API
 void
 plm_image_convert_itk_to_gpuit (Plm_image* pli, FloatImageType::Pointer img, short);
-template plastimatch1_EXPORT
+template API
 void
 plm_image_convert_itk_to_gpuit (Plm_image* pli, UCharImageType::Pointer img, float);
-template plastimatch1_EXPORT
+template API
 void
 plm_image_convert_itk_to_gpuit (Plm_image* pli, ShortImageType::Pointer img, float);
-template plastimatch1_EXPORT
+template API
 void
 plm_image_convert_itk_to_gpuit (Plm_image* pli, FloatImageType::Pointer img, float);

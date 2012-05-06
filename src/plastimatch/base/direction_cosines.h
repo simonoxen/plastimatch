@@ -11,7 +11,7 @@
 
 #define DIRECTION_COSINES_IDENTITY_THRESH 1e-9
 
-class gpuit_EXPORT Direction_cosines {
+class API Direction_cosines {
   public:
     float m_direction_cosines[9];
 

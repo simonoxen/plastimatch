@@ -9,14 +9,14 @@
 #include "plmbase.h"
 
 #include "pstring.h"
-#include "slice_index.h"
-#include "rtss_polyline_set.h"
 #include "warp_parms.h"
 #include "xio_studyset.h"
 
 class Plm_image;
 class Plm_image_header;
 class Rtds;
+class Rtss_polyline_set;
+class Slice_index;
 class Xform;
 class Xio_ct_transform;
 

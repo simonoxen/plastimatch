@@ -7,7 +7,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "xform_convert.h"
 
 void 
 xform_convert (Xform_convert *xfc)

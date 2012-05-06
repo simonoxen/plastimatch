@@ -44,7 +44,7 @@ set (PLMBASE_LIBRARY_SRC
   itk_pointset.cxx
   itk_resample.cxx
   itk_volume_header.cxx
-  mc_dose.cxx                      #TODO
+  mc_dose.cxx
   metadata.cxx
   mha_io.cxx
   plm_file_format.cxx
@@ -57,28 +57,28 @@ set (PLMBASE_LIBRARY_SRC
   ray_trace_exact.cxx
   ray_trace_uniform.cxx
   rpl_volume.cxx
-  rtss_polyline_set.cxx            #TODO
-  rtss_structure.cxx               #TODO
-  slice_index.cxx                  #TODO
+  rtss_polyline_set.cxx
+  rtss_structure.cxx
+  slice_index.cxx
   ss_list_io.cxx                   #TODO
-  thumbnail.cxx                    #TODO
+  thumbnail.cxx
   vf_convolve.cxx
-  vf_stats.cxx                     #TODO
+  vf_stats.cxx
   vf.cxx
-  volume_header.cxx                #TODO
+  volume_header.cxx
   volume_limit.cxx
   volume_resample.cxx
   volume.cxx
   xform.cxx
-  xform_convert.cxx                #TODO
+  xform_convert.cxx
   xform_legacy.cxx
-  xform_point.cxx                  #TODO
+  xform_point.cxx
   xio_ct.cxx
-  xio_demographic.cxx              #TODO
-  xio_dir.cxx                      #TODO
-  xio_dose.cxx                     #TODO
-  xio_patient.cxx                  #TODO
-  xio_plan.cxx                     #TODO
+  xio_demographic.cxx
+  xio_dir.cxx
+  xio_dose.cxx
+  xio_patient.cxx
+  xio_plan.cxx
   xio_structures.cxx
   xio_studyset.cxx
   xpm.cxx

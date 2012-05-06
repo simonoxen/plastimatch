@@ -17,8 +17,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
-#include "gdcm1_series.h"
-#include "gdcm1_series_helper_2.h"
 #include "plm_math.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"

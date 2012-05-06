@@ -32,16 +32,6 @@ public:
     void sort_all (void);
 };
 
-#if defined __cplusplus
-extern "C" {
-#endif
-
-plastimatch1_EXPORT
-void
-dcmtk_series_set_test (char *dicom_dir);
-
-#if defined __cplusplus
-}
-#endif
+C_API void dcmtk_series_set_test (char *dicom_dir);
 
 #endif

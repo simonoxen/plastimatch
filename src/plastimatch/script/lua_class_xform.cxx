@@ -22,7 +22,6 @@ extern "C"
 #include "lua_util.h"
 #include "pcmd_script.h"
 #include "plm_warp.h"
-#include "xform_convert.h"
 
 /* Name of class as exposed to Lua */
 #define THIS_CLASS LUA_CLASS_XFORM

@@ -6,12 +6,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "plmbase.h"
 #include "plmsys.h"
 
 #include "plm_math.h"
 #include "pstring.h"
-#include "rtss_polyline_set.h"
-#include "rtss_structure.h"
 
 Rtss_polyline::Rtss_polyline ()
 {
