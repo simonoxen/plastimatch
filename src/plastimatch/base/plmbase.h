@@ -19,6 +19,10 @@
 #if GDCM_VERSION_2
 #include "gdcm2_util.h"
 #endif
+#if (!PLM_CUDA_COMPILE)
+#include "itk_dicom_load.h"
+#include "itk_dicom_save.h"
+#endif
 
 #include "astroid_dose.h"
 #include "bspline_xform.h"
@@ -29,8 +33,6 @@
 #if (!PLM_CUDA_COMPILE)
 #include "itkClampCastImageFilter.h"
 #include "itk_directions.h"
-#include "itk_dicom_load.h"
-#include "itk_dicom_save.h"
 #include "itk_image.h"
 #include "itk_image_cast.h"
 #include "itk_image_load.h"
