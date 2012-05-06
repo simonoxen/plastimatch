@@ -9,7 +9,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "xio_studyset.h"
+#include "plmbase.h"
 
 Xio_studyset::Xio_studyset (const char *input_dir)
 {
@@ -106,7 +106,7 @@ Xio_studyset::~Xio_studyset ()
 }
 
 
-Xio_studyset_slice::Xio_studyset_slice (string slice_filename_scan, const float slice_location)
+Xio_studyset_slice::Xio_studyset_slice (std::string slice_filename_scan, const float slice_location)
 {
     filename_scan = slice_filename_scan;
     location = slice_location;

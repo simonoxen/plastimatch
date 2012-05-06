@@ -5,13 +5,12 @@
 #define _xio_structures_h_
 
 #include "plmbase_config.h"
-
 #include "plmbase.h"
 
-#include "xio_ct.h"
 #include "xio_studyset.h"
 
 class Metadata;
+class Xio_studyset;
 
 C_API void xio_structures_load (
         Rtss_polyline_set *structures,

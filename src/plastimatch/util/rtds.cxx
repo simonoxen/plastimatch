@@ -19,11 +19,9 @@
 #include "rtds.h"
 #include "rtss.h"
 #include "ss_list_io.h"
-#include "xio_ct.h"
 #include "xio_demographic.h"
 #include "xio_dir.h"
 #include "xio_dose.h"
-#include "xio_studyset.h"
 #include "xio_structures.h"
 
 Rtds::Rtds ()

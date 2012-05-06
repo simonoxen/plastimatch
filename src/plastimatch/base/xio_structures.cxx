@@ -22,8 +22,6 @@
 #include "pstring.h"
 #include "rtss_polyline_set.h"
 #include "rtss_structure.h"
-#include "xio_ct.h"
-#include "xio_studyset.h"
 #include "xio_structures.h"
 
 static void

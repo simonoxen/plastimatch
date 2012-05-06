@@ -23,8 +23,6 @@
 #endif
 #include "slice_index.h"
 #include "rtss_polyline_set.h"
-#include "xio_ct.h"
-#include "xio_studyset.h"
 #include "xio_structures.h"
 
 typedef struct xio_ct_header Xio_ct_header;
@@ -213,7 +211,7 @@ xio_ct_load (Plm_image *pli, const Xio_studyset *studyset)
     int i;
 
     Xio_ct_header xch;
-    string ct_file;
+    std::string ct_file;
 
     if (studyset->number_slices > 0) {
 	ct_file = studyset->studyset_dir 

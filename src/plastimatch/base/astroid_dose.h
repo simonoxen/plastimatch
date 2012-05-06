@@ -8,7 +8,7 @@
 
 class Metadata;
 class Plm_image;
-typedef struct xio_ct_transform Xio_ct_transform;
+class Xio_ct_transform;
 
 C_API void astroid_dose_load (
         Plm_image *plm,

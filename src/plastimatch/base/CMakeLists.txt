@@ -73,7 +73,7 @@ set (PLMBASE_LIBRARY_SRC
   xform_convert.cxx                #TODO
   xform_legacy.cxx
   xform_point.cxx                  #TODO
-  xio_ct.cxx                       #TODO
+  xio_ct.cxx
   xio_demographic.cxx              #TODO
   xio_dir.cxx                      #TODO
   xio_dose.cxx                     #TODO

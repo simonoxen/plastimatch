@@ -10,9 +10,8 @@
 #include "metadata.h"
 #include "plm_path.h"
 #include "slice_index.h"
-#include "xio_ct.h"
 
-// TODO: [1] Change type of m_rdd to Slice_index*
+// TODO: [3] Change type of m_rdd to Slice_index*
 //       [2] Change type of m_meta to Metadata*
 
 class Gdcm_series;
@@ -20,6 +19,7 @@ class Gdcm_series;
 class Plm_image;
 class Rtss;
 //class Slice_index;
+class Xio_ct_transform;
 
 /* rtds = RT data set */
 class plastimatch1_EXPORT Rtds {

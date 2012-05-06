@@ -15,19 +15,17 @@ enum Xio_version {
     XIO_VERSION_4_5_0,         /* Current MGH photon Xio */
 };
 
-using namespace std;
-
 class Xio_studyset_slice
 {
 public:
-    string name;
+    std::string name;
     float location;
 
-    string filename_scan;
-    string filename_contours;
+    std::string filename_scan;
+    std::string filename_contours;
     
 public:
-    Xio_studyset_slice (string slice_filename_scan, const float slice_location);
+    Xio_studyset_slice (std::string slice_filename_scan, const float slice_location);
     ~Xio_studyset_slice ();
 
     bool operator < (const Xio_studyset_slice &cmp) const
@@ -42,7 +40,7 @@ public:
     std::string studyset_dir;
     int number_slices;
     float thickness;
-    vector<Xio_studyset_slice> slices;
+    std::vector<Xio_studyset_slice> slices;
     
 public:
     Xio_studyset (const char *studyset_dir);
