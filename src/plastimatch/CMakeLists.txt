@@ -16,6 +16,7 @@ option (PLM_CONFIG_PREFER_DCMTK
   "Use DCMTK instead of GDCM for DICOM operations" OFF)
 option (PLM_USE_SS_IMAGE_VEC
   "Save structure sets as ITK UCHAR VEC images (in development)" OFF)
+option (PLM_CONFIG_CLANG_COMPLETE "Generate .clang_complete for hipster Vim-ers" OFF)
 
 ##-----------------------------------------------------------------------------
 ##  Include directories
@@ -92,6 +93,19 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/sys/plm_config.h.in
 
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/sys/plm_fortran.h.in
   ${PLM_BUILD_ROOT}/plm_fortran.h)
+
+##-----------------------------------------------------------------------------
+## Option to generate .clang_complete for hip Vim users using clang_complete
+##-----------------------------------------------------------------------------
+if (PLM_CONFIG_CLANG_COMPLETE)
+    get_property(inc_dirs DIRECTORY PROPERTY INCLUDE_DIRECTORIES)
+    set (file_clang_complete "${PLM_SRC_ROOT}/src/plastimatch/.clang_complete")
+    foreach (arg ${inc_dirs})
+        set (inc_args "${inc_args} -I${arg}\n")
+    endforeach ()
+    file (WRITE "${file_clang_complete}" "${inc_args}")
+    message (STATUS "Generated ${file_clang_complete}")
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  PLMSYS/GPUIT/PLASTIMATCH LIBRARY SOURCE FILES
