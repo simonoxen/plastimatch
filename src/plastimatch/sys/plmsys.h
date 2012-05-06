@@ -11,9 +11,6 @@
 
 #include "dir_list.h"
 #include "file_util.h"
-#ifndef GDCMCOMMON_H
-#include "plm_int.h"
-#endif
 #include "plm_path.h"
 #include "plm_fwrite.h"
 #include "plm_timer.h"
