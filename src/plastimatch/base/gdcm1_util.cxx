@@ -10,6 +10,11 @@
 
 #include "plmbase.h"
 
+/* winbase.h defines GetCurrentTime which conflicts with gdcm function */
+#if defined GetCurrentTime
+# undef GetCurrentTime
+#endif
+
 void
 gdcm1_get_date_time (
     std::string *date,
