@@ -22,7 +22,6 @@
 #include "pstring.h"
 #include "rtss_polyline_set.h"
 #include "rtss_structure.h"
-#include "xio_structures.h"
 
 static void
 add_cms_contournames (Rtss_polyline_set *rtss, const char *filename)

@@ -54,6 +54,7 @@
 #include "xform_legacy.h"
 #endif
 #include "xio_ct.h"
+#include "xio_structures.h"
 #include "xio_studyset.h"
 
 

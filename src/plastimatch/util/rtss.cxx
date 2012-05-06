@@ -17,7 +17,6 @@
 #include "ss_img_extract.h"
 #include "ss_img_stats.h"
 #include "ss_list_io.h"
-#include "xio_structures.h"
 
 static void
 compose_prefix_fn (

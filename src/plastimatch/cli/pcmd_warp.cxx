@@ -16,7 +16,6 @@
 #include "rtds.h"
 #include "rtds_warp.h"
 #include "pcmd_warp.h"
-#include "xio_structures.h"
 
 static void
 usage_fn (dlib::Plm_clp* parser, int argc, char *argv[])

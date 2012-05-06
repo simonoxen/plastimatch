@@ -22,7 +22,6 @@
 #include "xio_demographic.h"
 #include "xio_dir.h"
 #include "xio_dose.h"
-#include "xio_structures.h"
 
 Rtds::Rtds ()
 {

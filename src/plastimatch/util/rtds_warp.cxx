@@ -20,7 +20,6 @@
 #include "ss_img_stats.h"
 #include "ss_list_io.h"
 #include "xio_dose.h"
-#include "xio_structures.h"
 
 static void
 load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)

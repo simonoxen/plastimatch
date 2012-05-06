@@ -79,8 +79,8 @@ set (PLMBASE_LIBRARY_SRC
   xio_dose.cxx                     #TODO
   xio_patient.cxx                  #TODO
   xio_plan.cxx                     #TODO
-  xio_structures.cxx               #TODO
-  xio_studyset.cxx                 #TODO
+  xio_structures.cxx
+  xio_studyset.cxx
   xpm.cxx
   )
 

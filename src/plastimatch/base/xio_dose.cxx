@@ -19,7 +19,6 @@
 #include "plmsys.h"
 
 #include "rtss_polyline_set.h"
-#include "xio_structures.h"
 
 #define XIO_DATATYPE_UINT32 5
 
