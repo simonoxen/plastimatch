@@ -16,6 +16,7 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 set (PLMUTIL_LIBRARY_SRC
   bspline_warp.cxx
   cxt_extract.cxx
+  diff.cxx
   dvh.cxx 
   gamma_analysis.cxx
   itk_adjust.cxx
