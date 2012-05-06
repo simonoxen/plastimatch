@@ -233,7 +233,7 @@ if (OPENCL_FOUND)
 endif ()
 
 # dicom_uid requires dcmtk
-if (DCMTK_FOUND)
+if (DCMTK_FOUND AND NOT DCMTK_VERSION_STRING VERSION_LESS 3.6.0)
   plm_add_executable (dicom_uid "${DICOM_UID_SRC}" 
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})

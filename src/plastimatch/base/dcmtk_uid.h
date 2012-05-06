@@ -4,13 +4,9 @@
 #ifndef __dcmtk_uid_h__
 #define __dcmtk_uid_h__
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-char*
+#include "plmbase_config.h"
+
+API char*
 plm_generate_dicom_uid (char *uid, const char *uid_root);
-#ifdef __cplusplus
-}
-#endif
 
 #endif
