@@ -45,9 +45,16 @@ set (PLMUTIL_LIBRARY_DEPENDENCIES
   plmbase
   plmsys
   )
+
 ##-----------------------------------------------------------------------------
-##  SPECIAL BUILD RULES: SSE2
+##  SPECIAL BUILD RULES: OpenMP & SSE2
 ##-----------------------------------------------------------------------------
+if (OPENMP_FOUND)
+  set (PLMUTIL_LIBRARY_LDFLAGS "${OPENMP_LDFLAGS}")
+  set_source_files_properties (bspline_warp.cxx
+    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
+endif ()
+
 if (SSE2_FOUND AND NOT BUILD_AGAINST_SLICER3)
   plm_set_sse2_flags (bspline_warp.cxx)
 endif ()
@@ -59,7 +66,7 @@ plm_add_library (
   plmutil
   "${PLMUTIL_LIBRARY_SRC}" 
   "${PLMUTIL_LIBRARY_DEPENDENCIES}"
-  "")
+  "${PLMUTIL_LIBRARY_LDFLAGS}")
 
 ##-----------------------------------------------------------------------------
 ##  SPECIAL RULES FOR SLICER

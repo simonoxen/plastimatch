@@ -136,13 +136,11 @@ if (OPENMP_FOUND)
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
   set_source_files_properties (bspline_regularize_analytic.cxx
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
-  set_source_files_properties (bspline_warp.cxx
-    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
 endif ()
 
 # bspline registration benefits from SSE2
 if (SSE2_FOUND AND NOT BUILD_AGAINST_SLICER3)
-  plm_set_sse2_flags (bspline.cxx bspline_mi.cxx bspline_mse.cxx bspline_warp.cxx)
+  plm_set_sse2_flags (bspline.cxx bspline_mi.cxx bspline_mse.cxx)
 endif ()
 
 ##-----------------------------------------------------------------------------
