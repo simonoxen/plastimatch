@@ -14,7 +14,7 @@
 #include "plm_math.h"
 #include "gamma_analysis.h"
 
-void find_dose_threshold( Gamma_parms *parms ) { 	
+void find_dose_threshold( Gamma_parms *parms ) {
 	
     FloatImageType::Pointer img_in1 = parms->img_in1->itk_float();
     
@@ -225,6 +225,15 @@ void do_gamma_analysis( Gamma_parms *parms ) {
     parms->labelmap_out->set_itk( labelmap_fail);
 }
 
+class Gamma_filter_private {
+public:
+    int i;
+};
 
+Gamma_filter::Gamma_filter (...) {
+    d_ptr = new Gamma_filter_private;
+}
 
-
+Gamma_filter::~Gamma_filter () {
+    delete d_ptr;
+}

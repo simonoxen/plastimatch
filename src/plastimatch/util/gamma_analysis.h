@@ -6,6 +6,7 @@
 
 #include "plmutil_config.h"
 #include "direction_cosines.h"
+#include "plm_macros.h"
 
 class Plm_image;
 
@@ -29,6 +30,26 @@ public:
     Gamma_parms () {
         r_tol = d_tol = gamma_max = 3;
     }
+};
+
+class Gamma_filter_private;
+
+/*! \brief This is a sample "Filter API" class for Gamma.  
+ * How it works is a mystery. */
+class Gamma_filter {
+public:
+    Gamma_filter (...);
+    ~Gamma_filter ();
+public:
+    Gamma_filter_private *d_ptr;
+public:
+
+    PLM_GET_SET(float, s_tol);
+
+    /*! Sets the r_tol value */
+    PLM_SET(float, r_tol);
+    /*! Returns the r_tol value */
+    PLM_GET(float, r_tol);
 };
 
 /*! \brief This function finds a dose threshold.  It is a global function. 
