@@ -104,23 +104,22 @@ if (ITK_FOUND AND GDCM_VERSION_2)
     )
 endif ()
 
-# JAS 2012.04.28 -- Commented out for Plastimatch 2.0 transition
-#if (DCMTK_FOUND AND NOT DCMTK_VERSION_STRING VERSION_LESS 3.6.0)
-#  set (PLMBASE_LIBRARY_SRC
-#    ${PLMBASE_LIBRARY_SRC}
-#    dcmtk_file.cxx
-#    dcmtk_image.cxx
-#    dcmtk_load.cxx
-#    dcmtk_metadata.cxx
-#    dcmtk_save.cxx
-#    dcmtk_series.cxx
-#    dcmtk_rtdose.cxx 
-#    dcmtk_rtss.cxx
-#    dcmtk_series_set.cxx
-#    dcmtk_uid.cxx
-#    dcmtk_util.cxx
-#    )
-#endif ()
+if (DCMTK_FOUND AND NOT DCMTK_VERSION_STRING VERSION_LESS 3.6.0)
+  set (PLMBASE_LIBRARY_SRC
+    ${PLMBASE_LIBRARY_SRC}
+    dcmtk_file.cxx
+    dcmtk_image.cxx
+    dcmtk_load.cxx
+    dcmtk_metadata.cxx
+    dcmtk_save.cxx
+    dcmtk_series.cxx
+    dcmtk_rtdose.cxx 
+    dcmtk_rtss.cxx
+    dcmtk_series_set.cxx
+    dcmtk_uid.cxx
+    dcmtk_util.cxx
+    )
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  LIBRARY DEPENDENCIES
