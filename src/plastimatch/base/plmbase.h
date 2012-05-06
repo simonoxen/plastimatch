@@ -6,10 +6,7 @@
 
 #include "plmbase_config.h"
 
-#include "astroid_dose.h"
-#include "bspline_xform.h"
-#include "cxt_io.h"
-#include "dcm_util.h"
+/* gdcm must be before headers including plm_int.h */
 #if GDCM_VERSION_1
 #include "gdcm1_dose.h"
 #include "gdcm1_file.h"
@@ -22,6 +19,11 @@
 #if GDCM_VERSION_2
 #include "gdcm2_util.h"
 #endif
+
+#include "astroid_dose.h"
+#include "bspline_xform.h"
+#include "cxt_io.h"
+#include "dcm_util.h"
 #include "hnd_io.h"
 #include "interpolate.h"
 #if (!PLM_CUDA_COMPILE)
