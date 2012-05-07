@@ -13,6 +13,7 @@
 
 #include "bspline_optimize.h"
 #include "bspline_regularize.h"
+#include "bspline_landmarks.h"
 #include "plm_math.h"
 #include "plm_parms.h"
 #include "registration_data.h"
@@ -198,10 +199,10 @@ do_gpuit_bspline_stage_internal (
             regd->fixed_landmarks->count(),
             regd->moving_landmarks->count(),
             stage->landmark_stiffness);
-        parms.blm.set_landmarks (regd->fixed_landmarks, 
+        parms.blm->set_landmarks (regd->fixed_landmarks, 
             regd->moving_landmarks);
-        parms.blm.landmark_implementation = stage->landmark_flavor;
-        parms.blm.landmark_stiffness = stage->landmark_stiffness;
+        parms.blm->landmark_implementation = stage->landmark_flavor;
+        parms.blm->landmark_stiffness = stage->landmark_stiffness;
     }
 
     /* Transform input xform to gpuit vector field */

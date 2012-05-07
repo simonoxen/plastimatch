@@ -11,9 +11,9 @@
 #include "nlopt.h"
 #endif
 
+#include "plmregister.h"
 #include "plm_math.h"
 
-#include "bspline.h"
 #include "bspline_optimize_nlopt.h"
 
 #if (NLOPT_FOUND)

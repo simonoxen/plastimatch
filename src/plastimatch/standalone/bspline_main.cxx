@@ -14,8 +14,8 @@
 #include <math.h>
 
 #include "plmbase.h"
+#include "plmregister.h"
 
-#include "bspline.h"
 #include "bspline_optimize.h"
 #include "bspline_opts.h"
 #if (CUDA_FOUND)

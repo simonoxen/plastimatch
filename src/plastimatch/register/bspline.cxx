@@ -42,7 +42,6 @@
 #include "interpolate_macros.h"
 #include "volume_macros.h"
 
-#include "bspline.h"
 #include "bspline_mi.h"
 #include "bspline_mse.h"
 #if (CUDA_FOUND)
@@ -51,6 +50,7 @@
 #include "bspline_regularize.h"
 #include "bspline_optimize.h"
 #include "bspline_optimize_lbfgsb.h"
+#include "bspline_landmarks.h"
 
 
 /* -----------------------------------------------------------------------
@@ -93,6 +93,7 @@ Bspline_parms::Bspline_parms ()
     this->fixed_mask = NULL;
     this->moving_mask = NULL;
 
+    this->blm = new Bspline_landmarks;
     this->reg_parms = new Reg_parms;
 
 	this->rbf_radius = 0;
@@ -102,6 +103,7 @@ Bspline_parms::Bspline_parms ()
 
 Bspline_parms::~Bspline_parms ()
 {
+    delete this->blm;
     delete this->reg_parms;
 }
 
@@ -176,7 +178,7 @@ bspline_state_create (
     Bspline_state *bst = (Bspline_state*) malloc (sizeof (Bspline_state));
     Reg_parms* reg_parms = parms->reg_parms;
     Bspline_regularize_state* rst = &bst->rst;
-    Bspline_landmarks* blm = &parms->blm;
+    Bspline_landmarks* blm = parms->blm;
 
     memset (bst, 0, sizeof (Bspline_state));
     bst->ssd.grad = (float*) malloc (bxf->num_coeff * sizeof(float));
@@ -641,7 +643,7 @@ report_score (
 {
     Bspline_score* ssd = &bst->ssd;
     Reg_parms* reg_parms = parms->reg_parms;
-    Bspline_landmarks* blm = &parms->blm;
+    Bspline_landmarks* blm = parms->blm;
 
     int i;
     float ssd_grad_norm, ssd_grad_mean;
@@ -711,7 +713,7 @@ bspline_score (Bspline_optimize_data *bod)
     Bspline_xform *bxf   = bod->bxf;
 
     Reg_parms* reg_parms = parms->reg_parms;
-    Bspline_landmarks* blm = &parms->blm;
+    Bspline_landmarks* blm = parms->blm;
 
     /* CPU Implementations */
     if (parms->threading == BTHR_CPU) {

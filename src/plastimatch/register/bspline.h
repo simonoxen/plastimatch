@@ -9,7 +9,8 @@
 #include <string>
 
 #include "plmbase.h"
-#include "bspline_landmarks.h"
+#include "plmregister.h"
+
 #include "bspline_regularize_state.h"
 
 #define DOUBLE_HISTS	// Use doubles for histogram accumulation
@@ -29,6 +30,7 @@
     typedef double double_align8;
 #endif
 
+class Bspline_landmarks;
 class Reg_parms;
 
 /* -----------------------------------------------------------------------
@@ -144,10 +146,10 @@ public:
     Volume* moving_mask;
 
     /* Regularization */
-    Reg_parms* reg_parms;         /* Regularization Parameters */
+    Reg_parms* reg_parms;        /* Regularization Parameters */
 
     /* Landmarks */
-    Bspline_landmarks blm;       /* Landmarks parameters */
+    Bspline_landmarks* blm;      /* Landmarks parameters */
     float rbf_radius;            /* Radius of RBF; if rbf_radius>0, RBF are used */
     float rbf_young_modulus;     /* Penalty for the large 2nd derivative of RBF vector field */
     char* xpm_hist_dump;         /* Pointer to base string of hist dumps */

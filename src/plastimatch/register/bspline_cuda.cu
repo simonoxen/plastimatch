@@ -10,6 +10,7 @@
 #endif
 
 #include "plmbase.h"
+#include "plmregister.h"
 
 #include "bspline_cuda.h"
 #include "bspline_cuda_kernels.h"

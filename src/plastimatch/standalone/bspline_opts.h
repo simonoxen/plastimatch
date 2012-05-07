@@ -50,15 +50,9 @@ public:
     }
 };
 
-#if defined __cplusplus
-extern "C" {
-#endif
+C_API void bspline_opts_parse_args (
+    Bspline_options* options, 
+    int argc,char* argv[]
+);
 
-gpuit_EXPORT
-void bspline_opts_parse_args (Bspline_options* options, 
-    int argc, char* argv[]);
-
-#if defined __cplusplus
-}
-#endif
 #endif

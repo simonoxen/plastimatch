@@ -9,10 +9,10 @@
 #include <math.h>
 
 #include "plmbase.h"
+#include "plmregister.h"
 #include "plmsys.h"
 #include "plm_math.h"
 
-#include "bspline.h"
 #include "bspline_mi.h"
 #include "bspline_optimize.h"
 #include "bspline_optimize_liblbfgs.h"

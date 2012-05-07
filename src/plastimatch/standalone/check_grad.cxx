@@ -9,8 +9,8 @@
 #include <time.h>
 
 #include "plmbase.h"
+#include "plmregister.h"
 
-#include "bspline.h"
 #include "bspline_mi.h"
 #include "bspline_optimize.h"
 #if defined (HAVE_F2C_LIBRARY)

@@ -8,14 +8,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "bspline.h"
 #include "bspline_optimize_lbfgsb.h"
-#include "plm_fortran.h"
 
 #include "plmbase.h"
+#include "plmregister.h"
 #include "plmsys.h"
 
 #include "plm_math.h"
+#include "plm_fortran.h"
 
 
 /* Defined in f2c.h, conflicts with std::numeric_limits::max */

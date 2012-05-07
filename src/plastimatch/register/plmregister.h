@@ -6,6 +6,7 @@
 
 #include "plmregister_config.h"
 
+#include "bspline.h"
 #include "bspline_landmarks.h"
 //#include "plm_parms.h"
 

@@ -12,7 +12,6 @@
 #include <math.h>
 #include <cuda.h>
 
-#include "bspline.h"
 #include "cuda_mem.h"
 #include "delayload.h"
 

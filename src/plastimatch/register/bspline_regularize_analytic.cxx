@@ -10,11 +10,11 @@
 #endif
 
 #include "plmbase.h"
+#include "plmregister.h"
 #include "plmsys.h"
 
 #include "plm_math.h"
 
-#include "bspline.h"
 #include "bspline_regularize.h"
 #include "bspline_regularize_analytic.h"
 

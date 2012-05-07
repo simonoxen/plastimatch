@@ -11,7 +11,6 @@
 
 #include "plmregister.h"
 
-#include "bspline.h"
 #include "compiler_warnings.h"
 #include "landmark_warp.h"
 #include "plm_math.h"

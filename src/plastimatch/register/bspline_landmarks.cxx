@@ -13,9 +13,8 @@
 #include "plmsys.h"
 
 #include "plm_math.h"
-
-#include "bspline.h"
 #include "volume_macros.h"
+
 
 
 #if defined (commentout)
@@ -332,7 +331,7 @@ bspline_landmarks_score_a (
 )
 {
     Bspline_score* ssd = &bst->ssd;
-    Bspline_landmarks *blm = &parms->blm;
+    Bspline_landmarks *blm = parms->blm;
     int lidx;
 #if defined (commentout)
     FILE *fp, *fp2;
