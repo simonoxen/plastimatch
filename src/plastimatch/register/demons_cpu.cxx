@@ -27,7 +27,7 @@ demons_c (
     Volume* moving, 
     Volume* moving_grad, 
     Volume* vf_init, 
-    DEMONS_Parms* parms)
+    Demons_parms* parms)
 {
     plm_long i, j, k, v;
     int	it;	           /* Iterations */

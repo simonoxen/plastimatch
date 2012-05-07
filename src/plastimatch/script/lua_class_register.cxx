@@ -20,6 +20,7 @@ extern "C"
 #include "lua_class_xform.h"
 #include "lua_util.h"
 #include "plm_stages.h"
+#include "plm_parms.h"
 #include "registration_data.h"
 
 /* Name of class as exposed to Lua */

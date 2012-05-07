@@ -7,6 +7,7 @@
 #include "plmregister_config.h"
 #include "itkImageRegistrationMethod.h"
 #include "plm_stages.h"
+#include "plm_parms.h"
 
 class Registration_data;
 class Xform;

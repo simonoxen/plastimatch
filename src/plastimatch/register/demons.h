@@ -5,13 +5,12 @@
 #define _demons_h_
 
 #include "plmregister_config.h"
-#include "plmbase.h"
-
-#include "delayload.h"
 #include "threading.h"
 
-typedef struct DEMONS_Parms_struct DEMONS_Parms;
-struct DEMONS_Parms_struct {
+class Volume;
+
+class Demons_parms {
+public:
     Threading threading;
     float denominator_eps;
     float homog;
@@ -21,14 +20,21 @@ struct DEMONS_Parms_struct {
     float filter_std;
 };
 
-#if defined __cplusplus
-extern "C" {
-#endif
-gpuit_EXPORT
-void demons_default_parms (DEMONS_Parms* parms);
-gpuit_EXPORT
-Volume* demons (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, DEMONS_Parms* parms);
-Volume* demons_c (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, DEMONS_Parms* parms);
+API void demons_default_parms (Demons_parms* parms);
+API Volume* demons (
+        Volume* fixed,
+        Volume* moving,
+        Volume* moving_grad,
+        Volume* vf_init,
+        Demons_parms* parms
+);
+Volume* demons_c (
+        Volume* fixed,
+        Volume* moving,
+        Volume* moving_grad,
+        Volume* vf_init,
+        Demons_parms* parms
+);
 
 //plmopencl_EXPORT (
 Volume* demons_opencl (
@@ -36,10 +42,7 @@ Volume* demons_opencl (
     Volume* moving,
     Volume* moving_grad,
     Volume* vf_init,
-    DEMONS_Parms* parms
+    Demons_parms* parms
 );
-#if defined __cplusplus
-}
-#endif
 
 #endif

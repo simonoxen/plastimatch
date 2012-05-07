@@ -9,7 +9,7 @@
 #include <string>
 #include <ctype.h>
 #include <stdlib.h>
-#include "bspline.h"
+#include "bspline.h"    /* for enums */
 #include "plm_path.h"
 #include "pstring.h"
 #include "threading.h"

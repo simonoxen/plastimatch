@@ -5,23 +5,16 @@
 #define _plm_stages_h_
 
 #include "plmregister_config.h"
-#include "plm_parms.h"
-#include "registration_data.h"
 
-/* -----------------------------------------------------------------------
-   Public functions
-   ----------------------------------------------------------------------- */
+class Registration_data;
+class Registration_parms;
+class Xform;
 
-plastimatch1_EXPORT
-void
-do_registration_pure (
+API void do_registration_pure (
     Xform** xf_result,
     Registration_data* regd,
     Registration_parms* regp
 );
-
-plastimatch1_EXPORT
-void
-do_registration (Registration_parms* regp);
+API void do_registration (Registration_parms* regp);
 
 #endif

@@ -15,10 +15,10 @@
 #include "itkPointSet.h"
 #include "itkThinPlateSplineKernelTransform.h"
 
-#include "landmark_warp.h"
+class Landmark_warp;
 
-typedef struct tps_parms TPS_parms;
-struct tps_parms {
+class TPS_parms {
+public:
     char* reference;
     char* target;
     char* fixed;
@@ -28,11 +28,7 @@ struct tps_parms {
 };
 
 template<class T>
-API
-void do_tps(TPS_parms* parms,typename itk::Image<T,3>::Pointer img_fixed, typename itk::Image<T,3>::Pointer img_moving,T);
-
-API void itk_tps_warp (
-    Landmark_warp *lw
-);
+API void do_tps (TPS_parms* parms,typename itk::Image<T,3>::Pointer img_fixed, typename itk::Image<T,3>::Pointer img_moving,T);
+API void itk_tps_warp (Landmark_warp *lw);
 
 #endif

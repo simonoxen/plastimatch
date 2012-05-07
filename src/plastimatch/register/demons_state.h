@@ -7,8 +7,9 @@
 #include "plmregister_config.h"
 
 class Volume;
+class Demons_parms;
 
-class gpuit_EXPORT Demons_state {
+class API Demons_state {
   public:
     Volume *vf_smooth;
     Volume *vf_est;
@@ -20,7 +21,7 @@ class gpuit_EXPORT Demons_state {
 	Volume* moving, 
 	Volume* moving_grad, 
 	Volume* vf_init, 
-	DEMONS_Parms* parms);
+	Demons_parms* parms);
 };
 
 #endif

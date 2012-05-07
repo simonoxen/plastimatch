@@ -377,7 +377,7 @@ demons_cuda (
     Volume* moving, 
     Volume* moving_grad, 
     Volume* vf_init, 
-    DEMONS_Parms* parms
+    Demons_parms* parms
 )
 {
     int i;

@@ -32,7 +32,7 @@ void
 parse_args (DEMONS_Options* options, int argc, char* argv[])
 {
     int i, rc;
-    DEMONS_Parms* parms = &options->parms;
+    Demons_parms* parms = &options->parms;
 
     options->output_img_fn = 0;
     options->output_vf_fn = 0;

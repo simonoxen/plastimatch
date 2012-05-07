@@ -11,13 +11,15 @@
 #include <dlfcn.h>
 #endif
 
+#include "plmbase.h"
+
 #include "delayload.h"
 #include "demons.h"
 #include "demons_cuda.h"
 #include "demons_state.h"
 
 void
-demons_default_parms (DEMONS_Parms* parms)
+demons_default_parms (Demons_parms* parms)
 {
     parms->threading = THREADING_CPU_OPENMP;
     parms->accel = 1.0;
@@ -37,7 +39,7 @@ demons (
     Volume* moving, 
     Volume* moving_grad, 
     Volume* vf_init, 
-    DEMONS_Parms* parms
+    Demons_parms* parms
 )
 {
 #if (CUDA_FOUND || OPENCL_FOUND)

@@ -11,6 +11,7 @@
 #include "demons.h"
 #include "plmregister_config.h"
 #include "plm_stages.h"
+#include "plm_parms.h"
 #include "registration_data.h"
 
 void
@@ -21,7 +22,7 @@ do_gpuit_demons_stage_internal (
     Stage_parms* stage)
 {
     int d;
-    DEMONS_Parms parms;
+    Demons_parms parms;
     Plm_image_header pih;
 
     Volume* fixed = regd->fixed_image->gpuit_float();

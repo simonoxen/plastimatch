@@ -21,12 +21,12 @@
 #include "itkMeanSquaresImageToImageMetric.h"
 #endif
 
+#include "compiler_warnings.h"
+#include "plmutil.h"
 #include "plmsys.h"
 
-#include "compiler_warnings.h"
 #include "itk_demons.h"
 #include "itk_optim.h"
-#include "itk_warp.h"
 #include "plm_parms.h"
 #include "registration_data.h"
 

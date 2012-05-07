@@ -18,7 +18,7 @@
 // Since this function is commented out, this will suffice.
 // I did this to suppress build errors while transitioning
 // to Plastimatch 2.0.
-typedef struct DEMONS_Parms_struct DEMONS_Parms;
+typedef struct Demons_parms_struct Demons_parms;
 
 Volume*
 demons_opencl (
@@ -26,7 +26,7 @@ demons_opencl (
     Volume* moving, 
     Volume* moving_grad, 
     Volume* vf_init, 
-    DEMONS_Parms* parms)
+    Demons_parms* parms)
 {
 #if defined (commentout)
     int	it;						/* Iterations */

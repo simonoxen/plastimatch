@@ -12,7 +12,7 @@ struct DEMONS_Options_struct {
     char* moving_fn;
     char* output_vf_fn;
     char* output_img_fn;
-    DEMONS_Parms parms;
+    Demons_parms parms;
 };
 
 void parse_args (DEMONS_Options* options, int argc, char* argv[]);

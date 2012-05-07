@@ -5,20 +5,10 @@
 #define _rbf_cluster_h_
 
 #include "plmregister_config.h"
-#include "landmark_warp.h"
 
-#if defined __cplusplus
-extern "C" {
-#endif
+class Landmark_warp;
 
-plastimatch1_EXPORT
-void rbf_cluster_kmeans_plusplus(Landmark_warp *lw);
-
-plastimatch1_EXPORT
-void rbf_cluster_find_adapt_radius(Landmark_warp *lw);
-
-#if defined __cplusplus
-}
-#endif
+API void rbf_cluster_kmeans_plusplus (Landmark_warp *lw);
+API void rbf_cluster_find_adapt_radius (Landmark_warp *lw);
 
 #endif
