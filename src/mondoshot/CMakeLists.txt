@@ -40,10 +40,12 @@ endif ()
 ##  Executable targets
 ##-----------------------------------------------------------------------------
 # mondoshot requires WIN32, wx, dcmtk, sqlite3
-if (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
+if (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND
+    AND NOT DCMTK_VERSION_STRING VERSION_LESS 3.6.0)
   add_executable (mondoshot WIN32 ${MONDOSHOT_SRC})
   target_link_libraries (mondoshot 
-    ${wxWidgets_LIBRARIES} ${DCMTK_LIBRARIES} ${SQLITE_LIBRARIES})
+    ${wxWidgets_LIBRARIES} ${DCMTK_LIBRARIES} ${SQLITE_LIBRARIES}
+    ${PLASTIMATCH_LIBS})
   if (NOT BUILD_AGAINST_SLICER3)
     install (TARGETS mondoshot DESTINATION bin)
   endif ()

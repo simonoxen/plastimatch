@@ -229,13 +229,14 @@ if (DCMTK_FOUND)
       file (STRINGS "${DCMTK_INCLUDE_DIR}/dcmtk/config/cfunix.h"
         DCMTK_VERSION_STRING
         REGEX "^#define PACKAGE_VERSION *\"([^\"]*)\"")
-      if (DCMTK_VERSION_STRING)
-	# GCS: The below doesn't seem to work on Mac CMake 2.6.4.
-	#  SET (DCMTK_VERSION_STRING "${CMAKE_MATCH_1}")
-	string (REGEX REPLACE "[^\"]*\"([^\"]*)\".*" "\\1"
-	  DCMTK_VERSION_STRING "${DCMTK_VERSION_STRING}")
-      endif ()
     endif ()
+  endif ()
+
+  if (DCMTK_VERSION_STRING)
+    # GCS: The below doesn't seem to work on Mac CMake 2.6.4.
+    #  SET (DCMTK_VERSION_STRING "${CMAKE_MATCH_1}")
+    string (REGEX REPLACE "[^\"]*\"([^\"]*)\".*" "\\1"
+      DCMTK_VERSION_STRING "${DCMTK_VERSION_STRING}")
   endif ()
   message (STATUS "DCMTK version is ${DCMTK_VERSION_STRING}")
 endif ()
