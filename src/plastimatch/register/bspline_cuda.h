@@ -12,8 +12,6 @@
 #include <math.h>
 #include <cuda.h>
 
-#include "plmbase.h"
-
 #include "bspline.h"
 #include "cuda_mem.h"
 #include "delayload.h"
@@ -28,6 +26,12 @@
 
 /* HARDWARE IMPOSED CONSTANTS */
 #define GPU_MAX_BINS 32
+
+class Bspline_mi_hist;
+class Bspline_parms;
+class Bspline_state;
+class Bspline_xform;
+class Volume;
 
 typedef struct dev_pointers_bspline Dev_Pointers_Bspline;
 struct dev_pointers_bspline
@@ -260,7 +264,7 @@ extern "C" {
     int
     CUDA_bspline_mi_hist (
         Dev_Pointers_Bspline *dev_ptrs,
-        BSPLINE_MI_Hist* mi_hist,
+        Bspline_mi_hist* mi_hist,
         Volume* fixed,
         Volume* moving,
         Bspline_xform *bxf
@@ -269,7 +273,7 @@ extern "C" {
     void
     CUDA_bspline_mi_hist_fix (
         Dev_Pointers_Bspline *dev_ptrs,
-        BSPLINE_MI_Hist* mi_hist,
+        Bspline_mi_hist* mi_hist,
         Volume* fixed,
         Volume* moving,
         Bspline_xform *bxf
@@ -278,7 +282,7 @@ extern "C" {
     void
     CUDA_bspline_mi_hist_mov (
         Dev_Pointers_Bspline *dev_ptrs,
-        BSPLINE_MI_Hist* mi_hist,
+        Bspline_mi_hist* mi_hist,
         Volume* fixed,
         Volume* moving,
         Bspline_xform *bxf
@@ -287,7 +291,7 @@ extern "C" {
     int
     CUDA_bspline_mi_hist_jnt (
         Dev_Pointers_Bspline *dev_ptrs,
-        BSPLINE_MI_Hist* mi_hist,
+        Bspline_mi_hist* mi_hist,
         Volume* fixed,
         Volume* moving,
         Bspline_xform *bxf
@@ -295,7 +299,7 @@ extern "C" {
 
     void
     CUDA_bspline_mi_grad (
-        BSPLINE_MI_Hist* mi_hist,
+        Bspline_mi_hist* mi_hist,
         Bspline_state *bst,
         Bspline_xform *bxf,
         Volume* fixed,

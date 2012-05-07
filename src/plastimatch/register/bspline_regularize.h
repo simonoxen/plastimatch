@@ -22,25 +22,17 @@ public:
     }
 };
 
-gpuit_EXPORT
-void
-bspline_regularize_initialize (
+API void bspline_regularize_initialize (
     Reg_parms* reg_parms,
     Bspline_regularize_state* rst,
     Bspline_xform* bxf
 );
-
-gpuit_EXPORT
-void
-bspline_regularize_destroy (
+API void bspline_regularize_destroy (
     Reg_parms* reg_parms,
     Bspline_regularize_state* rst,
     Bspline_xform* bxf
 );
-
-gpuit_EXPORT
-void
-bspline_regularize (
+API void bspline_regularize (
     Bspline_score* bsp_score,    /* Gets updated */
     Bspline_regularize_state* rst,
     const Reg_parms* reg_parms,

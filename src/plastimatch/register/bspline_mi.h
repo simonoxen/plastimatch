@@ -5,60 +5,16 @@
 #define _bspline_mi_h_
 
 #include "plmregister_config.h"
-#include "plmbase.h"
 
-#include "bspline.h"
-#include "bspline_optimize.h"
+class Bspline_optimize_data;
+class Bspline_parms;
 
-/* -----------------------------------------------------------------------
-   Function declarations
-   ----------------------------------------------------------------------- */
-#if defined __cplusplus
-extern "C" {
-#endif
-
-gpuit_EXPORT
-void
-bspline_initialize_mi (Bspline_parms* parms);
-
-gpuit_EXPORT
-void
-bspline_score_c_mi (
-    Bspline_optimize_data *bod
-);
-
-gpuit_EXPORT
-void
-bspline_score_d_mi (
-    Bspline_optimize_data *bod
-);
-
-gpuit_EXPORT
-void
-bspline_score_e_mi (
-    Bspline_optimize_data *bod
-);
-
-gpuit_EXPORT
-void
-bspline_score_f_mi (
-    Bspline_optimize_data *bod
-);
-
-gpuit_EXPORT
-void
-bspline_score_g_mi (
-    Bspline_optimize_data *bod
-);
-
-gpuit_EXPORT
-void
-bspline_score_h_mi (
-    Bspline_optimize_data *bod
-);
-
-#if defined __cplusplus
-}
-#endif
+C_API void bspline_initialize_mi (Bspline_parms* parms);
+C_API void bspline_score_c_mi (Bspline_optimize_data *bod);
+C_API void bspline_score_d_mi (Bspline_optimize_data *bod);
+C_API void bspline_score_e_mi (Bspline_optimize_data *bod);
+C_API void bspline_score_f_mi (Bspline_optimize_data *bod);
+C_API void bspline_score_g_mi (Bspline_optimize_data *bod);
+C_API void bspline_score_h_mi (Bspline_optimize_data *bod);
 
 #endif

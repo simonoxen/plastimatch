@@ -9,8 +9,9 @@
 #include <string.h>
 #include <time.h>
 
+#include "plmregister.h"
+
 #include "bspline.h"
-#include "bspline_landmarks.h"
 #include "compiler_warnings.h"
 #include "landmark_warp.h"
 #include "plm_math.h"

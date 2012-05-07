@@ -74,7 +74,7 @@ CUDA_bspline_mi_init_a (
     Bspline_parms* parms
 )
 {
-    BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
+    Bspline_mi_hist* mi_hist = &parms->mi_hist;
 
     // Keep track of how much memory we allocated in the GPU global memory.
     long unsigned GPU_Memory_Bytes = 0;
@@ -759,7 +759,7 @@ CUDA_bspline_mi_cleanup_a (
 int
 CUDA_bspline_mi_hist (
     Dev_Pointers_Bspline *dev_ptrs,
-    BSPLINE_MI_Hist* mi_hist,
+    Bspline_mi_hist* mi_hist,
     Volume* fixed,
     Volume* moving,
     Bspline_xform* bxf)
@@ -781,7 +781,7 @@ CUDA_bspline_mi_hist (
 void
 CUDA_bspline_mi_hist_fix (
     Dev_Pointers_Bspline *dev_ptrs,
-    BSPLINE_MI_Hist* mi_hist,
+    Bspline_mi_hist* mi_hist,
     Volume* fixed,
     Volume* moving,
     Bspline_xform *bxf)
@@ -883,7 +883,7 @@ CUDA_bspline_mi_hist_fix (
 void
 CUDA_bspline_mi_hist_mov (
     Dev_Pointers_Bspline *dev_ptrs,
-    BSPLINE_MI_Hist* mi_hist,
+    Bspline_mi_hist* mi_hist,
     Volume* fixed,
     Volume* moving,
     Bspline_xform *bxf)
@@ -987,7 +987,7 @@ CUDA_bspline_mi_hist_mov (
 int
 CUDA_bspline_mi_hist_jnt (
     Dev_Pointers_Bspline *dev_ptrs,
-    BSPLINE_MI_Hist* mi_hist,
+    Bspline_mi_hist* mi_hist,
     Volume* fixed,
     Volume* moving,
     Bspline_xform *bxf)
@@ -1150,7 +1150,7 @@ CUDA_bspline_mi_hist_jnt (
 
 void
 CUDA_bspline_mi_grad (
-    BSPLINE_MI_Hist* mi_hist,
+    Bspline_mi_hist* mi_hist,
     Bspline_state *bst,
     Bspline_xform *bxf,
     Volume* fixed,

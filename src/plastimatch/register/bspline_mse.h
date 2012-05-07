@@ -9,38 +9,9 @@
 #include "bspline.h"
 #include "bspline_optimize.h"
 
-/* -----------------------------------------------------------------------
-   Function declarations
-   ----------------------------------------------------------------------- */
-#if defined __cplusplus
-extern "C" {
-#endif
-
-gpuit_EXPORT
-void
-bspline_score_c_mse (
-    Bspline_optimize_data *bod
-);
-gpuit_EXPORT
-void
-bspline_score_g_mse (
-    Bspline_optimize_data *bod
-);
-
-gpuit_EXPORT
-void
-bspline_score_h_mse (
-    Bspline_optimize_data *bod
-);
-
-gpuit_EXPORT
-void
-bspline_score_i_mse (
-    Bspline_optimize_data *bod
-);
-
-#if defined __cplusplus
-}
-#endif
+C_API void bspline_score_c_mse (Bspline_optimize_data *bod);
+C_API void bspline_score_g_mse (Bspline_optimize_data *bod);
+C_API void bspline_score_h_mse (Bspline_optimize_data *bod);
+C_API void bspline_score_i_mse (Bspline_optimize_data *bod);
 
 #endif

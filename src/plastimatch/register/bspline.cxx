@@ -34,6 +34,7 @@
 #endif
 
 #include "plmbase.h"
+#include "plmregister.h"
 #include "plmsys.h"
 #include "delayload.h"
 
@@ -48,7 +49,6 @@
 #include "bspline_cuda.h"
 #endif
 #include "bspline_regularize.h"
-#include "bspline_landmarks.h"
 #include "bspline_optimize.h"
 #include "bspline_optimize_lbfgsb.h"
 
@@ -273,7 +273,7 @@ dump_gradient (Bspline_xform* bxf, Bspline_score* ssd, const char* fn)
 }
 
 void
-dump_hist (BSPLINE_MI_Hist* mi_hist, int it, const std::string& prefix)
+dump_hist (Bspline_mi_hist* mi_hist, int it, const std::string& prefix)
 {
     double* f_hist = mi_hist->f_hist;
     double* m_hist = mi_hist->m_hist;

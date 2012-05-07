@@ -5,15 +5,14 @@
 #define _bspline_h_
 
 #include "plmregister_config.h"
+#include "sys/plm_int.h"
 #include <string>
 
 #include "bspline_landmarks.h"
-#include "bspline_optimize.h"
 #include "bspline_regularize.h"
 #include "bspline_regularize_state.h"
 
 #define DOUBLE_HISTS	// Use doubles for histogram accumulation
-
 
 /* JAS 2011.07.23
  * The following is a fix that allows us to more selectively enforce
@@ -92,8 +91,8 @@ public:
     Bspline_regularize_state rst;       /* Analytic regularization */
 };
 
-typedef struct BSPLINE_MI_Hist_Parms_struct BSPLINE_MI_Hist_Parms;
-struct BSPLINE_MI_Hist_Parms_struct {
+class Bspline_mi_hist_Parms {
+public:
     /* Used by all histogram types */
     enum BsplineHistType type;  /* Type of histograms */
     plm_long bins;           /* # of bins in histogram  */
@@ -106,11 +105,11 @@ struct BSPLINE_MI_Hist_Parms_struct {
     int* key_lut;               /* bin keys lookup table   */
 };
 
-typedef struct BSPLINE_MI_Hist_struct BSPLINE_MI_Hist;
-struct BSPLINE_MI_Hist_struct {
-    BSPLINE_MI_Hist_Parms moving;
-    BSPLINE_MI_Hist_Parms fixed;
-    BSPLINE_MI_Hist_Parms joint;    // JAS: for big_bin
+class Bspline_mi_hist {
+public:
+    Bspline_mi_hist_Parms moving;
+    Bspline_mi_hist_Parms fixed;
+    Bspline_mi_hist_Parms joint;    // JAS: for big_bin
     double* m_hist;
     double* f_hist;
     double* j_hist;
@@ -133,7 +132,7 @@ public:
     double_align8 convergence_tol; /* When to stop iterations based on score */
     int convergence_tol_its;     /* How many iterations to check for 
 				    convergence tol */
-    BSPLINE_MI_Hist mi_hist;     /* Histogram for MI score */
+    Bspline_mi_hist mi_hist;     /* Histogram for MI score */
     void *data_on_gpu;           /* Pointer to structure encapsulating the 
 				    data stored on the GPU */
     void *data_from_gpu;         /* Pointer to structure that stores the 
@@ -201,9 +200,8 @@ public:
     }
 };
 
-typedef struct bspline_optimize_data Bspline_optimize_data;
-struct bspline_optimize_data
-{
+class Bspline_optimize_data {
+public:
     Bspline_xform* bxf;
     Bspline_state *bst;
     Bspline_parms *parms;
@@ -211,103 +209,72 @@ struct bspline_optimize_data
     Volume *moving;
     Volume *moving_grad;
 };
-/* -----------------------------------------------------------------------
-   Function declarations
-   ----------------------------------------------------------------------- */
-#if defined __cplusplus
-extern "C" {
-#endif
 
-gpuit_EXPORT
-Bspline_state *
-bspline_state_create (
+
+C_API Bspline_state* bspline_state_create (
     Bspline_xform *bxf, 
     Bspline_parms *parms
 );
-
-gpuit_EXPORT
-void bspline_parms_free (Bspline_parms* parms);
-
-gpuit_EXPORT
-void
-bspline_state_destroy (
+C_API void bspline_parms_free (Bspline_parms* parms);
+C_API void bspline_state_destroy (
     Bspline_state *bst,
     Bspline_parms *parms,
     Bspline_xform *bxf
 );
-
-gpuit_EXPORT
-Volume*
-bspline_compute_vf (const Bspline_xform* bxf);
-
-
-void
-bspline_display_coeff_stats (Bspline_xform* bxf);
-
-gpuit_EXPORT
-void
-bspline_score (Bspline_optimize_data *bod);
-
-void
-bspline_update_grad (
+C_API Volume* bspline_compute_vf (const Bspline_xform* bxf);
+void bspline_display_coeff_stats (Bspline_xform* bxf);
+C_API void bspline_score (Bspline_optimize_data *bod);
+void bspline_update_grad (
     Bspline_state *bst, 
     Bspline_xform* bxf, 
-    plm_long p[3], plm_long qidx, float dc_dv[3]);
-void
-bspline_update_grad_b (
+    plm_long p[3], plm_long qidx, float dc_dv[3]
+);
+void bspline_update_grad_b (
     Bspline_score* bscore,
     const Bspline_xform* bxf, 
     plm_long pidx, 
     plm_long qidx, 
-    const float dc_dv[3]);
+    const float dc_dv[3]
+);
 int* calc_offsets (int* tile_dims, int* cdims);
-
 void find_knots (plm_long* knots, plm_long tile_num, plm_long* rdims, plm_long* cdims);
-
-void
-dump_hist (BSPLINE_MI_Hist* mi_hist, int it);
-
-void
-report_score (
+void dump_hist (Bspline_mi_hist* mi_hist, int it);
+void report_score (
     Bspline_parms *parms,
     Bspline_xform *bxf, 
     Bspline_state *bst
 );
 
 /* Debugging routines */
-void
-dump_gradient (Bspline_xform* bxf, Bspline_score* ssd, char* fn);
-
-void
-bspline_save_debug_state 
-(
- Bspline_parms *parms, 
- Bspline_state *bst, 
- Bspline_xform* bxf
- );
-
-void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_base, int iter);
-
-void
-bspline_make_grad (float* cond_x, float* cond_y, float* cond_z,
-    Bspline_xform* bxf, Bspline_score* ssd);
-
-void
-bspline_update_sets (float* sets_x, float* sets_y, float* sets_z,
-    int qidx, float* dc_dv, Bspline_xform* bxf);
-
-void
-bspline_update_sets_b (float* sets_x, float* sets_y, float* sets_z,
-    plm_long *q, float* dc_dv, Bspline_xform* bxf);
-
-
-void
-bspline_sort_sets (float* cond_x, float* cond_y, float* cond_z,
+void dump_gradient (Bspline_xform* bxf, Bspline_score* ssd, char* fn);
+void bspline_save_debug_state (
+    Bspline_parms *parms, 
+    Bspline_state *bst, 
+    Bspline_xform* bxf
+);
+void dump_xpm_hist (Bspline_mi_hist* mi_hist, char* file_base, int iter);
+void bspline_make_grad (
+    float* cond_x, float* cond_y, float* cond_z,
+    Bspline_xform* bxf,
+    Bspline_score* ssd
+);
+void bspline_update_sets (
     float* sets_x, float* sets_y, float* sets_z,
-    plm_long pidx, Bspline_xform* bxf);
-
-#if defined __cplusplus
-}
-#endif
+    int qidx,
+    float* dc_dv,
+    Bspline_xform* bxf
+);
+void bspline_update_sets_b (
+    float* sets_x, float* sets_y, float* sets_z,
+    plm_long *q,
+    float* dc_dv,
+    Bspline_xform* bxf
+);
+void bspline_sort_sets (
+    float* cond_x, float* cond_y, float* cond_z,
+    float* sets_x, float* sets_y, float* sets_z,
+    plm_long pidx,
+    Bspline_xform* bxf
+);
 
 #endif

@@ -17,10 +17,10 @@
 #include "vnl/vnl_sample.h"
 
 #include "plmbase.h"
+#include "plmregister.h"
 #include "plmsys.h"
 
 #include "bspline.h"
-#include "bspline_landmarks.h"
 #include "landmark_warp.h"
 #include "plm_math.h"
 #include "rbf_cluster.h"

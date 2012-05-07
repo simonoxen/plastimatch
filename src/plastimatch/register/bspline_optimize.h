@@ -5,23 +5,14 @@
 #define _bspline_optimize_h_
 
 #include "plmregister_config.h"
-#include "plmbase.h"
-#include "bspline.h"
 
+class Bspline_parms;
+class Bspline_state;
+class Bspline_xform;
 
-
-#if defined __cplusplus
-extern "C" {
-#endif
-
-gpuit_EXPORT
-void bspline_optimize (
+C_API void bspline_optimize (
     Bspline_xform* bxf, 
     Bspline_state **bst,
     Bspline_parms *parms);
-
-#if defined __cplusplus
-}
-#endif
 
 #endif

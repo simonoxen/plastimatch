@@ -5,12 +5,19 @@
 #define _bspline_landmarks_h_
 
 #include "plmregister_config.h"
-#include "plmbase.h"
 
+template<class T> class API Pointset;
+
+class Bspline_mi_hist;
 class Bspline_parms;
 class Bspline_state;
+class Bspline_xform;
+class Labeled_point;
+class Volume;
 
-class gpuit_EXPORT Bspline_landmarks {
+typedef Pointset<Labeled_point> Labeled_pointset;
+
+class API Bspline_landmarks {
 public:
     int num_landmarks;
     const Labeled_pointset *fixed_landmarks;
@@ -42,43 +49,37 @@ public:
     }
     void set_landmarks (
         const Labeled_pointset *fixed_landmarks, 
-        const Labeled_pointset *moving_landmarks);
+        const Labeled_pointset *moving_landmarks
+    );
     void initialize (const Bspline_xform* bxf);
 };
 
-#if defined __cplusplus
-extern "C" {
-#endif
-
-gpuit_EXPORT
-Bspline_landmarks*
-bspline_landmarks_load (char *fixed_fn, char *moving_fn);
-
-gpuit_EXPORT
-void
-bspline_landmarks_adjust (Bspline_landmarks *blm, Volume *fixed, Volume *moving);
-
-void
-bspline_landmarks_score (
-    Bspline_parms *parms, 
-    Bspline_state *bst, 
-    Bspline_xform *bxf
+C_API Bspline_landmarks* bspline_landmarks_load (
+        char *fixed_fn,
+        char *moving_fn
 );
-
-gpuit_EXPORT
-void bspline_landmarks_warp (
+C_API void bspline_landmarks_adjust (
+        Bspline_landmarks *blm,
+        Volume *fixed,
+        Volume *moving
+);
+void bspline_landmarks_score (
+        Bspline_parms *parms, 
+        Bspline_state *bst, 
+        Bspline_xform *bxf
+);
+C_API void bspline_landmarks_warp (
         Volume *vector_field, 
         Bspline_parms *parms,
         Bspline_xform* bxf, 
-    Volume *fixed, 
-    Volume *moving);
-
-gpuit_EXPORT
-void bspline_landmarks_write_file (const char *fn, char *title, 
-    float *coords, int n);
-
-#if defined __cplusplus
-}
-#endif
+        Volume *fixed, 
+        Volume *moving
+);
+C_API void bspline_landmarks_write_file (
+        const char *fn,
+        char *title, 
+        float *coords,
+        int n
+);
 
 #endif
