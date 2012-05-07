@@ -11,7 +11,7 @@
     void set_##name (const type&)
 
 #define PLM_GET(type, name)                                  \
-    const type get_##name ()
+    const type& get_##name () const
 
 #define PLM_SET(type, name)                                  \
     void set_##name (const type&)

@@ -44,6 +44,13 @@ public:
     Gamma_filter_private *d_ptr;
 public:
 
+    PLM_SET(char*, reference_image);
+    PLM_SET(Plm_image, reference_image);
+    PLM_SET(FloatImageType, reference_image);
+    PLM_SET(char*, comparison_image);
+    PLM_SET(Plm_image, comparison_image);
+    PLM_SET(FloatImageType, comparison_image);
+
     PLM_GET_SET(float, s_tol);
 
     /*! Sets the r_tol value */
