@@ -46,6 +46,13 @@ set (PLMREGISTER_LIBRARY_SRC
   registration_data.cxx
   )
 
+if (OPENCL_FOUND)
+  set (PLMREGISTER_LIBRARY_SRC
+    ${PLMREGISTER_LIBRARY_SRC}
+    demons_opencl.cxx
+   )
+endif ()
+
 set (PLMREGISTER_CUDA_SRC
   ../cuda/cuda_kernel_util.cu
   ../cuda/cuda_mem.cu
@@ -72,6 +79,12 @@ set (PLMREGISTER_LIBRARY_DEPENDENCIES
   ${PLM_FORTRAN}
   )
 
+if (OPENCL_FOUND)
+  set (PLMREGISTER_LIBRARY_DEPENDENCIES 
+    ${PLMREGISTER_LIBRARY_DEPENDENCIES}
+    plmopencl
+    )
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  SPECIAL BUILD RULES: CUDA

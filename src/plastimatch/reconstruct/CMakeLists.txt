@@ -29,6 +29,13 @@ if (FFTW_FOUND)
     ramp_filter.cxx
    )
 endif ()
+if (OPENCL_FOUND)
+  set (PLMRECONSTRUCT_LIBRARY_SRC
+    ${PLMRECONSTRUCT_LIBRARY_SRC}
+    drr_opencl.cxx
+    fdk_opencl.cxx
+   )
+endif ()
 
 set (PLMRECONSTRUCT_CUDA_SRC
   ../cuda/cuda_util.cu
@@ -48,6 +55,12 @@ set (PLMRECONSTRUCT_LIBRARY_DEPENDENCIES
   plmbase
   plmsys
   )
+if (HAVE_OPENCL)
+  set (PLMRECONSTRUCT_LIBRARY_DEPENDENCIES 
+    ${PLMRECONSTRUCT_LIBRARY_DEPENDENCIES}
+    plmopencl
+    )
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  SPECIAL BUILD RULES: CUDA
