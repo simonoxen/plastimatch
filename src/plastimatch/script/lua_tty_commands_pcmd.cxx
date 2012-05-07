@@ -4,6 +4,8 @@
 #include "plmscript_config.h"
 #include "lua_tty_commands_pcmd.h"
 
+#include "plmregister.h"
+
 #include "pcmd_add.h"
 #include "pcmd_adjust.h"
 #include "pcmd_autolabel.h"
@@ -25,7 +27,6 @@
 #include "pcmd_thumbnail.h"
 #include "pcmd_warp.h"
 #include "pcmd_xf_convert.h"
-#include "plm_parms.h"
 #include "plm_stages.h"
 
 void

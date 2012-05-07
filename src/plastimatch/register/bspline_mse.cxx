@@ -15,6 +15,7 @@
 #include <xmmintrin.h>
 #endif
 
+#include "plmutil.h"
 #include "plmsys.h"
 
 #include "bspline.h"

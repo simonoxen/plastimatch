@@ -14,6 +14,7 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 ##  SOURCE FILES
 ##-----------------------------------------------------------------------------
 set (PLMUTIL_LIBRARY_SRC
+  bspline_correspond.cxx
   bspline_warp.cxx
   cxt_extract.cxx
   diff.cxx

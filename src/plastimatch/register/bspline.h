@@ -240,38 +240,6 @@ gpuit_EXPORT
 Volume*
 bspline_compute_vf (const Bspline_xform* bxf);
 
-/* Used internally */
-int
-bspline_find_correspondence 
-(
- float *mxyz,             /* Output: xyz coordinates in moving image (mm) */
- float *mijk,             /* Output: ijk indices in moving image (vox) */
- const float *fxyz,       /* Input:  xyz coordinates in fixed image (mm) */
- const float *dxyz,       /* Input:  displacement from fixed to moving (mm) */
- const Volume *moving     /* Input:  moving image */
-);
-
-int
-bspline_find_correspondence_dcos
-(
- float *mxyz,             /* Output: xyz coordinates in moving image (mm) */
- float *mijk,             /* Output: ijk indices in moving image (vox) */
- const float *fxyz,       /* Input:  xyz coordinates in fixed image (mm) */
- const float *dxyz,       /* Input:  displacement from fixed to moving (mm) */
- const Volume *moving     /* Input:  moving image */
-);
-
-int
-bspline_find_correspondence_dcos_mask
-(
- float *mxyz,               /* Output: xyz coordinates in moving image (mm) */
- float *mijk,               /* Output: ijk indices in moving image (vox) */
- const float *fxyz,         /* Input:  xyz coordinates in fixed image (mm) */
- const float *dxyz,         /* Input:  displacement from fixed to moving (mm) */
- const Volume *moving,      /* Input:  moving image */
- const Volume *moving_mask  /* Input:  moving image mask */
-);
-
 
 void
 bspline_display_coeff_stats (Bspline_xform* bxf);
@@ -295,8 +263,6 @@ bspline_update_grad_b (
 int* calc_offsets (int* tile_dims, int* cdims);
 
 void find_knots (plm_long* knots, plm_long tile_num, plm_long* rdims, plm_long* cdims);
-
-int inside_mask (float* xyz, const Volume* mask);
 
 void
 dump_hist (BSPLINE_MI_Hist* mi_hist, int it);

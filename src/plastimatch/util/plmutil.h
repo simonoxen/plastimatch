@@ -6,6 +6,7 @@
 
 #include "plmutil_config.h"
 
+#include "bspline_correspond.h"
 #include "bspline_warp.h"
 #include "cxt_extract.h"
 #include "diff.h"

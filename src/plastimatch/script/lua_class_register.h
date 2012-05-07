@@ -5,7 +5,6 @@
 #define _lua_class_register_h_
 
 #include "plmscript_config.h"
-#include "plm_parms.h"
 #include "plm_path.h"
 
 #include "lua.h"
@@ -16,6 +15,8 @@
 #include "lua_class_structs.h"
 
 #define _MAX_STAGES 20
+
+class Registration_parms;
 
 typedef struct lua_register_struct lua_register;
 struct lua_register_struct {

@@ -12,10 +12,10 @@
 #include <xmmintrin.h>
 #endif
 
-#include "plmsys.h"
+#include "plmbase.h"
 #include "plmutil.h"
+#include "plmsys.h"
 
-#include "bspline.h"
 #include "bspline_macros.h"
 #include "plm_math.h"
 #include "volume_macros.h"
@@ -119,8 +119,7 @@ bspline_warp_internal (
                 }
 
                 /* Compute moving image coordinate of fixed image voxel */
-                rc = bspline_find_correspondence (mxyz, mijk, fxyz, 
-                    dxyz, moving);
+                rc = bspline_find_correspondence (mxyz, mijk, fxyz, dxyz, moving);
 
                 /* If voxel is not inside moving image, continue. */
                 if (!rc) continue;

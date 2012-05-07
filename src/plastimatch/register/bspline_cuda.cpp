@@ -10,6 +10,7 @@
 #include <windows.h>
 #endif
 
+#include "plmutil.h"
 #include "plmsys.h"
 
 #if !defined (PLM_USE_GPU_PLUGINS)
