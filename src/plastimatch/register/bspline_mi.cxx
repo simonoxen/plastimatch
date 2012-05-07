@@ -17,6 +17,7 @@
 #include "plmsys.h"
 
 #include "plm_math.h"
+#include "bspline_macros.h"
 #include "interpolate_macros.h"
 #include "volume_macros.h"
 
@@ -25,8 +26,6 @@
 #if (CUDA_FOUND)
 #include "bspline_cuda.h"
 #endif
-#include "bspline_optimize.h"
-#include "bspline_macros.h"
 
 
 /* Maximum # of bins for a vopt histogram */

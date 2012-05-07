@@ -64,7 +64,7 @@ bspline_opts_parse_args (Bspline_options* options, int argc, char* argv[])
 {
     int i, rc;
     Bspline_parms* parms = &options->parms;
-    Reg_parms* reg_parms = &parms->reg_parms;
+    Reg_parms* reg_parms = parms->reg_parms;
     Bspline_landmarks* blm = &parms->blm;
 
     for (i = 1; i < argc; i++) {

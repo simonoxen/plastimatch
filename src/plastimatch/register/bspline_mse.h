@@ -5,9 +5,8 @@
 #define _bspline_mse_h_
 
 #include "plmregister_config.h"
-#include "plmbase.h"
-#include "bspline.h"
-#include "bspline_optimize.h"
+
+class Bspline_optimize_data;
 
 C_API void bspline_score_c_mse (Bspline_optimize_data *bod);
 C_API void bspline_score_g_mse (Bspline_optimize_data *bod);

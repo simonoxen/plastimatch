@@ -11,10 +11,10 @@
 #include "nlopt.h"
 #endif
 
-#include "bspline.h"
-#include "bspline_optimize.h"
-#include "bspline_optimize_nlopt.h"
 #include "plm_math.h"
+
+#include "bspline.h"
+#include "bspline_optimize_nlopt.h"
 
 #if (NLOPT_FOUND)
 /* NLopt score function */

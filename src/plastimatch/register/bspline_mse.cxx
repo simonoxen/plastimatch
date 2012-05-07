@@ -17,18 +17,18 @@
 
 #include "plmutil.h"
 #include "plmsys.h"
+#include "plm_math.h"
+
+#include "bspline_macros.h"
+#include "interpolate_macros.h"
+#include "volume_macros.h"
 
 #include "bspline.h"
+#include "bspline_mse.h"
 #if (CUDA_FOUND)
 #include "bspline_cuda.h"
 #endif
-#include "bspline_mse.h"
-#include "bspline_optimize.h"
-#include "plm_math.h"
-#include "volume_macros.h"
-#include "bspline_macros.h"
 
-#include "interpolate_macros.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // FUNCTION: bspline_score_h_mse()

@@ -5,18 +5,9 @@
 #define _bspline_optimize_lbfgsb_h_
 
 #include <stdio.h>
-#include "bspline.h"
-#include "bspline_optimize.h"
 
-#if defined __cplusplus
-extern "C" {
-#endif
-void
-bspline_optimize_lbfgsb (
-    Bspline_optimize_data *bod
-);
-#if defined __cplusplus
-}
-#endif
+class Bspline_optimize_data;
+
+C_API void bspline_optimize_lbfgsb (Bspline_optimize_data *bod);
 
 #endif

@@ -7,71 +7,44 @@
 #include "plmregister_config.h"
 
 class Bspline_regularize_state;
+class Bspline_xform;
+class Reg_parms;
+class Volume;
 
-#if defined __cplusplus
-extern "C" {
-#endif
-
-gpuit_EXPORT
-void
-vf_regularize_numerical (
+API void vf_regularize_numerical (
     Bspline_score *ssd, 
     const Reg_parms *parms, 
     const Bspline_regularize_state *rst,
     const Bspline_xform* bxf,
     const Volume* vol
 );
-
-gpuit_EXPORT
-void
-bspline_regularize_numeric_a_init (
+API void bspline_regularize_numeric_a_init (
     Bspline_regularize_state* rst,
     Bspline_xform* bxf
 );
-
-gpuit_EXPORT
-void
-bspline_regularize_numeric_a (
+API void bspline_regularize_numeric_a (
     Bspline_score *ssd, 
     const Reg_parms *parms, 
     const Bspline_regularize_state *rst,
     const Bspline_xform *bxf
 );
-
-gpuit_EXPORT
-void
-bspline_regularize_numeric_a_destroy (
+API void bspline_regularize_numeric_a_destroy (
     Bspline_regularize_state* rst,
     Bspline_xform* bxf
 );
-
-
-gpuit_EXPORT
-void
-bspline_regularize_numeric_d_init (
+API void bspline_regularize_numeric_d_init (
     Bspline_regularize_state* rst,
     Bspline_xform* bxf
 );
-
-gpuit_EXPORT
-void
-bspline_regularize_numeric_d (
+API void bspline_regularize_numeric_d (
     Bspline_score *ssd, 
     const Reg_parms *parms, 
     const Bspline_regularize_state *rst,
     const Bspline_xform* bxf
 );
-
-gpuit_EXPORT
-void
-bspline_regularize_numeric_d_destroy (
+API void bspline_regularize_numeric_d_destroy (
     Bspline_regularize_state* rst,
     Bspline_xform* bxf
 );
-
-
-#if defined __cplusplus
-}
-#endif
 
 #endif

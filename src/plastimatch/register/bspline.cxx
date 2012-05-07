@@ -56,6 +56,57 @@
 /* -----------------------------------------------------------------------
    Initialization and teardown
    ----------------------------------------------------------------------- */
+Bspline_parms::Bspline_parms ()
+{
+	this->threading = BTHR_CPU;
+	this->optimization = BOPT_LBFGSB;
+	this->metric = BMET_MSE;
+	this->implementation = '\0';
+	this->max_its = 10;
+	this->max_feval = 10;
+	this->debug = 0;
+	this->debug_dir = ".";
+	this->debug_stage = 0;
+	this->gpuid = 0;
+	this->convergence_tol = 0.1;
+	this->convergence_tol_its = 4;
+
+	this->mi_hist.f_hist = 0;
+	this->mi_hist.m_hist = 0;
+	this->mi_hist.j_hist = 0;
+	this->mi_hist.fixed.type = HIST_EQSP;
+	this->mi_hist.moving.type = HIST_EQSP;
+	this->mi_hist.fixed.bins = 32;
+	this->mi_hist.moving.bins = 32;
+	this->mi_hist.joint.bins 
+	    = this->mi_hist.fixed.bins * this->mi_hist.moving.bins;
+	this->mi_hist.fixed.big_bin = 0;
+	this->mi_hist.moving.big_bin = 0;
+	this->mi_hist.joint.big_bin = 0;
+
+	this->lbfgsb_factr = 1.0e+7;
+	this->lbfgsb_pgtol = 1.0e-5;
+
+    this->fixed = NULL;
+    this->moving = NULL;
+    this->moving_grad = NULL;
+    this->fixed_mask = NULL;
+    this->moving_mask = NULL;
+
+    this->reg_parms = new Reg_parms;
+
+	this->rbf_radius = 0;
+	this->rbf_young_modulus = 0;
+	this->xpm_hist_dump = 0;
+}
+
+Bspline_parms::~Bspline_parms ()
+{
+    delete this->reg_parms;
+}
+
+
+
 static void
 bspline_cuda_state_create (
     Bspline_state *bst,           /* Modified in routine */
@@ -123,7 +174,7 @@ bspline_state_create (
 )
 {
     Bspline_state *bst = (Bspline_state*) malloc (sizeof (Bspline_state));
-    Reg_parms* reg_parms = &parms->reg_parms;
+    Reg_parms* reg_parms = parms->reg_parms;
     Bspline_regularize_state* rst = &bst->rst;
     Bspline_landmarks* blm = &parms->blm;
 
@@ -396,7 +447,7 @@ bspline_state_destroy (
     Bspline_xform *bxf
 )
 {
-    Reg_parms* reg_parms = &parms->reg_parms;
+    Reg_parms* reg_parms = parms->reg_parms;
 
     if (bst->ssd.grad) {
         free (bst->ssd.grad);
@@ -589,7 +640,7 @@ report_score (
 ) 
 {
     Bspline_score* ssd = &bst->ssd;
-    Reg_parms* reg_parms = &parms->reg_parms;
+    Reg_parms* reg_parms = parms->reg_parms;
     Bspline_landmarks* blm = &parms->blm;
 
     int i;
@@ -659,7 +710,7 @@ bspline_score (Bspline_optimize_data *bod)
     Bspline_state *bst   = bod->bst;
     Bspline_xform *bxf   = bod->bxf;
 
-    Reg_parms* reg_parms = &parms->reg_parms;
+    Reg_parms* reg_parms = parms->reg_parms;
     Bspline_landmarks* blm = &parms->blm;
 
     /* CPU Implementations */

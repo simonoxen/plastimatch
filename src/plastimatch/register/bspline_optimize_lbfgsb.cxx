@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "bspline.h"
-#include "bspline_optimize.h"
 #include "bspline_optimize_lbfgsb.h"
 #include "plm_fortran.h"
 

@@ -5,7 +5,6 @@
 #define _bspline_regularize_h_
 
 #include "plmregister_config.h"
-#include "plmbase.h"
 
 class Bspline_score;
 class Bspline_regularize_state;

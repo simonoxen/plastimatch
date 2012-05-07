@@ -5,17 +5,9 @@
 #define _bspline_optimize_liblbfgs_h_
 
 #include "plmregister_config.h"
-#include "bspline_optimize.h"
 
-#if defined __cplusplus
-extern "C" {
-#endif
+class Bspline_optimize_data;
 
-void
-bspline_optimize_liblbfgs (Bspline_optimize_data *bod);
-
-#if defined __cplusplus
-}
-#endif
+C_API void bspline_optimize_liblbfgs (Bspline_optimize_data *bod);
 
 #endif

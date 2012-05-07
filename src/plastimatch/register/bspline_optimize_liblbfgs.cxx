@@ -15,7 +15,6 @@
 #include "plm_math.h"
 
 #include "bspline.h"
-#include "bspline_optimize.h"
 #include "bspline_optimize_liblbfgs.h"
 
 

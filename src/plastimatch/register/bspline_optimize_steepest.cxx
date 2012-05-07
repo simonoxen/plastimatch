@@ -13,16 +13,14 @@
 
 #include "plmbase.h"
 #include "plmsys.h"
+#include "plm_math.h"
 
 #include "bspline.h"
 #if (CUDA_FOUND)
 #include "bspline_cuda.h"
 #endif
-#include "bspline_optimize.h"
 #include "bspline_optimize_steepest.h"
 
-/* EXTERNAL DEPENDS */
-#include "plm_math.h"
 
 /*
  * This is a simple gradient plotter based on

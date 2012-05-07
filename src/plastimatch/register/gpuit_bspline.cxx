@@ -12,6 +12,7 @@
 #include "plmsys.h"
 
 #include "bspline_optimize.h"
+#include "bspline_regularize.h"
 #include "plm_math.h"
 #include "plm_parms.h"
 #include "registration_data.h"
@@ -147,23 +148,23 @@ do_gpuit_bspline_stage_internal (
     }
 
     /* Regularization */
-    parms.reg_parms.lambda = stage->regularization_lambda;
+    parms.reg_parms->lambda = stage->regularization_lambda;
     switch (stage->regularization_type) {
     case REGULARIZATION_NONE:
-        parms.reg_parms.lambda = 0.0f;
+        parms.reg_parms->lambda = 0.0f;
         break;
     case REGULARIZATION_BSPLINE_ANALYTIC:
         if (stage->threading_type == THREADING_CPU_OPENMP) {
-            parms.reg_parms.implementation = 'c';
+            parms.reg_parms->implementation = 'c';
         } else {
-            parms.reg_parms.implementation = 'b';
+            parms.reg_parms->implementation = 'b';
         }
         break;
     case REGULARIZATION_BSPLINE_SEMI_ANALYTIC:
-        parms.reg_parms.implementation = 'd';
+        parms.reg_parms->implementation = 'd';
         break;
     case REGULARIZATION_BSPLINE_NUMERIC:
-        parms.reg_parms.implementation = 'a';
+        parms.reg_parms->implementation = 'a';
         break;
     default:
         print_and_exit ("Undefined regularization type in gpuit_bspline\n");
@@ -172,12 +173,12 @@ do_gpuit_bspline_stage_internal (
      * This needs to be integrated with the above switch 
      * young_modulus is regularization implementation 'd' */
     if (stage->regularization_lambda != 0) {
-        parms.reg_parms.lambda = stage->regularization_lambda;
+        parms.reg_parms->lambda = stage->regularization_lambda;
     }
 
     logfile_printf ("Regularization: flavor = %c lambda = %f\n", 
-        parms.reg_parms.implementation,
-        parms.reg_parms.lambda);
+        parms.reg_parms->implementation,
+        parms.reg_parms->lambda);
 
     /* Mutual information histograms */
     parms.mi_hist.fixed.type  = (BsplineHistType)stage->mi_histogram_type;
