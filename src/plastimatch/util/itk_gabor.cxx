@@ -7,8 +7,8 @@
 #include "itkImage.h"
 
 #include "plmbase.h"
+#include "plmutil.h"
 
-#include "itk_gabor.h"
 
 void 
 itk_gabor (FloatImageType::Pointer image)

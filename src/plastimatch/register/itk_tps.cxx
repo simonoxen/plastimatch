@@ -3,11 +3,11 @@
    ----------------------------------------------------------------------- */
 #include "plmregister_config.h"
 #include "plmbase.h"
+#include "plmutil.h"
 
 #include "landmark_warp.h"
 #include "itk_point.h"
 #include "itk_tps.h"
-#include "itk_warp.h"
 
 #define BUFLEN 2048
 

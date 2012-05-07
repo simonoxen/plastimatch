@@ -9,12 +9,11 @@
 #include <math.h>
 
 #include "plmbase.h"
+#include "plmutil.h"
 #include "plmsys.h"
 
 #include "plm_math.h"
 #include "plm_path.h"
-#include "rasterizer.h"
-#include "rasterize_slice.h"
 
 Rasterizer::Rasterizer ()
 {

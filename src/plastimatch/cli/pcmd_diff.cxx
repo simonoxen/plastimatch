@@ -6,12 +6,11 @@
 #include "itkSubtractImageFilter.h"
 #include "itkImageRegionIterator.h"
 
-#include "plmutil.h"
 #include "plmbase.h"
+#include "plmutil.h"
 #include "plmsys.h"
 
 #include "pcmd_diff.h"
-#include "diff.h"
 
 static void
 diff_print_usage (void)

@@ -38,7 +38,6 @@ public:
     }
 };
 
-plastimatch1_EXPORT 
-DeformationFieldType::Pointer synthetic_vf (Synthetic_vf_parms* parms);
+API DeformationFieldType::Pointer synthetic_vf (Synthetic_vf_parms* parms);
 
 #endif

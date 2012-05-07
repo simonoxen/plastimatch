@@ -9,7 +9,6 @@
 
 #include "plmbase.h"
 
-#include "slice_extract.h"
 
 template<class T>
 typename itk::Image<typename T::ObjectType::PixelType,2>::Pointer
@@ -99,6 +98,6 @@ slice_extract
     return out_img;
 }
 
-template plastimatch1_EXPORT UCharImage2DType::Pointer slice_extract (UCharImageType::Pointer, int);
-template plastimatch1_EXPORT FloatImage2DType::Pointer slice_extract (FloatImageType::Pointer, int);
-template plastimatch1_EXPORT UInt32Image2DType::Pointer slice_extract (UInt32ImageType::Pointer, int);
+template API UCharImage2DType::Pointer slice_extract (UCharImageType::Pointer, int);
+template API FloatImage2DType::Pointer slice_extract (FloatImageType::Pointer, int);
+template API UInt32Image2DType::Pointer slice_extract (UInt32ImageType::Pointer, int);

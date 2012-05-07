@@ -4,15 +4,9 @@
 #include "plmutil_config.h"
 
 #include "plmbase.h"
+#include "plmutil.h"
 #include "plmsys.h"
 
-#include "cxt_extract.h"
-#include "plm_warp.h"
-#include "rasterizer.h"
-#include "rtds.h"
-#include "rtss.h"
-#include "ss_img_extract.h"
-#include "ss_img_stats.h"
 
 static void
 compose_prefix_fn (

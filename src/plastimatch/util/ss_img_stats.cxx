@@ -5,9 +5,8 @@
 #include "itkImageRegionIterator.h"
 #include "itkVariableLengthVector.h"
 
+#include "plmutil.h"
 #include "plmsys.h"
-
-#include "ss_img_stats.h"
 
 void
 ss_img_stats (

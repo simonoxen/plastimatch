@@ -10,12 +10,12 @@
 #include "itkImageRegion.h"
 
 #include "plmbase.h"
+#include "plmutil.h"
 
 #include "plm_math.h"
-#include "gamma_analysis.h"
 
 void find_dose_threshold( Gamma_parms *parms ) {
-	
+        
     FloatImageType::Pointer img_in1 = parms->img_in1->itk_float();
     
     typedef itk::ImageRegionIteratorWithIndex< FloatImageType > FloatIteratorType;
@@ -26,19 +26,20 @@ void find_dose_threshold( Gamma_parms *parms ) {
     FloatIteratorType img_in1_iterator (img_in1, all_of_img1);
    
     float level1, maxlevel1=-1e20;
-	for (img_in1_iterator.GoToBegin(); !img_in1_iterator.IsAtEnd(); ++img_in1_iterator) {
-	level1 = img_in1_iterator.Get();
-    if (level1 > maxlevel1) maxlevel1 = level1; 	
-	} 
-	parms->dose_max = maxlevel1;
+        for (img_in1_iterator.GoToBegin(); !img_in1_iterator.IsAtEnd(); ++img_in1_iterator) {
+            level1 = img_in1_iterator.Get();
+            if (level1 > maxlevel1) maxlevel1 = level1;         
+        } 
+        parms->dose_max = maxlevel1;
 }
+
 void do_gamma_analysis( Gamma_parms *parms ) { 
 
     float spacing_in[3], origin_in[3];
     plm_long dim_in[3];
     Plm_image_header pih;
     float gamma;
-	unsigned char label_fail;
+    unsigned char label_fail;
 
     FloatImageType::Pointer img_in1 = parms->img_in1->itk_float();
     FloatImageType::Pointer img_in2 = parms->img_in2->itk_float();
@@ -57,10 +58,10 @@ void do_gamma_analysis( Gamma_parms *parms ) {
     FloatImageType::SpacingType sp;
     FloatImageType::DirectionType itk_dc;
     for (int d1 = 0; d1 < 3; d1++) {
-	st[d1] = 0;
-	sz[d1] = dim_in[d1];
-	sp[d1] = spacing_in[d1];
-	og[d1] = origin_in[d1];
+        st[d1] = 0;
+        sz[d1] = dim_in[d1];
+        sp[d1] = spacing_in[d1];
+        og[d1] = origin_in[d1];
     }
     rg.SetSize (sz);
     rg.SetIndex (st);
@@ -73,21 +74,21 @@ void do_gamma_analysis( Gamma_parms *parms ) {
     gamma_img->SetSpacing (sp);
     gamma_img->Allocate();
 
-	// output gamma image "pass"
+        // output gamma image "pass"
     FloatImageType::Pointer gamma_img_pass = FloatImageType::New();
     gamma_img_pass->SetRegions (rg);
     gamma_img_pass->SetOrigin (og);
     gamma_img_pass->SetSpacing (sp);
     gamma_img_pass->Allocate();
 
-	// output gamma image "fail"
+        // output gamma image "fail"
     FloatImageType::Pointer gamma_img_fail = FloatImageType::New();
     gamma_img_fail->SetRegions (rg);
     gamma_img_fail->SetOrigin (og);
     gamma_img_fail->SetSpacing (sp);
     gamma_img_fail->Allocate();
 
-	// output labelmap "fail"
+        // output labelmap "fail"
     UCharImageType::Pointer labelmap_fail = UCharImageType::New();
     labelmap_fail->SetRegions (rg);
     labelmap_fail->SetOrigin (og);
@@ -104,11 +105,11 @@ void do_gamma_analysis( Gamma_parms *parms ) {
 
     FloatIteratorType img_in1_iterator (img_in1, all_of_img1);
     FloatIteratorType gamma_img_iterator (gamma_img, gamma_img->GetLargestPossibleRegion());
-	FloatIteratorType gamma_img_pass_iterator (gamma_img_pass, gamma_img_pass->GetLargestPossibleRegion());
-	FloatIteratorType gamma_img_fail_iterator (gamma_img_fail, gamma_img_fail->GetLargestPossibleRegion());
-	UCharIteratorType labelmap_fail_iterator (labelmap_fail, labelmap_fail->GetLargestPossibleRegion());
+    FloatIteratorType gamma_img_pass_iterator (gamma_img_pass, gamma_img_pass->GetLargestPossibleRegion());
+    FloatIteratorType gamma_img_fail_iterator (gamma_img_fail, gamma_img_fail->GetLargestPossibleRegion());
+    UCharIteratorType labelmap_fail_iterator (labelmap_fail, labelmap_fail->GetLargestPossibleRegion());
 
-	FloatImageType::IndexType k1, k2, k3;
+    FloatImageType::IndexType k1, k2, k3;
     FloatImageType::OffsetType offset;
     FloatImageType::SizeType region_size;
     FloatPoint3DType phys;
@@ -117,7 +118,7 @@ void do_gamma_analysis( Gamma_parms *parms ) {
     float level1, level2, dr2, dd2, gg;
     float f0,f1,f2,f3;
 
-	//vox-to-mm-to-gamma conversion factors; strictly, these should come from IMAGE2, not 1
+        //vox-to-mm-to-gamma conversion factors; strictly, these should come from IMAGE2, not 1
     f0 = spacing_in[0]/parms->r_tol; f0=f0*f0;
     f1 = spacing_in[1]/parms->r_tol; f1=f1*f1;
     f2 = spacing_in[2]/parms->r_tol; f2=f2*f2;
@@ -137,11 +138,11 @@ void do_gamma_analysis( Gamma_parms *parms ) {
     offset[2]=reg_pixsize;
 
     gamma_img_iterator.GoToBegin();
-	gamma_img_pass_iterator.GoToBegin();
-	gamma_img_fail_iterator.GoToBegin();
-	labelmap_fail_iterator.GoToBegin();
+    gamma_img_pass_iterator.GoToBegin();
+    gamma_img_fail_iterator.GoToBegin();
+    labelmap_fail_iterator.GoToBegin();
 
-	
+        
 
     for (img_in1_iterator.GoToBegin(); !img_in1_iterator.IsAtEnd(); ++img_in1_iterator) {
     
@@ -171,22 +172,22 @@ void do_gamma_analysis( Gamma_parms *parms ) {
     gamma = 1e20;
     for (img_in2_iterator.GoToBegin(); !img_in2_iterator.IsAtEnd(); ++img_in2_iterator) {
 
-	k3 = img_in2_iterator.GetIndex();
+        k3 = img_in2_iterator.GetIndex();
 
-	
-	level2 = img_in2_iterator.Get();
+        
+        level2 = img_in2_iterator.Get();
 
-	dr2 = (k3[0]-k1[0])*(k3[0]-k1[0])*f0 +
-	      (k3[1]-k1[1])*(k3[1]-k1[1])*f1 +
-	      (k3[2]-k1[2])*(k3[2]-k1[2])*f2 ;
+        dr2 = (k3[0]-k1[0])*(k3[0]-k1[0])*f0 +
+              (k3[1]-k1[1])*(k3[1]-k1[1])*f1 +
+              (k3[2]-k1[2])*(k3[2]-k1[2])*f2 ;
 
-	dd2 = (level1 - level2)*(level1-level2)*f3;
+        dd2 = (level1 - level2)*(level1-level2)*f3;
 
-	gg = dr2 + dd2;
+        gg = dr2 + dd2;
 
-	if (gg < gamma) gamma=gg;
+        if (gg < gamma) gamma=gg;
         //test only: if (k1[0]==k3[0]) gamma = k3[0];
-	}
+        }
 
     gamma = sqrt(gamma);
     if (gamma > parms->gamma_max ) gamma = parms->gamma_max;
@@ -195,33 +196,33 @@ void do_gamma_analysis( Gamma_parms *parms ) {
 
     gamma_img_iterator.Set ( gamma );
     ++gamma_img_iterator;
-	
+        
     label_fail = 0;
 
-	if (gamma > 1) label_fail = 1;
+    if (gamma > 1) label_fail = 1;
 
-	if (gamma <= 1)
-	gamma_img_pass_iterator.Set ( gamma );
+    if (gamma <= 1)
+        gamma_img_pass_iterator.Set ( gamma );
     ++gamma_img_pass_iterator;
-	
+        
     if (gamma > 1)
-	gamma_img_fail_iterator.Set ( gamma );
-    ++gamma_img_fail_iterator;
+        gamma_img_fail_iterator.Set ( gamma );
+        ++gamma_img_fail_iterator;
 
-	labelmap_fail_iterator.Set ( label_fail );
-	++labelmap_fail_iterator;
-	}
+        labelmap_fail_iterator.Set ( label_fail );
+        ++labelmap_fail_iterator;
+    }
 
     parms->img_out = new Plm_image;
     parms->img_out->set_itk( gamma_img);
 
-	parms->img_out_pass = new Plm_image;
+    parms->img_out_pass = new Plm_image;
     parms->img_out_pass->set_itk( gamma_img_pass);
 
-	parms->img_out_fail = new Plm_image;
+    parms->img_out_fail = new Plm_image;
     parms->img_out_fail->set_itk( gamma_img_fail);
 
-	parms->labelmap_out = new Plm_image;
+    parms->labelmap_out = new Plm_image;
     parms->labelmap_out->set_itk( labelmap_fail);
 }
 

@@ -7,11 +7,11 @@
 #include <string.h>
 
 #include "plmbase.h"
+#include "plmutil.h"
 #include "plmsys.h"
 
 #include "plm_math.h"
 #include "pstring.h"
-#include "rtss.h"
 
 void
 cxt_load (

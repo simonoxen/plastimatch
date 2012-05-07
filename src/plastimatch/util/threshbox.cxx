@@ -9,9 +9,9 @@
 #include "itkImageRegionIteratorWithIndex.h"
 
 #include "plmbase.h"
+#include "plmutil.h"
 
 #include "plm_math.h"
-#include "threshbox.h"
 
 void do_threshbox( Threshbox_parms *parms) {
 

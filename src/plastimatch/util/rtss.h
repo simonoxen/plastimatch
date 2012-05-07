@@ -5,20 +5,19 @@
 #define _rtss_h_
 
 #include "plmutil_config.h"
-
-#include "plmbase.h"
+#include "xio_studyset.h"  /* enum Xio_version */
 
 #include "pstring.h"
-#include "warp_parms.h"
-#include "xio_studyset.h"
 
 class Plm_image;
 class Plm_image_header;
 class Rtds;
 class Rtss_polyline_set;
+class Rtss_structure;
 class Slice_index;
 class Xform;
 class Xio_ct_transform;
+class Warp_parms;
 
 class API Rtss {
 public:
@@ -39,8 +38,7 @@ public:
     void load_gdcm_rtss (const char *input_fn,  Slice_index *rdd);
 
     void save_colormap (const Pstring &colormap_fn);
-    void save_cxt (Slice_index *rdd, const Pstring &cxt_fn, 
-	bool prune_empty);
+    void save_cxt (Slice_index *rdd, const Pstring &cxt_fn, bool prune_empty);
     void save_gdcm_rtss (const char *output_dir, Slice_index *rdd);
     void save_fcsv (const Rtss_structure *curr_structure, const Pstring& fn);
     void save_prefix_fcsv (const Pstring &output_prefix);
@@ -49,7 +47,7 @@ public:
     void save_prefix (const Pstring &output_prefix);
     void save_ss_list (const Pstring &ss_list_fn);
     void save_xio (Xio_ct_transform *xio_transform, Xio_version xio_version, 
-	const Pstring &output_dir);
+    const Pstring &output_dir);
     UInt32ImageType::Pointer get_ss_img (void);
     Rtss_polyline_set *get_ss_list (void);
 
@@ -58,8 +56,7 @@ public:
     void convert_to_uchar_vec (void);
     void cxt_re_extract (void);
     void prune_empty (void);
-    void rasterize (Plm_image_header *pih, bool want_labelmap, 
-	bool xor_overlapping);
+    void rasterize (Plm_image_header *pih, bool want_labelmap, bool xor_overlapping);
     void set_geometry_from_plm_image_header (Plm_image_header *pih);
     void find_rasterization_geometry (Plm_image_header *pih);
     void warp (Xform *xf, Plm_image_header *pih, Warp_parms *parms);

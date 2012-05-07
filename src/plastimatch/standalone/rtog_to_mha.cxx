@@ -56,9 +56,10 @@
 #include <sys/types.h>
 #endif
 
+#include "plmutil.h"
+
 #include "getopt.h"
 #include "exchkeys.h"
-#include "rasterize_slice.h"
 
 #define BUFLEN 2048
 

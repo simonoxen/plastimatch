@@ -6,10 +6,8 @@
 #include <stdio.h>
 
 #include "plmbase.h"
+#include "plmutil.h"
 
-#include "rtds.h"
-#include "rtss.h"
-#include "simplify_points.h"
 #include "vnl/vnl_random.h"
 
 

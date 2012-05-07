@@ -170,7 +170,5 @@ ss_img_insert_uchar (
 }
 
 /* Explicit instantiation */
-template plastimatch1_EXPORT 
-UCharImageType::Pointer ss_img_extract_uchar (UCharVecImageType::Pointer, unsigned int);
-template plastimatch1_EXPORT 
-UCharImage2DType::Pointer ss_img_extract_uchar (UCharVecImage2DType::Pointer, unsigned int);
+template API UCharImageType::Pointer ss_img_extract_uchar (UCharVecImageType::Pointer, unsigned int);
+template API UCharImage2DType::Pointer ss_img_extract_uchar (UCharVecImage2DType::Pointer, unsigned int);

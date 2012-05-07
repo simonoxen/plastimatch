@@ -5,11 +5,11 @@
 #define _rtds_warp_h_
 
 #include "plmutil_config.h"
-#include "rtds.h"
-#include "warp_parms.h"
+#include "base/plm_file_format.h"
 
-plastimatch1_EXPORT
-void
-rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms);
+class Rtds;
+class Warp_parms;
+
+API void rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms);
 
 #endif

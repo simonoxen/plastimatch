@@ -9,8 +9,8 @@
 #include <stdlib.h>
 
 #include "plmbase.h"
-#include "diff.h"
-#include "gamma_analysis.h"
+#include "plmutil.h"
+
 #include "pstring.h"
 #include "threshbox.h"
 
@@ -18,7 +18,7 @@ int
 main (int argc, char * argv [])
 {
     PARSE_ARGS;
-	
+
     Diff_parms parms;
     Threshbox_parms tparms;
     Gamma_parms gparms;

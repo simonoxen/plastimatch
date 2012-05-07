@@ -3,9 +3,10 @@
    ----------------------------------------------------------------------- */
 #include "plmutil_config.h"
 
+#include "plmutil.h"
+
 #include "dcmtk_load.h"
 #include "dcmtk_save.h"
-#include "rtds.h"
 
 void
 Rtds::load_dcmtk (const char *dicom_dir)

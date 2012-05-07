@@ -9,6 +9,7 @@
 #include "dcmtk/dcmdata/dctk.h"
 
 #include "plmbase.h"
+#include "plmutil.h"
 #include "plmsys.h"
 
 #include "dcmtk_file.h"
@@ -17,7 +18,6 @@
 #include "plm_math.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
-#include "rtds.h"
 
 Plm_image*
 Dcmtk_series::load_plm_image (void)

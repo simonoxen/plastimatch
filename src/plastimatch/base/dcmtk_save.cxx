@@ -6,6 +6,7 @@
 #include "dcmtk/ofstd/ofstream.h"
 #include "dcmtk/dcmdata/dctk.h"
 
+#include "plmutil.h"
 #include "plmsys.h"
 
 #include "dcmtk_image.h"
@@ -15,7 +16,6 @@
 #include "dcmtk_uid.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
-#include "rtds.h"
 
 void
 dcmtk_rtds_save (Rtds *rtds, const char *dicom_dir)

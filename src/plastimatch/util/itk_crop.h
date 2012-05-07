@@ -7,7 +7,7 @@
 #include "plmutil_config.h"
 
 template <class T>
-plastimatch1_EXPORT
+API
 T
 itk_crop (T& image, const int *new_size);
 

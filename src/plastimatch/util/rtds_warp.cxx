@@ -4,16 +4,10 @@
 #include "plmutil_config.h"
 
 #include "plmbase.h"
+#include "plmutil.h"
 #include "plmsys.h"
 
-#include "cxt_extract.h"
-#include "plm_warp.h"
 #include "pstring.h"
-#include "rtds_warp.h"
-#include "rtss.h"
-#include "simplify_points.h"
-#include "ss_img_extract.h"
-#include "ss_img_stats.h"
 
 static void
 load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)

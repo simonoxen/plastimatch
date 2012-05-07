@@ -8,13 +8,11 @@
 #include <vector>
 
 #include "plmbase.h"
+#include "plmutil.h"
 
 #include "plm_math.h"
 #include "plm_clp.h"
 #include "pstring.h"
-#include "rtds.h"
-#include "rtss.h"
-#include "synthetic_vf.h"
 
 typedef struct synthetic_vf_main_parms Synthetic_vf_main_parms;
 struct synthetic_vf_main_parms {

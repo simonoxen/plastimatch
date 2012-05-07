@@ -5,14 +5,13 @@
 #define _rasterizer_h_
 
 #include "plmutil_config.h"
-#include "plmbase.h"
 
 #include "itk_image_type.h"
 
 class Rtss_polyline_set;
 class Plm_image_header;
 
-class plastimatch1_EXPORT Rasterizer {
+class API Rasterizer {
   public:
     Rasterizer ();
     ~Rasterizer ();

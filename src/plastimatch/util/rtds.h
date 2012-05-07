@@ -6,12 +6,12 @@
 
 #include "plmutil_config.h"
 #include <vector>
+#include "plm_path.h"
 
 #include "metadata.h"
-#include "plm_path.h"
 #include "slice_index.h"
 
-// TODO: [3] Change type of m_rdd to Slice_index*
+// TODO: [1] Change type of m_rdd to Slice_index*
 //       [2] Change type of m_meta to Metadata*
 
 class Gdcm_series;

@@ -7,9 +7,6 @@
 #include "plmregister_config.h"
 #include <string>
 
-#include "plmbase.h"
-#include "plmsys.h"
-
 #include "bspline_landmarks.h"
 #include "bspline_optimize.h"
 #include "bspline_regularize.h"

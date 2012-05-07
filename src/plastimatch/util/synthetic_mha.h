@@ -6,6 +6,7 @@
 
 #include "plmutil_config.h"
 #include "direction_cosines.h"
+#include "plm_image_type.h"
 
 class Rtds;
 
@@ -97,7 +98,6 @@ public:
     }
 };
 
-plastimatch1_EXPORT void synthetic_mha (Rtds *rtds, 
-    Synthetic_mha_parms *parms);
+API void synthetic_mha (Rtds *rtds, Synthetic_mha_parms *parms);
 
 #endif

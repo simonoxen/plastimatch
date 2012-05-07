@@ -8,11 +8,11 @@
 #include "getopt.h"
 
 #include "plmbase.h"
+#include "plmutil.h"
 #include "plmsys.h"
 
 #include "pcmd_stats.h"
 #include "proj_image.h"
-#include "ss_img_stats.h"
 
 static void
 stats_vf_main (Stats_parms* parms)

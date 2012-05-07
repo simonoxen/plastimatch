@@ -12,7 +12,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "rasterize_slice.h"
+
+#include "plmutil.h"
+
 
 typedef struct edge Edge;
 struct edge {

@@ -5,12 +5,9 @@
 #include <time.h>
 
 #include "plmbase.h"
-#include "plmsys.h"
 #include "plmutil.h"
+#include "plmsys.h"
 
-#include "itk_warp.h"
-#include "plm_warp.h"
-#include "ss_img_stats.h"
 
 static void
 plm_warp_itk (

@@ -7,9 +7,9 @@
 #include "itkImageRegionIterator.h"
 
 #include "plmbase.h"
+#include "plmutil.h"
 #include "plmsys.h"
 
-#include "diff.h"
 #include "plm_image.h"
 
 

@@ -3,7 +3,8 @@
    ----------------------------------------------------------------------- */
 #include "plmutil_config.h"
 #include "itkImageRegionIterator.h"
-#include "itk_mask.h"
+
+#include "plmutil.h"
 
 template <class T>
 T
@@ -121,8 +122,8 @@ mask_vf(DeformationFieldType::Pointer vf_out, DeformationFieldType::Pointer vf,
 #endif
 
 /* Explicit instantiations */
-template plastimatch1_EXPORT UCharImageType::Pointer mask_image (UCharImageType::Pointer, UCharImageType::Pointer, Mask_operation, float);
-template plastimatch1_EXPORT UShortImageType::Pointer mask_image (UShortImageType::Pointer, UCharImageType::Pointer, Mask_operation, float);
-template plastimatch1_EXPORT ShortImageType::Pointer mask_image (ShortImageType::Pointer, UCharImageType::Pointer, Mask_operation, float);
-template plastimatch1_EXPORT UInt32ImageType::Pointer mask_image (UInt32ImageType::Pointer, UCharImageType::Pointer, Mask_operation, float);
-template plastimatch1_EXPORT FloatImageType::Pointer mask_image (FloatImageType::Pointer, UCharImageType::Pointer, Mask_operation, float);
+template API UCharImageType::Pointer mask_image (UCharImageType::Pointer, UCharImageType::Pointer, Mask_operation, float);
+template API UShortImageType::Pointer mask_image (UShortImageType::Pointer, UCharImageType::Pointer, Mask_operation, float);
+template API ShortImageType::Pointer mask_image (ShortImageType::Pointer, UCharImageType::Pointer, Mask_operation, float);
+template API UInt32ImageType::Pointer mask_image (UInt32ImageType::Pointer, UCharImageType::Pointer, Mask_operation, float);
+template API FloatImageType::Pointer mask_image (FloatImageType::Pointer, UCharImageType::Pointer, Mask_operation, float);

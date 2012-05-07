@@ -5,10 +5,10 @@
 #include <time.h>
 
 #include "plmbase.h"
+#include "plmutil.h"
 #include "plmsys.h"
 
 #include "getopt.h"
-#include "itk_crop.h"
 #include "pcmd_crop.h"
 
 static void

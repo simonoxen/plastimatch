@@ -9,6 +9,7 @@
 #include "dcmtk/dcmdata/dctk.h"
 
 #include "plmbase.h"
+#include "plmutil.h"
 #include "plmsys.h"
 
 #include "dcmtk_file.h"
@@ -17,8 +18,6 @@
 #include "dcmtk_series.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
-#include "rtds.h"
-#include "rtss.h"
 
 void
 Dcmtk_series::rtss_load (

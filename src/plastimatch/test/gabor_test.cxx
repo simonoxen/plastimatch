@@ -5,8 +5,7 @@
 #include <stdio.h>
 
 #include "plmbase.h"
-
-#include "itk_gabor.h"
+#include "plmutil.h"
 #include "pstring.h"
 
 

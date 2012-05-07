@@ -7,13 +7,11 @@
 #include <time.h>
 
 #include "plmbase.h"
+#include "plmutil.h"
 #include "plmsys.h"
 
 #include "plm_clp.h"
-#include "plm_warp.h"
 #include "pstring.h"
-#include "rtds.h"
-#include "rtds_warp.h"
 #include "pcmd_warp.h"
 
 static void

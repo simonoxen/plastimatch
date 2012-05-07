@@ -6,9 +6,11 @@
 #include <stdlib.h>
 #include <math.h>
 #include "plmutil_config.h"
+
+#include "plmutil.h"
 #include "plm_math.h"
+
 #include "itkImageRegionIteratorWithIndex.h"
-#include "synthetic_vf.h"
 #include "getopt.h"
 
 DeformationFieldType::Pointer

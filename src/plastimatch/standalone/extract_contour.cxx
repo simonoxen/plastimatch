@@ -13,8 +13,8 @@
 #include "itkImageSliceConstIteratorWithIndex.h"
 
 #include "plmbase.h"
+#include "plmutil.h"
 
-#include "slice_extract.h"
 
 /* -----------------------------------------------------------------------
     Definitions

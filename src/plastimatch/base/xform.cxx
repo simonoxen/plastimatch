@@ -15,8 +15,6 @@
 #include "plmsys.h"
 #include "plm_math.h"
 
-#include "bspline.h"
-#include "plm_parms.h"
 
 static void
 itk_bsp_set_grid_img (Xform *xf,

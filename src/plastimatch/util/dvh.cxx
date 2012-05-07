@@ -8,12 +8,10 @@
 #include "getopt.h"
 
 #include "plmbase.h"
+#include "plmutil.h"
 #include "plmsys.h"
 
-#include "dvh.h"
 #include "make_string.h"
-#include "rtds.h"
-#include "rtss.h"
 
 
 Dvh_parms::Dvh_parms ()

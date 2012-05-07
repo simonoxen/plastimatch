@@ -8,9 +8,8 @@
 #include <time.h>
 
 #include "plmbase.h"
+#include "plmutil.h"
 
-#include "rtds.h"
-#include "rtss.h"
 
 void
 Rtds::load_gdcm (const char *dicom_dir)

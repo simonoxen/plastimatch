@@ -7,8 +7,7 @@
 #include <stdio.h>
 
 #include "plmbase.h"
-
-#include "landmark_diff.h"
+#include "plmutil.h"
 
 
 static float

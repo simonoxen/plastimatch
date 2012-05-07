@@ -9,11 +9,9 @@
 #include "itkImageRegionIteratorWithIndex.h"
 
 #include "plmbase.h"
+#include "plmutil.h"
 
 #include "plm_math.h"
-#include "rtds.h"
-#include "rtss.h"
-#include "synthetic_mha.h"
 
 static void 
 synth_gauss (

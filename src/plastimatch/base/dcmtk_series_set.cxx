@@ -8,13 +8,12 @@
 #include "dcmtk/ofstd/ofstream.h"
 #include "dcmtk/dcmdata/dctk.h"
 
+#include "plmutil.h"
 #include "plmsys.h"
 
 #include "compiler_warnings.h"
 #include "dcmtk_file.h"
 #include "dcmtk_series_set.h"
-#include "rtds.h"
-#include "rtss.h"
 
 Dcmtk_series_set::Dcmtk_series_set ()
 {

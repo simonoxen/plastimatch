@@ -6,11 +6,12 @@
 
 #include "plmscript_config.h"
 #include "plm_path.h"
-#include "rtss.h"
 
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
+
+class Plm_image;
 
 typedef struct lua_ss_struct lua_ss;
 struct lua_ss_struct {

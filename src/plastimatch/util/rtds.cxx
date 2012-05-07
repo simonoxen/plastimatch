@@ -7,11 +7,9 @@
 #include <string.h>
 
 #include "plmbase.h"
+#include "plmutil.h"
 #include "plmsys.h"
 
-#include "cxt_extract.h"
-#include "rtds.h"
-#include "rtss.h"
 
 Rtds::Rtds ()
 {

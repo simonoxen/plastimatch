@@ -5,16 +5,10 @@
 #define _rasterize_slice_h_
 
 #include "plmutil_config.h"
+#include "sys/plm_int.h"
 
-#include "plmsys.h"
 
-#if defined __cplusplus
-extern "C" {
-#endif
-
-plastimatch1_EXPORT
-void
-rasterize_slice (
+C_API void rasterize_slice (
     unsigned char* acc_img,
     plm_long* dims,
     float* spacing,
@@ -24,17 +18,12 @@ rasterize_slice (
     const float* y_in            /* polygon vertices in mm */
 );
 
-bool
-point_in_polygon (
+bool point_in_polygon (
     const float* x_in,           /* polygon vertices in mm */
     const float* y_in,           /* polygon vertices in mm */
     size_t num_vertices,
     float x_test,
     float y_test
 );
-
-#if defined __cplusplus
-}
-#endif
 
 #endif

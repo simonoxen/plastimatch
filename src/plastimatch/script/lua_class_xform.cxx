@@ -14,6 +14,7 @@ extern "C"
 }
 
 #include "plmbase.h"
+#include "plmutil.h"
 
 #include "lua_classes.h"
 #include "lua_class_image.h"
@@ -21,7 +22,6 @@ extern "C"
 #include "lua_class_xform.h"
 #include "lua_util.h"
 #include "pcmd_script.h"
-#include "plm_warp.h"
 
 /* Name of class as exposed to Lua */
 #define THIS_CLASS LUA_CLASS_XFORM

@@ -14,11 +14,9 @@
 #include "itkImageSliceConstIteratorWithIndex.h"
 
 #include "plmbase.h"
+#include "plmutil.h"
 #include "plmsys.h"
 
-#include "cxt_extract.h"
-#include "slice_extract.h"
-#include "ss_img_extract.h"
 
 #if defined (commentout)
 static bool
@@ -312,4 +310,4 @@ cxt_extract (
 }
 
 /* Explicit instantiations */
-template plastimatch1_EXPORT void cxt_extract (Rtss_polyline_set *cxt, UInt32ImageType::Pointer image, int num_structs, bool check_cxt_bits);
+template API void cxt_extract (Rtss_polyline_set *cxt, UInt32ImageType::Pointer image, int num_structs, bool check_cxt_bits);

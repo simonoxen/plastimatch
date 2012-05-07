@@ -7,8 +7,8 @@
 #include <stdio.h>
 
 #include "plmbase.h"
+#include "plmutil.h"
 
-#include "landmark_diff.h"
 
 int
 main (int argc, char** argv)

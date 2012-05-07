@@ -37,7 +37,7 @@
 
 #include <itkImage.h>
 
-#include "dvh.h"
+#include "plmutil.h"
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_ExtensionTemplate

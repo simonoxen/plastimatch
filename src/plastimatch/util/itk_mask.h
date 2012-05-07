@@ -16,6 +16,7 @@ enum Mask_operation {
 template <class T, class U>
 T
 vector_mask_image (T& vf_image, U& ref_image);
+
 template <class T>
 T
 vector_mask_image (T& image, float x_spacing,
@@ -23,6 +24,7 @@ vector_mask_image (T& image, float x_spacing,
 template <class T>
 T
 vector_mask_image (T& vf_image, float* origin, float* spacing, int* size);
+
 template <class T>
 T
 vector_mask_image (T& vf_image, Plm_image_header* pih);

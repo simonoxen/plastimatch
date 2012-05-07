@@ -4,9 +4,10 @@
 #include "plm_config.h"
 #include "plastimatch_slicer_synthCLP.h"
 
+#include "plmutil.h"
+
 #include "itk_image.h"
 #include "itk_image_save.h"
-#include "rtds.h"
 #include "rtss.h"
 #include "synthetic_mha.h"
 

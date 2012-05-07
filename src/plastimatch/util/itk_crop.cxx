@@ -6,8 +6,8 @@
 #include "itkImage.h"
 
 #include "plmbase.h"
+#include "plmutil.h"
 
-#include "itk_crop.h"
 
 template <class T>
 T
@@ -52,8 +52,8 @@ itk_crop (
 
 
 /* Explicit instantiations */
-template plastimatch1_EXPORT UCharImageType::Pointer itk_crop (UCharImageType::Pointer&, const int*);
-template plastimatch1_EXPORT ShortImageType::Pointer itk_crop (ShortImageType::Pointer&, const int*);
-template plastimatch1_EXPORT UShortImageType::Pointer itk_crop (UShortImageType::Pointer&, const int*);
-template plastimatch1_EXPORT UInt32ImageType::Pointer itk_crop (UInt32ImageType::Pointer&, const int*);
-template plastimatch1_EXPORT FloatImageType::Pointer itk_crop (FloatImageType::Pointer&, const int*);
+template API UCharImageType::Pointer itk_crop (UCharImageType::Pointer&, const int*);
+template API ShortImageType::Pointer itk_crop (ShortImageType::Pointer&, const int*);
+template API UShortImageType::Pointer itk_crop (UShortImageType::Pointer&, const int*);
+template API UInt32ImageType::Pointer itk_crop (UInt32ImageType::Pointer&, const int*);
+template API FloatImageType::Pointer itk_crop (FloatImageType::Pointer&, const int*);

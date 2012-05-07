@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include "plastimatch_slicer_dvhCLP.h"
 
-#include "dvh.h"
+#include "plmutil.h"
 
 int 
 main (int argc, char * argv [])
