@@ -11,6 +11,7 @@
 #include "nlopt.h"
 #endif
 
+#include "plmbase.h"
 #include "plmregister.h"
 #include "plm_math.h"
 
