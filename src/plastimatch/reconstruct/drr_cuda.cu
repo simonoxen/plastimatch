@@ -40,6 +40,7 @@
 #include "plm_math.h"
 #include "plm_cuda_math.h"
 #include "proj_image.h"
+#include "proj_matrix.h"
 
 /* Textures */
 //texture<float, 1, cudaReadModeElementType> tex_img;

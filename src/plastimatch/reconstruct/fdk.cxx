@@ -12,20 +12,20 @@
 #endif
 
 #include "plmbase.h"
+#include "plmreconstruct.h"
 #include "plmsys.h"
 
-#include "bowtie_correction.h"
 #include "fdk.h"
 #include "fdk_cuda.h"
 #include "fdk_opencl.h"
 #include "fdk_opts.h"
 #include "fdk_util.h"
 
-/* EXTERNAL DEPENDS */
 #include "delayload.h"
 #include "plm_math.h"
 #include "proj_image.h"
 #include "proj_image_dir.h"
+#include "proj_matrix.h"
 
 
 #if CUDA_FOUND

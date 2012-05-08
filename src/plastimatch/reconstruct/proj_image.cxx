@@ -14,6 +14,7 @@
 #include "plm_math.h"
 #include "plm_path.h"
 #include "proj_image.h"
+#include "proj_matrix.h"
 #include "ramp_filter.h"
 
 Proj_image::Proj_image ()

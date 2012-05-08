@@ -10,10 +10,11 @@
 #endif
 
 #include "plmbase.h"
+#include "plmreconstruct.h"
 
-#include "bowtie_correction.h"
-#include "fdk.h"
 #include "plm_math.h"
+
+#include "fdk.h"
 
 #ifndef DEGTORAD
 static const double DEGTORAD = 3.14159265 / 180.0;

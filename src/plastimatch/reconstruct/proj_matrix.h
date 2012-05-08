@@ -4,8 +4,9 @@
 #ifndef _proj_matrix_h_
 #define _proj_matrix_h_
 
-class Proj_matrix
-{
+#include "plmreconstruct_config.h"
+
+class Proj_matrix {
 public:
     Proj_matrix ();
 
@@ -21,18 +22,8 @@ public:
     double intrinsic[12];
 };
 
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-gpuit_EXPORT 
-Proj_matrix*
-proj_matrix_clone (Proj_matrix* pmat_in);
-
-gpuit_EXPORT
-void
-proj_matrix_set (
+C_API Proj_matrix* proj_matrix_clone (Proj_matrix* pmat_in);
+C_API void proj_matrix_set (
     Proj_matrix *pmat,
     double* cam, 
     double* tgt, 
@@ -42,43 +33,10 @@ proj_matrix_set (
     double* ps, 
     int* ires
 );
-
-gpuit_EXPORT
-void
-proj_matrix_debug (
-    Proj_matrix *pmat
-);
-
-gpuit_EXPORT
-void
-proj_matrix_get_nrm (
-    Proj_matrix *pmat,
-    double nrm[3]
-);
-
-gpuit_EXPORT
-void
-proj_matrix_get_pdn (
-    Proj_matrix *pmat,
-    double pdn[3]
-);
-
-gpuit_EXPORT
-void
-proj_matrix_get_prt (
-    Proj_matrix *pmat,
-    double prt[3]
-);
-
-gpuit_EXPORT
-void
-proj_matrix_save (
-    Proj_matrix *pmat,
-    const char *fn
-);
-
-#ifdef __cplusplus
-}
-#endif
+C_API void proj_matrix_debug (Proj_matrix *pmat);
+C_API void proj_matrix_get_nrm (Proj_matrix *pmat, double nrm[3]);
+C_API void proj_matrix_get_pdn (Proj_matrix *pmat, double pdn[3]);
+C_API void proj_matrix_get_prt (Proj_matrix *pmat, double prt[3]);
+C_API void proj_matrix_save (Proj_matrix *pmat, const char *fn);
 
 #endif

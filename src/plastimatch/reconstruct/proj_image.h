@@ -5,13 +5,11 @@
 #define _proj_image_h_
 
 #include "plmreconstruct_config.h"
-#include "plmbase.h"
 
-#include "fdk.h"
-#include "proj_matrix.h"
+class Proj_image;
+class Proj_matrix;
 
-class gpuit_EXPORT Proj_image
-{
+class API Proj_image {
 public:
     Proj_image (void);
     Proj_image (const char* img_filename, const char* mat_filename);
@@ -35,64 +33,29 @@ public:
     void set_xy_offset (const double xy_offset[2]);
 };
 
-#if defined __cplusplus
-extern "C" {
-#endif
-
-#if defined (commentout)
-gpuit_EXPORT
-Proj_image*
-proj_image_create (void);
-#endif
-
-gpuit_EXPORT 
-void 
-proj_image_free (Proj_image* proj);
-
-#if 0
-gpuit_EXPORT Proj_image* 
-proj_image_load_and_filter (
-    Fdk_parms* parms, 
-    const char* img_filename, 
-    const char* mat_filename
-);
-#endif
-
-gpuit_EXPORT 
-Proj_image* 
-proj_image_load (
+C_API void proj_image_free (Proj_image* proj);
+C_API Proj_image* proj_image_load (
     const char* img_filename,
     const char* mat_filename
 );
-
-gpuit_EXPORT 
-void
-proj_image_save (
+C_API void proj_image_save (
     Proj_image *proj,
     const char *img_filename,
     const char *mat_filename
 );
+C_API void proj_image_filter (Proj_image *proj);
+C_API void proj_image_debug_header (Proj_image *proj);
+C_API void proj_image_create_pmat (Proj_image *proj);
+C_API void proj_image_create_img (Proj_image *proj, int dim[2]);
+C_API void proj_image_stats (Proj_image *proj); 
 
-gpuit_EXPORT
-void
-proj_image_filter (Proj_image *proj);
-
-gpuit_EXPORT void
-proj_image_debug_header (Proj_image *proj);
-
-gpuit_EXPORT
-void
-proj_image_create_pmat (Proj_image *proj);
-
-gpuit_EXPORT
-void
-proj_image_create_img (Proj_image *proj, int dim[2]);
-
-gpuit_EXPORT void
-proj_image_stats (Proj_image *proj);
-
-#if defined __cplusplus
-}
+#if 0
+C_API Proj_image* proj_image_create (void);
+C_API Proj_image* proj_image_load_and_filter (
+    Fdk_parms* parms, 
+    const char* img_filename, 
+    const char* mat_filename
+);
 #endif
 
 #endif

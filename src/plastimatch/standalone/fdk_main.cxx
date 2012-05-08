@@ -12,9 +12,9 @@
 #endif
 
 #include "plmbase.h"
+#include "plmreconstruct.h"
 #include "plmsys.h"
 
-#include "bowtie_correction.h"
 #include "fdk.h"
 #include "fdk_cuda.h"
 #include "fdk_opencl.h"

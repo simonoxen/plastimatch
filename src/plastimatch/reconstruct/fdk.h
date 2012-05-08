@@ -5,19 +5,20 @@
 #define _fdk_h_
 
 #include "plmreconstruct_config.h"
-#include "plmbase.h"
+#include "sys/plm_int.h"
 #include "proj_image.h"
 #include "proj_image_dir.h"
 #include "threading.h"
+
+class Volume;
 
 enum Fdk_filter_type {
     FDK_FILTER_TYPE_NONE,
     FDK_FILTER_TYPE_RAMP
 };
 
-
-typedef struct fdk_parms Fdk_parms;
-struct fdk_parms {
+class Fdk_parms {
+public:
     Threading threading;
 
     int image_range_requested;
@@ -44,33 +45,17 @@ struct fdk_parms {
     int Half_radius;
 };
 
-
-#if defined __cplusplus
-extern "C" {
-#endif
-
-gpuit_EXPORT
-void
-reconstruct_conebeam (
+C_API void reconstruct_conebeam (
     Volume* vol, 
     Proj_image_dir *proj_dir, 
     Fdk_parms* parms
 );
-
-gpuit_EXPORT
-void
-CUDA_reconstruct_conebeam (
+C_API void CUDA_reconstruct_conebeam (
     Volume *vol, 
     Proj_image_dir *proj_dir,
     Fdk_parms *parms
 );
+C_API void fdk_do_bowtie (Volume* vol, Fdk_parms* parms);
 
-gpuit_EXPORT
-void
-fdk_do_bowtie (Volume* vol, Fdk_parms* parms);
-
-#if defined __cplusplus
-}
-#endif
 
 #endif
