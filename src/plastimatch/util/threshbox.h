@@ -36,7 +36,7 @@ public:
     Threshbox_parms () {
     center[0]=100;
     center[1]=100;
-    center[3]=100;
+    center[2]=100;
     boxsize[0]=10;
     boxsize[1]=10;
     boxsize[2]=10;
