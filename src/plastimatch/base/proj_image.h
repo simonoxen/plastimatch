@@ -43,7 +43,6 @@ C_API void proj_image_save (
     const char *img_filename,
     const char *mat_filename
 );
-C_API void proj_image_filter (Proj_image *proj);
 C_API void proj_image_debug_header (Proj_image *proj);
 C_API void proj_image_create_pmat (Proj_image *proj);
 C_API void proj_image_create_img (Proj_image *proj, int dim[2]);
