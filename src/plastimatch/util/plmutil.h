@@ -10,7 +10,9 @@
 #include "bspline_warp.h"
 #include "cxt_extract.h"
 #include "diff.h"
+#if (!PLM_CUDA_COMPILE)
 #include "dvh.h"
+#endif
 #include "gamma_analysis.h"
 #if (!PLM_CUDA_COMPILE)
 #include "itk_adjust.h"
@@ -24,7 +26,9 @@
 #include "proj_image_filter.h"
 #include "ramp_filter.h"
 #include "rasterize_slice.h"
+#if (!PLM_CUDA_COMPILE)
 #include "rasterizer.h"
+#endif
 #include "rtds.h"
 #include "rtds_warp.h"
 #include "rtss.h"
@@ -35,7 +39,9 @@
 #include "ss_img_stats.h"
 #endif
 #include "synthetic_mha.h"
+#if (!PLM_CUDA_COMPILE)
 #include "synthetic_vf.h"
+#endif
 #include "threshbox.h"
 #include "warp_parms.h"
 
