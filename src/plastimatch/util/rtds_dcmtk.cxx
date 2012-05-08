@@ -6,8 +6,10 @@
 #include "plmutil.h"
 
 #include "compiler_warnings.h"
+#if PLM_DCM_USE_DCMTK
 #include "dcmtk_loader.h"
 #include "dcmtk_save.h"
+#endif
 
 void
 Rtds::load_dcmtk (const char *dicom_dir)
