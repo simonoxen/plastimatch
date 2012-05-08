@@ -13,12 +13,6 @@
 #include "opencl_util.h"
 #include "demons_opencl_p.h"
 
-// JAS 2012.04.29
-// Since this function is commented out, this will suffice.
-// I did this to suppress build errors while transitioning
-// to Plastimatch 2.0.
-typedef struct Demons_parms_struct Demons_parms;
-
 Volume*
 demons_opencl (
     Volume* fixed, 

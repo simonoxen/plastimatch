@@ -31,6 +31,8 @@
 #include "rbf_cluster.h"
 #include "rbf_gauss.h"
 #include "rbf_wendland.h"
+#if (!PLM_CUDA_COMPILE)
 #include "registration_data.h"
+#endif
 
 #endif
