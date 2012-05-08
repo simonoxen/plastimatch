@@ -65,11 +65,6 @@ endif ()
 include (FindPackageHandleStandardArgs)
 find_package_handle_standard_args (SLICER DEFAULT_MSG Slicer_DIR)
 
-message (STATUS "CMAKE_MODULE_LINKER_FLAGS=${CMAKE_MODULE_LINKER_FLAGS}")
-message (STATUS "CMAKE_SHARED_LINKER_FLAGS=${CMAKE_SHARED_LINKER_FLAGS}")
-message (STATUS "CMAKE_EXE_LINKER_FLAGS=${CMAKE_EXE_LINKER_FLAGS}")
-
-
 if (SLICER_FOUND)
 
   # For Slicer 3: convert old names to new names
@@ -136,9 +131,5 @@ else ()
   #set (VTK_DIR ${VTK_DIR_OLD})
 endif ()
 message (STATUS "BUILD_SHARED_LIBS: ${BUILD_SHARED_LIBS}")
-
-message (STATUS "CMAKE_MODULE_LINKER_FLAGS=${CMAKE_MODULE_LINKER_FLAGS}")
-message (STATUS "CMAKE_SHARED_LINKER_FLAGS=${CMAKE_SHARED_LINKER_FLAGS}")
-message (STATUS "CMAKE_EXE_LINKER_FLAGS=${CMAKE_EXE_LINKER_FLAGS}")
 
 mark_as_advanced (SLICER_CONFIG_FILE)
