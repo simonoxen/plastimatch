@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "dcmtk_series_set.h"
+#include "dcmtk_loader.h"
 
 int
 main (int argc, char *argv[])
@@ -18,7 +18,9 @@ main (int argc, char *argv[])
 	exit (1);
     }
 
+#if defined (GCS_FIX)
     dcmtk_series_set_test (dicom_dir);
+#endif
 
     return 0;
 }
