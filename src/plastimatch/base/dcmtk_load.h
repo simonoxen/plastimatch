@@ -7,10 +7,6 @@
 #include "plmbase_config.h"
 #include "itk_image_type.h"
 
-class Rtds;
-
 API ShortImageType::Pointer dcmtk_load (const char *dicom_dir);
-
-void dcmtk_rtds_load (Rtds *rtds, const char *dicom_dir);
 
 #endif

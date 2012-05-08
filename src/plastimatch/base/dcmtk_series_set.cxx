@@ -8,12 +8,13 @@
 #include "dcmtk/ofstd/ofstream.h"
 #include "dcmtk/dcmdata/dctk.h"
 
-#include "plmutil.h"
+//#include "plmutil.h"
 #include "plmsys.h"
 
 #include "compiler_warnings.h"
 #include "dcmtk_file.h"
 #include "dcmtk_series_set.h"
+#include "plm_image.h"
 
 Dcmtk_series_set::Dcmtk_series_set ()
 {
@@ -104,6 +105,7 @@ Dcmtk_series_set::debug (void) const
     }
 }
 
+#if defined (GCS_FIX)
 void
 Dcmtk_series_set::load_rtds (Rtds *rtds)
 {
@@ -196,3 +198,4 @@ dcmtk_series_set_test (char *dicom_dir)
         rtds.m_dose->save_image ("dose.mha");
     }
 }
+#endif

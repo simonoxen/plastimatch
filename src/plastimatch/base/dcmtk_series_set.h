@@ -10,8 +10,6 @@
 
 #include "dcmtk_series.h"
 
-class Rtds;
-
 class Dcmtk_series_set
 {
 public:
@@ -26,12 +24,16 @@ public:
 
 public:
     void debug (void) const;
+#if defined (GCS_FIX)
     void load_rtds (Rtds *rtds);
+#endif
     void insert_file (const char* fn);
     void insert_directory (const char* fn);
     void sort_all (void);
 };
 
+#if defined (GCS_FIX)
 C_API void dcmtk_series_set_test (char *dicom_dir);
+#endif
 
 #endif
