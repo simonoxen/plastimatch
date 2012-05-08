@@ -15,8 +15,8 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 ##-----------------------------------------------------------------------------
 set (PLMRECONSTRUCT_LIBRARY_SRC
   bowtie_correction.cxx
-  drr.cxx drr.h
-  drr_trilin.cxx drr_trilin.h
+  drr.cxx
+  drr_trilin.cxx
   fdk.cxx
   fdk_util.cxx
   )

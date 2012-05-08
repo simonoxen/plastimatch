@@ -18,7 +18,6 @@
 
 #include "fdk_cuda.h"
 #include "fdk_opencl.h"
-#include "fdk_opts.h"
 
 #include "delayload.h"
 #include "plm_math.h"

@@ -19,7 +19,6 @@
 #include "drr_cuda.h"
 #include "drr_opencl.h"
 #include "drr_opts.h"
-#include "drr_trilin.h"
 
 typedef struct callback_data Callback_data;
 struct callback_data {

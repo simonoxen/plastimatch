@@ -22,7 +22,6 @@
 #include "drr_cuda.h"
 #include "drr_opencl.h"
 #include "drr_opts.h"
-#include "drr_trilin.h"
 
 static void*
 allocate_gpu_memory (

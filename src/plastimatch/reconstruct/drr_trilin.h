@@ -5,13 +5,10 @@
 #define _drr_trilin_h_
 
 #include "plmreconstruct_config.h"
-#include "plmbase.h"
 
-gpuit_EXPORT
-double
-drr_trace_ray_trilin_approx (Volume* vol, double* p1in, double* p2in);
-gpuit_EXPORT
-double
-drr_trace_ray_trilin_exact (Volume* vol, double* p1in, double* p2in);
+class Volume;
+
+API double drr_trace_ray_trilin_approx (Volume* vol, double* p1in, double* p2in);
+API double drr_trace_ray_trilin_exact (Volume* vol, double* p1in, double* p2in);
 
 #endif

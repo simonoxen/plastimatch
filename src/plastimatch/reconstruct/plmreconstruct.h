@@ -8,6 +8,7 @@
 
 #include "bowtie_correction.h"
 #include "drr.h"
+#include "drr_trilin.h"
 #include "fdk.h"
 #include "fdk_util.h"
 
