@@ -10,6 +10,7 @@
 class Drr_options;
 class Proj_image;
 class Volume;
+class Volume_limit;
 
 C_API void* drr_opencl_state_create (
     Proj_image *proj,

@@ -8,6 +8,7 @@
 #include <math.h>
 
 #include "plmreconstruct.h"
+#include "plmutil.h"
 #include "plmsys.h"
 
 #include "plm_math.h"
@@ -16,6 +17,10 @@
 #include "drr_opencl_p.h"
 #include "drr_opts.h"
 #include "opencl_util.h"
+#include "proj_image.h"
+#include "proj_matrix.h"
+#include "volume.h"
+#include "volume_limit.h"
 
 void*
 drr_opencl_state_create (
