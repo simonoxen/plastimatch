@@ -59,7 +59,9 @@ astroid_dose_load_header (Astroid_dose_header *adh, const char *filename)
     }
 
     /* Dose grid */
-    fgets (line1, sizeof(line1), fp);
+    if (fgets (line1, sizeof(line1), fp) == NULL) {
+        print_and_exit ("File error.");
+    }
 
     rc = sscanf (line1, "%lf,%lf,%lf,%lf,%lf,%lf,%d,%d,%d",
                  &rx, &rz, &ry, &ox, &oz, &oy, &nx, &nz, &ny);

@@ -366,7 +366,11 @@ bspline_xform_load (const char* filename)
     bspline_xform_set_default (bxf);
 
     /* Skip first line */
-    fgets (buf, 1024, fp);
+    if (fgets (buf, 1024, fp) == NULL) {
+        logfile_printf ("File error.\n");
+        goto free_exit;
+    }
+
 
     /* Read header */
     rc = fscanf (fp, "img_origin = %f %f %f\n", 

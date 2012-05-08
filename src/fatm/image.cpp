@@ -38,7 +38,7 @@ image_malloc_rand (Image* image, int dims[2])
     int i;
     image_malloc (image, dims);
     for (i = 0; i < image_size(image); i++) {
-	image_data(image)[i] = rand_kr() / 32768.0;
+        image_data(image)[i] = rand_kr() / 32768.0;
     }
 }
 
@@ -56,8 +56,8 @@ image_write (Image* image, char* fn)
              "-1\n",
              image->dims[0], image->dims[1]);
     for (i = 0; i < image_size(image); i++) {
-	float fv = (float) image_data(image)[i];
-	fwrite (&fv, sizeof(float), 1, fp);
+        float fv = (float) image_data(image)[i];
+        fwrite (&fv, sizeof(float), 1, fp);
     }
     fclose (fp);
 }
@@ -73,29 +73,40 @@ image_read (Image* image, char* fn)
     fp = fopen (fn, "rb");
     if (!fp) return;
 
-    fgets (buf, 1024, fp);
+    if (fgets (buf, 1024, fp) == NULL) {
+        printf ("Error reading pfm file\n");
+        return;
+    }
     if (strcmp (buf, "Pf\n")) {
-	fclose (fp);
-	printf ("Error reading pfm file\n");
-	return;
+        fclose (fp);
+        printf ("Error reading pfm file\n");
+        return;
     }
-    fgets (buf, 1024, fp);
+
+    if (fgets (buf, 1024, fp) == NULL) {
+        printf ("Error reading pfm file\n");
+        return;
+    }
     if (sscanf (buf, "%d %d", &image->dims[0], &image->dims[1]) != 2) {
-	fclose (fp);
-	printf ("Error reading pfm file\n");
-	return;
+        fclose (fp);
+        printf ("Error reading pfm file\n");
+        return;
     }
-    fgets (buf, 1024, fp);
+
+    if (fgets (buf, 1024, fp) == NULL) {
+        printf ("Error reading pfm file\n");
+        return;
+    }
     if (strcmp (buf, "-1\n")) {
-	fclose (fp);
-	printf ("Error reading pfm file\n");
-	return;
+        fclose (fp);
+        printf ("Error reading pfm file\n");
+        return;
     }
     image_malloc (image, image->dims);
     for (i = 0; i < image_size(image); i++) {
-	float fv;
-	fread (&fv, sizeof(float), 1, fp);
-	image_data(image)[i] = (double) fv;
+        float fv;
+        fread (&fv, sizeof(float), 1, fp);
+        image_data(image)[i] = (double) fv;
     }
     fclose (fp);
 }

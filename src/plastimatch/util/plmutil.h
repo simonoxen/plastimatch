@@ -12,17 +12,15 @@
 #include "diff.h"
 #if (!PLM_CUDA_COMPILE)
 #include "dvh.h"
-#endif
 #include "gamma_analysis.h"
-#if (!PLM_CUDA_COMPILE)
 #include "itk_adjust.h"
 #include "itk_crop.h"
 #include "itk_gabor.h"
 #include "itk_mask.h"
 #include "itk_warp.h"
-#endif
 #include "landmark_diff.h"
 #include "plm_warp.h"
+#endif
 #include "proj_image_filter.h"
 #include "ramp_filter.h"
 #include "rasterize_slice.h"

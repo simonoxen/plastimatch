@@ -5,6 +5,7 @@
 #define _plm_warp_h_
 
 #include "plmutil_config.h"
+#include "itkBSplineDeformableTransform.h"
 
 class Plm_image;
 class Xform;
