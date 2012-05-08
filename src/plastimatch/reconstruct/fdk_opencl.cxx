@@ -17,6 +17,7 @@
 #include "opencl_util.h"
 #include "proj_image.h"
 #include "proj_image_dir.h"
+#include "proj_matrix.h"
 
 void 
 opencl_reconstruct_conebeam (
