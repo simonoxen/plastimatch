@@ -12,7 +12,11 @@
 #include "bstrlib.h"
 #include "make_string.h"
 
+#if defined (commentout)
 std::string Metadata::KEY_NOT_FOUND = "";
+#endif
+
+static std::string KEY_NOT_FOUND = "PLM_KEY_NOT_FOUND";
 
 Metadata::Metadata ()
 {

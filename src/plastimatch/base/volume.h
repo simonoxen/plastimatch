@@ -51,9 +51,7 @@ class API Volume
     int pix_size;                       // # bytes per voxel
     void* img;                          // Voxel Data
   public:
-    Volume () {
-        init ();
-    }
+    Volume ();
     Volume (
         const plm_long dim[3], 
         const float offset[3], 
@@ -61,19 +59,12 @@ class API Volume
         const float direction_cosines[9], 
         enum Volume_pixel_type vox_type, 
         int vox_planes
-    ) {
-        init ();
-        create (dim, offset, spacing, direction_cosines, vox_type, 
-            vox_planes);
-    }
+    );
     Volume (
         const Volume_header& vh, 
         enum Volume_pixel_type vox_type, 
         int vox_planes
-    ) {
-        init ();
-        create (vh, vox_type, vox_planes);
-    }
+    );
     ~Volume ();
   public:
     void init () {

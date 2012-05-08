@@ -63,7 +63,7 @@ plm_image_convert_gpuit_to_itk (Plm_image* pli, T itk_img, U)
 }
 
 template<class T, class U> 
-API void
+void
 plm_image_convert_itk_to_gpuit (Plm_image* pli, T img, U)
 {
     typedef typename T::ObjectType ImageType;

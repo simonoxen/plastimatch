@@ -21,6 +21,7 @@ public:
     ~Metadata ();
 
 public:
+#if defined (commentout)
     /* GCS: This is idiotic, but I guess it is what it is.  To avoid string 
        copying, and simultaneously to return the empty string in the 
        event that a key does not exist in the map, I need the equivalent 
@@ -30,6 +31,7 @@ public:
        apparently not possible due to the fact that different strings 
        are returned depending whether the key is found or not. */
     static std::string KEY_NOT_FOUND;
+#endif
 
 public:
     /* GCS: Note use of unsigned short instead of uint16_t, because of 

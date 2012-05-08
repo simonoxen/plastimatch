@@ -39,6 +39,43 @@ directions_cosine_debug (const float *m)
 	m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8]);
 }
 
+Volume::Volume () {
+    init ();
+}
+
+Volume::Volume (
+    const plm_long dim[3], 
+    const float offset[3], 
+    const float spacing[3], 
+    const float direction_cosines[9], 
+    enum Volume_pixel_type vox_type, 
+    int vox_planes
+) {
+    init ();
+    create (dim, offset, spacing, direction_cosines, vox_type, 
+        vox_planes);
+}
+
+Volume::Volume (
+    const Volume_header& vh, 
+    enum Volume_pixel_type vox_type, 
+    int vox_planes
+) {
+    init ();
+    create (vh, vox_type, vox_planes);
+}
+
+Volume::~Volume ()
+{
+    if (this->pix_type == PT_VF_FLOAT_PLANAR) {
+	float** planes = (float**) this->img;
+	free (planes[0]);
+	free (planes[1]);
+	free (planes[2]);
+    }
+    free (this->img);
+}
+
 void
 Volume::allocate (void)
 {
@@ -67,17 +104,6 @@ Volume::allocate (void)
 	}
 	memset (this->img, 0, this->pix_size * this->npix);
     }
-}
-
-Volume::~Volume ()
-{
-    if (this->pix_type == PT_VF_FLOAT_PLANAR) {
-	float** planes = (float**) this->img;
-	free (planes[0]);
-	free (planes[1]);
-	free (planes[2]);
-    }
-    free (this->img);
 }
 
 void 
