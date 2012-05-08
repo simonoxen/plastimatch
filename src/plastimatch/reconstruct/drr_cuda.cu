@@ -33,6 +33,7 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
+#include "drr.h"
 #include "cuda_util.h"
 #include "drr_cuda.h"
 #include "drr_cuda_p.h"

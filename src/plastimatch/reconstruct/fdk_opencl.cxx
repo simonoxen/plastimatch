@@ -8,10 +8,10 @@
 #include <math.h>
 
 #include "plmbase.h"
+#include "plmreconstruct.h"
 
 #include "autotune_opencl.h"
 #include "fdk_opencl_p.h"
-#include "fdk.h"
 #include "fdk_util.h"
 #include "plm_math.h"
 #include "opencl_util.h"

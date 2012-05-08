@@ -5,47 +5,70 @@
 #define _drr_h_
 
 #include "plmreconstruct_config.h"
-#include "plmbase.h"
-#include "drr_opts.h"
 #include "plm_math.h"
-#include "proj_image.h"
+#include "threading.h"
 
-#define DRR_PLANE_RAY_TOLERANCE 1e-8
-#define DRR_STRIDE_TOLERANCE 1e-10
-#define DRR_HUGE_DOUBLE 1e10
-#define DRR_LEN_TOLERANCE 1e-6
-#define DRR_TOPLANE_TOLERANCE 1e-7
-#define DRR_BOUNDARY_TOLERANCE 1e-6
+class Drr_options;
+class Proj_image;
+class Volume;
 
-#define DRR_MSD_NUM_BINS 60
-
-#define DRR_PREPROCESS_ATTENUATION 1
+#define OUTPUT_FORMAT_PFM                 0
+#define OUTPUT_FORMAT_PGM                 1
+#define OUTPUT_FORMAT_RAW                 2
 
 //#define DRR_VERBOSE 1
 //#define DRR_DEBUG_CALLBACK 1
 //#define DRR_ULTRA_VERBOSE 1
 
-#if defined __cplusplus
-extern "C" {
-#endif
+enum drr_algorithm {
+    DRR_ALGORITHM_EXACT,
+    DRR_ALGORITHM_TRILINEAR_EXACT,
+    DRR_ALGORITHM_TRILINEAR_APPROX,
+    DRR_ALGORITHM_UNIFORM
+};
+typedef enum drr_algorithm Drr_algorithm;
 
-gpuit_EXPORT
-void
-drr_render_volume_perspective (
-    Proj_image *proj,
-    Volume *vol, 
-    double ps[2], 
-    void *dev_state, 
-    Drr_options *options
+class Drr_options {
+public:
+    Threading threading;
+    int image_resolution[2];         /* In pixels */
+    float image_size[2];             /* In mm */
+    int have_image_center;           /* Was image_center spec'd in options? */
+    float image_center[2];           /* In pixels */
+    int have_image_window;           /* Was image_window spec'd in options? */
+    int image_window[4];             /* In pixels */
+    float isocenter[3];              /* In mm */
+
+    int num_angles;
+    int have_angle_diff;             /* Was angle_diff spec'd in options? */
+    float angle_diff;                /* In degrees */
+
+    int have_nrm;                    /* Was nrm specified? */
+    float nrm[3];                    /* Normal vector (unitless) */
+    float vup[3];                    /* Direction vector (unitless) */
+
+    float sad;			     /* In mm */
+    float sid;			     /* In mm */
+    float scale;
+    int exponential_mapping;
+    int output_format;
+    int multispectral;
+    Drr_algorithm algorithm;
+    char* input_file;
+    int geometry_only;
+    char* output_prefix;
+};
+C_API void drr_render_volume_perspective (
+        Proj_image *proj,
+        Volume *vol, 
+        double ps[2], 
+        void *dev_state, 
+        Drr_options *options
 );
-gpuit_EXPORT
-void
-drr_preprocess_attenuation (Volume* vol);
-gpuit_EXPORT
-void preprocess_attenuation_and_drr_render_volume_cl (Volume* vol, Drr_options* options);
-
-#if defined __cplusplus
-}
-#endif
+C_API void drr_preprocess_attenuation (Volume* vol);
+C_API void preprocess_attenuation_and_drr_render_volume_cl (
+        Volume* vol,
+        Drr_options* options
+);
 
 #endif

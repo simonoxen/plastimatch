@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "plm_config.h"
+
+#include "plmreconstruct.h"
+
 #include "fdk_opts.h"
 
 void 

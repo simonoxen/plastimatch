@@ -7,9 +7,9 @@
 #include <string.h>
 
 #include "plmbase.h"
+#include "plmreconstruct.h"
 #include "plmsys.h"
 
-#include "fdk.h"
 #include "fdk_util.h"
 #include "proj_image.h"
 #include "ramp_filter.h"

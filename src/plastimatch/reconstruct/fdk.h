@@ -6,10 +6,9 @@
 
 #include "plmreconstruct_config.h"
 #include "sys/plm_int.h"
-#include "proj_image.h"
-#include "proj_image_dir.h"
 #include "threading.h"
 
+class Proj_image_dir;
 class Volume;
 
 enum Fdk_filter_type {

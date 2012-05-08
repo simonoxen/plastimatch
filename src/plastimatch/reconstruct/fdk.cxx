@@ -15,7 +15,6 @@
 #include "plmreconstruct.h"
 #include "plmsys.h"
 
-#include "fdk.h"
 #include "fdk_cuda.h"
 #include "fdk_opencl.h"
 #include "fdk_opts.h"

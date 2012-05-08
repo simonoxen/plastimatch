@@ -17,7 +17,7 @@ set (PLMRECONSTRUCT_LIBRARY_SRC
   bowtie_correction.cxx
   drr.cxx drr.h
   drr_trilin.cxx drr_trilin.h
-  fdk.cxx fdk.h
+  fdk.cxx
   fdk_util.cxx fdk_util.h
   proj_image.cxx proj_image.h
   proj_image_dir.cxx proj_image_dir.h

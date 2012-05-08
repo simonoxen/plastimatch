@@ -14,7 +14,6 @@
 
 #include "plm_math.h"
 
-#include "fdk.h"
 
 #ifndef DEGTORAD
 static const double DEGTORAD = 3.14159265 / 180.0;

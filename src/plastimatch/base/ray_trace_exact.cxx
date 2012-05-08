@@ -11,7 +11,6 @@
 
 #include "plmbase.h"
 
-#include "drr.h"
 #include "plm_math.h"
 
 void

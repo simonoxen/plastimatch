@@ -7,9 +7,9 @@
 #include <string.h>
 
 #include "plmbase.h"
+#include "plmreconstruct.h"
 #include "plmsys.h"
 
-#include "fdk.h"
 #include "fdk_util.h"
 #include "plm_math.h"
 #include "plm_path.h"

@@ -7,8 +7,8 @@
 #include <math.h>
 
 #include "plmbase.h"
+#include "plmreconstruct.h"
 
-#include "drr.h"
 #include "drr_opts.h"
 #include "drr_trilin.h"
 #include "plm_math.h"

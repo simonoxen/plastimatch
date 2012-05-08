@@ -7,5 +7,7 @@
 #include "plmreconstruct_config.h"
 
 #include "bowtie_correction.h"
+#include "drr.h"
+#include "fdk.h"
 
 #endif

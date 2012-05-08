@@ -7,11 +7,11 @@
 #include <string.h>
 #include <math.h>
 
+#include "plmreconstruct.h"
 #include "plmsys.h"
 
 #include "drr_opencl.h"
 #include "drr_opencl_p.h"
-#include "drr.h"
 #include "drr_opts.h"
 #include "plm_math.h"
 #include "opencl_util.h"

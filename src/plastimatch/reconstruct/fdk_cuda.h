@@ -5,12 +5,14 @@
 #define _fdk_cuda_h_
 
 #include "plmreconstruct_config.h"
-#include "plmbase.h"
 #include "delayload.h"
-#include "fdk.h"
-#include "proj_image_dir.h"
+
+class Fdk_parms;
+class Volume;
+
 
 #define FDK_CUDA_TIME_KERNEL 0
+
 
 #if defined __cplusplus
 extern "C" {

@@ -6,8 +6,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "drr_opts.h"
+
+#include "plmreconstruct.h"
 #include "plm_math.h"
+
+#include "drr_opts.h"
 
 #ifndef NULL
 #define NULL ((void*)0)
