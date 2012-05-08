@@ -7,7 +7,7 @@
 /* Nb. Doxygen values are substituted in PREDEFINED value of Doxyfile.in */
 
 #define PLM_GET_SET(type, name)                              \
-    const type get_##name (type);                            \
+    const type& get_##name () const;                         \
     void set_##name (const type&)
 
 #define PLM_GET(type, name)                                  \
