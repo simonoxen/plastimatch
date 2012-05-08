@@ -55,11 +55,12 @@ set (PLM_CLI_LIBRARIES ${PLASTIMATCH_LIBS} plmclp)
 ##-----------------------------------------------------------------------------
 ##  BUILD TARGETS
 ##-----------------------------------------------------------------------------
-plm_add_library (
-  plmclp
-  "${PLMCLP_LIBRARY_SRC}" 
-  ""
-  "")
+#plm_add_library (
+#  plmclp
+#  "${PLMCLP_LIBRARY_SRC}" 
+#  ""
+#  "")
+add_library (plmclp STATIC ${PLMCLP_LIBRARY_SRC})
 plm_add_executable (plastimatch "${PLASTIMATCH_SRC}"
   "${PLM_CLI_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
   ${BUILD_ALWAYS} ${INSTALL_ALWAYS})
