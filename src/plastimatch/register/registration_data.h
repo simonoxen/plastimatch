@@ -5,6 +5,7 @@
 #define _registration_data_h_
 
 #include "plmregister_config.h"
+#include "itk_image_type.h"
 
 template<class T> class API Pointset;
 
