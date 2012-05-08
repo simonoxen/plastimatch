@@ -19,8 +19,8 @@ enum point_location {
 };
 typedef enum point_location Point_location;
 
-typedef struct volume_limit Volume_limit;
-struct volume_limit {
+class Volume_limit {
+public:
     /* upper and lower limits of volume, including tolerances */
     double lower_limit[3];
     double upper_limit[3];

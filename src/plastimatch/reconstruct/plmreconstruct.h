@@ -9,5 +9,7 @@
 #include "bowtie_correction.h"
 #include "drr.h"
 #include "fdk.h"
+#include "fdk_util.h"
+#include "proj_image.h"
 
 #endif

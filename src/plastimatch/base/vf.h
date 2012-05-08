@@ -13,7 +13,7 @@
 #include "plmbase_config.h"
 
 class Volume;
-typedef struct volume_limit Volume_limit;
+class Volume_limit;
 
 C_API Volume* vf_warp (Volume* vout, Volume* vin, Volume* vf); 
 

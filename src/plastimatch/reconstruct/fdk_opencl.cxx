@@ -12,10 +12,8 @@
 
 #include "autotune_opencl.h"
 #include "fdk_opencl_p.h"
-#include "fdk_util.h"
 #include "plm_math.h"
 #include "opencl_util.h"
-#include "proj_image.h"
 #include "proj_image_dir.h"
 #include "proj_matrix.h"
 

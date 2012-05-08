@@ -10,10 +10,8 @@
 #include "plmreconstruct.h"
 #include "plmsys.h"
 
-#include "fdk_util.h"
 #include "plm_math.h"
 #include "plm_path.h"
-#include "proj_image.h"
 #include "proj_matrix.h"
 #include "ramp_filter.h"
 

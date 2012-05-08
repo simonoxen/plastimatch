@@ -31,16 +31,15 @@
 #include <cuda.h>
 
 #include "plmbase.h"
+#include "plmreconstruct.h"
 #include "plmsys.h"
 
-#include "drr.h"
+#include "plm_math.h"
+
 #include "cuda_util.h"
 #include "drr_cuda.h"
 #include "drr_cuda_p.h"
-#include "drr_opts.h"
-#include "plm_math.h"
 #include "plm_cuda_math.h"
-#include "proj_image.h"
 #include "proj_matrix.h"
 
 /* Textures */

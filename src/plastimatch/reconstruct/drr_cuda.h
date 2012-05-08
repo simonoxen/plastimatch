@@ -5,10 +5,12 @@
 #define _drr_cuda_h_
 
 #include "plmreconstruct_config.h"
-#include "plmbase.h"
-#include "drr_opts.h"
-#include "proj_image.h"
 #include "delayload.h"
+
+class Drr_options;
+class Proj_image;
+class Volume;
+class Volume_limit;
 
 #if defined __cplusplus
 extern "C" {

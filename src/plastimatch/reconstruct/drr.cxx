@@ -18,7 +18,6 @@
 #include "drr_opts.h"
 #include "drr_trilin.h"
 #include "plm_math.h"
-#include "proj_image.h"
 #include "proj_matrix.h"
 #include "delayload.h"
 #ifndef _WIN32

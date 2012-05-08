@@ -5,30 +5,19 @@
 #define _DRR_OPENCL_H_
 
 #include "plmreconstruct_config.h"
-#include "plmbase.h"
-#include "drr_opts.h"
-#include "proj_image.h"
 #include "delayload.h"
 
-#if defined __cplusplus
-extern "C" {
-#endif
+class Drr_options;
+class Proj_image;
+class Volume;
 
-gpuit_EXPORT
-void* drr_opencl_state_create (
+C_API void* drr_opencl_state_create (
     Proj_image *proj,
     Volume *vol,
     Drr_options *options
 );
-
-gpuit_EXPORT
-void drr_opencl_state_destroy (
-    void *dev_state
-);
-
-gpuit_EXPORT
-void
-drr_opencl_ray_trace_image (
+C_API void drr_opencl_state_destroy (void *dev_state);
+C_API void drr_opencl_ray_trace_image (
     Proj_image *proj, 
     Volume *vol, 
     Volume_limit *vol_limit, 
@@ -39,9 +28,5 @@ drr_opencl_ray_trace_image (
     void *dev_state, 
     Drr_options *options
 );
-
-#if defined __cplusplus
-}
-#endif
 
 #endif

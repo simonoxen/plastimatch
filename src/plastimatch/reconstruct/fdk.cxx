@@ -18,11 +18,9 @@
 #include "fdk_cuda.h"
 #include "fdk_opencl.h"
 #include "fdk_opts.h"
-#include "fdk_util.h"
 
 #include "delayload.h"
 #include "plm_math.h"
-#include "proj_image.h"
 #include "proj_image_dir.h"
 #include "proj_matrix.h"
 

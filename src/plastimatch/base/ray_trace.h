@@ -13,7 +13,7 @@
 #include "plmbase_config.h"
 
 class Volume;
-typedef struct volume_limit Volume_limit;
+class Volume_limit;
 
 //#define DRR_VERBOSE
 #define DRR_PLANE_RAY_TOLERANCE 1e-8

@@ -15,7 +15,6 @@
 #include "drr_opts.h"
 #include "plm_math.h"
 #include "opencl_util.h"
-#include "proj_image.h"
 #include "proj_matrix.h"
 
 void*

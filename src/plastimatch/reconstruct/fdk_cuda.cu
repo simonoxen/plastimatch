@@ -23,14 +23,13 @@
 #include <cuda.h>
 
 #include "plmbase.h"
+#include "plmreconstruct.h"
 #include "plmsys.h"
+
+#include "plm_math.h"
 
 #include "cuda_util.h"
 #include "fdk_cuda_p.h"
-#include "fdk.h"
-#include "fdk_util.h"
-#include "plm_math.h"
-#include "proj_image.h"
 #include "proj_image_dir.h"
 
 // P R O T O T Y P E S ////////////////////////////////////////////////////

@@ -7,9 +7,9 @@
 #include <string.h>
 
 #include "plmbase.h"
+#include "plmreconstruct.h"
 #include "plmsys.h"
 
-#include "proj_image.h"
 
 int 
 main (int argc, char* argv[]) 

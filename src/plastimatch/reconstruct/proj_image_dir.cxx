@@ -6,10 +6,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "plmreconstruct.h"
 #include "plmsys.h"
 
 #include "plm_path.h"
-#include "proj_image.h"
 #include "proj_image_dir.h"
 
 Proj_image_dir::Proj_image_dir (const char *dir)
