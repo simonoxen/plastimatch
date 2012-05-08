@@ -12,6 +12,8 @@
 #include <math.h>
 #include <cuda.h>
 
+#include "plmsys.h"
+
 #include "cuda_mem.h"
 #include "delayload.h"
 

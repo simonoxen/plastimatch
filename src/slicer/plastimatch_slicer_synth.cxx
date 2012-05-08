@@ -4,6 +4,7 @@
 #include "plm_config.h"
 #include "plastimatch_slicer_synthCLP.h"
 
+#include "plmbase.h"
 #include "plmutil.h"
 
 #include "itk_image.h"

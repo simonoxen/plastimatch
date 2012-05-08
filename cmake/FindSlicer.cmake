@@ -13,6 +13,10 @@ if (SLICER_INCLUDE_DIR)
   set (Slicer_FIND_QUIETLY TRUE)
 endif ()
 
+# Suppress Slicer4 strangeness
+set (Slicer_SKIP_PROJECT_COMMAND)
+set (Slicer_SKIP_SET_CMAKE_C_CXX_FLAGS TRUE)
+
 # Find SlicerConfig.cmake or Slicer3Config.cmake
 if (NOT ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION} VERSION_LESS 2.8.0)
   unset (SLICER_CONFIG_FILE CACHE)
@@ -60,6 +64,11 @@ endif ()
 # all listed variables are TRUE
 include (FindPackageHandleStandardArgs)
 find_package_handle_standard_args (SLICER DEFAULT_MSG Slicer_DIR)
+
+message (STATUS "CMAKE_MODULE_LINKER_FLAGS=${CMAKE_MODULE_LINKER_FLAGS}")
+message (STATUS "CMAKE_SHARED_LINKER_FLAGS=${CMAKE_SHARED_LINKER_FLAGS}")
+message (STATUS "CMAKE_EXE_LINKER_FLAGS=${CMAKE_EXE_LINKER_FLAGS}")
+
 
 if (SLICER_FOUND)
 
@@ -127,5 +136,9 @@ else ()
   #set (VTK_DIR ${VTK_DIR_OLD})
 endif ()
 message (STATUS "BUILD_SHARED_LIBS: ${BUILD_SHARED_LIBS}")
+
+message (STATUS "CMAKE_MODULE_LINKER_FLAGS=${CMAKE_MODULE_LINKER_FLAGS}")
+message (STATUS "CMAKE_SHARED_LINKER_FLAGS=${CMAKE_SHARED_LINKER_FLAGS}")
+message (STATUS "CMAKE_EXE_LINKER_FLAGS=${CMAKE_EXE_LINKER_FLAGS}")
 
 mark_as_advanced (SLICER_CONFIG_FILE)

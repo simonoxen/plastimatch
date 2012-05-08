@@ -7,6 +7,7 @@
 #include <sstream>
 #include <vector>
 
+#include "plmregister.h"
 #include "plmsys.h"
 
 #include "plastimatch_slicer_bsplineCLP.h"
