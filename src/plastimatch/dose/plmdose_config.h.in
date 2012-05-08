@@ -14,7 +14,7 @@
 #endif
 
 #if (!defined (BUILD_AGAINST_SLICER3) && (defined(_WIN32) || defined(WIN32)) && (defined (PLM_BUILD_SHARED_LIBS)))
-# ifdef plmtdose_EXPORTS
+# ifdef plmdose_EXPORTS
 #   define C_API EXTERNC __declspec(dllexport)
 #   define API __declspec(dllexport)
 # else
