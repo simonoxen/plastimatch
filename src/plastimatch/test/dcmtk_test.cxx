@@ -7,6 +7,32 @@
 #include <string.h>
 #include "dcmtk_loader.h"
 
+#if defined (GCS_FIX)
+void
+dcmtk_series_set_test (char *dicom_dir)
+{
+    Dcmtk_loader dss;
+    printf ("Searching directory: %s\n", dicom_dir);
+    dss.insert_directory (dicom_dir);
+    dss.sort_all ();
+    //dss.debug ();
+
+    Rtds rtds;
+    dss.load_rtds (&rtds);
+
+    if (rtds.m_img) {
+        rtds.m_img->save_image ("img.mha");
+    }
+    if (rtds.m_rtss) {
+        printf ("Trying to save ss.cxt\n");
+        rtds.m_rtss->save_cxt (0, Pstring("ss.cxt"), false);
+    }
+    if (rtds.m_dose) {
+        rtds.m_dose->save_image ("dose.mha");
+    }
+}
+#endif
+
 int
 main (int argc, char *argv[])
 {

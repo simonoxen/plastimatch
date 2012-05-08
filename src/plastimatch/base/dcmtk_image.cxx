@@ -13,6 +13,7 @@
 #include "plmsys.h"
 
 #include "dcmtk_file.h"
+#include "dcmtk_save.h"
 #include "dcmtk_series.h"
 #include "dcmtk_uid.h"
 #include "plm_math.h"
@@ -302,14 +303,13 @@ dcmtk_save_slice (const Dcmtk_study_writer *dsw, Dcmtk_slice_data *dsd)
 }
 
 void
-dcmtk_image_save (
+Dcmtk_save::save_image (
     Dcmtk_study_writer *dsw, 
-    Rtds *rtds, 
     const char *dicom_dir)
 {
     Dcmtk_slice_data dsd;
-    dsd.rtds = rtds;
-    dsd.vol = rtds->m_img->gpuit_float();
+//    dsd.rtds = rtds;
+    dsd.vol = this->img->gpuit_float();
 
     dsd.slice_size = dsd.vol->dim[0] * dsd.vol->dim[1];
     dsd.slice_int16 = new int16_t[dsd.slice_size];

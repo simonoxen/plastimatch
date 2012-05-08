@@ -14,23 +14,20 @@
 
 #include "dcmtk_file.h"
 #include "dcmtk_metadata.h"
+#include "dcmtk_loader.h"
 #include "dcmtk_save.h"
 #include "dcmtk_series.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 
 void
-Dcmtk_series::rtss_load (
-    Rtds *rtds                       /* Output: this gets updated */
-)
+Dcmtk_loader::rtss_load (void)
 {
-    Rtss *rtss = new Rtss (rtds);
-    rtds->m_rtss = rtss;
-    Rtss_polyline_set *cxt = new Rtss_polyline_set;
-    rtss->m_cxt = cxt;
+    if (this->cxt) delete this->cxt;
+    this->cxt = new Rtss_polyline_set;
     
     /* Modality -- better be RTSTRUCT */
-    std::string modality = this->get_modality();
+    std::string modality = ds_rtss->get_modality();
     if (modality == "RTSTRUCT") {
         printf ("Trying to load rt structure set.\n");
     } else {
@@ -41,7 +38,7 @@ Dcmtk_series::rtss_load (
 
     /* ReferencedFrameOfReferenceSequence */
     DcmSequenceOfItems *seq = 0;
-    bool rc = m_flist.front()->get_sequence (
+    bool rc = ds_rtss->m_flist.front()->get_sequence (
         DCM_ReferencedFrameOfReferenceSequence, seq);
     if (!rc) {
         printf ("Huh? Why no RFOR sequence???\n");
@@ -50,7 +47,8 @@ Dcmtk_series::rtss_load (
 
     /* StructureSetROISequence */
     seq = 0;
-    rc = m_flist.front()->get_sequence (DCM_StructureSetROISequence, seq);
+    rc = ds_rtss->m_flist.front()->get_sequence (
+        DCM_StructureSetROISequence, seq);
     if (rc) {
         for (unsigned long i = 0; i < seq->card(); i++) {
             int structure_id;
@@ -66,13 +64,13 @@ Dcmtk_series::rtss_load (
             val = 0;
             orc = seq->getItem(i)->findAndGetString (DCM_ROIName, val);
             printf ("Adding structure (%d), %s\n", structure_id, val);
-            cxt->add_structure (Pstring (val), Pstring (), structure_id);
+            this->cxt->add_structure (Pstring (val), Pstring (), structure_id);
         }
     }
 
     /* ROIContourSequence */
     seq = 0;
-    rc = m_flist.front()->get_sequence (DCM_ROIContourSequence, seq);
+    rc = ds_rtss->m_flist.front()->get_sequence (DCM_ROIContourSequence, seq);
     if (rc) {
         for (unsigned long i = 0; i < seq->card(); i++) {
             Rtss_structure *curr_structure;
@@ -95,7 +93,7 @@ Dcmtk_series::rtss_load (
             printf ("Structure %d has color %s\n", structure_id, val);
 
             /* Look up the structure for this id and set color */
-            curr_structure = cxt->find_structure_by_id (structure_id);
+            curr_structure = this->cxt->find_structure_by_id (structure_id);
             if (!curr_structure) {
                 printf ("Couldn't reference structure with id %d\n", 
                     structure_id);
@@ -206,21 +204,16 @@ Dcmtk_series::rtss_load (
             }
         }
     }
-    printf ("%p %p %p\n", rtds,
-        rtds->m_rtss, rtds->m_rtss->m_cxt);
-
 }
 
 void
-dcmtk_rtss_save (
+Dcmtk_save::save_rtss (
     Dcmtk_study_writer *dsw, 
-    const Rtds *rtds,
     const char *dicom_dir
 )
 {
     OFCondition ofc;
-    Rtss *rtss = rtds->m_rtss;
-    Rtss_polyline_set *cxt = rtss->m_cxt;
+    Rtss_polyline_set *cxt = this->cxt;
 
     /* Prepare output file */
     Pstring rtss_fn;
@@ -250,12 +243,12 @@ dcmtk_rtss_save (
     dataset->putAndInsertString (DCM_InstitutionName, "");
     dataset->putAndInsertString (DCM_ReferringPhysicianName, "");
     dataset->putAndInsertString (DCM_StationName, "");
-    dcmtk_set_metadata (dataset, &rtss->m_meta, DCM_SeriesDescription, "");
+    dcmtk_set_metadata (dataset, this->cxt_meta, DCM_SeriesDescription, "");
     dataset->putAndInsertString (DCM_ManufacturerModelName, "Plastimatch");
-    dcmtk_set_metadata (dataset, &rtss->m_meta, DCM_PatientName, "");
-    dcmtk_set_metadata (dataset, &rtss->m_meta, DCM_PatientID, "");
+    dcmtk_set_metadata (dataset, this->cxt_meta, DCM_PatientName, "");
+    dcmtk_set_metadata (dataset, this->cxt_meta, DCM_PatientID, "");
     dataset->putAndInsertString (DCM_PatientBirthDate, "");
-    dcmtk_set_metadata (dataset, &rtss->m_meta, DCM_PatientSex, "O");
+    dcmtk_set_metadata (dataset, this->cxt_meta, DCM_PatientSex, "O");
     dataset->putAndInsertString (DCM_SoftwareVersions,
         PLASTIMATCH_VERSION_STRING);
 
@@ -267,7 +260,7 @@ dcmtk_rtss_save (
 
     dataset->putAndInsertString (DCM_StudyInstanceUID, dsw->study_uid);
     dataset->putAndInsertString (DCM_SeriesInstanceUID, dsw->rtss_series_uid);
-    dcmtk_set_metadata (dataset, &rtss->m_meta, DCM_StudyID, "");
+    dcmtk_set_metadata (dataset, this->cxt_meta, DCM_StudyID, "");
     dataset->putAndInsertString (DCM_SeriesNumber, "103");
     dataset->putAndInsertString (DCM_InstanceNumber, "1");
     dataset->putAndInsertString (DCM_StructureSetLabel, "AutoSS");

@@ -25,16 +25,18 @@ dcmtk_load (const char *dicom_dir)
     return img;
 }
 
-Dcmtk_series_set::Dcmtk_series_set ()
+Dcmtk_loader::Dcmtk_loader ()
 {
+    init ();
 }
 
-Dcmtk_series_set::Dcmtk_series_set (const char* dicom_dir)
+Dcmtk_loader::Dcmtk_loader (const char* dicom_dir)
 {
+    init ();
     this->insert_directory (dicom_dir);
 }
 
-Dcmtk_series_set::~Dcmtk_series_set ()
+Dcmtk_loader::~Dcmtk_loader ()
 {
     /* Delete Dicom_series objects in map */
     Dcmtk_series_map::iterator it;
@@ -44,7 +46,18 @@ Dcmtk_series_set::~Dcmtk_series_set ()
 }
 
 void
-Dcmtk_series_set::insert_file (const char* fn)
+Dcmtk_loader::init ()
+{
+    this->ds_rtdose = 0;
+    this->ds_rtss = 0;
+    this->cxt = 0;
+    this->cxt_metadata = 0;
+    this->img = 0;
+    this->dose = 0;
+}
+
+void
+Dcmtk_loader::insert_file (const char* fn)
 {
     Dcmtk_file *df = new Dcmtk_file (fn);
 
@@ -73,7 +86,7 @@ Dcmtk_series_set::insert_file (const char* fn)
 }
 
 void
-Dcmtk_series_set::insert_directory (const char* dir)
+Dcmtk_loader::insert_directory (const char* dir)
 {
     OFBool recurse = OFFalse;
     OFList<OFString> input_files;
@@ -90,7 +103,7 @@ Dcmtk_series_set::insert_directory (const char* dir)
 }
 
 void
-Dcmtk_series_set::sort_all (void) 
+Dcmtk_loader::sort_all (void) 
 {
     Dcmtk_series_map::iterator it;
     for (it = m_smap.begin(); it != m_smap.end(); ++it) {
@@ -102,7 +115,7 @@ Dcmtk_series_set::sort_all (void)
 }
 
 void
-Dcmtk_series_set::debug (void) const
+Dcmtk_loader::debug (void) const
 {
     Dcmtk_series_map::const_iterator it;
     for (it = m_smap.begin(); it != m_smap.end(); ++it) {
@@ -114,13 +127,12 @@ Dcmtk_series_set::debug (void) const
     }
 }
 
-#if defined (GCS_FIX)
 void
-Dcmtk_series_set::load_rtds (Rtds *rtds)
+Dcmtk_loader::parse_directory (void)
 {
     Dcmtk_series_map::iterator it;
-    Dcmtk_series *ds_rtdose = 0;
-    Dcmtk_series *ds_rtss = 0;
+    this->ds_rtdose = 0;
+    this->ds_rtss = 0;
 
     /* First pass: loop through series and find ss, dose */
     /* GCS FIX: maybe need additional pass, make sure ss & dose 
@@ -168,43 +180,18 @@ Dcmtk_series_set::load_rtds (Rtds *rtds)
 
 	if (ds->get_modality() == "CT") {
 	    printf ("LOADING CT\n");
-	    rtds->m_img = ds->load_plm_image ();
+	    this->img = ds->load_plm_image ();
 	    continue;
 	}
     }
 
     if (ds_rtss) {
-        ds_rtss->rtss_load (rtds);
+        this->rtss_load ();
     }
 
+#if defined (GCS_FIX)
     if (ds_rtdose) {
         ds_rtdose->rtdose_load (rtds);
     }
-
-    printf ("Done.\n");
-}
-
-void
-dcmtk_series_set_test (char *dicom_dir)
-{
-    Dcmtk_series_set dss;
-    printf ("Searching directory: %s\n", dicom_dir);
-    dss.insert_directory (dicom_dir);
-    dss.sort_all ();
-    //dss.debug ();
-
-    Rtds rtds;
-    dss.load_rtds (&rtds);
-
-    if (rtds.m_img) {
-        rtds.m_img->save_image ("img.mha");
-    }
-    if (rtds.m_rtss) {
-        printf ("Trying to save ss.cxt\n");
-        rtds.m_rtss->save_cxt (0, Pstring("ss.cxt"), false);
-    }
-    if (rtds.m_dose) {
-        rtds.m_dose->save_image ("dose.mha");
-    }
-}
 #endif
+}

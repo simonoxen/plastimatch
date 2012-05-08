@@ -18,14 +18,14 @@ class DcmTagKey;
 
 class Dcmtk_file;
 class Plm_image;
-class Rtds;
+//class Rtds;
 class Volume;
 
 typedef
 struct dcmtk_slice_data
 {
     Pstring fn;
-    Rtds *rtds;
+//    Rtds *rtds;
     Volume *vol;
 
     size_t slice_size;
@@ -70,8 +70,10 @@ public:
     std::string get_referenced_uid (void) const;
     void insert (Dcmtk_file* df);
     Plm_image* load_plm_image ();
+#if defined (GCS_FIX)
     void rtss_load (Rtds *rtds);
     void rtdose_load (Rtds *rtds);
+#endif
     void sort (void);
 };
 

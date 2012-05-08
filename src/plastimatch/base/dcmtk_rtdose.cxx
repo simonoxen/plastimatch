@@ -29,6 +29,7 @@ dcmtk_dose_copy (float *img_out, T *img_in, int nvox, float scale)
     }
 }
 
+#if defined (GCS_FIX)
 void
 Dcmtk_series::rtdose_load (
     Rtds *rtds                       /* Output: this gets updated */
@@ -228,7 +229,5 @@ Dcmtk_series::rtdose_load (
                 bits_stored, pixel_rep);
         }
     }
-
-#if defined (commentout)
-#endif
 }
+#endif

@@ -17,8 +17,37 @@
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 
+Dcmtk_save::Dcmtk_save ()
+{
+    this->cxt = 0;
+    this->cxt_meta = 0;
+    this->dose = 0;
+    this->img = 0;
+}
+
+Dcmtk_save::~Dcmtk_save ()
+{
+    /* Do nothing, we don't own the data */
+}
+
+void Dcmtk_save::set_cxt (Rtss_polyline_set *cxt, Metadata *cxt_meta)
+{
+    this->cxt = cxt;
+    this->cxt_meta = cxt_meta;
+}
+
+void Dcmtk_save::set_dose (Plm_image* img)
+{
+    this->dose = img;
+}
+
+void Dcmtk_save::set_image (Plm_image* img)
+{
+    this->img = img;
+}
+
 void
-dcmtk_rtds_save (Rtds *rtds, const char *dicom_dir)
+Dcmtk_save::save (const char *dicom_dir)
 {
     Dcmtk_study_writer dsw;
     DcmDate::getCurrentDate (dsw.date_string);
@@ -29,10 +58,12 @@ dcmtk_rtds_save (Rtds *rtds, const char *dicom_dir)
     plm_generate_dicom_uid (dsw.rtss_series_uid, PLM_UID_PREFIX);
     plm_generate_dicom_uid (dsw.rtss_instance_uid, PLM_UID_PREFIX);
 
-    if (rtds->m_img) {
-        dcmtk_image_save (&dsw, rtds, dicom_dir);
+    if (this->img) {
+        this->save_image (&dsw, dicom_dir);
     }
-    if (rtds->m_rtss) {
+#if defined (GCS_FIX)
+    if (this->cxt) {
         dcmtk_rtss_save (&dsw, rtds, dicom_dir);
     }
+#endif
 }
