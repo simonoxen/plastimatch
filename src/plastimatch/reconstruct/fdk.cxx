@@ -22,8 +22,6 @@
 
 #include "delayload.h"
 #include "plm_math.h"
-#include "proj_image_dir.h"
-#include "proj_matrix.h"
 
 
 #if CUDA_FOUND

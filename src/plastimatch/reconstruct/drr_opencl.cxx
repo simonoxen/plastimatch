@@ -10,12 +10,12 @@
 #include "plmreconstruct.h"
 #include "plmsys.h"
 
+#include "plm_math.h"
+
 #include "drr_opencl.h"
 #include "drr_opencl_p.h"
 #include "drr_opts.h"
-#include "plm_math.h"
 #include "opencl_util.h"
-#include "proj_matrix.h"
 
 void*
 drr_opencl_state_create (

@@ -11,12 +11,11 @@
 #include "plmreconstruct.h"
 #include "plmutil.h"
 
+#include "plm_math.h"
+
 #include "autotune_opencl.h"
 #include "fdk_opencl_p.h"
-#include "plm_math.h"
 #include "opencl_util.h"
-#include "proj_image_dir.h"
-#include "proj_matrix.h"
 
 void 
 opencl_reconstruct_conebeam (

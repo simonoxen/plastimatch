@@ -17,13 +17,12 @@
 #include "plmsys.h"
 
 #include "plm_math.h"
+#include "delayload.h"
 
 #include "drr_cuda.h"
 #include "drr_opencl.h"
 #include "drr_opts.h"
 #include "drr_trilin.h"
-#include "proj_matrix.h"
-#include "delayload.h"
 
 static void*
 allocate_gpu_memory (

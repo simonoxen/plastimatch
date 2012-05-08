@@ -13,16 +13,13 @@
 #include "plmreconstruct.h"
 #include "plmsys.h"
 
+#include "plm_math.h"
+#include "delayload.h"
+
 #include "drr_cuda.h"
 #include "drr_opencl.h"
 #include "drr_opts.h"
 #include "drr_trilin.h"
-#include "plm_math.h"
-#include "proj_matrix.h"
-#include "delayload.h"
-#ifndef _WIN32
-#include <dlfcn.h>
-#endif
 
 typedef struct callback_data Callback_data;
 struct callback_data {

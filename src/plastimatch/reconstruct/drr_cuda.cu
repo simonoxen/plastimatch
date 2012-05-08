@@ -34,13 +34,12 @@
 #include "plmreconstruct.h"
 #include "plmsys.h"
 
+#include "plm_cuda_math.h"
 #include "plm_math.h"
-
 #include "cuda_util.h"
+
 #include "drr_cuda.h"
 #include "drr_cuda_p.h"
-#include "plm_cuda_math.h"
-#include "proj_matrix.h"
 
 /* Textures */
 //texture<float, 1, cudaReadModeElementType> tex_img;

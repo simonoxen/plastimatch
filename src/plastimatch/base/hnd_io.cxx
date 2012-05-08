@@ -7,12 +7,12 @@
 
 #include "plmbase.h"
 #include "plmsys.h"
-#include "hnd_io_p.h"
 
 #include "compiler_warnings.h"
 #include "plm_math.h"
-#include "proj_image.h"
-#include "proj_matrix.h"
+
+#include "hnd_io_p.h"
+
 
 #define HND_INTENSITY_MAX (139000)
 
@@ -26,14 +26,14 @@ hnd_adjust_intensity (Proj_image *proj)
     float *img = proj->img;
 
     for (i = 0; i < proj->dim[0] * proj->dim[1]; i++) {
-	if (img[i] == 0.0f) {
-	    continue;
-	}
-	img[i] = img[i] / HND_INTENSITY_MAX;
-	img[i] = 1.0 - img[i];
-	if (img[i] < 0.0f) img[i] = 0.0;
-	/* Exponential mapping -- maybe this helps a little */
-	img[i] = exp(img[i]) - 1;
+        if (img[i] == 0.0f) {
+            continue;
+        }
+        img[i] = img[i] / HND_INTENSITY_MAX;
+        img[i] = 1.0 - img[i];
+        if (img[i] < 0.0f) img[i] = 0.0;
+        /* Exponential mapping -- maybe this helps a little */
+        img[i] = exp(img[i]) - 1;
     }
 }
 
@@ -55,7 +55,7 @@ hnd_set_proj_matrix (
 
     /* Set pixel size in mm */
     double ps[2] = { (double) isize[0] / (double) proj->dim[0],
-		     (double) isize[1] / (double) proj->dim[1] };
+                     (double) isize[1] / (double) proj->dim[1] };
 
     double cam[3];
     double tmp[3];
@@ -67,8 +67,8 @@ hnd_set_proj_matrix (
     pmat->ic[0] = 0.5 * proj->dim[0] - 0.5;
     pmat->ic[1] = 0.5 * proj->dim[1] - 0.5;
     if (xy_offset) {
-	pmat->ic[0] += xy_offset[0];
-	pmat->ic[1] += xy_offset[1];
+        pmat->ic[0] += xy_offset[0];
+        pmat->ic[1] += xy_offset[1];
     }
 
     /* Change from varian angles to plastimatch angles */
@@ -191,9 +191,9 @@ hnd_load (Proj_image *proj, const char *fn, const double xy_offset[2])
     printf ("%s %f\n",  fn, hnd.dCTProjectionAngle);
 
     pt_lut = (unsigned char*) malloc (
-	sizeof (unsigned char) * hnd.SizeX * hnd.SizeY);
+        sizeof (unsigned char) * hnd.SizeX * hnd.SizeY);
     buf = (uint32_t*) malloc (
-	sizeof(uint32_t) * hnd.SizeX * hnd.SizeY);
+        sizeof(uint32_t) * hnd.SizeX * hnd.SizeY);
 
     /* Read LUT */
     fseek (fp, 1024, SEEK_SET);
@@ -201,8 +201,8 @@ hnd_load (Proj_image *proj, const char *fn, const double xy_offset[2])
 
     /* Read first row */
     for (i = 0; i < hnd.SizeX; i++) {
-	bit_bucket = fread (&a, sizeof(uint32_t), 1, fp);
-	buf[i] = a;
+        bit_bucket = fread (&a, sizeof(uint32_t), 1, fp);
+        buf[i] = a;
     }
 
     /* Read first pixel of second row */
@@ -213,63 +213,63 @@ hnd_load (Proj_image *proj, const char *fn, const double xy_offset[2])
     lut_idx = 0;
     lut_off = 0;
     while (i < hnd.SizeX * hnd.SizeY) {
-	uint32_t r11, r12, r21;
+        uint32_t r11, r12, r21;
 
-	r11 = buf[i-hnd.SizeX-1];
-	r12 = buf[i-hnd.SizeX];
-	r21 = buf[i-1];
-	v = pt_lut[lut_idx];
-	switch (lut_off) {
-	case 0:
-	    v = v & 0x03;
-	    lut_off ++;
-	    break;
-	case 1:
-	    v = (v & 0x0C) >> 2;
-	    lut_off ++;
-	    break;
-	case 2:
-	    v = (v & 0x30) >> 4;
-	    lut_off ++;
-	    break;
-	case 3:
-	    v = (v & 0xC0) >> 6;
-	    lut_off = 0;
-	    lut_idx ++;
-	    break;
-	}
-	switch (v) {
-	case 0:
-	    num_read = fread (&dc, sizeof(unsigned char), 1, fp);
-	    if (num_read != 1) goto read_error;
-	    diff = dc;
-	    break;
-	case 1:
-	    num_read = fread (&ds, sizeof(unsigned short), 1, fp);
-	    if (num_read != 1) goto read_error;
-	    diff = ds;
-	    break;
-	case 2:
-	    num_read = fread (&dl, sizeof(uint32_t), 1, fp);
-	    if (num_read != 1) goto read_error;
-	    diff = dl;
-	    break;
-	}
+        r11 = buf[i-hnd.SizeX-1];
+        r12 = buf[i-hnd.SizeX];
+        r21 = buf[i-1];
+        v = pt_lut[lut_idx];
+        switch (lut_off) {
+        case 0:
+            v = v & 0x03;
+            lut_off ++;
+            break;
+        case 1:
+            v = (v & 0x0C) >> 2;
+            lut_off ++;
+            break;
+        case 2:
+            v = (v & 0x30) >> 4;
+            lut_off ++;
+            break;
+        case 3:
+            v = (v & 0xC0) >> 6;
+            lut_off = 0;
+            lut_idx ++;
+            break;
+        }
+        switch (v) {
+        case 0:
+            num_read = fread (&dc, sizeof(unsigned char), 1, fp);
+            if (num_read != 1) goto read_error;
+            diff = dc;
+            break;
+        case 1:
+            num_read = fread (&ds, sizeof(unsigned short), 1, fp);
+            if (num_read != 1) goto read_error;
+            diff = ds;
+            break;
+        case 2:
+            num_read = fread (&dl, sizeof(uint32_t), 1, fp);
+            if (num_read != 1) goto read_error;
+            diff = dl;
+            break;
+        }
 
-	buf[i] = r21 + r12 + diff - r11;
-	i++;
+        buf[i] = r21 + r12 + diff - r11;
+        i++;
     }
 
     /* Convert hnd to proj_image */
     proj->dim[0] = hnd.SizeX;
     proj->dim[1] = hnd.SizeY;
     proj->img = (float*) malloc (
-	hnd.SizeX * hnd.SizeY * sizeof(float));
+        hnd.SizeX * hnd.SizeY * sizeof(float));
     if (!proj->img) {
-	print_and_exit ("Error allocating memory\n");
+        print_and_exit ("Error allocating memory\n");
     }
     for (i = 0; i < hnd.SizeX * hnd.SizeY; i++) {
-	proj->img[i] = (float) buf[i];
+        proj->img[i] = (float) buf[i];
     }
 
     /* Convert from "raw" intensities to attenuation values */
@@ -280,7 +280,7 @@ hnd_load (Proj_image *proj, const char *fn, const double xy_offset[2])
        the sid to 1500 until told otherwise. */
     proj->pmat = new Proj_matrix;
     hnd_set_proj_matrix (proj, hnd.dCTProjectionAngle, hnd.dSAD, 1500,
-	xy_offset);
+        xy_offset);
 
     /* Clean up */
     free (pt_lut);

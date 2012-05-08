@@ -10,7 +10,6 @@
 #include "plm_math.h"
 
 #include "compiler_warnings.h"
-#include "proj_matrix.h"
 #include "proton_dose.h"
 
 //#define UNIFIED_DEPTH_OFFSET 1

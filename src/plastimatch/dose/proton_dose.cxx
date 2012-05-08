@@ -24,7 +24,6 @@
 #include "plmsys.h"
 
 #include "plm_math.h"
-#include "proj_matrix.h"
 #include "proton_dose.h"
 
 //#define VERBOSE 1
