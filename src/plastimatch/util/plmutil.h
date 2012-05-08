@@ -26,12 +26,10 @@
 #include "rasterize_slice.h"
 #if (!PLM_CUDA_COMPILE)
 #include "rasterizer.h"
-#endif
 #include "rtds.h"
 #include "rtds_warp.h"
 #include "rtss.h"
 #include "simplify_points.h"
-#if (!PLM_CUDA_COMPILE)
 #include "slice_extract.h"
 #include "ss_img_extract.h"
 #include "ss_img_stats.h"

@@ -23,16 +23,11 @@
 #include <cuda.h>
 
 #include "plmbase.h"
+#include "plmreconstruct.h"
 #include "plmsys.h"
+#include "plmutil.h"
 
 #include "plm_math.h"
-
-/* temporary fix */
-//#include "plmreconstruct.h"
-//#include "plmutil.h"
-#include "fdk.h"
-#include "fdk_util.h"
-#include "proj_image_filter.h"
 
 #include "cuda_util.h"
 #include "fdk_cuda_p.h"
