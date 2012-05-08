@@ -23,7 +23,9 @@
 #include "demons.h"
 #include "demons_misc.h"
 #include "demons_state.h"
+#if (!PLM_CUDA_COMPILE)
 #include "landmark_warp.h"
+#endif
 #include "plm_parms.h"
 #include "plm_stages.h"
 #include "rbf_cluster.h"
