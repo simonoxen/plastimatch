@@ -14,6 +14,7 @@
 #include "plmbase.h"
 #include "plmreconstruct.h"
 #include "plmsys.h"
+#include "plmutil.h"
 
 #include "fdk_cuda.h"
 #include "fdk_opencl.h"

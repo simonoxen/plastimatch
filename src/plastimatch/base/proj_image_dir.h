@@ -4,11 +4,11 @@
 #ifndef _proj_image_dir_h_
 #define _proj_image_dir_h_
 
-#include "plmreconstruct_config.h"
+#include "plmbase_config.h"
 
 class Proj_image;
 
-class gpuit_EXPORT Proj_image_dir
+class API Proj_image_dir
 {
 public:
     Proj_image_dir (const char *dir);

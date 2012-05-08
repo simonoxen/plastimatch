@@ -52,6 +52,9 @@
 #include "plm_image_header.h"
 #endif
 #include "plm_image_type.h"
+#include "proj_image.h"
+#include "proj_image_dir.h"
+#include "proj_matrix.h"
 #include "pointset.h"
 #include "raw_pointset.h"
 #include "ray_trace.h"

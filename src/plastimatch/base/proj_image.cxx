@@ -7,13 +7,10 @@
 #include <string.h>
 
 #include "plmbase.h"
-#include "plmreconstruct.h"
 #include "plmsys.h"
 
 #include "plm_math.h"
 #include "plm_path.h"
-#include "proj_matrix.h"
-#include "ramp_filter.h"
 
 Proj_image::Proj_image ()
 {
@@ -58,10 +55,10 @@ void
 Proj_image::clear ()
 {
     if (this->pmat) {
-	free (this->pmat);
+        free (this->pmat);
     }
     if (this->img) {
-	free (this->img);
+        free (this->img);
     }
 }
 
@@ -86,49 +83,49 @@ raw_load (Proj_image *proj, const char* img_filename)
     /* Open file */
     fp = fopen (img_filename,"rb");
     if (!fp) {
-	fprintf (stderr, "Can't open file %s for read\n", img_filename);
-	exit (-1);
+        fprintf (stderr, "Can't open file %s for read\n", img_filename);
+        exit (-1);
     }
     
     /* Malloc memory */
     fs = file_size (img_filename);
     proj->img = (float*) malloc (fs);
     if (!proj->img) {
-	fprintf (stderr, "Couldn't malloc memory for input image\n");
-	exit (-1);
+        fprintf (stderr, "Couldn't malloc memory for input image\n");
+        exit (-1);
     }
 
     /* Load pixels */
     rc = fread (proj->img, sizeof(float), proj->dim[0] * proj->dim[1], fp);
     if (rc != (size_t) (proj->dim[0] * proj->dim[1])) {
-	fprintf (stderr, "Couldn't load raster data for %s\n",
-		 img_filename);
-	exit (-1);
+        fprintf (stderr, "Couldn't load raster data for %s\n",
+                 img_filename);
+        exit (-1);
     }
     fclose (fp);
 
     /* Guess image size */
     switch (fs) {
     case (512*384*sizeof(float)):
-	proj->dim[0] = 512;
-	proj->dim[1] = 384;
-	break;
+        proj->dim[0] = 512;
+        proj->dim[1] = 384;
+        break;
     case (1024*384*sizeof(float)):
-	proj->dim[0] = 1024;
-	proj->dim[1] = 384;
-	break;
+        proj->dim[0] = 1024;
+        proj->dim[1] = 384;
+        break;
     case (1024*768*sizeof(float)):
-	proj->dim[0] = 1024;
-	proj->dim[1] = 768;
-	break;
+        proj->dim[0] = 1024;
+        proj->dim[1] = 768;
+        break;
     case (2048*1536*sizeof(float)):
-	proj->dim[0] = 2048;
-	proj->dim[1] = 1536;
-	break;
+        proj->dim[0] = 2048;
+        proj->dim[1] = 1536;
+        break;
     default:
-	proj->dim[0] = 1024;
-	proj->dim[1] = fs / (1024 * sizeof(float));
-	break;
+        proj->dim[0] = 1024;
+        proj->dim[1] = fs / (1024 * sizeof(float));
+        break;
     }
 }
 
@@ -139,8 +136,8 @@ raw_save (Proj_image *proj, const char* img_filename)
     
     fp = fopen (img_filename, "wb");
     if (!fp) {
-	fprintf (stderr, "Can't open file %s for write\n", img_filename);
-	exit (-1);
+        fprintf (stderr, "Can't open file %s for write\n", img_filename);
+        exit (-1);
     }
 
     fwrite (proj->img, sizeof(float), proj->dim[0]*proj->dim[1], fp);
@@ -158,24 +155,24 @@ pfm_load (Proj_image *proj, const char* img_filename)
 
     fp = fopen (img_filename,"rb");
     if (!fp) {
-	fprintf (stderr, "Can't open file %s for read\n", img_filename);
-	exit (-1);
+        fprintf (stderr, "Can't open file %s for read\n", img_filename);
+        exit (-1);
     }
 
     /* Verify that it is pfm */
     fgets (buf, 1024, fp);
     if (strncmp(buf, "Pf", 2)) {
-	fprintf (stderr, "Couldn't parse file %s as an image [1]\n",
-		 img_filename);
-	exit (-1);
+        fprintf (stderr, "Couldn't parse file %s as an image [1]\n",
+                 img_filename);
+        exit (-1);
     }
 
     /* Get image resolution */
     fgets (buf, 1024, fp);
     if (2 != sscanf (buf, "%d %d", &proj->dim[0], &proj->dim[1])) {
-	fprintf (stderr, "Couldn't parse file %s as an image [2]\n", 
-		 img_filename);
-	exit (-1);
+        fprintf (stderr, "Couldn't parse file %s as an image [2]\n", 
+                 img_filename);
+        exit (-1);
     }
     /* Skip third line */
     fgets (buf, 1024, fp);
@@ -183,16 +180,16 @@ pfm_load (Proj_image *proj, const char* img_filename)
     /* Malloc memory */
     proj->img = (float*) malloc (sizeof(float) * proj->dim[0] * proj->dim[1]);
     if (!proj->img) {
-	fprintf (stderr, "Couldn't malloc memory for input image\n");
-	exit (-1);
+        fprintf (stderr, "Couldn't malloc memory for input image\n");
+        exit (-1);
     }
 
     /* Load pixels */
     rc = fread (proj->img, sizeof(float), proj->dim[0] * proj->dim[1], fp);
     if (rc != (size_t) (proj->dim[0] * proj->dim[1])) {
-	fprintf (stderr, "Couldn't load raster data for %s\n",
-		 img_filename);
-	exit (-1);
+        fprintf (stderr, "Couldn't load raster data for %s\n",
+                 img_filename);
+        exit (-1);
     }
     fclose (fp);
 }
@@ -205,15 +202,15 @@ pfm_save (Proj_image *proj, const char* img_filename)
     make_directory_recursive (img_filename);
     fp = fopen (img_filename, "wb");
     if (!fp) {
-	fprintf (stderr, "Can't open file %s for write\n", img_filename);
-	exit (-1);
+        fprintf (stderr, "Can't open file %s for write\n", img_filename);
+        exit (-1);
     }
 
     fprintf (fp, 
-	"Pf\n"
-	"%d %d\n"
-	"-1\n",
-	proj->dim[0], proj->dim[1]);
+        "Pf\n"
+        "%d %d\n"
+        "-1\n",
+        proj->dim[0], proj->dim[1]);
 
     fwrite (proj->img, sizeof(float), proj->dim[0]*proj->dim[1], fp);
     fclose (fp);
@@ -228,30 +225,30 @@ pgm_save (Proj_image *proj, const char* img_filename)
     make_directory_recursive (img_filename);
     fp = fopen (img_filename, "wb");
     if (!fp) {
-	fprintf (stderr, "Can't open file %s for write\n", img_filename);
-	exit (-1);
+        fprintf (stderr, "Can't open file %s for write\n", img_filename);
+        exit (-1);
     }
 
     fprintf (fp, 
-	"P2\n"
-	"# Created by plastimatch\n"
-	"%d %d\n"
-	"65535\n",
-	proj->dim[0],
-	proj->dim[1]
+        "P2\n"
+        "# Created by plastimatch\n"
+        "%d %d\n"
+        "65535\n",
+        proj->dim[0],
+        proj->dim[1]
     );
 
     for (i = 0; i < proj->dim[0]*proj->dim[1]; i++) {
-	float v = proj->img[i];
-	if (v >= 65535) {
-	    v = 65535;
-	} else if (v < 0) {
-	    v = 0;
-	}
-	fprintf (fp,"%lu ", ROUND_INT(v));
-	if (i % 25 == 24) {
-	    fprintf (fp,"\n");
-	}
+        float v = proj->img[i];
+        if (v >= 65535) {
+            v = 65535;
+        } else if (v < 0) {
+            v = 0;
+        }
+        fprintf (fp,"%lu ", ROUND_INT(v));
+        if (i % 25 == 24) {
+            fprintf (fp,"\n");
+        }
     }
     fclose (fp);
 }
@@ -272,47 +269,47 @@ mat_load (Proj_image *proj, const char* mat_filename)
     /* Open file */
     fp = fopen (mat_filename,"r");
     if (!fp) {
-	fprintf (stderr, "Can't open file %s for read\n", mat_filename);
-	exit (-1);
+        fprintf (stderr, "Can't open file %s for read\n", mat_filename);
+        exit (-1);
     }
     /* Load image center */
     for (i = 0; i < 2; i++) {
-	if (1 != fscanf (fp, "%g", &f)) {
-	    fprintf (stderr, "Couldn't parse file %s as a matrix [1,%d]\n", 
-		     mat_filename, i);
-	    exit (-1);
-	}
-	pmat->ic[i] = (double) f;
+        if (1 != fscanf (fp, "%g", &f)) {
+            fprintf (stderr, "Couldn't parse file %s as a matrix [1,%d]\n", 
+                     mat_filename, i);
+            exit (-1);
+        }
+        pmat->ic[i] = (double) f;
     }
     /* Load projection matrix */
     for (i = 0; i < 12; i++) {
-	if (1 != fscanf (fp, "%g", &f)) {
-	    fprintf (stderr, "Couldn't parse file %s as a matrix [2,%d]\n", 
-		     mat_filename, i);
-	    exit (-1);
-	}
-	pmat->matrix[i] = (double) f;
+        if (1 != fscanf (fp, "%g", &f)) {
+            fprintf (stderr, "Couldn't parse file %s as a matrix [2,%d]\n", 
+                     mat_filename, i);
+            exit (-1);
+        }
+        pmat->matrix[i] = (double) f;
     }
     /* Load sad */
     if (1 != fscanf (fp, "%g", &f)) {
-	fprintf (stderr, "Couldn't load sad from %s\n", mat_filename);
-	exit (-1);
+        fprintf (stderr, "Couldn't load sad from %s\n", mat_filename);
+        exit (-1);
     }
     pmat->sad = (double) f;
     /* Load sid */
     if (1 != fscanf (fp, "%g", &f)) {
-	fprintf (stderr, "Couldn't load sad from %s\n", mat_filename);
-	exit (-1);
+        fprintf (stderr, "Couldn't load sad from %s\n", mat_filename);
+        exit (-1);
     }
     pmat->sid = (double) f;
     /* Load nrm vector */
     for (i = 0; i < 3; i++) {
-	if (1 != fscanf (fp, "%g", &f)) {
-	    fprintf (stderr, "Couldn't parse file %s as a matrix [1,%d]\n", 
-		     mat_filename, i);
-	    exit (-1);
-	}
-	pmat->nrm[i] = (double) f;
+        if (1 != fscanf (fp, "%g", &f)) {
+            fprintf (stderr, "Couldn't parse file %s as a matrix [1,%d]\n", 
+                     mat_filename, i);
+            exit (-1);
+        }
+        pmat->nrm[i] = (double) f;
     }
     fclose (fp);
 
@@ -325,12 +322,12 @@ mat_load_by_img_filename (Proj_image* proj, const char* img_filename)
     /* No mat file, so try to find automatically */
     int img_filename_len = strlen (img_filename);
     if (img_filename_len > 4) {
-	char *mat_fn = strdup (img_filename);
-	strcpy (&mat_fn[img_filename_len-4], ".txt");
-	if (file_exists (mat_fn)) {
-	    mat_load (proj, mat_fn);
-	}
-	free (mat_fn);
+        char *mat_fn = strdup (img_filename);
+        strcpy (&mat_fn[img_filename_len-4], ".txt");
+        if (file_exists (mat_fn)) {
+            mat_load (proj, mat_fn);
+        }
+        free (mat_fn);
     }
 }
 
@@ -342,9 +339,9 @@ Proj_image::load_pfm (const char* img_filename, const char* mat_filename)
     pfm_load (this, img_filename);
 
     if (mat_filename) {
-	mat_load (this, mat_filename);
+        mat_load (this, mat_filename);
     } else {
-	mat_load_by_img_filename (this, img_filename);
+        mat_load_by_img_filename (this, img_filename);
     }
 }
 
@@ -356,9 +353,9 @@ Proj_image::load_raw (const char* img_filename, const char* mat_filename)
     raw_load (this, img_filename);
 
     if (mat_filename) {
-	mat_load (this, mat_filename);
+        mat_load (this, mat_filename);
     } else {
-	mat_load_by_img_filename (this, img_filename);
+        mat_load_by_img_filename (this, img_filename);
     }
 }
 
@@ -369,7 +366,7 @@ Proj_image::load_hnd (const char* img_filename)
 
     hnd_load (this, img_filename, this->xy_offset);
     if (this->img == 0) {
-	this->clear ();
+        this->clear ();
     }
 }
 
@@ -398,7 +395,7 @@ proj_image_debug_header (Proj_image *proj)
     printf ("Image center: %g %g\n", proj->pmat->ic[0], proj->pmat->ic[1]);
     printf ("Projection matrix: ");
     for (i = 0; i < 12; i++) {
-	printf ("%g ", proj->pmat->matrix[i]);
+        printf ("%g ", proj->pmat->matrix[i]);
     }
     printf ("\n");
 }
@@ -411,26 +408,26 @@ proj_image_stats (Proj_image *proj)
     double sum = 0.0;
 
     if (!proj) {
-	printf ("No image.\n");
-	return;
+        printf ("No image.\n");
+        return;
     }
 
     num = proj->dim[0]*proj->dim[1];
     if (!proj->img || num == 0) {
-	printf ("No image.\n");
-	return;
+        printf ("No image.\n");
+        return;
     }
     
     min_val = max_val = proj->img[0];
     for (i = 0; i < num; i++) {
-	float v = proj->img[i];
-	if (min_val > v) min_val = v;
-	if (max_val < v) max_val = v;
-	sum += v;
+        float v = proj->img[i];
+        if (min_val > v) min_val = v;
+        if (max_val < v) max_val = v;
+        sum += v;
     }
 
     printf ("MIN %f AVE %f MAX %f NUM %d\n",
-	    min_val, (float) (sum / num), max_val, num);
+            min_val, (float) (sum / num), max_val, num);
 }
 
 void
@@ -443,22 +440,22 @@ Proj_image::load (
 
     /* If not specified, try to guess the mat_filename */
     if (!mat_filename) {
-	strncpy (tmp, img_filename, _MAX_PATH);
-	strip_extension (tmp);
-	strncat (tmp, ".txt", _MAX_PATH);
-	if (file_exists (tmp)) {
-	    mat_filename = tmp;
-	}
+        strncpy (tmp, img_filename, _MAX_PATH);
+        strip_extension (tmp);
+        strncat (tmp, ".txt", _MAX_PATH);
+        if (file_exists (tmp)) {
+            mat_filename = tmp;
+        }
     }
 
     if (extension_is (img_filename, ".pfm")) {
-	load_pfm (img_filename, mat_filename);
+        load_pfm (img_filename, mat_filename);
     }
     else if (extension_is (img_filename, ".raw")) {
-	load_raw (img_filename, mat_filename);
+        load_raw (img_filename, mat_filename);
     }
     else if (extension_is (img_filename, ".hnd")) {
-	load_hnd (img_filename);
+        load_hnd (img_filename);
     }
 }
 
@@ -470,30 +467,23 @@ proj_image_save (
 )
 {
     if (img_filename) {
-	if (extension_is (img_filename, ".pfm")) {
-	    pfm_save (proj, img_filename);
-	}
-	else if (extension_is (img_filename, ".raw")) {
-	    raw_save (proj, img_filename);
-	}
-	else if (extension_is (img_filename, ".pgm")) {
-	    pgm_save (proj, img_filename);
-	}
+        if (extension_is (img_filename, ".pfm")) {
+            pfm_save (proj, img_filename);
+        }
+        else if (extension_is (img_filename, ".raw")) {
+            raw_save (proj, img_filename);
+        }
+        else if (extension_is (img_filename, ".pgm")) {
+            pgm_save (proj, img_filename);
+        }
 #if defined (commentout)
-	else if (extension_is (img_filename, "mha.")) {
-	    mha_save (proj, img_filename);
-	}
+        else if (extension_is (img_filename, "mha.")) {
+            mha_save (proj, img_filename);
+        }
 #endif
     }
     if (mat_filename) {
-	proj_matrix_save (proj->pmat, mat_filename);
+        proj_matrix_save (proj->pmat, mat_filename);
     }
 }
 
-void
-proj_image_filter (Proj_image *proj)
-{
-#if (FFTW_FOUND)
-    ramp_filter (proj->img, proj->dim[0], proj->dim[1]);
-#endif
-}

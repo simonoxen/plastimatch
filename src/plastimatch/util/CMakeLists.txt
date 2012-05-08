@@ -26,6 +26,7 @@ set (PLMUTIL_LIBRARY_SRC
   itk_mask.cxx
   itk_warp.cxx
   landmark_diff.cxx
+  proj_image_filter.cxx
   plm_warp.cxx
   rasterize_slice.cxx
   rasterizer.cxx 
@@ -42,6 +43,12 @@ set (PLMUTIL_LIBRARY_SRC
   synthetic_vf.cxx
   threshbox.cxx
   )
+if (FFTW_FOUND)
+  set (PLMUTIL_LIBRARY_SRC
+    ${PLMUTIL_LIBRARY_SRC}
+    ramp_filter.cxx
+   )
+endif ()
 
 set (PLMUTIL_LIBRARY_DEPENDENCIES 
   plmbase

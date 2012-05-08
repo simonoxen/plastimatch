@@ -4,21 +4,12 @@
 #ifndef _ramp_filter_h_
 #define _ramp_filter_h_
 
-#include "plmreconstruct_config.h"
+#include "plmutil_config.h"
 
-#if defined __cplusplus
-extern "C" {
-#endif
-
-void
-ramp_filter (
+void ramp_filter (
     float *data, 
     unsigned int width, 
     unsigned int height
 );
-
-#if defined __cplusplus
-}
-#endif
 
 #endif

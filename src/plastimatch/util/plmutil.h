@@ -21,6 +21,8 @@
 #endif
 #include "landmark_diff.h"
 #include "plm_warp.h"
+#include "proj_image_filter.h"
+#include "ramp_filter.h"
 #include "rasterize_slice.h"
 #include "rasterizer.h"
 #include "rtds.h"

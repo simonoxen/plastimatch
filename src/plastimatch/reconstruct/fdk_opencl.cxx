@@ -9,6 +9,7 @@
 
 #include "plmbase.h"
 #include "plmreconstruct.h"
+#include "plmutil.h"
 
 #include "autotune_opencl.h"
 #include "fdk_opencl_p.h"

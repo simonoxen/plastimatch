@@ -25,6 +25,7 @@
 #include "plmbase.h"
 #include "plmreconstruct.h"
 #include "plmsys.h"
+#include "plmutil.h"
 
 #include "plm_math.h"
 

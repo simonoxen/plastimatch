@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "plmreconstruct.h"
+#include "plmbase.h"
 #include "plmsys.h"
 
 #include "plm_path.h"

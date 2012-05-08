@@ -53,6 +53,9 @@ set (PLMBASE_LIBRARY_SRC
   plm_image_header.cxx
   plm_image_type.cxx
   pointset.cxx
+  proj_image.cxx
+  proj_image_dir.cxx
+  proj_matrix.cxx
   raw_pointset.cxx
   ray_trace_exact.cxx
   ray_trace_uniform.cxx
@@ -60,7 +63,7 @@ set (PLMBASE_LIBRARY_SRC
   rtss_polyline_set.cxx
   rtss_structure.cxx
   slice_index.cxx
-  ss_list_io.cxx                   #TODO
+  ss_list_io.cxx
   thumbnail.cxx
   vf_convolve.cxx
   vf_stats.cxx

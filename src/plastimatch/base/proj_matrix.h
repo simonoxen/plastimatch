@@ -4,7 +4,7 @@
 #ifndef _proj_matrix_h_
 #define _proj_matrix_h_
 
-#include "plmreconstruct_config.h"
+#include "plmbase_config.h"
 
 class Proj_matrix {
 public:

@@ -4,7 +4,7 @@
 #ifndef _proj_image_h_
 #define _proj_image_h_
 
-#include "plmreconstruct_config.h"
+#include "plmbase_config.h"
 
 class Proj_image;
 class Proj_matrix;

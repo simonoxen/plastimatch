@@ -19,16 +19,7 @@ set (PLMRECONSTRUCT_LIBRARY_SRC
   drr_trilin.cxx drr_trilin.h
   fdk.cxx
   fdk_util.cxx
-  proj_image.cxx proj_image.h
-  proj_image_dir.cxx proj_image_dir.h
-  proj_matrix.cxx proj_matrix.h 
   )
-if (FFTW_FOUND)
-  set (PLMRECONSTRUCT_LIBRARY_SRC
-    ${PLMRECONSTRUCT_LIBRARY_SRC}
-    ramp_filter.cxx
-   )
-endif ()
 if (OPENCL_FOUND)
   set (PLMRECONSTRUCT_LIBRARY_SRC
     ${PLMRECONSTRUCT_LIBRARY_SRC}
