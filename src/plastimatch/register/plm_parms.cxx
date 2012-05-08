@@ -16,6 +16,7 @@
 #include <dirent.h>
 #endif
 
+#include "plmregister.h"
 #include "plmsys.h"
 
 #include "itk_optim.h"

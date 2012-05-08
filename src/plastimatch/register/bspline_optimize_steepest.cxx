@@ -19,7 +19,6 @@
 #if (CUDA_FOUND)
 #include "bspline_cuda.h"
 #endif
-#include "bspline_optimize_steepest.h"
 
 
 /*

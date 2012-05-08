@@ -29,7 +29,7 @@ print_usage (void)
 }
 
 void
-parse_args (DEMONS_Options* options, int argc, char* argv[])
+parse_args (Demons_options* options, int argc, char* argv[])
 {
     int i, rc;
     Demons_parms* parms = &options->parms;

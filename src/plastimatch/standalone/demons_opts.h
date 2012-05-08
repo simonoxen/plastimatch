@@ -6,8 +6,8 @@
 
 #include "demons.h"
 
-typedef struct DEMONS_Options_struct DEMONS_Options;
-struct DEMONS_Options_struct {
+class Demons_options {
+public:
     char* fixed_fn;
     char* moving_fn;
     char* output_vf_fn;
@@ -15,6 +15,6 @@ struct DEMONS_Options_struct {
     Demons_parms parms;
 };
 
-void parse_args (DEMONS_Options* options, int argc, char* argv[]);
+void parse_args (Demons_options* options, int argc, char* argv[]);
 
 #endif

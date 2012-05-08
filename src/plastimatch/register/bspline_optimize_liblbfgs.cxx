@@ -7,15 +7,12 @@
 #include <time.h>
 #include <string.h>
 #include <math.h>
-#include "lbfgs.h"
 
 #include "plmbase.h"
 #include "plmregister.h"
 #include "plmsys.h"
 
 #include "plm_math.h"
-
-#include "bspline_optimize_liblbfgs.h"
 
 
 static lbfgsfloatval_t 

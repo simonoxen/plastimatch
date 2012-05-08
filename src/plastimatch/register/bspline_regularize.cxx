@@ -7,9 +7,6 @@
 #include "plmregister.h"
 #include "plmsys.h"
 
-#include "bspline_regularize.h"
-#include "bspline_regularize_analytic.h"
-#include "bspline_regularize_numeric.h"
 
 void
 bspline_regularize_initialize (

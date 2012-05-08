@@ -6,9 +6,10 @@
 #include <string.h>
 #include <math.h>
 #include "plm_config.h"
+
+#include "plmregister.h"
+
 #include "bspline_opts.h"
-#include "bspline.h"
-#include "bspline_regularize.h"
 #include "delayload.h"
 #if (CUDA_FOUND)
 #include "cuda_util.h"

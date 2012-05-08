@@ -8,10 +8,8 @@
 #include <string.h>
 
 #include "plmbase.h"
+#include "plmregister.h"
 
-#include "demons.h"
-#include "demons_misc.h"
-#include "demons_state.h"
 
 Demons_state::Demons_state (void)
 {

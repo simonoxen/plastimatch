@@ -8,10 +8,9 @@
 #include <math.h>
 
 #include "plmbase.h"
+#include "plmregister.h"
 #include "plmsys.h"
 
-#include "demons.h"
-#include "demons_misc.h"
 
 int
 round_int (float f)

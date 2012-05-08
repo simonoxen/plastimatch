@@ -12,8 +12,8 @@
 #include "plmregister.h"
 
 #include "compiler_warnings.h"
-#include "landmark_warp.h"
 #include "plm_math.h"
+
 #include "rbf_cluster.h"
 
 //k-means++ clustering algorithm to separate landmarks into user-specified number of clusters

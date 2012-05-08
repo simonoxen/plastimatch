@@ -7,15 +7,15 @@
 #include <time.h>
 
 #include "plmbase.h"
-
+#include "plmregister.h"
 #include "delayload.h"
-#include "demons.h"
+
 #include "demons_opts.h"
 
 int
 main (int argc, char* argv[])
 {
-    DEMONS_Options options;
+    Demons_options options;
     Volume* fixed;
     Volume* moving;
     Volume* warped;

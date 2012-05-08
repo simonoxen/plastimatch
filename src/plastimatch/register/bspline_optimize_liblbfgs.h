@@ -5,6 +5,7 @@
 #define _bspline_optimize_liblbfgs_h_
 
 #include "plmregister_config.h"
+#include "lbfgs.h"
 
 class Bspline_optimize_data;
 

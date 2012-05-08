@@ -11,14 +11,7 @@
 #include "plmbase.h"
 #include "plmregister.h"
 
-#include "bspline_mi.h"
-#include "bspline_optimize.h"
-#if defined (HAVE_F2C_LIBRARY)
-#include "bspline_optimize_lbfgsb.h"
-#endif
 #include "check_grad_opts.h"
-
-/* EXTERNAL DEPENDS */
 
 void
 check_gradient (

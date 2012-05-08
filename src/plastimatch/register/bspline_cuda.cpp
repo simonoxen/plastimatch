@@ -10,9 +10,6 @@
 #include <windows.h>
 #endif
 
-#include "plmutil.h"
-#include "plmsys.h"
-
 #if !defined (PLM_USE_GPU_PLUGINS)
 #include "bspline.h"
 #endif
@@ -20,11 +17,12 @@
 #include "bspline_cuda.h"
 #include "cuda_util.h"
 #endif
-#include "bspline_optimize_lbfgsb.h"
+
+#include "plmutil.h"
+#include "plmsys.h"
+
 #include "plm_math.h"
 #include "volume_macros.h"
-
-/* EXTERNAL DEPENDS */
 #include "interpolate_macros.h"
 
 /***********************************************************************

@@ -8,8 +8,8 @@
 #include <math.h>
 
 #include "plmbase.h"
+#include "plmregister.h"
 
-#include "landmark_warp.h"
 
 Landmark_warp::Landmark_warp (void)
 {

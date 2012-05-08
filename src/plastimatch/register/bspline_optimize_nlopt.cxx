@@ -14,8 +14,6 @@
 #include "plmregister.h"
 #include "plm_math.h"
 
-#include "bspline_optimize_nlopt.h"
-
 #if (NLOPT_FOUND)
 /* NLopt score function */
 static double

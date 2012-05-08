@@ -6,8 +6,8 @@
 #include "plmutil.h"
 
 #include "plmbase.h"
+#include "plmregister.h"
 
-#include "landmark_warp.h"
 #include "itk_tps.h"
 
 #define BUFLEN 2048

@@ -13,15 +13,6 @@
 #include "plmsys.h"
 #include "plm_math.h"
 
-#include "bspline_mi.h"
-#include "bspline_optimize.h"
-#include "bspline_optimize_liblbfgs.h"
-#include "bspline_optimize_lbfgsb.h"
-#if (NLOPT_FOUND)
-#include "bspline_optimize_nlopt.h"
-#endif
-#include "bspline_optimize_steepest.h"
-
 
 static void
 log_parms (Bspline_parms* parms)

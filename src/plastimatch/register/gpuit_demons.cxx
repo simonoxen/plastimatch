@@ -7,8 +7,8 @@
 #include <math.h>
 
 #include "plmbase.h"
+#include "plmregister.h"
 
-#include "demons.h"
 #include "plmregister_config.h"
 #include "plm_stages.h"
 #include "plm_parms.h"

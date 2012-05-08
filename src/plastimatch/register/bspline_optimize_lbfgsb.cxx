@@ -8,7 +8,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "bspline_optimize_lbfgsb.h"
 
 #include "plmbase.h"
 #include "plmregister.h"

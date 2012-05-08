@@ -24,7 +24,6 @@
 #include "interpolate_macros.h"
 #include "volume_macros.h"
 
-#include "bspline_mse.h"
 #if (CUDA_FOUND)
 #include "bspline_cuda.h"
 #endif

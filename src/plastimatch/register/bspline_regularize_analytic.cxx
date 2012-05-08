@@ -15,9 +15,6 @@
 
 #include "plm_math.h"
 
-#include "bspline_regularize.h"
-#include "bspline_regularize_analytic.h"
-
 //#define DEBUG
 
 void

@@ -42,15 +42,9 @@
 #include "interpolate_macros.h"
 #include "volume_macros.h"
 
-#include "bspline_mi.h"
-#include "bspline_mse.h"
 #if (CUDA_FOUND)
 #include "bspline_cuda.h"
 #endif
-#include "bspline_regularize.h"
-#include "bspline_optimize.h"
-#include "bspline_optimize_lbfgsb.h"
-#include "bspline_landmarks.h"
 
 
 /* -----------------------------------------------------------------------

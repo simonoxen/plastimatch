@@ -11,8 +11,6 @@
 #include "plmregister.h"
 #include "plmsys.h"
 
-#include "bspline_optimize.h"
-#include "bspline_regularize.h"
 #include "bspline_landmarks.h"
 #include "plm_math.h"
 #include "plm_parms.h"

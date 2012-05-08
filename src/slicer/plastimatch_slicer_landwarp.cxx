@@ -11,11 +11,12 @@
 #include <time.h>
 
 #include "plmbase.h"
+#include "plmregister.h"
 #include "plmsys.h"
+
 #include "plm_math.h"
 
 #include "itk_tps.h"
-#include "landmark_warp.h"
 #include "rbf_gauss.h"
 #include "rbf_wendland.h"
 

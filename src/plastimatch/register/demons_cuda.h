@@ -5,11 +5,10 @@
 #define _demons_cuda_h_
 
 #include "plmregister_config.h"
-
 #include "delayload.h"
-#include "demons.h"
 
 class Demons_state;
+class Demons_parms;
 class Volume;
 
 #if defined __cplusplus
