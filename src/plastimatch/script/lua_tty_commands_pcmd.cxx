@@ -27,7 +27,6 @@
 #include "pcmd_thumbnail.h"
 #include "pcmd_warp.h"
 #include "pcmd_xf_convert.h"
-#include "plm_stages.h"
 
 void
 do_tty_command_pcmd (int argc, char** argv)

@@ -5,7 +5,8 @@
 #define _registration_data_h_
 
 #include "plmregister_config.h"
-#include "plmbase.h"
+
+template<class T> class API Pointset;
 
 class Plm_image;
 class Registration_parms;

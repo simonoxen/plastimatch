@@ -19,9 +19,6 @@ extern "C"
 #include "lua_class_register.h"
 #include "lua_class_xform.h"
 #include "lua_util.h"
-#include "plm_stages.h"
-#include "plm_parms.h"
-#include "registration_data.h"
 
 /* Name of class as exposed to Lua */
 #define THIS_CLASS LUA_CLASS_REGISTER

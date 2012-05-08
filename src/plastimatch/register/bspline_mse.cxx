@@ -15,6 +15,7 @@
 #include <xmmintrin.h>
 #endif
 
+#include "plmbase.h"
 #include "plmregister.h"
 #include "plmutil.h"
 #include "plmsys.h"

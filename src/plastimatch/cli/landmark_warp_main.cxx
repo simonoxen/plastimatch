@@ -16,8 +16,6 @@
 #include "plm_math.h"
 #include "plm_clp.h"
 #include "pstring.h"
-#include "rbf_gauss.h"
-#include "rbf_wendland.h"
 
 class Landmark_warp_main_parms {
 public:

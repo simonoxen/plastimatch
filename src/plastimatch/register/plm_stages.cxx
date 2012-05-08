@@ -8,17 +8,16 @@
 #include "itkTimeProbe.h"
 
 #include "plmbase.h"
-#include "plmutil.h"
+#include "plmregister.h"
 #include "plmsys.h"
+#include "plmutil.h"
 
 #include "gpuit_bspline.h"
 #include "gpuit_demons.h"
+
 #include "itk_demons.h"
 #include "itk_optim.h"
 #include "itk_registration.h"
-#include "plm_parms.h"
-#include "plm_stages.h"
-#include "registration_data.h"
 
 #define FIXME_BACKGROUND_MAX (-1200)
 

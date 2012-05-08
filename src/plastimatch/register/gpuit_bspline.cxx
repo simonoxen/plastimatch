@@ -11,10 +11,7 @@
 #include "plmregister.h"
 #include "plmsys.h"
 
-#include "bspline_landmarks.h"
 #include "plm_math.h"
-#include "plm_parms.h"
-#include "registration_data.h"
 
 static void
 do_gpuit_bspline_stage_internal (

@@ -18,10 +18,10 @@
 #include "itkLBFGSOptimizer.h"
 #include "itkLBFGSBOptimizer.h"
 
+#include "plmregister.h"
 #include "plmsys.h"
 
 #include "itk_registration.h"
-#include "plm_parms.h"
 
 /* Types of optimizers */
 typedef itk::AmoebaOptimizer AmoebaOptimizerType;

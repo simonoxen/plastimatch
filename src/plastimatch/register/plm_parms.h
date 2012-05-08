@@ -10,6 +10,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include "bspline.h"    /* for enums */
+#include "plm_image_type.h"
 #include "plm_path.h"
 #include "pstring.h"
 #include "threading.h"
@@ -197,7 +198,7 @@ public:
     }
 };
 
-class plastimatch1_EXPORT Registration_parms {
+class API Registration_parms {
 public:
     char moving_fn[_MAX_PATH];
     char fixed_fn[_MAX_PATH];
@@ -271,10 +272,14 @@ public:
 };
 
 void not_implemented (void);
-plastimatch1_EXPORT int 
-plm_parms_parse_command_file (Registration_parms* regp, 
-                              const char* options_fn);
-plastimatch1_EXPORT int
-plm_parms_process_command_file (Registration_parms *regp, FILE *fp);
+
+API int plm_parms_parse_command_file (
+        Registration_parms* regp,
+        const char* options_fn
+);
+API int plm_parms_process_command_file (
+        Registration_parms *regp,
+        FILE *fp
+);
 
 #endif

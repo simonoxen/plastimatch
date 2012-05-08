@@ -14,11 +14,10 @@
 #include "itkImage.h"
 #include "itkLinearInterpolateImageFunction.h"
 
+#include "plmbase.h"
 #include "plmregister.h"
 #include "plmsys.h"
 
-#include "registration_data.h"
-#include "plm_parms.h"
 
 typedef itk::DemonsRegistrationFilter<
     FloatImageType,

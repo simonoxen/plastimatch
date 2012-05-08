@@ -1,9 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _demons_h_
-#define _demons_h_
-
+#ifndef _itk_demons_h_
+#define _itk_demons_h_
 
 class Registration_data;
 class Xform;

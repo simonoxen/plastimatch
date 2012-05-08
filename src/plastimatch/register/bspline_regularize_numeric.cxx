@@ -8,6 +8,7 @@
 #include <string.h>
 #include <math.h>
 
+#include "plmbase.h"
 #include "plmregister.h"
 #include "plmsys.h"
 

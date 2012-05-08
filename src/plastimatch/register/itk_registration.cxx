@@ -22,13 +22,13 @@
 #endif
 
 #include "compiler_warnings.h"
-#include "plmutil.h"
+#include "plmbase.h"
+#include "plmregister.h"
 #include "plmsys.h"
+#include "plmutil.h"
 
 #include "itk_demons.h"
 #include "itk_optim.h"
-#include "plm_parms.h"
-#include "registration_data.h"
 
 typedef itk::MeanSquaresImageToImageMetric <
     FloatImageType, FloatImageType > MSEMetricType;

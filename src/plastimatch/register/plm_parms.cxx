@@ -20,7 +20,6 @@
 #include "plmsys.h"
 
 #include "itk_optim.h"
-#include "plm_parms.h"
 
 #define BUFLEN 2048
 

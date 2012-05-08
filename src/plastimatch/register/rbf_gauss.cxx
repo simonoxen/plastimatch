@@ -21,8 +21,6 @@
 #include "plmsys.h"
 
 #include "plm_math.h"
-#include "rbf_cluster.h"
-#include "rbf_gauss.h"
 #include "volume_macros.h"
 
 typedef struct rbf_params Rbf_parms;

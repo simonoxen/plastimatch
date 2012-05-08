@@ -6,10 +6,10 @@
 
 #include "plmregister_config.h"
 #include "itkImageRegistrationMethod.h"
-#include "plm_stages.h"
-#include "plm_parms.h"
+#include "itk_image_type.h"
 
 class Registration_data;
+class Stage_parms;
 class Xform;
 
 typedef itk::ImageRegistrationMethod < 

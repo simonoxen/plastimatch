@@ -8,9 +8,6 @@
 #include "sys/plm_int.h"
 #include <string>
 
-#include "plmbase.h"
-#include "plmregister.h"
-
 #include "bspline_regularize_state.h"
 
 #define DOUBLE_HISTS	// Use doubles for histogram accumulation
@@ -31,7 +28,9 @@
 #endif
 
 class Bspline_landmarks;
+class Bspline_xform;
 class Reg_parms;
+class Volume;
 
 /* -----------------------------------------------------------------------
    Types

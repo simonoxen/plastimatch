@@ -24,6 +24,11 @@
 #include "demons_misc.h"
 #include "demons_state.h"
 #include "landmark_warp.h"
-//#include "plm_parms.h"
+#include "plm_parms.h"
+#include "plm_stages.h"
+#include "rbf_cluster.h"
+#include "rbf_gauss.h"
+#include "rbf_wendland.h"
+#include "registration_data.h"
 
 #endif

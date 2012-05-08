@@ -4,10 +4,9 @@
 #include "plmregister_config.h"
 
 #include "plmbase.h"
+#include "plmregister.h"
 #include "plmsys.h"
 
-#include "registration_data.h"
-#include "plm_parms.h"
 
 Registration_data::Registration_data ()
 {

@@ -1,6 +1,7 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plmregister_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -9,10 +10,6 @@
 #include "plmbase.h"
 #include "plmregister.h"
 
-#include "plmregister_config.h"
-#include "plm_stages.h"
-#include "plm_parms.h"
-#include "registration_data.h"
 
 void
 do_gpuit_demons_stage_internal (

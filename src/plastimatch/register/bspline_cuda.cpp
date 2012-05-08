@@ -18,6 +18,7 @@
 #include "cuda_util.h"
 #endif
 
+#include "plmbase.h"
 #include "plmutil.h"
 #include "plmsys.h"
 
