@@ -9,6 +9,7 @@
 #include <string>
 
 #include "dcmtk_series.h"
+#include "itk_image_type.h"
 
 class Dcmtk_series_set
 {
@@ -35,5 +36,7 @@ public:
 #if defined (GCS_FIX)
 C_API void dcmtk_series_set_test (char *dicom_dir);
 #endif
+
+API ShortImageType::Pointer dcmtk_load (const char *dicom_dir);
 
 #endif

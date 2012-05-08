@@ -6,9 +6,8 @@
 #include "plmutil.h"
 
 #include "compiler_warnings.h"
-#include "dcmtk_load.h"
+#include "dcmtk_loader.h"
 #include "dcmtk_save.h"
-#include "dcmtk_series_set.h"
 
 void
 Rtds::load_dcmtk (const char *dicom_dir)
@@ -70,6 +69,7 @@ Rtds::load_dcmtk (const char *dicom_dir)
 	}
     }
 
+#if defined (GCS_FIX)
     if (ds_rtss) {
         ds_rtss->rtss_load (rtds);
     }
@@ -77,6 +77,7 @@ Rtds::load_dcmtk (const char *dicom_dir)
     if (ds_rtdose) {
         ds_rtdose->rtdose_load (rtds);
     }
+#endif
 
     printf ("Done.\n");
 #endif

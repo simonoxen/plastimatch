@@ -13,8 +13,17 @@
 
 #include "compiler_warnings.h"
 #include "dcmtk_file.h"
-#include "dcmtk_series_set.h"
+#include "dcmtk_loader.h"
 #include "plm_image.h"
+
+
+ShortImageType::Pointer 
+dcmtk_load (const char *dicom_dir)
+{
+    ShortImageType::Pointer img = ShortImageType::New ();
+    
+    return img;
+}
 
 Dcmtk_series_set::Dcmtk_series_set ()
 {

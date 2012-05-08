@@ -109,13 +109,12 @@ if (DCMTK_FOUND AND NOT DCMTK_VERSION_STRING VERSION_LESS 3.6.0)
     ${PLMBASE_LIBRARY_SRC}
     dcmtk_file.cxx
     dcmtk_image.cxx
-    dcmtk_load.cxx
     dcmtk_metadata.cxx
     dcmtk_save.cxx
     dcmtk_series.cxx
     dcmtk_rtdose.cxx 
     dcmtk_rtss.cxx
-    dcmtk_series_set.cxx
+    dcmtk_loader.cxx
     dcmtk_uid.cxx
     dcmtk_util.cxx
     )

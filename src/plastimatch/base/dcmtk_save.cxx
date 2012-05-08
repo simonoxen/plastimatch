@@ -12,7 +12,7 @@
 #include "dcmtk_image.h"
 #include "dcmtk_rtss.h"
 #include "dcmtk_save.h"
-#include "dcmtk_series_set.h"
+#include "dcmtk_series.h"
 #include "dcmtk_uid.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
