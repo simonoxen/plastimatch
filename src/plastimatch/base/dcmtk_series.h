@@ -70,10 +70,6 @@ public:
     std::string get_referenced_uid (void) const;
     void insert (Dcmtk_file* df);
     Plm_image* load_plm_image ();
-#if defined (GCS_FIX)
-    void rtss_load (Rtds *rtds);
-    void rtdose_load (Rtds *rtds);
-#endif
     void sort (void);
 };
 

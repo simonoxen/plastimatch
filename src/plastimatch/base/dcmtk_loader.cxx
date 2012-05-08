@@ -8,7 +8,6 @@
 #include "dcmtk/ofstd/ofstream.h"
 #include "dcmtk/dcmdata/dctk.h"
 
-//#include "plmutil.h"
 #include "plmsys.h"
 
 #include "compiler_warnings.h"
@@ -189,9 +188,7 @@ Dcmtk_loader::parse_directory (void)
         this->rtss_load ();
     }
 
-#if defined (GCS_FIX)
     if (ds_rtdose) {
-        ds_rtdose->rtdose_load (rtds);
+        this->rtdose_load ();
     }
-#endif
 }

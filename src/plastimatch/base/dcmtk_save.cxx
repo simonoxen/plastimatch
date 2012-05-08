@@ -6,7 +6,6 @@
 #include "dcmtk/ofstd/ofstream.h"
 #include "dcmtk/dcmdata/dctk.h"
 
-#include "plmutil.h"
 #include "plmsys.h"
 
 #include "dcmtk_image.h"
@@ -61,9 +60,7 @@ Dcmtk_save::save (const char *dicom_dir)
     if (this->img) {
         this->save_image (&dsw, dicom_dir);
     }
-#if defined (GCS_FIX)
     if (this->cxt) {
-        dcmtk_rtss_save (&dsw, rtds, dicom_dir);
+        this->save_rtss (&dsw, dicom_dir);
     }
-#endif
 }

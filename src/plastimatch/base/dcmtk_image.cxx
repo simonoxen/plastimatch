@@ -9,7 +9,6 @@
 #include "dcmtk/dcmdata/dctk.h"
 
 #include "plmbase.h"
-#include "plmutil.h"
 #include "plmsys.h"
 
 #include "dcmtk_file.h"

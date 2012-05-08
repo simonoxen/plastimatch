@@ -43,13 +43,8 @@ public:
     void insert_directory (const char* fn);
     void parse_directory (void);
     void rtss_load (void);
+    void rtdose_load (void);
     void sort_all (void);
 };
-
-#if defined (GCS_FIX)
-C_API void dcmtk_series_set_test (char *dicom_dir);
-#endif
-
-API ShortImageType::Pointer dcmtk_load (const char *dicom_dir);
 
 #endif
