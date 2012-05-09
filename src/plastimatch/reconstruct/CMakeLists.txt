@@ -86,7 +86,7 @@ if (CUDA_FOUND)
 endif ()
 
 # if building cuda support as a plugin...
-if (PLM_USE_GPU_PLUGINS)
+if (CUDA_FOUND AND PLM_USE_GPU_PLUGINS)
   # windows needs to delayload it
   if (WIN32 AND NOT CYGWIN AND NOT MINGW)
     set (PLMRECONSTRUCT_LIBRARY_DEPENDENCIES
