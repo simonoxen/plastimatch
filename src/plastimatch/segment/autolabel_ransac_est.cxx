@@ -13,6 +13,7 @@
 #include "RANSAC.h"
 #include "PlaneParametersEstimator.h"
 #include "RandomNumberGenerator.h"
+#include "itk_point.h"
 
 typedef itk::RANSAC< Autolabel_point, double> Ransac_type;
 

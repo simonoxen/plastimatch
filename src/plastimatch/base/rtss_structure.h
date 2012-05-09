@@ -5,7 +5,8 @@
 #define _rtss_structure_h_
 
 #include "plmbase_config.h"
-#include "bstrwrap.h"
+#include "pstring.h"
+#include "plmbase_config.h"
 
 #define CXT_BUFLEN 2048
 
@@ -37,11 +38,11 @@ public:
     API Rtss_structure ();
     API ~Rtss_structure ();
 
-    void clear ();
-    Rtss_polyline* add_polyline ();
-    void set_color (const char* color_string);
-    void get_dcm_color_string (Pstring *dcm_color) const;
-    void structure_rgb (int *r, int *g, int *b) const;
+    API void clear ();
+    API Rtss_polyline* add_polyline ();
+    API void set_color (const char* color_string);
+    API void get_dcm_color_string (Pstring *dcm_color) const;
+    API void structure_rgb (int *r, int *g, int *b) const;
 
     static void adjust_name (Pstring *name_out, const Pstring *name_in);
 };

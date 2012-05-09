@@ -50,6 +50,7 @@ gdcm1_dose_probe (const char *dose_fn)
 }
 
 template <class T> 
+static
 void
 gdcm1_dose_copy_raw (float *img_out, T *img_in, int nvox, float scale)
 {
@@ -444,5 +445,5 @@ gdcm1_dose_save (
 }
 
 /* Explicit instantiations */
-template API void gdcm1_dose_copy_raw (float *img_out, unsigned short *img_in, int nvox, float scale);
-template API void gdcm1_dose_copy_raw (float *img_out, unsigned long int *img_in, int nvox, float scale);
+template void gdcm1_dose_copy_raw (float *img_out, unsigned short *img_in, int nvox, float scale);
+template void gdcm1_dose_copy_raw (float *img_out, unsigned long int *img_in, int nvox, float scale);

@@ -7,9 +7,10 @@
 #include "plmsegment_config.h"
 #include <vector>
 #include "dlib/svm.h"
-#include "pstring.h"
 
-class plastimatch1_EXPORT Dlib_trainer
+class Pstring;
+
+class API Dlib_trainer
 {
   public:
     Dlib_trainer () {

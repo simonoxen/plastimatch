@@ -10,7 +10,7 @@
  *   Instead, it is preferred to #include "plmsys.h"
  */
 
-#include "plmsys_config.h"
+//#include "plmsys_config.h"
 
 /* JAS 2012.05.06
  * If we are using GDCMv1, then gdcmCommon.h must be included **before**

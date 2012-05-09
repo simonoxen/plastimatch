@@ -5,9 +5,10 @@
 #define _proton_dose_h_
 
 #include "plmdose_config.h"
-#include "plmbase.h"
-
+//#include "plmbase.h"
 #include "threading.h"
+
+class Volume;
 
 #define INDEX_OF(ijk, dim) \
     (((ijk[2] * dim[1] + ijk[1]) * dim[0]) + ijk[0])

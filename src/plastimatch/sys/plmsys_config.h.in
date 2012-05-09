@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef __plmsys_config_h__
-#define __plmsys_config_h__
+//#ifndef __plmsys_config_h__
+//#define __plmsys_config_h__
 
 #include "plm_config.h"
 
@@ -26,4 +26,4 @@
 # define API 
 #endif
 
-#endif
+//#endif

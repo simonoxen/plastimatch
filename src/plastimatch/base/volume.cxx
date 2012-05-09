@@ -12,6 +12,9 @@
 
 #include "plm_math.h"
 
+#include "plmbase_config.h"
+#include "volume.h"
+
 #define CONVERT_VOLUME(old_type,new_type,new_type_enum)			\
     {									\
 	plm_long v;							\

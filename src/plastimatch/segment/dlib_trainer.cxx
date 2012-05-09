@@ -17,6 +17,7 @@
 
 #include "dlib_trainer.h"
 #include "plm_math.h"
+#include "pstring.h"
 
 using namespace dlib;
 

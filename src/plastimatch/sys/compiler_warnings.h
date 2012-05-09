@@ -4,7 +4,7 @@
 #ifndef _compiler_warnings_h_
 #define _compiler_warnings_h_
 
-#include "plmsys_config.h"
+//#include "plmsys_config.h"
 
 #define UNUSED_VARIABLE(a) ((void) a)
 

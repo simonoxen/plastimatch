@@ -21,6 +21,7 @@
 #endif
 
 #include "astroid_dose.h"
+#include "bspline_interpolate.h"
 #include "bspline_xform.h"
 #include "cxt_io.h"
 #include "dcm_util.h"

@@ -9,12 +9,16 @@
 #include <itkObjectFactory.h>
 #include "itk_point.h"
 
+/* GCS FIX: Why can't I remove itk_point.h include, 
+   and declare "class DoublePoint3DType;"? */
+#include "plmsegment_config.h"
+
 typedef DoublePoint3DType Autolabel_point;
 typedef std::vector< Autolabel_point > Autolabel_point_vector;
 
 namespace itk {
 
-class plastimatch1_EXPORT Autolabel_ransac_est : 
+class API Autolabel_ransac_est : 
 	public ParametersEstimator< Autolabel_point, double > 
 {
 public:
@@ -57,7 +61,7 @@ private:
 
 } // end namespace itk
 
-plastimatch1_EXPORT
+API
 void
 autolabel_ransac_est (Autolabel_point_vector& apv);
 

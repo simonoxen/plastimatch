@@ -15,6 +15,7 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 ##-----------------------------------------------------------------------------
 set (PLMBASE_LIBRARY_SRC
   astroid_dose.cxx
+  bspline_interpolate.cxx
   bspline_xform.cxx
   cxt_io.cxx
   dcm_util.cxx

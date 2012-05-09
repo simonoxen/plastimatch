@@ -4,7 +4,7 @@
 #ifndef _plm_math_h_
 #define _plm_math_h_
 
-#include "plmsys_config.h"
+//#include "plmsys_config.h"
 #include <float.h>
 #include <math.h>
 #include <string.h>
