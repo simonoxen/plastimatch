@@ -6,7 +6,7 @@
 
 #include "plmbase_config.h"
 
-class Proj_matrix {
+class PLMBASE_API Proj_matrix {
 public:
     Proj_matrix ();
 

@@ -122,10 +122,14 @@ PLMBASE_API void xform_itk_bsp_set_grid (Xform *xf,
     const BsplineTransformType::SpacingType bsp_spacing,
     const BsplineTransformType::RegionType bsp_region,
     const BsplineTransformType::DirectionType bsp_direction);
-void xform_to_trn (Xform *xf_out, Xform *xf_in, Plm_image_header* pih);
-void xform_to_vrs (Xform *xf_out, Xform *xf_in, Plm_image_header* pih);
-void xform_to_quat (Xform *xf_out, Xform *xf_in, Plm_image_header* pih);
-void xform_to_aff (Xform *xf_out, Xform *xf_in, Plm_image_header* pih);
+PLMBASE_API void xform_to_trn (
+    Xform *xf_out, Xform *xf_in, Plm_image_header* pih);
+PLMBASE_API void xform_to_vrs (
+    Xform *xf_out, Xform *xf_in, Plm_image_header* pih);
+PLMBASE_API void xform_to_quat (
+    Xform *xf_out, Xform *xf_in, Plm_image_header* pih);
+PLMBASE_API void xform_to_aff (
+    Xform *xf_out, Xform *xf_in, Plm_image_header* pih);
 PLMBASE_API DeformationFieldType::Pointer xform_gpuit_vf_to_itk_vf (
     Volume* vf,              /* Input */
     Plm_image_header* pih    /* Input, can be null */
