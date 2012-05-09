@@ -50,7 +50,7 @@ public:
     }
 };
 
-C_API void bspline_opts_parse_args (
+void bspline_opts_parse_args (
     Bspline_options* options, 
     int argc,char* argv[]
 );
