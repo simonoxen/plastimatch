@@ -10,9 +10,7 @@
 #include <windows.h>
 #endif
 
-#if !defined (PLM_USE_GPU_PLUGINS)
 #include "bspline.h"
-#endif
 #if (CUDA_FOUND)
 #include "bspline_cuda.h"
 #include "cuda_util.h"

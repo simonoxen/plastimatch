@@ -29,6 +29,7 @@
 #define GPU_MAX_BINS 32
 
 class Bspline_mi_hist;
+class Bspline_optimize_data;
 class Bspline_parms;
 class Bspline_state;
 class Bspline_xform;
