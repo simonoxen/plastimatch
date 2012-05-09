@@ -13,7 +13,7 @@ class Xform;
 /* -----------------------------------------------------------------------
    Public functions
    ----------------------------------------------------------------------- */
-API void plm_warp (
+PLMUTIL_API void plm_warp (
     Plm_image *im_warped,   /* Output: Output image */
     DeformationFieldType::Pointer *vf,    /* Output: Output vf (optional) */
     Xform *xf_in,          /* Input:  Input image warped by this xform */

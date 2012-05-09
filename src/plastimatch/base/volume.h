@@ -34,7 +34,7 @@ enum Volume_pixel_type {
 };
 
 
-class API Volume
+class PLMBASE_API Volume
 {
   public:
     plm_long dim[3];            // x, y, z Dims
@@ -110,23 +110,23 @@ class API Volume
     void allocate (void);
 };
 
-C_API void vf_convert_to_interleaved (Volume* ref);
-C_API void vf_convert_to_planar (Volume* ref, int min_size);
-C_API void vf_pad_planar (Volume* vol, int size);  // deprecated?
-C_API Volume* volume_clone_empty (Volume* ref);
-C_API Volume* volume_clone (Volume* ref);
-C_API void volume_convert_to_float (Volume* ref);
-C_API void volume_convert_to_int32 (Volume* ref);
-C_API void volume_convert_to_short (Volume* ref);
-C_API void volume_convert_to_uchar (Volume* ref);
-C_API void volume_convert_to_uint16 (Volume* ref);
-C_API void volume_convert_to_uint32 (Volume* ref);
-C_API Volume* volume_difference (Volume* vol, Volume* warped);
-C_API Volume* volume_make_gradient (Volume* ref);
-C_API void volume_matrix3x3inverse (float *out, const float *m);
-C_API void volume_scale (Volume *vol, float scale);
-C_API Volume* volume_warp (Volume* vout, Volume* vin, Volume* vf);
-C_API void directions_cosine_debug (float *m);
+PLMBASE_C_API void vf_convert_to_interleaved (Volume* ref);
+PLMBASE_C_API void vf_convert_to_planar (Volume* ref, int min_size);
+PLMBASE_C_API void vf_pad_planar (Volume* vol, int size);  // deprecated?
+PLMBASE_C_API Volume* volume_clone_empty (Volume* ref);
+PLMBASE_C_API Volume* volume_clone (Volume* ref);
+PLMBASE_C_API void volume_convert_to_float (Volume* ref);
+PLMBASE_C_API void volume_convert_to_int32 (Volume* ref);
+PLMBASE_C_API void volume_convert_to_short (Volume* ref);
+PLMBASE_C_API void volume_convert_to_uchar (Volume* ref);
+PLMBASE_C_API void volume_convert_to_uint16 (Volume* ref);
+PLMBASE_C_API void volume_convert_to_uint32 (Volume* ref);
+PLMBASE_C_API Volume* volume_difference (Volume* vol, Volume* warped);
+PLMBASE_C_API Volume* volume_make_gradient (Volume* ref);
+PLMBASE_C_API void volume_matrix3x3inverse (float *out, const float *m);
+PLMBASE_C_API void volume_scale (Volume *vol, float scale);
+PLMBASE_C_API Volume* volume_warp (Volume* vout, Volume* vin, Volume* vf);
+PLMBASE_C_API void directions_cosine_debug (float *m);
 
 
 #endif

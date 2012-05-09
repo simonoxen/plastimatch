@@ -12,7 +12,7 @@
 
 //class Volume_header;
 
-class API Xform_convert {
+class PLMBASE_API Xform_convert {
 public:
     Xform *m_xf_out;
     Xform *m_xf_in;
@@ -37,6 +37,6 @@ public:
     }
 };
 
-API void xform_convert (Xform_convert *xfc);
+PLMBASE_API void xform_convert (Xform_convert *xfc);
 
 #endif

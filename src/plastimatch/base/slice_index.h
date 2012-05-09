@@ -16,7 +16,7 @@
 //class Metadata;
 //class Plm_image_header;
 
-class Slice_index {
+class PLMBASE_API Slice_index {
 public:
     /* Set this if we have m_pih && ct slice uids */
     bool m_loaded;
@@ -32,11 +32,10 @@ public:
     std::vector<Pstring> m_ct_slice_uids;
 
 public:
-    API Slice_index ();
-    API ~Slice_index ();
+    Slice_index ();
+    ~Slice_index ();
     void load (const char *dicom_dir);
     void get_slice_info (int *slice_no, Pstring *ct_slice_uid, float z) const;
-
 };
 
 #endif

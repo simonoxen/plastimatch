@@ -43,6 +43,6 @@ itk_image_stats (T img, double *min_val, double *max_val,
 }
 
 /* Explicit instantiations */
-template API void itk_image_stats (UCharImageType::Pointer, double*, double*, double*, int*, int*);
-template API void itk_image_stats (ShortImageType::Pointer, double*, double*, double*, int*, int*);
-template API void itk_image_stats (FloatImageType::Pointer, double*, double*, double*, int*, int*);
+template PLMBASE_API void itk_image_stats (UCharImageType::Pointer, double*, double*, double*, int*, int*);
+template PLMBASE_API void itk_image_stats (ShortImageType::Pointer, double*, double*, double*, int*, int*);
+template PLMBASE_API void itk_image_stats (FloatImageType::Pointer, double*, double*, double*, int*, int*);

@@ -14,7 +14,7 @@
 
 class Volume;
 
-C_API Volume* read_mha (const char* filename);
-C_API void write_mha (const char* filename, Volume* vol);
+PLMBASE_C_API Volume* read_mha (const char* filename);
+PLMBASE_C_API void write_mha (const char* filename, Volume* vol);
 
 #endif

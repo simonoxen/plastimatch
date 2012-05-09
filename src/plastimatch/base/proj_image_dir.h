@@ -8,7 +8,7 @@
 
 class Proj_image;
 
-class API Proj_image_dir
+class PLMBASE_API Proj_image_dir
 {
 public:
     Proj_image_dir (const char *dir);

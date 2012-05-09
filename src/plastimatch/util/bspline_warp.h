@@ -7,7 +7,7 @@
 class Bspline_xform;
 class Volume;
 
-API void bspline_warp (
+PLMUTIL_API void bspline_warp (
     Volume *vout,         /* Output image (already sized and allocated) */
     Volume *vf_out,       /* Output vf (already sized and allocated, can be null) */
     Bspline_xform* bxf,   /* Bspline transform coefficients */

@@ -199,8 +199,8 @@ itk_pointset_debug (T pointset)
 }
 
 /* Explicit instantiations */
-template API void itk_pointset_debug (FloatPointSetType::Pointer pointset);
-template API void itk_pointset_debug (DoublePointSetType::Pointer pointset);
-template API void itk_pointset_load (FloatPointSetType::Pointer pointset, const char* fn);
-template API FloatPointSetType::Pointer itk_pointset_warp (FloatPointSetType::Pointer ps_in, Xform* xf);
-template API FloatPointSetType::Pointer itk_float_pointset_from_pointset (const Unlabeled_pointset *ps);
+template PLMBASE_API void itk_pointset_debug (FloatPointSetType::Pointer pointset);
+template PLMBASE_API void itk_pointset_debug (DoublePointSetType::Pointer pointset);
+template PLMBASE_API void itk_pointset_load (FloatPointSetType::Pointer pointset, const char* fn);
+template PLMBASE_API FloatPointSetType::Pointer itk_pointset_warp (FloatPointSetType::Pointer ps_in, Xform* xf);
+template PLMBASE_API FloatPointSetType::Pointer itk_float_pointset_from_pointset (const Unlabeled_pointset *ps);

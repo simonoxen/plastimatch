@@ -21,7 +21,7 @@ enum Dvh_normalization {
     DVH_NORMALIZATION_VOX,
 };
 
-class API Dvh_parms {
+class PLMUTIL_API Dvh_parms {
 public:
     enum Dvh_units input_units;
     enum Dvh_normalization normalization;
@@ -32,7 +32,7 @@ public:
     Dvh_parms ();
 };
 
-class API Dvh_parms_pcmd {
+class PLMUTIL_API Dvh_parms_pcmd {
 public:
     Pstring input_ss_img_fn;
     Pstring input_ss_list_fn;
@@ -45,17 +45,17 @@ public:
     }
 };
 
-API std::string dvh_execute (
+PLMUTIL_API std::string dvh_execute (
     Plm_image *input_ss_img,
     Plm_image *input_dose_img,
     Dvh_parms *parms);
 
-API std::string dvh_execute (
+PLMUTIL_API std::string dvh_execute (
     UInt32ImageType::Pointer input_ss_img,
     FloatImageType::Pointer input_dose_img,
     Dvh_parms *parms);
 
-API void dvh_execute (
+PLMUTIL_API void dvh_execute (
     Dvh_parms_pcmd *dvh_parms_pcmd);
 
 #endif

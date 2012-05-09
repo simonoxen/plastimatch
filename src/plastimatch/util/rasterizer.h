@@ -11,7 +11,7 @@
 class Rtss_polyline_set;
 class Plm_image_header;
 
-class API Rasterizer {
+class PLMUTIL_API Rasterizer {
   public:
     Rasterizer ();
     ~Rasterizer ();

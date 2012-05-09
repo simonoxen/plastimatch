@@ -10,16 +10,16 @@ class Slice_index;
 class Rtss;
 class Rtss_polyline_set;
 
-C_API Rtss_polyline_set* cxt_load_ss_list (
+PLMBASE_C_API Rtss_polyline_set* cxt_load_ss_list (
         Rtss_polyline_set* cxt,
         const char* xorlist_fn
 );
-C_API void cxt_load (
+PLMBASE_C_API void cxt_load (
         Rtss *rtss,             /* Output: load into this object */
         Slice_index *rdd,       /* Output: Also set some values here */
         const char *cxt_fn      /* Input: file to load from */
 );
-C_API void cxt_save (
+PLMBASE_C_API void cxt_save (
         Rtss *rtss,             /* Input: Structure set to save from */
         Slice_index *rdd,       /* Input: Also save some values from here */
         const char* cxt_fn,     /* Input: File to save to */

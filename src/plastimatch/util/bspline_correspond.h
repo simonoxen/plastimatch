@@ -6,9 +6,9 @@
 
 class Volume;
 
-API int inside_mask (float* xyz, const Volume* mask);
+PLMUTIL_API int inside_mask (float* xyz, const Volume* mask);
 
-API int bspline_find_correspondence (
+PLMUTIL_API int bspline_find_correspondence (
     float *mxyz,             /* Output: xyz coordinates in moving image (mm) */
     float *mijk,             /* Output: ijk indices in moving image (vox) */
     const float *fxyz,       /* Input:  xyz coordinates in fixed image (mm) */
@@ -16,7 +16,7 @@ API int bspline_find_correspondence (
     const Volume *moving     /* Input:  moving image */
 );
 
-API int bspline_find_correspondence_dcos (
+PLMUTIL_API int bspline_find_correspondence_dcos (
     float *mxyz,             /* Output: xyz coordinates in moving image (mm) */
     float *mijk,             /* Output: ijk indices in moving image (vox) */
     const float *fxyz,       /* Input:  xyz coordinates in fixed image (mm) */
@@ -24,7 +24,7 @@ API int bspline_find_correspondence_dcos (
     const Volume *moving     /* Input:  moving image */
 );
 
-API int bspline_find_correspondence_dcos_mask (
+PLMUTIL_API int bspline_find_correspondence_dcos_mask (
     float *mxyz,               /* Output: xyz coordinates in moving image (mm) */
     float *mijk,               /* Output: ijk indices in moving image (vox) */
     const float *fxyz,         /* Input:  xyz coordinates in fixed image (mm) */

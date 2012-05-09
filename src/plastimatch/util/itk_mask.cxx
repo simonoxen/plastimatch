@@ -122,8 +122,8 @@ mask_vf(DeformationFieldType::Pointer vf_out, DeformationFieldType::Pointer vf,
 #endif
 
 /* Explicit instantiations */
-template API UCharImageType::Pointer mask_image (UCharImageType::Pointer, UCharImageType::Pointer, Mask_operation, float);
-template API UShortImageType::Pointer mask_image (UShortImageType::Pointer, UCharImageType::Pointer, Mask_operation, float);
-template API ShortImageType::Pointer mask_image (ShortImageType::Pointer, UCharImageType::Pointer, Mask_operation, float);
-template API UInt32ImageType::Pointer mask_image (UInt32ImageType::Pointer, UCharImageType::Pointer, Mask_operation, float);
-template API FloatImageType::Pointer mask_image (FloatImageType::Pointer, UCharImageType::Pointer, Mask_operation, float);
+template PLMUTIL_API UCharImageType::Pointer mask_image (UCharImageType::Pointer, UCharImageType::Pointer, Mask_operation, float);
+template PLMUTIL_API UShortImageType::Pointer mask_image (UShortImageType::Pointer, UCharImageType::Pointer, Mask_operation, float);
+template PLMUTIL_API ShortImageType::Pointer mask_image (ShortImageType::Pointer, UCharImageType::Pointer, Mask_operation, float);
+template PLMUTIL_API UInt32ImageType::Pointer mask_image (UInt32ImageType::Pointer, UCharImageType::Pointer, Mask_operation, float);
+template PLMUTIL_API FloatImageType::Pointer mask_image (FloatImageType::Pointer, UCharImageType::Pointer, Mask_operation, float);

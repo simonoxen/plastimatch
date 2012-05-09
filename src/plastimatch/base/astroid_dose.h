@@ -10,12 +10,12 @@ class Metadata;
 class Plm_image;
 class Xio_ct_transform;
 
-C_API void astroid_dose_load (
+PLMBASE_C_API void astroid_dose_load (
         Plm_image *plm,
         Metadata *meta,
         const char *filename
 );
-C_API void astroid_dose_apply_transform (
+PLMBASE_C_API void astroid_dose_apply_transform (
         Plm_image *plm,
         Xio_ct_transform *transform
 );

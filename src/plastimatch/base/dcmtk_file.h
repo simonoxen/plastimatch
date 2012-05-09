@@ -50,8 +50,8 @@ public:
 };
 
 
-C_API void dcmtk_series_test (char *dicom_dir);
-C_API bool dcmtk_file_compare_z_position (
+PLMBASE_C_API void dcmtk_series_test (char *dicom_dir);
+PLMBASE_C_API bool dcmtk_file_compare_z_position (
         const Dcmtk_file* f1,
         const Dcmtk_file* f2
 );

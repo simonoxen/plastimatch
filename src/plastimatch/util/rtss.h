@@ -19,7 +19,7 @@ class Xform;
 class Xio_ct_transform;
 class Warp_parms;
 
-class API Rtss {
+class PLMUTIL_API Rtss {
 public:
     Rtss_polyline_set *m_ss_list; /* Names of structures */
     Rtss_polyline_set *m_cxt;     /* Structure set in polyline form */

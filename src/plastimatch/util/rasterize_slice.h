@@ -8,7 +8,7 @@
 #include "sys/plm_int.h"
 
 
-C_API void rasterize_slice (
+PLMUTIL_C_API void rasterize_slice (
     unsigned char* acc_img,
     plm_long* dims,
     float* spacing,

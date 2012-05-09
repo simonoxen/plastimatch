@@ -30,8 +30,8 @@ enum Plm_image_type {
     PLM_IMG_TYPE_GPUIT_UCHAR_VEC
 };
 
-API Plm_image_type plm_image_type_parse (const char* string);
-API char* plm_image_type_string (Plm_image_type type);
-API char* plm_image_type_string_simple (Plm_image_type type);
+PLMBASE_API Plm_image_type plm_image_type_parse (const char* string);
+PLMBASE_API char* plm_image_type_string (Plm_image_type type);
+PLMBASE_API char* plm_image_type_string_simple (Plm_image_type type);
 
 #endif

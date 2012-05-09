@@ -7,6 +7,6 @@
 #include "plmutil_config.h"
 #include "itk_image_type.h"
 
-C_API void ss_img_stats (UCharVecImageType::Pointer img);
+PLMUTIL_C_API void ss_img_stats (UCharVecImageType::Pointer img);
 
 #endif

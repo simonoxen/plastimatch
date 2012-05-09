@@ -7,7 +7,7 @@
 #include "plmutil_config.h"
 #include "pstring.h"
 
-class API Diff_parms {
+class PLMUTIL_API Diff_parms {
 public:
     Pstring img_in_1_fn;
     Pstring img_in_2_fn;
@@ -16,6 +16,6 @@ public:
     Diff_parms ();
 };
 
-API void diff_main (Diff_parms* parms);
+PLMUTIL_API void diff_main (Diff_parms* parms);
 
 #endif

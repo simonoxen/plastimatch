@@ -14,7 +14,7 @@
 
 class Proj_image;
 
-C_API void hnd_load (
+PLMBASE_C_API void hnd_load (
         Proj_image *proj,
         const char *fn,
         const double xy_offset[2]

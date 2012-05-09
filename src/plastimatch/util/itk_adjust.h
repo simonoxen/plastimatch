@@ -12,7 +12,7 @@
 typedef std::list< std::pair< float, float > > Adjustment_list;
 
 /* Does destructive, in-place adjustment */
-API void itk_adjust (FloatImageType::Pointer image, const Adjustment_list& al);
-API void itk_auto_adjust (FloatImageType::Pointer image);
+PLMUTIL_API void itk_adjust (FloatImageType::Pointer image, const Adjustment_list& al);
+PLMUTIL_API void itk_auto_adjust (FloatImageType::Pointer image);
 
 #endif

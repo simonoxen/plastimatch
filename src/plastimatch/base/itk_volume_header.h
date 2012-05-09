@@ -7,7 +7,7 @@
 #include "plmbase_config.h"
 #include "itk_image_type.h"
 
-class API Itk_volume_header {
+class PLMBASE_API Itk_volume_header {
 public:
     ImageRegionType m_region;
     OriginType m_origin;

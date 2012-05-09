@@ -33,7 +33,7 @@ typedef void (*Ray_trace_callback) (
     double vox_len, 
     float vox_value);
 
-C_API void ray_trace_exact (
+PLMBASE_C_API void ray_trace_exact (
         Volume *vol,                  /* Input: volume */
         Volume_limit *vol_limit,      /* Input: min/max coordinates of volume */
         Ray_trace_callback callback,  /* Input: callback function */
@@ -41,7 +41,7 @@ C_API void ray_trace_exact (
         double *p1in,                 /* Input: start point for ray */
         double *p2in                  /* Input: end point for ray */
 );
-C_API void ray_trace_uniform (
+PLMBASE_C_API void ray_trace_uniform (
         Volume *vol,                  /* Input: volume */
         Volume_limit *vol_limit,      /* Input: min/max coordinates of volume */
         Ray_trace_callback callback,  /* Input: callback function */

@@ -35,7 +35,7 @@ public:
 
 class Gamma_filter_private;
 
-/*! \brief This is a sample "Filter API" class for Gamma.  
+/*! \brief This is a sample "Filter PLMUTIL_API" class for Gamma.  
  * How it works is a mystery. */
 class Gamma_filter {
 public:
@@ -63,8 +63,8 @@ public:
 /*! \brief This function finds a dose threshold.  It is a global function. 
   If we document the file (with the \file directive) or if we add this 
   function to a group, it will show up in Doxygen. */
-C_API void find_dose_threshold (Gamma_parms *parms);
+PLMUTIL_C_API void find_dose_threshold (Gamma_parms *parms);
 
-C_API void do_gamma_analysis (Gamma_parms *parms);
+PLMUTIL_C_API void do_gamma_analysis (Gamma_parms *parms);
 
 #endif

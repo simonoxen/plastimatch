@@ -12,7 +12,7 @@
 
 #include "plmsys_config.h"
 
-C_API void plm_fwrite (
+PLMSYS_C_API void plm_fwrite (
         void* buf,
         size_t size,
         size_t count,

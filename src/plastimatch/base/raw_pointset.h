@@ -18,27 +18,27 @@ struct raw_pointset {
     float *points;
 };
 
-C_API void pointset_add_point (
+PLMBASE_C_API void pointset_add_point (
         Raw_pointset *ps,
         float lm[3]
 );
-C_API void pointset_add_point_noadjust (
+PLMBASE_C_API void pointset_add_point_noadjust (
         Raw_pointset *ps,
         float lm[3]
 );
-C_API Raw_pointset *pointset_create (void);
-C_API void pointset_debug (Raw_pointset* ps);
-C_API void pointset_destroy (Raw_pointset *ps);
-C_API Raw_pointset* pointset_load (const char *fn);
-C_API void pointset_resize (
+PLMBASE_C_API Raw_pointset *pointset_create (void);
+PLMBASE_C_API void pointset_debug (Raw_pointset* ps);
+PLMBASE_C_API void pointset_destroy (Raw_pointset *ps);
+PLMBASE_C_API Raw_pointset* pointset_load (const char *fn);
+PLMBASE_C_API void pointset_resize (
         Raw_pointset *ps,
         int new_size
 );
-C_API void pointset_save (
+PLMBASE_C_API void pointset_save (
         Raw_pointset* ps,
         const char *fn
 );
-C_API void pointset_save_fcsv_by_cluster (
+PLMBASE_C_API void pointset_save_fcsv_by_cluster (
         Raw_pointset* ps,
         int *clust_id,
         int which_cluster,

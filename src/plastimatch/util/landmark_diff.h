@@ -8,7 +8,7 @@
 
 typedef struct raw_pointset Raw_pointset;
 
-C_API int landmark_diff (
+PLMUTIL_C_API int landmark_diff (
     Raw_pointset *rps0,
     Raw_pointset *rps1
 );

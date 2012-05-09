@@ -17,7 +17,7 @@ class Xpm_canvas_private;
 
 enum xpm_brushes { XPM_BOX, XPM_CIRCLE };
 
-class API Xpm_brush {
+class PLMBASE_API Xpm_brush {
 public:
     Xpm_brush ();
     ~Xpm_brush ();
@@ -42,7 +42,7 @@ private:
     Xpm_brush_private *d_ptr;
 };
 
-class API Xpm_canvas {
+class PLMBASE_API Xpm_canvas {
 public:
     Xpm_canvas (int width, int height, int cpp);
     ~Xpm_canvas ();

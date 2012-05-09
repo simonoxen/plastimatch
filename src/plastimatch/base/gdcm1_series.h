@@ -21,7 +21,7 @@ namespace gdcm {
     class SerieHelper2;
 };
 
-class Gdcm_series 
+class PLMBASE_API Gdcm_series 
 {
 public:
     Gdcm_series ();

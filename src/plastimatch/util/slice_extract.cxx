@@ -8,6 +8,7 @@
 #include "itkImageFileWriter.h"
 
 #include "plmbase.h"
+#include "plmutil_config.h"
 
 
 template<class T>
@@ -98,6 +99,6 @@ slice_extract
     return out_img;
 }
 
-template API UCharImage2DType::Pointer slice_extract (UCharImageType::Pointer, int);
-template API FloatImage2DType::Pointer slice_extract (FloatImageType::Pointer, int);
-template API UInt32Image2DType::Pointer slice_extract (UInt32ImageType::Pointer, int);
+template PLMUTIL_API UCharImage2DType::Pointer slice_extract (UCharImageType::Pointer, int);
+template PLMUTIL_API FloatImage2DType::Pointer slice_extract (FloatImageType::Pointer, int);
+template PLMUTIL_API UInt32Image2DType::Pointer slice_extract (UInt32ImageType::Pointer, int);

@@ -15,7 +15,7 @@ enum Xio_version {
     XIO_VERSION_4_5_0,         /* Current MGH photon Xio */
 };
 
-class Xio_studyset_slice
+class PLMBASE_API Xio_studyset_slice
 {
 public:
     std::string name;
@@ -34,7 +34,7 @@ public:
     }
 };
 
-class Xio_studyset
+class PLMBASE_API Xio_studyset
 {
 public:
     std::string studyset_dir;

@@ -12,12 +12,12 @@
 class Metadata;
 class Xio_studyset;
 
-C_API void xio_structures_load (
+PLMBASE_C_API void xio_structures_load (
         Rtss_polyline_set *structures,
         const Xio_studyset& xsl
 );
 
-C_API void xio_structures_save (
+PLMBASE_C_API void xio_structures_save (
         Rtss_polyline_set *cxt, 
         Metadata *meta,
         Xio_ct_transform *transform, 
@@ -25,7 +25,7 @@ C_API void xio_structures_save (
         const char *output_dir
 );
 
-C_API void xio_structures_apply_transform (
+PLMBASE_C_API void xio_structures_apply_transform (
         Rtss_polyline_set *structures,
         Xio_ct_transform *transform
 );

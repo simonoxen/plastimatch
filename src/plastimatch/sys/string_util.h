@@ -8,15 +8,15 @@
 #include <string>
 #include <vector>
 
-API int plm_strcmp (const char* s1, const char* s2);
-API void string_util_rtrim_whitespace (char *s);
-API int parse_int13 (int *arr, const char *string);
-API int parse_dicom_float2 (float *arr, const char *string);
-API int parse_dicom_float3 (float *arr, const char *string);
-API int parse_dicom_float6 (float *arr, const char *string);
-API std::vector<int> parse_int3_string (const char* s);
-API std::vector<float> parse_float3_string (const char* s);
-API const std::string trim (
+PLMSYS_API int plm_strcmp (const char* s1, const char* s2);
+PLMSYS_API void string_util_rtrim_whitespace (char *s);
+PLMSYS_API int parse_int13 (int *arr, const char *string);
+PLMSYS_API int parse_dicom_float2 (float *arr, const char *string);
+PLMSYS_API int parse_dicom_float3 (float *arr, const char *string);
+PLMSYS_API int parse_dicom_float6 (float *arr, const char *string);
+PLMSYS_API std::vector<int> parse_int3_string (const char* s);
+PLMSYS_API std::vector<float> parse_float3_string (const char* s);
+PLMSYS_API const std::string trim (
     const std::string& str,
     const std::string& whitespace = " \t\r\n"
 );

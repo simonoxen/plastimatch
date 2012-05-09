@@ -101,9 +101,9 @@ itk_warp_image (
 }
 
 /* Explicit instantiations */
-template API UCharImageType::Pointer itk_warp_image (UCharImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, unsigned char default_val);
-template API UShortImageType::Pointer itk_warp_image (UShortImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, unsigned short default_val);
-template API ShortImageType::Pointer itk_warp_image (ShortImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, short default_val);
-template API UInt32ImageType::Pointer itk_warp_image (UInt32ImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, uint32_t default_val);
-template API FloatImageType::Pointer itk_warp_image (FloatImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, float default_val);
-template API DoubleImageType::Pointer itk_warp_image (DoubleImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, double default_val);
+template PLMUTIL_API UCharImageType::Pointer itk_warp_image (UCharImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, unsigned char default_val);
+template PLMUTIL_API UShortImageType::Pointer itk_warp_image (UShortImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, unsigned short default_val);
+template PLMUTIL_API ShortImageType::Pointer itk_warp_image (ShortImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, short default_val);
+template PLMUTIL_API UInt32ImageType::Pointer itk_warp_image (UInt32ImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, uint32_t default_val);
+template PLMUTIL_API FloatImageType::Pointer itk_warp_image (FloatImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, float default_val);
+template PLMUTIL_API DoubleImageType::Pointer itk_warp_image (DoubleImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, double default_val);

@@ -38,6 +38,6 @@ public:
     }
 };
 
-API DeformationFieldType::Pointer synthetic_vf (Synthetic_vf_parms* parms);
+PLMUTIL_API DeformationFieldType::Pointer synthetic_vf (Synthetic_vf_parms* parms);
 
 #endif

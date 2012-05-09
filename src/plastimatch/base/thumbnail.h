@@ -9,7 +9,7 @@
 
 class Plm_image;
 
-class API Thumbnail {
+class PLMBASE_API Thumbnail {
 public:
     Plm_image *pli;
     float origin[3];

@@ -17,16 +17,16 @@ public:
     float y_offset;
 };
 
-API void xio_ct_load (Plm_image *plm, const Xio_studyset *xio_studyset);
-API void xio_ct_get_transform_from_rdd (
+PLMBASE_API void xio_ct_load (Plm_image *plm, const Xio_studyset *xio_studyset);
+PLMBASE_API void xio_ct_get_transform_from_rdd (
     Plm_image *plm,
     Metadata *meta,
     Slice_index *rdd,
     Xio_ct_transform *transform
 );
-API void xio_ct_get_transform ( Metadata *meta,
+PLMBASE_API void xio_ct_get_transform ( Metadata *meta,
     Xio_ct_transform *transform
 );
-API void xio_ct_apply_transform (Plm_image *plm, Xio_ct_transform *transform);
+PLMBASE_API void xio_ct_apply_transform (Plm_image *plm, Xio_ct_transform *transform);
 
 #endif

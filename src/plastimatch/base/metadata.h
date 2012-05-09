@@ -14,7 +14,7 @@ namespace gdcm {
 };
 #endif
 
-class API Metadata
+class PLMBASE_API Metadata
 {
 public:
     Metadata ();

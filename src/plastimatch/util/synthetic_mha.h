@@ -98,6 +98,6 @@ public:
     }
 };
 
-API void synthetic_mha (Rtds *rtds, Synthetic_mha_parms *parms);
+PLMUTIL_API void synthetic_mha (Rtds *rtds, Synthetic_mha_parms *parms);
 
 #endif

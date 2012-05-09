@@ -18,7 +18,7 @@ class Pstring;
 class Slice_index;
 class Volume;
 
-class API Plm_image {
+class PLMBASE_API Plm_image {
 
 public:
     Plm_image ();
@@ -144,8 +144,8 @@ public:
 /* -----------------------------------------------------------------------
    Public functions
    ----------------------------------------------------------------------- */
-API Plm_image* plm_image_load (const char* fname, Plm_image_type type);
-API Plm_image* plm_image_load_native (const char* fname);
-API void plm_image_save_vol (const char* fname, Volume *vol);
+PLMBASE_API Plm_image* plm_image_load (const char* fname, Plm_image_type type);
+PLMBASE_API Plm_image* plm_image_load_native (const char* fname);
+PLMBASE_API void plm_image_save_vol (const char* fname, Volume *vol);
 
 #endif

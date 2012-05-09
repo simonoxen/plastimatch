@@ -15,6 +15,6 @@
 class Volume;
 class Volume_limit;
 
-C_API Volume* vf_warp (Volume* vout, Volume* vin, Volume* vf); 
+PLMBASE_C_API Volume* vf_warp (Volume* vout, Volume* vin, Volume* vf); 
 
 #endif

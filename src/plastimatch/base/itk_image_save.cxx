@@ -121,30 +121,30 @@ itk_image_save_double (T image, const char* fname)
 }
 
 /* Explicit instantiations */
-template API void itk_image_save(CharImageType::Pointer, const char*);
-template API void itk_image_save(UCharImageType::Pointer, const char*);
-template API void itk_image_save(ShortImageType::Pointer, const char*);
-template API void itk_image_save(UShortImageType::Pointer, const char*);
-template API void itk_image_save(Int32ImageType::Pointer, const char*);
-template API void itk_image_save(UInt32ImageType::Pointer, const char*);
-template API void itk_image_save(FloatImageType::Pointer, const char*);
-template API void itk_image_save(DoubleImageType::Pointer, const char*);
+template PLMBASE_API void itk_image_save(CharImageType::Pointer, const char*);
+template PLMBASE_API void itk_image_save(UCharImageType::Pointer, const char*);
+template PLMBASE_API void itk_image_save(ShortImageType::Pointer, const char*);
+template PLMBASE_API void itk_image_save(UShortImageType::Pointer, const char*);
+template PLMBASE_API void itk_image_save(Int32ImageType::Pointer, const char*);
+template PLMBASE_API void itk_image_save(UInt32ImageType::Pointer, const char*);
+template PLMBASE_API void itk_image_save(FloatImageType::Pointer, const char*);
+template PLMBASE_API void itk_image_save(DoubleImageType::Pointer, const char*);
 
-template API void itk_image_save(DeformationFieldType::Pointer, const char*);
-template API void itk_image_save(UCharImage4DType::Pointer, const char*);
-template API void itk_image_save(UCharVecImageType::Pointer, const char*);
+template PLMBASE_API void itk_image_save(DeformationFieldType::Pointer, const char*);
+template PLMBASE_API void itk_image_save(UCharImage4DType::Pointer, const char*);
+template PLMBASE_API void itk_image_save(UCharVecImageType::Pointer, const char*);
 
-template API void itk_image_save_char (FloatImageType::Pointer, const char*);
-template API void itk_image_save_uchar (FloatImageType::Pointer, const char*);
-template API void itk_image_save_short (FloatImageType::Pointer, const char*);
-template API void itk_image_save_ushort (FloatImageType::Pointer, const char*);
-template API void itk_image_save_uint32 (FloatImageType::Pointer, const char*);
-template API void itk_image_save_float (FloatImageType::Pointer, const char*);
-template API void itk_image_save_double (FloatImageType::Pointer, const char*);
+template PLMBASE_API void itk_image_save_char (FloatImageType::Pointer, const char*);
+template PLMBASE_API void itk_image_save_uchar (FloatImageType::Pointer, const char*);
+template PLMBASE_API void itk_image_save_short (FloatImageType::Pointer, const char*);
+template PLMBASE_API void itk_image_save_ushort (FloatImageType::Pointer, const char*);
+template PLMBASE_API void itk_image_save_uint32 (FloatImageType::Pointer, const char*);
+template PLMBASE_API void itk_image_save_float (FloatImageType::Pointer, const char*);
+template PLMBASE_API void itk_image_save_double (FloatImageType::Pointer, const char*);
 
-template API void itk_image_save_short_dicom (UCharImageType::Pointer, const char*, Slice_index *, const Metadata *meta);
-template API void itk_image_save_short_dicom (ShortImageType::Pointer, const char*, Slice_index *, const Metadata *meta);
-template API void itk_image_save_short_dicom (UShortImageType::Pointer, const char*, Slice_index *, const Metadata *meta);
-template API void itk_image_save_short_dicom (UInt32ImageType::Pointer, const char*, Slice_index *, const Metadata *meta);
-template API void itk_image_save_short_dicom (FloatImageType::Pointer, const char*, Slice_index *, const Metadata *meta);
+template PLMBASE_API void itk_image_save_short_dicom (UCharImageType::Pointer, const char*, Slice_index *, const Metadata *meta);
+template PLMBASE_API void itk_image_save_short_dicom (ShortImageType::Pointer, const char*, Slice_index *, const Metadata *meta);
+template PLMBASE_API void itk_image_save_short_dicom (UShortImageType::Pointer, const char*, Slice_index *, const Metadata *meta);
+template PLMBASE_API void itk_image_save_short_dicom (UInt32ImageType::Pointer, const char*, Slice_index *, const Metadata *meta);
+template PLMBASE_API void itk_image_save_short_dicom (FloatImageType::Pointer, const char*, Slice_index *, const Metadata *meta);
 

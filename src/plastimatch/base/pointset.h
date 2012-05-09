@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-class API Point {
+class PLMBASE_API Point {
 public:
     Point () {}
     Point (const std::string& label, float x, float y, float z) {
@@ -36,7 +36,7 @@ public:
     }
 };
 
-class API Labeled_point {
+class PLMBASE_API Labeled_point {
 public:
     Labeled_point () {}
     Labeled_point (const std::string& label, float x, float y, float z) {
@@ -58,7 +58,7 @@ public:
 };
 
 template<class T>
-class API Pointset {
+class PLMBASE_API Pointset {
   public:
     std::vector<T> point_list;
   public:

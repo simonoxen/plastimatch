@@ -6,6 +6,6 @@
 
 #include "plmbase_config.h"
 
-API void xio_plan_get_studyset (const char *filename, char *studyset);
+PLMBASE_API void xio_plan_get_studyset (const char *filename, char *studyset);
 
 #endif

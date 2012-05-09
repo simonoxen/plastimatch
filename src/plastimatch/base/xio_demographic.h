@@ -7,7 +7,7 @@
 #include "plmbase_config.h"
 #include "pstring.h"
 
-class Xio_demographic
+class PLMBASE_API Xio_demographic
 {
 public:
     Pstring m_patient_name;

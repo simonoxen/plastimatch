@@ -11,6 +11,7 @@
 
 #include "itkImage.h"
 #include "itkAndConstantToImageFilter.h"
+#include "plmutil_config.h"
 
 UCharImageType::Pointer
 ss_img_extract_bit (UInt32ImageType::Pointer image, unsigned int bit)
@@ -170,5 +171,5 @@ ss_img_insert_uchar (
 }
 
 /* Explicit instantiation */
-template API UCharImageType::Pointer ss_img_extract_uchar (UCharVecImageType::Pointer, unsigned int);
-template API UCharImage2DType::Pointer ss_img_extract_uchar (UCharVecImage2DType::Pointer, unsigned int);
+template PLMUTIL_API UCharImageType::Pointer ss_img_extract_uchar (UCharVecImageType::Pointer, unsigned int);
+template PLMUTIL_API UCharImage2DType::Pointer ss_img_extract_uchar (UCharVecImage2DType::Pointer, unsigned int);

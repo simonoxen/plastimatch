@@ -15,7 +15,7 @@ struct Xio_plan_dir;
 /* This class represents the input directory, which could be a 
    patient directory, plan directory, or even a directory which 
    contains multiple patients */
-class API Xio_dir {
+class PLMBASE_API Xio_dir {
 public:
     Pstring path;
     std::vector<Xio_patient*> patient_dir;
@@ -32,8 +32,8 @@ public:
     static int is_xio_plan_dir (std::string dir);
 };
 
-API int xio_dir_num_patients (Xio_dir* xd);
+PLMBASE_API int xio_dir_num_patients (Xio_dir* xd);
 
-API Xio_studyset_dir* xio_plan_dir_get_studyset_dir (Xio_plan_dir* xtpd);
+PLMBASE_API Xio_studyset_dir* xio_plan_dir_get_studyset_dir (Xio_plan_dir* xtpd);
 
 #endif

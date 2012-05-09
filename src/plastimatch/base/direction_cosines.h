@@ -11,7 +11,7 @@
 
 #define DIRECTION_COSINES_IDENTITY_THRESH 1e-9
 
-class API Direction_cosines {
+class PLMBASE_API Direction_cosines {
   public:
     float m_direction_cosines[9];
 

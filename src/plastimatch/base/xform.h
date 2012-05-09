@@ -54,7 +54,7 @@ typedef itk::ThinPlateSplineKernelTransform <
 typedef DoubleTpsTransformType TpsTransformType;
 
 
-class API Xform {
+class PLMBASE_API Xform {
 public:
     XFormInternalType m_type;
     
@@ -114,10 +114,10 @@ public:
 };
 
 
-API void xform_load (Xform *xf, const char* fn);
-API void xform_save (Xform *xf, const char* fn);
-API void xform_itk_bsp_init_default (Xform *xf);
-API void xform_itk_bsp_set_grid (Xform *xf,
+PLMBASE_API void xform_load (Xform *xf, const char* fn);
+PLMBASE_API void xform_save (Xform *xf, const char* fn);
+PLMBASE_API void xform_itk_bsp_init_default (Xform *xf);
+PLMBASE_API void xform_itk_bsp_set_grid (Xform *xf,
     const BsplineTransformType::OriginType bsp_origin,
     const BsplineTransformType::SpacingType bsp_spacing,
     const BsplineTransformType::RegionType bsp_region,
@@ -126,15 +126,15 @@ void xform_to_trn (Xform *xf_out, Xform *xf_in, Plm_image_header* pih);
 void xform_to_vrs (Xform *xf_out, Xform *xf_in, Plm_image_header* pih);
 void xform_to_quat (Xform *xf_out, Xform *xf_in, Plm_image_header* pih);
 void xform_to_aff (Xform *xf_out, Xform *xf_in, Plm_image_header* pih);
-API DeformationFieldType::Pointer xform_gpuit_vf_to_itk_vf (
+PLMBASE_API DeformationFieldType::Pointer xform_gpuit_vf_to_itk_vf (
     Volume* vf,              /* Input */
     Plm_image_header* pih    /* Input, can be null */
 );
-API void xform_to_itk_bsp (Xform *xf_out, Xform *xf_in, Plm_image_header* pih, float* grid_spac);
-API void xform_to_itk_bsp_nobulk (Xform *xf_out, Xform *xf_in, Plm_image_header* pih, float* grid_spac);
-API void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, Plm_image_header* pih);
-API void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, FloatImageType::Pointer image);
-API void xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih, float* grid_spac);
-API void xform_to_gpuit_vf (Xform* xf_out, Xform *xf_in, Plm_image_header* pih);
+PLMBASE_API void xform_to_itk_bsp (Xform *xf_out, Xform *xf_in, Plm_image_header* pih, float* grid_spac);
+PLMBASE_API void xform_to_itk_bsp_nobulk (Xform *xf_out, Xform *xf_in, Plm_image_header* pih, float* grid_spac);
+PLMBASE_API void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, Plm_image_header* pih);
+PLMBASE_API void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, FloatImageType::Pointer image);
+PLMBASE_API void xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih, float* grid_spac);
+PLMBASE_API void xform_to_gpuit_vf (Xform* xf_out, Xform *xf_in, Plm_image_header* pih);
 
 #endif

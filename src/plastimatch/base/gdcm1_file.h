@@ -12,17 +12,17 @@ namespace gdcm
     class File;
 };
 
-API std::string
+PLMBASE_API std::string
 gdcm_file_GetEntryValue (
         gdcm::File *file,
         unsigned short group,
         unsigned short elem
 );
 
-API const std::string&
+PLMBASE_API const std::string&
 gdcm_file_GDCM_UNKNOWN ();
 
-API const std::string&
+PLMBASE_API const std::string&
 gdcm_file_GDCM_UNFOUND ();
 
 #endif

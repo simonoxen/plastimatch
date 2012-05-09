@@ -8,7 +8,7 @@
 
 class Rtds;
 
-C_API void do_simplify (Rtds *rtds, float percentage);
+PLMUTIL_C_API void do_simplify (Rtds *rtds, float percentage);
 //void do_simplify (Rtds *rtds, Plm_file_format file_type,int percentage);
 
 #endif

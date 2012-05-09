@@ -9,7 +9,7 @@
 class Plm_image;
 class Xio_ct_transform;
 
-API void mc_dose_load (Plm_image *plm, const char *filename);
-API void mc_dose_apply_transform (Plm_image *plm, Xio_ct_transform *transform);
+PLMBASE_API void mc_dose_load (Plm_image *plm, const char *filename);
+PLMBASE_API void mc_dose_apply_transform (Plm_image *plm, Xio_ct_transform *transform);
 
 #endif

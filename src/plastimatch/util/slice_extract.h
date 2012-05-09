@@ -7,9 +7,9 @@
 #include "plmutil_config.h"
 #include "itkImage.h"
 
-template<class T> API
+template<class T> PLMUTIL_API
 typename itk::Image<typename T::ObjectType::PixelType,2>::Pointer slice_extract (T in_img, int slice_no);
 
-API UCharVecImage2DType::Pointer slice_extract (UCharVecImageType::Pointer, int);
+PLMUTIL_API UCharVecImage2DType::Pointer slice_extract (UCharVecImageType::Pointer, int);
 
 #endif

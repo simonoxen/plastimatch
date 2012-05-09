@@ -8,15 +8,15 @@
 
 class Rtss_polyline_set;
 
-C_API Rtss_polyline_set* ss_list_load (
+PLMBASE_C_API Rtss_polyline_set* ss_list_load (
         Rtss_polyline_set* cxt,
         const char* ss_list_fn
 );
-C_API void ss_list_save (
+PLMBASE_C_API void ss_list_save (
         Rtss_polyline_set* cxt,
         const char* cxt_fn
 );
-C_API void ss_list_save_colormap (
+PLMBASE_C_API void ss_list_save_colormap (
         Rtss_polyline_set* cxt,
         const char* colormap_fn
 );

@@ -9,13 +9,13 @@
 /* -----------------------------------------------------------------------
    Function prototypes
    ----------------------------------------------------------------------- */
-API void itk_metadata_set (
+PLMBASE_API void itk_metadata_set (
     itk::MetaDataDictionary *dict, 
     const char *tag, 
     const char *value
 );
 
-API void itk_metadata_print (
+PLMBASE_API void itk_metadata_print (
     itk::MetaDataDictionary *dict
 );
 

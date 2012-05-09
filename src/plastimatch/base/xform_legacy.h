@@ -9,6 +9,6 @@
 
 class Xform;
 
-C_API void xform_legacy_load (Xform *xf, FILE* fp);
+PLMBASE_C_API void xform_legacy_load (Xform *xf, FILE* fp);
 
 #endif

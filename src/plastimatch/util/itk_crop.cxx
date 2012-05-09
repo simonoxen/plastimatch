@@ -52,8 +52,8 @@ itk_crop (
 
 
 /* Explicit instantiations */
-template API UCharImageType::Pointer itk_crop (UCharImageType::Pointer&, const int*);
-template API ShortImageType::Pointer itk_crop (ShortImageType::Pointer&, const int*);
-template API UShortImageType::Pointer itk_crop (UShortImageType::Pointer&, const int*);
-template API UInt32ImageType::Pointer itk_crop (UInt32ImageType::Pointer&, const int*);
-template API FloatImageType::Pointer itk_crop (FloatImageType::Pointer&, const int*);
+template PLMUTIL_API UCharImageType::Pointer itk_crop (UCharImageType::Pointer&, const int*);
+template PLMUTIL_API ShortImageType::Pointer itk_crop (ShortImageType::Pointer&, const int*);
+template PLMUTIL_API UShortImageType::Pointer itk_crop (UShortImageType::Pointer&, const int*);
+template PLMUTIL_API UInt32ImageType::Pointer itk_crop (UInt32ImageType::Pointer&, const int*);
+template PLMUTIL_API FloatImageType::Pointer itk_crop (FloatImageType::Pointer&, const int*);

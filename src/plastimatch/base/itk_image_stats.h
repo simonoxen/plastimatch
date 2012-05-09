@@ -10,7 +10,7 @@
 /* -----------------------------------------------------------------------
    Function prototypes
    ----------------------------------------------------------------------- */
-template<class T> API void itk_image_stats (
+template<class T> PLMBASE_API void itk_image_stats (
         T img,
         double *min_val,
         double *max_val, 

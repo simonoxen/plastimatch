@@ -310,4 +310,4 @@ cxt_extract (
 }
 
 /* Explicit instantiations */
-template API void cxt_extract (Rtss_polyline_set *cxt, UInt32ImageType::Pointer image, int num_structs, bool check_cxt_bits);
+template PLMUTIL_API void cxt_extract (Rtss_polyline_set *cxt, UInt32ImageType::Pointer image, int num_structs, bool check_cxt_bits);

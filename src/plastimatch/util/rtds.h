@@ -22,7 +22,7 @@ class Rtss;
 class Xio_ct_transform;
 
 /* rtds = RT data set */
-class API Rtds {
+class PLMUTIL_API Rtds {
 public:
     Plm_image *m_img;                  /* CT image */
     Rtss *m_rtss;                      /* RT structure set */

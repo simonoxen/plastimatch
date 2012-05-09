@@ -45,8 +45,8 @@ public:
     }
 };
 
-C_API void do_threshbox (Threshbox_parms *parms);
-C_API void do_overlap_fraction (Threshbox_parms *parms);
-C_API void do_multi_threshold (Threshbox_parms *parms);
+PLMUTIL_C_API void do_threshbox (Threshbox_parms *parms);
+PLMUTIL_C_API void do_overlap_fraction (Threshbox_parms *parms);
+PLMUTIL_C_API void do_multi_threshold (Threshbox_parms *parms);
 
 #endif

@@ -14,7 +14,7 @@
 
 class Plm_timer_private;
 
-class API Plm_timer {
+class PLMSYS_API Plm_timer {
 public:
     Plm_timer ();
     ~Plm_timer ();

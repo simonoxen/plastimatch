@@ -10,6 +10,6 @@
 class Rtds;
 class Warp_parms;
 
-API void rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms);
+PLMUTIL_API void rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms);
 
 #endif

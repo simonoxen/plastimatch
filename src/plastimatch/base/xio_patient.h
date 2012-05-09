@@ -17,7 +17,7 @@ struct Xio_plan_dir {
 };
 
 /* This class represents a toplevel patient directory */
-class API Xio_patient {
+class PLMBASE_API Xio_patient {
 public:
     Xio_patient (const char* path);
     ~Xio_patient ();
