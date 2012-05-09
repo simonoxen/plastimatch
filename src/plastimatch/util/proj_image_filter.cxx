@@ -5,6 +5,7 @@
 
 #include "plmbase.h"
 #include "plmutil.h"
+#include "proj_image_filter.h"
 
 void
 proj_image_filter (Proj_image *proj)
