@@ -9,7 +9,7 @@
 class Volume;
 class Demons_parms;
 
-class API Demons_state {
+class PLMREGISTER_API Demons_state {
   public:
     Volume *vf_smooth;
     Volume *vf_est;

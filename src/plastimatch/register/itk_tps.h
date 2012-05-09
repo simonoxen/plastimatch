@@ -28,7 +28,7 @@ public:
 };
 
 template<class T>
-API void do_tps (TPS_parms* parms,typename itk::Image<T,3>::Pointer img_fixed, typename itk::Image<T,3>::Pointer img_moving,T);
-API void itk_tps_warp (Landmark_warp *lw);
+PLMREGISTER_API void do_tps (TPS_parms* parms,typename itk::Image<T,3>::Pointer img_fixed, typename itk::Image<T,3>::Pointer img_moving,T);
+PLMREGISTER_API void itk_tps_warp (Landmark_warp *lw);
 
 #endif

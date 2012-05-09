@@ -10,7 +10,7 @@ class Bspline_parms;
 class Bspline_state;
 class Bspline_xform;
 
-C_API void bspline_optimize (
+PLMREGISTER_C_API void bspline_optimize (
     Bspline_xform* bxf, 
     Bspline_state **bst,
     Bspline_parms *parms);

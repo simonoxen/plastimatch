@@ -11,38 +11,38 @@ class Bspline_xform;
 class Reg_parms;
 class Volume;
 
-API void vf_regularize_numerical (
+PLMREGISTER_API void vf_regularize_numerical (
     Bspline_score *ssd, 
     const Reg_parms *parms, 
     const Bspline_regularize_state *rst,
     const Bspline_xform* bxf,
     const Volume* vol
 );
-API void bspline_regularize_numeric_a_init (
+PLMREGISTER_API void bspline_regularize_numeric_a_init (
     Bspline_regularize_state* rst,
     Bspline_xform* bxf
 );
-API void bspline_regularize_numeric_a (
+PLMREGISTER_API void bspline_regularize_numeric_a (
     Bspline_score *ssd, 
     const Reg_parms *parms, 
     const Bspline_regularize_state *rst,
     const Bspline_xform *bxf
 );
-API void bspline_regularize_numeric_a_destroy (
+PLMREGISTER_API void bspline_regularize_numeric_a_destroy (
     Bspline_regularize_state* rst,
     Bspline_xform* bxf
 );
-API void bspline_regularize_numeric_d_init (
+PLMREGISTER_API void bspline_regularize_numeric_d_init (
     Bspline_regularize_state* rst,
     Bspline_xform* bxf
 );
-API void bspline_regularize_numeric_d (
+PLMREGISTER_API void bspline_regularize_numeric_d (
     Bspline_score *ssd, 
     const Reg_parms *parms, 
     const Bspline_regularize_state *rst,
     const Bspline_xform* bxf
 );
-API void bspline_regularize_numeric_d_destroy (
+PLMREGISTER_API void bspline_regularize_numeric_d_destroy (
     Bspline_regularize_state* rst,
     Bspline_xform* bxf
 );

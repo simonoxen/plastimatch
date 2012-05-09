@@ -43,6 +43,7 @@ set (PLMRECONSTRUCT_CUDA_IFACE_SRC
 ##  LIBRARY DEPENDENCIES
 ##-----------------------------------------------------------------------------
 set (PLMRECONSTRUCT_LIBRARY_DEPENDENCIES 
+  plmutil
   plmbase
   plmsys
   )

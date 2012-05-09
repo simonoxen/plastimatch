@@ -169,19 +169,19 @@ public:
 };
 
 
-C_API Bspline_state* bspline_state_create (
+PLMREGISTER_C_API Bspline_state* bspline_state_create (
     Bspline_xform *bxf, 
     Bspline_parms *parms
 );
-C_API void bspline_parms_free (Bspline_parms* parms);
-C_API void bspline_state_destroy (
+PLMREGISTER_C_API void bspline_parms_free (Bspline_parms* parms);
+PLMREGISTER_C_API void bspline_state_destroy (
     Bspline_state *bst,
     Bspline_parms *parms,
     Bspline_xform *bxf
 );
-C_API Volume* bspline_compute_vf (const Bspline_xform* bxf);
+PLMREGISTER_C_API Volume* bspline_compute_vf (const Bspline_xform* bxf);
 void bspline_display_coeff_stats (Bspline_xform* bxf);
-C_API void bspline_score (Bspline_optimize_data *bod);
+PLMREGISTER_C_API void bspline_score (Bspline_optimize_data *bod);
 void bspline_update_grad (
     Bspline_state *bst, 
     Bspline_xform* bxf, 

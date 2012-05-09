@@ -10,8 +10,8 @@ class Bspline_parms;
 class Landmark_warp;
 class Volume;
 
-API void bspline_rbf_find_coeffs (Volume *vector_field, Bspline_parms *parms);
-API void bspline_rbf_update_vector_field (Volume *vector_field, Bspline_parms *parms);
-API void rbf_gauss_warp (Landmark_warp *lw);
+PLMREGISTER_API void bspline_rbf_find_coeffs (Volume *vector_field, Bspline_parms *parms);
+PLMREGISTER_API void bspline_rbf_update_vector_field (Volume *vector_field, Bspline_parms *parms);
+PLMREGISTER_API void rbf_gauss_warp (Landmark_warp *lw);
 
 #endif

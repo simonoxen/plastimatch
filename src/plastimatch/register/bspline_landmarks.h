@@ -6,7 +6,7 @@
 
 #include "plmregister_config.h"
 
-template<class T> class API Pointset;
+template<class T> class PLMREGISTER_API Pointset;
 
 class Bspline_mi_hist;
 class Bspline_parms;
@@ -17,7 +17,7 @@ class Volume;
 
 typedef Pointset<Labeled_point> Labeled_pointset;
 
-class API Bspline_landmarks {
+class PLMREGISTER_API Bspline_landmarks {
 public:
     int num_landmarks;
     const Labeled_pointset *fixed_landmarks;
@@ -54,11 +54,11 @@ public:
     void initialize (const Bspline_xform* bxf);
 };
 
-C_API Bspline_landmarks* bspline_landmarks_load (
+PLMREGISTER_C_API Bspline_landmarks* bspline_landmarks_load (
         char *fixed_fn,
         char *moving_fn
 );
-C_API void bspline_landmarks_adjust (
+PLMREGISTER_C_API void bspline_landmarks_adjust (
         Bspline_landmarks *blm,
         Volume *fixed,
         Volume *moving
@@ -68,14 +68,14 @@ void bspline_landmarks_score (
         Bspline_state *bst, 
         Bspline_xform *bxf
 );
-C_API void bspline_landmarks_warp (
+PLMREGISTER_C_API void bspline_landmarks_warp (
         Volume *vector_field, 
         Bspline_parms *parms,
         Bspline_xform* bxf, 
         Volume *fixed, 
         Volume *moving
 );
-C_API void bspline_landmarks_write_file (
+PLMREGISTER_C_API void bspline_landmarks_write_file (
         const char *fn,
         char *title, 
         float *coords,

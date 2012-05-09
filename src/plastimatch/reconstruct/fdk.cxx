@@ -22,7 +22,6 @@
 #include "delayload.h"
 #include "plm_math.h"
 
-
 #if CUDA_FOUND
 void
 CUDA_reconstruct_conebeam (

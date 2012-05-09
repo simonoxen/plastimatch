@@ -8,6 +8,6 @@
 
 class Bspline_optimize_data;
 
-C_API void bspline_optimize_steepest (Bspline_optimize_data *bod);
+PLMREGISTER_C_API void bspline_optimize_steepest (Bspline_optimize_data *bod);
 
 #endif

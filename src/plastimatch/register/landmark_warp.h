@@ -15,7 +15,7 @@ class Xform;
 typedef struct raw_pointset Raw_pointset;
 
 
-class API Landmark_warp
+class PLMREGISTER_API Landmark_warp
 {
 public:
     /* Inputs */
@@ -49,10 +49,10 @@ public:
     );
 };
 
-C_API Landmark_warp* landmark_warp_create (void);
-C_API void landmark_warp_destroy (Landmark_warp *lw);
-C_API Landmark_warp* landmark_warp_load_xform (const char *fn);
-C_API Landmark_warp* landmark_warp_load_pointsets (
+PLMREGISTER_C_API Landmark_warp* landmark_warp_create (void);
+PLMREGISTER_C_API void landmark_warp_destroy (Landmark_warp *lw);
+PLMREGISTER_C_API Landmark_warp* landmark_warp_load_xform (const char *fn);
+PLMREGISTER_C_API Landmark_warp* landmark_warp_load_pointsets (
         const char *fixed_lm_fn,
         const char *moving_lm_fn
 );

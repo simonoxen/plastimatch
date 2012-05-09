@@ -20,8 +20,8 @@ public:
     float filter_std;
 };
 
-API void demons_default_parms (Demons_parms* parms);
-API Volume* demons (
+PLMREGISTER_API void demons_default_parms (Demons_parms* parms);
+PLMREGISTER_API Volume* demons (
         Volume* fixed,
         Volume* moving,
         Volume* moving_grad,

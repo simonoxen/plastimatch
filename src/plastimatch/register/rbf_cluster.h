@@ -8,7 +8,7 @@
 
 class Landmark_warp;
 
-API void rbf_cluster_kmeans_plusplus (Landmark_warp *lw);
-API void rbf_cluster_find_adapt_radius (Landmark_warp *lw);
+PLMREGISTER_API void rbf_cluster_kmeans_plusplus (Landmark_warp *lw);
+PLMREGISTER_API void rbf_cluster_find_adapt_radius (Landmark_warp *lw);
 
 #endif

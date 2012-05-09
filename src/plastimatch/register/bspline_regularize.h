@@ -21,17 +21,17 @@ public:
     }
 };
 
-API void bspline_regularize_initialize (
+PLMREGISTER_API void bspline_regularize_initialize (
     Reg_parms* reg_parms,
     Bspline_regularize_state* rst,
     Bspline_xform* bxf
 );
-API void bspline_regularize_destroy (
+PLMREGISTER_API void bspline_regularize_destroy (
     Reg_parms* reg_parms,
     Bspline_regularize_state* rst,
     Bspline_xform* bxf
 );
-API void bspline_regularize (
+PLMREGISTER_API void bspline_regularize (
     Bspline_score* bsp_score,    /* Gets updated */
     Bspline_regularize_state* rst,
     const Reg_parms* reg_parms,

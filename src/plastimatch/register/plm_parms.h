@@ -198,7 +198,7 @@ public:
     }
 };
 
-class API Registration_parms {
+class PLMREGISTER_API Registration_parms {
 public:
     char moving_fn[_MAX_PATH];
     char fixed_fn[_MAX_PATH];
@@ -273,11 +273,11 @@ public:
 
 void not_implemented (void);
 
-API int plm_parms_parse_command_file (
+PLMREGISTER_API int plm_parms_parse_command_file (
         Registration_parms* regp,
         const char* options_fn
 );
-API int plm_parms_process_command_file (
+PLMREGISTER_API int plm_parms_process_command_file (
         Registration_parms *regp,
         FILE *fp
 );

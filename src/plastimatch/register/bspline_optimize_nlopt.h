@@ -12,7 +12,7 @@
 class Bspline_optimize_data;
 
 #if (NLOPT_FOUND)
-C_API void bspline_optimize_nlopt (
+PLMREGISTER_C_API void bspline_optimize_nlopt (
         Bspline_optimize_data *bod,
         nlopt_algorithm algorithm
 );

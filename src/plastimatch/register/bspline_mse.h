@@ -8,9 +8,9 @@
 
 class Bspline_optimize_data;
 
-C_API void bspline_score_c_mse (Bspline_optimize_data *bod);
-C_API void bspline_score_g_mse (Bspline_optimize_data *bod);
-C_API void bspline_score_h_mse (Bspline_optimize_data *bod);
-C_API void bspline_score_i_mse (Bspline_optimize_data *bod);
+PLMREGISTER_C_API void bspline_score_c_mse (Bspline_optimize_data *bod);
+PLMREGISTER_C_API void bspline_score_g_mse (Bspline_optimize_data *bod);
+PLMREGISTER_C_API void bspline_score_h_mse (Bspline_optimize_data *bod);
+PLMREGISTER_C_API void bspline_score_i_mse (Bspline_optimize_data *bod);
 
 #endif
