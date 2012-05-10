@@ -17,6 +17,7 @@ option (PLM_CONFIG_PREFER_DCMTK
 option (PLM_USE_SS_IMAGE_VEC
   "Save structure sets as ITK UCHAR VEC images (in development)" OFF)
 option (PLM_CONFIG_CLANG_COMPLETE "Generate .clang_complete for hipster Vim-ers" OFF)
+option (PLM_CONFIG_DISABLE_VISCOUS "Disable experimental viscous fluid registration algorithm" ON)
 
 ##-----------------------------------------------------------------------------
 ##  Include directories

@@ -62,6 +62,24 @@ set (PLMREGISTER_CUDA_SRC
   demons_cuda.cu
   )
 
+#message (STATUS "CUDA_SDK_ROOT_DIR =  ${CUDA_SDK_ROOT_DIR}")
+#message (STATUS "CUDA_TOOLKIT_ROOT_DIR = ${CUDA_TOOLKIT_ROOT_DIR}")
+
+if (NOT PLM_CONFIG_DISABLE_VISCOUS)
+  if (CUDA_SDK_ROOT_DIR)
+  set (PLMREGISTER_CUDA_SRC
+    ${PLMREGISTER_CUDA_SRC}
+    viscous_compute.cu
+    viscous_convolution.cu
+    viscous_finalize.cu
+    viscous_funcHistogram.cu
+    viscous_funcImageDomain.cu
+    viscous_initialize.cu
+    viscous_main.cu
+    )
+  endif ()
+endif ()
+
 set (PLMREGISTER_CUDA_IFACE_SRC
   demons_misc.cxx
   bspline_cuda.cpp

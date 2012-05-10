@@ -91,7 +91,7 @@ using namespace thrust;
 /****************************************************
 	main program
 ****************************************************/
-int main( int argc, char** argv) 
+int viscous_main( int argc, char** argv) 
 {
 	cout << endl << "****************************************" << endl;
         cout << "Computation parameters..." << endl;
