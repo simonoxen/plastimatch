@@ -9,7 +9,7 @@
 class Fdk_parms;
 class Volume;
 
-C_API void bowtie_correction (Volume *vol, Fdk_parms *parms);
+PLMRECONSTRUCT_C_API void bowtie_correction (Volume *vol, Fdk_parms *parms);
 
 
 #endif

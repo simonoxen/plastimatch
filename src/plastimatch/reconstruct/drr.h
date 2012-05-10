@@ -58,15 +58,15 @@ public:
     int geometry_only;
     char* output_prefix;
 };
-C_API void drr_render_volume_perspective (
+PLMRECONSTRUCT_C_API void drr_render_volume_perspective (
         Proj_image *proj,
         Volume *vol, 
         double ps[2], 
         void *dev_state, 
         Drr_options *options
 );
-C_API void drr_preprocess_attenuation (Volume* vol);
-C_API void preprocess_attenuation_and_drr_render_volume_cl (
+PLMRECONSTRUCT_C_API void drr_preprocess_attenuation (Volume* vol);
+PLMRECONSTRUCT_C_API void preprocess_attenuation_and_drr_render_volume_cl (
         Volume* vol,
         Drr_options* options
 );

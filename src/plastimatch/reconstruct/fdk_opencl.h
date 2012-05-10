@@ -11,7 +11,7 @@ class Fdk_parms;
 class Proj_image_dir;
 class Volume;
 
-C_API void opencl_reconstruct_conebeam (
+PLMRECONSTRUCT_C_API void opencl_reconstruct_conebeam (
     Volume *vol, 
     Proj_image_dir *proj_dir, 
     Fdk_parms *parms

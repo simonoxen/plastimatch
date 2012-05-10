@@ -88,9 +88,9 @@ set (MEX_DRR_SRC
 set (MHA_TO_RAW_SRC
   mha_to_raw.c
   )
-set (MHA_TO_RTOG_DOSE_SRC
-  mha_to_rtog_dose.cxx
-  )
+#set (MHA_TO_RTOG_DOSE_SRC
+#  mha_to_rtog_dose.cxx
+#  )
 set (OPENCL_PROBE_SRC
   opencl_probe_main.c
   opencl_probe.cxx
@@ -105,9 +105,9 @@ set (PROTON_DOSE_SRC
 set (RAW_TO_MHA_SRC
   raw_to_mha.c
   )
-set (RTOG_TO_MHA_SRC
-  rtog_to_mha.cxx
-  )
+#set (RTOG_TO_MHA_SRC
+#  rtog_to_mha.cxx
+#  )
 set (SIFTnD_SRC
   siftnD.cxx
   )
@@ -152,12 +152,12 @@ if (FULL_PLASTIMATCH_BUILD)
   plm_add_executable (merge_vfs  "${MERGE_VFS_SRC}"
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-  plm_add_executable (mha_to_rtog_dose "${MHA_TO_RTOG_DOSE_SRC}"
-    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-  plm_add_executable (rtog_to_mha "${RTOG_TO_MHA_SRC}"
-    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+#  plm_add_executable (mha_to_rtog_dose "${MHA_TO_RTOG_DOSE_SRC}"
+#    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
+#    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+#  plm_add_executable (rtog_to_mha "${RTOG_TO_MHA_SRC}"
+#    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
+#    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   plm_add_executable (shuffle_mha "${SHUFFLE_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})

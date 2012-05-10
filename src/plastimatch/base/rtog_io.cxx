@@ -58,7 +58,7 @@
 
 #include "plmutil.h"
 
-#include "getopt.h"
+//#include "getopt.h"
 #include "exchkeys.h"
 
 #define BUFLEN 2048
@@ -171,6 +171,7 @@ print_usage (void)
     exit (0);
 }
 
+#if defined (commentout)
 void
 parse_args (Program_Parms* parms, int argc, char* argv[])
 {
@@ -200,6 +201,7 @@ parse_args (Program_Parms* parms, int argc, char* argv[])
 	}
     }
 }
+#endif
 
 void
 gs_strncpy (char* dst, char* src, int n)
@@ -916,6 +918,7 @@ void
 render_slice (RTOG_Header* rtog_header, unsigned char* slice_img, 
     unsigned char* acc_img, Cxt_polyline_Slice* ps)
 {
+#if defined (commentout)
     int i, j;
     int slice_voxels = rtog_header->ct.size_of_dimension_1 * rtog_header->ct.size_of_dimension_2;
 
@@ -942,6 +945,7 @@ render_slice (RTOG_Header* rtog_header, unsigned char* slice_img,
 	    slice_img[j] ^= acc_img[j];
 	}
     }
+#endif
 }
 
 void
@@ -1026,6 +1030,53 @@ free_skin (RTOG_Header* rtog_header)
     free (rtog_header->structures.skin_image);
 }
 
+void
+write_rtog_dose (Program_Parms* parms)
+{
+#if defined (commentout)
+    Volume* vol;
+    FILE* fp;
+    plm_long i;
+    int slice_voxels;
+    unsigned short *img_us, *p;
+    float *img_f;
+
+    vol = read_mha (parms->mha_in_fn);
+    if (!vol) exit (-1);
+
+    printf ("Scaling and converting (%ld pix)...\n", (long) vol->npix);
+    img_f = (float*) vol->img;
+    img_us = (unsigned short*) malloc (vol->npix * sizeof(unsigned short));
+    for (i = 0; i < vol->npix; i++) {
+	float raw = img_f[i];
+
+	/* correct for scale */
+	unsigned short raw_us = (unsigned short) (raw / parms->scale);
+
+	/* swap bytes */
+	unsigned short byte1 = (raw_us & 0xFF00) >> 8;
+	unsigned short byte2 = (raw_us & 0x00FF) << 8;
+	raw_us = byte1 | byte2;
+	img_us[i] = raw_us;
+    }
+
+    printf ("Writing...\n");
+    fp = fopen (parms->rtog_dose_out_fn, "wb");
+    slice_voxels = vol->dim[0] * vol->dim[1];
+    p = img_us + vol->npix;
+    for (i = 0; i < vol->dim[2]; i++) {
+	p -= slice_voxels;
+	fwrite (p, sizeof(unsigned short), slice_voxels, fp);
+    }
+    fclose (fp);
+
+    free (img_us);
+    free (vol->img);
+    free (vol);
+#endif
+}
+
+#if defined (commentout)
 int
 main (int argc, char* argv[])
 {
@@ -1060,3 +1111,4 @@ main (int argc, char* argv[])
 
     return 0;
 }
+#endif

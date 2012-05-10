@@ -44,17 +44,17 @@ public:
     int Half_radius;
 };
 
-C_API void reconstruct_conebeam (
+PLMRECONSTRUCT_C_API void reconstruct_conebeam (
     Volume* vol, 
     Proj_image_dir *proj_dir, 
     Fdk_parms* parms
 );
-C_API void CUDA_reconstruct_conebeam (
+PLMRECONSTRUCT_C_API void CUDA_reconstruct_conebeam (
     Volume *vol, 
     Proj_image_dir *proj_dir,
     Fdk_parms *parms
 );
-C_API void fdk_do_bowtie (Volume* vol, Fdk_parms* parms);
+PLMRECONSTRUCT_C_API void fdk_do_bowtie (Volume* vol, Fdk_parms* parms);
 
 
 #endif

@@ -12,13 +12,13 @@ class Proj_image;
 class Volume;
 class Volume_limit;
 
-C_API void* drr_opencl_state_create (
+PLMRECONSTRUCT_C_API void* drr_opencl_state_create (
     Proj_image *proj,
     Volume *vol,
     Drr_options *options
 );
-C_API void drr_opencl_state_destroy (void *dev_state);
-C_API void drr_opencl_ray_trace_image (
+PLMRECONSTRUCT_C_API void drr_opencl_state_destroy (void *dev_state);
+PLMRECONSTRUCT_C_API void drr_opencl_ray_trace_image (
     Proj_image *proj, 
     Volume *vol, 
     Volume_limit *vol_limit, 

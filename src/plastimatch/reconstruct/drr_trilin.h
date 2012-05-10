@@ -8,7 +8,7 @@
 
 class Volume;
 
-API double drr_trace_ray_trilin_approx (Volume* vol, double* p1in, double* p2in);
-API double drr_trace_ray_trilin_exact (Volume* vol, double* p1in, double* p2in);
+PLMRECONSTRUCT_API double drr_trace_ray_trilin_approx (Volume* vol, double* p1in, double* p2in);
+PLMRECONSTRUCT_API double drr_trace_ray_trilin_exact (Volume* vol, double* p1in, double* p2in);
 
 #endif

@@ -118,7 +118,7 @@ public:
     double* j_hist;
 };
 
-class Bspline_parms
+class PLMREGISTER_API Bspline_parms
 {
 public:
     enum BsplineThreading threading;
