@@ -18,7 +18,7 @@ typedef std::vector< Autolabel_point > Autolabel_point_vector;
 
 namespace itk {
 
-class API Autolabel_ransac_est : 
+class PLMSEGMENT_API Autolabel_ransac_est : 
 	public ParametersEstimator< Autolabel_point, double > 
 {
 public:
@@ -61,7 +61,7 @@ private:
 
 } // end namespace itk
 
-API
+PLMSEGMENT_API
 void
 autolabel_ransac_est (Autolabel_point_vector& apv);
 

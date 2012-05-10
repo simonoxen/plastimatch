@@ -66,7 +66,7 @@ static const char* pcmds[] = {
 };
 static const int num_pcmds = sizeof (pcmds)/sizeof(char*);
 
-void do_tty_command_pcmd (int argc, char** argv);
+PLMSCRIPT_C_API void do_tty_command_pcmd (int argc, char** argv);
 
 #if defined __cplusplus
 }

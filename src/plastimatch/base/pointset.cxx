@@ -229,5 +229,5 @@ Pointset<T>::truncate (size_t new_length)
     this->point_list.resize (new_length);
 }
 
-template class Pointset<Labeled_point>;
-template class Pointset<Point>;
+template class PLMBASE_API Pointset<Labeled_point>;
+template class PLMBASE_API Pointset<Point>;

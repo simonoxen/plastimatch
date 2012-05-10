@@ -8,7 +8,7 @@
 
 class Plm_image;
 
-class API Segment_body {
+class PLMSEGMENT_API Segment_body {
   public:
     Plm_image *img_in;
     Plm_image *img_out;

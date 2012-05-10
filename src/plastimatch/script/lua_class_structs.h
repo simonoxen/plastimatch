@@ -19,7 +19,7 @@ struct lua_ss_struct {
     Plm_image* ss_img;
 };
 
-int register_lua_class_ss (lua_State *L);
-void init_ss_instance (lua_ss* lss);
+PLMSCRIPT_C_API int register_lua_class_ss (lua_State *L);
+PLMSCRIPT_C_API void init_ss_instance (lua_ss* lss);
 
 #endif

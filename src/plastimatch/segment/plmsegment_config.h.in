@@ -1,29 +1,22 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-//#ifndef __plmutil_config_h__
-//#define __plmutil_config_h__
+#ifndef __plmsegment_config_h__
+#define __plmsegment_config_h__
 
 #include "plm_config.h"
 
-#ifdef API 
-#  undef API
-#endif
-#ifdef C_API 
-#  undef C_API
-#endif
-
 #if (!defined (BUILD_AGAINST_SLICER3) && (defined(_WIN32) || defined(WIN32)) && (defined (PLM_BUILD_SHARED_LIBS)))
 # ifdef plmsegment_EXPORTS
-#   define C_API EXTERNC __declspec(dllexport)
-#   define API __declspec(dllexport)
+#   define PLMSEGMENT_C_API EXTERNC __declspec(dllexport)
+#   define PLMSEGMENT_API __declspec(dllexport)
 # else
-#   define C_API EXTERNC __declspec(dllimport)
-#   define API __declspec(dllimport)
+#   define PLMSEGMENT_C_API EXTERNC __declspec(dllimport)
+#   define PLMSEGMENT_API __declspec(dllimport)
 # endif
 #else
-# define C_API EXTERNC 
-# define API 
+# define PLMSEGMENT_C_API EXTERNC 
+# define PLMSEGMENT_API 
 #endif
 
-//#endif
+#endif

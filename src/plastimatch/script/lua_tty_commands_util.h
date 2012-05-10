@@ -16,7 +16,7 @@ extern "C" {
 extern "C" {
 #endif
 
-void
+PLMSCRIPT_C_API void
 print_command_table (
     const char* cmds[], /* command array   */
     unsigned int nc,    /* # of commands   */
@@ -24,10 +24,10 @@ print_command_table (
     unsigned int sp     /* minimum spacing */
 );
 
-void build_args (int* argc, char*** argv, char* cmd);
-void list_vars_of_class (lua_State* L, const char* class_name);
-void sort_list (char** c, int n);
-void* get_obj_ptr_from_name (lua_State* L, const char* name);
+PLMSCRIPT_C_API void build_args (int* argc, char*** argv, char* cmd);
+PLMSCRIPT_C_API void list_vars_of_class (lua_State* L, const char* class_name);
+PLMSCRIPT_C_API void sort_list (char** c, int n);
+PLMSCRIPT_C_API void* get_obj_ptr_from_name (lua_State* L, const char* name);
 
 #if defined __cplusplus
 }

@@ -35,7 +35,7 @@ static const char* tty_cmds[] = {
 };
 static const int num_tty_cmds = sizeof (tty_cmds)/sizeof(char*);
 
-void do_tty_command (lua_State *L);
+PLMSCRIPT_C_API void do_tty_command (lua_State *L);
 
 #if defined __cplusplus
 }

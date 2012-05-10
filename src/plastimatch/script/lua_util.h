@@ -19,25 +19,25 @@ struct lua_sc_glue_struct {
     size_t offset;      /* offset of member in the interfacing C struct */
 };
 
-int sc_get_int (lua_State *L, void *v);
-int sc_set_int (lua_State *L, void *v);
-int sc_get_number (lua_State *L, void *v);
-int sc_set_number (lua_State *L, void *v);
-int sc_get_string (lua_State *L, void *v);
-int sc_set_string (lua_State *L, void *v);
-int sc_get_ptr (lua_State *L, void *v);
-int sc_set_ptr (lua_State *L, void *v);
+PLMSCRIPT_C_API int sc_get_int (lua_State *L, void *v);
+PLMSCRIPT_C_API int sc_set_int (lua_State *L, void *v);
+PLMSCRIPT_C_API int sc_get_number (lua_State *L, void *v);
+PLMSCRIPT_C_API int sc_set_number (lua_State *L, void *v);
+PLMSCRIPT_C_API int sc_get_string (lua_State *L, void *v);
+PLMSCRIPT_C_API int sc_set_string (lua_State *L, void *v);
+PLMSCRIPT_C_API int sc_get_ptr (lua_State *L, void *v);
+PLMSCRIPT_C_API int sc_set_ptr (lua_State *L, void *v);
 
-int lua_check_type (lua_State *L, const char* class_name, int index);
-void* lua_new_instance (lua_State *L, const char* class_name, size_t size);
-void* get_obj_ptr (lua_State *L, const char* class_name, int index);
-int register_lua_class (
+PLMSCRIPT_C_API int lua_check_type (lua_State *L, const char* class_name, int index);
+PLMSCRIPT_C_API void* lua_new_instance (lua_State *L, const char* class_name, size_t size);
+PLMSCRIPT_C_API void* get_obj_ptr (lua_State *L, const char* class_name, int index);
+PLMSCRIPT_C_API int register_lua_class (
     lua_State *L,
     const char* class_name,
     const luaL_reg* methods,
     const luaL_reg* metatable
 );
-int
+PLMSCRIPT_C_API int
 register_lua_super_class (
     lua_State *L,
     const char* class_name,

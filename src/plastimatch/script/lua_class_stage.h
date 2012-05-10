@@ -20,7 +20,7 @@ struct lua_stage_struct {
     int bar;
 };
 
-int register_lua_class_stage (lua_State *L);
-void init_stage_instance (lua_stage* lstage);
+PLMSCRIPT_C_API int register_lua_class_stage (lua_State *L);
+PLMSCRIPT_C_API void init_stage_instance (lua_stage* lstage);
 
 #endif

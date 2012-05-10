@@ -11,7 +11,7 @@
 
 class Dlib_trainer;
 
-class plastimatch1_EXPORT Autolabel_trainer
+class PLMSEGMENT_API Autolabel_trainer
 {
   public:
     Autolabel_trainer ();
@@ -41,15 +41,13 @@ class plastimatch1_EXPORT Autolabel_trainer
     void load_input_file (const char* nrrd_fn, const char* fcsv_fn);
 };
 
-class plastimatch1_EXPORT Autolabel_train_parms {
+class PLMSEGMENT_API Autolabel_train_parms {
 public:
     Pstring input_dir;
     Pstring output_dir;
     Pstring task;
 };
 
-plastimatch1_EXPORT 
-void
-autolabel_train (Autolabel_train_parms *parms);
+PLMSEGMENT_API void autolabel_train (Autolabel_train_parms *parms);
 
 #endif

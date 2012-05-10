@@ -29,7 +29,7 @@ struct lua_register_struct {
 };
 
 
-int register_lua_class_register (lua_State *L);
-void init_register_instance (lua_register* lregister);
+PLMSCRIPT_C_API int register_lua_class_register (lua_State *L);
+PLMSCRIPT_C_API void init_register_instance (lua_register* lregister);
 
 #endif

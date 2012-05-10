@@ -10,7 +10,7 @@
 extern "C" {
 #endif
 
-int preview_portal (void* pli);
+PLMSCRIPT_C_API int preview_portal (void* pli);
 
 #if defined __cplusplus
 }

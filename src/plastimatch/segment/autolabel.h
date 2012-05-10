@@ -7,7 +7,7 @@
 #include "plmsegment_config.h"
 #include "pstring.h"
 
-class Autolabel_parms {
+class PLMSEGMENT_API Autolabel_parms {
 public:
     Autolabel_parms () {
 	enforce_anatomic_constraints = false;
@@ -21,7 +21,7 @@ public:
     bool enforce_anatomic_constraints;
 };
 
-plastimatch1_EXPORT
+PLMSEGMENT_API
 void autolabel (Autolabel_parms *parms);
 
 #endif

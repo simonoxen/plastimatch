@@ -10,7 +10,7 @@
 
 class Pstring;
 
-class API Dlib_trainer
+class PLMSEGMENT_API Dlib_trainer
 {
   public:
     Dlib_trainer () {

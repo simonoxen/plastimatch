@@ -47,8 +47,8 @@ extern "C" {
 #define lua_freeline(L,b)	{ (void)L; (void)b; }
 #endif
 
-void do_tty (lua_State *L);
-void do_stdin (lua_State *L);
+PLMSCRIPT_C_API void do_tty (lua_State *L);
+PLMSCRIPT_C_API void do_stdin (lua_State *L);
 
 #if defined __cplusplus
 }

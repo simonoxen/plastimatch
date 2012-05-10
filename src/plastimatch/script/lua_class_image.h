@@ -19,7 +19,7 @@ struct lua_image_struct {
     Plm_image* pli;
 };
 
-int register_lua_class_image (lua_State *L);
-void init_image_instance (lua_image* limg);
+PLMSCRIPT_C_API int register_lua_class_image (lua_State *L);
+PLMSCRIPT_C_API void init_image_instance (lua_image* limg);
 
 #endif
