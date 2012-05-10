@@ -198,10 +198,16 @@ itk_dicom_save (
     }
 
     /* StudyInstanceUID */
-    value = itk_make_uid(gdcmIO);
+    value = "";
+    if (meta) {
+	value = meta->get_metadata (0x0020, 0x000d);
+    }
+    if (value == "") {
+        value = itk_make_uid(gdcmIO);
+    }
     encapsulate (dict, "0020|000d", value);
     if (rdd) {
-	rdd->m_ct_study_uid = value.c_str();
+        rdd->m_ct_study_uid = value.c_str();
     }
     /* SeriesInstanceUID */
     value = itk_make_uid(gdcmIO);
