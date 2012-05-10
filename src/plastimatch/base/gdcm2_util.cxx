@@ -49,3 +49,10 @@ set_gdcm_file_from_metadata (
 )
 {
 }
+char*
+gdcm_uid (char *uid, const char *uid_root)
+{
+    std::string uid_s = gdcm::Util::CreateUniqueUID (uid_root);
+    strcpy (uid, uid_s.c_str());
+    return uid;
+}

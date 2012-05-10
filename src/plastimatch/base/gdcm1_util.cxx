@@ -50,3 +50,11 @@ set_gdcm_file_from_metadata (
     gdcm_file->InsertValEntry (
 	meta->get_metadata (group, elem), group, elem);
 }
+
+char*
+gdcm_uid (char *uid, const char *uid_root)
+{
+    std::string uid_s = gdcm::Util::CreateUniqueUID (uid_root);
+    strcpy (uid, uid_s.c_str());
+    return uid;
+}

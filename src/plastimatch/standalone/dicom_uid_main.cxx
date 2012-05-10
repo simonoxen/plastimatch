@@ -2,12 +2,11 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
+#include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
-#include "dcmtk_config.h"
-#include "dcmtk/dcmdata/dcuid.h"
-#include "dcmtk/ofstd/ofstream.h"
-
-#include "dcmtk_uid.h"
+#include "dcm_util.h"
+#include "plm_uid_prefix.h"
 
 void
 print_usage (void)
@@ -20,7 +19,7 @@ int
 main (int argc, char* argv[])
 {
     char uid[100];
-    const char* uid_root = SITE_INSTANCE_UID_ROOT;
+    const char* uid_root = PLM_UID_PREFIX;
 
     if (argc == 2) {
 	uid_root = argv[1];
@@ -33,7 +32,7 @@ main (int argc, char* argv[])
 	exit (-1);
     }
 
-    plm_generate_dicom_uid (uid, uid_root);
+    dcm_uid (uid, uid_root);
 
     printf ("%s\n", uid);
     return (0);

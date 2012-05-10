@@ -51,3 +51,13 @@ dcm_load_rdd (Slice_index* rdd, const char* dicom_dir)
     /* Do nothing */
 #endif
 }
+
+char*
+dcm_uid (char *uid, const char *uid_root)
+{
+#if PLM_USE_DCMTK
+    return dcmtk_uid (uid, uid_root);
+#else
+    return gdcm_uid (uid, uid_root);
+#endif
+}

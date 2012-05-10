@@ -29,6 +29,8 @@ set_gdcm_file_from_metadata (
     unsigned short group, 
     unsigned short elem
 );
+char*
+gdcm_uid (char *uid, const char *uid_root);
 
 #endif /* GDCM_VERSION_2 */
 #endif

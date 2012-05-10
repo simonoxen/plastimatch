@@ -68,7 +68,7 @@ gen_random (unsigned char* buf, unsigned long buf_len)
     entropy source (above).
 */
 char*
-plm_generate_dicom_uid (char *uid, const char *uid_root)
+dcmtk_uid (char *uid, const char *uid_root)
 {
     int i;
     unsigned char random_buf[100];

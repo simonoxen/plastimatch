@@ -17,5 +17,7 @@ void dcm_get_date_time (
     std::string *date,
     std::string *time
 );
+PLMBASE_C_API char*
+dcm_uid (char *uid, const char *uid_root);
 
 #endif

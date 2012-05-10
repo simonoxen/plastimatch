@@ -7,6 +7,6 @@
 #include "plmbase_config.h"
 
 PLMBASE_API char*
-plm_generate_dicom_uid (char *uid, const char *uid_root);
+dcmtk_uid (char *uid, const char *uid_root);
 
 #endif
