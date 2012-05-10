@@ -14,9 +14,10 @@
 
 #if defined (commentout)
 std::string Metadata::KEY_NOT_FOUND = "";
+static std::string KEY_NOT_FOUND = "PLM_KEY_NOT_FOUND";
 #endif
 
-static std::string KEY_NOT_FOUND = "PLM_KEY_NOT_FOUND";
+static std::string KEY_NOT_FOUND = "";
 
 Metadata::Metadata ()
 {
@@ -92,13 +93,19 @@ Metadata::get_metadata (const std::string& key) const
 const std::string&
 Metadata::get_metadata (unsigned short key1, unsigned short key2) const
 {
+#if defined (commentout)
+    std::cout << "Getting metadata: " << make_key (key1, key2) 
+        << " is " << get_metadata (make_key (key1, key2)) << std::endl;
+#endif
     return get_metadata (make_key (key1, key2));
 }
 
 void
 Metadata::set_metadata (const std::string& key, const std::string& val)
 {
-    //std::cout << "Setting metadata: " << key << " to " << val << std::endl;
+#if defined (commentout)
+    std::cout << "Setting metadata: " << key << " to " << val << std::endl;
+#endif
     m_data[key] = val;
 }
 
