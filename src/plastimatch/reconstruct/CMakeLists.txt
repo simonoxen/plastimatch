@@ -98,6 +98,7 @@ if (CUDA_FOUND AND PLM_USE_GPU_PLUGINS)
     set (PLMRECONSTRUCT_LIBRARY_DEPENDENCIES
       ${PLMRECONSTRUCT_LIBRARY_DEPENDENCIES}
       plmreconstructcuda)
+    target_link_libraries (plmreconstructcuda plmcuda ${CUDA_LIBRARIES})
     set (PLMRECONSTRUCT_LIBRARY_LDFLAGS
       "${PLMRECONSTRUCT_LIBRARY_LDFLAGS} /DELAYLOAD:plmreconstructcuda.dll")
   endif ()
