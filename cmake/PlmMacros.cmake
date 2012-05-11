@@ -120,6 +120,14 @@ macro (PLM_ADD_TARGET_COPY TARGET SRC DEST DEPENDENCY)
       )
 endmacro ()
 
+macro (PLM_SLICER_COPY_DLL TARGET SRC DEST QTDEST DEPENDENCY)
+  plm_add_target_copy ("${TARGET}" "${SRC}" "${DEST}" "${DEPENDENCY}")
+  if (SLICER_IS_SLICER4)
+    set (QTTARGET "${TARGET}_qt")
+    plm_add_target_copy ("${QTTARGET}" "${SRC}" "${QTDEST}" "${DEPENDENCY}")
+  endif ()
+endmacro ()
+
 macro (PLM_SET_SSE2_FLAGS)
   foreach (SRC ${ARGN})
     # JAS 08.19.2010 - Unfortunately, this doesn't work.

@@ -192,7 +192,7 @@ plm_add_library (
 # CMake needs to be told explicitly that plmregister
 # depends on it, so we tell it explicitly here
 if (CUDA_FOUND AND PLM_USE_GPU_PLUGINS)
-    add_dependencies (plmregister plmregistercuda)
+  add_dependencies (plmregister plmregistercuda)
 endif ()
 
 ##-----------------------------------------------------------------------------
@@ -205,57 +205,14 @@ if (SLICER_FOUND)
       "${OUTDIR}/plmregister.dll"
       "${QTOUTDIR}/plmregister.dll"
       plmregister
-    )
-    plm_slicer_copy_dll (plastimatch_slicer_copy_plmregistercuda
-      "${INDIR}/plmregistercuda.dll"
-      "${OUTDIR}/plmregistercuda.dll"
-      "${QTOUTDIR}/plmregistercuda.dll"
-      plmregistercuda
-    )
+      )
+    if (CUDA_FOUND)
+      plm_slicer_copy_dll (plastimatch_slicer_copy_plmregistercuda
+	"${INDIR}/plmregistercuda.dll"
+	"${OUTDIR}/plmregistercuda.dll"
+	"${QTOUTDIR}/plmregistercuda.dll"
+	plmregistercuda
+	)
+    endif ()
   endif ()
 endif ()
-
-
-
-##### 
-# JAS 2011.01.13
-# New OpenCL plugin stuff (plmopencl)
-#if (OPENCL_FOUND)
-#  if (PLM_USE_GPU_PLUGINS)      # << Use dynamic loading
-#    if (WIN32)
-#      # Windows
-#      set (GPUIT_LIBRARY_DEPENDENCIES
-#        ${GPUIT_LIBRARY_DEPENDENCIES}
-#        plmopencl
-#        # shared library: cuda extensions
-#        # we tell windows to "delay load" this
-#      )
-#    else ()
-#      # Linux
-#      set (GPUIT_LIBRARY_DEPENDENCIES
-#        ${GPUIT_LIBRARY_DEPENDENCIES}
-#        # In linux we use delayload.h to load plmopencl
-#        # in the code @ runtime.
-#      )
-#    endif ()
-#  else ()    # << use static linking
-#    set (GPUIT_LIBRARY_DEPENDENCIES
-#      ${GPUIT_LIBRARY_DEPENDENCIES}
-#      ${OPENCL_LIBRARIES}
-#    )
-#  endif ()
-#endif ()
-#
-#if (WIN32 AND NOT CYGWIN AND NOT MINGW)
-#  if (PLM_USE_GPU_PLUGINS)
-#    set (GPUIT_LIB_LDFLAGS 
-#      "${GPUIT_LIB_LDFLAGS} /DELAYLOAD:plmcuda.dll /DELAYLOAD:plmopencl.dll")
-#    set (PLMCUDA_EXE_LDFLAGS 
-#      "${PLMCUDA_EXE_LDFLAGS} /DELAYLOAD:plmcuda.dll /DELAYLOAD:plmopencl.dll")
-#  else ()
-#    set (GPUIT_LIB_LDFLAGS 
-#      "${GPUIT_LIB_LDFLAGS} /DELAYLOAD:nvcuda.dll /DELAYLOAD:opencl.dll")
-#    set (PLMCUDA_EXE_LDFLAGS 
-#      "${PLMCUDA_EXE_LDFLAGS} /DELAYLOAD:nvcuda.dll /DELAYLOAD:opencl.dll")
-#  endif ()
-#endif ()

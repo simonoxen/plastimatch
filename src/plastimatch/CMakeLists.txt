@@ -350,26 +350,6 @@ if (SLICER_FOUND)
 
   # Copy dlls
   if (WIN32)
-    macro (plm_slicer_copy_dll TARGET SRC DEST QTDEST DEPENDENCY)
-      plm_add_target_copy ("${TARGET}" "${SRC}" "${DEST}" "${DEPENDENCY}")
-      if (SLICER_IS_SLICER4)
-	set (QTTARGET "${TARGET}_qt")
-	plm_add_target_copy ("${QTTARGET}" "${SRC}" "${QTDEST}" "${DEPENDENCY}")
-      endif ()
-    endmacro ()
-
-#    plm_slicer_copy_dll (plastimatch_slicer_copy_plastimatch1
-#      "${INDIR}/plastimatch1.dll"
-#      "${OUTDIR}/plastimatch1.dll"
-#      "${QTOUTDIR}/plastimatch1.dll"
-#      plastimatch1
-#      )
-    plm_slicer_copy_dll (plastimatch_slicer_copy_gpuit
-      "${INDIR}/gpuit.dll"
-      "${OUTDIR}/gpuit.dll"
-      "${QTOUTDIR}/gpuit.dll"
-      gpuit
-      )
     if (CUDA_FOUND)
       plm_slicer_copy_dll (plastimatch_slicer_copy_plmcuda
 	"${INDIR}/plmcuda.dll"

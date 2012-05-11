@@ -147,6 +147,14 @@ if (SLICER_FOUND)
       "${OUTDIR}/plmreconstruct.dll"
       "${QTOUTDIR}/plmreconstruct.dll"
       plmreconstruct
-    )
+      )
+    if (CUDA_FOUND)
+      plm_slicer_copy_dll (plastimatch_slicer_copy_plmreconstructcuda
+	"${INDIR}/plmreconstructcuda.dll"
+	"${OUTDIR}/plmreconstructcuda.dll"
+	"${QTOUTDIR}/plmreconstructcuda.dll"
+	plmreconstructcuda
+	)
+    endif ()
   endif ()
 endif ()
