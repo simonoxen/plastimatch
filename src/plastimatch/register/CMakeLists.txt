@@ -78,7 +78,7 @@ if (NOT PLM_CONFIG_DISABLE_VISCOUS)
 endif ()
 
 set (PLMREGISTER_CUDA_IFACE_SRC
-  demons_cuda.cxx
+  demons_misc.cxx
   bspline_cuda.cxx
   )
 
@@ -147,7 +147,7 @@ if (CUDA_FOUND AND PLM_USE_GPU_PLUGINS)
     set (PLMREGISTER_LIBRARY_DEPENDENCIES
       ${PLMREGISTER_LIBRARY_DEPENDENCIES}
       plmregistercuda)
-    target_link_libraries (plmregistercuda plmcuda ${CUDA_LIBRARIES})
+    target_link_libraries (plmregistercuda plmcuda plmbase ${CUDA_LIBRARIES})
     set (PLMREGISTER_LIBRARY_LDFLAGS
       "${PLMREGISTER_LIBRARY_LDFLAGS} /DELAYLOAD:plmregistercuda.dll /DELAYLOAD:plmcuda.dll")
   endif ()

@@ -54,27 +54,21 @@ stog_memcpy (
     int set_size
 );
 
-void
-CUDA_array2vec_3D (
-    int3* vec,
-    int* array
-);
-
-void
-CUDA_array2vec_3D (
-    int3* vec,
-    plm_long* array
-);
-
-void
-CUDA_array2vec_3D (
-    float3* vec,
-    float* array
-);
-
 #if defined __cplusplus
 extern "C" {
 #endif
+
+    plmcuda_EXPORT (
+        void CUDA_array2vec_int3, 
+        int3* vec,
+        plm_long* array
+    );
+
+    plmcuda_EXPORT (
+        void CUDA_array2vec_float3, 
+        float3* vec,
+        float* array
+    );
 
     plmcuda_EXPORT (
     int CUDA_exec_conf_1tpe,

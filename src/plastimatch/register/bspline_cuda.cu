@@ -42,25 +42,25 @@ build_gbd (
 {
     if (bxf != NULL) {
         // populate bxf entries
-        CUDA_array2vec_3D (&gbd->rdims, bxf->rdims);
-        CUDA_array2vec_3D (&gbd->cdims, bxf->cdims);
-        CUDA_array2vec_3D (&gbd->img_origin, bxf->img_origin);
-        CUDA_array2vec_3D (&gbd->img_spacing, bxf->img_spacing);
-        CUDA_array2vec_3D (&gbd->roi_dim, bxf->roi_dim);
-        CUDA_array2vec_3D (&gbd->roi_offset, bxf->roi_offset);
-        CUDA_array2vec_3D (&gbd->vox_per_rgn, bxf->vox_per_rgn);
+        CUDA_array2vec_int3 (&gbd->rdims, bxf->rdims);
+        CUDA_array2vec_int3 (&gbd->cdims, bxf->cdims);
+        CUDA_array2vec_float3 (&gbd->img_origin, bxf->img_origin);
+        CUDA_array2vec_float3 (&gbd->img_spacing, bxf->img_spacing);
+        CUDA_array2vec_int3 (&gbd->roi_dim, bxf->roi_dim);
+        CUDA_array2vec_int3 (&gbd->roi_offset, bxf->roi_offset);
+        CUDA_array2vec_int3 (&gbd->vox_per_rgn, bxf->vox_per_rgn);
     }
 
     if (fixed != NULL) {
         // populate fixed volume entries
-        CUDA_array2vec_3D (&gbd->fix_dim, fixed->dim);
+        CUDA_array2vec_int3 (&gbd->fix_dim, fixed->dim);
     }
 
     if (moving != NULL) {
         // populate moving volume entries
-        CUDA_array2vec_3D (&gbd->mov_dim, moving->dim);
-        CUDA_array2vec_3D (&gbd->mov_offset, moving->offset);
-        CUDA_array2vec_3D (&gbd->mov_spacing, moving->spacing);
+        CUDA_array2vec_int3 (&gbd->mov_dim, moving->dim);
+        CUDA_array2vec_float3 (&gbd->mov_offset, moving->offset);
+        CUDA_array2vec_float3 (&gbd->mov_spacing, moving->spacing);
     }
     
 }
@@ -1850,10 +1850,10 @@ CUDA_bspline_interpolate_vf (
     // Get things ready for the kernel
     // ---------------------------------------------------------------
     int3 vol_dim, rdim, cdim, vpr;
-    CUDA_array2vec_3D (&vol_dim, interp->dim);
-    CUDA_array2vec_3D (&rdim, bxf->rdims);
-    CUDA_array2vec_3D (&cdim, bxf->cdims);
-    CUDA_array2vec_3D (&vpr, bxf->vox_per_rgn);
+    CUDA_array2vec_int3 (&vol_dim, interp->dim);
+    CUDA_array2vec_int3 (&rdim, bxf->rdims);
+    CUDA_array2vec_int3 (&cdim, bxf->cdims);
+    CUDA_array2vec_int3 (&vpr, bxf->vox_per_rgn);
 
     plm_long vf_size = interp->npix * 3*sizeof(float);
 
