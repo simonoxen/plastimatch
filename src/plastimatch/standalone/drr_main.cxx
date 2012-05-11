@@ -37,10 +37,10 @@ allocate_gpu_memory (
     switch (options->threading) {
 #if CUDA_FOUND
     case THREADING_CUDA: {
-        LOAD_LIBRARY_SAFE (libplmcuda);
-        LOAD_SYMBOL (drr_cuda_state_create, libplmcuda);
+        LOAD_LIBRARY_SAFE (libplmreconstructcuda);
+        LOAD_SYMBOL (drr_cuda_state_create, libplmreconstructcuda);
         tmp = drr_cuda_state_create (proj, vol, options);
-        UNLOAD_LIBRARY (libplmcuda);
+        UNLOAD_LIBRARY (libplmreconstructcuda);
         return tmp;
     }
 #endif
@@ -66,12 +66,12 @@ free_gpu_memory (
     switch (options->threading) {
 #if CUDA_FOUND
     case THREADING_CUDA: {
-        LOAD_LIBRARY_SAFE (libplmcuda);
-        LOAD_SYMBOL (drr_cuda_state_destroy, libplmcuda);
+        LOAD_LIBRARY_SAFE (libplmreconstructcuda);
+        LOAD_SYMBOL (drr_cuda_state_destroy, libplmreconstructcuda);
 	if (dev_state) {
 	    drr_cuda_state_destroy (dev_state);
 	}
-	UNLOAD_LIBRARY (libplmcuda);
+	UNLOAD_LIBRARY (libplmreconstructcuda);
 	return;
     }
 #endif

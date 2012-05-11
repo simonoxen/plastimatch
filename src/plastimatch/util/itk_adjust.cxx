@@ -44,7 +44,7 @@ itk_adjust (FloatImageType::Pointer image, const Adjustment_list& al)
 #endif
             goto found_vout;
         }
-        else {
+        else if (ait_start != ait_end) {
             Adjustment_list::const_iterator ait = ait_start;
             Adjustment_list::const_iterator prev = ait_start;
             while (++ait != ait_end) {

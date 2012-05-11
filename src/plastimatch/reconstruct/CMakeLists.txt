@@ -29,7 +29,6 @@ if (OPENCL_FOUND)
 endif ()
 
 set (PLMRECONSTRUCT_CUDA_SRC
-  ../cuda/cuda_util.cu
   drr_cuda.cu
   fdk_cuda.cu
   )
@@ -47,6 +46,12 @@ set (PLMRECONSTRUCT_LIBRARY_DEPENDENCIES
   plmbase
   plmsys
   )
+if (HAVE_CUDA)
+  set (PLMRECONSTRUCT_LIBRARY_DEPENDENCIES 
+    ${PLMRECONSTRUCT_LIBRARY_DEPENDENCIES}
+    plmcuda
+    )
+endif ()
 if (HAVE_OPENCL)
   set (PLMRECONSTRUCT_LIBRARY_DEPENDENCIES 
     ${PLMRECONSTRUCT_LIBRARY_DEPENDENCIES}

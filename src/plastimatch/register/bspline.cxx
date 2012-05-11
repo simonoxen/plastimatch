@@ -121,8 +121,8 @@ bspline_cuda_state_create (
     bst->dev_ptrs = dev_ptrs;
     if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
         /* Be sure we loaded the CUDA plugin */
-        LOAD_LIBRARY_SAFE (libplmcuda);
-        LOAD_SYMBOL (CUDA_bspline_mse_init_j, libplmcuda);
+        LOAD_LIBRARY_SAFE (libplmregistercuda);
+        LOAD_SYMBOL (CUDA_bspline_mse_init_j, libplmregistercuda);
 
         switch (parms->implementation) {
         case 'j':
@@ -136,13 +136,13 @@ bspline_cuda_state_create (
             break;
         }
 
-        UNLOAD_LIBRARY (libplmcuda);
+        UNLOAD_LIBRARY (libplmregistercuda);
     } 
     else if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MI)) {
 
         /* Be sure we loaded the CUDA plugin */
-        LOAD_LIBRARY_SAFE (libplmcuda);
-        LOAD_SYMBOL (CUDA_bspline_mi_init_a, libplmcuda);
+        LOAD_LIBRARY_SAFE (libplmregistercuda);
+        LOAD_SYMBOL (CUDA_bspline_mi_init_a, libplmregistercuda);
 
         switch (parms->implementation) {
         case 'a':
@@ -155,7 +155,7 @@ bspline_cuda_state_create (
             break;
         }
 
-        UNLOAD_LIBRARY (libplmcuda);
+        UNLOAD_LIBRARY (libplmregistercuda);
     }
     else {
         printf ("No cuda initialization performed.\n");
@@ -459,16 +459,16 @@ bspline_state_destroy (
     Volume *moving_grad = parms->moving_grad;
 
     if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
-        LOAD_LIBRARY_SAFE (libplmcuda);
-        LOAD_SYMBOL (CUDA_bspline_mse_cleanup_j, libplmcuda);
+        LOAD_LIBRARY_SAFE (libplmregistercuda);
+        LOAD_SYMBOL (CUDA_bspline_mse_cleanup_j, libplmregistercuda);
         CUDA_bspline_mse_cleanup_j ((Dev_Pointers_Bspline *) bst->dev_ptrs, fixed, moving, moving_grad);
-        UNLOAD_LIBRARY (libplmcuda);
+        UNLOAD_LIBRARY (libplmregistercuda);
     }
     else if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MI)) {
-        LOAD_LIBRARY_SAFE (libplmcuda);
-        LOAD_SYMBOL (CUDA_bspline_mi_cleanup_a, libplmcuda);
+        LOAD_LIBRARY_SAFE (libplmregistercuda);
+        LOAD_SYMBOL (CUDA_bspline_mi_cleanup_a, libplmregistercuda);
         CUDA_bspline_mi_cleanup_a ((Dev_Pointers_Bspline *) bst->dev_ptrs, fixed, moving, moving_grad);
-        UNLOAD_LIBRARY (libplmcuda);
+        UNLOAD_LIBRARY (libplmregistercuda);
     }
 #endif
 
@@ -777,8 +777,8 @@ bspline_score (Bspline_optimize_data *bod)
         if (parms->metric == BMET_MSE) {
 
             /* Be sure we loaded the CUDA plugin */
-            LOAD_LIBRARY_SAFE (libplmcuda);
-            LOAD_SYMBOL (CUDA_bspline_mse_j, libplmcuda);
+            LOAD_LIBRARY_SAFE (libplmregistercuda);
+            LOAD_SYMBOL (CUDA_bspline_mse_j, libplmregistercuda);
 
             switch (parms->implementation) {
             case 'j':
@@ -790,15 +790,15 @@ bspline_score (Bspline_optimize_data *bod)
             }
 
             /* Unload plugin when done */
-            UNLOAD_LIBRARY (libplmcuda);
+            UNLOAD_LIBRARY (libplmregistercuda);
         } /* end MSE */
 
         /* Metric: Mutual Information */
         else if (parms->metric == BMET_MI) {
 
             /* Be sure we loaded the CUDA plugin */
-            LOAD_LIBRARY_SAFE (libplmcuda);
-            LOAD_SYMBOL (CUDA_bspline_mi_a, libplmcuda);
+            LOAD_LIBRARY_SAFE (libplmregistercuda);
+            LOAD_SYMBOL (CUDA_bspline_mi_a, libplmregistercuda);
 
             switch (parms->implementation) {
             case 'a':
@@ -809,7 +809,7 @@ bspline_score (Bspline_optimize_data *bod)
                 break;
             }
 
-            UNLOAD_LIBRARY (libplmcuda);
+            UNLOAD_LIBRARY (libplmregistercuda);
         } /* end MI */
 
     } /* CUDA Implementations */

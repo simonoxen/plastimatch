@@ -54,9 +54,6 @@ if (OPENCL_FOUND)
 endif ()
 
 set (PLMREGISTER_CUDA_SRC
-  ../cuda/cuda_kernel_util.cu
-  ../cuda/cuda_mem.cu
-  ../cuda/cuda_util.cu
   bspline_cuda.cu 
   bspline_cuda_kernels.h
   demons_cuda.cu
@@ -96,6 +93,13 @@ set (PLMREGISTER_LIBRARY_DEPENDENCIES
   plmutil
   ${PLM_FORTRAN}
   )
+
+if (CUDA_FOUND)
+  set (PLMREGISTER_LIBRARY_DEPENDENCIES 
+    ${PLMREGISTER_LIBRARY_DEPENDENCIES}
+    plmcuda
+    )
+endif ()
 
 if (OPENCL_FOUND)
   set (PLMREGISTER_LIBRARY_DEPENDENCIES 
@@ -144,7 +148,7 @@ if (CUDA_FOUND AND PLM_USE_GPU_PLUGINS)
       ${PLMREGISTER_LIBRARY_DEPENDENCIES}
       plmregistercuda)
     set (PLMREGISTER_LIBRARY_LDFLAGS
-      "${PLMREGISTER_LIBRARY_LDFLAGS} /DELAYLOAD:plmregistercuda.dll")
+      "${PLMREGISTER_LIBRARY_LDFLAGS} /DELAYLOAD:plmregistercuda.dll /DELAYLOAD:plmcuda.dll")
   endif ()
   # and unix needs dlopen()
   if (NOT WIN32 AND LIBDL_FOUND)

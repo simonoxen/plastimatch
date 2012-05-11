@@ -269,11 +269,11 @@ drr_render_volume_perspective (
     switch (options->threading) {
     case THREADING_CUDA: {
 #if CUDA_FOUND
-        LOAD_LIBRARY_SAFE (libplmcuda);
-        LOAD_SYMBOL (drr_cuda_ray_trace_image, libplmcuda);
+        LOAD_LIBRARY_SAFE (libplmreconstructcuda);
+        LOAD_SYMBOL (drr_cuda_ray_trace_image, libplmreconstructcuda);
 	drr_cuda_ray_trace_image (proj, vol, &vol_limit, 
 	    p1, ul_room, incr_r, incr_c, dev_state, options);
-        UNLOAD_LIBRARY (libplmcuda);
+        UNLOAD_LIBRARY (libplmreconstructcuda);
 	break;
 #else
 	/* Fall through */

@@ -10,7 +10,7 @@
 #include "pstring.h"
 #include "plm_image_type.h"
 
-class Adjust_Parms {
+class Adjust_parms {
 public:
     Pstring img_in_fn;
     Pstring img_out_fn;
@@ -23,6 +23,9 @@ public:
     float scale;
     bool have_scale;
 
+    /* Piecewise linear adjustment */
+    Pstring pw_linear;
+
     /* Alpha-beta scaling */
     float alpha_beta;
     float num_fx;
@@ -32,7 +35,7 @@ public:
     bool output_dicom;
     Plm_image_type output_type;
 public:
-    Adjust_Parms () {
+    Adjust_parms () {
 	have_truncate_above = false;
 	have_truncate_below = false;
 	have_stretch = false;

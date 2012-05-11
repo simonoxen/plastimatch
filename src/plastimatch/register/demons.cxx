@@ -52,11 +52,11 @@ demons (
         Demons_state demons_state;
 
         demons_state.init (fixed, moving, moving_grad, vf_init, parms);
-        LOAD_LIBRARY_SAFE (libplmcuda);
-        LOAD_SYMBOL (demons_cuda, libplmcuda);
+        LOAD_LIBRARY_SAFE (libplmregistercuda);
+        LOAD_SYMBOL (demons_cuda, libplmregistercuda);
         demons_cuda (&demons_state, fixed, moving, moving_grad, 
 	    vf_init, parms);
-        UNLOAD_LIBRARY (libplmcuda);
+        UNLOAD_LIBRARY (libplmregistercuda);
 	/* GCS FIX: This leaks vf_est... */
 	tmp = demons_state.vf_smooth;
 	return tmp;
@@ -66,7 +66,6 @@ demons (
 #if OPENCL_FOUND
     case THREADING_OPENCL:
         tmp = demons_opencl (fixed, moving, moving_grad, vf_init, parms);
-	//UNLOAD_LIBRARY (libplmopencl);
         return tmp;
 #endif
     case THREADING_CPU_SINGLE:

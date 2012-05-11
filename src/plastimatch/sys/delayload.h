@@ -79,8 +79,9 @@
 
 
 PLMSYS_C_API int delayload_libplmcuda (void);
+PLMSYS_C_API int delayload_libplmreconstructcuda (void);
 PLMSYS_C_API int delayload_libplmregistercuda (void);
 PLMSYS_C_API int delayload_libplmopencl (void);
-PLMSYS_C_API void* dlopen_ex (char* lib); 
+PLMSYS_C_API void* dlopen_ex (const char* lib); 
 
 #endif

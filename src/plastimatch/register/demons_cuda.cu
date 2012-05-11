@@ -415,6 +415,8 @@ demons_cuda (
 	fixed->direction_cosines, PT_VF_FLOAT_INTERLEAVED, 3, 0);
 #endif
 
+    printf ("Hello from demons_cuda()\n");
+
     /* Initialize GPU timers */
     gpu_time = 0;
     kernel_time = 0;

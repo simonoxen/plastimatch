@@ -26,7 +26,8 @@
 // This makes things read easier and also
 // gives me an entry point later if I need
 // to do something fancy.
-int find_lib (char* lib)
+static int 
+find_lib (const char* lib)
 {
 #if defined (_WIN32)
     if (LoadLibrary (lib) != NULL) {
@@ -60,7 +61,7 @@ int find_lib (char* lib)
 //         at compile time... which makes the
 //         Windows aspect of this a job for CMake.
 #if !defined (_WIN32)
-void* dlopen_ex (char* lib)
+void* dlopen_ex (const char* lib)
 {
     char cwd[FILENAME_MAX];
     char cudalib32[FILENAME_MAX];
@@ -111,8 +112,8 @@ void* dlopen_ex (char* lib)
 
 
 // Note: We need special cases for Windows and POSIX compliant OSes
-int 
-delayload_libplmcuda (void)
+static int 
+delayload_cuda_internal (const char* windows_name, const char* unix_name)
 {
 #if defined (_WIN32)
     // Windows
@@ -134,7 +135,7 @@ delayload_libplmcuda (void)
     // source.
     if (   !find_lib ("nvcuda.dll")     /* CUDA Driver */
 #if defined (PLM_USE_GPU_PLUGINS)
-        || !find_lib ("plmcuda.dll")    /* PLM CUDA Plugin */
+        || !find_lib (windows_name)     /* PLM CUDA Plugin */
 #endif
        ) {
         printf ("Failed to load CUDA runtime!\n");
@@ -172,7 +173,7 @@ delayload_libplmcuda (void)
     if (    !find_lib ("libcuda.so")         /* CUDA Driver */
          || !find_lib ("libcudart.so")       /* CUDA RunTime */
 #if defined (PLM_USE_GPU_PLUGINS)
-         || !find_lib ("libplmcuda.so")      /* PLM CUDA Plugin */
+         || !find_lib (unix_name)            /* PLM CUDA Plugin */
 #endif
        ) {
         printf ("Failed to load CUDA runtime!\n");
@@ -189,58 +190,24 @@ delayload_libplmcuda (void)
 #endif
 }
 
+int 
+delayload_libplmcuda (void)
+{
+    return delayload_cuda_internal ("plmcuda.dll", "libplmcuda.so");
+}
+
+int 
+delayload_libplmreconstructcuda (void)
+{
+    return delayload_cuda_internal (
+        "plmreconstructcuda.dll", "libplmreconstructcuda.so");
+}
 
 int 
 delayload_libplmregistercuda (void)
 {
-#if defined (_WIN32)
-    // For Windows we try to load the CUDA drivers:
-    // * If they don't exist -> we should exit upon returning from this function.
-    // * If they do exist    -> rely on Windows to properly /delayload them
-    if (   !find_lib ("nvcuda.dll")     /* CUDA Driver */
-#if defined (PLM_USE_GPU_PLUGINS)
-        || !find_lib ("plmregistercuda.dll")    /* PLM CUDA Plugin */
-#endif
-       ) {
-        printf ("Failed to load CUDA runtime!\n");
-        printf ("For GPU acceleration, please install:\n");
-        printf ("* the plastimatch GPU plugin\n");
-        printf ("* the CUDA Toolkit version needed by the GPU plugin\n\n");
-        printf ("Visit http://www.plastimatch.org/contents.html for more information.\n");
-        printf ("OR email <plastimatch@googlegroups.com> for support.\n\n");
-        return 0;
-    } else {
-        // success
-        return 1;
-    }
-#elif defined (APPLE)
-
-#if defined (PLM_USE_GPU_PLUGINS)
-    printf ("CUDA support for OS X is currently not available when building\n");
-    printf ("Plastimatch with BUILD_SHARED_LIBS enabled. Sorry.\n\n");
-    return 0;
-#endif
-    return 1;
-
-#else /* UNIX / Linux */
-    if (    !find_lib ("libcuda.so")         /* CUDA Driver */
-         || !find_lib ("libcudart.so")       /* CUDA RunTime */
-#if defined (PLM_USE_GPU_PLUGINS)
-         || !find_lib ("libplmregistercuda.so")      /* PLM CUDA Plugin */
-#endif
-       ) {
-        printf ("Failed to load CUDA runtime!\n");
-        printf ("For GPU acceleration, please install:\n");
-        printf ("* the plastimatch GPU plugin\n");
-        printf ("* the CUDA Toolkit version needed by the GPU plugin\n\n");
-        printf ("Visit http://www.plastimatch.org/contents.html for more information.\n");
-        printf ("OR email <plastimatch@googlegroups.com> for support.\n\n");
-        return 0;
-    } else {
-        // success
-        return 1;
-    }
-#endif
+    return delayload_cuda_internal (
+        "plmregistercuda.dll", "libplmregistercuda.so");
 }
 
 

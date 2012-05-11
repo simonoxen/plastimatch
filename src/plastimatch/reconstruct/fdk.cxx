@@ -46,12 +46,12 @@ CUDA_reconstruct_conebeam (
     double io_time = 0.0;
 #endif
 
-    LOAD_LIBRARY_SAFE (libplmcuda);
-    LOAD_SYMBOL (fdk_cuda_state_create, libplmcuda);
-    LOAD_SYMBOL (fdk_cuda_queue_image, libplmcuda);
-    LOAD_SYMBOL (fdk_cuda_fetch_volume, libplmcuda);
-    LOAD_SYMBOL (fdk_cuda_backproject, libplmcuda);
-    LOAD_SYMBOL (fdk_cuda_state_destroy, libplmcuda);
+    LOAD_LIBRARY_SAFE (libplmreconstructcuda);
+    LOAD_SYMBOL (fdk_cuda_state_create, libplmreconstructcuda);
+    LOAD_SYMBOL (fdk_cuda_queue_image, libplmreconstructcuda);
+    LOAD_SYMBOL (fdk_cuda_fetch_volume, libplmreconstructcuda);
+    LOAD_SYMBOL (fdk_cuda_backproject, libplmreconstructcuda);
+    LOAD_SYMBOL (fdk_cuda_state_destroy, libplmreconstructcuda);
 
     // Start timing total execution
     timer_total->start ();
@@ -142,7 +142,7 @@ CUDA_reconstruct_conebeam (
     /* Free memory on device */
     fdk_cuda_state_destroy (dev_state);
     
-    UNLOAD_LIBRARY (libplmcuda);
+    UNLOAD_LIBRARY (libplmreconstructcuda);
 
     /* Report total time */
     time_total = timer_total->report ();
