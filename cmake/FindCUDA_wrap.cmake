@@ -11,8 +11,15 @@ else ()
   # Make nvcc less whiny
   if (CMAKE_COMPILER_IS_GNUCC)
     set (CUDA_PROPAGATE_HOST_FLAGS OFF)
-    set (CUDA_CXX_FLAGS ${CUDA_CXX_FLAGS} ${CMAKE_CXX_FLAGS})
   endif ()
+
+  # GCS 2012-05-11:  We need to propagate cxx flags to nvcc, but 
+  # the flag -ftest-coverage causes nvcc to barf, so exclude that one
+  if (CMAKE_COMPILER_IS_GNUCC)
+    string (REPLACE "-ftest-coverage" "" TMP "${CMAKE_CXX_FLAGS}")
+    set (CUDA_CXX_FLAGS ${CUDA_CXX_FLAGS} ${TMP})
+  endif ()
+
   # GCS 2012-05-07: Workaround for poor, troubled FindCUDA
   set (CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE FALSE)
   find_package (CUDA QUIET)
@@ -24,7 +31,7 @@ endif ()
 set (CUDA_CXX_FLAGS ${CUDA_CXX_FLAGS};-DPLM_CUDA_COMPILE=1)
 
 if (CUDA_CXX_FLAGS)
-    set (CUDA_NVCC_FLAGS --compiler-options ${CUDA_CXX_FLAGS})
+  set (CUDA_NVCC_FLAGS --compiler-options ${CUDA_CXX_FLAGS})
 endif ()
 
 set (CUDA_FOUND ${CUDA_FOUND} CACHE BOOL "Did we find cuda?")
