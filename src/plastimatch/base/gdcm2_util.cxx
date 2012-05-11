@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "gdcmSystem.h"
+#include "gdcmUIDGenerator.h"
 
 #include "plmbase.h"
 
@@ -49,10 +50,13 @@ set_gdcm_file_from_metadata (
 )
 {
 }
+
 char*
 gdcm_uid (char *uid, const char *uid_root)
 {
-    std::string uid_s = gdcm::Util::CreateUniqueUID (uid_root);
-    strcpy (uid, uid_s.c_str());
+    gdcm::UIDGenerator generator;
+    generator.SetRoot (uid_root);
+    const char *uid_g = generator.Generate ();
+    strcpy (uid, uid_g);
     return uid;
 }

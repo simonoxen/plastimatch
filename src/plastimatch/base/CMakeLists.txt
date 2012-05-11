@@ -103,9 +103,9 @@ if (ITK_FOUND AND GDCM_VERSION_1)
 endif ()
 
 if (ITK_FOUND AND GDCM_VERSION_2)
-  set (PLASTIMATCH1_LIBRARY_SRC
-    ${PLASTIMATCH1_LIBRARY_SRC}
-    gdcm2_util.cxx gdcm2_util.h
+  set (PLMBASE_LIBRARY_SRC
+    ${PLMBASE_LIBRARY_SRC}
+    gdcm2_util.cxx
     )
 endif ()
 

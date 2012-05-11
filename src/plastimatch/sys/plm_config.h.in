@@ -45,7 +45,7 @@
 #cmakedefine FFTW_FOUND 1
 #cmakedefine GDCM_FOUND 1
 #cmakedefine GDCM_VERSION_1 1
-//#cmakedefine GDCM_VERSION_2 1
+#cmakedefine GDCM_VERSION_2 1
 #cmakedefine LIBLBFGS_FOUND 1
 #cmakedefine NLOPT_FOUND 1
 #cmakedefine OPENCL_FOUND 1

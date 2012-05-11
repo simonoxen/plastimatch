@@ -7,6 +7,8 @@
 #include "plmbase_config.h"
 #if GDCM_VERSION_2
 
+#include <string>
+
 class Metadata;
 namespace gdcm { class File; };
 
