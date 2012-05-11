@@ -78,8 +78,8 @@ if (NOT PLM_CONFIG_DISABLE_VISCOUS)
 endif ()
 
 set (PLMREGISTER_CUDA_IFACE_SRC
-  demons_misc.cxx
-  bspline_cuda.cpp
+  demons_cuda.cxx
+  bspline_cuda.cxx
   )
 
 ##-----------------------------------------------------------------------------
