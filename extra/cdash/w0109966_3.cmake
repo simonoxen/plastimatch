@@ -7,10 +7,10 @@ SET (CTEST_INITIAL_CACHE "
 CMAKE_GENERATOR:INTERNAL=Visual Studio 9 2008
 
 //Name of the build
-BUILDNAME:STRING=w03-wxp32-Pisrcd-vse9-static
+BUILDNAME:STRING=w03-wxp32-Pisrcd-static
 
 //Name of the computer/site where compile is being run
-SITE:STRING=w0109966
+SITE:STRING=w0109966-vse9
 
 //Build with shared libraries.
 PLM_CONFIG_DISABLE_CUDA:BOOL=ON

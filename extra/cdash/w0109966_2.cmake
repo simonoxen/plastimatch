@@ -7,10 +7,10 @@ SET (CTEST_INITIAL_CACHE "
 CMAKE_GENERATOR:INTERNAL=Visual Studio 9 2008
 
 //Name of the build
-BUILDNAME:STRING=w02-wxp32-PisRCd-vse9-shared
+BUILDNAME:STRING=w02-wxp32-PisRCd-shared
 
 //Name of the computer/site where compile is being run
-SITE:STRING=w0109966
+SITE:STRING=w0109966-vse9
 
 //Build with shared libraries.
 BUILD_SHARED_LIBS:BOOL=ON
