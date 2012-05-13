@@ -430,6 +430,7 @@ plm_add_test (
 ##   vf-zero         Zero vector field
 ##   vf-trans-1      Translation x direction, 1cm
 ##   vf-radial-1     Radial warp, 1cm
+##   vf-gauss-1      Gaussian warp, 10cm std, 1cm x, 2cm y
 ## -------------------------------------------------------------------------
 plm_add_test (
   "vf-zero"
@@ -448,6 +449,12 @@ plm_add_test (
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth-vf;--output;${PLM_BUILD_TESTING_DIR}/vf-radial-1.mha;--xf-radial;--radial-center;0 0 0;--radial-mag;10;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE}"
+  )
+plm_add_test (
+  "vf-gaussian-1"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth-vf;--output;${PLM_BUILD_TESTING_DIR}/vf-gaussian-1.mha;--xf-gauss;--gauss-center;0 0 0;--gauss-mag;10 20 0;--gauss-std;100 100 100;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE}"
   )
 
 ## -------------------------------------------------------------------------

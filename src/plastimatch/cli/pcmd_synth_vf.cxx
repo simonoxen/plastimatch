@@ -88,26 +88,33 @@ parse_fn (
 	"voxel spacing in mm \"x [y z]\"", 1, "5");
     parser->add_long_option ("", "direction-cosines", 
 	"oriention of x, y, and z axes; Specify either preset value,"
-	" {identity,rotated-{1,2,3},sheared},"
+	" {identity, rotated-{1,2,3}, sheared},"
 	" or 9 digit matrix string \"a b c d e f g h i\"", 1, "");
     parser->add_long_option ("", "volume-size", 
 	"size of output image in mm \"x [y z]\"", 1, "500");
     parser->add_long_option ("", "fixed", 
 	"An input image used to set the size of the output ", 1, "");
 
-
     /* Patterns */
+    parser->add_long_option ("", "xf-gauss",
+	"gaussian warp");
     parser->add_long_option ("", "xf-radial",
-	"Radial expansion (or contraction)", 1);
+	"radial expansion (or contraction)");
     parser->add_long_option ("", "xf-trans",
-	"Uniform translation in mm \"x y z\"", 1);
+	"uniform translation in mm \"x y z\"", 1);
     parser->add_long_option ("", "xf-zero", "Null transform");
 
     /* Pattern options */
+    parser->add_long_option ("", "gauss-center", 
+	"location of center of gaussian warp \"x [y z]\"", 1, "0 0 0");
+    parser->add_long_option ("", "gauss-mag", 
+	"displacment magnitude for gaussian warp in mm \"x [y z]\"", 1, "10");
+    parser->add_long_option ("", "gauss-std", 
+	"width of gaussian std in mm \"x [y z]\"", 1, "10");
     parser->add_long_option ("", "radial-center", 
 	"location of center of radial warp \"x [y z]\"", 1, "0 0 0");
     parser->add_long_option ("", "radial-mag", 
-	"displacment magnitude for radial warp in mm \"x [y z]\"", 1, "10");
+	"displacement magnitude for radial warp in mm \"x [y z]\"", 1, "10");
 
     /* Parse the command line arguments */
     parser->parse (argc,argv);
@@ -123,7 +130,8 @@ parse_fn (
     }
 
     /* Check that a xf option was given */
-    if (!parser->option("xf-radial") && 
+    if (!parser->option("xf-gauss") && 
+        !parser->option("xf-radial") && 
 	!parser->option("xf-trans") && 
 	!parser->option("xf-zero"))
     {
@@ -147,6 +155,8 @@ parse_fn (
 	parser->assign_float13 (sv_parms->translation, "xf-trans");
     } else if (parser->option("xf-radial")) {
 	sv_parms->pattern = Synthetic_vf_parms::PATTERN_RADIAL;
+    } else if (parser->option("xf-gauss")) {
+	sv_parms->pattern = Synthetic_vf_parms::PATTERN_GAUSSIAN;
     } else {
 	throw (dlib::error ("Error. Unknown --xf argument."));
     }
@@ -192,6 +202,11 @@ parse_fn (
     /* Radial options */
     parser->assign_float13 (sv_parms->radial_center, "radial-center");
     parser->assign_float13 (sv_parms->radial_mag, "radial-mag");
+
+    /* Gaussian options */
+    parser->assign_float13 (sv_parms->gaussian_center, "gauss-center");
+    parser->assign_float13 (sv_parms->gaussian_mag, "gauss-mag");
+    parser->assign_float13 (sv_parms->gaussian_std, "gauss-std");
 }
 
 void

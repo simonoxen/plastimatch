@@ -51,11 +51,21 @@ synthetic_vf (Synthetic_vf_parms* parms)
 	vf_out->TransformIndexToPhysicalPoint (idx, phys);
 
 	switch (parms->pattern) {
-	case Synthetic_vf_parms::PATTERN_ZERO:
-	case Synthetic_vf_parms::PATTERN_TRANSLATION:
-	default:
-            /* Don't change disp */
-	    break;
+	case Synthetic_vf_parms::PATTERN_GAUSSIAN: {
+            float diff[3];
+            float dist_2 = 0;
+            float f;
+            for (int d = 0; d < 3; d++) {
+                diff[d] = (phys[d] - parms->gaussian_center[d]) 
+                    / parms->gaussian_std[d];
+                dist_2 += diff[d] * diff[d];
+            }
+            f = exp (-0.5 * dist_2);
+            for (int d = 0; d < 3; d++) {
+                disp[d] = parms->gaussian_mag[d] * f;
+            }
+            break;
+        }
 	case Synthetic_vf_parms::PATTERN_RADIAL: {
             float diff[3];
             float dist_2 = 0;
@@ -72,6 +82,11 @@ synthetic_vf (Synthetic_vf_parms* parms)
             }
 	    break;
         }
+        case Synthetic_vf_parms::PATTERN_ZERO:
+        case Synthetic_vf_parms::PATTERN_TRANSLATION:
+        default:
+            /* Don't change disp */
+            break;
 	}
 	it_out.Set (disp);
     }
