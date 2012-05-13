@@ -15,21 +15,19 @@ project (PLM_Testing)
 ##-----------------------------------------------------------------------------
 ## Configure test input files
 ##-----------------------------------------------------------------------------
-configure_file ("${PLM_TESTING_DATA_DIR}/plm-bsp-dcos-a.txt"
-  "${PLM_BUILD_TESTING_DIR}/plm-bsp-dcos-a.txt"
-  @ONLY)
-configure_file ("${PLM_TESTING_DATA_DIR}/plm-bsp-dcos-b.txt"
-  "${PLM_BUILD_TESTING_DIR}/plm-bsp-dcos-b.txt"
-  @ONLY)
-configure_file ("${PLM_TESTING_DATA_DIR}/plm-bsp-landmark-a.txt"
-  "${PLM_BUILD_TESTING_DIR}/plm-bsp-landmark-a.txt"
-  @ONLY)
-configure_file ("${PLM_TESTING_DATA_DIR}/plm-reg-multi-a.txt"
-  "${PLM_BUILD_TESTING_DIR}/plm-reg-multi-a.txt"
-  @ONLY)
-configure_file ("${PLM_TESTING_DATA_DIR}/plm-reg-dv-itk-translation.txt"
-  "${PLM_BUILD_TESTING_DIR}/plm-reg-dv-itk-translation.txt"
-  @ONLY)
+set (CONFIG_FILE_LIST
+  "plm-bsp-logfile.txt"
+  "plm-bsp-dcos-a.txt"
+  "plm-bsp-dcos-b.txt"
+  "plm-bsp-landmark-a.txt"
+  "plm-reg-multi-a.txt"
+  "plm-reg-dv-itk-translation.txt"
+)
+foreach (CONFIG_FILE ${CONFIG_FILE_LIST})
+  configure_file ("${PLM_TESTING_DATA_DIR}/${CONFIG_FILE}"
+    "${PLM_BUILD_TESTING_DIR}/${CONFIG_FILE}"
+    @ONLY)
+endforeach ()
 
 ## -------------------------------------------------------------------------
 ## Testing macros
@@ -1970,8 +1968,9 @@ set_tests_properties (plm-reg-itk-demons-check-2 PROPERTIES
 ## plastimatch register (group 2)
 ##   plm-bspline-single-c
 ##   plm-bspline-single-h
-##   plm-bspline-single-openmp
-##   plm-bspline-single-cuda
+##   plm-bspline-openmp
+##   plm-bspline-cuda
+##   plm-bsp-logfile
 ##   plm-reg-bspline-ushort
 ##   plm-reg-bspline-double
 ##   plm-reg-bspline-itk-output
@@ -2076,6 +2075,31 @@ set_tests_properties (plm-bspline-cuda-stats PROPERTIES
   DEPENDS plm-bspline-cuda)
 set_tests_properties (plm-bspline-cuda-check PROPERTIES 
   DEPENDS plm-bspline-cuda-stats)
+
+plm_add_test (
+  "plm-bsp-logfile" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-logfile.txt"
+  )
+plm_add_test (
+  "plm-bsp-logfile-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-bsp-logfile-img.mha"
+  )
+plmtest_check_interval ("plm-bsp-logfile-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-logfile-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "${PLM_BSPLINE_TEST_LOWER_THRESH}"
+  "${PLM_BSPLINE_TEST_UPPER_THRESH}"
+  )
+set_property (TEST plm-bsp-logfile APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-bsp-logfile APPEND PROPERTY DEPENDS gauss-2)
+set_tests_properties (plm-bsp-logfile-stats PROPERTIES 
+  DEPENDS plm-bsp-logfile)
+set_tests_properties (plm-bsp-logfile-check PROPERTIES 
+  DEPENDS plm-bsp-logfile-stats)
 
 plm_add_test (
   "plm-reg-bspline-ushort"
