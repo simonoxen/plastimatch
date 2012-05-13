@@ -2061,7 +2061,7 @@ plm_add_test (
   "plm-bspline-cuda-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-bspline-cuda-img.mha"
+  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-bspline-cuda-img.nrrd"
   )
 plmtest_check_interval ("plm-bspline-cuda-check"
   "${PLM_BUILD_TESTING_DIR}/plm-bspline-cuda-stats.stdout.txt"
@@ -2082,24 +2082,16 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "${PLM_BUILD_TESTING_DIR}/plm-bsp-logfile.txt"
   )
-plm_add_test (
-  "plm-bsp-logfile-stats"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-bsp-logfile-img.mha"
-  )
 plmtest_check_interval ("plm-bsp-logfile-check"
-  "${PLM_BUILD_TESTING_DIR}/plm-bsp-logfile-stats.stdout.txt"
-  "AVE *([-0-9.]*)"
-  "${PLM_BSPLINE_TEST_LOWER_THRESH}"
-  "${PLM_BSPLINE_TEST_UPPER_THRESH}"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-logfile-logfile.txt"
+  "\\\\[.*,  5] MSE *([-0-9.]*)"
+  "281.5"
+  "282.5"
   )
 set_property (TEST plm-bsp-logfile APPEND PROPERTY DEPENDS gauss-1)
 set_property (TEST plm-bsp-logfile APPEND PROPERTY DEPENDS gauss-2)
-set_tests_properties (plm-bsp-logfile-stats PROPERTIES 
-  DEPENDS plm-bsp-logfile)
 set_tests_properties (plm-bsp-logfile-check PROPERTIES 
-  DEPENDS plm-bsp-logfile-stats)
+  DEPENDS plm-bsp-logfile)
 
 plm_add_test (
   "plm-reg-bspline-ushort"

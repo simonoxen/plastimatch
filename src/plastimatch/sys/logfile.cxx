@@ -85,24 +85,21 @@ logfile_close (void)
 void
 logfile_printf (const char* fmt, ...)
 {
-    va_list argptr;
-    va_start (argptr, fmt);
-
     /* Write to console */
     if (LOGFILE_ECHO_ON) {
+        va_list argptr;
+        va_start (argptr, fmt);
 	vprintf (fmt, argptr);
 	fflush (stdout);
+        va_end (argptr);
     }
 
-    if (!log_fp) {
+    if (log_fp) {
+        va_list argptr;
+        va_start (argptr, fmt);
+        vfprintf (log_fp, fmt, argptr);
+        fflush (log_fp);
 	va_end (argptr);
-	return;
     }
-
-    /* Write to file */
-    vfprintf (log_fp, fmt, argptr);
-    fflush (log_fp);
-
-    va_end (argptr);
 }
 #endif
