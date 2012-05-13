@@ -161,6 +161,11 @@ parse_fn (
 	throw (dlib::error ("Error. Unknown --xf argument."));
     }
 
+    /* Fixed */
+    if (parser->option ("fixed")) {
+        parms->fixed_fn = parser->get_string("fixed").c_str();
+    }
+
     /* Image size */
     parser->assign_plm_long_13 (vh.m_dim, "dim");
 
