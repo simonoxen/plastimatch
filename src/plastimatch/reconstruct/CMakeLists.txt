@@ -46,13 +46,13 @@ set (PLMRECONSTRUCT_LIBRARY_DEPENDENCIES
   plmbase
   plmsys
   )
-if (HAVE_CUDA)
+if (CUDA_FOUND)
   set (PLMRECONSTRUCT_LIBRARY_DEPENDENCIES 
     ${PLMRECONSTRUCT_LIBRARY_DEPENDENCIES}
     plmcuda
     )
 endif ()
-if (HAVE_OPENCL)
+if (OPENCL_FOUND)
   set (PLMRECONSTRUCT_LIBRARY_DEPENDENCIES 
     ${PLMRECONSTRUCT_LIBRARY_DEPENDENCIES}
     plmopencl
@@ -134,7 +134,7 @@ plm_add_library (
 # CMake needs to be told explicitly that plmreconstruct
 # depends on it, so we tell it explicitly here
 if (CUDA_FOUND AND PLM_USE_GPU_PLUGINS)
-    add_dependencies (plmreconstruct plmreconstructcuda)
+  add_dependencies (plmreconstruct plmreconstructcuda)
 endif ()
 
 ##-----------------------------------------------------------------------------
