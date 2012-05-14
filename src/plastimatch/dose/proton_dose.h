@@ -34,20 +34,12 @@ struct proton_dose_parms {
                           /* 1 = only consider voxels in beam path */
 };
 
-#if defined __cplusplus
-extern "C" {
-#endif
-
-gpuit_EXPORT 
+PLMDOSE_C_API
 void
 proton_dose_compute (
     Volume* dose_vol,
     Volume* ct_vol,
     Proton_dose_parms* parms
 );
-
-#if defined __cplusplus
-}
-#endif
 
 #endif

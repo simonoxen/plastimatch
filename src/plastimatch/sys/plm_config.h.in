@@ -129,30 +129,6 @@
 #endif
 
 
-/* This code is for exporting symbols when building DLLs on windows */
-#if (!defined (BUILD_AGAINST_SLICER3) && (defined(_WIN32) || defined(WIN32)) && (defined (PLM_BUILD_SHARED_LIBS)))
-# ifdef gpuit_EXPORTS
-#  define gpuit_EXPORT __declspec(dllexport)
-# else
-#  define gpuit_EXPORT __declspec(dllimport)
-# endif
-# ifdef plastimatch1_EXPORTS
-#  define plastimatch1_EXPORT __declspec(dllexport)
-# else
-#  define plastimatch1_EXPORT __declspec(dllimport)
-# endif
-# ifdef plmsys_EXPORTS
-#  define plmsys_EXPORT __declspec(dllexport)
-# else
-#  define plmsys_EXPORT __declspec(dllimport)
-# endif
-#else
-/* unix needs nothing */
-#define gpuit_EXPORT 
-#define plastimatch1_EXPORT 
-#define plmsys_EXPORT
-#endif
-
 /* JAS 2011.02.07
  * GPU Plugins are not considered "shared libs"
  * otherwise Win32 build will break when not using "shared libs" */
