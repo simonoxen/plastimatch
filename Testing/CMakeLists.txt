@@ -16,6 +16,7 @@ project (PLM_Testing)
 ## Configure test input files
 ##-----------------------------------------------------------------------------
 set (CONFIG_FILE_LIST
+  "plm-bsp-cuda.txt"
   "plm-bsp-logfile.txt"
   "plm-bsp-dcos-a.txt"
   "plm-bsp-dcos-b.txt"
@@ -1969,7 +1970,7 @@ set_tests_properties (plm-reg-itk-demons-check-2 PROPERTIES
 ##   plm-bspline-single-c
 ##   plm-bspline-single-h
 ##   plm-bspline-openmp
-##   plm-bspline-cuda
+##   plm-bsp-cuda
 ##   plm-bsp-logfile
 ##   plm-reg-bspline-ushort
 ##   plm-reg-bspline-double
@@ -2052,29 +2053,29 @@ set_tests_properties (plm-bspline-openmp-check PROPERTIES
   DEPENDS plm-bspline-openmp-stats)
 
 plm_add_test (
-  "plm-bspline-cuda" 
+  "plm-bsp-cuda" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-bspline-cuda.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-cuda.txt"
   )
 plm_add_test (
-  "plm-bspline-cuda-stats"
+  "plm-bsp-cuda-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-bspline-cuda-img.nrrd"
+  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-bsp-cuda-img.nrrd"
   )
-plmtest_check_interval ("plm-bspline-cuda-check"
-  "${PLM_BUILD_TESTING_DIR}/plm-bspline-cuda-stats.stdout.txt"
+plmtest_check_interval ("plm-bsp-cuda-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-cuda-stats.stdout.txt"
   "AVE *([-0-9.]*)"
   "${PLM_BSPLINE_TEST_LOWER_THRESH}"
   "${PLM_BSPLINE_TEST_UPPER_THRESH}"
   )
-set_property (TEST plm-bspline-cuda APPEND PROPERTY DEPENDS gauss-1)
-set_property (TEST plm-bspline-cuda APPEND PROPERTY DEPENDS gauss-2)
-set_tests_properties (plm-bspline-cuda-stats PROPERTIES 
-  DEPENDS plm-bspline-cuda)
-set_tests_properties (plm-bspline-cuda-check PROPERTIES 
-  DEPENDS plm-bspline-cuda-stats)
+set_property (TEST plm-bsp-cuda APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-bsp-cuda APPEND PROPERTY DEPENDS gauss-2)
+set_tests_properties (plm-bsp-cuda-stats PROPERTIES 
+  DEPENDS plm-bsp-cuda)
+set_tests_properties (plm-bsp-cuda-check PROPERTIES 
+  DEPENDS plm-bsp-cuda-stats)
 
 plm_add_test (
   "plm-bsp-logfile" 
