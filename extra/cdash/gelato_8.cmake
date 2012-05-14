@@ -7,10 +7,10 @@ SET (CTEST_INITIAL_CACHE "
 CMAKE_GENERATOR:INTERNAL=Unix Makefiles
 
 //Name of the build
-BUILDNAME:STRING=08-lin64-Pir-Cd-S4-gcc4.4.5
+BUILDNAME:STRING=08-lin64-PirCd-S4
 
 //Name of the computer/site where compile is being run
-SITE:STRING=gelato
+SITE:STRING=gelato-gcc4.4.5
 
 //Directory with SlicerConfig.cmake or Slicer3Config.cmake
 Slicer_DIR:PATH=/PHShome/gcs6/build/slicer-4/Slicer-build

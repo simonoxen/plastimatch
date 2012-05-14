@@ -7,10 +7,10 @@ SET (CTEST_INITIAL_CACHE "
 CMAKE_GENERATOR:INTERNAL=Unix Makefiles
 
 //Name of the build
-BUILDNAME:STRING=07-lin64-Pisr-CD-gcc4.4.5-itk-4.1.0
+BUILDNAME:STRING=07-lin64-PisrCD-itk-4.1.0
 
 //Name of the computer/site where compile is being run
-SITE:STRING=gelato
+SITE:STRING=gelato-gcc4.4.5
 
 //Build without REG-2-3
 PLM_CONFIG_DISABLE_REG23:BOOL=ON
