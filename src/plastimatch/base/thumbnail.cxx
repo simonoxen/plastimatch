@@ -82,5 +82,29 @@ Thumbnail::make_thumbnail ()
 
     /* Resample the image */
     Plm_image_header pih (dim, origin, spacing);
-    return resample_image (pli->m_itk_float, &pih, -1000, 1);
+    FloatImageType::Pointer itk_resampled_image = 
+        resample_image (pli->m_itk_float, &pih, -1000, 1);
+    Plm_image plm_resampled_image (itk_resampled_image);
+
+    /* Reshuffle dimensions to 2D */
+    if (axis == 0) {
+        Volume *vol = plm_resampled_image.gpuit_float();
+        vol->dim[0] = vol->dim[1];
+        vol->dim[1] = vol->dim[2];
+        vol->dim[2] = 1;
+        /* GCS FIX: Do something about spacing here */
+        /* GCS FIX: Do something about direction cosines here */
+    }
+    else if (axis == 1) {
+        Volume *vol = plm_resampled_image.gpuit_float();
+        vol->dim[1] = vol->dim[2];
+        vol->dim[2] = 1;
+        /* GCS FIX: Do something about spacing here */
+        /* GCS FIX: Do something about direction cosines here */
+    }
+    else {
+        /* Do nothing */
+    }
+
+    return plm_resampled_image.itk_float ();
 }

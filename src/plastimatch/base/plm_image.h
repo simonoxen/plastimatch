@@ -25,6 +25,7 @@ public:
     Plm_image (const Pstring& fname);
     Plm_image (const char* fname);
     Plm_image (const char* fname, Plm_image_type type);
+    Plm_image (FloatImageType::Pointer img);
     ~Plm_image ();
 
 public:
