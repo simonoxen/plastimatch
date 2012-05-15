@@ -16,6 +16,7 @@
 /* Major OSes */
 #cmakedefine WIN32 1
 #cmakedefine UNIX  1
+#cmakedefine APPLE 1
 
 /* Compiler attributes */
 #cmakedefine FORTRAN_COMPILER_FOUND 1
