@@ -7,7 +7,7 @@
 #include "plmcli_config.h"
 #include <stdlib.h>
 
-#include "plmsys.h"
+#include "sys/plm_int.h"
 
 #include "direction_cosines.h"
 #include "plm_image_type.h"

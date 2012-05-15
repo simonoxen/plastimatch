@@ -50,30 +50,30 @@ test_dicom_ok (const std::string& fn)
     header.Load ();
 
     if (!header.IsReadable()) {
-	return false;
+        return false;
     }
     std::string s;
 
     /* Reject GE Scouts */
     s = header.GetEntryValue (0x0018, 0x0022);
     if (s == "SCOUT MODE") {
-	logfile_printf ("Rejecting GE scout\n");
-	return false;
+        logfile_printf ("Rejecting GE scout\n");
+        return false;
     }
 
     /* Reject GE Dose reports */
     s = header.GetEntryValue (0x0008, 0x103e);
     if (s == "Dose Report" || s == "Dose Report ") {
-	logfile_printf ("Rejecting GE dose report\n");
-	return false;
+        logfile_printf ("Rejecting GE dose report\n");
+        return false;
     }
 
     /* Reject RTDOSE, which can get interpreted as an image (and gets 
        read incorretly anyway).  Dose is read by rtds.cxx instead. */
     s = header.GetEntryValue (0x0008, 0x0060);
     if (s == "RTDOSE") {
-	logfile_printf ("Rejecting RTDOSE\n");
-	return false;
+        logfile_printf ("Rejecting RTDOSE\n");
+        return false;
     }
 
     return true;
@@ -110,73 +110,73 @@ load_dicom_dir_rdr(T rdr, const char *dicom_dir)
 
     nameGenerator->SetDirectory (dicom_dir);
     try {
-	std::cout << std::endl << "The directory: " << std::endl;
-	std::cout << std::endl << dicom_dir << std::endl << std::endl;
-	std::cout << "Contains the following DICOM Series: ";
-	std::cout << std::endl;
+        std::cout << std::endl << "The directory: " << std::endl;
+        std::cout << std::endl << dicom_dir << std::endl << std::endl;
+        std::cout << "Contains the following DICOM Series: ";
+        std::cout << std::endl;
 
-	typedef std::vector< std::string > SeriesIdContainer;
-	const SeriesIdContainer & seriesUID = nameGenerator->GetSeriesUIDs();
-	SeriesIdContainer::const_iterator seriesItr = seriesUID.begin();
-	SeriesIdContainer::const_iterator seriesEnd = seriesUID.end();
-	while (seriesItr != seriesEnd) {
-	    std::cout << seriesItr->c_str() << std::endl;
-	    seriesItr++;
-	}
-	std::cout << std::endl;
+        typedef std::vector< std::string > SeriesIdContainer;
+        const SeriesIdContainer & seriesUID = nameGenerator->GetSeriesUIDs();
+        SeriesIdContainer::const_iterator seriesItr = seriesUID.begin();
+        SeriesIdContainer::const_iterator seriesEnd = seriesUID.end();
+        while (seriesItr != seriesEnd) {
+            std::cout << seriesItr->c_str() << std::endl;
+            seriesItr++;
+        }
+        std::cout << std::endl;
 
-	/* Loop through series and use first one that loads */
-	seriesItr = seriesUID.begin();
-	bool dicom_load_succeeded = false;
-	while (!dicom_load_succeeded && seriesItr != seriesEnd) {
-	    std::string seriesIdentifier;
-	    seriesIdentifier = seriesItr->c_str();
+        /* Loop through series and use first one that loads */
+        seriesItr = seriesUID.begin();
+        bool dicom_load_succeeded = false;
+        while (!dicom_load_succeeded && seriesItr != seriesEnd) {
+            std::string seriesIdentifier;
+            seriesIdentifier = seriesItr->c_str();
 
-	    std::cout << "Now reading series: " << std::endl;
-	    std::cout << seriesIdentifier << std::endl;
+            std::cout << "Now reading series: " << std::endl;
+            std::cout << seriesIdentifier << std::endl;
 
-	    /* Read the files */
-	    typedef std::vector< std::string > FileNamesContainer;
-	    FileNamesContainer file_names;
-	    file_names = nameGenerator->GetFileNames (seriesIdentifier);
+            /* Read the files */
+            typedef std::vector< std::string > FileNamesContainer;
+            FileNamesContainer file_names;
+            file_names = nameGenerator->GetFileNames (seriesIdentifier);
 
-	    /* Get the first filename */
-	    std::string first_fn = *(file_names.begin());
+            /* Get the first filename */
+            std::string first_fn = *(file_names.begin());
 
-	    /* Test against restrictions */
+            /* Test against restrictions */
 #if GDCM_MAJOR_VERSION < 2
-	    if (!test_dicom_ok (first_fn)) {
-		seriesItr++;
-		continue;
-	    }
+            if (!test_dicom_ok (first_fn)) {
+                seriesItr++;
+                continue;
+            }
 #endif
 
 #if defined (commentout)
-	    /* Print out the file names */
-	    FileNamesContainer::const_iterator fn_it = file_names.begin();
-	    printf ("File names are:\n");
-	    while (fn_it != file_names.end()) {
-		printf ("  %s\n", fn_it->c_str());
-		fn_it ++;
-	    }
+            /* Print out the file names */
+            FileNamesContainer::const_iterator fn_it = file_names.begin();
+            printf ("File names are:\n");
+            while (fn_it != file_names.end()) {
+                printf ("  %s\n", fn_it->c_str());
+                fn_it ++;
+            }
 #endif
 
-	    rdr->SetFileNames (file_names);
-	    try {
-		rdr->Update();
-		dicom_load_succeeded = true;
-	    } catch (itk::ExceptionObject &ex) {
-		/* do nothing */
-		logfile_printf ("Failed to load: %s\n", ex.GetDescription());
-	    }
-	    seriesItr++;
-	}
-	if (!dicom_load_succeeded) {
-	    print_and_exit ("Error, unable to load dicom series.\n");
-	}
+            rdr->SetFileNames (file_names);
+            try {
+                rdr->Update();
+                dicom_load_succeeded = true;
+            } catch (itk::ExceptionObject &ex) {
+                /* do nothing */
+                logfile_printf ("Failed to load: %s\n", ex.GetDescription());
+            }
+            seriesItr++;
+        }
+        if (!dicom_load_succeeded) {
+            print_and_exit ("Error, unable to load dicom series.\n");
+        }
     } catch (itk::ExceptionObject &ex) {
-	std::cout << ex << std::endl;
-	print_and_exit ("Error loading dicom series.\n");
+        std::cout << ex << std::endl;
+        print_and_exit ("Error loading dicom series.\n");
     }
 }
 
@@ -184,7 +184,7 @@ CharImageType::Pointer
 load_dicom_char (const char *dicom_dir)
 {
     DicomCharReaderType::Pointer fixed_input_rdr
-	= DicomCharReaderType::New();
+        = DicomCharReaderType::New();
     load_dicom_dir_rdr (fixed_input_rdr, dicom_dir);
     fixed_input_rdr->Update();
     return fixed_input_rdr->GetOutput();
@@ -194,7 +194,7 @@ UCharImageType::Pointer
 load_dicom_uchar (const char *dicom_dir)
 {
     DicomUCharReaderType::Pointer fixed_input_rdr
-	= DicomUCharReaderType::New();
+        = DicomUCharReaderType::New();
     load_dicom_dir_rdr (fixed_input_rdr, dicom_dir);
     fixed_input_rdr->Update();
     return fixed_input_rdr->GetOutput();
@@ -204,7 +204,7 @@ ShortImageType::Pointer
 load_dicom_short (const char *dicom_dir)
 {
     DicomShortReaderType::Pointer fixed_input_rdr
-	= DicomShortReaderType::New();
+        = DicomShortReaderType::New();
     load_dicom_dir_rdr (fixed_input_rdr, dicom_dir);
     fixed_input_rdr->Update();
     return fixed_input_rdr->GetOutput();
@@ -214,7 +214,7 @@ UShortImageType::Pointer
 load_dicom_ushort (const char *dicom_dir)
 {
     DicomUShortReaderType::Pointer fixed_input_rdr
-	= DicomUShortReaderType::New();
+        = DicomUShortReaderType::New();
     load_dicom_dir_rdr (fixed_input_rdr, dicom_dir);
     fixed_input_rdr->Update();
     return fixed_input_rdr->GetOutput();
@@ -224,7 +224,7 @@ Int32ImageType::Pointer
 load_dicom_int32 (const char *dicom_dir)
 {
     DicomInt32ReaderType::Pointer fixed_input_rdr
-	= DicomInt32ReaderType::New();
+        = DicomInt32ReaderType::New();
     load_dicom_dir_rdr (fixed_input_rdr, dicom_dir);
     fixed_input_rdr->Update();
     return fixed_input_rdr->GetOutput();
@@ -234,7 +234,7 @@ UInt32ImageType::Pointer
 load_dicom_uint32 (const char *dicom_dir)
 {
     DicomUInt32ReaderType::Pointer fixed_input_rdr
-	= DicomUInt32ReaderType::New();
+        = DicomUInt32ReaderType::New();
     load_dicom_dir_rdr (fixed_input_rdr, dicom_dir);
     fixed_input_rdr->Update();
     return fixed_input_rdr->GetOutput();
@@ -244,7 +244,7 @@ FloatImageType::Pointer
 load_dicom_float (const char *dicom_dir)
 {
     DicomFloatReaderType::Pointer fixed_input_rdr
-	= DicomFloatReaderType::New();
+        = DicomFloatReaderType::New();
     load_dicom_dir_rdr (fixed_input_rdr, dicom_dir);
     fixed_input_rdr->Update();
     return fixed_input_rdr->GetOutput();
@@ -254,7 +254,7 @@ DoubleImageType::Pointer
 load_dicom_double (const char *dicom_dir)
 {
     DicomDoubleReaderType::Pointer fixed_input_rdr
-	= DicomDoubleReaderType::New();
+        = DicomDoubleReaderType::New();
     load_dicom_dir_rdr (fixed_input_rdr, dicom_dir);
     fixed_input_rdr->Update();
     return fixed_input_rdr->GetOutput();

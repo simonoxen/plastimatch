@@ -5,7 +5,6 @@
 #define _volume_macros_h_
 
 #include "plmbase_config.h"
-//#include "plmsys.h"
 
 /* -----------------------------------------------------------------------
    Macros

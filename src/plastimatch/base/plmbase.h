@@ -1,9 +1,14 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#ifdef __PLM_MASTER_HEADER__
+#error "plmbase.h cannot be #included by another plastimatch header!"
+#else
+#define __PLM_MASTER_HEADER__
+
+
 #ifndef _plmbase_h_
 #define _plmbase_h_
-
 #include "plmbase_config.h"
 
 /* gdcm must be before headers including plm_int.h */
@@ -90,4 +95,8 @@
 #include "xio_structures.h"
 #include "xio_studyset.h"
 
-#endif
+#endif /* #ifndef _plmbase_h_ */
+
+
+#undef __PLM_MASTER_HEADER__
+#endif /* #ifdef __PLM_MASTER_HEADER__ */

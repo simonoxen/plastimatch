@@ -5,7 +5,7 @@
 #define _dcmtk_file_h_
 
 #include "plmbase_config.h"
-#include "plmsys.h"
+#include "sys/plm_int.h"
 #include "volume_header.h"
 
 // TODO: change type of m_vh to Volume_header*

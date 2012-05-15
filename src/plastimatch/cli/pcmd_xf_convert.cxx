@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "plmbase.h"
+#include "plmsys.h"
 
 #include "pcmd_xf_convert.h"
 #include "plm_clp.h"
@@ -28,10 +29,10 @@ public:
     Xform_convert xfc;
 public:
     Xf_convert_parms () {
-	m_have_dim = false;
-	m_have_origin = false;
-	m_have_spacing = false;
-	m_have_grid_spacing = false;
+        m_have_dim = false;
+        m_have_origin = false;
+        m_have_spacing = false;
+        m_have_grid_spacing = false;
     }
 };
 
@@ -39,16 +40,16 @@ void
 set_output_xform_type (Xform_convert *xfc, const Pstring& output_type)
 {
     if (output_type == "vf") {
-	xfc->m_xf_out_type = XFORM_ITK_VECTOR_FIELD;
+        xfc->m_xf_out_type = XFORM_ITK_VECTOR_FIELD;
     }
     else if (output_type == "bspline") {
-	xfc->m_xf_out_type = XFORM_GPUIT_BSPLINE;
+        xfc->m_xf_out_type = XFORM_GPUIT_BSPLINE;
     }
     else if (output_type == "itk_bsp" || output_type == "itk_bspline") {
-	xfc->m_xf_out_type = XFORM_ITK_BSPLINE;
+        xfc->m_xf_out_type = XFORM_ITK_BSPLINE;
     }
     else {
-	print_and_exit ("Sorry, can't convert output type\n");
+        print_and_exit ("Sorry, can't convert output type\n");
     }
 }
 
@@ -66,39 +67,39 @@ do_xf_convert (Xf_convert_parms *parms)
     /* Set grid spacing as needed */
     xfc->m_xf_in->get_grid_spacing (xfc->m_grid_spac);
     if (parms->m_have_grid_spacing) {
-	for (int d = 0; d < 3; d++) {
-	    xfc->m_grid_spac[d] = parms->m_grid_spacing[d];
-	}
+        for (int d = 0; d < 3; d++) {
+            xfc->m_grid_spac[d] = parms->m_grid_spacing[d];
+        }
     }
     if (xfc->m_xf_in->m_type == XFORM_GPUIT_BSPLINE) {
-	Bspline_xform* bxf = xfc->m_xf_in->get_gpuit_bsp();
-	printf ("vox_per_rgn = %u %u %u\n", 
-	    (unsigned int) bxf->vox_per_rgn[0],
-	    (unsigned int) bxf->vox_per_rgn[1],
-	    (unsigned int) bxf->vox_per_rgn[2]
-	);
-	printf ("grid_spac = %g %g %g\n", 
-	    bxf->grid_spac[0],
-	    bxf->grid_spac[1],
-	    bxf->grid_spac[2]
-	);
-	printf ("grid_spac = %g %g %g\n", 
-	    xfc->m_grid_spac[0],
-	    xfc->m_grid_spac[1],
-	    xfc->m_grid_spac[2]
-	);
+        Bspline_xform* bxf = xfc->m_xf_in->get_gpuit_bsp();
+        printf ("vox_per_rgn = %u %u %u\n", 
+            (unsigned int) bxf->vox_per_rgn[0],
+            (unsigned int) bxf->vox_per_rgn[1],
+            (unsigned int) bxf->vox_per_rgn[2]
+        );
+        printf ("grid_spac = %g %g %g\n", 
+            bxf->grid_spac[0],
+            bxf->grid_spac[1],
+            bxf->grid_spac[2]
+        );
+        printf ("grid_spac = %g %g %g\n", 
+            xfc->m_grid_spac[0],
+            xfc->m_grid_spac[1],
+            xfc->m_grid_spac[2]
+        );
     }
 
     /* Set volume header as needed */
     xfc->m_xf_in->get_volume_header (&xfc->m_volume_header);
     if (parms->m_have_dim) {
-	xfc->m_volume_header.set_dim (parms->m_vh.m_dim);
+        xfc->m_volume_header.set_dim (parms->m_vh.m_dim);
     }
     if (parms->m_have_origin) {
-	xfc->m_volume_header.set_origin (parms->m_vh.m_origin);
+        xfc->m_volume_header.set_origin (parms->m_vh.m_origin);
     }
     if (parms->m_have_spacing) {
-	xfc->m_volume_header.set_spacing (parms->m_vh.m_spacing);
+        xfc->m_volume_header.set_spacing (parms->m_vh.m_spacing);
     }
     
     /* Do conversion */
@@ -130,23 +131,23 @@ parse_fn (
 
     /* Basic options */
     parser->add_long_option ("", "input", 
-	"Input xform filename (required)", 1, "");
+        "Input xform filename (required)", 1, "");
     parser->add_long_option ("", "output", 
-	"Output xform filename (required)", 1, "");
+        "Output xform filename (required)", 1, "");
     parser->add_long_option ("", "output-type", 
-	"Type of xform to create (required), choose from "
-	"{bspline, itk_bspline, vf}", 1, "");
+        "Type of xform to create (required), choose from "
+        "{bspline, itk_bspline, vf}", 1, "");
 
     parser->add_long_option ("", "dim", 
-	"Size of output image in voxels \"x [y z]\"", 1, "");
+        "Size of output image in voxels \"x [y z]\"", 1, "");
     parser->add_long_option ("", "origin", 
-	"Location of first image voxel in mm \"x y z\"", 1, "");
+        "Location of first image voxel in mm \"x y z\"", 1, "");
     parser->add_long_option ("", "spacing", 
-	"Voxel spacing in mm \"x [y z]\"", 1, "");
+        "Voxel spacing in mm \"x [y z]\"", 1, "");
     parser->add_long_option ("", "grid-spacing", 
-	"B-spline grid spacing in mm \"x [y z]\"", 1, "");
+        "B-spline grid spacing in mm \"x [y z]\"", 1, "");
     parser->add_long_option ("", "nobulk", 
-	"Omit bulk transform for itk_bspline", 0);
+        "Omit bulk transform for itk_bspline", 0);
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -165,29 +166,29 @@ parse_fn (
     parms->output_fn = parser->get_string("output").c_str();
     parms->input_fn = parser->get_string("input").c_str();
     if (parser->option ("output-type")) {
-	parms->output_type = parser->get_string("output-type").c_str();
+        parms->output_type = parser->get_string("output-type").c_str();
     }
 
     /* Geometry options */
     if (parser->option ("dim")) {
-	parms->m_have_dim = true;
-	parser->assign_plm_long_13 (parms->m_vh.m_dim, "dim");
+        parms->m_have_dim = true;
+        parser->assign_plm_long_13 (parms->m_vh.m_dim, "dim");
     }
     if (parser->option ("origin")) {
-	parms->m_have_origin = true;
-	parser->assign_float13 (parms->m_vh.m_origin, "origin");
+        parms->m_have_origin = true;
+        parser->assign_float13 (parms->m_vh.m_origin, "origin");
     }
     if (parser->option ("spacing")) {
-	parms->m_have_spacing = true;
-	parser->assign_float13 (parms->m_vh.m_spacing, "spacing");
+        parms->m_have_spacing = true;
+        parser->assign_float13 (parms->m_vh.m_spacing, "spacing");
     }
     if (parser->option ("grid-spacing")) {
-	parms->m_have_grid_spacing = true;
-	parser->assign_float13 (parms->m_grid_spacing, "grid-spacing");
+        parms->m_have_grid_spacing = true;
+        parser->assign_float13 (parms->m_grid_spacing, "grid-spacing");
     }
 
     if (parser->option ("nobulk")) {
-	xfc->m_nobulk = true;
+        xfc->m_nobulk = true;
     }
 }
 

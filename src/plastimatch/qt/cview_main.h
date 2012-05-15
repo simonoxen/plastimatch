@@ -5,7 +5,6 @@
 #define _cview_main_h_
 
 #include <QtGui>
-#include "plmbase.h"
 #include "cview_portal.h"
 
 class Plm_image;

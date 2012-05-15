@@ -5,7 +5,8 @@
 #define _cview_portal_h_
 
 #include <QtGui/QGraphicsView>
-#include "plmbase.h"
+
+class Volume;
 
 class PortalWidget : public QGraphicsView
 {

@@ -1,6 +1,12 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#ifdef __PLM_MASTER_HEADER__
+#error "plmutil.h cannot be #included by another plastimatch header!"
+#else
+#define __PLM_MASTER_HEADER__
+
+
 #ifndef _plmutil_h_
 #define _plmutil_h_
 
@@ -41,4 +47,8 @@
 #include "threshbox.h"
 #include "warp_parms.h"
 
-#endif
+#endif /* #ifndef _plmutil_h_ */
+
+
+#undef __PLM_MASTER_HEADER__
+#endif /* #ifdef __PLM_MASTER_HEADER__ */

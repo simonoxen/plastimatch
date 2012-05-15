@@ -10,8 +10,6 @@
 #include "dcmtk/ofstd/ofstream.h"
 #include "dcmtk/dcmdata/dctk.h"
 
-#include "plmsys.h"
-
 #include "pstring.h"
 
 class DcmTagKey;

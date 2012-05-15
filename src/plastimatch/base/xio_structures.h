@@ -5,7 +5,6 @@
 #define _xio_structures_h_
 
 #include "plmbase_config.h"
-#include "plmbase.h"
 
 #include "xio_studyset.h"
 

@@ -5,7 +5,6 @@
 #define _proton_dose_h_
 
 #include "plmdose_config.h"
-//#include "plmbase.h"
 #include "threading.h"
 
 class Volume;

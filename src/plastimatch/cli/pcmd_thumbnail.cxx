@@ -6,6 +6,7 @@
 #include "itkImageRegionIterator.h"
 
 #include "plmbase.h"
+#include "plmsys.h"
 #include "plmutil.h"
 
 #include "pcmd_thumbnail.h"

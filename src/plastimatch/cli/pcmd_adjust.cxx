@@ -4,9 +4,11 @@
 #include "plmcli_config.h"
 #include <time.h>
 #include "itkImageRegionIterator.h"
-
 #include "itk_adjust.h"
+
 #include "plmbase.h"
+#include "plmsys.h"
+
 #include "plm_clp.h"
 #include "pcmd_adjust.h"
 

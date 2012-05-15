@@ -8,6 +8,7 @@
 #include "itkVectorLinearInterpolateImageFunction.h"
 
 #include "plmbase.h"
+#include "plmsys.h"
 
 #include "getopt.h"
 #include "pcmd_compose.h"
