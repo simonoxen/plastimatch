@@ -29,12 +29,15 @@ struct opencl_device {
     cl_kernel *kernels;
 };
 
+// JAS 2012.05.15
+//   This seems to cause build errors on OS X -- commented out
+//
 /* This should probably be done with CMake ... */
-#ifdef __APPLE__
-#  define opencl_idx(vec,idx) vec[idx]
-#else
+//#ifdef __APPLE__
+//#  define opencl_idx(vec,idx) vec[idx]
+//#else
 #  define opencl_idx(vec,idx) vec.s[idx]
-#endif
+//#endif
 
 #if defined __cplusplus
 extern "C" {
