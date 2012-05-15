@@ -257,9 +257,9 @@ if (NOT RUN_CUDA_TESTS)
     "fdk-cuda-a"
     "fdk-cuda-a-stats"
     "fdk-cuda-a-check"
-    "plm-bspline-cuda" 
-    "plm-bspline-cuda-stats" 
-    "plm-bspline-cuda-check" 
+    "plm-bsp-cuda" 
+    "plm-bsp-cuda-stats" 
+    "plm-bsp-cuda-check" 
     )
 endif ()
 
@@ -546,10 +546,10 @@ if (PLM_REDUCED_TESTS)
     "plm-bspline-single-h-check"
     "plm-bspline-openmp" 
     "plm-bspline-openmp-stats"
-    "plm-bspline-openmp-check"
-    "plm-bspline-cuda"
-    "plm-bspline-cuda-stats"
-    "plm-bspline-cuda-check"
+    "plm-bsp-openmp-check"
+    "plm-bsp-cuda"
+    "plm-bsp-cuda-stats"
+    "plm-bsp-cuda-check"
     "plm-reg-bspline-ushort"
     "plm-reg-bspline-ushort-stats"
     "plm-reg-bspline-ushort-check"
