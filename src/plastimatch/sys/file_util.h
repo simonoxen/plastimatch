@@ -11,6 +11,7 @@
  */
 
 #include "plmsys_config.h"
+#include <stdio.h>
 #include "sys/plm_int.h"
 
 PLMSYS_C_API int extension_is (const char* fname, const char* ext);
