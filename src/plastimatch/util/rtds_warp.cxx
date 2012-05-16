@@ -255,6 +255,10 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 #endif
     }
 
+    /* Set user-supplied metadata also prior to loading files,
+       because the user supplied patient position is needed to load XiO data */
+    rtds->set_user_metadata (parms->m_metadata);
+
     /* Load input file(s) */
     load_input_files (rtds, file_type, parms);
 

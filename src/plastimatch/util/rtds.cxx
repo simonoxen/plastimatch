@@ -185,9 +185,6 @@ Rtds::load_xio (
             /* Determine transformation based original DICOM */
             xio_ct_get_transform_from_rdd
                 (this->m_img, &m_meta, rdd, this->m_xio_transform);
-        } else {
-            /* Determine transformation based on patient position */
-            xio_ct_get_transform (&m_meta, this->m_xio_transform);
         }
     }
 
