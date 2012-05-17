@@ -9,7 +9,7 @@ struct bragg_curve_options {
     float z_max;                /* in mm */
     int have_z_max;
     float z_spacing;            /* in mm */
-    float E_0;                  /* in MeV */
+    double E_0;                  /* in MeV */
     float e_sigma;              /* in MeV */
     float have_e_sigma;
     char* output_file;

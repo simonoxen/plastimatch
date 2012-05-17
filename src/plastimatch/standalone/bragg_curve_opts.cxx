@@ -67,7 +67,7 @@ parse_args (Bragg_curve_options* options, int argc, char* argv[])
 		exit(1);
 	    }
 	    i++;
-	    rc = sscanf (argv[i], "%f", &options->E_0);
+	    rc = sscanf (argv[i], "%lf", &options->E_0);
 	    if (rc != 1) {
 		print_usage ();
 	    }
