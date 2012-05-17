@@ -6,6 +6,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+
+#include "plmsys.h"
+
 #include "proton_dose.h"
 #include "plm_math.h"
 
@@ -17,162 +23,233 @@ void
 print_usage (void)
 {
     printf (
-	"Usage: proton_dose [options] infile outfile\n"
-	"Options:\n"
-	" -A hardware       Either \"cpu\" or \"cuda\" (default=cpu)\n"
-	" -f implementation One of {a,b,c}\n"
-	" -src \"x y z\"      ...\n"
-	" -iso \"x y z\"      ...\n"
-	" -vup \"x y z\"      ...\n"
-	" -s scale          Scale the intensity of the output file\n"
-	" -d detail         0 = full, 1 = beam path only (default=0)\n"
-	" -u step           Uniform step (in mm) along ray trace\n"
-	" -p filename       Proton dose energy profile\n"
-	" --debug           Create various debug files\n"
+        "Usage: proton_dose [options] config_file\n"
+        "Options:\n"
+        " --debug           Create various debug files\n"
     );
     exit (1);
 }
 
-void
-proton_dose_parms_init (Proton_dose_parms* parms)
+int
+Proton_dose_parms::set_key_val (
+    const char* key, 
+    const char* val, 
+    int section
+)
 {
-    parms->threading = THREADING_CPU_OPENMP;
-    parms->flavor = 'a';
-    parms->src[0] = -2000.0f;
-    parms->src[1] = 0.0f;
-    parms->src[2] = 0.0f;
-    parms->isocenter[0] = 0.0f;
-    parms->isocenter[1] = 0.0f;
-    parms->isocenter[2] = 0.0f;
-    parms->vup[0] = 0.0f;
-    parms->vup[1] = 0.0f;
-    parms->vup[2] = 1.0f;
+    switch (section) {
 
-    parms->scale = 1.0f;
-    parms->ray_step = 1.0f;
-    parms->input_fn = 0;
-    parms->input_pep_fn = 0;
-    parms->output_fn = 0;
-    parms->debug = 0;
+    /* [SETTINGS] */
+    case 0:
+        if (!strcmp (key, "flavor")) {
+            if (strlen (val) >= 1) {
+                this->flavor = val[0];
+            } else {
+                goto error_exit;
+            } 
+        }
+        else if (!strcmp (key, "threading")) {
+            if (!strcmp (val,"single")) {
+                this->threading = THREADING_CPU_SINGLE;
+            }
+            else if (!strcmp (val,"openmp")) {
+#if (OPENMP_FOUND)
+                this->threading = THREADING_CPU_OPENMP;
+#else
+                this->threading = THREADING_CPU_SINGLE;
+#endif
+            }
+            else if (!strcmp (val,"cuda")) {
+#if (CUDA_FOUND)
+                this->threading = THREADING_CUDA;
+#elif (OPENMP_FOUND)
+                this->threading = THREADING_CPU_OPENMP;
+#else
+                this->threading = THREADING_CPU_SINGLE;
+#endif
+            }
+            else {
+                goto error_exit;
+            }
+        }
+        else if (!strcmp (key, "ray_step")) {
+            if (sscanf (val, "%f", &this->ray_step) != 1) {
+                goto error_exit;
+            }
+        }
+        else if (!strcmp (key, "scale")) {
+            if (sscanf (val, "%f", &this->scale) != 1) {
+                goto error_exit;
+            }
+        }
+        else if (!strcmp (key, "detail")) {
+            if (!strcmp (val, "low")) {
+                this->detail = 1;
+            }
+            else if (!strcmp (val, "high")) {
+                this->detail = 0;
+            }
+            else {
+                goto error_exit;
+            }
+        }
+        else if (!strcmp (key, "patient")) {
+            strncpy (this->input_fn, val, _MAX_PATH);
+        }
+        else if (!strcmp (key, "dose")) {
+            strncpy (this->output_fn, val, _MAX_PATH);
+        }
 
-    parms->detail = 0;
+        break;
+
+    /* [BEAM] */
+    case 1:
+        if (!strcmp (key, "bragg_curve")) {
+            strncpy (this->input_pep_fn, val, _MAX_PATH);
+        }
+        else if (!strcmp (key, "pos")) {
+            if (sscanf (val, "%lf %lf %lf", &(this->src[0]), &(this->src[1]), &(this->src[2])) != 3) {
+                goto error_exit;
+            }
+        }
+        else if (!strcmp (key, "isocenter")) {
+            if (sscanf (val, "%lf %lf %lf", &(this->isocenter[0]), &(this->isocenter[1]), &(this->isocenter[2])) != 3) {
+                goto error_exit;
+            }
+        }
+        break;
+
+    /* [APERTURE] */
+    case 2:
+        if (!strcmp (key, "up")) {
+            if (sscanf (val, "%lf %lf %lf", &(this->vup[0]), &(this->vup[1]), &(this->vup[2])) != 3) {
+                goto error_exit;
+            }
+        }
+        else if (!strcmp (key, "center")) {
+            if (sscanf (val, "%lf %lf", &(this->ic[0]), &(this->ic[1])) != 2) {
+                goto error_exit;
+            }
+        }
+        else if (!strcmp (key, "offset")) {
+            if (sscanf (val, "%lf", &(this->ap_offset)) != 1) {
+                goto error_exit;
+            }
+        }
+        else if (!strcmp (key, "resolution")) {
+            if (sscanf (val, "%i %i", &(this->ires[0]), &(this->ires[1])) != 2) {
+                goto error_exit;
+            }
+        }
+        break;
+    }
+    return 0;
+
+  error_exit:
+    print_and_exit ("Unknown (key,val) combination: (%s,%s)\n", key, val);
+    return -1;
+}
+
+
+
+void
+Proton_dose_parms::parse_config (
+    const char* config_fn
+)
+{
+    /* Read file into string */
+    std::ifstream t (config_fn);
+    std::stringstream buffer;
+    buffer << t.rdbuf();
+
+    std::string buf;
+    std::string buf_ori;    /* An extra copy for diagnostics */
+    int section = 0;
+
+    std::stringstream ss (buffer.str());
+
+    while (getline (ss, buf)) {
+        buf_ori = buf;
+        buf = trim (buf);
+        buf_ori = trim (buf_ori, "\r\n");
+
+        if (buf == "") continue;
+        if (buf[0] == '#') continue;
+
+        if (buf[0] == '[') {
+            if (buf.find ("[SETTINGS]") != std::string::npos
+                || buf.find ("[settings]") != std::string::npos)
+            {
+                section = 0;
+                continue;
+            }
+            else if (buf.find ("[BEAM]") != std::string::npos
+                || buf.find ("[beam]") != std::string::npos)
+            {
+                section = 1;
+                continue;
+            }
+            else if (buf.find ("[APERTURE]") != std::string::npos
+                || buf.find ("[aperture]") != std::string::npos)
+            {
+                section = 2;
+                continue;
+            }
+            else {
+                printf ("Parse error: %s\n", buf_ori.c_str());
+            }
+        }
+
+        size_t key_loc = buf.find ("=");
+        if (key_loc == std::string::npos) {
+            continue;
+        }
+
+        std::string key = buf.substr (0, key_loc);
+        std::string val = buf.substr (key_loc+1);
+        key = trim (key);
+        val = trim (val);
+
+        if (key != "" && val != "") {
+            if (this->set_key_val (key.c_str(), val.c_str(), section) < 0) {
+                printf ("Parse error: %s\n", buf_ori.c_str());
+            }
+        }
+    }
 }
 
 void
-proton_dose_parse_args (Proton_dose_parms* parms, int argc, char* argv[])
+Proton_dose_parms::parse_args (int argc, char** argv)
 {
-    int i, rc;
+    int i;
+    for (i=1; i<argc; i++) {
+        if (argv[i][0] != '-') break;
 
-    proton_dose_parms_init (parms);
-    for (i = 1; i < argc; i++) {
-	//printf ("ARG[%d] = %s\n", i, argv[i]);
-	if (argv[i][0] != '-') break;
-	if (!strcmp (argv[i], "-A")) {
-	    if (i == (argc-1) || argv[i+1][0] == '-') {
-		fprintf(stderr, "option %s requires an argument\n", argv[i]);
-		exit(1);
-	    }
-	    i++;
-	    if (!strcmp(argv[i], "cuda") || !strcmp(argv[i], "CUDA")
-		|| !strcmp(argv[i], "gpu") || !strcmp(argv[i], "GPU"))
-	    {
-		parms->threading = THREADING_CUDA;
-	    }
-	    else {
-		parms->threading = THREADING_CPU_OPENMP;
-	    }
-	}
-	else if (!strcmp (argv[i], "-src")) {
-	    i++;
-	    rc = sscanf (argv[i], "%f %f %f", 
-		&parms->src[0],
-		&parms->src[1], 
-		&parms->src[2]);
-	    if (rc != 3) {
-		print_usage ();
-	    }
-	}
-	else if (!strcmp (argv[i], "-iso")) {
-	    i++;
-	    rc = sscanf (argv[i], "%f %f %f", 
-		&parms->isocenter[0],
-		&parms->isocenter[1], 
-		&parms->isocenter[2]);
-	    if (rc != 3) {
-		print_usage ();
-	    }
-	}
-	else if (!strcmp (argv[i], "-vup")) {
-	    i++;
-	    rc = sscanf (argv[i], "%f %f %f", 
-		&parms->vup[0],
-		&parms->vup[1], 
-		&parms->vup[2]);
-	    if (rc != 3) {
-		print_usage ();
-	    }
-	}
-	else if (!strcmp (argv[i], "-d")) {
-	    i++;
-	    rc = sscanf (argv[i], "%i" , &parms->detail);
-	    if (rc != 1) {
-		print_usage ();
-	    }
-	}
-	else if (!strcmp (argv[i], "-f")) {
-	    i++;
-	    rc = sscanf (argv[i], "%c" , &parms->flavor);
-	    if (rc != 1 || parms->flavor < 'a' || parms->flavor > 'z') {
-		fprintf (stderr, 
-		    "option %s must be a character beween 'a' and 'z'\n", 
-		    argv[i-1]);
-		exit (1);
-	    }
-	    if (rc != 1) {
-		print_usage ();
-	    }
-	}
-	else if (!strcmp (argv[i], "-p")) {
-	    if (i == (argc-1) || argv[i+1][0] == '-') {
-	    	fprintf(stderr, "option %s requires an argument\n", argv[i]);
-		exit(1);
-	    }
-	    i++;
-	    parms->input_pep_fn = strdup (argv[i]);
-	}
-	else if (!strcmp (argv[i], "-s")) {
-	    i++;
-	    rc = sscanf (argv[i], "%g" , &parms->scale);
-	    if (rc != 1) {
-		print_usage ();
-	    }
-	}
-	else if (!strcmp (argv[i], "-u")) {
-	    i++;
-	    rc = sscanf (argv[i], "%f" , &parms->ray_step);
-	    if (rc != 1) {
-		print_usage ();
-	    }
-	}
-	else if (!strcmp (argv[i], "--debug")) {
-	    parms->debug = 1;
-	}
-	else {
-	    print_usage ();
-	    break;
-	}
+        if (!strcmp (argv[i], "--debug")) {
+            this->debug = 1;
+        }
+        else {
+            print_usage ();
+            break;
+        }
     }
 
-    if (i+1 >= argc) {
-	print_usage ();
+    if (!argv[i]) {
+        print_usage ();
+    } else {
+        this->parse_config (argv[i]);
     }
 
-    if (!parms->input_pep_fn) {
-        printf ("  Must specify a proton energy profile (-p switch)\n");
-        printf ("  Terminating...\n\n");
-        exit(1);
+    if (this->input_pep_fn[0] == '\0') {
+        fprintf (stderr, "\n** ERROR: Bragg Curve not specified in configuration file!\n");
+        exit (0);
     }
-
-    parms->input_fn = argv[i];
-    parms->output_fn = argv[i+1];
+    if (this->input_fn[0] == '\0') {
+        fprintf (stderr, "\n** ERROR: Patient image not specified in configuration file!\n");
+        exit (0);
+    }
+    if (this->output_fn[0] == '\0') {
+        fprintf (stderr, "\n** ERROR: Output dose not specified in configuration file!\n");
+        exit (0);
+    }
 }

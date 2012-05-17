@@ -23,10 +23,11 @@
 #include "plmbase.h"
 #include "plmsys.h"
 
+#include "threading.h"
 #include "plm_math.h"
 #include "proton_dose.h"
 
-//#define VERBOSE 1
+#define VERBOSE 1
 #define PROGRESS 1
 //#define DEBUG_VOXEL 1
 //#define DOSE_GAUSS 1
@@ -40,11 +41,33 @@ struct proton_depth_dose {
     int num_samp;       /* size of arrays */
 };
 
-/* This function is used to rotate a
- * point about a ray in an orbit
- * perpendicular to the ray.  It is assumed
- * that the arbitrary axis of rotation (ray)
- * originates at the Cartesian origin.
+Proton_dose_parms::Proton_dose_parms ()
+{
+    this->threading = THREADING_CPU_OPENMP;
+    this->flavor = 'a';
+    this->src[0] = -2000.0f;
+    this->src[1] = 0.0f;
+    this->src[2] = 0.0f;
+    this->isocenter[0] = 0.0f;
+    this->isocenter[1] = 0.0f;
+    this->isocenter[2] = 0.0f;
+    this->vup[0] = 0.0f;
+    this->vup[1] = 0.0f;
+    this->vup[2] = 1.0f;
+
+    this->scale = 1.0f;
+    this->ray_step = 1.0f;
+    this->input_fn[0] = '\0';
+    this->input_pep_fn[0] = '\0';
+    this->output_fn[0] = '\0';
+    this->debug = 0;
+
+    this->detail = 0;
+}
+
+/* This function is used to rotate a point about a ray in an orbit
+ * perpendicular to the ray.  It is assumed that the arbitrary axis of
+ * rotation (ray) originates at the Cartesian origin.
  */
 static void
 rotate_about_ray (
@@ -577,7 +600,7 @@ dose_hong (
                 ct_xyz);      // I: axis of rotation
 
         /* neighbor (or self) hit by proton beam? */
-	rgdepth = rpl_volume_get_rgdepth (rpl_vol, scatter_xyz);
+        rgdepth = rpl_volume_get_rgdepth (rpl_vol, scatter_xyz);
 
             if (rgdepth < 0.0f) {
                 if (debug) {
@@ -796,8 +819,6 @@ proton_dose_compute (
     int ct_ijk[3];
     double ct_xyz[4];
     double p1[3];
-    //double ap_dist = 1000.;
-    double ap_dist = 10.;
     double nrm[3], pdn[3], prt[3], tmp[3];
     double ic_room[3];
     double ul_room[3];
@@ -808,21 +829,21 @@ proton_dose_compute (
     int idx = 0;
 
     Proj_matrix *pmat;
-    double cam[3] = { parms->src[0], parms->src[1], parms->src[2] };
-    double tgt[3] = { parms->isocenter[0], parms->isocenter[1], 
-		      parms->isocenter[2] };
-    double vup[3] = { parms->vup[0], parms->vup[1], parms->vup[2] };
 
-    /* This is a 10x10 grid, with image center at 4.5 */
-    //double ic[2] = { 4.5, 4.5 };
-    //int ires[2] = { 10, 10 };
-    double ic[2] = { 0, 0 };
-    int ires[2] = { 1, 1 };
     double ps[2] = { 1., 1. };
     Proton_Depth_Dose* pep;
 
     pmat = new Proj_matrix;
-    proj_matrix_set (pmat, cam, tgt, vup, ap_dist, ic, ps, ires);
+    proj_matrix_set (
+            pmat,
+            parms->src,
+            parms->isocenter,
+            parms->vup,
+            parms->ap_offset,
+            parms->ic,
+            ps,
+            parms->ires
+    );
 
     proj_matrix_get_nrm (pmat, nrm);
     proj_matrix_get_pdn (pmat, pdn);
@@ -849,22 +870,35 @@ proton_dose_compute (
     vec3_copy (p1, pmat->cam);
 
 #if VERBOSE
-    printf ("NRM: %g %g %g\n", nrm[0], nrm[1], nrm[2]);
-    printf ("PDN: %g %g %g\n", pdn[0], pdn[1], pdn[2]);
-    printf ("PRT: %g %g %g\n", prt[0], prt[1], prt[2]);
-    printf ("CAM: %g %g %g\n", pmat->cam[0], pmat->cam[1], pmat->cam[2]);
-    printf ("ICR: %g %g %g\n", ic_room[0], ic_room[1], ic_room[2]);
-    printf ("INCR_C: %g %g %g\n", incr_c[0], incr_c[1], incr_c[2]);
-    printf ("INCR_R: %g %g %g\n", incr_r[0], incr_r[1], incr_r[2]);
-    printf ("UL_ROOM: %g %g %g\n", ul_room[0], ul_room[1], ul_room[2]);
+    printf ("\n");
+    printf ("PROTON SOURCE\n");
+    printf ("  -- [POS] Location: %g %g %g\n", pmat->cam[0], pmat->cam[1], pmat->cam[2]);
+    printf ("APERATURE\n");
+    printf ("  -- [NUM] Res   : %i %i\n", parms->ires[0], parms->ires[1]);
+    printf ("  -- [DIS] Offset: %g\n", parms->ap_offset);
+    printf ("  -- [POS] Center: %g %g %g\n", ic_room[0], ic_room[1], ic_room[2]);
+    printf ("  -- [POS] UpLeft: %g %g %g\n", ul_room[0], ul_room[1], ul_room[2]);
+    printf ("  -- [VEC] Normal: %g %g %g\n", nrm[0], nrm[1], nrm[2]);
+    printf ("  -- [VEC] Right : %g %g %g\n", prt[0], prt[1], prt[2]);
+    printf ("  -- [VEC] Down  : %g %g %g\n", pdn[0], pdn[1], pdn[2]);
+    printf ("  -- [VEC] col++ : %g %g %g\n", incr_c[0], incr_c[1], incr_c[2]);
+    printf ("  -- [VEC] row++ : %g %g %g\n", incr_r[0], incr_r[1], incr_r[2]);
 #endif
 
     /* Load proton energy profile specified on commandline */
     pep = load_pep (parms->input_pep_fn);
 
     /* Create the depth volume */
-    rpl_vol = rpl_volume_create (ct_vol, pmat, ires, pmat->cam, ul_room, 
-	incr_r, incr_c, parms->ray_step);
+    rpl_vol = rpl_volume_create (
+            ct_vol,             /* CT volume */
+            pmat,               /* from source to aperature  */
+            parms->ires,        /* aperature dimension       */
+            pmat->cam,          /* position of source        */
+            ul_room,            /* position of aperature     */
+            incr_r,             /* aperature row++ vector    */
+            incr_c,             /* aperature col++ vector    */
+            parms->ray_step     /* step size along ray trace */
+    );
 
     /* Scan through aperture to fill in rpl_volume */
     rpl_volume_compute (rpl_vol, ct_vol);
@@ -893,11 +927,11 @@ proton_dose_compute (
                             ct_xyz,         /* voxel to dose */
                             rpl_vol,        /* radiographic depths */
                             pep,            /* proton energy profile */
-                            ires,           /* ray cast resolution */
+                            parms->ires,    /* ray cast resolution */
                             ul_room,        /* aperture upper-left */
                             incr_r,         /* 3D ray row increment */
                             incr_c,         /* 3D ray col increment */
-                            parms);       /* parms->ray_step */
+                            parms);         /* parms->ray_step */
                     break;
                 case 'b':
                     dose = dose_scatter (
@@ -905,13 +939,13 @@ proton_dose_compute (
                             ct_ijk,        /* index of voxel */
                             rpl_vol,       /* radiographic depths */
                             pep,           /* proton energy profile */
-                            ires,          /* ray cast resolution */
+                            parms->ires,   /* ray cast resolution */
                             ul_room,       /* aperture upper-left */
                             incr_r,        /* 3D ray row increment */
                             incr_c,        /* 3D ray col increment */
                             prt,           /* x-dir in ap plane uv */
                             pdn,           /* y-dir in ap plane uv */
-                            parms);      /* parms->ray_step */
+                            parms);        /* parms->ray_step */
                     break;
                 case 'c':
                     dose = dose_hong (
@@ -919,24 +953,24 @@ proton_dose_compute (
                             ct_ijk,        /* index of voxel */
                             rpl_vol,       /* radiographic depths */
                             pep,           /* proton energy profile */
-                            ires,          /* ray cast resolution */
+                            parms->ires,   /* ray cast resolution */
                             ul_room,       /* aperture upper-left */
                             incr_r,        /* 3D ray row increment */
                             incr_c,        /* 3D ray col increment */
                             prt,           /* x-dir in ap plane uv */
                             pdn,           /* y-dir in ap plane uv */
-                            parms);      /* parms->ray_step */
+                            parms);        /* parms->ray_step */
                     break;
                 case 'd':
                     dose = dose_debug (
                             ct_xyz,         /* voxel to dose */
                             rpl_vol,        /* radiographic depths */
                             pep,            /* proton energy profile */
-                            ires,           /* ray cast resolution */
+                            parms->ires,    /* ray cast resolution */
                             ul_room,        /* aperture upper-left */
                             incr_r,         /* 3D ray row increment */
                             incr_c,         /* 3D ray col increment */
-                            parms);       /* parms->ray_step */
+                            parms);         /* parms->ray_step */
                     break;
                 }
 

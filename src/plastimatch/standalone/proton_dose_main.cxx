@@ -13,7 +13,6 @@
 
 #include "plm_math.h"
 #include "proton_dose.h"
-#include "proton_dose_opts.h"
 
 int
 main (int argc, char* argv[])
@@ -21,7 +20,7 @@ main (int argc, char* argv[])
     Volume *ct, *dose;
     Proton_dose_parms parms;
 
-    proton_dose_parse_args (&parms, argc, argv);
+    parms.parse_args (argc, argv);
 
     ct = read_mha (parms.input_fn);
     if (!ct) return -1;
