@@ -117,6 +117,27 @@ Proton_dose_parms::set_key_val (
                 goto error_exit;
             }
         }
+        else if (!strcmp (key, "energy")) {
+            if (sscanf (val, "%lf", &(this->beam->E0)) != 1) {
+                goto error_exit;
+            }
+        }
+        else if (!strcmp (key, "spread")) {
+            if (sscanf (val, "%lf", &(this->beam->spread)) != 1) {
+                goto error_exit;
+            }
+        }
+        else if (!strcmp (key, "depth")) {
+            if (sscanf (val, "%lf", &(this->beam->dmax)) != 1) {
+                goto error_exit;
+            }
+        }
+        else if (!strcmp (key, "res")) {
+            if (sscanf (val, "%lf", &(this->beam->dres)) != 1) {
+                goto error_exit;
+            }
+        }
+
         break;
 
     /* [APERTURE] */
@@ -241,9 +262,12 @@ Proton_dose_parms::parse_args (int argc, char** argv)
     }
 
     if (this->beam->d_lut == NULL) {
-        fprintf (stderr, "\n** ERROR: Beam not defined in configuration file!\n");
-        exit (0);
+        /* measured bragg curve not supplied, try to generate */
+        if (!this->beam->generate ()) {
+            exit (0);
+        }
     }
+
     if (this->input_fn[0] == '\0') {
         fprintf (stderr, "\n** ERROR: Patient image not specified in configuration file!\n");
         exit (0);

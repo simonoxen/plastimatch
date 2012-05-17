@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #include "plmdose.h"
 
@@ -19,7 +20,7 @@ Proton_Beam::Proton_Beam ()
     this->E0 = 0.0;
     this->spread = 0.0;
     this->dmax = 0.0;
-    this->dres = 0.0;
+    this->dres = 1.0;
     this->num_samples = 0;
 }
 
@@ -33,29 +34,27 @@ Proton_Beam::~Proton_Beam ()
     }
 }
 
-void
+bool
 Proton_Beam::load (const char* fn)
 {
     FILE* fp = fopen (fn, "r");
     char linebuf[128];
 
     if (!fp) {
-        printf ("Error reading bragg curve data from file.\n");
-        printf ("Terminating...\n");
-        exit(0);
+        return false;
     }
 
     fgets (linebuf, 128, fp);
     fclose (fp);
 
     if (!strncmp (linebuf, "00001037", strlen ("00001037"))) {
-        this->load_xio (fn);
+        return this->load_xio (fn);
     } else {
-//        this->load_txt (fn);
+        return this->load_txt (fn);
     }
 }
 
-void
+bool
 Proton_Beam::load_xio (const char* fn)
 {
     int i, j;
@@ -103,4 +102,71 @@ Proton_Beam::load_xio (const char* fn)
     }
 
     fclose (fp);
+    return true;
+}
+
+bool
+Proton_Beam::load_txt (const char* fn)
+{
+    char linebuf[128];
+    FILE* fp = fopen (fn, "r");
+
+    while (fgets (linebuf, 128, fp)) {
+        float range, dose;
+
+        if (2 != sscanf (linebuf, "%f %f", &range, &dose)) {
+            break;
+        }
+
+        this->num_samples++;
+        this->d_lut = (float*) realloc (
+                        this->d_lut,
+                        this->num_samples * sizeof(float));
+
+        this->e_lut = (float*) realloc (
+                        this->e_lut,
+                        this->num_samples * sizeof(float));
+
+        this->d_lut[this->num_samples-1] = range;
+        this->e_lut[this->num_samples-1] = dose;
+        this->dmax = range;         /* Assume entries are sorted */
+    }
+
+    fclose (fp);
+    return true;
+}
+
+bool
+Proton_Beam::generate ()
+{
+    int i;
+    double d;
+
+    if (!this->E0) {
+        printf ("ERROR: Failed to generate beam -- energy not specified.\n");
+        return false;
+    }
+    if (!this->spread) {
+        printf ("ERROR: Failed to generate beam -- energy spread not specified.\n");
+        return false;
+    }
+    if (!this->dmax) {
+        printf ("ERROR: Failed to generate beam -- max depth not specified.\n");
+        return false;
+    }
+
+    this->num_samples = (int) floorf (this->dmax / this->dres);
+
+    this->d_lut = (float*)malloc (this->num_samples*sizeof(float));
+    this->e_lut = (float*)malloc (this->num_samples*sizeof(float));
+    
+    memset (this->d_lut, 0, this->num_samples*sizeof(float));
+    memset (this->e_lut, 0, this->num_samples*sizeof(float));
+
+    for (d=0, i=0; d<this->dmax; d+=this->dres, i++) {
+        d_lut[i] = d;
+        e_lut[i] = bragg_curve (this->E0, this->spread, i);
+    }
+
+    return true;
 }

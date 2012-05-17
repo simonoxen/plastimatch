@@ -9,12 +9,12 @@ public:
     Proton_Beam ();
     ~Proton_Beam ();
 
-    void load (const char* fn);     /* load from file */
-    void generate ();               /* generate analytically */
+    bool load (const char* fn);     /* load from file */
+    bool generate ();               /* generate analytically */
 
 private:
-    void load_xio (const char* fn);
-    void load_txt (const char* fn);
+    bool load_xio (const char* fn);
+    bool load_txt (const char* fn);
 
 public:
     double src[3];                  /* beam nozzle location in space */
