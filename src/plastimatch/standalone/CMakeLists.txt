@@ -14,8 +14,8 @@ option (PLM_BUILD_SIFTND "Build siftnD program" ON)
 ##  SOURCE FILES
 ##-----------------------------------------------------------------------------
 set (BRAGG_CURVE_SRC
-  bragg_curve_main.c 
-  bragg_curve_opts.c
+  bragg_curve_main.cxx 
+  bragg_curve_opts.cxx
   )
 set (BSPLINE_SRC
   bspline_main.cxx 
@@ -211,7 +211,7 @@ plm_add_executable (raw_to_mha "${RAW_TO_MHA_SRC}"
 
 if (NOT BUILD_DEBIAN)
   plm_add_executable (bragg_curve "${BRAGG_CURVE_SRC}" 
-    "${PLASTIMATCH_LIBS};${PLM_FORTRAN}" "${PLASTIMATCH_LDFLAGS}" 
+    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
 

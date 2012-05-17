@@ -8,10 +8,12 @@
 #include "threading.h"
 #include "plm_path.h"
 
+class Proton_Beam;
 class Volume;
 
 #define INDEX_OF(ijk, dim) \
     (((ijk[2] * dim[1] + ijk[1]) * dim[0]) + ijk[0])
+
 
 class Proton_dose_parms {
 public:
@@ -32,10 +34,7 @@ public:
     char input_fn[_MAX_PATH];  /* input:  patient volume */
     char output_fn[_MAX_PATH]; /* output: dose volume */
 
-    /* [BEAM] */
-    char input_pep_fn[_MAX_PATH];   /* Proton energy profile */
-    double src[3];         /* Beam source */
-    double isocenter[3];
+    Proton_Beam* beam;
 
     /* [APERTURE] */
     double ap_offset;     /* distance from beam nozzle */

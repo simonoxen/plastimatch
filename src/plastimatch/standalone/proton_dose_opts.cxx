@@ -10,9 +10,9 @@
 #include <iostream>
 #include <sstream>
 
+#include "plmdose.h"
 #include "plmsys.h"
 
-#include "proton_dose.h"
 #include "plm_math.h"
 
 #ifndef NULL
@@ -105,15 +105,15 @@ Proton_dose_parms::set_key_val (
     /* [BEAM] */
     case 1:
         if (!strcmp (key, "bragg_curve")) {
-            strncpy (this->input_pep_fn, val, _MAX_PATH);
+            this->beam->load (val);
         }
         else if (!strcmp (key, "pos")) {
-            if (sscanf (val, "%lf %lf %lf", &(this->src[0]), &(this->src[1]), &(this->src[2])) != 3) {
+            if (sscanf (val, "%lf %lf %lf", &(this->beam->src[0]), &(this->beam->src[1]), &(this->beam->src[2])) != 3) {
                 goto error_exit;
             }
         }
         else if (!strcmp (key, "isocenter")) {
-            if (sscanf (val, "%lf %lf %lf", &(this->isocenter[0]), &(this->isocenter[1]), &(this->isocenter[2])) != 3) {
+            if (sscanf (val, "%lf %lf %lf", &(this->beam->isocenter[0]), &(this->beam->isocenter[1]), &(this->beam->isocenter[2])) != 3) {
                 goto error_exit;
             }
         }
@@ -240,8 +240,8 @@ Proton_dose_parms::parse_args (int argc, char** argv)
         this->parse_config (argv[i]);
     }
 
-    if (this->input_pep_fn[0] == '\0') {
-        fprintf (stderr, "\n** ERROR: Bragg Curve not specified in configuration file!\n");
+    if (this->beam->d_lut == NULL) {
+        fprintf (stderr, "\n** ERROR: Beam not defined in configuration file!\n");
         exit (0);
     }
     if (this->input_fn[0] == '\0') {

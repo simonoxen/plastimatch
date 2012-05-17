@@ -21,36 +21,33 @@
 #include <string.h>
 
 #include "plmbase.h"
+#include "plmdose.h"
 #include "plmsys.h"
 
 #include "threading.h"
 #include "plm_math.h"
-#include "proton_dose.h"
 
 #define VERBOSE 1
 #define PROGRESS 1
 //#define DEBUG_VOXEL 1
 //#define DOSE_GAUSS 1
 
+#if 0
 typedef struct proton_depth_dose Proton_Depth_Dose;
 struct proton_depth_dose {
     float* depth;       /* depth array (mm) */
     float* energy;      /* energy array */
     float dmax;         /* maximum depth */
-    float emax;         /* max energy */
     int num_samp;       /* size of arrays */
 };
+#endif
 
 Proton_dose_parms::Proton_dose_parms ()
 {
+    this->beam = new Proton_Beam;
+
     this->threading = THREADING_CPU_OPENMP;
     this->flavor = 'a';
-    this->src[0] = -2000.0f;
-    this->src[1] = 0.0f;
-    this->src[2] = 0.0f;
-    this->isocenter[0] = 0.0f;
-    this->isocenter[1] = 0.0f;
-    this->isocenter[2] = 0.0f;
     this->vup[0] = 0.0f;
     this->vup[1] = 0.0f;
     this->vup[2] = 1.0f;
@@ -58,7 +55,6 @@ Proton_dose_parms::Proton_dose_parms ()
     this->scale = 1.0f;
     this->ray_step = 1.0f;
     this->input_fn[0] = '\0';
-    this->input_pep_fn[0] = '\0';
     this->output_fn[0] = '\0';
     this->debug = 0;
 
@@ -176,7 +172,7 @@ debug_voxel (
 static double
 highland (
     double rgdepth,
-    Proton_Depth_Dose* pep
+    Proton_Beam* beam
 )
 {
 #if defined (commentout)
@@ -202,7 +198,7 @@ highland (
 
     /* This is just a normalization I used to use instead
      * of the Highland approximation */
-    return 3.0 * (rgdepth - pep->depth[0]) / (pep->dmax - pep->depth[0]);
+    return 3.0 * (rgdepth - beam->d_lut[0]) / (beam->dmax - beam->d_lut[0]);
 }
 
 static double
@@ -238,34 +234,34 @@ gaus_kernel (
 static float
 lookup_energy (
     float depth,
-    Proton_Depth_Dose* pep
+    Proton_Beam* beam
 )
 {
     int i;
     float energy = 0.0f;
 
     /* Sanity check */
-    if (depth < 0 || depth > pep->dmax) {
+    if (depth < 0 || depth > beam->dmax) {
         return 0.0f;
     }
 
     /* Find index into profile arrays */
-    for (i = 0; i < pep->num_samp; i++) {
-        if (pep->depth[i] > depth) {
+    for (i = 0; i < beam->num_samples; i++) {
+        if (beam->d_lut[i] > depth) {
             i--;
             break;
-        } else if (pep->depth[i] == depth) {
-            return pep->energy[i];
+        } else if (beam->d_lut[i] == depth) {
+            return beam->e_lut[i];
         }
     }
 
     /* Use index to lookup and interpolate energy */
-    if (i >= 0 || i < pep->num_samp) {
+    if (i >= 0 || i < beam->num_samples) {
         // linear interpolation
-        energy = pep->energy[i]
-                 + (depth - pep->depth[i])
-                 * ((pep->energy[i+1] - pep->energy[i]) 
-                 / (pep->depth[i+1] - pep->depth[i]));
+        energy = beam->e_lut[i]
+                 + (depth - beam->d_lut[i])
+                 * ((beam->e_lut[i+1] - beam->e_lut[i]) 
+                 / (beam->d_lut[i+1] - beam->d_lut[i]));
     } else {
         // this should never happen, failsafe
         energy = 0.0f;
@@ -282,7 +278,7 @@ static double
 dose_direct (
     double* ct_xyz,             /* voxel to dose */
     Rpl_volume *rpl_vol,        /* radiographic depths */
-    Proton_Depth_Dose* pep,     /* proton energy profile */
+    Proton_Beam* beam,          /* proton energy profile */
     int* ires,                  /* ray cast resolution */
     double* ap_ul,              /* aperture upper-left */
     double* incr_r,             /* ray row to row vector */
@@ -312,7 +308,7 @@ dose_direct (
 #endif
 
     /* Lookup the dose at this radiographic depth */
-    dose = lookup_energy (rgdepth, pep);
+    dose = lookup_energy (rgdepth, beam);
     
     return dose;
 }
@@ -321,7 +317,7 @@ static double
 dose_debug (
     double* ct_xyz,             /* voxel to dose */
     Rpl_volume *rpl_vol,        /* radiographic depths */
-    Proton_Depth_Dose* pep,     /* proton energy profile */
+    Proton_Beam* beam,          /* proton energy profile */
     int* ires,                  /* ray cast resolution */
     double* ap_ul,              /* aperture upper-left */
     double* incr_r,             /* ray row to row vector */
@@ -338,7 +334,7 @@ dose_scatter (
     double* ct_xyz,
     int* ct_ijk,            // DEBUG
     Rpl_volume *rpl_vol, 
-    Proton_Depth_Dose* pep,
+    Proton_Beam* beam,
     int* ires,
     double* ap_ul,
     double* incr_r,
@@ -403,7 +399,7 @@ dose_scatter (
      */
     if (rgdepth < 0.0) {
         if (parms->detail == 0) {
-            rgdepth = pep->dmax;
+            rgdepth = beam->dmax;
         }
         else if (parms->detail == 1) {
             /* User wants to ignore "scatter only" dose */
@@ -413,11 +409,11 @@ dose_scatter (
             return 0.0f;
         }
         else {
-            rgdepth = pep->dmax;
+            rgdepth = beam->dmax;
         }
     }
 
-    sigma = highland (rgdepth, pep);
+    sigma = highland (rgdepth, beam);
     r_max = 3.0*sigma;
 
     r_step = 1.00;          // mm
@@ -454,7 +450,7 @@ dose_scatter (
                 }
                 continue;
             } else {
-                d = lookup_energy (rgdepth, pep);
+                d = lookup_energy (rgdepth, beam);
 #if defined (DEBUG_VOXEL)
                 d0 = d;
 #endif
@@ -465,7 +461,7 @@ dose_scatter (
             proj_xy[0] = vec3_dot (sctoct, prt);
             proj_xy[1] = vec3_dot (sctoct, pdn);
 
-            sigma = highland (rgdepth, pep);
+            sigma = highland (rgdepth, beam);
 
             /* weight by gaussian kernel */
             w = gaus_kernel (proj_xy, ct_xyz, sigma);
@@ -497,7 +493,7 @@ dose_hong (
     double* ct_xyz,
     int* ct_ijk,            // DEBUG
     Rpl_volume *rpl_vol, 
-    Proton_Depth_Dose* pep,
+    Proton_Beam* beam,
     int* ires,
     double* ap_ul,
     double* incr_r,
@@ -557,7 +553,7 @@ dose_hong (
      */
     if (rgdepth < 0.0) {
         if (parms->detail == 0) {
-            rgdepth = pep->dmax;
+            rgdepth = beam->dmax;
         }
         else if (parms->detail == 1) {
             /* User wants to ignore "scatter only" dose */
@@ -567,11 +563,11 @@ dose_hong (
             return 0.0f;
         }
         else {
-            rgdepth = pep->dmax;
+            rgdepth = beam->dmax;
         }
     }
 
-    sigma = highland (rgdepth, pep);
+    sigma = highland (rgdepth, beam);
     r_max = 3.0*sigma;
 
     r_step = 1.00;          // mm
@@ -608,7 +604,7 @@ dose_hong (
                 }
                 continue;
             } else {
-                d = lookup_energy (rgdepth, pep);
+                d = lookup_energy (rgdepth, beam);
 #if defined (DEBUG_VOXEL)
                 d0 = d;
 #endif
@@ -619,7 +615,7 @@ dose_hong (
             proj_xy[0] = vec3_dot (sctoct, prt);
             proj_xy[1] = vec3_dot (sctoct, pdn);
 
-            sigma = highland (rgdepth, pep);
+            sigma = highland (rgdepth, beam);
 
             /* weight by gaussian kernel */
             w = gaus_kernel (proj_xy, ct_xyz, sigma);
@@ -648,25 +644,25 @@ dose_hong (
 }
 
 static void
-dump_pep (Proton_Depth_Dose* pep)
+dump_beam (Proton_Beam* beam)
 {
     FILE* fp;
 
     int i;
 
-    fp = fopen ("dump_pep.txt", "w");
+    fp = fopen ("dump_beam.txt", "w");
 
-    for (i = 0; i < pep->num_samp; i++) {
-       fprintf (fp, "[%3.2f] %3.2f\n", pep->depth[i], pep->energy[i]);
+    for (i = 0; i < beam->num_samples; i++) {
+       fprintf (fp, "[%3.2f] %3.2f\n", beam->d_lut[i], beam->e_lut[i]);
     }
 
-    fprintf (fp, "    dmax: %3.2f\n", pep->dmax);
-    fprintf (fp, "    emax: %3.2f\n", pep->emax);
-    fprintf (fp, "num_samp: %i\n", pep->num_samp);
+    fprintf (fp, "    dmax: %3.2f\n", beam->dmax);
+    fprintf (fp, "num_samp: %i\n", beam->num_samples);
 
     fclose (fp);
 }
 
+#if 0
 static Proton_Depth_Dose* 
 load_pep_txt (char* filename)
 {
@@ -703,10 +699,6 @@ load_pep_txt (char* filename)
         pep->depth [pep->num_samp-1] = range;
         pep->energy [pep->num_samp-1] = dose;
         pep->dmax = range;         /* Assume entries are sorted */
-
-        if (pep->emax < dose) {
-            pep->emax = dose;
-        }
     }
 
     fclose (fp);
@@ -762,7 +754,6 @@ load_pep_xio (char* filename)
         }
     }
     pep->dmax = pep->depth[j-1];
-    pep->emax = 0.0f;
 
     // Load in the energies
     // There are 10 samples per line
@@ -773,9 +764,6 @@ load_pep_xio (char* filename)
 
         while (ptoken) {
             pep->energy[j] = (float) strtod (ptoken, NULL);
-            if (pep->energy[j] > pep->emax) {
-                pep->emax = pep->energy[j];
-            }
             ptoken = strtok (NULL, ",\n\0");
             j++;
         }
@@ -806,6 +794,7 @@ load_pep (char* filename)
         return load_pep_txt (filename);
     }
 }
+#endif
 
 void
 proton_dose_compute (
@@ -825,19 +814,20 @@ proton_dose_compute (
     double incr_r[3];
     double incr_c[3];
 
+    Proton_Beam* beam = parms->beam;
+
     float* dose_img = (float*) dose_vol->img;
     int idx = 0;
 
     Proj_matrix *pmat;
 
     double ps[2] = { 1., 1. };
-    Proton_Depth_Dose* pep;
 
     pmat = new Proj_matrix;
     proj_matrix_set (
             pmat,
-            parms->src,
-            parms->isocenter,
+            beam->src,
+            beam->isocenter,
             parms->vup,
             parms->ap_offset,
             parms->ic,
@@ -885,9 +875,6 @@ proton_dose_compute (
     printf ("  -- [VEC] row++ : %g %g %g\n", incr_r[0], incr_r[1], incr_r[2]);
 #endif
 
-    /* Load proton energy profile specified on commandline */
-    pep = load_pep (parms->input_pep_fn);
-
     /* Create the depth volume */
     rpl_vol = rpl_volume_create (
             ct_vol,             /* CT volume */
@@ -905,7 +892,7 @@ proton_dose_compute (
 
     if (parms->debug) {
         rpl_volume_save (rpl_vol, "depth_vol.mha");
-        dump_pep (pep);
+        dump_beam (beam);
         proj_matrix_debug (pmat);
     }
 
@@ -926,7 +913,7 @@ proton_dose_compute (
                     dose = dose_direct (
                             ct_xyz,         /* voxel to dose */
                             rpl_vol,        /* radiographic depths */
-                            pep,            /* proton energy profile */
+                            beam,            /* proton energy profile */
                             parms->ires,    /* ray cast resolution */
                             ul_room,        /* aperture upper-left */
                             incr_r,         /* 3D ray row increment */
@@ -938,7 +925,7 @@ proton_dose_compute (
                             ct_xyz,        /* voxel to dose */
                             ct_ijk,        /* index of voxel */
                             rpl_vol,       /* radiographic depths */
-                            pep,           /* proton energy profile */
+                            beam,           /* proton energy profile */
                             parms->ires,   /* ray cast resolution */
                             ul_room,       /* aperture upper-left */
                             incr_r,        /* 3D ray row increment */
@@ -952,7 +939,7 @@ proton_dose_compute (
                             ct_xyz,        /* voxel to dose */
                             ct_ijk,        /* index of voxel */
                             rpl_vol,       /* radiographic depths */
-                            pep,           /* proton energy profile */
+                            beam,           /* proton energy profile */
                             parms->ires,   /* ray cast resolution */
                             ul_room,       /* aperture upper-left */
                             incr_r,        /* 3D ray row increment */
@@ -965,7 +952,7 @@ proton_dose_compute (
                     dose = dose_debug (
                             ct_xyz,         /* voxel to dose */
                             rpl_vol,        /* radiographic depths */
-                            pep,            /* proton energy profile */
+                            beam,            /* proton energy profile */
                             parms->ires,    /* ray cast resolution */
                             ul_room,        /* aperture upper-left */
                             incr_r,         /* 3D ray row increment */
@@ -983,7 +970,7 @@ proton_dose_compute (
         display_progress ((float)idx, (float)ct_vol->npix);
     }
 
-    free (pep);
+    delete beam;
     delete pmat;
     rpl_volume_destroy (rpl_vol);
 }

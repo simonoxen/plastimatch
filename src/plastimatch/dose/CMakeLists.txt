@@ -14,12 +14,15 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 ##  SOURCE FILES
 ##-----------------------------------------------------------------------------
 set (PLMDOSE_LIBRARY_SRC
+  bragg_curve.cxx
+  proton_beam.cxx
   proton_dose.cxx
   )
 
 set (PLMDOSE_LIBRARY_DEPENDENCIES 
   plmbase
   plmsys
+  specfun
   )
 
 ##-----------------------------------------------------------------------------

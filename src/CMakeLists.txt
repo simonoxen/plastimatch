@@ -13,17 +13,13 @@ set (PLASTIMATCH_LIBS
   ${MATH_LIB}
   plmsys
   plmbase
-  plmdose
-  plmreconstruct
+  plmutil
   plmregister
   plmsegment
-  plmutil
+  plmreconstruct
+  plmdose
   plmscript
   )
-
-if (NOT BUILD_DEBIAN)
-  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} specfun)
-endif ()
 
 if (FFTW_FOUND)
   set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} ${FFTW_LIBRARIES})
