@@ -11,6 +11,7 @@
 #define _plmdose_h_
 #include "plmdose_config.h"
 
+#include "aperture.h"
 #include "bragg_curve.h"
 #include "proton_beam.h"
 #include "proton_dose.h"

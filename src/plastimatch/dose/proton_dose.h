@@ -8,6 +8,7 @@
 #include "threading.h"
 #include "plm_path.h"
 
+class Aperture;
 class Proton_Beam;
 class Volume;
 
@@ -26,25 +27,18 @@ public:
 public:
     /* [SETTINGS] */
     Threading threading;
+    int debug;            /* 1 = debug mode */
+    int detail;           /* 0 = full detail */
     char flavor;          /* Which algorithm? */
     float ray_step;       /* Uniform ray step size (mm) */
     float scale;          /* scale dose intensity */
-    int detail;           /* 0 = full detail */
                           /* 1 = only consider voxels in beam path */
+
     char input_fn[_MAX_PATH];  /* input:  patient volume */
     char output_fn[_MAX_PATH]; /* output: dose volume */
 
     Proton_Beam* beam;
-
-    /* [APERTURE] */
-    double ap_offset;     /* distance from beam nozzle */
-    double vup[3];        /* orientation */
-    double ic [2];        /* center */
-    int ires[2];          /* resolution (vox) */
-
-
-    /* command line */
-    int debug;
+    Aperture* aperture;
 };
 
 PLMDOSE_C_API

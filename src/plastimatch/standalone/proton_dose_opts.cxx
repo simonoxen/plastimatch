@@ -143,22 +143,22 @@ Proton_dose_parms::set_key_val (
     /* [APERTURE] */
     case 2:
         if (!strcmp (key, "up")) {
-            if (sscanf (val, "%lf %lf %lf", &(this->vup[0]), &(this->vup[1]), &(this->vup[2])) != 3) {
+            if (sscanf (val, "%lf %lf %lf", &(this->aperture->vup[0]), &(this->aperture->vup[1]), &(this->aperture->vup[2])) != 3) {
                 goto error_exit;
             }
         }
         else if (!strcmp (key, "center")) {
-            if (sscanf (val, "%lf %lf", &(this->ic[0]), &(this->ic[1])) != 2) {
+            if (sscanf (val, "%lf %lf", &(this->aperture->ic[0]), &(this->aperture->ic[1])) != 2) {
                 goto error_exit;
             }
         }
         else if (!strcmp (key, "offset")) {
-            if (sscanf (val, "%lf", &(this->ap_offset)) != 1) {
+            if (sscanf (val, "%lf", &(this->aperture->ap_offset)) != 1) {
                 goto error_exit;
             }
         }
         else if (!strcmp (key, "resolution")) {
-            if (sscanf (val, "%i %i", &(this->ires[0]), &(this->ires[1])) != 2) {
+            if (sscanf (val, "%i %i", &(this->aperture->ires[0]), &(this->aperture->ires[1])) != 2) {
                 goto error_exit;
             }
         }
