@@ -16,7 +16,7 @@ class Volume;
     (((ijk[2] * dim[1] + ijk[1]) * dim[0]) + ijk[0])
 
 
-class Proton_dose_parms {
+class PLMDOSE_API Proton_dose_parms {
 public:
     Proton_dose_parms ();
 
