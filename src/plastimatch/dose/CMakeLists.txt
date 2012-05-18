@@ -18,6 +18,7 @@ set (PLMDOSE_LIBRARY_SRC
   bragg_curve.cxx
   proton_beam.cxx
   proton_dose.cxx
+  proton_scene.cxx
   )
 
 set (PLMDOSE_LIBRARY_DEPENDENCIES 

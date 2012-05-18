@@ -10,9 +10,9 @@
 #endif
 
 #include "plmbase.h"
+#include "plmdose.h"
 
 #include "plm_math.h"
-#include "proton_dose.h"
 
 int
 main (int argc, char* argv[])
@@ -22,17 +22,26 @@ main (int argc, char* argv[])
 
     parms.parse_args (argc, argv);
 
+    // TODO: Move this into Proton_dose_parms::parse_args()
+    //       and move away from read_mha in favor of plm_image
+    /* ----------------------------- */
     ct = read_mha (parms.input_fn);
     if (!ct) return -1;
 
     volume_convert_to_float (ct);
+    parms.scene->set_patient (ct);
+
+    /* try to setup the scene with the provided parameters */
+    if (!parms.scene->init (parms.ray_step)) {
+        fprintf (stderr, "ERROR: Unable to initilize scene.\n");
+        exit (0);
+    }
+    /* ----------------------------- */
 
     printf ("Working... ");
     fflush(stdout);
 
-    dose = volume_clone_empty (ct);
-
-    proton_dose_compute (dose, ct, &parms);
+    dose = proton_dose_compute (&parms);
 
     write_mha (parms.output_fn, dose);
 

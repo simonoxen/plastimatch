@@ -37,6 +37,7 @@ Proton_dose_parms::set_key_val (
     int section
 )
 {
+    Proton_Scene* scene = this->scene;
     switch (section) {
 
     /* [SETTINGS] */
@@ -105,35 +106,35 @@ Proton_dose_parms::set_key_val (
     /* [BEAM] */
     case 1:
         if (!strcmp (key, "bragg_curve")) {
-            this->beam->load (val);
+            scene->beam->load (val);
         }
         else if (!strcmp (key, "pos")) {
-            if (sscanf (val, "%lf %lf %lf", &(this->beam->src[0]), &(this->beam->src[1]), &(this->beam->src[2])) != 3) {
+            if (sscanf (val, "%lf %lf %lf", &(scene->beam->src[0]), &(scene->beam->src[1]), &(scene->beam->src[2])) != 3) {
                 goto error_exit;
             }
         }
         else if (!strcmp (key, "isocenter")) {
-            if (sscanf (val, "%lf %lf %lf", &(this->beam->isocenter[0]), &(this->beam->isocenter[1]), &(this->beam->isocenter[2])) != 3) {
+            if (sscanf (val, "%lf %lf %lf", &(scene->beam->isocenter[0]), &(scene->beam->isocenter[1]), &(scene->beam->isocenter[2])) != 3) {
                 goto error_exit;
             }
         }
         else if (!strcmp (key, "energy")) {
-            if (sscanf (val, "%lf", &(this->beam->E0)) != 1) {
+            if (sscanf (val, "%lf", &(scene->beam->E0)) != 1) {
                 goto error_exit;
             }
         }
         else if (!strcmp (key, "spread")) {
-            if (sscanf (val, "%lf", &(this->beam->spread)) != 1) {
+            if (sscanf (val, "%lf", &(scene->beam->spread)) != 1) {
                 goto error_exit;
             }
         }
         else if (!strcmp (key, "depth")) {
-            if (sscanf (val, "%lf", &(this->beam->dmax)) != 1) {
+            if (sscanf (val, "%lf", &(scene->beam->dmax)) != 1) {
                 goto error_exit;
             }
         }
         else if (!strcmp (key, "res")) {
-            if (sscanf (val, "%lf", &(this->beam->dres)) != 1) {
+            if (sscanf (val, "%lf", &(scene->beam->dres)) != 1) {
                 goto error_exit;
             }
         }
@@ -143,22 +144,22 @@ Proton_dose_parms::set_key_val (
     /* [APERTURE] */
     case 2:
         if (!strcmp (key, "up")) {
-            if (sscanf (val, "%lf %lf %lf", &(this->aperture->vup[0]), &(this->aperture->vup[1]), &(this->aperture->vup[2])) != 3) {
+            if (sscanf (val, "%lf %lf %lf", &(scene->ap->vup[0]), &(scene->ap->vup[1]), &(scene->ap->vup[2])) != 3) {
                 goto error_exit;
             }
         }
         else if (!strcmp (key, "center")) {
-            if (sscanf (val, "%lf %lf", &(this->aperture->ic[0]), &(this->aperture->ic[1])) != 2) {
+            if (sscanf (val, "%lf %lf", &(scene->ap->ic[0]), &(scene->ap->ic[1])) != 2) {
                 goto error_exit;
             }
         }
         else if (!strcmp (key, "offset")) {
-            if (sscanf (val, "%lf", &(this->aperture->ap_offset)) != 1) {
+            if (sscanf (val, "%lf", &(scene->ap->ap_offset)) != 1) {
                 goto error_exit;
             }
         }
         else if (!strcmp (key, "resolution")) {
-            if (sscanf (val, "%i %i", &(this->aperture->ires[0]), &(this->aperture->ires[1])) != 2) {
+            if (sscanf (val, "%i %i", &(scene->ap->ires[0]), &(scene->ap->ires[1])) != 2) {
                 goto error_exit;
             }
         }
@@ -261,9 +262,9 @@ Proton_dose_parms::parse_args (int argc, char** argv)
         this->parse_config (argv[i]);
     }
 
-    if (this->beam->d_lut == NULL) {
+    if (scene->beam->d_lut == NULL) {
         /* measured bragg curve not supplied, try to generate */
-        if (!this->beam->generate ()) {
+        if (!scene->beam->generate ()) {
             exit (0);
         }
     }

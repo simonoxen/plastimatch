@@ -15,6 +15,7 @@
 #include "bragg_curve.h"
 #include "proton_beam.h"
 #include "proton_dose.h"
+#include "proton_scene.h"
 #endif /* #ifndef _plmdose_h_ */
 
 

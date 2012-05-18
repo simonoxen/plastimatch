@@ -34,8 +34,7 @@
 
 Proton_dose_parms::Proton_dose_parms ()
 {
-    this->aperture = new Aperture;
-    this->beam = new Proton_Beam;
+    this->scene = new Proton_Scene;
 
     this->threading = THREADING_CPU_OPENMP;
     this->flavor = 'a';
@@ -46,6 +45,11 @@ Proton_dose_parms::Proton_dose_parms ()
     this->scale = 1.0f;
     this->input_fn[0] = '\0';
     this->output_fn[0] = '\0';
+}
+
+Proton_dose_parms::~Proton_dose_parms ()
+{
+    delete this->scene;
 }
 
 /* This function is used to rotate a point about a ray in an orbit
@@ -647,96 +651,24 @@ dump_beam (Proton_Beam* beam)
     fclose (fp);
 }
 
-void
-proton_dose_compute (
-    Volume *dose_vol,
-    Volume *ct_vol,
-    Proton_dose_parms *parms
-)
+Volume*
+proton_dose_compute (Proton_dose_parms *parms)
 {
-    Proj_matrix *pmat;
-    Rpl_volume* rpl_vol;
+    Proton_Scene* scene = parms->scene;
+    Aperture* ap = scene->ap;
+    Proton_Beam* beam = scene->beam;
+    Proj_matrix* pmat = scene->pmat;
+    Volume* ct_vol = scene->patient;
+
+    Rpl_volume* rpl_vol = scene->rpl_vol;
 
     int ct_ijk[3];
     double ct_xyz[4];
-    double p1[3];
-    double tmp[3];       
 
-    Aperture* ap = parms->aperture;
-    Proton_Beam* beam = parms->beam;
+    Volume* dose_vol = volume_clone_empty (ct_vol);
     float* dose_img = (float*) dose_vol->img;
 
-    int idx = 0;
-
-    double ps[2] = { 1., 1. };
-
-    pmat = new Proj_matrix;
-    proj_matrix_set (
-            pmat,
-            beam->src,
-            beam->isocenter,
-            ap->vup,
-            ap->ap_offset,
-            ap->ic,
-            ps,
-            ap->ires
-    );
-
-    proj_matrix_get_nrm (pmat, ap->nrm);
-    proj_matrix_get_pdn (pmat, ap->pdn);
-    proj_matrix_get_prt (pmat, ap->prt);
-
-    /* Compute position of aperture in room coordinates */
-    vec3_scale3 (tmp, ap->nrm, - pmat->sid);
-    vec3_add3 (ap->ic_room, pmat->cam, tmp);
-
-    /* Compute incremental change in 3d position for each change 
-       in aperture row/column. */
-    vec3_scale3 (ap->incr_c, ap->prt, ps[1]);
-    vec3_scale3 (ap->incr_r, ap->pdn, ps[0]);
-
-    /* Get position of upper left pixel on panel */
-    vec3_copy (ap->ul_room, ap->ic_room);
-    vec3_scale3 (tmp, ap->incr_r, - pmat->ic[0]);
-    vec3_add2 (ap->ul_room, tmp);
-    vec3_scale3 (tmp, ap->incr_c, - pmat->ic[1]);
-    vec3_add2 (ap->ul_room, tmp);
-
-    /* drr_trace_ray uses p1 & p2, p1 is the camera, p2 is in the 
-       direction of the ray inside the aperture plane*/
-    vec3_copy (p1, pmat->cam);
-
-#if VERBOSE
-    printf ("\n");
-    printf ("PROTON SOURCE\n");
-    printf ("  -- [POS] Location: %g %g %g\n", pmat->cam[0], pmat->cam[1], pmat->cam[2]);
-    printf ("APERATURE\n");
-    printf ("  -- [NUM] Res   : %i %i\n", ap->ires[0], ap->ires[1]);
-    printf ("  -- [DIS] Offset: %g\n", ap->ap_offset);
-    printf ("  -- [POS] Center: %g %g %g\n", ap->ic_room[0], ap->ic_room[1], ap->ic_room[2]);
-    printf ("  -- [POS] UpLeft: %g %g %g\n", ap->ul_room[0], ap->ul_room[1], ap->ul_room[2]);
-    printf ("  -- [VEC] Up    : %g %g %g\n", ap->vup[0], ap->vup[1], ap->vup[2]);
-    printf ("  -- [VEC] Normal: %g %g %g\n", ap->nrm[0], ap->nrm[1], ap->nrm[2]);
-    printf ("  -- [VEC] Right : %g %g %g\n", ap->prt[0], ap->prt[1], ap->prt[2]);
-    printf ("  -- [VEC] Down  : %g %g %g\n", ap->pdn[0], ap->pdn[1], ap->pdn[2]);
-    printf ("  -- [VEC] col++ : %g %g %g\n", ap->incr_c[0], ap->incr_c[1], ap->incr_c[2]);
-    printf ("  -- [VEC] row++ : %g %g %g\n", ap->incr_r[0], ap->incr_r[1], ap->incr_r[2]);
-#endif
-
-    /* Create the depth volume */
-    rpl_vol = rpl_volume_create (
-            ct_vol,             /* CT volume */
-            pmat,               /* from source to aperature  */
-            ap->ires,           /* aperature dimension       */
-            pmat->cam,          /* position of source        */
-            ap->ul_room,        /* position of aperature     */
-            ap->incr_r,         /* aperature row++ vector    */
-            ap->incr_c,         /* aperature col++ vector    */
-            parms->ray_step     /* step size along ray trace */
-    );
-
-    /* Scan through aperture to fill in rpl_volume */
-    rpl_volume_compute (rpl_vol, ct_vol);
+    scene->print ();
 
     if (parms->debug) {
         rpl_volume_save (rpl_vol, "depth_vol.mha");
@@ -745,6 +677,7 @@ proton_dose_compute (
     }
 
     /* Scan through CT Volume */
+    int idx = 0;
     for (ct_ijk[2] = 0; ct_ijk[2] < ct_vol->dim[2]; ct_ijk[2]++) {
         for (ct_ijk[1] = 0; ct_ijk[1] < ct_vol->dim[1]; ct_ijk[1]++) {
             for (ct_ijk[0] = 0; ct_ijk[0] < ct_vol->dim[0]; ct_ijk[0]++) {
@@ -818,7 +751,5 @@ proton_dose_compute (
         display_progress ((float)idx, (float)ct_vol->npix);
     }
 
-    delete beam;
-    delete pmat;
-    rpl_volume_destroy (rpl_vol);
+    return dose_vol;
 }
