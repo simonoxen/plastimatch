@@ -12,7 +12,6 @@
 #include "compiler_warnings.h"
 
 //#define UNIFIED_DEPTH_OFFSET 1
-
 //#define VERBOSE 1
 
 #define INDEX_OF(ijk, dim) \

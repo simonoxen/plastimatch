@@ -17,19 +17,18 @@
 int
 main (int argc, char* argv[])
 {
-    Volume *ct, *dose;
+    Plm_image* ct;
+    Volume* dose;
     Proton_Parms parms;
 
     parms.parse_args (argc, argv);
 
     // TODO: Move this into Proton_Parms::parse_args()
-    //       and move away from read_mha in favor of plm_image
     /* ----------------------------- */
-    ct = read_mha (parms.input_fn);
+    ct = plm_image_load (parms.input_fn, PLM_IMG_TYPE_ITK_FLOAT);
     if (!ct) return -1;
 
-    volume_convert_to_float (ct);
-    parms.scene->set_patient (ct);
+    parms.scene->set_patient (ct->gpuit_float ());
 
     /* try to setup the scene with the provided parameters */
     if (!parms.scene->init (parms.ray_step)) {
@@ -38,7 +37,7 @@ main (int argc, char* argv[])
     }
     /* ----------------------------- */
 
-    printf ("Working... ");
+    printf ("Working...\n");
     fflush(stdout);
 
     dose = proton_dose_compute (&parms);
