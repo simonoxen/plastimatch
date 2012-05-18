@@ -23,10 +23,12 @@ Proton_Scene::~Proton_Scene ()
 {
     delete this->ap;
     delete this->beam;
+    delete this->patient;
     delete this->pmat;
     if (this->rpl_vol) {
         rpl_volume_destroy (this->rpl_vol);
     }
+
 }
 
 bool
@@ -89,6 +91,12 @@ Proton_Scene::init (int ray_step)
     rpl_volume_compute (this->rpl_vol, this->patient);
 
     return true;
+}
+
+void
+Proton_Scene::set_patient (Plm_image* ct_vol)
+{
+    this->patient = ct_vol->gpuit_float ();
 }
 
 void

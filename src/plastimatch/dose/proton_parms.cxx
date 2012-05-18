@@ -10,6 +10,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "plmbase.h"
 #include "plmdose.h"
 #include "plmsys.h"
 
@@ -32,6 +33,8 @@ Proton_Parms::Proton_Parms ()
     this->scale = 1.0f;
     this->input_fn[0] = '\0';
     this->output_fn[0] = '\0';
+
+    this->patient = NULL;
 }
 
 Proton_Parms::~Proton_Parms ()
@@ -260,7 +263,7 @@ Proton_Parms::parse_config (
     }
 }
 
-void
+bool
 Proton_Parms::parse_args (int argc, char** argv)
 {
     int i;
@@ -285,16 +288,33 @@ Proton_Parms::parse_args (int argc, char** argv)
     if (scene->beam->d_lut == NULL) {
         /* measured bragg curve not supplied, try to generate */
         if (!scene->beam->generate ()) {
-            exit (0);
+            return false;
         }
+    }
+
+    if (this->output_fn[0] == '\0') {
+        fprintf (stderr, "\n** ERROR: Output dose not specified in configuration file!\n");
+        return false;
     }
 
     if (this->input_fn[0] == '\0') {
         fprintf (stderr, "\n** ERROR: Patient image not specified in configuration file!\n");
-        exit (0);
+        return false;
+    } else {
+        /* load the patient and insert into the scene */
+        this->patient = plm_image_load (this->input_fn, PLM_IMG_TYPE_ITK_FLOAT);
+        if (!this->patient) {
+            fprintf (stderr, "\n** ERROR: Unable to load patient volume.\n");
+            return false;
+        }
+        this->scene->set_patient (this->patient);
     }
-    if (this->output_fn[0] == '\0') {
-        fprintf (stderr, "\n** ERROR: Output dose not specified in configuration file!\n");
-        exit (0);
+
+    /* try to setup the scene with the provided parameters */
+    if (!this->scene->init (this->ray_step)) {
+        fprintf (stderr, "ERROR: Unable to initilize scene.\n");
+        return false;
     }
+
+    return true;
 }

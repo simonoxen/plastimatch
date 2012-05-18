@@ -4,6 +4,7 @@
 #ifndef _proton_dose_opts_h_
 #define _proton_dose_opts_h_
 
+class Plm_image;
 class Proton_Scene;
 
 class PLMDOSE_API Proton_Parms {
@@ -11,7 +12,7 @@ public:
     Proton_Parms ();
     ~Proton_Parms ();
 
-    void parse_args (int argc, char** argv);
+    bool parse_args (int argc, char** argv);
 
 private:
     void parse_config (const char* config_fn);
@@ -29,6 +30,8 @@ public:
 
     char input_fn[_MAX_PATH];  /* input:  patient volume */
     char output_fn[_MAX_PATH]; /* output: dose volume */
+
+    Plm_image* patient;
 
     Proton_Scene* scene;
 };
