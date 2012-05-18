@@ -23,6 +23,9 @@ DCMTK_DIR:PATH=/PHShome/gcs6/build/install/dcmtk-3.6.0
 //Use DCMTK instead of GDCM for DICOM operations
 PLM_CONFIG_PREFER_DCMTK:BOOL=ON
 
+//Disable REG-2-3
+PLM_CONFIG_DISABLE_REG23:BOOL=ON
+
 // Use anonymous checkout
 SVN_UPDATE_OPTIONS:STRING=--username anonymous --password \\\"\\\"
 

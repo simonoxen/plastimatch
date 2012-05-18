@@ -15,6 +15,9 @@ SITE:STRING=gelato-gcc4.4.5
 //Directory with SlicerConfig.cmake or Slicer3Config.cmake
 Slicer_DIR:PATH=/PHShome/gcs6/build/slicer-4/Slicer-build
 
+//Disable REG-2-3
+PLM_CONFIG_DISABLE_REG23:BOOL=ON
+
 // Use anonymous checkout
 SVN_UPDATE_OPTIONS:STRING=--username anonymous --password \\\"\\\"
 

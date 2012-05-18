@@ -20,6 +20,9 @@ ITK_DIR:PATH=/home/gcs6/build/itk-3.20.1
 // Use anonymous checkout
 SVN_UPDATE_OPTIONS:STRING=--username anonymous --password \\\"\\\"
 
+//Disable REG-2-3
+PLM_CONFIG_DISABLE_REG23:BOOL=ON
+
 //Build with shared libraries.
 BUILD_SHARED_LIBS:BOOL=ON
 ")

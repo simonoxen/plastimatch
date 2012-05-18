@@ -24,6 +24,9 @@ DCMTK_DIR:PATH=/PHShome/gcs6/build/install/dcmtk-3.6.0
 CMAKE_BUILD_TYPE:STRING=Debug
 CMAKE_CXX_FLAGS:STRING=-fprofile-arcs -ftest-coverage
 
+//Disable REG-2-3
+PLM_CONFIG_DISABLE_REG23:BOOL=ON
+
 // Use anonymous checkout
 SVN_UPDATE_OPTIONS:STRING=--username anonymous --password \\\"\\\"
 

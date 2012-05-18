@@ -23,6 +23,9 @@ Slicer_DIR:PATH=/PHShome/gcs6/build/slicer-3.6/Slicer3-build
 // Use anonymous checkout
 SVN_UPDATE_OPTIONS:STRING=--username anonymous --password \\\"\\\"
 
+//Disable REG-2-3
+PLM_CONFIG_DISABLE_REG23:BOOL=ON
+
 //Build with shared libraries.
 BUILD_SHARED_LIBS:BOOL=ON
 ")
