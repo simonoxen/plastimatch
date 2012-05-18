@@ -4,7 +4,7 @@
 #ifndef _proton_beam_h_
 #define _proton_beam_h_
 
-class Proton_Beam {
+class PLMDOSE_API Proton_Beam {
 public:
     Proton_Beam ();
     ~Proton_Beam ();

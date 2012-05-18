@@ -19,7 +19,27 @@
 #define NULL ((void*)0)
 #endif
 
-void
+Proton_Parms::Proton_Parms ()
+{
+    this->scene = new Proton_Scene;
+
+    this->threading = THREADING_CPU_OPENMP;
+    this->flavor = 'a';
+
+    this->debug = 0;
+    this->detail = 0;
+    this->ray_step = 1.0f;
+    this->scale = 1.0f;
+    this->input_fn[0] = '\0';
+    this->output_fn[0] = '\0';
+}
+
+Proton_Parms::~Proton_Parms ()
+{
+    delete this->scene;
+}
+
+static void
 print_usage (void)
 {
     printf (
@@ -31,7 +51,7 @@ print_usage (void)
 }
 
 int
-Proton_dose_parms::set_key_val (
+Proton_Parms::set_key_val (
     const char* key, 
     const char* val, 
     int section
@@ -175,7 +195,7 @@ Proton_dose_parms::set_key_val (
 
 
 void
-Proton_dose_parms::parse_config (
+Proton_Parms::parse_config (
     const char* config_fn
 )
 {
@@ -241,7 +261,7 @@ Proton_dose_parms::parse_config (
 }
 
 void
-Proton_dose_parms::parse_args (int argc, char** argv)
+Proton_Parms::parse_args (int argc, char** argv)
 {
     int i;
     for (i=1; i<argc; i++) {

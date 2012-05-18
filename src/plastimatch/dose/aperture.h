@@ -4,7 +4,7 @@
 #ifndef _aperture_h_
 #define _aperture_h_
 
-class Aperture {
+class PLMDOSE_API Aperture {
 public:
     Aperture ();
 

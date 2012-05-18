@@ -10,11 +10,13 @@
 #include "plm_math.h"
 
 #include "compiler_warnings.h"
-#include "proton_dose.h"
 
 //#define UNIFIED_DEPTH_OFFSET 1
 
 //#define VERBOSE 1
+
+#define INDEX_OF(ijk, dim) \
+    (((ijk[2] * dim[1] + ijk[1]) * dim[0]) + ijk[0])
 
 typedef struct callback_data Callback_data;
 struct callback_data {

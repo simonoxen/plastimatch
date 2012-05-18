@@ -11,7 +11,7 @@ class Volume;
 
 typedef struct rpl_volume Rpl_volume;
 
-class Proton_Scene {
+class PLMDOSE_API Proton_Scene {
 public:
     Proton_Scene ();
     ~Proton_Scene ();

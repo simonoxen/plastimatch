@@ -100,7 +100,6 @@ if (OPENCL_FOUND)
 endif ()
 set (PROTON_DOSE_SRC
   proton_dose_main.cxx 
-  proton_dose_opts.cxx
   )
 set (RAW_TO_MHA_SRC
   raw_to_mha.c

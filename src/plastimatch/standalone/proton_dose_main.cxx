@@ -18,11 +18,11 @@ int
 main (int argc, char* argv[])
 {
     Volume *ct, *dose;
-    Proton_dose_parms parms;
+    Proton_Parms parms;
 
     parms.parse_args (argc, argv);
 
-    // TODO: Move this into Proton_dose_parms::parse_args()
+    // TODO: Move this into Proton_Parms::parse_args()
     //       and move away from read_mha in favor of plm_image
     /* ----------------------------- */
     ct = read_mha (parms.input_fn);

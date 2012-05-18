@@ -32,25 +32,10 @@
 //#define DEBUG_VOXEL 1
 //#define DOSE_GAUSS 1
 
-Proton_dose_parms::Proton_dose_parms ()
-{
-    this->scene = new Proton_Scene;
 
-    this->threading = THREADING_CPU_OPENMP;
-    this->flavor = 'a';
+#define INDEX_OF(ijk, dim) \
+    (((ijk[2] * dim[1] + ijk[1]) * dim[0]) + ijk[0])
 
-    this->debug = 0;
-    this->detail = 0;
-    this->ray_step = 1.0f;
-    this->scale = 1.0f;
-    this->input_fn[0] = '\0';
-    this->output_fn[0] = '\0';
-}
-
-Proton_dose_parms::~Proton_dose_parms ()
-{
-    delete this->scene;
-}
 
 /* This function is used to rotate a point about a ray in an orbit
  * perpendicular to the ray.  It is assumed that the arbitrary axis of
@@ -266,7 +251,7 @@ lookup_energy (
 static double
 dose_direct (
     double* ct_xyz,             /* voxel to dose */
-    Proton_dose_parms *parms
+    Proton_Parms *parms
 )
 {
     Proton_Scene* scene = parms->scene;
@@ -296,7 +281,7 @@ dose_direct (
 static double
 dose_debug (
     double* ct_xyz,             /* voxel to dose */
-    Proton_dose_parms *parms
+    Proton_Parms *parms
 )
 {
     Proton_Scene* scene   = parms->scene;
@@ -309,7 +294,7 @@ static double
 dose_scatter (
     double* ct_xyz,
     int* ct_ijk,            // DEBUG
-    Proton_dose_parms *parms
+    Proton_Parms *parms
 )
 {
     Proton_Scene* scene   = parms->scene;
@@ -464,7 +449,7 @@ static double
 dose_hong (
     double* ct_xyz,
     int* ct_ijk,            // DEBUG
-    Proton_dose_parms *parms
+    Proton_Parms *parms
 )
 {
     Proton_Scene* scene   = parms->scene;
@@ -612,7 +597,7 @@ dose_hong (
 }
 
 Volume*
-proton_dose_compute (Proton_dose_parms *parms)
+proton_dose_compute (Proton_Parms *parms)
 {
     Proton_Scene* scene   = parms->scene;
     Proton_Beam*  beam    = scene->beam;
