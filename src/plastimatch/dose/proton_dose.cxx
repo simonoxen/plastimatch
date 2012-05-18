@@ -266,21 +266,14 @@ lookup_energy (
 static double
 dose_direct (
     double* ct_xyz,             /* voxel to dose */
-    Rpl_volume *rpl_vol,        /* radiographic depths */
-    Proton_Beam* beam,          /* proton energy profile */
-    int* ires,                  /* ray cast resolution */
-    double* ap_ul,              /* aperture upper-left */
-    double* incr_r,             /* ray row to row vector */
-    double* incr_c,             /* ray col to col vector */
     Proton_dose_parms *parms
 )
 {
-    double rgdepth;
-    double dose;
+    Proton_Scene* scene = parms->scene;
 
-    rgdepth = rpl_volume_get_rgdepth (
-	rpl_vol,        /* volume of radiological path lengths */
-	ct_xyz          /* voxel to find depth */
+    double rgdepth = rpl_volume_get_rgdepth (
+        scene->rpl_vol,     /* volume of radiological path lengths */
+        ct_xyz              /* find depth @ this voxel */
     );
 
     /* The voxel was not hit directly by the beam */
@@ -288,33 +281,27 @@ dose_direct (
         return 0.0f;
     }
 
+#if 0
     if (ct_xyz[1] > 0.0 && ct_xyz[1] < 2.0 
-	&& ct_xyz[2] > 0.0 && ct_xyz[2] < 2.0) {
-	printf ("(%f %f %f) %f\n", ct_xyz[0], ct_xyz[1], ct_xyz[2], 
-	    rgdepth);
+        && ct_xyz[2] > 0.0 && ct_xyz[2] < 2.0) {
+        printf ("(%f %f %f) %f\n", ct_xyz[0], ct_xyz[1], ct_xyz[2], 
+            rgdepth);
     }
-#if defined (commentout)
 #endif
 
-    /* Lookup the dose at this radiographic depth */
-    dose = lookup_energy (rgdepth, beam);
-    
-    return dose;
+    /* return the dose at this radiographic depth */
+    return lookup_energy (rgdepth, scene->beam);
 }
 
 static double
 dose_debug (
     double* ct_xyz,             /* voxel to dose */
-    Rpl_volume *rpl_vol,        /* radiographic depths */
-    Proton_Beam* beam,          /* proton energy profile */
-    int* ires,                  /* ray cast resolution */
-    double* ap_ul,              /* aperture upper-left */
-    double* incr_r,             /* ray row to row vector */
-    double* incr_c,             /* ray col to col vector */
     Proton_dose_parms *parms
 )
 {
-    return rpl_volume_get_rgdepth (rpl_vol, ct_xyz);
+    Proton_Scene* scene   = parms->scene;
+
+    return rpl_volume_get_rgdepth (scene->rpl_vol, ct_xyz);
 }
 
 /* Accounts for small angle scattering due to Columbic interactions */
@@ -322,24 +309,20 @@ static double
 dose_scatter (
     double* ct_xyz,
     int* ct_ijk,            // DEBUG
-    Rpl_volume *rpl_vol, 
-    Proton_Beam* beam,
-    int* ires,
-    double* ap_ul,
-    double* incr_r,
-    double* incr_c,
-    double* prt,
-    double* pdn,
     Proton_dose_parms *parms
 )
 {
+    Proton_Scene* scene   = parms->scene;
+    Aperture*     ap      = scene->ap;
+    Proton_Beam*  beam    = scene->beam;
+    Rpl_volume*   rpl_vol = scene->rpl_vol;
+
     double rgdepth;
     double sigma;
 
     double r, t;
     double r_step, t_step;
     double r_max;
-
 
     double sp_pos[3] = {0.0, 0.0, 0.0};
     double scatter_xyz[4] = {0.0, 0.0, 0.0, 1.0};
@@ -418,7 +401,7 @@ dose_scatter (
     /* Step radius */
     for (r = 0; r < r_max; r += r_step) {
         vec3_copy (sp_pos, ct_xyz);
-        vec3_scale3 (tmp, pdn, r);
+        vec3_scale3 (tmp, ap->pdn, r);
         vec3_add2 (sp_pos, tmp);
 
         /* Step angle */
@@ -447,8 +430,8 @@ dose_scatter (
 
             vec3_sub3 (sctoct, scatter_xyz, ct_xyz);
 
-            proj_xy[0] = vec3_dot (sctoct, prt);
-            proj_xy[1] = vec3_dot (sctoct, pdn);
+            proj_xy[0] = vec3_dot (sctoct, ap->prt);
+            proj_xy[1] = vec3_dot (sctoct, ap->pdn);
 
             sigma = highland (rgdepth, beam);
 
@@ -481,17 +464,14 @@ static double
 dose_hong (
     double* ct_xyz,
     int* ct_ijk,            // DEBUG
-    Rpl_volume *rpl_vol, 
-    Proton_Beam* beam,
-    int* ires,
-    double* ap_ul,
-    double* incr_r,
-    double* incr_c,
-    double* prt,
-    double* pdn,
     Proton_dose_parms *parms
 )
 {
+    Proton_Scene* scene   = parms->scene;
+    Aperture*     ap      = scene->ap;
+    Proton_Beam*  beam    = scene->beam;
+    Rpl_volume*   rpl_vol = scene->rpl_vol;
+
     double rgdepth;
     double sigma;
 
@@ -521,7 +501,7 @@ dose_hong (
         ct_ijk[2] == watch_ijk[2]) {
 
         printf ("Watching voxel [%i %i %i]\n", 
-	    watch_ijk[0], watch_ijk[1], watch_ijk[2]);
+            watch_ijk[0], watch_ijk[1], watch_ijk[2]);
         debug = 1;
     }
 #endif 
@@ -572,7 +552,7 @@ dose_hong (
     /* Step radius */
     for (r = 0; r < r_max; r += r_step) {
         vec3_copy (sp_pos, ct_xyz);
-        vec3_scale3 (tmp, pdn, r);
+        vec3_scale3 (tmp, ap->pdn, r);
         vec3_add2 (sp_pos, tmp);
 
         /* Step angle */
@@ -601,8 +581,8 @@ dose_hong (
 
             vec3_sub3 (sctoct, scatter_xyz, ct_xyz);
 
-            proj_xy[0] = vec3_dot (sctoct, prt);
-            proj_xy[1] = vec3_dot (sctoct, pdn);
+            proj_xy[0] = vec3_dot (sctoct, ap->prt);
+            proj_xy[1] = vec3_dot (sctoct, ap->pdn);
 
             sigma = highland (rgdepth, beam);
 
@@ -627,7 +607,6 @@ dose_hong (
 
         }
     }
-
     return dose;    
 
 }
@@ -654,21 +633,16 @@ dump_beam (Proton_Beam* beam)
 Volume*
 proton_dose_compute (Proton_dose_parms *parms)
 {
-    Proton_Scene* scene = parms->scene;
-    Aperture* ap = scene->ap;
-    Proton_Beam* beam = scene->beam;
-    Proj_matrix* pmat = scene->pmat;
-    Volume* ct_vol = scene->patient;
+    Proton_Scene* scene   = parms->scene;
+    Proton_Beam*  beam    = scene->beam;
+    Proj_matrix*  pmat    = scene->pmat;
+    Volume*       ct_vol  = scene->patient;
+    Rpl_volume*   rpl_vol = scene->rpl_vol;
 
-    Rpl_volume* rpl_vol = scene->rpl_vol;
-
-    int ct_ijk[3];
-    double ct_xyz[4];
+    scene->print ();
 
     Volume* dose_vol = volume_clone_empty (ct_vol);
     float* dose_img = (float*) dose_vol->img;
-
-    scene->print ();
 
     if (parms->debug) {
         rpl_volume_save (rpl_vol, "depth_vol.mha");
@@ -676,7 +650,10 @@ proton_dose_compute (Proton_dose_parms *parms)
         proj_matrix_debug (pmat);
     }
 
-    /* Scan through CT Volume */
+    /* scan through patient CT Volume */
+    int ct_ijk[3];
+    double ct_xyz[4];
+
     int idx = 0;
     for (ct_ijk[2] = 0; ct_ijk[2] < ct_vol->dim[2]; ct_ijk[2]++) {
         for (ct_ijk[1] = 0; ct_ijk[1] < ct_vol->dim[1]; ct_ijk[1]++) {
@@ -691,54 +668,16 @@ proton_dose_compute (Proton_dose_parms *parms)
 
                 switch (parms->flavor) {
                 case 'a':
-                    dose = dose_direct (
-                            ct_xyz,         /* voxel to dose */
-                            rpl_vol,        /* radiographic depths */
-                            beam,           /* proton energy profile */
-                            ap->ires,       /* ray cast resolution */
-                            ap->ul_room,    /* aperture upper-left */
-                            ap->incr_r,     /* 3D ray row increment */
-                            ap->incr_c,     /* 3D ray col increment */
-                            parms);         /* parms->ray_step */
+                    dose = dose_direct (ct_xyz, parms);
                     break;
                 case 'b':
-                    dose = dose_scatter (
-                            ct_xyz,        /* voxel to dose */
-                            ct_ijk,        /* index of voxel */
-                            rpl_vol,       /* radiographic depths */
-                            beam,          /* proton energy profile */
-                            ap->ires,      /* ray cast resolution */
-                            ap->ul_room,   /* aperture upper-left */
-                            ap->incr_r,    /* 3D ray row increment */
-                            ap->incr_c,    /* 3D ray col increment */
-                            ap->prt,       /* x-dir in ap plane uv */
-                            ap->pdn,       /* y-dir in ap plane uv */
-                            parms);        /* parms->ray_step */
+                    dose = dose_scatter (ct_xyz, ct_ijk, parms);
                     break;
                 case 'c':
-                    dose = dose_hong (
-                            ct_xyz,        /* voxel to dose */
-                            ct_ijk,        /* index of voxel */
-                            rpl_vol,       /* radiographic depths */
-                            beam,          /* proton energy profile */
-                            ap->ires,      /* ray cast resolution */
-                            ap->ul_room,   /* aperture upper-left */
-                            ap->incr_r,    /* 3D ray row increment */
-                            ap->incr_c,    /* 3D ray col increment */
-                            ap->prt,       /* x-dir in ap plane uv */
-                            ap->pdn,       /* y-dir in ap plane uv */
-                            parms);        /* parms->ray_step */
+                    dose = dose_hong (ct_xyz, ct_ijk, parms);
                     break;
                 case 'd':
-                    dose = dose_debug (
-                            ct_xyz,         /* voxel to dose */
-                            rpl_vol,        /* radiographic depths */
-                            beam,           /* proton energy profile */
-                            ap->ires,       /* ray cast resolution */
-                            ap->ul_room,    /* aperture upper-left */
-                            ap->incr_r,     /* 3D ray row increment */
-                            ap->incr_c,     /* 3D ray col increment */
-                            parms);         /* parms->ray_step */
+                    dose = dose_debug (ct_xyz, parms);
                     break;
                 }
 
