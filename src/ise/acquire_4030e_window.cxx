@@ -67,6 +67,41 @@ Acquire_4030e_window::log_output (const QString& log)
 }
 
 void 
+Acquire_4030e_window::set_label_style (int panel_no, Label_style style)
+{
+    QString style_sheet;
+    switch (style) {
+	case LABEL_NOT_READY:
+	    style_sheet = "QLabel { background-color : red; color : black; }";
+	    break;
+	case LABEL_ACQUIRING:
+	    style_sheet = "QLabel { background-color : yellow; color : black; }";
+	    break;
+	case LABEL_READY:
+	    style_sheet = "QLabel { background-color : green; color : black; }";
+	    break;
+    }
+    if (panel_no == 0) {
+	panel_1_status->setStyleSheet(style_sheet);
+    }
+    else {
+	panel_2_status->setStyleSheet(style_sheet);
+    }
+}
+
+
+void 
+Acquire_4030e_window::set_label (int panel_no, const QString& log)
+{
+    if (panel_no == 0) {
+	panel_1_status->setText(log);
+    }
+    else {
+	panel_2_status->setText(log);
+    }
+}
+
+void 
 Acquire_4030e_window::request_quit ()
 {
     tray_icon->hide ();

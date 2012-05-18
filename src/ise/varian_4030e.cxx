@@ -225,7 +225,8 @@ Varian_4030e::query_prog_info (UQueryProgInfo &crntStatus, bool show_all)
 //    vip_select_receptor (this->receptor_no);
     int result = vip_query_prog_info (HCP_U_QPI, &crntStatus);
     if (result != HCP_NO_ERR) {
-        aqprintf ("**** vip_query_prog_info returns error %d\n", result);
+        aqprintf ("**** vip_query_prog_info returns error %d (%s)\n", result,
+	    Varian_4030e::error_string (result));
         return result;
     }
 

@@ -32,12 +32,12 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>Panel 1</string>
+            <string>Panel 0</string>
            </property>
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QLabel" name="label">
+          <widget class="QLabel" name="panel_1_status">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
              <horstretch>0</horstretch>
@@ -58,12 +58,12 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>Panel 2</string>
+            <string>Panel 1</string>
            </property>
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QLabel" name="label_4">
+          <widget class="QLabel" name="panel_2_status">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
              <horstretch>0</horstretch>

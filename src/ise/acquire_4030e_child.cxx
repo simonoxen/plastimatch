@@ -3,6 +3,8 @@
    ----------------------------------------------------------------------- */
 #include "ise_config.h"
 #include <stdio.h>
+#include <QTimer>
+
 #include "acquire_4030e_child.h"
 #include "aqprintf.h"
 #include "dips_panel.h"
@@ -26,11 +28,15 @@ Acquire_4030e_child::Acquire_4030e_child (int argc, char* argv[])
     aqprintf ("Child %s got request to open panel: %s\n", argv[2], argv[3]);
     this->idx = QString(argv[2]).toInt();
     this->dp = new Dips_panel;
+    dp->open_panel (this->idx, HIRES_IMAGE_HEIGHT, HIRES_IMAGE_WIDTH);
+    aqprintf ("DIPS shared memory created.\n");
     this->open_receptor (argv[3]);
 }
 
 Acquire_4030e_child::~Acquire_4030e_child ()
 {
+    vip_close_link();
+
     if (this->dp) {
         delete this->dp;
     }
@@ -70,22 +76,24 @@ Acquire_4030e_child::open_receptor (const char* path)
         vp->close_link ();
         //return -1;
     }
+
+    /* Spawn the timer for polling devices */
+    this->timer = new QTimer(this);
+    connect (timer, SIGNAL(timeout()), this, SLOT(timer_event()));
+    timer->start (50);
 }
 
 void 
 Acquire_4030e_child::run()
 {
-    dp->open_panel (this->idx, HIRES_IMAGE_HEIGHT, HIRES_IMAGE_WIDTH);
 
     while (true) {
-#if defined (commentout)
-        /* Wait for generator expose request */
-        while (!advantech.ready_for_expose ()) {
-            Sleep (10);
-        }
-#endif
         /* Wait for, and save frame from panel */
         vp->rad_acquisition (dp);
     }
-    vip_close_link();
+}
+
+void 
+Acquire_4030e_child::timer_event ()
+{
 }

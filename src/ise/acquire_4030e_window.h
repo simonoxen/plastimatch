@@ -23,10 +23,19 @@ public:
 protected:
     void closeEvent(QCloseEvent *event);
 public:
+    enum Label_style {
+	LABEL_NOT_READY,
+	LABEL_ACQUIRING,
+	LABEL_READY
+    };
+
+public:
     void create_actions ();
     void create_tray_icon ();
     void set_icon ();
     void log_output (const QString& log);
+    void set_label (int panel_no, const QString& log);
+    void set_label_style (int panel_no, Label_style style);
 
 public slots:
     void request_quit ();

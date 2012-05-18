@@ -7,6 +7,7 @@
 #include <QCoreApplication>
 
 class Dips_panel;
+class QTimer;
 class Varian_4030e;
 
 class Acquire_4030e_child : public QCoreApplication
@@ -15,7 +16,8 @@ class Acquire_4030e_child : public QCoreApplication
     ;
 public slots:
     void run();
-    
+    void timer_event ();
+
 public:
     Acquire_4030e_child (int argc, char* argv[]);
     ~Acquire_4030e_child ();
@@ -23,6 +25,7 @@ public:
     void open_receptor (const char* path);
 public:
     int idx;
+    QTimer *timer;
     Dips_panel *dp;
     Varian_4030e *vp;
 };
