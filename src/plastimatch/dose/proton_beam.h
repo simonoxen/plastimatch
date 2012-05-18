@@ -12,6 +12,7 @@ public:
     bool load (const char* fn);     /* load from file */
     bool generate ();               /* generate analytically */
 
+    void dump (const char* fn);     /* debug: print bragg curve to file */
 private:
     bool load_xio (const char* fn);
     bool load_txt (const char* fn);

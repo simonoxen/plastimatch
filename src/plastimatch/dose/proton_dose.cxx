@@ -611,25 +611,6 @@ dose_hong (
 
 }
 
-static void
-dump_beam (Proton_Beam* beam)
-{
-    FILE* fp;
-
-    int i;
-
-    fp = fopen ("dump_beam.txt", "w");
-
-    for (i = 0; i < beam->num_samples; i++) {
-       fprintf (fp, "[%3.2f] %3.2f\n", beam->d_lut[i], beam->e_lut[i]);
-    }
-
-    fprintf (fp, "    dmax: %3.2f\n", beam->dmax);
-    fprintf (fp, "num_samp: %i\n", beam->num_samples);
-
-    fclose (fp);
-}
-
 Volume*
 proton_dose_compute (Proton_dose_parms *parms)
 {
@@ -646,7 +627,7 @@ proton_dose_compute (Proton_dose_parms *parms)
 
     if (parms->debug) {
         rpl_volume_save (rpl_vol, "depth_vol.mha");
-        dump_beam (beam);
+        beam->dump ("proton_beam.txt");
         proj_matrix_debug (pmat);
     }
 

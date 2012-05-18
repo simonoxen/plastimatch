@@ -170,3 +170,18 @@ Proton_Beam::generate ()
 
     return true;
 }
+
+void
+Proton_Beam::dump (const char* fn)
+{
+    FILE* fp = fopen (fn, "w");
+
+    for (int i=0; i<this->num_samples; i++) {
+       fprintf (fp, "[%3.2f] %3.2f\n", this->d_lut[i], this->e_lut[i]);
+    }
+
+    fprintf (fp, "    dmax: %3.2f\n", this->dmax);
+    fprintf (fp, "num_samp: %i\n", this->num_samples);
+
+    fclose (fp);
+}
