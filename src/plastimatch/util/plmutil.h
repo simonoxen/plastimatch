@@ -23,6 +23,7 @@
 #include "itk_crop.h"
 #include "itk_gabor.h"
 #include "itk_mask.h"
+#include "itk_scale.h"
 #include "itk_warp.h"
 #include "landmark_diff.h"
 #include "plm_warp.h"

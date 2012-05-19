@@ -24,6 +24,7 @@ set (PLMUTIL_LIBRARY_SRC
   itk_crop.cxx
   itk_gabor.cxx
   itk_mask.cxx
+  itk_scale.cxx
   itk_warp.cxx
   landmark_diff.cxx
   proj_image_filter.cxx

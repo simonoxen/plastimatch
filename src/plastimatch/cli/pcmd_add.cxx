@@ -10,6 +10,7 @@
 
 #include "plmbase.h"
 #include "plmsys.h"
+#include "plmutil.h"
 
 #include "plm_clp.h"
 #include "pstring.h"
@@ -33,13 +34,7 @@ scale_image (Plm_image *img, float weight)
        with new inputs, it gives the wrong answer. 
        Or maybe it has some default behavior you need to 
        override?? */
-    typedef itk::MultiplyByConstantImageFilter< 
-        FloatImageType, float, FloatImageType > MulFilterType;
-    MulFilterType::Pointer multiply = MulFilterType::New();
-    multiply->SetConstant (weight);
-    multiply->SetInput (img->itk_float());
-    multiply->Update();
-    img->set_itk (multiply->GetOutput());
+    img->set_itk (itk_scale (img->itk_float(), weight));
 }
 
 void
@@ -91,15 +86,15 @@ add_main (Add_parms *parms)
         ++it;
     }
 
-    /* Save the sum image */
-    sum->convert_to_original_type ();
-    sum->save_image (parms->output_fn);
-
     /* Take average */
     if (parms->average) {
         float avg = 1.0f / parms->input_fns.size();
         scale_image (sum, avg);
     }
+
+    /* Save the sum image */
+    sum->convert_to_original_type ();
+    sum->save_image (parms->output_fn);
 }
 
 static void

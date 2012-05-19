@@ -1091,6 +1091,55 @@ set_tests_properties (landmark-warp-c-check-2 PROPERTIES
   DEPENDS landmark-warp-c-stats-2)
 
 ## -------------------------------------------------------------------------
+## plastimatch add
+##  plm-add-a   Add two images
+##  plm-add-b   Average two images
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-add-a"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "add;--output;${PLM_BUILD_TESTING_DIR}/plm-add-a.nrrd;${PLM_BUILD_TESTING_DIR}/rect-1.mha;${PLM_BUILD_TESTING_DIR}/rect-3.mha"
+  )
+plm_add_test (
+  "plm-add-a-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-add-a.nrrd"
+  )
+plmtest_check_interval ("plm-add-a-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-add-a-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-1000.1"
+  "-999.9"
+  )
+set_tests_properties (plm-add-a PROPERTIES DEPENDS "rect-1;rect-3")
+set_tests_properties (plm-add-a-stats PROPERTIES DEPENDS plm-add-a)
+set_tests_properties (plm-add-a-check PROPERTIES DEPENDS plm-add-a-stats)
+
+plm_add_test (
+  "plm-add-b"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "average;--output;${PLM_BUILD_TESTING_DIR}/plm-add-b.nrrd;${PLM_BUILD_TESTING_DIR}/rect-1.mha;${PLM_BUILD_TESTING_DIR}/rect-3.mha"
+  )
+plm_add_test (
+  "plm-add-b-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-add-b.nrrd"
+  )
+plmtest_check_interval ("plm-add-b-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-add-b-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-500.1"
+  "-499.9"
+  )
+set_tests_properties (plm-add-b PROPERTIES DEPENDS "rect-1;rect-3")
+set_tests_properties (plm-add-b-stats PROPERTIES DEPENDS plm-add-b)
+set_tests_properties (plm-add-b-check PROPERTIES DEPENDS plm-add-b-stats)
+
+## -------------------------------------------------------------------------
 ## plastimatch convert dicom (and dicom rt)
 ##   plm convert dicom a: (rect) input rtss, no fixed image, no ct reference
 ##   plm convert dicom b: set metadata
