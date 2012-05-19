@@ -23,6 +23,7 @@
 #include "pcmd_header.h"
 #include "pcmd_probe.h"
 #include "pcmd_resample.h"
+#include "pcmd_scale.h"
 #include "pcmd_script.h"
 #include "pcmd_segment.h"
 #include "pcmd_stats.h"
@@ -66,12 +67,13 @@ print_usage (int return_code)
         "  register    "
         "  resample    "
         "\n"
+        "  scale       "
         "  segment     "
         "  stats       "
         "  synth       "
         "  synth-vf    "
-        "  thumbnail   "
         "\n"
+        "  thumbnail   "
         "  warp        "
         "  xf-convert  "
 //        "  xio-dvh     "
@@ -177,6 +179,9 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "resample")) {
         do_command_resample (argc, argv);
+    }
+    else if (!strcmp (command, "scale")) {
+        do_command_scale (argc, argv);
     }
     else if (!strcmp (command, "script")) {
         do_command_script (argc, argv);

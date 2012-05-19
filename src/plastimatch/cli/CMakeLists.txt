@@ -32,6 +32,7 @@ set (PLASTIMATCH_SRC
   pcmd_mask.cxx pcmd_mask.h
   pcmd_probe.cxx pcmd_probe.h
   pcmd_resample.cxx pcmd_resample.h
+  pcmd_scale.cxx
   pcmd_script.cxx pcmd_script.h
   pcmd_segment.cxx pcmd_segment.h
   pcmd_stats.cxx pcmd_stats.h

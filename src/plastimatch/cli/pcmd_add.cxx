@@ -4,7 +4,6 @@
 #include "plmcli_config.h"
 #include <list>
 #include "itkAddImageFilter.h"
-#include "itkMultiplyByConstantImageFilter.h"
 
 #include "plmbase.h"
 #include "plmsys.h"
@@ -99,7 +98,7 @@ add_vol_main (Add_parms *parms)
 
     /* Load the first input image */
     std::list<Pstring>::iterator it = parms->input_fns.begin();
-    Plm_image *sum = plm_image_load ((*it), PLM_IMG_TYPE_ITK_FLOAT);
+    Plm_image *sum = plm_image_load (*it, PLM_IMG_TYPE_ITK_FLOAT);
     ++it;
 
     /* Weigh the first input image */
@@ -221,6 +220,11 @@ parse_fn (
     /* Copy input filenames to parms struct */
     for (unsigned long i = 0; i < parser->number_of_arguments(); i++) {
         parms->input_fns.push_back (Pstring((*parser)[i].c_str()));
+    }
+
+    /* Average */
+    if (parser->option ("average")) {
+        parms->average = true;
     }
 
     /* Output files */

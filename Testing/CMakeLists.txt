@@ -1113,10 +1113,11 @@ set_tests_properties (landmark-warp-c-check-2 PROPERTIES
   DEPENDS landmark-warp-c-stats-2)
 
 ## -------------------------------------------------------------------------
-## plastimatch add
+## plastimatch add, plastimatch average
 ##  plm-add-a      Add two images
 ##  plm-add-b      Average two images
 ##  plm-add-vf-a   Add two vector fields
+##  plm-add-vf-b   Average two vector fields
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-add-a"
@@ -2715,6 +2716,55 @@ set_tests_properties (plm-resample-c PROPERTIES
 set_tests_properties (plm-resample-c-stats PROPERTIES DEPENDS plm-resample-c)
 set_tests_properties (plm-resample-c-check PROPERTIES 
   DEPENDS plm-resample-c-stats)
+
+## -------------------------------------------------------------------------
+## plastimatch scale
+##  plm-scale-a      Scale an image
+##  plm-scale-vf-a   Scale a vector field
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-scale-a"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "scale;--output;${PLM_BUILD_TESTING_DIR}/plm-scale-a.nrrd;--weight;0.4;${PLM_BUILD_TESTING_DIR}/rect-1.mha"
+  )
+plm_add_test (
+  "plm-scale-a-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-scale-a.nrrd"
+  )
+plmtest_check_interval ("plm-scale-a-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-scale-a-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-3.735"
+  "-3.730"
+  )
+set_tests_properties (plm-scale-a PROPERTIES DEPENDS "rect-1")
+set_tests_properties (plm-scale-a-stats PROPERTIES DEPENDS plm-scale-a)
+set_tests_properties (plm-scale-a-check PROPERTIES DEPENDS plm-scale-a-stats)
+
+plm_add_test (
+  "plm-scale-vf-a"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "scale;--output;${PLM_BUILD_TESTING_DIR}/plm-scale-vf-a.nrrd;--weight;0.4;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha"
+  )
+plm_add_test (
+  "plm-scale-vf-a-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-scale-vf-a.nrrd"
+  )
+plmtest_check_interval ("plm-scale-vf-a-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-scale-vf-a-stats.stdout.txt"
+  "Mean: *([-0-9.]*)"
+  "4.000"
+  "4.000"
+  )
+set_tests_properties (plm-scale-vf-a PROPERTIES DEPENDS vf-trans-1)
+set_tests_properties (plm-scale-vf-a-stats PROPERTIES DEPENDS plm-scale-vf-a)
+set_tests_properties (plm-scale-vf-a-check PROPERTIES DEPENDS plm-scale-vf-a-stats)
 
 ## -------------------------------------------------------------------------
 ## plm-thumbnail-a: make png file of sphere
