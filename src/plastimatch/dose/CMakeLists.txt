@@ -26,6 +26,7 @@ set (PLMDOSE_LIBRARY_DEPENDENCIES
   plmbase
   plmsys
   specfun
+  ${PLM_FORTRAN}
   )
 
 ##-----------------------------------------------------------------------------
