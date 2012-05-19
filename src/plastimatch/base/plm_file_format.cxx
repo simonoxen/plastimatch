@@ -11,7 +11,7 @@
 
 #include "plmbase.h"
 #include "plmsys.h"
-
+#include "pstring.h"
 
 static int
 is_xio_directory (const char* path)
@@ -122,6 +122,12 @@ plm_file_format_deduce (const char* path)
 #endif
 
     return PLM_FILE_FMT_IMG;
+}
+
+Plm_file_format
+plm_file_format_deduce (const Pstring& path)
+{
+    return plm_file_format_deduce ((const char*) path);
 }
 
 char*

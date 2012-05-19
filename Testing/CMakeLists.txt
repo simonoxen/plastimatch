@@ -428,6 +428,7 @@ plm_add_test (
 ## Create synthetic vector fields
 ##   vf-zero         Zero vector field
 ##   vf-trans-1      Translation x direction, 1cm
+##   vf-trans-2      Translation y direction, 1cm
 ##   vf-radial-1     Radial warp, 1cm
 ##   vf-gauss-1      Gaussian warp, 10cm std, 1cm x, 2cm y
 ## -------------------------------------------------------------------------
@@ -442,6 +443,12 @@ plm_add_test (
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth-vf;--output;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha;--xf-trans;10 0 0;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE}"
+  )
+plm_add_test (
+  "vf-trans-2"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth-vf;--output;${PLM_BUILD_TESTING_DIR}/vf-trans-2.mha;--xf-trans;0 10 0;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE}"
   )
 plm_add_test (
   "vf-radial-1"
@@ -488,6 +495,21 @@ plmtest_check_interval ("vf-trans-1-check"
   )
 set_property (TEST vf-trans-1-stats APPEND PROPERTY DEPENDS vf-trans-1)
 set_property (TEST vf-trans-1-check APPEND PROPERTY DEPENDS vf-trans-1-stats)
+
+plm_add_test (
+  "vf-trans-2-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_BUILD_TESTING_DIR}/vf-trans-2.mha"
+  )
+plmtest_check_interval ("vf-trans-2-check"
+  "${PLM_BUILD_TESTING_DIR}/vf-trans-2-stats.stdout.txt"
+  "Mean: *[-0-9.]* *([-0-9.]*)"
+  "10.000"
+  "10.000"
+  )
+set_property (TEST vf-trans-2-stats APPEND PROPERTY DEPENDS vf-trans-2)
+set_property (TEST vf-trans-2-check APPEND PROPERTY DEPENDS vf-trans-2-stats)
 
 plm_add_test (
   "vf-radial-1-stats"
@@ -1092,8 +1114,9 @@ set_tests_properties (landmark-warp-c-check-2 PROPERTIES
 
 ## -------------------------------------------------------------------------
 ## plastimatch add
-##  plm-add-a   Add two images
-##  plm-add-b   Average two images
+##  plm-add-a      Add two images
+##  plm-add-b      Average two images
+##  plm-add-vf-a   Add two vector fields
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-add-a"
@@ -1138,6 +1161,51 @@ plmtest_check_interval ("plm-add-b-check"
 set_tests_properties (plm-add-b PROPERTIES DEPENDS "rect-1;rect-3")
 set_tests_properties (plm-add-b-stats PROPERTIES DEPENDS plm-add-b)
 set_tests_properties (plm-add-b-check PROPERTIES DEPENDS plm-add-b-stats)
+
+
+plm_add_test (
+  "plm-add-vf-a"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "add;--output;${PLM_BUILD_TESTING_DIR}/plm-add-vf-a.nrrd;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha"
+  )
+plm_add_test (
+  "plm-add-vf-a-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-add-vf-a.nrrd"
+  )
+plmtest_check_interval ("plm-add-vf-a-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-add-vf-a-stats.stdout.txt"
+  "Mean: *([-0-9.]*)"
+  "20.000"
+  "20.000"
+  )
+set_tests_properties (plm-add-vf-a PROPERTIES DEPENDS vf-trans-1)
+set_tests_properties (plm-add-vf-a-stats PROPERTIES DEPENDS plm-add-vf-a)
+set_tests_properties (plm-add-vf-a-check PROPERTIES DEPENDS plm-add-vf-a-stats)
+
+plm_add_test (
+  "plm-add-vf-b"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "average;--output;${PLM_BUILD_TESTING_DIR}/plm-add-vf-b.nrrd;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha;${PLM_BUILD_TESTING_DIR}/vf-trans-2.mha"
+  )
+plm_add_test (
+  "plm-add-vf-b-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-add-vf-b.nrrd"
+  )
+plmtest_check_interval ("plm-add-vf-b-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-add-vf-b-stats.stdout.txt"
+  "Mean: *([-0-9.]*)"
+  "5.000"
+  "5.000"
+  )
+set_tests_properties (plm-add-vf-b PROPERTIES DEPENDS "vf-trans-1;vf-trans-2")
+set_tests_properties (plm-add-vf-b-stats PROPERTIES DEPENDS plm-add-vf-b)
+set_tests_properties (plm-add-vf-b-check PROPERTIES DEPENDS plm-add-vf-b-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch convert dicom (and dicom rt)

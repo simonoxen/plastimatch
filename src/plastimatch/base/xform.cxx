@@ -221,7 +221,7 @@ Xform::set_gpuit_vf (Volume* vf)
    Load/save functions
    ----------------------------------------------------------------------- */
 void
-xform_load (Xform *xf, const char* fn)
+Xform::load (const char* fn)
 {
     char buf[1024];
     FILE* fp;
@@ -236,13 +236,13 @@ xform_load (Xform *xf, const char* fn)
 
     if (plm_strcmp (buf, "#Insight Transform File V1.0") == 0) {
         fclose(fp);
-        itk_xform_load (xf, fn);
+        itk_xform_load (this, fn);
     } else if (plm_strcmp (buf,"ObjectType = MGH_XFORM") == 0) {
-        xform_legacy_load (xf, fp);
+        xform_legacy_load (this, fp);
         fclose(fp);
     } else if (plm_strcmp(buf,"MGH_GPUIT_BSP <experimental>")==0) {
         fclose (fp);
-        load_gpuit_bsp (xf, fn);
+        load_gpuit_bsp (this, fn);
     } else {
         /* Close the file and try again, it is probably a vector field */
         fclose (fp);
@@ -251,8 +251,20 @@ xform_load (Xform *xf, const char* fn)
         if (!vf) {
             print_and_exit ("Unexpected file format for xf_in file.\n");
         }
-        xf->set_itk_vf (vf);
+        this->set_itk_vf (vf);
     }
+}
+
+void
+Xform::load (const Pstring& fn)
+{
+    this->load ((const char*) fn);
+}
+
+void
+xform_load (Xform *xf, const char* fn)
+{
+    xf->load (fn);
 }
 
 static void
@@ -371,32 +383,32 @@ itk_xform_load (Xform *xf, const char* fn)
 }
 
 void
-xform_save (Xform *xf, const char* fn)
+Xform::save (const char* fn)
 {
-    switch (xf->m_type) {
+    switch (this->m_type) {
     case XFORM_ITK_TRANSLATION:
-        itk_xform_save (xf->get_trn(), fn);
+        itk_xform_save (this->get_trn(), fn);
         break;
     case XFORM_ITK_VERSOR:
-        itk_xform_save (xf->get_vrs(), fn);
+        itk_xform_save (this->get_vrs(), fn);
         break;
     case XFORM_ITK_QUATERNION:
-        itk_xform_save (xf->get_quat(), fn);
+        itk_xform_save (this->get_quat(), fn);
         break;
     case XFORM_ITK_AFFINE:
-        itk_xform_save (xf->get_aff(), fn);
+        itk_xform_save (this->get_aff(), fn);
         break;
     case XFORM_ITK_BSPLINE:
-        itk_xform_save (xf->get_itk_bsp(), fn);
+        itk_xform_save (this->get_itk_bsp(), fn);
         break;
     case XFORM_ITK_VECTOR_FIELD:
-        itk_image_save (xf->get_itk_vf(), fn);
+        itk_image_save (this->get_itk_vf(), fn);
         break;
     case XFORM_GPUIT_BSPLINE:
-        bspline_xform_save (xf->get_gpuit_bsp(), fn);
+        bspline_xform_save (this->get_gpuit_bsp(), fn);
         break;
     case XFORM_GPUIT_VECTOR_FIELD:
-        write_mha (fn, xf->get_gpuit_vf());
+        write_mha (fn, this->get_gpuit_vf());
         break;
     case XFORM_NONE:
         print_and_exit ("Error trying to save null transform\n");
@@ -405,6 +417,18 @@ xform_save (Xform *xf, const char* fn)
         print_and_exit ("Unhandled case trying to save transform\n");
         break;
     }
+}
+
+void
+Xform::save (const Pstring& fn)
+{
+    this->save ((const char*) fn);
+}
+
+void
+xform_save (Xform *xf, const char* fn)
+{
+    xf->save (fn);
 }
 
 #if defined (GCS_REARRANGING_STUFF)

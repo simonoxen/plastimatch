@@ -4,8 +4,6 @@
 #include "plmcli_config.h"
 #include <list>
 #include "itkAddImageFilter.h"
-#include "itkNaryAddImageFilter.h"
-#include "itkDivideByConstantImageFilter.h"
 #include "itkMultiplyByConstantImageFilter.h"
 
 #include "plmbase.h"
@@ -30,30 +28,74 @@ public:
 static void
 scale_image (Plm_image *img, float weight)
 {
-    /* GCS 2012-01-27 -- If you re-use the multiply filter 
-       with new inputs, it gives the wrong answer. 
-       Or maybe it has some default behavior you need to 
-       override?? */
     img->set_itk (itk_scale (img->itk_float(), weight));
 }
 
+static void
+scale_vf (Xform *xf, float weight)
+{
+    xf->set_itk_vf (itk_scale (xf->get_itk_vf(), weight));
+}
+
 void
-add_main (Add_parms *parms)
+add_vf_main (Add_parms *parms)
+{
+    typedef itk::AddImageFilter< 
+        DeformationFieldType, DeformationFieldType, DeformationFieldType 
+        > AddFilterType;
+
+    AddFilterType::Pointer addition = AddFilterType::New();
+
+    /* Load the first input image */
+    std::list<Pstring>::iterator it = parms->input_fns.begin();
+    Xform sum;
+    sum.load (*it);
+    ++it;
+
+    /* Weigh the first input image */
+    int widx = 0;
+    if (parms->weight_vector.size() > 0) {
+        scale_vf (&sum, parms->weight_vector[widx]);
+        ++widx;
+    }
+
+    /* Loop through remaining images */
+    while (it != parms->input_fns.end()) {
+        /* Load the images */
+        Xform tmp;
+        tmp.load (*it);
+
+        /* Weigh it */
+        if (parms->weight_vector.size() > 0) {
+            scale_vf (&tmp, parms->weight_vector[widx]);
+            ++widx;
+        }
+
+        /* Add it to running sum */
+	addition->SetInput1 (sum.get_itk_vf());
+	addition->SetInput2 (tmp.get_itk_vf());
+	addition->Update();
+	sum.set_itk_vf (addition->GetOutput ());
+        ++it;
+    }
+
+    /* Take average */
+    if (parms->average) {
+        float avg = 1.0f / parms->input_fns.size();
+        scale_vf (&sum, avg);
+    }
+
+    /* Save the sum image */
+    sum.save (parms->output_fn);
+}
+
+void
+add_vol_main (Add_parms *parms)
 {
     typedef itk::AddImageFilter< 
         FloatImageType, FloatImageType, FloatImageType > AddFilterType;
 
     AddFilterType::Pointer addition = AddFilterType::New();
-
-    /* Make sure we got the same number of input files and weights */
-    if (parms->weight_vector.size() > 0 
-        && parms->weight_vector.size() != parms->input_fns.size())
-    {
-        print_and_exit (
-            "Error, you specified %d input files and %d weights\n",
-            parms->input_fns.size(),
-            parms->weight_vector.size());
-    }
 
     /* Load the first input image */
     std::list<Pstring>::iterator it = parms->input_fns.begin();
@@ -70,7 +112,7 @@ add_main (Add_parms *parms)
     /* Loop through remaining images */
     while (it != parms->input_fns.end()) {
         /* Load the images */
-        Plm_image *tmp = plm_image_load ((*it), PLM_IMG_TYPE_ITK_FLOAT);
+        Plm_image *tmp = plm_image_load (*it, PLM_IMG_TYPE_ITK_FLOAT);
 
         /* Weigh it */
         if (parms->weight_vector.size() > 0) {
@@ -95,6 +137,35 @@ add_main (Add_parms *parms)
     /* Save the sum image */
     sum->convert_to_original_type ();
     sum->save_image (parms->output_fn);
+
+    delete sum;
+}
+
+void
+add_main (Add_parms *parms)
+{
+    /* Make sure we got the same number of input files and weights */
+    if (parms->weight_vector.size() > 0 
+        && parms->weight_vector.size() != parms->input_fns.size())
+    {
+        print_and_exit (
+            "Error, you specified %d input files and %d weights\n",
+            parms->input_fns.size(),
+            parms->weight_vector.size());
+    }
+    
+    /* What is the input file type? */
+    std::list<Pstring>::iterator it = parms->input_fns.begin();
+    Plm_file_format file_format = plm_file_format_deduce (*it);
+
+    switch (file_format) {
+    case PLM_FILE_FMT_VF:
+        add_vf_main (parms);
+        break;
+    default:
+        add_vol_main (parms);
+        break;
+    }
 }
 
 static void

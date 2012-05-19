@@ -6,6 +6,8 @@
 
 #include "plmbase_config.h"
 
+class Pstring;
+
 enum Plm_file_format {
     PLM_FILE_FMT_NO_FILE,
     PLM_FILE_FMT_UNKNOWN,
@@ -24,6 +26,7 @@ enum Plm_file_format {
 };
 
 PLMBASE_API Plm_file_format plm_file_format_deduce (const char* path);
+PLMBASE_API Plm_file_format plm_file_format_deduce (const Pstring& path);
 PLMBASE_API char* plm_file_format_string (Plm_file_format file_type);
 PLMBASE_API Plm_file_format plm_file_format_parse (const char* string);
 PLMBASE_API Plm_file_format plm_file_format_from_extension (const char* filename);

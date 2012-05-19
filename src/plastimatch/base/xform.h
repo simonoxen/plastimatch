@@ -16,9 +16,10 @@
 
 class Bspline_xform;
 class Plm_image_header;
-class Xform;
+class Pstring;
 class Volume;
 class Volume_header;
+class Xform;
 
 enum XFormInternalType {
     XFORM_NONE                  = 0,
@@ -32,7 +33,6 @@ enum XFormInternalType {
     XFORM_GPUIT_BSPLINE         = 8,
     XFORM_GPUIT_VECTOR_FIELD    = 9
 };
-
 
 /* itk basic transforms */
 typedef itk::TranslationTransform < double, 3 > TranslationTransformType;
@@ -74,6 +74,11 @@ public:
     ~Xform ();
 
     void clear ();
+
+    void load (const char* fn);
+    void load (const Pstring& fn);
+    void save (const char* fn);
+    void save (const Pstring& fn);
 
     TranslationTransformType::Pointer get_trn ();
     VersorTransformType::Pointer get_vrs ();
