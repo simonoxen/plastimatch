@@ -48,30 +48,31 @@ print_usage (int return_code)
         "Commands:\n"
         "  add         "
         "  adjust      "
+        "  average     "
 //        "  autolabel   "
         "  crop        "
         "  compare     "
-        "  compose     "
         "\n"
+        "  compose     "
         "  convert     "
         "  diff        "
 //        "  drr         "
         "  dvh         "
         "  fill        "
-        "  header      "
         "\n"
+        "  header      "
         "  mask        "
         "  probe       "
         "  register    "
         "  resample    "
-        "  segment     "
         "\n"
+        "  segment     "
         "  stats       "
         "  synth       "
         "  synth-vf    "
         "  thumbnail   "
-        "  warp        "
         "\n"
+        "  warp        "
         "  xf-convert  "
 //        "  xio-dvh     "
         "\n"
@@ -117,11 +118,17 @@ do_command (int argc, char* argv[])
 
     if (!strcmp (command, "--version")) {
         print_version ();
-    } else if (!strcmp (command, "add")) {
+    }
+    else if (!strcmp (command, "add")) {
+        /* add and average are the same */
         do_command_add (argc, argv);
     }
     else if (!strcmp (command, "adjust")) {
         do_command_adjust (argc, argv);
+    }
+    else if (!strcmp (command, "average")) {
+        /* add and average are the same */
+        do_command_add (argc, argv);
     }
     else if (!strcmp (command, "autolabel")) {
         do_command_autolabel (argc, argv);

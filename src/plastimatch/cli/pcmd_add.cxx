@@ -17,24 +17,38 @@
 class Add_parms {
 public:
     Pstring output_fn;
+    bool average;
     std::vector<float> weight_vector;
     std::list<Pstring> input_fns;
 public:
-    Add_parms () {}
+    Add_parms () {
+        average = false;
+    }
 };
+
+static void
+scale_image (Plm_image *img, float weight)
+{
+    /* GCS 2012-01-27 -- If you re-use the multiply filter 
+       with new inputs, it gives the wrong answer. 
+       Or maybe it has some default behavior you need to 
+       override?? */
+    typedef itk::MultiplyByConstantImageFilter< 
+        FloatImageType, float, FloatImageType > MulFilterType;
+    MulFilterType::Pointer multiply = MulFilterType::New();
+    multiply->SetConstant (weight);
+    multiply->SetInput (img->itk_float());
+    multiply->Update();
+    img->set_itk (multiply->GetOutput());
+}
 
 void
 add_main (Add_parms *parms)
 {
     typedef itk::AddImageFilter< 
         FloatImageType, FloatImageType, FloatImageType > AddFilterType;
-    typedef itk::DivideByConstantImageFilter< 
-        FloatImageType, int, FloatImageType > DivFilterType;
-    typedef itk::MultiplyByConstantImageFilter< 
-        FloatImageType, float, FloatImageType > MulFilterType;
 
     AddFilterType::Pointer addition = AddFilterType::New();
-    DivFilterType::Pointer division = DivFilterType::New();
 
     /* Make sure we got the same number of input files and weights */
     if (parms->weight_vector.size() > 0 
@@ -54,37 +68,24 @@ add_main (Add_parms *parms)
     /* Weigh the first input image */
     int widx = 0;
     if (parms->weight_vector.size() > 0) {
-        /* GCS 2012-01-27 -- If you re-use the multiply filter 
-           with new inputs, it gives the wrong answer. 
-           Or maybe it has some default behavior you need to 
-           override?? */
-        MulFilterType::Pointer multiply = MulFilterType::New();
-        multiply->SetConstant (parms->weight_vector[widx]);
-        multiply->SetInput (sum->itk_float());
-        multiply->Update();
-        sum->set_itk (multiply->GetOutput());
+        scale_image (sum, parms->weight_vector[widx]);
         ++widx;
     }
 
     /* Loop through remaining images */
     while (it != parms->input_fns.end()) {
         /* Load the images */
-        FloatImageType::Pointer tmp;
-	tmp = itk_image_load_float ((*it), 0);
+        Plm_image *tmp = plm_image_load ((*it), PLM_IMG_TYPE_ITK_FLOAT);
 
         /* Weigh it */
         if (parms->weight_vector.size() > 0) {
-            MulFilterType::Pointer multiply = MulFilterType::New();
-            multiply->SetConstant (parms->weight_vector[widx]);
-            multiply->SetInput (tmp);
-            multiply->Update();
-            tmp = multiply->GetOutput();
+            scale_image (tmp, parms->weight_vector[widx]);
             ++widx;
         }
 
         /* Add it to running sum */
 	addition->SetInput1 (sum->itk_float());
-	addition->SetInput2 (tmp);
+	addition->SetInput2 (tmp->itk_float());
 	addition->Update();
 	sum->m_itk_float = addition->GetOutput ();
         ++it;
@@ -94,27 +95,11 @@ add_main (Add_parms *parms)
     sum->convert_to_original_type ();
     sum->save_image (parms->output_fn);
 
-#if defined (commentout)
-    // divide by the total number of input images
-    division->SetConstant(nImages);
-    division->SetInput (sumImg);
-    division->Update();
-    // store the mean image in tmp first before write out
-    tmp = division->GetOutput();
-
-    // write the computed mean image
-    if (is_directory(outFile)) 
-    {
-	std::cout << "output dicom to " << outFile << std::endl;
-	// Dicom
-	itk_image_save_short_dicom (tmp, outFile);
+    /* Take average */
+    if (parms->average) {
+        float avg = 1.0f / parms->input_fns.size();
+        scale_image (sum, avg);
     }
-    else
-    {
-	std::cout << "output to " << outFile << std::endl;
-	itk_image_save_short (tmp, outFile);
-    }
-#endif
 }
 
 static void
@@ -142,6 +127,12 @@ parse_fn (
 
     /* Weight vector */
     parser->add_long_option ("", "weight", "", 1, "");
+
+    /* Average option */
+    parser->add_long_option ("", "average", 
+        "produce an output file which is the average of the input files "
+        "(if no weights are specified), or multiply the weights by 1/n",
+        0);
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -177,6 +168,13 @@ void
 do_command_add (int argc, char *argv[])
 {
     Add_parms parms;
+
+    /* Check if we're doing add or average */
+    if (!strcmp (argv[1], "add")) {
+        parms.average = false;
+    } else {
+        parms.average = true;
+    }
 
     /* Parse command line parameters */
     plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv, 1);

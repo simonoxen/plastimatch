@@ -30,9 +30,6 @@ set (COMPUTE_DISTANCE_SRC
   closest_point.cxx 
   read_obj.cxx
   )
-set (COMPUTE_MEAN_IMAGE_SRC
-  compute_mean_image_main.cxx
-  )
 set (CUDA_PROBE_SRC
   cuda_probe_main.c
   cuda_probe.h
@@ -128,9 +125,6 @@ set (XF_TO_EMPIREFMT_SRC
 ##-----------------------------------------------------------------------------
 if (FULL_PLASTIMATCH_BUILD)
   plm_add_executable (compute_distance "${COMPUTE_DISTANCE_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-  plm_add_executable (compute_mean_image "${COMPUTE_MEAN_IMAGE_SRC}"
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   plm_add_executable (dice_stats "${DICE_STATS_SRC}"
