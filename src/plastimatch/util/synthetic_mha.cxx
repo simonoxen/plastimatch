@@ -14,6 +14,132 @@
 #include "plm_math.h"
 
 static void 
+synth_dose (
+    float *intens, 
+    unsigned char *label,
+    const FloatPoint3DType& phys, 
+    const Synthetic_mha_parms *parms
+)
+{
+    /* sorry for this mess... */
+
+    float x,x0,x1,y,y0,y1,f0,f1;
+
+    /* uniform central dose */
+    if (phys[0] >= parms->rect_size[0] + parms->penumbra
+     && phys[0] <= parms->rect_size[1] - parms->penumbra
+     && phys[1] >= parms->rect_size[2] + parms->penumbra
+     && phys[1] <= parms->rect_size[3] - parms->penumbra
+     && phys[2] >= parms->rect_size[4] 
+     && phys[2] <= parms->rect_size[5])
+    {
+        *intens = parms->foreground;
+        *label = 1;
+    } else {
+        *intens = parms->background;
+        *label = 0;
+    }
+
+    if (phys[2] >= parms->rect_size[4] && phys[2] <= parms->rect_size[5]) {
+        /* penumbra edges */
+        if (phys[1] > parms->rect_size[2]+parms->penumbra && phys[1] < parms->rect_size[3]-parms->penumbra){
+            x  = phys[0];
+            x0 = parms->rect_size[0];
+            x1 = parms->rect_size[0] + parms->penumbra;
+            f0 = parms->background;
+            f1 = parms->foreground;
+            if (x >= x0 && x < x1) {
+                *intens = f0 + (x-x0)*((f1-f0)/(x1-x0));
+            }
+
+            x0 = parms->rect_size[1] - parms->penumbra;
+            x1 = parms->rect_size[1];
+            f0 = parms->foreground;
+            f1 = parms->background;
+            if (x >= x0 && x < x1) {
+                *intens = f0 + (x-x0)*((f1-f0)/(x1-x0));
+            }
+        }
+        if (phys[0] > parms->rect_size[0]+parms->penumbra && phys[0] < parms->rect_size[1]-parms->penumbra){
+            y  = phys[1];
+            y0 = parms->rect_size[2];
+            y1 = parms->rect_size[2] + parms->penumbra;
+            f0 = parms->background;
+            f1 = parms->foreground;
+            if ((phys[1] >= y0 && phys[1] < y1)) {
+                *intens = f0 + (y-y0)*((f1-f0)/(y1-y0));
+            }
+
+            y0 = parms->rect_size[3] - parms->penumbra;
+            y1 = parms->rect_size[3];
+            f0 = parms->foreground;
+            f1 = parms->background;
+            if (y >= y0 && y < y1) {
+                *intens = f0 + (y-y0)*((f1-f0)/(y1-y0));
+            }
+        }
+        
+        /* penumbra corners */
+        x = phys[0];
+        y = phys[1];
+        x0 = parms->rect_size[0];
+        x1 = parms->rect_size[0] + parms->penumbra;
+        y0 = parms->rect_size[2];
+        y1 = parms->rect_size[2] + parms->penumbra;
+        f0 = parms->background;
+        f1 = parms->foreground;
+        if (x > x0 && x < x1 && y > y0 && y < y1) {
+            *intens = ((f0)/((x1-x0)*(y1-y0)))*(x1-x)*(y1-y) +
+                      ((f0)/((x1-x0)*(y1-y0)))*(x-x0)*(y1-y) +
+                      ((f0)/((x1-x0)*(y1-y0)))*(x1-x)*(y-y0) +
+                      ((f1)/((x1-x0)*(y1-y0)))*(x-x0)*(y-y0);
+        }
+        x = phys[0];
+        y = phys[1];
+        x0 = parms->rect_size[1] - parms->penumbra;
+        x1 = parms->rect_size[1];
+        y0 = parms->rect_size[2];
+        y1 = parms->rect_size[2] + parms->penumbra;
+        f0 = parms->background;
+        f1 = parms->foreground;
+        if (x > x0 && x < x1 && y > y0 && y < y1) {
+            *intens = ((f0)/((x1-x0)*(y1-y0)))*(x1-x)*(y1-y) +
+                      ((f0)/((x1-x0)*(y1-y0)))*(x-x0)*(y1-y) +
+                      ((f1)/((x1-x0)*(y1-y0)))*(x1-x)*(y-y0) +
+                      ((f0)/((x1-x0)*(y1-y0)))*(x-x0)*(y-y0);
+        }
+        x = phys[0];
+        y = phys[1];
+        x0 = parms->rect_size[0];
+        x1 = parms->rect_size[0] + parms->penumbra;
+        y0 = parms->rect_size[3] - parms->penumbra;
+        y1 = parms->rect_size[3];
+        f0 = parms->background;
+        f1 = parms->foreground;
+        if (x > x0 && x < x1 && y > y0 && y < y1) {
+            *intens = ((f0)/((x1-x0)*(y1-y0)))*(x1-x)*(y1-y) +
+                      ((f1)/((x1-x0)*(y1-y0)))*(x-x0)*(y1-y) +
+                      ((f0)/((x1-x0)*(y1-y0)))*(x1-x)*(y-y0) +
+                      ((f0)/((x1-x0)*(y1-y0)))*(x-x0)*(y-y0);
+        }
+        x = phys[0];
+        y = phys[1];
+        x0 = parms->rect_size[1] - parms->penumbra;
+        x1 = parms->rect_size[1];
+        y0 = parms->rect_size[3] - parms->penumbra;
+        y1 = parms->rect_size[3];
+        f0 = parms->background;
+        f1 = parms->foreground;
+        if (x > x0 && x < x1 && y > y0 && y < y1) {
+            *intens = ((f1)/((x1-x0)*(y1-y0)))*(x1-x)*(y1-y) +
+                      ((f0)/((x1-x0)*(y1-y0)))*(x-x0)*(y1-y) +
+                      ((f0)/((x1-x0)*(y1-y0)))*(x1-x)*(y-y0) +
+                      ((f0)/((x1-x0)*(y1-y0)))*(x-x0)*(y-y0);
+        }
+    }
+} /* z-direction */
+
+static void 
 synth_gauss (
     float *intens, 
     unsigned char *label,
@@ -28,7 +154,6 @@ synth_gauss (
         f += f1 * f1;
     }
     f = exp (-0.5 * f);            /* f \in (0,1] */
-    
 
     *intens = (1 - f) * parms->background + f * parms->foreground;
     *label = (f > 0.2) ? 1 : 0;
@@ -561,6 +686,9 @@ synthetic_mha (
             break;
         case PATTERN_DONUT:
             synth_donut (&intens, &label_uchar, phys, parms);
+            break;
+        case PATTERN_DOSE:
+            synth_dose (&intens, &label_uchar, phys, parms);
             break;
         case PATTERN_GRID:
             synth_grid (&intens, &label_uchar, phys, parms);
