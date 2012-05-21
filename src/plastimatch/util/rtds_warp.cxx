@@ -66,6 +66,12 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
         rtds->m_rtss->load_cxt (parms->input_cxt_fn, &rtds->m_rdd);
     }
 
+    if (parms->input_prefix.not_empty()) {
+        if (rtds->m_rtss) delete rtds->m_rtss;
+        rtds->m_rtss = new Rtss (rtds);
+        rtds->m_rtss->load_prefix (parms->input_prefix);
+    }
+
     if (parms->input_ss_img_fn.not_empty()) {
         if (!file_exists (parms->input_ss_img_fn)) {
             print_and_exit ("Error: cannot open file %s for read\n",

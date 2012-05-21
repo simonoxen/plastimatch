@@ -18,6 +18,7 @@ public:
     Pstring xf_in_fn;
     Pstring referenced_dicom_dir;
     Pstring input_cxt_fn;
+    Pstring input_prefix;
     Pstring input_ss_img_fn;
     Pstring input_ss_list_fn;
     Pstring input_dose_img_fn;

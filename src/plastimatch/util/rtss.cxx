@@ -76,6 +76,25 @@ Rtss::load (const char *ss_img, const char *ss_list)
 }
 
 void
+Rtss::load_prefix (const Pstring &prefix_dir)
+{
+    if (m_ss_img) {
+        delete this->m_ss_img;
+    }
+
+    /* Need to create either an m_cxt or an m_ss_list to hold the 
+       structure names */
+
+    /* Then, basically the same logic as rasterization, where planes 
+       get added incrementally. */
+
+    /* I should spin the prefix stuff off to a separate file */
+
+    /* Also, rename to "ss-dir", but keep hidden option "prefix" 
+       for backward compatibility */
+}
+
+void
 Rtss::load_cxt (const Pstring &input_fn, Slice_index *rdd)
 {
     this->m_cxt = new Rtss_polyline_set;

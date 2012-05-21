@@ -45,6 +45,9 @@ parse_fn (
         "dicom directory used to set UIDs and metadata", 1, "");
     parser->add_long_option ("", "input-cxt", 
         "input a cxt file", 1, "");
+    parser->add_long_option ("", "input-prefix", 
+        "input a directory of structure set images (one image per file)", 
+        1, "");
     parser->add_long_option ("", "input-ss-img", 
         "input a structure set image file", 1, "");
     parser->add_long_option ("", "input-ss-list", 
@@ -155,6 +158,7 @@ parse_fn (
     /* Check that an input file was given */
     if (!parser->option ("input") 
         && !parser->option("input-cxt")
+        && !parser->option("input-prefix")
         && !parser->option("input-ss-img")
         && !parser->option("input-ss-list")
         && !parser->option("input-dose-img")
@@ -177,6 +181,7 @@ parse_fn (
     parms->xf_in_fn = parser->get_string("xf").c_str();
     parms->referenced_dicom_dir = parser->get_string("referenced-ct").c_str();
     parms->input_cxt_fn = parser->get_string("input-cxt").c_str();
+    parms->input_prefix = parser->get_string("input-prefix").c_str();
     parms->input_ss_img_fn = parser->get_string("input-ss-img").c_str();
     parms->input_ss_list_fn = parser->get_string("input-ss-list").c_str();
     parms->input_dose_img_fn = parser->get_string("input-dose-img").c_str();
