@@ -45,10 +45,11 @@ c*   entire program, output results, release memory spaces for     *
 c*   global variables, etc.                                        *
 c******************************************************************/
 
-
-#ifndef _FINALIZE_CU_
-#define _FINALIZE_CU_
-
+#include <iostream>
+#include <stdio.h>
+#include <cutil.h>
+#include <cutil_inline_runtime.h>
+#include "viscous_global.h"
 
 void fina()
 {
@@ -112,7 +113,7 @@ void outputData(void *src, int size, const char *outputfilename)
         fp = fopen(outputfilename,"wb");
         if( fp == NULL )
         {
-                cout << "Can not open file to write results.";
+            std::cout << "Can not open file to write results.";
                 exit(1);
         }
         fwrite (tempData_h, size, 1 , fp );
@@ -125,4 +126,3 @@ void outputData(void *src, int size, const char *outputfilename)
 //      free space
 
 }
-#endif

@@ -44,11 +44,15 @@ c*   main function to register two images on the current scale     *
 c*	 including upsample and downsample                             *
 c******************************************************************/
 
-
-#ifndef _FUN_COMPUTE_CU_
-#define _FUN_COMPUTE_CU_
-
-
+#include <thrust/binary_search.h>
+#include <thrust/device_vector.h>
+#include <thrust/functional.h>
+#include <thrust/sort.h>
+#include <cublas.h>
+#include <cutil.h>
+#include <cutil_inline.h>
+#include "viscous_convolution.h"
+#include "viscous_global.h"
 
 // hash a point in the unit square to the index of
 // the grid bucket that contains it
@@ -453,5 +457,3 @@ __global__ void transToFloat2(const float *input1, const float *input2, float2 *
 	}
 	
 }
-
-#endif

@@ -68,7 +68,7 @@ const int  KERNEL_W = (2 * KERNEL_RADIUS + 1);
 // Common host and device functions
 ////////////////////////////////////////////////////////////////////////////////
 //Round a / b to nearest higher integer value
-int iDivUp(int a, int b){
+inline int iDivUp(int a, int b){
     return (a % b != 0) ? (a / b + 1) : (a / b);
 }
 

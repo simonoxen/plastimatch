@@ -44,10 +44,7 @@ c* Short discription                                               *
 c*   histogram related functions                                   *
 c******************************************************************/
 
-
-#ifndef _FUNCHISTOGRAM_CU_
-#define _FUNCHISTOGRAM_CU_
-
+#include "viscous_global.h"
 
 __global__ void marginalDist(float *jointHist, float *probx, float *proby)
 {
@@ -207,9 +204,3 @@ __global__ void copyHist(unsigned int *hist, float *jointHist)
 	}
 
 }
-
-
-
-
-
-#endif

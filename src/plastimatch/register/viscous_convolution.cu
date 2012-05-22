@@ -55,11 +55,9 @@ c******************************************************************/
  * is strictly prohibited.
  *
  */
- #ifndef _CONVOLUTION_CU_
- #define _CONVOLUTION_CU_
-
 #include <cutil_inline.h>
-#include "convolution.h"
+#include "viscous_global.h"
+#include "viscous_convolution.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Row convolution filter by Frame
@@ -349,6 +347,3 @@ __global__ void myconv2dGPU(float *src, float *dest, float *kernel, int M, int N
 	}
 
 }
-
-
-#endif

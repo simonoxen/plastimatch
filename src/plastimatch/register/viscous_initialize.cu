@@ -45,9 +45,13 @@ c*   data preprocessing, construction of image pyramid             *
 c*   and Gaussian smoothing kernels                                *
 c******************************************************************/
 
-#ifndef _INITIALIZE_CU_
-#define _INITIALIZE_CU_
-
+#include <iostream>
+#include <thrust/device_ptr.h>
+#include <cublas.h>
+#include <cutil.h>
+#include <cutil_inline.h>
+#include "viscous_convolution.h"
+#include "viscous_global.h"
 
 void dataPreprocessing(float *image, float *maxValue, float *minValue)
 {
@@ -166,7 +170,7 @@ void initData()
 	
 	
 
-	cout << "Load data successfully.\n\n";
+        std::cout << "Load data successfully.\n\n";
 
 
 //	allocate space for histogram related variables
@@ -184,7 +188,7 @@ void initData()
 
 void initGaussKernel()
 {
-	cout <<	"Initializing Gaussian kernel..." << endl;
+    std::cout <<	"Initializing Gaussian kernel..." << std::endl;
 	float *h_GaussKernelH  = (float *)malloc(sizeof(float)*(6*hValue+1)*(6*hValue+1));
 	float *h_GaussKernelHx = (float *)malloc(sizeof(float)*(6*hValue+1)*(6*hValue+1));
 	cutilSafeCall( cudaMalloc(&GaussKernelH, sizeof(float)*(6*hValue+1)*(6*hValue+1) ) );
@@ -261,7 +265,3 @@ void loadData(float *dest, int sizeInByte, const char *filename)
         }
         
 }
-
-
-
-#endif

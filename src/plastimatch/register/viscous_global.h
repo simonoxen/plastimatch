@@ -15,10 +15,6 @@
 #define DEVICENUMBER 0
 //      device number to be used
 
-int deviceCount;
-cudaDeviceProp dP;
-//      device properties
-
 
 
 /**************************************
@@ -72,51 +68,57 @@ cudaDeviceProp dP;
 /***************************************
 *	global variables declaration
 ***************************************/
-const char inputfilename_move[100]   = "./inputDTI.raw"; 
+#ifndef GCS_REPRESS_EXTERNS
+extern char inputfilename_move[100];
 //	image move
-const char inputfilename_static[100] = "./inputT2.raw";
+extern char inputfilename_static[100];
 // 	image static
-const char outputfilename[100] = "./outputDTI.raw"; 
+extern char outputfilename[100];
 //      image out
-const char output_mv_x[100] = "./output_xFlow.dat";
-const char output_mv_y[100] = "./output_yFlow.dat";
-const char output_mv_z[100] = "./output_zFlow.dat";
+extern char output_mv_x[100];
+extern char output_mv_y[100];
+extern char output_mv_z[100];
 
 
-
-float *h_im_static, *h_im_move;
+extern float *h_im_static, *h_im_move;
 //	image pyramid
-float *d_im_static[NSCALE], *d_im_move[NSCALE];
+extern float *d_im_static[NSCALE], *d_im_move[NSCALE];
 // 	vector flow
-float *d_mv_x[NSCALE], *d_mv_y[NSCALE], *d_mv_z[NSCALE];
+extern float *d_mv_x[NSCALE], *d_mv_y[NSCALE], *d_mv_z[NSCALE];
 
 
 //	gaussian kernel
-float *GaussKernelH, *GaussKernelHx;
+extern float *GaussKernelH, *GaussKernelHx;
 
 //	 histogram related
-float *d_jointHistogram;
-float *d_jointHistogram_conv;
-float *d_probx, *d_proby;
-float *d_Bsum;
+extern float *d_jointHistogram;
+extern float *d_jointHistogram_conv;
+extern float *d_probx, *d_proby;
+extern float *d_Bsum;
 
-dim3 nblocks;
-dim3 nblocks_hist;
+extern dim3 nblocks;
+extern dim3 nblocks_hist;
 
-int NX, NY, NZ, sDATA_SIZE;
+extern int NX, NY, NZ, sDATA_SIZE;
 //	dimension at current pyramid level
-float max_im_move, min_im_move;
+extern float max_im_move, min_im_move;
 //	max and min intensity of the moving image
 
 
-cudaArray *d_im_move_array;
-texture<float, 3, cudaReadModeElementType> d_im_move_tex;
+extern cudaArray *d_im_move_array;
+extern texture<float, 3, cudaReadModeElementType> d_im_move_tex;
 
 
-cudaArray *d_mv_x_array, *d_mv_y_array, *d_mv_z_array;
-texture<float, 3, cudaReadModeElementType> d_mv_x_tex;
-texture<float, 3, cudaReadModeElementType> d_mv_y_tex;
-texture<float, 3, cudaReadModeElementType> d_mv_z_tex;
+extern cudaArray *d_mv_x_array, *d_mv_y_array, *d_mv_z_array;
+extern texture<float, 3, cudaReadModeElementType> d_mv_x_tex;
+extern texture<float, 3, cudaReadModeElementType> d_mv_y_tex;
+extern texture<float, 3, cudaReadModeElementType> d_mv_z_tex;
+
+extern int deviceCount;
+extern cudaDeviceProp dP;
+//      device properties
+
+#endif /* GCS_REPRESS_EXTERNS */
 
 /*************************************
 

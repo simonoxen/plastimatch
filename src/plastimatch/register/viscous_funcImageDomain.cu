@@ -44,10 +44,7 @@ c*   Supporting functions in the image domain                      *
 c*	 such as gradient, force computation, flow propagation, etc*
 c******************************************************************/
 
-
-#ifndef _FUN_IMAGE_DOMAIN_CU_
-#define _FUN_IMAGE_DOMAIN_CU_
-
+#include "viscous_global.h"
 
 __global__ void forceComp(float *d_im_out, float *d_im_static, float *d_Likelihood, float *d_v_x, float *d_v_y, float *d_v_z, int NX, int NY, int NZ)
 {
@@ -273,12 +270,3 @@ __host__ __device__ float minmod(float x, float y)
 		else 	return y;
 	}
 }
-
-
-
-
-
-
-
-
-#endif

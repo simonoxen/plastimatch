@@ -1,3 +1,11 @@
+***** Viscous *****
+
+It seems that only certain versions of thrust work with certain versions 
+of cuda.
+
+Thrust 1.6.0 does not work with CUDA 3.0
+Thrust 1.4.0 does work with CUDA 3.0
+
 ***** Metadata Mark II *****
 
 Do we need separate metadata items for image, dose, and rtstruct?

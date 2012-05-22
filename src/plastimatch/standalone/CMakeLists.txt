@@ -6,11 +6,6 @@ project (src_plastimatch_standalone)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 
 ##-----------------------------------------------------------------------------
-##  CMAKE FLAGS
-##-----------------------------------------------------------------------------
-option (PLM_BUILD_SIFTND "Build siftnD program" ON)
-
-##-----------------------------------------------------------------------------
 ##  SOURCE FILES
 ##-----------------------------------------------------------------------------
 set (BRAGG_CURVE_SRC
@@ -110,6 +105,9 @@ set (SIFTnD_SRC
 set (UNION_MASK_SRC
   union_mask.cxx
   )
+set (VISCOUS_SRC
+  viscous_main.cxx
+  )
 set (SHUFFLE_MHA_SRC
   shuffle_mha_main.cxx
   )
@@ -154,14 +152,17 @@ if (FULL_PLASTIMATCH_BUILD)
   plm_add_executable (shuffle_mha "${SHUFFLE_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-  if (PLM_BUILD_SIFTND)
-    plm_add_executable (siftnD "${SIFTnD_SRC}"
-      "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-      ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-  endif ()
+  plm_add_executable (siftnD "${SIFTnD_SRC}"
+    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   plm_add_executable (union_mask "${UNION_MASK_SRC}"
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+  if (PLM_BUILD_VISCOUS)
+    plm_add_executable (viscous "${VISCOUS_SRC}"
+      "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
+      ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+  endif ()
   plm_add_executable (vf_invert "${VF_INVERT_SRC}"
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})

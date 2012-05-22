@@ -10,6 +10,9 @@ configure_file (
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
+if (THRUST_INCLUDE_DIR)
+  include_directories (AFTER ${THRUST_INCLUDE_DIR})
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES
@@ -59,11 +62,10 @@ set (PLMREGISTER_CUDA_SRC
   demons_cuda.cu
   )
 
-#message (STATUS "CUDA_SDK_ROOT_DIR =  ${CUDA_SDK_ROOT_DIR}")
-#message (STATUS "CUDA_TOOLKIT_ROOT_DIR = ${CUDA_TOOLKIT_ROOT_DIR}")
+message (STATUS "CUDA_SDK_ROOT_DIR =  ${CUDA_SDK_ROOT_DIR}")
+message (STATUS "CUDA_CUT_INCLUDE_DIR = ${CUDA_CUT_INCLUDE_DIR}")
 
-if (NOT PLM_CONFIG_DISABLE_VISCOUS)
-  if (CUDA_SDK_ROOT_DIR)
+if (PLM_BUILD_VISCOUS)
   set (PLMREGISTER_CUDA_SRC
     ${PLMREGISTER_CUDA_SRC}
     viscous_compute.cu
@@ -74,7 +76,6 @@ if (NOT PLM_CONFIG_DISABLE_VISCOUS)
     viscous_initialize.cu
     viscous_main.cu
     )
-  endif ()
 endif ()
 
 set (PLMREGISTER_CUDA_IFACE_SRC
@@ -135,6 +136,7 @@ if (CUDA_FOUND)
       )
     set (PLMREGISTER_LIBRARY_DEPENDENCIES
       ${PLMREGISTER_LIBRARY_DEPENDENCIES}
+      ${CUDA_cublas_LIBRARY}
       ${CUDA_LIBRARIES}
       )
   endif ()
@@ -147,7 +149,8 @@ if (CUDA_FOUND AND PLM_USE_GPU_PLUGINS)
     set (PLMREGISTER_LIBRARY_DEPENDENCIES
       ${PLMREGISTER_LIBRARY_DEPENDENCIES}
       plmregistercuda)
-    target_link_libraries (plmregistercuda plmcuda plmbase ${CUDA_LIBRARIES})
+    target_link_libraries (plmregistercuda 
+      plmcuda plmbase ${CUDA_cublas_LIBRARY} ${CUDA_LIBRARIES})
     set (PLMREGISTER_LIBRARY_LDFLAGS
       "${PLMREGISTER_LIBRARY_LDFLAGS} /DELAYLOAD:plmregistercuda.dll /DELAYLOAD:plmcuda.dll")
   endif ()

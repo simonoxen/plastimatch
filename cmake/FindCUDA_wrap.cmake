@@ -42,6 +42,29 @@ if (CUDA_FOUND)
     )
 endif ()
 
+# GCS 2012-05-22 -- viscous fluid registration requires CUDA SDK.  
+if (NOT CUDA_SDK_ROOT_DIR)
+  # Try some obvious paths not searched by stock FindCUDA
+  find_path(CUDA_SDK_ROOT_DIR common/inc/cutil.h
+    "$ENV{HOME}/NVIDIA_GPU_Computing_SDK/C"
+    "/usr/local/NVIDIA_GPU_Computing_SDK/C"
+    )
+endif ()
+if (CUDA_SDK_ROOT_DIR)
+  find_path (CUDA_CUT_INCLUDE_DIR
+    cutil.h
+    PATHS ${CUDA_SDK_SEARCH_PATH}
+    PATH_SUFFIXES "common/inc" "C/common/inc"
+    DOC "Location of cutil.h"
+    NO_DEFAULT_PATH
+    )
+  if (CUDA_CUT_INCLUDE_DIR)
+    cuda_include_directories (
+      ${CUDA_CUT_INCLUDE_DIR}
+      )
+  endif ()
+endif ()
+
 # JAS 08.25.2010
 #   Check to make sure nvcc has gcc-4.3 for compiling.
 #   This script will modify CUDA_NVCC_FLAGS if system default is not gcc-4.3
