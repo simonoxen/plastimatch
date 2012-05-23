@@ -59,7 +59,7 @@ gdcm_rtss_load (
     gdcm::SeqEntry *seq;
     gdcm::SQItem *item;
     std::string tmp;
-    Rtss_polyline_set *cxt = rtss->m_cxt;
+    Rtss_structure_set *cxt = rtss->m_cxt;
 
     rtss_file->SetMaxSizeLoadEntry (0xffff);
     rtss_file->SetFileName (rtss_fn);
@@ -318,7 +318,7 @@ gdcm_rtss_save (
     const std::string &current_date = gdcm::Util::GetCurrentDate();
     const std::string &current_time = gdcm::Util::GetCurrentTime();
 
-    Rtss_polyline_set *cxt = rtss->m_cxt;
+    Rtss_structure_set *cxt = rtss->m_cxt;
 
     printf ("Hello from gdcm_rtss_save\n");
 

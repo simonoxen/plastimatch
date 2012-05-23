@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _rtss_polyline_set_h_
-#define _rtss_polyline_set_h_
+#ifndef _rtss_structure_set_h_
+#define _rtss_structure_set_h_
 
 #include "plmbase_config.h"
 #include <list>
@@ -18,7 +18,7 @@ class Rtss_structure;
 
 #define CXT_BUFLEN 2048
 
-class Rtss_polyline_set {
+class Rtss_structure_set {
 public:
     /* Output geometry */
     int have_geometry;
@@ -33,8 +33,8 @@ public:
     size_t num_structures;
     Rtss_structure **slist;
 public:
-    PLMBASE_API Rtss_polyline_set ();
-    PLMBASE_API ~Rtss_polyline_set ();
+    PLMBASE_API Rtss_structure_set ();
+    PLMBASE_API ~Rtss_structure_set ();
     PLMBASE_API void init (void);
     PLMBASE_API void clear (void);
     PLMBASE_API Rtss_structure* add_structure (
@@ -46,8 +46,8 @@ public:
     PLMBASE_API void adjust_structure_names (void);
     PLMBASE_API void prune_empty (void);
     static PLMBASE_API 
-    Rtss_polyline_set* clone_empty (Rtss_polyline_set* cxt_out, 
-	Rtss_polyline_set* cxt_in);
+    Rtss_structure_set* clone_empty (Rtss_structure_set* cxt_out, 
+	Rtss_structure_set* cxt_in);
     PLMBASE_API void find_default_geometry (Plm_image_header *pih);
     PLMBASE_API void find_rasterization_geometry (float offset[3], 
 	float spacing[3], plm_long dims[3]);

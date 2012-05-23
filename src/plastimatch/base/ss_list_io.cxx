@@ -10,8 +10,8 @@
 #include "plmsys.h"
 
 
-Rtss_polyline_set*
-ss_list_load (Rtss_polyline_set* cxt, const char* ss_list_fn)
+Rtss_structure_set*
+ss_list_load (Rtss_structure_set* cxt, const char* ss_list_fn)
 {
     FILE* fp;
     int struct_id;
@@ -22,7 +22,7 @@ ss_list_load (Rtss_polyline_set* cxt, const char* ss_list_fn)
 	    "Could not open ss_list file for read: %s\n", ss_list_fn);
     }
     if (!cxt) {
-	cxt = new Rtss_polyline_set;
+	cxt = new Rtss_structure_set;
     }
 
     /* Part 2: Structures info */
@@ -57,7 +57,7 @@ ss_list_load (Rtss_polyline_set* cxt, const char* ss_list_fn)
 }
 
 void
-ss_list_save (Rtss_polyline_set* cxt, const char* ss_list_fn)
+ss_list_save (Rtss_structure_set* cxt, const char* ss_list_fn)
 {
     FILE *fp;
 	
@@ -83,7 +83,7 @@ ss_list_save (Rtss_polyline_set* cxt, const char* ss_list_fn)
 }
 
 void
-ss_list_save_colormap (Rtss_polyline_set* cxt, const char* colormap_fn)
+ss_list_save_colormap (Rtss_structure_set* cxt, const char* colormap_fn)
 {
     int color_no;
     FILE *fp;

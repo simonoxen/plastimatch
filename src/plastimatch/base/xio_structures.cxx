@@ -21,7 +21,7 @@
 #include "pstring.h"
 
 static void
-add_cms_contournames (Rtss_polyline_set *rtss, const char *filename)
+add_cms_contournames (Rtss_structure_set *rtss, const char *filename)
 {
     FILE *fp;
     struct bStream * bs;
@@ -109,7 +109,7 @@ add_cms_contournames (Rtss_polyline_set *rtss, const char *filename)
 }
 
 static void
-add_cms_structure (Rtss_polyline_set *rtss, const char *filename, 
+add_cms_structure (Rtss_structure_set *rtss, const char *filename, 
 		   float z_loc)
 {
     FILE *fp;
@@ -216,7 +216,7 @@ add_cms_structure (Rtss_polyline_set *rtss, const char *filename,
 
 void
 xio_structures_load (
-    Rtss_polyline_set *rtss, 
+    Rtss_structure_set *rtss, 
     const Xio_studyset& studyset
 )
 {
@@ -277,7 +277,7 @@ format_xio_filename (char *fn, const char *output_dir, float z_loc)
 
 void
 xio_structures_save (
-    Rtss_polyline_set *cxt,
+    Rtss_structure_set *cxt,
     Metadata *meta,
     Xio_ct_transform *transform,
     Xio_version xio_version,
@@ -387,7 +387,7 @@ xio_structures_save (
 
 void
 xio_structures_apply_transform (
-    Rtss_polyline_set *rtss, 
+    Rtss_structure_set *rtss, 
     Xio_ct_transform *transform
 )
 {

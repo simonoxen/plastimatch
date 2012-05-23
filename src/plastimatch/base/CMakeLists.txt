@@ -62,7 +62,7 @@ set (PLMBASE_LIBRARY_SRC
   ray_trace_uniform.cxx
   rpl_volume.cxx
   rtog_io.cxx
-  rtss_polyline_set.cxx
+  rtss_structure_set.cxx
   rtss_structure.cxx
   slice_index.cxx
   ss_list_io.cxx

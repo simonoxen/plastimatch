@@ -6,10 +6,11 @@
 
 #include "plmutil_config.h"
 
-class Rtss_polyline_set;
+class Rtss_structure_set;
 
 template<class T> void cxt_extract (
-        Rtss_polyline_set *cxt, T image,
+        Rtss_structure_set *cxt, 
+        T image,
         int num_structs,
         bool check_cxt_bits
 );

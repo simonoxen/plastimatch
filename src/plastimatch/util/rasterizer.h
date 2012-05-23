@@ -8,7 +8,7 @@
 
 #include "itk_image_type.h"
 
-class Rtss_polyline_set;
+class Rtss_structure_set;
 class Plm_image_header;
 
 class PLMUTIL_API Rasterizer {
@@ -47,7 +47,7 @@ class PLMUTIL_API Rasterizer {
 
   public:
     void rasterize (
-	Rtss_polyline_set *cxt,
+	Rtss_structure_set *cxt,
 	Plm_image_header *pih,
 	bool want_prefix_imgs,
 	bool want_labelmap,
@@ -57,7 +57,7 @@ class PLMUTIL_API Rasterizer {
     );
   private:
     void init (
-	Rtss_polyline_set *cxt,            /* Input */
+	Rtss_structure_set *cxt,            /* Input */
 	Plm_image_header *pih,             /* Input */
 	bool want_prefix_imgs,             /* Input */
 	bool want_labelmap,                /* Input */
@@ -66,10 +66,10 @@ class PLMUTIL_API Rasterizer {
 	bool xor_overlapping               /* Input */
     );
     bool process_next (
-	Rtss_polyline_set *cxt                          /* In/out */
+	Rtss_structure_set *cxt                          /* In/out */
     );
     const char* current_name (
-	Rtss_polyline_set *cxt
+	Rtss_structure_set *cxt
     );
 };
 

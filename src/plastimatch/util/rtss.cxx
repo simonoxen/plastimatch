@@ -97,7 +97,7 @@ Rtss::load_prefix (const Pstring &prefix_dir)
 void
 Rtss::load_cxt (const Pstring &input_fn, Slice_index *rdd)
 {
-    this->m_cxt = new Rtss_polyline_set;
+    this->m_cxt = new Rtss_structure_set;
     cxt_load (this, rdd, (const char*) input_fn);
 }
 
@@ -105,7 +105,7 @@ void
 Rtss::load_gdcm_rtss (const char *input_fn, Slice_index *rdd)
 {
 #if GDCM_VERSION_1
-    this->m_cxt = new Rtss_polyline_set;
+    this->m_cxt = new Rtss_structure_set;
     gdcm_rtss_load (this, rdd, &this->m_meta, input_fn);
 #endif
 }
@@ -113,7 +113,7 @@ Rtss::load_gdcm_rtss (const char *input_fn, Slice_index *rdd)
 void
 Rtss::load_xio (const Xio_studyset& studyset)
 {
-    this->m_cxt = new Rtss_polyline_set;
+    this->m_cxt = new Rtss_structure_set;
     printf ("calling xio_structures_load\n");
     xio_structures_load (this->m_cxt, studyset);
 }
@@ -281,7 +281,7 @@ Rtss::get_ss_img (void)
     return this->m_ss_img->m_itk_uint32;
 }
 
-Rtss_polyline_set*
+Rtss_structure_set*
 Rtss::get_ss_list (void)
 {
     if (!this->m_ss_list) {
@@ -336,7 +336,7 @@ Rtss::convert_ss_img_to_cxt (void)
     if (this->m_cxt) {
         delete this->m_cxt;
     }
-    this->m_cxt = new Rtss_polyline_set;
+    this->m_cxt = new Rtss_structure_set;
 
     /* Copy geometry from ss_img to cxt */
     this->m_cxt->set_geometry_from_plm_image (
@@ -350,7 +350,7 @@ Rtss::convert_ss_img_to_cxt (void)
 
         /* Do extraction */
         if (this->m_ss_list) {
-            this->m_cxt = Rtss_polyline_set::clone_empty (
+            this->m_cxt = Rtss_structure_set::clone_empty (
                 this->m_cxt, this->m_ss_list);
             cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uchar_vec, 
                 -1, true);
@@ -365,7 +365,7 @@ Rtss::convert_ss_img_to_cxt (void)
 
         /* Do extraction */
         if (this->m_ss_list) {
-            this->m_cxt = Rtss_polyline_set::clone_empty (
+            this->m_cxt = Rtss_structure_set::clone_empty (
                 this->m_cxt, this->m_ss_list);
             cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uint32, -1, true);
         } else {
@@ -452,7 +452,7 @@ Rtss::rasterize (
     }
 
     /* Clone the set of names */
-    this->m_ss_list = Rtss_polyline_set::clone_empty (
+    this->m_ss_list = Rtss_structure_set::clone_empty (
         this->m_ss_list, this->m_cxt);
 
     printf ("Finished rasterization.\n");

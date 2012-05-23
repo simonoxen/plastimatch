@@ -47,41 +47,5 @@ public:
     static void adjust_name (Pstring *name_out, const Pstring *name_in);
 };
 
-#if defined (commentout)
-PLMBASE_API Cxt_structure_list*
-cxt_create (void);
-PLMBASE_API void cxt_init (Cxt_structure_list* structures);
-PLMBASE_API Cxt_structure* cxt_add_structure (
-    Cxt_structure_list *cxt, 
-    const Pstring& structure_name, 
-    const Pstring& color, 
-    int structure_id);
-PLMBASE_API Cxt_structure* cxt_find_structure_by_id (Cxt_structure_list* structures, int structure_id);
-PLMBASE_API void cxt_debug (Cxt_structure_list* structures);
-PLMBASE_API void cxt_adjust_structure_names (Cxt_structure_list* structures);
-PLMBASE_API void cxt_free (Cxt_structure_list* structures);
-PLMBASE_API void cxt_destroy (Cxt_structure_list* structures);
-PLMBASE_API void cxt_prune_empty (Cxt_structure_list* structures);
-PLMBASE_API Cxt_structure_list* cxt_clone_empty (
-    Cxt_structure_list* cxt_out, 
-    Cxt_structure_list* cxt_in
-);
-PLMBASE_API void cxt_apply_geometry (Cxt_structure_list* structures);
-PLMBASE_API void cxt_set_geometry_from_plm_image_header (
-    Cxt_structure_list* cxt, 
-    Plm_image_header *pih
-);
-PLMBASE_API void cxt_set_geometry_from_plm_image (
-    Cxt_structure_list* structures,
-    Plm_image *pli
-);
-#endif
-
-#if defined (commentout)
-PLMBASE_API Cxt_polyline* cxt_add_polyline (Cxt_structure* structure);
-PLMBASE_API void cxt_structure_rgb (const Cxt_structure *structure, int *r, int *g, int *b);
-PLMBASE_API void cxt_adjust_name (Pstring *name_out, const Pstring *name_in);
-#endif
-
 
 #endif

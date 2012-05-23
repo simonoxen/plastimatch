@@ -22,7 +22,7 @@ cxt_load (
 {
     FILE* fp;
     Rtss_polyline* curr_contour;
-    Rtss_polyline_set *cxt = rtss->m_cxt;
+    Rtss_structure_set *cxt = rtss->m_cxt;
 
     float val_x = 0;
     float val_y = 0;
@@ -265,7 +265,7 @@ cxt_save (
 )
 {
     FILE *fp;
-    Rtss_polyline_set *cxt = rtss->m_cxt;
+    Rtss_structure_set *cxt = rtss->m_cxt;
 
     /* Prepare output directory */
     make_directory_recursive (cxt_fn);

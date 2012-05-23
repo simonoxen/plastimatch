@@ -129,7 +129,7 @@ run_marching_squares (
 template<class T>
 void
 cxt_extract (
-    Rtss_polyline_set *cxt, 
+    Rtss_structure_set *cxt, 
     T image, 
     int num_structs, 
     bool check_cxt_bits
@@ -219,7 +219,7 @@ cxt_extract (
 template<>
 void
 cxt_extract (
-    Rtss_polyline_set *cxt, 
+    Rtss_structure_set *cxt, 
     UCharVecImageType::Pointer image, 
     int num_structs, 
     bool check_cxt_bits
@@ -310,4 +310,4 @@ cxt_extract (
 }
 
 /* Explicit instantiations */
-template PLMUTIL_API void cxt_extract (Rtss_polyline_set *cxt, UInt32ImageType::Pointer image, int num_structs, bool check_cxt_bits);
+template PLMUTIL_API void cxt_extract (Rtss_structure_set *cxt, UInt32ImageType::Pointer image, int num_structs, bool check_cxt_bits);

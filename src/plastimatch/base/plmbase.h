@@ -65,7 +65,7 @@
 #include "raw_pointset.h"
 #include "ray_trace.h"
 #include "rpl_volume.h"
-#include "rtss_polyline_set.h"
+#include "rtss_structure_set.h"
 #include "rtss_structure.h"
 #include "ss_list_io.h"
 #if (!PLM_CUDA_COMPILE)

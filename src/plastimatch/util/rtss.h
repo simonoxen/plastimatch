@@ -12,7 +12,7 @@
 class Plm_image;
 class Plm_image_header;
 class Rtds;
-class Rtss_polyline_set;
+class Rtss_structure_set;
 class Rtss_structure;
 class Slice_index;
 class Xform;
@@ -21,8 +21,8 @@ class Warp_parms;
 
 class PLMUTIL_API Rtss {
 public:
-    Rtss_polyline_set *m_ss_list; /* Names of structures */
-    Rtss_polyline_set *m_cxt;     /* Structure set in polyline form */
+    Rtss_structure_set *m_ss_list; /* Names of structures */
+    Rtss_structure_set *m_cxt;     /* Structure set in polyline form */
     Plm_image *m_ss_img;          /* Structure set in lossless bitmap form */
     Plm_image *m_labelmap;        /* Structure set lossy bitmap form */
     Metadata m_meta;  /* Metadata specific to this ss_image */
@@ -50,7 +50,7 @@ public:
     void save_xio (Xio_ct_transform *xio_transform, Xio_version xio_version, 
     const Pstring &output_dir);
     UInt32ImageType::Pointer get_ss_img (void);
-    Rtss_polyline_set *get_ss_list (void);
+    Rtss_structure_set *get_ss_list (void);
 
     void apply_dicom_dir (const Slice_index *rdd);
     void convert_ss_img_to_cxt (void);

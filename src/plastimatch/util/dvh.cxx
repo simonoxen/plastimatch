@@ -56,14 +56,14 @@ dvh_execute_internal (
     UInt32ImageType::Pointer ss_img = rtds->m_rtss->get_ss_img();
 
     /* GCS HACK: This should go into rtss.cxx */
-    Rtss_polyline_set *ss_list;
+    Rtss_structure_set *ss_list;
     if (rtds->m_rtss->m_ss_list) {
         ss_list = rtds->m_rtss->get_ss_list();
     } else {
         if (rtds->m_rtss->m_cxt) {
             ss_list = rtds->m_rtss->m_cxt;
         } else {
-            ss_list = new Rtss_polyline_set;
+            ss_list = new Rtss_structure_set;
             for (int i = 0; i < 32; i++) {
                 Rtss_structure* structure = 
                     ss_list->add_structure ("Unknown Structure", 

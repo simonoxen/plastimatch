@@ -47,7 +47,7 @@ Rasterizer::~Rasterizer (void)
 
 void
 Rasterizer::init (
-    Rtss_polyline_set *cxt,            /* Input */
+    Rtss_structure_set *cxt,            /* Input */
     Plm_image_header *pih,             /* Input */
     bool want_prefix_imgs,             /* Input */
     bool want_labelmap,                /* Input */
@@ -121,7 +121,7 @@ Rasterizer::init (
 /* Return true if an image was processed */
 bool
 Rasterizer::process_next (
-    Rtss_polyline_set *cxt                          /* In/out */
+    Rtss_structure_set *cxt                          /* In/out */
 )
 {
     Rtss_structure* curr_structure;
@@ -267,7 +267,7 @@ Rasterizer::process_next (
 
 const char*
 Rasterizer::current_name (
-    Rtss_polyline_set *cxt
+    Rtss_structure_set *cxt
 )
 {
     if (this->curr_struct_no < cxt->num_structures + 1) {
@@ -281,7 +281,7 @@ Rasterizer::current_name (
 
 void
 Rasterizer::rasterize (
-    Rtss_polyline_set *cxt,            /* Input */
+    Rtss_structure_set *cxt,            /* Input */
     Plm_image_header *pih,             /* Input */
     bool want_prefix_imgs,             /* Input */
     bool want_labelmap,                /* Input */

@@ -8,10 +8,10 @@
 
 class Slice_index;
 class Rtss;
-class Rtss_polyline_set;
+class Rtss_structure_set;
 
-PLMBASE_C_API Rtss_polyline_set* cxt_load_ss_list (
-        Rtss_polyline_set* cxt,
+PLMBASE_C_API Rtss_structure_set* cxt_load_ss_list (
+        Rtss_structure_set* cxt,
         const char* xorlist_fn
 );
 PLMBASE_C_API void cxt_load (

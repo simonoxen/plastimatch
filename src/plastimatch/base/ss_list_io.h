@@ -6,18 +6,18 @@
 
 #include "plmbase_config.h"
 
-class Rtss_polyline_set;
+class Rtss_structure_set;
 
-PLMBASE_C_API Rtss_polyline_set* ss_list_load (
-        Rtss_polyline_set* cxt,
+PLMBASE_C_API Rtss_structure_set* ss_list_load (
+        Rtss_structure_set* cxt,
         const char* ss_list_fn
 );
 PLMBASE_C_API void ss_list_save (
-        Rtss_polyline_set* cxt,
+        Rtss_structure_set* cxt,
         const char* cxt_fn
 );
 PLMBASE_C_API void ss_list_save_colormap (
-        Rtss_polyline_set* cxt,
+        Rtss_structure_set* cxt,
         const char* colormap_fn
 );
 
