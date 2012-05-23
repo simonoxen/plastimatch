@@ -11,9 +11,15 @@
     void set_##name (const type&)
 
 #define PLM_GET(type, name)                                  \
+    type get_##name () const
+
+#define PLM_GET_CR(type, name)                               \
     const type& get_##name () const
 
 #define PLM_SET(type, name)                                  \
+    void set_##name (type)
+
+#define PLM_SET_CR(type, name)                               \
     void set_##name (const type&)
 
 #endif

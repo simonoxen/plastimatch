@@ -33,33 +33,6 @@ public:
     }
 };
 
-class Gamma_filter_private;
-
-/*! \brief This is a sample "Filter PLMUTIL_API" class for Gamma.  
- * How it works is a mystery. */
-class Gamma_filter {
-public:
-    Gamma_filter (...);
-    ~Gamma_filter ();
-public:
-    Gamma_filter_private *d_ptr;
-public:
-
-    PLM_SET(char*, reference_image);
-    PLM_SET(Plm_image, reference_image);
-    PLM_SET(FloatImageType, reference_image);
-    PLM_SET(char*, comparison_image);
-    PLM_SET(Plm_image, comparison_image);
-    PLM_SET(FloatImageType, comparison_image);
-
-    PLM_GET_SET(float, s_tol);
-
-    /*! Sets the r_tol value */
-    PLM_SET(float, r_tol);
-    /*! Returns the r_tol value */
-    PLM_GET(float, r_tol);
-};
-
 /*! \brief This function finds a dose threshold.  It is a global function. 
   If we document the file (with the \file directive) or if we add this 
   function to a group, it will show up in Doxygen. */

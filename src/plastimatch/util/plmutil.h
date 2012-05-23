@@ -19,6 +19,7 @@
 #if (!PLM_CUDA_COMPILE)
 #include "dvh.h"
 #include "gamma_analysis.h"
+#include "gamma_dose_comparison.h"
 #include "itk_adjust.h"
 #include "itk_crop.h"
 #include "itk_gabor.h"

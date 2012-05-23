@@ -74,21 +74,21 @@ void do_gamma_analysis( Gamma_parms *parms ) {
     gamma_img->SetSpacing (sp);
     gamma_img->Allocate();
 
-        // output gamma image "pass"
+    // output gamma image "pass"
     FloatImageType::Pointer gamma_img_pass = FloatImageType::New();
     gamma_img_pass->SetRegions (rg);
     gamma_img_pass->SetOrigin (og);
     gamma_img_pass->SetSpacing (sp);
     gamma_img_pass->Allocate();
 
-        // output gamma image "fail"
+    // output gamma image "fail"
     FloatImageType::Pointer gamma_img_fail = FloatImageType::New();
     gamma_img_fail->SetRegions (rg);
     gamma_img_fail->SetOrigin (og);
     gamma_img_fail->SetSpacing (sp);
     gamma_img_fail->Allocate();
 
-        // output labelmap "fail"
+    // output labelmap "fail"
     UCharImageType::Pointer labelmap_fail = UCharImageType::New();
     labelmap_fail->SetRegions (rg);
     labelmap_fail->SetOrigin (og);
@@ -118,7 +118,7 @@ void do_gamma_analysis( Gamma_parms *parms ) {
     float level1, level2, dr2, dd2, gg;
     float f0,f1,f2,f3;
 
-        //vox-to-mm-to-gamma conversion factors; strictly, these should come from IMAGE2, not 1
+    //vox-to-mm-to-gamma conversion factors; strictly, these should come from IMAGE2, not 1
     f0 = spacing_in[0]/parms->r_tol; f0=f0*f0;
     f1 = spacing_in[1]/parms->r_tol; f1=f1*f1;
     f2 = spacing_in[2]/parms->r_tol; f2=f2*f2;
@@ -146,67 +146,67 @@ void do_gamma_analysis( Gamma_parms *parms ) {
 
     for (img_in1_iterator.GoToBegin(); !img_in1_iterator.IsAtEnd(); ++img_in1_iterator) {
     
-    //calculate gamma for this voxel of input image
+        //calculate gamma for this voxel of input image
     
-    level1 = img_in1_iterator.Get();
+        level1 = img_in1_iterator.Get();
 
-    k1=img_in1_iterator.GetIndex();
-    img_in1->TransformIndexToPhysicalPoint( k1, phys );
-    img_in2->TransformPhysicalPointToIndex( phys, k2 );
+        k1=img_in1_iterator.GetIndex();
+        img_in1->TransformIndexToPhysicalPoint( k1, phys );
+        img_in2->TransformPhysicalPointToIndex( phys, k2 );
 
-    //k2 is the voxel index of the k1's physical (mm) position in img2
+        //k2 is the voxel index of the k1's physical (mm) position in img2
     
-    // set subset_of_img2 to the following region:  
-    // k1[0]-region_size < k2[0] < k1[0]+region_size, same for y,z
-    // assume (approx) same pix spacing in img1 and img2
-    // crop the region by the entire image to be safe
-    k2-= offset;  
-    subset_of_img2.SetIndex(k2);
-    region_size.Fill( 2*reg_pixsize ); 
-    subset_of_img2.SetSize( region_size);
-    subset_of_img2.Crop( all_of_img2 );
+        // set subset_of_img2 to the following region:  
+        // k1[0]-region_size < k2[0] < k1[0]+region_size, same for y,z
+        // assume (approx) same pix spacing in img1 and img2
+        // crop the region by the entire image to be safe
+        k2-= offset;  
+        subset_of_img2.SetIndex(k2);
+        region_size.Fill( 2*reg_pixsize ); 
+        subset_of_img2.SetSize( region_size);
+        subset_of_img2.Crop( all_of_img2 );
 
-    FloatIteratorType img_in2_iterator (img_in2, subset_of_img2);
+        FloatIteratorType img_in2_iterator (img_in2, subset_of_img2);
 
-    // calculate gamma, take a minimum of ... over the subset_of_img2
-    gamma = 1e20;
-    for (img_in2_iterator.GoToBegin(); !img_in2_iterator.IsAtEnd(); ++img_in2_iterator) {
+        // calculate gamma, take a minimum of ... over the subset_of_img2
+        gamma = 1e20;
+        for (img_in2_iterator.GoToBegin(); !img_in2_iterator.IsAtEnd(); ++img_in2_iterator) {
 
-        k3 = img_in2_iterator.GetIndex();
+            k3 = img_in2_iterator.GetIndex();
 
         
-        level2 = img_in2_iterator.Get();
+            level2 = img_in2_iterator.Get();
 
-        dr2 = (k3[0]-k1[0])*(k3[0]-k1[0])*f0 +
-              (k3[1]-k1[1])*(k3[1]-k1[1])*f1 +
-              (k3[2]-k1[2])*(k3[2]-k1[2])*f2 ;
+            dr2 = (k3[0]-k1[0])*(k3[0]-k1[0])*f0 +
+                (k3[1]-k1[1])*(k3[1]-k1[1])*f1 +
+                (k3[2]-k1[2])*(k3[2]-k1[2])*f2 ;
 
-        dd2 = (level1 - level2)*(level1-level2)*f3;
+            dd2 = (level1 - level2)*(level1-level2)*f3;
 
-        gg = dr2 + dd2;
+            gg = dr2 + dd2;
 
-        if (gg < gamma) gamma=gg;
-        //test only: if (k1[0]==k3[0]) gamma = k3[0];
+            if (gg < gamma) gamma=gg;
+            //test only: if (k1[0]==k3[0]) gamma = k3[0];
         }
 
-    gamma = sqrt(gamma);
-    if (gamma > parms->gamma_max ) gamma = parms->gamma_max;
+        gamma = sqrt(gamma);
+        if (gamma > parms->gamma_max ) gamma = parms->gamma_max;
 
-    // test only: gamma = phys[0];
+        // test only: gamma = phys[0];
 
-    gamma_img_iterator.Set ( gamma );
-    ++gamma_img_iterator;
+        gamma_img_iterator.Set ( gamma );
+        ++gamma_img_iterator;
         
-    label_fail = 0;
+        label_fail = 0;
 
-    if (gamma > 1) label_fail = 1;
+        if (gamma > 1) label_fail = 1;
 
-    if (gamma <= 1)
-        gamma_img_pass_iterator.Set ( gamma );
-    ++gamma_img_pass_iterator;
+        if (gamma <= 1)
+            gamma_img_pass_iterator.Set ( gamma );
+        ++gamma_img_pass_iterator;
         
-    if (gamma > 1)
-        gamma_img_fail_iterator.Set ( gamma );
+        if (gamma > 1)
+            gamma_img_fail_iterator.Set ( gamma );
         ++gamma_img_fail_iterator;
 
         labelmap_fail_iterator.Set ( label_fail );
@@ -224,17 +224,4 @@ void do_gamma_analysis( Gamma_parms *parms ) {
 
     parms->labelmap_out = new Plm_image;
     parms->labelmap_out->set_itk( labelmap_fail);
-}
-
-class Gamma_filter_private {
-public:
-    int i;
-};
-
-Gamma_filter::Gamma_filter (...) {
-    d_ptr = new Gamma_filter_private;
-}
-
-Gamma_filter::~Gamma_filter () {
-    delete d_ptr;
 }
