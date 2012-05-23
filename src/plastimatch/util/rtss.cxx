@@ -2,6 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmutil_config.h"
+#include "itkImageRegionConstIterator.h"
 
 #include "plmbase.h"
 #include "plmutil.h"
@@ -78,14 +79,32 @@ Rtss::load (const char *ss_img, const char *ss_list)
 void
 Rtss::load_prefix (const Pstring &prefix_dir)
 {
+    /* Clear out any existing structures */
     this->clear ();
 
-    this->m_ss_list = new Rtss_structure_set;
-    this->m_ss_img = new Plm_image;
-
+    /* Load the list of files in the directory */
     Dir_list dl;
     dl.load (prefix_dir.c_str());
 
+    /* Make a quick pass through the directory to find the number of 
+       files.  This is used to size the ss_img. */
+    int max_structures = 0;
+    for (int i = 0; i < dl.num_entries; i++) {
+        /* Look at filename, make sure it is an mha file */
+        const char *entry = dl.entries[i];
+	if (!extension_is (entry, ".mha")) {
+            continue;
+        }
+        max_structures++;
+    }
+    int out_vec_len = 1 + (max_structures - 1) / 8;
+    if (out_vec_len < 2) out_vec_len = 2;
+
+    /* Make a second pass that actually loads the files */
+    bool first = true;
+    int bit = 0;
+    UCharVecImageType::Pointer ss_img;
+    Plm_image_header ss_img_pih;
     for (int i = 0; i < dl.num_entries; i++) {
         /* Look at filename, make sure it is an mha file */
         const char *entry = dl.entries[i];
@@ -94,24 +113,78 @@ Rtss::load_prefix (const Pstring &prefix_dir)
         }
 
         /* Grab the structure name from the filename */
-        char *base = strdup (entry);
-        strip_extension (base);
-        printf ("Parsed name is: %s\n", base);
-        free (base);
+        char *structure_name = strdup (entry);
+        strip_extension (structure_name);
+        lprintf ("Loading structure: %s\n", structure_name);
 
         /* Load the file */
         Pstring input_fn;
         input_fn.format ("%s/%s", prefix_dir.c_str(), entry);
-        Plm_image img (input_fn.c_str(), PLM_IMG_TYPE_GPUIT_UCHAR);
+        Plm_image img (input_fn.c_str(), PLM_IMG_TYPE_ITK_UCHAR);
+        Plm_image_header pih (img);
+
+        if (first) {
+            /* Create ss_image with same resolution as first image */
+            this->m_ss_img = new Plm_image;
+            ss_img = UCharVecImageType::New ();
+            itk_image_set_header (ss_img, pih);
+            ss_img->SetVectorLength (out_vec_len);
+            ss_img->Allocate ();
+            this->m_ss_img->set_itk (ss_img);
+            Plm_image_header::clone (&ss_img_pih, &pih);
+
+            /* Create ss_list to hold strucure names */
+            this->m_ss_list = new Rtss_structure_set;
+
+            first = false;
+        } else {
+            if (!Plm_image_header::compare (&pih, &ss_img_pih)) {
+                print_and_exit ("Image size mismatch when loading prefix_dir");
+            }
+        }
+
+        /* Add name to ss_list */
+        this->m_ss_list->add_structure (
+            structure_name, "", 
+            this->m_ss_list->num_structures + 1);
+        free (structure_name);
+
+        /* GCS FIX: This code is replicated in ss_img_extract */
+        unsigned int uchar_no = bit / 8;
+        unsigned int bit_no = bit % 8;
+        unsigned char bit_mask = 1 << bit_no;
+        if (uchar_no > ss_img->GetVectorLength()) {
+            print_and_exit ("Error.  Ss_img vector is too small.");
+        }
+
+        /* Set up iterators for looping through images */
+        typedef itk::ImageRegionConstIterator< UCharImageType > 
+            UCharIteratorType;
+        typedef itk::ImageRegionIterator< UCharVecImageType > 
+            UCharVecIteratorType;
+        UCharImageType::Pointer uchar_img = img.itk_uchar();
+        UCharIteratorType uchar_img_it (uchar_img, 
+            uchar_img->GetLargestPossibleRegion());
+        UCharVecIteratorType ss_img_it (ss_img, 
+            ss_img->GetLargestPossibleRegion());
+
+        /* Loop through voxels, or'ing them into ss_img */
+        /* GCS FIX: This is inefficient, due to undesirable construct 
+           and destruct of itk::VariableLengthVector of each pixel */
+        for (
+            uchar_img_it.GoToBegin(), ss_img_it.GoToBegin();
+            !uchar_img_it.IsAtEnd();
+            ++uchar_img_it, ++ss_img_it
+        ) {
+            unsigned char u = uchar_img_it.Get ();
+            if (!u) continue;
+
+            itk::VariableLengthVector<unsigned char> v 
+                = ss_img_it.Get ();
+            v[uchar_no] |= bit_mask;
+            ss_img_it.Set (v);
+        }            
     }
-
-    /* Then, basically the same logic as rasterization, where planes 
-       get added incrementally. */
-
-    /* I should spin the prefix stuff off to a separate file */
-
-    /* Also, rename to "ss-dir", but keep hidden option "prefix" 
-       for backward compatibility */
 }
 
 void

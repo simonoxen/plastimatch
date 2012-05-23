@@ -36,6 +36,9 @@ class PLMBASE_API Plm_image_header {
     Plm_image_header (Plm_image *pli) {
         this->set_from_plm_image (pli);
     }
+    Plm_image_header (const Plm_image& pli) {
+        this->set_from_plm_image (pli);
+    }
   public:
     int Size (int d) const { return m_region.GetSize()[d]; }
     const SizeType& GetSize (void) const { return m_region.GetSize (); }
@@ -67,7 +70,8 @@ class PLMBASE_API Plm_image_header {
         const float spacing[3],
         const float direction_cosines[9]);
     void set_from_gpuit_bspline (Bspline_xform *bxf);
-    void set_from_plm_image (Plm_image *pli);
+    void set_from_plm_image (const Plm_image *pli);
+    void set_from_plm_image (const Plm_image& pli);
     void set_from_volume_header (const Volume_header& vh);
     void set (const Volume_header& vh);
 

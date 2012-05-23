@@ -33,6 +33,7 @@ PLMBASE_C_API void itk_image_get_props (
 
 template<class T> PLMBASE_API void get_image_header (plm_long dim[3], float offset[3], float spacing[3], T image);
 template<class T> PLMBASE_API void itk_image_get_volume_header (Volume_header *vh, T image);
-template<class T> PLMBASE_API void itk_image_set_header (T image, Plm_image_header *pih);
+template<class T> PLMBASE_API void itk_image_set_header (T image, const Plm_image_header *pih);
+template<class T> PLMBASE_API void itk_image_set_header (T image, const Plm_image_header& pih);
 template<class T, class U> PLMBASE_API void itk_image_header_copy (T dest, U src);
 #endif

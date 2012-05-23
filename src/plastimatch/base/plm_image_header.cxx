@@ -103,7 +103,7 @@ Plm_image_header::set_from_gpuit_bspline (Bspline_xform *bxf)
 }
 
 void
-Plm_image_header::set_from_plm_image (Plm_image *pli)
+Plm_image_header::set_from_plm_image (const Plm_image *pli)
 {
     switch (pli->m_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
@@ -148,6 +148,12 @@ Plm_image_header::set_from_plm_image (Plm_image *pli)
 	    plm_image_type_string (pli->m_type));
 	break;
     }
+}
+
+void
+Plm_image_header::set_from_plm_image (const Plm_image& pli)
+{
+    this->set_from_plm_image (&pli);
 }
 
 void

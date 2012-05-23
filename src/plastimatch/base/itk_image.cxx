@@ -110,12 +110,19 @@ itk_image_get_volume_header (Volume_header *vh, T image)
 
 template<class T>
 void
-itk_image_set_header (T dest, Plm_image_header *pih)
+itk_image_set_header (T dest, const Plm_image_header *pih)
 {
     dest->SetRegions (pih->m_region);
     dest->SetOrigin (pih->m_origin);
     dest->SetSpacing (pih->m_spacing);
     dest->SetDirection (pih->m_direction);
+}
+
+template<class T>
+void
+itk_image_set_header (T dest, const Plm_image_header& pih)
+{
+    itk_image_set_header (dest, &pih);
 }
 
 template<class T, class U>
@@ -142,8 +149,10 @@ template PLMBASE_API void get_image_header (plm_long dim[3], float offset[3], fl
 template PLMBASE_API void get_image_header (plm_long dim[3], float offset[3], float spacing[3], ShortImageType::Pointer image);
 template PLMBASE_API void get_image_header (plm_long dim[3], float offset[3], float spacing[3], UShortImageType::Pointer image);
 template PLMBASE_API void get_image_header (plm_long dim[3], float offset[3], float spacing[3], FloatImageType::Pointer image);
-template PLMBASE_API void itk_image_set_header (UCharVecImageType::Pointer, Plm_image_header *pih);
-template PLMBASE_API void itk_image_set_header (DeformationFieldType::Pointer, Plm_image_header *pih);
+template PLMBASE_API void itk_image_set_header (UCharVecImageType::Pointer, const Plm_image_header *pih);
+template PLMBASE_API void itk_image_set_header (DeformationFieldType::Pointer, const Plm_image_header *pih);
+template PLMBASE_API void itk_image_set_header (UCharVecImageType::Pointer, const Plm_image_header& pih);
+template PLMBASE_API void itk_image_set_header (DeformationFieldType::Pointer, const Plm_image_header& pih);
 template PLMBASE_API void itk_image_header_copy (UCharVecImageType::Pointer, UCharImageType::Pointer);
 template PLMBASE_API void itk_image_header_copy (UCharVecImageType::Pointer, UInt32ImageType::Pointer);
 template PLMBASE_API void itk_image_header_copy (UCharVecImageType::Pointer, UCharVecImageType::Pointer);
