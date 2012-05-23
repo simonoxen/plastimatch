@@ -83,7 +83,27 @@ Rtss::load_prefix (const Pstring &prefix_dir)
     this->m_ss_list = new Rtss_structure_set;
     this->m_ss_img = new Plm_image;
 
-    
+    Dir_list dl;
+    dl.load (prefix_dir.c_str());
+
+    for (int i = 0; i < dl.num_entries; i++) {
+        /* Look at filename, make sure it is an mha file */
+        const char *entry = dl.entries[i];
+	if (!extension_is (entry, ".mha")) {
+            continue;
+        }
+
+        /* Grab the structure name from the filename */
+        char *base = strdup (entry);
+        strip_extension (base);
+        printf ("Parsed name is: %s\n", base);
+        free (base);
+
+        /* Load the file */
+        Pstring input_fn;
+        input_fn.format ("%s/%s", prefix_dir.c_str(), entry);
+        Plm_image img (input_fn.c_str(), PLM_IMG_TYPE_GPUIT_UCHAR);
+    }
 
     /* Then, basically the same logic as rasterization, where planes 
        get added incrementally. */

@@ -252,6 +252,7 @@ endif ()
 ##   gauss-7           Off-center gauss with wider sigma
 ##   gauss-ushort-1    Centered gauss, ushort
 ##   gauss-ushort-2    Off-center gauss, ushort
+##   lung-1            Synthetic lung
 ##   rect-1            Inverted rect, centered
 ##   rect-2            Standard rect, off-center
 ##   rect-3            Standard rect, centered
@@ -319,6 +320,18 @@ plm_add_test (
   "synth;--output;${PLM_BUILD_TESTING_DIR}/gauss-7.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;10 0 0;--gauss-std;20 20 20"
   )
 plm_add_test (
+  "gauss-double-1"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/gauss-double-1.mha;--output-type;double;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;1000;--gauss-center;0 0 0;--gauss-std;10 10 10"
+  )
+plm_add_test (
+  "gauss-double-2"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/gauss-double-2.mha;--output-type;double;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;1000;--gauss-center;10 0 0;--gauss-std;10 10 10"
+  )
+plm_add_test (
   "gauss-ushort-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -331,16 +344,10 @@ plm_add_test (
   "synth;--output;${PLM_BUILD_TESTING_DIR}/gauss-ushort-2.mha;--output-type;ushort;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;1000;--gauss-center;10 0 0;--gauss-std;10 10 10"
   )
 plm_add_test (
-  "gauss-double-1"
+  "lung-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--output;${PLM_BUILD_TESTING_DIR}/gauss-double-1.mha;--output-type;double;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;1000;--gauss-center;0 0 0;--gauss-std;10 10 10"
-  )
-plm_add_test (
-  "gauss-double-2"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--output;${PLM_BUILD_TESTING_DIR}/gauss-double-2.mha;--output-type;double;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;1000;--gauss-center;10 0 0;--gauss-std;10 10 10"
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/lung-1.mha;--output-dicom;${PLM_BUILD_TESTING_DIR}/lung-1-dicom;--pattern;lung"
   )
 plm_add_test (
   "rect-1"
@@ -1212,12 +1219,13 @@ set_tests_properties (plm-add-vf-b-check PROPERTIES DEPENDS plm-add-vf-b-stats)
 ## plastimatch convert dicom (and dicom rt)
 ##   plm convert dicom a: (rect) input rtss, no fixed image, no ct reference
 ##   plm convert dicom b: set metadata
+##   plm convert dicom c: make prefix images from lung-1
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-convert-dicom-a" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/rect-1-dicom/ss.dcm;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-a-ss.mha;--output-ss-list;plm-convert-dicom-a-ss.txt;--output-cxt;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-a.cxt"
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/rect-1-dicom/ss.dcm;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-a-ss.mha;--output-ss-list;plm-convert-dicom-a-ss.txt;--output-cxt;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-a.cxt;--output-prefix;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-a-prefix"
   )
 set_tests_properties (plm-convert-dicom-a PROPERTIES DEPENDS rect-1)
 
@@ -1243,6 +1251,14 @@ set_tests_properties (plm-convert-dicom-b-stats PROPERTIES
   DEPENDS plm-convert-dicom-b)
 set_tests_properties (plm-convert-dicom-b-check PROPERTIES 
   DEPENDS plm-convert-dicom-b-stats)
+
+plm_add_test (
+  "plm-convert-dicom-c" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/lung-1-dicom/;--output-prefix;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-c-prefix"
+  )
+set_tests_properties (plm-convert-dicom-c PROPERTIES DEPENDS lung-1)
 
 ## -------------------------------------------------------------------------
 ## These tests are designed to check the handling of overlapping structures 

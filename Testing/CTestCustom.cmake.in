@@ -1,8 +1,8 @@
 set (BUILD_DEBIAN @BUILD_DEBIAN@)
-set (BROOK_FOUND @BROOK_FOUND@)
 set (CMAKE_Fortran_COMPILER_WORKS @CMAKE_Fortran_COMPILER_WORKS@)
 set (CUDA_FOUND @CUDA_FOUND@)
 set (FFTW_FOUND @FFTW_FOUND@)
+set (GDCM_VERSION_1 @GDCM_VERSION_1@)
 set (OPENCL_FOUND @OPENCL_FOUND@)
 set (PLM_DCM_USE_DCMTK "@PLM_DCM_USE_DCMTK@")
 set (PLM_PLASTIMATCH_PATH "@PLM_PLASTIMATCH_PATH@")
@@ -274,16 +274,6 @@ if (NOT RUN_OPENCL_TESTS)
     "fdk-opencl-a-stats"
     "fdk-opencl-a-check"
     ) 
-endif ()
-
-## If we didn't compile with brook, don't run these tests
-if (NOT BROOK_FOUND)
-  set (CTEST_CUSTOM_TESTS_IGNORE
-    ${CTEST_CUSTOM_TESTS_IGNORE}
-    "fdk-brook"
-    "fdk-brook-stats"
-    "fdk-brook-check"
-    )
 endif ()
 
 ## If we don't have GDCM 1.X, don't run these tests
