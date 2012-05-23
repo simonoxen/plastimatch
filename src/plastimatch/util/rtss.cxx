@@ -78,12 +78,12 @@ Rtss::load (const char *ss_img, const char *ss_list)
 void
 Rtss::load_prefix (const Pstring &prefix_dir)
 {
-    if (m_ss_img) {
-        delete this->m_ss_img;
-    }
+    this->clear ();
 
-    /* Need to create either an m_cxt or an m_ss_list to hold the 
-       structure names */
+    this->m_ss_list = new Rtss_structure_set;
+    this->m_ss_img = new Plm_image;
+
+    
 
     /* Then, basically the same logic as rasterization, where planes 
        get added incrementally. */

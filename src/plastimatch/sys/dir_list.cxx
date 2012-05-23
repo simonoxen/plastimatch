@@ -14,28 +14,32 @@
 
 #include "plmsys.h"
 
-Dir_list*
-dir_list_create (void)
+Dir_list::Dir_list ()
 {
-    Dir_list *dl;
-    dl = (Dir_list*) malloc (sizeof (Dir_list));
-    dir_list_init (dl);
-    return dl;
+    this->init ();
+}
+
+Dir_list::~Dir_list ()
+{
+    int i;
+    if (this->entries) {
+	for (i = 0; i < this->num_entries; i++) {
+	    free (this->entries[i]);
+	}
+	free (this->entries);
+    }
 }
 
 void
-dir_list_init (Dir_list* dl)
+Dir_list::init ()
 {
-    dl->num_entries = 0;
-    dl->entries = 0;
+    this->num_entries = 0;
+    this->entries = 0;
 }
 
-/* Caller must free output.  Returns 0 if dir is not a directory. */
-Dir_list *
-dir_list_load (Dir_list *dir_list, const char* dir)
+void 
+Dir_list::load (const char* dir)
 {
-    Dir_list *dl;
-
 #if (_WIN32)
     intptr_t srch;
     struct _finddata_t d;
@@ -49,18 +53,12 @@ dir_list_load (Dir_list *dir_list, const char* dir)
 
     if (srch == -1) return 0;
 
-    if (dir_list) {
-	dl = dir_list;
-    } else {
-	dl = dir_list_create ();
-    }
-
     do {
-	dl->num_entries ++;
-	dl->entries = (char**) realloc (
-	    dl->entries, 
-	    dl->num_entries * sizeof (char*));
-	dl->entries[dl->num_entries-1] = strdup (d.name);
+	this->num_entries ++;
+	this->entries = (char**) realloc (
+	    this->entries, 
+	    this->num_entries * sizeof (char*));
+	this->entries[this->num_entries-1] = strdup (d.name);
     } while (_findnext (srch, &d) != -1);
     _findclose (srch);
 
@@ -69,36 +67,15 @@ dir_list_load (Dir_list *dir_list, const char* dir)
     struct dirent* d;
 
     dp = opendir (dir);
-    if (!dp) return 0;
+    if (!dp) return;
 
-    if (dir_list) {
-	dl = dir_list;
-    } else {
-	dl = dir_list_create ();
-    }
     for (d = readdir(dp); d; d = readdir(dp)) {
-	dl->num_entries ++;
-	dl->entries = (char**) realloc (
-	    dl->entries, 
-	    dl->num_entries * sizeof (char*));
-	dl->entries[dl->num_entries-1] = strdup (d->d_name);
+	this->num_entries ++;
+	this->entries = (char**) realloc (
+	    this->entries, 
+	    this->num_entries * sizeof (char*));
+	this->entries[this->num_entries-1] = strdup (d->d_name);
     }
     closedir (dp);
 #endif
-    return dl;
-}
-
-void
-dir_list_destroy (Dir_list *dir_list)
-{
-    int i;
-    if (!dir_list) return;
-
-    if (dir_list->entries) {
-	for (i = 0; i < dir_list->num_entries; i++) {
-	    free (dir_list->entries[i]);
-	}
-	free (dir_list->entries);
-    }
-    free (dir_list);
 }

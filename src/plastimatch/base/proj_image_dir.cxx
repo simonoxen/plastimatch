@@ -129,24 +129,21 @@ Proj_image_dir::load_filenames (
 )
 {
     int i;
-    Dir_list *dir_list;
+    Dir_list dir_list;
 
     if (this->dir) {
 	free (this->dir);
 	this->dir = 0;
     }
 
-    dir_list = dir_list_load (0, dir);
-    if (!dir_list) {
-	return;
-    }
+    dir_list.load (dir);
 
     this->dir = strdup (dir);
     this->num_proj_images = 0;
     this->proj_image_list = 0;
 
-    for (i = 0; i < dir_list->num_entries; i++) {
-	char *entry = dir_list->entries[i];
+    for (i = 0; i < dir_list.num_entries; i++) {
+	char *entry = dir_list.entries[i];
 	if (extension_is (entry, ".hnd") || extension_is (entry, ".pfm") 
 	    || extension_is (entry, ".raw"))
 	{
@@ -157,8 +154,6 @@ Proj_image_dir::load_filenames (
 	    this->proj_image_list[this->num_proj_images-1] = strdup (entry);
 	}
     }
-
-    dir_list_destroy (dir_list);
 }
 
 void

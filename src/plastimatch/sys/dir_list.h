@@ -12,18 +12,18 @@
 
 #include "plmsys_config.h"
 
-typedef struct dir_list Dir_list;
-struct dir_list
+class Dir_list
 {
+public:
     int num_entries;
     char** entries;
-};
+public:
+    Dir_list ();
+    ~Dir_list ();
 
-/* dir_list.cxx */
-PLMSYS_C_API Dir_list* dir_list_create (void);
-PLMSYS_C_API void dir_list_destroy (Dir_list *dir_list);
-PLMSYS_C_API void dir_list_init (Dir_list* dl);
-PLMSYS_C_API Dir_list * dir_list_load (Dir_list *dir_list, const char* dir);
+    void init ();
+    void load (const char* dir);
+};
 
 /* logfile.cxx */
 PLMSYS_C_API void logfile_open (char* log_fn);
