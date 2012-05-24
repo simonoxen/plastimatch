@@ -12,7 +12,7 @@
 
 #include "plmsys_config.h"
 
-class Dir_list
+class PLMSYS_API Dir_list
 {
 public:
     int num_entries;
