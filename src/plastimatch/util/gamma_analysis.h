@@ -11,6 +11,12 @@
 
 class Plm_image;
 
+enum Gamma_output_mode {
+    GAMMA,
+    PASS,
+    FAIL
+};
+
 /*! \brief This is the Gamma_parms class.
  * How it works is a mystery. */
 class Gamma_parms {
@@ -23,13 +29,15 @@ public:
     Plm_image *img_in1;
     Plm_image *img_in2;
     Plm_image *img_out;
-    Plm_image *img_out_pass;
-    Plm_image *img_out_fail;
-    Plm_image *labelmap_out;
+
+    Gamma_output_mode mode;
+    bool labelmap;
 
 public:
     Gamma_parms () {
         r_tol = d_tol = gamma_max = 3;
+        mode = GAMMA;
+        labelmap = false;
     }
 };
 

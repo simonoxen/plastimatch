@@ -132,39 +132,31 @@
       <default>None</default>
       <description>Input dose image 2</description>
     </image>
+    <string-enumeration>
+      <name>output_mode</name>
+      <longflag>--output_mode</longflag>
+      <label>Output Mode:</label>
+      <description>Type of output to generate</description>
+      <default>Gamma</default>
+      <element>Gamma</element>
+      <element>Pass Regions</element>
+      <element>Fail Regions</element>
+    </string-enumeration>
+    <boolean>
+      <name>labelmap</name>
+      <label>Output as labelmap</label>
+      <default>false</default>
+      <longflag>--labelmap</longflag>
+      <description>Produce a labelmap output for gamma analysis</description>
+    </boolean>
     <image>
-      <longflag>plmslc_gamma_output_img</longflag>
-      <name>plmslc_gamma_output_img</name>
-      <label>Output gamma image</label>
+      <longflag>plmslc_gamma_output</longflag>
+      <name>plmslc_gamma_output</name>
+      <label>Gamma output</label>
       <channel>output</channel>
       <default>None</default>
       <description>Output gamma image</description>
     </image>
-  <image>
-    <longflag>plmslc_gamma_output_img_pass</longflag>
-    <name>plmslc_gamma_output_img_pass</name>
-    <label>Output accepted gamma image</label>
-    <channel>output</channel>
-    <default>None</default>
-    <description>Output accepted gamma image</description>
-  </image>
-  <image>
-    <longflag>plmslc_gamma_output_img_fail</longflag>
-    <name>plmslc_gamma_output_img_fail</name>
-    <label>Output failed gamma image</label>
-    <channel>output</channel>
-    <default>None</default>
-    <description>Output failed gamma image</description>
-  </image>
-  <image type="label">
-    <name>plmslc_gamma_output_labelmap</name>
-    <label>Output labelmap for failed gamma</label>
-    <channel>output</channel>
-    <longflag>--failmap</longflag>
-    <default>None</default>
-    <description>Output labelmap for gamma greater than 1</description>
-  </image>
-  
   <double>
     <name>plmslc_gamma_r_tol</name>
     <longflag>--gamma_r</longflag>
