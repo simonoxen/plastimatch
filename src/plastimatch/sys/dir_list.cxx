@@ -51,7 +51,7 @@ Dir_list::load (const char* dir)
     srch = _findfirst (buf, &d);
     free (buf);
 
-    if (srch == -1) return 0;
+    if (srch == -1) return;
 
     do {
 	this->num_entries ++;
