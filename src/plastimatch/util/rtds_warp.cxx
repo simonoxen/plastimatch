@@ -348,9 +348,9 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     pih.print ();
 
     /* GCS DEBUGGING - delete this */
-#if defined (commentout)
     ss_img_stats (rtds->m_rtss->m_ss_img->itk_uchar_vec());
-    rtds->m_rtss->m_ss_list->debug();
+    rtds->m_rtss->m_cxt->debug();
+#if defined (commentout)
 #endif
 
     /* Warp the image and create vf */
@@ -441,9 +441,9 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
         lprintf ("Rtds_warp: Convert ss_img to cxt.\n");
         rtds->m_rtss->convert_ss_img_to_cxt ();
 
-#if defined (commentout)
         /* GCS DEBUGGING */
         rtds->m_rtss->m_cxt->debug();
+#if defined (commentout)
 #endif
 
         /* Delete empty structures */
@@ -459,7 +459,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
         
         /* Set the output geometry */
         lprintf ("Rtds_warp: Set geometry from PIH.\n");
-        rtds->m_rtss->set_geometry_from_plm_image_header (&pih);
+        rtds->m_rtss->set_geometry (&pih);
 
         /* Set rasterization geometry */
         lprintf ("Rtds_warp: Set rasterization geometry.\n");

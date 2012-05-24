@@ -17,7 +17,6 @@
 #include "plmutil.h"
 #include "plmsys.h"
 
-
 #if defined (commentout)
 static bool
 debug_uchar_slice (UCharImage2DType::Pointer uchar_slice)
@@ -29,7 +28,7 @@ debug_uchar_slice (UCharImage2DType::Pointer uchar_slice)
     while (!it1.IsAtEnd()) {
 	unsigned char p = it1.Get ();
 	if (p != 0) {
-	    printf ("Got pixel: %d ", p);
+	    printf ("Got pixel: %d\n", p);
 	    return true;
 	}
 	++it1;
@@ -256,6 +255,7 @@ cxt_extract (
     unsigned int num_uchar = image->GetVectorLength();
 
     for (int slice_no = 0; slice_no < num_slices; slice_no++) {
+
 	/* Make a copy of the current slice */
 	UCharVecImage2DType::Pointer ucharvec_slice 
 	    = slice_extract (image, slice_no);
@@ -301,7 +301,7 @@ cxt_extract (
 		    exit (1);
 		}
 		uchar_slice = and_filter->GetOutput ();
-		
+
 		run_marching_squares (curr_structure, uchar_slice, slice_no,
 		    image->GetOrigin(), image->GetSpacing());
 	    }

@@ -21,11 +21,10 @@ class Warp_parms;
 
 class PLMUTIL_API Rtss {
 public:
-    Rtss_structure_set *m_ss_list; /* Names of structures */
-    Rtss_structure_set *m_cxt;     /* Structure set in polyline form */
-    Plm_image *m_ss_img;          /* Structure set in lossless bitmap form */
-    Plm_image *m_labelmap;        /* Structure set lossy bitmap form */
-    Metadata m_meta;  /* Metadata specific to this ss_image */
+    Rtss_structure_set *m_cxt;  /* Structure set in polyline form */
+    Plm_image *m_ss_img;        /* Structure set in lossless bitmap form */
+    Plm_image *m_labelmap;      /* Structure set lossy bitmap form */
+    Metadata m_meta;            /* Metadata specific to this ss_image */
 
 public:
     Rtss (Rtds *rtds);
@@ -50,7 +49,6 @@ public:
     void save_xio (Xio_ct_transform *xio_transform, Xio_version xio_version, 
     const Pstring &output_dir);
     UInt32ImageType::Pointer get_ss_img (void);
-    Rtss_structure_set *get_ss_list (void);
 
     void apply_dicom_dir (const Slice_index *rdd);
     void convert_ss_img_to_cxt (void);
@@ -58,7 +56,7 @@ public:
     void cxt_re_extract (void);
     void prune_empty (void);
     void rasterize (Plm_image_header *pih, bool want_labelmap, bool xor_overlapping);
-    void set_geometry_from_plm_image_header (Plm_image_header *pih);
+    void set_geometry (const Plm_image_header *pih);
     void find_rasterization_geometry (Plm_image_header *pih);
     void warp (Xform *xf, Plm_image_header *pih, Warp_parms *parms);
 };
