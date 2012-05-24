@@ -444,8 +444,8 @@ Rtss_structure_set::fix_polyline_slice_numbers (void)
 }
 
 void
-Rtss_structure_set::set_geometry_from_plm_image_header (
-    Plm_image_header *pih
+Rtss_structure_set::set_geometry (
+    const Plm_image_header *pih
 )
 {
     pih->get_origin (this->m_offset);
@@ -457,13 +457,13 @@ Rtss_structure_set::set_geometry_from_plm_image_header (
 }
 
 void
-Rtss_structure_set::set_geometry_from_plm_image (
-    Plm_image *pli
+Rtss_structure_set::set_geometry (
+    const Plm_image *pli
 )
 {
     Plm_image_header pih;
     pih.set_from_plm_image (pli);
-    this->set_geometry_from_plm_image_header (&pih);
+    this->set_geometry (&pih);
 }
 
 void

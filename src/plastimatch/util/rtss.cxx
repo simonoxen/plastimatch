@@ -135,6 +135,7 @@ Rtss::load_prefix (const Pstring &prefix_dir)
 
             /* Create ss_list to hold strucure names */
             this->m_ss_list = new Rtss_structure_set;
+            this->m_ss_list->set_geometry (this->m_ss_img);
 
             first = false;
         } else {
@@ -184,6 +185,7 @@ Rtss::load_prefix (const Pstring &prefix_dir)
             v[uchar_no] |= bit_mask;
             ss_img_it.Set (v);
         }            
+        bit++;
     }
 }
 
@@ -432,8 +434,7 @@ Rtss::convert_ss_img_to_cxt (void)
     this->m_cxt = new Rtss_structure_set;
 
     /* Copy geometry from ss_img to cxt */
-    this->m_cxt->set_geometry_from_plm_image (
-        this->m_ss_img);
+    this->m_cxt->set_geometry (this->m_ss_img);
 
     if (this->m_ss_img->m_type == PLM_IMG_TYPE_GPUIT_UCHAR_VEC
         || this->m_ss_img->m_type == PLM_IMG_TYPE_ITK_UCHAR_VEC) 
@@ -555,7 +556,7 @@ void
 Rtss::set_geometry_from_plm_image_header (Plm_image_header *pih)
 {
     if (this->m_cxt) {
-        this->m_cxt->set_geometry_from_plm_image_header (pih);
+        this->m_cxt->set_geometry (pih);
     }
 }
 

@@ -154,8 +154,7 @@ Rtds::load_xio (
 
     /* Apply XiO CT geometry to structures */
     if (this->m_rtss->m_cxt) {
-        printf ("calling cxt_set_geometry_from_plm_image\n");
-        this->m_rtss->m_cxt->set_geometry_from_plm_image (this->m_img);
+        this->m_rtss->m_cxt->set_geometry (this->m_img);
     }
 
     /* Load demographics */

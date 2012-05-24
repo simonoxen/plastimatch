@@ -57,8 +57,8 @@ public:
     PLMBASE_API void free_all_polylines (void);
     PLMBASE_API void keyholize (void);
     PLMBASE_API void set_rasterization_geometry (void);
-    PLMBASE_API void set_geometry_from_plm_image_header (Plm_image_header *pih);
-    PLMBASE_API void set_geometry_from_plm_image (Plm_image *pli);
+    PLMBASE_API void set_geometry (const Plm_image_header *pih);
+    PLMBASE_API void set_geometry (const Plm_image *pli);
 };
 
 #endif
