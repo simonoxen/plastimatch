@@ -41,6 +41,10 @@ if (READLINE_FOUND)
     ${READLINE_LIBRARY}
   )
 endif()
+if (LIBDL_FOUND)
+  set (PLMSCRIPT_LIBRARY_DEPENDENCIES ${PLMSCRIPT_LIBRARY_DEPENDENCIES} -ldl)
+endif ()
+
 
 ##-----------------------------------------------------------------------------
 ##  SPECIAL BUILD RULES: Qt
