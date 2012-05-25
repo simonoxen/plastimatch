@@ -24,6 +24,11 @@ public:
     Plm_image *overlap_labelmap1;
     Plm_image *overlap_labelmap2;
     char overlap_fn[1024];
+	char max_coord_fn_out[1024];
+	
+	Pstring max_coord_fn_in1;
+	Pstring max_coord_fn_in2;
+
 
     /* for dose comparison plugin */
     int isodose_value1, isodose_value2, 

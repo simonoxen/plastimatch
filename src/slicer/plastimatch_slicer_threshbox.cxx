@@ -27,8 +27,9 @@ main (int argc, char * argv [])
     parms.threshold = plmslc_threshbox_threshold;
 
     parms.img_in = plm_image_load_native ( plmslc_threshbox_img_in.c_str() );
-
-    do_threshbox( &parms );
+	strcpy( parms.max_coord_fn_out, plmslc_max_coord_out.c_str() );
+    
+	do_threshbox( &parms );
     
 //    FloatImageType::Pointer img = parms.img_out->itk_float();
 //    itk_image_save_float (img, plmslc_threshbox_img_out.c_str());
@@ -46,7 +47,9 @@ main (int argc, char * argv [])
 	    plm_image_load_native( plmslc_threshbox_labelmap_1.c_str() );
 	parms.overlap_labelmap2 = 
 	    plm_image_load_native( plmslc_threshbox_labelmap_2.c_str() );
-
+	parms.max_coord_fn_in1 = plmslc_max_coord1.c_str() ;
+	parms.max_coord_fn_in2 = plmslc_max_coord2.c_str() ;
+	
 	do_overlap_fraction( &parms );    
 	}
 

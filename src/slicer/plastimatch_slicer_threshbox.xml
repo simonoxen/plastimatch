@@ -56,6 +56,13 @@
       <label>Threshold, percent</label>
       <default>80</default>
     </integer>
+    <string>
+      <name>plmslc_max_coord_out</name>
+      <label>Output file for coordinate of suv max [full path]</label>
+      <longflag>--outputfn1</longflag>
+      <default></default>
+      <description>Output file for overlap fraction</description>
+    </string>
     </parameters>
     <parameters>
     <label>Calculate overlap fraction</label>
@@ -81,6 +88,20 @@
       <longflag>--labelmap_two</longflag>
       <default>None</default>
     </image>
+      <string>
+        <name>plmslc_max_coord1</name>
+        <label>Input file for coordinates of suv max in labelmap 1 [full path]</label>
+        <longflag>--inputfn1</longflag>
+        <default></default>
+        <description>Input file for coordinates of suv max</description>
+      </string>
+      <string>
+        <name>plmslc_max_coord2</name>
+        <label>Input file for coordinates of suv max in labelmap 2 [full path]</label>
+        <longflag>--inputfn2</longflag>
+        <default></default>
+        <description>Input file for coordinates of suv max</description>
+      </string>
       <string>
         <name>plmslc_overlap_fraction</name>
         <label>Output file for overlap fraction [full path]</label>
