@@ -55,6 +55,7 @@ endif ()
 set (PLMUTIL_LIBRARY_DEPENDENCIES 
   plmbase
   plmsys
+  ${FFTW_LIBRARIES}
   )
 
 ##-----------------------------------------------------------------------------
