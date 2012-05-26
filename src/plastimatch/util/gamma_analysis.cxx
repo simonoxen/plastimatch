@@ -161,48 +161,28 @@ void do_gamma_analysis( Gamma_parms *parms ) {
         }
 
         gamma = sqrt(gamma);
-        if (gamma > parms->gamma_max ) gamma = parms->gamma_max;
+        if (gamma > parms->gamma_max) gamma = parms->gamma_max;
 
         // test only: gamma = phys[0];
 
         switch (parms->mode) {
         case PASS:
             if (gamma <= 1) {
-                if (parms->labelmap) {
-                    gamma_img_iterator.Set (1);
-                } else {
-                    gamma_img_iterator.Set (gamma);
-                }
+                gamma_img_iterator.Set (1);
             } else {
-                if (parms->labelmap) {
-                    gamma_img_iterator.Set (0);
-                } else {
-                    gamma_img_iterator.Set (-1);
-                }
+                gamma_img_iterator.Set (0);
             }
             break;
         case FAIL:
             if (gamma > 1) {
-                if (parms->labelmap) {
-                    gamma_img_iterator.Set (1);
-                } else {
-                    gamma_img_iterator.Set (gamma);
-                }
+                gamma_img_iterator.Set (1);
             } else {
-                if (parms->labelmap) {
-                    gamma_img_iterator.Set (0);
-                } else {
-                    gamma_img_iterator.Set (-1);
-                }
+                gamma_img_iterator.Set (0);
             }
             break;
         case GAMMA:
         default:
-            if (parms->labelmap) {
-                gamma_img_iterator.Set (1);
-            } else {
-                gamma_img_iterator.Set (gamma);
-            }
+            gamma_img_iterator.Set (gamma);
             break;
         }
         ++gamma_img_iterator;
