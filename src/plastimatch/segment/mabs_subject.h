@@ -12,8 +12,8 @@ public:
     ~Mabs_subject ();
 
 public:
-    char* img_fn;
-    char* ss_fn;
+    const char* img_fn;
+    const char* ss_fn;
 
     Volume* img;
     Volume* ss;

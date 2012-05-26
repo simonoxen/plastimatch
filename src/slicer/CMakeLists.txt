@@ -105,5 +105,5 @@ plm_add_slicer_executable (plastimatch_slicer_dose_comparison
 ##-----------------------------------------------------------------------------
 if (SLICER_IS_SLICER4)
   #add_subdirectory (PlastimatchDVH_Slicer4Plugin)
-  #add_subdirectory (PlmSlicerBspline)
+  add_subdirectory (PlmSlicerBspline)
 endif ()
