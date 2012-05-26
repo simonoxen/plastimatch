@@ -119,46 +119,45 @@ main (int argc, char * argv [])
 */
     } //end if need isodose
     
-    if ( plmslc_need_gamma ) {
-
-        if ( plmslc_gamma_input_img1 == "" || plmslc_gamma_input_img1 == "None" ||
+    if (plmslc_need_gamma) {
+        if (plmslc_gamma_input_img1 == "" || plmslc_gamma_input_img1 == "None" ||
             plmslc_gamma_input_img2 == "" || plmslc_gamma_input_img2 == "None"  ) {
             printf("Error. No input specified for dose multithresholding!\n");
             return EXIT_FAILURE;
         }
 
-        gparms.img_in1 = plm_image_load_native ( plmslc_gamma_input_img1.c_str() );
-        gparms.img_in2 = plm_image_load_native ( plmslc_gamma_input_img2.c_str() );
+        gparms.img_in1 = plm_image_load_native (plmslc_gamma_input_img1.c_str());
+        gparms.img_in2 = plm_image_load_native (plmslc_gamma_input_img2.c_str());
 
         gparms.r_tol = plmslc_gamma_r_tol;
         gparms.gamma_max = plmslc_gamma_g;
 
-        find_dose_threshold( &gparms ); 
+        find_dose_threshold (&gparms); 
 
 //   if (plmslc_gamma_d_tol_gy != "" )
-        if (plmslc_gamma_d_tol_gy != 0)
-        {
+        if (plmslc_gamma_d_tol_gy != 0) {
             gparms.d_tol = plmslc_gamma_d_tol_gy;
         }
 //  else if (plmslc_gamma_d_tol_percent != "" )
-        else if (plmslc_gamma_d_tol_percent != 0)
-        {
+        else if (plmslc_gamma_d_tol_percent != 0) {
             gparms.d_tol = plmslc_gamma_d_tol_percent/100.*gparms.dose_max;
         }
 
         /* Select output mode */
         if (!strcmp ("Gamma", output_mode.c_str())) {
             gparms.mode = GAMMA;
+            gparms.labelmap = false;
         }
-        else if (!strcmp ("Pass Regions", output_mode.c_str())) {
+        else if (!strcmp ("Pass Labelmap", output_mode.c_str())) {
             gparms.mode = PASS;
+            gparms.labelmap = true;
         }
-        else if (!strcmp ("Fail Regions", output_mode.c_str())) {
+        else if (!strcmp ("Fail Labelmap", output_mode.c_str())) {
             gparms.mode = FAIL;
+            gparms.labelmap = true;
         }
-        gparms.labelmap = labelmap;
 
-        do_gamma_analysis( &gparms ); 
+        do_gamma_analysis (&gparms); 
 
         if (gparms.labelmap) {
             UCharImageType::Pointer img_out = gparms.img_out->itk_uchar();

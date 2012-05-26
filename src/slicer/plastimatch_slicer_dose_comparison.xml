@@ -139,16 +139,9 @@
       <description>Type of output to generate</description>
       <default>Gamma</default>
       <element>Gamma</element>
-      <element>Pass Regions</element>
-      <element>Fail Regions</element>
+      <element>Pass Labelmap</element>
+      <element>Fail Labelmap</element>
     </string-enumeration>
-    <boolean>
-      <name>labelmap</name>
-      <label>Output as labelmap</label>
-      <default>false</default>
-      <longflag>--labelmap</longflag>
-      <description>Produce a labelmap output for gamma analysis</description>
-    </boolean>
     <image>
       <longflag>plmslc_gamma_output</longflag>
       <name>plmslc_gamma_output</name>
