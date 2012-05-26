@@ -347,12 +347,6 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     lprintf ("PIH is:\n");
     pih.print ();
 
-    /* GCS DEBUGGING - delete this */
-    ss_img_stats (rtds->m_rtss->m_ss_img->itk_uchar_vec());
-    rtds->m_rtss->m_cxt->debug();
-#if defined (commentout)
-#endif
-
     /* Warp the image and create vf */
     if (rtds->m_img 
         && parms->xf_in_fn.not_empty()
@@ -440,11 +434,6 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
         /* Convert ss_img to cxt */
         lprintf ("Rtds_warp: Convert ss_img to cxt.\n");
         rtds->m_rtss->convert_ss_img_to_cxt ();
-
-        /* GCS DEBUGGING */
-        rtds->m_rtss->m_cxt->debug();
-#if defined (commentout)
-#endif
 
         /* Delete empty structures */
         if (parms->prune_empty) {
