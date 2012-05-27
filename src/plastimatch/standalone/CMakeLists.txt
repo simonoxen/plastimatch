@@ -71,6 +71,9 @@ set (HND_TO_PFM_SRC
 set (LANDMARK_DIFF_SRC
   landmark_diff_main.cxx
   )
+set (MABS_SRC
+  mabs_main.cxx
+  )
 set (MERGE_VFS_SRC
   merge_vector_fields.cxx
   )
@@ -138,6 +141,9 @@ if (FULL_PLASTIMATCH_BUILD)
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   plm_add_executable (landmark_diff "${LANDMARK_DIFF_SRC}" 
+    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+  plm_add_executable (mabs "${MABS_SRC}" 
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   plm_add_executable (merge_vfs  "${MERGE_VFS_SRC}"

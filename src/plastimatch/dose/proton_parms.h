@@ -4,6 +4,8 @@
 #ifndef _proton_dose_opts_h_
 #define _proton_dose_opts_h_
 
+#include "sys/plm_path.h"
+
 class Plm_image;
 class Proton_Scene;
 
@@ -27,7 +29,6 @@ public:
     float ray_step;       /* Uniform ray step size (mm) */
     float scale;          /* scale dose intensity */
                           /* 1 = only consider voxels in beam path */
-
     char input_fn[_MAX_PATH];  /* input:  patient volume */
     char output_fn[_MAX_PATH]; /* output: dose volume */
 

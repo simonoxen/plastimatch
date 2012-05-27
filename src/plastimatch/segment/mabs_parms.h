@@ -4,14 +4,17 @@
 #ifndef _mabs_parms_h_
 #define _mabs_parms_h_
 
-class Mabs_subject;
+#include "sys/plm_path.h"
 
-class PLMSEGMENT_API Mabs_Parms {
+class Mabs_subject_manager;
+
+class PLMSEGMENT_API Mabs_parms {
 public:
-    Mabs_Parms ();
-    ~Mabs_Parms ();
+    Mabs_parms ();
+    ~Mabs_parms ();
 
     bool parse_args (int argc, char** argv);
+    void print ();
 
 private:
     void parse_config (const char* config_fn);
@@ -19,25 +22,24 @@ private:
 
 public:
     /* [TRAINING] */
-    const char* atlas_dir;
-    const char* training_dir;
+    char atlas_dir[_MAX_PATH];
+    char training_dir[_MAX_PATH];
 
     /* [REGISTRATION] */
-    const char* registration_config;
+    char registration_config[_MAX_PATH];
 
     /* [SUBJECT] */
-    Mabs_subject* subject_list;    
+    Mabs_subject_manager* sman;    
 
     /* [STRUCTURES] */
     // to be implemented
 
     /* [LABELING] */
-    const char* labeling_input_fn;
-    const char* labeling_output_fn;
+    char labeling_input_fn[_MAX_PATH];
+    char labeling_output_fn[_MAX_PATH];
 
     /* misc */
     bool debug;
-}
-
 };
+
 #endif /* #ifndef _mabs_parms_h_ */
