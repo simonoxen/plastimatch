@@ -13,6 +13,8 @@ macro (PLM_ADD_LIBRARY
     TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS)
 
   if (BUILD_AGAINST_SLICER3)
+    # This is the case for building on slicer 3 extension build machines
+    # We just need to create the build, no need to install
     add_library (${TARGET_NAME} STATIC ${TARGET_SRC})
     slicer3_set_plugins_output_path (${TARGET_NAME})
   else ()
@@ -29,6 +31,22 @@ macro (PLM_ADD_LIBRARY
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
+    endif ()
+    # Slicer 4 extension build needs dlls installed into the same 
+    # directory as the modules
+    if (SLICER_FOUND AND SLICER_IS_SLICER4)
+      install (TARGETS ${TARGET_NAME}
+	RUNTIME DESTINATION ${Slicer_INSTALL_CLIMODULES_BIN_DIR} 
+	COMPONENT RuntimeLibraries
+	LIBRARY DESTINATION ${Slicer_INSTALL_CLIMODULES_LIB_DIR} 
+	COMPONENT RuntimeLibraries
+	)
+      install (TARGETS ${TARGET_NAME}
+	RUNTIME DESTINATION ${Slicer_INSTALL_QTLOADABLEMODULES_BIN_DIR} 
+	COMPONENT RuntimeLibraries
+	LIBRARY DESTINATION ${Slicer_INSTALL_QTLOADABLEMODULES_LIB_DIR} 
+	COMPONENT RuntimeLibraries
+	)
     endif ()
   endif ()
   target_link_libraries (${TARGET_NAME} ${TARGET_LIBS})
