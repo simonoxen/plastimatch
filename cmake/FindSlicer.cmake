@@ -76,6 +76,20 @@ if (SLICER_FOUND)
     set (Slicer_USE_FILE "${Slicer3_USE_FILE}")
   endif ()
 
+  # Slicer 4 requires GIT_EXECUTABLE to be defined.
+  if (SLICER_IS_SLICER4)
+    if (NOT DEFINED GIT_EXECUTABLE)
+      find_package (git)
+    endif ()
+    if (NOT GIT_FOUND)
+      find_program(GIT_EXECUTABLE
+	NAMES git
+	PATHS c:/cygwin/bin
+	DOC "git command line client"
+	)
+    endif ()
+  endif ()
+
   # Load the Slicer configuration files
   #
   # Strangely, the Slicer use file (both Slicer 3 and Slicer 4) 
