@@ -21,8 +21,18 @@ main (int argc, char * argv [])
     dvh.input_dose_fn = input_dose_image.c_str();
     dvh.output_csv_fn = output_dvh_filename.c_str();
 
+    if (histogram_type == "Cumulative") {
+        dvh.dvh_parms.cumulative = 1;
+    } else {
+        dvh.dvh_parms.cumulative = 0;
+    }
+    dvh.dvh_parms.num_bins = num_bins;
+    dvh.dvh_parms.bin_width = bin_width;
+
     /* Optional inputs */
-    /* (none) */
+    if (input_ss_list != "" && input_ss_list != "None") {
+        dvh.input_ss_list_fn = input_ss_list.c_str();
+    }
 
     /* Process DVH */
     dvh_execute (&dvh);

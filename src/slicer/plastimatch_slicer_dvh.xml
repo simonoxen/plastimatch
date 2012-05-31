@@ -19,6 +19,13 @@
       <default>None</default>
       <description>Structure set image used to create the DVH</description>
     </image>
+    <string>
+      <name>input_ss_list</name>
+      <longflag>input_ss_list</longflag>
+      <label>Input structure names (file)</label>
+      <description>Read a file containing the names of all the structures in the structure set (absolute path)</description>
+      <channel>input</channel>
+    </string>
     <image>
       <longflag>input_dose_image</longflag>
       <name>input_dose_image</name>
@@ -27,6 +34,29 @@
       <default>None</default>
       <description>Dose image used to create the DVH</description>
     </image>
+    <string-enumeration>
+      <name>histogram_type</name>
+      <longflag>--histogram_type</longflag>
+      <description>Histogram type, either cumulative or differential</description>
+      <label>Histogram type</label>
+      <default>Cumulative</default>
+      <element>Cumulative</element>
+      <element>Differential</element>
+    </string-enumeration>
+    <integer>
+      <name>num_bins</name>
+      <label>Num bins</label>
+      <default>200</default>
+      <longflag>--num_bins</longflag>
+      <description>Number of histogram bins</description>
+    </integer>
+    <double>
+      <name>bin_width</name>
+      <label>Bin width</label>
+      <default>50.0</default>
+      <longflag>--bin_width</longflag>
+      <description>Width of each histogram bin (cGy)</description>
+    </double>
     <file>
       <longflag>output_dvh_filename</longflag>
       <name>output_dvh_filename</name>
