@@ -23,11 +23,11 @@ public:
 
     Plm_image *overlap_labelmap1;
     Plm_image *overlap_labelmap2;
-    char overlap_fn[1024];
+    char overlap_fn_out[1024];
 	char max_coord_fn_out[1024];
 	
-	Pstring max_coord_fn_in1;
-	Pstring max_coord_fn_in2;
+	char max_coord_fn_in1[1024];
+	char max_coord_fn_in2[1024];
 
 
     /* for dose comparison plugin */

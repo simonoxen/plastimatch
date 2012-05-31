@@ -81,10 +81,13 @@ void do_threshbox( Threshbox_parms *parms) {
 //	    img_in->TransformIndexToPhysicalPoint( k, phys );
 
 	level = img_in_iterator.Get();
-	    
+
+	//NSh 2012-05-30 - find position of the max over the entire image, disregarding the box
+	/*
 	if ( (parms->center[0]- parms->boxsize[0]/2 <= k[0] && k[0] < parms->center[0]+parms->boxsize[0]/2) &&
 	    (parms->center[1]- parms->boxsize[1]/2 <= k[1] && k[1] < parms->center[1]+parms->boxsize[1]/2) &&
 	    (parms->center[2]- parms->boxsize[2]/2 <= k[2] && k[2] < parms->center[2]+parms->boxsize[2]/2) )
+	*/
 	{
 		if (level> maxlevel) { maxlevel = level;
 								k_max = img_in_iterator.GetIndex(); 
@@ -95,7 +98,11 @@ void do_threshbox( Threshbox_parms *parms) {
 	}
 	}
 	
+	//char fn_tmp[1024];
+	//sprintf(fn_tmp, "c:\\cygwin\\home\\nadya\\%s", parms->max_coord_fn_out);
+
 	FILE *fp0 = fopen( parms->max_coord_fn_out, "w");
+	//FILE *fp0 = fopen( fn_tmp, "w");
     if (fp0) { 
 	fprintf(fp0, "max_coord\n%.3f %.3f %.3f\n", phys_max[0],phys_max[1],phys_max[2]);
 	fclose(fp0);
@@ -137,7 +144,10 @@ void do_threshbox( Threshbox_parms *parms) {
 void do_overlap_fraction( Threshbox_parms *parms) {
 
     double vol_img1=0, vol_img2=0, vol_min=0, vol_overlap=0, max_sep;
-    int level1, level2, level11, level22, over_max;
+    int level1, level2, level11, level22;
+
+	FloatPoint3DType phys_max1, phys_max2;
+	UCharImageType::IndexType k_max1, k_max2;
 
     UCharImageType::Pointer img1 = parms->overlap_labelmap1->itk_uchar();
     UCharImageType::Pointer img2 = parms->overlap_labelmap2->itk_uchar();
@@ -148,9 +158,6 @@ void do_overlap_fraction( Threshbox_parms *parms) {
     img1_iterator = UCharIteratorType (img1, img1->GetLargestPossibleRegion());
     img1_iterator.GoToBegin();
     
-FloatPoint3DType phys_max1, phys_max2;
-UCharImageType::IndexType k_max1, k_max2;
-
     UCharIteratorType img2_iterator;
     img2_iterator = UCharIteratorType (img2, img2->GetLargestPossibleRegion());
     img2_iterator.GoToBegin();
@@ -164,6 +171,32 @@ UCharImageType::IndexType k_max1, k_max2;
 	    level2 = img2_iterator.Get();
 	    if ( level2>0 ) vol_img2++;
     }
+
+printf("%s\n%s\n", parms->max_coord_fn_in1, parms->max_coord_fn_in2);
+
+	FILE *fp1 = fopen( parms->max_coord_fn_in1, "r");
+	char tmpbuf[1024];
+	if (fp1) {
+	fscanf(fp1, "%s", tmpbuf);
+	fscanf(fp1, "%f %f %f", &phys_max1[0], &phys_max1[1], &phys_max1[2]);
+	printf("read %f %f %f from %s\n", phys_max1[0],phys_max1[1],phys_max1[2], parms->max_coord_fn_in1);
+	fclose(fp1);
+	}
+
+	FILE *fp2 = fopen( parms->max_coord_fn_in2, "r");
+	//char tmpbuf[1024];
+	if (fp2) {
+	fscanf(fp2, "%s", tmpbuf);
+	fscanf(fp2, "%f %f %f", &phys_max2[0], &phys_max2[1], &phys_max2[2]);
+	printf("read %f %f %f from %s\n", phys_max2[0],phys_max2[1],phys_max2[2], parms->max_coord_fn_in2);
+	fclose(fp2);
+	}
+		
+	max_sep = (phys_max1[0] - phys_max2[0])*(phys_max1[0] - phys_max2[0])+
+			  (phys_max1[1] - phys_max2[1])*(phys_max1[1] - phys_max2[1])+
+			  (phys_max1[2] - phys_max2[2])*(phys_max1[2] - phys_max2[2]);
+	max_sep = sqrt(max_sep);
+	printf("max_sep %f\n", max_sep);
 
     FloatPoint3DType phys;
     bool in_image;
@@ -179,22 +212,6 @@ UCharImageType::IndexType k_max1, k_max2;
 	k1=img1_iterator.GetIndex();
 	img1->TransformIndexToPhysicalPoint( k1, phys );
 	in_image = img2->TransformPhysicalPointToIndex( phys, k2) ;
-
-	FILE *fp1 = fopen( parms->max_coord_fn_in1, "r");
-	char tmpbuf[1024];
-	if (fp1) {
-	fscanf(fp1, "%s", tmpbuf);
-	fscanf(fp1, "%f %f %f", &phys_max1[0], &phys_max1[1], &phys_max1[2]);
-	fclose(fp1);
-	}
-
-	FILE *fp2 = fopen( parms->max_coord_fn_in2, "r");
-	//char tmpbuf[1024];
-	if (fp2) {
-	fscanf(fp2, "%s", tmpbuf);
-	fscanf(fp2, "%f %f %f", &phys_max2[0], &phys_max2[1], &phys_max2[2]);
-	fclose(fp2);
-	}
 	
 	if (in_image) {
 		level1 = img1->GetPixel(k1);
@@ -206,31 +223,53 @@ UCharImageType::IndexType k_max1, k_max2;
 
     if (vol_img1<vol_img2) vol_min=vol_img1; else vol_min=vol_img2;
 
-    img1->TransformIndexToPhysicalPoint(k_max1, phys_max1);
-	img2->TransformIndexToPhysicalPoint(k_max2, phys_max2);
+	// wrong logic
+	//img1->TransformPhysicalPointToIndex(phys_max1, k_max1);
+	//img2->TransformPhysicalPointToIndex(phys_max2, k_max2);
+	//level11 = img1->GetPixel(k_max1);
+	//level22 = img2->GetPixel(k_max2);
+
+	int over_max = -1;
+
+	//check if phys_max1 is in overlap
+	int max1_in;
+	img1->TransformPhysicalPointToIndex(phys_max1, k_max1);
+	img2->TransformPhysicalPointToIndex(phys_max1, k_max2);
 	level11 = img1->GetPixel(k_max1);
 	level22 = img2->GetPixel(k_max2);
-	if (level11 > 0 && level22 > 0)
-		over_max = 0; // two suv max are in the overlap volume
-	if (level11 > 0 && level22 <= 0)
-		over_max = 1; // suv max 1 is in the overlap volume, suv max 2 is outside
-	if (level11 <= 0 && level22 > 0)
-		over_max = 2; // suv max 2 is in the overlap volume, suv max 1 is outside
-	if (level11 <= 0 && level22 <= 0) 
-		over_max = 3; // both suv max are outside overlap volume
-	
-	max_sep = (phys_max1[0] - phys_max2[0])*(phys_max1[0] - phys_max2[0])+
-			  (phys_max1[1] - phys_max2[1])*(phys_max1[1] - phys_max2[1])+
-			  (phys_max1[2] - phys_max2[2])*(phys_max1[2] - phys_max2[2]);
-	max_sep = sqrt(max_sep);
+	if (level11 > 0 && level22 > 0 ) max1_in = 1; else max1_in = 0;
 
-	FILE *fp = fopen( parms->overlap_fn, "w");
-    if (fp) { 
-	fprintf(fp, "Vol1 %.1f  Vol2 %.1f  Volmin %.1f  Vover %.1f  (voxels)\n", 
+	int max2_in;
+	img1->TransformPhysicalPointToIndex(phys_max2, k_max1);
+	img2->TransformPhysicalPointToIndex(phys_max2, k_max2);
+	level11 = img1->GetPixel(k_max1);
+	level22 = img2->GetPixel(k_max2);
+	if (level11 > 0 && level22 > 0 ) max2_in = 1; else max2_in = 0;
+
+	if ( max1_in==1 && max2_in==1 )  over_max = 0; // two suv max are in the overlap volume
+	if ( max1_in==1 && max2_in==0 )  over_max = 1; // suv max 1 is in the overlap volume, suv max 2 is outside
+	if ( max1_in==0 && max2_in==1 )  over_max = 2; // suv max 2 is in the overlap volume, suv max 1 is outside
+	if ( max1_in==0 && max2_in==0 )  over_max = 3; // both suv max are outside overlap volume
+
+	/* wrong logic!
+	int over_max = -1;
+	if (level11 > 0 && level22 > 0)   over_max = 0; // two suv max are in the overlap volume
+	if (level11 > 0 && level22 <= 0)  over_max = 1; // suv max 1 is in the overlap volume, suv max 2 is outside
+	if (level11 <= 0 && level22 > 0)  over_max = 2; // suv max 2 is in the overlap volume, suv max 1 is outside
+	if (level11 <= 0 && level22 <= 0) over_max = 3; // both suv max are outside overlap volume
+	*/
+
+	printf("overmax = %d\n", over_max );
+
+	printf("trying to write %s\n", parms->overlap_fn_out);
+	//return;
+	FILE *fpout = fopen( parms->overlap_fn_out, "w");
+    if (fpout) { 
+	fprintf(fpout, "Vol1 %.1f  Vol2 %.1f  Volmin %.1f  Vover %.1f  (voxels)\n", 
 	   vol_img1,vol_img2, vol_min, vol_overlap);
-	fprintf(fp, "Vover/Volmin = %.3f  MaxSep = %.3f SUV max location = %d\n", 
+	fprintf(fpout, "Vover/Volmin = %.3f  MaxSep = %.3f SUV max location = %d\n", 
 		vol_overlap/vol_min, max_sep, over_max );
-	fclose(fp);
+	fclose(fpout);
 	}
 }
 

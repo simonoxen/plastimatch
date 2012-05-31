@@ -26,9 +26,13 @@ main (int argc, char * argv [])
     parms.boxsize[2] = plmslc_threshbox_boxsize[2];
     parms.threshold = plmslc_threshbox_threshold;
 
+    if (plmslc_need_thresh_box) {
+
+	printf("threshbox selected\n");
+
     parms.img_in = plm_image_load_native ( plmslc_threshbox_img_in.c_str() );
 	strcpy( parms.max_coord_fn_out, plmslc_max_coord_out.c_str() );
-    
+	
 	do_threshbox( &parms );
     
 //    FloatImageType::Pointer img = parms.img_out->itk_float();
@@ -39,16 +43,23 @@ main (int argc, char * argv [])
 
     UCharImageType::Pointer img_box = parms.img_box->itk_uchar();
     itk_image_save (img_box, plmslc_threshbox_img_box.c_str());
+	}
 
     if (plmslc_need_overlap_fraction) {  
-	
-	strcpy( parms.overlap_fn, plmslc_overlap_fraction.c_str() );
+
+	printf("overlap fraction selected\n");
+
 	parms.overlap_labelmap1 = 
 	    plm_image_load_native( plmslc_threshbox_labelmap_1.c_str() );
 	parms.overlap_labelmap2 = 
 	    plm_image_load_native( plmslc_threshbox_labelmap_2.c_str() );
-	parms.max_coord_fn_in1 = plmslc_max_coord1.c_str() ;
-	parms.max_coord_fn_in2 = plmslc_max_coord2.c_str() ;
+
+	strcpy( parms.overlap_fn_out, plmslc_overlap_fraction.c_str() );
+	strcpy( parms.max_coord_fn_in1, plmslc_max_coord1.c_str() );
+	strcpy( parms.max_coord_fn_in2, plmslc_max_coord2.c_str() );
+
+//	parms.max_coord_fn_in1 = plmslc_max_coord1.c_str() ;
+//	parms.max_coord_fn_in2 = plmslc_max_coord2.c_str() ;
 	
 	do_overlap_fraction( &parms );    
 	}

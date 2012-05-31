@@ -11,6 +11,13 @@
   <parameters>
     <label>Input</label>
     <description>Input image</description>
+    <boolean>
+      <name>plmslc_need_thresh_box</name>
+      <label>Perform thresholding in a box?</label>
+      <default>false</default>
+      <longflag>--calcthreshbox</longflag>
+      <description>Check this box if you want to do thresholding in a box</description>
+    </boolean>
     <image>
       <name>plmslc_threshbox_img_in</name>
       <label>Input Volume</label>
