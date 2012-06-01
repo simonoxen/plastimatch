@@ -79,7 +79,7 @@ if (SLICER_FOUND)
   # Slicer 4 requires GIT_EXECUTABLE to be defined.
   if (SLICER_IS_SLICER4)
     if (NOT DEFINED GIT_EXECUTABLE)
-      find_package (git)
+      find_package (Git)
     endif ()
     if (NOT GIT_FOUND)
       find_program(GIT_EXECUTABLE
