@@ -1,14 +1,34 @@
-/* -------------------------------------------------------------------------*
-    See COPYRIGHT for copyright information.
- * -------------------------------------------------------------------------*/
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 #include <stdlib.h>
 #include <fcntl.h>
 #include <string.h>
 #include <math.h>
 #include "frame.h"
 #include "ise_globals.h"
+#include "synthetic_source.h"
 
 #define M_PI 3.14159265358979323846
+
+Synthetic_source::Synthetic_source ()
+{
+}
+
+unsigned long
+Synthetic_source::get_size_x () {
+    return 2048;
+}
+
+unsigned long
+Synthetic_source::get_size_y () {
+    return 1536;
+}
+
+const std::string 
+Synthetic_source::get_type () {
+    return std::string("Synthetic");
+}
 
 /* -------------------------------------------------------------------------*
    Simulated-related routines

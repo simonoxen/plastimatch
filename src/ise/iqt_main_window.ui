@@ -53,21 +53,14 @@
       <item>
        <widget class="QToolButton" name="toolButton_x">
         <property name="text">
-         <string>x</string>
+         <string>|&lt;</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QToolButton" name="toolButton_y">
         <property name="text">
-         <string>y</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QToolButton" name="toolButton_z">
-        <property name="text">
-         <string>z</string>
+         <string>||</string>
         </property>
        </widget>
       </item>
@@ -148,6 +141,7 @@
      <string>&amp;File</string>
     </property>
     <addaction name="actionLoad"/>
+    <addaction name="actionSynth"/>
     <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuEd_it">
@@ -173,6 +167,11 @@
   <action name="action_Settings">
    <property name="text">
     <string>&amp;Settings</string>
+   </property>
+  </action>
+  <action name="actionSynth">
+   <property name="text">
+    <string>&amp;Synth</string>
    </property>
   </action>
  </widget>
@@ -218,8 +217,25 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionSynth</sender>
+   <signal>triggered()</signal>
+   <receiver>iqtMainWindow</receiver>
+   <slot>slot_synth()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>373</x>
+     <y>326</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>slot_load()</slot>
+  <slot>slot_synth()</slot>
  </slots>
 </ui>

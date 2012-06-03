@@ -43,6 +43,7 @@ public:
 
 public slots:
     void slot_load (void);
+    void slot_synth (void);
     void slot_timer (void);
 };
 #endif

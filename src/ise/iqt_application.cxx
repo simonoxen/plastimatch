@@ -6,6 +6,8 @@
 #include <QtGui>
 
 #include "cbuf.h"
+#include "fluoro_source.h"
+#include "synthetic_source.h"
 #include "iqt_application.h"
 
 Iqt_application::Iqt_application (int argc, char* argv[])
@@ -17,6 +19,8 @@ Iqt_application::Iqt_application (int argc, char* argv[])
     for (int i = 0; i < this->num_panels; i++) {
         this->cbuf[i] = new Cbuf();
     }
+
+    this->fluoro_source = 0;
 }
 
 Iqt_application::~Iqt_application ()
@@ -25,4 +29,23 @@ Iqt_application::~Iqt_application ()
         delete this->cbuf[i];
     }
     delete[] this->cbuf;
+
+    if (fluoro_source) {
+        delete fluoro_source;
+    }
+}
+
+void
+Iqt_application::set_synthetic_source ()
+{
+    if (this->fluoro_source) {
+        if (this->fluoro_source->get_type() == "Synthetic") {
+            /* Already synthetic */
+            return;
+        } else {
+            /* Something else, so delete */
+            delete this->fluoro_source;
+        }
+    }
+    this->fluoro_source = new Synthetic_source;
 }

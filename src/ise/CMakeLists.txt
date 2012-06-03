@@ -100,6 +100,7 @@ set (ISE_QT_SRC
   autosense.cxx
   cbuf.cxx
   debug.cxx
+  fluoro_source.cxx
   frame.cxx
   iqt_application.cxx
   iqt_main.cxx

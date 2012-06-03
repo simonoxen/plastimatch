@@ -1,11 +1,13 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _aqprintf_h_
-#define _aqprintf_h_
-#include "ise_config.h"
+#include <stdlib.h>
+#include <fcntl.h>
+#include <string.h>
+#include <math.h>
+#include "frame.h"
+#include "fluoro_source.h"
 
-int 
-aqprintf (const char * format, ...);
-
-#endif
+Fluoro_source::Fluoro_source ()
+{
+}

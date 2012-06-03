@@ -9,6 +9,7 @@
 #define ise_app ((Iqt_application *) qApp)
 
 class Cbuf;
+class Fluoro_source;
 
 class Iqt_application : public QApplication {
     Q_OBJECT
@@ -18,7 +19,11 @@ public:
     ~Iqt_application ();
 
 public:
+    void set_synthetic_source ();
+
+public:
     int num_panels;
     Cbuf **cbuf;
+    Fluoro_source *fluoro_source;
 };
 #endif
