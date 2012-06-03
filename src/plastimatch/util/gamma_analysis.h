@@ -1,6 +1,12 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+/*! \file gamma_analysis.h
+    \brief Documented file for gamma analysis.
+*   This is a method for comparison two dose distributions. 
+*   It simultaneously considers the dose difference and distance-to-agreement. 
+*/
+
 #ifndef _gamma_analysis_h_
 #define _gamma_analysis_h_
 
@@ -11,41 +17,60 @@
 
 class Plm_image;
 
+/*! \enum Gamma_output_mode Selector for output image type (gamma, or binary pass/fail)
+*/
 enum Gamma_output_mode {
-    GAMMA,
-    PASS,
-    FAIL
+    GAMMA, /*!< output float image of gamma values  */
+    PASS,  /*!< output binary (1/0) image of float type, 1 if gamma<1 */ 
+    FAIL   /*!< output binary (1/0) image of float type, 1 if gamma>1 */ 
 };
 
-/*! \brief This is the Gamma_parms class.
- * How it works is a mystery. */
+/*! \class Gamma_parms
+    \brief This is the Gamma_parms class.
+    * Used to pass input and output parameters for gamma analysis
+	to/from find_dose_threshold() and do_gamma_analysis() */
 class Gamma_parms {
 public:
     
-    float r_tol, d_tol, dose_max, gamma_max;
+    float r_tol, /*!< distance-to-agreement (DTA) criterion, input parameter */ 
+		  d_tol, /*!< dose-difference criterion, input for do_gamma_analysis, in Gy 
+				 Set from 3D Slicer plugin either directly or as percentrage of
+				 dose_max, as found by find_dose_threshold().
+				 */
+		  dose_max, /*!< maximum dose (max voxel value) in the img_in1, set by find_dose_threshold() */
+		  gamma_max; /*!< maximum gamma to calculate */
 
-    Direction_cosines dc;
+    Direction_cosines dc; /*!< orientation of the output image (currently unused, set to identity?) */
 
-    Plm_image *img_in1;
-    Plm_image *img_in2;
-    Plm_image *img_out;
+    Plm_image *img_in1; /*!< input dose image 1 for gamma analysis*/
+    Plm_image *img_in2; /*!< input dose image 2 for gamma analysis*/
+    Plm_image *img_out; /*!< output image, voxel value = calculated gamma value or 1/0 for pass/fail labelmaps 
+						Image type is always returned as float, in pass/fail modes it is downcast to 
+						UChar labelmap by the 3D Slicer plugin, plastimatch_slicer_dose_comparison.cxx
+						*/
 
-    Gamma_output_mode mode;
-    bool labelmap;
+    Gamma_output_mode mode; /*!< output mode selector for 3D Slicer plugin*/
+    bool labelmap; /*!< if true, output labelmap, if false, output "gamma" image */
 
 public:
-    Gamma_parms () {
-        r_tol = d_tol = gamma_max = 3;
-        mode = GAMMA;
+    Gamma_parms () { /*!< Constructor for Gamma_parms, sets default values (mode GAMMA) 
+					 for the 3D Slicer plugin */
+        r_tol = d_tol = gamma_max = 3; 
+        mode = GAMMA;    
         labelmap = false;
     }
 };
 
-/*! \brief This function finds a dose threshold.  It is a global function. 
-  If we document the file (with the \file directive) or if we add this 
-  function to a group, it will show up in Doxygen. */
-PLMUTIL_C_API void find_dose_threshold (Gamma_parms *parms);
+/*! \fn PLMUTIL_C_API void find_dose_threshold (Gamma_parms *parms);
+    \brief This function finds a dose threshold.  It is a global function. 
+	parms->dose_max is output = maximum voxel value within parms->img_in_1
+*/
+/*! \fn PLMUTIL_C_API void do_gamma_analysis (Gamma_parms *parms);
+    \brief This function calculates gamma index.  It is a global function. 
+	parms->img_out is output
+*/
 
+PLMUTIL_C_API void find_dose_threshold (Gamma_parms *parms);
 PLMUTIL_C_API void do_gamma_analysis (Gamma_parms *parms);
 
 #endif
