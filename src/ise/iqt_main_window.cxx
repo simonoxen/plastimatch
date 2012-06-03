@@ -91,5 +91,6 @@ Iqt_main_window::slot_timer ()
     QMessageBox::information (0, QString ("Info"), 
 	QString ("slot_timer() was called"));
 #endif
-    statusBar()->showMessage(QString("Value = %1").arg(ise_app->foo));
+    statusBar()->showMessage(QString("Num panels = %1")
+        .arg(ise_app->num_panels));
 }

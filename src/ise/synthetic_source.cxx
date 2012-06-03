@@ -18,8 +18,6 @@ simulate_image_ramp (Frame* f, int x_size, int y_size)
 {
     int x, y;
     unsigned short* p;
-    int xwidth = 500 + rand() % 20;
-    int yheight = 500 + rand() % 20;
 
     /* Fill in dummy image */
     p = (unsigned short*) f->img;

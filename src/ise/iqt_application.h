@@ -8,6 +8,8 @@
 
 #define ise_app ((Iqt_application *) qApp)
 
+class Cbuf;
+
 class Iqt_application : public QApplication {
     Q_OBJECT
     ;
@@ -16,7 +18,7 @@ public:
     ~Iqt_application ();
 
 public:
-    int get_foo ();
-    int foo;
+    int num_panels;
+    Cbuf **cbuf;
 };
 #endif

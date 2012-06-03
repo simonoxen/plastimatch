@@ -5,14 +5,21 @@
 #include "frame.h"
 #include "ise_globals.h"
 
-Frame::Frame ()
+Frame::Frame (unsigned long size_x, unsigned long size_y)
 {
+    frame_clear (this);
+    this->img = new unsigned short[size_x * size_y];
+}
+
+Frame::~Frame ()
+{
+    delete[] this->img;
 }
 
 void
 frame_clear (Frame* f)
 {
-    /* NOTE: This does not clear img, prev, and next. */
+    /* NOTE: This does not clear img */
 
     f->id = 0;
     f->timestamp = 0;
@@ -22,8 +29,8 @@ frame_clear (Frame* f)
     f->display_lock = 0;
 
     f->autosense.is_dark = 0;
-    f->autosense.min_brightness;
-    f->autosense.max_brightness;
+    f->autosense.min_brightness = 0;
+    f->autosense.max_brightness = 0;
     f->autosense.mean_brightness = 0;
     f->indico_state = 0;
 

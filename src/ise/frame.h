@@ -8,7 +8,8 @@
 
 class Frame {
 public:
-    Frame ();
+    Frame (unsigned long size_x, unsigned long size_y);
+    ~Frame ();
 public:
     unsigned short* img;
 	

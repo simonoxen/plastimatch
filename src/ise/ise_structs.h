@@ -114,15 +114,6 @@ typedef struct __ThreadData {
     void (*notify_routine) (int);
 } ThreadData;
 
-struct __Autosense {
-    int is_dark;
-    unsigned short min_brightness;
-    unsigned short max_brightness;
-    unsigned short mean_brightness;
-    unsigned short ctr_brightness;
-};
-typedef struct __Autosense Autosense;
-
 struct __Frame {
     struct __Frame* prev;
     struct __Frame* next;

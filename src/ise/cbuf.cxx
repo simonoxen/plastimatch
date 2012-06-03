@@ -1,6 +1,6 @@
-/* -------------------------------------------------------------------------*
-    See COPYRIGHT for copyright information.
- * -------------------------------------------------------------------------*/
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------*
    The suffix "_crit" means that the function assumes we are 
    within a critical section.
@@ -14,86 +14,68 @@
 #endif
 #include <fcntl.h>
 #include <string.h>
-#include "ise.h"
-#include "debug.h"
 #include "cbuf.h"
+#include "debug.h"
+#include "frame.h"
 
 /* -------------------------------------------------------------------------*
    Declarations
  * -------------------------------------------------------------------------*/
-static void cbuf_insert_update_stats (CBuf* cbuf, Frame* frame);
-static void cbuf_remove_update_stats (CBuf* cbuf, Frame* frame);
+#if defined (commentout)
+static void cbuf_insert_update_stats (Cbuf* cbuf, Frame* frame);
+static void cbuf_remove_update_stats (Cbuf* cbuf, Frame* frame);
+#endif
 
-/* -------------------------------------------------------------------------*
-   Functions
- * -------------------------------------------------------------------------*/
-void
-cbuf_init (IseFramework* ig)
+Cbuf::Cbuf ()
 {
-    int idx;
+    this->num_frames = 0;
+    this->write_ptr = 0;
+    this->display_ptr = 0;
+    this->internal_grab_ptr = 0;
+    this->writable = 0;
+    this->waiting_unwritten = 0;
+    this->dropped = 0;
 
-    for (idx = 0; idx < 2; idx++) 
-    {
-        CBuf* cbuf = &ig->cbuf[idx];
+    /* Set up mutex */
+#ifdef _WIN32
+    InitializeCriticalSection(&this->cs);
+#endif
+}
 
-        cbuf->frames = 0;
-        cbuf->num_frames = 0;
-        cbuf->write_ptr = 0;
-        cbuf->display_ptr = 0;
-        cbuf->internal_grab_ptr = 0;
-        cbuf->writable = 0;
-        cbuf->waiting_unwritten = 0;
-        cbuf->dropped = 0;
-
-
-        /* Set up mutex */
-        InitializeCriticalSection(&cbuf->cs);
-    }
+Cbuf::~Cbuf ()
+{
 }
 
 int
-cbuf_init_queue (IseFramework* ig, unsigned int idx, unsigned int num_frames)
+Cbuf::init_queue (unsigned int idx, unsigned int num_frames, 
+    unsigned int size_x, unsigned int size_y)
 {
-    CBuf* cbuf = &ig->cbuf[idx];
-    Frame *fb;
-    unsigned short* buf;
-    unsigned long f;
-
+#ifdef _WIN32
     EnterCriticalSection(&cbuf->cs);
+#endif
 
-    while (cbuf->num_frames < num_frames) 
-    {
-        /* Allocate buffer */
-        buf = (unsigned short*) malloc (sizeof(unsigned short) * ig->size_x * ig->size_y);
-	    debug_printf ("cbuf[%d,%3d] = %d bytes, %p \n", idx, cbuf->num_frames, 
-		    sizeof(unsigned short) * ig->size_x * ig->size_y, buf);        
+    this->idx = idx;
+    this->num_frames = 0;
+    this->size_x = size_x;
+    this->size_y = size_y;
 
-	    if (!buf) 
-        {
-	        /* Do something */
-	        return 1;
-	        break;
-	    }
-        cbuf->num_frames ++;
+    while (this->num_frames < num_frames) {
+        /* Allocate new frame */
+        Frame *f = new Frame (size_x, size_y);
+        debug_printf ("cbuf[%d,%3d] = %d bytes\n", idx, this->num_frames, 
+            sizeof(unsigned short) * size_x * size_y);
 
-        /* Allocate frame */
-        fb = (Frame*) realloc (cbuf->frames,cbuf->num_frames*sizeof(Frame));
-        if (!fb) 
-        {
+        if (!f) {
             /* Do something */
             return 1;
-            break;
         }
-        cbuf->frames = fb;
+        this->num_frames ++;
 
         /* Add frame to frame array */
-        f = cbuf->num_frames - 1;
-        cbuf->frames[f].img = buf;
-        cbuf->frames[f].prev = 0;
-        cbuf->frames[f].next = 0;
-        frame_clear (&cbuf->frames[f]);
+        this->frames.push_back (f);
     }
 
+#if defined (commentout)
     /* Add frames to empty queue */
     cbuf->empty.head = 0;
     cbuf->empty.tail = 0;
@@ -101,17 +83,16 @@ cbuf_init_queue (IseFramework* ig, unsigned int idx, unsigned int num_frames)
     for (f=0; f<cbuf->num_frames; f++) {
 	cbuf_append_empty (cbuf, &cbuf->frames[f]);
     }
+#endif
 
-    /* Clear waiting queue */
-    cbuf->waiting.head = 0;
-    cbuf->waiting.tail = 0;
-    cbuf->waiting.queue_len = 0;
-
+#ifdef _WIN32
     LeaveCriticalSection(&cbuf->cs);
+#endif
 
     return 0;
 }
 
+#if defined (commentout)
 /* Return 1 if the frame is the tail frame */
 int
 cbuf_is_tail_frame (Frame* f)
@@ -120,7 +101,7 @@ cbuf_is_tail_frame (Frame* f)
 }
 
 static int
-cbuf_is_locked (CBuf* cbuf, Frame* f)
+cbuf_is_locked (Cbuf* cbuf, Frame* f)
 {
     //return (f && (cbuf->display_ptr == f || cbuf->write_ptr == f));
     return (f && (f->display_lock || f->write_lock));
@@ -188,19 +169,19 @@ cbuf_unlink_frame_crit (FrameQueue* queue, Frame* f)
 }
 
 static void
-cbuf_set_display_lock_crit (CBuf* cbuf)
+cbuf_set_display_lock_crit (Cbuf* cbuf)
 {
     if (cbuf->display_ptr) cbuf->display_ptr->display_lock = 1;
 }
 
 static void
-cbuf_reset_display_lock_crit (CBuf* cbuf)
+cbuf_reset_display_lock_crit (Cbuf* cbuf)
 {
     if (cbuf->display_ptr) cbuf->display_ptr->display_lock = 0;
 }
 
 static void
-cbuf_reset_display_ptr_crit (CBuf* cbuf)
+cbuf_reset_display_ptr_crit (Cbuf* cbuf)
 {
     if (cbuf->display_ptr && !cbuf->display_ptr->display_lock) {
 	cbuf->display_ptr = 0;
@@ -208,19 +189,19 @@ cbuf_reset_display_ptr_crit (CBuf* cbuf)
 }
 
 static void
-cbuf_set_write_lock_crit (CBuf* cbuf)
+cbuf_set_write_lock_crit (Cbuf* cbuf)
 {
     if (cbuf->write_ptr) cbuf->write_ptr->write_lock = 1;
 }
 
 static void
-cbuf_reset_write_lock_crit (CBuf* cbuf)
+cbuf_reset_write_lock_crit (Cbuf* cbuf)
 {
     if (cbuf->write_ptr) cbuf->write_ptr->write_lock = 0;
 }
 
 static void
-cbuf_reset_write_ptr_crit (CBuf* cbuf)
+cbuf_reset_write_ptr_crit (Cbuf* cbuf)
 {
     if (cbuf->write_ptr && !cbuf->write_ptr->write_lock) {
 	cbuf->write_ptr = 0;
@@ -228,7 +209,7 @@ cbuf_reset_write_ptr_crit (CBuf* cbuf)
 }
 
 void
-cbuf_append_empty (CBuf* cbuf, Frame* new_frame)
+cbuf_append_empty (Cbuf* cbuf, Frame* new_frame)
 {
     EnterCriticalSection(&cbuf->cs);
     cbuf_append_frame_crit (&cbuf->empty, new_frame);
@@ -236,7 +217,7 @@ cbuf_append_empty (CBuf* cbuf, Frame* new_frame)
 }
 
 void
-cbuf_append_waiting (CBuf* cbuf, Frame* new_frame)
+cbuf_append_waiting (Cbuf* cbuf, Frame* new_frame)
 {
     EnterCriticalSection(&cbuf->cs);
     cbuf_insert_update_stats (cbuf, new_frame);
@@ -245,7 +226,7 @@ cbuf_append_waiting (CBuf* cbuf, Frame* new_frame)
 }
 
 void
-cbuf_insert_waiting (CBuf* cbuf, Frame* new_frame)
+cbuf_insert_waiting (Cbuf* cbuf, Frame* new_frame)
 {
     Frame* f;
     EnterCriticalSection(&cbuf->cs);
@@ -276,7 +257,7 @@ cbuf_insert_waiting (CBuf* cbuf, Frame* new_frame)
 }
 
 Frame*
-cbuf_get_empty_frame (CBuf* cbuf)
+cbuf_get_empty_frame (Cbuf* cbuf)
 {
     Frame* empty_frame = 0;
     EnterCriticalSection(&cbuf->cs);
@@ -292,7 +273,7 @@ cbuf_get_empty_frame (CBuf* cbuf)
 }
 
 static void
-cbuf_insert_update_stats (CBuf* cbuf, Frame* frame)
+cbuf_insert_update_stats (Cbuf* cbuf, Frame* frame)
 {
     if (frame->writable) {
 	cbuf->writable ++;
@@ -303,7 +284,7 @@ cbuf_insert_update_stats (CBuf* cbuf, Frame* frame)
 }
 
 static void
-cbuf_remove_update_stats (CBuf* cbuf, Frame* frame)
+cbuf_remove_update_stats (Cbuf* cbuf, Frame* frame)
 {
     if (frame->writable && !frame->written) {
 	cbuf->waiting_unwritten --;
@@ -315,7 +296,7 @@ cbuf_remove_update_stats (CBuf* cbuf, Frame* frame)
 /* Find a frame.  First, look in the empty queue.  If there is none,
    then get an unlocked frame from the waiting queue. */
 Frame*
-cbuf_get_any_frame (CBuf* cbuf, int flush_dark)
+cbuf_get_any_frame (Cbuf* cbuf, int flush_dark)
 {
     Frame* empty_frame = 0;
     Frame* oldest_bright = 0;
@@ -384,7 +365,7 @@ frame_priority (Frame* f)
 /* Find a frame.  First, look in the empty queue.  If there is none,
    then get an unlocked frame from the waiting queue. */
 Frame*
-cbuf_get_any_frame (CBuf* cbuf, int flush_dark)
+cbuf_get_any_frame (Cbuf* cbuf, int flush_dark)
 {
     Frame* frame_to_return = 0;
     Frame* oldest_bright = 0;
@@ -431,7 +412,7 @@ cbuf_get_any_frame (CBuf* cbuf, int flush_dark)
 }
 
 void
-cbuf_display_lock_release (CBuf* cbuf)
+cbuf_display_lock_release (Cbuf* cbuf)
 {
     EnterCriticalSection(&cbuf->cs);
     cbuf_reset_display_lock_crit (cbuf);
@@ -439,7 +420,7 @@ cbuf_display_lock_release (CBuf* cbuf)
 }
 
 Frame*
-cbuf_display_lock_newest_frame (CBuf* cbuf)
+cbuf_display_lock_newest_frame (Cbuf* cbuf)
 {
     EnterCriticalSection(&cbuf->cs);
     cbuf_reset_display_lock_crit (cbuf);
@@ -450,7 +431,7 @@ cbuf_display_lock_newest_frame (CBuf* cbuf)
 }
 
 Frame*
-cbuf_display_lock_newest_bright (CBuf* cbuf)
+cbuf_display_lock_newest_bright (Cbuf* cbuf)
 {
     Frame* f;
     EnterCriticalSection(&cbuf->cs);
@@ -471,7 +452,7 @@ cbuf_display_lock_newest_bright (CBuf* cbuf)
 }
 
 Frame*
-cbuf_display_lock_oldest_frame (CBuf* cbuf)
+cbuf_display_lock_oldest_frame (Cbuf* cbuf)
 {
     EnterCriticalSection(&cbuf->cs);
     cbuf_reset_display_lock_crit (cbuf);
@@ -483,7 +464,7 @@ cbuf_display_lock_oldest_frame (CBuf* cbuf)
 
 /* This version of the function returns 0 is not a new one. */
 Frame*
-cbuf_display_lock_next_frame (CBuf* cbuf)
+cbuf_display_lock_next_frame (Cbuf* cbuf)
 {
     Frame* f = 0;
     EnterCriticalSection(&cbuf->cs);
@@ -507,7 +488,7 @@ cbuf_display_lock_next_frame (CBuf* cbuf)
 }
 
 Frame* 
-cbuf_display_lock_frame_by_idx (CBuf* cbuf, int frame_no)
+cbuf_display_lock_frame_by_idx (Cbuf* cbuf, int frame_no)
 {
     int i;
     Frame* f = 0;
@@ -526,7 +507,7 @@ cbuf_display_lock_frame_by_idx (CBuf* cbuf, int frame_no)
 }
 
 Frame* 
-cbuf_display_lock_internal_grab (CBuf* cbuf)
+cbuf_display_lock_internal_grab (Cbuf* cbuf)
 {
     Frame* f = 0;
     EnterCriticalSection(&cbuf->cs);
@@ -545,7 +526,7 @@ cbuf_display_lock_internal_grab (CBuf* cbuf)
 }
 
 void
-cbuf_internal_grab_rewind (CBuf* cbuf)
+cbuf_internal_grab_rewind (Cbuf* cbuf)
 {
     EnterCriticalSection(&cbuf->cs);
     cbuf->internal_grab_ptr = INTERNAL_GRAB_BEGIN;
@@ -553,7 +534,7 @@ cbuf_internal_grab_rewind (CBuf* cbuf)
 }
 
 Frame*
-cbuf_internal_grab_next_frame (CBuf* cbuf)
+cbuf_internal_grab_next_frame (Cbuf* cbuf)
 {
     Frame* f;
     EnterCriticalSection(&cbuf->cs);
@@ -568,7 +549,7 @@ cbuf_internal_grab_next_frame (CBuf* cbuf)
 }
 
 void
-cbuf_mark_frame_written (CBuf* cbuf, Frame* frame)
+cbuf_mark_frame_written (Cbuf* cbuf, Frame* frame)
 {
     if (frame_needs_write (frame)) {
 	cbuf->waiting_unwritten --;
@@ -578,7 +559,7 @@ cbuf_mark_frame_written (CBuf* cbuf, Frame* frame)
 
 /* Return frame if writable frame exists */
 Frame*
-cbuf_get_next_writable_frame (CBuf* cbuf)
+cbuf_get_next_writable_frame (Cbuf* cbuf)
 {
     Frame* f = 0;
     int frame_is_writable = 0;
@@ -617,7 +598,7 @@ done:
 }
 
 void
-cbuf_reset_queue (CBuf* cbuf)
+cbuf_reset_queue (Cbuf* cbuf)
 {
     Frame* f;
     EnterCriticalSection(&cbuf->cs);
@@ -643,7 +624,7 @@ cbuf_reset_queue (CBuf* cbuf)
 }
 
 unsigned long
-cbuf_queuelen (CBuf* cbuf, FrameQueue* queue)
+cbuf_queuelen (Cbuf* cbuf, FrameQueue* queue)
 {
     unsigned long len;
     EnterCriticalSection(&cbuf->cs);
@@ -661,7 +642,7 @@ cbuf_shutdown (IseFramework* ig)
 }
 
 void
-cbuf_shutdown_queue (IseFramework* ig, CBuf* cbuf)
+cbuf_shutdown_queue (IseFramework* ig, Cbuf* cbuf)
 {
     unsigned long f;
 
@@ -686,3 +667,4 @@ cbuf_shutdown_queue (IseFramework* ig, CBuf* cbuf)
     /* Release mutex */
     DeleteCriticalSection(&cbuf->cs);
 }
+#endif /* commentout */

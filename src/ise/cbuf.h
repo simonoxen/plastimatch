@@ -1,12 +1,41 @@
-/* -------------------------------------------------------------------------*
-    See COPYRIGHT for copyright information.
- * -------------------------------------------------------------------------*/
-#ifndef __CBUF_H__
-#define __CBUF_H__
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
+#ifndef _cbuf_h_
+#define _cbuf_h_
 
+#include <list>
 #include <stdio.h>
-#include "frame.h"
 
+class Frame;
+
+class Cbuf {
+public:
+    Cbuf ();
+    ~Cbuf ();
+    int init_queue (unsigned int idx, unsigned int num_frames, 
+        unsigned int size_x, unsigned int size_y);
+public:
+    unsigned long idx;
+    unsigned long num_frames;
+    unsigned long size_x;
+    unsigned long size_y;
+    std::list<Frame*> frames;
+    unsigned long writable;
+    unsigned long waiting_unwritten;
+    unsigned long dropped;
+    std::list<Frame*> empty;
+    std::list<Frame*> waiting;
+    Frame* write_ptr;
+    Frame* display_ptr;
+    Frame* internal_grab_ptr;
+#ifdef _WIN32
+    CRITICAL_SECTION cs;
+#endif
+};
+
+
+#if defined (commentout)
 void cbuf_init (IseFramework* ig);
 int cbuf_init_queue (IseFramework* ig, unsigned int idx, unsigned int num_frames);
 void cbuf_append_waiting (CBuf* cbuf, Frame* new_frame);
@@ -30,5 +59,6 @@ Frame* cbuf_internal_grab_next_frame (CBuf* cbuf);
 Frame* cbuf_display_lock_internal_grab (CBuf* cbuf);
 void cbuf_append_waiting (CBuf* cbuf, Frame* new_frame);
 void cbuf_mark_frame_written (CBuf* cbuf, Frame* frame);
+#endif
 
 #endif
