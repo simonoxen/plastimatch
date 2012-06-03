@@ -5,7 +5,7 @@
 #include <QApplication>
 #include <QLabel>
 #include <QtGui>
-
+#include "iqt_application.h"
 #include "iqt_main_window.h"
 
 static void
@@ -27,9 +27,9 @@ initialize_application (void)
     );
     QString config_dir = QFileInfo(tmp.fileName()).absolutePath();
 
+#if defined (commentout)
     QMessageBox::information (0, QString ("Info"), 
 	QString ("Config dir is %1").arg (config_dir));
-#if defined (commentout)
 #endif
 
 #if defined (commentout)
@@ -51,7 +51,7 @@ int
 main (int argc, char **argv)
 {
     int rc;
-    QApplication app (argc, argv);
+    Iqt_application app (argc, argv);
 
     initialize_application ();
 

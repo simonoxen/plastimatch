@@ -5,12 +5,13 @@
 #include <stdio.h>
 #include <QtGui>
 #include <QTimer>
-#include <vtkPolyDataMapper.h>
-#include <vtkRenderer.h>
-#include <vtkRenderWindow.h>
-#include <vtkSphereSource.h>
-#include "vtkSmartPointer.h"
+//#include <vtkPolyDataMapper.h>
+//#include <vtkRenderer.h>
+//#include <vtkRenderWindow.h>
+//#include <vtkSphereSource.h>
+//#include "vtkSmartPointer.h"
 
+#include "iqt_application.h"
 #include "iqt_main_window.h"
 
 /* Some hints on displaying video.  It may be necessary to explore 
@@ -36,12 +37,13 @@ Iqt_main_window::Iqt_main_window ()
     /* Start the timer */
     m_qtimer = new QTimer (this);
     connect (m_qtimer, SIGNAL(timeout()), this, SLOT(slot_timer()));
-    m_qtimer->start(10000);
+    m_qtimer->start(1000);
 
     /* Render a sphere ?? */
-    this->render_sphere ();
+//    this->render_sphere ();
 }
 
+#if defined (commentout)
 void
 Iqt_main_window::render_sphere ()
 {
@@ -64,6 +66,7 @@ Iqt_main_window::render_sphere ()
     // VTK/Qt wedded
     this->qvtkWidget->GetRenderWindow()->AddRenderer(renderer);
 };
+#endif
 
 Iqt_main_window::~Iqt_main_window ()
 {
@@ -83,9 +86,10 @@ Iqt_main_window::slot_load ()
 void
 Iqt_main_window::slot_timer ()
 {
-    this->video_widget;
 #if defined (commentout)
+    this->video_widget;
     QMessageBox::information (0, QString ("Info"), 
 	QString ("slot_timer() was called"));
 #endif
+    statusBar()->showMessage(QString("Value = %1").arg(ise_app->foo));
 }

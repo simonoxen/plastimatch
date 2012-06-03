@@ -21,12 +21,13 @@ include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 ##-----------------------------------------------------------------------------
 ## QT configuration
 ##-----------------------------------------------------------------------------
-if (QT4_FOUND)
+if (QT4_FOUND AND ADVANTECH_FOUND)
   set (BUILD_ACQUIRE_4030E TRUE)
 else ()
   set (BUILD_ACQUIRE_4030E TRUE)
 endif ()
-if (QT4_FOUND AND QT_QTSQL_FOUND AND VTK_FOUND AND VTK_USE_QT)
+if (QT4_FOUND AND QT_QTSQL_FOUND)
+  #if (VTK_FOUND AND VTK_USE_QT)
   set (BUILD_ISE_QT TRUE)
 else ()
   set (BUILD_ISE_QT FALSE)
@@ -96,12 +97,17 @@ if (BUILD_ACQUIRE_4030E)
 endif ()
 
 set (ISE_QT_SRC
+  autosense.cxx
+  frame.cxx
+  iqt_application.cxx
   iqt_main.cxx
-  iqt_main_window.cxx iqt_main_window.h
-  iqt_video_widget.cxx iqt_video_widget.h
+  iqt_main_window.cxx 
+  iqt_video_widget.cxx 
+  synthetic_source.cxx 
   )
 if (BUILD_ISE_QT)
   qt4_wrap_cpp (ISE_QT_SRC 
+    iqt_application.h
     iqt_main_window.h 
     iqt_video_widget.h
     )
@@ -168,7 +174,7 @@ endif ()
 
 if (BUILD_ISE_QT)
   set (ISE_QT_LIBRARIES ${QT_LIBRARIES} ${QT_QTSQL_LIBRARIES})
-  set (ISE_QT_LIBRARIES QVTK)  ## Hard-coded "for now"...
+##  set (ISE_QT_LIBRARIES QVTK)  ## Hard-coded "for now"...
   if (ADVANTECH_FOUND)
     set (ISE_QT_LIBRARIES ${ISE_QT_LIBRARIES} ${ADVANTECH_LIBRARIES})
   endif ()

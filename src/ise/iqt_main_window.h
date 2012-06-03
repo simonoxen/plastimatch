@@ -30,7 +30,7 @@ public:
     Iqt_main_window ();
     ~Iqt_main_window ();
 
-    void render_sphere ();
+//    void render_sphere ();
 
     //Iqt_data_source_dialog *m_data_source_dialog;
 

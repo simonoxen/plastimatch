@@ -2,20 +2,10 @@
     See COPYRIGHT for copyright information.
  * -------------------------------------------------------------------------*/
 #include <stdlib.h>
-#include <io.h>
 #include <fcntl.h>
-#include <process.h>
 #include <string.h>
-#include <windows.h>
-#include <direct.h>
 #include <math.h>
-#include "ise.h"
-#include "debug.h"
-#include "cbuf.h"
 #include "frame.h"
-#include "igpax.h"
-#include "tracker.h"
-#include "ise_ontrak.h"
 #include "ise_globals.h"
 
 #define M_PI 3.14159265358979323846

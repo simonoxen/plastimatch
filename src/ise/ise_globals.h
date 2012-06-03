@@ -4,13 +4,14 @@
 #ifndef __ise_globals_h__
 #define __ise_globals_h__
 
-#include "filewrite.h"
-#include "ise_resize.h"
-#include "indico_info.h"
-
 #ifndef MAXGREY
 #define MAXGREY 16384            // 14-bit
 #endif
+
+#if defined (commentout)
+#include "filewrite.h"
+#include "ise_resize.h"
+#include "indico_info.h"
 
 typedef unsigned int _GLuint;    // == GLuint, but defined here
 typedef struct __ShaderInfo ShaderInfo;
@@ -119,6 +120,6 @@ extern Globals globals;
 
 void init_globals (void);
 void save_globals (void);
-
+#endif
 
 #endif

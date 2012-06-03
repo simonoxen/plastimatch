@@ -1,9 +1,10 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _synthetic_source_h_
-#define _synthetic_source_h_
+#include <stdio.h>
+#include "frame.h"
+#include "ise_globals.h"
 
-void synthetic_grab_image (Frame* f);
-
-#endif
+Autosense::Autosense ()
+{
+}

@@ -1,10 +1,13 @@
 /* -------------------------------------------------------------------------*
     See COPYRIGHT for copyright information.
  * -------------------------------------------------------------------------*/
-#include <windows.h>
 #include <stdio.h>
-#include <io.h>
-#include "ise.h"
+#include "frame.h"
+#include "ise_globals.h"
+
+Frame::Frame ()
+{
+}
 
 void
 frame_clear (Frame* f)
