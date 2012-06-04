@@ -12,9 +12,10 @@ class Fluoro_source {
 public:
     Fluoro_source ();
 public:
-    virtual unsigned long get_size_x (void) = 0;
-    virtual unsigned long get_size_y (void) = 0;
-    virtual const std::string get_type (void) = 0;
+    virtual unsigned long get_size_x () = 0;
+    virtual unsigned long get_size_y () = 0;
+    virtual const std::string get_type () = 0;
+    virtual void start () = 0;
     virtual void grab_image (Frame* f) = 0;
 public:
     void set_cbuf (Cbuf * cbuf) {

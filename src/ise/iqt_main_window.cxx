@@ -86,8 +86,10 @@ Iqt_main_window::slot_load ()
 void
 Iqt_main_window::slot_synth ()
 {
+#if defined (commentout)
     QMessageBox::information (0, QString ("Info"), 
 	QString ("slot_synth() was called"));
+#endif
     ise_app->set_synthetic_source ();
 }
 

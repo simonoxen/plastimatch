@@ -14,6 +14,8 @@
 #endif
 #include <fcntl.h>
 #include <string.h>
+#include <QDebug>
+#include <QMutex>
 #include "cbuf.h"
 #include "debug.h"
 #include "frame.h"
@@ -36,23 +38,44 @@ Cbuf::Cbuf ()
     this->waiting_unwritten = 0;
     this->dropped = 0;
 
-    /* Set up mutex */
-#ifdef _WIN32
-    InitializeCriticalSection(&this->cs);
-#endif
+    this->mutex = new QMutex;
 }
 
 Cbuf::~Cbuf ()
 {
 }
 
+void
+Cbuf::clear (void)
+{
+    if (this->num_frames == 0) {
+	return;
+    }
+
+    this->mutex->lock ();
+
+    /* Release frames */
+    while (!this->frames.empty()) {
+        Frame *f = this->frames.front();
+        this->empty.pop_front();
+        delete f;
+    }
+
+    this->empty.clear();
+    this->waiting.clear();
+    this->num_frames = 0;
+    this->writable = 0;
+    this->waiting_unwritten = 0;
+    this->dropped = 0;
+
+    this->mutex->unlock ();
+}
+
 int
-Cbuf::init_queue (unsigned int idx, unsigned int num_frames, 
+Cbuf::init (unsigned int idx, unsigned int num_frames, 
     unsigned int size_x, unsigned int size_y)
 {
-#ifdef _WIN32
-    EnterCriticalSection(&cbuf->cs);
-#endif
+    this->mutex->lock ();
 
     this->idx = idx;
     this->num_frames = 0;
@@ -65,8 +88,13 @@ Cbuf::init_queue (unsigned int idx, unsigned int num_frames,
         debug_printf ("cbuf[%d,%3d] = %d bytes\n", idx, this->num_frames, 
             sizeof(unsigned short) * size_x * size_y);
 
+        QString t;
+        qDebug() << t.sprintf("[%p %p]", f, f->img);
+
         if (!f) {
-            /* Do something */
+            /* We got less than the desired number of frames.  
+               This is probably an error condition */
+            this->mutex->unlock ();
             return 1;
         }
         this->num_frames ++;
@@ -78,26 +106,21 @@ Cbuf::init_queue (unsigned int idx, unsigned int num_frames,
         this->empty.push_back (f);
     }
 
-#ifdef _WIN32
-    LeaveCriticalSection(&cbuf->cs);
-#endif
-
+    this->mutex->unlock ();
     return 0;
 }
 
 Frame*
 Cbuf::get_frame ()
 {
-#ifdef _WIN32
-    EnterCriticalSection(&cbuf->cs);
-#endif
+    this->mutex->lock ();
 
     /* Look for frame in empty list */
     if (!this->empty.empty()) {
         Frame *f = this->empty.front();
         this->empty.pop_front();
 	frame_clear (f);
-        /* Exit critical section */
+        this->mutex->unlock ();
         return f;
     }
 
@@ -105,9 +128,7 @@ Cbuf::get_frame ()
 
     /* Do something here */
 
-#ifdef _WIN32
-    LeaveCriticalSection(&cbuf->cs);
-#endif
+    this->mutex->unlock ();
 
     return 0;
 }

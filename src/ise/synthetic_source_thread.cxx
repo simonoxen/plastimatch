@@ -5,6 +5,8 @@
 #include <fcntl.h>
 #include <string.h>
 #include <math.h>
+#include <QDebug>
+
 #include "cbuf.h"
 #include "frame.h"
 #include "ise_globals.h"
@@ -29,8 +31,12 @@ Synthetic_source_thread::set_synthetic_source (Synthetic_source *ss)
 void
 Synthetic_source_thread::run () {
     while (1) {
+        qDebug() << "Hello world";
         Frame *f = this->ss->cbuf->get_frame ();
+        qDebug() << "Got frame.";
         Sleeper::msleep (500);
+        qDebug() << "Grabbing synth image.";
         this->ss->grab_image (f);
+        qDebug() << "Done.";
     }
 }

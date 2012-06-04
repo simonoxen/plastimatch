@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <math.h>
+#include <QDebug>
 #include "frame.h"
 #include "ise_globals.h"
 #include "synthetic_source.h"
@@ -18,6 +19,11 @@ Synthetic_source::Synthetic_source ()
 {
     this->thread = new Synthetic_source_thread;
     this->thread->set_synthetic_source (this);
+}
+
+void
+Synthetic_source::start ()
+{
     this->thread->start ();
 }
 
@@ -74,20 +80,17 @@ simulate_clip_pos_sin (Frame* f, int x_size, int y_size)
 }
 
 static void
-simulate_image_fill_bg (Frame* f, int x_size, int y_size, unsigned short bg_color)
+simulate_image_fill_bg (Frame* f, int x_size, int y_size, 
+    unsigned short bg_color)
 {
-    int i;
-    unsigned long longfill = (bg_color << 16) | bg_color;
-    int reps = x_size * y_size / 2;  /* sizes are always even */
-    unsigned long* longbuf = (unsigned long*) f->img;
-
-    for (i = 0; i < reps; i++) {
-	longbuf[i] = longfill;
+    for (int i = 0; i < x_size * y_size; i++) {
+	f->img[i] = bg_color;
     }
 }
 
 static void
-simulate_image_fill_fg (Frame* f, int x_size, int y_size, unsigned short fg_color)
+simulate_image_fill_fg (Frame* f, int x_size, int y_size, 
+    unsigned short fg_color)
 {
     int xmin = f->clip_x - 3, xmax = f->clip_x + 3;
     int ymin = f->clip_y - 5, ymax = f->clip_y + 5;
@@ -184,5 +187,9 @@ simulate_image (Frame* f, int x_size, int y_size)
 void
 Synthetic_source::grab_image (Frame* f)
 {
+    QString t;
+    qDebug() << t.sprintf("F pointer = %p", f);
+    qDebug() << t.sprintf("img pointer = %p", f->img);
     simulate_image (f, 2048, 1536);
+    qDebug() << "Simulation complete";
 }

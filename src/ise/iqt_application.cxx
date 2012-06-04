@@ -50,5 +50,10 @@ Iqt_application::set_synthetic_source ()
     this->fluoro_source = new Synthetic_source;
 
     /* GCS FIX: For now, just a single cbuf */
+    this->cbuf[0]->clear ();
+    this->cbuf[0]->init (0, 10, this->fluoro_source->get_size_x(), 
+        this->fluoro_source->get_size_y());
     this->fluoro_source->set_cbuf (this->cbuf[0]);
+
+    this->fluoro_source->start ();
 }

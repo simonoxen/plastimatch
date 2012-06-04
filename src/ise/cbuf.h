@@ -5,18 +5,19 @@
 #define _cbuf_h_
 
 #include <list>
-#include <stdio.h>
 
 class Frame;
+class QMutex;
 
 class Cbuf {
 public:
     Cbuf ();
     ~Cbuf ();
-    int init_queue (unsigned int idx, unsigned int num_frames, 
+
+    void clear (void);
+    int init (unsigned int idx, unsigned int num_frames, 
         unsigned int size_x, unsigned int size_y);
 
-public:
     Frame* get_frame ();
 
 public:
@@ -33,9 +34,8 @@ public:
     Frame* write_ptr;
     Frame* display_ptr;
     Frame* internal_grab_ptr;
-#ifdef _WIN32
-    CRITICAL_SECTION cs;
-#endif
+
+    QMutex *mutex;
 };
 
 
