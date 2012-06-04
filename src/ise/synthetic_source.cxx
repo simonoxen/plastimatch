@@ -8,11 +8,17 @@
 #include "frame.h"
 #include "ise_globals.h"
 #include "synthetic_source.h"
+#include "synthetic_source_thread.h"
 
+#ifndef M_PI
 #define M_PI 3.14159265358979323846
+#endif
 
 Synthetic_source::Synthetic_source ()
 {
+    this->thread = new Synthetic_source_thread;
+    this->thread->set_synthetic_source (this);
+    this->thread->start ();
 }
 
 unsigned long
@@ -176,7 +182,7 @@ simulate_image (Frame* f, int x_size, int y_size)
 }
 
 void
-synthetic_grab_image (Frame* f)
+Synthetic_source::grab_image (Frame* f)
 {
     simulate_image (f, 2048, 1536);
 }

@@ -6,6 +6,8 @@
 
 #include "fluoro_source.h"
 
+class Synthetic_source_thread;
+
 class Synthetic_source : public Fluoro_source {
 public:
     Synthetic_source ();
@@ -13,6 +15,10 @@ public:
     virtual unsigned long get_size_x (void);
     virtual unsigned long get_size_y (void);
     virtual const std::string get_type (void);
+    virtual void grab_image (Frame* f);
+public:
+    Synthetic_source_thread *thread;
+
 };
 
 void synthetic_grab_image (Frame* f);

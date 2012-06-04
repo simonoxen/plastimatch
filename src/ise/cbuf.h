@@ -15,6 +15,10 @@ public:
     ~Cbuf ();
     int init_queue (unsigned int idx, unsigned int num_frames, 
         unsigned int size_x, unsigned int size_y);
+
+public:
+    Frame* get_frame ();
+
 public:
     unsigned long idx;
     unsigned long num_frames;

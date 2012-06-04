@@ -107,12 +107,14 @@ set (ISE_QT_SRC
   iqt_main_window.cxx 
   iqt_video_widget.cxx 
   synthetic_source.cxx 
+  synthetic_source_thread.cxx
   )
 if (BUILD_ISE_QT)
   qt4_wrap_cpp (ISE_QT_SRC 
     iqt_application.h
     iqt_main_window.h 
     iqt_video_widget.h
+    synthetic_source_thread.h
     )
   qt4_wrap_ui (ISE_QT_SRC 
     iqt_main_window.ui

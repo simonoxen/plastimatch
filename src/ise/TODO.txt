@@ -1,5 +1,0 @@
-1. Let CMake search for the shader cg stuff and prompt the installation if the lib is not found.
-   program will not run without this lib.
-
-2. Let CMake search for the relay interface lib AduHid, set use_ontrak to false if it is not used. 
-   program will still run without this lib.

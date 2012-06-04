@@ -73,17 +73,10 @@ Cbuf::init_queue (unsigned int idx, unsigned int num_frames,
 
         /* Add frame to frame array */
         this->frames.push_back (f);
-    }
 
-#if defined (commentout)
-    /* Add frames to empty queue */
-    cbuf->empty.head = 0;
-    cbuf->empty.tail = 0;
-    cbuf->empty.queue_len = 0;
-    for (f=0; f<cbuf->num_frames; f++) {
-	cbuf_append_empty (cbuf, &cbuf->frames[f]);
+        /* Add frame to list of empty frames */
+        this->empty.push_back (f);
     }
-#endif
 
 #ifdef _WIN32
     LeaveCriticalSection(&cbuf->cs);
@@ -91,6 +84,34 @@ Cbuf::init_queue (unsigned int idx, unsigned int num_frames,
 
     return 0;
 }
+
+Frame*
+Cbuf::get_frame ()
+{
+#ifdef _WIN32
+    EnterCriticalSection(&cbuf->cs);
+#endif
+
+    /* Look for frame in empty list */
+    if (!this->empty.empty()) {
+        Frame *f = this->empty.front();
+        this->empty.pop_front();
+	frame_clear (f);
+        /* Exit critical section */
+        return f;
+    }
+
+    /* No frame in empty list, so grab oldest from waiting queue */
+
+    /* Do something here */
+
+#ifdef _WIN32
+    LeaveCriticalSection(&cbuf->cs);
+#endif
+
+    return 0;
+}
+
 
 #if defined (commentout)
 /* Return 1 if the frame is the tail frame */

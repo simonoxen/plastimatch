@@ -48,4 +48,7 @@ Iqt_application::set_synthetic_source ()
         }
     }
     this->fluoro_source = new Synthetic_source;
+
+    /* GCS FIX: For now, just a single cbuf */
+    this->fluoro_source->set_cbuf (this->cbuf[0]);
 }
