@@ -39,11 +39,13 @@ public:
     //Iqt_findscu m_findscu;
 
     QTimer *m_qtimer;
-
+    bool playing;
 
 public slots:
     void slot_load (void);
+    void slot_save (void);
     void slot_synth (void);
+    void slot_play_pause (void);
     void slot_timer (void);
 };
 #endif

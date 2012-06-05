@@ -39,6 +39,8 @@ Iqt_main_window::Iqt_main_window ()
     connect (m_qtimer, SIGNAL(timeout()), this, SLOT(slot_timer()));
     m_qtimer->start(1000);
 
+    this->playing = true;
+
     /* Render a sphere ?? */
 //    this->render_sphere ();
 }
@@ -81,6 +83,28 @@ Iqt_main_window::slot_load ()
 {
     QMessageBox::information (0, QString ("Info"), 
 	QString ("slot_load() was called"));
+}
+
+void
+Iqt_main_window::slot_save ()
+{
+    QMessageBox::information (0, QString ("Info"), 
+	QString ("slot_save() was called"));
+}
+
+void
+Iqt_main_window::slot_play_pause ()
+{
+    QMessageBox::information (0, QString ("Info"), 
+	QString ("slot_play_pause() was called"));
+
+    if (playing) {
+	playing = false;
+        play_pause_button->setText ("|>");
+    } else {
+	playing = true;
+        play_pause_button->setText ("||");
+    }
 }
 
 void
