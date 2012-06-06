@@ -10,7 +10,7 @@
 #include "synthetic_source.h"
 #include "iqt_application.h"
 
-Iqt_application::Iqt_application (int argc, char* argv[])
+Iqt_application::Iqt_application (int& argc, char* argv[])
     : QApplication (argc, argv)
 {
     this->num_panels = 1;

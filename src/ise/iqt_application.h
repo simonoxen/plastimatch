@@ -15,7 +15,7 @@ class Iqt_application : public QApplication {
     Q_OBJECT
     ;
 public:
-    Iqt_application (int argc, char* argv[]);
+    Iqt_application (int& argc, char* argv[]);
     ~Iqt_application ();
 
 public:
