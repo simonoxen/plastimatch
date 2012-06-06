@@ -22,16 +22,20 @@ synth_dose (
 )
 {
     /* sorry for this mess... */
-
     float x,x0,x1,y,y0,y1,f0,f1;
 
+    float p[3];
+    p[0] = phys[0] - parms->dose_center[0];
+    p[1] = phys[1] - parms->dose_center[1];
+    p[2] = phys[2] - parms->dose_center[2];
+
     /* uniform central dose */
-    if (phys[0] >= parms->rect_size[0] + parms->penumbra
-     && phys[0] <= parms->rect_size[1] - parms->penumbra
-     && phys[1] >= parms->rect_size[2] + parms->penumbra
-     && phys[1] <= parms->rect_size[3] - parms->penumbra
-     && phys[2] >= parms->rect_size[4] 
-     && phys[2] <= parms->rect_size[5])
+    if (p[0] >= parms->dose_size[0] + parms->penumbra
+     && p[0] <= parms->dose_size[1] - parms->penumbra
+     && p[1] >= parms->dose_size[2] + parms->penumbra
+     && p[1] <= parms->dose_size[3] - parms->penumbra
+     && p[2] >= parms->dose_size[4] 
+     && p[2] <= parms->dose_size[5])
     {
         *intens = parms->foreground;
         *label = 1;
@@ -40,38 +44,38 @@ synth_dose (
         *label = 0;
     }
 
-    if (phys[2] >= parms->rect_size[4] && phys[2] <= parms->rect_size[5]) {
+    if (p[2] >= parms->dose_size[4] && p[2] <= parms->dose_size[5]) {
         /* penumbra edges */
-        if (phys[1] > parms->rect_size[2]+parms->penumbra && phys[1] < parms->rect_size[3]-parms->penumbra){
-            x  = phys[0];
-            x0 = parms->rect_size[0];
-            x1 = parms->rect_size[0] + parms->penumbra;
+        if (p[1] > parms->dose_size[2]+parms->penumbra && p[1] < parms->dose_size[3]-parms->penumbra){
+            x  = p[0];
+            x0 = parms->dose_size[0];
+            x1 = parms->dose_size[0] + parms->penumbra;
             f0 = parms->background;
             f1 = parms->foreground;
             if (x >= x0 && x < x1) {
                 *intens = f0 + (x-x0)*((f1-f0)/(x1-x0));
             }
 
-            x0 = parms->rect_size[1] - parms->penumbra;
-            x1 = parms->rect_size[1];
+            x0 = parms->dose_size[1] - parms->penumbra;
+            x1 = parms->dose_size[1];
             f0 = parms->foreground;
             f1 = parms->background;
             if (x >= x0 && x < x1) {
                 *intens = f0 + (x-x0)*((f1-f0)/(x1-x0));
             }
         }
-        if (phys[0] > parms->rect_size[0]+parms->penumbra && phys[0] < parms->rect_size[1]-parms->penumbra){
-            y  = phys[1];
-            y0 = parms->rect_size[2];
-            y1 = parms->rect_size[2] + parms->penumbra;
+        if (p[0] > parms->dose_size[0]+parms->penumbra && p[0] < parms->dose_size[1]-parms->penumbra){
+            y  = p[1];
+            y0 = parms->dose_size[2];
+            y1 = parms->dose_size[2] + parms->penumbra;
             f0 = parms->background;
             f1 = parms->foreground;
-            if ((phys[1] >= y0 && phys[1] < y1)) {
+            if ((p[1] >= y0 && p[1] < y1)) {
                 *intens = f0 + (y-y0)*((f1-f0)/(y1-y0));
             }
 
-            y0 = parms->rect_size[3] - parms->penumbra;
-            y1 = parms->rect_size[3];
+            y0 = parms->dose_size[3] - parms->penumbra;
+            y1 = parms->dose_size[3];
             f0 = parms->foreground;
             f1 = parms->background;
             if (y >= y0 && y < y1) {
@@ -80,12 +84,12 @@ synth_dose (
         }
         
         /* penumbra corners */
-        x = phys[0];
-        y = phys[1];
-        x0 = parms->rect_size[0];
-        x1 = parms->rect_size[0] + parms->penumbra;
-        y0 = parms->rect_size[2];
-        y1 = parms->rect_size[2] + parms->penumbra;
+        x = p[0];
+        y = p[1];
+        x0 = parms->dose_size[0];
+        x1 = parms->dose_size[0] + parms->penumbra;
+        y0 = parms->dose_size[2];
+        y1 = parms->dose_size[2] + parms->penumbra;
         f0 = parms->background;
         f1 = parms->foreground;
         if (x > x0 && x < x1 && y > y0 && y < y1) {
@@ -94,12 +98,12 @@ synth_dose (
                       ((f0)/((x1-x0)*(y1-y0)))*(x1-x)*(y-y0) +
                       ((f1)/((x1-x0)*(y1-y0)))*(x-x0)*(y-y0);
         }
-        x = phys[0];
-        y = phys[1];
-        x0 = parms->rect_size[1] - parms->penumbra;
-        x1 = parms->rect_size[1];
-        y0 = parms->rect_size[2];
-        y1 = parms->rect_size[2] + parms->penumbra;
+        x = p[0];
+        y = p[1];
+        x0 = parms->dose_size[1] - parms->penumbra;
+        x1 = parms->dose_size[1];
+        y0 = parms->dose_size[2];
+        y1 = parms->dose_size[2] + parms->penumbra;
         f0 = parms->background;
         f1 = parms->foreground;
         if (x > x0 && x < x1 && y > y0 && y < y1) {
@@ -108,12 +112,12 @@ synth_dose (
                       ((f1)/((x1-x0)*(y1-y0)))*(x1-x)*(y-y0) +
                       ((f0)/((x1-x0)*(y1-y0)))*(x-x0)*(y-y0);
         }
-        x = phys[0];
-        y = phys[1];
-        x0 = parms->rect_size[0];
-        x1 = parms->rect_size[0] + parms->penumbra;
-        y0 = parms->rect_size[3] - parms->penumbra;
-        y1 = parms->rect_size[3];
+        x = p[0];
+        y = p[1];
+        x0 = parms->dose_size[0];
+        x1 = parms->dose_size[0] + parms->penumbra;
+        y0 = parms->dose_size[3] - parms->penumbra;
+        y1 = parms->dose_size[3];
         f0 = parms->background;
         f1 = parms->foreground;
         if (x > x0 && x < x1 && y > y0 && y < y1) {
@@ -122,12 +126,12 @@ synth_dose (
                       ((f0)/((x1-x0)*(y1-y0)))*(x1-x)*(y-y0) +
                       ((f0)/((x1-x0)*(y1-y0)))*(x-x0)*(y-y0);
         }
-        x = phys[0];
-        y = phys[1];
-        x0 = parms->rect_size[1] - parms->penumbra;
-        x1 = parms->rect_size[1];
-        y0 = parms->rect_size[3] - parms->penumbra;
-        y1 = parms->rect_size[3];
+        x = p[0];
+        y = p[1];
+        x0 = parms->dose_size[1] - parms->penumbra;
+        x1 = parms->dose_size[1];
+        y0 = parms->dose_size[3] - parms->penumbra;
+        y1 = parms->dose_size[3];
         f0 = parms->background;
         f1 = parms->foreground;
         if (x > x0 && x < x1 && y > y0 && y < y1) {

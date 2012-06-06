@@ -130,7 +130,7 @@ parse_fn (
     /* Main pattern */
     parser->add_long_option ("", "pattern",
         "synthetic pattern to create: {"
-        "donut, enclosed_rect, gauss, grid, lung, osd, rect, sphere"
+        "donut, dose, enclosed_rect, gauss, grid, lung, osd, rect, sphere"
         "}, default is gauss", 
         1, "gauss");
 
@@ -187,6 +187,12 @@ parse_fn (
     /* Dose pattern options */
     parser->add_long_option ("", "penumbra", 
         "width of dose penumbra in mm", 1, "5");
+    parser->add_long_option ("", "dose-center", 
+        "location of dose center in mm \"x y z\"", 1, "0 0 0");
+    parser->add_long_option ("", "dose-size", 
+        "dimensions of dose aperture in mm \"x [y z]\","
+        " or locations of rectangle corners in mm"
+        " \"x1 x2 y1 y2 z1 z2\"", 1, "-50 50 -50 50 -50 50");
 
     /* Lung options */
     parser->add_long_option ("", "lung-tumor-pos", 
@@ -342,6 +348,35 @@ parse_fn (
 
     /* Dose options */
     sm_parms->penumbra = parser->get_float ("penumbra");
+    parser->assign_float13 (sm_parms->dose_center, "dose-center");
+    rc = sscanf (parser->get_string("dose-size").c_str(), 
+        "%g %g %g %g %g %g", 
+        &(sm_parms->dose_size[0]), 
+        &(sm_parms->dose_size[1]), 
+        &(sm_parms->dose_size[2]), 
+        &(sm_parms->dose_size[3]), 
+        &(sm_parms->dose_size[4]), 
+        &(sm_parms->dose_size[5]));
+    if (rc == 1) {
+        sm_parms->dose_size[0] = - 0.5 * sm_parms->dose_size[0];
+        sm_parms->dose_size[1] = - sm_parms->dose_size[0];
+        sm_parms->dose_size[2] = + sm_parms->dose_size[0];
+        sm_parms->dose_size[3] = - sm_parms->dose_size[0];
+        sm_parms->dose_size[4] = + sm_parms->dose_size[0];
+        sm_parms->dose_size[5] = - sm_parms->dose_size[0];
+    }
+    else if (rc == 3) {
+        sm_parms->dose_size[4] = - 0.5 * sm_parms->dose_size[2];
+        sm_parms->dose_size[2] = - 0.5 * sm_parms->dose_size[1];
+        sm_parms->dose_size[0] = - 0.5 * sm_parms->dose_size[0];
+        sm_parms->dose_size[1] = - sm_parms->dose_size[0];
+        sm_parms->dose_size[3] = - sm_parms->dose_size[2];
+        sm_parms->dose_size[5] = - sm_parms->dose_size[4];
+    }
+    else if (rc != 6) {
+        throw (dlib::error ("Error. Option --dose_size must have "
+                "one, three, or six arguments\n"));
+    }
 
     /* Lung options */
     rc = sscanf (parser->get_string("lung-tumor-pos").c_str(), 

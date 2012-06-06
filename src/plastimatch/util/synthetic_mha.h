@@ -47,6 +47,8 @@ public:
     float gauss_center[3];
     float gauss_std[3];
     float penumbra;
+    float dose_size[6];
+    float dose_center[3];
     float rect_size[6];
     float sphere_center[3];
     float sphere_radius[3];
@@ -73,11 +75,11 @@ public:
             origin[i] = 0.0f;
             gauss_center[i] = 0.0f;
             gauss_std[i] = 100.0f;
-            penumbra = 5.0f;
             sphere_center[i] = 0.0f;
             sphere_radius[i] = 50.0f;
             donut_center[i] = 0.0f;
             lung_tumor_pos[i] = 0.0f;
+            dose_center[i] = 0.0f;
         }
         background = -1000.0f;
         foreground = 0.0f;
@@ -98,6 +100,13 @@ public:
         grid_spacing[2] = 10;
         pattern_ss = PATTERN_SS_ONE;
         num_multi_sphere = 33;
+        penumbra = 5.0f;
+        dose_size[0] = -50.0f;
+        dose_size[1] = +50.0f;
+        dose_size[2] = -50.0f;
+        dose_size[3] = +50.0f;
+        dose_size[4] = -50.0f;
+        dose_size[5] = +50.0f;
     }
 };
 
