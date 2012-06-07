@@ -46,6 +46,9 @@ public slots:
     void slot_save (void);
     void slot_synth (void);
     void slot_play_pause (void);
+    void slot_stop (void);
+    void slot_go_back(void);
+    void slot_go_forward(void);
     void slot_timer (void);
 };
 #endif

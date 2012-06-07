@@ -39,7 +39,7 @@ Iqt_main_window::Iqt_main_window ()
     connect (m_qtimer, SIGNAL(timeout()), this, SLOT(slot_timer()));
     m_qtimer->start(1000);
 
-    this->playing = true;
+    this->playing = false;
 
     /* Render a sphere ?? */
 //    this->render_sphere ();
@@ -95,16 +95,41 @@ Iqt_main_window::slot_save ()
 void
 Iqt_main_window::slot_play_pause ()
 {
-    QMessageBox::information (0, QString ("Info"), 
-	QString ("slot_play_pause() was called"));
-
     if (playing) {
 	playing = false;
         play_pause_button->setText ("|>");
+        action_Play->setText ("&Play");
     } else {
 	playing = true;
         play_pause_button->setText ("||");
+        action_Play->setText ("&Pause");
     }
+}
+
+void
+Iqt_main_window::slot_go_back ()
+{
+    QMessageBox::information (0, QString ("Info"), 
+	QString ("slot_go_back() was called"));
+}
+
+void
+Iqt_main_window::slot_go_forward ()
+{
+    QMessageBox::information (0, QString ("Info"), 
+	QString ("slot_go_forward() was called"));
+}
+
+void
+Iqt_main_window::slot_stop ()
+{
+    if (playing) {
+	playing = false;
+        play_pause_button->setText ("|>");
+        action_Play->setText ("&Play");
+    } else {
+		QMessageBox::information (0, QString ("Info"), QString ("This video has already been stopped."));
+	}
 }
 
 void
