@@ -178,7 +178,8 @@ void do_gamma_analysis( Gamma_parms *parms ) {
         switch (parms->mode) {
         case PASS:
             if ((gamma >=0) && (gamma <= 1)) {
-                gamma_labelmap_iterator.Set (1);
+                /* only set label map voxel if there is dose in image 1 */
+                if (level1 > 0) gamma_labelmap_iterator.Set (1);
             } else {
                 gamma_labelmap_iterator.Set (0);
             }
