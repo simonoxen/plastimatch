@@ -132,23 +132,31 @@
       <default>None</default>
       <description>Input dose image 2</description>
     </image>
-    <string-enumeration>
-      <name>output_mode</name>
-      <longflag>--output_mode</longflag>
-      <label>Output Mode:</label>
-      <description>Type of output to generate</description>
-      <default>Gamma</default>
-      <element>Gamma</element>
-      <element>Pass Labelmap</element>
-      <element>Fail Labelmap</element>
-    </string-enumeration>
     <image>
       <longflag>plmslc_gamma_output</longflag>
       <name>plmslc_gamma_output</name>
       <label>Gamma output</label>
       <channel>output</channel>
       <default>None</default>
-      <description>Output gamma image</description>
+      <description>Destination for output gamma volume</description>
+    </image>
+    <string-enumeration>
+      <name>labelmap_mode</name>
+      <longflag>--labelmap_mode</longflag>
+      <label>Labelmap Type:</label>
+      <description>Type of labelmap to generate</description>
+      <default>None</default>
+      <element>None</element>
+      <element>Pass</element>
+      <element>Fail</element>
+    </string-enumeration>
+    <image type="label">
+      <longflag>plmslc_gamma_labelmap</longflag>
+      <name>plmslc_gamma_labelmap</name>
+      <label>Labelmap output</label>
+      <channel>output</channel>
+      <default>None</default>
+      <description>Destination for output labelmap</description>
     </image>
   <double>
     <name>plmslc_gamma_r_tol</name>

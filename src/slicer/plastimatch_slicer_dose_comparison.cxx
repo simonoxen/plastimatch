@@ -143,28 +143,27 @@ main (int argc, char * argv [])
             gparms.d_tol = plmslc_gamma_d_tol_percent/100.*gparms.dose_max;
         }
 
-        /* Select output mode */
-        if (!strcmp ("Gamma", output_mode.c_str())) {
-            gparms.mode = GAMMA;
-            gparms.labelmap = false;
+        /* Select labalmap output mode */
+        if (!strcmp ("None", labelmap_mode.c_str())) {
+            gparms.mode = NONE;
         }
-        else if (!strcmp ("Pass Labelmap", output_mode.c_str())) {
+        else if (!strcmp ("Pass", labelmap_mode.c_str())) {
             gparms.mode = PASS;
-            gparms.labelmap = true;
         }
-        else if (!strcmp ("Fail Labelmap", output_mode.c_str())) {
+        else if (!strcmp ("Fail", labelmap_mode.c_str())) {
             gparms.mode = FAIL;
-            gparms.labelmap = true;
         }
 
         do_gamma_analysis (&gparms); 
 
-        if (gparms.labelmap) {
-            UCharImageType::Pointer img_out = gparms.img_out->itk_uchar();
-            itk_image_save (img_out, plmslc_gamma_output.c_str());
-        } else {
-            FloatImageType::Pointer img_out = gparms.img_out->itk_float();
-            itk_image_save (img_out, plmslc_gamma_output.c_str());
+        /* for Gamma */
+        FloatImageType::Pointer img_out = gparms.img_out->itk_float();
+        itk_image_save (img_out, plmslc_gamma_output.c_str());
+
+        /* for labelmap */
+        if (strcmp ("None", labelmap_mode.c_str())) {
+            UCharImageType::Pointer labelmap_out = gparms.labelmap_out->itk_uchar();
+            itk_image_save (labelmap_out, plmslc_gamma_labelmap.c_str());
         }
 
     } // end if need gamma

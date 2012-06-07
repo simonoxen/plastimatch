@@ -19,10 +19,10 @@ class Plm_image;
 
 /*! \enum Gamma_output_mode Selector for output image type (gamma, or binary pass/fail)
 */
-enum Gamma_output_mode {
-    GAMMA, /*!< output float image of gamma values  */
-    PASS,  /*!< output binary (1/0) image of float type, 1 if gamma<1 */ 
-    FAIL   /*!< output binary (1/0) image of float type, 1 if gamma>1 */ 
+enum Gamma_labelmap_mode {
+    NONE,  /*!< disable output binary uchar labelmap for gamma */
+    PASS,  /*!< output binary (1/0) image of type uchar, 1 if gamma<1 */ 
+    FAIL   /*!< output binary (1/0) image of type uchar, 1 if gamma>1 */ 
 };
 
 /*! \class Gamma_parms
@@ -44,20 +44,16 @@ public:
 
     Plm_image *img_in1; /*!< input dose image 1 for gamma analysis*/
     Plm_image *img_in2; /*!< input dose image 2 for gamma analysis*/
-    Plm_image *img_out; /*!< output image, voxel value = calculated gamma value or 1/0 for pass/fail labelmaps 
-						Image type is always returned as float, in pass/fail modes it is downcast to 
-						UChar labelmap by the 3D Slicer plugin, plastimatch_slicer_dose_comparison.cxx
-						*/
+    Plm_image *img_out; /*!< output float type image, voxel value = calculated gamma value */
+    Plm_image *labelmap_out; /*!< output uchar type labelmap, voxel value = 1/0 for pass/fail */
 
-    Gamma_output_mode mode; /*!< output mode selector for 3D Slicer plugin*/
-    bool labelmap; /*!< if true, output labelmap, if false, output "gamma" image */
+    Gamma_labelmap_mode mode; /*!< output mode selector for 3D Slicer plugin*/
 
 public:
     Gamma_parms () { /*!< Constructor for Gamma_parms, sets default values (mode GAMMA) 
 					 for the 3D Slicer plugin */
         r_tol = d_tol = gamma_max = 3; 
-        mode = GAMMA;    
-        labelmap = false;
+        mode = NONE;
     }
 };
 

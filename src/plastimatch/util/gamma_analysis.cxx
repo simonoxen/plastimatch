@@ -68,11 +68,17 @@ void do_gamma_analysis( Gamma_parms *parms ) {
     itk_direction_from_dc (&itk_dc, parms->dc);
 
     FloatImageType::Pointer gamma_img = FloatImageType::New();
+    UCharImageType::Pointer gamma_labelmap = UCharImageType::New();
 
     gamma_img->SetRegions (rg);
     gamma_img->SetOrigin (og);
     gamma_img->SetSpacing (sp);
     gamma_img->Allocate();
+
+    gamma_labelmap->SetRegions (rg);
+    gamma_labelmap->SetOrigin (og);
+    gamma_labelmap->SetSpacing (sp);
+    gamma_labelmap->Allocate();
 
     typedef itk::ImageRegionIteratorWithIndex< UCharImageType > UCharIteratorType;
     typedef itk::ImageRegionIteratorWithIndex< FloatImageType > FloatIteratorType;
@@ -84,6 +90,7 @@ void do_gamma_analysis( Gamma_parms *parms ) {
 
     FloatIteratorType img_in1_iterator (img_in1, all_of_img1);
     FloatIteratorType gamma_img_iterator (gamma_img, gamma_img->GetLargestPossibleRegion());
+    UCharIteratorType gamma_labelmap_iterator (gamma_labelmap, gamma_labelmap->GetLargestPossibleRegion());
 
     FloatImageType::IndexType k1, k2, k3;
     FloatImageType::OffsetType offset;
@@ -114,6 +121,7 @@ void do_gamma_analysis( Gamma_parms *parms ) {
     offset[2]=reg_pixsize;
 
     gamma_img_iterator.GoToBegin();
+    gamma_labelmap_iterator.GoToBegin();
 
     for (img_in1_iterator.GoToBegin(); !img_in1_iterator.IsAtEnd(); ++img_in1_iterator) {
     
@@ -165,6 +173,8 @@ void do_gamma_analysis( Gamma_parms *parms ) {
 
         // test only: gamma = phys[0];
 
+        gamma_img_iterator.Set (gamma);
+
         switch (parms->mode) {
         case PASS:
             if (gamma <= 1) {
@@ -172,6 +182,7 @@ void do_gamma_analysis( Gamma_parms *parms ) {
             } else {
                 gamma_img_iterator.Set (0);
             }
+            ++gamma_labelmap_iterator;
             break;
         case FAIL:
             if (gamma > 1) {
@@ -179,10 +190,10 @@ void do_gamma_analysis( Gamma_parms *parms ) {
             } else {
                 gamma_img_iterator.Set (0);
             }
+            ++gamma_labelmap_iterator;
             break;
-        case GAMMA:
+        case NONE:
         default:
-            gamma_img_iterator.Set (gamma);
             break;
         }
         ++gamma_img_iterator;
@@ -190,4 +201,7 @@ void do_gamma_analysis( Gamma_parms *parms ) {
 
     parms->img_out = new Plm_image;
     parms->img_out->set_itk (gamma_img);
+
+    parms->labelmap_out = new Plm_image;
+    parms->labelmap_out->set_itk (gamma_labelmap);
 }
