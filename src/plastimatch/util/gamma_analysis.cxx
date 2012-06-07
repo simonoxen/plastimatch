@@ -178,17 +178,17 @@ void do_gamma_analysis( Gamma_parms *parms ) {
         switch (parms->mode) {
         case PASS:
             if (gamma <= 1) {
-                gamma_img_iterator.Set (1);
+                gamma_labelmap_iterator.Set (1);
             } else {
-                gamma_img_iterator.Set (0);
+                gamma_labelmap_iterator.Set (0);
             }
             ++gamma_labelmap_iterator;
             break;
         case FAIL:
             if (gamma > 1) {
-                gamma_img_iterator.Set (1);
+                gamma_labelmap_iterator.Set (1);
             } else {
-                gamma_img_iterator.Set (0);
+                gamma_labelmap_iterator.Set (0);
             }
             ++gamma_labelmap_iterator;
             break;
@@ -202,6 +202,8 @@ void do_gamma_analysis( Gamma_parms *parms ) {
     parms->img_out = new Plm_image;
     parms->img_out->set_itk (gamma_img);
 
-    parms->labelmap_out = new Plm_image;
-    parms->labelmap_out->set_itk (gamma_labelmap);
+    if (parms->mode != NONE) {
+        parms->labelmap_out = new Plm_image;
+        parms->labelmap_out->set_itk (gamma_labelmap);
+    }
 }
