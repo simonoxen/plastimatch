@@ -91,14 +91,7 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="Iqt_video_widget" name="widget" native="true">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-         </widget>
+         <widget class="Iqt_video_widget" name="widget"/>
         </item>
        </layout>
       </item>
@@ -176,7 +169,7 @@
      <x>0</x>
      <y>0</y>
      <width>756</width>
-     <height>25</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -284,12 +277,8 @@
  <customwidgets>
   <customwidget>
    <class>Iqt_video_widget</class>
-   <extends>QWidget</extends>
+   <extends>QGraphicsView</extends>
    <header>iqt_video_widget.h</header>
-   <container>1</container>
-   <slots>
-    <slot>slot_stop()</slot>
-   </slots>
   </customwidget>
  </customwidgets>
  <tabstops>

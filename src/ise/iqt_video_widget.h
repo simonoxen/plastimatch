@@ -4,8 +4,8 @@
 #ifndef _iqt_video_widget_h_
 #define _iqt_video_widget_h_
 
+#include <QGraphicsView>
 #include <QPixmap>
-#include <QWidget>
 #include <QtGui/QGraphicsView>
 #include <QGraphicsScene>
 
@@ -23,7 +23,7 @@ public:
     ~Iqt_video_widget ();
 
 protected:
-    void paintEvent (QPaintEvent *event);
+//    void paintEvent (QPaintEvent *event);
 
 public:
     QPixmap m_pixmap;
