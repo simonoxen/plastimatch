@@ -81,8 +81,13 @@ Iqt_main_window::~Iqt_main_window ()
 void
 Iqt_main_window::slot_load ()
 {
+	if (playing) {
+		Iqt_main_window::slot_play_pause();
+	}
+	playing = false;
     QMessageBox::information (0, QString ("Info"), 
 	QString ("slot_load() was called"));
+	Iqt_main_window::slot_play_pause();
 }
 
 void

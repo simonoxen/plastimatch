@@ -6,10 +6,18 @@
 
 #include <QPixmap>
 #include <QWidget>
+#include <QtGui/QGraphicsView>
+#include <QGraphicsScene>
 
-class Iqt_video_widget : public QWidget {
+class Iqt_video_widget : public QGraphicsView {
     Q_OBJECT
-    ;
+
+private:
+
+	QGraphicsScene* scene;
+	QPixmap pmap;
+	QGraphicsPixmapItem* pmi;
+
 public:
     Iqt_video_widget (QWidget *parent = 0);
     ~Iqt_video_widget ();
