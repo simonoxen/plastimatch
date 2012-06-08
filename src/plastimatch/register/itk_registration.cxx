@@ -53,13 +53,15 @@ public:
 public:
     Stage_parms* m_stage;
     RegistrationType::Pointer m_registration;
-    double last_value;
+    double m_last_value;
     int m_feval;
     Plm_timer* timer;
 
 protected:
     Optimization_Observer() {
         m_stage = 0;
+        m_feval = 0;
+        m_last_value = -1.0;
         timer = new Plm_timer;
         timer->start ();
     };
@@ -84,7 +86,7 @@ public:
     {
         if (typeid(event) == typeid(itk::StartEvent)) {
             m_feval = 0;
-            last_value = -1.0;
+            m_last_value = -1.0;
             lprintf ("StartEvent: ");
             if (m_stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
                 std::stringstream ss;
@@ -106,6 +108,8 @@ public:
                 lprintf (ss.str().c_str());
             }
             lprintf ("\n");
+            lprintf ("%s\n", m_registration->GetOptimizer()
+                ->GetStopConditionDescription().c_str());
         }
         else if (typeid(event) 
             == typeid(itk::FunctionEvaluationIterationEvent))
@@ -119,7 +123,8 @@ public:
             double val = optimizer_get_value(m_registration, m_stage);
             double duration = timer->report ();
 
-            lprintf ("MSE [%2d,%3d] %9.3f [%6.3f secs]\n", 
+            lprintf ("%s [%2d,%3d] %9.3f [%6.3f secs]\n", 
+                (m_stage->metric_type == METRIC_MSE) ? "MSE" : "MI",
                 it, m_feval, val, duration);
             timer->start ();
             m_feval++;
@@ -137,10 +142,10 @@ public:
                 lprintf (ss.str().c_str());
             }
 
-            if (last_value >= 0.0) {
-                double diff = fabs(last_value - val);
+            if (m_last_value >= 0.0) {
+                double diff = fabs(m_last_value - val);
                 if (it >= m_stage->min_its && diff < m_stage->convergence_tol) {
-                    lprintf (" %10.2f (tol)", val - last_value);
+                    lprintf (" %10.2f (tol)", val - m_last_value);
                     /* calling optimizer_set_max_iterations () doesn't 
                        seem to always stop rsg. */
 
@@ -155,10 +160,10 @@ public:
                             m_stage, 1);
                     }
                 } else {
-                    lprintf (" %10.2f", val - last_value);
+                    lprintf (" %10.2f", val - m_last_value);
                 }
             }
-            last_value = val;
+            m_last_value = val;
             lprintf ("\n");
         }
         else if (typeid(event) == typeid(itk::ProgressEvent)) {

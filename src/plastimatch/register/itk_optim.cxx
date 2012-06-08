@@ -339,9 +339,12 @@ set_optimization_lbfgsb (RegistrationType::Pointer registration,
 {
     LBFGSBOptimizerType::Pointer optimizer = LBFGSBOptimizerType::New();
 
-    LBFGSBOptimizerType::BoundSelectionType boundSelect (registration->GetTransform()->GetNumberOfParameters());
-    LBFGSBOptimizerType::BoundValueType upperBound (registration->GetTransform()->GetNumberOfParameters());
-    LBFGSBOptimizerType::BoundValueType lowerBound (registration->GetTransform()->GetNumberOfParameters());
+    LBFGSBOptimizerType::BoundSelectionType boundSelect (
+        registration->GetTransform()->GetNumberOfParameters());
+    LBFGSBOptimizerType::BoundValueType upperBound (
+        registration->GetTransform()->GetNumberOfParameters());
+    LBFGSBOptimizerType::BoundValueType lowerBound (
+        registration->GetTransform()->GetNumberOfParameters());
 
     boundSelect.Fill(0);
     upperBound.Fill(0.0);
@@ -483,7 +486,7 @@ set_optimization (
     }
     else if (stage->xform_type == STAGE_TRANSFORM_BSPLINE 
 	&& (stage->optim_type != OPTIMIZATION_LBFGS
-	    || stage->optim_type != OPTIMIZATION_LBFGSB))
+	    && stage->optim_type != OPTIMIZATION_LBFGSB))
     {
 	stage->optim_type = OPTIMIZATION_LBFGSB;
     }
