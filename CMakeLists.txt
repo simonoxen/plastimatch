@@ -399,7 +399,8 @@ endif ()
 ##  Only use local dlib
 ##-----------------------------------------------------------------------------
 if (NOT DLIB_INCLUDE_DIR)
-  set (DLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/dlib-17.34")
+  #  set (DLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/dlib-17.34")
+  set (DLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/dlib-17.46")
 endif ()
 
 ##-----------------------------------------------------------------------------

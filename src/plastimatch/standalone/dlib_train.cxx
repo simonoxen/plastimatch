@@ -374,7 +374,7 @@ krr_rbk_test (
         std::vector<double> loo_values;
 	double lambda_used;
 	trainer.train (dense_samples, labels, loo_values, lambda_used);
-        loo_error = mean_squared_error (m_labels, loo_values);
+        loo_error = mean_squared_error (labels, loo_values);
 #else
         error, unknown DLIB version!;
 #endif
@@ -429,7 +429,7 @@ krr_lin_test (
         std::vector<double> loo_values;
 	double lambda_used;
 	trainer.train (dense_samples, labels, loo_values, lambda_used);
-        loo_error = mean_squared_error (m_labels, loo_values);
+        loo_error = mean_squared_error (labels, loo_values);
 #else
         error, unknown DLIB version!;
 #endif
@@ -511,11 +511,12 @@ svr_lin_test (
 )
 {
     option_range svr_c_range;
-    double best_svr_c = DBL_MAX;
-    float best_cv_error = FLT_MAX;
 
 #if DLIB_REVISION == 4093
     /* dlib 17.34 */
+    double best_svr_c = DBL_MAX;
+    float best_cv_error = FLT_MAX;
+
     typedef linear_kernel<dense_sample_type> kernel_type;
     svr_trainer<kernel_type> trainer;
 
@@ -575,11 +576,13 @@ svr_rbk_test (
     typedef radial_basis_kernel<dense_sample_type> kernel_type;
     svr_trainer<kernel_type> trainer;
     option_range gamma_range, svr_c_range;
+
+#if DLIB_REVISION == 4093
+    /* dlib 17.34 */
     double best_gamma = DBL_MAX;
     double best_svr_c = DBL_MAX;
     float best_cv_error = FLT_MAX;
 
-#if DLIB_REVISION == 4093
     get_rbk_gamma (parser, dense_samples, gamma_range);
     get_svr_c (parser, dense_samples, svr_c_range);
 
