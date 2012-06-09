@@ -9,7 +9,7 @@
 class Dcmtk_study_writer;
 class Metadata;
 class Plm_image;
-class Rtss_polyline_set;
+class Rtss_structure_set;
 
 class
 Dcmtk_save {
@@ -17,11 +17,11 @@ public:
     Dcmtk_save ();
     ~Dcmtk_save ();
 public:
-    void set_cxt (Rtss_polyline_set *cxt, Metadata *cxt_meta);
+    void set_cxt (Rtss_structure_set *cxt, Metadata *cxt_meta);
     void set_dose (Plm_image* img);
     void set_image (Plm_image* img);
 public:
-    Rtss_polyline_set *cxt;
+    Rtss_structure_set *cxt;
     Metadata *cxt_meta;
     Plm_image* dose;
     Plm_image* img;

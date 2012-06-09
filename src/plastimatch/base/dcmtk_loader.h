@@ -11,7 +11,7 @@
 #include "dcmtk_series.h"
 #include "itk_image_type.h"
 
-class Rtss_polyline_set;
+class Rtss_structure_set;
 class Metadata;
 
 class Dcmtk_loader
@@ -29,7 +29,7 @@ public:
     Dcmtk_series *ds_rtdose;
     Dcmtk_series *ds_rtss;
 
-    Rtss_polyline_set *cxt;
+    Rtss_structure_set *cxt;
     Metadata *cxt_metadata;
 
     Plm_image *img;

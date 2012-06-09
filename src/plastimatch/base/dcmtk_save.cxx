@@ -29,7 +29,7 @@ Dcmtk_save::~Dcmtk_save ()
     /* Do nothing, we don't own the data */
 }
 
-void Dcmtk_save::set_cxt (Rtss_polyline_set *cxt, Metadata *cxt_meta)
+void Dcmtk_save::set_cxt (Rtss_structure_set *cxt, Metadata *cxt_meta)
 {
     this->cxt = cxt;
     this->cxt_meta = cxt_meta;

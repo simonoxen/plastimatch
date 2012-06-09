@@ -23,7 +23,7 @@ void
 Dcmtk_loader::rtss_load (void)
 {
     if (this->cxt) delete this->cxt;
-    this->cxt = new Rtss_polyline_set;
+    this->cxt = new Rtss_structure_set;
     
     /* Modality -- better be RTSTRUCT */
     std::string modality = ds_rtss->get_modality();
@@ -212,7 +212,7 @@ Dcmtk_save::save_rtss (
 )
 {
     OFCondition ofc;
-    Rtss_polyline_set *cxt = this->cxt;
+    Rtss_structure_set *cxt = this->cxt;
 
     /* Prepare output file */
     Pstring rtss_fn;
