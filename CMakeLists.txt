@@ -412,6 +412,7 @@ link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/nocedal)
 ##-----------------------------------------------------------------------------
 ##  LUA 5.1.4
 ##-----------------------------------------------------------------------------
+# We can't use debian's lua 5.1 because it doesn't contain lobject.h
 add_subdirectory (libs/lua-5.1.4)
 set (LUA_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/lua-5.1.4/src")
 link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/lua-5.1.4)
