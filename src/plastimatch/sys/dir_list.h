@@ -19,6 +19,7 @@ public:
     char** entries;
 public:
     Dir_list ();
+    Dir_list (const char* dir);
     ~Dir_list ();
 
     void init ();

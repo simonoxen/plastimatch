@@ -9,16 +9,16 @@ project (src)
 ##  PLASTIMATCH LIBRARIES
 ##-----------------------------------------------------------------------------
 set (PLASTIMATCH_LIBS
-  ${ITK_LIBRARIES}
-  ${MATH_LIB}
-  plmsys
-  plmbase
-  plmutil
-  plmregister
+  plmscript
   plmsegment
+  plmregister
   plmreconstruct
   plmdose
-  plmscript
+  plmutil
+  plmbase
+  plmsys
+  ${ITK_LIBRARIES}
+  ${MATH_LIB}
   )
 
 if (FFTW_FOUND)

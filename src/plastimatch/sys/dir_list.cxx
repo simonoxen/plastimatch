@@ -19,6 +19,12 @@ Dir_list::Dir_list ()
     this->init ();
 }
 
+Dir_list::Dir_list (const char* dir)
+{
+    this->init ();
+    this->load (dir);
+}
+
 Dir_list::~Dir_list ()
 {
     int i;

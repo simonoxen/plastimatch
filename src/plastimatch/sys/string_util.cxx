@@ -2,6 +2,9 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmsys_config.h"
+#include <fstream>
+#include <iostream>
+#include <sstream>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -152,4 +155,14 @@ trim (
     const size_t range = end_str - begin_str + 1;
 
     return str.substr (begin_str, range);
+}
+
+std::string
+slurp_file (const char* fn)
+{
+    /* Read file into string */
+    std::ifstream t (fn);
+    std::stringstream buffer;
+    buffer << t.rdbuf();
+    return buffer.str();
 }

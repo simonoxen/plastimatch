@@ -204,6 +204,20 @@ strip_extension (char* filename)
     }
 }
 
+std::string
+compose_filename (const char *a, const char *b)
+{
+    std::string output_fn;
+
+    char *tmp = strdup (a);
+    trim_trailing_slashes (tmp);
+    output_fn = tmp;
+    free (tmp);
+    output_fn.append ("/");
+    output_fn.append (b);
+    return output_fn;
+}
+
 /* cross platform getcwd */
 char*
 plm_getcwd (char* s, int len)

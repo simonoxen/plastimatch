@@ -382,7 +382,7 @@ check_output_resolution (Xform* xf_out, Registration_data* regd)
     }
 }
 
-
+/* xf_result must be freed by caller */
 void
 do_registration_pure (
     Xform** xf_result,
