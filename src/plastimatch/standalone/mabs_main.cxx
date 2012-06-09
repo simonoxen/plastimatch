@@ -26,5 +26,9 @@ main (int argc, char* argv[])
         parms.print ();
     }
 
+    printf ("Running MABS...\n");
+    Mabs mabs;
+    mabs.run (parms);
+
     return 0;
 }

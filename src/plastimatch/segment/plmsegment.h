@@ -10,6 +10,7 @@
 #ifndef _plmsegment_h_
 #define _plmsegment_h_
 #include "plmsegment_config.h"
+#include "mabs.h"
 #include "mabs_parms.h"
 #include "mabs_subject.h"
 #endif /* #ifndef _plmsegment_h_ */
