@@ -6,6 +6,7 @@
 
 use Getopt::Long;
 
+# --working option uses standard dir instead of pristine dir
 my $working;
 $result = GetOptions (
     "working" => \$working
