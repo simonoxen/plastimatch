@@ -11,6 +11,7 @@
  */
 
 #include "plmsys_config.h"
+#include <string>
 #include <stdio.h>
 #include "sys/plm_int.h"
 
