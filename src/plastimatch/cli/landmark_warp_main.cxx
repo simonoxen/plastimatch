@@ -390,8 +390,10 @@ parse_fn (
 {
     Landmark_warp *lw = &parms->lw;
 
+    /* Add --help, --version */
+    parser->add_default_options ();
+
     /* Basic options */
-    parser->add_long_option ("h", "help", "Display this help message");
     parser->add_long_option ("f", "fixed-landmarks", 
 	"Input fixed landmarks", 1, "");
     parser->add_long_option ("m", "moving-landmarks",
@@ -432,8 +434,8 @@ parse_fn (
     /* Parse the command line arguments */
     parser->parse (argc,argv);
 
-    /* Check if the -h option was given */
-    parser->check_help ();
+    /* Handle --help, --version */
+    parser->check_default_options ();
 
     /* Check that required inputs were given */
     parser->check_required ("fixed-landmarks");

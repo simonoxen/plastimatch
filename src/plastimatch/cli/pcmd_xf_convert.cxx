@@ -127,7 +127,8 @@ parse_fn (
     char* argv[]
 )
 {
-    parser->add_long_option ("h", "help", "Display this help message");
+    /* Add --help, --version */
+    parser->add_default_options ();
 
     /* Basic options */
     parser->add_long_option ("", "input", 
@@ -152,8 +153,8 @@ parse_fn (
     /* Parse options */
     parser->parse (argc,argv);
 
-    /* Check if the -h option was given */
-    parser->check_help ();
+    /* Handle --help, --version */
+    parser->check_default_options ();
 
     /* Check that an input file was given */
     parser->check_required ("input");
