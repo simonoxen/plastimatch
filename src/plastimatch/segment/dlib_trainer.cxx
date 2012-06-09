@@ -212,13 +212,15 @@ Dlib_trainer::train_krr (void)
         /* dlib 17.34 */
         dlib::decision_function<Kernel_type> krr_df = 
             trainer.train (m_samples, m_labels, loo_error);
-#elif DLIB_MAJOR_VERSION == 17 && DLIB_MINOR_VERSION == 44
+#elif DLIB_MAJOR_VERSION == 17 && DLIB_MINOR_VERSION >= 44
         /* dlib 17.44 */
         /* GCS FIX: How to get loo_error from loo_values? */
         std::vector<double> loo_values;
         double lambda_used;
         dlib::decision_function<Kernel_type> krr_df = 
             trainer.train (m_samples, m_labels, loo_values, lambda_used);
+
+        loo_error = mean_squared_error (m_labels, loo_values);
 #else
         error, unknown DLIB version!;
 #endif

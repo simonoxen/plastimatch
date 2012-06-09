@@ -369,12 +369,12 @@ krr_rbk_test (
         /* dlib 17.34 */
 	trainer.train (dense_samples, labels, loo_error);
 
-#elif DLIB_MAJOR_VERSION == 17 && DLIB_MINOR_VERSION == 44
+#elif DLIB_MAJOR_VERSION == 17 && DLIB_MINOR_VERSION >= 44
         /* dlib 17.44 */
-        /* GCS FIX: How to get loo_error from loo_values? */
         std::vector<double> loo_values;
 	double lambda_used;
 	trainer.train (dense_samples, labels, loo_values, lambda_used);
+        loo_error = mean_squared_error (m_labels, loo_values);
 #else
         error, unknown DLIB version!;
 #endif
@@ -424,12 +424,12 @@ krr_lin_test (
         /* dlib 17.34 */
 	trainer.train (dense_samples, labels, loo_error);
 
-#elif DLIB_MAJOR_VERSION == 17 && DLIB_MINOR_VERSION == 44
+#elif DLIB_MAJOR_VERSION == 17 && DLIB_MINOR_VERSION >= 44
         /* dlib 17.44 */
-        /* GCS FIX: How to get loo_error from loo_values? */
         std::vector<double> loo_values;
 	double lambda_used;
 	trainer.train (dense_samples, labels, loo_values, lambda_used);
+        loo_error = mean_squared_error (m_labels, loo_values);
 #else
         error, unknown DLIB version!;
 #endif
@@ -556,7 +556,7 @@ svr_lin_test (
             printf ("%g %g\n", labels[j], best_network(dense_samples[j]));
         }
     }
-#elif DLIB_MAJOR_VERSION == 17 && DLIB_MINOR_VERSION == 44
+#elif DLIB_MAJOR_VERSION == 17 && DLIB_MINOR_VERSION >= 44
     /* dlib 17.44 */
     /* GCS FIX: The above doesn't compile. */
 #else
@@ -627,7 +627,7 @@ svr_rbk_test (
             printf ("%g %g\n", labels[j], best_network(dense_samples[j]));
         }
     }
-#elif DLIB_MAJOR_VERSION == 17 && DLIB_MINOR_VERSION == 44
+#elif DLIB_MAJOR_VERSION == 17 && DLIB_MINOR_VERSION >= 44
     /* dlib 17.44 */
     /* GCS FIX: The above doesn't compile. */
 #else

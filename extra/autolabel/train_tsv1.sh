@@ -1,5 +1,6 @@
-plastimatch autolabel-train \
+#plastimatch autolabel-train \
+~/build/plastimatch-dlib/plastimatch autolabel-train \
     --task tsv1 \
     --output-dir tsv \
-    --input /home/gsharp/Dropbox/autolabel/gold/ 
-#    --input mini 
+    --input mini 
+#    --input /home/gsharp/Dropbox/autolabel/gold/ 
