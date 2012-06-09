@@ -142,6 +142,7 @@ Proton_Beam::generate ()
     int i;
     double d;
 
+#if SPECFUN_FOUND
     if (!this->E0) {
         printf ("ERROR: Failed to generate beam -- energy not specified.\n");
         return false;
@@ -169,6 +170,10 @@ Proton_Beam::generate ()
     }
 
     return true;
+#else
+    printf ("ERROR: No specfun found.\n");
+    return false;
+#endif
 }
 
 void

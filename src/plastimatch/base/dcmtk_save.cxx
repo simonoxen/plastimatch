@@ -51,11 +51,11 @@ Dcmtk_save::save (const char *dicom_dir)
     Dcmtk_study_writer dsw;
     DcmDate::getCurrentDate (dsw.date_string);
     DcmTime::getCurrentTime (dsw.time_string);
-    plm_generate_dicom_uid (dsw.study_uid, PLM_UID_PREFIX);
-    plm_generate_dicom_uid (dsw.for_uid, PLM_UID_PREFIX);
-    plm_generate_dicom_uid (dsw.ct_series_uid, PLM_UID_PREFIX);
-    plm_generate_dicom_uid (dsw.rtss_series_uid, PLM_UID_PREFIX);
-    plm_generate_dicom_uid (dsw.rtss_instance_uid, PLM_UID_PREFIX);
+    dcmtk_uid (dsw.study_uid, PLM_UID_PREFIX);
+    dcmtk_uid (dsw.for_uid, PLM_UID_PREFIX);
+    dcmtk_uid (dsw.ct_series_uid, PLM_UID_PREFIX);
+    dcmtk_uid (dsw.rtss_series_uid, PLM_UID_PREFIX);
+    dcmtk_uid (dsw.rtss_instance_uid, PLM_UID_PREFIX);
 
     if (this->img) {
         this->save_image (&dsw, dicom_dir);

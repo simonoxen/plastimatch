@@ -324,7 +324,7 @@ Dcmtk_save::save_image (
         dsd.sloc.format ("%f", dsd.vol->offset[2] + k * dsd.vol->spacing[2]);
         dsd.ipp.format ("%f\\%f\\%f", dsd.vol->offset[0], dsd.vol->offset[1], 
             dsd.vol->offset[2] + k * dsd.vol->spacing[2]);
-        plm_generate_dicom_uid (dsd.slice_uid, PLM_UID_PREFIX);
+        dcmtk_uid (dsd.slice_uid, PLM_UID_PREFIX);
 
         dsd.slice_float = &((float*)dsd.vol->img)[k*dsd.slice_size];
         dcmtk_save_slice (dsw, &dsd);

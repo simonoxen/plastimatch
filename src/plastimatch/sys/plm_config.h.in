@@ -51,6 +51,7 @@
 #cmakedefine NLOPT_FOUND 1
 #cmakedefine OPENCL_FOUND 1
 #cmakedefine PANTHEIOS_FOUND 1
+#cmakedefine SPECFUN_FOUND 1
 #cmakedefine HAVE_GETOPT_LONG 1
 #cmakedefine READLINE_FOUND 1
 #cmakedefine QT4_FOUND 1

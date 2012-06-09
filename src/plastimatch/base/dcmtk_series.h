@@ -5,6 +5,7 @@
 #define _dcmtk_series_h_
 
 #include "plmbase_config.h"
+#include "plm_int.h"
 #include <list>
 #include "dcmtk_config.h"
 #include "dcmtk/ofstd/ofstream.h"

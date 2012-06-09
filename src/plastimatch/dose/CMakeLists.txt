@@ -22,6 +22,13 @@ set (PLMDOSE_LIBRARY_SRC
   proton_scene.cxx
   )
 
+if (NOT BUILD_DEBIAN)
+  set (PLMDOSE_LIBRARY_SRC
+    ${PLMDOSE_LIBRARY_SRC}
+    bragg_curve.cxx
+    )
+endif ()
+
 set (PLMDOSE_LIBRARY_DEPENDENCIES 
   plmbase
   plmsys
