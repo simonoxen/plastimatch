@@ -1,5 +1,8 @@
-Version 1.5.11 (build @PLASTIMATCH_SVN_VERSION@)
+Version 1.5.12 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
+
+Version 1.5.11 (build 3637)
+Sat Jun  9 19:58:20 EDT 2012
 * Reorganize code into smaller libraries
 * Mostly complete support for ITK 4
 * Improve performance of native B-spline registration
