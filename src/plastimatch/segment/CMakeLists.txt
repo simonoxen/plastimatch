@@ -41,6 +41,7 @@ plm_add_library (
   plmsegment
   "${PLMSEGMENT_LIBRARY_SRC}" 
   "${PLMSEGMENT_LIBRARY_DEPENDENCIES}"
+  ""
   "")
 
 ##-----------------------------------------------------------------------------

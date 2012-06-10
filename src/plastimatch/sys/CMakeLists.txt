@@ -44,7 +44,8 @@ plm_add_library (
   plmsys
   "${PLMSYS_LIBRARY_SRC}" 
   "${PLMSYS_LIBRARY_DEPENDENCIES}"
-  "")
+  ""
+  "${CMAKE_BINARY_DIR}/plmsys_config.h;plmsys.h;${CMAKE_BINARY_DIR}/plm_config.h")
 
 ##-----------------------------------------------------------------------------
 ##  SPECIAL RULES FOR SLICER

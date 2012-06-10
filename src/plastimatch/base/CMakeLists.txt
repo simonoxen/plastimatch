@@ -140,6 +140,7 @@ plm_add_library (
   plmbase
   "${PLMBASE_LIBRARY_SRC}" 
   "${PLMBASE_LIBRARY_DEPENDENCIES}"
+  ""
   "")
 
 ##-----------------------------------------------------------------------------

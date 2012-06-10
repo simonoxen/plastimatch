@@ -189,7 +189,8 @@ plm_add_library (
   plmregister
   "${PLMREGISTER_LIBRARY_SRC}" 
   "${PLMREGISTER_LIBRARY_DEPENDENCIES}"
-  "${PLMREGISTER_LIBRARY_LDFLAGS}")
+  "${PLMREGISTER_LIBRARY_LDFLAGS}"
+  "")
 
 # because plmregistercuda is dynamically loaded (not linked)
 # CMake needs to be told explicitly that plmregister

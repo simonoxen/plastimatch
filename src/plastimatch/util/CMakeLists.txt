@@ -78,7 +78,8 @@ plm_add_library (
   plmutil
   "${PLMUTIL_LIBRARY_SRC}" 
   "${PLMUTIL_LIBRARY_DEPENDENCIES}"
-  "${PLMUTIL_LIBRARY_LDFLAGS}")
+  "${PLMUTIL_LIBRARY_LDFLAGS}"
+  "")
 
 ##-----------------------------------------------------------------------------
 ##  SPECIAL RULES FOR SLICER

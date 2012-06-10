@@ -43,6 +43,34 @@ endif ()
 set (PLM_BUILD_ROOT "${CMAKE_CURRENT_BINARY_DIR}")
 set (PLM_SRC_ROOT   "${CMAKE_CURRENT_SOURCE_DIR}")
 
+# Offer the user the choice of overriding the installation directories
+set (PLM_INSTALL_LIB_DIR lib CACHE PATH 
+  "Installation directory for libraries")
+set (PLM_INSTALL_BIN_DIR bin CACHE PATH 
+  "Installation directory for executables")
+set (PLM_INSTALL_INCLUDE_DIR include CACHE PATH
+  "Installation directory for header files")
+if (WIN32 AND NOT CYGWIN)
+  set (DEF_INSTALL_CMAKE_DIR CMake)
+else()
+  set (DEF_INSTALL_CMAKE_DIR lib/cmake/plastimatch)
+endif()
+set (PLM_INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
+  "Installation directory for CMake files")
+mark_as_advanced (
+  PLM_INSTALL_LIB_DIR 
+  PLM_INSTALL_BIN_DIR 
+  PLM_INSTALL_INCLUDE_DIR 
+  PLM_INSTALL_CMAKE_DIR)
+
+# Make relative install paths absolute (needed later on)
+foreach (p LIB BIN INCLUDE CMAKE)
+  set (var PLM_INSTALL_${p}_DIR)
+  if (NOT IS_ABSOLUTE "${${var}}")
+    set (${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
+  endif ()
+endforeach ()
+
 ##-----------------------------------------------------------------------------
 ##  CMake include files
 ##-----------------------------------------------------------------------------
@@ -107,8 +135,8 @@ option (PLM_PREFER_SYSTEM_F2C
 # Installer Options
 option (PLM_INSTALL_RPATH 
   "Add full RPATH to install" OFF)
-option (PLM_INSTALL_LIBRARIES
-  "Include static libraries in install" OFF)
+option (PLM_CONFIG_INSTALL_LIBRARIES 
+  "Include libraries in install" ON)
 option (PLM_PACKAGE_32BIT 
   "Set this when building 32-bit packages on a 64-bit machine" OFF)
 
@@ -734,21 +762,7 @@ if (ITK_FOUND)
 endif ()
 
 ##-----------------------------------------------------------------------------
-##  WXWINDOWS LIBRARY
-##-----------------------------------------------------------------------------
-# if (wxWidgets_FOUND)
-#   if (wxWidgets_CXX_FLAGS)
-#     string (REGEX REPLACE "-D" "" wxWidgets_DEFINITIONS 
-#       "${wxWidgets_DEFINITIONS}")
-#     set_source_files_properties (mondoshot_main.cpp
-#       PROPERTIES COMPILE_FLAGS 
-#       ${wxWidgets_CXX_FLAGS}
-#       )
-#   endif ()
-# endif ()
-
-##-----------------------------------------------------------------------------
-##  CONFIGURE INCLUDE FILES
+##  Configure include files
 ##-----------------------------------------------------------------------------
 set (PLM_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
 #configure_file (${CMAKE_CURRENT_SOURCE_DIR}/src/plastimatch/plm_config.h.in
@@ -783,6 +797,33 @@ endif ()
 ##  Subdirectories
 ##-----------------------------------------------------------------------------
 add_subdirectory (src)
+
+##-----------------------------------------------------------------------------
+##  Set up configuration for external projects using plastimatch API
+##-----------------------------------------------------------------------------
+# Add targets to build tree export set
+export (TARGETS 
+  bstrlib specfun lbfgs nocedal plmsys plmbase plmutil plmdose plmregister
+  FILE "${PROJECT_BINARY_DIR}/PlastimatchLibraryDepends.cmake")
+
+# Help cmake find the PlastimatchConfig.cmake in the build directory
+export (PACKAGE Plastimatch)
+
+# Create PlastimatchBuildTreeSettings.cmake for the use from the build tree
+file (RELATIVE_PATH CONF_REL_INCLUDE_DIR "${PLM_INSTALL_CMAKE_DIR}"
+  "${PLM_INSTALL_INCLUDE_DIR}")
+configure_file (
+  "${CMAKE_SOURCE_DIR}/cmake/PlastimatchConfig.cmake.in" 
+  "${CMAKE_BINARY_DIR}/PlastimatchConfig.cmake" 
+  @ONLY)
+configure_file (
+  "${PROJECT_SOURCE_DIR}/cmake/PlastimatchBuildTreeSettings.cmake.in"
+  "${PROJECT_BINARY_DIR}/PlastimatchBuildTreeSettings.cmake" @ONLY)
+
+# Install the export set for use with the install-tree
+install (EXPORT PlastimatchLibraryDepends DESTINATION
+  "${PLM_INSTALL_CMAKE_DIR}/plastimatch/cmake"
+  COMPONENT dev)
 
 ##-----------------------------------------------------------------------------
 ##  Additional install files
@@ -903,18 +944,14 @@ endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Regression testing
-##  Rationale:
-##    1) Tests need to be launched from a script, because 
-##       CTest is not able to add the ITK DLL directory 
-##       to the path.
-##    2) Prefer use of CMAKE as scripting language 
-##       to avoid requirement of outside package (e.g. python)
-##  Notes/Issues:
-##    "Release" is hard coded.  There is (apparently) 
-##    no easy way to avoid this (i.e. no good suggestions 
-##    on CMake/CTest email list.
 ##-----------------------------------------------------------------------------
-# Set the "hack" variables to find windows binaries (under Release subdir)
+##  * Tests need to be launched from a script, because CTest is not able 
+##    to add the ITK DLL directory to the path.  We use CMAKE as scripting 
+##    language to avoid requirement of outside package (e.g. python)
+##  * "Release" is hard coded.  There is (apparently) no easy way to 
+##    avoid this (i.e. no good suggestions on CMake/CTest email list.  
+##    This is the purpose of the PATH_HACK code below.
+##-----------------------------------------------------------------------------
 if (WIN32 AND NOT CYGWIN AND NOT MINGW)
   set (PLM_PLASTIMATCH_PATH 
     ${CMAKE_CURRENT_BINARY_DIR}/Release)
@@ -979,44 +1016,19 @@ if (PLM_BUILD_TESTING)
 endif ()
 
 ##-----------------------------------------------------------------------------
-##  CPACK stuff
-##  Note: "make package_source" to create tarball
+##  Packaging
+##-----------------------------------------------------------------------------
+##  Simple version: "make package_source" to create tarball
 ##
-##  JAS 2011.01.21
-##  Extended the CPack stuff here for DEBs.
-##
-##  To generate...
+##  Advanced version: to generate...
 ##   * zip    : cpack -G ZIP <source tree>
-##   * deb    : cpack -G DEB <source tree>
 ##   * tar.bz2: cpack -G TBZ2 <source tree>
 ##
 ##    ...from within your build directory
 ##-----------------------------------------------------------------------------
-
 # Default Generators
 set (CPACK_GENERATOR "ZIP")
 set (CPACK_SOURCE_GENERATOR "TBZ2")
-
-# Deb specific stuff
-#set (CPACK_DEBIAN_PACKAGE_NAME "plastimatch")
-#if (PLM_PACKAGE_32BIT)
-#  set (CPACK_DEBIAN_PACKAGE_ARCHITECTURE "i386")
-#else ()
-#  if (MACHINE_IS_32_BIT)
-#    set (CPACK_DEBIAN_PACKAGE_ARCHITECTURE "i386")
-#  else ()
-#    set (CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
-#  endif ()
-#endif ()
-#set (CPACK_DEBIAN_PACKAGE_DEPENDS "put depends here")
-#set (CPACK_DEBIAN_PACKAGE_SECTION "science")
-#set (CPACK_DEBIAN_PACKAGE_HOMEPAGE "www.plastimatch.org")
-#set (CPACK_DEBIAN_PACKAGE_DESCRIPTION 
-#  "plastimatch\n Plastimatch is an open source software for deformable image
-#    registration. It is designed for high-performance volumetric registration
-#    of medical images, such as X-ray computed tomography, magnetic resonance
-#    imaging, and positron emission tomography."
-#)
 
 # General Stuff
 set (CPACK_PACKAGE_CONTACT "gcsharp@partners.org")
@@ -1029,8 +1041,9 @@ set (CPACK_SOURCE_IGNORE_FILES
   "~$"
 )
 
-# Write files to extra_stuff directory.  These files will get put 
-# into the source tarball.
+# Write files to extra_stuff directory.  These is sets the release date 
+# and version number correctly into the changelog, without needing 
+# to commit these changes into the svn repository.
 file (WRITE "${CMAKE_BINARY_DIR}/extra_stuff/plastimatch_version.txt" 
   "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH} ($PLASTIMATCH_SVN_VERSION)")
 execute_process (COMMAND date

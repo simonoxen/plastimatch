@@ -22,15 +22,17 @@ set (NOCEDAL_LIBRARY_C_SRC
   )
 
 if (PLM_USE_F2C)
-  add_library (nocedal STATIC ${NOCEDAL_LIBRARY_C_SRC})
+  #add_library (nocedal STATIC ${NOCEDAL_LIBRARY_C_SRC})
+  plm_add_library (nocedal "${NOCEDAL_LIBRARY_C_SRC}" "" "" "")
 else ()
-  add_library (nocedal STATIC ${NOCEDAL_LIBRARY_FORTRAN_SRC})
+  #add_library (nocedal STATIC ${NOCEDAL_LIBRARY_FORTRAN_SRC})
+  plm_add_library (nocedal "${NOCEDAL_LIBRARY_FORTRAN_SRC}" "" "" "")
 endif ()
 
 ## JAS 2011.01.24
 ## I have disabled this INSTALL since it would be inappropriate
 ## for our CPack packages to install libnocedal.a
 ##
-if (PLM_OLD_INSTALL_TARGETS)
-  install (TARGETS nocedal DESTINATION lib)
-endif (PLM_OLD_INSTALL_TARGETS)
+# if (PLM_OLD_INSTALL_TARGETS)
+#   install (TARGETS nocedal DESTINATION lib)
+# endif (PLM_OLD_INSTALL_TARGETS)

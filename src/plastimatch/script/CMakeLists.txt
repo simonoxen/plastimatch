@@ -72,6 +72,7 @@ plm_add_library (
   plmscript
   "${PLMSCRIPT_LIBRARY_SRC}" 
   "${PLMSCRIPT_LIBRARY_DEPENDENCIES}"
+  ""
   "")
 
 ##-----------------------------------------------------------------------------

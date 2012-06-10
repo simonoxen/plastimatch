@@ -128,7 +128,8 @@ plm_add_library (
   plmreconstruct
   "${PLMRECONSTRUCT_LIBRARY_SRC}" 
   "${PLMRECONSTRUCT_LIBRARY_DEPENDENCIES}"
-  "${PLMRECONSTRUCT_LIBRARY_LDFLAGS}")
+  "${PLMRECONSTRUCT_LIBRARY_LDFLAGS}"
+  "")
 
 # because plmreconstructcuda is dynamically loaded (not linked)
 # CMake needs to be told explicitly that plmreconstruct

@@ -2,15 +2,17 @@
 ##  Macros for creating targets
 ##-----------------------------------------------------------------------------
 ## JAS 2011.01.24
-## I have commented out the INSTALL for the PLM_ADD_LIBRARY
-## macro since it was only serving to include static link
-## libraries in the CPack generated packages.
-## Namely: libplastimatch1.a, libgpuit.a, & libf2c_helper.a
+##  I have commented out the INSTALL for the PLM_ADD_LIBRARY
+##  macro since it was only serving to include static link
+##  libraries in the CPack generated packages.
+##  Namely: libplastimatch1.a, libgpuit.a, & libf2c_helper.a
 ## GCS 2011-04-19
-## However, it is also needed to correctly install dlls for windows
-## binary packaging.
+##  However, it is also needed to correctly install dlls for windows
+##  binary packaging.
+## GCS 2012-06-10
+##  Installed libraries need added to export set for external applications.
 macro (PLM_ADD_LIBRARY 
-    TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS)
+    TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS TARGET_INCLUDES)
 
   if (BUILD_AGAINST_SLICER3)
     # This is the case for building on slicer 3 extension build machines
@@ -24,13 +26,19 @@ macro (PLM_ADD_LIBRARY
       LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
       RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
     if (WIN32 AND BUILD_SHARED_LIBS)
-      install (TARGETS ${TARGET_NAME} RUNTIME DESTINATION bin)
+      install (TARGETS ${TARGET_NAME} 
+	RUNTIME DESTINATION "${PLM_INSTALL_BIN_DIR}")
     endif ()
-    if (PLM_INSTALL_LIBRARIES)
+    set_target_properties (${TARGET_NAME} PROPERTIES 
+      PUBLIC_HEADER "${TARGET_INCLUDES}")
+    if (PLM_CONFIG_INSTALL_LIBRARIES)
       install (TARGETS ${TARGET_NAME}
-        RUNTIME DESTINATION bin
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib)
+	EXPORT PlastimatchLibraryDepends
+        RUNTIME DESTINATION "${PLM_INSTALL_BIN_DIR}" 
+        LIBRARY DESTINATION "${PLM_INSTALL_LIB_DIR}" 
+        ARCHIVE DESTINATION "${PLM_INSTALL_LIB_DIR}" 
+	PUBLIC_HEADER DESTINATION "${PLM_INSTALL_INCLUDE_DIR}/plastimatch-1.6"
+	)
     endif ()
     # Slicer 4 extension build needs dlls installed into the same 
     # directory as the modules
@@ -55,6 +63,7 @@ macro (PLM_ADD_LIBRARY
       PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
   endif ()
 endmacro ()
+
     
 macro (PLM_ADD_EXECUTABLE 
     TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS 
@@ -72,7 +81,7 @@ macro (PLM_ADD_EXECUTABLE
     # CXX linkage required for nlopt
     set_target_properties (${TARGET_NAME} PROPERTIES LINKER_LANGUAGE CXX)
     if (${TARGET_INSTALL})
-      install(TARGETS ${TARGET_NAME} DESTINATION bin)
+      install (TARGETS ${TARGET_NAME} DESTINATION "${PLM_INSTALL_BIN_DIR}")
     endif ()
   endif ()
 endmacro ()
@@ -94,7 +103,6 @@ endmacro ()
 macro (PLM_ADD_SLICER_MODULE 
     TARGET_NAME TARGET_SRC TARGET_LIBS)
 
-  #GENERATELM (TARGET_SRC ${TARGET_NAME}.xml)
   add_library (${TARGET_NAME} ${TARGET_SRC})
   target_link_libraries (${TARGET_NAME} 
     ${Slicer_Libs_LIBRARIES}
@@ -106,7 +114,6 @@ macro (PLM_ADD_SLICER_MODULE
   if (SLICER_IS_SLICER3)
     slicer3_set_modules_output_path (${TARGET_NAME})
   endif ()
-  #SLICER3_INSTALL_PLUGINS (${TARGET_NAME})
 endmacro ()
 
 macro (PLM_ADD_OPENCL_FILE SRCS CL_FILE)

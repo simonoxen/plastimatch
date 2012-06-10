@@ -232,10 +232,6 @@ add_subdirectory(sys)
 add_subdirectory(test)
 add_subdirectory(util)
 
-if (FULL_PLASTIMATCH_BUILD)
-  message (STATUS "PLASTIMATCH_LIBS: ${PLASTIMATCH_LIBS}")
-endif ()
-
 ##-----------------------------------------------------------------------------
 ##  DOXYGEN
 ##-----------------------------------------------------------------------------

@@ -52,6 +52,7 @@ plm_add_library (
   plmdose
   "${PLMDOSE_LIBRARY_SRC}" 
   "${PLMDOSE_LIBRARY_DEPENDENCIES}"
+  ""
   "")
 
 ##-----------------------------------------------------------------------------
