@@ -804,7 +804,7 @@ add_subdirectory (src)
 # Add targets to build tree export set
 set (EXPORT_TARGET_LIST
   bstrlib specfun lbfgs nocedal plmsys plmbase plmutil plmdose plmregister)
-if (PLM_USE_F2C)
+if (PLM_USE_INCLUDED_F2C)
   set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} f2c1)
 endif ()
 if (CUDA_FOUND)
