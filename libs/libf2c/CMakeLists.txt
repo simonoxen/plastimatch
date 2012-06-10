@@ -1,13 +1,13 @@
-PROJECT (libf2c)
+project (libf2c)
 
-IF ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
-  SET (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fPIC")
-  SET (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fPIC")
-  SET (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fPIC")
-  SET (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fPIC")
-ENDIF ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+  set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fPIC")
+  set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fPIC")
+  set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fPIC")
+  set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fPIC")
+endif ()
 
-SET (LIBF2C_LIBRARY_SRC
+set (LIBF2C_LIBRARY_SRC
   abort_.c    d_int.c	inquire.c	r_atn2.c  sig_die.c
   d_lg10.c	ftell_.c    i_sign.c	r_cnjg.c  signal_.c
   backspac.c  d_log.c	getarg_.c   lbitbits.c	r_cos.c   signbit.c
@@ -36,7 +36,7 @@ SET (LIBF2C_LIBRARY_SRC
   dfe.c	      fmt.c	i_mod.c     r_asin.c	s_copy.c
   d_imag.c    fmtlib.c	i_nint.c    r_atan.c	sfe.c
   )
-SET (LIBF2C_LIBRARY_SRC_UNUSED
+set (LIBF2C_LIBRARY_SRC_UNUSED
   ftell64_.c
   pow_qq.c
   qbitbits.c
@@ -45,8 +45,8 @@ SET (LIBF2C_LIBRARY_SRC_UNUSED
 
 ## Need output from arithchk.  Note this operation does not support 
 ## cross-compiling.
-SET (ARITHCHK_LINK_LIBRARIES ${MATH_LIB})
-TRY_RUN (
+set (ARITHCHK_LINK_LIBRARIES ${MATH_LIB})
+try_run (
   RUN_RESULT
   COMPILE_RESULT
   "${CMAKE_CURRENT_BINARY_DIR}/arithchk"
@@ -63,16 +63,17 @@ TRY_RUN (
 #MESSAGE (STATUS "RESULT is ${ARITHCHK_STDOUT}")
 
 ## Check exit code == 0 for running arithchk
-IF (NOT RUN_RESULT AND ARITHCHK_STDOUT)
-  ## Cmake adds extra \r on windows.  This creates a file with lines 
+if (NOT RUN_RESULT AND ARITHCHK_STDOUT)
+  ## cmake adds extra \r on windows.  This creates a file with lines 
   ## like "Blah blah\r\r\n", which MSVC refuses to compile.
   ## So we strip out the \r, to get lines like "Blah blah\r\n".
-  STRING (REGEX REPLACE "\r" "" ARITHCHK_STDOUT ${ARITHCHK_STDOUT})
-  FILE (WRITE "${CMAKE_CURRENT_BINARY_DIR}/arith.h" ${ARITHCHK_STDOUT})
-ELSE (NOT RUN_RESULT AND ARITHCHK_STDOUT)
-  MESSAGE (FATAL_ERROR "Failed to create arith.h when building libf2c")
-ENDIF (NOT RUN_RESULT AND ARITHCHK_STDOUT)
+  string (REGEX REPLACE "\r" "" ARITHCHK_STDOUT ${ARITHCHK_STDOUT})
+  file (WRITE "${CMAKE_CURRENT_BINARY_DIR}/arith.h" ${ARITHCHK_STDOUT})
+else ()
+  message (FATAL_ERROR "Failed to create arith.h when building libf2c")
+endif ()
 
-INCLUDE_DIRECTORIES (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
-INCLUDE_DIRECTORIES (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
-ADD_LIBRARY (f2c1 STATIC ${LIBF2C_LIBRARY_SRC})
+include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
+include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
+#add_library (f2c1 STATIC ${LIBF2C_LIBRARY_SRC})
+plm_add_library (f2c1 "${LIBF2C_LIBRARY_SRC}" "" "" "")

@@ -51,6 +51,7 @@ if (CUDA_FOUND)
       plmcuda
       "${PLMCUDA_LIBRARY_SRC}" 
       "${PLMCUDA_LIBRARY_DEPENDENCIES}"
+      ""
       "")
   endif ()
 endif ()

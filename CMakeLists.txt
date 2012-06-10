@@ -802,8 +802,16 @@ add_subdirectory (src)
 ##  Set up configuration for external projects using plastimatch API
 ##-----------------------------------------------------------------------------
 # Add targets to build tree export set
+set (EXPORT_TARGET_LIST
+  bstrlib specfun lbfgs nocedal plmsys plmbase plmutil plmdose plmregister)
+if (PLM_USE_F2C)
+  set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} f2c1)
+endif ()
+if (CUDA_FOUND)
+  set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} plmcuda)
+endif ()
 export (TARGETS 
-  bstrlib specfun lbfgs nocedal plmsys plmbase plmutil plmdose plmregister
+  ${EXPORT_TARGET_LIST}
   FILE "${PROJECT_BINARY_DIR}/PlastimatchLibraryDepends.cmake")
 
 # Help cmake find the PlastimatchConfig.cmake in the build directory
