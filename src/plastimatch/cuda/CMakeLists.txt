@@ -38,8 +38,10 @@ if (CUDA_FOUND)
       ${PLMCUDA_LIBRARY_DEPENDENCIES}
       )
     install (TARGETS plmcuda
-      RUNTIME DESTINATION bin
-      LIBRARY DESTINATION lib
+      EXPORT PlastimatchLibraryDepends
+      RUNTIME DESTINATION "${PLM_INSTALL_BIN_DIR}" 
+      LIBRARY DESTINATION "${PLM_INSTALL_LIB_DIR}" 
+      ARCHIVE DESTINATION "${PLM_INSTALL_LIB_DIR}" 
       )
   else ()
     cuda_compile (CUDA_WRAPPERS ${PLMCUDA_LIBRARY_SRC})
