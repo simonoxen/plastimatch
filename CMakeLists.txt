@@ -810,6 +810,9 @@ endif ()
 if (CUDA_FOUND)
   set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} plmcuda)
 endif ()
+if (OPENCL_FOUND)
+  set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} plmopencl)
+endif ()
 export (TARGETS 
   ${EXPORT_TARGET_LIST}
   FILE "${PROJECT_BINARY_DIR}/PlastimatchLibraryDepends.cmake")
