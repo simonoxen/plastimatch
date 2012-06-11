@@ -18,6 +18,9 @@ private:
 	QPixmap pmap;
 	QGraphicsPixmapItem* pmi;
 
+public slots:
+	void load();
+
 public:
     Iqt_video_widget (QWidget *parent = 0);
     ~Iqt_video_widget ();
