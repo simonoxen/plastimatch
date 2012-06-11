@@ -8,7 +8,6 @@
 #include <QFileDialog>
 #include <QDir>
 #include "iqt_video_widget.h"
-#include "iqt_video_widget.cxx"
 //#include <vtkPolyDataMapper.h>
 //#include <vtkRenderer.h>
 //#include <vtkRenderWindow.h>
@@ -89,9 +88,14 @@ Iqt_main_window::slot_load ()
 		Iqt_main_window::slot_play_pause();
 	}
 	playing = false;
-    QString fileName = QFileDialog::getOpenFileName(this,
+    QString filename = QFileDialog::getOpenFileName(this,
     	tr("Open File"), QDir::currentPath());
     //Iqt_video_widget::load();
+
+    statusBar()->showMessage(QString("Filename %2 %1")
+        .arg(filename).arg("!!!"));
+
+    widget->load(filename);
 	Iqt_main_window::slot_play_pause();
 }
 

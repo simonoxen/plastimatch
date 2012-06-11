@@ -19,7 +19,7 @@ private:
 	QGraphicsPixmapItem* pmi;
 
 public slots:
-	void load();
+	void load(const QString& filename);
 
 public:
     Iqt_video_widget (QWidget *parent = 0);

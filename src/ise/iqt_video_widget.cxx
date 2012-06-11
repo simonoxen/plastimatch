@@ -26,15 +26,20 @@ Iqt_video_widget::Iqt_video_widget (QWidget *parent)
     show();
 }
 
-void Iqt_video_widget::load() {
-	scene = new QGraphicsScene;
-	this->setScene (scene);
-	QString file = QFileDialog::getOpenFileName(this, tr("Open File"), QDir::currentPath());
-	pmi = new QGraphicsPixmapItem(QPixmap(file));
+void Iqt_video_widget::load(const QString& filename) {
+//	scene = new QGraphicsScene;
+//	this->setScene (scene);
+//	QString file = QFileDialog::getOpenFileName(this, tr("Open File"), QDir::currentPath());
+    QPixmap *qp = new QPixmap (filename);
+    for (int i = 0; i < 10; i++) {
+        delete pmi;
+        pmi = new QGraphicsPixmapItem(*qp);
 	scene->addItem(pmi);
-	
+    }
+    delete qp;
 } //end load()
 
 Iqt_video_widget::~Iqt_video_widget ()
 {
+    delete pmi;
 }
