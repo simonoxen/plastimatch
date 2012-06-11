@@ -2,15 +2,15 @@
 fixed=@PLM_BUILD_TESTING_DIR@/rect-5.mha
 moving=@PLM_BUILD_TESTING_DIR@/rect-2.mha
 
-vf_out=@PLM_BUILD_TESTING_DIR@/plm-bsp-dcos-b-vf.nrrd
-xform_out=@PLM_BUILD_TESTING_DIR@/plm-bsp-dcos-b-xf.txt
-img_out=@PLM_BUILD_TESTING_DIR@/plm-bsp-dcos-b-img.nrrd
+vf_out=@PLM_BUILD_TESTING_DIR@/plm-bsp-dcos-d-vf.nrrd
+xform_out=@PLM_BUILD_TESTING_DIR@/plm-bsp-dcos-d-xf.txt
+img_out=@PLM_BUILD_TESTING_DIR@/plm-bsp-dcos-d-img.nrrd
 
 [STAGE]
 xform=bspline
 optim=lbfgsb
 impl=plastimatch
-flavor=g
+flavor=i
 max_its=5
 convergence_tol=3
 grad_tol=0.1

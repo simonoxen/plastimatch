@@ -29,5 +29,6 @@ PLMSYS_C_API char* plm_getcwd (char* s, int len);
 PLMSYS_C_API int plm_chdir (char* s);
 PLMSYS_C_API int plm_get_dir_list (const char*** f_list);
 PLMSYS_API std::string compose_filename (const char *a, const char *b);
+PLMSYS_API FILE* plm_fopen (const char *path, const char *mode);
 
 #endif

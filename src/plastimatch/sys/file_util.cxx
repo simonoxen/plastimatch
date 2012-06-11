@@ -127,6 +127,15 @@ make_directory_recursive (const Pstring& filename)
 #endif
 
 FILE*
+plm_fopen (const char *path, const char *mode)
+{
+    if (mode && (mode[0] == 'w' || mode[0] == 'a')) {
+        make_directory_recursive (path);
+    }
+    return fopen (path, mode);
+}
+
+FILE*
 make_tempfile (void)
 {
 # if defined (_WIN32)

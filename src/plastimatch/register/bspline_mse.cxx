@@ -29,7 +29,6 @@
 #include "bspline_cuda.h"
 #endif
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // FUNCTION: bspline_score_h_mse()
 //
@@ -66,16 +65,16 @@ bspline_score_h_mse (
 
     plm_long idx_tile;
 
-    Plm_timer *timer = new Plm_timer;
-
     plm_long cond_size = 64*bxf->num_knots*sizeof(float);
     float* cond_x = (float*)malloc(cond_size);
     float* cond_y = (float*)malloc(cond_size);
     float* cond_z = (float*)malloc(cond_size);
 
+    static int it = 0;
     int i;
 
     // Start timing the code
+    Plm_timer *timer = new Plm_timer;
     timer->start ();
 
     // Zero out accumulators
@@ -87,13 +86,22 @@ bspline_score_h_mse (
     memset(cond_y, 0, cond_size);
     memset(cond_z, 0, cond_size);
 
+    FILE* corr_fp = 0;
+
+    if (parms->debug) {
+        char buf[1024];
+        sprintf (buf, "corr_mse_%02d.txt", it);
+        std::string fn = parms->debug_dir + "/" + buf;
+        corr_fp = plm_fopen (fn.c_str(), "wb");
+        it ++;
+    }
+
     // Serial across tiles
     LOOP_THRU_VOL_TILES (idx_tile, bxf) {
         int rc;
 
         int ijk_tile[3];
         plm_long ijk_local[3];
-        plm_long idx_local;
 
         float xyz_fixed[3];
         plm_long ijk_fixed[3];
@@ -155,6 +163,15 @@ bspline_score_h_mse (
 
                     // Return code is 0 if voxel is pushed outside of moving image
                     if (!rc) continue;
+
+                    if (parms->debug) {
+                        fprintf (corr_fp, 
+                            "%d %d %d %f %f %f\n",
+                            (unsigned int) ijk_fixed[0], 
+                            (unsigned int) ijk_fixed[1], 
+                            (unsigned int) ijk_fixed[2], 
+                            ijk_moving[0], ijk_moving[1], ijk_moving[2]);
+                    }
 
                     // Compute linear interpolation fractions
                     li_clamp_3d (
@@ -231,6 +248,10 @@ bspline_score_h_mse (
         ssd->grad[i] = 2 * ssd->grad[i] / ssd->num_vox;
     }
 
+    if (parms->debug) {
+        fclose (corr_fp);
+    }
+
     ssd->time_smetric = timer->report ();
     delete timer;
 }
@@ -247,6 +268,9 @@ bspline_score_h_mse (
 //
 // AUTHOR: James A. Shackleford
 // DATE: 11.22.2009
+//
+// 2012-06-10 (GCS): Updated to DCOS, only 0.15% increase in runtime, 
+//   judged not worth maintaining separate code.
 ////////////////////////////////////////////////////////////////////////////////
 void
 bspline_score_g_mse (
@@ -270,17 +294,27 @@ bspline_score_g_mse (
 
     int idx_tile;
 
-    Plm_timer* timer = new Plm_timer;
-
     plm_long cond_size = 64*bxf->num_knots*sizeof(float);
     float* cond_x = (float*)malloc(cond_size);
     float* cond_y = (float*)malloc(cond_size);
     float* cond_z = (float*)malloc(cond_size);
 
+    static int it = 0;
     int i;
 
+    FILE* corr_fp = 0;
+
     // Start timing the code
+    Plm_timer* timer = new Plm_timer;
     timer->start ();
+
+    if (parms->debug) {
+        char buf[1024];
+        sprintf (buf, "corr_mse_%02d.txt", it);
+        std::string fn = parms->debug_dir + "/" + buf;
+        corr_fp = plm_fopen (fn.c_str(), "wb");
+        it ++;
+    }
 
     // Zero out accumulators
     int num_vox = 0;
@@ -292,13 +326,12 @@ bspline_score_g_mse (
     memset(cond_z, 0, cond_size);
 
     // Parallel across tiles
-#pragma omp parallel for reduction (+:num_vox,score_tile)
+//#pragma omp parallel for reduction (+:num_vox,score_tile)
     LOOP_THRU_VOL_TILES (idx_tile, bxf) {
         int rc;
 
         plm_long ijk_tile[3];
         plm_long ijk_local[3];
-        plm_long idx_local;
 
         float xyz_fixed[3];
         plm_long ijk_fixed[3];
@@ -346,7 +379,10 @@ bspline_score_g_mse (
                         continue;
 
                     // Compute physical coordinates of fixed image voxel
-                    GET_REAL_SPACE_COORDS (xyz_fixed, ijk_fixed, bxf);
+                    /* To remove DCOS support, switch to 
+                       GET_REAL_SPACE_COORDS (xyz_fixed, ijk_fixed, bxf); */
+                    GET_COMMON_REAL_SPACE_COORDS (xyz_fixed, ijk_fixed, 
+                        fixed, bxf);
                     
                     // Construct the image volume index
                     idx_fixed = volume_index (fixed->dim, ijk_fixed);
@@ -355,8 +391,19 @@ bspline_score_g_mse (
                     bspline_interp_pix_c (dxyz, bxf, idx_tile, ijk_local);
 
                     // Calc. moving image coordinate from the deformation vector
-                    rc = bspline_find_correspondence (xyz_moving, ijk_moving,
-                        xyz_fixed, dxyz, moving);
+                    /* To remove DCOS support, change function call to 
+                       bspline_find_correspondence() */
+                    rc = bspline_find_correspondence_dcos (
+                        xyz_moving, ijk_moving, xyz_fixed, dxyz, moving);
+
+                    if (parms->debug) {
+                        fprintf (corr_fp, 
+                            "%d %d %d %f %f %f\n",
+                            (unsigned int) ijk_fixed[0], 
+                            (unsigned int) ijk_fixed[1], 
+                            (unsigned int) ijk_fixed[2], 
+                            ijk_moving[0], ijk_moving[1], ijk_moving[2]);
+                    }
 
                     // Return code is 0 if voxel is pushed outside of 
                     // moving image
@@ -373,8 +420,10 @@ bspline_score_g_mse (
                     );
 
                     // Find linear indices for moving image
-                    idx_moving_floor = volume_index (moving->dim, ijk_moving_floor);
-                    idx_moving_round = volume_index (moving->dim, ijk_moving_round);
+                    idx_moving_floor = volume_index (
+                        moving->dim, ijk_moving_floor);
+                    idx_moving_round = volume_index (
+                        moving->dim, ijk_moving_round);
 
                     // Calc. moving voxel intensity via linear interpolation
                     LI_VALUE (
@@ -435,6 +484,10 @@ bspline_score_g_mse (
         ssd->grad[i] = 2 * ssd->grad[i] / ssd->num_vox;
     }
 
+    if (parms->debug) {
+        fclose (corr_fp);
+    }
+
     /* Save for reporting */
     ssd->time_smetric = timer->report ();
     delete timer;
@@ -485,16 +538,18 @@ bspline_score_c_mse (
     double score_acc = 0.;
 
     static int it = 0;
-    char debug_fn[1024];
     FILE* fp = 0;
-
-    if (parms->debug) {
-        sprintf (debug_fn, "dc_dv_mse_%02d.txt", it++);
-        fp = fopen (debug_fn, "wb");
-    }
 
     Plm_timer* timer = new Plm_timer;
     timer->start ();
+
+    if (parms->debug) {
+        char buf[1024];
+        sprintf (buf, "dc_dv_mse_%02d.txt", it);
+        std::string fn = parms->debug_dir + "/" + buf;
+        fp = plm_fopen (fn.c_str(), "wb");
+        it++;
+    }
 
     ssd->num_vox = 0;
     ssd->smetric = 0.0f;
@@ -587,7 +642,7 @@ bspline_score_c_mse (
 }
 
 /* -----------------------------------------------------------------------
-   FUNCTION: bspline_score_i_dcos_mse()
+   FUNCTION: bspline_score_i_mse()
 
    Based on the "c" algorithm, but respects direction cosines.  
    This implementation computes both forward projection from fixed to 
@@ -638,12 +693,11 @@ bspline_score_i_mse (
         char buf[1024];
         sprintf (buf, "dc_dv_mse_%02d.txt", it);
         std::string fn = parms->debug_dir + "/" + buf;
-        make_directory_recursive (fn.c_str());
-        dc_dv_fp = fopen (fn.c_str(), "wb");
+        dc_dv_fp = plm_fopen (fn.c_str(), "wb");
 
         sprintf (buf, "corr_mse_%02d.txt", it);
         fn = parms->debug_dir + "/" + buf;
-        corr_fp = fopen (fn.c_str(), "wb");
+        corr_fp = plm_fopen (fn.c_str(), "wb");
         it ++;
     }
 

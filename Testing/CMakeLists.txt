@@ -20,6 +20,8 @@ set (CONFIG_FILE_LIST
   "plm-bsp-logfile.txt"
   "plm-bsp-dcos-a.txt"
   "plm-bsp-dcos-b.txt"
+  "plm-bsp-dcos-c.txt"
+  "plm-bsp-dcos-d.txt"
   "plm-bsp-landmark-a.txt"
   "plm-reg-multi-a.txt"
   "plm-reg-dv-itk-translation.txt"
@@ -373,26 +375,6 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-4.mha;--output-type;uchar;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;1;--rect-size;-50 50 -50 50 -50 50"
   )
-if (PLM_CONFIG_ALT_DCOS)
-plm_add_test (
-  "rect-5"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-5.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-50 50 -50 50 -50 50;--origin;-150 -300 -250;--direction-cosines;rotated-1"
-  )
-plm_add_test (
-  "rect-6"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-6.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-50 50 -50 50 -50 50;--origin;-300 0 -200;--direction-cosines;rotated-2"
-  )
-plm_add_test (
-  "rect-7"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-7.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-50 50 -50 50 -50 50;--origin;400 100 -100;--direction-cosines;rotated-3"
-  )
-else ()
 plm_add_test (
   "rect-5"
   ""
@@ -411,7 +393,6 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-7.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-50 50 -50 50 -50 50;--origin;100 300 -100;--direction-cosines;rotated-3"
   )
-endif ()
 plm_add_test (
   "sphere-1"
   ""
@@ -2424,8 +2405,10 @@ set_tests_properties (plm-bsp-landmark-a PROPERTIES DEPENDS "rect-2;sphere-2")
 
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 5)
-##   plm-bsp-dcos-a       fixed=standard moving=rotated 
-##   plm-bsp-dcos-b       fixed=rotated moving=standard
+##   plm-bsp-dcos-a       fixed=standard moving=rotated, flavor=g
+##   plm-bsp-dcos-b       fixed=rotated moving=standard, flavor=g
+##   plm-bsp-dcos-c       fixed=standard moving=rotated, flavor=i
+##   plm-bsp-dcos-d       fixed=rotated moving=standard, flavor=i
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-bsp-dcos-a"
@@ -2478,6 +2461,58 @@ set_tests_properties (plm-bsp-dcos-b-stats PROPERTIES
   DEPENDS plm-bsp-dcos-b)
 set_tests_properties (plm-bsp-dcos-b-check PROPERTIES 
   DEPENDS plm-bsp-dcos-b-stats)
+
+plm_add_test (
+  "plm-bsp-dcos-c"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-dcos-c.txt"
+  )
+plm_add_test (
+  "plm-bsp-dcos-c-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-dcos-c-img.nrrd"
+  )
+plmtest_check_interval (
+  "plm-bsp-dcos-c-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-dcos-c-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-816"
+  "-815"
+  )
+set_tests_properties (plm-bsp-dcos-c PROPERTIES 
+  DEPENDS "rect-2;rect-5")
+set_tests_properties (plm-bsp-dcos-c-stats PROPERTIES 
+  DEPENDS plm-bsp-dcos-c)
+set_tests_properties (plm-bsp-dcos-c-check PROPERTIES 
+  DEPENDS plm-bsp-dcos-c-stats)
+
+plm_add_test (
+  "plm-bsp-dcos-d"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-dcos-d.txt"
+  )
+plm_add_test (
+  "plm-bsp-dcos-d-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-dcos-d-img.nrrd"
+  )
+plmtest_check_interval (
+  "plm-bsp-dcos-d-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-dcos-d-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-796.8"
+  "-795.8"
+  )
+set_tests_properties (plm-bsp-dcos-d PROPERTIES 
+  DEPENDS "rect-2;rect-5")
+set_tests_properties (plm-bsp-dcos-d-stats PROPERTIES 
+  DEPENDS plm-bsp-dcos-d)
+set_tests_properties (plm-bsp-dcos-d-check PROPERTIES 
+  DEPENDS plm-bsp-dcos-d-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 6)
