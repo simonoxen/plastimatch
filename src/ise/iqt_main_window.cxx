@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <QtGui>
 #include <QTimer>
+#include <QFileDialog>
+#include <QDir>
 //#include <vtkPolyDataMapper.h>
 //#include <vtkRenderer.h>
 //#include <vtkRenderWindow.h>
@@ -85,8 +87,8 @@ Iqt_main_window::slot_load ()
 		Iqt_main_window::slot_play_pause();
 	}
 	playing = false;
-    QMessageBox::information (0, QString ("Info"), 
-	QString ("slot_load() was called"));
+    QString fileName = QFileDialog::getOpenFileName(this,
+    	tr("Open File"), QDir::currentPath());
 	Iqt_main_window::slot_play_pause();
 }
 
