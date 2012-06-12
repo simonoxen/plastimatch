@@ -13,6 +13,7 @@
 #include "iqt_video_widget.h"
 #include <QString>
 #include <QTime>
+#include "sleeper.h"
 
 Iqt_video_widget::Iqt_video_widget (QWidget *parent)
     : QGraphicsView (parent)
@@ -31,11 +32,15 @@ Iqt_video_widget::Iqt_video_widget (QWidget *parent)
 void Iqt_video_widget::load(const QString& filename) {
     time = new QTime();						//express new time variable
     QPixmap *qp = new QPixmap (filename);	//load new image
+//    QPixmap *qp2 = new QPixmap (filename2);	//load new image
     time->start();							//start time
-    for (int i = 0; i < 100000; i++) {
+    for (int i = 0; i < 10; i++) {
     	delete pmi;							//remove old pmi (necessary?)
         pmi = new QGraphicsPixmapItem(*qp);	//set loaded image as new pmi
-		scene->addItem(pmi);				//add new image to scene
+        scene->addItem(pmi);				//add new image to scene
+
+        Sleeper::msleep (33);
+
     }
     qDebug("Time Elapsed: %d ms", time->elapsed()); //display time in shell
     QTime ntime(0,0,0,0);  					//initialize time to be displayed
