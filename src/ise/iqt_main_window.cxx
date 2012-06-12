@@ -89,13 +89,14 @@ Iqt_main_window::slot_load ()
 	}
 	playing = false;
     QString filename = QFileDialog::getOpenFileName(this,
-    	tr("Open File"), QDir::currentPath());
+    	tr("Open File"), QDir::currentPath(), tr("Image Files (*.png *.jpg *.bmp)"));
     //Iqt_video_widget::load();
 
-    statusBar()->showMessage(QString("Filename %2 %1")
-        .arg(filename).arg("!!!"));
+    statusBar()->showMessage(QString("Filename: %1")
+        .arg(filename));
 
     widget->load(filename);
+    //label->setText(QString("Filename: %1").arg(filename));
 	Iqt_main_window::slot_play_pause();
 }
 

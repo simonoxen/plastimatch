@@ -42,8 +42,8 @@ void Iqt_video_widget::load(const QString& filename) {
     i = time->elapsed();					//msecs since time->start()
     ntime=ntime.addMSecs(i);				//time to be displayed
     QString text = ntime.toString("ss.zzz");//convert to text
-    QMessageBox::information (0, QString ("Time to complete task"), 
-    							QString (text)); //display text
+    QMessageBox::information (0, QString ("Timer"), 
+    				QString ("Took %1 seconds").arg(text)); //display text
     delete time;
     delete qp;
 } //end load()
