@@ -724,9 +724,6 @@ bspline_score (Bspline_optimize_data *bod)
             case 'h':
                 bspline_score_h_mse (bod);
                 break;
-            case 'i':
-                bspline_score_i_mse (bod);
-                break;
             default:
                 bspline_score_g_mse (bod);
                 break;

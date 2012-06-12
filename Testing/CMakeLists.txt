@@ -22,6 +22,8 @@ set (CONFIG_FILE_LIST
   "plm-bsp-dcos-b.txt"
   "plm-bsp-dcos-c.txt"
   "plm-bsp-dcos-d.txt"
+  "plm-bsp-dcos-e.txt"
+  "plm-bsp-dcos-f.txt"
   "plm-bsp-landmark-a.txt"
   "plm-reg-multi-a.txt"
   "plm-reg-dv-itk-translation.txt"
@@ -2407,8 +2409,10 @@ set_tests_properties (plm-bsp-landmark-a PROPERTIES DEPENDS "rect-2;sphere-2")
 ## plastimatch register (group 5)
 ##   plm-bsp-dcos-a       fixed=standard moving=rotated, flavor=g
 ##   plm-bsp-dcos-b       fixed=rotated moving=standard, flavor=g
-##   plm-bsp-dcos-c       fixed=standard moving=rotated, flavor=i
-##   plm-bsp-dcos-d       fixed=rotated moving=standard, flavor=i
+##   plm-bsp-dcos-c       fixed=standard moving=rotated, flavor=c
+##   plm-bsp-dcos-d       fixed=rotated moving=standard, flavor=c
+##   plm-bsp-dcos-e       fixed=standard moving=rotated, flavor=h
+##   plm-bsp-dcos-f       fixed=rotated moving=standard, flavor=h
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-bsp-dcos-a"
@@ -2513,6 +2517,58 @@ set_tests_properties (plm-bsp-dcos-d-stats PROPERTIES
   DEPENDS plm-bsp-dcos-d)
 set_tests_properties (plm-bsp-dcos-d-check PROPERTIES 
   DEPENDS plm-bsp-dcos-d-stats)
+
+plm_add_test (
+  "plm-bsp-dcos-e"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-dcos-e.txt"
+  )
+plm_add_test (
+  "plm-bsp-dcos-e-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-dcos-e-img.nrrd"
+  )
+plmtest_check_interval (
+  "plm-bsp-dcos-e-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-dcos-e-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-816"
+  "-815"
+  )
+set_tests_properties (plm-bsp-dcos-e PROPERTIES 
+  DEPENDS "rect-2;rect-5")
+set_tests_properties (plm-bsp-dcos-e-stats PROPERTIES 
+  DEPENDS plm-bsp-dcos-e)
+set_tests_properties (plm-bsp-dcos-e-check PROPERTIES 
+  DEPENDS plm-bsp-dcos-e-stats)
+
+plm_add_test (
+  "plm-bsp-dcos-f"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-dcos-f.txt"
+  )
+plm_add_test (
+  "plm-bsp-dcos-f-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-dcos-f-img.nrrd"
+  )
+plmtest_check_interval (
+  "plm-bsp-dcos-f-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-dcos-f-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-796.8"
+  "-795.8"
+  )
+set_tests_properties (plm-bsp-dcos-f PROPERTIES 
+  DEPENDS "rect-2;rect-5")
+set_tests_properties (plm-bsp-dcos-f-stats PROPERTIES 
+  DEPENDS plm-bsp-dcos-f)
+set_tests_properties (plm-bsp-dcos-f-check PROPERTIES 
+  DEPENDS plm-bsp-dcos-f-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 6)

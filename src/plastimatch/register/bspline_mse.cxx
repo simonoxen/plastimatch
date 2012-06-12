@@ -149,7 +149,10 @@ bspline_score_h_mse (
                         continue;
 
                     // Compute physical coordinates of fixed image voxel
-                    GET_REAL_SPACE_COORDS (xyz_fixed, ijk_fixed, bxf);
+                    /* To remove DCOS support, switch to 
+                       GET_REAL_SPACE_COORDS (xyz_fixed, ijk_fixed, bxf); */
+                    GET_COMMON_REAL_SPACE_COORDS (xyz_fixed, ijk_fixed, 
+                        fixed, bxf);
 
                     // Construct the image volume index
                     idx_fixed = volume_index (fixed->dim, ijk_fixed);
@@ -158,8 +161,10 @@ bspline_score_h_mse (
                     bspline_interp_pix_c (dxyz, bxf, idx_tile, ijk_local);
 
                     // Calc. moving image coordinate from the deformation vector
-                    rc = bspline_find_correspondence (xyz_moving, ijk_moving,
-                        xyz_fixed, dxyz, moving);
+                    /* To remove DCOS support, change function call to 
+                       bspline_find_correspondence() */
+                    rc = bspline_find_correspondence_dcos (
+                        xyz_moving, ijk_moving, xyz_fixed, dxyz, moving);
 
                     // Return code is 0 if voxel is pushed outside of moving image
                     if (!rc) continue;
@@ -216,7 +221,6 @@ bspline_score_h_mse (
                 } /* LOOP_THRU_TILE_X */
             } /* LOOP_THRU_TILE_Y */
         } /* LOOP_THRU_TILE_Z */
-        
 
         // The tile is now condensed.  Now we will put it in the
         // proper slot within the control point bin that it belong to.
@@ -225,7 +229,6 @@ bspline_score_h_mse (
             sets_x, sets_y, sets_z,
             idx_tile, bxf
         );
-
 
     } /* LOOP_THRU_VOL_TILES */
 
@@ -493,13 +496,14 @@ bspline_score_g_mse (
     delete timer;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// FUNCTION: bspline_score_c_mse()
-//
-// This is the older "fast" single-threaded MSE implementation.
-////////////////////////////////////////////////////////////////////////////////
+/* -----------------------------------------------------------------------
+   FUNCTION: bspline_score_c_mse_no_dcos()
+
+   This is the older "fast" single-threaded MSE implementation, without 
+   direction cosine support.
+   ----------------------------------------------------------------------- */
 void
-bspline_score_c_mse (
+bspline_score_c_mse_no_dcos (
     Bspline_optimize_data *bod
 )
 {
@@ -642,14 +646,13 @@ bspline_score_c_mse (
 }
 
 /* -----------------------------------------------------------------------
-   FUNCTION: bspline_score_i_mse()
+   FUNCTION: bspline_score_c_mse()
 
-   Based on the "c" algorithm, but respects direction cosines.  
-   This implementation computes both forward projection from fixed to 
-   world, as well as backward projection from world to moving.
+   This is the older "fast" single-threaded MSE implementation, modified 
+   to respect direction cosines (and ROI support removed).
    ----------------------------------------------------------------------- */
 void
-bspline_score_i_mse (
+bspline_score_c_mse (
     Bspline_optimize_data *bod
 )
 {
