@@ -818,7 +818,9 @@ export (TARGETS
   FILE "${PROJECT_BINARY_DIR}/PlastimatchLibraryDepends.cmake")
 
 # Help cmake find the PlastimatchConfig.cmake in the build directory
-export (PACKAGE Plastimatch)
+if (NOT ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} VERSION_LESS 2.8)
+  export (PACKAGE Plastimatch)
+endif ()
 
 # Create PlastimatchBuildTreeSettings.cmake for the use from the build tree
 file (RELATIVE_PATH CONF_REL_INCLUDE_DIR "${PLM_INSTALL_CMAKE_DIR}"
