@@ -23,10 +23,12 @@ set (SPECFUN_LIBRARY_C_SRC
 
 if (PLM_USE_F2C)
   #add_library (specfun STATIC ${SPECFUN_LIBRARY_C_SRC})
-  plm_add_library (specfun "${SPECFUN_LIBRARY_C_SRC}" "" "" "")
+  plm_add_library (specfun "${SPECFUN_LIBRARY_C_SRC}" 
+    "${PLM_FORTRAN}" "" "")
 else ()
   #add_library (specfun STATIC ${SPECFUN_LIBRARY_FORTRAN_SRC})
-  plm_add_library (specfun "${SPECFUN_LIBRARY_FORTRAN_SRC}" "" "" "")
+  plm_add_library (specfun "${SPECFUN_LIBRARY_FORTRAN_SRC}" 
+    "${PLM_FORTRAN}" "" "")
 endif ()
 
 ## JAS 2011.01.24
