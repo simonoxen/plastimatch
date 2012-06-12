@@ -9,8 +9,10 @@
 #include <QPixmap>
 #include <QGraphicsPixmapItem>
 #include <QDir>
-
+#include <QTimer>
 #include "iqt_video_widget.h"
+#include <QString>
+#include <QTime>
 
 Iqt_video_widget::Iqt_video_widget (QWidget *parent)
     : QGraphicsView (parent)
@@ -27,15 +29,22 @@ Iqt_video_widget::Iqt_video_widget (QWidget *parent)
 }
 
 void Iqt_video_widget::load(const QString& filename) {
-//	scene = new QGraphicsScene;
-//	this->setScene (scene);
-//	QString file = QFileDialog::getOpenFileName(this, tr("Open File"), QDir::currentPath());
-    QPixmap *qp = new QPixmap (filename);
-    for (int i = 0; i < 10; i++) {
-        delete pmi;
-        pmi = new QGraphicsPixmapItem(*qp);
-	scene->addItem(pmi);
+    time = new QTime();						//express new time variable
+    QPixmap *qp = new QPixmap (filename);	//load new image
+    time->start();							//start time
+    for (int i = 0; i < 100000; i++) {
+    	delete pmi;							//remove old pmi (necessary?)
+        pmi = new QGraphicsPixmapItem(*qp);	//set loaded image as new pmi
+		scene->addItem(pmi);				//add new image to scene
     }
+    qDebug("Time Elapsed: %d ms", time->elapsed()); //display time in shell
+    QTime ntime(0,0,0,0);  					//initialize time to be displayed
+    i = time->elapsed();					//msecs since time->start()
+    ntime=ntime.addMSecs(i);				//time to be displayed
+    QString text = ntime.toString("ss.zzz");//convert to text
+    QMessageBox::information (0, QString ("Time to complete task"), 
+    							QString (text)); //display text
+    delete time;
     delete qp;
 } //end load()
 

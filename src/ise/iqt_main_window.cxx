@@ -38,9 +38,9 @@ Iqt_main_window::Iqt_main_window ()
     setupUi (this);
 
     /* Start the timer */
-    m_qtimer = new QTimer (this);
-    connect (m_qtimer, SIGNAL(timeout()), this, SLOT(slot_timer()));
-    m_qtimer->start(1000);
+    //    m_qtimer = new QTimer (this);
+    //    connect (m_qtimer, SIGNAL(timeout()), this, SLOT(slot_timer()));
+    //    m_qtimer->start(1000);
 
     this->playing = false;
 
