@@ -31,6 +31,7 @@ set (PLMSEGMENT_LIBRARY_SRC
   mabs.cxx
   mabs_parms.cxx
   mabs_subject.cxx
+  mabs_vote.cxx
   segment_body.cxx
   )
 
