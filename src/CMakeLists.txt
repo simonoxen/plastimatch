@@ -21,6 +21,10 @@ set (PLASTIMATCH_LIBS
   ${MATH_LIB}
   )
 
+if (SPECFUN_FOUND)
+  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} specfun)
+endif ()
+
 if (FFTW_FOUND)
   set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} ${FFTW_LIBRARIES})
 endif ()
@@ -53,6 +57,8 @@ endif ()
 if (QT4_FOUND)
   set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} ${QT_LIBRARIES})
 endif ()
+
+set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} ${FORTRAN_LIBRARIES})
 
 
 ##-----------------------------------------------------------------------------
