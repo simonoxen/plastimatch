@@ -31,12 +31,21 @@ Iqt_video_widget::Iqt_video_widget (QWidget *parent)
 
 void Iqt_video_widget::load(const QString& filename) {
     time = new QTime();						//express new time variable
-    QPixmap *qp = new QPixmap (filename);	//load new image
-//    QPixmap *qp2 = new QPixmap (filename2);	//load new image
+    QPixmap *qp1 = new QPixmap (filename);	//load new image
+    QString filename_2 = QFileInfo (filename).path() + "/test2.png";
+    QPixmap *qp2 = new QPixmap (filename_2);	//load new image
     time->start();							//start time
-    for (int i = 0; i < 10; i++) {
+
+    int ping_pong = 0;
+    for (int i = 0; i < 100; i++) {
     	delete pmi;							//remove old pmi (necessary?)
-        pmi = new QGraphicsPixmapItem(*qp);	//set loaded image as new pmi
+        if (ping_pong == 0) {
+            pmi = new QGraphicsPixmapItem(*qp1);	//set loaded image as new pmi
+            ping_pong = 1;
+        } else {
+            pmi = new QGraphicsPixmapItem(*qp2);	//set loaded image as new pmi
+            ping_pong = 0;
+        }
         scene->addItem(pmi);				//add new image to scene
 
         Sleeper::msleep (33);
@@ -50,7 +59,8 @@ void Iqt_video_widget::load(const QString& filename) {
     QMessageBox::information (0, QString ("Timer"), 
     				QString ("Took %1 seconds").arg(text)); //display text
     delete time;
-    delete qp;
+    delete qp1;
+    delete qp2;
 } //end load()
 
 Iqt_video_widget::~Iqt_video_widget ()

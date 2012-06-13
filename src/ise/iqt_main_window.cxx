@@ -84,20 +84,24 @@ Iqt_main_window::~Iqt_main_window ()
 void
 Iqt_main_window::slot_load ()
 {
-	if (playing) {
-		Iqt_main_window::slot_play_pause();
-	}
-	playing = false;
-    QString filename = QFileDialog::getOpenFileName(this,
+    if (playing) {
+        Iqt_main_window::slot_play_pause();
+    }
+    playing = false;
+    filename = QFileDialog::getOpenFileName(this,
     	tr("Open File"), QDir::currentPath(), tr("Image Files (*.png *.jpg *.bmp)"));
     //Iqt_video_widget::load();
+
+    if (filename.isNull()) {
+        return;
+    }
 
     statusBar()->showMessage(QString("Filename: %1")
         .arg(filename));
 
     widget->load(filename);
     //label->setText(QString("Filename: %1").arg(filename));
-	Iqt_main_window::slot_play_pause();
+    Iqt_main_window::slot_play_pause();
 }
 
 void

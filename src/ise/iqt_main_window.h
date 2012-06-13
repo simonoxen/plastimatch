@@ -41,6 +41,8 @@ public:
     QTimer *m_qtimer;
     bool playing;
 
+    QString filename;
+
 public slots:
     void slot_load (void);
     void slot_save (void);
