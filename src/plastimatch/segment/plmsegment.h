@@ -13,6 +13,7 @@
 #include "mabs.h"
 #include "mabs_parms.h"
 #include "mabs_subject.h"
+#include "mabs_vote.h"
 #endif /* #ifndef _plmsegment_h_ */
 
 

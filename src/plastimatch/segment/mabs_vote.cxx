@@ -33,6 +33,7 @@ Mabs_vote::vote (
 const Mabs_parms& parms
 )
 {
+  printf ("Entering VOTE.\n");
   const   unsigned int wt_scale = 1000000000;
   Mabs_subject* sub = parms.sman->current ();
   // this->output_fn = parms.labeling_output_fn;
@@ -43,21 +44,23 @@ const Mabs_parms& parms
   ReaderType::Pointer inputReader = ReaderType::New();
   ReaderType::Pointer trainingReader = ReaderType::New();
   ReaderType::Pointer distmapReader = ReaderType::New();
-  
+
+  /* make image/structure series */
   std::vector< std::string > trainImageSeries;
   std::vector< std::string > distanceMapSeries;
-  /* make image/structure series */
-  unsigned int numberTraining = 0;
+  printf ("Looping through subjects.\n");
   while (sub) {
-    fprintf (stderr, "-- subject\n");
-    fprintf (stderr, "   -- img: %s [%p]\n", sub->img_fn, sub->img);
-    fprintf (stderr, "   -- ss : %s [%p]\n", sub->ss_fn, sub->ss);
+    printf ("-- subject\n");
+    printf ("   -- img: %s [%p]\n", sub->img_fn, sub->img);
+    printf ("   -- ss : %s [%p]\n", sub->ss_fn, sub->ss);
     trainImageSeries.push_back(sub->img_fn);
     distanceMapSeries.push_back(sub->ss_fn);
     
     sub = parms.sman->next ();
-    numberTraining ++;
   }
+
+  unsigned int numberTraining = trainImageSeries.size();
+  printf ("Training subjects: %d\n", numberTraining);
   
   /* Load input image we are segmenting */
   inputReader->SetFileName( parms.labeling_input_fn );
@@ -155,18 +158,24 @@ const Mabs_parms& parms
     
     // Loading warped training image
     std::string train_file_name = trainImageSeries[i];
+    std::cout << "file name: " << train_file_name << std::endl;
     trainingReader->SetFileName( train_file_name );
     try
     {
       trainingReader->Update();
+      std::cout << "updated" << std::endl;
     }
     catch( itk::ExceptionObject& err )
     {
-      std::cout << "Could not read the training image: " << trainImageSeries[i] << std::endl;
+      std::cout << "EXCEPTION" << std::endl;
+      std::cout << "Could not read the training image: " << train_file_name << std::endl;
       continue;
     }
+    printf ("trying to get output\n");
     trainingImage = trainingReader->GetOutput();
+    printf ("got output\n");
     trainingImage->DisconnectPipeline();
+    printf ("loaded training image\n");
     
     // Loading distance map of warped training label map
     distmapReader->SetFileName( distanceMapSeries[i] );
@@ -181,6 +190,8 @@ const Mabs_parms& parms
     }
     distmapImage = distmapReader->GetOutput();
     distmapImage->DisconnectPipeline();
+
+    printf ("loaded distance map");
     
     // Computing image likelihood (and write it in warped training image)
     int cnt = 0;

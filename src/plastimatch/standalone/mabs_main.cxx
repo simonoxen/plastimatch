@@ -15,7 +15,7 @@ int
 main (int argc, char* argv[])
 {
     Mabs_parms parms;
-
+    
     if (!parms.parse_args (argc, argv)) {
         exit (0);
     }
@@ -26,6 +26,11 @@ main (int argc, char* argv[])
         parms.print ();
     }
 
+    // printf ("Running MABS vote...\n");
+    // Mabs_vote vote;
+    // vote.vote (parms);
+    // printf ("Ran MABS vote.\n");
+    
     printf ("Running MABS...\n");
     Mabs mabs;
     mabs.run (parms);
