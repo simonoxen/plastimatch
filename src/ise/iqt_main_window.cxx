@@ -78,7 +78,7 @@ Iqt_main_window::~Iqt_main_window ()
     QSettings settings;
     settings.sync ();
 
-    delete m_qtimer;
+    //delete m_qtimer;
 }
 
 void
@@ -89,7 +89,7 @@ Iqt_main_window::slot_load ()
     }
     playing = false;
     filename = QFileDialog::getOpenFileName(this,
-    	tr("Open File"), QDir::currentPath(), tr("Image Files (*.png *.jpg *.bmp)"));
+    	tr("Open File"), QDir::homePath(), tr("Image Files (*.png *.jpg *.bmp)"));
     //Iqt_video_widget::load();
 
     if (filename.isNull()) {

@@ -19,14 +19,16 @@ private:
 	QPixmap pmap;
 	QGraphicsPixmapItem* pmi;
 	QTime *time;
+	QTimer *ping_check;
 
 public slots:
 	void load(const QString& filename);
+	void flick(const QString& filename);
 	//void addTime()
 
 public:
     Iqt_video_widget (QWidget *parent = 0);
-    int i;
+    int j;
     ~Iqt_video_widget ();
 
 protected:
