@@ -10,7 +10,7 @@ endif ()
 set (LIBF2C_LIBRARY_SRC
   abort_.c    d_int.c	inquire.c	r_atn2.c  sig_die.c
   d_lg10.c	ftell_.c    i_sign.c	r_cnjg.c  signal_.c
-  backspac.c  d_log.c	getarg_.c   lbitbits.c	r_cos.c   signbit.c
+  backspac.c  d_log.c	            lbitbits.c	r_cos.c   signbit.c
   c_abs.c     d_mod.c	getenv_.c   lbitshft.c	r_cosh.c  s_paus.c
   cabs.c      d_nint.c	h_abs.c     l_ge.c	rdfmt.c   s_rnge.c
   c_cos.c     dolio.c	h_dim.c     l_gt.c	r_dim.c   s_stop.c
@@ -18,7 +18,7 @@ set (LIBF2C_LIBRARY_SRC
   c_exp.c     d_sign.c	h_indx.c    l_lt.c	r_exp.c   system_.c
   c_log.c     d_sin.c	h_len.c     lread.c	r_imag.c  typesize.c
   close.c     d_sinh.c	hl_ge.c     lwrite.c	r_int.c   uio.c
-  c_sin.c     d_sqrt.c	hl_gt.c     main.c	r_lg10.c  uninit.c
+  c_sin.c     d_sqrt.c	hl_gt.c                 r_lg10.c  uninit.c
   c_sqrt.c    d_tan.c	hl_le.c     open.c	r_log.c   util.c
   ctype.c     d_tanh.c	hl_lt.c     pow_ci.c	r_mod.c   wref.c
   d_abs.c     dtime_.c	h_mod.c     pow_dd.c	r_nint.c  wrtfmt.c
@@ -26,7 +26,7 @@ set (LIBF2C_LIBRARY_SRC
   d_asin.c    ef1asc_.c	h_sign.c    pow_hh.c	r_sign.c  wsle.c
   d_atan.c    ef1cmc_.c	i77vers.c   pow_ii.c	r_sin.c   wsne.c
   d_atn2.c    endfile.c	i_abs.c     r_sinh.c  xwsne.c
-  d_cnjg.c    erf_.c	iargc_.c    pow_ri.c	rsli.c	  z_abs.c
+  d_cnjg.c    erf_.c	            pow_ri.c	rsli.c	  z_abs.c
   d_cos.c     erfc_.c	i_dim.c     pow_zi.c	rsne.c	  z_cos.c
   d_cosh.c    err.c	i_dnnt.c    pow_zz.c	r_sqrt.c  z_div.c
   d_dim.c     etime_.c	i_indx.c    r_tan.c   z_exp.c
@@ -38,6 +38,9 @@ set (LIBF2C_LIBRARY_SRC
   )
 set (LIBF2C_LIBRARY_SRC_UNUSED
   ftell64_.c
+  getarg_.c
+  iargc_.c
+  main.c
   pow_qq.c
   qbitbits.c
   qbitshft.c
