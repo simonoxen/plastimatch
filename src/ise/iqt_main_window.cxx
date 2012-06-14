@@ -13,7 +13,7 @@
 //#include <vtkRenderWindow.h>
 //#include <vtkSphereSource.h>
 //#include "vtkSmartPointer.h"
-
+#include "iqt_synth_settings.h"
 #include "iqt_application.h"
 #include "iqt_main_window.h"
 
@@ -85,7 +85,7 @@ void
 Iqt_main_window::slot_load ()
 {
     if (playing) {
-        Iqt_main_window::slot_play_pause();
+        this->slot_play_pause();
     }
     playing = false;
     filename = QFileDialog::getOpenFileName(this,
@@ -101,7 +101,7 @@ Iqt_main_window::slot_load ()
 
     widget->load(filename);
     //label->setText(QString("Filename: %1").arg(filename));
-    Iqt_main_window::slot_play_pause();
+    this->slot_play_pause();
 }
 
 void
@@ -154,11 +154,8 @@ Iqt_main_window::slot_stop ()
 void
 Iqt_main_window::slot_synth ()
 {
-#if defined (commentout)
-    QMessageBox::information (0, QString ("Info"), 
-	QString ("slot_synth() was called"));
-#endif
-    ise_app->set_synthetic_source ();
+    Iqt_synth_settings iqt_synth_settings;
+    iqt_synth_settings.show();
 }
 
 void

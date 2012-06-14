@@ -105,6 +105,7 @@ set (ISE_QT_SRC
   iqt_application.cxx
   iqt_main.cxx
   iqt_main_window.cxx 
+  iqt_synth_settings.cxx
   iqt_video_widget.cxx 
   synthetic_source.cxx 
   synthetic_source_thread.cxx
@@ -114,10 +115,12 @@ if (BUILD_ISE_QT)
     iqt_application.h
     iqt_main_window.h 
     iqt_video_widget.h
+    iqt_synth_settings.h
     synthetic_source_thread.h
     )
   qt4_wrap_ui (ISE_QT_SRC 
     iqt_main_window.ui
+    iqt_synth_settings.ui
     )
 endif ()
 
