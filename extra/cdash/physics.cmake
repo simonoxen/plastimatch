@@ -1,4 +1,4 @@
-SET (CTEST_SOURCE_DIRECTORY "$ENV{HOME}/work/plastimatch")
+SET (CTEST_SOURCE_DIRECTORY "$ENV{HOME}/build/physics_1/plastimatch")
 SET (CTEST_BINARY_DIRECTORY "$ENV{HOME}/build/nightly/plastimatch")
 SET (CTEST_CMAKE_COMMAND "/usr/local/bin/cmake")
 SET (CTEST_COMMAND "/usr/local/bin/ctest -D Nightly")
