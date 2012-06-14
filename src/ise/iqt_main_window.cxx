@@ -113,7 +113,7 @@ Iqt_main_window::slot_save ()
 
 void
 Iqt_main_window::slot_play_pause ()
-{
+{   
     if (playing) {
 	playing = false;
         play_pause_button->setText ("|>");
@@ -123,6 +123,7 @@ Iqt_main_window::slot_play_pause ()
         play_pause_button->setText ("||");
         action_Play->setText ("&Pause");
     }
+    widget->play(playing);
 }
 
 void
@@ -149,13 +150,14 @@ Iqt_main_window::slot_stop ()
     } else {
 		QMessageBox::information (0, QString ("Info"), QString ("This video has already been stopped."));
 	}
+	widget->stop();
 }
 
 void
 Iqt_main_window::slot_synth ()
 {
     Iqt_synth_settings iqt_synth_settings;
-    iqt_synth_settings.show();
+    iqt_synth_settings.exec();
 }
 
 void

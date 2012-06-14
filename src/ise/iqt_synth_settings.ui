@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>351</width>
-    <height>311</height>
+    <height>299</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -302,6 +302,9 @@
           <property name="standardButtons">
            <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
           </property>
+          <property name="centerButtons">
+           <bool>false</bool>
+          </property>
          </widget>
         </item>
         <item>
@@ -325,5 +328,42 @@
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>iqtSynthSettings</receiver>
+   <slot>slot_proceed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>175</x>
+     <y>278</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>175</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>iqtSynthSettings</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>175</x>
+     <y>266</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>175</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>slot_proceed()</slot>
+  <slot>slot_cancel()</slot>
+ </slots>
 </ui>

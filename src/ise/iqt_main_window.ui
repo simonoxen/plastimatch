@@ -74,6 +74,13 @@
          </widget>
         </item>
         <item>
+         <widget class="QPushButton" name="synth_button">
+          <property name="text">
+           <string>Synth</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <spacer name="verticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
@@ -169,7 +176,7 @@
      <x>0</x>
      <y>0</y>
      <width>756</width>
-     <height>24</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -507,6 +514,22 @@
     <hint type="sourcelabel">
      <x>-1</x>
      <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>377</x>
+     <y>321</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>synth_button</sender>
+   <signal>clicked()</signal>
+   <receiver>iqtMainWindow</receiver>
+   <slot>slot_synth()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>53</x>
+     <y>143</y>
     </hint>
     <hint type="destinationlabel">
      <x>377</x>

@@ -40,7 +40,7 @@ public:
 
     QTimer *m_qtimer;
     bool playing;
-
+    bool accepted;
     QString filename;
 
 public slots:

@@ -20,7 +20,8 @@
 
 Iqt_synth_settings::Iqt_synth_settings ()
 {
-
+    /* Set up GUI */
+    setupUi (this);
 }
 
 #if defined (commentout)
@@ -58,17 +59,18 @@ Iqt_synth_settings::~Iqt_synth_settings ()
 void
 Iqt_synth_settings::slot_cancel ()
 {
-    return;
+    this->close();
 }
 
 void
 Iqt_synth_settings::slot_proceed ()
 {
-#if defined (commentout)
+/*#if defined (commentout)
     QMessageBox::information (0, QString ("Info"), 
 	QString ("slot_synth() was called"));
 #endif
-    ise_app->set_synthetic_source ();
+    ise_app->set_synthetic_source ();*/
+    this->close();
 }
 
 

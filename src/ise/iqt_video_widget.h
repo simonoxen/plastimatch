@@ -21,6 +21,7 @@ private:
     QTime *time;
     QTimer *ping_check;
     QString filename;
+    QString empty;
     QPixmap *qp1;
     QPixmap *qp2;
     int ping_pong;
@@ -28,6 +29,8 @@ private:
 public slots:
     void load(const QString& filename);
     void flick (void);
+    void stop (void);
+    void play (bool playing);
 	//void addTime()
 
 public:

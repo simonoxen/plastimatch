@@ -28,7 +28,7 @@ Iqt_video_widget::Iqt_video_widget (QWidget *parent)
     
     ping_check = new QTimer (this);
     connect (ping_check, SIGNAL(timeout()), this, SLOT(flick()));
-    ping_check->start(1000);
+    ping_check->start(500);
     
     //QGraphicsRectItem *rect_item 
       //  = scene->addRect (QRectF (20, 20, 10, 10));
@@ -73,6 +73,20 @@ void Iqt_video_widget::flick(void)
     }
 }
 
+void Iqt_video_widget::stop ()
+{
+    ping_check->stop();
+}
+
+void Iqt_video_widget::play (bool playing)
+{   
+    if (playing) {
+        ping_check->start(500);
+    } else {
+        ping_check->stop();
+    }
+}
+    
 Iqt_video_widget::~Iqt_video_widget ()
 {
     delete qp1;
