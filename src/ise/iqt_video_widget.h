@@ -15,15 +15,19 @@ class Iqt_video_widget : public QGraphicsView {
 
 private:
 
-	QGraphicsScene* scene;
-	QPixmap pmap;
-	QGraphicsPixmapItem* pmi;
-	QTime *time;
-	QTimer *ping_check;
+    QGraphicsScene* scene;
+    QPixmap pmap;
+    QGraphicsPixmapItem* pmi;
+    QTime *time;
+    QTimer *ping_check;
+    QString filename;
+    QPixmap *qp1;
+    QPixmap *qp2;
+    int ping_pong;
 
 public slots:
-	void load(const QString& filename);
-	void flick(const QString& filename);
+    void load(const QString& filename);
+    void flick (void);
 	//void addTime()
 
 public:
