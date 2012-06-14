@@ -446,6 +446,7 @@ link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/lua-5.1.4)
 
 # for history, etc in plastimatch tty mode
 find_package (Readline)
+find_library (TERMCAP_LIBRARY termcap)
 
 ##-----------------------------------------------------------------------------
 ##  Only use local specfun
