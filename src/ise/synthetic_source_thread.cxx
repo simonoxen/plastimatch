@@ -14,8 +14,6 @@
 #include "synthetic_source.h"
 #include "synthetic_source_thread.h"
 
-#define M_PI 3.14159265358979323846
-
 Synthetic_source_thread::Synthetic_source_thread () {
 }
 
@@ -37,6 +35,7 @@ Synthetic_source_thread::run () {
         Sleeper::msleep (500);
         qDebug() << "Grabbing synth image.";
         this->ss->grab_image (f);
+        this->ss->cbuf->add_waiting_frame (f);
         qDebug() << "Done.";
     }
 }

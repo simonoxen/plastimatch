@@ -125,14 +125,32 @@ Cbuf::get_frame ()
     }
 
     /* No frame in empty list, so grab oldest from waiting queue */
-
-    /* Do something here */
-
+    Frame *f = this->waiting.front();
+    this->waiting.pop_front();
+    frame_clear (f);
     this->mutex->unlock ();
 
     return 0;
 }
 
+void
+Cbuf::add_waiting_frame (Frame* new_frame)
+{
+    if (!new_frame) return;
+
+    this->mutex->lock ();
+    this->waiting.push_back (new_frame);
+    this->mutex->unlock ();
+}
+
+Frame*
+Cbuf::display_lock_newest_frame ()
+{
+    this->mutex->lock ();
+    this->display_ptr = this->waiting.back();
+    this->mutex->unlock();
+    return this->display_ptr;
+}
 
 #if defined (commentout)
 /* Return 1 if the frame is the tail frame */
