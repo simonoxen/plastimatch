@@ -70,6 +70,9 @@
             <property name="enabled">
              <bool>true</bool>
             </property>
+            <property name="maximum">
+             <number>10</number>
+            </property>
            </widget>
           </item>
           <item>
@@ -110,7 +113,11 @@
            </spacer>
           </item>
           <item>
-           <widget class="QSpinBox" name="spinBox_2"/>
+           <widget class="QSpinBox" name="spinBox_2">
+            <property name="maximum">
+             <number>10</number>
+            </property>
+           </widget>
           </item>
           <item>
            <widget class="QLabel" name="label_2">
@@ -150,7 +157,11 @@
            </spacer>
           </item>
           <item>
-           <widget class="QSpinBox" name="spinBox_3"/>
+           <widget class="QSpinBox" name="spinBox_3">
+            <property name="maximum">
+             <number>10</number>
+            </property>
+           </widget>
           </item>
           <item>
            <widget class="QLabel" name="label_3">
@@ -190,7 +201,11 @@
            </spacer>
           </item>
           <item>
-           <widget class="QSpinBox" name="spinBox_5"/>
+           <widget class="QSpinBox" name="spinBox_5">
+            <property name="maximum">
+             <number>10</number>
+            </property>
+           </widget>
           </item>
           <item>
            <widget class="QLabel" name="label_5">
@@ -230,7 +245,11 @@
            </spacer>
           </item>
           <item>
-           <widget class="QSpinBox" name="spinBox_6"/>
+           <widget class="QSpinBox" name="spinBox_6">
+            <property name="maximum">
+             <number>10</number>
+            </property>
+           </widget>
           </item>
           <item>
            <widget class="QLabel" name="label_6">

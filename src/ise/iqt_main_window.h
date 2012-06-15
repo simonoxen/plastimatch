@@ -40,10 +40,18 @@ public:
 
     QTimer *m_qtimer;
     bool playing;
-    bool accepted;
+    //bool accepted;
+    
+    int *set1;
+    int *set2;
+    int *set3;
+    int *set4;
+    int *set5;
+    
     QString filename;
 
 public slots:
+    void slot_synth_set (int a/*, int b, int c, int d, int e*/);
     void slot_load (void);
     void slot_save (void);
     void slot_synth (void);

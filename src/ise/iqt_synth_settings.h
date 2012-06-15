@@ -37,10 +37,15 @@ public:
     //Iqt_patient_list_model *m_patient_list_model;
 
     //Iqt_findscu m_findscu;
-
+    int set1;
+    int set2;
+    int set3;
+    int set4;
+    int set5;
 
 public slots:
     void slot_proceed (void);
     void slot_cancel (void);
+    //void slot_settings (void);
 };
 #endif

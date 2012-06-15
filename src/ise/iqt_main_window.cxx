@@ -161,6 +161,17 @@ Iqt_main_window::slot_synth ()
 }
 
 void
+Iqt_main_window::slot_synth_set (int a/*, int b, int c, int d, int e*/)
+{
+    qDebug("Setting 1: %d",a);
+    /*qDebug("Setting 2: %d",b);
+    qDebug("Setting 3: %d",c);
+    qDebug("Setting 4: %d",d);
+    qDebug("Setting 5: %d",e);
+    */
+}
+
+void
 Iqt_main_window::slot_timer ()
 {
 #if defined (commentout)

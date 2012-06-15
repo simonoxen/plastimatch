@@ -52,8 +52,7 @@ Iqt_synth_settings::render_sphere ()
 Iqt_synth_settings::~Iqt_synth_settings ()
 {
     QSettings settings;
-    settings.sync ();
-    
+    settings.sync ();    
 }
 
 void
@@ -70,20 +69,17 @@ Iqt_synth_settings::slot_proceed ()
 	QString ("slot_synth() was called"));
 #endif
     ise_app->set_synthetic_source ();*/
+    set1 = spinBox->value();
+    qDebug("Setting 1: %d", set1);
+    //Iqt_main_window::slot_synth_set (set1/*, set2, set3, set4, set5*/);
     this->close();
+    
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/*
+void
+Iqt_synth_settings::slot_settings ();
+{
+    set1 = spinBox.value()
+}
+*/
 
