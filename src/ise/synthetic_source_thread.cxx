@@ -40,7 +40,8 @@ Synthetic_source_thread::run () {
         /* Send signal to main window (or widget) that frame is ready 
            The main window can call cbuf->display_lock_newest_frame ()
            to get the frame */
-
+        
+                
         qDebug() << "Done.";
     }
 }

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>351</width>
-    <height>299</height>
+    <height>345</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -53,32 +53,25 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <spacer name="horizontalSpacer_9">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QSpinBox" name="spinBox">
+           <widget class="QSpinBox" name="rowBox">
             <property name="enabled">
              <bool>true</bool>
             </property>
+            <property name="minimum">
+             <number>600</number>
+            </property>
             <property name="maximum">
-             <number>10</number>
+             <number>1536</number>
+            </property>
+            <property name="singleStep">
+             <number>128</number>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QLabel" name="label">
             <property name="text">
-             <string>Setting 1</string>
+             <string>Number of Rows</string>
             </property>
            </widget>
           </item>
@@ -100,29 +93,22 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <item>
-           <spacer name="horizontalSpacer_10">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+           <widget class="QSpinBox" name="colBox">
+            <property name="minimum">
+             <number>800</number>
             </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QSpinBox" name="spinBox_2">
             <property name="maximum">
-             <number>10</number>
+             <number>2048</number>
+            </property>
+            <property name="singleStep">
+             <number>128</number>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QLabel" name="label_2">
             <property name="text">
-             <string>Setting 2</string>
+             <string>Number of Columns</string>
             </property>
            </widget>
           </item>
@@ -144,20 +130,10 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>
-           <spacer name="horizontalSpacer_11">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+           <widget class="QSpinBox" name="ampBox">
+            <property name="minimum">
+             <number>1</number>
             </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QSpinBox" name="spinBox_3">
             <property name="maximum">
              <number>10</number>
             </property>
@@ -166,7 +142,7 @@
           <item>
            <widget class="QLabel" name="label_3">
             <property name="text">
-             <string>Setting 3</string>
+             <string>Amplitude of Motion</string>
             </property>
            </widget>
           </item>
@@ -188,29 +164,16 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_6">
           <item>
-           <spacer name="horizontalSpacer_12">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QSpinBox" name="spinBox_5">
+           <widget class="QSpinBox" name="markBox">
             <property name="maximum">
-             <number>10</number>
+             <number>5</number>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="label_5">
+           <widget class="QLabel" name="label_4">
             <property name="text">
-             <string>Setting 4</string>
+             <string>Number of Markers</string>
             </property>
            </widget>
           </item>
@@ -232,20 +195,7 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_7">
           <item>
-           <spacer name="horizontalSpacer_13">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QSpinBox" name="spinBox_6">
+           <widget class="QSpinBox" name="noiseBox">
             <property name="maximum">
              <number>10</number>
             </property>
@@ -254,7 +204,7 @@
           <item>
            <widget class="QLabel" name="label_6">
             <property name="text">
-             <string>Setting 5</string>
+             <string>Amount of Noise</string>
             </property>
            </widget>
           </item>
@@ -285,6 +235,37 @@
            </size>
           </property>
          </spacer>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <item>
+           <widget class="QToolButton" name="default_2">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Restore to Default Settings</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_5">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
         </item>
        </layout>
       </item>
@@ -380,9 +361,26 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>default_2</sender>
+   <signal>clicked()</signal>
+   <receiver>iqtSynthSettings</receiver>
+   <slot>slot_default()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>30</x>
+     <y>268</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>175</x>
+     <y>172</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>slot_proceed()</slot>
   <slot>slot_cancel()</slot>
+  <slot>slot_default()</slot>
  </slots>
 </ui>

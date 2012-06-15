@@ -28,13 +28,15 @@ Synthetic_source::start ()
 }
 
 unsigned long
-Synthetic_source::get_size_x () {
-    return 2048;
+Synthetic_source::get_size_x (int x) {
+    return x;
+    //return 2048;
 }
 
 unsigned long
-Synthetic_source::get_size_y () {
-    return 1536;
+Synthetic_source::get_size_y (int y) {
+    return y;
+    //return 1536;
 }
 
 const std::string 

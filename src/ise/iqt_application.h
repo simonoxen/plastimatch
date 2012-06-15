@@ -19,7 +19,7 @@ public:
     ~Iqt_application ();
 
 public:
-    void set_synthetic_source ();
+    void set_synthetic_source (int rowset, int colset, int ampset, int markset, int noiset);
 
 public:
     int num_panels;

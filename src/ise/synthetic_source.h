@@ -13,8 +13,8 @@ public:
     Synthetic_source ();
 
 public:
-    virtual unsigned long get_size_x ();
-    virtual unsigned long get_size_y ();
+    virtual unsigned long get_size_x (int x);
+    virtual unsigned long get_size_y (int y);
     virtual const std::string get_type ();
     virtual void start ();
     virtual void grab_image (Frame* f);

@@ -69,19 +69,27 @@ Iqt_synth_settings::slot_proceed ()
 	QString ("slot_synth() was called"));
 #endif
     ise_app->set_synthetic_source ();*/
-    set1 = spinBox->value();
-    qDebug("Setting 1: %d", set1);
+    rows = rowBox->value();
+    cols = colBox->value();
+    ampl = ampBox->value();
+    mark = markBox->value();
+    noise = noiseBox->value();
+    //qDebug("Setting 1: %d", rows);
     //Iqt_main_window::slot_synth_set (set1/*, set2, set3, set4, set5*/);
 
-    /* ise_app->set_synthetic_source (set1, set2, ...); */
+    //ise_app->set_synthetic_source (rows, cols, ampl, mark, noise);
     this->close();
     
 }
-/*
+
 void
-Iqt_synth_settings::slot_settings ();
+Iqt_synth_settings::slot_default ()
 {
-    set1 = spinBox.value()
+    rowBox->setValue(600);
+    colBox->setValue(800);
+    ampBox->setValue(1);
+    markBox->setValue(0);
+    noiseBox->setValue(0);
 }
-*/
+
 

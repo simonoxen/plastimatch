@@ -60,5 +60,6 @@ public slots:
     void slot_go_back(void);
     void slot_go_forward(void);
     void slot_timer (void);
+    //void slot_got_frame (void);
 };
 #endif

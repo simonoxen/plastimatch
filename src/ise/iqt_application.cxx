@@ -36,7 +36,7 @@ Iqt_application::~Iqt_application ()
 }
 
 void
-Iqt_application::set_synthetic_source ()
+Iqt_application::set_synthetic_source (int rowset, int colset, int ampset, int markset, int noiset)
 {
     if (this->fluoro_source) {
         if (this->fluoro_source->get_type() == "Synthetic") {
@@ -51,8 +51,9 @@ Iqt_application::set_synthetic_source ()
 
     /* GCS FIX: For now, just a single cbuf */
     this->cbuf[0]->clear ();
-    this->cbuf[0]->init (0, 10, this->fluoro_source->get_size_x(), 
-        this->fluoro_source->get_size_y());
+    this->cbuf[0]->init (0, 10, colset, rowset);
+   // this->cbuf[0]->init (0, 10, this->fluoro_source->get_size_x(cols), 
+     //   this->fluoro_source->get_size_y(rows));
     this->fluoro_source->set_cbuf (this->cbuf[0]);
 
     this->fluoro_source->start ();
