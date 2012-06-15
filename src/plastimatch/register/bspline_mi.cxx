@@ -1610,15 +1610,15 @@ bspline_score_h_mi (
     float* dbg_img = (float*) dbg_vol->img;
 #endif
 
-#if 0
     FILE* fp = 0;
-    char debug_fn[1024];
     static int it = 0;
     if (parms->debug) {
-        sprintf (debug_fn, "dump_mi_%02d.txt", it++);
-        fp = fopen (debug_fn, "w");
+        char buf[1024];
+        sprintf (buf, "dump_mi_%02d.txt", it);
+        std::string fn = parms->debug_dir + "/" + buf;
+        fp = plm_fopen (fn.c_str(), "wb");
+        it ++;
     }
-#endif
 
     Plm_timer* timer = new Plm_timer;
     timer->start ();
@@ -1647,7 +1647,6 @@ bspline_score_h_mi (
                 /* JAS 2012.03.26: Tends to break the optimizer (PGTOL)   */
                 /* Check to make sure the indices are valid (inside mask) */
                 if (fixed_mask) {
-//                    printf ("[%i %i %i]\t->\t", fijk[0], fijk[1], fijk[2]);
                     if (!inside_mask (fxyz, fixed_mask)) continue;
                 }
 
@@ -1655,10 +1654,16 @@ bspline_score_h_mi (
                 pidx = volume_index (bxf->rdims, p);
                 bspline_interp_pix_c (dxyz, bxf, pidx, q);
 
-                rc = bspline_find_correspondence_dcos_mask (mxyz, mijk, fxyz, dxyz, moving, moving_mask);
+                rc = bspline_find_correspondence_dcos_mask (
+                    mxyz, mijk, fxyz, dxyz, moving, moving_mask);
 
                 /* If voxel is not inside moving image */
                 if (!rc) continue;
+
+                if (parms->debug) {
+                    fprintf (fp, "[%i %i %i]\t->[%f %%f %f]\n",
+                        mijk[0], mijk[1], mijk[2]);
+                }
 
                 li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
 
@@ -1759,7 +1764,8 @@ bspline_score_h_mi (
                     bspline_interp_pix_c (dxyz, bxf, pidx, q);
 
                     /* Find correspondence in moving image */
-                    rc = bspline_find_correspondence_dcos_mask (mxyz, mijk, fxyz, dxyz, moving, moving_mask);
+                    rc = bspline_find_correspondence_dcos_mask (
+                        mxyz, mijk, fxyz, dxyz, moving, moving_mask);
 
                     /* If voxel is not inside moving image */
                     if (!rc) continue;
@@ -1767,7 +1773,8 @@ bspline_score_h_mi (
                     /* Get tri-linear interpolation fractions */
                     li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
                     
-                    /* Constrcut the fixed image linear index within volume space */
+                    /* Construct the fixed image linear index within 
+                       volume space */
                     fv = volume_index (fixed->dim, fijk);
 
                     /* Find linear index the corner voxel used to identifiy the
@@ -1812,11 +1819,9 @@ bspline_score_h_mi (
     free (cond_y);
     free (cond_z);
 
-#if 0
     if (parms->debug) {
         fclose (fp);
     }
-#endif
 
     mse_score = mse_score / ssd->num_vox;
     if (parms->debug) {
