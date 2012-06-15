@@ -72,6 +72,8 @@ Iqt_synth_settings::slot_proceed ()
     set1 = spinBox->value();
     qDebug("Setting 1: %d", set1);
     //Iqt_main_window::slot_synth_set (set1/*, set2, set3, set4, set5*/);
+
+    /* ise_app->set_synthetic_source (set1, set2, ...); */
     this->close();
     
 }

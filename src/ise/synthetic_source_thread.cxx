@@ -36,6 +36,11 @@ Synthetic_source_thread::run () {
         qDebug() << "Grabbing synth image.";
         this->ss->grab_image (f);
         this->ss->cbuf->add_waiting_frame (f);
+
+        /* Send signal to main window (or widget) that frame is ready 
+           The main window can call cbuf->display_lock_newest_frame ()
+           to get the frame */
+
         qDebug() << "Done.";
     }
 }
