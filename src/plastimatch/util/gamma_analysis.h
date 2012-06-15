@@ -33,12 +33,12 @@ class Gamma_parms {
 public:
     
     float r_tol, /*!< distance-to-agreement (DTA) criterion, input parameter */ 
-		  d_tol, /*!< dose-difference criterion, input for do_gamma_analysis, in Gy 
-				 Set from 3D Slicer plugin either directly or as percentrage of
-				 dose_max, as found by find_dose_threshold().
-				 */
-		  dose_max, /*!< maximum dose (max voxel value) in the img_in1, set by find_dose_threshold() */
-		  gamma_max; /*!< maximum gamma to calculate */
+        d_tol, /*!< dose-difference criterion, input for do_gamma_analysis, in Gy 
+                 Set from 3D Slicer plugin either directly or as percentrage of
+                 dose_max, as found by find_dose_threshold().
+               */
+        dose_max, /*!< maximum dose (max voxel value) in the img_in1, set by find_dose_threshold() */
+        gamma_max; /*!< maximum gamma to calculate */
 
     Direction_cosines dc; /*!< orientation of the output image (currently unused, set to identity?) */
 
@@ -51,7 +51,7 @@ public:
 
 public:
     Gamma_parms () { /*!< Constructor for Gamma_parms, sets default values (mode GAMMA) 
-					 for the 3D Slicer plugin */
+                       for the 3D Slicer plugin */
         r_tol = d_tol = gamma_max = 3; 
         mode = NONE;
     }
