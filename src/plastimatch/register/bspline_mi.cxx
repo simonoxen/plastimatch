@@ -1661,7 +1661,8 @@ bspline_score_h_mi (
                 if (!rc) continue;
 
                 if (parms->debug) {
-                    fprintf (fp, "[%i %i %i]\t->[%f %%f %f]\n",
+                    fprintf (fp, "[%i %i %i]\t->[%f %f %f]\n",
+                        (int) fijk[0], (int) fijk[1], (int) fijk[2],
                         mijk[0], mijk[1], mijk[2]);
                 }
 
