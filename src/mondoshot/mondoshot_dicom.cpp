@@ -57,7 +57,7 @@ mondoshot_dicom_create_file (
     } else {
 	dataset->putAndInsertString (DCM_SOPClassUID, UID_SecondaryCaptureImageStorage);
     }
-    dataset->putAndInsertString (DCM_SOPInstanceUID, plm_generate_dicom_uid (uid, uid_root));
+    dataset->putAndInsertString (DCM_SOPInstanceUID, dcmtk_uid (uid, uid_root));
 
     if (use_rtimage) {
 	dataset->putAndInsertString (DCM_Modality, "RTIMAGE");
@@ -76,8 +76,8 @@ mondoshot_dicom_create_file (
     dataset->putAndInsertString (DCM_PatientSex, "");
 
     /* These should be global for a session?? */
-    dataset->putAndInsertString (DCM_StudyInstanceUID, plm_generate_dicom_uid (uid, uid_root));
-    dataset->putAndInsertString (DCM_SeriesInstanceUID, plm_generate_dicom_uid (uid, uid_root));
+    dataset->putAndInsertString (DCM_StudyInstanceUID, dcmtk_uid (uid, uid_root));
+    dataset->putAndInsertString (DCM_SeriesInstanceUID, dcmtk_uid (uid, uid_root));
 
     dataset->putAndInsertString (DCM_StudyID, "");
     dataset->putAndInsertString (DCM_SeriesNumber, "");
