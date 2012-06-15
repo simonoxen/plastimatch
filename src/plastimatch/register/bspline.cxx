@@ -755,7 +755,7 @@ bspline_score (Bspline_optimize_data *bod)
 #endif
             default:
 #if (OPENMP_FOUND)
-                bspline_score_d_mi (bod);
+                bspline_score_g_mi (bod);
 #else
                 bspline_score_c_mi (bod);
 #endif
@@ -811,8 +811,6 @@ bspline_score (Bspline_optimize_data *bod)
 
     } /* CUDA Implementations */
 #endif
-
-
 
     /* Regularize */
     if (reg_parms->lambda > 0.0f) {
