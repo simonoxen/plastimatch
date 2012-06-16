@@ -52,6 +52,10 @@ public:
 public:
     Gamma_parms () { /*!< Constructor for Gamma_parms, sets default values (mode GAMMA) 
                        for the 3D Slicer plugin */
+        img_in1 = 0;
+        img_in2 = 0;
+        img_out = 0;
+        labelmap_out = 0;
         r_tol = d_tol = gamma_max = 3; 
         mode = NONE;
     }
@@ -68,5 +72,6 @@ public:
 
 PLMUTIL_C_API void find_dose_threshold (Gamma_parms *parms);
 PLMUTIL_C_API void do_gamma_analysis (Gamma_parms *parms);
+PLMUTIL_C_API void do_gamma_threshold (Gamma_parms *parms);
 
 #endif

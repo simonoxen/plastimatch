@@ -208,3 +208,62 @@ void do_gamma_analysis( Gamma_parms *parms ) {
         parms->labelmap_out->set_itk (gamma_labelmap);
     }
 }
+
+void 
+do_gamma_threshold (Gamma_parms *parms)
+{ 
+    FloatImageType::Pointer ref_img = parms->img_in1->itk_float();
+    FloatImageType::Pointer gamma_img = parms->img_out->itk_float();
+
+    /* Create labelmap image if not already created */
+    if (!parms->labelmap_out) {
+        parms->labelmap_out = new Plm_image;
+        UCharImageType::Pointer gamma_labelmap = UCharImageType::New();
+        itk_image_header_copy (gamma_labelmap, gamma_img);
+        gamma_labelmap->Allocate();
+        parms->labelmap_out = new Plm_image (gamma_labelmap);
+    }
+    UCharImageType::Pointer gamma_labelmap = parms->labelmap_out->itk_uchar();
+
+    typedef itk::ImageRegionIteratorWithIndex< UCharImageType > 
+        UCharIteratorType;
+    typedef itk::ImageRegionIteratorWithIndex< FloatImageType > 
+        FloatIteratorType;
+    typedef itk::ImageRegion<3> FloatRegionType;
+    
+    FloatIteratorType ref_it (gamma_img, 
+        ref_img->GetLargestPossibleRegion());
+    FloatIteratorType gam_it (gamma_img, 
+        gamma_img->GetLargestPossibleRegion());
+    UCharIteratorType lab_it (gamma_labelmap,
+        gamma_labelmap->GetLargestPossibleRegion());
+
+    /* Loop through gamma image, compare against threshold */
+    for (ref_it.GoToBegin(), gam_it.GoToBegin(), lab_it.GoToBegin(); 
+         !ref_it.IsAtEnd(); 
+         ++ref_it, ++gam_it, ++lab_it)
+    {
+        float ref_dose = ref_it.Get();
+        float gamma = gam_it.Get();
+        switch (parms->mode) {
+        case PASS:
+            if ((gamma >=0) && (gamma <= 1) && ref_dose > 0) {
+                lab_it.Set (1);
+            } else {
+                lab_it.Set (0);
+            }
+            break;
+        case FAIL:
+            if (gamma > 1) {
+                lab_it.Set (1);
+            } else {
+                lab_it.Set (0);
+            }
+            break;
+        case NONE:
+        default:
+            lab_it.Set (0);
+            break;
+        }
+    }
+}

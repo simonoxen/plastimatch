@@ -12,43 +12,93 @@
 class Gamma_dose_comparison_private;
 class Plm_image;
 
-/*! \file This is gamma_dose_comparison.h */
-
-/*! \brief This is a sample "Filter PLMUTIL_API" class for Gamma.  
- * How it works is a mystery. */
+/*! \brief 
+ * The Gamma_dose_comparison class executes a comparison between 
+ * two dose distributions based on the "gamma index" defined by 
+ * Dan Low et al. in the following reference:
+ * \n\n
+ *   Low et al, 
+ *   A technique for the quantitative evaluation of dose distributions,
+ *   Med Phys. 1998 May;25(5):656-61.
+ * \n\n
+ * The comparison is based on searching a local neighborhood for the 
+ * most similar dose.  The similarity is computed as the geometric mean 
+ * of the dose difference and spatial distance.  The gamma value at 
+ * a point is then the minumum of this similarity value over the 
+ * the neighborhood.
+ * Generally, the gamma value is normalized based on a spatial tolerance
+ * and a dose difference tolerance such that gamma values of less than 
+ * 1.0 are acceptable, and gamma values greater than 1.0 are unacceptable.
+ */
 class Gamma_dose_comparison {
 public:
-    Gamma_dose_comparison (...);
+    Gamma_dose_comparison ();
     ~Gamma_dose_comparison ();
 public:
     Gamma_dose_comparison_private *d_ptr;
 public:
 
-    /*! \name Parameter setting */
+    /*! \name Inputs */
     ///@{
-    PLM_SET(const char*, reference_image);
-    PLM_SET_CR(Plm_image, reference_image);
-    PLM_SET_CR(FloatImageType, reference_image);
-    PLM_SET(const char*, comparison_image);
-    PLM_SET_CR(Plm_image, comparison_image);
-    PLM_SET_CR(FloatImageType, comparison_image);
+    /*! \brief Set the reference image.  The image will be loaded
+      from the specified filename. */
+    void set_reference_image (const char* image_fn);
+    /*! \brief Set the reference image as a Plm image. */
+    void set_reference_image (Plm_image* image);
+    /*! \brief Set the reference image as an ITK image. */
+    void set_reference_image (const FloatImageType::Pointer image);
+    /*! \brief Set the compare image.  The image will be loaded
+      from the specified filename. */
+    void set_compare_image (const char* image_fn);
+    /*! \brief Set the compare image as a Plm image. */
+    void set_compare_image (Plm_image* image);
+    /*! \brief Set the compare image as an ITK image. */
+    void set_compare_image (const FloatImageType::Pointer image);
+
+    /*! \brief Set the distance to agreement (DTA) tolerance, in mm. */
+    void set_spatial_tolerance (float spatial_tol);
+    /*! \brief Set the dose difference tolerance.  
+      If a reference dose (prescription dose) is specified, 
+      the dose difference tolerance is treated as a 
+      percent of the reference dose.  Otherwise it is treated as a
+      percent of the maximum dose in the reference volume.  
+      To use a 3% dose tolerance, you would set this value to 0.03.  */
+    void set_dose_difference_tolerance (float dose_tol);
+    /*! \brief Set the reference dose (prescription dose).  This 
+      is used in dose comparison. */
+    void set_reference_dose (float dose);
+    /*! \brief Set the dose threshold for gamma analysis.  
+      This is used to ignore voxels which have dose below a certain value.  
+      For example, to consider only voxels which have dose greater 
+      than 10% of the prescription dose, set the analysis threshold to 
+      0.10.  The threshold is applied to the reference image. 
+      <b>Not yet implemented - threshold is hard-coded</b> */
+    void set_analysis_threshold (float percent);
+    /*! \brief Set the maximum gamma computed by the class.  This is 
+      used to speed up computation.  A typical value is 2 or 3.  */
+    void set_gamma_max (float gamma_max);
     ///@}
 
     /*! \name Execution */
     ///@{
+    /*! \brief Compute gamma value at each location in the input image */
     void run ();
     ///@}
 
-    /*! \name Getting outputs */
+    /*! \name Outputs */
     ///@{
+    /*! \brief Return the gamma image as a Plm_image.  */
     Plm_image* get_gamma_img ();
+    /*! \brief Return the gamma image as an ITK image.  */
     FloatImageType::Pointer get_gamma_img_itk ();
+    /*! \brief Return a binary image of passing voxels as a Plm image. */
     Plm_image* get_pass_img ();
+    /*! \brief Return a binary image of passing voxels as an ITK image. */
     UCharImageType::Pointer get_pass_img_itk ();
+    /*! \brief Return a binary image of failing voxels as a Plm image. */
     Plm_image* get_fail_img ();
+    /*! \brief Return a binary image of failing voxels as an ITK image. */
     UCharImageType::Pointer get_fail_img_itk ();
-    Plm_image* get_labelmap_pass_img ();
-    UCharImageType::Pointer get_labelmap_fail_img_itk ();
     ///@}
 };
 

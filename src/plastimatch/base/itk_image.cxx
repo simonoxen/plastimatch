@@ -158,5 +158,6 @@ template PLMBASE_API void itk_image_header_copy (UCharVecImageType::Pointer, UIn
 template PLMBASE_API void itk_image_header_copy (UCharVecImageType::Pointer, UCharVecImageType::Pointer);
 template PLMBASE_API void itk_image_header_copy (UCharVecImageType::Pointer, DeformationFieldType::Pointer);
 template PLMBASE_API void itk_image_header_copy (UCharImageType::Pointer, UCharVecImageType::Pointer);
+template PLMBASE_API void itk_image_header_copy (UCharImageType::Pointer, FloatImageType::Pointer);
 template PLMBASE_API void itk_image_header_copy (UCharImage2DType::Pointer, UCharVecImage2DType::Pointer);
 template PLMBASE_API void itk_image_get_volume_header (Volume_header *, DeformationFieldType::Pointer);

@@ -31,6 +31,11 @@ Plm_image::Plm_image (const char* fname, Plm_image_type type)
     this->init ();
     this->load (fname, type);
 }
+Plm_image::Plm_image (UCharImageType::Pointer img)
+{
+    this->init ();
+    this->set_itk (img);
+}
 Plm_image::Plm_image (FloatImageType::Pointer img)
 {
     this->init ();
