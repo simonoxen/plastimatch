@@ -5,7 +5,7 @@
 #define _rasterize_slice_h_
 
 #include "plmutil_config.h"
-#include "sys/plm_int.h"
+#include "plm_int.h"
 
 
 PLMUTIL_C_API void rasterize_slice (

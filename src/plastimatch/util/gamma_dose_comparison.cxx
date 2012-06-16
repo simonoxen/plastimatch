@@ -108,7 +108,7 @@ Gamma_dose_comparison::run ()
 }
 
 Plm_image*
-Gamma_dose_comparison::get_gamma_img ()
+Gamma_dose_comparison::get_gamma_image ()
 {
     if (!d_ptr->have_gamma_image) {
         this->run();
@@ -117,13 +117,13 @@ Gamma_dose_comparison::get_gamma_img ()
 }
 
 FloatImageType::Pointer
-Gamma_dose_comparison::get_gamma_img_itk ()
+Gamma_dose_comparison::get_gamma_image_itk ()
 {
-    return get_gamma_img()->itk_float();
+    return get_gamma_image()->itk_float();
 }
 
 Plm_image*
-Gamma_dose_comparison::get_pass_img ()
+Gamma_dose_comparison::get_pass_image ()
 {
     if (!d_ptr->have_gamma_image) {
         this->run();
@@ -134,13 +134,13 @@ Gamma_dose_comparison::get_pass_img ()
 }
 
 UCharImageType::Pointer
-Gamma_dose_comparison::get_pass_img_itk ()
+Gamma_dose_comparison::get_pass_image_itk ()
 {
-    return get_pass_img()->itk_uchar();
+    return get_pass_image()->itk_uchar();
 }
 
 Plm_image*
-Gamma_dose_comparison::get_fail_img ()
+Gamma_dose_comparison::get_fail_image ()
 {
     if (!d_ptr->have_gamma_image) {
         this->run();
@@ -151,7 +151,7 @@ Gamma_dose_comparison::get_fail_img ()
 }
 
 UCharImageType::Pointer
-Gamma_dose_comparison::get_fail_img_itk ()
+Gamma_dose_comparison::get_fail_image_itk ()
 {
-    return get_fail_img()->itk_uchar();
+    return get_fail_image()->itk_uchar();
 }

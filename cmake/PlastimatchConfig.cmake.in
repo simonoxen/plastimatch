@@ -1,11 +1,13 @@
 ##-----------------------------------------------------------------------------
 ##  PlastimatchConfig.cmake - configuration file for external projects
 ##-----------------------------------------------------------------------------
+## See:
+##  http://www.vtk.org/Wiki/CMake/Tutorials/How_to_create_a_ProjectConfig.cmake_file
 
 get_filename_component (PLASTIMATCH_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 if (EXISTS "${PLASTIMATCH_CMAKE_DIR}/CMakeCache.txt")
    # In build tree
-   include("${PLASTIMATCH_CMAKE_DIR}/FooBarBuildTreeSettings.cmake")
+   include("${PLASTIMATCH_CMAKE_DIR}/PlastimatchBuildTreeSettings.cmake")
 else()
    # In install tree
    set (PLASTIMATCH_INCLUDE_DIRS 
@@ -17,3 +19,5 @@ include("${PLASTIMATCH_CMAKE_DIR}/PlastimatchLibraryDepends.cmake")
 
 # These are IMPORTED targets created by PlastimatchDepends.cmake
 set (PLASTIMATCH_LIBRARIES bstrlib plmsys plmbase plmutil)
+
+set (PLASTIMATCH_FOUND ON)

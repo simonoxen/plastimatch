@@ -1,3 +1,9 @@
 set (PLASTIMATCH_INCLUDE_DIRS
-  "@PROJECT_SOURCE_DIR@"
+  "@PROJECT_SOURCE_DIR@/src/plastimatch"
+  "@PROJECT_SOURCE_DIR@/src/plastimatch/sys"
+  "@PROJECT_SOURCE_DIR@/src/plastimatch/base"
+  "@PROJECT_SOURCE_DIR@/src/plastimatch/util"
+  "@PROJECT_SOURCE_DIR@/libs/bstrlib-05122010"
   "@PROJECT_BINARY_DIR@")
+set (PLASTIMATCH_ITK_DIR
+  "@ITK_DIR@")

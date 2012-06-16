@@ -88,17 +88,17 @@ public:
     /*! \name Outputs */
     ///@{
     /*! \brief Return the gamma image as a Plm_image.  */
-    Plm_image* get_gamma_img ();
+    Plm_image* get_gamma_image ();
     /*! \brief Return the gamma image as an ITK image.  */
-    FloatImageType::Pointer get_gamma_img_itk ();
+    FloatImageType::Pointer get_gamma_image_itk ();
     /*! \brief Return a binary image of passing voxels as a Plm image. */
-    Plm_image* get_pass_img ();
+    Plm_image* get_pass_image ();
     /*! \brief Return a binary image of passing voxels as an ITK image. */
-    UCharImageType::Pointer get_pass_img_itk ();
+    UCharImageType::Pointer get_pass_image_itk ();
     /*! \brief Return a binary image of failing voxels as a Plm image. */
-    Plm_image* get_fail_img ();
+    Plm_image* get_fail_image ();
     /*! \brief Return a binary image of failing voxels as an ITK image. */
-    UCharImageType::Pointer get_fail_img_itk ();
+    UCharImageType::Pointer get_fail_image_itk ();
     ///@}
 };
 
