@@ -106,6 +106,7 @@ include (cmake/CheckCharSign)
 ##-----------------------------------------------------------------------------
 option (PLM_CONFIG_DISABLE_CUDA "Set to ON to build without CUDA" OFF)
 option (PLM_CONFIG_DISABLE_DCMTK "Set to ON to build without DCMTK" OFF)
+option (PLM_CONFIG_DISABLE_MONDOSHOT "Build mondoshot" OFF)
 option (PLM_CONFIG_DISABLE_OPENCL "Set to ON to build without OpenCL" OFF)
 option (PLM_CONFIG_DISABLE_PLASTIMATCH "Build plastimatch" OFF)
 option (PLM_CONFIG_DISABLE_REG23 "Build REG-2-3" OFF)

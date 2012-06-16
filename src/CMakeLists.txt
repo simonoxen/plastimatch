@@ -98,7 +98,8 @@ if (NOT PLM_CONFIG_DISABLE_PLASTIMATCH)
   endif ()
 
   # mondoshot requires plastimatch, WIN32, wx, dcmtk, sqlite3
-  if (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
+  if (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND
+      AND NOT PLM_CONFIG_DISABLE_MONDOSHOT)
     add_subdirectory (mondoshot)
   endif ()
 endif ()
