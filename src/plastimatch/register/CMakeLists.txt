@@ -109,6 +109,13 @@ if (OPENCL_FOUND)
     )
 endif ()
 
+if (NLOPT_FOUND)
+  set (PLMREGISTER_LIBRARY_DEPENDENCIES 
+    ${PLMREGISTER_LIBRARY_DEPENDENCIES}
+    ${NLOPT_LIBRARIES}
+    )
+endif ()
+
 ##-----------------------------------------------------------------------------
 ##  SPECIAL BUILD RULES: CUDA
 ##-----------------------------------------------------------------------------

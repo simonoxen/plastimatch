@@ -51,7 +51,7 @@ if (OPENMP_FOUND)
 endif ()
 
 if (LIBDL_FOUND)
-  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} -ldl)
+  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} dl)
 endif ()
 
 if (QT4_FOUND)

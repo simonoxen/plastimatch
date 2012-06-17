@@ -14,7 +14,7 @@ if (SLICER_INCLUDE_DIR)
 endif ()
 
 # Suppress Slicer4 strangeness
-set (Slicer_SKIP_PROJECT_COMMAND)
+set (Slicer_SKIP_PROJECT_COMMAND TRUE)
 set (Slicer_SKIP_SET_CMAKE_C_CXX_FLAGS TRUE)
 
 # Find SlicerConfig.cmake or Slicer3Config.cmake

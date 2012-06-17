@@ -36,6 +36,12 @@ set (PLMSYS_LIBRARY_SRC
 set (PLMSYS_LIBRARY_DEPENDENCIES 
   bstrlib
   )
+if (LIBDL_FOUND)
+  set (PLMSYS_LIBRARY_DEPENDENCIES
+    ${PLMSYS_LIBRARY_DEPENDENCIES}
+    dl
+    )
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  BUILD TARGETS

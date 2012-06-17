@@ -132,6 +132,11 @@ set (PLMBASE_LIBRARY_DEPENDENCIES
   ${ITK_LIBRARIES}
   plmsys
   )
+if (DCMTK_FOUND)
+  set (PLMBASE_LIBRARY_DEPENDENCIES
+    ${PLMBASE_LIBRARY_DEPENDENCIES}
+    ${DCMTK_LIBRARIES})
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  BUILD TARGETS
