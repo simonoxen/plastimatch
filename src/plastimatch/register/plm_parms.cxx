@@ -137,6 +137,14 @@ set_key_val (
         if (section != 0) goto error_not_global;
         regp->moving_landmarks_fn = val;
     }
+    else if (!strcmp (key, "fixed_landmark_list")) {
+        if (section != 0) goto error_not_global;
+        regp->fixed_landmarks_list = val;
+    }
+    else if (!strcmp (key, "moving_landmark_list")) {
+        if (section != 0) goto error_not_global;
+        regp->moving_landmarks_list = val;
+    }
 
     /* The following keywords are allowed either globally or in stages */
     else if (!strcmp (key, "background_val")

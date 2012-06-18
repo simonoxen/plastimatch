@@ -56,6 +56,16 @@ main (int argc, char * argv [])
 	command_string << "img_out_type = " << output_type << "\n";
     }
 
+    /* Figure out fiducials */
+    unsigned long num_fiducials = plmslc_fixed_fiducials.size();
+    if (plmslc_moving_fiducials.size() < num_fiducials) {
+	num_fiducials = plmslc_moving_fiducials.size();
+    }
+    printf ("Num fiducials = %d\n", num_fiducials);
+    if (num_fiducials == 0) {
+        printf (">> No fiducials.\n");
+    }
+
     /* Stage 0 */
     if (enable_stage_0) {
 	command_string << 
@@ -72,6 +82,28 @@ main (int argc, char * argv [])
 	    << stage_0_resolution[0] << " "
 	    << stage_0_resolution[1] << " "
 	    << stage_0_resolution[2] << "\n";
+    }
+    if (num_fiducials > 0) {
+        command_string << "fixed_fiducial_list=";
+        for (unsigned long i = 0; i < num_fiducials; i++) {
+            command_string << 
+                plmslc_fixed_fiducials[i][0] << "," <<
+                plmslc_fixed_fiducials[i][1] << "," <<
+                plmslc_fixed_fiducials[i][2];
+            if (i < num_fiducials - 1) {
+                command_string << ";";
+            }
+        }
+        command_string << "moving_fiducial_list=";
+        for (unsigned long i = 0; i < num_fiducials; i++) {
+            command_string << 
+                plmslc_moving_fiducials[i][0] << "," <<
+                plmslc_moving_fiducials[i][1] << "," <<
+                plmslc_moving_fiducials[i][2];
+            if (i < num_fiducials - 1) {
+                command_string << ";";
+            }
+        }
     }
 
     /* Stage 1 */

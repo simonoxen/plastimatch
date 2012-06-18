@@ -214,6 +214,8 @@ public:
     Pstring warped_landmarks_fn;
     Pstring fixed_landmarks_fn;
     Pstring moving_landmarks_fn;
+    Pstring fixed_landmarks_list;
+    Pstring moving_landmarks_list;
     char vf_out_fn[_MAX_PATH];
     char log_fn[_MAX_PATH];
     float default_value;           /* Replacement when out-of-view */
