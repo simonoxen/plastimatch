@@ -13,6 +13,8 @@
 //#include <vtkRenderWindow.h>
 //#include <vtkSphereSource.h>
 //#include "vtkSmartPointer.h"
+#include "frame.h"
+#include "synthetic_source_thread.h"
 #include "iqt_synth_settings.h"
 #include "iqt_application.h"
 #include "iqt_main_window.h"
@@ -41,7 +43,7 @@ Iqt_main_window::Iqt_main_window ()
     //    m_qtimer = new QTimer (this);
     //    connect (m_qtimer, SIGNAL(timeout()), this, SLOT(slot_timer()));
     //    m_qtimer->start(1000);
-
+    
     this->playing = false;
 
     /* Render a sphere ?? */
@@ -181,4 +183,12 @@ Iqt_main_window::slot_timer ()
 #endif
     statusBar()->showMessage(QString("Num panels = %1")
         .arg(ise_app->num_panels));
+}
+
+void
+Iqt_main_window::slot_frame_ready (Frame* f)
+{
+
+    qDebug("Got frame %p", f);
+
 }

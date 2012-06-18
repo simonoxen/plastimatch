@@ -31,6 +31,7 @@ public slots:
     void flick (void);
     void stop (void);
     void play (bool playing);
+    void synth (void);
 	//void addTime()
 
 public:

@@ -22,6 +22,8 @@
 // class QTextEdit;
 //QT_END_NAMESPACE
 
+class Frame;
+
 class Iqt_main_window : public QMainWindow, private Ui::iqtMainWindow {
     Q_OBJECT
     ;
@@ -40,13 +42,6 @@ public:
 
     QTimer *m_qtimer;
     bool playing;
-    //bool accepted;
-    
-    int *set1;
-    int *set2;
-    int *set3;
-    int *set4;
-    int *set5;
     
     QString filename;
 
@@ -60,6 +55,7 @@ public slots:
     void slot_go_back(void);
     void slot_go_forward(void);
     void slot_timer (void);
+    void slot_frame_ready (Frame* f);
     //void slot_got_frame (void);
 };
 #endif

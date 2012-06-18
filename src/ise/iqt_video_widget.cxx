@@ -86,7 +86,12 @@ void Iqt_video_widget::play (bool playing)
         ping_check->stop();
     }
 }
+
+void Iqt_video_widget::synth ()
+{
     
+}
+
 Iqt_video_widget::~Iqt_video_widget ()
 {
     delete qp1;
