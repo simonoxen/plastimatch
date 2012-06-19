@@ -58,6 +58,9 @@ set (PLASTIMATCH_SLICER_DVH_SRC
 set (PLASTIMATCH_SLICER_LANDWARP_SRC
   plastimatch_slicer_landwarp.cxx
   )
+set (PLASTIMATCH_SLICER_MABS_SRC
+  plastimatch_slicer_mabs.cxx
+  )
 set (PLASTIMATCH_SLICER_SYNTH_SRC
   plastimatch_slicer_synth.cxx
   )
@@ -87,6 +90,9 @@ plm_add_slicer_executable (plastimatch_slicer_dvh
   "${PLASTIMATCH_LDFLAGS}")
 plm_add_slicer_executable (plastimatch_slicer_landwarp 
   "${PLASTIMATCH_SLICER_LANDWARP_SRC}" "${PLASTIMATCH_LIBS}" 
+  "${PLASTIMATCH_LDFLAGS}")
+plm_add_slicer_executable (plastimatch_slicer_mabs 
+  "${PLASTIMATCH_SLICER_MABS_SRC}" "${PLASTIMATCH_LIBS}" 
   "${PLASTIMATCH_LDFLAGS}")
 plm_add_slicer_executable (plastimatch_slicer_synth
   "${PLASTIMATCH_SLICER_SYNTH_SRC}" "${PLASTIMATCH_LIBS}" 
