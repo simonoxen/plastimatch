@@ -1093,8 +1093,9 @@ Plm_image::planes ()
 }
 
 size_t 
-Plm_image::dim (size_t d)
+Plm_image::dim (size_t d1)
 {
+    int d = (int) d1;
     switch (m_type) {
     case PLM_IMG_TYPE_UNDEFINED:
 	return 0;
@@ -1130,8 +1131,9 @@ Plm_image::dim (size_t d)
 }
 
 float 
-Plm_image::origin (size_t d)
+Plm_image::origin (size_t d1)
 {
+    int d = (int) d1;
     switch (m_type) {
     case PLM_IMG_TYPE_UNDEFINED:
 	return 0;
@@ -1167,11 +1169,12 @@ Plm_image::origin (size_t d)
 }
 
 float 
-Plm_image::spacing (size_t d)
+Plm_image::spacing (size_t d1)
 {
+    int d = (int) d1;
     switch (m_type) {
     case PLM_IMG_TYPE_UNDEFINED:
-	return 0;
+        return 0;
     case PLM_IMG_TYPE_ITK_CHAR:
         return this->m_itk_char->GetSpacing()[d];
     case PLM_IMG_TYPE_ITK_UCHAR:

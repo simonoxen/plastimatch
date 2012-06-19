@@ -72,6 +72,12 @@ Gamma_dose_comparison::set_compare_image (
     d_ptr->gp.img_in2 = new Plm_image (image);
 }
 
+float
+Gamma_dose_comparison::get_spatial_tolerance ()
+{
+    return d_ptr->gp.r_tol;
+}
+
 void 
 Gamma_dose_comparison::set_spatial_tolerance (float spatial_tol)
 {

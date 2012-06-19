@@ -30,7 +30,7 @@ class Plm_image;
  * and a dose difference tolerance such that gamma values of less than 
  * 1.0 are acceptable, and gamma values greater than 1.0 are unacceptable.
  */
-class Gamma_dose_comparison {
+class PLMUTIL_API Gamma_dose_comparison {
 public:
     Gamma_dose_comparison ();
     ~Gamma_dose_comparison ();
@@ -55,6 +55,8 @@ public:
     /*! \brief Set the compare image as an ITK image. */
     void set_compare_image (const FloatImageType::Pointer image);
 
+    /*! \brief Get the distance to agreement (DTA) tolerance, in mm. */
+    float get_spatial_tolerance ();
     /*! \brief Set the distance to agreement (DTA) tolerance, in mm. */
     void set_spatial_tolerance (float spatial_tol);
     /*! \brief Set the dose difference tolerance.  
