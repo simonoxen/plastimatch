@@ -29,7 +29,13 @@ public:
     Mabs_vote ();
     ~Mabs_vote ();
 
+    void vote_contribution (Plm_image& target_image_plm,
+                            Plm_image& atlas_image_plm,
+                            Plm_image& atlas_structure_plm,
+                            ImageType::Pointer like0,
+                            ImageType::Pointer like1);
     bool vote (const Mabs_parms& parms);
+    bool vote_old (const Mabs_parms& parms);
 
 private:
     void hello_world ();
