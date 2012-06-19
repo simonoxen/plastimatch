@@ -16,6 +16,7 @@ endif()
 #-----------------------------------------------------------------------------
 set (EXTENSION_NAME PlmSlicerBspline)
 set (qt_module_name "PlmSlicerBspline")
+set (qt_module_title "B-spline Registration")
 
 #-----------------------------------------------------------------------------
 # Prerequisites
@@ -93,7 +94,9 @@ set(qt_module_resources
 # Build
 #-----------------------------------------------------------------------------
 slicerMacroBuildQtModule(
-  NAME ${EXTENSION_NAME}
+#  NAME ${EXTENSION_NAME}
+  NAME ${qt_module_name}
+  TITLE ${qt_module_title}
   EXPORT_DIRECTIVE ${qt_module_export_directive}
   INCLUDE_DIRECTORIES ${qt_module_include_directories}
   SRCS ${qt_module_SRCS}

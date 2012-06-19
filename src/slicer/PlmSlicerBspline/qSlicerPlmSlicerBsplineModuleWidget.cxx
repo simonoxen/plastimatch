@@ -48,20 +48,25 @@ void qSlicerPlmSlicerBsplineModuleWidget::setup()
   d->setupUi(this);
   this->Superclass::setup();
 
-  connect(d->fixedImageMRMLNodeComboBox, 
+  connect (d->fixedImageMRMLNodeComboBox, 
           SIGNAL(currentNodeChanged(vtkMRMLNode*)),
-          this, SLOT(onInputVolumeChanged()));
-  connect(d->movingImageMRMLNodeComboBox, 
-          SIGNAL(currentNodeChanged(vtkMRMLNode*)),
-          this, SLOT(onInputVolumeChanged()));
+          this,
+          SLOT(onInputVolumeChanged()));
 
-  connect(d->registerPushButton, SIGNAL(clicked()),
-          this, SLOT(onApply()));
+  connect (d->movingImageMRMLNodeComboBox, 
+          SIGNAL(currentNodeChanged(vtkMRMLNode*)),
+          this,
+          SLOT(onInputVolumeChanged()));
+
+  connect (d->registerPushButton,
+          SIGNAL(clicked()),
+          this,
+          SLOT(onApply()));
 }
 
 void qSlicerPlmSlicerBsplineModuleWidget::enter()
 {
-#if defined (commentout)
+#if 0
   this->onInputVolumeChanged();
   this->onInputROIChanged();
 #endif
@@ -73,7 +78,7 @@ void qSlicerPlmSlicerBsplineModuleWidget::setMRMLScene(vtkMRMLScene* scene)
   if(scene == NULL)
     return;
 
-#if defined (commentout)
+#if 0
   vtkCollection* parameterNodes = scene->GetNodesByClass("vtkMRMLPlmSlicerBsplineParametersNode");
 
   if(parameterNodes->GetNumberOfItems() > 0)
@@ -110,7 +115,7 @@ void qSlicerPlmSlicerBsplineModuleWidget::onApply()
   vtkSlicerPlmSlicerBsplineLogic *logic = 
     vtkSlicerPlmSlicerBsplineLogic::SafeDownCast(this->logic());
 
-#if defined (commentout)
+#if 0
   vtkSlicerPlmSlicerBsplineLogic *logic = d->logic();
   if(!logic->Apply(this->parametersNode))
     {

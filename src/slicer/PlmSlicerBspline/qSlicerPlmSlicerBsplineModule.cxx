@@ -61,6 +61,12 @@ QIcon qSlicerPlmSlicerBsplineModule::icon()const
 }
 
 //-----------------------------------------------------------------------------
+QStringList qSlicerPlmSlicerBsplineModule::categories()const
+{
+  return QStringList() << "Plastimatch";
+}
+
+//-----------------------------------------------------------------------------
 void qSlicerPlmSlicerBsplineModule::setup()
 {
   this->Superclass::setup();

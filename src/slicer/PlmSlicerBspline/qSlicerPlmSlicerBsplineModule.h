@@ -32,6 +32,9 @@ public:
   /// Return acknowledgements
   virtual QString acknowledgementText()const;
   
+  /// Set the category for this Module
+  virtual QStringList categories()const;
+
   /// Return a custom icon for the module
   virtual QIcon icon()const;
 

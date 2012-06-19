@@ -10,14 +10,18 @@
     <height>319</height>
    </rect>
   </property>
-  <property name="windowTitle">
-   <string>Form</string>
+    <property name="windowTitle">
+   <string>Volumes</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>:/Icons/Volumes.png</normaloff>:/Icons/PlmSlicerBpline.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0">
     <widget class="ctkCollapsibleButton" name="CTKCollapsibleButton">
      <property name="text">
-      <string>Bspline parameters</string>
+      <string>Parameters</string>
      </property>
      <property name="contentsFrameShape">
       <enum>QFrame::StyledPanel</enum>
@@ -90,7 +94,7 @@
    <item row="2" column="0">
     <widget class="QPushButton" name="registerPushButton">
      <property name="text">
-      <string>Register!</string>
+      <string>Register</string>
      </property>
     </widget>
    </item>
