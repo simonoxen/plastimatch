@@ -58,7 +58,7 @@
              <bool>true</bool>
             </property>
             <property name="minimum">
-             <number>1536</number>
+             <number>600</number>
             </property>
             <property name="maximum">
              <number>1536</number>
@@ -95,7 +95,7 @@
           <item>
            <widget class="QSpinBox" name="colBox">
             <property name="minimum">
-             <number>2048</number>
+             <number>800</number>
             </property>
             <property name="maximum">
              <number>2048</number>

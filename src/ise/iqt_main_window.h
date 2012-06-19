@@ -42,7 +42,8 @@ public:
 
     QTimer *m_qtimer;
     bool playing;
-    
+    unsigned int width;
+    unsigned int height;
     QString filename;
 
 public slots:
@@ -55,7 +56,7 @@ public slots:
     void slot_go_back(void);
     void slot_go_forward(void);
     void slot_timer (void);
-    void slot_frame_ready (Frame* f);
+    void slot_frame_ready (Frame* f, int width, int height);
     //void slot_got_frame (void);
 };
 #endif

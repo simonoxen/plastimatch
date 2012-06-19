@@ -17,13 +17,15 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-Synthetic_source::Synthetic_source (Iqt_main_window* mw)
+Synthetic_source::Synthetic_source (Iqt_main_window* mw, int width, int height)
 {
-    this->thread = new Synthetic_source_thread;
+    this->width = width;
+    this->height = height;
+    this->thread = new Synthetic_source_thread (width, height);
     this->thread->set_synthetic_source (this);
     qDebug ("connecting: %p %p", this->thread, mw);
-    QObject::connect (this->thread, SIGNAL(frame_ready(Frame*)), 
-        mw, SLOT(slot_frame_ready(Frame*)));
+    QObject::connect (this->thread, SIGNAL(frame_ready(Frame*, int, int)), 
+        mw, SLOT(slot_frame_ready(Frame*, int, int)));    
 }
 
 void
@@ -197,6 +199,7 @@ Synthetic_source::grab_image (Frame* f)
     QString t;
     qDebug() << t.sprintf("F pointer = %p", f);
     qDebug() << t.sprintf("img pointer = %p", f->img);
-    simulate_image (f, 2048, 1536);
+    qDebug("Height: %d \nWidth: %d", height, width);
+    simulate_image (f, width, height);
     qDebug() << "Simulation complete";
 }

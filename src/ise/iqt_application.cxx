@@ -49,7 +49,7 @@ Iqt_application::set_synthetic_source (
             delete this->fluoro_source;
         }
     }
-    this->fluoro_source = new Synthetic_source (mw);
+    this->fluoro_source = new Synthetic_source (mw, colset, rowset);
 
     /* GCS FIX: For now, just a single cbuf */
     this->cbuf[0]->clear ();

@@ -186,13 +186,13 @@ Iqt_main_window::slot_timer ()
 }
 
 void
-Iqt_main_window::slot_frame_ready (Frame* f)
+Iqt_main_window::slot_frame_ready (Frame* f, int width, int height)
 {
     qDebug ("Hello world");
     qDebug("Got frame %p", f);
 
-    unsigned int width = 2048;
-    unsigned int height = 1536;
+    this->width = width;
+    this->height = height;
 
     uchar *data = new uchar[width * height * 4];
     for (int i = 0; i < width * height; i++) {

@@ -15,9 +15,11 @@ public:
     ;
     
 public:
-    Synthetic_source_thread ();
+    Synthetic_source_thread (int width, int height);
     virtual ~Synthetic_source_thread ();
     void set_synthetic_source (Synthetic_source *ss);
+    unsigned int width;
+    unsigned int height;
 
 protected:
     virtual void run();
@@ -26,7 +28,7 @@ public:
     Synthetic_source *ss;
 
 signals:
-    void frame_ready (Frame* f);
+    void frame_ready (Frame* f, int width, int height);
     
 };
 
