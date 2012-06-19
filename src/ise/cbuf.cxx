@@ -129,8 +129,7 @@ Cbuf::get_frame ()
     this->waiting.pop_front();
     frame_clear (f);
     this->mutex->unlock ();
-
-    return 0;
+    return f;
 }
 
 void

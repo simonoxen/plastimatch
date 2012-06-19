@@ -6,7 +6,9 @@
 #include <string.h>
 #include <math.h>
 #include <QDebug>
+#include <QObject>
 #include "frame.h"
+#include "iqt_main_window.h"
 #include "ise_globals.h"
 #include "synthetic_source.h"
 #include "synthetic_source_thread.h"
@@ -15,10 +17,13 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-Synthetic_source::Synthetic_source ()
+Synthetic_source::Synthetic_source (Iqt_main_window* mw)
 {
     this->thread = new Synthetic_source_thread;
     this->thread->set_synthetic_source (this);
+    qDebug ("connecting: %p %p", this->thread, mw);
+    QObject::connect (this->thread, SIGNAL(frame_ready(Frame*)), 
+        mw, SLOT(slot_frame_ready(Frame*)));
 }
 
 void

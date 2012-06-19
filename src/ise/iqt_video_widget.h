@@ -38,6 +38,8 @@ public:
     Iqt_video_widget (QWidget *parent = 0);
     int j;
     ~Iqt_video_widget ();
+    void set_qimage (const QImage& qimage);
+
 
 protected:
 //    void paintEvent (QPaintEvent *event);

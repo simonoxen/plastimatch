@@ -6,11 +6,12 @@
 
 #include "fluoro_source.h"
 
+class Iqt_main_window;
 class Synthetic_source_thread;
 
 class Synthetic_source : public Fluoro_source {
 public:
-    Synthetic_source ();
+    Synthetic_source (Iqt_main_window *mw);
 
 public:
     virtual unsigned long get_size_x (int x);

@@ -158,7 +158,7 @@ Iqt_main_window::slot_stop ()
 void
 Iqt_main_window::slot_synth ()
 {
-    Iqt_synth_settings iqt_synth_settings;
+    Iqt_synth_settings iqt_synth_settings (this);
     iqt_synth_settings.exec();
 }
 
@@ -188,7 +188,20 @@ Iqt_main_window::slot_timer ()
 void
 Iqt_main_window::slot_frame_ready (Frame* f)
 {
-
+    qDebug ("Hello world");
     qDebug("Got frame %p", f);
 
+    unsigned int width = 2048;
+    unsigned int height = 1536;
+
+    uchar *data = new uchar[width * height * 4];
+    for (int i = 0; i < width * height; i++) {
+        uchar val = (f->img[i] - 200) * 255.0 / (800-200);
+        data[4*i+0] = 0xff;
+        data[4*i+1] = val;
+        data[4*i+2] = val;
+        data[4*i+3] = val;
+    }
+    QImage qimage (data, width, height, QImage::Format_RGB32);
+    widget->set_qimage (qimage);
 }

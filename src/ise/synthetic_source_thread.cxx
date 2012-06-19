@@ -42,7 +42,9 @@ Synthetic_source_thread::run () {
            The main window can call cbuf->display_lock_newest_frame ()
            to get the frame */
         //Iqt_main_window::frame_ready (f);
-        //emit frame_ready (f);
+
+        emit frame_ready (f);
+
         qDebug() << "Done.";
     }
 }

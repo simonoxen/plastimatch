@@ -10,6 +10,7 @@
 
 class Cbuf;
 class Fluoro_source;
+class Iqt_main_window;
 
 class Iqt_application : public QApplication {
     Q_OBJECT
@@ -19,7 +20,9 @@ public:
     ~Iqt_application ();
 
 public:
-    void set_synthetic_source (int rowset, int colset, int ampset, int markset, int noiset);
+    void set_synthetic_source (
+        Iqt_main_window *mw,
+        int rowset, int colset, int ampset, int markset, int noiset);
 
 public:
     int num_panels;

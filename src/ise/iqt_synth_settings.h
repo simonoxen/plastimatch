@@ -10,24 +10,14 @@
 //#include "iqt_patient_list_model.h"
 #include "ui_iqt_synth_settings.h"
 
-//QT_BEGIN_NAMESPACE
-// class QAction;
-// class QDialogButtonBox;
-// class QGroupBox;
-// class QLabel;
-// class QLineEdit;
-// class QMenu;
-// class QMenuBar;
-// class QPushButton;
-// class QTextEdit;
-//QT_END_NAMESPACE
+class Iqt_main_window;
 
 class Iqt_synth_settings : public QDialog, private Ui::iqtSynthSettings {
     Q_OBJECT
     ;
 
 public:
-    Iqt_synth_settings ();
+    Iqt_synth_settings (QWidget *parent);
     ~Iqt_synth_settings ();
 
 //    void render_sphere ();
@@ -42,6 +32,8 @@ public:
     int ampl;
     int mark;
     int noise;
+
+    Iqt_main_window *mw;
 
 public slots:
     void slot_default (void);

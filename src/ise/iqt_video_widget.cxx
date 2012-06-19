@@ -26,6 +26,8 @@ Iqt_video_widget::Iqt_video_widget (QWidget *parent)
     ping_pong = 0;
     qp1 = qp2 = 0;
     
+    qp1 = new QPixmap;
+
     ping_check = new QTimer (this);
     connect (ping_check, SIGNAL(timeout()), this, SLOT(flick()));
     ping_check->start(500);
@@ -98,4 +100,12 @@ Iqt_video_widget::~Iqt_video_widget ()
     delete qp2;
     delete pmi;
     delete ping_check;
+}
+
+void 
+Iqt_video_widget::set_qimage (const QImage& qimage)
+{
+    delete pmi;                       //remove old pmi (IS necessary)
+    pmi = new QGraphicsPixmapItem(QPixmap::fromImage (qimage));
+    scene->addItem(pmi);
 }
