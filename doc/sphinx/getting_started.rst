@@ -70,7 +70,8 @@ want the DRR and FDK programs, you don't need it.  Get ITK from here:
 
   http://itk.org/
 
-We recommend version ITK 3.20.X.  ITK version 4.0 is not supported.
+We recommend version ITK 3.20.X.  ITK version 4.X works, but is 
+still experimental.
 
 When you build ITK, the following settings are recommended::
 
@@ -297,9 +298,10 @@ Then build as follows:
 
 Compiling the 3D Slicer extensions
 ----------------------------------
-METHOD ONE:
 
-#. Build slicer from source.  Use slicer 3.6, not slicer 4.
+#. Build slicer from source.  Use either slicer 3.6 or slicer 4.X.
+
+   If building Slicer 3.6:
 
    http://www.slicer.org/slicerWiki/index.php/Slicer3:Build_Instructions
 
@@ -308,6 +310,10 @@ METHOD ONE:
    I suggest these options::
 
      ./Slicer3/Scripts/getbuildtest.tcl --release -t ""
+
+   If building Slicer 4.0:
+
+   http://www.slicer.org/slicerWiki/index.php/Documentation/4.1/Developers/Build_Instructions
 
    The slicer build takes a while.  Let it run overnight.
 
@@ -318,45 +324,52 @@ METHOD ONE:
 #. Run CMake
 
    Configure.
-   Set Slicer3_DIR to the Slicer3-build directory.
-   You don't need to set ITK -- the script should use Slicer's ITK.
+   Set Slicer_DIR to the Slicer-build directory.
+   You don't need to set ITK -- the script automatically finds and uses Slicer's ITK.
    Configure again.
    Generate.
 
-#. Build plastimatch.  You should find the plugins here:
+#. Build plastimatch.  You should find the plugins in the following locations:
+
+   For Slicer 3 (windows):
 
    lib/Slicer3/Plugins/Release
+
+   For Slicer 4 (windows):
+
+   lib/Slicer-4.X/cli-modules/Release
+   lib/Slicer-4.X/qt-loadable-modules/Release
 
 #. Fire up slicer.  You need to tell slicer where the plugins are located
 
    View -> Application Settings -> Module Settings
    Click on the "Add a preset" icon
-   Browse to the lib/Slicer3/Plugins/Release directory
+   Browse to (e.g.) the lib/Slicer3/Plugins/Release directory
    Click Close
    Restart slicer
 
 #. You should see the plastimatch plugin in the module selector
 
-METHOD TWO:
+.. METHOD TWO:
 
-#. Build 3D Slicer as described above.
+.. #. Build 3D Slicer as described above.
 
-#. Use slicer's extension builder script to make the plugin::
+.. #. Use slicer's extension builder script to make the plugin::
 
-     ./Slicer3/Scripts/extend.tcl --release -t "" plastimatch-slicer
+..      ./Slicer3/Scripts/extend.tcl --release -t "" plastimatch-slicer
 
-#. You should find the plugins here:
+.. #. You should find the plugins here:
 
-   Slicer3-ext/plastimatch-slicer-build/lib/Slicer3/Plugins/Release
+..    Slicer3-ext/plastimatch-slicer-build/lib/Slicer3/Plugins/Release
 
-#. Plugins get uploaded here:
+.. #. Plugins get uploaded here:
 
-   http://ext.slicer.org/ext/trunk
+..    http://ext.slicer.org/ext/trunk
 
-   Your plugin gets put in one of the subdirectories, organized by 
-   the platform and the svn version number of slicer.  
+..    Your plugin gets put in one of the subdirectories, organized by 
+..    the platform and the svn version number of slicer.  
 
-#. Add module path as described above -OR- download using extension manager
+.. #. Add module path as described above -OR- download using extension manager
 
 
 .. JAS 09.03.2010
