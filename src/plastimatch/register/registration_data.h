@@ -6,6 +6,7 @@
 
 #include "plmregister_config.h"
 #include "itk_image_type.h"
+#include "pointset.h"
 
 //template<class T> class PLMREGISTER_API Pointset;
 

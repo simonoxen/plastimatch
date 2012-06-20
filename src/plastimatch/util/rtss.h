@@ -58,6 +58,7 @@ public:
     void rasterize (Plm_image_header *pih, bool want_labelmap, bool xor_overlapping);
     void set_geometry (const Plm_image_header *pih);
     void find_rasterization_geometry (Plm_image_header *pih);
+    void warp (Xform *xf, Plm_image_header *pih, bool use_itk = false);
     void warp (Xform *xf, Plm_image_header *pih, Warp_parms *parms);
 };
 

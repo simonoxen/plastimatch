@@ -549,14 +549,14 @@ void
 Rtss::warp (
     Xform *xf, 
     Plm_image_header *pih, 
-    Warp_parms *parms)
+    bool use_itk)
 {
     Plm_image *tmp;
 
     if (this->m_labelmap) {
         printf ("Warping labelmap.\n");
         tmp = new Plm_image;
-        plm_warp (tmp, 0, xf, pih, this->m_labelmap, 0, parms->use_itk, 0);
+        plm_warp (tmp, 0, xf, pih, this->m_labelmap, 0, use_itk, 0);
         delete this->m_labelmap;
         this->m_labelmap = tmp;
         this->m_labelmap->convert (PLM_IMG_TYPE_ITK_ULONG);
@@ -565,11 +565,20 @@ Rtss::warp (
     if (this->m_ss_img) {
         printf ("Warping ss_img.\n");
         tmp = new Plm_image;
-        plm_warp (tmp, 0, xf, pih, this->m_ss_img, 0, parms->use_itk, 0);
+        plm_warp (tmp, 0, xf, pih, this->m_ss_img, 0, use_itk, 0);
         delete this->m_ss_img;
         this->m_ss_img = tmp;
     }
 
     /* The cxt polylines are now obsolete, but we can't delete it because 
        it contains our "bits", used e.g. by prefix extraction.  */
+}
+
+void
+Rtss::warp (
+    Xform *xf, 
+    Plm_image_header *pih, 
+    Warp_parms *parms)
+{
+    this->warp (xf, pih, parms->use_itk);
 }

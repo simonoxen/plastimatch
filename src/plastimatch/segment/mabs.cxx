@@ -5,13 +5,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "plmbase.h"
-#include "plmsegment.h"
-#include "plmsys.h"
+#include "dir_list.h"
+#include "file_util.h"
+#include "mabs.h"
+#include "mabs_parms.h"
+#include "plm_image.h"
 #include "plm_parms.h"
 #include "plm_stages.h"
+#include "print_and_exit.h"
 #include "registration_data.h"
 #include "rtds.h"
+#include "rtss.h"
+#include "rtss_structure_set.h"
+#include "string_util.h"
+#include "xform.h"
 
 Mabs::Mabs () { }
 
@@ -82,10 +89,17 @@ Mabs::run (const Mabs_parms& parms)
         printf ("DO_REGISTRATION_PURE\n");
         printf ("regp.num_stages = %d\n", regp.num_stages);
         do_registration_pure (&xf_out, &regd, &regp);
-        
-        /* *** WARP STRUCTURES *** */
-        // do the entire label map at once
-        
+
+        /* Warp the structures */
+        Plm_image_header source_pih;
+        Rtss_structure_set *cxt = rtds.m_rtss->m_cxt;
+        source_pih.set_from_gpuit (cxt->rast_dim, cxt->rast_offset, 
+            cxt->rast_spacing, 0);
+        rtds.m_rtss->rasterize (&source_pih, false, false);
+
+        Plm_image_header dest_pih (regd.fixed_image);
+        rtds.m_rtss->warp (xf_out, &dest_pih);
+
         /* *** VOTING HAPPENS *** */
         // each structure in this patient's structures
         // for () {
