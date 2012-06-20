@@ -111,6 +111,27 @@ Pointset<T>::load_txt (const char *fn)
 
 template<class T>
 void
+Pointset<T>::set_ras (const Pstring& p)
+{
+    int loc = 0;
+    while (1) {
+        int rc;
+        float f1, f2, f3;
+        rc = sscanf (p.c_str() + loc, "%f,%f,%f", &f1, &f2, &f3);
+        if (rc != 3) {
+            break;
+        }
+        this->insert_ras ("", f1, f2, f3);
+        rc = p.findchr (';', loc);
+        if (rc == BSTR_ERR) {
+            break;
+        }
+        loc += rc + 1;
+    }
+}
+
+template<class T>
+void
 Pointset<T>::insert_ras (
     const std::string& label,
     float x,
@@ -131,7 +152,7 @@ Pointset<T>::insert_lps (
     float z
 )
 {
-    /* Noo RAS to LPS adjustment */
+    /* No RAS to LPS adjustment */
     this->point_list.push_back (T (label, x, y, z));
 }
 

@@ -8,9 +8,6 @@
 #include "dcmtk/ofstd/ofstream.h"
 #include "dcmtk/dcmdata/dctk.h"
 
-#include "plmbase.h"
-#include "plmsys.h"
-
 #include "dcmtk_file.h"
 #include "dcmtk_metadata.h"
 #include "dcmtk_loader.h"

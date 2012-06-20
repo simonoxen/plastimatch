@@ -68,6 +68,7 @@ class PLMBASE_API Pointset {
     void save (const char *fn);
     void save_fcsv (const char *fn);
     void save_txt (const char *fn);
+    void set_ras (const Pstring& p);
 
     /* Insert single points */
     void insert_lps (const std::string& label, float x, float y, float z);

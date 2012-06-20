@@ -45,8 +45,6 @@ do_gpuit_bspline_stage_internal (
         f_mask = regd->fixed_mask->gpuit_uchar();
     }
 
-
-
     /* Confirm grid method.  This should go away? */
     if (stage->grid_method != 1) {
         logfile_printf ("Sorry, GPUIT B-Splines must use grid method #1\n");

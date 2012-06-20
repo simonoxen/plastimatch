@@ -84,7 +84,7 @@ main (int argc, char * argv [])
 	    << stage_0_resolution[2] << "\n";
     }
     if (num_fiducials > 0) {
-        command_string << "fixed_fiducial_list=";
+        command_string << "fixed_landmark_list=";
         for (unsigned long i = 0; i < num_fiducials; i++) {
             command_string << 
                 plmslc_fixed_fiducials[i][0] << "," <<
@@ -92,9 +92,11 @@ main (int argc, char * argv [])
                 plmslc_fixed_fiducials[i][2];
             if (i < num_fiducials - 1) {
                 command_string << ";";
+            } else {
+                command_string << "\n";
             }
         }
-        command_string << "moving_fiducial_list=";
+        command_string << "moving_landmark_list=";
         for (unsigned long i = 0; i < num_fiducials; i++) {
             command_string << 
                 plmslc_moving_fiducials[i][0] << "," <<
@@ -102,6 +104,8 @@ main (int argc, char * argv [])
                 plmslc_moving_fiducials[i][2];
             if (i < num_fiducials - 1) {
                 command_string << ";";
+            } else {
+                command_string << "\n";
             }
         }
     }

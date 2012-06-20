@@ -67,8 +67,17 @@ Registration_data::load_input_files (Registration_parms* regp)
             print_and_exit (
                 "Sorry, you need to specify both fixed and moving landmarks");
         }
-    } else if (regp->moving_landmarks_fn.not_empty()) {
+    }
+    else if (regp->moving_landmarks_fn.not_empty()) {
         print_and_exit (
             "Sorry, you need to specify both fixed and moving landmarks");
+    }
+    else if (regp->fixed_landmarks_list.not_empty()) {
+        if (regp->moving_landmarks_list.not_empty()) {
+            fixed_landmarks = new Labeled_pointset;
+            moving_landmarks = new Labeled_pointset;
+            fixed_landmarks->set_ras (regp->fixed_landmarks_list);
+            moving_landmarks->set_ras (regp->moving_landmarks_list);
+        }
     }
 }
