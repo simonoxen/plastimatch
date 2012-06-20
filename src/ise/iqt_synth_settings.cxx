@@ -50,11 +50,11 @@ Iqt_synth_settings::slot_proceed ()
     cols = colBox->value();
     ampl = ampBox->value();
     mark = markBox->value();
-    noise = noiseBox->value();
+    fps = noiseBox->value();
     //qDebug("Setting 1: %d", rows);
     //Iqt_main_window::slot_synth_set (set1/*, set2, set3, set4, set5*/);
 
-    ise_app->set_synthetic_source (mw, rows, cols, ampl, mark, noise);
+    ise_app->set_synthetic_source (mw, rows, cols, ampl, mark, fps);
     this->close();
     
 }
@@ -69,4 +69,21 @@ Iqt_synth_settings::slot_default ()
     noiseBox->setValue(0);
 }
 
+void
+Iqt_synth_settings::slot_attenuate ()
+{   
+    double amp = ampBox->value();
+    if (attenuate->isChecked())
+    {
+        ampBox->setRange(0.1, 1.0);
+        ampBox->setSingleStep(0.1);
+        ampBox->setDecimals(1);
+        ampBox->setValue(amp/10.);
+    } else {
+        ampBox->setRange(1., 10.);
+        ampBox->setSingleStep(1.);
+        ampBox->setDecimals(0);
+        ampBox->setValue(amp*10.);
+    }
+}
 

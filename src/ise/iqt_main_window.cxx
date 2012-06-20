@@ -101,7 +101,7 @@ Iqt_main_window::slot_load ()
     statusBar()->showMessage(QString("Filename: %1")
         .arg(filename));
 
-    widget->load(filename);
+    vid_screen->load(filename);
     //label->setText(QString("Filename: %1").arg(filename));
     this->slot_play_pause();
 }
@@ -125,7 +125,7 @@ Iqt_main_window::slot_play_pause ()
         play_pause_button->setText ("||");
         action_Play->setText ("&Pause");
     }
-    widget->play(playing);
+    vid_screen->play(playing);
 }
 
 void
@@ -152,7 +152,7 @@ Iqt_main_window::slot_stop ()
     } else {
 		QMessageBox::information (0, QString ("Info"), QString ("This video has already been stopped."));
 	}
-	widget->stop();
+	vid_screen->stop();
 }
 
 void
@@ -203,5 +203,5 @@ Iqt_main_window::slot_frame_ready (Frame* f, int width, int height)
         data[4*i+3] = val;
     }
     QImage qimage (data, width, height, QImage::Format_RGB32);
-    widget->set_qimage (qimage);
+    vid_screen->set_qimage (qimage);
 }

@@ -81,7 +81,7 @@ Cbuf::init (unsigned int idx, unsigned int num_frames,
     this->num_frames = 0;
     this->size_x = size_x;
     this->size_y = size_y;
-    qDebug("Height: %d \nWidth:  %d", size_y, size_x);
+    //qDebug("Height: %d \nWidth:  %d", size_y, size_x);
     while (this->num_frames < num_frames) {
         /* Allocate new frame */
         Frame *f = new Frame (size_x, size_y);

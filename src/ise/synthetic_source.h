@@ -11,7 +11,7 @@ class Synthetic_source_thread;
 
 class Synthetic_source : public Fluoro_source {
 public:
-    Synthetic_source (Iqt_main_window *mw, int width, int height);
+    Synthetic_source (Iqt_main_window *mw, int width, int height, double ampl, int fps);
 
 public:
     virtual unsigned long get_size_x (int x);
@@ -21,7 +21,8 @@ public:
     virtual void grab_image (Frame* f);
     int width;
     int height;
-
+    double ampl;
+    int fps;
 public:
     Synthetic_source_thread *thread;
     

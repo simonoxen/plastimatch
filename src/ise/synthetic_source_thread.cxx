@@ -15,10 +15,12 @@
 #include "synthetic_source.h"
 #include "synthetic_source_thread.h"
 
-Synthetic_source_thread::Synthetic_source_thread (int width, int height) 
+Synthetic_source_thread::Synthetic_source_thread (int width, int height, int fps) 
 {
     this->width = width;
     this->height = height;
+    this->sleep = 1000/fps;
+    this->playing = true;
 }
 
 Synthetic_source_thread::~Synthetic_source_thread () {
@@ -32,11 +34,11 @@ Synthetic_source_thread::set_synthetic_source (Synthetic_source *ss)
 
 void
 Synthetic_source_thread::run () {
-    while (1) {
+    while (playing) {
         //qDebug() << "Hello world";
         Frame *f = this->ss->cbuf->get_frame ();
         qDebug() << "Got frame.";
-        Sleeper::msleep (75);
+        Sleeper::msleep (sleep);
         
     /***********************************************************\
     |      5  fps (msleep-200) -> jumpy, 26%  CPU usage         |
@@ -61,3 +63,10 @@ Synthetic_source_thread::run () {
         qDebug() << "Done.";
     }
 }
+
+/*
+void
+Synthetic_source_thread::stop ()
+{
+    this->playing = false;
+}*/

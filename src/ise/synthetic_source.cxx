@@ -17,11 +17,13 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-Synthetic_source::Synthetic_source (Iqt_main_window* mw, int width, int height)
+Synthetic_source::Synthetic_source (Iqt_main_window* mw, int width, int height, double ampl, int fps)
 {
     this->width = width;
     this->height = height;
-    this->thread = new Synthetic_source_thread (width, height);
+    this->ampl = ampl;
+    this->fps = fps;
+    this->thread = new Synthetic_source_thread (width, height, fps);
     this->thread->set_synthetic_source (this);
     qDebug ("connecting: %p %p", this->thread, mw);
     QObject::connect (this->thread, SIGNAL(frame_ready(Frame*, int, int)), 
@@ -75,10 +77,10 @@ simulate_image_ramp (Frame* f, int x_size, int y_size)
 }
 
 static void
-simulate_clip_pos_sin (Frame* f, int x_size, int y_size)
+simulate_clip_pos_sin (Frame* f, int x_size, int y_size, double amplitude)
 {
     static double phase = 0.0;
-    double amp = 50.0;
+    double amp = 50.0 * amplitude;
 
     int xpos = x_size / 2;
     int ypos = (y_size / 2) + (int) (amp*sin(phase));
@@ -114,34 +116,34 @@ simulate_image_fill_fg (Frame* f, int x_size, int y_size,
 }
 
 void
-simulate_image_clip_sin (Frame* f, int x_size, int y_size)
+simulate_image_clip_sin (Frame* f, int x_size, int y_size, double amplitude)
 {
     simulate_image_fill_bg (f, x_size, y_size, 800);
-    simulate_clip_pos_sin (f, x_size, y_size);
+    simulate_clip_pos_sin (f, x_size, y_size, amplitude);
     simulate_image_fill_fg (f, x_size, y_size, 200);
 }
 
 void
-simulate_image_clip_fluoro_pulse (Frame* f, int x_size, int y_size)
+simulate_image_clip_fluoro_pulse (Frame* f, int x_size, int y_size, double amplitude)
 {
     static int countdown1 = 10;
     static int countdown2 = 20;
     if (countdown1 > 0 || countdown2 <= 0) {
 	if (--countdown1 < 0) countdown1 = 0;
 	simulate_image_fill_bg (f, x_size, y_size, 30);
-	simulate_clip_pos_sin (f, x_size, y_size);
+	simulate_clip_pos_sin (f, x_size, y_size, amplitude);
 	simulate_image_fill_fg (f, x_size, y_size, 10);
     } else {
 	--countdown2;
 	simulate_image_fill_bg (f, x_size, y_size, 300);
-	simulate_clip_pos_sin (f, x_size, y_size);
+	simulate_clip_pos_sin (f, x_size, y_size, amplitude);
 	simulate_image_fill_fg (f, x_size, y_size, 100);
     }
 }
 
 
 void
-simulate_image_clip_fluoro_pulses (Frame* f, int x_size, int y_size)
+simulate_image_clip_fluoro_pulses (Frame* f, int x_size, int y_size, double amplitude)
 {
     static int countdown1 = 10;
     static int countdown2 = 10;
@@ -150,24 +152,24 @@ simulate_image_clip_fluoro_pulses (Frame* f, int x_size, int y_size)
 	    countdown2 = 10;
 	}
 	simulate_image_fill_bg (f, x_size, y_size, 20);
-	simulate_clip_pos_sin (f, x_size, y_size);
+	simulate_clip_pos_sin (f, x_size, y_size, amplitude);
 	simulate_image_fill_fg (f, x_size, y_size, 10);
     } else {
 	if (--countdown2 == 0) {
 	    countdown1 = 10;
 	}
 	simulate_image_fill_bg (f, x_size, y_size, 300);
-	simulate_clip_pos_sin (f, x_size, y_size);
+	simulate_clip_pos_sin (f, x_size, y_size, amplitude);
 	simulate_image_fill_fg (f, x_size, y_size, 100);
     }
 }
 
 void
-simulate_image_clip_line (Frame* f, int x_size, int y_size)
+simulate_image_clip_line (Frame* f, int x_size, int y_size, double amplitude)
 {
     int y;
     simulate_image_fill_bg (f, x_size, y_size, 800);
-    simulate_clip_pos_sin (f, x_size, y_size);
+    simulate_clip_pos_sin (f, x_size, y_size, amplitude);
     for (y = 0; y < y_size; y++) {
 	int x1 = y;
 	int x2 = y + (x_size-y_size);
@@ -182,9 +184,9 @@ simulate_image_clip_line (Frame* f, int x_size, int y_size)
 }
 
 static void
-simulate_image (Frame* f, int x_size, int y_size)
+simulate_image (Frame* f, int x_size, int y_size, double amplitude)
 {
-    simulate_image_clip_sin (f, x_size, y_size);
+    simulate_image_clip_sin (f, x_size, y_size, amplitude);
 #if defined (commentout)
     simulate_image_ramp (f, x_size, y_size);
     simulate_image_clip_line (f, x_size, y_size);
@@ -199,7 +201,7 @@ Synthetic_source::grab_image (Frame* f)
     QString t;
     qDebug() << t.sprintf("F pointer = %p", f);
     qDebug() << t.sprintf("img pointer = %p", f->img);
-    qDebug("Height: %d \nWidth: %d", height, width);
-    simulate_image (f, width, height);
+    qDebug("Height: %d \nWidth: %d \nAmplitude: %d", height, width, (int)ampl);
+    simulate_image (f, width, height, ampl);
     qDebug() << "Simulation complete";
 }

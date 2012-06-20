@@ -15,11 +15,13 @@ public:
     ;
     
 public:
-    Synthetic_source_thread (int width, int height);
+    Synthetic_source_thread (int width, int height, int fps);
     virtual ~Synthetic_source_thread ();
     void set_synthetic_source (Synthetic_source *ss);
     unsigned int width;
     unsigned int height;
+    bool playing;
+    int sleep;
 
 protected:
     virtual void run();

@@ -29,16 +29,16 @@ public:
     //Iqt_findscu m_findscu;
     int rows;
     int cols;
-    int ampl;
+    double ampl;
     int mark;
-    int noise;
-
+    int fps;
     Iqt_main_window *mw;
 
 public slots:
     void slot_default (void);
     void slot_proceed (void);
     void slot_cancel (void);
+    void slot_attenuate (void);
     //void slot_settings (void);
 };
 #endif
