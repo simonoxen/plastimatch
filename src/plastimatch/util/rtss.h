@@ -37,6 +37,9 @@ public:
     void load_xio (const Xio_studyset& xio_studyset);
     void load_gdcm_rtss (const char *input_fn,  Slice_index *rdd);
 
+    size_t get_num_structures ();
+    UCharImageType::Pointer get_structure_image (int index);
+
     void save_colormap (const Pstring &colormap_fn);
     void save_cxt (Slice_index *rdd, const Pstring &cxt_fn, bool prune_empty);
     void save_gdcm_rtss (const char *output_dir, Slice_index *rdd);

@@ -22,6 +22,7 @@ typedef itk::Image< OutputPixelType, Dimension > OutputImageType;
 typedef itk::CastImageFilter< ImageType, OutputImageType > CastFilterType;
 typedef itk::ImageFileWriter< OutputImageType >  WriterType;
 
+class Plm_image;
 class Mabs_subject_manager;
 
 class PLMSEGMENT_API Mabs_vote {

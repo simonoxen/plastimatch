@@ -2,6 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmsegment_config.h"
+#include <list>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -9,9 +10,11 @@
 #include "file_util.h"
 #include "mabs.h"
 #include "mabs_parms.h"
+#include "mabs_vote.h"
 #include "plm_image.h"
 #include "plm_parms.h"
 #include "plm_stages.h"
+#include "plm_warp.h"
 #include "print_and_exit.h"
 #include "registration_data.h"
 #include "rtds.h"
@@ -90,17 +93,56 @@ Mabs::run (const Mabs_parms& parms)
         printf ("regp.num_stages = %d\n", regp.num_stages);
         do_registration_pure (&xf_out, &regd, &regp);
 
+        /* Warp the output image */
+        printf ("Warp output image...\n");
+        Plm_image_header fixed_pih (regd.fixed_image);
+        Plm_image warped_image;
+        plm_warp (&warped_image, 0, xf_out, &fixed_pih, regd.moving_image, 
+            regp.default_value, 0, 1);
+
         /* Warp the structures */
+        printf ("Warp structures...\n");
         Plm_image_header source_pih;
+        rtds.m_rtss->prune_empty();
         Rtss_structure_set *cxt = rtds.m_rtss->m_cxt;
         source_pih.set_from_gpuit (cxt->rast_dim, cxt->rast_offset, 
             cxt->rast_spacing, 0);
         rtds.m_rtss->rasterize (&source_pih, false, false);
+        rtds.m_rtss->warp (xf_out, &fixed_pih);
 
-        Plm_image_header dest_pih (regd.fixed_image);
-        rtds.m_rtss->warp (xf_out, &dest_pih);
+        /* Voting loop */
+        printf ("Vote...\n");
+        std::vector<Mabs_vote*> vote_list;
+        for (size_t i = 0; i < rtds.m_rtss->get_num_structures(); i++) 
+        {
+            /* TODO: Check structure name - for now we just assume 
+               structures are in the same order for each atlas */
 
-        /* *** VOTING HAPPENS *** */
+            /* Make a new voter if needed */
+            Mabs_vote *vote;
+            if (i >= vote_list.size()) {
+                vote = new Mabs_vote;
+                vote_list.push_back (vote);
+            } else {
+                vote = vote_list[i];
+            }
+
+            /* Extract binary structure as image */
+            UCharImageType::Pointer structure_image 
+                = rtds.m_rtss->get_structure_image (i);
+
+            /* Send to voter */
+#if defined (commentout)
+            vote->vote_contribution (
+                regd.fixed_image, 
+                warped_image, 
+                Plm_image (structure_image), 
+                like0, 
+                like1
+            );
+#endif
+        }
+
         // each structure in this patient's structures
         // for () {
           // add this structure to the set of structures that we're segmenting

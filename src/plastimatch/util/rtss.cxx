@@ -209,6 +209,41 @@ Rtss::load_xio (const Xio_studyset& studyset)
     xio_structures_load (this->m_cxt, studyset);
 }
 
+size_t
+Rtss::get_num_structures ()
+{
+    if (m_cxt) {
+        return m_cxt->num_structures;
+    }
+    return 0;
+}
+
+UCharImageType::Pointer
+Rtss::get_structure_image (int index)
+{
+    if (!m_ss_img) {
+        print_and_exit (
+            "Error extracting unknown structure image (no ssi %d)\n", index);
+    }
+
+    if (!m_cxt) {
+        print_and_exit (
+            "Error extracting unknown structure image (no cxt %d)\n", index);
+    }
+
+    Rtss_structure *curr_structure = m_cxt->slist[index];
+    int bit = curr_structure->bit;
+
+    if (bit == -1) {
+        print_and_exit (
+            "Error extracting unknown structure image (no bit %d)\n", index);
+    }
+    UCharImageType::Pointer prefix_img 
+        = ss_img_extract_bit (m_ss_img, bit);
+
+    return prefix_img;
+}
+
 void
 Rtss::save_colormap (const Pstring &colormap_fn)
 {
