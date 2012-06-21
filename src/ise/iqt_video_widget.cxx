@@ -108,4 +108,5 @@ Iqt_video_widget::set_qimage (const QImage& qimage)
     delete pmi;                       //remove old pmi (IS necessary)
     pmi = new QGraphicsPixmapItem(QPixmap::fromImage (qimage));
     scene->addItem(pmi);
+    scene->addText("Synthetic Fluoroscopy");
 }

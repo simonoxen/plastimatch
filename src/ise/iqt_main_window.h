@@ -42,12 +42,12 @@ public:
 
     QTimer *m_qtimer;
     bool playing;
+    bool synth;
     unsigned int width;
     unsigned int height;
     QString filename;
 
 public slots:
-    void slot_synth_set (int a/*, int b, int c, int d, int e*/);
     void slot_load (void);
     void slot_save (void);
     void slot_synth (void);

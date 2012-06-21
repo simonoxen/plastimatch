@@ -33,7 +33,14 @@ Synthetic_source::Synthetic_source (Iqt_main_window* mw, int width, int height, 
 void
 Synthetic_source::start ()
 {
+    this->thread->playing = true;
     this->thread->start ();
+}
+
+void
+Synthetic_source::stop ()
+{
+    this->thread->playing = false;
 }
 
 unsigned long

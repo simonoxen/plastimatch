@@ -20,7 +20,6 @@ Synthetic_source_thread::Synthetic_source_thread (int width, int height, int fps
     this->width = width;
     this->height = height;
     this->sleep = 1000/fps;
-    this->playing = true;
 }
 
 Synthetic_source_thread::~Synthetic_source_thread () {
@@ -47,6 +46,7 @@ Synthetic_source_thread::run () {
     |      20 fps (msleep-50)  -> good,  92%  CPU usage         |
     |      25 fps (msleep-40)  -> lags,  102% CPU usage         |
     |      30 fps (msleep-33)  -> lags,  103% CPU usage *CRASH* | 
+    |            <<<FULL RESOLUTION (2048 x 1536)>>>            |
     \***********************************************************/
         
         qDebug() << "Grabbing synth image.";

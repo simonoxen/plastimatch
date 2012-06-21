@@ -53,15 +53,12 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <widget class="QSpinBox" name="rowBox">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
+           <widget class="QSpinBox" name="colBox">
             <property name="minimum">
-             <number>600</number>
+             <number>1280</number>
             </property>
             <property name="maximum">
-             <number>1536</number>
+             <number>2048</number>
             </property>
             <property name="singleStep">
              <number>128</number>
@@ -69,9 +66,9 @@
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="label">
+           <widget class="QLabel" name="label_2">
             <property name="text">
-             <string>Number of Rows</string>
+             <string>Screen Width</string>
             </property>
            </widget>
           </item>
@@ -93,12 +90,15 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <item>
-           <widget class="QSpinBox" name="colBox">
+           <widget class="QSpinBox" name="rowBox">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
             <property name="minimum">
-             <number>800</number>
+             <number>768</number>
             </property>
             <property name="maximum">
-             <number>2048</number>
+             <number>1536</number>
             </property>
             <property name="singleStep">
              <number>128</number>
@@ -106,9 +106,9 @@
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="label_2">
+           <widget class="QLabel" name="label">
             <property name="text">
-             <string>Number of Columns</string>
+             <string>Screen Height</string>
             </property>
            </widget>
           </item>
@@ -138,7 +138,7 @@
              <double>1.000000000000000</double>
             </property>
             <property name="maximum">
-             <double>10.000000000000000</double>
+             <double>13.000000000000000</double>
             </property>
            </widget>
           </item>
@@ -419,11 +419,28 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>rowBox</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>iqtSynthSettings</receiver>
+   <slot>slot_max_amplitude(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>51</x>
+     <y>70</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>188</x>
+     <y>171</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>slot_proceed()</slot>
   <slot>slot_cancel()</slot>
   <slot>slot_default()</slot>
   <slot>slot_attenuate()</slot>
+  <slot>slot_max_amplitude(int)</slot>
  </slots>
 </ui>

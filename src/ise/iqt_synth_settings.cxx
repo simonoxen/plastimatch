@@ -55,6 +55,7 @@ Iqt_synth_settings::slot_proceed ()
     //Iqt_main_window::slot_synth_set (set1/*, set2, set3, set4, set5*/);
 
     ise_app->set_synthetic_source (mw, rows, cols, ampl, mark, fps);
+    mw->synth = true;
     this->close();
     
 }
@@ -64,15 +65,17 @@ Iqt_synth_settings::slot_default ()
 {
     rowBox->setValue(1536);
     colBox->setValue(2048);
+    attenuate->setChecked(false);
     ampBox->setValue(1);
     markBox->setValue(0);
-    noiseBox->setValue(0);
+    noiseBox->setValue(15);
 }
 
 void
 Iqt_synth_settings::slot_attenuate ()
 {   
     double amp = ampBox->value();
+    int height = rowBox->value();
     if (attenuate->isChecked())
     {
         ampBox->setRange(0.1, 1.0);
@@ -80,10 +83,15 @@ Iqt_synth_settings::slot_attenuate ()
         ampBox->setDecimals(1);
         ampBox->setValue(amp/10.);
     } else {
-        ampBox->setRange(1., 10.);
+        ampBox->setRange(1., (double)height/100);
         ampBox->setSingleStep(1.);
         ampBox->setDecimals(0);
         ampBox->setValue(amp*10.);
     }
 }
 
+void
+Iqt_synth_settings::slot_max_amplitude (int height)
+{
+    ampBox->setMaximum((double)height/100);
+}

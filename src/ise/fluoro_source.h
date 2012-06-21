@@ -17,6 +17,7 @@ public:
     virtual const std::string get_type () = 0;
     virtual void start () = 0;
     virtual void grab_image (Frame* f) = 0;
+    virtual void stop () = 0;
 public:
     void set_cbuf (Cbuf * cbuf) {
         this->cbuf = cbuf;

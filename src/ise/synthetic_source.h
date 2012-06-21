@@ -23,6 +23,8 @@ public:
     int height;
     double ampl;
     int fps;
+    virtual void stop ();
+    
 public:
     Synthetic_source_thread *thread;
     

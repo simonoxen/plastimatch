@@ -38,7 +38,14 @@ Iqt_main_window::Iqt_main_window ()
 {
     /* Sets up the GUI */
     setupUi (this);
-
+    
+    setMin->setHidden(true);
+    min_label->setHidden(true);
+    min_val->setHidden(true);
+    setMax->setHidden(true);
+    max_label->setHidden(true);
+    max_val->setHidden(true);
+    
     /* Start the timer */
     //    m_qtimer = new QTimer (this);
     //    connect (m_qtimer, SIGNAL(timeout()), this, SLOT(slot_timer()));
@@ -150,9 +157,13 @@ Iqt_main_window::slot_stop ()
         play_pause_button->setText ("|>");
         action_Play->setText ("&Play");
     } else {
-		QMessageBox::information (0, QString ("Info"), QString ("This video has already been stopped."));
+		QMessageBox::information (0, QString ("Info"),
+		 QString ("This video has already been stopped."));
 	}
 	vid_screen->stop();
+	if (synth) {
+	    ise_app->stop();
+	}
 }
 
 void
@@ -160,17 +171,6 @@ Iqt_main_window::slot_synth ()
 {
     Iqt_synth_settings iqt_synth_settings (this);
     iqt_synth_settings.exec();
-}
-
-void
-Iqt_main_window::slot_synth_set (int a/*, int b, int c, int d, int e*/)
-{
-    qDebug("Setting 1: %d",a);
-    /*qDebug("Setting 2: %d",b);
-    qDebug("Setting 3: %d",c);
-    qDebug("Setting 4: %d",d);
-    qDebug("Setting 5: %d",e);
-    */
 }
 
 void
@@ -190,18 +190,28 @@ Iqt_main_window::slot_frame_ready (Frame* f, int width, int height)
 {
     qDebug ("Hello world");
     qDebug("Got frame %p", f);
-
+    
+    setMin->setHidden(false);
+    min_label->setHidden(false);
+    min_val->setHidden(false);
+    setMax->setHidden(false);
+    max_label->setHidden(false);
+    max_val->setHidden(false);
+    
     this->width = width;
     this->height = height;
-
+    int max = setMax->value(); //changed by sliders, alters bg darkness
+    int min = setMin->value(); //changed by sliders, alters bg&rect darkness
+    
     uchar *data = new uchar[width * height * 4];
     for (int i = 0; i < width * height; i++) {
-        uchar val = (f->img[i] - 200) * 255.0 / (800-200);
-        data[4*i+0] = 0xff;
-        data[4*i+1] = val;
-        data[4*i+2] = val;
-        data[4*i+3] = val;
+        uchar val = (f->img[i] - min) * 255.0 / (max-min);
+        data[4*i+0] = val; //bg red, the 0xff made it blue
+        data[4*i+1] = val; //bg green
+        data[4*i+2] = val; //bg blue
+        //data[4*i+3] = val; //does nothing
     }
     QImage qimage (data, width, height, QImage::Format_RGB32);
+    this->playing = true;
     vid_screen->set_qimage (qimage);
 }

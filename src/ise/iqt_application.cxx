@@ -40,9 +40,11 @@ Iqt_application::set_synthetic_source (
     Iqt_main_window *mw,
     int rowset, int colset, double ampset, int markset, int noiset)
 {
+    qDebug("Set_synth Called");
     if (this->fluoro_source) {
         if (this->fluoro_source->get_type() == "Synthetic") {
             /* Already synthetic */
+            qDebug("Restarting synthetic display...");
             return;
         } else {
             /* Something else, so delete */
@@ -57,6 +59,11 @@ Iqt_application::set_synthetic_source (
    // this->cbuf[0]->init (0, 10, this->fluoro_source->get_size_x(cols), 
      //   this->fluoro_source->get_size_y(rows));
     this->fluoro_source->set_cbuf (this->cbuf[0]);
-
     this->fluoro_source->start ();
+}
+
+void
+Iqt_application::stop ()
+{
+    this->fluoro_source->stop ();
 }

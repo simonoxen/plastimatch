@@ -23,6 +23,7 @@ public:
     void set_synthetic_source (
         Iqt_main_window *mw,
         int rowset, int colset, double ampset, int markset, int noiset);
+    void stop ();
 
 public:
     int num_panels;

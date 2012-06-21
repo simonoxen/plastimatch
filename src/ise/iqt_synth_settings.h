@@ -39,6 +39,7 @@ public slots:
     void slot_proceed (void);
     void slot_cancel (void);
     void slot_attenuate (void);
+    void slot_max_amplitude (int height);
     //void slot_settings (void);
 };
 #endif
