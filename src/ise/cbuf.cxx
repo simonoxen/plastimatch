@@ -57,7 +57,7 @@ Cbuf::clear (void)
     /* Release frames */
     while (!this->frames.empty()) {
         Frame *f = this->frames.front();
-        this->empty.pop_front();
+        this->frames.pop_front();
         delete f;
     }
 

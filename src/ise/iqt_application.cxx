@@ -52,7 +52,7 @@ Iqt_application::set_synthetic_source (
             }*/
 
 	    /*perhaps find a way to call cbuf->cbuf_shutdown_queue()*/
-	    return;
+	    //return;
         } else {
             /* Something else, so delete */
             delete this->fluoro_source;
