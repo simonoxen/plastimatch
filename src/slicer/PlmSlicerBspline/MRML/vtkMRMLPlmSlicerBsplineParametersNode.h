@@ -64,6 +64,7 @@ class VTK_SLICER_PLMSLICERBSPLINE_MODULE_MRML_EXPORT vtkMRMLPlmSlicerBsplinePara
   vtkMRMLVolumeNode* GetOutputVolumeNode();
 #endif
 
+  /* Volume MRML Combo-boxes */
   vtkSetStringMacro(FixedVolumeNodeID);
   vtkSetStringMacro(MovingVolumeNodeID);
   vtkSetStringMacro(WarpedVolumeNodeID);
@@ -74,7 +75,17 @@ class VTK_SLICER_PLMSLICERBSPLINE_MODULE_MRML_EXPORT vtkMRMLPlmSlicerBsplinePara
   vtkGetStringMacro(WarpedVolumeNodeID);
   vtkGetStringMacro(XformVolumeNodeID);
 
+  void SetAndObserveFixedVolumeNodeID(const char *volumeNodeID);
+  void SetAndObserveMovingVolumeNodeID(const char *volumeNodeID);
+  void SetAndObserveWarpedVolumeNodeID(const char *volumeNodeID);
+  void SetAndObserveXformVolumeNodeID(const char *volumeNodeID);
 
+  vtkMRMLVolumeNode* GetFixedVolumeNode();
+  vtkMRMLVolumeNode* GetMovingVolumeNode();
+  vtkMRMLVolumeNode* GetWarpedVolumeNode();
+  vtkMRMLVolumeNode* GetXformVolumeNode();
+
+  /* Simple QT widgets */
   vtkSetMacro(UseMSE, bool);
   vtkGetMacro(UseMSE, bool);
   vtkBooleanMacro(UseMSE, bool);
@@ -82,6 +93,15 @@ class VTK_SLICER_PLMSLICERBSPLINE_MODULE_MRML_EXPORT vtkMRMLPlmSlicerBsplinePara
   vtkSetMacro(UseMI, bool);
   vtkGetMacro(UseMI, bool);
   vtkBooleanMacro(UseMI, bool);
+
+  /* Control Grid Dimensions */
+  vtkSetMacro(GridX, int);
+  vtkSetMacro(GridY, int);
+  vtkSetMacro(GridZ, int);
+
+  vtkGetMacro(GridX, int);
+  vtkGetMacro(GridY, int);
+  vtkGetMacro(GridZ, int);
 
 protected:
   vtkMRMLPlmSlicerBsplineParametersNode();
@@ -102,6 +122,11 @@ protected:
 
   bool UseMSE;
   bool UseMI;
+
+  double GridX;
+  double GridY;
+  double GridZ;
+
 };
 
 #endif

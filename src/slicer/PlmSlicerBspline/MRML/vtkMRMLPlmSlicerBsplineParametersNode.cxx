@@ -122,41 +122,37 @@ void vtkMRMLPlmSlicerBsplineParametersNode::WriteXML(ostream& of, int nIndent)
 //----------------------------------------------------------------------------
 void vtkMRMLPlmSlicerBsplineParametersNode::UpdateReferenceID(const char *oldID, const char *newID)
 {
-#if 0
-  if (this->InputVolumeNodeID && !strcmp(oldID, this->InputVolumeNodeID))
-    {
-    this->SetAndObserveInputVolumeNodeID(newID);
-    }
-  if (this->OutputVolumeNodeID && !strcmp(oldID, this->OutputVolumeNodeID))
-    {
-    this->SetAndObserveOutputVolumeNodeID(newID);
-    }
-  if (this->ROINodeID && !strcmp(oldID, this->ROINodeID))
-    {
-    this->SetAndObserveROINodeID(newID);
-    }
-#endif
+  if (this->FixedVolumeNodeID && !strcmp(oldID, this->FixedVolumeNodeID)) {
+    this->SetAndObserveFixedVolumeNodeID(newID);
+  }
+  if (this->MovingVolumeNodeID && !strcmp(oldID, this->MovingVolumeNodeID)) {
+    this->SetAndObserveMovingVolumeNodeID(newID);
+  }
+  if (this->WarpedVolumeNodeID && !strcmp(oldID, this->WarpedVolumeNodeID)) {
+    this->SetAndObserveWarpedVolumeNodeID(newID);
+  }
+  if (this->XformVolumeNodeID && !strcmp(oldID, this->XformVolumeNodeID)) {
+    this->SetAndObserveXformVolumeNodeID(newID);
+  }
 }
 
 //-----------------------------------------------------------
 void vtkMRMLPlmSlicerBsplineParametersNode::UpdateReferences()
 {
-#if 0
    Superclass::UpdateReferences();
 
-  if (this->InputVolumeNodeID != NULL && this->Scene->GetNodeByID(this->InputVolumeNodeID) == NULL)
-    {
-    this->SetAndObserveInputVolumeNodeID(NULL);
-    }
-  if (this->OutputVolumeNodeID != NULL && this->Scene->GetNodeByID(this->OutputVolumeNodeID) == NULL)
-    {
-    this->SetAndObserveOutputVolumeNodeID(NULL);
-    }
-  if (this->ROINodeID != NULL && this->Scene->GetNodeByID(this->ROINodeID) == NULL)
-    {
-    this->SetAndObserveROINodeID(NULL);
-    }
-#endif
+  if (this->FixedVolumeNodeID != NULL && this->Scene->GetNodeByID(this->FixedVolumeNodeID) == NULL) {
+    this->SetAndObserveFixedVolumeNodeID(NULL);
+  }
+  if (this->MovingVolumeNodeID != NULL && this->Scene->GetNodeByID(this->MovingVolumeNodeID) == NULL) {
+    this->SetAndObserveMovingVolumeNodeID(NULL);
+  }
+  if (this->WarpedVolumeNodeID != NULL && this->Scene->GetNodeByID(this->WarpedVolumeNodeID) == NULL) {
+    this->SetAndObserveWarpedVolumeNodeID(NULL);
+  }
+  if (this->XformVolumeNodeID != NULL && this->Scene->GetNodeByID(this->XformVolumeNodeID) == NULL) {
+    this->SetAndObserveXformVolumeNodeID(NULL);
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -164,118 +160,154 @@ void vtkMRMLPlmSlicerBsplineParametersNode::UpdateReferences()
 // Does NOT copy: ID, FilePrefix, Name, SliceID
 void vtkMRMLPlmSlicerBsplineParametersNode::Copy(vtkMRMLNode *anode)
 {
-#if 0
   Superclass::Copy(anode);
   vtkMRMLPlmSlicerBsplineParametersNode *node = vtkMRMLPlmSlicerBsplineParametersNode::SafeDownCast(anode);
   this->DisableModifiedEventOn();
 
-  this->SetInputVolumeNodeID(node->GetInputVolumeNodeID());
-  this->SetOutputVolumeNodeID(node->GetOutputVolumeNodeID());
+  this->SetFixedVolumeNodeID(node->GetFixedVolumeNodeID());
+  this->SetMovingVolumeNodeID(node->GetMovingVolumeNodeID());
+  this->SetWarpedVolumeNodeID(node->GetWarpedVolumeNodeID());
+  this->SetXformVolumeNodeID(node->GetXformVolumeNodeID());
+
+#if 0
   this->SetROINodeID(node->GetROINodeID());
   this->SetInterpolationMode(node->GetInterpolationMode());
   this->SetROIVisibility(node->GetROIVisibility());
+#endif
   
   this->DisableModifiedEventOff();
   this->InvokePendingModifiedEvent();
-#endif
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLPlmSlicerBsplineParametersNode::SetAndObserveInputVolumeNodeID(const char *volumeNodeID)
+void vtkMRMLPlmSlicerBsplineParametersNode::SetAndObserveFixedVolumeNodeID(const char *volumeNodeID)
 {
-  vtkSetAndObserveMRMLObjectMacro(this->InputVolumeNode, NULL);
+  vtkSetAndObserveMRMLObjectMacro(this->FixedVolumeNode, NULL);
 
   if (volumeNodeID != NULL)
   {
-    this->SetInputVolumeNodeID(volumeNodeID);
-    vtkMRMLVolumeNode *node = this->GetInputVolumeNode();
-    vtkSetAndObserveMRMLObjectMacro(this->InputVolumeNode, node);
+    this->SetFixedVolumeNodeID(volumeNodeID);
+    vtkMRMLVolumeNode *node = this->GetFixedVolumeNode();
+    vtkSetAndObserveMRMLObjectMacro(this->FixedVolumeNode, node);
   }
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLPlmSlicerBsplineParametersNode::SetAndObserveOutputVolumeNodeID(const char *volumeNodeID)
+void vtkMRMLPlmSlicerBsplineParametersNode::SetAndObserveMovingVolumeNodeID(const char *volumeNodeID)
 {
-  vtkSetAndObserveMRMLObjectMacro(this->OutputVolumeNode, NULL);
+  vtkSetAndObserveMRMLObjectMacro(this->MovingVolumeNode, NULL);
 
   if (volumeNodeID != NULL)
   {
-    this->SetOutputVolumeNodeID(volumeNodeID);
-    vtkMRMLVolumeNode *node = this->GetOutputVolumeNode();
-    vtkSetAndObserveMRMLObjectMacro(this->OutputVolumeNode, node);
+    this->SetMovingVolumeNodeID(volumeNodeID);
+    vtkMRMLVolumeNode *node = this->GetMovingVolumeNode();
+    vtkSetAndObserveMRMLObjectMacro(this->MovingVolumeNode, node);
   }
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLPlmSlicerBsplineParametersNode::SetAndObserveROINodeID(const char *ROINodeID)
+void vtkMRMLPlmSlicerBsplineParametersNode::SetAndObserveWarpedVolumeNodeID(const char *volumeNodeID)
 {
-  vtkSetAndObserveMRMLObjectMacro(this->ROINode, NULL);
+  vtkSetAndObserveMRMLObjectMacro(this->WarpedVolumeNode, NULL);
 
-  if (ROINodeID != NULL)
+  if (volumeNodeID != NULL)
   {
-    this->SetROINodeID(ROINodeID);
-    vtkMRMLAnnotationROINode *node = this->GetROINode();
-    vtkSetAndObserveMRMLObjectMacro(this->ROINode, node);
+    this->SetWarpedVolumeNodeID(volumeNodeID);
+    vtkMRMLVolumeNode *node = this->GetWarpedVolumeNode();
+    vtkSetAndObserveMRMLObjectMacro(this->WarpedVolumeNode, node);
   }
 }
 
 //----------------------------------------------------------------------------
-vtkMRMLVolumeNode* vtkMRMLPlmSlicerBsplineParametersNode::GetInputVolumeNode()
+void vtkMRMLPlmSlicerBsplineParametersNode::SetAndObserveXformVolumeNodeID(const char *volumeNodeID)
 {
-  if (this->InputVolumeNodeID == NULL)
-    {
-    vtkSetAndObserveMRMLObjectMacro(this->InputVolumeNode, NULL);
-    }
-  else if (this->GetScene() &&
-           ((this->InputVolumeNode != NULL && strcmp(this->InputVolumeNode->GetID(), this->InputVolumeNodeID)) ||
-            (this->InputVolumeNode == NULL)) )
-    {
-    vtkMRMLNode* snode = this->GetScene()->GetNodeByID(this->InputVolumeNodeID);
-    vtkSetAndObserveMRMLObjectMacro(this->InputVolumeNode, vtkMRMLVolumeNode::SafeDownCast(snode));
-    }
-  return this->InputVolumeNode;
+  vtkSetAndObserveMRMLObjectMacro(this->XformVolumeNode, NULL);
+
+  if (volumeNodeID != NULL)
+  {
+    this->SetXformVolumeNodeID(volumeNodeID);
+    vtkMRMLVolumeNode *node = this->GetXformVolumeNode();
+    vtkSetAndObserveMRMLObjectMacro(this->XformVolumeNode, node);
+  }
 }
 
 //----------------------------------------------------------------------------
-vtkMRMLVolumeNode* vtkMRMLPlmSlicerBsplineParametersNode::GetOutputVolumeNode()
+vtkMRMLVolumeNode* vtkMRMLPlmSlicerBsplineParametersNode::GetFixedVolumeNode()
 {
-    if (this->OutputVolumeNodeID == NULL) {
-        vtkSetAndObserveMRMLObjectMacro(this->OutputVolumeNode, NULL);
-    }
-    else if (this->GetScene() &&
-           ((this->OutputVolumeNode != NULL && strcmp(this->OutputVolumeNode->GetID(), this->OutputVolumeNodeID)) ||
-            (this->OutputVolumeNode == NULL)) )
+  if (this->FixedVolumeNodeID == NULL)
     {
-        vtkMRMLNode* snode = this->GetScene()->GetNodeByID(this->OutputVolumeNodeID);
-        vtkSetAndObserveMRMLObjectMacro(this->OutputVolumeNode, vtkMRMLVolumeNode::SafeDownCast(snode));
+    vtkSetAndObserveMRMLObjectMacro(this->FixedVolumeNode, NULL);
     }
-    return this->OutputVolumeNode;
+  else if (this->GetScene() &&
+           ((this->FixedVolumeNode != NULL && strcmp(this->FixedVolumeNode->GetID(), this->FixedVolumeNodeID)) ||
+            (this->FixedVolumeNode == NULL)) )
+    {
+    vtkMRMLNode* snode = this->GetScene()->GetNodeByID(this->FixedVolumeNodeID);
+    vtkSetAndObserveMRMLObjectMacro(this->FixedVolumeNode, vtkMRMLVolumeNode::SafeDownCast(snode));
+    }
+  return this->FixedVolumeNode;
 }
 
 //----------------------------------------------------------------------------
-vtkMRMLAnnotationROINode* vtkMRMLPlmSlicerBsplineParametersNode::GetROINode()
+vtkMRMLVolumeNode* vtkMRMLPlmSlicerBsplineParametersNode::GetMovingVolumeNode()
 {
-  if (this->ROINodeID == NULL)
+  if (this->MovingVolumeNodeID == NULL)
     {
-    vtkSetAndObserveMRMLObjectMacro(this->ROINode, NULL);
+    vtkSetAndObserveMRMLObjectMacro(this->MovingVolumeNode, NULL);
     }
   else if (this->GetScene() &&
-           ((this->ROINode != NULL && strcmp(this->ROINode->GetID(), this->ROINodeID)) ||
-            (this->ROINode == NULL)) )
+           ((this->MovingVolumeNode != NULL && strcmp(this->MovingVolumeNode->GetID(), this->MovingVolumeNodeID)) ||
+            (this->MovingVolumeNode == NULL)) )
     {
-    vtkMRMLNode* snode = this->GetScene()->GetNodeByID(this->ROINodeID);
-    vtkSetAndObserveMRMLObjectMacro(this->ROINode, vtkMRMLAnnotationROINode::SafeDownCast(snode));
+    vtkMRMLNode* snode = this->GetScene()->GetNodeByID(this->MovingVolumeNodeID);
+    vtkSetAndObserveMRMLObjectMacro(this->MovingVolumeNode, vtkMRMLVolumeNode::SafeDownCast(snode));
     }
-  return this->ROINode;
+  return this->MovingVolumeNode;
 }
+
+//----------------------------------------------------------------------------
+vtkMRMLVolumeNode* vtkMRMLPlmSlicerBsplineParametersNode::GetWarpedVolumeNode()
+{
+  if (this->WarpedVolumeNodeID == NULL)
+    {
+    vtkSetAndObserveMRMLObjectMacro(this->WarpedVolumeNode, NULL);
+    }
+  else if (this->GetScene() &&
+           ((this->WarpedVolumeNode != NULL && strcmp(this->WarpedVolumeNode->GetID(), this->WarpedVolumeNodeID)) ||
+            (this->WarpedVolumeNode == NULL)) )
+    {
+    vtkMRMLNode* snode = this->GetScene()->GetNodeByID(this->WarpedVolumeNodeID);
+    vtkSetAndObserveMRMLObjectMacro(this->WarpedVolumeNode, vtkMRMLVolumeNode::SafeDownCast(snode));
+    }
+  return this->WarpedVolumeNode;
+}
+
+//----------------------------------------------------------------------------
+vtkMRMLVolumeNode* vtkMRMLPlmSlicerBsplineParametersNode::GetXformVolumeNode()
+{
+  if (this->XformVolumeNodeID == NULL)
+    {
+    vtkSetAndObserveMRMLObjectMacro(this->XformVolumeNode, NULL);
+    }
+  else if (this->GetScene() &&
+           ((this->XformVolumeNode != NULL && strcmp(this->XformVolumeNode->GetID(), this->XformVolumeNodeID)) ||
+            (this->XformVolumeNode == NULL)) )
+    {
+    vtkMRMLNode* snode = this->GetScene()->GetNodeByID(this->XformVolumeNodeID);
+    vtkSetAndObserveMRMLObjectMacro(this->XformVolumeNode, vtkMRMLVolumeNode::SafeDownCast(snode));
+    }
+  return this->XformVolumeNode;
+}
+
 
 //-----------------------------------------------------------
 void vtkMRMLPlmSlicerBsplineParametersNode::UpdateScene(vtkMRMLScene *scene)
 {
   Superclass::UpdateScene(scene);
-  this->SetAndObserveInputVolumeNodeID(this->InputVolumeNodeID);
-  this->SetAndObserveOutputVolumeNodeID(this->OutputVolumeNodeID);
-  this->SetAndObserveROINodeID(this->ROINodeID);
+  this->SetAndObserveFixedVolumeNodeID(this->FixedVolumeNodeID);
+  this->SetAndObserveMovingVolumeNodeID(this->MovingVolumeNodeID);
+  this->SetAndObserveWarpedVolumeNodeID(this->WarpedVolumeNodeID);
+  this->SetAndObserveXformVolumeNodeID(this->XformVolumeNodeID);
 }
 
 //---------------------------------------------------------------------------
@@ -293,12 +325,14 @@ void vtkMRMLPlmSlicerBsplineParametersNode::PrintSelf(ostream& os, vtkIndent ind
 {
   Superclass::PrintSelf(os,indent);
 
+#if 0
   os << "InputVolumeNodeID: " << ( (this->InputVolumeNodeID) ? this->InputVolumeNodeID : "None" ) << "\n";
   os << "OutputVolumeNodeID: " << ( (this->OutputVolumeNodeID) ? this->OutputVolumeNodeID : "None" ) << "\n";
   os << "ROINodeID: " << ( (this->ROINodeID) ? this->ROINodeID : "None" ) << "\n";
   os << "ROIVisibility: " << this->ROIVisibility << "\n";
   os << "InterpolationMode: " << this->InterpolationMode << "\n";
   os << "IsotropicResampling: " << this->IsotropicResampling << "\n";
+#endif
 }
 
 // End

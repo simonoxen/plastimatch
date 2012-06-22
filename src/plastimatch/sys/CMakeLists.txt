@@ -10,6 +10,10 @@ configure_file (
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 
+## JAS 2012.06.22
+##   Currently, it is necessary for appliations linking against
+##   plmregister to also link against bstrlib
+
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES
 ##-----------------------------------------------------------------------------

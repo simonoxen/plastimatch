@@ -32,5 +32,5 @@ SlicerMacroBuildModuleLogic(
   EXPORT_DIRECTIVE ${module_logic_export_directive}
   INCLUDE_DIRECTORIES ${module_logic_include_directories}
   SRCS ${module_logic_SRCS}
-  TARGET_LIBRARIES ${module_logic_target_libraries}
+  TARGET_LIBRARIES ${module_logic_target_libraries} ${PLASTIMATCH_LIBS} bstrlib
   )

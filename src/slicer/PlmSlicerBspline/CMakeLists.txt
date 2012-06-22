@@ -88,6 +88,7 @@ set(qt_module_UI_SRCS
 # Additional Target libraries
 set(qt_module_target_libraries
   vtkSlicerPlmSlicerBsplineModuleLogic
+  vtkSlicerPlmSlicerBsplineModuleMRML
   )
 
 # Resources
@@ -110,7 +111,7 @@ slicerMacroBuildQtModule(
   SRCS ${qt_module_SRCS}
   MOC_SRCS ${qt_module_MOC_SRCS}
   UI_SRCS ${qt_module_UI_SRCS}
-  TARGET_LIBRARIES ${qt_module_target_libraries} ${PLASTIMATCH_LIBS}
+  TARGET_LIBRARIES ${qt_module_target_libraries}
   RESOURCES ${qt_module_resources}
   )
 

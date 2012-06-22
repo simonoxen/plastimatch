@@ -59,7 +59,7 @@ enum Regularization_type {
     REGULARIZATION_BSPLINE_NUMERIC
 };
 
-class Stage_parms {
+class PLMREGISTER_API Stage_parms {
 public:
     /* Stage # */
     int stage_no;
@@ -200,6 +200,7 @@ public:
 
 class PLMREGISTER_API Registration_parms {
 public:
+    int num_stages;
     char moving_fn[_MAX_PATH];
     char fixed_fn[_MAX_PATH];
     char moving_mask_fn[_MAX_PATH];
@@ -222,7 +223,6 @@ public:
     int init_type;
     double init[12];
 
-    int num_stages;
     Stage_parms** stages;
 
     /* for 4D and atlas */

@@ -7,6 +7,8 @@
 #include <cstdlib>
 #include <vtkSlicerModuleLogic.h>
 
+#include "itkImage.h"
+
 #include "vtkSlicerPlmSlicerBsplineModuleLogicExport.h"
 class vtkMRMLPlmSlicerBsplineParametersNode;
 
@@ -24,7 +26,6 @@ public:
   void InitializeEventListeners();
 
   int Apply(vtkMRMLPlmSlicerBsplineParametersNode*);
-//  int Apply();
 
 protected:
   vtkSlicerPlmSlicerBsplineLogic();
@@ -35,10 +36,13 @@ protected:
   virtual void UpdateFromMRMLScene();
   virtual void OnMRMLSceneNodeAdded(vtkMRMLNode* node);
   virtual void OnMRMLSceneNodeRemoved(vtkMRMLNode* node);
-private:
 
-  vtkSlicerPlmSlicerBsplineLogic(const vtkSlicerPlmSlicerBsplineLogic&); // Not implemented
-  void operator=(const vtkSlicerPlmSlicerBsplineLogic&);               // Not implemented
+private:
+  void ConvertVtkImageToItkImage (vtkImageData* inVolume, itk::Image<float, 3>::Pointer outVolume);
+
+  /* Not implemented */
+  vtkSlicerPlmSlicerBsplineLogic (const vtkSlicerPlmSlicerBsplineLogic&);
+  void operator= (const vtkSlicerPlmSlicerBsplineLogic&);
 };
 
 #endif

@@ -44,6 +44,9 @@ protected slots:
   void onXformVolumeChanged();
   void onMSEChanged();
   void onMIChanged();
+  void onGridXChanged(int s);
+  void onGridYChanged(int s);
+  void onGridZChanged(int s);
 
 private:
   Q_DECLARE_PRIVATE(qSlicerPlmSlicerBsplineModuleWidget);

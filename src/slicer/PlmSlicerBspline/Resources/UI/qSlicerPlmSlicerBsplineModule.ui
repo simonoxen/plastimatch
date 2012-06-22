@@ -73,7 +73,7 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>
-           <widget class="QSpinBox" name="spinBox">
+           <widget class="QSpinBox" name="spinBoxGridX">
             <property name="value">
              <number>20</number>
             </property>
@@ -90,7 +90,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QSpinBox" name="spinBox_2">
+           <widget class="QSpinBox" name="spinBoxGridY">
             <property name="value">
              <number>20</number>
             </property>
@@ -107,14 +107,14 @@
            </widget>
           </item>
           <item>
-           <widget class="QSpinBox" name="spinBox_3">
+           <widget class="QSpinBox" name="spinBoxGridZ">
             <property name="value">
              <number>20</number>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="label_7">
+           <widget class="QLabel" name="label_mm">
             <property name="text">
              <string>mm</string>
             </property>

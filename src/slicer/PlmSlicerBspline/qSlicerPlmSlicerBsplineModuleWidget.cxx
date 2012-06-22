@@ -77,6 +77,14 @@ void qSlicerPlmSlicerBsplineModuleWidget::setup()
   connect (d->radioButtonMI, SIGNAL(toggled(bool)),
           this, SLOT(onMIChanged()));
 
+  /* Grid Spinner Boxes */
+  connect (d->spinBoxGridX, SIGNAL(valueChanged(int)),
+          this, SLOT(onGridXChanged(int)));
+  connect (d->spinBoxGridY, SIGNAL(valueChanged(int)),
+          this, SLOT(onGridYChanged(int)));
+  connect (d->spinBoxGridZ, SIGNAL(valueChanged(int)),
+          this, SLOT(onGridZChanged(int)));
+
   /* the "GO" button */
   connect (d->registerPushButton, SIGNAL(clicked()),
           this, SLOT(onApply()));
@@ -84,12 +92,17 @@ void qSlicerPlmSlicerBsplineModuleWidget::setup()
 
 void qSlicerPlmSlicerBsplineModuleWidget::enter()
 {
+  Q_D(qSlicerPlmSlicerBsplineModuleWidget);
+
   this->onFixedVolumeChanged ();
   this->onMovingVolumeChanged ();
   this->onWarpedVolumeChanged ();
   this->onXformVolumeChanged ();
   this->onMSEChanged ();
   this->onMIChanged ();
+  this->onGridXChanged (d->spinBoxGridX->value());
+  this->onGridYChanged (d->spinBoxGridX->value());
+  this->onGridZChanged (d->spinBoxGridX->value());
 }
 
 void qSlicerPlmSlicerBsplineModuleWidget::setMRMLScene(vtkMRMLScene* scene)
@@ -97,11 +110,7 @@ void qSlicerPlmSlicerBsplineModuleWidget::setMRMLScene(vtkMRMLScene* scene)
   this->Superclass::setMRMLScene (scene);
   if(scene == NULL) return;
 
-  /* JAS 2012.06.2012 */
-  /* parameter node creation currently segfaults slicer.
-   * (See line 137)
-   * New macro is not being satisfied. */
-//  this->initializeParameterNode (scene);
+  this->initializeParameterNode (scene);
 
 #if 0
   this->updateWidget();
@@ -110,7 +119,6 @@ void qSlicerPlmSlicerBsplineModuleWidget::setMRMLScene(vtkMRMLScene* scene)
   qvtkReconnect(this->mrmlScene(), vtkMRMLScene::EndCloseEvent, 
     this, SLOT(onEndCloseEvent()));
 #endif
-
 }
 
 #if 0
@@ -184,23 +192,10 @@ void qSlicerPlmSlicerBsplineModuleWidget::updateParameters()
     pNode->SetXformVolumeNodeID(NULL);
   }
 
-//  pNode->SetROIVisibility(d->VisibilityButton->isChecked());
-
-#if 0
-  if(d->NNRadioButton->isChecked())
-    pNode->SetInterpolationMode(1);
-  else if(d->LinearRadioButton->isChecked())
-    pNode->SetInterpolationMode(2);
-  else if(d->WSRadioButton->isChecked())
-    pNode->SetInterpolationMode(3);
-  else if(d->BSRadioButton->isChecked())
-    pNode->SetInterpolationMode(4);
-
-  if(d->IsotropicCheckbox->isChecked())
-    pNode->SetIsotropicResampling(1);
-
-  pNode->SetSpacingScalingConst(d->SpacingScalingSpinBox->value());
-#endif
+  /* Control Grid */
+  pNode->SetGridX (d->spinBoxGridX->value());
+  pNode->SetGridY (d->spinBoxGridY->value());
+  pNode->SetGridZ (d->spinBoxGridZ->value());
 }
 
 //-----------------------------------------------------------------------------
@@ -208,21 +203,9 @@ void qSlicerPlmSlicerBsplineModuleWidget::onApply()
 {
   Q_D(const qSlicerPlmSlicerBsplineModuleWidget);
 
-#if 0
-  /* GCS 2012-01-21: This seems simpler/better than the CropVolume 
-     example code which adds a logic() member to the Q_D class */
-  vtkSlicerPlmSlicerBsplineLogic *logic = 
-    vtkSlicerPlmSlicerBsplineLogic::SafeDownCast(this->logic());
-#endif
-
   vtkSlicerPlmSlicerBsplineLogic *logic = d->logic();
   fprintf (stderr, "parametersNode: %p\n", this->parametersNode);
-//  logic->Apply(this->parametersNode);
-
-#if 0
-  vtkIndent ind;
-  this->parametersNode->PrintSelf(cout, ind);
-#endif
+  logic->Apply(this->parametersNode);
 }
 
 //-----------------------------------------------------------------------------
@@ -289,5 +272,37 @@ void qSlicerPlmSlicerBsplineModuleWidget::onMIChanged()
     if (!this->parametersNode) return;
 
     this->parametersNode->SetUseMI(d->radioButtonMSE->isChecked());
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerPlmSlicerBsplineModuleWidget::onGridXChanged(int s)
+{
+  if (!this->parametersNode) {
+    return;
+  }
+  vtkMRMLPlmSlicerBsplineParametersNode *p = this->parametersNode;
+  p->SetGridX (s);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerPlmSlicerBsplineModuleWidget::onGridYChanged(int s)
+{
+  if(!this->parametersNode)
+    {
+    return;
+    }
+  vtkMRMLPlmSlicerBsplineParametersNode *p = this->parametersNode;
+  p->SetGridY (s);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerPlmSlicerBsplineModuleWidget::onGridZChanged(int s)
+{
+  if(!this->parametersNode)
+    {
+    return;
+    }
+  vtkMRMLPlmSlicerBsplineParametersNode *p = this->parametersNode;
+  p->SetGridZ (s);
 }
 

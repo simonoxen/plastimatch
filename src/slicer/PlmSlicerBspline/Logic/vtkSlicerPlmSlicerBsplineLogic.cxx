@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include <stdio.h>
+#include <string.h>
 // ModuleTemplate includes
 #include "vtkSlicerPlmSlicerBsplineLogic.h"
 #include "vtkMRMLPlmSlicerBsplineParametersNode.h"
@@ -11,14 +11,26 @@
 
 // VTK includes
 #include <vtkNew.h>
+#include <vtkImageData.h>
+#include <vtkImageExport.h>
 
 // STD includes
 #include <cassert>
 
+// Plastimatch includes
+#include "plm_path.h"   // <-- unghf!
+#include "plmbase.h"
+#include "plmregister.h"
+
+/* JAS 2012.06.22 */
+/* We must include plm_path.h because Registration_parms
+ * has fixed array members defined using _MAX_PATH.  Without
+ * it, array offsets will not match and you'll segfault. */
+
 //----------------------------------------------------------------------------
 vtkStandardNewMacro(vtkSlicerPlmSlicerBsplineLogic);
 
-//----------------------------------------------------------------------------
+//---------------------------------------------------------------------------- 
 vtkSlicerPlmSlicerBsplineLogic::vtkSlicerPlmSlicerBsplineLogic()
 {
 }
@@ -69,14 +81,66 @@ void vtkSlicerPlmSlicerBsplineLogic
 }
 
 //----------------------------------------------------------------------------
+void vtkSlicerPlmSlicerBsplineLogic::ConvertVtkImageToItkImage(vtkImageData* inVolume, itk::Image<float, 3>::Pointer outVolume)
+{
+  if (inVolume == NULL) {
+    vtkErrorMacro ("Failed to convert vtk image to itk image - input image is NULL!"); 
+    return; 
+  }
+
+  if (outVolume.IsNull()) {
+    vtkErrorMacro("Failed to convert vtk image to itk image - output image is NULL!"); 
+    return; 
+  }
+
+  // convert vtkImageData to itkImage 
+  vtkSmartPointer<vtkImageExport> imageExport = vtkSmartPointer<vtkImageExport>::New(); 
+  imageExport->SetInput (inVolume); 
+  imageExport->Update (); 
+
+  int extent[6]={0,0,0,0,0,0}; 
+  inVolume->GetExtent (extent); 
+
+  itk::Image<float, 3>::SizeType size;
+  size[0] = extent[1] - extent[0] + 1;
+  size[1] = extent[3] - extent[2] + 1;
+  size[2] = extent[5] - extent[4] + 1;
+
+  itk::Image<float, 3>::IndexType start;
+  //double* inputOrigin = inVolume->GetOrigin();
+  //start[0]=inputOrigin[0];
+  //start[1]=inputOrigin[1];
+  //start[2]=inputOrigin[2];
+  start[0]=0.0;
+  start[1]=0.0;
+  start[2]=0.0;
+
+  itk::Image<float, 3>::RegionType region;
+  region.SetSize (size);
+  region.SetIndex (start);
+  outVolume->SetRegions (region);
+
+  //double* inputSpacing = inVolume->GetSpacing();
+  //outVolume->SetSpacing(inputSpacing);
+
+  try {
+    outVolume->Allocate ();
+  }
+  catch (itk::ExceptionObject & err) {
+    vtkErrorMacro ("Failed to allocate memory for the image conversion: " << err.GetDescription() ); 
+    return; 
+  }
+
+  imageExport->Export (outVolume->GetBufferPointer()); 
+}
+
+
+//----------------------------------------------------------------------------
 //int vtkSlicerPlmSlicerBsplineLogic::Apply()
 int vtkSlicerPlmSlicerBsplineLogic::Apply(vtkMRMLPlmSlicerBsplineParametersNode* pnode)
 {
   vtkMRMLScene *scene = this->GetMRMLScene();
 
-  fprintf (stderr, ">>> %s\n", pnode->GetFixedVolumeNodeID());
-
-#if 0
   vtkMRMLVolumeNode *fixedInputVolume = 
     vtkMRMLVolumeNode::SafeDownCast(scene->GetNodeByID(pnode->GetFixedVolumeNodeID()));
   vtkMRMLVolumeNode *movingInputVolume = 
@@ -102,174 +166,53 @@ int vtkSlicerPlmSlicerBsplineLogic::Apply(vtkMRMLPlmSlicerBsplineParametersNode*
     std::cerr << "Failed to look up xform volume!" << std::endl;
     return -1;
   }
-#endif
 
+  // Convert input images to the format Plastimatch can use
+  itk::Image<float, 3>::Pointer fixedInputVolumeItk = itk::Image<float, 3>::New();
+  itk::Image<float, 3>::Pointer movingInputVolumeItk = itk::Image<float, 3>::New();
+  itk::Image<float, 3>::Pointer warpedInputVolumeItk = itk::Image<float, 3>::New();
+  itk::Image<float, 3>::Pointer xformInputVolumeItk = itk::Image<float, 3>::New();
+  Plm_image* fixed  = new Plm_image (fixedInputVolumeItk);
+  Plm_image* moving = new Plm_image (movingInputVolumeItk);
+
+  ConvertVtkImageToItkImage (fixedInputVolume->GetImageData(),  fixedInputVolumeItk);
+  ConvertVtkImageToItkImage (movingInputVolume->GetImageData(), movingInputVolumeItk);
+//  ConvertVtkImageToItkImage (warpedInputVolume->GetImageData(), warpedInputVolumeItk);
+//  ConvertVtkImageToItkImage (xformInputVolume->GetImageData(),  xformInputVolumeItk);
+
+  /* Setup the registration parms - single stage only */
+
+  /* JAS 2012.06.22
+   *   There seems to be a linking issue somewhere
+   *   because writing to members of regp crashes
+   *   Slicer.  Oddly, reading back values set by
+   *   the regp constructor works fine. o_O */
 #if 0
-  vtkMRMLScalarVolumeNode *refVolume;
-  vtkMRMLVolumeNode *outputVolume = NULL;
-  vtkMatrix4x4 *inputRASToIJK = vtkMatrix4x4::New();
-  vtkMatrix4x4 *inputIJKToRAS = vtkMatrix4x4::New();
-  vtkMatrix4x4 *outputRASToIJK = vtkMatrix4x4::New();
-  vtkMatrix4x4 *outputIJKToRAS = vtkMatrix4x4::New();
-  vtkMRMLLinearTransformNode *movingVolumeTransform = NULL, *roiTransform = NULL;
-
-  // make sure inputs are initialized
-  if(!inputVolume || !inputROI )
-    {
-    std::cerr << "CropVolume: Inputs are not initialized" << std::endl;
-    return -1;
-    }
-
-  // check the output volume type
-  vtkMRMLDiffusionTensorVolumeNode *dtvnode= vtkMRMLDiffusionTensorVolumeNode::SafeDownCast(inputVolume);
-  vtkMRMLDiffusionWeightedVolumeNode *dwvnode= vtkMRMLDiffusionWeightedVolumeNode::SafeDownCast(inputVolume);
-  vtkMRMLVectorVolumeNode *vvnode= vtkMRMLVectorVolumeNode::SafeDownCast(inputVolume);
-  vtkMRMLScalarVolumeNode *svnode = vtkMRMLScalarVolumeNode::SafeDownCast(inputVolume);
-
-  if(!this->Internal->VolumesLogic){
-      std::cerr << "CropVolume: ERROR: failed to get hold of Volumes logic" << std::endl;
-      return -2;
-  }
-  if(dtvnode){
-    std::cerr << "CropVolume: ERROR: Diffusion tensor volumes are not supported by this module!" << std::endl;
-    return -2;
-  }
- 
-  std::ostringstream outSS;
-  double outputSpacing[3], spacingScaleConst = pnode->GetSpacingScalingConst();
-  outSS << inputVolume->GetName() << "-subvolume-scale_" << spacingScaleConst;
-
- if(dwvnode){
-    outputVolume = vtkMRMLVolumeNode::SafeDownCast(this->Internal->VolumesLogic->CloneVolume(this->GetMRMLScene(), inputVolume, outSS.str().c_str()));
-  }
-  if(vvnode){
-    outputVolume = vtkMRMLVolumeNode::SafeDownCast(this->Internal->VolumesLogic->CloneVolume(this->GetMRMLScene(), inputVolume, outSS.str().c_str()));
-  }
-  if(svnode){
-    outputVolume = vtkMRMLVolumeNode::SafeDownCast(this->Internal->VolumesLogic->CloneVolume(this->GetMRMLScene(), inputVolume, outSS.str().c_str()));
-  }
-  refVolume = this->Internal->VolumesLogic->CreateLabelVolume(this->GetMRMLScene(), inputVolume, "CropVolume_ref_volume");
-  refVolume->HideFromEditorsOn();
-
-  //vtkMatrix4x4 *volumeXform = vtkMatrix4x4::New();
-  //vtkMatrix4x4 *roiXform = vtkMatrix4x4::New();
-  //vtkMatrix4x4 *T = vtkMatrix4x4::New();
-
-  refVolume->GetRASToIJKMatrix(inputRASToIJK);
-  refVolume->GetIJKToRASMatrix(inputIJKToRAS);
-  outputRASToIJK->Identity();
-  outputIJKToRAS->Identity();
-
-  //T->Identity();
-  //roiXform->Identity();
-  //volumeXform->Identity();
-
-  // prepare the resampling reference volume
-  double roiRadius[3], roiXYZ[3];
-  inputROI->GetRadiusXYZ(roiRadius);
-  inputROI->GetXYZ(roiXYZ);
-  std::cerr << "ROI radius: " << roiRadius[0] << "," << roiRadius[1] << "," << roiRadius[2] << std::endl;
-  std::cerr << "ROI center: " << roiXYZ[0] << "," << roiXYZ[1] << "," << roiXYZ[2] << std::endl;
-
-  double* inputSpacing = inputVolume->GetSpacing();
-  double minSpacing = inputSpacing[0];
-  if (minSpacing > inputSpacing[1])
-    {
-    minSpacing = inputSpacing[1];
-    }
-  if (minSpacing > inputSpacing[2])
-    {
-    minSpacing = inputSpacing[2];
-    }
-
-  if(pnode->GetIsotropicResampling()){
-      outputSpacing[0] = minSpacing*spacingScaleConst;
-      outputSpacing[1] = minSpacing*spacingScaleConst;
-      outputSpacing[2] = minSpacing*spacingScaleConst;
-  } else {
-      outputSpacing[0] = inputSpacing[0]*spacingScaleConst;
-      outputSpacing[1] = inputSpacing[1]*spacingScaleConst;
-      outputSpacing[2] = inputSpacing[2]*spacingScaleConst;
-  }
-
-  int outputExtent[3];
-
-  outputExtent[0] = roiRadius[0]/outputSpacing[0]*2.;
-  outputExtent[1] = roiRadius[1]/outputSpacing[1]*2.;
-  outputExtent[2] = roiRadius[2]/outputSpacing[2]*2.;
-
-  outputIJKToRAS->SetElement(0,0,outputSpacing[0]);
-  outputIJKToRAS->SetElement(1,1,outputSpacing[1]);
-  outputIJKToRAS->SetElement(2,2,outputSpacing[2]);
-
-  outputIJKToRAS->SetElement(0,3,roiXYZ[0]-roiRadius[0]+outputSpacing[0]*.5);
-  outputIJKToRAS->SetElement(1,3,roiXYZ[1]-roiRadius[1]+outputSpacing[1]*.5);
-  outputIJKToRAS->SetElement(2,3,roiXYZ[2]-roiRadius[2]+outputSpacing[2]*.5);
-
-  // account for the ROI parent transform, if present
-  roiTransform = vtkMRMLLinearTransformNode::SafeDownCast(inputROI->GetParentTransformNode());
-  if(roiTransform){
-    vtkMatrix4x4 *roiMatrix = vtkMatrix4x4::New();
-    roiTransform->GetMatrixTransformToWorld(roiMatrix);
-    outputIJKToRAS->Multiply4x4(roiMatrix, outputIJKToRAS, outputIJKToRAS);
-  }
-
-  outputRASToIJK->DeepCopy(outputIJKToRAS);
-  outputRASToIJK->Invert();
-
-  vtkImageData* outputImageData = vtkImageData::New();
-  outputImageData->SetDimensions(outputExtent[0], outputExtent[1], outputExtent[2]);
-  outputImageData->AllocateScalars();
-
-  refVolume->SetAndObserveImageData(outputImageData);
-  outputImageData->Delete();
-
-  refVolume->SetIJKToRASMatrix(outputIJKToRAS);
-  refVolume->SetRASToIJKMatrix(outputRASToIJK);
-
-  inputRASToIJK->Delete();
-  inputIJKToRAS->Delete();
-  outputRASToIJK->Delete();
-  outputIJKToRAS->Delete();
-
-  if(this->Internal->ResampleLogic == 0)
-    {
-    std::cerr << "CropVolume: ERROR: resample logic is not set!";
-    return -3;
-    }
-
-  vtkSmartPointer<vtkMRMLCommandLineModuleNode> cmdNode =
-    this->Internal->ResampleLogic->CreateNodeInScene();
-  assert(cmdNode.GetPointer() != 0);
-
-  cmdNode->SetParameterAsString("inputVolume", inputVolume->GetID());
-  cmdNode->SetParameterAsString("referenceVolume",refVolume->GetID());
-  cmdNode->SetParameterAsString("outputVolume",outputVolume->GetID());
-
-  movingVolumeTransform = vtkMRMLLinearTransformNode::SafeDownCast(inputVolume->GetParentTransformNode());
-
-  if(movingVolumeTransform != NULL)
-    cmdNode->SetParameterAsString("transformationFile",movingVolumeTransform->GetID());
-
-  std::string interp = "linear";
-  switch(pnode->GetInterpolationMode()){
-    case 1: interp = "nn"; break;
-    case 2: interp = "linear"; break;
-    case 3: interp = "ws"; break;
-    case 4: interp = "bs"; break;
-  }
-
-  cmdNode->SetParameterAsString("interpolationType", interp.c_str());
-  this->Internal->ResampleLogic->ApplyAndWait(cmdNode);
-
-  this->GetMRMLScene()->RemoveNode(refVolume);
-  this->GetMRMLScene()->RemoveNode(cmdNode);
-
-  outputVolume->SetAndObserveTransformNodeID(NULL);
-  outputVolume->ModifiedSinceReadOn();
-  pnode->SetOutputVolumeNodeID(outputVolume->GetID());
+  Registration_parms regp;
+  regp.num_stages = 1;
+  fprintf (stderr, "num_stages: %i\n", regp.num_stages);
+  regp.stages[0] = new Stage_parms ();
+  regp.stages[0]->stage_no = 1;
+  regp.stages[0]->grid_spac[0] = pnode->GetGridX ();
+  regp.stages[0]->grid_spac[1] = pnode->GetGridY ();
+  regp.stages[0]->grid_spac[2] = pnode->GetGridZ ();
 #endif
 
-  fprintf (stderr, "Apply ()\n");
+  Registration_data regd;
+  regd.fixed_image = fixed;
+  regd.moving_image = moving;
+
+  fprintf (stderr, "DEBUG: Control Grid: %i %i %i\n", 
+                pnode->GetGridX(),
+                pnode->GetGridY(),
+                pnode->GetGridZ()
+  );
+
+  Xform* xf_out = NULL;
+
+//  do_registration_pure (&xf_out, &regd, &regp);
+
+  fprintf (stderr, "DEBUG: Apply () Complete!\n");
+
   return 0;
 }
