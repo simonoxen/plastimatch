@@ -39,6 +39,7 @@ Iqt_main_window::Iqt_main_window ()
     /* Sets up the GUI */
     setupUi (this);
     
+    /* Hides the sliders until the source is called */
     setMin->setHidden(true);
     min_label->setHidden(true);
     min_val->setHidden(true);
@@ -161,6 +162,8 @@ Iqt_main_window::slot_stop ()
 		 QString ("This video has already been stopped."));
 	}
 	vid_screen->stop();
+	/* Checks if synthetic source is currently running
+	   would segfault without this check */
 	if (synth) {
 	    ise_app->stop();
 	}
@@ -209,7 +212,6 @@ Iqt_main_window::slot_frame_ready (Frame* f, int width, int height)
         data[4*i+0] = val; //bg red, the 0xff made it blue
         data[4*i+1] = val; //bg green
         data[4*i+2] = val; //bg blue
-        //data[4*i+3] = val; //does nothing
     }
     QImage qimage (data, width, height, QImage::Format_RGB32);
     this->playing = true;
