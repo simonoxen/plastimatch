@@ -8,6 +8,7 @@
 #include <vtkSlicerModuleLogic.h>
 
 #include "vtkSlicerPlmSlicerBsplineModuleLogicExport.h"
+class vtkMRMLPlmSlicerBsplineParametersNode;
 
 /// \ingroup Slicer_QtModules_ExtensionTemplate
 class VTK_SLICER_PLMSLICERBSPLINE_MODULE_LOGIC_EXPORT vtkSlicerPlmSlicerBsplineLogic :
@@ -21,6 +22,9 @@ public:
 
   /// Initialize listening to MRML events
   void InitializeEventListeners();
+
+  int Apply(vtkMRMLPlmSlicerBsplineParametersNode*);
+//  int Apply();
 
 protected:
   vtkSlicerPlmSlicerBsplineLogic();

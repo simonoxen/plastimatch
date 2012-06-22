@@ -11,7 +11,10 @@ set(module_logic_export_directive "VTK_SLICER_PLMSLICERBSPLINE_MODULE_LOGIC_EXPO
 
 # Additional directories to include
 set(module_logic_include_directories
+    ${qt_module_include_directories}
   )
+
+  message (STATUS "____ ${module_logic_include_directories}")
 
 # Source files
 set(module_logic_SRCS

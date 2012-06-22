@@ -44,12 +44,6 @@ if(NOT Slicer_SOURCE_DIR)
 endif()
 
 
-# Add subdirectories
-add_subdirectory(Logic)
-add_subdirectory(MRML)
-
-#-----------------------------------------------------------------------------
-# Sources
 #-----------------------------------------------------------------------------
 set(qt_module_export_directive "Q_SLICER_QTMODULES_PLMSLICERBSPLINE_EXPORT")
 
@@ -59,7 +53,18 @@ set(qt_module_include_directories
   ${CMAKE_CURRENT_BINARY_DIR}/Logic
   ${CMAKE_CURRENT_SOURCE_DIR}/MRML
   ${CMAKE_CURRENT_BINARY_DIR}/MRML
+  ${src_plastimatch_SOURCE_DIR}/base
+  ${src_plastimatch_SOURCE_DIR}/register
   )
+
+# Add subdirectories
+add_subdirectory(Logic)
+add_subdirectory(MRML)
+
+
+#-----------------------------------------------------------------------------
+# Sources
+#-----------------------------------------------------------------------------
 
 # Source files
 set(qt_module_SRCS
@@ -90,11 +95,14 @@ set(qt_module_resources
   Resources/qSlicerPlmSlicerBsplineModule.qrc
 )
 
+##-----------------------------------------------------------------------------
+##  Include directories
+##-----------------------------------------------------------------------------
+
 #-----------------------------------------------------------------------------
 # Build
 #-----------------------------------------------------------------------------
 slicerMacroBuildQtModule(
-#  NAME ${EXTENSION_NAME}
   NAME ${qt_module_name}
   TITLE ${qt_module_title}
   EXPORT_DIRECTIVE ${qt_module_export_directive}
@@ -102,7 +110,7 @@ slicerMacroBuildQtModule(
   SRCS ${qt_module_SRCS}
   MOC_SRCS ${qt_module_MOC_SRCS}
   UI_SRCS ${qt_module_UI_SRCS}
-  TARGET_LIBRARIES ${qt_module_target_libraries}
+  TARGET_LIBRARIES ${qt_module_target_libraries} ${PLASTIMATCH_LIBS}
   RESOURCES ${qt_module_resources}
   )
 

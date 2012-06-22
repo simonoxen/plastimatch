@@ -6,16 +6,16 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>525</width>
-    <height>319</height>
+    <width>448</width>
+    <height>425</height>
    </rect>
   </property>
-    <property name="windowTitle">
+  <property name="windowTitle">
    <string>Volumes</string>
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>:/Icons/Volumes.png</normaloff>:/Icons/PlmSlicerBpline.png</iconset>
+    <normaloff>:/Icons/Volumes.png</normaloff>:/Icons/Volumes.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0">
@@ -28,50 +28,136 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
-       <layout class="QFormLayout" name="formLayout">
-        <item row="0" column="0">
-         <widget class="QLabel" name="inputImageLabel">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <property name="bottomMargin">
+         <number>10</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="label">
           <property name="text">
-           <string>Fixed image</string>
+           <string>Similarity Metric:</string>
           </property>
          </widget>
         </item>
-        <item row="0" column="1">
-         <widget class="qMRMLNodeComboBox" name="fixedImageMRMLNodeComboBox">
-          <property name="nodeTypes">
-           <stringlist>
-            <string>vtkMRMLScalarVolumeNode</string>
-           </stringlist>
+        <item>
+         <widget class="QRadioButton" name="radioButtonMSE">
+          <property name="text">
+           <string>MSE</string>
           </property>
-          <property name="addEnabled">
-           <bool>false</bool>
-          </property>
-          <property name="renameEnabled">
+          <property name="checked">
            <bool>true</bool>
           </property>
          </widget>
         </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="outputImageLabel">
+        <item>
+         <widget class="QRadioButton" name="radioButtonMI">
           <property name="text">
-           <string>Moving image</string>
+           <string>MI</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="1">
-         <widget class="qMRMLNodeComboBox" name="movingImageMRMLNodeComboBox">
-          <property name="nodeTypes">
-           <stringlist>
-            <string>vtkMRMLScalarVolumeNode</string>
-           </stringlist>
-          </property>
-          <property name="addEnabled">
-           <bool>false</bool>
-          </property>
-          <property name="renameEnabled">
-           <bool>true</bool>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <property name="bottomMargin">
+         <number>10</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>Control Grid:</string>
           </property>
          </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QSpinBox" name="spinBox">
+            <property name="value">
+             <number>20</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>x</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="spinBox_2">
+            <property name="value">
+             <number>20</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>x</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="spinBox_3">
+            <property name="value">
+             <number>20</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_7">
+            <property name="text">
+             <string>mm</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <property name="bottomMargin">
+         <number>10</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Regularization:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkBox">
+          <property name="text">
+           <string>Enabled</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Lambda</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="doubleSpinBox"/>
         </item>
        </layout>
       </item>
@@ -98,6 +184,98 @@
      </property>
     </widget>
    </item>
+   <item row="0" column="0">
+    <layout class="QFormLayout" name="formLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="inputImageLabel">
+       <property name="text">
+        <string>Fixed image</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="qMRMLNodeComboBox" name="fixedImageMRMLNodeComboBox">
+       <property name="nodeTypes">
+        <stringlist>
+         <string>vtkMRMLScalarVolumeNode</string>
+        </stringlist>
+       </property>
+       <property name="addEnabled">
+        <bool>false</bool>
+       </property>
+       <property name="renameEnabled">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="outputImageLabel">
+       <property name="text">
+        <string>Moving image</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="qMRMLNodeComboBox" name="movingImageMRMLNodeComboBox">
+       <property name="nodeTypes">
+        <stringlist>
+         <string>vtkMRMLScalarVolumeNode</string>
+        </stringlist>
+       </property>
+       <property name="addEnabled">
+        <bool>false</bool>
+       </property>
+       <property name="renameEnabled">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="warpedImageLabel">
+       <property name="text">
+        <string>Warped image</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="qMRMLNodeComboBox" name="warpedImageMRMLNodeComboBox">
+       <property name="nodeTypes">
+        <stringlist>
+         <string>vtkMRMLScalarVolumeNode</string>
+        </stringlist>
+       </property>
+       <property name="addEnabled">
+        <bool>true</bool>
+       </property>
+       <property name="renameEnabled">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="xformImageLabel">
+       <property name="text">
+        <string>Vector field</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="qMRMLNodeComboBox" name="xformImageMRMLNodeComboBox">
+       <property name="nodeTypes">
+        <stringlist>
+         <string>vtkMRMLScalarVolumeNode</string>
+        </stringlist>
+       </property>
+       <property name="addEnabled">
+        <bool>true</bool>
+       </property>
+       <property name="renameEnabled">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
   </layout>
  </widget>
  <customwidgets>
@@ -121,6 +299,38 @@
  </customwidgets>
  <resources/>
  <connections>
+  <connection>
+   <sender>qSlicerPlmSlicerBsplineModule</sender>
+   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+   <receiver>xformImageMRMLNodeComboBox</receiver>
+   <slot>setMRMLScene(vtkMRMLScene*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>qSlicerPlmSlicerBsplineModule</sender>
+   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+   <receiver>warpedImageMRMLNodeComboBox</receiver>
+   <slot>setMRMLScene(vtkMRMLScene*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
   <connection>
    <sender>qSlicerPlmSlicerBsplineModule</sender>
    <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>

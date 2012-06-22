@@ -54,6 +54,7 @@ class VTK_SLICER_PLMSLICERBSPLINE_MODULE_MRML_EXPORT vtkMRMLPlmSlicerBsplinePara
   virtual void ProcessMRMLEvents ( vtkObject *caller, unsigned long event, void *callData);
 
   // Description:
+#if 0
   vtkGetStringMacro (InputVolumeNodeID);
   void SetAndObserveInputVolumeNodeID(const char *volumeNodeID);
   vtkMRMLVolumeNode* GetInputVolumeNode();
@@ -61,53 +62,46 @@ class VTK_SLICER_PLMSLICERBSPLINE_MODULE_MRML_EXPORT vtkMRMLPlmSlicerBsplinePara
   vtkGetStringMacro (OutputVolumeNodeID);
   void SetAndObserveOutputVolumeNodeID(const char *volumeNodeID);
   vtkMRMLVolumeNode* GetOutputVolumeNode();
+#endif
 
-  vtkGetStringMacro (ROINodeID);
-  void SetAndObserveROINodeID(const char *ROINodeID);
-  vtkMRMLAnnotationROINode* GetROINode();
+  vtkSetStringMacro(FixedVolumeNodeID);
+  vtkSetStringMacro(MovingVolumeNodeID);
+  vtkSetStringMacro(WarpedVolumeNodeID);
+  vtkSetStringMacro(XformVolumeNodeID);
 
-  vtkSetMacro(IsotropicResampling,bool);
-  vtkGetMacro(IsotropicResampling,bool);
-  vtkBooleanMacro(IsotropicResampling,bool);
+  vtkGetStringMacro(FixedVolumeNodeID);
+  vtkGetStringMacro(MovingVolumeNodeID);
+  vtkGetStringMacro(WarpedVolumeNodeID);
+  vtkGetStringMacro(XformVolumeNodeID);
 
-  vtkSetMacro(ROIVisibility,bool);
-  vtkGetMacro(ROIVisibility,bool);
-  vtkBooleanMacro(ROIVisibility,bool);
 
-  typedef enum {NearestNeighbor, Linear, Cubic}
-   InterpolationModeType;
+  vtkSetMacro(UseMSE, bool);
+  vtkGetMacro(UseMSE, bool);
+  vtkBooleanMacro(UseMSE, bool);
 
-  vtkSetMacro(InterpolationMode, int);
-  vtkGetMacro(InterpolationMode, int);
-
-  vtkSetMacro(SpacingScalingConst, double);
-  vtkGetMacro(SpacingScalingConst, double);
+  vtkSetMacro(UseMI, bool);
+  vtkGetMacro(UseMI, bool);
+  vtkBooleanMacro(UseMI, bool);
 
 protected:
   vtkMRMLPlmSlicerBsplineParametersNode();
   ~vtkMRMLPlmSlicerBsplineParametersNode();
+
   vtkMRMLPlmSlicerBsplineParametersNode(const vtkMRMLPlmSlicerBsplineParametersNode&);
   void operator=(const vtkMRMLPlmSlicerBsplineParametersNode&);
 
-  char *InputVolumeNodeID;
-  char *OutputVolumeNodeID;
+  char *FixedVolumeNodeID;
+  char *MovingVolumeNodeID;
+  char *WarpedVolumeNodeID;
+  char *XformVolumeNodeID;
 
-  vtkSetReferenceStringMacro(InputVolumeNodeID);
-  vtkSetReferenceStringMacro(OutputVolumeNodeID);
+  vtkMRMLVolumeNode* FixedVolumeNode;
+  vtkMRMLVolumeNode* MovingVolumeNode;
+  vtkMRMLVolumeNode* WarpedVolumeNode;
+  vtkMRMLVolumeNode* XformVolumeNode;
 
-  vtkMRMLVolumeNode* InputVolumeNode;
-  vtkMRMLVolumeNode* OutputVolumeNode;
-
-  char *ROINodeID;
-  
-  vtkSetReferenceStringMacro(ROINodeID);
-
-  vtkMRMLAnnotationROINode *ROINode;
-
-  bool ROIVisibility;
-  int InterpolationMode;
-  bool IsotropicResampling;
-  double SpacingScalingConst;
+  bool UseMSE;
+  bool UseMI;
 };
 
 #endif

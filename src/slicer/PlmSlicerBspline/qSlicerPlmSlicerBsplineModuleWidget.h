@@ -35,7 +35,15 @@ protected:
   virtual void setMRMLScene(vtkMRMLScene*);
 
 protected slots:
+  void initializeParameterNode(vtkMRMLScene* scene);
+  void updateParameters();
   void onApply();
+  void onFixedVolumeChanged();
+  void onMovingVolumeChanged();
+  void onWarpedVolumeChanged();
+  void onXformVolumeChanged();
+  void onMSEChanged();
+  void onMIChanged();
 
 private:
   Q_DECLARE_PRIVATE(qSlicerPlmSlicerBsplineModuleWidget);
