@@ -7,58 +7,6 @@
 #include "plmutil_config.h"
 #include <string>
 #include "itk_image_type.h"
-#include "pstring.h"
-
-#if defined (commentout)
-class Plm_image;
-
-enum Dvh_units {
-    DVH_UNITS_GY,
-    DVH_UNITS_CGY,
-};
-
-enum Dvh_normalization {
-    DVH_NORMALIZATION_PCT,
-    DVH_NORMALIZATION_VOX,
-};
-
-class PLMUTIL_API Dvh_parms {
-public:
-    enum Dvh_units input_units;
-    enum Dvh_normalization normalization;
-    int cumulative;
-    int num_bins;
-    float bin_width;
-public:
-    Dvh_parms ();
-};
-
-class PLMUTIL_API Dvh_parms_pcmd {
-public:
-    Pstring input_ss_img_fn;
-    Pstring input_ss_list_fn;
-    Pstring input_dose_fn;
-    Pstring output_csv_fn;
-    Dvh_parms dvh_parms;
-public:
-    Dvh_parms_pcmd () {
-        printf ("Dvh_parms_pcmd\n");
-    }
-};
-
-PLMUTIL_API std::string dvh_execute (
-    Plm_image *input_ss_img,
-    Plm_image *input_dose_img,
-    Dvh_parms *parms);
-
-PLMUTIL_API std::string dvh_execute (
-    UInt32ImageType::Pointer input_ss_img,
-    FloatImageType::Pointer input_dose_img,
-    Dvh_parms *parms);
-
-PLMUTIL_API void dvh_execute (
-    Dvh_parms_pcmd *dvh_parms_pcmd);
-#endif
 
 class Dvh_private;
 class Plm_image;
@@ -83,7 +31,36 @@ public:
         DVH_NORMALIZATION_VOX,
     };
 
+    enum Histogram_type {
+        DVH_CUMULATIVE_HISTOGRAM,
+        DVH_DIFFERENTIAL_HISTOGRAM
+    };
+
 public:
+
+    /*! \name Defaults */
+    ///@{
+    /*! \brief Return the default value for dose units */
+    static Dvh::Dvh_units default_dose_units () {
+        return Dvh::DVH_UNITS_GY;
+    }
+    /*! \brief Return the default value for DVH normalization */
+    static Dvh::Dvh_normalization default_normalization () {
+        return Dvh::DVH_NORMALIZATION_PCT;
+    }
+    /*! \brief Return the default value for histogram type */
+    static Dvh::Histogram_type default_histogram_type () {
+        return Dvh::DVH_CUMULATIVE_HISTOGRAM;
+    }
+    /*! \brief Return the default number of bins in the histogram */
+    static int default_histogram_num_bins () {
+        return 256;
+    }
+    /*! \brief Return the default bin width (in Gy) in the histogram */
+    static float default_histogram_bin_width () {
+        return 0.5;
+    }
+    ///@}
 
     /*! \name Inputs */
     ///@{
@@ -108,7 +85,7 @@ public:
       either percent or voxels, choice of cumulative or differential 
       histogram, number of bins, and bin width. */
     void set_dvh_parameters (enum Dvh_normalization normalization,
-        int cumulative, int num_bins, float bin_width);
+        enum Histogram_type histogram_type, int num_bins, float bin_width);
 
     ///@}
 

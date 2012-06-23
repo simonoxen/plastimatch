@@ -18,7 +18,7 @@ public:
     Plm_image *dose;
     enum Dvh::Dvh_units dose_units;
     enum Dvh::Dvh_normalization normalization;
-    int cumulative;
+    enum Dvh::Histogram_type histogram_type;
     int num_bins;
     float bin_width;
     std::string output_string;

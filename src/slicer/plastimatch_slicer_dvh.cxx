@@ -28,9 +28,9 @@ main (int argc, char * argv [])
     /* Set input parameters */
     dvh.set_dose_units (Dvh::DVH_UNITS_CGY);
     Dvh::Dvh_normalization normalization = Dvh::DVH_NORMALIZATION_VOX;
-    int cumulative = (histogram_type == "Cumulative") ? 1 : 0;
-    dvh.set_dvh_parameters (normalization, cumulative, 
-        num_bins, bin_width);
+    Dvh::Histogram_type htype = (histogram_type == "Cumulative") 
+        ? Dvh::DVH_CUMULATIVE_HISTOGRAM : Dvh::DVH_DIFFERENTIAL_HISTOGRAM;
+    dvh.set_dvh_parameters (normalization, htype, num_bins, bin_width);
 
     /* Process DVH */
     dvh.run();

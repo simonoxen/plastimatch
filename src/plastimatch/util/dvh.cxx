@@ -318,10 +318,10 @@ Dvh::set_dose_units (enum Dvh_units units)
 
 void 
 Dvh::set_dvh_parameters (enum Dvh_normalization normalization,
-    int cumulative, int num_bins, float bin_width)
+    enum Histogram_type histogram_type, int num_bins, float bin_width)
 {
     d_ptr->normalization = normalization;
-    d_ptr->cumulative = cumulative;
+    d_ptr->histogram_type = histogram_type;
     d_ptr->num_bins = num_bins;
     d_ptr->bin_width = bin_width;
 }
@@ -455,7 +455,7 @@ Dvh::run ()
     }
 
     /* Convert histogram to cumulative histogram */
-    if (d_ptr->cumulative) {
+    if (d_ptr->histogram_type == DVH_CUMULATIVE_HISTOGRAM) {
         for (size_t sno = 0; sno < ss_list->num_structures; sno++) {
             int cum = 0;
             for (bin = d_ptr->num_bins - 1; bin >= 0; bin--) {

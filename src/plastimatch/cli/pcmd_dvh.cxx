@@ -7,6 +7,7 @@
 
 #include "dvh.h"
 #include "pcmd_dvh.h"
+#include "pstring.h"
 
 class Dvh_parms_pcmd {
 public:
@@ -16,7 +17,7 @@ public:
     Pstring output_csv_fn;
     Dvh::Dvh_units dose_units;
     Dvh::Dvh_normalization normalization;
-    int cumulative;
+    Dvh::Histogram_type histogram_type;
     int num_bins;
     float bin_width;
 public:
@@ -100,7 +101,7 @@ parse_args (Dvh_parms_pcmd* parms, int argc, char* argv[])
 	    }
 	    break;
 	case 7:
-	    parms->cumulative = 1;
+            parms->histogram_type = Dvh::DVH_CUMULATIVE_HISTOGRAM;
 	    break;
 	case 8:
 	    rc = sscanf (optarg, "%d", &parms->num_bins);
@@ -156,7 +157,7 @@ do_command_dvh (int argc, char *argv[])
     dvh.set_dose_units (parms.dose_units);
     dvh.set_dvh_parameters (
         parms.normalization,
-        parms.cumulative,
+        parms.histogram_type, 
         parms.num_bins,
         parms.bin_width);
 
