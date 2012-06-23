@@ -283,6 +283,11 @@ dvh_execute (
 #endif
 
 Dvh_private::Dvh_private () {
+    this->dose_units = Dvh::default_dose_units ();
+    this->normalization = Dvh::default_normalization ();
+    this->histogram_type = Dvh::default_histogram_type ();
+    this->num_bins = Dvh::default_histogram_num_bins ();
+    this->bin_width = Dvh::default_histogram_bin_width ();
 }
 
 Dvh_private::~Dvh_private () {
