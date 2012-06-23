@@ -44,6 +44,9 @@ Iqt_application::set_synthetic_source (
     if (this->fluoro_source) {
         if (this->fluoro_source->get_type() == "Synthetic") {
             /* Already synthetic */
+<<<<<<< .mine
+            qDebug("Restarting synthetic display..."); 
+=======
             qDebug("Restarting synthetic display...");
             /*unsigned long j = 0;
             for (j = 0; j < this->num_panels; j++)
@@ -53,6 +56,7 @@ Iqt_application::set_synthetic_source (
 
 	    /*perhaps find a way to call cbuf->cbuf_shutdown_queue()*/
 	    //return;
+>>>>>>> .r3701
         } else {
             /* Something else, so delete */
             delete this->fluoro_source;

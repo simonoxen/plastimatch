@@ -215,5 +215,6 @@ Iqt_main_window::slot_frame_ready (Frame* f, int width, int height)
     }
     QImage qimage (data, width, height, QImage::Format_RGB32);
     this->playing = true;
+    Qt::AspectRatioMode aspectRatioMode = Qt::KeepAspectRatio;
     vid_screen->set_qimage (qimage);
 }
