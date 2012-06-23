@@ -1859,6 +1859,17 @@ set_tests_properties (plm-convert-dose-scale-check PROPERTIES
   DEPENDS plm-convert-dose-scale-stats)
 
 ## -------------------------------------------------------------------------
+## plm-dvh-a
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-dvh-a"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "dvh;--input-ss-img;${PLM_BUILD_TESTING_DIR}/rect-1-ss.mha;--input-dose;${PLM_BUILD_TESTING_DIR}/rect-1-dose-img.mha;--output-csv;${PLM_BUILD_TESTING_DIR}/plm-dvh-a.csv"
+  )
+set_tests_properties (plm-dvh-a PROPERTIES DEPENDS "rect-1")
+
+## -------------------------------------------------------------------------
 ## plastimatch fill/mask
 ## -------------------------------------------------------------------------
 plm_add_test (

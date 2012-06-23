@@ -31,123 +31,6 @@ public:
     }
 };
 
-#if defined (commentout)
-static void
-print_usage (void)
-{
-    printf (
-	"Usage: plastimatch dvh [options]\n"
-	"   --input-ss-img file\n"
-	"   --input-ss-list file\n"
-	"   --input-dose file\n"
-	"   --output-csv file\n"
-	"   --input-units {gy,cgy}\n"
-	"   --cumulative\n"
-	"   --normalization {pct,vox}\n"
-	"   --num-bins\n"
-	"   --bin-width (in cGy)\n"
-    );
-    exit (-1);
-}
-
-static void
-parse_args (Dvh_parms_pcmd* parms, int argc, char* argv[])
-{
-    int rc;
-    int ch;
-    static struct option longopts[] = {
-	{ "input_ss_img",   required_argument,      NULL,           2 },
-	{ "input-ss-img",   required_argument,      NULL,           2 },
-	{ "input_ss_list",  required_argument,      NULL,           3 },
-	{ "input-ss-list",  required_argument,      NULL,           3 },
-	{ "input_dose",     required_argument,      NULL,           4 },
-	{ "input-dose",     required_argument,      NULL,           4 },
-	{ "output_csv",     required_argument,      NULL,           5 },
-	{ "output-csv",     required_argument,      NULL,           5 },
-	{ "input_units",    required_argument,      NULL,           6 },
-	{ "input-units",    required_argument,      NULL,           6 },
-	{ "cumulative",     no_argument,            NULL,           7 },
-	{ "num_bins",       required_argument,      NULL,           8 },
-	{ "num-bins",       required_argument,      NULL,           8 },
-	{ "bin_width",      required_argument,      NULL,           9 },
-	{ "bin-width",      required_argument,      NULL,           9 },
-	{ "normalization",  required_argument,      NULL,           10 },
-	{ NULL,             0,                      NULL,           0 }
-    };
-
-    /* Skip command "dvh" */
-    optind ++;
-
-    while ((ch = getopt_long(argc, argv, "", longopts, NULL)) != -1) {
-	switch (ch) {
-	case 2:
-	    parms->input_ss_img_fn = optarg;
-	    break;
-	case 3:
-	    parms->input_ss_list_fn = optarg;
-	    break;
-	case 4:
-	    parms->input_dose_fn = optarg;
-	    break;
-	case 5:
-	    parms->output_csv_fn = optarg;
-	    break;
-	case 6:
-	    if (!strcmp (optarg, "cgy") || !strcmp (optarg, "cGy"))
-	    {
-		parms->dose_units = Dvh::DVH_UNITS_CGY;
-	    }
-	    else if (!strcmp (optarg, "gy") || !strcmp (optarg, "Gy"))
-	    {
-		parms->dose_units = Dvh::DVH_UNITS_CGY;
-	    }
-	    else {
-		fprintf (stderr, "Error.  Units must be Gy or cGy.\n");
-		print_usage ();
-	    }
-	    break;
-	case 7:
-            parms->histogram_type = Dvh::DVH_CUMULATIVE_HISTOGRAM;
-	    break;
-	case 8:
-	    rc = sscanf (optarg, "%d", &parms->num_bins);
-	    std::cout << "num_bins " << parms->num_bins << "\n";
-	    break;
-	case 9:
-	    rc = sscanf (optarg, "%f", &parms->bin_width);
-	    std::cout << "bin_width " << parms->bin_width << "\n";
-	    break;
-	case 10:
-	    if (!strcmp (optarg, "percent") || !strcmp (optarg, "pct"))
-	    {
-		parms->normalization = Dvh::DVH_NORMALIZATION_PCT;
-	    }
-	    else if (!strcmp (optarg, "voxels") || !strcmp (optarg, "vox"))
-	    {
-		parms->normalization = Dvh::DVH_NORMALIZATION_VOX;
-	    }
-	    else {
-		fprintf (stderr, "Error.  Normalization must be pct or vox.\n");
-		print_usage ();
-	    }
-	    break;
-	default:
-	    fprintf (stderr, "Error.  Unknown option.\n");
-	    print_usage ();
-	    break;
-	}
-    }
-    if (parms->input_ss_img_fn.empty()
-	|| parms->input_dose_fn.empty()
-        || parms->output_csv_fn.empty())
-    {
-	fprintf (stderr, 
-	    "Error.  Must specify input for dose, ss_img, and output file.\n");
-	print_usage ();
-    }
-}
-#endif
-
 static void
 usage_fn (dlib::Plm_clp *parser, int argc, char *argv[])
 {
@@ -176,7 +59,7 @@ parse_fn (
         "dose image file", 1, "");
 
     /* Parameters */
-    parser->add_long_option ("", "input-units", 
+    parser->add_long_option ("", "dose-units", 
         "specify units of dose in input file as either cGy as \"cgy\" "
         "or Gy as \"gy\" (default=\"gy\")", 1, "");
     parser->add_long_option ("", "cumulative", 
