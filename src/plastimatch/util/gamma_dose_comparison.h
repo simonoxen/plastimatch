@@ -59,7 +59,9 @@ public:
     float get_spatial_tolerance ();
     /*! \brief Set the distance to agreement (DTA) tolerance, in mm. */
     void set_spatial_tolerance (float spatial_tol);
-    /*! \brief Set the dose difference tolerance.  
+    /*! \brief Get the dose difference tolerance, in percent. */
+    float get_dose_difference_tolerance ();
+    /*! \brief Set the dose difference tolerance, in percent. 
       If a reference dose (prescription dose) is specified, 
       the dose difference tolerance is treated as a 
       percent of the reference dose.  Otherwise it is treated as a

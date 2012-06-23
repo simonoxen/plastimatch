@@ -84,6 +84,12 @@ Gamma_dose_comparison::set_spatial_tolerance (float spatial_tol)
     d_ptr->gp.r_tol = spatial_tol;
 }
 
+float
+Gamma_dose_comparison::get_dose_difference_tolerance ()
+{
+    return d_ptr->gp.d_tol;
+}
+
 void 
 Gamma_dose_comparison::set_dose_difference_tolerance (float dose_tol)
 {

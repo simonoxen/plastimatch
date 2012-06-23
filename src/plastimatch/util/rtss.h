@@ -27,7 +27,7 @@ public:
     Metadata m_meta;            /* Metadata specific to this ss_image */
 
 public:
-    Rtss (Rtds *rtds);
+    Rtss (Rtds *rtds = 0);
     ~Rtss ();
 
     void clear ();

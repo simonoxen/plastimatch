@@ -27,7 +27,9 @@ Rtss::Rtss (Rtds *rtds) {
     m_cxt = 0;
     m_ss_img = 0;
     m_labelmap = 0;
-    m_meta.set_parent (&rtds->m_meta);
+    if (rtds) {
+        m_meta.set_parent (&rtds->m_meta);
+    }
 }
 
 Rtss::~Rtss () {

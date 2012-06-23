@@ -5,9 +5,25 @@
 #include <time.h>
 #include "getopt.h"
 
-#include "plmutil.h"
-
+#include "dvh.h"
 #include "pcmd_dvh.h"
+
+class Dvh_parms_pcmd {
+public:
+    Pstring input_ss_img_fn;
+    Pstring input_ss_list_fn;
+    Pstring input_dose_fn;
+    Pstring output_csv_fn;
+    Dvh::Dvh_units dose_units;
+    Dvh::Dvh_normalization normalization;
+    int cumulative;
+    int num_bins;
+    float bin_width;
+public:
+    Dvh_parms_pcmd () {
+        printf ("Dvh_parms_pcmd\n");
+    }
+};
 
 static void
 print_usage (void)
@@ -72,11 +88,11 @@ parse_args (Dvh_parms_pcmd* parms, int argc, char* argv[])
 	case 6:
 	    if (!strcmp (optarg, "cgy") || !strcmp (optarg, "cGy"))
 	    {
-		parms->dvh_parms.input_units = DVH_UNITS_CGY;
+		parms->dose_units = Dvh::DVH_UNITS_CGY;
 	    }
 	    else if (!strcmp (optarg, "gy") || !strcmp (optarg, "Gy"))
 	    {
-		parms->dvh_parms.input_units = DVH_UNITS_CGY;
+		parms->dose_units = Dvh::DVH_UNITS_CGY;
 	    }
 	    else {
 		fprintf (stderr, "Error.  Units must be Gy or cGy.\n");
@@ -84,24 +100,24 @@ parse_args (Dvh_parms_pcmd* parms, int argc, char* argv[])
 	    }
 	    break;
 	case 7:
-	    parms->dvh_parms.cumulative = 1;
+	    parms->cumulative = 1;
 	    break;
 	case 8:
-	    rc = sscanf (optarg, "%d", &parms->dvh_parms.num_bins);
-	    std::cout << "num_bins " << parms->dvh_parms.num_bins << "\n";
+	    rc = sscanf (optarg, "%d", &parms->num_bins);
+	    std::cout << "num_bins " << parms->num_bins << "\n";
 	    break;
 	case 9:
-	    rc = sscanf (optarg, "%f", &parms->dvh_parms.bin_width);
-	    std::cout << "bin_width " << parms->dvh_parms.bin_width << "\n";
+	    rc = sscanf (optarg, "%f", &parms->bin_width);
+	    std::cout << "bin_width " << parms->bin_width << "\n";
 	    break;
 	case 10:
 	    if (!strcmp (optarg, "percent") || !strcmp (optarg, "pct"))
 	    {
-		parms->dvh_parms.normalization = DVH_NORMALIZATION_PCT;
+		parms->normalization = Dvh::DVH_NORMALIZATION_PCT;
 	    }
 	    else if (!strcmp (optarg, "voxels") || !strcmp (optarg, "vox"))
 	    {
-		parms->dvh_parms.normalization = DVH_NORMALIZATION_VOX;
+		parms->normalization = Dvh::DVH_NORMALIZATION_VOX;
 	    }
 	    else {
 		fprintf (stderr, "Error.  Normalization must be pct or vox.\n");
@@ -131,5 +147,20 @@ do_command_dvh (int argc, char *argv[])
     
     parse_args (&parms, argc, argv);
 
-    dvh_execute (&parms);
+    Dvh dvh;
+    dvh.set_structure_set_image (
+        (const char*) parms.input_ss_img_fn, 
+        (const char*) parms.input_ss_list_fn);
+    dvh.set_dose_image (
+        (const char*) parms.input_dose_fn);
+    dvh.set_dose_units (parms.dose_units);
+    dvh.set_dvh_parameters (
+        parms.normalization,
+        parms.cumulative,
+        parms.num_bins,
+        parms.bin_width);
+
+    dvh.run ();
+
+    dvh.save_csv ((const char*) parms.output_csv_fn);
 }

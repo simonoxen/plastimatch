@@ -7,35 +7,36 @@
 #include <stdio.h>
 #include "plastimatch_slicer_dvhCLP.h"
 
-#include "plmutil.h"
+#include "dvh.h"
 
 int 
 main (int argc, char * argv [])
 {
     PARSE_ARGS;
 
-    Dvh_parms_pcmd dvh;
+    Dvh dvh;
 
-    /* Required input */
-    dvh.input_ss_img_fn = input_ss_image.c_str();
-    dvh.input_dose_fn = input_dose_image.c_str();
-    dvh.output_csv_fn = output_dvh_filename.c_str();
-
-    if (histogram_type == "Cumulative") {
-        dvh.dvh_parms.cumulative = 1;
-    } else {
-        dvh.dvh_parms.cumulative = 0;
-    }
-    dvh.dvh_parms.num_bins = num_bins;
-    dvh.dvh_parms.bin_width = bin_width;
-
-    /* Optional inputs */
+    /* Set input images */
     if (input_ss_list != "" && input_ss_list != "None") {
-        dvh.input_ss_list_fn = input_ss_list.c_str();
+        dvh.set_structure_set_image (
+            input_ss_image.c_str(), input_ss_list.c_str());
+    } else {
+        dvh.set_structure_set_image (input_ss_image.c_str(), 0);
     }
+    dvh.set_dose_image (input_dose_image.c_str());
+
+    /* Set input parameters */
+    dvh.set_dose_units (Dvh::DVH_UNITS_CGY);
+    Dvh::Dvh_normalization normalization = Dvh::DVH_NORMALIZATION_VOX;
+    int cumulative = (histogram_type == "Cumulative") ? 1 : 0;
+    dvh.set_dvh_parameters (normalization, cumulative, 
+        num_bins, bin_width);
 
     /* Process DVH */
-    dvh_execute (&dvh);
+    dvh.run();
+
+    /* Save output to csv */
+    dvh.save_csv (output_dvh_filename.c_str());
 
     return EXIT_SUCCESS;
 }
