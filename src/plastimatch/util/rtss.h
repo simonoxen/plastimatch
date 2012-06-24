@@ -50,7 +50,7 @@ public:
     void save_prefix (const Pstring &output_prefix);
     void save_ss_list (const Pstring &ss_list_fn);
     void save_xio (Xio_ct_transform *xio_transform, Xio_version xio_version, 
-    const Pstring &output_dir);
+        const Pstring &output_dir);
     UInt32ImageType::Pointer get_ss_img (void);
 
     void apply_dicom_dir (const Slice_index *rdd);
@@ -58,7 +58,8 @@ public:
     void convert_to_uchar_vec (void);
     void cxt_re_extract (void);
     void prune_empty (void);
-    void rasterize (Plm_image_header *pih, bool want_labelmap, bool xor_overlapping);
+    void rasterize (Plm_image_header *pih, bool want_labelmap, 
+        bool xor_overlapping);
     void set_geometry (const Plm_image_header *pih);
     void find_rasterization_geometry (Plm_image_header *pih);
     void warp (Xform *xf, Plm_image_header *pih, bool use_itk = false);

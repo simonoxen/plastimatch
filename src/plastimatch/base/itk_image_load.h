@@ -23,14 +23,6 @@ PLMBASE_API DoubleImageType::Pointer itk_image_load_double (const char* fname, P
 PLMBASE_API DeformationFieldType::Pointer itk_image_load_float_field (const char* fname);
 PLMBASE_API UCharVecImageType::Pointer itk_image_load_uchar_vec (const char* fname);
 
-PLMBASE_API void itk_image_get_props (
-    std::string fileName,
-    int *num_dimensions, 
-    itk::ImageIOBase::IOPixelType &pixel_type, 
-    itk::ImageIOBase::IOComponentType &component_type, 
-    int *num_components
-);
-
 template<class T> PLMBASE_API void get_image_header (int dim[3], float offset[3], float spacing[3], T image);
 
 #endif

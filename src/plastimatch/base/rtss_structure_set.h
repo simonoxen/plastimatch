@@ -40,7 +40,8 @@ public:
     PLMBASE_API Rtss_structure* add_structure (
 	const Pstring& structure_name, 
 	const Pstring& color, 
-	int structure_id);
+	int structure_id,
+        int bit = -1);
     PLMBASE_API Rtss_structure* find_structure_by_id (int structure_id);
     PLMBASE_API void debug (void);
     PLMBASE_API void adjust_structure_names (void);

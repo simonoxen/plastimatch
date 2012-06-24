@@ -530,6 +530,7 @@ synth_lung (
     /* If within chest wall, set chest wall intensity */
     if (d2 > 130) {
         *intens = parms->foreground;
+        *label = 1;
         return;
     }
 
@@ -543,14 +544,14 @@ synth_lung (
 
     /* If within tumor, set tumor density */
     if (d3 < 20) {
-        *label = 1;
+        *label = 3;
         *intens = parms->foreground;
         return;
     }
 
     /* Otherwise, must be lung */
     *intens = -700;
-    *label = 2;
+    *label = 5;
 }
 
 static float 
@@ -750,6 +751,30 @@ synthetic_mha (
         rtds->m_rtss = new Rtss (rtds);
         rtds->m_rtss->m_ss_img = new Plm_image;
         rtds->m_rtss->m_ss_img->set_itk (ss_img);
+
+        /* Add structure names */
+        rtds->m_rtss->m_cxt = new Rtss_structure_set;
+        switch (parms->pattern) {
+        case PATTERN_OBJSTRUCTDOSE:
+            rtds->m_rtss->m_cxt->add_structure (Pstring ("Object 1"),
+                Pstring(), 1, 0);
+            rtds->m_rtss->m_cxt->add_structure (Pstring ("Object 2"),
+                Pstring(), 2, 1);
+            rtds->m_rtss->m_cxt->add_structure (Pstring ("Object 3"),
+                Pstring(), 3, 2);
+            break;
+        case PATTERN_LUNG:
+            rtds->m_rtss->m_cxt->add_structure (Pstring ("Body"),
+                Pstring(), 1, 0);
+            rtds->m_rtss->m_cxt->add_structure (Pstring ("Tumor"),
+                Pstring(), 2, 1);
+            rtds->m_rtss->m_cxt->add_structure (Pstring ("Lung"),
+                Pstring(), 3, 2);
+            break;
+        default:
+            rtds->m_rtss->m_cxt->add_structure (Pstring ("Foreground"),
+                Pstring(), 1, 0);
+        }
     }
     if (parms->m_want_dose_img) {
         rtds->m_dose = new Plm_image;

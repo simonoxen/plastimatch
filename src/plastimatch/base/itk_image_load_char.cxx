@@ -3,8 +3,6 @@
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
 
-#include "plmbase.h"
-
 #include "itk_image_load.txx"
 
 CharImageType::Pointer

@@ -109,7 +109,8 @@ Rtss_structure*
 Rtss_structure_set::add_structure (
     const Pstring& structure_name, 
     const Pstring& color, 
-    int structure_id)
+    int structure_id,
+    int bit)
 {
     Rtss_structure* new_structure;
 
@@ -132,7 +133,7 @@ Rtss_structure_set::add_structure (
     }
     new_structure->name.trim();
     new_structure->id = structure_id;
-    new_structure->bit = -1;
+    new_structure->bit = bit;
     if (color.not_empty()) {
 	new_structure->color = color;
     } else {

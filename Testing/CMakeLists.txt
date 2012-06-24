@@ -357,7 +357,7 @@ plm_add_test (
   "rect-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-1.mha;--output-type;float;--output-dose-img;${PLM_BUILD_TESTING_DIR}/rect-1-dose-img.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/rect-1-ss.mha;--output-dicom;${PLM_BUILD_TESTING_DIR}/rect-1-dicom;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;-1000"
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-1.mha;--output-type;float;--output-dose-img;${PLM_BUILD_TESTING_DIR}/rect-1-dose-img.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/rect-1-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/rect-1-ss-list.txt;--output-dicom;${PLM_BUILD_TESTING_DIR}/rect-1-dicom;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;-1000"
   )
 plm_add_test (
   "rect-2"
@@ -1859,7 +1859,8 @@ set_tests_properties (plm-convert-dose-scale-check PROPERTIES
   DEPENDS plm-convert-dose-scale-stats)
 
 ## -------------------------------------------------------------------------
-## plm-dvh-a
+## plm-dvh-a  ss-img, without ss-list
+## plm-dvh-b  ss-img, with ss-list
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-dvh-a"
@@ -1867,7 +1868,43 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "dvh;--input-ss-img;${PLM_BUILD_TESTING_DIR}/rect-1-ss.mha;--input-dose;${PLM_BUILD_TESTING_DIR}/rect-1-dose-img.mha;--output-csv;${PLM_BUILD_TESTING_DIR}/plm-dvh-a.csv"
   )
+plmtest_check_interval ("plm-dvh-a-check-1"
+  "${PLM_BUILD_TESTING_DIR}/plm-dvh-a.csv"
+  "^15,([-0-9.]*),"
+  "0.999"
+  "1.0"
+  )
+plmtest_check_interval ("plm-dvh-a-check-2"
+  "${PLM_BUILD_TESTING_DIR}/plm-dvh-a.csv"
+  "^15.5,([-0-9.]*),"
+  "0.0"
+  "0.001"
+  )
 set_tests_properties (plm-dvh-a PROPERTIES DEPENDS "rect-1")
+set_tests_properties (plm-dvh-a-check-1 PROPERTIES DEPENDS "plm-dvh-a")
+set_tests_properties (plm-dvh-a-check-2 PROPERTIES DEPENDS "plm-dvh-a")
+
+plm_add_test (
+  "plm-dvh-b"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "dvh;--input-ss-img;${PLM_BUILD_TESTING_DIR}/rect-1-ss.mha;--input-ss-list;${PLM_BUILD_TESTING_DIR}/rect-1-ss-list.txt;--input-dose;${PLM_BUILD_TESTING_DIR}/rect-1-dose-img.mha;--output-csv;${PLM_BUILD_TESTING_DIR}/plm-dvh-b.csv"
+  )
+plmtest_check_interval ("plm-dvh-b-check-1"
+  "${PLM_BUILD_TESTING_DIR}/plm-dvh-b.csv"
+  "^15,([-0-9.]*)"
+  "0.999"
+  "1.0"
+  )
+plmtest_check_interval ("plm-dvh-b-check-2"
+  "${PLM_BUILD_TESTING_DIR}/plm-dvh-b.csv"
+  "^15.5,([-0-9.]*)"
+  "0.0"
+  "0.001"
+  )
+set_tests_properties (plm-dvh-b PROPERTIES DEPENDS "rect-1")
+set_tests_properties (plm-dvh-b-check-1 PROPERTIES DEPENDS "plm-dvh-b")
+set_tests_properties (plm-dvh-b-check-2 PROPERTIES DEPENDS "plm-dvh-b")
 
 ## -------------------------------------------------------------------------
 ## plastimatch fill/mask

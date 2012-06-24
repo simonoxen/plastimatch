@@ -19,6 +19,7 @@ struct synthetic_mha_main_parms {
     Pstring output_fn;
     Pstring output_dose_img_fn;
     Pstring output_ss_img_fn;
+    Pstring output_ss_list_fn;
     Pstring output_dicom;
     Synthetic_mha_parms sm_parms;
 };
@@ -31,7 +32,8 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
     /* Create image */
     Rtds rtds;
     if (parms->output_dicom.not_empty() 
-        || parms->output_ss_img_fn.not_empty())
+        || parms->output_ss_img_fn.not_empty()
+        || parms->output_ss_list_fn.not_empty())
     {
         sm_parms->m_want_ss_img = true;
     }
@@ -80,13 +82,11 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
         rtds.m_dose->save_image (parms->output_dose_img_fn);
     }
 
-#if defined (commentout)
-    /* -- list of structure names -- */
+    /* list of structure names */
     if (parms->output_ss_list_fn.not_empty()) {
         printf ("save_ss_img: save_ss_list\n");
-        rtds->m_rtss->save_ss_list (parms->output_ss_list_fn);
+        rtds.m_rtss->save_ss_list (parms->output_ss_list_fn);
     }
-#endif
 
     if (parms->output_dicom.not_empty()) {
         rtds.m_rtss->convert_ss_img_to_cxt ();
@@ -122,8 +122,10 @@ parse_fn (
         "filename for output dose image", 1, "");
     parser->add_long_option ("", "output-ss-img", 
         "filename for output structure set image", 1, "");
+    parser->add_long_option ("", "output-ss-list", 
+        "filename for output file containing structure names", 1, "");
     parser->add_long_option ("", "output-type", 
-        "data type for output image: {uchar,short,ushort, ulong,float},"
+        "data type for output image: {uchar, short, ushort, ulong, float},"
         " default is float", 
         1, "float");
 
@@ -219,6 +221,7 @@ parse_fn (
     parms->output_dicom = parser->get_string("output-dicom").c_str();
     parms->output_dose_img_fn = parser->get_string("output-dose-img").c_str();
     parms->output_ss_img_fn = parser->get_string("output-ss-img").c_str();
+    parms->output_ss_list_fn = parser->get_string("output-ss-list").c_str();
     sm_parms->output_type = plm_image_type_parse (
         parser->get_string("output-type").c_str());
     if (sm_parms->output_type == PLM_IMG_TYPE_UNDEFINED) {
