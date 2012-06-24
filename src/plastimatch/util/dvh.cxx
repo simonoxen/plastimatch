@@ -78,7 +78,7 @@ Dvh::run ()
     plm_long ss_dim[3];
 
     FloatImageType::Pointer dose_img = d_ptr->dose->itk_float ();
-    UInt32ImageType::Pointer ss_img = d_ptr->rtss->get_ss_img();
+    UInt32ImageType::Pointer ss_img = d_ptr->rtss->get_ss_img_uint32 ();
 
     /* GCS HACK: This should go into rtss.cxx */
     Rtss_structure_set *ss_list;
@@ -87,10 +87,8 @@ Dvh::run ()
     } else {
         ss_list = new Rtss_structure_set;
         for (int i = 0; i < 32; i++) {
-            Rtss_structure* structure = 
-                ss_list->add_structure ("Unknown Structure", 
-                    "255 255 0", i);
-            structure->bit = i;
+            ss_list->add_structure ("Unknown Structure", 
+                "255 255 0", i+1, i);
         }
     }
 

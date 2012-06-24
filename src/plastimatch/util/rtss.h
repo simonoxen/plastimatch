@@ -51,7 +51,8 @@ public:
     void save_ss_list (const Pstring &ss_list_fn);
     void save_xio (Xio_ct_transform *xio_transform, Xio_version xio_version, 
         const Pstring &output_dir);
-    UInt32ImageType::Pointer get_ss_img (void);
+    UInt32ImageType::Pointer get_ss_img_uint32 (void);
+    UCharVecImageType::Pointer get_ss_img_uchar_vec (void);
 
     void apply_dicom_dir (const Slice_index *rdd);
     void convert_ss_img_to_cxt (void);

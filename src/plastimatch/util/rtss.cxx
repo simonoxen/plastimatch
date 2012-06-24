@@ -400,13 +400,23 @@ Rtss::save_xio (Xio_ct_transform *xio_transform, Xio_version xio_version,
 }
 
 UInt32ImageType::Pointer
-Rtss::get_ss_img (void)
+Rtss::get_ss_img_uint32 (void)
 {
     if (!this->m_ss_img) {
         print_and_exit ("Sorry, can't get_ss_img()\n");
     }
     m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
     return this->m_ss_img->m_itk_uint32;
+}
+
+UCharVecImageType::Pointer
+Rtss::get_ss_img_uchar_vec (void)
+{
+    if (!this->m_ss_img) {
+        print_and_exit ("Sorry, can't get_ss_img()\n");
+    }
+    m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
+    return this->m_ss_img->m_itk_uchar_vec;
 }
 
 void
