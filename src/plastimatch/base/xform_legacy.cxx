@@ -33,6 +33,8 @@ void
 xform_legacy_load (Xform *xf, FILE* fp)
 {
     char buf[1024];
+    rewind (fp);
+    fgets (buf,1024,fp);
     if (plm_strcmp (buf,"ObjectType = MGH_XFORM_TRANSLATION") == 0) {
 	TranslationTransformType::Pointer trn = TranslationTransformType::New();
 	TranslationTransformType::ParametersType xfp(12);
@@ -191,6 +193,8 @@ xform_legacy_load (Xform *xf, FILE* fp)
 
 	/* Copy into bsp structure */
 	xf->get_itk_bsp()->SetParametersByValue (bsp_coeff);
+    } else {
+        /* Not a legacy format */
     }
 }
 
