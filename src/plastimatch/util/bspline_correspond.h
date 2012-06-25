@@ -4,6 +4,8 @@
 #ifndef _bspline_correspond_h_
 #define _bspline_correspond_h_
 
+#include "plmutil_config.h"
+
 class Volume;
 
 PLMUTIL_API int inside_mask (float* xyz, const Volume* mask);

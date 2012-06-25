@@ -15,6 +15,8 @@
 #include "bspline_cuda.h"
 #include "cuda_util.h"
 #endif
+#include "bspline_correspond.h"
+#include "bspline_interpolate.h"
 #include "bspline_xform.h"
 #include "interpolate.h"
 #include "interpolate_macros.h"
