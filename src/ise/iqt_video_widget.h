@@ -5,6 +5,7 @@
 #define _iqt_video_widget_h_
 
 #include <QGraphicsView>
+#include <QRubberBand>
 #include <QPixmap>
 #include <QtGui/QGraphicsView>
 #include <QGraphicsScene>
@@ -37,12 +38,23 @@ public slots:
 public:
     Iqt_video_widget (QWidget *parent = 0);
     int j;
+    bool drawing;
+    QPoint origin;
+    QRubberBand* rubberband;
     ~Iqt_video_widget ();
     void set_qimage (const QImage& qimage);
 
 
 protected:
 //    void paintEvent (QPaintEvent *event);
+    QPointF currentCenter;
+    QPointF GetCenter() { return currentCenter; }
+    void SetCenter(const QPointF& centerPoint);
+    virtual void wheelEvent(QWheelEvent* event);
+    virtual void mousePressEvent(QMouseEvent* event);
+    virtual void mouseMoveEvent(QMouseEvent* event);
+    virtual void mouseReleaseEvent(QMouseEvent* event);
+    //virtual void resizeEvent(QResizeEvent* event);
 
 public:
     QPixmap m_pixmap;
