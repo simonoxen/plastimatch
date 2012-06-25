@@ -14,7 +14,16 @@
 #   define PLMRECONSTRUCT_C_API EXTERNC __declspec(dllimport)
 #   define PLMRECONSTRUCT_API __declspec(dllimport)
 # endif
+# ifdef plmreconstructcuda_EXPORTS
+#   define PLMRECONSTRUCTCUDA_C_API EXTERNC __declspec(dllexport)
+#   define PLMRECONSTRUCTCUDA_API __declspec(dllexport)
+# else
+#   define PLMRECONSTRUCTCUDA_C_API EXTERNC __declspec(dllimport)
+#   define PLMRECONSTRUCTCUDA_API __declspec(dllimport)
+# endif
 #else
+# define PLMRECONSTRUCTCUDA_C_API EXTERNC 
+# define PLMRECONSTRUCTCUDA_API 
 # define PLMRECONSTRUCT_C_API EXTERNC 
 # define PLMRECONSTRUCT_API 
 #endif

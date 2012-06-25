@@ -77,6 +77,8 @@
         ;
 #endif
 
+#define DELAYLOAD_WRAP(f, ...)                          \
+    f (__VA_ARGS__); typedef f##_t(__VA_ARGS__);
 
 PLMSYS_C_API int delayload_libplmcuda (void);
 PLMSYS_C_API int delayload_libplmreconstructcuda (void);

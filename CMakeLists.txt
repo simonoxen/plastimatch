@@ -283,13 +283,13 @@ else ()
 endif ()
 
 ##-----------------------------------------------------------------------------
-##  Search for languages and language features
+##  Figure out FORTRAN madness
+##  This needs to be done before add_subdirectory() calls 
+##   to set PLM_FORTRAN_LIBRARIES properly
+##  GCS FIX: This should be done after slicer, to ensure that 
+##   system f2c is not used
 ##-----------------------------------------------------------------------------
-if (BUILD_AGAINST_SLICER3)
-  # Never use fortran for slicer extension build, because end users
-  # might not have it installed
-  set (PLM_PREFER_F2C TRUE)
-elseif (NOT MINGW)
+if (NOT MINGW)
   # For some reason, CMake tries to invoke devenv instead of gfortran
   # for mingw.
   include (cmake/PLM_FindFortran.cmake)
@@ -320,6 +320,28 @@ if (PLM_USE_F2C)
   endif ()
 endif ()
 
+if (PLM_USE_F2C)
+  set (PLM_FORTRAN_LIBRARIES ${F2C_LIBRARY})
+#  if (UNIX AND NOT PLM_USE_INCLUDED_F2C)
+#    set (PLM_FORTRAN ${PLM_FORTRAN} f2c_helper)
+#  endif ()
+else ()
+  # It would seem that mixed-language programs need to set compiler and 
+  # linker flags manually
+  #   http://www.vtk.org/Wiki/CMakeForFortranExample
+  # In theory, this is fixed in a future release
+  #   http://www.cmake.org/Bug/view.php?id=9195
+  message (STATUS "Fortran compiler = ${CMAKE_Fortran_COMPILER}")
+  if (Fortran_COMPILER_NAME STREQUAL "gfortran" 
+      OR Fortran_COMPILER_NAME STREQUAL "f95")
+    set (PLM_FORTRAN_LIBRARIES gfortran)
+  endif ()
+endif ()
+message (STATUS "PLM_FORTRAN_LIBRARIES: ${PLM_FORTRAN_LIBRARIES}")
+
+##-----------------------------------------------------------------------------
+##  Libdl
+##-----------------------------------------------------------------------------
 # Some systems such as pcBSD don't have libdl
 find_library (LIBDL_FOUND dl)
 
@@ -485,28 +507,6 @@ endif ()
 find_package (Thrust)
 
 ##-----------------------------------------------------------------------------
-##  Set PLM_FORTRAN (either F2C or fortran)
-##-----------------------------------------------------------------------------
-if (PLM_USE_F2C)
-  set (PLM_FORTRAN ${F2C_LIBRARY})
-#  if (UNIX AND NOT PLM_USE_INCLUDED_F2C)
-#    set (PLM_FORTRAN ${PLM_FORTRAN} f2c_helper)
-#  endif ()
-else ()
-  # It would seem that mixed-language programs need to set compiler and 
-  # linker flags manually
-  #   http://www.vtk.org/Wiki/CMakeForFortranExample
-  # In theory, this is fixed in a future release
-  #   http://www.cmake.org/Bug/view.php?id=9195
-  message (STATUS "Fortran compiler = ${CMAKE_Fortran_COMPILER}")
-  if (Fortran_COMPILER_NAME STREQUAL "gfortran" 
-      OR Fortran_COMPILER_NAME STREQUAL "f95")
-    set (PLM_FORTRAN gfortran)
-  endif ()
-endif ()
-message (STATUS "PLM_FORTRAN: ${PLM_FORTRAN}")
-
-##-----------------------------------------------------------------------------
 ## JAS 10.28.2010
 ## nvcc automatically passed the flag -malign-double to gcc when compiling .cu
 ## files.  This can be a problem when structs are shared between 
@@ -575,7 +575,7 @@ find_package (Doxygen)
 ##-----------------------------------------------------------------------------
 set (PLM_USE_GPU_PLUGINS OFF)
 if (BUILD_SHARED_LIBS)
-    set (PLM_USE_GPU_PLUGINS ON)
+  set (PLM_USE_GPU_PLUGINS ON)
 endif ()
 
 ##-----------------------------------------------------------------------------
@@ -814,6 +814,10 @@ if (CUDA_FOUND)
 endif ()
 if (OPENCL_FOUND)
   set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} plmopencl)
+endif ()
+if (CUDA_FOUND AND PLM_USE_GPU_PLUGINS)
+  set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} 
+    plmregistercuda plmreconstructcuda)
 endif ()
 export (TARGETS 
   ${EXPORT_TARGET_LIST}

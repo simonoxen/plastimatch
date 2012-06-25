@@ -326,10 +326,9 @@ float do_dice_nsh (
 
 
 /* Explicit instantiations */
-template float do_dice<unsigned char>(UCharImageType::Pointer reference, UCharImageType::Pointer warped, FILE* output);
-template float do_dice<short>(ShortImageType::Pointer reference, ShortImageType::Pointer warped, FILE* output);
-
-/*
-template float do_dice_nsh<unsigned char>(UCharImageType::Pointer reference, UCharImageType::Pointer warped, FILE* output);
-template float do_dice_nsh<short>(ShortImageType::Pointer reference, ShortImageType::Pointer warped, FILE* output);
-*/
+template 
+PLMUTIL_API
+float do_dice<unsigned char>(UCharImageType::Pointer reference, UCharImageType::Pointer warped, FILE* output);
+template 
+PLMUTIL_API
+float do_dice<short>(ShortImageType::Pointer reference, ShortImageType::Pointer warped, FILE* output);

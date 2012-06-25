@@ -13,7 +13,7 @@ class Plm_image;
 class Rtds;
 class Rtss;
 
-class Dvh {
+class PLMUTIL_API Dvh {
 public:
     Dvh ();
     ~Dvh ();

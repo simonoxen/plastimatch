@@ -6,3 +6,7 @@ Patch unint.c and f2c.h0 using Debian patch version 20090411-2
 http://packages.debian.org/source/sid/libf2c2
 
 Copy signal1.h0 to signal1.h, sysdep1.h0 to sysdep1.h
+
+Thu Jun 14 21:10:13 2012 UTC
+
+Remove getarg_.c, main.c, iargc_.c from build.

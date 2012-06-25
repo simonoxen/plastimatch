@@ -8,7 +8,7 @@
 #include <time.h>
 #include "plmsys_config.h"
 
-#include "plmsys.h"
+#include "logfile.h"
 
 #if (PANTHEIOS_FOUND)
 #include <pantheios/pantheios.h>        /* The root header for Panthieos when using the C-API. */

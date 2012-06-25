@@ -42,7 +42,7 @@ endif ()
 
 set (PLMDOSE_LIBRARY_DEPENDENCIES 
   ${PLMDOSE_LIBRARY_DEPENDENCIES} 
-  ${PLM_FORTRAN}
+  ${PLM_FORTRAN_LIBRARIES}
   )
 
 ##-----------------------------------------------------------------------------

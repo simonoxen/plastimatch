@@ -16,14 +16,16 @@ class Volume_limit;
 extern "C" {
 #endif
 
-plmcuda_EXPORT (
+PLMRECONSTRUCTCUDA_API
+DELAYLOAD_WRAP (
 void* drr_cuda_state_create,
     Proj_image *proj,
     Volume *vol,
     Drr_options *options
 );
 
-plmcuda_EXPORT (
+PLMRECONSTRUCTCUDA_API
+DELAYLOAD_WRAP (
 void drr_cuda_state_destroy,
     void *void_state
 );
@@ -39,7 +41,8 @@ drr_cuda_state_destroy_cu (
     void *void_state
 );
 
-plmcuda_EXPORT (
+PLMRECONSTRUCTCUDA_API
+DELAYLOAD_WRAP (
 void drr_cuda_ray_trace_image,
     Proj_image *proj, 
     Volume *vol, 

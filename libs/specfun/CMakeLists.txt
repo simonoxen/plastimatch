@@ -22,20 +22,9 @@ set (SPECFUN_LIBRARY_C_SRC
   )
 
 if (PLM_USE_F2C)
-  #add_library (specfun STATIC ${SPECFUN_LIBRARY_C_SRC})
-  plm_add_library (specfun "${SPECFUN_LIBRARY_C_SRC}" 
-    "${PLM_FORTRAN}" "" "")
+  plm_add_static_library (specfun "${SPECFUN_LIBRARY_C_SRC}" 
+    "${PLM_FORTRAN_LIBRARIES}" "" "")
 else ()
-  #add_library (specfun STATIC ${SPECFUN_LIBRARY_FORTRAN_SRC})
-  plm_add_library (specfun "${SPECFUN_LIBRARY_FORTRAN_SRC}" 
-    "${PLM_FORTRAN}" "" "")
+  plm_add_static_library (specfun "${SPECFUN_LIBRARY_FORTRAN_SRC}" 
+    "${PLM_FORTRAN_LIBRARIES}" "" "")
 endif ()
-
-## JAS 2011.01.24
-## I have disabled this INSTALL since it would be inappropriate
-## for our CPack packages to install libspecfun.a
-##
-#if (PLM_OLD_INSTALL_TARGETS)
-#  install (TARGETS specfun DESTINATION lib)
-#endif ()
-

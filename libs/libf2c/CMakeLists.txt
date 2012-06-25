@@ -11,7 +11,7 @@ set (LIBF2C_LIBRARY_SRC
   abort_.c    d_int.c	inquire.c	r_atn2.c  sig_die.c
   d_lg10.c	ftell_.c    i_sign.c	r_cnjg.c  signal_.c
   backspac.c  d_log.c	            lbitbits.c	r_cos.c   signbit.c
-  c_abs.c     d_mod.c	getenv_.c   lbitshft.c	r_cosh.c  s_paus.c
+  c_abs.c     d_mod.c	getenv_.c   lbitshft.c	r_cosh.c  
   cabs.c      d_nint.c	h_abs.c     l_ge.c	rdfmt.c   s_rnge.c
   c_cos.c     dolio.c	h_dim.c     l_gt.c	r_dim.c   s_stop.c
   c_div.c     d_prod.c	h_dnnt.c    l_le.c	rewind.c  sue.c
@@ -44,7 +44,13 @@ set (LIBF2C_LIBRARY_SRC_UNUSED
   pow_qq.c
   qbitbits.c
   qbitshft.c
+  s_paus.c
   )
+
+## Fix for building shared library on MSVC which does not provide erf()
+# set (LIBF2C_LIBRARY_SRC
+#   ${LIBF2C_LIBRARY_SRC}
+#   tesuji_erf.c)
 
 ## Need output from arithchk.  Note this operation does not support 
 ## cross-compiling.
@@ -78,5 +84,5 @@ endif ()
 
 include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
-#add_library (f2c1 STATIC ${LIBF2C_LIBRARY_SRC})
-plm_add_library (f2c1 "${LIBF2C_LIBRARY_SRC}" "" "" "")
+
+plm_add_static_library (f2c1 "${LIBF2C_LIBRARY_SRC}" "" "" "")

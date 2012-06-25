@@ -123,12 +123,14 @@ extern "C" {
     // -------------------------------------------------------------------
     // Prototypes: bspline_cuda.cpp 
 
-    plmcuda_EXPORT (
+    PLMREGISTERCUDA_API
+    DELAYLOAD_WRAP (
     void CUDA_bspline_mi_a,
         Bspline_optimize_data *bod
     );
 
-    plmcuda_EXPORT (
+    PLMREGISTERCUDA_API
+    DELAYLOAD_WRAP (
     void CUDA_bspline_mse_j,
         Bspline_optimize_data *bod
     );
@@ -167,7 +169,8 @@ extern "C" {
         int* num_vox
     );
 
-    plmcuda_EXPORT (
+    PLMREGISTERCUDA_API
+    DELAYLOAD_WRAP (
     void CUDA_bspline_mse_init_j,
         Dev_Pointers_Bspline* dev_ptrs,
         Volume* fixed,
@@ -177,7 +180,8 @@ extern "C" {
         Bspline_parms* parms
     );
 
-    plmcuda_EXPORT (
+    PLMREGISTERCUDA_API
+    DELAYLOAD_WRAP (
     void CUDA_bspline_mse_cleanup_j,
         Dev_Pointers_Bspline* dev_ptrs,
         Volume* fixed,
@@ -185,7 +189,8 @@ extern "C" {
         Volume* moving_grad
     );
 
-    plmcuda_EXPORT (
+    PLMREGISTERCUDA_API
+    DELAYLOAD_WRAP (
     void CUDA_bspline_mi_cleanup_a,
         Dev_Pointers_Bspline* dev_ptrs,
         Volume* fixed,
@@ -251,7 +256,8 @@ extern "C" {
         plm_long* cdims
     );
 
-    plmcuda_EXPORT (
+    PLMREGISTERCUDA_API
+    DELAYLOAD_WRAP (
     void CUDA_bspline_mi_init_a,
         Dev_Pointers_Bspline* dev_ptrs,
         Volume* fixed,
@@ -308,7 +314,8 @@ extern "C" {
         Dev_Pointers_Bspline *dev_ptrs
     );
 
-    plmcuda_EXPORT (
+    PLMREGISTERCUDA_API
+    DELAYLOAD_WRAP (
     void CUDA_bspline_interpolate_vf,
         Volume* interp,
         Bspline_xform* bxf

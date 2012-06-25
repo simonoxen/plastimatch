@@ -57,19 +57,23 @@ void do_contour_mean_dist(
 
 /* Explicit instantiations */
 template 
+PLMUTIL_API
 void do_hausdorff<unsigned char> (
     itk::Image<unsigned char,3>::Pointer image_1, 
     itk::Image<unsigned char,3>::Pointer image_2);
 template 
+PLMUTIL_API
 void do_hausdorff<float> (
     itk::Image<float,3>::Pointer image_1, 
     itk::Image<float,3>::Pointer image_2);
 
 template 
+PLMUTIL_API
 void do_contour_mean_dist<unsigned char> (
     itk::Image<unsigned char,3>::Pointer image_1, 
     itk::Image<unsigned char,3>::Pointer image_2);
 template 
+PLMUTIL_API
 void do_contour_mean_dist<float> (
     itk::Image<float,3>::Pointer image_1, 
     itk::Image<float,3>::Pointer image_2);

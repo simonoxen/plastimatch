@@ -20,7 +20,8 @@ extern "C" {
 
 // CUDA Plugin (plmcuda) interfaces ////////////
 
-plmcuda_EXPORT (
+PLMRECONSTRUCTCUDA_API
+DELAYLOAD_WRAP (
 void* fdk_cuda_state_create,
     Volume *vol, 
     unsigned int image_npix, 
@@ -28,12 +29,14 @@ void* fdk_cuda_state_create,
     Fdk_parms *parms
 );
 
-plmcuda_EXPORT (
+PLMRECONSTRUCTCUDA_API
+DELAYLOAD_WRAP (
 void fdk_cuda_state_destroy,
     void *void_state
 );
 
-plmcuda_EXPORT (
+PLMRECONSTRUCTCUDA_API
+DELAYLOAD_WRAP (
 void fdk_cuda_queue_image,
     void *dev_state, 
     int *dim, 
@@ -45,12 +48,14 @@ void fdk_cuda_queue_image,
     float *img
 );
 
-plmcuda_EXPORT (
+PLMRECONSTRUCTCUDA_API
+DELAYLOAD_WRAP (
 void fdk_cuda_backproject,
     void *dev_state
 );
 
-plmcuda_EXPORT (
+PLMRECONSTRUCTCUDA_API
+DELAYLOAD_WRAP (
 void fdk_cuda_fetch_volume,
     void *dev_state, 
     void *host_buf, 

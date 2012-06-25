@@ -14,7 +14,16 @@
 #   define PLMREGISTER_C_API EXTERNC __declspec(dllimport)
 #   define PLMREGISTER_API __declspec(dllimport)
 # endif
+# ifdef plmregistercuda_EXPORTS
+#   define PLMREGISTERCUDA_C_API EXTERNC __declspec(dllexport)
+#   define PLMREGISTERCUDA_API __declspec(dllexport)
+# else
+#   define PLMREGISTERCUDA_C_API EXTERNC __declspec(dllimport)
+#   define PLMREGISTERCUDA_API __declspec(dllimport)
+# endif
 #else
+# define PLMREGISTERCUDA_C_API EXTERNC 
+# define PLMREGISTERCUDA_API 
 # define PLMREGISTER_C_API EXTERNC 
 # define PLMREGISTER_API 
 #endif

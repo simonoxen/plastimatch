@@ -132,10 +132,6 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  OLD BUILD SYSTEM REMNANTS
 ##-----------------------------------------------------------------------------
-# if (F2C_LIBRARY AND UNIX)
-#   plm_add_library (f2c_helper "${F2C_HELPER_LIBRARY_SRC}" "" "")
-# endif ()
-
 # JAS 2012.05.15 -- needs to be merged then removed for new build system
 #if (FULL_PLASTIMATCH_BUILD)
 #  # Ugh.  ITK is stupid.  They quietly dropped support for cygwin. 
@@ -148,16 +144,6 @@ endif ()
 #  if (CYGWIN)
 #    set (PLASTIMATCH1_LIBRARY_DEPENDENCIES 
 #      ${PLASTIMATCH1_LIBRARY_DEPENDENCIES} gdi32)
-#  endif ()
-#endif ()
-
-# mondoshot requires WIN32, wx, dcmtk, sqlite3
-#if (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
-#  add_executable (mondoshot WIN32 ${MONDOSHOT_SRC})
-#  target_link_libraries (mondoshot 
-#    ${wxWidgets_LIBRARIES} ${DCMTK_LIBRARIES} ${SQLITE_LIBRARIES})
-#  if (NOT BUILD_AGAINST_SLICER3)
-#    install (TARGETS mondoshot DESTINATION bin)
 #  endif ()
 #endif ()
 
@@ -183,11 +169,13 @@ if (SLICER_FOUND)
   set (QTOUTDIR "${QTPLUGIN_DIR}/${CMAKE_CFG_INTDIR}")
 
   # Copy plastimatch executable
-  plm_add_target_copy (plastimatch_slicer_copy_plastimatch_exe
-    "${INDIR}/plastimatch${CMAKE_EXECUTABLE_SUFFIX}"
-    "${OUTDIR}/plastimatch${CMAKE_EXECUTABLE_SUFFIX}"
-    plastimatch
-    )
+  # GCS 2012-06-25: Don't do this any more.  It causes Slicer Debug 
+  # build to barf.  Need to find another place to copy it...
+  #  plm_add_target_copy (plastimatch_slicer_copy_plastimatch_exe
+  #    "${INDIR}/plastimatch${CMAKE_EXECUTABLE_SUFFIX}"
+  #    "${OUTDIR}/plastimatch${CMAKE_EXECUTABLE_SUFFIX}"
+  #    plastimatch
+  #    )
 
   # Copy dlls
   if (WIN32)

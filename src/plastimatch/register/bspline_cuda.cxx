@@ -15,14 +15,14 @@
 #include "bspline_cuda.h"
 #include "cuda_util.h"
 #endif
-
-#include "plmbase.h"
-#include "plmutil.h"
-#include "plmsys.h"
-
-#include "plm_math.h"
-#include "volume_macros.h"
+#include "bspline_xform.h"
+#include "interpolate.h"
 #include "interpolate_macros.h"
+#include "logfile.h"
+#include "plm_math.h"
+#include "plm_timer.h"
+#include "volume.h"
+#include "volume_macros.h"
 
 /***********************************************************************
  * A few of the CPU functions are reproduced here for testing purposes.

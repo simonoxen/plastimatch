@@ -64,18 +64,31 @@ endif ()
 ##-----------------------------------------------------------------------------
 if (CUDA_FOUND)
   if (PLM_USE_GPU_PLUGINS)
-    # build CUDA as plmreconstructcuda
+
+    # build CUDA as separate plmreconstructcuda shared library
     set (PLMRECONSTRUCTCUDA_LIBRARY_SRC
       ${PLMRECONSTRUCT_CUDA_IFACE_SRC}
       ${PLMRECONSTRUCT_CUDA_SRC}
-    )
-    cuda_add_library (plmreconstructcuda SHARED
-      ${PLMRECONSTRUCTCUDA_LIBRARY_SRC}
       )
-    set_target_properties (plmreconstructcuda PROPERTIES 
-      ARCHIVE_OUTPUT_DIRECTORY "${PLM_BUILD_ROOT}"
-      LIBRARY_OUTPUT_DIRECTORY "${PLM_BUILD_ROOT}"
-      RUNTIME_OUTPUT_DIRECTORY "${PLM_BUILD_ROOT}")
+    plm_add_gpu_plugin_library (plmreconstructcuda 
+      "${PLMRECONSTRUCTCUDA_LIBRARY_SRC}")
+    target_link_libraries (plmreconstructcuda plmcuda ${CUDA_LIBRARIES})
+
+    # set dependencies that plmreconstruct library needs 
+    if (WIN32 AND NOT CYGWIN AND NOT MINGW)
+      # windows needs to delayload it
+      set (PLMRECONSTRUCT_LIBRARY_DEPENDENCIES
+	${PLMRECONSTRUCT_LIBRARY_DEPENDENCIES}
+	plmreconstructcuda)
+      set (PLMRECONSTRUCT_LIBRARY_LDFLAGS
+	"${PLMRECONSTRUCT_LIBRARY_LDFLAGS} /DELAYLOAD:plmreconstructcuda.dll")
+    endif ()
+    if (NOT WIN32 AND LIBDL_FOUND)
+      # and unix needs dlopen()
+      set (PLMRECONSTRUCT_LIBRARY_DEPENDENCIES
+	${PLMRECONSTRUCT_LIBRARY_DEPENDENCIES}
+	-ldl)
+    endif ()
   else ()
     # building CUDA into plmreconstruct
     cuda_compile (CUDA_WRAPPERS ${PLMRECONSTRUCT_CUDA_SRC})
@@ -91,24 +104,6 @@ if (CUDA_FOUND)
   endif ()
 endif ()
 
-# if building cuda support as a plugin...
-if (CUDA_FOUND AND PLM_USE_GPU_PLUGINS)
-  # windows needs to delayload it
-  if (WIN32 AND NOT CYGWIN AND NOT MINGW)
-    set (PLMRECONSTRUCT_LIBRARY_DEPENDENCIES
-      ${PLMRECONSTRUCT_LIBRARY_DEPENDENCIES}
-      plmreconstructcuda)
-    target_link_libraries (plmreconstructcuda plmcuda ${CUDA_LIBRARIES})
-    set (PLMRECONSTRUCT_LIBRARY_LDFLAGS
-      "${PLMRECONSTRUCT_LIBRARY_LDFLAGS} /DELAYLOAD:plmreconstructcuda.dll")
-  endif ()
-  # and unix needs dlopen()
-  if (NOT WIN32 AND LIBDL_FOUND)
-    set (PLMRECONSTRUCT_LIBRARY_DEPENDENCIES
-      ${PLMRECONSTRUCT_LIBRARY_DEPENDENCIES}
-      -ldl)
-  endif ()
-endif ()
 
 ##-----------------------------------------------------------------------------
 ##  SPECIAL BUILD RULES: OpenMP

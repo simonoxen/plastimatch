@@ -14,46 +14,40 @@
 macro (PLM_ADD_LIBRARY 
     TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS TARGET_INCLUDES)
 
-  if (BUILD_AGAINST_SLICER3)
-    # This is the case for building on slicer 3 extension build machines
-    # We just need to create the build, no need to install
-    add_library (${TARGET_NAME} STATIC ${TARGET_SRC})
-    slicer3_set_plugins_output_path (${TARGET_NAME})
-  else ()
-    add_library (${TARGET_NAME} ${TARGET_SRC})
-    set_target_properties (${TARGET_NAME} PROPERTIES 
-      ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
-      LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
-      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
-      PUBLIC_HEADER "${TARGET_INCLUDES}")
-    if (PLM_CONFIG_INSTALL_LIBRARIES)
-      install (TARGETS ${TARGET_NAME}
-	EXPORT PlastimatchLibraryDepends
-        RUNTIME DESTINATION "${PLM_INSTALL_BIN_DIR}" 
-        LIBRARY DESTINATION "${PLM_INSTALL_LIB_DIR}" 
-        ARCHIVE DESTINATION "${PLM_INSTALL_LIB_DIR}" 
-	PUBLIC_HEADER DESTINATION "${PLM_INSTALL_INCLUDE_DIR}/plastimatch-1.6"
-	)
-    endif ()
-    # Slicer 4 extension build needs dlls installed into the same 
-    # directory as the modules
-    if (SLICER_FOUND AND SLICER_IS_SLICER4)
-      install (TARGETS ${TARGET_NAME}
-	RUNTIME DESTINATION ${Slicer_INSTALL_CLIMODULES_BIN_DIR} 
-	COMPONENT RuntimeLibraries
-	LIBRARY DESTINATION ${Slicer_INSTALL_CLIMODULES_LIB_DIR} 
-	COMPONENT RuntimeLibraries
-	PUBLIC_HEADER DESTINATION 
-	"${Slicer_INSTALL_INCLUDE_DIR}/plastimatch-1.6")
-      install (TARGETS ${TARGET_NAME}
-	RUNTIME DESTINATION ${Slicer_INSTALL_QTLOADABLEMODULES_BIN_DIR} 
-	COMPONENT RuntimeLibraries
-	LIBRARY DESTINATION ${Slicer_INSTALL_QTLOADABLEMODULES_LIB_DIR} 
-	COMPONENT RuntimeLibraries
-	PUBLIC_HEADER DESTINATION 
-	"${Slicer_INSTALL_INCLUDE_DIR}/plastimatch-1.6")
-    endif ()
+  add_library (${TARGET_NAME} ${TARGET_SRC})
+  set_target_properties (${TARGET_NAME} PROPERTIES 
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    PUBLIC_HEADER "${TARGET_INCLUDES}")
+  if (PLM_CONFIG_INSTALL_LIBRARIES)
+    install (TARGETS ${TARGET_NAME}
+      EXPORT PlastimatchLibraryDepends
+      RUNTIME DESTINATION "${PLM_INSTALL_BIN_DIR}" 
+      LIBRARY DESTINATION "${PLM_INSTALL_LIB_DIR}" 
+      ARCHIVE DESTINATION "${PLM_INSTALL_LIB_DIR}" 
+      PUBLIC_HEADER DESTINATION "${PLM_INSTALL_INCLUDE_DIR}/plastimatch-1.6"
+      )
   endif ()
+  # Slicer 4 extension build needs dlls installed into the same 
+  # directory as the modules
+  if (SLICER_FOUND AND SLICER_IS_SLICER4)
+    install (TARGETS ${TARGET_NAME}
+      RUNTIME DESTINATION ${Slicer_INSTALL_CLIMODULES_BIN_DIR} 
+      COMPONENT RuntimeLibraries
+      LIBRARY DESTINATION ${Slicer_INSTALL_CLIMODULES_LIB_DIR} 
+      COMPONENT RuntimeLibraries
+      PUBLIC_HEADER DESTINATION 
+      "${Slicer_INSTALL_INCLUDE_DIR}/plastimatch-1.6")
+    install (TARGETS ${TARGET_NAME}
+      RUNTIME DESTINATION ${Slicer_INSTALL_QTLOADABLEMODULES_BIN_DIR} 
+      COMPONENT RuntimeLibraries
+      LIBRARY DESTINATION ${Slicer_INSTALL_QTLOADABLEMODULES_LIB_DIR} 
+      COMPONENT RuntimeLibraries
+      PUBLIC_HEADER DESTINATION 
+      "${Slicer_INSTALL_INCLUDE_DIR}/plastimatch-1.6")
+  endif ()
+
   target_link_libraries (${TARGET_NAME} ${TARGET_LIBS})
   if (NOT ${TARGET_LDFLAGS} STREQUAL "")
     set_target_properties(${TARGET_NAME} 
@@ -61,7 +55,68 @@ macro (PLM_ADD_LIBRARY
   endif ()
 endmacro ()
 
-    
+# The bstrlib and f2c library are static because they aren't 
+# properly decorated for windows
+macro (PLM_ADD_STATIC_LIBRARY 
+    TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS TARGET_INCLUDES)
+
+  # GCS 2012-06-25 - No longer need to consider BUILD_AGAINST_SLICER3
+  # because no more builds on S3 build machines.  
+
+  add_library (${TARGET_NAME} STATIC ${TARGET_SRC})
+  set_target_properties (${TARGET_NAME} PROPERTIES 
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    PUBLIC_HEADER "${TARGET_INCLUDES}")
+  if (PLM_CONFIG_INSTALL_LIBRARIES)
+    install (TARGETS ${TARGET_NAME}
+      EXPORT PlastimatchLibraryDepends
+      RUNTIME DESTINATION "${PLM_INSTALL_BIN_DIR}" 
+      LIBRARY DESTINATION "${PLM_INSTALL_LIB_DIR}" 
+      ARCHIVE DESTINATION "${PLM_INSTALL_LIB_DIR}" 
+      PUBLIC_HEADER DESTINATION "${PLM_INSTALL_INCLUDE_DIR}/plastimatch-1.6"
+      )
+  endif ()
+
+  # Let's worry about Slicer 4 later
+
+  target_link_libraries (${TARGET_NAME} ${TARGET_LIBS})
+  if (NOT ${TARGET_LDFLAGS} STREQUAL "")
+    set_target_properties(${TARGET_NAME} 
+      PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
+  endif ()
+endmacro ()
+
+macro (PLM_ADD_GPU_PLUGIN_LIBRARY TARGET_NAME TARGET_SRC)
+
+  # GCS 2012-06-25 - No longer need to consider BUILD_AGAINST_SLICER3
+  # because no more builds on S3 build machines.  
+
+  # Add library target
+  cuda_add_library (${TARGET_NAME} SHARED ${TARGET_SRC})
+
+  # Set output directory.  No PUBLIC_HEADER directory is needed, 
+  # because they don't have a public API.
+  set_target_properties (${TARGET_NAME} PROPERTIES 
+    ARCHIVE_OUTPUT_DIRECTORY "${PLM_BUILD_ROOT}"
+    LIBRARY_OUTPUT_DIRECTORY "${PLM_BUILD_ROOT}"
+    RUNTIME_OUTPUT_DIRECTORY "${PLM_BUILD_ROOT}")
+
+  # Set installation diretory and export definition.  No PUBLIC_HEADER needed.
+  if (PLM_CONFIG_INSTALL_LIBRARIES)
+    install (TARGETS ${TARGET_NAME}
+      EXPORT PlastimatchLibraryDepends
+      RUNTIME DESTINATION "${PLM_INSTALL_BIN_DIR}" 
+      LIBRARY DESTINATION "${PLM_INSTALL_LIB_DIR}" 
+      ARCHIVE DESTINATION "${PLM_INSTALL_LIB_DIR}" 
+      )
+  endif ()
+
+  # Let's worry about Slicer 4 later
+
+endmacro ()
+
 macro (PLM_ADD_EXECUTABLE 
     TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS 
     TARGET_BUILD TARGET_INSTALL)

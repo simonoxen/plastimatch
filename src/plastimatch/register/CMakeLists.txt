@@ -92,7 +92,7 @@ set (PLMREGISTER_LIBRARY_DEPENDENCIES
   plmbase
   plmsys
   plmutil
-  ${PLM_FORTRAN}
+  ${PLM_FORTRAN_LIBRARIES}
   )
 
 if (CUDA_FOUND)
@@ -121,18 +121,32 @@ endif ()
 ##-----------------------------------------------------------------------------
 if (CUDA_FOUND)
   if (PLM_USE_GPU_PLUGINS)
-    # build CUDA as plmregistercuda
+
+    # build CUDA as separate plmregistercuda shared library
     set (PLMREGISTERCUDA_LIBRARY_SRC
       ${PLMREGISTER_CUDA_IFACE_SRC}
       ${PLMREGISTER_CUDA_SRC}
       )
-    cuda_add_library (plmregistercuda SHARED
-      ${PLMREGISTERCUDA_LIBRARY_SRC}
-      )
-    set_target_properties (plmregistercuda PROPERTIES 
-      ARCHIVE_OUTPUT_DIRECTORY "${PLM_BUILD_ROOT}"
-      LIBRARY_OUTPUT_DIRECTORY "${PLM_BUILD_ROOT}"
-      RUNTIME_OUTPUT_DIRECTORY "${PLM_BUILD_ROOT}")
+    plm_add_gpu_plugin_library (plmregistercuda 
+      "${PLMREGISTERCUDA_LIBRARY_SRC}")
+    target_link_libraries (plmregistercuda 
+      plmcuda plmbase ${CUDA_cublas_LIBRARY} ${CUDA_LIBRARIES})
+
+    # set dependencies that plmreconstruct library needs 
+    if (WIN32 AND NOT CYGWIN AND NOT MINGW)
+      # windows needs to delayload it
+      set (PLMREGISTER_LIBRARY_DEPENDENCIES
+	${PLMREGISTER_LIBRARY_DEPENDENCIES}
+	plmregistercuda)
+      set (PLMREGISTER_LIBRARY_LDFLAGS
+	"${PLMREGISTER_LIBRARY_LDFLAGS} /DELAYLOAD:plmregistercuda.dll /DELAYLOAD:plmcuda.dll")
+    endif ()
+    if (NOT WIN32 AND LIBDL_FOUND)
+      # and unix needs dlopen()
+      set (PLMREGISTER_LIBRARY_DEPENDENCIES
+	${PLMREGISTER_LIBRARY_DEPENDENCIES}
+	-ldl)
+    endif ()
   else ()
     # building CUDA into plmregister
     cuda_compile (CUDA_WRAPPERS ${PLMREGISTER_CUDA_SRC})
@@ -146,26 +160,6 @@ if (CUDA_FOUND)
       ${CUDA_cublas_LIBRARY}
       ${CUDA_LIBRARIES}
       )
-  endif ()
-endif ()
-
-# if building cuda support as a plugin...
-if (CUDA_FOUND AND PLM_USE_GPU_PLUGINS)
-  # windows needs to delayload it
-  if (WIN32 AND NOT CYGWIN AND NOT MINGW)
-    set (PLMREGISTER_LIBRARY_DEPENDENCIES
-      ${PLMREGISTER_LIBRARY_DEPENDENCIES}
-      plmregistercuda)
-    target_link_libraries (plmregistercuda 
-      plmcuda plmbase ${CUDA_cublas_LIBRARY} ${CUDA_LIBRARIES})
-    set (PLMREGISTER_LIBRARY_LDFLAGS
-      "${PLMREGISTER_LIBRARY_LDFLAGS} /DELAYLOAD:plmregistercuda.dll /DELAYLOAD:plmcuda.dll")
-  endif ()
-  # and unix needs dlopen()
-  if (NOT WIN32 AND LIBDL_FOUND)
-    set (PLMREGISTER_LIBRARY_DEPENDENCIES
-      ${PLMREGISTER_LIBRARY_DEPENDENCIES}
-      -ldl)
   endif ()
 endif ()
 

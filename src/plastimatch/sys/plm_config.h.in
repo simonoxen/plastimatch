@@ -136,23 +136,25 @@
  * otherwise Win32 build will break when not using "shared libs" */
 #if (!defined (BUILD_AGAINST_SLICER3) && (defined(_WIN32) || defined(WIN32)) && (defined (PLM_USE_GPU_PLUGINS)))
 #ifdef plmcuda_EXPORTS
-#define plmcuda_EXPORT(f, ...)                                     \
+ #define plmcuda_EXPORT(f, ...)                                     \
     __declspec(dllexport)                                          \
     f (__VA_ARGS__); typedef f##_t(__VA_ARGS__); 
-#else
-#define plmcuda_EXPORT(f, ...)                                     \
+ #else
+ #define plmcuda_EXPORT(f, ...)                                     \
     __declspec(dllimport)                                          \
     f (__VA_ARGS__); typedef f##_t(__VA_ARGS__); 
 #endif
+
 #ifdef plmopencl_EXPORTS
-#define plmopencl_EXPORT(f, ...)                                   \
+ #define plmopencl_EXPORT(f, ...)                                   \
     __declspec(dllexport)                                          \
     f (__VA_ARGS__); typedef f##_t(__VA_ARGS__); 
 #else
-#define plmopencl_EXPORT(f, ...)                                   \
+ #define plmopencl_EXPORT(f, ...)                                   \
     __declspec(dllimport)                                          \
     f (__VA_ARGS__); typedef f##_t(__VA_ARGS__); 
 #endif
+
 #else
 #define plmcuda_EXPORT(f, ...)                                     \
     f (__VA_ARGS__); typedef f##_t(__VA_ARGS__); 

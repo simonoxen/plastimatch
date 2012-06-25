@@ -14,4 +14,4 @@ set (BSTRLIB_LIBRARY_SRC
   bstrwrap.cpp
   )
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-plm_add_library (bstrlib "${BSTRLIB_LIBRARY_SRC}" "" "" "")
+plm_add_static_library (bstrlib "${BSTRLIB_LIBRARY_SRC}" "" "" "")
