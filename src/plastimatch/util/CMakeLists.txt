@@ -17,10 +17,12 @@ set (PLMUTIL_LIBRARY_SRC
   bspline_correspond.cxx
   bspline_warp.cxx
   cxt_extract.cxx
+  dice_statistics.cxx
   diff.cxx
   dvh.cxx 
   gamma_analysis.cxx
   gamma_dose_comparison.cxx
+  hausdorff_statistics.cxx
   itk_adjust.cxx
   itk_crop.cxx
   itk_gabor.cxx

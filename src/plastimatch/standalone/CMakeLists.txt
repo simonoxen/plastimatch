@@ -39,8 +39,6 @@ set (DEMONS_SRC
   )
 set (DICE_STATS_SRC
   dice_stats_main.cxx
-  dice_statistics.cxx
-  hausdorff_statistics.cxx
   )
 set (DICOM_INFO_SRC
   dicom_info.cxx

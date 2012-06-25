@@ -3,7 +3,6 @@
    ----------------------------------------------------------------------- */
 #include "plmcli_config.h"
 #include <time.h>
-#include "getopt.h"
 
 #include "dvh.h"
 #include "pcmd_dvh.h"

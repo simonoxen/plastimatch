@@ -1,9 +1,10 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _contour_statistics_h
-#define _contour_statistics_h
+#ifndef _dice_statistics_h
+#define _dice_statistics_h
 
+#include "plmutil_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

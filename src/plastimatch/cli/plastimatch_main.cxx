@@ -15,6 +15,7 @@
 #include "pcmd_compare.h"
 #include "pcmd_compose.h"
 #include "pcmd_crop.h"
+#include "pcmd_dice.h"
 #include "pcmd_diff.h"
 #include "pcmd_drr.h"
 #include "pcmd_dvh.h"
@@ -56,23 +57,24 @@ print_usage (int return_code)
         "\n"
         "  compose     "
         "  convert     "
+        "  dice        "
         "  diff        "
 //        "  drr         "
         "  dvh         "
-        "  fill        "
         "\n"
+        "  fill        "
         "  header      "
         "  mask        "
         "  probe       "
         "  register    "
-        "  resample    "
         "\n"
+        "  resample    "
         "  scale       "
         "  segment     "
         "  stats       "
         "  synth       "
-        "  synth-vf    "
         "\n"
+        "  synth-vf    "
         "  thumbnail   "
         "  warp        "
         "  xf-convert  "
@@ -150,6 +152,9 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "crop")) {
         do_command_crop (argc, argv);
+    }
+    else if (!strcmp (command, "dice")) {
+        do_command_dice (argc, argv);
     }
     else if (!strcmp (command, "diff")) {
         do_command_diff (argc, argv);
