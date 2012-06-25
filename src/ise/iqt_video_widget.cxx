@@ -104,7 +104,12 @@ void Iqt_video_widget::mouseReleaseEvent(QMouseEvent* event)
     // 	scale(scalefactor, scalefactor);
     // }
     qDebug("Top: %d\nRight: %d\nWidth: %d\nHeight: %d", origin.x(), origin.y(), rubberband->width(), rubberband->height());
-    this->fitInView(origin.x(), origin.y(), rubberband->width(), rubberband->height(), Qt::KeepAspectRatio);
+    QPointF originf = mapToScene(origin);
+//    this->fitInView(origin.x(), origin.y(), rubberband->width(), rubberband->height(), Qt::KeepAspectRatio);
+    QPoint dest = origin + QPoint (rubberband->width(), rubberband->height());
+    QPointF destf = mapToScene(dest);
+    this->fitInView(originf.x(), originf.y(), destf.x() - originf.x(),
+        destf.y() - originf.y(), Qt::KeepAspectRatio);
     rubberband->hide();
 }
 
@@ -142,7 +147,10 @@ void Iqt_video_widget::wheelEvent(QWheelEvent* event)
     QPointF pointAfterScale(mapToScene(event->pos()));
     QPointF offset = pointBeforeScale - pointAfterScale;
     QPointF newCenter = screenCenter + offset;
+    qDebug() << "[" << pointBeforeScale << " // " << pointAfterScale << " // "
+        << offset << " // " << newCenter << "]";
     SetCenter (newCenter);
+
 }
 
 void Iqt_video_widget::flick(void)

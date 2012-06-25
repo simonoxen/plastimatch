@@ -53,6 +53,7 @@ Iqt_main_window::Iqt_main_window ()
     //    m_qtimer->start(1000);
     
     this->playing = false;
+    this->synth = false;
 
     /* Render a sphere ?? */
 //    this->render_sphere ();
@@ -207,11 +208,18 @@ Iqt_main_window::slot_frame_ready (Frame* f, int width, int height)
     int min = setMin->value(); //changed by sliders, alters bg&rect darkness
     
     uchar *data = new uchar[width * height * 4];
+    qDebug() << " [" << min << " " 
+        << (200 - min) * 255.0 / (max-min) << " " 
+        << (800 - min) * 255.0 / (max-min) << " " 
+        << max << "]";
     for (int i = 0; i < width * height; i++) {
-        uchar val = (f->img[i] - min) * 255.0 / (max-min);
-        data[4*i+0] = val; //bg red, the 0xff made it blue
-        data[4*i+1] = val; //bg green
-        data[4*i+2] = val; //bg blue
+        float fval = (f->img[i] - min) * 255.0 / (max-min);
+        if (fval < 0) fval = 0; else if (fval > 255) fval = 255;
+        uchar val = (uchar) fval;
+        data[4*i+0] = val;  //bg red, the 0xff made it blue
+        data[4*i+1] = val;  //bg green
+        data[4*i+2] = val;  //bg blue
+        data[4*i+3] = 0xff; //alpha
     }
     QImage qimage (data, width, height, QImage::Format_RGB32);
     this->playing = true;
