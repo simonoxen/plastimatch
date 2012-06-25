@@ -37,9 +37,6 @@ set (DEMONS_SRC
   demons_main.cxx 
   demons_opts.cxx
   )
-set (DICE_STATS_SRC
-  dice_stats_main.cxx
-  )
 set (DICOM_INFO_SRC
   dicom_info.cxx
   )
@@ -124,9 +121,6 @@ set (XF_TO_EMPIREFMT_SRC
 ##-----------------------------------------------------------------------------
 if (FULL_PLASTIMATCH_BUILD)
   plm_add_executable (compute_distance "${COMPUTE_DISTANCE_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-  plm_add_executable (dice_stats "${DICE_STATS_SRC}"
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   plm_add_executable (dicom_info "${DICOM_INFO_SRC}"
