@@ -202,6 +202,11 @@ Iqt_main_window::slot_frame_ready (Frame* f, int width, int height)
     max_label->setHidden(false);
     max_val->setHidden(false);
     
+    if (setMax->value() <= setMin->value())
+    {
+	setMin->setValue(setMax->value());
+    } 
+
     this->width = width;
     this->height = height;
     int max = setMax->value(); //changed by sliders, alters bg darkness
