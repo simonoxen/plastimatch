@@ -24,10 +24,13 @@ IF(ORAIFUTILS_USE_QT)
     oraTask.h
     oraTaskManager.h
     oraImageImporterTask.h
-    oraImageOrienter.h
-    oraImageOrienter.txx  
+    oraImageOrienter.h     
     oraQVTKProgressEventAdaptor.h
     oraQProgressEmitter.h
+  )
+  
+  SET(${OWN_LIB_NAME}_TXX
+    oraImageOrienter.txx
   )
   
   SET(${OWN_LIB_NAME}_SRCS
@@ -42,7 +45,7 @@ IF(ORAIFUTILS_USE_QT)
   # Convince MSVC that txx files are also C++ files!
   IF(MSVC)
     SET_SOURCE_FILES_PROPERTIES(
-      oraImageOrienter.txx
+      ${${OWN_LIB_NAME}_TXX}
       PROPERTIES 
       LANGUAGE "CXX" 
       HEADER_FILE_ONLY FALSE
@@ -61,7 +64,7 @@ SET(${OWN_LIB_NAME}_SRCS
   oraImageConsumer.cxx
 )
 
-ADD_LIBRARY(${OWN_LIB_NAME} ${ORAIFUTILS_LIBRARY_TYPE} ${${OWN_LIB_NAME}_SRCS} ${${OWN_LIB_NAME}_HDRS})
+ADD_LIBRARY(${OWN_LIB_NAME} ${ORAIFUTILS_LIBRARY_TYPE} ${${OWN_LIB_NAME}_SRCS} ${${OWN_LIB_NAME}_HDRS} ${${OWN_LIB_NAME}_TXX})
 SET_TARGET_PROPERTIES(${OWN_LIB_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 
 SET(${OWN_LIB_NAME}_LINK_LIBRARIES ORAIFImageAccess)
@@ -87,4 +90,4 @@ INSTALL(TARGETS ${OWN_LIB_NAME}
   ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib/static
   PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}/${ORAIFUTILS_MODEL_SUBDIR}"
   COMPONENT dev)
-
+INSTALL(FILES ${${OWN_LIB_NAME}_TXX} DESTINATION "${INSTALL_INCLUDE_DIR}/${ORAIFUTILS_MODEL_SUBDIR}")

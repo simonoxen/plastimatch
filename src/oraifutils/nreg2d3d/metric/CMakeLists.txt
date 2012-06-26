@@ -8,15 +8,18 @@ INCLUDE_DIRECTORIES(
 )
 
 SET(${OWN_LIB_NAME}_HDRS
-  oraAverageRanksImageToImageFilter.h
-  oraAverageRanksImageToImageFilter.txx
-  oraStochasticRankCorrelationImageToImageMetric.h
-  oraStochasticRankCorrelationImageToImageMetric.txx
-  oraDRRITFLikelihoodCostFunction.h
-  oraDRRITFLikelihoodCostFunction.txx
-  oraGradientDifferenceImageToImageMetric.h
-  oraGradientDifferenceImageToImageMetric.txx
+  oraAverageRanksImageToImageFilter.h  
+  oraStochasticRankCorrelationImageToImageMetric.h  
+  oraDRRITFLikelihoodCostFunction.h  
+  oraGradientDifferenceImageToImageMetric.h  
   oraGradientMagnitudeDifferenceImageToImageMetric.h
+)
+
+SET(${OWN_LIB_NAME}_TXX
+  oraAverageRanksImageToImageFilter.txx
+  oraStochasticRankCorrelationImageToImageMetric.txx
+  oraDRRITFLikelihoodCostFunction.txx
+  oraGradientDifferenceImageToImageMetric.txx
   oraGradientMagnitudeDifferenceImageToImageMetric.txx
 )
 
@@ -26,11 +29,7 @@ SET(${OWN_LIB_NAME}_SRCS
 # Convince MSVC that txx files are also C++ files!
 IF(MSVC)
   SET_SOURCE_FILES_PROPERTIES(
-    oraAverageRanksImageToImageFilter.txx 
-    oraStochasticRankCorrelationImageToImageMetric.txx  
-    oraDRRITFLikelihoodCostFunction.txx
-    oraGradientDifferenceImageToImageMetric.txx  
-    oraGradientMagnitudeDifferenceImageToImageMetric.txx
+    ${${OWN_LIB_NAME}_TXX}
     PROPERTIES 
     LANGUAGE "CXX" 
     HEADER_FILE_ONLY FALSE
@@ -38,7 +37,7 @@ IF(MSVC)
   )
 ENDIF(MSVC)
 
-ADD_LIBRARY(${OWN_LIB_NAME} ${ORAIFUTILS_LIBRARY_TYPE} ${${OWN_LIB_NAME}_SRCS} ${${OWN_LIB_NAME}_HDRS})
+ADD_LIBRARY(${OWN_LIB_NAME} ${ORAIFUTILS_LIBRARY_TYPE} ${${OWN_LIB_NAME}_SRCS} ${${OWN_LIB_NAME}_HDRS} ${${OWN_LIB_NAME}_TXX})
 SET_TARGET_PROPERTIES(${OWN_LIB_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 TARGET_LINK_LIBRARIES(${OWN_LIB_NAME} 
   ITKAlgorithms ITKBasicFilters ITKStatistics ORAIFNReg2D3DMathMethods
@@ -55,6 +54,7 @@ INSTALL(TARGETS ${OWN_LIB_NAME}
   ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib/static
   PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}/${ORAIFUTILS_NREG2D3D_METRIC_SUBDIR}"
   COMPONENT dev)
+INSTALL(FILES ${${OWN_LIB_NAME}_TXX} DESTINATION "${INSTALL_INCLUDE_DIR}/${ORAIFUTILS_NREG2D3D_METRIC_SUBDIR}")
 
 # UNIT TEST
 IF (ORAIFUTILS_BUILD_TESTING)

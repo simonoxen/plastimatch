@@ -10,20 +10,19 @@ INCLUDE_DIRECTORIES(
 
 SET(${OWN_LIB_NAME}_HDRS
   oraGLSLDRRRayCasterDevMethods.hxx
-  oraGLSLRayCastingCodeFragments.hxx
-    
+  oraGLSLRayCastingCodeFragments.hxx    
   oraProjectionGeometry.h
-  oraImageBasedProjectionGeometry.h
+  oraImageBasedProjectionGeometry.h    
+  oraIntensityTransferFunction.h    
+  oraCPUSiddonDRRFilter.h    
+  oraGLSLRayCastingDRRFilter.h  
+)
+
+SET(${OWN_LIB_NAME}_TXX
   oraImageBasedProjectionGeometry.txx
-  
-  oraIntensityTransferFunction.h
   oraIntensityTransferFunction.txx
-  
-  oraCPUSiddonDRRFilter.h
   oraCPUSiddonDRRFilter.txx
-  
-  oraGLSLRayCastingDRRFilter.h
-  oraGLSLRayCastingDRRFilter.txx
+  oraGLSLRayCastingDRRFilter.txx 
 )
 
 SET(${OWN_LIB_NAME}_SRCS
@@ -34,28 +33,30 @@ SET(${OWN_LIB_NAME}_SRCS
 IF(VTK_FOUND)
 SET(${OWN_LIB_NAME}_HDRS
     ${${OWN_LIB_NAME}_HDRS}
-        
-    oraDRRFilter.h
-    oraDRRFilter.txx
-       
+    oraDRRFilter.h           
     oraGLSLDRRRayCastMapper.h
     oraRGBTableManager.h
-    oraITKVTKDRRFilter.h
-    oraITKVTKDRRFilter.txx
+    oraITKVTKDRRFilter.h    
     oraScalarFieldManager.h
-    oraProjectionProperties.h
-    oraProjectionProperties.txx
-    
-    oraFlexMapCorrection.h
-    oraFlexMapCorrection.txx
-    oraTranslationScaleFlexMapCorrection.h
-    oraTranslationScaleFlexMapCorrection.txx
-    oraLinacMountedImagingDeviceProjectionProperties.h
-    oraLinacMountedImagingDeviceProjectionProperties.txx
-    oraPortalImagingDeviceProjectionProperties.h
-    oraPortalImagingDeviceProjectionProperties.txx
+    oraProjectionProperties.h        
+    oraFlexMapCorrection.h    
+    oraTranslationScaleFlexMapCorrection.h    
+    oraLinacMountedImagingDeviceProjectionProperties.h    
+    oraPortalImagingDeviceProjectionProperties.h    
     ${ORAIFUTILS_SOURCE_DIR}/${ORAIFUTILS_IMAGETOOLS_SUBDIR}/oraVTKUnsharpMaskingImageFilter.h
     )
+    
+  SET(${OWN_LIB_NAME}_TXX
+    ${${OWN_LIB_NAME}_TXX}
+    oraDRRFilter.txx
+    oraITKVTKDRRFilter.txx
+    oraProjectionProperties.txx
+    oraTranslationScaleFlexMapCorrection.txx
+    oraLinacMountedImagingDeviceProjectionProperties.txx
+    oraPortalImagingDeviceProjectionProperties.txx
+    oraFlexMapCorrection.txx
+  )
+    
   SET(${OWN_LIB_NAME}_SRCS
     ${${OWN_LIB_NAME}_SRCS}
     oraGLSLDRRRayCastMapper.cxx  
@@ -68,17 +69,7 @@ ENDIF(VTK_FOUND)
 # Convince MSVC that txx files are also C++ files!
 IF(MSVC)
   SET_SOURCE_FILES_PROPERTIES(
-    oraITKVTKDRRFilter.txx
-    oraProjectionProperties.txx
-    oraIntensityTransferFunction.txx
-    oraFlexMapCorrection.txx
-    oraTranslationScaleFlexMapCorrection.txx
-    oraLinacMountedImagingDeviceProjectionProperties.txx
-    oraPortalImagingDeviceProjectionProperties.txx
-    oraIntensityTransferFunction.txx
-    oraDRRFilter.txx
-    oraCPUSiddonDRRFilter.txx
-    oraImageBasedProjectionGeometry.txx
+    ${${OWN_LIB_NAME}_TXX}
     PROPERTIES 
     LANGUAGE "CXX" 
     HEADER_FILE_ONLY FALSE
@@ -97,7 +88,7 @@ IF (VTK_FOUND AND UNIX AND NOT WIN32)
   )
 ENDIF(VTK_FOUND AND UNIX AND NOT WIN32)
 
-ADD_LIBRARY(${OWN_LIB_NAME} ${ORAIFUTILS_LIBRARY_TYPE} ${${OWN_LIB_NAME}_SRCS} ${${OWN_LIB_NAME}_HDRS})
+ADD_LIBRARY(${OWN_LIB_NAME} ${ORAIFUTILS_LIBRARY_TYPE} ${${OWN_LIB_NAME}_SRCS} ${${OWN_LIB_NAME}_HDRS} ${${OWN_LIB_NAME}_TXX})
 SET_TARGET_PROPERTIES(${OWN_LIB_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 SET(${OWN_LIB_NAME}_LIBRARIES ITKCommon ITKIO ITKAlgorithms ITKBasicFilters ITKNumerics)
 IF(VTK_FOUND)
@@ -118,6 +109,7 @@ INSTALL(TARGETS ${OWN_LIB_NAME}
   ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib/static
   PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}/${ORAIFUTILS_NREG2D3D_DRRENGINE_SUBDIR}"
   COMPONENT dev)
+INSTALL(FILES ${${OWN_LIB_NAME}_TXX} DESTINATION "${INSTALL_INCLUDE_DIR}/${ORAIFUTILS_NREG2D3D_DRRENGINE_SUBDIR}")
 
 # UNIT TEST
 IF (ORAIFUTILS_BUILD_TESTING)

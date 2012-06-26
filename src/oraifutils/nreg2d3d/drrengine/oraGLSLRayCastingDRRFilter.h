@@ -5,6 +5,8 @@
 //ORAIFUTILS
 #include "oraDRRFilter.h"
 
+#include <itkMatrixOffsetTransformBase.h>
+
 namespace ora
 {
 /** \class GLSLRayCastingDRRFilter

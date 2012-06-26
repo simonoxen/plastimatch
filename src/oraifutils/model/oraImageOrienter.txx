@@ -4,6 +4,8 @@
 #include "oraImageOrienter.h"
 
 #include <fstream>
+#define _USE_MATH_DEFINES  // For MSVC
+#include <math.h>
 
 // ORAIFTools
 #include "oraIniAccess.h"
@@ -22,6 +24,7 @@
 #include <itkImageFileWriter.h>
 #include <itkVersorRigid3DTransform.h>
 #include <itkEuler3DTransform.h>
+#include <itkMath.h>
 
 #include <vtkTransform.h>
 #include <vtkMatrix4x4.h>
@@ -524,7 +527,7 @@ bool ImageOrienter<TPixelType>::ConvertKVImages(std::string viewFolder,
     {
       double p = (double) i / (double) kVList.size();
       p *= 90; // -> rounded to 1 % resolution
-      p = round(p);
+      p = itk::Math::Round<int, double>(p);
       p /= 100;
       progress->SetProgress(p);
     }
@@ -624,7 +627,7 @@ bool ImageOrienter<TPixelType>::ConvertKVImages(std::string viewFolder,
     const int wb = w * sizeof(PixelType); // width in bytes
     const int h = itkImage->GetLargestPossibleRegion().GetSize()[1]; // img height
     const int hl = h / 2; // half lines
-    PixelType line[w]; // temp buffer
+    PixelType *line = new PixelType[w]; // temp buffer
     void *pline = (void *) line;
     void *pbuff = 0;
     void *pbuff2 = 0;
@@ -637,6 +640,7 @@ bool ImageOrienter<TPixelType>::ConvertKVImages(std::string viewFolder,
       memcpy(pbuff, pbuff2, wb); // swap
       memcpy(pbuff2, pline, wb);
     }
+    delete [] line;
 
     // generate oriented ITK-image:
     // NOTE: the RTI converter has already been fixed to generate right-oriented
@@ -1255,7 +1259,7 @@ bool ImageOrienter<TPixelType>::ConvertPlanarImage(std::string sourceRTIFile,
   const int wb = w * sizeof(PixelType); // width in bytes
   const int h = itkImage->GetLargestPossibleRegion().GetSize()[1]; // img height
   const int hl = h / 2; // half lines
-  PixelType line[w]; // temp buffer
+  PixelType *line = new PixelType[w]; // temp buffer
   void *pline = (void *) line;
   void *pbuff = 0;
   void *pbuff2 = 0;
@@ -1268,6 +1272,7 @@ bool ImageOrienter<TPixelType>::ConvertPlanarImage(std::string sourceRTIFile,
     memcpy(pbuff, pbuff2, wb); // swap
     memcpy(pbuff2, pline, wb);
   }
+  delete [] line;
 
   // generate oriented ITK-image:
   typedef itk::Image<unsigned short, 3> USHORTImageType;

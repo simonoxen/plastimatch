@@ -16,7 +16,7 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QInputDialog>
-#include <QWebView>
+#include <QtWebKit/QWebView>
 
 #include "oraREG23ControlWindow.h"
 #include "oraREG23Model.h"
@@ -274,7 +274,8 @@ void REG23ControlWindow::OnMainTimerTimeout()
         this->setWindowTitle(m_WindowTitle + " " +
             REG23ControlWindow::tr("[Scientific Mode]"));
 
-      QMessageBox::critical(this, REG23ControlWindow::tr("Configuration Error"),
+      if (!m_NoGUI)
+        QMessageBox::critical(this, REG23ControlWindow::tr("Configuration Error"),
           REG23ControlWindow::tr("The specified configuration file appeared to be invalid!\nError occurred here: [%1]\\%2\nError description: %3").
           arg(QString::fromStdString(errSect)).
           arg(QString::fromStdString(errKey)).
@@ -298,7 +299,8 @@ void REG23ControlWindow::OnMainTimerTimeout()
     {
       QString message = REG23ControlWindow::tr("The hardware (graphics card, GPU) appears to be invalid for REG23. The application cannot resume!\nPossible reasons:\n");
       message += QString::fromStdString(nonSupportReasons);
-      QMessageBox::critical(this, REG23ControlWindow::tr("Hardware Error"), message);
+      if (!m_NoGUI)
+        QMessageBox::critical(this, REG23ControlWindow::tr("Hardware Error"), message);
       OnCancelButtonPressed(); // exit application (application makes no sense)
       return;
     }
@@ -357,13 +359,15 @@ void REG23ControlWindow::OnMainTimerTimeout()
       {
         if (vtask)
           delete vtask;
-        QMessageBox::critical(this, REG23ControlWindow::tr("Image import"),
+        if (!m_NoGUI)
+          QMessageBox::critical(this, REG23ControlWindow::tr("Image import"),
             REG23ControlWindow::tr("Image import could not be established."));
       }
     }
     else
     {
-      QMessageBox::critical(this, REG23ControlWindow::tr("Images"),
+      if (!m_NoGUI)
+        QMessageBox::critical(this, REG23ControlWindow::tr("Images"),
           REG23ControlWindow::tr("No or invalid images configured."));
     }
   }
@@ -399,7 +403,8 @@ void REG23ControlWindow::OnLastImageLoaderTaskFinished(bool execute)
   }
   else
   {
-    QMessageBox::critical(
+    if (!m_NoGUI)
+      QMessageBox::critical(
         this,
         REG23ControlWindow::tr("Registration initialization"),
         REG23ControlWindow::tr(
@@ -420,7 +425,8 @@ void REG23ControlWindow::OnOKButtonPressed()
   }
   if (!ok)
   {
-    QMessageBox::critical(
+    if (!m_NoGUI)
+      QMessageBox::critical(
       this,
       REG23ControlWindow::tr("Registration result storage"),
       REG23ControlWindow::tr(
@@ -560,18 +566,39 @@ void REG23ControlWindow::OnTaskManagerTaskHasNoInputsDropped(Task* task)
         dynamic_cast<REG23RegistrationExecutionTask *>(task);
     if (testImporterTask)
     {
-      QMessageBox::critical(this, REG23ControlWindow::tr("Image import failed"),
+      if (!m_NoGUI)
+      {
+        QMessageBox::critical(this, REG23ControlWindow::tr("Image import failed"),
           REG23ControlWindow::tr("Obviously at least one image is not available on disk. Cannot resume with registration!"));
+      }
+      else
+      {
+        OnCancelButtonPressed(); // exit application in "no-GUI"-mode
+      }
     }
     else if (testInitTask)
     {
-      QMessageBox::critical(this, REG23ControlWindow::tr("Image import failed"),
+      if (!m_NoGUI)
+      {
+        QMessageBox::critical(this, REG23ControlWindow::tr("Image import failed"),
           REG23ControlWindow::tr("Obviously the import of at least one image failed. Cannot resume with registration!"));
+      }
+      else
+      {
+        OnCancelButtonPressed(); // exit application in "no-GUI"-mode
+      }
     }
     else if (testExecTask)
     {
-      QMessageBox::critical(this, REG23ControlWindow::tr("Initialization failed"),
+      if (!m_NoGUI)
+      {
+        QMessageBox::critical(this, REG23ControlWindow::tr("Initialization failed"),
           REG23ControlWindow::tr("Obviously the initialization of the registration (pre-processing, mask-generation ...) failed. Cannot resume with registration!"));
+      }
+      else
+      {
+        OnCancelButtonPressed(); // exit application in "no-GUI"-mode
+      }
     }
 
     if (testImporterTask || testInitTask || testExecTask)
@@ -605,8 +632,15 @@ void REG23ControlWindow::OnTaskFinished(bool execute)
       // model is ready for auto-registration after a SUCCESSFUL initialization!
       if (!m_CastedModel->IsReadyForAutoRegistration() && !m_ApplicationIsShuttingDown)
       {
-        QMessageBox::critical(this, REG23ControlWindow::tr("Initialization failed"),
+        if (!m_NoGUI)
+        {
+          QMessageBox::critical(this, REG23ControlWindow::tr("Initialization failed"),
             REG23ControlWindow::tr("Obviously the initialization of the registration (pre-processing, mask-generation ...) failed. Cannot resume with registration!"));
+        }
+        else
+        {
+          OnCancelButtonPressed(); // exit application in "no-GUI"-mode
+        }
         return;
       }
 
@@ -657,7 +691,8 @@ void REG23ControlWindow::OnTaskFinished(bool execute)
         QLocale loc;
         QString s1 = loc.toString(divergence, 'f', 1);
         QString s2 = loc.toString(m_CastedModel->GetMaxFixedImageAcquisitionDivergingTimeMin(), 'f', 1);
-        QMessageBox::warning(this,
+        if (!m_NoGUI)
+          QMessageBox::warning(this,
             REG23ControlWindow::tr("Diverging reference X-ray acquisition times"),
             REG23ControlWindow::tr("The reference X-ray images appear to have diverging acquisition times (%1 min) which are out of tolerance (max. %2 min)!\nPlease check whether or not the right X-rays are selected!").arg(s1).arg(s2));
       }
@@ -842,7 +877,8 @@ void REG23ControlWindow::OnStartButtonPressed()
     }
     else
     {
-      QMessageBox::critical(
+      if (!m_NoGUI)
+        QMessageBox::critical(
           this,
           REG23ControlWindow::tr("Automatic registration"),
           REG23ControlWindow::tr(
@@ -1337,8 +1373,9 @@ void REG23ControlWindow::closeEvent(QCloseEvent *event)
     // NOTE: new approach -> terminate running processes automatically (see below)!
 //    if (m_StatusWidget->IsCancelButtonActivated())
 //    {
-//      QMessageBox::critical(this, REG23ControlWindow::tr("Processes running!"),
-//        REG23ControlWindow::tr("There is at least one process running; cannot close the program. Please cancel or finish the process before!"));
+//      if (!m_NoGUI)
+//        QMessageBox::critical(this, REG23ControlWindow::tr("Processes running!"),
+//          REG23ControlWindow::tr("There is at least one process running; cannot close the program. Please cancel or finish the process before!"));
 //      event->ignore();
 //      return;
 //    }
@@ -1349,10 +1386,12 @@ void REG23ControlWindow::closeEvent(QCloseEvent *event)
       if (m_CastedModel->GetShowWarningOnCancel() &&
           /* hardware support cannot be queried during registration (!) */
           (m_CastedModel->GetRegistrationIsRunning() || m_CastedModel->IsHardwareAdequate(nonSupportReasons)) &&
-          QMessageBox::question(this, REG23ControlWindow::tr("Are you sure?"),
+          (!m_NoGUI && QMessageBox::question(this, REG23ControlWindow::tr("Are you sure?"),
           REG23ControlWindow::tr("Are you sure that you want to 'decline' the actual registration result?"),
-          QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::No)
+          QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::No))
         doClose = false;
+      if (m_NoGUI)
+        doClose = true;
     }
     if (doClose)
     {
@@ -1459,7 +1498,8 @@ void REG23ControlWindow::OnITFOptimizerToolButtonClicked()
           ok = m_CastedModel->GenerateITFOptimizerConfiguration, dir.toStdString())
       if (!ok)
       {
-        QMessageBox::critical(this, REG23ControlWindow::tr("ITF-optimizer configuration error"),
+        if (!m_NoGUI)
+          QMessageBox::critical(this, REG23ControlWindow::tr("ITF-optimizer configuration error"),
             REG23ControlWindow::tr("One or more errors occured during generating and storing ITF-optimization configuration!"));
       }
     }
@@ -1483,7 +1523,8 @@ void REG23ControlWindow::OnSaveDRRsToolButtonClicked()
       {
         if (!pattern.contains("%d", Qt::CaseSensitive))
         {
-          QMessageBox::critical(this, REG23ControlWindow::tr("No pattern"),
+          if (!m_NoGUI)
+            QMessageBox::critical(this, REG23ControlWindow::tr("No pattern"),
               REG23ControlWindow::tr("No %d (view index) was detected in pattern!"));
           return;
         }
@@ -1513,7 +1554,8 @@ void REG23ControlWindow::OnSaveDRRsToolButtonClicked()
                     pattern.toStdString(), defaultIndex)
           if (!ok)
           {
-            QMessageBox::critical(this, REG23ControlWindow::tr("DRR storage error"),
+            if (!m_NoGUI)
+              QMessageBox::critical(this, REG23ControlWindow::tr("DRR storage error"),
                 REG23ControlWindow::tr("One or more errors occured during generating and storing DRRs!"));
           }
         }
@@ -1546,13 +1588,15 @@ void REG23ControlWindow::OnSaveBlendingToolButtonClicked()
 
   if (!pattern.contains("%1", Qt::CaseSensitive))
   {
-    QMessageBox::critical(this, REG23ControlWindow::tr("No pattern"),
+    if (!m_NoGUI)
+      QMessageBox::critical(this, REG23ControlWindow::tr("No pattern"),
         REG23ControlWindow::tr("No '%1' (view index) was detected in pattern!"));
     return;
   }
   if (!pattern.contains("%2", Qt::CaseSensitive))
   {
-    QMessageBox::critical(
+    if (!m_NoGUI)
+      QMessageBox::critical(
         this,
         REG23ControlWindow::tr("No pattern"),
         REG23ControlWindow::tr(
@@ -1561,7 +1605,8 @@ void REG23ControlWindow::OnSaveBlendingToolButtonClicked()
   }
   if (!pattern.endsWith(".png", Qt::CaseInsensitive))
   {
-    QMessageBox::critical(this, REG23ControlWindow::tr("Invalid file extension"),
+    if (!m_NoGUI)
+      QMessageBox::critical(this, REG23ControlWindow::tr("Invalid file extension"),
         REG23ControlWindow::tr("Only PNG is supported!"));
     return;
   }
@@ -1572,7 +1617,8 @@ void REG23ControlWindow::OnSaveBlendingToolButtonClicked()
       QLineEdit::Normal, REG23ControlWindow::tr("20;80;10"), &ok);
   if (!ok || pattern.isEmpty())
   {
-    QMessageBox::critical(this, REG23ControlWindow::tr("Invalid settings"),
+    if (!m_NoGUI)
+      QMessageBox::critical(this, REG23ControlWindow::tr("Invalid settings"),
         REG23ControlWindow::tr("No settings provided!"));
     return;
   }
@@ -1581,7 +1627,8 @@ void REG23ControlWindow::OnSaveBlendingToolButtonClicked()
       Qt::CaseSensitive);
   if (settingsList.size() != 3)
   {
-    QMessageBox::critical(
+    if (!m_NoGUI)
+      QMessageBox::critical(
         this,
         REG23ControlWindow::tr("Invalid settings"),
         REG23ControlWindow::tr("Invalid number of settings provided (%1)!").arg(
@@ -1594,7 +1641,8 @@ void REG23ControlWindow::OnSaveBlendingToolButtonClicked()
   if (!ok || minValue < 0 || minValue > 100 || maxValue < 0 || maxValue > 100 ||
       minValue > maxValue || stepValue < 1 || minValue > 50 || maxValue < 50)
   {
-    QMessageBox::critical(this, REG23ControlWindow::tr("Invalid settings"),
+    if (!m_NoGUI)
+      QMessageBox::critical(this, REG23ControlWindow::tr("Invalid settings"),
         REG23ControlWindow::tr("Invalid settings provided (%1)!").arg(settings));
     return;
   }
@@ -1612,7 +1660,8 @@ void REG23ControlWindow::OnSaveBlendingToolButtonClicked()
       ++index;
       if (!ok)
       {
-        QMessageBox::critical(
+        if (!m_NoGUI)
+          QMessageBox::critical(
             this,
             REG23ControlWindow::tr("Image storage error"),
             REG23ControlWindow::tr(
@@ -1627,7 +1676,8 @@ void REG23ControlWindow::OnSaveBlendingToolButtonClicked()
       ++index;
       if (!ok)
       {
-        QMessageBox::critical(
+        if (!m_NoGUI)
+          QMessageBox::critical(
             this,
             REG23ControlWindow::tr("Image storage error"),
             REG23ControlWindow::tr(
@@ -1642,7 +1692,8 @@ void REG23ControlWindow::OnSaveBlendingToolButtonClicked()
       ++index;
       if (!ok)
       {
-        QMessageBox::critical(
+        if (!m_NoGUI)
+          QMessageBox::critical(
             this,
             REG23ControlWindow::tr("Image storage error"),
             REG23ControlWindow::tr(

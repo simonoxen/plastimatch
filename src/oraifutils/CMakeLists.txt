@@ -7,13 +7,13 @@ SET(ORAIFUTILS_MINOR_VERSION 1)
 SET(ORAIFUTILS_PATCH_VERSION 9) 
 SET(ORAIFUTILS_VERSION ${ORAIFUTILS_MAJOR_VERSION}.${ORAIFUTILS_MINOR_VERSION}.${ORAIFUTILS_PATCH_VERSION})
 
-# Require ITK 3.20
+# Require at least ITK 3.20
 SET(ITK_MIN_VERSION "3.20")
 FIND_PACKAGE(ITK) 
 IF(NOT ITK_FOUND)
   MESSAGE(SEND_ERROR "ITK ${ITK_MIN_VERSION} not found.  Please set the ITK_DIR variable.")
 ELSE(NOT ITK_FOUND)
-  # The version check fails with cmake 2.8.4+linux(win untested), manually perform check
+  # The version check fails with cmake 2.8.4+linux, manually perform check
   IF("${ITK_VERSION_MAJOR}.${ITK_VERSION_MINOR}" VERSION_LESS ${ITK_MIN_VERSION})
     MESSAGE(SEND_ERROR "ITK ${ITK_MIN_VERSION} not found (version ${ITK_VERSION_MAJOR}.${ITK_VERSION_MINOR} provided).  Please set the ITK_DIR variable.")
   ELSE("${ITK_VERSION_MAJOR}.${ITK_VERSION_MINOR}" VERSION_LESS ${ITK_MIN_VERSION})
@@ -21,16 +21,21 @@ ELSE(NOT ITK_FOUND)
   ENDIF("${ITK_VERSION_MAJOR}.${ITK_VERSION_MINOR}" VERSION_LESS ${ITK_MIN_VERSION})
 ENDIF(NOT ITK_FOUND)
 
-# Require VTK 5.6
-SET(VTK_MIN_VERSION "5.6.0")
-FIND_PACKAGE(VTK ${VTK_MIN_VERSION})
+# Require at least VTK 5.6
+SET(VTK_MIN_VERSION "5.6")
+FIND_PACKAGE(VTK) # NOTE: CMake appears to fail on checking VTK minimum version (at least on win7); ${VTK_MIN_VERSION})
 IF(NOT VTK_FOUND)
   # Only give an error if not building within plastimatch
   IF(NOT PLM_BUILD_ORAIFUTILS)
     MESSAGE(SEND_ERROR "VTK ${VTK_MIN_VERSION} not found.  Please set the VTK_DIR variable.")
   ENDIF(NOT PLM_BUILD_ORAIFUTILS)
 ELSE(NOT VTK_FOUND)
-  INCLUDE(${VTK_USE_FILE})
+  # The version check fails with cmake 2.8.4+linux/windows7, manually perform check
+  IF("${VTK_VERSION_MAJOR}.${VTK_VERSION_MINOR}" VERSION_LESS ${VTK_MIN_VERSION})
+    MESSAGE(SEND_ERROR "VTK ${VTK_MIN_VERSION} not found (version ${VTK_VERSION_MAJOR}.${VTK_VERSION_MINOR} provided).  Please set the VTK_DIR variable.")
+  ELSE("${VTK_VERSION_MAJOR}.${VTK_VERSION_MINOR}" VERSION_LESS ${VTK_MIN_VERSION})
+    INCLUDE(${VTK_USE_FILE})
+  ENDIF("${VTK_VERSION_MAJOR}.${VTK_VERSION_MINOR}" VERSION_LESS ${VTK_MIN_VERSION})  
 ENDIF(NOT VTK_FOUND)
  
 # Add Option to enable Qt Support and build Qt dependent libraries
