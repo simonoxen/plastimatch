@@ -116,6 +116,11 @@ Iqt_main_window::slot_load ()
 }
 
 void
+Iqt_main_window::slot_load_fluoro ()
+{
+}
+
+void
 Iqt_main_window::slot_save ()
 {
     QMessageBox::information (0, QString ("Info"), 
@@ -202,10 +207,13 @@ Iqt_main_window::slot_frame_ready (Frame* f, int width, int height)
     max_label->setHidden(false);
     max_val->setHidden(false);
     
-    if (setMax->value() <= setMin->value())
+    if (setMax->isSliderDown() && setMax->value() <= setMin->value())
     {
 	setMin->setValue(setMax->value());
-    } 
+    } else if (setMin->isSliderDown() && setMax->value() <= setMin->value())
+    {
+	setMax->setValue(setMin->value());
+    }
 
     this->width = width;
     this->height = height;

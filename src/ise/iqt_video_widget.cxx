@@ -76,13 +76,15 @@ void Iqt_video_widget::SetCenter (const QPointF& centerPoint) {
 void Iqt_video_widget::mousePressEvent(QMouseEvent* event)
 {
     this->origin = event->pos();
-    if (!rubberband)
-    {
-        rubberband = new QRubberBand(QRubberBand::Rectangle, this);
-	this->drawing = true;
+    if (event->button() == 1) {
+        if (!rubberband)	       
+        {
+            rubberband = new QRubberBand(QRubberBand::Rectangle, this);
+  	    this->drawing = true;
+        }
+        rubberband->setGeometry(QRect(origin, QSize()));
+        rubberband->show();
     }
-    rubberband->setGeometry(QRect(origin, QSize()));
-    rubberband->show();
 }
 
 void Iqt_video_widget::mouseMoveEvent(QMouseEvent* event)
@@ -103,14 +105,15 @@ void Iqt_video_widget::mouseReleaseEvent(QMouseEvent* event)
     //     double scalefactor = this->height()/rubberband->height();
     // 	scale(scalefactor, scalefactor);
     // }
-    qDebug("Top: %d\nRight: %d\nWidth: %d\nHeight: %d", origin.x(), origin.y(), rubberband->width(), rubberband->height());
-    QPointF originf = mapToScene(origin);
-//    this->fitInView(origin.x(), origin.y(), rubberband->width(), rubberband->height(), Qt::KeepAspectRatio);
-    QPoint dest = origin + QPoint (rubberband->width(), rubberband->height());
-    QPointF destf = mapToScene(dest);
-    this->fitInView(originf.x(), originf.y(), destf.x() - originf.x(),
-        destf.y() - originf.y(), Qt::KeepAspectRatio);
-    rubberband->hide();
+    if (event->button()==1) {
+	qDebug("Top: %d\nRight: %d\nWidth: %d\nHeight: %d", origin.x(), origin.y(), rubberband->width(), rubberband->height()); 
+	QPointF originf = mapToScene(origin);
+	QPoint dest = origin + QPoint (rubberband->width(), rubberband->height());
+	QPointF destf = mapToScene(dest);
+	this->fitInView(originf.x(), originf.y(), destf.x() - originf.x(),
+			destf.y() - originf.y(), Qt::KeepAspectRatio);
+	rubberband->hide();
+    }
 }
 
 void Iqt_video_widget::load(const QString& filename) {
