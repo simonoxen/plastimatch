@@ -32,9 +32,9 @@ Iqt_video_widget::Iqt_video_widget (QWidget *parent)
     
     qp1 = new QPixmap;
 
-    ping_check = new QTimer (this);
-    connect (ping_check, SIGNAL(timeout()), this, SLOT(flick()));
-    ping_check->start(500);
+    // ping_check = new QTimer (this);
+    // connect (ping_check, SIGNAL(timeout()), this, SLOT(flick()));
+    // ping_check->start(500);
     
     SetCenter(QPointF(500.0, 500.0));
     //QGraphicsRectItem *rect_item 

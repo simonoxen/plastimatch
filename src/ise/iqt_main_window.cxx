@@ -8,12 +8,14 @@
 #include <QFileDialog>
 #include <QDir>
 #include "iqt_video_widget.h"
+#include <QByteArray>
 //#include <vtkPolyDataMapper.h>
 //#include <vtkRenderer.h>
 //#include <vtkRenderWindow.h>
 //#include <vtkSphereSource.h>
 //#include "vtkSmartPointer.h"
 #include "frame.h"
+#include "his_io.h"
 #include "synthetic_source_thread.h"
 #include "iqt_synth_settings.h"
 #include "iqt_application.h"
@@ -100,7 +102,7 @@ Iqt_main_window::slot_load ()
     }
     playing = false;
     filename = QFileDialog::getOpenFileName(this,
-    	tr("Open File"), QDir::homePath(), tr("Image Files (*.png *.jpg *.bmp)"));
+					    tr("Open File"), QDir::homePath(), tr("Image Files (*.his *.png *.jpg *.bmp)"));
     //Iqt_video_widget::load();
 
     if (filename.isNull()) {
@@ -108,11 +110,20 @@ Iqt_main_window::slot_load ()
     }
 
     statusBar()->showMessage(QString("Filename: %1")
-        .arg(filename));
-
-    vid_screen->load(filename);
+			     .arg(filename));
+    //    for (int j = 0x79b1; j < 0x7a47; j++) {
+    //	filename = QFileInfo(filename).path() + "/0000" + hex << j;
+    QByteArray ba = filename.toLocal8Bit();
+    const char *fn = ba.data();
+    bool isHis = his_read(ise_app->cbuf, 512, 512, fn);
+    if (isHis) {
+	qDebug("Success! This is indeed a .his file");
+    } else {
+	vid_screen->load(filename);
+    }
+    // }
     //label->setText(QString("Filename: %1").arg(filename));
-    this->slot_play_pause();
+    // this->slot_play_pause();
 }
 
 void

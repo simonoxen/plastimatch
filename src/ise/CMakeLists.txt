@@ -106,7 +106,8 @@ set (ISE_QT_SRC
   iqt_main.cxx
   iqt_main_window.cxx 
   iqt_synth_settings.cxx
-  iqt_video_widget.cxx 
+  iqt_video_widget.cxx
+  his_io.cxx
   synthetic_source.cxx 
   synthetic_source_thread.cxx
   )

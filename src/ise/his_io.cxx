@@ -9,6 +9,10 @@ his_read (void *buf, int x_size, int y_size, const char *fn)
 {
     FILE *fp = fopen (fn, "rb");
     if (!fp) return false;
+    
+    unsigned short rows;
+    unsigned short cols;
+    short ulx, uly, brx, bry;
 
     size_t rc;
     unsigned short file_type;
@@ -18,7 +22,6 @@ his_read (void *buf, int x_size, int y_size, const char *fn)
 
     fseek (fp, 12, SEEK_SET);
 
-    short ulx, uly, brx, bry;
     rc = fread (&ulx, sizeof(short), 1, fp);
     if (rc != 1) goto error_exit;
     rc = fread (&uly, sizeof(short), 1, fp);
@@ -28,8 +31,8 @@ his_read (void *buf, int x_size, int y_size, const char *fn)
     rc = fread (&bry, sizeof(short), 1, fp);
     if (rc != 1) goto error_exit;
 
-    unsigned short rows = bry - uly + 1;
-    unsigned short cols = brx - ulx + 1;
+    rows = bry - uly + 1;
+    cols = brx - ulx + 1;
 
     if (rows != y_size) goto error_exit;
     if (cols != x_size) goto error_exit;
