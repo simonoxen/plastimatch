@@ -90,7 +90,7 @@ ramp_filter (
     for (i = 0; i < width / 2; ++i)
         ramp[i] = i;
 
-    for (i = width / 2; i < (int) width; ++i)
+    for (i = width / 2; i < (unsigned int) width; ++i)
         ramp[i] = width - i;
 
     /* Roll off ramp filter */
