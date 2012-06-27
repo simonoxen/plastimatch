@@ -6,5 +6,7 @@
 
 bool
 his_read (void *buf, int x_size, int y_size, const char *fn);
+bool
+is_his (int x_size, int y_size, const char *fn);
 
 #endif

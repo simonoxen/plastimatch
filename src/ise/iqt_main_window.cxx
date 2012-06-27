@@ -7,19 +7,20 @@
 #include <QTimer>
 #include <QFileDialog>
 #include <QDir>
-#include "iqt_video_widget.h"
 #include <QByteArray>
 //#include <vtkPolyDataMapper.h>
 //#include <vtkRenderer.h>
 //#include <vtkRenderWindow.h>
 //#include <vtkSphereSource.h>
 //#include "vtkSmartPointer.h"
+#include "cbuf.h"
 #include "frame.h"
 #include "his_io.h"
 #include "synthetic_source_thread.h"
 #include "iqt_synth_settings.h"
 #include "iqt_application.h"
 #include "iqt_main_window.h"
+#include "iqt_video_widget.h"
 
 /* Some hints on displaying video.  It may be necessary to explore 
    multiple options.  Start with the QWidget option?
@@ -102,7 +103,7 @@ Iqt_main_window::slot_load ()
     }
     playing = false;
     filename = QFileDialog::getOpenFileName(this,
-					    tr("Open File"), QDir::homePath(), tr("Image Files (*.his *.png *.jpg *.bmp)"));
+        tr("Open File"), QDir::homePath(), tr("Image Files (*.his *.png *.jpg *.bmp)"));
     //Iqt_video_widget::load();
 
     if (filename.isNull()) {
@@ -110,14 +111,24 @@ Iqt_main_window::slot_load ()
     }
 
     statusBar()->showMessage(QString("Filename: %1")
-			     .arg(filename));
+        .arg(filename));
     //    for (int j = 0x79b1; j < 0x7a47; j++) {
     //	filename = QFileInfo(filename).path() + "/0000" + hex << j;
     QByteArray ba = filename.toLocal8Bit();
     const char *fn = ba.data();
-    bool isHis = his_read(ise_app->cbuf, 512, 512, fn);
-    if (isHis) {
-	qDebug("Success! This is indeed a .his file");
+
+    if (is_his (512, 512, fn)) {
+        ise_app->cbuf[0]->clear();
+        ise_app->cbuf[0]->init (0, 2, 512, 512);
+
+        Frame *f = ise_app->cbuf[0]->get_frame ();
+        bool isHis = his_read (f->img, 512, 512, fn);
+        if (isHis) {
+            ise_app->cbuf[0]->add_waiting_frame (f);
+            this->slot_frame_ready (f, 512, 512);
+        } else {
+            ise_app->cbuf[0]->add_empty_frame (f);
+        }
     } else {
 	vid_screen->load(filename);
     }
@@ -230,12 +241,17 @@ Iqt_main_window::slot_frame_ready (Frame* f, int width, int height)
     this->height = height;
     int max = setMax->value(); //changed by sliders, alters bg darkness
     int min = setMin->value(); //changed by sliders, alters bg&rect darkness
+
+    unsigned short min_val = 0xffff;
+    unsigned short max_val = 0;
+    for (int i = 0; i < width * height; i++) {
+        if (f->img[i] < min_val) min_val = f->img[i];
+        if (f->img[i] > max_val) max_val = f->img[i];
+    }
     
+    qDebug("[%d %d]\n", min_val, max_val);
+
     uchar *data = new uchar[width * height * 4];
-    qDebug() << " [" << min << " " 
-        << (200 - min) * 255.0 / (max-min) << " " 
-        << (800 - min) * 255.0 / (max-min) << " " 
-        << max << "]";
     for (int i = 0; i < width * height; i++) {
         float fval = (f->img[i] - min) * 255.0 / (max-min);
         if (fval < 0) fval = 0; else if (fval > 255) fval = 255;

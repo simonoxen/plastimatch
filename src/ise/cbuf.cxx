@@ -142,6 +142,16 @@ Cbuf::add_waiting_frame (Frame* new_frame)
     this->mutex->unlock ();
 }
 
+void
+Cbuf::add_empty_frame (Frame* new_frame)
+{
+    if (!new_frame) return;
+
+    this->mutex->lock ();
+    this->empty.push_back (new_frame);
+    this->mutex->unlock ();
+}
+
 Frame*
 Cbuf::display_lock_newest_frame ()
 {

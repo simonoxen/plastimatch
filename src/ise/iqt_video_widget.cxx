@@ -32,7 +32,8 @@ Iqt_video_widget::Iqt_video_widget (QWidget *parent)
     
     qp1 = new QPixmap;
 
-    // ping_check = new QTimer (this);
+    ping_check = new QTimer (this);
+
     // connect (ping_check, SIGNAL(timeout()), this, SLOT(flick()));
     // ping_check->start(500);
     

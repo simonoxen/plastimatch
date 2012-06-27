@@ -19,6 +19,7 @@ public:
         unsigned int size_x, unsigned int size_y);
 
     Frame* get_frame ();
+    void add_empty_frame (Frame* new_frame);
     void add_waiting_frame (Frame* f);
     Frame* display_lock_newest_frame ();
 
