@@ -132,8 +132,8 @@ parse_fn (
     /* Main pattern */
     parser->add_long_option ("", "pattern",
         "synthetic pattern to create: {"
-        "donut, dose, enclosed_rect, gauss, grid, lung, osd, rect, sphere"
-        "}, default is gauss", 
+        "donut, dose, enclosed_rect, gauss, grid, lung, osd, rect, sphere, "
+        "xramp, yramp, zramp}, default is gauss", 
         1, "gauss");
 
     /* Image size */
@@ -259,6 +259,15 @@ parse_fn (
     }
     else if (arg == "lung") {
         sm_parms->pattern = PATTERN_LUNG;
+    }
+    else if (arg == "xramp") {
+        sm_parms->pattern = PATTERN_XRAMP;
+    }
+    else if (arg == "yramp") {
+        sm_parms->pattern = PATTERN_YRAMP;
+    }
+    else if (arg == "zramp") {
+        sm_parms->pattern = PATTERN_ZRAMP;
     }
     else {
         throw (dlib::error ("Error. Unknown --pattern argument: " + arg));

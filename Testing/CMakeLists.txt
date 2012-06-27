@@ -413,6 +413,24 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_BUILD_TESTING_DIR}/sphere-3.mha;--output-type;float;--pattern;sphere;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;1;--sphere-center;0 0 0;--sphere-radius;50 50 50"
   )
+plm_add_test (
+  "xramp-1"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/xramp-1.mha;--output-type;float;--pattern;xramp;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE}"
+  )
+plm_add_test (
+  "yramp-1"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/yramp-1.mha;--output-type;float;--pattern;yramp;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE}"
+  )
+plm_add_test (
+  "zramp-1"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/zramp-1.mha;--output-type;float;--pattern;zramp;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE}"
+  )
 
 ## -------------------------------------------------------------------------
 ## Create synthetic vector fields

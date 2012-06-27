@@ -20,7 +20,10 @@ enum Pattern_type {
     PATTERN_OBJSTRUCTDOSE,
     PATTERN_DONUT,
     PATTERN_GRID,
-    PATTERN_LUNG
+    PATTERN_LUNG,
+    PATTERN_XRAMP,
+    PATTERN_YRAMP,
+    PATTERN_ZRAMP
 };
 
 enum Pattern_structset_type {

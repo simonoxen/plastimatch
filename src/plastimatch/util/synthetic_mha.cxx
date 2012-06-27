@@ -554,6 +554,32 @@ synth_lung (
     *label = 5;
 }
 
+static void 
+synth_ramp (
+    float *intens, 
+    unsigned char *label,
+    const FloatPoint3DType& phys, 
+    const Synthetic_mha_parms *parms
+)
+{
+
+    /* Get distance from origin */
+    float d;
+    if (parms->pattern == PATTERN_XRAMP) {
+        d = phys[0] - parms->origin[0];
+    }
+    else if (parms->pattern == PATTERN_YRAMP) {
+        d = phys[1] - parms->origin[1];
+    }
+    else {
+        d = phys[2] - parms->origin[2];
+    }
+
+    /* Set intensity */
+    *label = 0;
+    *intens = d;
+}
+
 static float 
 shifttanh (float x)
 {
@@ -700,6 +726,11 @@ synthetic_mha (
             break;
         case PATTERN_LUNG:
             synth_lung (&intens, &label_uchar, phys, parms);
+            break;
+        case PATTERN_XRAMP:
+        case PATTERN_YRAMP:
+        case PATTERN_ZRAMP:
+            synth_ramp (&intens, &label_uchar, phys, parms);
             break;
         default:
             intens = 0.0f;
