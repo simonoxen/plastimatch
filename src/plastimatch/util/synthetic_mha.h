@@ -7,6 +7,7 @@
 #include "plmutil_config.h"
 #include "direction_cosines.h"
 #include "plm_image_type.h"
+#include "pstring.h"
 
 class Rtds;
 
@@ -37,6 +38,7 @@ class Synthetic_mha_parms {
 public:
     int output_type;
     Pattern_type pattern;
+    Pstring fixed_fn;
     int dim[3];
     float origin[3];
     float spacing[3];

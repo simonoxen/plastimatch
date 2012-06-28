@@ -630,23 +630,35 @@ synthetic_mha (
     Synthetic_mha_parms *parms
 )
 {
-    /* Create ITK images for intensity, ss, and dose */
     FloatImageType::SizeType sz;
     FloatImageType::IndexType st;
     FloatImageType::RegionType rg;
     FloatImageType::PointType og;
     FloatImageType::SpacingType sp;
     FloatImageType::DirectionType itk_dc;
-    for (int d1 = 0; d1 < 3; d1++) {
-        st[d1] = 0;
-        sz[d1] = parms->dim[d1];
-        sp[d1] = parms->spacing[d1];
-        og[d1] = parms->origin[d1];
-    }
-    rg.SetSize (sz);
-    rg.SetIndex (st);
-    itk_direction_from_dc (&itk_dc, parms->dc);
 
+    /* Override default geometry option if fixed image specified */
+    if (parms->fixed_fn.not_empty()) {
+        Plm_image pi (parms->fixed_fn);
+        Plm_image_header pih;
+        pih.set_from_plm_image (&pi);
+        og = pih.m_origin;
+        sp = pih.m_spacing;
+        rg = pih.m_region;
+        itk_dc = pih.m_direction;
+    } else {
+        for (int d1 = 0; d1 < 3; d1++) {
+            st[d1] = 0;
+            sz[d1] = parms->dim[d1];
+            sp[d1] = parms->spacing[d1];
+            og[d1] = parms->origin[d1];
+        }
+        rg.SetSize (sz);
+        rg.SetIndex (st);
+        itk_direction_from_dc (&itk_dc, parms->dc);
+    }
+
+    /* Create ITK images for intensity, ss, and dose */
     FloatImageType::Pointer im_out = FloatImageType::New();
     im_out->SetRegions (rg);
     im_out->SetOrigin (og);
