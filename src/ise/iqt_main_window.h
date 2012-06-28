@@ -46,6 +46,7 @@ public:
     unsigned int width;
     unsigned int height;
     QString filename;
+    Frame* f;
 
 public slots:
     void slot_load (void);
@@ -56,6 +57,7 @@ public slots:
     void slot_go_back(void);
     void slot_go_forward(void);
     void slot_timer (void);
+    void slot_reload_frame (void);
     void slot_frame_ready (Frame* f, int width, int height);
     void slot_load_fluoro (void);
 };

@@ -102,8 +102,17 @@ Iqt_main_window::slot_load ()
         this->slot_play_pause();
     }
     playing = false;
-    filename = QFileDialog::getOpenFileName(this,
-        tr("Open File"), QDir::homePath(), tr("Image Files (*.his *.png *.jpg *.bmp)"));
+    const QString DEFAULT_DIR_KEY(QDir::homePath());
+
+    QSettings settings;
+    filename = QFileDialog::getOpenFileName(this, "Select a file",                                              settings.value(DEFAULT_DIR_KEY).toString(),                                       tr("Image Files (*.his *.jpg *.png *.bmp)"));
+
+    if (!filename.isEmpty()) {
+        QDir CurrentDir;
+        settings.setValue(DEFAULT_DIR_KEY, CurrentDir.absoluteFilePath(filename));
+    }
+    
+   
     //Iqt_video_widget::load();
 
     if (filename.isNull()) {
@@ -217,17 +226,8 @@ Iqt_main_window::slot_timer ()
 }
 
 void
-Iqt_main_window::slot_frame_ready (Frame* f, int width, int height)
+Iqt_main_window::slot_reload_frame ()
 {
-    qDebug ("Hello world");
-    qDebug("Got frame %p", f);
-    
-    setMin->setHidden(false);
-    min_label->setHidden(false);
-    min_val->setHidden(false);
-    setMax->setHidden(false);
-    max_label->setHidden(false);
-    max_val->setHidden(false);
     
     if (setMax->isSliderDown() && setMax->value() <= setMin->value())
     {
@@ -237,8 +237,6 @@ Iqt_main_window::slot_frame_ready (Frame* f, int width, int height)
 	setMax->setValue(setMin->value());
     }
 
-    this->width = width;
-    this->height = height;
     int max = setMax->value(); //changed by sliders, alters bg darkness
     int min = setMin->value(); //changed by sliders, alters bg&rect darkness
 
@@ -248,15 +246,13 @@ Iqt_main_window::slot_frame_ready (Frame* f, int width, int height)
         if (f->img[i] < min_val) min_val = f->img[i];
         if (f->img[i] > max_val) max_val = f->img[i];
     }
-    
-    qDebug("[%d %d]\n", min_val, max_val);
 
     uchar *data = new uchar[width * height * 4];
     for (int i = 0; i < width * height; i++) {
         float fval = (f->img[i] - min) * 255.0 / (max-min);
         if (fval < 0) fval = 0; else if (fval > 255) fval = 255;
         uchar val = (uchar) fval;
-        data[4*i+0] = val;  //bg red, the 0xff made it blue
+        data[4*i+0] = val;  //bg red
         data[4*i+1] = val;  //bg green
         data[4*i+2] = val;  //bg blue
         data[4*i+3] = 0xff; //alpha
@@ -265,4 +261,23 @@ Iqt_main_window::slot_frame_ready (Frame* f, int width, int height)
     this->playing = true;
 
     vid_screen->set_qimage (qimage);
+}
+
+void
+Iqt_main_window::slot_frame_ready (Frame* f, int width, int height)
+{
+    qDebug("Got frame %p", f);
+    
+    setMin->setHidden(false);
+    min_label->setHidden(false);
+    min_val->setHidden(false);
+    setMax->setHidden(false);
+    max_label->setHidden(false);
+    max_val->setHidden(false);
+    
+    this->f = f;
+    this->width = width;
+    this->height = height;
+    
+    this->slot_reload_frame();
 }

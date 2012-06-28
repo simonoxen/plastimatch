@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>964</width>
-    <height>667</height>
+    <height>668</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -100,53 +100,73 @@
         <item>
          <widget class="QLabel" name="max_label">
           <property name="text">
-           <string>Max</string>
+           <string>Maximum</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="max_val">
-          <property name="text">
-           <string>800</string>
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <property name="topMargin">
+           <number>0</number>
           </property>
-         </widget>
+          <item>
+           <widget class="QLabel" name="max_val">
+            <property name="text">
+             <string>65000</string>
+            </property>
+            <property name="scaledContents">
+             <bool>false</bool>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item>
-         <widget class="QSlider" name="setMax">
-          <property name="minimum">
+         <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0">
+          <property name="topMargin">
            <number>0</number>
           </property>
-          <property name="maximum">
-           <number>1000</number>
-          </property>
-          <property name="singleStep">
-           <number>50</number>
-          </property>
-          <property name="pageStep">
-           <number>50</number>
-          </property>
-          <property name="value">
-           <number>800</number>
-          </property>
-          <property name="tracking">
-           <bool>true</bool>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="invertedAppearance">
-           <bool>false</bool>
-          </property>
-          <property name="invertedControls">
-           <bool>false</bool>
-          </property>
-          <property name="tickPosition">
-           <enum>QSlider::NoTicks</enum>
-          </property>
-          <property name="tickInterval">
-           <number>0</number>
-          </property>
-         </widget>
+          <item>
+           <widget class="QSlider" name="setMax">
+            <property name="minimum">
+             <number>32500</number>
+            </property>
+            <property name="maximum">
+             <number>65000</number>
+            </property>
+            <property name="singleStep">
+             <number>50</number>
+            </property>
+            <property name="pageStep">
+             <number>50</number>
+            </property>
+            <property name="value">
+             <number>65000</number>
+            </property>
+            <property name="tracking">
+             <bool>true</bool>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="invertedAppearance">
+             <bool>false</bool>
+            </property>
+            <property name="invertedControls">
+             <bool>false</bool>
+            </property>
+            <property name="tickPosition">
+             <enum>QSlider::NoTicks</enum>
+            </property>
+            <property name="tickInterval">
+             <number>0</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </item>
@@ -155,32 +175,52 @@
         <item>
          <widget class="QLabel" name="min_label">
           <property name="text">
-           <string>Min</string>
+           <string>Minimum</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="min_val">
-          <property name="text">
-           <string>200</string>
+         <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <property name="topMargin">
+           <number>0</number>
           </property>
-         </widget>
+          <item>
+           <widget class="QLabel" name="min_val">
+            <property name="text">
+             <string>63000</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item>
-         <widget class="QSlider" name="setMin">
-          <property name="maximum">
-           <number>1000</number>
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <property name="topMargin">
+           <number>0</number>
           </property>
-          <property name="singleStep">
-           <number>50</number>
-          </property>
-          <property name="value">
-           <number>200</number>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-         </widget>
+          <item>
+           <widget class="QSlider" name="setMin">
+            <property name="minimum">
+             <number>32500</number>
+            </property>
+            <property name="maximum">
+             <number>65000</number>
+            </property>
+            <property name="singleStep">
+             <number>50</number>
+            </property>
+            <property name="value">
+             <number>63000</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </item>
@@ -629,16 +669,48 @@
   <connection>
    <sender>setMax</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>max_val</receiver>
-   <slot>setNum(int)</slot>
+   <receiver>iqtMainWindow</receiver>
+   <slot>slot_reload_frame()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>118</x>
      <y>337</y>
     </hint>
     <hint type="destinationlabel">
-     <x>118</x>
-     <y>95</y>
+     <x>481</x>
+     <y>333</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>setMin</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>iqtMainWindow</receiver>
+   <slot>slot_reload_frame()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>155</x>
+     <y>337</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>481</x>
+     <y>333</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>setMax</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>max_val</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>136</x>
+     <y>338</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>136</x>
+     <y>96</y>
     </hint>
    </hints>
   </connection>
@@ -649,12 +721,12 @@
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>155</x>
-     <y>337</y>
+     <x>209</x>
+     <y>338</y>
     </hint>
     <hint type="destinationlabel">
-     <x>155</x>
-     <y>95</y>
+     <x>209</x>
+     <y>96</y>
     </hint>
    </hints>
   </connection>
@@ -669,5 +741,6 @@
   <slot>slot_go_forward()</slot>
   <slot>slot_slider_min(int)</slot>
   <slot>slot_slider_max(int)</slot>
+  <slot>slot_reload_frame()</slot>
  </slots>
 </ui>
