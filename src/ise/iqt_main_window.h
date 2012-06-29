@@ -50,6 +50,7 @@ public:
 
 public slots:
     void slot_load (void);
+    void show_fluoro (QString path);
     void slot_save (void);
     void slot_synth (void);
     void slot_play_pause (void);
@@ -59,6 +60,8 @@ public slots:
     void slot_timer (void);
     void slot_reload_frame (void);
     void slot_frame_ready (Frame* f, int width, int height);
-    void slot_load_fluoro (void);
+
+signals:
+    void fluoro_ready (QString path);
 };
 #endif

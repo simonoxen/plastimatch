@@ -13,6 +13,7 @@
 //#include <vtkRenderWindow.h>
 //#include <vtkSphereSource.h>
 //#include "vtkSmartPointer.h"
+#include "sleeper.h"
 #include "cbuf.h"
 #include "frame.h"
 #include "his_io.h"
@@ -54,7 +55,7 @@ Iqt_main_window::Iqt_main_window ()
     //    m_qtimer = new QTimer (this);
     //    connect (m_qtimer, SIGNAL(timeout()), this, SLOT(slot_timer()));
     //    m_qtimer->start(1000);
-    
+    connect (this, SIGNAL(fluoro_ready(QString)), this, SLOT(show_fluoro(QString)));
     this->playing = false;
     this->synth = false;
 
@@ -101,6 +102,10 @@ Iqt_main_window::slot_load ()
     if (playing) {
         this->slot_play_pause();
     }
+    setMax->setRange(32500, 65000);
+    setMin->setRange(32500, 65000);
+    setMax->setValue(65000);
+    setMin->setValue(63000);
     playing = false;
     const QString DEFAULT_DIR_KEY(QDir::homePath());
 
@@ -108,27 +113,38 @@ Iqt_main_window::slot_load ()
     filename = QFileDialog::getOpenFileName(this, "Select a file",                                              settings.value(DEFAULT_DIR_KEY).toString(),                                       tr("Image Files (*.his *.jpg *.png *.bmp)"));
 
     if (!filename.isEmpty()) {
-        QDir CurrentDir;
+	QDir CurrentDir;
         settings.setValue(DEFAULT_DIR_KEY, CurrentDir.absoluteFilePath(filename));
     }
     
-   
-    //Iqt_video_widget::load();
-
     if (filename.isNull()) {
         return;
     }
 
     statusBar()->showMessage(QString("Filename: %1")
-        .arg(filename));
-    //    for (int j = 0x79b1; j < 0x7a47; j++) {
-    //	filename = QFileInfo(filename).path() + "/0000" + hex << j;
-    QByteArray ba = filename.toLocal8Bit();
-    const char *fn = ba.data();
+			     .arg(filename));
+    QString path = QFileInfo(filename).path();
+    show_fluoro(path);
+}
 
-    if (is_his (512, 512, fn)) {
-        ise_app->cbuf[0]->clear();
-        ise_app->cbuf[0]->init (0, 2, 512, 512);
+void
+Iqt_main_window::show_fluoro (QString path)
+{
+    QDir directory = QDir(path);
+    QStringList files = directory.entryList(QDir::Files, QDir::Name);
+    int numFiles = files.size();
+
+    for (int j=0; j < numFiles; j++) {
+	filename = path + "/" + files.at(j);
+	qDebug() << filename;
+	
+	QByteArray ba = filename.toLocal8Bit();
+	const char *fn = ba.data();
+	
+	if (j == 0 && is_his (512, 512, fn)) {
+	    ise_app->cbuf[0]->clear();
+	    ise_app->cbuf[0]->init (0, numFiles, 512, 512);
+	}
 
         Frame *f = ise_app->cbuf[0]->get_frame ();
         bool isHis = his_read (f->img, 512, 512, fn);
@@ -137,18 +153,10 @@ Iqt_main_window::slot_load ()
             this->slot_frame_ready (f, 512, 512);
         } else {
             ise_app->cbuf[0]->add_empty_frame (f);
-        }
-    } else {
-	vid_screen->load(filename);
+	}
+	Sleeper::msleep(500);
     }
-    // }
-    //label->setText(QString("Filename: %1").arg(filename));
-    // this->slot_play_pause();
-}
 
-void
-Iqt_main_window::slot_load_fluoro ()
-{
 }
 
 void
@@ -170,7 +178,7 @@ Iqt_main_window::slot_play_pause ()
         play_pause_button->setText ("||");
         action_Play->setText ("&Pause");
     }
-    vid_screen->play(playing);
+    //vid_screen->play(playing);
 }
 
 void
@@ -209,6 +217,10 @@ Iqt_main_window::slot_stop ()
 void
 Iqt_main_window::slot_synth ()
 {
+    setMax->setRange(0, 1000);
+    setMin->setRange(0, 1000);
+    setMax->setValue(800);
+    setMin->setValue(200);
     Iqt_synth_settings iqt_synth_settings (this);
     iqt_synth_settings.exec();
 }
@@ -228,7 +240,7 @@ Iqt_main_window::slot_timer ()
 void
 Iqt_main_window::slot_reload_frame ()
 {
-    
+    qDebug("Reloading frame...");
     if (setMax->isSliderDown() && setMax->value() <= setMin->value())
     {
 	setMin->setValue(setMax->value());
@@ -267,14 +279,16 @@ void
 Iqt_main_window::slot_frame_ready (Frame* f, int width, int height)
 {
     qDebug("Got frame %p", f);
-    
-    setMin->setHidden(false);
-    min_label->setHidden(false);
-    min_val->setHidden(false);
-    setMax->setHidden(false);
-    max_label->setHidden(false);
-    max_val->setHidden(false);
-    
+    if (setMin->isHidden())
+    {
+	setMin->setHidden(false);
+	min_label->setHidden(false);
+	min_val->setHidden(false);
+	setMax->setHidden(false);
+	max_label->setHidden(false);
+	max_val->setHidden(false);
+    }
+
     this->f = f;
     this->width = width;
     this->height = height;

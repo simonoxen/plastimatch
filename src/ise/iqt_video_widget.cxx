@@ -151,8 +151,6 @@ void Iqt_video_widget::wheelEvent(QWheelEvent* event)
     QPointF pointAfterScale(mapToScene(event->pos()));
     QPointF offset = pointBeforeScale - pointAfterScale;
     QPointF newCenter = screenCenter + offset;
-    qDebug() << "[" << pointBeforeScale << " // " << pointAfterScale << " // "
-        << offset << " // " << newCenter << "]";
     SetCenter (newCenter);
 
 }
@@ -206,7 +204,8 @@ void
 Iqt_video_widget::set_qimage (const QImage& qimage)
 {
     delete pmi;                       //remove old pmi (IS necessary)
-    
+    qDebug("Setting QImage");
+
     pmi = new QGraphicsPixmapItem(QPixmap::fromImage (qimage.scaled(this->size(), Qt::KeepAspectRatio)));
     scene->addItem(pmi);
     scene->addText("Synthetic Fluoroscopy");
