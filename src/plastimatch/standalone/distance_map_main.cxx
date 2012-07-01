@@ -1,10 +1,6 @@
-#if defined(_MSC_VER)
-#pragma warning ( disable : 4786 )
-#endif
-
-#ifdef __BORLANDC__
-#define ITK_LEAN_AND_MEAN
-#endif
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -97,20 +93,20 @@ void compare_distance_map(char* img1fn ,char* img2fn,char* outfn){
 
 int main( int argc, char * argv[] )
 {
-	//InputImageType::Pointer img=InputImageType::New();
-	//ImgType::Pointer warped=ImgType::New();
+    //InputImageType::Pointer img=InputImageType::New();
+    //ImgType::Pointer warped=ImgType::New();
 
-	char* inputImageFile1Name;
-	char* inputImageFile2Name;
-	char* outputDistanceMap1Name;
-	char* outputDistanceMap2Name;
-	char* outputDifferenceImageName;
-	int dist=0;
-	int imgSpac=0;
-	int inside=0;
+    char* inputImageFile1Name;
+    char* inputImageFile2Name;
+    char* outputDistanceMap1Name;
+    char* outputDistanceMap2Name;
+    char* outputDifferenceImageName;
+    int dist=0;
+    int imgSpac=0;
+    int inside=0;
   
-	if( argc < 3 ){
-	  print_usage();
+    if( argc < 3 ){
+        print_usage();
 	//}else if (argc <4){
 	//	inputImageFile1Name  = argv[1];    
 	//	outputDistanceMap1Name = argv[2];
@@ -118,52 +114,43 @@ int main( int argc, char * argv[] )
 	//	//compute_distance_map(img, outputDistanceMap1Name);
 	//	compute_distance_map(inputImageFile1Name, outputDistanceMap1Name,0,0,0);
 
-	}else{
-		inputImageFile1Name  = argv[1];    
-		outputDistanceMap1Name = argv[2];
-		if (argc<4){
-			dist=0;
-			imgSpac=0;
-			inside=0;
-		}else if (argc ==4){
-			dist=atoi(argv[3]);
-			imgSpac=0;
-			inside=0;
-		}else if (argc==5){
-			dist=atoi(argv[3]);
-			imgSpac=atoi(argv[4]);
-			inside=0;
-		}else if (argc==6){
-			dist=atoi(argv[3]);
-			imgSpac=atoi(argv[4]);
-			inside=atoi(argv[5]);
-		}else{
-			dist=atoi(argv[3]);
-			imgSpac=atoi(argv[4]);
-			inside=atoi(argv[5]);
-			inputImageFile2Name = argv[6];
-			outputDistanceMap2Name = argv[7];
-			outputDifferenceImageName = argv[8];
-		}
+    }else{
+        inputImageFile1Name  = argv[1];    
+        outputDistanceMap1Name = argv[2];
+        if (argc<4){
+            dist=0;
+            imgSpac=0;
+            inside=0;
+        }else if (argc ==4){
+            dist=atoi(argv[3]);
+            imgSpac=0;
+            inside=0;
+        }else if (argc==5){
+            dist=atoi(argv[3]);
+            imgSpac=atoi(argv[4]);
+            inside=0;
+        }else if (argc==6){
+            dist=atoi(argv[3]);
+            imgSpac=atoi(argv[4]);
+            inside=atoi(argv[5]);
+        }else{
+            dist=atoi(argv[3]);
+            imgSpac=atoi(argv[4]);
+            inside=atoi(argv[5]);
+            inputImageFile2Name = argv[6];
+            outputDistanceMap2Name = argv[7];
+            outputDifferenceImageName = argv[8];
+        }
 
-		if(argc<7){
-			compute_distance_map(inputImageFile1Name, outputDistanceMap1Name,dist,imgSpac,inside);
-		}else{
-			compute_distance_map(inputImageFile1Name, outputDistanceMap1Name,dist,imgSpac,inside);	
-			std::cout << "saved first output" << std::endl;
-			compute_distance_map(inputImageFile2Name, outputDistanceMap2Name,dist,imgSpac,inside);
-			std::cout << "saved second output" << std::endl;
-			compare_distance_map(outputDistanceMap1Name,outputDistanceMap2Name,outputDifferenceImageName);
-			std::cout << "saved difference output" << std::endl;
-		}
-
-	}
-
-	
-
-
-
-
-
-
+        if(argc<7){
+            compute_distance_map(inputImageFile1Name, outputDistanceMap1Name,dist,imgSpac,inside);
+        }else{
+            compute_distance_map(inputImageFile1Name, outputDistanceMap1Name,dist,imgSpac,inside);	
+            std::cout << "saved first output" << std::endl;
+            compute_distance_map(inputImageFile2Name, outputDistanceMap2Name,dist,imgSpac,inside);
+            std::cout << "saved second output" << std::endl;
+            compare_distance_map(outputDistanceMap1Name,outputDistanceMap2Name,outputDifferenceImageName);
+            std::cout << "saved difference output" << std::endl;
+        }
+    }
 }

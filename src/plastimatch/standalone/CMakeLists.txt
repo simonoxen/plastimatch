@@ -44,7 +44,7 @@ set (DICOM_UID_SRC
   dicom_uid_main.cxx
   )
 set (DISTANCE_MAP_SRC
-  distance_map.cxx
+  distance_map_main.cxx
   )
 set (DLIB_TRAIN_SRC 
   dlib_train.cxx

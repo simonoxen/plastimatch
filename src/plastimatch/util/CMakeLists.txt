@@ -18,6 +18,7 @@ set (PLMUTIL_LIBRARY_SRC
   bspline_warp.cxx
   cxt_extract.cxx
   dice_statistics.cxx
+  distance_map.cxx
   diff.cxx
   dvh.cxx 
   gamma_analysis.cxx
