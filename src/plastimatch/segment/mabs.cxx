@@ -8,6 +8,7 @@
 
 #include "dir_list.h"
 #include "file_util.h"
+#include "itk_image_save.h"
 #include "mabs.h"
 #include "mabs_parms.h"
 #include "mabs_vote.h"
@@ -45,9 +46,10 @@ Mabs::run (const Mabs_parms& parms)
     /* Load the labeling file.  For now, we'll assume this is successful. */
     Plm_image pli (parms.labeling_input_fn);
 
-    // create the data structure for saving the automatically generated labels
-    
-    /* Parse the atlas directory */
+    /* Make a list to store voting results */
+    std::vector<Mabs_vote*> vote_list;
+
+    /* Loop through images in the atlas directory */
     Dir_list d (parms.atlas_dir);
     for (int i = 0; i < d.num_entries; i++) {
 
@@ -110,9 +112,8 @@ Mabs::run (const Mabs_parms& parms)
         rtds.m_rtss->rasterize (&source_pih, false, false);
         rtds.m_rtss->warp (xf_out, &fixed_pih);
 
-        /* Voting loop */
+        /* Loop through structures for this atlas image */
         printf ("Vote...\n");
-        std::vector<Mabs_vote*> vote_list;
         for (size_t i = 0; i < rtds.m_rtss->get_num_structures(); i++) 
         {
             /* TODO: Check structure name - for now we just assume 
@@ -123,45 +124,41 @@ Mabs::run (const Mabs_parms& parms)
             if (i >= vote_list.size()) {
                 vote = new Mabs_vote;
                 vote_list.push_back (vote);
+                vote->set_fixed_image (regd.fixed_image->itk_float());
             } else {
                 vote = vote_list[i];
             }
 
-            /* Extract binary structure as image */
+            /* Extract structure as binary mask */
             UCharImageType::Pointer structure_image 
                 = rtds.m_rtss->get_structure_image (i);
 
-            /* Send to voter */
-#if defined (commentout)
-            vote->vote_contribution (
-                regd.fixed_image, 
-                warped_image, 
-                Plm_image (structure_image), 
-                like0, 
-                like1
-            );
-#endif
+            /* Vote for each voxel */
+            vote->vote (
+                warped_image.itk_float(),
+                structure_image);
         }
 
-        // each structure in this patient's structures
-        // for () {
-          // add this structure to the set of structures that we're segmenting
-          // atlas_structure = get the binary structure from the label map
-          // target_structure += vote(target, atlas_image, atlas_structure,
-          // like0, like1)
-        // }
-
-        /* *** THRESHOLING *** */
-        // for each of the structures we're trying to segment
-        // for () {
-          // do the final thresholding (or whatnot)
-          // }
-        // create the final labelmap
-        
         /* Don't let regd destructor delete our fixed image */
         regd.fixed_image = 0;
 
         /* Clean up */
         delete xf_out;
+    }
+
+    /* Get output image for each label */
+    for (size_t i = 0; i < vote_list.size(); i++) {
+        Mabs_vote *vote = vote_list[i];
+        vote->normalize_votes();
+
+        /* GCS DEBUG -- SAVE A COPY OF THE WEIGHT FILE */
+        FloatImageType::Pointer wi = vote->get_weight_image ();
+        Pstring fn; fn.format ("%s/weight_%04d.nrrd", 
+            parms.labeling_output_fn.c_str(), i);
+        itk_image_save (wi, fn.c_str());
+
+        /* Threshold */
+
+        /* Assemble into structure set */
     }
 }

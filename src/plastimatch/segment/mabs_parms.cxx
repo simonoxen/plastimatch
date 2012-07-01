@@ -23,7 +23,6 @@ Mabs_parms::Mabs_parms ()
     this->registration_config[0] = '\0';
     this->sman = new Mabs_subject_manager;
     this->labeling_input_fn[0] = '\0';
-    this->labeling_output_fn[0] = '\0';
     this->debug = false;
 }
 
@@ -59,7 +58,8 @@ Mabs_parms::print ()
         sub = this->sman->next ();
     }
     fprintf (stderr, "-- labeling_input_fn: %s\n", this->labeling_input_fn);
-    fprintf (stderr, "-- labeling_output_fn: %s\n", this->labeling_output_fn);
+    fprintf (stderr, "-- labeling_output_fn: %s\n", 
+        this->labeling_output_fn.c_str());
 }
 
 int
@@ -111,7 +111,7 @@ Mabs_parms::set_key_val (
             strncpy ((char*)this->labeling_input_fn, val, _MAX_PATH);
         }
         else if (!strcmp (key, "output")) {
-            strncpy ((char*)this->labeling_output_fn, val, _MAX_PATH);
+            this->labeling_output_fn = val;
         }
     }
     return 0;

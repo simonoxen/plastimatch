@@ -83,22 +83,29 @@ Mabs_vote::vote (
     double rho = 1;
   
     // create distance map
+    printf ("\tcreating distance map\n");
     Distance_map dmap;
     dmap.set_input_image (atlas_label);
     dmap.run ();
     FloatImageType::Pointer dmap_image = dmap.get_output_image ();
 
     /* Create iterators */
+    printf ("\tcreating iterators [1]\n");fflush(stdout);
     itk::ImageRegionIterator< FloatImageType > target_it (
         d_ptr->target, d_ptr->target->GetLargestPossibleRegion());
+    printf ("\tcreating iterators [2]\n");fflush(stdout);
     itk::ImageRegionIterator< FloatImageType > atlas_image_it (
         atlas_image, atlas_image->GetLargestPossibleRegion());
+    printf ("\tcreating iterators [3]\n");fflush(stdout);
     itk::ImageRegionIterator< FloatImageType > like0_it (
         d_ptr->like0, d_ptr->like0->GetLargestPossibleRegion());
+    printf ("\tcreating iterators [4]\n");fflush(stdout);
     itk::ImageRegionIterator< FloatImageType > like1_it (
         d_ptr->like1, d_ptr->like1->GetLargestPossibleRegion());
+    printf ("\tcreating iterators [5]\n");fflush(stdout);
     itk::ImageRegionIterator< FloatImageType > dmap_it (
         dmap_image, dmap_image->GetLargestPossibleRegion());
+    printf ("\tcreating iterators [done]\n");fflush(stdout);
 
     // These are necessary to normalize the label likelihoods
     const unsigned int wt_scale = 1000;
@@ -109,6 +116,7 @@ Mabs_vote::vote (
     double normLabelLikelihoods;
     double distmapValue;
     int cnt = 0;
+    printf ("\tlooping through voxels\n");fflush(stdout);
     for (atlas_image_it.GoToBegin(),
              dmap_it.GoToBegin(),
              target_it.GoToBegin(),
@@ -187,6 +195,11 @@ Mabs_vote::normalize_votes ()
     printf ("looped through %d weights.\n", cnt);
 }
 
+FloatImageType::Pointer
+Mabs_vote::get_weight_image ()
+{
+    return d_ptr->weights;
+}
 
 /* -----------------------------------------------------------------
    OLD CODE

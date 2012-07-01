@@ -4,7 +4,9 @@
 #ifndef _mabs_parms_h_
 #define _mabs_parms_h_
 
-#include "sys/plm_path.h"
+#include "plmsegment_config.h"
+#include "plm_path.h"
+#include "pstring.h"
 
 class Mabs_subject_manager;
 
@@ -36,7 +38,7 @@ public:
 
     /* [LABELING] */
     char labeling_input_fn[_MAX_PATH];
-    char labeling_output_fn[_MAX_PATH];
+    Pstring labeling_output_fn;
 
     /* misc */
     bool debug;
