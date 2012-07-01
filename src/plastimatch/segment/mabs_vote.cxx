@@ -17,16 +17,31 @@
 #include "mabs_vote.h"
 #include "plm_math.h"
 
+class Mabs_vote_private {
+public:
+    Mabs_vote_private () {
+        this->sman = new Mabs_subject_manager;
+    }
+    ~Mabs_vote_private () {
+        delete this->sman;
+    }
+public:
+    Mabs_subject_manager* sman;
+    
+    FloatImageType::Pointer target;
+    FloatImageType::Pointer like0;
+    FloatImageType::Pointer like1;
+    FloatImageType::Pointer weights;
+};
+
 Mabs_vote::Mabs_vote ()
 {
-    this->target_fn[0] = '\0';
-    this->output_fn[0] = '\0';
-    this->sman = new Mabs_subject_manager;
+    d_ptr = new Mabs_vote_private;
 }
 
 Mabs_vote::~Mabs_vote ()
 {
-    delete this->sman;
+    delete d_ptr;
 }
 
 void
@@ -35,31 +50,31 @@ Mabs_vote::set_fixed_image (
 )
 {
     /* Save a copy of target */
-    this->target = target;
+    d_ptr->target = target;
 
     /* Create a like0 image */
-    this->like0 = FloatImageType::New();
-    like0->SetOrigin( target->GetOrigin() );
-    like0->SetSpacing( target->GetSpacing() );
-    like0->SetDirection( target->GetDirection() );
-    like0->SetRegions( target->GetLargestPossibleRegion() );
-    like0->Allocate();
-    like0->FillBuffer( 0.0 );
+    d_ptr->like0 = FloatImageType::New();
+    d_ptr->like0->SetOrigin( target->GetOrigin() );
+    d_ptr->like0->SetSpacing( target->GetSpacing() );
+    d_ptr->like0->SetDirection( target->GetDirection() );
+    d_ptr->like0->SetRegions( target->GetLargestPossibleRegion() );
+    d_ptr->like0->Allocate();
+    d_ptr->like0->FillBuffer( 0.0 );
 
     /* Create a like1 image */
-    this->like1 = FloatImageType::New();
-    like1->SetOrigin( target->GetOrigin() );
-    like1->SetSpacing( target->GetSpacing() );
-    like1->SetDirection( target->GetDirection() );
-    like1->SetRegions( target->GetLargestPossibleRegion() );
-    like1->Allocate();
-    like1->FillBuffer( 0.0 );
+    d_ptr->like1 = FloatImageType::New();
+    d_ptr->like1->SetOrigin( target->GetOrigin() );
+    d_ptr->like1->SetSpacing( target->GetSpacing() );
+    d_ptr->like1->SetDirection( target->GetDirection() );
+    d_ptr->like1->SetRegions( target->GetLargestPossibleRegion() );
+    d_ptr->like1->Allocate();
+    d_ptr->like1->FillBuffer( 0.0 );
 }
 
 void
-Mabs_vote::vote_contribution (
-    Plm_image& atlas_image_plm,
-    Plm_image& atlas_structure_plm
+Mabs_vote::vote (
+    FloatImageType::Pointer atlas_image,
+    UCharImageType::Pointer atlas_label
 )
 {
     printf ("\tentering vote contr\n");
@@ -67,85 +82,115 @@ Mabs_vote::vote_contribution (
     double sigma = 50;
     double rho = 1;
   
-    // create input, atlas, and atlas structure
-    UCharImageType::Pointer atlas_image = atlas_image_plm.itk_uchar();
-
     // create distance map
     Distance_map dmap;
-    dmap.set_input_image (atlas_image);
+    dmap.set_input_image (atlas_label);
     dmap.run ();
     FloatImageType::Pointer dmap_image = dmap.get_output_image ();
 
     /* Create iterators */
     itk::ImageRegionIterator< FloatImageType > target_it (
-        target, target->GetLargestPossibleRegion());
-    itk::ImageRegionIterator< UCharImageType > atlas_image_it (
+        d_ptr->target, d_ptr->target->GetLargestPossibleRegion());
+    itk::ImageRegionIterator< FloatImageType > atlas_image_it (
         atlas_image, atlas_image->GetLargestPossibleRegion());
     itk::ImageRegionIterator< FloatImageType > like0_it (
-        like0, like0->GetLargestPossibleRegion());
+        d_ptr->like0, d_ptr->like0->GetLargestPossibleRegion());
     itk::ImageRegionIterator< FloatImageType > like1_it (
-        like1, like1->GetLargestPossibleRegion());
+        d_ptr->like1, d_ptr->like1->GetLargestPossibleRegion());
     itk::ImageRegionIterator< FloatImageType > dmap_it (
         dmap_image, dmap_image->GetLargestPossibleRegion());
 
     // These are necessary to normalize the label likelihoods
-    const   unsigned int wt_scale = 1000;
+    const unsigned int wt_scale = 1000;
     double med_diff;
     double value;
     double labelLikelihood0;
     double labelLikelihood1;
     double normLabelLikelihoods;
     double distmapValue;
-    double like0;
-    double like1;
     int cnt = 0;
-    for ( atlas_image_it.GoToBegin(),
-              dmap_it.GoToBegin(),
-              target_it.GoToBegin(),
-              like0_it.GoToBegin(),
-              like1_it.GoToBegin();
-          !target_it.IsAtEnd();
-          ++atlas_image_it,
-              ++dmap_it,
-              ++target_it,
-              ++like0_it,
-              ++like1_it)
+    for (atlas_image_it.GoToBegin(),
+             dmap_it.GoToBegin(),
+             target_it.GoToBegin(),
+             like0_it.GoToBegin(),
+             like1_it.GoToBegin();
+         !target_it.IsAtEnd();
+         ++atlas_image_it,
+             ++dmap_it,
+             ++target_it,
+             ++like0_it,
+             ++like1_it)
     {
         cnt++;
         
         // similarity between target and atlas images 
         med_diff = target_it.Get() - atlas_image_it.Get();
-        value = exp( -pow( (med_diff), 2.0 ) / (2.0*pow(sigma, 2.0)) ) 
+        value = exp (-pow((med_diff), 2.0 ) / (2.0*pow(sigma, 2.0)))
             / (sqrt(2.0*M_PI)*sigma);
     
         distmapValue = dmap_it.Get();
-    
-        // Fixing locations where distmap 0 (caused by warp to smaller image)
-        if ( distmapValue == 0 )
-        {
-            // -1 value is arbitrary, any negative will do
-            distmapValue = -1; 
-        }
 
         // the chance of being in the structure
-        labelLikelihood0 = exp( -rho*distmapValue );
-        labelLikelihood1 = exp( rho*distmapValue );
+        labelLikelihood0 = exp (-rho*distmapValue);
+        labelLikelihood1 = exp (rho*distmapValue);
         normLabelLikelihoods = labelLikelihood0 + labelLikelihood1;
     
         // weighted by image similarity
-        like0 = ( labelLikelihood0 / normLabelLikelihoods ) * value;
-        like1 = ( labelLikelihood1 / normLabelLikelihoods ) * value;
+        double l0 = (labelLikelihood0 / normLabelLikelihoods ) * value;
+        double l1 = (labelLikelihood1 / normLabelLikelihoods ) * value;
 
         // write to like0, like1
-        like0_it.Set( like0*wt_scale );
-        like1_it.Set( like1*wt_scale );
+        like0_it.Set (like0_it.Get() + l0*wt_scale);
+        like1_it.Set (like1_it.Get() + l1*wt_scale);
     }
     printf ("\tlooped through %d pixels\n", cnt);
-  
-    // like0_plm.set_itk(like0_image);
-    // like1_plm.set_itk(like1_image);
 }    
 
+void
+Mabs_vote::normalize_votes ()
+{
+    /* GCS: I don't understand this */
+    const unsigned int wt_scale = 1000;
+
+    /* Create weight image */
+    d_ptr->weights->SetOrigin (d_ptr->target->GetOrigin());
+    d_ptr->weights->SetSpacing (d_ptr->target->GetSpacing());
+    d_ptr->weights->SetDirection (d_ptr->target->GetDirection());
+    d_ptr->weights->SetRegions (d_ptr->target->GetLargestPossibleRegion());
+    d_ptr->weights->Allocate ();
+    d_ptr->weights->FillBuffer (0.0);
+
+    /* Create iterators */
+    itk::ImageRegionIterator< FloatImageType > like0_it (
+        d_ptr->like0, d_ptr->like0->GetLargestPossibleRegion());
+    itk::ImageRegionIterator< FloatImageType > like1_it (
+        d_ptr->like1, d_ptr->like1->GetLargestPossibleRegion());
+    itk::ImageRegionIterator< FloatImageType > weights_it (
+        d_ptr->weights, d_ptr->weights->GetLargestPossibleRegion());
+
+    /* Normalize log likelihood */
+    int cnt = 0;
+    for (weights_it.GoToBegin(),
+             like0_it.GoToBegin(),
+             like1_it.GoToBegin();
+         !like0_it.IsAtEnd();
+         ++weights_it,
+             ++like0_it,
+             ++like1_it)
+    {
+        cnt++;
+        double l0 = like0_it.Get();
+        double l1 = like1_it.Get();
+        double v =  l1 / (l1+l0);
+        weights_it.Set(v*wt_scale);
+    }
+    printf ("looped through %d weights.\n", cnt);
+}
+
+
+/* -----------------------------------------------------------------
+   OLD CODE
+   ------------------------------------------------------------------ */
 #if defined (commentout)
 bool
 Mabs_vote::vote (

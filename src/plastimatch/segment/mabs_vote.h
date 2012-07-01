@@ -4,58 +4,47 @@
 #ifndef _mabs_vote_h_
 #define _mabs_vote_h_
 
-#include "sys/plm_path.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkCastImageFilter.h"
+#include "plmsegment_config.h"
 #include "itk_image_type.h"
 
-//const double PI = 3.141592653589793238;
-//const unsigned int Dimension = 3;
-
-//typedef double      PixelType;
-//typedef itk::Image< PixelType, Dimension > ImageType;
-//typedef itk::ImageFileReader< ImageType > ReaderType;
-
-//typedef unsigned short      OutputPixelType;
-//typedef itk::Image< OutputPixelType, Dimension > OutputImageType;
-//typedef itk::CastImageFilter< ImageType, OutputImageType > CastFilterType;
-//typedef itk::ImageFileWriter< OutputImageType >  WriterType;
-
-class Plm_image;
-class Mabs_subject_manager;
+class Mabs_vote_private;
 
 class PLMSEGMENT_API Mabs_vote {
 public:
     Mabs_vote ();
     ~Mabs_vote ();
+public:
+    Mabs_vote_private *d_ptr;
 
+public:
+    /*! \name Inputs */
+    ///@{
+    /*! \brief Set the reference image.  This is the image we want 
+      to segment. */
     void set_fixed_image (
         FloatImageType::Pointer target
     );
-    void vote_contribution (
-//        Plm_image& target_image_plm,
-        Plm_image& atlas_image_plm,
-        Plm_image& atlas_structure_plm);
-//    ImageType::Pointer like0,
-//    ImageType::Pointer like1);
-//    bool vote (const Mabs_parms& parms);
-//    bool vote_old (const Mabs_parms& parms);
+    ///@}
 
-private:
-    void hello_world ();
-//    int write_to_file (const ImageType::Pointer image_data,
-//                       const std::string out_file
-//);
-    
-public:
-    char target_fn[_MAX_PATH];
-    char output_fn[_MAX_PATH];
-    Mabs_subject_manager* sman;
-    
-    FloatImageType::Pointer target;
-    FloatImageType::Pointer like0;
-    FloatImageType::Pointer like1;
+    /*! \name Execution */
+    ///@{
+    /*! \brief Vote for labels using the contribution for a single 
+      registered atlas image */
+    void vote (
+        FloatImageType::Pointer atlas_image,
+        UCharImageType::Pointer atlas_label);
+    /*! \brief After you done adding contributions, normalize the 
+      votes. */
+    void normalize_votes ();
+    ///@}
+
+    /*! \name Outputs */
+    ///@{
+    /*! \brief Return the label likelihoods as an ITK image. */
+    FloatImageType::Pointer get_weight_image ();
+    /*! \brief Return the weights as an ITK image. */
+    UCharImageType::Pointer get_label_image ();
+    ///@}
 };
 
 #endif /* #ifndef _mabs_vote_h_ */
