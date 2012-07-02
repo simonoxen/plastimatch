@@ -13,7 +13,6 @@
 #include "plmbase.h"
 #include "plmsys.h"
 #include "distance_map.h"
-#include "itk_image_save.h"
 #include "mabs_subject.h"
 #include "mabs_vote.h"
 #include "plm_math.h"
@@ -86,10 +85,6 @@ Mabs_vote::vote (
     dmap.set_input_image (atlas_label);
     dmap.run ();
     FloatImageType::Pointer dmap_image = dmap.get_output_image ();
-
-    static int deleteme = 0;
-    Pstring fn; fn.format ("mabs/output/dmap_%04d.nrrd", deleteme++);
-    itk_image_save (dmap_image, fn.c_str());
 
     /* Create iterators */
     itk::ImageRegionIterator< FloatImageType > target_it (

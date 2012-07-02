@@ -9,6 +9,7 @@
 #include "dir_list.h"
 #include "file_util.h"
 #include "itk_image_save.h"
+#include "itk_threshold.h"
 #include "mabs.h"
 #include "mabs_parms.h"
 #include "mabs_vote.h"
@@ -39,6 +40,12 @@ Mabs::run (const Mabs_parms& parms)
     if (!file_exists (parms.registration_config)) {
         print_and_exit ("Couldn't find registration config (%s)\n", 
             parms.registration_config);
+    }
+
+    /* Make sure there is an output directory */
+    Pstring out_dir = parms.labeling_output_fn;
+    if (out_dir.empty()) {
+        out_dir = "mabs";
     }
 
     /* Load the labeling file.  For now, we'll assume this is successful. */
@@ -80,7 +87,7 @@ Mabs::run (const Mabs_parms& parms)
         int rc = regp.set_command_string (command_string);
         if (rc) {
             print_and_exit ("Failure parsing command file: %s\n",
-                            parms.registration_config);
+                parms.registration_config);
         }
 
         /* Manually set input files */
@@ -149,15 +156,27 @@ Mabs::run (const Mabs_parms& parms)
         lprintf ("Normalizing votes\n");
         vote->normalize_votes();
 
-        /* GCS DEBUG -- SAVE A COPY OF THE WEIGHT FILE */
-        lprintf ("Saving weights\n");
+        /* Optionally, get the weight image */
         FloatImageType::Pointer wi = vote->get_weight_image ();
-        Pstring fn; fn.format ("%s/weight_%04d.nrrd", 
-            parms.labeling_output_fn.c_str(), i);
-        lprintf ("...fn = %s\n", fn.c_str());
-        itk_image_save (wi, fn.c_str());
 
-        /* Threshold */
+        /* Optionally, save the weight files */
+        if (parms.debug) {
+            lprintf ("Saving weights\n");
+            Pstring fn; 
+            fn.format ("%s/weight_%04d.nrrd", out_dir.c_str(), i);
+            itk_image_save (wi, fn.c_str());
+        }
+
+        /* Threshold the weight image */
+        UCharImageType::Pointer thresh = itk_threshold_above (wi, 0.5);
+
+        /* Optionally, save the thresholded files */
+        /* GCS FIX: After we can create the structure set, we'll make 
+           this optional */
+        lprintf ("Saving thresholded structures\n");
+        Pstring fn; 
+        fn.format ("%s/label_%04d.nrrd", out_dir.c_str(), i);
+        itk_image_save (thresh, fn.c_str());
 
         /* Assemble into structure set */
     }
