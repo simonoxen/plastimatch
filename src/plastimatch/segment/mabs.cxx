@@ -31,8 +31,6 @@ Mabs::~Mabs () { }
 void
 Mabs::run (const Mabs_parms& parms)
 {
-    Rtds rtds;
-
     /* Do a few sanity checks */
     if (!is_directory (parms.atlas_dir)) {
         print_and_exit ("Atlas dir (%s) is not a directory\n",
@@ -44,7 +42,7 @@ Mabs::run (const Mabs_parms& parms)
     }
 
     /* Load the labeling file.  For now, we'll assume this is successful. */
-    Plm_image pli (parms.labeling_input_fn);
+    Plm_image fixed_image (parms.labeling_input_fn);
 
     /* Make a list to store voting results */
     std::vector<Mabs_vote*> vote_list;
@@ -52,6 +50,7 @@ Mabs::run (const Mabs_parms& parms)
     /* Loop through images in the atlas directory */
     Dir_list d (parms.atlas_dir);
     for (int i = 0; i < d.num_entries; i++) {
+        Rtds rtds;
 
         /* Skip "." and ".." */
         if (!strcmp (d.entries[i], ".") || !strcmp (d.entries[i], "..")) {
@@ -86,7 +85,7 @@ Mabs::run (const Mabs_parms& parms)
 
         /* Manually set input files */
         Registration_data regd;
-        regd.fixed_image = &pli;
+        regd.fixed_image = &fixed_image;
         regd.moving_image = rtds.m_img;
 
         /* Run the registration */
@@ -104,11 +103,8 @@ Mabs::run (const Mabs_parms& parms)
 
         /* Warp the structures */
         printf ("Warp structures...\n");
-        Plm_image_header source_pih;
-        rtds.m_rtss->prune_empty();
-        Rtss_structure_set *cxt = rtds.m_rtss->m_cxt;
-        source_pih.set_from_gpuit (cxt->rast_dim, cxt->rast_offset, 
-            cxt->rast_spacing, 0);
+        Plm_image_header source_pih (rtds.m_img);
+        rtds.m_rtss->prune_empty ();
         rtds.m_rtss->rasterize (&source_pih, false, false);
         rtds.m_rtss->warp (xf_out, &fixed_pih);
 
@@ -147,14 +143,18 @@ Mabs::run (const Mabs_parms& parms)
     }
 
     /* Get output image for each label */
+    lprintf ("Normalizing and saving weights\n");
     for (size_t i = 0; i < vote_list.size(); i++) {
         Mabs_vote *vote = vote_list[i];
+        lprintf ("Normalizing votes\n");
         vote->normalize_votes();
 
         /* GCS DEBUG -- SAVE A COPY OF THE WEIGHT FILE */
+        lprintf ("Saving weights\n");
         FloatImageType::Pointer wi = vote->get_weight_image ();
         Pstring fn; fn.format ("%s/weight_%04d.nrrd", 
             parms.labeling_output_fn.c_str(), i);
+        lprintf ("...fn = %s\n", fn.c_str());
         itk_image_save (wi, fn.c_str());
 
         /* Threshold */

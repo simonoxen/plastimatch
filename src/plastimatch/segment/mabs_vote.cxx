@@ -77,35 +77,26 @@ Mabs_vote::vote (
     UCharImageType::Pointer atlas_label
 )
 {
-    printf ("\tentering vote contr\n");
-  
     double sigma = 50;
     double rho = 1;
   
     // create distance map
-    printf ("\tcreating distance map\n");
     Distance_map dmap;
     dmap.set_input_image (atlas_label);
     dmap.run ();
     FloatImageType::Pointer dmap_image = dmap.get_output_image ();
 
     /* Create iterators */
-    printf ("\tcreating iterators [1]\n");fflush(stdout);
     itk::ImageRegionIterator< FloatImageType > target_it (
         d_ptr->target, d_ptr->target->GetLargestPossibleRegion());
-    printf ("\tcreating iterators [2]\n");fflush(stdout);
     itk::ImageRegionIterator< FloatImageType > atlas_image_it (
         atlas_image, atlas_image->GetLargestPossibleRegion());
-    printf ("\tcreating iterators [3]\n");fflush(stdout);
     itk::ImageRegionIterator< FloatImageType > like0_it (
         d_ptr->like0, d_ptr->like0->GetLargestPossibleRegion());
-    printf ("\tcreating iterators [4]\n");fflush(stdout);
     itk::ImageRegionIterator< FloatImageType > like1_it (
         d_ptr->like1, d_ptr->like1->GetLargestPossibleRegion());
-    printf ("\tcreating iterators [5]\n");fflush(stdout);
     itk::ImageRegionIterator< FloatImageType > dmap_it (
         dmap_image, dmap_image->GetLargestPossibleRegion());
-    printf ("\tcreating iterators [done]\n");fflush(stdout);
 
     // These are necessary to normalize the label likelihoods
     const unsigned int wt_scale = 1000;
@@ -116,7 +107,7 @@ Mabs_vote::vote (
     double normLabelLikelihoods;
     double distmapValue;
     int cnt = 0;
-    printf ("\tlooping through voxels\n");fflush(stdout);
+    printf ("\tMABS looping through voxels...\n");fflush(stdout);
     for (atlas_image_it.GoToBegin(),
              dmap_it.GoToBegin(),
              target_it.GoToBegin(),
@@ -151,7 +142,7 @@ Mabs_vote::vote (
         like0_it.Set (like0_it.Get() + l0*wt_scale);
         like1_it.Set (like1_it.Get() + l1*wt_scale);
     }
-    printf ("\tlooped through %d pixels\n", cnt);
+    printf ("\tMABS voted with %d voxels\n", cnt);
 }    
 
 void
@@ -161,6 +152,7 @@ Mabs_vote::normalize_votes ()
     const unsigned int wt_scale = 1000;
 
     /* Create weight image */
+    d_ptr->weights = FloatImageType::New();
     d_ptr->weights->SetOrigin (d_ptr->target->GetOrigin());
     d_ptr->weights->SetSpacing (d_ptr->target->GetSpacing());
     d_ptr->weights->SetDirection (d_ptr->target->GetDirection());
