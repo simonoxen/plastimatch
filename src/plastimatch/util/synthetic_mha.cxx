@@ -646,6 +646,9 @@ synthetic_mha (
         sp = pih.m_spacing;
         rg = pih.m_region;
         itk_dc = pih.m_direction;
+        for (int d1 = 0; d1 < 3; d1++) {
+            parms->origin[d1] = og[d1];
+        }
     } else {
         for (int d1 = 0; d1 < 3; d1++) {
             st[d1] = 0;

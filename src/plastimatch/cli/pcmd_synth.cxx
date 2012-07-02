@@ -16,7 +16,6 @@
 
 typedef struct synthetic_mha_main_parms Synthetic_mha_main_parms;
 struct synthetic_mha_main_parms {
-    Pstring fixed_fn;
     Pstring output_fn;
     Pstring output_dose_img_fn;
     Pstring output_ss_img_fn;
@@ -279,7 +278,7 @@ parse_fn (
     }
 
     /* Fixed image */
-    parms->fixed_fn = parser->get_string("fixed").c_str();
+    sm_parms->fixed_fn = parser->get_string("fixed").c_str();
 
     /* Image size */
     parser->assign_int13 (sm_parms->dim, "dim");
