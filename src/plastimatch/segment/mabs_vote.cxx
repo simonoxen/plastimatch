@@ -13,6 +13,7 @@
 #include "plmbase.h"
 #include "plmsys.h"
 #include "distance_map.h"
+#include "itk_image_save.h"
 #include "mabs_subject.h"
 #include "mabs_vote.h"
 #include "plm_math.h"
@@ -86,6 +87,10 @@ Mabs_vote::vote (
     dmap.run ();
     FloatImageType::Pointer dmap_image = dmap.get_output_image ();
 
+    static int deleteme = 0;
+    Pstring fn; fn.format ("mabs/output/dmap_%04d.nrrd", deleteme++);
+    itk_image_save (dmap_image, fn.c_str());
+
     /* Create iterators */
     itk::ImageRegionIterator< FloatImageType > target_it (
         d_ptr->target, d_ptr->target->GetLargestPossibleRegion());
@@ -102,10 +107,9 @@ Mabs_vote::vote (
     const unsigned int wt_scale = 1000;
     double med_diff;
     double value;
-    double labelLikelihood0;
-    double labelLikelihood1;
-    double normLabelLikelihoods;
-    double distmapValue;
+    double label_likelihood_0;
+    double label_likelihood_1;
+    double dmap_value;
     int cnt = 0;
     printf ("\tMABS looping through voxels...\n");fflush(stdout);
     for (atlas_image_it.GoToBegin(),
@@ -122,21 +126,32 @@ Mabs_vote::vote (
     {
         cnt++;
         
-        // similarity between target and atlas images 
+        /* Compute similarity between target and atlas images */
         med_diff = target_it.Get() - atlas_image_it.Get();
-        value = exp (-pow((med_diff), 2.0 ) / (2.0*pow(sigma, 2.0)))
-            / (sqrt(2.0*M_PI)*sigma);
+        value = exp (-(med_diff * med_diff) / (2.0*sigma*sigma))
+            / (M_SQRT2PI * sigma);
     
-        distmapValue = dmap_it.Get();
+        /* Compute the chance of being in the structure. */
+        /* Nb. we need to check to make sure exp(dmap_value) 
+           doesn't overflow.  The actual overflow is at about exp(700) 
+           for double, and about exp(85) for float.  But we can be 
+           a little more conservative. */
+        dmap_value = rho * dmap_it.Get();
+        if (dmap_value > 50) {
+            label_likelihood_0 = 0;
+            label_likelihood_1 = 1;
+        } else if (dmap_value > -50) {
+            label_likelihood_0 = exp (-rho*dmap_value);
+            label_likelihood_1 = exp (+rho*dmap_value);
+        } else {
+            label_likelihood_0 = 1;
+            label_likelihood_1 = 0;
+        }
 
-        // the chance of being in the structure
-        labelLikelihood0 = exp (-rho*distmapValue);
-        labelLikelihood1 = exp (rho*distmapValue);
-        normLabelLikelihoods = labelLikelihood0 + labelLikelihood1;
-    
-        // weighted by image similarity
-        double l0 = (labelLikelihood0 / normLabelLikelihoods ) * value;
-        double l1 = (labelLikelihood1 / normLabelLikelihoods ) * value;
+        /* Compute total score, weighted by image similarity */
+        double sum = label_likelihood_0 + label_likelihood_1;
+        double l0 = (label_likelihood_0 / sum) * value;
+        double l1 = (label_likelihood_1 / sum) * value;
 
         // write to like0, like1
         like0_it.Set (like0_it.Get() + l0*wt_scale);
@@ -170,6 +185,8 @@ Mabs_vote::normalize_votes ()
 
     /* Normalize log likelihood */
     int cnt = 0;
+    double XX_0 = 0, XX_1 = 0;
+    double YY_0 = DBL_MAX, YY_1 = DBL_MAX;
     for (weights_it.GoToBegin(),
              like0_it.GoToBegin(),
              like1_it.GoToBegin();
@@ -181,10 +198,16 @@ Mabs_vote::normalize_votes ()
         cnt++;
         double l0 = like0_it.Get();
         double l1 = like1_it.Get();
+        if (l0 > XX_0) XX_0 = l0;
+        if (l1 > XX_1) XX_1 = l1;
+        if (l0 < YY_0) YY_0 = l0;
+        if (l1 < YY_1) YY_1 = l1;
         double v =  l1 / (l1+l0);
-        weights_it.Set(v*wt_scale);
+        weights_it.Set (v*wt_scale);
     }
     printf ("looped through %d weights.\n", cnt);
+    printf ("\tMAX votes = %g, %g\n", XX_0, XX_1);
+    printf ("\tMAX votes = %g, %g\n", YY_0, YY_1);
 }
 
 FloatImageType::Pointer

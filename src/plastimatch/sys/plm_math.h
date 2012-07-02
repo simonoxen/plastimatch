@@ -27,6 +27,9 @@
 #ifndef M_SQRT1_2
 #define M_SQRT1_2       0.70710678118654752440  /* 1/sqrt(2) */
 #endif
+#ifndef M_SQRT2PI
+#define M_SQRT2PI       2.50662827463100        /* sqrt(2*pi) - nonstandard */
+#endif
 
 /* Returns integer data type */
 #define ROUND_INT(x) (((x) >= 0) ? ((long)((x)+0.5)) : (long)(-(-(x)+0.5)))
