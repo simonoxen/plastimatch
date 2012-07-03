@@ -95,15 +95,6 @@ raw_load (Proj_image *proj, const char* img_filename)
         exit (-1);
     }
 
-    /* Load pixels */
-    rc = fread (proj->img, sizeof(float), proj->dim[0] * proj->dim[1], fp);
-    if (rc != (size_t) (proj->dim[0] * proj->dim[1])) {
-        fprintf (stderr, "Couldn't load raster data for %s\n",
-                 img_filename);
-        exit (-1);
-    }
-    fclose (fp);
-
     /* Guess image size */
     switch (fs) {
     case (512*384*sizeof(float)):
@@ -127,6 +118,15 @@ raw_load (Proj_image *proj, const char* img_filename)
         proj->dim[1] = fs / (1024 * sizeof(float));
         break;
     }
+
+    /* Load pixels */
+    rc = fread (proj->img, sizeof(float), proj->dim[0] * proj->dim[1], fp);
+    if (rc != (size_t) (proj->dim[0] * proj->dim[1])) {
+        fprintf (stderr, "Couldn't load raster data for %s\n",
+                 img_filename);
+        exit (-1);
+    }
+    fclose (fp);
 }
 
 static void
