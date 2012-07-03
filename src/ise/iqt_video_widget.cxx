@@ -203,10 +203,13 @@ Iqt_video_widget::~Iqt_video_widget ()
 void 
 Iqt_video_widget::set_qimage (const QImage& qimage)
 {
-    delete pmi;                       //remove old pmi (IS necessary)
-    qDebug("Setting QImage");
+    if(!qimage.isNull()){
+        delete pmi;                       //remove old pmi (IS necessary)
+        qDebug("Setting QImage");
 
-    pmi = new QGraphicsPixmapItem(QPixmap::fromImage (qimage.scaled(this->size(), Qt::KeepAspectRatio)));
-    scene->addItem(pmi);
-    scene->addText("Synthetic Fluoroscopy");
+        pmi = new QGraphicsPixmapItem(QPixmap::fromImage (qimage.scaled(this->size(), Qt::KeepAspectRatio)));
+        scene->addItem(pmi);
+        scene->addText("Synthetic Fluoroscopy");
+        qDebug("Image set");
+    }
 }

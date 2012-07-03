@@ -102,15 +102,22 @@ Iqt_main_window::slot_load ()
     if (playing) {
         this->slot_play_pause();
     }
-    setMax->setRange(32500, 65000);
-    setMin->setRange(32500, 65000);
-    setMax->setValue(65000);
-    setMin->setValue(63000);
+    if (synth){
+        setMax->setRange(32500, 65000);
+        setMin->setRange(32500, 65000);
+        setMax->setValue(65000);
+        setMin->setValue(63000);
+    }
     playing = false;
     const QString DEFAULT_DIR_KEY(QDir::homePath());
 
     QSettings settings;
-    filename = QFileDialog::getOpenFileName(this, "Select a file",                                              settings.value(DEFAULT_DIR_KEY).toString(),                                       tr("Image Files (*.his *.jpg *.png *.bmp)"));
+    QString ddk = settings.value(DEFAULT_DIR_KEY).toString();
+    if (ddk.isEmpty()) {
+        ddk = QDir::homePath();
+    }
+    filename = QFileDialog::getOpenFileName(this, "Select a file",
+        ddk, tr("Image Files (*.his *.jpg *.png *.bmp)"));
 
     if (!filename.isEmpty()) {
 	QDir CurrentDir;
@@ -121,11 +128,33 @@ Iqt_main_window::slot_load ()
         return;
     }
 
+    QEvent *event = new QEvent(QEvent::User); //type, receiver->mapFromGlobal(pos), mouse_button, mouse_buttons, Qt::NoModifier);
+
     statusBar()->showMessage(QString("Filename: %1")
-			     .arg(filename));
+        .arg(filename));
+
+    //ise_app->postEvent (this, event);
+    QMessageBox::information (0, QString ("Info"), QString ("TEST 1..2"));
     QString path = QFileInfo(filename).path();
     show_fluoro(path);
 }
+
+bool
+Iqt_main_window::event (QEvent *event)
+{
+    if (event->type() == QEvent::User) {
+        //QMessageBox::information (0, QString ("Info"), 
+        //QString ("Our event was handled"));
+
+        QString path = QFileInfo(filename).path();
+        show_fluoro(path);
+        
+        return true;
+    } else {
+        return QMainWindow::event (event);
+    }
+}
+
 
 void
 Iqt_main_window::show_fluoro (QString path)
@@ -148,6 +177,7 @@ Iqt_main_window::show_fluoro (QString path)
 
         Frame *f = ise_app->cbuf[0]->get_frame ();
         bool isHis = his_read (f->img, 512, 512, fn);
+        qDebug("Image Pointer: %p", f->img);
         if (isHis) {
             ise_app->cbuf[0]->add_waiting_frame (f);
             this->slot_frame_ready (f, 512, 512);
