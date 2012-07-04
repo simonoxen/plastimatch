@@ -70,8 +70,11 @@ want the DRR and FDK programs, you don't need it.  Get ITK from here:
 
   http://itk.org/
 
-We recommend version ITK 3.20.X.  ITK version 4.X works, but is 
-still experimental.
+We recommend version ITK 3.20.X.  ITK 4.1 seems to work, but 
+you won't be able to use DICOM-RT.
+
+  ITK 3.20.1            Recommended
+  ITK >= 4.1            Supported
 
 When you build ITK, the following settings are recommended::
 
@@ -81,6 +84,13 @@ When you build ITK, the following settings are recommended::
   BUILD_TESTING                             OFF
   ITK_USE_REVIEW                            ON
   ITK_USE_OPTIMIZED_REGITRATION_METHODS     ON
+
+Note, if you are using gcc 4.7 on 32-bit platform, and if you 
+need to load .nrrd files, you will need to patch ITK.  
+I believe this patch is needed for both ITK 3.20.1 and ITK 4.1.
+Here is the patch:
+
+  http://lists.debian.org/debian-med/2012/06/msg00136.html
 
 Note, if you are using Debian, Ubuntu, or related distributions, 
 the ITK package provided by the repository is compiled against 
