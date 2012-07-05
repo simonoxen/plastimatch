@@ -8,6 +8,7 @@
 #include <QFileDialog>
 #include <QDir>
 #include <QByteArray>
+#include <QCoreApplication>
 //#include <vtkPolyDataMapper.h>
 //#include <vtkRenderer.h>
 //#include <vtkRenderWindow.h>
@@ -58,7 +59,9 @@ Iqt_main_window::Iqt_main_window ()
     connect (this, SIGNAL(fluoro_ready(QString)), this, SLOT(show_fluoro(QString)));
     this->playing = false;
     this->synth = false;
-
+    framePos = new QSlider(Qt::Horizontal, this);
+    connect (framePos, SIGNAL(valueChanged(int)), this, SLOT(get_new_frame(int)));
+    slider_layout->addWidget(framePos);
     /* Render a sphere ?? */
 //    this->render_sphere ();
 }
@@ -92,7 +95,7 @@ Iqt_main_window::~Iqt_main_window ()
 {
     QSettings settings;
     settings.sync ();
-
+    delete framePos;
     //delete m_qtimer;
 }
 
@@ -101,7 +104,7 @@ Iqt_main_window::slot_load ()
 {
     if (playing) {
         this->slot_play_pause();
-    }
+	}
     if (synth){
         setMax->setRange(32500, 65000);
         setMin->setRange(32500, 65000);
@@ -128,17 +131,18 @@ Iqt_main_window::slot_load ()
         return;
     }
 
-    QEvent *event = new QEvent(QEvent::User); //type, receiver->mapFromGlobal(pos), mouse_button, mouse_buttons, Qt::NoModifier);
+    //QEvent *event = new QEvent(QEvent::User); //type, receiver->mapFromGlobal(pos), mouse_button, mouse_buttons, Qt::NoModifier);
 
     statusBar()->showMessage(QString("Filename: %1")
         .arg(filename));
 
     //ise_app->postEvent (this, event);
-    QMessageBox::information (0, QString ("Info"), QString ("TEST 1..2"));
+    //QMessageBox::information (0, QString ("Info"), QString ("TEST 1..2"));
+    //QCoreApplication::processEvents();
     QString path = QFileInfo(filename).path();
     show_fluoro(path);
 }
-
+/*
 bool
 Iqt_main_window::event (QEvent *event)
 {
@@ -154,18 +158,19 @@ Iqt_main_window::event (QEvent *event)
         return QMainWindow::event (event);
     }
 }
-
+*/
 
 void
 Iqt_main_window::show_fluoro (QString path)
 {
     QDir directory = QDir(path);
     QStringList files = directory.entryList(QDir::Files, QDir::Name);
-    int numFiles = files.size();
+    numFiles = files.size();
+    framePos->setMaximum(numFiles-1);
 
     for (int j=0; j < numFiles; j++) {
 	filename = path + "/" + files.at(j);
-	qDebug() << filename;
+	//qDebug() << filename;
 	
 	QByteArray ba = filename.toLocal8Bit();
 	const char *fn = ba.data();
@@ -177,16 +182,24 @@ Iqt_main_window::show_fluoro (QString path)
 
         Frame *f = ise_app->cbuf[0]->get_frame ();
         bool isHis = his_read (f->img, 512, 512, fn);
-        qDebug("Image Pointer: %p", f->img);
+        //qDebug("Image Pointer: %p", f->img);
         if (isHis) {
             ise_app->cbuf[0]->add_waiting_frame (f);
-            this->slot_frame_ready (f, 512, 512);
+            //this->slot_frame_ready (f, 512, 512);
         } else {
             ise_app->cbuf[0]->add_empty_frame (f);
 	}
-	Sleeper::msleep(500);
+	frameList[j] = f;
+	//framePos->setValue(j);
+	//Sleeper::msleep(500);
     }
-
+    this->slot_frame_ready (frameList[0], 512, 512);
+    /*for (int q=0; q < numFiles; q++) {
+	qDebug("Frame: %p", frameList[q]);
+	qDebug("Image: %p", frameList[q]->img);
+	}*/
+    playing = false;
+    this->slot_play_pause ();
 }
 
 void
@@ -199,6 +212,7 @@ Iqt_main_window::slot_save ()
 void
 Iqt_main_window::slot_play_pause ()
 {   
+    int i;
     if (playing) {
 	playing = false;
         play_pause_button->setText ("|>");
@@ -207,22 +221,36 @@ Iqt_main_window::slot_play_pause ()
 	playing = true;
         play_pause_button->setText ("||");
         action_Play->setText ("&Pause");
+	
+	for (i=framePos->value(); i < numFiles; i++) {
+	    framePos->setValue(i);
+	    Sleeper::msleep(100);
+	    QCoreApplication::processEvents();
+	}
+	
     }
+    if (i==numFiles) playing = false;
     //vid_screen->play(playing);
+}
+
+void
+Iqt_main_window::get_new_frame (int pos)
+{
+    this->slot_frame_ready(frameList[pos], 512, 512);
 }
 
 void
 Iqt_main_window::slot_go_back ()
 {
-    QMessageBox::information (0, QString ("Info"), 
-	QString ("slot_go_back() was called"));
+    framePos->setValue(0);
+    playing = false;
 }
 
 void
 Iqt_main_window::slot_go_forward ()
 {
-    QMessageBox::information (0, QString ("Info"), 
-	QString ("slot_go_forward() was called"));
+    framePos->setValue(numFiles);
+    playing = false;
 }
 
 void

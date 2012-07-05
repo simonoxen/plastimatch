@@ -234,11 +234,11 @@
      </layout>
     </item>
     <item>
-     <widget class="QSlider" name="horizontalSlider">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
+     <layout class="QVBoxLayout" name="slider_layout">
+      <property name="topMargin">
+       <number>0</number>
       </property>
-     </widget>
+     </layout>
     </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
@@ -422,7 +422,6 @@
   <tabstop>play_pause_button</tabstop>
   <tabstop>stop_button</tabstop>
   <tabstop>go_back_button</tabstop>
-  <tabstop>horizontalSlider</tabstop>
  </tabstops>
  <resources/>
  <connections>

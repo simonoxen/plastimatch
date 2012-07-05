@@ -32,7 +32,7 @@ public:
     Iqt_main_window ();
     ~Iqt_main_window ();
 
-    virtual bool event (QEvent *event);
+    //virtual bool event (QEvent *event);
 
     QTimer *m_qtimer;
     bool playing;
@@ -41,8 +41,12 @@ public:
     unsigned int height;
     QString filename;
     Frame* f;
+    QSlider *framePos;
+    int numFiles;
+    Frame* frameList[150];
 
 public slots:
+    void get_new_frame (int pos);
     void slot_load (void);
     void show_fluoro (QString path);
     void slot_save (void);
