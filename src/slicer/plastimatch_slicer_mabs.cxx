@@ -24,7 +24,7 @@ main (int argc, char * argv [])
     /* GCS FIX: Need registration config */
 
     /* Output image */
-    strncpy (parms.labeling_output_fn, output_image.c_str(), _MAX_PATH-1);
+    parms.labeling_output_fn = output_image.c_str();
 
     /* Process mabs */
     Mabs mabs;
