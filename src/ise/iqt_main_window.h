@@ -40,7 +40,7 @@ public:
     unsigned int width;
     unsigned int height;
     QString filename;
-    Frame* f;
+//    Frame* f;
     QSlider *framePos;
     int numFiles;
     Frame* frameList[150];
@@ -57,7 +57,7 @@ public slots:
     void slot_go_forward(void);
     void slot_timer (void);
     void slot_reload_frame (void);
-    void slot_frame_ready (Frame* f, int width, int height);
+    void slot_frame_ready (int width, int height);
 
 signals:
     void fluoro_ready (QString path);

@@ -32,7 +32,7 @@ Cbuf::Cbuf ()
 {
     this->num_frames = 0;
     this->write_ptr = 0;
-    this->display_ptr = 0;
+    this->display_ptr = this->waiting.end();
     this->internal_grab_ptr = 0;
     this->writable = 0;
     this->waiting_unwritten = 0;
@@ -152,13 +152,58 @@ Cbuf::add_empty_frame (Frame* new_frame)
     this->mutex->unlock ();
 }
 
-Frame*
+std::list<Frame*>::iterator&
 Cbuf::display_lock_newest_frame ()
 {
     this->mutex->lock ();
-    this->display_ptr = this->waiting.back();
+    this->display_ptr = this->waiting.end();
+    this->display_ptr --;
     this->mutex->unlock();
     return this->display_ptr;
+}
+
+std::list<Frame*>::iterator&
+Cbuf::display_lock_frame (int pos)
+{
+    this->mutex->lock ();
+    std::list<Frame*>::iterator it = this->waiting.begin();
+    for (int i = 0; i < pos; i++) {
+        ++it;
+    }
+    this->display_ptr = it;
+    this->mutex->unlock();
+    return this->display_ptr;
+}
+
+std::list<Frame*>::iterator&
+Cbuf::display_lock_oldest_frame ()
+{
+    this->mutex->lock ();
+    this->display_ptr = this->waiting.begin();
+    this->mutex->unlock();
+    return this->display_ptr;
+}
+
+Frame*
+Cbuf::get_display_frame ()
+{
+    if (this->display_ptr == this->waiting.end()) {
+        return 0;
+    } else {
+        return *(this->display_ptr);
+    }
+}
+
+int
+Cbuf::get_size_x ()
+{
+    return this->size_x;
+}
+
+int
+Cbuf::get_size_y ()
+{
+    return this->size_y;
 }
 
 #if defined (commentout)

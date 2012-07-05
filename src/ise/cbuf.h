@@ -21,7 +21,12 @@ public:
     Frame* get_frame ();
     void add_empty_frame (Frame* new_frame);
     void add_waiting_frame (Frame* f);
-    Frame* display_lock_newest_frame ();
+    std::list<Frame*>::iterator& display_lock_newest_frame ();
+    std::list<Frame*>::iterator& display_lock_frame (int pos);
+    std::list<Frame*>::iterator& display_lock_oldest_frame ();
+    Frame* get_display_frame ();
+    int get_size_x ();
+    int get_size_y ();
 
 public:
     unsigned long idx;
@@ -35,8 +40,9 @@ public:
     std::list<Frame*> empty;
     std::list<Frame*> waiting;
     Frame* write_ptr;
-    Frame* display_ptr;
+    //Frame* display_ptr;
     Frame* internal_grab_ptr;
+    std::list<Frame*>::iterator display_ptr;
 
     QMutex *mutex;
 };

@@ -26,8 +26,8 @@ Synthetic_source::Synthetic_source (Iqt_main_window* mw, int width, int height, 
     this->thread = new Synthetic_source_thread (width, height, fps);
     this->thread->set_synthetic_source (this);
     qDebug ("connecting: %p %p", this->thread, mw);
-    QObject::connect (this->thread, SIGNAL(frame_ready(Frame*, int, int)), 
-        mw, SLOT(slot_frame_ready(Frame*, int, int)));    
+    QObject::connect (this->thread, SIGNAL(frame_ready(int, int)), 
+        mw, SLOT(slot_frame_ready(int, int)));    
 }
 
 void

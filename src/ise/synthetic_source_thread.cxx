@@ -58,7 +58,8 @@ Synthetic_source_thread::run () {
            to get the frame */
         //Iqt_main_window::frame_ready (f);
 
-        emit frame_ready (f, width, height);
+        this->ss->cbuf->display_lock_newest_frame ();
+        emit frame_ready (width, height);
 
         qDebug() << "Done.";
     }

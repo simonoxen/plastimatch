@@ -193,7 +193,9 @@ Iqt_main_window::show_fluoro (QString path)
 	//framePos->setValue(j);
 	//Sleeper::msleep(500);
     }
-    this->slot_frame_ready (frameList[0], 512, 512);
+
+    ise_app->cbuf[0]->display_lock_oldest_frame ();
+    this->slot_frame_ready (512, 512);
     /*for (int q=0; q < numFiles; q++) {
 	qDebug("Frame: %p", frameList[q]);
 	qDebug("Image: %p", frameList[q]->img);
@@ -212,7 +214,6 @@ Iqt_main_window::slot_save ()
 void
 Iqt_main_window::slot_play_pause ()
 {   
-    int i;
     if (playing) {
 	playing = false;
         play_pause_button->setText ("|>");
@@ -222,21 +223,21 @@ Iqt_main_window::slot_play_pause ()
         play_pause_button->setText ("||");
         action_Play->setText ("&Pause");
 	
+        int i;
 	for (i=framePos->value(); i < numFiles; i++) {
 	    framePos->setValue(i);
 	    Sleeper::msleep(100);
 	    QCoreApplication::processEvents();
 	}
-	
+        if (i==numFiles) playing = false;
     }
-    if (i==numFiles) playing = false;
     //vid_screen->play(playing);
 }
 
 void
 Iqt_main_window::get_new_frame (int pos)
 {
-    this->slot_frame_ready(frameList[pos], 512, 512);
+    ise_app->cbuf[0]->display_lock_frame (pos);
 }
 
 void
@@ -312,6 +313,8 @@ Iqt_main_window::slot_reload_frame ()
 
     unsigned short min_val = 0xffff;
     unsigned short max_val = 0;
+
+    Frame *f = *(ise_app->cbuf[0]->display_ptr);
     for (int i = 0; i < width * height; i++) {
         if (f->img[i] < min_val) min_val = f->img[i];
         if (f->img[i] > max_val) max_val = f->img[i];
@@ -334,9 +337,9 @@ Iqt_main_window::slot_reload_frame ()
 }
 
 void
-Iqt_main_window::slot_frame_ready (Frame* f, int width, int height)
+Iqt_main_window::slot_frame_ready (int width, int height)
 {
-    qDebug("Got frame %p", f);
+    qDebug("slot_frame_ready");
     if (setMin->isHidden())
     {
 	setMin->setHidden(false);
@@ -347,7 +350,6 @@ Iqt_main_window::slot_frame_ready (Frame* f, int width, int height)
 	max_val->setHidden(false);
     }
 
-    this->f = f;
     this->width = width;
     this->height = height;
     

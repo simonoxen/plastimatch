@@ -30,7 +30,7 @@ public:
     Synthetic_source *ss;
 
 signals:
-    void frame_ready (Frame* f, int width, int height);
+    void frame_ready (int width, int height);
     
 };
 
