@@ -49,7 +49,7 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_3">
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout">
+       <layout class="QVBoxLayout" name="side_buttons">
         <item>
          <widget class="QPushButton" name="Load">
           <property name="text">
@@ -77,6 +77,13 @@
          <widget class="QPushButton" name="synth_button">
           <property name="text">
            <string>Synth</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="track_button">
+          <property name="text">
+           <string>Track</string>
           </property>
          </widget>
         </item>
@@ -729,6 +736,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>track_button</sender>
+   <signal>clicked()</signal>
+   <receiver>iqtMainWindow</receiver>
+   <slot>slot_set_tracking()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>53</x>
+     <y>176</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>481</x>
+     <y>333</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>slot_load()</slot>
@@ -741,5 +764,6 @@
   <slot>slot_slider_min(int)</slot>
   <slot>slot_slider_max(int)</slot>
   <slot>slot_reload_frame()</slot>
+  <slot>slot_set_tracking()</slot>
  </slots>
 </ui>

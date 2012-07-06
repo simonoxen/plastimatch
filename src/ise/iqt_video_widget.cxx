@@ -1,23 +1,27 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include "ise_config.h"
-#include <stdio.h>
+/*Qt Libraries*/
 #include <QtGui>
-#include <QFileDialog>
-#include <QGraphicsScene>
-#include <QPixmap>
-#include <QGraphicsPixmapItem>
 #include <QDir>
-#include <QTimer>
+#include <QFileDialog>
+#include <QGraphicsPixmapItem>
+#include <QGraphicsRectItem>
+#include <QGraphicsScene>
+#include <QMouseEvent>
+#include <QPen>
+#include <QPixmap>
 #include <QRect>
-#include "iqt_video_widget.h"
+#include <QRubberBand>
 #include <QString>
 #include <QTime>
-#include <QRubberBand>
-#include <QMouseEvent>
+#include <QTimer>
 #include <QWheelEvent>
+/*Other Libraries*/
+#include "ise_config.h"
+#include "iqt_video_widget.h"
 #include "sleeper.h"
+#include <stdio.h>
 
 Iqt_video_widget::Iqt_video_widget (QWidget *parent)
     : QGraphicsView (parent)
@@ -36,7 +40,7 @@ Iqt_video_widget::Iqt_video_widget (QWidget *parent)
 
     // connect (ping_check, SIGNAL(timeout()), this, SLOT(flick()));
     // ping_check->start(500);
-    
+    this->hasRect = false;
     SetCenter(QPointF(500.0, 500.0));
     //QGraphicsRectItem *rect_item 
       //  = scene->addRect (QRectF (20, 20, 10, 10));
@@ -98,14 +102,7 @@ void Iqt_video_widget::mouseMoveEvent(QMouseEvent* event)
 
 void Iqt_video_widget::mouseReleaseEvent(QMouseEvent* event)
 {
-    // if (rubberband->width() > rubberband->height())
-    // {
-    //     double scalefactor = this->width()/rubberband->width();
-    //     scale(scalefactor, scalefactor);
-    // } else {
-    //     double scalefactor = this->height()/rubberband->height();
-    // 	scale(scalefactor, scalefactor);
-    // }
+    this->trace.setRect((origin.x()-3), (origin.y()-5), 6, 10);
     if (event->button()==1) {
 	qDebug("Top: %d\nRight: %d\nWidth: %d\nHeight: %d", origin.x(), origin.y(), rubberband->width(), rubberband->height()); 
 	QPointF originf = mapToScene(origin);
@@ -115,7 +112,18 @@ void Iqt_video_widget::mouseReleaseEvent(QMouseEvent* event)
 			destf.y() - originf.y(), Qt::KeepAspectRatio);
 	rubberband->hide();
     }
+    if (!hasRect && event->button()==2) {
+	/*draw a rectangle*/
+	this->tracker
+	    = scene->addRect (trace);
+	tracker->setPen(QColor(255,0,0));
+       	this->hasRect = true;
+    } else if (hasRect) {
+	tracker->setRect(trace);
+    }
 }
+
+
 
 void Iqt_video_widget::load(const QString& filename) {
     
@@ -124,18 +132,7 @@ void Iqt_video_widget::load(const QString& filename) {
     qp2 = new QPixmap (filename_2);//load new image
 
     this->filename = filename;
-
-    // qDebug("Time Elapsed: %d ms", time->elapsed()); //display time in shell
-    // QTime ntime(0,0,0,0);                   //initialize time to be displayed
-    // j = time->elapsed();                    //msecs since time->start()
-    //   ntime=ntime.addMSecs(j);                //time to be displayed
-    //  QString text = ntime.toString("ss.zzz");//convert to text
-    //  QMessageBox::information (0, QString ("Timer"), 
-    //			QString ("Took %1 seconds").arg(text)); //display text
-    // delete time;
-    // delete qp1;
-    // delete qp2;
-} //end load()
+}
 
 void Iqt_video_widget::wheelEvent(QWheelEvent* event)
 {
@@ -187,11 +184,14 @@ void Iqt_video_widget::play (bool playing)
     }
 }
 
-void Iqt_video_widget::synth ()
+/*
+void Iqt_video_widget::paintEvent (QPaintEvent *paint)
 {
-    
+    QPainter tracker (this);
+    tracker.setPen(Qt::red);
+    tracker.drawRect((origin.x()-3), (origin.y()-5), 6, 10);
 }
-
+*/
 Iqt_video_widget::~Iqt_video_widget ()
 {
     delete qp1;

@@ -24,21 +24,6 @@
 #include "iqt_main_window.h"
 #include "iqt_video_widget.h"
 
-/* Some hints on displaying video.  It may be necessary to explore 
-   multiple options.  Start with the QWidget option?
-
-   Use a QGraphicsItem, which you put in a QGraphicsScene
-   http://www.qtforum.org/article/35428/display-live-camera-video-in-a-graphics-item.html
-   Use glTexture
-   http://www.qtforum.org/article/20311/using-opengl-to-display-dib-bmp-format-from-video-for-windows.html
-   Use a QWidget
-   http://sourceforge.net/projects/qtv4lcapture/
-   http://qt-apps.org/content/show.php/Qt+Opencv+webcam+viewer?content=89995
-   http://doc.trolltech.com/qq/qq16-fader.html
-   Use phonon
-   http://doc.qt.nokia.com/latest/phonon-overview.html
-*/
-
 Iqt_main_window::Iqt_main_window ()
 {
     /* Sets up the GUI */
@@ -238,6 +223,7 @@ void
 Iqt_main_window::get_new_frame (int pos)
 {
     ise_app->cbuf[0]->display_lock_frame (pos);
+    slot_reload_frame();
 }
 
 void

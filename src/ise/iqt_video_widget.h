@@ -32,13 +32,14 @@ public slots:
     void flick (void);
     void stop (void);
     void play (bool playing);
-    void synth (void);
-	//void addTime()
 
 public:
     Iqt_video_widget (QWidget *parent = 0);
     int j;
+    QGraphicsRectItem *tracker;
+    QRectF trace;
     bool drawing;
+    bool hasRect;
     QPoint origin;
     QRubberBand* rubberband;
     ~Iqt_video_widget ();
@@ -46,7 +47,7 @@ public:
 
 
 protected:
-//    void paintEvent (QPaintEvent *event);
+    //void paintEvent (QPaintEvent *event);
     QPointF currentCenter;
     QPointF GetCenter() { return currentCenter; }
     void SetCenter(const QPointF& centerPoint);
