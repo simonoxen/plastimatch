@@ -27,6 +27,7 @@ set (CONFIG_FILE_LIST
   "plm-bsp-landmark-a.txt"
   "plm-reg-multi-a.txt"
   "plm-reg-dv-itk-translation.txt"
+  "plm-reg-itk-bspline.txt"
 )
 foreach (CONFIG_FILE ${CONFIG_FILE_LIST})
   configure_file ("${PLM_TESTING_DATA_DIR}/${CONFIG_FILE}"
@@ -2039,8 +2040,8 @@ plm_add_test (
 plmtest_check_interval ("plm-reg-itk-translation-check"
   "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-translation-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "-637.0"
-  "-636.9"
+  "-677.6"
+  "-677.5"
   )
 set_property (TEST plm-reg-itk-translation APPEND PROPERTY DEPENDS gauss-1)
 set_property (TEST plm-reg-itk-translation APPEND PROPERTY DEPENDS gauss-2)
@@ -2064,8 +2065,8 @@ plm_add_test (
 plmtest_check_interval ("plm-reg-itk-rigid-check-1"
   "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-rigid-stats-1.stdout.txt"
   "AVE *([-0-9.]*)"
-  "-965.7"
-  "-965.4"
+  "-939.3"
+  "-939.1"
   )
 plm_add_test (
   "plm-reg-itk-rigid-stats-2"
@@ -2076,8 +2077,8 @@ plm_add_test (
 plmtest_check_interval ("plm-reg-itk-rigid-check-2"
   "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-rigid-stats-2.stdout.txt"
   "AVE *([-0-9.]*)"
-  "-965.7"
-  "-965.4"
+  "-939.3"
+  "-939.1"
   )
 set_tests_properties (plm-reg-itk-rigid PROPERTIES 
   DEPENDS "rect-2;rect-3")
