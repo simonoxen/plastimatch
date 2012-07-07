@@ -2095,7 +2095,7 @@ plm_add_test (
   "plm-reg-itk-bspline"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-reg-itk-bspline.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-bspline.txt"
   )
 plm_add_test (
   "plm-reg-itk-bspline-stats-1"

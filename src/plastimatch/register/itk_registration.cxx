@@ -130,7 +130,7 @@ Itk_registration_private::set_best_xform ()
     case STAGE_TRANSFORM_BSPLINE: {
         typedef BsplineTransformType * XfPtr;
         XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
-        xf_out->set_itk_bsp (transform);
+        xf_best->set_itk_bsp (transform);
     }
     break;
     default:

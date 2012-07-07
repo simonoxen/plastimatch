@@ -467,28 +467,6 @@ xform_save (Xform *xf, const char* fn)
     xf->save (fn);
 }
 
-#if defined (GCS_REARRANGING_STUFF)
-void
-init_versor_moments (RegistrationType::Pointer registration,
-                       VersorTransformType* versor)
-{
-    typedef itk::CenteredTransformInitializer < VersorTransformType,
-        FloatImageType, FloatImageType > TransformInitializerType;
-    TransformInitializerType::Pointer initializer =
-        TransformInitializerType::New();
-
-    initializer->SetTransform(versor);
-    initializer->SetFixedImage(registration->GetFixedImage());
-    initializer->SetMovingImage(registration->GetMovingImage());
-
-    initializer->GeometryOn();
-
-    initializer->InitializeTransform();
-
-    std::cout << "Transform is " << registration->GetTransform()->GetParameters() << std::endl;
-}
-#endif /* GCS_REARRANGING_STUFF */
-
 /* -----------------------------------------------------------------------
    Defaults
    ----------------------------------------------------------------------- */
