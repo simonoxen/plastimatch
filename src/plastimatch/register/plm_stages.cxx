@@ -16,7 +16,6 @@
 #include "gpuit_demons.h"
 
 #include "itk_demons.h"
-#include "itk_optim.h"
 #include "itk_registration.h"
 
 #define FIXME_BACKGROUND_MAX (-1200)
@@ -286,7 +285,7 @@ do_registration_stage (
     Xform *xf_out, Xform *xf_in, 
     Stage_parms* stage)
 {
-    logfile_printf ("[1] xf_in->m_type = %d, xf_out->m_type = %d\n", 
+    lprintf ("[1] xf_in->m_type = %d, xf_out->m_type = %d\n", 
         xf_in->m_type, xf_out->m_type);
 
     /* Run registration */
@@ -312,7 +311,7 @@ do_registration_stage (
         itk_registration_stage (regd, xf_out, xf_in, stage);
     }
 
-    logfile_printf ("[2] xf_out->m_type = %d, xf_in->m_type = %d\n", 
+    lprintf ("[2] xf_out->m_type = %d, xf_in->m_type = %d\n", 
         xf_out->m_type, xf_in->m_type);
 
     /* Save intermediate output */

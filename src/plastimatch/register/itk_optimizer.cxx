@@ -18,11 +18,12 @@
 #include "itkLBFGSOptimizer.h"
 #include "itkLBFGSBOptimizer.h"
 
-#include "plmregister.h"
-#include "plmsys.h"
-
+#include "itk_optimizer.h"
 #include "itk_registration.h"
 #include "itk_registration_private.h"
+#include "logfile.h"
+#include "plm_parms.h"
+#include "print_and_exit.h"
 
 /* Types of optimizers */
 typedef itk::AmoebaOptimizer AmoebaOptimizerType;
@@ -33,8 +34,7 @@ typedef itk::LBFGSOptimizer LBFGSOptimizerType;
 typedef itk::LBFGSBOptimizer LBFGSBOptimizerType;
 
 void
-optimizer_set_max_iterations (RegistrationType::Pointer registration, 
-				Stage_parms* stage, int its)
+Itk_registration_private::optimizer_set_max_iterations (int its)
 {
     if (stage->optim_type == OPTIMIZATION_AMOEBA) {
 	typedef AmoebaOptimizerType * OptimizerPointer;
@@ -79,8 +79,7 @@ optimizer_set_max_iterations (RegistrationType::Pointer registration,
 }
 
 double
-optimizer_get_value (RegistrationType::Pointer registration, 
-		     Stage_parms* stage)
+Itk_registration_private::optimizer_get_value ()
 {
     if (stage->optim_type == OPTIMIZATION_AMOEBA) {
 	typedef AmoebaOptimizerType * OptimizerPointer;
@@ -124,8 +123,7 @@ optimizer_get_value (RegistrationType::Pointer registration,
 }
 
 double
-optimizer_get_step_length (RegistrationType::Pointer registration, 
-		           Stage_parms* stage)
+Itk_registration_private::optimizer_get_step_length ()
 {
     if (stage->optim_type == OPTIMIZATION_AMOEBA) {
 #if defined (commentout)
@@ -175,8 +173,7 @@ optimizer_get_step_length (RegistrationType::Pointer registration,
 }
 
 int
-optimizer_get_current_iteration (RegistrationType::Pointer registration, 
-				 Stage_parms* stage)
+Itk_registration_private::optimizer_get_current_iteration ()
 {
     if (stage->optim_type == OPTIMIZATION_AMOEBA) {
 #if defined (commentout)
@@ -224,8 +221,7 @@ optimizer_get_current_iteration (RegistrationType::Pointer registration,
 }
 
 const itk::Array<double>&
-optimizer_get_current_position (RegistrationType::Pointer registration, 
-				Stage_parms* stage)
+Itk_registration_private::optimizer_get_current_position ()
 {
     if (stage->optim_type == OPTIMIZATION_AMOEBA) {
 	typedef AmoebaOptimizerType * OptimizerPointer;
@@ -234,10 +230,7 @@ optimizer_get_current_position (RegistrationType::Pointer registration,
 	return optimizer->GetCachedCurrentPosition();
     }
     else if (stage->optim_type == OPTIMIZATION_RSG) {
-	typedef RSGOptimizerType * OptimizerPointer;
-	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
-			   registration->GetOptimizer());
-	return optimizer->GetCurrentPosition();
+        return registration->GetTransform()->GetParameters();
     }
     else if (stage->optim_type == OPTIMIZATION_VERSOR) {
 	typedef VersorOptimizerType * OptimizerPointer;
@@ -266,6 +259,23 @@ optimizer_get_current_position (RegistrationType::Pointer registration,
         print_and_exit ("Error: Unknown optimizer value.\n");
     }
     exit (1);    /* Suppress compiler warning */
+}
+
+void
+Itk_registration_private::optimizer_stop ()
+{
+    /* calling StopOptimization() doesn't always stop 
+       optimization */
+    if (stage->optim_type == OPTIMIZATION_RSG) {
+        /* calling optimizer_set_max_iterations () doesn't 
+           seem to always stop rsg. */
+        typedef itk::RegularStepGradientDescentOptimizer *OptimizerPointer;
+        OptimizerPointer optimizer = dynamic_cast< 
+            OptimizerPointer >(registration->GetOptimizer());
+        optimizer->StopOptimization();
+    } else {
+        optimizer_set_max_iterations (1);
+    }
 }
 
 void

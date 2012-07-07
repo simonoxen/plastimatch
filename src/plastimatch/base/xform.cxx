@@ -153,11 +153,29 @@ Xform::set_trn (TranslationTransformType::Pointer trn)
 }
 
 void
+Xform::set_trn (const itk::Array<double>& trn)
+{
+    typedef TranslationTransformType XfType;
+    XfType::Pointer transform = XfType::New ();
+    transform->SetParametersByValue (trn);
+    this->set_trn (transform);
+}
+
+void
 Xform::set_vrs (VersorTransformType::Pointer vrs)
 {
     clear ();
     m_type = XFORM_ITK_VERSOR;
     m_vrs = vrs;
+}
+
+void
+Xform::set_vrs (const itk::Array<double>& vrs)
+{
+    typedef VersorTransformType XfType;
+    XfType::Pointer transform = XfType::New ();
+    transform->SetParametersByValue (vrs);
+    this->set_vrs (transform);
 }
 
 void
@@ -169,11 +187,29 @@ Xform::set_quat (QuaternionTransformType::Pointer quat)
 }
 
 void
+Xform::set_quat (const itk::Array<double>& quat)
+{
+    typedef QuaternionTransformType XfType;
+    XfType::Pointer transform = XfType::New ();
+    transform->SetParametersByValue (quat);
+    this->set_quat (transform);
+}
+
+void
 Xform::set_aff (AffineTransformType::Pointer aff)
 {
     clear ();
     m_type = XFORM_ITK_AFFINE;
     m_aff = aff;
+}
+
+void
+Xform::set_aff (const itk::Array<double>& aff)
+{
+    typedef AffineTransformType XfType;
+    XfType::Pointer transform = XfType::New ();
+    transform->SetParametersByValue (aff);
+    this->set_aff (transform);
 }
 
 void

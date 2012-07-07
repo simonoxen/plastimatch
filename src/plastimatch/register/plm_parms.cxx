@@ -19,8 +19,6 @@
 #include "plmregister.h"
 #include "plmsys.h"
 
-#include "itk_optim.h"
-
 #define BUFLEN 2048
 
 // JAS 2012.02.13 -- TODO: Move somewhere more appropriate

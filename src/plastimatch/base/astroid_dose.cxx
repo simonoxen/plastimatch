@@ -4,10 +4,14 @@
 #include "plmbase_config.h"
 #include <string.h>
 
-#include "plmsys.h"
-#include "plmbase.h"
-
+#include "astroid_dose.h"
 #include "direction_cosines.h"
+#include "plm_endian.h"
+#include "plm_image.h"
+#include "plm_int.h"
+#include "print_and_exit.h"
+#include "volume.h"
+#include "xio_ct.h"
 
 typedef struct astroid_dose_header Astroid_dose_header;
 struct astroid_dose_header {

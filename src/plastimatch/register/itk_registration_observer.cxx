@@ -2,6 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmregister_config.h"
+#include <iomanip>
 #include <sstream>
 #include <stdlib.h>
 #include <string.h>
@@ -9,7 +10,7 @@
 
 #include "compiler_warnings.h"
 #include "itk_image_type.h"
-#include "itk_optim.h"
+#include "itk_optimizer.h"
 #include "itk_registration.h"
 #include "itk_registration_private.h"
 #include "plmbase.h"
@@ -17,15 +18,14 @@
 #include "plmsys.h"
 #include "plmutil.h"
 
-/* Lots of ITK algorithms don't behave well.  They don't keep track of 
-   the best result, and/or they don't evaluate the initial position. 
+/* Lots of ITK algorithms don't behave uniformly.
    We're going to keep all this state in the observer, and the 
    registration should query the observer to find the best registration. 
 
    RSG
-   - Invokes itk::IterationEvent
-   - Current position is valid at StartEvent
-   - Initial transform is not evaluated
+   - Invokes itk::IterationEvent 
+   - Current position at time of itk::IterationEvent is next position 
+     So we need to check registration->GetTransform() instead
    - Final transform is not optimal
 
    Amoeba
@@ -47,19 +47,13 @@ public:
     itkNewMacro(Self);
 
 public:
-    Stage_parms* m_stage;
-    RegistrationType::Pointer m_registration;
-    double m_best_value;
+    Itk_registration_private *irp;
     double m_prev_value;
     int m_feval;
     Plm_timer* timer;
-    Xform m_best_xform;
 
 protected:
     Optimization_observer() {
-        m_stage = 0;
-        m_feval = 0;
-        m_best_value = DBL_MAX;
         m_prev_value = -DBL_MAX;
         timer = new Plm_timer;
         timer->start ();
@@ -69,11 +63,9 @@ protected:
     }
 
 public:
-    void Set_Stage_parms (RegistrationType::Pointer registration,
-        Stage_parms* stage)
+    void set_irp (Itk_registration_private *irp)
     {
-        m_registration = registration;
-        m_stage = stage;
+        this->irp = irp;
     }
 
     void Execute (itk::Object * caller, const itk::EventObject & event)
@@ -88,9 +80,9 @@ public:
             m_feval = 0;
             m_prev_value = -DBL_MAX;
             lprintf ("StartEvent: ");
-            if (m_stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
+            if (irp->stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
                 std::stringstream ss;
-                ss << optimizer_get_current_position (m_registration, m_stage);
+                ss << irp->optimizer_get_current_position ();
                 lprintf (ss.str().c_str());
             }
             lprintf ("\n");
@@ -102,82 +94,88 @@ public:
         }
         else if (typeid(event) == typeid(itk::EndEvent)) {
             lprintf ("EndEvent: ");
-            if (m_stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
+            if (irp->stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
                 std::stringstream ss;
-                ss << optimizer_get_current_position (m_registration, m_stage);
+                ss << irp->optimizer_get_current_position ();
                 lprintf (ss.str().c_str());
             }
             lprintf ("\n");
-            lprintf ("%s\n", m_registration->GetOptimizer()
+            lprintf ("%s\n", irp->registration->GetOptimizer()
                 ->GetStopConditionDescription().c_str());
         }
         else if (typeid(event) 
             == typeid(itk::FunctionAndGradientEvaluationIterationEvent))
         {
-            int it = optimizer_get_current_iteration(m_registration, m_stage);
-            double val = optimizer_get_value(m_registration, m_stage);
+            int it = irp->optimizer_get_current_iteration();
+            double val = irp->optimizer_get_value();
             double duration = timer->report ();
 
             lprintf ("%s [%2d,%3d] %9.3f [%6.3f secs]\n", 
-                (m_stage->metric_type == METRIC_MSE) ? "MSE" : "MI",
+                (irp->stage->metric_type == METRIC_MSE) ? "MSE" : "MI",
                 it, m_feval, val, duration);
             timer->start ();
             m_feval++;
         }
-        else if (typeid(event) == typeid(itk::FunctionEvaluationIterationEvent))
+        else if (typeid(event) == typeid(itk::IterationEvent)
+            || typeid(event) == typeid(itk::FunctionEvaluationIterationEvent))
         {
-            lprintf ("itk::FunctionEvaluationIterationEvent\n");
-        }
-        else if (typeid(event) == typeid(itk::IterationEvent))
-        {
-            int it = optimizer_get_current_iteration(m_registration, m_stage);
-            double val = optimizer_get_value(m_registration, m_stage);
-            double ss = optimizer_get_step_length(m_registration, m_stage);
+            int it = irp->optimizer_get_current_iteration();
+            double val = irp->optimizer_get_value();
+            double ss = irp->optimizer_get_step_length();
 
-            lprintf (" VAL %9.3f SS %5.2f ", val, ss);
+            /* ITK amoeba generates spurious events */
+            if (irp->stage->optim_type == OPTIMIZATION_AMOEBA) {
+                if (m_feval % 2 == 1) {
+                    m_feval ++;
+                    return;
+                }
+            }
 
-            if (m_stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
+            /* Print out score & optimizer stats */
+            if (irp->stage->optim_type == OPTIMIZATION_AMOEBA) {
+                lprintf ("%s [%3d] %9.3f ",
+                    (irp->stage->metric_type == METRIC_MSE) ? "MSE" : "MI",
+                    m_feval / 2, val);
+            } else {
+                lprintf ("%s [%2d,%3d,%5.2f] %9.3f ",
+                    (irp->stage->metric_type == METRIC_MSE) ? "MSE" : "MI",
+                    it, m_feval, ss, val);
+            }
+
+            if (irp->stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
                 std::stringstream ss;
-                ss << optimizer_get_current_position (m_registration, m_stage);
+                ss << std::setprecision(3);
+                ss << irp->optimizer_get_current_position ();
                 lprintf (ss.str().c_str());
             }
 
             if (m_prev_value != -DBL_MAX) {
                 double diff = fabs(m_prev_value - val);
                 lprintf (" %10.2f", val - m_prev_value);
-                if (it >= m_stage->min_its && diff < m_stage->convergence_tol) {
+                if (it >= irp->stage->min_its 
+                    && diff < irp->stage->convergence_tol)
+                {
                     lprintf (" (tol)", val - m_prev_value);
 
-                    /* calling StopOptimization() doesn't always stop 
-                       optimization */
-                    /* calling optimizer_set_max_iterations () doesn't 
-                       seem to always stop rsg. */
-                    if (m_stage->optim_type == OPTIMIZATION_RSG) {
-                        typedef itk::RegularStepGradientDescentOptimizer 
-                            * OptimizerPointer;
-                        OptimizerPointer optimizer = dynamic_cast< 
-                            OptimizerPointer >(m_registration->GetOptimizer());
-                        optimizer->StopOptimization();
-                    } else {
-                        optimizer_set_max_iterations (m_registration, 
-                            m_stage, 1);
-                    }
+                    irp->optimizer_stop ();
                 }
             }
             m_prev_value = val;
 
-            if (val < m_best_value) {
-                m_best_value = val;
+            if (val < irp->best_value) {
+                irp->best_value = val;
+                irp->set_best_xform ();
                 lprintf (" *");
             }
 
             lprintf ("\n");
+            m_feval ++;
         }
         else if (typeid(event) == typeid(itk::ProgressEvent)) {
             lprintf ("ProgressEvent: ");
-            if (m_stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
+            if (irp->stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
                 std::stringstream ss;
-                ss << optimizer_get_current_position (m_registration, m_stage);
+                ss << irp->optimizer_get_current_position ();
                 lprintf (ss.str().c_str());
             }
             lprintf ("\n");
@@ -193,7 +191,7 @@ Itk_registration_private::set_observer ()
 {
     typedef Optimization_observer OOType;
     OOType::Pointer observer = OOType::New();
-    observer->Set_Stage_parms (registration, stage);
+    observer->set_irp (this);
     registration->GetOptimizer()->AddObserver(itk::StartEvent(), observer);
     registration->GetOptimizer()->AddObserver(itk::InitializeEvent(), observer);
     registration->GetOptimizer()->AddObserver(itk::IterationEvent(), observer);

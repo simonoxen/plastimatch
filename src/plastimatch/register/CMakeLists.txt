@@ -37,7 +37,7 @@ set (PLMREGISTER_LIBRARY_SRC
   gpuit_bspline.cxx
   gpuit_demons.cxx
   itk_demons.cxx
-  itk_optim.cxx
+  itk_optimizer.cxx
   itk_registration.cxx
   itk_registration_observer.cxx
   itk_tps.cxx

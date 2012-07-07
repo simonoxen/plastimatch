@@ -5,7 +5,9 @@
 #define _itk_registration_private_h_
 
 #include "plmregister_config.h"
+#include "itkExceptionObject.h"
 #include "itkImageRegistrationMethod.h"
+#include "itk_image_type.h"
 
 class Registration_data;
 class Stage_parms;
@@ -20,14 +22,8 @@ public:
         Xform *xf_out, 
         Xform *xf_in, 
         Stage_parms* stage
-    )
-    {
-        this->regd = regd;
-        this->xf_in = xf_in;
-        this->xf_out = xf_out;
-        this->stage = stage;
-    }
-    ~Itk_registration_private () {}
+    );
+    ~Itk_registration_private ();
 
 public:
     Registration_data *regd;
@@ -36,8 +32,20 @@ public:
     Stage_parms *stage;
 
     RegistrationType::Pointer registration;
+    double best_value;
+    Xform *xf_best;
 
 public:
+    double evaluate_initial_transform ();
+
+    const itk::Array<double>& optimizer_get_current_position ();
+    int optimizer_get_current_iteration ();
+    double optimizer_get_value ();
+    double optimizer_get_step_length ();
+    void optimizer_stop ();
+    void optimizer_set_max_iterations (int its);
+
+    void set_best_xform ();
     void set_fixed_image_region ();
     void set_mask_images ();
     void set_metric ();
@@ -47,30 +55,5 @@ public:
     void set_xf_out ();
     void show_stats ();
 };
-
-void
-set_optimization (RegistrationType::Pointer registration,
-		  Stage_parms* stage);
-
-const itk::Array<double>&
-optimizer_get_current_position (RegistrationType::Pointer registration, 
-		  Stage_parms* stage);
-int
-optimizer_get_current_iteration (RegistrationType::Pointer registration, 
-				 Stage_parms* stage);
-double
-optimizer_get_value (RegistrationType::Pointer registration, 
-		     Stage_parms* stage);
-double
-optimizer_get_step_length (RegistrationType::Pointer registration, 
-		           Stage_parms* stage);
-
-void
-optimizer_update_settings (RegistrationType::Pointer registration, 
-			    Stage_parms* stage);
-
-void
-optimizer_set_max_iterations (RegistrationType::Pointer registration, 
-				Stage_parms* stage, int its);
 
 #endif

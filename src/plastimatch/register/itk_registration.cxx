@@ -23,7 +23,7 @@
 #include "compiler_warnings.h"
 #include "itk_demons.h"
 #include "itk_image_type.h"
-#include "itk_optim.h"
+#include "itk_optimizer.h"
 #include "itk_registration.h"
 #include "itk_registration_private.h"
 #include "plmbase.h"
@@ -37,64 +37,158 @@ typedef itk::MutualInformationImageToImageMetric <
     FloatImageType, FloatImageType > MIMetricType;
 typedef itk::MattesMutualInformationImageToImageMetric <
     FloatImageType, FloatImageType > MattesMIMetricType;
+typedef itk::ImageToImageMetric < 
+    FloatImageType, FloatImageType > MetricType;
 
 typedef itk::ImageMaskSpatialObject< 3 > Mask_SOType;
 
 typedef itk::LinearInterpolateImageFunction <
     FloatImageType, double >InterpolatorType;
 
-void do_itk_center_stage (Registration_data* regd, Xform *xf_out, Xform *xf_in, Stage_parms* stage);
+void
+itk_align_center (
+    Registration_data* regd, Xform *xf_out, Xform *xf_in, Stage_parms* stage);
+
+Itk_registration_private::Itk_registration_private (
+    Registration_data* regd, 
+    Xform *xf_out, 
+    Xform *xf_in, 
+    Stage_parms* stage
+)
+{
+    this->regd = regd;
+    this->xf_in = xf_in;
+    this->xf_out = xf_out;
+    this->stage = stage;
+    this->best_value = DBL_MAX;
+    this->xf_best = new Xform (*xf_in);
+}
+
+Itk_registration_private::~Itk_registration_private ()
+{
+    delete this->xf_best;
+}
+
+/* ITK throws exceptions when e.g. evaluating metrics with overlap 
+   of less that 25%.  Identify these so we can continue processing. */
+static bool
+itk_sample_failure (const itk::ExceptionObject& err)
+{
+    std::string err_string = err.GetDescription();
+    const char *t = "Too many samples map outside moving image buffer";
+
+    if (err_string.find (t) != std::string::npos) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+double
+Itk_registration_private::evaluate_initial_transform ()
+{
+    double value = DBL_MAX;
+    MetricType *metric = registration->GetMetric();
+    try {
+        value = metric->GetValue (
+            registration->GetInitialTransformParameters());
+    }
+    catch (itk::ExceptionObject & err) {
+        if (itk_sample_failure (err)) {
+            lprintf ("ITK failed with too few samples.\n");
+            return value;
+        }
+        lprintf ("Exception caught in evaluate_initial_transform()\n");
+        std::stringstream ss;
+        ss << err << "\n";
+        lprintf (ss.str().c_str());
+        exit (-1);
+    }
+    return value;
+}
+
+void
+Itk_registration_private::set_best_xform ()
+{
+    switch (stage->xform_type) {
+    case STAGE_TRANSFORM_TRANSLATION:
+        xf_best->set_trn (
+            registration->GetTransform()->GetParameters());
+        break;
+    case STAGE_TRANSFORM_VERSOR:
+        xf_best->set_vrs (
+            registration->GetTransform()->GetParameters());
+        break;
+    case STAGE_TRANSFORM_QUATERNION:
+        xf_best->set_quat (
+            registration->GetTransform()->GetParameters());
+        break;
+    case STAGE_TRANSFORM_AFFINE:
+        xf_best->set_aff (
+            registration->GetTransform()->GetParameters());
+        break;
+    case STAGE_TRANSFORM_BSPLINE: {
+        typedef BsplineTransformType * XfPtr;
+        XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
+        xf_out->set_itk_bsp (transform);
+    }
+    break;
+    default:
+        print_and_exit ("Error: unknown case in set_best_xform()\n");
+        break;
+    }
+}
 
 void
 Itk_registration_private::set_metric ()
 {
     switch (stage->metric_type) {
     case METRIC_MSE:
-        {
-            MSEMetricType::Pointer metric = MSEMetricType::New();
-            registration->SetMetric(metric);
-        }
-        break;
+    {
+        MSEMetricType::Pointer metric = MSEMetricType::New();
+        registration->SetMetric(metric);
+    }
+    break;
     case METRIC_MI:
-        {
-            /*  The metric requires a number of parameters to be
-                selected, including the standard deviation of the
-                Gaussian kernel for the fixed image density estimate,
-                the standard deviation of the kernel for the moving
-                image density and the number of samples use to compute
-                the densities and entropy values. Details on the
-                concepts behind the computation of the metric can be
-                found in Section \ref{sec:MutualInformationMetric}.
-                Experience has shown that a kernel standard deviation
-                of $0.4$ works well for images which have been
-                normalized to a mean of zero and unit variance.  We
-                will follow this empirical rule in this example. */
-            MIMetricType::Pointer metric = MIMetricType::New();
-            metric->SetFixedImageStandardDeviation(  0.4 );
-            metric->SetMovingImageStandardDeviation( 0.4 );
-            registration->SetMetric(metric);
-        }
-        break;
+    {
+        /*  The metric requires a number of parameters to be
+            selected, including the standard deviation of the
+            Gaussian kernel for the fixed image density estimate,
+            the standard deviation of the kernel for the moving
+            image density and the number of samples use to compute
+            the densities and entropy values. Details on the
+            concepts behind the computation of the metric can be
+            found in Section \ref{sec:MutualInformationMetric}.
+            Experience has shown that a kernel standard deviation
+            of $0.4$ works well for images which have been
+            normalized to a mean of zero and unit variance.  We
+            will follow this empirical rule in this example. */
+        MIMetricType::Pointer metric = MIMetricType::New();
+        metric->SetFixedImageStandardDeviation(  0.4 );
+        metric->SetMovingImageStandardDeviation( 0.4 );
+        registration->SetMetric(metric);
+    }
+    break;
     case METRIC_MI_MATTES:
-        {
-            /*  The metric requires two parameters to be selected: the 
-                number of bins used to compute the entropy and the
-                number of spatial samples used to compute the density
-                estimates. In typical application, 50 histogram bins
-                are sufficient and the metric is relatively
-                insensitive to changes in the number of bins. The
-                number of spatial samples to be used depends on the
-                content of the image. If the images are smooth and do
-                not contain much detail, then using approximately $1$
-                percent of the pixels will do. On the other hand, if
-                the images are detailed, it may be necessary to use a
-                much higher proportion, such as $20$ percent. */
-            MattesMIMetricType::Pointer metric = MattesMIMetricType::New();
-            metric->SetNumberOfHistogramBins(stage->mi_histogram_bins_fixed);
-            metric->SetNumberOfSpatialSamples(stage->mi_num_spatial_samples);
-            registration->SetMetric(metric);
-        }
-        break;
+    {
+        /*  The metric requires two parameters to be selected: the 
+            number of bins used to compute the entropy and the
+            number of spatial samples used to compute the density
+            estimates. In typical application, 50 histogram bins
+            are sufficient and the metric is relatively
+            insensitive to changes in the number of bins. The
+            number of spatial samples to be used depends on the
+            content of the image. If the images are smooth and do
+            not contain much detail, then using approximately $1$
+            percent of the pixels will do. On the other hand, if
+            the images are detailed, it may be necessary to use a
+            much higher proportion, such as $20$ percent. */
+        MattesMIMetricType::Pointer metric = MattesMIMetricType::New();
+        metric->SetNumberOfHistogramBins(stage->mi_histogram_bins_fixed);
+        metric->SetNumberOfSpatialSamples(stage->mi_num_spatial_samples);
+        registration->SetMetric(metric);
+    }
+    break;
     default:
         print_and_exit ("Error: metric is not implemented");
         break;
@@ -412,12 +506,22 @@ Itk_registration_private::set_transform ()
 void
 Itk_registration_private::set_xf_out ()
 {
+    printf ("Best xf:\n");
+    xf_best->print();
+    *xf_out = *xf_best;
+
+#if defined (commentout)
     switch (stage->xform_type) {
     case STAGE_TRANSFORM_TRANSLATION:
     {
+#if defined (commentout)
         typedef TranslationTransformType * XfPtr;
         XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
         xf_out->set_trn (transform);
+#endif
+        printf ("Setting xf_out ....\n");
+        xf_best->print();
+        *xf_out = *xf_best;
     }
     break;
     case STAGE_TRANSFORM_VERSOR:
@@ -456,6 +560,7 @@ Itk_registration_private::set_xf_out ()
     }
     break;
     }
+#endif
 }
 
 void
@@ -468,7 +573,7 @@ itk_registration_stage (
 {
     /* center_align is handled separately */
     if (stage->xform_type == STAGE_TRANSFORM_ALIGN_CENTER) {
-        return do_itk_center_stage (regd, xf_out, xf_in, stage);
+        return itk_align_center (regd, xf_out, xf_in, stage);
     }
 
     Itk_registration_private irp (regd, xf_out, xf_in, stage);
@@ -510,44 +615,38 @@ itk_registration_stage (
         }
     }
     catch (itk::ExceptionObject & err) {
-        lprintf ("Exception caught in itk registration.\n");
-        std::stringstream ss;
-        ss << err << "\n";
-        lprintf (ss.str().c_str());
-        exit (-1);
+        if (itk_sample_failure (err)) {
+            lprintf ("ITK failed with too few samples.\n");
+        } else {
+            lprintf ("Exception caught in itk registration.\n");
+            std::stringstream ss;
+            ss << err << "\n";
+            lprintf (ss.str().c_str());
+            exit (-1);
+        }
     }
 
     irp.set_xf_out ();
 }
 
 void
-do_itk_center_stage (
+itk_align_center (
     Registration_data* regd, Xform *xf_out, Xform *xf_in, Stage_parms* stage)
 {
     typedef itk::CenteredTransformInitializer < 
         VersorTransformType, FloatImageType, FloatImageType 
         > TransformInitializerType;
-    RegistrationType::Pointer registration = RegistrationType::New();
-
-    registration->SetFixedImage (regd->fixed_image->itk_float());
-    registration->SetMovingImage (regd->moving_image->itk_float());
-
-    VersorTransformType::Pointer trn = VersorTransformType::New();
     TransformInitializerType::Pointer initializer 
         = TransformInitializerType::New();
         
-    initializer->SetTransform(trn);
-    initializer->SetFixedImage(registration->GetFixedImage());
-    initializer->SetMovingImage(registration->GetMovingImage());
-    initializer->GeometryOn();
+    VersorTransformType::Pointer trn = VersorTransformType::New();
+    initializer->SetTransform (trn);
+    initializer->SetFixedImage (regd->fixed_image->itk_float());
+    initializer->SetMovingImage (regd->moving_image->itk_float());
+    initializer->GeometryOn ();
 
     lprintf ("Centering images\n");
     initializer->InitializeTransform();
-    registration->SetTransform(trn);
 
-    typedef VersorTransformType * XfPtr;
-    XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
-    xf_out->set_vrs(transform);
-
-    std::cout << "CENTER XFOUT = " << transform << std::endl;
+    xf_out->set_vrs (trn);
 }
