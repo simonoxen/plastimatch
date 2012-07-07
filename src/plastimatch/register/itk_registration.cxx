@@ -42,10 +42,31 @@ typedef itk::ImageMaskSpatialObject< 3 > Mask_SOType;
 typedef itk::LinearInterpolateImageFunction <
     FloatImageType, double >InterpolatorType;
 
-class Optimization_Observer : public itk::Command
+
+/* Lots of ITK algorithms don't behave well.  They don't keep track of 
+   the best result, and/or they don't evaluate the initial position. 
+   We're going to keep all this state in the observer, and the 
+   registration should query the observer to find the best registration. 
+
+   RSG
+   - Invokes itk::IterationEvent
+   - Current position is valid at StartEvent
+   - Initial transform is not evaluate
+   - Final transform is not optimal
+
+   Amoeba
+   - Invokes itk::FunctionValueIterationEvent
+   - Current position is not valid at StartEvent
+   - Initial transform is evaluate
+   - Final transform is optimal
+
+   LBFGS
+   - Current position is not valid at StartEvent
+*/
+class Optimization_observer : public itk::Command
 {
 public:
-    typedef Optimization_Observer Self;
+    typedef Optimization_observer Self;
     typedef itk::Command Superclass;
     typedef itk::SmartPointer < Self > Pointer;
     itkNewMacro(Self);
@@ -53,32 +74,36 @@ public:
 public:
     Stage_parms* m_stage;
     RegistrationType::Pointer m_registration;
-    double m_last_value;
+    double m_best_value;
+    double m_prev_value;
     int m_feval;
     Plm_timer* timer;
+    Xform m_best_xform;
 
 protected:
-    Optimization_Observer() {
+    Optimization_observer() {
         m_stage = 0;
         m_feval = 0;
-        m_last_value = -1.0;
+        m_best_value = DBL_MAX;
+        m_prev_value = -DBL_MAX;
         timer = new Plm_timer;
         timer->start ();
     };
-    ~Optimization_Observer() {
+    ~Optimization_observer() {
         delete timer;
     }
 
 public:
     void Set_Stage_parms (RegistrationType::Pointer registration,
-        Stage_parms* stage) {
+        Stage_parms* stage)
+    {
         m_registration = registration;
         m_stage = stage;
     }
 
-    void Execute (itk::Object * caller, const itk::EventObject & event) {
+    void Execute (itk::Object * caller, const itk::EventObject & event)
+    {
         Execute((const itk::Object *) caller, event);
-        timer->start ();
     }
 
     void
@@ -86,7 +111,7 @@ public:
     {
         if (typeid(event) == typeid(itk::StartEvent)) {
             m_feval = 0;
-            m_last_value = -1.0;
+            m_prev_value = -DBL_MAX;
             lprintf ("StartEvent: ");
             if (m_stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
                 std::stringstream ss;
@@ -112,11 +137,6 @@ public:
                 ->GetStopConditionDescription().c_str());
         }
         else if (typeid(event) 
-            == typeid(itk::FunctionEvaluationIterationEvent))
-        {
-            lprintf ("FunctionEvaluationIterationEvent\n");
-        }
-        else if (typeid(event) 
             == typeid(itk::FunctionAndGradientEvaluationIterationEvent))
         {
             int it = optimizer_get_current_iteration(m_registration, m_stage);
@@ -129,11 +149,16 @@ public:
             timer->start ();
             m_feval++;
         }
-        else if (typeid(event) == typeid(itk::IterationEvent)) {
+        else if (typeid(event) == typeid(itk::FunctionEvaluationIterationEvent))
+        {
+            lprintf ("itk::FunctionEvaluationIterationEvent\n");
+        }
+        else if (typeid(event) == typeid(itk::IterationEvent))
+        {
             int it = optimizer_get_current_iteration(m_registration, m_stage);
             double val = optimizer_get_value(m_registration, m_stage);
             double ss = optimizer_get_step_length(m_registration, m_stage);
-            
+
             lprintf (" VAL %9.3f SS %5.2f ", val, ss);
 
             if (m_stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
@@ -142,13 +167,16 @@ public:
                 lprintf (ss.str().c_str());
             }
 
-            if (m_last_value >= 0.0) {
-                double diff = fabs(m_last_value - val);
+            if (m_prev_value != -DBL_MAX) {
+                double diff = fabs(m_prev_value - val);
+                lprintf (" %10.2f", val - m_prev_value);
                 if (it >= m_stage->min_its && diff < m_stage->convergence_tol) {
-                    lprintf (" %10.2f (tol)", val - m_last_value);
+                    lprintf (" (tol)", val - m_prev_value);
+
+                    /* calling StopOptimization() doesn't always stop 
+                       optimization */
                     /* calling optimizer_set_max_iterations () doesn't 
                        seem to always stop rsg. */
-
                     if (m_stage->optim_type == OPTIMIZATION_RSG) {
                         typedef itk::RegularStepGradientDescentOptimizer 
                             * OptimizerPointer;
@@ -159,11 +187,15 @@ public:
                         optimizer_set_max_iterations (m_registration, 
                             m_stage, 1);
                     }
-                } else {
-                    lprintf (" %10.2f", val - m_last_value);
                 }
             }
-            m_last_value = val;
+            m_prev_value = val;
+
+            if (val < m_best_value) {
+                m_best_value = val;
+                lprintf (" *");
+            }
+
             lprintf ("\n");
         }
         else if (typeid(event) == typeid(itk::ProgressEvent)) {
@@ -557,7 +589,7 @@ void
 set_observer (RegistrationType::Pointer registration,
               Stage_parms* stage)
 {
-    typedef Optimization_Observer OOType;
+    typedef Optimization_observer OOType;
     OOType::Pointer observer = OOType::New();
     observer->Set_Stage_parms (registration, stage);
     registration->GetOptimizer()->AddObserver(itk::StartEvent(), observer);
@@ -569,53 +601,54 @@ set_observer (RegistrationType::Pointer registration,
 }
 
 void
-set_xf_out (Xform *xf_out, 
-            RegistrationType::Pointer registration,
-            Stage_parms *stage)
+set_xf_out (
+    Xform *xf_out, 
+    RegistrationType::Pointer registration,
+    Stage_parms *stage)
 {
     switch (stage->xform_type) {
     case STAGE_TRANSFORM_TRANSLATION:
-        {
-            typedef TranslationTransformType * XfPtr;
-            XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
-            xf_out->set_trn (transform);
-        }
-        break;
+    {
+        typedef TranslationTransformType * XfPtr;
+        XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
+        xf_out->set_trn (transform);
+    }
+    break;
     case STAGE_TRANSFORM_VERSOR:
-        {
-            typedef VersorTransformType * XfPtr;
-            XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
-            xf_out->set_vrs (transform);
-        }
-        break;
+    {
+        typedef VersorTransformType * XfPtr;
+        XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
+        xf_out->set_vrs (transform);
+    }
+    break;
     case STAGE_TRANSFORM_QUATERNION:
-        {
-            typedef QuaternionTransformType * XfPtr;
-            XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
-            xf_out->set_quat (transform);
-        }
-        break;
+    {
+        typedef QuaternionTransformType * XfPtr;
+        XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
+        xf_out->set_quat (transform);
+    }
+    break;
     case STAGE_TRANSFORM_AFFINE:
-        {
-            typedef AffineTransformType * XfPtr;
-            XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
-            xf_out->set_aff (transform);
-        }
-        break;
+    {
+        typedef AffineTransformType * XfPtr;
+        XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
+        xf_out->set_aff (transform);
+    }
+    break;
     case STAGE_TRANSFORM_BSPLINE:
-        {
-            typedef BsplineTransformType * XfPtr;
-            XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
-            xf_out->set_itk_bsp (transform);
-        }
-        break;
-        case STAGE_TRANSFORM_ALIGN_CENTER:
-        {
-            typedef VersorTransformType * XfPtr;
-            XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
-            xf_out->set_vrs(transform);
-        }
-        break;
+    {
+        typedef BsplineTransformType * XfPtr;
+        XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
+        xf_out->set_itk_bsp (transform);
+    }
+    break;
+    case STAGE_TRANSFORM_ALIGN_CENTER:
+    {
+        typedef VersorTransformType * XfPtr;
+        XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
+        xf_out->set_vrs(transform);
+    }
+    break;
     }
 }
 

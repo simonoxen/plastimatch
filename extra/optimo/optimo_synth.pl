@@ -1,3 +1,8 @@
+#########################################################################
+#  Optimo synth
+#  - Generate synthetic vector fields
+#  - Run registration
+#########################################################################
 #!/usr/bin/perl
 use File::Copy;
 use File::Find;

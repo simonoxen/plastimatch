@@ -1,3 +1,7 @@
+#########################################################################
+#  Optimo
+#  - Run registration for each pair of images in a directory
+#########################################################################
 #!/usr/bin/perl
 use File::Copy;
 use File::Find;
