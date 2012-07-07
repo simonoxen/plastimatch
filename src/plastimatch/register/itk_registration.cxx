@@ -8,7 +8,6 @@
 #include <string.h>
 #include "itkCenteredTransformInitializer.h"
 #include "itkImageMaskSpatialObject.h"
-#include "itkImageRegistrationMethod.h"
 #include "itkLinearInterpolateImageFunction.h"
 #include "itkMutualInformationImageToImageMetric.h"
 #include "itkRegularStepGradientDescentOptimizer.h"
@@ -22,13 +21,15 @@
 #endif
 
 #include "compiler_warnings.h"
+#include "itk_demons.h"
+#include "itk_image_type.h"
+#include "itk_optim.h"
+#include "itk_registration.h"
+#include "itk_registration_private.h"
 #include "plmbase.h"
 #include "plmregister.h"
 #include "plmsys.h"
 #include "plmutil.h"
-
-#include "itk_demons.h"
-#include "itk_optim.h"
 
 typedef itk::MeanSquaresImageToImageMetric <
     FloatImageType, FloatImageType > MSEMetricType;
@@ -42,180 +43,10 @@ typedef itk::ImageMaskSpatialObject< 3 > Mask_SOType;
 typedef itk::LinearInterpolateImageFunction <
     FloatImageType, double >InterpolatorType;
 
-
-/* Lots of ITK algorithms don't behave well.  They don't keep track of 
-   the best result, and/or they don't evaluate the initial position. 
-   We're going to keep all this state in the observer, and the 
-   registration should query the observer to find the best registration. 
-
-   RSG
-   - Invokes itk::IterationEvent
-   - Current position is valid at StartEvent
-   - Initial transform is not evaluate
-   - Final transform is not optimal
-
-   Amoeba
-   - Invokes itk::FunctionValueIterationEvent
-   - Current position is not valid at StartEvent
-   - Initial transform is evaluate
-   - Final transform is optimal
-
-   LBFGS
-   - Current position is not valid at StartEvent
-*/
-class Optimization_observer : public itk::Command
-{
-public:
-    typedef Optimization_observer Self;
-    typedef itk::Command Superclass;
-    typedef itk::SmartPointer < Self > Pointer;
-    itkNewMacro(Self);
-
-public:
-    Stage_parms* m_stage;
-    RegistrationType::Pointer m_registration;
-    double m_best_value;
-    double m_prev_value;
-    int m_feval;
-    Plm_timer* timer;
-    Xform m_best_xform;
-
-protected:
-    Optimization_observer() {
-        m_stage = 0;
-        m_feval = 0;
-        m_best_value = DBL_MAX;
-        m_prev_value = -DBL_MAX;
-        timer = new Plm_timer;
-        timer->start ();
-    };
-    ~Optimization_observer() {
-        delete timer;
-    }
-
-public:
-    void Set_Stage_parms (RegistrationType::Pointer registration,
-        Stage_parms* stage)
-    {
-        m_registration = registration;
-        m_stage = stage;
-    }
-
-    void Execute (itk::Object * caller, const itk::EventObject & event)
-    {
-        Execute((const itk::Object *) caller, event);
-    }
-
-    void
-    Execute (const itk::Object * object, const itk::EventObject & event)
-    {
-        if (typeid(event) == typeid(itk::StartEvent)) {
-            m_feval = 0;
-            m_prev_value = -DBL_MAX;
-            lprintf ("StartEvent: ");
-            if (m_stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
-                std::stringstream ss;
-                ss << optimizer_get_current_position (m_registration, m_stage);
-                lprintf (ss.str().c_str());
-            }
-            lprintf ("\n");
-            timer->start ();
-        }
-        else if (typeid(event) == typeid(itk::InitializeEvent)) {
-            lprintf ("InitializeEvent: \n");
-            timer->start ();
-        }
-        else if (typeid(event) == typeid(itk::EndEvent)) {
-            lprintf ("EndEvent: ");
-            if (m_stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
-                std::stringstream ss;
-                ss << optimizer_get_current_position (m_registration, m_stage);
-                lprintf (ss.str().c_str());
-            }
-            lprintf ("\n");
-            lprintf ("%s\n", m_registration->GetOptimizer()
-                ->GetStopConditionDescription().c_str());
-        }
-        else if (typeid(event) 
-            == typeid(itk::FunctionAndGradientEvaluationIterationEvent))
-        {
-            int it = optimizer_get_current_iteration(m_registration, m_stage);
-            double val = optimizer_get_value(m_registration, m_stage);
-            double duration = timer->report ();
-
-            lprintf ("%s [%2d,%3d] %9.3f [%6.3f secs]\n", 
-                (m_stage->metric_type == METRIC_MSE) ? "MSE" : "MI",
-                it, m_feval, val, duration);
-            timer->start ();
-            m_feval++;
-        }
-        else if (typeid(event) == typeid(itk::FunctionEvaluationIterationEvent))
-        {
-            lprintf ("itk::FunctionEvaluationIterationEvent\n");
-        }
-        else if (typeid(event) == typeid(itk::IterationEvent))
-        {
-            int it = optimizer_get_current_iteration(m_registration, m_stage);
-            double val = optimizer_get_value(m_registration, m_stage);
-            double ss = optimizer_get_step_length(m_registration, m_stage);
-
-            lprintf (" VAL %9.3f SS %5.2f ", val, ss);
-
-            if (m_stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
-                std::stringstream ss;
-                ss << optimizer_get_current_position (m_registration, m_stage);
-                lprintf (ss.str().c_str());
-            }
-
-            if (m_prev_value != -DBL_MAX) {
-                double diff = fabs(m_prev_value - val);
-                lprintf (" %10.2f", val - m_prev_value);
-                if (it >= m_stage->min_its && diff < m_stage->convergence_tol) {
-                    lprintf (" (tol)", val - m_prev_value);
-
-                    /* calling StopOptimization() doesn't always stop 
-                       optimization */
-                    /* calling optimizer_set_max_iterations () doesn't 
-                       seem to always stop rsg. */
-                    if (m_stage->optim_type == OPTIMIZATION_RSG) {
-                        typedef itk::RegularStepGradientDescentOptimizer 
-                            * OptimizerPointer;
-                        OptimizerPointer optimizer = dynamic_cast< 
-                            OptimizerPointer >(m_registration->GetOptimizer());
-                        optimizer->StopOptimization();
-                    } else {
-                        optimizer_set_max_iterations (m_registration, 
-                            m_stage, 1);
-                    }
-                }
-            }
-            m_prev_value = val;
-
-            if (val < m_best_value) {
-                m_best_value = val;
-                lprintf (" *");
-            }
-
-            lprintf ("\n");
-        }
-        else if (typeid(event) == typeid(itk::ProgressEvent)) {
-            lprintf ("ProgressEvent: ");
-            if (m_stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
-                std::stringstream ss;
-                ss << optimizer_get_current_position (m_registration, m_stage);
-                lprintf (ss.str().c_str());
-            }
-            lprintf ("\n");
-        }
-        else {
-            lprintf ("Unknown event type: %s\n", event.GetEventName());
-        }
-    }
-};
+void do_itk_center_stage (Registration_data* regd, Xform *xf_out, Xform *xf_in, Stage_parms* stage);
 
 void
-set_metric (RegistrationType::Pointer registration,
-            Stage_parms* stage)
+Itk_registration_private::set_metric ()
 {
     switch (stage->metric_type) {
     case METRIC_MSE:
@@ -271,9 +102,7 @@ set_metric (RegistrationType::Pointer registration,
 }
 
 void
-set_mask_images (RegistrationType::Pointer registration,
-                 Registration_data* regd,
-                 Stage_parms* stage)
+Itk_registration_private::set_mask_images ()
 {
     if (regd->fixed_mask) {
         Mask_SOType::Pointer mask_so = Mask_SOType::New();
@@ -334,9 +163,7 @@ set_fixed_image_region_new_unfinished (
 }
 
 void
-set_fixed_image_region (RegistrationType::Pointer registration,
-                        Registration_data* regd,
-                        Stage_parms* stage)
+Itk_registration_private::set_fixed_image_region ()
 {
     int use_magic_value = 0;
     if (regd->fixed_mask) {
@@ -474,10 +301,12 @@ show_image_stats (T image)
 }
 
 void
-show_stats (RegistrationType::Pointer registration)
+Itk_registration_private::show_stats ()
 {
-    show_image_stats(static_cast < FloatImageType::ConstPointer > (registration->GetFixedImage()));
-    show_image_stats(static_cast < FloatImageType::ConstPointer > (registration->GetMovingImage()));
+    show_image_stats(static_cast < FloatImageType::ConstPointer > (
+            registration->GetFixedImage()));
+    show_image_stats(static_cast < FloatImageType::ConstPointer > (
+            registration->GetMovingImage()));
 }
 
 void
@@ -546,12 +375,7 @@ set_transform_bspline (
 }
 
 void
-set_transform (
-    RegistrationType::Pointer registration,
-    Xform *xf_out,
-    Xform *xf_in,
-    Stage_parms* stage
-)
+Itk_registration_private::set_transform ()
 {
     xf_out->clear();
     switch (stage->xform_type) {
@@ -586,25 +410,7 @@ set_transform (
 }
 
 void
-set_observer (RegistrationType::Pointer registration,
-              Stage_parms* stage)
-{
-    typedef Optimization_observer OOType;
-    OOType::Pointer observer = OOType::New();
-    observer->Set_Stage_parms (registration, stage);
-    registration->GetOptimizer()->AddObserver(itk::StartEvent(), observer);
-    registration->GetOptimizer()->AddObserver(itk::InitializeEvent(), observer);
-    registration->GetOptimizer()->AddObserver(itk::IterationEvent(), observer);
-    registration->GetOptimizer()->AddObserver(itk::FunctionEvaluationIterationEvent(), observer);
-    registration->GetOptimizer()->AddObserver(itk::ProgressEvent(), observer);
-    registration->GetOptimizer()->AddObserver(itk::EndEvent(), observer);
-}
-
-void
-set_xf_out (
-    Xform *xf_out, 
-    RegistrationType::Pointer registration,
-    Stage_parms *stage)
+Itk_registration_private::set_xf_out ()
 {
     switch (stage->xform_type) {
     case STAGE_TRANSFORM_TRANSLATION:
@@ -653,14 +459,20 @@ set_xf_out (
 }
 
 void
-do_itk_registration_stage (
+itk_registration_stage (
     Registration_data* regd, 
     Xform *xf_out, 
     Xform *xf_in, 
     Stage_parms* stage
 )
 {
-    RegistrationType::Pointer registration = RegistrationType::New();
+    /* center_align is handled separately */
+    if (stage->xform_type == STAGE_TRANSFORM_ALIGN_CENTER) {
+        return do_itk_center_stage (regd, xf_out, xf_in, stage);
+    }
+
+    Itk_registration_private irp (regd, xf_out, xf_in, stage);
+    irp.registration = RegistrationType::New();
 
     /* Subsample fixed & moving images */
     FloatImageType::Pointer fixed_ss = subsample_image (
@@ -676,24 +488,24 @@ do_itk_registration_stage (
         stage->moving_subsample_rate[2], 
         stage->default_value);
 
-    registration->SetFixedImage (fixed_ss);
-    registration->SetMovingImage (moving_ss);
+    irp.registration->SetFixedImage (fixed_ss);
+    irp.registration->SetMovingImage (moving_ss);
 
-    set_metric (registration, stage);                    // must be after setting images
-    set_mask_images (registration, regd, stage);         // must be after set_metric
-    set_fixed_image_region (registration, regd, stage);  // must be after set_mask_images
-    show_stats (registration);
-    set_transform (registration, xf_out, xf_in, stage);  // must be after set_fixed_image_region
-    set_optimization (registration, stage);
+    irp.set_metric ();              // must be after setting images
+    irp.set_mask_images ();         // must be after set_metric
+    irp.set_fixed_image_region ();  // must be after set_mask_images
+    irp.show_stats ();
+    irp.set_transform ();           // must be after set_fixed_image_region
+    irp.set_optimization ();
 
     InterpolatorType::Pointer interpolator = InterpolatorType::New();
-    registration->SetInterpolator (interpolator);
-    set_observer (registration, stage);
+    irp.registration->SetInterpolator (interpolator);
+    irp.set_observer ();
 
     try {
         if (stage->optim_type != OPTIMIZATION_NO_REGISTRATION) {
             lprintf ("Starting ITK registration\n");
-            registration->Update ();
+            irp.registration->Update ();
             lprintf ("ITK registration complete\n");
         }
     }
@@ -705,7 +517,7 @@ do_itk_registration_stage (
         exit (-1);
     }
 
-    set_xf_out (xf_out, registration, stage);
+    irp.set_xf_out ();
 }
 
 void
@@ -732,5 +544,10 @@ do_itk_center_stage (
     lprintf ("Centering images\n");
     initializer->InitializeTransform();
     registration->SetTransform(trn);
-    set_xf_out (xf_out, registration, stage);
+
+    typedef VersorTransformType * XfPtr;
+    XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
+    xf_out->set_vrs(transform);
+
+    std::cout << "CENTER XFOUT = " << transform << std::endl;
 }

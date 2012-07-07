@@ -39,6 +39,7 @@ set (PLMREGISTER_LIBRARY_SRC
   itk_demons.cxx
   itk_optim.cxx
   itk_registration.cxx
+  itk_registration_observer.cxx
   itk_tps.cxx
   landmark_warp.cxx 
   plm_parms.cxx

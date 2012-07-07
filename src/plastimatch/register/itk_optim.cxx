@@ -22,6 +22,7 @@
 #include "plmsys.h"
 
 #include "itk_registration.h"
+#include "itk_registration_private.h"
 
 /* Types of optimizers */
 typedef itk::AmoebaOptimizer AmoebaOptimizerType;
@@ -470,9 +471,7 @@ set_optimization_scales_affine (RegistrationType::Pointer registration,
 }
 
 void
-set_optimization (
-    RegistrationType::Pointer registration,
-    Stage_parms* stage)
+Itk_registration_private::set_optimization ()
 {
     if (stage->xform_type == STAGE_TRANSFORM_QUATERNION)
     {

@@ -1763,3 +1763,46 @@ Xform::get_grid_spacing (float grid_spacing[3])
         break;
     }
 }
+
+void
+Xform::print ()
+{
+    switch (this->m_type) {
+    case XFORM_NONE:
+        lprintf ("XFORM_NONE\n");
+        break;
+    case XFORM_ITK_TRANSLATION:
+        lprintf ("XFORM_ITK_TRANSLATION\n");
+        std::cout << this->get_trn ();
+        break;
+    case XFORM_ITK_VERSOR:
+        lprintf ("XFORM_ITK_VERSOR\n");
+        std::cout << this->get_vrs ();
+        break;
+    case XFORM_ITK_QUATERNION:
+        lprintf ("XFORM_ITK_QUATERNION\n");
+        break;
+    case XFORM_ITK_AFFINE:
+        lprintf ("XFORM_ITK_AFFINE\n");
+        break;
+    case XFORM_ITK_BSPLINE:
+        lprintf ("XFORM_ITK_BSPLINE\n");
+        break;
+    case XFORM_ITK_TPS:
+        lprintf ("XFORM_ITK_TPS\n");
+        break;
+    case XFORM_ITK_VECTOR_FIELD:
+        lprintf ("XFORM_ITK_VECTOR_FIELD\n");
+        break;
+    case XFORM_GPUIT_BSPLINE:
+        lprintf ("XFORM_GPUIT_BSPLINE\n");
+        break;
+    case XFORM_GPUIT_VECTOR_FIELD:
+        lprintf ("XFORM_GPUIT_VECTOR_FIELD\n");
+        break;
+    default:
+        print_and_exit ("Sorry, couldn't print xform (type = %d)\n",
+            this->m_type);
+        break;
+    }
+}

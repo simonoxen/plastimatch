@@ -299,17 +299,17 @@ do_registration_stage (
     }
     else if (stage->xform_type == STAGE_TRANSFORM_BSPLINE) {
         if (stage->impl_type == IMPLEMENTATION_ITK) {
-            do_itk_registration_stage (regd, xf_out, xf_in, stage);
+            itk_registration_stage (regd, xf_out, xf_in, stage);
         } else {
             do_gpuit_bspline_stage (regp, regd, xf_out, xf_in, stage);
         }
     }
     else if (stage->xform_type == STAGE_TRANSFORM_ALIGN_CENTER) {
-        do_itk_center_stage (regd, xf_out, xf_in, stage);
+        itk_registration_stage (regd, xf_out, xf_in, stage);
         lprintf ("Centering done\n");
     }
     else {
-        do_itk_registration_stage (regd, xf_out, xf_in, stage);
+        itk_registration_stage (regd, xf_out, xf_in, stage);
     }
 
     logfile_printf ("[2] xf_out->m_type = %d, xf_in->m_type = %d\n", 

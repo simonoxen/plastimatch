@@ -103,6 +103,8 @@ public:
     void get_volume_header (Volume_header *vh);
     void get_grid_spacing (float grid_spacing[3]);
 
+    void print ();
+
 public:
     Xform& operator= (Xform& xf) {
         m_type = xf.m_type;
