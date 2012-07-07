@@ -2686,8 +2686,8 @@ plm_add_test (
 plmtest_check_interval ("plm-reg-dv-itk-translation-check"
   "${PLM_BUILD_TESTING_DIR}/plm-reg-dv-itk-translation-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "-385.6"
-  "-385.0"
+  "-467.1"
+  "-366.9"
   )
 set_property (TEST plm-reg-dv-itk-translation APPEND PROPERTY DEPENDS gauss-1)
 set_property (TEST plm-reg-dv-itk-translation APPEND PROPERTY DEPENDS gauss-2)
@@ -2743,8 +2743,8 @@ plm_add_test (
 plmtest_check_interval ("plm-compose-a-check"
   "${PLM_BUILD_TESTING_DIR}/plm-compose-a-stats.stdout.txt"
   "Mean: *([-0-9.]*)"
-  "13.1"
-  "13.3"
+  "13.75"
+  "13.85"
   )
 set_tests_properties (plm-compose-a PROPERTIES 
   DEPENDS "plm-reg-itk-translation;plm-reg-compose")
@@ -2774,8 +2774,8 @@ plm_add_test (
 plmtest_check_interval ("plm-compose-b-check"
   "${PLM_BUILD_TESTING_DIR}/plm-compose-b-stats.stdout.txt"
   "Mean: *([-0-9.]*)"
-  "13.1"
-  "13.3"
+  "13.75"
+  "13.85"
   )
 set_tests_properties (plm-compose-b PROPERTIES 
   DEPENDS "plm-reg-itk-translation;plm-reg-compose")
