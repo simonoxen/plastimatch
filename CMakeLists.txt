@@ -106,18 +106,20 @@ include (cmake/CheckCharSign)
 ##-----------------------------------------------------------------------------
 option (PLM_CONFIG_DISABLE_CUDA "Set to ON to build without CUDA" OFF)
 option (PLM_CONFIG_DISABLE_DCMTK "Set to ON to build without DCMTK" OFF)
+option (PLM_CONFIG_DISABLE_FATM "Set to ON to build without FATM" OFF)
 option (PLM_CONFIG_DISABLE_MONDOSHOT "Disable building mondoshot" ON)
 option (PLM_CONFIG_DISABLE_OPENCL "Set to ON to build without OpenCL" OFF)
 option (PLM_CONFIG_DISABLE_PLASTIMATCH "Disable building plastimatch" OFF)
 option (PLM_CONFIG_DISABLE_REG23 "Disable building REG-2-3" OFF)
+option (PLM_CONFIG_DISABLE_SLICER 
+  "Set to ON to build without Slicer extensions" OFF)
 option (PLM_CONFIG_DISABLE_SSE2 "Set to ON to build without SSE" OFF)
 option (PLM_CONFIG_ENABLE_MATLAB "Set to ON to build Matlab plugins" OFF)
 set (PLM_CONFIG_VERSION_STRING "" CACHE STRING "Version string")
+option (PLM_CONFIG_LIBRARY_BUILD "Set to ON to build only libraries" OFF)
 
 # Optional components
 option (PLM_BUILD_ISE "Build ISE fluoro program" OFF)
-#option (PLM_BUILD_RTK "Build RTK" OFF)
-#option (PLM_BUILD_SLICER_LOADABLE "Build slicer loadable module" OFF)
 
 # Compile and link options
 option (PLM_SUPERBUILD
@@ -804,18 +806,23 @@ add_subdirectory (src)
 ##  Set up configuration for external projects using plastimatch API
 ##-----------------------------------------------------------------------------
 # Add targets to build tree export set
-set (EXPORT_TARGET_LIST
-  bstrlib specfun lbfgs nocedal plmsys plmbase plmutil plmdose plmregister)
+if (PLM_CONFIG_LIBRARY_BUILD)
+  set (EXPORT_TARGET_LIST
+    bstrlib plmsys plmbase plmutil)
+else ()
+  set (EXPORT_TARGET_LIST
+    bstrlib specfun lbfgs nocedal plmsys plmbase plmutil plmdose plmregister)
+endif ()
 if (PLM_USE_INCLUDED_F2C)
   set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} f2c1)
 endif ()
-if (CUDA_FOUND)
+if (NOT PLM_CONFIG_LIBRARY_BUILD AND CUDA_FOUND)
   set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} plmcuda)
 endif ()
-if (OPENCL_FOUND)
+if (NOT PLM_CONFIG_LIBRARY_BUILD AND OPENCL_FOUND)
   set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} plmopencl)
 endif ()
-if (CUDA_FOUND AND PLM_USE_GPU_PLUGINS)
+if (NOT PLM_CONFIG_LIBRARY_BUILD AND CUDA_FOUND AND PLM_USE_GPU_PLUGINS)
   set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} 
     plmregistercuda plmreconstructcuda)
 endif ()

@@ -84,24 +84,50 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Add subdirectories
 ##-----------------------------------------------------------------------------
+if (PLM_CONFIG_LIBRARY_BUILD)
+  set (PLM_BUILD_ISE OFF)
+  set (PLM_CONFIG_DISABLE_FATM ON)
+  set (PLM_CONFIG_DISABLE_MONDOSHOT ON)
+  set (PLM_CONFIG_DISABLE_REG23 ON)
+  set (PLM_CONFIG_DISABLE_SLICER ON)
+endif ()
+
+if (BUILD_DEBIAN)
+  set (PLM_BUILD_ISE OFF)
+  set (PLM_CONFIG_DISABLE_FATM ON)
+  set (PLM_CONFIG_DISABLE_MONDOSHOT ON)
+  set (PLM_CONFIG_DISABLE_REG23 ON)
+  set (PLM_CONFIG_DISABLE_SLICER ON)
+endif ()
+
+if (BUILD_AGAINST_SLICER3)
+  set (PLM_BUILD_ISE OFF)
+  set (PLM_CONFIG_DISABLE_FATM ON)
+  set (PLM_CONFIG_DISABLE_MONDOSHOT ON)
+  set (PLM_CONFIG_DISABLE_REG23 ON)
+endif ()
+
+
 if (PLM_BUILD_ISE)
   add_subdirectory (ise)
 endif ()
 
+if (NOT PLM_CONFIG_DISABLE_FATM)
+  add_subdirectory (fatm)
+endif ()
+
+# mondoshot requires plastimatch, WIN32, wx, dcmtk, sqlite3
+if (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND
+    AND NOT PLM_CONFIG_DISABLE_MONDOSHOT)
+  add_subdirectory (mondoshot)
+endif ()
+
 if (NOT PLM_CONFIG_DISABLE_PLASTIMATCH)
   add_subdirectory (plastimatch)
-  if (NOT BUILD_DEBIAN)
-    add_subdirectory (slicer)
-    if (NOT BUILD_AGAINST_SLICER3)
-      add_subdirectory (fatm)
-    endif ()
-  endif ()
+endif ()
 
-  # mondoshot requires plastimatch, WIN32, wx, dcmtk, sqlite3
-  if (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND
-      AND NOT PLM_CONFIG_DISABLE_MONDOSHOT)
-    add_subdirectory (mondoshot)
-  endif ()
+if (NOT PLM_CONFIG_DISABLE_SLICER)
+  add_subdirectory (slicer)
 endif ()
 
 set (PLM_BUILD_ORAIFUTILS 1)

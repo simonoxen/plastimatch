@@ -202,6 +202,7 @@ endif ()
 ##  PLASTIMATCH MODULES
 ##-----------------------------------------------------------------------------
 add_subdirectory(base)
+if (NOT PLM_CONFIG_LIBRARY_BUILD)
 add_subdirectory(cli)
 if (CUDA_FOUND)
   add_subdirectory(cuda)
@@ -216,8 +217,11 @@ add_subdirectory(register)
 add_subdirectory(segment)
 add_subdirectory(standalone)
 add_subdirectory(script)
+endif ()
 add_subdirectory(sys)
+if (NOT PLM_CONFIG_LIBRARY_BUILD)
 add_subdirectory(test)
+endif ()
 add_subdirectory(util)
 
 ##-----------------------------------------------------------------------------
