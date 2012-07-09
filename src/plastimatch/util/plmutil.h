@@ -15,6 +15,9 @@
 #include "bspline_correspond.h"
 #include "bspline_warp.h"
 #include "cxt_extract.h"
+#if (!PLM_CUDA_COMPILE)
+#include "dice_statistics.h"
+#endif
 #include "diff.h"
 #if (!PLM_CUDA_COMPILE)
 #include "dvh.h"

@@ -21,5 +21,6 @@ PLMSYS_API const std::string trim (
     const std::string& whitespace = " \t\r\n"
 );
 PLMSYS_API std::string slurp_file (const char* fn);
+PLMSYS_API std::string string_format (const std::string &fmt, ...);
 
 #endif

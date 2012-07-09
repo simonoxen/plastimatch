@@ -5,10 +5,11 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <ctype.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <ctype.h>
 
 #include "plmsys.h"
 
@@ -132,7 +133,6 @@ parse_float3_string (const char* s)
     return float_list;
 }
 
-
 /* String trimming by GMan.
    http://stackoverflow.com/questions/1798112/removing-leading-and-trailing-spaces-from-a-string/1798170#1798170
    Distributed under Attribution-ShareAlike 3.0 Unported license (CC BY-SA 3.0) 
@@ -165,4 +165,29 @@ slurp_file (const char* fn)
     std::stringstream buffer;
     buffer << t.rdbuf();
     return buffer.str();
+}
+
+/* std::string formatting by Erik Aronesty
+   http://stackoverflow.com/questions/2342162/stdstring-formating-like-sprintf
+   Distributed under Attribution-ShareAlike 3.0 Unported license (CC BY-SA 3.0) 
+   http://creativecommons.org/licenses/by-sa/3.0/
+*/
+std::string 
+string_format (const std::string &fmt, ...)
+{
+    int size=100;
+    std::string str;
+    va_list ap;
+    while (1) {
+        str.resize(size);
+        va_start(ap, fmt);
+        int n = vsnprintf((char *)str.c_str(), size, fmt.c_str(), ap);
+        va_end(ap);
+        if (n > -1 && n < size)
+            return str;
+        if (n > -1)
+            size=n+1;
+        else
+            size*=2;
+    }
 }
