@@ -102,24 +102,36 @@ void Iqt_video_widget::mouseMoveEvent(QMouseEvent* event)
 
 void Iqt_video_widget::mouseReleaseEvent(QMouseEvent* event)
 {
-    this->trace.setRect((origin.x()-3), (origin.y()-5), 6, 10);
+    QPointF originf = mapToScene(origin);
     if (event->button()==1) {
 	qDebug("Top: %d\nRight: %d\nWidth: %d\nHeight: %d", origin.x(), origin.y(), rubberband->width(), rubberband->height()); 
-	QPointF originf = mapToScene(origin);
 	QPoint dest = origin + QPoint (rubberband->width(), rubberband->height());
 	QPointF destf = mapToScene(dest);
 	this->fitInView(originf.x(), originf.y(), destf.x() - originf.x(),
-			destf.y() - originf.y(), Qt::KeepAspectRatio);
+            destf.y() - originf.y(), Qt::KeepAspectRatio);
 	rubberband->hide();
     }
-    if (!hasRect && event->button()==2) {
-	/*draw a rectangle*/
-	this->tracker
-	    = scene->addRect (trace);
-	tracker->setPen(QColor(255,0,0));
-       	this->hasRect = true;
-    } else if (hasRect) {
-	tracker->setRect(trace);
+    if (event->button()==2) {
+        qDebug() << "originf = " << originf;
+        qDebug() << "boundingRect = " << pmi->boundingRect();
+        QRectF br = pmi->boundingRect();
+
+        QPointF pix (
+            (1 - (br.width() - originf.x()) / br.width()) * 512 + 0.5,
+            (1 - (br.height() - originf.y()) / br.height()) * 512 + 0.5);
+
+        qDebug() << "pix = " << pix;
+            
+        this->trace.setRect((originf.x()-3), (originf.y()-5), 6, 10);
+        if (!hasRect) {
+            /*draw a rectangle*/
+            this->tracker
+                = scene->addRect (trace);
+            tracker->setPen(QColor(255,0,0));
+            this->hasRect = true;
+        } else {
+            tracker->setRect(trace);
+        }
     }
 }
 
@@ -149,7 +161,6 @@ void Iqt_video_widget::wheelEvent(QWheelEvent* event)
     QPointF offset = pointBeforeScale - pointAfterScale;
     QPointF newCenter = screenCenter + offset;
     SetCenter (newCenter);
-
 }
 
 void Iqt_video_widget::flick(void)
