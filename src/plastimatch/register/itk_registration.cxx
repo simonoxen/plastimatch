@@ -128,9 +128,13 @@ Itk_registration_private::set_best_xform ()
             registration->GetTransform()->GetParameters());
         break;
     case STAGE_TRANSFORM_BSPLINE: {
+        /* GCS FIX: The B-spline method still gives the last xform, 
+           not the best xform  */
+#if defined (commentout)
         typedef BsplineTransformType * XfPtr;
         XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
         xf_best->set_itk_bsp (transform);
+#endif
     }
     break;
     default:
@@ -506,61 +510,13 @@ Itk_registration_private::set_transform ()
 void
 Itk_registration_private::set_xf_out ()
 {
-    printf ("Best xf:\n");
-    xf_best->print();
-    *xf_out = *xf_best;
-
-#if defined (commentout)
-    switch (stage->xform_type) {
-    case STAGE_TRANSFORM_TRANSLATION:
-    {
-#if defined (commentout)
-        typedef TranslationTransformType * XfPtr;
-        XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
-        xf_out->set_trn (transform);
-#endif
-        printf ("Setting xf_out ....\n");
-        xf_best->print();
-        *xf_out = *xf_best;
-    }
-    break;
-    case STAGE_TRANSFORM_VERSOR:
-    {
-        typedef VersorTransformType * XfPtr;
-        XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
-        xf_out->set_vrs (transform);
-    }
-    break;
-    case STAGE_TRANSFORM_QUATERNION:
-    {
-        typedef QuaternionTransformType * XfPtr;
-        XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
-        xf_out->set_quat (transform);
-    }
-    break;
-    case STAGE_TRANSFORM_AFFINE:
-    {
-        typedef AffineTransformType * XfPtr;
-        XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
-        xf_out->set_aff (transform);
-    }
-    break;
-    case STAGE_TRANSFORM_BSPLINE:
-    {
+    if (stage->xform_type == STAGE_TRANSFORM_BSPLINE) {
         typedef BsplineTransformType * XfPtr;
         XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
         xf_out->set_itk_bsp (transform);
+    } else {
+        *xf_out = *xf_best;
     }
-    break;
-    case STAGE_TRANSFORM_ALIGN_CENTER:
-    {
-        typedef VersorTransformType * XfPtr;
-        XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
-        xf_out->set_vrs(transform);
-    }
-    break;
-    }
-#endif
 }
 
 void

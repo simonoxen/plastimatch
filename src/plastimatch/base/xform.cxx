@@ -964,12 +964,7 @@ xform_gpuit_bsp_to_itk_bsp (
     const ImageRegionType* roi, /* Not yet used */
     float* grid_spac)
 {
-    typedef BsplineTransformType::ImageType ParametersImageType;
-    typedef itk::ImageRegionIterator<ParametersImageType> Iterator;
     Xform xf_tmp;
-    OriginType img_origin_old;
-    SpacingType img_spacing_old;
-    ImageRegionType img_region_old;
 
     if (grid_spac) {
         /* Convert to itk data structure */
