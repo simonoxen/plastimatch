@@ -32,6 +32,7 @@ public slots:
     void flick (void);
     void stop (void);
     void play (bool playing);
+    void rescale (void);
 
 public:
     Iqt_video_widget (QWidget *parent = 0);
@@ -41,10 +42,12 @@ public:
     bool drawing;
     bool hasRect;
     QPoint origin;
+    QPointF pix;
+    QGraphicsTextItem *trackPoint;
     QRubberBand* rubberband;
     ~Iqt_video_widget ();
     void set_qimage (const QImage& qimage);
-
+    void updateTracking (void);
 
 protected:
     //void paintEvent (QPaintEvent *event);

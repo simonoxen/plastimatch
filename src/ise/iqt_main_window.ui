@@ -88,6 +88,33 @@
          </widget>
         </item>
         <item>
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="track_label">
+          <property name="text">
+           <string># Trackers</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="num_track">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>3</number>
+          </property>
+         </widget>
+        </item>
+        <item>
          <spacer name="verticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
@@ -738,7 +765,7 @@
   </connection>
   <connection>
    <sender>track_button</sender>
-   <signal>clicked()</signal>
+   <signal>clicked(bool)</signal>
    <receiver>iqtMainWindow</receiver>
    <slot>slot_set_tracking()</slot>
    <hints>

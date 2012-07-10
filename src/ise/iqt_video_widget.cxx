@@ -8,6 +8,7 @@
 #include <QGraphicsPixmapItem>
 #include <QGraphicsRectItem>
 #include <QGraphicsScene>
+#include <QGraphicsTextItem>
 #include <QMouseEvent>
 #include <QPen>
 #include <QPixmap>
@@ -28,22 +29,23 @@ Iqt_video_widget::Iqt_video_widget (QWidget *parent)
 {
     scene = new QGraphicsScene;
     this->setScene (scene);
-    pmi = new QGraphicsPixmapItem (
-        QPixmap("/home/willemro/src/plastimatch/src/ise/test1.png"));
+    pmi = new QGraphicsPixmapItem (QPixmap());
     scene->addItem(pmi);
     ping_pong = 0;
     qp1 = qp2 = 0;
-    
+    drawing = false;
     qp1 = new QPixmap;
 
-    ping_check = new QTimer (this);
+    tracker = new QGraphicsRectItem;
+    trackPoint = new QGraphicsTextItem;
 
+    ping_check = new QTimer (this);
     // connect (ping_check, SIGNAL(timeout()), this, SLOT(flick()));
     // ping_check->start(500);
     this->hasRect = false;
     SetCenter(QPointF(500.0, 500.0));
     //QGraphicsRectItem *rect_item 
-      //  = scene->addRect (QRectF (20, 20, 10, 10));
+    //  = scene->addRect (QRectF (20, 20, 10, 10));
     show();
 }
 
@@ -108,54 +110,66 @@ void Iqt_video_widget::mouseReleaseEvent(QMouseEvent* event)
 	QPoint dest = origin + QPoint (rubberband->width(), rubberband->height());
 	QPointF destf = mapToScene(dest);
 	this->fitInView(originf.x(), originf.y(), destf.x() - originf.x(),
-            destf.y() - originf.y(), Qt::KeepAspectRatio);
+			destf.y() - originf.y(), Qt::KeepAspectRatio);
 	rubberband->hide();
     }
     if (event->button()==2) {
+
         qDebug() << "originf = " << originf;
         qDebug() << "boundingRect = " << pmi->boundingRect();
         QRectF br = pmi->boundingRect();
 
-        QPointF pix (
-            (1 - (br.width() - originf.x()) / br.width()) * 512 + 0.5,
-            (1 - (br.height() - originf.y()) / br.height()) * 512 + 0.5);
+        this->pix = QPointF(
+		     (1 - (br.width() - originf.x()) / br.width()) * 512 + 0.5,
+		     (1 - (br.height() - originf.y()) / br.height()) * 512 + 0.5);
 
         qDebug() << "pix = " << pix;
-            
+	
         this->trace.setRect((originf.x()-3), (originf.y()-5), 6, 10);
-        if (!hasRect) {
-            /*draw a rectangle*/
-            this->tracker
-                = scene->addRect (trace);
-            tracker->setPen(QColor(255,0,0));
-            this->hasRect = true;
-        } else {
-            tracker->setRect(trace);
-        }
+	updateTracking();
+    }
+    if (event->button()==4) {
+	this->rescale();
     }
 }
 
-
+void Iqt_video_widget::rescale()
+{
+    QRectF va = mapToScene(rect()).boundingRect();
+    QRectF br = pmi->boundingRect();
+    double sf = (va.height())/(br.height());
+    fitInView(va, Qt::KeepAspectRatio);
+    scale(sf, sf);
+}
 
 void Iqt_video_widget::load(const QString& filename) {
     
     qp1 = new QPixmap (filename);
     QString filename_2 = QFileInfo (filename).path() + "/test2.png";
-    qp2 = new QPixmap (filename_2);//load new image
+    qp2 = new QPixmap (filename_2);
 
     this->filename = filename;
 }
 
 void Iqt_video_widget::wheelEvent(QWheelEvent* event)
 {
+    QRectF visibleArea = mapToScene(rect()).boundingRect();
     QPointF pointBeforeScale(mapToScene(event->pos()));
     QPointF screenCenter = GetCenter();
     double scaleFactor = 1.15;
     if (event->delta() > 0)
-    {
-        scale(scaleFactor, scaleFactor);
-    } else {
-        scale(1.0/scaleFactor, 1.0/scaleFactor);
+	{
+	    if (visibleArea.height() < 25) {
+		return;
+	    } else {
+		scale(scaleFactor, scaleFactor);
+	    }
+	} else {
+	if (visibleArea.height() > pmi->boundingRect().height()) {
+	    return;
+	} else {
+	    scale(1.0/scaleFactor, 1.0/scaleFactor);
+	}
     }
     QPointF pointAfterScale(mapToScene(event->pos()));
     QPointF offset = pointBeforeScale - pointAfterScale;
@@ -195,32 +209,52 @@ void Iqt_video_widget::play (bool playing)
     }
 }
 
-/*
-void Iqt_video_widget::paintEvent (QPaintEvent *paint)
+void
+Iqt_video_widget::updateTracking()
 {
-    QPainter tracker (this);
-    tracker.setPen(Qt::red);
-    tracker.drawRect((origin.x()-3), (origin.y()-5), 6, 10);
+    delete trackPoint;
+
+    if (!hasRect) {
+	this->hasRect = true;
+    } else {
+	delete tracker;
+	tracker = new QGraphicsRectItem;
+    }
+    this->tracker
+	= scene->addRect (trace);
+    tracker->setPen(QColor(255,0,0));
+
+    trackPoint = new QGraphicsTextItem;
+    trackPoint->setDefaultTextColor (Qt::red);
+    scene->addItem (trackPoint);
+
+    trackPoint->setPlainText (QString("Tracking Point:  %1 ,  %2")
+			      .arg((int)pix.x())
+			      .arg((int)pix.y()));
+    trackPoint->setPos (0,0); //looks like an owl
 }
-*/
+
 Iqt_video_widget::~Iqt_video_widget ()
 {
     delete qp1;
     delete qp2;
     delete pmi;
     delete ping_check;
+    delete trackPoint;
+    delete tracker;
 }
 
 void 
 Iqt_video_widget::set_qimage (const QImage& qimage)
 {
-    if(!qimage.isNull()){
-        delete pmi;                       //remove old pmi (IS necessary)
-        qDebug("Setting QImage");
+    if(qimage.isNull()) return;
 
-        pmi = new QGraphicsPixmapItem(QPixmap::fromImage (qimage.scaled(this->size(), Qt::KeepAspectRatio)));
-        scene->addItem(pmi);
-        scene->addText("Synthetic Fluoroscopy");
-        qDebug("Image set");
-    }
+    delete pmi;
+		
+    pmi = new QGraphicsPixmapItem(QPixmap::fromImage
+				  (qimage.scaled(this->size(),
+						 Qt::KeepAspectRatio)));
+    scene->addItem(pmi);
+    if (pix.isNull()) return;
+    updateTracking();
 }

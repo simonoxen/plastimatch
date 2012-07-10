@@ -9,6 +9,8 @@
 #include <QDir>
 #include <QByteArray>
 #include <QCoreApplication>
+#include <QSpinBox>
+#include <QLabel>
 //#include <vtkPolyDataMapper.h>
 //#include <vtkRenderer.h>
 //#include <vtkRenderWindow.h>
@@ -36,7 +38,8 @@ Iqt_main_window::Iqt_main_window ()
     setMax->setHidden(true);
     max_label->setHidden(true);
     max_val->setHidden(true);
-    
+    num_track->setHidden(true);
+    track_label->setHidden(true);
     /* Start the timer */
     //    m_qtimer = new QTimer (this);
     //    connect (m_qtimer, SIGNAL(timeout()), this, SLOT(slot_timer()));
@@ -44,11 +47,11 @@ Iqt_main_window::Iqt_main_window ()
     connect (this, SIGNAL(fluoro_ready(QString)), this, SLOT(show_fluoro(QString)));
     this->playing = false;
     this->synth = false;
-    framePos = new QSlider(Qt::Horizontal, this);
+    framePos = new QSlider (Qt::Horizontal, this);
     connect (framePos, SIGNAL(valueChanged(int)), this, SLOT(get_new_frame(int)));
     slider_layout->addWidget(framePos);
     /* Render a sphere ?? */
-//    this->render_sphere ();
+    //    this->render_sphere ();
 }
 
 #if defined (commentout)
@@ -61,7 +64,7 @@ Iqt_main_window::render_sphere ()
     sphereSource->Update();
     vtkSmartPointer<vtkPolyDataMapper> sphereMapper =
 	vtkSmartPointer<vtkPolyDataMapper>::New();
-    sphereMapper->SetInputConnection(sphereSource->GetOutputPort());
+     sphereMapper->SetInputConnection(sphereSource->GetOutputPort());
     vtkSmartPointer<vtkActor> sphereActor = 
 	vtkSmartPointer<vtkActor>::New();
     sphereActor->SetMapper(sphereMapper);
@@ -126,6 +129,7 @@ Iqt_main_window::slot_load ()
     //QCoreApplication::processEvents();
     QString path = QFileInfo(filename).path();
     show_fluoro(path);
+    vid_screen->rescale();
 }
 /*
 bool
