@@ -172,6 +172,15 @@ itk_image_header_compare (T image1, U image2)
     }
 }
 
+template<class T> 
+void 
+itk_volume_center (float center[3], const T image)
+{
+    Itk_volume_header ivh;
+    ivh.set_from_itk_image (image);
+    ivh.get_image_center (center);
+}
+
 /* Explicit instantiations */
 template PLMBASE_API void get_image_header (plm_long dim[3], float offset[3], float spacing[3], UCharImageType::Pointer image);
 template PLMBASE_API void get_image_header (plm_long dim[3], float offset[3], float spacing[3], ShortImageType::Pointer image);
@@ -190,3 +199,5 @@ template PLMBASE_API void itk_image_header_copy (UCharImageType::Pointer, FloatI
 template PLMBASE_API void itk_image_header_copy (UCharImage2DType::Pointer, UCharVecImage2DType::Pointer);
 template PLMBASE_API void itk_image_get_volume_header (Volume_header *, DeformationFieldType::Pointer);
 template PLMBASE_API bool itk_image_header_compare (UCharImageType::Pointer image1, UCharImageType::Pointer image2);
+template PLMBASE_API void itk_volume_center (float center[3], const FloatImageType::Pointer image);
+

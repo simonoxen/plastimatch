@@ -27,6 +27,7 @@ public:
     {
         this->set_from_gpuit (origin, spacing, dim, direction_cosines);
     }
+
 public:
     int Size (int d) const { return m_region.GetSize()[d]; }
 
@@ -46,7 +47,7 @@ public:
     void 
     set_from_gpuit_bspline (Bspline_xform *bxf);
     template<class T> 
-    void set_from_itk_image (T image) {
+    void set_from_itk_image (const T image) {
         m_origin = image->GetOrigin ();
         m_spacing = image->GetSpacing ();
         m_region = image->GetLargestPossibleRegion ();

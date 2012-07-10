@@ -589,6 +589,7 @@ void
 itk_align_center (
     Registration_data* regd, Xform *xf_out, Xform *xf_in, Stage_parms* stage)
 {
+#if defined (commentout)
     typedef itk::CenteredTransformInitializer < 
         VersorTransformType, FloatImageType, FloatImageType 
         > TransformInitializerType;
@@ -605,4 +606,15 @@ itk_align_center (
     initializer->InitializeTransform();
 
     xf_out->set_vrs (trn);
+#endif
+    float fixed_center[3];
+    float moving_center[3];
+    itk_volume_center (fixed_center, regd->fixed_image->itk_float());
+    itk_volume_center (moving_center, regd->moving_image->itk_float());
+
+    itk::Array<double> trn_parms (3);
+    trn_parms[0] = moving_center[0] - fixed_center[0];
+    trn_parms[1] = moving_center[1] - fixed_center[1];
+    trn_parms[2] = moving_center[2] - fixed_center[2];
+    xf_out->set_trn (trn_parms);
 }
