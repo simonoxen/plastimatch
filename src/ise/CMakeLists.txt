@@ -17,6 +17,7 @@ find_package (Paxscan)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories (BEFORE ${CMAKE_BINARY_DIR})
 include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
+include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/../fatm)
 
 ##-----------------------------------------------------------------------------
 ## QT configuration
@@ -110,6 +111,7 @@ set (ISE_QT_SRC
   his_io.cxx
   synthetic_source.cxx 
   synthetic_source_thread.cxx
+  tracker.cxx
   )
 if (BUILD_ISE_QT)
   qt4_wrap_cpp (ISE_QT_SRC 
@@ -195,6 +197,12 @@ if (BUILD_ISE_QT)
   endif ()
   if (PAXSCAN_FOUND)
     set (ISE_QT_LIBRARIES ${ISE_QT_LIBRARIES} ${PAXSCAN_LIBRARIES})
+  endif ()
+  if (NOT PLM_CONFIG_DISABLE_FATM)
+    set (ISE_QT_LIBRARIES ${ISE_QT_LIBRARIES} fatm)
+    if (FFTW_FOUND)
+      set (ISE_QT_LIBRARIES ${ISE_QT_LIBRARIES} ${FFTW_LIBRARIES})
+    endif ()
   endif ()
   plm_add_executable (ise_qt "${ISE_QT_SRC}" "${ISE_QT_LIBRARIES}" "" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})

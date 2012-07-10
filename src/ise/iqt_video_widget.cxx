@@ -35,6 +35,7 @@ Iqt_video_widget::Iqt_video_widget (QWidget *parent)
     qp1 = qp2 = 0;
     drawing = false;
     qp1 = new QPixmap;
+    rubberband = 0;
 
     tracker = new QGraphicsRectItem;
     trackPoint = new QGraphicsTextItem;
@@ -223,6 +224,7 @@ Iqt_video_widget::updateTracking()
     this->tracker
 	= scene->addRect (trace);
     tracker->setPen(QColor(255,0,0));
+    tracker->setZValue (1);
 
     trackPoint = new QGraphicsTextItem;
     trackPoint->setDefaultTextColor (Qt::red);
@@ -232,6 +234,8 @@ Iqt_video_widget::updateTracking()
 			      .arg((int)pix.x())
 			      .arg((int)pix.y()));
     trackPoint->setPos (0,0); //looks like an owl
+    trackPoint->setZValue (1);
+
 }
 
 Iqt_video_widget::~Iqt_video_widget ()
