@@ -10,6 +10,15 @@
 class Plm_image;
 class Dice_statistics_private;
 
+/*! \brief 
+ * The Dice_statistics class computes a Dice statistic for the 
+ * overlap between two regions.  Dice is defined as 
+ *
+ * (I need to learn how to use doxygen math commands here)
+ *
+ * At this time, the images must be of the same size and resolution. 
+ * The class will throw an exception if they are not.
+ */
 class PLMUTIL_API Dice_statistics {
 public:
     Dice_statistics ();
