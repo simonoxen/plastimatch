@@ -2106,8 +2106,8 @@ plm_add_test (
 plmtest_check_interval ("plm-reg-itk-bspline-check-1"
   "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-bspline-stats-1.stdout.txt"
   "AVE *([-0-9.]*)"
-  "-866.0"
-  "-865.8"
+  "-764.0"
+  "-763.6"
   )
 set_property (TEST plm-reg-itk-bspline APPEND PROPERTY DEPENDS gauss-1)
 set_property (TEST plm-reg-itk-bspline APPEND PROPERTY DEPENDS gauss-2)

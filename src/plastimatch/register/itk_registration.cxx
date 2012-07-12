@@ -469,6 +469,7 @@ set_transform_bspline (
 
     /* GCS FIX: Need to set ROI from registration->GetFixedImageRegion(), */
     xform_to_itk_bsp (xf_out, xf_in, &pih, stage->grid_spac);
+
     registration->SetTransform (xf_out->get_itk_bsp());
 }
 
@@ -511,9 +512,7 @@ void
 Itk_registration_private::set_xf_out ()
 {
     if (stage->xform_type == STAGE_TRANSFORM_BSPLINE) {
-        typedef BsplineTransformType * XfPtr;
-        XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
-        xf_out->set_itk_bsp (transform);
+        /* Do nothing */
     } else {
         *xf_out = *xf_best;
     }
@@ -583,6 +582,14 @@ itk_registration_stage (
     }
 
     irp.set_xf_out ();
+
+    /* There is an ITK bug which deletes the internal memory of a 
+       BSplineDeformableTransform when the RegistrationMethod
+       is destructed.  This is a workaround for that bug. */
+    if (irp.stage->xform_type == STAGE_TRANSFORM_BSPLINE) {
+        xf_out->get_itk_bsp()->SetParametersByValue (
+            xf_out->get_itk_bsp()->GetParameters ());
+    }
 }
 
 void
@@ -618,3 +625,37 @@ itk_align_center (
     trn_parms[2] = moving_center[2] - fixed_center[2];
     xf_out->set_trn (trn_parms);
 }
+
+/* Greg's notes about itk problems (ITK 3.20.1)
+   There are two ways to set the ITK bspline parameters:
+
+   SetParameters()
+   SetCoefficientImage()
+
+   SetParameters()
+   ---------------
+   You pass in a (const ParametersType&), and then it stashes a pointer 
+   to that in m_InputParametersPointer.  Finally it calls WrapAsImages(), 
+   which maps m_CoefficientImage[] arrays into memory of 
+   m_InputParametersPointer
+
+   SetCoefficientImage()
+   ---------------------
+   You pass in a (ImagePointer[]), and these get copied into 
+   m_CoefficientImage[] arrays.   m_InputParametersPointer gets reset 
+   to zero.
+
+   SetParametersByValue()
+   ----------------------
+   You pass in a (const ParametersType&), and then it allocates a new 
+   memory to contain the array.  It initializes m_InputParametersPointer
+   with the internal buffer.  Finally it calls WrapAsImages(), 
+   which maps m_CoefficientImage[] arrays into memory of 
+   m_InputParametersPointer
+
+   xform_to_itk_bsp (xf_out, xf_in, &pih, stage->grid_spac);
+   -----------------------
+   Computes the grid parameters using bsp_grid_from_img_grid(), then 
+   copies these into BSplineTransform using xform_itk_bsp_set_grid ().
+   Note: SetGridRegion() will zero the region, but does not allocate it.
+*/

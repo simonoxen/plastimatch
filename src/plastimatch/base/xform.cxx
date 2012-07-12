@@ -324,7 +324,7 @@ itk_xform_save (T transform, const char *filename)
     typedef itk::TransformFileWriter TransformWriterType;
     TransformWriterType::Pointer outputTransformWriter;
         
-    outputTransformWriter= TransformWriterType::New();
+    outputTransformWriter = TransformWriterType::New();
     outputTransformWriter->SetFileName( filename );
     outputTransformWriter->SetInput( transform );
     try
@@ -553,12 +553,15 @@ xform_itk_bsp_set_grid (Xform *xf,
     xf->get_itk_bsp()->SetGridSpacing (bsp_spacing);
     xf->get_itk_bsp()->SetGridOrigin (bsp_origin);
     xf->get_itk_bsp()->SetGridRegion (bsp_region);
+
+    /* Allocate and initialize a buffer for the BSplineTransform */
+    unsigned int num_parameters = xf->get_itk_bsp()->GetNumberOfParameters();
+    itk::Array<double> parameters (num_parameters);
+    xf->get_itk_bsp()->SetParametersByValue (parameters);
     xf->get_itk_bsp()->SetIdentity ();
 
     /* GCS FIX: Assume direction cosines orthogonal */
     xf->get_itk_bsp()->SetGridDirection (bsp_direction);
-
-    /* SetGridRegion automatically initializes internal coefficients to zero */
 }
 
 /* Initialize using image spacing */
@@ -826,7 +829,8 @@ xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
     bsp_out->SetBulkTransform (bsp_old->GetBulkTransform());
 
     /* Create temporary array for output coefficients */
-    const unsigned int num_parms = xf_out->get_itk_bsp()->GetNumberOfParameters();
+    const unsigned int num_parms 
+        = xf_out->get_itk_bsp()->GetNumberOfParameters();
     BsplineTransformType::ParametersType bsp_coeff;
     bsp_coeff.SetSize (num_parms);
 
@@ -851,10 +855,12 @@ xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
     unsigned int counter = 0;
     for (unsigned int k = 0; k < 3; k++) {
         typedef BsplineTransformType::ImageType ParametersImageType;
-        typedef itk::ResampleImageFilter<ParametersImageType, ParametersImageType> ResamplerType;
+        typedef itk::ResampleImageFilter<
+            ParametersImageType, ParametersImageType> ResamplerType;
         ResamplerType::Pointer resampler = ResamplerType::New();
 
-        typedef itk::BSplineResampleImageFunction<ParametersImageType, double> FunctionType;
+        typedef itk::BSplineResampleImageFunction<
+            ParametersImageType, double> FunctionType;
         FunctionType::Pointer fptr = FunctionType::New();
 
         typedef itk::IdentityTransform<double, 3> IdentityTransformType;
@@ -872,14 +878,16 @@ xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
         resampler->SetOutputOrigin (bsp_out->GetGridOrigin());
         resampler->SetOutputDirection (bsp_out->GetGridDirection());
 
-        typedef itk::BSplineDecompositionImageFilter<ParametersImageType, ParametersImageType> DecompositionType;
+        typedef itk::BSplineDecompositionImageFilter<
+            ParametersImageType, ParametersImageType> DecompositionType;
         DecompositionType::Pointer decomposition = DecompositionType::New();
 
         decomposition->SetSplineOrder (SplineOrder);
         decomposition->SetInput (resampler->GetOutput());
         decomposition->Update();
 
-        ParametersImageType::Pointer newCoefficients = decomposition->GetOutput();
+        ParametersImageType::Pointer newCoefficients 
+            = decomposition->GetOutput();
 
         // copy the coefficients into a temporary parameter array
         typedef itk::ImageRegionIterator<ParametersImageType> Iterator;

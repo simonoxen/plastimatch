@@ -90,8 +90,8 @@ print_usage (int return_code)
 void
 do_command_register (int argc, char* argv[])
 {
-    char * command_filename;
-    Registration_parms regp;
+    char *command_filename;
+    Registration_parms *regp = new Registration_parms;
 
     if (!strcmp (argv[1], "register")) {
         if (argc > 2) {
@@ -104,10 +104,11 @@ do_command_register (int argc, char* argv[])
         command_filename = argv[1];
     }
 
-    if (plm_parms_parse_command_file (&regp, command_filename) < 0) {
+    if (plm_parms_parse_command_file (regp, command_filename) < 0) {
         print_usage (1);
     }
-    do_registration (&regp);
+    do_registration (regp);
+    delete regp;
 }
 
 void

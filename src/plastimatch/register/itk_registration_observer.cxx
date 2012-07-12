@@ -37,6 +37,9 @@
    LBFGS
    - Invokes itk::FunctionAndGradientEvaluationIterationEvent
    - Current position is not valid at StartEvent
+
+   LBFGSB
+   - StartEvent is not invoked
 */
 class Optimization_observer : public itk::Command
 {
@@ -55,6 +58,7 @@ public:
 protected:
     Optimization_observer() {
         m_prev_value = -DBL_MAX;
+        m_feval = 0;
         timer = new Plm_timer;
         timer->start ();
     };
@@ -83,7 +87,7 @@ public:
             if (irp->stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
                 std::stringstream ss;
                 ss << irp->optimizer_get_current_position ();
-                lprintf (ss.str().c_str());
+                lprintf ("%s", ss.str().c_str());
             }
             lprintf ("\n");
             timer->start ();
@@ -97,7 +101,7 @@ public:
             if (irp->stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
                 std::stringstream ss;
                 ss << irp->optimizer_get_current_position ();
-                lprintf (ss.str().c_str());
+                lprintf ("%s", ss.str().c_str());
             }
             lprintf ("\n");
             lprintf ("%s\n", irp->registration->GetOptimizer()
@@ -146,7 +150,7 @@ public:
                 std::stringstream ss;
                 ss << std::setprecision(3);
                 ss << irp->optimizer_get_current_position ();
-                lprintf (ss.str().c_str());
+                lprintf ("%s", ss.str().c_str());
             }
 
             if (m_prev_value != -DBL_MAX) {
@@ -155,8 +159,7 @@ public:
                 if (it >= irp->stage->min_its 
                     && diff < irp->stage->convergence_tol)
                 {
-                    lprintf (" (tol)", val - m_prev_value);
-
+                    lprintf (" (tol)");
                     irp->optimizer_stop ();
                 }
             }
@@ -176,7 +179,7 @@ public:
             if (irp->stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
                 std::stringstream ss;
                 ss << irp->optimizer_get_current_position ();
-                lprintf (ss.str().c_str());
+                lprintf ("%s", ss.str().c_str());
             }
             lprintf ("\n");
         }
