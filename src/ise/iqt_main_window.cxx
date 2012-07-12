@@ -309,21 +309,23 @@ Iqt_main_window::slot_reload_frame ()
         if (f->img[i] < min_val) min_val = f->img[i];
         if (f->img[i] > max_val) max_val = f->img[i];
     }
-
-    uchar *data = new uchar[width * height * 4];
+    
+    
+    uchar *imgdata = new uchar[width * height * 4];
     for (int i = 0; i < width * height; i++) {
         float fval = (f->img[i] - min) * 255.0 / (max-min);
         if (fval < 0) fval = 0; else if (fval > 255) fval = 255;
         uchar val = (uchar) fval;
-        data[4*i+0] = val;  //bg red
-        data[4*i+1] = val;  //bg green
-        data[4*i+2] = val;  //bg blue
-        data[4*i+3] = 0xff; //alpha
+        imgdata[4*i+0] = val;  //bg red
+        imgdata[4*i+1] = val;  //bg green
+        imgdata[4*i+2] = val;  //bg blue
+        imgdata[4*i+3] = 0xff; //alpha
     }
-    QImage qimage (data, width, height, QImage::Format_RGB32);
+    QImage qimage (imgdata, width, height, QImage::Format_RGB32);
     this->playing = true;
 
     vid_screen->set_qimage (qimage);
+    delete imgdata;
 }
 
 void

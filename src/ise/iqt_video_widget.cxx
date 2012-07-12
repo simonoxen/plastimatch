@@ -126,7 +126,7 @@ void Iqt_video_widget::mouseReleaseEvent(QMouseEvent* event)
 
         qDebug() << "pix = " << pix;
 	
-        this->trace.setRect((originf.x()-3), (originf.y()-5), 6, 10);
+        this->trace.setRect((originf.x()-5), (originf.y()-5), 10, 10);
 	updateTracking();
     }
     if (event->button()==4) {

@@ -111,7 +111,7 @@ set (ISE_QT_SRC
   his_io.cxx
   synthetic_source.cxx 
   synthetic_source_thread.cxx
-  tracker.cxx
+  iqt_tracker.cxx
   )
 if (BUILD_ISE_QT)
   qt4_wrap_cpp (ISE_QT_SRC 
