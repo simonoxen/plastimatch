@@ -141,12 +141,6 @@ if (FULL_PLASTIMATCH_BUILD)
   plm_add_executable (merge_vfs  "${MERGE_VFS_SRC}"
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-#  plm_add_executable (mha_to_rtog_dose "${MHA_TO_RTOG_DOSE_SRC}"
-#    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-#    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-#  plm_add_executable (rtog_to_mha "${RTOG_TO_MHA_SRC}"
-#    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-#    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   plm_add_executable (shuffle_mha "${SHUFFLE_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
