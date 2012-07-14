@@ -40,7 +40,7 @@ CompositeImageToImageMetric<TFixedImage, TMovingImage>::CompositeImageToImageMet
 #elif defined(_SC_NPROC_ONLN)
   m_NumberOfAvailableCPUs = sysconf(_SC_NPROC_ONLN);
 #else
-  num = 1;
+  m_NumberOfAvailableCPUs = 1;
 #endif
 #if defined(__SVR4) && defined(sun) && defined(PTHREAD_MUTEX_NORMAL)
   pthread_setconcurrency(m_NumberOfAvailableCPUs);
