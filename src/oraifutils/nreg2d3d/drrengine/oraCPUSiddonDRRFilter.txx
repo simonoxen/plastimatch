@@ -574,7 +574,7 @@ template<class TInputPixelType, class TOutputPixelType>
 void CPUSiddonDRRFilter<TInputPixelType, TOutputPixelType>::UpdateCurrentImagingGeometry()
 {
 	// current desired geometry:
-	GeometryPointer geom = GetProjectionGeometry(this->m_CurrentDRROutputIndex);
+	GeometryPointer geom = this->GetProjectionGeometry(this->m_CurrentDRROutputIndex);
 	if (!geom)
 		return;
 
