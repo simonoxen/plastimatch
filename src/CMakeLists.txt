@@ -158,6 +158,12 @@ if (PLM_BUILD_REG23
   set (PLM_BUILD_ORAIFUTILS 0)
   set (PLM_BUILD_REG23 0)
 endif ()
+if (PLM_BUILD_REG23 AND ITK_USE_REVIEW_STATISTICS)
+  message (STATUS 
+    "Reg-2-3 will not be built (ITK compiled with review statistics)")
+  set (PLM_BUILD_ORAIFUTILS 0)
+  set (PLM_BUILD_REG23 0)
+endif ()
 if (PLM_BUILD_REG23 AND NOT VTK_FOUND)
   message (STATUS "Reg-2-3 will not be built (VTK not found)")
   set (PLM_BUILD_ORAIFUTILS 0) ## REMOVE WHEN DONE
