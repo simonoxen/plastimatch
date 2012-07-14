@@ -3,6 +3,20 @@
    ----------------------------------------------------------------------- */
 #include "fatm.h"
 #include "image.h"
+#include "iqt_tracker.h"
+#include "tracker_thread.h"
+
+Tracker::Tracker () 
+{
+    this->tracker_thread = new Tracker_thread;
+    this->tracker_thread->start();
+}
+
+Tracker::~Tracker () 
+{
+    delete tracker_thread;
+}
+
 
 void
 tracker_initialize (/*bool user_track*/)
@@ -56,15 +70,15 @@ tracker_initialize (/*bool user_track*/)
 	    for (int j = 0; j < dims[1]; j++) {
 		if (i==4 || i==5) {
 		    if (j > 1 && j < 8) {
-			value = 1;
+			value = 0xFFFF;
 		    } else {
-			value = -1;
+			value = 0;
 		    }
 		} else {
-		    value = -1;
+		    value = 0;
 		}
 		/* horizontal bright rectangle */
-		pattern->data[i*dims[0]+j] = value;
+		pattern->data[i*dims[1]+j] = value;
 	    }
 	}
     }
@@ -72,7 +86,7 @@ tracker_initialize (/*bool user_track*/)
     else {
 	for (int i=0; i < 10; i++) {
 	    for (int j=0; j < 10; j++) {
-		pattern->data[i*dims[0]+j] = img[(pattern->pmin[0]+i)*(512) 
+		pattern->data[i*dims[1]+j] = img[(pattern->pmin[0]+i)*(512) 
 						 + (pattern->pmin[1]+j)];
 		/* pmin[] is top-left pixel ({x, y}) of user-defined pattern,
 		   would be from "trace" in iqt_video_widget 

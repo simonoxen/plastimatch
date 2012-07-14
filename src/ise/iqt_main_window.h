@@ -23,6 +23,7 @@
 //QT_END_NAMESPACE
 
 class Frame;
+class Tracker;
 
 class Iqt_main_window : public QMainWindow, private Ui::iqtMainWindow {
     Q_OBJECT
@@ -44,6 +45,7 @@ public:
     QSlider *framePos;
     int numFiles;
     Frame* frameList[150];
+    Tracker *tracker;
 
 public slots:
     void get_new_frame (int pos);

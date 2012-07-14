@@ -103,20 +103,22 @@ set (ISE_QT_SRC
   debug.cxx
   fluoro_source.cxx
   frame.cxx
+  his_io.cxx
   iqt_application.cxx
   iqt_main.cxx
   iqt_main_window.cxx 
   iqt_synth_settings.cxx
+  iqt_tracker.cxx
   iqt_video_widget.cxx
-  his_io.cxx
   synthetic_source.cxx 
   synthetic_source_thread.cxx
-  iqt_tracker.cxx
+  tracker_thread.cxx
   )
 if (BUILD_ISE_QT)
   qt4_wrap_cpp (ISE_QT_SRC 
     iqt_application.h
     iqt_main_window.h 
+    tracker_thread.h
     iqt_video_widget.h
     iqt_synth_settings.h
     synthetic_source_thread.h

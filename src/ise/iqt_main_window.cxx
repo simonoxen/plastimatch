@@ -24,6 +24,7 @@
 #include "iqt_synth_settings.h"
 #include "iqt_application.h"
 #include "iqt_main_window.h"
+#include "iqt_tracker.h"
 #include "iqt_video_widget.h"
 
 Iqt_main_window::Iqt_main_window ()
@@ -50,34 +51,9 @@ Iqt_main_window::Iqt_main_window ()
     framePos = new QSlider (Qt::Horizontal, this);
     connect (framePos, SIGNAL(valueChanged(int)), this, SLOT(get_new_frame(int)));
     slider_layout->addWidget(framePos);
-    /* Render a sphere ?? */
-    //    this->render_sphere ();
-}
 
-#if defined (commentout)
-void
-Iqt_main_window::render_sphere ()
-{
-    // sphere
-    vtkSmartPointer<vtkSphereSource> sphereSource = 
-	vtkSmartPointer<vtkSphereSource>::New();
-    sphereSource->Update();
-    vtkSmartPointer<vtkPolyDataMapper> sphereMapper =
-	vtkSmartPointer<vtkPolyDataMapper>::New();
-     sphereMapper->SetInputConnection(sphereSource->GetOutputPort());
-    vtkSmartPointer<vtkActor> sphereActor = 
-	vtkSmartPointer<vtkActor>::New();
-    sphereActor->SetMapper(sphereMapper);
- 
-    // VTK Renderer
-    vtkSmartPointer<vtkRenderer> renderer = 
-	vtkSmartPointer<vtkRenderer>::New();
-    renderer->AddActor(sphereActor);
- 
-    // VTK/Qt wedded
-    this->qvtkWidget->GetRenderWindow()->AddRenderer(renderer);
-};
-#endif
+    tracker = new Tracker ();
+}
 
 Iqt_main_window::~Iqt_main_window ()
 {
@@ -85,6 +61,7 @@ Iqt_main_window::~Iqt_main_window ()
     settings.sync ();
     delete framePos;
     //delete m_qtimer;
+    delete tracker;
 }
 
 void
