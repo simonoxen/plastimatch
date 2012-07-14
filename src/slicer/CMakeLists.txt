@@ -13,6 +13,12 @@ if (NOT SLICER_FOUND)
 endif ()
 
 ##-----------------------------------------------------------------------------
+##  Load slicer use file
+##-----------------------------------------------------------------------------
+include ("${CMAKE_SOURCE_DIR}/cmake/PlmSlicerMacros.cmake")
+plm_use_slicer ()
+
+##-----------------------------------------------------------------------------
 ##  Include directories
 ##-----------------------------------------------------------------------------
 include_directories (BEFORE ${src_plastimatch_SOURCE_DIR})
