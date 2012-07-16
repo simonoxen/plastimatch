@@ -25,6 +25,7 @@
 #include "iqt_application.h"
 #include "iqt_main_window.h"
 #include "iqt_tracker.h"
+#include "tracker_thread.h"
 #include "iqt_video_widget.h"
 
 Iqt_main_window::Iqt_main_window ()
@@ -51,7 +52,7 @@ Iqt_main_window::Iqt_main_window ()
     framePos = new QSlider (Qt::Horizontal, this);
     connect (framePos, SIGNAL(valueChanged(int)), this, SLOT(get_new_frame(int)));
     slider_layout->addWidget(framePos);
-
+    frameNum = 0;
     tracker = new Tracker ();
 }
 
@@ -68,7 +69,7 @@ void
 Iqt_main_window::slot_load ()
 {
     if (playing) {
-        this->slot_play_pause();
+        this->slot_pause ();
 	}
     if (synth){
         setMax->setRange(32500, 65000);
@@ -167,7 +168,7 @@ Iqt_main_window::show_fluoro (QString path)
 	qDebug("Image: %p", frameList[q]->img);
 	}*/
     playing = false;
-    this->slot_play_pause ();
+    this->slot_play ();
 }
 
 void
@@ -178,26 +179,38 @@ Iqt_main_window::slot_save ()
 }
 
 void
-Iqt_main_window::slot_play_pause ()
+Iqt_main_window::slot_play ()
 {   
     if (playing) {
-	playing = false;
-        play_pause_button->setText ("|>");
-        action_Play->setText ("&Play");
+	return;
     } else {
 	playing = true;
         play_pause_button->setText ("||");
         action_Play->setText ("&Pause");
-	
-        int i;
-	for (i=framePos->value(); i < numFiles; i++) {
-	    framePos->setValue(i);
+	while (playing) {
+	    framePos->setValue(frameNum);
 	    Sleeper::msleep(100);
+	    if (isTracking) {
+		/* do something */
+	    }
 	    QCoreApplication::processEvents();
+	    frameNum++;
+	    if (frameNum==numFiles) playing = false;
 	}
-        if (i==numFiles) playing = false;
     }
     //vid_screen->play(playing);
+}
+
+void
+Iqt_main_window::slot_pause ()
+{
+    if (!playing) {
+	return;
+    } else {
+	playing = false;
+	play_pause_button->setText ("|>");
+	action_Play->setText ("&Play");
+    }
 }
 
 void
@@ -211,6 +224,7 @@ void
 Iqt_main_window::slot_go_back ()
 {
     framePos->setValue(0);
+    frameNum = 0;
     playing = false;
 }
 
@@ -218,6 +232,7 @@ void
 Iqt_main_window::slot_go_forward ()
 {
     framePos->setValue(numFiles);
+    frameNum = numFiles;
     playing = false;
 }
 
@@ -228,16 +243,17 @@ Iqt_main_window::slot_stop ()
 	playing = false;
         play_pause_button->setText ("|>");
         action_Play->setText ("&Play");
+	slot_go_back ();
     } else {
-		QMessageBox::information (0, QString ("Info"),
-		 QString ("This video has already been stopped."));
-	}
-	vid_screen->stop();
-	/* Checks if synthetic source is currently running
-	   would segfault without this check */
-	if (synth) {
-	    ise_app->stop();
-	}
+	QMessageBox::information (0, QString ("Info"),
+				  QString ("This video has already been stopped."));
+    }
+    vid_screen->stop();
+    /* Checks if synthetic source is currently running
+       would segfault without this check */
+    if (synth) {
+	ise_app->stop();
+    }
 }
 
 void
@@ -323,4 +339,19 @@ Iqt_main_window::slot_frame_ready (int width, int height)
     this->height = height;
     
     this->slot_reload_frame();
+}
+
+void
+Iqt_main_window::slot_set_tracking (bool clicked)
+{
+    if (clicked){
+	num_track->setHidden(false);
+	track_label->setHidden(false);
+	this->tracker->tracker_thread->start ();
+	isTracking = true;
+    } else {
+	num_track->setHidden(true);
+	track_label->setHidden(true);
+	isTracking = false;
+    }
 }

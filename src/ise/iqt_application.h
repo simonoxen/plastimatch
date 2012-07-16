@@ -5,6 +5,7 @@
 #define _iqt_application_h_
 
 #include <QApplication>
+#include <QMutex>
 
 #define ise_app ((Iqt_application *) qApp)
 
@@ -27,6 +28,7 @@ public:
 
 public:
     int num_panels;
+    QMutex mutex;
     Cbuf **cbuf;
     Fluoro_source *fluoro_source;
 };

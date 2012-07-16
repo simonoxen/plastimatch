@@ -81,7 +81,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="track_button">
+         <widget class="QCheckBox" name="track_check">
           <property name="text">
            <string>Track</string>
           </property>
@@ -543,7 +543,7 @@
    <sender>play_pause_button</sender>
    <signal>clicked()</signal>
    <receiver>iqtMainWindow</receiver>
-   <slot>slot_play_pause()</slot>
+   <slot>slot_play()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>30</x>
@@ -575,7 +575,7 @@
    <sender>action_Play</sender>
    <signal>triggered()</signal>
    <receiver>iqtMainWindow</receiver>
-   <slot>slot_play_pause()</slot>
+   <slot>slot_play()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -764,14 +764,46 @@
    </hints>
   </connection>
   <connection>
-   <sender>track_button</sender>
-   <signal>clicked(bool)</signal>
+   <sender>action_Play</sender>
+   <signal>activated()</signal>
    <receiver>iqtMainWindow</receiver>
-   <slot>slot_set_tracking()</slot>
+   <slot>slot_pause()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>481</x>
+     <y>333</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>play_pause_button</sender>
+   <signal>clicked()</signal>
+   <receiver>iqtMainWindow</receiver>
+   <slot>slot_pause()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>22</x>
+     <y>623</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>481</x>
+     <y>333</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>track_check</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>iqtMainWindow</receiver>
+   <slot>slot_set_tracking(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>53</x>
-     <y>176</y>
+     <y>173</y>
     </hint>
     <hint type="destinationlabel">
      <x>481</x>
@@ -784,13 +816,14 @@
   <slot>slot_load()</slot>
   <slot>slot_synth()</slot>
   <slot>slot_save()</slot>
-  <slot>slot_play_pause()</slot>
+  <slot>slot_play()</slot>
   <slot>slot_stop()</slot>
   <slot>slot_go_back()</slot>
   <slot>slot_go_forward()</slot>
   <slot>slot_slider_min(int)</slot>
   <slot>slot_slider_max(int)</slot>
   <slot>slot_reload_frame()</slot>
-  <slot>slot_set_tracking()</slot>
+  <slot>slot_set_tracking(bool)</slot>
+  <slot>slot_pause()</slot>
  </slots>
 </ui>

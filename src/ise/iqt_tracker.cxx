@@ -9,7 +9,7 @@
 Tracker::Tracker () 
 {
     this->tracker_thread = new Tracker_thread;
-    this->tracker_thread->start();
+    //this->tracker_thread->start(); 
 }
 
 Tracker::~Tracker () 

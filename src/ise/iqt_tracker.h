@@ -1,8 +1,8 @@
 /* -------------------------------------------------------------------------*
     See COPYRIGHT for copyright information.
  * -------------------------------------------------------------------------*/
-#ifndef __iqt_tracker_h__
-#define __iqt_tracker_h__
+#ifndef _iqt_tracker_h_
+#define _iqt_tracker_h_
 
 class Tracker_thread;
 

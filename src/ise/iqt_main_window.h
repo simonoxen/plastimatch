@@ -38,12 +38,14 @@ public:
     QTimer *m_qtimer;
     bool playing;
     bool synth;
+    bool isTracking;
     unsigned int width;
     unsigned int height;
     QString filename;
 //    Frame* f;
     QSlider *framePos;
     int numFiles;
+    int frameNum;
     Frame* frameList[150];
     Tracker *tracker;
 
@@ -53,13 +55,15 @@ public slots:
     void show_fluoro (QString path);
     void slot_save (void);
     void slot_synth (void);
-    void slot_play_pause (void);
+    void slot_play (void);
+    void slot_pause (void);
     void slot_stop (void);
     void slot_go_back(void);
     void slot_go_forward(void);
     void slot_timer (void);
     void slot_reload_frame (void);
     void slot_frame_ready (int width, int height);
+    void slot_set_tracking (bool clicked);
 
 signals:
     void fluoro_ready (QString path);
