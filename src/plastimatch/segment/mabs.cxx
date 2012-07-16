@@ -35,16 +35,16 @@ Mabs::run (const Mabs_parms& parms)
     /* Do a few sanity checks */
     if (!is_directory (parms.atlas_dir)) {
         print_and_exit ("Atlas dir (%s) is not a directory\n",
-            parms.atlas_dir);
+            parms.atlas_dir.c_str());
     }
     if (!file_exists (parms.registration_config)) {
         print_and_exit ("Couldn't find registration config (%s)\n", 
-            parms.registration_config);
+            parms.registration_config.c_str());
     }
 
     /* Make sure there is an output directory */
-    Pstring out_dir = parms.labeling_output_fn;
-    if (out_dir.empty()) {
+    std::string out_dir = parms.labeling_output_fn;
+    if (out_dir == "") {
         out_dir = "mabs";
     }
 
@@ -78,6 +78,46 @@ Mabs::run (const Mabs_parms& parms)
            load is successful. */
         lprintf ("MABS loading %s\n", d.entries[i]);
         rtds.load_dicom_dir (path.c_str());
+        rtds.m_rtss->prune_empty ();
+
+        /* Inspect the structures -- we might be able to skip the 
+           atlas if it has no relevant structures */
+        bool can_skip = true;
+        if (parms.structure_map.size() == 0) {
+            lprintf ("$ No structure list specified\n");
+            can_skip = false;
+        } else {
+            for (size_t i = 0; i < rtds.m_rtss->get_num_structures(); i++) {
+                std::string ori_name = rtds.m_rtss->get_structure_name (i);
+                std::map<std::string, std::string>::const_iterator it 
+                    = parms.structure_map.find (ori_name);
+                if (it == parms.structure_map.end()) {
+                    lprintf (" $ irrelevant structure: %s\n", 
+                        ori_name.c_str());
+                    continue;
+                }
+
+                const std::string& mapped_name = it->second;
+                if (mapped_name == "") {
+                    lprintf (" $ irrelevant structure: %s\n", 
+                        ori_name.c_str());
+                }
+                else if (mapped_name == ori_name) {
+                    lprintf (" $ relevant structure: %s\n", 
+                        ori_name.c_str());
+                    can_skip = false;
+                }
+                else {
+                    lprintf (" $ relevant structure: %s -> %s\n", 
+                        ori_name.c_str(), mapped_name.c_str());
+                    can_skip = false;
+                }
+            }
+        }
+        if (can_skip) {
+            lprintf ("No relevant structures. Skipping.\n");
+            continue;
+        }
 
         /* Make a registration command string */
         std::string command_string = slurp_file (parms.registration_config);
@@ -87,7 +127,7 @@ Mabs::run (const Mabs_parms& parms)
         int rc = regp.set_command_string (command_string);
         if (rc) {
             print_and_exit ("Failure parsing command file: %s\n",
-                parms.registration_config);
+                parms.registration_config.c_str());
         }
 
         /* Manually set input files */
@@ -111,7 +151,6 @@ Mabs::run (const Mabs_parms& parms)
         /* Warp the structures */
         printf ("Warp structures...\n");
         Plm_image_header source_pih (rtds.m_img);
-        rtds.m_rtss->prune_empty ();
         rtds.m_rtss->rasterize (&source_pih, false, false);
         rtds.m_rtss->warp (xf_out, &fixed_pih);
 

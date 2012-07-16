@@ -25,6 +25,12 @@ Dir_list::Dir_list (const char* dir)
     this->load (dir);
 }
 
+Dir_list::Dir_list (const std::string& dir)
+{
+    this->init ();
+    this->load (dir.c_str());
+}
+
 Dir_list::~Dir_list ()
 {
     int i;

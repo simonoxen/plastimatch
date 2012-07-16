@@ -167,6 +167,12 @@ slurp_file (const char* fn)
     return buffer.str();
 }
 
+std::string
+slurp_file (const std::string& fn)
+{
+    return slurp_file (fn.c_str());
+}
+
 /* std::string formatting by Erik Aronesty
    http://stackoverflow.com/questions/2342162/stdstring-formating-like-sprintf
    Distributed under Attribution-ShareAlike 3.0 Unported license (CC BY-SA 3.0) 

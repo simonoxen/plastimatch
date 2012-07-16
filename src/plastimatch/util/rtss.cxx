@@ -220,6 +220,15 @@ Rtss::get_num_structures ()
     return 0;
 }
 
+std::string
+Rtss::get_structure_name (size_t index)
+{
+    if (m_cxt) {
+        return m_cxt->get_structure_name (index);
+    }
+    return 0;
+}
+
 UCharImageType::Pointer
 Rtss::get_structure_image (int index)
 {

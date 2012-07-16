@@ -38,6 +38,7 @@ public:
     void load_gdcm_rtss (const char *input_fn,  Slice_index *rdd);
 
     size_t get_num_structures ();
+    std::string get_structure_name (size_t index);
     UCharImageType::Pointer get_structure_image (int index);
 
     void save_colormap (const Pstring &colormap_fn);

@@ -11,6 +11,7 @@
  */
 
 #include "plmsys_config.h"
+#include <string>
 
 class PLMSYS_API Dir_list
 {
@@ -20,6 +21,7 @@ public:
 public:
     Dir_list ();
     Dir_list (const char* dir);
+    Dir_list (const std::string& dir);
     ~Dir_list ();
 
     void init ();

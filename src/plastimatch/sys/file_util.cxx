@@ -49,6 +49,12 @@ is_directory (const char *dir)
 }
 
 int
+is_directory (const std::string& dir)
+{
+    return is_directory (dir.c_str());
+}
+
+int
 extension_is (const char* fname, const char* ext)
 {
     return (strlen (fname) > strlen(ext)) 
@@ -64,6 +70,12 @@ file_exists (const char *filename)
 	return 1;
     }
     return 0;
+}
+
+int
+file_exists (const std::string& filename)
+{
+    return file_exists (filename.c_str());
 }
 
 uint64_t
@@ -225,6 +237,12 @@ compose_filename (const char *a, const char *b)
     output_fn.append ("/");
     output_fn.append (b);
     return output_fn;
+}
+
+std::string
+compose_filename (const std::string& a, const std::string& b)
+{
+    return compose_filename (a.c_str(), b.c_str());
 }
 
 /* cross platform getcwd */

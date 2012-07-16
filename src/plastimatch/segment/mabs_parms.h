@@ -5,6 +5,9 @@
 #define _mabs_parms_h_
 
 #include "plmsegment_config.h"
+#include <list>
+#include <map>
+#include <string>
 #include "plm_path.h"
 #include "pstring.h"
 
@@ -20,25 +23,26 @@ public:
 
 private:
     void parse_config (const char* config_fn);
-    int set_key_val (const char* key, const char* val, int section);
+    int set_key_val (const std::string& key, const std::string& val, 
+        int section);
 
 public:
     /* [TRAINING] */
-    char atlas_dir[_MAX_PATH];
-    char training_dir[_MAX_PATH];
+    std::string atlas_dir;
+    std::string training_dir;
 
     /* [REGISTRATION] */
-    char registration_config[_MAX_PATH];
+    std::string registration_config;
 
     /* [SUBJECT] */
     Mabs_subject_manager* sman;    
 
     /* [STRUCTURES] */
-    // to be implemented
+    std::map<std::string, std::string> structure_map;
 
     /* [LABELING] */
-    char labeling_input_fn[_MAX_PATH];
-    Pstring labeling_output_fn;
+    std::string labeling_input_fn;
+    std::string labeling_output_fn;
 
     /* misc */
     bool debug;

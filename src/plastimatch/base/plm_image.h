@@ -22,8 +22,9 @@ class PLMBASE_API Plm_image {
 
 public:
     Plm_image ();
-    Plm_image (const Pstring& fname);
     Plm_image (const char* fname);
+    Plm_image (const Pstring& fname);
+    Plm_image (const std::string& fname);
     Plm_image (const char* fname, Plm_image_type type);
     Plm_image (FloatImageType::Pointer img);
     Plm_image (UCharImageType::Pointer img);

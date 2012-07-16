@@ -48,24 +48,26 @@ Mabs_parms::print ()
     Mabs_subject* sub = this->sman->current ();
 
     fprintf (stderr, "Mabs_parms:\n");
-    fprintf (stderr, "-- atlas_dir: %s\n", this->atlas_dir);
-    fprintf (stderr, "-- training_dir: %s\n", this->training_dir);
-    fprintf (stderr, "-- registration_config: %s\n", this->registration_config);
+    fprintf (stderr, "-- atlas_dir: %s\n", this->atlas_dir.c_str());
+    fprintf (stderr, "-- training_dir: %s\n", this->training_dir.c_str());
+    fprintf (stderr, "-- registration_config: %s\n", 
+        this->registration_config.c_str());
     while (sub) {
         fprintf (stderr, "-- subject\n");
         fprintf (stderr, "   -- img: %s [%p]\n", sub->img_fn, sub->img);
         fprintf (stderr, "   -- ss : %s [%p]\n", sub->ss_fn, sub->ss);
         sub = this->sman->next ();
     }
-    fprintf (stderr, "-- labeling_input_fn: %s\n", this->labeling_input_fn);
+    fprintf (stderr, "-- labeling_input_fn: %s\n", 
+        this->labeling_input_fn.c_str());
     fprintf (stderr, "-- labeling_output_fn: %s\n", 
         this->labeling_output_fn.c_str());
 }
 
 int
 Mabs_parms::set_key_val (
-    const char* key, 
-    const char* val, 
+    const std::string& key, 
+    const std::string& val, 
     int section
 )
 {
@@ -74,43 +76,48 @@ Mabs_parms::set_key_val (
     switch (section) {
     /* [TRAINING] */
     case 0:
-        if (!strcmp (key, "atlas_dir")) {
-            strncpy ((char*)this->atlas_dir, val, _MAX_PATH);
+        if (key == "atlas_dir") {
+            this->atlas_dir = val;
         }
-        else if (!strcmp (key, "training_dir")) {
-            strncpy ((char*)this->training_dir, val, _MAX_PATH);
+        else if (key == "training_dir") {
+            this->training_dir = val;
         }
         break;
 
     /* [REGISTRATION] */
     case 1:
-        if (!strcmp (key, "registration_config")) {
-            strncpy ((char*)this->registration_config, val, _MAX_PATH);
+        if (key == "registration_config") {
+            this->registration_config = val;
         }
         break;
 
     /* [SUBJECT] */
     case 2:
         /* head is the most recent addition to the list */
-        if (!strcmp (key, "image")) {
-            strncpy ((char*)subject->img_fn, val, _MAX_PATH);
+        if (key == "image") {
+            strncpy ((char*)subject->img_fn, val.c_str(), _MAX_PATH);
         }
-        else if (!strcmp (key, "structs")) {
-            strncpy ((char*)subject->ss_fn, val, _MAX_PATH);
+        else if (key == "structs") {
+            strncpy ((char*)subject->ss_fn, val.c_str(), _MAX_PATH);
         }
         break;
 
     /* [STRUCTURES] */
     case 3:
-        // not yet implemented
+        /* Add key to list of structures */
+        this->structure_map[key] = key;
+        if (val != "") {
+            /* Key/value pair, so add for renaming */
+            this->structure_map[val] = key;
+        }
         break;
 
     /* [LABELING] */
     case 4:
-        if (!strcmp (key, "input")) {
-            strncpy ((char*)this->labeling_input_fn, val, _MAX_PATH);
+        if (key == "input") {
+            this->labeling_input_fn = val;
         }
-        else if (!strcmp (key, "output")) {
+        else if (key == "output") {
             this->labeling_output_fn = val;
         }
     }
@@ -118,7 +125,8 @@ Mabs_parms::set_key_val (
 
 #if 0
   error_exit:
-    print_and_exit ("Unknown (key,val) combination: (%s,%s)\n", key, val);
+    print_and_exit ("Unknown (key,val) combination: (%s,%s)\n", 
+        key.c_str(), val.c_str());
     return -1;
 #endif
 }
@@ -185,17 +193,20 @@ Mabs_parms::parse_config (
             }
         }
 
+        std::string key;
+        std::string val;
         size_t key_loc = buf.find ("=");
         if (key_loc == std::string::npos) {
-            continue;
+            key = buf;
+            val = "";
+        } else {
+            key = buf.substr (0, key_loc);
+            val = buf.substr (key_loc+1);
         }
-
-        std::string key = buf.substr (0, key_loc);
-        std::string val = buf.substr (key_loc+1);
         key = trim (key);
         val = trim (val);
 
-        if (key != "" && val != "") {
+        if (key != "") {
             if (this->set_key_val (key.c_str(), val.c_str(), section) < 0) {
                 printf ("Parse error: %s\n", buf_ori.c_str());
             }

@@ -25,11 +25,6 @@ main (int argc, char* argv[])
     if (parms.debug) {
         parms.print ();
     }
-
-    // printf ("Running MABS vote...\n");
-    // Mabs_vote vote;
-    // vote.vote (parms);
-    // printf ("Ran MABS vote.\n");
     
     printf ("Running MABS...\n");
     Mabs mabs;

@@ -157,6 +157,16 @@ Rtss_structure_set::find_structure_by_id (int structure_id)
     return 0;
 }
 
+std::string
+Rtss_structure_set::get_structure_name (size_t index)
+{
+    if (index < this->num_structures) {
+        return std::string (this->slist[index]->name.c_str());
+    } else {
+        return "";
+    }
+}
+
 void
 Rtss_structure_set::debug (void)
 {

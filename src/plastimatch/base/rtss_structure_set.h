@@ -18,7 +18,7 @@ class Rtss_structure;
 
 #define CXT_BUFLEN 2048
 
-class Rtss_structure_set {
+class PLMBASE_API Rtss_structure_set {
 public:
     /* Output geometry */
     int have_geometry;
@@ -33,33 +33,34 @@ public:
     size_t num_structures;
     Rtss_structure **slist;
 public:
-    PLMBASE_API Rtss_structure_set ();
-    PLMBASE_API ~Rtss_structure_set ();
-    PLMBASE_API void init (void);
-    PLMBASE_API void clear (void);
-    PLMBASE_API Rtss_structure* add_structure (
+    Rtss_structure_set ();
+    ~Rtss_structure_set ();
+    void init (void);
+    void clear (void);
+    Rtss_structure* add_structure (
 	const Pstring& structure_name, 
 	const Pstring& color, 
 	int structure_id,
         int bit = -1);
-    PLMBASE_API Rtss_structure* find_structure_by_id (int structure_id);
-    PLMBASE_API void debug (void);
-    PLMBASE_API void adjust_structure_names (void);
-    PLMBASE_API void prune_empty (void);
-    static PLMBASE_API 
+    Rtss_structure* find_structure_by_id (int structure_id);
+    std::string get_structure_name (size_t index);
+    void debug (void);
+    void adjust_structure_names (void);
+    void prune_empty (void);
+    static 
     Rtss_structure_set* clone_empty (Rtss_structure_set* cxt_out, 
 	Rtss_structure_set* cxt_in);
-    PLMBASE_API void find_default_geometry (Plm_image_header *pih);
-    PLMBASE_API void find_rasterization_geometry (float offset[3], 
+    void find_default_geometry (Plm_image_header *pih);
+    void find_rasterization_geometry (float offset[3], 
 	float spacing[3], plm_long dims[3]);
-    PLMBASE_API void find_rasterization_geometry (Plm_image_header *pih);
-    PLMBASE_API Pstring find_unused_structure_name (void);
-    PLMBASE_API void fix_polyline_slice_numbers (void);
-    PLMBASE_API void free_all_polylines (void);
-    PLMBASE_API void keyholize (void);
-    PLMBASE_API void set_rasterization_geometry (void);
-    PLMBASE_API void set_geometry (const Plm_image_header *pih);
-    PLMBASE_API void set_geometry (const Plm_image *pli);
+    void find_rasterization_geometry (Plm_image_header *pih);
+    Pstring find_unused_structure_name (void);
+    void fix_polyline_slice_numbers (void);
+    void free_all_polylines (void);
+    void keyholize (void);
+    void set_rasterization_geometry (void);
+    void set_geometry (const Plm_image_header *pih);
+    void set_geometry (const Plm_image *pli);
 };
 
 #endif

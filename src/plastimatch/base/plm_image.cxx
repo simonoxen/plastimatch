@@ -17,14 +17,19 @@
 Plm_image::Plm_image () {
     this->init ();
 }
+Plm_image::Plm_image (const char* fname) {
+    this->init ();
+    this->load_native (fname);
+}
 Plm_image::Plm_image (const Pstring& fname)
 {
     this->init ();
     this->load_native (fname.c_str());
 }
-Plm_image::Plm_image (const char* fname) {
+Plm_image::Plm_image (const std::string& fname)
+{
     this->init ();
-    this->load_native (fname);
+    this->load_native (fname.c_str());
 }
 Plm_image::Plm_image (const char* fname, Plm_image_type type)
 {
