@@ -29,8 +29,8 @@ class new():
 	##
 	## PUBLIC METHODS:
 	##
-	## img.read('file_name.mha')
-	## img.write('file_name.mha')
+	## img.read_mha('file_name.mha')
+	## img.write_mha('file_name.mha')
 	
 	data=None
 	size=None
