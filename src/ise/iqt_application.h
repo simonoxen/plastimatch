@@ -6,6 +6,7 @@
 
 #include <QApplication>
 #include <QMutex>
+#include <QWaitCondition>
 
 #define ise_app ((Iqt_application *) qApp)
 
@@ -25,6 +26,7 @@ public:
         Iqt_main_window *mw,
         int rowset, int colset, double ampset, int markset, int noiset);
     void stop ();
+    QWaitCondition frameLoaded;
 
 public:
     int num_panels;

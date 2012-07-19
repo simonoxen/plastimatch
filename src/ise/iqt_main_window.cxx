@@ -11,6 +11,8 @@
 #include <QCoreApplication>
 #include <QSpinBox>
 #include <QLabel>
+#include <QMutex>
+#include <QWaitCondition>
 //#include <vtkPolyDataMapper.h>
 //#include <vtkRenderer.h>
 //#include <vtkRenderWindow.h>
@@ -188,14 +190,23 @@ Iqt_main_window::slot_play ()
         play_pause_button->setText ("||");
         action_Play->setText ("&Pause");
 	while (playing) {
-	    framePos->setValue(frameNum);
-	    Sleeper::msleep(100);
-	    if (isTracking) {
-		/* do something */
+	    ise_app->mutex.lock();
+	    if (!isTracking) {
+		framePos->setValue(frameNum);
+		Sleeper::msleep(200);
+	    } else {
+		framePos->setValue(frameNum);
+		qDebug() << "Displaying frame " << frameNum;
+		Sleeper::msleep(200);
+		ise_app->frameLoaded.wakeAll();
 	    }
+	    ise_app->mutex.unlock();
 	    QCoreApplication::processEvents();
 	    frameNum++;
-	    if (frameNum==numFiles) playing = false;
+	    if (frameNum==numFiles) {
+		playing = false;
+		if (isTracking) slot_set_tracking (false);
+	    }
 	}
     }
     //vid_screen->play(playing);
@@ -352,6 +363,7 @@ Iqt_main_window::slot_set_tracking (bool clicked)
     } else {
 	num_track->setHidden(true);
 	track_label->setHidden(true);
+	this->tracker->tracker_thread->quit ();
 	isTracking = false;
     }
 }
