@@ -1,34 +1,32 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include "ise_config.h"
-#include <stdio.h>
+/* Libraries */
 #include <QtGui>
-#include <QTimer>
-#include <QFileDialog>
-#include <QDir>
 #include <QByteArray>
 #include <QCoreApplication>
-#include <QSpinBox>
+#include <QDir>
+#include <QFileDialog>
+#include <QTimer>
 #include <QLabel>
 #include <QMutex>
+#include <QSpinBox>
 #include <QWaitCondition>
-//#include <vtkPolyDataMapper.h>
-//#include <vtkRenderer.h>
-//#include <vtkRenderWindow.h>
-//#include <vtkSphereSource.h>
-//#include "vtkSmartPointer.h"
-#include "sleeper.h"
+#include <stdio.h>
+
+/* Plastimatch headers */
+#include "ise_config.h"
 #include "cbuf.h"
 #include "frame.h"
 #include "his_io.h"
-#include "synthetic_source_thread.h"
 #include "iqt_synth_settings.h"
 #include "iqt_application.h"
 #include "iqt_main_window.h"
 #include "iqt_tracker.h"
-#include "tracker_thread.h"
 #include "iqt_video_widget.h"
+#include "sleeper.h"
+#include "synthetic_source_thread.h"
+#include "tracker_thread.h"
 
 Iqt_main_window::Iqt_main_window ()
 {
@@ -99,35 +97,13 @@ Iqt_main_window::slot_load ()
         return;
     }
 
-    //QEvent *event = new QEvent(QEvent::User); //type, receiver->mapFromGlobal(pos), mouse_button, mouse_buttons, Qt::NoModifier);
-
     statusBar()->showMessage(QString("Filename: %1")
         .arg(filename));
 
-    //ise_app->postEvent (this, event);
-    //QMessageBox::information (0, QString ("Info"), QString ("TEST 1..2"));
-    //QCoreApplication::processEvents();
     QString path = QFileInfo(filename).path();
     show_fluoro(path);
     vid_screen->rescale();
 }
-/*
-bool
-Iqt_main_window::event (QEvent *event)
-{
-    if (event->type() == QEvent::User) {
-        //QMessageBox::information (0, QString ("Info"), 
-        //QString ("Our event was handled"));
-
-        QString path = QFileInfo(filename).path();
-        show_fluoro(path);
-        
-        return true;
-    } else {
-        return QMainWindow::event (event);
-    }
-}
-*/
 
 void
 Iqt_main_window::show_fluoro (QString path)
@@ -139,7 +115,6 @@ Iqt_main_window::show_fluoro (QString path)
 
     for (int j=0; j < numFiles; j++) {
 	filename = path + "/" + files.at(j);
-	//qDebug() << filename;
 	
 	QByteArray ba = filename.toLocal8Bit();
 	const char *fn = ba.data();
@@ -151,24 +126,17 @@ Iqt_main_window::show_fluoro (QString path)
 
         Frame *f = ise_app->cbuf[0]->get_frame ();
         bool isHis = his_read (f->img, 512, 512, fn);
-        //qDebug("Image Pointer: %p", f->img);
+
         if (isHis) {
             ise_app->cbuf[0]->add_waiting_frame (f);
-            //this->slot_frame_ready (f, 512, 512);
         } else {
             ise_app->cbuf[0]->add_empty_frame (f);
 	}
 	frameList[j] = f;
-	//framePos->setValue(j);
-	//Sleeper::msleep(500);
     }
 
     ise_app->cbuf[0]->display_lock_oldest_frame ();
     this->slot_frame_ready (512, 512);
-    /*for (int q=0; q < numFiles; q++) {
-	qDebug("Frame: %p", frameList[q]);
-	qDebug("Image: %p", frameList[q]->img);
-	}*/
     playing = false;
     this->slot_play ();
 }
@@ -209,7 +177,6 @@ Iqt_main_window::slot_play ()
 	    }
 	}
     }
-    //vid_screen->play(playing);
 }
 
 void
@@ -302,8 +269,8 @@ Iqt_main_window::slot_reload_frame ()
 	setMax->setValue(setMin->value());
     }
 
-    int max = setMax->value(); //changed by sliders, alters bg darkness
-    int min = setMin->value(); //changed by sliders, alters bg&rect darkness
+    int max = setMax->value();
+    int min = setMin->value();
 
     unsigned short min_val = 0xffff;
     unsigned short max_val = 0;
@@ -320,10 +287,10 @@ Iqt_main_window::slot_reload_frame ()
         float fval = (f->img[i] - min) * 255.0 / (max-min);
         if (fval < 0) fval = 0; else if (fval > 255) fval = 255;
         uchar val = (uchar) fval;
-        imgdata[4*i+0] = val;  //bg red
-        imgdata[4*i+1] = val;  //bg green
-        imgdata[4*i+2] = val;  //bg blue
-        imgdata[4*i+3] = 0xff; //alpha
+        imgdata[4*i+0] = val;
+        imgdata[4*i+1] = val;
+        imgdata[4*i+2] = val;
+        imgdata[4*i+3] = 0xff;
     }
     QImage qimage (imgdata, width, height, QImage::Format_RGB32);
     this->playing = true;
@@ -358,6 +325,7 @@ Iqt_main_window::slot_set_tracking (bool clicked)
     if (clicked){
 	num_track->setHidden(false);
 	track_label->setHidden(false);
+	this->tracker->tracker_initialize ();
 	this->tracker->tracker_thread->start ();
 	isTracking = true;
     } else {

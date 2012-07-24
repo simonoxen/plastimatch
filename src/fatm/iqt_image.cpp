@@ -1,11 +1,12 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "config.h"
-#include "image.h"
+#include "iqt_image.h"
 
 Image_Rect::Image_Rect () {
     this->data = 0;
@@ -137,3 +138,4 @@ image_free (Image* image)
 {
     if (image->data) free (image->data);
 }
+

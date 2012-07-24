@@ -2,14 +2,13 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "fatm.h"
-#include "image.h"
 #include "iqt_tracker.h"
 #include "tracker_thread.h"
 
 Tracker::Tracker () 
 {
     this->tracker_thread = new Tracker_thread;
-    //this->tracker_thread->start(); 
+    this->tracker_thread->set_tracker (this);
 }
 
 Tracker::~Tracker () 
@@ -19,7 +18,7 @@ Tracker::~Tracker ()
 
 
 void
-tracker_initialize (/*bool user_track*/)
+Tracker::tracker_initialize (/*bool user_track*/)
 {
 #if defined (this_is_today)
     FATM_Options *fopt;
@@ -46,26 +45,31 @@ tracker_initialize (/*bool user_track*/)
     */
 #endif
 
-#if defined (this_is_what_we_would_like)
-    Fatm fatm = new Fatm;
+    bool user_track = false;
+    FATM_Options *fatm = new FATM_Options;
     Image_Rect *pattern;
     Image_Rect *signal;
     int dims[2] = {10, 10};
+    int sig_dims[2] = {150, 150};
     pattern->set_dims (dims);
-    signal->set_dims ({150, 150}); /*arbitrary, could be user-defined as well*/
-    unsigned short *img = pattern->get_image_pointer(); /* will be same as f->img */
+    signal->set_dims (sig_dims); /*arbitrary, could be user-defined as well*/
     
+    fatm = fatm_initialize ();
+    fatm->alg = MATCH_ALGORITHM_FNCC;
+
+    //unsigned short *img = pattern->get_image_pointer(); /* will be same as f->img */
+    /*
     for (int i = 0; i < signal->dims[0]; i++) {
 	for (int j = 0; j < signal->dims[1]; j++) {
 	    signal->data[i*signal->dims[0] + j] = img[i*(512) + j];
 	}
     }
-
+    
     if (!user_track) {
 	//unsigned short value;
 	int value;
 	
-	/* create pattern */
+	/* create pattern 
 	for (int i = 0; i < dims[0]; i++) {
 	    for (int j = 0; j < dims[1]; j++) {
 		if (i==4 || i==5) {
@@ -77,7 +81,7 @@ tracker_initialize (/*bool user_track*/)
 		} else {
 		    value = 0;
 		}
-		/* horizontal bright rectangle */
+		/* horizontal bright rectangle 
 		pattern->data[i*dims[1]+j] = value;
 	    }
 	}
@@ -90,11 +94,11 @@ tracker_initialize (/*bool user_track*/)
 						 + (pattern->pmin[1]+j)];
 		/* pmin[] is top-left pixel ({x, y}) of user-defined pattern,
 		   would be from "trace" in iqt_video_widget 
-		   need to know how the img[] array is laid out */
+		   need to know how the img[] array is laid out 
 	    }
 	}
     }    
 
-    fatm->set_pattern (pattern);
-#endif
+    fatm->pat_rect = *(pattern);
+*/
 }

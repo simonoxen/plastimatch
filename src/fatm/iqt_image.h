@@ -1,30 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef IMAGE_H
-#define IMAGE_H
-
-/* ABOUT THE DIMENSIONS: SLOW MOVING INDICES FIRST!
-   For col-major code, this means:
-     pmin[0] = cmin,  pmin[1] = rmin.
-     dims[0] = ncol,  dims[1] = nrow.
-   For row-major code, this means:
-     pmin[0] = rmin,  pmin[1] = cmin.
-     dims[0] = nrow,  dims[1] = ncol.
-*/
-/*typedef struct Image_Rect_struct Image_Rect;
-struct Image_Rect_struct {
-    int pmin[2];
-    int dims[2];
-};
-
-typedef struct Image_struct Image;
-struct Image_struct {
-    int dims[2];
-    int type;
-    void* data;
-};
-*/
+#ifndef IQT_IMAGE_H
+#define IQT_IMAGE_H
 
 class Image_Rect {
 

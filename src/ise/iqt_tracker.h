@@ -12,6 +12,7 @@ public:
     ~Tracker ();
 public:
     Tracker_thread *tracker_thread;
+    void tracker_initialize ();
 };
 
 #endif

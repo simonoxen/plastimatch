@@ -261,5 +261,3 @@ match_process_render (FATM_Options *options, double* qpat)
 	break;
     }
 }
-
-
