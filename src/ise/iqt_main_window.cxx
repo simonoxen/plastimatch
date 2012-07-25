@@ -53,7 +53,7 @@ Iqt_main_window::Iqt_main_window ()
     connect (framePos, SIGNAL(valueChanged(int)), this, SLOT(get_new_frame(int)));
     slider_layout->addWidget(framePos);
     frameNum = 0;
-    tracker = new Tracker ();
+    tracker = new Tracker (this);
 }
 
 Iqt_main_window::~Iqt_main_window ()

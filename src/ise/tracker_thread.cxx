@@ -10,6 +10,7 @@
 #include <string.h>
 
 /* Headers */
+#include "fatm.h"
 #include "iqt_application.h"
 #include "iqt_tracker.h"
 #include "sleeper.h"
@@ -37,5 +38,6 @@ Tracker_thread::run ()
 
 	ise_app->frameLoaded.wakeAll();
 	ise_app->mutex.unlock();
+	fatm_run(tracker->fatm);
     }
 }

@@ -4,10 +4,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <iostream>
 #include "config.h"
 #include "image.h"
 
 Image_Rect::Image_Rect () {
+    dims[0] = 0;
+    dims[1] = 1;
     this->data = 0;
 }
 
@@ -16,9 +19,10 @@ Image_Rect::~Image_Rect () {
 }
 
 void
-Image_Rect::set_dims (int dims[2]) {
-    this->dims[0] = dims[0];
-    this->dims[1] = dims[1];
+Image_Rect::set_dims (int dimens[2]) {
+    std::cout << dimens[0] << " " << dimens[1];
+    this->dims[0] = dimens[0];
+    this->dims[1] = dimens[1];
     this->data = new unsigned short[dims[0] * dims[1]];
 }
 

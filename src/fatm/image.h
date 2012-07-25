@@ -36,7 +36,7 @@ class Image_Rect {
  public:
     Image_Rect ();
     ~Image_Rect ();
-    void set_dims (int dims[2]);
+    void set_dims (int dimens[2]);
 };
 
 class Image {

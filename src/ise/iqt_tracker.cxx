@@ -4,11 +4,17 @@
 #include "fatm.h"
 #include "iqt_tracker.h"
 #include "tracker_thread.h"
+#include "iqt_main_window.h"
+#include "frame.h"
+#include "iqt_application.h"
+#include "cbuf.h"
+#include <QDebug>
 
-Tracker::Tracker () 
+Tracker::Tracker (Iqt_main_window *mw) 
 {
     this->tracker_thread = new Tracker_thread;
     this->tracker_thread->set_tracker (this);
+    this->mw = mw;
 }
 
 Tracker::~Tracker () 
@@ -46,34 +52,45 @@ Tracker::tracker_initialize (/*bool user_track*/)
 #endif
 
     bool user_track = false;
+    bool user_def = false;
     FATM_Options *fatm = new FATM_Options;
     Image_Rect *pattern;
     Image_Rect *signal;
     int dims[2] = {10, 10};
-    int sig_dims[2] = {150, 150};
+    qDebug("dims: %d, %d", dims[0], dims[1]);
+    int sig_dims[2] = {175, 175};
     pattern->set_dims (dims);
-    signal->set_dims (sig_dims); /*arbitrary, could be user-defined as well*/
+    //signal->set_dims (sig_dims); /*arbitrary, could be user-defined as well*/
     
     fatm = fatm_initialize ();
     fatm->alg = MATCH_ALGORITHM_FNCC;
-
-    //unsigned short *img = pattern->get_image_pointer(); /* will be same as f->img */
-    /*
-    for (int i = 0; i < signal->dims[0]; i++) {
-	for (int j = 0; j < signal->dims[1]; j++) {
+        
+    Frame *f = *(ise_app->cbuf[0]->display_ptr);
+    unsigned short *img = f->img;
+    
+    if (!user_def) {
+	signal->set_dims (sig_dims);
+	signal->pmin[0] = 175;
+	signal->pmin[1] = 175;
+    }
+    
+    for (int i = signal->pmin[0]; i < (signal->dims[0] + signal->pmin[0]); i++) {
+	for (int j = signal->pmin[1]; j < (signal->dims[1] + signal->pmin[1]); j++){
 	    signal->data[i*signal->dims[0] + j] = img[i*(512) + j];
 	}
     }
-    
+
+    fatm->sig_rect = *(signal);
+
     if (!user_track) {
-	//unsigned short value;
-	int value;
+	unsigned short value;
+	//int value;
 	
-	/* create pattern 
+	/* create pattern */
 	for (int i = 0; i < dims[0]; i++) {
 	    for (int j = 0; j < dims[1]; j++) {
-		if (i==4 || i==5) {
-		    if (j > 1 && j < 8) {
+		if (i>1 && i<8) {
+		    if (j == 4 || j == 5) {
 			value = 0xFFFF;
 		    } else {
 			value = 0;
@@ -81,7 +98,7 @@ Tracker::tracker_initialize (/*bool user_track*/)
 		} else {
 		    value = 0;
 		}
-		/* horizontal bright rectangle 
+		/* vertical bright rectangle */
 		pattern->data[i*dims[1]+j] = value;
 	    }
 	}
@@ -94,11 +111,11 @@ Tracker::tracker_initialize (/*bool user_track*/)
 						 + (pattern->pmin[1]+j)];
 		/* pmin[] is top-left pixel ({x, y}) of user-defined pattern,
 		   would be from "trace" in iqt_video_widget 
-		   need to know how the img[] array is laid out 
+		   need to know how the img[] array is laid out */
 	    }
 	}
     }    
 
     fatm->pat_rect = *(pattern);
-*/
+    fatm_compile (fatm);
 }
