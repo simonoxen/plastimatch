@@ -31,7 +31,7 @@ class Image_Rect {
  public:
     int pmin[2];
     int dims[2];
-    unsigned short *data;
+//    unsigned short *data;
 
  public:
     Image_Rect ();

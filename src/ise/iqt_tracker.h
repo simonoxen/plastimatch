@@ -5,6 +5,7 @@
 #define _iqt_tracker_h_
 #include "fatm.h"
 
+class Image_Rect;
 class Iqt_main_window;
 class Tracker_thread;
 
