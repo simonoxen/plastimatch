@@ -40,4 +40,5 @@ Tracker_thread::run ()
 	ise_app->mutex.unlock();
 	fatm_run(tracker->fatm);
     }
+    /* after running, send signal to this->tracker->mw with scoring information */
 }
