@@ -68,6 +68,7 @@ set (PLMBASE_LIBRARY_SRC
   ss_list_io.cxx
   thumbnail.cxx
   vf_convolve.cxx
+  vf_jacobian.cxx
   vf_stats.cxx
   vf.cxx
   volume_header.cxx

@@ -22,6 +22,7 @@
 #include "pcmd_xio_dvh.h"
 #include "pcmd_mask.h"
 #include "pcmd_header.h"
+#include "pcmd_jacobian.h"
 #include "pcmd_probe.h"
 #include "pcmd_resample.h"
 #include "pcmd_scale.h"
@@ -64,6 +65,7 @@ print_usage (int return_code)
         "\n"
         "  fill        "
         "  header      "
+	"  jacobian      "
         "  mask        "
         "  probe       "
         "  register    "
@@ -168,6 +170,9 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "header")) {
         do_command_header (argc, argv);
+    }
+    else if (!strcmp (command, "jacobian")) {
+        do_command_jacobian (argc, argv);
     }
     else if (!strcmp (command, "fill")) {
         /* fill and mask are the same */

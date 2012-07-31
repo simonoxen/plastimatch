@@ -23,6 +23,7 @@ extern "C" {
 #define PCMD_DRR             "drr"
 #define PCMD_DVH             "dvh"
 #define PCMD_HEADER          "header"
+#define PCMD_JACOBIAN          "jacobian"
 #define PCMD_FILL            "fill"
 #define PCMD_MASK            "mask"
 #define PCMD_PROBE           "probe"
@@ -50,6 +51,7 @@ static const char* pcmds[] = {
     PCMD_DRR,
     PCMD_DVH,
     PCMD_HEADER,
+    PCMD_JACOBIAN,
     PCMD_FILL,
     PCMD_MASK,
     PCMD_PROBE,

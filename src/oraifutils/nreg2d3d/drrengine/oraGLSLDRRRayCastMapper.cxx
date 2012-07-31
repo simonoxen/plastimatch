@@ -352,8 +352,8 @@ void GLSLDRRRayCastMapper::AutoDetectVideoMemory()
       this->MaxMemoryInBytes = info->GetSharedSystemMemory();
   }
 
-  if (this->MaxMemoryInBytes == 0) // default: 128MB.
-    this->MaxMemoryInBytes = 128 * 1024 * 1024;
+  if (this->MaxMemoryInBytes == 0) // default: 512MB.
+    this->MaxMemoryInBytes = 512 * 1024 * 1024;
 }
 
 bool GLSLDRRRayCastMapper::IsDRRComputationSupported()

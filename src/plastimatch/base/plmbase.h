@@ -74,6 +74,9 @@
 #endif
 #include "vf.h"
 #include "vf_convolve.h"
+#if (!PLM_CUDA_COMPILE)
+#include "vf_jacobian.h"
+#endif
 #include "vf_stats.h"
 #include "volume.h"
 #include "volume_header.h"

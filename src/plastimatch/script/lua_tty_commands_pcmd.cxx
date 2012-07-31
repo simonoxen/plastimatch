@@ -19,6 +19,7 @@
 #include "pcmd_xio_dvh.h"
 #include "pcmd_mask.h"
 #include "pcmd_header.h"
+#include "pcmd_jacobian.h"
 #include "pcmd_probe.h"
 #include "pcmd_resample.h"
 #include "pcmd_segment.h"
@@ -69,6 +70,9 @@ do_tty_command_pcmd (int argc, char** argv)
     }
     else if (!strcmp (command, PCMD_HEADER)) {
         do_command_header (argc, argv);
+    }
+    else if (!strcmp (command, PCMD_JACOBIAN)) {
+        do_command_jacobian (argc, argv);
     }
     else if (!strcmp (command, PCMD_FILL)) {
         /* fill and mask are the same */

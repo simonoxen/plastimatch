@@ -72,6 +72,22 @@ IF(ORAIFUTILS_USE_OPENCL)
   ENDIF(NOT OPENCL_FOUND)
 ENDIF(ORAIFUTILS_USE_OPENCL)
 
+#check for graphics auto-dection
+IF(WIN32 AND NOT UNIX)
+  IF(NOT DirectX_FOUND)
+    MESSAGE(STATUS "Could not find DirectX SDK -> Graphics Memory Autodetection won't be active -> Using defaults")
+  ELSE(NOT DirectX_FOUND)
+    MESSAGE(STATUS "DIRECTX SDK found.")
+  ENDIF(NOT DirectX_FOUND)
+ELSEIF(UNIX AND NOT WIN32)
+  find_package(NVCtrlLib)
+  IF(NOT NVCtrlLib_FOUND)
+    MESSAGE(STATUS "Could not find NVCONTROL LIB -> Graphics Memory Autodetection won't be active -> Using defaults")
+  ELSE(NOT NVCtrlLib_FOUND)
+    MESSAGE(STATUS "NVCONTROL LIB found.")
+  ENDIF(NOT NVCtrlLib_FOUND)
+ENDIF(WIN32 AND NOT UNIX)
+
 # Build static libraries by default
 # Build ONLY static libraries in MSVC because no exports are defined yet
 # FIXME: Add __declspec(dllexport) for MSVC SHARED library support
