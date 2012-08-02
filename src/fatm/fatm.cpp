@@ -25,6 +25,15 @@ void clip_score_rect (FATM_Options *options);
 /* =======================================================================*
     Public Functions
  * =======================================================================*/
+/*
+Score_Rect_Info::Score_Rect_Info ()
+{
+}
+
+Score_Rect_Info::~Score_Rect_Info ()
+{
+}
+*/
 FATM_Options* 
 fatm_initialize (void)
 {

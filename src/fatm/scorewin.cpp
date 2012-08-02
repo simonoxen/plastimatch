@@ -16,7 +16,7 @@
    and run that isn't appropriate.
    ----------------------------------------------------------------------- */
 #include <math.h>
-#include "match.h"
+#include "fatm.h"
 #include "shared.h"
 #include "scorewin.h"
 #include "mex.h"
@@ -24,7 +24,7 @@
 
 #if defined (commentout)
 void
-scorewin_clip_pattern (Match_Options* options)
+scorewin_clip_pattern (FATM_Options *options)
 {
     Image* pat = &options->pat;
     Image_Rect* pr = &options->pat_rect;
@@ -45,7 +45,7 @@ scorewin_clip_pattern (Match_Options* options)
 #endif
 
 inline void
-scorewin_match_partials (Match_Options* options, Score_Function score_fn)
+scorewin_match_partials (FATM__Options* options, Score_Function score_fn)
 {
     Image_Rect* pr = &options->pat_rect;
     Image_Rect* sr = &options->sig_rect;
@@ -114,12 +114,12 @@ scorewin_match_partials (Match_Options* options, Score_Function score_fn)
 }
 
 void
-scorewin_clip_partials (Match_Options* options, Score_Function score_fn)
+scorewin_clip_partials (FATM_Options* options, Score_Function score_fn)
 {
 }
 
 void
-scorewin (Match_Options* options, Score_Function score_fn)
+scorewin (FATM_Options* options, Score_Function score_fn)
 {
 #if defined (commentout)
     if (options->match_partials) {

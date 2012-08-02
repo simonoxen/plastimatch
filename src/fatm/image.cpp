@@ -138,3 +138,10 @@ image_free (Image* image)
 {
     if (image->data) free (image->data);
 }
+
+double
+image_double (Image* image)
+{
+    double sig[(image->dims[0])*(image->dims[1])];
+    image->data = sig;
+}

@@ -56,6 +56,18 @@ struct score_rect_info {
     Image_Rect score_rect_valid;
 };
 
+/*
+class Score_Rect_Info {
+
+ public:
+    Image_Rect score_rect_full;
+    Image_Rect score_rect_valid;
+
+ public:
+    Score_Rect_Info ();
+    ~Score_Rect_Info ();
+};
+*/
 typedef struct pattern_stats Pattern_Stats;
 struct pattern_stats {
     double p_mean;

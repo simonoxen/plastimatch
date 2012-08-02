@@ -94,5 +94,6 @@ void image_malloc (Image* image, int dims[2]);
 void image_malloc_rand (Image* image, int dims[2]);
 void image_write (Image* image, char* fn);
 void image_free (Image* image);
+double image_double (Image* image);
 
 #endif
