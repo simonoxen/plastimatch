@@ -18,7 +18,7 @@ The recommended method for downloading plastimatch is to use subversion
 to download the source code, and then compile the source.
 To download using subversion, use the following command::
 
-  $ svn co http://forge.abcd.harvard.edu/svn/plastimatch/plastimatch/trunk plastimatch
+  $ svn co https://forge.abcd.harvard.edu/svn/plastimatch/plastimatch/trunk plastimatch
 
 You will need to supply the user name and password::
 
@@ -83,7 +83,7 @@ When you build ITK, the following settings are recommended::
   BUILD_SHARED_LIBS                         (EITHER)
   BUILD_TESTING                             OFF
   ITK_USE_REVIEW                            ON
-  ITK_USE_OPTIMIZED_REGITRATION_METHODS     ON
+  ITK_USE_OPTIMIZED_REGISTRATION_METHODS    ON
 
 Note, if you are using gcc 4.7 on 32-bit platform, and if you 
 need to load .nrrd files, you will need to patch ITK.  
@@ -222,6 +222,11 @@ capture program.  Download WxWidgets from here:
 
 Compiling plastimatch (Windows)
 -------------------------------
+Before compiling plastimatch, compile or install the desired 
+prerequisites.  At a minimum, you must compile required 
+packages such as ITK.  Be sure to build ITK and plastimatch 
+using the same build type (e.g. both as Debug, or both as Release).
+
 Run CMake as follows:
 
 #. Select source directory and binary directory
