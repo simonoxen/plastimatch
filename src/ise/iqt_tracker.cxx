@@ -98,9 +98,12 @@ Tracker::tracker_initialize (/*bool user_track*/)
     	    }
     	}
     }
+
+    /* initial score area */
     
     int score_dims[2] = {175, 175};
     int score_val2[2] = {20, 20};
+
     image_init (&fatm->score);
     image_malloc (&fatm->score, score_dims);
     
@@ -111,6 +114,9 @@ Tracker::tracker_initialize (/*bool user_track*/)
     fatm->score_rect.score_rect_valid.pmin[0] = 0;
     fatm->score_rect.score_rect_valid.pmin[1] = 0;
     fatm->score_rect.score_rect_valid.set_dims(score_val2);
+
+    /* for subsequent iterations, make the score window 50 pixels
+       (in each direction) from previous detection point */
 
     fatm->pat.data = patt;
 
@@ -167,5 +173,6 @@ Tracker::tracker_initialize (/*bool user_track*/)
     */
 
     //fatm->pat_rect = *(fatm->pat_rect);
+
     fatm_compile (fatm);
 }

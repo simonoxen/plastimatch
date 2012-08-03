@@ -18,7 +18,6 @@ Image_Rect::~Image_Rect () {
 
 void
 Image_Rect::set_dims (int dimens[2]) {
-    std::cout << dimens[0] << " " << dimens[1];
     this->dims[0] = dimens[0];
     this->dims[1] = dimens[1];
 }

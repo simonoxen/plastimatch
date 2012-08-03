@@ -35,10 +35,12 @@ Tracker_thread::run ()
     while (1) {
 	ise_app->mutex.lock();
 	ise_app->frameLoaded.wait(&(ise_app->mutex));
-
 	ise_app->frameLoaded.wakeAll();
 	ise_app->mutex.unlock();
+	this->tracker->tracker_initialize();
 	fatm_run(tracker->fatm);
     }
     /* after running, send signal to this->tracker->mw with scoring information */
+    /* or to this->tracker->mw->vid_screen for the point around which to make
+       the tracking square */
 }

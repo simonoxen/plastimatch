@@ -325,7 +325,7 @@ Iqt_main_window::slot_set_tracking (bool clicked)
     if (clicked){
 	num_track->setHidden(false);
 	track_label->setHidden(false);
-	this->tracker->tracker_initialize ();
+	//this->tracker->tracker_initialize ();
 	this->tracker->tracker_thread->start ();
 	isTracking = true;
     } else {
