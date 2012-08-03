@@ -64,7 +64,7 @@ image_malloc_rand (Image* image, int dims[2])
 }
 
 void
-image_write (Image* image, char* fn)
+image_write (Image* image, const char* fn)
 {
     FILE* fp;
     int i;
@@ -138,9 +138,11 @@ image_free (Image* image)
     if (image->data) free (image->data);
 }
 
+#if defined (commentout)
 double
 image_double (Image* image)
 {
     double sig[(image->dims[0])*(image->dims[1])];
     image->data = sig;
 }
+#endif

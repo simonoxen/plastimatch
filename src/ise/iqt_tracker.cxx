@@ -66,7 +66,6 @@ Tracker::tracker_initialize (/*bool user_track*/)
 
     image_init(&fatm->sig);
     image_init(&fatm->pat);
-    fatm->pat_rect.set_dims (dims);
         
     Frame *f = *(ise_app->cbuf[0]->display_ptr);
     unsigned short *img = f->img;
@@ -76,8 +75,8 @@ Tracker::tracker_initialize (/*bool user_track*/)
     }
 
     image_malloc (&fatm->pat, dims);
-    image_double (&fatm->pat);
-    double patt[dims[0]*dims[1]];
+    //image_double (&fatm->pat);
+    //double patt[dims[0]*dims[1]];
 
     if (!user_track) {
 	double value;
@@ -86,7 +85,7 @@ Tracker::tracker_initialize (/*bool user_track*/)
 	    for (int j = 0; j < dims[1]; j++) {
 		if (i>1 && i<8) {
 		    if (j == 4 || j == 5) {
-			value = 0xFFFF;
+			value = 1;
 		    } else {
 			value = 0;
 		    }
@@ -94,7 +93,7 @@ Tracker::tracker_initialize (/*bool user_track*/)
 		    value = 0;
 		}
 		/* vertical bright rectangle */
-		patt[i*dims[1]+j] = value;
+                image_data(&fatm->pat)[i*dims[1]+j] = value;
     	    }
     	}
     }
@@ -118,22 +117,30 @@ Tracker::tracker_initialize (/*bool user_track*/)
     /* for subsequent iterations, make the score window 50 pixels
        (in each direction) from previous detection point */
 
-    fatm->pat.data = patt;
+//    fatm->pat.data = patt;
 
+//    fatm->sig_rect.pmin[0] = 175;
+//    fatm->sig_rect.pmin[1] = 175;
+    fatm->sig_rect.pmin[0] = 0;
+    fatm->sig_rect.pmin[1] = 0;
     fatm->sig_rect.set_dims(sig_dims);
+    fatm->pat_rect.pmin[0] = 0;
+    fatm->pat_rect.pmin[1] = 0;
     fatm->pat_rect.set_dims(dims);
     
 
-    double signal_img[fatm->sig.dims[0]*fatm->sig.dims[1]];
+//    double signal_img[fatm->sig.dims[0]*fatm->sig.dims[1]];
     
     for (int i = 0; i < (fatm->sig.dims[0]); i++) {
 	for (int j = 0; j < (fatm->sig.dims[1]); j++){
-	    signal_img[i*fatm->sig.dims[0] + j] = img[(i+175)*(512) + (j+175)];
+//	    signal_img[i*fatm->sig.dims[0] + j] = img[(i+175)*(512) + (j+175)];
+            image_data(&fatm->sig)[i*fatm->sig.dims[0] + j]
+                = img[(i+175)*(512) + (j+175)];
 	}
     }
 
-    fatm->sig.data = signal_img;
-    fatm->score.data = signal_img;
+//    fatm->sig.data = signal_img;
+//    fatm->score.data = signal_img;
 
     /*
       if (!user_track) {

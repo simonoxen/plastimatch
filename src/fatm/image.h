@@ -92,7 +92,7 @@ double* image_data (Image* image);
 void image_init (Image* image);
 void image_malloc (Image* image, int dims[2]);
 void image_malloc_rand (Image* image, int dims[2]);
-void image_write (Image* image, char* fn);
+void image_write (Image* image, const char* fn);
 void image_free (Image* image);
 double image_double (Image* image);
 
