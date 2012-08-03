@@ -17,9 +17,8 @@ main (int argc, char * argv [])
     Mabs_parms parms;
 
     /* Required input */
-    strncpy (parms.atlas_dir, atlas_directory.c_str(), _MAX_PATH-1);
-    strncpy (parms.labeling_input_fn, 
-        input_image.c_str(), _MAX_PATH-1);
+    parms.atlas_dir = atlas_directory;
+    parms.labeling_input_fn = input_image.c_str();
 
     /* GCS FIX: Need registration config */
 
