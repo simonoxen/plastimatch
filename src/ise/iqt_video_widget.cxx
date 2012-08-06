@@ -127,6 +127,7 @@ void Iqt_video_widget::mouseReleaseEvent(QMouseEvent* event)
         qDebug() << "pix = " << pix;
 	
         this->trace.setRect((originf.x()-5), (originf.y()-5), 10, 10);
+	this->manual = true;
 	updateTracking();
     }
     if (event->button()==4) {
@@ -214,7 +215,22 @@ void
 Iqt_video_widget::updateTracking()
 {
     delete trackPoint;
+    
+    if (!manual) {
+	//QPointF originf = mapToScene (origin);
+	QRectF br = this->pmi->boundingRect();
 
+	//this->pix = QPointF(
+	//	(1 - (br.width() - originf.x()) / br.width()) * 512 + 0.5,
+	//	(1 - (br.height() - originf.y()) / br.height()) * 512 + 0.5);
+
+	QPointF originf;
+	originf = QPointF (
+		    ((pix.x()+0.5)/512 - 1) * br.width() + br.width(),
+	            ((pix.y()+0.5)/512 - 1) * br.height() + br.height());
+	this->trace.setRect ((originf.x()-5), (originf.y()-5), 10, 10);
+    }
+    
     if (!hasRect) {
 	this->hasRect = true;
     } else {
@@ -229,6 +245,7 @@ Iqt_video_widget::updateTracking()
     trackPoint = new QGraphicsTextItem;
     trackPoint->setDefaultTextColor (Qt::red);
     scene->addItem (trackPoint);
+    
 
     trackPoint->setPlainText (QString("Tracking Point:  %1 ,  %2")
 			      .arg((int)pix.x())

@@ -18,7 +18,6 @@ private:
 
     QGraphicsScene* scene;
     QPixmap pmap;
-    QGraphicsPixmapItem* pmi;
     QTime *time;
     QTimer *ping_check;
     QString filename;
@@ -36,11 +35,13 @@ public slots:
 
 public:
     Iqt_video_widget (QWidget *parent = 0);
+    QGraphicsPixmapItem* pmi;
     int j;
     QGraphicsRectItem *tracker;
     QRectF trace;
     bool drawing;
     bool hasRect;
+    bool manual;
     QPoint origin;
     QPointF pix;
     QGraphicsTextItem *trackPoint;

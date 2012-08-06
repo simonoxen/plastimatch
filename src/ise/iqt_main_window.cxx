@@ -335,3 +335,11 @@ Iqt_main_window::slot_set_tracking (bool clicked)
 	isTracking = false;
     }
 }
+
+void
+Iqt_main_window::trackPoint (double row, double col)
+{
+    this->vid_screen->pix = QPointF (row, col);
+    this->vid_screen->manual = false;
+    this->vid_screen->updateTracking ();
+}

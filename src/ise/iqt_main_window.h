@@ -64,6 +64,7 @@ public slots:
     void slot_reload_frame (void);
     void slot_frame_ready (int width, int height);
     void slot_set_tracking (bool clicked);
+    void trackPoint (double row, double col);
 
 signals:
     void fluoro_ready (QString path);

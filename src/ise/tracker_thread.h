@@ -17,6 +17,10 @@ public:
 public:
     Tracker_thread ();
     virtual ~Tracker_thread ();
+    double best_score;
+    double best_row;
+    double best_col;
+    void find_max (void);
     void set_tracker (Tracker *t);
 
 protected:
