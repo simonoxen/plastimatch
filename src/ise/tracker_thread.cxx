@@ -53,7 +53,7 @@ Tracker_thread::run ()
 	qDebug("Signal point: %d, %d",
 	       (int)this->best_row + 175,
 	       (int)this->best_col + 175);
-	this->tracker->mw->trackPoint ((this->best_row+175), (this->best_col+175));
+	this->tracker->mw->trackPoint ((this->best_row+175+5), (this->best_col+175+5));
 
 #if defined (commentout)
 	/* Save to File */
@@ -78,9 +78,11 @@ Tracker_thread::run ()
 void
 Tracker_thread::find_max ()
 {
-    for(int r = 0; r < 175; r++) {
-	for (int c = 0; c < 175; c++) {
-	    double score = image_data(&tracker->fatm->score)[r*175 + c];
+    this->best_score = -1;
+    for (int r = 0; r < 175; r++) {
+        for (int c = 0; c < 175; c++) {
+            /* Force column major */
+	    double score = image_data(&tracker->fatm->score)[c*175 + r];
 	    if (score > this->best_score) {
 		this->best_score = score;
 		this->best_row = (double) r;
