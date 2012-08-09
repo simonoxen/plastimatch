@@ -3,7 +3,7 @@
 ##
 ## FUNCTION STILL IN TESTING
 ##
-## Author: Paolo Zaffino (p.zaffino@yahoo.it)
+## Author: Paolo Zaffino (p.zaffino@unicz.it)
 ##
 ## rev 2
 ##

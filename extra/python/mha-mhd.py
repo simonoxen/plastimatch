@@ -7,7 +7,7 @@
 ## This script converts a mha file in a mhd file and vice versa.
 ## The input file can be an image or a vector field.
 ##
-## Author: Paolo Zaffino (p.zaffino@yahoo.it)
+## Author: Paolo Zaffino (p.zaffino@unicz.it)
 ##
 ## NOT TESTED ON PYTHON 3
 

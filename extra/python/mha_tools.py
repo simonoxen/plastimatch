@@ -1,5 +1,5 @@
 ## MHA tools
-## Author: Paolo Zaffino  (p.zaffino@yahoo.it)
+## Author: Paolo Zaffino  (p.zaffino@unicz.it)
 ## rev 2
 ## NOT TESTED ON PYTHON 3
 

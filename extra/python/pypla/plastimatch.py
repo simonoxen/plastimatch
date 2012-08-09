@@ -1,7 +1,7 @@
 ########################################################################
 ## This is a Python wrapper for Plastimatch
-## Author: Paolo Zaffino  (p.zaffino@yahoo.it)
-## Rev 3
+## Author: Paolo Zaffino  (p.zaffino@unicz.it)
+## Rev 4
 ## NOT TESTED ON PYTHON 3
 ########################################################################
 
@@ -35,9 +35,9 @@ class add:
 		input_parms=""
 		
 		for file_name in self.input_files:
-			input_parms+=str(file_name)+" "
+			input_parms+=str(file_name) + " "
 		
-		subprocess.call('plastimatch add ' + input_parms + str(self.output_file),\
+		subprocess.call("plastimatch add " + input_parms + str(self.output_file),\
 		shell=True, stdout=self.log, stderr=self.log)
 		
 		self.log.close()
@@ -99,6 +99,31 @@ class crop:
 
 
 
+class dice:
+	
+	def __init__ (self, log_file=""):
+		self.log_file=log_file
+	
+	input_files=[]
+	
+	def run_dice(self):
+		
+		if len(self.input_files) != 2:
+			raise NameError("You must define two input structures!")
+		
+		if self.log_file == "":
+			raise NameError("You must define a log file!")
+		else:
+			self.log=open(self.log_file, "w")
+		
+		subprocess.call("plastimatch dice " + str(self.input_files[0]) + " " + str(self.input_files[1]), \
+		shell=True, stdout=self.log, stderr=self.log)
+		
+		self.log.close()
+
+
+
+
 class diff:
 	
 	def __init__ (self, log_file=""):
@@ -117,8 +142,8 @@ class diff:
 		else:
 			self.log=open(self.log_file, "w")
 		
-		subprocess.call('plastimatch diff ' + str(self.input_files[0]) + " " + str(self.input_files[1])\
-		+" " + str(self.output_file), shell=True, stdout=self.log, stderr=self.log)
+		subprocess.call("plastimatch diff " + str(self.input_files[0]) + " " + str(self.input_files[1])\
+		+ " " + str(self.output_file), shell=True, stdout=self.log, stderr=self.log)
 		
 		self.log.close()
 
@@ -220,7 +245,7 @@ class register:
 		
 		if self.par_file!="" and os.path.exists(self.par_file):
 			print ("Please wait...")
-			subprocess.call('plastimatch register ' + self.par_file, shell=True, stdout=self.log, stderr=self.log)
+			subprocess.call("plastimatch register " + self.par_file, shell=True, stdout=self.log, stderr=self.log)
 			self.log.close()
 		else:
 			raise NameError("REGISTRATION NOT EXECUTED! You have to define a new parameters file name")
@@ -318,7 +343,7 @@ def _run_plm_command(command_type, command_options, command_keys, command_log_fi
 	else:
 		log=open(command_log_file, "w")
 	
-	subprocess.call('plastimatch '+ command_type + _scan_options(command_options, command_keys),\
+	subprocess.call("plastimatch "+ command_type + _scan_options(command_options, command_keys),\
 	shell=True, stdout=log, stderr=log)
 	
 	log.close()

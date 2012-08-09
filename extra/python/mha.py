@@ -1,6 +1,6 @@
 ########################################################################
 ## This class reads and writes mha files (images or vector fields)
-## Author: Paolo Zaffino  (p.zaffino@yahoo.it)
+## Author: Paolo Zaffino  (p.zaffino@unicz.it)
 ## Rev 16
 ## NOT TESTED ON PYTHON 3
 ########################################################################
