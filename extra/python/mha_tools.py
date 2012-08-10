@@ -1,6 +1,6 @@
 ## MHA tools
 ## Author: Paolo Zaffino  (p.zaffino@unicz.it)
-## rev 2
+## rev 3
 ## NOT TESTED ON PYTHON 3
 
 import numpy as np
@@ -14,11 +14,11 @@ def delete_edges(img_reg, img_ref, img_out, background):
 	# img_out = image without edges
 	# background = background value (HU)
 	
-	(reg, reg_size, reg_spacing, reg_offset, reg_data_type)=mha.read(img_reg)
-	(ref, ref_size, ref_spacing, ref_offset, ref_data_type)=mha.read(img_ref)
+	reg=mha.new(input_file=img_reg)
+	ref=mha.new(input_file=img_ref)
 	
-	diff=reg-ref
-	reg[diff==int(np.abs(background))]=background
+	diff=reg.data-ref.data
+	reg.data[diff==int(np.abs(background))]=background
 	
-	mha.write(reg, img_out, reg_spacing, reg_offset, reg_data_type)
-	
+	reg.write_mha(img_out)
+
