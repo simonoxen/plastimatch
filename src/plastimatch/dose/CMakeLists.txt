@@ -20,6 +20,7 @@ set (PLMDOSE_LIBRARY_SRC
   proton_dose.cxx
   proton_parms.cxx
   proton_scene.cxx
+  wed_parms.cxx
   )
 
 if (NOT BUILD_DEBIAN)

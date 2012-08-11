@@ -17,6 +17,7 @@
 #include "proton_dose.h"
 #include "proton_parms.h"
 #include "proton_scene.h"
+#include "wed_parms.h"
 #endif /* #ifndef _plmdose_h_ */
 
 

@@ -106,6 +106,9 @@ set (UNION_MASK_SRC
 set (VISCOUS_SRC
   viscous_main.cxx
   )
+set (WED_SRC
+  wed_main.cxx
+  )
 set (SHUFFLE_MHA_SRC
   shuffle_mha_main.cxx
   )
@@ -158,6 +161,9 @@ if (FULL_PLASTIMATCH_BUILD)
   plm_add_executable (vf_invert "${VF_INVERT_SRC}"
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+plm_add_executable (wed "${WED_SRC}" 
+    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   plm_add_executable (xf_to_EMPIREFMT "${XF_TO_EMPIREFMT_SRC}"
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
