@@ -5,6 +5,7 @@
 #define _mabs_h_
 
 #include "plmsegment_config.h"
+#include <string>
 
 class Mabs_private;
 class Mabs_parms;

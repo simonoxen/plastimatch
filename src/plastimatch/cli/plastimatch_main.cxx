@@ -20,6 +20,7 @@
 #include "pcmd_drr.h"
 #include "pcmd_dvh.h"
 #include "pcmd_xio_dvh.h"
+#include "pcmd_mabs.h"
 #include "pcmd_mask.h"
 #include "pcmd_header.h"
 #include "pcmd_jacobian.h"
@@ -66,6 +67,7 @@ print_usage (int return_code)
         "  fill        "
         "  header      "
 	"  jacobian    "
+//        "  mask        "
         "  mask        "
         "  probe       "
         "\n"
@@ -177,6 +179,9 @@ do_command (int argc, char* argv[])
     else if (!strcmp (command, "fill")) {
         /* fill and mask are the same */
         do_command_mask (argc, argv);
+    }
+    else if (!strcmp (command, "mabs")) {
+        do_command_mabs (argc, argv);
     }
     else if (!strcmp (command, "mask")) {
         /* fill and mask are the same */

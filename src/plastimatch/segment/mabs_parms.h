@@ -21,8 +21,8 @@ public:
     bool parse_args (int argc, char** argv);
     void print ();
 
-private:
     void parse_config (const char* config_fn);
+private:
     int set_key_val (const std::string& key, const std::string& val, 
         int section);
 
