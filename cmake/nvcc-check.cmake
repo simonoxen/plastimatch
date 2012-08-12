@@ -45,6 +45,13 @@ IF(CUDA_FOUND)
 
             # CUDA 3.X NEEDS GCC-4.3
             IF (CUDA_VERSION_MAJOR MATCHES "3")
+                # JAS 08.06.2012
+                #   Tell versions of CUDA < 4.1 to compile host code to C++
+                #   (instead of C). This is the default behavior in CUDA 4.1+
+                set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
+                    --host-compilation=C++
+                )
+
                 IF(GCCVER_MAJOR MATCHES "4")
                     IF(GCCVER_MINOR MATCHES "3")
                         MESSAGE(STATUS "nvcc-check: Found gcc-${GCCVER_MAJOR}.${GCCVER_MINOR}... success.")

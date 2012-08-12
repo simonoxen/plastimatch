@@ -50,6 +50,16 @@ PLMBASE_C_API void ray_trace_uniform (
         double *p2in,                 /* Input: end point for ray */
         float ray_step                /* Input: uniform step size */
 );
+PLMBASE_C_API void ray_trace_probe (
+        Volume *vol,                  /* Input: volume */
+        Volume_limit *vol_limit,      /* Input: min/max coordinates of volume */
+        Ray_trace_callback callback,  /* Input: callback function */
+        void *callback_data,          /* Input: callback function private data */
+        double *p1in,                 /* Input: start point for ray */
+        double *p2in,                 /* Input: end point for ray */
+        float ray_depth,              /* Input: depth along ray to probe */
+        float ray_idx                 /* Input: z-idnex along ray cast */
+);
 
 
 #endif
