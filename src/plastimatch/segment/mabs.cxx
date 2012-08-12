@@ -25,9 +25,51 @@
 #include "string_util.h"
 #include "xform.h"
 
-Mabs::Mabs () { }
+class Mabs_private {
+public:
+    std::map<std::string, Mabs_vote*> vote_map;
+};
 
-Mabs::~Mabs () { }
+Mabs::Mabs () {
+    d_ptr = new Mabs_private;
+}
+
+Mabs::~Mabs () {
+    delete d_ptr;
+}
+
+/* Map an input-specific structure name to a canonical structure name 
+   Return "" if no canonical name */
+std::string
+Mabs::map_structure_name (
+    const Mabs_parms& parms, 
+    const std::string& ori_name)
+{
+    if (parms.structure_map.size() == 0) {
+        lprintf ("$ No structure list specified\n");
+        return ori_name;
+    }
+
+    std::map<std::string, std::string>::const_iterator it 
+        = parms.structure_map.find (ori_name);
+    if (it == parms.structure_map.end()) {
+        lprintf (" $ irrelevant structure: %s\n", ori_name.c_str());
+        return "";
+    }
+
+    const std::string& mapped_name = it->second;
+    if (mapped_name == "") {
+        lprintf (" $ irrelevant structure: %s\n", ori_name.c_str());
+    }
+    else if (mapped_name == ori_name) {
+        lprintf (" $ relevant structure: %s\n", ori_name.c_str());
+    }
+    else {
+        lprintf (" $ relevant structure: %s -> %s\n", 
+            ori_name.c_str(), mapped_name.c_str());
+    }
+    return mapped_name;
+}
 
 void
 Mabs::run (const Mabs_parms& parms)
@@ -50,9 +92,6 @@ Mabs::run (const Mabs_parms& parms)
 
     /* Load the labeling file.  For now, we'll assume this is successful. */
     Plm_image fixed_image (parms.labeling_input_fn);
-
-    /* Make a list to store voting results */
-    std::vector<Mabs_vote*> vote_list;
 
     /* Loop through images in the atlas directory */
     Dir_list d (parms.atlas_dir);
@@ -83,35 +122,13 @@ Mabs::run (const Mabs_parms& parms)
         /* Inspect the structures -- we might be able to skip the 
            atlas if it has no relevant structures */
         bool can_skip = true;
-        if (parms.structure_map.size() == 0) {
-            lprintf ("$ No structure list specified\n");
-            can_skip = false;
-        } else {
-            for (size_t i = 0; i < rtds.m_rtss->get_num_structures(); i++) {
-                std::string ori_name = rtds.m_rtss->get_structure_name (i);
-                std::map<std::string, std::string>::const_iterator it 
-                    = parms.structure_map.find (ori_name);
-                if (it == parms.structure_map.end()) {
-                    lprintf (" $ irrelevant structure: %s\n", 
-                        ori_name.c_str());
-                    continue;
-                }
-
-                const std::string& mapped_name = it->second;
-                if (mapped_name == "") {
-                    lprintf (" $ irrelevant structure: %s\n", 
-                        ori_name.c_str());
-                }
-                else if (mapped_name == ori_name) {
-                    lprintf (" $ relevant structure: %s\n", 
-                        ori_name.c_str());
-                    can_skip = false;
-                }
-                else {
-                    lprintf (" $ relevant structure: %s -> %s\n", 
-                        ori_name.c_str(), mapped_name.c_str());
-                    can_skip = false;
-                }
+        for (size_t i = 0; i < rtds.m_rtss->get_num_structures(); i++) {
+            std::string ori_name = rtds.m_rtss->get_structure_name (i);
+            std::string mapped_name = this->map_structure_name (parms, 
+                ori_name);
+            if (mapped_name != "") {
+                can_skip = false;
+                break;
             }
         }
         if (can_skip) {
@@ -156,19 +173,27 @@ Mabs::run (const Mabs_parms& parms)
 
         /* Loop through structures for this atlas image */
         printf ("Vote...\n");
-        for (size_t i = 0; i < rtds.m_rtss->get_num_structures(); i++) 
-        {
-            /* TODO: Check structure name - for now we just assume 
-               structures are in the same order for each atlas */
+        for (size_t i = 0; i < rtds.m_rtss->get_num_structures(); i++) {
+            /* Check structure name, make sure it is something we 
+               want to segment */
+            std::string ori_name = rtds.m_rtss->get_structure_name (i);
+            std::string mapped_name = this->map_structure_name (parms, 
+                ori_name);
+            if (mapped_name == "") {
+                continue;
+            }
 
             /* Make a new voter if needed */
+            lprintf ("Voting structure %s\n", mapped_name.c_str());
             Mabs_vote *vote;
-            if (i >= vote_list.size()) {
+            std::map<std::string, Mabs_vote*>::const_iterator vote_it 
+                = d_ptr->vote_map.find (mapped_name);
+            if (vote_it == d_ptr->vote_map.end()) {
                 vote = new Mabs_vote;
-                vote_list.push_back (vote);
+                d_ptr->vote_map[mapped_name] = vote;
                 vote->set_fixed_image (regd.fixed_image->itk_float());
             } else {
-                vote = vote_list[i];
+                vote = vote_it->second;
             }
 
             /* Extract structure as binary mask */
@@ -190,8 +215,11 @@ Mabs::run (const Mabs_parms& parms)
 
     /* Get output image for each label */
     lprintf ("Normalizing and saving weights\n");
-    for (size_t i = 0; i < vote_list.size(); i++) {
-        Mabs_vote *vote = vote_list[i];
+    for (std::map<std::string, Mabs_vote*>::const_iterator vote_it 
+             = d_ptr->vote_map.begin(); 
+         vote_it != d_ptr->vote_map.end(); vote_it++)
+    {
+        Mabs_vote *vote = vote_it->second;
         lprintf ("Normalizing votes\n");
         vote->normalize_votes();
 
@@ -202,7 +230,8 @@ Mabs::run (const Mabs_parms& parms)
         if (parms.debug) {
             lprintf ("Saving weights\n");
             Pstring fn; 
-            fn.format ("%s/weight_%04d.nrrd", out_dir.c_str(), i);
+            fn.format ("%s/weight_%s.nrrd", out_dir.c_str(), 
+                vote_it->first.c_str());
             itk_image_save (wi, fn.c_str());
         }
 
@@ -214,7 +243,8 @@ Mabs::run (const Mabs_parms& parms)
            this optional */
         lprintf ("Saving thresholded structures\n");
         Pstring fn; 
-        fn.format ("%s/label_%04d.nrrd", out_dir.c_str(), i);
+        fn.format ("%s/label_%s.nrrd", out_dir.c_str(), 
+                vote_it->first.c_str());
         itk_image_save (thresh, fn.c_str());
 
         /* Assemble into structure set */
