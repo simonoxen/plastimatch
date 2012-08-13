@@ -226,6 +226,16 @@ strip_extension (char* filename)
 }
 
 std::string
+strip_leading_dir (const std::string& fn)
+{
+    size_t s = fn.find_first_of ("/");
+    if (s == fn.npos) {
+        return fn;
+    }
+    return fn.substr(s+1);
+}
+
+std::string
 compose_filename (const char *a, const char *b)
 {
     std::string output_fn;

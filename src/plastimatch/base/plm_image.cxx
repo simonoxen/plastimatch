@@ -268,6 +268,12 @@ Plm_image::load_native (const char* fname)
 }
 
 void
+Plm_image::load_native (const std::string& fn)
+{
+    this->load_native (fn.c_str());
+}
+
+void
 Plm_image::load_native_dicom (const char* fname)
 {
 #if PLM_CONFIG_PREFER_DCMTK

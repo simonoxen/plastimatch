@@ -13,8 +13,10 @@
 class Mabs_parms_pcmd {
 public:
     Pstring cmd_file_fn;
+    bool train;
 public:
     Mabs_parms_pcmd () {
+        train = false;
     }
 };
 
@@ -37,6 +39,10 @@ parse_fn (
     /* Add --help, --version */
     parser->add_default_options ();
 
+    /* Parameters */
+    parser->add_long_option ("", "train", 
+        "perform training to find the best parameters", 0);
+
     /* Parse options */
     parser->parse (argc,argv);
 
@@ -51,6 +57,12 @@ parse_fn (
 
     /* Get filename of command file */
     parms->cmd_file_fn = (*parser)[0].c_str();
+
+    /* Parameters */
+    if (parser->have_option ("train")) {
+        parms->train = true;
+    }
+
 }
 
 void
@@ -62,6 +74,11 @@ do_command_mabs (int argc, char *argv[])
 
     Mabs_parms mabs_parms;
     mabs_parms.parse_config (parms.cmd_file_fn.c_str());
+
     Mabs mabs;
-    mabs.run (mabs_parms);
+    if (parms.train) {
+        mabs.train (mabs_parms);
+    } else {
+        mabs.run (mabs_parms);
+    }
 }

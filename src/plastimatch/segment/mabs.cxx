@@ -28,6 +28,13 @@
 class Mabs_private {
 public:
     std::map<std::string, Mabs_vote*> vote_map;
+    std::list<std::string> atlas_dir_list;
+    std::string outdir_base;
+
+    Plm_image fixed_image;
+    std::list<std::string> atlas_list;
+    std::string output_dir;
+    std::string input_dir;
 };
 
 Mabs::Mabs () {
@@ -72,7 +79,7 @@ Mabs::map_structure_name (
 }
 
 void
-Mabs::run (const Mabs_parms& parms)
+Mabs::sanity_checks (const Mabs_parms& parms)
 {
     /* Do a few sanity checks */
     if (!is_directory (parms.atlas_dir)) {
@@ -85,22 +92,20 @@ Mabs::run (const Mabs_parms& parms)
     }
 
     /* Make sure there is an output directory */
-    std::string out_dir = parms.labeling_output_fn;
-    if (out_dir == "") {
-        out_dir = "mabs";
+    d_ptr->outdir_base = parms.labeling_output_fn;
+    if (d_ptr->outdir_base == "") {
+        d_ptr->outdir_base = "mabs";
     }
+}
 
-    /* Load the labeling file.  For now, we'll assume this is successful. */
-    Plm_image fixed_image (parms.labeling_input_fn);
-
-    /* Loop through images in the atlas directory */
+void
+Mabs::load_atlas_dir_list (const Mabs_parms& parms)
+{
     Dir_list d (parms.atlas_dir);
-    for (int i = 0; i < d.num_entries; i++) {
-        Rtds rtds;
-
+    for (int i = 0; i < d.num_entries; i++)
+    {
         /* Skip "." and ".." */
         if (!strcmp (d.entries[i], ".") || !strcmp (d.entries[i], "..")) {
-            printf ("Skipping %s\n", d.entries[i]);
             continue;
         }
 
@@ -109,13 +114,27 @@ Mabs::run (const Mabs_parms& parms)
 
         /* Only consider directories */
         if (!is_directory (path.c_str())) {
-            printf ("Skipping [2] %s\n", d.entries[i]);
             continue;
         }
 
+        /* Add directory to atlas_dir_list */
+        d_ptr->atlas_dir_list.push_back (path);
+    }
+}
+
+void
+Mabs::run_internal (const Mabs_parms& parms)
+{
+    /* Loop through images in the atlas */
+    for (std::list<std::string>::iterator it = d_ptr->atlas_list.begin();
+         it != d_ptr->atlas_list.end(); it++)
+    {
+        Rtds rtds;
+        std::string path = *it;
+
         /* For now, only handle dicom directories.  We assume the 
            load is successful. */
-        lprintf ("MABS loading %s\n", d.entries[i]);
+        lprintf ("MABS loading %s\n", path.c_str());
         rtds.load_dicom_dir (path.c_str());
         rtds.m_rtss->prune_empty ();
 
@@ -149,7 +168,7 @@ Mabs::run (const Mabs_parms& parms)
 
         /* Manually set input files */
         Registration_data regd;
-        regd.fixed_image = &fixed_image;
+        regd.fixed_image = &d_ptr->fixed_image;
         regd.moving_image = rtds.m_img;
 
         /* Run the registration */
@@ -230,7 +249,7 @@ Mabs::run (const Mabs_parms& parms)
         if (parms.debug) {
             lprintf ("Saving weights\n");
             Pstring fn; 
-            fn.format ("%s/weight_%s.nrrd", out_dir.c_str(), 
+            fn.format ("%s/weight_%s.nrrd", d_ptr->output_dir.c_str(), 
                 vote_it->first.c_str());
             itk_image_save (wi, fn.c_str());
         }
@@ -243,10 +262,65 @@ Mabs::run (const Mabs_parms& parms)
            this optional */
         lprintf ("Saving thresholded structures\n");
         Pstring fn; 
-        fn.format ("%s/label_%s.nrrd", out_dir.c_str(), 
+        fn.format ("%s/label_%s.nrrd", d_ptr->output_dir.c_str(), 
                 vote_it->first.c_str());
         itk_image_save (thresh, fn.c_str());
 
         /* Assemble into structure set */
     }
+}
+
+void
+Mabs::run (const Mabs_parms& parms)
+{
+    /* Do a few sanity checks */
+    this->sanity_checks (parms);
+
+    /* Load the labeling file.  For now, we'll assume this is successful. */
+    d_ptr->fixed_image.load_native (parms.labeling_input_fn);
+
+    /* Parse atlas directory */
+    this->load_atlas_dir_list (parms);
+
+    /* Set atlas_list */
+    d_ptr->atlas_list = d_ptr->atlas_dir_list;
+
+    /* Set output dir for this test case */
+    d_ptr->output_dir = d_ptr->outdir_base;
+
+    /* Run the segmentation */
+    this->run_internal (parms);
+}
+
+void
+Mabs::train (const Mabs_parms& parms)
+{
+    /* Do a few sanity checks */
+    this->sanity_checks (parms);
+
+    /* Parse atlas directory */
+    this->load_atlas_dir_list (parms);
+
+    /* Loop through atlas_dir, doing LOO testing */
+    for (std::list<std::string>::iterator it = d_ptr->atlas_dir_list.begin();
+         it != d_ptr->atlas_dir_list.end(); it++)
+    {
+        /* Create atlas list for this test case */
+        std::string path = *it;
+        d_ptr->atlas_list = d_ptr->atlas_dir_list;
+        d_ptr->atlas_list.remove (path);
+
+        /* Set output dir for this test case */
+        std::string tmp_path = strip_leading_dir (path);
+        d_ptr->output_dir = d_ptr->outdir_base + "/" + tmp_path;
+        lprintf ("outdir = %s\n", d_ptr->output_dir.c_str());
+
+        /* Load the input file.  For now, we'll assume this is successful. */
+        d_ptr->fixed_image.load_native (path);
+
+        /* Run the segmentation */
+        this->run_internal (parms);
+    }
+    
+    print_and_exit ("Did training!\n");
 }

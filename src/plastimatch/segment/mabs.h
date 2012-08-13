@@ -17,12 +17,17 @@ public:
 public:
     Mabs_private *d_ptr;
 
-public:
+protected:
     std::string map_structure_name (
         const Mabs_parms& parms, 
         const std::string& ori_name);
-    void
-    run (const Mabs_parms& parms);
+    void sanity_checks (const Mabs_parms& parms);
+    void load_atlas_dir_list (const Mabs_parms& parms);
+    void run_internal (const Mabs_parms& parms);
+
+public:
+    void run (const Mabs_parms& parms);
+    void train (const Mabs_parms& parms);
 };
 
 #endif

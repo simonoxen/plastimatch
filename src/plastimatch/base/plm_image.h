@@ -81,6 +81,7 @@ public:
     /* Loading */
     void load (const char* fname, Plm_image_type type);
     void load_native (const char* fname);
+    void load_native (const std::string& fn);
     void load_native_dicom (const char* fname);
 
     /* Saving */
