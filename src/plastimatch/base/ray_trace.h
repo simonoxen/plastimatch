@@ -29,7 +29,7 @@ class Volume_limit;
 
 typedef void (*Ray_trace_callback) (
     void *callback_data, 
-    int vox_index, 
+    size_t vox_index, 
     double vox_len, 
     float vox_value);
 

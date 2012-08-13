@@ -22,6 +22,7 @@ struct callback_data {
 };
 
 
+#if 0
 static plm_long
 get_wed_volume_depth (Wed_Parms* parms)
 {
@@ -41,6 +42,7 @@ get_wed_volume_depth (Wed_Parms* parms)
     }
     return (plm_long) floorf (largest+1);
 }
+#endif
 
 
 static Volume*
@@ -51,16 +53,14 @@ create_wed_volume (Wed_Parms* parms)
     float wed_off[3] = {0.0f, 0.0f, 0.0f};
     float wed_ps[3] = {1.0f, 1.0f, 1.0f};
 
-    /* water equivalent depth volume has the same
-     * x,y dimensions as the rpl volume, but it's
-     * z-dimension is equal to the largest value
-     * stored in the rpl volume.  Note: this means
-     * the wed x,y dimensions are equal to the
-     * aperture dimensions */
+    /* water equivalent depth volume has the same x,y dimensions as the rpl
+     * volume. Note: this means the wed x,y dimensions are equal to the
+     * aperture dimensions and the z-dimension is equal to the sampling
+     * resolution chosen for the rpl */
     plm_long wed_dims[3];
     wed_dims[0] = rpl_vol->vol->dim[0];
     wed_dims[1] = rpl_vol->vol->dim[1];
-    wed_dims[2] = get_wed_volume_depth (parms);
+    wed_dims[2] = rpl_vol->vol->dim[2];
 
     return new Volume (wed_dims, wed_off, wed_ps, NULL, PT_FLOAT, 1);
 }
@@ -69,7 +69,7 @@ create_wed_volume (Wed_Parms* parms)
 static void
 wed_ray_trace_callback (
     void *callback_data, 
-    int vox_index, 
+    size_t vox_index, 
     double vox_len, 
     float vox_value
 )

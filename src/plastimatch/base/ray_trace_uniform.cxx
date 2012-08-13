@@ -37,7 +37,7 @@ ray_trace_uniform (
     double pt;  
     double rlen;
     int idx;
-    int z;
+    size_t z;
 
     float* img = (float*) vol->img;
 

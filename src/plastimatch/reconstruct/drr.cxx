@@ -71,7 +71,7 @@ drr_preprocess_attenuation (Volume* vol)
 void
 drr_ray_trace_callback (
     void *callback_data, 
-    int vox_index, 
+    size_t vox_index, 
     double vox_len, 
     float vox_value
 )
