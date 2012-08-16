@@ -30,11 +30,18 @@ public:
     std::map<std::string, Mabs_vote*> vote_map;
     std::list<std::string> atlas_dir_list;
     std::string outdir_base;
+    std::string traindir_base;
 
     Plm_image fixed_image;
     std::list<std::string> atlas_list;
     std::string output_dir;
     std::string input_dir;
+
+    bool write_weight_files;
+public:
+    Mabs_private () {
+        write_weight_files = false;
+    }
 };
 
 Mabs::Mabs () {
@@ -96,6 +103,12 @@ Mabs::sanity_checks (const Mabs_parms& parms)
     if (d_ptr->outdir_base == "") {
         d_ptr->outdir_base = "mabs";
     }
+
+    /* Make sure there is a training directory */
+    d_ptr->traindir_base = parms.training_dir;
+    if (d_ptr->traindir_base == "") {
+        d_ptr->traindir_base = "training";
+    }
 }
 
 void
@@ -125,6 +138,9 @@ Mabs::load_atlas_dir_list (const Mabs_parms& parms)
 void
 Mabs::run_internal (const Mabs_parms& parms)
 {
+    /* Clear out internal structure */
+    d_ptr->vote_map.clear ();
+
     /* Loop through images in the atlas */
     for (std::list<std::string>::iterator it = d_ptr->atlas_list.begin();
          it != d_ptr->atlas_list.end(); it++)
@@ -246,7 +262,7 @@ Mabs::run_internal (const Mabs_parms& parms)
         FloatImageType::Pointer wi = vote->get_weight_image ();
 
         /* Optionally, save the weight files */
-        if (parms.debug) {
+        if (d_ptr->write_weight_files) {
             lprintf ("Saving weights\n");
             Pstring fn; 
             fn.format ("%s/weight_%s.nrrd", d_ptr->output_dir.c_str(), 
@@ -301,6 +317,9 @@ Mabs::train (const Mabs_parms& parms)
     /* Parse atlas directory */
     this->load_atlas_dir_list (parms);
 
+    /* Write some extra files when training */
+    d_ptr->write_weight_files = true;
+
     /* Loop through atlas_dir, doing LOO testing */
     for (std::list<std::string>::iterator it = d_ptr->atlas_dir_list.begin();
          it != d_ptr->atlas_dir_list.end(); it++)
@@ -312,7 +331,7 @@ Mabs::train (const Mabs_parms& parms)
 
         /* Set output dir for this test case */
         std::string tmp_path = strip_leading_dir (path);
-        d_ptr->output_dir = d_ptr->outdir_base + "/" + tmp_path;
+        d_ptr->output_dir = d_ptr->traindir_base + "/" + tmp_path;
         lprintf ("outdir = %s\n", d_ptr->output_dir.c_str());
 
         /* Load the input file.  For now, we'll assume this is successful. */
