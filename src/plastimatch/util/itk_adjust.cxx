@@ -30,6 +30,16 @@ itk_adjust (FloatImageType::Pointer image, const Adjustment_list& al)
         right_slope = ait_end->second;
     }
 
+    /* Debug adjustment lists */
+#if defined (commentout)
+    for (Adjustment_list::const_iterator ait = al.begin();
+         ait != al.end(); ait++)
+    {
+        printf ("[%f,%f] ", ait->first, ait->second);
+    }
+    printf ("\n");
+#endif
+    
     for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
         float vin = it.Get();
         float vout;
@@ -37,19 +47,20 @@ itk_adjust (FloatImageType::Pointer image, const Adjustment_list& al)
            after last node */
 
         /* Case 1 */
-        if (vin < ait_start->first) {
+        if (vin <= ait_start->first) {
             vout = ait_start->second + (vin - ait_start->first) * left_slope;
 #if defined (commentout)
             printf ("[1] < %f (%f -> %f)\n", ait_start->first, vin, vout);
 #endif
             goto found_vout;
         }
-        else if (ait_start != ait_end) {
+        else if (ait_start != al.end()) {
             Adjustment_list::const_iterator ait = ait_start;
             Adjustment_list::const_iterator prev = ait_start;
-            while (++ait != ait_end) {
+            ait++;
+            do {
                 /* Case 2 */
-                if (vin > prev->first) {
+                if (vin <= ait->first) {
                     float slope = (ait->second - prev->second) 
                         / (ait->first - prev->first);
                     vout = prev->second + (vin - prev->first) * slope;
@@ -59,7 +70,8 @@ itk_adjust (FloatImageType::Pointer image, const Adjustment_list& al)
 #endif
                     goto found_vout;
                 }
-            }
+                prev = ait;
+            } while (++ait != al.end());
         }
         /* Case 3 */
         vout = ait_end->second + (vin - ait_end->first) * right_slope;
