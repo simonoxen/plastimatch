@@ -54,8 +54,9 @@ else ()
   message (STATUS "Looking for SSL - not found")
 endif ()
 
-find_path (
-  DCMTK_INCLUDE_DIR dcmtk/config/osconfig.h
+find_path (DCMTK_INCLUDE_DIR
+  NAMES dcmtk/config/osconfig.h
+  HINTS
   ${DCMTK_DIR}/include
   /usr/local/dicom/include
   )
@@ -69,7 +70,9 @@ else ()
   set (DCMTK_HAVE_CFUNIX_H FALSE)
 endif ()
 
-find_library (DCMTK_dcmimgle_LIBRARY dcmimgle
+find_library (DCMTK_dcmimgle_LIBRARY 
+  NAMES dcmimgle
+  HINTS
   ${DCMTK_DIR}/dcmimgle/libsrc
   ${DCMTK_DIR}/dcmimgle/libsrc/Release
   ${DCMTK_DIR}/dcmimgle/libsrc/Debug
@@ -82,7 +85,7 @@ find_library (DCMTK_dcmimgle_LIBRARY dcmimgle
 # This is gone in 3.6
 find_library (DCMTK_imagedb_LIBRARY 
   NAMES imagedb dcmimage
-  PATHS
+  HINTS
   ${DCMTK_DIR}/imagectn/libsrc/Release
   ${DCMTK_DIR}/imagectn/libsrc/
   ${DCMTK_DIR}/imagectn/libsrc/Debug
@@ -90,7 +93,9 @@ find_library (DCMTK_imagedb_LIBRARY
   /usr/local/dicom/lib
 )
 
-find_library (DCMTK_dcmtls_LIBRARY dcmtls 
+find_library (DCMTK_dcmtls_LIBRARY 
+  NAMES dcmtls 
+  HINTS
   ${DCMTK_DIR}/dcmnet/libsrc/Release
   ${DCMTK_DIR}/dcmnet/libsrc/Debug
   ${DCMTK_DIR}/dcmnet/libsrc
@@ -101,7 +106,9 @@ find_library (DCMTK_dcmtls_LIBRARY dcmtls
   /usr/local/dicom/lib
 )
 
-find_library (DCMTK_dcmnet_LIBRARY dcmnet 
+find_library (DCMTK_dcmnet_LIBRARY 
+  NAMES dcmnet 
+  HINTS
   ${DCMTK_DIR}/dcmnet/libsrc/Release
   ${DCMTK_DIR}/dcmnet/libsrc/Debug
   ${DCMTK_DIR}/dcmnet/libsrc/
@@ -109,7 +116,9 @@ find_library (DCMTK_dcmnet_LIBRARY dcmnet
   /usr/local/dicom/lib
 )
 
-find_library (DCMTK_dcmdata_LIBRARY dcmdata
+find_library (DCMTK_dcmdata_LIBRARY 
+  NAMES dcmdata
+  HINTS
   ${DCMTK_DIR}/dcmdata/libsrc
   ${DCMTK_DIR}/dcmdata/libsrc/Release
   ${DCMTK_DIR}/dcmdata/libsrc/Debug
@@ -120,12 +129,16 @@ find_library (DCMTK_dcmdata_LIBRARY dcmdata
 )
 
 # Quick hack: dcmtk 3.6.0
-find_library (DCMTK_oflog_LIBRARY oflog
+find_library (DCMTK_oflog_LIBRARY
+  NAMES oflog
+  HINTS
   ${DCMTK_DIR}/lib
   /usr/local/dicom/lib
 )
 
-find_library (DCMTK_ofstd_LIBRARY ofstd
+find_library (DCMTK_ofstd_LIBRARY 
+  NAMES ofstd
+  HINTS
   ${DCMTK_DIR}/ofstd/libsrc
   ${DCMTK_DIR}/ofstd/libsrc/Release
   ${DCMTK_DIR}/ofstd/libsrc/Debug
