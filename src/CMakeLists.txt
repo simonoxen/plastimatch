@@ -84,14 +84,6 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Add subdirectories
 ##-----------------------------------------------------------------------------
-if (PLM_CONFIG_LIBRARY_BUILD)
-  set (PLM_BUILD_ISE OFF)
-  set (PLM_CONFIG_DISABLE_FATM ON)
-  set (PLM_CONFIG_DISABLE_MONDOSHOT ON)
-  set (PLM_CONFIG_DISABLE_REG23 ON)
-  set (PLM_CONFIG_DISABLE_SLICER ON)
-endif ()
-
 if (BUILD_DEBIAN)
   set (PLM_BUILD_ISE OFF)
   set (PLM_CONFIG_DISABLE_FATM ON)

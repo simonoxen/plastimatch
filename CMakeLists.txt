@@ -171,6 +171,15 @@ option (PLM_DOWNLOAD_FDK_VARIAN
 option (PLM_DOWNLOAD_XIO 
   "Additional testing data (download from internet)" OFF)
 
+# Update options if library build is selected  
+if (PLM_CONFIG_LIBRARY_BUILD)
+  set (PLM_BUILD_ISE OFF)
+  set (PLM_CONFIG_DISABLE_FATM ON)
+  set (PLM_CONFIG_DISABLE_MONDOSHOT ON)
+  set (PLM_CONFIG_DISABLE_REG23 ON)
+  set (PLM_CONFIG_DISABLE_SLICER ON)
+endif ()
+  
 ##-----------------------------------------------------------------------------
 ##  Figure out plastimatch version number
 ##-----------------------------------------------------------------------------
@@ -545,23 +554,25 @@ find_package (Thrust)
 ##-----------------------------------------------------------------------------
 ##  Slicer
 ##-----------------------------------------------------------------------------
-set (EXTENSION_NAME Plastimatch)
-set (EXTENSION_HOMEPAGE http://plastimatch.org)
-set (EXTENSION_CATEGORY Plastimatch)
-set (EXTENSION_ICONURL FALSE)
-set (EXTENSION_CONTRIBUTORS FALSE)
-set (EXTENSION_DESCRIPTION FALSE)
-set (EXTENSION_SCREENSHOTURLS FALSE)
-find_package (Slicer QUIET)
-if (SLICER_FOUND)
-  # GCS FIX 2012-05-08: Cuda/OpenCL doesn't yet work with slicer build
-  set (PLM_CONFIG_DISABLE_CUDA TRUE)
-  set (PLM_CONFIG_DISABLE_OPENCL TRUE)
-  set (CUDA_FOUND FALSE)
-  set (OPENCL_FOUND FALSE)
-else ()
-  message (STATUS "Looking for Slicer - not found")
-endif ()
+if (NOT PLM_CONFIG_DISABLE_SLICER)
+  set (EXTENSION_NAME Plastimatch)
+  set (EXTENSION_HOMEPAGE http://plastimatch.org)
+  set (EXTENSION_CATEGORY Plastimatch)
+  set (EXTENSION_ICONURL FALSE)
+  set (EXTENSION_CONTRIBUTORS FALSE)
+  set (EXTENSION_DESCRIPTION FALSE)
+  set (EXTENSION_SCREENSHOTURLS FALSE)
+  find_package (Slicer QUIET)
+  if (SLICER_FOUND)
+    # GCS FIX 2012-05-08: Cuda/OpenCL doesn't yet work with slicer build
+    set (PLM_CONFIG_DISABLE_CUDA TRUE)
+    set (PLM_CONFIG_DISABLE_OPENCL TRUE)
+    set (CUDA_FOUND FALSE)
+    set (OPENCL_FOUND FALSE)
+  else ()
+    message (STATUS "Looking for Slicer - not found")
+  endif ()
+endif()
 
 ##-----------------------------------------------------------------------------
 ##  Doxygen
