@@ -38,9 +38,11 @@ public:
     std::string input_dir;
 
     bool write_weight_files;
+    bool write_registration_files;
 public:
     Mabs_private () {
         write_weight_files = false;
+        write_registration_files = true;
     }
 };
 
@@ -199,6 +201,20 @@ Mabs::run_internal (const Mabs_parms& parms)
         Plm_image warped_image;
         plm_warp (&warped_image, 0, xf_out, &fixed_pih, regd.moving_image, 
             regp.default_value, 0, 1);
+
+        /* Save some debugging information */
+        if (d_ptr->write_registration_files) {
+            lprintf ("Saving registration_files\n");
+            std::string tmp_path = strip_leading_dir (path);
+            Pstring fn;
+            fn.format ("%s/%s/img.nrrd", d_ptr->output_dir.c_str(), 
+                tmp_path.c_str());
+            warped_image.save_image (fn.c_str());
+
+            fn.format ("%s/%s/xf.txt", d_ptr->output_dir.c_str(), 
+                tmp_path.c_str());
+            xf_out->save (fn.c_str());
+        }
 
         /* Warp the structures */
         printf ("Warp structures...\n");
