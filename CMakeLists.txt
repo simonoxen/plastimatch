@@ -753,12 +753,8 @@ find_package (VTK)
 ##-----------------------------------------------------------------------------
 ##  QT
 ##-----------------------------------------------------------------------------
-if (MINGW)
-  set (QT4_FOUND FALSE)
-else ()
-  #find_package (Qt4 4.6.2 COMPONENTS QtCore QtGui OPTIONAL)
-  find_package (Qt4 4.6.2 COMPONENTS QtCore QtGui)
-endif ()
+#find_package (Qt4 4.6.2 COMPONENTS QtCore QtGui OPTIONAL)
+find_package (Qt4 4.6.3 COMPONENTS QtCore QtGui QtWebKit)
 if (QT4_FOUND)
   message (STATUS "Looking for Qt4 - found")
   include (${QT_USE_FILE})
