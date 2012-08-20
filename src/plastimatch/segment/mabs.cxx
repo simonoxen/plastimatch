@@ -16,6 +16,7 @@
 #include "plm_image.h"
 #include "plm_parms.h"
 #include "plm_stages.h"
+#include "plm_timer.h"
 #include "plm_warp.h"
 #include "print_and_exit.h"
 #include "registration_data.h"
@@ -39,8 +40,20 @@ public:
 
     bool write_weight_files;
     bool write_registration_files;
+
+    double time_extract;
+    double time_io;
+    double time_reg;
+    double time_vote;
+    double time_warp;
+
 public:
     Mabs_private () {
+        time_extract = 0;
+        time_io = 0;
+        time_reg = 0;
+        time_vote = 0;
+        time_warp = 0;
         write_weight_files = false;
         write_registration_files = true;
     }
@@ -140,6 +153,8 @@ Mabs::load_atlas_dir_list (const Mabs_parms& parms)
 void
 Mabs::run_internal (const Mabs_parms& parms)
 {
+    Plm_timer timer;
+
     /* Clear out internal structure */
     d_ptr->vote_map.clear ();
 
@@ -152,9 +167,11 @@ Mabs::run_internal (const Mabs_parms& parms)
 
         /* For now, only handle dicom directories.  We assume the 
            load is successful. */
+        timer.start();
         lprintf ("MABS loading %s\n", path.c_str());
         rtds.load_dicom_dir (path.c_str());
         rtds.m_rtss->prune_empty ();
+        d_ptr->time_io += timer.report();
 
         /* Inspect the structures -- we might be able to skip the 
            atlas if it has no relevant structures */
@@ -193,14 +210,18 @@ Mabs::run_internal (const Mabs_parms& parms)
         Xform *xf_out;
         printf ("DO_REGISTRATION_PURE\n");
         printf ("regp.num_stages = %d\n", regp.num_stages);
+        timer.start();
         do_registration_pure (&xf_out, &regd, &regp);
+        d_ptr->time_reg += timer.report();
 
         /* Warp the output image */
         printf ("Warp output image...\n");
         Plm_image_header fixed_pih (regd.fixed_image);
         Plm_image warped_image;
+        timer.start();
         plm_warp (&warped_image, 0, xf_out, &fixed_pih, regd.moving_image, 
             regp.default_value, 0, 1);
+        d_ptr->time_warp += timer.report();
 
         /* Save some debugging information */
         if (d_ptr->write_registration_files) {
@@ -219,8 +240,10 @@ Mabs::run_internal (const Mabs_parms& parms)
         /* Warp the structures */
         printf ("Warp structures...\n");
         Plm_image_header source_pih (rtds.m_img);
+        timer.start();
         rtds.m_rtss->rasterize (&source_pih, false, false);
         rtds.m_rtss->warp (xf_out, &fixed_pih);
+        d_ptr->time_warp += timer.report();
 
         /* Loop through structures for this atlas image */
         printf ("Vote...\n");
@@ -248,13 +271,17 @@ Mabs::run_internal (const Mabs_parms& parms)
             }
 
             /* Extract structure as binary mask */
+            timer.start();
             UCharImageType::Pointer structure_image 
                 = rtds.m_rtss->get_structure_image (i);
+            d_ptr->time_extract += timer.report();
 
             /* Vote for each voxel */
+            timer.start();
             vote->vote (
                 warped_image.itk_float(),
                 structure_image);
+            d_ptr->time_vote += timer.report();
         }
 
         /* Don't let regd destructor delete our fixed image */
@@ -272,7 +299,9 @@ Mabs::run_internal (const Mabs_parms& parms)
     {
         Mabs_vote *vote = vote_it->second;
         lprintf ("Normalizing votes\n");
+        timer.start();
         vote->normalize_votes();
+        d_ptr->time_vote += timer.report();
 
         /* Optionally, get the weight image */
         FloatImageType::Pointer wi = vote->get_weight_image ();
@@ -287,7 +316,9 @@ Mabs::run_internal (const Mabs_parms& parms)
         }
 
         /* Threshold the weight image */
+        timer.start();
         UCharImageType::Pointer thresh = itk_threshold_above (wi, 0.5);
+        d_ptr->time_vote += timer.report();
 
         /* Optionally, save the thresholded files */
         /* GCS FIX: After we can create the structure set, we'll make 
@@ -296,7 +327,9 @@ Mabs::run_internal (const Mabs_parms& parms)
         Pstring fn; 
         fn.format ("%s/label_%s.nrrd", d_ptr->output_dir.c_str(), 
                 vote_it->first.c_str());
+        timer.start();
         itk_image_save (thresh, fn.c_str());
+        d_ptr->time_io += timer.report();
 
         /* Assemble into structure set */
     }
@@ -327,6 +360,8 @@ Mabs::run (const Mabs_parms& parms)
 void
 Mabs::train (const Mabs_parms& parms)
 {
+    Plm_timer timer;
+
     /* Do a few sanity checks */
     this->sanity_checks (parms);
 
@@ -351,11 +386,19 @@ Mabs::train (const Mabs_parms& parms)
         lprintf ("outdir = %s\n", d_ptr->output_dir.c_str());
 
         /* Load the input file.  For now, we'll assume this is successful. */
+        timer.start();
         d_ptr->fixed_image.load_native (path);
+        d_ptr->time_io += timer.report();
 
         /* Run the segmentation */
         this->run_internal (parms);
     }
-    
-    print_and_exit ("Did training!\n");
+
+    printf ("Registration time:    %10.1f seconds\n", d_ptr->time_reg);
+    printf ("Warping time:         %10.1f seconds\n", d_ptr->time_warp);
+    printf ("Extraction time:      %10.1f seconds\n", d_ptr->time_extract);
+    printf ("Voting time:          %10.1f seconds\n", d_ptr->time_vote);
+    printf ("I/O time:             %10.1f seconds\n", d_ptr->time_io);
+
+    printf ("Training complete\n");
 }
