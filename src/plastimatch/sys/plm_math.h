@@ -181,4 +181,15 @@ static inline void mat_mult_mat (double* m1,
     }
 }
 
+/* 0 when value is NaN or infinity */
+static inline int is_number (const double x)
+{
+    if (!(x == x)) return 0;
+
+    if (x > DBL_MAX || x < -DBL_MAX) return 0;
+
+    return 1;
+}
+
+
 #endif

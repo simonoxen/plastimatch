@@ -113,6 +113,11 @@ rpl_volume_get_rgdepth (
     ap_xy[0] = pmat->ic[0] + ap_xy[0] / ap_xy[2];
     ap_xy[1] = pmat->ic[1] + ap_xy[1] / ap_xy[2];
 
+    /* Make sure value is not inf or NaN */
+    if (!is_number (ap_xy[0]) || !is_number (ap_xy[1])) {
+    	return -1;
+    }
+
     ap_ij[0] = ROUND_INT (ap_xy[0]);
     ap_ij[1] = ROUND_INT (ap_xy[1]);
 
