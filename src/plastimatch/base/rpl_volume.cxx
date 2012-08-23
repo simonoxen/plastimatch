@@ -360,9 +360,10 @@ proton_dose_ray_trace (
 #if (!UNIFIED_DEPTH_OFFSET)
     printf ("off = %g\n", rpl_vol->depth_offset[ap_idx]);
 #endif
+
 #endif
 
-    /* init callback data for this ray */
+/* init callback data for this ray */
     cd.accum = 0.0f;
     cd.ires = ires;
     cd.rpl_vol = rpl_vol;

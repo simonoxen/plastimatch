@@ -232,6 +232,8 @@ main (int argc, char* argv[])
         exit (0);
     }
 
+    write_mha ("debug_rpl.mha", parms.scene->rpl_vol->vol);
+
     printf ("Working...\n");
     fflush(stdout);
 
