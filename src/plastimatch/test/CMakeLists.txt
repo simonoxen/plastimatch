@@ -157,6 +157,9 @@ if (PLM_BUILD_RANSAC_TEST)
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
 
+## This is a test, in case of deciding to use shared_ptr
+find_package (TR1)
+
 plm_add_executable (test_eps test_eps.cxx
   "" "" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
