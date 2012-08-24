@@ -40,16 +40,19 @@ void do_contour_mean_dist(
     typename itk::Image<T,3>::Pointer image_2
 )
 {
-
-  typedef itk::plm_ContourMeanDistanceImageFilter< itk::Image<T,3> , itk::Image<T,3>  > ContourMeanDistanceImageFilterType;
+    typedef itk::plm_ContourMeanDistanceImageFilter< 
+        itk::Image<T,3> , 
+        itk::Image<T,3> > ContourMeanDistanceImageFilterType;
  
-  typename ContourMeanDistanceImageFilterType::Pointer contourMeanDistanceImageFilter = ContourMeanDistanceImageFilterType::New();
-  contourMeanDistanceImageFilter->SetInput1(image_1);
-  contourMeanDistanceImageFilter->SetInput2(image_2);
-  contourMeanDistanceImageFilter->SetUseImageSpacing(true);
-  contourMeanDistanceImageFilter->Update();
+    typename ContourMeanDistanceImageFilterType::Pointer 
+        contourMeanDistanceImageFilter 
+        = ContourMeanDistanceImageFilterType::New();
+    contourMeanDistanceImageFilter->SetInput1(image_1);
+    contourMeanDistanceImageFilter->SetInput2(image_2);
+    contourMeanDistanceImageFilter->SetUseImageSpacing(true);
+    contourMeanDistanceImageFilter->Update();
  
-  printf (
+    printf (
 	"Contour Mean distance = %f\n",
 	contourMeanDistanceImageFilter->GetMeanDistance());
 
