@@ -38,7 +38,7 @@ http://www.insight-journal.org/browse/publication/207
 #define VERBOSE
 
 #include <string.h>
-#include <cstddef>
+#include <stddef.h>
 #include <itkScaleInvariantFeatureImageFilter.h>
 #include <itkImageSeriesReader.h>
 #include <itkNumericSeriesFileNames.h>

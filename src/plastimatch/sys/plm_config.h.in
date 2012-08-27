@@ -6,7 +6,7 @@
 
 /* ITK 3.20 is missing this */
 #if defined __cplusplus
-#include <cstddef>
+#include <stddef.h>
 #endif
 
 /* Architecture attributes */
