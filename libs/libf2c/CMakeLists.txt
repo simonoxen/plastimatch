@@ -66,11 +66,6 @@ try_run (
   RUN_OUTPUT_VARIABLE ARITHCHK_STDOUT
   )
 
-#MESSAGE (STATUS "RUN_RESULT is ${RUN_RESULT}")
-#MESSAGE (STATUS "COMPILE_RESULT is ${COMPILE_RESULT}")
-#MESSAGE (STATUS "COMPILE_OUTPUT is ${ARITHCHK_COMPILE_OUTPUT}")
-#MESSAGE (STATUS "RESULT is ${ARITHCHK_STDOUT}")
-
 ## Check exit code == 0 for running arithchk
 if (NOT RUN_RESULT AND ARITHCHK_STDOUT)
   ## cmake adds extra \r on windows.  This creates a file with lines 
@@ -79,6 +74,10 @@ if (NOT RUN_RESULT AND ARITHCHK_STDOUT)
   string (REGEX REPLACE "\r" "" ARITHCHK_STDOUT ${ARITHCHK_STDOUT})
   file (WRITE "${CMAKE_CURRENT_BINARY_DIR}/arith.h" ${ARITHCHK_STDOUT})
 else ()
+  message (STATUS "RUN_RESULT is ${RUN_RESULT}")
+  message (STATUS "COMPILE_RESULT is ${COMPILE_RESULT}")
+  message (STATUS "COMPILE_OUTPUT is ${ARITHCHK_COMPILE_OUTPUT}")
+  message (STATUS "RESULT is ${ARITHCHK_STDOUT}")
   message (FATAL_ERROR "Failed to create arith.h when building libf2c")
 endif ()
 
