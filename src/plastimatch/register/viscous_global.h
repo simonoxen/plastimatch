@@ -1,7 +1,44 @@
-
-#ifndef _GLOBAL_H_
-#define _GLOBAL_H_
-
+/*******************************************************************
+c* Multimodal Deformable Image Registration			   *
+c* via Mutual Information or Bhattacharyya Distantce               *
+c* Version: 1.0                                                    *
+c* Language: C, CUDA                                               *
+c*                                                                 *
+c* Developer: Yifei Lou                                            *
+c* Email: yifei.lou@ece.gatech.edu                                 *
+c*                                                                 *
+c* School of Electrical and Computer Engineering                   *   
+c* Georgia Institute of Technology                                 *
+c* Atlanta, GA, 30318                                              *
+c* Website: http://groups.bme.gatech.edu/groups/bil/               *
+c*                                                                 *
+c* Copyright (c) 2011                                              *
+c* All rights reserved.                                            *
+c*                                                                 *
+c* Permission to use, copy, or modify this code and its            *
+c* documentation for scientific purpose is hereby granted          *
+c* without fee, provided that this copyright notice appear in      *
+c* all copies and that both that copyright notice and this         *
+c* permission notice appear in supporting documentation. The use   *
+c* for commercial purposes is prohibited without permission.       *
+c*                                                                 *
+c* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND          *
+c* CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,     *
+c* INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF        *
+c* MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE        *
+c* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR            *
+c* CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,    *
+c* SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES INCLUDING, BUT NOT *
+c* LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF*
+c* USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED *
+c* AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT     *
+c* LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING  *
+c* IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF  *
+c* THE POSSIBILITY OF SUCH DAMAGE.                                 *
+c*                                                                 *
+c******************************************************************/
+#ifndef _viscous_global_h_
+#define _viscous_global_h_
 
 /**************************************
 *	CUDA parameters

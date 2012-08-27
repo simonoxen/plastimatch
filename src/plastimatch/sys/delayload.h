@@ -8,6 +8,7 @@
 #ifndef _WIN32
 #include <dlfcn.h>
 #endif
+#include <stdlib.h>
 
 // Needed for delay loading windows DLLs
 #if _MSC_VER

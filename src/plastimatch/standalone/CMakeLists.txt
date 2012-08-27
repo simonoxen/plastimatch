@@ -104,7 +104,7 @@ set (UNION_MASK_SRC
   union_mask.cxx
   )
 set (VISCOUS_SRC
-  viscous_main.cxx
+  viscous.cxx
   )
 set (WED_SRC
   wed_main.cxx

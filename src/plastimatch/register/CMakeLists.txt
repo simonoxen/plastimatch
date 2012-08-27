@@ -57,7 +57,7 @@ if (OPENCL_FOUND)
    )
 endif ()
 
-set (PLMREGISTER_CUDA_SRC
+set (PLMREGISTERCUDA_SRC
   bspline_cuda.cu 
   bspline_cuda_kernels.h
   demons_cuda.cu
@@ -66,9 +66,19 @@ set (PLMREGISTER_CUDA_SRC
 message (STATUS "CUDA_SDK_ROOT_DIR =  ${CUDA_SDK_ROOT_DIR}")
 message (STATUS "CUDA_CUT_INCLUDE_DIR = ${CUDA_CUT_INCLUDE_DIR}")
 
+set (PLMREGISTERCUDA_IFACE_SRC
+  bspline_cuda.cxx
+  demons_misc.cxx
+  viscous_cuda.cxx
+  )
+
 if (PLM_BUILD_VISCOUS)
-  set (PLMREGISTER_CUDA_SRC
-    ${PLMREGISTER_CUDA_SRC}
+  set (PLMREGISTER_LIBRARY_SRC
+    ${PLMREGISTER_LIBRARY_SRC}
+    viscous_main.cxx
+    )
+  set (PLMREGISTERCUDA_SRC
+    ${PLMREGISTERCUDA_SRC}
     viscous_compute.cu
     viscous_convolution.cu
     viscous_finalize.cu
@@ -78,11 +88,6 @@ if (PLM_BUILD_VISCOUS)
     viscous_main.cu
     )
 endif ()
-
-set (PLMREGISTER_CUDA_IFACE_SRC
-  demons_misc.cxx
-  bspline_cuda.cxx
-  )
 
 ##-----------------------------------------------------------------------------
 ##  LIBRARY DEPENDENCIES
@@ -125,8 +130,8 @@ if (CUDA_FOUND)
 
     # build CUDA as separate plmregistercuda shared library
     set (PLMREGISTERCUDA_LIBRARY_SRC
-      ${PLMREGISTER_CUDA_IFACE_SRC}
-      ${PLMREGISTER_CUDA_SRC}
+      ${PLMREGISTERCUDA_IFACE_SRC}
+      ${PLMREGISTERCUDA_SRC}
       )
     plm_add_gpu_plugin_library (plmregistercuda 
       "${PLMREGISTERCUDA_LIBRARY_SRC}")
@@ -150,10 +155,10 @@ if (CUDA_FOUND)
     endif ()
   else ()
     # building CUDA into plmregister
-    cuda_compile (CUDA_WRAPPERS ${PLMREGISTER_CUDA_SRC})
+    cuda_compile (CUDA_WRAPPERS ${PLMREGISTERCUDA_SRC})
     set (PLMREGISTER_LIBRARY_SRC
       ${PLMREGISTER_LIBRARY_SRC}
-      ${PLMREGISTER_CUDA_IFACE_SRC}
+      ${PLMREGISTERCUDA_IFACE_SRC}
       ${CUDA_WRAPPERS}
       )
     set (PLMREGISTER_LIBRARY_DEPENDENCIES

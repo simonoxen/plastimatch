@@ -140,7 +140,11 @@ cudaDeviceProp dP;
 /****************************************************
 	main program
 ****************************************************/
-int viscous_main( int argc, char** argv) 
+int 
+CUDA_viscous (
+    int argc, 
+    char** argv
+)
 {
     cout << endl << "****************************************" << endl;
     cout << "Computation parameters..." << endl;
@@ -197,20 +201,17 @@ int viscous_main( int argc, char** argv)
 //      initialize CUBLAS
 	
     initData();
-	
     initGaussKernel();
-
-
 	
 /******************************************************
 	start iterations
 ******************************************************/
 #if defined (commentout)
+    // mark the start time
     unsigned int timer = 0;
     cutilCheckError( cutCreateTimer( &timer));
     cutilCheckError( cutStartTimer( timer));
 #endif
-//      mark the start time
 
     cout << "\n\n";
     cout << "Performing registration...\n\n";
@@ -219,32 +220,29 @@ int viscous_main( int argc, char** argv)
     {
         NX = NX0/pow(2, scale);
         NY = NY0/pow(2, scale);
-        NZ = (NZ0-1)/pow(2, scale) +1;
+        NZ = (NZ0-1)/pow(2, scale) + 1;
 	
-        sDATA_SIZE = (NX*NY*NZ)* sizeof(float);		
+        sDATA_SIZE = (NX*NY*NZ)* sizeof(float);
 
         nblocks.x = NBLOCKX;
-        nblocks.y =  ((1 + (NX*NY*NZ - 1)/NTHREAD_PER_BLOCK) - 1) / NBLOCKX + 1; 
-        printf("current scale = %d, size of image = %d x %d x %d ... \n", scale, NX, NY, NZ);
+        nblocks.y =  ((1 + (NX*NY*NZ - 1)/NTHREAD_PER_BLOCK) - 1) 
+            / NBLOCKX + 1;
+        printf ("current scale = %d, size of image = %d x %d x %d ... \n", 
+            scale, NX, NY, NZ);
         if(scale<NSCALE-1)
         {
-            upSample<<<nblocks, NTHREAD_PER_BLOCK>>>(d_mv_x[scale+1], d_mv_x[scale], NX, NY, NZ);
-            upSample<<<nblocks, NTHREAD_PER_BLOCK>>>(d_mv_y[scale+1], d_mv_y[scale], NX, NY, NZ);
-            upSample<<<nblocks, NTHREAD_PER_BLOCK>>>(d_mv_z[scale+1], d_mv_z[scale], NX, NY, NZ);
+            upSample<<<nblocks, NTHREAD_PER_BLOCK>>>(
+                d_mv_x[scale+1], d_mv_x[scale], NX, NY, NZ);
+            upSample<<<nblocks, NTHREAD_PER_BLOCK>>>(
+                d_mv_y[scale+1], d_mv_y[scale], NX, NY, NZ);
+            upSample<<<nblocks, NTHREAD_PER_BLOCK>>>(
+                d_mv_z[scale+1], d_mv_z[scale], NX, NY, NZ);
         }
-		
-		
-
-        compute(d_im_move[scale], d_im_static[scale], d_mv_x[scale], d_mv_y[scale], d_mv_z[scale], MAX_ITER);
-
+        compute (
+            d_im_move[scale], d_im_static[scale], 
+            d_mv_x[scale], d_mv_y[scale], d_mv_z[scale], MAX_ITER);
         printf("\n\n");
     }
-
-
-	
-	
-
-	
 
     cudaThreadSynchronize();
 #if defined (commentout)
@@ -277,7 +275,6 @@ int viscous_main( int argc, char** argv)
 
     cudaThreadSynchronize();
 
-
 //	mark the end total timer
 #if defined (commentout)
     cutilCheckError( cutStopTimer( totalTimer));
@@ -290,17 +287,9 @@ int viscous_main( int argc, char** argv)
     printf("Have a nice day!\n");
 	
     cudaThreadExit();	
-	
-
-
-
 
 #if defined (commentout)
     cutilExit(argc, argv);
 #endif
     return 0;
-
-
 }
-
-
