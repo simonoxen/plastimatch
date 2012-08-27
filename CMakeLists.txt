@@ -475,8 +475,15 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Only use local nocedal
 ##-----------------------------------------------------------------------------
+# GCS 2012-08-27: Special hack for testing -arch ppc problems 
+# with SlicerRt build on mac, by disabling libf2c.  This completely 
+# disables fortran and f2c.
+if (NOT PLM_CONFIG_LIBRARY_BUILD)
+
 add_subdirectory (libs/nocedal)
 link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/nocedal)
+
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  LUA 5.1.4
@@ -501,11 +508,18 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Only use local specfun
 ##-----------------------------------------------------------------------------
+# GCS 2012-08-27: Special hack for testing -arch ppc problems 
+# with SlicerRt build on mac, by disabling libf2c.  This completely 
+# disables fortran and f2c.
+if (NOT PLM_CONFIG_LIBRARY_BUILD)
+
 set (SPECFUN_FOUND FALSE)
 if (NOT BUILD_DEBIAN)
   add_subdirectory (libs/specfun)
   link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/specfun)
   set (SPECFUN_FOUND TRUE)
+endif ()
+
 endif ()
 
 ##-----------------------------------------------------------------------------
