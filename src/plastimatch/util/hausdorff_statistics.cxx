@@ -25,7 +25,12 @@ void do_hausdorff (
     h_filter->SetInput1 (image_1);
     h_filter->SetInput2 (image_2);
     h_filter->SetUseImageSpacing(true);
-    h_filter->Update ();
+    try {
+        h_filter->Update ();
+    } catch (itk::ExceptionObject &err) {
+	std::cout << "ITK Exception: " << err << std::endl;
+        return;
+    }
 
     printf (
 	"Hausdorff distance = %f\n"
@@ -50,12 +55,16 @@ void do_contour_mean_dist(
     contourMeanDistanceImageFilter->SetInput1(image_1);
     contourMeanDistanceImageFilter->SetInput2(image_2);
     contourMeanDistanceImageFilter->SetUseImageSpacing(true);
-    contourMeanDistanceImageFilter->Update();
- 
+    try {
+        contourMeanDistanceImageFilter->Update();
+    } catch (itk::ExceptionObject &err) {
+	std::cout << "ITK Exception: " << err << std::endl;
+        return;
+    }
+
     printf (
 	"Contour Mean distance = %f\n",
 	contourMeanDistanceImageFilter->GetMeanDistance());
-
 }
 
 /* Explicit instantiations */
