@@ -126,7 +126,11 @@
        (inline-open                . 0)
        (innamespace                . 0)
        (label                      . 0)
-       ;;(statement-block-intro      . 0)
+
+       ;; This is based on SlicerRt ...
+       (statement-block-intro      . +)
+       (substatement-open          . 0)
+
        ;;(statement-cont             . 4)
        ;;(stream-op                  . 4)
        ;;(substatement-open          . 0)
@@ -138,8 +142,8 @@
   (if (buffer-file-name)
       ;; choose coding style based on filename
       (cond ((or (string-match "Slicer4" buffer-file-name)
-		 (string-match "SlicerGCS" buffer-file-name)
 		 (string-match "PlmSlicerBspline" buffer-file-name)
+		 (string-match "SlicerRt" buffer-file-name)
 		 )
 	     (c-set-style "slicer-codingstyle"))
 	    (t (c-set-style "plm-codingstyle")))
@@ -189,7 +193,7 @@
 ;;-----------------------------------------------------------------------------
 ;; Basic
 ;;-----------------------------------------------------------------------------
-(require 'basic nil noerror)
+;(require 'basic nil noerror)
 
 ;;-----------------------------------------------------------------------------
 ;; Python
