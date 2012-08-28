@@ -108,36 +108,9 @@ ELSE(APPLE)
     )
 ENDIF(APPLE)
 
-
-# Set defaults for Universal Binaries. We want 32-bit Intel/PPC on 10.4 
-# and 32/64-bit Intel/PPC on >= 10.5. Anything <= 10.3 doesn't support.
-IF(APPLE)
-    # These are just defaults/recommendations, but how we want to build
-    # out of the box. But the user needs to be able to change these options.
-    # So we must only set the values the first time CMake is run, or we 
-    # will overwrite any changes the user sets.
-    # FORCE is used because the options are not reflected in the UI otherwise.
-    # Seems like a good place to add version specific compiler flags too.
-    IF(NOT LUA_CONFIG_HAS_BEEN_RUN_BEFORE)
-        # This is really fragile, but CMake doesn't provide the OS system 
-        # version information we need. (Darwin versions can be changed 
-        # independently of OS X versions.)
-        # It does look like CMake handles the CMAKE_OSX_SYSROOT automatically.
-        IF(EXISTS /Developer/SDKs/MacOSX10.5.sdk)
-            SET(CMAKE_OSX_ARCHITECTURES "ppc;i386;ppc64;x86_64" CACHE STRING "Build architectures for OSX" FORCE)
-            SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.5" CACHE STRING "Flags used by the compiler during all build types." FORCE)
-        ELSE(EXISTS /Developer/SDKs/MacOSX10.5.sdk)
-            IF(EXISTS /Developer/SDKs/MacOSX10.4u.sdk)
-                SET(CMAKE_OSX_ARCHITECTURES "ppc;i386" CACHE STRING "Build architectures for OSX" FORCE)
-                SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.4" CACHE STRING "Flags used by the compiler during all build types." FORCE)
-            ELSE(EXISTS /Developer/SDKs/MacOSX10.4u.sdk)
-                # No Universal Binary support
-                # Should break down further to set the -mmacosx-version-min,
-                # but the SDK detection is too unreliable here.
-            ENDIF(EXISTS /Developer/SDKs/MacOSX10.4u.sdk)
-        ENDIF(EXISTS /Developer/SDKs/MacOSX10.5.sdk)
-    ENDIF(NOT LUA_CONFIG_HAS_BEEN_RUN_BEFORE)
-ENDIF(APPLE)
+# GCS 2012-08-28 This script used to have a section which tried to 
+# set gcc flags for Mac universal binaries.  Universal binaries are 
+# no longer supported by Apple, so I deleted this from the CMake script.
 
 # This needs to be run very last so other parts of the scripts can take
 # advantage of this.

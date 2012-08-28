@@ -204,11 +204,6 @@ if (APPLE AND BUILD_AGAINST_SLICER3)
 endif ()
 
 ##-----------------------------------------------------------------------------
-##  GCS 2012-08-27 bleh.
-##-----------------------------------------------------------------------------
-unset (CMAKE_OSX_ARCHITECTURES CACHE)
-
-##-----------------------------------------------------------------------------
 ##  Processor and OS characteristics
 ##    32-bit or 64-bit machine
 ##    Endian-ness
@@ -305,12 +300,6 @@ endif ()
 ##  GCS FIX: This should be done after slicer, to ensure that 
 ##   system f2c is not used
 ##-----------------------------------------------------------------------------
-
-# GCS 2012-08-27: Special hack for testing -arch ppc problems 
-# with SlicerRt build on mac, by disabling libf2c.  This completely 
-# disables fortran and f2c.
-if (NOT PLM_CONFIG_LIBRARY_BUILD)
-
 if (NOT MINGW)
   # For some reason, CMake tries to invoke devenv instead of gfortran
   # for mingw.
@@ -360,8 +349,6 @@ else ()
   endif ()
 endif ()
 message (STATUS "PLM_FORTRAN_LIBRARIES: ${PLM_FORTRAN_LIBRARIES}")
-
-endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Libdl
@@ -480,25 +467,12 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Only use local nocedal
 ##-----------------------------------------------------------------------------
-# GCS 2012-08-27: Special hack for testing -arch ppc problems 
-# with SlicerRt build on mac, by disabling libf2c.  This completely 
-# disables fortran and f2c.
-if (NOT PLM_CONFIG_LIBRARY_BUILD)
-
 add_subdirectory (libs/nocedal)
 link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/nocedal)
-
-endif ()
 
 ##-----------------------------------------------------------------------------
 ##  LUA 5.1.4
 ##-----------------------------------------------------------------------------
-
-# GCS 2012-08-27: Special hack for testing -arch ppc problems 
-# with SlicerRt build on mac, by disabling libf2c.  This completely 
-# disables fortran and f2c.
-if (NOT PLM_CONFIG_LIBRARY_BUILD)
-
 # We can't use debian's lua 5.1 because it doesn't contain lobject.h
 add_subdirectory (libs/lua-5.1.4)
 set (LUA_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/lua-5.1.4/src")
@@ -508,23 +482,14 @@ link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/lua-5.1.4)
 find_package (Readline)
 find_library (TERMCAP_LIBRARY termcap)
 
-endif ()
-
 ##-----------------------------------------------------------------------------
 ##  Only use local specfun
 ##-----------------------------------------------------------------------------
-# GCS 2012-08-27: Special hack for testing -arch ppc problems 
-# with SlicerRt build on mac, by disabling libf2c.  This completely 
-# disables fortran and f2c.
-if (NOT PLM_CONFIG_LIBRARY_BUILD)
-
 set (SPECFUN_FOUND FALSE)
 if (NOT BUILD_DEBIAN)
   add_subdirectory (libs/specfun)
   link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/specfun)
   set (SPECFUN_FOUND TRUE)
-endif ()
-
 endif ()
 
 ##-----------------------------------------------------------------------------
