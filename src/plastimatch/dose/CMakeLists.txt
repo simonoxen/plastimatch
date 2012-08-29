@@ -17,6 +17,8 @@ set (PLMDOSE_LIBRARY_SRC
   aperture.cxx
   bragg_curve.cxx
   proton_beam.cxx
+  proton_pristine_peak.cxx
+  proton_sobp.cxx
   proton_dose.cxx
   proton_parms.cxx
   proton_scene.cxx

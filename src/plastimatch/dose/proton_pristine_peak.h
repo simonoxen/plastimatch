@@ -1,13 +1,13 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _proton_beam_h_
-#define _proton_beam_h_
+#ifndef _proton_pristine_peak_h_
+#define _proton_pristine_peak_h_
 
-class PLMDOSE_API Proton_Beam {
+class PLMDOSE_API Proton_pristine_peak {
 public:
-    Proton_Beam ();
-    ~Proton_Beam ();
+    Proton_pristine_peak ();
+    ~Proton_pristine_peak ();
 
     bool load (const char* fn);     /* load from file */
     bool generate ();               /* generate analytically */

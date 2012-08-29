@@ -552,7 +552,9 @@ rpl_volume_compute_separate (
             int ap_idx;
 
             /* Compute index of aperture pixel */
-            ap_idx = c * ires[0] + r;
+            /* GCS DEBUGGING: WTF is this definition of ap_idx?? */
+//            ap_idx = c * ires[0] + r;
+            ap_idx = r * ires[1] + c;
 
             /* Compute p2 = 3d coordinates of point on aperture */
             vec3_scale3 (tmp, rpl_vol->incr_c, (double) c);

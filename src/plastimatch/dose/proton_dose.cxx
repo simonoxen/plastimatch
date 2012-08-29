@@ -543,14 +543,14 @@ dose_hong (
         /* Step angle */
         for (t = 0.0f; t < 2.0*M_PI; t += t_step) {
 
-        rotate_about_ray (
+            rotate_about_ray (
                 scatter_xyz,  // O: new xyz coordinate
                 sp_pos,       // I: init xyz coordinate
                 t,            // I: angle of rotation
                 ct_xyz);      // I: axis of rotation
 
-        /* neighbor (or self) hit by proton beam? */
-        rgdepth = rpl_volume_get_rgdepth (rpl_vol, scatter_xyz);
+            /* neighbor (or self) hit by proton beam? */
+            rgdepth = rpl_volume_get_rgdepth (rpl_vol, scatter_xyz);
 
             if (rgdepth < 0.0f) {
                 if (debug) {
@@ -581,7 +581,7 @@ dose_hong (
 #if defined (DEBUG_VOXEL)
             if (debug) {
                 debug_voxel (r, t, rgdepth, d, scatter_xyz, ct_xyz,
-                             w, d0, sigma, dose);
+                    w, d0, sigma, dose);
             }
 #endif
 
@@ -612,7 +612,7 @@ proton_dose_compute (Proton_Parms *parms)
 
     if (parms->debug) {
         rpl_volume_save (rpl_vol, "depth_vol.mha");
-        beam->dump ("proton_beam.txt");
+        beam->dump ("bragg_curve.txt");
         proj_matrix_debug (pmat);
     }
 
@@ -650,7 +650,6 @@ proton_dose_compute (Proton_Parms *parms)
                 /* Insert the dose into the dose volume */
                 idx = INDEX_OF (ct_ijk, dose_vol->dim);
                 dose_img[idx] = dose;
-
             }
         }
         display_progress ((float)idx, (float)ct_vol->npix);
