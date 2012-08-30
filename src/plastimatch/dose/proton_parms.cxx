@@ -261,30 +261,24 @@ Proton_Parms::parse_config (
         if (buf[0] == '#') continue;
 
         if (buf[0] == '[') {
-            printf (">> %s\n", buf.c_str());
             handle_end_of_section (section);
-            if (buf.find ("[SETTINGS]") != std::string::npos
-                || buf.find ("[settings]") != std::string::npos)
+            if (ci_find (buf, "[SETTINGS]") != std::string::npos)
             {
                 section = 0;
                 continue;
             }
-            else if (buf.find ("[BEAM]") != std::string::npos
-                || buf.find ("[beam]") != std::string::npos)
+            else if (ci_find (buf, "[BEAM]") != std::string::npos)
             {
                 section = 1;
                 continue;
             }
-            else if (buf.find ("[APERTURE]") != std::string::npos
-                || buf.find ("[aperture]") != std::string::npos)
+            else if (ci_find (buf, "[APERTURE]") != std::string::npos)
             {
                 section = 2;
                 continue;
             }
-            else if (buf.find ("[PEAK]") != std::string::npos
-                || buf.find ("[peak]") != std::string::npos)
+            else if (ci_find (buf, "[PEAK]") != std::string::npos) 
             {
-                printf ("Found peak...\n");
                 section = 3;
                 continue;
             }
@@ -293,7 +287,6 @@ Proton_Parms::parse_config (
             }
         }
 
-        printf ("buf = %s\n", buf.c_str());
         size_t key_loc = buf.find ("=");
         if (key_loc == std::string::npos) {
             continue;
@@ -312,9 +305,6 @@ Proton_Parms::parse_config (
     }
 
     handle_end_of_section (section);
-
-    std::string foo = string_format ("Hello %s", "world");
-    printf ("%s = %s\n", "Foobar", foo.c_str());
 }
 
 bool

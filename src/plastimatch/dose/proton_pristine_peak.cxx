@@ -173,8 +173,6 @@ Proton_pristine_peak::generate ()
 
     this->num_samples = (int) floorf (this->dmax / this->dres);
 
-    printf (" ^ num_samples = %d\n", this->num_samples);
-
     this->d_lut = (float*) malloc (this->num_samples*sizeof(float));
     this->e_lut = (float*) malloc (this->num_samples*sizeof(float));
     

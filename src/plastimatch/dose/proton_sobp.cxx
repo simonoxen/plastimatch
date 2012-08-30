@@ -59,9 +59,7 @@ Proton_sobp::add (double E0, double spread, double dres, double dmax,
         (float) dres, (float) dmax);
     Proton_pristine_peak *peak = new Proton_pristine_peak (
         E0, spread, dres, dmax, weight);
-    printf ("Created peak\n");
     d_ptr->peaks.push_back (peak);
-    printf ("Added peak to list\n");
 }
 
 float
@@ -105,7 +103,6 @@ Proton_sobp::lookup_energy (
 bool
 Proton_sobp::generate ()
 {
-    printf ("Generating\n");
     std::vector<const Proton_pristine_peak*>::const_iterator it 
         = d_ptr->peaks.begin();
     while (it != d_ptr->peaks.end ()) {
@@ -137,12 +134,9 @@ Proton_sobp::generate ()
             d_ptr->e_lut[i] += ppp->weight * ppp->e_lut[i];
         }
 
-        printf ("Added pristine peak to SOBP.\n");
-
         /* Go on to next pristine peak */
         it++;
     }
-    printf ("Generating...done.\n");
     return true;
 }
 

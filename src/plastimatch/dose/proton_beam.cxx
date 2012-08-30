@@ -142,7 +142,6 @@ Proton_Beam::add_peak ()
 {
     this->sobp->add (this->E0, this->spread, this->dres, this->dmax, 
         this->weight);
-    printf ("Done adding...?\n");
 }
 
 float
