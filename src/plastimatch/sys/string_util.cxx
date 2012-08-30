@@ -23,10 +23,10 @@ plm_strcmp (const char* s1, const char* s2)
 void
 string_util_rtrim_whitespace (char *s)
 {
-    int len = strlen (s);
+    int len = (int)strlen (s);
     while (len > 0 && isspace(s[len-1])) {
-	s[len-1] = 0;
-	len--;
+        s[len-1] = 0;
+        len--;
     }
 }
 
@@ -36,13 +36,13 @@ parse_int13 (int *arr, const char *string)
     int rc;
     rc = sscanf (string, "%d %d %d", &arr[0], &arr[1], &arr[2]);
     if (rc == 3) {
-	return 0;
+        return 0;
     } else if (rc == 1) {
-	arr[1] = arr[2] = arr[0];
-	return 0;
+        arr[1] = arr[2] = arr[0];
+        return 0;
     } else {
-	/* Failure */
-	return 1;
+        /* Failure */
+        return 1;
     }
 }
 
@@ -52,10 +52,10 @@ parse_dicom_float2 (float *arr, const char *string)
     int rc;
     rc = sscanf (string, "%f\\%f", &arr[0], &arr[1]);
     if (rc == 2) {
-	return 0;
+        return 0;
     } else {
-	/* Failure */
-	return 1;
+        /* Failure */
+        return 1;
     }
 }
 
@@ -65,10 +65,10 @@ parse_dicom_float3 (float *arr, const char *string)
     int rc;
     rc = sscanf (string, "%f\\%f\\%f", &arr[0], &arr[1], &arr[2]);
     if (rc == 3) {
-	return 0;
+        return 0;
     } else {
-	/* Failure */
-	return 1;
+        /* Failure */
+        return 1;
     }
 }
 
@@ -77,12 +77,12 @@ parse_dicom_float6 (float *arr, const char *string)
 {
     int rc;
     rc = sscanf (string, "%f\\%f\\%f\\%f\\%f\\%f", 
-	&arr[0], &arr[1], &arr[2], &arr[3], &arr[4], &arr[5]);
+        &arr[0], &arr[1], &arr[2], &arr[3], &arr[4], &arr[5]);
     if (rc == 6) {
-	return 0;
+        return 0;
     } else {
-	/* Failure */
-	return 1;
+        /* Failure */
+        return 1;
     }
 }
 
@@ -96,16 +96,16 @@ parse_int3_string (const char* s)
     int n;
 
     do {
-	int v[3];
+        int v[3];
 
-	n = 0;
-	rc = sscanf (p, "%d %d %d;%n", &v[0], &v[1], &v[2], &n);
-	p += n;
-	if (rc >= 3) {
-	    int_list.push_back (v[0]);
-	    int_list.push_back (v[1]);
-	    int_list.push_back (v[2]);
-	}
+        n = 0;
+        rc = sscanf (p, "%d %d %d;%n", &v[0], &v[1], &v[2], &n);
+        p += n;
+        if (rc >= 3) {
+            int_list.push_back (v[0]);
+            int_list.push_back (v[1]);
+            int_list.push_back (v[2]);
+        }
     } while (rc >= 3 && n > 0);
     return int_list;
 }
@@ -120,16 +120,16 @@ parse_float3_string (const char* s)
     int n;
 
     do {
-	float v[3];
+        float v[3];
 
-	n = 0;
-	rc = sscanf (p, "%f %f %f;%n", &v[0], &v[1], &v[2], &n);
-	p += n;
-	if (rc >= 3) {
-	    float_list.push_back (v[0]);
-	    float_list.push_back (v[1]);
-	    float_list.push_back (v[2]);
-	}
+        n = 0;
+        rc = sscanf (p, "%f %f %f;%n", &v[0], &v[1], &v[2], &n);
+        p += n;
+        if (rc >= 3) {
+            float_list.push_back (v[0]);
+            float_list.push_back (v[1]);
+            float_list.push_back (v[2]);
+        }
     } while (rc >= 3 && n > 0);
     return float_list;
 }
@@ -207,7 +207,11 @@ http://stackoverflow.com/questions/3152241/case-insensitive-stdstring-find
 // templated version of my_equal so it could work with both char and wchar_t
 struct my_equal {
     bool operator()(char ch1, char ch2) {
-        return std::toupper(ch1) == std::toupper(ch2);
+#ifdef _WIN32
+      return toupper(ch1) == toupper(ch2);
+#else
+      return std::toupper(ch1) == std::toupper(ch2);
+#endif
     }
 };
 
