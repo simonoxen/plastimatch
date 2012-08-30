@@ -206,6 +206,11 @@ Proton_Parms::set_key_val (
                 goto error_exit;
             }
         }
+        else if (!strcmp (key, "weight")) {
+            if (sscanf (val, "%lf", &(scene->beam->weight)) != 1) {
+                goto error_exit;
+            }
+        }
         break;
 
     }
