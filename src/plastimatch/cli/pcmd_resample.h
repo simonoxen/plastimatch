@@ -4,7 +4,6 @@
 #ifndef _pcmd_resample_h_
 #define _pcmd_resample_h_
 
-#include "plmcli_config.h"
 #include <stdlib.h>
 
 #include "sys/plm_int.h"
