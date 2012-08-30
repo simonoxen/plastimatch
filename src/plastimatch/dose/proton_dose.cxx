@@ -21,11 +21,16 @@
 #include <string.h>
 
 #include "plmbase.h"
-#include "plmdose.h"
 #include "plmsys.h"
 
-#include "threading.h"
+#include "aperture.h"
+#include "proton_beam.h"
+#include "proton_dose.h"
+#include "proton_parms.h"
+#include "proton_scene.h"
+#include "proton_sobp.h"
 #include "plm_math.h"
+#include "threading.h"
 
 #define VERBOSE 1
 #define PROGRESS 1
@@ -170,9 +175,14 @@ highland (
     return 14.1 * (1 + (1/9) * log10(rgdepth/rad_length)) * sum; 
 #endif
 
+#if defined (commentout) /* MOVE TO BEAM or SOBP class */
+
     /* This is just a normalization I used to use instead
      * of the Highland approximation */
-    return 3.0 * (rgdepth - beam->d_lut[0]) / (beam->dmax - beam->d_lut[0]);
+    return 3.0 * (rgdepth - beam->sobp->d_lut[0]) 
+        / (beam->dmax - beam->sobp->d_lut[0]);
+#endif
+    return 0;
 }
 
 static double
@@ -205,45 +215,6 @@ gaus_kernel (
 }
 
 
-static float
-lookup_energy (
-    float depth,
-    Proton_Beam* beam
-)
-{
-    int i;
-    float energy = 0.0f;
-
-    /* Sanity check */
-    if (depth < 0 || depth > beam->dmax) {
-        return 0.0f;
-    }
-
-    /* Find index into profile arrays */
-    for (i = 0; i < beam->num_samples; i++) {
-        if (beam->d_lut[i] > depth) {
-            i--;
-            break;
-        } else if (beam->d_lut[i] == depth) {
-            return beam->e_lut[i];
-        }
-    }
-
-    /* Use index to lookup and interpolate energy */
-    if (i >= 0 || i < beam->num_samples) {
-        // linear interpolation
-        energy = beam->e_lut[i]
-                 + (depth - beam->d_lut[i])
-                 * ((beam->e_lut[i+1] - beam->e_lut[i]) 
-                 / (beam->d_lut[i+1] - beam->d_lut[i]));
-    } else {
-        // this should never happen, failsafe
-        energy = 0.0f;
-    }
-
-    return energy;   
-}
-
 /* This function should probably be marked for deletion once dose_scatter() is
  * working properly.  GCS: This funcion is useful for debugging.  Let's keep
  * it as flavor 'a'.
@@ -275,7 +246,7 @@ dose_direct (
 #endif
 
     /* return the dose at this radiographic depth */
-    return lookup_energy (rgdepth, scene->beam);
+    return scene->beam->lookup_energy (rgdepth);
 }
 
 static double
@@ -407,7 +378,7 @@ dose_scatter (
                 }
                 continue;
             } else {
-                d = lookup_energy (rgdepth, beam);
+                d = beam->lookup_energy (rgdepth);
 #if defined (DEBUG_VOXEL)
                 d0 = d;
 #endif
@@ -558,7 +529,7 @@ dose_hong (
                 }
                 continue;
             } else {
-                d = lookup_energy (rgdepth, beam);
+                d = beam->lookup_energy (rgdepth);
 #if defined (DEBUG_VOXEL)
                 d0 = d;
 #endif

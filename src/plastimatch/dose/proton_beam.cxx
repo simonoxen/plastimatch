@@ -7,31 +7,28 @@
 #include <string.h>
 #include <math.h>
 
-#include "plmdose.h"
+#include "bragg_curve.h"
+#include "proton_beam.h"
+#include "proton_sobp.h"
 
 Proton_Beam::Proton_Beam ()
 {
     memset (this->src, 0, 3*sizeof (double));
     memset (this->isocenter, 0, 3*sizeof (double));
 
-    this->d_lut = NULL;
-    this->e_lut = NULL;
+    this->sobp = new Proton_sobp;
 
     this->E0 = 0.0;
     this->spread = 0.0;
-    this->dmax = 0.0;
     this->dres = 1.0;
+    this->dmax = 0.0;
     this->num_samples = 0;
+    this->weight = 1.0;
 }
 
 Proton_Beam::~Proton_Beam ()
 {
-    if (this->d_lut) {
-        free (this->d_lut);
-    }
-    if (this->e_lut) {
-        free (this->e_lut);
-    }
+    delete this->sobp;
 }
 
 bool
@@ -57,6 +54,7 @@ Proton_Beam::load (const char* fn)
 bool
 Proton_Beam::load_xio (const char* fn)
 {
+#if defined (commentout)
     int i, j;
     char* ptoken;
     char linebuf[128];
@@ -102,12 +100,14 @@ Proton_Beam::load_xio (const char* fn)
     }
 
     fclose (fp);
+#endif
     return true;
 }
 
 bool
 Proton_Beam::load_txt (const char* fn)
 {
+#if defined (commentout)
     char linebuf[128];
     FILE* fp = fopen (fn, "r");
 
@@ -133,60 +133,34 @@ Proton_Beam::load_txt (const char* fn)
     }
 
     fclose (fp);
+#endif
     return true;
+}
+
+void
+Proton_Beam::add_peak ()
+{
+    this->sobp->add (this->E0, this->spread, this->dres, this->dmax, 
+        this->weight);
+    printf ("Done adding...?\n");
+}
+
+float
+Proton_Beam::lookup_energy (
+    float depth
+)
+{
+    return this->sobp->lookup_energy(depth);
 }
 
 bool
 Proton_Beam::generate ()
 {
-    int i;
-    double d;
-
-#if SPECFUN_FOUND
-    if (!this->E0) {
-        printf ("ERROR: Failed to generate beam -- energy not specified.\n");
-        return false;
-    }
-    if (!this->spread) {
-        printf ("ERROR: Failed to generate beam -- energy spread not specified.\n");
-        return false;
-    }
-    if (!this->dmax) {
-        printf ("ERROR: Failed to generate beam -- max depth not specified.\n");
-        return false;
-    }
-
-    this->num_samples = (int) floorf (this->dmax / this->dres);
-
-    this->d_lut = (float*)malloc (this->num_samples*sizeof(float));
-    this->e_lut = (float*)malloc (this->num_samples*sizeof(float));
-    
-    memset (this->d_lut, 0, this->num_samples*sizeof(float));
-    memset (this->e_lut, 0, this->num_samples*sizeof(float));
-
-    for (d=0, i=0; d<this->dmax; d+=this->dres, i++) {
-        d_lut[i] = d;
-        e_lut[i] = bragg_curve (this->E0, this->spread, i);
-    }
-
-    return true;
-#else
-    printf ("ERROR: No specfun found.\n");
-    return false;
-#endif
+    return this->sobp->generate ();
 }
 
 void
 Proton_Beam::dump (const char* fn)
 {
-    FILE* fp = fopen (fn, "w");
-
-    for (int i=0; i<this->num_samples; i++) {
-       fprintf (fp, "[%3.2f] %3.2f\n", this->d_lut[i], this->e_lut[i]);
-    }
-
-    fprintf (fp, "    dmax: %3.2f\n", this->dmax);
-    fprintf (fp, "num_samp: %i\n", this->num_samples);
-
-    fclose (fp);
+    this->sobp->dump (fn);
 }

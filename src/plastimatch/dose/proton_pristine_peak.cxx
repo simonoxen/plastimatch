@@ -12,17 +12,31 @@
 
 Proton_pristine_peak::Proton_pristine_peak ()
 {
-    memset (this->src, 0, 3*sizeof (double));
-    memset (this->isocenter, 0, 3*sizeof (double));
-
     this->d_lut = NULL;
     this->e_lut = NULL;
 
     this->E0 = 0.0;
     this->spread = 0.0;
-    this->dmax = 0.0;
     this->dres = 1.0;
+    this->dmax = 0.0;
+    this->weight = 1.0;
+
     this->num_samples = 0;
+}
+
+Proton_pristine_peak::Proton_pristine_peak (
+    double E0, double spread, double dres, double dmax, double weight)
+{
+    this->d_lut = NULL;
+    this->e_lut = NULL;
+
+    this->E0 = E0;
+    this->spread = spread;
+    this->dres = dres;
+    this->dmax = dmax;
+    this->weight = weight;
+
+    this->generate();
 }
 
 Proton_pristine_peak::~Proton_pristine_peak ()
@@ -159,15 +173,17 @@ Proton_pristine_peak::generate ()
 
     this->num_samples = (int) floorf (this->dmax / this->dres);
 
-    this->d_lut = (float*)malloc (this->num_samples*sizeof(float));
-    this->e_lut = (float*)malloc (this->num_samples*sizeof(float));
+    printf (" ^ num_samples = %d\n", this->num_samples);
+
+    this->d_lut = (float*) malloc (this->num_samples*sizeof(float));
+    this->e_lut = (float*) malloc (this->num_samples*sizeof(float));
     
     memset (this->d_lut, 0, this->num_samples*sizeof(float));
     memset (this->e_lut, 0, this->num_samples*sizeof(float));
 
-    for (d=0, i=0; d<this->dmax; d+=this->dres, i++) {
+    for (d=0, i=0; i<this->num_samples; d+=this->dres, i++) {
         d_lut[i] = d;
-        e_lut[i] = bragg_curve (this->E0, this->spread, i);
+        e_lut[i] = bragg_curve (this->E0, this->spread, d);
     }
 
     return true;
@@ -178,16 +194,13 @@ Proton_pristine_peak::generate ()
 }
 
 void
-Proton_pristine_peak::dump (const char* fn)
+Proton_pristine_peak::dump (const char* fn) const
 {
     FILE* fp = fopen (fn, "w");
 
     for (int i=0; i<this->num_samples; i++) {
-       fprintf (fp, "[%3.2f] %3.2f\n", this->d_lut[i], this->e_lut[i]);
+       fprintf (fp, "%3.2f %3.2f\n", this->d_lut[i], this->e_lut[i]);
     }
-
-    fprintf (fp, "    dmax: %3.2f\n", this->dmax);
-    fprintf (fp, "num_samp: %i\n", this->num_samples);
 
     fclose (fp);
 }

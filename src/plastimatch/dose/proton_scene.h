@@ -5,8 +5,8 @@
 #define _proton_scene_h_
 
 class Aperture;
-class Beam;
 class Proj_matrix;
+class Proton_Beam;
 class Volume;
 
 typedef struct rpl_volume Rpl_volume;
@@ -22,7 +22,7 @@ public:
     void print ();
 public:
     Aperture* ap;
-    Proton_Beam* beam;
+    Proton_Beam *beam;
     Proj_matrix* pmat;
     Volume* patient;
 

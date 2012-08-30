@@ -214,6 +214,19 @@ file_util_dirname (const char *filename)
     return file_util_parent (filename);
 }
 
+std::string
+file_util_dirname_string (const char *filename)
+{
+    std::string dirname = "";
+
+    char *c_dirname = file_util_dirname (filename);
+    if (c_dirname) {
+        dirname = c_dirname;
+        free (c_dirname);
+    }
+    return dirname;
+}
+
 void
 strip_extension (char* filename)
 {

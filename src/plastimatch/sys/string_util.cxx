@@ -2,10 +2,11 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmsys_config.h"
+#include <algorithm>
+#include <ctype.h>
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <ctype.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -196,4 +197,25 @@ string_format (const std::string &fmt, ...)
         else
             size*=2;
     }
+}
+
+/* Case-insensitive string::find() by Kirill V. Lyadvinsky 
+http://stackoverflow.com/questions/3152241/case-insensitive-stdstring-find
+   Distributed under Attribution-ShareAlike 3.0 Unported license (CC BY-SA 3.0) 
+   http://creativecommons.org/licenses/by-sa/3.0/
+*/
+// templated version of my_equal so it could work with both char and wchar_t
+struct my_equal {
+    bool operator()(char ch1, char ch2) {
+        return std::toupper(ch1) == std::toupper(ch2);
+    }
+};
+
+// find substring (case insensitive)
+size_t ci_find (const std::string& str1, const std::string& str2)
+{
+    std::string::const_iterator it = std::search (str1.begin(), str1.end(), 
+        str2.begin(), str2.end(), my_equal());
+    if (it != str1.end()) return it - str1.begin();
+    else return std::string::npos;
 }

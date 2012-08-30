@@ -1,10 +1,11 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _proton_dose_opts_h_
-#define _proton_dose_opts_h_
+#ifndef _proton_parms_h_
+#define _proton_parms_h_
 
 #include "sys/plm_path.h"
+#include "threading.h"
 
 class Plm_image;
 class Proton_Scene;
@@ -17,6 +18,7 @@ public:
     bool parse_args (int argc, char** argv);
 
 private:
+    void handle_end_of_section (int section);
     void parse_config (const char* config_fn);
     int set_key_val (const char* key, const char* val, int section);
 

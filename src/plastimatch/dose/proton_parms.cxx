@@ -13,8 +13,9 @@
 #include "plmbase.h"
 #include "plmdose.h"
 #include "plmsys.h"
-
 #include "plm_math.h"
+#include "string_util.h"
+
 
 #ifndef NULL
 #define NULL ((void*)0)
@@ -187,6 +188,26 @@ Proton_Parms::set_key_val (
             }
         }
         break;
+
+        /* [PEAK] */
+    case 3:
+        if (!strcmp (key, "energy")) {
+            if (sscanf (val, "%lf", &(scene->beam->E0)) != 1) {
+                goto error_exit;
+            }
+        }
+        else if (!strcmp (key, "spread")) {
+            if (sscanf (val, "%lf", &(scene->beam->spread)) != 1) {
+                goto error_exit;
+            }
+        }
+        else if (!strcmp (key, "depth")) {
+            if (sscanf (val, "%lf", &(scene->beam->dmax)) != 1) {
+                goto error_exit;
+            }
+        }
+        break;
+
     }
     return 0;
 
@@ -195,7 +216,25 @@ Proton_Parms::set_key_val (
     return -1;
 }
 
-
+void
+Proton_Parms::handle_end_of_section (int section)
+{
+    switch (section) {
+    case 0:
+        /* Settings */
+        break;
+    case 1:
+        /* Beam */
+        break;
+    case 2:
+        /* Aperture */
+        break;
+    case 3:
+        /* Peak */
+        scene->beam->add_peak ();
+        break;
+    }
+}
 
 void
 Proton_Parms::parse_config (
@@ -222,6 +261,8 @@ Proton_Parms::parse_config (
         if (buf[0] == '#') continue;
 
         if (buf[0] == '[') {
+            printf (">> %s\n", buf.c_str());
+            handle_end_of_section (section);
             if (buf.find ("[SETTINGS]") != std::string::npos
                 || buf.find ("[settings]") != std::string::npos)
             {
@@ -240,11 +281,19 @@ Proton_Parms::parse_config (
                 section = 2;
                 continue;
             }
+            else if (buf.find ("[PEAK]") != std::string::npos
+                || buf.find ("[peak]") != std::string::npos)
+            {
+                printf ("Found peak...\n");
+                section = 3;
+                continue;
+            }
             else {
                 printf ("Parse error: %s\n", buf_ori.c_str());
             }
         }
 
+        printf ("buf = %s\n", buf.c_str());
         size_t key_loc = buf.find ("=");
         if (key_loc == std::string::npos) {
             continue;
@@ -261,6 +310,11 @@ Proton_Parms::parse_config (
             }
         }
     }
+
+    handle_end_of_section (section);
+
+    std::string foo = string_format ("Hello %s", "world");
+    printf ("%s = %s\n", "Foobar", foo.c_str());
 }
 
 bool
@@ -285,11 +339,8 @@ Proton_Parms::parse_args (int argc, char** argv)
         this->parse_config (argv[i]);
     }
 
-    if (scene->beam->d_lut == NULL) {
-        /* measured bragg curve not supplied, try to generate */
-        if (!scene->beam->generate ()) {
-            return false;
-        }
+    if (!scene->beam->generate ()) {
+        return false;
     }
 
     if (this->output_fn[0] == '\0') {

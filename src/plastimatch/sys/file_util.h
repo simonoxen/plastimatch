@@ -27,6 +27,7 @@ PLMSYS_C_API FILE* make_tempfile (void);
 PLMSYS_C_API void strip_extension (char* filename);
 PLMSYS_API std::string strip_leading_dir (const std::string& fn);
 PLMSYS_C_API char* file_util_dirname (const char *filename);
+PLMSYS_C_API std::string file_util_dirname_string (const char *filename);
 PLMSYS_C_API char* file_util_parent (const char *filename);
 PLMSYS_C_API char* plm_getcwd (char* s, int len);
 PLMSYS_C_API int plm_chdir (char* s);
