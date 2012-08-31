@@ -13,6 +13,7 @@
 #include "plmutil.h"
 
 #include "plm_math.h"
+#include "pcmd_resample.h"
 
 class Gamma_dose_comparison_private {
 public:
@@ -116,6 +117,7 @@ Gamma_dose_comparison::run ()
         find_dose_threshold (&d_ptr->gp);
     }
     d_ptr->have_gamma_image = true;
+    resample_image_to_reference (d_ptr->gp.img_in1, d_ptr->gp.img_in2);
     do_gamma_analysis (&d_ptr->gp);
 }
 
@@ -166,4 +168,22 @@ UCharImageType::Pointer
 Gamma_dose_comparison::get_fail_image_itk ()
 {
     return get_fail_image()->itk_uchar();
+}
+
+void Gamma_dose_comparison::resample_image_to_reference (Plm_image *image_reference, Plm_image *image_moving)
+{
+    Plm_image_header pih;
+    Resample_parms parms;
+
+    parms.interp_lin = false;
+    pih.set_from_plm_image (image_reference);
+
+    itk::Image<float, 3>::Pointer resampledMovingImage = resample_image (
+        image_moving->itk_float(),
+        &pih,
+        parms.default_val,
+        parms.interp_lin
+    );
+
+    image_moving->set_itk(resampledMovingImage);
 }

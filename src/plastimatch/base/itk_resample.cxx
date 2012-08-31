@@ -19,7 +19,7 @@ vector_resample_image (T& vf_image, Plm_image_header* pih)
     typedef typename T::ObjectType VFImageType;
     typedef itk::VectorResampleImageFilter < VFImageType, VFImageType > FilterType;
     typedef itk::VectorLinearInterpolateImageFunction< 
-	    VFImageType, double >  InterpolatorType;
+            VFImageType, double >  InterpolatorType;
 
     typename FilterType::Pointer filter = FilterType::New();
 
@@ -41,13 +41,13 @@ vector_resample_image (T& vf_image, Plm_image_header* pih)
 
     filter->SetInput (vf_image);
     try {
-	filter->Update();
+        filter->Update();
     }
     catch(itk::ExceptionObject & ex) {
-	printf ("Exception running vector resample filter!\n");
-	std::cout << ex << std::endl;
-	getchar();
-	exit(1);
+        printf ("Exception running vector resample filter!\n");
+        std::cout << ex << std::endl;
+        getchar();
+        exit(1);
     }
 
     T out_image = filter->GetOutput();
@@ -57,12 +57,12 @@ vector_resample_image (T& vf_image, Plm_image_header* pih)
 template <class T>
 T
 vector_resample_image (T& vf_image, DoublePoint3DType origin, 
-		       DoubleVector3DType spacing, SizeType size)
+                       DoubleVector3DType spacing, SizeType size)
 {
     typedef typename T::ObjectType VFImageType;
     typedef itk::VectorResampleImageFilter < VFImageType, VFImageType > FilterType;
     typedef itk::VectorLinearInterpolateImageFunction< 
-	    VFImageType, double >  InterpolatorType;
+            VFImageType, double >  InterpolatorType;
 
     typename FilterType::Pointer filter = FilterType::New();
 
@@ -84,13 +84,13 @@ vector_resample_image (T& vf_image, DoublePoint3DType origin,
 
     filter->SetInput (vf_image);
     try {
-	filter->Update();
+        filter->Update();
     }
     catch(itk::ExceptionObject & ex) {
-	printf ("Exception running vector resample filter!\n");
-	std::cout << ex << std::endl;
-	getchar();
-	exit(1);
+        printf ("Exception running vector resample filter!\n");
+        std::cout << ex << std::endl;
+        getchar();
+        exit(1);
     }
 
     T out_image = filter->GetOutput();
@@ -114,12 +114,12 @@ vector_resample_image (T& vf_image, U& ref_image)
 template <class T>
 T
 vector_resample_image (T& image, float x_spacing,
-			float y_spacing, float z_spacing)
+                        float y_spacing, float z_spacing)
 {
     typedef typename T::ObjectType ImageType;
     typedef itk::VectorResampleImageFilter < ImageType, ImageType > FilterType;
     typedef itk::VectorLinearInterpolateImageFunction< 
-	    ImageType, double >  InterpolatorType;
+            ImageType, double >  InterpolatorType;
 
     typename FilterType::Pointer filter = FilterType::New();
 
@@ -156,9 +156,9 @@ vector_resample_image (T& image, float x_spacing,
 
     typename ImageType::PointType origin;
     origin[0] =  old_origin[0] 
-		    - (old_spacing[0]/2.0) 
-		    + (spacing[0]/2.0)
-		    + ((old_coverage[0]-coverage[0])/2.0);
+                    - (old_spacing[0]/2.0) 
+                    + (spacing[0]/2.0)
+                    + ((old_coverage[0]-coverage[0])/2.0);
     filter->SetOutputOrigin (origin);
 
     filter->SetOutputDirection (image->GetDirection());
@@ -176,13 +176,13 @@ vector_resample_image (T& image, float x_spacing,
 
     filter->SetInput (image);
     try {
-	filter->Update();
+        filter->Update();
     }
     catch(itk::ExceptionObject & ex) {
-	printf ("Exception running vector resample filter!\n");
-	std::cout << ex << std::endl;
-	getchar();
-	exit(1);
+        printf ("Exception running vector resample filter!\n");
+        std::cout << ex << std::endl;
+        getchar();
+        exit(1);
     }
 
     T out_image = filter->GetOutput();
@@ -205,7 +205,7 @@ resample_image (
     typedef typename T::ObjectType::PixelType PixelType;
     typedef itk::ResampleImageFilter < ImageType, ImageType > FilterType;
     typedef itk::LinearInterpolateImageFunction< 
-	ImageType, double >  LinInterpType;
+        ImageType, double >  LinInterpType;
     typedef itk::NearestNeighborInterpolateImageFunction < ImageType, double >  NNInterpType;
 
     typename FilterType::Pointer filter = FilterType::New();
@@ -223,23 +223,22 @@ resample_image (
     typename NNInterpType::Pointer nn_interpolator = NNInterpType::New();
 
     if (interp_lin) {
-	filter->SetInterpolator (l_interpolator);
+        filter->SetInterpolator (l_interpolator);
     } else {
-	filter->SetInterpolator (nn_interpolator);
+        filter->SetInterpolator (nn_interpolator);
     }
-   
 
     filter->SetDefaultPixelValue ((PixelType) default_val);
 
     filter->SetInput (image);
     try {
-	filter->Update();
+        filter->Update();
     }
     catch(itk::ExceptionObject & ex) {
-	printf ("Exception running image resample filter!\n");
-	std::cout << ex << std::endl;
-	getchar();
-	exit(1);
+        printf ("Exception running image resample filter!\n");
+        std::cout << ex << std::endl;
+        getchar();
+        exit(1);
     }
 
     T out_image = filter->GetOutput();
@@ -254,16 +253,16 @@ resample_image (
     float default_val, 
     int interp_lin)
 {
-    return resample_image (image, pih->m_origin, pih->m_spacing, 
-	pih->m_region.GetSize(), pih->m_direction, 
-	default_val, interp_lin);
+    return resample_image (image, pih->m_origin, pih->m_spacing,
+        pih->m_region.GetSize(), pih->m_direction,
+        default_val, interp_lin);
 }
 
 template <class T>
 T
 subsample_image (T& image, int x_sampling_rate,
-	        int y_sampling_rate, int z_sampling_rate,
-		float default_val)
+                int y_sampling_rate, int z_sampling_rate,
+                float default_val)
 {
     typedef typename T::ObjectType ImageType;
     typedef typename T::ObjectType::PixelType PixelType;
@@ -290,9 +289,9 @@ subsample_image (T& image, int x_sampling_rate,
     typename ImageType::SizeType size;
     typename ImageType::PointType origin;
     for (int i = 0; i < 3; i++) {
-	spacing[i] = spacing1[i] * sampling_rate[i];
-	origin[i] = origin1[i] + 0.5 * (sampling_rate[i]-1) * spacing1[i];
-	size[i] = (int) ceil(((float) size1[i] / sampling_rate[i]) - 0.5);
+        spacing[i] = spacing1[i] * sampling_rate[i];
+        origin[i] = origin1[i] + 0.5 * (sampling_rate[i]-1) * spacing1[i];
+        size[i] = (int) ceil(((float) size1[i] / sampling_rate[i]) - 0.5);
     }
 
     //compute_origin_and_size (origin, size, spacing, origin1, spacing1, size1);
@@ -309,13 +308,13 @@ subsample_image (T& image, int x_sampling_rate,
     filter->SetTransform( transform );
     filter->SetInput( image ); 
     try {
-	filter->Update();
+        filter->Update();
     }
     catch(itk::ExceptionObject & ex) {
-	printf ("Exception running image subsample filter!\n");
-	std::cout << ex << std::endl;
-	getchar();
-	exit(1);
+        printf ("Exception running image subsample filter!\n");
+        std::cout << ex << std::endl;
+        getchar();
+        exit(1);
     }
 
     T out_image = filter->GetOutput();

@@ -104,6 +104,8 @@ public:
     /*! \brief Return a binary image of failing voxels as an ITK image. */
     UCharImageType::Pointer get_fail_image_itk ();
     ///@}
+    /*! \brief Resample image_moving to image_reference */
+    void resample_image_to_reference (Plm_image *image_reference, Plm_image *image_moving);
 };
 
 #endif
