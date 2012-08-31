@@ -48,7 +48,6 @@ void do_gamma_analysis( Gamma_parms *parms ) {
     pih.get_dim (dim_in );
     pih.get_origin (origin_in );
     pih.get_spacing (spacing_in );
-    // direction cosines??
 
     // Create ITK image for gamma output, "pass", "fail" and combined 
     FloatImageType::SizeType sz;
@@ -56,7 +55,7 @@ void do_gamma_analysis( Gamma_parms *parms ) {
     FloatImageType::RegionType rg;
     FloatImageType::PointType og;
     FloatImageType::SpacingType sp;
-    FloatImageType::DirectionType itk_dc;
+    FloatImageType::DirectionType dc;
     for (int d1 = 0; d1 < 3; d1++) {
         st[d1] = 0;
         sz[d1] = dim_in[d1];
@@ -65,7 +64,7 @@ void do_gamma_analysis( Gamma_parms *parms ) {
     }
     rg.SetSize (sz);
     rg.SetIndex (st);
-    itk_direction_from_dc (&itk_dc, parms->dc);
+    dc = pih.m_direction;
 
     FloatImageType::Pointer gamma_img = FloatImageType::New();
     UCharImageType::Pointer gamma_labelmap = UCharImageType::New();
@@ -73,11 +72,13 @@ void do_gamma_analysis( Gamma_parms *parms ) {
     gamma_img->SetRegions (rg);
     gamma_img->SetOrigin (og);
     gamma_img->SetSpacing (sp);
+    gamma_img->SetDirection (dc);
     gamma_img->Allocate();
 
     gamma_labelmap->SetRegions (rg);
     gamma_labelmap->SetOrigin (og);
     gamma_labelmap->SetSpacing (sp);
+    gamma_labelmap->SetDirection (dc);
     gamma_labelmap->Allocate();
 
     typedef itk::ImageRegionIteratorWithIndex< UCharImageType > UCharIteratorType;

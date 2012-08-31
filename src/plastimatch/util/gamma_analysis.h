@@ -40,8 +40,6 @@ public:
         dose_max, /*!< maximum dose (max voxel value) in the img_in1, set by find_dose_threshold() */
         gamma_max; /*!< maximum gamma to calculate */
 
-    Direction_cosines dc; /*!< orientation of the output image (currently unused, set to identity?) */
-
     Plm_image *img_in1; /*!< input dose image 1 for gamma analysis*/
     Plm_image *img_in2; /*!< input dose image 2 for gamma analysis*/
     Plm_image *img_out; /*!< output float type image, voxel value = calculated gamma value */
