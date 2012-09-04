@@ -3,12 +3,14 @@
    ----------------------------------------------------------------------- */
 #include "plmregister_config.h"
 #include "viscous_cuda.h"
+#include "viscous.h"
 
-int 
-CUDA_viscous_main (
-    int argc, 
-    char** argv
-)
+int
+viscous (int argc, char *argv[])
 {
-    return CUDA_viscous (argc, argv);
+    LOAD_LIBRARY_SAFE (libplmregistercuda);
+    LOAD_SYMBOL (CUDA_viscous_main, libplmregistercuda);
+    int rc = CUDA_viscous_main (argc, argv);
+    UNLOAD_LIBRARY (libplmregistercuda);
+    return rc;
 }

@@ -69,13 +69,13 @@ message (STATUS "CUDA_CUT_INCLUDE_DIR = ${CUDA_CUT_INCLUDE_DIR}")
 set (PLMREGISTERCUDA_IFACE_SRC
   bspline_cuda.cxx
   demons_misc.cxx
-  viscous_cuda.cxx
+#  viscous_cuda.cxx
   )
 
 if (PLM_BUILD_VISCOUS)
   set (PLMREGISTER_LIBRARY_SRC
     ${PLMREGISTER_LIBRARY_SRC}
-    viscous_main.cxx
+    viscous.cxx
     )
   set (PLMREGISTERCUDA_SRC
     ${PLMREGISTERCUDA_SRC}

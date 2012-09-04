@@ -7,8 +7,6 @@
 #include "plmregister_config.h"
 #include "delayload.h"
 
-int CUDA_viscous (int argc, char** argv);
-
 #if defined __cplusplus
 extern "C" {
 #endif
