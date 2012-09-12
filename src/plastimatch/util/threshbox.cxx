@@ -269,6 +269,20 @@ printf("%s\n%s\n", parms->max_coord_fn_in1, parms->max_coord_fn_in2);
 	   vol_img1,vol_img2, vol_min, vol_overlap);
 	fprintf(fpout, "Vover/Volmin = %.3f  MaxSep = %.3f SUV max location = %d\n", 
 		vol_overlap/vol_min, max_sep, over_max );
+
+	float voxvol1;
+	float spacing1[3];
+	Plm_image_header pih_overlap1 ( parms->overlap_labelmap1 );
+	pih_overlap1.get_spacing(spacing1);
+	voxvol1=spacing1[0]*spacing1[1]*spacing1[2];	
+
+	float voxvol2;
+	float spacing2[3];
+	Plm_image_header pih_overlap2 ( parms->overlap_labelmap2 );
+	pih_overlap2.get_spacing(spacing2);
+	voxvol2=spacing2[0]*spacing2[1]*spacing2[2];	
+
+	fprintf(fpout, "Vol1cm3 %.4f Vol2cm3 %.4f\n", vol_img1*voxvol1/1000., vol_img2*voxvol2/1000. );
 	fclose(fpout);
 	}
 }
