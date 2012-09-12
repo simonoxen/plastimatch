@@ -170,7 +170,7 @@ fdk_parse_args (Fdk_parms* parms, int argc, char* argv[])
 		parms->dim[2] = a;
 	    } else if (rc == 3) {
 		parms->dim[0] = a;
-		parms->dim[1] = c;
+		parms->dim[1] = b;
 		parms->dim[2] = c;
 	    } else {
 		print_usage ();
