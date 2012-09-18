@@ -1830,8 +1830,7 @@ bspline_score_i_mi (
     }
 
     /* Display histrogram stats in debug mode */
-//    if (parms->debug) {
-    if (1) {
+    if (parms->debug) {
         double tmp;
         long zz;
         for (zz=0,tmp=0; zz < mi_hist->fixed.bins; zz++) {
@@ -3000,8 +2999,7 @@ bspline_score_e_mi (
     }
 
     /* Display histrogram stats in debug mode */
-//    if (parms->debug) {
-    if (1) {
+    if (parms->debug) {
         double tmp;
         long zz;
         for (zz=0,tmp=0; zz < mi_hist->fixed.bins; zz++) {
