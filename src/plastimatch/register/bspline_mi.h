@@ -16,5 +16,6 @@ PLMREGISTER_C_API void bspline_score_e_mi (Bspline_optimize_data *bod);
 PLMREGISTER_C_API void bspline_score_f_mi (Bspline_optimize_data *bod);
 PLMREGISTER_C_API void bspline_score_g_mi (Bspline_optimize_data *bod);
 PLMREGISTER_C_API void bspline_score_h_mi (Bspline_optimize_data *bod);
+PLMREGISTER_C_API void bspline_score_i_mi (Bspline_optimize_data *bod);
 
 #endif

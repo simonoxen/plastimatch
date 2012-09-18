@@ -752,6 +752,9 @@ bspline_score (Bspline_optimize_data *bod)
             case 'h':
                 bspline_score_h_mi (bod);
                 break;
+            case 'i':
+                bspline_score_i_mi (bod);
+                break;
 #endif
             default:
 #if (OPENMP_FOUND)
