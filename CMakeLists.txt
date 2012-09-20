@@ -810,59 +810,6 @@ endif ()
 add_subdirectory (src)
 
 ##-----------------------------------------------------------------------------
-##  Set up configuration for external projects using plastimatch API
-##-----------------------------------------------------------------------------
-# Add targets to build tree export set
-if (PLM_CONFIG_LIBRARY_BUILD)
-  set (EXPORT_TARGET_LIST
-    bstrlib plmsys plmbase plmutil)
-else ()
-  set (EXPORT_TARGET_LIST
-    bstrlib specfun lbfgs nocedal plmsys plmbase plmutil plmdose plmregister)
-endif ()
-if (PLM_USE_INCLUDED_F2C)
-  set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} f2c1)
-endif ()
-if (NOT PLM_CONFIG_LIBRARY_BUILD AND CUDA_FOUND)
-  set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} plmcuda)
-endif ()
-if (NOT PLM_CONFIG_LIBRARY_BUILD AND OPENCL_FOUND)
-  set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} plmopencl)
-endif ()
-if (NOT PLM_CONFIG_LIBRARY_BUILD AND CUDA_FOUND AND PLM_USE_GPU_PLUGINS)
-  set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} 
-    plmregistercuda plmreconstructcuda)
-endif ()
-export (TARGETS 
-  ${EXPORT_TARGET_LIST}
-  FILE "${PROJECT_BINARY_DIR}/PlastimatchLibraryDepends.cmake")
-
-# Help cmake find the PlastimatchConfig.cmake in the build directory
-if (NOT ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} VERSION_LESS 2.8)
-  export (PACKAGE Plastimatch)
-endif ()
-
-# "For now", write OpenMP linker flags into PlastimatchConfig.cmake 
-# file so SlicerRt can find them
-set (PLASTIMATCH_LDFLAGS "${OPENMP_LDFLAGS}")
-
-# Create PlastimatchBuildTreeSettings.cmake for the use from the build tree
-file (RELATIVE_PATH CONF_REL_INCLUDE_DIR "${PLM_INSTALL_CMAKE_DIR}"
-  "${PLM_INSTALL_INCLUDE_DIR}")
-configure_file (
-  "${CMAKE_SOURCE_DIR}/cmake/PlastimatchConfig.cmake.in" 
-  "${CMAKE_BINARY_DIR}/PlastimatchConfig.cmake" 
-  @ONLY)
-configure_file (
-  "${PROJECT_SOURCE_DIR}/cmake/PlastimatchBuildTreeSettings.cmake.in"
-  "${PROJECT_BINARY_DIR}/PlastimatchBuildTreeSettings.cmake" @ONLY)
-
-# Install the export set for use with the install-tree
-install (EXPORT PlastimatchLibraryDepends DESTINATION
-  "${PLM_INSTALL_CMAKE_DIR}/plastimatch/cmake"
-  COMPONENT dev)
-
-##-----------------------------------------------------------------------------
 ##  Additional install files
 ##-----------------------------------------------------------------------------
 if (ITK_FOUND)
