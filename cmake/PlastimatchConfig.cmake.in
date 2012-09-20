@@ -20,4 +20,7 @@ include("${PLASTIMATCH_CMAKE_DIR}/PlastimatchLibraryDepends.cmake")
 # These are IMPORTED targets created by PlastimatchDepends.cmake
 set (PLASTIMATCH_LIBRARIES bstrlib plmsys plmbase plmutil)
 
+# You need to set these to link with a plastimatch static library
+set (PLASTIMATCH_LDFLAGS "@PLASTIMATCH_LDFLAGS@")
+
 set (PLASTIMATCH_FOUND ON)
