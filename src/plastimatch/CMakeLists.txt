@@ -289,10 +289,6 @@ if (NOT ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} VERSION_LESS 2.8)
   export (PACKAGE Plastimatch)
 endif ()
 
-# "For now", write OpenMP linker flags into PlastimatchConfig.cmake 
-# file so SlicerRt can find them
-set (PLASTIMATCH_LDFLAGS "${OPENMP_LDFLAGS}")
-
 # Create PlastimatchBuildTreeSettings.cmake for the use from the build tree
 file (RELATIVE_PATH CONF_REL_INCLUDE_DIR "${PLM_INSTALL_CMAKE_DIR}"
   "${PLM_INSTALL_INCLUDE_DIR}")
