@@ -134,6 +134,8 @@ option (PLM_PREFER_F2C
   "Prefer using f2c over native fortran compiler" ON)
 option (PLM_PREFER_SYSTEM_F2C 
   "Prefer the system f2c over the included f2c" ON)
+option (PLM_PREFER_NO_FORTRAN_NO_F2C
+  "Prefer no fortran, no f2c" OFF)
 
 # Installer Options
 option (PLM_INSTALL_RPATH 
