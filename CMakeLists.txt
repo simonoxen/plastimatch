@@ -178,6 +178,8 @@ if (PLM_CONFIG_LIBRARY_BUILD)
   set (PLM_CONFIG_DISABLE_MONDOSHOT ON)
   set (PLM_CONFIG_DISABLE_REG23 ON)
   set (PLM_CONFIG_DISABLE_SLICER ON)
+  set (PLM_CONFIG_PREFER_F2C ON)
+  set (PLM_PREFER_SYSTEM_F2C OFF)
 endif ()
   
 ##-----------------------------------------------------------------------------
