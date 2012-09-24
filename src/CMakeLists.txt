@@ -77,7 +77,7 @@ if (PLM_USE_GPU_PLUGINS AND WIN32 AND NOT CYGWIN AND NOT MINGW)
 endif ()
 # Work around issue with f2c on linux.  See:
 #   http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=337460
-if (UNIX AND NOT PLM_USE_INCLUDED_F2C)
+if (UNIX AND NOT PLM_PREFER_NO_FORTRAN_NO_F2C AND NOT PLM_USE_INCLUDED_F2C)
   set (PLASTIMATCH_LDFLAGS "${PLASTIMATCH_LDFLAGS} -u MAIN__")
 endif ()
 

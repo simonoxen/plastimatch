@@ -47,5 +47,6 @@ main (int argc, char* argv[])
     if (options.output_file) {
         fclose (fp);
     }
+    printf ("Done.\n");
     return 0;
 }

@@ -1,6 +1,8 @@
 #include <math.h>
 #include "plmdose.h"
-#include "plm_fortran.h"
+//#include "plm_fortran.h"
+
+typedef double doublereal;
 
 /* unmangled symbol in specfun */
 // PBDV(V,X,DV,DP,PDF,PDD)

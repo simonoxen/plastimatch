@@ -10,7 +10,23 @@
 		http://www.netlib.org/f2c/libf2c.zip
 */
 
-#include "plm_fortran.h"
+/* GCS: Fortran built-ins */
+#include <math.h>
+typedef double doublereal;
+typedef long integer;
+double d_sign(doublereal *a, doublereal *b)
+{
+    double x;
+    x = (*a >= 0 ? *a : - *a);
+    return( *b >= 0 ? x : -x);
+}
+
+double pow_dd(doublereal *ap, doublereal *bp)
+{
+    return(pow(*ap, *bp) );
+}
+#undef abs
+#define abs(x) ((x) >= 0 ? (x) : -(x))
 
 /* Table of constant values */
 

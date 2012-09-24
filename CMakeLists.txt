@@ -135,7 +135,7 @@ option (PLM_PREFER_F2C
 option (PLM_PREFER_SYSTEM_F2C 
   "Prefer the system f2c over the included f2c" ON)
 option (PLM_PREFER_NO_FORTRAN_NO_F2C
-  "Prefer no fortran, no f2c" OFF)
+  "Prefer no fortran, no f2c" ON)
 
 # Installer Options
 option (PLM_INSTALL_RPATH 
@@ -304,6 +304,7 @@ endif ()
 ##  GCS FIX: This should be done after slicer, to ensure that 
 ##   system f2c is not used
 ##-----------------------------------------------------------------------------
+if (NOT PLM_PREFER_NO_FORTRAN_NO_F2C)
 if (NOT MINGW)
   # For some reason, CMake tries to invoke devenv instead of gfortran
   # for mingw.
@@ -353,6 +354,7 @@ else ()
   endif ()
 endif ()
 message (STATUS "PLM_FORTRAN_LIBRARIES: ${PLM_FORTRAN_LIBRARIES}")
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Libdl
@@ -471,8 +473,10 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Only use local nocedal
 ##-----------------------------------------------------------------------------
-add_subdirectory (libs/nocedal)
-link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/nocedal)
+if (NOT PLM_PREFER_NO_FORTRAN_NO_F2C)
+  add_subdirectory (libs/nocedal)
+  link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/nocedal)
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  LUA 5.1.4

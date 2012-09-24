@@ -21,7 +21,7 @@ set (NOCEDAL_LIBRARY_C_SRC
   lbfgsb_2_1.c
   )
 
-if (PLM_USE_F2C)
+if (PLM_PREFER_NO_FORTRAN_NO_F2C OR PLM_USE_F2C)
   plm_add_static_library (nocedal "${NOCEDAL_LIBRARY_C_SRC}" 
     "${PLM_FORTRAN_LIBRARIES}" "" "")
 else ()
