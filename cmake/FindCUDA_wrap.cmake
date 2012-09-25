@@ -28,10 +28,19 @@ endif ()
 # ITK headers cannot be processed by nvcc, so we define
 # PLM_CUDA_COMPILE for the purpose of guarding
 # (see base/plmbase.h)
-set (CUDA_CXX_FLAGS ${CUDA_CXX_FLAGS};-DPLM_CUDA_COMPILE=1)
+if (CUDA_CXX_FLAGS)
+  set (CUDA_CXX_FLAGS "${CUDA_CXX_FLAGS},-DPLM_CUDA_COMPILE=1")
+else ()
+  set (CUDA_CXX_FLAGS "-DPLM_CUDA_COMPILE=1")
+endif ()
+
+# GCS 2012-09-25 - Seems this is needed too
+if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+  set (CUDA_CXX_FLAGS "${CUDA_CXX_FLAGS},-fPIC")
+endif ()
 
 if (CUDA_CXX_FLAGS)
-  set (CUDA_NVCC_FLAGS --compiler-options ${CUDA_CXX_FLAGS})
+  set (CUDA_NVCC_FLAGS --compiler-options "${CUDA_CXX_FLAGS}")
 endif ()
 
 set (CUDA_FOUND ${CUDA_FOUND} CACHE BOOL "Did we find cuda?")
