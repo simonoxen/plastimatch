@@ -108,6 +108,8 @@ void do_threshbox( Threshbox_parms *parms) {
 	fclose(fp0);
 	}
     
+	int label_onecount=0;
+
 	for (img_in_iterator.GoToBegin(); !img_in_iterator.IsAtEnd(); ++img_in_iterator) {
 	    
 	level = img_in_iterator.Get();
@@ -125,7 +127,7 @@ void do_threshbox( Threshbox_parms *parms) {
 	if ( (parms->center[0] - parms->boxsize[0]/2 <= k[0] && k[0] < parms->center[0]+parms->boxsize[0]/2) &&
 	    (parms->center[1] - parms->boxsize[1]/2 <= k[1] && k[1] < parms->center[1]+parms->boxsize[1]/2) &&
 	    (parms->center[2] - parms->boxsize[2]/2 <= k[2] && k[2] < parms->center[2]+parms->boxsize[2]/2) )	
-	    if	(level > parms->threshold/100.*maxlevel) label_uchar = 1;
+	    if	(level > parms->threshold/100.*maxlevel) { label_uchar = 1; label_onecount++;  }
 	    
 	uchar_img_iterator.Set ( label_uchar );
 	box_img_iterator.Set ( label_box );
@@ -146,8 +148,13 @@ void do_overlap_fraction( Threshbox_parms *parms) {
     double vol_img1=0, vol_img2=0, vol_min=0, vol_overlap=0, max_sep;
     int level1, level2, level11, level22;
 
+    int vol_img1_int = 0, vol_img2_int=0;
+
 	FloatPoint3DType phys_max1, phys_max2;
 	UCharImageType::IndexType k_max1, k_max2;
+
+	UCharImageType::IndexType kcurr;
+	FloatPoint3DType phys;
 
     UCharImageType::Pointer img1 = parms->overlap_labelmap1->itk_uchar();
     UCharImageType::Pointer img2 = parms->overlap_labelmap2->itk_uchar();
@@ -164,13 +171,79 @@ void do_overlap_fraction( Threshbox_parms *parms) {
 
     for (img1_iterator.GoToBegin(); !img1_iterator.IsAtEnd(); ++img1_iterator) {
 	    level1 = img1_iterator.Get();
-	    if ( level1>0 ) vol_img1++;
+	    if ( level1>0 ) { vol_img1++; vol_img1_int++;}
     }
 
     for (img2_iterator.GoToBegin(); !img2_iterator.IsAtEnd(); ++img2_iterator) {
 	    level2 = img2_iterator.Get();
-	    if ( level2>0 ) vol_img2++;
+	    if ( level2>0 ) { vol_img2++; vol_img2_int++;} 
     }
+
+
+// diameter of the labelmap thresholded image
+
+	float *xone = (float *)malloc(vol_img1_int*sizeof(float));
+	float *yone = (float *)malloc(vol_img1_int*sizeof(float));
+	float *zone = (float *)malloc(vol_img1_int*sizeof(float));
+
+	int j=0;
+	for (img1_iterator.GoToBegin(); !img1_iterator.IsAtEnd(); ++img1_iterator) {
+
+	int level = img1_iterator.Get();
+
+	if (level>0) {
+		kcurr=img1_iterator.GetIndex();
+		img1->TransformIndexToPhysicalPoint( kcurr, phys );
+		xone[j]=phys[0];yone[j]=phys[1];zone[j]=phys[2];
+		if (j>vol_img1_int) { fprintf(stderr,"inconsistent labelmap vox count!\n"); exit(1);}
+		j++;		
+		}
+	}
+
+
+	int i1,i2;
+	float diam1=-1;
+	for(i1=0;i1<j;i1++) for(i2=i1+1;i2<j;i2++) {
+		float d=sqrt( (xone[i1]-xone[i2])*(xone[i1]-xone[i2])+
+				(yone[i1]-yone[i2])*(yone[i1]-yone[i2])+
+				(zone[i1]-zone[i2])*(zone[i1]-zone[i2])				
+				);
+		if (d>diam1) diam1=d;		
+		}	
+
+	free(xone);free(yone);free(zone);
+
+	xone = (float *)malloc(vol_img2_int*sizeof(float));
+	yone = (float *)malloc(vol_img2_int*sizeof(float));
+	zone = (float *)malloc(vol_img2_int*sizeof(float));
+
+	j=0;
+	for (img2_iterator.GoToBegin(); !img2_iterator.IsAtEnd(); ++img2_iterator) {
+
+	int level = img2_iterator.Get();
+
+	if (level>0) {
+		kcurr=img2_iterator.GetIndex();
+		img2->TransformIndexToPhysicalPoint( kcurr, phys );
+		xone[j]=phys[0];yone[j]=phys[1];zone[j]=phys[2];
+		if (j>vol_img2_int) { fprintf(stderr,"inconsistent labelmap vox count!\n"); exit(1);}
+		j++;		
+		}
+	}
+
+
+//	int i1,i2;
+	float diam2=-1;
+	for(i1=0;i1<j;i1++) for(i2=i1+1;i2<j;i2++) {
+		float d=sqrt(   (xone[i1]-xone[i2])*(xone[i1]-xone[i2])+
+				(yone[i1]-yone[i2])*(yone[i1]-yone[i2])+
+				(zone[i1]-zone[i2])*(zone[i1]-zone[i2])				
+				);
+		if (d>diam2) diam2=d;		
+		}	
+
+	free(xone);free(yone);free(zone);
+
 
 printf("%s\n%s\n", parms->max_coord_fn_in1, parms->max_coord_fn_in2);
 
@@ -198,7 +271,7 @@ printf("%s\n%s\n", parms->max_coord_fn_in1, parms->max_coord_fn_in2);
 	max_sep = sqrt(max_sep);
 	printf("max_sep %f\n", max_sep);
 
-    FloatPoint3DType phys;
+//    FloatPoint3DType phys;
     bool in_image;
     UCharImageType::IndexType k1;
     UCharImageType::IndexType k2;
@@ -221,13 +294,7 @@ printf("%s\n%s\n", parms->max_coord_fn_in1, parms->max_coord_fn_in2);
 
 	}
 
-    if (vol_img1<vol_img2) vol_min=vol_img1; else vol_min=vol_img2;
-
-	// wrong logic
-	//img1->TransformPhysicalPointToIndex(phys_max1, k_max1);
-	//img2->TransformPhysicalPointToIndex(phys_max2, k_max2);
-	//level11 = img1->GetPixel(k_max1);
-	//level22 = img2->GetPixel(k_max2);
+    if (vol_img1<vol_img2) vol_min=vol_img1; else vol_min=vol_img2;	
 
 	int over_max = -1;
 
@@ -250,14 +317,6 @@ printf("%s\n%s\n", parms->max_coord_fn_in1, parms->max_coord_fn_in2);
 	if ( max1_in==1 && max2_in==0 )  over_max = 1; // suv max 1 is in the overlap volume, suv max 2 is outside
 	if ( max1_in==0 && max2_in==1 )  over_max = 2; // suv max 2 is in the overlap volume, suv max 1 is outside
 	if ( max1_in==0 && max2_in==0 )  over_max = 3; // both suv max are outside overlap volume
-
-	/* wrong logic!
-	int over_max = -1;
-	if (level11 > 0 && level22 > 0)   over_max = 0; // two suv max are in the overlap volume
-	if (level11 > 0 && level22 <= 0)  over_max = 1; // suv max 1 is in the overlap volume, suv max 2 is outside
-	if (level11 <= 0 && level22 > 0)  over_max = 2; // suv max 2 is in the overlap volume, suv max 1 is outside
-	if (level11 <= 0 && level22 <= 0) over_max = 3; // both suv max are outside overlap volume
-	*/
 
 	printf("overmax = %d\n", over_max );
 
@@ -283,6 +342,7 @@ printf("%s\n%s\n", parms->max_coord_fn_in1, parms->max_coord_fn_in2);
 	voxvol2=spacing2[0]*spacing2[1]*spacing2[2];	
 
 	fprintf(fpout, "Vol1cm3 %.4f Vol2cm3 %.4f\n", vol_img1*voxvol1/1000., vol_img2*voxvol2/1000. );
+	fprintf(fpout, "diam1mm %f diam2mm %f\n",diam1,diam2);
 	fclose(fpout);
 	}
 }
