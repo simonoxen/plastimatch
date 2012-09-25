@@ -296,8 +296,6 @@ printf("%s\n%s\n", parms->max_coord_fn_in1, parms->max_coord_fn_in2);
 
     if (vol_img1<vol_img2) vol_min=vol_img1; else vol_min=vol_img2;	
 
-	int over_max = -1;
-
 	//check if phys_max1 is in overlap
 	int max1_in;
 	img1->TransformPhysicalPointToIndex(phys_max1, k_max1);
@@ -313,12 +311,12 @@ printf("%s\n%s\n", parms->max_coord_fn_in1, parms->max_coord_fn_in2);
 	level22 = img2->GetPixel(k_max2);
 	if (level11 > 0 && level22 > 0 ) max2_in = 1; else max2_in = 0;
 
+    int over_max = -1;
+
 	if ( max1_in==1 && max2_in==1 )  over_max = 0; // two suv max are in the overlap volume
 	if ( max1_in==1 && max2_in==0 )  over_max = 1; // suv max 1 is in the overlap volume, suv max 2 is outside
 	if ( max1_in==0 && max2_in==1 )  over_max = 2; // suv max 2 is in the overlap volume, suv max 1 is outside
 	if ( max1_in==0 && max2_in==0 )  over_max = 3; // both suv max are outside overlap volume
-
-	printf("overmax = %d\n", over_max );
 
 	printf("trying to write %s\n", parms->overlap_fn_out);
 	//return;
@@ -326,8 +324,10 @@ printf("%s\n%s\n", parms->max_coord_fn_in1, parms->max_coord_fn_in2);
     if (fpout) { 
 	fprintf(fpout, "Vol1 %.1f  Vol2 %.1f  Volmin %.1f  Vover %.1f  (voxels)\n", 
 	   vol_img1,vol_img2, vol_min, vol_overlap);
-	fprintf(fpout, "Vover/Volmin = %.3f  MaxSep = %.3f SUV max location = %d\n", 
-		vol_overlap/vol_min, max_sep, over_max );
+	/*fprintf(fpout, "Vover/Volmin = %.3f  MaxSep = %.3f SUV max location = %d\n", 
+		vol_overlap/vol_min, max_sep, over_max );*/
+
+	fprintf(fpout, "Vover/Volmin = %.3f", vol_overlap/vol_min );
 
 	float voxvol1;
 	float spacing1[3];
