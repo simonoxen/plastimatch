@@ -86,7 +86,8 @@ itk_image_load_any (
     Plm_image_type* original_type, 
     U otype)
 {
-    if (!file_exists (fname)) {
+    if (!file_exists (fname) && !string_starts_with (fname, "slicer:"))
+    {
 	print_and_exit ("Can't open file \"%s\" for read\n", fname);
     }
 

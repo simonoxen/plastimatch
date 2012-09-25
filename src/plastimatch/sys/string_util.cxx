@@ -14,6 +14,12 @@
 
 #include "plmsys.h"
 
+bool
+string_starts_with (const char* s1, const char* s2)
+{
+    return strncmp (s1, s2, strlen(s2)) == 0;
+}
+
 int
 plm_strcmp (const char* s1, const char* s2)
 {

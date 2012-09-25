@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+PLMSYS_API bool string_starts_with (const char* s1, const char* s2);
 PLMSYS_API int plm_strcmp (const char* s1, const char* s2);
 PLMSYS_API void string_util_rtrim_whitespace (char *s);
 PLMSYS_API int parse_int13 (int *arr, const char *string);
