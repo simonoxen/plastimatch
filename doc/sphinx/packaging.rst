@@ -127,10 +127,10 @@ Third party libraries to be used::
 
 Configuration settings::
 
+  BUILD_SHARED                  ON      (this is not default)
+  PLM_CONFIG_USE_SS_IMAGE_VEC   ON      (this is default)
   PLM_CUDA_ALL_DEVICES          ON      (this is default)
   PLM_INSTALL_RPATH             OFF     (this is default)
-  PLM_USE_GPU_PLUGINS           ON      (this is default)
-  PLM_CONFIG_USE_SS_IMAGE_VEC   ON      (this is default)
 
 #. Build/install all required 3rd party libraries.
 #. Double check CPACK version number (at bottom of CMakeLists.txt)

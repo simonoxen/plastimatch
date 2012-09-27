@@ -1055,4 +1055,12 @@ configure_file (
 set (CPACK_SOURCE_INSTALLED_DIRECTORIES
   "${CMAKE_SOURCE_DIR};/;${CMAKE_BINARY_DIR}/extra_stuff;/src/plastimatch")
 
+## GCS 2012-09-27 Trying to fix "make package" under linux.
+## c.f. http://www.cmake.org/pipermail/cmake/2011-July/045602.html
+#set (CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
+#set (CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+#set (CPACK_PACKAGING_INSTALL_PREFIX "")
+set (CPACK_SET_DESTDIR ON)
+set (CPACK_INSTALL_PREFIX "")
+
 include (CPack)
