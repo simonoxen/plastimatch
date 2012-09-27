@@ -551,7 +551,7 @@ Rtss::rasterize (
     /* Rasterize structure sets */
     Rasterizer rasterizer;
 
-#if (PLM_USE_SS_IMAGE_VEC)
+#if (PLM_CONFIG_USE_SS_IMAGE_VEC)
     printf ("Setting use_ss_img_vec to true!\n");
     bool use_ss_img_vec = true;
 #else

@@ -32,13 +32,6 @@ class PLMUTIL_API Rasterizer {
     Volume* uchar_vol;
     Volume* labelmap_vol;
 
-#if defined (commentout)
-#if (PLM_USE_SS_IMAGE_VEC)
-    UCharVecImageType::Pointer m_ss_img;
-#else
-    Volume* ss_img_vol;
-#endif
-#endif
     Plm_image* m_ss_img;
     bool m_use_ss_img_vec;
 

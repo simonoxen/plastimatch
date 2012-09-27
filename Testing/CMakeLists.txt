@@ -1281,6 +1281,15 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-donut-a-ss.nrrd"
   )
+if (PLM_CONFIG_USE_SS_IMAGE_VEC)
+plmtest_check_interval (
+  "plm-convert-dicom-donut-a-check" 
+  "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-donut-a-stats.stdout.txt"
+  "S *0 *NVOX *([-0-9.]*)"
+  "2623"
+  "2623"
+  )
+else ()
 plmtest_check_interval (
   "plm-convert-dicom-donut-a-check" 
   "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-donut-a-stats.stdout.txt"
@@ -1288,6 +1297,7 @@ plmtest_check_interval (
   "2623"
   "2623"
   )
+endif ()
 plm_add_test (
   "plm-convert-dicom-donut-b"
   ""
@@ -1300,6 +1310,15 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-donut-b-ss.nrrd"
   )
+if (PLM_CONFIG_USE_SS_IMAGE_VEC)
+plmtest_check_interval (
+  "plm-convert-dicom-donut-b-check" 
+  "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-donut-b-stats.stdout.txt"
+  "S *0 *NVOX *([-0-9.]*)"
+  "1924"
+  "1924"
+  )
+else ()
 plmtest_check_interval (
   "plm-convert-dicom-donut-b-check" 
   "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-donut-b-stats.stdout.txt"
@@ -1307,6 +1326,7 @@ plmtest_check_interval (
   "1924"
   "1924"
   )
+endif ()
 set_tests_properties (plm-convert-dicom-donut-a PROPERTIES DEPENDS donut-1)
 set_tests_properties (plm-convert-dicom-donut-a-stats PROPERTIES 
   DEPENDS plm-convert-dicom-donut-a)
@@ -1435,7 +1455,7 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-b-ss.mha"
   )
-if (PLM_USE_SS_IMAGE_VEC)
+if (PLM_CONFIG_USE_SS_IMAGE_VEC)
 plmtest_check_interval ("plm-convert-dicom-xio-b-check"
   "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-b-stats.stdout.txt"
   "S *1 *NVOX *([-0-9.]*)"
@@ -1467,7 +1487,7 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-c-ss.mha"
   )
-if (PLM_USE_SS_IMAGE_VEC)
+if (PLM_CONFIG_USE_SS_IMAGE_VEC)
 # To be resolved.  Why do dicom-xio-b and dicom-xio-c give different answers?
 plmtest_check_interval ("plm-convert-dicom-xio-c-check"
   "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-c-stats.stdout.txt"
@@ -1570,7 +1590,7 @@ plmtest_check_interval ("plm-warp-dicom-xio-a-check-1"
   "-661.5"
   "-661.4"
   )
-if (PLM_USE_SS_IMAGE_VEC)
+if (PLM_CONFIG_USE_SS_IMAGE_VEC)
   plm_add_test (
     "plm-warp-dicom-xio-a-stats-2"
     ""
@@ -1630,7 +1650,7 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch 
   "stats;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-33-a-ss.mha"
   )
-if (PLM_USE_SS_IMAGE_VEC)
+if (PLM_CONFIG_USE_SS_IMAGE_VEC)
 plmtest_check_string ("plm-convert-dicom-33-a-check-1" 
   "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-33-a-stats-1.stdout.txt"
   "^Planes . (.*[^ ]) *$"
@@ -1682,7 +1702,7 @@ plm_add_test (
 # There is a bug in the dicom converter, whereby the image in the 
 # same directory is not parsed to find rasterization size.  This 
 # test should be modified when that bug is fixed.
-if (PLM_USE_SS_IMAGE_VEC)
+if (PLM_CONFIG_USE_SS_IMAGE_VEC)
 plmtest_check_interval ("plm-convert-cxt-check"
   "${PLM_BUILD_TESTING_DIR}/plm-convert-cxt-stats.stdout.txt"
   "S *0 *NVOX *([-0-9.]*)"
@@ -1802,7 +1822,7 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;plm-warp-xio-a-ss.nrrd"
   )
-if (PLM_USE_SS_IMAGE_VEC)
+if (PLM_CONFIG_USE_SS_IMAGE_VEC)
   plmtest_check_interval ("plm-warp-xio-a-check-4"
     "${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-stats-4.stdout.txt"
     "S *1 *NVOX *([-0-9.]*)"

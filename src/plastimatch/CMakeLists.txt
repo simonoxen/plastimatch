@@ -14,8 +14,8 @@ option (PLM_CONFIG_ALT_DCOS "Use alternative direction cosines rules" OFF)
 option (PLM_CONFIG_KEYHOLIZE "Enable RT structure keyholization" OFF)
 option (PLM_CONFIG_PREFER_DCMTK 
   "Use DCMTK instead of GDCM for DICOM operations" OFF)
-option (PLM_USE_SS_IMAGE_VEC
-  "Save structure sets as ITK UCHAR VEC images (in development)" OFF)
+option (PLM_CONFIG_USE_SS_IMAGE_VEC
+  "Save structure sets as ITK UCHAR VEC images (in development)" ON)
 option (PLM_CONFIG_CLANG_COMPLETE "Generate .clang_complete for hipster Vim-ers" OFF)
 option (PLM_CONFIG_DISABLE_VISCOUS "Disable experimental viscous fluid registration algorithm" ON)
 

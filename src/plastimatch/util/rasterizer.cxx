@@ -101,6 +101,12 @@ Rasterizer::init (
             if (num_uchar < 2) num_uchar = 2;
             ss_img->SetVectorLength (num_uchar);
             ss_img->Allocate ();
+
+            /* Zero out the image */
+            itk::VariableLengthVector< unsigned char > ZeroPixel (num_uchar);
+            ZeroPixel.Fill (itk::NumericTraits< unsigned char >::Zero);
+            ss_img->FillBuffer (ZeroPixel);
+
             this->m_ss_img->set_itk (ss_img);
         }
         else {
