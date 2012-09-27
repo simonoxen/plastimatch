@@ -120,17 +120,17 @@ This means 32-bit (only), and no OpenMP.
 Third party libraries to be used::
 
   CUDA            3.0.14
-  DCMTK           3.6.0             (Nb. Mondoshot used 3.5.4)
+  DCMTK           3.6.0             (If mondoshot is built)
   FFTW            3.2.2
   ITK             3.20.1
   wxWidgets       2.8.12            (If mondoshot is built)
 
 Configuration settings::
 
-  PLM_CUDA_ALL_DEVICES        ON      (this is default)
-  PLM_INSTALL_RPATH           OFF     (change this, only relevant for Unix)
-  PLM_USE_GPU_PLUGINS         ON      (this is default)
-  PLM_USE_SS_IMAGE_VEC        ON      (change this, but should be OFF for slicer plugin)
+  PLM_CUDA_ALL_DEVICES          ON      (this is default)
+  PLM_INSTALL_RPATH             OFF     (this is default)
+  PLM_USE_GPU_PLUGINS           ON      (this is default)
+  PLM_CONFIG_USE_SS_IMAGE_VEC   ON      (this is default)
 
 #. Build/install all required 3rd party libraries.
 #. Double check CPACK version number (at bottom of CMakeLists.txt)
