@@ -7,7 +7,7 @@ SET (CTEST_INITIAL_CACHE "
 CMAKE_GENERATOR:INTERNAL=Unix Makefiles
 
 //Name of the build
-BUILDNAME:STRING=06-lin64-PisrCD
+BUILDNAME:STRING=06-lin64-PisrCd-coverage
 
 //Name of the computer/site where compile is being run
 SITE:STRING=gelato-gcc4.4.5
