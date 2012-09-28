@@ -7,10 +7,10 @@ SET (CTEST_INITIAL_CACHE "
 CMAKE_GENERATOR:INTERNAL=Unix Makefiles
 
 //Name of the build
-BUILDNAME:STRING=lin64-Pisr-cd-gcc4.1.2
+BUILDNAME:STRING=lin64-Pisr-cd
 
 //Name of the computer/site where compile is being run
-SITE:STRING=physics
+SITE:STRING=physics-gcc4.1.2
 
 //The directory containing ITKConfig.cmake.  This is either the
 // root of the build tree, or PREFIX/lib/InsightToolkit for an
