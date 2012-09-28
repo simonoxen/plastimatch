@@ -21,8 +21,10 @@
 //#undef max
 //#endif
 
-#include "vxl/v3p/netlib/v3p_netlib.h"
-#include "vxl/v3p/netlib/v3p_f2c_mangle.h"
+//#include "vxl/v3p/netlib/v3p_netlib.h"
+//#include "vxl/v3p/netlib/v3p_f2c_mangle.h"
+#include "v3p_netlib.h"
+#include "v3p_f2c_mangle.h"
 
 #if defined (commentout)
 #if defined __cplusplus
