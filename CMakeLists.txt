@@ -215,9 +215,9 @@ endif ()
 ##    Processor type
 ##-----------------------------------------------------------------------------
 if (UNIX) # OS X and Cygwin are both considered UNIX
-    if (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-        set (GNU TRUE)
-    endif ()
+  if (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+    set (GNU TRUE)
+  endif ()
 endif()
 
 check_type_size ("unsigned int"   CMAKE_SIZEOF_UINT)

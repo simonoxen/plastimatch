@@ -319,10 +319,18 @@ configure_file (
   "${PROJECT_SOURCE_DIR}/cmake/PlastimatchBuildTreeSettings.cmake.in"
   "${CMAKE_BINARY_DIR}/PlastimatchBuildTreeSettings.cmake" @ONLY)
 
+# Install the PlastimatchConfig.cmake file
+install (FILES 
+  "${CMAKE_BINARY_DIR}/PlastimatchConfig.cmake" 
+  DESTINATION "${PLM_INSTALL_CMAKE_DIR}"
+  # COMPONENT dev
+  )
+
 # Install the export set for use with the install-tree
-install (EXPORT PlastimatchLibraryDepends DESTINATION
-  "${PLM_INSTALL_CMAKE_DIR}/plastimatch/cmake"
-  COMPONENT dev)
+install (EXPORT PlastimatchLibraryDepends 
+  DESTINATION "${PLM_INSTALL_CMAKE_DIR}"
+  # COMPONENT dev
+  )
 
 ##-----------------------------------------------------------------------------
 ##  DOXYGEN
