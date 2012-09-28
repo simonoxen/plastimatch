@@ -45,14 +45,8 @@ foreach (ARG ${PLMSYS_LIBRARY_SRC})
   string (REGEX MATCH ".*\\.h$" TMP "${ARG}")
   if (TMP)
     list (APPEND PLMSYS_LIBRARY_HEADERS "${TMP}")
-    set (PLMSYS_H_INCLUDES_STRING
-      "${PLMSYS_H_INCLUDES_STRING}#include \"${TMP}\"\n")
   endif ()
 endforeach ()
-configure_file (
-  "${PROJECT_SOURCE_DIR}/plmsys.h.in" 
-  "${CMAKE_BINARY_DIR}/plmsys.h"
-  @ONLY)
 
 ##-----------------------------------------------------------------------------
 ##  LIBRARY DEPENDENCIES

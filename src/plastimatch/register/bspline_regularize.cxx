@@ -5,8 +5,8 @@
 
 #include "plmbase.h"
 #include "plmregister.h"
-#include "plmsys.h"
 
+#include "print_and_exit.h"
 
 void
 bspline_regularize_initialize (

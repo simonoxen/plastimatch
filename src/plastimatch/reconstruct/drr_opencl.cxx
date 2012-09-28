@@ -9,7 +9,6 @@
 
 #include "plmreconstruct.h"
 #include "plmutil.h"
-#include "plmsys.h"
 
 #include "plm_math.h"
 

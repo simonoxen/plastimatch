@@ -10,10 +10,12 @@
 
 #include "plmbase.h"
 #include "plmregister.h"
-#include "plmsys.h"
 
-#include "plm_math.h"
 #include "bspline_macros.h"
+#include "logfile.h"
+#include "plm_math.h"
+#include "plm_timer.h"
+#include "print_and_exit.h"
 #include "volume_macros.h"
 
 /* Prototypes */

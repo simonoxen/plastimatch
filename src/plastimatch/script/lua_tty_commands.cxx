@@ -14,8 +14,6 @@ extern "C" {
 #include "lualib.h"
 }
 
-#include "plmsys.h"
-
 #include "lua_classes.h"
 #include "lua_class_image.h"
 #include "lua_tty.h"
@@ -24,6 +22,8 @@ extern "C" {
 #include "lua_tty_commands_util.h"
 #include "lua_tty_preview.h"
 #include "lua_util.h"
+
+#include "file_util.h"
 
 static void do_tty_command_pwd (lua_State* L, int argc, char** argv);
 

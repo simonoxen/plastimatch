@@ -21,7 +21,6 @@
 #include <string.h>
 
 #include "plmbase.h"
-#include "plmsys.h"
 
 #include "aperture.h"
 #include "proton_beam.h"

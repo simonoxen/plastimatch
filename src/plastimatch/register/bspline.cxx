@@ -35,9 +35,10 @@
 
 #include "plmbase.h"
 #include "plmregister.h"
-#include "plmsys.h"
-#include "delayload.h"
 
+#include "delayload.h"
+#include "file_util.h"
+#include "logfile.h"
 #include "plm_math.h"
 #include "interpolate_macros.h"
 #include "volume_macros.h"

@@ -14,7 +14,10 @@
 #include "gdcmUtil.h"
 
 #include "plmbase.h"
-#include "plmsys.h"
+
+#include "file_util.h"
+#include "logfile.h"
+#include "print_and_exit.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 

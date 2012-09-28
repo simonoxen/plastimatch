@@ -9,8 +9,8 @@
 
 #include "plmbase.h"
 #include "plmregister.h"
-#include "plmsys.h"
 
+#include "plm_timer.h"
 
 int
 round_int (float f)

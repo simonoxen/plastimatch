@@ -4,12 +4,6 @@
 #ifndef _print_and_exit_h_
 #define _print_and_exit_h_
 
-/**
-*  You probably do not want to #include this header directly.
- *
- *   Instead, it is preferred to #include "plmsys.h"
- */
-
 #include "plmsys_config.h"
 
 PLMSYS_C_API void print_and_wait (char* prompt_fmt, ...);

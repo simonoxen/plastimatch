@@ -6,8 +6,8 @@
 #include <string.h>
 
 #include "plmregister.h"
-#include "plmsys.h"
 
+#include "file_util.h"
 #include "pcmd_add.h"
 #include "pcmd_adjust.h"
 #include "pcmd_autolabel.h"
@@ -36,6 +36,7 @@
 #include "pcmd_warp.h"
 #include "pcmd_xf_convert.h"
 #include "plm_version.h"
+#include "print_and_exit.h"
 
 static void
 print_version (void)

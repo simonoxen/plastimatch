@@ -15,7 +15,6 @@
 #include "bstrlib.h"
 
 #include "plmbase.h"
-#include "plmsys.h"
 
 
 Xio_patient::Xio_patient (

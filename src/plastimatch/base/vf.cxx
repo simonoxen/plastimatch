@@ -8,7 +8,6 @@
 #include <math.h>
 
 #include "plmbase.h"
-#include "plmsys.h"
 
 #include "interpolate_macros.h"
 #include "plm_math.h"

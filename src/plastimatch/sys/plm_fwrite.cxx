@@ -9,7 +9,8 @@
 #include <io.h>
 #endif
 
-#include "plmsys.h"
+#include "plm_fwrite.h"
+#include "print_and_exit.h"
 
 #define LINELEN 128
 #define MIN_SHORT -32768

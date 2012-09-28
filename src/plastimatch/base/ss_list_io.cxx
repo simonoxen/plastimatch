@@ -7,8 +7,9 @@
 #include <string.h>
 
 #include "plmbase.h"
-#include "plmsys.h"
 
+#include "file_util.h"
+#include "print_and_exit.h"
 
 Rtss_structure_set*
 ss_list_load (Rtss_structure_set* cxt, const char* ss_list_fn)

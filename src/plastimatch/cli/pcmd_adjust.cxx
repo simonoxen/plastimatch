@@ -7,10 +7,10 @@
 #include "itk_adjust.h"
 
 #include "plmbase.h"
-#include "plmsys.h"
 
 #include "plm_clp.h"
 #include "pcmd_adjust.h"
+#include "print_and_exit.h"
 
 static void
 do_itk_adjust (FloatImageType::Pointer image, Adjust_parms *parms)

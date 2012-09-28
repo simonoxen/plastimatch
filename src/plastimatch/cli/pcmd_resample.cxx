@@ -8,10 +8,10 @@
 #include "itkResampleImageFilter.h"
 
 #include "plmbase.h"
-#include "plmsys.h"
 
 #include "pcmd_resample.h"
 #include "plm_clp.h"
+#include "print_and_exit.h"
 
 /* Return true if geometry was deduced, else false */
 static bool

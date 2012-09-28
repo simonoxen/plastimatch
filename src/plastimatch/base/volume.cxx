@@ -8,11 +8,10 @@
 #include <math.h>
 
 #include "plmbase.h"
-#include "plmsys.h"
 
+#include "logfile.h"
 #include "plm_math.h"
-
-#include "plmbase_config.h"
+#include "print_and_exit.h"
 #include "volume.h"
 
 #define CONVERT_VOLUME(old_type,new_type,new_type_enum)			\

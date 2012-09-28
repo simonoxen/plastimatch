@@ -6,7 +6,6 @@
 #include <stdlib.h>
 
 #include "plmbase.h"
-#include "plmsys.h"
 
 #include "plm_math.h"
 

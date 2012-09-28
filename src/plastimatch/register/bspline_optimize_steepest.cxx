@@ -13,13 +13,12 @@
 
 #include "plmbase.h"
 #include "plmregister.h"
-#include "plmsys.h"
 #include "plm_math.h"
 
 #if (CUDA_FOUND)
 #include "bspline_cuda.h"
 #endif
-
+#include "logfile.h"
 
 /*
  * This is a simple gradient plotter based on

@@ -8,13 +8,11 @@
 #include "dcmtk/ofstd/ofstream.h"
 #include "dcmtk/dcmdata/dctk.h"
 
-#include "plmsys.h"
-
 #include "compiler_warnings.h"
 #include "dcmtk_file.h"
 #include "dcmtk_loader.h"
 #include "plm_image.h"
-
+#include "print_and_exit.h"
 
 ShortImageType::Pointer 
 dcmtk_load (const char *dicom_dir)

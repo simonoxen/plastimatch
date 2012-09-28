@@ -13,7 +13,6 @@
 #include "itkImageSliceConstIteratorWithIndex.h"
 
 #include "plmbase.h"
-#include "plmsys.h"
 
 #include "compiler_warnings.h"
 #include "dice_statistics.h"

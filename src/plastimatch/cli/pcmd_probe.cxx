@@ -8,13 +8,12 @@
 #include "itkContinuousIndex.h"
 
 #include "plmbase.h"
-#include "plmsys.h"
 
 #include "pstring.h"
 #include "pcmd_probe.h"
 #include "plm_clp.h"
 #include "pstring.h"
-
+#include "string_util.h"
 
 class Probe_parms {
 public:

@@ -7,9 +7,9 @@
 #include <string.h>
 
 #include "plmbase.h"
-#include "plmsys.h"
 
 #include "bstrlib.h"
+#include "print_and_exit.h"
 
 Xio_demographic::Xio_demographic (const char *filename)
 {

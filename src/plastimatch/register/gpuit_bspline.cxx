@@ -9,9 +9,10 @@
 
 #include "plmbase.h"
 #include "plmregister.h"
-#include "plmsys.h"
 
+#include "logfile.h"
 #include "plm_math.h"
+#include "print_and_exit.h"
 
 static void
 do_gpuit_bspline_stage_internal (

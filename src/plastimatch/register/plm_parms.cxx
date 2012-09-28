@@ -17,7 +17,9 @@
 #endif
 
 #include "plmregister.h"
-#include "plmsys.h"
+
+#include "print_and_exit.h"
+#include "string_util.h"
 
 #define BUFLEN 2048
 

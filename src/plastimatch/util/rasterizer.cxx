@@ -10,8 +10,8 @@
 
 #include "plmbase.h"
 #include "plmutil.h"
-#include "plmsys.h"
 
+#include "print_and_exit.h"
 #include "plm_math.h"
 #include "plm_path.h"
 

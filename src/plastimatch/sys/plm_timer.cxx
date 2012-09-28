@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "plmsys.h"
 #include "plm_timer_p.h"
+#include "plm_timer.h"
 
 #include "compiler_warnings.h"
 

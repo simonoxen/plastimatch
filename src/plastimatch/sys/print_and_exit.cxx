@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-#include "plmsys.h"
+#include "print_and_exit.h"
 
 #if (defined(_WIN32) || defined(WIN32))
 	#define vsnprintf _vsnprintf

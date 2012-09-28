@@ -10,7 +10,9 @@
 #include "itkImageSeriesReader.h"
 
 #include "plmbase.h"
-#include "plmsys.h"
+
+#include "logfile.h"
+#include "print_and_exit.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */
 #if defined GetCurrentTime

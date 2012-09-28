@@ -7,12 +7,12 @@
 
 #include "plmbase.h"
 #include "plmregister.h"
-#include "plmsys.h"
 
 #include "cuda_util.h"
 #include "demons_cuda.h"
 #include "plm_cuda_math.h"
 
+#include "plm_timer.h"
 
 /*
 Constants

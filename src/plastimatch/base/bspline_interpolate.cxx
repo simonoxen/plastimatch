@@ -12,7 +12,6 @@
 #endif
 
 #include "plmbase.h"
-#include "plmsys.h"
 
 #include "bspline_interpolate.h"
 #include "direction_cosines.h"

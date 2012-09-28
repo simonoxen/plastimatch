@@ -18,7 +18,7 @@
 #endif
 #include <sys/stat.h>
 
-#include "plmsys.h"
+#include "file_util.h"
 
 #if (_WIN32)
 #define ISSLASH(c) (((c) == '/') || ((c) == '\\'))

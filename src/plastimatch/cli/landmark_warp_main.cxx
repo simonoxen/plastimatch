@@ -10,11 +10,11 @@
 
 #include "plmbase.h"
 #include "plmregister.h"
-#include "plmsys.h"
 
 #include "itk_tps.h"
 #include "plm_math.h"
 #include "plm_clp.h"
+#include "print_and_exit.h"
 #include "pstring.h"
 
 class Landmark_warp_main_parms {

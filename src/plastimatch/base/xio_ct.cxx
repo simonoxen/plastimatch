@@ -16,8 +16,9 @@
 #include "bstrlib.h"
 
 #include "plmbase.h"
-#include "plmsys.h"
 
+#include "plm_endian.h"
+#include "print_and_exit.h"
 
 typedef struct xio_ct_header Xio_ct_header;
 struct xio_ct_header {

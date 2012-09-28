@@ -10,8 +10,10 @@
 #include <itkImageIOBase.h>
 
 #include "plmbase.h"
-#include "plmsys.h"
+
+#include "file_util.h"
 #include "pstring.h"
+#include "string_util.h"
 
 static int
 is_xio_directory (const char* path)

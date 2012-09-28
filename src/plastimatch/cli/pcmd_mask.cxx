@@ -7,10 +7,10 @@
 
 #include "plmbase.h"
 #include "plmutil.h"
-#include "plmsys.h"
 
 #include "pcmd_mask.h"
 #include "plm_clp.h"
+#include "print_and_exit.h"
 
 static void
 mask_main (Mask_parms* parms)

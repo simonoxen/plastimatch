@@ -4,12 +4,6 @@
 #ifndef _plm_path_h_
 #define _plm_path_h_
 
-/**
-*  You probably do not want to #include this header directly.
- *
- *   Instead, it is preferred to #include "plmsys.h"
- */
-
 #include <stdlib.h>
 #include <limits.h>
 

@@ -4,12 +4,6 @@
 #ifndef _plm_endian_h_
 #define _plm_endian_h_
 
-/**
-*  You probably do not want to #include this header directly.
- *
- *   Instead, it is preferred to #include "plmsys.h"
- */
-
 #include "plmsys_config.h"
 
 PLMSYS_C_API void endian2_big_to_native (void* buf, unsigned long len);

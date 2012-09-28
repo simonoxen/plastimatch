@@ -5,8 +5,9 @@
 #include <string.h>
 
 #include "plmbase.h"
-#include "plmsys.h"
 
+#include "print_and_exit.h"
+#include "string_util.h"
 #include "xform.h"
 
 /* -----------------------------------------------------------------------

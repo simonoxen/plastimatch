@@ -7,8 +7,6 @@
 #include "PlaneParametersEstimator.h"
 #include "RandomNumberGenerator.h"
 
-#include "plmsys.h"
-
 #include "autolabel_ransac_est.h"
 #include "itk_point.h"
 #include "pstring.h"

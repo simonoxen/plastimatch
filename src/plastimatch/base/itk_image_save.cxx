@@ -10,10 +10,6 @@
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "itkOrientImageFilter.h"
-
-#include "plmbase.h"
-#include "plmsys.h"
-
 #if (defined(_WIN32) || defined(WIN32))
 #define snprintf _snprintf
 #define mkdir(a,b) _mkdir(a)
@@ -21,6 +17,11 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #endif
+
+#include "plmbase.h"
+
+#include "file_util.h"
+#include "logfile.h"
 
 /* -----------------------------------------------------------------------
    Writing image files

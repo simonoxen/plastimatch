@@ -9,14 +9,13 @@
 
 #include "plmbase.h"
 #include "plmregister.h"
-#include "plmsys.h"
 #include "plmutil.h"
 
 #include "gpuit_bspline.h"
 #include "gpuit_demons.h"
-
 #include "itk_demons.h"
 #include "itk_registration.h"
+#include "logfile.h"
 
 #define FIXME_BACKGROUND_MAX (-1200)
 

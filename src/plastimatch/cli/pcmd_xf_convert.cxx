@@ -5,10 +5,10 @@
 #include <stdlib.h>
 
 #include "plmbase.h"
-#include "plmsys.h"
 
 #include "pcmd_xf_convert.h"
 #include "plm_clp.h"
+#include "print_and_exit.h"
 #include "pstring.h"
 
 class Xf_convert_parms {

@@ -6,7 +6,6 @@
 #include "itkVariableLengthVector.h"
 
 #include "plmutil.h"
-#include "plmsys.h"
 
 void
 ss_img_stats (

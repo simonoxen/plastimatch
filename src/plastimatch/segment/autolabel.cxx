@@ -7,12 +7,12 @@
 #include "dlib/svm.h"
 
 #include "plmbase.h"
-#include "plmsys.h"
 
 #include "autolabel.h"
 #include "autolabel_ransac_est.h"
 #include "autolabel_thumbnailer.h"
 #include "dlib_trainer.h"
+#include "print_and_exit.h"
 #include "pstring.h"
 
 /* ITK typedefs */

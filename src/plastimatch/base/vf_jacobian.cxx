@@ -2,10 +2,10 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
+
 #include "plmbase.h"
-#include "plmsys.h"
+
 #include "vf_jacobian.h"
-// #include "stdio.h"
 
 Jacobian::Jacobian ()
 {

@@ -7,7 +7,8 @@
 #include <time.h>
 
 #include "plmbase.h"
-#include "plmsys.h"
+
+#include "print_and_exit.h"
 
 /* -----------------------------------------------------------------------
    Transform points

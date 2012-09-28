@@ -6,10 +6,10 @@
 
 #include "plmbase.h"
 #include "plmutil.h"
-#include "plmsys.h"
 
 #include "getopt.h"
 #include "pcmd_crop.h"
+#include "print_and_exit.h"
 
 static void
 crop_main (Crop_Parms* parms)

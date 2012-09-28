@@ -14,14 +14,13 @@
 
 #include "plmbase.h"
 #include "plmreconstruct.h"
-#include "plmsys.h"
 
-#include "plm_math.h"
 #include "delayload.h"
-
 #include "drr_cuda.h"
 #include "drr_opencl.h"
 #include "drr_opts.h"
+#include "plm_math.h"
+#include "plm_timer.h"
 
 static void*
 allocate_gpu_memory (

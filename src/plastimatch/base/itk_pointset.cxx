@@ -5,8 +5,8 @@
 #include <stdio.h>
 
 #include "plmbase.h"
-#include "plmsys.h"
 
+#include "print_and_exit.h"
 
 /* Don't get confused by the parameterization of the itk pointset.  The 
    PixelType is the "color" of the point, whereas the PointType is the 

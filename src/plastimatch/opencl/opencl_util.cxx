@@ -6,12 +6,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "plmsys.h"
-
-#include "opencl_util.h"
-#include "pstring.h"
 #include "delayload.h"
 #include "delayload_opencl.h"
+#include "opencl_util.h"
+#include "print_and_exit.h"
+#include "pstring.h"
 
 /* JAS 2012.04.26
  * Moved from file_util.cxx in order to keep

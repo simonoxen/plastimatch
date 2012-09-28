@@ -89,7 +89,7 @@
 
    ============================================================ */
 #include "plm_config.h"
-#include "plmsys.h"
+
 #include "opencl_test.h"
 
 /*

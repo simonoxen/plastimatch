@@ -7,10 +7,10 @@
 #include <string.h>
 
 #include "plmbase.h"
-#include "plmsys.h"
 
 #include "bstrlib.h"
 #include "bstrwrap.h"
+#include "print_and_exit.h"
 
 void
 xio_plan_get_studyset (const char *filename, char *studyset)

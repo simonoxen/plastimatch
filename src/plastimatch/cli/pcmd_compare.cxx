@@ -7,10 +7,10 @@
 #include "itkImageRegionIterator.h"
 
 #include "plmbase.h"
-#include "plmsys.h"
 
 #include "getopt.h"
 #include "pcmd_compare.h"
+#include "print_and_exit.h"
 
 void
 vf_analyze (Volume* vol1, Volume* vol2)

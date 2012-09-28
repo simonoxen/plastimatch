@@ -11,10 +11,10 @@
 #include "itkVectorLinearInterpolateImageFunction.h"
 
 #include "plmbase.h"
-#include "plmsys.h"
 
 #include "pcmd_warp.h"
 #include "plm_path.h"
+#include "print_and_exit.h"
 
 typedef unsigned short ushort;
 typedef unsigned long ulong;

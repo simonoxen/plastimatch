@@ -13,8 +13,6 @@ extern "C"
 #include "lauxlib.h"
 }
 
-#include "plmsys.h"
-
 #include "pcmd_script.h"
 #include "lua_class_image.h"
 #include "lua_class_register.h"
@@ -33,6 +31,7 @@ extern "C"
 #include "lua_tty.h"
 #include "lua_util.h"
 
+#include "file_util.h"
 
 void
 print_usage ()

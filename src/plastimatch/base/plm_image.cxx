@@ -10,8 +10,9 @@
 #include "itkMetaDataObject.h"
 
 #include "plmbase.h"
-#include "plmsys.h"
 
+#include "file_util.h"
+#include "print_and_exit.h"
 #include "pstring.h"
 
 Plm_image::Plm_image () {

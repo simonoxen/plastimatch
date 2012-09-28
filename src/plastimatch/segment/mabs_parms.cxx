@@ -12,9 +12,9 @@
 
 #include "plmbase.h"
 #include "plmsegment.h"
-#include "plmsys.h"
 
 #include "plm_math.h"
+#include "string_util.h"
 
 Mabs_parms::Mabs_parms ()
 {

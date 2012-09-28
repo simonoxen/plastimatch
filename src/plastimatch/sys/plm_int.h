@@ -4,12 +4,6 @@
 #ifndef _plm_int_h_
 #define _plm_int_h_
 
-/**
- *  You probably do not want to #include this header directly.
- *
- *   Instead, it is preferred to #include "plmsys.h"
- */
-
 #include "plmsys_config.h"
 
 /* JAS 2012.05.06

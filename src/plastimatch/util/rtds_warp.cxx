@@ -5,8 +5,10 @@
 
 #include "plmbase.h"
 #include "plmutil.h"
-#include "plmsys.h"
 
+#include "file_util.h"
+#include "logfile.h"
+#include "print_and_exit.h"
 #include "pstring.h"
 
 static void

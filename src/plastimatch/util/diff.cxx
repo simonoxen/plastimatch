@@ -8,10 +8,9 @@
 
 #include "plmbase.h"
 #include "plmutil.h"
-#include "plmsys.h"
 
 #include "plm_image.h"
-
+#include "print_and_exit.h"
 
 Diff_parms::Diff_parms ()
 {

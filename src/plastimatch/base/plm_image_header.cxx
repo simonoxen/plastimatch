@@ -8,8 +8,8 @@
 #include "itkImageRegionIterator.h"
 
 #include "plmbase.h"
-#include "plmsys.h"
 
+#include "print_and_exit.h"
 
 /* -----------------------------------------------------------------------
    functions

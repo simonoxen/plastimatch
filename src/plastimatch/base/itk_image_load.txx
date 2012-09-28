@@ -5,16 +5,19 @@
 #define _itk_image_load_txx_
 
 #include "plmbase_config.h"
-#include "plmsys.h"
 #include "itkImage.h"
 #include "itkCastImageFilter.h"
 #include "itkImageFileReader.h"
 #include "itkMetaDataDictionary.h"
 #include "itkOrientImageFilter.h"
+
+#include "file_util.h"
 #include "itk_dicom_load.h"
 #include "itk_image.h"
 #include "itk_image_load.h"
 #include "plm_image_type.h"
+#include "print_and_exit.h"
+#include "string_util.h"
 
 /* -----------------------------------------------------------------------
    Loading Images

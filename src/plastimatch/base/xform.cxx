@@ -12,9 +12,11 @@
 #include "itkTransformFileReader.h"
 
 #include "plmbase.h"
-#include "plmsys.h"
-#include "plm_math.h"
 
+#include "logfile.h"
+#include "plm_math.h"
+#include "print_and_exit.h"
+#include "string_util.h"
 
 static void
 itk_bsp_set_grid_img (Xform *xf,

@@ -10,8 +10,6 @@
 #include "itkMetaDataObject.h"
 
 #include "plmbase.h"
-#include "plmsys.h"
-
 
 void 
 itk_metadata_set (

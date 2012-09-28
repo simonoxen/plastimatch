@@ -14,13 +14,12 @@
 
 #include "plmbase.h"
 #include "plmutil.h"
-#include "plmsys.h"
 
 #include "bspline_macros.h"
-#include "plm_math.h"
-#include "volume_macros.h"
-
 #include "interpolate_macros.h"
+#include "plm_math.h"
+#include "print_and_exit.h"
+#include "volume_macros.h"
 
 /* This only warps voxels within the ROI.  If you need the whole 
    image, call bspline_xform_extend. */

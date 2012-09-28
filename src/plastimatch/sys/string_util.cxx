@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "plmsys.h"
+#include "string_util.h"
 
 bool
 string_starts_with (const char* s1, const char* s2)

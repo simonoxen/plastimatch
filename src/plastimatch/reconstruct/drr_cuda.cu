@@ -32,7 +32,6 @@
 
 #include "plmbase.h"
 #include "plmreconstruct.h"
-#include "plmsys.h"
 
 #include "plm_cuda_math.h"
 #include "plm_math.h"

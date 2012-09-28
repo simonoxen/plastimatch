@@ -5,8 +5,9 @@
 
 #include "plmbase.h"
 #include "plmregister.h"
-#include "plmsys.h"
 
+#include "logfile.h"
+#include "print_and_exit.h"
 
 Registration_data::Registration_data ()
 {

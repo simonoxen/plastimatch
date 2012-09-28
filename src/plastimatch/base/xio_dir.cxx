@@ -15,8 +15,8 @@
 #include "bstrlib.h"
 
 #include "plmbase.h"
-#include "plmsys.h"
 
+#include "file_util.h"
 
 /* -----------------------------------------------------------------------
    Private functions

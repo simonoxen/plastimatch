@@ -6,10 +6,10 @@
 #include "itkAddImageFilter.h"
 
 #include "plmbase.h"
-#include "plmsys.h"
 #include "plmutil.h"
 
 #include "plm_clp.h"
+#include "print_and_exit.h"
 #include "pstring.h"
 
 class Add_parms {

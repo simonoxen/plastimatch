@@ -12,7 +12,6 @@
 #include "itkOrientImageFilter.h"
 
 #include "plmbase.h"
-#include "plmsys.h"
 
 #if (defined(_WIN32) || defined(WIN32))
 #define snprintf _snprintf

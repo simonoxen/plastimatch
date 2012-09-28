@@ -5,7 +5,6 @@
 #include <list>
 
 #include "plmbase.h"
-#include "plmsys.h"
 #include "plmutil.h"
 
 #include "plm_clp.h"

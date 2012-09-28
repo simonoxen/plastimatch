@@ -9,8 +9,6 @@
 #include <omp.h>
 #endif
 
-#include "plmsys.h"
-
 #define LOOP1 2000
 #define LOOP2 20000
 

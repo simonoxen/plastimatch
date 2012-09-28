@@ -6,8 +6,8 @@
 
 #include "plmbase.h"
 #include "plmutil.h"
-#include "plmsys.h"
 
+#include "print_and_exit.h"
 
 static void
 plm_warp_itk (

@@ -12,14 +12,16 @@
 #endif
 
 #include "plmbase.h"
-#include "plmsys.h"
 
 #include "bspline_interpolate.h"
 #include "bspline_xform.h"
 #include "direction_cosines.h"
+#include "file_util.h"
 #include "interpolate_macros.h"
+#include "logfile.h"
 #include "plm_math.h"
 #include "plm_path.h"
+#include "print_and_exit.h"
 #include "volume_macros.h"
 
 static float

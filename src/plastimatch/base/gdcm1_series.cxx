@@ -15,11 +15,11 @@
 #include "gdcmUtil.h"
 
 #include "plmbase.h"
-#include "plmsys.h"
 
 #include "plm_math.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
+#include "print_and_exit.h"
 
 void
 gdcm1_series_test (char *dicom_dir)

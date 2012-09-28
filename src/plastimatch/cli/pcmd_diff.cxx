@@ -8,7 +8,6 @@
 
 #include "plmbase.h"
 #include "plmutil.h"
-#include "plmsys.h"
 
 #include "pcmd_diff.h"
 

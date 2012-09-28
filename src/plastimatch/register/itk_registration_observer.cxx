@@ -8,15 +8,17 @@
 #include <string.h>
 #include "itkRegularStepGradientDescentOptimizer.h"
 
+#include "plmbase.h"
+#include "plmregister.h"
+#include "plmutil.h"
+
 #include "compiler_warnings.h"
 #include "itk_image_type.h"
 #include "itk_optimizer.h"
 #include "itk_registration.h"
 #include "itk_registration_private.h"
-#include "plmbase.h"
-#include "plmregister.h"
-#include "plmsys.h"
-#include "plmutil.h"
+#include "logfile.h"
+#include "plm_timer.h"
 
 /* Lots of ITK algorithms don't behave uniformly.
    We're going to keep all this state in the observer, and the 

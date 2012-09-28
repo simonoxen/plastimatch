@@ -6,8 +6,11 @@
 
 #include "plmbase.h"
 #include "plmutil.h"
-#include "plmsys.h"
 
+#include "dir_list.h"
+#include "file_util.h"
+#include "logfile.h"
+#include "print_and_exit.h"
 
 static void
 compose_prefix_fn (

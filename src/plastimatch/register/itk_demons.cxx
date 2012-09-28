@@ -16,8 +16,10 @@
 
 #include "plmbase.h"
 #include "plmregister.h"
-#include "plmsys.h"
 
+#include "logfile.h"
+#include "plm_timer.h"
+#include "print_and_exit.h"
 
 typedef itk::DemonsRegistrationFilter<
     FloatImageType,

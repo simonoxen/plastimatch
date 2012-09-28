@@ -8,8 +8,9 @@
 
 #include "plmbase.h"
 #include "plmreconstruct.h"
-#include "plmsys.h"
 
+#include "file_util.h"
+#include "print_and_exit.h"
 
 int 
 main (int argc, char* argv[]) 

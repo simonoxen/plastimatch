@@ -16,8 +16,10 @@
 #include "itkRegularExpressionSeriesFileNames.h"
 
 #include "plmbase.h"
-#include "plmsys.h"
 
+#include "file_util.h"
+#include "plm_endian.h"
+#include "print_and_exit.h"
 
 #define XIO_DATATYPE_UINT32 5
 

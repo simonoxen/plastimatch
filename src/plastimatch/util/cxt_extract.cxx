@@ -15,7 +15,6 @@
 
 #include "plmbase.h"
 #include "plmutil.h"
-#include "plmsys.h"
 
 #if defined (commentout)
 static bool

@@ -6,7 +6,6 @@
 #include <itkImageRegionIterator.h>
 
 #include "plmbase.h"
-#include "plmsys.h"
 
 /* -----------------------------------------------------------------------
    Standard 3D image conversion

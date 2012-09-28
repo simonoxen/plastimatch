@@ -10,9 +10,9 @@
 
 #include "plmbase.h"
 #include "plmregister.h"
-#include "plmsys.h"
-#include "plm_math.h"
 
+#include "logfile.h"
+#include "plm_math.h"
 
 static void
 log_parms (Bspline_parms* parms)

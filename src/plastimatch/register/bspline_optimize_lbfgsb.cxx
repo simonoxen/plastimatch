@@ -11,9 +11,10 @@
 
 #include "plmbase.h"
 #include "plmregister.h"
-#include "plmsys.h"
 
+#include "logfile.h"
 #include "plm_math.h"
+#include "print_and_exit.h"
 
 //#include "plm_fortran.h"
 /* Defined in f2c.h, conflicts with std::numeric_limits::max */

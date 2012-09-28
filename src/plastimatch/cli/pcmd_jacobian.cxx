@@ -5,7 +5,6 @@
 #include <time.h>
 
 #include "plmbase.h"
-#include "plmsys.h"
 #include "plmutil.h"
 
 #include "pcmd_jacobian.h"

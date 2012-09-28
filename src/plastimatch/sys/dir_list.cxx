@@ -12,7 +12,7 @@
 #include <dirent.h>
 #endif
 
-#include "plmsys.h"
+#include "dir_list.h"
 
 Dir_list::Dir_list ()
 {
