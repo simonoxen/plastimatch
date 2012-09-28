@@ -2010,15 +2010,12 @@ plm_add_test (
 ##   plm-reg-itk-bspline
 ##   plm-reg-itk-demons
 ## -------------------------------------------------------------------------
-if (CMAKE_Fortran_COMPILER_WORKS OR F2C_LIBRARY)
-  # For Nocedal optimizer
-  set (PLM_BSPLINE_TEST_LOWER_THRESH "-746.0")
-  set (PLM_BSPLINE_TEST_UPPER_THRESH "-744.5")
-else ()
-  # For Liblbfgs optimizer
-  set (PLM_BSPLINE_TEST_LOWER_THRESH "-706.0")
-  set (PLM_BSPLINE_TEST_UPPER_THRESH "-704.5")
-endif ()
+# For Nocedal optimizer
+set (PLM_BSPLINE_TEST_LOWER_THRESH "-746.0")
+set (PLM_BSPLINE_TEST_UPPER_THRESH "-744.5")
+# For Liblbfgs optimizer
+#set (PLM_BSPLINE_TEST_LOWER_THRESH "-706.0")
+#set (PLM_BSPLINE_TEST_UPPER_THRESH "-704.5")
 
 plm_add_test (
   "plm-reg-align-center"
