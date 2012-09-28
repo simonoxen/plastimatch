@@ -8,7 +8,7 @@ CMAKE_GENERATOR:INTERNAL=Unix Makefiles
 
 //Name of the build
 //BUILDNAME:STRING=osx10.7.3-Pisr-Cd-gcc4.2-cuda4.1
-BUILDNAME:STRING=01-osx10.7.3-Pisr-Cd
+BUILDNAME:STRING=x01-osx10.7.3-Pisr-Cd
 
 //Name of the computer/site where compile is being run
 SITE:STRING=tempest-gcc4.2-cuda4.1
