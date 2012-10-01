@@ -5,7 +5,6 @@
 #define _gamma_dose_comparison_h_
 
 #include "plmutil_config.h"
-#include "direction_cosines.h"
 #include "plm_macros.h"
 #include "itk_image_type.h"
 

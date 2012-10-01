@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "plmutil.h"
+#include "gamma_dose_comparison.h"
 
 int main (int argc, char* argv[])
 {

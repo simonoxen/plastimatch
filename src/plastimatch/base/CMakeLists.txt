@@ -41,7 +41,9 @@ set (PLMBASE_LIBRARY_SRC
   itk_image_load_vec.cxx
   itk_image_save.cxx
   itk_image_stats.cxx
+  itk_image_type.h
   itk_metadata.cxx
+  itk_point.h
   itk_pointset.cxx
   itk_resample.cxx
   itk_volume_header.cxx
@@ -127,6 +129,16 @@ if (DCMTK_FOUND)
     )
 endif ()
 
+set (PLMBASE_LIBRARY_HEADERS
+  "${CMAKE_BINARY_DIR}/plmbase_config.h"
+  )
+foreach (ARG ${PLMBASE_LIBRARY_SRC})
+  string (REGEX MATCH ".*\\.h$" TMP "${ARG}")
+  if (TMP)
+    list (APPEND PLMBASE_LIBRARY_HEADERS "${TMP}")
+  endif ()
+endforeach ()
+
 ##-----------------------------------------------------------------------------
 ##  LIBRARY DEPENDENCIES
 ##-----------------------------------------------------------------------------
@@ -148,7 +160,7 @@ plm_add_library (
   "${PLMBASE_LIBRARY_SRC}" 
   "${PLMBASE_LIBRARY_DEPENDENCIES}"
   ""
-  "")
+  "${PLMBASE_LIBRARY_HEADERS}")
 
 ##-----------------------------------------------------------------------------
 ##  SPECIAL RULES FOR SLICER

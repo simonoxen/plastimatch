@@ -22,7 +22,7 @@ set (PLMUTIL_LIBRARY_SRC
   diff.cxx
   dvh.cxx 
   gamma_analysis.cxx
-  gamma_dose_comparison.cxx
+  gamma_dose_comparison.cxx gamma_dose_comparison.h
   hausdorff_statistics.cxx
   itk_adjust.cxx
   itk_crop.cxx
@@ -56,6 +56,19 @@ if (FFTW_FOUND)
    )
 endif ()
 
+set (PLMUTIL_LIBRARY_HEADERS
+  "${CMAKE_BINARY_DIR}/plmutil_config.h"
+  )
+foreach (ARG ${PLMUTIL_LIBRARY_SRC})
+  string (REGEX MATCH ".*\\.h$" TMP "${ARG}")
+  if (TMP)
+    list (APPEND PLMUTIL_LIBRARY_HEADERS "${TMP}")
+  endif ()
+endforeach ()
+
+##-----------------------------------------------------------------------------
+##  LIBRARY DEPENDENCIES
+##-----------------------------------------------------------------------------
 set (PLMUTIL_LIBRARY_DEPENDENCIES 
   plmbase
   plmsys
@@ -83,7 +96,7 @@ plm_add_library (
   "${PLMUTIL_LIBRARY_SRC}" 
   "${PLMUTIL_LIBRARY_DEPENDENCIES}"
   "${PLMUTIL_LIBRARY_LDFLAGS}"
-  "")
+  "${PLMUTIL_LIBRARY_HEADERS}")
 
 ##-----------------------------------------------------------------------------
 ##  SPECIAL RULES FOR SLICER
