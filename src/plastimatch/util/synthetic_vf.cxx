@@ -11,7 +11,6 @@
 #include "plm_math.h"
 
 #include "itkImageRegionIteratorWithIndex.h"
-#include "getopt.h"
 
 DeformationFieldType::Pointer
 synthetic_vf (Synthetic_vf_parms* parms)

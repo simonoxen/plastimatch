@@ -8,7 +8,6 @@
 #include <time.h>
 #include "itkImage.h"
 #include "itkImageRegionConstIterator.h"
-#include "getopt.h"
 
 #include "plmbase.h"
 

@@ -58,7 +58,6 @@
 
 #include "plmutil.h"
 
-//#include "getopt.h"
 #include "exchkeys.h"
 
 #define BUFLEN 2048
@@ -170,38 +169,6 @@ print_usage (void)
     printf ("  -o dir    output directory\n");
     exit (0);
 }
-
-#if defined (commentout)
-void
-parse_args (Program_Parms* parms, int argc, char* argv[])
-{
-    int ch;
-    static struct option longopts[] = {
-	{ "directory",             required_argument,      NULL,           'd' },
-	{ "output-directory",      required_argument,      NULL,           'o' },
-	{ NULL,                    0,                      NULL,           0 }
-    };
-
-    /* Set defaults */
-    parms->indir = ".";
-    parms->outdir = ".";
-
-    while ((ch = getopt_long (argc, argv, "d:o:", longopts, NULL))) {
-	if (ch == -1) break;
-	switch (ch) {
-	case 'd':
-	    parms->indir = optarg;
-	    break;
-	case 'o':
-	    parms->outdir = optarg;
-	    break;
-	default:
-	    print_usage ();
-	    break;
-	}
-    }
-}
-#endif
 
 void
 gs_strncpy (char* dst, char* src, int n)

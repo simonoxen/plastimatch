@@ -13,9 +13,9 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES
 ##-----------------------------------------------------------------------------
-set (PLMCLP_LIBRARY_SRC
-  plm_clp.cxx plm_clp.h
-  )
+#set (PLMCLP_LIBRARY_SRC
+#  plm_clp.cxx plm_clp.h
+#  )
 
 set (PLASTIMATCH_SRC
   pcmd_add.cxx 
@@ -64,7 +64,7 @@ set (PLM_CLI_LIBRARIES ${PLASTIMATCH_LIBS} plmclp)
 #  "${PLMCLP_LIBRARY_SRC}" 
 #  ""
 #  "")
-add_library (plmclp STATIC ${PLMCLP_LIBRARY_SRC})
+#add_library (plmclp STATIC ${PLMCLP_LIBRARY_SRC})
 plm_add_executable (plastimatch "${PLASTIMATCH_SRC}"
   "${PLM_CLI_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
   ${BUILD_ALWAYS} ${INSTALL_ALWAYS})
