@@ -28,7 +28,6 @@ Proton_Scene::~Proton_Scene ()
     if (this->rpl_vol) {
         rpl_volume_destroy (this->rpl_vol);
     }
-
 }
 
 bool
@@ -43,14 +42,16 @@ Proton_Scene::init (int ray_step)
 
     /* build projection matrix */
     proj_matrix_set (
-            this->pmat,
-            this->beam->src,
-            this->beam->isocenter,
-            this->ap->vup,
-            this->ap->ap_offset,
-            this->ap->ic,
-            ps,
-            this->ap->ires
+        this->pmat,
+        //this->beam->src,
+        //this->beam->isocenter,
+        this->beam->get_source_position(),
+        this->beam->get_isocenter_position(),
+        this->ap->vup,
+        this->ap->ap_offset,
+        this->ap->ic,
+        ps,
+        this->ap->ires
     );
 
     /* populate aperture orientation unit vectors */
@@ -76,14 +77,14 @@ Proton_Scene::init (int ray_step)
 
     /* create the depth volume */
     this->rpl_vol = rpl_volume_create (
-            this->patient,            /* CT volume */
-            this->pmat,               /* from source to aperature  */
-            this->ap->ires,           /* aperature dimension       */
-            this->pmat->cam,          /* position of source        */
-            this->ap->ul_room,        /* position of aperature     */
-            this->ap->incr_r,         /* aperature row++ vector    */
-            this->ap->incr_c,         /* aperature col++ vector    */
-            ray_step                  /* step size along ray trace */
+        this->patient,            /* CT volume */
+        this->pmat,               /* from source to aperature  */
+        this->ap->ires,           /* aperature dimension       */
+        this->pmat->cam,          /* position of source        */
+        this->ap->ul_room,        /* position of aperature     */
+        this->ap->incr_r,         /* aperature row++ vector    */
+        this->ap->incr_c,         /* aperature col++ vector    */
+        ray_step                  /* step size along ray trace */
     );
     if (!this->rpl_vol) return false;
 
@@ -112,8 +113,12 @@ Proton_Scene::print ()
     Proton_Beam* beam = this->beam;
 
     printf ("BEAM\n");
-    printf ("  -- [POS] Location : %g %g %g\n", beam->src[0], beam->src[1], beam->src[2]);
-    printf ("  -- [POS] Isocenter: %g %g %g\n", beam->isocenter[0], beam->isocenter[1], beam->isocenter[2]);
+    printf ("  -- [POS] Source :   %g %g %g\n", 
+        beam->get_source_position(0), beam->get_source_position(1), 
+        beam->get_source_position(2));
+    printf ("  -- [POS] Isocenter: %g %g %g\n", 
+        beam->get_isocenter_position(0), beam->get_isocenter_position(1), 
+        beam->get_isocenter_position(2));
     printf ("APERATURE\n");
     printf ("  -- [NUM] Res   : %i %i\n", ap->ires[0], ap->ires[1]);
     printf ("  -- [DIS] Offset: %g\n", ap->ap_offset);

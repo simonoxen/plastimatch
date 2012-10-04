@@ -23,16 +23,22 @@ private:
 public:
     /* [SETTINGS] */
     int debug;
-    float ray_step;       /* Uniform ray step size (mm) */
+    bool have_ray_step;
+    float ray_step;                 /* Uniform ray step size (mm) */
     char input_ct_fn[_MAX_PATH];    /* input:  patient volume */
     char input_dose_fn[_MAX_PATH];  /* input:     dose volume */
     char output_ct_fn[_MAX_PATH];   /* output: patient volume */
     char output_dose_fn[_MAX_PATH]; /* output:    dose volume */
 
-    Plm_image* ct_vol;
-    Plm_image* dose_vol;
+    float src[3];
+    float isocenter[3];
+    float beam_res;
 
-    Proton_Scene* scene;
+    float vup[3];
+    int ires[2];
+    bool have_ic;
+    float ic[2];
+    float ap_offset;
 };
 
 #endif

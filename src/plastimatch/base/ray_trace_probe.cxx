@@ -64,7 +64,10 @@ ray_trace_probe (
     ai[1] = (int) floor ((ipx[1] - vol->offset[1] + 0.5 * ps[1]) / ps[1]);
     ai[2] = (int) floor ((ipx[2] - vol->offset[2] + 0.5 * ps[2]) / ps[2]);
 
-    if (ai[0] < vol->dim[0] && ai[1] < vol->dim[1] && ai[2] < vol->dim[2]) {
+    if (ai[0] > 0 && ai[0] < vol->dim[0] 
+        && ai[1] > 0 && ai[1] < vol->dim[1] 
+        && ai[2] > 0 && ai[2] < vol->dim[2])
+    {
         idx = ((ai[2]*vol->dim[1] + ai[1]) * vol->dim[0]) + ai[0];
         pix_density = img[idx];
         (*callback) (callback_data, ray_idx, ray_depth, pix_density);

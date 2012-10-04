@@ -22,21 +22,21 @@ public:
     double intrinsic[12];
 };
 
-PLMBASE_C_API Proj_matrix* proj_matrix_clone (Proj_matrix* pmat_in);
-PLMBASE_C_API void proj_matrix_set (
+PLMBASE_API Proj_matrix* proj_matrix_clone (Proj_matrix* pmat_in);
+PLMBASE_API void proj_matrix_set (
     Proj_matrix *pmat,
-    double* cam, 
-    double* tgt, 
+    const double* cam, 
+    const double* tgt, 
     double* vup, 
     double sid, 
     double* ic, 
     double* ps, 
     int* ires
 );
-PLMBASE_C_API void proj_matrix_debug (Proj_matrix *pmat);
-PLMBASE_C_API void proj_matrix_get_nrm (Proj_matrix *pmat, double nrm[3]);
-PLMBASE_C_API void proj_matrix_get_pdn (Proj_matrix *pmat, double pdn[3]);
-PLMBASE_C_API void proj_matrix_get_prt (Proj_matrix *pmat, double prt[3]);
-PLMBASE_C_API void proj_matrix_save (Proj_matrix *pmat, const char *fn);
+PLMBASE_API void proj_matrix_debug (Proj_matrix *pmat);
+PLMBASE_API void proj_matrix_get_nrm (Proj_matrix *pmat, double nrm[3]);
+PLMBASE_API void proj_matrix_get_pdn (Proj_matrix *pmat, double pdn[3]);
+PLMBASE_API void proj_matrix_get_prt (Proj_matrix *pmat, double prt[3]);
+PLMBASE_API void proj_matrix_save (Proj_matrix *pmat, const char *fn);
 
 #endif

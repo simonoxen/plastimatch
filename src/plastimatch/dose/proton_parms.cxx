@@ -134,14 +134,22 @@ Proton_Parms::set_key_val (
             scene->beam->load (val);
         }
         else if (!strcmp (key, "pos")) {
-            if (sscanf (val, "%lf %lf %lf", &(scene->beam->src[0]), &(scene->beam->src[1]), &(scene->beam->src[2])) != 3) {
+            float beam_source_position[3];
+            int rc = sscanf (val, "%f %f %f", &beam_source_position[0],
+                &beam_source_position[1], &beam_source_position[2]);
+            if (rc != 3) {
                 goto error_exit;
             }
+            scene->beam->set_source_position (beam_source_position);
         }
         else if (!strcmp (key, "isocenter")) {
-            if (sscanf (val, "%lf %lf %lf", &(scene->beam->isocenter[0]), &(scene->beam->isocenter[1]), &(scene->beam->isocenter[2])) != 3) {
+            float isocenter_position[3];
+            int rc = sscanf (val, "%f %f %f", &isocenter_position[0],
+                &isocenter_position[1], &isocenter_position[2]);
+            if (rc != 3) {
                 goto error_exit;
             }
+            scene->beam->set_isocenter_position (isocenter_position);
         }
         else if (!strcmp (key, "energy")) {
             if (sscanf (val, "%lf", &(scene->beam->E0)) != 1) {

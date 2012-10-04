@@ -11,11 +11,26 @@
 #include "proton_beam.h"
 #include "proton_sobp.h"
 
+class Proton_beam_private {
+public:
+    Proton_beam_private ()
+    {
+        this->source[0] = -1000.f;
+        this->source[1] = 0.f;
+        this->source[2] = 0.f;
+        this->isocenter[0] = 0.f;
+        this->isocenter[1] = 0.f;
+        this->isocenter[2] = 0.f;
+//    this->beam_res = 1.f;
+    }
+public:
+    double source[3];
+    double isocenter[3];
+};
+
+
 Proton_Beam::Proton_Beam ()
 {
-    memset (this->src, 0, 3*sizeof (double));
-    memset (this->isocenter, 0, 3*sizeof (double));
-
     this->sobp = new Proton_sobp;
 
     this->E0 = 0.0;
@@ -48,6 +63,62 @@ Proton_Beam::load (const char* fn)
         return this->load_xio (fn);
     } else {
         return this->load_txt (fn);
+    }
+}
+
+const double*
+Proton_Beam::get_source_position ()
+{
+    return d_ptr->source;
+}
+
+double
+Proton_Beam::get_source_position (int dim)
+{
+    return d_ptr->source[dim];
+}
+
+void
+Proton_Beam::set_source_position (const float* position)
+{
+    for (int d = 0; d < 3; d++) {
+        d_ptr->source[d] = position[3];
+    }
+}
+
+void
+Proton_Beam::set_source_position (const double* position)
+{
+    for (int d = 0; d < 3; d++) {
+        d_ptr->source[d] = position[3];
+    }
+}
+
+const double*
+Proton_Beam::get_isocenter_position ()
+{
+    return d_ptr->isocenter;
+}
+
+double
+Proton_Beam::get_isocenter_position (int dim)
+{
+    return d_ptr->isocenter[dim];
+}
+
+void
+Proton_Beam::set_isocenter_position (const float* position)
+{
+    for (int d = 0; d < 3; d++) {
+        d_ptr->isocenter[d] = position[3];
+    }
+}
+
+void
+Proton_Beam::set_isocenter_position (const double* position)
+{
+    for (int d = 0; d < 3; d++) {
+        d_ptr->isocenter[d] = position[3];
     }
 }
 

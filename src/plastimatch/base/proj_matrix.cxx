@@ -121,8 +121,8 @@ proj_matrix_save (
 void
 proj_matrix_set (
     Proj_matrix *pmat,
-    double* cam, 
-    double* tgt, 
+    const double* cam, 
+    const double* tgt, 
     double* vup, 
     double sid, 
     double* ic, 

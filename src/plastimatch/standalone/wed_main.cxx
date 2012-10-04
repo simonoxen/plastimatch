@@ -46,9 +46,9 @@ get_wed_volume_depth (Wed_Parms* parms)
 
 
 static Volume*
-create_wed_volume (Wed_Parms* parms)
+create_wed_volume (Wed_Parms* parms, Proton_Scene *scene)
 {
-    Rpl_volume* rpl_vol = parms->scene->rpl_vol;
+    Rpl_volume* rpl_vol = scene->rpl_vol;
 
     float wed_off[3] = {0.0f, 0.0f, 0.0f};
     float wed_ps[3] = {1.0f, 1.0f, 1.0f};
@@ -202,18 +202,19 @@ wed_volume_populate (
     }
 }
 
-
 void
 wed_ct_compute (
     char* out_fn,
-    Wed_Parms* parms
+    Wed_Parms* parms,
+    Plm_image *ct_vol,
+    Proton_Scene *scene
 )
 {
     Volume* wed_vol;
-    Rpl_volume* rpl_vol = parms->scene->rpl_vol;
+    Rpl_volume* rpl_vol = scene->rpl_vol;
 
-    wed_vol = create_wed_volume (parms);
-    wed_volume_populate (wed_vol, parms->ct_vol->gpuit_float(), rpl_vol);
+    wed_vol = create_wed_volume (parms, scene);
+    wed_volume_populate (wed_vol, ct_vol->gpuit_float(), rpl_vol);
 
     write_mha (out_fn, wed_vol);
 
@@ -232,12 +233,33 @@ main (int argc, char* argv[])
         exit (0);
     }
 
-    write_mha ("debug_rpl.mha", parms.scene->rpl_vol->vol);
+    Plm_image* ct_vol;
+    Plm_image* dose_vol;
+    Proton_Scene scene;
+
+    /* load the patient and insert into the scene */
+    ct_vol = plm_image_load (parms.input_ct_fn, PLM_IMG_TYPE_ITK_FLOAT);
+    if (!ct_vol) {
+        fprintf (stderr, "\n** ERROR: Unable to load patient volume.\n");
+        return -1;
+    }
+    scene.set_patient (ct_vol);
+
+    /* set scene parameters */
+    scene.beam->set_source_position (parms.src);
+
+    /* try to setup the scene with the provided parameters */
+    if (!scene.init (parms.ray_step)) {
+        fprintf (stderr, "ERROR: Unable to initilize scene.\n");
+        return -1;
+    }
+
+    write_mha ("debug_rpl.mha", scene.rpl_vol->vol);
 
     printf ("Working...\n");
     fflush(stdout);
 
-    wed_ct_compute (parms.output_ct_fn, &parms);
+    wed_ct_compute (parms.output_ct_fn, &parms, ct_vol, &scene);
 
     printf ("done.  \n\n");
 

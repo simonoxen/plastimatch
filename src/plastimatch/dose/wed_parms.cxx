@@ -23,8 +23,6 @@
 
 Wed_Parms::Wed_Parms ()
 {
-    this->scene = new Proton_Scene;
-
     this->debug = 0;
     this->ray_step = 1.0f;
     this->input_ct_fn[0] = '\0';
@@ -32,13 +30,27 @@ Wed_Parms::Wed_Parms ()
     this->output_ct_fn[0] = '\0';
     this->output_dose_fn[0] = '\0';
 
-    this->ct_vol = NULL;
-    this->dose_vol = NULL;
+    this->src[0] = -1000.f;
+    this->src[1] = 0.f;
+    this->src[2] = 0.f;
+    this->isocenter[0] = 0.f;
+    this->isocenter[1] = 0.f;
+    this->isocenter[2] = 0.f;
+    this->beam_res = 1.f;
+
+    this->vup[0] = 0.f;
+    this->vup[1] = 0.f;
+    this->vup[2] = 1.f;
+    this->ires[0] = 200;
+    this->ires[1] = 200;
+    this->have_ic = false;
+    this->ic[0] = 99.5f;
+    this->ic[1] = 99.5f;
+    this->ap_offset = 100;
 }
 
 Wed_Parms::~Wed_Parms ()
 {
-    delete this->scene;
 }
 
 static void
@@ -55,10 +67,9 @@ Wed_Parms::set_key_val (
     int section
 )
 {
-    Proton_Scene* scene = this->scene;
     switch (section) {
 
-    /* [SETTINGS] */
+        /* [SETTINGS] */
     case 0:
         if (!strcmp (key, "ray_step")) {
             if (sscanf (val, "%f", &this->ray_step) != 1) {
@@ -79,45 +90,46 @@ Wed_Parms::set_key_val (
         }
         break;
 
-    /* [BEAM] */
+        /* [BEAM] */
     case 1:
         if (!strcmp (key, "pos")) {
-            if (sscanf (val, "%lf %lf %lf", &(scene->beam->src[0]), &(scene->beam->src[1]), &(scene->beam->src[2])) != 3) {
+            if (sscanf (val, "%f %f %f", &(this->src[0]), &(this->src[1]), &(this->src[2])) != 3) {
                 goto error_exit;
             }
         }
         else if (!strcmp (key, "isocenter")) {
-            if (sscanf (val, "%lf %lf %lf", &(scene->beam->isocenter[0]), &(scene->beam->isocenter[1]), &(scene->beam->isocenter[2])) != 3) {
+            if (sscanf (val, "%f %f %f", &(this->isocenter[0]), &(this->isocenter[1]), &(this->isocenter[2])) != 3) {
                 goto error_exit;
             }
         }
         else if (!strcmp (key, "res")) {
-            if (sscanf (val, "%lf", &(scene->beam->dres)) != 1) {
+            if (sscanf (val, "%f", &(this->beam_res)) != 1) {
                 goto error_exit;
             }
         }
 
         break;
 
-    /* [APERTURE] */
+        /* [APERTURE] */
     case 2:
         if (!strcmp (key, "up")) {
-            if (sscanf (val, "%lf %lf %lf", &(scene->ap->vup[0]), &(scene->ap->vup[1]), &(scene->ap->vup[2])) != 3) {
+            if (sscanf (val, "%f %f %f", &(this->vup[0]), &(this->vup[1]), &(this->vup[2])) != 3) {
                 goto error_exit;
             }
         }
         else if (!strcmp (key, "center")) {
-            if (sscanf (val, "%lf %lf", &(scene->ap->ic[0]), &(scene->ap->ic[1])) != 2) {
+            if (sscanf (val, "%f %f", &(this->ic[0]), &(this->ic[1])) != 2) {
                 goto error_exit;
             }
+            this->have_ic = true;
         }
         else if (!strcmp (key, "offset")) {
-            if (sscanf (val, "%lf", &(scene->ap->ap_offset)) != 1) {
+            if (sscanf (val, "%f", &(this->ap_offset)) != 1) {
                 goto error_exit;
             }
         }
         else if (!strcmp (key, "resolution")) {
-            if (sscanf (val, "%i %i", &(scene->ap->ires[0]), &(scene->ap->ires[1])) != 2) {
+            if (sscanf (val, "%i %i", &(this->ires[0]), &(this->ires[1])) != 2) {
                 goto error_exit;
             }
         }
@@ -125,7 +137,7 @@ Wed_Parms::set_key_val (
     }
     return 0;
 
-  error_exit:
+error_exit:
     print_and_exit ("Unknown (key,val) combination: (%s,%s)\n", key, val);
     return -1;
 }
@@ -221,19 +233,19 @@ Wed_Parms::parse_args (int argc, char** argv)
     }
 
 #if 0
-    if (scene->beam->d_lut == NULL) {
+    if (this->d_lut == NULL) {
         /* measured bragg curve not supplied, try to generate */
-        if (!scene->beam->generate ()) {
+        if (!this->generate ()) {
             return false;
         }
     }
-#endif
     // JAS 2012.08.10
     //   Hack so that I can reuse the proton code.  The values
     //   don't actually matter.
     scene->beam->E0 = 1.0;
     scene->beam->spread = 1.0;
     scene->beam->dmax = 1.0;
+#endif
 
     if (this->output_ct_fn[0] == '\0') {
         fprintf (stderr, "\n** ERROR: Output file for patient water equivalent depth volume not specified in configuration file!\n");
@@ -249,20 +261,6 @@ Wed_Parms::parse_args (int argc, char** argv)
 
     if (this->input_ct_fn[0] == '\0') {
         fprintf (stderr, "\n** ERROR: Input patient image not specified in configuration file!\n");
-        return false;
-    } else {
-        /* load the patient and insert into the scene */
-        this->ct_vol = plm_image_load (this->input_ct_fn, PLM_IMG_TYPE_ITK_FLOAT);
-        if (!this->ct_vol) {
-            fprintf (stderr, "\n** ERROR: Unable to load patient volume.\n");
-            return false;
-        }
-        this->scene->set_patient (this->ct_vol);
-    }
-
-    /* try to setup the scene with the provided parameters */
-    if (!this->scene->init (this->ray_step)) {
-        fprintf (stderr, "ERROR: Unable to initilize scene.\n");
         return false;
     }
 
