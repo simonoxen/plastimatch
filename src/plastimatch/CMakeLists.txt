@@ -27,6 +27,7 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 # JAS 2012.04.25 !!!!!!!!!!! TEMPORARY !!!!!!!!!!!!!!!!!!!!!!
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/base)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/cli)
+include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/clp)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/dose)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/cuda)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/opencl)

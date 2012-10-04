@@ -9,6 +9,7 @@ project (src)
 ##  PLASTIMATCH LIBRARIES
 ##-----------------------------------------------------------------------------
 set (PLASTIMATCH_LIBS
+  plmclp
   plmscript
   plmsegment
   plmregister
