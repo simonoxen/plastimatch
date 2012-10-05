@@ -31,7 +31,7 @@ PLMBASE_API void proj_matrix_set (
     double sid, 
     double* ic, 
     double* ps, 
-    int* ires
+    const int* ires
 );
 PLMBASE_API void proj_matrix_debug (Proj_matrix *pmat);
 PLMBASE_API void proj_matrix_get_nrm (Proj_matrix *pmat, double nrm[3]);

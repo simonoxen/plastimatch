@@ -48,10 +48,12 @@ Proton_Scene::init (int ray_step)
         this->beam->get_source_position(),
         this->beam->get_isocenter_position(),
         this->ap->vup,
-        this->ap->ap_offset,
+        //this->ap->ap_offset,
+        this->ap->get_offset(),
         this->ap->ic,
         ps,
-        this->ap->ires
+        //this->ap->ires
+        this->ap->get_dim()
     );
 
     /* populate aperture orientation unit vectors */
@@ -79,7 +81,7 @@ Proton_Scene::init (int ray_step)
     this->rpl_vol = rpl_volume_create (
         this->patient,            /* CT volume */
         this->pmat,               /* from source to aperature  */
-        this->ap->ires,           /* aperature dimension       */
+        this->ap->get_dim(),      /* aperature dimension       */
         this->pmat->cam,          /* position of source        */
         this->ap->ul_room,        /* position of aperature     */
         this->ap->incr_r,         /* aperature row++ vector    */
@@ -119,9 +121,9 @@ Proton_Scene::print ()
     printf ("  -- [POS] Isocenter: %g %g %g\n", 
         beam->get_isocenter_position(0), beam->get_isocenter_position(1), 
         beam->get_isocenter_position(2));
-    printf ("APERATURE\n");
-    printf ("  -- [NUM] Res   : %i %i\n", ap->ires[0], ap->ires[1]);
-    printf ("  -- [DIS] Offset: %g\n", ap->ap_offset);
+    printf ("APERTURE\n");
+    printf ("  -- [NUM] Res   : %i %i\n", ap->get_dim(0), ap->get_dim(1));
+    printf ("  -- [DIS] Offset: %g\n", ap->get_offset());
     printf ("  -- [POS] Center: %g %g %g\n", ap->ic_room[0], ap->ic_room[1], ap->ic_room[2]);
     printf ("  -- [POS] UpLeft: %g %g %g\n", ap->ul_room[0], ap->ul_room[1], ap->ul_room[2]);
     printf ("  -- [VEC] Up    : %g %g %g\n", ap->vup[0], ap->vup[1], ap->vup[2]);

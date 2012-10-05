@@ -31,6 +31,8 @@ public:
 
 Proton_Beam::Proton_Beam ()
 {
+    this->d_ptr = new Proton_beam_private;
+
     this->sobp = new Proton_sobp;
 
     this->E0 = 0.0;
@@ -43,6 +45,7 @@ Proton_Beam::Proton_Beam ()
 
 Proton_Beam::~Proton_Beam ()
 {
+    delete this->d_ptr;
     delete this->sobp;
 }
 

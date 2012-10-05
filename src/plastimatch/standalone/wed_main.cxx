@@ -5,14 +5,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#if (OPENMP_FOUND)
-#include <omp.h>
-#endif
 
-#include "plmbase.h"
-#include "plmdose.h"
-
+#include "aperture.h"
+#include "plm_image.h"
 #include "plm_math.h"
+#include "proton_beam.h"
+#include "proton_scene.h"
+#include "ray_trace_probe.h"
+#include "rpl_volume.h"
+#include "volume.h"
+#include "volume_limit.h"
+#include "wed_parms.h"
 
 typedef struct callback_data Callback_data;
 struct callback_data {
@@ -216,7 +219,8 @@ wed_ct_compute (
     wed_vol = create_wed_volume (parms, scene);
     wed_volume_populate (wed_vol, ct_vol->gpuit_float(), rpl_vol);
 
-    write_mha (out_fn, wed_vol);
+    //write_mha (out_fn, wed_vol);
+    plm_image_save_vol (out_fn, wed_vol);
 
 #if 0
     rpl_volume_save (rpl_vol, out_fn);
@@ -247,6 +251,10 @@ main (int argc, char* argv[])
 
     /* set scene parameters */
     scene.beam->set_source_position (parms.src);
+    scene.beam->set_isocenter_position (parms.isocenter);
+
+    scene.ap->set_offset (parms.ap_offset);
+    scene.ap->set_dim (parms.ires);
 
     /* try to setup the scene with the provided parameters */
     if (!scene.init (parms.ray_step)) {
@@ -254,14 +262,15 @@ main (int argc, char* argv[])
         return -1;
     }
 
-    write_mha ("debug_rpl.mha", scene.rpl_vol->vol);
+    //write_mha ("debug_rpl.mha", scene.rpl_vol->vol);
+    plm_image_save_vol ("debug_rpl.mha", scene.rpl_vol->vol);
 
     printf ("Working...\n");
     fflush(stdout);
 
     wed_ct_compute (parms.output_ct_fn, &parms, ct_vol, &scene);
 
-    printf ("done.  \n\n");
+    printf ("done.\n");
 
     return 0;
 }

@@ -4,10 +4,8 @@
 #ifndef _wed_parms_h_
 #define _wed_parms_h_
 
+#include "plmdose_config.h"
 #include "sys/plm_path.h"
-
-class Plm_image;
-class Proton_Scene;
 
 class PLMDOSE_API Wed_Parms {
 public:

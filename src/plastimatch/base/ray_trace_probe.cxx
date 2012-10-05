@@ -12,7 +12,7 @@
 #include "plmbase.h"
 
 #include "plm_math.h"
-
+#include "ray_trace_probe.h"
 
 void
 ray_trace_probe (

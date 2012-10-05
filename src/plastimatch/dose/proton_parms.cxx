@@ -187,14 +187,18 @@ Proton_Parms::set_key_val (
             }
         }
         else if (!strcmp (key, "offset")) {
-            if (sscanf (val, "%lf", &(scene->ap->ap_offset)) != 1) {
+            double offset;
+            if (sscanf (val, "%lf", &offset) != 1) {
                 goto error_exit;
             }
+            scene->ap->set_offset (offset);
         }
         else if (!strcmp (key, "resolution")) {
-            if (sscanf (val, "%i %i", &(scene->ap->ires[0]), &(scene->ap->ires[1])) != 2) {
+            int ires[2];
+            if (sscanf (val, "%i %i", &ires[0], &ires[1]) != 2) {
                 goto error_exit;
             }
+            scene->ap->set_dim (ires);
         }
         break;
 

@@ -4,9 +4,10 @@
 #ifndef _proton_beam_h_
 #define _proton_beam_h_
 
-class Proton_sobp;
+#include "plmdose_config.h"
 
 class Proton_beam_private;
+class Proton_sobp;
 
 class PLMDOSE_API Proton_Beam {
 public:
@@ -20,6 +21,7 @@ public:
     ///@{
     /*! \brief ( Documentation needed ) */
     bool load (const char* fn);
+
     /*! \brief Get the position of the beam source in world coordinates. */
     const double* get_source_position ();
     /*! \brief Get the x, y, or z coordinate of the beam source 
@@ -29,6 +31,7 @@ public:
     void set_source_position (const float position[3]);
     /*! \brief Set the position of the beam source in world coordinates. */
     void set_source_position (const double position[3]);
+
     /*! \brief Get the position of the beam isocenter in world coordinates. */
     const double* get_isocenter_position ();
     /*! \brief Get the x, y, or z coordinate of the beam source 
@@ -38,6 +41,7 @@ public:
     void set_isocenter_position (const float position[3]);
     /*! \brief Set the position of the beam isocenter in world coordinates. */
     void set_isocenter_position (const double position[3]);
+
     ///@}
 
     /*! \name Execution */
@@ -57,12 +61,7 @@ private:
     bool load_txt (const char* fn);
 
 public:
-    double isocenter[3];            /* beam is aimed at this point */
-
     Proton_sobp *sobp;
-
-//    float* d_lut;                   /* depth array (mm) */
-//    float* e_lut;                   /* energy array (MeV) */
 
     double E0;                      /* initial proton energy (MeV) */
     double spread;                  /* beam energy sigma (MeV) */

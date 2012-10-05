@@ -4,7 +4,10 @@
 #ifndef _proton_scene_h_
 #define _proton_scene_h_
 
+#include "plmdose_config.h"
+
 class Aperture;
+class Plm_image;
 class Proj_matrix;
 class Proton_Beam;
 class Volume;

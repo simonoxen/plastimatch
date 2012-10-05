@@ -127,7 +127,7 @@ proj_matrix_set (
     double sid, 
     double* ic, 
     double* ps, 
-    int* ires
+    const int* ires
 )
 {
     const int cols = 4;

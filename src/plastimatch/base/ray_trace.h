@@ -4,13 +4,8 @@
 #ifndef _ray_trace_h_
 #define _ray_trace_h_
 
-/**
-*  You probably do not want to #include this header directly.
- *
- *   Instead, it is preferred to #include "plmbase.h"
- */
-
 #include "plmbase_config.h"
+#include "ray_trace_callback.h"
 
 class Volume;
 class Volume_limit;
@@ -27,39 +22,22 @@ class Volume_limit;
 
 #define DRR_PREPROCESS_ATTENUATION 1
 
-typedef void (*Ray_trace_callback) (
-    void *callback_data, 
-    size_t vox_index, 
-    double vox_len, 
-    float vox_value);
-
 PLMBASE_C_API void ray_trace_exact (
-        Volume *vol,                  /* Input: volume */
-        Volume_limit *vol_limit,      /* Input: min/max coordinates of volume */
-        Ray_trace_callback callback,  /* Input: callback function */
-        void *callback_data,          /* Input: callback function private data */
-        double *p1in,                 /* Input: start point for ray */
-        double *p2in                  /* Input: end point for ray */
+    Volume *vol,                  /* Input: volume */
+    Volume_limit *vol_limit,      /* Input: min/max coordinates of volume */
+    Ray_trace_callback callback,  /* Input: callback function */
+    void *callback_data,          /* Input: callback function private data */
+    double *p1in,                 /* Input: start point for ray */
+    double *p2in                  /* Input: end point for ray */
 );
 PLMBASE_C_API void ray_trace_uniform (
-        Volume *vol,                  /* Input: volume */
-        Volume_limit *vol_limit,      /* Input: min/max coordinates of volume */
-        Ray_trace_callback callback,  /* Input: callback function */
-        void *callback_data,          /* Input: callback function private data */
-        double *p1in,                 /* Input: start point for ray */
-        double *p2in,                 /* Input: end point for ray */
-        float ray_step                /* Input: uniform step size */
+    Volume *vol,                  /* Input: volume */
+    Volume_limit *vol_limit,      /* Input: min/max coordinates of volume */
+    Ray_trace_callback callback,  /* Input: callback function */
+    void *callback_data,          /* Input: callback function private data */
+    double *p1in,                 /* Input: start point for ray */
+    double *p2in,                 /* Input: end point for ray */
+    float ray_step                /* Input: uniform step size */
 );
-PLMBASE_C_API void ray_trace_probe (
-        Volume *vol,                  /* Input: volume */
-        Volume_limit *vol_limit,      /* Input: min/max coordinates of volume */
-        Ray_trace_callback callback,  /* Input: callback function */
-        void *callback_data,          /* Input: callback function private data */
-        double *p1in,                 /* Input: start point for ray */
-        double *p2in,                 /* Input: end point for ray */
-        float ray_depth,              /* Input: depth along ray to probe */
-        float ray_idx                 /* Input: z-idnex along ray cast */
-);
-
 
 #endif

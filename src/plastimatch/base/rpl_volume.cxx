@@ -218,7 +218,7 @@ Rpl_volume*
 rpl_volume_create (
     Volume *ct_vol,       // ct volume
     Proj_matrix *pmat,    // projection matrix from source to aperture
-    int ires[2],          // aperture dimensions
+    const int ires[2],    // aperture dimensions
     double cam[3],        // position of source
     double ap_ul_room[3], // position of aperture in room coords
     double incr_r[3],     // change in room coordinates for each ap pixel
