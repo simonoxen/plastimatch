@@ -25,8 +25,6 @@ public:
     int get_dim (int dim) const;
     /*! \brief Set the aperture dimension, in pixels */
     void set_dim (const int* dim);
-    /*! \brief Set the aperture dimension, in pixels */
-    void set_dim (const plm_long* dim);
 
     /*! \brief Get the aperture offset: the distance from the
       beam source to closest point on the aperture plane */

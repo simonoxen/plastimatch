@@ -72,10 +72,3 @@ Aperture::set_dim (const int* dim)
     d_ptr->ires[0] = dim[0];
     d_ptr->ires[1] = dim[1];
 }
-
-void
-Aperture::set_dim (const plm_long* dim)
-{
-    d_ptr->ires[0] = dim[0];
-    d_ptr->ires[1] = dim[1];
-}
