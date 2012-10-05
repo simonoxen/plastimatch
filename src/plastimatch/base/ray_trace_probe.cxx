@@ -9,10 +9,10 @@
 #include <omp.h>
 #endif
 
-#include "plmbase.h"
-
 #include "plm_math.h"
 #include "ray_trace_probe.h"
+#include "volume.h"
+#include "volume_limit.h"
 
 void
 ray_trace_probe (

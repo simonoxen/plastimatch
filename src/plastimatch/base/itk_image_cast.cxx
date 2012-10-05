@@ -12,20 +12,13 @@
 #include <dirent.h>
 #endif
 
-#include "plmbase.h"
-
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "itkOrientImageFilter.h"
 
-#if (defined(_WIN32) || defined(WIN32))
-#define snprintf _snprintf
-#define mkdir(a,b) _mkdir(a)
-#else
-#include <sys/stat.h>
-#include <sys/types.h>
-#endif
+#include "itk_image_type.h"
+#include "itkClampCastImageFilter.h"
 
 /* -----------------------------------------------------------------------
    Casting image types
