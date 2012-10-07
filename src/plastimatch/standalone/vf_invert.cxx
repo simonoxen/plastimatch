@@ -4,13 +4,17 @@
 #include "plm_config.h"
 #include <time.h>
 #include "itkImage.h"
+
 #include "getopt.h"
 
-#include "plmbase.h"
-
+#include "itk_image_load.h"
+#include "mha_io.h"
+#include "plm_int.h"
+#include "plm_image_header.h"
+#include "plm_math.h"
+#include "vf_convolve.h"
 #include "vf_invert.h"
-
-#define round_int(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
+#include "volume.h"
 
 #define MAX_ITS 20
 
@@ -92,7 +96,7 @@ vf_invert_main (Vf_Invert_Parms* parms)
                 plm_long mijk[3], midx;
                 float mxyz[3];
                 mxyz[0] = x + img_in[3*v+0];
-                mijk[0] = round_int ((mxyz[0] - vf_inv->offset[0]) / vf_inv->spacing[0]);
+                mijk[0] = ROUND_INT ((mxyz[0] - vf_inv->offset[0]) / vf_inv->spacing[0]);
                 mxyz[1] = y + img_in[3*v+1];
                 mijk[1] = (mxyz[1] - vf_inv->offset[1]) / vf_inv->spacing[1];
                 mxyz[2] = z + img_in[3*v+2];
