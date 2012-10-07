@@ -33,7 +33,7 @@ set (PLMSCRIPT_LIBRARY_DEPENDENCIES
   plmsys
   plmutil
   ${QT_LIBRARIES}
-  lua
+#  lua
   )
 if (READLINE_FOUND)
   set (PLMSCRIPT_LIBRARY_DEPENDENCIES

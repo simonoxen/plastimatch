@@ -19,6 +19,7 @@ set (PLASTIMATCH_LIBS
   plmbase
   plmsys
   ${ITK_LIBRARIES}
+  lua
   ${MATH_LIB}
   )
 
