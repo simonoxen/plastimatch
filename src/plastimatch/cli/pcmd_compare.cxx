@@ -8,7 +8,6 @@
 
 #include "plmbase.h"
 
-#include "getopt.h"
 #include "pcmd_compare.h"
 #include "print_and_exit.h"
 

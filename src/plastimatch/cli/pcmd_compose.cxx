@@ -9,7 +9,6 @@
 
 #include "plmbase.h"
 
-#include "getopt.h"
 #include "pcmd_compose.h"
 #include "print_and_exit.h"
 
