@@ -77,6 +77,7 @@ public:
 
     void load (const char* fn);
     void load (const Pstring& fn);
+    void load (const std::string& fn);
     void save (const char* fn);
     void save (const Pstring& fn);
 

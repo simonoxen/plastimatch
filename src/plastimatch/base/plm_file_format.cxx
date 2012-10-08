@@ -132,6 +132,12 @@ plm_file_format_deduce (const Pstring& path)
     return plm_file_format_deduce ((const char*) path);
 }
 
+Plm_file_format
+plm_file_format_deduce (const std::string& path)
+{
+    return plm_file_format_deduce (path.c_str());
+}
+
 char*
 plm_file_format_string (Plm_file_format file_type)
 {

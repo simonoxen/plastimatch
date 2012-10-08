@@ -11,15 +11,12 @@
 #include "itkCastImageFilter.h"
 #include "itkOrientImageFilter.h"
 
-#include "plmbase.h"
-
-#if (defined(_WIN32) || defined(WIN32))
-#define snprintf _snprintf
-#define mkdir(a,b) _mkdir(a)
-#else
-#include <sys/stat.h>
-#include <sys/types.h>
-#endif
+#include "direction_cosines.h"
+#include "itk_image.h"
+#include "itk_volume_header.h"
+#include "plm_image_header.h"
+#include "plm_int.h"
+#include "volume_header.h"
 
 /* -----------------------------------------------------------------------
     Functions

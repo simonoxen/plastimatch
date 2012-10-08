@@ -5,9 +5,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "plmbase.h"
-
+#include "plm_int.h"
 #include "plm_math.h"
+#include "vf_convolve.h"
+#include "volume.h"
 
 void
 vf_convolve_x (Volume* vf_out, Volume* vf_in, float* ker, int width)

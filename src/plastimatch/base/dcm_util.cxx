@@ -6,8 +6,14 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "plmbase.h"
-
+#include "dcm_util.h"
+#if GDCM_VERSION_1
+#include "gdcm1_rdd.h"
+#include "gdcm1_util.h"
+#endif
+#if GDCM_VERSION_2
+#include "gdcm2_util.h"
+#endif
 #include "make_string.h"
 
 void

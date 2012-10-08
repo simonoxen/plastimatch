@@ -11,8 +11,6 @@
 #include <omp.h>
 #endif
 
-#include "plmbase.h"
-
 #include "bspline_interpolate.h"
 #include "bspline_xform.h"
 #include "direction_cosines.h"
@@ -22,6 +20,7 @@
 #include "plm_math.h"
 #include "plm_path.h"
 #include "print_and_exit.h"
+#include "volume_header.h"
 #include "volume_macros.h"
 
 static float

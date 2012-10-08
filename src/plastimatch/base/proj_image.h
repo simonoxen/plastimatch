@@ -13,6 +13,8 @@ class PLMBASE_API Proj_image {
 public:
     Proj_image (void);
     Proj_image (const char* img_filename, const char* mat_filename);
+    Proj_image (const std::string& img_filename, 
+        const std::string& mat_filename = "");
     Proj_image (const char* img_filename, const double xy_offset[2]);
     ~Proj_image (void);
 
@@ -27,6 +29,8 @@ public:
     bool have_image ();
     void init ();
     void load (const char* img_filename, const char* mat_filename);
+    void load (const std::string& img_filename, 
+        const std::string& mat_filename = "");
     void load_pfm (const char* img_filename, const char* mat_filename);
     void load_raw (const char* img_filename, const char* mat_filename);
     void load_hnd (const char* img_filename);

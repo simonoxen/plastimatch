@@ -19,3 +19,9 @@ itk_image_load_float (const char* fname, Plm_image_type* original_type)
     //return orient_image (img);
     return img;
 }
+
+FloatImageType::Pointer
+itk_image_load_float (const std::string& fname, Plm_image_type* original_type)
+{
+    return itk_image_load_float (fname.c_str(), original_type);
+}

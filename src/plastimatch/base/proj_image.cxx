@@ -37,6 +37,15 @@ Proj_image::Proj_image (
     this->load (img_filename, mat_filename);
 }
 
+Proj_image::Proj_image (
+    const std::string& img_filename,
+    const std::string& mat_filename
+)
+{
+    this->init ();
+    this->load (img_filename, mat_filename);
+}
+
 Proj_image::~Proj_image ()
 {
     this->clear ();
@@ -439,7 +448,7 @@ Proj_image::load (
     char tmp[_MAX_PATH];
 
     /* If not specified, try to guess the mat_filename */
-    if (!mat_filename) {
+    if (!mat_filename || mat_filename[0] == 0) {
         strncpy (tmp, img_filename, _MAX_PATH);
         strip_extension (tmp);
         strncat (tmp, ".txt", _MAX_PATH);
@@ -457,6 +466,16 @@ Proj_image::load (
     else if (extension_is (img_filename, ".hnd")) {
         load_hnd (img_filename);
     }
+}
+
+
+void
+Proj_image::load (
+    const std::string& img_filename,
+    const std::string& mat_filename
+)
+{
+    load (img_filename.c_str(), mat_filename.c_str());
 }
 
 void

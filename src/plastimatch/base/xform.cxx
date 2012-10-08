@@ -300,6 +300,12 @@ Xform::load (const Pstring& fn)
 }
 
 void
+Xform::load (const std::string& fn)
+{
+    this->load (fn.c_str());
+}
+
+void
 xform_load (Xform *xf, const char* fn)
 {
     xf->load (fn);

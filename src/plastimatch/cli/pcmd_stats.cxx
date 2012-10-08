@@ -6,15 +6,13 @@
 #include "itkImageRegionIterator.h"
 #include "itkVariableLengthVector.h"
 
-#include "getopt.h"
-
-//#include "plmbase.h"
-//#include "plmutil.h"
+//#include "getopt.h"
 
 #include "itk_image_load.h"
 #include "itk_image_stats.h"
 #include "mha_io.h"
 #include "pcmd_stats.h"
+#include "plm_clp.h"
 #include "plm_file_format.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
@@ -25,13 +23,20 @@
 #include "volume.h"
 #include "xform.h"
 
+class Stats_parms {
+public:
+    std::string mask_fn;
+    std::list<std::string> input_fns;
+};
+
+
 static void
-stats_vf_main (Stats_parms* parms)
+stats_vf_main (Stats_parms* parms, const std::string& current_fn)
 {
     Volume *vol = 0;
     Xform xf1, xf2;
 
-    xform_load (&xf1, (const char*) parms->img_in_fn);
+    xf1.load (current_fn);
 
     if (xf1.m_type == XFORM_GPUIT_VECTOR_FIELD) {
 	vol = xf1.get_gpuit_vf();
@@ -46,13 +51,13 @@ stats_vf_main (Stats_parms* parms)
     else 
     {
 	print_and_exit ("Error: input file %s is not a vector field\n", 
-	    (const char*) parms->img_in_fn);
+            current_fn.c_str());
     }
 
     if (vol->pix_type != PT_VF_FLOAT_INTERLEAVED) {
 	fprintf (stderr, 
 	    "Sorry, file \"%s\" is not an interleaved float vector field.\n", 
-	    (const char*) parms->img_in_fn);
+            current_fn.c_str());
 	fprintf (stderr, "Type = %d\n", vol->pix_type);
 	delete vol;
 	exit (-1);
@@ -66,7 +71,7 @@ stats_vf_main (Stats_parms* parms)
     }
     else {
 	/* GCS FIX: Mask should be read as xform (to enable use of mhd) */
-	Volume* mask = read_mha ((const char*) parms->mask_fn);
+	Volume* mask = read_mha (current_fn.c_str());
 	vf_analyze (vol); 
 	vf_analyze_strain (vol);
 	vf_analyze_jacobian (vol);
@@ -78,24 +83,24 @@ stats_vf_main (Stats_parms* parms)
 }
 
 static void
-stats_proj_image_main (Stats_parms* parms)
+stats_proj_image_main (Stats_parms* parms, const std::string& current_fn)
 {
     Proj_image *proj;
 
-    proj = new Proj_image ((const char*) parms->img_in_fn, (const char*) 0);
+    proj = new Proj_image (current_fn, (const char*) 0);
     proj_image_debug_header (proj);
     proj_image_stats (proj);
     delete proj;
 }
 
 static void
-stats_ss_image_main (Stats_parms* parms)
+stats_ss_image_main (Stats_parms* parms, const std::string& current_fn)
 {
-    Plm_image plm ((const char*) parms->img_in_fn);
+    Plm_image plm (current_fn);
 
     if (plm.m_type != PLM_IMG_TYPE_ITK_UCHAR_VEC) {
 	print_and_exit ("Failure loading file %s as ss_image.\n",
-	    (const char*) parms->img_in_fn);
+	    current_fn.c_str());
     }
 
     UCharVecImageType::Pointer img = plm.m_itk_uchar_vec;
@@ -104,10 +109,10 @@ stats_ss_image_main (Stats_parms* parms)
 }
 
 static void
-stats_img_main (Stats_parms* parms)
+stats_img_main (Stats_parms* parms, const std::string& current_fn)
 {
     FloatImageType::Pointer img = itk_image_load_float (
-	(const char*) parms->img_in_fn, 0);
+        current_fn, 0);
 
     double min_val, max_val, avg;
     int non_zero, num_vox;
@@ -120,67 +125,72 @@ stats_img_main (Stats_parms* parms)
 static void
 stats_main (Stats_parms* parms)
 {
-    switch (plm_file_format_deduce ((const char*) parms->img_in_fn)) {
-    case PLM_FILE_FMT_VF:
-	stats_vf_main (parms);
-	break;
-    case PLM_FILE_FMT_PROJ_IMG:
-	stats_proj_image_main (parms);
-	break;
-    case PLM_FILE_FMT_SS_IMG_VEC:
-	stats_ss_image_main (parms);
-	break;
-    case PLM_FILE_FMT_IMG:
-    default:
-	stats_img_main (parms);
-	break;
+    std::list<std::string>::iterator it = parms->input_fns.begin();
+    while (it != parms->input_fns.end()) {
+        std::string current_fn = *it;
+        switch (plm_file_format_deduce (current_fn)) {
+        case PLM_FILE_FMT_VF:
+            stats_vf_main (parms, current_fn);
+            break;
+        case PLM_FILE_FMT_PROJ_IMG:
+            stats_proj_image_main (parms, current_fn);
+            break;
+        case PLM_FILE_FMT_SS_IMG_VEC:
+            stats_ss_image_main (parms, current_fn);
+            break;
+        case PLM_FILE_FMT_IMG:
+        default:
+            stats_img_main (parms, current_fn);
+            break;
+        }
+        ++it;
     }
 }
 
 static void
-stats_print_usage (void)
+usage_fn (dlib::Plm_clp* parser, int argc, char *argv[])
 {
-    printf ("Usage: plastimatch stats file [file ...]\n"
-	    );
-    exit (-1);
+    printf (
+        "Usage: plastimatch stats [options] input_file [input_file ...]\n");
+    parser->print_options (std::cout);
+    std::cout << std::endl;
 }
 
 static void
-stats_parse_args (Stats_parms* parms, int argc, char* argv[])
+parse_fn (
+    Stats_parms* parms, 
+    dlib::Plm_clp* parser, 
+    int argc, 
+    char* argv[]
+)
 {
-    int ch;
-    static struct option longopts[] = {
-	{ "input",          required_argument,      NULL,           2 },
-	{ "mask",           required_argument,      NULL,           3 },
-	{ NULL,             0,                      NULL,           0 }
-    };
+    /* Add --help, --version */
+    parser->add_default_options ();
 
-    while ((ch = getopt_long (argc, argv, "", longopts, NULL)) != -1) {
-	switch (ch) {
-	case 2:
-	    parms->img_in_fn = optarg;
-	    break;
-	case 3:
-	    parms->mask_fn = optarg;
-	    break;
-	default:
-	    break;
-	}
+    /* Weight vector */
+    parser->add_long_option ("", "mask", 
+        "A binary image (usually unsigned char) where only non-zero voxels "
+        "are considered for statistics", 1, "");
+
+    /* Parse options */
+    parser->parse (argc,argv);
+
+    /* Handle --help, --version */
+    parser->check_default_options ();
+
+    if (parser->option ("mask")) {
+        parms->mask_fn = parser->get_string ("mask");
     }
-    if (parms->img_in_fn.length() == 0) {
-	optind ++;   /* Skip plastimatch command argument */
-	if (optind < argc) {
-	    parms->img_in_fn = argv[optind];
-	} else {
-	    printf ("Error: must specify input file\n");
-	    stats_print_usage ();
-	}
+
+    /* Check that no extraneous options were given */
+    if (parser->number_of_arguments() == 0) {
+	throw (dlib::error ("Error.  You must specify at least one "
+                "file for printing stats."));
     }
-    
-    if (parms->mask_fn.length() == 0) {
-	optind ++;
-        if (optind < argc) 
-	    parms->mask_fn = argv[optind];
+
+    /* Copy input filenames to parms struct */
+    for (unsigned long i = 0; i < parser->number_of_arguments(); i++) {
+        parms->input_fns.push_back ((*parser)[i]);
     }
 }
 
@@ -189,7 +199,6 @@ do_command_stats (int argc, char *argv[])
 {
     Stats_parms parms;
     
-    stats_parse_args (&parms, argc, argv);
-
+    plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv, 1);
     stats_main (&parms);
 }
