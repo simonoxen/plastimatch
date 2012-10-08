@@ -9,16 +9,21 @@
 #include <omp.h>
 #endif
 
-#include "plmbase.h"
-#include "plmreconstruct.h"
-
-#include "plm_math.h"
 #include "delayload.h"
-
+#include "drr.h"
 #include "drr_cuda.h"
 #include "drr_opencl.h"
 #include "drr_opts.h"
+#include "drr_trilin.h"
+#include "plm_int.h"
+#include "plm_math.h"
+#include "proj_image.h"
+#include "proj_matrix.h"
 #include "print_and_exit.h"
+#include "ray_trace.h"
+#include "threading.h"
+#include "volume.h"
+#include "volume_limit.h"
 
 typedef struct callback_data Callback_data;
 struct callback_data {

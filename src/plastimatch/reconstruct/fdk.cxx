@@ -11,16 +11,19 @@
 #include <omp.h>
 #endif
 
-#include "plmbase.h"
-#include "plmreconstruct.h"
-#include "plmutil.h"
-
+#include "bowtie_correction.h"
 #include "delayload.h"
+#include "fdk.h"
 #include "fdk_cuda.h"
 #include "fdk_opencl.h"
 #include "file_util.h"
 #include "plm_math.h"
 #include "plm_timer.h"
+#include "proj_image.h"
+#include "proj_image_dir.h"
+#include "proj_image_filter.h"
+#include "proj_matrix.h"
+#include "volume.h"
 
 #if CUDA_FOUND
 void

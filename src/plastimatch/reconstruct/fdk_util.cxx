@@ -6,10 +6,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "plmbase.h"
-#include "plmreconstruct.h"
-
+#include "fdk.h"
+#include "fdk_util.h"
 #include "ramp_filter.h"
+#include "volume.h"
 
 Volume*
 my_create_volume (Fdk_parms* parms)

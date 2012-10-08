@@ -7,15 +7,12 @@
 #include <string.h>
 #include <math.h>
 
-#include "plmreconstruct.h"
-#include "plmutil.h"
-
-#include "plm_math.h"
-
+#include "drr.h"
 #include "drr_opencl.h"
 #include "drr_opencl_p.h"
 #include "drr_opts.h"
 #include "opencl_util.h"
+#include "plm_math.h"
 #include "proj_image.h"
 #include "proj_matrix.h"
 #include "volume.h"

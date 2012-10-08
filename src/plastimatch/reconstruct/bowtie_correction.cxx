@@ -9,11 +9,12 @@
 #include "fftw3.h"
 #endif
 
-#include "plmbase.h"
-#include "plmreconstruct.h"
-
+#include "bowtie_correction.h"
+#include "fdk.h"
+#include "mha_io.h"
+#include "plm_int.h"
 #include "plm_math.h"
-
+#include "volume.h"
 
 #ifndef DEGTORAD
 static const double DEGTORAD = 3.14159265 / 180.0;

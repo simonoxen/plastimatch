@@ -2,6 +2,22 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmreconstruct_config.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <cuda.h>
+
+#include "cuda_util.h"
+#include "drr.h"
+#include "drr_cuda.h"
+#include "drr_cuda_p.h"
+#include "plm_cuda_math.h"
+#include "plm_math.h"
+#include "proj_image.h"
+#include "proj_matrix.h"
+#include "volume.h"
+#include "volume_limit.h"
 
 /****************************************************\
 * Uncomment the line below to enable verbose output. *
@@ -20,25 +36,6 @@
 #else
 #define EMUSYNC
 #endif
-
-/*****************
-*  C   #includes *
-*****************/
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <cuda.h>
-
-#include "plmbase.h"
-#include "plmreconstruct.h"
-
-#include "plm_cuda_math.h"
-#include "plm_math.h"
-#include "cuda_util.h"
-
-#include "drr_cuda.h"
-#include "drr_cuda_p.h"
 
 /* Textures */
 //texture<float, 1, cudaReadModeElementType> tex_img;

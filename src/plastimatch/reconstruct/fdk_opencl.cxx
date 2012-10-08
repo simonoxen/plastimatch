@@ -7,15 +7,16 @@
 #include <string.h>
 #include <math.h>
 
-#include "plmbase.h"
-#include "plmreconstruct.h"
-#include "plmutil.h"
-
-#include "plm_math.h"
-
 #include "autotune_opencl.h"
+#include "fdk.h"
 #include "fdk_opencl_p.h"
 #include "opencl_util.h"
+#include "plm_math.h"
+#include "proj_image.h"
+#include "proj_image_dir.h"
+#include "proj_image_filter.h"
+#include "proj_matrix.h"
+#include "volume.h"
 
 void 
 opencl_reconstruct_conebeam (
