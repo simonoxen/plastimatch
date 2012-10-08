@@ -7,6 +7,7 @@
 #include "plmreconstruct_config.h"
 
 class Fdk_parms;
+class Proj_image;
 class Volume;
 
 PLMRECONSTRUCT_C_API void convert_to_hu (Volume* vol, Fdk_parms* parms);

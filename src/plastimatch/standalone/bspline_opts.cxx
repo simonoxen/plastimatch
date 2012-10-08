@@ -1,25 +1,18 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
-#include "plm_config.h"
 
-#include "plmregister.h"
-
+#include "bspline_landmarks.h"
 #include "bspline_opts.h"
+#include "bspline_regularize.h"
 #include "delayload.h"
 #if (CUDA_FOUND)
 #include "cuda_util.h"
-#endif
-#ifndef _WIN32
-#include <dlfcn.h>
-#endif
-
-#ifndef NULL
-#define NULL ((void*)0)
 #endif
 
 void

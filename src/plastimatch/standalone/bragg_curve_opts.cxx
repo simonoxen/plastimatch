@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+
 #include "bragg_curve_opts.h"
 #include "plm_math.h"
 

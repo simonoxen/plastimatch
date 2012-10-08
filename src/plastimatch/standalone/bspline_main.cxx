@@ -13,20 +13,18 @@
 #include <string.h>
 #include <math.h>
 
-#include "plmbase.h"
-#include "plmregister.h"
-
-#include "bspline_opts.h"
-#if (CUDA_FOUND)
 #include "bspline_cuda.h"
+#include "bspline_interpolate.h"
+#include "bspline_optimize.h"
+#include "bspline_opts.h"
+#include "bspline_xform.h"
+#if (CUDA_FOUND)
 #include "cuda_util.h"
 #include "delayload.h"
 #endif
-#ifndef _WIN32
-#include <dlfcn.h>
-#endif
-
-/* EXTERNAL DEPENDS */
+#include "mha_io.h"
+#include "vf.h"
+#include "volume.h"
 
 int
 main (int argc, char* argv[])

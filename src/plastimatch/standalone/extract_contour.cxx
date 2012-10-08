@@ -12,9 +12,9 @@
 #include "itkImageLinearIteratorWithIndex.h"
 #include "itkImageSliceConstIteratorWithIndex.h"
 
-#include "plmbase.h"
-#include "plmutil.h"
-
+#include "itk_image_load.h"
+#include "itk_image_type.h"
+#include "slice_extract.h"
 
 /* -----------------------------------------------------------------------
     Definitions

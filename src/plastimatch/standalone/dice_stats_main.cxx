@@ -3,8 +3,6 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 
-#include "plmbase.h"
-
 #include "dice_statistics.h"
 #include "hausdorff_statistics.h"
 #include "pcmd_resample.h"

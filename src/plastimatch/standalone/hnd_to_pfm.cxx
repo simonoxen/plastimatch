@@ -6,11 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "plmbase.h"
-#include "plmreconstruct.h"
-
 #include "file_util.h"
 #include "print_and_exit.h"
+#include "proj_image.h"
 
 int 
 main (int argc, char* argv[]) 

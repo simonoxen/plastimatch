@@ -6,11 +6,12 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "plmbase.h"
-#include "plmregister.h"
 #include "delayload.h"
-
 #include "demons_opts.h"
+#include "mha_io.h"
+#include "vf.h"
+#include "vf_stats.h"
+#include "volume.h"
 
 int
 main (int argc, char* argv[])

@@ -2,7 +2,6 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
-#include <time.h>
 #include "itkImage.h"
 
 #include "itk_image_load.h"
@@ -12,7 +11,6 @@
 #include "plm_image_header.h"
 #include "plm_math.h"
 #include "vf_convolve.h"
-//#include "vf_invert.h"
 #include "volume.h"
 
 #define MAX_ITS 20

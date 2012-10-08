@@ -9,10 +9,11 @@
 #include <omp.h>
 #endif
 
-#include "plmbase.h"
-#include "plmdose.h"
-
+#include "mha_io.h"
 #include "plm_math.h"
+#include "proton_dose.h"
+#include "proton_parms.h"
+#include "volume.h"
 
 int
 main (int argc, char* argv[])

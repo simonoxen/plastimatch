@@ -7,14 +7,10 @@
 #include <string.h>
 #include <math.h>
 
-#include "plmreconstruct.h"
-#include "plm_math.h"
-
+#include "drr.h"
 #include "drr_opts.h"
-
-#ifndef NULL
-#define NULL ((void*)0)
-#endif
+#include "plm_math.h"
+#include "threading.h"
 
 void
 print_usage (void)

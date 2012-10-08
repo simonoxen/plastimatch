@@ -2,25 +2,25 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
-#include <time.h>
 #if (OPENMP_FOUND)
 #include <omp.h>
 #endif
 
-#include "plmbase.h"
-#include "plmreconstruct.h"
-
+#include "delayload.h"
+#include "fdk.h"
 #include "fdk_opts.h"
 #include "fdk_cuda.h"
 #include "fdk_opencl.h"
+#include "fdk_util.h"
+#include "mha_io.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
 #include "proj_image_dir.h"
-#include "delayload.h"
+#include "threading.h"
 
 int 
 main (int argc, char* argv[])

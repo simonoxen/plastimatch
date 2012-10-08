@@ -1,14 +1,14 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "plm_config.h"
 
-#include "plmreconstruct.h"
-
+#include "fdk.h"
 #include "fdk_opts.h"
+#include "threading.h"
 
 void 
 print_usage (void)

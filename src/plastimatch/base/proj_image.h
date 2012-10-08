@@ -5,6 +5,7 @@
 #define _proj_image_h_
 
 #include "plmbase_config.h"
+#include <string>
 
 class Proj_image;
 class Proj_matrix;

@@ -5,22 +5,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#ifndef _WIN32
-#include <dlfcn.h>
-#endif
 #if (OPENMP_FOUND)
 #include <omp.h>
 #endif
 
-#include "plmbase.h"
-#include "plmreconstruct.h"
-
 #include "delayload.h"
+#include "drr.h"
 #include "drr_cuda.h"
 #include "drr_opencl.h"
 #include "drr_opts.h"
+#include "mha_io.h"
 #include "plm_math.h"
 #include "plm_timer.h"
+#include "proj_image.h"
+#include "proj_matrix.h"
+#include "threading.h"
+#include "volume.h"
 
 static void*
 allocate_gpu_memory (

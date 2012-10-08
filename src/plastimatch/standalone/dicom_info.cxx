@@ -3,7 +3,6 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include <string.h>
-
 #include "itkImageFileReader.h"
 #include "itkGDCMImageIO.h"
 #include "itkImageIOBase.h"

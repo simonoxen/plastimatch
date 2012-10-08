@@ -6,14 +6,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-//#include "itkDanielssonDistanceMapImageFilter.h"
 #include "itkSignedMaurerDistanceMapImageFilter.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "itkRescaleIntensityImageFilter.h"
 #include "itkSubtractImageFilter.h"
-
 
 typedef  unsigned char                   InputPixelType;
 typedef  float                 OutputPixelType;

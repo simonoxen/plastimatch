@@ -6,9 +6,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "plmbase.h"
-#include "plmsegment.h"
-
+#include "mabs.h"
+#include "mabs_parms.h"
 #include "plm_math.h"
 
 int

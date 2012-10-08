@@ -2,7 +2,9 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
+
 #include "compute_distance.h"
+
 #define BUFLEN 2048
 
 void

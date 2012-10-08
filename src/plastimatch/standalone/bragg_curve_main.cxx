@@ -9,7 +9,7 @@
 #include <omp.h>
 #endif
 
-#include "plmdose.h"
+#include "bragg_curve.h"
 #include "bragg_curve_opts.h"
 
 int

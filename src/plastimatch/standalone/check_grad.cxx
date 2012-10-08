@@ -8,10 +8,11 @@
 #include <string.h>
 #include <time.h>
 
-#include "plmbase.h"
-#include "plmregister.h"
-
+#include "bspline_mi.h"
+#include "bspline_xform.h"
 #include "check_grad_opts.h"
+#include "mha_io.h"
+#include "volume.h"
 
 void
 check_gradient (

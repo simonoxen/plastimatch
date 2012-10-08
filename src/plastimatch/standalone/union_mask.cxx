@@ -3,7 +3,6 @@
    ----------------------------------------------------------------------- */
 /* This program merges (takes the union) of binary (mask) images */
 #include "plm_config.h"
-#include <time.h>
 #include "itkImageRegistrationMethod.h"
 #include "itkMeanSquaresImageToImageMetric.h"
 #include "itkLinearInterpolateImageFunction.h"

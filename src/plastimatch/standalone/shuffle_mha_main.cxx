@@ -8,8 +8,10 @@
 #include "itkImageSliceConstIteratorWithIndex.h"
 #include "itkImageSliceIteratorWithIndex.h"
 
-#include "plmbase.h"
-
+#include "itk_image.h"
+#include "itk_image_load.h"
+#include "itk_image_save.h"
+#include "itk_image_type.h"
 
 int 
 main (int argc, char* argv[])
