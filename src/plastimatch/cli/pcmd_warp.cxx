@@ -264,6 +264,10 @@ parse_fn (
     }
 
     /* Geometry options */
+    if (parser->option ("dim")) {
+        parms->m_have_dim = true;
+        parser->assign_plm_long_13 (parms->m_dim, "dim");
+    }
     if (parser->option ("origin")) {
         parms->m_have_origin = true;
         parser->assign_float13 (parms->m_origin, "origin");
@@ -271,10 +275,6 @@ parse_fn (
     if (parser->option ("spacing")) {
         parms->m_have_spacing = true;
         parser->assign_float13 (parms->m_spacing, "spacing");
-    }
-    if (parser->option ("dim")) {
-        parms->m_have_dim = true;
-        parser->assign_plm_long_13 (parms->m_dim, "dim");
     }
     parms->fixed_img_fn = parser->get_string("fixed").c_str();
 
