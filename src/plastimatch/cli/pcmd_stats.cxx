@@ -82,7 +82,7 @@ stats_proj_image_main (Stats_parms* parms, const std::string& current_fn)
 {
     Proj_image *proj;
 
-    proj = new Proj_image (current_fn, (const char*) 0);
+    proj = new Proj_image (current_fn, "");
     proj_image_debug_header (proj);
     proj_image_stats (proj);
     delete proj;

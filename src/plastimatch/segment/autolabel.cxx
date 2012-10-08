@@ -6,12 +6,13 @@
 #include "dlib/data_io.h"
 #include "dlib/svm.h"
 
-#include "plmbase.h"
-
 #include "autolabel.h"
 #include "autolabel_ransac_est.h"
 #include "autolabel_thumbnailer.h"
+#include "compiler_warnings.h"
 #include "dlib_trainer.h"
+#include "plm_image_header.h"
+#include "pointset.h"
 #include "print_and_exit.h"
 #include "pstring.h"
 
@@ -55,6 +56,7 @@ autolabel_la1 (Autolabel_parms *parms)
     Plm_image_header pih (thumb.pli);
     float best_score = FLT_MAX;
     float best_slice = 0.f;
+    UNUSED_VARIABLE (best_slice);
     for (int i = 0; i < pih.Size(2); i++) {
 
         /* Create slice thumbnail and dlib sample */
