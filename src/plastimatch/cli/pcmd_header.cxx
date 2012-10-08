@@ -2,57 +2,66 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmcli_config.h"
-#include <time.h>
+#include <list>
 #include "itkImageRegionIterator.h"
 
-#include "plmbase.h"
-
-#include "getopt.h"
 #include "pcmd_header.h"
+#include "plm_clp.h"
+#include "plm_image.h"
+
+class Header_parms {
+public:
+    std::list<std::string> input_fns;
+};
 
 static void
 header_main (Header_parms* parms)
 {
     Plm_image pli;
 
-    pli.load_native ((const char*) parms->img_in_fn);
-    pli.print ();
-}
-
-static void
-header_print_usage (void)
-{
-    printf ("Usage: plastimatch header input-file\n"
-	    );
-    exit (-1);
-}
-
-static void
-header_parse_args (Header_parms* parms, int argc, char* argv[])
-{
-    int ch;
-    static struct option longopts[] = {
-	{ "input",          required_argument,      NULL,           2 },
-	{ NULL,             0,                      NULL,           0 }
-    };
-
-    while ((ch = getopt_long (argc, argv, "", longopts, NULL)) != -1) {
-	switch (ch) {
-	case 2:
-	    parms->img_in_fn = optarg;
-	    break;
-	default:
-	    break;
-	}
+    std::list<std::string>::iterator it = parms->input_fns.begin();
+    while (it != parms->input_fns.end()) {
+        pli.load_native (*it);
+        pli.print ();
+        ++it;
     }
-    if (parms->img_in_fn.length() == 0) {
-	optind ++;   /* Skip plastimatch command argument */
-	if (optind < argc) {
-	    parms->img_in_fn = argv[optind];
-	} else {
-	    printf ("Error: must specify input file\n");
-	    header_print_usage ();
-	}
+}
+
+static void
+usage_fn (dlib::Plm_clp* parser, int argc, char *argv[])
+{
+    printf (
+        "Usage: plastimatch header [options] input_file [input_file ...]\n");
+    parser->print_options (std::cout);
+    std::cout << std::endl;
+}
+
+static void
+parse_fn (
+    Header_parms* parms, 
+    dlib::Plm_clp* parser, 
+    int argc, 
+    char* argv[]
+)
+{
+    /* Add --help, --version */
+    parser->add_default_options ();
+
+    /* Parse options */
+    parser->parse (argc,argv);
+
+    /* Handle --help, --version */
+    parser->check_default_options ();
+
+    /* Check that no extraneous options were given */
+    if (parser->number_of_arguments() == 0) {
+	throw (dlib::error ("Error.  You must specify at least one "
+                "file for printing header."));
+    }
+
+    /* Copy input filenames to parms struct */
+    for (unsigned long i = 0; i < parser->number_of_arguments(); i++) {
+        parms->input_fns.push_back ((*parser)[i]);
     }
 }
 
@@ -61,7 +70,6 @@ do_command_header (int argc, char *argv[])
 {
     Header_parms parms;
     
-    header_parse_args (&parms, argc, argv);
-
+    plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv, 1);
     header_main (&parms);
 }
