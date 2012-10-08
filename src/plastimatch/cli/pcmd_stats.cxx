@@ -5,13 +5,25 @@
 #include <time.h>
 #include "itkImageRegionIterator.h"
 #include "itkVariableLengthVector.h"
+
 #include "getopt.h"
 
-#include "plmbase.h"
-#include "plmutil.h"
+//#include "plmbase.h"
+//#include "plmutil.h"
 
+#include "itk_image_load.h"
+#include "itk_image_stats.h"
+#include "mha_io.h"
 #include "pcmd_stats.h"
+#include "plm_file_format.h"
+#include "plm_image.h"
+#include "plm_image_header.h"
 #include "print_and_exit.h"
+#include "proj_image.h"
+#include "ss_img_stats.h"
+#include "vf_stats.h"
+#include "volume.h"
+#include "xform.h"
 
 static void
 stats_vf_main (Stats_parms* parms)
