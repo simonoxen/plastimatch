@@ -219,7 +219,6 @@ wed_ct_compute (
     wed_vol = create_wed_volume (parms, scene);
     wed_volume_populate (wed_vol, ct_vol->gpuit_float(), rpl_vol);
 
-    //write_mha (out_fn, wed_vol);
     plm_image_save_vol (out_fn, wed_vol);
 
 #if 0
@@ -262,7 +261,6 @@ main (int argc, char* argv[])
         return -1;
     }
 
-    //write_mha ("debug_rpl.mha", scene.rpl_vol->vol);
     plm_image_save_vol ("debug_rpl.mha", scene.rpl_vol->vol);
 
     printf ("Working...\n");
