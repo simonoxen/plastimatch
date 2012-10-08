@@ -10,9 +10,8 @@
 #include <iostream>
 #include <sstream>
 
-#include "plmbase.h"
-#include "plmsegment.h"
-
+#include "mabs_parms.h"
+#include "mabs_subject.h"
 #include "plm_math.h"
 #include "string_util.h"
 

@@ -2,15 +2,14 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmsegment_config.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
 #include <fstream>
 #include <iostream>
 #include <sstream>
-
-#include "plmbase.h"
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "itkImageRegionIterator.h"
 
 #include "distance_map.h"
 #include "mabs_subject.h"

@@ -4,10 +4,10 @@
 #include "plmsegment_config.h"
 #include "itkImageRegionIterator.h"
 
-#include "plmbase.h"
-
 #include "autolabel_thumbnailer.h"
 #include "dlib_trainer.h"
+#include "plm_image.h"
+#include "thumbnail.h"
 
 Autolabel_thumbnailer::Autolabel_thumbnailer ()
 {

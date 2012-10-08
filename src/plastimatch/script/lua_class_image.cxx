@@ -15,12 +15,11 @@ extern "C"
 #include "itkAddImageFilter.h"
 #include "itkMultiplyByConstantImageFilter.h"
 
-#include "plmbase.h"
-
 #include "lua_classes.h"
 #include "lua_class_image.h"
 #include "lua_class_structs.h"
 #include "lua_util.h"
+#include "plm_image.h"
 #include "segment_body.h"
 
 /* Name of class as exposed to Lua */

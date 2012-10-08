@@ -4,6 +4,9 @@
 #ifndef _mabs_subject_h_
 #define _mabs_subject_h_
 
+#include "plmsegment_config.h"
+#include "plm_path.h"
+
 class Volume;
 
 class PLMSEGMENT_API Mabs_subject {

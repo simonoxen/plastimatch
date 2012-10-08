@@ -11,13 +11,13 @@
 #include "itkImageRegionIterator.h"
 #include "itkRegularExpressionSeriesFileNames.h"
 
-#include "plmbase.h"
-
 #include "autolabel_task.h"
 #include "autolabel_thumbnailer.h"
 #include "autolabel_trainer.h"
 #include "dlib_trainer.h"
 #include "file_util.h"
+#include "plm_image.h"
+#include "pointset.h"
 #include "print_and_exit.h"
 
 Autolabel_trainer::Autolabel_trainer ()

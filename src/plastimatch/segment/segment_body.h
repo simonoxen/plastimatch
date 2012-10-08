@@ -6,6 +6,8 @@
 
 #include "plmsegment_config.h"
 
+#include "itk_image_type.h"
+
 class Plm_image;
 
 class PLMSEGMENT_API Segment_body {

@@ -5,8 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "plmbase.h"
-#include "plmsegment.h"
+#include "mabs_subject.h"
+#include "volume.h"
 
 Mabs_subject::Mabs_subject ()
 {
