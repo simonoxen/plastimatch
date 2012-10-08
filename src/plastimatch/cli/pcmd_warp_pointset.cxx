@@ -3,10 +3,13 @@
    ----------------------------------------------------------------------- */
 #include "plmcli_config.h"
 
-#include "plmbase.h"
-
+#include "itk_point.h"
+#include "itk_pointset.h"
 #include "pcmd_warp.h"
+#include "pointset.h"
 #include "pstring.h"
+#include "warp_parms.h"
+#include "xform.h"
 
 void
 warp_pointset_main (Warp_parms* parms)

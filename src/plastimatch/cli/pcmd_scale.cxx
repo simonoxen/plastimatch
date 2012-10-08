@@ -4,11 +4,12 @@
 #include "plmcli_config.h"
 #include <list>
 
-#include "plmbase.h"
-#include "plmutil.h"
-
+#include "itk_scale.h"
 #include "plm_clp.h"
+#include "plm_image.h"
+#include "plm_file_format.h"
 #include "pstring.h"
+#include "xform.h"
 
 class Scale_parms {
 public:

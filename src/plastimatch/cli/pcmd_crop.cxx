@@ -2,13 +2,12 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmcli_config.h"
-#include <time.h>
+#include <string>
 
-#include "plmbase.h"
-#include "plmutil.h"
-
+#include "itk_crop.h"
 #include "pcmd_crop.h"
 #include "plm_clp.h"
+#include "plm_image.h"
 #include "print_and_exit.h"
 
 class Crop_parms {

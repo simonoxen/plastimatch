@@ -7,12 +7,13 @@
 #include <stdlib.h>
 #include <vector>
 
-#include "plmbase.h"
-#include "plmutil.h"
-
-#include "plm_math.h"
+#include "itk_image_load.h"
+#include "itk_image_save.h"
 #include "plm_clp.h"
+#include "plm_math.h"
 #include "pstring.h"
+#include "synthetic_vf.h"
+#include "volume_header.h"
 
 typedef struct synthetic_vf_main_parms Synthetic_vf_main_parms;
 struct synthetic_vf_main_parms {

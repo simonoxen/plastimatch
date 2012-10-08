@@ -10,8 +10,7 @@
 #include "itkLinearInterpolateImageFunction.h"
 #include "itkVectorLinearInterpolateImageFunction.h"
 
-#include "plmbase.h"
-
+#include "itk_image_type.h"
 #include "pcmd_warp.h"
 #include "plm_path.h"
 #include "print_and_exit.h"

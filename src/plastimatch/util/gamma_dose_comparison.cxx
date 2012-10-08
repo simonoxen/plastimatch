@@ -13,7 +13,6 @@
 #include "plmutil.h"
 
 #include "plm_math.h"
-#include "pcmd_resample.h"
 
 class Gamma_dose_comparison_private {
 public:
@@ -173,16 +172,12 @@ Gamma_dose_comparison::get_fail_image_itk ()
 void Gamma_dose_comparison::resample_image_to_reference (Plm_image *image_reference, Plm_image *image_moving)
 {
     Plm_image_header pih;
-    Resample_parms parms;
-
-    parms.interp_lin = false;
     pih.set_from_plm_image (image_reference);
-
     itk::Image<float, 3>::Pointer resampledMovingImage = resample_image (
         image_moving->itk_float(),
         &pih,
-        parms.default_val,
-        parms.interp_lin
+        0.f,
+        false
     );
 
     image_moving->set_itk(resampledMovingImage);

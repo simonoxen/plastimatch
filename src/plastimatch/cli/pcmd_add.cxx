@@ -5,12 +5,14 @@
 #include <list>
 #include "itkAddImageFilter.h"
 
-#include "plmbase.h"
-#include "plmutil.h"
-
+#include "itk_image_type.h"
+#include "itk_scale.h"
 #include "plm_clp.h"
+#include "plm_file_format.h"
+#include "plm_image.h"
 #include "print_and_exit.h"
 #include "pstring.h"
+#include "xform.h"
 
 class Add_parms {
 public:

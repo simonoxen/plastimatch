@@ -7,10 +7,12 @@
 #include "itkImageRegionIterator.h"
 #include "itkVectorLinearInterpolateImageFunction.h"
 
-#include "plmbase.h"
-
+#include "itk_image_save.h"
+#include "itk_image_type.h"
 #include "pcmd_compose.h"
+#include "plm_image_header.h"
 #include "print_and_exit.h"
+#include "xform.h"
 
 void
 vf_compose (

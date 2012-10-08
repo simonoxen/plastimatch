@@ -2,7 +2,6 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmcli_config.h"
-#include <time.h>
 
 #include "mabs.h"
 #include "mabs_parms.h"

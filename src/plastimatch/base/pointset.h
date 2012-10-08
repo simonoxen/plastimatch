@@ -4,15 +4,11 @@
 #ifndef _pointset_h_
 #define _pointset_h_
 
-/*
- *  You probably do not want to #include this header directly.
- *
- *   Instead, it is preferred to #include "plmbase.h"
- */
-
 #include "plmbase_config.h"
 #include <string>
 #include <vector>
+
+class Pstring;
 
 class PLMBASE_API Point {
 public:

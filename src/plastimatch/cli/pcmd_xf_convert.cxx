@@ -4,12 +4,14 @@
 #include "plmcli_config.h"
 #include <stdlib.h>
 
-#include "plmbase.h"
-
+#include "bspline_xform.h"
 #include "pcmd_xf_convert.h"
 #include "plm_clp.h"
 #include "print_and_exit.h"
 #include "pstring.h"
+#include "volume_header.h"
+#include "xform.h"
+#include "xform_convert.h"
 
 class Xf_convert_parms {
 public:

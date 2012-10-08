@@ -2,16 +2,61 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmcli_config.h"
-#include "itkCastImageFilter.h"
-#include "itkImage.h"
-#include "itkImageFileWriter.h"
-#include "itkResampleImageFilter.h"
+#include <stdlib.h>
 
-#include "plmbase.h"
-
+#include "direction_cosines.h"
+#include "itk_image_load.h"
+#include "itk_image_save.h"
+#include "itk_resample.h"
 #include "pcmd_resample.h"
 #include "plm_clp.h"
+#include "plm_file_format.h"
+#include "plm_int.h"
+#include "plm_image.h"
+#include "plm_image_header.h"
+#include "plm_image_type.h"
 #include "print_and_exit.h"
+#include "pstring.h"
+
+class Resample_parms {
+public:
+    Pstring input_fn;
+    Pstring output_fn;
+    Pstring fixed_fn;
+    Plm_image_type output_type;
+    plm_long dim[3];
+    bool m_have_dim;
+    float origin[3];
+    bool m_have_origin;
+    float spacing[3];
+    bool m_have_spacing;
+    int subsample[3];
+    bool m_have_subsample;
+    Direction_cosines m_dc;
+    bool m_have_direction_cosines;
+    float default_val;
+    bool have_default_val;
+    int adjust;
+    bool interp_lin;
+public:
+    Resample_parms () {
+	output_type = PLM_IMG_TYPE_UNDEFINED;
+	for (int i = 0; i < 3; i++) {
+	    origin[i] = 0.0;
+	    spacing[i] = 0.0;
+	    dim[i] = 0;
+	    subsample[i] = 0;
+	}
+	m_have_dim = false;
+	m_have_origin = false;
+	m_have_spacing = false;
+	m_have_subsample = false;
+	default_val = 0.0;
+	have_default_val = false;
+	adjust = 0;
+	interp_lin=true;
+    }
+};
 
 /* Return true if geometry was deduced, else false */
 static bool

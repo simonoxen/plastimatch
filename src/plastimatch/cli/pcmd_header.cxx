@@ -3,7 +3,6 @@
    ----------------------------------------------------------------------- */
 #include "plmcli_config.h"
 #include <list>
-#include "itkImageRegionIterator.h"
 
 #include "pcmd_header.h"
 #include "plm_clp.h"

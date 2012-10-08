@@ -2,15 +2,14 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmcli_config.h"
-#include <time.h>
-#include "itkImageRegionIterator.h"
-
-#include "plmbase.h"
-#include "plmutil.h"
 
 #include "file_util.h"
+#include "itk_adjust.h"
 #include "pcmd_thumbnail.h"
 #include "plm_clp.h"
+#include "plm_image.h"
+#include "pstring.h"
+#include "thumbnail.h"
 
 class Thumbnail_parms {
 public:

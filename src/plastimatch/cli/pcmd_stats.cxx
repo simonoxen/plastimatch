@@ -2,11 +2,6 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmcli_config.h"
-#include <time.h>
-#include "itkImageRegionIterator.h"
-#include "itkVariableLengthVector.h"
-
-//#include "getopt.h"
 
 #include "itk_image_load.h"
 #include "itk_image_stats.h"

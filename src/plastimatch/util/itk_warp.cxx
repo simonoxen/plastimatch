@@ -1,17 +1,17 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include <time.h>
 #include "plmutil_config.h"
+#include <time.h>
 #include "itkConfigure.h"
 #include "itkImage.h"
 #include "itkLinearInterpolateImageFunction.h"
 #include "itkNearestNeighborInterpolateImageFunction.h"
 #include "itkWarpImageFilter.h"
 
-#include "plmbase.h"
-#include "plmutil.h"
-
+#include "itk_image.h"
+#include "itk_warp.h"
+#include "ss_img_extract.h"
 
 /* Warp the image.  
     im_in:	    the image which is warped

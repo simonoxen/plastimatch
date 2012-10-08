@@ -2,13 +2,14 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmcli_config.h"
-#include <time.h>
 
-#include "plmbase.h"
-#include "plmutil.h"
-
+#include "itk_image_load.h"
+#include "itk_image_type.h"
 #include "pcmd_jacobian.h"
 #include "plm_clp.h"
+#include "plm_image.h"
+#include "pstring.h"
+#include "vf_jacobian.h"
 
 class Jacobian_parms {
 public:

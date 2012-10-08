@@ -8,6 +8,7 @@
 #include <string.h>
 #include "direction_cosines.h"
 #include "plm_image_type.h"
+#include "plm_int.h"
 #include "pstring.h"
 #include "xio_studyset.h"
 

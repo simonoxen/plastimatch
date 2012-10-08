@@ -2,26 +2,19 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmcli_config.h"
-#include<stdio.h>
-#include<string.h>
-#include<stdlib.h>
-#include<math.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
 
-#if (defined(_WIN32) || defined(WIN32))
-#include <direct.h>
-#define snprintf _snprintf
-#define mkdir(a,b) _mkdir(a)                                      
-#else
-#include <sys/stat.h>  
-#include <sys/types.h> 
-#endif
+#include "file_util.h"
 
 #define NBUF 10000
 static double x[NBUF], y[NBUF], sum[NBUF];
 
 static void usage()
 {
-printf("Usage: plastimatch xio-dvh rtog_dvh_file output_directory\n");
+    printf("Usage: plastimatch xio-dvh rtog_dvh_file output_directory\n");
 }
 
 void do_command_xio_dvh(int argc, char *argv[])
@@ -46,7 +39,7 @@ void do_command_xio_dvh(int argc, char *argv[])
     if (!fp) {fprintf(stderr, "cannot open input file %s\n", input_fn); exit(1);}
 
     /* If mkdir fails, write will fail too and throw an error later on */
-    mkdir(output_dir, 0777);
+    make_directory (output_dir);
 
     while(!feof(fp)) {
 

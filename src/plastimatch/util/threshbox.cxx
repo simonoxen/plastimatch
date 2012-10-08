@@ -73,7 +73,7 @@ void do_threshbox( Threshbox_parms *parms) {
 
     FloatImageType::IndexType k, k_max;
     FloatPoint3DType phys, phys_max;
-
+    phys_max[0] = phys_max[1] = phys_max[2] = 0.f;
     float level, maxlevel=-1e20;
     for (img_in_iterator.GoToBegin(); !img_in_iterator.IsAtEnd(); ++img_in_iterator) {
 	    
@@ -84,33 +84,33 @@ void do_threshbox( Threshbox_parms *parms) {
 
 	//NSh 2012-05-30 - find position of the max over the entire image, disregarding the box
 	/*
-	if ( (parms->center[0]- parms->boxsize[0]/2 <= k[0] && k[0] < parms->center[0]+parms->boxsize[0]/2) &&
-	    (parms->center[1]- parms->boxsize[1]/2 <= k[1] && k[1] < parms->center[1]+parms->boxsize[1]/2) &&
-	    (parms->center[2]- parms->boxsize[2]/2 <= k[2] && k[2] < parms->center[2]+parms->boxsize[2]/2) )
+          if ( (parms->center[0]- parms->boxsize[0]/2 <= k[0] && k[0] < parms->center[0]+parms->boxsize[0]/2) &&
+          (parms->center[1]- parms->boxsize[1]/2 <= k[1] && k[1] < parms->center[1]+parms->boxsize[1]/2) &&
+          (parms->center[2]- parms->boxsize[2]/2 <= k[2] && k[2] < parms->center[2]+parms->boxsize[2]/2) )
 	*/
 	{
-		if (level> maxlevel) { maxlevel = level;
-								k_max = img_in_iterator.GetIndex(); 
-								img_in->TransformIndexToPhysicalPoint(k_max, phys_max);
-								}
+            if (level> maxlevel) { maxlevel = level;
+                k_max = img_in_iterator.GetIndex(); 
+                img_in->TransformIndexToPhysicalPoint(k_max, phys_max);
+            }
 	
 	
 	}
-	}
+    }
 	
-	//char fn_tmp[1024];
-	//sprintf(fn_tmp, "c:\\cygwin\\home\\nadya\\%s", parms->max_coord_fn_out);
+    //char fn_tmp[1024];
+    //sprintf(fn_tmp, "c:\\cygwin\\home\\nadya\\%s", parms->max_coord_fn_out);
 
-	FILE *fp0 = fopen( parms->max_coord_fn_out, "w");
-	//FILE *fp0 = fopen( fn_tmp, "w");
+    FILE *fp0 = fopen( parms->max_coord_fn_out, "w");
+    //FILE *fp0 = fopen( fn_tmp, "w");
     if (fp0) { 
 	fprintf(fp0, "max_coord\n%.3f %.3f %.3f\n", phys_max[0],phys_max[1],phys_max[2]);
 	fclose(fp0);
-	}
+    }
     
-	int label_onecount=0;
+    int label_onecount=0;
 
-	for (img_in_iterator.GoToBegin(); !img_in_iterator.IsAtEnd(); ++img_in_iterator) {
+    for (img_in_iterator.GoToBegin(); !img_in_iterator.IsAtEnd(); ++img_in_iterator) {
 	    
 	level = img_in_iterator.Get();
 	k=img_in_iterator.GetIndex();
@@ -150,11 +150,11 @@ void do_overlap_fraction( Threshbox_parms *parms) {
 
     int vol_img1_int = 0, vol_img2_int=0;
 
-	FloatPoint3DType phys_max1, phys_max2;
-	UCharImageType::IndexType k_max1, k_max2;
+    FloatPoint3DType phys_max1, phys_max2;
+    UCharImageType::IndexType k_max1, k_max2;
 
-	UCharImageType::IndexType kcurr;
-	FloatPoint3DType phys;
+    UCharImageType::IndexType kcurr;
+    FloatPoint3DType phys;
 
     UCharImageType::Pointer img1 = parms->overlap_labelmap1->itk_uchar();
     UCharImageType::Pointer img2 = parms->overlap_labelmap2->itk_uchar();
@@ -170,106 +170,106 @@ void do_overlap_fraction( Threshbox_parms *parms) {
     img2_iterator.GoToBegin();
 
     for (img1_iterator.GoToBegin(); !img1_iterator.IsAtEnd(); ++img1_iterator) {
-	    level1 = img1_iterator.Get();
-	    if ( level1>0 ) { vol_img1++; vol_img1_int++;}
+        level1 = img1_iterator.Get();
+        if ( level1>0 ) { vol_img1++; vol_img1_int++;}
     }
 
     for (img2_iterator.GoToBegin(); !img2_iterator.IsAtEnd(); ++img2_iterator) {
-	    level2 = img2_iterator.Get();
-	    if ( level2>0 ) { vol_img2++; vol_img2_int++;} 
+        level2 = img2_iterator.Get();
+        if ( level2>0 ) { vol_img2++; vol_img2_int++;} 
     }
 
 
 // diameter of the labelmap thresholded image
 
-	float *xone = (float *)malloc(vol_img1_int*sizeof(float));
-	float *yone = (float *)malloc(vol_img1_int*sizeof(float));
-	float *zone = (float *)malloc(vol_img1_int*sizeof(float));
+    float *xone = (float *)malloc(vol_img1_int*sizeof(float));
+    float *yone = (float *)malloc(vol_img1_int*sizeof(float));
+    float *zone = (float *)malloc(vol_img1_int*sizeof(float));
 
-	int j=0;
-	for (img1_iterator.GoToBegin(); !img1_iterator.IsAtEnd(); ++img1_iterator) {
+    int j=0;
+    for (img1_iterator.GoToBegin(); !img1_iterator.IsAtEnd(); ++img1_iterator) {
 
 	int level = img1_iterator.Get();
 
 	if (level>0) {
-		kcurr=img1_iterator.GetIndex();
-		img1->TransformIndexToPhysicalPoint( kcurr, phys );
-		xone[j]=phys[0];yone[j]=phys[1];zone[j]=phys[2];
-		if (j>vol_img1_int) { fprintf(stderr,"inconsistent labelmap vox count!\n"); exit(1);}
-		j++;		
-		}
-	}
+            kcurr=img1_iterator.GetIndex();
+            img1->TransformIndexToPhysicalPoint( kcurr, phys );
+            xone[j]=phys[0];yone[j]=phys[1];zone[j]=phys[2];
+            if (j>vol_img1_int) { fprintf(stderr,"inconsistent labelmap vox count!\n"); exit(1);}
+            j++;		
+        }
+    }
 
 
-	int i1,i2;
-	float diam1=-1;
-	for(i1=0;i1<j;i1++) for(i2=i1+1;i2<j;i2++) {
-		float d=sqrt( (xone[i1]-xone[i2])*(xone[i1]-xone[i2])+
-				(yone[i1]-yone[i2])*(yone[i1]-yone[i2])+
-				(zone[i1]-zone[i2])*(zone[i1]-zone[i2])				
-				);
-		if (d>diam1) diam1=d;		
-		}	
+    int i1,i2;
+    float diam1=-1;
+    for(i1=0;i1<j;i1++) for(i2=i1+1;i2<j;i2++) {
+            float d=sqrt( (xone[i1]-xone[i2])*(xone[i1]-xone[i2])+
+                (yone[i1]-yone[i2])*(yone[i1]-yone[i2])+
+                (zone[i1]-zone[i2])*(zone[i1]-zone[i2])				
+            );
+            if (d>diam1) diam1=d;		
+        }	
 
-	free(xone);free(yone);free(zone);
+    free(xone);free(yone);free(zone);
 
-	xone = (float *)malloc(vol_img2_int*sizeof(float));
-	yone = (float *)malloc(vol_img2_int*sizeof(float));
-	zone = (float *)malloc(vol_img2_int*sizeof(float));
+    xone = (float *)malloc(vol_img2_int*sizeof(float));
+    yone = (float *)malloc(vol_img2_int*sizeof(float));
+    zone = (float *)malloc(vol_img2_int*sizeof(float));
 
-	j=0;
-	for (img2_iterator.GoToBegin(); !img2_iterator.IsAtEnd(); ++img2_iterator) {
+    j=0;
+    for (img2_iterator.GoToBegin(); !img2_iterator.IsAtEnd(); ++img2_iterator) {
 
 	int level = img2_iterator.Get();
 
 	if (level>0) {
-		kcurr=img2_iterator.GetIndex();
-		img2->TransformIndexToPhysicalPoint( kcurr, phys );
-		xone[j]=phys[0];yone[j]=phys[1];zone[j]=phys[2];
-		if (j>vol_img2_int) { fprintf(stderr,"inconsistent labelmap vox count!\n"); exit(1);}
-		j++;		
-		}
-	}
+            kcurr=img2_iterator.GetIndex();
+            img2->TransformIndexToPhysicalPoint( kcurr, phys );
+            xone[j]=phys[0];yone[j]=phys[1];zone[j]=phys[2];
+            if (j>vol_img2_int) { fprintf(stderr,"inconsistent labelmap vox count!\n"); exit(1);}
+            j++;		
+        }
+    }
 
 
 //	int i1,i2;
-	float diam2=-1;
-	for(i1=0;i1<j;i1++) for(i2=i1+1;i2<j;i2++) {
-		float d=sqrt(   (xone[i1]-xone[i2])*(xone[i1]-xone[i2])+
-				(yone[i1]-yone[i2])*(yone[i1]-yone[i2])+
-				(zone[i1]-zone[i2])*(zone[i1]-zone[i2])				
-				);
-		if (d>diam2) diam2=d;		
-		}	
+    float diam2=-1;
+    for(i1=0;i1<j;i1++) for(i2=i1+1;i2<j;i2++) {
+            float d=sqrt(   (xone[i1]-xone[i2])*(xone[i1]-xone[i2])+
+                (yone[i1]-yone[i2])*(yone[i1]-yone[i2])+
+                (zone[i1]-zone[i2])*(zone[i1]-zone[i2])				
+            );
+            if (d>diam2) diam2=d;		
+        }	
 
-	free(xone);free(yone);free(zone);
+    free(xone);free(yone);free(zone);
 
 
-printf("%s\n%s\n", parms->max_coord_fn_in1, parms->max_coord_fn_in2);
+    printf("%s\n%s\n", parms->max_coord_fn_in1, parms->max_coord_fn_in2);
 
-	FILE *fp1 = fopen( parms->max_coord_fn_in1, "r");
-	char tmpbuf[1024];
-	if (fp1) {
+    FILE *fp1 = fopen( parms->max_coord_fn_in1, "r");
+    char tmpbuf[1024];
+    if (fp1) {
 	fscanf(fp1, "%s", tmpbuf);
 	fscanf(fp1, "%f %f %f", &phys_max1[0], &phys_max1[1], &phys_max1[2]);
 	printf("read %f %f %f from %s\n", phys_max1[0],phys_max1[1],phys_max1[2], parms->max_coord_fn_in1);
 	fclose(fp1);
-	}
+    }
 
-	FILE *fp2 = fopen( parms->max_coord_fn_in2, "r");
-	//char tmpbuf[1024];
-	if (fp2) {
+    FILE *fp2 = fopen( parms->max_coord_fn_in2, "r");
+    //char tmpbuf[1024];
+    if (fp2) {
 	fscanf(fp2, "%s", tmpbuf);
 	fscanf(fp2, "%f %f %f", &phys_max2[0], &phys_max2[1], &phys_max2[2]);
 	printf("read %f %f %f from %s\n", phys_max2[0],phys_max2[1],phys_max2[2], parms->max_coord_fn_in2);
 	fclose(fp2);
-	}
+    }
 		
-	max_sep = (phys_max1[0] - phys_max2[0])*(phys_max1[0] - phys_max2[0])+
-			  (phys_max1[1] - phys_max2[1])*(phys_max1[1] - phys_max2[1])+
-			  (phys_max1[2] - phys_max2[2])*(phys_max1[2] - phys_max2[2]);
-	max_sep = sqrt(max_sep);
-	printf("max_sep %f\n", max_sep);
+    max_sep = (phys_max1[0] - phys_max2[0])*(phys_max1[0] - phys_max2[0])+
+        (phys_max1[1] - phys_max2[1])*(phys_max1[1] - phys_max2[1])+
+        (phys_max1[2] - phys_max2[2])*(phys_max1[2] - phys_max2[2]);
+    max_sep = sqrt(max_sep);
+    printf("max_sep %f\n", max_sep);
 
 //    FloatPoint3DType phys;
     bool in_image;
@@ -287,45 +287,45 @@ printf("%s\n%s\n", parms->max_coord_fn_in1, parms->max_coord_fn_in2);
 	in_image = img2->TransformPhysicalPointToIndex( phys, k2) ;
 	
 	if (in_image) {
-		level1 = img1->GetPixel(k1);
-		level2 = img2->GetPixel(k2);
-		if (level1 >0 && level2 > 0) vol_overlap++;
-		}
+            level1 = img1->GetPixel(k1);
+            level2 = img2->GetPixel(k2);
+            if (level1 >0 && level2 > 0) vol_overlap++;
+        }
 
-	}
+    }
 
     if (vol_img1<vol_img2) vol_min=vol_img1; else vol_min=vol_img2;	
 
-	//check if phys_max1 is in overlap
-	int max1_in;
-	img1->TransformPhysicalPointToIndex(phys_max1, k_max1);
-	img2->TransformPhysicalPointToIndex(phys_max1, k_max2);
-	level11 = img1->GetPixel(k_max1);
-	level22 = img2->GetPixel(k_max2);
-	if (level11 > 0 && level22 > 0 ) max1_in = 1; else max1_in = 0;
+    //check if phys_max1 is in overlap
+    int max1_in;
+    img1->TransformPhysicalPointToIndex(phys_max1, k_max1);
+    img2->TransformPhysicalPointToIndex(phys_max1, k_max2);
+    level11 = img1->GetPixel(k_max1);
+    level22 = img2->GetPixel(k_max2);
+    if (level11 > 0 && level22 > 0 ) max1_in = 1; else max1_in = 0;
 
-	int max2_in;
-	img1->TransformPhysicalPointToIndex(phys_max2, k_max1);
-	img2->TransformPhysicalPointToIndex(phys_max2, k_max2);
-	level11 = img1->GetPixel(k_max1);
-	level22 = img2->GetPixel(k_max2);
-	if (level11 > 0 && level22 > 0 ) max2_in = 1; else max2_in = 0;
+    int max2_in;
+    img1->TransformPhysicalPointToIndex(phys_max2, k_max1);
+    img2->TransformPhysicalPointToIndex(phys_max2, k_max2);
+    level11 = img1->GetPixel(k_max1);
+    level22 = img2->GetPixel(k_max2);
+    if (level11 > 0 && level22 > 0 ) max2_in = 1; else max2_in = 0;
 
     int over_max = -1;
 
-	if ( max1_in==1 && max2_in==1 )  over_max = 0; // two suv max are in the overlap volume
-	if ( max1_in==1 && max2_in==0 )  over_max = 1; // suv max 1 is in the overlap volume, suv max 2 is outside
-	if ( max1_in==0 && max2_in==1 )  over_max = 2; // suv max 2 is in the overlap volume, suv max 1 is outside
-	if ( max1_in==0 && max2_in==0 )  over_max = 3; // both suv max are outside overlap volume
+    if ( max1_in==1 && max2_in==1 )  over_max = 0; // two suv max are in the overlap volume
+    if ( max1_in==1 && max2_in==0 )  over_max = 1; // suv max 1 is in the overlap volume, suv max 2 is outside
+    if ( max1_in==0 && max2_in==1 )  over_max = 2; // suv max 2 is in the overlap volume, suv max 1 is outside
+    if ( max1_in==0 && max2_in==0 )  over_max = 3; // both suv max are outside overlap volume
 
-	printf("trying to write %s\n", parms->overlap_fn_out);
-	//return;
-	FILE *fpout = fopen( parms->overlap_fn_out, "w");
+    printf("trying to write %s\n", parms->overlap_fn_out);
+    //return;
+    FILE *fpout = fopen( parms->overlap_fn_out, "w");
     if (fpout) { 
 	fprintf(fpout, "Vol1 %.1f  Vol2 %.1f  Volmin %.1f  Vover %.1f  (voxels)\n", 
-	   vol_img1,vol_img2, vol_min, vol_overlap);
+            vol_img1,vol_img2, vol_min, vol_overlap);
 	/*fprintf(fpout, "Vover/Volmin = %.3f  MaxSep = %.3f SUV max location = %d\n", 
-		vol_overlap/vol_min, max_sep, over_max );*/
+          vol_overlap/vol_min, max_sep, over_max );*/
 
 	fprintf(fpout, "Vover/Volmin = %.3f", vol_overlap/vol_min );
 
@@ -344,7 +344,7 @@ printf("%s\n%s\n", parms->max_coord_fn_in1, parms->max_coord_fn_in2);
 	fprintf(fpout, "Vol1cm3 %.4f Vol2cm3 %.4f\n", vol_img1*voxvol1/1000., vol_img2*voxvol2/1000. );
 	fprintf(fpout, "diam1mm %f diam2mm %f\n",diam1,diam2);
 	fclose(fpout);
-	}
+    }
 }
 
 /*

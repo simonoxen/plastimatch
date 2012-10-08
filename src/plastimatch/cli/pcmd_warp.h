@@ -5,7 +5,8 @@
 #define _pcmd_warp_h_
 
 #include "plmcli_config.h"
-#include "warp_parms.h"
+
+class Warp_parms;
 
 void
 do_command_warp (int argc, char* argv[]);

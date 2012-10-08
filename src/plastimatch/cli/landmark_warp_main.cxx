@@ -8,14 +8,18 @@
 #include <math.h>
 #include <time.h>
 
-#include "plmbase.h"
-#include "plmregister.h"
-
 #include "itk_tps.h"
-#include "plm_math.h"
+#include "landmark_warp.h"
 #include "plm_clp.h"
+#include "plm_image.h"
+#include "plm_math.h"
 #include "print_and_exit.h"
 #include "pstring.h"
+#include "raw_pointset.h"
+#include "rbf_gauss.h"
+#include "rbf_wendland.h"
+#include "volume.h"
+#include "xform.h"
 
 class Landmark_warp_main_parms {
 public:

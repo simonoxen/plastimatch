@@ -5,9 +5,6 @@
 #define _pcmd_diff_h_
 
 #include "plmcli_config.h"
-#include <string.h>
-#include <stdlib.h>
-#include "pstring.h"
 
 void do_command_diff (int argc, char *argv[]);
 

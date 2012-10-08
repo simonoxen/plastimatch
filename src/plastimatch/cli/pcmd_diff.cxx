@@ -2,13 +2,9 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmcli_config.h"
-#include <time.h>
-#include "itkSubtractImageFilter.h"
-#include "itkImageRegionIterator.h"
+#include <stdio.h>
 
-#include "plmbase.h"
-#include "plmutil.h"
-
+#include "diff.h"
 #include "pcmd_diff.h"
 
 static void

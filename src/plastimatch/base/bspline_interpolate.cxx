@@ -11,13 +11,13 @@
 #include <omp.h>
 #endif
 
-#include "plmbase.h"
-
 #include "bspline_interpolate.h"
+#include "bspline_xform.h"
 #include "direction_cosines.h"
 #include "interpolate_macros.h"
 #include "plm_math.h"
 #include "plm_path.h"
+#include "volume.h"
 #include "volume_macros.h"
 
 void

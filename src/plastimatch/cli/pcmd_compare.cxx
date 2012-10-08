@@ -6,10 +6,13 @@
 #include "itkSubtractImageFilter.h"
 #include "itkImageRegionIterator.h"
 
-#include "plmbase.h"
-
+#include "itk_image_type.h"
+#include "mha_io.h"
 #include "pcmd_compare.h"
+#include "plm_file_format.h"
+#include "plm_image.h"
 #include "print_and_exit.h"
+#include "volume.h"
 
 void
 vf_analyze (Volume* vol1, Volume* vol2)
