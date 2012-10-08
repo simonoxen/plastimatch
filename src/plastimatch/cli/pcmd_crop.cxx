@@ -7,16 +7,31 @@
 #include "plmbase.h"
 #include "plmutil.h"
 
-#include "getopt.h"
 #include "pcmd_crop.h"
+#include "plm_clp.h"
 #include "print_and_exit.h"
 
+class Crop_parms {
+public:
+    std::string img_in_fn;
+    std::string img_out_fn;
+    int crop_vox[6];
+public:
+    Crop_parms () {
+        img_in_fn = "";
+        img_out_fn = "";
+        for (int i = 0; i < 6; i++) {
+            crop_vox[i] = 0;
+        }
+    }
+};
+
 static void
-crop_main (Crop_Parms* parms)
+crop_main (Crop_parms* parms)
 {
     Plm_image plm_image;
 
-    plm_image.load_native ((const char*) parms->img_in_fn);
+    plm_image.load_native (parms->img_in_fn);
 
     switch (plm_image.m_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
@@ -40,74 +55,84 @@ crop_main (Crop_Parms* parms)
 	break;
     }
 
-    plm_image.convert_and_save (
-	(const char*) parms->img_out_fn, 
-	plm_image.m_type);
+    plm_image.convert_and_save (parms->img_out_fn, plm_image.m_type);
 }
 
 static void
-crop_print_usage (void)
+usage_fn (dlib::Plm_clp* parser, int argc, char *argv[])
 {
-    printf ("Usage: plastimatch crop [options]\n"
-	    "Required:\n"
-	    "    --input=image_in\n"
-	    "    --output=image_out\n"
-	    "    --voxels=\"x-min x-max y-min y-max z-min z-max\" (integers)\n"
-	    );
-    exit (-1);
+    printf ("Usage: plastimatch %s [options]\n", argv[1]);
+    parser->print_options (std::cout);
+    std::cout << std::endl;
 }
 
 static void
-crop_parse_args (Crop_Parms* parms, int argc, char* argv[])
+parse_fn (
+    Crop_parms* parms, 
+    dlib::Plm_clp* parser, 
+    int argc, 
+    char* argv[]
+)
 {
-    int ch;
-    static struct option longopts[] = {
-	{ "input",          required_argument,      NULL,           2 },
-	{ "output",         required_argument,      NULL,           3 },
-	{ "voxels",         required_argument,      NULL,           4 },
-	{ NULL,             0,                      NULL,           0 }
-    };
+    /* Add --help, --version */
+    parser->add_default_options ();
 
-    while ((ch = getopt_long(argc, argv, "", longopts, NULL)) != -1) {
-	switch (ch) {
-	case 2:
-	    parms->img_in_fn = optarg;
-	    break;
-	case 3:
-	    parms->img_out_fn = optarg;
-	    break;
-	case 4:
-	    if (sscanf (optarg, 
-		    "%d %d %d %d %d %d", 
-		    &parms->crop_vox[0],
-		    &parms->crop_vox[1],
-		    &parms->crop_vox[2],
-		    &parms->crop_vox[3],
-		    &parms->crop_vox[4],
-		    &parms->crop_vox[5]) != 6)
-	    {
-		printf ("Error: voxels takes 6 arguments\n");
-		crop_print_usage ();
-	    }
-	    break;
-	default:
-	    break;
-	}
+    /* Input files */
+    parser->add_long_option ("", "input", 
+        "input directory or filename", 1, "");
+
+    /* Output files */
+    parser->add_long_option ("", "output", 
+        "output image", 1, "");
+
+    /* Adjustment string */
+    parser->add_long_option ("", "voxels", 
+        "a string that specifies the voxels in the six corners "
+        "of the region to be cropped, in the form "
+        "\"x1 x2 y1 y2 z1 z2\"", 
+        1, "");
+
+    /* Parse options */
+    parser->parse (argc,argv);
+
+    /* Handle --help, --version */
+    parser->check_default_options ();
+
+    /* Check that an output file was given */
+    if (!parser->option ("input")) {
+	throw (dlib::error ("Error.  Please specify an input file "
+		"using the --input option"));
     }
-    if (parms->img_in_fn.length() == 0 || parms->img_out_fn.length() == 0) {
-	printf ("Error: must specify --input and --output\n");
-	crop_print_usage ();
+
+    /* Check that an output file was given */
+    if (!parser->option ("output")) {
+	throw (dlib::error ("Error.  Please specify an output file "
+		"using the --output option"));
     }
+
+    /* Check that an output file was given */
+    if (!parser->option ("voxels")) {
+	throw (dlib::error ("Error.  Please specify the voxels to be "
+		"cropped using the --voxels option"));
+    }
+
+    /* Input files */
+    parms->img_in_fn = parser->get_string("input").c_str();
+
+    /* Output files */
+    parms->img_out_fn = parser->get_string("output").c_str();
+
+    /* Voxels option */
+    parser->assign_int_6 (parms->crop_vox, "voxels");
 }
 
 void
 do_command_crop (int argc, char *argv[])
 {
-    Crop_Parms parms;
+    Crop_parms parms;
     
-    crop_parse_args (&parms, argc, argv);
+    /* Parse command line parameters */
+    plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv, 1);
 
     crop_main (&parms);
-
-    printf ("Finished!\n");
 }

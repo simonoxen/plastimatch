@@ -85,29 +85,96 @@ Plm_clp::add_long_option (
 }
 
 void 
+Plm_clp::assign_int13 (int *arr, const string_type& name)
+{
+    int rc;
+    rc = sscanf (get_string(name).c_str(), "%d %d %d", 
+        &arr[0], &arr[1], &arr[2]);
+    if (rc == 1) {
+        arr[1] = arr[2] = arr[0];
+    } else if (rc != 3) {
+        string_type error_string = 
+            "Error. Option "
+            + get_option_string (name) 
+            + " takes one or three integer arguments.";
+        throw dlib::error (error_string);
+    }
+}
+
+void 
+Plm_clp::assign_int_6 (
+    int *arr, 
+    const string_type& name)
+{
+    int rc;
+    int a, b, c, d, e, f;
+    rc = sscanf (get_string(name).c_str(), "%d %d %d %d %d %d", 
+        &a, &b, &c, &d, &e, &f);
+    if (rc == 6) {
+        arr[0] = a;
+        arr[1] = b;
+        arr[2] = c;
+        arr[3] = d;
+        arr[4] = e;
+        arr[5] = f;
+    } else {
+        string_type error_string = 
+            "Error. Option "
+            + get_option_string (name) 
+            + " takes six integer arguments.";
+        throw dlib::error (error_string);
+    }
+}
+
+void 
 Plm_clp::assign_plm_long_13 (
     plm_long *arr, 
     const string_type& name)
 {
-	int rc;
-	unsigned int a, b, c;
-	rc = sscanf (get_string(name).c_str(), "%d %d %d", &a, &b, &c);
-	if (rc == 1) {
-	    arr[0] = a;
-	    arr[1] = a;
-	    arr[2] = a;
-	} else if (rc == 3) {
-	    arr[0] = a;
-	    arr[1] = b;
-	    arr[2] = c;
-	} else {
-	    string_type error_string = 
-		"Error. Option "
-		+ get_option_string (name) 
-		+ " takes one or three integer arguments.";
-	    throw dlib::error (error_string);
-	}
+    int rc;
+    unsigned int a, b, c;
+    rc = sscanf (get_string(name).c_str(), "%d %d %d", &a, &b, &c);
+    if (rc == 1) {
+        arr[0] = a;
+        arr[1] = a;
+        arr[2] = a;
+    } else if (rc == 3) {
+        arr[0] = a;
+        arr[1] = b;
+        arr[2] = c;
+    } else {
+        string_type error_string = 
+            "Error. Option "
+            + get_option_string (name) 
+            + " takes one or three integer arguments.";
+        throw dlib::error (error_string);
     }
+}
+
+void 
+Plm_clp::assign_plm_long_6 (
+    plm_long *arr, 
+    const string_type& name)
+{
+    int rc;
+    int a, b, c, d, e, f;
+    rc = sscanf (get_string(name).c_str(), "%d %d %d %d %d %d", 
+        &a, &b, &c, &d, &e, &f);
+    if (rc == 6) {
+        arr[0] = a;
+        arr[1] = b;
+        arr[2] = c;
+        arr[3] = d;
+        arr[4] = e;
+        arr[5] = f;
+    } else {
+        string_type error_string = 
+            "Error. Option "
+            + get_option_string (name) 
+            + " takes six integer arguments.";
+        throw dlib::error (error_string);
+    }
+}
 
 void Plm_clp::assign_float_vec (
     std::vector<float>* float_vec, 

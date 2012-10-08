@@ -90,6 +90,7 @@ public:
     void save_image (const Pstring& fname);
     void save_image (const char* fname);
     void convert_and_save (const char* fname, Plm_image_type new_type);
+    void convert_and_save (const std::string& fname, Plm_image_type new_type);
 
     /* assignment */
     void set_gpuit (Volume *v);

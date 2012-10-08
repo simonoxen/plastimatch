@@ -1085,6 +1085,12 @@ Plm_image::convert_and_save (const char* fname, Plm_image_type new_type)
     this->save_image (fname);
 }
 
+void
+Plm_image::convert_and_save (const std::string& fname, Plm_image_type new_type)
+{
+    this->convert_and_save (fname.c_str(), new_type);
+}
+
 /* geometry */
 int 
 Plm_image::planes ()

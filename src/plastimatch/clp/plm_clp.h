@@ -159,21 +159,10 @@ class Plm_clp
     }
 
     /* Shorthand functions for specific well-known types */
-    void assign_int13 (int *arr, const string_type& name) {
-        int rc;
-        rc = sscanf (get_string(name).c_str(), "%d %d %d", 
-            &arr[0], &arr[1], &arr[2]);
-        if (rc == 1) {
-            arr[1] = arr[2] = arr[0];
-        } else if (rc != 3) {
-            string_type error_string = 
-                "Error. Option "
-                + get_option_string (name) 
-                + " takes one or three integer arguments.";
-            throw dlib::error (error_string);
-        }
-    }
+    void assign_int13 (int *arr, const string_type& name);
+    void assign_int_6 (int *arr, const string_type& name);
     void assign_plm_long_13 (plm_long *arr, const string_type& name);
+    void assign_plm_long_6 (plm_long *arr, const string_type& name);
     void assign_float13 (float *arr, const string_type& name) {
         float rc;
         rc = sscanf (get_string(name).c_str(), "%g %g %g", 
