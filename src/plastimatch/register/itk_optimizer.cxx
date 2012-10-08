@@ -1,10 +1,9 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include <time.h>
+#include "plmregister_config.h"
 #include <stdlib.h>
 #include <string.h>
-#include "plmregister_config.h"
 #include "itkImage.h"
 #include "itkArray.h"
 #include "itkCenteredTransformInitializer.h"

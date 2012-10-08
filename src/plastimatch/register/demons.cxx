@@ -6,15 +6,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
 #ifndef _WIN32
 #include <dlfcn.h>
 #endif
 
-#include "plmbase.h"
-#include "plmregister.h"
-
 #include "delayload.h"
+#include "demons.h"
 #include "demons_cuda.h"
 
 void

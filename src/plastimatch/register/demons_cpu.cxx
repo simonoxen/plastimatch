@@ -7,17 +7,13 @@
 #include <string.h>
 #include <math.h>
 
-#include "plmbase.h"
-#include "plmregister.h"
-
+#include "demons.h"
+#include "demons_misc.h"
+#include "plm_int.h"
+#include "plm_math.h"
 #include "plm_timer.h"
-
-int
-round_int (float f)
-{
-    return (f > 0) ? (int)(f+0.5) : (int)(ceil(f-0.5));
-}
-
+#include "vf_convolve.h"
+#include "volume.h"
 
 /* Vector fields are all in mm units */
 Volume*
@@ -117,11 +113,11 @@ demons_c (
 
 		    /* Find correspondence with nearest neighbor interpolation & boundary checking */
 		    dxyz = &vf_smooth_img [3*fv];			/* mm */
-		    mz = round_int(mk + invmps[2] * dxyz[2]);		/* pixels (moving) */
+		    mz = ROUND_INT(mk + invmps[2] * dxyz[2]);		/* pixels (moving) */
 		    if (mz < 0 || mz >= moving->dim[2]) continue;
-		    my = round_int(mj + invmps[1] * dxyz[1]);		/* pixels (moving) */
+		    my = ROUND_INT(mj + invmps[1] * dxyz[1]);		/* pixels (moving) */
 		    if (my < 0 || my >= moving->dim[1]) continue;
-		    mx = round_int(mi + invmps[0] * dxyz[0]);		/* pixels (moving) */
+		    mx = ROUND_INT(mi + invmps[0] * dxyz[0]);		/* pixels (moving) */
 		    if (mx < 0 || mx >= moving->dim[0]) continue;
 		    mv = moving->index (mx, my, mz);
 

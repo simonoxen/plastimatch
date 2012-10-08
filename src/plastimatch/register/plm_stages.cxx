@@ -2,20 +2,26 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmregister_config.h"
-#include <time.h>
 #include <stdlib.h>
 #include <string.h>
 #include "itkTimeProbe.h"
+#include "itkImageRegionConstIteratorWithIndex.h"
 
-#include "plmbase.h"
-#include "plmregister.h"
-#include "plmutil.h"
-
+#include "bspline_xform.h"
 #include "gpuit_bspline.h"
 #include "gpuit_demons.h"
 #include "itk_demons.h"
+#include "itk_image_save.h"
 #include "itk_registration.h"
 #include "logfile.h"
+#include "plm_image.h"
+#include "plm_image_header.h"
+#include "plm_parms.h"
+#include "plm_stages.h"
+#include "plm_warp.h"
+#include "registration_data.h"
+#include "volume.h"
+#include "xform.h"
 
 #define FIXME_BACKGROUND_MAX (-1200)
 

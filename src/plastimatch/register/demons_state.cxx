@@ -7,9 +7,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "plmbase.h"
-#include "plmregister.h"
-
+#include "demons_state.h"
+#include "volume.h"
 
 Demons_state::Demons_state (void)
 {

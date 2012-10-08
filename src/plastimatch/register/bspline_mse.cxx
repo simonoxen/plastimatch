@@ -15,18 +15,18 @@
 #include <xmmintrin.h>
 #endif
 
-#include "plmbase.h"
-#include "plmregister.h"
-#include "plmutil.h"
-
-#if (CUDA_FOUND)
+#include "bspline.h"
+#include "bspline_correspond.h"
 #include "bspline_cuda.h"
-#endif
+#include "bspline_interpolate.h"
 #include "bspline_macros.h"
+#include "bspline_mse.h"
 #include "file_util.h"
+#include "interpolate.h"
 #include "interpolate_macros.h"
 #include "plm_math.h"
 #include "plm_timer.h"
+#include "volume.h"
 #include "volume_macros.h"
 
 ////////////////////////////////////////////////////////////////////////////////

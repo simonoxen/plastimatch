@@ -2,21 +2,21 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include "plmbase.h"
-#include "plmdose.h"
-
+#include "aperture.h"
+#include "plm_image.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
+#include "proton_beam.h"
+#include "proton_parms.h"
+#include "proton_scene.h"
 #include "string_util.h"
-
 
 #ifndef NULL
 #define NULL ((void*)0)

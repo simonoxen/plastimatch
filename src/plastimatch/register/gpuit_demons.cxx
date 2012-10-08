@@ -4,12 +4,17 @@
 #include "plmregister_config.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <math.h>
 
-#include "plmbase.h"
-#include "plmregister.h"
-
+#include "demons.h"
+#include "gpuit_demons.h"
+#include "plm_image.h"
+#include "plm_image_header.h"
+#include "plm_parms.h"
+#include "registration_data.h"
+#include "volume.h"
+#include "volume_resample.h"
+#include "xform.h"
 
 void
 do_gpuit_demons_stage_internal (

@@ -2,13 +2,16 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmregister_config.h"
-#include "plmbase.h"
-#include "plmutil.h"
 
-#include "plmbase.h"
-#include "plmregister.h"
-
+#include "landmark_warp.h"
+#include "itk_image_save.h"
+#include "itk_pointset.h"
 #include "itk_tps.h"
+#include "itk_warp.h"
+#include "plm_image.h"
+#include "plm_image_header.h"
+#include "raw_pointset.h"
+#include "xform.h"
 
 #define BUFLEN 2048
 

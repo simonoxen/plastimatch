@@ -8,11 +8,13 @@
 #include <string.h>
 #include <math.h>
 
-#include "plmbase.h"
-#include "plmregister.h"
-
+#include "bspline.h"
+#include "bspline_interpolate.h"
+#include "bspline_landmarks.h"
+#include "bspline_xform.h"
 #include "file_util.h"
 #include "plm_math.h"
+#include "pointset.h"
 #include "print_and_exit.h"
 #include "volume_macros.h"
 

@@ -7,11 +7,9 @@
 #include <string.h>
 #include <math.h>
 
-#include "plmbase.h"
-#include "plmregister.h"
-
-#include "opencl_util.h"
+#include "demons_opencl.h"
 #include "demons_opencl_p.h"
+#include "opencl_util.h"
 
 Volume*
 demons_opencl (

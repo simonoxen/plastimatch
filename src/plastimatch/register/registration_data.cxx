@@ -3,11 +3,12 @@
    ----------------------------------------------------------------------- */
 #include "plmregister_config.h"
 
-#include "plmbase.h"
-#include "plmregister.h"
-
 #include "logfile.h"
+#include "plm_image.h"
+#include "plm_image_type.h"
+#include "plm_parms.h"
 #include "print_and_exit.h"
+#include "registration_data.h"
 
 Registration_data::Registration_data ()
 {

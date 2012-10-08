@@ -5,6 +5,9 @@
 #define _bspline_cuda_h_
 
 #include "plmregister_config.h"
+
+#if (CUDA_FOUND)
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -326,5 +329,7 @@ extern "C" {
 #if defined __cplusplus
 }
 #endif
+
+#endif /* CUDA_FOUND */
 
 #endif

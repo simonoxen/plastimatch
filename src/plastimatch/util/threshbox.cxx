@@ -11,7 +11,9 @@
 #include "plmbase.h"
 #include "plmutil.h"
 
+#include "compiler_warnings.h"
 #include "plm_math.h"
+#include "threshbox.h"
 
 void do_threshbox( Threshbox_parms *parms) {
 
@@ -312,6 +314,7 @@ void do_overlap_fraction( Threshbox_parms *parms) {
     if (level11 > 0 && level22 > 0 ) max2_in = 1; else max2_in = 0;
 
     int over_max = -1;
+    UNUSED_VARIABLE (over_max);
 
     if ( max1_in==1 && max2_in==1 )  over_max = 0; // two suv max are in the overlap volume
     if ( max1_in==1 && max2_in==0 )  over_max = 1; // suv max 1 is in the overlap volume, suv max 2 is outside

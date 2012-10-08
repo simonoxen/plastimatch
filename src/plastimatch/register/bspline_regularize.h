@@ -8,6 +8,7 @@
 
 class Bspline_score;
 class Bspline_regularize_state;
+class Bspline_xform;
 
 class Reg_parms
 {

@@ -8,8 +8,7 @@
 #include <time.h>
 #include <math.h>
 
-#include "plmregister.h"
-
+#include "demons_misc.h"
 
 /* This function creates the smoothing kernel */
 float*

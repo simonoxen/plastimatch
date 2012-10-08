@@ -3,9 +3,10 @@
    ----------------------------------------------------------------------- */
 #include "plmregister_config.h"
 
-#include "plmbase.h"
-#include "plmregister.h"
-
+#include "bspline_regularize.h"
+#include "bspline_regularize_analytic.h"
+#include "bspline_regularize_numeric.h"
+#include "bspline_xform.h"
 #include "print_and_exit.h"
 
 void

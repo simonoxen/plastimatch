@@ -11,13 +11,10 @@
 #include <omp.h>
 #endif
 
-#include "plmbase.h"
-#include "plmregister.h"
-#include "plm_math.h"
-
-#if (CUDA_FOUND)
+#include "bspline.h"
 #include "bspline_cuda.h"
-#endif
+#include "bspline_optimize_steepest.h"
+#include "bspline_xform.h"
 #include "logfile.h"
 
 /*

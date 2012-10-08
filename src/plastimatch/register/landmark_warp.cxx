@@ -7,9 +7,8 @@
 #include <string.h>
 #include <math.h>
 
-#include "plmbase.h"
-#include "plmregister.h"
-
+#include "landmark_warp.h"
+#include "raw_pointset.h"
 
 Landmark_warp::Landmark_warp (void)
 {

@@ -4,7 +4,8 @@
 #ifndef _proton_parms_h_
 #define _proton_parms_h_
 
-#include "sys/plm_path.h"
+#include "plmdose_config.h"
+#include "plm_path.h"
 #include "threading.h"
 
 class Plm_image;

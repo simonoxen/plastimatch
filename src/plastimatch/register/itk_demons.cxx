@@ -5,7 +5,6 @@
 #include <iostream>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include "itkArray.h"
 #include "itkCommand.h"
 #include "itkDemonsRegistrationFilter.h"
@@ -14,12 +13,16 @@
 #include "itkImage.h"
 #include "itkLinearInterpolateImageFunction.h"
 
-#include "plmbase.h"
-#include "plmregister.h"
-
+#include "itk_demons.h"
+#include "itk_image.h"
+#include "itk_resample.h"
 #include "logfile.h"
+#include "plm_image.h"
+#include "plm_parms.h"
 #include "plm_timer.h"
 #include "print_and_exit.h"
+#include "registration_data.h"
+#include "xform.h"
 
 typedef itk::DemonsRegistrationFilter<
     FloatImageType,

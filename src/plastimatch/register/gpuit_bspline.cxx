@@ -4,15 +4,23 @@
 #include "plmregister_config.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <math.h>
 
-#include "plmbase.h"
-#include "plmregister.h"
-
+#include "bspline.h"
+#include "bspline_landmarks.h"
+#include "bspline_optimize.h"
+#include "bspline_regularize.h"
+#include "gpuit_bspline.h"
 #include "logfile.h"
+#include "plm_image_header.h"
+#include "plm_image.h"
 #include "plm_math.h"
+#include "plm_parms.h"
 #include "print_and_exit.h"
+#include "registration_data.h"
+#include "volume.h"
+#include "volume_resample.h"
+#include "xform.h"
 
 static void
 do_gpuit_bspline_stage_internal (

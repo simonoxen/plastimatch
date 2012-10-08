@@ -9,9 +9,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "plmbase.h"
-#include "plmregister.h"
-
+#include "bspline.h"
+#include "bspline_optimize_lbfgsb.h"
+#include "bspline_xform.h"
 #include "logfile.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
@@ -22,8 +22,6 @@
 //#undef max
 //#endif
 
-//#include "vxl/v3p/netlib/v3p_netlib.h"
-//#include "vxl/v3p/netlib/v3p_f2c_mangle.h"
 #include "v3p_netlib.h"
 #include "v3p_f2c_mangle.h"
 

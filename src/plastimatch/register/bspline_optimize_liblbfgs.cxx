@@ -8,9 +8,9 @@
 #include <string.h>
 #include <math.h>
 
-#include "plmbase.h"
-#include "plmregister.h"
-
+#include "bspline.h"
+#include "bspline_optimize_liblbfgs.h"
+#include "bspline_xform.h"
 #include "logfile.h"
 #include "plm_math.h"
 

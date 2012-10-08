@@ -12,22 +12,22 @@
 #include <xmmintrin.h>
 #endif
 
-#include "plmbase.h"
-#include "plmregister.h"
-#include "plmutil.h"
-
+#include "bspline.h"
+#include "bspline_correspond.h"
+#include "bspline_cuda.h"
+#include "bspline_interpolate.h"
 #include "bspline_macros.h"
+#include "bspline_mi.h"
 #include "file_util.h"
+#include "interpolate.h"
 #include "interpolate_macros.h"
 #include "logfile.h"
+#include "mha_io.h"
 #include "plm_math.h"
 #include "plm_timer.h"
 #include "volume_macros.h"
-
-#if (CUDA_FOUND)
-#include "bspline_cuda.h"
-#endif
-
+#include "volume.h"
+#include "xpm.h"
 
 /* Maximum # of bins for a vopt histogram */
 #define VOPT_RES 1000
@@ -79,6 +79,7 @@ volume_clip_intensity (Volume* vin, float bot, float top)
     return vout;
 }
 
+#if defined (commentout)
 static void
 dump_vol_clipped (char* fn, Volume* vin, float bot, float top)
 {
@@ -90,7 +91,7 @@ dump_vol_clipped (char* fn, Volume* vin, float bot, float top)
         delete vout;
     }
 }
-
+#endif
 
 /* -----------------------------------------------------------------------
    Initialization and teardown
@@ -176,6 +177,7 @@ bspline_initialize_mi_hist_eqsp (Bspline_mi_hist_Parms* hparms, Volume* vol)
     hparms->offset = min_vox - 0.5 * hparms->delta;
 }
 
+#if defined (commentout)
 static void
 bspline_mi_hist_vopt_dump_ranges (
     Bspline_mi_hist_Parms* hparms,
@@ -222,6 +224,7 @@ bspline_mi_hist_vopt_dump_ranges (
     dump_vol_clipped (buff, vol, left, right);
     fclose (fp);
 }
+#endif
 
 /* JAS - 2011.08.08
  * Experimental implementation of V-Optimal Histograms

@@ -16,8 +16,8 @@
 #include <dirent.h>
 #endif
 
-#include "plmregister.h"
-
+#include "plm_parms.h"
+#include "plm_path.h"
 #include "print_and_exit.h"
 #include "string_util.h"
 

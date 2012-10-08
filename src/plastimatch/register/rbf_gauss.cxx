@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
 #include "vnl/vnl_matrix_fixed.h"
 #include "vnl/vnl_matrix.h"
@@ -16,12 +15,17 @@
 #include "vnl/algo/vnl_svd.h"
 #include "vnl/vnl_sample.h"
 
-#include "plmbase.h"
-#include "plmregister.h"
-
+#include "landmark_warp.h"
+#include "plm_image.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
+#include "raw_pointset.h"
+#include "rbf_cluster.h"
+#include "rbf_gauss.h"
+#include "vf.h"
+#include "volume.h"
 #include "volume_macros.h"
+#include "xform.h"
 
 typedef struct rbf_params Rbf_parms;
 struct rbf_params { // used to pass information to bspline_rbf_score

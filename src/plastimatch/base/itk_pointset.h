@@ -7,6 +7,7 @@
 #include "plmbase_config.h"
 #include "itkPointSet.h"
 #include "itkDefaultStaticMeshTraits.h"
+#include "itk_point.h"
 
 class Point;
 class Xform;

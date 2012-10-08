@@ -33,20 +33,24 @@
 #include <xmmintrin.h>
 #endif
 
-#include "plmbase.h"
-#include "plmregister.h"
-
-#include "delayload.h"
-#include "file_util.h"
-#include "logfile.h"
-#include "plm_math.h"
-#include "interpolate_macros.h"
-#include "volume_macros.h"
-
+#include "bspline.h"
 #if (CUDA_FOUND)
 #include "bspline_cuda.h"
 #endif
-
+#include "bspline_interpolate.h"
+#include "bspline_landmarks.h"
+#include "bspline_mi.h"
+#include "bspline_mse.h"
+#include "bspline_regularize.h"
+#include "bspline_xform.h"
+#include "delayload.h"
+#include "file_util.h"
+#include "interpolate_macros.h"
+#include "logfile.h"
+#include "plm_math.h"
+#include "string_util.h"
+#include "volume.h"
+#include "volume_macros.h"
 
 /* -----------------------------------------------------------------------
    Initialization and teardown
@@ -330,9 +334,11 @@ dump_hist (Bspline_mi_hist* mi_hist, int it, const std::string& prefix)
     FILE *fp;
     //char fn[_MAX_PATH];
     std::string fn;
-    char buf[_MAX_PATH];
+    //char buf[_MAX_PATH];
+    std::string buf;
 
-    sprintf (buf, "hist_fix_%02d.csv", it);
+    buf = string_format ("hist_fix_%02d.csv", it);
+    //sprintf (buf, "hist_fix_%02d.csv", it);
     fn = prefix + buf;
     make_directory_recursive (fn.c_str());
     fp = fopen (fn.c_str(), "wb");
@@ -342,7 +348,8 @@ dump_hist (Bspline_mi_hist* mi_hist, int it, const std::string& prefix)
     }
     fclose (fp);
 
-    sprintf (buf, "hist_mov_%02d.csv", it);
+    //sprintf (buf, "hist_mov_%02d.csv", it);
+    buf = string_format ("hist_mov_%02d.csv", it);
     fn = prefix + buf;
     make_directory_recursive (fn.c_str());
     fp = fopen (fn.c_str(), "wb");
@@ -352,7 +359,8 @@ dump_hist (Bspline_mi_hist* mi_hist, int it, const std::string& prefix)
     }
     fclose (fp);
 
-    sprintf (buf, "hist_jnt_%02d.csv", it);
+    //sprintf (buf, "hist_jnt_%02d.csv", it);
+    buf = string_format ("hist_jnt_%02d.csv", it);
     fn = prefix + buf;
     make_directory_recursive (fn.c_str());
     fp = fopen (fn.c_str(), "wb");

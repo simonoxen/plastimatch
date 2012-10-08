@@ -20,18 +20,20 @@
 #include "itkMeanSquaresImageToImageMetric.h"
 #endif
 
-#include "plmbase.h"
-#include "plmregister.h"
-#include "plmutil.h"
-
 #include "compiler_warnings.h"
 #include "itk_demons.h"
 #include "itk_image_type.h"
 #include "itk_optimizer.h"
 #include "itk_registration.h"
 #include "itk_registration_private.h"
+#include "itk_resample.h"
 #include "logfile.h"
+#include "plm_image.h"
+#include "plm_image_header.h"
+#include "plm_parms.h"
 #include "print_and_exit.h"
+#include "registration_data.h"
+#include "xform.h"
 
 typedef itk::MeanSquaresImageToImageMetric <
     FloatImageType, FloatImageType > MSEMetricType;

@@ -2,21 +2,22 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmregister_config.h"
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <string.h>
-#include <math.h>
 
-#include "plmbase.h"
-#include "plmregister.h"
-
+#include "bspline.h"
 #include "bspline_macros.h"
+#include "bspline_regularize.h"
+#include "bspline_regularize_numeric.h"
+#include "bspline_xform.h"
 #include "logfile.h"
 #include "plm_math.h"
 #include "plm_timer.h"
 #include "print_and_exit.h"
 #include "volume_macros.h"
+#include "volume.h"
 
 /* Prototypes */
 static void bspline_xform_free_qlut_grad (Bspline_xform* bxf);
