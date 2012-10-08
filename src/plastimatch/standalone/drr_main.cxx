@@ -19,6 +19,7 @@
 #include "plm_timer.h"
 #include "proj_image.h"
 #include "proj_matrix.h"
+#include "ray_trace.h"
 #include "threading.h"
 #include "volume.h"
 
@@ -121,8 +122,9 @@ create_matrix_and_drr (
 		    options->image_resolution[1] };
 
     /* Set physical size of imager in mm */
-    int isize[2] = { options->image_size[0],
-		     options->image_size[1] };
+    int isize[2];
+    isize[0] = options->image_size[0];
+    isize[1] = options->image_size[1];
 
     /* Set pixel size in mm */
     double ps[2] = { (double)isize[0]/(double)ires[0], 
