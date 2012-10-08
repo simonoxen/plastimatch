@@ -13,6 +13,7 @@
 #include "delayload.h"
 #include "demons.h"
 #include "demons_cuda.h"
+#include "demons_state.h"
 
 void
 demons_default_parms (Demons_parms* parms)

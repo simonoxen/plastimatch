@@ -7,9 +7,10 @@
 #include <string.h>
 #include <math.h>
 
-#include "demons_opencl.h"
+#include "demons.h"
 #include "demons_opencl_p.h"
 #include "opencl_util.h"
+#include "volume.h"
 
 Volume*
 demons_opencl (
