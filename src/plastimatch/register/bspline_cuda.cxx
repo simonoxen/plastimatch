@@ -18,6 +18,7 @@
 #include "bspline_correspond.h"
 #include "bspline_interpolate.h"
 #include "bspline_xform.h"
+#include "compiler_warnings.h"
 #include "interpolate.h"
 #include "interpolate_macros.h"
 #include "logfile.h"
@@ -647,6 +648,7 @@ CUDA_bspline_mi_a (
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
     Volume *moving_grad = parms->moving_grad;
+    UNUSED_VARIABLE (moving_grad);
 
     Dev_Pointers_Bspline* dev_ptrs = (Dev_Pointers_Bspline*)bst->dev_ptrs;
 

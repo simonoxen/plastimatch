@@ -5,14 +5,14 @@
 #include <stdio.h>
 #include <cuda.h>
 
-#include "plmbase.h"
-#include "plmregister.h"
-
 #include "cuda_util.h"
+#include "demons.h"
 #include "demons_cuda.h"
+#include "demons_misc.h"
+#include "demons_state.h"
 #include "plm_cuda_math.h"
-
 #include "plm_timer.h"
+#include "volume.h"
 
 /*
 Constants

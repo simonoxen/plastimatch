@@ -2,21 +2,22 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmregister_config.h"
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 #if defined (_WIN32)
 #include <windows.h>
 #endif
 
-#include "plmbase.h"
-#include "plmregister.h"
-
+#include "bspline.h"
 #include "bspline_cuda.h"
 #include "bspline_cuda_kernels.h"
+#include "bspline_xform.h"
 #include "cuda_util.h"
 #include "cuda_mem.h"
 #include "cuda_kernel_util.h"
+#include "plm_int.h"
+#include "volume.h"
 
 // For CUDA Toolkits < 4.0
 #ifndef cudaTextureType1D

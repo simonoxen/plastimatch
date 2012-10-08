@@ -17,6 +17,7 @@
 
 #include "cuda_mem.h"
 #include "delayload.h"
+#include "plm_int.h"
 
 /* B-Spline CUDA MI Switches */
 //#define MI_HISTS_CPU
