@@ -304,6 +304,12 @@ if (OPENCL_FOUND)
     set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} plmopencl)
   endif ()
 endif ()
+if (PLMLIB_CONFIG_ENABLE_SEGMENT)
+  set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} plmsegment)
+endif ()
+if (PLMLIB_CONFIG_ENABLE_SCRIPT)
+  set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} lua plmscript)
+endif ()
 export (TARGETS 
   ${EXPORT_TARGET_LIST}
   FILE "${CMAKE_BINARY_DIR}/PlastimatchLibraryDepends.cmake")
