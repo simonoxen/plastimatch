@@ -6,11 +6,23 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "plmbase.h"
-#include "plmutil.h"
-
+#if GDCM_VERSION_1
+#include "gdcm1_series.h"
+#endif
+#include "astroid_dose.h"
 #include "file_util.h"
+#include "mc_dose.h"
+#include "plm_image.h"
 #include "print_and_exit.h"
+#include "rtds.h"
+#include "rtss.h"
+#include "rtss_structure_set.h"
+#include "xio_ct.h"
+#include "xio_demographic.h"
+#include "xio_dir.h"
+#include "xio_dose.h"
+#include "xio_patient.h"
+#include "xio_structures.h"
 
 Rtds::Rtds ()
 {

@@ -3,14 +3,32 @@
    ----------------------------------------------------------------------- */
 #include "plmutil_config.h"
 #include "itkImageRegionConstIterator.h"
+#include "itkImageRegionIterator.h"
 
-#include "plmbase.h"
-#include "plmutil.h"
-
+#if GDCM_VERSION_1
+#include "gdcm1_dose.h"
+#endif
+#include "cxt_extract.h"
+#include "cxt_io.h"
 #include "dir_list.h"
 #include "file_util.h"
+#include "itk_image_save.h"
+#include "itk_image_type.h"
 #include "logfile.h"
+#include "plm_image.h"
+#include "plm_warp.h"
+#include "pointset.h"
 #include "print_and_exit.h"
+#include "pstring.h"
+#include "rasterizer.h"
+#include "rtds.h"
+#include "rtss.h"
+#include "rtss_structure.h"
+#include "rtss_structure_set.h"
+#include "ss_list_io.h"
+#include "ss_img_extract.h"
+#include "warp_parms.h"
+#include "xio_structures.h"
 
 static void
 compose_prefix_fn (

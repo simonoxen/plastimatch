@@ -2,14 +2,15 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmutil_config.h"
-
 #include <stdio.h>
-
-#include "plmbase.h"
-#include "plmutil.h"
-
 #include "vnl/vnl_random.h"
 
+#include "itk_pointset.h"
+#include "rtds.h"
+#include "rtss.h"
+#include "rtss_structure.h"
+#include "rtss_structure_set.h"
+#include "simplify_points.h"
 
 /* -----------------------------------------------------------------------
     Resorting method for the simplified vector of points

@@ -4,7 +4,6 @@
 #include "plmutil_config.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #if (OPENMP_FOUND)
 #include <omp.h>
 #endif
@@ -12,14 +11,16 @@
 #include <xmmintrin.h>
 #endif
 
-#include "plmbase.h"
-#include "plmutil.h"
-
+#include "bspline_correspond.h"
+#include "bspline_interpolate.h"
 #include "bspline_macros.h"
+#include "bspline_warp.h"
+#include "interpolate.h"
 #include "interpolate_macros.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
 #include "volume_macros.h"
+#include "volume.h"
 
 /* This only warps voxels within the ROI.  If you need the whole 
    image, call bspline_xform_extend. */

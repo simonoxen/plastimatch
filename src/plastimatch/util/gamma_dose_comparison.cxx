@@ -9,9 +9,11 @@
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkImageRegion.h"
 
-#include "plmbase.h"
-#include "plmutil.h"
-
+#include "gamma_analysis.h"
+#include "gamma_dose_comparison.h"
+#include "itk_resample.h"
+#include "plm_image.h"
+#include "plm_image_header.h"
 #include "plm_math.h"
 
 class Gamma_dose_comparison_private {

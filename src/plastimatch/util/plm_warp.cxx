@@ -4,10 +4,16 @@
 #include "plmutil_config.h"
 #include <time.h>
 
-#include "plmbase.h"
-#include "plmutil.h"
-
+#include "bspline_warp.h"
+#include "bspline_xform.h"
+#include "itk_image_type.h"
+#include "itk_warp.h"
+#include "plm_image.h"
+#include "plm_image_header.h"
+#include "plm_warp.h"
 #include "print_and_exit.h"
+#include "volume.h"
+#include "xform.h"
 
 static void
 plm_warp_itk (

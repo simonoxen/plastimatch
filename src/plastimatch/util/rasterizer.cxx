@@ -8,12 +8,17 @@
 #include <string.h>
 #include <math.h>
 
-#include "plmbase.h"
-#include "plmutil.h"
-
 #include "print_and_exit.h"
+#include "plm_image.h"
+#include "plm_image_header.h"
+#include "plm_int.h"
 #include "plm_math.h"
 #include "plm_path.h"
+#include "rasterize_slice.h"
+#include "rasterizer.h"
+#include "rtss_structure.h"
+#include "rtss_structure_set.h"
+#include "volume.h"
 
 Rasterizer::Rasterizer ()
 {

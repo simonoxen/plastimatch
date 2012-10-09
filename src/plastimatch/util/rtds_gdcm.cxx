@@ -5,11 +5,14 @@
 #include <iostream>
 #include <sstream>
 #include <stdlib.h>
-#include <time.h>
 
-#include "plmbase.h"
-#include "plmutil.h"
-
+#if GDCM_VERSION_1
+#include "gdcm1_dose.h"
+#include "gdcm1_series.h"
+#endif
+#include "plm_image.h"
+#include "rtds.h"
+#include "rtss.h"
 
 void
 Rtds::load_gdcm (const char *dicom_dir)

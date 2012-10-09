@@ -8,10 +8,16 @@
 #include <stdlib.h>
 #include "itkImageRegionIteratorWithIndex.h"
 
-#include "plmbase.h"
-#include "plmutil.h"
-
+#include "itk_directions.h"
+#include "itk_image_type.h"
+#include "itk_point.h"
+#include "plm_image.h"
+#include "plm_image_header.h"
 #include "plm_math.h"
+#include "rtds.h"
+#include "rtss.h"
+#include "rtss_structure_set.h"
+#include "synthetic_mha.h"
 
 static void 
 synth_dose (

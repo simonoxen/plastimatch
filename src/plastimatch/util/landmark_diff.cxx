@@ -6,9 +6,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "plmbase.h"
-#include "plmutil.h"
-
+#include "landmark_diff.h"
+#include "raw_pointset.h"
 
 static float
 get_sd (

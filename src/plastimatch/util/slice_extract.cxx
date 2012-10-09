@@ -7,9 +7,7 @@
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 
-#include "plmbase.h"
-#include "plmutil_config.h"
-
+#include "slice_extract.h"
 
 template<class T>
 typename itk::Image<typename T::ObjectType::PixelType,2>::Pointer

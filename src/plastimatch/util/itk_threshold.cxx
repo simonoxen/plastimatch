@@ -3,6 +3,7 @@
    ----------------------------------------------------------------------- */
 #include "plmutil_config.h"
 #include <itkBinaryThresholdImageFilter.h>
+
 #include "itk_threshold.h"
 
 UCharImageType::Pointer

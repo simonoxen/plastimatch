@@ -1,9 +1,11 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plmutil_config.h"
 
-#include "plmbase.h"
-#include "plmutil.h"
+#include "bspline_correspond.h"
+#include "plm_int.h"
+#include "volume.h"
 
 static void
 float_to_plm_long_clamp (plm_long* p, float* f, const plm_long* max)

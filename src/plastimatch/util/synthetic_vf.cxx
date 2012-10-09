@@ -2,15 +2,14 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 /* Correct mha files which have incorrect patient orientations */
+#include "plmutil_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "plmutil_config.h"
-
-#include "plmutil.h"
-#include "plm_math.h"
-
 #include "itkImageRegionIteratorWithIndex.h"
+
+#include "plm_math.h"
+#include "synthetic_vf.h"
 
 DeformationFieldType::Pointer
 synthetic_vf (Synthetic_vf_parms* parms)

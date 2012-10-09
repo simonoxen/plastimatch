@@ -13,8 +13,14 @@
 #include "itkAndConstantToImageFilter.h"
 #include "itkImageSliceConstIteratorWithIndex.h"
 
-#include "plmbase.h"
-#include "plmutil.h"
+#include "cxt_extract.h"
+#include "itk_image.h"
+#include "itk_image_type.h"
+#include "rtss_structure.h"
+#include "rtss_structure_set.h"
+#include "slice_extract.h"
+#include "ss_img_extract.h"
+#include "volume.h"
 
 #if defined (commentout)
 static bool

@@ -5,8 +5,8 @@
 #include "itkImage.h"
 #include "itkMultiplyByConstantImageFilter.h"
 
-#include "plmbase.h"
-#include "plmutil.h"
+#include "itk_image_type.h"
+#include "itk_scale.h"
 
 template <class T>
 T

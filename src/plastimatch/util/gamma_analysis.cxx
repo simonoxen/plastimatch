@@ -10,9 +10,10 @@
 #include "itkImageRegion.h"
 #include "itkCastImageFilter.h"
 
-#include "plmbase.h"
-#include "plmutil.h"
-
+#include "gamma_analysis.h"
+#include "itk_image_type.h"
+#include "plm_image.h"
+#include "plm_image_header.h"
 #include "plm_math.h"
 
 void find_dose_threshold( Gamma_parms *parms ) {

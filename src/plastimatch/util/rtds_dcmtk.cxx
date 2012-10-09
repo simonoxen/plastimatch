@@ -3,13 +3,13 @@
    ----------------------------------------------------------------------- */
 #include "plmutil_config.h"
 
-#include "plmutil.h"
-
 #include "compiler_warnings.h"
 #if PLM_DCM_USE_DCMTK
 #include "dcmtk_loader.h"
 #include "dcmtk_save.h"
 #endif
+#include "rtss.h"
+#include "rtds.h"
 
 void
 Rtds::load_dcmtk (const char *dicom_dir)

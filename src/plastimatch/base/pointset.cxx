@@ -8,11 +8,11 @@
 #include <string.h>
 #include <math.h>
 
-#include "plmbase.h"
-
 #include "file_util.h"
 #include "plm_math.h"
+#include "pointset.h"
 #include "print_and_exit.h"
+#include "pstring.h"
 #include "string_util.h"
 
 template<class T>

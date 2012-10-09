@@ -10,12 +10,10 @@
 #include <iostream>
 #include <sstream>
 
-#include "plmbase.h"
-#include "plmdose.h"
-
 #include "plm_math.h"
 #include "print_and_exit.h"
 #include "string_util.h"
+#include "wed_parms.h"
 
 #ifndef NULL
 #define NULL ((void*)0)

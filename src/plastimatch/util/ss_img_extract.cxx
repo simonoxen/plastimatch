@@ -5,13 +5,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "itkImage.h"
 #include "itkAndConstantToImageFilter.h"
 
-#include "plmbase.h"
-
+#include "itk_image.h"
+#include "plm_image.h"
 #include "print_and_exit.h"
+#include "ss_img_extract.h"
 
 UCharImageType::Pointer
 ss_img_extract_bit (UInt32ImageType::Pointer image, unsigned int bit)

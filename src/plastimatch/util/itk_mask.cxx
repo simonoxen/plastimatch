@@ -4,7 +4,7 @@
 #include "plmutil_config.h"
 #include "itkImageRegionIterator.h"
 
-#include "plmutil.h"
+#include "itk_mask.h"
 
 template <class T>
 T

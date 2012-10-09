@@ -6,8 +6,13 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "plmbase.h"
-#include "plmdose.h"
+#include "aperture.h"
+#include "plm_image.h"
+#include "proton_beam.h"
+#include "proj_matrix.h"
+#include "proton_scene.h"
+#include "rpl_volume.h"
+#include "volume.h"
 
 Proton_Scene::Proton_Scene ()
 {

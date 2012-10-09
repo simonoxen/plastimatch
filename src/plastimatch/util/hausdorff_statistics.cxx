@@ -1,17 +1,16 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-
-#include "plm_config.h"
-#include "plm_HausdorffDistanceImageFilter.h"
 #include "itkImage.h"
+#include "plm_ContourMeanDistanceImageFilter.h"
+#include "plm_HausdorffDistanceImageFilter.h"
 
 #include "hausdorff_statistics.h"
-#include "plm_ContourMeanDistanceImageFilter.h"
 
 template<class T>
 void do_hausdorff (

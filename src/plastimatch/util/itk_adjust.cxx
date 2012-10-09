@@ -5,9 +5,7 @@
 #include <limits>
 #include "itkImageRegionIterator.h"
 
-#include "plmutil.h"
-
-//numeric_limits<float>::min(), numeric_limits<float>::max()
+#include "itk_adjust.h"
 
 void
 itk_adjust (FloatImageType::Pointer image, const Adjustment_list& al)

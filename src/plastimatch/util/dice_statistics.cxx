@@ -12,11 +12,10 @@
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkImageSliceConstIteratorWithIndex.h"
 
-#include "plmbase.h"
-
 #include "compiler_warnings.h"
 #include "dice_statistics.h"
 #include "itk_image.h"
+#include "itk_image_load.h"
 
 class Dice_statistics_private {
 public:

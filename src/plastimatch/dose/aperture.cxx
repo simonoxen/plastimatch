@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "plmdose.h"
+#include "aperture.h"
 
 class Aperture_private {
 public:

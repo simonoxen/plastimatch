@@ -8,10 +8,12 @@
 #include <stdlib.h>
 #include "itkImageRegionIteratorWithIndex.h"
 
-#include "plmbase.h"
-#include "plmutil.h"
-
 #include "compiler_warnings.h"
+#include "itk_directions.h"
+#include "itk_image_type.h"
+#include "plm_image.h"
+#include "plm_image_header.h"
+#include "plm_int.h"
 #include "plm_math.h"
 #include "threshbox.h"
 

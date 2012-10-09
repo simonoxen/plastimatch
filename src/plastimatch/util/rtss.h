@@ -5,9 +5,11 @@
 #define _rtss_h_
 
 #include "plmutil_config.h"
-#include "xio_studyset.h"  /* enum Xio_version */
 
+#include "itk_image_type.h"
+#include "metadata.h"
 #include "pstring.h"
+#include "xio_studyset.h"  /* enum Xio_version */
 
 class Plm_image;
 class Plm_image_header;
