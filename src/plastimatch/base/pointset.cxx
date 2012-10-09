@@ -16,6 +16,16 @@
 #include "string_util.h"
 
 template<class T>
+Pointset<T>::Pointset ()
+{
+}
+
+template<class T>
+Pointset<T>::~Pointset ()
+{
+}
+
+template<class T>
 void
 Pointset<T>::load (const char *fn)
 {

@@ -55,9 +55,12 @@ public:
 
 template<class T>
 class PLMBASE_API Pointset {
-  public:
+public:
+    Pointset();
+    ~Pointset();
+public:
     std::vector<T> point_list;
-  public:
+public:
     void load (const char *fn);
     void load_txt (const char *fn);
     void load_fcsv (const char *fn);
