@@ -43,16 +43,12 @@ Proton_Scene::init (int ray_step)
     /* build projection matrix */
     proj_matrix_set (
         this->pmat,
-        //this->beam->src,
-        //this->beam->isocenter,
         this->beam->get_source_position(),
         this->beam->get_isocenter_position(),
         this->ap->vup,
-        //this->ap->ap_offset,
         this->ap->get_offset(),
         this->ap->ic,
         ps,
-        //this->ap->ires
         this->ap->get_dim()
     );
 
