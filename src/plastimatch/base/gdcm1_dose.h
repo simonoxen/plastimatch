@@ -34,20 +34,6 @@ PLMBASE_C_API void gdcm1_dose_save (
 /* gdcm1_series.cxx */
 PLMBASE_C_API void gdcm1_series_test (char *dicom_dir);
 
-/* gdcm1_rtss.cxx */
-PLMBASE_C_API bool gdcm_rtss_probe (const char *rtss_fn);
-PLMBASE_C_API void gdcm_rtss_load (
-        Rtss *rtss,             /* Output: this gets loaded into */
-        Slice_index *rdd,       /* Output: this gets updated too */
-        Metadata *meta,         /* Output: this gets updated too */
-        const char *rtss_fn    /* Input: the file that gets read */
-);
-PLMBASE_C_API void gdcm_rtss_save (
-        Rtss *rtss,             /* Input: this is what gets saved */
-        Slice_index *rdd,       /* Input: need to look at this too */
-        char *rtss_fn           /* Input: name of file to write to */
-);
 #endif /* GDCM_VERSION_1 */
-
 
 #endif /* _gdcm1_dose_h_ */

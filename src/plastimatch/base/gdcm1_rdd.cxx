@@ -2,21 +2,17 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
+#include <string>
 #include <stdio.h>
 #include <stdlib.h>
-#if defined (commentout)
-#include "gdcmFile.h"
-#include "gdcmFileHelper.h"
-#include "gdcmGlobal.h"
-#include "gdcmSeqEntry.h"
-#include "gdcmSQItem.h"
-#include "gdcmUtil.h"
-#endif
 
-#include "plmbase.h"
+#include "gdcm1_file.h"
+#include "gdcm1_rdd.h"
+#include "gdcm1_series.h"
+#include "gdcm1_util.h"
 #include "plm_math.h"
 #include "plm_uid_prefix.h"
-
+#include "slice_index.h"
 
 void
 gdcm1_load_rdd (

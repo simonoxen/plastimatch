@@ -14,13 +14,15 @@
 #include "gdcmUtil.h"
 #include "gdcmValEntry.h"
 
-#include "plmbase.h"
-#include "plmutil.h"
-
 #include "file_util.h"
+#include "gdcm1_rtss.h"
+#include "gdcm1_util.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "print_and_exit.h"
+#include "rtss_structure.h"
+#include "rtss_structure_set.h"
+#include "slice_index.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */
 #if defined GetCurrentTime
@@ -51,17 +53,16 @@ gdcm_rtss_probe (const char *rtss_fn)
 
 void
 gdcm_rtss_load (
-    Rtss *rtss,                      /* Output: this gets loaded into */
-    Slice_index *rdd,       /* Output: this gets updated too */
-    Metadata *meta,              /* Output: this gets updated too */
-    const char *rtss_fn              /* Input: the file that gets read */
+    Rtss_structure_set *cxt,   /* Output: this gets loaded into */
+    Metadata *meta,            /* Output: this gets updated too */
+    Slice_index *rdd,          /* Output: this gets updated too */
+    const char *rtss_fn        /* Input: the file that gets read */
 )
 {
     gdcm::File *rtss_file = new gdcm::File;
     gdcm::SeqEntry *seq;
     gdcm::SQItem *item;
     std::string tmp;
-    Rtss_structure_set *cxt = rtss->m_cxt;
 
     rtss_file->SetMaxSizeLoadEntry (0xffff);
     rtss_file->SetFileName (rtss_fn);
@@ -310,17 +311,16 @@ plm_ComputeGroup0002Length (gdcm::File *gf)
 
 void
 gdcm_rtss_save (
-    Rtss *rtss,                    /* Input: this is what gets saved */
-    Slice_index *rdd,     /* Input: need to look at this too */
-    char *rtss_fn                  /* Input: name of file to write to */
+    Rtss_structure_set *cxt,   /* Input: this is what gets saved */
+    Metadata *meta,            /* Input: need to look at this too */
+    Slice_index *rdd,          /* Input: need to look at this too */
+    char *rtss_fn              /* Input: name of file to write to */
 )
 {
     int k;
     gdcm::File *gf = new gdcm::File ();
     const std::string &current_date = gdcm::Util::GetCurrentDate();
     const std::string &current_time = gdcm::Util::GetCurrentTime();
-
-    Rtss_structure_set *cxt = rtss->m_cxt;
 
     printf ("Hello from gdcm_rtss_save\n");
 
@@ -371,17 +371,17 @@ gdcm_rtss_save (
     /* StationName */
     gf->InsertValEntry ("", 0x0008, 0x1010);
     /* SeriesDescription */
-    set_gdcm_file_from_metadata (gf, &rtss->m_meta, 0x0008, 0x103e);
+    set_gdcm_file_from_metadata (gf, meta, 0x0008, 0x103e);
     /* ManufacturersModelName */
     gf->InsertValEntry ("Plastimatch", 0x0008, 0x1090);
     /* PatientsName */
-    set_gdcm_file_from_metadata (gf, &rtss->m_meta, 0x0010, 0x0010);
+    set_gdcm_file_from_metadata (gf, meta, 0x0010, 0x0010);
     /* PatientID */
-    set_gdcm_file_from_metadata (gf, &rtss->m_meta, 0x0010, 0x0020);
+    set_gdcm_file_from_metadata (gf, meta, 0x0010, 0x0020);
     /* PatientsBirthDate */
     gf->InsertValEntry ("", 0x0010, 0x0030);
     /* PatientsSex */
-    set_gdcm_file_from_metadata (gf, &rtss->m_meta, 0x0010, 0x0040);
+    set_gdcm_file_from_metadata (gf, meta, 0x0010, 0x0040);
     /* SoftwareVersions */
     gf->InsertValEntry (PLASTIMATCH_VERSION_STRING, 0x0018, 0x1020);
     /* PatientPosition */

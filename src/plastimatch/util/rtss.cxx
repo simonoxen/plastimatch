@@ -7,6 +7,7 @@
 
 #if GDCM_VERSION_1
 #include "gdcm1_dose.h"
+#include "gdcm1_rtss.h"
 #endif
 #include "cxt_extract.h"
 #include "cxt_io.h"
@@ -220,7 +221,7 @@ Rtss::load_gdcm_rtss (const char *input_fn, Slice_index *rdd)
 {
 #if GDCM_VERSION_1
     this->m_cxt = new Rtss_structure_set;
-    gdcm_rtss_load (this, rdd, &this->m_meta, input_fn);
+    gdcm_rtss_load (this->m_cxt, &this->m_meta, rdd, input_fn);
 #endif
 }
 
@@ -317,7 +318,7 @@ Rtss::save_gdcm_rtss (
     snprintf (fn, _MAX_PATH, "%s/%s", output_dir, "ss.dcm");
 
 #if GDCM_VERSION_1
-    gdcm_rtss_save (this, rdd, fn);
+    gdcm_rtss_save (this->m_cxt, &this->m_meta, rdd, fn);
 #else
     /* GDCM 2 not implemented -- you're out of luck. */
 #endif

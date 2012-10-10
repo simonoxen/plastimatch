@@ -5,9 +5,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "plmbase.h"
-
 #include "xpm_p.h"
+#include "xpm.h"
 
 /* -----------
      Canvas

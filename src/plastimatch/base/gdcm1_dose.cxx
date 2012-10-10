@@ -2,9 +2,10 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
+#include <algorithm>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <algorithm>
 #include "gdcmBinEntry.h"
 #include "gdcmFile.h"
 #include "gdcmFileHelper.h"
@@ -13,14 +14,19 @@
 #include "gdcmSQItem.h"
 #include "gdcmUtil.h"
 
-#include "plmbase.h"
-
 #include "file_util.h"
+#include "gdcm1_dose.h"
+#include "gdcm1_util.h"
+#include "gdcm1_series.h"
+#include "itk_image_stats.h"
 #include "logfile.h"
 #include "print_and_exit.h"
+#include "plm_image.h"
+#include "plm_image_header.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
-
+#include "slice_index.h"
+#include "volume.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */
 #if defined GetCurrentTime

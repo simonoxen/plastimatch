@@ -4,6 +4,8 @@
 #ifndef _xpm_p_h_
 #define _xpm_p_h_
 
+#include "xpm.h"
+
 class Xpm_canvas_private {
 public:
     int width;          /* Image Width                 */

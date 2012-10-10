@@ -8,18 +8,18 @@
 #include "dcmtk/ofstd/ofstream.h"
 #include "dcmtk/dcmdata/dctk.h"
 
-#include "plmbase.h"
-
 #include "dcmtk_file.h"
 #include "dcmtk_save.h"
 #include "dcmtk_series.h"
 #include "dcmtk_uid.h"
 #include "file_util.h"
+#include "plm_image.h"
 #include "plm_math.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "print_and_exit.h"
 #include "string_util.h"
+#include "volume.h"
 
 Plm_image*
 Dcmtk_series::load_plm_image (void)
