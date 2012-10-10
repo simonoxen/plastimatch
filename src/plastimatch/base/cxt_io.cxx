@@ -6,23 +6,27 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "plmbase.h"
-#include "plmutil.h"
-
+#include "cxt_io.h"
 #include "file_util.h"
 #include "plm_math.h"
 #include "pstring.h"
+#include "rtss.h"
+#include "rtss_structure.h"
+#include "rtss_structure_set.h"
+#include "slice_index.h"
 
 void
 cxt_load (
-    Rtss *rtss,                    /* Output: load into this object */
-    Slice_index *rdd,     /* Output: Also set some values here */
-    const char *cxt_fn             /* Input: file to load from */
+//    Rtss *rtss,                    /* Output: load into this object */
+    Rtss_structure_set *cxt,         /* Output: load into this object */
+    Metadata *meta,                  /* Output: load into this object */
+    Slice_index *rdd,                /* Output: Also set some values here */
+    const char *cxt_fn               /* Input: file to load from */
 )
 {
     FILE* fp;
     Rtss_polyline* curr_contour;
-    Rtss_structure_set *cxt = rtss->m_cxt;
+//    Rtss_structure_set *cxt = rtss->m_cxt;
 
     float val_x = 0;
     float val_y = 0;
@@ -75,15 +79,15 @@ cxt_load (
 	    /* fall through */
 	}
         else if (biseqcstr (tag, "PATIENT_NAME")) {
-	    rtss->m_meta.set_metadata (0x0010, 0x0010, 
+	    meta->set_metadata (0x0010, 0x0010, 
 		(const char*) val->data);
 	}
         else if (biseqcstr (tag, "PATIENT_ID")) {
-	    rtss->m_meta.set_metadata (0x0010, 0x0020, 
+	    meta->set_metadata (0x0010, 0x0020, 
 		(const char*) val->data);
 	}
         else if (biseqcstr (tag, "PATIENT_SEX")) {
-	    rtss->m_meta.set_metadata (0x0010, 0x0040, 
+	    meta->set_metadata (0x0010, 0x0040, 
 		(const char*) val->data);
 	}
         else if (biseqcstr (tag, "STUDY_ID")) {
@@ -258,14 +262,14 @@ not_successful:
 
 void
 cxt_save (
-    Rtss *rtss,                  /* Input: Structure set to save from */
-    Slice_index *rdd,   /* Input: Also save some values from here */
-    const char* cxt_fn,          /* Input: File to save to */
-    bool prune_empty             /* Input: Should we prune empty structures? */
+    Rtss_structure_set *cxt,    /* Input: load into this object */
+    Metadata *meta,             /* Input: load into this object */
+    Slice_index *rdd,           /* Input: Also save some values from here */
+    const char* cxt_fn,         /* Input: File to save to */
+    bool prune_empty            /* Input: Should we prune empty structures? */
 )
 {
     FILE *fp;
-    Rtss_structure_set *cxt = rtss->m_cxt;
 
     /* Prepare output directory */
     make_directory_recursive (cxt_fn);
@@ -295,11 +299,11 @@ cxt_save (
 	fprintf (fp, "CT_FRAME_OF_REFERENCE_UID\n");
     }
     fprintf (fp, "PATIENT_NAME %s\n",
-	rtss->m_meta.get_metadata (0x0010, 0x0010).c_str());
+	meta->get_metadata (0x0010, 0x0010).c_str());
     fprintf (fp, "PATIENT_ID %s\n",
-	rtss->m_meta.get_metadata (0x0010, 0x0020).c_str());
+	meta->get_metadata (0x0010, 0x0020).c_str());
     fprintf (fp, "PATIENT_SEX %s\n",
-	rtss->m_meta.get_metadata (0x0010, 0x0040).c_str());
+	meta->get_metadata (0x0010, 0x0040).c_str());
     if (rdd && rdd->m_study_id.not_empty()) {
 	fprintf (fp, "STUDY_ID %s\n", (const char*) rdd->m_study_id);
     } else {

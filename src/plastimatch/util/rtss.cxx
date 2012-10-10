@@ -212,7 +212,7 @@ void
 Rtss::load_cxt (const Pstring &input_fn, Slice_index *rdd)
 {
     this->m_cxt = new Rtss_structure_set;
-    cxt_load (this, rdd, (const char*) input_fn);
+    cxt_load (this->m_cxt, &this->m_meta, rdd, (const char*) input_fn);
 }
 
 void
@@ -289,7 +289,8 @@ Rtss::save_cxt (
     bool prune_empty
 )
 {
-    cxt_save (this, rdd, (const char*) cxt_fn, prune_empty);
+    cxt_save (this->m_cxt, &this->m_meta, rdd, (const char*) cxt_fn, 
+        prune_empty);
 }
 
 void
