@@ -7,12 +7,13 @@
 #include <string.h>
 #include <math.h>
 
-#include "plmbase.h"
-
+#include "interpolate.h"
 #include "interpolate_macros.h"
 #include "plm_math.h"
 #include "plmbase_config.h"
 #include "volume_macros.h"
+#include "vf.h"
+#include "volume.h"
 
 Volume*
 vf_warp (Volume *vout, Volume *vin, Volume *vf)

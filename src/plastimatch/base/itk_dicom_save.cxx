@@ -12,10 +12,14 @@
 #include "itkNumericSeriesFileNames.h"
 #include "itkImageSeriesWriter.h"
 
-#include "plmbase.h"
-
+#include "dcm_util.h"
+#include "gdcm1_util.h"
+#include "gdcm2_util.h"
+#include "itk_dicom_save.h"
 #include "make_string.h"
+#include "metadata.h"
 #include "plm_uid_prefix.h"
+#include "slice_index.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */
 #if defined GetCurrentTime

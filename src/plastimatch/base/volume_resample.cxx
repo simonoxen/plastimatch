@@ -7,10 +7,13 @@
 #include <string.h>
 #include <math.h>
 
-#include "plmbase.h"
-
+#include "interpolate.h"
 #include "interpolate_macros.h"
+#include "plm_int.h"
 #include "plm_math.h"
+#include "volume.h"
+#include "volume_header.h"
+#include "volume_resample.h"
 
 /* Nearest neighbor interpolation */
 static Volume*

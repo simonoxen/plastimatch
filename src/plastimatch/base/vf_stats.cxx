@@ -9,8 +9,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "plmbase.h"
-
+#include "vf_stats.h"
+#include "volume.h"
 
 void
 vf_analyze (Volume* vol)

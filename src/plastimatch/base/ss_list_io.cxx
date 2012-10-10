@@ -6,10 +6,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "plmbase.h"
-
 #include "file_util.h"
 #include "print_and_exit.h"
+#include "rtss_structure.h"
+#include "rtss_structure_set.h"
+#include "ss_list_io.h"
 
 Rtss_structure_set*
 ss_list_load (Rtss_structure_set* cxt, const char* ss_list_fn)

@@ -2,15 +2,13 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
-#include <stdio.h>
-#include <stdlib.h>
 #include <math.h>
-
-#include "plmbase.h"
+#include <stdlib.h>
+#include <stdio.h>
 
 #include "file_util.h"
 #include "plm_math.h"
-
+#include "proj_matrix.h"
 
 Proj_matrix::Proj_matrix ()
 {

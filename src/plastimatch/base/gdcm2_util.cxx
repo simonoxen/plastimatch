@@ -8,7 +8,8 @@
 #include "gdcmSystem.h"
 #include "gdcmUIDGenerator.h"
 
-#include "plmbase.h"
+#include "gdcm2_util.h"
+#include "metadata.h"
 
 namespace gdcm {
     class File;

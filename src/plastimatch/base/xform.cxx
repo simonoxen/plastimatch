@@ -4,19 +4,29 @@
 #include "plmbase_config.h"
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include "itkArray.h"
 #include "itkResampleImageFilter.h"
 #include "itkBSplineResampleImageFunction.h"
 #include "itkTransformFileWriter.h"
 #include "itkTransformFileReader.h"
 
-#include "plmbase.h"
-
+#include "bspline_interpolate.h"
+#include "bspline_xform.h"
+#include "itk_image_load.h"
+#include "itk_image_save.h"
+#include "itk_resample.h"
 #include "logfile.h"
+#include "mha_io.h"
+#include "plm_image_header.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
+#include "pstring.h"
 #include "string_util.h"
+#include "volume.h"
+#include "volume_header.h"
+#include "volume_resample.h"
+#include "xform.h"
+#include "xform_legacy.h"
 
 static void
 itk_bsp_set_grid_img (Xform *xf,

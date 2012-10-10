@@ -5,7 +5,8 @@
 #include "itkImage.h"
 #include "itkOrientImageFilter.h"
 
-#include "plmbase.h"
+#include "itk_image_type.h"
+#include "itk_image_stats.h"
 
 /* -----------------------------------------------------------------------
    Statistics like min, max, etc.

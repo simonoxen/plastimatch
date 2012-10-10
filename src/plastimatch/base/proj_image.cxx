@@ -6,11 +6,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "plmbase.h"
-
 #include "file_util.h"
+#include "hnd_io.h"
 #include "plm_math.h"
 #include "plm_path.h"
+#include "proj_image.h"
+#include "proj_matrix.h"
 
 Proj_image::Proj_image ()
 {

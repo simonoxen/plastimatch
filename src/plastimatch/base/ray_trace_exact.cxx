@@ -2,16 +2,17 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 #if (OPENMP_FOUND)
 #include <omp.h>
 #endif
 
-#include "plmbase.h"
-
 #include "plm_math.h"
+#include "ray_trace.h"
+#include "volume.h"
+#include "volume_limit.h"
 
 void
 ray_trace_exact_init_loopvars (

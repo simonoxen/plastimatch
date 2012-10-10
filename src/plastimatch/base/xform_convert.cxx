@@ -2,11 +2,12 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
-#include <time.h>
 
-#include "plmbase.h"
-
+#include "plm_image_header.h"
+#include "plm_int.h"
 #include "print_and_exit.h"
+#include "xform.h"
+#include "xform_convert.h"
 
 void 
 xform_convert (Xform_convert *xfc)

@@ -9,8 +9,9 @@
 #include "itkVectorResampleImageFilter.h"
 #include "itkNearestNeighborInterpolateImageFunction.h"
 
-#include "plmbase.h"
-
+#include "itk_image_type.h"
+#include "itk_resample.h"
+#include "plm_image_header.h"
 
 template <class T>
 T

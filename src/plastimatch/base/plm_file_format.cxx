@@ -9,11 +9,14 @@
 #include <itksys/SystemTools.hxx>
 #include <itkImageIOBase.h>
 
-#include "plmbase.h"
-
 #include "file_util.h"
+#include "gdcm1_dose.h"
+#include "gdcm1_rtss.h"
+#include "itk_image.h"
+#include "plm_file_format.h"
 #include "pstring.h"
 #include "string_util.h"
+#include "xio_dir.h"
 
 static int
 is_xio_directory (const char* path)

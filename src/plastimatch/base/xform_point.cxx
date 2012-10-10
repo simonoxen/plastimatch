@@ -4,11 +4,13 @@
 #include "plmbase_config.h"
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
-#include "plmbase.h"
-
+#include "bspline_interpolate.h"
+#include "itk_image_type.h"
+#include "itk_point.h"
 #include "print_and_exit.h"
+#include "xform.h"
+#include "xform_point.h"
 
 /* -----------------------------------------------------------------------
    Transform points

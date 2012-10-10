@@ -5,11 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "plmbase.h"
+#include "dcm_util.h"
 #include "plm_math.h"
-#include "plm_uid_prefix.h"
-#include "plm_version.h"
-
+#include "slice_index.h"
 
 Slice_index::Slice_index ()
 {

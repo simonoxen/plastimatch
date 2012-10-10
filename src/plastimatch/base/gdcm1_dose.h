@@ -4,12 +4,6 @@
 #ifndef _gdcm1_dose_h_
 #define _gdcm1_dose_h_
 
-/**
-*  You probably do not want to #include this header directly.
- *
- *   Instead, it is preferred to #include "plmbase.h"
- */
-
 #include "plmbase_config.h"
 
 class Metadata;

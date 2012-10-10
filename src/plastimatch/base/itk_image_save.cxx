@@ -18,9 +18,10 @@
 #include <sys/types.h>
 #endif
 
-#include "plmbase.h"
-
 #include "file_util.h"
+#include "itk_dicom_save.h"
+#include "itk_image_cast.h"
+#include "itk_image_save.h"
 #include "logfile.h"
 
 /* -----------------------------------------------------------------------

@@ -2,24 +2,28 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <vector>
-#include <string>
 #include <algorithm>
 #include <fstream>
-
+#include <string>
+#include <vector>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <itksys/SystemTools.hxx>
 #include <itksys/Directory.hxx>
 #include <itksys/RegularExpression.hxx>
 #include "itkDirectory.h"
 #include "itkRegularExpressionSeriesFileNames.h"
 
-#include "plmbase.h"
-
 #include "file_util.h"
+#include "metadata.h"
 #include "plm_endian.h"
+#include "plm_image.h"
 #include "print_and_exit.h"
+#include "volume.h"
+#include "xio_ct.h"
+#include "xio_dose.h"
+#include "xio_studyset.h"
 
 #define XIO_DATATYPE_UINT32 5
 

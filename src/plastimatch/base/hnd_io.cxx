@@ -5,14 +5,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "plmbase.h"
-
 #include "compiler_warnings.h"
 #include "file_util.h"
 #include "hnd_io_p.h"
 #include "hnd_io.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
+#include "proj_image.h"
+#include "proj_matrix.h"
 
 #define HND_INTENSITY_MAX (139000)
 

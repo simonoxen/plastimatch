@@ -5,10 +5,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
 
-#include "plmbase.h"
-
+#include "bspline_xform.h"
+#include "plm_int.h"
+#include "volume_header.h"
 
 void
 Volume_header::set_dim (const plm_long dim[3])

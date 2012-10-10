@@ -2,15 +2,14 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-
-#include "plmbase.h"
-
 #include "bstrlib.h"
 #include "bstrwrap.h"
+
 #include "print_and_exit.h"
+#include "xio_plan.h"
 
 void
 xio_plan_get_studyset (const char *filename, char *studyset)

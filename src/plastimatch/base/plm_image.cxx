@@ -9,11 +9,19 @@
 #include "itkMetaDataDictionary.h"
 #include "itkMetaDataObject.h"
 
-#include "plmbase.h"
-
 #include "file_util.h"
+#include "itk_image_cast.h"
+#include "itk_image_load.h"
+#include "itk_image_save.h"
+#include "itk_image_type.h"
+#include "itk_metadata.h"
+#include "mha_io.h"
+#include "plm_image.h"
+#include "plm_image_convert.h"
+#include "plm_image_header.h"
 #include "print_and_exit.h"
 #include "pstring.h"
+#include "volume.h"
 
 Plm_image::Plm_image () {
     this->init ();

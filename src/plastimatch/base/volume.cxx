@@ -7,11 +7,11 @@
 #include <string.h>
 #include <math.h>
 
-#include "plmbase.h"
-
 #include "logfile.h"
+#include "plm_int.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
+#include "volume_header.h"
 #include "volume.h"
 
 #define CONVERT_VOLUME(old_type,new_type,new_type_enum)			\

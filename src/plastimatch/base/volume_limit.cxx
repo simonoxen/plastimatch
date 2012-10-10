@@ -4,8 +4,10 @@
 #include "plmbase_config.h"
 #include <stdio.h>
 
-#include "plmbase.h"
 #include "plm_math.h"
+#include "ray_trace.h"
+#include "volume.h"
+#include "volume_limit.h"
 
 // TODO: All the #defines in base/ray_trace.h need to
 //       be rethought/goaway.

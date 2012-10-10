@@ -8,7 +8,8 @@
 #include "gdcmFile.h"
 #include "gdcmUtil.h"
 
-#include "plmbase.h"
+#include "gdcm1_util.h"
+#include "metadata.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */
 #if defined GetCurrentTime

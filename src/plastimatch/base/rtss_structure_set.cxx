@@ -2,17 +2,19 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
+#include <limits>
 #include <set>
 #include <vector>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-#include "plmbase.h"
-
+#include "plm_image_header.h"
+#include "plm_int.h"
 #include "plm_math.h"
 #include "pstring.h"
-
+#include "rtss_structure.h"
+#include "rtss_structure_set.h"
 
 static void
 assign_random_color (Pstring& color)

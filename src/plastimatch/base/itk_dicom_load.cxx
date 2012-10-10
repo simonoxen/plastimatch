@@ -9,8 +9,7 @@
 #include "itkGDCMSeriesFileNames.h"
 #include "itkImageSeriesReader.h"
 
-#include "plmbase.h"
-
+#include "itk_dicom_load.h"
 #include "logfile.h"
 #include "print_and_exit.h"
 

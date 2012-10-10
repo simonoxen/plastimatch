@@ -3,7 +3,7 @@
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
 
-#include "plmbase.h"
+#include "itk_directions.h"
 
 void
 itk_direction_from_dc (DirectionType* itk_dc, const Direction_cosines& dc)

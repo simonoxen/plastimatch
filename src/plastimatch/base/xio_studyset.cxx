@@ -2,14 +2,14 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <algorithm>
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-#include "plmbase.h"
+#include "xio_studyset.h"
 
 Xio_studyset::Xio_studyset (const char *input_dir)
 {

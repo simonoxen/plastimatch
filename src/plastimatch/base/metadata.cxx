@@ -7,10 +7,10 @@
 #include <string.h>
 #include <gdcmFile.h>
 
-#include "plmbase.h"
-
 #include "bstrlib.h"
+#include "dcm_util.h"
 #include "make_string.h"
+#include "metadata.h"
 
 #if defined (commentout)
 std::string Metadata::KEY_NOT_FOUND = "";

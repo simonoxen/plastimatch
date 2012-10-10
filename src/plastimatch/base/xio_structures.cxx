@@ -14,13 +14,16 @@
 #include "itkRegularExpressionSeriesFileNames.h"
 #include "bstrlib.h"
 
-#include "plmbase.h"
-
 #include "file_util.h"
+#include "metadata.h"
 #include "plm_math.h"
 #include "plm_path.h"
 #include "print_and_exit.h"
 #include "pstring.h"
+#include "rtss_structure.h"
+#include "rtss_structure_set.h"
+#include "xio_ct.h"
+#include "xio_structures.h"
 
 static void
 add_cms_contournames (Rtss_structure_set *rtss, const char *filename)

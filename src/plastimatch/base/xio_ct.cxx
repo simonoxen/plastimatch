@@ -15,10 +15,14 @@
 #include "itkRegularExpressionSeriesFileNames.h"
 #include "bstrlib.h"
 
-#include "plmbase.h"
-
+#include "metadata.h"
 #include "plm_endian.h"
+#include "plm_image.h"
 #include "print_and_exit.h"
+#include "slice_index.h"
+#include "volume.h"
+#include "xio_ct.h"
+#include "xio_studyset.h"
 
 typedef struct xio_ct_header Xio_ct_header;
 struct xio_ct_header {

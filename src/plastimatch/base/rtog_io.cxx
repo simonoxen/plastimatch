@@ -56,8 +56,6 @@
 #include <sys/types.h>
 #endif
 
-#include "plmutil.h"
-
 #include "exchkeys.h"
 
 #define BUFLEN 2048

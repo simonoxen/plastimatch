@@ -5,11 +5,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
-#include "plmbase.h"
-
 #include "bstrlib.h"
+
 #include "print_and_exit.h"
+#include "xio_demographic.h"
 
 Xio_demographic::Xio_demographic (const char *filename)
 {

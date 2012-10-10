@@ -6,10 +6,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "plmbase.h"
-#include "plm_math.h"
-
 #include "compiler_warnings.h"
+#include "mha_io.h"
+#include "plm_int.h"
+#include "plm_math.h"
+#include "proj_matrix.h"
+#include "ray_trace.h"
+#include "rpl_volume.h"
+#include "volume.h"
+#include "volume_limit.h"
 
 //#define UNIFIED_DEPTH_OFFSET 1
 //#define VERBOSE 1

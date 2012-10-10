@@ -4,11 +4,10 @@
 #include "plmbase_config.h"
 #include <string.h>
 
-#include "plmbase.h"
-
 #include "print_and_exit.h"
 #include "string_util.h"
 #include "xform.h"
+#include "xform_legacy.h"
 
 /* -----------------------------------------------------------------------
    Utility functions

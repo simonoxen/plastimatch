@@ -5,17 +5,16 @@
 #include <algorithm>
 #include <string>
 #include <vector>
-#include <stdlib.h>
 #include <stdio.h>
-
+#include <stdlib.h>
 #include <itksys/SystemTools.hxx>
 #include <itksys/Directory.hxx>
 #include <itksys/RegularExpression.hxx>
 #include "itkDirectory.h"
 #include "bstrlib.h"
 
-#include "plmbase.h"
-
+#include "xio_dir.h"
+#include "xio_patient.h"
 
 Xio_patient::Xio_patient (
     const char* path

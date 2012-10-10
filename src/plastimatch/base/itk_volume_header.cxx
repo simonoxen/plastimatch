@@ -7,7 +7,11 @@
 #include <time.h>
 #include "itkImageRegionIterator.h"
 
-#include "plmbase.h"
+#include "bspline_xform.h"
+#include "itk_directions.h"
+#include "itk_image.h"
+#include "itk_volume_header.h"
+#include "plm_int.h"
 
 /* -----------------------------------------------------------------------
    prototypes

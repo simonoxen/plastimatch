@@ -3,9 +3,13 @@
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
 
-#include "plmbase.h"
-
+#include "itk_resample.h"
+#include "plm_image.h"
+#include "plm_image_header.h"
+#include "plm_int.h"
 #include "print_and_exit.h"
+#include "thumbnail.h"
+#include "volume.h"
 
 Thumbnail::Thumbnail ()
 {

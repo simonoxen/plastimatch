@@ -15,18 +15,19 @@
      PURPOSE.  See the above copyright notices for more information.
                                                                                 
 =========================================================================*/
-#include "gdcm1_series_helper_2.h"
+#include "plmbase_config.h"
+#include <algorithm>
+#include <map>
+#include <vector>
+#include <math.h>
+#include <stdio.h>
 #include "gdcmDirList.h"
 #include "gdcmFile.h"
 #include "gdcmDictEntry.h" // for TranslateToKey
 #include "gdcmDebug.h"
 #include "gdcmUtil.h"
 
-#include <math.h>
-#include <vector>
-#include <algorithm>
-#include <map>
-#include <stdio.h>  //for sscanf
+#include "gdcm1_series_helper_2.h"
 
 namespace gdcm
 {

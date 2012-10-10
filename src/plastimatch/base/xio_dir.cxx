@@ -7,16 +7,16 @@
 #include <vector>
 #include <stdlib.h>
 #include <stdio.h>
-
 #include <itksys/SystemTools.hxx>
 #include <itksys/Directory.hxx>
 #include <itksys/RegularExpression.hxx>
 #include "itkDirectory.h"
 #include "bstrlib.h"
 
-#include "plmbase.h"
-
 #include "file_util.h"
+#include "xio_dir.h"
+#include "xio_patient.h"
+#include "xio_plan.h"
 
 /* -----------------------------------------------------------------------
    Private functions

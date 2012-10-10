@@ -3,8 +3,6 @@
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
 
-#include "plmbase.h"
-
 #include "vf_jacobian.h"
 
 Jacobian::Jacobian ()

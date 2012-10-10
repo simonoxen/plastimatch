@@ -2,17 +2,15 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <string.h>
-#include <math.h>
-
-#include "plmbase.h"
 
 #include "file_util.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
+#include "raw_pointset.h"
 
 Raw_pointset*
 pointset_create (void)

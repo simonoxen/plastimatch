@@ -4,9 +4,12 @@
 #include "plmbase_config.h"
 #include <stdio.h>
 
-#include "plmbase.h"
-
+#include "itk_pointset.h"
+#include "pointset.h"
 #include "print_and_exit.h"
+#include "raw_pointset.h"
+#include "xform.h"
+#include "xform_point.h"
 
 /* Don't get confused by the parameterization of the itk pointset.  The 
    PixelType is the "color" of the point, whereas the PointType is the 

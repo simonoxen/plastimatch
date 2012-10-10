@@ -9,7 +9,7 @@
 #include "itkMetaDataDictionary.h"
 #include "itkMetaDataObject.h"
 
-#include "plmbase.h"
+#include "itk_metadata.h"
 
 void 
 itk_metadata_set (
