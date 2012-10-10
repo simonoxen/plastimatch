@@ -10,14 +10,12 @@
 #include "file_util.h"
 #include "plm_math.h"
 #include "pstring.h"
-#include "rtss.h"
 #include "rtss_structure.h"
 #include "rtss_structure_set.h"
 #include "slice_index.h"
 
 void
 cxt_load (
-//    Rtss *rtss,                    /* Output: load into this object */
     Rtss_structure_set *cxt,         /* Output: load into this object */
     Metadata *meta,                  /* Output: load into this object */
     Slice_index *rdd,                /* Output: Also set some values here */
@@ -26,7 +24,6 @@ cxt_load (
 {
     FILE* fp;
     Rtss_polyline* curr_contour;
-//    Rtss_structure_set *cxt = rtss->m_cxt;
 
     float val_x = 0;
     float val_y = 0;
