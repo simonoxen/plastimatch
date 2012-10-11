@@ -18,6 +18,9 @@ if (PLASTIMATCH_FOUND)
   add_executable (plastimatch_example_02 example_02.cxx)
   target_link_libraries (plastimatch_example_02 ${PLASTIMATCH_LIBRARIES})
 
+  add_executable (plastimatch_example_03 example_03.cxx)
+  target_link_libraries (plastimatch_example_03 ${PLASTIMATCH_LIBRARIES})
+
 else ()
   message (STATUS "Warning: plastimatch not found")
 endif ()
