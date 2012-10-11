@@ -10,6 +10,7 @@
 #include "dcmtk_config.h"
 #include "dcmtk/dcmdata/dcuid.h"
 #include "dcmtk/ofstd/ofstream.h"
+
 #include "dcmtk_uid.h"
 
 #if defined (_WIN32)

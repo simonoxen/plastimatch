@@ -9,7 +9,6 @@
 #include <string>
 
 #include "dcmtk_series.h"
-#include "itk_image_type.h"
 
 class Rtss_structure_set;
 class Metadata;
