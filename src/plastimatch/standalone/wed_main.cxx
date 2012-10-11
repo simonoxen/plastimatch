@@ -237,7 +237,7 @@ main (int argc, char* argv[])
     }
 
     Plm_image* ct_vol;
-    Plm_image* dose_vol;
+    //Plm_image* dose_vol;
     Proton_Scene scene;
 
     /* load the patient and insert into the scene */

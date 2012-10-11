@@ -27,6 +27,13 @@ enum Volume_pixel_type {
     PT_UCHAR_VEC_INTERLEAVED
 };
 
+/*! \brief 
+ * The Volume class represents a three-dimensional volume on a uniform 
+ * grid.  The volume can be located at arbitrary positions and orientations 
+ * in space, and can represent most voxel types (float, unsigned char, etc.).
+ * A volume can also support multiple planes, which is used to hold 
+ * three dimensional vector fields, or three-dimensional bitfields.  
+ */
 class PLMBASE_API Volume
 {
   public:
@@ -77,6 +84,19 @@ class PLMBASE_API Volume
         enum Volume_pixel_type vox_type, 
         int vox_planes = 1
     );
+    /*! \brief Get a pointer to the direction cosines.  
+      Direction cosines hold the orientation of a volume. 
+      They are defined as the unit length direction vectors 
+      of the volume in world space as one traverses the pixels
+      in the raw array of values.
+    */
+    float* get_direction_cosines (void);
+    /*! \brief Set the direction cosines.  
+      Direction cosines hold the orientation of a volume. 
+      They are defined as the unit length direction vectors 
+      of the volume in world space as one traverses the pixels
+      in the raw array of values.
+    */
     void set_direction_cosines (const float direction_cosines[9]);
   protected:
     void allocate (void);

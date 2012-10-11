@@ -200,6 +200,12 @@ Volume::create (
 	vh.m_direction_cosines, vox_type, vox_planes);
 }
 
+float*
+Volume::get_direction_cosines ()
+{
+    return this->direction_cosines;
+}
+
 void 
 Volume::set_direction_cosines (
     const float direction_cosines[9]

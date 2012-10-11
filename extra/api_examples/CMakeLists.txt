@@ -11,8 +11,13 @@ find_package (ITK)
 if (PLASTIMATCH_FOUND)
   include (${ITK_USE_FILE})
   include_directories (AFTER ${PLASTIMATCH_INCLUDE_DIRS})
-  add_executable (plastimatch_example main.cxx)
-  target_link_libraries (plastimatch_example ${PLASTIMATCH_LIBRARIES})
+
+  add_executable (plastimatch_example_01 example_01.cxx)
+  target_link_libraries (plastimatch_example_01 ${PLASTIMATCH_LIBRARIES})
+
+  add_executable (plastimatch_example_02 example_02.cxx)
+  target_link_libraries (plastimatch_example_02 ${PLASTIMATCH_LIBRARIES})
+
 else ()
   message (STATUS "Warning: plastimatch not found")
 endif ()
