@@ -79,6 +79,30 @@ Volume::~Volume ()
 }
 
 void
+Volume::init ()
+{
+    for (int d = 0; d < 3; d++) {
+        dim[d] = 0;
+        offset[d] = 0;
+        spacing[d] = 0;
+    }
+    for (int d = 0; d < 9; d++) {
+        inverse_direction_cosines[d] = 0;
+    }
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            proj[i][j] = 0;
+            step[i][j] = 0;
+        }
+    }
+    npix = 0;
+    pix_type = PT_UNDEFINED;
+    vox_planes = 0;
+    pix_size = 0;
+    img = 0;
+}
+
+void
 Volume::allocate (void)
 {
     if (this->pix_type == PT_VF_FLOAT_PLANAR) {

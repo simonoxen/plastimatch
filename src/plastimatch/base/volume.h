@@ -4,12 +4,6 @@
 #ifndef _volume_h_
 #define _volume_h_
 
-/**
-*  You probably do not want to #include this header directly.
- *
- *   Instead, it is preferred to #include "plmbase.h"
- */
-
 #include "plmbase_config.h"
 
 #include "sys/plm_int.h"
@@ -32,7 +26,6 @@ enum Volume_pixel_type {
     PT_VF_FLOAT_PLANAR,
     PT_UCHAR_VEC_INTERLEAVED
 };
-
 
 class PLMBASE_API Volume
 {
@@ -68,27 +61,6 @@ class PLMBASE_API Volume
     );
     ~Volume ();
   public:
-    void init () {
-        for (int d = 0; d < 3; d++) {
-            dim[d] = 0;
-            offset[d] = 0;
-            spacing[d] = 0;
-        }
-        for (int d = 0; d < 9; d++) {
-            inverse_direction_cosines[d] = 0;
-        }
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                proj[i][j] = 0;
-                step[i][j] = 0;
-            }
-        }
-        npix = 0;
-        pix_type = PT_UNDEFINED;
-        vox_planes = 0;
-        pix_size = 0;
-        img = 0;
-    }
     plm_long index (plm_long i, plm_long j, plm_long k) {
         return volume_index (this->dim, i, j, k);
     }
@@ -108,6 +80,7 @@ class PLMBASE_API Volume
     void set_direction_cosines (const float direction_cosines[9]);
   protected:
     void allocate (void);
+    void init ();
 };
 
 PLMBASE_C_API void vf_convert_to_interleaved (Volume* ref);
