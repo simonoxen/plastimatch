@@ -35,12 +35,12 @@ void Dcmtk_save::set_cxt (Rtss_structure_set *cxt, Metadata *cxt_meta)
     this->cxt_meta = cxt_meta;
 }
 
-void Dcmtk_save::set_dose (Plm_image* img)
+void Dcmtk_save::set_dose (Plm_image* img, Metadata *meta)
 {
     this->dose = img;
 }
 
-void Dcmtk_save::set_dose (Volume *vol)
+void Dcmtk_save::set_dose (Volume *vol, Metadata *meta)
 {
     this->dose = new Plm_image ();
     this->dose->set_gpuit (vol);

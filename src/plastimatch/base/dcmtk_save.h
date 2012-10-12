@@ -18,9 +18,9 @@ public:
     Dcmtk_save ();
     ~Dcmtk_save ();
 public:
-    void set_cxt (Rtss_structure_set *cxt, Metadata *cxt_meta);
-    void set_dose (Plm_image* img);
-    void set_dose (Volume *vol);
+    void set_cxt (Rtss_structure_set *cxt, Metadata *cxt_meta = 0);
+    void set_dose (Plm_image* img, Metadata *dose_meta = 0);
+    void set_dose (Volume *vol, Metadata * dose_met = 0);
     void set_image (Plm_image* img);
 public:
     Rtss_structure_set *cxt;

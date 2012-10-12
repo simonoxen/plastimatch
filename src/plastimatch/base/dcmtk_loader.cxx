@@ -124,6 +124,12 @@ Dcmtk_loader::debug (void) const
     }
 }
 
+Metadata *
+Dcmtk_loader::get_metadata ()
+{
+    return &this->img->m_meta;
+}
+
 Volume *
 Dcmtk_loader::get_volume ()
 {
