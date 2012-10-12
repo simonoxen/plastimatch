@@ -11,8 +11,10 @@
 #include "dcmtk_save.h"
 #include "dcmtk_series.h"
 #include "dcmtk_uid.h"
+#include "plm_image.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
+#include "volume.h"
 
 Dcmtk_save::Dcmtk_save ()
 {
@@ -36,6 +38,12 @@ void Dcmtk_save::set_cxt (Rtss_structure_set *cxt, Metadata *cxt_meta)
 void Dcmtk_save::set_dose (Plm_image* img)
 {
     this->dose = img;
+}
+
+void Dcmtk_save::set_dose (Volume *vol)
+{
+    this->dose = new Plm_image ();
+    this->dose->set_gpuit (vol);
 }
 
 void Dcmtk_save::set_image (Plm_image* img)

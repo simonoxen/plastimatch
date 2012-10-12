@@ -37,6 +37,8 @@ public:
 public:
     void init ();
     void debug (void) const;
+    Metadata *get_metadata ();
+    Volume *get_volume ();
     void load_rtss (void);
     void insert_file (const char* fn);
     void insert_directory (const char* fn);

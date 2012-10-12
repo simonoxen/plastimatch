@@ -124,6 +124,13 @@ Dcmtk_loader::debug (void) const
     }
 }
 
+Volume *
+Dcmtk_loader::get_volume ()
+{
+    this->parse_directory ();
+    return this->img->vol();
+}
+
 void
 Dcmtk_loader::parse_directory (void)
 {
@@ -182,6 +189,7 @@ Dcmtk_loader::parse_directory (void)
 	}
     }
 
+#if defined (commentout)
     if (ds_rtss) {
         this->rtss_load ();
     }
@@ -189,4 +197,5 @@ Dcmtk_loader::parse_directory (void)
     if (ds_rtdose) {
         this->rtdose_load ();
     }
+#endif
 }
