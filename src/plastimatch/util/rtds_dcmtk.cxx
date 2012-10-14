@@ -8,6 +8,7 @@
 #include "dcmtk_loader.h"
 #include "dcmtk_save.h"
 #endif
+#include "plm_image.h"
 #include "rtss.h"
 #include "rtds.h"
 
@@ -43,7 +44,7 @@ Rtds::save_dcmtk (const char *dicom_dir)
     if (this->m_rtss && this->m_rtss->m_cxt) {
         ds.set_cxt (this->m_rtss->m_cxt, &this->m_rtss->m_meta);
     }
-    ds.set_dose (this->m_dose);
+    ds.set_dose (this->m_dose->gpuit_float());
 
     ds.save (dicom_dir);
 #endif

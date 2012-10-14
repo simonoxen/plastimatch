@@ -21,6 +21,7 @@ Dcmtk_save::Dcmtk_save ()
     this->cxt = 0;
     this->cxt_meta = 0;
     this->dose = 0;
+    this->dose_meta = 0;
     this->img = 0;
 }
 
@@ -29,21 +30,16 @@ Dcmtk_save::~Dcmtk_save ()
     /* Do nothing, we don't own the data */
 }
 
-void Dcmtk_save::set_cxt (Rtss_structure_set *cxt, Metadata *cxt_meta)
+void Dcmtk_save::set_cxt (Rtss_structure_set *cxt, Metadata *meta)
 {
     this->cxt = cxt;
-    this->cxt_meta = cxt_meta;
-}
-
-void Dcmtk_save::set_dose (Plm_image* img, Metadata *meta)
-{
-    this->dose = img;
+    this->cxt_meta = meta;
 }
 
 void Dcmtk_save::set_dose (Volume *vol, Metadata *meta)
 {
-    this->dose = new Plm_image ();
-    this->dose->set_gpuit (vol);
+    this->dose = vol;
+    this->dose_meta = meta;
 }
 
 void Dcmtk_save::set_image (Plm_image* img)
@@ -62,11 +58,16 @@ Dcmtk_save::save (const char *dicom_dir)
     dcmtk_uid (dsw.ct_series_uid, PLM_UID_PREFIX);
     dcmtk_uid (dsw.rtss_series_uid, PLM_UID_PREFIX);
     dcmtk_uid (dsw.rtss_instance_uid, PLM_UID_PREFIX);
+    dcmtk_uid (dsw.dose_series_uid, PLM_UID_PREFIX);
+    dcmtk_uid (dsw.dose_instance_uid, PLM_UID_PREFIX);
 
     if (this->img) {
         this->save_image (&dsw, dicom_dir);
     }
     if (this->cxt) {
         this->save_rtss (&dsw, dicom_dir);
+    }
+    if (this->dose) {
+        this->save_dose (&dsw, dicom_dir);
     }
 }

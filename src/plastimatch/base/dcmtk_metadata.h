@@ -11,7 +11,7 @@ class DcmTagKey;
 class Metadata;
 
 void
-dcmtk_set_metadata (
+dcmtk_put_metadata (
     DcmDataset *dataset, 
     const Metadata *meta, 
     const DcmTagKey& tagkey, 

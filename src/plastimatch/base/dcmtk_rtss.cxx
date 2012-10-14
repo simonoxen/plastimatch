@@ -244,12 +244,12 @@ Dcmtk_save::save_rtss (
     dataset->putAndInsertString (DCM_InstitutionName, "");
     dataset->putAndInsertString (DCM_ReferringPhysicianName, "");
     dataset->putAndInsertString (DCM_StationName, "");
-    dcmtk_set_metadata (dataset, this->cxt_meta, DCM_SeriesDescription, "");
+    dcmtk_put_metadata (dataset, this->cxt_meta, DCM_SeriesDescription, "");
     dataset->putAndInsertString (DCM_ManufacturerModelName, "Plastimatch");
-    dcmtk_set_metadata (dataset, this->cxt_meta, DCM_PatientName, "");
-    dcmtk_set_metadata (dataset, this->cxt_meta, DCM_PatientID, "");
+    dcmtk_put_metadata (dataset, this->cxt_meta, DCM_PatientName, "");
+    dcmtk_put_metadata (dataset, this->cxt_meta, DCM_PatientID, "");
     dataset->putAndInsertString (DCM_PatientBirthDate, "");
-    dcmtk_set_metadata (dataset, this->cxt_meta, DCM_PatientSex, "O");
+    dcmtk_put_metadata (dataset, this->cxt_meta, DCM_PatientSex, "O");
     dataset->putAndInsertString (DCM_SoftwareVersions,
         PLASTIMATCH_VERSION_STRING);
 
@@ -261,7 +261,7 @@ Dcmtk_save::save_rtss (
 
     dataset->putAndInsertString (DCM_StudyInstanceUID, dsw->study_uid);
     dataset->putAndInsertString (DCM_SeriesInstanceUID, dsw->rtss_series_uid);
-    dcmtk_set_metadata (dataset, this->cxt_meta, DCM_StudyID, "");
+    dcmtk_put_metadata (dataset, this->cxt_meta, DCM_StudyID, "");
     dataset->putAndInsertString (DCM_SeriesNumber, "103");
     dataset->putAndInsertString (DCM_InstanceNumber, "1");
     dataset->putAndInsertString (DCM_StructureSetLabel, "AutoSS");

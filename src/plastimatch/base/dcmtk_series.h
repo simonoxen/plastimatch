@@ -47,6 +47,8 @@ public:
     char ct_series_uid[100];
     char rtss_instance_uid[100];
     char rtss_series_uid[100];
+    char dose_instance_uid[100];
+    char dose_series_uid[100];
     std::vector<Dcmtk_slice_data> slice_data;
 };
 

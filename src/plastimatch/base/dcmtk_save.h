@@ -18,19 +18,21 @@ public:
     Dcmtk_save ();
     ~Dcmtk_save ();
 public:
-    void set_cxt (Rtss_structure_set *cxt, Metadata *cxt_meta = 0);
-    void set_dose (Plm_image* img, Metadata *dose_meta = 0);
-    void set_dose (Volume *vol, Metadata * dose_met = 0);
+    void set_cxt (Rtss_structure_set *cxt, Metadata *meta = 0);
+    void set_dose (Volume *vol, Metadata *meta = 0);
     void set_image (Plm_image* img);
 public:
     Rtss_structure_set *cxt;
     Metadata *cxt_meta;
-    Plm_image* dose;
+    Volume *dose;
+    Metadata *dose_meta;
     Plm_image* img;
 public:
     void save (const char *dicom_dir);
     void save_image (Dcmtk_study_writer *dsw, const char *dicom_dir);
     void save_rtss (Dcmtk_study_writer *dsw, const char *dicom_dir);
+    void save_dose (const Dcmtk_study_writer *dsw,
+        const char *dicom_dir);
 };
 
 #endif

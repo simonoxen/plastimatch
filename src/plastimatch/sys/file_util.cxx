@@ -130,6 +130,12 @@ make_directory_recursive (const char *dirname)
     free (tmp);
 }
 
+void
+make_directory_recursive (const std::string& dirname)
+{
+    make_directory_recursive (dirname.c_str());
+}
+
 #if 0
 void
 make_directory_recursive (const Pstring& filename)
