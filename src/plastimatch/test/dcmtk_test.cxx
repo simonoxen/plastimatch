@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "compiler_warnings.h"
 #include "dcmtk_loader.h"
 
 #if defined (GCS_FIX)
@@ -37,6 +38,7 @@ int
 main (int argc, char *argv[])
 {
     char *dicom_dir;
+    UNUSED_VARIABLE (dicom_dir);
     if (argc == 2) {
 	dicom_dir = argv[1];
     } else {

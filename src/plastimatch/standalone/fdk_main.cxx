@@ -21,6 +21,7 @@
 #include "print_and_exit.h"
 #include "proj_image_dir.h"
 #include "threading.h"
+#include "volume.h"
 
 int 
 main (int argc, char* argv[])

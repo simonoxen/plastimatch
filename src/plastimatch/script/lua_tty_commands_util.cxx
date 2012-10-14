@@ -138,9 +138,6 @@ sort_list (char** c, int n)
 void*
 get_obj_ptr_from_name (lua_State* L, const char* name)
 {
-    int argc;
-    char** argv;
-
     void* ptr = NULL;
     lua_pushvalue (L, LUA_GLOBALSINDEX);
     lua_pushnil (L);
