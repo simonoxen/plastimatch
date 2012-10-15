@@ -84,6 +84,11 @@ class PLMBASE_API Volume
         enum Volume_pixel_type vox_type, 
         int vox_planes = 1
     );
+    /*! \brief Make a copy of the volume */
+    Volume* clone ();
+    /*! \brief Convert the image voxels to a new data type */
+    void convert (Volume_pixel_type new_type);
+
     /*! \brief Get a pointer to the direction cosines.  
       Direction cosines hold the orientation of a volume. 
       They are defined as the unit length direction vectors 

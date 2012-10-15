@@ -23,6 +23,7 @@
 #include "print_and_exit.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
+#include "plm_int.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "slice_index.h"
@@ -403,16 +404,6 @@ gdcm1_dose_save (
     tmp->convert (PLM_IMG_TYPE_ITK_FLOAT);
     itk_image_stats (tmp->m_itk_float, &min_val, &max_val, &avg, 
 	&non_zero, &num_vox);
-
-#ifndef UINT32_T_MAX
-#define UINT32_T_MAX (0xffffffff)
-#endif
-#ifndef INT32_T_MAX
-#define INT32_T_MAX (0x7fffffff)
-#endif
-#ifndef INT32_T_MIN
-#define INT32_T_MIN (-0x7fffffff - 1)
-#endif
 
     float dose_scale;
 

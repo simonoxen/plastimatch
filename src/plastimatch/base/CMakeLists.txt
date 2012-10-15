@@ -77,6 +77,7 @@ set (PLMBASE_LIBRARY_SRC
   volume_header.cxx
   volume_limit.cxx
   volume_resample.cxx
+  volume_stats.cxx
   volume.cxx
   xform.cxx
   xform_convert.cxx

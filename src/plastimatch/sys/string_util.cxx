@@ -196,8 +196,10 @@ string_format (const std::string &fmt, ...)
         va_start(ap, fmt);
         int n = vsnprintf((char *)str.c_str(), size, fmt.c_str(), ap);
         va_end(ap);
-        if (n > -1 && n < size)
+        if (n > -1 && n < size) {
+            str = std::string (str.c_str());  /* Strip excess padding */
             return str;
+        }
         if (n > -1)
             size=n+1;
         else

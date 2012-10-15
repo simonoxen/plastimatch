@@ -33,6 +33,17 @@ typedef unsigned __int64 uint64_t;
 #include <stdint.h>
 #endif
 
+/* These are non-standard */
+#ifndef UINT32_T_MAX
+#define UINT32_T_MAX (0xffffffff)
+#endif
+#ifndef INT32_T_MAX
+#define INT32_T_MAX (0x7fffffff)
+#endif
+#ifndef INT32_T_MIN
+#define INT32_T_MIN (-0x7fffffff - 1)
+#endif
+
 /* The data type plm_long is a signed integer with the same size as size_t.
    It is equivalent to the POSIX idea of ssize_t.  It is used for 
    OpenMP 2.0 loop variables which must be signed. */

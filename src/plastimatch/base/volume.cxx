@@ -279,6 +279,11 @@ volume_clone (Volume* ref)
     return vout;
 }
 
+Volume*
+Volume::clone () {
+    return volume_clone (this);
+}
+
 void
 volume_convert_to_float (Volume* ref)
 {
@@ -564,6 +569,44 @@ vf_convert_to_planar (Volume* ref)
 	/* Can't convert this */
 	fprintf (stderr, "Sorry, unsupportd conversion to VF\n");
 	exit (-1);
+	break;
+    }
+}
+
+void
+Volume::convert (Volume_pixel_type new_type)
+{
+    switch (new_type) {
+    case PT_UCHAR:
+        volume_convert_to_uchar (this);
+        break;
+    case PT_SHORT:
+        volume_convert_to_short (this);
+        break;
+    case PT_UINT16:
+        volume_convert_to_uint16 (this);
+        break;
+    case PT_UINT32:
+        volume_convert_to_uint32 (this);
+        break;
+    case PT_INT32:
+        volume_convert_to_int32 (this);
+        break;
+    case PT_FLOAT:
+        volume_convert_to_float (this);
+        break;
+    case PT_VF_FLOAT_INTERLEAVED:
+        vf_convert_to_interleaved (this);
+        break;
+    case PT_VF_FLOAT_PLANAR:
+        vf_convert_to_planar (this);
+        break;
+    case PT_UCHAR_VEC_INTERLEAVED:
+    default:
+	/* Can't convert this */
+	print_and_exit (
+            "Sorry, unsupported conversion type to %d in Volume::convert()\n",
+            new_type);
 	break;
     }
 }

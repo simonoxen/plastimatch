@@ -309,7 +309,6 @@ Dcmtk_save::save_image (
     const char *dicom_dir)
 {
     Dcmtk_slice_data dsd;
-//    dsd.rtds = rtds;
     dsd.vol = this->img->gpuit_float();
 
     dsd.slice_size = dsd.vol->dim[0] * dsd.vol->dim[1];
