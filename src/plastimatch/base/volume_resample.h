@@ -4,12 +4,6 @@
 #ifndef _volume_resample_h_
 #define _volume_resample_h_
 
-/**
-*  You probably do not want to #include this header directly.
- *
- *   Instead, it is preferred to #include "plmbase.h"
- */
-
 #include "plmbase_config.h"
 
 PLMBASE_API Volume* volume_resample (

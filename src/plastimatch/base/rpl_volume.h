@@ -4,12 +4,6 @@
 #ifndef _rpl_volume_h_
 #define _rpl_volume_h_
 
-/**
-*  You probably do not want to #include this header directly.
- *
- *   Instead, it is preferred to #include "plmbase.h"
- */
-
 #include "plmbase_config.h"
 
 class Proj_matrix;
@@ -47,6 +41,5 @@ PLMBASE_C_API double rpl_volume_get_rgdepth (
         double* ct_xyz         /* I: location of voxel in world space */
 );
 PLMBASE_C_API void rpl_volume_save (Rpl_volume *rpl_vol, char *filename);
-
 
 #endif

@@ -4,12 +4,6 @@
 #ifndef _bspline_interpolate_h_
 #define _bspline_interpolate_h_
 
-/**
-*  You probably do not want to #include this header directly.
- *
- *   Instead, it is preferred to #include "plmbase.h"
- */
-
 #include "plmbase_config.h"
 #include "sys/plm_int.h"
 

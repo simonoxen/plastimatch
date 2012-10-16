@@ -4,12 +4,6 @@
 #ifndef _raw_pointset_h_
 #define _raw_pointset_h_
 
-/**
-*  You probably do not want to #include this header directly.
- *
- *   Instead, it is preferred to #include "plmbase.h"
- */
-
 #include "plmbase_config.h"
 
 typedef struct raw_pointset Raw_pointset;

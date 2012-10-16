@@ -4,12 +4,6 @@
 #ifndef _mha_io_h_
 #define _mha_io_h_
 
-/**
-*  You probably do not want to #include this header directly.
- *
- *   Instead, it is preferred to #include "plmbase.h"
- */
-
 #include "plmbase_config.h"
 
 class Volume;

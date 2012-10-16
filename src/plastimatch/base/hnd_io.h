@@ -4,12 +4,6 @@
 #ifndef _hnd_io_h_
 #define _hnd_io_h_
 
-/**
-*  You probably do not want to #include this header directly.
- *
- *   Instead, it is preferred to #include "plmbase.h"
- */
-
 #include "plmbase_config.h"
 
 class Proj_image;
