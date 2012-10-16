@@ -59,6 +59,7 @@ set (PLMBASE_LIBRARY_SRC
   proj_image.cxx
   proj_image_dir.cxx
   proj_matrix.cxx
+  proj_volume.cxx proj_volume.h
   raw_pointset.cxx
   ray_trace_exact.cxx
   ray_trace_probe.cxx
