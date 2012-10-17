@@ -44,6 +44,8 @@ Wed_Parms::Wed_Parms ()
     this->have_ic = false;
     this->ic[0] = 99.5f;
     this->ic[1] = 99.5f;
+    this->ap_spacing[0] = 1.;
+    this->ap_spacing[1] = 1.;
     this->ap_offset = 100;
 }
 
@@ -91,12 +93,20 @@ Wed_Parms::set_key_val (
         /* [BEAM] */
     case 1:
         if (!strcmp (key, "pos")) {
-            if (sscanf (val, "%f %f %f", &(this->src[0]), &(this->src[1]), &(this->src[2])) != 3) {
+            if (sscanf (val, "%f %f %f", 
+                    &(this->src[0]), 
+                    &(this->src[1]), 
+                    &(this->src[2])) != 3)
+            {
                 goto error_exit;
             }
         }
         else if (!strcmp (key, "isocenter")) {
-            if (sscanf (val, "%f %f %f", &(this->isocenter[0]), &(this->isocenter[1]), &(this->isocenter[2])) != 3) {
+            if (sscanf (val, "%f %f %f", 
+                    &(this->isocenter[0]), 
+                    &(this->isocenter[1]), 
+                    &(this->isocenter[2])) != 3)
+            {
                 goto error_exit;
             }
         }
@@ -126,8 +136,19 @@ Wed_Parms::set_key_val (
                 goto error_exit;
             }
         }
+        else if (!strcmp (key, "spacing")) {
+            if (sscanf (val, "%f %f", 
+                    &(this->ap_spacing[0]), 
+                    &(this->ap_spacing[1])) != 2)
+            {
+                goto error_exit;
+            }
+        }
         else if (!strcmp (key, "resolution")) {
-            if (sscanf (val, "%i %i", &(this->ires[0]), &(this->ires[1])) != 2) {
+            if (sscanf (val, "%i %i", 
+                    &(this->ires[0]), 
+                    &(this->ires[1])) != 2)
+            {
                 goto error_exit;
             }
         }

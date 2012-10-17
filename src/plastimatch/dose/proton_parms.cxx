@@ -182,16 +182,18 @@ Proton_Parms::set_key_val (
             }
         }
         else if (!strcmp (key, "center")) {
-            if (sscanf (val, "%lf %lf", &(scene->ap->ic[0]), &(scene->ap->ic[1])) != 2) {
+            float ic[2];
+            if (sscanf (val, "%lf %lf", &ic[0], &ic[1]) != 2) {
                 goto error_exit;
             }
+            scene->ap->set_center (ic);
         }
         else if (!strcmp (key, "offset")) {
             double offset;
             if (sscanf (val, "%lf", &offset) != 1) {
                 goto error_exit;
             }
-            scene->ap->set_offset (offset);
+            scene->ap->set_distance (offset);
         }
         else if (!strcmp (key, "resolution")) {
             int ires[2];
@@ -370,7 +372,8 @@ Proton_Parms::parse_args (int argc, char** argv)
     }
 
     /* try to setup the scene with the provided parameters */
-    if (!this->scene->init (this->ray_step)) {
+    this->scene->set_step_length (this->ray_step);
+    if (!this->scene->init ()) {
         fprintf (stderr, "ERROR: Unable to initilize scene.\n");
         return false;
     }

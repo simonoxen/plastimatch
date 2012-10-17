@@ -227,10 +227,14 @@ dose_direct (
 {
     Proton_Scene* scene = parms->scene;
 
+#if defined (commentout)
     double rgdepth = rpl_volume_get_rgdepth (
         scene->rpl_vol,     /* volume of radiological path lengths */
         ct_xyz              /* find depth @ this voxel */
     );
+#endif
+    /* Find radiological depth at voxel ct_xyz */
+    double rgdepth = scene->rpl_vol->get_rgdepth (ct_xyz);
 
     /* The voxel was not hit directly by the beam */
     if (rgdepth < 0.0f) {
@@ -257,7 +261,12 @@ dose_debug (
 {
     Proton_Scene* scene   = parms->scene;
 
+#if defined (commentout)
     return rpl_volume_get_rgdepth (scene->rpl_vol, ct_xyz);
+#endif
+
+    /* Find radiological depth at voxel ct_xyz */
+    return scene->rpl_vol->get_rgdepth (ct_xyz);
 }
 
 /* Accounts for small angle scattering due to Columbic interactions */
@@ -314,7 +323,10 @@ dose_scatter (
     /* Get approximation for scatterer search radius
      * NOTE: This is not used to define the Gaussian
      */
+#if defined (commentout)
     rgdepth = rpl_volume_get_rgdepth (rpl_vol, ct_xyz);
+#endif
+    rgdepth = rpl_vol->get_rgdepth (ct_xyz);
 
     if (debug) {
 //        printf ("rgdepth = %f\n", rgdepth);
@@ -370,7 +382,10 @@ dose_scatter (
                 ct_xyz);      // I: axis of rotation
 
             /* neighbor (or self) hit by proton beam? */
+#if defined (commentout)
             rgdepth = rpl_volume_get_rgdepth (rpl_vol, scatter_xyz);
+#endif
+            rgdepth = rpl_vol->get_rgdepth (scatter_xyz);
 
             if (rgdepth < 0.0f) {
                 if (debug) {
@@ -465,7 +480,10 @@ dose_hong (
     /* Get approximation for scatterer search radius
      * NOTE: This is not used to define the Gaussian
      */
+#if defined (commentout)
     rgdepth = rpl_volume_get_rgdepth (rpl_vol, ct_xyz);
+#endif
+    rgdepth = rpl_vol->get_rgdepth (ct_xyz);
 
     if (debug) {
         printf ("rgdepth = %f\n", rgdepth);
@@ -521,7 +539,10 @@ dose_hong (
                 ct_xyz);      // I: axis of rotation
 
             /* neighbor (or self) hit by proton beam? */
+#if defined (commentout)
             rgdepth = rpl_volume_get_rgdepth (rpl_vol, scatter_xyz);
+#endif
+            rgdepth = rpl_vol->get_rgdepth (scatter_xyz);
 
             if (rgdepth < 0.0f) {
                 if (debug) {
@@ -582,7 +603,7 @@ proton_dose_compute (Proton_Parms *parms)
     float* dose_img = (float*) dose_vol->img;
 
     if (parms->debug) {
-        rpl_volume_save (rpl_vol, "depth_vol.mha");
+        rpl_vol->save ("depth_vol.mha");
         beam->dump ("bragg_curve.txt");
         proj_matrix_debug (pmat);
     }

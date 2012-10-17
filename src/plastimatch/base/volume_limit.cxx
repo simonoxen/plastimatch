@@ -30,8 +30,8 @@ volume_limit_clip_ray (
     Volume_limit *vol_limit,    /* INPUT:  The bounding box to clip to */
     double *ip1,                /* OUTPUT: Intersection point 1 */
     double *ip2,                /* OUTPUT: Intersection point 2 */
-    double *p1,                 /* INPUT:  Starting point of ray */
-    double *ray                 /* INPUT:  Direction of ray */
+    const double *p1,           /* INPUT:  Starting point of ray */
+    const double *ray           /* INPUT:  Direction of ray */
 )
 {
     Point_location ploc[3];
@@ -93,7 +93,6 @@ volume_limit_clip_ray (
     }
 
     /* Compute the volume intersection points */
-    vec3_sub3 (ray, p2, p1);
     for (d = 0; d < 3; d++) {
         ip1[d] = p1[d] + alpha_in * ray[d];
         ip2[d] = p1[d] + alpha_out * ray[d];

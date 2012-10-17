@@ -229,9 +229,9 @@ drr_render_volume_perspective (
     double nrm[3], pdn[3], prt[3];
     Proj_matrix *pmat = proj->pmat;
 
-    proj_matrix_get_nrm (pmat, nrm);
-    proj_matrix_get_pdn (pmat, pdn);
-    proj_matrix_get_prt (pmat, prt);
+    pmat->get_nrm (nrm);
+    pmat->get_pdn (pdn);
+    pmat->get_prt (prt);
 
     /* Compute position of image center in room coordinates */
     vec3_scale3 (tmp, nrm, - pmat->sid);

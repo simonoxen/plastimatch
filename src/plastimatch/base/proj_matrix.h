@@ -20,6 +20,11 @@ public:
 
     double extrinsic[16];
     double intrinsic[12];
+
+public:
+    void get_nrm (double nrm[3]);
+    void get_pdn (double nrm[3]);
+    void get_prt (double nrm[3]);
 };
 
 PLMBASE_API Proj_matrix* proj_matrix_clone (Proj_matrix* pmat_in);
@@ -27,16 +32,13 @@ PLMBASE_API void proj_matrix_set (
     Proj_matrix *pmat,
     const double* cam, 
     const double* tgt, 
-    double* vup, 
+    const double* vup, 
     double sid, 
-    double* ic, 
-    double* ps, 
+    const double* ic, 
+    const double* ps, 
     const int* ires
 );
 PLMBASE_API void proj_matrix_debug (Proj_matrix *pmat);
-PLMBASE_API void proj_matrix_get_nrm (Proj_matrix *pmat, double nrm[3]);
-PLMBASE_API void proj_matrix_get_pdn (Proj_matrix *pmat, double pdn[3]);
-PLMBASE_API void proj_matrix_get_prt (Proj_matrix *pmat, double prt[3]);
 PLMBASE_API void proj_matrix_save (Proj_matrix *pmat, const char *fn);
 
 #endif

@@ -11,13 +11,12 @@
 #include "plm_int.h"
 #include "plm_math.h"
 #include "proj_matrix.h"
+#include "proj_volume.h"
 #include "ray_trace.h"
 #include "rpl_volume.h"
 #include "volume.h"
 #include "volume_limit.h"
-
-//#define UNIFIED_DEPTH_OFFSET 1
-//#define VERBOSE 1
+#include "print_and_exit.h"
 
 #define INDEX_OF(ijk, dim) \
     (((ijk[2] * dim[1] + ijk[1]) * dim[0]) + ijk[0])
@@ -32,6 +31,492 @@ struct callback_data {
 #endif
     double accum;           /* Accumulated intensity */
 };
+
+
+class Rpl_volume_private {
+public:
+    Proj_volume *proj_vol;
+public:
+    Rpl_volume_private () {
+        proj_vol = new Proj_volume;
+    }
+    ~Rpl_volume_private () {
+        delete proj_vol;
+    }
+};
+
+Rpl_volume::Rpl_volume () {
+    d_ptr = new Rpl_volume_private;
+}
+
+Rpl_volume::~Rpl_volume () {
+    delete d_ptr;
+}
+
+void 
+Rpl_volume::set_geometry (
+    const double src[3],           // position of source (mm)
+    const double iso[3],           // position of isocenter (mm)
+    const double vup[3],           // dir to "top" of projection plane
+    double sid,                    // dist from proj plane to source (mm)
+    const int image_dim[2],        // resolution of image
+    const double image_center[2],  // image center (pixels)
+    const double image_spacing[2], // pixel size (mm)
+    const double step_length       // spacing between planes
+)
+{
+    double clipping_dist[2] = {sid, sid};
+
+#if defined (commentout)
+    printf ("> src = %f %f %f\n", src[0], src[1], src[2]);
+    printf ("> iso = %f %f %f\n", iso[0], iso[1], iso[2]);
+    printf ("> vup = %f %f %f\n", vup[0], vup[1], vup[2]);
+    printf ("> sid = %f\n", sid);
+    printf ("> idim = %d %d\n", image_dim[0], image_dim[1]);
+    printf ("> ictr = %f %f\n", image_center[0], image_center[1]);
+    printf ("> isp = %f %f\n", image_spacing[0], image_spacing[1]);
+    printf ("> stp = %f\n", step_length);
+#endif
+
+    /* This sets everything except the clipping planes.  We don't know 
+       these until caller tells us the CT volume to compute against. */
+    d_ptr->proj_vol->set_geometry (
+        src, iso, vup, sid, image_dim, image_center, image_spacing,
+        clipping_dist, step_length);
+}
+
+/* Lookup radiological path length from depth_vol */
+double
+Rpl_volume::get_rgdepth (
+    const double* ct_xyz         /* I: location of voxel in world space */
+)
+{
+    int ap_ij[2], ap_idx;
+    double ap_xy[3], ap_xyz[3], tmp[3];
+    double dist, rgdepth = 0.;
+    int ires[2];
+    Proj_matrix *pmat;
+    int debug = 0;
+
+#if defined (GCS_REFACTORING)
+
+    /* For debugging */
+#if defined (commentout)
+    if ((ct_xyz[0] > -198 && ct_xyz[0] < -196)
+	&& (ct_xyz[1] > 132 && ct_xyz[1] < 134)
+	&& (ct_xyz[2] > -6 && ct_xyz[2] < 6))
+    {
+	debug = 1;
+    }
+#endif
+
+    /* A couple of abbreviations */
+    ires[0] = d_ptr->proj_vol->get_volume()->dim[0];
+    ires[1] = d_ptr->proj_vol->get_volume()->dim[1];
+    pmat = d_ptr->proj_vol->get_proj_matrix();
+
+    /* Back project the voxel to the aperture plane */
+    mat43_mult_vec3 (ap_xy, pmat->matrix, ct_xyz);
+    ap_xy[0] = pmat->ic[0] + ap_xy[0] / ap_xy[2];
+    ap_xy[1] = pmat->ic[1] + ap_xy[1] / ap_xy[2];
+
+    /* Make sure value is not inf or NaN */
+    if (!is_number (ap_xy[0]) || !is_number (ap_xy[1])) {
+    	return -1;
+    }
+
+    ap_ij[0] = ROUND_INT (ap_xy[0]);
+    ap_ij[1] = ROUND_INT (ap_xy[1]);
+
+    if (debug) {
+	printf ("ap_xy = %g %g\n", ap_xy[0], ap_xy[1]);
+    }
+
+    /* Only handle voxels inside the (square) aperture */
+    if (ap_ij[0] < 0 || ap_ij[0] >= ires[0] ||
+        ap_ij[1] < 0 || ap_ij[1] >= ires[1]) {
+        return -1;
+    }
+
+#if defined (commentout)
+    ap_idx = ap_ij[1] * ires[0] + ap_ij[0];
+
+    /* Convert aperture indices into space coords */
+    vec3_copy (ap_xyz, rpl_vol->ap_ul_room);
+    vec3_scale3 (tmp, rpl_vol->incr_c, ap_xy[0]);
+    vec3_add2 (ap_xyz, tmp);
+    vec3_scale3 (tmp, rpl_vol->incr_r, ap_xy[1]);
+    vec3_add2 (ap_xyz, tmp);
+
+    if (debug) {
+	printf ("ap_xyz = %g %g %g\n", ap_xyz[0], ap_xyz[1], ap_xyz[2]);
+    }
+
+    /* Compute distance from aperture to voxel */
+    dist = vec3_dist (ap_xyz, ct_xyz);
+#if UNIFIED_DEPTH_OFFSET
+    dist -= rpl_vol->depth_offset[0];
+#else
+    dist -= rpl_vol->depth_offset[ap_idx];
+#endif
+
+    /* GCS FIX: This is a hack.  There is something wrong with 
+       how the row/col indexing of the aperture is defined. 
+       So here I swap the rows & cols to get the correct lookup 
+       from the rpl_vol.  */
+    { int tmp; tmp = ap_ij[0]; ap_ij[0] = ap_ij[1]; ap_ij[1] = tmp; }
+#endif
+
+    ap_idx = ap_ij[0] * ires[1] + ap_ij[1];
+
+    /* Convert aperture indices into space coords */
+    vec3_copy (ap_xyz, rpl_vol->ap_ul_room);
+    vec3_scale3 (tmp, rpl_vol->incr_r, ap_xy[0]);
+    vec3_add2 (ap_xyz, tmp);
+    vec3_scale3 (tmp, rpl_vol->incr_c, ap_xy[1]);
+    vec3_add2 (ap_xyz, tmp);
+
+    if (debug) {
+	printf ("ap_xyz = %g %g %g\n", ap_xyz[0], ap_xyz[1], ap_xyz[2]);
+    }
+
+    /* Compute distance from aperture to voxel */
+    dist = vec3_dist (ap_xyz, ct_xyz);
+#if UNIFIED_DEPTH_OFFSET
+    dist -= rpl_vol->depth_offset[0];
+#else
+    dist -= rpl_vol->depth_offset[ap_idx];
+#endif
+
+    /* Retrieve the radiographic depth */
+    rgdepth = lookup_rgdepth (rpl_vol, ap_ij, dist);
+
+    if (debug) {
+	printf ("(%g %g %g / %g %g %g) -> (%d %d %g) -> %g\n", 
+	    ct_xyz[0], ct_xyz[1], ct_xyz[2], 
+	    (ct_xyz[0] + 249) / 2,
+	    (ct_xyz[1] + 249) / 2,
+	    (ct_xyz[2] + 249) / 2,
+	    ap_ij[0], ap_ij[1], dist, 
+	    rgdepth);
+    }
+
+#endif /* REFACTORING */
+
+    return rgdepth;
+}
+
+void 
+Rpl_volume::compute (Volume *ct_vol)
+{
+    int ires[2];
+    Volume_limit ct_limit;
+
+    /* A couple of abbreviations */
+    Proj_volume *proj_vol = d_ptr->proj_vol;
+    const double *src = proj_vol->get_src();
+    const double *nrm = proj_vol->get_nrm();
+    ires[0] = d_ptr->proj_vol->get_image_dim (0);
+    ires[1] = d_ptr->proj_vol->get_image_dim (1);
+
+    /* Compute volume boundary box */
+    volume_limit_set (&ct_limit, ct_vol);
+
+    proj_vol->debug ();
+
+    /* Make two passes through the aperture grid.  The first pass 
+       is used to find the clipping planes.  The second pass actually 
+       traces the rays. */
+
+    /* Scan through the aperture -- first pass */
+    double front_plane_dist = DBL_MAX;
+    double back_plane_dist = DBL_MAX;
+    for (int r = 0; r < ires[0]; r++) {
+        double r_tgt[3];
+        double tmp[3];
+        double p2[3];
+
+        /* Compute r_tgt = 3d coordinates of first pixel in this row
+           on aperture */
+        vec3_copy (r_tgt, proj_vol->get_ul_room());
+        vec3_scale3 (tmp, proj_vol->get_incr_r(), (double) r);
+        vec3_add2 (r_tgt, tmp);
+
+        for (int c = 0; c < ires[1]; c++) {
+            plm_long ap_idx;
+            UNUSED_VARIABLE (ap_idx);
+	    double ray[3];
+	    double ip1[3];
+	    double ip2[3];
+	    double dist;
+
+            /* Compute index of aperture pixel */
+            ap_idx = c * ires[0] + r;
+
+            /* Compute p2 = 3d coordinates of point on aperture */
+            vec3_scale3 (tmp, proj_vol->get_incr_c(), (double) c);
+            vec3_add3 (p2, r_tgt, tmp);
+
+	    /* Define unit vector in ray direction */
+	    vec3_sub3 (ray, p2, src);
+	    vec3_normalize1 (ray);
+
+	    /* Test if ray intersects volume and create intersection points */
+	    if (!volume_limit_clip_ray (&ct_limit, ip1, ip2, 
+		    src, ray))
+	    {
+		continue;
+	    }
+
+	    /* Test if intersect points are before or after aperture. 
+               If before, clip them at aperture plane. */
+
+            /* First, check the second point */
+            double tmp[3];
+            vec3_sub3 (tmp, ip2, p2);
+            if (vec3_dot (tmp, nrm) > 0) {
+                /* If second point is behind aperture, then so is 
+                   first point, and therefore the ray doesn't intersect 
+                   the volume. */
+                continue;
+            }
+
+            /* Next check the first point, and set front clipping plane 
+               if indicated */
+            vec3_sub3 (tmp, ip1, p2);
+            if (vec3_dot (tmp, nrm) > 0) {
+                front_plane_dist = 0;
+            } else {
+                dist = vec3_dist (p2, ip1);
+                if (dist < front_plane_dist) {
+                    front_plane_dist = dist;
+                }
+            }
+
+            /* Finally, check second point, and set back clipping 
+               plane if indicated */
+	    dist = vec3_dist (p2, ip2);
+            if (dist < back_plane_dist) {
+                back_plane_dist = dist;
+            }
+#if defined (commentout)
+	    printf ("ap  = %f %f %f\n", p2[0], p2[1], p2[2]);
+	    printf ("ip1 = %f %f %f\n", ip1[0], ip1[1], ip1[2]);
+	    printf ("ip2 = %f %f %f\n", ip2[0], ip2[1], ip2[2]);
+	    printf ("(%d,%d) dist = %f\n", r, c, dist);
+#endif
+        }
+    }
+
+    if (front_plane_dist == DBL_MAX) {
+        print_and_exit ("Sorry, total failure intersecting volume\n");
+    }
+
+    printf ("FPD = %f, BPD = %f\n", 
+        front_plane_dist, back_plane_dist);
+    
+    exit (0);
+
+    /* Scan through the aperture -- second pass */
+    for (int r = 0; r < ires[0]; r++) {
+        double r_tgt[3];
+        double tmp[3];
+        double p2[3];
+
+        //if (r % 50 == 0) printf ("Row: %4d/%d\n", r, rows);
+
+        /* Compute r_tgt = 3d coordinates of first pixel in this row
+           on aperture */
+        vec3_copy (r_tgt, proj_vol->get_ul_room());
+        vec3_scale3 (tmp, proj_vol->get_incr_r(), (double) r);
+        vec3_add2 (r_tgt, tmp);
+
+        for (int c = 0; c < ires[1]; c++) {
+            int ap_idx;
+
+            /* Compute index of aperture pixel */
+            ap_idx = c * ires[0] + r;
+
+            /* Compute p2 = 3d coordinates of point on aperture */
+            vec3_scale3 (tmp, proj_vol->get_incr_c(), (double) c);
+            vec3_add3 (p2, r_tgt, tmp);
+
+#if defined (commentout)
+	    printf ("Tracing ray (%d,%d)\n", r, c);
+#endif
+            this->ray_trace (
+                ct_vol,       /* I: CT volume */
+                &ct_limit,    /* I: CT bounding region */
+                src,          /* I: @ source */
+                p2,           /* I: @ aperture */
+                ires,         /* I: ray cast resolution */
+                ap_idx        /* I: linear index of ray in ap */
+            );
+        }
+    }
+}
+
+Volume* 
+Rpl_volume::get_volume ()
+{
+    return d_ptr->proj_vol->get_volume ();
+}
+
+void
+Rpl_volume::save (const char *filename)
+{
+    d_ptr->proj_vol->save (filename);
+}
+
+static float
+lookup_attenuation_weq (float density)
+{
+    const double min_hu = -1000.0;
+    if (density <= min_hu) {
+        return 0.0;
+    } else {
+        return ((density + 1000.0)/1000.0);
+    }
+}
+
+static float
+lookup_attenuation (float density)
+{
+    return lookup_attenuation_weq (density);
+}
+
+static
+void
+rpl_ray_trace_callback (
+    void *callback_data, 
+    size_t vox_index, 
+    double vox_len, 
+    float vox_value
+)
+{
+    Callback_data *cd = (Callback_data *) callback_data;
+    Rpl_volume *rpl_vol = cd->rpl_vol;
+    float *depth_img = (float*) rpl_vol->get_volume()->img;
+    int ap_idx = cd->ap_idx;
+    int ap_area = cd->ires[0] * cd->ires[1];
+#if UNIFIED_DEPTH_OFFSET
+    int step_num = vox_index + cd->step_offset;
+#else
+    int step_num = vox_index;
+#endif
+
+    cd->accum += vox_len * lookup_attenuation (vox_value);
+
+#if defined (commentout)
+    if (ap_idx == 99 || ap_idx == 90) {
+	printf ("%d %4d: %20g %20g\n", ap_idx, step_num, 
+	    vox_value, cd->accum);
+    }
+#endif
+
+    depth_img[ap_area*step_num + ap_idx] = cd->accum;
+}
+
+void
+Rpl_volume::ray_trace (
+    Volume *ct_vol,              /* I: CT volume */
+    Volume_limit *vol_limit,     /* I: CT bounding region */
+    const double *p1,            /* I: @ source */
+    const double *p2,            /* I: @ aperture */
+    int* ires,                   /* I: ray cast resolution */
+    int ap_idx                   /* I: linear index of ray in ap */
+)
+{
+    Callback_data cd;
+    double ray[3];
+    double ip1[3];
+    double ip2[3];
+
+    /* Define unit vector in ray direction */
+    vec3_sub3 (ray, p2, p1);
+    vec3_normalize1 (ray);
+
+    /* Test if ray intersects volume and create intersection points */
+    if (!volume_limit_clip_ray (vol_limit, ip1, ip2, p1, ray)) {
+        return;
+    }
+
+#if (!UNIFIED_DEPTH_OFFSET)
+    /* store the distance from aperture to CT_vol for later */
+//    rpl_vol->depth_offset[ap_idx] = vec3_dist (p2, ip1);
+#endif
+
+#if VERBOSE
+    printf ("ap_idx: %d\n", ap_idx);
+    printf ("P1: %g %g %g\n", p1[0], p1[1], p1[2]);
+    printf ("P2: %g %g %g\n", p2[0], p2[1], p2[2]);
+
+    printf ("ip1 = %g %g %g\n", ip1[0], ip1[1], ip1[2]);
+    printf ("ip2 = %g %g %g\n", ip2[0], ip2[1], ip2[2]);
+    printf ("ray = %g %g %g\n", ray[0], ray[1], ray[2]);
+#if (!UNIFIED_DEPTH_OFFSET)
+    printf ("off = %g\n", rpl_vol->depth_offset[ap_idx]);
+#endif
+
+#endif
+
+/* init callback data for this ray */
+    cd.accum = 0.0f;
+    cd.ires = ires;
+    cd.rpl_vol = this;
+    cd.ap_idx = ap_idx;
+
+#if (UNIFIED_DEPTH_OFFSET)
+    /* account for distance between depth_offset and intersection with 
+       volume boundary */
+    {
+	double tmp[3];
+	double dist;
+
+	/* Compute distance from depth_offset to volume boundary */
+	dist = vec3_dist (ip1, p2);
+#if VERBOSE
+	printf ("dist = %g, depth_off = %g\n", 
+	    dist, rpl_vol->depth_offset[0]);
+#endif
+	dist = dist - rpl_vol->depth_offset[0];
+
+	/* Figure out how many steps to first step within volume */
+	cd.step_offset = (int) ceil (dist / rpl_vol->ray_step);
+#if VERBOSE
+	printf ("step_offset = %d\n", cd.step_offset);
+#endif
+	
+	/* Find location of first step within volume */
+	vec3_scale3 (tmp, ray, rpl_vol->depth_offset[0] 
+	    + cd.step_offset * (double) rpl_vol->ray_step);
+	vec3_add3 (ip1, p2, tmp);
+#if VERBOSE
+	printf ("ip1 (adj) = (%f, %f, %f)\n", ip1[0], ip1[1], ip1[2]);
+#endif
+    }
+#endif
+
+    /* get radiographic depth along ray */
+    ray_trace_uniform (
+        ct_vol,                     // INPUT: CT volume
+        vol_limit,                  // INPUT: CT volume bounding box
+        &rpl_ray_trace_callback,    // INPUT: step action cbFunction
+        &cd,                        // INPUT: callback data
+        ip1,                        // INPUT: ray starting point
+        ip2,                        // INPUT: ray ending point
+        d_ptr->proj_vol->get_step_length()); // INPUT: uniform ray step size
+}
+
+
+
+
+
+
+
+#if defined (commentout)
+//#define UNIFIED_DEPTH_OFFSET 1
+//#define VERBOSE 1
 
 static double
 lookup_rgdepth (
@@ -590,3 +1075,5 @@ rpl_volume_compute (
     rpl_volume_compute_separate (rpl_vol, ct_vol);
 #endif
 }
+
+#endif

@@ -121,10 +121,10 @@ proj_matrix_set (
     Proj_matrix *pmat,
     const double* cam, 
     const double* tgt, 
-    double* vup, 
+    const double* vup, 
     double sid, 
-    double* ic, 
-    double* ps, 
+    const double* ic, 
+    const double* ps, 
     const int* ires
 )
 {
@@ -210,29 +210,26 @@ proj_matrix_set (
 }
 
 void
-proj_matrix_get_nrm (
-    Proj_matrix *pmat,
+Proj_matrix::get_nrm (
     double nrm[3]
 )
 {
-    vec3_copy (nrm, &pmat->extrinsic[8]);
+    vec3_copy (nrm, &this->extrinsic[8]);
     vec3_invert (nrm);
 }
 
 void
-proj_matrix_get_pdn (
-    Proj_matrix *pmat,
+Proj_matrix::get_pdn (
     double pdn[3]
 )
 {
-    vec3_copy (pdn, &pmat->extrinsic[4]);
+    vec3_copy (pdn, &this->extrinsic[4]);
 }
 
 void
-proj_matrix_get_prt (
-    Proj_matrix *pmat,
+Proj_matrix::get_prt (
     double prt[3]
 )
 {
-    vec3_copy (prt, &pmat->extrinsic[0]);
+    vec3_copy (prt, &this->extrinsic[0]);
 }

@@ -85,7 +85,7 @@ void
 Proton_Beam::set_source_position (const float* position)
 {
     for (int d = 0; d < 3; d++) {
-        d_ptr->source[d] = position[3];
+        d_ptr->source[d] = position[d];
     }
 }
 
@@ -93,7 +93,7 @@ void
 Proton_Beam::set_source_position (const double* position)
 {
     for (int d = 0; d < 3; d++) {
-        d_ptr->source[d] = position[3];
+        d_ptr->source[d] = position[d];
     }
 }
 
@@ -113,7 +113,7 @@ void
 Proton_Beam::set_isocenter_position (const float* position)
 {
     for (int d = 0; d < 3; d++) {
-        d_ptr->isocenter[d] = position[3];
+        d_ptr->isocenter[d] = position[d];
     }
 }
 
@@ -121,7 +121,7 @@ void
 Proton_Beam::set_isocenter_position (const double* position)
 {
     for (int d = 0; d < 3; d++) {
-        d_ptr->isocenter[d] = position[3];
+        d_ptr->isocenter[d] = position[d];
     }
 }
 

@@ -36,6 +36,7 @@ public:
     int ires[2];
     bool have_ic;
     float ic[2];
+    float ap_spacing[2];
     float ap_offset;
 };
 

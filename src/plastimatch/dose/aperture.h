@@ -26,18 +26,36 @@ public:
     /*! \brief Set the aperture dimension, in pixels */
     void set_dim (const int* dim);
 
+    /*! \brief Get the aperture center, in pixels */
+    const double* get_center () const;
+    /*! \brief Get the aperture center in the i or j dimension, in pixels */
+    double get_center (int dim) const;
+    /*! \brief Set the aperture center, in pixels */
+    void set_center (const float* center);
+    void set_center (const double* center);
+
     /*! \brief Get the aperture offset: the distance from the
       beam source to closest point on the aperture plane */
-    double get_offset () const;
+    double get_distance () const;
     /*! \brief Get the aperture offset: the distance from the
       beam source to closest point on the aperture plane */
-    void set_offset (double offset);
+    void set_distance (double distance);
+
+    /*! \brief Get the aperture spacing: the distance between 
+      sampling points in the aperture plane, in mm */
+    const double* get_spacing () const;
+    /*! \brief Get the aperture spacing in the i or j dimension, in mm */
+    double get_spacing (int dim) const;
+    /*! \brief Get the aperture spacing: the distance between 
+      sampling points in the aperture plane */
+    void set_spacing (const float* spacing);
+    void set_spacing (const double* spacing);
     ///@}
 
 public:
 //    double ap_offset;     /* distance from beam nozzle */
     double vup[3];        /* orientation */
-    double ic [2];        /* center */
+//    double ic [2];        /* center */
 //    int ires[2];          /* resolution (vox) */
     double ic_room[3];    /* loc of center (room coords) */
     double ul_room[3];    /* loc of upper left corder (room coords) */

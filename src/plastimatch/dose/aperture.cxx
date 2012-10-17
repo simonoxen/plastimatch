@@ -12,13 +12,19 @@ class Aperture_private {
 public:
     Aperture_private ()
     {
-        ap_offset = 0.0;
-        ires[0] = 0;
-        ires[1] = 0;
+        distance = 0.0;
+        dim[0] = 0;
+        dim[1] = 0;
+        center[0] = 0;
+        center[1] = 0;
+        spacing[0] = 0;
+        spacing[1] = 0;
     }
 public:
-    double ap_offset;
-    int ires[2];
+    double distance;
+    int dim[2];
+    double center[2];
+    double spacing[2];
 };
 
 Aperture::Aperture ()
@@ -29,8 +35,7 @@ Aperture::Aperture ()
     this->vup[1] = 0.0;
     this->vup[2] = 1.0;
 
-    memset (this->ic,   0, 2*sizeof (double));
-//    memset (this->ires, 0, 2*sizeof (int));
+    //memset (this->ic,   0, 2*sizeof (double));
     memset (this->ic_room, 0, 3*sizeof (double));
     memset (this->ul_room, 0, 3*sizeof (double));
     memset (this->incr_r, 0, 3*sizeof (double));
@@ -43,32 +48,86 @@ Aperture::~Aperture ()
 }
 
 double
-Aperture::get_offset () const
+Aperture::get_distance () const
 {
-    return d_ptr->ap_offset;
+    return d_ptr->distance;
 }
 
 void
-Aperture::set_offset (double offset)
+Aperture::set_distance (double distance)
 {
-    d_ptr->ap_offset = offset;
+    d_ptr->distance = distance;
 }
 
 const int*
 Aperture::get_dim () const
 {
-    return d_ptr->ires;
+    return d_ptr->dim;
 }
 
 int
 Aperture::get_dim (int dim) const
 {
-    return d_ptr->ires[dim];
+    return d_ptr->dim[dim];
 }
 
 void
 Aperture::set_dim (const int* dim)
 {
-    d_ptr->ires[0] = dim[0];
-    d_ptr->ires[1] = dim[1];
+    d_ptr->dim[0] = dim[0];
+    d_ptr->dim[1] = dim[1];
+    d_ptr->center[0] = (dim[0]-1) / 2;
+    d_ptr->center[1] = (dim[1]-1) / 2;
+}
+
+const double*
+Aperture::get_center () const
+{
+    return d_ptr->center;
+}
+
+double
+Aperture::get_center (int dim) const
+{
+    return d_ptr->center[dim];
+}
+
+void
+Aperture::set_center (const float* center)
+{
+    d_ptr->center[0] = center[0];
+    d_ptr->center[1] = center[1];
+}
+
+void
+Aperture::set_center (const double* center)
+{
+    d_ptr->center[0] = center[0];
+    d_ptr->center[1] = center[1];
+}
+
+const double*
+Aperture::get_spacing () const
+{
+    return d_ptr->spacing;
+}
+
+double
+Aperture::get_spacing (int dim) const
+{
+    return d_ptr->spacing[dim];
+}
+
+void
+Aperture::set_spacing (const float* spacing)
+{
+    d_ptr->spacing[0] = spacing[0];
+    d_ptr->spacing[1] = spacing[1];
+}
+
+void
+Aperture::set_spacing (const double* spacing)
+{
+    d_ptr->spacing[0] = spacing[0];
+    d_ptr->spacing[1] = spacing[1];
 }

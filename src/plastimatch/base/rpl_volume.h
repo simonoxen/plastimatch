@@ -6,40 +6,44 @@
 
 #include "plmbase_config.h"
 
-class Proj_matrix;
+class Rpl_volume_private;
 class Volume;
+class Volume_limit;
 
-typedef struct rpl_volume Rpl_volume;
-struct rpl_volume {
-    Volume *vol;
-    Proj_matrix *pmat;
-    double *depth_offset;
-    double cam[3];
-    double ap_ul_room[3];
-    double incr_r[3];
-    double incr_c[3];
-    double ray_step;
+class PLMBASE_API Rpl_volume 
+{
+public:
+    Rpl_volume ();
+    ~Rpl_volume ();
+public:
+    Rpl_volume_private *d_ptr;
+public:
+    void set_geometry (
+        const double src[3],           // position of source (mm)
+        const double iso[3],           // position of isocenter (mm)
+        const double vup[3],           // dir to "top" of projection plane
+        double sid,                    // dist from proj plane to source (mm)
+        const int image_dim[2],        // resolution of image
+        const double image_center[2],  // image center (pixels)
+        const double image_spacing[2], // pixel size (mm)
+        const double step_length       // spacing between planes
+    );
+
+    void compute (Volume *ct_vol);
+
+    Volume* get_volume ();
+    double get_rgdepth (const double *xyz);
+    void save (const char* filename);
+protected:
+    void ray_trace (
+        Volume *ct_vol,              /* I: CT volume */
+        Volume_limit *vol_limit,     /* I: CT bounding region */
+        const double *p1,            /* I: @ source */
+        const double *p2,            /* I: @ aperture */
+        int* ires,                   /* I: ray cast resolution */
+        int ap_idx                   /* I: linear index of ray in ap */
+    );
+
 };
-
-PLMBASE_C_API void rpl_volume_compute (
-        Rpl_volume *rpl_vol,   /* I/O: this gets filled in with depth info */
-        Volume *ct_vol         /* I:   the ct volume */
-);
-PLMBASE_C_API Rpl_volume* rpl_volume_create (
-        Volume* ct_vol,       // ct volume
-        Proj_matrix *pmat,    // projection matrix from source to aperture
-        const int ires[2],    // aperture dimensions
-        double cam[3],        // position of source
-        double ap_ul_room[3], // position of aperture in room coords
-        double incr_r[3],     // change in room coordinates for each ap pixel
-        double incr_c[3],     // change in room coordinates for each ap pixel
-        float ray_step        // uniform ray step size
-);
-PLMBASE_C_API void rpl_volume_destroy (Rpl_volume *rpl_vol);
-PLMBASE_C_API double rpl_volume_get_rgdepth (
-        Rpl_volume *rpl_vol,   /* I: volume of radiological depths */
-        double* ct_xyz         /* I: location of voxel in world space */
-);
-PLMBASE_C_API void rpl_volume_save (Rpl_volume *rpl_vol, char *filename);
 
 #endif

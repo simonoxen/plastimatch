@@ -14,8 +14,18 @@
 #include "rpl_volume.h"
 #include "volume.h"
 
+class Proton_scene_private {
+public:
+    Proton_scene_private () {
+        step_length = 0.;
+    }
+public:
+    double step_length;
+};
+
 Proton_Scene::Proton_Scene ()
 {
+    this->d_ptr = new Proton_scene_private;
     this->ap = new Aperture;
     this->beam = new Proton_Beam;
     this->pmat = new Proj_matrix;
@@ -26,73 +36,45 @@ Proton_Scene::Proton_Scene ()
 
 Proton_Scene::~Proton_Scene ()
 {
+    delete this->d_ptr;
     delete this->ap;
     delete this->beam;
     delete this->patient;
     delete this->pmat;
     if (this->rpl_vol) {
-        rpl_volume_destroy (this->rpl_vol);
+        //rpl_volume_destroy (this->rpl_vol);
+        delete this->rpl_vol;
     }
 }
 
-bool
-Proton_Scene::init (int ray_step)
+void
+Proton_Scene::set_step_length (double step_length)
 {
-    double tmp[3];       
-    double ps[2] = { 1., 1. };  /* NEEDS TO BE MOVED */
+    d_ptr->step_length = step_length;
+}
 
+bool
+Proton_Scene::init ()
+{
     if (!this->ap) return false;
     if (!this->beam) return false;
     if (!this->patient) return false;
 
-    /* build projection matrix */
-    proj_matrix_set (
-        this->pmat,
+    this->rpl_vol = new Rpl_volume;
+    this->rpl_vol->set_geometry (
         this->beam->get_source_position(),
         this->beam->get_isocenter_position(),
         this->ap->vup,
-        this->ap->get_offset(),
-        this->ap->ic,
-        ps,
-        this->ap->get_dim()
-    );
-
-    /* populate aperture orientation unit vectors */
-    proj_matrix_get_nrm (this->pmat, this->ap->nrm);
-    proj_matrix_get_pdn (this->pmat, this->ap->pdn);
-    proj_matrix_get_prt (this->pmat, this->ap->prt);
-
-    /* compute position of aperture in room coordinates */
-    vec3_scale3 (tmp, this->ap->nrm, - this->pmat->sid);
-    vec3_add3 (this->ap->ic_room, this->pmat->cam, tmp);
-
-    /* compute incremental change in 3d position for each change 
-       in aperture row/column. */
-    vec3_scale3 (this->ap->incr_c, this->ap->prt, ps[1]);
-    vec3_scale3 (this->ap->incr_r, this->ap->pdn, ps[0]);
-
-    /* get position of upper left pixel on panel */
-    vec3_copy (this->ap->ul_room, this->ap->ic_room);
-    vec3_scale3 (tmp, this->ap->incr_r, - this->pmat->ic[0]);
-    vec3_add2 (this->ap->ul_room, tmp);
-    vec3_scale3 (tmp, this->ap->incr_c, - this->pmat->ic[1]);
-    vec3_add2 (this->ap->ul_room, tmp);
-
-    /* create the depth volume */
-    this->rpl_vol = rpl_volume_create (
-        this->patient,            /* CT volume */
-        this->pmat,               /* from source to aperature  */
-        this->ap->get_dim(),      /* aperature dimension       */
-        this->pmat->cam,          /* position of source        */
-        this->ap->ul_room,        /* position of aperature     */
-        this->ap->incr_r,         /* aperature row++ vector    */
-        this->ap->incr_c,         /* aperature col++ vector    */
-        ray_step                  /* step size along ray trace */
-    );
+        this->ap->get_distance(),
+        this->ap->get_dim(),
+        this->ap->get_center(),
+        this->ap->get_spacing(),
+        d_ptr->step_length);
+        
     if (!this->rpl_vol) return false;
 
     /* scan through aperture to fill in rpl_volume */
-    rpl_volume_compute (this->rpl_vol, this->patient);
+    this->rpl_vol->compute (this->patient);
 
     return true;
 }
@@ -124,7 +106,7 @@ Proton_Scene::print ()
         beam->get_isocenter_position(2));
     printf ("APERTURE\n");
     printf ("  -- [NUM] Res   : %i %i\n", ap->get_dim(0), ap->get_dim(1));
-    printf ("  -- [DIS] Offset: %g\n", ap->get_offset());
+    printf ("  -- [DIS] Offset: %g\n", ap->get_distance());
     printf ("  -- [POS] Center: %g %g %g\n", ap->ic_room[0], ap->ic_room[1], ap->ic_room[2]);
     printf ("  -- [POS] UpLeft: %g %g %g\n", ap->ul_room[0], ap->ul_room[1], ap->ul_room[2]);
     printf ("  -- [VEC] Up    : %g %g %g\n", ap->vup[0], ap->vup[1], ap->vup[2]);

@@ -16,13 +16,38 @@ class Volume;
  * a rectangular frustum, the geometry of which is specified by 
  * a projection matrix.
  */
-class Proj_volume 
+class PLMBASE_API Proj_volume 
 {
 public:
     Proj_volume ();
     ~Proj_volume ();
 public:
     Proj_volume_private *d_ptr;
+public:
+    void set_geometry (
+        const double src[3],           // position of source (mm)
+        const double iso[3],           // position of isocenter (mm)
+        const double vup[3],           // dir to "top" of projection plane
+        double sid,                    // dist from proj plane to source (mm)
+        const int image_dim[2],        // resolution of image
+        const double image_center[2],  // image center (pixels)
+        const double image_spacing[2], // pixel size (mm)
+        const double clipping_dist[2], // dist from src to clipping planes (mm)
+        const double step_length       // spacing between planes
+    );
+
+    void debug ();
+
+    int get_image_dim (int dim);
+    const double* get_incr_c ();
+    const double* get_incr_r ();
+    Proj_matrix *get_proj_matrix ();
+    const double* get_nrm ();
+    const double* get_src ();
+    double get_step_length ();
+    const double* get_ul_room ();
+    Volume *get_volume ();
+    void save (const char* filename);
 };
 
 #endif

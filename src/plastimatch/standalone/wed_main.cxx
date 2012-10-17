@@ -61,9 +61,10 @@ create_wed_volume (Wed_Parms* parms, Proton_Scene *scene)
      * aperture dimensions and the z-dimension is equal to the sampling
      * resolution chosen for the rpl */
     plm_long wed_dims[3];
-    wed_dims[0] = rpl_vol->vol->dim[0];
-    wed_dims[1] = rpl_vol->vol->dim[1];
-    wed_dims[2] = rpl_vol->vol->dim[2];
+    Volume *vol = rpl_vol->get_volume ();
+    wed_dims[0] = vol->dim[0];
+    wed_dims[1] = vol->dim[1];
+    wed_dims[2] = vol->dim[2];
 
     return new Volume (wed_dims, wed_off, wed_ps, NULL, PT_FLOAT, 1);
 }
@@ -105,7 +106,7 @@ wed_dose_ray_trace (
     double ip1[3];
     double ip2[3];
 
-    float* rpl_img = (float*) rpl_vol->vol->img;
+    float* rpl_img = (float*) rpl_vol->get_volume()->img;
 
     /* Define unit vector in ray direction */
     vec3_sub3 (ray, p2, p1);
@@ -163,9 +164,11 @@ wed_volume_populate (
     int ires[2];
     Volume_limit ct_limit;
 
+#if defined (GCS_REFACTORING)
+
     /* A couple of abbreviations */
-    ires[0] = rpl_vol->vol->dim[0];
-    ires[1] = rpl_vol->vol->dim[1];
+    ires[0] = rpl_vol->get_volume()->dim[0];
+    ires[1] = rpl_vol->get_volume()->dim[1];
 
     /* Compute volume boundary box */
     volume_limit_set (&ct_limit, ct_vol);
@@ -203,6 +206,7 @@ wed_volume_populate (
                 );
         }
     }
+#endif /* GCS_REFACTORING */
 }
 
 void
@@ -252,16 +256,22 @@ main (int argc, char* argv[])
     scene.beam->set_source_position (parms.src);
     scene.beam->set_isocenter_position (parms.isocenter);
 
-    scene.ap->set_offset (parms.ap_offset);
+    scene.ap->set_distance (parms.ap_offset);
     scene.ap->set_dim (parms.ires);
+    scene.ap->set_spacing (parms.ap_spacing);
+    if (parms.have_ic) {
+        scene.ap->set_center (parms.ic);
+    }
+
+    scene.set_step_length(parms.ray_step);
 
     /* try to setup the scene with the provided parameters */
-    if (!scene.init (parms.ray_step)) {
+    if (!scene.init ()) {
         fprintf (stderr, "ERROR: Unable to initilize scene.\n");
         return -1;
     }
 
-    plm_image_save_vol ("debug_rpl.mha", scene.rpl_vol->vol);
+    scene.rpl_vol->save ("debug_rpl.mha");
 
     printf ("Working...\n");
     fflush(stdout);
