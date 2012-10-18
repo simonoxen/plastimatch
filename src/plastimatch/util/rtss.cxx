@@ -315,7 +315,7 @@ Rtss::save_gdcm_rtss (
         this->apply_dicom_dir (rdd);
     }
 
-    snprintf (fn, _MAX_PATH, "%s/%s", output_dir, "ss.dcm");
+    snprintf (fn, _MAX_PATH, "%s/%s", output_dir, "rtss.dcm");
 
 #if GDCM_VERSION_1
     gdcm_rtss_save (this->m_cxt, &this->m_meta, rdd, fn);

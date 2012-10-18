@@ -1227,7 +1227,7 @@ plm_add_test (
   "plm-convert-dicom-a" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/rect-1-dicom/ss.dcm;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-a-ss.mha;--output-ss-list;plm-convert-dicom-a-ss.txt;--output-cxt;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-a.cxt;--output-prefix;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-a-prefix"
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/rect-1-dicom/rtss.dcm;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-a-ss.mha;--output-ss-list;plm-convert-dicom-a-ss.txt;--output-cxt;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-a.cxt;--output-prefix;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-a-prefix"
   )
 set_tests_properties (plm-convert-dicom-a PROPERTIES DEPENDS rect-1)
 
