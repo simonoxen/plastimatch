@@ -113,14 +113,6 @@ set_key_val (
         strncpy (regp->vf_out_dir, val, _MAX_PATH);
         check_trailing_slash (regp->vf_out_dir);
     }
-    else if (!strcmp (key, "fixed_mask")) {
-        if (section != 0) goto error_not_stages;
-        strncpy (regp->fixed_mask_fn, val, _MAX_PATH);
-    }
-    else if (!strcmp (key, "moving_mask")) {
-        if (section != 0) goto error_not_stages;
-        strncpy (regp->moving_mask_fn, val, _MAX_PATH);
-    }
     else if (!strcmp (key, "xf_in") || !strcmp (key, "xform_in") || !strcmp (key, "vf_in")) {
         if (section != 0) goto error_not_stages;
         strncpy (regp->xf_in_fn, val, _MAX_PATH);
@@ -160,6 +152,20 @@ set_key_val (
             regp->default_value = f;
         } else {
             stage->default_value = f;
+        }
+    }
+    else if (!strcmp (key, "fixed_mask")) {
+        if (section == 0) {
+            strncpy (regp->fixed_mask_fn, val, _MAX_PATH);
+        } else {
+            strncpy (stage->fixed_mask_fn, val, _MAX_PATH);
+        }
+    }
+    else if (!strcmp (key, "moving_mask")) {
+        if (section == 0) {
+            strncpy (regp->moving_mask_fn, val, _MAX_PATH);
+        } else {
+            strncpy (stage->moving_mask_fn, val, _MAX_PATH);
         }
     }
     else if (!strcmp (key, "img_out") || !strcmp (key, "image_out")) {

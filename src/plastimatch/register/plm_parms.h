@@ -47,6 +47,7 @@
 #define IMG_OUT_FMT_AUTO                    0
 #define IMG_OUT_FMT_DICOM                   1
 
+
 enum Subsampling_type {
     SUBSAMPLING_AUTO,
     SUBSAMPLING_VOXEL_RATE
@@ -58,6 +59,8 @@ enum Regularization_type {
     REGULARIZATION_BSPLINE_SEMI_ANALYTIC, 
     REGULARIZATION_BSPLINE_NUMERIC
 };
+
+class Plm_image;
 
 class PLMREGISTER_API Stage_parms {
 public:
@@ -110,6 +113,11 @@ public:
     /* Landmarks */
     float landmark_stiffness; //strength of attraction between landmarks
     char landmark_flavor;
+    /* Masks */
+    char moving_mask_fn[_MAX_PATH];
+    char fixed_mask_fn[_MAX_PATH];
+    Plm_image *moving_mask;
+    Plm_image *fixed_mask;
     /* Output files */
     int img_out_fmt;
     Plm_image_type img_out_type;

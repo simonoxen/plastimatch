@@ -46,12 +46,28 @@ do_gpuit_bspline_stage_internal (
     Volume *moving_ss, *fixed_ss;
     Volume *moving_grad = 0;
 
-    /* prepare masks if provided */
-    if (regd->moving_mask) {
-        m_mask = regd->moving_mask->gpuit_uchar();
+    /* load "stage" masks */
+    /*   stage mask overrides a global mask */
+    if (stage->fixed_mask_fn[0]) {
+        logfile_printf ("Loading fixed mask: %s\n", stage->fixed_mask_fn);
+        stage->fixed_mask = plm_image_load (stage->fixed_mask_fn, PLM_IMG_TYPE_ITK_UCHAR);
+        f_mask = stage->fixed_mask->gpuit_uchar();
+    } else {
+        stage->fixed_mask = 0;
+        if (regd->fixed_mask) {
+            f_mask = regd->fixed_mask->gpuit_uchar();
+        }
     }
-    if (regd->fixed_mask) {
-        f_mask = regd->fixed_mask->gpuit_uchar();
+
+    if (stage->moving_mask_fn[0]) {
+        logfile_printf ("Loading moving mask: %s\n", stage->moving_mask_fn);
+        stage->moving_mask = plm_image_load (stage->moving_mask_fn, PLM_IMG_TYPE_ITK_UCHAR);
+        m_mask = stage->moving_mask->gpuit_uchar();
+    } else {
+        stage->moving_mask = 0;
+        if (regd->moving_mask) {
+            m_mask = regd->moving_mask->gpuit_uchar();
+        }
     }
 
     /* Confirm grid method.  This should go away? */
@@ -74,6 +90,8 @@ do_gpuit_bspline_stage_internal (
     );
     moving_ss = volume_subsample (moving, stage->moving_subsample_rate);
     fixed_ss = volume_subsample (fixed, stage->fixed_subsample_rate);
+
+    /* Subsample masks (if we are using them) */
     if (m_mask) {
         m_mask_ss = volume_subsample_nn (m_mask, stage->moving_subsample_rate);
     }
@@ -251,11 +269,18 @@ do_gpuit_bspline_stage_internal (
 #endif
 
     /* Free up temporary memory */
+    if (stage->fixed_mask) {
+        logfile_printf ("Freeing fixed mask.\n");
+        delete stage->fixed_mask;
+    }
+    if (stage->moving_mask) {
+        logfile_printf ("Freeing moving mask.\n");
+        delete stage->moving_mask;
+    }
+
     delete fixed_ss;
     delete moving_ss;
     delete moving_grad;
-    delete f_mask_ss;
-    delete m_mask_ss;
     bspline_parms_free (&parms);
 }
 

@@ -24,6 +24,8 @@ Registration_data::~Registration_data ()
 {
     if (fixed_landmarks) delete fixed_landmarks;
     if (moving_landmarks) delete moving_landmarks;
+    if (fixed_mask) delete fixed_mask;
+    if (moving_mask) delete moving_mask;
 }
 
 void
@@ -38,7 +40,7 @@ Registration_data::load_input_files (Registration_parms* regp)
     logfile_printf ("Loading moving image: %s\n", regp->moving_fn);
     this->moving_image = plm_image_load (regp->moving_fn, image_type);
 
-    /* Load masks */
+    /* load "global" masks */
     if (regp->fixed_mask_fn[0]) {
         logfile_printf ("Loading fixed mask: %s\n", regp->fixed_mask_fn);
         this->fixed_mask = plm_image_load (regp->fixed_mask_fn, PLM_IMG_TYPE_ITK_UCHAR);
