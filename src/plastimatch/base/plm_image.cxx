@@ -577,13 +577,14 @@ Plm_image::convert_to_gpuit_uchar (void)
     case PLM_IMG_TYPE_GPUIT_FLOAT:
         volume_convert_to_uchar ((Volume *) this->m_gpuit);
         break;
+    case PLM_IMG_TYPE_GPUIT_UCHAR:
+        return;
     default:
         print_and_exit (
             "Error: unhandled conversion from %s to itk_uchar\n",
             plm_image_type_string (this->m_type));
         return;
     }
-    this->m_type = PLM_IMG_TYPE_ITK_UCHAR;
 }
 
 
