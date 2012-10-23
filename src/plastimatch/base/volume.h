@@ -36,7 +36,7 @@ enum Volume_pixel_type {
  */
 class PLMBASE_API Volume
 {
-  public:
+public:
     plm_long dim[3];            // x, y, z Dims
     plm_long npix;              // # of voxels in volume
                                 // = dim[0] * dim[1] * dim[2] 
@@ -51,7 +51,7 @@ class PLMBASE_API Volume
     int vox_planes;                     // # planes per voxel
     int pix_size;                       // # bytes per voxel
     void* img;                          // Voxel Data
-  public:
+public:
     Volume ();
     Volume (
         const plm_long dim[3], 
@@ -67,7 +67,7 @@ class PLMBASE_API Volume
         int vox_planes
     );
     ~Volume ();
-  public:
+public:
     plm_long index (plm_long i, plm_long j, plm_long k) {
         return volume_index (this->dim, i, j, k);
     }
@@ -89,6 +89,16 @@ class PLMBASE_API Volume
     /*! \brief Convert the image voxels to a new data type */
     void convert (Volume_pixel_type new_type);
 
+    /*! \brief Get a pointer to the origin of the volume.  
+      The origin is defined as the location in world coordinates 
+      of the center of the first voxel in the volume.
+    */
+    const float* get_origin (void);
+    /*! \brief Set the origin.
+      The origin is defined as the location in world coordinates 
+      of the center of the first voxel in the volume.
+    */
+    void set_origin (const float origin[3]);
     /*! \brief Get a pointer to the direction cosines.  
       Direction cosines hold the orientation of a volume. 
       They are defined as the unit length direction vectors 
@@ -103,7 +113,7 @@ class PLMBASE_API Volume
       in the raw array of values.
     */
     void set_direction_cosines (const float direction_cosines[9]);
-  protected:
+protected:
     void allocate (void);
     void init ();
 };

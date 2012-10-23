@@ -200,6 +200,20 @@ Volume::create (
 	vh.m_direction_cosines, vox_type, vox_planes);
 }
 
+const float*
+Volume::get_origin ()
+{
+    return this->offset;
+}
+
+void
+Volume::set_origin (const float origin[3])
+{
+    for (int d = 0; d < 3; d++) {
+        this->offset[d] = origin[d];
+    }
+}
+
 float*
 Volume::get_direction_cosines ()
 {
