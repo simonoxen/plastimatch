@@ -189,6 +189,11 @@ public:
         /* Landmarks */
         landmark_stiffness = 1.0;
         landmark_flavor = 'a';
+        /* Masks */
+        moving_mask_fn[0] = '\0';
+        fixed_mask_fn[0] = '\0';
+        moving_mask = NULL;
+        fixed_mask = NULL;
         /* Output files */
         img_out_fmt = IMG_OUT_FMT_AUTO;
         img_out_type = PLM_IMG_TYPE_UNDEFINED;
