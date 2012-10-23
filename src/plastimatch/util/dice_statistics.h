@@ -16,8 +16,9 @@ class Dice_statistics_private;
  *
  * (I need to learn how to use doxygen math commands here)
  *
- * At this time, the images must be of the same size and resolution. 
- * The class will throw an exception if they are not.
+ * If the images do not have the same size and resolution, the compare 
+ * image will be resampled onto the reference image geometry prior 
+ * to comparison.  
  */
 class PLMUTIL_API Dice_statistics {
 public:
@@ -73,12 +74,9 @@ public:
     double get_reference_volume ();
     /*! \brief Return the volume of the compare image structure */
     double get_compare_volume ();
+    /*! \brief Display debugging information to stdout */
+    void debug ();
     ///@}
 };
-
-template<class T> float 
-PLMUTIL_API
-do_dice (typename itk::Image<T,3>::Pointer reference, 
-    typename itk::Image<T,3>::Pointer warped, FILE* output);
 
 #endif

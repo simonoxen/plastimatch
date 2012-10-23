@@ -265,6 +265,8 @@ endif ()
 ##   rect-5            Standard rect, centered, direction cosines alt-1
 ##   rect-6            Standard rect, centered, direction cosines alt-2
 ##   rect-7            Standard rect, centered, direction cosines alt-3
+##   rect-8            Uchar rect, off-center
+##   rect-9            Uchar rect, centered, higher resolution
 ##   sphere-1          Uchar sphere, bg=0, fg=255
 ##   sphere-2          Standard sphere, centered
 ## -------------------------------------------------------------------------
@@ -395,6 +397,18 @@ plm_add_test (
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-7.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-50 50 -50 50 -50 50;--origin;100 300 -100;--direction-cosines;rotated-3"
+  )
+plm_add_test (
+  "rect-8"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-8.mha;--output-type;uchar;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;1;--rect-size;-30 70 -50 50 -50 50"
+  )
+plm_add_test (
+  "rect-9"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-9.mha;--output-type;uchar;--pattern;rect;--dim;47 47 47;--background;0;--foreground;1;--rect-size;-50 50 -50 50 -50 50"
   )
 plm_add_test (
   "sphere-1"
@@ -1896,6 +1910,35 @@ set_tests_properties (plm-convert-dose-scale-stats PROPERTIES
   DEPENDS plm-convert-dose-scale)
 set_tests_properties (plm-convert-dose-scale-check PROPERTIES 
   DEPENDS plm-convert-dose-scale-stats)
+
+## -------------------------------------------------------------------------
+## plm-dice-a  centered and off-centered rect
+## plm-dice-a  centered rects of different resolution
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-dice-a"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "dice;${PLM_BUILD_TESTING_DIR}/rect-4.mha;${PLM_BUILD_TESTING_DIR}/rect-8.mha"
+  )
+plmtest_check_interval ("plm-dice-a-check-1"
+  "${PLM_BUILD_TESTING_DIR}/plm-dice-a.stdout.txt"
+  "^DICE: *([-0-9.]*)"
+  "0.799"
+  "0.801"
+  )
+plm_add_test (
+  "plm-dice-b"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "dice;${PLM_BUILD_TESTING_DIR}/rect-4.mha;${PLM_BUILD_TESTING_DIR}/rect-9.mha"
+  )
+plmtest_check_interval ("plm-dice-b-check-1"
+  "${PLM_BUILD_TESTING_DIR}/plm-dice-b.stdout.txt"
+  "^DICE: *([-0-9.]*)"
+  "0.999"
+  "1.000"
+  )
 
 ## -------------------------------------------------------------------------
 ## plm-dvh-a  ss-img, without ss-list

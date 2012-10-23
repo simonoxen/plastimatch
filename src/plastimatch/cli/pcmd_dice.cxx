@@ -131,7 +131,11 @@ do_command_dice (int argc, char *argv[])
     check_resolution (&image_1, &image_2);
 
     if (parms.have_dice_option) {
-        do_dice<unsigned char> (image_1, image_2, stdout);
+        Dice_statistics ds;
+        ds.set_reference_image (image_1);
+        ds.set_compare_image (image_2);
+        ds.run ();
+        ds.debug ();
     }
     if (parms.have_hausdorff_option) {
         do_hausdorff<unsigned char> (image_1, image_2);

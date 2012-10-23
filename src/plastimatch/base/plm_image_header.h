@@ -14,13 +14,13 @@ class Plm_image;
 class Volume_header;
 
 class PLMBASE_API Plm_image_header {
-  public:
+public:
     OriginType m_origin;
     SpacingType m_spacing;
     ImageRegionType m_region;
     DirectionType m_direction;
 
-  public:
+public:
     Plm_image_header () {}
     Plm_image_header (
         plm_long dim[3], float origin[3], float spacing[3])
@@ -39,14 +39,19 @@ class PLMBASE_API Plm_image_header {
     Plm_image_header (const Plm_image& pli) {
         this->set_from_plm_image (pli);
     }
-  public:
+    template<class T> 
+        Plm_image_header (T image) {
+        this->set_from_itk_image (image);
+    }
+
+public:
     int Size (int d) const { return m_region.GetSize()[d]; }
     const SizeType& GetSize (void) const { return m_region.GetSize (); }
-  public:
+public:
     /* Return 1 if the two headers are the same */
     static int compare (Plm_image_header *pli1, Plm_image_header *pli2);
 
-  public:
+public:
     void set_dim (const plm_long dim[3]);
     void set_origin (const float origin[3]);
     void set_spacing (const float spacing[3]);
