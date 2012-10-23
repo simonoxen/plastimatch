@@ -11,6 +11,7 @@
 #include "dcmtk_file.h"
 #include "dcmtk_loader.h"
 #include "dcmtk_metadata.h"
+#include "dcmtk_rt_study.h"
 #include "dcmtk_save.h"
 #include "dcmtk_series.h"
 #include "file_util.h"
@@ -202,7 +203,7 @@ Dcmtk_loader::rtdose_load ()
     unsigned long length = 0;
     if (pixel_rep == 0) {
         const uint16_t* pixel_data;
-        rc = this->ds_rtdose->m_flist.front()->get_uint16_array (
+        rc = this->ds_rtdose->get_uint16_array (
             DCM_PixelData, &pixel_data, &length);
         printf ("rc = %d, length = %lu, npix = %ld\n", 
             rc, length, (long) vol->npix);
@@ -220,7 +221,7 @@ Dcmtk_loader::rtdose_load ()
         }
     } else {
         const int16_t* pixel_data;
-        rc = this->ds_rtdose->m_flist.front()->get_int16_array (
+        rc = this->ds_rtdose->get_int16_array (
             DCM_PixelData, &pixel_data, &length);
         if (bits_stored == 16) {
             dcmtk_dose_copy (img, (const int16_t*) pixel_data, 
@@ -239,7 +240,7 @@ Dcmtk_loader::rtdose_load ()
 
 void
 Dcmtk_save::save_dose (
-    const Dcmtk_study_writer *dsw,
+    const Dcmtk_rt_study *dsw,
     const char *dicom_dir)
 {
     OFCondition ofc;
@@ -253,26 +254,24 @@ Dcmtk_save::save_dose (
     DcmFileFormat fileformat;
     DcmDataset *dataset = fileformat.getDataset();
 
-    dataset->putAndInsertString (DCM_ImageType, 
-        "DERIVED\\SECONDARY\\REFORMATTED");
-    dataset->putAndInsertOFStringArray(DCM_InstanceCreationDate, 
-        dsw->date_string);
-    dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, 
-        dsw->time_string);
-
     /* ----------------------------------------------------------------- */
     /*     Part 1  -- General header                                     */
     /* ----------------------------------------------------------------- */
+    dataset->putAndInsertString (DCM_ImageType, 
+        "DERIVED\\SECONDARY\\REFORMATTED");
     dataset->putAndInsertOFStringArray(DCM_InstanceCreationDate, 
-        dsw->date_string);
+        dsw->get_study_date());
     dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, 
-        dsw->time_string);
+        dsw->get_study_time());
     dataset->putAndInsertOFStringArray(DCM_InstanceCreatorUID, 
         PLM_UID_PREFIX);
     dataset->putAndInsertString (DCM_SOPClassUID, UID_RTDoseStorage);
-    dataset->putAndInsertString (DCM_SOPInstanceUID, dsw->dose_instance_uid);
-    dataset->putAndInsertOFStringArray (DCM_StudyDate, dsw->date_string);
-    dataset->putAndInsertOFStringArray (DCM_StudyTime, dsw->time_string);
+    dataset->putAndInsertString (DCM_SOPInstanceUID, 
+        dsw->get_dose_instance_uid());
+    dataset->putAndInsertOFStringArray (DCM_StudyDate, 
+        dsw->get_study_date());
+    dataset->putAndInsertOFStringArray (DCM_StudyTime, 
+        dsw->get_study_time());
     dataset->putAndInsertOFStringArray (DCM_AccessionNumber, "");
     dataset->putAndInsertOFStringArray (DCM_Modality, "RTDOSE");
     dataset->putAndInsertString (DCM_Manufacturer, "Plastimatch");
@@ -288,8 +287,9 @@ Dcmtk_save::save_dose (
     dataset->putAndInsertString (DCM_SliceThickness, "");
     dataset->putAndInsertString (DCM_SoftwareVersions,
         PLASTIMATCH_VERSION_STRING);
-    dataset->putAndInsertString (DCM_StudyInstanceUID, dsw->study_uid);
-    dataset->putAndInsertString (DCM_SeriesInstanceUID, dsw->dose_series_uid);
+    dataset->putAndInsertString (DCM_StudyInstanceUID, dsw->get_study_uid());
+    dataset->putAndInsertString (DCM_SeriesInstanceUID, 
+        dsw->get_dose_series_uid());
     dcmtk_put_metadata (dataset, this->dose_meta, DCM_StudyID, "10001");
     dataset->putAndInsertString (DCM_SeriesNumber, "");
     dataset->putAndInsertString (DCM_InstanceNumber, "1");
@@ -306,7 +306,8 @@ Dcmtk_save::save_dose (
 	this->dose->direction_cosines[4],
 	this->dose->direction_cosines[5]);
     dataset->putAndInsertString (DCM_ImageOrientationPatient, s.c_str());
-    dataset->putAndInsertString (DCM_FrameOfReferenceUID, dsw->for_uid);
+    dataset->putAndInsertString (DCM_FrameOfReferenceUID, 
+        dsw->get_frame_of_reference_uid());
 
     dataset->putAndInsertString (DCM_SamplesPerPixel, "1");
     dataset->putAndInsertString (DCM_PhotometricInterpretation, "MONOCHROME2");

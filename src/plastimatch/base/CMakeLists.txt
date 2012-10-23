@@ -120,12 +120,13 @@ if (DCMTK_FOUND)
     ${PLMBASE_LIBRARY_SRC}
     dcmtk_file.cxx
     dcmtk_image.cxx
+    dcmtk_loader.cxx
     dcmtk_metadata.cxx
-    dcmtk_save.cxx
-    dcmtk_series.cxx
     dcmtk_rtdose.cxx 
     dcmtk_rtss.cxx
-    dcmtk_loader.cxx
+    dcmtk_save.cxx
+    dcmtk_series.cxx
+    dcmtk_rt_study.cxx dcmtk_rt_study.h
     dcmtk_uid.cxx
     dcmtk_util.cxx
     )

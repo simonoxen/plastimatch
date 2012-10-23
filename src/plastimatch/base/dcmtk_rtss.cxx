@@ -11,6 +11,7 @@
 #include "dcmtk_file.h"
 #include "dcmtk_metadata.h"
 #include "dcmtk_loader.h"
+#include "dcmtk_rt_study.h"
 #include "dcmtk_save.h"
 #include "dcmtk_series.h"
 #include "file_util.h"
@@ -39,7 +40,7 @@ Dcmtk_loader::rtss_load (void)
 
     /* ReferencedFrameOfReferenceSequence */
     DcmSequenceOfItems *seq = 0;
-    bool rc = ds_rtss->m_flist.front()->get_sequence (
+    bool rc = ds_rtss->get_sequence (
         DCM_ReferencedFrameOfReferenceSequence, seq);
     if (!rc) {
         printf ("Huh? Why no RFOR sequence???\n");
@@ -48,8 +49,7 @@ Dcmtk_loader::rtss_load (void)
 
     /* StructureSetROISequence */
     seq = 0;
-    rc = ds_rtss->m_flist.front()->get_sequence (
-        DCM_StructureSetROISequence, seq);
+    rc = ds_rtss->get_sequence (DCM_StructureSetROISequence, seq);
     if (rc) {
         for (unsigned long i = 0; i < seq->card(); i++) {
             int structure_id;
@@ -71,7 +71,7 @@ Dcmtk_loader::rtss_load (void)
 
     /* ROIContourSequence */
     seq = 0;
-    rc = ds_rtss->m_flist.front()->get_sequence (DCM_ROIContourSequence, seq);
+    rc = ds_rtss->get_sequence (DCM_ROIContourSequence, seq);
     if (rc) {
         for (unsigned long i = 0; i < seq->card(); i++) {
             Rtss_structure *curr_structure;
@@ -209,7 +209,7 @@ Dcmtk_loader::rtss_load (void)
 
 void
 Dcmtk_save::save_rtss (
-    Dcmtk_study_writer *dsw, 
+    Dcmtk_rt_study *dsw, 
     const char *dicom_dir
 )
 {
@@ -229,15 +229,16 @@ Dcmtk_save::save_rtss (
     /*     Part 1  -- General header                                     */
     /* ----------------------------------------------------------------- */
     dataset->putAndInsertOFStringArray(DCM_InstanceCreationDate, 
-        dsw->date_string);
+        dsw->get_study_date());
     dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, 
-        dsw->time_string);
+        dsw->get_study_time());
     dataset->putAndInsertOFStringArray(DCM_InstanceCreatorUID, 
         PLM_UID_PREFIX);
     dataset->putAndInsertString (DCM_SOPClassUID, UID_RTStructureSetStorage);
-    dataset->putAndInsertString (DCM_SOPInstanceUID, dsw->rtss_instance_uid);
-    dataset->putAndInsertOFStringArray (DCM_StudyDate, dsw->date_string);
-    dataset->putAndInsertOFStringArray (DCM_StudyTime, dsw->time_string);
+    dataset->putAndInsertString (DCM_SOPInstanceUID, 
+        dsw->get_rtss_instance_uid());
+    dataset->putAndInsertOFStringArray (DCM_StudyDate, dsw->get_study_date());
+    dataset->putAndInsertOFStringArray (DCM_StudyTime, dsw->get_study_time());
     dataset->putAndInsertOFStringArray (DCM_AccessionNumber, "");
     dataset->putAndInsertOFStringArray (DCM_Modality, "RTSTRUCT");
     dataset->putAndInsertString (DCM_Manufacturer, "Plastimatch");
@@ -259,17 +260,18 @@ Dcmtk_save::save_rtss (
     // gf->InsertValEntry (xxx, 0x0018, 0x5100);
 #endif
 
-    dataset->putAndInsertString (DCM_StudyInstanceUID, dsw->study_uid);
-    dataset->putAndInsertString (DCM_SeriesInstanceUID, dsw->rtss_series_uid);
+    dataset->putAndInsertString (DCM_StudyInstanceUID, dsw->get_study_uid());
+    dataset->putAndInsertString (DCM_SeriesInstanceUID, 
+        dsw->get_rtss_series_uid());
     dcmtk_put_metadata (dataset, this->cxt_meta, DCM_StudyID, "");
     dataset->putAndInsertString (DCM_SeriesNumber, "103");
     dataset->putAndInsertString (DCM_InstanceNumber, "1");
     dataset->putAndInsertString (DCM_StructureSetLabel, "AutoSS");
     dataset->putAndInsertString (DCM_StructureSetName, "AutoSS");
     dataset->putAndInsertOFStringArray (DCM_StructureSetDate, 
-        dsw->date_string);
+        dsw->get_study_date());
     dataset->putAndInsertOFStringArray (DCM_StructureSetTime, 
-        dsw->time_string);
+        dsw->get_study_time());
 
     /* ----------------------------------------------------------------- */
     /*     Part 2  -- UID's for CT series                                */
@@ -278,7 +280,8 @@ Dcmtk_save::save_rtss (
     DcmItem *rfor_item = 0;
     dataset->findOrCreateSequenceItem (
         DCM_ReferencedFrameOfReferenceSequence, rfor_item, -2);
-    rfor_item->putAndInsertString (DCM_FrameOfReferenceUID, dsw->for_uid);
+    rfor_item->putAndInsertString (DCM_FrameOfReferenceUID, 
+        dsw->get_frame_of_reference_uid());
     dataset->findAndGetSequence (
         DCM_ReferencedFrameOfReferenceSequence, rfor_seq);
     DcmItem *rtrstudy_item = 0;
@@ -288,12 +291,12 @@ Dcmtk_save::save_rtss (
         DCM_ReferencedSOPClassUID, 
         UID_RETIRED_StudyComponentManagementSOPClass);
     rtrstudy_item->putAndInsertString (
-        DCM_ReferencedSOPInstanceUID, dsw->study_uid);
+        DCM_ReferencedSOPInstanceUID, dsw->get_study_uid());
     DcmItem *rtrseries_item = 0;
     rtrstudy_item->findOrCreateSequenceItem (
         DCM_RTReferencedSeriesSequence, rtrseries_item, -2);
     rtrseries_item->putAndInsertString (
-        DCM_SeriesInstanceUID, dsw->ct_series_uid);
+        DCM_SeriesInstanceUID, dsw->get_ct_series_uid());
     std::vector<Dcmtk_slice_data>::iterator it;
     for (it = dsw->slice_data.begin(); it < dsw->slice_data.end(); it++) {
         DcmItem *ci_item = 0;
@@ -316,7 +319,7 @@ Dcmtk_save::save_rtss (
         tmp.format ("%d", cxt->slist[i]->id);
         ssroi_item->putAndInsertString (DCM_ROINumber, tmp.c_str());
         ssroi_item->putAndInsertString (DCM_ReferencedFrameOfReferenceUID,
-            dsw->for_uid);
+            dsw->get_frame_of_reference_uid());
         ssroi_item->putAndInsertString (DCM_ROIName, cxt->slist[i]->name);
         ssroi_item->putAndInsertString (DCM_ROIGenerationAlgorithm, "");
     }

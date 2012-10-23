@@ -7,6 +7,7 @@
 #include "dcmtk/dcmdata/dctk.h"
 
 #include "dcmtk_image.h"
+#include "dcmtk_rt_study.h"
 #include "dcmtk_rtss.h"
 #include "dcmtk_save.h"
 #include "dcmtk_series.h"
@@ -50,16 +51,7 @@ void Dcmtk_save::set_image (Plm_image* img)
 void
 Dcmtk_save::save (const char *dicom_dir)
 {
-    Dcmtk_study_writer dsw;
-    DcmDate::getCurrentDate (dsw.date_string);
-    DcmTime::getCurrentTime (dsw.time_string);
-    dcmtk_uid (dsw.study_uid, PLM_UID_PREFIX);
-    dcmtk_uid (dsw.for_uid, PLM_UID_PREFIX);
-    dcmtk_uid (dsw.ct_series_uid, PLM_UID_PREFIX);
-    dcmtk_uid (dsw.rtss_series_uid, PLM_UID_PREFIX);
-    dcmtk_uid (dsw.rtss_instance_uid, PLM_UID_PREFIX);
-    dcmtk_uid (dsw.dose_series_uid, PLM_UID_PREFIX);
-    dcmtk_uid (dsw.dose_instance_uid, PLM_UID_PREFIX);
+    Dcmtk_rt_study dsw;
 
     if (this->img) {
         this->save_image (&dsw, dicom_dir);

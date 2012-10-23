@@ -11,6 +11,7 @@
 #include "compiler_warnings.h"
 #include "dcmtk_file.h"
 #include "dcmtk_loader.h"
+#include "dcmtk_series.h"
 #include "plm_image.h"
 #include "print_and_exit.h"
 

@@ -1,17 +1,18 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _dcmtk_series_set_h_
-#define _dcmtk_series_set_h_
+#ifndef _dcmtk_loader_h_
+#define _dcmtk_loader_h_
 
 #include "plmbase_config.h"
 #include <map>
 #include <string>
 
-#include "dcmtk_series.h"
-
-class Rtss_structure_set;
+class Dcmtk_series;
 class Metadata;
+class Plm_image;
+class Rtss_structure_set;
+class Volume;
 
 class Dcmtk_loader
 {

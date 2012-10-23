@@ -6,12 +6,12 @@
 
 #include "plmbase_config.h"
 
-class Dcmtk_study_writer;
+class Dcmtk_rt_study;
 class Rtds;
 
 void
 dcmtk_rtss_save (
-    Dcmtk_study_writer *dsw, 
+    Dcmtk_rt_study *dsw, 
     const Rtds *rtds,
     const char *dicom_dir);
 
