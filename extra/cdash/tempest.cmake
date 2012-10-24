@@ -7,10 +7,10 @@ SET (CTEST_INITIAL_CACHE "
 CMAKE_GENERATOR:INTERNAL=Unix Makefiles
 
 //Name of the build
-BUILDNAME:STRING=osx10.7.3-Pisr-Cd-gcc4.2-cuda4.1
+BUILDNAME:STRING=x02-osx10.7.3-Pisr-Cd
 
 //Name of the computer/site where compile is being run
-SITE:STRING=tempest
+SITE:STRING=tempest-gcc4.2-cuda5.0
 
 //Build with shared libraries.
 BUILD_SHARED_LIBS:BOOL=OFF
