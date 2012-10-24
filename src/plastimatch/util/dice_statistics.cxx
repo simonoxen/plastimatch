@@ -76,12 +76,6 @@ Dice_statistics::set_compare_image (
 void 
 Dice_statistics::run ()
 {
-    /* Make sure images have the same headers */
-    if (!itk_image_header_compare (d_ptr->ref_image, d_ptr->cmp_image)) {
-        itkGenericExceptionMacro (
-            "ERROR: The 2 volumes have different sizes.\n");
-    }
-
     /* Resample warped onto geometry of reference */
     if (!itk_image_header_compare (d_ptr->ref_image, d_ptr->cmp_image)) {
         d_ptr->cmp_image = resample_image (d_ptr->cmp_image, 
