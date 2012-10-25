@@ -42,7 +42,6 @@ Proton_Scene::~Proton_Scene ()
     delete this->patient;
     delete this->pmat;
     if (this->rpl_vol) {
-        //rpl_volume_destroy (this->rpl_vol);
         delete this->rpl_vol;
     }
 }
@@ -92,7 +91,7 @@ Proton_Scene::set_patient (Volume* ct_vol)
 }
 
 void
-Proton_Scene::print ()
+Proton_Scene::debug ()
 {
     Aperture* ap = this->ap;
     Proton_Beam* beam = this->beam;

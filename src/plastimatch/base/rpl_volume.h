@@ -6,6 +6,8 @@
 
 #include "plmbase_config.h"
 
+class Proj_volume;
+class Ray_data;
 class Rpl_volume_private;
 class Volume;
 class Volume_limit;
@@ -28,22 +30,23 @@ public:
         const double image_spacing[2], // pixel size (mm)
         const double step_length       // spacing between planes
     );
-
     void compute (Volume *ct_vol);
-
     Volume* get_volume ();
+    Proj_volume *get_proj_volume ();
     double get_rgdepth (const double *xyz);
+    void save (const std::string& filename);
     void save (const char* filename);
+
+    void compute_wed_volume (Volume *wed_vol, Volume *in_vol);
+
 protected:
     void ray_trace (
         Volume *ct_vol,              /* I: CT volume */
+        Ray_data *ray_data,          /* I: Pre-computed data for this ray */
         Volume_limit *vol_limit,     /* I: CT bounding region */
-        const double *p1,            /* I: @ source */
-        const double *p2,            /* I: @ aperture */
-        int* ires,                   /* I: ray cast resolution */
-        int ap_idx                   /* I: linear index of ray in ap */
+        const double *src,           /* I: @ source */
+        int* ires                    /* I: ray cast resolution */
     );
-
 };
 
 #endif

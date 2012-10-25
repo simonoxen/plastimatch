@@ -35,9 +35,8 @@ public:
         const double clipping_dist[2], // dist from src to clipping planes (mm)
         const double step_length       // spacing between planes
     );
-
-    void debug ();
-
+    void set_clipping_dist (const double clipping_dist[2]);
+    const int* get_image_dim ();
     int get_image_dim (int dim);
     const double* get_incr_c ();
     const double* get_incr_r ();
@@ -47,7 +46,11 @@ public:
     double get_step_length ();
     const double* get_ul_room ();
     Volume *get_volume ();
+
+    void allocate ();
     void save (const char* filename);
+
+    void debug ();
 };
 
 #endif

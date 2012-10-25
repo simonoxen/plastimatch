@@ -597,7 +597,7 @@ proton_dose_compute (Proton_Parms *parms)
     Volume*       ct_vol  = scene->patient;
     Rpl_volume*   rpl_vol = scene->rpl_vol;
 
-    scene->print ();
+    scene->debug ();
 
     Volume* dose_vol = volume_clone_empty (ct_vol);
     float* dose_img = (float*) dose_vol->img;

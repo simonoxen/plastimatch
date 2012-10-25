@@ -13,25 +13,33 @@ public:
     Proj_volume_private () {
         vol = new Volume;
         pmat = new Proj_matrix;
+
+        num_steps = 0;
+        step_length = 0.;
+        for (int d = 0; d < 2; d++) {
+            image_dim[d] = 0;
+            clipping_dist[d] = 0.;
+        }
         for (int d = 0; d < 3; d++) {
             nrm[d] = 0.;
             src[d] = 0.;
             ul_room[d] = 0.;
             incr_c[d] = 0.;
             incr_r[d] = 0.;
-            step_length = 0.;
         }
     }
 public:
     Volume *vol;
     Proj_matrix *pmat;
+    int num_steps;
+    double step_length;
+    int image_dim[2];
+    double clipping_dist[2];
     double nrm[3];
     double src[3];
     double ul_room[3];
     double incr_r[3];
     double incr_c[3];
-    int image_dim[2];
-    double step_length;
 };
 
 Proj_volume::Proj_volume () {
@@ -107,6 +115,34 @@ Proj_volume::set_geometry (
     vec3_add2 (d_ptr->ul_room, tmp);
     vec3_scale3 (tmp, d_ptr->incr_r, - image_center[1]);
     vec3_add2 (d_ptr->ul_room, tmp);
+}
+
+void
+Proj_volume::set_clipping_dist (const double clipping_dist[2])
+{
+    d_ptr->clipping_dist[0] = clipping_dist[0];
+    d_ptr->clipping_dist[1] = clipping_dist[1];
+    d_ptr->num_steps = (int) ceil (
+        (clipping_dist[1] - clipping_dist[0]) / d_ptr->step_length);
+}
+
+void
+Proj_volume::allocate ()
+{
+    plm_long dim[3] = { d_ptr->image_dim[0], d_ptr->image_dim[1], 
+                        d_ptr->num_steps };
+    float origin[3] = { 0, 0, 0 };
+    float spacing[3] = { 1, 1, 1 };
+    float direction_cosines[9] = { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
+
+    d_ptr->vol->create (dim, origin, spacing,
+        direction_cosines, PT_FLOAT, 1);
+}
+
+const int*
+Proj_volume::get_image_dim ()
+{
+    return d_ptr->image_dim;
 }
 
 int

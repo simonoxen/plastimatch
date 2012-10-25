@@ -24,9 +24,10 @@ public:
     bool have_ray_step;
     float ray_step;                 /* Uniform ray step size (mm) */
     char input_ct_fn[_MAX_PATH];    /* input:  patient volume */
-    char input_dose_fn[_MAX_PATH];  /* input:     dose volume */
+    std::string input_dose_fn;      /* input:     dose volume */
     char output_ct_fn[_MAX_PATH];   /* output: patient volume */
-    char output_dose_fn[_MAX_PATH]; /* output:    dose volume */
+    std::string output_dose_fn;     /* output:    dose volume */
+    std::string rpl_vol_fn;         /* output: rpl volume */
 
     float src[3];
     float isocenter[3];

@@ -9,6 +9,7 @@
 #include "aperture.h"
 #include "plm_image.h"
 #include "plm_math.h"
+#include "proj_volume.h"
 #include "proton_beam.h"
 #include "proton_scene.h"
 #include "ray_trace_probe.h"
@@ -95,8 +96,8 @@ wed_dose_ray_trace (
     Rpl_volume *rpl_vol,         /* I: radiographic depths */
     Volume *ct_vol,              /* I: CT volume */
     Volume_limit *vol_limit,     /* I: CT bounding region */
-    double *p1,                  /* I: @ source */
-    double *p2,                  /* I: @ aperture */
+    const double *p1,                  /* I: @ source */
+    const double *p2,                  /* I: @ aperture */
     int* ires,                   /* I: ray cast resolution */
     int ap_idx                   /* I: linear index of ray in ap */
 )
@@ -152,7 +153,6 @@ wed_dose_ray_trace (
      }
 }
 
-
 static void
 wed_volume_populate (
     Volume* wed_vol,
@@ -164,9 +164,8 @@ wed_volume_populate (
     int ires[2];
     Volume_limit ct_limit;
 
-#if defined (GCS_REFACTORING)
-
     /* A couple of abbreviations */
+    Proj_volume *proj_vol = rpl_vol->get_proj_volume();
     ires[0] = rpl_vol->get_volume()->dim[0];
     ires[1] = rpl_vol->get_volume()->dim[1];
 
@@ -180,8 +179,8 @@ wed_volume_populate (
         double tmp[3];
         double p2[3];
 
-        vec3_copy (r_tgt, rpl_vol->ap_ul_room);
-        vec3_scale3 (tmp, rpl_vol->incr_r, (double) r);
+        vec3_copy (r_tgt, proj_vol->get_ul_room());
+        vec3_scale3 (tmp, proj_vol->get_incr_r(), (double) r);
         vec3_add2 (r_tgt, tmp);
 
         for (c = 0; c < ires[1]; c++) {
@@ -191,7 +190,7 @@ wed_volume_populate (
             ap_idx = c * ires[0] + r;
 
             /* Compute p2 = 3d coordinates of point on aperture */
-            vec3_scale3 (tmp, rpl_vol->incr_c, (double) c);
+            vec3_scale3 (tmp, proj_vol->get_incr_c(), (double) c);
             vec3_add3 (p2, r_tgt, tmp);
 
             wed_dose_ray_trace (
@@ -199,19 +198,18 @@ wed_volume_populate (
                 rpl_vol,      /* I: radiographic depths */
                 ct_vol,       /* I: CT volume */
                 &ct_limit,    /* I: CT bounding region */
-                rpl_vol->cam, /* I: @ source */
+                proj_vol->get_src(), /* I: @ source */
                 p2,           /* I: @ aperture */
                 ires,         /* I: ray cast resolution */
                 ap_idx        /* I: linear index of ray in ap */
-                );
+            );
         }
     }
-#endif /* GCS_REFACTORING */
 }
 
 void
 wed_ct_compute (
-    char* out_fn,
+    const char* out_fn,
     Wed_Parms* parms,
     Plm_image *ct_vol,
     Proton_Scene *scene
@@ -220,16 +218,16 @@ wed_ct_compute (
     Volume* wed_vol;
     Rpl_volume* rpl_vol = scene->rpl_vol;
 
+#if defined (commentout)
     wed_vol = create_wed_volume (parms, scene);
     wed_volume_populate (wed_vol, ct_vol->gpuit_float(), rpl_vol);
-
     plm_image_save_vol (out_fn, wed_vol);
-
-#if 0
-    rpl_volume_save (rpl_vol, out_fn);
 #endif
-}
 
+    wed_vol = create_wed_volume (parms, scene);
+    rpl_vol->compute_wed_volume (wed_vol, ct_vol->gpuit_float());
+    plm_image_save_vol (out_fn, wed_vol);
+}
 
 int
 main (int argc, char* argv[])
@@ -241,7 +239,7 @@ main (int argc, char* argv[])
     }
 
     Plm_image* ct_vol;
-    //Plm_image* dose_vol;
+    Plm_image* dose_vol = 0;
     Proton_Scene scene;
 
     /* load the patient and insert into the scene */
@@ -251,6 +249,11 @@ main (int argc, char* argv[])
         return -1;
     }
     scene.set_patient (ct_vol);
+
+    if (parms.input_dose_fn != "" && parms.output_dose_fn != "") {
+        dose_vol = plm_image_load (parms.input_dose_fn.c_str(), 
+            PLM_IMG_TYPE_ITK_FLOAT);
+    }
 
     /* set scene parameters */
     scene.beam->set_source_position (parms.src);
@@ -270,15 +273,24 @@ main (int argc, char* argv[])
         fprintf (stderr, "ERROR: Unable to initilize scene.\n");
         return -1;
     }
+    scene.debug ();
 
-    scene.rpl_vol->save ("debug_rpl.mha");
+    if (parms.rpl_vol_fn != "") {
+        scene.rpl_vol->save (parms.rpl_vol_fn);
+    }
 
     printf ("Working...\n");
     fflush(stdout);
 
     wed_ct_compute (parms.output_ct_fn, &parms, ct_vol, &scene);
-
     printf ("done.\n");
+
+    if (parms.input_dose_fn != "" && parms.output_dose_fn != "") {
+        printf ("Trying to wed dose...\n");
+        wed_ct_compute (parms.output_dose_fn.c_str(), 
+            &parms, dose_vol, &scene);
+        printf ("Did wed dose...\n");
+    }
 
     return 0;
 }

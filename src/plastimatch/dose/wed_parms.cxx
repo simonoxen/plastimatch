@@ -24,9 +24,7 @@ Wed_Parms::Wed_Parms ()
     this->debug = 0;
     this->ray_step = 1.0f;
     this->input_ct_fn[0] = '\0';
-    this->input_dose_fn[0] = '\0';
     this->output_ct_fn[0] = '\0';
-    this->output_dose_fn[0] = '\0';
 
     this->src[0] = -1000.f;
     this->src[1] = 0.f;
@@ -80,13 +78,16 @@ Wed_Parms::set_key_val (
             strncpy (this->input_ct_fn, val, _MAX_PATH);
         }
         else if (!strcmp (key, "dose")) {
-            strncpy (this->input_dose_fn, val, _MAX_PATH);
+            this->input_dose_fn = val;
+        }
+        else if (!strcmp (key, "rpl_vol")) {
+            this->rpl_vol_fn = val;
         }
         else if (!strcmp (key, "patient_wed")) {
             strncpy (this->output_ct_fn, val, _MAX_PATH);
         }
         else if (!strcmp (key, "dose_wed")) {
-            strncpy (this->output_dose_fn, val, _MAX_PATH);
+            this->output_dose_fn = val;
         }
         break;
 

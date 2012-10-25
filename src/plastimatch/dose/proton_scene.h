@@ -21,7 +21,7 @@ public:
     ~Proton_Scene ();
 
     bool init ();
-    void print ();
+    void debug ();
     void set_patient (Plm_image*);
     void set_patient (Volume*);
     void set_step_length (double ray_step);
