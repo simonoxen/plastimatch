@@ -329,7 +329,7 @@ bspline_score_g_mse (
     memset(cond_z, 0, cond_size);
 
     // Parallel across tiles
-//#pragma omp parallel for reduction (+:num_vox,score_tile)
+#pragma omp parallel for reduction (+:num_vox,score_tile)
     LOOP_THRU_VOL_TILES (idx_tile, bxf) {
         int rc;
 
