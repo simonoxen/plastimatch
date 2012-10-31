@@ -7,6 +7,7 @@ set (ENV{PATH} "$ENV{PATH};${ITK_LIBRARY_PATH};${PLM_PLASTIMATCH_PATH};${PLM_FFT
 
 message ("PLM_TEST_COMMAND is ${PLM_TEST_COMMAND}")
 message ("PARMS is ${PARMS}")
+message ("EXPECTED_ERRNO is ${EXPECTED_ERRNO}")
 
 # CMake doesn't allow "=" to be passed in a -D parameter.  So we substitute 
 # with replacement string when calling ADD_TEST(), but need to back-substitute
@@ -53,8 +54,12 @@ file (WRITE ${STDOUT_FN} ${STDOUT})
 set (STDERR_FN "${PLM_BUILD_TESTING_DIR}/${TESTNAME}.stderr.txt")
 file (WRITE ${STDERR_FN} ${STDERR})
 
-if (${RESULT} EQUAL 0)
+
+if (NOT DEFINED EXPECTED_ERRNO)
+  set (EXPECTED_ERRNO 0)
+endif ()
+if (${RESULT} EQUAL ${EXPECTED_ERRNO})
   message ("Not an error")
 else ()
   message (SEND_ERROR "An error")
-endif (${RESULT} EQUAL 0)
+endif ()
