@@ -5,6 +5,7 @@
 #define _rpl_volume_h_
 
 #include "plmbase_config.h"
+#include <string>
 
 class Proj_volume;
 class Ray_data;
