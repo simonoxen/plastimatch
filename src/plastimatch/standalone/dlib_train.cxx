@@ -269,6 +269,7 @@ get_svr_c (
     range.set_option (parser, "svr-c", default_svr_c);
 }
 
+#if defined (commentout)
 static double
 get_svr_epsilon_insensitivity (
     clp& parser,
@@ -288,6 +289,7 @@ get_svr_epsilon_insensitivity (
     }
     return epsilon_insensitivity;
 }
+#endif
 
 static void
 krls_test (

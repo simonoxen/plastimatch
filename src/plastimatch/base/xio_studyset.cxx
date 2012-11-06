@@ -49,16 +49,16 @@ Xio_studyset::Xio_studyset (const char *input_dir)
     // Plastimatch only supports volumes with uniform voxel sizes
     // If slice thickness is not uniform, extract the largest uniform chunk
 
-    float best_chunk_diff;
-    int best_chunk_start;
-    int best_chunk_len;
+    float best_chunk_diff = 0.f;
+    int best_chunk_start = 0;
+    int best_chunk_len = 0;
 
     if (all_number_slices > 1) {
 
 	float z_diff;
-	float this_chunk_diff;
-	int this_chunk_start;
-	int this_chunk_len;
+	float this_chunk_diff = 0.f;
+	int this_chunk_start = 0;
+	int this_chunk_len = 0;
 
 	for (int i = 1; i < all_number_slices; i++) {
 	    z_diff = all_slices[i].location - all_slices[i-1].location;

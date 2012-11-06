@@ -440,6 +440,7 @@ bspline_update_grad_b_inline (Bspline_state* bst, Bspline_xform* bxf,
 }
 #endif
 
+#if defined (commentout)
 static void display_hist_totals (Bspline_mi_hist *mi_hist)
 {
     plm_long i;
@@ -460,7 +461,7 @@ static void display_hist_totals (Bspline_mi_hist *mi_hist)
     }
     printf ("j_hist total: %f\n", tmp);
 }
-
+#endif
 
 
 ////////////////////////////////////////////////////////////////////////////////

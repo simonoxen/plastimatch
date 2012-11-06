@@ -441,7 +441,7 @@ Rpl_volume::compute_wed_volume (Volume *wed_vol, Volume *in_vol)
                 /* Compute the currently required rpl for this step */
                 double req_rpl = wijk[2] * 1.0;
 
-                if (debug) printf ("--- (%d,%f)\n", wijk[2], req_rpl);
+                if (debug) printf ("--- (%d,%f)\n", (int) wijk[2], req_rpl);
 
                 /* Loop through input voxels looking for appropriate 
                    value */
@@ -449,7 +449,7 @@ Rpl_volume::compute_wed_volume (Volume *wed_vol, Volume *in_vol)
                     plm_long ridx = volume_index (rvol->dim, rijk);
                     double curr_rpl = rvol_img[ridx];
 
-                    if (debug) printf ("(%d,%f)\n", rijk[2], curr_rpl);
+                    if (debug) printf ("(%d,%f)\n", (int) rijk[2], curr_rpl);
 
                     /* Test if the current input voxel is suitable */
                     if (curr_rpl > req_rpl) {
@@ -470,7 +470,8 @@ Rpl_volume::compute_wed_volume (Volume *wed_vol, Volume *in_vol)
 
                         if (debug) {
                             printf ("%f %f %f\n", xyz[0], xyz[1], xyz[2]);
-                            printf ("%d %d %d\n", in_ijk[0], in_ijk[1], in_ijk[2]);
+                            printf ("%d %d %d\n", (int) in_ijk[0], 
+                                (int) in_ijk[1], (int) in_ijk[2]);
                         }
 
                         if (in_ijk[2] < 0 || in_ijk[2] >= in_vol->dim[2])

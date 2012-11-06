@@ -183,7 +183,7 @@ Proton_Parms::set_key_val (
         }
         else if (!strcmp (key, "center")) {
             float ic[2];
-            if (sscanf (val, "%lf %lf", &ic[0], &ic[1]) != 2) {
+            if (sscanf (val, "%f %f", &ic[0], &ic[1]) != 2) {
                 goto error_exit;
             }
             scene->ap->set_center (ic);
