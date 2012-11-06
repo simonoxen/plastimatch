@@ -38,6 +38,7 @@ set (PLASTIMATCH_SRC
   pcmd_scale.cxx
   pcmd_script.cxx 
   pcmd_segment.cxx 
+  pcmd_sift.cxx
   pcmd_stats.cxx 
   pcmd_synth.cxx 
   pcmd_synth_vf.cxx 

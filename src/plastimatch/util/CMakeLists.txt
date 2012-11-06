@@ -41,6 +41,7 @@ set (PLMUTIL_LIBRARY_SRC
   rtds_gdcm.cxx
   rtds_warp.cxx 
   rtss.cxx
+  sift.cxx
   simplify_points.cxx 
   slice_extract.cxx
   ss_img_extract.cxx

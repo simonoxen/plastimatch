@@ -27,6 +27,7 @@
 #include "pcmd_scale.h"
 #include "pcmd_script.h"
 #include "pcmd_segment.h"
+#include "pcmd_sift.h"
 #include "pcmd_stats.h"
 #include "pcmd_synth.h"
 #include "pcmd_synth_vf.h"
@@ -68,7 +69,6 @@ print_usage (int return_code)
         "  fill        "
         "  header      "
 	"  jacobian    "
-//        "  mask        "
         "  mask        "
         "  probe       "
         "\n"
@@ -76,6 +76,7 @@ print_usage (int return_code)
         "  resample    "
         "  scale       "
         "  segment     "
+//        "  sift        "
         "  stats       "
         "\n"
         "  synth       "
@@ -205,6 +206,9 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "segment")) {
         do_command_segment (argc, argv);
+    }
+    else if (!strcmp (command, "sift")) {
+        do_command_sift (argc, argv);
     }
     else if (!strcmp (command, "slice")) {
         print_and_exit ("Error: slice command is now called thumbnail.\n");
