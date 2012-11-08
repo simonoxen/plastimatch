@@ -5,24 +5,49 @@
 #include <string.h>
 #include <stddef.h>
 #include <itkScaleInvariantFeatureImageFilter.h>
-#include <itkImageSeriesReader.h>
-#include <itkNumericSeriesFileNames.h>
-#include <itkAffineTransform.h>
-#include <getopt.h>
-#include <itkLinearInterpolateImageFunction.h>
-#include <itkResampleImageFilter.h>
+//#include <itkImageSeriesReader.h>
+//#include <itkNumericSeriesFileNames.h>
+//#include <itkAffineTransform.h>
+//#include <itkLinearInterpolateImageFunction.h>
+//#include <itkResampleImageFilter.h>
 
+#include "itk_image_type.h"
 #include "sift.h"
+
+typedef itk::ScaleInvariantFeatureImageFilter<
+    FloatImageType, 3> SiftFilterType;
 
 class Sift_private {
 public:
     Sift_private () {
-        have_reference_dose = false;
-        have_gamma_image = false;
+        image_doubled = false;
+        octave = 3;
+        initial_sigma1 = 2;
+        initial_sigma2 = 2;
+        descriptor_dimension = 8;
+        contrast = 0.03;
+        curvature = 172.3025;
+        flag_curve = true;
+        normalization = true;
+        match_ratio = 0.9;
     }
 public:
-    bool have_reference_dose;
-    bool have_gamma_image;
+    bool image_doubled;   //false: no doubling; true: doubling
+    unsigned int octave;  //number of octave
+    float initial_sigma1; //float	initial_sigma_sy = 1.5;
+    float initial_sigma2;
+    float descriptor_dimension;
+    float contrast;       //if we assume image pixel value in the range [0,1]
+    float curvature;      //if we assume image pixel value in the range [0,1]
+    bool flag_curve;      //1: curvature; 0: no curvature;
+    bool normalization;   //true: normalization of input image for 
+                          //contrast&curvature thresholds definition 
+    float match_ratio;    //from 0 (no matches) to 1 (all matches)
+
+
+    FloatImageType::Pointer image;
+    SiftFilterType::PointSetTypePointer keypoints;
+    SiftFilterType sift_filter;
 };
 
 Sift::Sift () {
@@ -34,12 +59,29 @@ Sift::~Sift () {
 }
 
 void
-Sift::run () {
-    
+Sift::run ()
+{
+    d_ptr->sift_filter.SetDoubling(d_ptr->image_doubled);
+    d_ptr->sift_filter.SetNumScales(d_ptr->octave);
+    d_ptr->sift_filter.SetInitialSigma(d_ptr->initial_sigma1);
+    d_ptr->sift_filter.SetContrast(d_ptr->contrast);
+    d_ptr->sift_filter.SetCurvature(d_ptr->curvature);
+    d_ptr->sift_filter.SetDescriptorDimension(d_ptr->descriptor_dimension);
+    d_ptr->sift_filter.SetMatchRatio(d_ptr->match_ratio);
+
+    /* output keypoints from image */
+    d_ptr->keypoints = d_ptr->sift_filter.getSiftFeatures (
+        d_ptr->image, 
+        d_ptr->flag_curve,
+        d_ptr->normalization, 
+        "phy_max1.fcsv",
+        "phy_max2.fcsv",
+        "imagecoord_max1.txt",
+        "imagecoord_min1.txt",
+        "point_rej_contrast1.fcsv",
+        "point_rej_curvature1.fcsv"
+    );
 }
-
-
-
 
 /**************************************************************************/
 #define DIMENSION 3
@@ -473,19 +515,19 @@ int main( int argc, char *argv[] )
         siftFilter2.SetNumScales(octave);
         siftFilter2.SetDescriptorDimension(descriptor_dimension);
         siftFilter2.SetInitialSigma(initial_sigma2);
-		siftFilter2.SetContrast(contrast);
+        siftFilter2.SetContrast(contrast);
         siftFilter2.SetCurvature(curvature);
-		siftFilter2.SetMatchRatio(match_ratio);
+        siftFilter2.SetMatchRatio(match_ratio);
 
-		//output keypoints from ImageFile2
-		keypoints2 = siftFilter2.getSiftFeatures(fixedImage2,flag_curve,normalization,point_max2,point_min2,"imagecoord_max2.txt","imagecoord_min2.txt","point_rej_contrast2.fcsv","point_rej_curvature2.fcsv");
-	  }
+        //output keypoints from ImageFile2
+        keypoints2 = siftFilter2.getSiftFeatures(fixedImage2,flag_curve,normalization,point_max2,point_min2,"imagecoord_max2.txt","imagecoord_min2.txt","point_rej_contrast2.fcsv","point_rej_curvature2.fcsv");
+    }
   
-  // ---- MATCHING:
-  std::cerr << std::endl << "Matching Keypoints\n";  
-  siftFilter2.MatchKeypointsFeatures(keypoints1, keypoints2, point_match1, point_match2);
+    // ---- MATCHING:
+    std::cerr << std::endl << "Matching Keypoints\n";  
+    siftFilter2.MatchKeypointsFeatures(keypoints1, keypoints2, point_match1, point_match2);
 
-  return 0;
+    return 0;
 
 }
 
