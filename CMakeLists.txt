@@ -752,6 +752,11 @@ endif ()
 ##  VTK
 ##-----------------------------------------------------------------------------
 find_package (VTK)
+if (VTK_FOUND)
+  message (STATUS "VTK version ${VTK_VERSION}")
+else ()
+  message (STATUS "VTK not found")
+endif ()
 # GCS 2012-05-14: Including VTK_USE_FILE causes VTK to pollute the 
 # include directory list, which causes cuda to fail to compile
 #if (VTK_FOUND)
