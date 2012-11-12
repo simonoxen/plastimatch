@@ -257,7 +257,8 @@ endif ()
 ##   gauss-7           Off-center gauss with wider sigma
 ##   gauss-ushort-1    Centered gauss, ushort
 ##   gauss-ushort-2    Off-center gauss, ushort
-##   lung-1            Synthetic lung
+##   lung-1            Synthetic lung, tumor position 0
+##   lung-2            Synthetic lung, tumor position -5
 ##   rect-1            Inverted rect, centered
 ##   rect-2            Standard rect, off-center
 ##   rect-3            Standard rect, centered
@@ -340,7 +341,12 @@ plm_add_test (
 plm_add_test (
   "lung-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--output;${PLM_BUILD_TESTING_DIR}/lung-1.mha;--output-dicom;${PLM_BUILD_TESTING_DIR}/lung-1-dicom;--pattern;lung"
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/lung-1.mha;--output-dicom;${PLM_BUILD_TESTING_DIR}/lung-1-dicom;--pattern;lung;--lung-tumor-pos;0"
+  )
+plm_add_test (
+  "lung-2"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/lung-2.mha;--output-dicom;${PLM_BUILD_TESTING_DIR}/lung-1-dicom;--pattern;lung;--lung-tumor-pos;-5"
   )
 plm_add_test (
   "rect-1"
@@ -2796,6 +2802,30 @@ plmtest_check_interval ("plm-scale-vf-a-check"
 set_tests_properties (plm-scale-vf-a PROPERTIES DEPENDS vf-trans-1)
 set_tests_properties (plm-scale-vf-a-stats PROPERTIES DEPENDS plm-scale-vf-a)
 set_tests_properties (plm-scale-vf-a-check PROPERTIES DEPENDS plm-scale-vf-a-stats)
+
+## -------------------------------------------------------------------------
+## plastimatch sift
+##  plm-sift-a       Run SIFT on rect
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-sift-a"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "sift;--output-ps-1;${PLM_BUILD_TESTING_DIR}/plm-sift-a-ps-1.fcsv;--output-ps-2;${PLM_BUILD_TESTING_DIR}/plm-sift-a-ps-2.fcsv;--output-match-1;${PLM_BUILD_TESTING_DIR}/plm-sift-a-match-1.fcsv;--output-match-2;${PLM_BUILD_TESTING_DIR}/plm-sift-a-match-2.fcsv;${PLM_BUILD_TESTING_DIR}/lung-1.mha;${PLM_BUILD_TESTING_DIR}/lung-2.mha"
+  )
+plmtest_check_string ("plm-sift-a-check-1" 
+  "${PLM_BUILD_TESTING_DIR}/plm-sift-a-match-1.fcsv"
+  "^p1-1,(.*)"
+  "-7.500,7.500,-17.500"
+  )
+plmtest_check_string ("plm-sift-a-check-2" 
+  "${PLM_BUILD_TESTING_DIR}/plm-sift-a-match-2.fcsv"
+  "^p1-1,(.*)"
+  "-7.500,7.500,-22.500"
+  )
+set_tests_properties (plm-sift-a PROPERTIES DEPENDS "lung-1")
+set_tests_properties (plm-sift-a PROPERTIES DEPENDS "lung-2")
+set_tests_properties (plm-sift-a-check-1 PROPERTIES DEPENDS plm-sift-a)
+set_tests_properties (plm-sift-a-check-2 PROPERTIES DEPENDS plm-sift-a)
 
 ## -------------------------------------------------------------------------
 ## plm-thumbnail-a: make png file of sphere

@@ -12,6 +12,8 @@
 //#include <itkResampleImageFilter.h>
 
 #include "itk_image_type.h"
+#include "plm_image.h"
+#include "print_and_exit.h"
 #include "sift.h"
 
 typedef itk::ScaleInvariantFeatureImageFilter<
@@ -30,6 +32,11 @@ public:
         flag_curve = true;
         normalization = true;
         match_ratio = 0.9;
+
+        image = 0;
+    }
+    ~Sift_private () {
+        delete image;
     }
 public:
     bool image_doubled;   //false: no doubling; true: doubling
@@ -45,7 +52,7 @@ public:
     float match_ratio;    //from 0 (no matches) to 1 (all matches)
 
 
-    FloatImageType::Pointer image;
+    Plm_image *image;
     SiftFilterType::PointSetTypePointer keypoints;
     SiftFilterType sift_filter;
 };
@@ -59,8 +66,23 @@ Sift::~Sift () {
 }
 
 void
+Sift::set_image (const char* image_fn)
+{
+    d_ptr->image = new Plm_image (image_fn);
+}
+
+void
+Sift::set_image (const std::string& image_fn)
+{
+    this->set_image (image_fn.c_str());
+}
+
+void
 Sift::run ()
 {
+    if (!d_ptr->image) {
+        print_and_exit ("Error: image not defined for Sift::run()\n");
+    }
     d_ptr->sift_filter.SetDoubling(d_ptr->image_doubled);
     d_ptr->sift_filter.SetNumScales(d_ptr->octave);
     d_ptr->sift_filter.SetInitialSigma(d_ptr->initial_sigma1);
@@ -71,7 +93,13 @@ Sift::run ()
 
     /* output keypoints from image */
     d_ptr->keypoints = d_ptr->sift_filter.getSiftFeatures (
-        d_ptr->image, 
+        d_ptr->image->itk_float(), 
+        d_ptr->flag_curve,
+        d_ptr->normalization, 
+        "", "", "", "", "", "");
+/*
+    d_ptr->keypoints = d_ptr->sift_filter.getSiftFeatures (
+        d_ptr->image->itk_float(), 
         d_ptr->flag_curve,
         d_ptr->normalization, 
         "phy_max1.fcsv",
@@ -81,7 +109,36 @@ Sift::run ()
         "point_rej_contrast1.fcsv",
         "point_rej_curvature1.fcsv"
     );
+*/
 }
+
+itk::ScaleInvariantFeatureImageFilter<FloatImageType,3>::PointSetTypePointer
+Sift::get_keypoints ()
+{
+    return d_ptr->keypoints;
+}
+
+void
+Sift::save_pointset (const char* filename)
+{
+    d_ptr->sift_filter.save_pointset (filename);
+}
+
+void
+Sift::match_features (
+    Sift& sift1, Sift& sift2,
+    const char* filename1, const char* filename2, 
+    float match_ratio)
+{
+    itk::ScaleInvariantFeatureImageFilter<FloatImageType,3>
+        ::PointSetTypePointer keypoints1, keypoints2;
+    keypoints1 = sift1.get_keypoints ();
+    keypoints2 = sift2.get_keypoints ();
+
+    SiftFilterType::MatchKeypointsFeatures (
+        keypoints1, keypoints2, filename1, filename2, match_ratio);
+}
+
 
 /**************************************************************************/
 #define DIMENSION 3
@@ -530,6 +587,5 @@ int main( int argc, char *argv[] )
     return 0;
 
 }
-
 
 #endif

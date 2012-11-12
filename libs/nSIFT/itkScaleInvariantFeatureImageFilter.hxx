@@ -278,7 +278,7 @@ ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
                 tmpIndex[k] = 0;
             } else {
                 tmpIndex[k] = pixelIndex[k] + delta[k];
-                if (tmpIndex[k] >= regionSize[k])
+                if (((SizeValueType) tmpIndex[k]) >= regionSize[k])
                     tmpIndex[k] = regionSize[k]-1;
             }
             //std::cout << "tmpIndex: "<< tmpIndex[k] << std::endl;
@@ -602,7 +602,16 @@ ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
 template <class TFixedImageType, int VDimension> 
 typename ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>::PointSetTypePointer
 ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
-::getSiftFeatures(FixedImagePointer fixedImageInput, bool flag_curve,bool normalization, const char *filename_phy_max, const char *filename_phy_min,const char *filename_im_max, const char *filename_im_min,const char *filename_rej_contrast,const char *filename_rej_curvature)
+::getSiftFeatures (
+    FixedImagePointer fixedImageInput, 
+    bool flag_curve,
+    bool normalization, 
+    const char *filename_phy_max, 
+    const char *filename_phy_min,
+    const char *filename_im_max, 
+    const char *filename_im_min,
+    const char *filename_rej_contrast,
+    const char *filename_rej_curvature)
 {
     unsigned int numMin = 0, numMax = 0, numReject = 0;
     m_KeypointSet = PointSetType::New();
@@ -1059,20 +1068,22 @@ ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
                     //std::cout << "max phys coord: "<< point << std::endl;
                     //std::cout << "max image coord: "<< pixelIndex << std::endl;
 	     
-                    FILE* pFile;
-                    pFile=fopen(filename_phy_max,"a");
-                    //FILE* pFile1;
-                    //pFile1=fopen(filename_im_max,"a");
-                    //physical coordinates
-                    point[0]=-1.0*point[0];
-                    point[1]=-1.0*point[1];	
-                    fprintf(pFile, "M-%d-%d-%d,", numMax,i,j);
-                    for(int k=0; k<VDimension; k++)
-                    {	  		
-	  		fprintf(pFile,"%.3f, ",point[k]);
-                    } 	  
-                    fprintf(pFile,"\n");
-                    fclose(pFile);
+                    if (filename_phy_max && filename_phy_max[0]) {
+                        FILE* pFile;
+                        pFile=fopen(filename_phy_max,"a");
+                        //FILE* pFile1;
+                        //pFile1=fopen(filename_im_max,"a");
+                        //physical coordinates
+                        point[0]=-1.0*point[0];
+                        point[1]=-1.0*point[1];	
+                        fprintf(pFile, "M-%d-%d-%d,", numMax,i,j);
+                        for(int k=0; k<VDimension; k++)
+                        {	  		
+                            fprintf(pFile,"%.3f, ",point[k]);
+                        } 	  
+                        fprintf(pFile,"\n");
+                        fclose(pFile);
+                    }
 	  		
                     //image coordinates
                     /*point[0]=-1.0*point[0];
@@ -1093,21 +1104,22 @@ ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
                     ++numMin;
                     //std::cout << "min phys coord: "<< point << std::endl;
                     //std::cout << "min image coord: "<< pixelIndex << std::endl;
-	   	
-                    FILE* pFile;
-                    pFile=fopen(filename_phy_min,"a");
-                    //pFile1=fopen(filename_im_min,"a");
-                    //physical coordinates
-                    point[0]=-1.0*point[0];
-                    point[1]=-1.0*point[1];	
-                    fprintf(pFile, "m-%d-%d-%d,", numMin,i,j);
-                    for(int k=0; k<VDimension; k++)
-                    {
-	  		fprintf(pFile,"%.3f, ",point[k]);
-                    } 	  
-                    fprintf(pFile,"\n");
-                    fclose(pFile);
-	  	
+
+                    if (filename_phy_min && filename_phy_min[0]) {
+                        FILE* pFile;
+                        pFile=fopen(filename_phy_min,"a");
+                        //pFile1=fopen(filename_im_min,"a");
+                        //physical coordinates
+                        point[0]=-1.0*point[0];
+                        point[1]=-1.0*point[1];	
+                        fprintf(pFile, "m-%d-%d-%d,", numMin,i,j);
+                        for(int k=0; k<VDimension; k++)
+                        {
+                            fprintf(pFile,"%.3f, ",point[k]);
+                        } 	  
+                        fprintf(pFile,"\n");
+                        fclose(pFile);
+                    }
                     //image coordinates
                     /*point[0]=-1.0*point[0];
                       point[1]=-1.0*point[1];
@@ -1122,7 +1134,6 @@ ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
                       fclose(pFile1);*/
                 }
                 //std::cout << "current scale: "<< currScale << std::endl;
-
             }
 #ifdef VERBOSE
             std::cout << "Acc. Num Max: " << numMax 
@@ -1149,8 +1160,29 @@ ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
 template <class TFixedImageType, int VDimension> 
 void
 ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
-::MatchKeypointsFeatures(PointSetTypePointer keypoints1, PointSetTypePointer keypoints2,
-    char *filename_phy_match1, char *filename_phy_match2)
+::save_pointset (const char* filename)
+{
+    FILE *fp = fopen (filename, "w");
+    unsigned long num_points = m_KeypointSet->GetNumberOfPoints();
+    for (unsigned int i = 0; i < num_points; ++i) {
+        PointType point;
+        point.Fill(0.0);
+        m_KeypointSet->GetPoint(i, &point);
+        fprintf (fp, "p-%03d,%f,%f,%f\n", i, - point[0], - point[1], point[2]);
+//        FeatureType ft2;
+//        m_KeypointSet->GetPointData(i, &ft2);
+//        std::cout << ft2 << "\n";
+    }
+    fclose (fp);
+}
+
+template <class TFixedImageType, int VDimension> 
+void
+ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
+::MatchKeypointsFeatures(
+    PointSetTypePointer keypoints1, PointSetTypePointer keypoints2,
+    const char *filename_phy_match1, const char *filename_phy_match2,
+    float max_feature_distance_ratio)
 {
     // Compare Keypoints.  Check Coverage and Accuracy
     // This does the comparison based on position of the keypoints
@@ -1159,14 +1191,21 @@ ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
     // # of points that did not scale
     // # of points created by the scale
 
-    FILE* pFileMatch1;
-    FILE* pFileMatch2;
+    FILE* fp1 = 0;
+    FILE* fp2 = 0;
     unsigned int numMatches;
     unsigned int numMatchesTried;
     unsigned int numMatches2;
     unsigned int numMatches5;
-    const double MATCH_THRESHOLD = 0.05; //1.5;
     typename PointSetType::PointsContainer::Pointer keyps1, keyps2;
+
+    /* Open files, we will stream into them */
+    if (filename_phy_match1 && filename_phy_match1[0]) {
+        fp1 = fopen (filename_phy_match1, "w");
+    }
+    if (filename_phy_match2 && filename_phy_match2[0]) {
+        fp2 = fopen (filename_phy_match2, "w");
+    }
 
     unsigned long numpoints1, numpoints2;
     numpoints1 = keypoints1->GetNumberOfPoints();
@@ -1197,6 +1236,7 @@ ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
             FeatureType ft;
             keypoints1->GetPointData(j, &ft);	
 
+            /* Compute feature distance */
             float dist = 0.0;
             for (unsigned int k = 0; k < ft.Size(); ++k)
             {
@@ -1215,17 +1255,16 @@ ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
 
             //std::cout << "bestdist= "<<bestdist<<std::endl;
             //std::cout << "nextbestdist= "<<nextbestdist<<std::endl;
-
         }
 
         /* Reject "too close" matches */
-        if ((bestdist / nextbestdist) >  m_MaxFeatureDistanceRatio)
+//        if ((bestdist / nextbestdist) >  m_MaxFeatureDistanceRatio)
+        if ((bestdist / nextbestdist) > max_feature_distance_ratio)
         {
-            //  //std::cout << "MATCH REJECTED 1:" << std::endl;
-		
-            PointType pp;
-            keypoints1->GetPoint(bestj, &pp);
-            ////std::cout << pp << std::endl;
+            //std::cout << "MATCH REJECTED 1:" << std::endl;
+            //PointType pp;
+            //keypoints1->GetPoint(bestj, &pp);
+            //std::cout << pp << std::endl;
 
             //matches rejected on Image1:
             /*FILE* pFileMatch1_rej;
@@ -1263,12 +1302,13 @@ ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
             continue;
         }	
 
-        /* NEW IDEA: Bi-directional mapping -- look to make sure it is a reciprocal best match */
+        /* NEW IDEA: Bi-directional mapping -- look to make sure it is a 
+           reciprocal best match */
         /* Take the best feature found,  see if pp2 makes the cut */
         bestdist = -1.0;
         nextbestdist = -1.0;
         FeatureType bestft2;
-        unsigned int bestj2;
+        unsigned int bestj2 = -1;
 
         for (unsigned int j = 0; j < numpoints2; ++j) {
             PointType pp;
@@ -1286,49 +1326,47 @@ ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
                 bestdist=dist;
                 bestft2 = ft;
                 bestj2 = j;
-            }	  
+            }
         }
 
         /* Reject if not reciprocal best hit or "too close" matches */
-        if ( bestft2 != ft2 || ((bestdist / nextbestdist) >  m_MaxFeatureDistanceRatio))
-            continue;	
+//        if ( bestft2 != ft2 || ((bestdist / nextbestdist) >  m_MaxFeatureDistanceRatio))
+        if (bestft2 != ft2 
+            || (bestdist / nextbestdist) > max_feature_distance_ratio)
+        {
+            continue;
+        }
         /* END NEW IDEA */
 
         ++numMatchesTried;
 
         // Check goodness of best feature
         PointType tmpp, pp;
+        tmpp.Fill (0.0);
+        pp.Fill (0.0);
         keypoints1->GetPoint(bestj, &tmpp);
 
         // Print the match
         std::cout << tmpp << " => " << pp2 << std::endl;
 
-        pFileMatch1=fopen(filename_phy_match1,"a");
-        tmpp[0]=-1.0*tmpp[0];
-        tmpp[1]=-1.0*tmpp[1];
-        fprintf(pFileMatch1, "p1-%d,",bestj);
-        for(int k=0; k<VDimension; k++)
-        {
-            fprintf(pFileMatch1,"%.3f, ",tmpp[k]);
-        } 	  
-        fprintf(pFileMatch1,"\n");
-        fclose(pFileMatch1);
-
-        pFileMatch2=fopen(filename_phy_match2,"a");
-        pp2[0]=-1.0*pp2[0];
-        pp2[1]=-1.0*pp2[1];
-        fprintf(pFileMatch2, "p2-%d,",bestj2);
-        for(int k=0; k<VDimension; k++)
-        {
-            fprintf(pFileMatch2,"%.3f, ",pp2[k]);
-        } 	  
-        fprintf(pFileMatch2,"\n");
-        fclose(pFileMatch2);
-
+        if (fp1) {
+            fprintf (fp1, "p1-%d,%.3f,%.3f,%.3f\n",
+                bestj, - tmpp[0], - tmpp[1], tmpp[2]);
+        }
+        
+        if (fp2) {
+            fprintf (fp2, "p1-%d,%.3f,%.3f,%.3f\n",
+                bestj, - pp2[0], - pp2[1], pp2[2]);
+        }
     }
 
     std::cout << "\n***Features Matches: " << numMatchesTried << std::endl;
-    
+    if (fp1) {
+        fclose (fp1);
+    }
+    if (fp2) {
+        fclose (fp2);
+    }
 }
 
 } // end namespace itk
