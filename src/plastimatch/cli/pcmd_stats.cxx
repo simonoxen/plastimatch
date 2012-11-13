@@ -3,6 +3,7 @@
    ----------------------------------------------------------------------- */
 #include "plmcli_config.h"
 
+#include "gdcm1_dose.h"
 #include "itk_image_load.h"
 #include "itk_image_stats.h"
 #include "mha_io.h"
@@ -118,23 +119,51 @@ stats_img_main (Stats_parms* parms, const std::string& current_fn)
 }
 
 static void
+stats_dicom_dose (Stats_parms* parms, const std::string& current_fn)
+{
+#if PLM_DCM_USE_DCMTK
+    /* Sorry, not yet supported */
+#elif GDCM_VERSION_1
+    Plm_image *dose = gdcm1_dose_load (
+        0, current_fn.c_str(), 0);
+    FloatImageType::Pointer img = dose->itk_float ();
+    double min_val, max_val, avg;
+    int non_zero, num_vox;
+    itk_image_stats (img, &min_val, &max_val, &avg, &non_zero, &num_vox);
+
+    printf ("MIN %f AVE %f MAX %f NONZERO %d NUMVOX %d\n", 
+	(float) min_val, (float) avg, (float) max_val, non_zero, num_vox);
+
+    delete dose;
+#endif
+}
+
+static void
 stats_main (Stats_parms* parms)
 {
     std::list<std::string>::iterator it = parms->input_fns.begin();
     while (it != parms->input_fns.end()) {
         std::string current_fn = *it;
-        switch (plm_file_format_deduce (current_fn)) {
+        Plm_file_format file_format = plm_file_format_deduce (current_fn);
+        switch (file_format) {
+        case PLM_FILE_FMT_IMG:
+            stats_img_main (parms, current_fn);
+            break;
         case PLM_FILE_FMT_VF:
             stats_vf_main (parms, current_fn);
             break;
         case PLM_FILE_FMT_PROJ_IMG:
             stats_proj_image_main (parms, current_fn);
             break;
+        case PLM_FILE_FMT_DICOM_DOSE:
+            stats_dicom_dose (parms, current_fn);
+            break;
         case PLM_FILE_FMT_SS_IMG_VEC:
             stats_ss_image_main (parms, current_fn);
             break;
-        case PLM_FILE_FMT_IMG:
         default:
+            printf ("Warning, stats requested for file type: %s\n",
+                plm_file_format_string (file_format));
             stats_img_main (parms, current_fn);
             break;
         }
