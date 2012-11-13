@@ -35,7 +35,7 @@ namespace gdcm
 //-----------------------------------------------------------------------------
 // Constructor / Destructor
 /**
- * \brief   Constructor from a given SerieHelper2
+ * brief   Constructor from a given SerieHelper2
  */
 SerieHelper2::SerieHelper2()
 {
@@ -47,7 +47,7 @@ SerieHelper2::SerieHelper2()
 }
 
 /**
- * \brief   Canonical destructor.
+ * brief   Canonical destructor.
  */
 SerieHelper2::~SerieHelper2()
 {
@@ -55,7 +55,7 @@ SerieHelper2::~SerieHelper2()
 }
 
 /**
- * \brief  Preventively, clear everything at constructor time.
+ * brief  Preventively, clear everything at constructor time.
  *         ( use it at destructor time.)
  */
 void SerieHelper2::ClearAll()
@@ -85,7 +85,7 @@ void SerieHelper2::ClearAll()
 
 // Public
 /**
- * \brief add a gdcm::File to the Fileset corresponding to its Serie UID
+ * brief add a gdcm::File to the Fileset corresponding to its Serie UID
  * @param   filename Name of the file to deal with
  */
 void SerieHelper2::AddFileName(std::string const &filename)
@@ -119,7 +119,7 @@ void SerieHelper2::AddFileName(std::string const &filename)
 }
 
 /**
- * \brief add a gdcm::File to the first (and supposed to be unique) file set
+ * brief add a gdcm::File to the first (and supposed to be unique) file set
  *        of the gdcm::SerieHelper2.
  * \warning : this method should be used by aware users only!
  *           Passing a gdcm::File* has the same effect than passing a file name!
@@ -191,7 +191,7 @@ bool SerieHelper2::AddFile(File *header)
 }
 
 /**
- * \brief add a rule for restricting a DICOM file to be in the serie we are
+ * brief add a rule for restricting a DICOM file to be in the serie we are
  * trying to find. For example you can select only the DICOM files from a
  * directory which would have a particular EchoTime==4.0.
  * This method is a user level, value is not required to be formatted as a DICOM
@@ -224,7 +224,7 @@ void SerieHelper2::AddRestriction(uint16_t group, uint16_t elem)
 
 #ifndef GDCM_LEGACY_REMOVE
 /**
- * \brief add a rule for restricting a DICOM file to be in the serie we are
+ * brief add a rule for restricting a DICOM file to be in the serie we are
  * trying to find. For example you can select only the DICOM files from a
  * directory which would have a particular EchoTime==4.0.
  * This method is a user level, value is not required to be formatted as a DICOM
@@ -245,7 +245,7 @@ void SerieHelper2::AddRestriction(TagKey const &key, std::string const &value)
 #endif
 
 /**
- * \brief Sets the root Directory
+ * brief Sets the root Directory
  * @param   dir Name of the directory to deal with
  * @param recursive whether we want explore recursively the root Directory
  */
@@ -263,7 +263,7 @@ void SerieHelper2::SetDirectory(std::string const &dir, bool recursive)
 }
 
 /**
- * \brief Sorts the given Fileset
+ * brief Sorts the given Fileset
  * \warning This could be implemented in a 'Strategy Pattern' approach
  *          But as I don't know how to do it, I leave it this way
  *          BTW, this is also a Strategy, I don't know this is 
@@ -292,7 +292,7 @@ void SerieHelper2::OrderFileList(FileList *fileSet)
 }
 
 /**
- * \brief Elementary coherence checking of the files with the same Serie UID
+ * brief Elementary coherence checking of the files with the same Serie UID
  * Only sizes and pixel type are checked right now ...
  */ 
 bool SerieHelper2::IsCoherent(FileList *fileSet)
@@ -326,7 +326,7 @@ bool SerieHelper2::IsCoherent(FileList *fileSet)
 
 #ifndef GDCM_LEGACY_REMOVE
 /**
- * \brief   accessor (DEPRECATED :  use GetFirstSingleSerieUIDFileSet )
+ * brief   accessor (DEPRECATED :  use GetFirstSingleSerieUIDFileSet )
  *          Warning : 'coherent' means here they have the same Serie UID
  * @return  The first FileList if found, otherwhise NULL
  */
@@ -339,7 +339,7 @@ FileList *SerieHelper2::GetFirstCoherentFileList()
 }
 
 /**
- * \brief   accessor (DEPRECATED :  use GetNextSingleSerieUIDFileSet )
+ * brief   accessor (DEPRECATED :  use GetNextSingleSerieUIDFileSet )
  *          Warning : 'coherent' means here they have the same Serie UID
  * \note : meaningfull only if GetFirstCoherentFileList() already called 
  * @return  The next FileList if found, otherwhise NULL
@@ -355,7 +355,7 @@ FileList *SerieHelper2::GetNextCoherentFileList()
 }
 
 /**
- * \brief   accessor (DEPRECATED :  use GetSingleSerieUIDFileSet )
+ * brief   accessor (DEPRECATED :  use GetSingleSerieUIDFileSet )
   *          Warning : 'coherent' means here they have the same Serie UID
  * @param SerieUID SerieUID
  * \return  pointer to the FileList if found, otherwhise NULL
@@ -370,7 +370,7 @@ FileList *SerieHelper2::GetCoherentFileList(std::string SerieUID)
 
 
 /**
- * \brief   Get the first Fileset while visiting the SingleSerieUIDFileSetmap
+ * brief   Get the first Fileset while visiting the SingleSerieUIDFileSetmap
  * @return  The first FileList (SingleSerieUIDFileSet) if found, otherwhise 0
  */
 FileList *SerieHelper2::GetFirstSingleSerieUIDFileSet()
@@ -382,7 +382,7 @@ FileList *SerieHelper2::GetFirstSingleSerieUIDFileSet()
 }
 
 /**
- * \brief   Get the next Fileset while visiting the SingleSerieUIDFileSetmap
+ * brief   Get the next Fileset while visiting the SingleSerieUIDFileSetmap
  * \note : meaningfull only if GetNextSingleSerieUIDFileSet() already called 
  * @return  The next FileList (SingleSerieUIDFileSet) if found, otherwhise 0
  */
@@ -397,7 +397,7 @@ FileList *SerieHelper2::GetNextSingleSerieUIDFileSet()
 }
 
 /**
- * \brief   Get the SingleSerieUIDFileSet according to its Serie UID
+ * brief   Get the SingleSerieUIDFileSet according to its Serie UID
  * @param SerieUID SerieUID to retrieve
  * \return pointer to the FileList (SingleSerieUIDFileSet) if found, otherwhise 0
  */
@@ -409,7 +409,7 @@ FileList *SerieHelper2::GetSingleSerieUIDFileSet(std::string SerieUID)
 }
 
 /**
- * \brief   Splits a Single SerieUID Fileset according to the Orientations
+ * brief   Splits a Single SerieUID Fileset according to the Orientations
  * @param fileSet File Set to be splitted
  * \return  std::map of 'Xcoherent' File sets
  */
@@ -458,7 +458,7 @@ XCoherentFileSetmap SerieHelper2::SplitOnOrientation(FileList *fileSet)
 }
 
 /**
- * \brief   Splits a 'Single SerieUID' Fileset according to the Positions
+ * brief   Splits a 'Single SerieUID' Fileset according to the Positions
  * @param fileSet File Set to be splitted
  * \return  std::map of 'Xcoherent' File sets
  */
@@ -530,7 +530,7 @@ XCoherentFileSetmap SerieHelper2::SplitOnPosition(FileList *fileSet)
 }
 
 /**
- * \brief   Splits a 'Single SerieUID' File set Coherent according to the
+ * brief   Splits a 'Single SerieUID' File set Coherent according to the
  *          value of a given Tag
  * @param fileSet File Set to be splitted
  * @param   group  group number of the target Element
@@ -578,7 +578,7 @@ XCoherentFileSetmap SerieHelper2::SplitOnTagValue(FileList *fileSet,
 //-----------------------------------------------------------------------------
 // Private
 /**
- * \brief sorts the images, according to their Patient Position.
+ * brief sorts the images, according to their Patient Position.
  *
  *  We may order, considering :
  *   -# Image Position Patient
@@ -752,7 +752,7 @@ public:
 //-----------------------------------------------------------------------------
 // Sort
 /**
- * \brief   Sort FileList.
+ * brief   Sort FileList.
  */
 static void Sort(FileList *fileList, SortFunctor &sf)
 {
@@ -761,7 +761,7 @@ static void Sort(FileList *fileList, SortFunctor &sf)
 
 
 /**
- * \brief sorts the images, according to their Image Number
+ * brief sorts the images, according to their Image Number
  * \note Works only on bona fide files  (i.e image number is a character string
  *                                      corresponding to an integer)
  *             within a bona fide serie (i.e image numbers are consecutive)
@@ -800,7 +800,7 @@ bool SerieHelper2::ImageNumberOrdering(FileList *fileList)
    return true;
 }
 /**
- * \brief sorts the images, according to their File Name
+ * brief sorts the images, according to their File Name
  * @param fileList Coherent File list (same Serie UID) to sort
  * @return false only if the header is bugged !
  */
@@ -817,7 +817,7 @@ bool SerieHelper2::FileNameOrdering(FileList *fileList)
 }
 
 /**
- * \brief sorts the images, according to user supplied function
+ * brief sorts the images, according to user supplied function
  * @param fileList Coherent File list (same Serie UID) to sort
  * @return false only if the header is bugged !
  */
@@ -836,7 +836,7 @@ bool SerieHelper2::UserOrdering(FileList *fileList)
 //-----------------------------------------------------------------------------
 // Print
 /**
- * \brief   Canonical printer.
+ * brief   Canonical printer.
  */
 void SerieHelper2::Print(std::ostream &os, std::string const &indent)
 {
@@ -892,7 +892,7 @@ void SerieHelper2::CreateDefaultUniqueSeriesIdentifier()
 }
 
 /**
- * \brief Heuristics to *try* to build a Serie Identifier that would ensure
+ * brief Heuristics to *try* to build a Serie Identifier that would ensure
  *        all the images are coherent.
  *
  * By default, uses the SeriesUID.  If UseSeriesDetails(true) has been called,

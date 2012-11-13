@@ -37,7 +37,7 @@ namespace gdcm
 typedef std::vector<File* > GdcmFileList;
 #endif
 
-   /// \brief XCoherent stands for 'Extra Coherent',
+   ///        XCoherent stands for 'Extra Coherent',
    ///        (The name 'Coherent' would be enough but it was used before;
    ///        I don't want to put a bomb in the code)
    ///        Any 'better name' is welcome !
@@ -46,8 +46,7 @@ typedef std::vector<File* > GdcmFileList;
    typedef bool (*BOOL_FUNCTION_PFILE_PFILE_POINTER)(File *, File *);
 
 //-----------------------------------------------------------------------------
-/**
- * \brief  
+/*
  *  This class should be used for a stack of 2D dicom images.
  *   
  *   - It allows to explore (recursively or not) a directory and 
@@ -86,10 +85,10 @@ public:
    void OrderFileList(FileList *fileSet);
    void Clear() { ClearAll(); }
 
-   /// \brief Gets the FIRST Single SerieUID Fileset.
+   /// brief Gets the FIRST Single SerieUID Fileset.
    ///        Deprecated; kept not to break the API
-   /// \note Caller must call OrderFileList first
-   /// @return the (first) Single SerieUID Fileset
+   /// note Caller must call OrderFileList first
+   /// return the (first) Single SerieUID Fileset
    const FileList &GetFileList()
                            { return *SingleSerieUIDFileSetHT.begin()->second; }
   
@@ -121,7 +120,7 @@ public:
    void AddRestriction(uint16_t group, uint16_t elem, 
                        std::string const &value, int op);
 
-   /// \brief Use additional series information such as ProtocolName
+   /// brief Use additional series information such as ProtocolName
    ///        and SeriesName to identify when a single SeriesUID contains
    ///        multiple 3D volumes - as can occur with perfusion and DTI imaging
    void SetUseSeriesDetails( bool useSeriesDetails )
@@ -132,7 +131,7 @@ public:
      {
      return m_UseSeriesDetails;
      }
-   /// \brief This function will add the following DICOM tag as being part of a
+   /// brief This function will add the following DICOM tag as being part of a
    /// 'fake' uid. This is usefull when the Serie UID is not enough to disseminate
    /// into multiple sub serie when needed:
    /// 0020 0011 Series Number
@@ -141,13 +140,13 @@ public:
    /// 0028 0010 Rows
    /// 0028 0011 Columns
    void CreateDefaultUniqueSeriesIdentifier();
-   /// \brief Create a string that uniquely identifies a series.   By default
+   /// brief Create a string that uniquely identifies a series.   By default
    //         uses the SeriesUID.   If UseSeriesDetails(true) has been called,
    //         then additional identifying information is used.
    std::string CreateUniqueSeriesIdentifier( File * inFile );
  
 /**
- * \brief Sets the LoadMode as a boolean string. 
+ * brief Sets the LoadMode as a boolean string. 
  *        LD_NOSEQ, LD_NOSHADOW, LD_NOSHADOWSEQ
  *        ... (nothing more, right now)
  *        WARNING : before using LD_NOSHADOW, be sure *all* your files
@@ -204,17 +203,17 @@ private:
    SerieExRestrictions ExRestrictions;
    SerieExRestrictions ExRefine;
 
-   /// \brief Bit string integer (each one considered as a boolean)
+   /// brief Bit string integer (each one considered as a boolean)
    ///        Bit 0 : Skip Sequences,    if possible
    ///        Bit 1 : Skip Shadow Groups if possible
    ///        Probabely, some more to add
    int LoadMode;
 
-   /// \brief whether we want to sort in direct order or not (reverse order).
+   /// brief whether we want to sort in direct order or not (reverse order).
    ///        To be used by aware user only
    bool DirectOrder;
 
-   /// \brief If user knows more about his images than gdcm does,
+   /// brief If user knows more about his images than gdcm does,
    ///        he may supply his own comparison function.
    BOOL_FUNCTION_PFILE_PFILE_POINTER UserLessThanFunction;
 
