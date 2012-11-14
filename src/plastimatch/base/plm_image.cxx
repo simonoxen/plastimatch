@@ -15,12 +15,14 @@
 #include "itk_image_save.h"
 #include "itk_image_type.h"
 #include "itk_metadata.h"
+#include "logfile.h"
 #include "mha_io.h"
 #include "plm_image.h"
 #include "plm_image_convert.h"
 #include "plm_image_header.h"
 #include "print_and_exit.h"
 #include "pstring.h"
+#include "string_util.h"
 #include "volume.h"
 
 Plm_image::Plm_image () {
@@ -201,7 +203,7 @@ Plm_image::load_native (const char* fname)
 	return;
     }
 
-    if (!file_exists (fname)) {
+    if (!file_exists (fname) && !string_starts_with (fname, "slicer:")) {
 	print_and_exit ("Couldn't open %s for read\n", fname);
     }
 
