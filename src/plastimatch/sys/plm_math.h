@@ -8,6 +8,7 @@
 #include <float.h>
 #include <math.h>
 #include <string.h>
+#include "compiler_warnings.h"
 
 #ifndef M_PI
 #define M_PI            3.14159265358979323846
@@ -165,10 +166,12 @@ static inline void mat43_mult_vec3 (double* v1, const double* m2, const double* 
 }
 
 /* m1 = m2 * m3 */
-static inline void mat_mult_mat (double* m1, 
-				 const double* m2, int m2_rows, int m2_cols, 
-				 const double* m3, int m3_rows, int m3_cols)
+static inline void mat_mult_mat (
+    double* m1, 
+    const double* m2, int m2_rows, int m2_cols, 
+    const double* m3, int m3_rows, int m3_cols)
 {
+    UNUSED_VARIABLE (m3_rows);
     int i,j,k;
     for (i = 0; i < m2_rows; i++) {
 	for (j = 0; j < m3_cols; j++) {

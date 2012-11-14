@@ -5,9 +5,10 @@
 #define _plm_image_h_
 
 #include "plmbase_config.h"
-#include "plm_image_type.h"
+#include "compiler_warnings.h"
 #include "itk_image.h"
 #include "metadata.h"
+#include "plm_image_type.h"
 
 // TODO: Change type of m_meta to Metadata*
 
@@ -50,9 +51,11 @@ public:
 private:
     /* Please don't use copy constructors.  They suck. */
     Plm_image (Plm_image& xf) {
+        UNUSED_VARIABLE (xf);
     }
     /* Please don't use overloaded operators.  They suck. */
     Plm_image& operator= (Plm_image& xf) {
+        UNUSED_VARIABLE (xf);
         return *this;
     }
     

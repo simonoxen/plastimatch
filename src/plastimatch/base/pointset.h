@@ -7,6 +7,7 @@
 #include "plmbase_config.h"
 #include <string>
 #include <vector>
+#include "compiler_warnings.h"
 
 class Pstring;
 
@@ -14,6 +15,7 @@ class PLMBASE_API Point {
 public:
     Point () {}
     Point (const std::string& label, float x, float y, float z) {
+        UNUSED_VARIABLE (label);
         p[0] = x;
         p[1] = y;
         p[2] = z;
@@ -26,7 +28,9 @@ public:
 public:
     float p[3];
 public:
-    void set_label (const char* s) {}
+    void set_label (const char* s) {
+        UNUSED_VARIABLE (s);
+    }
     std::string get_label (void) const {
         return "";
     }
