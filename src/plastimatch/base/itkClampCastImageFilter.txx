@@ -64,7 +64,7 @@ ClampCastImageFilter<TInputImage, TOutputImage>
 
 /* Make gcc accept the below without complaining about 
    signed/unsigned compare */
-#if (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 2)
+#if (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 6)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-compare"
 #endif
@@ -89,7 +89,7 @@ ClampCastImageFilter<TInputImage, TOutputImage>
 	progress.CompletedPixel();
     }
 
-#if (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 2)
+#if (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 6)
 #pragma GCC diagnostic pop
 #endif
 
