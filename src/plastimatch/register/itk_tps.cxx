@@ -168,7 +168,6 @@ itk_tps_warp (
     );
 }
 
-
 /* Explicit instantiations */
 /* RMK: Visual studio 2005 without service pack requires <float> specifier
    on the explicit extantiations.  The current hypothesis is that this
