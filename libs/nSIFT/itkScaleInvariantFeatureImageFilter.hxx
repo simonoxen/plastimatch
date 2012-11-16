@@ -513,7 +513,7 @@ ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
     //std::cout << " SPACING AFTER RESAMPLE: " << spacing[0] << " " << spacing[1] << std::endl;
     
     //Origin
-    typename TFixedImageType::PointType origin = fixedImage->GetOrigin();
+//    typename TFixedImageType::PointType origin = fixedImage->GetOrigin();
     scaler->SetOutputOrigin( fixedImage->GetOrigin() );
    
     //Orientation
@@ -553,23 +553,23 @@ ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
     float Minors=0;
     float Product=0;
     unsigned int Curvature=0;
-    unsigned int P=0;
-    unsigned int M=0;
-    unsigned int C=0;
-    bool maxmin=0;
-    if(isMax) maxmin=1;
-    if(isMin) maxmin=0;
+//    unsigned int P=0;
+//    unsigned int M=0;
+//    unsigned int C=0;
+//    bool maxmin=0;
+//    if(isMax) maxmin=1;
+//    if(isMin) maxmin=0;
 	
     if(VDimension==2)
     {
 	Tr=hessian[0]+hessian[2];
 	Det=hessian[0]*hessian[2]-hessian[1]*hessian[1];
 	Product=Tr*Det;
-        if (Product>0){P=1;}
+//        if (Product>0){P=1;}
         PrincipalCurve=(Tr*Tr)/Det; 
-        if (PrincipalCurve<m_ThresholdPrincipalCurve){C=1;} 
+//        if (PrincipalCurve<m_ThresholdPrincipalCurve){C=1;} 
 	Minors=Det;
-	if (Minors>0){M=1;}
+//	if (Minors>0){M=1;}
     }
 		
     if(VDimension==3)
@@ -578,11 +578,11 @@ ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
 	Det=hessian[0]*hessian[3]*hessian[5]+2*hessian[1]*hessian[4]*hessian[2]-hessian[0]*hessian[4]*hessian[4]-hessian[3]*(hessian[2])*hessian[2]-hessian[5]*(hessian[1])*hessian[1];
         Product=Tr*Det;
 
-        if (Product>0){P=1;}
+//        if (Product>0){P=1;}
         PrincipalCurve=(Tr*Tr*Tr)/Det; 
-        if (PrincipalCurve<m_ThresholdPrincipalCurve){C=1;} 
+//        if (PrincipalCurve<m_ThresholdPrincipalCurve){C=1;} 
         Minors=hessian[3]*hessian[5]-(hessian[4])*hessian[4]+hessian[5]*hessian[0]-(hessian[2])*hessian[2]+hessian[0]*hessian[3]-(hessian[1])*hessian[1];
-        if (Minors>0){M=1;}
+//        if (Minors>0){M=1;}
     }
     
     if ((Product>0) && (Minors>0)&&(PrincipalCurve<m_ThresholdPrincipalCurve)) //threshold on curvature
@@ -756,9 +756,9 @@ ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
                 scaleImage = scaler->GetOutput();
             }
 	
-            typename TFixedImageType::SpacingType spacing = scaleImage->GetSpacing();
-            typename TFixedImageType::PointType origin = scaleImage->GetOrigin();
-            typename TFixedImageType::DirectionType direction = scaleImage->GetDirection();
+//            typename TFixedImageType::SpacingType spacing = scaleImage->GetSpacing();
+//            typename TFixedImageType::PointType origin = scaleImage->GetOrigin();
+//            typename TFixedImageType::DirectionType direction = scaleImage->GetDirection();
 
 //std::cout << " SPACING AFTER ALIAS: " << spacing[0] << " " << spacing[1] <<" "<< spacing[2] <<std::endl;
 //std::cout << " ORIGIN AFTER ALIAS: " << origin[0] << " " << origin[1] <<" "<< origin[2] <<std::endl;	
@@ -866,7 +866,7 @@ ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
                     gaussianImage_ref=gaussianImage_new;
 		}
 
-		typename TFixedImageType::SpacingType spacing = gaussianImage_new->GetSpacing();
+//		typename TFixedImageType::SpacingType spacing = gaussianImage_new->GetSpacing();
 	
 #ifdef VERBOSE
                 std::cout << "Done\n";
@@ -1193,10 +1193,10 @@ ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
 
     FILE* fp1 = 0;
     FILE* fp2 = 0;
-    unsigned int numMatches;
+//    unsigned int numMatches;
     unsigned int numMatchesTried;
-    unsigned int numMatches2;
-    unsigned int numMatches5;
+//    unsigned int numMatches2;
+//    unsigned int numMatches5;
     typename PointSetType::PointsContainer::Pointer keyps1, keyps2;
 
     /* Open files, we will stream into them */
@@ -1215,9 +1215,9 @@ ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
 
     std::cout << "***Keypoint Matches***\n";
 	
-    numMatches = 0;
-    numMatches2 = 0;
-    numMatches5 = 0;
+//    numMatches = 0;
+//    numMatches2 = 0;
+//    numMatches5 = 0;
     numMatchesTried = 0;
     for (unsigned int i = 0; i < numpoints2; ++i) {
         PointType pp2;
@@ -1308,7 +1308,7 @@ ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
         bestdist = -1.0;
         nextbestdist = -1.0;
         FeatureType bestft2;
-        unsigned int bestj2 = -1;
+//        unsigned int bestj2 = -1;
 
         for (unsigned int j = 0; j < numpoints2; ++j) {
             PointType pp;
@@ -1325,7 +1325,7 @@ ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
                 nextbestdist = bestdist;
                 bestdist=dist;
                 bestft2 = ft;
-                bestj2 = j;
+//                bestj2 = j;
             }
         }
 
