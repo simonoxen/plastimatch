@@ -35,9 +35,9 @@ ClampCastImageFilter<TInputImage, TOutputImage>
 ::ThreadedGenerateData (
     const OutputImageRegionType& outputRegionForThread,
 #if ITK_VERSION_MAJOR == 3
-	int threadId
+    int threadId
 #else /* ITK 4 */
-	ThreadIdType threadId
+    ThreadIdType threadId
 #endif
 ) {
     itkDebugMacro(<<"Actually executing");
@@ -57,10 +57,17 @@ ClampCastImageFilter<TInputImage, TOutputImage>
 	OutputImagePixelType>::NonpositiveMin();
     OutputImagePixelType out_max = NumericTraits<
 	OutputImagePixelType>::max();
-          
+
     /* support progress methods/callbacks */
     ProgressReporter progress (this, threadId, 
 	outputRegionForThread.GetNumberOfPixels());
+
+/* Make gcc accept the below without complaining about 
+   signed/unsigned compare */
+#if (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 2)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#endif
 
     /* walk through image, clamping and casting each pixel */
     while (!out_it.IsAtEnd())
@@ -81,6 +88,11 @@ ClampCastImageFilter<TInputImage, TOutputImage>
 	++out_it;
 	progress.CompletedPixel();
     }
+
+#if (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 2)
+#pragma GCC diagnostic pop
+#endif
+
 }
 
 } // end namespace itk
