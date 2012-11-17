@@ -7,14 +7,14 @@
 #include "plmbase_config.h"
 
 /* itkImage.h emits warnings on gcc when used with itkKernelTransform */
-#if (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 6)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
+//#if (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 6)
+//#pragma GCC diagnostic push
+//#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+//#endif
 #include "itkImage.h"
-#if (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 6)
-#pragma GCC diagnostic pop
-#endif
+//#if (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 6)
+//#pragma GCC diagnostic pop
+//#endif
 
 #include "itkImageIOBase.h"
 #if (PLM_ITK_ORIENTED_IMAGES)
