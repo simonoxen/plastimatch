@@ -13,7 +13,7 @@
 Plm_timer_private::Plm_timer_private ()
 {
 #if defined (_WIN32)
-    QueryPerformanceFrequency (&d_ptr->clock_freq);
+    QueryPerformanceFrequency (&this->clock_freq);
 #endif
     acc_time = 0.;
     running = false;
