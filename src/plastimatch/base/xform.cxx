@@ -544,7 +544,11 @@ void
 xform_vrs_to_quat (Xform *xf_out, Xform* xf_in)
 {
     init_quaternion_default (xf_out);
+#if ITK_VERSION_MAJOR == 3
     xf_out->get_quat()->SetMatrix(xf_in->get_vrs()->GetRotationMatrix());
+#else /* ITK 4 */
+    xf_out->get_quat()->SetMatrix(xf_in->get_vrs()->GetMatrix());
+#endif
     xf_out->get_quat()->SetOffset(xf_in->get_vrs()->GetOffset());
 }
 
@@ -552,7 +556,11 @@ void
 xform_vrs_to_aff (Xform *xf_out, Xform* xf_in)
 {
     init_affine_default (xf_out);
+#if ITK_VERSION_MAJOR == 3
     xf_out->get_aff()->SetMatrix(xf_in->get_vrs()->GetRotationMatrix());
+#else /* ITK 4 */
+    xf_out->get_aff()->SetMatrix(xf_in->get_vrs()->GetMatrix());
+#endif
     xf_out->get_aff()->SetOffset(xf_in->get_vrs()->GetOffset());
 }
 

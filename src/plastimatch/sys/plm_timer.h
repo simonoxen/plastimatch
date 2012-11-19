@@ -14,6 +14,7 @@ public:
     ~Plm_timer ();
 
     void start ();
+    void stop ();
     double report ();
 private:
     Plm_timer_private *d_ptr;

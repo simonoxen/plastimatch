@@ -10,6 +10,15 @@
 
 #include "compiler_warnings.h"
 
+Plm_timer_private::Plm_timer_private ()
+{
+#if defined (_WIN32)
+    QueryPerformanceFrequency (&d_ptr->clock_freq);
+#endif
+    acc_time = 0.;
+    running = false;
+}
+
 double
 Plm_timer_private::get_time ()
 {
@@ -24,6 +33,17 @@ Plm_timer_private::get_time ()
     UNUSED_VARIABLE (rc);
     return ((double) tv.tv_sec) + ((double) tv.tv_usec) / 1000000.;
 #endif
+}
+
+double
+Plm_timer_private::elapsed_time ()
+{
+    if (!this->running) {
+        return 0.;
+    }
+
+    double current_time = this->get_time ();
+    return current_time - this->start_time;
 }
 
 Plm_timer::Plm_timer ()
@@ -45,11 +65,17 @@ Plm_timer::start ()
     d_ptr->start_time = d_ptr->get_time ();
 }
 
+void
+Plm_timer::stop ()
+{
+    if (d_ptr->running) {
+        d_ptr->acc_time += d_ptr->elapsed_time ();
+        d_ptr->running = false;
+    }
+}
+
 double
 Plm_timer::report ()
 {
-    double current_time;
-
-    current_time = d_ptr->get_time ();
-    return current_time - d_ptr->start_time;
+    return d_ptr->acc_time + d_ptr->elapsed_time();
 }

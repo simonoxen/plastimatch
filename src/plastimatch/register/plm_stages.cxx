@@ -4,7 +4,6 @@
 #include "plmregister_config.h"
 #include <stdlib.h>
 #include <string.h>
-#include "itkTimeProbe.h"
 #include "itkImageRegionConstIteratorWithIndex.h"
 
 #include "bspline_xform.h"
@@ -18,6 +17,7 @@
 #include "plm_image_header.h"
 #include "plm_parms.h"
 #include "plm_stages.h"
+#include "plm_timer.h"
 #include "plm_warp.h"
 #include "registration_data.h"
 #include "volume.h"
@@ -433,13 +433,13 @@ do_registration (Registration_parms* regp)
 {
     Registration_data regd;
     Xform* xf_out = NULL;
-    itk::TimeProbe timer1, timer2, timer3;
+    Plm_timer timer1, timer2, timer3;
 
     /* Start logging */
     logfile_open (regp->log_fn);
 
     /* Load images */
-//    printf ("Performing < %i > registrations.\n", regp->num_jobs);
+    // printf ("Performing < %i > registrations.\n", regp->num_jobs);
     for (regp->job_idx=0; regp->job_idx < regp->num_jobs; regp->job_idx++) {
 
         if (regp->num_jobs > 1) {
@@ -449,22 +449,22 @@ do_registration (Registration_parms* regp)
             }
         }
 
-        timer1.Start();
+        timer1.start();
         regd.load_input_files (regp);
-        timer1.Stop();
+        timer1.stop();
     
-        timer2.Start();
+        timer2.start();
         do_registration_pure (&xf_out, &regd, regp);
-        timer2.Stop();
+        timer2.stop();
 
         /* RMK: If no stages, we still generate output (same as input) */
     
-        timer3.Start();
+        timer3.start();
         save_output (&regd, xf_out, regp->xf_out_fn, regp->xf_out_itk, 
             regp->img_out_fmt, regp->img_out_type, 
             regp->default_value, regp->img_out_fn, 
             regp->vf_out_fn);
-        timer3.Stop();
+        timer3.stop();
     
         delete xf_out;
     
@@ -474,12 +474,12 @@ do_registration (Registration_parms* regp)
             "Run:    %g\n"
             "Save:   %g\n"
             "Total:  %g\n",
-            (double) timer1.GetMeanTime(),
-            (double) timer2.GetMeanTime(),
-            (double) timer3.GetMeanTime(),
-            (double) timer1.GetMeanTime() + 
-            (double) timer2.GetMeanTime() + 
-            (double) timer3.GetMeanTime());
+            (double) timer1.report(),
+            (double) timer2.report(),
+            (double) timer3.report(),
+            (double) timer1.report() + 
+            (double) timer2.report() + 
+            (double) timer3.report());
     
         /* Done logging */
         logfile_printf ("Finished!\n");

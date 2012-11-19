@@ -11,10 +11,15 @@
 
 class Plm_timer_private {
 public:
-    double get_time ();
+    Plm_timer_private ();
 public:
+    bool running;
     double start_time;
+    double acc_time;
 #ifdef _WIN32
     LARGE_INTEGER clock_freq;
 #endif
+public:
+    double get_time ();
+    double elapsed_time ();
 };
