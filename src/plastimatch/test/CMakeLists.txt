@@ -14,6 +14,7 @@ option (PLM_BUILD_DLIB_TEST   "Build dlib test program"   OFF)
 option (PLM_BUILD_FANN_TEST   "Build fann test program"   OFF)
 option (PLM_BUILD_GABOR_TEST  "Build Gabor test program"  OFF)
 option (PLM_BUILD_GDCM1_TEST  "Build GDCM test program"   OFF)
+option (PLM_BUILD_ITK_TEST    "Build ITK test program"    OFF)
 option (PLM_BUILD_MEX_TEST    "Build mex test program"    OFF)
 option (PLM_BUILD_NLOPT_TEST  "Build NLopt test program"  OFF)
 option (PLM_BUILD_OPENCL_TEST "Build OpenCL test program" OFF)
@@ -65,6 +66,13 @@ endif ()
 # Test executable -- gdcm
 if (ITK_FOUND AND GDCM_VERSION_1 AND PLM_BUILD_GDCM1_TEST)
   plm_add_executable (gdcm1_test gdcm1_test.cxx
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_ALWAYS} ${INSTALL_NEVER})
+endif ()
+
+# Test executable -- itk
+if (ITK_FOUND AND PLM_BUILD_ITK_TEST)
+  plm_add_executable (itk_test itk_test.cxx
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_ALWAYS} ${INSTALL_NEVER})
 endif ()
