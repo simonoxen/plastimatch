@@ -71,11 +71,9 @@ int main
     FloatImageType::PixelType  initialValue = 0;
     image->FillBuffer( initialValue );
 
-    std::cout << image;
-
     typedef itk::CastImageFilter <
 	FloatImageType, UCharImageType > ClampCastFilterType;
-    typename ClampCastFilterType::Pointer caster = ClampCastFilterType::New();
+    ClampCastFilterType::Pointer caster = ClampCastFilterType::New();
 
     caster->SetInput(image);
     try {
@@ -86,9 +84,8 @@ int main
 	std::cout << ex << std::endl;
 	exit(1);
     }
-    printf ("Trying to get output.\n");
     UCharImageType::Pointer tmp = caster->GetOutput();
-    printf ("Got output.\n");
+
 //    std::cout << tmp;
 
 //    itk_image_save (image, "foo.mha");
