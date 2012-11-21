@@ -122,24 +122,28 @@ if (CUDA_FOUND AND CMAKE_SYSTEM_NAME MATCHES "Linux" AND CMAKE_COMPILER_IS_GNUCC
         list (APPEND CUDA_NVCC_FLAGS --compiler-bindir ${NVC_SELECT_GCC})
     endif ()
 
-
-    #: Exceptions for specific quirks in certain CUDA versions
-    #  ----------------------------------------------------------------
-
-    # For CUDA 3.2: surface_functions.h does some non-compliant things, 
-    #   so we tell g++ to ignore them when called via nvcc by passing the
-    #   -fpermissive flag through the nvcc build trajectory. Unfortunately,
-    #    nvcc will also blindly pass this flag to gcc, even though it is
-    #    not valid; thus, resulting in TONS of warnings.  So, we 1st check
-    #    the nvcc version number
-    if(CUDA_VERSION_MAJOR MATCHES "3" AND CUDA_VERSION_MINOR MATCHES "2")
-        list (APPEND CUDA_NVCC_FLAGS --compiler-options -fpermissive)
-        message (STATUS "nvcc-check: CUDA 3.2 exception: CUDA_NVCC_FLAGS set to \"${CUDA_NVCC_FLAGS}\"")
-    endif()
+endif ()
 
 
-    if (verbose)
-        message(STATUS "nvcc-check: CUDA_NVCC_FLAGS=\"${CUDA_NVCC_FLAGS}\"")
+#: Exceptions for specific quirks in certain CUDA versions
+#  ----------------------------------------------------------------
+if (CUDA_FOUND AND CMAKE_COMPILER_IS_GNUCC)
+    if (CMAKE_SYSTEM_NAME MATCHES "Linux" OR CMAKE_SYSTEM_NAME MATCHES "APPLE")
+        # For CUDA 3.2: surface_functions.h does some non-compliant things, 
+        #   so we tell g++ to ignore them when called via nvcc by passing the
+        #   -fpermissive flag through the nvcc build trajectory. Unfortunately,
+        #    nvcc will also blindly pass this flag to gcc, even though it is
+        #    not valid; thus, resulting in TONS of warnings.  So, we 1st check
+        #    the nvcc version number
+        if (CUDA_VERSION_MAJOR MATCHES "3" AND CUDA_VERSION_MINOR MATCHES "2")
+            list (APPEND CUDA_NVCC_FLAGS --compiler-options -fpermissive)
+            message (STATUS "nvcc-check: CUDA 3.2 exception (-fpermissive enabled)")
+        endif ()
     endif ()
+endif ()
 
+
+
+if (verbose)
+    message(STATUS "nvcc-check: CUDA_NVCC_FLAGS=\"${CUDA_NVCC_FLAGS}\"")
 endif ()
