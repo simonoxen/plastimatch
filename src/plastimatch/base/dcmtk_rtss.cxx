@@ -22,6 +22,29 @@
 #include "rtss_structure.h"
 #include "rtss_structure_set.h"
 
+PLMBASE_C_API bool 
+dcmtk_rtss_probe (const char *rtss_fn)
+{
+    DcmFileFormat dfile;
+    OFCondition ofrc = dfile.loadFile (rtss_fn, EXS_Unknown, EGL_noChange);
+    if (ofrc.bad()) {
+        return false;
+    }
+
+    const char *c;
+    DcmDataset *dset = dfile.getDataset();
+    ofrc = dset->findAndGetString (DCM_Modality, c);
+    if (ofrc.bad() || !c) {
+        return false;
+    }
+
+    if (strncmp (c, "RTSTRUCT", strlen("RTSTRUCT"))) {
+	return false;
+    } else {
+	return true;
+    }
+}
+
 void
 Dcmtk_loader::rtss_load (void)
 {

@@ -11,6 +11,7 @@
 #include "dcmtk_file.h"
 #include "dcmtk_loader.h"
 #include "dcmtk_metadata.h"
+#include "dcmtk_rtdose.h"
 #include "dcmtk_rt_study.h"
 #include "dcmtk_save.h"
 #include "dcmtk_series.h"
@@ -24,6 +25,30 @@
 #include "string_util.h"
 #include "volume.h"
 #include "volume_stats.h"
+
+bool 
+dcmtk_dose_probe (const char *fn)
+{
+    DcmFileFormat dfile;
+    OFCondition ofrc = dfile.loadFile (fn, EXS_Unknown, EGL_noChange);
+    if (ofrc.bad()) {
+        return false;
+    }
+
+    const char *c;
+    DcmDataset *dset = dfile.getDataset();
+    ofrc = dset->findAndGetString (DCM_Modality, c);
+    if (ofrc.bad() || !c) {
+        return false;
+    }
+
+    if (strncmp (c, "RTDOSE", strlen("RTDOSE"))) {
+	return false;
+    } else {
+	return true;
+    }
+}
+
 
 /* This is the tolerance on irregularity of the grid spacing (in mm) */
 #define GFOV_SPACING_TOL (1e-1)

@@ -9,9 +9,9 @@
 #include <itksys/SystemTools.hxx>
 #include <itkImageIOBase.h>
 
+#include "dcm_probe.h"
 #include "file_util.h"
 #include "gdcm1_dose.h"
-#include "gdcm1_rtss.h"
 #include "itk_image.h"
 #include "plm_file_format.h"
 #include "pstring.h"
@@ -114,17 +114,15 @@ plm_file_format_deduce (const char* path)
 	/* else fall through */
     }
 
-#if GDCM_VERSION_1
     /* Maybe dicom rtss? */
-    if (gdcm_rtss_probe (path)) {
+    if (dcm_probe_rtss (path)) {
 	return PLM_FILE_FMT_DICOM_RTSS;
     }
 
-    /* Maybe dicom dose? */
-    if (gdcm1_dose_probe (path)) {
+    /* Maybe dicom dose */
+    if (dcm_probe_dose (path)) {
 	return PLM_FILE_FMT_DICOM_DOSE;
     }
-#endif
 
     return PLM_FILE_FMT_IMG;
 }

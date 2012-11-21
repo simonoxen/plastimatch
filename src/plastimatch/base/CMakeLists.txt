@@ -18,6 +18,7 @@ set (PLMBASE_LIBRARY_SRC
   bspline_interpolate.cxx
   bspline_xform.cxx
   cxt_io.cxx
+  dcm_probe.cxx
   dcm_util.cxx
   dicom.dic
   exchkeys.cxx

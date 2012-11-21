@@ -7,14 +7,16 @@
 #include <time.h>
 
 #include "dcm_util.h"
-#if GDCM_VERSION_1
+#include "make_string.h"
+
+#if PLM_DCM_USE_DCMTK
+#include "dcmtk_uid.h"
+#elif GDCM_VERSION_1
 #include "gdcm1_rdd.h"
 #include "gdcm1_util.h"
-#endif
-#if GDCM_VERSION_2
+#else /* GDCM_VERSION_2 */
 #include "gdcm2_util.h"
 #endif
-#include "make_string.h"
 
 void
 dcm_get_date_time (
@@ -33,9 +35,6 @@ dcm_anon_patient_id (void)
     unsigned char uuid[16];
     std::string patient_id = "PL";
 
-    /* Ugh.  It is a private function. */
-    //    bool rc = gdcm::Util::GenerateUUID (uuid);
-
     srand (time (0));
     for (i = 0; i < 16; i++) {
        int r = (int) (10.0 * rand() / RAND_MAX);
@@ -49,7 +48,7 @@ dcm_anon_patient_id (void)
 void
 dcm_load_rdd (Slice_index* rdd, const char* dicom_dir)
 {
-#if PLM_USE_DCMTK
+#if PLM_DCM_USE_DCMTK
     /* Do nothing */
 #elif GDCM_VERSION_1
     gdcm1_load_rdd (rdd, dicom_dir);
@@ -61,7 +60,7 @@ dcm_load_rdd (Slice_index* rdd, const char* dicom_dir)
 char*
 dcm_uid (char *uid, const char *uid_root)
 {
-#if PLM_USE_DCMTK
+#if PLM_DCM_USE_DCMTK
     return dcmtk_uid (uid, uid_root);
 #else
     return gdcm_uid (uid, uid_root);

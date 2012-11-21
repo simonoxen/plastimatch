@@ -1,21 +1,17 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _dcmtk_rtss_h_
-#define _dcmtk_rtss_h_
+#ifndef _dcm_probe_h_
+#define _dcm_probe_h_
 
 #include "plmbase_config.h"
 
-class Dcmtk_rt_study;
-class Rtds;
+PLMBASE_C_API 
+bool
+dcm_probe_dose (const char *fn);
 
-PLMBASE_C_API bool 
-dcmtk_rtss_probe (const char *rtss_fn);
-
-PLMBASE_C_API void
-dcmtk_rtss_save (
-    Dcmtk_rt_study *dsw, 
-    const Rtds *rtds,
-    const char *dicom_dir);
+PLMBASE_C_API 
+bool
+dcm_probe_rtss (const char *fn);
 
 #endif
