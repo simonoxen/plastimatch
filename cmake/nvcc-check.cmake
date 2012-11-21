@@ -73,7 +73,6 @@ if (CUDA_FOUND AND CMAKE_SYSTEM_NAME MATCHES "Linux" AND CMAKE_COMPILER_IS_GNUCC
 
         # JAS 08.06.2012: default behavior in CUDA 4.1+
         list (APPEND CUDA_NVCC_FLAGS --host-compilation C++)
-        message (FATAL_ERROR "nvcc-check: Please install gcc-4.3, it is needed by nvcc \(CUDA\).\nNote that gcc-4.3 can be installed side-by-side with your current version of gcc (${GCCVER_MAJOR}.${GCCVER_MINOR}).\nYou need not replace your current version of gcc; just make gcc-4.3 available as well so that nvcc can use it.\nDebian/Ubuntu users with root privilages may simply enter the following at a terminal prompt:\n  sudo apt-get install gcc-4.3 g++-4.3\n")
     endif ()
 
     #: CUDA 4.X+: gcc-4.4 or gcc-4.3
