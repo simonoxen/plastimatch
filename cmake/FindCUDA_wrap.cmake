@@ -41,7 +41,7 @@ if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
 endif ()
 
 if (CUDA_CXX_FLAGS)
-  set (CUDA_NVCC_FLAGS --compiler-options "${CUDA_CXX_FLAGS}")
+    list (APPEND CUDA_NVCC_FLAGS --compiler-options ${CUDA_CXX_FLAGS})
 endif ()
 
 set (CUDA_FOUND ${CUDA_FOUND} CACHE BOOL "Did we find cuda?")

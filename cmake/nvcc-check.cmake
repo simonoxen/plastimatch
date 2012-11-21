@@ -1,142 +1,146 @@
 # James Shackleford
-# Date: 08.24.2010
-# File: PLM_nvcc-check.cmake
+# Date: 2010.08.24
+# File: nvcc-check.cmake
 #
-# Currently, nvcc only works with gcc-4.3
-#
-# This script:
-#   * Checks the version of default gcc
-#   * If not 4.3, we look for gcc-4.3 on the system
-#   * If found we tell nvcc to use it
-#   * If not found, we kill CMake and tell user to install gcc-4.3
-#   * Checks for NVCC 3.2
-#   * If found, we add -fpermissive to NVCCFLAGS
-# 
-# NOTE: If nvcc tries to use gcc-4.4 (for example) the build simply
-#       fails.  Ending things at CMake with a request for gcc-4.3
-#       is the most graceful failure I could provide.
+# 2012.11.21  <James Shackleford>
+#   -- Complete rewrite to make checking different gcc
+#        versions easier for the increasing number of nvcc versions
 ######################################################################
-IF(CUDA_FOUND)
-    IF(CMAKE_SYSTEM_NAME MATCHES "Linux")
-        IF(CMAKE_COMPILER_IS_GNUCC)
 
-            # We have to get NVCC version ourselves... the FindCUDA.cmake version # checks are
-            # skipped for non-initial CMake configuration runs
-            exec_program(${CUDA_NVCC_EXECUTABLE} ARGS "--version" OUTPUT_VARIABLE NVCC_OUT)
-            string(REGEX REPLACE ".*release ([0-9]+)\\.([0-9]+).*" "\\1" CUDA_VERSION_MAJOR ${NVCC_OUT})
-            string(REGEX REPLACE ".*release ([0-9]+)\\.([0-9]+).*" "\\2" CUDA_VERSION_MINOR ${NVCC_OUT})
-            MESSAGE(STATUS "nvcc-check: NVCC Version is ${CUDA_VERSION_MAJOR}.${CUDA_VERSION_MINOR}")
+#: FUNCTION: get_nvcc_version ()
+#:  RETURNS: CUDA_VERSION_MAJOR = <STRING: MAJOR_VERSION>
+#:           CUDA_VERSION_MINOR = <STRING: MINOR_VERSION>
+#  ----------------------------------------------------------------------------
+function (get_nvcc_version)
+    # We have to get NVCC version ourselves. FindCUDA.cmake version checks are
+    # skipped for non-initial CMake configuration runs
+    exec_program(${CUDA_NVCC_EXECUTABLE} ARGS "--version" OUTPUT_VARIABLE NVCC_OUT)
+    string(REGEX REPLACE ".*release ([0-9]+)\\.([0-9]+).*" "\\1" NVCC_VERSION_MAJOR ${NVCC_OUT})
+    string(REGEX REPLACE ".*release ([0-9]+)\\.([0-9]+).*" "\\2" NVCC_VERSION_MINOR ${NVCC_OUT})
+    set (CUDA_VERSION_MAJOR ${NVCC_VERSION_MAJOR} PARENT_SCOPE)
+    set (CUDA_VERSION_MINOR ${NVCC_VERSION_MINOR} PARENT_SCOPE)
+endfunction ()
 
-            # Get the gcc version number
-            EXEC_PROGRAM(gcc ARGS "-dumpversion" OUTPUT_VARIABLE GCCVER)
+#: FUNCTION: find_gcc_version (major_version minor_version)
+#:  RETURNS: NVC_GCC_STATUS = 0 [FAILURE]
+#:                          = 1 [USE DEFAULT GCC]
+#:                          = 2 [USE SELECT  GCC]
+#:           NVC_SELECT_GCC = <STRING: PATH_TO_GCC>
+#  ----------------------------------------------------------------------------
+function (find_gcc_version major minor)
+    set (NVC_GCC_STATUS "0" PARENT_SCOPE)
 
-            # Get gcc's major and minor revs
-#            STRING(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+).*" "\\1" GCCVER_MAJOR "${GCCVER}")
-#            STRING(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+).*" "\\2" GCCVER_MINOR "${GCCVER}")
-#            STRING(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+).*" "\\3" GCCVER_PATCH "${GCCVER}")
-            STRING(REGEX REPLACE "^([0-9]+)\\.([0-9]+).*" "\\1" GCCVER_MAJOR "${GCCVER}")
-            STRING(REGEX REPLACE "^([0-9]+)\\.([0-9]+).*" "\\2" GCCVER_MINOR "${GCCVER}")
-            MESSAGE(STATUS "nvcc-check: GCC Version is ${GCCVER_MAJOR}.${GCCVER_MINOR}")
+    exec_program (gcc ARGS "-dumpversion" OUTPUT_VARIABLE GCCVER)
+    string (REGEX REPLACE "^([0-9]+)\\.([0-9]+).*" "\\1" GCCVER_MAJOR "${GCCVER}")
+    string (REGEX REPLACE "^([0-9]+)\\.([0-9]+).*" "\\2" GCCVER_MINOR "${GCCVER}")
 
-            # CUDA 2.X IS UNSUPPORTED
-            IF (CUDA_VERSION_MAJOR MATCHES "2")
-                MESSAGE(FATAL_ERROR "nvcc-check: Plastimatch only supports CUDA 3.0+\n")
-            ENDIF ()
+    if (GCCVER_MAJOR MATCHES "${major}" AND GCCVER_MINOR MATCHES "${minor}")
+        set (NVC_GCC_STATUS "1" PARENT_SCOPE)
+    else ()
+        exec_program (which ARGS "gcc-${major}.${minor}" OUTPUT_VARIABLE GCC_XX RETURN_VALUE GCC_XX_EXIST)
+        if (GCC_XX_EXIST EQUAL 0)
+            set (NVC_GCC_STATUS "2" PARENT_SCOPE)
+            set (NVC_SELECT_GCC ${GCC_XX} PARENT_SCOPE)
+        endif ()
+    endif ()
+endfunction ()
 
-            # CUDA 3.X NEEDS GCC-4.3
-            IF (CUDA_VERSION_MAJOR MATCHES "3")
-                # JAS 08.06.2012
-                #   Tell versions of CUDA < 4.1 to compile host code to C++
-                #   (instead of C). This is the default behavior in CUDA 4.1+
-                set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
-                    --host-compilation=C++
-                )
-
-                IF(GCCVER_MAJOR MATCHES "4")
-                    IF(GCCVER_MINOR MATCHES "3")
-                        MESSAGE(STATUS "nvcc-check: Found gcc-${GCCVER_MAJOR}.${GCCVER_MINOR}... success.")
-                    ELSE()
-                        MESSAGE(STATUS "nvcc-check: Found gcc-${GCCVER_MAJOR}.${GCCVER_MINOR}... searching for gcc-4.3")
-                        EXEC_PROGRAM(which ARGS "gcc-4.3" OUTPUT_VARIABLE GCC43 RETURN_VALUE GCC43_EXIST)
-    
-                        IF(GCC43_EXIST EQUAL 0)
-                            MESSAGE(STATUS "nvcc-check: Found gcc-4.3... telling nvcc to use it!")
-                            MESSAGE(STATUS "nvcc-check: CUDA_NVCC_FLAGS set to \"${CUDA_NVCC_FLAGS} --compiler-bindir=${GCC43}\"")
-                            SET (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --compiler-bindir=${GCC43})
-                        ELSE()
-                            MESSAGE(FATAL_ERROR "nvcc-check: Please install gcc-4.3, it is needed by nvcc \(CUDA\).\nNote that gcc-4.3 can be installed side-by-side with your current version of gcc (${GCCVER_MAJOR}.${GCCVER_MINOR}).\nYou need not replace your current version of gcc; just make gcc-4.3 available as well so that nvcc can use it.\nDebian/Ubuntu users with root privilages may simply enter the following at a terminal prompt:\n  sudo apt-get install gcc-4.3 g++-4.3\n")
-                        ENDIF()
-    
-                    ENDIF()
-                ENDIF()
-            ENDIF ()
-
-            # CUDA 4.X NEEDS GCC-4.4 or GCC-4.3
-            #    ...this begs to be re-written
-            IF (CUDA_VERSION_MAJOR MATCHES "4")
-                IF(GCCVER_MAJOR MATCHES "4")
-                    # GCC 4.4 is okay
-                    IF(GCCVER_MINOR MATCHES "4")
-                        MESSAGE(STATUS "nvcc-check: Found gcc-${GCCVER_MAJOR}.${GCCVER_MINOR}... success.")
-                    ELSE()
-                        # GCC 4.3 is also okay
-                        IF(GCCVER_MINOR MATCHES "3")
-                            MESSAGE(STATUS "nvcc-check: Found gcc-${GCCVER_MAJOR}.${GCCVER_MINOR}... success.")
-                        ELSE()
-                            # neither 4.4 or 4.3 are default, see if GCC-4.4 is also installed somewhere in the PATH
-                            MESSAGE(STATUS "nvcc-check: Found gcc-${GCCVER_MAJOR}.${GCCVER_MINOR}... searching for gcc-4.4")
-                            EXEC_PROGRAM(which ARGS "gcc-4.4" OUTPUT_VARIABLE GCC44 RETURN_VALUE GCC44_EXIST)
-    
-                            # found gcc-4.4.  cool, let's use it
-                            IF(GCC44_EXIST EQUAL 0)
-                                MESSAGE(STATUS "nvcc-check: Found gcc-4.4... telling nvcc to use it!")
-                                MESSAGE(STATUS "nvcc-check: CUDA_NVCC_FLAGS set to \"${CUDA_NVCC_FLAGS} --compiler-bindir=${GCC44}\"")
-                                SET (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --compiler-bindir=${GCC44})
-                            ELSE()
-
-                                # didn't find gcc-4.4, let's look for for gcc-4.3
-                                MESSAGE(STATUS "nvcc-check: Found gcc-${GCCVER_MAJOR}.${GCCVER_MINOR}... searching for gcc-4.3")
-                                EXEC_PROGRAM(which ARGS "gcc-4.3" OUTPUT_VARIABLE GCC43 RETURN_VALUE GCC43_EXIST)
-    
-                                # found gcc-4.3... use it.
-                                IF(GCC43_EXIST EQUAL 0)
-                                    MESSAGE(STATUS "nvcc-check: Found gcc-4.3... telling nvcc to use it!")
-                                    MESSAGE(STATUS "nvcc-check: CUDA_NVCC_FLAGS set to \"${CUDA_NVCC_FLAGS} --compiler-bindir=${GCC43}\"")
-                                    SET (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --compiler-bindir=${GCC43})
-                                ELSE()
-                                    # didn't find anything useful
-                                    MESSAGE(FATAL_ERROR "nvcc-check: Please install gcc-4.3, it is needed by nvcc \(CUDA\).\nNote that gcc-4.3 can be installed side-by-side with your current version of gcc (${GCCVER_MAJOR}.${GCCVER_MINOR}).\nYou need not replace your current version of gcc; just make gcc-4.3 available as well so that nvcc can use it.\nDebian/Ubuntu users with root privilages may simply enter the following at a terminal prompt:\n  sudo apt-get install gcc-4.3 g++-4.3\n")
-                                ENDIF()
-                            ENDIF()
-                        ENDIF()
-                    ENDIF()
-                ENDIF()
-            ENDIF ()
-
-        ENDIF()
-    ENDIF()
+#: FUNCTION: error_request_gcc_version (major_version minor_version)
+#  ----------------------------------------------------------------------------
+function (error_request_gcc_version major minor)
+    message (FATAL_ERROR "nvcc-check: Please install gcc-${major}.${minor}, it is needed by nvcc \(CUDA\).\nNote that gcc-${major}.${minor} can be installed side-by-side with your current version of gcc.\nYou need not replace your current version of gcc; just make gcc-${major}.${minor} available as well so that nvcc can use it.\nDebian/Ubuntu users with root privilages may simply enter the following at a terminal prompt:\n sudo apt-get install gcc-${major}.${minor} g++-${major}.${minor}\n")
+endfunction ()
 
 
 
-    IF(CMAKE_SYSTEM_NAME MATCHES "Linux" OR "APPLE")
+#: Only perform the gcc version check if it is necessary
+#  ----------------------------------------------------------------------------
+if (CUDA_FOUND AND CMAKE_SYSTEM_NAME MATCHES "Linux" AND CMAKE_COMPILER_IS_GNUCC)
 
-        # For CUDA 3.2: surface_functions.h does some non-compliant things...
-        #               so we tell g++ to ignore them when called via nvcc
-        #               by passing the -fpermissive flag through the nvcc
-        #               build trajectory.  Unfortunately, nvcc will also
-        #               blindly pass this flag to gcc, even though it is not
-        #               valid... resulting in TONS of warnings.  So, we go
-        #               version checking again, this time nvcc...
-        # Get the nvcc version number
+    get_nvcc_version ()
+    message(STATUS "nvcc-check: NVCC Version is ${CUDA_VERSION_MAJOR}.${CUDA_VERSION_MINOR}")
 
-        IF(CUDA_VERSION_MAJOR MATCHES "3")
-            IF(CUDA_VERSION_MINOR MATCHES "2")
-                SET (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --compiler-options='-fpermissive')
-                MESSAGE(STATUS "nvcc-check: CUDA 3.2 exception: CUDA_NVCC_FLAGS set to \"${CUDA_NVCC_FLAGS}\"")
-            ENDIF()
-        ENDIF()
-    ENDIF()
+    #: CUDA 2.X: UNSUPPORTED
+    #  ----------------------------------------------------------------
+    if (CUDA_VERSION_MAJOR MATCHES "2")
+        message (FATAL_ERROR "nvcc-check: Plastimatch only supports CUDA 3.0+\n")
+    endif ()
 
-    #    message(STATUS "using nvcc flags ${CUDA_NVCC_FLAGS}")
+    #: CUDA 3.X+: gcc-4.3
+    #  ----------------------------------------------------------------
+    if (CUDA_VERSION_MAJOR MATCHES "3")
+        find_gcc_version (4 3)
 
-ENDIF(CUDA_FOUND)
+        # JAS 08.06.2012: default behavior in CUDA 4.1+
+        list (APPEND CUDA_NVCC_FLAGS --host-compilation C++)
+        message (FATAL_ERROR "nvcc-check: Please install gcc-4.3, it is needed by nvcc \(CUDA\).\nNote that gcc-4.3 can be installed side-by-side with your current version of gcc (${GCCVER_MAJOR}.${GCCVER_MINOR}).\nYou need not replace your current version of gcc; just make gcc-4.3 available as well so that nvcc can use it.\nDebian/Ubuntu users with root privilages may simply enter the following at a terminal prompt:\n  sudo apt-get install gcc-4.3 g++-4.3\n")
+    endif ()
+
+    #: CUDA 4.X+: gcc-4.4 or gcc-4.3
+    #  ----------------------------------------------------------------
+    if (CUDA_VERSION_MAJOR MATCHES "4")
+        find_gcc_version (4 4)
+        if (NVC_GCC_STATUS MATCHES "0")
+            find_gcc_version (4 3)
+        endif ()
+    endif ()
+
+    #: CUDA 5.X+: gcc-4.6, gcc-4.4 or gcc-4.3
+    #  ----------------------------------------------------------------
+    if (CUDA_VERSION_MAJOR MATCHES "5")
+        find_gcc_version (4 6)
+        if (NVC_GCC_STATUS MATCHES "0")
+            find_gcc_version (4 4)
+        endif ()
+        if (NVC_GCC_STATUS MATCHES "0")
+            find_gcc_version (4 3)
+        endif ()
+    endif ()
+
+    #: Set CUDA_NVCC_FLAGS and give the user a little feedback
+    #  ----------------------------------------------------------------
+    #: CASE 0: NO COMPATIBLE VERSION OF GCC WAS FOUND!
+    if (NVC_GCC_STATUS MATCHES "0")
+        if (CUDA_VERSION_MAJOR MATCHES "3")
+            error_request_gcc_version (4 3)
+        endif()
+        if (CUDA_VERSION_MAJOR MATCHES "4")
+            error_request_gcc_version (4 4)
+        endif()
+        if (CUDA_VERSION_MAJOR MATCHES "5")
+            error_request_gcc_version (4 6)
+        endif()
+    endif ()
+
+    #: CASE 1: SYSTEM DEFAULT GCC IS COMPATIBLE
+    if (NVC_GCC_STATUS MATCHES "1")
+        message (STATUS "nvcc-check: Using system default gcc for CUDA compilation.")
+    endif ()
+
+    #: CASE 2: COMPATIBLE VERSION OF GCC WAS FOUND (NOT SYSTEM DEFAULT)
+    if (NVC_GCC_STATUS MATCHES "2")
+        message (STATUS "nvcc-check: Using \"${NVC_SELECT_GCC}\" for CUDA compilation.")
+        list (APPEND CUDA_NVCC_FLAGS --compiler-bindir ${NVC_SELECT_GCC})
+    endif ()
+
+
+    #: Exceptions for specific quirks in certain CUDA versions
+    #  ----------------------------------------------------------------
+
+    # For CUDA 3.2: surface_functions.h does some non-compliant things, 
+    #   so we tell g++ to ignore them when called via nvcc by passing the
+    #   -fpermissive flag through the nvcc build trajectory. Unfortunately,
+    #    nvcc will also blindly pass this flag to gcc, even though it is
+    #    not valid; thus, resulting in TONS of warnings.  So, we 1st check
+    #    the nvcc version number
+    if(CUDA_VERSION_MAJOR MATCHES "3" AND CUDA_VERSION_MINOR MATCHES "2")
+        list (APPEND CUDA_NVCC_FLAGS --compiler-options -fpermissive)
+        message (STATUS "nvcc-check: CUDA 3.2 exception: CUDA_NVCC_FLAGS set to \"${CUDA_NVCC_FLAGS}\"")
+    endif()
+
+
+    if (verbose)
+        message(STATUS "nvcc-check: CUDA_NVCC_FLAGS=\"${CUDA_NVCC_FLAGS}\"")
+    endif ()
+
+endif ()
