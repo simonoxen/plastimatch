@@ -142,6 +142,6 @@ do_command_dice (int argc, char *argv[])
         do_hausdorff (image_1, image_2);
     }
     if (parms.have_contour_dist_option) {
-        do_contour_mean_dist<unsigned char> (image_1, image_2);
+        do_contour_mean_distance (image_1, image_2);
     }
 }

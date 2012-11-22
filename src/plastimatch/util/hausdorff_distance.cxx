@@ -11,6 +11,7 @@
 
 #include "hausdorff_distance.h"
 #include "itk_image_load.h"
+#include "logfile.h"
 
 class Hausdorff_distance_private {
 public:
@@ -97,6 +98,16 @@ float Hausdorff_distance::get_average_hausdorff ()
 }
 
 void 
+Hausdorff_distance::debug ()
+{
+    lprintf (
+	"Hausdorff distance = %f\n"
+	"Average Hausdorff distance = %f\n",
+	this->get_hausdorff (),
+	this->get_average_hausdorff ());
+}
+
+void 
 do_hausdorff (
     UCharImageType::Pointer image_1, 
     UCharImageType::Pointer image_2
@@ -105,10 +116,6 @@ do_hausdorff (
     Hausdorff_distance hd;
     hd.set_reference_image (image_1);
     hd.set_compare_image (image_2);
-    hd.run();
-    printf (
-	"Hausdorff distance = %f\n"
-	"Average Hausdorff distance = %f\n",
-	hd.get_hausdorff (),
-	hd.get_average_hausdorff ());
+    hd.run ();
+    hd.debug ();
 }
