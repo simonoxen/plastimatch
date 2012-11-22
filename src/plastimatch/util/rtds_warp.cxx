@@ -261,24 +261,10 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     Plm_image_header pih;
 
     /* Load referenced DICOM directory */
-
     if (parms->referenced_dicom_dir.not_empty()) {
         lprintf ("Loading RDD\n");
         plm_patient.load_rdd ((const char*) parms->referenced_dicom_dir);
         rtds->load_rdd ((const char*) parms->referenced_dicom_dir);
-    } else {
-        /* GCS: 2011-09-05.  I think it is better to ask the user
-           to explicitly choose a referenced dicom dir than load
-           a directory by default. */
-#if defined (commentout)
-        /* Look for referenced CT in input directory */
-        if (parms->input_fn.not_empty()) {
-            lprintf ("Loading RDD\n");
-            char* dirname = file_util_dirname ((const char*) parms->input_fn);
-            rtds->load_rdd (dirname);
-            free (dirname);
-        }
-#endif
     }
 
     /* Set user-supplied metadata also prior to loading files,

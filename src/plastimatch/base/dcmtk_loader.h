@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+class Dcmtk_loader_private;
 class Dcmtk_series;
 class Metadata;
 class Plm_image;
@@ -20,6 +21,9 @@ public:
     Dcmtk_loader ();
     Dcmtk_loader (const char* dicom_dir);
     ~Dcmtk_loader ();
+
+public:
+    Dcmtk_loader_private *d_ptr;
 
 public:
     typedef std::map<std::string, Dcmtk_series*> Dcmtk_series_map;

@@ -16,13 +16,16 @@ dcmtk_load_rdd (
     const char *dicom_dir
 )
 {
-#if defined (commentout)
-    Gdcm_series gs;
-    std::string tmp;
-
     if (!dicom_dir) {
 	return;
     }
+
+    Dcmtk_loader dss (dicom_dir);
+    dss.parse_directory ();
+
+#if defined (commentout)
+    Gdcm_series gs;
+    std::string tmp;
 
     gs.load (dicom_dir);
     gs.digest_files ();

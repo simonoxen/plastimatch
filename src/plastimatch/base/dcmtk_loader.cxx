@@ -15,16 +15,18 @@
 #include "plm_image.h"
 #include "print_and_exit.h"
 
-ShortImageType::Pointer 
-dcmtk_load (const char *dicom_dir)
-{
-    ShortImageType::Pointer img = ShortImageType::New ();
-    
-    return img;
-}
+class Dcmtk_loader_private {
+public:
+public:
+    Dcmtk_loader_private () {
+    }
+    ~Dcmtk_loader_private () {
+    }
+};
 
 Dcmtk_loader::Dcmtk_loader ()
 {
+    d_ptr = new Dcmtk_loader_private;
     init ();
 }
 
@@ -41,6 +43,8 @@ Dcmtk_loader::~Dcmtk_loader ()
     for (it = m_smap.begin(); it != m_smap.end(); ++it) {
 	delete (*it).second;
     }
+
+    delete d_ptr;
 }
 
 void
@@ -205,4 +209,12 @@ Dcmtk_loader::parse_directory (void)
         this->rtdose_load ();
     }
 #endif
+}
+
+ShortImageType::Pointer 
+dcmtk_load (const char *dicom_dir)
+{
+    ShortImageType::Pointer img = ShortImageType::New ();
+    
+    return img;
 }
