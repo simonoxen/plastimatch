@@ -10,6 +10,7 @@
 #include "make_string.h"
 
 #if PLM_DCM_USE_DCMTK
+#include "dcmtk_rdd.h"
 #include "dcmtk_uid.h"
 #elif GDCM_VERSION_1
 #include "gdcm1_rdd.h"
@@ -49,7 +50,7 @@ void
 dcm_load_rdd (Slice_index* rdd, const char* dicom_dir)
 {
 #if PLM_DCM_USE_DCMTK
-    /* Do nothing */
+    dcmtk_load_rdd (rdd, dicom_dir);
 #elif GDCM_VERSION_1
     gdcm1_load_rdd (rdd, dicom_dir);
 #else

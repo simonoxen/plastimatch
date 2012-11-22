@@ -4,11 +4,11 @@
 #ifndef _plm_patient_h_
 #define _plm_patient_h_
 
-#include "plmbase_config.h"
+#include "plmutil_config.h"
 
 class Plm_patient_private;
 
-class Plm_patient 
+class PLMUTIL_API Plm_patient 
 {
 public:
     Plm_patient ();
@@ -18,6 +18,7 @@ public:
     Plm_patient_private *d_ptr;
 
 public:
+    void load_rdd (const char *rdd);
     void debug (void) const;
 };
 
