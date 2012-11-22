@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "dcmtk_loader.h"
 #include "plm_math.h"
 #include "plm_uid_prefix.h"
 #include "slice_index.h"
