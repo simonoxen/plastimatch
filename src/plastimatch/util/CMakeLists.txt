@@ -33,6 +33,9 @@ set (PLMUTIL_LIBRARY_SRC
   itk_warp.cxx
   landmark_diff.cxx
   proj_image_filter.cxx
+  plm_patient.cxx
+  plm_series.cxx
+  plm_study.cxx
   plm_warp.cxx
   rasterize_slice.cxx
   rasterizer.cxx 

@@ -1,11 +1,9 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include "plmbase_config.h"
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "plmbase.h"
 
 int
 main (int argc, char *argv[])

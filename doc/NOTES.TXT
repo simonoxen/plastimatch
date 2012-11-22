@@ -7,7 +7,7 @@ Need patient, study, series hierarchy.
     -- Plm_series
 
 This should be allowed to be created via dicom.  It might therefore 
-be required to move rtss code into base.
+be required to move rtss/rtds code into base.  These files would move:
 
 Idea (1).  Plm_series has a "type" field, which tells us if the 
 item is an image, rtss, etc.

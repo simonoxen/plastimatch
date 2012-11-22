@@ -4,10 +4,9 @@
 #include "plm_config.h"
 #include <stdio.h>
 
-#include "plmbase.h"
 #include "plmutil.h"
 #include "pstring.h"
-
+#include "itk_image_save.h"
 
 int 
 main (int argc, char *argv[])

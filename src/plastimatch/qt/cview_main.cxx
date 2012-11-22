@@ -12,10 +12,9 @@
 #include <iostream>
 #include <QtGui>
 
-#include "plmbase.h"
-
 #include "cview_portal.h"
 #include "cview_main.h"
+#include "plm_image.h"
 
 #define VERSION "0.09a"
 

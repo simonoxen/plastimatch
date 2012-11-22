@@ -11,8 +11,9 @@
 #include <QWheelEvent>
 #include <QGraphicsPixmapItem>
 
-#include "plmbase.h"
 #include "cview_portal.h"
+#include "plm_math.h"
+#include "volume.h"
 
 // TODO: * Clean up this file!
 //       * Add: Multi-Volume / Layered Rendering System

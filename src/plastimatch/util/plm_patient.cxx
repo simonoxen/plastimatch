@@ -5,11 +5,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "metadata.h"
 #include "plm_patient.h"
 
 class Plm_patient_private {
 public:
-
+    Metadata *meta;
+    
 public:
     Plm_patient_private () {
     }
