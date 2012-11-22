@@ -32,6 +32,7 @@ Dcmtk_loader::Dcmtk_loader ()
 
 Dcmtk_loader::Dcmtk_loader (const char* dicom_dir)
 {
+    d_ptr = new Dcmtk_loader_private;
     init ();
     this->insert_directory (dicom_dir);
 }
