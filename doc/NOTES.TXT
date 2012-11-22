@@ -1,3 +1,19 @@
+***** DICOM re-org *****
+
+Need patient, study, series hierarchy.
+
+------ Plm_patient
+  ---- Plm_study
+    -- Plm_series
+
+This should be allowed to be created via dicom.  It might therefore 
+be required to move rtss code into base.
+
+Idea (1).  Plm_series has a "type" field, which tells us if the 
+item is an image, rtss, etc.
+
+Idea (2).  Plm_series is a base type, subclassed by image, rtss, etc.
+
 ***** Viscous *****
 
 It seems that only certain versions of thrust work with certain versions 

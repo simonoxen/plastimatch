@@ -56,6 +56,9 @@ set (PLMBASE_LIBRARY_SRC
   plm_image_convert.cxx
   plm_image_header.cxx
   plm_image_type.cxx
+  plm_patient.cxx
+  plm_series.cxx
+  plm_study.cxx
   pointset.cxx
   proj_image.cxx
   proj_image_dir.cxx
