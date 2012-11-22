@@ -16,7 +16,7 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 set (PLMUTIL_LIBRARY_SRC
   bspline_correspond.cxx
   bspline_warp.cxx
-  contour_mean_distance.cxx contour_mean_distance.h 
+  contour_distance.cxx contour_distance.h 
   cxt_extract.cxx
   dice_statistics.cxx
   distance_map.cxx

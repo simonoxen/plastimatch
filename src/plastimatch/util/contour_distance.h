@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _contour_mean_distance_h_
-#define _contour_mean_distance_h_
+#ifndef _contour_distance_h_
+#define _contour_distance_h_
 
 #include "plmutil_config.h"
 #include "itk_image_type.h"

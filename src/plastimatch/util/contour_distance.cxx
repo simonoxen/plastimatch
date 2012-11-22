@@ -9,7 +9,7 @@
 #include "itkImage.h"
 #include "plm_ContourMeanDistanceImageFilter.h"
 
-#include "contour_mean_distance.h"
+#include "contour_distance.h"
 #include "itk_image_load.h"
 #include "logfile.h"
 

@@ -3,7 +3,7 @@
    ----------------------------------------------------------------------- */
 #include "plmcli_config.h"
 
-#include "contour_mean_distance.h"
+#include "contour_distance.h"
 #include "dice_statistics.h"
 #include "hausdorff_distance.h"
 #include "itk_image_load.h"
