@@ -9,6 +9,7 @@
 
 #include "autolabel_ransac_est.h"
 #include "itk_point.h"
+#include "print_and_exit.h"
 #include "pstring.h"
 
 static bool

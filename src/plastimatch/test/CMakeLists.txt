@@ -11,7 +11,6 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 option (PLM_BUILD_CUDA_TEST   "Build CUDA test program"   OFF)
 option (PLM_BUILD_DCMTK_TEST  "Build DCMTK test program"  OFF)
 option (PLM_BUILD_DLIB_TEST   "Build dlib test program"   OFF)
-option (PLM_BUILD_FANN_TEST   "Build fann test program"   OFF)
 option (PLM_BUILD_GABOR_TEST  "Build Gabor test program"  OFF)
 option (PLM_BUILD_GDCM1_TEST  "Build GDCM test program"   OFF)
 option (PLM_BUILD_ITK_TEST    "Build ITK test program"    OFF)
@@ -44,21 +43,13 @@ endif ()
 # Test executable -- dlib
 if (PLM_BUILD_DLIB_TEST)
   plm_add_executable (dlib_test dlib_test.cxx
-    "" "" 
-    ${BUILD_ALWAYS} ${INSTALL_NEVER})
-endif ()
-
-# Test executable -- fann
-if (FANN_FOUND AND PLM_BUILD_FANN_TEST)
-  set (FANN_TEST_LIBS ${GPUIT_LIBRARIES} ${FANN_LIBRARIES})
-  plm_add_executable (fann_test fann_test.c
-    "${FANN_TEST_LIBS}" "${OPENMP_LDFLAGS}"
+    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_ALWAYS} ${INSTALL_NEVER})
 endif ()
 
 # Test executable -- gabor_test
 if (PLM_BUILD_GABOR_TEST)
-  plm_add_executable (gabor_test "${GABOR_TEST_SRC}" 
+  plm_add_executable (gabor_test gabor_test.cxx 
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
