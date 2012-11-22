@@ -50,12 +50,10 @@ encapsulate (
 static const std::string
 itk_make_uid (ImageIOType::Pointer& gdcmIO)
 {
-#if GDCM_MAJOR_VERSION < 2
-    return gdcm::Util::CreateUniqueUID (gdcmIO->GetUIDPrefix());
-#else
-    static gdcm::UIDGenerator uid;
-    return uid.Generate();
-#endif
+    char uid[100];
+    const char* uid_root = PLM_UID_PREFIX;
+    std::string uid_string = dcm_uid (uid, uid_root);
+    return uid_string;
 }
 
 static void
@@ -100,14 +98,7 @@ itk_dicom_save (
        DICOM time string looks like this: 203842 or 203842.805219
     */
     std::string current_date, current_time;
-#if GDCM_VERSION_1
-    gdcm1_get_date_time (&current_date, &current_time);
-#elif GDCM_VERSION_2
-    gdcm2_get_date_time (&current_date, &current_time);
-#else
-    current_date = "20000101";
-    current_time = "000000";
-#endif
+    dcm_get_date_time (&current_date, &current_time);
 
     itksys::SystemTools::MakeDirectory (dir_name);
 

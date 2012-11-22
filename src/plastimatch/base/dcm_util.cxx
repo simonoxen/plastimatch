@@ -25,8 +25,14 @@ dcm_get_date_time (
     std::string *time
 )
 {
+#if PLM_DCM_USE_DCMTK
     *date = "20110101";
     *time = "120000";
+#elif GDCM_VERSION_1
+    gdcm1_get_date_time (date, time);
+#else /* GDCM_VERSION_2 */
+    gdcm2_get_date_time (date, time);
+#endif
 }
 
 std::string 
