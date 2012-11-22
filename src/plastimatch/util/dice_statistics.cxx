@@ -22,56 +22,56 @@
 
 class Dice_statistics_private {
 public:
-  Dice_statistics_private () {
-    TP = TN = FP = FN = 0;
-  }
+    Dice_statistics_private () {
+        TP = TN = FP = FN = 0;
+    }
 public:
-  size_t TP, TN, FP, FN;
-  float dice;
-  size_t ref_size;
-  size_t cmp_size;
-  DoubleVector3DType ref_cog;
-  DoubleVector3DType cmp_cog;
-  double ref_vol;
-  double cmp_vol;
-  UCharImageType::Pointer ref_image;
-  UCharImageType::Pointer cmp_image;
+    size_t TP, TN, FP, FN;
+    float dice;
+    size_t ref_size;
+    size_t cmp_size;
+    DoubleVector3DType ref_cog;
+    DoubleVector3DType cmp_cog;
+    double ref_vol;
+    double cmp_vol;
+    UCharImageType::Pointer ref_image;
+    UCharImageType::Pointer cmp_image;
 };
 
 Dice_statistics::Dice_statistics ()
 {
-  d_ptr = new Dice_statistics_private;
+    d_ptr = new Dice_statistics_private;
 }
 
 Dice_statistics::~Dice_statistics ()
 {
-  delete d_ptr;
+    delete d_ptr;
 }
 
 void 
 Dice_statistics::set_reference_image (const char* image_fn)
 {
-  d_ptr->ref_image = itk_image_load_uchar (image_fn, 0);
+    d_ptr->ref_image = itk_image_load_uchar (image_fn, 0);
 }
 
 void 
 Dice_statistics::set_reference_image (
-                                      const UCharImageType::Pointer image)
+    const UCharImageType::Pointer image)
 {
-  d_ptr->ref_image = image;
+    d_ptr->ref_image = image;
 }
 
 void 
 Dice_statistics::set_compare_image (const char* image_fn)
 {
-  d_ptr->cmp_image = itk_image_load_uchar (image_fn, 0);
+    d_ptr->cmp_image = itk_image_load_uchar (image_fn, 0);
 }
 
 void 
 Dice_statistics::set_compare_image (
-                                    const UCharImageType::Pointer image)
+    const UCharImageType::Pointer image)
 {
-  d_ptr->cmp_image = image;
+    d_ptr->cmp_image = image;
 }
 
 void 

@@ -3,8 +3,9 @@
    ----------------------------------------------------------------------- */
 #include "plmcli_config.h"
 
+#include "contour_mean_distance.h"
 #include "dice_statistics.h"
-#include "hausdorff_statistics.h"
+#include "hausdorff_distance.h"
 #include "itk_image_load.h"
 #include "itk_resample.h"
 #include "plm_clp.h"
@@ -138,7 +139,7 @@ do_command_dice (int argc, char *argv[])
         ds.debug ();
     }
     if (parms.have_hausdorff_option) {
-        do_hausdorff<unsigned char> (image_1, image_2);
+        do_hausdorff (image_1, image_2);
     }
     if (parms.have_contour_dist_option) {
         do_contour_mean_dist<unsigned char> (image_1, image_2);

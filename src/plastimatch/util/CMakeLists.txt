@@ -16,6 +16,7 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 set (PLMUTIL_LIBRARY_SRC
   bspline_correspond.cxx
   bspline_warp.cxx
+  contour_mean_distance.cxx contour_mean_distance.h 
   cxt_extract.cxx
   dice_statistics.cxx
   distance_map.cxx
@@ -23,7 +24,7 @@ set (PLMUTIL_LIBRARY_SRC
   dvh.cxx 
   gamma_analysis.cxx
   gamma_dose_comparison.cxx gamma_dose_comparison.h
-  hausdorff_statistics.cxx
+  hausdorff_distance.cxx hausdorff_distance.h 
   itk_adjust.cxx
   itk_crop.cxx
   itk_gabor.cxx

@@ -13,8 +13,11 @@ class Dice_statistics_private;
 /*! \brief 
  * The Dice_statistics class computes a Dice statistic for the 
  * overlap between two regions.  Dice is defined as 
- *
- * (I need to learn how to use doxygen math commands here)
+ * \f[
+ *   D = \frac{2 |X| \cup |Y|}{|X| + |Y|}.
+ * \f]
+ * A value of zero means X and Y have no overlap, where a value of one means 
+ * the two regions are the same.
  *
  * If the images do not have the same size and resolution, the compare 
  * image will be resampled onto the reference image geometry prior 

@@ -8,35 +8,8 @@
 #include <math.h>
 #include "itkImage.h"
 #include "plm_ContourMeanDistanceImageFilter.h"
-#include "plm_HausdorffDistanceImageFilter.h"
 
-#include "hausdorff_statistics.h"
-
-template<class T>
-void do_hausdorff (
-    typename itk::Image<T,3>::Pointer image_1, 
-    typename itk::Image<T,3>::Pointer image_2
-)
-{
-    typedef itk::plm_HausdorffDistanceImageFilter< 
-	itk::Image<T,3>, itk::Image<T,3> > Hausdorff_filter;
-    typename Hausdorff_filter::Pointer h_filter = Hausdorff_filter::New ();
-    h_filter->SetInput1 (image_1);
-    h_filter->SetInput2 (image_2);
-    h_filter->SetUseImageSpacing(true);
-    try {
-        h_filter->Update ();
-    } catch (itk::ExceptionObject &err) {
-	std::cout << "ITK Exception: " << err << std::endl;
-        return;
-    }
-
-    printf (
-	"Hausdorff distance = %f\n"
-	"Average Hausdorff distance = %f\n",
-	h_filter->GetHausdorffDistance (),
-	h_filter->GetAverageHausdorffDistance ());
-}
+#include "contour_mean_distance.h"
 
 template<class T>
 void do_contour_mean_dist(
@@ -67,17 +40,6 @@ void do_contour_mean_dist(
 }
 
 /* Explicit instantiations */
-template 
-PLMUTIL_API
-void do_hausdorff<unsigned char> (
-    itk::Image<unsigned char,3>::Pointer image_1, 
-    itk::Image<unsigned char,3>::Pointer image_2);
-template 
-PLMUTIL_API
-void do_hausdorff<float> (
-    itk::Image<float,3>::Pointer image_1, 
-    itk::Image<float,3>::Pointer image_2);
-
 template 
 PLMUTIL_API
 void do_contour_mean_dist<unsigned char> (
