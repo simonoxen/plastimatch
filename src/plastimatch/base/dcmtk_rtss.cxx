@@ -376,23 +376,70 @@ Dcmtk_save::save_rtss (
 		continue;
 	    }
 
+	    /* ContourImageSequence */
             DcmItem *c_item = 0;
             roic_item->findOrCreateSequenceItem (
-                DCM_ROIContourSequence, c_item, -2);
+                DCM_ContourSequence, c_item, -2);
+            DcmItem *ci_item = 0;
+            c_item->findOrCreateSequenceItem (
+                DCM_ContourImageSequence, ci_item, -2);
+            ci_item->putAndInsertString (DCM_ReferencedSOPClassUID,
+                UID_CTImageStorage);
+            ci_item->putAndInsertString (DCM_ReferencedSOPInstanceUID,
+                curr_contour->ct_slice_uid.c_str());
 
-            /* GCS FIX:  In the gdcm1 code, the ITK dicom writer 
-               stores slice uids in Rdd */
-	    /* ContourImageSequence */
-	    if (curr_contour->ct_slice_uid.not_empty()) {
-                DcmItem *ci_item = 0;
-                c_item->findOrCreateSequenceItem (
-                    DCM_ContourImageSequence, ci_item, -2);
-                ci_item->putAndInsertString (DCM_ReferencedSOPClassUID,
-                    UID_CTImageStorage);
-                ci_item->putAndInsertString (DCM_ReferencedSOPInstanceUID,
-                    curr_contour->ct_slice_uid.c_str());
+            /* ContourGeometricType */
+            c_item->putAndInsertString (DCM_ContourGeometricType, 
+                "CLOSED_PLANAR");
+
+            /* NumberOfContourPoints */
+            tmp.format ("%d", curr_contour->num_vertices);
+            c_item->putAndInsertString (DCM_NumberOfContourPoints, tmp);
+
+	    /* ContourData */
+            tmp.format ("%g\\%g\\%g", 
+                curr_contour->x[0],
+                curr_contour->y[0],
+                curr_contour->z[0]);
+	    for (int k = 1; k < curr_contour->num_vertices; k++) {
+                Pstring tmp2;
+                tmp2.format ("\\%g\\%g\\%g",
+		    curr_contour->x[k],
+		    curr_contour->y[k],
+		    curr_contour->z[k]);
+                tmp += tmp2;
 	    }
-        }       
+            c_item->putAndInsertString (DCM_ContourData, tmp);
+        }
+
+        tmp.format ("%d", (int) curr_structure->id);
+        roic_item->putAndInsertString (DCM_ReferencedROINumber, tmp);
+    }
+
+    /* ----------------------------------------------------------------- */
+    /*     Part 5  -- More structure info                                */
+    /* ----------------------------------------------------------------- */
+    for (size_t i = 0; i < cxt->num_structures; i++) {
+	Rtss_structure *curr_structure = cxt->slist[i];
+	Pstring tmp;
+
+        /* RTROIObservationsSequence */
+        DcmItem *rtroio_item = 0;
+        dataset->findOrCreateSequenceItem (
+            DCM_RTROIObservationsSequence, rtroio_item, -2);
+
+	/* ObservationNumber */
+        tmp.format ("%d", (int) curr_structure->id);
+	rtroio_item->putAndInsertString (DCM_ObservationNumber, tmp);
+	/* ReferencedROINumber */
+	rtroio_item->putAndInsertString (DCM_ReferencedROINumber, tmp);
+	/* ROIObservationLabel */
+	rtroio_item->putAndInsertString (DCM_ROIObservationLabel, 
+	    (const char*) curr_structure->name);
+	/* RTROIInterpretedType */
+	rtroio_item->putAndInsertString (DCM_RTROIInterpretedType, "");
+	/* ROIInterpreter */
+	rtroio_item->putAndInsertString (DCM_ROIInterpreter, "");
     }
 
     /* ----------------------------------------------------------------- */
