@@ -14,6 +14,8 @@
 class Plm_image;
 class Plm_image_header;
 class Rtss_structure;
+class Slice_index;
+class Slice_list;
 
 #define CXT_BUFLEN 2048
 
@@ -55,6 +57,8 @@ public:
     void find_rasterization_geometry (Plm_image_header *pih);
     Pstring find_unused_structure_name (void);
     void fix_polyline_slice_numbers (void);
+    void apply_slice_index (const Slice_index *rdd);
+    void apply_slice_list (const Slice_list *slice_list);
     void free_all_polylines (void);
     void keyholize (void);
     void set_rasterization_geometry (void);

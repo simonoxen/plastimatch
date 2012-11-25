@@ -16,6 +16,7 @@
 #include "dicom_rt_study.h"
 #include "file_util.h"
 #include "plm_image.h"
+#include "plm_image_header.h"
 #include "plm_math.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
@@ -109,21 +110,25 @@ Dcmtk_save::save_image (
     dsd.iop.format ("%f\\%f\\%f\\%f\\%f\\%f",
         dc[0], dc[1], dc[2], dc[3], dc[4], dc[5]);
 
+    Plm_image_header pih (dsd.vol);
+    dsw->set_image_header (pih);
+
     for (plm_long k = 0; k < dsd.vol->dim[2]; k++) {
+        /* GCS FIX: direction cosines */
+        float z_loc = dsd.vol->offset[2] + k * dsd.vol->spacing[2];
         dsd.fn.format ("%s/image%03d.dcm", dicom_dir, (int) k);
         make_directory_recursive (dsd.fn);
-        /* GCS FIX: direction cosines */
         dsd.sthk.format ("%f", dsd.vol->spacing[2]);
-        dsd.sloc.format ("%f", dsd.vol->offset[2] + k * dsd.vol->spacing[2]);
+        dsd.sloc.format ("%f", z_loc);
         dsd.ipp.format ("%f\\%f\\%f", dsd.vol->offset[0], dsd.vol->offset[1], 
             dsd.vol->offset[2] + k * dsd.vol->spacing[2]);
         dcmtk_uid (dsd.slice_uid, PLM_UID_PREFIX);
 
         dsd.slice_float = &((float*)dsd.vol->img)[k*dsd.slice_size];
         dcmtk_save_slice (dsw, &dsd);
-#if defined (GCS_REARRANGING)
-        dsw->get_slice_data()->push_back (dsd);
-#endif
+
+        dsw->set_slice_uid (k, dsd.slice_uid);
     }
     delete[] dsd.slice_int16;
+    dsw->set_slice_list_complete ();
 }

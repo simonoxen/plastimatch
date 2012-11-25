@@ -15,6 +15,8 @@
 #include "pstring.h"
 #include "rtss_structure.h"
 #include "rtss_structure_set.h"
+#include "slice_index.h"
+#include "slice_list.h"
 
 static void
 assign_random_color (Pstring& color)
@@ -122,8 +124,8 @@ Rtss_structure_set::add_structure (
 
     this->num_structures++;
     this->slist = (Rtss_structure**) 
-	    realloc (this->slist, 
-		     this->num_structures * sizeof(Rtss_structure*));
+        realloc (this->slist, 
+            this->num_structures * sizeof(Rtss_structure*));
     new_structure 
 	= this->slist[this->num_structures - 1] 
 	= new Rtss_structure;
@@ -428,6 +430,69 @@ Rtss_structure_set::set_rasterization_geometry (void)
 	this->rast_offset[0], this->rast_offset[1], this->rast_offset[2]);
     printf ("rast_spacing = %g %g %g\n", 
 	this->rast_spacing[0], this->rast_spacing[1], this->rast_spacing[2]);
+}
+
+void
+Rtss_structure_set::apply_slice_index (const Slice_index *rdd)
+{
+    /* Geometry */
+    for (int d = 0; d < 3; d++) {
+        this->m_offset[d] = rdd->m_pih.m_origin[d];
+        this->m_dim[d] = rdd->m_pih.Size(d);
+        this->m_spacing[d] = rdd->m_pih.m_spacing[d];
+    }
+
+    /* Slice numbers and slice uids */
+    for (size_t i = 0; i < this->num_structures; i++) {
+        Rtss_structure *curr_structure = this->slist[i];
+        for (size_t j = 0; j < curr_structure->num_contours; j++) {
+            Rtss_polyline *curr_polyline = curr_structure->pslist[j];
+            if (curr_polyline->num_vertices <= 0) {
+                continue;
+            }
+            rdd->get_slice_info (
+                &curr_polyline->slice_no,
+                &curr_polyline->ct_slice_uid,
+                curr_polyline->z[0]);
+        }
+    }
+}
+
+void
+Rtss_structure_set::apply_slice_list (const Slice_list *slice_list)
+{
+    if (!slice_list->slice_list_complete()) {
+        return;
+    }
+
+    const Plm_image_header *pih = slice_list->get_image_header ();
+    /* Geometry */
+    for (int d = 0; d < 3; d++) {
+        this->m_offset[d] = pih->m_origin[d];
+        this->m_dim[d] = pih->Size(d);
+        this->m_spacing[d] = pih->m_spacing[d];
+    }
+
+    /* Slice numbers and slice uids */
+    for (size_t i = 0; i < this->num_structures; i++) {
+        Rtss_structure *curr_structure = this->slist[i];
+        for (size_t j = 0; j < curr_structure->num_contours; j++) {
+            Rtss_polyline *curr_polyline = curr_structure->pslist[j];
+            if (curr_polyline->num_vertices <= 0) {
+                continue;
+            }
+            curr_polyline->slice_no = slice_list->get_slice_index (
+                curr_polyline->z[0]);
+            curr_polyline->ct_slice_uid = slice_list->get_slice_uid (
+                curr_polyline->slice_no);
+#if defined (commentout)
+            rdd->get_slice_info (
+                &curr_polyline->slice_no,
+                &curr_polyline->ct_slice_uid,
+                curr_polyline->z[0]);
+#endif
+        }
+    }
 }
 
 void

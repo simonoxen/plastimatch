@@ -464,27 +464,7 @@ Rtss::apply_dicom_dir (const Slice_index *rdd)
         return;
     }
 
-    /* Geometry */
-    for (int d = 0; d < 3; d++) {
-        this->m_cxt->m_offset[d] = rdd->m_pih.m_origin[d];
-        this->m_cxt->m_dim[d] = rdd->m_pih.Size(d);
-        this->m_cxt->m_spacing[d] = rdd->m_pih.m_spacing[d];
-    }
-
-    /* Slice numbers and slice uids */
-    for (size_t i = 0; i < this->m_cxt->num_structures; i++) {
-        Rtss_structure *curr_structure = this->m_cxt->slist[i];
-        for (size_t j = 0; j < curr_structure->num_contours; j++) {
-            Rtss_polyline *curr_polyline = curr_structure->pslist[j];
-            if (curr_polyline->num_vertices <= 0) {
-                continue;
-            }
-            rdd->get_slice_info (
-                &curr_polyline->slice_no,
-                &curr_polyline->ct_slice_uid,
-                curr_polyline->z[0]);
-        }
-    }
+    this->m_cxt->apply_slice_index (rdd);
 }
 
 void

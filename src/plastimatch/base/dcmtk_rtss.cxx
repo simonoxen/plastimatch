@@ -240,6 +240,10 @@ Dcmtk_save::save_rtss (
     OFCondition ofc;
     Rtss_structure_set *cxt = this->cxt;
 
+    /* Prepare structure set with slice uids */
+    const Slice_list *slice_list = dsw->get_slice_list ();
+    cxt->apply_slice_list (slice_list);
+
     /* Prepare output file */
     Pstring rtss_fn;
     rtss_fn.format ("%s/rtss.dcm", dicom_dir);
@@ -321,20 +325,17 @@ Dcmtk_save::save_rtss (
         DCM_RTReferencedSeriesSequence, rtrseries_item, -2);
     rtrseries_item->putAndInsertString (
         DCM_SeriesInstanceUID, dsw->get_ct_series_uid());
-    std::vector<Dcmtk_slice_data>::iterator it;
-#if defined (GCS_REARRANGING)
-    for (it = dsw->get_slice_data()->begin(); 
-         it < dsw->get_slice_data()->end(); it++)
-    {
+
+    for (int k = 0; k < dsw->num_slices(); k++) {
         DcmItem *ci_item = 0;
         rtrseries_item->findOrCreateSequenceItem (
             DCM_ContourImageSequence, ci_item, -2);
         ci_item->putAndInsertString (
             DCM_ReferencedSOPClassUID, UID_CTImageStorage);
         ci_item->putAndInsertString (
-            DCM_ReferencedSOPInstanceUID, (*it).slice_uid);
+            DCM_ReferencedSOPInstanceUID, 
+            dsw->get_slice_uid (k));
     }
-#endif
 
     /* ----------------------------------------------------------------- */
     /*     Part 3  -- Structure info                                     */

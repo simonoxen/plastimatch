@@ -9,6 +9,7 @@
 #include "plm_image_header.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
+#include "slice_list.h"
 #include "volume.h"
 
 class Dicom_rt_study_private {
@@ -27,7 +28,7 @@ public:
     std::string rtss_instance_uid;
     std::string rtss_series_uid;
     std::string study_uid;
-//    std::vector<Dicom_slice_data>* slice_data;
+    Slice_list slice_list;
 public:
     Dicom_rt_study_private () {
         dicom_get_date_time (&date_string, &time_string);
@@ -38,13 +39,8 @@ public:
         rtss_instance_uid = dicom_uid (PLM_UID_PREFIX);
         dose_series_uid = dicom_uid (PLM_UID_PREFIX);
         dose_instance_uid = dicom_uid (PLM_UID_PREFIX);
-//        slice_data = new std::vector<Dicom_slice_data>;
-    }
-    ~Dicom_rt_study_private () {
-//        delete slice_data;
     }
 };
-
 
 Dicom_rt_study::Dicom_rt_study ()
 {
@@ -108,4 +104,40 @@ const char*
 Dicom_rt_study::get_study_uid () const
 {
     return d_ptr->study_uid.c_str();
+}
+
+void
+Dicom_rt_study::set_image_header (const Plm_image_header& pih)
+{
+    d_ptr->slice_list.set_image_header (pih);
+}
+
+const char*
+Dicom_rt_study::get_slice_uid (int index) const
+{
+    return d_ptr->slice_list.get_slice_uid (index);
+}
+
+void 
+Dicom_rt_study::set_slice_uid (int index, const char* slice_uid)
+{
+    d_ptr->slice_list.set_slice_uid (index, slice_uid);
+}
+
+void 
+Dicom_rt_study::set_slice_list_complete ()
+{
+    d_ptr->slice_list.set_slice_list_complete ();
+}
+
+const Slice_list* 
+Dicom_rt_study::get_slice_list ()
+{
+    return &d_ptr->slice_list;
+}
+
+int 
+Dicom_rt_study::num_slices ()
+{
+    return d_ptr->slice_list.num_slices ();
 }

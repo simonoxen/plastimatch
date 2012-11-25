@@ -11,6 +11,7 @@
 class Bspline_xform;
 class Plm_image_header;
 class Plm_image;
+class Volume;
 class Volume_header;
 
 class PLMBASE_API Plm_image_header {
@@ -39,6 +40,15 @@ public:
     Plm_image_header (const Plm_image& pli) {
         this->set_from_plm_image (pli);
     }
+    Plm_image_header (const Volume& vol) {
+        this->set (vol);
+    }
+    Plm_image_header (const Volume* vol) {
+        this->set (vol);
+    }
+    Plm_image_header (Volume* vol) {
+        this->set (vol);
+    }
     template<class T> 
         Plm_image_header (T image) {
         this->set_from_itk_image (image);
@@ -46,6 +56,7 @@ public:
 
 public:
     int Size (int d) const { return m_region.GetSize()[d]; }
+    int dim (int d) const { return m_region.GetSize()[d]; }
     const SizeType& GetSize (void) const { return m_region.GetSize (); }
 public:
     /* Return 1 if the two headers are the same */
@@ -79,6 +90,8 @@ public:
     void set_from_plm_image (const Plm_image& pli);
     void set_from_volume_header (const Volume_header& vh);
     void set (const Volume_header& vh);
+    void set (const Volume& vol);
+    void set (const Volume* vol);
 
     template<class T> 
         void set_from_itk_image (T image) {

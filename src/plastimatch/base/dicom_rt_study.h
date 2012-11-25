@@ -11,8 +11,9 @@
 #include "pstring.h"
 
 class Dicom_rt_study_private;
-class Dicom_slice_data;
 class Plm_image;
+class Plm_image_header;
+class Slice_list;
 class Volume;
 
 class PLMBASE_API Dicom_rt_study {
@@ -31,7 +32,12 @@ public:
     const char* get_study_date () const;
     const char* get_study_time () const;
     const char* get_study_uid () const;
-    std::vector<Dicom_slice_data>* get_slice_data();
+    void set_image_header (const Plm_image_header& pih);
+    const char* get_slice_uid (int index) const;
+    void set_slice_uid (int index, const char* slice_uid);
+    void set_slice_list_complete ();
+    const Slice_list *get_slice_list ();
+    int num_slices ();
 };
 
 #endif

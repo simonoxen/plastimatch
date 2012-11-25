@@ -174,6 +174,20 @@ Plm_image_header::set_from_volume_header (const Volume_header& vh)
 }
 
 void
+Plm_image_header::set (const Volume& vol)
+{
+    this->set_from_gpuit (vol.dim, vol.offset,
+	vol.spacing, vol.direction_cosines);
+}
+
+void
+Plm_image_header::set (const Volume* vol)
+{
+    this->set_from_gpuit (vol->dim, vol->offset,
+	vol->spacing, vol->direction_cosines);
+}
+
+void
 Plm_image_header::get_volume_header (Volume_header *vh) const
 {
     this->get_origin (vh->m_origin);
