@@ -71,6 +71,7 @@ set (PLMBASE_LIBRARY_SRC
   rtss_structure_set.cxx
   rtss_structure.cxx
   slice_index.cxx
+  slice_list.cxx
   ss_list_io.cxx
   thumbnail.cxx
   vf_convolve.cxx

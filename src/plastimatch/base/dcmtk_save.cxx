@@ -7,11 +7,11 @@
 #include "dcmtk/dcmdata/dctk.h"
 
 #include "dcmtk_image.h"
-#include "dcmtk_rt_study.h"
 #include "dcmtk_rtss.h"
 #include "dcmtk_save.h"
 #include "dcmtk_series.h"
 #include "dcmtk_uid.h"
+#include "dicom_rt_study.h"
 #include "plm_image.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
@@ -51,7 +51,7 @@ void Dcmtk_save::set_image (Plm_image* img)
 void
 Dcmtk_save::save (const char *dicom_dir)
 {
-    Dcmtk_rt_study dsw;
+    Dicom_rt_study dsw;
 
     if (this->img) {
         this->save_image (&dsw, dicom_dir);

@@ -11,10 +11,10 @@
 #include "dcmtk_file.h"
 #include "dcmtk_metadata.h"
 #include "dcmtk_loader.h"
-#include "dcmtk_rt_study.h"
 #include "dcmtk_save.h"
 #include "dcmtk_series.h"
 #include "dcmtk_slice_data.h"
+#include "dicom_rt_study.h"
 #include "file_util.h"
 #include "metadata.h"
 #include "plm_uid_prefix.h"
@@ -233,7 +233,7 @@ Dcmtk_loader::rtss_load (void)
 
 void
 Dcmtk_save::save_rtss (
-    Dcmtk_rt_study *dsw, 
+    Dicom_rt_study *dsw, 
     const char *dicom_dir
 )
 {
@@ -322,6 +322,7 @@ Dcmtk_save::save_rtss (
     rtrseries_item->putAndInsertString (
         DCM_SeriesInstanceUID, dsw->get_ct_series_uid());
     std::vector<Dcmtk_slice_data>::iterator it;
+#if defined (GCS_REARRANGING)
     for (it = dsw->get_slice_data()->begin(); 
          it < dsw->get_slice_data()->end(); it++)
     {
@@ -333,6 +334,7 @@ Dcmtk_save::save_rtss (
         ci_item->putAndInsertString (
             DCM_ReferencedSOPInstanceUID, (*it).slice_uid);
     }
+#endif
 
     /* ----------------------------------------------------------------- */
     /*     Part 3  -- Structure info                                     */

@@ -9,11 +9,11 @@
 #include "dcmtk/dcmdata/dctk.h"
 
 #include "dcmtk_file.h"
-#include "dcmtk_rt_study.h"
 #include "dcmtk_save.h"
 #include "dcmtk_series.h"
 #include "dcmtk_slice_data.h"
 #include "dcmtk_uid.h"
+#include "dicom_rt_study.h"
 #include "file_util.h"
 #include "plm_image.h"
 #include "plm_math.h"
@@ -24,7 +24,7 @@
 #include "volume.h"
 
 static void
-dcmtk_save_slice (const Dcmtk_rt_study *dsw, Dcmtk_slice_data *dsd)
+dcmtk_save_slice (const Dicom_rt_study *dsw, Dcmtk_slice_data *dsd)
 {
     Pstring tmp;
     DcmFileFormat fileformat;
@@ -98,12 +98,11 @@ dcmtk_save_slice (const Dcmtk_rt_study *dsw, Dcmtk_slice_data *dsd)
 
 void
 Dcmtk_save::save_image (
-    Dcmtk_rt_study *dsw, 
+    Dicom_rt_study *dsw, 
     const char *dicom_dir)
 {
     Dcmtk_slice_data dsd;
     dsd.vol = this->img->gpuit_float();
-
     dsd.slice_size = dsd.vol->dim[0] * dsd.vol->dim[1];
     dsd.slice_int16 = new int16_t[dsd.slice_size];
     float *dc = dsd.vol->direction_cosines.m_direction_cosines;
@@ -122,7 +121,9 @@ Dcmtk_save::save_image (
 
         dsd.slice_float = &((float*)dsd.vol->img)[k*dsd.slice_size];
         dcmtk_save_slice (dsw, &dsd);
+#if defined (GCS_REARRANGING)
         dsw->get_slice_data()->push_back (dsd);
+#endif
     }
     delete[] dsd.slice_int16;
 }

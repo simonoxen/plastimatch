@@ -12,9 +12,9 @@
 #include "dcmtk_loader.h"
 #include "dcmtk_metadata.h"
 #include "dcmtk_rtdose.h"
-#include "dcmtk_rt_study.h"
 #include "dcmtk_save.h"
 #include "dcmtk_series.h"
+#include "dicom_rt_study.h"
 #include "file_util.h"
 #include "logfile.h"
 #include "plm_image.h"
@@ -265,7 +265,7 @@ Dcmtk_loader::rtdose_load ()
 
 void
 Dcmtk_save::save_dose (
-    const Dcmtk_rt_study *dsw,
+    const Dicom_rt_study *dsw,
     const char *dicom_dir)
 {
     OFCondition ofc;
