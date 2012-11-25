@@ -277,8 +277,7 @@ if (NOT RUN_OPENCL_TESTS)
 endif ()
 
 ## If we have neither DCMTK nor GDCM 1.X, don't run these tests
-#if (NOT PLM_DCM_USE_DCMTK AND NOT GDCM_VERSION_1)
-if (NOT GDCM_VERSION_1)
+if (NOT PLM_DCM_USE_DCMTK AND NOT GDCM_VERSION_1)
   set (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
     "plm-convert-dicom-donut-a" 
