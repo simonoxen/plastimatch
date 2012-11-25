@@ -12,6 +12,7 @@
 #if PLM_DCM_USE_DCMTK
 #include "dcmtk_rdd.h"
 #include "dcmtk_uid.h"
+#include "dcmtk_util.h"
 #elif GDCM_VERSION_1
 #include "gdcm1_rdd.h"
 #include "gdcm1_util.h"
@@ -26,8 +27,9 @@ dicom_get_date_time (
 )
 {
 #if PLM_DCM_USE_DCMTK
-    *date = "20110101";
-    *time = "120000";
+    dcmtk_get_date_time (date, time);
+//    *date = "20110101";
+//    *time = "120000";
 #elif GDCM_VERSION_1
     gdcm1_get_date_time (date, time);
 #else /* GDCM_VERSION_2 */
@@ -72,4 +74,12 @@ dicom_uid (char *uid, const char *uid_root)
 #else
     return gdcm_uid (uid, uid_root);
 #endif
+}
+
+std::string
+dicom_uid (const char *uid_root)
+{
+    char uid[100];
+    dicom_uid (uid, uid_root);
+    return std::string (uid);
 }

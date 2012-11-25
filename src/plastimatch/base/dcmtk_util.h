@@ -6,4 +6,10 @@
 
 #include "plmbase_config.h"
 
+PLMBASE_API void
+dcmtk_get_date_time (
+    std::string *date,
+    std::string *time
+);
+
 #endif

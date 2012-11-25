@@ -19,6 +19,7 @@ set (PLMBASE_LIBRARY_SRC
   bspline_xform.cxx
   cxt_io.cxx
   dicom_probe.cxx
+  dicom_rt_study.cxx
   dicom_util.cxx
   dicom.dic
   exchkeys.cxx
