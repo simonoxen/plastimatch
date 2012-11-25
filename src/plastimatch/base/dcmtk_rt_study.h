@@ -11,25 +11,9 @@
 #include "pstring.h"
 
 class Dcmtk_rt_study_private;
+class Dcmtk_slice_data;
 class Plm_image;
 class Volume;
-
-class Dcmtk_slice_data
-{
-public:
-    Pstring fn;
-    Volume *vol;
-
-    size_t slice_size;
-    float *slice_float;
-    int16_t *slice_int16;
-
-    char slice_uid[100];
-    Pstring ipp;
-    Pstring iop;
-    Pstring sloc;
-    Pstring sthk;
-};
 
 class PLMBASE_API Dcmtk_rt_study {
 public:
@@ -47,8 +31,7 @@ public:
     const char* get_study_date () const;
     const char* get_study_time () const;
     const char* get_study_uid () const;
-public:
-    std::vector<Dcmtk_slice_data> slice_data;
+    std::vector<Dcmtk_slice_data>* get_slice_data();
 };
 
 #endif

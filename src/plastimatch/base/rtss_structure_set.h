@@ -8,9 +8,8 @@
 #include <list>
 #include <vector>
 
+#include "plm_int.h"
 #include "pstring.h"
-
-#include "plmbase_config.h"
 
 class Plm_image;
 class Plm_image_header;

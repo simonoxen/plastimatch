@@ -14,6 +14,7 @@
 #include "mabs_parms.h"
 #include "mabs_vote.h"
 #include "plm_image.h"
+#include "plm_image_header.h"
 #include "plm_parms.h"
 #include "plm_stages.h"
 #include "plm_timer.h"

@@ -12,6 +12,7 @@
 #include "itk_image_type.h"
 #include "logfile.h"
 #include "plm_image.h"
+#include "plm_image_header.h"
 #include "plm_patient.h"
 #include "plm_warp.h"
 #include "print_and_exit.h"
@@ -21,6 +22,7 @@
 #include "rtss.h"
 #include "rtss_structure_set.h"
 #include "simplify_points.h"
+#include "slice_index.h"
 #include "warp_parms.h"
 #include "volume.h"
 #include "xform.h"
@@ -44,7 +46,7 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
             break;
         case PLM_FILE_FMT_XIO_DIR:
             rtds->load_xio (
-                (const char*) parms->input_fn, &rtds->m_rdd);
+                (const char*) parms->input_fn, rtds->m_rdd);
             break;
         case PLM_FILE_FMT_DIJ:
             print_and_exit (
@@ -65,7 +67,7 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 #endif
         case PLM_FILE_FMT_CXT:
             rtds->m_rtss = new Rtss (rtds);
-            rtds->m_rtss->load_cxt (parms->input_fn, &rtds->m_rdd);
+            rtds->m_rtss->load_cxt (parms->input_fn, rtds->m_rdd);
             break;
         case PLM_FILE_FMT_SS_IMG_VEC:
         default:
@@ -80,7 +82,7 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     if (parms->input_cxt_fn.not_empty()) {
         if (rtds->m_rtss) delete rtds->m_rtss;
         rtds->m_rtss = new Rtss (rtds);
-        rtds->m_rtss->load_cxt (parms->input_cxt_fn, &rtds->m_rdd);
+        rtds->m_rtss->load_cxt (parms->input_cxt_fn, rtds->m_rdd);
     }
 
     if (parms->input_prefix.not_empty()) {
@@ -165,7 +167,7 @@ save_ss_img (
     /* cxt */
     if (parms->output_cxt_fn.not_empty()) {
         lprintf ("save_ss_img: save_cxt\n");
-        rtds->m_rtss->save_cxt (&rtds->m_rdd, parms->output_cxt_fn, false);
+        rtds->m_rtss->save_cxt (rtds->m_rdd, parms->output_cxt_fn, false);
     }
 
     /* xio */
@@ -297,10 +299,10 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
         /* use the spacing from input bxf file */
         lprintf ("Setting PIH from XFORM\n");
         pih.set_from_gpuit_bspline (xform.get_gpuit_bsp());
-    } else if (rtds->m_rdd.m_loaded) {
+    } else if (rtds->m_rdd->m_loaded) {
         /* use spacing from referenced CT */
         lprintf ("Setting PIH from RDD\n");
-        Plm_image_header::clone (&pih, &rtds->m_rdd.m_pih);
+        Plm_image_header::clone (&pih, &rtds->m_rdd->m_pih);
     } else if (rtds->m_img) {
         /* use the spacing of the input image */
         lprintf ("Setting PIH from M_IMG\n");
@@ -450,7 +452,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
         /* Set the DICOM reference info -- this sets the internal geometry 
            of the ss_image so we rasterize on the same slices as the CT? */
         lprintf ("Rtds_warp: Apply dicom_dir.\n");
-        rtds->m_rtss->apply_dicom_dir (&rtds->m_rdd);
+        rtds->m_rtss->apply_dicom_dir (rtds->m_rdd);
         
         /* Set the output geometry */
         lprintf ("Rtds_warp: Set geometry from PIH.\n");

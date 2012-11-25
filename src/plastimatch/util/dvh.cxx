@@ -12,6 +12,7 @@
 #include "itk_resample.h"
 #include "make_string.h"
 #include "plm_image.h"
+#include "plm_image_header.h"
 #include "print_and_exit.h"
 #include "rtds.h"
 #include "rtss.h"

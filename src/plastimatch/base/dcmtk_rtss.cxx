@@ -14,6 +14,7 @@
 #include "dcmtk_rt_study.h"
 #include "dcmtk_save.h"
 #include "dcmtk_series.h"
+#include "dcmtk_slice_data.h"
 #include "file_util.h"
 #include "metadata.h"
 #include "plm_uid_prefix.h"
@@ -321,7 +322,9 @@ Dcmtk_save::save_rtss (
     rtrseries_item->putAndInsertString (
         DCM_SeriesInstanceUID, dsw->get_ct_series_uid());
     std::vector<Dcmtk_slice_data>::iterator it;
-    for (it = dsw->slice_data.begin(); it < dsw->slice_data.end(); it++) {
+    for (it = dsw->get_slice_data()->begin(); 
+         it < dsw->get_slice_data()->end(); it++)
+    {
         DcmItem *ci_item = 0;
         rtrseries_item->findOrCreateSequenceItem (
             DCM_ContourImageSequence, ci_item, -2);
@@ -376,23 +379,16 @@ Dcmtk_save::save_rtss (
 
             /* GCS FIX:  In the gdcm1 code, the ITK dicom writer 
                stores slice uids in Rdd */
-#if defined (commentout)
 	    /* ContourImageSequence */
 	    if (curr_contour->ct_slice_uid.not_empty()) {
-		gdcm::SeqEntry *ci_seq 
-		    = c_item->InsertSeqEntry (0x3006, 0x0016);
-		gdcm::SQItem *ci_item 
-		    = new gdcm::SQItem (ci_seq->GetDepthLevel());
-		ci_seq->AddSQItem (ci_item, 1);
-		/* ReferencedSOPClassUID = CTImageStorage */
-		ci_item->InsertValEntry ("1.2.840.10008.5.1.4.1.1.2", 
-		    0x0008, 0x1150);
-		/* ReferencedSOPInstanceUID */
-		ci_item->InsertValEntry (
-		    (const char*) curr_contour->ct_slice_uid,
-		    0x0008, 0x1155);
+                DcmItem *ci_item = 0;
+                c_item->findOrCreateSequenceItem (
+                    DCM_ContourImageSequence, ci_item, -2);
+                ci_item->putAndInsertString (DCM_ReferencedSOPClassUID,
+                    UID_CTImageStorage);
+                ci_item->putAndInsertString (DCM_ReferencedSOPInstanceUID,
+                    curr_contour->ct_slice_uid.c_str());
 	    }
-#endif
         }       
     }
 

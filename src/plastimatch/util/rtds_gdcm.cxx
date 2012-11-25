@@ -56,7 +56,7 @@ Rtds::save_gdcm (const char *output_dir)
 {
     if (this->m_img) {
 	printf ("Rtds::save_dicom: save_short_dicom()\n");
-	this->m_img->save_short_dicom (output_dir, &m_rdd, &m_meta);
+	this->m_img->save_short_dicom (output_dir, m_rdd, &m_meta);
     }
 #if GDCM_VERSION_1
     if (this->m_rtss) {

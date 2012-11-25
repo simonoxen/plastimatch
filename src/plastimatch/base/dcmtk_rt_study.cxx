@@ -11,6 +11,7 @@
 #include "dcmtk_rtss.h"
 #include "dcmtk_save.h"
 #include "dcmtk_series.h"
+#include "dcmtk_slice_data.h"
 #include "dcmtk_uid.h"
 #include "plm_image.h"
 #include "plm_uid_prefix.h"
@@ -28,6 +29,7 @@ public:
     char rtss_instance_uid[100];
     char rtss_series_uid[100];
     char study_uid[100];
+    std::vector<Dcmtk_slice_data>* slice_data;
 public:
     Dcmtk_rt_study_private () {
         DcmDate::getCurrentDate (date_string);
@@ -39,6 +41,10 @@ public:
         dcmtk_uid (rtss_instance_uid, PLM_UID_PREFIX);
         dcmtk_uid (dose_series_uid, PLM_UID_PREFIX);
         dcmtk_uid (dose_instance_uid, PLM_UID_PREFIX);
+        slice_data = new std::vector<Dcmtk_slice_data>;
+    }
+    ~Dcmtk_rt_study_private () {
+        delete slice_data;
     }
 };
 
@@ -105,4 +111,10 @@ const char*
 Dcmtk_rt_study::get_study_uid () const
 {
     return d_ptr->study_uid;
+}
+
+std::vector<Dcmtk_slice_data>* 
+Dcmtk_rt_study::get_slice_data ()
+{
+    return d_ptr->slice_data;
 }

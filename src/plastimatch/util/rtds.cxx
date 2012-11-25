@@ -17,6 +17,7 @@
 #include "rtds.h"
 #include "rtss.h"
 #include "rtss_structure_set.h"
+#include "slice_index.h"
 #include "xio_ct.h"
 #include "xio_demographic.h"
 #include "xio_dir.h"
@@ -29,6 +30,7 @@ Rtds::Rtds ()
     m_img = 0;
     m_rtss = 0;
     m_dose = 0;
+    m_rdd = new Slice_index;
 #if GDCM_VERSION_1
     m_gdcm_series = 0;
 #endif
@@ -51,6 +53,7 @@ Rtds::~Rtds ()
     if (m_dose) {
         delete m_dose;
     }
+    delete m_rdd;
 #if GDCM_VERSION_1
     if (m_gdcm_series) {
         delete m_gdcm_series;
@@ -193,7 +196,7 @@ Rtds::load_xio (
        and the origin will remain the same. */
 
     if (this->m_img) {
-        if (m_rdd.m_loaded) {
+        if (m_rdd->m_loaded) {
             /* Determine transformation based original DICOM */
             xio_ct_get_transform_from_rdd
                 (this->m_img, &m_meta, rdd, this->m_xio_transform);
@@ -233,21 +236,21 @@ Rtds::load_dose_img (const char *dose_img)
 void
 Rtds::load_rdd (const char *rdd)
 {
-    m_rdd.load (rdd);
+    m_rdd->load (rdd);
 
-    if (m_rdd.m_loaded) {
+    if (m_rdd->m_loaded) {
         /* Default to patient position in referenced DICOM */
         m_meta.set_metadata(0x0018, 0x5100,
-            m_rdd.m_demographics.get_metadata(0x0018, 0x5100));
+            m_rdd->m_demographics.get_metadata(0x0018, 0x5100));
         xio_ct_get_transform(&m_meta, m_xio_transform);
 
         /* Default to patient name/ID/sex in referenced DICOM */
         m_meta.set_metadata(0x0010, 0x0010,
-            m_rdd.m_demographics.get_metadata(0x0010, 0x0010));
+            m_rdd->m_demographics.get_metadata(0x0010, 0x0010));
         m_meta.set_metadata(0x0010, 0x0020,
-            m_rdd.m_demographics.get_metadata(0x0010, 0x0020));
+            m_rdd->m_demographics.get_metadata(0x0010, 0x0020));
         m_meta.set_metadata(0x0010, 0x0040,
-            m_rdd.m_demographics.get_metadata(0x0010, 0x0040));
+            m_rdd->m_demographics.get_metadata(0x0010, 0x0040));
     }
 }
 

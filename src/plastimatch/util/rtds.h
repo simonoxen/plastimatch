@@ -9,16 +9,15 @@
 #include "plm_path.h"
 
 #include "metadata.h"
-#include "slice_index.h"
 
-// TODO: [1] Change type of m_rdd to Slice_index*
+// TODO: [1] Change type of m_rdd to Slice_index* -- DONE
 //       [2] Change type of m_meta to Metadata*
 
 class Gdcm_series;
 //class Metadata;
 class Plm_image;
 class Rtss;
-//class Slice_index;
+class Slice_index;
 class Xio_ct_transform;
 
 /* rtds = RT data set */
@@ -29,7 +28,7 @@ public:
     Plm_image *m_dose;                 /* RT dose */
 
     Gdcm_series *m_gdcm_series;        /* Input dicom parse info */
-    Slice_index m_rdd;                 /* UIDs, etc */
+    Slice_index *m_rdd;                /* UIDs, etc */
     Metadata m_meta;                   /* Patient name, patient id, etc. */
     Xio_ct_transform *m_xio_transform; /* Transformation from XiO to DICOM
                                           coordinates */

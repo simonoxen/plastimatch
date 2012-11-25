@@ -12,6 +12,7 @@
 #include "dcmtk_rt_study.h"
 #include "dcmtk_save.h"
 #include "dcmtk_series.h"
+#include "dcmtk_slice_data.h"
 #include "dcmtk_uid.h"
 #include "file_util.h"
 #include "plm_image.h"
@@ -121,7 +122,7 @@ Dcmtk_save::save_image (
 
         dsd.slice_float = &((float*)dsd.vol->img)[k*dsd.slice_size];
         dcmtk_save_slice (dsw, &dsd);
-        dsw->slice_data.push_back (dsd);
+        dsw->get_slice_data()->push_back (dsd);
     }
     delete[] dsd.slice_int16;
 }
