@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "dcm_util.h"
+#include "dicom_util.h"
 #include "plm_math.h"
 #include "slice_index.h"
 
@@ -21,7 +21,7 @@ Slice_index::~Slice_index ()
 void
 Slice_index::load (const char *dicom_dir)
 {
-    dcm_load_rdd (this, dicom_dir);
+    dicom_load_rdd (this, dicom_dir);
 }
 
 void

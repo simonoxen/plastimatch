@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "dcm_util.h"
+#include "dicom_util.h"
 #include "plm_uid_prefix.h"
 
 void
@@ -33,7 +33,7 @@ main (int argc, char* argv[])
 	exit (-1);
     }
 
-    dcm_uid (uid, uid_root);
+    dicom_uid (uid, uid_root);
 
     printf ("%s\n", uid);
     return (0);

@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "dcm_util.h"
+#include "dicom_util.h"
 #include "make_string.h"
 
 #if PLM_DCM_USE_DCMTK
@@ -20,7 +20,7 @@
 #endif
 
 void
-dcm_get_date_time (
+dicom_get_date_time (
     std::string *date,
     std::string *time
 )
@@ -36,7 +36,7 @@ dcm_get_date_time (
 }
 
 std::string 
-dcm_anon_patient_id (void)
+dicom_anon_patient_id (void)
 {
     int i;
     unsigned char uuid[16];
@@ -53,7 +53,7 @@ dcm_anon_patient_id (void)
 }
 
 void
-dcm_load_rdd (Slice_index* rdd, const char* dicom_dir)
+dicom_load_rdd (Slice_index* rdd, const char* dicom_dir)
 {
 #if PLM_DCM_USE_DCMTK
     dcmtk_load_rdd (rdd, dicom_dir);
@@ -65,7 +65,7 @@ dcm_load_rdd (Slice_index* rdd, const char* dicom_dir)
 }
 
 char*
-dcm_uid (char *uid, const char *uid_root)
+dicom_uid (char *uid, const char *uid_root)
 {
 #if PLM_DCM_USE_DCMTK
     return dcmtk_uid (uid, uid_root);

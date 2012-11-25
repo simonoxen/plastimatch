@@ -3,7 +3,7 @@
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
 
-#include "dcm_probe.h"
+#include "dicom_probe.h"
 
 #if PLM_DCM_USE_DCMTK
 #include "dcmtk_rtdose.h"
@@ -18,7 +18,7 @@
 
 /* Return true if the file is a dicom rtstruct */
 bool
-dcm_probe_rtss (const char *rtss_fn)
+dicom_probe_rtss (const char *rtss_fn)
 {
 #if PLM_DCM_USE_DCMTK
     return dcmtk_rtss_probe (rtss_fn);
@@ -31,7 +31,7 @@ dcm_probe_rtss (const char *rtss_fn)
 
 /* Return true if the file is a dicom rt dose */
 bool
-dcm_probe_dose (const char *fn)
+dicom_probe_dose (const char *fn)
 {
 #if PLM_DCM_USE_DCMTK
     return dcmtk_dose_probe (fn);

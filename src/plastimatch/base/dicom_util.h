@@ -9,15 +9,17 @@
 
 class Slice_index;
 
-std::string dcm_anon_patient_id (void);
+std::string dicom_anon_patient_id (void);
 
-void dcm_load_rdd (Slice_index* rdd, const char* dicom_dir);
+void dicom_load_rdd (Slice_index* rdd, const char* dicom_dir);
 
-void dcm_get_date_time (
+PLMBASE_C_API void 
+dicom_get_date_time (
     std::string *date,
     std::string *time
 );
+
 PLMBASE_C_API char*
-dcm_uid (char *uid, const char *uid_root);
+dicom_uid (char *uid, const char *uid_root);
 
 #endif

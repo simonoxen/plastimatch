@@ -12,7 +12,7 @@
 #include "itkNumericSeriesFileNames.h"
 #include "itkImageSeriesWriter.h"
 
-#include "dcm_util.h"
+#include "dicom_util.h"
 #include "gdcm1_util.h"
 #include "gdcm2_util.h"
 #include "itk_dicom_save.h"
@@ -52,7 +52,7 @@ itk_make_uid (ImageIOType::Pointer& gdcmIO)
 {
     char uid[100];
     const char* uid_root = PLM_UID_PREFIX;
-    std::string uid_string = dcm_uid (uid, uid_root);
+    std::string uid_string = dicom_uid (uid, uid_root);
     return uid_string;
 }
 
@@ -98,7 +98,7 @@ itk_dicom_save (
        DICOM time string looks like this: 203842 or 203842.805219
     */
     std::string current_date, current_time;
-    dcm_get_date_time (&current_date, &current_time);
+    dicom_get_date_time (&current_date, &current_time);
 
     itksys::SystemTools::MakeDirectory (dir_name);
 
@@ -167,7 +167,7 @@ itk_dicom_save (
 	/* Patient name */
 	encapsulate (dict, "0010|0010", "ANONYMOUS");
 	/* Patient id */
-	encapsulate (dict, "0010|0020", dcm_anon_patient_id());
+	encapsulate (dict, "0010|0020", dicom_anon_patient_id());
 	/* Patient sex */
 	encapsulate (dict, "0010|0040", "O");
     }

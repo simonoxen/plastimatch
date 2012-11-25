@@ -8,10 +8,10 @@
 
 PLMBASE_C_API 
 bool
-dcm_probe_dose (const char *fn);
+dicom_probe_dose (const char *fn);
 
 PLMBASE_C_API 
 bool
-dcm_probe_rtss (const char *fn);
+dicom_probe_rtss (const char *fn);
 
 #endif
