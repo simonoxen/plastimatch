@@ -11,13 +11,14 @@
 #include "plm_image.h"
 #include "rtss.h"
 #include "rtds.h"
+#include "rtds_p.h"
 
 void
 Rtds::load_dcmtk (const char *dicom_dir)
 {
 #if PLM_DCM_USE_DCMTK
     Dcmtk_loader dss (dicom_dir);
-
+    dss.set_rt_study (d_ptr->m_drs);
     dss.parse_directory ();
 
 #if defined (GCS_FIX)

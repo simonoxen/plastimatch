@@ -40,6 +40,9 @@ public:
     Plm_image_header (const Plm_image& pli) {
         this->set_from_plm_image (pli);
     }
+    Plm_image_header (const Volume_header& vh) {
+        this->set (vh);
+    }
     Plm_image_header (const Volume& vol) {
         this->set (vol);
     }

@@ -13,6 +13,7 @@
 // TODO: [1] Change type of m_rdd to Slice_index* -- DONE
 //       [2] Change type of m_meta to Metadata*
 
+class Rtds_private;
 class Gdcm_series;
 //class Metadata;
 class Plm_image;
@@ -23,12 +24,15 @@ class Xio_ct_transform;
 /* rtds = RT data set */
 class PLMUTIL_API Rtds {
 public:
+    Rtds_private *d_ptr;
+public:
     Plm_image *m_img;                  /* CT image */
     Rtss *m_rtss;                      /* RT structure set */
     Plm_image *m_dose;                 /* RT dose */
 
     Gdcm_series *m_gdcm_series;        /* Input dicom parse info */
-    Slice_index *m_rdd;                /* UIDs, etc */
+    Slice_index *m_rdd;                /* UIDs, etc -- used by gdcm */
+
     Metadata m_meta;                   /* Patient name, patient id, etc. */
     Xio_ct_transform *m_xio_transform; /* Transformation from XiO to DICOM
                                           coordinates */
@@ -38,6 +42,8 @@ public:
     Rtds ();
     ~Rtds ();
     void load_dicom_dir (const char *dicom_dir);
+    void load_dicom (const char *dicom_dir); 
+    void load_dicom_rtss (const char *dicom_dir); 
     void load_xio (const char *xio_dir, Slice_index *rdd);
     void load_ss_img (const char *ss_img, const char *ss_list);
     void load_dose_img (const char *dose_img);
@@ -45,7 +51,6 @@ public:
     void load_dose_astroid (const char *dose_astroid);
     void load_dose_mc (const char *dose_mc);
     void load_rdd (const char *rdd);
-    void load_dicom (const char *dicom_dir); 
     void load_dcmtk (const char *dicom_dir); 
     void load_gdcm (const char *dicom_dir); 
     void save_dicom (const char *output_dir);

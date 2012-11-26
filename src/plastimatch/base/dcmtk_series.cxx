@@ -10,21 +10,28 @@
 
 #include "dcmtk_file.h"
 #include "dcmtk_series.h"
+#include "dicom_rt_study.h"
 #include "plm_image.h"
+#include "plm_image_header.h"
 #include "print_and_exit.h"
 #include "volume.h"
 
 class Dcmtk_series_private {
 public:
     std::list<Dcmtk_file*> m_flist;
+    Dicom_rt_study *m_drs;
+
 public:
     Dcmtk_series_private () {
+        m_drs = 0;
     }
     ~Dcmtk_series_private () {
         std::list<Dcmtk_file*>::iterator it;
         for (it = m_flist.begin(); it != m_flist.end(); ++it) {
             delete (*it);
         }
+
+        /* Don't delete m_drs.  It belongs to caller. */
     }
 };
 
@@ -124,6 +131,12 @@ Dcmtk_series::sort (void)
     d_ptr->m_flist.sort (dcmtk_file_compare_z_position);
 }
 
+void
+Dcmtk_series::set_rt_study (Dicom_rt_study *drs)
+{
+    d_ptr->m_drs = drs;
+}
+
 Plm_image*
 Dcmtk_series::load_plm_image (void)
 {
@@ -150,6 +163,20 @@ Dcmtk_series::load_plm_image (void)
     float z_init, z_prev, z_diff, z_last;
     int slice_no = 0;
     float best_chunk_z_start = z_init = z_prev = df->m_vh.m_origin[2];
+    
+    /* Store UIDs */
+    if (d_ptr->m_drs) {
+        d_ptr->m_drs->set_ct_series_uid (
+            df->get_cstr (DCM_SeriesInstanceUID));
+        d_ptr->m_drs->set_frame_of_reference_uid (
+            df->get_cstr (DCM_FrameOfReferenceUID));
+        d_ptr->m_drs->set_study_uid (
+            df->get_cstr (DCM_StudyInstanceUID));
+        d_ptr->m_drs->set_study_date (
+            df->get_cstr (DCM_StudyDate));
+        d_ptr->m_drs->set_study_time (
+            df->get_cstr (DCM_StudyTime));
+    }
 
     /* Get next slice */
     ++it; ++slice_no;
@@ -223,6 +250,11 @@ Dcmtk_series::load_plm_image (void)
     vh.m_dim[2] = slices_before + best_chunk_len + slices_after;
     vh.m_origin[2] = best_chunk_z_start - slices_before * best_chunk_diff;
     vh.m_spacing[2] = best_chunk_diff;
+
+    /* Store image header */
+    if (d_ptr->m_drs) {
+        d_ptr->m_drs->set_image_header (Plm_image_header (vh));
+    }
 
     /* More debugging info */
     vh.print ();
@@ -331,6 +363,11 @@ Dcmtk_series::load_plm_image (void)
 	}
 	memcpy (img, pixel_data, length * sizeof(uint16_t));
 	img += length;
+
+	/* Store slice UID */
+        if (d_ptr->m_drs) {
+            d_ptr->m_drs->set_slice_uid (i, df->get_cstr (DCM_SOPInstanceUID));
+        }
     }
     return pli;
 }
@@ -344,4 +381,3 @@ Dcmtk_series::debug (void) const
 	df->debug ();
     }
 }
-

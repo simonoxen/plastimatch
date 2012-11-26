@@ -10,6 +10,7 @@
 
 class Dcmtk_loader_private;
 class Dcmtk_series;
+class Dicom_rt_study;
 class Metadata;
 class Plm_image;
 class Rtss_structure_set;
@@ -26,10 +27,6 @@ public:
     Dcmtk_loader_private *d_ptr;
 
 public:
-    typedef std::map<std::string, Dcmtk_series*> Dcmtk_series_map;
-    typedef std::pair<std::string, Dcmtk_series*> Dcmtk_series_map_pair;
-    Dcmtk_series_map m_smap;
-
     Dcmtk_series *ds_rtdose;
     Dcmtk_series *ds_rtss;
 
@@ -42,6 +39,7 @@ public:
 public:
     void init ();
     void debug (void) const;
+    void set_rt_study (Dicom_rt_study *drs);
     Metadata *get_metadata ();
     Volume *get_volume ();
     void load_rtss (void);
@@ -51,6 +49,8 @@ public:
     void rtss_load (void);
     void rtdose_load (void);
     void sort_all (void);
+protected:
+    void set_image_uids (const Dcmtk_series *ds);
 };
 
 #endif

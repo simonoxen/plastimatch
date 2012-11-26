@@ -12,15 +12,31 @@
 #include "dcmtk_file.h"
 #include "dcmtk_loader.h"
 #include "dcmtk_series.h"
+#include "dicom_rt_study.h"
 #include "plm_image.h"
 #include "print_and_exit.h"
 
+/* Map from SeriesInstanceUID to Dcmtk_series */
+typedef std::map<std::string, Dcmtk_series*> Dcmtk_series_map;
+typedef std::pair<std::string, Dcmtk_series*> Dcmtk_series_map_pair;
+
 class Dcmtk_loader_private {
 public:
+    Dcmtk_series_map m_smap;
+    Dicom_rt_study *m_drs;
+
 public:
     Dcmtk_loader_private () {
+        m_drs = 0;
     }
     ~Dcmtk_loader_private () {
+        /* Delete Dicom_series objects in map */
+        Dcmtk_series_map::iterator it;
+        for (it = m_smap.begin(); it != m_smap.end(); ++it) {
+            delete (*it).second;
+        }
+
+        /* Don't delete m_drs.  It belongs to caller. */
     }
 };
 
@@ -39,12 +55,6 @@ Dcmtk_loader::Dcmtk_loader (const char* dicom_dir)
 
 Dcmtk_loader::~Dcmtk_loader ()
 {
-    /* Delete Dicom_series objects in map */
-    Dcmtk_series_map::iterator it;
-    for (it = m_smap.begin(); it != m_smap.end(); ++it) {
-	delete (*it).second;
-    }
-
     delete d_ptr;
 }
 
@@ -60,10 +70,17 @@ Dcmtk_loader::init ()
 }
 
 void
+Dcmtk_loader::set_rt_study (Dicom_rt_study *drs)
+{
+    d_ptr->m_drs = drs;
+}
+
+void
 Dcmtk_loader::insert_file (const char* fn)
 {
     Dcmtk_file *df = new Dcmtk_file (fn);
 
+    /* Get the SeriesInstanceUID */
     const char *c = NULL;
     c = df->get_cstr (DCM_SeriesInstanceUID);
     if (!c) {
@@ -72,11 +89,14 @@ Dcmtk_loader::insert_file (const char* fn)
 	return;
     }
 
+    /* Look for the SeriesInstanceUID in the map */
     Dcmtk_series_map::iterator it;
-    it = m_smap.find (std::string(c));
-    if (it == m_smap.end()) {
+    it = d_ptr->m_smap.find (std::string(c));
+
+    /* If we didn't find the UID, add a new entry into the map */
+    if (it == d_ptr->m_smap.end()) {
 	std::pair<Dcmtk_series_map::iterator,bool> ret 
-	    = m_smap.insert (Dcmtk_series_map_pair (std::string(c), 
+	    = d_ptr->m_smap.insert (Dcmtk_series_map_pair (std::string(c), 
 		    new Dcmtk_series()));
 	if (ret.second == false) {
 	    print_and_exit (
@@ -84,6 +104,8 @@ Dcmtk_loader::insert_file (const char* fn)
 	}
 	it = ret.first;
     }
+
+    /* Add the file to the Dcmtk_series object for this UID */
     Dcmtk_series *ds = (*it).second;
     ds->insert (df);
 }
@@ -109,7 +131,7 @@ void
 Dcmtk_loader::sort_all (void) 
 {
     Dcmtk_series_map::iterator it;
-    for (it = m_smap.begin(); it != m_smap.end(); ++it) {
+    for (it = d_ptr->m_smap.begin(); it != d_ptr->m_smap.end(); ++it) {
 	const std::string& key = (*it).first;
 	Dcmtk_series *ds = (*it).second;
 	UNUSED_VARIABLE (key);
@@ -121,7 +143,7 @@ void
 Dcmtk_loader::debug (void) const
 {
     Dcmtk_series_map::const_iterator it;
-    for (it = m_smap.begin(); it != m_smap.end(); ++it) {
+    for (it = d_ptr->m_smap.begin(); it != d_ptr->m_smap.end(); ++it) {
 	const std::string& key = (*it).first;
 	const Dcmtk_series *ds = (*it).second;
 	UNUSED_VARIABLE (ds);
@@ -144,6 +166,16 @@ Dcmtk_loader::get_volume ()
 }
 
 void
+Dcmtk_loader::set_image_uids (const Dcmtk_series *ds)
+{
+    if (!d_ptr->m_drs) {
+        return;
+    }
+    d_ptr->m_drs->set_frame_of_reference_uid (
+        ds->get_string (DCM_FrameOfReferenceUID).c_str());
+}
+
+void
 Dcmtk_loader::parse_directory (void)
 {
     Dcmtk_series_map::iterator it;
@@ -154,7 +186,7 @@ Dcmtk_loader::parse_directory (void)
     /* GCS FIX: maybe need additional pass, make sure ss & dose 
        refer to same CT, in case of multiple ss & dose in same 
        directory */
-    for (it = m_smap.begin(); it != m_smap.end(); ++it) {
+    for (it = d_ptr->m_smap.begin(); it != d_ptr->m_smap.end(); ++it) {
 	const std::string& key = (*it).first;
 	Dcmtk_series *ds = (*it).second;
 	UNUSED_VARIABLE (key);
@@ -181,21 +213,25 @@ Dcmtk_loader::parse_directory (void)
     }
 
     /* Second pass: loop through series and find img */
-    for (it = m_smap.begin(); it != m_smap.end(); ++it) {
+    for (it = d_ptr->m_smap.begin(); it != d_ptr->m_smap.end(); ++it) {
 	const std::string& key = (*it).first;
 	Dcmtk_series *ds = (*it).second;
 	UNUSED_VARIABLE (key);
 
 	/* Skip stuff we're not interested in */
 	const std::string& modality = ds->get_modality();
-	if (modality == "RTSTRUCT"
-	    || modality == "RTDOSE")
-	{
+	if (modality == "RTSTRUCT" || modality == "RTDOSE") {
 	    continue;
 	}
 
 	if (ds->get_modality() == "CT") {
 	    printf ("LOADING CT\n");
+
+            /* Copy UIDs */
+            this->set_image_uids (ds);
+
+            /* Load image */
+            ds->set_rt_study (d_ptr->m_drs);
 	    this->img = ds->load_plm_image ();
 	    continue;
 	}

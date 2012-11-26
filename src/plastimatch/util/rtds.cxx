@@ -15,6 +15,7 @@
 #include "plm_image.h"
 #include "print_and_exit.h"
 #include "rtds.h"
+#include "rtds_p.h"
 #include "rtss.h"
 #include "rtss_structure_set.h"
 #include "slice_index.h"
@@ -27,6 +28,7 @@
 
 Rtds::Rtds ()
 {
+    d_ptr = new Rtds_private;
     m_img = 0;
     m_rtss = 0;
     m_dose = 0;
@@ -44,6 +46,7 @@ Rtds::Rtds ()
 
 Rtds::~Rtds ()
 {
+    delete d_ptr;
     if (m_img) {
         delete m_img;
     }
@@ -65,20 +68,6 @@ Rtds::~Rtds ()
 }
 
 void
-Rtds::load_dicom (const char *dicom_dir)
-{
-    if (!dicom_dir) {
-        return;
-    }
-
-#if PLM_DCM_USE_DCMTK
-    this->load_dcmtk (dicom_dir);
-#else
-    this->load_gdcm (dicom_dir);
-#endif
-}
-
-void
 Rtds::load_dicom_dir (const char *dicom_dir)
 {
     const char *dicom_dir_tmp;  /* In case dicom_dir is a file, not dir */
@@ -94,6 +83,36 @@ Rtds::load_dicom_dir (const char *dicom_dir)
     if (dicom_dir_tmp != dicom_dir) {
         free ((void*) dicom_dir_tmp);
     }
+}
+
+void
+Rtds::load_dicom (const char *dicom_dir)
+{
+    if (!dicom_dir) {
+        return;
+    }
+
+#if PLM_DCM_USE_DCMTK
+    this->load_dcmtk (dicom_dir);
+#else
+    this->load_gdcm (dicom_dir);
+#endif
+}
+
+void
+Rtds::load_dicom_rtss (const char *dicom_rtss_fn)
+{
+    if (this->m_rtss) {
+        delete this->m_rtss;
+    }
+#if PLM_DCM_USE_DCMTK
+    // GCS FIX
+#elif GDCM_VERSION_1
+    this->m_rtss = new Rtss (this);
+    this->m_rtss->load_gdcm_rtss (dicom_rtss_fn, this->m_rdd);
+#else
+    /* Do nothing */
+#endif
 }
 
 void

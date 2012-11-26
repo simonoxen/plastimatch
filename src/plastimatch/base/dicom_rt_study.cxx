@@ -58,6 +58,12 @@ Dicom_rt_study::get_ct_series_uid () const
     return d_ptr->ct_series_uid.c_str();
 }
 
+void
+Dicom_rt_study::set_ct_series_uid (const char* uid)
+{
+    d_ptr->ct_series_uid = uid;
+}
+
 const char*
 Dicom_rt_study::get_dose_instance_uid () const
 {
@@ -74,6 +80,12 @@ const char*
 Dicom_rt_study::get_frame_of_reference_uid () const
 {
     return d_ptr->for_uid.c_str();
+}
+
+void
+Dicom_rt_study::set_frame_of_reference_uid (const char* uid)
+{
+    d_ptr->for_uid = uid;
 }
 
 const char*
@@ -94,16 +106,34 @@ Dicom_rt_study::get_study_date () const
     return d_ptr->date_string.c_str();
 }
 
+void
+Dicom_rt_study::set_study_date (const char* date)
+{
+    d_ptr->date_string = date;
+}
+
 const char*
 Dicom_rt_study::get_study_time () const
 {
     return d_ptr->time_string.c_str();
 }
 
+void
+Dicom_rt_study::set_study_time (const char* time)
+{
+    d_ptr->time_string = time;
+}
+
 const char*
 Dicom_rt_study::get_study_uid () const
 {
     return d_ptr->study_uid.c_str();
+}
+
+void
+Dicom_rt_study::set_study_uid (const char* uid)
+{
+    d_ptr->study_uid = uid;
 }
 
 void

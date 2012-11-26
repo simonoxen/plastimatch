@@ -24,14 +24,19 @@ public:
     ~Dicom_rt_study ();
 public:
     const char* get_ct_series_uid () const;
+    void set_ct_series_uid (const char* uid);
     const char* get_dose_instance_uid () const;
     const char* get_dose_series_uid () const;
     const char* get_frame_of_reference_uid () const;
+    void set_frame_of_reference_uid (const char* uid);
     const char* get_rtss_instance_uid () const;
     const char* get_rtss_series_uid () const;
     const char* get_study_date () const;
+    void set_study_date (const char* date);
     const char* get_study_time () const;
+    void set_study_time (const char* time);
     const char* get_study_uid () const;
+    void set_study_uid (const char* uid);
     void set_image_header (const Plm_image_header& pih);
     const char* get_slice_uid (int index) const;
     void set_slice_uid (int index, const char* slice_uid);

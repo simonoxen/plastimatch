@@ -14,6 +14,7 @@ class DcmTagKey;
 
 class Dcmtk_file;
 class Dcmtk_series_private;
+class Dicom_rt_study;
 class Plm_image;
 
 class Dcmtk_series 
@@ -42,6 +43,7 @@ public:
     void insert (Dcmtk_file* df);
     void sort (void);
 
+    void set_rt_study (Dicom_rt_study *drs);
     Plm_image *load_plm_image ();
 
     void debug (void) const;
