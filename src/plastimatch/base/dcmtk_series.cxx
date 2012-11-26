@@ -23,6 +23,7 @@ public:
 
 public:
     Dcmtk_series_private () {
+        /* Don't create m_drs.  It is set by caller. */
         m_drs = 0;
     }
     ~Dcmtk_series_private () {
@@ -60,7 +61,7 @@ Dcmtk_series::get_int16_array (const DcmTagKey& tag_key,
 
 bool
 Dcmtk_series::get_sequence (const DcmTagKey& tag_key,
-    DcmSequenceOfItems *seq) const
+    DcmSequenceOfItems*& seq) const
 {
     return d_ptr->m_flist.front()->get_sequence (tag_key, seq);
 }

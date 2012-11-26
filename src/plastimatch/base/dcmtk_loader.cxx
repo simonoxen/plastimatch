@@ -11,34 +11,11 @@
 #include "compiler_warnings.h"
 #include "dcmtk_file.h"
 #include "dcmtk_loader.h"
+#include "dcmtk_loader_p.h"
 #include "dcmtk_series.h"
 #include "dicom_rt_study.h"
 #include "plm_image.h"
 #include "print_and_exit.h"
-
-/* Map from SeriesInstanceUID to Dcmtk_series */
-typedef std::map<std::string, Dcmtk_series*> Dcmtk_series_map;
-typedef std::pair<std::string, Dcmtk_series*> Dcmtk_series_map_pair;
-
-class Dcmtk_loader_private {
-public:
-    Dcmtk_series_map m_smap;
-    Dicom_rt_study *m_drs;
-
-public:
-    Dcmtk_loader_private () {
-        m_drs = 0;
-    }
-    ~Dcmtk_loader_private () {
-        /* Delete Dicom_series objects in map */
-        Dcmtk_series_map::iterator it;
-        for (it = m_smap.begin(); it != m_smap.end(); ++it) {
-            delete (*it).second;
-        }
-
-        /* Don't delete m_drs.  It belongs to caller. */
-    }
-};
 
 Dcmtk_loader::Dcmtk_loader ()
 {
@@ -166,16 +143,6 @@ Dcmtk_loader::get_volume ()
 }
 
 void
-Dcmtk_loader::set_image_uids (const Dcmtk_series *ds)
-{
-    if (!d_ptr->m_drs) {
-        return;
-    }
-    d_ptr->m_drs->set_frame_of_reference_uid (
-        ds->get_string (DCM_FrameOfReferenceUID).c_str());
-}
-
-void
 Dcmtk_loader::parse_directory (void)
 {
     Dcmtk_series_map::iterator it;
@@ -224,11 +191,8 @@ Dcmtk_loader::parse_directory (void)
 	    continue;
 	}
 
-	if (ds->get_modality() == "CT") {
+	if (modality == "CT") {
 	    printf ("LOADING CT\n");
-
-            /* Copy UIDs */
-            this->set_image_uids (ds);
 
             /* Load image */
             ds->set_rt_study (d_ptr->m_drs);
@@ -237,14 +201,16 @@ Dcmtk_loader::parse_directory (void)
 	}
     }
 
-#if defined (commentout)
+    /* Load rtss */
     if (ds_rtss) {
         this->rtss_load ();
     }
 
+    /* Load dose */
     if (ds_rtdose) {
         this->rtdose_load ();
     }
+#if defined (commentout)
 #endif
 }
 

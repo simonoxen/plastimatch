@@ -31,7 +31,7 @@ public:
     bool get_int16_array (const DcmTagKey& tag_key, 
         const int16_t** val, unsigned long* count) const;
     bool get_sequence (const DcmTagKey& tag_key, 
-        DcmSequenceOfItems *seq) const;
+        DcmSequenceOfItems*& seq) const;
     std::string get_string (const DcmTagKey& tag_key) const;
     bool get_uint16 (const DcmTagKey& tag_key, uint16_t* val) const;
     bool get_uint16_array (const DcmTagKey& tag_key, 

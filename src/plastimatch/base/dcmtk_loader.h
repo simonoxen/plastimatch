@@ -49,8 +49,6 @@ public:
     void rtss_load (void);
     void rtdose_load (void);
     void sort_all (void);
-protected:
-    void set_image_uids (const Dcmtk_series *ds);
 };
 
 #endif

@@ -69,16 +69,19 @@ Dcmtk_loader::rtss_load (void)
     if (!rc) {
         printf ("Huh? Why no RFOR sequence???\n");
     }
-    /* FIX: need to stash the slice UIDs */
+
+    printf ("Checkpoint 1\n");
 
     /* StructureSetROISequence */
     seq = 0;
     rc = ds_rtss->get_sequence (DCM_StructureSetROISequence, seq);
     if (rc) {
+        printf ("Checkpoint 1.1 (%p)\n", seq);
         for (unsigned long i = 0; i < seq->card(); i++) {
             int structure_id;
             OFCondition orc;
             const char *val = 0;
+            printf ("Checkpoint 1.2 (%d)\n", (int) i);
             orc = seq->getItem(i)->findAndGetString (DCM_ROINumber, val);
             if (!orc.good()) {
                 continue;
@@ -92,6 +95,8 @@ Dcmtk_loader::rtss_load (void)
             this->cxt->add_structure (Pstring (val), Pstring (), structure_id);
         }
     }
+
+    printf ("Checkpoint 2\n");
 
     /* ROIContourSequence */
     seq = 0;
@@ -229,6 +234,7 @@ Dcmtk_loader::rtss_load (void)
             }
         }
     }
+    printf ("Checkpoint 3\n");
 }
 
 void
