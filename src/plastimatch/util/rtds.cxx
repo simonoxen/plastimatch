@@ -106,7 +106,7 @@ Rtds::load_dicom_rtss (const char *dicom_rtss_fn)
         delete this->m_rtss;
     }
 #if PLM_DCM_USE_DCMTK
-    // GCS FIX
+    /* ... */
 #elif GDCM_VERSION_1
     this->m_rtss = new Rtss (this);
     this->m_rtss->load_gdcm_rtss (dicom_rtss_fn, this->m_rdd);

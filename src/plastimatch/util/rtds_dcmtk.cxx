@@ -21,15 +21,13 @@ Rtds::load_dcmtk (const char *dicom_dir)
     dss.set_rt_study (d_ptr->m_drs);
     dss.parse_directory ();
 
-#if defined (GCS_FIX)
-    if (ds_rtss) {
-        ds_rtss->rtss_load (rtds);
+    this->m_img = dss.steal_plm_image ();
+    Rtss_structure_set *rtss = dss.steal_rtss_structure_set ();
+    if (rtss) {
+	this->m_rtss = new Rtss (this);
+        this->m_rtss->m_cxt = rtss;
     }
-
-    if (ds_rtdose) {
-        ds_rtdose->rtdose_load (rtds);
-    }
-#endif
+    this->m_dose = dss.steal_dose_image ();
 
     printf ("Done.\n");
 #endif
@@ -45,7 +43,9 @@ Rtds::save_dcmtk (const char *dicom_dir)
     if (this->m_rtss && this->m_rtss->m_cxt) {
         ds.set_cxt (this->m_rtss->m_cxt, &this->m_rtss->m_meta);
     }
-    ds.set_dose (this->m_dose->gpuit_float());
+    if (this->m_dose) {
+        ds.set_dose (this->m_dose->gpuit_float());
+    }
 
     ds.save (dicom_dir);
 #endif

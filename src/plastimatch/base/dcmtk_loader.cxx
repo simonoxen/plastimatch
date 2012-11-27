@@ -14,6 +14,7 @@
 #include "dcmtk_loader_p.h"
 #include "dcmtk_series.h"
 #include "dicom_rt_study.h"
+#include "file_util.h"
 #include "plm_image.h"
 #include "print_and_exit.h"
 
@@ -23,11 +24,15 @@ Dcmtk_loader::Dcmtk_loader ()
     init ();
 }
 
-Dcmtk_loader::Dcmtk_loader (const char* dicom_dir)
+Dcmtk_loader::Dcmtk_loader (const char* dicom_path)
 {
     d_ptr = new Dcmtk_loader_private;
     init ();
-    this->insert_directory (dicom_dir);
+    if (is_directory (dicom_path)) {
+        this->insert_directory (dicom_path);
+    } else {
+        this->insert_file (dicom_path);
+    }
 }
 
 Dcmtk_loader::~Dcmtk_loader ()
@@ -138,8 +143,37 @@ Dcmtk_loader::get_metadata ()
 Volume *
 Dcmtk_loader::get_volume ()
 {
-    this->parse_directory ();
+    if (!this->img) {
+        this->parse_directory ();
+    }
     return this->img->vol();
+}
+
+Plm_image *
+Dcmtk_loader::steal_plm_image ()
+{
+    /* Transfer ownership to caller */
+    Plm_image *tmp = this->img;
+    this->img = 0;
+    return tmp;
+}
+
+Rtss_structure_set *
+Dcmtk_loader::steal_rtss_structure_set ()
+{
+    /* Transfer ownership to caller */
+    Rtss_structure_set *tmp = this->cxt;
+    this->cxt = 0;
+    return tmp;
+}
+
+Plm_image *
+Dcmtk_loader::steal_dose_image ()
+{
+    /* Transfer ownership to caller */
+    Plm_image *tmp = this->dose;
+    this->dose = 0;
+    return tmp;
 }
 
 void
@@ -210,8 +244,6 @@ Dcmtk_loader::parse_directory (void)
     if (ds_rtdose) {
         this->rtdose_load ();
     }
-#if defined (commentout)
-#endif
 }
 
 ShortImageType::Pointer 

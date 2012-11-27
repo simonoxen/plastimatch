@@ -20,7 +20,7 @@ class Dcmtk_loader
 {
 public:
     Dcmtk_loader ();
-    Dcmtk_loader (const char* dicom_dir);
+    Dcmtk_loader (const char* dicom_path);
     ~Dcmtk_loader ();
 
 public:
@@ -42,6 +42,9 @@ public:
     void set_rt_study (Dicom_rt_study *drs);
     Metadata *get_metadata ();
     Volume *get_volume ();
+    Plm_image *steal_plm_image ();
+    Rtss_structure_set *steal_rtss_structure_set ();
+    Plm_image *steal_dose_image ();
     void load_rtss (void);
     void insert_file (const char* fn);
     void insert_directory (const char* fn);
