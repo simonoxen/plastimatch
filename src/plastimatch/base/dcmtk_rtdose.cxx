@@ -13,6 +13,7 @@
 #include "dcmtk_metadata.h"
 #include "dcmtk_rtdose.h"
 #include "dcmtk_save.h"
+#include "dcmtk_save_p.h"
 #include "dcmtk_series.h"
 #include "dicom_rt_study.h"
 #include "file_util.h"
@@ -265,11 +266,14 @@ Dcmtk_loader::rtdose_load ()
 
 void
 Dcmtk_save::save_dose (
-    const Dicom_rt_study *dsw,
     const char *dicom_dir)
 {
     OFCondition ofc;
     std::string s;
+    const Metadata *dose_metadata = 0;
+    if (d_ptr->m_drs) {
+        dose_metadata = d_ptr->m_drs->get_dose_metadata ();
+    }
 
     /* Prepare output file */
     std::string filename = string_format ("%s/dose.dcm", dicom_dir);
@@ -285,37 +289,39 @@ Dcmtk_save::save_dose (
     dataset->putAndInsertString (DCM_ImageType, 
         "DERIVED\\SECONDARY\\REFORMATTED");
     dataset->putAndInsertOFStringArray(DCM_InstanceCreationDate, 
-        dsw->get_study_date());
+        d_ptr->m_drs->get_study_date());
     dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, 
-        dsw->get_study_time());
+        d_ptr->m_drs->get_study_time());
     dataset->putAndInsertOFStringArray(DCM_InstanceCreatorUID, 
         PLM_UID_PREFIX);
     dataset->putAndInsertString (DCM_SOPClassUID, UID_RTDoseStorage);
     dataset->putAndInsertString (DCM_SOPInstanceUID, 
-        dsw->get_dose_instance_uid());
+        d_ptr->m_drs->get_dose_instance_uid());
     dataset->putAndInsertOFStringArray (DCM_StudyDate, 
-        dsw->get_study_date());
+        d_ptr->m_drs->get_study_date());
     dataset->putAndInsertOFStringArray (DCM_StudyTime, 
-        dsw->get_study_time());
+        d_ptr->m_drs->get_study_time());
     dataset->putAndInsertOFStringArray (DCM_AccessionNumber, "");
     dataset->putAndInsertOFStringArray (DCM_Modality, "RTDOSE");
     dataset->putAndInsertString (DCM_Manufacturer, "Plastimatch");
     dataset->putAndInsertString (DCM_InstitutionName, "");
     dataset->putAndInsertString (DCM_ReferringPhysicianName, "");
     dataset->putAndInsertString (DCM_StationName, "");
-    dcmtk_put_metadata (dataset, this->dose_meta, DCM_SeriesDescription, "");
+    dcmtk_copy_from_metadata (dataset, dose_metadata, 
+        DCM_SeriesDescription, "");
     dataset->putAndInsertString (DCM_ManufacturerModelName, "Plastimatch");
-    dcmtk_put_metadata (dataset, this->dose_meta, DCM_PatientName, "");
-    dcmtk_put_metadata (dataset, this->dose_meta, DCM_PatientID, "");
+    dcmtk_copy_from_metadata (dataset, dose_metadata, DCM_PatientName, "");
+    dcmtk_copy_from_metadata (dataset, dose_metadata, DCM_PatientID, "");
     dataset->putAndInsertString (DCM_PatientBirthDate, "");
-    dcmtk_put_metadata (dataset, this->dose_meta, DCM_PatientSex, "O");
+    dcmtk_copy_from_metadata (dataset, dose_metadata, DCM_PatientSex, "O");
     dataset->putAndInsertString (DCM_SliceThickness, "");
     dataset->putAndInsertString (DCM_SoftwareVersions,
         PLASTIMATCH_VERSION_STRING);
-    dataset->putAndInsertString (DCM_StudyInstanceUID, dsw->get_study_uid());
+    dataset->putAndInsertString (DCM_StudyInstanceUID, 
+        d_ptr->m_drs->get_study_uid());
     dataset->putAndInsertString (DCM_SeriesInstanceUID, 
-        dsw->get_dose_series_uid());
-    dcmtk_put_metadata (dataset, this->dose_meta, DCM_StudyID, "10001");
+        d_ptr->m_drs->get_dose_series_uid());
+    dcmtk_copy_from_metadata (dataset, dose_metadata, DCM_StudyID, "10001");
     dataset->putAndInsertString (DCM_SeriesNumber, "");
     dataset->putAndInsertString (DCM_InstanceNumber, "1");
     s = string_format ("%g\\%g\\%g", 
@@ -332,7 +338,7 @@ Dcmtk_save::save_dose (
 	this->dose->direction_cosines[5]);
     dataset->putAndInsertString (DCM_ImageOrientationPatient, s.c_str());
     dataset->putAndInsertString (DCM_FrameOfReferenceUID, 
-        dsw->get_frame_of_reference_uid());
+        d_ptr->m_drs->get_frame_of_reference_uid());
 
     dataset->putAndInsertString (DCM_SamplesPerPixel, "1");
     dataset->putAndInsertString (DCM_PhotometricInterpretation, "MONOCHROME2");
@@ -352,8 +358,8 @@ Dcmtk_save::save_dose (
     dataset->putAndInsertString (DCM_BitsAllocated, "32");
     dataset->putAndInsertString (DCM_BitsStored, "32");
     dataset->putAndInsertString (DCM_HighBit, "31");
-    if (this->dose_meta 
-        && this->dose_meta->get_metadata(0x3004, 0x0004) == "ERROR")
+    if (dose_metadata 
+        && dose_metadata->get_metadata(0x3004, 0x0004) == "ERROR")
     {
         dataset->putAndInsertString (DCM_PixelRepresentation, "1");
     } else {
@@ -361,7 +367,8 @@ Dcmtk_save::save_dose (
     }
 
     dataset->putAndInsertString (DCM_DoseUnits, "GY");
-    dcmtk_put_metadata (dataset, this->dose_meta, DCM_DoseType, "PHYSICAL");
+    dcmtk_copy_from_metadata (dataset, dose_metadata, 
+        DCM_DoseType, "PHYSICAL");
     dataset->putAndInsertString (DCM_DoseSummationType, "PLAN");
 
     s = std::string ("0");
@@ -389,8 +396,8 @@ Dcmtk_save::save_dose (
 
     /* Find scale factor */
     float dose_scale;
-    if (this->dose_meta 
-        && this->dose_meta->get_metadata(0x3004, 0x0004) == "ERROR")
+    if (dose_metadata 
+        && dose_metadata->get_metadata(0x3004, 0x0004) == "ERROR")
     {
 	/* Dose error is signed integer */
 	float dose_scale_min = min_val / INT32_T_MIN * 1.001;
@@ -407,8 +414,8 @@ Dcmtk_save::save_dose (
     dataset->putAndInsertString (DCM_DoseGridScaling, s.c_str());
 
     /* Convert image bytes to integer, then add to dataset */
-    if (this->dose_meta 
-        && this->dose_meta->get_metadata(0x3004, 0x0004) == "ERROR")
+    if (dose_metadata 
+        && dose_metadata->get_metadata(0x3004, 0x0004) == "ERROR")
     {
 	dose_copy->convert (PT_INT32);
         dataset->putAndInsertSint16Array (DCM_PixelData, 

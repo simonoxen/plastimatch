@@ -70,7 +70,7 @@ gdcm1_dose_copy_raw (float *img_out, T *img_in, int nvox, float scale)
 }
 
 Plm_image*
-gdcm1_dose_load (Plm_image *pli, const char *dose_fn, const char *dicom_dir)
+gdcm1_dose_load (Plm_image *pli, const char *dose_fn)
 {
     int d, rc;
     gdcm::File *gdcm_file = new gdcm::File;

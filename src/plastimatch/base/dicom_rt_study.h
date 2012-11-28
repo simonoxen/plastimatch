@@ -11,6 +11,7 @@
 #include "pstring.h"
 
 class Dicom_rt_study_private;
+class Metadata;
 class Plm_image;
 class Plm_image_header;
 class Slice_list;
@@ -43,6 +44,15 @@ public:
     void set_slice_list_complete ();
     const Slice_list *get_slice_list ();
     int num_slices ();
+
+    Metadata *get_study_metadata ();
+    const Metadata *get_study_metadata () const;
+    Metadata *get_image_metadata ();
+    const Metadata *get_image_metadata () const;
+    Metadata *get_rtss_metadata ();
+    const Metadata *get_rtss_metadata () const;
+    Metadata *get_dose_metadata ();
+    const Metadata *get_dose_metadata () const;
 };
 
 #endif

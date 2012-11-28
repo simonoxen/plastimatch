@@ -31,7 +31,7 @@ Rtds::load_gdcm (const char *dicom_dir)
 
      if (m_gdcm_series->m_rtdose_file_list) {
 	const std::string& filename = m_gdcm_series->get_rtdose_filename();
-	m_dose = gdcm1_dose_load (0, filename.c_str(), dicom_dir);
+	m_dose = gdcm1_dose_load (0, filename.c_str());
     }
     if (m_gdcm_series->m_rtstruct_file_list) {
 	const std::string& filename = m_gdcm_series->get_rtstruct_filename();

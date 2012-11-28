@@ -9,6 +9,7 @@
 #include "dcmtk/dcmdata/dctk.h"
 
 #include "dcmtk_file.h"
+#include "dcmtk_metadata.h"
 #include "dcmtk_series.h"
 #include "dicom_rt_study.h"
 #include "plm_image.h"
@@ -177,6 +178,17 @@ Dcmtk_series::load_plm_image (void)
             df->get_cstr (DCM_StudyDate));
         d_ptr->m_drs->set_study_time (
             df->get_cstr (DCM_StudyTime));
+
+        /* Store remaining metadata */
+        Metadata *study_metadata = d_ptr->m_drs->get_study_metadata ();
+        dcmtk_copy_into_metadata (study_metadata, df, DCM_PatientName);
+        dcmtk_copy_into_metadata (study_metadata, df, DCM_PatientID);
+        dcmtk_copy_into_metadata (study_metadata, df, DCM_PatientSex);
+        dcmtk_copy_into_metadata (study_metadata, df, DCM_PatientPosition);
+        dcmtk_copy_into_metadata (study_metadata, df, DCM_StudyID);
+
+        Metadata *image_metadata = d_ptr->m_drs->get_image_metadata ();
+        dcmtk_copy_into_metadata (image_metadata, df, DCM_Modality);
     }
 
     /* Get next slice */
@@ -370,6 +382,7 @@ Dcmtk_series::load_plm_image (void)
             d_ptr->m_drs->set_slice_uid (i, df->get_cstr (DCM_SOPInstanceUID));
         }
     }
+
     return pli;
 }
 

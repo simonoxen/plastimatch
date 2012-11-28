@@ -15,7 +15,7 @@
 #include "metadata.h"
 
 void
-dcmtk_put_metadata (
+dcmtk_copy_from_metadata (
     DcmDataset *dataset, 
     const Metadata *meta, 
     const DcmTagKey& tagkey, 
@@ -30,4 +30,17 @@ dcmtk_put_metadata (
         }
     }
     dataset->putAndInsertString (tagkey, default_value);
+}
+
+void
+dcmtk_copy_into_metadata (
+    Metadata *meta, 
+    const Dcmtk_file *df, 
+    const DcmTagKey& tag_key)
+{
+    const char* value = df->get_cstr (tag_key);
+    if (value) {
+        meta->set_metadata (
+            tag_key.getGroup(), tag_key.getElement(), value);
+    }
 }

@@ -29,6 +29,12 @@ public:
     std::string rtss_series_uid;
     std::string study_uid;
     Slice_list slice_list;
+
+    Metadata study_metadata;
+    Metadata image_metadata;
+    Metadata rtss_metadata;
+    Metadata dose_metadata;
+
 public:
     Dicom_rt_study_private () {
         dicom_get_date_time (&date_string, &time_string);
@@ -39,6 +45,11 @@ public:
         rtss_instance_uid = dicom_uid (PLM_UID_PREFIX);
         dose_series_uid = dicom_uid (PLM_UID_PREFIX);
         dose_instance_uid = dicom_uid (PLM_UID_PREFIX);
+
+        study_metadata.create_anonymous ();
+        image_metadata.set_parent (&study_metadata);
+        rtss_metadata.set_parent (&study_metadata);
+        dose_metadata.set_parent (&study_metadata);
     }
 };
 
@@ -170,4 +181,52 @@ int
 Dicom_rt_study::num_slices ()
 {
     return d_ptr->slice_list.num_slices ();
+}
+
+Metadata*
+Dicom_rt_study::get_study_metadata ()
+{
+    return &d_ptr->study_metadata;
+}
+
+const Metadata*
+Dicom_rt_study::get_study_metadata () const
+{
+    return &d_ptr->study_metadata;
+}
+
+Metadata*
+Dicom_rt_study::get_image_metadata ()
+{
+    return &d_ptr->image_metadata;
+}
+
+const Metadata*
+Dicom_rt_study::get_image_metadata () const
+{
+    return &d_ptr->image_metadata;
+}
+
+Metadata*
+Dicom_rt_study::get_rtss_metadata ()
+{
+    return &d_ptr->rtss_metadata;
+}
+
+const Metadata*
+Dicom_rt_study::get_rtss_metadata () const
+{
+    return &d_ptr->rtss_metadata;
+}
+
+Metadata*
+Dicom_rt_study::get_dose_metadata ()
+{
+    return &d_ptr->dose_metadata;
+}
+
+const Metadata*
+Dicom_rt_study::get_dose_metadata () const
+{
+    return &d_ptr->dose_metadata;
 }

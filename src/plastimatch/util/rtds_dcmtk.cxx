@@ -38,10 +38,11 @@ Rtds::save_dcmtk (const char *dicom_dir)
 {
 #if PLM_DCM_USE_DCMTK
     Dcmtk_save ds;
+    ds.set_rt_study (d_ptr->m_drs);
 
     ds.set_image (this->m_img);
     if (this->m_rtss && this->m_rtss->m_cxt) {
-        ds.set_cxt (this->m_rtss->m_cxt, &this->m_rtss->m_meta);
+        ds.set_cxt (this->m_rtss->m_cxt);
     }
     if (this->m_dose) {
         ds.set_dose (this->m_dose->gpuit_float());

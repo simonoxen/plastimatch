@@ -9,7 +9,9 @@
 #include "dcmtk/dcmdata/dctk.h"
 
 #include "dcmtk_file.h"
+#include "dcmtk_metadata.h"
 #include "dcmtk_save.h"
+#include "dcmtk_save_p.h"
 #include "dcmtk_series.h"
 #include "dcmtk_slice_data.h"
 #include "dcmtk_uid.h"
@@ -25,39 +27,44 @@
 #include "volume.h"
 
 static void
-dcmtk_save_slice (const Dicom_rt_study *dsw, Dcmtk_slice_data *dsd)
+dcmtk_save_slice (const Dicom_rt_study *drs, Dcmtk_slice_data *dsd)
 {
     Pstring tmp;
     DcmFileFormat fileformat;
     DcmDataset *dataset = fileformat.getDataset();
+    const Metadata *image_metadata = 0;
+    if (drs) {
+        image_metadata = drs->get_image_metadata ();
+    }
 
     dataset->putAndInsertString (DCM_ImageType, 
         "DERIVED\\SECONDARY\\REFORMATTED");
     dataset->putAndInsertOFStringArray(DCM_InstanceCreationDate, 
-        dsw->get_study_date());
+        drs->get_study_date());
     dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, 
-        dsw->get_study_time());
+        drs->get_study_time());
     dataset->putAndInsertString (DCM_SOPClassUID, UID_CTImageStorage);
     dataset->putAndInsertString (DCM_SOPInstanceUID, dsd->slice_uid);
-    dataset->putAndInsertOFStringArray (DCM_StudyDate, dsw->get_study_date());
-    dataset->putAndInsertOFStringArray (DCM_StudyTime, dsw->get_study_time());
+    dataset->putAndInsertOFStringArray (DCM_StudyDate, drs->get_study_date());
+    dataset->putAndInsertOFStringArray (DCM_StudyTime, drs->get_study_time());
     dataset->putAndInsertString (DCM_AccessionNumber, "");
-    dataset->putAndInsertString (DCM_Modality, "CT");
+    dcmtk_copy_from_metadata (dataset, image_metadata, DCM_Modality, "CT");
     dataset->putAndInsertString (DCM_Manufacturer, "Plastimatch");
     dataset->putAndInsertString (DCM_ReferringPhysicianName, "");
-    dataset->putAndInsertString (DCM_PatientName, "");
-    dataset->putAndInsertString (DCM_PatientID, "");
-    dataset->putAndInsertString (DCM_PatientBirthDate, "");
-    dataset->putAndInsertString (DCM_PatientSex, "");
+    dcmtk_copy_from_metadata (dataset, image_metadata, DCM_PatientName, "");
+    dcmtk_copy_from_metadata (dataset, image_metadata, DCM_PatientID, "");
+    dcmtk_copy_from_metadata (dataset, image_metadata, 
+        DCM_PatientBirthDate, "");
+    dcmtk_copy_from_metadata (dataset, image_metadata, DCM_PatientSex, "");
     dataset->putAndInsertString (DCM_SliceThickness, dsd->sthk.c_str());
-    dataset->putAndInsertString (DCM_SoftwareVersions,
+    dataset->putAndInsertString (DCM_SoftwareVersions, 
         PLASTIMATCH_VERSION_STRING);
-    /* GCS FIX: PatientPosition */
-    dataset->putAndInsertString (DCM_PatientPosition, "HFS");
-    dataset->putAndInsertString (DCM_StudyInstanceUID, dsw->get_study_uid());
+    dcmtk_copy_from_metadata (dataset, image_metadata, 
+        DCM_PatientPosition, "HFS");
+    dataset->putAndInsertString (DCM_StudyInstanceUID, drs->get_study_uid());
     dataset->putAndInsertString (DCM_SeriesInstanceUID, 
-        dsw->get_ct_series_uid());
-    dataset->putAndInsertString (DCM_StudyID, "10001");
+        drs->get_ct_series_uid());
+    dcmtk_copy_from_metadata (dataset, image_metadata, DCM_StudyID, "10001");
     dataset->putAndInsertString (DCM_SeriesNumber, "303");
     dataset->putAndInsertString (DCM_InstanceNumber, "0");
     /* GCS FIX: PatientOrientation */
@@ -65,7 +72,7 @@ dcmtk_save_slice (const Dicom_rt_study *dsw, Dcmtk_slice_data *dsd)
     dataset->putAndInsertString (DCM_ImagePositionPatient, dsd->ipp);
     dataset->putAndInsertString (DCM_ImageOrientationPatient, dsd->iop);
     dataset->putAndInsertString (DCM_FrameOfReferenceUID, 
-        dsw->get_frame_of_reference_uid());
+        drs->get_frame_of_reference_uid());
     dataset->putAndInsertString (DCM_SliceLocation, dsd->sloc.c_str());
     dataset->putAndInsertString (DCM_SamplesPerPixel, "1");
     dataset->putAndInsertString (DCM_PhotometricInterpretation, "MONOCHROME2");
@@ -99,7 +106,6 @@ dcmtk_save_slice (const Dicom_rt_study *dsw, Dcmtk_slice_data *dsd)
 
 void
 Dcmtk_save::save_image (
-    Dicom_rt_study *dsw, 
     const char *dicom_dir)
 {
     Dcmtk_slice_data dsd;
@@ -111,7 +117,7 @@ Dcmtk_save::save_image (
         dc[0], dc[1], dc[2], dc[3], dc[4], dc[5]);
 
     Plm_image_header pih (dsd.vol);
-    dsw->set_image_header (pih);
+    d_ptr->m_drs->set_image_header (pih);
 
     for (plm_long k = 0; k < dsd.vol->dim[2]; k++) {
         /* GCS FIX: direction cosines */
@@ -125,10 +131,10 @@ Dcmtk_save::save_image (
         dcmtk_uid (dsd.slice_uid, PLM_UID_PREFIX);
 
         dsd.slice_float = &((float*)dsd.vol->img)[k*dsd.slice_size];
-        dcmtk_save_slice (dsw, &dsd);
+        dcmtk_save_slice (d_ptr->m_drs, &dsd);
 
-        dsw->set_slice_uid (k, dsd.slice_uid);
+        d_ptr->m_drs->set_slice_uid (k, dsd.slice_uid);
     }
     delete[] dsd.slice_int16;
-    dsw->set_slice_list_complete ();
+    d_ptr->m_drs->set_slice_list_complete ();
 }

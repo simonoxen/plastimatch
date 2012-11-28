@@ -7,6 +7,7 @@
 #include <string.h>
 
 #if GDCM_VERSION_1
+#include "gdcm1_dose.h"
 #include "gdcm1_series.h"
 #endif
 #include "astroid_dose.h"
@@ -121,8 +122,7 @@ Rtds::load_dicom_dose (const char *dicom_path)
 #if PLM_DCM_USE_DCMTK
     this->load_dcmtk (dicom_path);
 #elif GDCM_VERSION_1
-    this->m_dose = gdcm1_dose_load (
-        0, dicom_path, this->m_rdd);
+    this->m_dose = gdcm1_dose_load (0, dicom_path);
 #else
     /* Do nothing */
 #endif
@@ -343,6 +343,8 @@ Rtds::save_dicom (const char *dicom_dir)
 void 
 Rtds::set_user_metadata (std::vector<std::string>& metadata)
 {
+    Metadata *study_metadata = d_ptr->m_drs->get_study_metadata ();
+
     std::vector<std::string>::iterator it = metadata.begin();
     while (it < metadata.end()) {
         const std::string& str = (*it);
@@ -350,7 +352,10 @@ Rtds::set_user_metadata (std::vector<std::string>& metadata)
         if (eq_pos != std::string::npos) {
             std::string key = str.substr (0, eq_pos);
             std::string val = str.substr (eq_pos+1);
+            /* Set older-style metadata, used by gdcm */
             m_meta.set_metadata (key, val);
+            /* Set newer-style metadata, used by dcmtk */
+            study_metadata->set_metadata (key, val);
         }
         ++it;
     }

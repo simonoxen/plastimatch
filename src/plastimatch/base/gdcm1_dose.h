@@ -16,9 +16,7 @@ class Slice_index;
 PLMBASE_C_API bool gdcm1_dose_probe (const char *dose_fn);
 PLMBASE_C_API Plm_image* gdcm1_dose_load (
         Plm_image *pli,
-        const char *dose_fn,
-        const char *dicom_dir
-);
+        const char *dose_fn);
 PLMBASE_C_API void gdcm1_dose_save (
         Plm_image *pli, 
         const Metadata *meta, 

@@ -9,6 +9,7 @@
 #include "dcmtk_image.h"
 #include "dcmtk_rtss.h"
 #include "dcmtk_save.h"
+#include "dcmtk_save_p.h"
 #include "dcmtk_series.h"
 #include "dcmtk_uid.h"
 #include "dicom_rt_study.h"
@@ -19,28 +20,33 @@
 
 Dcmtk_save::Dcmtk_save ()
 {
+    this->d_ptr = new Dcmtk_save_private ();
     this->cxt = 0;
-    this->cxt_meta = 0;
     this->dose = 0;
-    this->dose_meta = 0;
     this->img = 0;
 }
 
 Dcmtk_save::~Dcmtk_save ()
 {
-    /* Do nothing, we don't own the data */
+    delete d_ptr;
+
+    /* Do nothing with other items -- we don't own the data */
 }
 
-void Dcmtk_save::set_cxt (Rtss_structure_set *cxt, Metadata *meta)
+void 
+Dcmtk_save::set_rt_study (Dicom_rt_study *drs)
+{
+    d_ptr->m_drs = drs;
+}
+
+void Dcmtk_save::set_cxt (Rtss_structure_set *cxt)
 {
     this->cxt = cxt;
-    this->cxt_meta = meta;
 }
 
-void Dcmtk_save::set_dose (Volume *vol, Metadata *meta)
+void Dcmtk_save::set_dose (Volume *vol)
 {
     this->dose = vol;
-    this->dose_meta = meta;
 }
 
 void Dcmtk_save::set_image (Plm_image* img)
@@ -51,15 +57,13 @@ void Dcmtk_save::set_image (Plm_image* img)
 void
 Dcmtk_save::save (const char *dicom_dir)
 {
-    Dicom_rt_study dsw;
-
     if (this->img) {
-        this->save_image (&dsw, dicom_dir);
+        this->save_image (dicom_dir);
     }
     if (this->cxt) {
-        this->save_rtss (&dsw, dicom_dir);
+        this->save_rtss (dicom_dir);
     }
     if (this->dose) {
-        this->save_dose (&dsw, dicom_dir);
+        this->save_dose (dicom_dir);
     }
 }

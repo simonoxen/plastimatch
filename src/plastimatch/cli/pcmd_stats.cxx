@@ -124,8 +124,7 @@ stats_dicom_dose (Stats_parms* parms, const std::string& current_fn)
 #if PLM_DCM_USE_DCMTK
     /* Sorry, not yet supported */
 #elif GDCM_VERSION_1
-    Plm_image *dose = gdcm1_dose_load (
-        0, current_fn.c_str(), 0);
+    Plm_image *dose = gdcm1_dose_load (0, current_fn.c_str());
     FloatImageType::Pointer img = dose->itk_float ();
     double min_val, max_val, avg;
     int non_zero, num_vox;

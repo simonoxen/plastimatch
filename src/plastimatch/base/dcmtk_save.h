@@ -6,6 +6,7 @@
 
 #include "plmbase_config.h"
 
+class Dcmtk_save_private;
 class Dicom_rt_study;
 class Metadata;
 class Plm_image;
@@ -18,20 +19,22 @@ public:
     Dcmtk_save ();
     ~Dcmtk_save ();
 public:
-    void set_cxt (Rtss_structure_set *cxt, Metadata *meta = 0);
-    void set_dose (Volume *vol, Metadata *meta = 0);
+//    void set_cxt (Rtss_structure_set *cxt, Metadata *meta = 0);
+    void set_rt_study (Dicom_rt_study *drs);
+    void set_cxt (Rtss_structure_set *cxt);
+    void set_dose (Volume *vol);
     void set_image (Plm_image* img);
 public:
+    Dcmtk_save_private *d_ptr;
+public:
     Rtss_structure_set *cxt;
-    Metadata *cxt_meta;
     Volume *dose;
-    Metadata *dose_meta;
     Plm_image* img;
 public:
     void save (const char *dicom_dir);
-    void save_image (Dicom_rt_study *dsw, const char *dicom_dir);
-    void save_rtss (Dicom_rt_study *dsw, const char *dicom_dir);
-    void save_dose (const Dicom_rt_study *dsw, const char *dicom_dir);
+    void save_image (const char *dicom_dir);
+    void save_rtss (const char *dicom_dir);
+    void save_dose (const char *dicom_dir);
 };
 
 #endif
