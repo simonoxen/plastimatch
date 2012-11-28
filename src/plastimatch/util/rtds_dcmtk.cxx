@@ -14,10 +14,10 @@
 #include "rtds_p.h"
 
 void
-Rtds::load_dcmtk (const char *dicom_dir)
+Rtds::load_dcmtk (const char *dicom_path)
 {
 #if PLM_DCM_USE_DCMTK
-    Dcmtk_loader dss (dicom_dir);
+    Dcmtk_loader dss (dicom_path);
     dss.set_rt_study (d_ptr->m_drs);
     dss.parse_directory ();
 

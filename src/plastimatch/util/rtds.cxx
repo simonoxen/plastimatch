@@ -100,16 +100,29 @@ Rtds::load_dicom (const char *dicom_dir)
 }
 
 void
-Rtds::load_dicom_rtss (const char *dicom_rtss_fn)
+Rtds::load_dicom_rtss (const char *dicom_path)
 {
     if (this->m_rtss) {
         delete this->m_rtss;
     }
 #if PLM_DCM_USE_DCMTK
-    /* ... */
+    this->load_dcmtk (dicom_path);
 #elif GDCM_VERSION_1
     this->m_rtss = new Rtss (this);
-    this->m_rtss->load_gdcm_rtss (dicom_rtss_fn, this->m_rdd);
+    this->m_rtss->load_gdcm_rtss (dicom_path, this->m_rdd);
+#else
+    /* Do nothing */
+#endif
+}
+
+void
+Rtds::load_dicom_dose (const char *dicom_path)
+{
+#if PLM_DCM_USE_DCMTK
+    this->load_dcmtk (dicom_path);
+#elif GDCM_VERSION_1
+    this->m_dose = gdcm1_dose_load (
+        0, dicom_path, this->m_rdd);
 #else
     /* Do nothing */
 #endif

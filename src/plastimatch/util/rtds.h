@@ -43,7 +43,8 @@ public:
     ~Rtds ();
     void load_dicom_dir (const char *dicom_dir);
     void load_dicom (const char *dicom_dir); 
-    void load_dicom_rtss (const char *dicom_dir); 
+    void load_dicom_dose (const char *dicom_path);
+    void load_dicom_rtss (const char *dicom_path);
     void load_xio (const char *xio_dir, Slice_index *rdd);
     void load_ss_img (const char *ss_img, const char *ss_list);
     void load_dose_img (const char *dose_img);

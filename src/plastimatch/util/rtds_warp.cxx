@@ -55,14 +55,9 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
         case PLM_FILE_FMT_DICOM_RTSS:
             rtds->load_dicom_rtss ((const char*) parms->input_fn);
             break;
-#if GDCM_VERSION_1
         case PLM_FILE_FMT_DICOM_DOSE:
-            rtds->m_dose = gdcm1_dose_load (
-                0, 
-                (const char*) parms->input_fn, 
-                (const char*) parms->referenced_dicom_dir);
+            rtds->load_dicom_dose ((const char*) parms->input_fn);
             break;
-#endif
         case PLM_FILE_FMT_CXT:
             rtds->m_rtss = new Rtss (rtds);
             rtds->m_rtss->load_cxt (parms->input_fn, rtds->m_rdd);
