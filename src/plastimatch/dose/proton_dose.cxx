@@ -241,12 +241,12 @@ dose_direct (
         return 0.0f;
     }
 
-#if 0
     if (ct_xyz[1] > 0.0 && ct_xyz[1] < 2.0 
         && ct_xyz[2] > 0.0 && ct_xyz[2] < 2.0) {
         printf ("(%f %f %f) %f\n", ct_xyz[0], ct_xyz[1], ct_xyz[2], 
             rgdepth);
     }
+#if 0
 #endif
 
     /* return the dose at this radiographic depth */
