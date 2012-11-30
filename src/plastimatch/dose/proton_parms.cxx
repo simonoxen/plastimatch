@@ -33,8 +33,6 @@ Proton_Parms::Proton_Parms ()
     this->detail = 0;
     this->ray_step = 1.0f;
     this->scale = 1.0f;
-    this->input_fn[0] = '\0';
-    this->output_fn[0] = '\0';
 
     this->patient = NULL;
 }
@@ -120,10 +118,10 @@ Proton_Parms::set_key_val (
             }
         }
         else if (!strcmp (key, "patient")) {
-            strncpy (this->input_fn, val, _MAX_PATH);
+            this->input_ct_fn = val;
         }
         else if (!strcmp (key, "dose")) {
-            strncpy (this->output_fn, val, _MAX_PATH);
+            this->output_dose_fn = val;
         }
 
         break;
@@ -353,23 +351,24 @@ Proton_Parms::parse_args (int argc, char** argv)
         return false;
     }
 
-    if (this->output_fn[0] == '\0') {
+    if (this->output_dose_fn == "") {
         fprintf (stderr, "\n** ERROR: Output dose not specified in configuration file!\n");
         return false;
     }
 
-    if (this->input_fn[0] == '\0') {
+    if (this->input_ct_fn == "") {
         fprintf (stderr, "\n** ERROR: Patient image not specified in configuration file!\n");
         return false;
-    } else {
-        /* load the patient and insert into the scene */
-        this->patient = plm_image_load (this->input_fn, PLM_IMG_TYPE_ITK_FLOAT);
-        if (!this->patient) {
-            fprintf (stderr, "\n** ERROR: Unable to load patient volume.\n");
-            return false;
-        }
-        this->scene->set_patient (this->patient);
     }
+
+    /* load the patient and insert into the scene */
+    this->patient = plm_image_load (this->input_ct_fn.c_str(), 
+        PLM_IMG_TYPE_ITK_FLOAT);
+    if (!this->patient) {
+        fprintf (stderr, "\n** ERROR: Unable to load patient volume.\n");
+        return false;
+    }
+    this->scene->set_patient (this->patient);
 
     /* try to setup the scene with the provided parameters */
     this->scene->set_step_length (this->ray_step);

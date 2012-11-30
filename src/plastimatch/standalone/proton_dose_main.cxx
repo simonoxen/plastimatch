@@ -5,9 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#if (OPENMP_FOUND)
-#include <omp.h>
-#endif
 
 #include "mha_io.h"
 #include "plm_math.h"
@@ -29,7 +26,7 @@ main (int argc, char* argv[])
     fflush(stdout);
 
     dose = proton_dose_compute (&parms);
-    write_mha (parms.output_fn, dose);
+    write_mha (parms.output_dose_fn.c_str(), dose);
     printf ("done.  \n\n");
 
     delete dose;

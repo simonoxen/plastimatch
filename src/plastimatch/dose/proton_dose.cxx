@@ -21,7 +21,9 @@
 #include <string.h>
 
 #include "aperture.h"
+#include "plm_image.h"
 #include "plm_math.h"
+#include "print_and_exit.h"
 #include "proj_matrix.h"
 #include "proton_beam.h"
 #include "proton_dose.h"
@@ -596,6 +598,29 @@ proton_dose_compute (Proton_Parms *parms)
     Proj_matrix*  pmat    = scene->pmat;
     Volume*       ct_vol  = scene->patient;
     Rpl_volume*   rpl_vol = scene->rpl_vol;
+
+#if defined (commentout)
+    /* load the patient and insert into the scene */
+    //ct_vol = plm_image_load (parms->input_ct_fn, PLM_IMG_TYPE_ITK_FLOAT);
+    Plm_image plm_image (parms->input_ct_fn, PLM_IMG_TYPE_ITK_FLOAT);
+    if (!plm_image.have_image()) {
+        print_and_exit ("** ERROR: Unable to load patient volume.\n");
+    }
+    scene->set_patient (plm_image.gpuit_float());
+
+    /* set scene parameters */
+    scene->beam->set_source_position (parms->src);
+    scene->beam->set_isocenter_position (parms->isocenter);
+
+    scene->ap->set_distance (parms->ap_offset);
+    scene->ap->set_dim (parms->ires);
+    scene->ap->set_spacing (parms->ap_spacing);
+    if (parms->have_ic) {
+        scene->ap->set_center (parms->ic);
+    }
+
+    scene->set_step_length(parms->ray_step);
+#endif
 
     scene->debug ();
 

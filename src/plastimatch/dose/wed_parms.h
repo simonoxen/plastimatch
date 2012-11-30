@@ -30,10 +30,12 @@ public:
     std::string output_dose_fn;     /* output:    dose volume */
     std::string rpl_vol_fn;         /* output: rpl volume */
 
+    /* [BEAM] */
     float src[3];
     float isocenter[3];
     float beam_res;
 
+    /* [APERTURE] */
     float vup[3];
     int ires[2];
     bool have_ic;

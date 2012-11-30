@@ -47,6 +47,11 @@ Plm_image::Plm_image (const char* fname, Plm_image_type type)
     this->init ();
     this->load (fname, type);
 }
+Plm_image::Plm_image (const std::string& fname, Plm_image_type type)
+{
+    this->init ();
+    this->load (fname.c_str(), type);
+}
 Plm_image::Plm_image (UCharImageType::Pointer img)
 {
     this->init ();
@@ -92,6 +97,13 @@ Plm_image::free ()
     m_itk_double = 0;
     m_gpuit = 0;
 }
+
+bool
+Plm_image::have_image ()
+{
+    return m_type == PLM_IMG_TYPE_UNDEFINED;
+}
+
 
 /* -----------------------------------------------------------------------
    Cloning

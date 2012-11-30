@@ -5,6 +5,7 @@
 #define _proton_parms_h_
 
 #include "plmdose_config.h"
+#include <string>
 #include "plm_path.h"
 #include "threading.h"
 
@@ -32,8 +33,23 @@ public:
     float ray_step;       /* Uniform ray step size (mm) */
     float scale;          /* scale dose intensity */
                           /* 1 = only consider voxels in beam path */
-    char input_fn[_MAX_PATH];  /* input:  patient volume */
-    char output_fn[_MAX_PATH]; /* output: dose volume */
+    std::string input_ct_fn;  /* input:  patient volume */
+    std::string output_dose_fn; /* output: dose volume */
+
+    /* GCS FIX: Copy-paste with wed_parms.h */
+
+    /* [BEAM] */
+    float src[3];
+    float isocenter[3];
+    float beam_res;
+
+    /* [APERTURE] */
+    float vup[3];
+    int ires[2];
+    bool have_ic;
+    float ic[2];
+    float ap_spacing[2];
+    float ap_offset;
 
     Plm_image* patient;
 

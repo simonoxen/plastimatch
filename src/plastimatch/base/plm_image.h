@@ -27,6 +27,7 @@ public:
     Plm_image (const Pstring& fname);
     Plm_image (const std::string& fname);
     Plm_image (const char* fname, Plm_image_type type);
+    Plm_image (const std::string& fname, Plm_image_type type);
     Plm_image (FloatImageType::Pointer img);
     Plm_image (UCharImageType::Pointer img);
     ~Plm_image ();
@@ -79,6 +80,7 @@ public:
     /* creation / destruction */
     void init ();
     void free ();
+    bool have_image ();
     Plm_image* clone (void);
 
     /* Loading */
