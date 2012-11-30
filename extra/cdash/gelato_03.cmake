@@ -1,5 +1,5 @@
 SET (CTEST_SOURCE_DIRECTORY "$ENV{HOME}/build/nightly/src/plastimatch")
-SET (CTEST_BINARY_DIRECTORY "$ENV{HOME}/build/nightly/gelato_3/plastimatch")
+SET (CTEST_BINARY_DIRECTORY "$ENV{HOME}/build/nightly/gelato_03/plastimatch")
 SET (CTEST_CMAKE_COMMAND "/usr/local/bin/cmake")
 SET (CTEST_COMMAND "/usr/local/bin/ctest -D Nightly")
 SET (CTEST_INITIAL_CACHE "

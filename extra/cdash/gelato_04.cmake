@@ -1,5 +1,5 @@
 SET (CTEST_SOURCE_DIRECTORY "$ENV{HOME}/build/nightly/src/plastimatch")
-SET (CTEST_BINARY_DIRECTORY "$ENV{HOME}/build/nightly/gelato_5/plastimatch")
+SET (CTEST_BINARY_DIRECTORY "$ENV{HOME}/build/nightly/gelato_04/plastimatch")
 SET (CTEST_CMAKE_COMMAND "/usr/local/bin/cmake")
 SET (CTEST_COMMAND "/usr/local/bin/ctest -D Nightly")
 SET (CTEST_INITIAL_CACHE "
@@ -7,7 +7,7 @@ SET (CTEST_INITIAL_CACHE "
 CMAKE_GENERATOR:INTERNAL=Unix Makefiles
 
 //Name of the build
-BUILDNAME:STRING=05-lin64-PisRCD
+BUILDNAME:STRING=04-lin64-PisRCd
 
 //Name of the computer/site where compile is being run
 SITE:STRING=gelato-gcc4.4.5
@@ -19,12 +19,6 @@ ITK_DIR:PATH=/home/gcs6/build/itk-3.20.1
 
 //The directory containing a CMake configuration file for VTK.
 VTK_DIR:PATH=/PHShome/gcs6/build/vtk-5.6.1
-
-//The install directory for dcmtk
-DCMTK_DIR:PATH=/PHShome/gcs6/build/install/dcmtk-3.6.0
-
-//Use DCMTK instead of GDCM for DICOM operations
-PLM_CONFIG_PREFER_DCMTK:BOOL=ON
 
 //Disable reg23 testing (it builds, but doesn't run on this computer)
 ORAIFUTILS_BUILD_TESTING:BOOL=OFF
