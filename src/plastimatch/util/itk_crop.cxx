@@ -23,6 +23,10 @@ itk_crop (
     typename ImageType::SizeType   extract_size;
     typename ImageType::RegionType extract_region;
 
+#if ITK_VERSION_MAJOR > 3
+    filter->SetDirectionCollapseToGuess();
+#endif
+
     for (int d = 0; d < 3; d++) {
 	extract_index[d] = new_size[d*2];
 	extract_size[d] = new_size[d*2+1] - new_size[d*2] + 1;

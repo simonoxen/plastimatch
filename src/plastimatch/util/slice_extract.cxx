@@ -23,7 +23,9 @@ slice_extract
     typedef typename itk::ExtractImageFilter<InImgType, OutImgType> FilterType;
 
     typename FilterType::Pointer extraction = FilterType::New();
-	
+#if (ITK_VERSION_MAJOR > 3)
+    extraction->SetDirectionCollapseToGuess();
+#endif
     typename InImgType::RegionType inputRegion 
 	= in_img->GetLargestPossibleRegion();
     typename InImgType::SizeType size = inputRegion.GetSize();
@@ -66,6 +68,9 @@ slice_extract
     typedef itk::ExtractImageFilter<InImgType, OutImgType> FilterType;
 
     FilterType::Pointer extraction = FilterType::New();
+#if (ITK_VERSION_MAJOR > 3)
+    extraction->SetDirectionCollapseToGuess();
+#endif
 	
     InImgType::RegionType inputRegion 
 	= in_img->GetLargestPossibleRegion();

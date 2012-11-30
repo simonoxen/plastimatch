@@ -26,7 +26,7 @@ itk_scale (
         multiply->Update();
     }
     catch(itk::ExceptionObject & ex) {
-	printf ("Exception running itkExtractImageFilter.\n");
+	printf ("Exception running itkMultiplyByConstantImageFilter.\n");
 	std::cout << ex << std::endl;
 	getchar();
 	exit(1);
