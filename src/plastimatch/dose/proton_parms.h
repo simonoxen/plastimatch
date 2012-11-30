@@ -10,6 +10,7 @@
 #include "threading.h"
 
 class Plm_image;
+class Proton_parms_private;
 class Proton_Scene;
 
 class PLMDOSE_API Proton_Parms {
@@ -17,12 +18,16 @@ public:
     Proton_Parms ();
     ~Proton_Parms ();
 
+    void set_scene (Proton_Scene *scene);
     bool parse_args (int argc, char** argv);
 
 private:
     void handle_end_of_section (int section);
     void parse_config (const char* config_fn);
     int set_key_val (const char* key, const char* val, int section);
+
+public:
+    Proton_parms_private *d_ptr;
 
 public:
     /* [SETTINGS] */
@@ -38,21 +43,7 @@ public:
 
     /* GCS FIX: Copy-paste with wed_parms.h */
 
-    /* [BEAM] */
-    float src[3];
-    float isocenter[3];
-    float beam_res;
-
-    /* [APERTURE] */
-    float vup[3];
-    int ires[2];
-    bool have_ic;
-    float ic[2];
-    float ap_spacing[2];
-    float ap_offset;
-
-    Plm_image* patient;
-
+    /* Scene (owned by caller) */
     Proton_Scene* scene;
 };
 

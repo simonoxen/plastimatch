@@ -10,6 +10,7 @@
 #include "plm_math.h"
 #include "proton_dose.h"
 #include "proton_parms.h"
+#include "proton_scene.h"
 #include "volume.h"
 
 int
@@ -17,7 +18,9 @@ main (int argc, char* argv[])
 {
     Volume* dose;
     Proton_Parms parms;
+    Proton_Scene scene;
 
+    parms.set_scene (&scene);
     if (!parms.parse_args (argc, argv)) {
         exit (0);
     }
@@ -25,7 +28,7 @@ main (int argc, char* argv[])
     printf ("Working...\n");
     fflush(stdout);
 
-    dose = proton_dose_compute (&parms);
+    dose = proton_dose_compute (&scene);
     write_mha (parms.output_dose_fn.c_str(), dose);
     printf ("done.  \n\n");
 

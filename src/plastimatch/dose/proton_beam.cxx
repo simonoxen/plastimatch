@@ -21,11 +21,14 @@ public:
         this->isocenter[0] = 0.f;
         this->isocenter[1] = 0.f;
         this->isocenter[2] = 0.f;
-//    this->beam_res = 1.f;
+        this->detail = 1;
+        this->flavor = 'a';
     }
 public:
     double source[3];
     double isocenter[3];
+    int detail;
+    char flavor;
 };
 
 
@@ -123,6 +126,30 @@ Proton_Beam::set_isocenter_position (const double* position)
     for (int d = 0; d < 3; d++) {
         d_ptr->isocenter[d] = position[d];
     }
+}
+
+int
+Proton_Beam::get_detail (void) const
+{
+    return d_ptr->detail;
+}
+
+void
+Proton_Beam::set_detail (int detail)
+{
+    d_ptr->detail = detail;
+}
+
+char
+Proton_Beam::get_flavor (void) const
+{
+    return d_ptr->flavor;
+}
+
+void
+Proton_Beam::set_flavor (char flavor)
+{
+    d_ptr->flavor = flavor;
 }
 
 bool

@@ -19,7 +19,7 @@ public:
 public:
     /*! \name Inputs */
     ///@{
-    /*! \brief ( Documentation needed ) */
+    /*! \brief Load PDD from XiO or txt file */
     bool load (const char* fn);
 
     /*! \brief Get the position of the beam source in world coordinates. */
@@ -41,6 +41,15 @@ public:
     void set_isocenter_position (const float position[3]);
     /*! \brief Set the position of the beam isocenter in world coordinates. */
     void set_isocenter_position (const double position[3]);
+
+    /*! \brief Get "detail" parameter of dose calculation algorithm */
+    int get_detail () const;
+    /*! \brief Set "detail" parameter of dose calculation algorithm */
+    void set_detail (int detail);
+    /*! \brief Get "flavor" parameter of dose calculation algorithm */
+    char get_flavor () const;
+    /*! \brief Set "flavor" parameter of dose calculation algorithm */
+    void set_flavor (char flavor);
 
     ///@}
 

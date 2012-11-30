@@ -224,11 +224,9 @@ gaus_kernel (
 static double
 dose_direct (
     double* ct_xyz,             /* voxel to dose */
-    Proton_Parms *parms
+    Proton_Scene* scene
 )
 {
-    Proton_Scene* scene = parms->scene;
-
 #if defined (commentout)
     double rgdepth = rpl_volume_get_rgdepth (
         scene->rpl_vol,     /* volume of radiological path lengths */
@@ -258,11 +256,9 @@ dose_direct (
 static double
 dose_debug (
     double* ct_xyz,             /* voxel to dose */
-    Proton_Parms *parms
+    Proton_Scene* scene
 )
 {
-    Proton_Scene* scene   = parms->scene;
-
 #if defined (commentout)
     return rpl_volume_get_rgdepth (scene->rpl_vol, ct_xyz);
 #endif
@@ -276,10 +272,9 @@ static double
 dose_scatter (
     double* ct_xyz,
     int* ct_ijk,            // DEBUG
-    Proton_Parms *parms
+    Proton_Scene* scene
 )
 {
-    Proton_Scene* scene   = parms->scene;
     Aperture*     ap      = scene->ap;
     Proton_Beam*  beam    = scene->beam;
     Rpl_volume*   rpl_vol = scene->rpl_vol;
@@ -340,10 +335,10 @@ dose_scatter (
      * estimate, so we assume the largest scattering radius.
      */
     if (rgdepth < 0.0) {
-        if (parms->detail == 0) {
+        if (beam->get_detail() == 0) {
             rgdepth = beam->dmax;
         }
-        else if (parms->detail == 1) {
+        else if (beam->get_detail() == 1) {
             /* User wants to ignore "scatter only" dose */
             if (debug) {
 //                printf ("Voxel culled by detail flag\n");
@@ -437,10 +432,9 @@ static double
 dose_hong (
     double* ct_xyz,
     int* ct_ijk,            // DEBUG
-    Proton_Parms *parms
+    Proton_Scene* scene
 )
 {
-    Proton_Scene* scene   = parms->scene;
     Aperture*     ap      = scene->ap;
     Proton_Beam*  beam    = scene->beam;
     Rpl_volume*   rpl_vol = scene->rpl_vol;
@@ -497,10 +491,10 @@ dose_hong (
      * a resonable estimate, so we assume the largest scattering radius.
      */
     if (rgdepth < 0.0) {
-        if (parms->detail == 0) {
+        if (beam->get_detail() == 0) {
             rgdepth = beam->dmax;
         }
-        else if (parms->detail == 1) {
+        else if (beam->get_detail() == 1) {
             /* User wants to ignore "scatter only" dose */
             if (debug) {
                 printf ("Voxel culled by detail flag\n");
@@ -591,12 +585,11 @@ dose_hong (
 }
 
 Volume*
-proton_dose_compute (Proton_Parms *parms)
+proton_dose_compute (Proton_Scene *scene)
 {
-    Proton_Scene* scene   = parms->scene;
     Proton_Beam*  beam    = scene->beam;
     Proj_matrix*  pmat    = scene->pmat;
-    Volume*       ct_vol  = scene->patient;
+    Volume*       ct_vol  = scene->get_patient_vol ();
     Rpl_volume*   rpl_vol = scene->rpl_vol;
 
 #if defined (commentout)
@@ -627,16 +620,17 @@ proton_dose_compute (Proton_Parms *parms)
     Volume* dose_vol = volume_clone_empty (ct_vol);
     float* dose_img = (float*) dose_vol->img;
 
-    if (parms->debug) {
+    if (scene->get_debug()) {
         rpl_vol->save ("depth_vol.mha");
         beam->dump ("bragg_curve.txt");
         proj_matrix_debug (pmat);
     }
 
+    printf ("About to loop.\n");
+
     /* scan through patient CT Volume */
     int ct_ijk[3];
     double ct_xyz[4];
-
     int idx = 0;
     for (ct_ijk[2] = 0; ct_ijk[2] < ct_vol->dim[2]; ct_ijk[2]++) {
         for (ct_ijk[1] = 0; ct_ijk[1] < ct_vol->dim[1]; ct_ijk[1]++) {
@@ -649,18 +643,18 @@ proton_dose_compute (Proton_Parms *parms)
                 ct_xyz[2] = (double) (ct_vol->offset[2] + ct_ijk[2] * ct_vol->spacing[2]);
                 ct_xyz[3] = (double) 1.0;
 
-                switch (parms->flavor) {
+                switch (beam->get_flavor()) {
                 case 'a':
-                    dose = dose_direct (ct_xyz, parms);
+                    dose = dose_direct (ct_xyz, scene);
                     break;
                 case 'b':
-                    dose = dose_scatter (ct_xyz, ct_ijk, parms);
+                    dose = dose_scatter (ct_xyz, ct_ijk, scene);
                     break;
                 case 'c':
-                    dose = dose_hong (ct_xyz, ct_ijk, parms);
+                    dose = dose_hong (ct_xyz, ct_ijk, scene);
                     break;
                 case 'd':
-                    dose = dose_debug (ct_xyz, parms);
+                    dose = dose_debug (ct_xyz, scene);
                     break;
                 }
 

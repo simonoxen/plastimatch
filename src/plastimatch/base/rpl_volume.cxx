@@ -171,13 +171,13 @@ Rpl_volume::get_rgdepth (
     int debug = 0;
 
     /* For debugging */
-#if defined (commentout)
     if ((ct_xyz[0] > -198 && ct_xyz[0] < -196)
 	&& (ct_xyz[1] > 132 && ct_xyz[1] < 134)
 	&& (ct_xyz[2] > -6 && ct_xyz[2] < 6))
     {
 	debug = 1;
     }
+#if defined (commentout)
 #endif
 
     /* A couple of abbreviations */

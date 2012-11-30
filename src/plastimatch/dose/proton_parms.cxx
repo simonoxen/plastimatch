@@ -18,13 +18,48 @@
 #include "proton_scene.h"
 #include "string_util.h"
 
-#ifndef NULL
-#define NULL ((void*)0)
-#endif
+class Proton_parms_private {
+public:
+    /* [BEAM] */
+    float src[3];
+    float isocenter[3];
+    float beam_res;
+
+    /* [APERTURE] */
+    float vup[3];
+    int ires[2];
+    bool have_ic;
+    float ic[2];
+    float ap_spacing[2];
+    float ap_offset;
+public:
+    Proton_parms_private () {
+        /* GCS FIX: Copy-paste with wed_parms.cxx */
+        this->src[0] = -1000.f;
+        this->src[1] = 0.f;
+        this->src[2] = 0.f;
+        this->isocenter[0] = 0.f;
+        this->isocenter[1] = 0.f;
+        this->isocenter[2] = 0.f;
+        this->beam_res = 1.f;
+
+        this->vup[0] = 0.f;
+        this->vup[1] = 0.f;
+        this->vup[2] = 1.f;
+        this->ires[0] = 200;
+        this->ires[1] = 200;
+        this->have_ic = false;
+        this->ic[0] = 99.5f;
+        this->ic[1] = 99.5f;
+        this->ap_spacing[0] = 1.;
+        this->ap_spacing[1] = 1.;
+        this->ap_offset = 100;
+    }
+};
 
 Proton_Parms::Proton_Parms ()
 {
-    this->scene = new Proton_Scene;
+    this->d_ptr = new Proton_parms_private;
 
     this->threading = THREADING_CPU_OPENMP;
     this->flavor = 'a';
@@ -34,12 +69,12 @@ Proton_Parms::Proton_Parms ()
     this->ray_step = 1.0f;
     this->scale = 1.0f;
 
-    this->patient = NULL;
+    this->scene = 0;
 }
 
 Proton_Parms::~Proton_Parms ()
 {
-    delete this->scene;
+    /* Don't delete scene.  You don't own it. */
 }
 
 static void
@@ -60,7 +95,6 @@ Proton_Parms::set_key_val (
     int section
 )
 {
-    Proton_Scene* scene = this->scene;
     switch (section) {
 
     /* [SETTINGS] */
@@ -132,22 +166,18 @@ Proton_Parms::set_key_val (
             scene->beam->load (val);
         }
         else if (!strcmp (key, "pos")) {
-            float beam_source_position[3];
-            int rc = sscanf (val, "%f %f %f", &beam_source_position[0],
-                &beam_source_position[1], &beam_source_position[2]);
+            int rc = sscanf (val, "%f %f %f", 
+                &d_ptr->src[0], &d_ptr->src[1], &d_ptr->src[2]);
             if (rc != 3) {
                 goto error_exit;
             }
-            scene->beam->set_source_position (beam_source_position);
         }
         else if (!strcmp (key, "isocenter")) {
-            float isocenter_position[3];
-            int rc = sscanf (val, "%f %f %f", &isocenter_position[0],
-                &isocenter_position[1], &isocenter_position[2]);
+            int rc = sscanf (val, "%f %f %f", &d_ptr->isocenter[0],
+                &d_ptr->isocenter[1], &d_ptr->isocenter[2]);
             if (rc != 3) {
                 goto error_exit;
             }
-            scene->beam->set_isocenter_position (isocenter_position);
         }
         else if (!strcmp (key, "energy")) {
             if (sscanf (val, "%lf", &(scene->beam->E0)) != 1) {
@@ -175,30 +205,26 @@ Proton_Parms::set_key_val (
     /* [APERTURE] */
     case 2:
         if (!strcmp (key, "up")) {
-            if (sscanf (val, "%lf %lf %lf", &(scene->ap->vup[0]), &(scene->ap->vup[1]), &(scene->ap->vup[2])) != 3) {
+            if (sscanf (val, "%f %f %f", &d_ptr->vup[0], 
+                    &d_ptr->vup[1], &d_ptr->vup[2]) != 3)
+            {
                 goto error_exit;
             }
         }
         else if (!strcmp (key, "center")) {
-            float ic[2];
-            if (sscanf (val, "%f %f", &ic[0], &ic[1]) != 2) {
+            if (sscanf (val, "%f %f", &d_ptr->ic[0], &d_ptr->ic[1]) != 2) {
                 goto error_exit;
             }
-            scene->ap->set_center (ic);
         }
         else if (!strcmp (key, "offset")) {
-            double offset;
-            if (sscanf (val, "%lf", &offset) != 1) {
+            if (sscanf (val, "%f", &d_ptr->ap_offset) != 1) {
                 goto error_exit;
             }
-            scene->ap->set_distance (offset);
         }
         else if (!strcmp (key, "resolution")) {
-            int ires[2];
-            if (sscanf (val, "%i %i", &ires[0], &ires[1]) != 2) {
+            if (sscanf (val, "%i %i", &d_ptr->ires[0], &d_ptr->ires[1]) != 2) {
                 goto error_exit;
             }
-            scene->ap->set_dim (ires);
         }
         break;
 
@@ -252,6 +278,14 @@ Proton_Parms::handle_end_of_section (int section)
         scene->beam->add_peak ();
         break;
     }
+}
+
+void
+Proton_Parms::set_scene (
+    Proton_Scene *scene
+)
+{
+    this->scene = scene;
 }
 
 void
@@ -333,7 +367,7 @@ Proton_Parms::parse_args (int argc, char** argv)
         if (argv[i][0] != '-') break;
 
         if (!strcmp (argv[i], "--debug")) {
-            this->debug = 1;
+            scene->set_debug (true);
         }
         else {
             print_usage ();
@@ -347,10 +381,6 @@ Proton_Parms::parse_args (int argc, char** argv)
         this->parse_config (argv[i]);
     }
 
-    if (!scene->beam->generate ()) {
-        return false;
-    }
-
     if (this->output_dose_fn == "") {
         fprintf (stderr, "\n** ERROR: Output dose not specified in configuration file!\n");
         return false;
@@ -362,13 +392,29 @@ Proton_Parms::parse_args (int argc, char** argv)
     }
 
     /* load the patient and insert into the scene */
-    this->patient = plm_image_load (this->input_ct_fn.c_str(), 
+    Plm_image *ct = plm_image_load (this->input_ct_fn.c_str(), 
         PLM_IMG_TYPE_ITK_FLOAT);
-    if (!this->patient) {
+    if (!ct) {
         fprintf (stderr, "\n** ERROR: Unable to load patient volume.\n");
         return false;
     }
-    this->scene->set_patient (this->patient);
+    this->scene->set_patient (ct);
+
+    /* Generate PDD */
+    if (!scene->beam->generate ()) {
+        return false;
+    }
+
+    /* set scene parameters */
+    scene->beam->set_source_position (d_ptr->src);
+    scene->beam->set_isocenter_position (d_ptr->isocenter);
+
+    scene->ap->set_distance (d_ptr->ap_offset);
+    scene->ap->set_dim (d_ptr->ires);
+    scene->ap->set_spacing (d_ptr->ap_spacing);
+    if (d_ptr->have_ic) {
+        scene->ap->set_center (d_ptr->ic);
+    }
 
     /* try to setup the scene with the provided parameters */
     this->scene->set_step_length (this->ray_step);
@@ -376,6 +422,8 @@ Proton_Parms::parse_args (int argc, char** argv)
         fprintf (stderr, "ERROR: Unable to initilize scene.\n");
         return false;
     }
+
+    printf ("parse_args complete.\n");
 
     return true;
 }
