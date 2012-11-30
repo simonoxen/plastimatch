@@ -78,7 +78,7 @@
 #if (ITK_FOUND && !PLM_CUDA_COMPILE)
 #include "itkConfigure.h"
 #if !defined (ITK_LEGACY_REMOVE)
-#define ITK_LEGACY_REMOVE 1 /* Silence MSVC+ITK compiler warnings */
+#define ITK_LEGACY_SILENT 1 /* Silence MSVC+ITK compiler warnings */
 #endif
 #if (ITK_VERSION_MAJOR >= 3) && (ITK_VERSION_MINOR >= 10) && defined (ITK_USE_ORIENTED_IMAGE_DIRECTION)
 #define PLM_ITK_ORIENTED_IMAGES 1
