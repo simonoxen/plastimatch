@@ -7,6 +7,9 @@
 #include "itkArray.h"
 #include "itkResampleImageFilter.h"
 #include "itkBSplineResampleImageFunction.h"
+#if ITK_VERSION_MAJOR > 3
+#include "itkTransformFactory.h"
+#endif
 #include "itkTransformFileWriter.h"
 #include "itkTransformFileReader.h"
 
@@ -359,6 +362,10 @@ itk_xform_save (T transform, const char *filename)
 static void
 itk_xform_load (Xform *xf, const char* fn)
 {
+#if (ITK_VERSION_MAJOR > 3)
+    itk::TransformFactory< itk::BSplineDeformableTransform< double, 3, 3 > >::RegisterTransform ();
+#endif
+
     /* Load from file to into reader */
     itk::TransformFileReader::Pointer transfReader;
     transfReader = itk::TransformFileReader::New();
