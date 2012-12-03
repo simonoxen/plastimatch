@@ -72,6 +72,7 @@ Dicom_rt_study::get_ct_series_uid () const
 void
 Dicom_rt_study::set_ct_series_uid (const char* uid)
 {
+    if (!uid) return;
     d_ptr->ct_series_uid = uid;
 }
 
@@ -96,6 +97,7 @@ Dicom_rt_study::get_frame_of_reference_uid () const
 void
 Dicom_rt_study::set_frame_of_reference_uid (const char* uid)
 {
+    if (!uid) return;
     d_ptr->for_uid = uid;
 }
 
@@ -120,6 +122,7 @@ Dicom_rt_study::get_study_date () const
 void
 Dicom_rt_study::set_study_date (const char* date)
 {
+    if (!date) return;
     d_ptr->date_string = date;
 }
 
@@ -132,6 +135,7 @@ Dicom_rt_study::get_study_time () const
 void
 Dicom_rt_study::set_study_time (const char* time)
 {
+    if (!time) return;
     d_ptr->time_string = time;
 }
 
@@ -144,6 +148,7 @@ Dicom_rt_study::get_study_uid () const
 void
 Dicom_rt_study::set_study_uid (const char* uid)
 {
+    if (!uid) return;
     d_ptr->study_uid = uid;
 }
 
@@ -162,6 +167,7 @@ Dicom_rt_study::get_slice_uid (int index) const
 void 
 Dicom_rt_study::set_slice_uid (int index, const char* slice_uid)
 {
+    if (!slice_uid) return;
     d_ptr->slice_list.set_slice_uid (index, slice_uid);
 }
 
