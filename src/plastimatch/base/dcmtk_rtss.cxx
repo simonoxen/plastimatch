@@ -17,6 +17,7 @@
 #include "dcmtk_slice_data.h"
 #include "dicom_rt_study.h"
 #include "file_util.h"
+#include "logfile.h"
 #include "metadata.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
@@ -56,7 +57,7 @@ Dcmtk_loader::rtss_load (void)
     /* Modality -- better be RTSTRUCT */
     std::string modality = ds_rtss->get_modality();
     if (modality == "RTSTRUCT") {
-        printf ("Trying to load rt structure set.\n");
+        lprintf ("Trying to load rt structure set.\n");
     } else {
         print_and_exit ("Oops.\n");
     }
@@ -68,21 +69,17 @@ Dcmtk_loader::rtss_load (void)
     bool rc = ds_rtss->get_sequence (
         DCM_ReferencedFrameOfReferenceSequence, seq);
     if (!rc) {
-        printf ("Huh? Why no RFOR sequence???\n");
+        lprintf ("Huh? Why no RFOR sequence???\n");
     }
-
-    printf ("Checkpoint 1\n");
 
     /* StructureSetROISequence */
     seq = 0;
     rc = ds_rtss->get_sequence (DCM_StructureSetROISequence, seq);
     if (rc) {
-        printf ("Checkpoint 1.1 (%p)\n", seq);
         for (unsigned long i = 0; i < seq->card(); i++) {
             int structure_id;
             OFCondition orc;
             const char *val = 0;
-            printf ("Checkpoint 1.2 (%d)\n", (int) i);
             orc = seq->getItem(i)->findAndGetString (DCM_ROINumber, val);
             if (!orc.good()) {
                 continue;
@@ -92,12 +89,10 @@ Dcmtk_loader::rtss_load (void)
             }
             val = 0;
             orc = seq->getItem(i)->findAndGetString (DCM_ROIName, val);
-            printf ("Adding structure (%d), %s\n", structure_id, val);
+            lprintf ("Adding structure (%d), %s\n", structure_id, val);
             this->cxt->add_structure (Pstring (val), Pstring (), structure_id);
         }
     }
-
-    printf ("Checkpoint 2\n");
 
     /* ROIContourSequence */
     seq = 0;
@@ -113,7 +108,7 @@ Dcmtk_loader::rtss_load (void)
             /* Get ID and color */
             orc = item->findAndGetString (DCM_ReferencedROINumber, val);
             if (!orc.good()) {
-                printf ("Error finding DCM_ReferencedROINumber.\n");
+                lprintf ("Error finding DCM_ReferencedROINumber.\n");
                 continue;
             }
             if (1 != sscanf (val, "%d", &structure_id)) {
@@ -121,12 +116,12 @@ Dcmtk_loader::rtss_load (void)
             }
             val = 0;
             orc = item->findAndGetString (DCM_ROIDisplayColor, val);
-            printf ("Structure %d has color %s\n", structure_id, val);
+            lprintf ("Structure %d has color %s\n", structure_id, val);
 
             /* Look up the structure for this id and set color */
             curr_structure = this->cxt->find_structure_by_id (structure_id);
             if (!curr_structure) {
-                printf ("Couldn't reference structure with id %d\n", 
+                lprintf ("Couldn't reference structure with id %d\n", 
                     structure_id);
                 continue;
             }
@@ -136,7 +131,7 @@ Dcmtk_loader::rtss_load (void)
             DcmSequenceOfItems *c_seq = 0;
             orc = item->findAndGetSequence (DCM_ContourSequence, c_seq);
             if (!orc.good()) {
-                printf ("Error finding DCM_ContourSequence.\n");
+                lprintf ("Error finding DCM_ContourSequence.\n");
                 continue;
             }
             for (unsigned long j = 0; j < c_seq->card(); j++) {
@@ -152,13 +147,13 @@ Dcmtk_loader::rtss_load (void)
                 orc = c_item->findAndGetString (DCM_ContourGeometricType, 
                     contour_geometric_type);
                 if (!orc.good()) {
-		    printf ("Error finding DCM_ContourGeometricType.\n");
+		    lprintf ("Error finding DCM_ContourGeometricType.\n");
                     continue;
                 }
 		if (strncmp (contour_geometric_type, "CLOSED_PLANAR", 
                         strlen("CLOSED_PLANAR"))) {
 		    /* Might be "POINT".  Do I want to preserve this? */
-		    printf ("Skipping geometric type: [%s]\n", 
+		    lprintf ("Skipping geometric type: [%s]\n", 
                         contour_geometric_type);
 		    continue;
 		}
@@ -167,23 +162,22 @@ Dcmtk_loader::rtss_load (void)
                 orc = c_item->findAndGetString (DCM_NumberOfContourPoints,
                     number_of_contour_points);
                 if (!orc.good()) {
-		    printf ("Error finding DCM_NumberOfContourPoints.\n");
+		    lprintf ("Error finding DCM_NumberOfContourPoints.\n");
                     continue;
                 }
 		if (1 != sscanf (number_of_contour_points, "%d", &num_points)) {
-		    printf ("Error parsing number_of_contour_points...\n");
+		    lprintf ("Error parsing number_of_contour_points...\n");
 		    continue;
 		}
 		if (num_points <= 0) {
 		    /* Polyline with zero points?  Skip it. */
 		    continue;
 		}
-                printf ("Contour %d points\n", num_points);
 
                 /* ContourData */
                 orc = c_item->findAndGetString (DCM_ContourData, contour_data);
                 if (!orc.good()) {
-		    printf ("Error finding DCM_ContourData.\n");
+		    lprintf ("Error finding DCM_ContourData.\n");
 		    continue;
 		}
 
@@ -213,7 +207,7 @@ Dcmtk_loader::rtss_load (void)
 
 		    /* Parse float value */
 		    if (1 != sscanf (&contour_data[n], "%f%n", &f, &this_n)) {
-			printf ("Error parsing data...\n");
+			lprintf ("Error parsing data...\n");
 			break;
 		    }
 		    n += this_n;
@@ -235,7 +229,6 @@ Dcmtk_loader::rtss_load (void)
             }
         }
     }
-    printf ("Checkpoint 3\n");
 }
 
 void
