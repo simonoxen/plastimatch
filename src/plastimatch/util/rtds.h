@@ -14,7 +14,6 @@
 //       [2] Change type of m_meta to Metadata*
 
 class Rtds_private;
-class Gdcm_series;
 //class Metadata;
 class Plm_image;
 class Rtss;
@@ -30,7 +29,6 @@ public:
     Rtss *m_rtss;                      /* RT structure set */
     Plm_image *m_dose;                 /* RT dose */
 
-    Gdcm_series *m_gdcm_series;        /* Input dicom parse info */
     Slice_index *m_rdd;                /* UIDs, etc -- used by gdcm */
 
     Metadata m_meta;                   /* Patient name, patient id, etc. */

@@ -22,19 +22,16 @@ Rtds::load_gdcm (const char *dicom_dir)
     }
 
 #if GDCM_VERSION_1
-    if (m_gdcm_series) {
-	delete m_gdcm_series;
-    }
-    m_gdcm_series = new Gdcm_series;
-    m_gdcm_series->load (dicom_dir);
-    m_gdcm_series->digest_files ();
+    Gdcm_series *gdcm_series = new Gdcm_series;
+    gdcm_series->load (dicom_dir);
+    gdcm_series->digest_files ();
 
-     if (m_gdcm_series->m_rtdose_file_list) {
-	const std::string& filename = m_gdcm_series->get_rtdose_filename();
+     if (gdcm_series->m_rtdose_file_list) {
+	const std::string& filename = gdcm_series->get_rtdose_filename();
 	m_dose = gdcm1_dose_load (0, filename.c_str());
     }
-    if (m_gdcm_series->m_rtstruct_file_list) {
-	const std::string& filename = m_gdcm_series->get_rtstruct_filename();
+    if (gdcm_series->m_rtstruct_file_list) {
+	const std::string& filename = gdcm_series->get_rtstruct_filename();
 	m_rtss = new Rtss (this);
 	m_rtss->load_gdcm_rtss (filename.c_str(), m_rdd);
     }
@@ -47,7 +44,8 @@ Rtds::load_gdcm (const char *dicom_dir)
 
 #if GDCM_VERSION_1
     /* Use native reader to set meta */
-    m_gdcm_series->get_metadata (&m_meta);
+    gdcm_series->get_metadata (&m_meta);
+    delete gdcm_series;
 #endif
 }
 

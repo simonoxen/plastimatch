@@ -34,9 +34,6 @@ Rtds::Rtds ()
     m_rtss = 0;
     m_dose = 0;
     m_rdd = new Slice_index;
-#if GDCM_VERSION_1
-    m_gdcm_series = 0;
-#endif
     m_meta.create_anonymous ();
 
     m_xio_transform = (Xio_ct_transform*) malloc (sizeof (Xio_ct_transform));
@@ -58,11 +55,6 @@ Rtds::~Rtds ()
         delete m_dose;
     }
     delete m_rdd;
-#if GDCM_VERSION_1
-    if (m_gdcm_series) {
-        delete m_gdcm_series;
-    }
-#endif
     if (m_xio_transform) {
         free (m_xio_transform);
     }
