@@ -21,6 +21,7 @@
 #include "rtss_structure_set.h"
 #include "slice_index.h"
 #include "xio_ct.h"
+#include "xio_ct_transform.h"
 #include "xio_demographic.h"
 #include "xio_dir.h"
 #include "xio_dose.h"
@@ -36,8 +37,9 @@ Rtds::Rtds ()
     m_rdd = new Slice_index;
     m_meta.create_anonymous ();
 
-    m_xio_transform = (Xio_ct_transform*) malloc (sizeof (Xio_ct_transform));
-    xio_ct_get_transform(&m_meta, m_xio_transform);
+//    m_xio_transform = (Xio_ct_transform*) malloc (sizeof (Xio_ct_transform));
+//    xio_ct_get_transform(&m_meta, m_xio_transform);
+    m_xio_transform = new Xio_ct_transform (&m_meta);
 
     strcpy (m_xio_dose_input, "\0");
 }
@@ -221,14 +223,13 @@ Rtds::load_xio (
 
     if (this->m_img) {
         if (m_rdd->m_loaded) {
-            /* Determine transformation based original DICOM */
-            xio_ct_get_transform_from_rdd
-                (this->m_img, &m_meta, rdd, this->m_xio_transform);
+            /* Determine transformation based on original DICOM */
+            this->m_xio_transform->set_from_rdd (this->m_img, &m_meta, rdd);
         }
     }
 
     if (this->m_img) {
-        xio_ct_apply_transform (this->m_img, this->m_xio_transform);
+        xio_ct_apply_transform (this->m_img, this->m_xio_transform);        
     }
     if (this->m_rtss->m_cxt) {
         xio_structures_apply_transform (this->m_rtss->m_cxt, 
@@ -266,7 +267,7 @@ Rtds::load_rdd (const char *rdd)
         /* Default to patient position in referenced DICOM */
         m_meta.set_metadata(0x0018, 0x5100,
             m_rdd->m_demographics.get_metadata(0x0018, 0x5100));
-        xio_ct_get_transform(&m_meta, m_xio_transform);
+        m_xio_transform->set (&m_meta);
 
         /* Default to patient name/ID/sex in referenced DICOM */
         m_meta.set_metadata(0x0010, 0x0010,
@@ -352,7 +353,7 @@ Rtds::set_user_metadata (std::vector<std::string>& metadata)
         ++it;
     }
 
-    xio_ct_get_transform(&(m_meta), m_xio_transform);
+    m_xio_transform->set (&m_meta);
 }
 
 void 

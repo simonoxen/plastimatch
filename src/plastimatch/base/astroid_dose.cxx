@@ -12,6 +12,7 @@
 #include "print_and_exit.h"
 #include "volume.h"
 #include "xio_ct.h"
+#include "xio_ct_transform.h"
 
 typedef struct astroid_dose_header Astroid_dose_header;
 struct astroid_dose_header {

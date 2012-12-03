@@ -88,6 +88,7 @@ set (PLMBASE_LIBRARY_SRC
   xform_legacy.cxx
   xform_point.cxx
   xio_ct.cxx
+  xio_ct_transform.cxx
   xio_demographic.cxx
   xio_dir.cxx
   xio_dose.cxx

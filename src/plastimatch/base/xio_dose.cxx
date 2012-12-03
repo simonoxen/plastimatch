@@ -22,6 +22,7 @@
 #include "print_and_exit.h"
 #include "volume.h"
 #include "xio_ct.h"
+#include "xio_ct_transform.h"
 #include "xio_dose.h"
 #include "xio_studyset.h"
 

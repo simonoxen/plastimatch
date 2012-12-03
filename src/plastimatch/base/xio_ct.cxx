@@ -22,6 +22,7 @@
 #include "slice_index.h"
 #include "volume.h"
 #include "xio_ct.h"
+#include "xio_ct_transform.h"
 #include "xio_studyset.h"
 
 typedef struct xio_ct_header Xio_ct_header;
@@ -158,14 +159,6 @@ xio_ct_load_image (
     }
 
     /* Switch big-endian to native */
-#if defined (commentout)
-    for (int i = 0; i < v->dim[0] * v->dim[1]; i++) {
-	char *byte = (char*) &slice_img[i];
-	char tmp = byte[0];
-	byte[0] = byte[1];
-	byte[1] = tmp;
-    }
-#endif
     endian2_big_to_native ((void*) slice_img, v->dim[0] * v->dim[1]);
 
     fclose (fp);
@@ -225,135 +218,6 @@ xio_ct_load (Plm_image *pli, const Xio_studyset *studyset)
 	    xio_ct_load_image (pli, i, ct_file.c_str());
 	}
     }
-}
-
-void
-xio_ct_get_transform_from_rdd (
-    Plm_image *pli,
-    Metadata *meta,
-    Slice_index *rdd,
-    Xio_ct_transform *transform
-)
-{
-    /* Use original XiO CT geometry and a DICOM directory to determine
-       the transformation from XiO coordinates to DICOM coordinates. */
-
-    Volume *v;
-    v = (Volume*) pli->m_gpuit;
-
-    /* Offsets */
-    transform->x_offset = 0;
-    transform->y_offset = 0;
-
-    /* Direction cosines */
-    for (int i = 0; i <= 8; i++) {
-	transform->direction_cosines[i] = 0.;
-    }
-    transform->direction_cosines[0] = 1.0f;
-    transform->direction_cosines[4] = 1.0f;
-    transform->direction_cosines[8] = 1.0f;
-
-    std::string patient_pos = meta->get_metadata(0x0018, 0x5100);
-
-    if (patient_pos == "HFS" ||	patient_pos == "") {
-
-	/* Offsets */
-	transform->x_offset = v->offset[0] - rdd->m_pih.m_origin[0];
-	transform->y_offset = v->offset[1] - rdd->m_pih.m_origin[1];
-
-	/* Direction cosines */
-	transform->direction_cosines[0] = 1.0f;
-	transform->direction_cosines[4] = 1.0f;
-	transform->direction_cosines[8] = 1.0f;
-
-    } else if (patient_pos == "HFP") {
-
-	/* Offsets */
-	transform->x_offset = v->offset[0] + rdd->m_pih.m_origin[0];
-	transform->y_offset = v->offset[1] + rdd->m_pih.m_origin[1];
-
-	/* Direction cosines */
-	transform->direction_cosines[0] = -1.0f;
-	transform->direction_cosines[4] = -1.0f;
-	transform->direction_cosines[8] = 1.0f;
-
-    } else if (patient_pos == "FFS") {
-
-	/* Offsets */
-	transform->x_offset = v->offset[0] + rdd->m_pih.m_origin[0];
-	transform->y_offset = v->offset[1] - rdd->m_pih.m_origin[1];
-
-	/* Direction cosines */
-	transform->direction_cosines[0] = -1.0f;
-	transform->direction_cosines[4] = 1.0f;
-	transform->direction_cosines[8] = -1.0f;
-
-    } else if (patient_pos == "FFP") {
-
-	/* Offsets */
-	transform->x_offset = v->offset[0] - rdd->m_pih.m_origin[0];
-	transform->y_offset = v->offset[1] + rdd->m_pih.m_origin[1];
-
-	/* Direction cosines */
-	transform->direction_cosines[0] = 1.0f;
-	transform->direction_cosines[4] = -1.0f;
-	transform->direction_cosines[8] = -1.0f;
-    }
-
-}
-
-void
-xio_ct_get_transform (
-    Metadata *meta,
-    Xio_ct_transform *transform
-)
-{
-    /* Use patient position to determine the transformation from XiO
-       coordinates to a valid set of DICOM coordinates.
-       The origin of the DICOM coordinates will be the same as the
-       origin of the XiO coordinates, which is generally not the same
-       as the origin of the original DICOM CT scan. */
-
-    /* Offsets */
-    transform->x_offset = 0;
-    transform->y_offset = 0;
-
-    /* Direction cosines */
-    for (int i = 0; i <= 8; i++) {
-	transform->direction_cosines[i] = 0.;
-    }
-    transform->direction_cosines[0] = 1.0f;
-    transform->direction_cosines[4] = 1.0f;
-    transform->direction_cosines[8] = 1.0f;
-
-    std::string patient_pos = meta->get_metadata(0x0018, 0x5100);
-
-    if (patient_pos == "HFS" ||	patient_pos == "") {
-
-	transform->direction_cosines[0] = 1.0f;
-	transform->direction_cosines[4] = 1.0f;
-	transform->direction_cosines[8] = 1.0f;
-
-    } else if (patient_pos == "HFP") {
-
-	transform->direction_cosines[0] = -1.0f;
-	transform->direction_cosines[4] = -1.0f;
-	transform->direction_cosines[8] = 1.0f;
-
-    } else if (patient_pos == "FFS") {
-
-	transform->direction_cosines[0] = -1.0f;
-	transform->direction_cosines[4] = 1.0f;
-	transform->direction_cosines[8] = -1.0f;
-
-    } else if (patient_pos == "FFP") {
-
-	transform->direction_cosines[0] = 1.0f;
-	transform->direction_cosines[4] = -1.0f;
-	transform->direction_cosines[8] = -1.0f;
-
-    }
-
 }
 
 void

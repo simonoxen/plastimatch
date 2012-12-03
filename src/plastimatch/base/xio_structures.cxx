@@ -23,6 +23,7 @@
 #include "rtss_structure.h"
 #include "rtss_structure_set.h"
 #include "xio_ct.h"
+#include "xio_ct_transform.h"
 #include "xio_structures.h"
 
 static void
