@@ -9,6 +9,7 @@
 #include "itk_image_save.h"
 #include "plm_clp.h"
 #include "plm_image.h"
+#include "plm_math.h"
 #include "pcmd_adjust.h"
 #include "print_and_exit.h"
 
@@ -27,8 +28,20 @@ do_itk_adjust (FloatImageType::Pointer image, Adjust_parms *parms)
             break;
         }
         have_curve = true;
-        c += n;
+
+        /* Look for end-caps */
+        if (!is_number(f1)) {
+            if (al.size() == 0) {
+                f1 = -std::numeric_limits<float>::max();
+            } else {
+                f1 = std::numeric_limits<float>::max();
+            }
+        }
+        /* Append (x,y) pair to list */
         al.push_back (std::make_pair (f1, f2));
+
+        /* Look for next pair in string */
+        c += n;
         if (*c == ',') c++;
     }
     
