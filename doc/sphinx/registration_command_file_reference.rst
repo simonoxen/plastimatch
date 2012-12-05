@@ -22,6 +22,16 @@ intermediate output).
    * - moving
      - GLOBAL
      - Filename of moving image
+   * - fixed_mask
+     - GLOBAL
+     - Filename of a binary mask for the fixed image; 
+       only pixels which are non-zero in this image will contribute 
+       to the registration result
+   * - moving_mask
+     - GLOBAL
+     - Filename of a binary mask for the moving image;
+       only pixels which are non-zero in this image will contribute 
+       to the registration result
    * - xform_in
      - GLOBAL, STAGE
      - Initial guess for transform

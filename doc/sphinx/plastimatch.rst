@@ -55,27 +55,52 @@ The command line usage is given as follows::
 
   Usage: plastimatch adjust [options]
   Required:
-      --input=image_in
-      --output=image_out
+      --input <arg>       input directory or filename 
+      --output <arg>      output image 
   Optional:
-      --output-type={uchar,short,ushort,ulong,float}
-      --scale="min max"
-      --ab-scale="ab nfx ndf"       (Alpha-beta scaling)
-      --stretch="min max"
-      --truncate-above=value
-      --truncate-below=value
+      --pw-linear <arg>   a string that forms a piecewise linear map from 
+                           input values to output values, of the form 
+                           "in1,out1,in2,out2,..." 
 
-Example
-^^^^^^^
-The following command will truncate the input intensities to the 
-range [-1000,1000], and then map the intensities to the range [0,1]::
+The adjust command can be used to make a piecewise linear adjustment of 
+the image intensities.  The --pw-linear option is used to create 
+the mapping from input intensities to output intensities.  
+The input intensities in the curve must increase from left to right 
+in the string, but output intensities are arbitrary.  
+
+Input intensities below the first pair or after the last pair 
+are transformed by extrapolating the curve out to infinity with 
+a slope of +1.  A different slope may be specified out to 
+positive or negative infinity by specifying the special 
+input values of -inf and +inf.  In this case, the 
+second number in the pair is the slope of the curve, not the 
+output intensity.
+
+Examples
+^^^^^^^^
+The following command will add 100 to all voxels in the image::
 
   plastimatch adjust \
     --input infile.nrrd \
     --output outfile.nrrd \
-    --truncate-above 1000 \
-    --truncate-below -1000 \
-    --stretch "0 1"
+    --pw-linear "0,100"
+
+The following command does the same thing, but with explicit 
+specification of the slope in the extrapolation area::
+
+  plastimatch adjust \
+    --input infile.nrrd \
+    --output outfile.nrrd \
+    --pw-linear "-inf,1,0,100,inf,1"
+
+The following command truncates the inputs to the 
+range of [-1000,+1000]::
+
+  plastimatch adjust \
+    --input infile.nrrd \
+    --output outfile.nrrd \
+    --pw-linear "-inf,0,-1000,-1000,+1000,+1000,inf,0"
+
 
 plastimatch autolabel
 ---------------------

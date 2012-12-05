@@ -146,7 +146,6 @@ The following example illustrates some additional options::
   # Quit if gradient norm is less than 0.1
   grad_tol=0.1
 
-
 Using ITK algorithms
 --------------------
 The default is to use plastimatch native implementations where available.  
@@ -193,6 +192,24 @@ mutual information metric with the B-spline transform::
   metric=mi
   max_its=30
   res=4 4 2
+
+Image masking
+-------------
+Not all algorithms support masking.  But for those that do, you can 
+specify a mask image for either the fixed image, the moving image, 
+or both.  The mask image must be the same size as the input image.
+When a mask image is used, only voxels of the moving or fixed image 
+which have non-zero corresponding voxels in their mask image 
+will contribute to the matching score.  Masks are specified as follows::
+
+  [GLOBAL]
+  fixed=image_1.mha
+  moving=image_2.mha
+  fixed_mask=image_1_mask.mha
+  moving_mask=image_2_mask.mha
+
+At this time, only the plastimatch B-spline transform 
+with mutual information cost function supports masking.
 
 Output options
 --------------
