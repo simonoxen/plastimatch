@@ -718,6 +718,10 @@ bspline_score (Bspline_optimize_data *bod)
     Reg_parms* reg_parms = parms->reg_parms;
     Bspline_landmarks* blm = parms->blm;
 
+    Volume* fixed_mask  = parms->fixed_mask;
+    Volume* moving_mask = parms->moving_mask;
+    bool have_mask = fixed_mask || moving_mask;
+
     /* CPU Implementations */
     if (parms->threading == BTHR_CPU) {
             
@@ -767,7 +771,11 @@ bspline_score (Bspline_optimize_data *bod)
 #endif
             default:
 #if (OPENMP_FOUND)
-                bspline_score_g_mi (bod);
+                if (have_mask) {
+                    bspline_score_h_mi (bod);
+                } else {
+                    bspline_score_g_mi (bod);
+                }
 #else
                 bspline_score_c_mi (bod);
 #endif
