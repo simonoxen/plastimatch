@@ -14,6 +14,11 @@ class Plm_image;
 class Volume;
 class Volume_header;
 
+/*! \brief 
+ * The Plm_image_header class defines the geometry of an image.  
+ * It defines image origin, spacing, dimensions, and direction cosines, 
+ * but does not contain image voxels.
+ */
 class PLMBASE_API Plm_image_header {
 public:
     OriginType m_origin;
@@ -62,8 +67,8 @@ public:
     int dim (int d) const { return m_region.GetSize()[d]; }
     const SizeType& GetSize (void) const { return m_region.GetSize (); }
 public:
-    /* Return 1 if the two headers are the same */
-    static int compare (Plm_image_header *pli1, Plm_image_header *pli2);
+    /*! \brief Return true if the two headers are the same */
+    static bool compare (Plm_image_header *pli1, Plm_image_header *pli2);
 
 public:
     void set_dim (const plm_long dim[3]);
@@ -73,6 +78,7 @@ public:
         const float direction_cosines[9]);
     void set_direction_cosines (
         const Direction_cosines& dc);
+    void set (const Plm_image_header& src);
     void set (
         const plm_long dim[3],
         const float origin[3],
@@ -96,6 +102,18 @@ public:
     void set (const Volume& vol);
     void set (const Volume* vol);
 
+    /*! \brief Expand existing geometry to contain the 
+      specified point.  Only origin and dimensions can change, 
+      spacing and direction cosines will stay the same. */
+    void expand_to_contain (const FloatPoint3DType& position);
+
+    /*! \brief Create a new geometry that can contain both 
+      the reference and compare image, with direction cosines 
+      and voxel spacing of the reference image */
+    void set_geometry_to_contain (
+        const Plm_image_header& reference_pih,
+        const Plm_image_header& compare_pih);
+
     template<class T> 
         void set_from_itk_image (T image) {
         m_origin = image->GetOrigin ();
@@ -118,6 +136,9 @@ public:
     void get_direction_cosines (float direction_cosines[9]) const;
 
     void print (void) const;
+
+    FloatPoint3DType get_index (const FloatPoint3DType& pos) const;
+    FloatPoint3DType get_position (const float index[3]) const;
     void get_image_center (float center[3]) const;
 };
 

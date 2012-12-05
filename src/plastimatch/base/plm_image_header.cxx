@@ -15,9 +15,6 @@
 #include "volume.h"
 #include "volume_header.h"
 
-/* -----------------------------------------------------------------------
-   functions
-   ----------------------------------------------------------------------- */
 void
 Plm_image_header::set_dim (const plm_long dim[3])
 {
@@ -61,6 +58,15 @@ void
 Plm_image_header::set_direction_cosines (const Direction_cosines& dc)
 {
     itk_direction_from_dc (&m_direction, dc.m_direction_cosines);
+}
+
+void
+Plm_image_header::set (const Plm_image_header& src)
+{
+    this->m_origin = src.m_origin;
+    this->m_spacing = src.m_spacing;
+    this->m_region = src.m_region;
+    this->m_direction = src.m_direction;
 }
 
 void
@@ -187,6 +193,74 @@ Plm_image_header::set (const Volume* vol)
 	vol->spacing, vol->direction_cosines);
 }
 
+void 
+Plm_image_header::expand_to_contain (
+    const FloatPoint3DType& position)
+{
+    /* Compute index */
+    
+}
+
+void 
+Plm_image_header::set_geometry_to_contain (
+    const Plm_image_header& reference_pih,
+    const Plm_image_header& compare_pih)
+{
+    /* Initialize to reference image */
+    this->set (reference_pih);
+
+    /* Expand to contain all eight corners of compare image */
+    FloatPoint3DType pos;
+    float idx[3];
+    idx[0] = 0;
+    idx[1] = 0;
+    idx[2] = 0;
+    pos = compare_pih.get_position (idx);
+    this->expand_to_contain (pos);
+
+    idx[0] = 0;
+    idx[1] = 0;
+    idx[2] = compare_pih.dim(2) - 1;
+    pos = compare_pih.get_position (idx);
+    this->expand_to_contain (pos);
+
+    idx[0] = 0;
+    idx[1] = compare_pih.dim(1) - 1;
+    idx[2] = 0;
+    pos = compare_pih.get_position (idx);
+    this->expand_to_contain (pos);
+
+    idx[0] = 0;
+    idx[1] = compare_pih.dim(1) - 1;
+    idx[2] = compare_pih.dim(2) - 1;
+    pos = compare_pih.get_position (idx);
+    this->expand_to_contain (pos);
+
+    idx[0] = compare_pih.dim(0) - 1;
+    idx[1] = 0;
+    idx[2] = 0;
+    pos = compare_pih.get_position (idx);
+    this->expand_to_contain (pos);
+
+    idx[0] = compare_pih.dim(0) - 1;
+    idx[1] = 0;
+    idx[2] = compare_pih.dim(2) - 1;
+    pos = compare_pih.get_position (idx);
+    this->expand_to_contain (pos);
+
+    idx[0] = compare_pih.dim(0) - 1;
+    idx[1] = compare_pih.dim(1) - 1;
+    idx[2] = 0;
+    pos = compare_pih.get_position (idx);
+    this->expand_to_contain (pos);
+
+    idx[0] = compare_pih.dim(0) - 1;
+    idx[1] = compare_pih.dim(1) - 1;
+    idx[2] = compare_pih.dim(2) - 1;
+    pos = compare_pih.get_position (idx);
+    this->expand_to_contain (pos);
+}
+
 void
 Plm_image_header::get_volume_header (Volume_header *vh) const
 {
@@ -270,20 +344,30 @@ Plm_image_header::print (void) const
     printf ("\n");
 }
 
-void
-itk_roi_from_gpuit (
-    ImageRegionType* roi,
-    plm_long roi_offset[3], plm_long roi_dim[3])
+FloatPoint3DType
+Plm_image_header::get_index (const FloatPoint3DType& pos) const
 {
-    ImageRegionType::SizeType itk_size;
-    ImageRegionType::IndexType itk_index;
+    FloatPoint3DType idx;
 
-    for (unsigned int d = 0; d < 3; d++) {
-	itk_index[d] = roi_offset[d];
-	itk_size[d] = roi_dim[d];
+    /* To be written */
+    idx[0] = 0.f;
+    idx[1] = 0.f;
+    idx[2] = 0.f;
+
+    return idx;
+}
+
+FloatPoint3DType
+Plm_image_header::get_position (const float index[3]) const
+{
+    FloatPoint3DType pos;
+    for (int d = 0; d < 3; d++) {
+        pos[d] = 0.f;
+        for (int dc = 0; dc < 3; dc++) {
+            pos[d] += m_spacing[d] * index[dc] * m_direction[dc][d];
+        }
     }
-    (*roi).SetSize (itk_size);
-    (*roi).SetIndex (itk_index);
+    return pos;
 }
 
 void 
@@ -297,7 +381,7 @@ Plm_image_header::get_image_center (float center[3]) const
 }
 
 /* Return 1 if the two headers are the same */
-int
+bool
 Plm_image_header::compare (Plm_image_header *pli1, Plm_image_header *pli2)
 {
     int d;
