@@ -112,7 +112,7 @@ Dcmtk_save::save_image (
     dsd.vol = this->img->gpuit_float();
     dsd.slice_size = dsd.vol->dim[0] * dsd.vol->dim[1];
     dsd.slice_int16 = new int16_t[dsd.slice_size];
-    float *dc = dsd.vol->direction_cosines.m_direction_cosines;
+    float *dc = dsd.vol->direction_cosines.get();
     dsd.iop.format ("%f\\%f\\%f\\%f\\%f\\%f",
         dc[0], dc[1], dc[2], dc[3], dc[4], dc[5]);
 
