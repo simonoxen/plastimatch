@@ -58,7 +58,7 @@ Rtds::~Rtds ()
     }
     delete m_rdd;
     if (m_xio_transform) {
-        free (m_xio_transform);
+        delete m_xio_transform;
     }
 }
 
