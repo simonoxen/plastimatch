@@ -2663,7 +2663,7 @@ set_tests_properties (plm-compose-b-check PROPERTIES
 plm_add_test (
   "plm-compose-c" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "compose;plm-bspline-single-h-xf.txt;${PLM_BUILD_TESTING_DIR}/plm-reg-compose-vf.mha;${PLM_BUILD_TESTING_DIR}/plm-compose-c-vf.mha"
+  "compose;${PLM_BUILD_TESTING_DIR}/plm-bspline-single-h-xf.txt;${PLM_BUILD_TESTING_DIR}/plm-reg-compose-vf.mha;${PLM_BUILD_TESTING_DIR}/plm-compose-c-vf.mha"
   )
 plm_add_test (
   "plm-compose-c-warp" 
@@ -3025,7 +3025,7 @@ plmtest_check_interval ("plm-warp-d-check"
   "9.2"
   "9.3"
   )
-set_tests_properties (plm-warp-d PROPERTIES DEPENDS "bspline-d;sphere-1")
+set_tests_properties (plm-warp-d PROPERTIES DEPENDS "bspline-c;sphere-1")
 set_tests_properties (plm-warp-d-stats PROPERTIES DEPENDS plm-warp-d)
 set_tests_properties (plm-warp-d-check PROPERTIES DEPENDS plm-warp-d-stats)
 

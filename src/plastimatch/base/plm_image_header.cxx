@@ -57,7 +57,7 @@ Plm_image_header::set_direction_cosines (const float direction_cosines[9])
 void
 Plm_image_header::set_direction_cosines (const Direction_cosines& dc)
 {
-    itk_direction_from_dc (&m_direction, dc.m_direction_cosines);
+    itk_direction_from_dc (&m_direction, dc.get());
 }
 
 void
@@ -89,7 +89,7 @@ Plm_image_header::set (
     const float spacing[3],
     const Direction_cosines& dc)
 {
-    this->set (dim, origin, spacing, dc.m_direction_cosines);
+    this->set (dim, origin, spacing, dc.get());
 }
 
 void
@@ -109,7 +109,7 @@ Plm_image_header::set_from_gpuit_bspline (Bspline_xform *bxf)
 	bxf->img_dim,
 	bxf->img_origin,
 	bxf->img_spacing,
-	(bxf->dc).m_direction_cosines);
+	bxf->dc.get());
 }
 
 void

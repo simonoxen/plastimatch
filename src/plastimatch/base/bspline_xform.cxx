@@ -23,6 +23,63 @@
 #include "volume_header.h"
 #include "volume_macros.h"
 
+Bspline_xform::Bspline_xform ()
+{
+    for (int d = 0; d < 3; d++) {
+        this->img_origin[d] = 0.0f;
+        this->img_spacing[d] = 1.0f;
+        this->img_dim[d] = 0;
+        this->roi_offset[d] = 0;
+        this->roi_dim[d] = 0;
+        this->vox_per_rgn[d] = 30;
+        this->grid_spac[d] = 30.0f;
+        this->rdims[d] = 0;
+        this->cdims[d] = 0;
+    }
+    this->dc.set_identity ();
+    this->num_knots = 0;
+    this->num_coeff = 0;
+    this->coeff = 0;
+
+    this->cidx_lut = 0;
+    this->c_lut = 0;
+    this->qidx_lut = 0;
+    this->q_lut = 0;
+
+    this->bx_lut = 0;
+    this->by_lut = 0;
+    this->bz_lut = 0;
+
+    this->q_dxdyz_lut = 0;
+    this->q_xdydz_lut = 0;
+    this->q_dxydz_lut = 0;
+    this->q_d2xyz_lut = 0;
+    this->q_xd2yz_lut = 0;
+    this->q_xyd2z_lut = 0;
+}
+
+Bspline_xform::~Bspline_xform ()
+{
+    if (this->coeff) {
+        free (this->coeff);
+    }
+    if (this->q_lut) {
+        free (this->q_lut);
+    }
+    if (this->c_lut) {
+        free (this->c_lut);
+    }
+    if (this->bx_lut) {
+        free (this->bx_lut);
+    }
+    if (this->by_lut) {
+        free (this->by_lut);
+    }
+    if (this->bz_lut) {
+        free (this->bz_lut);
+    }
+}
+
 static float
 bspline_basis_eval (
     int t_idx, 
@@ -48,24 +105,6 @@ bspline_basis_eval (
     default:
         return 0.0;
         break;
-    }
-}
-
-void
-bspline_xform_set_default (Bspline_xform* bxf)
-{
-    int d;
-
-    memset (bxf, 0, sizeof (Bspline_xform));
-
-    for (d = 0; d < 3; d++) {
-        bxf->img_origin[d] = 0.0f;
-        bxf->img_spacing[d] = 1.0f;
-        bxf->img_dim[d] = 0;
-        bxf->roi_offset[d] = 0;
-        bxf->roi_dim[d] = 0;
-        bxf->vox_per_rgn[d] = 30;
-        bxf->grid_spac[d] = 30.0f;
     }
 }
 
@@ -96,16 +135,17 @@ bspline_xform_save (Bspline_xform* bxf, const char* filename)
         (unsigned int) bxf->vox_per_rgn[0], 
         (unsigned int) bxf->vox_per_rgn[1], 
         (unsigned int) bxf->vox_per_rgn[2]);
+    float *direction_cosines = bxf->dc.get ();
     fprintf (fp, "direction_cosines = %f %f %f %f %f %f %f %f %f\n", 
-        (bxf->dc).m_direction_cosines[0], 
-        (bxf->dc).m_direction_cosines[1], 
-        (bxf->dc).m_direction_cosines[2], 
-        (bxf->dc).m_direction_cosines[3], 
-        (bxf->dc).m_direction_cosines[4], 
-        (bxf->dc).m_direction_cosines[5], 
-        (bxf->dc).m_direction_cosines[6], 
-        (bxf->dc).m_direction_cosines[7], 
-        (bxf->dc).m_direction_cosines[8]);
+        direction_cosines[0], 
+        direction_cosines[1], 
+        direction_cosines[2], 
+        direction_cosines[3], 
+        direction_cosines[4], 
+        direction_cosines[5], 
+        direction_cosines[6], 
+        direction_cosines[7], 
+        direction_cosines[8]);
     /* No need to save grid_spac */
 
 #if defined (commentout)
@@ -151,8 +191,7 @@ bspline_xform_load (const char* filename)
     if (!fp) return 0;
 
     /* Initialize parms */
-    bxf = (Bspline_xform*) malloc (sizeof(Bspline_xform));
-    bspline_xform_set_default (bxf);
+    bxf = new Bspline_xform;
 
     /* Skip first line */
     if (fgets (buf, 1024, fp) == NULL) {
@@ -234,7 +273,6 @@ bspline_xform_load (const char* filename)
                 rc = fscanf (fp, "%f\n", &bxf->coeff[j*3 + i]);
                 if (rc != 1) {
                     logfile_printf ("Error parsing input xform (idx = %d,%d): %s\n", i, j, filename);
-                    bspline_xform_free (bxf);
                     goto free_exit;
                 }
             }
@@ -246,7 +284,7 @@ bspline_xform_load (const char* filename)
 
   free_exit:
     fclose (fp);
-    free (bxf);
+    delete bxf;
     return 0;
 }
 
@@ -596,17 +634,6 @@ bspline_xform_extend (
     }
 }
 
-void
-bspline_xform_free (Bspline_xform* bxf)
-{
-    free (bxf->coeff);
-    free (bxf->q_lut);
-    free (bxf->c_lut);
-    free (bxf->bx_lut);
-    free (bxf->by_lut);
-    free (bxf->bz_lut);
-}
-
 /* Set volume header from B-spline Xform */
 void 
 Bspline_xform::get_volume_header (Volume_header *vh)
@@ -617,5 +644,6 @@ Bspline_xform::get_volume_header (Volume_header *vh)
     vh->set_spacing (this->img_spacing);
 #endif
 
-    vh->set (this->img_dim, this->img_origin, this->img_spacing, (this->dc).m_direction_cosines);
+    vh->set (this->img_dim, this->img_origin, this->img_spacing, 
+        this->dc.get());
 }

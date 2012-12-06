@@ -86,7 +86,7 @@ main (int argc, char* argv[])
             exit (-1);
         }
     } else {
-        bxf = (Bspline_xform*) malloc (sizeof (Bspline_xform));
+        bxf = new Bspline_xform;
         bspline_xform_initialize (
             bxf,
             fixed->offset,
@@ -95,7 +95,7 @@ main (int argc, char* argv[])
             roi_offset,
             fixed->dim,
             options.vox_per_rgn,
-        (fixed->direction_cosines).m_direction_cosines
+            fixed->direction_cosines.get()
         );
     }
 
@@ -157,8 +157,7 @@ main (int argc, char* argv[])
     /* Free memory */
     printf ("Done warping images.\n");
     bspline_parms_free (parms);
-    bspline_xform_free (bxf);
-    free (bxf);
+    delete bxf;
     delete fixed;
     delete moving;
     delete moving_grad;

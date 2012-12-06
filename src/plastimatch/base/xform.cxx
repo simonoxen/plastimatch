@@ -60,7 +60,7 @@ Xform::clear ()
         if (m_type == XFORM_GPUIT_VECTOR_FIELD) {
             delete (Volume*) m_gpuit;
         } else {
-            bspline_xform_free ((Bspline_xform*) m_gpuit);
+            delete (Bspline_xform*) m_gpuit;
         }
         m_gpuit = 0;
     }
@@ -1194,7 +1194,7 @@ static Bspline_xform*
 create_gpuit_bxf (Plm_image_header* pih, float* grid_spac)
 {
     int d;
-    Bspline_xform* bxf = (Bspline_xform*) malloc (sizeof(Bspline_xform));
+    Bspline_xform* bxf = new Bspline_xform;
     float img_origin[3];
     float img_spacing[3];
     plm_long img_dim[3];

@@ -15,7 +15,10 @@ class Volume;
 class Volume_header;
 
 class PLMBASE_API Bspline_xform {
-  public:
+public:
+    Bspline_xform ();
+    ~Bspline_xform ();
+public:
     float img_origin[3];         /* Image origin (in mm) */
     float img_spacing[3];        /* Image spacing (in mm) */
     plm_long img_dim[3];           /* Image size (in vox) */
@@ -53,7 +56,7 @@ public:
     void get_volume_header (Volume_header *vh);
 };
 
-PLMBASE_C_API void bspline_xform_set_default (Bspline_xform* bxf);
+//PLMBASE_C_API void bspline_xform_set_default (Bspline_xform* bxf);
 PLMBASE_C_API void bspline_xform_initialize (
         Bspline_xform* bxf,	          /* Output: bxf is initialized */
         float img_origin[3],          /* Image origin (in mm) */
@@ -64,7 +67,7 @@ PLMBASE_C_API void bspline_xform_initialize (
         plm_long vox_per_rgn[3],      /* Knot spacing (in vox) */
         float direction_cosines[9]    /* Direction cosines */
 );
-PLMBASE_C_API void bspline_xform_free (Bspline_xform* bxf);
+//PLMBASE_C_API void bspline_xform_free (Bspline_xform* bxf);
 PLMBASE_C_API Bspline_xform* bspline_xform_load (const char* filename);
 PLMBASE_C_API void bspline_xform_save (Bspline_xform* bxf, const char* filename);
 PLMBASE_C_API void bspline_set_coefficients (Bspline_xform* bxf, float val);

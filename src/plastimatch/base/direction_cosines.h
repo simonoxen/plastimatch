@@ -16,7 +16,6 @@ class Direction_cosines_private;
 class PLMBASE_API Direction_cosines {
   public:
     Direction_cosines_private *d_ptr;
-    float m_direction_cosines[9];
 
   public:
     Direction_cosines ();
@@ -34,6 +33,8 @@ class PLMBASE_API Direction_cosines {
     void set_rotated_3 ();
     void set_skewed ();
 
+    const float* get () const;
+    float* get ();
     void set (const float dc[]);
     bool set_from_string (std::string& str);
     bool is_identity ();

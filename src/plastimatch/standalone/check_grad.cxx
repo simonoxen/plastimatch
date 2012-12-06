@@ -45,7 +45,7 @@ check_gradient (
     if (options->input_xf_fn) {
         bxf = bspline_xform_load (options->input_xf_fn);
     } else {
-        bxf = (Bspline_xform*) malloc (sizeof (Bspline_xform));
+        bxf = new Bspline_xform;
         bspline_xform_initialize (
             bxf,
             fixed->offset,
@@ -54,7 +54,7 @@ check_gradient (
             roi_offset,
             fixed->dim,
             options->vox_per_rgn,
-        (fixed->direction_cosines).m_direction_cosines
+            fixed->direction_cosines.get()
         );
         if (options->random) {
             srand (time (0));
@@ -145,8 +145,7 @@ check_gradient (
     free (grad);
     free (grad_fd);
     bspline_state_destroy (bst, parms, bxf);
-    bspline_xform_free (bxf);
-    free (bxf);
+    delete bxf;
     bspline_parms_free (parms);
 }
 

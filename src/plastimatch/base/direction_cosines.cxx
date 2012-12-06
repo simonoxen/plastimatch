@@ -13,24 +13,6 @@ class Direction_cosines_private {
 public:
     float direction_cosines[9];
     float inv_direction_cosines[9];
-public:
-    Direction_cosines_private () {
-        this->set_identity ();
-    }
-    ~Direction_cosines_private () {
-    }
-public:
-    void set_identity () {
-	direction_cosines[0] = 1.;
-	direction_cosines[1] = 0.;
-	direction_cosines[2] = 0.;
-	direction_cosines[3] = 0.;
-	direction_cosines[4] = 1.;
-	direction_cosines[5] = 0.;
-	direction_cosines[6] = 0.;
-	direction_cosines[7] = 0.;
-	direction_cosines[8] = 1.;
-    }
 };
 
 Direction_cosines::Direction_cosines ()
@@ -46,75 +28,89 @@ Direction_cosines::~Direction_cosines ()
 
 Direction_cosines::operator const float* () const
 {
-    return m_direction_cosines;
+    return d_ptr->direction_cosines;
 }
 
 Direction_cosines::operator float* ()
 {
-    return this->m_direction_cosines;
+    return d_ptr->direction_cosines;
 }
 
 void Direction_cosines::set_identity () {
-    m_direction_cosines[0] = 1.;
-    m_direction_cosines[1] = 0.;
-    m_direction_cosines[2] = 0.;
-    m_direction_cosines[3] = 0.;
-    m_direction_cosines[4] = 1.;
-    m_direction_cosines[5] = 0.;
-    m_direction_cosines[6] = 0.;
-    m_direction_cosines[7] = 0.;
-    m_direction_cosines[8] = 1.;
+    d_ptr->direction_cosines[0] = 1.;
+    d_ptr->direction_cosines[1] = 0.;
+    d_ptr->direction_cosines[2] = 0.;
+    d_ptr->direction_cosines[3] = 0.;
+    d_ptr->direction_cosines[4] = 1.;
+    d_ptr->direction_cosines[5] = 0.;
+    d_ptr->direction_cosines[6] = 0.;
+    d_ptr->direction_cosines[7] = 0.;
+    d_ptr->direction_cosines[8] = 1.;
     }
 void Direction_cosines::set_rotated_1 () {
-	m_direction_cosines[0] = 0.894427190999916;
-	m_direction_cosines[1] = 0.447213595499958;
-	m_direction_cosines[2] = 0.;
-	m_direction_cosines[3] = -0.447213595499958;
-	m_direction_cosines[4] = 0.894427190999916;
-	m_direction_cosines[5] = 0.;
-	m_direction_cosines[6] = 0.;
-	m_direction_cosines[7] = 0.;
-	m_direction_cosines[8] = 1.;
+	d_ptr->direction_cosines[0] = 0.894427190999916;
+	d_ptr->direction_cosines[1] = 0.447213595499958;
+	d_ptr->direction_cosines[2] = 0.;
+	d_ptr->direction_cosines[3] = -0.447213595499958;
+	d_ptr->direction_cosines[4] = 0.894427190999916;
+	d_ptr->direction_cosines[5] = 0.;
+	d_ptr->direction_cosines[6] = 0.;
+	d_ptr->direction_cosines[7] = 0.;
+	d_ptr->direction_cosines[8] = 1.;
     }
 void Direction_cosines::set_rotated_2 () {
-	m_direction_cosines[0] = M_SQRT1_2;
-	m_direction_cosines[1] = -M_SQRT1_2;
-	m_direction_cosines[2] = 0.;
-	m_direction_cosines[3] = M_SQRT1_2;
-	m_direction_cosines[4] = M_SQRT1_2;
-	m_direction_cosines[5] = 0.;
-	m_direction_cosines[6] = 0.;
-	m_direction_cosines[7] = 0.;
-	m_direction_cosines[8] = 1.;
+	d_ptr->direction_cosines[0] = M_SQRT1_2;
+	d_ptr->direction_cosines[1] = -M_SQRT1_2;
+	d_ptr->direction_cosines[2] = 0.;
+	d_ptr->direction_cosines[3] = M_SQRT1_2;
+	d_ptr->direction_cosines[4] = M_SQRT1_2;
+	d_ptr->direction_cosines[5] = 0.;
+	d_ptr->direction_cosines[6] = 0.;
+	d_ptr->direction_cosines[7] = 0.;
+	d_ptr->direction_cosines[8] = 1.;
     }
 void Direction_cosines::set_rotated_3 () {
-	m_direction_cosines[0] = -0.855063803257865;
-	m_direction_cosines[1] = 0.498361271551590;
-	m_direction_cosines[2] = -0.143184969098287;
-	m_direction_cosines[3] = -0.428158353951640;
-	m_direction_cosines[4] = -0.834358655093045;
-	m_direction_cosines[5] = -0.347168631377818;
-	m_direction_cosines[6] = -0.292483018822660;
-	m_direction_cosines[7] = -0.235545489638006;
-	m_direction_cosines[8] = 0.926807426605751;
+	d_ptr->direction_cosines[0] = -0.855063803257865;
+	d_ptr->direction_cosines[1] = 0.498361271551590;
+	d_ptr->direction_cosines[2] = -0.143184969098287;
+	d_ptr->direction_cosines[3] = -0.428158353951640;
+	d_ptr->direction_cosines[4] = -0.834358655093045;
+	d_ptr->direction_cosines[5] = -0.347168631377818;
+	d_ptr->direction_cosines[6] = -0.292483018822660;
+	d_ptr->direction_cosines[7] = -0.235545489638006;
+	d_ptr->direction_cosines[8] = 0.926807426605751;
     }
 void Direction_cosines::set_skewed () {
-	m_direction_cosines[0] = 1.;
-	m_direction_cosines[1] = 0.;
-	m_direction_cosines[2] = 0.;
-	m_direction_cosines[3] = M_SQRT1_2;
-	m_direction_cosines[4] = M_SQRT1_2;
-	m_direction_cosines[5] = 0.;
-	m_direction_cosines[6] = 0.;
-	m_direction_cosines[7] = 0.;
-	m_direction_cosines[8] = 1.;
+	d_ptr->direction_cosines[0] = 1.;
+	d_ptr->direction_cosines[1] = 0.;
+	d_ptr->direction_cosines[2] = 0.;
+	d_ptr->direction_cosines[3] = M_SQRT1_2;
+	d_ptr->direction_cosines[4] = M_SQRT1_2;
+	d_ptr->direction_cosines[5] = 0.;
+	d_ptr->direction_cosines[6] = 0.;
+	d_ptr->direction_cosines[7] = 0.;
+	d_ptr->direction_cosines[8] = 1.;
     }
 
-void Direction_cosines::set (const float dc[]) {
-	for (int i = 0; i < 9; i++) {
-	    m_direction_cosines[i] = dc[i];
-	}
+void 
+Direction_cosines::set (const float dc[])
+{
+    for (int i = 0; i < 9; i++) {
+        d_ptr->direction_cosines[i] = dc[i];
     }
+}
+
+const float *
+Direction_cosines::get () const
+{
+    return d_ptr->direction_cosines;
+}
+
+float *
+Direction_cosines::get ()
+{
+    return d_ptr->direction_cosines;
+}
 
 bool Direction_cosines::set_from_string (std::string& str) {
     float dc[9];
@@ -159,7 +155,9 @@ bool Direction_cosines::is_identity () {
     float frob = 0.;
 	
     for (int i = 0; i < 9; i++) {
-        frob += fabs (m_direction_cosines[i] - id.m_direction_cosines[i]);
+        frob += fabs (
+            d_ptr->direction_cosines[i] 
+            - id.d_ptr->direction_cosines[i]);
     }
     return frob < DIRECTION_COSINES_IDENTITY_THRESH;
 }
