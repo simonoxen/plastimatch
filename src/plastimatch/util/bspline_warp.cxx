@@ -177,11 +177,8 @@ bspline_warp_dcos (
     T default_val       /* Fill in this value outside of image */
 )
 {
-    int d;
-    plm_long vidx;
     T* vout_img = (T*) vout->img;
     T* m_img = (T*) moving->img;
-    T m_val;
 
     printf ("Direction cosines: "
         "vout = %f %f %f ...\n"
@@ -229,7 +226,7 @@ bspline_warp_dcos (
         print_and_exit ("Error: bspline_warp pix type mismatch\n");
         return;
     }
-    for (d = 0; d < 3; d++) {
+    for (int d = 0; d < 3; d++) {
         if (vout->dim[d] != bxf->img_dim[d]) {
             print_and_exit ("Error: bspline_warp dim mismatch\n");
             return;
@@ -249,16 +246,16 @@ bspline_warp_dcos (
     }
 
     /* Set default */
-    for (vidx = 0; vidx < vout->npix; vidx++) {
+    for (plm_long vidx = 0; vidx < vout->npix; vidx++) {
         vout_img[vidx] = default_val;
     }
     if (vf_out) {
         memset (vf_out->img, 0, vf_out->pix_size * vf_out->npix);
     }
-        
+
 #pragma omp parallel for 
     LOOP_Z_OMP (k, vout) {
-        plm_long fijk[3];           /* Index within fixed image (vox) */
+        plm_long fijk[3];      /* Index within fixed image (vox) */
         float fxyz[3];         /* Position within fixed image (mm) */
         plm_long p[3];
         plm_long q[3];
@@ -321,6 +318,7 @@ bspline_warp_dcos (
                     /* Macro is slightly faster than function */
                     /* Compute moving image intensity using linear 
                        interpolation */
+                    T m_val;
                     LI_VALUE (m_val, 
                         li_1[0], li_2[0],
                         li_1[1], li_2[1],
@@ -341,6 +339,7 @@ bspline_warp_dcos (
                     for (int plane = 0; plane < moving->vox_planes; plane++)
                     {
                         /* Get moving image value */
+                        T m_val;
                         m_val = m_img[mvf*moving->vox_planes+plane];
 
                         /* Assign to output image */
