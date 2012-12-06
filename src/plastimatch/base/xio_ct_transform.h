@@ -10,7 +10,7 @@ class Metadata;
 class Plm_image;
 class Slice_index;
 
-class Xio_ct_transform {
+class PLMBASE_API Xio_ct_transform {
 public:
     float direction_cosines[9];
     float x_offset;
