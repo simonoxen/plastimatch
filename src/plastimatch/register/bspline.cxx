@@ -743,7 +743,33 @@ bspline_score (Bspline_optimize_data *bod)
             }
         } /* end MSE */
 
-        /* Metric: Mutual Information */
+        /* Metric: Mutual Information with mask */
+        else if (parms->metric == BMET_MI && have_mask) {
+            switch (parms->implementation) {
+            case 'c':
+                bspline_score_c_mi (bod);
+                break;
+#if (OPENMP_FOUND)
+            case 'd':
+            case 'e':
+            case 'f':
+            case 'g':
+            case 'h':
+            case 'i':
+                bspline_score_h_mi (bod);
+                break;
+#endif
+            default:
+#if (OPENMP_FOUND)
+                bspline_score_h_mi (bod);
+#else
+                bspline_score_c_mi (bod);
+#endif
+                break;
+            }
+        }
+
+        /* Metric: Mutual Information without mask */
         else if (parms->metric == BMET_MI) {
             switch (parms->implementation) {
             case 'c':
@@ -771,11 +797,7 @@ bspline_score (Bspline_optimize_data *bod)
 #endif
             default:
 #if (OPENMP_FOUND)
-                if (have_mask) {
-                    bspline_score_h_mi (bod);
-                } else {
-                    bspline_score_g_mi (bod);
-                }
+                bspline_score_g_mi (bod);
 #else
                 bspline_score_c_mi (bod);
 #endif
