@@ -38,6 +38,11 @@ MIDAS
 
   Many image data sets
 
+Oldies but goodies
+  http://placid.nlm.nih.gov/community/21
+
+  Visible human and other images from Bill Lorensen's desk
+
 Mammographic image analysis homepage
   http://www.mammoimage.org/databases/
 
