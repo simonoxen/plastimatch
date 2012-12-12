@@ -25,6 +25,7 @@ set (CONFIG_FILE_LIST
   "plm-bsp-dcos-e.txt"
   "plm-bsp-dcos-f.txt"
   "plm-bsp-landmark-a.txt"
+  "plm-reg-mask-a.txt"
   "plm-reg-multi-a.txt"
   "plm-reg-dv-itk-translation.txt"
   "plm-reg-itk-bspline.txt"
@@ -392,6 +393,31 @@ plm_add_test (
   "rect-9"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-9.mha;--output-type;uchar;--pattern;rect;--dim;47 47 47;--background;0;--foreground;1;--rect-size;-50 50 -50 50 -50 50"
+  )
+plm_add_test (
+  "rect-10"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-10.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-200 50 -50 50 -50 50"
+  )
+plm_add_test (
+  "rect-10-mask-1"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-10-mask-1.mha;--output-type;uchar;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;1;--rect-size;-60 60 -60 60 -60 60"
+  )
+plm_add_test (
+  "rect-10-mask-2"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-10-mask-2.mha;--output-type;uchar;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;1;--rect-size;-220 60 -60 60 -60 60"
+  )
+plm_add_test (
+  "rect-11"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-11.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;-1000;--rect-size;-40 60 -40 60 -40 60"
+  )
+plm_add_test (
+  "rect-11-mask"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-11-mask.mha;--output-type;uchar;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;1;--rect-size;-50 80 -50 80 -50 80"
   )
 plm_add_test (
   "sphere-1"
@@ -2579,6 +2605,16 @@ set_tests_properties (plm-reg-dv-itk-translation-stats PROPERTIES
 set_tests_properties (plm-reg-dv-itk-translation-check PROPERTIES 
   DEPENDS plm-reg-dv-itk-translation-stats)
 
+## -------------------------------------------------------------------------
+## plastimatch register (group 8)
+##   plm-reg-mask-a
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-reg-mask-a"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-mask-a.txt"
+  )
+set_tests_properties (plm-bsp-landmark-a PROPERTIES DEPENDS "rect-10;rect-10-mask-1;rect-11;rect-11-mask")
 
 
 ## -------------------------------------------------------------------------
