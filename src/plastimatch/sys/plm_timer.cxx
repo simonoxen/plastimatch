@@ -16,7 +16,7 @@ Plm_timer_private::Plm_timer_private ()
     QueryPerformanceFrequency (&this->clock_freq);
 #endif
     acc_time = 0.;
-    running = false;
+    running = true;
 }
 
 double
@@ -59,9 +59,8 @@ Plm_timer::~Plm_timer ()
 void
 Plm_timer::start ()
 {
-#if defined (_WIN32)
-    QueryPerformanceFrequency (&d_ptr->clock_freq);
-#endif
+    d_ptr->acc_time = 0.;
+    d_ptr->running = true;
     d_ptr->start_time = d_ptr->get_time ();
 }
 
@@ -71,6 +70,16 @@ Plm_timer::stop ()
     if (d_ptr->running) {
         d_ptr->acc_time += d_ptr->elapsed_time ();
         d_ptr->running = false;
+    }
+}
+
+void
+Plm_timer::resume ()
+{
+    if (!d_ptr->running) {
+        /* Don't reset acc_time */
+        d_ptr->running = true;
+        d_ptr->start_time = d_ptr->get_time ();
     }
 }
 
