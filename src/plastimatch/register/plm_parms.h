@@ -90,6 +90,7 @@ public:
     /* Versor & RSG optimizer */
     float max_step;
     float min_step;
+    float rsg_grad_tol;
     /* Quaternion optimizer */
     float learn_rate;
     /* Mattes mutual information */
@@ -160,6 +161,7 @@ public:
         /* Versor & RSG optimizer */
         max_step = 10.0;
         min_step = 0.5;
+        rsg_grad_tol = 0.0001;
         /* Quaternion optimizer */
         learn_rate = 0.01 ;
         /* Mattes mutual information */
