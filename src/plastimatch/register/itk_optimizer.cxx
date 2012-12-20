@@ -296,6 +296,7 @@ set_optimization_rsg (RegistrationType::Pointer registration,
     optimizer->SetMaximumStepLength(stage->max_step);
     optimizer->SetMinimumStepLength(stage->min_step);
     optimizer->SetNumberOfIterations(stage->max_its);
+    optimizer->SetGradientMagnitudeTolerance (stage->grad_tol);
     registration->SetOptimizer(optimizer);
 }
 
