@@ -86,7 +86,8 @@ dcmtk_save_slice (const Dicom_rt_study *drs, Dcmtk_slice_data *dsd)
     dataset->putAndInsertString (DCM_PixelRepresentation, "1");
     dataset->putAndInsertString (DCM_RescaleIntercept, "0");
     dataset->putAndInsertString (DCM_RescaleSlope, "1");
-    dataset->putAndInsertString (DCM_RescaleType, "US");
+//    dataset->putAndInsertString (DCM_RescaleType, "US");
+    dataset->putAndInsertString (DCM_RescaleType, "HU");
 
     /* Convert to 16-bit signed int */
     for (size_t i = 0; i < dsd->slice_size; i++) {
