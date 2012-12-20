@@ -308,6 +308,7 @@ set_optimization_versor (RegistrationType::Pointer registration,
     optimizer->SetMaximumStepLength(stage->max_step);
     optimizer->SetMinimumStepLength(stage->min_step);
     optimizer->SetNumberOfIterations(stage->max_its);
+    optimizer->SetGradientMagnitudeTolerance (stage->rsg_grad_tol);
     registration->SetOptimizer(optimizer);
 }
 
