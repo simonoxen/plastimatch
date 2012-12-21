@@ -94,6 +94,9 @@ plm_file_format_deduce (const char* path)
     if (!itksys::SystemTools::Strucmp (ext.c_str(), ".hnd")) {
 	return PLM_FILE_FMT_PROJ_IMG;
     }
+    if (!itksys::SystemTools::Strucmp (ext.c_str(), ".scan")) {
+	return PLM_FILE_FMT_IMG;
+    }
 
     itk::ImageIOBase::IOPixelType pixel_type;
     itk::ImageIOBase::IOComponentType component_type;

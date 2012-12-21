@@ -219,6 +219,11 @@ Plm_image::load_native (const char* fname)
 	print_and_exit ("Couldn't open %s for read\n", fname);
     }
 
+    /* Check for NKI filetype, which doesn't use ITK reader */
+    if (extension_is (fname, "scan") || extension_is (fname, "SCAN")) {
+	print_and_exit ("NKI file type not yet supported: %s\n", fname);
+    }
+
     std::string fn = fname;
     itk_image_get_props (fname, &num_dimensions, &pixel_type, 
 	&component_type, &num_components);

@@ -508,6 +508,12 @@ set (MSINTTYPES_INCLUDE_DIR
   )
 
 ##-----------------------------------------------------------------------------
+##  Only use local nkidecompress
+##-----------------------------------------------------------------------------
+set (NKIDECOMPRESS_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/nkidecompress")
+add_subdirectory (libs/nkidecompress)
+
+##-----------------------------------------------------------------------------
 ##  Special CUDA processing
 ##-----------------------------------------------------------------------------
 if (PLM_CONFIG_DISABLE_CUDA)
