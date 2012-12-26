@@ -330,7 +330,6 @@ set_optimization_lbfgs (RegistrationType::Pointer registration,
 {
     LBFGSOptimizerType::Pointer optimizer = LBFGSOptimizerType::New();
     
-    //optimizer->SetGradientConvergenceTolerance (0.05);
     optimizer->SetGradientConvergenceTolerance (stage->grad_tol);
     optimizer->SetLineSearchAccuracy (0.9);
     optimizer->SetDefaultStepLength (5.0);
@@ -366,20 +365,10 @@ set_optimization_lbfgsb (RegistrationType::Pointer registration,
     optimizer->SetUpperBound(upperBound);
     optimizer->SetLowerBound(lowerBound);
 
-#if defined (commentout)
-    optimizer->SetCostFunctionConvergenceFactor (1e+7);
-    optimizer->SetProjectedGradientTolerance (1e-4);
-    //optimizer->SetProjectedGradientTolerance (1.5);
-    optimizer->SetMaximumNumberOfIterations (500);
-    optimizer->SetMaximumNumberOfEvaluations (500);
-    optimizer->SetMaximumNumberOfCorrections (12);
-#endif
-
     /* GCS FIX: I think this is right for # of evaluations.  Not at all sure 
        about # of corrections or cost fn convergence factor. */
     optimizer->SetCostFunctionConvergenceFactor (1e+7);
-    //optimizer->SetProjectedGradientTolerance (stage->grad_tol);
-    optimizer->SetProjectedGradientTolerance (0.1 * stage->grad_tol);
+    optimizer->SetProjectedGradientTolerance (stage->pgtol);
     optimizer->SetMaximumNumberOfIterations (stage->max_its);
     optimizer->SetMaximumNumberOfEvaluations (2 * stage->max_its);
     optimizer->SetMaximumNumberOfCorrections (5);

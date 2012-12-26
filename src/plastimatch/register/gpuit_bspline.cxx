@@ -124,6 +124,7 @@ do_gpuit_bspline_stage_internal (
     } else {
         parms.optimization = BOPT_LBFGSB;
     }
+    parms.lbfgsb_pgtol = stage->pgtol;
 
     /* Metric */
     switch (stage->metric_type) {

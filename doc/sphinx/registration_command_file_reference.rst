@@ -148,10 +148,21 @@ specific parameters are available.
      - specify whether or not to equalize intensity histograms before 
        registration
    * - grad_tol
-     - any+{lbfgs, lbfgsb}+any
+     - any+{lbfgs}+itk
      - 1.5
      - score per unit parameter
-     - (needs description)
+     - Gradient convergence tolerance for LBFGS optimizer.
+       The optimizer can be asked to stop when the gradient
+       magnitude is below this number.
+   * - pgtol
+     - any+{lbfgsb}+any
+     - 1e-5
+     - score per unit parameter
+     - Projected gradient tolerance for LBFGSB optimizer.
+       The optimizer can be asked to stop when the projected gradient
+       is below this number.  The projected gradient is defined 
+       as max{proj g_i | i = 1, ..., n} 
+       where proj g_i is the ith component of the projected gradient.
    * - grid_spac
      - bspline+any+any
      - [20 20 20]
@@ -209,6 +220,14 @@ specific parameters are available.
      -
      -
      - Alias for "ss"
+   * - rsg_grad_tol
+     - any+{rsg, versor}+itk
+     - 0.001
+     - score per unit parameter
+     - Gradient magnitude tolerance for RSG and Versor optimizers.
+       The optimizer can be asked to stop when the cost function is 
+       in a stable region where the gradient magnitude is smaller 
+       than this value.
    * - ss
      - any+any+any
      - automatic

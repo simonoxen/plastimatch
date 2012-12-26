@@ -85,8 +85,11 @@ public:
     /* Generic optimization parms */
     int min_its;
     int max_its;
-    float grad_tol;
     float convergence_tol;
+    /* LBGFG optimizer */
+    float grad_tol;
+    /* LBGFGB optimizer */
+    float pgtol;
     /* Versor & RSG optimizer */
     float max_step;
     float min_step;
@@ -156,8 +159,11 @@ public:
         /* Generic optimization parms */
         min_its = 2;
         max_its = 25;
-        grad_tol = 1.5;
         convergence_tol = 5.0;
+        /* LBGFG optimizer */
+        grad_tol = 1.5;
+        /* LBGFGB optimizer */
+        pgtol = 1.0e-5;
         /* Versor & RSG optimizer */
         max_step = 10.0;
         min_step = 0.5;

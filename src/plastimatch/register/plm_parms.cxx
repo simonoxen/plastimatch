@@ -443,6 +443,12 @@ set_key_val (
             goto error_exit;
         }
     }
+    else if (!strcmp (key, "pgtol")) {
+        if (section == 0) goto error_not_global;
+        if (sscanf (val, "%g", &stage->pgtol) != 1) {
+            goto error_exit;
+        }
+    }
     else if (!strcmp (key, "max_step")) {
         if (section == 0) goto error_not_global;
         if (sscanf (val, "%g", &stage->max_step) != 1) {
