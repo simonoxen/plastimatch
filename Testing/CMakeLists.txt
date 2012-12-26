@@ -3208,6 +3208,57 @@ set_tests_properties (plm-xf-convert-d-warp-2-check PROPERTIES
   DEPENDS plm-xf-convert-d-warp-2-stats)
 
 ## -------------------------------------------------------------------------
+## vf-invert
+## -------------------------------------------------------------------------
+## vf-invert-zero-1    invert zero vector field
+## vf-invert-trans-1   invert translation x direction, 1cm
+## vf-invert-gauss-1   invert gaussian warp, 10cm std, 1cm x, 2cm y
+## -------------------------------------------------------------------------
+plm_add_test (
+  "vf-invert-zero-1"
+  ${PLM_PLASTIMATCH_PATH}/vf_invert
+  "--input;${PLM_BUILD_TESTING_DIR}/vf-zero.mha;--fixed;${PLM_BUILD_TESTING_DIR}/vf-zero.mha;--output;${PLM_BUILD_TESTING_DIR}/vf-invert-zero-1.mha"
+  )
+plm_add_test (
+  "vf-invert-zero-1-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/vf-invert-zero-1.mha"
+  )
+plmtest_check_interval ("vf-invert-zero-1-check"
+  "${PLM_BUILD_TESTING_DIR}/vf-invert-zero-1-stats.stdout.txt"
+  "Mean abs: *([-0-9.]*)"
+  "0.000"
+  "0.000"
+  )
+set_tests_properties (vf-invert-zero-1 PROPERTIES DEPENDS vf-zero)
+set_tests_properties (vf-invert-zero-1-stats 
+  PROPERTIES DEPENDS vf-invert-zero-1)
+set_tests_properties (vf-invert-zero-1-check 
+  PROPERTIES DEPENDS vf-invert-zero-1-stats)
+
+plm_add_test (
+  "vf-invert-trans-1"
+  ${PLM_PLASTIMATCH_PATH}/vf_invert
+  "--input;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha;--fixed;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha;--output;${PLM_BUILD_TESTING_DIR}/vf-invert-trans-1.mha"
+  )
+plm_add_test (
+  "vf-invert-trans-1-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/vf-invert-trans-1.mha"
+  )
+plmtest_check_interval ("vf-invert-trans-1-check"
+  "${PLM_BUILD_TESTING_DIR}/vf-invert-trans-1-stats.stdout.txt"
+  "Mean: *([-0-9.]*)"
+  "-9.3"
+  "-9.2"
+  )
+set_tests_properties (vf-invert-trans-1 PROPERTIES DEPENDS vf-trans)
+set_tests_properties (vf-invert-trans-1-stats 
+  PROPERTIES DEPENDS vf-invert-trans-1)
+set_tests_properties (vf-invert-trans-1-check 
+  PROPERTIES DEPENDS vf-invert-trans-1-stats)
+
+## -------------------------------------------------------------------------
 ## bragg-curve
 ## proton-dose
 ## -------------------------------------------------------------------------
