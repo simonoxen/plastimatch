@@ -24,6 +24,7 @@ set (PLMUTIL_LIBRARY_SRC
   dvh.cxx 
   gamma_analysis.cxx
   gamma_dose_comparison.cxx gamma_dose_comparison.h
+  geometry_chooser.cxx geometry_chooser.h 
   hausdorff_distance.cxx hausdorff_distance.h 
   itk_adjust.cxx
   itk_crop.cxx
@@ -53,6 +54,7 @@ set (PLMUTIL_LIBRARY_SRC
   synthetic_mha.cxx
   synthetic_vf.cxx
   threshbox.cxx
+  vf_invert.cxx
   )
 if (FFTW_FOUND)
   set (PLMUTIL_LIBRARY_SRC
@@ -86,6 +88,8 @@ set (PLMUTIL_LIBRARY_DEPENDENCIES
 if (OPENMP_FOUND)
   set (PLMUTIL_LIBRARY_LDFLAGS "${OPENMP_LDFLAGS}")
   set_source_files_properties (bspline_warp.cxx
+    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
+  set_source_files_properties (vf_invert.cxx
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
 endif ()
 

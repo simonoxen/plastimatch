@@ -1,3 +1,18 @@
+***** Geometry chooser *****
+
+Two use cases.
+
+Use case one:
+- Manual overrides
+- Fixed image
+- Input image
+
+Use case two:
+- Manual overrides
+- Fixed image
+- Reference image
+- Compare image
+
 ***** DICOM re-org *****
 
 Need patient, study, series hierarchy.

@@ -113,7 +113,7 @@ set (SHUFFLE_MHA_SRC
   shuffle_mha_main.cxx
   )
 set (VF_INVERT_SRC
-  vf_invert.cxx
+  vf_invert_main.cxx
   )
 set (XF_TO_EMPIREFMT_SRC
   xf_to_empirefmt.cxx
