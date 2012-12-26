@@ -11,6 +11,7 @@
 #include "plm_image_header.h"
 #include "plm_math.h"
 #include "vf_convolve.h"
+#include "vf_invert.h"
 #include "volume.h"
 
 #define MAX_ITS 20
@@ -20,19 +21,25 @@ public:
     std::string vf_in_fn;
     std::string vf_out_fn;
     std::string fixed_img_fn;
+    bool have_dim;
+    bool have_origin;
+    bool have_spacing;
+    plm_long dim[3];
     float origin[3];
     float spacing[3];
-    plm_long dim[3];
 public:
     Vf_invert_parms () {
         vf_in_fn = "";
         vf_out_fn = "";
         fixed_img_fn = "";
         for (int d = 0; d < 3; d++) {
+            dim[d] = 0;
             origin[d] = 0.f;
             spacing[d] = 1.f;
-            dim[d] = 0;
         }
+        have_dim = false;
+        have_origin = false;
+        have_spacing = false;
     }
 };
 
@@ -67,7 +74,7 @@ vf_invert_itk (Vf_Invert_Parms* parms)
 #endif
 
 void
-do_vf_invert (Vf_invert_parms* parms)
+do_vf_invert_old (Vf_invert_parms* parms)
 {
     plm_long i, j, k, v;
     int its;
@@ -184,6 +191,45 @@ do_vf_invert (Vf_invert_parms* parms)
     delete vf_out;
 }
 
+void
+do_vf_invert_new (Vf_invert_parms* parms)
+{
+    Vf_invert vf_invert;
+
+    vf_invert.set_input_vf (parms->vf_in_fn.c_str());
+    if (parms->fixed_img_fn != "") {
+        vf_invert.set_fixed_image (parms->fixed_img_fn.c_str());
+    }
+    if (parms->have_dim) {
+        vf_invert.set_dim (parms->dim);
+    }
+    if (parms->have_origin) {
+        vf_invert.set_origin (parms->origin);
+    }
+    if (parms->have_spacing) {
+        vf_invert.set_spacing (parms->spacing);
+    }
+#if defined (commentout)
+    /* GCS FIX: direction cosines */
+    if (parms->have_direction_cosines) {
+        vf_invert.set_direction_cosines (parms->direction_cosines);
+    }
+#endif
+
+    /* Invert the vf */
+    vf_invert.run ();
+
+    /* Write the output */
+    write_mha (parms->vf_out_fn.c_str(), vf_invert.get_output_volume());
+}
+
+void
+do_vf_invert (Vf_invert_parms* parms)
+{
+    do_vf_invert_old (parms);
+    //do_vf_invert_new (parms);
+}
+
 static void
 usage_fn (dlib::Plm_clp* parser, int argc, char *argv[])
 {
@@ -254,12 +300,15 @@ parse_fn (
         parms->fixed_img_fn = parser->get_string("fixed");
     }
     if (parser->option ("dim")) {
+        parms->have_dim = true;
         parser->assign_plm_long_13 (parms->dim, "dim");
     }
     if (parser->option ("origin")) {
+        parms->have_origin = true;
         parser->assign_float13 (parms->origin, "origin");
     }
     if (parser->option ("spacing")) {
+        parms->have_spacing = true;
         parser->assign_float13 (parms->spacing, "spacing");
     }
 }

@@ -25,7 +25,7 @@
 static void 
 write_mha_internal (
     const char* filename,    /* Input: filename to write to */
-    Volume* vol              /* Input: volume to write */
+    const Volume* vol        /* Input: volume to write */
 )
 {
     FILE* fp;
@@ -240,7 +240,7 @@ read_mha_internal (
    Public functions
    ----------------------------------------------------------------------- */
 void 
-write_mha (const char* filename, Volume* vol)
+write_mha (const char* filename, const Volume* vol)
 {
     write_mha_internal (filename, vol);
 }

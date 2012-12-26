@@ -123,6 +123,33 @@ Geometry_chooser::set_fixed_image (
     d_ptr->have_pih_fix = true;
 }
 
+void 
+Geometry_chooser::set_dim (const plm_long dim[3])
+{
+    d_ptr->pih_manual.set_dim (dim);
+    d_ptr->have_dim = true;
+}
+
+void 
+Geometry_chooser::set_origin (const float origin[3])
+{
+    d_ptr->pih_manual.set_origin (origin);
+    d_ptr->have_origin = true;
+}
+
+void 
+Geometry_chooser::set_spacing (const float spacing[3])
+{
+    d_ptr->pih_manual.set_spacing (spacing);
+    d_ptr->have_spacing = true;
+}
+
+void 
+Geometry_chooser::set_direction_cosines (const float direction_cosines[9])
+{
+    d_ptr->pih_manual.set_direction_cosines (direction_cosines);
+    d_ptr->have_direction_cosines = true;
+}
 
 const Plm_image_header *
 Geometry_chooser::get_geometry ()

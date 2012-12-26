@@ -6,6 +6,7 @@
 
 #include "plmutil_config.h"
 #include "itk_image_type.h"
+#include "plm_int.h"
 
 class Geometry_chooser_private;
 class Plm_image_header;
@@ -54,6 +55,14 @@ public:
     /*! \brief Set the fixed image as an ITK image. */
     void set_fixed_image (const UCharImageType::Pointer image);
     void set_fixed_image (const FloatImageType::Pointer image);
+    /*! \brief Set the image dimension (number of voxels) manually. */
+    void set_dim (const plm_long dim[3]);
+    /*! \brief Set the image origin manually. */
+    void set_origin (const float origin[3]);
+    /*! \brief Set the image spacing manually. */
+    void set_spacing (const float spacing[3]);
+    /*! \brief Set the image direction cosines manually. */
+    void set_direction_cosines (const float direction_cosines[9]);
     ///@}
 
     /*! \name Outputs */

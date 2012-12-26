@@ -32,12 +32,30 @@ public:
     /*! \brief Set the geometry of the output vector field to match 
       another image, specified as an ITK image. */
     void set_fixed_image (const FloatImageType::Pointer image);
+    /*! \brief Set the image dimension (number of voxels) 
+      of the output vector field. */
+    void set_dim (const plm_long dim[3]);
+    /*! \brief Set the image origin 
+      of the output vector field. */
+    void set_origin (const float origin[3]);
+    /*! \brief Set the image spacing 
+      of the output vector field. */
+    void set_spacing (const float spacing[3]);
+    /*! \brief Set the image direction cosines 
+      of the output vector field. */
+    void set_direction_cosines (const float direction_cosines[9]);
     ///@}
 
     /*! \name Execution */
     ///@{
     /*! \brief Compute inverse vector field */
     void run ();
+    ///@}
+
+    /*! \name Outputs */
+    ///@{
+    /*! \brief Return the inverse vector field as a Volume*. */
+    const Volume* get_output_volume ();
     ///@}
 };
 

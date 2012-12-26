@@ -69,6 +69,30 @@ Vf_invert::set_fixed_image (
 }
 
 void 
+Vf_invert::set_dim (const plm_long dim[3])
+{
+    d_ptr->gchooser.set_dim (dim);
+}
+
+void 
+Vf_invert::set_origin (const float origin[3])
+{
+    d_ptr->gchooser.set_origin (origin);
+}
+
+void 
+Vf_invert::set_spacing (const float spacing[3])
+{
+    d_ptr->gchooser.set_spacing (spacing);
+}
+
+void 
+Vf_invert::set_direction_cosines (const float direction_cosines[9])
+{
+    d_ptr->gchooser.set_direction_cosines (direction_cosines);
+}
+
+void 
 Vf_invert::run ()
 {
     /* Compute geometry of output volume */
@@ -173,14 +197,13 @@ Vf_invert::run ()
 
     /* Save the output image! */
     d_ptr->vf_out = vf_out;
-
-#if defined (commentout)
-    /* Write the output */
-    write_mha (parms->vf_out_fn.c_str(), vf_out);
-    delete vf_out;
-#endif
 }
 
+const Volume*
+Vf_invert::get_output_volume ()
+{
+    return d_ptr->vf_out;
+}
 
 /* ---------------------------------------------------------------------- */
 #if defined (commentout)
