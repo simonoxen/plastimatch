@@ -48,6 +48,7 @@ include_directories (AFTER ${DLIB_INCLUDE_DIR})
 include_directories (AFTER ${LUA_INCLUDE_DIR})
 include_directories (AFTER ${LIBLBFGS_INCLUDE_DIR})
 include_directories (AFTER ${MSINTTYPES_INCLUDE_DIR})
+include_directories (AFTER ${NKIDECOMPRESS_INCLUDE_DIR})
 include_directories (AFTER ${RANSAC_INCLUDE_DIRS})
 
 if (CUDA_FOUND)
@@ -270,7 +271,7 @@ endif ()
 ##  Set up configuration for external projects using plastimatch API
 ##-----------------------------------------------------------------------------
 # Add targets to build tree export set
-set (EXPORT_TARGET_LIST bstrlib plmsys plmbase plmutil)
+set (EXPORT_TARGET_LIST bstrlib plmsys nkidecompress plmbase plmutil)
 if (PLMLIB_CONFIG_ENABLE_DOSE)
   set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} specfun plmdose)
 endif ()

@@ -17,6 +17,7 @@
 #include "itk_metadata.h"
 #include "logfile.h"
 #include "mha_io.h"
+#include "nki_io.h"
 #include "plm_image.h"
 #include "plm_image_convert.h"
 #include "plm_image_header.h"
@@ -221,7 +222,8 @@ Plm_image::load_native (const char* fname)
 
     /* Check for NKI filetype, which doesn't use ITK reader */
     if (extension_is (fname, "scan") || extension_is (fname, "SCAN")) {
-	print_and_exit ("NKI file type not yet supported: %s\n", fname);
+        load_native_nki (fname);
+        return;
     }
 
     std::string fn = fname;
@@ -315,6 +317,17 @@ Plm_image::load_native_dicom (const char* fname)
     this->m_original_type = PLM_IMG_TYPE_ITK_SHORT;
     this->m_type = PLM_IMG_TYPE_ITK_SHORT;
 #endif
+}
+
+void
+Plm_image::load_native_nki (const char* fname)
+{
+    Volume *v = nki_load (fname);
+    if (v) {
+        this->m_gpuit = v;
+        this->m_original_type = PLM_IMG_TYPE_ITK_SHORT;
+        this->m_type = PLM_IMG_TYPE_GPUIT_SHORT;
+    }
 }
 
 

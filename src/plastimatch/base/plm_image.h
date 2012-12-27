@@ -88,6 +88,7 @@ public:
     void load_native (const char* fname);
     void load_native (const std::string& fn);
     void load_native_dicom (const char* fname);
+    void load_native_nki (const char* fname);
 
     /* Saving */
     void save_short_dicom (const char* fname, Slice_index *rdd, 

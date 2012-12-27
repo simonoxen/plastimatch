@@ -53,6 +53,7 @@ set (PLMBASE_LIBRARY_SRC
   mc_dose.cxx
   metadata.cxx
   mha_io.cxx
+  nki_io.cxx
   plm_file_format.cxx
   plm_image.cxx
   plm_image_convert.cxx
