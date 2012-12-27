@@ -100,9 +100,6 @@ set (RAW_TO_MHA_SRC
 set (SIFTnD_SRC
   siftnD.cxx
   )
-set (UNION_MASK_SRC
-  union_mask.cxx
-  )
 set (VISCOUS_SRC
   viscous.cxx
   )
@@ -148,9 +145,6 @@ if (FULL_PLASTIMATCH_BUILD)
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   plm_add_executable (siftnD "${SIFTnD_SRC}"
-    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-  plm_add_executable (union_mask "${UNION_MASK_SRC}"
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   if (PLM_BUILD_VISCOUS)

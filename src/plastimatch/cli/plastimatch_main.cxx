@@ -32,6 +32,7 @@
 #include "pcmd_synth.h"
 #include "pcmd_synth_vf.h"
 #include "pcmd_thumbnail.h"
+#include "pcmd_union.h"
 #include "pcmd_warp.h"
 #include "pcmd_xf_convert.h"
 #include "plm_parms.h"
@@ -82,7 +83,9 @@ print_usage (int return_code)
         "  synth       "
         "  synth-vf    "
         "  thumbnail   "
+        "  union       "
         "  warp        "
+        "\n"
         "  xf-convert  "
 //        "  xio-dvh     "
         "\n"
@@ -224,6 +227,9 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "thumbnail")) {
         do_command_thumbnail (argc, argv);
+    }
+    else if (!strcmp (command, "union")) {
+        do_command_union (argc, argv);
     }
     else if (!strcmp (command, "warp")) {
         /* convert and warp are the same */

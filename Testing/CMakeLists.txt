@@ -2933,6 +2933,30 @@ set_tests_properties (plm-thumbnail-c-check PROPERTIES
   DEPENDS plm-thumbnail-c-stats)
 
 ## -------------------------------------------------------------------------
+## plm-union
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-union"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "union;--output;${PLM_BUILD_TESTING_DIR}/plm-union.mha;${PLM_BUILD_TESTING_DIR}/rect-10-mask-1.mha;${PLM_BUILD_TESTING_DIR}/rect-11-mask.mha"
+  )
+plm_add_test (
+  "plm-union-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-union.mha"
+  )
+plmtest_check_interval ("plm-union-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-union-stats.stdout.txt"
+  "NONZERO *([-0-9.]*)"
+  "1271"
+  "1271"
+  )
+set_tests_properties (plm-union 
+  PROPERTIES DEPENDS "rect-10-mask-1;rect-11-mask")
+set_tests_properties (plm-union-stats PROPERTIES DEPENDS plm-union)
+set_tests_properties (plm-union-check PROPERTIES DEPENDS plm-union-stats)
+
+## -------------------------------------------------------------------------
 ## plastimatch warp pointset
 ##   plm-warp-pointset-a:  xf = bspline, output fcsv
 ##   plm-warp-pointset-b:  xf = bspline, output txt

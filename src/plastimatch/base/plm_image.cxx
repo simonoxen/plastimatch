@@ -369,12 +369,6 @@ Plm_image::save_short_dicom (
 }
 
 void
-Plm_image::save_image (const Pstring& fname)
-{
-    this->save_image (fname.c_str());
-}
-
-void
 Plm_image::save_image (const char* fname)
 {
     switch (this->m_type) {
@@ -427,6 +421,18 @@ Plm_image::save_image (const char* fname)
 	    " (type = %s)\n", plm_image_type_string (this->m_type));
 	break;
     }
+}
+
+void
+Plm_image::save_image (const Pstring& fname)
+{
+    this->save_image (fname.c_str());
+}
+
+void
+Plm_image::save_image (const std::string& fname)
+{
+    this->save_image (fname.c_str());
 }
 
 /* -----------------------------------------------------------------------

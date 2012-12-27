@@ -43,6 +43,7 @@ set (PLASTIMATCH_SRC
   pcmd_synth.cxx 
   pcmd_synth_vf.cxx 
   pcmd_thumbnail.cxx 
+  pcmd_union.cxx
   pcmd_warp.cxx 
   pcmd_warp_dij.cxx 
   pcmd_warp_pointset.cxx 

@@ -92,8 +92,9 @@ public:
     /* Saving */
     void save_short_dicom (const char* fname, Slice_index *rdd, 
         Metadata *meta);
-    void save_image (const Pstring& fname);
     void save_image (const char* fname);
+    void save_image (const Pstring& fname);
+    void save_image (const std::string& fname);
     void convert_and_save (const char* fname, Plm_image_type new_type);
     void convert_and_save (const std::string& fname, Plm_image_type new_type);
 
