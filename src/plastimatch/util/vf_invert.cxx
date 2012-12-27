@@ -93,6 +93,12 @@ Vf_invert::set_direction_cosines (const float direction_cosines[9])
 }
 
 void 
+Vf_invert::set_iterations (int iterations)
+{
+    d_ptr->iterations = iterations;
+}
+
+void 
 Vf_invert::run ()
 {
     /* Compute geometry of output volume */
@@ -106,8 +112,11 @@ Vf_invert::run ()
     Volume *vf_inv = new Volume (vh, PT_VF_FLOAT_INTERLEAVED, 1);
 
     /* Convert input vf to native, interleaved format */
+    Xform xf_itk;
+    xf_itk.set_itk_vf (d_ptr->input_vf);
     Xform *xf = new Xform;
-    xf->set_itk_vf (d_ptr->input_vf);
+    const Plm_image_header pih_in (d_ptr->input_vf);
+    xform_to_gpuit_vf (xf, &xf_itk, &pih_in);
     Volume *vf_in = xf->get_gpuit_vf ();
     vf_convert_to_interleaved (vf_in);
 
@@ -118,31 +127,33 @@ Vf_invert::run ()
 
 #pragma omp parallel for 
     LOOP_Z_OMP (k, vf_in) {
-//    for (z = vf_in->offset[2], k = 0, v = 0; k < vf_in->dim[2]; k++, z+=vf_in->spacing[2]) {
-//        for (y = vf_in->offset[1], j = 0; j < vf_in->dim[1]; j++, y+=vf_in->spacing[1]) {
-//            for (x = vf_in->offset[0], i = 0; i < vf_in->dim[0]; v++, i++, x+=vf_in->spacing[0]) {
-
         plm_long fijk[3];      /* Index within fixed image (vox) */
         float fxyz[3];         /* Position within fixed image (mm) */
         fijk[2] = k;
         fxyz[2] = vf_in->offset[2] + fijk[2] * vf_in->step[2][2];
         LOOP_Y (fijk, fxyz, vf_in) {
             LOOP_X (fijk, fxyz, vf_in) {
-                plm_long mijk[3], midx;
-                float mxyz[3];
+                float mijk[3];
+                plm_long mijk_r[3], midx;
                 plm_long v = volume_index (vf_in->dim, fijk);
-                mxyz[0] = fxyz[0] + img_in[3*v+0];
-                mijk[0] = ROUND_INT ((mxyz[0] - vf_inv->offset[0]) / vf_inv->spacing[0]);
-                mxyz[1] = fxyz[1] + img_in[3*v+1];
-                mijk[1] = (mxyz[1] - vf_inv->offset[1]) / vf_inv->spacing[1];
-                mxyz[2] = fxyz[2] + img_in[3*v+2];
-                mijk[2] = (mxyz[2] - vf_inv->offset[2]) / vf_inv->spacing[2];
+		float *dxyz = &img_in[3*v];
+		float mo_xyz[3] = {
+		    fxyz[0] + dxyz[0] - vf_inv->offset[0],
+		    fxyz[1] + dxyz[1] - vf_inv->offset[1],
+		    fxyz[2] + dxyz[2] - vf_inv->offset[2]
+		};
 
-                if (mijk[0] < 0 || mijk[0] >= vf_inv->dim[0]) continue;
-                if (mijk[1] < 0 || mijk[1] >= vf_inv->dim[1]) continue;
-                if (mijk[2] < 0 || mijk[2] >= vf_inv->dim[2]) continue;
+		mijk[2] = PROJECT_Z(mo_xyz,vf_inv->proj);
+		if (mijk[2] < -0.5 || mijk[2] > vf_inv->dim[2] - 0.5) continue;
+		mijk[1] = PROJECT_Y(mo_xyz,vf_inv->proj);
+		if (mijk[1] < -0.5 || mijk[1] > vf_inv->dim[1] - 0.5) continue;
+		mijk[0] = PROJECT_X(mo_xyz,vf_inv->proj);
+		if (mijk[0] < -0.5 || mijk[0] > vf_inv->dim[0] - 0.5) continue;
 
-                midx = (mijk[2] * vf_inv->dim[1] + mijk[1]) * vf_inv->dim[0] + mijk[0];
+                mijk_r[2] = ROUND_PLM_LONG (mijk[2]);
+                mijk_r[1] = ROUND_PLM_LONG (mijk[1]);
+                mijk_r[0] = ROUND_PLM_LONG (mijk[0]);
+                midx = volume_index (vf_inv->dim, mijk_r);
                 img_inv[3*midx+0] = -img_in[3*v+0];
                 img_inv[3*midx+1] = -img_in[3*v+1];
                 img_inv[3*midx+2] = -img_in[3*v+2];

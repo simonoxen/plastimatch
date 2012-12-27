@@ -151,6 +151,6 @@ PLMBASE_API void xform_to_itk_bsp_nobulk (Xform *xf_out, Xform *xf_in, Plm_image
 PLMBASE_API void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, Plm_image_header* pih);
 PLMBASE_API void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, FloatImageType::Pointer image);
 PLMBASE_API void xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih, float* grid_spac);
-PLMBASE_API void xform_to_gpuit_vf (Xform* xf_out, Xform *xf_in, Plm_image_header* pih);
+PLMBASE_API void xform_to_gpuit_vf (Xform* xf_out, Xform *xf_in, const Plm_image_header* pih);
 
 #endif

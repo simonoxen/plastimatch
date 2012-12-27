@@ -44,6 +44,9 @@ public:
     /*! \brief Set the image direction cosines 
       of the output vector field. */
     void set_direction_cosines (const float direction_cosines[9]);
+    /*! \brief Set the number of iterations to run the inversion 
+      routine (default is 20 iterations). */
+    void set_iterations (int iterations);
     ///@}
 
     /*! \name Execution */

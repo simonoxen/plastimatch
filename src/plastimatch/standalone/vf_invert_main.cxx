@@ -14,8 +14,6 @@
 #include "vf_invert.h"
 #include "volume.h"
 
-#define MAX_ITS 20
-
 class Vf_invert_parms {
 public:
     std::string vf_in_fn;
@@ -27,6 +25,8 @@ public:
     plm_long dim[3];
     float origin[3];
     float spacing[3];
+    bool old_algorithm;
+    int iterations;
 public:
     Vf_invert_parms () {
         vf_in_fn = "";
@@ -40,6 +40,8 @@ public:
         have_dim = false;
         have_origin = false;
         have_spacing = false;
+        old_algorithm = false;
+        iterations = 20;
     }
 };
 
@@ -155,8 +157,8 @@ do_vf_invert_old (Vf_invert_parms* parms)
 
     /* Iterate, pasting and smoothing */
     printf ("Paste and smooth loop\n");
-    for (its = 0; its < MAX_ITS; its++) {
-        printf ("Iteration %d/%d\n", its, MAX_ITS);
+    for (its = 0; its < parms->iterations; its++) {
+        printf ("Iteration %d/%d\n", its, parms->iterations);
         /* Paste */
         for (v = 0, k = 0; k < vf_out->dim[2]; k++) {
             for (j = 0; j < vf_out->dim[1]; j++) {
@@ -216,6 +218,8 @@ do_vf_invert_new (Vf_invert_parms* parms)
     }
 #endif
 
+    vf_invert.set_iterations (parms->iterations);
+
     /* Invert the vf */
     vf_invert.run ();
 
@@ -226,8 +230,11 @@ do_vf_invert_new (Vf_invert_parms* parms)
 void
 do_vf_invert (Vf_invert_parms* parms)
 {
-    do_vf_invert_old (parms);
-    //do_vf_invert_new (parms);
+    if (parms->old_algorithm) {
+        do_vf_invert_old (parms);
+    } else {
+        do_vf_invert_new (parms);
+    }
 }
 
 static void
@@ -263,6 +270,10 @@ parse_fn (
         "voxel spacing of output vector field in mm \"x [y z]\"", 1, "");
     parser->add_long_option ("", "fixed", 
         "fixed image (match output vector field size to this image)", 1, "");
+    parser->add_long_option ("", "old-algorithm", 
+        "use the old algorithm", 0);
+    parser->add_long_option ("", "iterations", 
+        "number of iterations to run (default = 20)", 1, "");
 
     /* Parse the command line arguments */
     parser->parse (argc,argv);
@@ -310,6 +321,12 @@ parse_fn (
     if (parser->option ("spacing")) {
         parms->have_spacing = true;
         parser->assign_float13 (parms->spacing, "spacing");
+    }
+    if (parser->option ("old-algorithm")) {
+        parms->old_algorithm = true;
+    }
+    if (parser->option ("iterations")) {
+        parser->get_value (parms->iterations, "iterations");
     }
 }
 

@@ -639,9 +639,10 @@ plm_add_test (
 plmtest_check_interval (demons-a-check
   "${PLM_BUILD_TESTING_DIR}/demons-a.stdout.txt"
   "^Mean: *([0-9.]*)"
-#  "2.1"
-  "1.95"
-  "2.2"
+  "3.4"
+  "3.5"
+#  "1.95"
+#  "2.2"
   )
 set_property (TEST demons-a APPEND PROPERTY DEPENDS gauss-1)
 set_property (TEST demons-a APPEND PROPERTY DEPENDS gauss-2)
@@ -2567,9 +2568,9 @@ plm_add_test (
 plmtest_check_interval (
   "plm-reg-multi-a-check"
   "${PLM_BUILD_TESTING_DIR}/plm-reg-multi-a-stats.stdout.txt"
-  "Mean: *([-0-9.]*)"
-  "-19.05"
-  "-18.85"
+  "Max: *([-0-9.]*)"
+  "-19.95"
+  "-19.85"
   )
 set_tests_properties (plm-reg-multi-a PROPERTIES 
   DEPENDS "rect-2;sphere-2")
@@ -3239,7 +3240,7 @@ set_tests_properties (vf-invert-zero-1-check
 plm_add_test (
   "vf-invert-trans-1"
   ${PLM_PLASTIMATCH_PATH}/vf_invert
-  "--input;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha;--fixed;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha;--output;${PLM_BUILD_TESTING_DIR}/vf-invert-trans-1.mha"
+  "--input;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha;--fixed;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha;--output;${PLM_BUILD_TESTING_DIR}/vf-invert-trans-1.mha;--iterations;10"
   )
 plm_add_test (
   "vf-invert-trans-1-stats"
@@ -3249,8 +3250,8 @@ plm_add_test (
 plmtest_check_interval ("vf-invert-trans-1-check"
   "${PLM_BUILD_TESTING_DIR}/vf-invert-trans-1-stats.stdout.txt"
   "Mean: *([-0-9.]*)"
-  "-9.3"
-  "-9.2"
+  "-10.0"
+  "-9.9"
   )
 set_tests_properties (vf-invert-trans-1 PROPERTIES DEPENDS vf-trans)
 set_tests_properties (vf-invert-trans-1-stats 

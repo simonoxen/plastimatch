@@ -26,7 +26,6 @@ vf_convolve_x (Volume* vf_out, Volume* vf_in, float* ker, int width)
 		plm_long i, i1;	    /* i is the offset in the vf */
 		plm_long j, j1, j2;   /* j is the index of the kernel */
 		int d;		    /* d is the vector field direction */
-//		float *vin = &in_img[3*v];
 		float *vout = &out_img[3*v];
 
 		if (x < half_width) {
@@ -43,35 +42,18 @@ vf_convolve_x (Volume* vf_out, Volume* vf_in, float* ker, int width)
 		}
 
 		for (d = 0; d < 3; d++) {
+                    float ktot = 0.0f;
 		    vout[d] = (float) 0.0;
 		    for (i = i1, j = j1; j <= j2; i++, j++) {
 			plm_long idx = vf_in->index (i, y, z);
 			vout[d] += ker[j] * in_img [idx*3+d];
+                        ktot += ker[j];
 		    }
+                    vout[d] /= ktot;
 		}
-
 #if defined (commentout)
 		printf ("%u %u %u | %u | %u %u %u\n",
 		    z, y, x, v, i1, j1, j2);
-#endif
-
-#if defined (commentout)
-		j1 = x - half_width;
-		j2 = x + half_width;
-		if (j1 < 0) j1 = 0;
-		if (j2 >= vf_in->dim[0]) {
-		    j2 = vf_in->dim[0] - 1;
-		}
-		i1 = j1 - x;
-		j1 = j1 - x + half_width;
-		j2 = j2 - x + half_width;
-
-		for (d = 0; d < 3; d++) {
-		    vout[d] = (float) 0.0;
-		    for (i = i1, j = j1; j <= j2; i++, j++) {
-			vout[d] += ker[j] * (vin+i*3)[d];
-		    }
-		}
 #endif
 	    }
 	}
@@ -94,9 +76,6 @@ vf_convolve_y (Volume* vf_out, Volume* vf_in, float* ker, int width)
 		plm_long i, i1;	    /* i is the offset in the vf */
 		plm_long j, j1, j2;   /* j is the index of the kernel */
 		int d;		    /* d is the vector field direction */
-#if defined (commentout)
-		float *vin = &in_img[3*v];
-#endif
 		float *vout = &out_img[3*v];
 
 		if (y < half_width) {
@@ -113,31 +92,15 @@ vf_convolve_y (Volume* vf_out, Volume* vf_in, float* ker, int width)
 		}
 
 		for (d = 0; d < 3; d++) {
+                    float ktot = 0.0f;
 		    vout[d] = (float) 0.0;
 		    for (i = i1, j = j1; j <= j2; i++, j++) {
 			plm_long idx = vf_in->index (x, i, z);
 			vout[d] += ker[j] * in_img [idx*3+d];
+                        ktot += ker[j];
 		    }
+                    vout[d] /= ktot;
 		}
-
-#if defined (commentout)
-		j1 = y - half_width;
-		j2 = y + half_width;
-		if (j1 < 0) j1 = 0;
-		if (j2 >= vf_in->dim[1]) {
-		    j2 = vf_in->dim[1] - 1;
-		}
-		i1 = j1 - y;
-		j1 = j1 - y + half_width;
-		j2 = j2 - y + half_width;
-
-		for (d = 0; d < 3; d++) {
-		    vout[d] = (float) 0.0;
-		    for (i = i1, j = j1; j <= j2; i++, j++) {
-			vout[d] += ker[j] * (vin+i*vf_in->dim[0]*3)[d];
-		    }
-		}
-#endif
 	    }
 	}
     }
@@ -159,9 +122,6 @@ vf_convolve_z (Volume* vf_out, Volume* vf_in, float* ker, int width)
 		plm_long i, i1;	    /* i is the offset in the vf */
 		plm_long j, j1, j2;   /* j is the index of the kernel */
 		int d;		    /* d is the vector field direction */
-#if defined (commentout)
-		float *vin = &in_img[3*v];
-#endif
 		float *vout = &out_img[3*v];
 
 		if (z < half_width) {
@@ -178,31 +138,15 @@ vf_convolve_z (Volume* vf_out, Volume* vf_in, float* ker, int width)
 		}
 
 		for (d = 0; d < 3; d++) {
+                    float ktot = 0.0f;
 		    vout[d] = (float) 0.0;
 		    for (i = i1, j = j1; j <= j2; i++, j++) {
 			plm_long idx = vf_in->index (x, y, i);
 			vout[d] += ker[j] * in_img [idx*3+d];
+                        ktot += ker[j];
 		    }
+                    vout[d] /= ktot;
 		}
-
-#if defined (commentout)
-		j1 = z - half_width;
-		j2 = z + half_width;
-		if (j1 < 0) j1 = 0;
-		if (j2 >= vf_in->dim[2]) {
-		    j2 = vf_in->dim[2] - 1;
-		}
-		i1 = j1 - z;
-		j1 = j1 - z + half_width;
-		j2 = j2 - z + half_width;
-
-		for (d = 0; d < 3; d++) {
-		    vout[d] = (float) 0.0;
-		    for (i = i1, j = j1; j <= j2; i++, j++) {
-			vout[d] += ker[j] * (vin+i*vf_in->dim[0]*vf_in->dim[1]*3)[d];
-		    }
-		}
-#endif
 	    }
 	}
     }

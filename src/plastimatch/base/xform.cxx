@@ -1339,7 +1339,7 @@ xform_itk_any_to_gpuit_vf (
 }
 
 Volume*
-xform_gpuit_vf_to_gpuit_vf (Volume* vf_in, Plm_image_header *pih)
+xform_gpuit_vf_to_gpuit_vf (Volume* vf_in, const Plm_image_header *pih)
 {
     Volume* vf_out;
     Volume_header vh = pih->get_volume_header();
@@ -1348,7 +1348,7 @@ xform_gpuit_vf_to_gpuit_vf (Volume* vf_in, Plm_image_header *pih)
 }
 
 Volume*
-xform_gpuit_bsp_to_gpuit_vf (Xform *xf_in, Plm_image_header *pih)
+xform_gpuit_bsp_to_gpuit_vf (Xform *xf_in, const Plm_image_header *pih)
 {
     Bspline_xform* bxf = xf_in->get_gpuit_bsp();
     Volume* vf_out;
@@ -1361,7 +1361,7 @@ xform_gpuit_bsp_to_gpuit_vf (Xform *xf_in, Plm_image_header *pih)
 
 Volume*
 xform_itk_vf_to_gpuit_vf (
-    DeformationFieldType::Pointer itk_vf, Plm_image_header *pih)
+    DeformationFieldType::Pointer itk_vf, const Plm_image_header *pih)
 {
     Volume_header vh = pih->get_volume_header();
     Volume* vf_out = new Volume (vh, PT_VF_FLOAT_INTERLEAVED, 3);
@@ -1702,7 +1702,7 @@ xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih,
 
 void
 xform_to_gpuit_vf (
-    Xform* xf_out, Xform *xf_in, Plm_image_header* pih)
+    Xform* xf_out, Xform *xf_in, const Plm_image_header* pih)
 {
     Volume* vf = 0;
     switch (xf_in->m_type) {
