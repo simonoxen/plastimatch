@@ -85,7 +85,7 @@ macro (plm_download_and_extract DOWNLOAD_URL DOWNLOAD_FILENAME DOWNLOAD_DIR)
     file (DOWNLOAD "${DOWNLOAD_URL}" "${DOWNLOAD_FILENAME}")
   endif ()
   if (NOT EXISTS ${DOWNLOAD_DIR})
-    message (STATUS "Untarring test data")
+    message (STATUS "Untarring test data: ${DOWNLOAD_FILENAME}")
     execute_process (
       COMMAND 
       ${CMAKE_COMMAND} "-E" "tar" "xvzf" "${DOWNLOAD_FILENAME}"
@@ -127,7 +127,7 @@ endif ()
 
 if (PLM_DOWNLOAD_DICOMRT_IRREGULAR)
   plm_download_and_extract (
-    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1827/xio-4.60-irregular-spacing.tar.gz"
+    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/2163/xio-4.60-irregular-spacing.tar.gz"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/xio-4.60-irregular-spacing.tar.gz"
     "${PLM_BUILD_TESTING_DIR}/xio-4.60-irregular-spacing")
 endif ()
