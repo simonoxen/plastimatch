@@ -17,33 +17,55 @@ The list of possible commands can be seen by simply typing "plastimatch"
 without any additional command line arguments::
 
  $ plastimatch
- plastimatch version 1.5.4-beta (2802)
+ plastimatch version 1.5.12-beta (4019)
  Usage: plastimatch command [options]
  Commands:
-  add           adjust        autolabel     crop          compare     
-  compose       convert       diff          drr           dvh         
-  fill          header        mask          probe         register    
-  resample      segment       stats         synth         thumbnail   
-  warp          xf-convert    xio-dvh     
+  add           adjust        average       crop          compare     
+  compose       convert       dice          diff          dvh         
+  fill          header        jacobian      mask          probe       
+  register      resample      scale         segment       stats       
+  synth         synth-vf      thumbnail     union         warp        
+  xf-convert  
 
  For detailed usage of a specific command, type:
    plastimatch command
 
+.. _plastimatch_add:
+
 plastimatch add
 ---------------
 The *add* command is used to add one or more images together and create 
-an output image.
+an output image.  The contributions of the input images can be weighted
+with a weight vector.
 
 The command line usage is given as follows::
 
-  Usage: plastimatch add input_file [input_file ...] output_file
+ Usage: plastimatch add [options] input_file [input_file ...]
+ Options:
+      --average        produce an output file which is the average of the 
+                        input files (if no weights are specified), or multiply 
+                        the weights by 1/n 
+  -h, --help           display this help message 
+      --output <arg>   output image 
+      --version        display the program version 
+      --weight <arg>   specify a vector of weights; the images are multiplied 
+                        by the weight prior to adding their values 
 
-Example
-^^^^^^^
+Examples
+^^^^^^^^
 To add together files 01.mha, 02.mha and 03.mha, and save the result 
 in the file output.mha, you can run the following command::
 
-  plastimatch add 01.mha 02.mha 03.mha output.mha
+  plastimatch add --output output.mha 01.mha 02.mha 03.mha
+
+If you wanted output.mha to be 2 * 01.mha + 0.5 * 02.mha + 0.1 * 03.mha, 
+then you should do this::
+
+  plastimatch add \
+    --output output.mha \
+    --weight "2 0.5 0.1" \
+    01.mha 02.mha 03.mha
+
 
 plastimatch adjust
 ------------------
@@ -101,6 +123,21 @@ range of [-1000,+1000]::
     --output outfile.nrrd \
     --pw-linear "-inf,0,-1000,-1000,+1000,+1000,inf,0"
 
+plastimatch average
+-------------------
+The *average* command is used to compute the (weighted) average 
+of multiple input images.  It is the same as the plastimatch *add* 
+command, with the --average option specified.  
+Please refer to :ref:`plastimatch_add` for the list of command line 
+arguments.
+
+Example
+^^^^^^^
+The following command will compute the average of three input images::
+
+  plastimatch average \
+    --output outfile.nrrd \
+    01.mha 02.mha 0.3.mha
 
 plastimatch autolabel
 ---------------------
@@ -383,6 +420,36 @@ the result in outfile.nrrd::
 
   plastimatch diff file1.nrrd file2.nrrd outfile.nrrd
 
+
+plastimatch dice
+----------------
+The plastimatch *dice* compares binary volumes using Dice coefficient, 
+Hausdorff distance, or contour mean distance.  The input images are 
+treated as boolean, where non-zero values mean that voxel is inside 
+of the structure and zero values mean that the voxel is outside 
+of the structure.
+
+The command line usage is given as follows::
+
+  Usage: plastimatch dice [options] reference-image test-image
+  Options:
+      --all            Compute Dice, Hausdorff, and contour mean distance 
+                        (equivalent to --dice --hausdorff --contour-mean) 
+      --contour-mean   Compute contour mean distance 
+      --dice           Compute Dice coefficient (default) 
+      --hausdorff      Compute Hausdorff distance and average Hausdorff 
+                        distance 
+  -h, --help           display this help message 
+      --version        display the program version 
+
+Example
+^^^^^^^
+The following command computes all three statistics for mask1.mha 
+and mask2.mha::
+
+  plastimatch dice --all mask1.mha mask2.mha
+
+
 plastimatch drr
 ---------------
 This command is under construction.
@@ -434,28 +501,6 @@ use the following command::
     --num-bins 250 \
     --bin-width 1
 
-plastimatch header
-------------------
-The *header* command displays brief information about the image geometry.
-The command line usage is given as follows::
-
-  Usage: plastimatch header input-file
-
-
-Example
-^^^^^^^
-We can display the geometry of any supported file type, such as mha, nrrd, 
-or dicom.  We can run the command as follows::
-
-  $ plastimatch header input.mha
-  Origin = -180 -180 -167.75
-  Size = 512 512 120
-  Spacing = 0.7031 0.7031 2.5
-  Direction = 1 0 0 0 1 0 0 0 1
-
-From the header information, we see that the image has 120 slices, 
-and each slice is 512 x 512 pixels.  The slice spacing is 2.5 mm, 
-and the in-plane pixel spacing is 0.7031 mm.
 
 plastimatch fill
 ----------------
@@ -493,6 +538,36 @@ the following command. ::
     --output outfile.nrrd \
     --mask-value 1000 \
     --mask prostate.nrrd
+
+
+plastimatch header
+------------------
+The *header* command is used to display simple properties about 
+the volume, such as the image data type and image geometry.
+
+The command line usage is given as follows::
+
+ Usage: plastimatch header [options] input_file [input_file ...]
+ Options:
+  -h, --help      display this help message 
+      --version   display the program version 
+
+Example
+^^^^^^^
+We can display the geometry of any supported file type, such as mha, nrrd, 
+or dicom.  We can run the command as follows::
+
+  $ plastimatch header input.mha
+  Type = float
+  Planes = 1
+  Origin = -180 -180 -167.75
+  Size = 512 512 120
+  Spacing = 0.7031 0.7031 2.5
+  Direction = 1 0 0 0 1 0 0 0 1
+
+From the header information, we see that the image has 120 slices, 
+and each slice is 512 x 512 pixels.  The slice spacing is 2.5 mm, 
+and the in-plane pixel spacing is 0.7031 mm.
 
 
 plastimatch mask
@@ -631,6 +706,29 @@ to a single voxel.  So for example, if we want to bin a cube of size
     --output outfile.nrrd \
     --subsample "3 3 1"
 
+plastimatch stats
+-----------------
+The *scale* command scales an image or vector field by multiplying 
+each voxel by a constant value.
+
+The command line usage is given as follows::
+
+ Usage: plastimatch scale [options] input_file
+ Options:
+  -h, --help           display this help message 
+      --output <arg>   filename for output image or vector field 
+      --version        display the program version 
+      --weight <arg>   scale the input image or vector field by this value 
+                        (float) 
+
+Example
+^^^^^^^
+This command creates an output file with image intensity (or voxel 
+length) twice as large as the input values::
+
+ plastimatch scale --output output.mha --weight 2.0 input.mha
+
+
 plastimatch segment
 -------------------
 The *segment* command does simple threshold-based semgentation.  
@@ -668,6 +766,7 @@ The output file will be called "ss.dcm".
     --input water_dicom \
     --output-dicom water_dicom \
     --lower-threshold -500
+
 
 plastimatch stats
 -----------------
@@ -731,9 +830,16 @@ The remaining statistics are described as follows::
   TOTSECDER     Total second derivative
   INTSECDER     Integral second derivative
 
+
 plastimatch synth
 -----------------
 Documentation has not yet been written for this command.
+
+
+plastimatch synth-vf
+--------------------
+Documentation has not yet been written for this command.
+
 
 plastimatch thumbnail
 ---------------------
@@ -762,6 +868,33 @@ at axial location 0, and of size 20 x 20 mm::
     --thumbnail-dim 10 \
     --thumbnail-spacing 2 \
     --slice-loc 0
+
+
+plastimatch union
+-----------------
+The *union* command creates a binary volume which is the 
+logical union of two input images.  Voxels in the output 
+image have 
+value one if the voxel is non-zero in either input image, 
+or value zero if the voxel is zero in both input images.
+
+The command line usage is given as follows::
+
+ Usage: plastimatch union [options] input_1 input_2
+ Options:
+  -h, --help           display this help message 
+      --output <arg>   filename for output image 
+      --version        display the program version 
+
+Example
+^^^^^^^
+The following command creates a volume that is the 
+union of two input images::
+
+ plastimatch union \
+   --output itv.mha \
+   phase_1.mha phase_2.mha
+
 
 plastimatch warp
 ----------------

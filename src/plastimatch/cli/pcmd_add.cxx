@@ -193,7 +193,10 @@ parse_fn (
     parser->add_long_option ("", "output", "output image", 1, "");
 
     /* Weight vector */
-    parser->add_long_option ("", "weight", "", 1, "");
+    parser->add_long_option ("", "weight", 
+        "specify a vector of weights; the images are multiplied "
+        "by the weight prior to adding their values", 
+        1, "");
 
     /* Average option */
     parser->add_long_option ("", "average", 
