@@ -79,7 +79,7 @@ public:
     int init_type;
     double init[12];
 
-    Stage_parms** stages;
+//    Stage_parms** stages;
 
     /* for 4D and atlas */
     char moving_dir[_MAX_PATH];
@@ -102,6 +102,7 @@ public:
 public:
     const std::string& get_fixed_fn ();
     const std::string& get_moving_fn ();
+    std::list<Stage_parms*>& get_stages ();
 };
 
 #endif

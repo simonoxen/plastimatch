@@ -2,13 +2,14 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmregister_config.h"
-#include <time.h>
+#include <fstream>
+#include <list>
+#include <iostream>
+#include <sstream>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <fstream>
-#include <iostream>
-#include <sstream>
+#include <time.h>
 #if defined (_WIN32)
 // win32 directory stuff
 #else
@@ -29,14 +30,13 @@ class Registration_parms_private
 public:
     std::string moving_fn;
     std::string fixed_fn;
+    std::list<Stage_parms*> stages;
 };
 
 Registration_parms::Registration_parms()
 {
     d_ptr = new Registration_parms_private;
 
-//    *moving_fn = 0;
-//    *fixed_fn = 0;
     *moving_mask_fn = 0;
     *fixed_mask_fn = 0;
     img_out_fmt = IMG_OUT_FMT_AUTO;
@@ -49,7 +49,7 @@ Registration_parms::Registration_parms()
     init_type = STAGE_TRANSFORM_NONE;
     default_value = 0.0;
     num_stages = 0;
-    stages = 0;
+//    stages = 0;
     *moving_dir = 0;
     *fixed_dir = 0;
     *img_out_dir = 0;
@@ -64,14 +64,12 @@ Registration_parms::Registration_parms()
 
 Registration_parms::~Registration_parms()
 {
-    for (int i = 0; i < num_stages; i++) {
-        delete stages[i];
+    std::list<Stage_parms*>::iterator it;
+    for (it = d_ptr->stages.begin(); it != d_ptr->stages.end(); it++) {
+        delete *it;
     }
-    free (stages);
-
     delete d_ptr;
 }
-
 
 // JAS 2012.02.13 -- TODO: Move somewhere more appropriate
 static void
@@ -128,7 +126,8 @@ Registration_parms::set_key_val (
     int rc;
     Stage_parms* stage = 0;
     if (section != 0) {
-        stage = this->stages[this->num_stages-1];
+        //stage = this->stages[this->num_stages-1];
+        stage = d_ptr->stages.back();
     }
 
     /* The following keywords are only allowed globally */
@@ -701,6 +700,7 @@ Registration_parms::set_command_string (
                 section = 1;
                 this->num_stages ++;
 
+#if defined (commentout)
                 this->stages = (Stage_parms**) realloc (
                     this->stages, this->num_stages * sizeof(Stage_parms*));
                 if (this->num_stages == 1) {
@@ -710,12 +710,19 @@ Registration_parms::set_command_string (
                         *(this->stages[this->num_stages-2]));
                 }
                 this->stages[this->num_stages-1]->stage_no = this->num_stages;
+#endif
+                Stage_parms *sp;
+                if (this->num_stages == 1) {
+                    sp = new Stage_parms();
+                } else {
+                    sp = new Stage_parms(*d_ptr->stages.back());
+                }
+                d_ptr->stages.push_back (sp);
 
                 /* Some parameters that should be copied from global 
                    to the first stage. */
                 if (this->num_stages == 1) {
-                    this->stages[this->num_stages-1]->default_value
-                        = this->default_value;
+                    sp->default_value = this->default_value;
                 }
 
                 continue;
@@ -828,4 +835,10 @@ const std::string&
 Registration_parms::get_moving_fn ()
 {
     return d_ptr->moving_fn;
+}
+
+std::list<Stage_parms*>& 
+Registration_parms::get_stages ()
+{
+    return d_ptr->stages;
 }

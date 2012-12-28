@@ -286,13 +286,26 @@ set_auto_subsampling (int subsample_rate[], Plm_image *pli)
 static void
 set_automatic_parameters (Registration_data* regd, Registration_parms* regp)
 {
+#if defined (commentout)
     for (int i = 0; i < regp->num_stages; i++) {
-        Stage_parms *stagep = regp->stages[i];
-        if (stagep->subsampling_type == SUBSAMPLING_AUTO) {
+        Stage_parms *sp = regp->stages[i];
+        if (sp->subsampling_type == SUBSAMPLING_AUTO) {
             set_auto_subsampling (
-                stagep->fixed_subsample_rate, regd->fixed_image);
+                sp->fixed_subsample_rate, regd->fixed_image);
             set_auto_subsampling (
-                stagep->moving_subsample_rate, regd->moving_image);
+                sp->moving_subsample_rate, regd->moving_image);
+        }
+    }
+#endif
+    std::list<Stage_parms*>& stages = regp->get_stages();
+    std::list<Stage_parms*>::iterator it;
+    for (it = stages.begin(); it != stages.end(); it++) {
+        Stage_parms* sp = *it;
+        if (sp->subsampling_type == SUBSAMPLING_AUTO) {
+            set_auto_subsampling (
+                sp->fixed_subsample_rate, regd->fixed_image);
+            set_auto_subsampling (
+                sp->moving_subsample_rate, regd->moving_image);
         }
     }
 }
@@ -342,7 +355,6 @@ do_registration_pure (
     Registration_parms* regp
 )
 {
-    int i;
     Xform *xf1 = new Xform;
     Xform *xf2 = new Xform;
     Xform *xf_in, *xf_out, *xf_tmp;
@@ -361,11 +373,23 @@ do_registration_pure (
     /* Set automatic parameters based on image size */
     set_automatic_parameters (regd, regp);
 
+#if defined (commentout)
     for (i = 0; i < regp->num_stages; i++) {
         /* Swap xf_in and xf_out */
         xf_tmp = xf_out; xf_out = xf_in; xf_in = xf_tmp;
         /* Run registation, results are stored in xf_out */
         do_registration_stage (regp, regd, xf_out, xf_in, regp->stages[i]);
+    }
+#endif
+
+    std::list<Stage_parms*>& stages = regp->get_stages();
+    std::list<Stage_parms*>::iterator it;
+    for (it = stages.begin(); it != stages.end(); it++) {
+        /* Swap xf_in and xf_out */
+        xf_tmp = xf_out; xf_out = xf_in; xf_in = xf_tmp;
+        /* Run registation, results are stored in xf_out */
+        Stage_parms* sp = *it;
+        do_registration_stage (regp, regd, xf_out, xf_in, sp);
     }
 
     /* JAS 2012.03.29 - for GPUIT Bspline
