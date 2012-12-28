@@ -50,7 +50,7 @@ register_load (lua_State *L)
     }
 
     Registration_parms *regp = new Registration_parms; //(Registration_parms*)malloc (sizeof(Registration_parms));
-    if (plm_parms_parse_command_file (regp, fn) < 0) {
+    if (regp->parse_command_file (fn) < 0) {
         fprintf (stderr, "error -- register.load() -- unable to load %s\n", fn);
         return 0;
     }

@@ -113,7 +113,7 @@ do_command_register (int argc, char* argv[])
         command_filename = argv[1];
     }
 
-    if (plm_parms_parse_command_file (regp, command_filename) < 0) {
+    if (regp->parse_command_file (command_filename) < 0) {
         print_usage (1);
     }
     do_registration (regp);

@@ -24,10 +24,19 @@
 
 #define BUFLEN 2048
 
+class Registration_parms_private
+{
+public:
+    std::string moving_fn;
+    std::string fixed_fn;
+};
+
 Registration_parms::Registration_parms()
 {
-    *moving_fn = 0;
-    *fixed_fn = 0;
+    d_ptr = new Registration_parms_private;
+
+//    *moving_fn = 0;
+//    *fixed_fn = 0;
     *moving_mask_fn = 0;
     *fixed_mask_fn = 0;
     img_out_fmt = IMG_OUT_FMT_AUTO;
@@ -59,6 +68,8 @@ Registration_parms::~Registration_parms()
         delete stages[i];
     }
     free (stages);
+
+    delete d_ptr;
 }
 
 
@@ -108,8 +119,7 @@ populate_jobs (char jobs[255][_MAX_PATH], char* dir)
 }
 
 int
-set_key_val (
-    Registration_parms* regp, 
+Registration_parms::set_key_val (
     const char* key, 
     const char* val, 
     int section
@@ -118,63 +128,63 @@ set_key_val (
     int rc;
     Stage_parms* stage = 0;
     if (section != 0) {
-        stage = regp->stages[regp->num_stages-1];
+        stage = this->stages[this->num_stages-1];
     }
 
     /* The following keywords are only allowed globally */
     if (!strcmp (key, "fixed")) {
         if (section != 0) goto error_not_stages;
-        strncpy (regp->fixed_fn, val, _MAX_PATH);
+        d_ptr->fixed_fn = val;
     }
     else if (!strcmp (key, "moving")) {
         if (section != 0) goto error_not_stages;
-        strncpy (regp->moving_fn, val, _MAX_PATH);
+        d_ptr->moving_fn = val;
     }
     else if (!strcmp (key, "fixed_dir")) {
         if (section != 0) goto error_not_stages;
-        strncpy (regp->fixed_dir, val, _MAX_PATH);
-        check_trailing_slash (regp->fixed_dir);
-        regp->num_jobs = populate_jobs (regp->fixed_jobs, regp->fixed_dir);
+        strncpy (this->fixed_dir, val, _MAX_PATH);
+        check_trailing_slash (this->fixed_dir);
+        this->num_jobs = populate_jobs (this->fixed_jobs, this->fixed_dir);
     }
     else if (!strcmp (key, "moving_dir")) {
         if (section != 0) goto error_not_stages;
-        strncpy (regp->moving_dir, val, _MAX_PATH);
-        check_trailing_slash (regp->moving_dir);
-        regp->num_jobs = populate_jobs (regp->moving_jobs, regp->moving_dir);
+        strncpy (this->moving_dir, val, _MAX_PATH);
+        check_trailing_slash (this->moving_dir);
+        this->num_jobs = populate_jobs (this->moving_jobs, this->moving_dir);
     }
     else if (!strcmp (key, "img_out_dir")) {
         if (section != 0) goto error_not_stages;
-        strncpy (regp->img_out_dir, val, _MAX_PATH);
-        check_trailing_slash (regp->img_out_dir);
+        strncpy (this->img_out_dir, val, _MAX_PATH);
+        check_trailing_slash (this->img_out_dir);
     }
     else if (!strcmp (key, "vf_out_dir")) {
         if (section != 0) goto error_not_stages;
-        strncpy (regp->vf_out_dir, val, _MAX_PATH);
-        check_trailing_slash (regp->vf_out_dir);
+        strncpy (this->vf_out_dir, val, _MAX_PATH);
+        check_trailing_slash (this->vf_out_dir);
     }
     else if (!strcmp (key, "xf_in") || !strcmp (key, "xform_in") || !strcmp (key, "vf_in")) {
         if (section != 0) goto error_not_stages;
-        strncpy (regp->xf_in_fn, val, _MAX_PATH);
+        strncpy (this->xf_in_fn, val, _MAX_PATH);
     }
     else if (!strcmp (key, "log") || !strcmp (key, "logfile")) {
         if (section != 0) goto error_not_stages;
-        strncpy (regp->log_fn, val, _MAX_PATH);
+        strncpy (this->log_fn, val, _MAX_PATH);
     }
     else if (!strcmp (key, "fixed_landmarks")) {
         if (section != 0) goto error_not_global;
-        regp->fixed_landmarks_fn = val;
+        this->fixed_landmarks_fn = val;
     }
     else if (!strcmp (key, "moving_landmarks")) {
         if (section != 0) goto error_not_global;
-        regp->moving_landmarks_fn = val;
+        this->moving_landmarks_fn = val;
     }
     else if (!strcmp (key, "fixed_landmark_list")) {
         if (section != 0) goto error_not_global;
-        regp->fixed_landmarks_list = val;
+        this->fixed_landmarks_list = val;
     }
     else if (!strcmp (key, "moving_landmark_list")) {
         if (section != 0) goto error_not_global;
-        regp->moving_landmarks_list = val;
+        this->moving_landmarks_list = val;
     }
 
     /* The following keywords are allowed either globally or in stages */
@@ -188,28 +198,28 @@ set_key_val (
             goto error_exit;
         }
         if (section == 0) {
-            regp->default_value = f;
+            this->default_value = f;
         } else {
             stage->default_value = f;
         }
     }
     else if (!strcmp (key, "fixed_mask")) {
         if (section == 0) {
-            strncpy (regp->fixed_mask_fn, val, _MAX_PATH);
+            strncpy (this->fixed_mask_fn, val, _MAX_PATH);
         } else {
             strncpy (stage->fixed_mask_fn, val, _MAX_PATH);
         }
     }
     else if (!strcmp (key, "moving_mask")) {
         if (section == 0) {
-            strncpy (regp->moving_mask_fn, val, _MAX_PATH);
+            strncpy (this->moving_mask_fn, val, _MAX_PATH);
         } else {
             strncpy (stage->moving_mask_fn, val, _MAX_PATH);
         }
     }
     else if (!strcmp (key, "img_out") || !strcmp (key, "image_out")) {
         if (section == 0) {
-            strncpy (regp->img_out_fn, val, _MAX_PATH);
+            strncpy (this->img_out_fn, val, _MAX_PATH);
         } else {
             strncpy (stage->img_out_fn, val, _MAX_PATH);
         }
@@ -222,7 +232,7 @@ set_key_val (
             goto error_exit;
         }
         if (section == 0) {
-            regp->img_out_fmt = fmt;
+            this->img_out_fmt = fmt;
         } else {
             stage->img_out_fmt = fmt;
         }
@@ -233,14 +243,14 @@ set_key_val (
             goto error_exit;
         }
         if (section == 0) {
-            regp->img_out_type = type;
+            this->img_out_type = type;
         } else {
             stage->img_out_type = type;
         }
     }
     else if (!strcmp (key, "vf_out")) {
         if (section == 0) {
-            strncpy (regp->vf_out_fn, val, _MAX_PATH);
+            strncpy (this->vf_out_fn, val, _MAX_PATH);
         } else {
             strncpy (stage->vf_out_fn, val, _MAX_PATH);
         }
@@ -251,7 +261,7 @@ set_key_val (
             value = false;
         }
         if (section == 0) {
-            regp->xf_out_itk = value;
+            this->xf_out_itk = value;
         } else {
             stage->xf_out_itk = value;
         }
@@ -261,20 +271,20 @@ set_key_val (
            This capability is used by the slicer plugin. */
 #if defined (commentout)
         if (section == 0) {
-            strncpy (regp->xf_out_fn, val, _MAX_PATH);
+            strncpy (this->xf_out_fn, val, _MAX_PATH);
         } else {
             strncpy (stage->xf_out_fn, val, _MAX_PATH);
         }
 #endif
         if (section == 0) {
-            regp->xf_out_fn.push_back (val);
+            this->xf_out_fn.push_back (val);
         } else {
             stage->xf_out_fn.push_back (val);
         }
     }
     else if (!strcmp (key, "warped_landmarks")) {
         if (section == 0) {
-            regp->warped_landmarks_fn = val;
+            this->warped_landmarks_fn = val;
         } else {
             stage->warped_landmarks_fn = val;
         }
@@ -732,7 +742,7 @@ Registration_parms::set_command_string (
         val = trim (val);
 
         if (key != "" && val != "") {
-            if (set_key_val (this, key.c_str(), val.c_str(), section) < 0) {
+            if (this->set_key_val (key.c_str(), val.c_str(), section) < 0) {
                 printf ("Parse error: %s\n", buf_ori.c_str());
                 return -1;
             }
@@ -742,7 +752,7 @@ Registration_parms::set_command_string (
 }
 
 int
-plm_parms_parse_command_file (Registration_parms* regp, const char* options_fn)
+Registration_parms::parse_command_file (const char* options_fn)
 {
     /* Read file into string */
     std::ifstream t (options_fn);
@@ -750,5 +760,72 @@ plm_parms_parse_command_file (Registration_parms* regp, const char* options_fn)
     buffer << t.rdbuf();
 
     /* Parse the string */
-    return regp->set_command_string (buffer.str());
+    return this->set_command_string (buffer.str());
+}
+
+/* JAS 2012.03.13
+ *  This is a temp solution */
+/* GCS 2012-12-28: Nb. regp->job_idx must be set prior to calling 
+   this function */
+void
+Registration_parms::set_job_paths (void)
+{
+    /* Setup input paths */
+    if (*(this->fixed_dir)) {
+        d_ptr->fixed_fn = string_format (
+            "%s%s", this->fixed_dir, this->fixed_jobs[this->job_idx]);
+    }
+    if (*(this->moving_dir)) {
+        d_ptr->moving_fn = string_format (
+            "%s%s", this->moving_dir, this->moving_jobs[this->job_idx]);
+    }
+
+    /* Setup output paths */
+    /*   NOTE: For now, output files inherit moving image names */
+    if (*(this->img_out_dir)) {
+        if (!strcmp (this->img_out_dir, this->moving_dir)) {
+            strcpy (this->img_out_fn, this->img_out_dir);
+            strcat (this->img_out_fn, "warp/");
+            strcat (this->img_out_fn, this->moving_jobs[this->job_idx]);
+        } else {
+            strcpy (this->img_out_fn, this->img_out_dir);
+            strcat (this->img_out_fn, this->moving_jobs[this->job_idx]);
+        }
+    } else {
+        /* Output directory not specifed but img_out was... smart fallback*/
+        if (*(this->img_out_fn)) {
+            strcpy (this->img_out_fn, this->moving_dir);
+            strcat (this->img_out_fn, "warp/");
+            strcat (this->img_out_fn, this->moving_jobs[this->job_idx]);
+        }
+    }
+    if (*(this->vf_out_dir)) {
+        if (!strcmp (this->vf_out_dir, this->moving_dir)) {
+            strcpy (this->vf_out_fn, this->img_out_dir);
+            strcat (this->vf_out_fn, "vf/");
+            strcat (this->vf_out_fn, this->moving_jobs[this->job_idx]);
+        } else {
+            strcpy (this->vf_out_fn, this->vf_out_dir);
+            strcat (this->vf_out_fn, this->moving_jobs[this->job_idx]);
+        }
+    } else {
+        /* Output directory not specifed but vf_out was... smart fallback*/
+        if (*(this->vf_out_fn)) {
+            strcpy (this->vf_out_fn, this->moving_dir);
+            strcat (this->vf_out_fn, "vf/");
+            strcat (this->vf_out_fn, this->moving_jobs[this->job_idx]);
+        }
+    }
+}
+
+const std::string& 
+Registration_parms::get_fixed_fn ()
+{
+    return d_ptr->fixed_fn;
+}
+
+const std::string& 
+Registration_parms::get_moving_fn ()
+{
+    return d_ptr->moving_fn;
 }

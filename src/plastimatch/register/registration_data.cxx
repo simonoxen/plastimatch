@@ -34,22 +34,26 @@ Registration_data::load_input_files (Registration_parms* regp)
     Plm_image_type image_type = PLM_IMG_TYPE_ITK_FLOAT;
 
     /* Load images */
-    logfile_printf ("Loading fixed image: %s\n", regp->fixed_fn);
-    this->fixed_image = plm_image_load (regp->fixed_fn, image_type);
+    logfile_printf ("Loading fixed image: %s\n", 
+        regp->get_fixed_fn().c_str());
+    this->fixed_image = plm_image_load (regp->get_fixed_fn(), image_type);
 
-    logfile_printf ("Loading moving image: %s\n", regp->moving_fn);
-    this->moving_image = plm_image_load (regp->moving_fn, image_type);
+    logfile_printf ("Loading moving image: %s\n", 
+        regp->get_moving_fn().c_str());
+    this->moving_image = plm_image_load (regp->get_moving_fn(), image_type);
 
     /* load "global" masks */
     if (regp->fixed_mask_fn[0]) {
         logfile_printf ("Loading fixed mask: %s\n", regp->fixed_mask_fn);
-        this->fixed_mask = plm_image_load (regp->fixed_mask_fn, PLM_IMG_TYPE_ITK_UCHAR);
+        this->fixed_mask = plm_image_load (
+            regp->fixed_mask_fn, PLM_IMG_TYPE_ITK_UCHAR);
     } else {
         this->fixed_mask = 0;
     }
     if (regp->moving_mask_fn[0]) {
         logfile_printf ("Loading moving mask: %s\n", regp->moving_mask_fn);
-        this->moving_mask = plm_image_load (regp->moving_mask_fn, PLM_IMG_TYPE_ITK_UCHAR);
+        this->moving_mask = plm_image_load (
+            regp->moving_mask_fn, PLM_IMG_TYPE_ITK_UCHAR);
     } else {
         this->moving_mask = 0;
     }

@@ -27,59 +27,6 @@
 #define FIXME_BACKGROUND_MAX (-1200)
 
 
-/* JAS 2012.03.13
- *  This is a temp solution */
-static void
-set_job_paths (Registration_parms* regp)
-{
-    /* Setup input paths */
-    if (*(regp->fixed_dir)) {
-        strcpy (regp->fixed_fn, regp->fixed_dir);
-        strcat (regp->fixed_fn, regp->fixed_jobs[regp->job_idx]);
-    }
-    if (*(regp->moving_dir)) {
-        strcpy (regp->moving_fn, regp->moving_dir);
-        strcat (regp->moving_fn, regp->moving_jobs[regp->job_idx]);
-    }
-
-    /* Setup output paths */
-    /*   NOTE: For now, output files inherit moving image names */
-    if (*(regp->img_out_dir)) {
-        if (!strcmp (regp->img_out_dir, regp->moving_dir)) {
-            strcpy (regp->img_out_fn, regp->img_out_dir);
-            strcat (regp->img_out_fn, "warp/");
-            strcat (regp->img_out_fn, regp->moving_jobs[regp->job_idx]);
-        } else {
-            strcpy (regp->img_out_fn, regp->img_out_dir);
-            strcat (regp->img_out_fn, regp->moving_jobs[regp->job_idx]);
-        }
-    } else {
-        /* Output directory not specifed but img_out was... smart fallback*/
-        if (*(regp->img_out_fn)) {
-            strcpy (regp->img_out_fn, regp->moving_dir);
-            strcat (regp->img_out_fn, "warp/");
-            strcat (regp->img_out_fn, regp->moving_jobs[regp->job_idx]);
-        }
-    }
-    if (*(regp->vf_out_dir)) {
-        if (!strcmp (regp->vf_out_dir, regp->moving_dir)) {
-            strcpy (regp->vf_out_fn, regp->img_out_dir);
-            strcat (regp->vf_out_fn, "vf/");
-            strcat (regp->vf_out_fn, regp->moving_jobs[regp->job_idx]);
-        } else {
-            strcpy (regp->vf_out_fn, regp->vf_out_dir);
-            strcat (regp->vf_out_fn, regp->moving_jobs[regp->job_idx]);
-        }
-    } else {
-        /* Output directory not specifed but vf_out was... smart fallback*/
-        if (*(regp->vf_out_fn)) {
-            strcpy (regp->vf_out_fn, regp->moving_dir);
-            strcat (regp->vf_out_fn, "vf/");
-            strcat (regp->vf_out_fn, regp->moving_jobs[regp->job_idx]);
-        }
-    }
-}
-
 /* This helps speed up the registration, by setting the bounding box to the 
    smallest size needed.  To find the bounding box, either use the extent 
    of the fixed_mask (if one is used), or by eliminating excess air 
@@ -444,8 +391,8 @@ do_registration (Registration_parms* regp)
     for (regp->job_idx=0; regp->job_idx < regp->num_jobs; regp->job_idx++) {
 
         if (regp->num_jobs > 1) {
-            set_job_paths (regp);
-            if (!strcmp (regp->fixed_fn, regp->moving_fn)) {
+            regp->set_job_paths ();
+            if (regp->get_fixed_fn() == regp->get_moving_fn()) {
                 continue;
             }
         }

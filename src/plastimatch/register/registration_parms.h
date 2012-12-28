@@ -49,13 +49,16 @@
 
 
 class Plm_image;
+class Registration_parms_private;
 class Stage_parms;
 
 class PLMREGISTER_API Registration_parms {
 public:
+    Registration_parms_private *d_ptr;
+public:
     int num_stages;
-    char moving_fn[_MAX_PATH];
-    char fixed_fn[_MAX_PATH];
+//    char moving_fn[_MAX_PATH];
+//    char fixed_fn[_MAX_PATH];
     char moving_mask_fn[_MAX_PATH];
     char fixed_mask_fn[_MAX_PATH];
     int img_out_fmt;
@@ -93,15 +96,12 @@ public:
     ~Registration_parms();
 public:
     int set_command_string (const std::string& command_string);
+    int set_key_val (const char* key, const char* val, int section);
+    int parse_command_file (const char* options_fn);
+    void set_job_paths (void);
+public:
+    const std::string& get_fixed_fn ();
+    const std::string& get_moving_fn ();
 };
-
-PLMREGISTER_API int plm_parms_parse_command_file (
-        Registration_parms* regp,
-        const char* options_fn
-);
-PLMREGISTER_API int plm_parms_process_command_file (
-        Registration_parms *regp,
-        FILE *fp
-);
 
 #endif
