@@ -698,7 +698,10 @@ Registration_parms::set_command_string (
                 || buf.find ("[stage]") != std::string::npos)
             {
                 section = 1;
+
+#if defined (commentout)
                 this->num_stages ++;
+#endif
 
 #if defined (commentout)
                 this->stages = (Stage_parms**) realloc (
@@ -711,6 +714,8 @@ Registration_parms::set_command_string (
                 }
                 this->stages[this->num_stages-1]->stage_no = this->num_stages;
 #endif
+
+#if defined (commentout)
                 Stage_parms *sp;
                 if (this->num_stages == 1) {
                     sp = new Stage_parms();
@@ -724,6 +729,9 @@ Registration_parms::set_command_string (
                 if (this->num_stages == 1) {
                     sp->default_value = this->default_value;
                 }
+#endif
+
+                this->append_stage ();
 
                 continue;
             }
@@ -841,4 +849,26 @@ std::list<Stage_parms*>&
 Registration_parms::get_stages ()
 {
     return d_ptr->stages;
+}
+
+Stage_parms* 
+Registration_parms::append_stage ()
+{
+    Stage_parms *sp;
+
+    this->num_stages ++;
+    if (this->num_stages == 1) {
+        sp = new Stage_parms();
+    } else {
+        sp = new Stage_parms(*d_ptr->stages.back());
+    }
+    d_ptr->stages.push_back (sp);
+
+    /* Some parameters that should be copied from global 
+       to the first stage. */
+    if (this->num_stages == 1) {
+        sp->default_value = this->default_value;
+    }
+
+    return sp;
 }

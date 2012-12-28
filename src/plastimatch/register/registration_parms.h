@@ -103,6 +103,7 @@ public:
     const std::string& get_fixed_fn ();
     const std::string& get_moving_fn ();
     std::list<Stage_parms*>& get_stages ();
+    Stage_parms* append_stage ();
 };
 
 #endif
