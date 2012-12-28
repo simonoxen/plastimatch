@@ -1,3 +1,5 @@
+#include "nkidecompress.h"
+
 /* Copied from nkiqrsop.cpp */
 
 static const unsigned int CRC32_table[256] = {

@@ -15,8 +15,8 @@
 #include "itk_registration_private.h"
 #include "logfile.h"
 #include "plm_math.h"
-#include "plm_parms.h"
 #include "plm_timer.h"
+#include "stage_parms.h"
 
 /* Lots of ITK algorithms don't behave uniformly.
    We're going to keep all this state in the observer, and the 

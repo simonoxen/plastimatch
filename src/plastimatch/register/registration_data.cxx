@@ -6,9 +6,9 @@
 #include "logfile.h"
 #include "plm_image.h"
 #include "plm_image_type.h"
-#include "plm_parms.h"
 #include "print_and_exit.h"
 #include "registration_data.h"
+#include "registration_parms.h"
 
 Registration_data::Registration_data ()
 {

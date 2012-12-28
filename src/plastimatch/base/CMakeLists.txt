@@ -154,6 +154,7 @@ endforeach ()
 ##-----------------------------------------------------------------------------
 set (PLMBASE_LIBRARY_DEPENDENCIES
   ${ITK_LIBRARIES}
+  nkidecompress
   plmsys
   )
 if (DCMTK_FOUND)

@@ -31,7 +31,6 @@
 #if (!PLM_CUDA_COMPILE)
 #include "landmark_warp.h"
 #endif
-#include "plm_parms.h"
 #include "plm_stages.h"
 #include "rbf_cluster.h"
 #include "rbf_gauss.h"
@@ -39,6 +38,8 @@
 #if (!PLM_CUDA_COMPILE)
 #include "registration_data.h"
 #endif
+#include "registration_parms.h"
+#include "stage_parms.h"
 
 #endif /* #ifndef _plmregister_h_ */
 

@@ -81,8 +81,6 @@ macro (PLM_ADD_STATIC_LIBRARY
       )
   endif ()
 
-  # Let's worry about Slicer 4 later
-
   target_link_libraries (${TARGET_NAME} ${TARGET_LIBS})
   if (NOT ${TARGET_LDFLAGS} STREQUAL "")
     set_target_properties(${TARGET_NAME} 

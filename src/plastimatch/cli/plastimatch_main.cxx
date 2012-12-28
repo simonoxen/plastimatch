@@ -35,10 +35,10 @@
 #include "pcmd_union.h"
 #include "pcmd_warp.h"
 #include "pcmd_xf_convert.h"
-#include "plm_parms.h"
 #include "plm_stages.h"
 #include "plm_version.h"
 #include "print_and_exit.h"
+#include "registration_parms.h"
 
 static void
 print_version (void)

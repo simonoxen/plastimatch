@@ -18,10 +18,10 @@
 #include "itk_resample.h"
 #include "logfile.h"
 #include "plm_image.h"
-#include "plm_parms.h"
 #include "plm_timer.h"
 #include "print_and_exit.h"
 #include "registration_data.h"
+#include "stage_parms.h"
 #include "xform.h"
 
 typedef itk::DemonsRegistrationFilter<

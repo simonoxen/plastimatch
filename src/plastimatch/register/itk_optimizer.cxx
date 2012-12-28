@@ -21,8 +21,8 @@
 #include "itk_registration.h"
 #include "itk_registration_private.h"
 #include "logfile.h"
-#include "plm_parms.h"
 #include "print_and_exit.h"
+#include "stage_parms.h"
 
 /* Types of optimizers */
 typedef itk::AmoebaOptimizer AmoebaOptimizerType;

@@ -16,12 +16,51 @@
 #include <dirent.h>
 #endif
 
-#include "plm_parms.h"
 #include "plm_path.h"
 #include "print_and_exit.h"
+#include "registration_parms.h"
+#include "stage_parms.h"
 #include "string_util.h"
 
 #define BUFLEN 2048
+
+Registration_parms::Registration_parms()
+{
+    *moving_fn = 0;
+    *fixed_fn = 0;
+    *moving_mask_fn = 0;
+    *fixed_mask_fn = 0;
+    img_out_fmt = IMG_OUT_FMT_AUTO;
+    img_out_type = PLM_IMG_TYPE_UNDEFINED;
+    *img_out_fn = 0;
+    *xf_in_fn = 0;
+    xf_out_itk = false;
+    *vf_out_fn = 0;
+    *log_fn = 0;
+    init_type = STAGE_TRANSFORM_NONE;
+    default_value = 0.0;
+    num_stages = 0;
+    stages = 0;
+    *moving_dir = 0;
+    *fixed_dir = 0;
+    *img_out_dir = 0;
+    *vf_out_dir = 0;
+    for (int i=0; i<256; i++) {
+        moving_jobs[i][0] = '\0';
+        fixed_jobs[i][0] = '\0';
+    }
+    job_idx = 0;
+    num_jobs = 1;
+}
+
+Registration_parms::~Registration_parms()
+{
+    for (int i = 0; i < num_stages; i++) {
+        delete stages[i];
+    }
+    free (stages);
+}
+
 
 // JAS 2012.02.13 -- TODO: Move somewhere more appropriate
 static void

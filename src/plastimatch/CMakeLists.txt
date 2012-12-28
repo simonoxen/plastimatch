@@ -271,7 +271,7 @@ endif ()
 ##  Set up configuration for external projects using plastimatch API
 ##-----------------------------------------------------------------------------
 # Add targets to build tree export set
-set (EXPORT_TARGET_LIST bstrlib plmsys nkidecompress plmbase plmutil)
+set (EXPORT_TARGET_LIST bstrlib plmsys plmbase nkidecompress plmutil)
 if (PLMLIB_CONFIG_ENABLE_DOSE)
   set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} specfun plmdose)
 endif ()

@@ -42,12 +42,12 @@ set (PLMREGISTER_LIBRARY_SRC
   itk_registration_observer.cxx
   itk_tps.cxx
   landmark_warp.cxx 
-  plm_parms.cxx
   plm_stages.cxx
   rbf_cluster.cxx
   rbf_gauss.cxx
   rbf_wendland.cxx
   registration_data.cxx
+  registration_parms.cxx
   )
 
 if (OPENCL_FOUND)

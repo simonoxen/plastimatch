@@ -30,9 +30,9 @@
 #include "logfile.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
-#include "plm_parms.h"
 #include "print_and_exit.h"
 #include "registration_data.h"
+#include "stage_parms.h"
 #include "xform.h"
 
 typedef itk::MeanSquaresImageToImageMetric <

@@ -15,11 +15,12 @@
 #include "logfile.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
-#include "plm_parms.h"
 #include "plm_stages.h"
 #include "plm_timer.h"
 #include "plm_warp.h"
 #include "registration_data.h"
+#include "registration_parms.h"
+#include "stage_parms.h"
 #include "volume.h"
 #include "xform.h"
 

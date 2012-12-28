@@ -81,7 +81,7 @@ nki_load (const char* filename)
         print_and_exit ("Failure to parse NKI header\n");
     }
 
-    short *dest = (short*) malloc (sizeof(short) * dim1 * dim2 * dim3);
+    short int *dest = (short*) malloc (sizeof(short) * dim1 * dim2 * dim3);
     
     int rc = nki_private_decompress (dest, src, dim1 * dim2 * dim3);
     free (src);
