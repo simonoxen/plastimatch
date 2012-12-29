@@ -98,6 +98,13 @@ Rtss::load (const char *ss_img, const char *ss_list)
 }
 
 void
+Rtss::load_prefix (const char *prefix_dir)
+{
+    Pstring pd = prefix_dir;
+    this->load_prefix (pd);
+}
+
+void
 Rtss::load_prefix (const Pstring &prefix_dir)
 {
     /* Clear out any existing structures */

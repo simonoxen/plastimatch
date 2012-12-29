@@ -165,13 +165,28 @@ Mabs::run_internal (const Mabs_parms& parms)
     {
         Rtds rtds;
         std::string path = *it;
+        std::string patient_id = strip_leading_dir (path);
 
+#if defined (commentout)
         /* For now, only handle dicom directories.  We assume the 
            load is successful. */
         timer.start();
         lprintf ("MABS loading %s\n", path.c_str());
         rtds.load_dicom_dir (path.c_str());
         rtds.m_rtss->prune_empty ();
+        d_ptr->time_io += timer.report();
+#endif
+        /* Load image & structures from "prep" directory */
+        timer.start();
+        std::string fn = string_format ("%s/%s/%s/%s.nrrd", 
+            d_ptr->traindir_base.c_str(), patient_id.c_str(), 
+            patient_id.c_str(), patient_id.c_str());
+        rtds.m_img = plm_image_load_native (fn.c_str());
+        fn = string_format ("%s/%s/%s/structures", 
+            d_ptr->traindir_base.c_str(), patient_id.c_str(), 
+            patient_id.c_str());
+        rtds.m_rtss = new Rtss;
+        rtds.m_rtss->load_prefix (fn.c_str());
         d_ptr->time_io += timer.report();
 
         /* Inspect the structures -- we might be able to skip the 
@@ -227,14 +242,13 @@ Mabs::run_internal (const Mabs_parms& parms)
         /* Save some debugging information */
         if (d_ptr->write_registration_files) {
             lprintf ("Saving registration_files\n");
-            std::string tmp_path = strip_leading_dir (path);
             Pstring fn;
             fn.format ("%s/%s/img.nrrd", d_ptr->output_dir.c_str(), 
-                tmp_path.c_str());
+                patient_id.c_str());
             warped_image.save_image (fn.c_str());
 
             fn.format ("%s/%s/xf.txt", d_ptr->output_dir.c_str(), 
-                tmp_path.c_str());
+                patient_id.c_str());
             xf_out->save (fn.c_str());
         }
 
@@ -242,7 +256,9 @@ Mabs::run_internal (const Mabs_parms& parms)
         printf ("Warp structures...\n");
         Plm_image_header source_pih (rtds.m_img);
         timer.start();
-        rtds.m_rtss->rasterize (&source_pih, false, false);
+#if defined (commentout)
+        //rtds.m_rtss->rasterize (&source_pih, false, false);
+#endif
         rtds.m_rtss->warp (xf_out, &fixed_pih);
         d_ptr->time_warp += timer.report();
 
@@ -361,10 +377,10 @@ Mabs::prep (const Mabs_parms& parms)
 
         /* Save the image as raw files */
         timer.start();
-        std::string tmp_path = strip_leading_dir (path);
+        std::string patient_id = strip_leading_dir (path);
         std::string fn = string_format ("%s/%s/%s/%s.nrrd", 
-            d_ptr->traindir_base.c_str(), tmp_path.c_str(), tmp_path.c_str(),
-            tmp_path.c_str());
+            d_ptr->traindir_base.c_str(), patient_id.c_str(), 
+            patient_id.c_str(), patient_id.c_str());
         rtds.m_img->save_image (fn.c_str());
 
         /* Remove structures which are not part of the atlas */
@@ -390,8 +406,9 @@ Mabs::prep (const Mabs_parms& parms)
         d_ptr->time_extract += timer.report();
 
         /* Save strcutres which are part of the atlas */
-        std::string prefix = string_format ("%s/%s/%s/", 
-            d_ptr->traindir_base.c_str(), tmp_path.c_str(), tmp_path.c_str());
+        std::string prefix = string_format ("%s/%s/%s/structures", 
+            d_ptr->traindir_base.c_str(), patient_id.c_str(), 
+            patient_id.c_str());
         rtds.m_rtss->save_prefix (prefix.c_str());
         d_ptr->time_io += timer.report();
     }
@@ -446,8 +463,8 @@ Mabs::train (const Mabs_parms& parms)
         d_ptr->atlas_list.remove (path);
 
         /* Set output dir for this test case */
-        std::string tmp_path = strip_leading_dir (path);
-        d_ptr->output_dir = d_ptr->traindir_base + "/" + tmp_path;
+        std::string patient_id = strip_leading_dir (path);
+        d_ptr->output_dir = d_ptr->traindir_base + "/" + patient_id;
         lprintf ("outdir = %s\n", d_ptr->output_dir.c_str());
 
         /* Load the input file.  For now, we'll assume this is successful. */

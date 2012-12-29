@@ -35,6 +35,7 @@ public:
     void clear ();
     void load (const char *ss_img, const char *ss_list);
     void load_cxt (const Pstring &input_fn, Slice_index *rdd);
+    void load_prefix (const char *prefix_dir);
     void load_prefix (const Pstring &prefix_dir);
     void load_xio (const Xio_studyset& xio_studyset);
     void load_gdcm_rtss (const char *input_fn,  Slice_index *rdd);
