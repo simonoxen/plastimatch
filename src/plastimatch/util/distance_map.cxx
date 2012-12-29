@@ -70,7 +70,7 @@ Distance_map::run ()
     }
 
     /* ??? */
-    filter->SetNumberOfThreads (2);
+    /* filter->SetNumberOfThreads (2); */
 
     /* Run the filter */
     filter->SetInput (d_ptr->input);
