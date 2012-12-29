@@ -46,17 +46,22 @@ public:
     double time_io;
     double time_reg;
     double time_vote;
-    double time_warp;
+    double time_warp_img;
+    double time_warp_str;
 
 public:
     Mabs_private () {
+        write_weight_files = false;
+        write_registration_files = true;
+        this->reset_timers ();
+    }
+    void reset_timers () {
         time_extract = 0;
         time_io = 0;
         time_reg = 0;
         time_vote = 0;
-        time_warp = 0;
-        write_weight_files = false;
-        write_registration_files = true;
+        time_warp_img = 0;
+        time_warp_str = 0;
     }
 };
 
@@ -167,15 +172,6 @@ Mabs::run_internal (const Mabs_parms& parms)
         std::string path = *it;
         std::string patient_id = strip_leading_dir (path);
 
-#if defined (commentout)
-        /* For now, only handle dicom directories.  We assume the 
-           load is successful. */
-        timer.start();
-        lprintf ("MABS loading %s\n", path.c_str());
-        rtds.load_dicom_dir (path.c_str());
-        rtds.m_rtss->prune_empty ();
-        d_ptr->time_io += timer.report();
-#endif
         /* Load image & structures from "prep" directory */
         timer.start();
         std::string fn = string_format ("%s/%s/%s/%s.nrrd", 
@@ -237,7 +233,7 @@ Mabs::run_internal (const Mabs_parms& parms)
         timer.start();
         plm_warp (&warped_image, 0, xf_out, &fixed_pih, regd.moving_image, 
             regp.default_value, 0, 1);
-        d_ptr->time_warp += timer.report();
+        d_ptr->time_warp_img += timer.report();
 
         /* Save some debugging information */
         if (d_ptr->write_registration_files) {
@@ -256,11 +252,8 @@ Mabs::run_internal (const Mabs_parms& parms)
         printf ("Warp structures...\n");
         Plm_image_header source_pih (rtds.m_img);
         timer.start();
-#if defined (commentout)
-        //rtds.m_rtss->rasterize (&source_pih, false, false);
-#endif
         rtds.m_rtss->warp (xf_out, &fixed_pih);
-        d_ptr->time_warp += timer.report();
+        d_ptr->time_warp_str += timer.report();
 
         /* Loop through structures for this atlas image */
         printf ("Vote...\n");
@@ -443,6 +436,8 @@ void
 Mabs::train (const Mabs_parms& parms)
 {
     Plm_timer timer;
+    Plm_timer timer_total;
+    timer_total.start();
 
     /* Do a few sanity checks */
     this->sanity_checks (parms);
@@ -477,9 +472,11 @@ Mabs::train (const Mabs_parms& parms)
     }
 
     printf ("Registration time:    %10.1f seconds\n", d_ptr->time_reg);
-    printf ("Warping time:         %10.1f seconds\n", d_ptr->time_warp);
+    printf ("Warping time (img):   %10.1f seconds\n", d_ptr->time_warp_img);
+    printf ("Warping time (str):   %10.1f seconds\n", d_ptr->time_warp_str);
     printf ("Extraction time:      %10.1f seconds\n", d_ptr->time_extract);
     printf ("Voting time:          %10.1f seconds\n", d_ptr->time_vote);
     printf ("I/O time:             %10.1f seconds\n", d_ptr->time_io);
+    printf ("Total time:           %10.1f seconds\n", timer_total.report());
     printf ("MABS training complete\n");
 }

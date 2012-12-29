@@ -180,6 +180,7 @@ bspline_warp_dcos (
     T* vout_img = (T*) vout->img;
     T* m_img = (T*) moving->img;
 
+#if defined (commentout)
     printf ("Direction cosines: "
         "vout = %f %f %f ...\n"
         "mov = %f %f %f ...\n",
@@ -220,6 +221,7 @@ bspline_warp_dcos (
         moving->step[0][1],
         moving->step[0][2]
     );
+#endif
 
     /* A few sanity checks */
     if (vout->pix_type != PIX_TYPE) {
@@ -393,8 +395,12 @@ bspline_warp (
         print_and_exit ("bspline_warp: sorry, this is not supported.\n");
         break;
     case PT_UCHAR_VEC_INTERLEAVED:
+        bspline_warp_dcos<unsigned char, PT_UCHAR_VEC_INTERLEAVED> (
+            vout, vf_out, bxf, moving, linear_interp, default_val);
+#if defined (commentout)
         bspline_warp_internal<unsigned char, PT_UCHAR_VEC_INTERLEAVED> (
             vout, vf_out, bxf, moving, linear_interp, default_val);
+#endif
         break;
     default:
         print_and_exit ("bspline_warp: sorry, this is not supported.\n");
