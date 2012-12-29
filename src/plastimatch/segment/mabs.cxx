@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include "dir_list.h"
+#include "distance_map.h"
 #include "file_util.h"
 #include "itk_image_save.h"
 #include "itk_threshold.h"
@@ -42,6 +43,7 @@ public:
     bool write_weight_files;
     bool write_registration_files;
 
+    double time_dmap;
     double time_extract;
     double time_io;
     double time_reg;
@@ -56,6 +58,7 @@ public:
         this->reset_timers ();
     }
     void reset_timers () {
+        time_dmap = 0;
         time_extract = 0;
         time_io = 0;
         time_reg = 0;
@@ -235,8 +238,16 @@ Mabs::run_internal (const Mabs_parms& parms)
             regp.default_value, 0, 1);
         d_ptr->time_warp_img += timer.report();
 
+        /* Warp the structures */
+        printf ("Warp structures...\n");
+        Plm_image_header source_pih (rtds.m_img);
+        timer.start();
+        rtds.m_rtss->warp (xf_out, &fixed_pih);
+        d_ptr->time_warp_str += timer.report();
+
         /* Save some debugging information */
         if (d_ptr->write_registration_files) {
+            timer.start();
             lprintf ("Saving registration_files\n");
             Pstring fn;
             fn.format ("%s/%s/img.nrrd", d_ptr->output_dir.c_str(), 
@@ -246,14 +257,12 @@ Mabs::run_internal (const Mabs_parms& parms)
             fn.format ("%s/%s/xf.txt", d_ptr->output_dir.c_str(), 
                 patient_id.c_str());
             xf_out->save (fn.c_str());
-        }
 
-        /* Warp the structures */
-        printf ("Warp structures...\n");
-        Plm_image_header source_pih (rtds.m_img);
-        timer.start();
-        rtds.m_rtss->warp (xf_out, &fixed_pih);
-        d_ptr->time_warp_str += timer.report();
+            fn.format ("%s/%s/structures", d_ptr->output_dir.c_str(), 
+                patient_id.c_str());
+            rtds.m_rtss->save_prefix (fn.c_str());
+            d_ptr->time_io += timer.report();
+        }
 
         /* Loop through structures for this atlas image */
         printf ("Vote...\n");
@@ -286,11 +295,26 @@ Mabs::run_internal (const Mabs_parms& parms)
                 = rtds.m_rtss->get_structure_image (i);
             d_ptr->time_extract += timer.report();
 
-            /* Vote for each voxel */
+            /* Make the distance map */
             timer.start();
-            vote->vote (
-                warped_image.itk_float(),
-                structure_image);
+            Distance_map dmap;
+            dmap.set_input_image (structure_image);
+            dmap.run ();
+            FloatImageType::Pointer dmap_image = dmap.get_output_image ();
+            d_ptr->time_dmap += timer.report();
+
+            if (d_ptr->write_registration_files) {
+                timer.start();
+                fn = string_format (
+                    "%s/%s/dmap_%s.nrrd", d_ptr->output_dir.c_str(), 
+                    patient_id.c_str(), mapped_name.c_str());
+                itk_image_save (dmap_image, fn.c_str());
+                d_ptr->time_io += timer.report();
+            }
+
+            /* Vote */
+            timer.start();
+            vote->vote (warped_image.itk_float(), dmap_image);
             d_ptr->time_vote += timer.report();
         }
 
@@ -336,7 +360,7 @@ Mabs::run_internal (const Mabs_parms& parms)
         lprintf ("Saving thresholded structures\n");
         Pstring fn; 
         fn.format ("%s/label_%s.nrrd", d_ptr->output_dir.c_str(), 
-                vote_it->first.c_str());
+            vote_it->first.c_str());
         timer.start();
         itk_image_save (thresh, fn.c_str());
         d_ptr->time_io += timer.report();
@@ -475,6 +499,7 @@ Mabs::train (const Mabs_parms& parms)
     printf ("Warping time (img):   %10.1f seconds\n", d_ptr->time_warp_img);
     printf ("Warping time (str):   %10.1f seconds\n", d_ptr->time_warp_str);
     printf ("Extraction time:      %10.1f seconds\n", d_ptr->time_extract);
+    printf ("Distance map time:    %10.1f seconds\n", d_ptr->time_dmap);
     printf ("Voting time:          %10.1f seconds\n", d_ptr->time_vote);
     printf ("I/O time:             %10.1f seconds\n", d_ptr->time_io);
     printf ("Total time:           %10.1f seconds\n", timer_total.report());

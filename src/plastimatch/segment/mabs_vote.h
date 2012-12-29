@@ -31,8 +31,8 @@ public:
     /*! \brief Vote for labels using the contribution for a single 
       registered atlas image */
     void vote (
-        FloatImageType::Pointer atlas_image,
-        UCharImageType::Pointer atlas_label);
+        FloatImageType::Pointer atlas_image, 
+        FloatImageType::Pointer dmap_image);
     /*! \brief After you done adding contributions, normalize the 
       votes. */
     void normalize_votes ();

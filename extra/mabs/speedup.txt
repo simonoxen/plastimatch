@@ -19,3 +19,15 @@ Warping time (str):         13.4 seconds
 Extraction time:             3.2 seconds
 Voting time:               306.1 seconds
 I/O time:                   21.5 seconds
+
+Revision 4032, gelato, mini.cfg
+-------------------------------
+** Additional logic to save warped structures and distance maps **
+Registration time:           6.8 seconds
+Warping time (img):         10.9 seconds
+Warping time (str):         13.6 seconds
+Extraction time:             3.2 seconds
+Distance map time:         264.0 seconds
+Voting time:                40.0 seconds
+I/O time:                  215.2 seconds
+Total time:                572.1 seconds
