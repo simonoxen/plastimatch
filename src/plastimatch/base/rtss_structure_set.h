@@ -43,6 +43,7 @@ public:
 	const Pstring& color, 
 	int structure_id,
         int bit = -1);
+    void delete_structure (int index);
     Rtss_structure* find_structure_by_id (int structure_id);
     std::string get_structure_name (size_t index);
     void debug (void);

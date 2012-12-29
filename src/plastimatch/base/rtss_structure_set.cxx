@@ -147,6 +147,19 @@ Rtss_structure_set::add_structure (
     return new_structure;
 }
 
+void
+Rtss_structure_set::delete_structure (int index)
+{
+    Rtss_structure* curr_structure = this->slist[index];
+    delete curr_structure;
+
+    /* Remark: the below two lines are correct but redundant if 
+       (index == this->num_structures-1), but this comment to explain 
+       it is not worse than adding if statement. */
+    this->slist[index] = this->slist[this->num_structures-1];
+    this->num_structures --;
+}
+
 Rtss_structure*
 Rtss_structure_set::find_structure_by_id (int structure_id)
 {

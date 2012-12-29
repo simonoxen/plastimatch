@@ -368,16 +368,34 @@ Mabs::prep (const Mabs_parms& parms)
         rtds.m_img->save_image (fn.c_str());
 
         /* Remove structures which are not part of the atlas */
+        timer.start();
         rtds.m_rtss->prune_empty ();
+        Rtss_structure_set *cxt = rtds.m_rtss->m_cxt;
+        for (size_t i = 0; i < rtds.m_rtss->get_num_structures(); i++) {
+            /* Check structure name, make sure it is something we 
+               want to segment */
+            std::string ori_name = rtds.m_rtss->get_structure_name (i);
+            std::string mapped_name = this->map_structure_name (
+                parms, ori_name);
+            if (mapped_name == "") {
+                /* If not, delete it (before rasterizing) */
+                cxt->delete_structure (i);
+                --i;
+            }
+        }
 
         /* Rasterize structure sets and save */
         Plm_image_header pih (rtds.m_img);
         rtds.m_rtss->rasterize (&pih, false, false);
+        d_ptr->time_extract += timer.report();
+
+        /* Save strcutres which are part of the atlas */
         std::string prefix = string_format ("%s/%s/%s/", 
             d_ptr->traindir_base.c_str(), tmp_path.c_str(), tmp_path.c_str());
         rtds.m_rtss->save_prefix (prefix.c_str());
         d_ptr->time_io += timer.report();
     }
+    printf ("Rasterization time:   %10.1f seconds\n", d_ptr->time_extract);
     printf ("I/O time:             %10.1f seconds\n", d_ptr->time_io);
     printf ("MABS prep complete\n");
 }
