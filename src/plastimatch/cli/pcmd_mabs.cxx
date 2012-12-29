@@ -12,9 +12,11 @@
 class Mabs_parms_pcmd {
 public:
     Pstring cmd_file_fn;
+    bool prep;
     bool train;
 public:
     Mabs_parms_pcmd () {
+        prep = false;
         train = false;
     }
 };
@@ -22,7 +24,7 @@ public:
 static void
 usage_fn (dlib::Plm_clp *parser, int argc, char *argv[])
 {
-    std::cout << "Usage: plastimatch mabs [options]\n";
+    std::cout << "Usage: plastimatch mabs [options] command_file\n";
     parser->print_options (std::cout);
     std::cout << std::endl;
 }
@@ -39,6 +41,8 @@ parse_fn (
     parser->add_default_options ();
 
     /* Parameters */
+    parser->add_long_option ("", "prep", 
+        "pre-process atlas", 0);
     parser->add_long_option ("", "train", 
         "perform training to find the best parameters", 0);
 
@@ -58,10 +62,12 @@ parse_fn (
     parms->cmd_file_fn = (*parser)[0].c_str();
 
     /* Parameters */
+    if (parser->have_option ("prep")) {
+        parms->prep = true;
+    }
     if (parser->have_option ("train")) {
         parms->train = true;
     }
-
 }
 
 void
@@ -75,9 +81,13 @@ do_command_mabs (int argc, char *argv[])
     mabs_parms.parse_config (parms.cmd_file_fn.c_str());
 
     Mabs mabs;
-    if (parms.train) {
+    if (parms.prep) {
+        mabs.prep (mabs_parms);
+    }
+    else if (parms.train) {
         mabs.train (mabs_parms);
-    } else {
+    }
+    else {
         mabs.run (mabs_parms);
     }
 }

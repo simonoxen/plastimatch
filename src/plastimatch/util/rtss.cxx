@@ -420,6 +420,13 @@ Rtss::save_prefix (const Pstring &output_prefix)
 }
 
 void
+Rtss::save_prefix (const char *output_prefix)
+{
+    Pstring op = output_prefix;
+    this->save_prefix (op);
+}
+
+void
 Rtss::save_ss_list (const Pstring &ss_list_fn)
 {
     ss_list_save (this->m_cxt, (const char*) ss_list_fn);

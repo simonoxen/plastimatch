@@ -337,6 +337,52 @@ Mabs::run_internal (const Mabs_parms& parms)
 }
 
 void
+Mabs::prep (const Mabs_parms& parms)
+{
+    /* Do a few sanity checks */
+    this->sanity_checks (parms);
+
+    /* Parse atlas directory */
+    this->load_atlas_dir_list (parms);
+
+    /* Loop through atlas_dir, converting file formats */
+    for (std::list<std::string>::iterator it = d_ptr->atlas_dir_list.begin();
+         it != d_ptr->atlas_dir_list.end(); it++)
+    {
+        Plm_timer timer;
+        Rtds rtds;
+        std::string path = *it;
+
+        /* Load the rtds */
+        timer.start();
+        lprintf ("MABS loading %s\n", path.c_str());
+        rtds.load_dicom_dir (path.c_str());
+        d_ptr->time_io += timer.report();
+
+        /* Save the image as raw files */
+        timer.start();
+        std::string tmp_path = strip_leading_dir (path);
+        std::string fn = string_format ("%s/%s/%s/%s.nrrd", 
+            d_ptr->traindir_base.c_str(), tmp_path.c_str(), tmp_path.c_str(),
+            tmp_path.c_str());
+        rtds.m_img->save_image (fn.c_str());
+
+        /* Remove structures which are not part of the atlas */
+        rtds.m_rtss->prune_empty ();
+
+        /* Rasterize structure sets and save */
+        Plm_image_header pih (rtds.m_img);
+        rtds.m_rtss->rasterize (&pih, false, false);
+        std::string prefix = string_format ("%s/%s/%s/", 
+            d_ptr->traindir_base.c_str(), tmp_path.c_str(), tmp_path.c_str());
+        rtds.m_rtss->save_prefix (prefix.c_str());
+        d_ptr->time_io += timer.report();
+    }
+    printf ("I/O time:             %10.1f seconds\n", d_ptr->time_io);
+    printf ("MABS prep complete\n");
+}
+
+void
 Mabs::run (const Mabs_parms& parms)
 {
     /* Do a few sanity checks */
@@ -400,6 +446,5 @@ Mabs::train (const Mabs_parms& parms)
     printf ("Extraction time:      %10.1f seconds\n", d_ptr->time_extract);
     printf ("Voting time:          %10.1f seconds\n", d_ptr->time_vote);
     printf ("I/O time:             %10.1f seconds\n", d_ptr->time_io);
-
-    printf ("Training complete\n");
+    printf ("MABS training complete\n");
 }

@@ -26,6 +26,7 @@ protected:
     void run_internal (const Mabs_parms& parms);
 
 public:
+    void prep (const Mabs_parms& parms);
     void run (const Mabs_parms& parms);
     void train (const Mabs_parms& parms);
 };
