@@ -32,7 +32,7 @@ Voting time:                40.0 seconds
 I/O time:                  215.2 seconds
 Total time:                572.1 seconds
 
-Revision 4032, gelato, mini.cfg
+Revision 4033, gelato, mini.cfg
 -------------------------------
 ** Turn off thread selection for dmap filter */
 Registration time:           6.5 seconds

@@ -1,3 +1,14 @@
+***** MABS re-org *****
+
+Prep/training steps:
+(1) convert file format
+(2) do registrations, compute dice, possibly optimize registration
+(3) warp structures and get distance maps
+(4) optimize rho, sigma, thresh
+
+Other thoughts:
+(1) Make dmap, dice faster
+
 ***** Geometry chooser *****
 
 Two use cases.
