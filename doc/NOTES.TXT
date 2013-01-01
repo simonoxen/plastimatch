@@ -4,7 +4,48 @@ Prep/training steps:
 (1) convert file format
 (2) do registrations, compute dice, possibly optimize registration
 (3) warp structures and get distance maps
-(4) optimize rho, sigma, thresh
+(4) optimize voting parameters (rho, sigma, thresh)
+
+Workflow -- optimizing registrations
+------------------------------------
+convert file format
+for each image pair
+  for each registration parameter
+    register
+    warp structures
+    compute distance maps
+    compute dice
+    tabulate results
+  choose best registration parameter
+
+Workflow -- optimizing voting parameters
+----------------------------------------
+convert file format
+for each image pair
+  register
+  warp structures
+  compute distance maps
+for each structure
+  for each voting parameter
+    for each image pair
+      load dmap
+      vote
+    save weights
+    for each thresh
+      threshold image
+      compute dice
+      save results
+
+Workflow -- standard usage
+--------------------------
+for each image pair
+  register
+  warp structures
+  for each structure
+    compute distance maps
+    vote
+    threshold image
+  
 
 Other thoughts:
 (1) Make dmap, dice faster

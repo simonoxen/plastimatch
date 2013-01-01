@@ -23,7 +23,9 @@ protected:
         const std::string& ori_name);
     void sanity_checks (const Mabs_parms& parms);
     void load_atlas_dir_list (const Mabs_parms& parms);
-    void run_internal (const Mabs_parms& parms);
+    void run_single_registration (const Mabs_parms& parms);
+    void run_registration (const Mabs_parms& parms);
+    void run_segmentation (const Mabs_parms& parms);
 
 public:
     void prep (const Mabs_parms& parms);

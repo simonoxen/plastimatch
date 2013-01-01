@@ -17,11 +17,7 @@
 
 Mabs_parms::Mabs_parms ()
 {
-    this->atlas_dir[0] = '\0';
-    this->training_dir[0] = '\0';
-    this->registration_config[0] = '\0';
     this->sman = new Mabs_subject_manager;
-    this->labeling_input_fn[0] = '\0';
     this->debug = false;
 }
 

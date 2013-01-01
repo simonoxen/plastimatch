@@ -163,6 +163,7 @@ PLMBASE_API Plm_image* plm_image_load (const char* fname, Plm_image_type type);
 PLMBASE_API Plm_image* plm_image_load (
     const std::string& fname, Plm_image_type type);
 PLMBASE_API Plm_image* plm_image_load_native (const char* fname);
+PLMBASE_API Plm_image* plm_image_load_native (const std::string& fname);
 PLMBASE_API void plm_image_save_vol (const char* fname, Volume *vol);
 
 #endif

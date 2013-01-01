@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include "dir_list.h"
+#include "dice_statistics.h"
 #include "distance_map.h"
 #include "file_util.h"
 #include "itk_image_save.h"
@@ -35,7 +36,8 @@ public:
     std::string outdir_base;
     std::string traindir_base;
 
-    Plm_image fixed_image;
+    std::string ref_id;
+    Rtds fixed_rtds;
     std::list<std::string> atlas_list;
     std::string output_dir;
     std::string input_dir;
@@ -43,6 +45,9 @@ public:
     bool write_weight_files;
     bool write_registration_files;
 
+    FILE *dice_fp;
+
+    double time_dice;
     double time_dmap;
     double time_extract;
     double time_io;
@@ -58,6 +63,7 @@ public:
         this->reset_timers ();
     }
     void reset_timers () {
+        time_dice = 0;
         time_dmap = 0;
         time_extract = 0;
         time_io = 0;
@@ -117,9 +123,11 @@ Mabs::sanity_checks (const Mabs_parms& parms)
         print_and_exit ("Atlas dir (%s) is not a directory\n",
             parms.atlas_dir.c_str());
     }
-    if (!file_exists (parms.registration_config)) {
-        print_and_exit ("Couldn't find registration config (%s)\n", 
-            parms.registration_config.c_str());
+    if (!is_directory (parms.registration_config)) {
+        if (!file_exists (parms.registration_config)) {
+            print_and_exit ("Couldn't find registration config (%s)\n", 
+                parms.registration_config.c_str());
+        }
     }
 
     /* Make sure there is an output directory */
@@ -160,9 +168,95 @@ Mabs::load_atlas_dir_list (const Mabs_parms& parms)
 }
 
 void
-Mabs::run_internal (const Mabs_parms& parms)
+Mabs::prep (const Mabs_parms& parms)
+{
+    /* Do a few sanity checks */
+    this->sanity_checks (parms);
+
+    /* Parse atlas directory */
+    this->load_atlas_dir_list (parms);
+
+    /* Loop through atlas_dir, converting file formats */
+    for (std::list<std::string>::iterator it = d_ptr->atlas_dir_list.begin();
+         it != d_ptr->atlas_dir_list.end(); it++)
+    {
+        Plm_timer timer;
+        Rtds rtds;
+        std::string path = *it;
+
+        /* Load the rtds for the atlas */
+        timer.start();
+        lprintf ("MABS loading %s\n", path.c_str());
+        rtds.load_dicom_dir (path.c_str());
+        d_ptr->time_io += timer.report();
+
+        /* Save the image as raw files */
+        timer.start();
+        std::string atlas_id = strip_leading_dir (path);
+        std::string fn = string_format ("%s/%s/%s/%s.nrrd", 
+            d_ptr->traindir_base.c_str(), atlas_id.c_str(), 
+            atlas_id.c_str(), atlas_id.c_str());
+        rtds.m_img->save_image (fn.c_str());
+
+        /* Remove structures which are not part of the atlas */
+        timer.start();
+        rtds.m_rtss->prune_empty ();
+        Rtss_structure_set *cxt = rtds.m_rtss->m_cxt;
+        for (size_t i = 0; i < rtds.m_rtss->get_num_structures(); i++) {
+            /* Check structure name, make sure it is something we 
+               want to segment */
+            std::string ori_name = rtds.m_rtss->get_structure_name (i);
+            std::string mapped_name = this->map_structure_name (
+                parms, ori_name);
+            if (mapped_name == "") {
+                /* If not, delete it (before rasterizing) */
+                cxt->delete_structure (i);
+                --i;
+            }
+        }
+
+        /* Rasterize structure sets and save */
+        Plm_image_header pih (rtds.m_img);
+        rtds.m_rtss->rasterize (&pih, false, false);
+        d_ptr->time_extract += timer.report();
+
+        /* Save structures which are part of the atlas */
+        std::string prefix = string_format ("%s/%s/%s/structures", 
+            d_ptr->traindir_base.c_str(), atlas_id.c_str(), 
+            atlas_id.c_str());
+        rtds.m_rtss->save_prefix (prefix.c_str());
+        d_ptr->time_io += timer.report();
+    }
+    printf ("Rasterization time:   %10.1f seconds\n", d_ptr->time_extract);
+    printf ("I/O time:             %10.1f seconds\n", d_ptr->time_io);
+    printf ("MABS prep complete\n");
+}
+
+void
+Mabs::run_registration (const Mabs_parms& parms)
 {
     Plm_timer timer;
+    bool multi_registration;
+
+    /* Figure out whether we need to do a single registration 
+       or multiple registrations */
+    std::list<std::string> registration_list;
+    if (is_directory (parms.registration_config)) {
+        Dir_list dir (parms.registration_config);
+        for (int i = 0; i < dir.num_entries; i++) {
+            std::string full_path = string_format (
+                "%s/%s", parms.registration_config.c_str(), 
+                dir.entries[i]);
+            if (!is_directory (full_path)) {
+                registration_list.push_back (full_path);
+            }
+        }
+        multi_registration = true;
+    }
+    else {
+        registration_list.push_back (parms.registration_config);
+        multi_registration = false;
+    }
 
     /* Clear out internal structure */
     d_ptr->vote_map.clear ();
@@ -173,17 +267,17 @@ Mabs::run_internal (const Mabs_parms& parms)
     {
         Rtds rtds;
         std::string path = *it;
-        std::string patient_id = strip_leading_dir (path);
+        std::string atlas_id = strip_leading_dir (path);
 
         /* Load image & structures from "prep" directory */
         timer.start();
         std::string fn = string_format ("%s/%s/%s/%s.nrrd", 
-            d_ptr->traindir_base.c_str(), patient_id.c_str(), 
-            patient_id.c_str(), patient_id.c_str());
+            d_ptr->traindir_base.c_str(), atlas_id.c_str(), 
+            atlas_id.c_str(), atlas_id.c_str());
         rtds.m_img = plm_image_load_native (fn.c_str());
         fn = string_format ("%s/%s/%s/structures", 
-            d_ptr->traindir_base.c_str(), patient_id.c_str(), 
-            patient_id.c_str());
+            d_ptr->traindir_base.c_str(), atlas_id.c_str(), 
+            atlas_id.c_str());
         rtds.m_rtss = new Rtss;
         rtds.m_rtss->load_prefix (fn.c_str());
         d_ptr->time_io += timer.report();
@@ -205,125 +299,209 @@ Mabs::run_internal (const Mabs_parms& parms)
             continue;
         }
 
-        /* Make a registration command string */
-        std::string command_string = slurp_file (parms.registration_config);
-
-        /* Parse the registration command string */
-        Registration_parms regp;
-        int rc = regp.set_command_string (command_string);
-        if (rc) {
-            print_and_exit ("Failure parsing command file: %s\n",
-                parms.registration_config.c_str());
-        }
-
-        /* Manually set input files */
-        Registration_data regd;
-        regd.fixed_image = &d_ptr->fixed_image;
-        regd.moving_image = rtds.m_img;
-
-        /* Run the registration */
-        Xform *xf_out;
-        printf ("DO_REGISTRATION_PURE\n");
-        printf ("regp.num_stages = %d\n", regp.num_stages);
-        timer.start();
-        do_registration_pure (&xf_out, &regd, &regp);
-        d_ptr->time_reg += timer.report();
-
-        /* Warp the output image */
-        printf ("Warp output image...\n");
-        Plm_image_header fixed_pih (regd.fixed_image);
-        Plm_image warped_image;
-        timer.start();
-        plm_warp (&warped_image, 0, xf_out, &fixed_pih, regd.moving_image, 
-            regp.default_value, 0, 1);
-        d_ptr->time_warp_img += timer.report();
-
-        /* Warp the structures */
-        printf ("Warp structures...\n");
-        Plm_image_header source_pih (rtds.m_img);
-        timer.start();
-        rtds.m_rtss->warp (xf_out, &fixed_pih);
-        d_ptr->time_warp_str += timer.report();
-
-        /* Save some debugging information */
-        if (d_ptr->write_registration_files) {
-            timer.start();
-            lprintf ("Saving registration_files\n");
-            Pstring fn;
-            fn.format ("%s/%s/img.nrrd", d_ptr->output_dir.c_str(), 
-                patient_id.c_str());
-            warped_image.save_image (fn.c_str());
-
-            fn.format ("%s/%s/xf.txt", d_ptr->output_dir.c_str(), 
-                patient_id.c_str());
-            xf_out->save (fn.c_str());
-
-            fn.format ("%s/%s/structures", d_ptr->output_dir.c_str(), 
-                patient_id.c_str());
-            rtds.m_rtss->save_prefix (fn.c_str());
-            d_ptr->time_io += timer.report();
-        }
-
-        /* Loop through structures for this atlas image */
-        printf ("Vote...\n");
-        for (size_t i = 0; i < rtds.m_rtss->get_num_structures(); i++) {
-            /* Check structure name, make sure it is something we 
-               want to segment */
-            std::string ori_name = rtds.m_rtss->get_structure_name (i);
-            std::string mapped_name = this->map_structure_name (parms, 
-                ori_name);
-            if (mapped_name == "") {
-                continue;
+        /* Loop through each registration parameter set */
+        std::list<std::string>::iterator it;
+        for (it = registration_list.begin(); 
+             it != registration_list.end(); it++) 
+        {
+            /* Set up files & directories for this job */
+            std::string command_file = *it;
+            std::string curr_output_dir;
+            std::string registration_id;
+            if (multi_registration) {
+                registration_id = strip_leading_dir (command_file);
+                curr_output_dir = string_format ("%s/%s/%s",
+                    d_ptr->output_dir.c_str(), 
+                    atlas_id.c_str(),
+                    registration_id.c_str());
+            }
+            else {
+                curr_output_dir = string_format ("%s/%s",
+                    d_ptr->output_dir.c_str(), 
+                    atlas_id.c_str());
             }
 
-            /* Make a new voter if needed */
-            lprintf ("Voting structure %s\n", mapped_name.c_str());
-            Mabs_vote *vote;
-            std::map<std::string, Mabs_vote*>::const_iterator vote_it 
-                = d_ptr->vote_map.find (mapped_name);
-            if (vote_it == d_ptr->vote_map.end()) {
-                vote = new Mabs_vote;
-                d_ptr->vote_map[mapped_name] = vote;
-                vote->set_fixed_image (regd.fixed_image->itk_float());
-            } else {
-                vote = vote_it->second;
+            /* Make a registration command string */
+            lprintf ("Processing command file: %s\n", command_file.c_str());
+            std::string command_string = slurp_file (command_file);
+
+            /* Parse the registration command string */
+            Registration_parms regp;
+            int rc = regp.set_command_string (command_string);
+            if (rc) {
+                logfile_printf ("Skipping command file \"%s\" "
+                    "due to parse error.\n", command_file.c_str());
             }
 
-            /* Extract structure as binary mask */
-            timer.start();
-            UCharImageType::Pointer structure_image 
-                = rtds.m_rtss->get_structure_image (i);
-            d_ptr->time_extract += timer.report();
+            /* Manually set input files */
+            Registration_data regd;
+            regd.fixed_image = d_ptr->fixed_rtds.m_img;
+            regd.moving_image = rtds.m_img;
 
-            /* Make the distance map */
+            /* Run the registration */
+            Xform *xf_out;
+            printf ("DO_REGISTRATION_PURE\n");
+            printf ("regp.num_stages = %d\n", regp.num_stages);
             timer.start();
-            Distance_map dmap;
-            dmap.set_input_image (structure_image);
-            dmap.run ();
-            FloatImageType::Pointer dmap_image = dmap.get_output_image ();
-            d_ptr->time_dmap += timer.report();
+            do_registration_pure (&xf_out, &regd, &regp);
+            d_ptr->time_reg += timer.report();
 
+            /* Warp the output image */
+            printf ("Warp output image...\n");
+            Plm_image_header fixed_pih (regd.fixed_image);
+            Plm_image warped_image;
+            timer.start();
+            plm_warp (&warped_image, 0, xf_out, &fixed_pih, regd.moving_image, 
+                regp.default_value, 0, 1);
+            d_ptr->time_warp_img += timer.report();
+
+            /* Warp the structures */
+            printf ("Warp structures...\n");
+            Plm_image_header source_pih (rtds.m_img);
+            timer.start();
+            rtds.m_rtss->warp (xf_out, &fixed_pih);
+            d_ptr->time_warp_str += timer.report();
+
+            /* Save some debugging information */
             if (d_ptr->write_registration_files) {
                 timer.start();
-                fn = string_format (
-                    "%s/%s/dmap_%s.nrrd", d_ptr->output_dir.c_str(), 
-                    patient_id.c_str(), mapped_name.c_str());
-                itk_image_save (dmap_image, fn.c_str());
+                lprintf ("Saving registration_files\n");
+                Pstring fn;
+                fn.format ("%s/img.nrrd", curr_output_dir.c_str());
+                warped_image.save_image (fn.c_str());
+
+                fn.format ("%s/xf.txt", curr_output_dir.c_str());
+                xf_out->save (fn.c_str());
+
+                fn.format ("%s/structures", curr_output_dir.c_str());
+                rtds.m_rtss->save_prefix (fn.c_str());
                 d_ptr->time_io += timer.report();
             }
 
-            /* Vote */
-            timer.start();
-            vote->vote (warped_image.itk_float(), dmap_image);
-            d_ptr->time_vote += timer.report();
-        }
+            /* Loop through structures for this atlas image */
+            printf ("Process structures...\n");
+            for (size_t i = 0; i < rtds.m_rtss->get_num_structures(); i++) {
+                /* Check structure name, make sure it is something we 
+                   want to segment */
+                std::string ori_name = rtds.m_rtss->get_structure_name (i);
+                std::string mapped_name = this->map_structure_name (parms, 
+                    ori_name);
+                if (mapped_name == "") {
+                    continue;
+                }
 
-        /* Don't let regd destructor delete our fixed image */
-        regd.fixed_image = 0;
+#if defined (commentout)
+                /* Make a new voter if needed */
+                lprintf ("Voting structure %s\n", mapped_name.c_str());
+                Mabs_vote *vote;
+                std::map<std::string, Mabs_vote*>::const_iterator vote_it 
+                    = d_ptr->vote_map.find (mapped_name);
+                if (vote_it == d_ptr->vote_map.end()) {
+                    vote = new Mabs_vote;
+                    d_ptr->vote_map[mapped_name] = vote;
+                    vote->set_fixed_image (regd.fixed_image->itk_float());
+                } else {
+                    vote = vote_it->second;
+                }
+#endif
 
-        /* Clean up */
-        delete xf_out;
-    }
+                /* Extract structure as binary mask */
+                timer.start();
+                UCharImageType::Pointer structure_image 
+                    = rtds.m_rtss->get_structure_image (i);
+                d_ptr->time_extract += timer.report();
+
+                /* Extract reference structure as binary mask.
+                   This is used when computing dice statistics. 
+                   GCS FIX: This is inefficient, it could be extracted 
+                   once at the beginning, and cached. */
+                timer.start();
+                bool have_ref_structure = false;
+                UCharImageType::Pointer ref_structure_image;
+                for (size_t j = 0; 
+                     j < d_ptr->fixed_rtds.m_rtss->get_num_structures(); j++)
+                {
+                    std::string ref_ori_name 
+                        = d_ptr->fixed_rtds.m_rtss->get_structure_name (i);
+                    std::string ref_mapped_name = this->map_structure_name (
+                        parms, ori_name);
+                    if (ref_mapped_name == mapped_name) {
+                        ref_structure_image = d_ptr->fixed_rtds.m_rtss
+                            ->get_structure_image (j);
+                        have_ref_structure = true;
+                        break;
+                    }
+                }
+                d_ptr->time_extract += timer.report();
+
+                /* Make the distance map */
+                timer.start();
+                lprintf ("Computing distance map...\n");
+                Distance_map dmap;
+                dmap.set_input_image (structure_image);
+                dmap.run ();
+                FloatImageType::Pointer dmap_image = dmap.get_output_image ();
+                d_ptr->time_dmap += timer.report();
+
+                if (d_ptr->write_registration_files) {
+                    timer.start();
+                    fn = string_format ("%s/dmap_%s.nrrd", 
+                        curr_output_dir.c_str(), mapped_name.c_str());
+                    itk_image_save (dmap_image, fn.c_str());
+                    d_ptr->time_io += timer.report();
+                }
+
+                /* Compute Dice, etc. */
+                timer.start();
+                if (have_ref_structure) {
+                    lprintf ("Computing Dice...\n");
+                    Dice_statistics dice;
+                    dice.set_reference_image (ref_structure_image);
+                    dice.set_compare_image (structure_image);
+                    dice.run ();
+
+                    lprintf ("%s,%s,%s,%f,%d,%d,%d,%d\n",
+                        d_ptr->ref_id.c_str(), 
+                        atlas_id.c_str(),
+                        multi_registration ? registration_id.c_str() : "", 
+                        dice.get_dice(),
+                        (int) dice.get_true_positives(),
+                        (int) dice.get_true_negatives(),
+                        (int) dice.get_false_positives(),
+                        (int) dice.get_false_negatives());
+                    fprintf (d_ptr->dice_fp, "%s,%s,%s,%f,%d,%d,%d,%d\n",
+                        d_ptr->ref_id.c_str(), 
+                        atlas_id.c_str(),
+                        multi_registration ? registration_id.c_str() : "", 
+                        dice.get_dice(),
+                        (int) dice.get_true_positives(),
+                        (int) dice.get_true_negatives(),
+                        (int) dice.get_false_positives(),
+                        (int) dice.get_false_negatives());
+                }
+                d_ptr->time_dice += timer.report();
+
+#if defined (commentout)
+                /* Vote */
+                timer.start();
+                vote->vote (warped_image.itk_float(), dmap_image);
+                d_ptr->time_vote += timer.report();
+#endif
+            }
+
+            /* Don't let regd destructor delete our fixed image */
+            regd.fixed_image = 0;
+
+            /* Clean up */
+            delete xf_out;
+        } /* end for each registration parameter */
+    } /* end for each atlas image */
+}
+
+void
+Mabs::run_segmentation (const Mabs_parms& parms)
+{
+    Plm_timer timer;
 
     /* Get output image for each label */
     lprintf ("Normalizing and saving weights\n");
@@ -370,78 +548,13 @@ Mabs::run_internal (const Mabs_parms& parms)
 }
 
 void
-Mabs::prep (const Mabs_parms& parms)
-{
-    /* Do a few sanity checks */
-    this->sanity_checks (parms);
-
-    /* Parse atlas directory */
-    this->load_atlas_dir_list (parms);
-
-    /* Loop through atlas_dir, converting file formats */
-    for (std::list<std::string>::iterator it = d_ptr->atlas_dir_list.begin();
-         it != d_ptr->atlas_dir_list.end(); it++)
-    {
-        Plm_timer timer;
-        Rtds rtds;
-        std::string path = *it;
-
-        /* Load the rtds */
-        timer.start();
-        lprintf ("MABS loading %s\n", path.c_str());
-        rtds.load_dicom_dir (path.c_str());
-        d_ptr->time_io += timer.report();
-
-        /* Save the image as raw files */
-        timer.start();
-        std::string patient_id = strip_leading_dir (path);
-        std::string fn = string_format ("%s/%s/%s/%s.nrrd", 
-            d_ptr->traindir_base.c_str(), patient_id.c_str(), 
-            patient_id.c_str(), patient_id.c_str());
-        rtds.m_img->save_image (fn.c_str());
-
-        /* Remove structures which are not part of the atlas */
-        timer.start();
-        rtds.m_rtss->prune_empty ();
-        Rtss_structure_set *cxt = rtds.m_rtss->m_cxt;
-        for (size_t i = 0; i < rtds.m_rtss->get_num_structures(); i++) {
-            /* Check structure name, make sure it is something we 
-               want to segment */
-            std::string ori_name = rtds.m_rtss->get_structure_name (i);
-            std::string mapped_name = this->map_structure_name (
-                parms, ori_name);
-            if (mapped_name == "") {
-                /* If not, delete it (before rasterizing) */
-                cxt->delete_structure (i);
-                --i;
-            }
-        }
-
-        /* Rasterize structure sets and save */
-        Plm_image_header pih (rtds.m_img);
-        rtds.m_rtss->rasterize (&pih, false, false);
-        d_ptr->time_extract += timer.report();
-
-        /* Save strcutres which are part of the atlas */
-        std::string prefix = string_format ("%s/%s/%s/structures", 
-            d_ptr->traindir_base.c_str(), patient_id.c_str(), 
-            patient_id.c_str());
-        rtds.m_rtss->save_prefix (prefix.c_str());
-        d_ptr->time_io += timer.report();
-    }
-    printf ("Rasterization time:   %10.1f seconds\n", d_ptr->time_extract);
-    printf ("I/O time:             %10.1f seconds\n", d_ptr->time_io);
-    printf ("MABS prep complete\n");
-}
-
-void
 Mabs::run (const Mabs_parms& parms)
 {
     /* Do a few sanity checks */
     this->sanity_checks (parms);
 
     /* Load the labeling file.  For now, we'll assume this is successful. */
-    d_ptr->fixed_image.load_native (parms.labeling_input_fn);
+    d_ptr->fixed_rtds.m_img = plm_image_load_native (parms.labeling_input_fn);
 
     /* Parse atlas directory */
     this->load_atlas_dir_list (parms);
@@ -453,7 +566,8 @@ Mabs::run (const Mabs_parms& parms)
     d_ptr->output_dir = d_ptr->outdir_base;
 
     /* Run the segmentation */
-    this->run_internal (parms);
+    this->run_registration (parms);
+    this->run_segmentation (parms);
 }
 
 void
@@ -469,6 +583,11 @@ Mabs::train (const Mabs_parms& parms)
     /* Parse atlas directory */
     this->load_atlas_dir_list (parms);
 
+    /* Open output file for dice logging */
+    std::string dice_log_fn = string_format ("%s/dice.txt",
+        d_ptr->traindir_base.c_str());
+    d_ptr->dice_fp = fopen (dice_log_fn.c_str(), "w+");
+
     /* Write some extra files when training */
     d_ptr->write_weight_files = true;
 
@@ -483,22 +602,34 @@ Mabs::train (const Mabs_parms& parms)
 
         /* Set output dir for this test case */
         std::string patient_id = strip_leading_dir (path);
+        d_ptr->ref_id = patient_id;
         d_ptr->output_dir = d_ptr->traindir_base + "/" + patient_id;
         lprintf ("outdir = %s\n", d_ptr->output_dir.c_str());
 
-        /* Load the input file.  For now, we'll assume this is successful. */
+        /* Load image & structures from "prep" directory */
         timer.start();
-        d_ptr->fixed_image.load_native (path);
+        std::string fn = string_format ("%s/%s/%s.nrrd", 
+            d_ptr->output_dir.c_str(), patient_id.c_str(), 
+            patient_id.c_str());
+        d_ptr->fixed_rtds.m_img = plm_image_load_native (fn.c_str());
+        fn = string_format ("%s/%s/structures", 
+            d_ptr->output_dir.c_str(), patient_id.c_str());
+        d_ptr->fixed_rtds.m_rtss = new Rtss;
+        d_ptr->fixed_rtds.m_rtss->load_prefix (fn.c_str());
         d_ptr->time_io += timer.report();
 
         /* Run the segmentation */
-        this->run_internal (parms);
+        this->run_registration (parms);
+        this->run_segmentation (parms);
     }
+
+    fclose (d_ptr->dice_fp);
 
     printf ("Registration time:    %10.1f seconds\n", d_ptr->time_reg);
     printf ("Warping time (img):   %10.1f seconds\n", d_ptr->time_warp_img);
     printf ("Warping time (str):   %10.1f seconds\n", d_ptr->time_warp_str);
     printf ("Extraction time:      %10.1f seconds\n", d_ptr->time_extract);
+    printf ("Dice time:            %10.1f seconds\n", d_ptr->time_dice);
     printf ("Distance map time:    %10.1f seconds\n", d_ptr->time_dmap);
     printf ("Voting time:          %10.1f seconds\n", d_ptr->time_vote);
     printf ("I/O time:             %10.1f seconds\n", d_ptr->time_io);

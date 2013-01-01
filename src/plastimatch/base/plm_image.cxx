@@ -182,6 +182,12 @@ plm_image_load_native (const char* fname)
     return pli;
 }
 
+Plm_image*
+plm_image_load_native (const std::string& fname)
+{
+    return plm_image_load_native (fname.c_str());
+}
+
 void
 Plm_image::load (const char* fname, Plm_image_type type)
 {
