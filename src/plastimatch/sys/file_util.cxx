@@ -19,12 +19,7 @@
 #include <sys/stat.h>
 
 #include "file_util.h"
-
-#if (_WIN32)
-#define ISSLASH(c) (((c) == '/') || ((c) == '\\'))
-#else
-#define ISSLASH(c) ((c) == '/')
-#endif
+#include "path_util.h"
 
 int
 is_directory (const char *dir)
@@ -52,13 +47,6 @@ int
 is_directory (const std::string& dir)
 {
     return is_directory (dir.c_str());
-}
-
-int
-extension_is (const char* fname, const char* ext)
-{
-    return (strlen (fname) > strlen(ext)) 
-	&& !strcmp (&fname[strlen(fname)-strlen(ext)], ext);
 }
 
 int
@@ -169,109 +157,6 @@ make_tempfile (void)
     FILE *fp = tmpfile ();
 # endif
     return fp;
-}
-
-void
-trim_trailing_slashes (char *pathname)
-{
-    char *p = pathname + strlen (pathname) - 1;
-    while (p >= pathname && ISSLASH(*p)) {
-	*p = 0;
-    }
-}
-
-/* Caller must free memory */
-char*
-file_util_parent (const char *filename)
-{
-    char *tmp = 0;
-    char *p = 0, *q = 0;
-
-    if (!filename) return tmp;
-
-    p = tmp = strdup (filename);
-    trim_trailing_slashes (p);
-    while (*p) {
-	if (ISSLASH (*p)) {
-	    q = p;
-	}
-	p ++;
-    }
-    if (q) {
-	*q = 0;
-	return tmp;
-    } else {
-	/* No directory separators -- return "." */
-	free (tmp);
-	return strdup (".");
-    }
-}
-
-/* Caller must free memory */
-char*
-file_util_dirname (const char *filename)
-{
-    if (!filename) return 0;
-
-    if (is_directory (filename)) {
-	return strdup (filename);
-    }
-
-    return file_util_parent (filename);
-}
-
-std::string
-file_util_dirname_string (const char *filename)
-{
-    std::string dirname = "";
-
-    char *c_dirname = file_util_dirname (filename);
-    if (c_dirname) {
-        dirname = c_dirname;
-        free (c_dirname);
-    }
-    return dirname;
-}
-
-void
-strip_extension (char* filename)
-{
-    char *p;
-
-    p = strrchr (filename, '.');
-    if (p) {
-	*p = 0;
-    }
-}
-
-std::string
-strip_leading_dir (const std::string& fn)
-{
-    size_t s = fn.find_first_of ("/");
-    if (s == fn.npos) {
-        return fn;
-    }
-    return fn.substr(s+1);
-}
-
-std::string
-compose_filename (const char *a, const char *b)
-{
-    std::string output_fn;
-
-    char *tmp = strdup (a);
-    trim_trailing_slashes (tmp);
-    output_fn = tmp;
-    free (tmp);
-    output_fn.append ("/");
-    output_fn.append (b);
-    return output_fn;
-}
-
-std::string
-compose_filename (const std::string& a, const std::string& b)
-{
-    return compose_filename (a.c_str(), b.c_str());
 }
 
 /* cross platform getcwd */

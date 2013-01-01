@@ -15,6 +15,7 @@
 #include "mabs.h"
 #include "mabs_parms.h"
 #include "mabs_vote.h"
+#include "path_util.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "plm_stages.h"

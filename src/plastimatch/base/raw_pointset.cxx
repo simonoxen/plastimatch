@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "file_util.h"
+#include "path_util.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
 #include "raw_pointset.h"

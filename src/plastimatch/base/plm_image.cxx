@@ -18,6 +18,7 @@
 #include "logfile.h"
 #include "mha_io.h"
 #include "nki_io.h"
+#include "path_util.h"
 #include "plm_image.h"
 #include "plm_image_convert.h"
 #include "plm_image_header.h"

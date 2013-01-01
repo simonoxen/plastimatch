@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "file_util.h"
+#include "path_util.h"
 #include "print_and_exit.h"
 #include "proj_image.h"
 

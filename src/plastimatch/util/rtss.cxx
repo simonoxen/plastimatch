@@ -16,6 +16,7 @@
 #include "itk_image_save.h"
 #include "itk_image_type.h"
 #include "logfile.h"
+#include "path_util.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "plm_warp.h"

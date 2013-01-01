@@ -5,6 +5,7 @@
 
 #include "file_util.h"
 #include "itk_adjust.h"
+#include "path_util.h"
 #include "pcmd_thumbnail.h"
 #include "plm_clp.h"
 #include "plm_image.h"

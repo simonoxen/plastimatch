@@ -16,6 +16,7 @@
 #include "autolabel_trainer.h"
 #include "dlib_trainer.h"
 #include "file_util.h"
+#include "path_util.h"
 #include "plm_image.h"
 #include "pointset.h"
 #include "print_and_exit.h"

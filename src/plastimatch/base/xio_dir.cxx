@@ -14,6 +14,7 @@
 #include "bstrlib.h"
 
 #include "file_util.h"
+#include "path_util.h"
 #include "xio_dir.h"
 #include "xio_patient.h"
 #include "xio_plan.h"

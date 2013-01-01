@@ -23,6 +23,7 @@
 #include "itk_image_cast.h"
 #include "itk_image_save.h"
 #include "logfile.h"
+#include "path_util.h"
 
 /* -----------------------------------------------------------------------
    Writing image files
