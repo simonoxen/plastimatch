@@ -32,6 +32,8 @@
 
 class Mabs_private {
 public:
+    const Mabs_parms *parms;
+    
     std::map<std::string, Mabs_vote*> vote_map;
     std::list<std::string> atlas_dir_list;
     std::string outdir_base;
@@ -59,6 +61,7 @@ public:
 
 public:
     Mabs_private () {
+        parms = 0;
         write_weight_files = false;
         write_registration_files = true;
         this->reset_timers ();
@@ -87,17 +90,16 @@ Mabs::~Mabs () {
    Return "" if no canonical name */
 std::string
 Mabs::map_structure_name (
-    const Mabs_parms& parms, 
     const std::string& ori_name)
 {
-    if (parms.structure_map.size() == 0) {
+    if (d_ptr->parms->structure_map.size() == 0) {
         lprintf ("$ No structure list specified\n");
         return ori_name;
     }
 
     std::map<std::string, std::string>::const_iterator it 
-        = parms.structure_map.find (ori_name);
-    if (it == parms.structure_map.end()) {
+        = d_ptr->parms->structure_map.find (ori_name);
+    if (it == d_ptr->parms->structure_map.end()) {
         lprintf (" $ irrelevant structure: %s\n", ori_name.c_str());
         return "";
     }
@@ -117,37 +119,37 @@ Mabs::map_structure_name (
 }
 
 void
-Mabs::sanity_checks (const Mabs_parms& parms)
+Mabs::sanity_checks ()
 {
     /* Do a few sanity checks */
-    if (!is_directory (parms.atlas_dir)) {
+    if (!is_directory (d_ptr->parms->atlas_dir)) {
         print_and_exit ("Atlas dir (%s) is not a directory\n",
-            parms.atlas_dir.c_str());
+            d_ptr->parms->atlas_dir.c_str());
     }
-    if (!is_directory (parms.registration_config)) {
-        if (!file_exists (parms.registration_config)) {
+    if (!is_directory (d_ptr->parms->registration_config)) {
+        if (!file_exists (d_ptr->parms->registration_config)) {
             print_and_exit ("Couldn't find registration config (%s)\n", 
-                parms.registration_config.c_str());
+                d_ptr->parms->registration_config.c_str());
         }
     }
 
     /* Make sure there is an output directory */
-    d_ptr->outdir_base = parms.labeling_output_fn;
+    d_ptr->outdir_base = d_ptr->parms->labeling_output_fn;
     if (d_ptr->outdir_base == "") {
         d_ptr->outdir_base = "mabs";
     }
 
     /* Make sure there is a training directory */
-    d_ptr->traindir_base = parms.training_dir;
+    d_ptr->traindir_base = d_ptr->parms->training_dir;
     if (d_ptr->traindir_base == "") {
         d_ptr->traindir_base = "training";
     }
 }
 
 void
-Mabs::load_atlas_dir_list (const Mabs_parms& parms)
+Mabs::load_atlas_dir_list ()
 {
-    Dir_list d (parms.atlas_dir);
+    Dir_list d (d_ptr->parms->atlas_dir);
     for (int i = 0; i < d.num_entries; i++)
     {
         /* Skip "." and ".." */
@@ -156,7 +158,7 @@ Mabs::load_atlas_dir_list (const Mabs_parms& parms)
         }
 
         /* Build string containing full path to atlas item */
-        std::string path = compose_filename (parms.atlas_dir, d.entries[i]);
+        std::string path = compose_filename (d_ptr->parms->atlas_dir, d.entries[i]);
 
         /* Only consider directories */
         if (!is_directory (path.c_str())) {
@@ -169,13 +171,13 @@ Mabs::load_atlas_dir_list (const Mabs_parms& parms)
 }
 
 void
-Mabs::prep (const Mabs_parms& parms)
+Mabs::prep ()
 {
     /* Do a few sanity checks */
-    this->sanity_checks (parms);
+    this->sanity_checks ();
 
     /* Parse atlas directory */
-    this->load_atlas_dir_list (parms);
+    this->load_atlas_dir_list ();
 
     /* Loop through atlas_dir, converting file formats */
     for (std::list<std::string>::iterator it = d_ptr->atlas_dir_list.begin();
@@ -193,7 +195,7 @@ Mabs::prep (const Mabs_parms& parms)
 
         /* Save the image as raw files */
         timer.start();
-        std::string atlas_id = strip_leading_dir (path);
+        std::string atlas_id = basename (path);
         std::string fn = string_format ("%s/%s/%s/%s.nrrd", 
             d_ptr->traindir_base.c_str(), atlas_id.c_str(), 
             atlas_id.c_str(), atlas_id.c_str());
@@ -207,8 +209,7 @@ Mabs::prep (const Mabs_parms& parms)
             /* Check structure name, make sure it is something we 
                want to segment */
             std::string ori_name = rtds.m_rtss->get_structure_name (i);
-            std::string mapped_name = this->map_structure_name (
-                parms, ori_name);
+            std::string mapped_name = this->map_structure_name (ori_name);
             if (mapped_name == "") {
                 /* If not, delete it (before rasterizing) */
                 cxt->delete_structure (i);
@@ -228,13 +229,13 @@ Mabs::prep (const Mabs_parms& parms)
         rtds.m_rtss->save_prefix (prefix.c_str());
         d_ptr->time_io += timer.report();
     }
-    printf ("Rasterization time:   %10.1f seconds\n", d_ptr->time_extract);
-    printf ("I/O time:             %10.1f seconds\n", d_ptr->time_io);
-    printf ("MABS prep complete\n");
+    lprintf ("Rasterization time:   %10.1f seconds\n", d_ptr->time_extract);
+    lprintf ("I/O time:             %10.1f seconds\n", d_ptr->time_io);
+    lprintf ("MABS prep complete\n");
 }
 
 void
-Mabs::run_registration (const Mabs_parms& parms)
+Mabs::run_registration ()
 {
     Plm_timer timer;
     bool multi_registration;
@@ -242,11 +243,11 @@ Mabs::run_registration (const Mabs_parms& parms)
     /* Figure out whether we need to do a single registration 
        or multiple registrations */
     std::list<std::string> registration_list;
-    if (is_directory (parms.registration_config)) {
-        Dir_list dir (parms.registration_config);
+    if (is_directory (d_ptr->parms->registration_config)) {
+        Dir_list dir (d_ptr->parms->registration_config);
         for (int i = 0; i < dir.num_entries; i++) {
             std::string full_path = string_format (
-                "%s/%s", parms.registration_config.c_str(), 
+                "%s/%s", d_ptr->parms->registration_config.c_str(), 
                 dir.entries[i]);
             if (!is_directory (full_path)) {
                 registration_list.push_back (full_path);
@@ -255,7 +256,7 @@ Mabs::run_registration (const Mabs_parms& parms)
         multi_registration = true;
     }
     else {
-        registration_list.push_back (parms.registration_config);
+        registration_list.push_back (d_ptr->parms->registration_config);
         multi_registration = false;
     }
 
@@ -263,12 +264,13 @@ Mabs::run_registration (const Mabs_parms& parms)
     d_ptr->vote_map.clear ();
 
     /* Loop through images in the atlas */
-    for (std::list<std::string>::iterator it = d_ptr->atlas_list.begin();
-         it != d_ptr->atlas_list.end(); it++)
+    std::list<std::string>::iterator atl_it;
+    for (atl_it = d_ptr->atlas_list.begin();
+         atl_it != d_ptr->atlas_list.end(); atl_it++)
     {
         Rtds rtds;
-        std::string path = *it;
-        std::string atlas_id = strip_leading_dir (path);
+        std::string path = *atl_it;
+        std::string atlas_id = basename (path);
 
         /* Load image & structures from "prep" directory */
         timer.start();
@@ -288,8 +290,7 @@ Mabs::run_registration (const Mabs_parms& parms)
         bool can_skip = true;
         for (size_t i = 0; i < rtds.m_rtss->get_num_structures(); i++) {
             std::string ori_name = rtds.m_rtss->get_structure_name (i);
-            std::string mapped_name = this->map_structure_name (parms, 
-                ori_name);
+            std::string mapped_name = this->map_structure_name (ori_name);
             if (mapped_name != "") {
                 can_skip = false;
                 break;
@@ -301,16 +302,16 @@ Mabs::run_registration (const Mabs_parms& parms)
         }
 
         /* Loop through each registration parameter set */
-        std::list<std::string>::iterator it;
-        for (it = registration_list.begin(); 
-             it != registration_list.end(); it++) 
+        std::list<std::string>::iterator reg_it;
+        for (reg_it = registration_list.begin(); 
+             reg_it != registration_list.end(); reg_it++) 
         {
             /* Set up files & directories for this job */
-            std::string command_file = *it;
+            std::string command_file = *reg_it;
             std::string curr_output_dir;
             std::string registration_id;
             if (multi_registration) {
-                registration_id = strip_leading_dir (command_file);
+                registration_id = basename (command_file);
                 curr_output_dir = string_format ("%s/%s/%s",
                     d_ptr->output_dir.c_str(), 
                     atlas_id.c_str(),
@@ -327,11 +328,13 @@ Mabs::run_registration (const Mabs_parms& parms)
             std::string command_string = slurp_file (command_file);
 
             /* Parse the registration command string */
-            Registration_parms regp;
-            int rc = regp.set_command_string (command_string);
+            Registration_parms *regp = new Registration_parms;
+            int rc = regp->set_command_string (command_string);
             if (rc) {
-                logfile_printf ("Skipping command file \"%s\" "
+                lprintf ("Skipping command file \"%s\" "
                     "due to parse error.\n", command_file.c_str());
+                delete regp;
+                continue;
             }
 
             /* Manually set input files */
@@ -341,23 +344,26 @@ Mabs::run_registration (const Mabs_parms& parms)
 
             /* Run the registration */
             Xform *xf_out;
-            printf ("DO_REGISTRATION_PURE\n");
-            printf ("regp.num_stages = %d\n", regp.num_stages);
+            lprintf ("DO_REGISTRATION_PURE\n");
+            lprintf ("regp->num_stages = %d\n", regp->num_stages);
             timer.start();
-            do_registration_pure (&xf_out, &regd, &regp);
+            do_registration_pure (&xf_out, &regd, regp);
             d_ptr->time_reg += timer.report();
 
             /* Warp the output image */
-            printf ("Warp output image...\n");
+            lprintf ("Warp output image...\n");
             Plm_image_header fixed_pih (regd.fixed_image);
             Plm_image warped_image;
             timer.start();
             plm_warp (&warped_image, 0, xf_out, &fixed_pih, regd.moving_image, 
-                regp.default_value, 0, 1);
+                regp->default_value, 0, 1);
             d_ptr->time_warp_img += timer.report();
+            
+            /* We're done with this */
+            delete regp;
 
             /* Warp the structures */
-            printf ("Warp structures...\n");
+            lprintf ("Warp structures...\n");
             Plm_image_header source_pih (rtds.m_img);
             timer.start();
             rtds.m_rtss->warp (xf_out, &fixed_pih);
@@ -380,13 +386,12 @@ Mabs::run_registration (const Mabs_parms& parms)
             }
 
             /* Loop through structures for this atlas image */
-            printf ("Process structures...\n");
+            lprintf ("Process structures...\n");
             for (size_t i = 0; i < rtds.m_rtss->get_num_structures(); i++) {
                 /* Check structure name, make sure it is something we 
                    want to segment */
                 std::string ori_name = rtds.m_rtss->get_structure_name (i);
-                std::string mapped_name = this->map_structure_name (parms, 
-                    ori_name);
+                std::string mapped_name = this->map_structure_name (ori_name);
                 if (mapped_name == "") {
                     continue;
                 }
@@ -425,7 +430,7 @@ Mabs::run_registration (const Mabs_parms& parms)
                     std::string ref_ori_name 
                         = d_ptr->fixed_rtds.m_rtss->get_structure_name (i);
                     std::string ref_mapped_name = this->map_structure_name (
-                        parms, ori_name);
+                        ori_name);
                     if (ref_mapped_name == mapped_name) {
                         ref_structure_image = d_ptr->fixed_rtds.m_rtss
                             ->get_structure_image (j);
@@ -500,7 +505,7 @@ Mabs::run_registration (const Mabs_parms& parms)
 }
 
 void
-Mabs::run_segmentation (const Mabs_parms& parms)
+Mabs::run_segmentation ()
 {
     Plm_timer timer;
 
@@ -548,17 +553,24 @@ Mabs::run_segmentation (const Mabs_parms& parms)
     }
 }
 
+void 
+Mabs::set_parms (const Mabs_parms *parms)
+{
+    d_ptr->parms = parms;
+}
+
 void
-Mabs::run (const Mabs_parms& parms)
+Mabs::run ()
 {
     /* Do a few sanity checks */
-    this->sanity_checks (parms);
+    this->sanity_checks ();
 
     /* Load the labeling file.  For now, we'll assume this is successful. */
-    d_ptr->fixed_rtds.m_img = plm_image_load_native (parms.labeling_input_fn);
+    d_ptr->fixed_rtds.m_img = plm_image_load_native (
+        d_ptr->parms->labeling_input_fn);
 
     /* Parse atlas directory */
-    this->load_atlas_dir_list (parms);
+    this->load_atlas_dir_list ();
 
     /* Set atlas_list */
     d_ptr->atlas_list = d_ptr->atlas_dir_list;
@@ -567,22 +579,22 @@ Mabs::run (const Mabs_parms& parms)
     d_ptr->output_dir = d_ptr->outdir_base;
 
     /* Run the segmentation */
-    this->run_registration (parms);
-    this->run_segmentation (parms);
+    this->run_registration ();
+    this->run_segmentation ();
 }
 
 void
-Mabs::train (const Mabs_parms& parms)
+Mabs::train ()
 {
     Plm_timer timer;
     Plm_timer timer_total;
     timer_total.start();
 
     /* Do a few sanity checks */
-    this->sanity_checks (parms);
+    this->sanity_checks ();
 
     /* Parse atlas directory */
-    this->load_atlas_dir_list (parms);
+    this->load_atlas_dir_list ();
 
     /* Open output file for dice logging */
     std::string dice_log_fn = string_format ("%s/dice.txt",
@@ -602,7 +614,7 @@ Mabs::train (const Mabs_parms& parms)
         d_ptr->atlas_list.remove (path);
 
         /* Set output dir for this test case */
-        std::string patient_id = strip_leading_dir (path);
+        std::string patient_id = basename (path);
         d_ptr->ref_id = patient_id;
         d_ptr->output_dir = d_ptr->traindir_base + "/" + patient_id;
         lprintf ("outdir = %s\n", d_ptr->output_dir.c_str());
@@ -620,20 +632,20 @@ Mabs::train (const Mabs_parms& parms)
         d_ptr->time_io += timer.report();
 
         /* Run the segmentation */
-        this->run_registration (parms);
-        this->run_segmentation (parms);
+        this->run_registration ();
+        this->run_segmentation ();
     }
 
     fclose (d_ptr->dice_fp);
 
-    printf ("Registration time:    %10.1f seconds\n", d_ptr->time_reg);
-    printf ("Warping time (img):   %10.1f seconds\n", d_ptr->time_warp_img);
-    printf ("Warping time (str):   %10.1f seconds\n", d_ptr->time_warp_str);
-    printf ("Extraction time:      %10.1f seconds\n", d_ptr->time_extract);
-    printf ("Dice time:            %10.1f seconds\n", d_ptr->time_dice);
-    printf ("Distance map time:    %10.1f seconds\n", d_ptr->time_dmap);
-    printf ("Voting time:          %10.1f seconds\n", d_ptr->time_vote);
-    printf ("I/O time:             %10.1f seconds\n", d_ptr->time_io);
-    printf ("Total time:           %10.1f seconds\n", timer_total.report());
-    printf ("MABS training complete\n");
+    lprintf ("Registration time:    %10.1f seconds\n", d_ptr->time_reg);
+    lprintf ("Warping time (img):   %10.1f seconds\n", d_ptr->time_warp_img);
+    lprintf ("Warping time (str):   %10.1f seconds\n", d_ptr->time_warp_str);
+    lprintf ("Extraction time:      %10.1f seconds\n", d_ptr->time_extract);
+    lprintf ("Dice time:            %10.1f seconds\n", d_ptr->time_dice);
+    lprintf ("Distance map time:    %10.1f seconds\n", d_ptr->time_dmap);
+    lprintf ("Voting time:          %10.1f seconds\n", d_ptr->time_vote);
+    lprintf ("I/O time:             %10.1f seconds\n", d_ptr->time_io);
+    lprintf ("Total time:           %10.1f seconds\n", timer_total.report());
+    lprintf ("MABS training complete\n");
 }

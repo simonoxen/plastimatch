@@ -36,6 +36,13 @@ trim_trailing_slashes (char *pathname)
     }
 }
 
+std::string
+trim_trailing_slashes (const std::string& pathname)
+{
+    size_t s = pathname.find_last_not_of ("/");
+    return pathname.substr(0, s+1);
+}
+
 /* Caller must free memory */
 char*
 file_util_parent (const char *filename)
@@ -97,6 +104,17 @@ strip_leading_dir (const std::string& fn)
         return fn;
     }
     return fn.substr(s+1);
+}
+
+std::string
+basename (const std::string& fn)
+{
+    std::string tmp = trim_trailing_slashes (fn);
+    size_t s = tmp.find_last_of ("/");
+    if (s == tmp.npos) {
+        return tmp;
+    }
+    return tmp.substr(s+1);
 }
 
 std::string

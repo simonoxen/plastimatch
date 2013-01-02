@@ -19,18 +19,18 @@ public:
 
 protected:
     std::string map_structure_name (
-        const Mabs_parms& parms, 
         const std::string& ori_name);
-    void sanity_checks (const Mabs_parms& parms);
-    void load_atlas_dir_list (const Mabs_parms& parms);
-    void run_single_registration (const Mabs_parms& parms);
-    void run_registration (const Mabs_parms& parms);
-    void run_segmentation (const Mabs_parms& parms);
+    void sanity_checks ();
+    void load_atlas_dir_list ();
+    void run_single_registration ();
+    void run_registration ();
+    void run_segmentation ();
 
 public:
-    void prep (const Mabs_parms& parms);
-    void run (const Mabs_parms& parms);
-    void train (const Mabs_parms& parms);
+    void set_parms (const Mabs_parms *parms);
+    void prep ();
+    void run ();
+    void train ();
 };
 
 #endif

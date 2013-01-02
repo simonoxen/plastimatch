@@ -81,13 +81,14 @@ do_command_mabs (int argc, char *argv[])
     mabs_parms.parse_config (parms.cmd_file_fn.c_str());
 
     Mabs mabs;
+    mabs.set_parms (&mabs_parms);
     if (parms.prep) {
-        mabs.prep (mabs_parms);
+        mabs.prep ();
     }
     else if (parms.train) {
-        mabs.train (mabs_parms);
+        mabs.train ();
     }
     else {
-        mabs.run (mabs_parms);
+        mabs.run ();
     }
 }
