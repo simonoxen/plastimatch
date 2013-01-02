@@ -159,6 +159,22 @@ Rtss::load_prefix (const Pstring &prefix_dir)
             itk_image_set_header (ss_img, pih);
             ss_img->SetVectorLength (out_vec_len);
             ss_img->Allocate ();
+
+            /* GCS NOTE: For some reason, ss_img->FillBuffer (0) 
+               doesn't do what I want. */
+            itk::VariableLengthVector<unsigned char> v;
+            v.SetSize (out_vec_len);
+            v.Fill (0);
+            ss_img->FillBuffer (v);
+#if defined (commentout)
+            typedef itk::ImageRegionIterator< 
+                UCharVecImageType > UCharVecIteratorType;
+            UCharVecIteratorType it (ss_img, pih.m_region);
+            for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
+                it.Set (v);
+            }
+#endif
+
             this->m_ss_img->set_itk (ss_img);
             Plm_image_header::clone (&ss_img_pih, &pih);
 
@@ -174,10 +190,10 @@ Rtss::load_prefix (const Pstring &prefix_dir)
         }
 
         /* Add name to ss_list */
-        Rtss_structure* rts = this->m_cxt->add_structure (
+        this->m_cxt->add_structure (
             structure_name, "", 
-            this->m_cxt->num_structures + 1);
-        rts->bit = bit;
+            this->m_cxt->num_structures + 1,
+            bit);
         free (structure_name);
 
         /* GCS FIX: This code is replicated in ss_img_extract */
@@ -214,7 +230,9 @@ Rtss::load_prefix (const Pstring &prefix_dir)
                 = ss_img_it.Get ();
             v[uchar_no] |= bit_mask;
             ss_img_it.Set (v);
-        }            
+        }
+
+        /* Move to next bit */
         bit++;
     }
 }
