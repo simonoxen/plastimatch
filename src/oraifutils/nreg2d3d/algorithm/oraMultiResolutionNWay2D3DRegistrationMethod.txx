@@ -674,8 +674,7 @@ void MultiResolutionNWay2D3DRegistrationMethod<TFixed2DImage, TMoving2DImage,
     useOriginalImages = true;
   if (!this->m_UseFixedPyramidForUnshrinkedLevels && fabs(
       this->m_FixedSchedule[level][0] - 1.0) < 1e-6 && fabs(
-      this->m_FixedSchedule[level][1] - 1.0) < 1e-6 && fabs(
-      this->m_FixedSchedule[level][2] - 1.0) < 1e-6)
+      this->m_FixedSchedule[level][1] - 1.0) < 1e-6)
     useOriginalImages = true;
 
   unsigned int numMetrics = this->m_Metric->GetNumberOfMetricInputs();
