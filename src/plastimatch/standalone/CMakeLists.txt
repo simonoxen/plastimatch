@@ -103,6 +103,9 @@ set (VISCOUS_SRC
 set (WED_SRC
   wed_main.cxx
   )
+set (GROUP_ADD_SRC
+  group_add.cxx
+  )
 set (SHUFFLE_MHA_SRC
   shuffle_mha_main.cxx
   )
@@ -150,6 +153,9 @@ if (FULL_PLASTIMATCH_BUILD)
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
 plm_add_executable (wed "${WED_SRC}" 
+    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+plm_add_executable (group_add "${GROUP_ADD_SRC}" 
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 #  plm_add_executable (xf_to_EMPIREFMT "${XF_TO_EMPIREFMT_SRC}"
