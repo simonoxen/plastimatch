@@ -52,79 +52,109 @@ wed_ct_compute (
     const char* out_fn,
     Wed_Parms* parms,
     Plm_image *ct_vol,
-    Proton_Scene *scene
+    Proton_Scene *scene,
+    float background
 )
 {
     Volume* wed_vol;
     Rpl_volume* rpl_vol = scene->rpl_vol;
 
     wed_vol = create_wed_volume (parms, scene);
-    rpl_vol->compute_wed_volume (wed_vol, ct_vol->gpuit_float());
+    rpl_vol->compute_wed_volume (wed_vol, ct_vol->gpuit_float(), background);
     plm_image_save_vol (out_fn, wed_vol);
+}
+
+int
+wed_ct_compute(Wed_Parms *parms)
+{
+
+
+  Plm_image* ct_vol;
+  Plm_image* dose_vol = 0;
+  Proton_Scene scene;
+  
+  /* load the patient and insert into the scene */
+  ct_vol = plm_image_load (parms->input_ct_fn, PLM_IMG_TYPE_ITK_FLOAT);
+  if (!ct_vol) {
+    fprintf (stderr, "\n** ERROR: Unable to load patient volume.\n");
+    return -1;
+  }
+  scene.set_patient (ct_vol);
+  
+  if (parms->input_dose_fn != "" && parms->output_dose_fn != "") {
+    dose_vol = plm_image_load (parms->input_dose_fn.c_str(), 
+			       PLM_IMG_TYPE_ITK_FLOAT);
+  }
+  
+  /* set scene parameters */
+  scene.beam->set_source_position (parms->src);
+  scene.beam->set_isocenter_position (parms->isocenter);
+  
+  scene.ap->set_distance (parms->ap_offset);
+  scene.ap->set_dim (parms->ires);
+  scene.ap->set_spacing (parms->ap_spacing);
+  if (parms->have_ic) {
+    scene.ap->set_center (parms->ic);
+  }
+  
+  scene.set_step_length(parms->ray_step);
+  
+  /* try to setup the scene with the provided parameters */
+  if (!scene.init ()) {
+    fprintf (stderr, "ERROR: Unable to initilize scene.\n");
+    return -1;
+  }
+  scene.debug ();
+  
+  if (parms->rpl_vol_fn != "") {
+    scene.rpl_vol->save (parms->rpl_vol_fn);
+  }
+  
+  float background[2];
+  //Background value for wed ct output
+  background[0] = -1000.;
+  //Background value for wed dose output
+  background[1] = 0.;
+
+  printf ("Working...\n");
+  fflush(stdout);
+  
+  wed_ct_compute (parms->output_ct_fn, parms, ct_vol, &scene, background[0]);
+  printf ("done.\n");
+  
+  if (parms->input_dose_fn != "" && parms->output_dose_fn != "") {
+    printf ("Trying to wed dose...\n");
+    wed_ct_compute (parms->output_dose_fn.c_str(), 
+		    parms, dose_vol, &scene, background[1]);
+    printf ("Did wed dose...\n");
+  }
+  
 }
 
 int
 main (int argc, char* argv[])
 {
-    Wed_Parms parms;
+  Wed_Parms *parms = new Wed_Parms();
+    int wed_iter = 1;
 
-    if (!parms.parse_args (argc, argv)) {
-        exit (0);
+    if (!parms->parse_args (argc, argv)) { //sets parms if input with .cfg file, skips with group option
+      exit (0); 
     }
 
-    Plm_image* ct_vol;
-    Plm_image* dose_vol = 0;
-    Proton_Scene scene;
+    if (parms->group)  {
+      int wed_iter = 0;
 
-    /* load the patient and insert into the scene */
-    ct_vol = plm_image_load (parms.input_ct_fn, PLM_IMG_TYPE_ITK_FLOAT);
-    if (!ct_vol) {
-        fprintf (stderr, "\n** ERROR: Unable to load patient volume.\n");
-        return -1;
+      while(wed_iter!=parms->group)  {
+	if (parms->group) {
+	  parms->parse_group(argc, argv, wed_iter);
+	  wed_ct_compute(parms);
+	  wed_iter++;
+	}
+
+      }
     }
-    scene.set_patient (ct_vol);
-
-    if (parms.input_dose_fn != "" && parms.output_dose_fn != "") {
-        dose_vol = plm_image_load (parms.input_dose_fn.c_str(), 
-            PLM_IMG_TYPE_ITK_FLOAT);
-    }
-
-    /* set scene parameters */
-    scene.beam->set_source_position (parms.src);
-    scene.beam->set_isocenter_position (parms.isocenter);
-
-    scene.ap->set_distance (parms.ap_offset);
-    scene.ap->set_dim (parms.ires);
-    scene.ap->set_spacing (parms.ap_spacing);
-    if (parms.have_ic) {
-        scene.ap->set_center (parms.ic);
-    }
-
-    scene.set_step_length(parms.ray_step);
-
-    /* try to setup the scene with the provided parameters */
-    if (!scene.init ()) {
-        fprintf (stderr, "ERROR: Unable to initilize scene.\n");
-        return -1;
-    }
-    scene.debug ();
-
-    if (parms.rpl_vol_fn != "") {
-        scene.rpl_vol->save (parms.rpl_vol_fn);
-    }
-
-    printf ("Working...\n");
-    fflush(stdout);
-
-    wed_ct_compute (parms.output_ct_fn, &parms, ct_vol, &scene);
-    printf ("done.\n");
-
-    if (parms.input_dose_fn != "" && parms.output_dose_fn != "") {
-        printf ("Trying to wed dose...\n");
-        wed_ct_compute (parms.output_dose_fn.c_str(), 
-            &parms, dose_vol, &scene);
-        printf ("Did wed dose...\n");
-    }
-
+    
+    else {wed_ct_compute(parms);} //Compute wed without loop
+    
     return 0;
 }

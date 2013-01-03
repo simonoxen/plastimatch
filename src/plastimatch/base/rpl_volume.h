@@ -38,7 +38,7 @@ public:
     void save (const std::string& filename);
     void save (const char* filename);
 
-    void compute_wed_volume (Volume *wed_vol, Volume *in_vol);
+    void compute_wed_volume (Volume *wed_vol, Volume *in_vol, float background);
 
 protected:
     void ray_trace (

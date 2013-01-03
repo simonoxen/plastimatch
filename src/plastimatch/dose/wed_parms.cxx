@@ -22,6 +22,7 @@
 Wed_Parms::Wed_Parms ()
 {
     this->debug = 0;
+    this->group = 0;
     this->ray_step = 1.0f;
     this->input_ct_fn[0] = '\0';
     this->output_ct_fn[0] = '\0';
@@ -55,7 +56,93 @@ static void
 print_usage (void)
 {
     printf ("Usage: wed config_file\n");
+    printf ("Options:\n");
+    printf ("\t--group <input .txt file>\n");
     exit (1);
+}
+
+int
+Wed_Parms::get_group_lines(char* groupfile)
+{
+  std::string line;
+  std::ifstream text(groupfile);
+  int numlines = 0;
+  if (text.is_open())  {
+    while (text.good()) {
+      getline(text,line);	    
+      if ( (!line.empty()) && (line.compare(0,1,"#")) )  {
+	numlines++;
+      }
+    }
+  }
+  return numlines;
+
+}
+
+void
+Wed_Parms::parse_group(int argc, char** argv, int linenumber)
+{
+
+  int linecounter = 0;
+
+  for (int i=1; i<argc; i++) {
+    if (!strcmp (argv[i], "--group")) {
+      std::string line;
+      std::ifstream text(argv[i+1]);
+      if (text.is_open()) {
+	while (text.good()) {
+	  getline(text,line);
+	  if ( (!line.empty()) && (line.compare(0,1,"#")) )  {
+
+	    if (linecounter == linenumber)  {
+
+	      std::string pvol_file;
+	      std::string dose_file;
+	      std::string dose_wed_file;
+
+	      std::stringstream linestream(line);
+
+	      linestream >> pvol_file >> dose_file >> dose_wed_file;
+
+	      if (pvol_file.size()>=4)  {
+		if (pvol_file.compare(pvol_file.size()-4,4,".mha"))  {
+		  print_and_exit ("%s is not in <name>.mha format.\n", pvol_file.c_str());
+		  return;
+		}
+	      }
+	      else {print_and_exit ("%s is not in <name>.mha format.\n", pvol_file.c_str());}
+
+	      if (dose_file.size()>=4)  {
+		if (dose_file.compare(dose_file.size()-4,4,".mha"))  {
+		  print_and_exit ("%s is not an .mha file.\n", dose_file.c_str());
+		  return;
+		}
+	      }
+	      else {print_and_exit ("%s is not in <name>.mha format.\n", dose_file.c_str());}
+
+
+	      //	      std::cout<<pvol_file<<" "<<dose_file<<" "<<dose_wed_file<<std::endl;
+
+	      strncpy (this->input_ct_fn, pvol_file.c_str(), _MAX_PATH);
+	      //	      strncpy (this->input_dose_fn, dose_file.c_str(), _MAX_PATH);
+	      this->input_dose_fn = dose_file.c_str();
+
+	      //add "_wed" to  pvol_file names
+	      pvol_file.insert (pvol_file.end()-4,'_wed');   
+	      strncpy (this->output_ct_fn, pvol_file.c_str(), _MAX_PATH);
+	      this->output_dose_fn = dose_wed_file.c_str();
+
+
+
+
+	      std::cout<<"linenumber is "<<linenumber<<std::endl;
+	    }
+	    linecounter++;
+	  }
+	}
+      }
+    }
+  }
 }
 
 int
@@ -238,7 +325,17 @@ Wed_Parms::parse_args (int argc, char** argv)
         if (argv[i][0] != '-') break;
 
         if (!strcmp (argv[i], "--debug")) {
-            this->debug = 1;
+	  this->debug = 1;
+        }
+	if (!strcmp (argv[i], "--group")) {
+	  if (!argv[i+1])  { //group needs an argument
+	    print_usage ();
+            return false;
+	  }
+	  else {
+	    this->group = get_group_lines(argv[i+1]);
+	    return true;
+	  }
         }
         else {
             print_usage ();

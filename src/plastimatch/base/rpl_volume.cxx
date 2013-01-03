@@ -399,7 +399,7 @@ Rpl_volume::compute (Volume *ct_vol)
 }
 
 void 
-Rpl_volume::compute_wed_volume (Volume *wed_vol, Volume *in_vol)
+Rpl_volume::compute_wed_volume (Volume *wed_vol, Volume *in_vol, float background)
 {
     /* A couple of abbreviations */
     Proj_volume *proj_vol = d_ptr->proj_vol;
@@ -411,7 +411,10 @@ Rpl_volume::compute_wed_volume (Volume *wed_vol, Volume *in_vol)
  
     plm_long wijk[3];  /* Index within wed_volume */
 
+
+    printf("ires is %d %d %d \n",ires[0],ires[1],ires[2]);
     for (wijk[1] = 0; wijk[1] < ires[1]; wijk[1]++) {
+
         for (wijk[0] = 0; wijk[0] < ires[0]; wijk[0]++) {
             /* Compute index of aperture pixel */
             plm_long ap_idx = wijk[1] * ires[0] + wijk[0];
@@ -427,7 +430,13 @@ Rpl_volume::compute_wed_volume (Volume *wed_vol, Volume *in_vol)
             /* Make some aliases */
             Ray_data *ray_data = &d_ptr->ray_data[ap_idx];
 
+	    //Below resets the default from water to air, if the ray
+	    //misses the volume
             if (!ray_data->intersects_volume) {
+	      for (wijk[2] = 0; wijk[2] < ires[2]; wijk[2]++) {
+                plm_long widx = volume_index (rvol->dim, wijk);
+		wed_vol_img[widx] = -1000.;
+	      }
                 continue;
             }
 
@@ -437,6 +446,9 @@ Rpl_volume::compute_wed_volume (Volume *wed_vol, Volume *in_vol)
             /* Loop, looking for each output voxel */
             for (wijk[2] = 0; wijk[2] < rvol->dim[2]; wijk[2]++) {
                 plm_long widx = volume_index (rvol->dim, wijk);
+
+		//Set the default to background.
+		wed_vol_img[widx] = background;
 
                 /* Compute the currently required rpl for this step */
                 double req_rpl = wijk[2] * 1.0;

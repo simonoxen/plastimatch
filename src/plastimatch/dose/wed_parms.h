@@ -14,14 +14,17 @@ public:
     ~Wed_Parms ();
 
     bool parse_args (int argc, char** argv);
+    void parse_group (int argc, char** argv, int line);
 
 private:
     void parse_config (const char* config_fn);
     int set_key_val (const char* key, const char* val, int section);
+    int get_group_lines (char* groupfile);
 
 public:
     /* [SETTINGS] */
     int debug;
+    int group;
     bool have_ray_step;
     float ray_step;                 /* Uniform ray step size (mm) */
     char input_ct_fn[_MAX_PATH];    /* input:  patient volume */
