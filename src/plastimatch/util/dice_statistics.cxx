@@ -126,22 +126,36 @@ Dice_statistics::run ()
     typedef itk::ImageMomentsCalculator<UCharImageType> MomentCalculatorType;
     MomentCalculatorType::Pointer moment = MomentCalculatorType::New();
 
-    moment->SetImage (d_ptr->ref_image);
-    moment->Compute ();
-    d_ptr->ref_cog = moment->GetCenterOfGravity ();
-    d_ptr->ref_vol = moment->GetTotalMass ();
+    try {
+        moment->SetImage (d_ptr->ref_image);
+        moment->Compute ();
+        d_ptr->ref_cog = moment->GetCenterOfGravity ();
+        d_ptr->ref_vol = moment->GetTotalMass ();
+    } catch (itk::ExceptionObject &) {
+        d_ptr->ref_cog[0] = d_ptr->ref_cog[1] = d_ptr->ref_cog[2] = 0.f;
+        d_ptr->ref_vol = 0.f;
+    }
 
-    moment->SetImage (d_ptr->cmp_image);
-    moment->Compute ();
-    d_ptr->cmp_cog = moment->GetCenterOfGravity ();
-    d_ptr->cmp_vol = moment->GetTotalMass ();
+    try {
+        moment->SetImage (d_ptr->cmp_image);
+        moment->Compute ();
+        d_ptr->cmp_cog = moment->GetCenterOfGravity ();
+        d_ptr->cmp_vol = moment->GetTotalMass ();
+    } catch (itk::ExceptionObject &) {
+        d_ptr->cmp_cog[0] = d_ptr->cmp_cog[1] = d_ptr->cmp_cog[2] = 0.f;
+        d_ptr->cmp_vol = 0.f;
+    }
 }
 
 float
 Dice_statistics::get_dice ()
 {
-  return ((float) (2 * d_ptr->TP))
-    / ((float) (d_ptr->ref_size + d_ptr->cmp_size));
+    float dice = 0.f;
+    if ((d_ptr->ref_size + d_ptr->cmp_size) > 0) {
+        dice = ((float) (2 * d_ptr->TP))
+            / ((float) (d_ptr->ref_size + d_ptr->cmp_size));
+    }
+    return dice;
 }
 
 size_t
