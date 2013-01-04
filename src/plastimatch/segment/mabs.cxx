@@ -10,6 +10,7 @@
 #include "dice_statistics.h"
 #include "distance_map.h"
 #include "file_util.h"
+#include "itk_adjust.h"
 #include "itk_image_save.h"
 #include "itk_threshold.h"
 #include "mabs.h"
@@ -226,7 +227,7 @@ Mabs::prep ()
         std::string prefix = string_format ("%s/%s/%s/structures", 
             d_ptr->traindir_base.c_str(), atlas_id.c_str(), 
             atlas_id.c_str());
-        rtds.m_rtss->save_prefix (prefix.c_str());
+        rtds.m_rtss->save_prefix (prefix, "nrrd");
         d_ptr->time_io += timer.report();
     }
     lprintf ("Rasterization time:   %10.1f seconds\n", d_ptr->time_extract);
@@ -373,15 +374,15 @@ Mabs::run_registration ()
             if (d_ptr->write_registration_files) {
                 timer.start();
                 lprintf ("Saving registration_files\n");
-                Pstring fn;
-                fn.format ("%s/img.nrrd", curr_output_dir.c_str());
+                std::string fn;
+                fn = string_format ("%s/img.nrrd", curr_output_dir.c_str());
                 warped_image.save_image (fn.c_str());
 
-                fn.format ("%s/xf.txt", curr_output_dir.c_str());
+                fn = string_format ("%s/xf.txt", curr_output_dir.c_str());
                 xf_out->save (fn.c_str());
 
-                fn.format ("%s/structures", curr_output_dir.c_str());
-                rtds.m_rtss->save_prefix (fn.c_str());
+                fn = string_format ("%s/structures", curr_output_dir.c_str());
+                rtds.m_rtss->save_prefix (fn, "nrrd");
                 d_ptr->time_io += timer.report();
             }
 
@@ -448,6 +449,17 @@ Mabs::run_registration ()
                 dmap.run ();
                 FloatImageType::Pointer dmap_image = dmap.get_output_image ();
                 d_ptr->time_dmap += timer.report();
+
+                /* Truncate the dmap.  This is to save disk space. 
+                   Maybe we won't need this if we can crop. */
+                Adjustment_list al;
+                al.push_back (std::make_pair (
+                        -std::numeric_limits<float>::max(), 0));
+                al.push_back (std::make_pair (-400, -400));
+                al.push_back (std::make_pair (400, 400));
+                al.push_back (std::make_pair (
+                        std::numeric_limits<float>::max(), 0));
+                itk_adjust (dmap_image, al);
 
                 if (d_ptr->write_registration_files) {
                     timer.start();

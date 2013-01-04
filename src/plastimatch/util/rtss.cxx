@@ -31,6 +31,7 @@
 #include "slice_index.h"
 #include "ss_list_io.h"
 #include "ss_img_extract.h"
+#include "string_util.h"
 #include "warp_parms.h"
 #include "xio_structures.h"
 
@@ -119,9 +120,11 @@ Rtss::load_prefix (const Pstring &prefix_dir)
        files.  This is used to size the ss_img. */
     int max_structures = 0;
     for (int i = 0; i < dl.num_entries; i++) {
-        /* Look at filename, make sure it is an mha file */
+        /* Look at filename, make sure it is an mha or nrrd file */
         const char *entry = dl.entries[i];
-	if (!extension_is (entry, ".mha")) {
+	if (!extension_is (entry, ".mha") 
+            && !extension_is (entry, ".nrrd"))
+        {
             continue;
         }
         max_structures++;
@@ -135,9 +138,11 @@ Rtss::load_prefix (const Pstring &prefix_dir)
     UCharVecImageType::Pointer ss_img;
     Plm_image_header ss_img_pih;
     for (int i = 0; i < dl.num_entries; i++) {
-        /* Look at filename, make sure it is an mha file */
+        /* Look at filename, make sure it is an mha or nrrd file */
         const char *entry = dl.entries[i];
-	if (!extension_is (entry, ".mha")) {
+	if (!extension_is (entry, ".mha") 
+            && !extension_is (entry, ".nrrd"))
+        {
             continue;
         }
 
@@ -419,6 +424,37 @@ Rtss::save_labelmap (const Pstring &labelmap_fn)
     this->m_labelmap->save_image ((const char*) labelmap_fn);
 }
 
+void
+Rtss::save_prefix (const std::string &output_prefix,
+    const std::string& extension)
+{
+    if (!m_ss_img) {
+        return;
+    }
+
+    if (!m_cxt) {
+        printf ("WTF???\n");
+    }
+
+    for (size_t i = 0; i < m_cxt->num_structures; i++)
+    {
+        std::string fn;
+        Rtss_structure *curr_structure = m_cxt->slist[i];
+        int bit = curr_structure->bit;
+
+        if (bit == -1) continue;
+        UCharImageType::Pointer prefix_img 
+            = ss_img_extract_bit (m_ss_img, bit);
+
+        fn = string_format ("%s/%s.%s", 
+            output_prefix.c_str(),
+            curr_structure->name.c_str(),
+            extension.c_str());
+        itk_image_save (prefix_img, fn.c_str());
+    }
+}
+
+/* GCS FIX: This is obsolete, and should invoke the above function */
 void
 Rtss::save_prefix (const Pstring &output_prefix)
 {
