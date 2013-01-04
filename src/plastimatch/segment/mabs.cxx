@@ -40,7 +40,7 @@ public:
     std::string traindir_base;
 
     std::string ref_id;
-    Rtds fixed_rtds;
+    Rtds ref_rtds;
     std::list<std::string> atlas_list;
     std::string output_dir;
     std::string input_dir;
@@ -339,7 +339,7 @@ Mabs::run_registration ()
 
             /* Manually set input files */
             Registration_data regd;
-            regd.fixed_image = d_ptr->fixed_rtds.m_img;
+            regd.fixed_image = d_ptr->ref_rtds.m_img;
             regd.moving_image = rtds.m_img;
 
             /* Run the registration */
@@ -425,14 +425,14 @@ Mabs::run_registration ()
                 bool have_ref_structure = false;
                 UCharImageType::Pointer ref_structure_image;
                 for (size_t j = 0; 
-                     j < d_ptr->fixed_rtds.m_rtss->get_num_structures(); j++)
+                     j < d_ptr->ref_rtds.m_rtss->get_num_structures(); j++)
                 {
                     std::string ref_ori_name 
-                        = d_ptr->fixed_rtds.m_rtss->get_structure_name (i);
+                        = d_ptr->ref_rtds.m_rtss->get_structure_name (i);
                     std::string ref_mapped_name = this->map_structure_name (
                         ori_name);
                     if (ref_mapped_name == mapped_name) {
-                        ref_structure_image = d_ptr->fixed_rtds.m_rtss
+                        ref_structure_image = d_ptr->ref_rtds.m_rtss
                             ->get_structure_image (j);
                         have_ref_structure = true;
                         break;
@@ -466,19 +466,21 @@ Mabs::run_registration ()
                     dice.set_compare_image (structure_image);
                     dice.run ();
 
-                    lprintf ("%s,%s,%s,%f,%d,%d,%d,%d\n",
+                    lprintf ("%s,%s,%s,%s,%f,%d,%d,%d,%d\n",
                         d_ptr->ref_id.c_str(), 
                         atlas_id.c_str(),
                         multi_registration ? registration_id.c_str() : "", 
+                        mapped_name.c_str(), 
                         dice.get_dice(),
                         (int) dice.get_true_positives(),
                         (int) dice.get_true_negatives(),
                         (int) dice.get_false_positives(),
                         (int) dice.get_false_negatives());
-                    fprintf (d_ptr->dice_fp, "%s,%s,%s,%f,%d,%d,%d,%d\n",
+                    fprintf (d_ptr->dice_fp, "%s,%s,%s,%s,%f,%d,%d,%d,%d\n",
                         d_ptr->ref_id.c_str(), 
                         atlas_id.c_str(),
                         multi_registration ? registration_id.c_str() : "", 
+                        mapped_name.c_str(), 
                         dice.get_dice(),
                         (int) dice.get_true_positives(),
                         (int) dice.get_true_negatives(),
@@ -566,7 +568,7 @@ Mabs::run ()
     this->sanity_checks ();
 
     /* Load the labeling file.  For now, we'll assume this is successful. */
-    d_ptr->fixed_rtds.m_img = plm_image_load_native (
+    d_ptr->ref_rtds.m_img = plm_image_load_native (
         d_ptr->parms->labeling_input_fn);
 
     /* Parse atlas directory */
@@ -604,7 +606,7 @@ Mabs::train ()
     /* Write some extra files when training */
     d_ptr->write_weight_files = true;
 
-    /* Loop through atlas_dir, doing LOO testing */
+    /* Loop through atlas_dir, choosing reference images to segment */
     for (std::list<std::string>::iterator it = d_ptr->atlas_dir_list.begin();
          it != d_ptr->atlas_dir_list.end(); it++)
     {
@@ -624,11 +626,11 @@ Mabs::train ()
         std::string fn = string_format ("%s/%s/%s.nrrd", 
             d_ptr->output_dir.c_str(), patient_id.c_str(), 
             patient_id.c_str());
-        d_ptr->fixed_rtds.m_img = plm_image_load_native (fn.c_str());
+        d_ptr->ref_rtds.m_img = plm_image_load_native (fn.c_str());
         fn = string_format ("%s/%s/structures", 
             d_ptr->output_dir.c_str(), patient_id.c_str());
-        d_ptr->fixed_rtds.m_rtss = new Rtss;
-        d_ptr->fixed_rtds.m_rtss->load_prefix (fn.c_str());
+        d_ptr->ref_rtds.m_rtss = new Rtss;
+        d_ptr->ref_rtds.m_rtss->load_prefix (fn.c_str());
         d_ptr->time_io += timer.report();
 
         /* Run the segmentation */
