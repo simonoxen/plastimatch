@@ -428,9 +428,9 @@ Mabs::run_registration ()
                      j < d_ptr->ref_rtds.m_rtss->get_num_structures(); j++)
                 {
                     std::string ref_ori_name 
-                        = d_ptr->ref_rtds.m_rtss->get_structure_name (i);
+                        = d_ptr->ref_rtds.m_rtss->get_structure_name (j);
                     std::string ref_mapped_name = this->map_structure_name (
-                        ori_name);
+                        ref_ori_name);
                     if (ref_mapped_name == mapped_name) {
                         ref_structure_image = d_ptr->ref_rtds.m_rtss
                             ->get_structure_image (j);
