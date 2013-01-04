@@ -248,7 +248,7 @@ main (int argc, char* argv[])
     int zz = 0;
     for (image_it.GoToBegin(); !image_it.IsAtEnd(); ++image_it) {
       //      printf("%d: %d, %d, %d\n",zz,(int) (zz%image_dim[0]),(int) (floor(zz/image_dim[0]))%image_dim[1],(int) floor(zz/(image_dim[0]*image_dim[1])));
-      input_vect[ (int) (zz%image_dim[0]) ][ (int) (floor(zz/image_dim[0]))%image_dim[1] ][ (int) floor(zz/(image_dim[0]*image_dim[1])) ] = image_it.Get();
+      input_vect[ (int) (zz%image_dim[0]) ][ (int) (floor( (float) zz/image_dim[0]))%image_dim[1] ][ (int) floor( (float) zz/(image_dim[0]*image_dim[1])) ] = image_it.Get();
       
       zz++;
     }
@@ -319,7 +319,7 @@ main (int argc, char* argv[])
   int zz = 0;
   for (image_out_it.GoToBegin(); !image_out_it.IsAtEnd(); ++image_out_it) {
     
-    image_out_it.Set( added_vect[ (int) (zz%added_length[0]) ][ (int) (floor(zz/added_length[0]))%added_length[1] ][ (int) floor(zz/(added_length[0]*added_length[1])) ] );
+    image_out_it.Set( added_vect[ (int) (zz%added_length[0]) ][ (int) (floor( (float) zz/added_length[0]))%added_length[1] ][ (int) floor( (float) zz/(added_length[0]*added_length[1])) ] );
 
     zz++;
   }
