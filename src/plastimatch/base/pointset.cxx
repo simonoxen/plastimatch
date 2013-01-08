@@ -138,7 +138,7 @@ Pointset<T>::set_ras (const Pstring& p)
         if (rc == BSTR_ERR) {
             break;
         }
-        loc += rc + 1;
+        loc = rc + 1;
     }
 }
 
