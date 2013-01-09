@@ -1,85 +1,72 @@
-########################################################################
-## This class reads and writes mha files (images or vector fields)
-## Author: Paolo Zaffino  (p.zaffino@unicz.it)
-## Rev 16
-## NOT TESTED ON PYTHON 3
-########################################################################
-
+"""
+This class reads and writes mha files (images or vector fields)
+Author: Paolo Zaffino  (p.zaffino@unicz.it)
+Rev 17
+NOT TESTED ON PYTHON 3
+"""
 
 import numpy as np
 
-
 class new():
 	
-	## PUBLIC PARAMETERS:
-	## 
-	##	data=3D/4D matrix
-	##	size=3D/4D matrix size
-	##	spacing=voxel size
-	##	offset=spatial offset of data data
-	##	data_type='short', 'float' or 'uchar'
-	##
-	## 
-	## CONSTRUCTOR OVERLOADING:
-	##
-	## img=mha.new() # All the public parameters will be set to None
-	## img=mha.new(input_file='img.mha')
-	## img=mha.new(data=matrix, size=[512, 512, 80], spacing=[0.9, 0.9, 5], offset=[-240, -240, -160], data_type='short')
-	##
-	##
-	## PUBLIC METHODS:
-	##
-	## img.read_mha('file_name.mha')
-	## img.write_mha('file_name.mha')
+	"""
+	PUBLIC PARAMETERS:
+	
+	data=3D/4D matrix
+	size=3D/4D matrix size
+	spacing=voxel size
+	offset=spatial offset of data data
+	data_type='short', 'float' or 'uchar'
+	direction_cosines=direction cosines of the raw image/vf
+	
+	 
+	CONSTRUCTOR OVERLOADING:
+	
+	img=mha.new() # All the public parameters will be set to None
+	img=mha.new(input_file='img.mha')
+	img=mha.new(data=matrix, size=[512, 512, 80], spacing=[0.9, 0.9, 5], offset=[-240, -240, -160], data_type='short', direction_cosines=[1, 0, 0, 0, 1, 0, 0, 0, 1])
+	
+	
+	PUBLIC METHODS:
+	
+	img.read_mha('file_name.mha')
+	img.write_mha('file_name.mha')
+	"""
 	
 	data=None
 	size=None
 	spacing=None
 	offset=None
 	data_type=None
-	
+	direction_cosines=None
 	
 ######################## CONSTRUCTOR - START - #########################
-	
-	def __init__ (self, input_file=None, data=None, size=None, spacing=None, offset=None, data_type=None):
+	def __init__ (self, input_file=None, data=None, size=None, spacing=None, offset=None, data_type=None, direction_cosines=None):
 		
-		if input_file!=None and data==None and size==None and spacing==None and offset==None and data_type==None:
+		if input_file!=None and data==None and size==None and spacing==None and offset==None and data_type==None and direction_cosines==None:
 			self.read_mha(input_file)
 			
-		elif input_file==None and data!=None and size!=None and spacing!=None and offset!=None and data_type!=None:
+		elif input_file==None and data!=None and size!=None and spacing!=None and offset!=None and data_type!=None and direction_cosines!=None:
 			self.data=data
 			self.size=size
 			self.spacing=spacing
 			self.offset=offset
 			self.data_type=data_type
+			self.direction_cosines=direction_cosines
 		
-		elif input_file==None and data==None and size==None and spacing==None and offset==None and data_type==None:
+		elif input_file==None and data==None and size==None and spacing==None and offset==None and data_type==None and direction_cosines==None:
 			pass
-	
-######################## CONSTRUCTOR - END - ###########################
-	
-	
-######################## READ_MHA - START - ############################
-	
-## INPUT PARAMETER:
-## fn=file name
-##
-## This method reads a mha file and assigns the data to the object parameters
+######################## CONSTRUCTOR - END - ###########################	
 
+######################## READ_MHA - START - ############################
 	def read_mha(self, fn):
-	
-		######## Utility function, NOT FOR PUBLIC USE - START - ########
-		def __cast2int (l):
-			for i in range(3):
-				if l[i].is_integer():
-					l[i]=int(l[i])
-			return l
-			
-			
-		def __shiftdim (x, n):
-			return x.transpose(np.roll(range(x.ndim), -n))
-		######## Utility function, NOT FOR PUBLIC USE - END - ##########
 		
+		"""
+		This method reads a mha file and assigns the data to the object parameters
+		
+		INPUT PARAMETER:
+		fn=file name
+		"""	
 		
 		if fn.endswith('.mha'): ## Check if the file extension is ".mha"
 			
@@ -91,12 +78,15 @@ class new():
 				
 				row=f.readline()
 				
-				if row.startswith('Offset ='):
+				if row.startswith('TransformMatrix ='):
 					row=row.split('=')[1].strip()
-					self.offset=__cast2int(map(float, row.split()))
+					self.direction_cosines=self._cast2int(map(float, row.split()))
+				elif row.startswith('Offset ='):
+					row=row.split('=')[1].strip()
+					self.offset=self._cast2int(map(float, row.split()))
 				elif row.startswith('ElementSpacing ='):
 					row=row.split('=')[1].strip()
-					self.spacing=__cast2int(map(float, row.split()))
+					self.spacing=self._cast2int(map(float, row.split()))
 				elif row.startswith('DimSize ='):
 					row=row.split('=')[1].strip()
 					self.size=map(int, row.split())
@@ -128,24 +118,22 @@ class new():
 				self.data=self.data.reshape(self.size[2],self.size[1],self.size[0]).T
 			elif data == 'vf':
 				self.data=self.data.reshape(self.size[2],self.size[1],self.size[0],3)
-				self.data=__shiftdim(self.data, 3).T
+				self.data=self._shiftdim(self.data, 3).T
 				self.size+=[3]
 			
 		elif not fn.endswith('.mha'): ## Extension file is not ".mha". It returns all null values
 			raise NameError('The input file is not a mha file!')
-		
 ######################### READ_MHA - END - #############################
-	
-	
+
 ######################## WRITE_MHA - START - ###########################
-	
-## INPUT PARAMETER:
-## fn=file name
-##
-## This method writes the object parameters in a mha file
-	
 	def write_mha (self,fn):
 		
+		"""
+		This method writes the object parameters in a mha file
+		
+		INPUT PARAMETER:
+		fn=file name
+		"""
 		
 		if fn.endswith('.mha'): ## Check if the file extension is ".mha"
 			
@@ -163,15 +151,15 @@ class new():
 			f.write('BinaryData = True\n')
 			f.write('BinaryDataByteOrderMSB = False\n')
 			f.write('CompressedData = False\n')
-			f.write('TransformMatrix = 1 0 0 0 1 0 0 0 1\n')
-			f.write('Offset = '+str(self.offset[0])+' '+str(self.offset[1])+' '+str(self.offset[2])+'\n')
+			f.write('TransformMatrix = '+str(self.direction_cosines).strip('()[]').replace(',','')+'\n')
+			f.write('Offset = '+str(self.offset).strip('()[]').replace(',','')+'\n')
 			f.write('CenterOfRotation = 0 0 0\n')
 			f.write('AnatomicalOrientation = RAI\n')
-			f.write('ElementSpacing = '+str(self.spacing[0])+' '+str(self.spacing[1])+' '+str(self.spacing[2])+'\n')
-			f.write('DimSize = '+str(self.data.shape[0])+' '+str(self.data.shape[1])+ ' '+str(self.data.shape[2])+'\n')
+			f.write('ElementSpacing = '+str(self.spacing).strip('()[]').replace(',','')+'\n')
+			f.write('DimSize = '+str(self.data.shape[:3]).strip('()[]').replace(',','')+'\n')
 			if data == 'vf':
 				f.write('ElementNumberOfChannels = 3\n')
-				self.data=_shiftdim(self.data, 3) ## Shift dimensions if the input matrix is a vf
+				self.data=self._shiftdim(self.data, 3) ## Shift dimensions if the input matrix is a vf
 			if self.data_type == 'short':
 				f.write('ElementType = MET_SHORT\n')
 			elif self.data_type == 'float':
@@ -187,5 +175,15 @@ class new():
 			
 		elif not fn.endswith('.mha'): ## File extension is not ".mha"
 			raise NameError('The input file name is not a mha file!')
-	
 ######################## WRITE_MHA - END - #############################
+
+############ UTILITY FUNCTIONS, NOT FOR PUBLIC USE - START - ###########
+	def _cast2int (self, l):
+		l_new=[]
+		for i in l:
+			if i.is_integer(): l_new.append(int(i))
+			else: l_new.append(i)
+		return l_new
+		
+	_shiftdim = lambda self, x, n: x.transpose(np.roll(range(x.ndim), -n))
+############# UTILITY FUNCTIONS, NOT FOR PUBLIC USE - END - ############
