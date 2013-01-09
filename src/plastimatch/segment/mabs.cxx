@@ -324,6 +324,15 @@ Mabs::run_registration ()
                     atlas_id.c_str());
             }
 
+            /* Check if this registration is already complete */
+            std::string checkpoint_fn = string_format (
+                "%s/checkpoint.txt", curr_output_dir.c_str());
+            if (file_exists (checkpoint_fn)) {
+                lprintf ("Registration complete for %s\n",
+                    curr_output_dir.c_str());
+                continue;
+            }
+
             /* Make a registration command string */
             lprintf ("Processing command file: %s\n", command_file.c_str());
             std::string command_string = slurp_file (command_file);
@@ -508,6 +517,10 @@ Mabs::run_registration ()
                 d_ptr->time_vote += timer.report();
 #endif
             }
+
+            /* Create checkpoint file which means that this registration
+               is complete */
+            touch_file (checkpoint_fn);
 
             /* Don't let regd destructor delete our fixed image */
             regd.fixed_image = 0;

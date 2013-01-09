@@ -75,6 +75,13 @@ file_size (const char *filename)
     return (uint64_t) fs.st_size;
 }
 
+void 
+touch_file (const std::string& filename)
+{
+    FILE *fp = fopen (filename.c_str(), "w");
+    fclose (fp);
+}
+
 void
 make_directory (const char *dirname)
 {

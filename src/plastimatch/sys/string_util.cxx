@@ -186,7 +186,7 @@ slurp_file (const std::string& fn)
    http://creativecommons.org/licenses/by-sa/3.0/
 */
 std::string 
-string_format (const std::string &fmt, ...)
+string_format (const char *fmt, ...)
 {
     int size=100;
     std::string str;
@@ -194,7 +194,7 @@ string_format (const std::string &fmt, ...)
     while (1) {
         str.resize(size);
         va_start(ap, fmt);
-        int n = vsnprintf((char *)str.c_str(), size, fmt.c_str(), ap);
+        int n = vsnprintf((char *)str.c_str(), size, fmt, ap);
         va_end(ap);
         if (n > -1 && n < size) {
             str = std::string (str.c_str());  /* Strip excess padding */
