@@ -272,6 +272,18 @@ Mabs::run_registration ()
         Rtds rtds;
         std::string path = *atl_it;
         std::string atlas_id = basename (path);
+        std::string atlas_path = string_format ("%s/%s",
+            d_ptr->traindir_base.c_str(), atlas_id.c_str());
+
+        /* Check if this registration is already complete.
+           We might be able to skip it. */
+        std::string atl_checkpoint_fn = string_format (
+            "%s/checkpoint.txt", atlas_path.c_str());
+        if (file_exists (atl_checkpoint_fn)) {
+            lprintf ("Atlas training complete for %s\n",
+                atlas_path.c_str());
+            continue;
+        }
 
         /* Load image & structures from "prep" directory */
         timer.start();
@@ -324,10 +336,11 @@ Mabs::run_registration ()
                     atlas_id.c_str());
             }
 
-            /* Check if this registration is already complete */
-            std::string checkpoint_fn = string_format (
+            /* Check if this registration is already complete.
+               We might be able to skip it. */
+            std::string reg_checkpoint_fn = string_format (
                 "%s/checkpoint.txt", curr_output_dir.c_str());
-            if (file_exists (checkpoint_fn)) {
+            if (file_exists (reg_checkpoint_fn)) {
                 lprintf ("Registration complete for %s\n",
                     curr_output_dir.c_str());
                 continue;
@@ -348,24 +361,24 @@ Mabs::run_registration ()
             }
 
             /* Manually set input files */
-            Registration_data regd;
-            regd.fixed_image = d_ptr->ref_rtds.m_img;
-            regd.moving_image = rtds.m_img;
+            Registration_data *regd = new Registration_data;
+            regd->fixed_image = d_ptr->ref_rtds.m_img;
+            regd->moving_image = rtds.m_img;
 
             /* Run the registration */
             Xform *xf_out;
             lprintf ("DO_REGISTRATION_PURE\n");
             lprintf ("regp->num_stages = %d\n", regp->num_stages);
             timer.start();
-            do_registration_pure (&xf_out, &regd, regp);
+            do_registration_pure (&xf_out, regd, regp);
             d_ptr->time_reg += timer.report();
 
             /* Warp the output image */
             lprintf ("Warp output image...\n");
-            Plm_image_header fixed_pih (regd.fixed_image);
-            Plm_image warped_image;
+            Plm_image_header fixed_pih (regd->fixed_image);
+            Plm_image *warped_image = new Plm_image;
             timer.start();
-            plm_warp (&warped_image, 0, xf_out, &fixed_pih, regd.moving_image, 
+            plm_warp (warped_image, 0, xf_out, &fixed_pih, regd->moving_image, 
                 regp->default_value, 0, 1);
             d_ptr->time_warp_img += timer.report();
             
@@ -385,7 +398,7 @@ Mabs::run_registration ()
                 lprintf ("Saving registration_files\n");
                 std::string fn;
                 fn = string_format ("%s/img.nrrd", curr_output_dir.c_str());
-                warped_image.save_image (fn.c_str());
+                warped_image->save_image (fn.c_str());
 
                 fn = string_format ("%s/xf.txt", curr_output_dir.c_str());
                 xf_out->save (fn.c_str());
@@ -394,6 +407,10 @@ Mabs::run_registration ()
                 rtds.m_rtss->save_prefix (fn, "nrrd");
                 d_ptr->time_io += timer.report();
             }
+
+            /* We're done with these */
+            delete regd;
+            delete warped_image;
 
             /* Loop through structures for this atlas image */
             lprintf ("Process structures...\n");
@@ -520,14 +537,15 @@ Mabs::run_registration ()
 
             /* Create checkpoint file which means that this registration
                is complete */
-            touch_file (checkpoint_fn);
-
-            /* Don't let regd destructor delete our fixed image */
-            regd.fixed_image = 0;
+            touch_file (reg_checkpoint_fn);
 
             /* Clean up */
             delete xf_out;
         } /* end for each registration parameter */
+
+        /* Create checkpoint file which means that training for 
+           this atlas example is complete */
+        touch_file (atl_checkpoint_fn);
     } /* end for each atlas image */
 }
 
