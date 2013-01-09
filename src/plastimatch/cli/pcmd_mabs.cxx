@@ -83,7 +83,7 @@ do_command_mabs (int argc, char *argv[])
     Mabs mabs;
     mabs.set_parms (&mabs_parms);
     if (parms.prep) {
-        mabs.prep ();
+        mabs.atlas_prep ();
     }
     else if (parms.train) {
         mabs.train ();

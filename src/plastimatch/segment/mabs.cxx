@@ -172,7 +172,51 @@ Mabs::load_atlas_dir_list ()
 }
 
 void
-Mabs::prep ()
+Mabs::prep (const std::string& input_dir, const std::string& output_dir)
+{
+    Rtds rtds;
+    Plm_timer timer;
+
+    /* Load the rtds for the atlas */
+    timer.start();
+    lprintf ("MABS loading %s\n", input_dir.c_str());
+    rtds.load_dicom_dir (input_dir.c_str());
+    d_ptr->time_io += timer.report();
+
+    /* Save the image as raw files */
+    timer.start();
+    std::string fn = string_format ("%s/img.nrrd", output_dir.c_str());
+    rtds.m_img->save_image (fn.c_str());
+
+    /* Remove structures which are not part of the atlas */
+    timer.start();
+    rtds.m_rtss->prune_empty ();
+    Rtss_structure_set *cxt = rtds.m_rtss->m_cxt;
+    for (size_t i = 0; i < rtds.m_rtss->get_num_structures(); i++) {
+        /* Check structure name, make sure it is something we 
+           want to segment */
+        std::string ori_name = rtds.m_rtss->get_structure_name (i);
+        std::string mapped_name = this->map_structure_name (ori_name);
+        if (mapped_name == "") {
+            /* If not, delete it (before rasterizing) */
+            cxt->delete_structure (i);
+            --i;
+        }
+    }
+
+    /* Rasterize structure sets and save */
+    Plm_image_header pih (rtds.m_img);
+    rtds.m_rtss->rasterize (&pih, false, false);
+    d_ptr->time_extract += timer.report();
+
+    /* Save structures which are part of the atlas */
+    std::string prefix = string_format ("%s/structures", output_dir.c_str());
+    rtds.m_rtss->save_prefix (prefix, "nrrd");
+    d_ptr->time_io += timer.report();
+}
+
+void
+Mabs::atlas_prep ()
 {
     /* Do a few sanity checks */
     this->sanity_checks ();
@@ -184,51 +228,13 @@ Mabs::prep ()
     for (std::list<std::string>::iterator it = d_ptr->atlas_dir_list.begin();
          it != d_ptr->atlas_dir_list.end(); it++)
     {
-        Plm_timer timer;
-        Rtds rtds;
-        std::string path = *it;
-
-        /* Load the rtds for the atlas */
-        timer.start();
-        lprintf ("MABS loading %s\n", path.c_str());
-        rtds.load_dicom_dir (path.c_str());
-        d_ptr->time_io += timer.report();
-
-        /* Save the image as raw files */
-        timer.start();
-        std::string atlas_id = basename (path);
-        std::string fn = string_format ("%s/%s/%s/%s.nrrd", 
-            d_ptr->traindir_base.c_str(), atlas_id.c_str(), 
-            atlas_id.c_str(), atlas_id.c_str());
-        rtds.m_img->save_image (fn.c_str());
-
-        /* Remove structures which are not part of the atlas */
-        timer.start();
-        rtds.m_rtss->prune_empty ();
-        Rtss_structure_set *cxt = rtds.m_rtss->m_cxt;
-        for (size_t i = 0; i < rtds.m_rtss->get_num_structures(); i++) {
-            /* Check structure name, make sure it is something we 
-               want to segment */
-            std::string ori_name = rtds.m_rtss->get_structure_name (i);
-            std::string mapped_name = this->map_structure_name (ori_name);
-            if (mapped_name == "") {
-                /* If not, delete it (before rasterizing) */
-                cxt->delete_structure (i);
-                --i;
-            }
-        }
-
-        /* Rasterize structure sets and save */
-        Plm_image_header pih (rtds.m_img);
-        rtds.m_rtss->rasterize (&pih, false, false);
-        d_ptr->time_extract += timer.report();
-
-        /* Save structures which are part of the atlas */
-        std::string prefix = string_format ("%s/%s/%s/structures", 
-            d_ptr->traindir_base.c_str(), atlas_id.c_str(), 
+        std::string input_dir = *it;
+        std::string atlas_id = basename (input_dir);
+        std::string output_dir = string_format (
+            "%s/atlas/%s", d_ptr->traindir_base.c_str(), 
             atlas_id.c_str());
-        rtds.m_rtss->save_prefix (prefix, "nrrd");
-        d_ptr->time_io += timer.report();
+
+        this->prep (input_dir, output_dir);
     }
     lprintf ("Rasterization time:   %10.1f seconds\n", d_ptr->time_extract);
     lprintf ("I/O time:             %10.1f seconds\n", d_ptr->time_io);
@@ -242,7 +248,7 @@ Mabs::run_registration ()
     bool multi_registration;
 
     /* Figure out whether we need to do a single registration 
-       or multiple registrations */
+       or multiple registrations (for atlas tuning) */
     std::list<std::string> registration_list;
     if (is_directory (d_ptr->parms->registration_config)) {
         Dir_list dir (d_ptr->parms->registration_config);
@@ -272,28 +278,28 @@ Mabs::run_registration ()
         Rtds rtds;
         std::string path = *atl_it;
         std::string atlas_id = basename (path);
-        std::string atlas_path = string_format ("%s/%s",
+        std::string atlas_input_path = string_format ("%s/atlas/%s",
             d_ptr->traindir_base.c_str(), atlas_id.c_str());
+        std::string atlas_output_path = string_format ("%s/%s",
+            d_ptr->output_dir.c_str(), atlas_id.c_str());
 
         /* Check if this registration is already complete.
            We might be able to skip it. */
         std::string atl_checkpoint_fn = string_format (
-            "%s/checkpoint.txt", atlas_path.c_str());
+            "%s/checkpoint.txt", atlas_output_path.c_str());
         if (file_exists (atl_checkpoint_fn)) {
             lprintf ("Atlas training complete for %s\n",
-                atlas_path.c_str());
+                atlas_output_path.c_str());
             continue;
         }
 
         /* Load image & structures from "prep" directory */
         timer.start();
-        std::string fn = string_format ("%s/%s/%s/%s.nrrd", 
-            d_ptr->traindir_base.c_str(), atlas_id.c_str(), 
-            atlas_id.c_str(), atlas_id.c_str());
+        std::string fn = string_format ("%s/img.nrrd", 
+            atlas_input_path.c_str());
         rtds.m_img = plm_image_load_native (fn.c_str());
-        fn = string_format ("%s/%s/%s/structures", 
-            d_ptr->traindir_base.c_str(), atlas_id.c_str(), 
-            atlas_id.c_str());
+        fn = string_format ("%s/structures", 
+            atlas_input_path.c_str());
         rtds.m_rtss = new Rtss;
         rtds.m_rtss->load_prefix (fn.c_str());
         d_ptr->time_io += timer.report();
@@ -325,15 +331,13 @@ Mabs::run_registration ()
             std::string registration_id;
             if (multi_registration) {
                 registration_id = basename (command_file);
-                curr_output_dir = string_format ("%s/%s/%s",
-                    d_ptr->output_dir.c_str(), 
-                    atlas_id.c_str(),
+                curr_output_dir = string_format ("%s/%s",
+                    atlas_output_path.c_str(),
                     registration_id.c_str());
             }
             else {
-                curr_output_dir = string_format ("%s/%s",
-                    d_ptr->output_dir.c_str(), 
-                    atlas_id.c_str());
+                curr_output_dir = string_format ("%s",
+                    atlas_output_path.c_str());
             }
 
             /* Check if this registration is already complete.
@@ -451,18 +455,22 @@ Mabs::run_registration ()
                 timer.start();
                 bool have_ref_structure = false;
                 UCharImageType::Pointer ref_structure_image;
-                for (size_t j = 0; 
-                     j < d_ptr->ref_rtds.m_rtss->get_num_structures(); j++)
-                {
-                    std::string ref_ori_name 
-                        = d_ptr->ref_rtds.m_rtss->get_structure_name (j);
-                    std::string ref_mapped_name = this->map_structure_name (
-                        ref_ori_name);
-                    if (ref_mapped_name == mapped_name) {
-                        ref_structure_image = d_ptr->ref_rtds.m_rtss
-                            ->get_structure_image (j);
-                        have_ref_structure = true;
-                        break;
+                if (d_ptr->ref_rtds.m_rtss){
+                    for (size_t j = 0; 
+                         j < d_ptr->ref_rtds.m_rtss->get_num_structures(); 
+                         j++)
+                    {
+                        lprintf ("looping %d\n", j);
+                        std::string ref_ori_name 
+                            = d_ptr->ref_rtds.m_rtss->get_structure_name (j);
+                        std::string ref_mapped_name = this->map_structure_name (
+                            ref_ori_name);
+                        if (ref_mapped_name == mapped_name) {
+                            ref_structure_image = d_ptr->ref_rtds.m_rtss
+                                ->get_structure_image (j);
+                            have_ref_structure = true;
+                            break;
+                        }
                     }
                 }
                 d_ptr->time_extract += timer.report();
@@ -610,7 +618,8 @@ Mabs::run ()
     /* Do a few sanity checks */
     this->sanity_checks ();
 
-    /* Load the labeling file.  For now, we'll assume this is successful. */
+    /* Load the image to be labeled.  For now, we'll assume this 
+       is successful. */
     d_ptr->ref_rtds.m_img = plm_image_load_native (
         d_ptr->parms->labeling_input_fn);
 
@@ -626,6 +635,20 @@ Mabs::run ()
     /* Run the segmentation */
     this->run_registration ();
     this->run_segmentation ();
+
+#if defined (commentout)
+        /* Load image & structures from "prep" directory */
+        timer.start();
+        std::string fn = string_format ("%s/%s/%s.nrrd", 
+            d_ptr->output_dir.c_str(), patient_id.c_str(), 
+            patient_id.c_str());
+        d_ptr->ref_rtds.m_img = plm_image_load_native (fn.c_str());
+        fn = string_format ("%s/%s/structures", 
+            d_ptr->output_dir.c_str(), patient_id.c_str());
+        d_ptr->ref_rtds.m_rtss = new Rtss;
+        d_ptr->ref_rtds.m_rtss->load_prefix (fn.c_str());
+        d_ptr->time_io += timer.report();
+#endif
 }
 
 void
@@ -661,17 +684,17 @@ Mabs::train ()
         /* Set output dir for this test case */
         std::string patient_id = basename (path);
         d_ptr->ref_id = patient_id;
-        d_ptr->output_dir = d_ptr->traindir_base + "/" + patient_id;
+        d_ptr->output_dir = string_format ("%s/%s",
+            d_ptr->traindir_base.c_str(), patient_id.c_str());
         lprintf ("outdir = %s\n", d_ptr->output_dir.c_str());
 
         /* Load image & structures from "prep" directory */
         timer.start();
-        std::string fn = string_format ("%s/%s/%s.nrrd", 
-            d_ptr->output_dir.c_str(), patient_id.c_str(), 
-            patient_id.c_str());
+        std::string fn = string_format ("%s/atlas/%s/img.nrrd", 
+            d_ptr->traindir_base.c_str(), patient_id.c_str());
         d_ptr->ref_rtds.m_img = plm_image_load_native (fn.c_str());
-        fn = string_format ("%s/%s/structures", 
-            d_ptr->output_dir.c_str(), patient_id.c_str());
+        fn = string_format ("%s/atlas/%s/structures", 
+            d_ptr->traindir_base.c_str(), patient_id.c_str());
         d_ptr->ref_rtds.m_rtss = new Rtss;
         d_ptr->ref_rtds.m_rtss->load_prefix (fn.c_str());
         d_ptr->time_io += timer.report();
