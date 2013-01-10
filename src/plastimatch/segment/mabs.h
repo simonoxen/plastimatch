@@ -28,6 +28,8 @@ protected:
 
 public:
     void set_parms (const Mabs_parms *parms);
+    void parse_registration_dir (void);
+
     void prep (const std::string& input_dir, const std::string& output_dir);
     void atlas_prep ();
     void run ();
