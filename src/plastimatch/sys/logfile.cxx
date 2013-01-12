@@ -16,11 +16,11 @@
 FILE* log_fp = 0;
 
 void
-logfile_open (char* log_fn)
+logfile_open (const char* log_fn, const char* mode)
 {
     if (!log_fn[0]) return;
     if (!(log_fp)) {
-	log_fp = fopen (log_fn, "w");
+	log_fp = fopen (log_fn, mode);
 	if (!log_fp) {
 	    /* If failure (e.g. bad path), do nothing */	
 	}

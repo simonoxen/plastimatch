@@ -13,6 +13,7 @@
 #include "itk_adjust.h"
 #include "itk_image_save.h"
 #include "itk_threshold.h"
+#include "logfile.h"
 #include "mabs.h"
 #include "mabs_parms.h"
 #include "mabs_vote.h"
@@ -41,7 +42,6 @@ public:
     std::string traindir_base;
 
     std::list<std::string> registration_list;
-    bool multi_registration;
 
     std::string ref_id;
     Rtds ref_rtds;
@@ -79,6 +79,13 @@ public:
         time_vote = 0;
         time_warp_img = 0;
         time_warp_str = 0;
+    }
+    void clear_vote_map () {
+        std::map<std::string, Mabs_vote*>::iterator it;
+        for (it = vote_map.begin(); it != vote_map.end(); ++it) {
+            delete it->second;
+        }
+        vote_map.clear ();
     }
 };
 
@@ -256,15 +263,19 @@ Mabs::parse_registration_dir (void)
             std::string full_path = string_format (
                 "%s/%s", d_ptr->parms->registration_config.c_str(), 
                 dir.entries[i]);
-            if (!is_directory (full_path)) {
-                d_ptr->registration_list.push_back (full_path);
+            /* Skip backup files */
+            if (extension_is (dir.entries[i], "~")) {
+                continue;
             }
+            /* Skip directories */
+            if (is_directory (full_path)) {
+                continue;
+            }
+            d_ptr->registration_list.push_back (full_path);
         }
-        d_ptr->multi_registration = true;
     }
     else {
         d_ptr->registration_list.push_back (d_ptr->parms->registration_config);
-        d_ptr->multi_registration = false;
     }
 }
 
@@ -272,9 +283,6 @@ void
 Mabs::run_registration ()
 {
     Plm_timer timer;
-
-    /* Clear out internal structure */
-    d_ptr->vote_map.clear ();
 
     /* Loop through images in the atlas */
     std::list<std::string>::iterator atl_it;
@@ -335,16 +343,10 @@ Mabs::run_registration ()
             std::string command_file = *reg_it;
             std::string curr_output_dir;
             std::string registration_id;
-            if (d_ptr->multi_registration) {
-                registration_id = basename (command_file);
-                curr_output_dir = string_format ("%s/%s",
-                    atlas_output_path.c_str(),
-                    registration_id.c_str());
-            }
-            else {
-                curr_output_dir = string_format ("%s",
-                    atlas_output_path.c_str());
-            }
+            registration_id = basename (command_file);
+            curr_output_dir = string_format ("%s/%s",
+                atlas_output_path.c_str(),
+                registration_id.c_str());
 
             /* Check if this registration is already complete.
                We might be able to skip it. */
@@ -433,21 +435,6 @@ Mabs::run_registration ()
                     continue;
                 }
 
-#if defined (commentout)
-                /* Make a new voter if needed */
-                lprintf ("Voting structure %s\n", mapped_name.c_str());
-                Mabs_vote *vote;
-                std::map<std::string, Mabs_vote*>::const_iterator vote_it 
-                    = d_ptr->vote_map.find (mapped_name);
-                if (vote_it == d_ptr->vote_map.end()) {
-                    vote = new Mabs_vote;
-                    d_ptr->vote_map[mapped_name] = vote;
-                    vote->set_fixed_image (regd.fixed_image->itk_float());
-                } else {
-                    vote = vote_it->second;
-                }
-#endif
-
                 /* Extract structure as binary mask */
                 timer.start();
                 UCharImageType::Pointer structure_image 
@@ -521,8 +508,7 @@ Mabs::run_registration ()
                     lprintf ("%s,%s,%s,%s,%f,%d,%d,%d,%d\n",
                         d_ptr->ref_id.c_str(), 
                         atlas_id.c_str(),
-                        d_ptr->multi_registration 
-                          ? registration_id.c_str() : "", 
+                        registration_id.c_str(),
                         mapped_name.c_str(), 
                         dice.get_dice(),
                         (int) dice.get_true_positives(),
@@ -532,8 +518,7 @@ Mabs::run_registration ()
                     fprintf (d_ptr->dice_fp, "%s,%s,%s,%s,%f,%d,%d,%d,%d\n",
                         d_ptr->ref_id.c_str(), 
                         atlas_id.c_str(),
-                        d_ptr->multi_registration 
-                          ? registration_id.c_str() : "", 
+                        registration_id.c_str(),
                         mapped_name.c_str(), 
                         dice.get_dice(),
                         (int) dice.get_true_positives(),
@@ -542,13 +527,6 @@ Mabs::run_registration ()
                         (int) dice.get_false_negatives());
                 }
                 d_ptr->time_dice += timer.report();
-
-#if defined (commentout)
-                /* Vote */
-                timer.start();
-                vote->vote (warped_image.itk_float(), dmap_image);
-                d_ptr->time_vote += timer.report();
-#endif
             }
 
             /* Create checkpoint file which means that this registration
@@ -576,13 +554,11 @@ Mabs::run_segmentation ()
          reg_it != d_ptr->registration_list.end(); reg_it++) 
     {
         /* Clear out internal structure */
-        d_ptr->vote_map.clear ();
+        d_ptr->clear_vote_map ();
 
         /* Get id string for registration */
         std::string registration_id = "";
-        if (d_ptr->multi_registration) {
-            registration_id = basename (*reg_it);
-        }
+        registration_id = basename (*reg_it);
 
         /* Loop through images in the atlas */
         std::list<std::string>::iterator atl_it;
@@ -598,15 +574,9 @@ Mabs::run_segmentation ()
                 d_ptr->output_dir.c_str(), atlas_id.c_str(),
                 atlas_output_path.c_str());
             std::string curr_output_dir;
-            if (d_ptr->multi_registration) {
-                curr_output_dir = string_format ("%s/%s",
-                    atlas_output_path.c_str(),
-                    registration_id.c_str());
-            }
-            else {
-                curr_output_dir = string_format ("%s",
-                    atlas_output_path.c_str());
-            }
+            curr_output_dir = string_format ("%s/%s",
+                atlas_output_path.c_str(),
+                registration_id.c_str());
             lprintf ("curr_output_dir: %s\n", curr_output_dir.c_str());
 
             /* Load warped image */
@@ -701,6 +671,9 @@ Mabs::run_segmentation ()
             /* Assemble into structure set */
         }
     }
+
+    /* Clear out internal structure */
+    d_ptr->clear_vote_map ();
 }
 
 void 
@@ -740,20 +713,6 @@ Mabs::run ()
     /* Run the segmentation */
     this->run_registration ();
     this->run_segmentation ();
-
-#if defined (commentout)
-    /* Load image & structures from "prep" directory */
-    timer.start();
-    std::string fn = string_format ("%s/%s/%s.nrrd", 
-        d_ptr->output_dir.c_str(), patient_id.c_str(), 
-        patient_id.c_str());
-    d_ptr->ref_rtds.m_img = plm_image_load_native (fn.c_str());
-    fn = string_format ("%s/%s/structures", 
-        d_ptr->output_dir.c_str(), patient_id.c_str());
-    d_ptr->ref_rtds.m_rtss = new Rtss;
-    d_ptr->ref_rtds.m_rtss->load_prefix (fn.c_str());
-    d_ptr->time_io += timer.report();
-#endif
 }
 
 void
@@ -765,6 +724,11 @@ Mabs::train ()
 
     /* Do a few sanity checks */
     this->sanity_checks ();
+
+    /* Open logfile */
+    std::string logfile_path = string_format (
+        "%s/%s", d_ptr->traindir_base, "logfile.txt");
+    logfile_open (logfile_path.c_str());
 
     /* Parse directory with registration files */
     this->parse_registration_dir ();
@@ -824,4 +788,6 @@ Mabs::train ()
     lprintf ("I/O time:             %10.1f seconds\n", d_ptr->time_io);
     lprintf ("Total time:           %10.1f seconds\n", timer_total.report());
     lprintf ("MABS training complete\n");
+
+    logfile_close ();
 }

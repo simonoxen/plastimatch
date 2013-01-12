@@ -34,10 +34,10 @@ if "%COMPUTERNAME%"=="COTTONTAIL" (
   SET QT_PATH=C:\QT\4.6.3\bin
 ) else if "%COMPUTERNAME%"=="GALL" (
   echo Setting for GALL
-  SET ITK_PATH=%HOME%\build\itk-3.20.1\bin\Release
-  SET PLASTIMATCH_BASE=%HOME%\build\plastimatch-3.20.1
+  SET ITK_PATH=%HOME%\build\vs2008\itk-3.20.1\bin\Release
+  SET PLASTIMATCH_BASE=%HOME%\build\vs2008\plastimatch-3.20.1
   SET FFTW_PATH=%HOME%\build\fftw-3.2.2
-  SET QT_PATH=C:\QT\4.6.3\bin
+  SET QT_PATH=C:\QT\4.7.4\bin
 ) else (
   echo "Sorry, couldn't recognize host"
   exit /b

@@ -22,11 +22,4 @@ public:
     void load (const char* dir);
 };
 
-/* logfile.cxx */
-PLMSYS_C_API void logfile_open (char* log_fn);
-PLMSYS_C_API void logfile_close (void);
-PLMSYS_C_API void logfile_printf (const char* fmt, ...);
-#define lprintf logfile_printf
-
-
 #endif
