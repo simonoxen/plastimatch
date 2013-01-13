@@ -727,7 +727,7 @@ Mabs::train ()
 
     /* Open logfile */
     std::string logfile_path = string_format (
-        "%s/%s", d_ptr->traindir_base, "logfile.txt");
+        "%s/%s", d_ptr->traindir_base.c_str(), "logfile.txt");
     logfile_open (logfile_path.c_str());
 
     /* Parse directory with registration files */
