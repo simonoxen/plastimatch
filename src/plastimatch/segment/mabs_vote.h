@@ -24,6 +24,16 @@ public:
     void set_fixed_image (
         FloatImageType::Pointer target
     );
+    /*! \brief Set the tuning parameters.  Rho is the penalty 
+      with respect to distance */
+    void set_rho (
+        float rho
+    );
+    /*! \brief Set the tuning parameters.  Sigma is the width of the 
+      gaussian with respect to image difference */
+    void set_sigma (
+        float sigma
+    );
     ///@}
 
     /*! \name Execution */

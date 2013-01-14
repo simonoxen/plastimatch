@@ -30,6 +30,8 @@ public:
     /* [TRAINING] */
     std::string atlas_dir;
     std::string training_dir;
+    std::string rho_values;
+    std::string sigma_values;
 
     /* [REGISTRATION] */
     std::string registration_config;

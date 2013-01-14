@@ -24,6 +24,7 @@ set (PLMSYS_LIBRARY_SRC
   dir_list.cxx dir_list.h
   file_util.cxx file_util.h
   logfile.cxx logfile.h
+  option_range.cxx option_range.h 
   path_util.cxx path_util.h
   plm_endian.cxx plm_endian.h
   plm_fwrite.cxx plm_fwrite.h

@@ -17,6 +17,7 @@
 #include "mabs.h"
 #include "mabs_parms.h"
 #include "mabs_vote.h"
+#include "option_range.h"
 #include "path_util.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
@@ -544,136 +545,175 @@ Mabs::run_registration ()
 }
 
 void
-Mabs::run_segmentation ()
+Mabs::segmentation_vote (
+    const std::string& registration_id, 
+    const std::string& atlas_id, 
+    float rho, 
+    float sigma)
 {
     Plm_timer timer;
+    
+    /* Set up files & directories for this job */
+    std::string atlas_output_path;
+    atlas_output_path = string_format ("%s/%s",
+        d_ptr->output_dir.c_str(), atlas_id.c_str());
+    lprintf ("atlas_output_path: %s, %s, %s\n",
+        d_ptr->output_dir.c_str(), atlas_id.c_str(),
+        atlas_output_path.c_str());
+    std::string curr_output_dir;
+    curr_output_dir = string_format ("%s/%s",
+        atlas_output_path.c_str(),
+        registration_id.c_str());
+    lprintf ("curr_output_dir: %s\n", curr_output_dir.c_str());
+
+    /* Load warped image */
+    std::string warped_image_fn;
+    warped_image_fn = string_format (
+        "%s/img.nrrd", curr_output_dir.c_str());
+    lprintf ("Loading warped image: %s\n", warped_image_fn.c_str());
+    Plm_image *warped_image = plm_image_load_native (
+        warped_image_fn);
+            
+    /* Loop through structures for this atlas image */
+    std::map<std::string, std::string>::const_iterator it;
+    for (it = d_ptr->parms->structure_map.begin ();
+         it != d_ptr->parms->structure_map.end (); it++)
+    {
+        std::string mapped_name = it->first;
+        lprintf ("Segmenting structure: %s\n", mapped_name.c_str());
+
+        /* Make a new voter if needed */
+        lprintf ("Voting structure %s\n", mapped_name.c_str());
+        Mabs_vote *vote;
+        std::map<std::string, Mabs_vote*>::const_iterator vote_it 
+            = d_ptr->vote_map.find (mapped_name);
+        if (vote_it == d_ptr->vote_map.end()) {
+            vote = new Mabs_vote;
+            vote->set_rho (rho);
+            vote->set_sigma (sigma);
+            d_ptr->vote_map[mapped_name] = vote;
+            vote->set_fixed_image (
+                d_ptr->ref_rtds.m_img->itk_float());
+        } else {
+            vote = vote_it->second;
+        }
+
+        /* Load dmap */
+        std::string dmap_fn = string_format ("%s/dmap_%s.nrrd", 
+            curr_output_dir.c_str(), mapped_name.c_str());
+        Plm_image *dmap_image = plm_image_load_native (
+            dmap_fn.c_str());
+
+        /* Vote */
+        timer.start();
+        vote->vote (warped_image->itk_float(), 
+            dmap_image->itk_float());
+        d_ptr->time_vote += timer.report();
+
+        /* We don't need this any more */
+        delete dmap_image;
+    }
+
+    /* We don't need this any more */
+    delete warped_image;
+}
+
+void
+Mabs::segmentation_label ()
+{
+    Plm_timer timer;
+
+    /* Get output image for each label */
+    lprintf ("Normalizing and saving weights\n");
+    for (std::map<std::string, Mabs_vote*>::const_iterator vote_it 
+             = d_ptr->vote_map.begin(); 
+         vote_it != d_ptr->vote_map.end(); vote_it++)
+    {
+        Mabs_vote *vote = vote_it->second;
+        lprintf ("Normalizing votes\n");
+        timer.start();
+        vote->normalize_votes();
+        d_ptr->time_vote += timer.report();
+
+        /* Optionally, get the weight image */
+        FloatImageType::Pointer wi = vote->get_weight_image ();
+
+        /* Optionally, save the weight files */
+        if (d_ptr->write_weight_files) {
+            lprintf ("Saving weights\n");
+            Pstring fn; 
+            fn.format ("%s/weight_%s.nrrd", d_ptr->output_dir.c_str(), 
+                vote_it->first.c_str());
+            itk_image_save (wi, fn.c_str());
+        }
+
+        /* Threshold the weight image */
+        timer.start();
+        UCharImageType::Pointer thresh = itk_threshold_above (wi, 0.5);
+        d_ptr->time_vote += timer.report();
+
+        /* Optionally, save the thresholded files */
+        /* GCS FIX: After we can create the structure set, we'll make 
+           this optional */
+        lprintf ("Saving thresholded structures\n");
+        Pstring fn; 
+        fn.format ("%s/label_%s.nrrd", d_ptr->output_dir.c_str(), 
+            vote_it->first.c_str());
+        timer.start();
+        itk_image_save (thresh, fn.c_str());
+        d_ptr->time_io += timer.report();
+
+    }
+
+    /* Clear out internal structure */
+    d_ptr->clear_vote_map ();
+}
+
+void
+Mabs::run_segmentation ()
+{
+    Option_range rho_range, sigma_range;
+    rho_range.set_linear_range (d_ptr->parms->rho_values);
+    sigma_range.set_log_range (d_ptr->parms->sigma_values);
 
     /* Loop through each registration parameter set */
     std::list<std::string>::iterator reg_it;
     for (reg_it = d_ptr->registration_list.begin(); 
          reg_it != d_ptr->registration_list.end(); reg_it++) 
     {
-        /* Clear out internal structure */
-        d_ptr->clear_vote_map ();
-
-        /* Get id string for registration */
-        std::string registration_id = "";
-        registration_id = basename (*reg_it);
-
-        /* Loop through images in the atlas */
-        std::list<std::string>::iterator atl_it;
-        for (atl_it = d_ptr->atlas_list.begin();
-             atl_it != d_ptr->atlas_list.end(); atl_it++)
+        /* Loop through each training parameter: rho */
+        const std::list<float>& rho_list = rho_range.get_range();
+        std::list<float>::const_iterator rho_it;
+        for (rho_it = rho_list.begin(); rho_it != rho_list.end(); rho_it++) 
         {
-            /* Set up files & directories for this job */
-            std::string atlas_id = basename (*atl_it);
-            std::string atlas_output_path;
-            atlas_output_path = string_format ("%s/%s",
-                d_ptr->output_dir.c_str(), atlas_id.c_str());
-            lprintf ("atlas_output_path: %s, %s, %s\n",
-                d_ptr->output_dir.c_str(), atlas_id.c_str(),
-                atlas_output_path.c_str());
-            std::string curr_output_dir;
-            curr_output_dir = string_format ("%s/%s",
-                atlas_output_path.c_str(),
-                registration_id.c_str());
-            lprintf ("curr_output_dir: %s\n", curr_output_dir.c_str());
-
-            /* Load warped image */
-            std::string warped_image_fn;
-            warped_image_fn = string_format (
-                "%s/img.nrrd", curr_output_dir.c_str());
-            lprintf ("Loading warped image: %s\n", warped_image_fn.c_str());
-            Plm_image *warped_image = plm_image_load_native (
-                warped_image_fn);
-            
-            /* Loop through structures for this atlas image */
-            std::map<std::string, std::string>::const_iterator it;
-            for (it = d_ptr->parms->structure_map.begin ();
-                 it != d_ptr->parms->structure_map.end (); it++)
+            /* Loop through each training parameter: sigma */
+            const std::list<float>& sigma_list = sigma_range.get_range();
+            std::list<float>::const_iterator sigma_it;
+            for (sigma_it = sigma_list.begin(); 
+                 sigma_it != sigma_list.end(); sigma_it++) 
             {
-                std::string mapped_name = it->first;
-                lprintf ("Segmenting structure: %s\n", mapped_name.c_str());
+                /* Clear out internal structure */
+                d_ptr->clear_vote_map ();
 
-                /* Make a new voter if needed */
-                lprintf ("Voting structure %s\n", mapped_name.c_str());
-                Mabs_vote *vote;
-                std::map<std::string, Mabs_vote*>::const_iterator vote_it 
-                    = d_ptr->vote_map.find (mapped_name);
-                if (vote_it == d_ptr->vote_map.end()) {
-                    vote = new Mabs_vote;
-                    d_ptr->vote_map[mapped_name] = vote;
-                    vote->set_fixed_image (
-                        d_ptr->ref_rtds.m_img->itk_float());
-                } else {
-                    vote = vote_it->second;
+                /* Get id string for registration */
+                std::string registration_id = "";
+                registration_id = basename (*reg_it);
+
+                /* Loop through images in the atlas */
+                std::list<std::string>::iterator atl_it;
+                for (atl_it = d_ptr->atlas_list.begin();
+                     atl_it != d_ptr->atlas_list.end(); atl_it++)
+                {
+                    std::string atlas_id = basename (*atl_it);
+                    segmentation_vote (registration_id, atlas_id, 
+                        *rho_it, *sigma_it);
                 }
 
-                /* Load dmap */
-                std::string dmap_fn = string_format ("%s/dmap_%s.nrrd", 
-                    curr_output_dir.c_str(), mapped_name.c_str());
-                Plm_image *dmap_image = plm_image_load_native (
-                    dmap_fn.c_str());
-
-                /* Vote */
-                timer.start();
-                vote->vote (warped_image->itk_float(), dmap_image->itk_float());
-                d_ptr->time_vote += timer.report();
-
-                /* We don't need this any more */
-                delete dmap_image;
+                /* Threshold images based on weight */
+                segmentation_label ();
             }
-
-            /* We don't need this any more */
-            delete warped_image;
-        }
-
-        /* Get output image for each label */
-        lprintf ("Normalizing and saving weights\n");
-        for (std::map<std::string, Mabs_vote*>::const_iterator vote_it 
-                 = d_ptr->vote_map.begin(); 
-             vote_it != d_ptr->vote_map.end(); vote_it++)
-        {
-            Mabs_vote *vote = vote_it->second;
-            lprintf ("Normalizing votes\n");
-            timer.start();
-            vote->normalize_votes();
-            d_ptr->time_vote += timer.report();
-
-            /* Optionally, get the weight image */
-            FloatImageType::Pointer wi = vote->get_weight_image ();
-
-            /* Optionally, save the weight files */
-            if (d_ptr->write_weight_files) {
-                lprintf ("Saving weights\n");
-                Pstring fn; 
-                fn.format ("%s/weight_%s.nrrd", d_ptr->output_dir.c_str(), 
-                    vote_it->first.c_str());
-                itk_image_save (wi, fn.c_str());
-            }
-
-            /* Threshold the weight image */
-            timer.start();
-            UCharImageType::Pointer thresh = itk_threshold_above (wi, 0.5);
-            d_ptr->time_vote += timer.report();
-
-            /* Optionally, save the thresholded files */
-            /* GCS FIX: After we can create the structure set, we'll make 
-               this optional */
-            lprintf ("Saving thresholded structures\n");
-            Pstring fn; 
-            fn.format ("%s/label_%s.nrrd", d_ptr->output_dir.c_str(), 
-                vote_it->first.c_str());
-            timer.start();
-            itk_image_save (thresh, fn.c_str());
-            d_ptr->time_io += timer.report();
-
-            /* Assemble into structure set */
         }
     }
-
-    /* Clear out internal structure */
-    d_ptr->clear_vote_map ();
 }
 
 void 

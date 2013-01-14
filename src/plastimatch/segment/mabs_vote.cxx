@@ -18,18 +18,19 @@
 class Mabs_vote_private {
 public:
     Mabs_vote_private () {
-        this->sman = new Mabs_subject_manager;
+        rho = 1;
+        sigma = 50;
     }
     ~Mabs_vote_private () {
-        delete this->sman;
     }
 public:
-    Mabs_subject_manager* sman;
-    
     FloatImageType::Pointer target;
     FloatImageType::Pointer like0;
     FloatImageType::Pointer like1;
     FloatImageType::Pointer weights;
+
+    double rho;
+    double sigma;
 };
 
 Mabs_vote::Mabs_vote ()
@@ -70,14 +71,27 @@ Mabs_vote::set_fixed_image (
 }
 
 void
+Mabs_vote::set_rho (
+    float rho
+)
+{
+    d_ptr->rho = (double) rho;
+}
+
+void
+Mabs_vote::set_sigma (
+    float sigma
+)
+{
+    d_ptr->sigma = (double) sigma;
+}
+
+void
 Mabs_vote::vote (
     FloatImageType::Pointer atlas_image, 
     FloatImageType::Pointer dmap_image
 )
 {
-    double sigma = 50;
-    double rho = 1;
-  
     /* Create iterators */
     itk::ImageRegionIterator< FloatImageType > target_it (
         d_ptr->target, d_ptr->target->GetLargestPossibleRegion());
@@ -115,21 +129,21 @@ Mabs_vote::vote (
         
         /* Compute similarity between target and atlas images */
         med_diff = target_it.Get() - atlas_image_it.Get();
-        value = exp (-(med_diff * med_diff) / (2.0*sigma*sigma))
-            / (M_SQRT2PI * sigma);
+        value = exp (-(med_diff * med_diff) / (2.0*d_ptr->sigma*d_ptr->sigma))
+            / (M_SQRT2PI * d_ptr->sigma);
     
         /* Compute the chance of being in the structure. */
         /* Nb. we need to check to make sure exp(dmap_value) 
            doesn't overflow.  The actual overflow is at about exp(700) 
            for double, and about exp(85) for float.  But we can be 
            a little more conservative. */
-        dmap_value = rho * dmap_it.Get();
+        dmap_value = d_ptr->rho * dmap_it.Get();
         if (dmap_value > 50) {
             label_likelihood_0 = 0;
             label_likelihood_1 = 1;
         } else if (dmap_value > -50) {
-            label_likelihood_0 = exp (-rho*dmap_value);
-            label_likelihood_1 = exp (+rho*dmap_value);
+            label_likelihood_0 = exp (-d_ptr->rho*dmap_value);
+            label_likelihood_1 = exp (+d_ptr->rho*dmap_value);
         } else {
             label_likelihood_0 = 1;
             label_likelihood_1 = 0;

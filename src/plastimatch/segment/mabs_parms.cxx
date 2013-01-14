@@ -77,6 +77,12 @@ Mabs_parms::set_key_val (
         else if (key == "training_dir") {
             this->training_dir = val;
         }
+        else if (key == "rho_values") {
+            this->rho_values = val;
+        }
+        else if (key == "sigma_values") {
+            this->sigma_values = val;
+        }
         break;
 
     /* [REGISTRATION] */

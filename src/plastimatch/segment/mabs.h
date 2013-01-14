@@ -24,6 +24,12 @@ protected:
     void load_atlas_dir_list ();
     void run_single_registration ();
     void run_registration ();
+    void segmentation_vote (
+        const std::string& registration_id, 
+        const std::string& atlas_id, 
+        float rho, 
+        float sigma);
+    void segmentation_label ();
     void run_segmentation ();
 
 public:
