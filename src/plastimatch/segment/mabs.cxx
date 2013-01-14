@@ -105,26 +105,26 @@ Mabs::map_structure_name (
     const std::string& ori_name)
 {
     if (d_ptr->parms->structure_map.size() == 0) {
-        lprintf ("$ No structure list specified\n");
+        lprintf (" > no structure list specified\n");
         return ori_name;
     }
 
     std::map<std::string, std::string>::const_iterator it 
         = d_ptr->parms->structure_map.find (ori_name);
     if (it == d_ptr->parms->structure_map.end()) {
-        lprintf (" $ irrelevant structure: %s\n", ori_name.c_str());
+        lprintf (" > irrelevant structure: %s\n", ori_name.c_str());
         return "";
     }
 
     const std::string& mapped_name = it->second;
     if (mapped_name == "") {
-        lprintf (" $ irrelevant structure: %s\n", ori_name.c_str());
+        lprintf (" > irrelevant structure: %s\n", ori_name.c_str());
     }
     else if (mapped_name == ori_name) {
-        lprintf (" $ relevant structure: %s\n", ori_name.c_str());
+        lprintf (" > relevant structure: %s\n", ori_name.c_str());
     }
     else {
-        lprintf (" $ relevant structure: %s -> %s\n", 
+        lprintf (" > relevant structure: %s -> %s\n", 
             ori_name.c_str(), mapped_name.c_str());
     }
     return mapped_name;
@@ -454,7 +454,6 @@ Mabs::run_registration ()
                          j < d_ptr->ref_rtds.m_rtss->get_num_structures(); 
                          j++)
                     {
-                        lprintf ("looping %d\n", j);
                         std::string ref_ori_name 
                             = d_ptr->ref_rtds.m_rtss->get_structure_name (j);
                         std::string ref_mapped_name = this->map_structure_name (
@@ -619,9 +618,19 @@ Mabs::segmentation_vote (
 }
 
 void
-Mabs::segmentation_label ()
+Mabs::segmentation_label (
+    const std::string& registration_id, 
+    float rho, 
+    float sigma)
 {
     Plm_timer timer;
+
+    /* Set up files & directories for this job */
+    std::string curr_output_dir;
+    curr_output_dir = string_format ("%s/segmentations/%s/rho_%f_sig_%f",
+        d_ptr->output_dir.c_str(), registration_id.c_str(),
+        rho, sigma);
+    lprintf ("curr_output_dir: %s\n", curr_output_dir.c_str());
 
     /* Get output image for each label */
     lprintf ("Normalizing and saving weights\n");
@@ -641,32 +650,25 @@ Mabs::segmentation_label ()
         /* Optionally, save the weight files */
         if (d_ptr->write_weight_files) {
             lprintf ("Saving weights\n");
-            Pstring fn; 
-            fn.format ("%s/weight_%s.nrrd", d_ptr->output_dir.c_str(), 
-                vote_it->first.c_str());
+            std::string fn = string_format ("%s/weight_%s.nrrd", 
+                curr_output_dir.c_str(), vote_it->first.c_str());
             itk_image_save (wi, fn.c_str());
         }
 
         /* Threshold the weight image */
         timer.start();
-        UCharImageType::Pointer thresh = itk_threshold_above (wi, 0.5);
+        UCharImageType::Pointer thresh_img = itk_threshold_above (wi, 0.5);
         d_ptr->time_vote += timer.report();
 
         /* Optionally, save the thresholded files */
-        /* GCS FIX: After we can create the structure set, we'll make 
-           this optional */
         lprintf ("Saving thresholded structures\n");
         Pstring fn; 
-        fn.format ("%s/label_%s.nrrd", d_ptr->output_dir.c_str(), 
-            vote_it->first.c_str());
+        fn.format ("%s/label_%s.nrrd", 
+            curr_output_dir.c_str(), vote_it->first.c_str());
         timer.start();
-        itk_image_save (thresh, fn.c_str());
+        itk_image_save (thresh_img, fn.c_str());
         d_ptr->time_io += timer.report();
-
     }
-
-    /* Clear out internal structure */
-    d_ptr->clear_vote_map ();
 }
 
 void
@@ -710,7 +712,10 @@ Mabs::run_segmentation ()
                 }
 
                 /* Threshold images based on weight */
-                segmentation_label ();
+                segmentation_label (registration_id, *rho_it, *sigma_it);
+
+                /* Clear out internal structure */
+                d_ptr->clear_vote_map ();
             }
         }
     }

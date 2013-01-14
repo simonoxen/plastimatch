@@ -29,7 +29,10 @@ protected:
         const std::string& atlas_id, 
         float rho, 
         float sigma);
-    void segmentation_label ();
+    void segmentation_label (
+        const std::string& registration_id, 
+        float rho, 
+        float sigma);
     void run_segmentation ();
 
 public:
