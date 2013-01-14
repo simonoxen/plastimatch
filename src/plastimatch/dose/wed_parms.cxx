@@ -23,6 +23,7 @@ Wed_Parms::Wed_Parms ()
 {
     this->debug = 0;
     this->group = 0;
+    this->wed_choice = false;
     this->ray_step = 1.0f;
     this->input_ct_fn[0] = '\0';
     this->output_ct_fn[0] = '\0';
@@ -57,7 +58,8 @@ print_usage (void)
 {
     printf ("Usage: wed config_file\n");
     printf ("Options:\n");
-    printf ("\t--group <input .txt file>\n");
+    printf ("\t--dew (reverse wed calculation)\n");
+    printf ("\t--group <input .txt file> (computes multiple wed computations)\n");
     exit (1);
 }
 
@@ -337,6 +339,10 @@ Wed_Parms::parse_args (int argc, char** argv)
 	    return true;
 	  }
         }
+	if (!strcmp (argv[i], "--dew")) {
+	  this->wed_choice = true;
+        }
+
         else {
             print_usage ();
             break;

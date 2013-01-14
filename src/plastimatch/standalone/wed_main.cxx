@@ -47,6 +47,30 @@ create_wed_volume (Wed_Parms* parms, Proton_Scene *scene)
     return new Volume (wed_dims, wed_off, wed_ps, NULL, PT_FLOAT, 1);
 }
 
+static Volume*
+create_dew_volume (Wed_Parms* parms, Proton_Scene *scene)
+{
+ 
+    Volume* patient_vol = scene->get_patient_vol();
+
+    float dew_off[3];
+    dew_off[0] = patient_vol->offset[0];
+    dew_off[1] = patient_vol->offset[1];
+    dew_off[2] = patient_vol->offset[2];
+
+    float dew_ps[3];
+    dew_ps[0] = patient_vol->spacing[0];
+    dew_ps[1] = patient_vol->spacing[1];
+    dew_ps[2] = patient_vol->spacing[2];
+
+    plm_long dew_dims[3];
+    dew_dims[0] = patient_vol->dim[0];
+    dew_dims[1] = patient_vol->dim[1];
+    dew_dims[2] = patient_vol->dim[2];
+
+    return new Volume (dew_dims, dew_off, dew_ps, NULL, PT_FLOAT, 1);
+}
+
 void
 wed_ct_compute (
     const char* out_fn,
@@ -56,19 +80,31 @@ wed_ct_compute (
     float background
 )
 {
-    Volume* wed_vol;
-    Rpl_volume* rpl_vol = scene->rpl_vol;
 
-    wed_vol = create_wed_volume (parms, scene);
-    rpl_vol->compute_wed_volume (wed_vol, ct_vol->gpuit_float(), background);
-    plm_image_save_vol (out_fn, wed_vol);
+  Rpl_volume* rpl_vol = scene->rpl_vol;
+
+    if (!parms->wed_choice)  {
+      Volume* wed_vol;
+      
+      wed_vol = create_wed_volume (parms, scene);
+      rpl_vol->compute_wed_volume (wed_vol, ct_vol->gpuit_float(), background);
+      plm_image_save_vol (out_fn, wed_vol);
+    }
+
+    else  {
+      Volume* dew_vol;
+      
+      dew_vol = create_dew_volume (parms, scene);
+      rpl_vol->compute_dew_volume (ct_vol->gpuit_float(), dew_vol, background);
+      plm_image_save_vol (out_fn, dew_vol);
+    }
 }
 
 int
 wed_ct_compute(Wed_Parms *parms)
 {
-
-
+  
+  
   Plm_image* ct_vol;
   Plm_image* dose_vol = 0;
   Proton_Scene scene;
@@ -79,25 +115,60 @@ wed_ct_compute(Wed_Parms *parms)
     fprintf (stderr, "\n** ERROR: Unable to load patient volume.\n");
     return -1;
   }
+  
+  
   scene.set_patient (ct_vol);
   
+ 
   if (parms->input_dose_fn != "" && parms->output_dose_fn != "") {
-    dose_vol = plm_image_load (parms->input_dose_fn.c_str(), 
-			       PLM_IMG_TYPE_ITK_FLOAT);
+    //Load the input dose, or wed dose
+    if (!parms->wed_choice)  {
+      dose_vol = plm_image_load (parms->input_dose_fn.c_str(), 
+				 PLM_IMG_TYPE_ITK_FLOAT);
+    }
+    if (parms->wed_choice)  {
+      dose_vol = plm_image_load (parms->output_dose_fn.c_str(), 
+				 PLM_IMG_TYPE_ITK_FLOAT);
+    }
   }
+
   
   /* set scene parameters */
   scene.beam->set_source_position (parms->src);
   scene.beam->set_isocenter_position (parms->isocenter);
   
   scene.ap->set_distance (parms->ap_offset);
-  scene.ap->set_dim (parms->ires);
   scene.ap->set_spacing (parms->ap_spacing);
-  if (parms->have_ic) {
-    scene.ap->set_center (parms->ic);
+  
+  //If normal wed, scene dimensions are set by .cfg file
+  if (!parms->wed_choice)  {
+    scene.ap->set_dim (parms->ires);
+    if (parms->have_ic) {
+      scene.ap->set_center (parms->ic);
+    }
+  }
+  //If dew, then SOME scene dimensions are set by input wed image.
+  if (parms->wed_choice)  {
+    
+    Volume *wed_vol = dose_vol->gpuit_float();
+    //Grab aperture dimensions from input wed.
+    //We also pad each dimension by 1, for the later trilinear interpolations.
+    int ap_res[2] = { (int) (wed_vol->dim[0]+2), (int) (wed_vol->dim[1]+2)};
+    scene.ap->set_dim (ap_res);
+
+    printf("ap_res is %d %d\n",ap_res[0],ap_res[1]);
+    
+    //Set center as half the resolutions.
+    float ap_center[2];
+    ap_center[0] = (float) ap_res[0]/2.;
+    ap_center[1] = (float) ap_res[1]/2.;
+    //    float ap_center[2] = { (float) ap_res[0]/2., (float) ap_res[1]/2.};
+    scene.ap->set_center (ap_center);
+    
   }
   
   scene.set_step_length(parms->ray_step);
+  
   
   /* try to setup the scene with the provided parameters */
   if (!scene.init ()) {
@@ -106,6 +177,7 @@ wed_ct_compute(Wed_Parms *parms)
   }
   scene.debug ();
   
+  //Seems to have no use - clean this up?
   if (parms->rpl_vol_fn != "") {
     scene.rpl_vol->save (parms->rpl_vol_fn);
   }
@@ -115,46 +187,56 @@ wed_ct_compute(Wed_Parms *parms)
   background[0] = -1000.;
   //Background value for wed dose output
   background[1] = 0.;
-
+  
   printf ("Working...\n");
   fflush(stdout);
   
-  wed_ct_compute (parms->output_ct_fn, parms, ct_vol, &scene, background[0]);
-  printf ("done.\n");
-  
-  if (parms->input_dose_fn != "" && parms->output_dose_fn != "") {
-    printf ("Trying to wed dose...\n");
-    wed_ct_compute (parms->output_dose_fn.c_str(), 
-		    parms, dose_vol, &scene, background[1]);
-    printf ("Did wed dose...\n");
+  if (!parms->wed_choice)  {
+    wed_ct_compute (parms->output_ct_fn, parms, ct_vol, &scene, background[0]);
+    printf ("done.\n");
   }
   
+  if (parms->input_dose_fn != "" && parms->output_dose_fn != "") {
+    if (!parms->wed_choice)  {
+      printf ("Trying to wed dose...\n");
+      wed_ct_compute (parms->output_dose_fn.c_str(), 
+		      parms, dose_vol, &scene, background[1]);
+      printf ("Did wed dose...\n");
+    }
+    else {
+      printf ("Trying to reverse wed dose...\n");
+      wed_ct_compute (parms->input_dose_fn.c_str(), 
+		      parms, dose_vol, &scene, background[1]);
+      printf ("Did dew dose...\n");
+    }
+  }
+  return 0;
 }
 
 int
 main (int argc, char* argv[])
 {
   Wed_Parms *parms = new Wed_Parms();
-    int wed_iter = 1;
-
-    if (!parms->parse_args (argc, argv)) { //sets parms if input with .cfg file, skips with group option
-      exit (0); 
-    }
-
-    if (parms->group)  {
-      int wed_iter = 0;
-
-      while(wed_iter!=parms->group)  {
-	if (parms->group) {
-	  parms->parse_group(argc, argv, wed_iter);
-	  wed_ct_compute(parms);
-	  wed_iter++;
-	}
-
+  int wed_iter = 1;
+  
+  if (!parms->parse_args (argc, argv)) { //sets parms if input with .cfg file, skips with group option
+    exit (0); 
+  }
+  
+  if (parms->group)  {
+    wed_iter = 0;
+    
+    while(wed_iter!=parms->group)  {
+      if (parms->group) {
+	parms->parse_group(argc, argv, wed_iter);
+	wed_ct_compute(parms);
+	wed_iter++;
       }
+      
     }
+  }
     
-    else {wed_ct_compute(parms);} //Compute wed without loop
-    
-    return 0;
+  else {wed_ct_compute(parms);} //Compute wed without loop
+  
+  return 0;
 }

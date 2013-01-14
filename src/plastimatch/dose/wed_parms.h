@@ -25,6 +25,7 @@ public:
     /* [SETTINGS] */
     int debug;
     int group;
+    bool wed_choice;
     bool have_ray_step;
     float ray_step;                 /* Uniform ray step size (mm) */
     char input_ct_fn[_MAX_PATH];    /* input:  patient volume */
