@@ -84,11 +84,11 @@ public:
     Plm_image* clone (void);
 
     /* Loading */
-    void load (const char* fname, Plm_image_type type);
-    void load_native (const char* fname);
-    void load_native (const std::string& fn);
-    void load_native_dicom (const char* fname);
-    void load_native_nki (const char* fname);
+    bool load (const char* fname, Plm_image_type type);
+    bool load_native (const char* fname);
+    bool load_native (const std::string& fn);
+    bool load_native_dicom (const char* fname);
+    bool load_native_nki (const char* fname);
 
     /* Saving */
     void save_short_dicom (const char* fname, Slice_index *rdd, 

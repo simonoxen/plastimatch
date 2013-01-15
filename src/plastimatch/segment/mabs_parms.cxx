@@ -19,7 +19,7 @@ Mabs_parms::Mabs_parms ()
 {
     this->sman = new Mabs_subject_manager;
     this->debug = false;
-    this->rho_values = "0.5:1:0.5";
+    this->rho_values = "1:1:1";
     this->sigma_values = "1.7:1:1.7";
 }
 

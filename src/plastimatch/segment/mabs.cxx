@@ -37,24 +37,46 @@ class Mabs_private {
 public:
     const Mabs_parms *parms;
     
-    std::map<std::string, Mabs_vote*> vote_map;
+    /* atlas_dir_list is a list of the input directories where the 
+       original (dicom) atlas files live, one directory per case */
     std::list<std::string> atlas_dir_list;
+    /* outdir_base is the output directory when we are 
+       doing a labeling task (i.e. not training) */
     std::string outdir_base;
+    /* traindir_base is the output directory when we are 
+       doing a training task (i.e. not labeling) */
     std::string traindir_base;
-
+    /* registration_list is the list of registration parameter files */
     std::list<std::string> registration_list;
+    /* output_dir is ??? */
+    std::string output_dir;
 
+    /* There is one reference image at a time, which is the 
+       image we are segmenting. */
     std::string ref_id;
     Rtds ref_rtds;
     std::list<std::string> atlas_list;
-    std::string output_dir;
-    std::string input_dir;
 
+    /* While segmenting an image, we sometimes loop through 
+       the structures for evaluation.  This holds the 
+       binary image of the current structure which we are 
+       evaluating. */
+    bool have_ref_structure;
+    UCharImageType::Pointer ref_structure_image;
+
+    /* You can set these variables to save some intermediate data 
+       for debugging and tuning */
     bool write_weight_files;
     bool write_registration_files;
 
-    FILE *dice_fp;
+    /* These files are created by the training procedure */
+    FILE *reg_dice_fp;
+    FILE *seg_dice_fp;
 
+    /* While looping through atlases, the voting information is stored here */
+    std::map<std::string, Mabs_vote*> vote_map;
+
+    /* Store timing information for performance evaluation */
     double time_dice;
     double time_dmap;
     double time_extract;
@@ -69,6 +91,7 @@ public:
         parms = 0;
         write_weight_files = false;
         write_registration_files = true;
+        have_ref_structure = false;
         this->reset_timers ();
     }
     void reset_timers () {
@@ -280,6 +303,35 @@ Mabs::parse_registration_dir (void)
     }
 }
 
+/* Extract reference structure as binary mask, and save into the 
+   variable d_ptr->ref_structure_image.
+   This image is used when computing dice statistics. 
+
+   GCS FIX: This is inefficient, it could be extracted 
+   once at the beginning, and cached. */
+void
+Mabs::extract_reference_image (const std::string& mapped_name)
+{
+    d_ptr->have_ref_structure = false;
+    if (d_ptr->ref_rtds.m_rtss){
+        for (size_t j = 0; 
+             j < d_ptr->ref_rtds.m_rtss->get_num_structures(); 
+             j++)
+        {
+            std::string ref_ori_name 
+                = d_ptr->ref_rtds.m_rtss->get_structure_name (j);
+            std::string ref_mapped_name 
+                = this->map_structure_name (ref_ori_name);
+            if (ref_mapped_name == mapped_name) {
+                d_ptr->ref_structure_image = d_ptr->ref_rtds.m_rtss
+                    ->get_structure_image (j);
+                d_ptr->have_ref_structure = true;
+                break;
+            }
+        }
+    }
+}
+
 void
 Mabs::run_registration ()
 {
@@ -442,32 +494,6 @@ Mabs::run_registration ()
                     = rtds.m_rtss->get_structure_image (i);
                 d_ptr->time_extract += timer.report();
 
-                /* Extract reference structure as binary mask.
-                   This is used when computing dice statistics. 
-                   GCS FIX: This is inefficient, it could be extracted 
-                   once at the beginning, and cached. */
-                timer.start();
-                bool have_ref_structure = false;
-                UCharImageType::Pointer ref_structure_image;
-                if (d_ptr->ref_rtds.m_rtss){
-                    for (size_t j = 0; 
-                         j < d_ptr->ref_rtds.m_rtss->get_num_structures(); 
-                         j++)
-                    {
-                        std::string ref_ori_name 
-                            = d_ptr->ref_rtds.m_rtss->get_structure_name (j);
-                        std::string ref_mapped_name = this->map_structure_name (
-                            ref_ori_name);
-                        if (ref_mapped_name == mapped_name) {
-                            ref_structure_image = d_ptr->ref_rtds.m_rtss
-                                ->get_structure_image (j);
-                            have_ref_structure = true;
-                            break;
-                        }
-                    }
-                }
-                d_ptr->time_extract += timer.report();
-
                 /* Make the distance map */
                 timer.start();
                 lprintf ("Computing distance map...\n");
@@ -496,16 +522,22 @@ Mabs::run_registration ()
                     d_ptr->time_io += timer.report();
                 }
 
+                /* Extract reference structure as binary mask. */
+                timer.start();
+                this->extract_reference_image (mapped_name);
+                d_ptr->time_extract += timer.report();
+
                 /* Compute Dice, etc. */
                 timer.start();
-                if (have_ref_structure) {
+                if (d_ptr->have_ref_structure) {
                     lprintf ("Computing Dice...\n");
                     Dice_statistics dice;
-                    dice.set_reference_image (ref_structure_image);
+                    dice.set_reference_image (d_ptr->ref_structure_image);
                     dice.set_compare_image (structure_image);
                     dice.run ();
 
-                    lprintf ("%s,%s,%s,%s,%f,%d,%d,%d,%d\n",
+                    std::string reg_log_string = string_format (
+                        "%s,%s,%s,%s,%f,%d,%d,%d,%d\n",
                         d_ptr->ref_id.c_str(), 
                         atlas_id.c_str(),
                         registration_id.c_str(),
@@ -515,16 +547,9 @@ Mabs::run_registration ()
                         (int) dice.get_true_negatives(),
                         (int) dice.get_false_positives(),
                         (int) dice.get_false_negatives());
-                    fprintf (d_ptr->dice_fp, "%s,%s,%s,%s,%f,%d,%d,%d,%d\n",
-                        d_ptr->ref_id.c_str(), 
-                        atlas_id.c_str(),
-                        registration_id.c_str(),
-                        mapped_name.c_str(), 
-                        dice.get_dice(),
-                        (int) dice.get_true_positives(),
-                        (int) dice.get_true_negatives(),
-                        (int) dice.get_false_positives(),
-                        (int) dice.get_false_negatives());
+                    lprintf ("%s", reg_log_string.c_str());
+                    fprintf (d_ptr->reg_dice_fp, 
+                        "%s", reg_log_string.c_str());
                 }
                 d_ptr->time_dice += timer.report();
             }
@@ -566,12 +591,14 @@ Mabs::segmentation_vote (
     lprintf ("curr_output_dir: %s\n", curr_output_dir.c_str());
 
     /* Load warped image */
+    timer.start();
     std::string warped_image_fn;
     warped_image_fn = string_format (
         "%s/img.nrrd", curr_output_dir.c_str());
     lprintf ("Loading warped image: %s\n", warped_image_fn.c_str());
     Plm_image *warped_image = plm_image_load_native (
         warped_image_fn);
+    d_ptr->time_io += timer.report();
             
     /* Loop through structures for this atlas image */
     std::map<std::string, std::string>::const_iterator it;
@@ -598,10 +625,15 @@ Mabs::segmentation_vote (
         }
 
         /* Load dmap */
+        timer.start();
         std::string dmap_fn = string_format ("%s/dmap_%s.nrrd", 
             curr_output_dir.c_str(), mapped_name.c_str());
         Plm_image *dmap_image = plm_image_load_native (
             dmap_fn.c_str());
+        d_ptr->time_io += timer.report();
+        if (!dmap_image) {
+            continue;
+        }
 
         /* Vote */
         timer.start();
@@ -638,6 +670,7 @@ Mabs::segmentation_label (
              = d_ptr->vote_map.begin(); 
          vote_it != d_ptr->vote_map.end(); vote_it++)
     {
+        const std::string& mapped_name = vote_it->first;
         Mabs_vote *vote = vote_it->second;
         lprintf ("Normalizing votes\n");
         timer.start();
@@ -648,26 +681,61 @@ Mabs::segmentation_label (
         FloatImageType::Pointer wi = vote->get_weight_image ();
 
         /* Optionally, save the weight files */
+        timer.start();
         if (d_ptr->write_weight_files) {
             lprintf ("Saving weights\n");
             std::string fn = string_format ("%s/weight_%s.nrrd", 
                 curr_output_dir.c_str(), vote_it->first.c_str());
             itk_image_save (wi, fn.c_str());
         }
+        d_ptr->time_io += timer.report();
 
         /* Threshold the weight image */
         timer.start();
-        UCharImageType::Pointer thresh_img = itk_threshold_above (wi, 0.5);
+        float thresh_val = 0.5;
+        UCharImageType::Pointer thresh_img = itk_threshold_above (
+            wi, thresh_val);
         d_ptr->time_vote += timer.report();
 
         /* Optionally, save the thresholded files */
         lprintf ("Saving thresholded structures\n");
-        Pstring fn; 
-        fn.format ("%s/label_%s.nrrd", 
-            curr_output_dir.c_str(), vote_it->first.c_str());
+        std::string thresh_img_fn = string_format (
+            "%s/label_%s.nrrd", curr_output_dir.c_str(), 
+            vote_it->first.c_str());
         timer.start();
-        itk_image_save (thresh_img, fn.c_str());
+        itk_image_save (thresh_img, thresh_img_fn.c_str());
         d_ptr->time_io += timer.report();
+
+        /* Extract reference structure as binary mask. */
+        timer.start();
+        this->extract_reference_image (mapped_name);
+        d_ptr->time_extract += timer.report();
+
+        /* Compute Dice, etc. */
+        timer.start();
+        if (d_ptr->have_ref_structure) {
+            lprintf ("Computing Dice...\n");
+            Dice_statistics dice;
+            dice.set_reference_image (d_ptr->ref_structure_image);
+            dice.set_compare_image (thresh_img);
+            dice.run ();
+
+            std::string seg_log_string = string_format (
+                "%s,%s,%s,%f,%f,%f,%f,%d,%d,%d,%d\n",
+                d_ptr->ref_id.c_str(), 
+                registration_id.c_str(),
+                mapped_name.c_str(), 
+                rho, sigma, thresh_val, 
+                dice.get_dice(),
+                (int) dice.get_true_positives(),
+                (int) dice.get_true_negatives(),
+                (int) dice.get_false_positives(),
+                (int) dice.get_false_negatives());
+            lprintf ("%s", seg_log_string.c_str());
+            fprintf (d_ptr->seg_dice_fp, 
+                "%s", seg_log_string.c_str());
+        }
+        d_ptr->time_dice += timer.report();
     }
 }
 
@@ -701,6 +769,21 @@ Mabs::run_segmentation ()
                 std::string registration_id = "";
                 registration_id = basename (*reg_it);
 
+                /* Check if this segmentation is already complete.
+                   We might be able to skip it. */
+                std::string curr_output_dir;
+                curr_output_dir = string_format (
+                    "%s/segmentations/%s/rho_%f_sig_%f",
+                    d_ptr->output_dir.c_str(), registration_id.c_str(),
+                    *rho_it, *sigma_it);
+                std::string seg_checkpoint_fn = string_format (
+                    "%s/checkpoint.txt", curr_output_dir.c_str());
+                if (file_exists (seg_checkpoint_fn)) {
+                    lprintf ("Segmentation complete for %s\n",
+                        curr_output_dir.c_str());
+                    continue;
+                }
+
                 /* Loop through images in the atlas */
                 std::list<std::string>::iterator atl_it;
                 for (atl_it = d_ptr->atlas_list.begin();
@@ -713,6 +796,10 @@ Mabs::run_segmentation ()
 
                 /* Threshold images based on weight */
                 segmentation_label (registration_id, *rho_it, *sigma_it);
+
+                /* Create checkpoint file which means that this segmentation
+                   is complete */
+                touch_file (seg_checkpoint_fn);
 
                 /* Clear out internal structure */
                 d_ptr->clear_vote_map ();
@@ -781,10 +868,13 @@ Mabs::train ()
     /* Parse atlas directory */
     this->load_atlas_dir_list ();
 
-    /* Open output file for dice logging */
-    std::string dice_log_fn = string_format ("%s/dice.txt",
+    /* Open output files for dice logging */
+    std::string reg_dice_log_fn = string_format ("%s/reg_dice.txt",
         d_ptr->traindir_base.c_str());
-    d_ptr->dice_fp = fopen (dice_log_fn.c_str(), "w+");
+    d_ptr->reg_dice_fp = fopen (reg_dice_log_fn.c_str(), "w+");
+    std::string seg_dice_log_fn = string_format ("%s/seg_dice.txt",
+        d_ptr->traindir_base.c_str());
+    d_ptr->seg_dice_fp = fopen (seg_dice_log_fn.c_str(), "w+");
 
     /* Write some extra files when training */
     d_ptr->write_weight_files = true;
@@ -821,7 +911,8 @@ Mabs::train ()
         this->run_segmentation ();
     }
 
-    fclose (d_ptr->dice_fp);
+    fclose (d_ptr->reg_dice_fp);
+    fclose (d_ptr->seg_dice_fp);
 
     lprintf ("Registration time:    %10.1f seconds\n", d_ptr->time_reg);
     lprintf ("Warping time (img):   %10.1f seconds\n", d_ptr->time_warp_img);

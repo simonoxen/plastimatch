@@ -158,12 +158,14 @@ Plm_image::clone (void)
 Plm_image*
 plm_image_load (const char* fname, Plm_image_type type)
 {
-    Plm_image *ri = new Plm_image;
-    if (!ri) return 0;
+    Plm_image *pli = new Plm_image;
+    if (!pli) return 0;
 
-    ri->load (fname, type);
-
-    return ri;
+    if (pli->load (fname, type)) {
+        return pli;
+    }
+    delete pli;
+    return 0;
 }
 
 Plm_image*
@@ -178,9 +180,11 @@ plm_image_load_native (const char* fname)
     Plm_image *pli = new Plm_image;
     if (!pli) return 0;
 
-    pli->load_native (fname);
-
-    return pli;
+    if (pli->load_native (fname)) {
+        return pli;
+    }
+    delete pli;
+    return 0;
 }
 
 Plm_image*
@@ -189,7 +193,7 @@ plm_image_load_native (const std::string& fname)
     return plm_image_load_native (fname.c_str());
 }
 
-void
+bool
 Plm_image::load (const char* fname, Plm_image_type type)
 {
     this->free ();
@@ -207,15 +211,16 @@ Plm_image::load (const char* fname, Plm_image_type type)
     case PLM_IMG_TYPE_ITK_UCHAR:
         this->m_type = type;
         this->m_original_type = type;
-	    this->m_itk_uchar = itk_image_load_uchar (fname, 0);
+        this->m_itk_uchar = itk_image_load_uchar (fname, 0);
         break;
     default:
         print_and_exit ("Unhandled image load in plm_image_load\n");
         break;
     }
+    return true;
 }
 
-void
+bool
 Plm_image::load_native (const char* fname)
 {
     itk::ImageIOBase::IOPixelType pixel_type;
@@ -225,18 +230,17 @@ Plm_image::load_native (const char* fname)
     if (is_directory (fname)) {
 	/* GCS FIX: The call to is_directory is redundant -- we already 
 	   called plm_file_format_deduce() in warp_main() */
-	load_native_dicom (fname);
-	return;
+	return load_native_dicom (fname);
     }
 
     if (!file_exists (fname) && !string_starts_with (fname, "slicer:")) {
-	print_and_exit ("Couldn't open %s for read\n", fname);
+	lprintf ("Couldn't open %s for read\n", fname);
+        return false;
     }
 
     /* Check for NKI filetype, which doesn't use ITK reader */
     if (extension_is (fname, "scan") || extension_is (fname, "SCAN")) {
-        load_native_nki (fname);
-        return;
+        return load_native_nki (fname);
     }
 
     std::string fn = fname;
@@ -248,7 +252,7 @@ Plm_image::load_native (const char* fname)
 	this->m_itk_uchar_vec = itk_image_load_uchar_vec (fname);
 	this->m_original_type = PLM_IMG_TYPE_ITK_UCHAR_VEC;
 	this->m_type = PLM_IMG_TYPE_ITK_UCHAR_VEC;
-	return;
+	return true;
     }
 
     switch (component_type) {
@@ -305,18 +309,18 @@ Plm_image::load_native (const char* fname)
     default:
 	printf ("Error, unsupported input type in load_native(): %d\n",
 	    component_type);
-	exit (-1);
-	break;
+        return false;
     }
+    return true;
 }
 
-void
+bool
 Plm_image::load_native (const std::string& fn)
 {
-    this->load_native (fn.c_str());
+    return this->load_native (fn.c_str());
 }
 
-void
+bool
 Plm_image::load_native_dicom (const char* fname)
 {
 #if PLM_CONFIG_PREFER_DCMTK
@@ -330,9 +334,11 @@ Plm_image::load_native_dicom (const char* fname)
     this->m_original_type = PLM_IMG_TYPE_ITK_SHORT;
     this->m_type = PLM_IMG_TYPE_ITK_SHORT;
 #endif
+
+    return true;
 }
 
-void
+bool
 Plm_image::load_native_nki (const char* fname)
 {
     Volume *v = nki_load (fname);
@@ -340,7 +346,9 @@ Plm_image::load_native_nki (const char* fname)
         this->m_gpuit = v;
         this->m_original_type = PLM_IMG_TYPE_ITK_SHORT;
         this->m_type = PLM_IMG_TYPE_GPUIT_SHORT;
+        return true;
     }
+    return false;
 }
 
 
