@@ -8,7 +8,7 @@ FUNCTION STILL IN TESTING
 
 Author: Paolo Zaffino (p.zaffino@unicz.it)
 
-rev 3
+rev 4
 
 Required libraries:
 1) numpy (http://numpy.scipy.org)
@@ -51,14 +51,16 @@ screenshot_filename = file name where will be saved the screenshot
 
 
 import matplotlib.cm as cm
-from matplotlib.pyplot import axis, hold, imshow, savefig, show
+from matplotlib.pyplot import axis, gcf, hold, imshow, savefig, show
 import mha
 import numpy as np
 import types
+import warnings
 
 
 ########################################################################
 
+warnings.filterwarnings(action='ignore', module='numpy')
 
 def show_img(input='', slice=None, view='c', overlay_image=None, gain_overlay_image=1, image_trasparency=0.5,\
 windowing='', windowing_overlay_img='',vf=None, vf_trasparency=0.5, structure=None, structure_color='red',\
@@ -72,26 +74,31 @@ axes=False, screenshot_filename=None):
 	## Read the input image
 	
 	img=_scan_input(input)
+	figure_info='Basic img'
 		
 	## Read the overlay image
 	if overlay_image != None:
 		img2=_scan_input(overlay_image)
 		_check_data_parameters(img, img2, 'overlay image')
+		figure_info+=' + overlay img'
 		
 	## Read the vector field
 	if vf != None:
 		vf_data=_scan_input(vf)
-		_check_data_parameters(img, vf, 'vector field')
+		_check_data_parameters(img, vf_data, 'vector field')
+		figure_info+=' + vf'
 			
 	## Read the structure
 	if structure != None:
 		stru=_scan_input(structure)
-		_check_data_parameters(img, stru, 'structure')	
+		_check_data_parameters(img, stru, 'structure')
+		figure_info+=' + first stru'	
 
 	## Read the structure 2
 	if structure2 != None:
 		stru2=_scan_input(structure2)
-		_check_data_parameters(img, stru2, 'structure 2')	
+		_check_data_parameters(img, stru2, 'structure 2')
+		figure_info+=' + second stru'
 	
 	## Slice number settings
 	if slice == None and (view == 'c' or view == 's'):
@@ -100,6 +107,7 @@ axes=False, screenshot_filename=None):
 		slice_number=np.rint(img.size[2]/2)
 	else:
 		slice_number=slice
+	figure_info+= ' -- slice ' + str(int(slice_number))
 	
 	## View settings
 	if view == 'c':
@@ -217,6 +225,7 @@ axes=False, screenshot_filename=None):
 		axis('off')
 	
 	if screenshot_filename==None:
+		gcf().canvas.set_window_title(figure_info)
 		show()
 	else:
 		savefig(screenshot_filename, bbox_inches="tight", transparent = True)
@@ -236,10 +245,8 @@ def _scan_input(input_par):
 	else if it is already a mha object it returns the unchanged input parameter
 	"""
 	
-	if type(input_par)==str:
-		return mha.new(input_file=input_par)
-	elif type(input_par)==types.InstanceType:
-		return input_par
+	if type(input_par)==str: return mha.new(input_file=input_par)
+	elif type(input_par)==types.InstanceType: return input_par
 
 
 def _check_data_parameters(im1, im2, im_type):
@@ -251,11 +258,12 @@ def _check_data_parameters(im1, im2, im_type):
 	
 	if (im1.size != im2.size):
 		raise NameError("The " + im_type + " doesn't have the same dimensions of the input image!")
-	elif (im1.spacing != im2.spacing):
+	if (im1.spacing != im2.spacing):
 		raise NameError("The " + im_type + " doesn't have the same spacing of the input image!")
-	elif (im1.offset != im2.offset):
+	if (im1.offset != im2.offset):
 		print "Warning: the " + im_type + " doesn't have the same offset of the input image!"
-
+	if (im1.direction_cosines != im2.direction_cosines):
+		print "Warning: the " + im_type + " doesn't have the same direction cosines of the input image!"
 
 def _set_colormap(cm_in, stru_number):
 	
@@ -263,16 +271,11 @@ def _set_colormap(cm_in, stru_number):
 	This private function sets the chosen colormap
 	"""
 	
-	if cm_in == "red":
-		return cm.autumn
-	elif cm_in == "blue":
-		return cm.winter
-	elif cm_in == "yellow":
-		return cm.autumn_r
-	elif cm_in == "green":
-		return cm.brg_r
-	else:
-		raise NameError('Unknown structure ' + str(stru_number) +' colormap')
+	if cm_in == "red": return cm.autumn
+	elif cm_in == "blue": return cm.winter
+	elif cm_in == "yellow": return cm.autumn_r
+	elif cm_in == "green": return cm.brg_r
+	else: raise NameError('Unknown structure ' + str(stru_number) +' colormap')
 
 
 def _windowing_img (img, low_threshold, hi_threshold):

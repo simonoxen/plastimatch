@@ -1,7 +1,7 @@
 """
 This class reads and writes mha files (images or vector fields)
 Author: Paolo Zaffino  (p.zaffino@unicz.it)
-Rev 17
+Rev 18
 NOT TESTED ON PYTHON 3
 """
 
@@ -99,7 +99,6 @@ class new():
 			
 			## Read raw data
 			self.data=''.join(f.readlines())
-			
 			f.close()
 			
 			## Raw data from string to array
@@ -119,7 +118,6 @@ class new():
 			elif data == 'vf':
 				self.data=self.data.reshape(self.size[2],self.size[1],self.size[0],3)
 				self.data=self._shiftdim(self.data, 3).T
-				self.size+=[3]
 			
 		elif not fn.endswith('.mha'): ## Extension file is not ".mha". It returns all null values
 			raise NameError('The input file is not a mha file!')
@@ -156,7 +154,7 @@ class new():
 			f.write('CenterOfRotation = 0 0 0\n')
 			f.write('AnatomicalOrientation = RAI\n')
 			f.write('ElementSpacing = '+str(self.spacing).strip('()[]').replace(',','')+'\n')
-			f.write('DimSize = '+str(self.data.shape[:3]).strip('()[]').replace(',','')+'\n')
+			f.write('DimSize = '+str(self.size).strip('()[]').replace(',','')+'\n')
 			if data == 'vf':
 				f.write('ElementNumberOfChannels = 3\n')
 				self.data=self._shiftdim(self.data, 3) ## Shift dimensions if the input matrix is a vf
@@ -170,7 +168,6 @@ class new():
 			
 			## Write matrix
 			f.write(self.data)
-			
 			f.close()
 			
 		elif not fn.endswith('.mha'): ## File extension is not ".mha"
