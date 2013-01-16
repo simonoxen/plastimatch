@@ -385,10 +385,6 @@ bspline_warp (
     case PT_FLOAT:
         bspline_warp_dcos<float, PT_FLOAT> (
             vout, vf_out, bxf, moving, linear_interp, default_val);
-#if defined (commentout)
-        bspline_warp_internal<float, PT_FLOAT> (
-            vout, vf_out, bxf, moving, linear_interp, default_val);
-#endif
         break;
     case PT_VF_FLOAT_INTERLEAVED:
     case PT_VF_FLOAT_PLANAR:
@@ -397,10 +393,6 @@ bspline_warp (
     case PT_UCHAR_VEC_INTERLEAVED:
         bspline_warp_dcos<unsigned char, PT_UCHAR_VEC_INTERLEAVED> (
             vout, vf_out, bxf, moving, linear_interp, default_val);
-#if defined (commentout)
-        bspline_warp_internal<unsigned char, PT_UCHAR_VEC_INTERLEAVED> (
-            vout, vf_out, bxf, moving, linear_interp, default_val);
-#endif
         break;
     default:
         print_and_exit ("bspline_warp: sorry, this is not supported.\n");

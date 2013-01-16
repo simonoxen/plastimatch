@@ -271,7 +271,6 @@ plm_warp_native_vec (
     }
     printf ("plm_warp_native is complete.\n");
 }
-//#endif
 
 void
 plm_warp (

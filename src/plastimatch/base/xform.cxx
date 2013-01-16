@@ -1128,28 +1128,11 @@ xform_gpuit_vf_to_itk_vf (
     Plm_image_header* pih    /* Input, can be null */
 )
 {
-    int i;
-    DeformationFieldType::SizeType sz;
-    DeformationFieldType::IndexType st;
-    DeformationFieldType::RegionType rg;
-    DeformationFieldType::PointType og;
-    DeformationFieldType::SpacingType sp;
     DeformationFieldType::Pointer itk_vf = DeformationFieldType::New();
     FloatVector3DType displacement;
 
     /* Copy header & allocate data for itk */
-    for (i = 0; i < 3; i++) {
-        st[i] = 0;
-        sz[i] = vf->dim[i];
-        sp[i] = vf->spacing[i];
-        og[i] = vf->offset[i];
-    }
-    rg.SetSize (sz);
-    rg.SetIndex (st);
-
-    itk_vf->SetRegions (rg);
-    itk_vf->SetOrigin (og);
-    itk_vf->SetSpacing (sp);
+    itk_image_set_header (itk_vf, Plm_image_header (vf));
     itk_vf->Allocate();
 
     /* Copy data into itk */
