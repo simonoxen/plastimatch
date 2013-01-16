@@ -11,6 +11,7 @@
 
 #include "file_util.h"
 #include "itk_image_cast.h"
+#include "itk_image_create.h"
 #include "itk_image_load.h"
 #include "itk_image_save.h"
 #include "itk_image_type.h"
@@ -64,6 +65,11 @@ Plm_image::Plm_image (FloatImageType::Pointer img)
     this->init ();
     this->set_itk (img);
 }
+Plm_image::Plm_image (Plm_image_type type, const Plm_image_header& pih)
+{
+    this->init ();
+    this->create (type, pih);
+}
 Plm_image::~Plm_image () {
     this->free ();
 }
@@ -106,6 +112,38 @@ Plm_image::have_image ()
     return m_type == PLM_IMG_TYPE_UNDEFINED;
 }
 
+
+/* -----------------------------------------------------------------------
+   Creating
+   ----------------------------------------------------------------------- */
+void
+Plm_image::create (Plm_image_type type, const Plm_image_header& pih)
+{
+    switch (type) {
+    case PLM_IMG_TYPE_ITK_UCHAR:
+    case PLM_IMG_TYPE_ITK_SHORT:
+    case PLM_IMG_TYPE_ITK_USHORT:
+    case PLM_IMG_TYPE_ITK_ULONG:
+	print_and_exit ("Unhandled image type in Plm_image::create"
+			" (type = %d)\n", this->m_type);
+	break;
+    case PLM_IMG_TYPE_ITK_FLOAT:
+        this->m_type = type;
+        this->m_original_type = type;
+	this->m_itk_float = itk_image_create<float> (pih);
+	break;
+    case PLM_IMG_TYPE_GPUIT_UCHAR:
+    case PLM_IMG_TYPE_GPUIT_SHORT:
+    case PLM_IMG_TYPE_GPUIT_UINT16:
+    case PLM_IMG_TYPE_GPUIT_UINT32:
+    case PLM_IMG_TYPE_GPUIT_FLOAT:
+    case PLM_IMG_TYPE_GPUIT_FLOAT_FIELD:
+    default:
+	print_and_exit ("Unhandled image type in Plm_image::create"
+			" (type = %d)\n", this->m_type);
+	break;
+    }
+}
 
 /* -----------------------------------------------------------------------
    Cloning

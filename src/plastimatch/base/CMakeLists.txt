@@ -32,6 +32,7 @@ set (PLMBASE_LIBRARY_SRC
   itk_directions.cxx
   itk_image.cxx
   itk_image_cast.cxx
+  itk_image_create.cxx
   itk_image_load.txx
   itk_image_load_char.cxx
   itk_image_load_double.cxx

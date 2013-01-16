@@ -36,25 +36,20 @@ set (PLMSEGMENT_LIBRARY_SRC
   )
 
 ##-----------------------------------------------------------------------------
+##  SPECIAL BUILD RULES: OpenMP
+##-----------------------------------------------------------------------------
+if (OPENMP_FOUND)
+  set (PLMSEGMENT_LIBRARY_LDFLAGS "${OPENMP_LDFLAGS}")
+  set_source_files_properties (mabs_vote.cxx
+    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
+endif ()
+
+##-----------------------------------------------------------------------------
 ##  BUILD TARGETS
 ##-----------------------------------------------------------------------------
 plm_add_library (
   plmsegment
   "${PLMSEGMENT_LIBRARY_SRC}" 
   "${PLMSEGMENT_LIBRARY_DEPENDENCIES}"
-  ""
+  "${PLMSEGMENT_LIBRARY_LDFLAGS}"
   "")
-
-##-----------------------------------------------------------------------------
-##  SPECIAL RULES FOR SLICER
-##-----------------------------------------------------------------------------
-if (SLICER_FOUND)
-  if (WIN32)
-    plm_slicer_copy_dll (plastimatch_slicer_copy_plmsegment
-      "${INDIR}/plmsegment.dll"
-      "${OUTDIR}/plmsegment.dll"
-      "${QTOUTDIR}/plmsegment.dll"
-      plmsegment
-    )
-  endif ()
-endif ()

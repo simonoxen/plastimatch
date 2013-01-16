@@ -30,6 +30,7 @@ public:
     Plm_image (const std::string& fname, Plm_image_type type);
     Plm_image (FloatImageType::Pointer img);
     Plm_image (UCharImageType::Pointer img);
+    Plm_image (Plm_image_type type, const Plm_image_header& pih);
     ~Plm_image ();
 
 public:
@@ -82,6 +83,7 @@ public:
     void free ();
     bool have_image ();
     Plm_image* clone (void);
+    void create (Plm_image_type type, const Plm_image_header& pih);
 
     /* Loading */
     bool load (const char* fname, Plm_image_type type);

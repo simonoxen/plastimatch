@@ -135,6 +135,19 @@ public:
     void get_dim (plm_long dim[3]) const;
     void get_direction_cosines (float direction_cosines[9]) const;
 
+    const OriginType& GetOrigin () const {
+        return m_origin;
+    }
+    const SpacingType& GetSpacing () const {
+        return m_spacing;
+    }
+    const ImageRegionType& GetLargestPossibleRegion () const {
+        return m_region;
+    }
+    const DirectionType& GetDirection () const {
+        return m_direction;
+    }
+
     void print (void) const;
 
     FloatPoint3DType get_index (const FloatPoint3DType& pos) const;

@@ -2,6 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmsegment_config.h"
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -9,25 +10,43 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if (OPENMP_FOUND)
+#include <omp.h>
+#endif
 #include "itkImageRegionIterator.h"
 
 #include "mabs_subject.h"
 #include "mabs_vote.h"
+#include "plm_image.h"
+#include "plm_image_header.h"
 #include "plm_math.h"
+#include "volume.h"
+
+class Plm_image;
 
 class Mabs_vote_private {
 public:
     Mabs_vote_private () {
         rho = 1;
         sigma = 50;
+        like0_img = 0;
+        like1_img = 0;
+        score_img = 0;
     }
     ~Mabs_vote_private () {
+        delete score_img;
+        delete like0_img;
+        delete like1_img;
     }
 public:
     FloatImageType::Pointer target;
-    FloatImageType::Pointer like0;
-    FloatImageType::Pointer like1;
-    FloatImageType::Pointer weights;
+//    FloatImageType::Pointer like0;
+//    FloatImageType::Pointer like1;
+//    FloatImageType::Pointer weights;
+
+    Plm_image *score_img;
+    Plm_image *like0_img;
+    Plm_image *like1_img;
 
     double rho;
     double sigma;
@@ -52,22 +71,14 @@ Mabs_vote::set_fixed_image (
     d_ptr->target = target;
 
     /* Create a like0 image */
-    d_ptr->like0 = FloatImageType::New();
-    d_ptr->like0->SetOrigin(target->GetOrigin());
-    d_ptr->like0->SetSpacing(target->GetSpacing());
-    d_ptr->like0->SetDirection(target->GetDirection());
-    d_ptr->like0->SetRegions(target->GetLargestPossibleRegion());
-    d_ptr->like0->Allocate();
-    d_ptr->like0->FillBuffer(0.0);
+    d_ptr->like0_img = new Plm_image (
+        PLM_IMG_TYPE_ITK_FLOAT, 
+        Plm_image_header (d_ptr->target));
 
     /* Create a like1 image */
-    d_ptr->like1 = FloatImageType::New();
-    d_ptr->like1->SetOrigin(target->GetOrigin());
-    d_ptr->like1->SetSpacing(target->GetSpacing());
-    d_ptr->like1->SetDirection(target->GetDirection());
-    d_ptr->like1->SetRegions(target->GetLargestPossibleRegion());
-    d_ptr->like1->Allocate();
-    d_ptr->like1->FillBuffer(0.0);
+    d_ptr->like1_img = new Plm_image (
+        PLM_IMG_TYPE_ITK_FLOAT, 
+        Plm_image_header (d_ptr->target));
 }
 
 void
@@ -92,52 +103,55 @@ Mabs_vote::vote (
     FloatImageType::Pointer dmap_image
 )
 {
-    /* Create iterators */
-    itk::ImageRegionIterator< FloatImageType > target_it (
-        d_ptr->target, d_ptr->target->GetLargestPossibleRegion());
-    itk::ImageRegionIterator< FloatImageType > atlas_image_it (
-        atlas_image, atlas_image->GetLargestPossibleRegion());
-    itk::ImageRegionIterator< FloatImageType > like0_it (
-        d_ptr->like0, d_ptr->like0->GetLargestPossibleRegion());
-    itk::ImageRegionIterator< FloatImageType > like1_it (
-        d_ptr->like1, d_ptr->like1->GetLargestPossibleRegion());
-    itk::ImageRegionIterator< FloatImageType > dmap_it (
-        dmap_image, dmap_image->GetLargestPossibleRegion());
+    /* GCS FIX: I shouldn't need to re-convert these every time I vote */
+    Plm_image atl_i (atlas_image);
+    Plm_image dmp_i (dmap_image);
+    Plm_image tgt_i (d_ptr->target);
 
-    // These are necessary to normalize the label likelihoods
-    const unsigned int wt_scale = 1000;
-    double med_diff;
-    double value;
-    double label_likelihood_0;
-    double label_likelihood_1;
-    double dmap_value;
-    int cnt = 0;
-    printf ("\tMABS looping through voxels...\n");fflush(stdout);
-    for (atlas_image_it.GoToBegin(),
-             dmap_it.GoToBegin(),
-             target_it.GoToBegin(),
-             like0_it.GoToBegin(),
-             like1_it.GoToBegin();
-         !target_it.IsAtEnd();
-         ++atlas_image_it,
-             ++dmap_it,
-             ++target_it,
-             ++like0_it,
-             ++like1_it)
-    {
-        cnt++;
-        
-        /* Compute similarity between target and atlas images */
-        med_diff = target_it.Get() - atlas_image_it.Get();
-        value = exp (-(med_diff * med_diff) / (2.0*d_ptr->sigma*d_ptr->sigma))
-            / (M_SQRT2PI * d_ptr->sigma);
+    Volume *atl_vol = atl_i.gpuit_float ();
+    Volume *dmp_vol = dmp_i.gpuit_float ();
+    Volume *tgt_vol = tgt_i.gpuit_float ();
+
+    float *atl_img = (float*) atl_vol->img;
+    float *dmp_img = (float*) dmp_vol->img;
+    float *tgt_img = (float*) tgt_vol->img;
+
+    Volume *like0_vol = d_ptr->like0_img->gpuit_float ();
+    Volume *like1_vol = d_ptr->like1_img->gpuit_float ();
+
+    float *like0_img = (float*) like0_vol->img;
+    float *like1_img = (float*) like1_vol->img;
     
+    plm_long v;
+#pragma omp parallel for
+    for (v = 0; v < tgt_vol->npix; v++) {
+        /* Compute similarity between target and atlas images */
+        double med_diff = tgt_img[v] - atl_img[v];
+
+        /* GCS Note:  Sometimes value is zero, when med_diff is very high.
+           When this happens for all atlas examples, we get divide by zero.
+           Furthermore, there is no sense dividing by 
+           M_SQRT2PI * d_ptr->sigma, because that is a constant. */
+#if defined (commentout)
+        similarity_value = exp (-(med_diff * med_diff) 
+            / (2.0*d_ptr->sigma*d_ptr->sigma))
+            / (M_SQRT2PI * d_ptr->sigma);
+#endif
+
+        /* So instead, we do this */
+        double similarity_value = exp (-(med_diff * med_diff) 
+            / (2.0*d_ptr->sigma*d_ptr->sigma));
+        if (similarity_value < 0.0001) {
+            similarity_value = 0.0001;
+        }
+
         /* Compute the chance of being in the structure. */
         /* Nb. we need to check to make sure exp(dmap_value) 
            doesn't overflow.  The actual overflow is at about exp(700) 
            for double, and about exp(85) for float.  But we can be 
            a little more conservative. */
-        dmap_value = d_ptr->rho * dmap_it.Get();
+        double dmap_value = d_ptr->rho * dmp_img[v];
+        double label_likelihood_0, label_likelihood_1;
         if (dmap_value > 50) {
             label_likelihood_0 = 0;
             label_likelihood_1 = 1;
@@ -151,68 +165,73 @@ Mabs_vote::vote (
 
         /* Compute total score, weighted by image similarity */
         double sum = label_likelihood_0 + label_likelihood_1;
-        double l0 = (label_likelihood_0 / sum) * value;
-        double l1 = (label_likelihood_1 / sum) * value;
+        double l0 = (label_likelihood_0 / sum) * similarity_value;
+        double l1 = (label_likelihood_1 / sum) * similarity_value;
 
-        // write to like0, like1
-        like0_it.Set (like0_it.Get() + l0*wt_scale);
-        like1_it.Set (like1_it.Get() + l1*wt_scale);
+        /* Save the scores */
+        like0_img[v] += l0;
+        like1_img[v] += l1;
     }
-    printf ("\tMABS voted with %d voxels\n", cnt);
 }
 
 void
 Mabs_vote::normalize_votes ()
 {
-    /* GCS: I don't understand this */
-    const unsigned int wt_scale = 1000;
-
     /* Create weight image */
-    d_ptr->weights = FloatImageType::New();
-    d_ptr->weights->SetOrigin (d_ptr->target->GetOrigin());
-    d_ptr->weights->SetSpacing (d_ptr->target->GetSpacing());
-    d_ptr->weights->SetDirection (d_ptr->target->GetDirection());
-    d_ptr->weights->SetRegions (d_ptr->target->GetLargestPossibleRegion());
-    d_ptr->weights->Allocate ();
-    d_ptr->weights->FillBuffer (0.0);
+    d_ptr->score_img = new Plm_image (
+        PLM_IMG_TYPE_ITK_FLOAT, 
+        Plm_image_header (d_ptr->target));
 
-    /* Create iterators */
-    itk::ImageRegionIterator< FloatImageType > like0_it (
-        d_ptr->like0, d_ptr->like0->GetLargestPossibleRegion());
-    itk::ImageRegionIterator< FloatImageType > like1_it (
-        d_ptr->like1, d_ptr->like1->GetLargestPossibleRegion());
-    itk::ImageRegionIterator< FloatImageType > weights_it (
-        d_ptr->weights, d_ptr->weights->GetLargestPossibleRegion());
-
-    /* Normalize log likelihood */
-    int cnt = 0;
-    double XX_0 = 0, XX_1 = 0;
-    double YY_0 = DBL_MAX, YY_1 = DBL_MAX;
-    for (weights_it.GoToBegin(),
-             like0_it.GoToBegin(),
-             like1_it.GoToBegin();
-         !like0_it.IsAtEnd();
-         ++weights_it,
-             ++like0_it,
-             ++like1_it)
+    Volume *score_vol = d_ptr->score_img->gpuit_float ();
+    Volume *like0_vol = d_ptr->like0_img->gpuit_float ();
+    Volume *like1_vol = d_ptr->like1_img->gpuit_float ();
+    float *score_img = (float*) score_vol->img;
+    float *like0_img = (float*) like0_vol->img;
+    float *like1_img = (float*) like1_vol->img;
+    
+    plm_long v;
+    float l0_min = FLT_MAX;
+    float l1_min = FLT_MAX;
+    float l0_max = -FLT_MAX;
+    float l1_max = -FLT_MAX;
+#pragma omp parallel
     {
-        cnt++;
-        double l0 = like0_it.Get();
-        double l1 = like1_it.Get();
-        if (l0 > XX_0) XX_0 = l0;
-        if (l1 > XX_1) XX_1 = l1;
-        if (l0 < YY_0) YY_0 = l0;
-        if (l1 < YY_1) YY_1 = l1;
-        double v =  l1 / (l1+l0);
-        weights_it.Set (v*wt_scale);
+        float priv_l0_min = FLT_MAX;
+        float priv_l1_min = FLT_MAX;
+        float priv_l0_max = -FLT_MAX;
+        float priv_l1_max = -FLT_MAX;
+#pragma omp for
+        for (v = 0; v < score_vol->npix; v++) {
+            float l0 = like0_img[v];
+            float l1 = like1_img[v];
+            score_img[v] = l1 / (l0 + l1);
+            if (l0 < priv_l0_min) priv_l0_min = l0;
+            if (l1 < priv_l1_min) priv_l1_min = l1;
+            if (l0 > priv_l0_max) priv_l0_max = l0;
+            if (l1 > priv_l1_max) priv_l1_max = l1;
+        }
+
+        /* GCS Note: this could be done faster using pragma omp flush,
+           and then testing whether or not it is needed to enter the 
+           critical section.  Cf: http://pc51.plm.eecs.uni-kassel.de/plm/fileadmin/pm/courses/pvI07/SL06.pdf
+           However, for readability I leave it as-is
+        */
+#pragma omp critical
+        { l0_min = std::min (l0_min, priv_l0_min); }
+#pragma omp critical
+        { l1_min = std::min (l1_min, priv_l1_min); }
+#pragma omp critical
+        { l0_max = std::max (l0_max, priv_l0_max); }
+#pragma omp critical
+        { l1_max = std::max (l1_max, priv_l1_max); }
     }
-    printf ("looped through %d weights.\n", cnt);
-    printf ("\tMAX votes = %g, %g\n", XX_0, XX_1);
-    printf ("\tMAX votes = %g, %g\n", YY_0, YY_1);
+    printf ("\tLikelihood 0 \\in [ %g, %g ]\n", l0_min, l0_max);
+    printf ("\tLikelihood 1 \\in [ %g, %g ]\n", l1_min, l1_max);
 }
 
 FloatImageType::Pointer
 Mabs_vote::get_weight_image ()
 {
-    return d_ptr->weights;
+    FloatImageType::Pointer itk_score_img = d_ptr->score_img->itk_float();
+    return itk_score_img;
 }

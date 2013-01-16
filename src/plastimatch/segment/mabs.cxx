@@ -355,7 +355,7 @@ Mabs::run_registration ()
         std::string atl_checkpoint_fn = string_format (
             "%s/checkpoint.txt", atlas_output_path.c_str());
         if (file_exists (atl_checkpoint_fn)) {
-            lprintf ("Atlas training complete for %s\n",
+            lprintf ("Atlas registration complete for %s\n",
                 atlas_output_path.c_str());
             continue;
         }
@@ -406,7 +406,7 @@ Mabs::run_registration ()
             std::string reg_checkpoint_fn = string_format (
                 "%s/checkpoint.txt", curr_output_dir.c_str());
             if (file_exists (reg_checkpoint_fn)) {
-                lprintf ("Registration complete for %s\n",
+                lprintf ("Registration parms complete for %s\n",
                     curr_output_dir.c_str());
                 continue;
             }
