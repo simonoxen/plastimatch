@@ -11,7 +11,7 @@ FUNCTION STILL IN TESTING
 
 Author: Paolo Zaffino (p.zaffino@unicz.it)
 
-rev 3
+rev 4
 
 Required libraries:
 1) Argparse (only if your python version is < 2.7)
@@ -54,9 +54,11 @@ parser.add_argument('--windowing_overlay_img', help='Windowing interval for the 
 parser.add_argument('--vf', help='Vector field file name. The viewer plots the phase map of the vector field', type=str)
 parser.add_argument('--vf_trasparency', help='Vector field trasparency in overlap mode (0.0 transparent, 1.0 opaque)', type=float, default=0.5)
 parser.add_argument('--structure', help='Binary structure file name', type=str)
-parser.add_argument('--structure_color', help='Structure color (default is "red")', type=str, default='red', choices=('red','green','blue', 'yellow'))
+parser.add_argument('--structure_color', help='Structure 1 color (default is "red")', type=str, default='red', choices=('red','green','blue', 'yellow'))
+parser.add_argument('--structure_alpha', help='Structure 1 alpha value (default is 1.0)', type=float, default=1.0)
 parser.add_argument('--structure2', help='Binary structure file name', type=str)
 parser.add_argument('--structure2_color', help='Structure 2 color (default is "blue")', type=str, default='blue', choices=('red','green','blue', 'yellow'))
+parser.add_argument('--structure2_alpha', help='Structure 2 alpha value (default is 0.8)', type=float, default=0.8)
 parser.add_argument('--checkerboard', help='Sets the checkerboard in the overlay mode', action='store_true')
 parser.add_argument('--check_size', help='Size of the check (in voxel)', type=int, default=100)
 parser.add_argument('--diff', help='Shows the difference between the input image and the overlay one', action='store_true')
@@ -66,9 +68,9 @@ parser.add_argument('--screenshot_filename', help='Screenshot file name', type=s
 
 args = parser.parse_args()
 
-pypla_viewer.show_img(input=args.input, slice=args.slice, view=args.view, overlay_image=args.overlay_image,\
-gain_overlay_image=args.gain_overlay_image, image_trasparency=args.image_trasparency, windowing=args.windowing,\
-windowing_overlay_img=args.windowing_overlay_img, vf=args.vf, vf_trasparency=args.vf_trasparency, structure=args.structure,\
-structure_color=args.structure_color,structure2=args.structure2, structure2_color=args.structure2_color,\
-checkerboard=args.checkerboard, check_size=args.check_size, diff=args.diff, colors=args.colors, axes=args.axes,\
-screenshot_filename=args.screenshot_filename)
+pypla_viewer.show_img(input=args.input, slice=args.slice, view=args.view, overlay_image=args.overlay_image,
+gain_overlay_image=args.gain_overlay_image, image_trasparency=args.image_trasparency, windowing=args.windowing,
+windowing_overlay_img=args.windowing_overlay_img, vf=args.vf, vf_trasparency=args.vf_trasparency, structure=args.structure,
+structure_color=args.structure_color, structure_alpha=args.structure_alpha, structure2=args.structure2,
+structure2_color=args.structure2_color, structure2_alpha=args.structure2_alpha, checkerboard=args.checkerboard,
+check_size=args.check_size, diff=args.diff, colors=args.colors, axes=args.axes, screenshot_filename=args.screenshot_filename)

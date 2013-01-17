@@ -8,7 +8,7 @@ FUNCTION STILL IN TESTING
 
 Author: Paolo Zaffino (p.zaffino@unicz.it)
 
-rev 4
+rev 5
 
 Required libraries:
 1) numpy (http://numpy.scipy.org)
@@ -35,9 +35,11 @@ windowing-overlay_img = Windowing interval for the overlay image
 vf = Input vector field in order to plot the phase map, it can be a mha file or a mha object (from mha.py)
 vf-trasparency = Vector field trasparency in overlap mode (0.0 transparent, 1.0 opaque)
 structure = Binary structure file name, it can be a mha file or a mha object (from mha.py)
-structure_color = Structure color, default is 'red', choise='red','green','blue' or 'yellow'
+structure_color = Structure 1 color, default is 'red', choise='red','green','blue' or 'yellow'
+structure_alpha = Structure 1 alpha value, default is 1.0
 structure2 = Binary structure file name, it can be a mha file or a mha object (from mha.py)
 structure2_color = Structure 2 color, default is 'blue', choise='red','green','blue' or 'yellow'
+structure2_alpha = Structure 2 alpha value, default is 0.8
 checkerboard = Checkerboard mode, to enable set on True
 check-size = Size of the check (in voxel), default is 100
 diff = Shows the difference between the input image and the overlay one. To enable set on True
@@ -62,10 +64,10 @@ import warnings
 
 warnings.filterwarnings(action='ignore', module='numpy')
 
-def show_img(input='', slice=None, view='c', overlay_image=None, gain_overlay_image=1, image_trasparency=0.5,\
-windowing='', windowing_overlay_img='',vf=None, vf_trasparency=0.5, structure=None, structure_color='red',\
-structure2=None, structure2_color='blue',checkerboard=False, check_size=100, diff=False, colors=False,\
-axes=False, screenshot_filename=None):
+def show_img(input='', slice=None, view='c', overlay_image=None, gain_overlay_image=1, image_trasparency=0.5,
+windowing='', windowing_overlay_img='', vf=None, vf_trasparency=0.5, structure=None, structure_color='red',
+structure_alpha=1.0, structure2=None, structure2_color='blue', structure2_alpha=0.8, checkerboard=False,
+check_size=100, diff=False, colors=False, axes=False, screenshot_filename=None):
 	
 	"""
 	This is the function that shows the images/vf/structure
@@ -213,12 +215,14 @@ axes=False, screenshot_filename=None):
 			imshow(slice2, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
 			if vf != None: ## Checkerboad, NO color mode + vf
 				imshow(phase_vf, aspect=pixel_ratio, origin='lower', alpha=vf_trasparency)
+	else:
+		raise NameError('Unrecognized view options combination!')
 				
 	if structure != None: ## Plus structure
-		imshow(slice_stru, cmap=stru_colormap, aspect=pixel_ratio, origin='lower', interpolation="nearest")
+		imshow(slice_stru, cmap=stru_colormap, aspect=pixel_ratio, origin='lower', interpolation="nearest", alpha=structure_alpha)
 	
 	if structure2 != None: ## Plus structure 2
-		imshow(slice_stru2, cmap=stru2_colormap, aspect=pixel_ratio, origin='lower', interpolation="nearest")
+		imshow(slice_stru2, cmap=stru2_colormap, aspect=pixel_ratio, origin='lower', interpolation="nearest", alpha=structure2_alpha)
 	
 	## Print the result on the screen or into a file
 	if axes == False:
