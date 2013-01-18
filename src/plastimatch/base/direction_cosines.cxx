@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include "direction_cosines.h"
 #include "plm_math.h"
+#include "print_and_exit.h"
 
 #define DIRECTION_COSINES_IDENTITY_THRESH 1e-9
 
@@ -46,51 +47,90 @@ void Direction_cosines::set_identity () {
     d_ptr->direction_cosines[6] = 0.;
     d_ptr->direction_cosines[7] = 0.;
     d_ptr->direction_cosines[8] = 1.;
-    }
+    solve_inverse ();
+}
 void Direction_cosines::set_rotated_1 () {
-	d_ptr->direction_cosines[0] = 0.894427190999916;
-	d_ptr->direction_cosines[1] = 0.447213595499958;
-	d_ptr->direction_cosines[2] = 0.;
-	d_ptr->direction_cosines[3] = -0.447213595499958;
-	d_ptr->direction_cosines[4] = 0.894427190999916;
-	d_ptr->direction_cosines[5] = 0.;
-	d_ptr->direction_cosines[6] = 0.;
-	d_ptr->direction_cosines[7] = 0.;
-	d_ptr->direction_cosines[8] = 1.;
-    }
+    d_ptr->direction_cosines[0] = 0.894427190999916;
+    d_ptr->direction_cosines[1] = 0.447213595499958;
+    d_ptr->direction_cosines[2] = 0.;
+    d_ptr->direction_cosines[3] = -0.447213595499958;
+    d_ptr->direction_cosines[4] = 0.894427190999916;
+    d_ptr->direction_cosines[5] = 0.;
+    d_ptr->direction_cosines[6] = 0.;
+    d_ptr->direction_cosines[7] = 0.;
+    d_ptr->direction_cosines[8] = 1.;
+    solve_inverse ();
+}
 void Direction_cosines::set_rotated_2 () {
-	d_ptr->direction_cosines[0] = M_SQRT1_2;
-	d_ptr->direction_cosines[1] = -M_SQRT1_2;
-	d_ptr->direction_cosines[2] = 0.;
-	d_ptr->direction_cosines[3] = M_SQRT1_2;
-	d_ptr->direction_cosines[4] = M_SQRT1_2;
-	d_ptr->direction_cosines[5] = 0.;
-	d_ptr->direction_cosines[6] = 0.;
-	d_ptr->direction_cosines[7] = 0.;
-	d_ptr->direction_cosines[8] = 1.;
-    }
+    d_ptr->direction_cosines[0] = M_SQRT1_2;
+    d_ptr->direction_cosines[1] = -M_SQRT1_2;
+    d_ptr->direction_cosines[2] = 0.;
+    d_ptr->direction_cosines[3] = M_SQRT1_2;
+    d_ptr->direction_cosines[4] = M_SQRT1_2;
+    d_ptr->direction_cosines[5] = 0.;
+    d_ptr->direction_cosines[6] = 0.;
+    d_ptr->direction_cosines[7] = 0.;
+    d_ptr->direction_cosines[8] = 1.;
+    solve_inverse ();
+}
 void Direction_cosines::set_rotated_3 () {
-	d_ptr->direction_cosines[0] = -0.855063803257865;
-	d_ptr->direction_cosines[1] = 0.498361271551590;
-	d_ptr->direction_cosines[2] = -0.143184969098287;
-	d_ptr->direction_cosines[3] = -0.428158353951640;
-	d_ptr->direction_cosines[4] = -0.834358655093045;
-	d_ptr->direction_cosines[5] = -0.347168631377818;
-	d_ptr->direction_cosines[6] = -0.292483018822660;
-	d_ptr->direction_cosines[7] = -0.235545489638006;
-	d_ptr->direction_cosines[8] = 0.926807426605751;
-    }
+    d_ptr->direction_cosines[0] = -0.855063803257865;
+    d_ptr->direction_cosines[1] = 0.498361271551590;
+    d_ptr->direction_cosines[2] = -0.143184969098287;
+    d_ptr->direction_cosines[3] = -0.428158353951640;
+    d_ptr->direction_cosines[4] = -0.834358655093045;
+    d_ptr->direction_cosines[5] = -0.347168631377818;
+    d_ptr->direction_cosines[6] = -0.292483018822660;
+    d_ptr->direction_cosines[7] = -0.235545489638006;
+    d_ptr->direction_cosines[8] = 0.926807426605751;
+    solve_inverse ();
+}
 void Direction_cosines::set_skewed () {
-	d_ptr->direction_cosines[0] = 1.;
-	d_ptr->direction_cosines[1] = 0.;
-	d_ptr->direction_cosines[2] = 0.;
-	d_ptr->direction_cosines[3] = M_SQRT1_2;
-	d_ptr->direction_cosines[4] = M_SQRT1_2;
-	d_ptr->direction_cosines[5] = 0.;
-	d_ptr->direction_cosines[6] = 0.;
-	d_ptr->direction_cosines[7] = 0.;
-	d_ptr->direction_cosines[8] = 1.;
+    d_ptr->direction_cosines[0] = 1.;
+    d_ptr->direction_cosines[1] = 0.;
+    d_ptr->direction_cosines[2] = 0.;
+    d_ptr->direction_cosines[3] = M_SQRT1_2;
+    d_ptr->direction_cosines[4] = M_SQRT1_2;
+    d_ptr->direction_cosines[5] = 0.;
+    d_ptr->direction_cosines[6] = 0.;
+    d_ptr->direction_cosines[7] = 0.;
+    d_ptr->direction_cosines[8] = 1.;
+    solve_inverse ();
+}
+
+static void 
+volume_matrix3x3inverse (float *out, const float *m)
+{
+    float det;
+
+    det =  
+	m[0]*(m[4]*m[8]-m[5]*m[7])
+	-m[1]*(m[3]*m[8]-m[5]*m[6])
+	+m[2]*(m[3]*m[7]-m[4]*m[6]);
+
+    if (fabs(det)<1e-8) {
+	print_and_exit ("Error: singular matrix of direction cosines\n");
     }
+
+    out[0]=  (m[4]*m[8]-m[5]*m[7]) / det;
+    out[1]= -(m[1]*m[8]-m[2]*m[7]) / det;
+    out[2]=  (m[1]*m[5]-m[2]*m[4]) / det;
+
+    out[3]= -(m[3]*m[8]-m[5]*m[6]) / det;
+    out[4]=  (m[0]*m[8]-m[2]*m[6]) / det;
+    out[5]= -(m[0]*m[5]-m[2]*m[3]) / det;
+
+    out[6]=  (m[3]*m[7]-m[4]*m[6]) / det;
+    out[7]= -(m[0]*m[7]-m[1]*m[6]) / det;
+    out[8]=  (m[0]*m[4]-m[1]*m[3]) / det;
+}
+
+void 
+Direction_cosines::solve_inverse ()
+{
+    volume_matrix3x3inverse (d_ptr->inv_direction_cosines, 
+	d_ptr->direction_cosines);
+}
 
 void 
 Direction_cosines::set (const float dc[])
@@ -98,6 +138,7 @@ Direction_cosines::set (const float dc[])
     for (int i = 0; i < 9; i++) {
         d_ptr->direction_cosines[i] = dc[i];
     }
+    solve_inverse ();
 }
 
 const float *
@@ -110,6 +151,12 @@ float *
 Direction_cosines::get ()
 {
     return d_ptr->direction_cosines;
+}
+
+const float *
+Direction_cosines::get_inverse () const
+{
+    return d_ptr->inv_direction_cosines;
 }
 
 bool Direction_cosines::set_from_string (std::string& str) {

@@ -71,5 +71,4 @@ volume_index (const plm_long dims[3], const plm_long ijk[3])
 #define PROJECT_X(xyz,proj)                                             \
     (xyz[0] * proj[0][0] + xyz[1] * proj[0][1] + xyz[2] * proj[0][2])
 
-
 #endif

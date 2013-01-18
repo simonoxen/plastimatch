@@ -24,12 +24,15 @@
 #include "file_util.h"
 #include "interpolate.h"
 #include "interpolate_macros.h"
+#include "logfile.h"
+#include "mha_io.h"
 #include "plm_math.h"
 #include "plm_timer.h"
+#include "string_util.h"
 #include "volume.h"
 #include "volume_macros.h"
 
-////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // FUNCTION: bspline_score_h_mse()
 //
 // This is a single core CPU implementation of CUDA implementation J.
@@ -42,7 +45,7 @@
 //
 // AUTHOR: James A. Shackleford
 // DATE: 11.22.2009
-////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 void
 bspline_score_h_mse (
     Bspline_optimize_data *bod
@@ -260,7 +263,7 @@ bspline_score_h_mse (
 }
 
 
-////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // FUNCTION: bspline_score_g_mse()
 //
 // This is a multi-CPU implementation of CUDA implementation J.  OpenMP is
@@ -274,7 +277,7 @@ bspline_score_h_mse (
 //
 // 2012-06-10 (GCS): Updated to DCOS, only 0.15% increase in runtime, 
 //   judged not worth maintaining separate code.
-////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 void
 bspline_score_g_mse (
     Bspline_optimize_data *bod
@@ -393,7 +396,8 @@ bspline_score_g_mse (
                     // Calc. deformation vector (dxyz) for voxel
                     bspline_interp_pix_c (dxyz, bxf, idx_tile, ijk_local);
 
-                    // Calc. moving image coordinate from the deformation vector
+                    // Calc. moving image coordinate from the deformation 
+                    // vector
                     /* To remove DCOS support, change function call to 
                        bspline_find_correspondence() */
                     rc = bspline_find_correspondence_dcos (
@@ -693,15 +697,20 @@ bspline_score_c_mse (
     FILE* corr_fp = 0;
 
     if (parms->debug) {
+        std::string fn;
         char buf[1024];
+
         sprintf (buf, "dc_dv_mse_%02d.txt", it);
-        std::string fn = parms->debug_dir + "/" + buf;
+        fn = parms->debug_dir + "/" + buf;
         dc_dv_fp = plm_fopen (fn.c_str(), "wb");
 
         sprintf (buf, "corr_mse_%02d.txt", it);
         fn = parms->debug_dir + "/" + buf;
         corr_fp = plm_fopen (fn.c_str(), "wb");
         it ++;
+
+        fn = string_format ("%s/moving_grad.mha", parms->debug_dir.c_str());
+        write_mha (fn.c_str(), moving_grad);
     }
 
     Plm_timer* timer = new Plm_timer;
@@ -737,9 +746,14 @@ bspline_score_c_mse (
 
                 if (parms->debug) {
                     fprintf (corr_fp, 
-                        "%d %d %d %f %f %f\n",
-                        (unsigned int) fijk[0], (unsigned int) fijk[1], 
-                        (unsigned int) fijk[2], mijk[0], mijk[1], mijk[2]);
+                        "%d %d %d, %f %f %f -> %f %f %f, %f %f %f\n",
+                        (unsigned int) fijk[0], 
+                        (unsigned int) fijk[1], 
+                        (unsigned int) fijk[2], 
+                        fxyz[0], fxyz[1], fxyz[2],
+                        mijk[0], mijk[1], mijk[2],
+                        fxyz[0] + dxyz[0], fxyz[1] + dxyz[1], fxyz[2] + dxyz[2]
+                    );
                 }
 
                 if (mijk[2] < -0.5 || mijk[2] > moving->dim[2] - 0.5) continue;

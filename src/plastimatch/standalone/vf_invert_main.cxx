@@ -8,6 +8,7 @@
 #include "mha_io.h"
 #include "plm_clp.h"
 #include "plm_int.h"
+#include "plm_image.h"
 #include "plm_image_header.h"
 #include "plm_math.h"
 #include "vf_convolve.h"
@@ -225,6 +226,10 @@ do_vf_invert_new (Vf_invert_parms* parms)
 
     /* Write the output */
     write_mha (parms->vf_out_fn.c_str(), vf_invert.get_output_volume());
+#if defined (commentout)
+    plm_image_save_vol (parms->vf_out_fn.c_str(), 
+        vf_invert.get_output_volume());
+#endif
 }
 
 void

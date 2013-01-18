@@ -140,6 +140,7 @@ public:
     void convert (Plm_image_type new_type);
     void convert_to_original_type (void);
     void convert_to_itk (void);
+    void convert_to_itk_float_field (void);
     void convert_to_itk_uchar_vec (void);
 
     /* geometry */
@@ -166,6 +167,6 @@ PLMBASE_API Plm_image* plm_image_load (
     const std::string& fname, Plm_image_type type);
 PLMBASE_API Plm_image* plm_image_load_native (const char* fname);
 PLMBASE_API Plm_image* plm_image_load_native (const std::string& fname);
-PLMBASE_API void plm_image_save_vol (const char* fname, Volume *vol);
+PLMBASE_API void plm_image_save_vol (const char* fname, const Volume *vol);
 
 #endif

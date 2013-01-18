@@ -198,7 +198,9 @@ Plm_image_header::expand_to_contain (
     const FloatPoint3DType& position)
 {
     /* Compute index */
-    
+
+    /* GCS FIX: We need to fix get_position() as well 
+       to use native direction cosines instead of ITK dc. */
 }
 
 void 
@@ -317,6 +319,8 @@ Plm_image_header::print (void) const
 {
     ImageRegionType::SizeType itk_size;
     itk_size = m_region.GetSize ();
+    float dc[9];
+    this->get_direction_cosines (dc);
 
     printf ("Origin =");
     for (unsigned int d = 0; d < 3; d++) {
@@ -333,11 +337,7 @@ Plm_image_header::print (void) const
     printf ("\nDirection =");
     for (unsigned int d1 = 0; d1 < 3; d1++) {
 	for (unsigned int d2 = 0; d2 < 3; d2++) {
-#if defined (PLM_CONFIG_ALT_DCOS)
-	    printf (" %g", m_direction[d2][d1]);
-#else
-	    printf (" %g", m_direction[d1][d2]);
-#endif
+	    printf (" %g", dc[d1*3+d2]);
 	}
     }
 
@@ -360,6 +360,8 @@ Plm_image_header::get_index (const FloatPoint3DType& pos) const
 FloatPoint3DType
 Plm_image_header::get_position (const float index[3]) const
 {
+    /* GCS FIX: Change to use native direction cosines instead of ITK dc
+       -- needed to avoid ALT_DCOS mess. */
     FloatPoint3DType pos;
     for (int d = 0; d < 3; d++) {
         pos[d] = 0.f;

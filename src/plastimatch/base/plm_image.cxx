@@ -540,6 +540,10 @@ Plm_image::set_gpuit (Volume *v)
 	m_original_type = PLM_IMG_TYPE_GPUIT_FLOAT;
 	m_type = PLM_IMG_TYPE_GPUIT_FLOAT;
 	break;
+    case PT_VF_FLOAT_INTERLEAVED:
+	m_original_type = PLM_IMG_TYPE_GPUIT_FLOAT_FIELD;
+	m_type = PLM_IMG_TYPE_GPUIT_FLOAT_FIELD;
+        break;
     case PT_UCHAR_VEC_INTERLEAVED:
 	m_original_type = PLM_IMG_TYPE_GPUIT_UCHAR_VEC;
 	m_type = PLM_IMG_TYPE_GPUIT_UCHAR_VEC;
@@ -881,6 +885,19 @@ Plm_image::convert_to_itk_double ()
 	return;
     }
     this->m_type = PLM_IMG_TYPE_ITK_DOUBLE;
+}
+
+void
+Plm_image::convert_to_itk_float_field (void)
+{
+    switch (m_type) {
+    default:
+	print_and_exit (
+	    "Error: unhandled conversion from %s to itk_float_field\n",
+	    plm_image_type_string (this->m_type));
+	return;
+    }
+    this->m_type = PLM_IMG_TYPE_ITK_FLOAT_FIELD;
 }
 
 void
@@ -1385,7 +1402,7 @@ Plm_image::set_metadata (char *tag, char *value)
    http://blog.placidhacker.com/2008/11/reference-counting-in-c.html
    for an example of ref counting in C.  */
 void
-plm_image_save_vol (const char* fname, Volume *vol)
+plm_image_save_vol (const char* fname, const Volume *vol)
 {
     Volume *v2 = volume_clone (vol);
     Plm_image pli;

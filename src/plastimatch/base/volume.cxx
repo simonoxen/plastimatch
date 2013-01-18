@@ -34,13 +34,6 @@
 	free (old_img);							\
     }
 
-void
-directions_cosine_debug (const float *m)
-{
-    lprintf ("%8f %8f %8f\n%8f %8f %8f\n%8f %8f %8f\n",
-	m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8]);
-}
-
 Volume::Volume () {
     init ();
 }
@@ -85,9 +78,6 @@ Volume::init ()
         dim[d] = 0;
         offset[d] = 0;
         spacing[d] = 0;
-    }
-    for (int d = 0; d < 9; d++) {
-        inverse_direction_cosines[d] = 0;
     }
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
@@ -235,27 +225,15 @@ Volume::set_direction_cosines (
 
     this->direction_cosines.set (dc);
 
-    // NSH version of step and proj
-    // works ok for matrix, still needs testing for spacing
-    volume_matrix3x3inverse (this->inverse_direction_cosines, 
-	this->direction_cosines);
-
+    const float* inv_dc = this->direction_cosines.get_inverse ();
     for (int i = 0; i < 3; i++) {
 	for (int j = 0; j < 3; j++) {
-#if defined (PLM_CONFIG_ALT_DCOS)
 	    this->step[i][j] = this->direction_cosines[3*i+j] 
 		* this->spacing[i];
-	    this->proj[i][j] = this->inverse_direction_cosines[3*i+j] 
+	    this->proj[i][j] = inv_dc[3*i+j] 
 		/ this->spacing[j];
-#else
-	    this->step[i][j] = this->direction_cosines[3*i+j] 
-		* this->spacing[j];
-	    this->proj[i][j] = this->inverse_direction_cosines[3*i+j] 
-		/ this->spacing[i];
-#endif
 	}
     }
-
 }
 
 Volume*
@@ -268,7 +246,7 @@ volume_clone_empty (Volume* ref)
 }
 
 Volume*
-volume_clone (Volume* ref)
+volume_clone (const Volume* ref)
 {
     Volume* vout;
     vout = new Volume (ref->dim, ref->offset, ref->spacing, 
@@ -642,6 +620,7 @@ volume_scale (Volume* vol, float scale)
 
 /* This is the old algorithm which doesn't respect direction cosines */
 /* In mm coordinates */
+#if defined (commentout)
 void
 volume_calc_grad_no_dcos (Volume* vout, const Volume* vref)
 {
@@ -689,7 +668,57 @@ volume_calc_grad_no_dcos (Volume* vout, const Volume* vref)
 	}
     }
 }
+#endif
 
+void
+Volume::direction_cosines_debug ()
+{
+    lprintf ("org:%f %f %f\n",
+	offset[0],
+	offset[1],
+	offset[2]
+    );
+    lprintf ("spac:%f %f %f\n",
+	spacing[0],
+	spacing[1],
+	spacing[2]
+    );
+    lprintf ("dc:\n%8f %8f %8f\n%8f %8f %8f\n%8f %8f %8f\n",
+	direction_cosines[0],
+	direction_cosines[1],
+	direction_cosines[2],
+	direction_cosines[3],
+	direction_cosines[4],
+	direction_cosines[5],
+	direction_cosines[6],
+	direction_cosines[7],
+	direction_cosines[8]
+    );
+    lprintf ("step:\n%8f %8f %8f\n%8f %8f %8f\n%8f %8f %8f\n",
+	step[0][0],
+	step[0][1],
+	step[0][2],
+	step[1][0],
+	step[1][1],
+	step[1][2],
+	step[2][0],
+	step[2][1],
+	step[2][2]
+    );
+    lprintf ("proj:\n%8f %8f %8f\n%8f %8f %8f\n%8f %8f %8f\n",
+	proj[0][0],
+	proj[0][1],
+	proj[0][2],
+	proj[1][0],
+	proj[1][1],
+	proj[1][2],
+	proj[2][0],
+	proj[2][1],
+	proj[2][2]
+    );
+}
+
+/* In mm coordinates */
 void
 volume_calc_grad_dcos (Volume* vout, const Volume* vref)
 {
@@ -703,52 +732,7 @@ volume_calc_grad_dcos (Volume* vout, const Volume* vref)
     out_img = (float*) vout->img;
     ref_img = (float*) vref->img;
 
-    lprintf ("Direction cosines: "
-	"vout = %f %f %f %f %f %f\n"
-	"vref = %f %f %f %f %f %f\n",
-	vout->direction_cosines[0],
-	vout->direction_cosines[1],
-	vout->direction_cosines[2],
-	vout->direction_cosines[3],
-	vout->direction_cosines[4],
-	vout->direction_cosines[5],
-	vref->direction_cosines[0],
-	vref->direction_cosines[1],
-	vref->direction_cosines[2],
-	vref->direction_cosines[3],
-	vref->direction_cosines[4],
-	vref->direction_cosines[5]
-    );
-    lprintf ("spac: "
-	"vout = %f %f %f ...\n"
-	"vref = %f %f %f ...\n",
-	vout->spacing[0],
-	vout->spacing[1],
-	vout->spacing[2],
-	vref->spacing[0],
-	vref->spacing[1],
-	vref->spacing[2]
-    );
-    lprintf ("proj: "
-	"vout = %f %f %f ...\n"
-	"vref = %f %f %f ...\n",
-	vout->proj[0][0],
-	vout->proj[0][1],
-	vout->proj[0][2],
-	vref->proj[0][0],
-	vref->proj[0][1],
-	vref->proj[0][2]
-    );
-    lprintf ("step: "
-	"vout = %f %f %f ...\n"
-	"vref = %f %f %f ...\n",
-	vout->step[0][0],
-	vout->step[0][1],
-	vout->step[0][2],
-	vref->step[0][0],
-	vref->step[0][1],
-	vref->step[0][2]
-    );
+    const float *inv_dc = vref->direction_cosines.get_inverse();
 
     plm_long v = 0;
     for (k = 0; k < vref->dim[2]; k++) {
@@ -774,7 +758,8 @@ volume_calc_grad_dcos (Volume* vout, const Volume* vref)
 		out_img[gi] = 0.f;
 		out_img[gj] = 0.f;
 		out_img[gk] = 0.f;
-		
+
+#if defined (commentout)		
 		idx_p = volume_index (vref->dim, i_p, j, k);
 		idx_n = volume_index (vref->dim, i_n, j, k);
 		diff = (float) (ref_img[idx_n] - ref_img[idx_p]) 
@@ -798,6 +783,31 @@ volume_calc_grad_dcos (Volume* vout, const Volume* vref)
 		out_img[gi] += diff * vref->direction_cosines[2*3+0];
 		out_img[gj] += diff * vref->direction_cosines[2*3+1];
 		out_img[gk] += diff * vref->direction_cosines[2*3+2];
+#endif
+
+		idx_p = volume_index (vref->dim, i_p, j, k);
+		idx_n = volume_index (vref->dim, i_n, j, k);
+		diff = (float) (ref_img[idx_n] - ref_img[idx_p]) 
+		    / 2.0 / vref->spacing[0];
+		out_img[gi] += diff * inv_dc[0*3+0];
+		out_img[gj] += diff * inv_dc[1*3+0];
+		out_img[gk] += diff * inv_dc[2*3+0];
+
+		idx_p = volume_index (vref->dim, i, j_p, k);
+		idx_n = volume_index (vref->dim, i, j_n, k);
+		diff = (float) (ref_img[idx_n] - ref_img[idx_p]) 
+		    / 2.0 / vref->spacing[1];
+		out_img[gi] += diff * inv_dc[0*3+1];
+		out_img[gj] += diff * inv_dc[1*3+1];
+		out_img[gk] += diff * inv_dc[2*3+1];
+
+		idx_p = volume_index (vref->dim, i, j, k_p);
+		idx_n = volume_index (vref->dim, i, j, k_n);
+		diff = (float) (ref_img[idx_n] - ref_img[idx_p]) 
+		    / 2.0 / vref->spacing[2];
+		out_img[gi] += diff * inv_dc[0*3+2];
+		out_img[gj] += diff * inv_dc[1*3+2];
+		out_img[gk] += diff * inv_dc[2*3+2];
 	    }
 	}
     }
@@ -868,32 +878,4 @@ volume_difference (Volume* vol, Volume* warped)
 	}
     }
     return temp;
-}
-
-void 
-volume_matrix3x3inverse (float *out, const float *m)
-{
-    float det;
-
-    det =  
-	m[0]*(m[4]*m[8]-m[5]*m[7])
-	-m[1]*(m[3]*m[8]-m[5]*m[6])
-	+m[2]*(m[3]*m[7]-m[4]*m[6]);
-
-    if (fabs(det)<1e-8) {
-	directions_cosine_debug (m);
-	print_and_exit ("Error: singular matrix of direction cosines\n");
-    }
-
-    out[0]=  (m[4]*m[8]-m[5]*m[7]) / det;
-    out[1]= -(m[1]*m[8]-m[2]*m[7]) / det;
-    out[2]=  (m[1]*m[5]-m[2]*m[4]) / det;
-
-    out[3]= -(m[3]*m[8]-m[5]*m[6]) / det;
-    out[4]=  (m[0]*m[8]-m[2]*m[6]) / det;
-    out[5]= -(m[0]*m[5]-m[2]*m[3]) / det;
-
-    out[6]=  (m[3]*m[7]-m[4]*m[6]) / det;
-    out[7]= -(m[0]*m[7]-m[1]*m[6]) / det;
-    out[8]=  (m[0]*m[4]-m[1]*m[3]) / det;
 }

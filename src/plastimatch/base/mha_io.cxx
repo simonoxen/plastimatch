@@ -76,10 +76,14 @@ write_mha_internal (
 	exit (-1);
     }
     fprintf (fp, mha_header, 
-	vol->direction_cosines[0], vol->direction_cosines[1], 
-	vol->direction_cosines[2], vol->direction_cosines[3], 
-	vol->direction_cosines[4], vol->direction_cosines[5], 
-	vol->direction_cosines[6], vol->direction_cosines[7], 
+	vol->direction_cosines[0], 
+        vol->direction_cosines[3], 
+	vol->direction_cosines[6], 
+        vol->direction_cosines[1], 
+	vol->direction_cosines[4], 
+        vol->direction_cosines[7], 
+	vol->direction_cosines[2], 
+        vol->direction_cosines[5], 
 	vol->direction_cosines[8], 
 	vol->offset[0], vol->offset[1], vol->offset[2], 
 	vol->spacing[0], vol->spacing[1], vol->spacing[2], 
@@ -149,8 +153,9 @@ read_mha_internal (
 	    continue;
 	}
 	if (sscanf (linebuf, "TransformMatrix = %g %g %g %g %g %g %g %g %g",
-		&dc[0], &dc[1], &dc[2], &dc[3], &dc[4], &dc[5], 
-		&dc[6], &dc[7], &dc[8]) == 9)
+		&dc[0], &dc[3], &dc[6], 
+                &dc[1], &dc[4], &dc[7], 
+		&dc[2], &dc[5], &dc[8]) == 9)
 	{
 	    have_direction_cosines = true;
 	    continue;

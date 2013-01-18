@@ -43,7 +43,6 @@ public:
     float offset[3];
     float spacing[3];
     Direction_cosines direction_cosines;
-    float inverse_direction_cosines[9];
     float step[3][3];           // direction_cosines * spacing
     float proj[3][3];           // inv direction_cosines / spacing
 
@@ -113,6 +112,8 @@ public:
       in the raw array of values.
     */
     void set_direction_cosines (const float direction_cosines[9]);
+
+    void direction_cosines_debug ();
 protected:
     void allocate (void);
     void init ();
@@ -122,7 +123,7 @@ PLMBASE_C_API void vf_convert_to_interleaved (Volume* ref);
 PLMBASE_C_API void vf_convert_to_planar (Volume* ref, int min_size);
 PLMBASE_C_API void vf_pad_planar (Volume* vol, int size);  // deprecated?
 PLMBASE_C_API Volume* volume_clone_empty (Volume* ref);
-PLMBASE_C_API Volume* volume_clone (Volume* ref);
+PLMBASE_C_API Volume* volume_clone (const Volume* ref);
 PLMBASE_C_API void volume_convert_to_float (Volume* ref);
 PLMBASE_C_API void volume_convert_to_int32 (Volume* ref);
 PLMBASE_C_API void volume_convert_to_short (Volume* ref);
@@ -134,7 +135,6 @@ PLMBASE_C_API Volume* volume_make_gradient (Volume* ref);
 PLMBASE_C_API void volume_matrix3x3inverse (float *out, const float *m);
 PLMBASE_C_API void volume_scale (Volume *vol, float scale);
 PLMBASE_C_API Volume* volume_warp (Volume* vout, Volume* vin, Volume* vf);
-PLMBASE_C_API void directions_cosine_debug (float *m);
 
 
 #endif

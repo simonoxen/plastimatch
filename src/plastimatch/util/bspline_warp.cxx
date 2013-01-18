@@ -180,49 +180,6 @@ bspline_warp_dcos (
     T* vout_img = (T*) vout->img;
     T* m_img = (T*) moving->img;
 
-#if defined (commentout)
-    printf ("Direction cosines: "
-        "vout = %f %f %f ...\n"
-        "mov = %f %f %f ...\n",
-        vout->direction_cosines[0],
-        vout->direction_cosines[1],
-        vout->direction_cosines[2],
-        moving->direction_cosines[0],
-        moving->direction_cosines[1],
-        moving->direction_cosines[2]
-    );
-    printf ("spac: "
-        "vout = %f %f %f ...\n"
-        "mov = %f %f %f ...\n",
-        vout->spacing[0],
-        vout->spacing[1],
-        vout->spacing[2],
-        moving->spacing[0],
-        moving->spacing[1],
-        moving->spacing[2]
-    );
-    printf ("proj: "
-        "vout = %f %f %f ...\n"
-        "mov = %f %f %f ...\n",
-        vout->proj[0][0],
-        vout->proj[0][1],
-        vout->proj[0][2],
-        moving->proj[0][0],
-        moving->proj[0][1],
-        moving->proj[0][2]
-    );
-    printf ("step: "
-        "vout = %f %f %f ...\n"
-        "mov = %f %f %f ...\n",
-        vout->step[0][0],
-        vout->step[0][1],
-        vout->step[0][2],
-        moving->step[0][0],
-        moving->step[0][1],
-        moving->step[0][2]
-    );
-#endif
-
     /* A few sanity checks */
     if (vout->pix_type != PIX_TYPE) {
         print_and_exit ("Error: bspline_warp pix type mismatch\n");
@@ -367,19 +324,19 @@ bspline_warp (
     switch (moving->pix_type)
     {
     case PT_UCHAR:
-        bspline_warp_internal<unsigned char, PT_UCHAR> (
+        bspline_warp_dcos<unsigned char, PT_UCHAR> (
             vout, vf_out, bxf, moving, linear_interp, default_val);
         break;
     case PT_SHORT:
-        bspline_warp_internal<short, PT_SHORT> (
+        bspline_warp_dcos<short, PT_SHORT> (
             vout, vf_out, bxf, moving, linear_interp, default_val);
         break;
     case PT_UINT16:
-        bspline_warp_internal<uint16_t, PT_UINT16> (
+        bspline_warp_dcos<uint16_t, PT_UINT16> (
             vout, vf_out, bxf, moving, linear_interp, default_val);
         break;
     case PT_UINT32:
-        bspline_warp_internal<uint32_t, PT_UINT32> (
+        bspline_warp_dcos<uint32_t, PT_UINT32> (
             vout, vf_out, bxf, moving, linear_interp, default_val);
         break;
     case PT_FLOAT:
