@@ -46,7 +46,7 @@ before you can build plastimatch.  Download from here:
   http://cmake.org/
 
 Cmake 2.6 or higher is required.  Cmake 2.8 is required if you 
-want to build the Slicer plugin, or if you want to compile reg-2-3.
+want to compile reg-2-3.
 
 C/C++ Compiler (required)
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -58,7 +58,7 @@ from here:
 
   http://www.microsoft.com/Express/
 
-Microsoft Visual Studio 2010 is also fine, but you will not 
+Microsoft Visual Studio 2010 or 2012 are also fine, but you will not 
 be able to use CUDA.  
 
 You may also use the MinGW compiler.
@@ -95,7 +95,8 @@ Here is the patch:
 Note, if you are using Debian, Ubuntu, or related distributions, 
 the ITK package provided by the repository is compiled against 
 GDCM 2.X instead of GDCM 1.X.  You can use this ITK, but you 
-will not be able to import or export DICOM-RT.
+should also install dcmtk and dcmtk-dev if you wish to 
+import or export in DICOM-RT.
 
 VTK (optional)
 ^^^^^^^^^^^^^^
@@ -135,21 +136,11 @@ correct CUDA version to install/upgrade::
   CUDA 3.2              Supported
   CUDA 4.0              Supported
   CUDA 4.1              Supported
+  CUDA 5.0              Unknown
 
 Download CUDA from here:
 
   http://developer.nvidia.com/object/cuda_archive.html
-
-3D Slicer (optional)
-^^^^^^^^^^^^^^^^^^^^
-3D Slicer is needed if you want to build the Slicer plugin.  
-Download Slicer from here:
-
-  http://slicer.org/
-
-Slicer version 3.6 and 4.0 are supported.
-See the section below for detailed instructions on how to build the 
-3D Slicer plugin.
 
 FFTW (optional)
 ^^^^^^^^^^^^^^^
@@ -165,52 +156,21 @@ See this page for details:
 
   http://www.fftw.org/install/windows.html  
 
-Fortran (optional)
-^^^^^^^^^^^^^^^^^^
-Plastimatch requires fortran, which can be satisfied with either 
-a real fortran compiler, or with the f2c library.  If neither of these 
-are installed, plastimatch supplies its own version of f2c.  You can 
-hint which of these is used using the following CMake options::
-
-  Option                 Default      Description
-  ------                 -------      ------------
-  PLM_PREFER_F2C         OFF          Prefer the f2c library over fortran
-  PLM_PREFER_SYSTEM_F2C  ON           Prefer the system f2c library over
-                                        the included f2c library
-
 DCMTK (optional)
 ^^^^^^^^^^^^^^^^
-DCMTK is needed for mondoshot and a few other small utilities.  On Unix, 
-it is a breeze, but Windows can be tricky.  My experience is 
-that the pre-built binaries don't seem to work, and you will 
-get the best results if you build it yourself.
-Here is a rough guide how 
-to compile and use on windows:
+DCMTK is needed for DICOM-RT support with ITK 4.  
+The supported version is 3.6.  On linux, feel free to 
+use the dcmtk that comes from your package manager (that's what I do).
 
-Building dcmtk 3.5.4 on windows
+There are special considerations to building dcmtk:
 
-#. Download and unpack source code for 3.5.4
-#. Run CMake - set WITH_LIBPNG, WITH_LIBTIFF, WITH_ZLIB to OFF
-#. Build
-#. Install - this will create a directory "dcmtk-3.5.4-win32-i386" 
-   with the same parent as the source directory
-#. Run CMake on plastimatch - set DCMTK_DIR to the install directory
-
-Building dcmtk 3.6 on windows
-
-#. Download and unpack source code
-#. Run CMake - set WITH_LIBPNG, WITH_LIBTIFF, WITH_ZLIB to OFF
-#. Set install directory (if desired); I use $HOME/build/dcmtk-3.6.0-install
-#. Build DCMTK
-#. Run CMake on plastimatch - set DCMTK_DIR to the install directory
-
-Building dcmtk 3.6 on linux x86_64 with gcc
-
-#. Download and unpack source code
-#. Run CMake - add -fPIC to CMAKE_CXX_FLAGS and CMAKE_C_FLAGS
-#. Set install directory (if desired); I use $HOME/build/dcmtk-3.6.0-install
-#. Build DCMTK
-#. Run CMake on plastimatch - set DCMTK_DIR to the install directory
+#. PNG, TIFF, and ZLIB are not required
+#. You will need to install dcmtk, so set install directory to something
+   that works for you; I use $HOME/build/dcmtk-3.6.0-install
+#. On linux x86_64 platforms, you need to add -fPIC to 
+   CMAKE_CXX_FLAGS and CMAKE_C_FLAGS
+#. After building, you need to install
+#. When you run cmake on plastimatch, set DCMTK_DIR to the install directory
 
 
 WxWidgets (optional)
@@ -313,109 +273,9 @@ Then build as follows:
 
 Compiling the 3D Slicer extensions
 ----------------------------------
+The 3D Slicer extension is now included in SlicerRT.  Please see 
+the developer instructions on the SlicerRT assembla page for 
+detailed instructions.
 
-#. Build slicer from source.  Use either slicer 3.6 or slicer 4.X.
+https://www.assembla.com/spaces/slicerrt/wiki/SlicerRt_developers_page
 
-   If building Slicer 3.6:
-
-   http://www.slicer.org/slicerWiki/index.php/Slicer3:Build_Instructions
-
-   If you are on Vista, you need to turn off UAC.
-   If you are on Vista or 7, you need to run cygwin as administrator
-   I suggest these options::
-
-     ./Slicer3/Scripts/getbuildtest.tcl --release -t ""
-
-   If building Slicer 4.0:
-
-   http://www.slicer.org/slicerWiki/index.php/Documentation/4.1/Developers/Build_Instructions
-
-   The slicer build takes a while.  Let it run overnight.
-
-#. Run slicer, just make sure the build went ok.
-
-#. Make a new build directory for plastimatch.  
-
-#. Run CMake
-
-   Configure.
-   Set Slicer_DIR to the Slicer-build directory.
-   You don't need to set ITK -- the script automatically finds and uses Slicer's ITK.
-   Configure again.
-   Generate.
-
-#. Build plastimatch.  You should find the plugins in the following locations:
-
-   For Slicer 3 (windows):
-
-   lib/Slicer3/Plugins/Release
-
-   For Slicer 4 (windows):
-
-   lib/Slicer-4.X/cli-modules/Release
-   lib/Slicer-4.X/qt-loadable-modules/Release
-
-#. Fire up slicer.  You need to tell slicer where the plugins are located
-
-   View -> Application Settings -> Module Settings
-   Click on the "Add a preset" icon
-   Browse to (e.g.) the lib/Slicer3/Plugins/Release directory
-   Click Close
-   Restart slicer
-
-#. You should see the plastimatch plugin in the module selector
-
-.. METHOD TWO:
-
-.. #. Build 3D Slicer as described above.
-
-.. #. Use slicer's extension builder script to make the plugin::
-
-..      ./Slicer3/Scripts/extend.tcl --release -t "" plastimatch-slicer
-
-.. #. You should find the plugins here:
-
-..    Slicer3-ext/plastimatch-slicer-build/lib/Slicer3/Plugins/Release
-
-.. #. Plugins get uploaded here:
-
-..    http://ext.slicer.org/ext/trunk
-
-..    Your plugin gets put in one of the subdirectories, organized by 
-..    the platform and the svn version number of slicer.  
-
-.. #. Add module path as described above -OR- download using extension manager
-
-
-.. JAS 09.03.2010
-.. The below has been commented out because it is now automatically
-.. performed by my PLM_nvcc-check.cmake script.
-
-.. Special Instructions For Linux Systems Using gcc-4.4
-   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. These instructions are for Linux users who desire GPU acceleration via CUDA.
-   Due to an incompatibility between the Nvidia CUDA Compiler (nvcc) and version
-   4.4 of the GNU C Compiler (gcc), Linux users must ensure that gcc-4.3 is
-   available and that nvcc is set to use it.  If your system already uses version
-   4.3 of gcc by default (run gcc --version to check), you may ignore these
-   instructions.
-
-.. Debian/Ubuntu users may install gcc version 4.3 by running the following from
-   the command console:
-
-..  $ sudo apt-get install gcc-4.3
-
-.. Now, within the CMake curses frontend (ccmake) hit 't' to toggle advanced mode
-   ON.  You will be presented with many new flags.  Scroll down using the arrow
-   keys until you find CUDA_NVCC_FLAGS.  Once CUDA_NVCC_FLAGS is selected, hit
-   enter and type the following into the field:
-
-..  --compiler-bindir=PATH_TO_GCC_4.3
-
-.. For example, under Ubuntu 9.04 with gcc-4.3 installed, one would enter:
-
-..  --compiler-bindir=/usr/bin/gcc-4.3
-
-.. You can now hit 't' again to hide the advanced mode flags.  Now you can
-   continue the build process as usual by pressing "c" to configure.
