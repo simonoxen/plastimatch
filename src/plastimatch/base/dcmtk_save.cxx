@@ -49,6 +49,14 @@ void Dcmtk_save::set_dose (Volume *vol)
     this->dose = vol;
 }
 
+void Dcmtk_save::set_dose (Volume *vol, Metadata *meta)
+{
+    /* GCS FIX: Need to actually use the metadata.  
+       This is for TOPAS, which will pass the metadata of the 
+       referenced CT. */
+    this->set_dose (vol);
+}
+
 void Dcmtk_save::set_image (Plm_image* img)
 {
     this->img = img;

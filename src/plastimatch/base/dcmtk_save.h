@@ -23,6 +23,7 @@ public:
     void set_rt_study (Dicom_rt_study *drs);
     void set_cxt (Rtss_structure_set *cxt);
     void set_dose (Volume *vol);
+    void set_dose (Volume *vol, Metadata *meta);
     void set_image (Plm_image* img);
 public:
     Dcmtk_save_private *d_ptr;
