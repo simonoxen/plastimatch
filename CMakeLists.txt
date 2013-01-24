@@ -494,11 +494,9 @@ find_library (TERMCAP_LIBRARY termcap)
 ##  Only use local specfun
 ##-----------------------------------------------------------------------------
 set (SPECFUN_FOUND FALSE)
-if (NOT BUILD_DEBIAN)
-  add_subdirectory (libs/specfun)
-  link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/specfun)
-  set (SPECFUN_FOUND TRUE)
-endif ()
+add_subdirectory (libs/specfun)
+link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/specfun)
+set (SPECFUN_FOUND TRUE)
 
 ##-----------------------------------------------------------------------------
 ##  Only use local msinttypes
