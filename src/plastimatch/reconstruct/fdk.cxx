@@ -181,6 +181,7 @@ get_pixel_value_c (Proj_image* cbi, double r, double c)
 {
     int rr, cc;
 
+#if defined (commentout)
     r += 0.5;
     if (r < 0) return 0.0;
     rr = (int) r;
@@ -190,6 +191,17 @@ get_pixel_value_c (Proj_image* cbi, double r, double c)
     if (c < 0) return 0.0;
     cc = (int) c;
     if (cc >= cbi->dim[0]) return 0.0;
+#endif
+
+    r += 0.5;
+    if (r < 0) return 0.0;
+    if (r >= (double) cbi->dim[1]) return 0.0;
+    rr = (int) r;
+
+    c += 0.5;
+    if (c < 0) return 0.0;
+    if (c >= (double) cbi->dim[0]) return 0.0;
+    cc = (int) c;
 
     return cbi->img[rr*cbi->dim[0] + cc];
 }

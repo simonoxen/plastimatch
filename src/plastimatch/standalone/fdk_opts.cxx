@@ -188,16 +188,18 @@ fdk_parse_args (Fdk_parms* parms, int argc, char* argv[])
 	    }
 	}
 	else if (!strcmp (argv[i], "-x")) {
-	    if (i == (argc-1) || argv[i+1][0] == '-') {
-		fprintf(stderr, "option %s requires an argument\n", argv[i]);
-		exit(1);
-	    }
 	    i++;
 	    rc = sscanf (argv[i], "%f %f", 
 		&parms->xy_offset[0],
 		&parms->xy_offset[1]);
 	    if (rc != 2) {
-		print_usage ();
+                if (i == (argc-1) || argv[i+1][0] == '-') {
+                    fprintf(stderr, 
+                        "option %s requires an argument\n", argv[i]);
+                    exit(1);
+                } else {
+                    print_usage ();
+                }
 	    }
 	}
 	else if (!strcmp (argv[i], "-z")) {
