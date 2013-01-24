@@ -35,6 +35,7 @@
 
 class Mabs_private {
 public:
+    /* These are the input parameters */
     const Mabs_parms *parms;
     
     /* atlas_dir_list is a list of the input directories where the 
@@ -66,11 +67,12 @@ public:
 
     /* You can set these variables to save some intermediate data 
        for debugging and tuning */
+    bool compute_distance_map;
     bool write_weight_files;
+    bool write_distance_map;
     bool write_registration_files;
 
     /* These files are created by the training procedure */
-    FILE *reg_dice_fp;
     FILE *seg_dice_fp;
 
     /* While looping through atlases, the voting information is stored here */
@@ -89,7 +91,9 @@ public:
 public:
     Mabs_private () {
         parms = 0;
+        compute_distance_map = true;
         write_weight_files = false;
+        write_distance_map = true;
         write_registration_files = true;
         have_ref_structure = false;
         this->reset_timers ();
@@ -498,28 +502,30 @@ Mabs::run_registration ()
                 timer.start();
                 lprintf ("Computing distance map...\n");
                 Distance_map dmap;
-                dmap.set_input_image (structure_image);
-                dmap.run ();
-                FloatImageType::Pointer dmap_image = dmap.get_output_image ();
-                d_ptr->time_dmap += timer.report();
+                if (d_ptr->compute_distance_map) {
+                    dmap.set_input_image (structure_image);
+                    dmap.run ();
+                    FloatImageType::Pointer dmap_image 
+                        = dmap.get_output_image ();
+                    d_ptr->time_dmap += timer.report();
 
-                /* Truncate the dmap.  This is to save disk space. 
-                   Maybe we won't need this if we can crop. */
-                Adjustment_list al;
-                al.push_back (std::make_pair (
-                        -std::numeric_limits<float>::max(), 0));
-                al.push_back (std::make_pair (-400, -400));
-                al.push_back (std::make_pair (400, 400));
-                al.push_back (std::make_pair (
-                        std::numeric_limits<float>::max(), 0));
-                itk_adjust (dmap_image, al);
-
-                if (d_ptr->write_registration_files) {
-                    timer.start();
-                    fn = string_format ("%s/dmap_%s.nrrd", 
-                        curr_output_dir.c_str(), mapped_name.c_str());
-                    itk_image_save (dmap_image, fn.c_str());
-                    d_ptr->time_io += timer.report();
+                    /* Truncate the dmap.  This is to save disk space. 
+                       Maybe we won't need this if we can crop. */
+                    Adjustment_list al;
+                    al.push_back (std::make_pair (
+                            -std::numeric_limits<float>::max(), 0));
+                    al.push_back (std::make_pair (-400, -400));
+                    al.push_back (std::make_pair (400, 400));
+                    al.push_back (std::make_pair (
+                            std::numeric_limits<float>::max(), 0));
+                    itk_adjust (dmap_image, al);
+                    if (d_ptr->write_distance_map) {
+                        timer.start();
+                        fn = string_format ("%s/dmap_%s.nrrd", 
+                            curr_output_dir.c_str(), mapped_name.c_str());
+                        itk_image_save (dmap_image, fn.c_str());
+                        d_ptr->time_io += timer.report();
+                    }
                 }
 
                 /* Extract reference structure as binary mask. */
@@ -548,8 +554,14 @@ Mabs::run_registration ()
                         (int) dice.get_false_positives(),
                         (int) dice.get_false_negatives());
                     lprintf ("%s", reg_log_string.c_str());
-                    fprintf (d_ptr->reg_dice_fp, 
-                        "%s", reg_log_string.c_str());
+
+                    /* Update reg_dice file */
+                    std::string reg_dice_log_fn = string_format (
+                        "%s/reg_dice.csv",
+                        d_ptr->traindir_base.c_str());
+                    FILE *fp = fopen (reg_dice_log_fn.c_str(), "a");
+                    fprintf (fp, "%s", reg_log_string.c_str());
+                    fclose (fp);
                 }
                 d_ptr->time_dice += timer.report();
             }
@@ -848,7 +860,7 @@ Mabs::run ()
 }
 
 void
-Mabs::train ()
+Mabs::train_internal (bool registration_only)
 {
     Plm_timer timer;
     Plm_timer timer_total;
@@ -869,12 +881,11 @@ Mabs::train ()
     this->load_atlas_dir_list ();
 
     /* Open output files for dice logging */
-    std::string reg_dice_log_fn = string_format ("%s/reg_dice.txt",
-        d_ptr->traindir_base.c_str());
-    d_ptr->reg_dice_fp = fopen (reg_dice_log_fn.c_str(), "w+");
-    std::string seg_dice_log_fn = string_format ("%s/seg_dice.txt",
-        d_ptr->traindir_base.c_str());
-    d_ptr->seg_dice_fp = fopen (seg_dice_log_fn.c_str(), "w+");
+    if (!registration_only) {
+        std::string seg_dice_log_fn = string_format ("%s/seg_dice.csv",
+            d_ptr->traindir_base.c_str());
+        d_ptr->seg_dice_fp = fopen (seg_dice_log_fn.c_str(), "w+");
+    }
 
     /* Write some extra files when training */
     d_ptr->write_weight_files = true;
@@ -908,11 +919,14 @@ Mabs::train ()
 
         /* Run the segmentation */
         this->run_registration ();
-        this->run_segmentation ();
+        if (!registration_only) {
+            this->run_segmentation ();
+        }
     }
 
-    fclose (d_ptr->reg_dice_fp);
-    fclose (d_ptr->seg_dice_fp);
+    if (!registration_only) {
+        fclose (d_ptr->seg_dice_fp);
+    }
 
     lprintf ("Registration time:    %10.1f seconds\n", d_ptr->time_reg);
     lprintf ("Warping time (img):   %10.1f seconds\n", d_ptr->time_warp_img);
@@ -926,4 +940,20 @@ Mabs::train ()
     lprintf ("MABS training complete\n");
 
     logfile_close ();
+}
+
+void
+Mabs::train ()
+{
+    d_ptr->compute_distance_map = true;
+    d_ptr->write_distance_map = true;
+    this->train_internal (false);
+}
+
+void
+Mabs::train_registration ()
+{
+    d_ptr->compute_distance_map = false;
+    d_ptr->write_distance_map = false;
+    this->train_internal (true);
 }

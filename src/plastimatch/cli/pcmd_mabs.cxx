@@ -14,10 +14,12 @@ public:
     Pstring cmd_file_fn;
     bool prep;
     bool train;
+    bool train_registration;
 public:
     Mabs_parms_pcmd () {
         prep = false;
         train = false;
+        train_registration = false;
     }
 };
 
@@ -44,7 +46,11 @@ parse_fn (
     parser->add_long_option ("", "prep", 
         "pre-process atlas", 0);
     parser->add_long_option ("", "train", 
-        "perform training to find the best parameters", 0);
+        "perform full training to find the best registration "
+        " and segmentation parameters", 0);
+    parser->add_long_option ("", "train-registration", 
+        "perform limited training to find the best registration "
+        "parameters only", 0);
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -68,6 +74,9 @@ parse_fn (
     if (parser->have_option ("train")) {
         parms->train = true;
     }
+    if (parser->have_option ("train-registration")) {
+        parms->train_registration = true;
+    }
 }
 
 void
@@ -87,6 +96,9 @@ do_command_mabs (int argc, char *argv[])
     }
     else if (parms.train) {
         mabs.train ();
+    }
+    else if (parms.train_registration) {
+        mabs.train_registration ();
     }
     else {
         mabs.run ();

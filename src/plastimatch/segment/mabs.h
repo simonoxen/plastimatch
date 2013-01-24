@@ -25,6 +25,7 @@ protected:
     void extract_reference_image (const std::string& mapped_name);
     void run_single_registration ();
     void run_registration ();
+    void run_segmentation ();
     void segmentation_vote (
         const std::string& registration_id, 
         const std::string& atlas_id, 
@@ -34,7 +35,7 @@ protected:
         const std::string& registration_id, 
         float rho, 
         float sigma);
-    void run_segmentation ();
+    void train_internal (bool registration_only);
 
 public:
     void set_parms (const Mabs_parms *parms);
@@ -42,8 +43,9 @@ public:
 
     void prep (const std::string& input_dir, const std::string& output_dir);
     void atlas_prep ();
-    void run ();
+    void train_registration ();
     void train ();
+    void run ();
 };
 
 #endif
