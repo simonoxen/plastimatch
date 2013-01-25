@@ -32,6 +32,37 @@
 #include "volume.h"
 #include "volume_macros.h"
 
+void
+bspline_score_normalize (
+    Bspline_optimize_data *bod,
+    double raw_score
+)
+{
+    Bspline_state *bst = bod->bst;
+    Bspline_score* ssd = &bst->ssd;
+    Bspline_xform *bxf = bod->bxf;
+
+    const int MIN_VOX = 1;
+
+    /* GCS FIX: This is partly correct.  It would be better if 
+       I could set the smetric to slightly more than the previous 
+       best score.  By setting to FLT_MAX, it causes the optimizer 
+       to exit prematurely.  
+       However, the best score is not currently stored in the state.  
+    */
+    if (ssd->num_vox < MIN_VOX) {
+        ssd->smetric = FLT_MAX;
+        for (int i = 0; i < bxf->num_coeff; i++) {
+            ssd->grad[i] = 0;
+        }
+    } else {
+        ssd->smetric = raw_score / ssd->num_vox;
+        for (int i = 0; i < bxf->num_coeff; i++) {
+            ssd->grad[i] = 2 * ssd->grad[i] / ssd->num_vox;
+        }
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // FUNCTION: bspline_score_h_mse()
 //
@@ -74,7 +105,6 @@ bspline_score_h_mse (
     float* cond_z = (float*)malloc(cond_size);
 
     static int it = 0;
-    int i;
 
     // Start timing the code
     Plm_timer *timer = new Plm_timer;
@@ -248,11 +278,8 @@ bspline_score_h_mse (
     free (cond_y);
     free (cond_z);
 
-    ssd->smetric = score_tile / ssd->num_vox;
-
-    for (i = 0; i < bxf->num_coeff; i++) {
-        ssd->grad[i] = 2 * ssd->grad[i] / ssd->num_vox;
-    }
+    /* Normalize score for MSE */
+    bspline_score_normalize (bod, score_tile);
 
     if (parms->debug) {
         fclose (corr_fp);
@@ -306,7 +333,6 @@ bspline_score_g_mse (
     float* cond_z = (float*)malloc(cond_size);
 
     static int it = 0;
-    int i;
 
     FILE* corr_fp = 0;
 
@@ -485,11 +511,8 @@ bspline_score_g_mse (
     free (cond_y);
     free (cond_z);
 
-    ssd->smetric = score_tile / ssd->num_vox;
-
-    for (i = 0; i < bxf->num_coeff; i++) {
-        ssd->grad[i] = 2 * ssd->grad[i] / ssd->num_vox;
-    }
+    /* Normalize score for MSE */
+    bspline_score_normalize (bod, score_tile);
 
     if (parms->debug) {
         fclose (corr_fp);
@@ -640,10 +663,7 @@ bspline_score_c_mse_no_dcos (
     }
 
     /* Normalize score for MSE */
-    ssd->smetric = score_acc / ssd->num_vox;
-    for (int i = 0; i < bxf->num_coeff; i++) {
-        ssd->grad[i] = 2 * ssd->grad[i] / ssd->num_vox;
-    }
+    bspline_score_normalize (bod, score_acc);
 
     ssd->time_smetric = timer->report ();
     delete timer;
@@ -808,10 +828,7 @@ bspline_score_c_mse (
     }
 
     /* Normalize score for MSE */
-    ssd->smetric = score_acc / ssd->num_vox;
-    for (int i = 0; i < bxf->num_coeff; i++) {
-        ssd->grad[i] = 2 * ssd->grad[i] / ssd->num_vox;
-    }
+    bspline_score_normalize (bod, score_acc);
 
     ssd->time_smetric = timer->report ();
     delete timer;
