@@ -1,5 +1,21 @@
 Version 1.5.12 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
+* B-spline support for direction cosines
+* Alpha version of plastimatch library API
+* Vector field inverter "vf_invert" now officially supported
+* Add "adjust" command for changing image intensities
+* Better support for masks in B-spline registration
+* Better ITK4 and DCMTK support
+* Add support for loading Elkta/NKI CBCT format images
+* Beta version of "mabs" command for atlas-based segmentation
+* Beta version of "wed" command for water-equivalent pathlength computation
+* Move dice command into plastimatch executable
+* Move structure set union command into plastimatch executable
+* Move sift feature detection command into plastimatch executable
+* Fix potential divide by zero in B-spline registration
+* Bug fixes in DVH computation
+* Bug fixes and speed improvements for B-spline warper
+* Speed improvements for Dice calculation
 
 Version 1.5.11 (build 3637)
 Sat Jun  9 19:58:20 EDT 2012

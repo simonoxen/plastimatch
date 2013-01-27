@@ -402,25 +402,6 @@ have to tell plastimatch where it is located with the --dicom-dir option. ::
     --dicom-dir ../ct-directory
 
 
-plastimatch diff
-----------------
-The plastimatch *diff* command subtracts one image from another, and saves 
-the output as a new image.
-The two input files must have the 
-same geometry (origin, dimensions, and voxel spacing).
-
-The command line usage is given as follows::
-
-  Usage: plastimatch diff image_in_1 image_in_2 image_out
-
-Example
-^^^^^^^
-The following command computes file1.nrrd minus file2.nrrd, and saves 
-the result in outfile.nrrd::
-
-  plastimatch diff file1.nrrd file2.nrrd outfile.nrrd
-
-
 plastimatch dice
 ----------------
 The plastimatch *dice* compares binary volumes using Dice coefficient, 
@@ -448,6 +429,25 @@ The following command computes all three statistics for mask1.mha
 and mask2.mha::
 
   plastimatch dice --all mask1.mha mask2.mha
+
+
+plastimatch diff
+----------------
+The plastimatch *diff* command subtracts one image from another, and saves 
+the output as a new image.
+The two input files must have the 
+same geometry (origin, dimensions, and voxel spacing).
+
+The command line usage is given as follows::
+
+  Usage: plastimatch diff image_in_1 image_in_2 image_out
+
+Example
+^^^^^^^
+The following command computes file1.nrrd minus file2.nrrd, and saves 
+the result in outfile.nrrd::
+
+  plastimatch diff file1.nrrd file2.nrrd outfile.nrrd
 
 
 plastimatch drr
@@ -706,7 +706,7 @@ to a single voxel.  So for example, if we want to bin a cube of size
     --output outfile.nrrd \
     --subsample "3 3 1"
 
-plastimatch stats
+plastimatch scale
 -----------------
 The *scale* command scales an image or vector field by multiplying 
 each voxel by a constant value.
@@ -833,12 +833,131 @@ The remaining statistics are described as follows::
 
 plastimatch synth
 -----------------
-Documentation has not yet been written for this command.
+The *synth* command creates a synthetic image.  The following kinds 
+of images can be created, by specifying the appropriate --pattern option.
+Each of these patterns come with a synthetic structure set and 
+synthetic dose which can be used for testing.
+
+- donut -- a donut shaped structure
+- gauss -- a Gaussian blur
+- grid -- a 3D grid
+- lung -- a synthetic lung with a tumor
+- rect -- a uniform rectangle within a uniform background
+- sphere -- a uniform sphere within a uniform background
+- xramp -- an image that linearly varies intensities in the x direction
+- yramp -- an image that linearly varies intensities in the y direction
+- zramp -- an image that linearly varies intensities in the z direction
+
+The command line usage is given as follows::
+
+ Usage: plastimatch synth [options]
+ Options:
+      --background <arg>        intensity of background region 
+      --dim <arg>               size of output image in voxels "x [y z]" 
+      --direction-cosines <arg>   
+                                oriention of x, y, and z axes; Specify either 
+                                 preset value, 
+                                 {identity,rotated-{1,2,3},sheared}, or 9 digit
+                                 matrix string "a b c d e f g h i" 
+      --donut-center <arg>      location of donut center in mm "x [y z]" 
+      --donut-radius <arg>      size of donut in mm "x [y z]" 
+      --donut-rings <arg>       number of donut rings (2 rings for traditional
+                                 donut) 
+      --dose-center <arg>       location of dose center in mm "x y z" 
+      --dose-size <arg>         dimensions of dose aperture in mm "x [y z]", 
+                                 or locations of rectangle corners in mm "x1 x2
+                                 y1 y2 z1 z2" 
+      --fixed <arg>             fixed image (match output size to this image) 
+      --foreground <arg>        intensity of foreground region 
+      --gauss-center <arg>      location of Gaussian center in mm "x [y z]" 
+      --gauss-std <arg>         width of Gaussian in mm "x [y z]" 
+      --grid-pattern <arg>      grid pattern spacing in voxels "x [y z]" 
+      --lung-tumor-pos <arg>    position of tumor in mm "z" or "x y z" 
+      --origin <arg>            location of first image voxel in mm "x y z" 
+      --output <arg>            output filename 
+      --output-dicom <arg>      output dicom directory 
+      --output-dose-img <arg>   filename for output dose image 
+      --output-ss-img <arg>     filename for output structure set image 
+      --output-ss-list <arg>    filename for output file containing structure 
+                                 names 
+      --output-type <arg>       data type for output image: {uchar, short, 
+                                 ushort, ulong, float}, default is float 
+      --pattern <arg>           synthetic pattern to create: {donut, dose, 
+                                 enclosed_rect, gauss, grid, lung, osd, rect, 
+                                 sphere, xramp, yramp, zramp}, default is gauss 
+      --penumbra <arg>          width of dose penumbra in mm 
+      --rect-size <arg>         width of rectangle in mm "x [y z]", or 
+                                 locations of rectangle corners in mm "x1 x2 y1
+                                 y2 z1 z2" 
+      --spacing <arg>           voxel spacing in mm "x [y z]" 
+      --sphere-center <arg>     location of sphere center in mm "x y z" 
+      --sphere-radius <arg>     radius of sphere in mm "x [y z]" 
+      --volume-size <arg>       size of output image in mm "x [y z]" 
+
+Examples
+^^^^^^^^
+Create a cubic water phantom 30 x 30 x 40 cm with zero position at 
+the center of the water surface::
+
+  plastimatch synth \
+    --pattern rect \
+    --output water_tank.mha \
+    --rect-size "-150 150 0 400 -150 150" \
+    --origin "-245.5 245.5 -49.5 449.5 -149.5 149.5" \
+    --spacing "1 1 1" \
+    --dim "500 500 300"
+
+Create lung phantoms with two different tumor positions, and 
+output to dicom::
+
+  plastimatch synth \
+    --pattern lung \
+    --output-dicom lung_inhale \
+    --lung-tumor-pos "0 0 10"
+  plastimatch synth \
+    --pattern lung \
+    --output-dicom lung_exhale \
+    --lung-tumor-pos "0 0 -10"
 
 
 plastimatch synth-vf
 --------------------
-Documentation has not yet been written for this command.
+The *synth-vf* command creates a synthetic vector field.  
+The following kinds of vector fields can be created, 
+by specifying the appropriate option.
+
+- gauss -- a gaussian warp
+- radial -- a radial expansion or contraction
+- translation -- a uniform translation
+- zero -- a vector field that is zero everywhere
+
+The command line usage is given as follows::
+
+ Usage: plastimatch synth-vf [options]
+ Options:
+      --dim <arg>             size of output image in voxels "x [y z]" 
+      --direction-cosines <arg>   
+                              oriention of x, y, and z axes; Specify either 
+                               preset value, {identity, rotated-{1,2,3}, 
+                               sheared}, or 9 digit matrix string "a b c d e f 
+                               g h i" 
+      --fixed <arg>           An input image used to set the size of the 
+                               output 
+      --gauss-center <arg>    location of center of gaussian warp "x [y z]" 
+      --gauss-mag <arg>       displacment magnitude for gaussian warp in mm "x
+                               [y z]" 
+      --gauss-std <arg>       width of gaussian std in mm "x [y z]" 
+      --origin <arg>          location of first image voxel in mm "x y z" 
+      --output <arg>          output filename 
+      --radial-center <arg>   location of center of radial warp "x [y z]" 
+      --radial-mag <arg>      displacement magnitude for radial warp in mm "x 
+                               [y z]" 
+      --spacing <arg>         voxel spacing in mm "x [y z]" 
+      --volume-size <arg>     size of output image in mm "x [y z]" 
+      --xf-gauss              gaussian warp 
+      --xf-radial             radial expansion (or contraction) 
+      --xf-trans <arg>        uniform translation in mm "x y z" 
+      --xf-zero               Null transform 
 
 
 plastimatch thumbnail
