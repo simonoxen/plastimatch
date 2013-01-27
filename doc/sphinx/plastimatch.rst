@@ -42,14 +42,13 @@ The command line usage is given as follows::
 
  Usage: plastimatch add [options] input_file [input_file ...]
  Options:
-      --average        produce an output file which is the average of the 
-                        input files (if no weights are specified), or multiply 
-                        the weights by 1/n 
-  -h, --help           display this help message 
-      --output <arg>   output image 
-      --version        display the program version 
-      --weight <arg>   specify a vector of weights; the images are multiplied 
-                        by the weight prior to adding their values 
+   --average        produce an output file which is the average of the 
+                     input files (if no weights are specified), or 
+                     multiply the weights by 1/n 
+   --output <arg>   output image 
+   --weight <arg>   specify a vector of weights; the images are 
+                     multiplied by the weight prior to adding their 
+                     values 
 
 Examples
 ^^^^^^^^
@@ -512,18 +511,16 @@ The command line usage is given as follows::
 
  Usage: plastimatch fill [options]
  Options:
-  -h, --help                  display this help message 
-      --input <arg>           input directory or filename; can be an image or 
-                               dicom directory 
-      --mask <arg>            input filename for mask image 
-      --mask-value <arg>      value to set for pixels within mask (for "fill"),
-                               or outside of mask (for "mask" 
-      --output <arg>          output filename (for image file) or directory 
-                               (for dicom) 
-      --output-format <arg>   arg should be "dicom" for dicom output 
-      --output-type <arg>     type of output image, one of {uchar, short, 
-                               float, ...} 
-      --version               display the program version 
+   --input <arg>           input directory or filename; can be an image 
+                            or dicom directory 
+   --mask <arg>            input filename for mask image 
+   --mask-value <arg>      value to set for pixels within mask (for 
+                            "fill"), or outside of mask (for "mask" 
+   --output <arg>          output filename (for image file) or directory 
+                            (for dicom) 
+   --output-format <arg>   arg should be "dicom" for dicom output 
+   --output-type <arg>     type of output image, one of {uchar, short, 
+                            float, ...} 
 
 Examples
 ^^^^^^^^
@@ -581,18 +578,16 @@ The command line usage is given as follows::
 
  Usage: plastimatch mask [options]
  Options:
-  -h, --help                  display this help message 
-      --input <arg>           input directory or filename; can be an image or 
-                               dicom directory 
-      --mask <arg>            input filename for mask image 
-      --mask-value <arg>      value to set for pixels within mask (for "fill"),
-                               or outside of mask (for "mask" 
-      --output <arg>          output filename (for image file) or directory 
-                               (for dicom) 
-      --output-format <arg>   arg should be "dicom" for dicom output 
-      --output-type <arg>     type of output image, one of {uchar, short, 
-                               float, ...} 
-      --version               display the program version 
+   --input <arg>           input directory or filename; can be an image 
+                            or dicom directory 
+   --mask <arg>            input filename for mask image 
+   --mask-value <arg>      value to set for pixels within mask (for 
+                            "fill"), or outside of mask (for "mask" 
+   --output <arg>          output filename (for image file) or directory 
+                            (for dicom) 
+   --output-format <arg>   arg should be "dicom" for dicom output 
+   --output-type <arg>     type of output image, one of {uchar, short, 
+                            float, ...} 
 
 Examples
 ^^^^^^^^
@@ -622,10 +617,9 @@ The command line usage is given as follows::
 
  Usage: plastimatch probe [options] file
  Options:
-  -h, --help             display this help message 
   -i, --index <arg>      List of voxel indices, such as "i j k;i j k;..." 
-  -l, --location <arg>   List of spatial locations, such as "i j k;i j k;..." 
-      --version          display the program version 
+  -l, --location <arg>   List of spatial locations, such as 
+                          "i j k;i j k;..." 
 
 The command will output one line for each probe requested.  
 Each output line includes the following fields.::
@@ -633,7 +627,8 @@ Each output line includes the following fields.::
   PROBE#        The probe number, starting with zero
   INDEX         The (fractional) position of the probe as a voxel index
   LOC           The position of the probe in world coordinates
-  VALUE         The intensity (for volumes) or displacement (for vector fields)
+  VALUE         The intensity (for volumes) or displacement 
+                 (for vector fields)
 
 Example
 ^^^^^^^
@@ -715,11 +710,9 @@ The command line usage is given as follows::
 
  Usage: plastimatch scale [options] input_file
  Options:
-  -h, --help           display this help message 
-      --output <arg>   filename for output image or vector field 
-      --version        display the program version 
-      --weight <arg>   scale the input image or vector field by this value 
-                        (float) 
+   --output <arg>   filename for output image or vector field 
+   --weight <arg>   scale the input image or vector field by this 
+                     value (float) 
 
 Example
 ^^^^^^^
@@ -852,47 +845,49 @@ The command line usage is given as follows::
 
  Usage: plastimatch synth [options]
  Options:
-      --background <arg>        intensity of background region 
-      --dim <arg>               size of output image in voxels "x [y z]" 
-      --direction-cosines <arg>   
-                                oriention of x, y, and z axes; Specify either 
-                                 preset value, 
-                                 {identity,rotated-{1,2,3},sheared}, or 9 digit
-                                 matrix string "a b c d e f g h i" 
-      --donut-center <arg>      location of donut center in mm "x [y z]" 
-      --donut-radius <arg>      size of donut in mm "x [y z]" 
-      --donut-rings <arg>       number of donut rings (2 rings for traditional
-                                 donut) 
-      --dose-center <arg>       location of dose center in mm "x y z" 
-      --dose-size <arg>         dimensions of dose aperture in mm "x [y z]", 
-                                 or locations of rectangle corners in mm "x1 x2
-                                 y1 y2 z1 z2" 
-      --fixed <arg>             fixed image (match output size to this image) 
-      --foreground <arg>        intensity of foreground region 
-      --gauss-center <arg>      location of Gaussian center in mm "x [y z]" 
-      --gauss-std <arg>         width of Gaussian in mm "x [y z]" 
-      --grid-pattern <arg>      grid pattern spacing in voxels "x [y z]" 
-      --lung-tumor-pos <arg>    position of tumor in mm "z" or "x y z" 
-      --origin <arg>            location of first image voxel in mm "x y z" 
-      --output <arg>            output filename 
-      --output-dicom <arg>      output dicom directory 
-      --output-dose-img <arg>   filename for output dose image 
-      --output-ss-img <arg>     filename for output structure set image 
-      --output-ss-list <arg>    filename for output file containing structure 
-                                 names 
-      --output-type <arg>       data type for output image: {uchar, short, 
-                                 ushort, ulong, float}, default is float 
-      --pattern <arg>           synthetic pattern to create: {donut, dose, 
-                                 enclosed_rect, gauss, grid, lung, osd, rect, 
-                                 sphere, xramp, yramp, zramp}, default is gauss 
-      --penumbra <arg>          width of dose penumbra in mm 
-      --rect-size <arg>         width of rectangle in mm "x [y z]", or 
-                                 locations of rectangle corners in mm "x1 x2 y1
-                                 y2 z1 z2" 
-      --spacing <arg>           voxel spacing in mm "x [y z]" 
-      --sphere-center <arg>     location of sphere center in mm "x y z" 
-      --sphere-radius <arg>     radius of sphere in mm "x [y z]" 
-      --volume-size <arg>       size of output image in mm "x [y z]" 
+   --background <arg>        intensity of background region 
+   --dim <arg>               size of output image in voxels "x [y z]" 
+   --direction-cosines <arg>   
+                             oriention of x, y, and z axes; Specify 
+                              either preset value, {identity,
+                              rotated-{1,2,3},sheared}, or 9 digit
+                              matrix string "a b c d e f g h i" 
+   --donut-center <arg>      location of donut center in mm "x [y z]" 
+   --donut-radius <arg>      size of donut in mm "x [y z]" 
+   --donut-rings <arg>       number of donut rings (2 rings for 
+                              traditional donut) 
+   --dose-center <arg>       location of dose center in mm "x y z" 
+   --dose-size <arg>         dimensions of dose aperture in mm "x [y z]", 
+                              or locations of rectangle corners in 
+                              mm "x1 x2 y1 y2 z1 z2" 
+   --fixed <arg>             fixed image (match output size to this 
+                              image) 
+   --foreground <arg>        intensity of foreground region 
+   --gauss-center <arg>      location of Gaussian center in mm "x [y z]" 
+   --gauss-std <arg>         width of Gaussian in mm "x [y z]" 
+   --grid-pattern <arg>      grid pattern spacing in voxels "x [y z]" 
+   --lung-tumor-pos <arg>    position of tumor in mm "z" or "x y z" 
+   --origin <arg>            location of first image voxel in mm "x y z" 
+   --output <arg>            output filename 
+   --output-dicom <arg>      output dicom directory 
+   --output-dose-img <arg>   filename for output dose image 
+   --output-ss-img <arg>     filename for output structure set image 
+   --output-ss-list <arg>    filename for output file containing 
+                              structure names 
+   --output-type <arg>       data type for output image: {uchar, short, 
+                              ushort, ulong, float}, default is float 
+   --pattern <arg>           synthetic pattern to create: {donut, dose, 
+                              enclosed_rect, gauss, grid, lung, osd, 
+                              rect, sphere, xramp, yramp, zramp}, 
+                              default is gauss 
+   --penumbra <arg>          width of dose penumbra in mm 
+   --rect-size <arg>         width of rectangle in mm "x [y z]", or 
+                              locations of rectangle corners in mm 
+                              "x1 x2 y1 y2 z1 z2" 
+   --spacing <arg>           voxel spacing in mm "x [y z]" 
+   --sphere-center <arg>     location of sphere center in mm "x y z" 
+   --sphere-radius <arg>     radius of sphere in mm "x [y z]" 
+   --volume-size <arg>       size of output image in mm "x [y z]" 
 
 Examples
 ^^^^^^^^
@@ -935,29 +930,29 @@ The command line usage is given as follows::
 
  Usage: plastimatch synth-vf [options]
  Options:
-      --dim <arg>             size of output image in voxels "x [y z]" 
-      --direction-cosines <arg>   
-                              oriention of x, y, and z axes; Specify either 
-                               preset value, {identity, rotated-{1,2,3}, 
-                               sheared}, or 9 digit matrix string "a b c d e f 
-                               g h i" 
-      --fixed <arg>           An input image used to set the size of the 
-                               output 
-      --gauss-center <arg>    location of center of gaussian warp "x [y z]" 
-      --gauss-mag <arg>       displacment magnitude for gaussian warp in mm "x
-                               [y z]" 
-      --gauss-std <arg>       width of gaussian std in mm "x [y z]" 
-      --origin <arg>          location of first image voxel in mm "x y z" 
-      --output <arg>          output filename 
-      --radial-center <arg>   location of center of radial warp "x [y z]" 
-      --radial-mag <arg>      displacement magnitude for radial warp in mm "x 
-                               [y z]" 
-      --spacing <arg>         voxel spacing in mm "x [y z]" 
-      --volume-size <arg>     size of output image in mm "x [y z]" 
-      --xf-gauss              gaussian warp 
-      --xf-radial             radial expansion (or contraction) 
-      --xf-trans <arg>        uniform translation in mm "x y z" 
-      --xf-zero               Null transform 
+   --dim <arg>             size of output image in voxels "x [y z]" 
+   --direction-cosines <arg>   
+                           oriention of x, y, and z axes; Specify either 
+                            preset value, {identity, rotated-{1,2,3}, 
+                            sheared}, or 9 digit matrix string "a b c 
+                            d e f g h i" 
+   --fixed <arg>           An input image used to set the size of the 
+                            output 
+   --gauss-center <arg>    location of center of gaussian warp "x [y z]" 
+   --gauss-mag <arg>       displacment magnitude for gaussian warp in 
+                            mm "x [y z]" 
+   --gauss-std <arg>       width of gaussian std in mm "x [y z]" 
+   --origin <arg>          location of first image voxel in mm "x y z" 
+   --output <arg>          output filename 
+   --radial-center <arg>   location of center of radial warp "x [y z]" 
+   --radial-mag <arg>      displacement magnitude for radial warp in 
+                            mm "x [y z]" 
+   --spacing <arg>         voxel spacing in mm "x [y z]" 
+   --volume-size <arg>     size of output image in mm "x [y z]" 
+   --xf-gauss              gaussian warp 
+   --xf-radial             radial expansion (or contraction) 
+   --xf-trans <arg>        uniform translation in mm "x y z" 
+   --xf-zero               Null transform 
 
 
 plastimatch thumbnail
@@ -1095,16 +1090,15 @@ The command line usage is given as follows::
 
  Usage: plastimatch xf-convert [options]
  Options:
-      --dim <arg>            Size of output image in voxels "x [y z]" 
-      --grid-spacing <arg>   B-spline grid spacing in mm "x [y z]" 
-  -h, --help                 Display this help message 
-      --input <arg>          Input xform filename (required) 
-      --nobulk               Omit bulk transform for itk_bspline 
-      --origin <arg>         Location of first image voxel in mm "x y z" 
-      --output <arg>         Output xform filename (required) 
-      --output-type <arg>    Type of xform to create (required), choose from 
-                              {bspline, itk_bspline, vf} 
-      --spacing <arg>        Voxel spacing in mm "x [y z]" 
+   --dim <arg>            Size of output image in voxels "x [y z]" 
+   --grid-spacing <arg>   B-spline grid spacing in mm "x [y z]" 
+   --input <arg>          Input xform filename (required) 
+   --nobulk               Omit bulk transform for itk_bspline 
+   --origin <arg>         Location of first image voxel in mm "x y z" 
+   --output <arg>         Output xform filename (required) 
+   --output-type <arg>    Type of xform to create (required), choose from 
+                           {bspline, itk_bspline, vf} 
+   --spacing <arg>        Voxel spacing in mm "x [y z]" 
 
 Example
 ^^^^^^^

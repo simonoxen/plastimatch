@@ -1,4 +1,4 @@
-.TH "PLASTIMATCH" "1" "June 11, 2011" "Plastimatch 1.5" "Plastimatch"
+.TH "PLASTIMATCH" "1" "January 27, 2013" "Plastimatch 1.5.12" "Plastimatch"
 .SH NAME
 plastimatch \- register, convert, warp, or manipulate images
 .
@@ -46,13 +46,15 @@ without any additional command line arguments:
 .nf
 .ft C
 $ plastimatch
-plastimatch version 1.4\-beta (2161)
+plastimatch version 1.5.12\-beta (4019)
 Usage: plastimatch command [options]
 Commands:
-  add           adjust        autolabel     crop          compare
-  compose       convert       diff          dvh           header
-  mask          register      resample      segment       stats
-  thumbnail     warp          xio\-dvh
+ add           adjust        average       crop          compare
+ compose       convert       dice          diff          dvh
+ fill          header        jacobian      mask          probe
+ register      resample      scale         segment       stats
+ synth         synth\-vf      thumbnail     union         warp
+ xf\-convert
 
 For detailed usage of a specific command, type:
   plastimatch command
@@ -61,23 +63,44 @@ For detailed usage of a specific command, type:
 .SH PLASTIMATCH ADD
 .sp
 The \fIadd\fP command is used to add one or more images together and create
-an output image.
+an output image.  The contributions of the input images can be weighted
+with a weight vector.
 .sp
 The command line usage is given as follows:
 .sp
 .nf
 .ft C
-Usage: plastimatch add input_file [input_file ...] output_file
+Usage: plastimatch add [options] input_file [input_file ...]
+Options:
+  \-\-average        produce an output file which is the average of the
+                    input files (if no weights are specified), or
+                    multiply the weights by 1/n
+  \-\-output <arg>   output image
+  \-\-weight <arg>   specify a vector of weights; the images are
+                    multiplied by the weight prior to adding their
+                    values
 .ft P
 .fi
-.SS Example
+.SS Examples
 .sp
 To add together files 01.mha, 02.mha and 03.mha, and save the result
 in the file output.mha, you can run the following command:
 .sp
 .nf
 .ft C
-plastimatch add 01.mha 02.mha 03.mha output.mha
+plastimatch add \-\-output output.mha 01.mha 02.mha 03.mha
+.ft P
+.fi
+.sp
+If you wanted output.mha to be 2 * 01.mha + 0.5 * 02.mha + 0.1 * 03.mha,
+then you should do this:
+.sp
+.nf
+.ft C
+plastimatch add \e
+  \-\-output output.mha \e
+  \-\-weight "2 0.5 0.1" \e
+  01.mha 02.mha 03.mha
 .ft P
 .fi
 .SH PLASTIMATCH ADJUST
@@ -92,30 +115,80 @@ The command line usage is given as follows:
 .ft C
 Usage: plastimatch adjust [options]
 Required:
-    \-\-input=image_in
-    \-\-output=image_out
+    \-\-input <arg>       input directory or filename
+    \-\-output <arg>      output image
 Optional:
-    \-\-output\-type={uchar,short,ushort,ulong,float}
-    \-\-scale="min max"
-    \-\-ab\-scale="ab nfx ndf"       (Alpha\-beta scaling)
-    \-\-stretch="min max"
-    \-\-truncate\-above=value
-    \-\-truncate\-below=value
+    \-\-pw\-linear <arg>   a string that forms a piecewise linear map from
+                         input values to output values, of the form
+                         "in1,out1,in2,out2,..."
 .ft P
 .fi
-.SS Example
 .sp
-The following command will truncate the input intensities to the
-range [\-1000,1000], and then map the intensities to the range [0,1]:
+The adjust command can be used to make a piecewise linear adjustment of
+the image intensities.  The \-\-pw\-linear option is used to create
+the mapping from input intensities to output intensities.
+The input intensities in the curve must increase from left to right
+in the string, but output intensities are arbitrary.
+.sp
+Input intensities below the first pair or after the last pair
+are transformed by extrapolating the curve out to infinity with
+a slope of +1.  A different slope may be specified out to
+positive or negative infinity by specifying the special
+input values of \-inf and +inf.  In this case, the
+second number in the pair is the slope of the curve, not the
+output intensity.
+.SS Examples
+.sp
+The following command will add 100 to all voxels in the image:
 .sp
 .nf
 .ft C
 plastimatch adjust \e
   \-\-input infile.nrrd \e
   \-\-output outfile.nrrd \e
-  \-\-truncate\-above 1000 \e
-  \-\-truncate\-below \-1000 \e
-  \-\-stretch "0 1"
+  \-\-pw\-linear "0,100"
+.ft P
+.fi
+.sp
+The following command does the same thing, but with explicit
+specification of the slope in the extrapolation area:
+.sp
+.nf
+.ft C
+plastimatch adjust \e
+  \-\-input infile.nrrd \e
+  \-\-output outfile.nrrd \e
+  \-\-pw\-linear "\-inf,1,0,100,inf,1"
+.ft P
+.fi
+.sp
+The following command truncates the inputs to the
+range of [\-1000,+1000]:
+.sp
+.nf
+.ft C
+plastimatch adjust \e
+  \-\-input infile.nrrd \e
+  \-\-output outfile.nrrd \e
+  \-\-pw\-linear "\-inf,0,\-1000,\-1000,+1000,+1000,inf,0"
+.ft P
+.fi
+.SH PLASTIMATCH AVERAGE
+.sp
+The \fIaverage\fP command is used to compute the (weighted) average
+of multiple input images.  It is the same as the plastimatch \fIadd\fP
+command, with the \-\-average option specified.
+Please refer to \fI\%plastimatch add\fP for the list of command line
+arguments.
+.SS Example
+.sp
+The following command will compute the average of three input images:
+.sp
+.nf
+.ft C
+plastimatch average \e
+  \-\-output outfile.nrrd \e
+  01.mha 02.mha 0.3.mha
 .ft P
 .fi
 .SH PLASTIMATCH AUTOLABEL
@@ -268,9 +341,9 @@ Options:
  \-F, \-\-fixed <arg>             fixed image (match output size to this
                                 image)
  \-h, \-\-help                    display this help message
-     \-\-input <arg>             input directory or filename (required);
-                                can be an image, structure set file (cxt
-                                or dicom\-rt), dose file (dicom\-rt,
+     \-\-input <arg>             input directory or filename; can be an
+                                image, structure set file (cxt or
+                                dicom\-rt), dose file (dicom\-rt,
                                 monte\-carlo or xio), dicom directory, or
                                 xio directory
      \-\-input\-cxt <arg>         input a cxt file
@@ -285,6 +358,8 @@ Options:
                                 either "nn" for nearest neighbors or
                                 "linear" for tri\-linear, default is
                                 linear
+     \-\-metadata <arg>          patient metadata (you may use this
+                                option multiple times)
      \-\-origin <arg>            location of first image voxel in mm "x y
                                 z"
      \-\-output\-colormap <arg>   create a colormap file that can be used
@@ -302,6 +377,9 @@ Options:
                                 with 3d slicer
      \-\-output\-prefix <arg>     create a directory with a separate image
                                 for each structure
+     \-\-output\-prefix\-fcsv <arg>
+                               create a directory with a separate fcsv
+                                pointset file for each structure
      \-\-output\-ss\-img <arg>     create a structure set image which
                                 allows overlapping structures
      \-\-output\-ss\-list <arg>    create a structure set list file
@@ -311,7 +389,9 @@ Options:
      \-\-output\-vf <arg>         create a vector field from the input xf
      \-\-output\-xio <arg>        create a directory containing xio\-format
                                 files
-     \-\-patient\-pos <arg>       patient position in metadata, one of
+     \-\-patient\-id <arg>        patient id metadata: string
+     \-\-patient\-name <arg>      patient name metadata: string
+     \-\-patient\-pos <arg>       patient position metadata: one of
                                 {hfs,hfp,ffs,ffp}
      \-\-prune\-empty             delete empty structures from output
      \-\-referenced\-ct <arg>     dicom directory used to set UIDs and
@@ -320,8 +400,9 @@ Options:
                                 from output polylines
      \-\-spacing <arg>           voxel spacing in mm "x [y z]"
      \-\-version                 display the program version
-     \-\-vf <arg>                input vector field used to warp image(s)
      \-\-xf <arg>                input transform used to warp image(s)
+     \-\-xor\-contours            overlapping contours should be xor\(aqd
+                                instead of or\(aqd
 .ft P
 .fi
 .SS Examples
@@ -420,6 +501,40 @@ plastimatch convert \e
   \-\-dicom\-dir ../ct\-directory
 .ft P
 .fi
+.SH PLASTIMATCH DICE
+.sp
+The plastimatch \fIdice\fP compares binary volumes using Dice coefficient,
+Hausdorff distance, or contour mean distance.  The input images are
+treated as boolean, where non\-zero values mean that voxel is inside
+of the structure and zero values mean that the voxel is outside
+of the structure.
+.sp
+The command line usage is given as follows:
+.sp
+.nf
+.ft C
+Usage: plastimatch dice [options] reference\-image test\-image
+Options:
+    \-\-all            Compute Dice, Hausdorff, and contour mean distance
+                      (equivalent to \-\-dice \-\-hausdorff \-\-contour\-mean)
+    \-\-contour\-mean   Compute contour mean distance
+    \-\-dice           Compute Dice coefficient (default)
+    \-\-hausdorff      Compute Hausdorff distance and average Hausdorff
+                      distance
+\-h, \-\-help           display this help message
+    \-\-version        display the program version
+.ft P
+.fi
+.SS Example
+.sp
+The following command computes all three statistics for mask1.mha
+and mask2.mha:
+.sp
+.nf
+.ft C
+plastimatch dice \-\-all mask1.mha mask2.mha
+.ft P
+.fi
 .SH PLASTIMATCH DIFF
 .sp
 The plastimatch \fIdiff\fP command subtracts one image from another, and saves
@@ -444,6 +559,9 @@ the result in outfile.nrrd:
 plastimatch diff file1.nrrd file2.nrrd outfile.nrrd
 .ft P
 .fi
+.SH PLASTIMATCH DRR
+.sp
+This command is under construction.
 .SH PLASTIMATCH DVH
 .sp
 The \fIdvh\fP command creates a dose value histogram (DVH)
@@ -497,14 +615,60 @@ plastimatch dvh \e
   \-\-bin\-width 1
 .ft P
 .fi
-.SH PLASTIMATCH HEADER
+.SH PLASTIMATCH FILL
 .sp
-The \fIheader\fP command displays brief information about the image geometry.
+The \fIfill\fP command is used to fill an image region with a constant
+intensity.  The region filled is defined by a mask file,
+with voxels with non\-zero intensity in the mask image being filled.
+.sp
 The command line usage is given as follows:
 .sp
 .nf
 .ft C
-Usage: plastimatch header input\-file
+Usage: plastimatch fill [options]
+Options:
+  \-\-input <arg>           input directory or filename; can be an image
+                           or dicom directory
+  \-\-mask <arg>            input filename for mask image
+  \-\-mask\-value <arg>      value to set for pixels within mask (for
+                           "fill"), or outside of mask (for "mask"
+  \-\-output <arg>          output filename (for image file) or directory
+                           (for dicom)
+  \-\-output\-format <arg>   arg should be "dicom" for dicom output
+  \-\-output\-type <arg>     type of output image, one of {uchar, short,
+                           float, ...}
+.ft P
+.fi
+.SS Examples
+.sp
+Suppose we have a file prostate.nrrd which is zero outside of the
+prostate, and non\-zero inside of the prostate.
+We can fill the prostate with an intensity of 1000, while
+leaving non\-prostate areas with their original intensity, using
+the following command.
+.sp
+.nf
+.ft C
+plastimatch fill \e
+  \-\-input infile.nrrd \e
+  \-\-output outfile.nrrd \e
+  \-\-mask\-value 1000 \e
+  \-\-mask prostate.nrrd
+.ft P
+.fi
+.SH PLASTIMATCH HEADER
+.sp
+The \fIheader\fP command is used to display simple properties about
+the volume, such as the image data type and image geometry.
+.sp
+The command line usage is given as follows:
+.sp
+.nf
+.ft C
+Usage: plastimatch header [options] input_file [input_file ...]
+Options:
+ \-h, \-\-help      display this help message
+     \-\-version   display the program version
 .ft P
 .fi
 .SS Example
@@ -515,6 +679,8 @@ or dicom.  We can run the command as follows:
 .nf
 .ft C
 $ plastimatch header input.mha
+Type = float
+Planes = 1
 Origin = \-180 \-180 \-167.75
 Size = 512 512 120
 Spacing = 0.7031 0.7031 2.5
@@ -527,44 +693,35 @@ and each slice is 512 x 512 pixels.  The slice spacing is 2.5 mm,
 and the in\-plane pixel spacing is 0.7031 mm.
 .SH PLASTIMATCH MASK
 .sp
-The \fImask\fP command is used to fill in a region of the image, as specified
-by a mask file, with a constant intensity.
+The \fImask\fP command is used to fill an image region with a constant
+intensity.  The region filled is defined by a mask file,
+with voxels with zero intensity in the mask image being filled.
+Thus, it is the inverse of the \fIfill\fP command.
 .sp
 The command line usage is given as follows:
 .sp
 .nf
 .ft C
 Usage: plastimatch mask [options]
-Required:
-    \-\-input=image_in
-    \-\-output=image_out
-    \-\-mask=mask_image_in
-Optional:
-    \-\-negate\-mask
-    \-\-mask\-value=float
-    \-\-output\-format=dicom
-    \-\-output\-type={uchar,short,ushort,ulong,float}
+Options:
+  \-\-input <arg>           input directory or filename; can be an image
+                           or dicom directory
+  \-\-mask <arg>            input filename for mask image
+  \-\-mask\-value <arg>      value to set for pixels within mask (for
+                           "fill"), or outside of mask (for "mask"
+  \-\-output <arg>          output filename (for image file) or directory
+                           (for dicom)
+  \-\-output\-format <arg>   arg should be "dicom" for dicom output
+  \-\-output\-type <arg>     type of output image, one of {uchar, short,
+                           float, ...}
 .ft P
 .fi
 .SS Examples
 .sp
-If we have a file prostate.nrrd which is non\-zero inside of the prostate
-and zero outside of the prostate, we can set the prostate intensity to 1000
-(while leaving non\-prostate areas with their original intensity) using
-the following command.
-.sp
-.nf
-.ft C
-plastimatch mask \e
-  \-\-input infile.nrrd \e
-  \-\-output outfile.nrrd \e
-  \-\-mask\-value 1000 \e
-  \-\-mask prostate.nrrd
-.ft P
-.fi
-.sp
-Suppose we have a file called patient.nrrd, which is non\-zero inside of the
-patient, and zero outside of the patient.  If we want to fill in the area
+Suppose we have a file called patient.nrrd,
+which is zero outside of the patient, and
+non\-zero inside the patient.
+If we want to fill in the area
 outside of the patient with value \-1000, we use the following command.
 .sp
 .nf
@@ -573,8 +730,66 @@ plastimatch mask \e
   \-\-input infile.nrrd \e
   \-\-output outfile.nrrd \e
   \-\-negate\-mask \e
-  \-\-mask\-value 1000 \e
+  \-\-mask\-value \-1000 \e
   \-\-mask patient.nrrd
+.ft P
+.fi
+.SH PLASTIMATCH PROBE
+.sp
+The plastimatch \fIprobe\fP command is used to examine the image intensity
+or vector field displacement at one or more positions within a volume.
+The probe positions can be specified in world coordinates (in mm), using
+the \-\-location option, or as image indices using the \-\-index option.
+The locations or indices are linearly interpolated if they lie between
+voxels.
+.sp
+The command line usage is given as follows:
+.sp
+.nf
+.ft C
+Usage: plastimatch probe [options] file
+Options:
+ \-i, \-\-index <arg>      List of voxel indices, such as "i j k;i j k;..."
+ \-l, \-\-location <arg>   List of spatial locations, such as
+                         "i j k;i j k;..."
+.ft P
+.fi
+.sp
+The command will output one line for each probe requested.
+Each output line includes the following fields.:
+.sp
+.nf
+.ft C
+PROBE#        The probe number, starting with zero
+INDEX         The (fractional) position of the probe as a voxel index
+LOC           The position of the probe in world coordinates
+VALUE         The intensity (for volumes) or displacement
+               (for vector fields)
+.ft P
+.fi
+.SS Example
+.sp
+We use the index option to see an image intensity at coordinate (2,3,4),
+and the location option to see image intensities at two different
+locations:
+.sp
+.nf
+.ft C
+plastimatch probe \e
+   \-\-index "2 3 4" \e
+   \-\-location "0 0 0; 0.5 0.5 0.5" \e
+   infile.nrrd
+.ft P
+.fi
+.sp
+The output will include three probe results.  Each probe shows the
+probe index, voxel index, voxel location, and intensity.
+.sp
+.nf
+.ft C
+0:    2.00,    3.00,    4.00;  \-22.37,  \-21.05,  \-19.74; \-998.725891
+1:   19.00,   19.00,   19.00;    0.00,    0.00,    0.00; \-0.000197
+2:   19.38,   19.38,   19.38;    0.50,    0.50,    0.50; \-9.793450
 .ft P
 .fi
 .SH PLASTIMATCH REGISTER
@@ -589,8 +804,83 @@ Usage: plastimatch register command_file
 .ft P
 .fi
 .sp
-A more complete description, including the format of the required
-command file is given in the next section.
+The command file is an ordinary text file, which contains a single
+global section and one or more stages sections.
+The global section begins with a line containing only the string "[GLOBAL]",
+and each stage begins with a line containing the string "[STAGE]".
+.sp
+The global section is used to set input files, output files, and
+global parameters, while the each stage section defines a sequential
+stage of processing.  For a complete description of the command file
+syntax, please refer to the \fIregistration_command_file_reference\fP.
+.SS Examples
+.sp
+If you want to register image_2.mha to match image_1.mha using
+B\-spline registration, create a command file like this:
+.sp
+.nf
+.ft C
+# command_file.txt
+[GLOBAL]
+fixed=image_1.mha
+moving=image_2.mha
+img_out=warped_2.mha
+xform_out=bspline_coefficients.txt
+
+[STAGE]
+xform=bspline
+impl=plastimatch
+threading=openmp
+max_its=30
+regularization_lambda=0.005
+grid_spac=100 100 100
+res=4 4 2
+.ft P
+.fi
+.sp
+Then, run the registration like this:
+.sp
+.nf
+.ft C
+plastimatch register command_file.txt
+.ft P
+.fi
+.sp
+The above example only performs a single registration stage.  If you
+want to do multi\-stage registration, use multiple [STAGE] sections.
+Like this:
+.sp
+.nf
+.ft C
+# command_file.txt
+[GLOBAL]
+fixed=image_1.mha
+moving=image_2.mha
+img_out=warped_2.mha
+xform_out=bspline_coefficients.txt
+
+[STAGE]
+xform=bspline
+impl=plastimatch
+threading=openmp
+max_its=30
+regularization_lambda=0.005
+grid_spac=100 100 100
+res=4 4 2
+
+[STAGE]
+max_its=30
+grid_spac=80 80 80
+res=2 2 1
+
+[STAGE]
+max_its=30
+grid_spac=60 60 60
+res=1 1 1
+.ft P
+.fi
+.sp
+For more examples, please refer to the \fIimage_registration_guidebook\fP.
 .SH PLASTIMATCH RESAMPLE
 .sp
 The \fIresample\fP command can be used to change the geometry of an image.
@@ -624,6 +914,32 @@ plastimatch resample \e
   \-\-input infile.nrrd \e
   \-\-output outfile.nrrd \e
   \-\-subsample "3 3 1"
+.ft P
+.fi
+.SH PLASTIMATCH SCALE
+.sp
+The \fIscale\fP command scales an image or vector field by multiplying
+each voxel by a constant value.
+.sp
+The command line usage is given as follows:
+.sp
+.nf
+.ft C
+Usage: plastimatch scale [options] input_file
+Options:
+  \-\-output <arg>   filename for output image or vector field
+  \-\-weight <arg>   scale the input image or vector field by this
+                    value (float)
+.ft P
+.fi
+.SS Example
+.sp
+This command creates an output file with image intensity (or voxel
+length) twice as large as the input values:
+.sp
+.nf
+.ft C
+plastimatch scale \-\-output output.mha \-\-weight 2.0 input.mha
 .ft P
 .fi
 .SH PLASTIMATCH SEGMENT
@@ -752,6 +1068,163 @@ TOTSECDER     Total second derivative
 INTSECDER     Integral second derivative
 .ft P
 .fi
+.SH PLASTIMATCH SYNTH
+.sp
+The \fIsynth\fP command creates a synthetic image.  The following kinds
+of images can be created, by specifying the appropriate \-\-pattern option.
+Each of these patterns come with a synthetic structure set and
+synthetic dose which can be used for testing.
+.INDENT 0.0
+.IP \(bu 2
+donut \-\- a donut shaped structure
+.IP \(bu 2
+gauss \-\- a Gaussian blur
+.IP \(bu 2
+grid \-\- a 3D grid
+.IP \(bu 2
+lung \-\- a synthetic lung with a tumor
+.IP \(bu 2
+rect \-\- a uniform rectangle within a uniform background
+.IP \(bu 2
+sphere \-\- a uniform sphere within a uniform background
+.IP \(bu 2
+xramp \-\- an image that linearly varies intensities in the x direction
+.IP \(bu 2
+yramp \-\- an image that linearly varies intensities in the y direction
+.IP \(bu 2
+zramp \-\- an image that linearly varies intensities in the z direction
+.UNINDENT
+.sp
+The command line usage is given as follows:
+.sp
+.nf
+.ft C
+Usage: plastimatch synth [options]
+Options:
+  \-\-background <arg>        intensity of background region
+  \-\-dim <arg>               size of output image in voxels "x [y z]"
+  \-\-direction\-cosines <arg>
+                            oriention of x, y, and z axes; Specify
+                             either preset value, {identity,
+                             rotated\-{1,2,3},sheared}, or 9 digit
+                             matrix string "a b c d e f g h i"
+  \-\-donut\-center <arg>      location of donut center in mm "x [y z]"
+  \-\-donut\-radius <arg>      size of donut in mm "x [y z]"
+  \-\-donut\-rings <arg>       number of donut rings (2 rings for
+                             traditional donut)
+  \-\-dose\-center <arg>       location of dose center in mm "x y z"
+  \-\-dose\-size <arg>         dimensions of dose aperture in mm "x [y z]",
+                             or locations of rectangle corners in
+                             mm "x1 x2 y1 y2 z1 z2"
+  \-\-fixed <arg>             fixed image (match output size to this
+                             image)
+  \-\-foreground <arg>        intensity of foreground region
+  \-\-gauss\-center <arg>      location of Gaussian center in mm "x [y z]"
+  \-\-gauss\-std <arg>         width of Gaussian in mm "x [y z]"
+  \-\-grid\-pattern <arg>      grid pattern spacing in voxels "x [y z]"
+  \-\-lung\-tumor\-pos <arg>    position of tumor in mm "z" or "x y z"
+  \-\-origin <arg>            location of first image voxel in mm "x y z"
+  \-\-output <arg>            output filename
+  \-\-output\-dicom <arg>      output dicom directory
+  \-\-output\-dose\-img <arg>   filename for output dose image
+  \-\-output\-ss\-img <arg>     filename for output structure set image
+  \-\-output\-ss\-list <arg>    filename for output file containing
+                             structure names
+  \-\-output\-type <arg>       data type for output image: {uchar, short,
+                             ushort, ulong, float}, default is float
+  \-\-pattern <arg>           synthetic pattern to create: {donut, dose,
+                             enclosed_rect, gauss, grid, lung, osd,
+                             rect, sphere, xramp, yramp, zramp},
+                             default is gauss
+  \-\-penumbra <arg>          width of dose penumbra in mm
+  \-\-rect\-size <arg>         width of rectangle in mm "x [y z]", or
+                             locations of rectangle corners in mm
+                             "x1 x2 y1 y2 z1 z2"
+  \-\-spacing <arg>           voxel spacing in mm "x [y z]"
+  \-\-sphere\-center <arg>     location of sphere center in mm "x y z"
+  \-\-sphere\-radius <arg>     radius of sphere in mm "x [y z]"
+  \-\-volume\-size <arg>       size of output image in mm "x [y z]"
+.ft P
+.fi
+.SS Examples
+.sp
+Create a cubic water phantom 30 x 30 x 40 cm with zero position at
+the center of the water surface:
+.sp
+.nf
+.ft C
+plastimatch synth \e
+  \-\-pattern rect \e
+  \-\-output water_tank.mha \e
+  \-\-rect\-size "\-150 150 0 400 \-150 150" \e
+  \-\-origin "\-245.5 245.5 \-49.5 449.5 \-149.5 149.5" \e
+  \-\-spacing "1 1 1" \e
+  \-\-dim "500 500 300"
+.ft P
+.fi
+.sp
+Create lung phantoms with two different tumor positions, and
+output to dicom:
+.sp
+.nf
+.ft C
+plastimatch synth \e
+  \-\-pattern lung \e
+  \-\-output\-dicom lung_inhale \e
+  \-\-lung\-tumor\-pos "0 0 10"
+plastimatch synth \e
+  \-\-pattern lung \e
+  \-\-output\-dicom lung_exhale \e
+  \-\-lung\-tumor\-pos "0 0 \-10"
+.ft P
+.fi
+.SH PLASTIMATCH SYNTH-VF
+.sp
+The \fIsynth\-vf\fP command creates a synthetic vector field.
+The following kinds of vector fields can be created,
+by specifying the appropriate option.
+.INDENT 0.0
+.IP \(bu 2
+gauss \-\- a gaussian warp
+.IP \(bu 2
+radial \-\- a radial expansion or contraction
+.IP \(bu 2
+translation \-\- a uniform translation
+.IP \(bu 2
+zero \-\- a vector field that is zero everywhere
+.UNINDENT
+.sp
+The command line usage is given as follows:
+.sp
+.nf
+.ft C
+Usage: plastimatch synth\-vf [options]
+Options:
+  \-\-dim <arg>             size of output image in voxels "x [y z]"
+  \-\-direction\-cosines <arg>
+                          oriention of x, y, and z axes; Specify either
+                           preset value, {identity, rotated\-{1,2,3},
+                           sheared}, or 9 digit matrix string "a b c
+                           d e f g h i"
+  \-\-fixed <arg>           An input image used to set the size of the
+                           output
+  \-\-gauss\-center <arg>    location of center of gaussian warp "x [y z]"
+  \-\-gauss\-mag <arg>       displacment magnitude for gaussian warp in
+                           mm "x [y z]"
+  \-\-gauss\-std <arg>       width of gaussian std in mm "x [y z]"
+  \-\-origin <arg>          location of first image voxel in mm "x y z"
+  \-\-output <arg>          output filename
+  \-\-radial\-center <arg>   location of center of radial warp "x [y z]"
+  \-\-radial\-mag <arg>      displacement magnitude for radial warp in
+                           mm "x [y z]"
+  \-\-spacing <arg>         voxel spacing in mm "x [y z]"
+  \-\-volume\-size <arg>     size of output image in mm "x [y z]"
+  \-\-xf\-gauss              gaussian warp
+  \-\-xf\-radial             radial expansion (or contraction)
+  \-\-xf\-trans <arg>        uniform translation in mm "x y z"
+  \-\-xf\-zero               Null transform
+.ft P
+.fi
 .SH PLASTIMATCH THUMBNAIL
 .sp
 The \fIthumbnail\fP command generates a two\-dimensional thumbnail image of an
@@ -786,10 +1259,41 @@ plastimatch thumbnail \e
   \-\-slice\-loc 0
 .ft P
 .fi
+.SH PLASTIMATCH UNION
+.sp
+The \fIunion\fP command creates a binary volume which is the
+logical union of two input images.  Voxels in the output
+image have
+value one if the voxel is non\-zero in either input image,
+or value zero if the voxel is zero in both input images.
+.sp
+The command line usage is given as follows:
+.sp
+.nf
+.ft C
+Usage: plastimatch union [options] input_1 input_2
+Options:
+ \-h, \-\-help           display this help message
+     \-\-output <arg>   filename for output image
+     \-\-version        display the program version
+.ft P
+.fi
+.SS Example
+.sp
+The following command creates a volume that is the
+union of two input images:
+.sp
+.nf
+.ft C
+plastimatch union \e
+  \-\-output itv.mha \e
+  phase_1.mha phase_2.mha
+.ft P
+.fi
 .SH PLASTIMATCH WARP
 .sp
 The \fIwarp\fP command is an alias for \fIconvert\fP.
-Please refer to \fIplastimatch_convert\fP for the list of command line
+Please refer to \fI\%plastimatch convert\fP for the list of command line
 parameters.
 .SS Examples
 .sp
@@ -848,10 +1352,89 @@ plastimatch warp \e
   \-\-default\-val \-1000
 .ft P
 .fi
+.sp
+In addition to images and structures, landmarks exported from 3D Slicer can
+also be warped.
+.sp
+.nf
+.ft C
+plastimatch warp \e
+  \-\-input fixed_landmarks.fcsv \e
+  \-\-output\-pointset warped_landmarks.fcsv \e
+  \-\-xf bspline.txt
+.ft P
+.fi
+.sp
+Sometimes, it may be desirable to apply a transform explicitly defined by a
+vector field instead of using B\-spline coefficients.  To allow this, the \-\-xf
+option also accepts vector field volumes.  For example, the previous example
+would become.
+.sp
+.nf
+.ft C
+plastimatch warp \e
+  \-\-input fixed_landmarks.fcsv \e
+  \-\-output\-pointset warped_landmarks.fcsv \e
+  \-\-xf vf.mha
+.ft P
+.fi
+.SH PLASTIMATCH XF-CONVERT
+.sp
+The \fIxf\-convert\fP command converts between transform types.
+A tranform can be either a B\-spline transform, or a vector field.
+There are two different kinds of B\-spline transform formats:
+the plastimatch native format, and the ITK format.
+In addition to converting the transform type, the \fIxf\-convert\fP command
+can also change the grid\-spacing of B\-spline transforms.
+.sp
+The command line usage is given as follows:
+.sp
+.nf
+.ft C
+Usage: plastimatch xf\-convert [options]
+Options:
+  \-\-dim <arg>            Size of output image in voxels "x [y z]"
+  \-\-grid\-spacing <arg>   B\-spline grid spacing in mm "x [y z]"
+  \-\-input <arg>          Input xform filename (required)
+  \-\-nobulk               Omit bulk transform for itk_bspline
+  \-\-origin <arg>         Location of first image voxel in mm "x y z"
+  \-\-output <arg>         Output xform filename (required)
+  \-\-output\-type <arg>    Type of xform to create (required), choose from
+                          {bspline, itk_bspline, vf}
+  \-\-spacing <arg>        Voxel spacing in mm "x [y z]"
+.ft P
+.fi
+.SS Example
+.sp
+We want to convert a B\-spline transform into a vector field.  If the
+B\-spline transform is in native\-format, the vector field
+geometry is defined by the values found in the transform header.:
+.sp
+.nf
+.ft C
+plastimatch xf\-convert \e
+  \-\-input bspline.txt \e
+  \-\-output vf.mha \e
+  \-\-output\-type vf
+.ft P
+.fi
+.sp
+Likewise, if we want to convert a vector field into a set of B\-spline
+coefficients with a control\-point spacing of 30 mm in each direction.
+.sp
+.nf
+.ft C
+plastimatch xf\-convert \e
+  \-\-input vf.mha \e
+  \-\-output bspline.txt \e
+  \-\-output\-type bspline \e
+  \-\-grid\-spacing 30
+.ft P
+.fi
 .SH AUTHOR
-Plastimatch is a collaborative project.  For more documentation, please visit http://plastimatch.org.  For questions, comments, and bug reports, please visit http://groups.google.com/group/plastimatch.
+Plastimatch is a collaborative project.  For additional documentation, please visit http://plastimatch.org.  For questions, comments, and bug reports, please visit http://groups.google.com/group/plastimatch.
 .SH COPYRIGHT
-Plastimatch development team (C) 2010-2011.  You are free to use, modify, and distribute plastimatch according to a BSD-style license.  Please see LICENSE.TXT for details.
+Plastimatch development team (C) 2010-2013.  You are free to use, modify, and distribute plastimatch according to a BSD-style license.  Please see LICENSE.TXT for details.
 .\" Generated by docutils manpage writer.
 .\" 
 .

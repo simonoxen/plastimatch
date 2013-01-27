@@ -89,6 +89,7 @@ Then, do a few small things to get ready for next time
      ~/build/plastimatch-pristene/extra_stuff
 
 #. Bump version number in CMakeLists
+#. Bump version number in doc/sphinx/conf.py
 
 Step 3: Build the debian package
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
