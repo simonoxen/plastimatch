@@ -1847,6 +1847,10 @@ plmtest_check_interval ("plm-dice-b-check-1"
   "0.999"
   "1.000"
   )
+set_tests_properties (plm-dice-a PROPERTIES DEPENDS "rect-4;rect-8")
+set_tests_properties (plm-dice-a-check-1 PROPERTIES DEPENDS "plm-dice-a")
+set_tests_properties (plm-dice-b PROPERTIES DEPENDS "rect-4;rect-9")
+set_tests_properties (plm-dice-b-check-1 PROPERTIES DEPENDS "plm-dice-b")
 
 ## -------------------------------------------------------------------------
 ## plm-dvh-a  ss-img, without ss-list
