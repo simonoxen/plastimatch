@@ -221,10 +221,9 @@ main (int argc, char* argv[])
   
 
   plm_long added_length[3];
-  for (int i=0;i!=3;++i)  {added_length[i]= (plm_long) added_dim[i]/added_spacing[i];}
+  for (int i=0;i!=3;++i)  {added_length[i]= (plm_long) added_dim[i];}
+
   resize_3d_vect(added_vect,added_length);
-
-
 
   //Added the voxels from each image into the added image
   for (std::vector<group_add_parms>::iterator it = parms_vec->begin(); it != parms_vec->end();++it)  {
@@ -289,11 +288,11 @@ main (int argc, char* argv[])
 		if (kk==z_low2) {unit *= (1 - ((z_low-added_origin[2])/added_spacing[2]+.5 - z_low2));}
 		if (kk==z_high2) {unit *= ((z_high-added_origin[2])/added_spacing[2]+.5 - z_high2);}
 
-	
-
 		if ((x_low2<0)||(y_low2<0)||(z_low2<0)||(x_high2>=added_dim[0])||(y_high2>=added_dim[1])||(z_high2>=added_dim[2]))  {continue;}
 
 		added_vect[ii][jj][kk] += unit*input_vect[i][j][k]*it->weight;
+
+
 		
 	      }
 	    }

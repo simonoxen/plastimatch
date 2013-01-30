@@ -47,6 +47,17 @@ Wed_Parms::Wed_Parms ()
     this->ap_spacing[0] = 1.;
     this->ap_spacing[1] = 1.;
     this->ap_offset = 100;
+
+    this->dew_dim[0] = -999.;
+    this->dew_dim[1] = -999.;
+    this->dew_dim[2] = -999.;
+    this->dew_origin[0] = -999.;
+    this->dew_origin[1] = -999.;
+    this->dew_origin[2] = -999.;
+    this->dew_spacing[0] = -999.;
+    this->dew_spacing[1] = -999.;
+    this->dew_spacing[2] = -999.;
+    this->dew_offset = 0.;
 }
 
 Wed_Parms::~Wed_Parms ()
@@ -130,14 +141,10 @@ Wed_Parms::parse_group(int argc, char** argv, int linenumber)
 	      this->input_dose_fn = dose_file.c_str();
 
 	      //add "_wed" to  pvol_file names
-	      pvol_file.insert (pvol_file.end()-4,'_wed');   
+	      pvol_file.insert (pvol_file.size()-4,"_wed");   
 	      strncpy (this->output_ct_fn, pvol_file.c_str(), _MAX_PATH);
 	      this->output_dose_fn = dose_wed_file.c_str();
 
-
-
-
-	      std::cout<<"linenumber is "<<linenumber<<std::endl;
 	    }
 	    linecounter++;
 	  }
@@ -156,32 +163,55 @@ Wed_Parms::set_key_val (
 {
     switch (section) {
 
-        /* [SETTINGS] */
+        /* [INPUT SETTINGS] */
     case 0:
         if (!strcmp (key, "ray_step")) {
             if (sscanf (val, "%f", &this->ray_step) != 1) {
                 goto error_exit;
             }
         }
+        //Whether wed or reverse, input patient and rpl vol
         else if (!strcmp (key, "patient")) {
             strncpy (this->input_ct_fn, val, _MAX_PATH);
-        }
-        else if (!strcmp (key, "dose")) {
-            this->input_dose_fn = val;
         }
         else if (!strcmp (key, "rpl_vol")) {
             this->rpl_vol_fn = val;
         }
-        else if (!strcmp (key, "patient_wed")) {
-            strncpy (this->output_ct_fn, val, _MAX_PATH);
-        }
-        else if (!strcmp (key, "dose_wed")) {
-            this->output_dose_fn = val;
-        }
-        break;
+        //If normal wed procedure, input dose
+	if (!this->wed_choice)  {
+	  if (!strcmp (key, "dose")) {
+	    this->input_dose_fn = val;
+	  }
+	}
+	//If reverse wed procedure, input dose_wed
+	if (this->wed_choice)  {
+	  if (!strcmp (key, "dose_wed")) {
+	    this->input_dose_fn = val;
+	  }
+	}
+	
 
-        /* [BEAM] */
+        break;
+        /* [OUTPUT SETTINGS] */
     case 1:
+        //If normal wed procedure, output patient_wed and dose_wed
+        if (!this->wed_choice)  {
+	  if (!strcmp (key, "patient_wed")) {
+            strncpy (this->output_ct_fn, val, _MAX_PATH);
+	  }
+	  else if (!strcmp (key, "dose_wed")) {
+            this->output_dose_fn = val;
+	  }
+	}
+	//If reverse wed  procedure, output only dose
+        if (this->wed_choice)  {
+	  if (!strcmp (key, "dose")) {
+            this->output_dose_fn = val;
+	  }
+	}
+        break;
+        /* [BEAM] */
+    case 2:
         if (!strcmp (key, "pos")) {
             if (sscanf (val, "%f %f %f", 
                     &(this->src[0]), 
@@ -209,7 +239,7 @@ Wed_Parms::set_key_val (
         break;
 
         /* [APERTURE] */
-    case 2:
+    case 3:
         if (!strcmp (key, "up")) {
             if (sscanf (val, "%f %f %f", &(this->vup[0]), &(this->vup[1]), &(this->vup[2])) != 3) {
                 goto error_exit;
@@ -243,6 +273,32 @@ Wed_Parms::set_key_val (
             }
         }
         break;
+
+
+        /* [DEW VOLUME] */
+    case 4:
+        if (!strcmp (key, "dew_dim")) {
+            if (sscanf (val, "%f %f %f", &(this->dew_dim[0]), &(this->dew_dim[1]), &(this->dew_dim[2])) != 3) {
+                goto error_exit;
+            }
+        }
+        else if (!strcmp (key, "dew_origin")) {
+            if (sscanf (val, "%f %f %f", &(this->dew_origin[0]), &(this->dew_origin[1]), &(this->dew_origin[2])) != 3) {
+                goto error_exit;
+            }
+        }
+        if (!strcmp (key, "dew_spacing")) {
+            if (sscanf (val, "%f %f %f", &(this->dew_spacing[0]), &(this->dew_spacing[1]), &(this->dew_spacing[2])) != 3) {
+                goto error_exit;
+            }
+        }
+	else if (!strcmp (key, "dew_offset")) {
+            if (sscanf (val, "%f", &(this->dew_offset)) != 1) {
+                goto error_exit;
+            }
+        }
+        break;
+
     }
     return 0;
 
@@ -265,7 +321,7 @@ Wed_Parms::parse_config (
 
     std::string buf;
     std::string buf_ori;    /* An extra copy for diagnostics */
-    int section = 0;
+    int section = -1;
 
     std::stringstream ss (buffer.str());
 
@@ -278,22 +334,34 @@ Wed_Parms::parse_config (
         if (buf[0] == '#') continue;
 
         if (buf[0] == '[') {
-            if (buf.find ("[SETTINGS]") != std::string::npos
-                || buf.find ("[settings]") != std::string::npos)
+            if (buf.find ("[INPUT SETTINGS]") != std::string::npos
+                || buf.find ("[input settings]") != std::string::npos)
             {
                 section = 0;
+                continue;
+            }
+            if (buf.find ("[OUTPUT SETTINGS]") != std::string::npos
+                || buf.find ("[output settings]") != std::string::npos)
+            {
+                section = 1;
                 continue;
             }
             else if (buf.find ("[BEAM]") != std::string::npos
                 || buf.find ("[beam]") != std::string::npos)
             {
-                section = 1;
+                section = 2;
                 continue;
             }
             else if (buf.find ("[APERTURE]") != std::string::npos
                 || buf.find ("[aperture]") != std::string::npos)
             {
-                section = 2;
+                section = 3;
+                continue;
+            }
+            else if (buf.find ("[DEW VOLUME]") != std::string::npos
+                || buf.find ("[dew volume]") != std::string::npos)
+            {
+                section = 4;
                 continue;
             }
             else {
@@ -370,9 +438,11 @@ Wed_Parms::parse_args (int argc, char** argv)
     scene->beam->dmax = 1.0;
 #endif
 
-    if (this->output_ct_fn[0] == '\0') {
+    if (!this->wed_choice)  {//If doing a wed calculation, patient_wed is required
+      if (this->output_ct_fn[0] == '\0') {
         fprintf (stderr, "\n** ERROR: Output file for patient water equivalent depth volume not specified in configuration file!\n");
         return false;
+      }
     }
 
 #if 0

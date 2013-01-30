@@ -46,6 +46,13 @@ public:
     float ic[2];
     float ap_spacing[2];
     float ap_offset;
+
+    /* [DEW VOLUME] */
+    float dew_dim[3];
+    float dew_origin[3];
+    float dew_spacing[3];
+    float dew_offset;
+
 };
 
 #endif

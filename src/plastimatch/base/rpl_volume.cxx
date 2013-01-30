@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <iostream>
 
 #include "compiler_warnings.h"
 #include "logfile.h"
@@ -264,7 +265,7 @@ Rpl_volume::compute (Volume *ct_vol)
     d_ptr->ray_data = new Ray_data[ires[0]*ires[1]];
 
     /* Scan through the aperture -- first pass */
-    for (int r = 0; r < ires[0]; r++) {
+    for (int r = 0; r < ires[1]; r++) {
         double r_tgt[3];
         double tmp[3];
 
@@ -274,10 +275,9 @@ Rpl_volume::compute (Volume *ct_vol)
         vec3_scale3 (tmp, proj_vol->get_incr_r(), (double) r);
         vec3_add2 (r_tgt, tmp);
 
-        for (int c = 0; c < ires[1]; c++) {
+        for (int c = 0; c < ires[0]; c++) {
             /* Compute index of aperture pixel */
             plm_long ap_idx = r * ires[0] + c;
-
             /* Make some aliases */
             Ray_data *ray_data = &d_ptr->ray_data[ap_idx];
             double *ip1 = ray_data->ip1;
@@ -320,6 +320,7 @@ Rpl_volume::compute (Volume *ct_vol)
 
 #if defined (commentout)
 	    printf ("(%d,%d)\n", r, c);
+	    printf ("%d",ap_idx);
 	    printf ("ap  = %f %f %f\n", p2[0], p2[1], p2[2]);
 	    printf ("ip1 = %f %f %f\n", ip1[0], ip1[1], ip1[2]);
 	    printf ("ip2 = %f %f %f\n", ip2[0], ip2[1], ip2[2]);
@@ -365,23 +366,21 @@ Rpl_volume::compute (Volume *ct_vol)
     d_ptr->proj_vol->allocate ();
     
     /* Scan through the aperture -- second pass */
-    for (int r = 0; r < ires[0]; r++) {
+    for (int r = 0; r < ires[1]; r++) {
 
         //if (r % 50 == 0) printf ("Row: %4d/%d\n", r, rows);
 
-        for (int c = 0; c < ires[1]; c++) {
+        for (int c = 0; c < ires[0]; c++) {
 
             /* Compute index of aperture pixel */
             plm_long ap_idx = r * ires[0] + c;
 
             /* Make some aliases */
             Ray_data *ray_data = &d_ptr->ray_data[ap_idx];
-
             /* Compute intersection with front clipping plane */
             vec3_scale3 (ray_data->cp, ray_data->ray, 
                 d_ptr->front_clipping_dist);
             vec3_add2 (ray_data->cp, ray_data->p2);
-
 #if defined (commentout)
 	    printf ("Tracing ray (%d,%d)\n", r, c);
 #endif
@@ -409,10 +408,11 @@ Rpl_volume::compute_wed_volume (Volume *wed_vol, Volume *in_vol, float backgroun
     float *wed_vol_img = (float*) wed_vol->img;
     const int *ires = proj_vol->get_image_dim();
 
- 
+
+
     plm_long wijk[3];  /* Index within wed_volume */
 
-
+   
     //   printf("ires is %d %d %d %d \n",ires[0],ires[1],ires[2],ires[3]);
     for (wijk[1] = 0; wijk[1] < ires[1]; wijk[1]++) {
 
@@ -529,28 +529,21 @@ Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float backgrou
 
   //A couple of abbreviations
   Proj_volume *proj_vol = d_ptr->proj_vol;
-  Volume *rvol = proj_vol->get_volume();
-  float *rvol_img = (float*) rvol->img;
+  //  Volume *rvol = proj_vol->get_volume();
   float *dew_vol_img = (float*) dew_vol->img;
   float *wed_vol_img = (float*) wed_vol->img;
   const plm_long *dew_dim = dew_vol->dim; 
   
   //Get some parameters from the proj volume
   const int *ires = proj_vol->get_image_dim();
-
- 
-
   const double *src = proj_vol->get_src();
   const double dist = proj_vol->get_proj_matrix()->sid; //distance from source to aperture
   double src_iso_vec[3];   //vector from source to isocenter
   proj_vol->get_proj_matrix()->get_nrm(src_iso_vec); 
   vec3_invert(src_iso_vec);
 
-  printf("%f %f %f\n",src_iso_vec[0],src_iso_vec[1],src_iso_vec[2]);
-  
   //Contruct aperture "box", in which each voxel's respective
   //ray intersection must be within.
-  
   Ray_data *ray_box[4];
   ray_box[0] = &d_ptr->ray_data[ 0 ];
   ray_box[1] = &d_ptr->ray_data[ ires[0]-1 ];
@@ -558,47 +551,35 @@ Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float backgrou
   ray_box[3] = &d_ptr->ray_data[ ires[0]*ires[1]-1 ];
 
   //Compute aperture dimension lengths and normalized axes
-  double ap_dim[2]; //length of each aperture axis
   double ap_axis1[3]; //unit vector of ap. axis 1
   double ap_axis2[3];
+
   vec3_sub3(ap_axis1,ray_box[1]->p2,ray_box[0]->p2);
-  ap_dim[0] = vec3_len(ap_axis1);
   vec3_normalize1(ap_axis1);
   vec3_sub3(ap_axis2,ray_box[2]->p2,ray_box[0]->p2);
-  ap_dim[1] = vec3_len(ap_axis2);
   vec3_normalize1(ap_axis2);
-  
+
   Ray_data *ray_adj[4]; //the 4 rays in rpl space that border each coordinate
-  double ray_adj_len[4]; //calculated length of adjacent 4 rays to each voxel
+  double ray_adj_len; //calculated length each adjacent ray to the voxel
+  double rad_depth_input; //input length to calculate rgdepth
 
-  printf("ray 0 is %f %f %f\n",ray_box[0]->p2[0],ray_box[0]->p2[1],ray_box[0]->p2[2]);
-  printf("ray 1 is %f %f %f\n",ray_box[1]->p2[0],ray_box[1]->p2[1],ray_box[1]->p2[2]);
-  printf("ray 2 is %f %f %f\n",ray_box[2]->p2[0],ray_box[2]->p2[1],ray_box[2]->p2[2]);
-  printf("ray 3 is %f %f %f\n",ray_box[3]->p2[0],ray_box[3]->p2[1],ray_box[3]->p2[2]);
-
-  /*
-  plm_long wijk[3]; 
-  for (wijk[1] = 0; wijk[1] < ires[1]; wijk[1]++) {
-    for (wijk[0] = 0; wijk[0] < ires[0]; wijk[0]++) {
-      plm_long ap_idx = wijk[1] * ires[0] + wijk[0];
-      Ray_data *ray_data = &d_ptr->ray_data[ap_idx];
-      printf("ray (%d,%d) is %f %f %f\n",wijk[0],wijk[1],ray_data->p2[0],ray_data->p2[1],ray_data->p2[2]);
-    }
-  }
-  */
-  
   plm_long wijk[3]; //index within wed_volume
-  plm_long rijk[3]; //index within rpl_volume
+  int ap_ij[2]; //ray indox of rvol
   plm_long dijk[3]; //Index within dew_volume
   plm_long didx; //image index within dew_volume
 
+  bool skipflag;
+
   double coord[3];   //coordinate within dew_volume
-  double ap_coord[3]; //coordinate in aperture plane along coord vector
+  double ap_coord[3]; //coordinate in aperture plane from source
   double ap_coord_plane[2]; //transformed, 2-d aperture coordinate of each voxel ray
 
   double coord_vec[3]; //vector along source to coordinate
   double unit_coord_vec[3]; //unit vector along source to coordinate
   double ap_coord_vec[3]; //vector along source to coordinate, terminated at ap. plane
+  
+  double adj_ray_coord[3]; //adjacent ray vector, used to compute rad. length
+  double dummy_adj_ray[3];
 
   double coord_ap_len; //distance from coordinate to aperture
   double dummy_lin_ex;
@@ -607,19 +588,19 @@ Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float backgrou
 
   plm_long ray_lookup[4][2]; //quick lookup table for ray coordinates for rijk input
   double ray_rad_len[4]; //radiation length of each ray
-	       
+
   for (dijk[0] = 0; dijk[0] != dew_dim[0]; ++dijk[0])  {
     coord[0] = dijk[0]*dew_vol->spacing[0]+dew_vol->offset[0];
     for (dijk[1] = 0; dijk[1] != dew_dim[1]; ++dijk[1])  {
       coord[1] = dijk[1]*dew_vol->spacing[1]+dew_vol->offset[1];
       for (dijk[2] = 0; dijk[2] != dew_dim[2]; ++dijk[2])  {
 	coord[2] = dijk[2]*dew_vol->spacing[2]+dew_vol->offset[2];
-	
+
+
 	didx = volume_index (dew_dim, dijk);
-	
+
 	//Set the default to background.
 	dew_vol_img[didx] = background;
-
 	
 	vec3_sub3(coord_vec,coord,src); //Determine the vector to this voxel from the source
 	vec3_copy(unit_coord_vec,coord_vec);
@@ -627,127 +608,120 @@ Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float backgrou
 	coord_ap_len = dist/vec3_dot(unit_coord_vec,src_iso_vec); //trig + dot product for distance
 	vec3_copy(ap_coord_vec,unit_coord_vec);
 	vec3_scale2(ap_coord_vec, coord_ap_len); //calculate vector from source to aperture plane
-	vec3_add3(ap_coord,ap_coord_vec,src);
+	vec3_add3(ap_coord,ap_coord_vec,src);  //calculate vector from origin to aperture plane
 
+	//Some math will fail if we try to compute nonsensical values of the volume
+	//between the source and aperture.
+	if (coord_ap_len>=vec3_len(coord_vec))  {continue;}
 
-
-	//	printf("coord is %f %f %f at voxel %d\n",ap_coord[0],ap_coord[1],ap_coord[2], didx);
-
-
-	//As ap_coord is on the proj. plane, then simply check the 6 coord. boundaries
-	  if ( (ap_coord[0] <= ray_box[0]->p2[0]) && (ap_coord[0] >= ray_box[3]->p2[0]) &&
-	       (ap_coord[1] <= ray_box[0]->p2[1]) && (ap_coord[1] >= ray_box[3]->p2[1]) &&
-	       (ap_coord[2] <= ray_box[0]->p2[2]) && (ap_coord[2] >= ray_box[3]->p2[2]) )  {
-	    
-	    for (int i=0;i!=4;++i)  {master_square[i/2][i%2] = background;}
-
-	    //Now we must find the projection of the point on the two aperture axes
-	    //Do this by calculating the closest point along both
-
-	    vec3_sub3(dummy_vec,ap_coord,ray_box[0]->p2);
-	    dummy_length = vec3_len(dummy_vec);
-	    vec3_normalize1(dummy_vec);
-	    ap_coord_plane[0] = vec3_dot(dummy_vec,ap_axis1)*dummy_length;
-	    ap_coord_plane[1] = vec3_dot(dummy_vec,ap_axis2)*dummy_length;
-
-	    //Note: starting here, some of the following code implicitly assumes that the 
-	    //aperture spacing is 1mm.  If this changes, some normalizing will be needed.
-	    master_coord[0] = ap_coord_plane[0]-floor(ap_coord_plane[0]);
-	    master_coord[1] = ap_coord_plane[1]-floor(ap_coord_plane[1]);
-
-	    //Get the 4 adjacent rays relative to the aperature coordinates
-	    int base_ap_coord = (int) (floor(ap_coord_plane[0]) + floor(ap_coord_plane[1])*ires[0]);
-	    ray_adj[0] = &d_ptr->ray_data[ base_ap_coord ];
-	    ray_adj[1] = &d_ptr->ray_data[ base_ap_coord + 1 ];
-	    ray_adj[2] = &d_ptr->ray_data[ base_ap_coord + ires[0] ];
-	    ray_adj[3] = &d_ptr->ray_data[ base_ap_coord + ires[0] + 1 ];
-
-	    //Compute ray indices for later rpl calculations.
-	    ray_lookup[0][0] = floor(ap_coord_plane[0]);
-	    ray_lookup[0][1] = floor(ap_coord_plane[1]);
-	    ray_lookup[1][0] = floor(ap_coord_plane[0]) + 1;
-	    ray_lookup[1][1] = floor(ap_coord_plane[1]);
-	    ray_lookup[2][0] = floor(ap_coord_plane[0]);
-	    ray_lookup[2][1] = floor(ap_coord_plane[1]) + 1;
-	    ray_lookup[3][0] = floor(ap_coord_plane[0]) + 1;
-	    ray_lookup[3][1] = floor(ap_coord_plane[1]) + 1;
-
-	    //Now compute the distance along each of the 4 rays
-	    //Distance chosen to be the intersection of each ray with the plane that both
-	    //contains the voxel and is normal to the aperture plane.
-
-	    for (int i=0;i!=4;++i)  {
-	      //Compute distance along each ray
-	      ray_adj_len[i] = (vec3_len(coord_vec)/coord_ap_len)*vec3_len(ray_adj[i]->p2);
-	      //Now look up the radiation length.  Since this is an exact coordinate,
-	      //linearly extrapolate along the rpl rays to obtain this value.
-	      dummy_lin_ex = ray_adj_len[i]/proj_vol->get_step_length() - floor(ray_adj_len[i]/proj_vol->get_step_length());
-	      rijk[0] = ray_lookup[i][0];
-	      rijk[1] = ray_lookup[i][1];
-	      rijk[2] = (int) floor(ray_adj_len[i]/proj_vol->get_step_length());
-	      dummy_index1 = volume_index ( rvol->dim, rijk );
-	      rijk[2] = (int) ceil(ray_adj_len[i]/proj_vol->get_step_length());
-	      dummy_index2 = volume_index ( rvol->dim, rijk );
-
-	      ray_rad_len[i] = rvol_img[dummy_index1] * (1-dummy_lin_ex) + rvol_img[dummy_index2] * dummy_lin_ex;
-
-	      //DIVERGENCE HERE:
-	      //Do we attempt a sort of trilinear interpolation, with a shape that is not regular (z dim different for each ray)?
-	      //Or simply linearly interpolate each ray to get a dose value, then binlinearly interpolate between the 4 rays.
-
-	      //Going with the latter:
-
-	      //Now, with the radiation length, extract the two dose values on either side
-
-	      //Check the borders - rvol should have an extra "border" for this purpose.
-	      //If any rays are these added borders, it is outside dose and is background
-	      if ( (ray_lookup[i][0]==0) || (ray_lookup[i][0]==ires[0]-1) ||
-		   (ray_lookup[i][1]==0) || (ray_lookup[i][1]==ires[1]-1) )  {
-		master_square[i/2][i%2] = background;
-	      }
-
-	      
-	      else {
-
-		dummy_lin_ex = ray_rad_len[i]-floor(ray_rad_len[i]);
-		wijk[0] = ray_lookup[i][0] - 1;
-		wijk[1] = ray_lookup[i][1] - 1;
-		
-		wijk[2] = (int) floor(ray_rad_len[i]);
-		dummy_index1 = volume_index ( wed_vol->dim, wijk );
-		wijk[2] = (int) ceil(ray_rad_len[i]);
-		dummy_index2 = volume_index ( wed_vol->dim, wijk );
-
-		master_square[i/2][i%2] = wed_vol_img[dummy_index1] * (1-dummy_lin_ex) + wed_vol_img[dummy_index2] * dummy_lin_ex;
-
-		//		printf("wijk is %d %d %d at voxel %d\n",wijk[0],wijk[1],wijk[2], dummy_index2);
-
-	      }
-	      
-	    }
-	    
-	    //Bilear interpolation from the square of wed dose ray values
-
-
-	    dew_vol_img[didx] = (float)
-	      ( master_square[0][0]*(1-master_coord[0])*(1-master_coord[1]) +
-		master_square[0][1]*(master_coord[0])*(1-master_coord[1]) + 
-		master_square[1][0]*(1-master_coord[0])*(master_coord[1]) + 
-		master_square[1][1]*(master_coord[0])*(master_coord[1]) );
-
-	    
+	//As ap_coord is on the proj. plane, then check the 6 coord. boundaries
+	//We also don't know which coordinates are larger depending on the orientation of
+	//the projection plane, so account for that.
+	skipflag = false;
+	for (int i=0;i!=3;++i)  {
+	  if(ray_box[0]->p2[i] >= ray_box[3]->p2[i])  {
+	    if ( !( (ap_coord[i] <= ray_box[0]->p2[i]) && (ap_coord[i] >= ray_box[3]->p2[i]) ) )  {skipflag = true; break;}
 	  }
-	  //      printf("1 coord is %f %f %f at voxel %d\n",ap_coord[0],ap_coord[1],ap_coord[2], didx);
-	  //	printf("coord is %f %f %f at voxel %d\n",ap_coord[0],ap_coord[1],ap_coord[2], didx);
-	  //	printf("coord is %f %f %f at voxel %d\n",coord[0],coord[1],coord[2], didx);
-	  //      printf("dijk is %d %d %d at voxel %d\n",dijk[0],dijk[1],dijk[2], didx);
+	  else  {
+	    if ( !( (ap_coord[i] >= ray_box[0]->p2[i]) && (ap_coord[i] <= ray_box[3]->p2[i]) ) )  {skipflag = true; break;}
+	  }
+	}
+	if (skipflag) {continue;}
+
+	for (int i=0;i!=4;++i)  {master_square[i/2][i%2] = background;}
 	
+	//Now we must find the projection of the point on the two aperture axes
+	//Do this by calculating the closest point along both
+	vec3_sub3(dummy_vec,ap_coord,ray_box[0]->p2);
+	dummy_length = vec3_len(dummy_vec);
+	vec3_normalize1(dummy_vec);
+	ap_coord_plane[0] = vec3_dot(dummy_vec,ap_axis1)*dummy_length;
+	ap_coord_plane[1] = vec3_dot(dummy_vec,ap_axis2)*dummy_length;
+	
+	//Note: starting here, some of the following code implicitly assumes that the 
+	//aperture spacing is 1mm.  If this changes, some normalizing will be needed.
+	master_coord[0] = ap_coord_plane[0]-floor(ap_coord_plane[0]);
+	master_coord[1] = ap_coord_plane[1]-floor(ap_coord_plane[1]);
+
+	//Get the 4 adjacent rays relative to the aperature coordinates
+	int base_ap_coord = (int) (floor(ap_coord_plane[1])*ires[0] + floor(ap_coord_plane[0])); 
+	ray_adj[0] = &d_ptr->ray_data[ base_ap_coord ];
+	ray_adj[1] = &d_ptr->ray_data[ base_ap_coord + 1 ];
+	ray_adj[2] = &d_ptr->ray_data[ base_ap_coord + ires[0] ];
+	ray_adj[3] = &d_ptr->ray_data[ base_ap_coord + ires[0] + 1 ];
+
+	//Compute ray indices for later rpl calculations.
+	ray_lookup[0][0] = floor(ap_coord_plane[0]);
+	ray_lookup[0][1] = floor(ap_coord_plane[1]);
+	ray_lookup[1][0] = floor(ap_coord_plane[0]);
+	ray_lookup[1][1] = floor(ap_coord_plane[1]) + 1;
+	ray_lookup[2][0] = floor(ap_coord_plane[0]) + 1;
+	ray_lookup[2][1] = floor(ap_coord_plane[1]);
+	ray_lookup[3][0] = floor(ap_coord_plane[0]) + 1;
+	ray_lookup[3][1] = floor(ap_coord_plane[1]) + 1;
+
+	//Now compute the distance along each of the 4 rays
+	//Distance chosen to be the intersection of each ray with the plane that both
+	//contains the voxel and is normal to the aperture plane.
+	  
+	for (int i=0;i!=4;++i)  {
+	  //Compute distance along each ray.
+	  //Vector along ray from source to aperture
+	  vec3_sub3(dummy_adj_ray,ray_adj[i]->p2,src);
+
+	  //Compute length, then ray from source to target position, using
+	  //ratio of coordinate-aperture to coordinate lengths.
+	  ray_adj_len = (vec3_len(coord_vec)/coord_ap_len)*vec3_len(dummy_adj_ray);
+	  vec3_scale3(adj_ray_coord,ray_adj[i]->ray,ray_adj_len);
+	  //Get vector from front clipping plane to target position
+	  vec3_add2(adj_ray_coord,src);
+	  vec3_sub2(adj_ray_coord,ray_adj[i]->cp);
+	  rad_depth_input = vec3_len(adj_ray_coord);
+	  //Now look up the radiation length, using the provided function,
+	  //knowing the ray and the length along it.
+	  ap_ij[0] = (int) ray_lookup[i][0];
+	  ap_ij[1] = (int) ray_lookup[i][1];
+	  ray_rad_len[i] = lookup_rgdepth(this,ap_ij,rad_depth_input);
+
+	  //Now, with the radiation length, extract the two dose values on either side
+	  
+	  //Check the borders - rvol should have an extra "border" for this purpose.
+	  //If any rays are these added borders, it is outside dose and is background
+	  if ( (ray_lookup[i][0]==0) || (ray_lookup[i][0]==ires[0]-1) ||
+	       (ray_lookup[i][1]==0) || (ray_lookup[i][1]==ires[1]-1) )  {
+	    master_square[i/2][i%2] = background;
+	    continue;
+	  }
+
+	  //Set radiation lengths of 0 to background.
+	  //While this is a boundary, keeps dose values from being assigned
+	  //everywhere that rad depth is 0 (for example, the air before the volume).
+	  if (ray_rad_len[i]<=0.)  {
+	    master_square[i/2][i%2] = background;
+	    continue;
+	  }
+	  
+	  else {
+	    dummy_lin_ex = ray_rad_len[i]-floor(ray_rad_len[i]);
+	    wijk[0] = ray_lookup[i][0] - 1;
+	    wijk[1] = ray_lookup[i][1] - 1;
+	    wijk[2] = (int) floor(ray_rad_len[i]);
+	    dummy_index1 = volume_index ( wed_vol->dim, wijk );
+	    wijk[2] = (int) ceil(ray_rad_len[i]);
+	    dummy_index2 = volume_index ( wed_vol->dim, wijk );
+
+	    master_square[i/2][i%2] = wed_vol_img[dummy_index1] * (1-dummy_lin_ex) + wed_vol_img[dummy_index2] * dummy_lin_ex;
+	  }
+	}
+	//Bilear interpolation from the square of wed dose ray values
+	dew_vol_img[didx] = (float)
+	  ( master_square[0][0]*(1-master_coord[0])*(1-master_coord[1]) +
+	    master_square[0][1]*(1-master_coord[0])*(master_coord[1]) + 
+	    master_square[1][0]*(master_coord[0])*(1-master_coord[1]) + 
+	    master_square[1][1]*(master_coord[0])*(master_coord[1]) );
       }
     }
   }
-  
-  
-
 }
 
 Volume* 

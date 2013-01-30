@@ -39,10 +39,12 @@ create_wed_volume (Wed_Parms* parms, Proton_Scene *scene)
      * aperture dimensions and the z-dimension is equal to the sampling
      * resolution chosen for the rpl */
     plm_long wed_dims[3];
+
     Volume *vol = rpl_vol->get_volume ();
     wed_dims[0] = vol->dim[0];
     wed_dims[1] = vol->dim[1];
     wed_dims[2] = vol->dim[2];
+
 
     return new Volume (wed_dims, wed_off, wed_ps, NULL, PT_FLOAT, 1);
 }
@@ -67,6 +69,19 @@ create_dew_volume (Wed_Parms* parms, Proton_Scene *scene)
     dew_dims[0] = patient_vol->dim[0];
     dew_dims[1] = patient_vol->dim[1];
     dew_dims[2] = patient_vol->dim[2];
+
+    //If output volume dimensions were set in .cfg file, use these.
+    if (parms->dew_dim[0]!=-999.) {dew_dims[0]=parms->dew_dim[0];}
+    if (parms->dew_dim[1]!=-999.) {dew_dims[1]=parms->dew_dim[1];}
+    if (parms->dew_dim[2]!=-999.) {dew_dims[2]=parms->dew_dim[2];}
+
+    if (parms->dew_origin[0]!=-999.) {dew_off[0]=parms->dew_origin[0];}
+    if (parms->dew_origin[1]!=-999.) {dew_off[1]=parms->dew_origin[1];}
+    if (parms->dew_origin[2]!=-999.) {dew_off[2]=parms->dew_origin[2];}
+
+    if (parms->dew_spacing[0]!=-999.) {dew_ps[0]=parms->dew_spacing[0];}
+    if (parms->dew_spacing[1]!=-999.) {dew_ps[1]=parms->dew_spacing[1];}
+    if (parms->dew_spacing[2]!=-999.) {dew_ps[2]=parms->dew_spacing[2];}
 
     return new Volume (dew_dims, dew_off, dew_ps, NULL, PT_FLOAT, 1);
 }
@@ -101,7 +116,7 @@ wed_ct_compute (
 }
 
 int
-wed_ct_compute(Wed_Parms *parms)
+wed_ct_initialize(Wed_Parms *parms)
 {
   
   
@@ -119,17 +134,12 @@ wed_ct_compute(Wed_Parms *parms)
   
   scene.set_patient (ct_vol);
   
+  printf("%s\n",parms->input_dose_fn.c_str());
  
   if (parms->input_dose_fn != "" && parms->output_dose_fn != "") {
-    //Load the input dose, or wed dose
-    if (!parms->wed_choice)  {
-      dose_vol = plm_image_load (parms->input_dose_fn.c_str(), 
-				 PLM_IMG_TYPE_ITK_FLOAT);
-    }
-    if (parms->wed_choice)  {
-      dose_vol = plm_image_load (parms->output_dose_fn.c_str(), 
-				 PLM_IMG_TYPE_ITK_FLOAT);
-    }
+    //Load the input dose, or input wed_dose
+    dose_vol = plm_image_load (parms->input_dose_fn.c_str(), 
+			       PLM_IMG_TYPE_ITK_FLOAT);
   }
 
   
@@ -155,8 +165,8 @@ wed_ct_compute(Wed_Parms *parms)
     //We also pad each dimension by 1, for the later trilinear interpolations.
     int ap_res[2] = { (int) (wed_vol->dim[0]+2), (int) (wed_vol->dim[1]+2)};
     scene.ap->set_dim (ap_res);
-
-    printf("ap_res is %d %d\n",ap_res[0],ap_res[1]);
+    parms->ires[0]=ap_res[0];
+    parms->ires[1]=ap_res[1];
     
     //Set center as half the resolutions.
     float ap_center[2];
@@ -164,6 +174,8 @@ wed_ct_compute(Wed_Parms *parms)
     ap_center[1] = (float) ap_res[1]/2.;
     //    float ap_center[2] = { (float) ap_res[0]/2., (float) ap_res[1]/2.};
     scene.ap->set_center (ap_center);
+    parms->ic[0]=ap_center[0];
+    parms->ic[1]=ap_center[1];
     
   }
   
@@ -177,7 +189,6 @@ wed_ct_compute(Wed_Parms *parms)
   }
   scene.debug ();
   
-  //Seems to have no use - clean this up?
   if (parms->rpl_vol_fn != "") {
     scene.rpl_vol->save (parms->rpl_vol_fn);
   }
@@ -192,30 +203,25 @@ wed_ct_compute(Wed_Parms *parms)
   fflush(stdout);
   
   if (!parms->wed_choice)  {
+    printf ("Computing patient wed volume...\n");
     wed_ct_compute (parms->output_ct_fn, parms, ct_vol, &scene, background[0]);
     printf ("done.\n");
   }
   
   if (parms->input_dose_fn != "" && parms->output_dose_fn != "") {
-    if (!parms->wed_choice)  {
-      printf ("Trying to wed dose...\n");
-      wed_ct_compute (parms->output_dose_fn.c_str(), 
-		      parms, dose_vol, &scene, background[1]);
-      printf ("Did wed dose...\n");
-    }
-    else {
-      printf ("Trying to reverse wed dose...\n");
-      wed_ct_compute (parms->input_dose_fn.c_str(), 
-		      parms, dose_vol, &scene, background[1]);
-      printf ("Did dew dose...\n");
-    }
+    printf ("Calculating dose...\n");
+    wed_ct_compute (parms->output_dose_fn.c_str(), 
+		    parms, dose_vol, &scene, background[1]);
+    printf ("Complete...\n");
   }
+
   return 0;
 }
 
 int
 main (int argc, char* argv[])
 {
+
   Wed_Parms *parms = new Wed_Parms();
   int wed_iter = 1;
   
@@ -229,14 +235,14 @@ main (int argc, char* argv[])
     while(wed_iter!=parms->group)  {
       if (parms->group) {
 	parms->parse_group(argc, argv, wed_iter);
-	wed_ct_compute(parms);
+	wed_ct_initialize(parms);
 	wed_iter++;
       }
       
     }
   }
     
-  else {wed_ct_compute(parms);} //Compute wed without loop
+  else {wed_ct_initialize(parms);} //Compute wed without loop
   
   return 0;
 }
