@@ -36,7 +36,7 @@ gdcm_rtss_probe (const char *rtss_fn)
     gdcm::File *rtss_file = new gdcm::File;
     std::string tmp;
 
-    rtss_file->SetMaxSizeLoadEntry (0xffff);
+    rtss_file->SetMaxSizeLoadEntry (0xffffff);
     rtss_file->SetFileName (rtss_fn);
     rtss_file->SetLoadMode (0);
     rtss_file->Load();
@@ -64,7 +64,7 @@ gdcm_rtss_load (
     gdcm::SQItem *item;
     std::string tmp;
 
-    rtss_file->SetMaxSizeLoadEntry (0xffff);
+    rtss_file->SetMaxSizeLoadEntry (0xffffff);
     rtss_file->SetFileName (rtss_fn);
     rtss_file->SetLoadMode (0);
     rtss_file->Load();
@@ -242,6 +242,8 @@ gdcm_rtss_load (
 		    /* Parse float value */
 		    if (1 != sscanf (&contour_data[n], "%f%n", &f, &this_n)) {
 			printf ("Error parsing data...\n");
+                        printf ("%d points\n", num_points);
+                        printf ("%s\n", contour_data.c_str());
 			break;
 		    }
 		    n += this_n;
