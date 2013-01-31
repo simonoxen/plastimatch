@@ -8,7 +8,7 @@ FUNCTION STILL IN TESTING
 
 Author: Paolo Zaffino (p.zaffino@unicz.it)
 
-rev 5
+rev 6
 
 Required libraries:
 1) numpy (http://numpy.scipy.org)
@@ -17,10 +17,17 @@ Required libraries:
 
 NOT TESTED ON PYTHON 3
 
-USAGE EXAMPLE:
+USAGE EXAMPLES:
 
 import pypla_viewer as pv
-pv.show_img(input=foo.mha)
+pv.show_img(input='foo.mha')
+
+	OR
+
+import mha
+import pypla_viewer as pv
+foo_obj=mha.new(input_file='foo.mha')
+pv.show_img(input=foo_obj)
 
 BRIEF INPUTS EXPLANATION:
 
