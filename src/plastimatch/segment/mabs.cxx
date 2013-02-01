@@ -210,7 +210,8 @@ Mabs::load_atlas_dir_list ()
         }
 
         /* Build string containing full path to atlas item */
-        std::string path = compose_filename (d_ptr->parms->atlas_dir, d.entries[i]);
+        std::string path = compose_filename (
+            d_ptr->parms->atlas_dir, d.entries[i]);
 
         /* Only consider directories */
         if (!is_directory (path.c_str())) {
@@ -630,7 +631,6 @@ Mabs::segmentation_vote (const std::string& atlas_id)
         lprintf ("Segmenting structure: %s\n", mapped_name.c_str());
 
         /* Make a new voter if needed */
-        lprintf ("Voting structure %s\n", mapped_name.c_str());
         Mabs_vote *vote;
         std::map<std::string, Mabs_vote*>::const_iterator vote_it 
             = d_ptr->vote_map.find (mapped_name);
@@ -638,6 +638,7 @@ Mabs::segmentation_vote (const std::string& atlas_id)
             vote = new Mabs_vote;
             vote->set_rho (d_ptr->rho);
             vote->set_sigma (d_ptr->sigma);
+            vote->set_minimum_similarity (d_ptr->minsim);
             d_ptr->vote_map[mapped_name] = vote;
             vote->set_fixed_image (
                 d_ptr->ref_rtds.m_img->itk_float());
@@ -647,6 +648,7 @@ Mabs::segmentation_vote (const std::string& atlas_id)
 
         /* Load dmap */
         timer.start();
+        lprintf ("Loading dmap\n");
         std::string dmap_fn = string_format ("%s/dmap_%s.nrrd", 
             curr_output_dir.c_str(), mapped_name.c_str());
         Plm_image *dmap_image = plm_image_load_native (
@@ -658,6 +660,7 @@ Mabs::segmentation_vote (const std::string& atlas_id)
 
         /* Vote */
         timer.start();
+        lprintf ("Voting\n");
         vote->vote (warped_image->itk_float(), 
             dmap_image->itk_float());
         d_ptr->time_vote += timer.report();
@@ -741,7 +744,7 @@ Mabs::segmentation_label ()
             dice.run ();
 
             std::string seg_log_string = string_format (
-                "%s,%s,%s,%f,%f,%f,%f,%d,%d,%d,%d\n",
+                "%s,%s,%s,%f,%f,%f,%f,%d,%d,%d,%d,%f\n",
                 d_ptr->ref_id.c_str(), 
                 d_ptr->registration_id.c_str(),
                 mapped_name.c_str(), 
@@ -752,7 +755,9 @@ Mabs::segmentation_label ()
                 (int) dice.get_true_positives(),
                 (int) dice.get_true_negatives(),
                 (int) dice.get_false_positives(),
-                (int) dice.get_false_negatives());
+                (int) dice.get_false_negatives(),
+                d_ptr->minsim
+            );
             lprintf ("%s", seg_log_string.c_str());
             fprintf (d_ptr->seg_dice_fp, 
                 "%s", seg_log_string.c_str());

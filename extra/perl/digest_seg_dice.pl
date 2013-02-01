@@ -8,10 +8,13 @@ $seg_dice_fn = shift;
 
 open (FP, "<$seg_dice_fn") or die "Couldn't open file $seg_dice_fn for read";
 while (<FP>) {
-    ($a1,$reg,$structure,$rho,$sigma,$thresh,$dice,$junk) = split (',',$_);
+    ($a1,$reg,$structure,$rho,$sigma,$thresh,$dice,$d1,$d2,$d3,$d4,$minsim) 
+	= split (',',$_);
     if ($dice eq "") { next; }
+    chomp ($minsim);
+    if ($minsim eq "") { $minsim = "0.0001"; }
 
-    $keystring = "$structure,$rho,$sigma,$thresh";
+    $keystring = "$structure,$rho,$sigma,$minsim,$thresh";
 
     $dice_num{$keystring} ++;
     $dice_sum{$keystring} += $dice;
