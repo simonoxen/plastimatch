@@ -675,7 +675,7 @@ Mabs::segmentation_label (
     std::string curr_output_dir;
     curr_output_dir = string_format ("%s/segmentations/%s/rho_%f_sig_%f_ms_%f",
         d_ptr->output_dir.c_str(), registration_id.c_str(),
-        rho, sigma, minimum_similarity);
+        rho, sigma, d_ptr->parms->minimum_similarity.c_str());
     lprintf ("curr_output_dir: %s\n", curr_output_dir.c_str());
 
     /* Get output image for each label */

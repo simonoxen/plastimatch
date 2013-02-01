@@ -34,6 +34,9 @@ public:
     void set_sigma (
         float sigma
     );
+    void set_minimum_similarity (
+        float minimum_similarity
+    );
     ///@}
 
     /*! \name Execution */
