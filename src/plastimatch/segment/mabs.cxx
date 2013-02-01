@@ -58,6 +58,12 @@ public:
     Rtds ref_rtds;
     std::list<std::string> atlas_list;
 
+    /* Segmentation parameters */
+    std::string registration_id;
+    float minsim;
+    float rho;
+    float sigma;
+
     /* While segmenting an image, we sometimes loop through 
        the structures for evaluation.  This holds the 
        binary image of the current structure which we are 
@@ -99,6 +105,11 @@ public:
         write_registration_files = true;
         have_ref_structure = false;
         this->reset_timers ();
+
+        registration_id = "";
+        minsim = 0.0;
+        rho = 0.0;
+        sigma = 0.0;
     }
     void reset_timers () {
         time_dice = 0;
@@ -583,11 +594,7 @@ Mabs::run_registration ()
 }
 
 void
-Mabs::segmentation_vote (
-    const std::string& registration_id, 
-    const std::string& atlas_id, 
-    float rho, 
-    float sigma)
+Mabs::segmentation_vote (const std::string& atlas_id)
 {
     Plm_timer timer;
     
@@ -601,7 +608,7 @@ Mabs::segmentation_vote (
     std::string curr_output_dir;
     curr_output_dir = string_format ("%s/%s",
         atlas_output_path.c_str(),
-        registration_id.c_str());
+        d_ptr->registration_id.c_str());
     lprintf ("curr_output_dir: %s\n", curr_output_dir.c_str());
 
     /* Load warped image */
@@ -629,8 +636,8 @@ Mabs::segmentation_vote (
             = d_ptr->vote_map.find (mapped_name);
         if (vote_it == d_ptr->vote_map.end()) {
             vote = new Mabs_vote;
-            vote->set_rho (rho);
-            vote->set_sigma (sigma);
+            vote->set_rho (d_ptr->rho);
+            vote->set_sigma (d_ptr->sigma);
             d_ptr->vote_map[mapped_name] = vote;
             vote->set_fixed_image (
                 d_ptr->ref_rtds.m_img->itk_float());
@@ -664,18 +671,15 @@ Mabs::segmentation_vote (
 }
 
 void
-Mabs::segmentation_label (
-    const std::string& registration_id, 
-    float rho, 
-    float sigma)
+Mabs::segmentation_label ()
 {
     Plm_timer timer;
 
     /* Set up files & directories for this job */
     std::string curr_output_dir;
     curr_output_dir = string_format ("%s/segmentations/%s/rho_%f_sig_%f_ms_%f",
-        d_ptr->output_dir.c_str(), registration_id.c_str(),
-        rho, sigma, d_ptr->parms->minimum_similarity.c_str());
+        d_ptr->output_dir.c_str(), d_ptr->registration_id.c_str(),
+        d_ptr->rho, d_ptr->sigma, d_ptr->minsim);
     lprintf ("curr_output_dir: %s\n", curr_output_dir.c_str());
 
     /* Get output image for each label */
@@ -739,9 +743,11 @@ Mabs::segmentation_label (
             std::string seg_log_string = string_format (
                 "%s,%s,%s,%f,%f,%f,%f,%d,%d,%d,%d\n",
                 d_ptr->ref_id.c_str(), 
-                registration_id.c_str(),
+                d_ptr->registration_id.c_str(),
                 mapped_name.c_str(), 
-                rho, sigma, thresh_val, 
+                d_ptr->rho, 
+                d_ptr->sigma, 
+                thresh_val, 
                 dice.get_dice(),
                 (int) dice.get_true_positives(),
                 (int) dice.get_true_negatives(),
@@ -758,7 +764,50 @@ Mabs::segmentation_label (
 void
 Mabs::run_segmentation ()
 {
-    Option_range rho_range, sigma_range;
+    /* Clear out internal structure */
+    d_ptr->clear_vote_map ();
+
+    /* Check if this segmentation is already complete.
+       We might be able to skip it. */
+    std::string curr_output_dir;
+    curr_output_dir = string_format (
+        "%s/segmentations/%s/rho_%f_sig_%f_ms_%f",
+        d_ptr->output_dir.c_str(), d_ptr->registration_id.c_str(),
+        d_ptr->rho, d_ptr->sigma, d_ptr->minsim);
+    std::string seg_checkpoint_fn = string_format (
+        "%s/checkpoint.txt", curr_output_dir.c_str());
+    if (file_exists (seg_checkpoint_fn)) {
+        lprintf ("Segmentation complete for %s\n",
+            curr_output_dir.c_str());
+        return;
+    }
+
+    /* Loop through images in the atlas */
+    std::list<std::string>::iterator atl_it;
+    for (atl_it = d_ptr->atlas_list.begin();
+         atl_it != d_ptr->atlas_list.end(); atl_it++)
+    {
+        std::string atlas_id = basename (*atl_it);
+        segmentation_vote (atlas_id);
+    }
+
+    /* Threshold images based on weight */
+    segmentation_label ();
+
+    /* Create checkpoint file which means that this segmentation
+       is complete */
+    touch_file (seg_checkpoint_fn);
+
+    /* Clear out internal structure */
+    d_ptr->clear_vote_map ();
+}
+
+
+void
+Mabs::run_segmentation_loop ()
+{
+    Option_range minsim_range, rho_range, sigma_range;
+    minsim_range.set_linear_range (d_ptr->parms->minsim_values);
     rho_range.set_linear_range (d_ptr->parms->rho_values);
     sigma_range.set_log_range (d_ptr->parms->sigma_values);
 
@@ -767,58 +816,33 @@ Mabs::run_segmentation ()
     for (reg_it = d_ptr->registration_list.begin(); 
          reg_it != d_ptr->registration_list.end(); reg_it++) 
     {
+        d_ptr->registration_id = basename (*reg_it);
+
         /* Loop through each training parameter: rho */
         const std::list<float>& rho_list = rho_range.get_range();
         std::list<float>::const_iterator rho_it;
         for (rho_it = rho_list.begin(); rho_it != rho_list.end(); rho_it++) 
         {
+            d_ptr->rho = *rho_it;
+
             /* Loop through each training parameter: sigma */
             const std::list<float>& sigma_list = sigma_range.get_range();
             std::list<float>::const_iterator sigma_it;
             for (sigma_it = sigma_list.begin(); 
                  sigma_it != sigma_list.end(); sigma_it++) 
             {
-                /* Clear out internal structure */
-                d_ptr->clear_vote_map ();
+                d_ptr->sigma = *sigma_it;
 
-                /* Get id string for registration */
-                std::string registration_id = "";
-                registration_id = basename (*reg_it);
-
-                /* Check if this segmentation is already complete.
-                   We might be able to skip it. */
-                std::string curr_output_dir;
-                curr_output_dir = string_format (
-                    "%s/segmentations/%s/rho_%f_sig_%f",
-                    d_ptr->output_dir.c_str(), registration_id.c_str(),
-                    *rho_it, *sigma_it);
-                std::string seg_checkpoint_fn = string_format (
-                    "%s/checkpoint.txt", curr_output_dir.c_str());
-                if (file_exists (seg_checkpoint_fn)) {
-                    lprintf ("Segmentation complete for %s\n",
-                        curr_output_dir.c_str());
-                    continue;
-                }
-
-                /* Loop through images in the atlas */
-                std::list<std::string>::iterator atl_it;
-                for (atl_it = d_ptr->atlas_list.begin();
-                     atl_it != d_ptr->atlas_list.end(); atl_it++)
+                /* Loop through each training parameter: minimum similarity */
+                const std::list<float>& minsim_list = minsim_range.get_range();
+                std::list<float>::const_iterator minsim_it;
+                for (minsim_it = minsim_list.begin(); 
+                     minsim_it != minsim_list.end(); minsim_it++) 
                 {
-                    std::string atlas_id = basename (*atl_it);
-                    segmentation_vote (registration_id, atlas_id, 
-                        *rho_it, *sigma_it);
+                    d_ptr->minsim = *minsim_it;
+
+                    run_segmentation ();
                 }
-
-                /* Threshold images based on weight */
-                segmentation_label (registration_id, *rho_it, *sigma_it);
-
-                /* Create checkpoint file which means that this segmentation
-                   is complete */
-                touch_file (seg_checkpoint_fn);
-
-                /* Clear out internal structure */
-                d_ptr->clear_vote_map ();
             }
         }
     }
@@ -860,7 +884,6 @@ Mabs::run ()
 
     /* Run the segmentation */
     this->run_registration ();
-    this->run_segmentation ();
 }
 
 void
@@ -928,7 +951,7 @@ Mabs::train_internal (bool registration_only)
         /* Run the segmentation */
         this->run_registration ();
         if (!registration_only) {
-            this->run_segmentation ();
+            this->run_segmentation_loop ();
         }
     }
 

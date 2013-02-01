@@ -26,15 +26,9 @@ protected:
     void run_single_registration ();
     void run_registration ();
     void run_segmentation ();
-    void segmentation_vote (
-        const std::string& registration_id, 
-        const std::string& atlas_id, 
-        float rho, 
-        float sigma);
-    void segmentation_label (
-        const std::string& registration_id, 
-        float rho, 
-        float sigma);
+    void run_segmentation_loop ();
+    void segmentation_vote (const std::string& atlas_id);
+    void segmentation_label ();
     void train_internal (bool registration_only);
 
 public:

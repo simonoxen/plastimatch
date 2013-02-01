@@ -20,7 +20,7 @@ Mabs_parms::Mabs_parms ()
     this->sman = new Mabs_subject_manager;
     this->debug = false;
     this->rho_values = "1:1:1";
-    this->minimum_similarity = "0.0001:1:0.0001";
+    this->minsim_values = "0.0001:1:0.0001";
     this->sigma_values = "1.7:1:1.7";
 }
 
@@ -87,7 +87,7 @@ Mabs_parms::set_key_val (
             this->sigma_values = val;
         }
         else if (key == "minimum_similarity") {
-            this->minimum_similarity = val;
+            this->minsim_values = val;
         }
         break;
 
