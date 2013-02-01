@@ -69,6 +69,7 @@ public:
        for debugging and tuning */
     bool compute_distance_map;
     bool write_weight_files;
+    bool write_thresholded_files;
     bool write_distance_map;
     bool write_registration_files;
 
@@ -93,6 +94,7 @@ public:
         parms = 0;
         compute_distance_map = true;
         write_weight_files = false;
+        write_thresholded_files = true;
         write_distance_map = true;
         write_registration_files = true;
         have_ref_structure = false;
@@ -671,9 +673,9 @@ Mabs::segmentation_label (
 
     /* Set up files & directories for this job */
     std::string curr_output_dir;
-    curr_output_dir = string_format ("%s/segmentations/%s/rho_%f_sig_%f",
+    curr_output_dir = string_format ("%s/segmentations/%s/rho_%f_sig_%f_ms_%f",
         d_ptr->output_dir.c_str(), registration_id.c_str(),
-        rho, sigma);
+        rho, sigma, minimum_similarity);
     lprintf ("curr_output_dir: %s\n", curr_output_dir.c_str());
 
     /* Get output image for each label */
@@ -693,14 +695,14 @@ Mabs::segmentation_label (
         FloatImageType::Pointer wi = vote->get_weight_image ();
 
         /* Optionally, save the weight files */
-        timer.start();
         if (d_ptr->write_weight_files) {
             lprintf ("Saving weights\n");
             std::string fn = string_format ("%s/weight_%s.nrrd", 
                 curr_output_dir.c_str(), vote_it->first.c_str());
+            timer.start();
             itk_image_save (wi, fn.c_str());
+            d_ptr->time_io += timer.report();
         }
-        d_ptr->time_io += timer.report();
 
         /* Threshold the weight image */
         timer.start();
@@ -710,13 +712,15 @@ Mabs::segmentation_label (
         d_ptr->time_vote += timer.report();
 
         /* Optionally, save the thresholded files */
-        lprintf ("Saving thresholded structures\n");
-        std::string thresh_img_fn = string_format (
-            "%s/label_%s.nrrd", curr_output_dir.c_str(), 
-            vote_it->first.c_str());
-        timer.start();
-        itk_image_save (thresh_img, thresh_img_fn.c_str());
-        d_ptr->time_io += timer.report();
+        if (d_ptr->write_thresholded_files) {
+            lprintf ("Saving thresholded structures\n");
+            std::string thresh_img_fn = string_format (
+                "%s/label_%s.nrrd", curr_output_dir.c_str(), 
+                vote_it->first.c_str());
+            timer.start();
+            itk_image_save (thresh_img, thresh_img_fn.c_str());
+            d_ptr->time_io += timer.report();
+        }
 
         /* Extract reference structure as binary mask. */
         timer.start();
@@ -888,7 +892,11 @@ Mabs::train_internal (bool registration_only)
     }
 
     /* Write some extra files when training */
+//    d_ptr->write_weight_files = false;
+//    d_ptr->write_thresholded_files = false;
+
     d_ptr->write_weight_files = true;
+    d_ptr->write_thresholded_files = true;
 
     /* Loop through atlas_dir, choosing reference images to segment */
     for (std::list<std::string>::iterator it = d_ptr->atlas_dir_list.begin();

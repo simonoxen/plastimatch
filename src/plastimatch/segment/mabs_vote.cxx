@@ -15,6 +15,7 @@
 #endif
 #include "itkImageRegionIterator.h"
 
+#include "logfile.h"
 #include "mabs_subject.h"
 #include "mabs_vote.h"
 #include "plm_image.h"
@@ -29,6 +30,7 @@ public:
     Mabs_vote_private () {
         rho = 1;
         sigma = 50;
+        minimum_similarity = 0.0001;
         like0_img = 0;
         like1_img = 0;
         score_img = 0;
@@ -50,6 +52,7 @@ public:
 
     double rho;
     double sigma;
+    double minimum_similarity;
 };
 
 Mabs_vote::Mabs_vote ()
@@ -98,6 +101,14 @@ Mabs_vote::set_sigma (
 }
 
 void
+Mabs_vote::set_minimum_similarity (
+    float minimum_similarity
+)
+{
+    d_ptr->minimum_similarity = (double) minimum_similarity;
+}
+
+void
 Mabs_vote::vote (
     FloatImageType::Pointer atlas_image, 
     FloatImageType::Pointer dmap_image
@@ -126,31 +137,45 @@ Mabs_vote::vote (
 #pragma omp parallel for
     for (v = 0; v < tgt_vol->npix; v++) {
         /* Compute similarity between target and atlas images */
-        double med_diff = tgt_img[v] - atl_img[v];
+        double intensity_diff = tgt_img[v] - atl_img[v];
 
         /* GCS Note:  Sometimes value is zero, when med_diff is very high.
            When this happens for all atlas examples, we get divide by zero.
            Furthermore, there is no sense dividing by 
            M_SQRT2PI * d_ptr->sigma, because that is a constant. */
 #if defined (commentout)
-        similarity_value = exp (-(med_diff * med_diff) 
+        similarity_value = exp (-(intensity_diff * intensity_diff) 
             / (2.0*d_ptr->sigma*d_ptr->sigma))
             / (M_SQRT2PI * d_ptr->sigma);
 #endif
 
         /* So instead, we do this */
-        double similarity_value = exp (-(med_diff * med_diff) 
+        double similarity_value = exp (-(intensity_diff * intensity_diff) 
             / (2.0*d_ptr->sigma*d_ptr->sigma));
         if (similarity_value < 0.0001) {
             similarity_value = 0.0001;
         }
 
+        /* The above is too sensitive.  We should truncate. 
+           Mixed Gaussian / Uniform model. */
+        if (similarity_value < d_ptr->minimum_similarity) {
+            similarity_value = d_ptr->minimum_similarity;
+        }
+
         /* Compute the chance of being in the structure. */
+        double dmap_value = dmp_img[v];
+        /* GCS 2013-01-31: Distance map is squared.  This should 
+           probably be corrected before saving */
+        if (dmap_value > 0) {
+            dmap_value = sqrt(dmap_value);
+        } else {
+            dmap_value = -sqrt(-dmap_value);
+        }
+
         /* Nb. we need to check to make sure exp(dmap_value) 
            doesn't overflow.  The actual overflow is at about exp(700) 
            for double, and about exp(85) for float.  But we can be 
            a little more conservative. */
-        double dmap_value = d_ptr->rho * dmp_img[v];
         double label_likelihood_0, label_likelihood_1;
         if (dmap_value > 50) {
             label_likelihood_0 = 0;
@@ -225,8 +250,8 @@ Mabs_vote::normalize_votes ()
 #pragma omp critical
         { l1_max = std::max (l1_max, priv_l1_max); }
     }
-    printf ("\tLikelihood 0 \\in [ %g, %g ]\n", l0_min, l0_max);
-    printf ("\tLikelihood 1 \\in [ %g, %g ]\n", l1_min, l1_max);
+    lprintf ("\tLikelihood 0 \\in [ %g, %g ]\n", l0_min, l0_max);
+    lprintf ("\tLikelihood 1 \\in [ %g, %g ]\n", l1_min, l1_max);
 }
 
 FloatImageType::Pointer
