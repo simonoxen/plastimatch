@@ -1,5 +1,5 @@
-Version 1.5.12 (build @PLASTIMATCH_SVN_VERSION@)
-@TIMESTAMP@
+Version 1.5.12 (build 4075)
+Sun Jan 27 09:19:01 EST 2013
 * B-spline support for direction cosines
 * Alpha version of plastimatch library API
 * Vector field inverter "vf_invert" now officially supported

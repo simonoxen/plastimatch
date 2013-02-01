@@ -6,7 +6,7 @@
 project (plastimatch)
 set (PLM_VERSION_MAJOR "1")
 set (PLM_VERSION_MINOR "5")
-set (PLM_VERSION_PATCH "12")
+set (PLM_VERSION_PATCH "13")
 
 ##-----------------------------------------------------------------------------
 ##  Set up CMake defaults
