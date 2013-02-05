@@ -19,9 +19,10 @@ Mabs_parms::Mabs_parms ()
 {
     this->sman = new Mabs_subject_manager;
     this->debug = false;
+    this->minsim_values = "L 0.0001:1:0.0001";
     this->rho_values = "1:1:1";
-    this->minsim_values = "0.0001:1:0.0001";
-    this->sigma_values = "1.7:1:1.7";
+    this->sigma_values = "L 1.7:1:1.7";
+    this->threshold_values = "0.5";
 }
 
 Mabs_parms::~Mabs_parms ()
@@ -77,8 +78,8 @@ Mabs_parms::set_key_val (
         if (key == "atlas_dir") {
             this->atlas_dir = val;
         }
-        else if (key == "training_dir") {
-            this->training_dir = val;
+        else if (key == "minimum_similarity") {
+            this->minsim_values = val;
         }
         else if (key == "rho_values") {
             this->rho_values = val;
@@ -86,8 +87,11 @@ Mabs_parms::set_key_val (
         else if (key == "sigma_values") {
             this->sigma_values = val;
         }
-        else if (key == "minimum_similarity") {
-            this->minsim_values = val;
+        else if (key == "threshold_values") {
+            this->threshold_values = val;
+        }
+        else if (key == "training_dir") {
+            this->training_dir = val;
         }
         break;
 

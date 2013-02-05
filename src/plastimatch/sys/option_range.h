@@ -18,6 +18,7 @@ public:
 public:
     void set_log_range (const std::string& range);
     void set_linear_range (const std::string& range);
+    void set_range (const std::string& range);
     const std::list<float>& get_range ();
 
 public:

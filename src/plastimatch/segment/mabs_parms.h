@@ -34,6 +34,7 @@ public:
     std::string minsim_values;
     std::string rho_values;
     std::string sigma_values;
+    std::string threshold_values;
 
     /* [REGISTRATION] */
     std::string registration_config;

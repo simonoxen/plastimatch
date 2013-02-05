@@ -18,11 +18,8 @@ public:
     Mabs_private *d_ptr;
 
 protected:
-    std::string map_structure_name (
-        const std::string& ori_name);
     void sanity_checks ();
     void load_atlas_dir_list ();
-    void extract_reference_image (const std::string& mapped_name);
     void run_single_registration ();
     void run_registration ();
     void run_segmentation ();
