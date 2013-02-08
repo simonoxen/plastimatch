@@ -78,6 +78,7 @@ file_size (const char *filename)
 void 
 touch_file (const std::string& filename)
 {
+    make_directory_recursive (filename);
     FILE *fp = fopen (filename.c_str(), "w");
     fclose (fp);
 }

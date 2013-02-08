@@ -23,6 +23,8 @@ Mabs_parms::Mabs_parms ()
     this->rho_values = "1:1:1";
     this->sigma_values = "L 1.7:1:1.7";
     this->threshold_values = "0.5";
+    this->write_thresholded_files = true;
+    this->write_weight_files = true;
 }
 
 Mabs_parms::~Mabs_parms ()
@@ -92,6 +94,16 @@ Mabs_parms::set_key_val (
         }
         else if (key == "training_dir") {
             this->training_dir = val;
+        }
+        else if (key == "write_thresholded_files") {
+            if (val == "0") {
+                this->write_thresholded_files = false;
+            }
+        }
+        else if (key == "write_weight_files") {
+            if (val == "0") {
+                this->write_weight_files = false;
+            }
         }
         break;
 

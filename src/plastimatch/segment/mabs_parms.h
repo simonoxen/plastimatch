@@ -36,6 +36,9 @@ public:
     std::string sigma_values;
     std::string threshold_values;
 
+    bool write_thresholded_files;
+    bool write_weight_files;
+
     /* [REGISTRATION] */
     std::string registration_config;
 

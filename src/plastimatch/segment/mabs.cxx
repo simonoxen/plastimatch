@@ -86,9 +86,6 @@ public:
     bool write_distance_map;
     bool write_registration_files;
 
-    /* These files are created by the training procedure */
-    FILE *seg_dice_fp;
-
     /* While looping through atlases, the voting information is stored here */
     std::map<std::string, Mabs_vote*> vote_map;
 
@@ -265,8 +262,14 @@ Mabs_private::segmentation_threshold_weight (
             this->minsim
         );
         lprintf ("%s", seg_log_string.c_str());
-        fprintf (this->seg_dice_fp, 
-            "%s", seg_log_string.c_str());
+
+        /* Update seg_dice file */
+        std::string seg_dice_log_fn = string_format (
+            "%s/seg_dice.csv",
+            this->traindir_base.c_str());
+        FILE *fp = fopen (seg_dice_log_fn.c_str(), "a");
+        fprintf (fp, "%s", seg_log_string.c_str());
+        fclose (fp);
     }
     this->time_dice += timer.report();
 }
@@ -903,6 +906,8 @@ void
 Mabs::set_parms (const Mabs_parms *parms)
 {
     d_ptr->parms = parms;
+    d_ptr->write_thresholded_files = parms->write_thresholded_files;
+    d_ptr->write_weight_files = parms->write_weight_files;
 }
 
 void
@@ -958,20 +963,6 @@ Mabs::train_internal (bool registration_only)
     /* Parse atlas directory */
     this->load_atlas_dir_list ();
 
-    /* Open output files for dice logging */
-    if (!registration_only) {
-        std::string seg_dice_log_fn = string_format ("%s/seg_dice.csv",
-            d_ptr->traindir_base.c_str());
-        d_ptr->seg_dice_fp = fopen (seg_dice_log_fn.c_str(), "w+");
-    }
-
-    /* Write some extra files when training */
-//    d_ptr->write_weight_files = false;
-//    d_ptr->write_thresholded_files = false;
-
-    d_ptr->write_weight_files = true;
-    d_ptr->write_thresholded_files = true;
-
     /* Loop through atlas_dir, choosing reference images to segment */
     for (std::list<std::string>::iterator it = d_ptr->atlas_dir_list.begin();
          it != d_ptr->atlas_dir_list.end(); it++)
@@ -1004,10 +995,6 @@ Mabs::train_internal (bool registration_only)
         if (!registration_only) {
             this->run_segmentation_loop ();
         }
-    }
-
-    if (!registration_only) {
-        fclose (d_ptr->seg_dice_fp);
     }
 
     lprintf ("Registration time:    %10.1f seconds\n", d_ptr->time_reg);
