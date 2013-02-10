@@ -177,6 +177,26 @@ itk_volume_center (float center[3], const T image)
     ivh.get_image_center (center);
 }
 
+template<class T>
+T
+itk_image_fix_negative_spacing (T img)
+{
+    typename T::ObjectType::SpacingType sp = img->GetSpacing ();
+    typename T::ObjectType::DirectionType dc = img->GetDirection ();
+
+    /* Copy header & allocate data for gpuit float */
+    for (int d = 0; d < 3; d++) {
+        if (sp[d] < 0) {
+            sp[d] = -sp[d];
+            for (int dd = 0; dd < 3; dd++) {
+                dc[d][dd] = -dc[d][dd];
+            }
+        }
+    }
+    return img;
+}
+
+
 /* Explicit instantiations */
 template PLMBASE_API void get_image_header (plm_long dim[3], float offset[3], float spacing[3], UCharImageType::Pointer image);
 template PLMBASE_API void get_image_header (plm_long dim[3], float offset[3], float spacing[3], ShortImageType::Pointer image);
@@ -197,3 +217,13 @@ template PLMBASE_API void itk_image_get_volume_header (Volume_header *, Deformat
 template PLMBASE_API bool itk_image_header_compare (UCharImageType::Pointer image1, UCharImageType::Pointer image2);
 template PLMBASE_API void itk_volume_center (float center[3], const FloatImageType::Pointer image);
 
+template PLMBASE_API UCharImageType::Pointer itk_image_fix_negative_spacing (UCharImageType::Pointer image);
+template PLMBASE_API CharImageType::Pointer itk_image_fix_negative_spacing (CharImageType::Pointer image);
+template PLMBASE_API UShortImageType::Pointer itk_image_fix_negative_spacing (UShortImageType::Pointer image);
+template PLMBASE_API ShortImageType::Pointer itk_image_fix_negative_spacing (ShortImageType::Pointer image);
+template PLMBASE_API Int32ImageType::Pointer itk_image_fix_negative_spacing (Int32ImageType::Pointer image);
+template PLMBASE_API UInt32ImageType::Pointer itk_image_fix_negative_spacing (UInt32ImageType::Pointer image);
+template PLMBASE_API FloatImageType::Pointer itk_image_fix_negative_spacing (FloatImageType::Pointer image);
+template PLMBASE_API DoubleImageType::Pointer itk_image_fix_negative_spacing (DoubleImageType::Pointer image);
+template PLMBASE_API UCharVecImageType::Pointer itk_image_fix_negative_spacing (UCharVecImageType::Pointer image);
+template PLMBASE_API DeformationFieldType::Pointer itk_image_fix_negative_spacing (DeformationFieldType::Pointer image);

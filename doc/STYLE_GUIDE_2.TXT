@@ -139,6 +139,11 @@ but it becomes non-alphabetic:
 
   calling_a_function (region, origin, spacing, direction_cosines);
 
+UChar, Char, ...
+----------------
+The ordering is integers, then float, then vectors; 
+    smaller, then larger; unsigned, then signed.
+
 Variable naming for indexing  [Proposed, not implemented]
 ---------------------------------------------------------
 Fixed image voxel                   (f[3]), fidx <currently (fi,fj,fk),fv>

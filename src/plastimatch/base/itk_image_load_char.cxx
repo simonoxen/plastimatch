@@ -18,5 +18,6 @@ itk_image_load_char (const char* fname, Plm_image_type* original_type)
 	    static_cast<char>(0));
     }
     //return orient_image (img);
-    return img;
+    //return img;
+    return itk_image_load_postprocess (img);
 }

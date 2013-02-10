@@ -148,14 +148,6 @@ itk_image_load_any (
     }
 }
 
-/* GCS 2011-11-13.  The ITK filter fails with exception when direction 
-   cosines are non-orthogonal.  Looking at the code, it does not seem 
-   that this function even works as expected.  Perhaps we should just
-   omit it.
-*/
-/* -----------------------------------------------------------------------
-   Orienting Images
-   ----------------------------------------------------------------------- */
 template<class T>
 T
 orient_image (T img)
@@ -179,7 +171,13 @@ orient_image (T img)
 	exit (-1);
     }
 }
-#if defined (commentout)
-#endif
+
+template<class T>
+T
+itk_image_load_postprocess (T img)
+{
+    img = itk_image_fix_negative_spacing (img);
+    return img;
+}
 
 #endif

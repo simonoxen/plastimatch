@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <limits>
-
-#include "itk_image_save.h"
 #include "itkCastImageFilter.h"
 #include "itkImageFileWriter.h"
+
 #include "file_util.h"
-#include "string_util.h"
+#include "itk_image_save.h"
 #include "logfile.h"
+#include "path_util.h"
+#include "string_util.h"
 
 typedef itk::Image < float, 3 > FloatImageType;
 typedef itk::Image < unsigned char, 3 > UCharImageType;

@@ -11,7 +11,8 @@ itk_image_load_uchar_vec (const char* fname)
     UCharVecImageType::Pointer img 
 	= itk_image_load<UCharVecImageType> (fname);
     //return orient_image (img);
-    return img;
+    //return img;
+    return itk_image_load_postprocess (img);
 }
 
 DeformationFieldType::Pointer
@@ -20,5 +21,6 @@ itk_image_load_float_field (const char* fname)
     DeformationFieldType::Pointer img 
 	= itk_image_load<DeformationFieldType> (fname);
     //return orient_image (img);
-    return img;
+    //return img;
+    return itk_image_load_postprocess (img);
 }

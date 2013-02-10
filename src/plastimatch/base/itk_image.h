@@ -38,5 +38,6 @@ template<class T> PLMBASE_API void itk_image_set_header (T image, const Plm_imag
 template<class T, class U> PLMBASE_API void itk_image_header_copy (T dest, U src);
 template<class T, class U> PLMBASE_API bool itk_image_header_compare (T image1, U image2);
 template<class T> PLMBASE_API void itk_volume_center (float center[3], const T image);
+template<class T> PLMBASE_API T itk_image_fix_negative_spacing (T img);
 
 #endif
