@@ -3,7 +3,11 @@
    ----------------------------------------------------------------------- */
 #include "plmutil_config.h"
 #include "itkImage.h"
+#if ITK_VERSION_MAJOR >= 4
+#include "itkMultiplyImageFilter.h"
+#else
 #include "itkMultiplyByConstantImageFilter.h"
+#endif
 
 #include "itk_image_type.h"
 #include "itk_scale.h"
@@ -17,11 +21,16 @@ itk_scale (
     typedef typename T::ObjectType ImageType;
     typedef typename T::ObjectType::PixelType PixelType;
 
+#if ITK_VERSION_MAJOR >= 4
+    typedef typename itk::MultiplyImageFilter<
+        ImageType, FloatImageType, ImageType > MulFilterType;
+#else
     typedef typename itk::MultiplyByConstantImageFilter< 
         ImageType, float, ImageType > MulFilterType;
+#endif
     typename MulFilterType::Pointer multiply = MulFilterType::New();
-    multiply->SetConstant (weight);
     multiply->SetInput (image);
+    multiply->SetConstant (weight);
     try {
         multiply->Update();
     }

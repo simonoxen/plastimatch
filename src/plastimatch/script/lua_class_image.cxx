@@ -13,7 +13,11 @@ extern "C"
 #include "lauxlib.h"
 }
 #include "itkAddImageFilter.h"
+#if ITK_VERSION_MAJOR >= 4
+#include "itkMultiplyImageFilter.h"
+#else
 #include "itkMultiplyByConstantImageFilter.h"
+#endif
 
 #include "lua_classes.h"
 #include "lua_class_image.h"
@@ -160,8 +164,13 @@ image_action_mul (lua_State *L)
     }
 
 
-    typedef itk::MultiplyByConstantImageFilter< 
+#if ITK_VERSION_MAJOR >= 4
+    typedef typename itk::MultiplyImageFilter<
+        FloatImageType, FloatImageType, FloatImageType > MulFilterType;
+#else
+    typedef typename itk::MultiplyByConstantImageFilter< 
         FloatImageType, float, FloatImageType > MulFilterType;
+#endif
     MulFilterType::Pointer multiply = MulFilterType::New();
 
     lua_image *out =
