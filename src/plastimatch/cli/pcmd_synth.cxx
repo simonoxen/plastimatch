@@ -317,6 +317,16 @@ parse_fn (
         }
     }
 
+    /* Correct negative spacing */
+    for (int d = 0; d < 3; d++) {
+        if (sm_parms->spacing[d] < 0) {
+            sm_parms->spacing[d] = -sm_parms->spacing[d];
+            for (int dd = 0; dd < 3; dd++) {
+                sm_parms->dc[d*3+dd] = -sm_parms->dc[d*3+dd];
+            }
+        }
+    }
+
     /* Image intensities */
     sm_parms->background = parser->get_float ("background");
     sm_parms->foreground = parser->get_float ("foreground");
