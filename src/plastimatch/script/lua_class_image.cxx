@@ -165,10 +165,10 @@ image_action_mul (lua_State *L)
 
 
 #if ITK_VERSION_MAJOR >= 4
-    typedef typename itk::MultiplyImageFilter<
+    typedef itk::MultiplyImageFilter<
         FloatImageType, FloatImageType, FloatImageType > MulFilterType;
 #else
-    typedef typename itk::MultiplyByConstantImageFilter< 
+    typedef itk::MultiplyByConstantImageFilter< 
         FloatImageType, float, FloatImageType > MulFilterType;
 #endif
     MulFilterType::Pointer multiply = MulFilterType::New();
