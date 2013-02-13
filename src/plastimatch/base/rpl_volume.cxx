@@ -7,6 +7,7 @@
 #include <string.h>
 #include <iostream>
 
+#include "interpolate.h"
 #include "compiler_warnings.h"
 #include "logfile.h"
 #include "mha_io.h"
@@ -458,6 +459,9 @@ Rpl_volume::compute_wed_volume (Volume *wed_vol, Volume *in_vol, float backgroun
 
                 /* Loop through input voxels looking for appropriate 
                    value */
+
+		double prev_rpl = 0.;
+
                 while (rijk[2] < rvol->dim[2]) {
                     plm_long ridx = volume_index (rvol->dim, rijk);
                     double curr_rpl = rvol_img[ridx];
@@ -468,11 +472,44 @@ Rpl_volume::compute_wed_volume (Volume *wed_vol, Volume *in_vol, float backgroun
                     if (curr_rpl > req_rpl) {
                         /* Compute coordinate of matching voxel */
                         double xyz[3];
-                        double dist = rijk[2] * proj_vol->get_step_length();
+
+			/* Get the distance relative to the reqired rad. length.  */
+			double dist = rijk[2]*proj_vol->get_step_length() - ( (curr_rpl - req_rpl)/(curr_rpl-prev_rpl) ) * proj_vol->get_step_length();
+
                         vec3_scale3 (xyz, ray_data->ray, dist);
                         vec3_add2 (xyz, ray_data->cp);
                         
+			//NEW
+			
+			float in_ijk_f[3];
+			in_ijk_f[0] = (xyz[0] - in_vol->offset[0]) / in_vol->spacing[0];
+			in_ijk_f[1] = (xyz[1] - in_vol->offset[1]) / in_vol->spacing[1];
+			in_ijk_f[2] = (xyz[2] - in_vol->offset[2]) / in_vol->spacing[2];
+	
+			if (in_ijk_f[0] < 0 || in_ijk_f[0] >= in_vol->dim[0]) {break;}
+			if (in_ijk_f[1] < 0 || in_ijk_f[1] >= in_vol->dim[1]) {break;}
+			if (in_ijk_f[2] < 0 || in_ijk_f[2] >= in_vol->dim[2]) {break;}
+
+			plm_long ijk_floor[3];
+			plm_long ijk_round[3];
+			float li_1[3], li_2[3];
+
+			// Compute linear interpolation fractions
+			li_clamp_3d (in_ijk_f, ijk_floor, ijk_round,li_1,li_2,in_vol);
+
+			plm_long idx_floor;
+
+			// Find linear indices for moving image
+			idx_floor = volume_index (in_vol->dim, ijk_floor);
+
+			float value = li_value(li_1[0], li_2[0],li_1[1], li_2[1],li_1[2], li_2[2],idx_floor,in_vol_img,in_vol);
+
+			/////////////////
+			
                         /* Look up value at coordinate in input image */
+
+			//OLD
+			/*
                         plm_long in_ijk[3];
                         in_ijk[2] = ROUND_PLM_LONG(
                             (xyz[2] - in_vol->offset[2]) / in_vol->spacing[2]);
@@ -497,7 +534,10 @@ Rpl_volume::compute_wed_volume (Volume *wed_vol, Volume *in_vol, float backgroun
                         plm_long in_idx = volume_index(in_vol->dim, in_ijk);
 
 			float value = in_vol_img[in_idx];
-			
+			//		value = in_vol_img[in_idx];
+			*/
+
+
 			/* Write value to output image */
 			wed_vol_img[widx] = value;
 
@@ -509,6 +549,7 @@ Rpl_volume::compute_wed_volume (Volume *wed_vol, Volume *in_vol, float backgroun
                     }
                     /* Otherwise, current voxel has insufficient 
                        rpl, so move on to the next */
+		    prev_rpl = curr_rpl;
                     rijk[2] ++;
                 }
             }
@@ -553,12 +594,15 @@ Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float backgrou
   //Compute aperture dimension lengths and normalized axes
   double ap_axis1[3]; //unit vector of ap. axis 1
   double ap_axis2[3];
+  double  ap_res[2]; //resolution of aperture grid
 
   vec3_sub3(ap_axis1,ray_box[1]->p2,ray_box[0]->p2);
+  ap_res[0] = vec3_len(ap_axis1)/(ires[0]-1);
   vec3_normalize1(ap_axis1);
   vec3_sub3(ap_axis2,ray_box[2]->p2,ray_box[0]->p2);
+  ap_res[1] = vec3_len(ap_axis2)/(ires[1]-1);
   vec3_normalize1(ap_axis2);
-
+  
   Ray_data *ray_adj[4]; //the 4 rays in rpl space that border each coordinate
   double ray_adj_len; //calculated length each adjacent ray to the voxel
   double rad_depth_input; //input length to calculate rgdepth
@@ -595,7 +639,6 @@ Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float backgrou
       coord[1] = dijk[1]*dew_vol->spacing[1]+dew_vol->offset[1];
       for (dijk[2] = 0; dijk[2] != dew_dim[2]; ++dijk[2])  {
 	coord[2] = dijk[2]*dew_vol->spacing[2]+dew_vol->offset[2];
-
 
 	didx = volume_index (dew_dim, dijk);
 
@@ -640,25 +683,27 @@ Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float backgrou
 	
 	//Note: starting here, some of the following code implicitly assumes that the 
 	//aperture spacing is 1mm.  If this changes, some normalizing will be needed.
-	master_coord[0] = ap_coord_plane[0]-floor(ap_coord_plane[0]);
-	master_coord[1] = ap_coord_plane[1]-floor(ap_coord_plane[1]);
+	master_coord[0] = ap_coord_plane[0]/ap_res[0] - floor(ap_coord_plane[0]/ap_res[0]);
+	master_coord[1] = ap_coord_plane[1]/ap_res[1] - floor(ap_coord_plane[1]/ap_res[1]);
 
 	//Get the 4 adjacent rays relative to the aperature coordinates
-	int base_ap_coord = (int) (floor(ap_coord_plane[1])*ires[0] + floor(ap_coord_plane[0])); 
+	int base_ap_coord = (int) (floor(ap_coord_plane[1]/ap_res[1])*ires[0] + floor(ap_coord_plane[0]/ap_res[0])); 
+
 	ray_adj[0] = &d_ptr->ray_data[ base_ap_coord ];
 	ray_adj[1] = &d_ptr->ray_data[ base_ap_coord + 1 ];
 	ray_adj[2] = &d_ptr->ray_data[ base_ap_coord + ires[0] ];
 	ray_adj[3] = &d_ptr->ray_data[ base_ap_coord + ires[0] + 1 ];
 
 	//Compute ray indices for later rpl calculations.
-	ray_lookup[0][0] = floor(ap_coord_plane[0]);
-	ray_lookup[0][1] = floor(ap_coord_plane[1]);
-	ray_lookup[1][0] = floor(ap_coord_plane[0]);
-	ray_lookup[1][1] = floor(ap_coord_plane[1]) + 1;
-	ray_lookup[2][0] = floor(ap_coord_plane[0]) + 1;
-	ray_lookup[2][1] = floor(ap_coord_plane[1]);
-	ray_lookup[3][0] = floor(ap_coord_plane[0]) + 1;
-	ray_lookup[3][1] = floor(ap_coord_plane[1]) + 1;
+
+	ray_lookup[0][0] = floor(ap_coord_plane[0]/ap_res[0]);
+	ray_lookup[0][1] = floor(ap_coord_plane[1]/ap_res[1]);
+	ray_lookup[1][0] = floor(ap_coord_plane[0]/ap_res[0]);
+	ray_lookup[1][1] = floor(ap_coord_plane[1]/ap_res[1]) + 1;
+	ray_lookup[2][0] = floor(ap_coord_plane[0]/ap_res[0]) + 1;
+	ray_lookup[2][1] = floor(ap_coord_plane[1]/ap_res[1]);
+	ray_lookup[3][0] = floor(ap_coord_plane[0]/ap_res[0]) + 1;
+	ray_lookup[3][1] = floor(ap_coord_plane[1]/ap_res[1]) + 1;
 
 	//Now compute the distance along each of the 4 rays
 	//Distance chosen to be the intersection of each ray with the plane that both
@@ -683,31 +728,36 @@ Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float backgrou
 	  ap_ij[1] = (int) ray_lookup[i][1];
 	  ray_rad_len[i] = lookup_rgdepth(this,ap_ij,rad_depth_input);
 
+	  //Set each corner to background.
+	  master_square[i/2][i%2] = background;
+
 	  //Now, with the radiation length, extract the two dose values on either side
 	  
 	  //Check the borders - rvol should have an extra "border" for this purpose.
 	  //If any rays are these added borders, it is outside dose and is background
 	  if ( (ray_lookup[i][0]==0) || (ray_lookup[i][0]==ires[0]-1) ||
-	       (ray_lookup[i][1]==0) || (ray_lookup[i][1]==ires[1]-1) )  {
-	    master_square[i/2][i%2] = background;
-	    continue;
-	  }
+	       (ray_lookup[i][1]==0) || (ray_lookup[i][1]==ires[1]-1) )  {continue;}
 
 	  //Set radiation lengths of 0 to background.
 	  //While this is a boundary, keeps dose values from being assigned
 	  //everywhere that rad depth is 0 (for example, the air before the volume).
-	  if (ray_rad_len[i]<=0.)  {
-	    master_square[i/2][i%2] = background;
-	    continue;
-	  }
+	  if (ray_rad_len[i]<=0.)  {continue;}
 	  
 	  else {
 	    dummy_lin_ex = ray_rad_len[i]-floor(ray_rad_len[i]);
-	    wijk[0] = ray_lookup[i][0] - 1;
-	    wijk[1] = ray_lookup[i][1] - 1;
-	    wijk[2] = (int) floor(ray_rad_len[i]);
+
+
+	    wijk[0] = ((ray_lookup[i][0] - 1) - wed_vol->offset[0])/wed_vol->spacing[0];
+	    wijk[1] = ((ray_lookup[i][1] - 1) - wed_vol->offset[1])/wed_vol->spacing[1];
+	    if (wijk[0] < 0 || wijk[0] >= wed_vol->dim[0]) {break;}
+	    if (wijk[1] < 0 || wijk[1] >= wed_vol->dim[1]) {break;}
+
+	    wijk[2] = (int) ((floor(ray_rad_len[i])) - wed_vol->offset[2])/wed_vol->spacing[2];
+	    if (wijk[2] < 0) {break;}
 	    dummy_index1 = volume_index ( wed_vol->dim, wijk );
-	    wijk[2] = (int) ceil(ray_rad_len[i]);
+
+	    wijk[2] = (int) ((ceil(ray_rad_len[i])) - wed_vol->offset[2])/wed_vol->spacing[2];
+	    if (wijk[2] >= wed_vol->dim[2]) {break;}
 	    dummy_index2 = volume_index ( wed_vol->dim, wijk );
 
 	    master_square[i/2][i%2] = wed_vol_img[dummy_index1] * (1-dummy_lin_ex) + wed_vol_img[dummy_index2] * dummy_lin_ex;

@@ -180,7 +180,6 @@ main (int argc, char* argv[])
     image_header.get_spacing(spacing);
     image_header.get_origin(origin);
 
-
     //Here we calculate the new dimensions, spacing, and origin of the added image
 
     if (it == parms_vec->begin())  {
@@ -240,15 +239,15 @@ main (int argc, char* argv[])
     FloatImageType::RegionType rg = img->GetLargestPossibleRegion ();
     FloatIteratorType image_it (img, rg);
 
-    //    printf("Image dim: %d, %d, %d\n", image_dim[0],image_dim[1],image_dim[2]);
-
     resize_3d_vect(input_vect,image_dim);
     
     int zz = 0;
+    plm_long ijk[3];
     for (image_it.GoToBegin(); !image_it.IsAtEnd(); ++image_it) {
-      //      printf("%d: %d, %d, %d\n",zz,(int) (zz%image_dim[0]),(int) (floor(zz/image_dim[0]))%image_dim[1],(int) floor(zz/(image_dim[0]*image_dim[1])));
-      input_vect[ (int) (zz%image_dim[0]) ][ (int) (floor( (float) zz/image_dim[0]))%image_dim[1] ][ (int) floor( (float) zz/(image_dim[0]*image_dim[1])) ] = image_it.Get();
-      
+
+      COORDS_FROM_INDEX(ijk,zz,image_dim);
+      input_vect[ ijk[0] ][ ijk[1] ][ ijk[2] ] = image_it.Get();
+
       zz++;
     }
 
@@ -291,15 +290,10 @@ main (int argc, char* argv[])
 		if ((x_low2<0)||(y_low2<0)||(z_low2<0)||(x_high2>=added_dim[0])||(y_high2>=added_dim[1])||(z_high2>=added_dim[2]))  {continue;}
 
 		added_vect[ii][jj][kk] += unit*input_vect[i][j][k]*it->weight;
-
-
 		
 	      }
 	    }
 	  }
-
-
-
 
 	}
       }
@@ -314,11 +308,12 @@ main (int argc, char* argv[])
   FloatImageType::RegionType rg_out = img_out->GetLargestPossibleRegion ();
   FloatIteratorType image_out_it (img_out, rg_out);
 
-
+  plm_long ijk[3];
   int zz = 0;
   for (image_out_it.GoToBegin(); !image_out_it.IsAtEnd(); ++image_out_it) {
-    
-    image_out_it.Set( added_vect[ (int) (zz%added_length[0]) ][ (int) (floor( (float) zz/added_length[0]))%added_length[1] ][ (int) floor( (float) zz/(added_length[0]*added_length[1])) ] );
+
+    COORDS_FROM_INDEX(ijk,zz,added_length);
+    image_out_it.Set( added_vect[ ijk[0] ][ ijk[1] ][ ijk[2] ] );
 
     zz++;
   }
