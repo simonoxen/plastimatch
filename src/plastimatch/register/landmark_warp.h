@@ -7,6 +7,12 @@
 #include "plmregister_config.h"
 #include "plm_image_header.h"
 
+//NSh for calculate_warped_landmarks
+#include "volume.h"
+#include "xform.h"
+#include "plm_image.h"
+#include "print_and_exit.h"
+
 // TODO: change type of m_pih to Plm_image_header*
 
 class Plm_image;
@@ -56,5 +62,7 @@ PLMREGISTER_C_API Landmark_warp* landmark_warp_load_pointsets (
         const char *fixed_lm_fn,
         const char *moving_lm_fn
 );
+
+PLMREGISTER_C_API void calculate_warped_landmarks( Landmark_warp *lw );
 
 #endif
