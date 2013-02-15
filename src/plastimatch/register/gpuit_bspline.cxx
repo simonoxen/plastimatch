@@ -10,6 +10,7 @@
 #include "bspline_landmarks.h"
 #include "bspline_optimize.h"
 #include "bspline_regularize.h"
+#include "bspline_interpolate.h"
 #include "gpuit_bspline.h"
 #include "logfile.h"
 #include "plm_image_header.h"
@@ -248,13 +249,14 @@ do_gpuit_bspline_stage_internal (
     /* Warp landmarks and write them out */
 
 // NSh uncomment 2013-02-14
-//#if defined (commentout)
-    if (stage->fixed_landmarks_fn[0] 
-        && stage->moving_landmarks_fn[0]
-        && stage->warped_landmarks_fn[0]) {
+#if defined (commentout)
+    if (regp->fixed_landmarks_fn.not_empty() 
+        && regp->moving_landmarks_fn.not_empty() 
+        && regp->warped_landmarks_fn.not_empty() ) {
         logfile_printf("Trying to warp landmarks, output file: %s\n",
-            (const char*) stage->warped_landmarks_fn);
-        vector_field = new Volume (fixed_ss->dim, fixed_ss->offset, 
+            (const char*) regp->warped_landmarks_fn);
+	Volume *vector_field;        
+	vector_field = new Volume (fixed_ss->dim, fixed_ss->offset, 
             fixed_ss->spacing, fixed_ss->direction_cosines, 
             PT_VF_FLOAT_INTERLEAVED, 3);
         bspline_interpolate_vf (vector_field, xf_out->get_gpuit_bsp() );
@@ -262,15 +264,15 @@ do_gpuit_bspline_stage_internal (
             bspline_landmarks_warp (vector_field, &parms, 
                 xf_out->get_gpuit_bsp(), fixed_ss, moving_ss );
             bspline_landmarks_write_file (
-                (const char*) stage->warped_landmarks_fn, 
+                (const char*) regp->warped_landmarks_fn, 
                 "warped", 
-                parms.landmarks->warped_landmarks, 
-                parms.landmarks->num_landmarks);
+                regp->landmarks->warped_landmarks, 
+                regp->landmarks->num_landmarks);
             delete vector_field;
         } else 
             print_and_exit ("Could not interpolate vector field for landmark warping\n");
     }
-//#endif
+#endif
 
     /* Free up temporary memory */
     if (stage->fixed_mask) {
