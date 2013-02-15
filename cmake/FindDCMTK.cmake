@@ -212,11 +212,26 @@ if (DCMTK_INCLUDE_DIR
       ${CMAKE_THREAD_LIBS_INIT})
   endif ()
 
-  find_library (LIBWRAP_LIBRARY NAMES wrap libwrap PATHS /lib)
-  if (LIBWRAP_LIBRARY)
-    set (DCMTK_LIBRARIES
-      ${DCMTK_LIBRARIES}
-      ${LIBWRAP_LIBRARY})
+  # Dcmtk must be linked with libwrap if the original package was 
+  # built with libwrap support.  
+  set (NEED_LIBWRAP_CHECK TRUE)
+  if (EXISTS "${DCMTK_INCLUDE_DIR}/dcmtk/config/osconfig.h")
+    file (STRINGS "${DCMTK_INCLUDE_DIR}/dcmtk/config/osconfig.h"
+      DCMTK_UNDEF_TCPWRAPPER
+      REGEX "#undef WITH_TCPWRAPPER")
+    message (STATUS "DCMTK_UNDEF_TCPWRAPPER = ${DCMTK_UNDEF_TCPWRAPPER}")
+    if (NOT ${DCMTK_UNDEF_TCPWRAPPER} STREQUAL "")
+      set (NEED_LIBWRAP_CHECK FALSE)
+    endif ()
+  endif ()
+
+  if (NEED_LIBWRAP_CHECK)
+    find_library (LIBWRAP_LIBRARY NAMES wrap libwrap PATHS /lib)
+    if (LIBWRAP_LIBRARY)
+      set (DCMTK_LIBRARIES
+	${DCMTK_LIBRARIES}
+	${LIBWRAP_LIBRARY})
+    endif ()
   endif ()
 
   if (WIN32)
