@@ -1,4 +1,4 @@
-/* -----------------------------------------------------------------------
+//* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmregister_config.h"
@@ -246,7 +246,9 @@ do_gpuit_bspline_stage_internal (
     bspline_optimize (xf_out->get_gpuit_bsp(), 0, &parms);
 
     /* Warp landmarks and write them out */
-#if defined (commentout)
+
+// NSh uncomment 2013-02-14
+//#if defined (commentout)
     if (stage->fixed_landmarks_fn[0] 
         && stage->moving_landmarks_fn[0]
         && stage->warped_landmarks_fn[0]) {
@@ -268,7 +270,7 @@ do_gpuit_bspline_stage_internal (
         } else 
             print_and_exit ("Could not interpolate vector field for landmark warping\n");
     }
-#endif
+//#endif
 
     /* Free up temporary memory */
     if (stage->fixed_mask) {
