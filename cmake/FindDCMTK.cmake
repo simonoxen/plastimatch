@@ -219,9 +219,11 @@ if (DCMTK_INCLUDE_DIR
     file (STRINGS "${DCMTK_INCLUDE_DIR}/dcmtk/config/osconfig.h"
       DCMTK_UNDEF_TCPWRAPPER
       REGEX "#undef WITH_TCPWRAPPER")
-    message (STATUS "DCMTK_UNDEF_TCPWRAPPER = ${DCMTK_UNDEF_TCPWRAPPER}")
     if (NOT ${DCMTK_UNDEF_TCPWRAPPER} STREQUAL "")
+      message (STATUS "DCMTK was built without libwrap")
       set (NEED_LIBWRAP_CHECK FALSE)
+    else ()
+      message (STATUS "DCMTK may have been built with libwrap")
     endif ()
   endif ()
 
