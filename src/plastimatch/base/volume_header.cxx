@@ -12,17 +12,23 @@
 
 class Volume_header_private {
 public:
+    plm_long m_dim[3];
+    float m_origin[3];
+    float m_spacing[3];
+    Direction_cosines m_direction_cosines;
+public:
+    Volume_header_private () {
+        for (int d = 0; d < 3; d++) {
+            m_dim[d] = 0;
+            m_origin[d] = 0.;
+            m_spacing[d] = 0.;
+        }
+        m_direction_cosines.set_identity ();
+    }
 };
 
 Volume_header::Volume_header ()
 {
-    for (int d = 0; d < 3; d++) {
-        m_dim[d] = 0;
-        m_origin[d] = 0.;
-        m_spacing[d] = 0.;
-    }
-    this->set_direction_cosines_identity ();
-
     this->d_ptr = new Volume_header_private;
 }
 
@@ -51,90 +57,90 @@ void
 Volume_header::set_dim (const plm_long dim[3])
 {
     for (unsigned int d = 0; d < 3; d++) {
-	m_dim[d] = dim[d];
+	d_ptr->m_dim[d] = dim[d];
     }
 }
 
 plm_long*
 Volume_header::get_dim ()
 {
-    return m_dim;
+    return d_ptr->m_dim;
 }
 
 const plm_long*
 Volume_header::get_dim () const
 {
-    return m_dim;
+    return d_ptr->m_dim;
 }
 
 void
 Volume_header::set_origin (const float origin[3])
 {
     for (unsigned int d = 0; d < 3; d++) {
-	this->m_origin[d] = origin[d];
+	d_ptr->m_origin[d] = origin[d];
     }
 }
 
 float*
 Volume_header::get_origin ()
 {
-    return m_origin;
+    return d_ptr->m_origin;
 }
 
 const float*
 Volume_header::get_origin () const
 {
-    return m_origin;
+    return d_ptr->m_origin;
 }
 
 void
 Volume_header::set_spacing (const float spacing[3])
 {
     for (unsigned int d = 0; d < 3; d++) {
-	this->m_spacing[d] = spacing[d];
+	d_ptr->m_spacing[d] = spacing[d];
     }
 }
 
 float*
 Volume_header::get_spacing ()
 {
-    return m_spacing;
+    return d_ptr->m_spacing;
 }
 
 const float*
 Volume_header::get_spacing () const
 {
-    return m_spacing;
+    return d_ptr->m_spacing;
 }
 
 void
 Volume_header::set_direction_cosines (const float direction_cosines[9])
 {
-    this->m_direction_cosines.set (direction_cosines);
+    d_ptr->m_direction_cosines.set (direction_cosines);
 }
 
 void
 Volume_header::set_direction_cosines (const Direction_cosines& dc)
 {
-    this->m_direction_cosines.set (dc);
+    d_ptr->m_direction_cosines.set (dc);
 }
 
 void
 Volume_header::set_direction_cosines_identity ()
 {
-    this->m_direction_cosines.set_identity ();
+    d_ptr->m_direction_cosines.set_identity ();
 }
 
 Direction_cosines&
 Volume_header::get_direction_cosines ()
 {
-    return this->m_direction_cosines;
+    return d_ptr->m_direction_cosines;
 }
 
 const Direction_cosines&
 Volume_header::get_direction_cosines () const
 {
-    return this->m_direction_cosines;
+    return d_ptr->m_direction_cosines;
 }
 
 void
@@ -176,24 +182,25 @@ Volume_header::set_from_bxf (Bspline_xform *bxf)
 void 
 Volume_header::clone (Volume_header *dest, Volume_header *src)
 {
-    dest->set (src->m_dim, src->m_origin, src->m_spacing, 
-        src->m_direction_cosines);
+    dest->set (src->get_dim(), src->get_origin(), src->get_spacing(), 
+        src->get_direction_cosines());
 }
 
 void 
 Volume_header::clone (const Volume_header *src)
 {
-    this->set (src->m_dim, src->m_origin, src->m_spacing, 
-        src->m_direction_cosines);
+    this->set (src->get_dim(), src->get_origin(), src->get_spacing(), 
+        src->get_direction_cosines());
 }
 
 void 
 Volume_header::get_image_center (float center[3])
 {
     int d;
+    /* GCS FIX: Direction cosines */
     for (d = 0; d < 3; d++) {
-	center[d] = this->m_origin[d] 
-	    + this->m_spacing[d] * (this->m_dim[d] - 1) / 2;
+	center[d] = d_ptr->m_origin[d] 
+	    + d_ptr->m_spacing[d] * (d_ptr->m_dim[d] - 1) / 2;
     }
 }
 
@@ -203,20 +210,20 @@ Volume_header::print (void) const
 {
     printf ("Dim =");
     for (unsigned int d = 0; d < 3; d++) {
-	printf (" %ld", (long) m_dim[d]);
+	printf (" %ld", (long) d_ptr->m_dim[d]);
     }
     printf ("\nOrigin =");
     for (unsigned int d = 0; d < 3; d++) {
-	printf (" %g", m_origin[d]);
+	printf (" %g", d_ptr->m_origin[d]);
     }
     printf ("\nSpacing =");
     for (unsigned int d = 0; d < 3; d++) {
-	printf (" %g", m_spacing[d]);
+	printf (" %g", d_ptr->m_spacing[d]);
     }
     printf ("\nDirection =");
     for (unsigned int d1 = 0; d1 < 3; d1++) {
 	for (unsigned int d2 = 0; d2 < 3; d2++) {
-	    printf (" %g", m_direction_cosines[d1*3+d2]);
+	    printf (" %g", d_ptr->m_direction_cosines[d1*3+d2]);
 	}
     }
     printf ("\n");
@@ -228,12 +235,14 @@ Volume_header::compare (Volume_header *pli1, Volume_header *pli2)
 {
     int d;
     for (d = 0; d < 3; d++) {
-	if (pli1->m_dim[d] != pli2->m_dim[d]) return 0;
-	if (pli1->m_origin[d] != pli2->m_origin[d]) return 0;
-	if (pli1->m_spacing[d] != pli2->m_spacing[d]) return 0;
+	if (pli1->get_dim()[d] != pli2->get_dim()[d]) return 0;
+	if (pli1->get_origin()[d] != pli2->get_origin()[d]) return 0;
+	if (pli1->get_spacing()[d] != pli2->get_spacing()[d]) return 0;
     }
     for (d = 0; d < 9; d++) {
-	if (pli1->m_direction_cosines[d] != pli2->m_direction_cosines[d]) {
+	if (pli1->get_direction_cosines()[d] 
+            != pli2->get_direction_cosines()[d])
+        {
 	    return 0;
 	}
     }

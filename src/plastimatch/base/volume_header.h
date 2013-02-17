@@ -15,12 +15,6 @@ class PLMBASE_API Volume_header {
 public:
     Volume_header_private *d_ptr;
 
-private:
-    plm_long m_dim[3];
-    float m_origin[3];
-    float m_spacing[3];
-    Direction_cosines m_direction_cosines;
-
 public:
     Volume_header ();
     Volume_header (plm_long dim[3], float origin[3], float spacing[3]);
