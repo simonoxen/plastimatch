@@ -1822,8 +1822,10 @@ set_tests_properties (plm-convert-dose-scale-check PROPERTIES
   DEPENDS plm-convert-dose-scale-stats)
 
 ## -------------------------------------------------------------------------
-## plm-dice-a  centered and off-centered rect
-## plm-dice-a  centered rects of different resolution
+## plm-dice-a  dice, centered and off-centered rect
+## plm-dice-b  dice, centered rects of different resolution
+## plm-dice-c  HD, centered and off-centered rect
+## plm-dice-d  95 HD, centered and off-centered rect
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-dice-a"
@@ -1836,6 +1838,9 @@ plmtest_check_interval ("plm-dice-a-check-1"
   "0.799"
   "0.801"
   )
+set_tests_properties (plm-dice-a PROPERTIES DEPENDS "rect-4;rect-8")
+set_tests_properties (plm-dice-a-check-1 PROPERTIES DEPENDS "plm-dice-a")
+
 plm_add_test (
   "plm-dice-b"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1847,10 +1852,22 @@ plmtest_check_interval ("plm-dice-b-check-1"
   "0.999"
   "1.000"
   )
-set_tests_properties (plm-dice-a PROPERTIES DEPENDS "rect-4;rect-8")
-set_tests_properties (plm-dice-a-check-1 PROPERTIES DEPENDS "plm-dice-a")
 set_tests_properties (plm-dice-b PROPERTIES DEPENDS "rect-4;rect-9")
 set_tests_properties (plm-dice-b-check-1 PROPERTIES DEPENDS "plm-dice-b")
+
+plm_add_test (
+  "plm-dice-c"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "dice;--hausdorff;${PLM_BUILD_TESTING_DIR}/rect-4.mha;${PLM_BUILD_TESTING_DIR}/rect-8.mha"
+  )
+plmtest_check_interval ("plm-dice-c-check-1"
+  "${PLM_BUILD_TESTING_DIR}/plm-dice-c.stdout.txt"
+  "^Hausdorff distance = *([-0-9.]*)"
+  "26.2"
+  "26.4"
+  )
+set_tests_properties (plm-dice-b PROPERTIES DEPENDS "rect-4;rect-8")
+set_tests_properties (plm-dice-b-check-1 PROPERTIES DEPENDS "plm-dice-a")
 
 ## -------------------------------------------------------------------------
 ## plm-dvh-a  ss-img, without ss-list
