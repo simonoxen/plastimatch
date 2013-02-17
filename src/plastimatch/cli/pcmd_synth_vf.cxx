@@ -72,6 +72,7 @@ parse_fn (
 )
 {
     Volume_header vh;
+    plm_long *dim = vh.get_dim();
 
     /* Add --help, --version */
     parser->add_default_options ();
@@ -168,12 +169,12 @@ parse_fn (
     }
 
     /* Image size */
-    parser->assign_plm_long_13 (vh.m_dim, "dim");
+    parser->assign_plm_long_13 (dim, "dim");
 
     /* Direction cosines */
     if (parser->option ("direction-cosines")) {
 	std::string arg = parser->get_string("direction-cosines");
-	if (!vh.m_direction_cosines.set_from_string (arg)) {
+	if (!vh.get_direction_cosines().set_from_string (arg)) {
 	    throw (dlib::error ("Error parsing --direction-cosines "
 		    "(should have nine numbers)\n"));
 	}
@@ -183,22 +184,22 @@ parse_fn (
     float volume_size[3];
     parser->assign_float13 (volume_size, "volume-size");
     if (parser->option ("origin")) {
-	parser->assign_float13 (vh.m_origin, "origin");
+	parser->assign_float13 (vh.get_origin(), "origin");
     } else {
 	for (int d = 0; d < 3; d++) {
 	    /* GCS FIX: This should include direction cosines */
-	    vh.m_origin[d] = - 0.5 * volume_size[d] 
-		+ 0.5 * volume_size[d] / vh.m_dim[d];
+	    vh.get_origin()[d] = - 0.5 * volume_size[d] 
+		+ 0.5 * volume_size[d] / dim[d];
 	}
     }
 
     /* If spacing not specified, set spacing from size and resolution */
     if (parser->option ("spacing")) {
-	parser->assign_float13 (vh.m_spacing, "spacing");
+	parser->assign_float13 (vh.get_spacing(), "spacing");
     } else {
 	for (int d = 0; d < 3; d++) {
-	    vh.m_spacing[d] 
-		= volume_size[d] / ((float) vh.m_dim[d]);
+	    vh.get_spacing()[d] 
+		= volume_size[d] / ((float) dim[d]);
 	}
     }
 

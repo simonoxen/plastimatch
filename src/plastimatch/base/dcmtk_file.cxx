@@ -179,7 +179,7 @@ Dcmtk_file::load_header (const char *fn) {
 bool
 dcmtk_file_compare_z_position (const Dcmtk_file* f1, const Dcmtk_file* f2)
 {
-    return f1->m_vh.m_origin[2] < f2->m_vh.m_origin[2];
+    return f1->m_vh.get_origin()[2] < f2->m_vh.get_origin()[2];
 }
 
 void

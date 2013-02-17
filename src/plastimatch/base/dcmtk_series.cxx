@@ -164,7 +164,7 @@ Dcmtk_series::load_plm_image (void)
     Dcmtk_file *df = (*it);
     float z_init, z_prev, z_diff, z_last;
     int slice_no = 0;
-    float best_chunk_z_start = z_init = z_prev = df->m_vh.m_origin[2];
+    float best_chunk_z_start = z_init = z_prev = df->m_vh.get_origin()[2];
     
     /* Store UIDs */
     if (d_ptr->m_drs) {
@@ -194,8 +194,8 @@ Dcmtk_series::load_plm_image (void)
     /* Get next slice */
     ++it; ++slice_no;
     df = (*it);
-    z_diff = df->m_vh.m_origin[2] - z_prev;
-    z_last = z_prev = df->m_vh.m_origin[2];
+    z_diff = df->m_vh.get_origin()[2] - z_prev;
+    z_last = z_prev = df->m_vh.get_origin()[2];
 
     /* We want to find the largest chunk with equal spacing.  This will 
        be used to resample in the case of irregular spacing. */
@@ -208,8 +208,8 @@ Dcmtk_series::load_plm_image (void)
     {
 	++slice_no;
 	df = (*it);
-	z_diff = df->m_vh.m_origin[2] - z_prev;
-	z_last = z_prev = df->m_vh.m_origin[2];
+	z_diff = df->m_vh.get_origin()[2] - z_prev;
+	z_last = z_prev = df->m_vh.get_origin()[2];
 
 	if (fabs (this_chunk_diff - z_diff) > 0.11) {
 	    /* Start a new chunk if difference in thickness is 
@@ -247,12 +247,15 @@ Dcmtk_series::load_plm_image (void)
     printf ("Slices: ");
     for (it = d_ptr->m_flist.begin(); it != d_ptr->m_flist.end(); ++it) {
 	Dcmtk_file *df = (*it);
-	printf ("%f ", df->m_vh.m_origin[2]);
+	printf ("%f ", df->m_vh.get_origin()[2]);
     }
     printf ("\n");
 
-    /* Compute resampled volume header */
+    /* Create a Volume_header to hold the image geometry */
     Volume_header vh;
+    plm_long *dim = vh.get_dim();
+
+    /* Compute resampled volume header */
     int slices_before = 
 	ROUND_INT ((best_chunk_z_start - z_init) / best_chunk_diff);
     int slices_after = 
@@ -260,9 +263,9 @@ Dcmtk_series::load_plm_image (void)
 		- (best_chunk_len - 1) * best_chunk_diff) / best_chunk_diff);
     df = (*d_ptr->m_flist.begin());
     vh.clone (&df->m_vh);
-    vh.m_dim[2] = slices_before + best_chunk_len + slices_after;
-    vh.m_origin[2] = best_chunk_z_start - slices_before * best_chunk_diff;
-    vh.m_spacing[2] = best_chunk_diff;
+    dim[2] = slices_before + best_chunk_len + slices_after;
+    vh.get_origin()[2] = best_chunk_z_start - slices_before * best_chunk_diff;
+    vh.get_spacing()[2] = best_chunk_diff;
 
     /* Store image header */
     if (d_ptr->m_drs) {
@@ -274,8 +277,8 @@ Dcmtk_series::load_plm_image (void)
 
     /* Still more debugging info */
     printf ("Resamples slices: ");
-    for (plm_long i = 0; i < vh.m_dim[2]; i++) {
-	printf ("%f ", vh.m_origin[2] + i * vh.m_spacing[2]);
+    for (plm_long i = 0; i < dim[2]; i++) {
+	printf ("%f ", vh.get_origin()[2] + i * vh.get_spacing()[2]);
     }
     printf ("\n");
 
@@ -344,13 +347,13 @@ Dcmtk_series::load_plm_image (void)
     Volume* vol = (Volume*) pli->m_gpuit;
     uint16_t* img = (uint16_t*) vol->img;
 
-    for (plm_long i = 0; i < vh.m_dim[2]; i++) {
+    for (plm_long i = 0; i < dim[2]; i++) {
 	/* Find the best slice, using nearest neighbor interpolation */
 	std::list<Dcmtk_file*>::iterator best_slice_it = d_ptr->m_flist.begin();
 	float best_z_dist = FLT_MAX;
-	float z_pos = vh.m_origin[2] + i * vh.m_spacing[2];
+	float z_pos = vh.get_origin()[2] + i * vh.get_spacing()[2];
 	for (it = d_ptr->m_flist.begin(); it != d_ptr->m_flist.end(); ++it) {
-	    float this_z_dist = fabs ((*it)->m_vh.m_origin[2] - z_pos);
+	    float this_z_dist = fabs ((*it)->m_vh.get_origin()[2] - z_pos);
 	    if (this_z_dist < best_z_dist) {
 		best_z_dist = this_z_dist;
 		best_slice_it = it;
@@ -363,16 +366,15 @@ Dcmtk_series::load_plm_image (void)
 	unsigned long length;
 
 	printf ("Loading slice z=%f at location z=%f\n",
-	    (*best_slice_it)->m_vh.m_origin[2], z_pos);
+	    (*best_slice_it)->m_vh.get_origin()[2], z_pos);
 
 	rc = df->get_uint16_array (DCM_PixelData, &pixel_data, &length);
 	if (!rc) {
 	    print_and_exit ("Oops.  Error reading pixel data.  Punting.\n");
 	}
-	if (((long) length) != vh.m_dim[0] * vh.m_dim[1]) {
+	if (((long) length) != dim[0] * dim[1]) {
 	    print_and_exit ("Oops.  Dicom image had wrong length "
-		"(%d vs. %d x %d).\n", length, vh.m_dim[0],
-		vh.m_dim[1]);
+		"(%d vs. %d x %d).\n", length, dim[0], dim[1]);
 	}
 	memcpy (img, pixel_data, length * sizeof(uint16_t));
 	img += length;

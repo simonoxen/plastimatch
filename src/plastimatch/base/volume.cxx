@@ -186,8 +186,8 @@ Volume::create (
     int vox_planes
 )
 {
-    this->create (vh.m_dim, vh.m_origin, vh.m_spacing, 
-	vh.m_direction_cosines, vox_type, vox_planes);
+    this->create (vh.get_dim(), vh.get_origin(), vh.get_spacing(), 
+	vh.get_direction_cosines(), vox_type, vox_planes);
 }
 
 const float*

@@ -95,13 +95,13 @@ do_xf_convert (Xf_convert_parms *parms)
     /* Set volume header as needed */
     xfc->m_xf_in->get_volume_header (&xfc->m_volume_header);
     if (parms->m_have_dim) {
-        xfc->m_volume_header.set_dim (parms->m_vh.m_dim);
+        xfc->m_volume_header.set_dim (parms->m_vh.get_dim());
     }
     if (parms->m_have_origin) {
-        xfc->m_volume_header.set_origin (parms->m_vh.m_origin);
+        xfc->m_volume_header.set_origin (parms->m_vh.get_origin());
     }
     if (parms->m_have_spacing) {
-        xfc->m_volume_header.set_spacing (parms->m_vh.m_spacing);
+        xfc->m_volume_header.set_spacing (parms->m_vh.get_spacing());
     }
     
     /* Do conversion */
@@ -175,15 +175,15 @@ parse_fn (
     /* Geometry options */
     if (parser->option ("dim")) {
         parms->m_have_dim = true;
-        parser->assign_plm_long_13 (parms->m_vh.m_dim, "dim");
+        parser->assign_plm_long_13 (parms->m_vh.get_dim(), "dim");
     }
     if (parser->option ("origin")) {
         parms->m_have_origin = true;
-        parser->assign_float13 (parms->m_vh.m_origin, "origin");
+        parser->assign_float13 (parms->m_vh.get_origin(), "origin");
     }
     if (parser->option ("spacing")) {
         parms->m_have_spacing = true;
-        parser->assign_float13 (parms->m_vh.m_spacing, "spacing");
+        parser->assign_float13 (parms->m_vh.get_spacing(), "spacing");
     }
     if (parser->option ("grid-spacing")) {
         parms->m_have_grid_spacing = true;

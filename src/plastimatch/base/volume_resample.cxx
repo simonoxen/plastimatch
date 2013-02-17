@@ -239,7 +239,8 @@ Volume*
 volume_resample (Volume* vol_in, const Volume_header *vh)
 {
     /* GCS FIX: direction cosines */
-    return volume_resample (vol_in, vh->m_dim, vh->m_origin, vh->m_spacing);
+    return volume_resample (vol_in, vh->get_dim(), vh->get_origin(), 
+        vh->get_spacing());
 }
 
 Volume*

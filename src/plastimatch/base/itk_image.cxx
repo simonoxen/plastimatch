@@ -100,8 +100,8 @@ template<class T>
 void
 itk_image_get_volume_header (Volume_header *vh, T image)
 {
-    itk_image_get_image_header (vh->m_dim, vh->m_origin, vh->m_spacing, 
-	vh->m_direction_cosines, image);
+    itk_image_get_image_header (vh->get_dim(), vh->get_origin(), 
+        vh->get_spacing(), vh->get_direction_cosines(), image);
 }
 
 template<class T>

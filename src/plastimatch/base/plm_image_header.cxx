@@ -169,8 +169,8 @@ Plm_image_header::set_from_plm_image (const Plm_image& pli)
 void
 Plm_image_header::set (const Volume_header& vh)
 {
-    this->set_from_gpuit (vh.m_dim, vh.m_origin, 
-	vh.m_spacing, vh.m_direction_cosines);
+    this->set_from_gpuit (vh.get_dim(), vh.get_origin(), 
+	vh.get_spacing(), vh.get_direction_cosines());
 }
 
 void
@@ -199,8 +199,8 @@ Plm_image_header::expand_to_contain (
 {
     /* Compute index */
 
-    /* GCS FIX: We need to fix get_position() as well 
-       to use native direction cosines instead of ITK dc. */
+    /* GCS ___kkk___ LEFT OFF HERE */
+
 }
 
 void 
@@ -266,20 +266,20 @@ Plm_image_header::set_geometry_to_contain (
 void
 Plm_image_header::get_volume_header (Volume_header *vh) const
 {
-    this->get_origin (vh->m_origin);
-    this->get_dim (vh->m_dim);
-    this->get_spacing (vh->m_spacing);
-    this->get_direction_cosines (vh->m_direction_cosines);
+    this->get_origin (vh->get_origin());
+    this->get_dim (vh->get_dim());
+    this->get_spacing (vh->get_spacing());
+    this->get_direction_cosines (vh->get_direction_cosines());
 }
 
 Volume_header
 Plm_image_header::get_volume_header () const
 {
     Volume_header vh;
-    this->get_origin (vh.m_origin);
-    this->get_dim (vh.m_dim);
-    this->get_spacing (vh.m_spacing);
-    this->get_direction_cosines (vh.m_direction_cosines);
+    this->get_origin (vh.get_origin());
+    this->get_dim (vh.get_dim());
+    this->get_spacing (vh.get_spacing());
+    this->get_direction_cosines (vh.get_direction_cosines());
     return vh;
 }
 
@@ -349,6 +349,8 @@ Plm_image_header::get_index (const FloatPoint3DType& pos) const
 {
     FloatPoint3DType idx;
 
+    /* GCS ___kkk___ LEFT OFF HERE */
+
     /* To be written */
     idx[0] = 0.f;
     idx[1] = 0.f;
@@ -360,9 +362,8 @@ Plm_image_header::get_index (const FloatPoint3DType& pos) const
 FloatPoint3DType
 Plm_image_header::get_position (const float index[3]) const
 {
-    /* GCS FIX: Change to use native direction cosines instead of ITK dc
-       -- needed to avoid ALT_DCOS mess. */
     FloatPoint3DType pos;
+
     for (int d = 0; d < 3; d++) {
         pos[d] = 0.f;
         for (int dc = 0; dc < 3; dc++) {
