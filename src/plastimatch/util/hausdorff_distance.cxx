@@ -24,6 +24,9 @@ public:
     float hausdorff_distance;
     UCharImageType::Pointer ref_image;
     UCharImageType::Pointer cmp_image;
+    
+    FloatImageType::Pointer fwd_dmap;
+    
 };
 
 Hausdorff_distance::Hausdorff_distance ()
@@ -68,7 +71,6 @@ Hausdorff_distance::run ()
     typedef unsigned char T;
     typedef itk::plm_HausdorffDistanceImageFilter< 
 	itk::Image<T,3>, itk::Image<T,3> > Hausdorff_filter;
-//    typename Hausdorff_filter::Pointer h_filter = Hausdorff_filter::New ();
     Hausdorff_filter::Pointer h_filter = Hausdorff_filter::New ();
 
     h_filter->SetInput1 (d_ptr->ref_image);
@@ -84,7 +86,6 @@ Hausdorff_distance::run ()
         = h_filter->GetHausdorffDistance ();
     d_ptr->avg_hausdorff_distance 
         = h_filter->GetAverageHausdorffDistance ();
-
 }
 
 float Hausdorff_distance::get_hausdorff ()

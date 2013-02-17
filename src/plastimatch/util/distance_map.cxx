@@ -47,6 +47,12 @@ Distance_map::set_input_image (UCharImageType::Pointer image)
     d_ptr->input = image;
 }
 
+void 
+Distance_map::set_use_squared_distance (bool use_squared_distance)
+{
+    d_ptr->use_squared_distance = use_squared_distance;
+}
+
 void
 Distance_map::run ()
 {

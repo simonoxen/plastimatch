@@ -25,6 +25,9 @@ public:
     void set_input_image (const char* image_fn);
     /*! \brief Set the input image as an ITK image. */
     void set_input_image (const UCharImageType::Pointer image);
+    /*! \brief Choose whether the output image is distance or squared 
+      distance. The default is squared distance. */
+    void set_use_squared_distance (bool use_squared_distance);
     ///@}
 
     /*! \name Execution */
