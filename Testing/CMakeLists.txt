@@ -1863,11 +1863,18 @@ plm_add_test (
 plmtest_check_interval ("plm-dice-c-check-1"
   "${PLM_BUILD_TESTING_DIR}/plm-dice-c.stdout.txt"
   "^Hausdorff distance = *([-0-9.]*)"
-  "26.2"
-  "26.4"
+  "26.31"
+  "26.32"
   )
-set_tests_properties (plm-dice-b PROPERTIES DEPENDS "rect-4;rect-8")
-set_tests_properties (plm-dice-b-check-1 PROPERTIES DEPENDS "plm-dice-a")
+plmtest_check_interval ("plm-dice-c-check-2"
+  "${PLM_BUILD_TESTING_DIR}/plm-dice-c.stdout.txt"
+  "^Average Hausdorff distance = *([-0-9.]*)"
+  "3.40"
+  "3.41"
+  )
+set_tests_properties (plm-dice-c PROPERTIES DEPENDS "rect-4;rect-8")
+set_tests_properties (plm-dice-c-check-1 PROPERTIES DEPENDS "plm-dice-c")
+set_tests_properties (plm-dice-c-check-2 PROPERTIES DEPENDS "plm-dice-c")
 
 ## -------------------------------------------------------------------------
 ## plm-dvh-a  ss-img, without ss-list

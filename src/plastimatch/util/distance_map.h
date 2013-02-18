@@ -28,6 +28,9 @@ public:
     /*! \brief Choose whether the output image is distance or squared 
       distance. The default is squared distance. */
     void set_use_squared_distance (bool use_squared_distance);
+    /*! \brief Choose whether the inside is positive or negative.  
+      The default is inside positive. */
+    void set_inside_is_positive (bool inside_is_positive);
     ///@}
 
     /*! \name Execution */

@@ -53,6 +53,12 @@ Distance_map::set_use_squared_distance (bool use_squared_distance)
     d_ptr->use_squared_distance = use_squared_distance;
 }
 
+void 
+Distance_map::set_inside_is_positive (bool inside_is_positive)
+{
+    d_ptr->inside_is_positive = inside_is_positive;
+}
+
 void
 Distance_map::run ()
 {

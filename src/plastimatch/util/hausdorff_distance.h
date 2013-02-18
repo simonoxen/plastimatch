@@ -44,6 +44,9 @@ public:
     ///@{
     /*! \brief Compute hausdorff distances */
     void run ();
+    /*! \brief Compute hausdorff distances (obsolete version, doesn't 
+      compute 95% Hausdorff) */
+    void run_obsolete ();
     ///@}
 
     /*! \name Outputs */
@@ -55,6 +58,11 @@ public:
     /*! \brief Display debugging information to stdout */
     void debug ();
     ///@}
+
+protected:
+    void run_internal (
+        UCharImageType::Pointer image,
+        FloatImageType::Pointer dmap);
 };
 
 PLMUTIL_API

@@ -9,9 +9,14 @@
 #include "itkImage.h"
 #include "plm_HausdorffDistanceImageFilter.h"
 
+#include "distance_map.h"
 #include "hausdorff_distance.h"
 #include "itk_image_load.h"
+#include "itk_resample.h"
 #include "logfile.h"
+#include "plm_image.h"
+#include "plm_image_header.h"
+#include "volume.h"
 
 class Hausdorff_distance_private {
 public:
@@ -26,7 +31,7 @@ public:
     UCharImageType::Pointer cmp_image;
     
     FloatImageType::Pointer fwd_dmap;
-    
+    FloatImageType::Pointer rev_dmap;
 };
 
 Hausdorff_distance::Hausdorff_distance ()
@@ -66,7 +71,73 @@ Hausdorff_distance::set_compare_image (
 }
 
 void 
+Hausdorff_distance::run_internal (
+    UCharImageType::Pointer image,
+    FloatImageType::Pointer dmap
+)
+{
+    /* Convert to Plm_image type */
+    Plm_image pli_uchar (image);
+    Volume *vol_uchar = pli_uchar.gpuit_uchar ();
+    unsigned char *img_uchar = (unsigned char*) vol_uchar->img;
+    Plm_image pli_dmap (dmap);
+    Volume *vol_dmap = pli_dmap.gpuit_float ();
+    float *img_dmap = (float*) vol_dmap->img;
+
+    /* Loop through voxels, find distances */
+    float max_distance = 0;
+    double sum_distance = 0;
+    plm_long num_vox = 0;
+    for (plm_long i = 0; i < vol_uchar->npix; i++) {
+        if (img_uchar[i]) {
+            num_vox ++;
+            if (img_dmap[i] > 0) {
+                sum_distance += img_dmap[i];
+            }
+            if (img_dmap[i] > max_distance) {
+                max_distance = img_dmap[i];
+            }
+        }
+    }
+
+    if (max_distance > d_ptr->hausdorff_distance) {
+        d_ptr->hausdorff_distance = max_distance;
+    }
+    if (num_vox > 0) {
+        d_ptr->avg_hausdorff_distance += 0.5 * (sum_distance / num_vox);
+    }
+}
+
+void 
 Hausdorff_distance::run ()
+{
+    /* Resample cmp image onto geometry of reference */
+    if (!itk_image_header_compare (d_ptr->ref_image, d_ptr->cmp_image)) {
+        d_ptr->cmp_image = resample_image (d_ptr->cmp_image, 
+            Plm_image_header (d_ptr->ref_image), 0, 0);
+    }
+
+    Distance_map dmap;
+    dmap.set_input_image (d_ptr->cmp_image);
+    dmap.set_inside_is_positive (false);
+    dmap.set_use_squared_distance (false);
+    dmap.run ();
+    d_ptr->fwd_dmap = dmap.get_output_image ();
+
+    dmap.set_input_image (d_ptr->ref_image);
+    dmap.set_inside_is_positive (false);
+    dmap.set_use_squared_distance (false);
+    dmap.run ();
+    d_ptr->rev_dmap = dmap.get_output_image ();
+
+    d_ptr->hausdorff_distance = 0;
+    d_ptr->avg_hausdorff_distance = 0;
+    this->run_internal (d_ptr->ref_image, d_ptr->fwd_dmap);
+    this->run_internal (d_ptr->cmp_image, d_ptr->rev_dmap);
+}
+
+void 
+Hausdorff_distance::run_obsolete ()
 {
     typedef unsigned char T;
     typedef itk::plm_HausdorffDistanceImageFilter< 
