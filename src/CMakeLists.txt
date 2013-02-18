@@ -19,6 +19,7 @@ set (PLASTIMATCH_LIBS
   plmbase
   plmsys
   ${ITK_LIBRARIES}
+  devillard
   nkidecompress
   lua
   ${MATH_LIB}

@@ -457,10 +457,8 @@ link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/bstrlib-05122010)
 ##-----------------------------------------------------------------------------
 ##  Only use local devillard
 ##-----------------------------------------------------------------------------
-if (NOT BUILD_DEBIAN)
-  set (DEVILLARD_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/devillard")
-  add_subdirectory (libs/devillard)
-endif ()
+set (DEVILLARD_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/devillard")
+add_subdirectory (libs/devillard)
 
 ##-----------------------------------------------------------------------------
 ##  Only use local dlib

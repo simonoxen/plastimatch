@@ -38,6 +38,11 @@ public:
     void set_compare_image (const char* image_fn);
     /*! \brief Set the compare image as an ITK image. */
     void set_compare_image (const UCharImageType::Pointer image);
+    /*! \brief Set the fraction of voxels to include when computing 
+      the percent hausdorff distance.  The input value should be 
+      a number between 0 and 1.  The default value is 0.95. */
+    void set_hausdorff_distance_fraction (
+        float hausdorff_distance_fraction);
     ///@}
 
     /*! \name Execution */
@@ -55,6 +60,8 @@ public:
     float get_hausdorff ();
     /*! \brief Return the average Hausdorff distance */
     float get_average_hausdorff ();
+    /*! \brief Return the percent Hausdorff distance */
+    float get_percent_hausdorff ();
     /*! \brief Display debugging information to stdout */
     void debug ();
     ///@}

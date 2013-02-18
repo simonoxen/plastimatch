@@ -43,6 +43,7 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/util)
 include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/itk-3.20.0)
 include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/nSIFT)
+include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/devillard)
 include_directories (AFTER ${BSTRLIB_INCLUDE_DIR})
 include_directories (AFTER ${DLIB_INCLUDE_DIR})
 include_directories (AFTER ${LUA_INCLUDE_DIR})
@@ -271,7 +272,7 @@ endif ()
 ##  Set up configuration for external projects using plastimatch API
 ##-----------------------------------------------------------------------------
 # Add targets to build tree export set
-set (EXPORT_TARGET_LIST bstrlib plmsys plmbase nkidecompress plmutil)
+set (EXPORT_TARGET_LIST bstrlib plmsys plmbase devillard nkidecompress plmutil)
 if (PLMLIB_CONFIG_ENABLE_DOSE)
   set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} specfun plmdose)
 endif ()

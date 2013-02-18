@@ -8,6 +8,7 @@
 #include <math.h>
 #include "itkImage.h"
 #include "plm_HausdorffDistanceImageFilter.h"
+#include "wirth.h"
 
 #include "distance_map.h"
 #include "hausdorff_distance.h"
@@ -21,12 +22,17 @@
 class Hausdorff_distance_private {
 public:
     Hausdorff_distance_private () {
-        avg_hausdorff_distance = 0.f;
         hausdorff_distance = 0.f;
+        avg_hausdorff_distance = 0.f;
+        pct_hausdorff_distance = 0.f;
+        pct_hausdorff_distance_fraction = 0.95;
     }
 public:
-    float avg_hausdorff_distance;
     float hausdorff_distance;
+    float avg_hausdorff_distance;
+    float pct_hausdorff_distance;
+    float pct_hausdorff_distance_fraction;
+
     UCharImageType::Pointer ref_image;
     UCharImageType::Pointer cmp_image;
     
@@ -71,6 +77,13 @@ Hausdorff_distance::set_compare_image (
 }
 
 void 
+Hausdorff_distance::set_hausdorff_distance_fraction (
+    float hausdorff_distance_fraction)
+{
+    d_ptr->pct_hausdorff_distance_fraction = hausdorff_distance_fraction;
+}
+
+void 
 Hausdorff_distance::run_internal (
     UCharImageType::Pointer image,
     FloatImageType::Pointer dmap
@@ -84,27 +97,46 @@ Hausdorff_distance::run_internal (
     Volume *vol_dmap = pli_dmap.gpuit_float ();
     float *img_dmap = (float*) vol_dmap->img;
 
+    /* Make an array to store the distances */
+    float *distance_array = new float[vol_uchar->npix];
+
     /* Loop through voxels, find distances */
     float max_distance = 0;
     double sum_distance = 0;
     plm_long num_vox = 0;
     for (plm_long i = 0; i < vol_uchar->npix; i++) {
         if (img_uchar[i]) {
-            num_vox ++;
+            float dist = 0;
             if (img_dmap[i] > 0) {
-                sum_distance += img_dmap[i];
+                dist = img_dmap[i];
             }
             if (img_dmap[i] > max_distance) {
                 max_distance = img_dmap[i];
             }
+            sum_distance += dist;
+            distance_array[num_vox] = dist;
+            num_vox ++;
         }
     }
 
+    /* Figure out HD95 stuff */
+    float hd_pct = 0;
+    if (num_vox > 0) {
+        int ordinal = (int) floor (
+            d_ptr->pct_hausdorff_distance_fraction * num_vox-1);
+        if (ordinal > num_vox - 1) {
+            ordinal = num_vox - 1;
+        }
+        hd_pct = kth_smallest (distance_array, num_vox, ordinal);
+    }
+
+    /* Record results */
     if (max_distance > d_ptr->hausdorff_distance) {
         d_ptr->hausdorff_distance = max_distance;
     }
     if (num_vox > 0) {
         d_ptr->avg_hausdorff_distance += 0.5 * (sum_distance / num_vox);
+        d_ptr->pct_hausdorff_distance += 0.5 * hd_pct;
     }
 }
 
@@ -132,6 +164,7 @@ Hausdorff_distance::run ()
 
     d_ptr->hausdorff_distance = 0;
     d_ptr->avg_hausdorff_distance = 0;
+    d_ptr->pct_hausdorff_distance = 0;
     this->run_internal (d_ptr->ref_image, d_ptr->fwd_dmap);
     this->run_internal (d_ptr->cmp_image, d_ptr->rev_dmap);
 }
@@ -159,14 +192,22 @@ Hausdorff_distance::run_obsolete ()
         = h_filter->GetAverageHausdorffDistance ();
 }
 
-float Hausdorff_distance::get_hausdorff ()
+float 
+Hausdorff_distance::get_hausdorff ()
 {
     return d_ptr->hausdorff_distance;
 }
 
-float Hausdorff_distance::get_average_hausdorff ()
+float 
+Hausdorff_distance::get_average_hausdorff ()
 {
     return d_ptr->avg_hausdorff_distance;
+}
+
+float 
+Hausdorff_distance::get_percent_hausdorff ()
+{
+    return d_ptr->pct_hausdorff_distance;
 }
 
 void 
@@ -174,9 +215,11 @@ Hausdorff_distance::debug ()
 {
     lprintf (
 	"Hausdorff distance = %f\n"
-	"Average Hausdorff distance = %f\n",
+	"Average Hausdorff distance = %f\n"
+	"Percent Hausdorff distance = %f\n",
 	this->get_hausdorff (),
-	this->get_average_hausdorff ());
+	this->get_average_hausdorff (),
+	this->get_percent_hausdorff ());
 }
 
 void 
