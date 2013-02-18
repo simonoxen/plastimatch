@@ -9,6 +9,7 @@
 
 #include "bspline_xform.h"
 #include "direction_cosines.h"
+#include "direction_matrices.h"
 #include "itk_directions.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
@@ -198,12 +199,31 @@ void
 Plm_image_header::expand_to_contain (
     const FloatPoint3DType& position)
 {
-    /* Compute index */
+    /* Compute index for this position */
+    FloatPoint3DType idx = this->get_index (position);
 
+    /* Get the step & proj matrices */
+    /* GCS FIX: This is inefficient, already computed in get_index() */
+    float spacing[3], step[9], proj[9];
     Direction_cosines dc (m_direction);
+    this->get_spacing (spacing);
+    compute_direction_matrices (step, proj, dc, spacing);
 
-    /* GCS ___kkk___ LEFT OFF HERE */
+    ImageRegionType::SizeType itk_size = m_region.GetSize();
 
+    /* Expand the volume to contain the point */
+    for (int d1 = 0; d1 < 3; d1++) {
+        if (idx[d1] < 0) {
+            float extra = (float) floor ((double) idx[d1]);
+            for (int d2 = 0; d2 < 3; d2++) {
+                m_origin += extra * step[d1*3+d2];
+            }
+            itk_size[d1] += -extra;
+        }
+        else if (idx[d1] > itk_size[d1]) {
+            itk_size[d1] = (int) floor ((double) idx[d1]) + 1;
+        }
+    }
 }
 
 void 
@@ -351,13 +371,21 @@ FloatPoint3DType
 Plm_image_header::get_index (const FloatPoint3DType& pos) const
 {
     FloatPoint3DType idx;
+    FloatPoint3DType tmp;
 
-    /* GCS ___kkk___ LEFT OFF HERE */
+    float spacing[3], step[9], proj[9];
+    Direction_cosines dc (m_direction);
+    this->get_spacing (spacing);
 
-    /* To be written */
-    idx[0] = 0.f;
-    idx[1] = 0.f;
-    idx[2] = 0.f;
+    compute_direction_matrices (step, proj, dc, spacing);
+
+    for (int d1 = 0; d1 < 3; d1++) {
+        tmp[d1] = pos[d1] - m_origin[d1];
+        idx[d1] = 0;
+        for (int d2 = 0; d2 < 3; d2++) {
+            idx[d1] += pos[d2] * proj[d1*3+d2];
+        }
+    }
 
     return idx;
 }
