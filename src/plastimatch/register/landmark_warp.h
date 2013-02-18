@@ -42,7 +42,7 @@ public:
 
     /* Outputs */
     Plm_image *m_warped_img;
-    Xform *m_vf;
+    Xform *m_vf;   //also, INPUT vf for calculate_warped_landmarks()
     Raw_pointset *m_warped_landmarks; // if regularized, warped l. may not exactly match fixed
 
 public:
@@ -64,5 +64,6 @@ PLMREGISTER_C_API Landmark_warp* landmark_warp_load_pointsets (
 );
 
 PLMREGISTER_C_API void calculate_warped_landmarks( Landmark_warp *lw );
+PLMREGISTER_C_API void calculate_warped_landmarks_by_vf( Landmark_warp *lw, Volume *vf );
 
 #endif

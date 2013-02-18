@@ -23,6 +23,9 @@
 #include "volume.h"
 #include "volume_resample.h"
 #include "xform.h"
+#include "landmark_warp.h"
+#include "pointset.h"
+#include "raw_pointset.h"
 
 static void
 do_gpuit_bspline_stage_internal (
@@ -249,7 +252,7 @@ do_gpuit_bspline_stage_internal (
     /* Warp landmarks and write them out */
 
 // NSh uncomment 2013-02-14
-#if defined (commentout)
+//#if defined (commentout)
     if (regp->fixed_landmarks_fn.not_empty() 
         && regp->moving_landmarks_fn.not_empty() 
         && regp->warped_landmarks_fn.not_empty() ) {
@@ -261,18 +264,45 @@ do_gpuit_bspline_stage_internal (
             PT_VF_FLOAT_INTERLEAVED, 3);
         bspline_interpolate_vf (vector_field, xf_out->get_gpuit_bsp() );
         if (vector_field) {
-            bspline_landmarks_warp (vector_field, &parms, 
+
+	logfile_printf("... vector field ok\n");
+
+ 	// using Landmark_warp code from RBF
+	Landmark_warp lw;
+	lw.m_fixed_landmarks  = pointset_create ();
+	lw.m_moving_landmarks = pointset_create ();
+	
+	// does not work: Labeled_pointset vs Raw_pointset        
+	// lw->m_fixed_landmarks = regd->fixed_landmarks;
+	// re-loading from files	
+	logfile_printf("... reloading %s %s\n",regp->fixed_landmarks_fn.c_str(), regp->moving_landmarks_fn.c_str());
+	lw.load_pointsets (regp->fixed_landmarks_fn, regp->moving_landmarks_fn);
+
+	lw.m_input_img = regd->moving_image; 
+	lw.m_pih.set_from_plm_image (lw.m_input_img); // see landmark_warp_main.cxx
+
+	// how to pass vector field into lw?? 
+
+	// warp & save
+	lw.m_warped_landmarks = pointset_create ();
+	calculate_warped_landmarks_by_vf ( &lw, vector_field);
+	//pointset_save (lw.m_warped_landmarks, regp->warped_landmarks_fn);
+
+	/*  // obsolete code using Blm 
+           bspline_landmarks_warp (vector_field, &parms, 
                 xf_out->get_gpuit_bsp(), fixed_ss, moving_ss );
             bspline_landmarks_write_file (
                 (const char*) regp->warped_landmarks_fn, 
                 "warped", 
                 regp->landmarks->warped_landmarks, 
                 regp->landmarks->num_landmarks);
-            delete vector_field;
+	*/
+
+            //delete vector_field;
         } else 
             print_and_exit ("Could not interpolate vector field for landmark warping\n");
     }
-#endif
+//#endif
 
     /* Free up temporary memory */
     if (stage->fixed_mask) {

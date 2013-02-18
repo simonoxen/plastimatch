@@ -68,6 +68,7 @@ void bspline_landmarks_score (
         Bspline_state *bst, 
         Bspline_xform *bxf
 );
+/* // NSh 2012-02-17 - definitions of these fxns are missing
 PLMREGISTER_C_API void bspline_landmarks_warp (
         Volume *vector_field, 
         Bspline_parms *parms,
@@ -81,5 +82,5 @@ PLMREGISTER_C_API void bspline_landmarks_write_file (
         float *coords,
         int n
 );
-
+*/
 #endif
