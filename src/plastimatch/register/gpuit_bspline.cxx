@@ -281,12 +281,13 @@ do_gpuit_bspline_stage_internal (
 	lw.m_input_img = regd->moving_image; 
 	lw.m_pih.set_from_plm_image (lw.m_input_img); // see landmark_warp_main.cxx
 
-	// how to pass vector field into lw?? 
+	// how to pass vector field into lw via Xform lw->m_vf ? 
 
 	// warp & save
 	lw.m_warped_landmarks = pointset_create ();
 	calculate_warped_landmarks_by_vf ( &lw, vector_field);
-	//pointset_save (lw.m_warped_landmarks, regp->warped_landmarks_fn);
+	logfile_printf("... trying to save landmarks to %s\n",regp->warped_landmarks_fn.c_str());
+	pointset_save (lw.m_warped_landmarks, regp->warped_landmarks_fn.c_str());
 
 	/*  // obsolete code using Blm 
            bspline_landmarks_warp (vector_field, &parms, 
@@ -298,7 +299,7 @@ do_gpuit_bspline_stage_internal (
                 regp->landmarks->num_landmarks);
 	*/
 
-            //delete vector_field;
+            delete vector_field;
         } else 
             print_and_exit ("Could not interpolate vector field for landmark warping\n");
     }
