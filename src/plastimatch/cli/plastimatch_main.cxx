@@ -10,6 +10,7 @@
 #include "pcmd_adjust.h"
 #include "pcmd_autolabel.h"
 #include "pcmd_autolabel_train.h"
+#include "pcmd_boundary.h"
 #include "pcmd_compare.h"
 #include "pcmd_compose.h"
 #include "pcmd_crop.h"
@@ -56,36 +57,37 @@ print_usage (int return_code)
         "  add         "
         "  adjust      "
         "  average     "
+        "  boundary    "
 //        "  autolabel   "
         "  crop        "
-        "  compare     "
         "\n"
+        "  compare     "
         "  compose     "
         "  convert     "
         "  dice        "
         "  diff        "
+        "\n"
 //        "  drr         "
         "  dvh         "
-        "\n"
         "  fill        "
         "  header      "
 	"  jacobian    "
         "  mask        "
-        "  probe       "
         "\n"
+        "  probe       "
         "  register    "
         "  resample    "
         "  scale       "
         "  segment     "
+        "\n"
 //        "  sift        "
         "  stats       "
-        "\n"
         "  synth       "
         "  synth-vf    "
         "  thumbnail   "
         "  union       "
-        "  warp        "
         "\n"
+        "  warp        "
         "  xf-convert  "
 //        "  xio-dvh     "
         "\n"
@@ -149,6 +151,9 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "autolabel-train")) {
         do_command_autolabel_train (argc, argv);
+    }
+    else if (!strcmp (command, "boundary")) {
+        do_command_boundary (argc, argv);
     }
     else if (!strcmp (command, "compare")) {
         do_command_compare (argc, argv);

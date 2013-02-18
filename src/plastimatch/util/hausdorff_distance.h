@@ -62,14 +62,18 @@ public:
     float get_average_hausdorff ();
     /*! \brief Return the percent Hausdorff distance */
     float get_percent_hausdorff ();
+    /*! \brief Return the average boundary Hausdorff distance */
+    float get_average_boundary_hausdorff ();
+    /*! \brief Return the percent boundary Hausdorff distance */
+    float get_percent_boundary_hausdorff ();
     /*! \brief Display debugging information to stdout */
     void debug ();
     ///@}
 
 protected:
     void run_internal (
-        UCharImageType::Pointer image,
-        FloatImageType::Pointer dmap);
+        UCharImageType::Pointer image1,
+        UCharImageType::Pointer image2);
 };
 
 PLMUTIL_API

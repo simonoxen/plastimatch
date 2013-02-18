@@ -1174,6 +1174,31 @@ set_tests_properties (plm-add-vf-b-stats PROPERTIES DEPENDS plm-add-vf-b)
 set_tests_properties (plm-add-vf-b-check PROPERTIES DEPENDS plm-add-vf-b-stats)
 
 ## -------------------------------------------------------------------------
+## plastimatch boundary
+##  plm-boundary-a:   sphere
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-boundary-a"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "boundary;--output;${PLM_BUILD_TESTING_DIR}/plm-boundary-a.nrrd;${PLM_BUILD_TESTING_DIR}/sphere-1.mha"
+  )
+plm_add_test (
+  "plm-boundary-a-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-boundary-a.nrrd"
+  )
+plmtest_check_interval ("plm-boundary-a-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-boundary-a-stats.stdout.txt"
+  "NONZERO *([-0-9.]*)"
+  "546"
+  "546"
+  )
+set_tests_properties (plm-boundary-a PROPERTIES DEPENDS sphere-1)
+set_tests_properties (plm-boundary-a-stats PROPERTIES DEPENDS plm-boundary-a)
+set_tests_properties (plm-boundary-a-check 
+  PROPERTIES DEPENDS plm-boundary-a-stats)
+
+## -------------------------------------------------------------------------
 ## plastimatch convert dicom (and dicom rt)
 ##   plm convert dicom a: (rect) input rtss, no fixed image, no ct reference
 ##   plm convert dicom b: set metadata

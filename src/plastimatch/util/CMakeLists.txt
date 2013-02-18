@@ -26,6 +26,7 @@ set (PLMUTIL_LIBRARY_SRC
   gamma_dose_comparison.cxx gamma_dose_comparison.h
   geometry_chooser.cxx geometry_chooser.h 
   hausdorff_distance.cxx hausdorff_distance.h 
+  image_boundary.cxx image_boundary.h
   itk_adjust.cxx
   itk_crop.cxx
   itk_gabor.cxx
