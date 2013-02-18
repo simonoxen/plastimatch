@@ -43,13 +43,16 @@ public:
     float offset[3];
     float spacing[3];
     Direction_cosines direction_cosines;
-    float step[3][3];           // direction_cosines * spacing
-    float proj[3][3];           // inv direction_cosines / spacing
 
     enum Volume_pixel_type pix_type;    // Voxel Data type
     int vox_planes;                     // # planes per voxel
     int pix_size;                       // # bytes per voxel
     void* img;                          // Voxel Data
+
+public:
+    float step[9];           // direction_cosines * spacing
+    float proj[9];           // inv direction_cosines / spacing
+
 public:
     Volume ();
     Volume (
@@ -112,6 +115,17 @@ public:
       in the raw array of values.
     */
     void set_direction_cosines (const float direction_cosines[9]);
+
+    /*! \brief Get the step matrix.
+      The step matrix encodes the transform from voxel coordinates 
+      to world coordinates.
+    */
+    const float* get_step (void) const;
+    /*! \brief Get the proj matrix.
+      The proj matrix encodes the transform from world coordinates
+      to voxel coordinates.
+    */
+    const float* get_proj (void) const;
 
     void direction_cosines_debug ();
 protected:

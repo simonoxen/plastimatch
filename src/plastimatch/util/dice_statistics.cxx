@@ -113,7 +113,7 @@ Dice_statistics::run ()
         plm_long fijk[3];      /* Index within fixed image (vox) */
         float fxyz[3];         /* Position within fixed image (mm) */
         fijk[2] = k;
-        fxyz[2] = vol_ref->offset[2] + fijk[2] * vol_ref->step[2][2];
+        fxyz[2] = vol_ref->offset[2] + fijk[2] * vol_ref->step[2*3+2];
         LOOP_Y (fijk, fxyz, vol_ref) {
             LOOP_X (fijk, fxyz, vol_ref) {
                 plm_long v = volume_index (vol_ref->dim, fijk);

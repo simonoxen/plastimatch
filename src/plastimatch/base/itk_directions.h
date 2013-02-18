@@ -9,16 +9,16 @@
 #include "itk_image.h"
 
 PLMBASE_API void itk_direction_from_dc (
-        DirectionType* itk_dc,
-        const Direction_cosines& dc
+    DirectionType* itk_dc,
+    const Direction_cosines& dc
 );
 PLMBASE_API void itk_direction_from_dc (
-        DirectionType* itk_direction,
-        const float dc[9]
+    DirectionType* itk_direction,
+    const float dc[9]
 );
 PLMBASE_C_API void dc_from_itk_direction (
-        float dc[9],
-        const DirectionType* itk_direction
+    float dc[9],
+    const DirectionType* itk_direction
 );
 PLMBASE_C_API void itk_direction_set_identity (DirectionType* itk_direction);
 

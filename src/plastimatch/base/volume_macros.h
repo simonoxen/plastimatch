@@ -33,7 +33,7 @@ volume_index (const plm_long dims[3], const plm_long ijk[3])
         fxyz[2] = vol->offset[2];                                       \
     ijk[2] < vol->dim[2];                                               \
     ++ijk[2],                                                           \
-        fxyz[2] = vol->offset[2] + ijk[2]*vol->step[2][2]               \
+        fxyz[2] = vol->offset[2] + ijk[2]*vol->step[2*3+2]              \
         )
 #define LOOP_Z_OMP(k,vol)                                               \
     for (                                                               \
@@ -44,31 +44,31 @@ volume_index (const plm_long dims[3], const plm_long ijk[3])
 #define LOOP_Y(ijk,fxyz,vol)                                            \
     for (                                                               \
     ijk[1] = 0,                                                         \
-        fxyz[1] = vol->offset[1] + ijk[2]*vol->step[1][2];              \
+        fxyz[1] = vol->offset[1] + ijk[2]*vol->step[1*3+2];             \
     ijk[1] < vol->dim[1];                                               \
     ++ijk[1],                                                           \
-        fxyz[2] = vol->offset[2] + ijk[2]*vol->step[2][2]               \
-        + ijk[1]*vol->step[2][1],                                       \
-        fxyz[1] = vol->offset[1] + ijk[2]*vol->step[1][2]               \
-        + ijk[1]*vol->step[1][1]                                        \
+        fxyz[2] = vol->offset[2] + ijk[2]*vol->step[2*3+2]              \
+        + ijk[1]*vol->step[2*3+1],                                      \
+        fxyz[1] = vol->offset[1] + ijk[2]*vol->step[1*3+2]              \
+        + ijk[1]*vol->step[1*3+1]                                       \
         )
 #define LOOP_X(ijk,fxyz,vol)                                            \
     for (                                                               \
     ijk[0] = 0,                                                         \
-        fxyz[0] = vol->offset[0] + ijk[2]*vol->step[0][2]               \
-        + ijk[1]*vol->step[0][1];                                       \
+        fxyz[0] = vol->offset[0] + ijk[2]*vol->step[0*3+2]              \
+        + ijk[1]*vol->step[0*3+1];                                      \
     ijk[0] < vol->dim[0];                                               \
     ++ijk[0],                                                           \
-        fxyz[0] += vol->step[0][0],                                     \
-        fxyz[1] += vol->step[1][0],                                     \
-        fxyz[2] += vol->step[2][0]                                      \
+        fxyz[0] += vol->step[0*3+0],                                    \
+        fxyz[1] += vol->step[1*3+0],                                    \
+        fxyz[2] += vol->step[2*3+0]                                     \
         )
 
 #define PROJECT_Z(xyz,proj)                                             \
-    (xyz[0] * proj[2][0] + xyz[1] * proj[2][1] + xyz[2] * proj[2][2])
+    (xyz[0] * proj[2*3+0] + xyz[1] * proj[2*3+1] + xyz[2] * proj[2*3+2])
 #define PROJECT_Y(xyz,proj)                                             \
-    (xyz[0] * proj[1][0] + xyz[1] * proj[1][1] + xyz[2] * proj[1][2])
+    (xyz[0] * proj[1*3+0] + xyz[1] * proj[1*3+1] + xyz[2] * proj[1*3+2])
 #define PROJECT_X(xyz,proj)                                             \
-    (xyz[0] * proj[0][0] + xyz[1] * proj[0][1] + xyz[2] * proj[0][2])
+    (xyz[0] * proj[0*3+0] + xyz[1] * proj[0*3+1] + xyz[2] * proj[0*3+2])
 
 #endif

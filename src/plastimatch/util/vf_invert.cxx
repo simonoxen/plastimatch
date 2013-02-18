@@ -131,7 +131,7 @@ Vf_invert::run ()
         plm_long fijk[3];      /* Index within fixed image (vox) */
         float fxyz[3];         /* Position within fixed image (mm) */
         fijk[2] = k;
-        fxyz[2] = vf_in->offset[2] + fijk[2] * vf_in->step[2][2];
+        fxyz[2] = vf_in->offset[2] + fijk[2] * vf_in->step[2*3+2];
         LOOP_Y (fijk, fxyz, vf_in) {
             LOOP_X (fijk, fxyz, vf_in) {
                 float mijk[3];

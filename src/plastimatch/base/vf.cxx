@@ -25,6 +25,11 @@ vf_warp (Volume *vout, Volume *vin, Volume *vf)
     float* vout_img;
     float* m_img = (float*) vin->img;
 
+    const float* vin_proj = vin->get_proj();
+    const float* vf_proj = vf->get_proj();
+    const float* vin_step = vin->get_step();
+    const float* vf_step = vf->get_step();
+
     printf ("Direction cosines: "
 	"vin = %f %f %f ...\n"
 	"vf = %f %f %f ...\n",
@@ -48,22 +53,22 @@ vf_warp (Volume *vout, Volume *vin, Volume *vf)
     printf ("proj: "
 	"vin = %f %f %f ...\n"
 	"vf = %f %f %f ...\n",
-	vin->proj[0][0],
-	vin->proj[0][1],
-	vin->proj[0][2],
-	vf->proj[0][0],
-	vf->proj[0][1],
-	vf->proj[0][2]
+	vin_proj[3*0+0],
+	vin_proj[3*0+1],
+	vin_proj[3*0+2],
+	vf_proj[3*0+0],
+	vf_proj[3*0+1],
+	vf_proj[3*0+2]
     );
     printf ("step: "
 	"vin = %f %f %f ...\n"
 	"vf = %f %f %f ...\n",
-	vin->step[0][0],
-	vin->step[0][1],
-	vin->step[0][2],
-	vf->step[0][0],
-	vf->step[0][1],
-	vf->step[0][2]
+	vin_step[3*0+0],
+	vin_step[3*0+1],
+	vin_step[3*0+2],
+	vf_step[3*0+0],
+	vf_step[3*0+1],
+	vf_step[3*0+2]
     );
 
     if (!vout) {

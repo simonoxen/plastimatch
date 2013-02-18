@@ -23,6 +23,7 @@ set (PLMBASE_LIBRARY_SRC
   dicom_util.cxx
   dicom.dic
   direction_cosines.cxx 
+  direction_matrices.cxx 
   exchkeys.cxx
   hnd_io.cxx
   interpolate.cxx

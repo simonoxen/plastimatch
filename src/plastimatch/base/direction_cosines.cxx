@@ -22,6 +22,12 @@ Direction_cosines::Direction_cosines ()
     this->set_identity ();
 }
 
+Direction_cosines::Direction_cosines (const DirectionType& itk_dc)
+{
+    this->d_ptr = new Direction_cosines_private;
+    this->set (itk_dc);
+}
+
 Direction_cosines::~Direction_cosines ()
 {
     delete this->d_ptr;
@@ -137,6 +143,21 @@ Direction_cosines::set (const float dc[])
 {
     for (int i = 0; i < 9; i++) {
         d_ptr->direction_cosines[i] = dc[i];
+    }
+    solve_inverse ();
+}
+
+void 
+Direction_cosines::set (const DirectionType& itk_dc)
+{
+    for (unsigned int d1 = 0; d1 < 3; d1++) {
+	for (unsigned int d2 = 0; d2 < 3; d2++) {
+#if defined (PLM_CONFIG_ALT_DCOS)
+	    d_ptr->direction_cosines[d1*3+d2] = itk_dc[d2][d1];
+#else
+	    d_ptr->direction_cosines[d1*3+d2] = itk_dc[d1][d2];
+#endif
+	}
     }
     solve_inverse ();
 }

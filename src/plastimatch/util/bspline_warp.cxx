@@ -222,7 +222,7 @@ bspline_warp_dcos (
         float dxyz[3];
 
         fijk[2] = k;
-        fxyz[2] = vout->offset[2] + fijk[2] * vout->step[2][2];
+        fxyz[2] = vout->offset[2] + fijk[2] * vout->step[2*3+2];
         p[2] = REGION_INDEX_Z (fijk, bxf);
         q[2] = REGION_OFFSET_Z (fijk, bxf);
         LOOP_Y (fijk, fxyz, vout) {

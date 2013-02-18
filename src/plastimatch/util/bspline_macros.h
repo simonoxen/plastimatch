@@ -124,14 +124,23 @@ get_region_offset (plm_long i, plm_long j, plm_long k, const Bspline_xform *bxf)
     (bxf->img_origin[2] + bxf->img_spacing[2] * ijk_vol[2])
 
 
-#define GET_COMMON_REAL_SPACE_COORD_X(ijk_vol, vol, bxf)  \
-    (bxf->img_origin[0] + ijk_vol[0]*vol->step[0][0] + ijk_vol[1]*vol->step[0][1] + ijk_vol[2]*vol->step[0][2])
+#define GET_COMMON_REAL_SPACE_COORD_X(ijk_vol, vol, bxf)                \
+    (bxf->img_origin[0]                                                 \
+        + ijk_vol[0]*vol->step[0*3+0]                                   \
+        + ijk_vol[1]*vol->step[0*3+1]                                   \
+        + ijk_vol[2]*vol->step[0*3+2])
 
-#define GET_COMMON_REAL_SPACE_COORD_Y(ijk_vol, vol, bxf)  \
-    (bxf->img_origin[1] + ijk_vol[0]*vol->step[1][0] + ijk_vol[1]*vol->step[1][1] + ijk_vol[2]*vol->step[1][2])
+#define GET_COMMON_REAL_SPACE_COORD_Y(ijk_vol, vol, bxf)                \
+    (bxf->img_origin[1]                                                 \
+        + ijk_vol[0]*vol->step[1*3+0]                                   \
+        + ijk_vol[1]*vol->step[1*3+1]                                   \
+        + ijk_vol[2]*vol->step[1*3+2])
 
-#define GET_COMMON_REAL_SPACE_COORD_Z(ijk_vol, vol, bxf)  \
-    (bxf->img_origin[2] + ijk_vol[0]*vol->step[2][0] + ijk_vol[1]*vol->step[2][1] + ijk_vol[2]*vol->step[2][2])
+#define GET_COMMON_REAL_SPACE_COORD_Z(ijk_vol, vol, bxf)                \
+    (bxf->img_origin[2]                                                 \
+        + ijk_vol[0]*vol->step[2*3+0]                                   \
+        + ijk_vol[1]*vol->step[2*3+1]                                   \
+        + ijk_vol[2]*vol->step[2*3+2])
 
 /***************************************************************
  * MACROS FOR THE "PARALLEL FRIENDLY" TILE-CENTRIC ALGORITHMS  *
@@ -176,11 +185,20 @@ get_region_offset (plm_long i, plm_long j, plm_long k, const Bspline_xform *bxf)
 
 
 /* Direction cosines - IJK to XYZ */
-#define GET_COMMON_REAL_SPACE_COORDS(xyz_vol, ijk_vol, vol, bxf)  \
-    do { \
-    xyz_vol[0] = bxf->img_origin[0] + ijk_vol[0]*vol->step[0][0] + ijk_vol[1]*vol->step[0][1] + ijk_vol[2]*vol->step[0][2]; \
-    xyz_vol[1] = bxf->img_origin[1] + ijk_vol[0]*vol->step[1][0] + ijk_vol[1]*vol->step[1][1] + ijk_vol[2]*vol->step[1][2]; \
-    xyz_vol[2] = bxf->img_origin[2] + ijk_vol[0]*vol->step[2][0] + ijk_vol[1]*vol->step[2][1] + ijk_vol[2]*vol->step[2][2]; \
+#define GET_COMMON_REAL_SPACE_COORDS(xyz_vol, ijk_vol, vol, bxf)        \
+    do {                                                                \
+        xyz_vol[0] = bxf->img_origin[0]                                 \
+            + ijk_vol[0]*vol->step[3*0+0]                               \
+            + ijk_vol[1]*vol->step[3*0+1]                               \
+            + ijk_vol[2]*vol->step[3*0+2];                              \
+        xyz_vol[1] = bxf->img_origin[1]                                 \
+            + ijk_vol[0]*vol->step[3*1+0]                               \
+            + ijk_vol[1]*vol->step[3*1+1]                               \
+            + ijk_vol[2]*vol->step[3*1+2];                              \
+        xyz_vol[2] = bxf->img_origin[2]                                 \
+            + ijk_vol[0]*vol->step[3*2+0]                               \
+            + ijk_vol[1]*vol->step[3*2+1]                               \
+            + ijk_vol[2]*vol->step[3*2+2];                              \
     } while (0);
 
 #endif /* _bspline_macros_h_ */

@@ -7,6 +7,7 @@
 #include <string.h>
 #include <math.h>
 
+#include "direction_matrices.h"
 #include "logfile.h"
 #include "plm_int.h"
 #include "plm_math.h"
@@ -81,8 +82,8 @@ Volume::init ()
     }
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
-            proj[i][j] = 0;
-            step[i][j] = 0;
+            proj[3*i+j] = 0;
+            step[3*i+j] = 0;
         }
     }
     npix = 0;
@@ -225,15 +226,32 @@ Volume::set_direction_cosines (
 
     this->direction_cosines.set (dc);
 
+    compute_direction_matrices (step, proj, 
+        this->direction_cosines, this->spacing);
+
+#if defined (commentout)
     const float* inv_dc = this->direction_cosines.get_inverse ();
     for (int i = 0; i < 3; i++) {
 	for (int j = 0; j < 3; j++) {
-	    this->step[i][j] = this->direction_cosines[3*i+j] 
+	    this->step[3*i+j] = this->direction_cosines[3*i+j] 
 		* this->spacing[i];
-	    this->proj[i][j] = inv_dc[3*i+j] 
+	    this->proj[3*i+j] = inv_dc[3*i+j] 
 		/ this->spacing[j];
 	}
     }
+#endif
+}
+
+const float* 
+Volume::get_step (void) const
+{
+    return this->step;
+}
+
+const float* 
+Volume::get_proj (void) const
+{
+    return this->proj;
 }
 
 Volume*
@@ -618,58 +636,6 @@ volume_scale (Volume* vol, float scale)
     }
 }
 
-/* This is the old algorithm which doesn't respect direction cosines */
-/* In mm coordinates */
-#if defined (commentout)
-void
-volume_calc_grad_no_dcos (Volume* vout, const Volume* vref)
-{
-    plm_long i, j, k;
-    plm_long i_n, j_n, k_n;       /* n is next */
-    int i_p, j_p, k_p;          /* p is prev */
-    plm_long gi, gj, gk;
-    plm_long idx_p, idx_n;
-    float *out_img, *ref_img;
-
-    out_img = (float*) vout->img;
-    ref_img = (float*) vref->img;
-
-    plm_long v = 0;
-    for (k = 0; k < vref->dim[2]; k++) {
-	k_p = k - 1;
-	k_n = k + 1;
-	if (k == 0) k_p = 0;
-	if (k == vref->dim[2]-1) k_n = vref->dim[2]-1;
-	for (j = 0; j < vref->dim[1]; j++) {
-	    j_p = j - 1;
-	    j_n = j + 1;
-	    if (j == 0) j_p = 0;
-	    if (j == vref->dim[1]-1) j_n = vref->dim[1]-1;
-	    for (i = 0; i < vref->dim[0]; i++, v++) {
-		i_p = i - 1;
-		i_n = i + 1;
-		if (i == 0) i_p = 0;
-		if (i == vref->dim[0]-1) i_n = vref->dim[0]-1;
-		
-		gi = 3 * v + 0;
-		gj = 3 * v + 1;
-		gk = 3 * v + 2;
-		
-		idx_p = volume_index (vref->dim, i_p, j, k);
-		idx_n = volume_index (vref->dim, i_n, j, k);
-		out_img[gi] = (float) (ref_img[idx_n] - ref_img[idx_p]) / 2.0 / vref->spacing[0];
-		idx_p = volume_index (vref->dim, i, j_p, k);
-		idx_n = volume_index (vref->dim, i, j_n, k);
-		out_img[gj] = (float) (ref_img[idx_n] - ref_img[idx_p]) / 2.0 / vref->spacing[1];
-		idx_p = volume_index (vref->dim, i, j, k_p);
-		idx_n = volume_index (vref->dim, i, j, k_n);
-		out_img[gk] = (float) (ref_img[idx_n] - ref_img[idx_p]) / 2.0 / vref->spacing[2];
-	    }
-	}
-    }
-}
-#endif
-
 void
 Volume::direction_cosines_debug ()
 {
@@ -695,26 +661,26 @@ Volume::direction_cosines_debug ()
 	direction_cosines[8]
     );
     lprintf ("step:\n%8f %8f %8f\n%8f %8f %8f\n%8f %8f %8f\n",
-	step[0][0],
-	step[0][1],
-	step[0][2],
-	step[1][0],
-	step[1][1],
-	step[1][2],
-	step[2][0],
-	step[2][1],
-	step[2][2]
+	step[3*0+0],
+	step[3*0+1],
+	step[3*0+2],
+	step[3*1+0],
+	step[3*1+1],
+	step[3*1+2],
+	step[3*2+0],
+	step[3*2+1],
+	step[3*2+2]
     );
     lprintf ("proj:\n%8f %8f %8f\n%8f %8f %8f\n%8f %8f %8f\n",
-	proj[0][0],
-	proj[0][1],
-	proj[0][2],
-	proj[1][0],
-	proj[1][1],
-	proj[1][2],
-	proj[2][0],
-	proj[2][1],
-	proj[2][2]
+	proj[3*0+0],
+	proj[3*0+1],
+	proj[3*0+2],
+	proj[3*1+0],
+	proj[3*1+1],
+	proj[3*1+2],
+	proj[3*2+0],
+	proj[3*2+1],
+	proj[3*2+2]
     );
 }
 

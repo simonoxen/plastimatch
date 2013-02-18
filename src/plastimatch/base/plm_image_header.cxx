@@ -8,6 +8,7 @@
 #include "itkImageRegionIterator.h"
 
 #include "bspline_xform.h"
+#include "direction_cosines.h"
 #include "itk_directions.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
@@ -198,6 +199,8 @@ Plm_image_header::expand_to_contain (
     const FloatPoint3DType& position)
 {
     /* Compute index */
+
+    Direction_cosines dc (m_direction);
 
     /* GCS ___kkk___ LEFT OFF HERE */
 
