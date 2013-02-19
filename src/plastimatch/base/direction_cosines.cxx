@@ -5,6 +5,7 @@
 #include <string>
 #include <stdio.h>
 #include "direction_cosines.h"
+#include "itk_image.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
 
