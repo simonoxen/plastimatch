@@ -12,5 +12,4 @@ set (NKIDECOMPRESS_SRC
   )
 
 ##add_library (nkidecompress STATIC ${NKIDECOMPRESS_SRC})
-plm_add_static_library (nkidecompress "${NKIDECOMPRESS_SRC}"
-  "" "" "")
+plm_add_static_library (nkidecompress "${NKIDECOMPRESS_SRC}" "" "" "")

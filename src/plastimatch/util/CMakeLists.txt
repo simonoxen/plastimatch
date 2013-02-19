@@ -79,9 +79,10 @@ endforeach ()
 ##  LIBRARY DEPENDENCIES
 ##-----------------------------------------------------------------------------
 set (PLMUTIL_LIBRARY_DEPENDENCIES 
+  ${FFTW_LIBRARIES}
+  devillard
   plmbase
   plmsys
-  ${FFTW_LIBRARIES}
   )
 
 ##-----------------------------------------------------------------------------
