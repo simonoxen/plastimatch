@@ -493,7 +493,7 @@ Registration_parms::set_key_val (
     }
     else if (!strcmp (key, "pgtol")) {
         if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g", &stage->pgtol) != 1) {
+        if (sscanf (val, "%f", &stage->pgtol) != 1) {
             goto error_exit;
         }
     }
