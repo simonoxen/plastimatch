@@ -15,6 +15,7 @@
 #include "proj_matrix.h"
 
 #define HND_INTENSITY_MAX (139000)
+//#define HND_INTENSITY_MAX (10000)
 
 /* -----------------------------------------------------------------------
    Private functions
@@ -31,6 +32,7 @@ hnd_adjust_intensity (Proj_image *proj)
         }
         img[i] = img[i] / HND_INTENSITY_MAX;
         img[i] = 1.0 - img[i];
+
         if (img[i] < 0.0f) img[i] = 0.0;
         /* Exponential mapping -- maybe this helps a little */
         img[i] = exp(img[i]) - 1;
@@ -278,8 +280,10 @@ hnd_load (Proj_image *proj, const char *fn, const double xy_offset[2])
     /* Set the matrix */
     /* Note: Varian HND seems to give 0 for the SFD.  We will hard code 
        the sid to 1500 until told otherwise. */
+    /* GCS: Sometimes the SAD is 100 (cm) and sometimes it is 1000 (mm).
+       So we will hard code the SAD to 1000 mm. */
     proj->pmat = new Proj_matrix;
-    hnd_set_proj_matrix (proj, hnd.dCTProjectionAngle, hnd.dSAD, 1500,
+    hnd_set_proj_matrix (proj, hnd.dCTProjectionAngle, 1000, 1500,
         xy_offset);
 
     /* Clean up */

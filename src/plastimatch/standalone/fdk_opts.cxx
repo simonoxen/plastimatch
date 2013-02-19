@@ -24,7 +24,7 @@ print_usage (void)
 	" -z \"s1 s2 s3\"          Physical size of the reconstruction (in mm)\n"
 	" -I indir               The input directory\n"
 	" -O outfile             The output file\n"
-        " -x \"x0 y0\"           Panel offset (in pixels)\n"
+        " -x \"x0 y0\"             Panel offset (in pixels)\n"
         " -X flavor              Implementation flavor (0,a,b,c,d) (default=c)\n"
     );
     exit (1);
