@@ -146,6 +146,9 @@ Dcmtk_loader::get_volume ()
     if (!this->img) {
         this->parse_directory ();
     }
+    if (!this->img) {
+        return 0;
+    }
     return this->img->vol();
 }
 
