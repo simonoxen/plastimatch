@@ -81,17 +81,3 @@ plm_add_library (
   "${PLMSCRIPT_LIBRARY_DEPENDENCIES}"
   ""
   "")
-
-##-----------------------------------------------------------------------------
-##  SPECIAL RULES FOR SLICER
-##-----------------------------------------------------------------------------
-if (SLICER_FOUND)
-  if (WIN32)
-    plm_slicer_copy_dll (plastimatch_slicer_copy_plmscript
-      "${INDIR}/plmscript.dll"
-      "${OUTDIR}/plmscript.dll"
-      "${QTOUTDIR}/plmscript.dll"
-      plmscript
-    )
-  endif ()
-endif ()

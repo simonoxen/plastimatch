@@ -72,17 +72,3 @@ plm_add_library (
   "${PLMSYS_LIBRARY_DEPENDENCIES}"
   ""
   "${PLMSYS_LIBRARY_HEADERS}")
-
-##-----------------------------------------------------------------------------
-##  SPECIAL RULES FOR SLICER
-##-----------------------------------------------------------------------------
-if (SLICER_FOUND)
-  if (WIN32)
-    plm_slicer_copy_dll (plastimatch_slicer_copy_plmsys
-      "${INDIR}/plmsys.dll"
-      "${OUTDIR}/plmsys.dll"
-      "${QTOUTDIR}/plmsys.dll"
-      plmsys
-    )
-  endif ()
-endif ()

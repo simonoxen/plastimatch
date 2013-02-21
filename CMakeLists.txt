@@ -111,8 +111,6 @@ option (PLM_CONFIG_DISABLE_MONDOSHOT "Disable building mondoshot" ON)
 option (PLM_CONFIG_DISABLE_OPENCL "Set to ON to build without OpenCL" OFF)
 option (PLM_CONFIG_DISABLE_PLASTIMATCH "Disable building plastimatch" OFF)
 option (PLM_CONFIG_DISABLE_REG23 "Disable building REG-2-3" OFF)
-option (PLM_CONFIG_DISABLE_SLICER 
-  "Set to ON to build without Slicer extensions" OFF)
 option (PLM_CONFIG_DISABLE_SSE2 "Set to ON to build without SSE" OFF)
 option (PLM_CONFIG_ENABLE_MATLAB "Set to ON to build Matlab plugins" OFF)
 set (PLM_CONFIG_VERSION_STRING "" CACHE STRING "Version string")
@@ -179,7 +177,6 @@ if (PLM_CONFIG_LIBRARY_BUILD)
   set (PLM_CONFIG_DISABLE_FATM ON)
   set (PLM_CONFIG_DISABLE_MONDOSHOT ON)
   set (PLM_CONFIG_DISABLE_REG23 ON)
-  set (PLM_CONFIG_DISABLE_SLICER ON)
   set (PLM_CONFIG_PREFER_F2C ON)
   set (PLM_PREFER_SYSTEM_F2C OFF)
 endif ()
@@ -197,14 +194,6 @@ set (PLM_DEFAULT_VERSION_STRING
 if (EXISTS "${CMAKE_SOURCE_DIR}/src/plastimatch/plastimatch_version.txt")
   file (READ "${CMAKE_SOURCE_DIR}/src/plastimatch/plastimatch_version.txt"
     PLM_RELEASE_VERSION_STRING)
-endif ()
-
-##-----------------------------------------------------------------------------
-##  Special hack for slicer extension on apple
-##-----------------------------------------------------------------------------
-if (APPLE AND BUILD_AGAINST_SLICER3)
-  set (PLM_CONFIG_DISABLE_CUDA ON)
-  set (PLM_CONFIG_DISABLE_OPENCL ON)
 endif ()
 
 ##-----------------------------------------------------------------------------
@@ -301,8 +290,6 @@ endif ()
 ##  Figure out FORTRAN madness
 ##  This needs to be done before add_subdirectory() calls 
 ##   to set PLM_FORTRAN_LIBRARIES properly
-##  GCS FIX: This should be done after slicer, to ensure that 
-##   system f2c is not used
 ##-----------------------------------------------------------------------------
 if (NOT PLM_PREFER_NO_FORTRAN_NO_F2C)
 if (NOT MINGW)
@@ -390,18 +377,12 @@ if (NOT PLM_CONFIG_DISABLE_OPENCL)
 endif ()
 find_package (OpenGL)
 find_package (OpenMP)
-if (PLM_BUILD_RTK)
-  find_package (RTK)
-  # RTK sets ITK variables.  But we might prefer Slicer's, so reset them.
-  set (ITK_FOUND)
-  set (ITK_USE_FILE)
-endif ()
 if (BUILD_DEBIAN)
   set (SQLITE_FOUND false)
 else ()
   find_package (SQLite)
 endif ()
-if (NOT PLM_CONFIG_DISABLE_SSE2 AND NOT BUILD_AGAINST_SLICER3)
+if (NOT PLM_CONFIG_DISABLE_SSE2)
   find_package (SSE)           # SSE Extensions for CPU
 else ()
   set (SSE2_FOUND false)
@@ -562,29 +543,6 @@ find_package (Thrust)
 #endif ()
 
 ##-----------------------------------------------------------------------------
-##  Slicer
-##-----------------------------------------------------------------------------
-if (NOT PLM_CONFIG_DISABLE_SLICER)
-  set (EXTENSION_NAME Plastimatch)
-  set (EXTENSION_HOMEPAGE http://plastimatch.org)
-  set (EXTENSION_CATEGORY Plastimatch)
-  set (EXTENSION_ICONURL FALSE)
-  set (EXTENSION_CONTRIBUTORS FALSE)
-  set (EXTENSION_DESCRIPTION FALSE)
-  set (EXTENSION_SCREENSHOTURLS FALSE)
-  find_package (Slicer QUIET)
-  if (SLICER_FOUND)
-    # GCS FIX 2012-05-08: Cuda/OpenCL doesn't yet work with slicer build
-    set (PLM_CONFIG_DISABLE_CUDA TRUE)
-    set (PLM_CONFIG_DISABLE_OPENCL TRUE)
-    set (CUDA_FOUND FALSE)
-    set (OPENCL_FOUND FALSE)
-  else ()
-    message (STATUS "Looking for Slicer - not found")
-  endif ()
-endif()
-
-##-----------------------------------------------------------------------------
 ##  Doxygen
 ##-----------------------------------------------------------------------------
 find_package (Doxygen)
@@ -593,8 +551,6 @@ find_package (Doxygen)
 ##  For shared libraries, we enable dynamic loading of cuda, opencl
 ##  Note: we can't use BUILD_SHARED_LIBS directly, because it conflicts 
 ##  with the ITK header files
-##  Note: we have to do this after checking for Slicer, because Slicer 
-##  will change BUILD_SHARED_LIBS to ON
 ##-----------------------------------------------------------------------------
 set (PLM_USE_GPU_PLUGINS OFF)
 if (BUILD_SHARED_LIBS)
@@ -813,11 +769,7 @@ endif ()
 ##-----------------------------------------------------------------------------
 set (BUILD_NEVER 0)
 set (BUILD_ALWAYS 1)
-if (BUILD_AGAINST_SLICER3)
-  set (BUILD_IF_NOT_SLICER_EXT 0)
-else ()
-  set (BUILD_IF_NOT_SLICER_EXT 1)
-endif ()
+set (BUILD_IF_NOT_SLICER_EXT 1)
 
 ##-----------------------------------------------------------------------------
 ##  Subdirectories
@@ -887,10 +839,6 @@ if (CUDA_FOUND)
     else ()
       install (FILES "${CUDART_FILE}" DESTINATION bin)
     endif ()
-
-    if (BUILD_AGAINST_SLICER3)
-      install (FILES "${CUDART_FILE}" DESTINATION lib/Slicer3/Plugins)
-    endif ()
   endif ()
 endif ()
 
@@ -903,29 +851,27 @@ endif ()
 # JAS 2011.01.24
 # I have moved the documentation DESTINATION from
 # /usr/doc to /usr/share/doc/plastimatch/ for Linux/UNIX
-if (NOT BUILD_AGAINST_SLICER3)
-  if (UNIX)
-    # FHS compliant path for Linux/UNIX
-    set (DOC_DESTINATION "share/doc/plastimatch")
-  else ()
-    # Just throw TXTs into a doc folder for Windows
-    set (DOC_DESTINATION "doc")
-  endif ()
+if (UNIX)
+  # FHS compliant path for Linux/UNIX
+  set (DOC_DESTINATION "share/doc/plastimatch")
+else ()
+  # Just throw TXTs into a doc folder for Windows
+  set (DOC_DESTINATION "doc")
+endif ()
 
+install (FILES 
+  README.TXT
+  src/plastimatch/COPYRIGHT.TXT
+  DESTINATION ${DOC_DESTINATION}
+  )
+
+# Debian doesn't like INSTALL, LICENSE included in documentation
+if (NOT BUILD_DEBIAN)
   install (FILES 
-    README.TXT
-    src/plastimatch/COPYRIGHT.TXT
+    INSTALL.TXT
+    src/plastimatch/LICENSE.TXT
     DESTINATION ${DOC_DESTINATION}
     )
-
-  # Debian doesn't like INSTALL, LICENSE included in documentation
-  if (NOT BUILD_DEBIAN)
-    install (FILES 
-      INSTALL.TXT
-      src/plastimatch/LICENSE.TXT
-      DESTINATION ${DOC_DESTINATION}
-      )
-  endif ()
 endif ()
 
 ##-----------------------------------------------------------------------------

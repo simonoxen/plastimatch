@@ -66,12 +66,6 @@ set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} ${FORTRAN_LIBRARIES})
 
 
 ##-----------------------------------------------------------------------------
-##  SLICER LIBRARIES
-##-----------------------------------------------------------------------------
-set (SLICER_PLUGIN_LIBS ${PLASTIMATCH_LIBS})
-
-
-##-----------------------------------------------------------------------------
 ##  DETERMINE LINKER FLAGS
 ##-----------------------------------------------------------------------------
 set (PLASTIMATCH_LDFLAGS "${OPENMP_LDFLAGS}")
@@ -93,16 +87,7 @@ if (BUILD_DEBIAN)
   set (PLM_CONFIG_DISABLE_FATM ON)
   set (PLM_CONFIG_DISABLE_MONDOSHOT ON)
   set (PLM_CONFIG_DISABLE_REG23 ON)
-  set (PLM_CONFIG_DISABLE_SLICER ON)
 endif ()
-
-if (BUILD_AGAINST_SLICER3)
-  set (PLM_BUILD_ISE OFF)
-  set (PLM_CONFIG_DISABLE_FATM ON)
-  set (PLM_CONFIG_DISABLE_MONDOSHOT ON)
-  set (PLM_CONFIG_DISABLE_REG23 ON)
-endif ()
-
 
 if (PLM_BUILD_ISE)
   add_subdirectory (ise)
@@ -122,10 +107,6 @@ if (NOT PLM_CONFIG_DISABLE_PLASTIMATCH)
   add_subdirectory (plastimatch)
 endif ()
 
-if (NOT PLM_CONFIG_DISABLE_SLICER)
-  add_subdirectory (slicer)
-endif ()
-
 set (PLM_BUILD_ORAIFUTILS 1)
 set (PLM_BUILD_REG23 1)
 if (PLM_CONFIG_DISABLE_REG23)
@@ -135,11 +116,6 @@ endif ()
 if (PLM_BUILD_REG23 
     AND ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} VERSION_LESS 2.8)
   message (STATUS "Reg-2-3 will not be built (CMake version)")
-  set (PLM_BUILD_ORAIFUTILS 0)
-  set (PLM_BUILD_REG23 0)
-endif ()
-if (PLM_BUILD_REG23 AND BUILD_AGAINST_SLICER3)
-  message (STATUS "Reg-2-3 will not be built (build is with 3D-Slicer)")
   set (PLM_BUILD_ORAIFUTILS 0)
   set (PLM_BUILD_REG23 0)
 endif ()

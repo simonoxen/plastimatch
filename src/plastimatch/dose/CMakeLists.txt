@@ -57,17 +57,3 @@ plm_add_library (
   "${PLMDOSE_LIBRARY_DEPENDENCIES}"
   ""
   "")
-
-##-----------------------------------------------------------------------------
-##  SPECIAL RULES FOR SLICER
-##-----------------------------------------------------------------------------
-if (SLICER_FOUND)
-  if (WIN32)
-    plm_slicer_copy_dll (plastimatch_slicer_copy_plmdose
-      "${INDIR}/plmdose.dll"
-      "${OUTDIR}/plmdose.dll"
-      "${QTOUTDIR}/plmdose.dll"
-      plmdose
-    )
-  endif ()
-endif ()

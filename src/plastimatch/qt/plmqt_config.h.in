@@ -13,7 +13,7 @@
 #  undef C_API
 #endif
 
-#if (!defined (BUILD_AGAINST_SLICER3) && (defined(_WIN32) || defined(WIN32)) && (defined (PLM_BUILD_SHARED_LIBS)))
+#if ((defined(_WIN32) || defined(WIN32)) && (defined (PLM_BUILD_SHARED_LIBS)))
 # ifdef plmqt_EXPORTS
 #   define C_API EXTERNC __declspec(dllexport)
 #   define API __declspec(dllexport)

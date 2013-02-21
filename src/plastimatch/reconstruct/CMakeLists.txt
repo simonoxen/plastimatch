@@ -132,25 +132,3 @@ plm_add_library (
 if (CUDA_FOUND AND PLM_USE_GPU_PLUGINS)
   add_dependencies (plmreconstruct plmreconstructcuda)
 endif ()
-
-##-----------------------------------------------------------------------------
-##  SPECIAL RULES FOR SLICER
-##-----------------------------------------------------------------------------
-if (SLICER_FOUND)
-  if (WIN32)
-    plm_slicer_copy_dll (plastimatch_slicer_copy_plmreconstruct
-      "${INDIR}/plmreconstruct.dll"
-      "${OUTDIR}/plmreconstruct.dll"
-      "${QTOUTDIR}/plmreconstruct.dll"
-      plmreconstruct
-      )
-    if (CUDA_FOUND)
-      plm_slicer_copy_dll (plastimatch_slicer_copy_plmreconstructcuda
-	"${INDIR}/plmreconstructcuda.dll"
-	"${OUTDIR}/plmreconstructcuda.dll"
-	"${QTOUTDIR}/plmreconstructcuda.dll"
-	plmreconstructcuda
-	)
-    endif ()
-  endif ()
-endif ()

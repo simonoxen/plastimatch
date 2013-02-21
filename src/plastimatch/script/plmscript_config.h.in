@@ -6,7 +6,7 @@
 
 #include "plm_config.h"
 
-#if (!defined (BUILD_AGAINST_SLICER3) && (defined(_WIN32) || defined(WIN32)) && (defined (PLM_BUILD_SHARED_LIBS)))
+#if ((defined(_WIN32) || defined(WIN32)) && (defined (PLM_BUILD_SHARED_LIBS)))
 # ifdef plmscript_EXPORTS
 #   define PLMSCRIPT_C_API EXTERNC __declspec(dllexport)
 #   define PLMSCRIPT_API __declspec(dllexport)

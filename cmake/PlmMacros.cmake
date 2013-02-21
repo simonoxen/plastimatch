@@ -29,27 +29,6 @@ macro (PLM_ADD_LIBRARY
       PUBLIC_HEADER DESTINATION "${PLM_INSTALL_INCLUDE_DIR}"
       )
   endif ()
-  # Slicer 4 extension build needs dlls installed into the same 
-  # directory as the modules
-  if (SLICER_FOUND AND SLICER_IS_SLICER4)
-    install (TARGETS ${TARGET_NAME}
-      RUNTIME DESTINATION ${Slicer_INSTALL_CLIMODULES_BIN_DIR} 
-      COMPONENT RuntimeLibraries
-      LIBRARY DESTINATION ${Slicer_INSTALL_CLIMODULES_LIB_DIR} 
-      COMPONENT RuntimeLibraries
-      # PUBLIC_HEADER DESTINATION 
-      # "${Slicer_INSTALL_INCLUDE_DIR}/plastimatch-1.6"
-      )
-    install (TARGETS ${TARGET_NAME}
-      RUNTIME DESTINATION ${Slicer_INSTALL_QTLOADABLEMODULES_BIN_DIR} 
-      COMPONENT RuntimeLibraries
-      LIBRARY DESTINATION ${Slicer_INSTALL_QTLOADABLEMODULES_LIB_DIR} 
-      COMPONENT RuntimeLibraries
-      # PUBLIC_HEADER DESTINATION 
-      # "${Slicer_INSTALL_INCLUDE_DIR}/plastimatch-1.6"
-      )
-  endif ()
-
   target_link_libraries (${TARGET_NAME} ${TARGET_LIBS})
   if (NOT ${TARGET_LDFLAGS} STREQUAL "")
     set_target_properties(${TARGET_NAME} 
@@ -61,9 +40,6 @@ endmacro ()
 # properly decorated for windows
 macro (PLM_ADD_STATIC_LIBRARY 
     TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS TARGET_INCLUDES)
-
-  # GCS 2012-06-25 - No longer need to consider BUILD_AGAINST_SLICER3
-  # because no more builds on S3 build machines.  
 
   add_library (${TARGET_NAME} STATIC ${TARGET_SRC})
   set_target_properties (${TARGET_NAME} PROPERTIES 
@@ -90,9 +66,6 @@ endmacro ()
 
 macro (PLM_ADD_GPU_PLUGIN_LIBRARY TARGET_NAME TARGET_SRC)
 
-  # GCS 2012-06-25 - No longer need to consider BUILD_AGAINST_SLICER3
-  # because no more builds on S3 build machines.  
-
   # Add library target
   cuda_add_library (${TARGET_NAME} SHARED ${TARGET_SRC})
 
@@ -112,8 +85,6 @@ macro (PLM_ADD_GPU_PLUGIN_LIBRARY TARGET_NAME TARGET_SRC)
       ARCHIVE DESTINATION "${PLM_INSTALL_LIB_DIR}" 
       )
   endif ()
-
-  # Let's worry about Slicer 4 later
 
 endmacro ()
 
@@ -135,36 +106,6 @@ macro (PLM_ADD_EXECUTABLE
     if (${TARGET_INSTALL})
       install (TARGETS ${TARGET_NAME} DESTINATION "${PLM_INSTALL_BIN_DIR}")
     endif ()
-  endif ()
-endmacro ()
-
-macro (PLM_ADD_SLICER_EXECUTABLE 
-    TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS)
-
-  generateclp (${TARGET_SRC} ${TARGET_NAME}.xml)
-  add_executable (${TARGET_NAME} ${TARGET_SRC})
-  target_link_libraries (${TARGET_NAME} ${TARGET_LIBS})
-  if (NOT ${TARGET_LDFLAGS} STREQUAL "")
-    set_target_properties (${TARGET_NAME} 
-      PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
-  endif ()
-  slicer3_set_plugins_output_path (${TARGET_NAME})
-  slicer3_install_plugins (${TARGET_NAME})
-endmacro ()
-
-macro (PLM_ADD_SLICER_MODULE 
-    TARGET_NAME TARGET_SRC TARGET_LIBS)
-
-  add_library (${TARGET_NAME} ${TARGET_SRC})
-  target_link_libraries (${TARGET_NAME} 
-    ${Slicer_Libs_LIBRARIES}
-    ${Slicer_Base_LIBRARIES}
-    ${KWWidgets_LIBRARIES}
-    ${ITK_LIBRARIES}
-    ${TARGET_LIBS})
-
-  if (SLICER_IS_SLICER3)
-    slicer3_set_modules_output_path (${TARGET_NAME})
   endif ()
 endmacro ()
 
@@ -195,14 +136,6 @@ macro (PLM_ADD_TARGET_COPY TARGET SRC DEST DEPENDENCY)
       COMMAND ${CMAKE_COMMAND} "-E" "copy" "${SRC}" "${DEST}"
       DEPENDS ${DEPENDENCY}
       )
-endmacro ()
-
-macro (PLM_SLICER_COPY_DLL TARGET SRC DEST QTDEST DEPENDENCY)
-  plm_add_target_copy ("${TARGET}" "${SRC}" "${DEST}" "${DEPENDENCY}")
-  if (SLICER_IS_SLICER4)
-    set (QTTARGET "${TARGET}_qt")
-    plm_add_target_copy ("${QTTARGET}" "${SRC}" "${QTDEST}" "${DEPENDENCY}")
-  endif ()
 endmacro ()
 
 macro (PLM_SET_SSE2_FLAGS)

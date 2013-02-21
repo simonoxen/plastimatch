@@ -99,7 +99,7 @@ if (OPENMP_FOUND)
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
 endif ()
 
-if (SSE2_FOUND AND NOT BUILD_AGAINST_SLICER3)
+if (SSE2_FOUND)
   plm_set_sse2_flags (bspline_warp.cxx)
 endif ()
 
@@ -112,17 +112,3 @@ plm_add_library (
   "${PLMUTIL_LIBRARY_DEPENDENCIES}"
   "${PLMUTIL_LIBRARY_LDFLAGS}"
   "${PLMUTIL_LIBRARY_HEADERS}")
-
-##-----------------------------------------------------------------------------
-##  SPECIAL RULES FOR SLICER
-##-----------------------------------------------------------------------------
-if (SLICER_FOUND)
-  if (WIN32)
-    plm_slicer_copy_dll (plastimatch_slicer_copy_plmutil
-      "${INDIR}/plmutil.dll"
-      "${OUTDIR}/plmutil.dll"
-      "${QTOUTDIR}/plmutil.dll"
-      plmutil
-    )
-  endif ()
-endif ()

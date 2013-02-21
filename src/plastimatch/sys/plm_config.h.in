@@ -38,7 +38,6 @@
 #cmakedefine PLM_CONFIG_VERSION_STRING "@PLM_CONFIG_VERSION_STRING@"
 
 /* External libraries */
-#cmakedefine BUILD_AGAINST_SLICER3 1
 #cmakedefine CUDA_FOUND 1
 #cmakedefine DCMTK_FOUND 1
 #cmakedefine DCMTK_HAVE_CFUNIX_H 1
@@ -143,7 +142,7 @@
 /* JAS 2011.02.07
  * GPU Plugins are not considered "shared libs"
  * otherwise Win32 build will break when not using "shared libs" */
-#if (!defined (BUILD_AGAINST_SLICER3) && (defined(_WIN32) || defined(WIN32)) && (defined (PLM_USE_GPU_PLUGINS)))
+#if ((defined(_WIN32) || defined(WIN32)) && (defined (PLM_USE_GPU_PLUGINS)))
 #ifdef plmcuda_EXPORTS
  #define plmcuda_EXPORT(f, ...)                                     \
     __declspec(dllexport)                                          \
