@@ -272,20 +272,46 @@ do_gpuit_bspline_stage_internal (
 	lw.m_fixed_landmarks  = pointset_create ();
 	lw.m_moving_landmarks = pointset_create ();
 	
-	// does not work: Labeled_pointset vs Raw_pointset        
-	// lw->m_fixed_landmarks = regd->fixed_landmarks;
-	// re-loading from files	
-	logfile_printf("... reloading %s %s\n",regp->fixed_landmarks_fn.c_str(), regp->moving_landmarks_fn.c_str());
-	lw.load_pointsets (regp->fixed_landmarks_fn, regp->moving_landmarks_fn);
+	// regd->fixed_landmarks is Pointset, lw.m_fixed_landmarks is Raw_pointset 
+
+	for(std::vector<Labeled_point>::iterator it = 
+	          regd->fixed_landmarks->point_list.begin();
+	    it != regd->fixed_landmarks->point_list.end();
+	    ++it
+	    ) 
+	{	
+	float lm[3];
+	lm[0]=(*it).p[0];
+	lm[1]=(*it).p[1];
+	lm[2]=(*it).p[2];
+	pointset_add_point_noadjust( lw.m_fixed_landmarks, lm); 
+	}
+
+	for(std::vector<Labeled_point>::iterator it = 
+	          regd->moving_landmarks->point_list.begin();
+	    it != regd->moving_landmarks->point_list.end();
+	    ++it
+	    ) 
+	{	
+	float lm[3];
+	lm[0]=(*it).p[0];
+	lm[1]=(*it).p[1];
+	lm[2]=(*it).p[2];
+	pointset_add_point_noadjust( lw.m_moving_landmarks, lm); 
+	}
 
 	lw.m_input_img = regd->moving_image; 
 	lw.m_pih.set_from_plm_image (lw.m_input_img); // see landmark_warp_main.cxx
 
 	// how to pass vector field into lw via Xform lw->m_vf ? 
+	// lw.m_vf = xf_out;
+	// this results in a runtime error:
+	// Typecast error in get_gpuit_vf() - in calculate_warped_landmarks(), line 200 of landmark_warp.cxx 
 
 	// warp & save
 	lw.m_warped_landmarks = pointset_create ();
 	calculate_warped_landmarks_by_vf ( &lw, vector_field);
+	//calculate_warped_landmarks ( &lw);
 	logfile_printf("... trying to save landmarks to %s\n",regp->warped_landmarks_fn.c_str());
 	pointset_save (lw.m_warped_landmarks, regp->warped_landmarks_fn.c_str());
 
