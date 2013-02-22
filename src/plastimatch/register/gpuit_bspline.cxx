@@ -253,11 +253,15 @@ do_gpuit_bspline_stage_internal (
 
 // NSh uncomment 2013-02-14
 //#if defined (commentout)
-    if (regp->fixed_landmarks_fn.not_empty() 
-        && regp->moving_landmarks_fn.not_empty() 
+ 
+    if (   regd->fixed_landmarks   // does not exist if landmarks are not used 
+	&& regd->moving_landmarks
+	&& !regd->fixed_landmarks->point_list.empty()  
+        && !regd->moving_landmarks->point_list.empty() 
         && regp->warped_landmarks_fn.not_empty() ) {
-        logfile_printf("Trying to warp landmarks, output file: %s\n",
-            (const char*) regp->warped_landmarks_fn);
+        logfile_printf("Trying to warp %d landmarks, output file: %s\n",
+		regd->fixed_landmarks->point_list.size(),            
+		(const char*) regp->warped_landmarks_fn);
 	Volume *vector_field;        
 	vector_field = new Volume (fixed_ss->dim, fixed_ss->offset, 
             fixed_ss->spacing, fixed_ss->direction_cosines, 
