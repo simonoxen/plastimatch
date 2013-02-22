@@ -300,7 +300,15 @@ do_gpuit_bspline_stage_internal (
 	pointset_add_point_noadjust( lw.m_moving_landmarks, lm); 
 	}
 
-	lw.m_input_img = regd->moving_image; 
+	//moving_ss is Volume*, lw.m_input_img is Plm_image*
+
+	Volume *moving_ss_clone = new Volume();
+	moving_ss_clone = moving_ss->clone();
+	Plm_image *moving_ss_plmimage = new Plm_image();
+	moving_ss_plmimage->set_gpuit( moving_ss_clone );
+
+//	lw.m_input_img = regd->moving_image; // Plm_image
+        lw.m_input_img = moving_ss_plmimage;
 	lw.m_pih.set_from_plm_image (lw.m_input_img); // see landmark_warp_main.cxx
 
 	// how to pass vector field into lw via Xform lw->m_vf ? 
