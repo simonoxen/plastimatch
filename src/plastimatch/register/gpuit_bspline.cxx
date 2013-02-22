@@ -254,6 +254,8 @@ do_gpuit_bspline_stage_internal (
 // NSh uncomment 2013-02-14
 //#if defined (commentout)
  
+	logfile_printf("Trying to start to warp %d landmarks, output file: %s\n");
+
     if (   regd->fixed_landmarks   // does not exist if landmarks are not used 
 	&& regd->moving_landmarks
 	&& !regd->fixed_landmarks->point_list.empty()  
