@@ -1,7 +1,0 @@
-To add or change the svn externals, do the following:
-
-(1) Edit svn.externals
-(2) svn propset svn:externals -F svn.externals .
-(3) svn commit; svn update
-
-See: http://beerpla.net/2009/06/20/how-to-properly-set-svn-svnexternals-property-in-svn-command-line/
