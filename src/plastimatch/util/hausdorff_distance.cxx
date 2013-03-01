@@ -154,7 +154,7 @@ Hausdorff_distance::run_internal (
         num_h_vox ++;
         
         /* Update statistics for boundary hausdorff */
-        if (!img_ib[i]) {
+        if (img_ib[i]) {
             sum_bh_distance += bh_dist;
             bh_distance_array[num_bh_vox] = bh_dist;
             num_bh_vox ++;
@@ -193,6 +193,7 @@ Hausdorff_distance::run_internal (
             += 0.5 * (sum_bh_distance / num_bh_vox);
         d_ptr->pct_boundary_hausdorff_distance += 0.5 * bh_pct;
     }
+    printf ("num_h_vox = %d, num_bh_vox = %d\n", num_h_vox, num_bh_vox);
 }
 
 void 
