@@ -44,7 +44,7 @@ Rtds::load_gdcm (const char *dicom_dir)
 
 #if GDCM_VERSION_1
     /* Use native reader to set meta */
-    gdcm_series->get_metadata (&m_meta);
+    gdcm_series->get_metadata (this->get_metadata ());
     delete gdcm_series;
 #endif
 }
@@ -54,7 +54,8 @@ Rtds::save_gdcm (const char *output_dir)
 {
     if (this->m_img) {
 	printf ("Rtds::save_dicom: save_short_dicom()\n");
-	this->m_img->save_short_dicom (output_dir, m_rdd, &m_meta);
+	this->m_img->save_short_dicom (output_dir, m_rdd, 
+            this->get_metadata ());
     }
 #if GDCM_VERSION_1
     if (this->m_rtss) {
@@ -65,7 +66,7 @@ Rtds::save_gdcm (const char *output_dir)
 	char fn[_MAX_PATH];
 	printf ("Rtds::save_dicom: gdcm_save_dose()\n");
 	snprintf (fn, _MAX_PATH, "%s/%s", output_dir, "dose.dcm");
-	gdcm1_dose_save (m_dose, &m_meta, m_rdd, fn);
+	gdcm1_dose_save (m_dose, this->get_metadata(), m_rdd, fn);
     }
 #endif
 }

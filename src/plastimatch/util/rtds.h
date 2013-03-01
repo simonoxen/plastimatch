@@ -6,21 +6,20 @@
 
 #include "plmutil_config.h"
 #include <vector>
+#include "itk_image_type.h"
 #include "plm_path.h"
 
-#include "metadata.h"
-
-// TODO: [1] Change type of m_rdd to Slice_index* -- DONE
-//       [2] Change type of m_meta to Metadata*
-
 class Rtds_private;
-//class Metadata;
+class Metadata;
 class Plm_image;
 class Rtss;
 class Slice_index;
 class Xio_ct_transform;
 
-/* rtds = RT data set */
+/*! \brief 
+ * The Rtds class encapsulates the concept of a radiotherapy planning 
+ * data set, including image, structure set, and dose.
+ */
 class PLMUTIL_API Rtds {
 public:
     Rtds_private *d_ptr;
@@ -31,14 +30,10 @@ public:
 
     Slice_index *m_rdd;                /* UIDs, etc -- used by gdcm */
 
-    Metadata m_meta;                   /* Patient name, patient id, etc. */
-    Xio_ct_transform *m_xio_transform; /* Transformation from XiO to DICOM
-                                          coordinates */
-    char m_xio_dose_input[_MAX_PATH];  /* Input XiO dose file to use as 
-                                          template for XiO dose saving. */
 public:
     Rtds ();
     ~Rtds ();
+
     void load_dicom_dir (const char *dicom_dir);
     void load_dicom (const char *dicom_dir); 
     void load_dicom_dose (const char *dicom_path);
@@ -54,10 +49,17 @@ public:
     void load_gdcm (const char *dicom_dir); 
     void save_dicom (const char *output_dir);
     void save_dcmtk (const char *dicom_dir);
-    void save_gdcm (const char *dicom_dir); 
+    void save_gdcm (const char *dicom_dir);
     void convert_ss_img_to_cxt (void);
     void set_user_metadata (std::vector<std::string>& metadata);
+
     void set_dose (Plm_image *pli);
+    void set_dose (FloatImageType::Pointer itk_dose);
+
+    const std::string& get_xio_dose_filename () const;
+    Xio_ct_transform* get_xio_ct_transform ();
+
+    Metadata* get_metadata (void);
 };
 
 #endif

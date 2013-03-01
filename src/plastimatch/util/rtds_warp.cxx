@@ -168,7 +168,7 @@ save_ss_img (
         lprintf ("save_ss_img: save_xio (dirname = %s)\n", 
             (const char*) parms->output_xio_dirname);
         rtds->m_rtss->save_xio (
-            rtds->m_xio_transform,
+            rtds->get_xio_ct_transform(),
             parms->output_xio_version,
             parms->output_xio_dirname);
     }
@@ -406,7 +406,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 
     /* Save output XiO dose */
     if (parms->output_xio_dirname.not_empty()
-        && rtds->m_xio_dose_input
+        && rtds->get_xio_dose_filename() != ""
         && rtds->m_dose)
     {
         Pstring fn;
@@ -415,10 +415,10 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
         fn.format ("%s/%s", (const char*) parms->output_xio_dirname, "dose");
         xio_dose_save (
             rtds->m_dose,
-            &(rtds->m_meta),
-            rtds->m_xio_transform, 
+            rtds->get_metadata(), 
+            rtds->get_xio_ct_transform(),
             (const char*) fn, 
-            rtds->m_xio_dose_input);
+            rtds->get_xio_dose_filename().c_str());
     }
 
     /* Save output vector field */
