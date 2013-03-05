@@ -136,6 +136,33 @@
        ;;(substatement-open          . 0)
        ))))
 
+(c-add-style 
+ "topas-codingstyle"
+ '((c-basic-offset . 4)
+   (c-indent-level . 4)
+   (tab-width . 4)
+   (c-comment-only-line-offset . 0)
+   (c-hanging-braces-alist . ((substatement-open before after)))
+   (indent-tabs-mode . t)
+   (c-offsets-alist 
+    . (
+       (access-label               . -)
+       (arglist-intro              . +)
+       ;;(arglist-cont-nonempty      . +)
+       (arglist-close              . 0)
+       (inline-open                . 0)
+       (innamespace                . 0)
+       (label                      . 0)
+
+       ;; This is based on SlicerRt ...
+       (statement-block-intro      . +)
+       (substatement-open          . 0)
+
+       ;;(statement-cont             . 4)
+       ;;(stream-op                  . 4)
+       ;;(substatement-open          . 0)
+       ))))
+
 ;; Choose whether to use slicer-style or plastimatch-style indentation
 ;; Ref: http://www.emacswiki.org/emacs/IndentingC
 (defun choose-c-style ()
@@ -146,6 +173,8 @@
 		 (string-match "SlicerRt" buffer-file-name)
 		 )
 	     (c-set-style "slicer-codingstyle"))
+	    ((string-match "topas" buffer-file-name)
+	     (c-set-style "topas-codingstyle"))
 	    (t (c-set-style "plm-codingstyle")))
     ;; else if not buffer-file-name
     (c-set-style "plm-codingstyle")))
