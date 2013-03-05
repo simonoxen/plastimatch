@@ -334,7 +334,7 @@ Rtds::save_dicom_dose (const char *dicom_dir)
     }
 
 #if PLM_DCM_USE_DCMTK
-    this->save_dcmtk (dicom_dir);
+    this->save_dcmtk_dose (dicom_dir);
 #else
     /* Not yet supported -- this function is only used by topas, 
        which uses dcmtk. */
@@ -399,11 +399,20 @@ Rtds::get_metadata (void)
     return d_ptr->m_meta;
 }
 
-Volume *
-Rtds::get_volume (void)
+Volume*
+Rtds::get_volume_short (void)
 {
     if (!this->m_img) {
         return 0;
     }
-    return this->m_img->gpuit_float ();
+    return this->m_img->get_volume_short ();
+}
+
+Volume*
+Rtds::get_volume_float (void)
+{
+    if (!this->m_img) {
+        return 0;
+    }
+    return this->m_img->get_volume_float ();
 }

@@ -508,7 +508,7 @@ Plm_image::save_image (const std::string& fname)
 }
 
 /* -----------------------------------------------------------------------
-   Assignment
+   Getting and setting
    ----------------------------------------------------------------------- */
 void 
 Plm_image::set_gpuit (Volume *v)
@@ -552,6 +552,20 @@ Plm_image::set_gpuit (Volume *v)
 	print_and_exit ("Undefined conversion in Plm_image::set_gpuit\n");
 	break;
     }
+}
+
+Volume *
+Plm_image::get_volume_short ()
+{
+    convert_to_gpuit_short ();
+    return (Volume*) m_gpuit;
+}
+
+Volume *
+Plm_image::get_volume_float ()
+{
+    convert_to_gpuit_float ();
+    return (Volume*) m_gpuit;
 }
 
 void 

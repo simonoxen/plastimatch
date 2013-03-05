@@ -125,6 +125,9 @@ public:
     Volume* vol () {
         return (Volume*) m_gpuit;
     }
+
+    Volume* get_volume_short ();
+    Volume* get_volume_float ();
     Volume* gpuit_float () {
         convert_to_gpuit_float ();
         return (Volume*) m_gpuit;

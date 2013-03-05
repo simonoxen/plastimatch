@@ -63,7 +63,8 @@ public:
 
     Metadata* get_metadata (void);
 
-    Volume* get_volume (void);
+    Volume* get_volume_short (void);
+    Volume* get_volume_float (void);
 
 protected:
     void save_dcmtk (const char *dicom_dir);
