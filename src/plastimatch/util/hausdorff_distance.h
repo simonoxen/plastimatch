@@ -62,6 +62,8 @@ public:
     float get_average_hausdorff ();
     /*! \brief Return the percent Hausdorff distance */
     float get_percent_hausdorff ();
+    /*! \brief Return the boundary Hausdorff distance */
+    float get_boundary_hausdorff ();
     /*! \brief Return the average boundary Hausdorff distance */
     float get_average_boundary_hausdorff ();
     /*! \brief Return the percent boundary Hausdorff distance */

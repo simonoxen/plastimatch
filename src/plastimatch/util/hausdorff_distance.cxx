@@ -31,6 +31,7 @@ public:
         hausdorff_distance = 0.f;
         avg_hausdorff_distance = 0.f;
         pct_hausdorff_distance = 0.f;
+        boundary_hausdorff_distance = 0.f;
         avg_boundary_hausdorff_distance = 0.f;
         pct_boundary_hausdorff_distance = 0.f;
     }
@@ -38,6 +39,7 @@ public:
     float hausdorff_distance;
     float avg_hausdorff_distance;
     float pct_hausdorff_distance;
+    float boundary_hausdorff_distance;
     float avg_boundary_hausdorff_distance;
     float pct_boundary_hausdorff_distance;
     float pct_hausdorff_distance_fraction;
@@ -127,7 +129,8 @@ Hausdorff_distance::run_internal (
     float *bh_distance_array = new float[vol_uchar->npix];
 
     /* Loop through voxels, find distances */
-    float max_distance = 0;
+    float max_h_distance = 0;
+    float max_bh_distance = 0;
     double sum_h_distance = 0;
     double sum_bh_distance = 0;
     plm_long num_h_vox = 0;
@@ -146,8 +149,8 @@ Hausdorff_distance::run_internal (
         }
 
         /* Update statistics for hausdorff */
-        if (h_dist > max_distance) {
-            max_distance = h_dist;
+        if (h_dist > max_h_distance) {
+            max_h_distance = h_dist;
         }
         sum_h_distance += h_dist;
         h_distance_array[num_h_vox] = h_dist;
@@ -155,6 +158,9 @@ Hausdorff_distance::run_internal (
         
         /* Update statistics for boundary hausdorff */
         if (img_ib[i]) {
+            if (bh_dist > max_bh_distance) {
+                max_bh_distance = bh_dist;
+            }
             sum_bh_distance += bh_dist;
             bh_distance_array[num_bh_vox] = bh_dist;
             num_bh_vox ++;
@@ -181,8 +187,11 @@ Hausdorff_distance::run_internal (
     }
 
     /* Record results */
-    if (max_distance > d_ptr->hausdorff_distance) {
-        d_ptr->hausdorff_distance = max_distance;
+    if (max_h_distance > d_ptr->hausdorff_distance) {
+        d_ptr->hausdorff_distance = max_h_distance;
+    }
+    if (max_bh_distance > d_ptr->boundary_hausdorff_distance) {
+        d_ptr->boundary_hausdorff_distance = max_bh_distance;
     }
     if (num_h_vox > 0) {
         d_ptr->avg_hausdorff_distance += 0.5 * (sum_h_distance / num_h_vox);
@@ -193,7 +202,6 @@ Hausdorff_distance::run_internal (
             += 0.5 * (sum_bh_distance / num_bh_vox);
         d_ptr->pct_boundary_hausdorff_distance += 0.5 * bh_pct;
     }
-    printf ("num_h_vox = %d, num_bh_vox = %d\n", num_h_vox, num_bh_vox);
 }
 
 void 
@@ -252,6 +260,12 @@ Hausdorff_distance::get_percent_hausdorff ()
 }
 
 float 
+Hausdorff_distance::get_boundary_hausdorff ()
+{
+    return d_ptr->boundary_hausdorff_distance;
+}
+
+float 
 Hausdorff_distance::get_average_boundary_hausdorff ()
 {
     return d_ptr->avg_boundary_hausdorff_distance;
@@ -270,12 +284,14 @@ Hausdorff_distance::debug ()
 	"Hausdorff distance = %f\n"
 	"Average Hausdorff distance = %f\n"
 	"Percent (%.2f) Hausdorff distance = %f\n"
+	"Hausdorff distance (boundary) = %f\n"
 	"Average Hausdorff distance (boundary) = %f\n"
 	"Percent (%.2f) Hausdorff distance (boundary) = %f\n",
 	this->get_hausdorff (),
 	this->get_average_hausdorff (),
         d_ptr->pct_hausdorff_distance_fraction,
 	this->get_percent_hausdorff (),
+	this->get_boundary_hausdorff (),
 	this->get_average_boundary_hausdorff (),
         d_ptr->pct_hausdorff_distance_fraction,
 	this->get_percent_boundary_hausdorff ()
