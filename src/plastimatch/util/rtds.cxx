@@ -21,6 +21,7 @@
 #include "rtss.h"
 #include "rtss_structure_set.h"
 #include "slice_index.h"
+#include "volume.h"
 #include "xio_ct.h"
 #include "xio_ct_transform.h"
 #include "xio_demographic.h"
@@ -325,6 +326,21 @@ Rtds::save_dicom (const char *dicom_dir)
 #endif
 }
 
+void
+Rtds::save_dicom_dose (const char *dicom_dir)
+{
+    if (!dicom_dir) {
+        return;
+    }
+
+#if PLM_DCM_USE_DCMTK
+    this->save_dcmtk (dicom_dir);
+#else
+    /* Not yet supported -- this function is only used by topas, 
+       which uses dcmtk. */
+#endif
+}
+
 void 
 Rtds::set_user_metadata (std::vector<std::string>& metadata)
 {
@@ -355,6 +371,16 @@ Rtds::set_dose (Plm_image *pli)
     m_dose = pli;
 }
 
+void 
+Rtds::set_dose (Volume *vol)
+{
+    if (!vol) return;
+    if (m_dose) delete m_dose;
+    m_dose = new Plm_image;
+    /* Make a copy */
+    this->m_dose->set_gpuit (vol->clone());
+}
+
 Xio_ct_transform*
 Rtds::get_xio_ct_transform ()
 {
@@ -371,4 +397,13 @@ Metadata*
 Rtds::get_metadata (void)
 {
     return d_ptr->m_meta;
+}
+
+Volume *
+Rtds::get_volume (void)
+{
+    if (!this->m_img) {
+        return 0;
+    }
+    return this->m_img->gpuit_float ();
 }

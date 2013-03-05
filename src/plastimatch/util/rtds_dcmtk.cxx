@@ -51,3 +51,18 @@ Rtds::save_dcmtk (const char *dicom_dir)
     ds.save (dicom_dir);
 #endif
 }
+
+void
+Rtds::save_dcmtk_dose (const char *dicom_dir)
+{
+#if PLM_DCM_USE_DCMTK
+    Dcmtk_save ds;
+    ds.set_rt_study (d_ptr->m_drs);
+
+    if (this->m_dose) {
+        ds.set_dose (this->m_dose->gpuit_float());
+    }
+
+    ds.save (dicom_dir);
+#endif
+}

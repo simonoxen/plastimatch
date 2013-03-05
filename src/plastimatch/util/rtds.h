@@ -9,11 +9,12 @@
 #include "itk_image_type.h"
 #include "plm_path.h"
 
-class Rtds_private;
 class Metadata;
 class Plm_image;
+class Rtds_private;
 class Rtss;
 class Slice_index;
+class Volume;
 class Xio_ct_transform;
 
 /*! \brief 
@@ -47,19 +48,28 @@ public:
     void load_rdd (const char *rdd);
     void load_dcmtk (const char *dicom_dir); 
     void load_gdcm (const char *dicom_dir); 
+
     void save_dicom (const char *output_dir);
-    void save_dcmtk (const char *dicom_dir);
-    void save_gdcm (const char *dicom_dir);
-    void convert_ss_img_to_cxt (void);
+    void save_dicom_dose (const char *output_dir);
+
     void set_user_metadata (std::vector<std::string>& metadata);
 
     void set_dose (Plm_image *pli);
     void set_dose (FloatImageType::Pointer itk_dose);
+    void set_dose (Volume *vol);
 
     const std::string& get_xio_dose_filename () const;
     Xio_ct_transform* get_xio_ct_transform ();
 
     Metadata* get_metadata (void);
+
+    Volume* get_volume (void);
+
+protected:
+    void save_dcmtk (const char *dicom_dir);
+    void save_dcmtk_dose (const char *dicom_dir);
+    void save_gdcm (const char *dicom_dir);
+    void convert_ss_img_to_cxt (void);
 };
 
 #endif
