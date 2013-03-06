@@ -168,9 +168,9 @@ Dice_statistics::run ()
         d_ptr->ref_cog[2] = rz / d_ptr->ref_num_vox;
     }
     if (d_ptr->ref_num_vox > 0) {
-        d_ptr->cmp_cog[0] = cx / d_ptr->ref_num_vox;
-        d_ptr->cmp_cog[1] = cy / d_ptr->ref_num_vox;
-        d_ptr->cmp_cog[2] = cz / d_ptr->ref_num_vox;
+        d_ptr->cmp_cog[0] = cx / d_ptr->cmp_num_vox;
+        d_ptr->cmp_cog[1] = cy / d_ptr->cmp_num_vox;
+        d_ptr->cmp_cog[2] = cz / d_ptr->cmp_num_vox;
     }
 
 #if defined (commentout)
