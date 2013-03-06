@@ -582,6 +582,7 @@ Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float backgrou
   double src_iso_vec[3];   //vector from source to isocenter
   proj_vol->get_proj_matrix()->get_nrm(src_iso_vec); 
   vec3_invert(src_iso_vec);
+  const double *center = proj_vol->get_proj_matrix()->ic;
 
   //Contruct aperture "box", in which each voxel's respective
   //ray intersection must be within.
@@ -624,7 +625,7 @@ Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float backgrou
   
   double adj_ray_coord[3]; //adjacent ray vector, used to compute rad. length
   double dummy_adj_ray[3];
-
+  
   double coord_ap_len; //distance from coordinate to aperture
   double dummy_lin_ex;
   plm_long dummy_index1;
@@ -746,12 +747,19 @@ Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float backgrou
 	  else {
 	    dummy_lin_ex = ray_rad_len[i]-floor(ray_rad_len[i]);
 
+	    wijk[0] = (ray_lookup[i][0] - 1)/wed_vol->spacing[0];
+	    wijk[1] = (ray_lookup[i][1] - 1)/wed_vol->spacing[1];
 
-	    wijk[0] = ((ray_lookup[i][0] - 1) - wed_vol->offset[0])/wed_vol->spacing[0];
-	    wijk[1] = ((ray_lookup[i][1] - 1) - wed_vol->offset[1])/wed_vol->spacing[1];
+	    //	    wijk[0] = ray_lookup[i][0] - 1;
+	    //	    wijk[1] = ray_lookup[i][1] - 1;
+
+	    //Needed if dew dimensions are not automatically set by wed in wed_main.
+	    //	    	    wijk[0] = ((ray_lookup[i][0] - 1) - wed_vol->offset[0])/wed_vol->spacing[0];
+	    //	    	    wijk[1] = ((ray_lookup[i][1] - 1) - wed_vol->offset[1])/wed_vol->spacing[1];
+
 	    if (wijk[0] < 0 || wijk[0] >= wed_vol->dim[0]) {break;}
 	    if (wijk[1] < 0 || wijk[1] >= wed_vol->dim[1]) {break;}
-
+	    
 	    wijk[2] = (int) ((floor(ray_rad_len[i])) - wed_vol->offset[2])/wed_vol->spacing[2];
 	    if (wijk[2] < 0) {break;}
 	    dummy_index1 = volume_index ( wed_vol->dim, wijk );

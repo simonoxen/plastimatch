@@ -150,37 +150,44 @@ wed_ct_initialize(Wed_Parms *parms)
   scene.ap->set_distance (parms->ap_offset);
   scene.ap->set_spacing (parms->ap_spacing);
   
-  //If normal wed, scene dimensions are set by .cfg file
-  if (!parms->wed_choice)  {
-    scene.ap->set_dim (parms->ires);
-    if (parms->have_ic) {
-      scene.ap->set_center (parms->ic);
+  //Scene dimensions are set by .cfg file
+
+  //Note: Set dimensions first, THEN center, as set_dim() also changes center
+  int ap_res[2];
+  float ap_center[2];
+
+  //Aperture dimensions
+  if (parms->have_ires) {scene.ap->set_dim (parms->ires);}
+  //If dew option, and not specified in .cfg files, then we guess
+  //at some scene dimensions set by input wed image.
+  if (parms->wed_choice)  {
+   if (!parms->have_ires)  {
+      Volume *wed_vol = dose_vol->gpuit_float();
+      //Grab aperture dimensions from input wed.
+      //We also pad each dimension by 1, for the later trilinear interpolations.
+      ap_res[0] = (int) (wed_vol->dim[0]+2);
+      ap_res[1] = (int) (wed_vol->dim[1]+2);
+      scene.ap->set_dim (ap_res);
+      parms->ires[0]=ap_res[0];
+      parms->ires[1]=ap_res[1];
     }
   }
-  //If dew, then SOME scene dimensions are set by input wed image.
+
+  //Aperture Center
+  if (parms->have_ic) {scene.ap->set_center (parms->ic);}
+  //And again, guess.
   if (parms->wed_choice)  {
-    
-    Volume *wed_vol = dose_vol->gpuit_float();
-    //Grab aperture dimensions from input wed.
-    //We also pad each dimension by 1, for the later trilinear interpolations.
-    int ap_res[2] = { (int) (wed_vol->dim[0]+2), (int) (wed_vol->dim[1]+2)};
-    scene.ap->set_dim (ap_res);
-    parms->ires[0]=ap_res[0];
-    parms->ires[1]=ap_res[1];
-    
-    //Set center as half the resolutions.
-    float ap_center[2];
-    ap_center[0] = (float) ap_res[0]/2.;
-    ap_center[1] = (float) ap_res[1]/2.;
-    //    float ap_center[2] = { (float) ap_res[0]/2., (float) ap_res[1]/2.};
-    scene.ap->set_center (ap_center);
-    parms->ic[0]=ap_center[0];
-    parms->ic[1]=ap_center[1];
-    
+    if (!parms->have_ic)  {
+      //Set center as half the resolutions.
+      ap_center[0] = (float) ap_res[0]/2.;
+      ap_center[1] = (float) ap_res[1]/2.;
+      scene.ap->set_center (ap_center);
+       parms->ic[0]=ap_center[0];
+      parms->ic[1]=ap_center[1];
+    } 
   }
-  
+
   scene.set_step_length(parms->ray_step);
-  
   
   /* try to setup the scene with the provided parameters */
   if (!scene.init ()) {

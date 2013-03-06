@@ -39,6 +39,7 @@ Wed_Parms::Wed_Parms ()
     this->vup[0] = 0.f;
     this->vup[1] = 0.f;
     this->vup[2] = 1.f;
+    this->have_ires = false;
     this->ires[0] = 200;
     this->ires[1] = 200;
     this->have_ic = false;
@@ -57,7 +58,6 @@ Wed_Parms::Wed_Parms ()
     this->dew_spacing[0] = -999.;
     this->dew_spacing[1] = -999.;
     this->dew_spacing[2] = -999.;
-    this->dew_offset = 0.;
 }
 
 Wed_Parms::~Wed_Parms ()
@@ -271,6 +271,8 @@ Wed_Parms::set_key_val (
             {
                 goto error_exit;
             }
+	    this->have_ires = true;
+
         }
         break;
 
@@ -289,11 +291,6 @@ Wed_Parms::set_key_val (
         }
         if (!strcmp (key, "dew_spacing")) {
             if (sscanf (val, "%f %f %f", &(this->dew_spacing[0]), &(this->dew_spacing[1]), &(this->dew_spacing[2])) != 3) {
-                goto error_exit;
-            }
-        }
-	else if (!strcmp (key, "dew_offset")) {
-            if (sscanf (val, "%f", &(this->dew_offset)) != 1) {
                 goto error_exit;
             }
         }

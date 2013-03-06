@@ -43,6 +43,7 @@ public:
     float vup[3];
     int ires[2];
     bool have_ic;
+    bool have_ires;
     float ic[2];
     float ap_spacing[2];
     float ap_offset;
@@ -51,7 +52,6 @@ public:
     float dew_dim[3];
     float dew_origin[3];
     float dew_spacing[3];
-    float dew_offset;
 
 };
 
