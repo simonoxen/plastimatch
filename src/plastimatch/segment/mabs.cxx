@@ -10,6 +10,7 @@
 #include "dice_statistics.h"
 #include "distance_map.h"
 #include "file_util.h"
+#include "hausdorff_distance.h"
 #include "itk_adjust.h"
 #include "itk_image_save.h"
 #include "itk_threshold.h"
@@ -93,6 +94,7 @@ public:
     double time_dice;
     double time_dmap;
     double time_extract;
+    double time_hausdorff;
     double time_io;
     double time_reg;
     double time_vote;
@@ -119,6 +121,7 @@ public:
         time_dice = 0;
         time_dmap = 0;
         time_extract = 0;
+        time_hausdorff = 0;
         time_io = 0;
         time_reg = 0;
         time_vote = 0;
@@ -238,28 +241,47 @@ Mabs_private::segmentation_threshold_weight (
     this->time_extract += timer.report();
 
     /* Compute Dice, etc. */
-    timer.start();
     if (this->have_ref_structure) {
+        timer.start();
         lprintf ("Computing Dice...\n");
         Dice_statistics dice;
         dice.set_reference_image (this->ref_structure_image);
         dice.set_compare_image (thresh_img);
         dice.run ();
+        this->time_dice += timer.report();
+
+        timer.start();
+        lprintf ("Computing Hausdorff...\n");
+        Hausdorff_distance hd;
+        hd.set_reference_image (this->ref_structure_image);
+        hd.set_compare_image (thresh_img);
+        hd.run ();
+        this->time_hausdorff += timer.report();
 
         std::string seg_log_string = string_format (
-            "%s,%s,%s,%f,%f,%f,%f,%d,%d,%d,%d,%f\n",
-            this->ref_id.c_str(), 
+            "%s,%s,%s,"
+            "rho=%f,sigma=%f,minsum=%f,thresh=%f,"
+            "dice=%f,tp=%d,tn=%d,fp=%d,fn=%d,"
+            "hd=%f,95hd=%f,ahd=%f,"
+            "bhd=%f,95bhd=%f,abhd=%f\n",
+            this->ref_id.c_str(),
             this->registration_id.c_str(),
-            mapped_name.c_str(), 
-            this->rho, 
-            this->sigma, 
+            mapped_name.c_str(),
+            this->rho,
+            this->sigma,
+            this->minsim,
             thresh_val, 
             dice.get_dice(),
             (int) dice.get_true_positives(),
             (int) dice.get_true_negatives(),
             (int) dice.get_false_positives(),
             (int) dice.get_false_negatives(),
-            this->minsim
+            hd.get_hausdorff(),
+            hd.get_percent_hausdorff(),
+            hd.get_average_hausdorff(),
+            hd.get_boundary_hausdorff(),
+            hd.get_percent_boundary_hausdorff(),
+            hd.get_average_boundary_hausdorff()
         );
         lprintf ("%s", seg_log_string.c_str());
 
@@ -271,7 +293,6 @@ Mabs_private::segmentation_threshold_weight (
         fprintf (fp, "%s", seg_log_string.c_str());
         fclose (fp);
     }
-    this->time_dice += timer.report();
 }
 
 Mabs::Mabs () {
@@ -1002,6 +1023,7 @@ Mabs::train_internal (bool registration_only)
     lprintf ("Warping time (str):   %10.1f seconds\n", d_ptr->time_warp_str);
     lprintf ("Extraction time:      %10.1f seconds\n", d_ptr->time_extract);
     lprintf ("Dice time:            %10.1f seconds\n", d_ptr->time_dice);
+    lprintf ("Hausdorff time:       %10.1f seconds\n", d_ptr->time_hausdorff);
     lprintf ("Distance map time:    %10.1f seconds\n", d_ptr->time_dmap);
     lprintf ("Voting time:          %10.1f seconds\n", d_ptr->time_vote);
     lprintf ("I/O time:             %10.1f seconds\n", d_ptr->time_io);
