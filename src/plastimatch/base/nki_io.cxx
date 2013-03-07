@@ -81,33 +81,48 @@ nki_load (const char* filename)
         print_and_exit ("Failure to parse NKI header\n");
     }
 
-    short int *dest = (short*) malloc (sizeof(short) * dim1 * dim2 * dim3);
+    short int *nki = (short*) malloc (sizeof(short) * dim1 * dim2 * dim3);
     
-    int rc = nki_private_decompress (dest, src, dim1 * dim2 * dim3);
+    int rc = nki_private_decompress (nki, src, dim1 * dim2 * dim3);
     free (src);
 
     printf ("Decoded NKI size: %d %d %d, rc = %d\n", dim1, dim2, dim3, rc);
 
     if (rc == 0) {
         /* Decompression failure */
-        free (dest);
+        free (nki);
         return 0;
     }
 
     Volume *vol  = new Volume;
     vol->pix_size = 2;
     vol->pix_type = PT_SHORT;
-    vol->dim[0] = dim1;
-    vol->dim[1] = dim2;
-    vol->dim[2] = dim3;
-    vol->offset[0] = 0;
-    vol->offset[1] = 0;
-    vol->offset[2] = 0;
     vol->spacing[0] = 1;
     vol->spacing[1] = 1;
     vol->spacing[2] = 1;
     vol->set_direction_cosines (0);
-    vol->img = dest;
+
+    /* Shuffle pixels */
+    plm_long nki_dim[3] = {dim1,dim2,dim3};
+    plm_long tgt_dim[3] = {dim3,dim2,dim1};
+    short *tgt = (short*) malloc (sizeof(short) * dim1 * dim2 * dim3);
+    for (int k = 0; k < dim1; k++) {
+        for (int j = 0; j < dim2; j++) {
+            for (int i = 0; i < dim3; i++) {
+                tgt[volume_index(tgt_dim,i,j,dim1-k-1)]
+                    = nki[volume_index(nki_dim,k,j,i)];
+            }
+        }
+    }
+    vol->dim[0] = dim3;
+    vol->dim[1] = dim2;
+    vol->dim[2] = dim1;
+    vol->offset[0] = -0.5 * dim3;
+    vol->offset[1] = -0.5 * dim2;
+    vol->offset[2] = -0.5 * dim1;
+    vol->img = (void*) tgt;
+
+    free (nki);
 
     return vol;
 }
