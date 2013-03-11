@@ -102,7 +102,7 @@ Rtds::load_dicom_dose (const char *dicom_path)
 #if PLM_DCM_USE_DCMTK
     this->load_dcmtk (dicom_path);
 #elif GDCM_VERSION_1
-    this->m_dose = gdcm1_dose_load (0, dicom_path);
+    d_ptr->m_dose = gdcm1_dose_load (0, dicom_path);
 #else
     /* Do nothing */
 #endif

@@ -195,12 +195,9 @@ plm_add_executable (proton_dose "${PROTON_DOSE_SRC}"
 plm_add_executable (raw_to_mha "${RAW_TO_MHA_SRC}"
   "" "" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-
-if (NOT BUILD_DEBIAN)
-  plm_add_executable (bragg_curve "${BRAGG_CURVE_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-endif ()
+plm_add_executable (bragg_curve "${BRAGG_CURVE_SRC}" 
+  "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 
 if (CUDA_FOUND)
   plm_add_executable (cuda_probe "${CUDA_PROBE_SRC}" 

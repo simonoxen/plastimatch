@@ -116,6 +116,7 @@ option (PLM_CONFIG_DISABLE_SSE2 "Set to ON to build without SSE" OFF)
 option (PLM_CONFIG_ENABLE_MATLAB "Set to ON to build Matlab plugins" OFF)
 set (PLM_CONFIG_VERSION_STRING "" CACHE STRING "Version string")
 option (PLM_CONFIG_LIBRARY_BUILD "Set to ON to build only libraries" OFF)
+option (PLM_CONFIG_DEBIAN_BUILD "Set to ON to configure build for debian" OFF)
 
 # Optional components
 option (PLM_BUILD_ISE "Build ISE fluoro program" OFF)
@@ -304,7 +305,7 @@ endif ()
 
 # Choose between f2c or fortran
 set (PLM_USE_F2C FALSE)
-if (NOT BUILD_DEBIAN AND (PLM_PREFER_F2C OR NOT CMAKE_Fortran_COMPILER_WORKS))
+if (NOT PLM_CONFIG_DEBIAN_BUILD AND (PLM_PREFER_F2C OR NOT CMAKE_Fortran_COMPILER_WORKS))
   set (PLM_USE_F2C TRUE)
 endif ()
 
@@ -380,7 +381,7 @@ endif ()
 if (NOT PLM_CONFIG_DISABLE_OPENMP)
   find_package (OpenMP)
 endif ()
-if (BUILD_DEBIAN)
+if (PLM_CONFIG_DEBIAN_BUILD)
   set (SQLITE_FOUND false)
 else ()
   find_package (SQLite)
@@ -424,7 +425,7 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Use local sqlite if not found
 ##-----------------------------------------------------------------------------
-if (NOT SQLITE_FOUND AND NOT BUILD_DEBIAN)
+if (NOT SQLITE_FOUND AND NOT PLM_CONFIG_DEBIAN_BUILD)
   add_subdirectory (libs/sqlite-3.6.21)
   set (SQLITE_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/sqlite-3.6.21")
   set (SQLITE_LIBRARIES sqlite3)
@@ -635,7 +636,7 @@ if (DCMTK_FOUND AND PLM_CONFIG_PREFER_DCMTK)
 else ()
   set (PLM_DCM_USE_DCMTK 0)
 endif ()
-if (BUILD_DEBIAN)
+if (PLM_CONFIG_DEBIAN_BUILD)
   set (PLM_DCM_USE_DCMTK 1)
 endif ()
 
@@ -761,7 +762,7 @@ set (PLM_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
 ##-----------------------------------------------------------------------------
 set (INSTALL_NEVER 0)
 set (INSTALL_ALWAYS 1)
-if (BUILD_DEBIAN)
+if (PLM_CONFIG_DEBIAN_BUILD)
   set (INSTALL_IF_NOT_DEBIAN 0)
 else ()
   set (INSTALL_IF_NOT_DEBIAN 1)
@@ -869,7 +870,7 @@ install (FILES
   )
 
 # Debian doesn't like INSTALL, LICENSE included in documentation
-if (NOT BUILD_DEBIAN)
+if (NOT PLM_CONFIG_DEBIAN_BUILD)
   install (FILES 
     INSTALL.TXT
     src/plastimatch/LICENSE.TXT

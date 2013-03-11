@@ -82,7 +82,7 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Add subdirectories
 ##-----------------------------------------------------------------------------
-if (BUILD_DEBIAN)
+if (PLM_CONFIG_DEBIAN_BUILD)
   set (PLM_BUILD_ISE OFF)
   set (PLM_CONFIG_DISABLE_FATM ON)
   set (PLM_CONFIG_DISABLE_MONDOSHOT ON)

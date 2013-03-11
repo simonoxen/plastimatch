@@ -1,4 +1,4 @@
-set (BUILD_DEBIAN @BUILD_DEBIAN@)
+set (PLM_CONFIG_DEBIAN_BUILD @PLM_CONFIG_DEBIAN_BUILD@)
 set (CMAKE_Fortran_COMPILER_WORKS @CMAKE_Fortran_COMPILER_WORKS@)
 set (CUDA_FOUND @CUDA_FOUND@)
 set (FFTW_FOUND @FFTW_FOUND@)
@@ -297,7 +297,7 @@ if (NOT PLM_DCM_USE_DCMTK AND NOT GDCM_VERSION_1)
 endif ()
 
 ## Specfun is removed from debian build
-if (BUILD_DEBIAN)
+if (PLM_CONFIG_DEBIAN_BUILD)
   set (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
     "bragg-curve"
@@ -307,7 +307,7 @@ endif ()
 
 ## Debian on MIPS causes timeout because the build machine is too slow.
 ## So we just skip these tests
-if (BUILD_DEBIAN AND CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "mips")
+if (PLM_CONFIG_DEBIAN_BUILD AND CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "mips")
   set (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
     "bspline-mi-c-1"
