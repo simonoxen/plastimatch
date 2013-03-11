@@ -7,6 +7,7 @@
 #include "plmutil_config.h"
 #include "dicom_rt_study.h"
 #include "metadata.h"
+#include "slice_index.h"
 #include "xio_ct_transform.h"
 
 class PLMUTIL_API Rtds_private {
@@ -17,17 +18,29 @@ public:
                                           for saving in XiO format */
     Xio_ct_transform *m_xio_transform; /* Transformation from XiO to DICOM
                                           coordinates */
+    Slice_index *m_slice_index;        /* UIDs, etc -- used by gdcm */
+
+    Plm_image *m_dose;                 /* RT dose */
+
 public:
     Rtds_private () {
         m_drs = new Dicom_rt_study;
         m_meta = new Metadata;
         m_meta->create_anonymous ();
         m_xio_transform = new Xio_ct_transform (this->m_meta);
+        m_slice_index = new Slice_index;
+
+        m_dose = 0;
     }
     ~Rtds_private () {
         delete m_drs;
         delete m_meta;
+        delete m_slice_index;
         delete m_xio_transform;
+
+        if (m_dose) {
+            delete m_dose;
+        }
     }
 };
 

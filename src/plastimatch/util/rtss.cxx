@@ -19,6 +19,7 @@
 #include "path_util.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
+#include "plm_path.h"
 #include "plm_warp.h"
 #include "pointset.h"
 #include "print_and_exit.h"

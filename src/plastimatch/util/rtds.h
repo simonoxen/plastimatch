@@ -7,7 +7,7 @@
 #include "plmutil_config.h"
 #include <vector>
 #include "itk_image_type.h"
-#include "plm_path.h"
+#include "plm_image_type.h"
 
 class Metadata;
 class Plm_image;
@@ -27,9 +27,6 @@ public:
 public:
     Plm_image *m_img;                  /* CT image */
     Rtss *m_rtss;                      /* RT structure set */
-    Plm_image *m_dose;                 /* RT dose */
-
-    Slice_index *m_rdd;                /* UIDs, etc -- used by gdcm */
 
 public:
     Rtds ();
@@ -45,12 +42,15 @@ public:
     void load_dose_xio (const char *dose_xio);
     void load_dose_astroid (const char *dose_astroid);
     void load_dose_mc (const char *dose_mc);
-    void load_rdd (const char *rdd);
+    void load_rdd (const char *image_directory);
     void load_dcmtk (const char *dicom_dir); 
     void load_gdcm (const char *dicom_dir); 
 
     void save_dicom (const char *output_dir);
     void save_dicom_dose (const char *output_dir);
+
+    void save_dose (const char* fname);
+    void save_dose (const char* fname, Plm_image_type image_type);
 
     void set_user_metadata (std::vector<std::string>& metadata);
 
@@ -61,16 +61,22 @@ public:
     const std::string& get_xio_dose_filename () const;
     Xio_ct_transform* get_xio_ct_transform ();
 
-    Metadata* get_metadata (void);
+    Metadata* get_metadata ();
 
-    Volume* get_volume_short (void);
-    Volume* get_volume_float (void);
+    Slice_index* get_slice_index ();
+
+    Volume* get_image_volume_short ();
+    Volume* get_image_volume_float ();
+
+    bool has_dose ();
+    Plm_image* get_dose_plm_image ();
+    Volume* get_dose_volume_float ();
 
 protected:
     void save_dcmtk (const char *dicom_dir);
     void save_dcmtk_dose (const char *dicom_dir);
     void save_gdcm (const char *dicom_dir);
-    void convert_ss_img_to_cxt (void);
+    void convert_ss_img_to_cxt ();
 };
 
 #endif

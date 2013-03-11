@@ -46,7 +46,7 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
             break;
         case PLM_FILE_FMT_XIO_DIR:
             rtds->load_xio (
-                (const char*) parms->input_fn, rtds->m_rdd);
+                (const char*) parms->input_fn, rtds->get_slice_index());
             break;
         case PLM_FILE_FMT_DIJ:
             print_and_exit (
@@ -60,7 +60,7 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
             break;
         case PLM_FILE_FMT_CXT:
             rtds->m_rtss = new Rtss (rtds);
-            rtds->m_rtss->load_cxt (parms->input_fn, rtds->m_rdd);
+            rtds->m_rtss->load_cxt (parms->input_fn, rtds->get_slice_index());
             break;
         case PLM_FILE_FMT_SS_IMG_VEC:
         default:
@@ -75,7 +75,7 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     if (parms->input_cxt_fn.not_empty()) {
         if (rtds->m_rtss) delete rtds->m_rtss;
         rtds->m_rtss = new Rtss (rtds);
-        rtds->m_rtss->load_cxt (parms->input_cxt_fn, rtds->m_rdd);
+        rtds->m_rtss->load_cxt (parms->input_cxt_fn, rtds->get_slice_index());
     }
 
     if (parms->input_prefix.not_empty()) {
@@ -160,7 +160,8 @@ save_ss_img (
     /* cxt */
     if (parms->output_cxt_fn.not_empty()) {
         lprintf ("save_ss_img: save_cxt\n");
-        rtds->m_rtss->save_cxt (rtds->m_rdd, parms->output_cxt_fn, false);
+        rtds->m_rtss->save_cxt (rtds->get_slice_index(), 
+            parms->output_cxt_fn, false);
     }
 
     /* xio */
@@ -292,10 +293,10 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
         /* use the spacing from input bxf file */
         lprintf ("Setting PIH from XFORM\n");
         pih.set_from_gpuit_bspline (xform.get_gpuit_bsp());
-    } else if (rtds->m_rdd->m_loaded) {
+    } else if (rtds->get_slice_index()->m_loaded) {
         /* use spacing from referenced CT */
         lprintf ("Setting PIH from RDD\n");
-        Plm_image_header::clone (&pih, &rtds->m_rdd->m_pih);
+        Plm_image_header::clone (&pih, &rtds->get_slice_index()->m_pih);
     } else if (rtds->m_img) {
         /* use the spacing of the input image */
         lprintf ("Setting PIH from M_IMG\n");
@@ -314,10 +315,10 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
             rtds->m_rtss->m_cxt->m_offset, 
             rtds->m_rtss->m_cxt->m_spacing, 
             0);
-    } else if (rtds->m_dose) {
+    } else if (rtds->has_dose()) {
         /* use the spacing of dose */
         lprintf ("Setting PIH from DOSE\n");
-        pih.set_from_plm_image (rtds->m_dose);
+        pih.set_from_plm_image (rtds->get_dose_plm_image());
     } else if (rtds->m_rtss && rtds->m_rtss->m_cxt) {
         /* we have structure set, but without geometry.  use 
            heuristics to find a good geometry for rasterization */
@@ -374,7 +375,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     }
 
     /* Warp the dose image */
-    if (rtds->m_dose
+    if (rtds->has_dose()
         && parms->xf_in_fn.not_empty()
         && (parms->output_dose_img_fn.not_empty()
             || parms->output_xio_dirname.not_empty()
@@ -383,23 +384,27 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
         lprintf ("Rtds_warp: Warping dose\n");
         Plm_image *im_out;
         im_out = new Plm_image;
-        plm_warp (im_out, 0, &xform, &pih, rtds->m_dose, 0, 
+        plm_warp (im_out, 0, &xform, &pih, rtds->get_dose_plm_image(), 0, 
             parms->use_itk, 1);
-        delete rtds->m_dose;
-        rtds->m_dose = im_out;
+        rtds->set_dose (im_out);
     }
 
     /* Scale the dose image */
-    if (rtds->m_dose && parms->have_dose_scale) {
-        volume_scale (rtds->m_dose->gpuit_float(), parms->dose_scale);
+    if (rtds->has_dose() && parms->have_dose_scale) {
+        volume_scale (rtds->get_dose_volume_float(), parms->dose_scale);
     }
 
     /* Save output dose image */
-    if (parms->output_dose_img_fn.not_empty() && rtds->m_dose)
+    if (parms->output_dose_img_fn.not_empty() && rtds->has_dose())
     {
         lprintf ("Rtds_warp: Saving dose image (%s)\n", 
             (const char*) parms->output_dose_img_fn);
+#if defined (commentout)
         rtds->m_dose->convert_and_save (
+            (const char*) parms->output_dose_img_fn, 
+            parms->output_type);
+#endif
+        rtds->save_dose (
             (const char*) parms->output_dose_img_fn, 
             parms->output_type);
     }
@@ -407,14 +412,14 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     /* Save output XiO dose */
     if (parms->output_xio_dirname.not_empty()
         && rtds->get_xio_dose_filename() != ""
-        && rtds->m_dose)
+        && rtds->has_dose())
     {
         Pstring fn;
 
         lprintf ("Rtds_warp: Saving xio dose.\n");
         fn.format ("%s/%s", (const char*) parms->output_xio_dirname, "dose");
         xio_dose_save (
-            rtds->m_dose,
+            rtds->get_dose_plm_image(),
             rtds->get_metadata(), 
             rtds->get_xio_ct_transform(),
             (const char*) fn, 
@@ -445,7 +450,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
         /* Set the DICOM reference info -- this sets the internal geometry 
            of the ss_image so we rasterize on the same slices as the CT? */
         lprintf ("Rtds_warp: Apply dicom_dir.\n");
-        rtds->m_rtss->apply_dicom_dir (rtds->m_rdd);
+        rtds->m_rtss->apply_dicom_dir (rtds->get_slice_index());
         
         /* Set the output geometry */
         lprintf ("Rtds_warp: Set geometry from PIH.\n");

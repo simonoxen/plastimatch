@@ -27,7 +27,7 @@ Rtds::load_dcmtk (const char *dicom_path)
 	this->m_rtss = new Rtss (this);
         this->m_rtss->m_cxt = rtss;
     }
-    this->m_dose = dss.steal_dose_image ();
+    d_ptr->m_dose = dss.steal_dose_image ();
 
     printf ("Done.\n");
 #endif
@@ -44,8 +44,8 @@ Rtds::save_dcmtk (const char *dicom_dir)
     if (this->m_rtss && this->m_rtss->m_cxt) {
         ds.set_cxt (this->m_rtss->m_cxt);
     }
-    if (this->m_dose) {
-        ds.set_dose (this->m_dose->gpuit_float());
+    if (d_ptr->m_dose) {
+        ds.set_dose (d_ptr->m_dose->gpuit_float());
     }
 
     ds.save (dicom_dir);
@@ -59,8 +59,8 @@ Rtds::save_dcmtk_dose (const char *dicom_dir)
     Dcmtk_save ds;
     ds.set_rt_study (d_ptr->m_drs);
 
-    if (this->m_dose) {
-        ds.set_dose (this->m_dose->gpuit_float());
+    if (d_ptr->m_dose) {
+        ds.set_dose (d_ptr->m_dose->gpuit_float());
     }
 
     ds.save (dicom_dir);

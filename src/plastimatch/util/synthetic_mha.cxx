@@ -829,7 +829,8 @@ synthetic_mha (
         }
     }
     if (parms->m_want_dose_img) {
-        rtds->m_dose = new Plm_image;
-        rtds->m_dose->set_itk (dose_img);
+        rtds->set_dose (dose_img);
+//        rtds->m_dose = new Plm_image;
+//        rtds->m_dose->set_itk (dose_img);
     }
 }

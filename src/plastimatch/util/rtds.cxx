@@ -35,8 +35,6 @@ Rtds::Rtds ()
     d_ptr = new Rtds_private;
     m_img = 0;
     m_rtss = 0;
-    m_dose = 0;
-    m_rdd = new Slice_index;
 }
 
 Rtds::~Rtds ()
@@ -48,10 +46,6 @@ Rtds::~Rtds ()
     if (m_rtss) {
         delete m_rtss;
     }
-    if (m_dose) {
-        delete m_dose;
-    }
-    delete m_rdd;
 }
 
 void
@@ -96,7 +90,7 @@ Rtds::load_dicom_rtss (const char *dicom_path)
     this->load_dcmtk (dicom_path);
 #elif GDCM_VERSION_1
     this->m_rtss = new Rtss (this);
-    this->m_rtss->load_gdcm_rtss (dicom_path, this->m_rdd);
+    this->m_rtss->load_gdcm_rtss (dicom_path, d_ptr->m_slice_index);
 #else
     /* Do nothing */
 #endif
@@ -146,10 +140,10 @@ Rtds::load_xio (
         }
 
         /* Load the summed XiO dose file */
-        this->m_dose = new Plm_image ();
+        d_ptr->m_dose = new Plm_image ();
         printf ("calling xio_dose_load\n");
         d_ptr->m_xio_dose_filename = std::string(xtpd->path) + "/dose.1";
-        xio_dose_load (this->m_dose, d_ptr->m_meta,
+        xio_dose_load (d_ptr->m_dose, d_ptr->m_meta,
             d_ptr->m_xio_dose_filename.c_str());
 
         /* Find studyset associated with plan */
@@ -214,7 +208,7 @@ Rtds::load_xio (
        and the origin will remain the same. */
 
     if (this->m_img) {
-        if (m_rdd->m_loaded) {
+        if (d_ptr->m_slice_index->m_loaded) {
             /* Determine transformation based on original DICOM */
             d_ptr->m_xio_transform->set_from_rdd (this->m_img, 
                 d_ptr->m_meta, rdd);
@@ -228,8 +222,8 @@ Rtds::load_xio (
         xio_structures_apply_transform (this->m_rtss->m_cxt, 
             d_ptr->m_xio_transform);
     }
-    if (this->m_dose) {
-        xio_dose_apply_transform (this->m_dose, d_ptr->m_xio_transform);
+    if (d_ptr->m_dose) {
+        xio_dose_apply_transform (d_ptr->m_dose, d_ptr->m_xio_transform);
     }
 }
 
@@ -243,72 +237,77 @@ Rtds::load_ss_img (const char *ss_img, const char *ss_list)
 void
 Rtds::load_dose_img (const char *dose_img)
 {
-    if (this->m_dose) {
-        delete this->m_dose;
+    if (d_ptr->m_dose) {
+        delete d_ptr->m_dose;
+        d_ptr->m_dose = 0;
     }
     if (dose_img) {
-        this->m_dose = plm_image_load_native (dose_img);
+        d_ptr->m_dose = plm_image_load_native (dose_img);
     }
 }
 
 void
-Rtds::load_rdd (const char *rdd)
+Rtds::load_rdd (const char *image_directory)
 {
-    m_rdd->load (rdd);
+    d_ptr->m_slice_index->load (image_directory);
 
-    if (m_rdd->m_loaded) {
+    Slice_index *si = d_ptr->m_slice_index;
+    if (si->m_loaded) {
         /* Default to patient position in referenced DICOM */
         d_ptr->m_meta->set_metadata(0x0018, 0x5100,
-            m_rdd->m_demographics.get_metadata(0x0018, 0x5100));
+            si->m_demographics.get_metadata(0x0018, 0x5100));
         d_ptr->m_xio_transform->set (d_ptr->m_meta);
 
         /* Default to patient name/ID/sex in referenced DICOM */
         d_ptr->m_meta->set_metadata(0x0010, 0x0010,
-            m_rdd->m_demographics.get_metadata(0x0010, 0x0010));
+            si->m_demographics.get_metadata(0x0010, 0x0010));
         d_ptr->m_meta->set_metadata(0x0010, 0x0020,
-            m_rdd->m_demographics.get_metadata(0x0010, 0x0020));
+            si->m_demographics.get_metadata(0x0010, 0x0020));
         d_ptr->m_meta->set_metadata(0x0010, 0x0040,
-            m_rdd->m_demographics.get_metadata(0x0010, 0x0040));
+            si->m_demographics.get_metadata(0x0010, 0x0040));
     }
 }
 
 void
 Rtds::load_dose_xio (const char *dose_xio)
 {
-    if (this->m_dose) {
-        delete this->m_dose;
+    if (d_ptr->m_dose) {
+        delete d_ptr->m_dose;
+        d_ptr->m_dose = 0;
     }
     if (dose_xio) {
         d_ptr->m_xio_dose_filename = dose_xio;
-        this->m_dose = new Plm_image ();
-        xio_dose_load (this->m_dose, d_ptr->m_meta, dose_xio);
-        xio_dose_apply_transform (this->m_dose, d_ptr->m_xio_transform);
+        d_ptr->m_dose = new Plm_image ();
+        xio_dose_load (d_ptr->m_dose, d_ptr->m_meta, dose_xio);
+        xio_dose_apply_transform (d_ptr->m_dose, d_ptr->m_xio_transform);
     }
 }
 
 void
 Rtds::load_dose_astroid (const char *dose_astroid)
 {
-    if (this->m_dose) {
-        delete this->m_dose;
+    if (d_ptr->m_dose) {
+        delete d_ptr->m_dose;
+        d_ptr->m_dose = 0;
     }
     if (dose_astroid) {
-        this->m_dose = new Plm_image ();
-        astroid_dose_load (this->m_dose, d_ptr->m_meta, dose_astroid);
-        astroid_dose_apply_transform (this->m_dose, d_ptr->m_xio_transform);
+        d_ptr->m_dose = new Plm_image ();
+        astroid_dose_load (d_ptr->m_dose, d_ptr->m_meta, dose_astroid);
+        astroid_dose_apply_transform (d_ptr->m_dose, d_ptr->m_xio_transform);
     }
 }
 
 void
 Rtds::load_dose_mc (const char *dose_mc)
 {
-    if (this->m_dose) {
-        delete this->m_dose;
+    if (d_ptr->m_dose) {
+        delete d_ptr->m_dose;
+        d_ptr->m_dose = 0;
     }
     if (dose_mc) {
-        this->m_dose = new Plm_image ();
-        mc_dose_load (this->m_dose, dose_mc);
-        mc_dose_apply_transform (this->m_dose, d_ptr->m_xio_transform);
+        d_ptr->m_dose = new Plm_image ();
+        mc_dose_load (d_ptr->m_dose, dose_mc);
+        mc_dose_apply_transform (d_ptr->m_dose, d_ptr->m_xio_transform);
     }
 }
 
@@ -341,6 +340,22 @@ Rtds::save_dicom_dose (const char *dicom_dir)
 #endif
 }
 
+void
+Rtds::save_dose (const char* fname)
+{
+    if (d_ptr->m_dose) {
+        d_ptr->m_dose->save_image (fname);
+    }
+}
+
+void
+Rtds::save_dose (const char* fname, Plm_image_type image_type)
+{
+    if (d_ptr->m_dose) {
+        d_ptr->m_dose->convert_and_save (fname, image_type);
+    }
+}
+
 void 
 Rtds::set_user_metadata (std::vector<std::string>& metadata)
 {
@@ -367,18 +382,25 @@ Rtds::set_user_metadata (std::vector<std::string>& metadata)
 void 
 Rtds::set_dose (Plm_image *pli)
 {
-    if (m_dose) delete m_dose;
-    m_dose = pli;
+    if (d_ptr->m_dose) delete d_ptr->m_dose;
+    d_ptr->m_dose = pli;
+}
+
+void 
+Rtds::set_dose (FloatImageType::Pointer itk_dose)
+{
+    if (d_ptr->m_dose) delete d_ptr->m_dose;
+    d_ptr->m_dose = new Plm_image (itk_dose);
 }
 
 void 
 Rtds::set_dose (Volume *vol)
 {
     if (!vol) return;
-    if (m_dose) delete m_dose;
-    m_dose = new Plm_image;
+    if (d_ptr->m_dose) delete d_ptr->m_dose;
+    d_ptr->m_dose = new Plm_image;
     /* Make a copy */
-    this->m_dose->set_gpuit (vol->clone());
+    d_ptr->m_dose->set_gpuit (vol->clone());
 }
 
 Xio_ct_transform*
@@ -399,8 +421,14 @@ Rtds::get_metadata (void)
     return d_ptr->m_meta;
 }
 
+Slice_index*
+Rtds::get_slice_index ()
+{
+    return d_ptr->m_slice_index;
+}
+
 Volume*
-Rtds::get_volume_short (void)
+Rtds::get_image_volume_short ()
 {
     if (!this->m_img) {
         return 0;
@@ -409,10 +437,34 @@ Rtds::get_volume_short (void)
 }
 
 Volume*
-Rtds::get_volume_float (void)
+Rtds::get_image_volume_float (void)
 {
     if (!this->m_img) {
         return 0;
     }
     return this->m_img->get_volume_float ();
+}
+
+bool
+Rtds::has_dose ()
+{
+    return (d_ptr->m_dose != 0);
+}
+
+Plm_image*
+Rtds::get_dose_plm_image ()
+{
+    if (!d_ptr->m_dose) {
+        return 0;
+    }
+    return d_ptr->m_dose;
+}
+
+Volume*
+Rtds::get_dose_volume_float ()
+{
+    if (!d_ptr->m_dose) {
+        return 0;
+    }
+    return d_ptr->m_dose->gpuit_float ();
 }

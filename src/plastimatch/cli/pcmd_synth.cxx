@@ -81,7 +81,7 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
 
     /* dose_img */
     if (parms->output_dose_img_fn.not_empty()) {
-        rtds.m_dose->save_image (parms->output_dose_img_fn);
+        rtds.save_dose (parms->output_dose_img_fn);
     }
 
     /* list of structure names */
