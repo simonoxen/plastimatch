@@ -106,6 +106,7 @@ public:
     void set_gpuit_vf (Volume* vf);
 
     void get_volume_header (Volume_header *vh);
+    Plm_image_header get_plm_image_header ();
     void get_grid_spacing (float grid_spacing[3]);
 
     void print ();

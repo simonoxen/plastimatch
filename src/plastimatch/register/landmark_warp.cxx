@@ -159,18 +159,14 @@ landmark_convert_mm_to_voxel (
     }
 }
 
-
-void
-calculate_warped_landmarks( Landmark_warp *lw )
-
-  /*Moves moving landmarks according to the current vector field.
+/*Moves moving landmarks according to the current vector field.
   Output goes into lw->m_warped_landmarks
   LW = warped landmark
-  We must solve LW + u(LW) = LM to get new LW, corresponding to current vector field.
-
-  Adapted from bspline_landmarks_warp(...) in bspline_landmarks.c to use Landmark_warp */
-
-
+  We must solve LW + u(LW) = LM to get new LW, corresponding to current 
+  vector field. Adapted from bspline_landmarks_warp(...) in 
+  bspline_landmarks.c to use Landmark_warp */
+void
+calculate_warped_landmarks( Landmark_warp *lw )
 {
     plm_long ri, rj, rk;
     plm_long fi, fj, fk, fv;
@@ -221,7 +217,6 @@ calculate_warped_landmarks( Landmark_warp *lw )
     for (d=0;d<num_landmarks;d++) dd_min[d] = 1e20F; //a very large number
 
     // roi_offset and roi_dim are not used here //
-
     for (rk = 0, fk = 0; rk < fixed_dim[2]; rk++, fk++) {
 	fz = fixed_offset[2] + fixed_spacing[2] * fk;
 	for (rj = 0, fj = 0; rj < fixed_dim[1]; rj++, fj++) {
@@ -315,12 +310,12 @@ calculate_warped_landmarks( Landmark_warp *lw )
 
 
 void
-calculate_warped_landmarks_by_vf( Landmark_warp *lw , Volume *vector_field )
+calculate_warped_landmarks_by_vf (Landmark_warp *lw , Volume *vector_field)
 
 // same as calculate_warped_landmarks, but accepts vector_field directly,
 // not through Xform lw->m_vf
 
-  /*Moves moving landmarks according to the current vector field.
+/*Moves moving landmarks according to the current vector field.
   Output goes into lw->m_warped_landmarks
   LW = warped landmark
   We must solve LW + u(LW) = LM to get new LW, corresponding to current vector field.
@@ -373,21 +368,22 @@ calculate_warped_landmarks_by_vf( Landmark_warp *lw , Volume *vector_field )
 	moving->offset, moving->spacing, moving->dim, 
 	moving->direction_cosines);
     
-	printf("done landvox; n=%d\n", num_landmarks);
+    printf("done landvox; n=%d\n", num_landmarks);
 
-	printf("fix offs %f %f %f\n",  fixed_offset[0],fixed_offset[1],fixed_offset[2]);
-	printf("fix dim  %d %d %d\n",  fixed_dim[0],fixed_dim[1],fixed_dim[2]);
-	printf("mov offs %f %f %f\n",  moving->offset[0],moving->offset[1],moving->offset[2]);
+    printf("fix offs %f %f %f\n",  fixed_offset[0],fixed_offset[1],fixed_offset[2]);
+    printf("fix dim  %d %d %d\n",  
+        (int) fixed_dim[0], (int) fixed_dim[1], (int) fixed_dim[2]);
+    printf("mov offs %f %f %f\n", moving->offset[0], 
+        moving->offset[1], moving->offset[2]);
+    printf("vf dim  %d %d %d\n", (int) vector_field->dim[0], 
+        (int) vector_field->dim[1], (int) vector_field->dim[2]);
 
-	printf("vf dim  %d %d %d\n",  vector_field->dim[0],vector_field->dim[1],vector_field->dim[2]);
-
-
-	for(i=0;i<num_landmarks;i++)
-	 printf("%d %d %d    %d %d %d\n",
-		landvox_fix[3*i+0],landvox_fix[3*i+1],landvox_fix[3*i+2],
-		landvox_mov[3*i+0],landvox_mov[3*i+1],landvox_mov[3*i+2]
-		);
-
+    for(i=0;i<num_landmarks;i++) {
+        printf("%d %d %d    %d %d %d\n",
+            landvox_fix[3*i+0],landvox_fix[3*i+1],landvox_fix[3*i+2],
+            landvox_mov[3*i+0],landvox_mov[3*i+1],landvox_mov[3*i+2]
+        );
+    }
 
     dd_min = (float *)malloc( num_landmarks * sizeof(float));
     for (d=0;d<num_landmarks;d++) dd_min[d] = 1e20F; //a very large number
@@ -461,7 +457,7 @@ calculate_warped_landmarks_by_vf( Landmark_warp *lw , Volume *vector_field )
 	pointset_add_point_noadjust (lw->m_warped_landmarks, warped_landmarks+3*lidx);
     }
 
-printf("done warping, printing rms\n");
+    printf("done warping, printing rms\n");
 
 //debug only
     fy = 0;
@@ -485,5 +481,3 @@ printf("done warping, printing rms\n");
     free (landmark_dxyz);
     free (warped_landmarks);
 }
-
-

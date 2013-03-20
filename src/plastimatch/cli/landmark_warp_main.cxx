@@ -158,13 +158,14 @@ save_output_files (Landmark_warp_main_parms *parms)
 		
 		//write FIXED landmarks to check for clustering issues
 		pointset_save_fcsv_by_cluster(lw->m_fixed_landmarks, 
-			lw->cluster_id, ii,  fn_out);
-		}
-	    }
-	    else pointset_save (lw->m_warped_landmarks, parms->output_lm_fn);
+                    lw->cluster_id, ii,  fn_out);
+            }
+        }
+        else {
+            pointset_save (lw->m_warped_landmarks, parms->output_lm_fn);
+        }
     }
 }
-
 
 static void
 do_landmark_warp (Landmark_warp_main_parms *parms)

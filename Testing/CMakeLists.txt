@@ -972,7 +972,8 @@ set_tests_properties (fdk-tutorial-c-check-1 PROPERTIES
 ## -------------------------------------------------------------------------
 ## landmark_warp a: itk tps, slicer fcsv
 ## landmark_warp b: wendland rbf, slicer fcsv
-## landmark_warp c: nsh gauss rbf, slicer fcsv
+## landmark_warp c: gauss rbf, slicer fcsv
+## landmark_warp d: itk tps, slicer fcsv, -L option
 ## -------------------------------------------------------------------------
 plm_add_test (
   "landmark-warp-a" 
@@ -1084,6 +1085,13 @@ set_tests_properties (landmark-warp-c-stats-2 PROPERTIES
   DEPENDS landmark-warp-c)
 set_tests_properties (landmark-warp-c-check-2 PROPERTIES 
   DEPENDS landmark-warp-c-stats-2)
+
+plm_add_test (
+  "landmark-warp-d" 
+  ${PLM_PLASTIMATCH_PATH}/landmark_warp
+  "-a;tps;-f;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;-m;${PLM_TESTING_DATA_DIR}/fiducials-rect-3.fcsv;-I;${PLM_BUILD_TESTING_DIR}/rect-3.mha;-O;${PLM_BUILD_TESTING_DIR}/landmark-warp-d-img.mha;-V;${PLM_BUILD_TESTING_DIR}/landmark-warp-d-vf.mha;-L;${PLM_BUILD_TESTING_DIR}/landmark-warp-d.fcsv"
+  )
+set_tests_properties (landmark-warp-d PROPERTIES DEPENDS rect-3)
 
 ## -------------------------------------------------------------------------
 ## plastimatch add, plastimatch average

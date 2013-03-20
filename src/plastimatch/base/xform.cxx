@@ -154,6 +154,10 @@ Volume*
 Xform::get_gpuit_vf ()
 {
     if (m_type != XFORM_GPUIT_VECTOR_FIELD) {
+        Plm_image_header pih = this->get_plm_image_header();
+        xform_to_gpuit_vf (this, this, &pih);
+    }
+    if (m_type != XFORM_GPUIT_VECTOR_FIELD) {
         print_and_exit ("Typecast error in get_gpuit_vf()\n");
     }
     return (Volume*) m_gpuit;
@@ -1758,6 +1762,14 @@ Xform::get_volume_header (Volume_header *vh)
             this->m_type);
         break;
     }
+}
+
+Plm_image_header
+Xform::get_plm_image_header ()
+{
+    Volume_header vh;
+    this->get_volume_header (&vh);
+    return Plm_image_header (vh);
 }
 
 void
