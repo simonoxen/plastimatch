@@ -6,8 +6,8 @@
 
 #include "plmbase_config.h"
 
-#include "sys/plm_int.h"
 #include "direction_cosines.h"
+#include "plm_int.h"
 #include "volume_macros.h"
 
 //TODO: Change type of directions_cosines to Direction_cosines*

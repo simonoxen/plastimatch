@@ -11,9 +11,9 @@
  * the fix below is encountered.  By including it here, we ensure that
  * integer type redefinitions do not occur later if headers are later
  * included "out of order" somewhere in the project. */
-#if GDCM_VERSION_1
-#include "gdcmCommon.h"
-#endif
+//#if GDCM_VERSION_1
+//#include "gdcmCommon.h"
+//#endif
 
 #if defined (GDCMCOMMON_H)
 /* Gdcm 1.x has a broken header file gdcmCommon.h, which defines C99 types 

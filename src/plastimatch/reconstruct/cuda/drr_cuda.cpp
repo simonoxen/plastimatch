@@ -1,6 +1,7 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#define PLM_CUDA_COMPILE 1
 #include "plmreconstruct_config.h"
 #include <stdio.h>
 #include <stdlib.h>

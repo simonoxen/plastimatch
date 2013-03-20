@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#if (OPENMP_FOUND)
+#if OPENMP_FOUND
 #include <omp.h>
 #endif
 

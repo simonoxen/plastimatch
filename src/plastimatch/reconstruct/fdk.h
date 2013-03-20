@@ -5,7 +5,7 @@
 #define _fdk_h_
 
 #include "plmreconstruct_config.h"
-#include "sys/plm_int.h"
+#include "plm_int.h"
 #include "threading.h"
 
 class Proj_image_dir;

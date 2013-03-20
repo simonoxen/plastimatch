@@ -25,6 +25,10 @@ set (PLASTIMATCH_LIBS
   ${MATH_LIB}
   )
 
+if (CUDA_FOUND AND NOT PLM_USE_GPU_PLUGINS)
+  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} plmreconstructcuda)
+endif ()
+
 if (SPECFUN_FOUND)
   set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} specfun)
 endif ()
