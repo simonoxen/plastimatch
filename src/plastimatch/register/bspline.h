@@ -5,7 +5,7 @@
 #define _bspline_h_
 
 #include "plmregister_config.h"
-#include "sys/plm_int.h"
+#include "plm_int.h"
 #include <string>
 
 #include "bspline_regularize_state.h"

@@ -5,7 +5,7 @@
 #define _bspline_xform_h_
 
 #include "plmbase_config.h"
-#include "sys/plm_int.h"
+#include "plm_int.h"
 #include "direction_cosines.h"
 
 //TODO: Change type of dc to Direction_cosines*

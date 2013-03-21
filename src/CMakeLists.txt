@@ -27,6 +27,7 @@ set (PLASTIMATCH_LIBS
 
 if (CUDA_FOUND AND NOT PLM_USE_GPU_PLUGINS)
   set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} plmreconstructcuda)
+  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} plmregistercuda)
 endif ()
 
 if (SPECFUN_FOUND)
@@ -75,7 +76,7 @@ set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} ${FORTRAN_LIBRARIES})
 set (PLASTIMATCH_LDFLAGS "${OPENMP_LDFLAGS}")
 if (PLM_USE_GPU_PLUGINS AND WIN32 AND NOT CYGWIN AND NOT MINGW)
   set (PLASTIMATCH_LDFLAGS
-  "${PLASTIMATCH_LDFLAGS} /DELAYLOAD:plmregistercuda.dll /DELAYLOAD:plmreconstructcuda.dll")
+ "${PLASTIMATCH_LDFLAGS} /DELAYLOAD:plmregistercuda.dll /DELAYLOAD:plmreconstructcuda.dll")
 endif ()
 # Work around issue with f2c on linux.  See:
 #   http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=337460

@@ -5,7 +5,7 @@
 #define _interpolate_h_
 
 #include "plmbase_config.h"
-#include "sys/plm_int.h"
+#include "plm_int.h"
 
 class Volume;
 

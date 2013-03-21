@@ -5,7 +5,7 @@
 #define _bspline_interpolate_h_
 
 #include "plmbase_config.h"
-#include "sys/plm_int.h"
+#include "plm_int.h"
 
 class Bspline_xform;
 class Volume;

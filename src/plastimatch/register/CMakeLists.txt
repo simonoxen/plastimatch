@@ -10,8 +10,10 @@ configure_file (
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
-if (THRUST_INCLUDE_DIR)
-  include_directories (AFTER ${THRUST_INCLUDE_DIR})
+
+if (CUDA_FOUND)
+  add_subdirectory (cuda)
+  include_directories (BEFORE "${CMAKE_CURRENT_SOURCE_DIR}/cuda")
 endif ()
 
 ##-----------------------------------------------------------------------------
@@ -57,35 +59,10 @@ if (OPENCL_FOUND)
    )
 endif ()
 
-set (PLMREGISTERCUDA_SRC
-  bspline_cuda.cu 
-  bspline_cuda_kernels.h
-  demons_cuda.cu
-  )
-
-message (STATUS "CUDA_SDK_ROOT_DIR =  ${CUDA_SDK_ROOT_DIR}")
-message (STATUS "CUDA_CUT_INCLUDE_DIR = ${CUDA_CUT_INCLUDE_DIR}")
-
-set (PLMREGISTERCUDA_IFACE_SRC
-  bspline_cuda.cxx
-  demons_misc.cxx
-#  viscous_cuda.cxx
-  )
-
 if (PLM_BUILD_VISCOUS)
   set (PLMREGISTER_LIBRARY_SRC
     ${PLMREGISTER_LIBRARY_SRC}
     viscous.cxx
-    )
-  set (PLMREGISTERCUDA_SRC
-    ${PLMREGISTERCUDA_SRC}
-    viscous_compute.cu
-    viscous_convolution.cu
-    viscous_finalize.cu
-    viscous_funcHistogram.cu
-    viscous_funcImageDomain.cu
-    viscous_initialize.cu
-    viscous_main.cu
     )
 endif ()
 
@@ -114,6 +91,10 @@ if (CUDA_FOUND)
     ${PLMREGISTER_LIBRARY_DEPENDENCIES}
     plmcuda
     )
+  set (PLMREGISTER_LIBRARY_DEPENDENCIES 
+    ${PLMREGISTER_LIBRARY_DEPENDENCIES}
+    plmregistercuda
+    )
 endif ()
 
 if (OPENCL_FOUND)
@@ -128,53 +109,6 @@ if (NLOPT_FOUND)
     ${PLMREGISTER_LIBRARY_DEPENDENCIES}
     ${NLOPT_LIBRARIES}
     )
-endif ()
-
-##-----------------------------------------------------------------------------
-##  SPECIAL BUILD RULES: CUDA
-##-----------------------------------------------------------------------------
-if (CUDA_FOUND)
-  if (PLM_USE_GPU_PLUGINS)
-
-    # build CUDA as separate plmregistercuda shared library
-    set (PLMREGISTERCUDA_LIBRARY_SRC
-      ${PLMREGISTERCUDA_IFACE_SRC}
-      ${PLMREGISTERCUDA_SRC}
-      )
-    plm_add_gpu_plugin_library (plmregistercuda 
-      "${PLMREGISTERCUDA_LIBRARY_SRC}")
-    target_link_libraries (plmregistercuda 
-      plmcuda plmbase ${CUDA_cublas_LIBRARY} ${CUDA_LIBRARIES})
-
-    # set dependencies that plmreconstruct library needs 
-    if (WIN32 AND NOT CYGWIN AND NOT MINGW)
-      # windows needs to delayload it
-      set (PLMREGISTER_LIBRARY_DEPENDENCIES
-	${PLMREGISTER_LIBRARY_DEPENDENCIES}
-	plmregistercuda)
-      set (PLMREGISTER_LIBRARY_LDFLAGS
-	"${PLMREGISTER_LIBRARY_LDFLAGS} /DELAYLOAD:plmregistercuda.dll /DELAYLOAD:plmcuda.dll")
-    endif ()
-    if (NOT WIN32 AND LIBDL_FOUND)
-      # and unix needs dlopen()
-      set (PLMREGISTER_LIBRARY_DEPENDENCIES
-	${PLMREGISTER_LIBRARY_DEPENDENCIES}
-	-ldl)
-    endif ()
-  else ()
-    # building CUDA into plmregister
-    cuda_compile (CUDA_WRAPPERS ${PLMREGISTERCUDA_SRC})
-    set (PLMREGISTER_LIBRARY_SRC
-      ${PLMREGISTER_LIBRARY_SRC}
-      ${PLMREGISTERCUDA_IFACE_SRC}
-      ${CUDA_WRAPPERS}
-      )
-    set (PLMREGISTER_LIBRARY_DEPENDENCIES
-      ${PLMREGISTER_LIBRARY_DEPENDENCIES}
-      ${CUDA_cublas_LIBRARY}
-      ${CUDA_LIBRARIES}
-      )
-  endif ()
 endif ()
 
 ##-----------------------------------------------------------------------------
@@ -210,6 +144,6 @@ plm_add_library (
 # because plmregistercuda is dynamically loaded (not linked)
 # CMake needs to be told explicitly that plmregister
 # depends on it, so we tell it explicitly here
-if (CUDA_FOUND AND PLM_USE_GPU_PLUGINS)
+if (CUDA_FOUND)
   add_dependencies (plmregister plmregistercuda)
 endif ()
