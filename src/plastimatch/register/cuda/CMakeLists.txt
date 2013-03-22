@@ -61,7 +61,10 @@ if (CUDA_FOUND)
     # build CUDA as separate plmregistercuda shared library
     plm_add_gpu_plugin_library (plmregistercuda 
       "${PLMREGISTERCUDA_LIBRARY_SRC}")
-    target_link_libraries (plmregistercuda plmcuda ${CUDA_LIBRARIES})
+
+    # GCS 2013-03-21.  Why can't we link plmregistercuda against plmbase?
+    # I'm going to try it and see.
+    target_link_libraries (plmregistercuda plmbase plmcuda ${CUDA_LIBRARIES})
 
     # set dependencies that plmregister library needs 
     if (WIN32 AND NOT CYGWIN AND NOT MINGW)

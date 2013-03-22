@@ -27,7 +27,7 @@ set (COMPUTE_DISTANCE_SRC
   read_obj.cxx
   )
 set (CUDA_PROBE_SRC
-  cuda_probe_main.c
+  cuda_probe_main.cxx
   )
 set (DEMONS_SRC
   demons_main.cxx 
