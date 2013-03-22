@@ -25,7 +25,7 @@ public:
     /* [SETTINGS] */
     int debug;
     int group;
-    bool wed_choice;
+    short mode;                     /*Running in wed, dew, or segdepth?*/
     bool have_ray_step;
     float ray_step;                 /* Uniform ray step size (mm) */
     char input_ct_fn[_MAX_PATH];    /* input:  patient volume */
@@ -33,6 +33,8 @@ public:
     char output_ct_fn[_MAX_PATH];   /* output: patient volume */
     std::string output_dose_fn;     /* output:    dose volume */
     std::string rpl_vol_fn;         /* output: rpl volume */
+    std::string output_ap_fn;       /* output: aperture volume */
+    std::string output_depth_fn;    /* output: depth volume */
 
     /* [BEAM] */
     float src[3];

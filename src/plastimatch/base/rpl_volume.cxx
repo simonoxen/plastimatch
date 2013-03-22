@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <iostream>
+#include <vector>
 
 #include "interpolate.h"
 #include "compiler_warnings.h"
@@ -582,7 +583,7 @@ Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float backgrou
   double src_iso_vec[3];   //vector from source to isocenter
   proj_vol->get_proj_matrix()->get_nrm(src_iso_vec); 
   vec3_invert(src_iso_vec);
-  const double *center = proj_vol->get_proj_matrix()->ic;
+  //  const double *center = proj_vol->get_proj_matrix()->ic;
 
   //Contruct aperture "box", in which each voxel's respective
   //ray intersection must be within.
@@ -682,8 +683,6 @@ Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float backgrou
 	ap_coord_plane[0] = vec3_dot(dummy_vec,ap_axis1)*dummy_length;
 	ap_coord_plane[1] = vec3_dot(dummy_vec,ap_axis2)*dummy_length;
 	
-	//Note: starting here, some of the following code implicitly assumes that the 
-	//aperture spacing is 1mm.  If this changes, some normalizing will be needed.
 	master_coord[0] = ap_coord_plane[0]/ap_res[0] - floor(ap_coord_plane[0]/ap_res[0]);
 	master_coord[1] = ap_coord_plane[1]/ap_res[1] - floor(ap_coord_plane[1]/ap_res[1]);
 
@@ -780,6 +779,134 @@ Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float backgrou
       }
     }
   }
+}
+
+void 
+Rpl_volume::compute_segdepth_volume (Volume *seg_vol, Volume *aperture_vol, Volume *segdepth_vol, float background)
+{
+
+  double threshold = .2;  //theshold for interpolated, segmented volume
+
+  Proj_volume *proj_vol = d_ptr->proj_vol;
+  Volume *rvol = proj_vol->get_volume();
+  float *seg_img = (float*) seg_vol->img;
+  float *aperture_img = (float*) aperture_vol->img;
+  float *segdepth_img = (float*) segdepth_vol->img;
+  const int *ires = proj_vol->get_image_dim();
+
+  
+
+  int aij[2];  /* Index within aperture plane */
+  plm_long ap_idx;  /* Image index of aperture*/
+
+  plm_long rijk[3]; /* Index with rvol */
+
+  double cp_origin[3]; //intersection of clipping plane with ray
+  double seg_unit_ray[3]; //unit vector along ray
+  double seg_long_ray[3]; //unit vector along ray
+  double final_vec[3];  //final vector to target point
+  float final_index[3]; //index of final vector
+
+  //Trilinear interpoloation variables
+  plm_long ijk_floor[3];  //floor of rounded
+  plm_long ijk_round[3];  //ceiling of rounded
+  float li_1[3], li_2[3]; //upper/lower fractions
+  plm_long idx_floor;
+
+  //Interpolated seg_volume value
+  double interp_seg_value;
+
+  double current_depth; //current wed depth
+  double previous_depth; //previous wed depth
+  bool seq_check;  //boolean to confirm depths are sequential
+  double total_ray_wed; //running total of wed along ray within seg. volume
+
+  Ray_data *seg_ray;
+
+  std::vector<double> seg_wed_storage;  //vector containing all wed's
+  seg_wed_storage.resize(ires[0]*ires[1]-1);
+  double max_seg_depth = 0;  //maximum seg volume depth
+
+  for (aij[1] = 0; aij[1] < ires[1]; aij[1]++) {
+    for (aij[0] = 0; aij[0] < ires[0]; aij[0]++) {
+
+      ap_idx = aij[1] * ires[0] + aij[0];
+
+      seg_ray = &d_ptr->ray_data[ap_idx];
+      vec3_copy(cp_origin, seg_ray->cp);
+      vec3_copy(seg_unit_ray, seg_ray->ray);
+
+      //Set aperture grid to 0 background.
+      aperture_img[ap_idx] = 0.;
+      //Set segdepth background.
+      segdepth_img[ap_idx]= background;
+
+      rijk[0] = aij[0];
+      rijk[1] = aij[1];
+      rijk[2] = 0.;
+
+      //Reset ray variables.
+      current_depth = 0;
+      previous_depth = 0;
+      seq_check = false;
+      total_ray_wed = 0;
+
+      //Increment by 1 along each ray, getting the position at each point.
+      while (rijk[2] < rvol->dim[2]) {
+	
+	//Scale distance along ray to rijk depth
+	vec3_scale3(seg_long_ray, seg_unit_ray, rijk[2]);
+	vec3_add3(final_vec, cp_origin, seg_long_ray);
+		
+	final_index[0] = (final_vec[0]-seg_vol->offset[0])/seg_vol->spacing[0];
+	final_index[1] = (final_vec[1]-seg_vol->offset[1])/seg_vol->spacing[1];
+	final_index[2] = (final_vec[2]-seg_vol->offset[2])/seg_vol->spacing[2];
+
+	//Trilinear interpolate the seg_vol binary matrix to find value of point
+	li_clamp_3d (final_index, ijk_floor, ijk_round,li_1,li_2,seg_vol);
+	idx_floor = volume_index(seg_vol->dim, ijk_floor);
+	interp_seg_value = li_value(li_1[0], li_2[0],li_1[1], li_2[1],li_1[2], li_2[2],idx_floor,seg_img,seg_vol);
+
+	if (interp_seg_value < threshold)  {
+	  seq_check = false;	  
+	  rijk[2]++;
+	  continue;
+	}
+
+	//If point is within segmentation volume, set wed.
+	current_depth = lookup_rgdepth(this,aij,rijk[2]);
+
+	if (seq_check)  {
+	  total_ray_wed += (current_depth - previous_depth);
+	}
+
+	seq_check = true;
+	previous_depth = current_depth;
+	rijk[2]++;
+      }
+      //Total ray wed tabulated
+      seg_wed_storage[ap_idx] = total_ray_wed;
+
+    }
+  }
+  
+  //Get max wed
+  for (unsigned i=0; i!=seg_wed_storage.size(); ++i)  {
+    if (seg_wed_storage[i]>max_seg_depth)  {max_seg_depth = seg_wed_storage[i];}
+  }
+
+  //Assign final values to volumes
+  for (unsigned i=0; i!=seg_wed_storage.size(); ++i)  {
+  
+    //Assign aperture volume
+    if (seg_wed_storage[i]>0) {aperture_img[i] = 1.;}
+    else {aperture_img[i] = 0.;}
+
+    //Assign seg depth volume
+    segdepth_img[i] = max_seg_depth - seg_wed_storage[i];
+
+  }
+
 }
 
 Volume* 

@@ -23,7 +23,7 @@ Wed_Parms::Wed_Parms ()
 {
     this->debug = 0;
     this->group = 0;
-    this->wed_choice = false;
+    this->mode = 0;
     this->ray_step = 1.0f;
     this->input_ct_fn[0] = '\0';
     this->output_ct_fn[0] = '\0';
@@ -178,14 +178,20 @@ Wed_Parms::set_key_val (
             this->rpl_vol_fn = val;
         }
         //If normal wed procedure, input dose
-	if (!this->wed_choice)  {
+	if (this->mode==0)  {
 	  if (!strcmp (key, "dose")) {
 	    this->input_dose_fn = val;
 	  }
 	}
 	//If reverse wed procedure, input dose_wed
-	if (this->wed_choice)  {
+	if (this->mode==1)  {
 	  if (!strcmp (key, "dose_wed")) {
+	    this->input_dose_fn = val;
+	  }
+	}
+	//If in depth/segmentation mode, input segment
+	if (this->mode==2)  {
+	  if (!strcmp (key, "segment")) {
 	    this->input_dose_fn = val;
 	  }
 	}
@@ -195,7 +201,7 @@ Wed_Parms::set_key_val (
         /* [OUTPUT SETTINGS] */
     case 1:
         //If normal wed procedure, output patient_wed and dose_wed
-        if (!this->wed_choice)  {
+        if (this->mode==0)  {
 	  if (!strcmp (key, "patient_wed")) {
             strncpy (this->output_ct_fn, val, _MAX_PATH);
 	  }
@@ -204,11 +210,23 @@ Wed_Parms::set_key_val (
 	  }
 	}
 	//If reverse wed  procedure, output only dose
-        if (this->wed_choice)  {
+        if (this->mode==1)  {
 	  if (!strcmp (key, "dose")) {
             this->output_dose_fn = val;
 	  }
 	}
+
+	//If in depth/segmentation mode, output depth matrix
+        if (this->mode==2)  {
+	  if (!strcmp (key, "depth")) {
+            this->output_depth_fn = val;
+	  }
+	  else if (!strcmp (key, "aperture")) {
+            this->output_ap_fn = val;
+	  }
+	}
+
+
         break;
         /* [BEAM] */
     case 2:
@@ -405,7 +423,11 @@ Wed_Parms::parse_args (int argc, char** argv)
 	  }
         }
 	if (!strcmp (argv[i], "--dew")) {
-	  this->wed_choice = true;
+	  this->mode = 1;
+        }
+
+	if (!strcmp (argv[i], "--segdepth")) {
+	  this->mode = 2;
         }
 
         else {
@@ -435,24 +457,48 @@ Wed_Parms::parse_args (int argc, char** argv)
     scene->beam->dmax = 1.0;
 #endif
 
-    if (!this->wed_choice)  {//If doing a wed calculation, patient_wed is required
+    //Input CT always required
+    if (this->input_ct_fn[0] == '\0') {
+        fprintf (stderr, "\n** ERROR: Input patient image not specified in configuration file!\n");
+        return false;
+    }
+
+    //Input "dose" always required
+    if (this->input_dose_fn[0] == '\0') {
+        fprintf (stderr, "\n** ERROR: Input dose not specified in configuration file!\n");
+        return false;
+    }
+
+    //For wed mode, patient wed name is required.
+    if (this->mode==0)  {
       if (this->output_ct_fn[0] == '\0') {
         fprintf (stderr, "\n** ERROR: Output file for patient water equivalent depth volume not specified in configuration file!\n");
         return false;
       }
     }
 
-#if 0
-    if (this->output_dose_fn[0] == '\0') {
-        fprintf (stderr, "\n** ERROR: Output file for dose water equivalent depth volume not specified in configuration file!\n");
-        return false;
+    //For wed or dew mode, output dose name required.
+    if ((this->mode==0)||(this->mode==1))  {
+	if (this->output_dose_fn[0] == '\0') {
+	  fprintf (stderr, "\n** ERROR: Output file for dose volume not specified in configuration file!\n");
+	  return false;
+	}
     }
-#endif
 
-    if (this->input_ct_fn[0] == '\0') {
-        fprintf (stderr, "\n** ERROR: Input patient image not specified in configuration file!\n");
+   //For depth/segmentation  mode, aperture and depth volumes required.
+    if (this->mode==2)  {
+      if (this->output_depth_fn[0] == '\0') {
+        fprintf (stderr, "\n** ERROR: Output file for depths not specified in configuration file!\n");
         return false;
+      }
+
+      if (this->output_ap_fn[0] == '\0') {
+        fprintf (stderr, "\n** ERROR: Output file for aperture not specified in configuration file!\n");
+        return false;
+      }
     }
+
+
 
     return true;
 }

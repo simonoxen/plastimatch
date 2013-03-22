@@ -86,6 +86,40 @@ create_dew_volume (Wed_Parms* parms, Proton_Scene *scene)
     return new Volume (dew_dims, dew_off, dew_ps, NULL, PT_FLOAT, 1);
 }
 
+static Volume*
+create_segdepth_volume (Wed_Parms* parms, Proton_Scene *scene)
+{
+ 
+    Rpl_volume* rpl_vol = scene->rpl_vol;
+
+    float wed_off[3] = {0.0f, 0.0f, 0.0f};
+    float wed_ps[3] = {1.0f, 1.0f, 1.0f};
+
+    /* water equivalent depth volume has the same x,y dimensions as the rpl
+     * volume. Note: this means the wed x,y dimensions are equal to the
+     * aperture dimensions and the z-dimension is equal to the sampling
+     * resolution chosen for the rpl */
+    plm_long segdepth_dims[3];
+
+    Volume *vol = rpl_vol->get_volume ();
+    segdepth_dims[0] = vol->dim[0];
+    segdepth_dims[1] = vol->dim[1];
+    segdepth_dims[2] = 1;
+
+  
+    float segdepth_off[3];
+    segdepth_off[0] = 0;
+    segdepth_off[1] = 0;
+    segdepth_off[2] = 0;
+
+    float segdepth_ps[3];
+    segdepth_ps[0] = parms->ap_spacing[0];
+    segdepth_ps[1] = parms->ap_spacing[1];
+    segdepth_ps[2] = 1;
+
+    return new Volume (segdepth_dims, segdepth_off, segdepth_ps, NULL, PT_FLOAT, 1);
+}
+
 void
 wed_ct_compute (
     const char* out_fn,
@@ -98,7 +132,7 @@ wed_ct_compute (
 
   Rpl_volume* rpl_vol = scene->rpl_vol;
 
-    if (!parms->wed_choice)  {
+    if (parms->mode==0)  {
       Volume* wed_vol;
       
       wed_vol = create_wed_volume (parms, scene);
@@ -106,12 +140,23 @@ wed_ct_compute (
       plm_image_save_vol (out_fn, wed_vol);
     }
 
-    else  {
+    if (parms->mode==1)  {
       Volume* dew_vol;
       
       dew_vol = create_dew_volume (parms, scene);
       rpl_vol->compute_dew_volume (ct_vol->gpuit_float(), dew_vol, background);
       plm_image_save_vol (out_fn, dew_vol);
+    }
+
+    if (parms->mode==2)  {
+      Volume* aperture_vol;
+      Volume* segdepth_vol;
+      
+      aperture_vol = create_segdepth_volume (parms, scene);
+      segdepth_vol = create_segdepth_volume (parms, scene);
+      rpl_vol->compute_segdepth_volume (ct_vol->gpuit_float(), aperture_vol, segdepth_vol, background);
+      plm_image_save_vol (out_fn, segdepth_vol);
+      plm_image_save_vol (parms->output_ap_fn.c_str(), aperture_vol);
     }
 }
 
@@ -136,12 +181,10 @@ wed_ct_initialize(Wed_Parms *parms)
   
   printf("%s\n",parms->input_dose_fn.c_str());
  
-  if (parms->input_dose_fn != "" && parms->output_dose_fn != "") {
+  //  if (parms->input_dose_fn != "" && parms->output_dose_fn != "") {
     //Load the input dose, or input wed_dose
     dose_vol = plm_image_load (parms->input_dose_fn.c_str(), 
 			       PLM_IMG_TYPE_ITK_FLOAT);
-  }
-
   
   /* set scene parameters */
   scene.beam->set_source_position (parms->src);
@@ -160,7 +203,7 @@ wed_ct_initialize(Wed_Parms *parms)
   if (parms->have_ires) {scene.ap->set_dim (parms->ires);}
   //If dew option, and not specified in .cfg files, then we guess
   //at some scene dimensions set by input wed image.
-  if (parms->wed_choice)  {
+  if (parms->mode==1)  {
    if (!parms->have_ires)  {
       Volume *wed_vol = dose_vol->gpuit_float();
       //Grab aperture dimensions from input wed.
@@ -174,9 +217,11 @@ wed_ct_initialize(Wed_Parms *parms)
   }
 
   //Aperture Center
+  //Note - Center MUST be reset here if set in the config file, as set_dim()
+  //will reset the center.
   if (parms->have_ic) {scene.ap->set_center (parms->ic);}
   //And again, guess.
-  if (parms->wed_choice)  {
+  if (parms->mode==1)  {
     if (!parms->have_ic)  {
       //Set center as half the resolutions.
       ap_center[0] = (float) ap_res[0]/2.;
@@ -200,27 +245,38 @@ wed_ct_initialize(Wed_Parms *parms)
     scene.rpl_vol->save (parms->rpl_vol_fn);
   }
   
-  float background[2];
+  float background[3];
   //Background value for wed ct output
   background[0] = -1000.;
   //Background value for wed dose output
   background[1] = 0.;
+ //Background value for radiation length output
+  background[2] = 0.;
   
   printf ("Working...\n");
   fflush(stdout);
   
-  if (!parms->wed_choice)  {
+  if (parms->mode==0)  {
     printf ("Computing patient wed volume...\n");
     wed_ct_compute (parms->output_ct_fn, parms, ct_vol, &scene, background[0]);
     printf ("done.\n");
   }
   
   if (parms->input_dose_fn != "" && parms->output_dose_fn != "") {
-    printf ("Calculating dose...\n");
-    wed_ct_compute (parms->output_dose_fn.c_str(), 
-		    parms, dose_vol, &scene, background[1]);
+    if ((parms->mode==0)||(parms->mode==1))  {
+      printf ("Calculating dose...\n");
+      wed_ct_compute (parms->output_dose_fn.c_str(), 
+		      parms, dose_vol, &scene, background[1]);
+      printf ("Complete...\n");
+    }
+  }
+  if (parms->mode==2)  {
+    printf ("Calculating depths...\n");
+    wed_ct_compute (parms->output_depth_fn.c_str(), 
+		    parms, dose_vol, &scene, background[2]);
     printf ("Complete...\n");
   }
+
 
   return 0;
 }
