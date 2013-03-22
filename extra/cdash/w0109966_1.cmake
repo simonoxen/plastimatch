@@ -18,7 +18,7 @@ BUILD_SHARED_LIBS:BOOL=ON
 //The directory containing ITKConfig.cmake.  This is either the
 // root of the build tree, or PREFIX/lib/InsightToolkit for an
 // installation.
-ITK_DIR:PATH=C:/gcs6/build/vs2008/itk-3.20.0
+ITK_DIR:PATH=C:/gcs6/build/vs2008/itk-3.20.1
 
 //Build REG-2-3
 PLM_CONFIG_DISABLE_REG23:BOOL=ON
