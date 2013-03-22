@@ -19,6 +19,7 @@ include_directories (AFTER ${MSINTTYPES_INCLUDE_DIR})
 set (PLMCUDA_LIBRARY_SRC
   cuda_kernel_util.cu
   cuda_mem.cu
+  cuda_probe.cu
   cuda_util.cu
   )
 

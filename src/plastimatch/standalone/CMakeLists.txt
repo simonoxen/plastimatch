@@ -28,12 +28,7 @@ set (COMPUTE_DISTANCE_SRC
   )
 set (CUDA_PROBE_SRC
   cuda_probe_main.c
-  cuda_probe.h
   )
-if (CUDA_FOUND)
-  cuda_compile(CUDA_PROBE_WRAP cuda_probe.cu)
-  set (CUDA_PROBE_SRC ${CUDA_PROBE_SRC} ${CUDA_PROBE_WRAP})
-endif ()
 set (DEMONS_SRC
   demons_main.cxx 
   demons_opts.cxx
@@ -201,7 +196,7 @@ plm_add_executable (bragg_curve "${BRAGG_CURVE_SRC}"
 
 if (CUDA_FOUND)
   plm_add_executable (cuda_probe "${CUDA_PROBE_SRC}" 
-    "${CUDA_LIBRARIES}" "" 
+    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
 endif ()
 
