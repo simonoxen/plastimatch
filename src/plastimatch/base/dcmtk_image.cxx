@@ -67,8 +67,8 @@ dcmtk_save_slice (const Dicom_rt_study *drs, Dcmtk_slice_data *dsd)
     dcmtk_copy_from_metadata (dataset, image_metadata, DCM_StudyID, "10001");
     dataset->putAndInsertString (DCM_SeriesNumber, "303");
     dataset->putAndInsertString (DCM_InstanceNumber, "0");
-    /* GCS FIX: PatientOrientation */
-    dataset->putAndInsertString (DCM_PatientOrientation, "L/P");
+    /* DCM_PatientOrientation is not required.  */
+    // dataset->putAndInsertString (DCM_PatientOrientation, "L\\P");
     dataset->putAndInsertString (DCM_ImagePositionPatient, dsd->ipp);
     dataset->putAndInsertString (DCM_ImageOrientationPatient, dsd->iop);
     dataset->putAndInsertString (DCM_FrameOfReferenceUID, 
