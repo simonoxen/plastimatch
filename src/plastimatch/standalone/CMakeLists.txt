@@ -115,7 +115,7 @@ set (XF_TO_EMPIREFMT_SRC
 ##-----------------------------------------------------------------------------
 ##  BUILD TARGETS
 ##-----------------------------------------------------------------------------
-if (FULL_PLASTIMATCH_BUILD)
+if (ITK_FOUND)
   plm_add_executable (compute_distance "${COMPUTE_DISTANCE_SRC}" 
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})

@@ -64,15 +64,15 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  BUILD TARGETS
 ##-----------------------------------------------------------------------------
-if (FULL_PLASTIMATCH_BUILD)
-  if (QT4_FOUND)
-    set (CRYSTALVIEW_LIBRARIES ${PLASTIMATCH_LIBS} 
-      ${QT_LIBRARIES} ${QT_QTSQL_LIBRARIES})
-    plm_add_executable (cview "${CRYSTALVIEW_SRC}"
-      "${CRYSTALVIEW_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}"
-      ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-  endif ()
-  if (QT4_FOUND AND QT_QTSQL_FOUND)
+if (ITK_FOUND AND QT4_FOUND)
+  set (CRYSTALVIEW_LIBRARIES ${PLASTIMATCH_LIBS} 
+    ${QT_LIBRARIES} ${QT_QTSQL_LIBRARIES})
+  plm_add_executable (cview "${CRYSTALVIEW_SRC}"
+    "${CRYSTALVIEW_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}"
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+endif ()
+if (ITK_FOUND AND QT4_FOUND AND QT_QTSQL_FOUND)
+  if (PLM_CONFIG_ENABLE_PLASTIMATCH_QT)
     set (PLASTIMATCH_QT_LIBRARIES ${PLASTIMATCH_LIBS} 
       ${QT_LIBRARIES} ${QT_QTSQL_LIBRARIES})
     plm_add_executable (plastimatch_qt "${PLASTIMATCH_QT_SRC}"

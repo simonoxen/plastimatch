@@ -363,7 +363,10 @@ Plm_image::load_native_dicom (const char* fname)
 {
 #if PLM_CONFIG_PREFER_DCMTK
     /* GCS FIX: This should load using dcmtk! */
+#if defined (commentout)
     this->m_itk_short = itk_image_load_short (fname, 0);
+#endif
+kkk
 #else
     /* GCS FIX: We don't yet have a way of getting original pixel type 
 	for dicom.  Force SHORT */
