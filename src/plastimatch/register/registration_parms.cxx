@@ -161,7 +161,10 @@ Registration_parms::set_key_val (
         strncpy (this->vf_out_dir, val, _MAX_PATH);
         check_trailing_slash (this->vf_out_dir);
     }
-    else if (!strcmp (key, "xf_in") || !strcmp (key, "xform_in") || !strcmp (key, "vf_in")) {
+    else if (!strcmp (key, "xf_in") 
+        || !strcmp (key, "xform_in") 
+        || !strcmp (key, "vf_in"))
+    {
         if (section != 0) goto error_not_stages;
         strncpy (this->xf_in_fn, val, _MAX_PATH);
     }
@@ -805,6 +808,11 @@ Registration_parms::set_job_paths (void)
         } else {
             strcpy (this->img_out_fn, this->img_out_dir);
             strcat (this->img_out_fn, this->moving_jobs[this->job_idx]);
+        }
+        /* If not dicom, we give a default name */
+        if (this->img_out_fmt != IMG_OUT_FMT_DICOM) {
+            std::string fn = string_format ("%s.mha", this->img_out_fn);
+            strcpy (this->img_out_fn, fn.c_str());
         }
     } else {
         /* Output directory not specifed but img_out was... smart fallback*/
