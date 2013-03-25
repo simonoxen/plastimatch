@@ -1,3 +1,20 @@
+
+***** DICOM re-org 2013-03-24 *****
+
+Future plan:
+
+Dicom_rt_study
+  -> Various metadata
+  -> Dcmtk_rt_study
+    -> Backpointer to Dicom_rt_study
+    -> More metadata
+    -> Dcmtk_series (dose) // currently in dcmtk_loader
+    -> Dcmtk_series (rtss) // currently in dcmtk_loader
+    -> Dcmtk_series (img)  //??
+  -> cxt    // currently in dcmtk_loader
+  -> dose   // currently in dcmtk_loader
+  -> img    // currently in dcmtk_loader
+
 ***** MABS re-org *****
 
 Prep/training steps:

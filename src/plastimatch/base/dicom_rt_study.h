@@ -24,6 +24,9 @@ public:
     Dicom_rt_study ();
     ~Dicom_rt_study ();
 public:
+    void load (const char* dicom_path);
+    void save (const char* dicom_path);
+public:
     const char* get_ct_series_uid () const;
     void set_ct_series_uid (const char* uid);
     const char* get_dose_instance_uid () const;

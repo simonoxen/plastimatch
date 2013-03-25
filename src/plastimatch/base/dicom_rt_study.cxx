@@ -63,6 +63,16 @@ Dicom_rt_study::~Dicom_rt_study ()
     delete this->d_ptr;
 }
 
+void 
+Dicom_rt_study::load (const char* dicom_path)
+{
+}
+
+void 
+Dicom_rt_study::save (const char* dicom_path)
+{
+}
+
 const char*
 Dicom_rt_study::get_ct_series_uid () const
 {
