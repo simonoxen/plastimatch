@@ -8,7 +8,7 @@ FUNCTION STILL IN TESTING
 
 Author: Paolo Zaffino (p.zaffino@unicz.it)
 
-rev 6
+rev 7
 
 Required libraries:
 1) numpy (http://numpy.scipy.org)
@@ -20,27 +20,27 @@ NOT TESTED ON PYTHON 3
 USAGE EXAMPLES:
 
 import pypla_viewer as pv
-pv.show_img(input='foo.mha')
+pv.show_img(img_in='foo.mha')
 
 	OR
 
 import mha
 import pypla_viewer as pv
 foo_obj=mha.new(input_file='foo.mha')
-pv.show_img(input=foo_obj)
+pv.show_img(img_in=foo_obj)
 
 BRIEF INPUTS EXPLANATION:
 
-input = Input image, it can be a mha file or a mha object (from mha.py)
-slice = Slice number, default slice is the middle one
+img_in = Input image, it can be a mha file or a mha object (from mha.py)
+slice_n = Slice number, default slice is the middle one
 view = View, default is coronal, choices='a','c' or 's'
-overlay-image = Overlay image, it can be a mha file or a mha object (from mha.py)
-gain-overlay-image = Gain of overlay image
-image-trasparency = Image trasparency of the overlap image (0.0 transparent, 1.0 opaque)
-windowing = Windowing interval as "-100 100"
-windowing-overlay_img = Windowing interval for the overlay image
+overlay_img = Overlay image, it can be a mha file or a mha object (from mha.py)
+overlay_img_gain = Gain of overlay image
+overlay_img_trasparency = Image trasparency of the overlap image (0.0 transparent, 1.0 opaque)
+img_windowing = Windowing interval as "-100 100" (for the main image)
+overlay_img_windowing = Windowing interval for the overlay image
 vf = Input vector field in order to plot the phase map, it can be a mha file or a mha object (from mha.py)
-vf-trasparency = Vector field trasparency in overlap mode (0.0 transparent, 1.0 opaque)
+vf_trasparency = Vector field trasparency in overlap mode (0.0 transparent, 1.0 opaque)
 structure = Binary structure file name, it can be a mha file or a mha object (from mha.py)
 structure_color = Structure 1 color, default is 'red', choise='red','green','blue' or 'yellow'
 structure_alpha = Structure 1 alpha value, default is 1.0
@@ -59,6 +59,7 @@ screenshot_filename = file name where will be saved the screenshot
 ########################################################################
 
 
+from copy import deepcopy
 import matplotlib.cm as cm
 from matplotlib.pyplot import axis, gcf, hold, imshow, savefig, show
 import mha
@@ -71,8 +72,8 @@ import warnings
 
 warnings.filterwarnings(action='ignore', module='numpy')
 
-def show_img(input='', slice=None, view='c', overlay_image=None, gain_overlay_image=1, image_trasparency=0.5,
-windowing='', windowing_overlay_img='', vf=None, vf_trasparency=0.5, structure=None, structure_color='red',
+def show_img(img_in='', slice_n=None, view='c', overlay_img=None, overlay_img_gain=1, overlay_img_trasparency=0.5,
+img_windowing='', overlay_img_windowing='', vf=None, vf_trasparency=0.5, structure=None, structure_color='red',
 structure_alpha=1.0, structure2=None, structure2_color='blue', structure2_alpha=0.8, checkerboard=False,
 check_size=100, diff=False, colors=False, axes=False, screenshot_filename=None):
 	
@@ -82,12 +83,12 @@ check_size=100, diff=False, colors=False, axes=False, screenshot_filename=None):
 	
 	## Read the input image
 	
-	img=_scan_input(input)
+	img=_scan_input(img_in)
 	figure_info='Basic img'
 		
 	## Read the overlay image
-	if overlay_image != None:
-		img2=_scan_input(overlay_image)
+	if overlay_img != None:
+		img2=_scan_input(overlay_img)
 		_check_data_parameters(img, img2, 'overlay image')
 		figure_info+=' + overlay img'
 		
@@ -110,20 +111,20 @@ check_size=100, diff=False, colors=False, axes=False, screenshot_filename=None):
 		figure_info+=' + second stru'
 	
 	## Slice number settings
-	if slice == None and (view == 'c' or view == 's'):
+	if slice_n == None and (view == 'c' or view == 's'):
 		slice_number=np.rint(img.size[1]/2)
-	elif slice == None and view == 'a':
+	elif slice_n == None and view == 'a':
 		slice_number=np.rint(img.size[2]/2)
 	else:
-		slice_number=slice
+		slice_number=deepcopy(slice_n)
 	figure_info+= ' -- slice ' + str(int(slice_number))
 	
 	## View settings
 	if view == 'c':
-		slice=img.data[:,slice_number].T
+		slice_img=img.data[:,slice_number].T
 		pixel_ratio=img.spacing[2]/img.spacing[0]
-		if overlay_image != None:
-			slice2=img2.data[:,slice_number].T
+		if overlay_img != None:
+			slice2_img=img2.data[:,slice_number].T
 		if vf != None:
 			phase_vf=np.arctan(vf_data.data[:,slice_number,:,0], vf_data.data[:,slice_number,:,2]).T
 		if structure != None:
@@ -132,10 +133,10 @@ check_size=100, diff=False, colors=False, axes=False, screenshot_filename=None):
 			slice_stru2=stru2.data[:,slice_number].T
 		
 	elif view == 's':
-		slice=img.data[slice_number,:].T
+		slice_img=img.data[slice_number,:].T
 		pixel_ratio=img.spacing[2]/img.spacing[1]
-		if overlay_image != None:
-			slice2=img2.data[slice_number,:].T
+		if overlay_img != None:
+			slice2_img=img2.data[slice_number,:].T
 		if vf != None:
 			phase_vf=np.arctan(vf_data.data[slice_number,:,:,1], vf_data.data[slice_number,:,:,2]).T
 		if structure != None:
@@ -144,10 +145,10 @@ check_size=100, diff=False, colors=False, axes=False, screenshot_filename=None):
 			slice_stru2=stru2.data[slice_number,:].T
 		
 	elif view == 'a':
-		slice=np.rot90(img.data[:,:,slice_number],1)
+		slice_img=np.rot90(img.data[:,:,slice_number],1)
 		pixel_ratio=img.spacing[1]/img.spacing[0]
-		if overlay_image != None:
-			slice2=np.rot90(img2.data[:,:,slice_number],1)
+		if overlay_img != None:
+			slice2_img=np.rot90(img2.data[:,:,slice_number],1)
 		if vf != None:
 			phase_vf=np.rot90(np.arctan(vf_data.data[:,:,slice_number,0], vf_data.data[:,:,slice_number,1]), 1)
 		if structure != None:
@@ -164,10 +165,10 @@ check_size=100, diff=False, colors=False, axes=False, screenshot_filename=None):
 	if type(vf)==str:
 		del vf_data.data
 	
-	if type(input)==str:
+	if type(img_in)==str:
 		del img.data
 		
-	if type(overlay_image)==str:
+	if type(overlay_img)==str:
 		del img2.data
 		
 	if type(structure)==str:
@@ -177,13 +178,13 @@ check_size=100, diff=False, colors=False, axes=False, screenshot_filename=None):
 		del stru2.data
 	
 	## Windowing settings
-	if windowing != '':
-		windowing_low_value=int(windowing.split(' ')[0])
-		windowing_hi_value=int(windowing.split(' ')[1])
-		slice = _windowing_img(slice, windowing_low_value, windowing_hi_value)
+	if img_windowing != '':
+		windowing_low_value=int(img_windowing.split(' ')[0])
+		windowing_hi_value=int(img_windowing.split(' ')[1])
+		slice_img = _windowing_img(slice_img, windowing_low_value, windowing_hi_value)
 	
-	if windowing_overlay_img != '' and overlay_image != None:
-		slice2 = _windowing_img(slice2, windowing_low_value, windowing_hi_value)
+	if overlay_img_windowing != '' and overlay_img != None:
+		slice2_img = _windowing_img(slice2_img, windowing_low_value, windowing_hi_value)
 	
 	## Structure colormap
 	stru_colormap=_set_colormap(structure_color, 1)
@@ -193,33 +194,33 @@ check_size=100, diff=False, colors=False, axes=False, screenshot_filename=None):
 	
 	## Show options
 	if diff == False and checkerboard == False: ## NO options
-		imshow(slice, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
+		imshow(slice_img, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
 		
-		if colors == True and overlay_image != None and vf == None and checkerboard == False: ## Plus overlay images in color mode (NO checkerboard, NO vf)
-			imshow(slice2, aspect=pixel_ratio, origin='lower', alpha=image_trasparency)
+		if colors == True and overlay_img != None and vf == None and checkerboard == False: ## Plus overlay images in color mode (NO checkerboard, NO vf)
+			imshow(slice2_img, aspect=pixel_ratio, origin='lower', alpha=overlay_img_trasparency)
 			
-		elif colors == False and overlay_image == None and vf != None and checkerboard == False: ## Plus vector field
+		elif colors == False and overlay_img == None and vf != None and checkerboard == False: ## Plus vector field
 			imshow(phase_vf, aspect=pixel_ratio, origin='lower', alpha=vf_trasparency)
 
-	elif diff == False and colors == False and overlay_image != None and vf == None and checkerboard == False: ## Overlay images (NO checkerboard, NO color, NO vf)
-		slice_sum=np.add(np.multiply(slice2, gain_overlay_image), slice)
-		del slice, slice2
+	elif diff == False and colors == False and overlay_img != None and vf == None and checkerboard == False: ## Overlay images (NO checkerboard, NO color, NO vf)
+		slice_sum=np.add(np.multiply(slice2_img, overlay_img_gain), slice_img)
+		del slice_img, slice2_img
 		imshow(slice_sum, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
 
-	elif diff == True and colors == False and overlay_image != None and vf == None and checkerboard == False: ## Two images in diff mode
-		diff_slice=np.subtract(slice, np.multiply(slice2, gain_overlay_image))
-		del slice, slice2
+	elif diff == True and colors == False and overlay_img != None and vf == None and checkerboard == False: ## Two images in diff mode
+		diff_slice=np.subtract(slice_img, np.multiply(slice2_img, overlay_img_gain))
+		del slice_img, slice2_img
 		imshow(diff_slice, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
 	
-	elif diff == False and overlay_image != None and checkerboard == True: ## Overlay images in checkerboard mode		
-		slice, slice2 = _img_for_checkerboard(slice, slice2, check_size, pixel_ratio)
+	elif diff == False and overlay_img != None and checkerboard == True: ## Overlay images in checkerboard mode		
+		slice_img, slice2_img = _img_for_checkerboard(slice_img, slice2_img, check_size, pixel_ratio)
 		
 		if colors == True: ## Checkerboad color mode
-			imshow(slice, cmap=cm.get_cmap('bone'), aspect=pixel_ratio, origin='lower')
-			imshow(slice2, cmap=cm.get_cmap('reds'), aspect=pixel_ratio, origin='lower')
+			imshow(slice_img, cmap=cm.get_cmap('bone'), aspect=pixel_ratio, origin='lower')
+			imshow(slice2_img, cmap=cm.get_cmap('reds'), aspect=pixel_ratio, origin='lower')
 		elif colors == False: ## Checkerboad, NO color mode
-			imshow(slice, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
-			imshow(slice2, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
+			imshow(slice_img, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
+			imshow(slice2_img, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
 			if vf != None: ## Checkerboad, NO color mode + vf
 				imshow(phase_vf, aspect=pixel_ratio, origin='lower', alpha=vf_trasparency)
 	else:
@@ -301,7 +302,7 @@ def _windowing_img (img, low_threshold, hi_threshold):
 	return img
 
 
-def _img_for_checkerboard(slice, slice2, check_size, pixel_ratio):
+def _img_for_checkerboard(slice_img, slice2_img, check_size, pixel_ratio):
 
 	"""
 	This private function builds the two images for the checkerboard mode
@@ -309,8 +310,8 @@ def _img_for_checkerboard(slice, slice2, check_size, pixel_ratio):
 	
 	check_white=np.ones((np.rint(check_size/pixel_ratio), check_size))
 	check_black=np.zeros((np.rint(check_size/pixel_ratio), check_size))
-	check_number_x=slice.shape[1]/check_size
-	check_number_y=slice.shape[0]/np.rint(check_size/pixel_ratio)
+	check_number_x=slice_img.shape[1]/check_size
+	check_number_y=slice_img.shape[0]/np.rint(check_size/pixel_ratio)
 	
 	x=y=0
 	while x <= check_number_x:
@@ -333,18 +334,18 @@ def _img_for_checkerboard(slice, slice2, check_size, pixel_ratio):
 			checkerboard=np.concatenate((checkerboard, row_neg), axis=0)
 		y=y+2
 	
-	checkerboard=np.delete(checkerboard, np.s_[slice.shape[0]:checkerboard.shape[0]], axis=0)
-	checkerboard=np.delete(checkerboard, np.s_[slice.shape[1]:checkerboard.shape[1]], axis=1)
+	checkerboard=np.delete(checkerboard, np.s_[slice_img.shape[0]:checkerboard.shape[0]], axis=0)
+	checkerboard=np.delete(checkerboard, np.s_[slice_img.shape[1]:checkerboard.shape[1]], axis=1)
 	
 	checkerboard_neg=np.ones(checkerboard.shape)
 	checkerboard_neg=np.subtract(checkerboard_neg, checkerboard)
 	checkerboard=np.ma.masked_where(checkerboard == 0, checkerboard)
 	checkerboard_neg=np.ma.masked_where(checkerboard_neg == 0, checkerboard_neg)
 		
-	slice=np.multiply(slice, checkerboard)
-	slice2=np.multiply(slice2, checkerboard_neg)
+	slice_img=np.multiply(slice_img, checkerboard)
+	slice2_img=np.multiply(slice2_img, checkerboard_neg)
 	
-	return slice, slice2
+	return slice_img, slice2_img
 
 ########################################################################
 ######### Private utility function, NOT FOR PUBLIC USE - END - #########
