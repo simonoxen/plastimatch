@@ -77,9 +77,14 @@ set (ACQUIRE_4030E_SRC
   acquire_4030e_child.cxx acquire_4030e_child.h 
   acquire_4030e_parent.cxx acquire_4030e_parent.h
   acquire_4030e_window.cxx acquire_4030e_window.h
+  Acquire_4030e_DlgControl.cxx Acquire_4030e_DlgControl.h
   advantech.cxx advantech.h
   aqprintf.cxx aqprintf.h 
   dips_panel.cxx dips_panel.h
+  YK16GrayImage.cxx YK16GrayImage.h
+  ykqtutil.cxx ykqtutil.h
+  dlgprogbaryk.cxx dlgprogbaryk.h
+  dips_if.h
   kill.cxx kill.h
   varian_4030e.cxx varian_4030e.h 
   )
@@ -88,9 +93,13 @@ if (BUILD_ACQUIRE_4030E)
     acquire_4030e_child.h
     acquire_4030e_parent.h
     acquire_4030e_window.h
+    acquire_4030e_DlgControl.h
+    dlgprogbaryk.h
     )
   qt4_wrap_ui (ACQUIRE_4030E_SRC 
     acquire_4030e_window.ui
+    acquire_4030e_panel.ui
+    DlgProgress.ui
     )
   qt4_add_resources (ACQUIRE_4030E_SRC 
     acquire_4030e.qrc
@@ -168,6 +177,8 @@ if (BITFLOW_FOUND)
   link_directories (${BITFLOW_ROOT_DIR}/lib)
 endif ()
 
+set (ACQUIRE_4030E_LDFLAGS "/subsystem:windows /ENTRY:mainCRTStartup")
+
 link_directories ("${CMAKE_BINARY_DIR}/src/fatm")
 
 ##-----------------------------------------------------------------------------
@@ -215,7 +226,7 @@ set (ACQUIRE_4030E_LIBRARIES
 
 if (PAXSCAN_FOUND AND ADVANTECH_FOUND AND QT_FOUND)
   plm_add_executable (acquire_4030e "${ACQUIRE_4030E_SRC}" 
-    "${ACQUIRE_4030E_LIBRARIES}" "" 
+    "${ACQUIRE_4030E_LIBRARIES}" "${ACQUIRE_4030E_LDFLAGS}"
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
 
@@ -241,7 +252,7 @@ if (BITFLOW_FOUND)
   set (BITFLOW_TEST_SRC 
     bitflow.c bitflow.h
     bitflow_test.cxx
-    debug.c debug.h)
+    debug.cXX debug.h)
   plm_add_executable (bitflow_test "${BITFLOW_TEST_SRC}" 
     "${BITFLOW_LIBRARIES}" ""
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})

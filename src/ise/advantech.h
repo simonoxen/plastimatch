@@ -7,7 +7,16 @@
 #include "ise_config.h"
 #include <windows.h>
 
+
 class Advantech {
+
+public:
+	enum STATERETURN{
+		STATE_0 = 0,
+		STATE_1,
+		STATE_ERROR //2
+	};
+	
 public:
     Advantech ();
     ~Advantech ();
@@ -19,7 +28,7 @@ public:
     void relay_open (int bit);
     void relay_close (int bit);
     static void print_error (LRESULT ErrorCode);
-    bool read_bit (int bit);
+    int read_bit (int bit);
 };
 
 #endif

@@ -22,9 +22,6 @@
 // class QTextEdit;
 //QT_END_NAMESPACE
 
-class Frame;
-class Tracker;
-
 class Iqt_main_window : public QMainWindow, private Ui::iqtMainWindow {
     Q_OBJECT
     ;
@@ -33,40 +30,19 @@ public:
     Iqt_main_window ();
     ~Iqt_main_window ();
 
-    //virtual bool event (QEvent *event);
+   // void render_sphere ();
+
+    //Iqt_data_source_dialog *m_data_source_dialog;
+
+    //Iqt_patient_list_model *m_patient_list_model;
+
+    //Iqt_findscu m_findscu;
 
     QTimer *m_qtimer;
-    bool playing;
-    bool synth;
-    bool isTracking;
-    unsigned int width;
-    unsigned int height;
-    QString filename;
-//    Frame* f;
-    QSlider *framePos;
-    int numFiles;
-    int frameNum;
-    Frame* frameList[150];
-    Tracker *tracker;
+
 
 public slots:
-    void get_new_frame (int pos);
     void slot_load (void);
-    void show_fluoro (QString path);
-    void slot_save (void);
-    void slot_synth (void);
-    void slot_play (void);
-    void slot_pause (void);
-    void slot_stop (void);
-    void slot_go_back(void);
-    void slot_go_forward(void);
     void slot_timer (void);
-    void slot_reload_frame (void);
-    void slot_frame_ready (int width, int height);
-    void slot_set_tracking (bool clicked);
-    void trackPoint (double row, double col);
-
-signals:
-    void fluoro_ready (QString path);
 };
 #endif

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DlgProgressYK</class>
+ <widget class="QDialog" name="DlgProgressYK">
+  <property name="windowModality">
+   <enum>Qt::NonModal</enum>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>331</width>
+    <height>71</height>
+   </rect>
+  </property>
+  <property name="cursor">
+   <cursorShape>WaitCursor</cursorShape>
+  </property>
+  <property name="windowTitle">
+   <string>Progress Bar Dialog</string>
+  </property>
+  <property name="windowOpacity">
+   <double>1.000000000000000</double>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <widget class="QProgressBar" name="progBar">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>40</y>
+     <width>311</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="maximum">
+    <number>99</number>
+   </property>
+   <property name="value">
+    <number>0</number>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lbStatusText">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>10</y>
+     <width>261</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Waiting for completion...</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>progBar</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>DlgProgressYK</receiver>
+   <slot>FuncForProgressVal()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>289</x>
+     <y>51</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>357</x>
+     <y>41</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>FuncForProgressVal()</slot>
+ </slots>
+</ui>

@@ -40,7 +40,7 @@ Iqt_synth_settings::slot_proceed ()
     mark = markBox->value();
     fps = noiseBox->value();
 
-    mw->synth = true; //bool in main window so slot_stop checks if synth is running
+ //   mw->synth = true; //bool in main window so slot_stop checks if synth is running  //deleted by YK
     ise_app->set_synthetic_source (mw, rows, cols, ampl, mark, fps);
     this->close();
 }

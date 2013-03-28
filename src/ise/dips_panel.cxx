@@ -3,14 +3,14 @@
    ----------------------------------------------------------------------- */
 #include "ise_config.h"
 #define _USE_32BIT_TIME_T 1
+#include "dips_if.h"
+#include "dips_panel.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <windows.h>
 #include <io.h>
 #include "aqprintf.h"
-#include "dips_if.h"
-#include "dips_panel.h"
 
 #define FLUORO_MODE 0
 //#define HIRES_IMAGE_HEIGHT 1536
@@ -79,7 +79,7 @@ Dips_panel::open_panel (int panel_no, int height, int width)
     this->panelp->depth = 2;
     this->panelp->pixel = (short*) this->pixelp;
 
-    /* Initialize random mumber generator for dummy images */
+    /* Initialize random number generator for dummy images */
     srand ((unsigned) time(NULL));
 }
 
@@ -89,9 +89,12 @@ Dips_panel::wait_for_dips (void)
     int i = 0;
     while ((panelp->status & READ) == 0) {
         aqprintf ("Waiting for dips...\n");
+	//PrintCurrentTime();
+
         SleepEx (500, FALSE);
         if (++i > 4) {
             aqprintf ("Dips didn't read the last image?  Continuing...\n");
+	    //PrintCurrentTime();
             break;
         }
     }
@@ -102,6 +105,8 @@ Dips_panel::send_image (void)
 {
     /* Set timestamp */
     aqprintf ("Sending image to dips.\n");
+    //PrintCurrentTime();
+
     time (&panelp->time);
 
     /* Let DIPS know we have an image */
@@ -136,6 +141,7 @@ Dips_panel::poll_dummy (void)
 	    }
         }
 	aqprintf ("\"Captured\" image!\n");
+	////PrintCurrentTime();
 
 	/* Set timestamp */
 	time (&panelp->time);
@@ -144,6 +150,7 @@ Dips_panel::poll_dummy (void)
 	SleepEx (5000, FALSE);
 
 	aqprintf ("Hit any key to send another image to dips\n");
+	//PrintCurrentTime();
 	getchar ();
 
 	/* Let DIPS know we have an image */

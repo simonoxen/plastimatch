@@ -53,7 +53,8 @@ Tracker_thread::run ()
 	qDebug("Signal point: %d, %d",
 	       (int)this->best_row + 175,
 	       (int)this->best_col + 175);
-	this->tracker->mw->trackPoint ((this->best_row+175+5), (this->best_col+175+5));
+
+	//this->tracker->mw->trackPoint ((this->best_row+175+5), (this->best_col+175+5));//deleted by YK
 
 #if defined (commentout)
 	/* Save to File */

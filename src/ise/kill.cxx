@@ -18,7 +18,14 @@ kill_process (const char* process_name)
     BOOL rc;
     DWORD my_process_id;
 
-    /* Make sure it isn't my process id! */
+    /* Make sure it isn't my
+    process id! */
+
+	/*QMessageBox msg;
+	msg.setText("KillProcess");
+	msg.exec();*/
+
+
     my_process_id = GetCurrentProcessId ();
 
     snapshot = CreateToolhelp32Snapshot (TH32CS_SNAPPROCESS, 0);

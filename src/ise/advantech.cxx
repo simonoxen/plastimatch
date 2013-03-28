@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <windows.h>
 #include "advantech.h"
+#include "aqprintf.h"
 
 /* Card is Advantech PCI-1760U */
 /* USB box is Advantech USB-4761 */
@@ -28,18 +29,18 @@ Advantech::Advantech ()
     /* Find number of devices */
     rc = DRV_DeviceGetNumOfList(&num_devices);
     if (rc != SUCCESS) {
-	printf ("Error enumerating Advantech devices (1)\n");
+	aqprintf ("Error enumerating Advantech devices (1)\n");
 	Advantech::print_error (rc);
 	exit (-1);
     }
-    printf ("Advantech: %d devices found.\n", (int) num_devices);
+    aqprintf ("Advantech: %d devices found.\n", (int) num_devices);
 
     /* Retrieve device list */
     DEVLIST* device_list = (DEVLIST*) malloc (num_devices * sizeof(DEVLIST));
     SHORT num_out_entries;
     rc = DRV_DeviceGetList (device_list, num_devices, &num_out_entries);
     if (rc != SUCCESS) {
-	printf ("Error enumerating Advantech devices (2)\n");
+	aqprintf ("Error enumerating Advantech devices (2)\n");
 	Advantech::print_error (rc);
 	exit (-1);
     }
@@ -48,12 +49,12 @@ Advantech::Advantech ()
     for (int i = 0; i < num_devices; i++) {
 	std::string device_name = device_list[i].szDeviceName;
 	std::string usb_device_name ("USB-4761");
-	printf ("Advantech device %2d: %d, %s\n", 
+	aqprintf ("Advantech device %2d: %d, %s\n", 
 	    i, device_list[i].dwDeviceNum, device_list[i].szDeviceName);
 	if (!device_name.compare (0, usb_device_name.size(), usb_device_name))
 	{
 	    if (!this->have_device) {
-		printf ("  >> Trying to connect to USB-4761 at device %d\n", 
+		aqprintf ("  >> Trying to connect to USB-4761 at device %d\n", 
 		    device_list[i].dwDeviceNum);
 		this->have_device = true;
 		this->device_number = device_list[i].dwDeviceNum;
@@ -62,7 +63,7 @@ Advantech::Advantech ()
     }
 
     if (!this->have_device) {
-	printf ("Sorry, no USB device found\n");
+	aqprintf ("Sorry, no USB device found\n");
 	exit (-1);
     }
 
@@ -70,14 +71,14 @@ Advantech::Advantech ()
     rc = DRV_DeviceOpen (this->device_number, &this->driver_handle);
     if (rc != SUCCESS) {
 	this->have_device = false;
-	printf ("Error opening Advantech device\n");
+	aqprintf ("Error opening Advantech device\n");
 	Advantech::print_error (rc);
 	if (rc == 8193) {
-	    printf ("USB device not connected?\n");
+	    aqprintf ("USB device not connected?\n");
 	}
 	exit (-1);
     }
-    printf ("Connected to USB-4761.\n");
+    aqprintf ("Connected to USB-4761.\n");
 }
 
 Advantech::~Advantech ()
@@ -87,8 +88,7 @@ Advantech::~Advantech ()
     }
 }
 
-void 
-Advantech::relay_close (int bit)
+void Advantech::relay_close (int bit)
 {
     LRESULT rc;
     PT_DioWriteBit ptDioWriteBit;
@@ -111,23 +111,31 @@ Advantech::relay_open (int bit)
 	this->driver_handle, (LPT_DioWriteBit) &ptDioWriteBit);
 }
 
-bool
-Advantech::read_bit (int bit)
+//bool Advantech::read_bit (int bit)
+int Advantech::read_bit (int bit)
 {
+	int result;
+
     LRESULT rc;
     PT_DioReadBit ptDioReadBit;
     USHORT state = 0;
     ptDioReadBit.port  = 0;
     ptDioReadBit.bit   = bit;
     ptDioReadBit.state = &state;
+
     rc = DRV_DioReadBit (
 	this->driver_handle, (LPT_DioReadBit) &ptDioReadBit);
-    if (rc != SUCCESS) {
-	printf ("Error reading bit on Advantech device\n");
-	Advantech::print_error (rc);
-	exit (-1);
-    }
-    return (bool) state;
+
+	result = (int)state;
+
+    if (rc != SUCCESS)
+	{
+		aqprintf ("Error reading bit on Advantech device\n");
+		Advantech::print_error (rc);
+		result = STATE_ERROR;
+		//exit (-1);
+	}
+    return result;
 }
 
 void 
@@ -135,5 +143,5 @@ Advantech::print_error (LRESULT ErrorCode)
 {
     char error_msg[80];
     DRV_GetErrorMessage (ErrorCode, error_msg);
-    printf ("Error %d: %s\n", ErrorCode, error_msg);
+    aqprintf ("Error %d: %s\n", ErrorCode, error_msg);
 }

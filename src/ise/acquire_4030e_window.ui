@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>561</width>
+    <width>403</width>
     <height>502</height>
    </rect>
   </property>
@@ -18,7 +18,7 @@
     <item>
      <widget class="QGroupBox" name="groupBox">
       <property name="title">
-       <string>GroupBox</string>
+       <string>Panel Status</string>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
@@ -118,7 +118,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>561</width>
+     <width>403</width>
      <height>20</height>
     </rect>
    </property>
@@ -127,9 +127,26 @@
      <string>&amp;File</string>
     </property>
     <addaction name="action_Close"/>
-    <addaction name="action_Quit"/>
+    <addaction name="action_SafeQuit"/>
+    <addaction name="action_ForcedQuit"/>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="actionPanel_Controller_0"/>
+    <addaction name="actionPanel_Controller_1"/>
+   </widget>
+   <widget class="QMenu" name="menuTools">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+    <addaction name="action_RestartPanel_0"/>
+    <addaction name="action_RestartPanel_1"/>
    </widget>
    <addaction name="menu_File"/>
+   <addaction name="menuView"/>
+   <addaction name="menuTools"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="action_Close">
@@ -137,16 +154,41 @@
     <string>&amp;Close</string>
    </property>
   </action>
-  <action name="action_Quit">
+  <action name="action_SafeQuit">
+   <property name="text">
+    <string>&amp;SafeQuit</string>
+   </property>
+  </action>
+  <action name="actionPanel_Controller_0">
+   <property name="text">
+    <string>Panel Controller 0</string>
+   </property>
+  </action>
+  <action name="actionPanel_Controller_1">
+   <property name="text">
+    <string>Panel Controller 1</string>
+   </property>
+  </action>
+  <action name="action_ForcedQuit">
    <property name="text">
     <string>&amp;Quit</string>
+   </property>
+  </action>
+  <action name="action_RestartPanel_0">
+   <property name="text">
+    <string>Restart Panel 0</string>
+   </property>
+  </action>
+  <action name="action_RestartPanel_1">
+   <property name="text">
+    <string>Restart Panel 1</string>
    </property>
   </action>
  </widget>
  <resources/>
  <connections>
   <connection>
-   <sender>action_Quit</sender>
+   <sender>action_SafeQuit</sender>
    <signal>triggered()</signal>
    <receiver>ui_acquire_4030e_window</receiver>
    <slot>request_quit()</slot>
@@ -184,8 +226,8 @@
    <slot>hide()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>507</x>
-     <y>471</y>
+     <x>392</x>
+     <y>473</y>
     </hint>
     <hint type="destinationlabel">
      <x>280</x>
@@ -193,8 +235,93 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionPanel_Controller_0</sender>
+   <signal>triggered()</signal>
+   <receiver>ui_acquire_4030e_window</receiver>
+   <slot>ShowPanelControl_0()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>440</x>
+     <y>48</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionPanel_Controller_1</sender>
+   <signal>triggered()</signal>
+   <receiver>ui_acquire_4030e_window</receiver>
+   <slot>ShowPanelControl_1()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>201</x>
+     <y>250</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_RestartPanel_0</sender>
+   <signal>triggered()</signal>
+   <receiver>ui_acquire_4030e_window</receiver>
+   <slot>RestartPanel_0()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>201</x>
+     <y>250</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_RestartPanel_1</sender>
+   <signal>triggered()</signal>
+   <receiver>ui_acquire_4030e_window</receiver>
+   <slot>RestartPanel_1()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>201</x>
+     <y>250</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_ForcedQuit</sender>
+   <signal>triggered()</signal>
+   <receiver>ui_acquire_4030e_window</receiver>
+   <slot>FinalQuit()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>201</x>
+     <y>250</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>request_quit()</slot>
+  <slot>ShowPanelControl_0()</slot>
+  <slot>ShowPanelControl_1()</slot>
+  <slot>RestartPanel_0()</slot>
+  <slot>RestartPanel_1()</slot>
+  <slot>FinalQuit()</slot>
  </slots>
 </ui>
