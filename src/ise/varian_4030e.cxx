@@ -386,10 +386,13 @@ Varian_4030e::get_image_to_file (int xSize, int ySize,
 			//get a mean value for m_pGainImage
 			double sum = 0.0;
 			double MeanVal = 0.0; 
+
 			for (int i = 0; i < xSize * ySize; i++) {
 				sum = sum + (m_pParent->m_pGainImage->m_pData[i] - m_pParent->m_pDarkImage->m_pData[i]);		
 			}
 			MeanVal = sum/(double)(xSize*ySize);
+
+			aqprintf("YK: Mean value of denometer is %3.4f",MeanVal);
 
 			double denom = 0.0;
 			for (int i = 0; i < xSize * ySize; i++)
@@ -411,7 +414,7 @@ Varian_4030e::get_image_to_file (int xSize, int ySize,
 					if (tmpVal < 0)
 						pImageCorr[i] = 0;
 					else
-						pImageCorr[i] = (USHORT)tmpVal;		    					    
+						pImageCorr[i] = (USHORT)tmpVal;
 				}		    
 			}//end of for
 		}//end if not bRawImage
@@ -459,6 +462,12 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 	USHORT *image_ptr = (USHORT *)malloc(npixels * sizeof(USHORT));
 	result = vip_get_image(mode_num, VIP_CURRENT_IMAGE, xSize, ySize, image_ptr);
 	//now raw image from panel
+
+	if (result != HCP_NO_ERR)
+	{		
+		aqprintf("*** vip_get_image returned error %d\n", result);		
+		return HCP_NO_ERR;
+	}
 
 	if (m_bDarkCorrApply)
 		aqprintf("Dark Correction On\n");
@@ -525,8 +534,9 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 	}
 
 	else if (m_bDarkCorrApply && m_bGainCorrApply)
-	{
-		//aqprintf("Dark and gain correction\n");
+	{		
+		aqprintf("Dark and gain correction\n");
+
 		bool bRawImage = false;
 		if (m_pParent->m_pDarkImage->IsEmpty())
 		{
@@ -546,7 +556,9 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 			}
 		}
 		else
-		{	    
+		{	
+
+
 			//get a mean value for m_pGainImage
 			double sum = 0.0;
 			double MeanVal = 0.0; 
@@ -554,18 +566,33 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 				sum = sum + (m_pParent->m_pGainImage->m_pData[i] - m_pParent->m_pDarkImage->m_pData[i]);		
 			}
 			MeanVal = sum/(double)(xSize*ySize);
-
 			double denom = 0.0;
+
+			int iDenomLessZero = 0;
+			int iDenomLessZero_RawIsGreaterThanDark = 0;
+			int iDenomLessZero_RawIsSmallerThanDark = 0;			
+			int iDenomOK_RawValueMinus = 0;
+			int iValOutOfRange = 0;
+
+
 			for (int i = 0; i < xSize * ySize; i++)
 			{
 				denom = (double)(m_pParent->m_pGainImage->m_pData[i] - m_pParent->m_pDarkImage->m_pData[i]);
 
 				if (denom <= 0)
 				{
+					iDenomLessZero++;
+
 					if (image_ptr[i] > m_pParent->m_pDarkImage->m_pData[i])
+					{
 						pImageCorr[i] = image_ptr[i] - m_pParent->m_pDarkImage->m_pData[i];
+						iDenomLessZero_RawIsGreaterThanDark++;
+					}
 					else
+					{
 						pImageCorr[i] = 0;
+						iDenomLessZero_RawIsSmallerThanDark++;
+					}
 				}		    
 				else
 				{
@@ -573,11 +600,23 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 					tmpVal = (image_ptr[i] - m_pParent->m_pDarkImage->m_pData[i]) / denom * MeanVal;
 
 					if (tmpVal < 0)
+					{
 						pImageCorr[i] = 0;
+						iDenomOK_RawValueMinus;
+					}
 					else
+					{
+						if (tmpVal < 0 || tmpVal > 16383)
+							iValOutOfRange++;
+
 						pImageCorr[i] = (USHORT)tmpVal;		    					    
+					}
 				}		    
 			}//end of for
+
+			aqprintf("MeanVal: %3.5f, iDenomLessZero: %d, iDenomLessZero_RawIsGreaterThanDark: %d, iDenomLessZero_RawIsSmallerThanDark: %d, iDenomOK_RawValueMinus: %d, iValOutOfRange: %d"
+					, MeanVal, iDenomLessZero, iDenomLessZero_RawIsGreaterThanDark, iDenomLessZero_RawIsSmallerThanDark, iDenomOK_RawValueMinus, iValOutOfRange);
+
 		}//end if not bRawImage
 	} // else if (m_bDarkCorrApply && m_bGainCorrApply)
 
@@ -618,6 +657,36 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 	free(pImageCorr);
 
 	return HCP_NO_ERR;
+}
+
+bool Varian_4030e::CopyFromBufAndSendToDips (Dips_panel *dp) //get cur image to curImage
+{
+	if (m_pParent->m_pCurrImage == NULL)
+	{
+		aqprintf("Cur image not created\n");
+		return false;
+	}
+
+	if (m_pParent->m_pCurrImage->IsEmpty())
+	{
+		aqprintf("No buffer image to send\n");
+		return false;
+	}
+	if (dp->width != m_pParent->m_pCurrImage->m_iWidth || dp->height != m_pParent->m_pCurrImage->m_iHeight)
+	{
+		aqprintf("Image size is not matched!\n");
+		return false;
+	}
+	
+	dp->wait_for_dips ();
+
+	int npixels = m_pParent->m_pCurrImage->m_iWidth * m_pParent->m_pCurrImage->m_iHeight;
+	for (int i = 0  ; i<npixels ; i++)
+		dp->pixelp[i] = m_pParent->m_pCurrImage->m_pData[i];		
+
+	dp->send_image (); //Sending IMage to dips message sent
+
+	return true;
 }
 
 
@@ -1075,7 +1144,7 @@ Varian_4030e::get_image_to_dips (Dips_panel *dp, int xSize, int ySize)
 	//aqprintf("mode number is %d",mode_num);
 
 	if (result == HCP_NO_ERR) {
-		ShowImageStatistics(npixels, image_ptr);
+		ShowImageStatistics(npixels, image_ptr); //raw image
 	} else {
 		aqprintf("*** vip_get_image returned error %d\n", result);
 		//	PrintCurrentTime();
@@ -1199,7 +1268,7 @@ Varian_4030e::get_image_to_dips (Dips_panel *dp, int xSize, int ySize)
 
 	//YKFUTURE defect map applying
 
-	dp->send_image ();
+	dp->send_image (); //Sending IMage to dips message sent
 	free(image_ptr);
 	//YK: added
 	//this->vip_mutex.unlock();    

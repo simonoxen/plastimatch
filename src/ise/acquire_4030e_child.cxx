@@ -680,9 +680,12 @@ bool Acquire_4030e_child::SWSingleAcquisition(UQueryProgInfo& crntStatus)
 	//aqprintf(str.toLocal8Bit().constData());
 	if (result == HCP_NO_ERR)
 	{		
-		result = vp->get_image_to_dips (dp, vp->m_iSizeX, vp->m_iSizeY);
+		//result = vp->get_image_to_dips (dp, vp->m_iSizeX, vp->m_iSizeY);
 		//result = vp->get_image_to_file(vp->m_iSizeX, vp->m_iSizeY, (char*)(strFileName.toLocal8Bit().constData()),VIP_CURRENT_IMAGE);		
 		result = vp->get_image_to_buf(vp->m_iSizeX, vp->m_iSizeY); //fill Curr Image
+
+		vp->CopyFromBufAndSendToDips(dp);
+			
 
 		//Display on the screen
 		m_pCurrImage->FillPixMap(m_iCurWinMidVal, m_iCurWinWidthVal);
@@ -1157,13 +1160,16 @@ bool Acquire_4030e_child::PC_GetImageHardware()
 		{			
 			Sleep(200);
 			//HCP_NO_IMAGE_ERR,	//128 ¹ß»ý
-			result = vp->get_image_to_dips (dp, m_pModeInfo->ColsPerFrame,m_pModeInfo->LinesPerFrame);
-			if (result != HCP_NO_ERR){
+			//result = vp->get_image_to_dips (dp, m_pModeInfo->ColsPerFrame,m_pModeInfo->LinesPerFrame);		
+
+			/*if (result != HCP_NO_ERR){
 				errorStr = QString ("Error in sending image to dips. Error code is %1..Anyway, going to next step\n").arg(result);
 				aqprintf(errorStr.toLocal8Bit().constData());
-			}			
+			}			*/
 
 			result = vp->get_image_to_buf(m_pModeInfo->ColsPerFrame,m_pModeInfo->LinesPerFrame); //fill m_pCurrImage
+			vp->CopyFromBufAndSendToDips(dp);
+
 			if (result != HCP_NO_ERR){
 				errorStr = QString ("Error in sending image to currentImageBuffer. Error code is %1..Anyway, going to next step\n").arg(result);
 				aqprintf(errorStr.toLocal8Bit().constData());

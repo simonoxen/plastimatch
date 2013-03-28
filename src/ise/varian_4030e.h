@@ -43,6 +43,13 @@ public:
 
 	int get_image_to_buf (int xSize, int ySize);
     int get_image_to_dips (Dips_panel *dp, int xSize, int ySize);
+
+
+	bool CopyFromBufAndSendToDips (Dips_panel *dp); //get cur image to curImage
+
+
+
+
     int disable_missing_corrections (int result);
 
 public:
