@@ -507,8 +507,8 @@ bool Varian_4030e::SameImageExist(IMGINFO& curInfo, int& sameImgIndex)
 	for (it = m_vImageInfo.begin() ; it != m_vImageInfo.end() ; it++)
 	{		
 		compInfo = (*it);
-		if (fabs(curInfo.meanVal - compInfo.meanVal) < 1 && 
-			fabs(curInfo.SD - compInfo.SD) < 1)
+		if (fabs(curInfo.meanVal - compInfo.meanVal) < 0.001 && 
+			fabs(curInfo.SD - compInfo.SD) < 0.001)
 		{
 			result = true;
 			sameImgIndex = order;
@@ -526,8 +526,9 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 
 	USHORT *image_ptr = (USHORT *)malloc(npixels * sizeof(USHORT));
 	result = vip_get_image(mode_num, VIP_CURRENT_IMAGE, xSize, ySize, image_ptr);
+
 	//now raw image from panel
-	QMessageBox msgBox;
+	//QMessageBox msgBox;
 	
 	double tmpMean = 0.0;
 	double tmpSD = 0.0;
@@ -545,9 +546,9 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 	int sameImageIndex = -1;
 	if (SameImageExist(tmpInfo, sameImageIndex))
 	{
-		QString str = QString("Same image error found in image[%1]! RETAKE the image or call the physicist").arg(sameImageIndex);
-		msgBox.setText(str);	
-		msgBox.exec();
+		//QString str = QString("Same image error found in image[%1]! RETAKE the image or call the physicist").arg(sameImageIndex);
+		//msgBox.setText(str);	
+		//msgBox.exec(); //sometimes kills child process.. don't know why
 		aqprintf("******SAME_IMAGE_ERROR!! prevImgNum [%d]\n", sameImageIndex);
 	}
 	m_vImageInfo.push_back(tmpInfo);

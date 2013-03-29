@@ -1016,6 +1016,7 @@ bool Acquire_4030e_child::PC_ActivatePanel()
 	int result = HCP_NO_ERR;
 
 	result = vip_enable_sw_handshaking (FALSE); //mandatory code	
+	Sleep(500);
 
 	if (result != HCP_NO_ERR)
 	{
@@ -1028,6 +1029,7 @@ bool Acquire_4030e_child::PC_ActivatePanel()
 	
 	vp->vip_mutex.lock ();
 	vip_select_receptor (vp->receptor_no);
+	Sleep(500);
 	result = vip_io_enable (HS_ACTIVE);
 	vp->vip_mutex.unlock ();	
 
@@ -1068,7 +1070,7 @@ bool Acquire_4030e_child::PC_WaitForPanelReady()
 		m_enPanelStatus = OPENNED; //Go back to first step
 		
 	}
-	else if (m_timeOutCnt > 2000) //Time_out
+	else if (m_timeOutCnt > 5000) //Time_out //5000 is fixed! Optimized value
 	{
 		aqprintf("*** TIMEOUT ***_wait_on_ready_for_pulse\n"); //just retry
 		
@@ -1238,7 +1240,7 @@ bool Acquire_4030e_child::PC_WaitForComplete()//vp->wait_on_complete
 
 	QString errorStr;
 	int result = HCP_NO_ERR;
-	m_pCrntStatus->qpi.Complete = FALSE;	
+	m_pCrntStatus->qpi.Complete = FALSE;
 
 	m_timeOutCnt += TIMEOUT_MAINLOOP;
 	result = vp->query_prog_info (*m_pCrntStatus); // YK: Everytime, No data error 8
@@ -1303,7 +1305,7 @@ bool Acquire_4030e_child::PC_WaitForStanby() //also can be used for SW acquisiti
 		//vip_io_enable(HS_STANDBY); // Let's try without this (directly go to PANEL_ACTIVE)
 		return false;
 	}
-	else if (m_timeOutCnt > 10000) //Time_out
+	else if (m_timeOutCnt > 5000) //Time_out
 	{
 		aqprintf("*** TIMEOUT ***Restanby failed! \n"); //just retry
 		m_timeOutCnt = 0;
