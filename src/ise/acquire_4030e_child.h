@@ -25,7 +25,8 @@ class Varian_4030e;
 class Acquire_4030e_DlgControl;
 
 class YK16GrayImage;
-class DlgProgBarYK;
+//class DlgProgBarYK;
+class QProgressDialog;
 
 union UQueryProgInfo;
 struct SModeInfo;
@@ -136,11 +137,14 @@ public:
 	bool PC_WaitForPulse();
 	bool PC_GetImageHardware();
 	bool PC_WaitForComplete();
-	bool PC_ReStandbyPanel();
+	//bool PC_ReStandbyPanel();
+	bool PC_WaitForStanby();
 
 
 	bool PC_SoftwareAcquisition_SingleShot(); //should be done at READY_FOR_PULSE
 	bool PC_DarkFieldAcquisition_SingleShot(int avgFrames); //should be done at READY_FOR_PULSE
+
+	bool GetGainImageFromCurrent();
 
 	int m_iNumOfFramesRequested;// = 1 default
 	Acquire_4030e_DlgControl *m_dlgControl;
@@ -148,7 +152,10 @@ public:
 	void ReDraw(int lowerWinVal, int upperWinVal);//current image only
 	int m_iCurWinMidVal, m_iCurWinWidthVal; //window level of current image
 
-	DlgProgBarYK* m_dlgProgBar;	
+	//DlgProgBarYK* m_dlgProgBar;	
+	QProgressDialog* m_dlgProgBar;	
+
+	
 
 };
 

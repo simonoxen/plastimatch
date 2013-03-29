@@ -28,7 +28,8 @@ public slots:
 	void OpenDarkImage();
 	void OpenGainImage(); //Btn
 	void OpenCurImgFolder();
-	void ReDrawImg();	
+	void ReDrawImg();
+	void CopyCurrentImageForGainImage();
 
 public:
     Acquire_4030e_DlgControl();

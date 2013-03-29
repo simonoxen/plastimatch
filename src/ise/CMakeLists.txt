@@ -83,7 +83,6 @@ set (ACQUIRE_4030E_SRC
   dips_panel.cxx dips_panel.h
   YK16GrayImage.cxx YK16GrayImage.h
   ykqtutil.cxx ykqtutil.h
-  dlgprogbaryk.cxx dlgprogbaryk.h
   dips_if.h
   kill.cxx kill.h
   varian_4030e.cxx varian_4030e.h 
@@ -94,12 +93,10 @@ if (BUILD_ACQUIRE_4030E)
     acquire_4030e_parent.h
     acquire_4030e_window.h
     acquire_4030e_DlgControl.h
-    dlgprogbaryk.h
     )
   qt4_wrap_ui (ACQUIRE_4030E_SRC 
     acquire_4030e_window.ui
     acquire_4030e_panel.ui
-    DlgProgress.ui
     )
   qt4_add_resources (ACQUIRE_4030E_SRC 
     acquire_4030e.qrc

@@ -17,6 +17,8 @@ See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 #include "dips_panel.h"
 #include "varian_4030e.h"
 #include "YK16GrayImage.h"
+#include <fstream>
+#include <QMessageBox>
 
 /* This mutex is a class static variable */
 QMutex Varian_4030e::vip_mutex;
@@ -252,7 +254,7 @@ void ShowImageStatistics(int npixels, USHORT *image_ptr)
 
 	nTotal = 0;
 	//minPixel = 4095;
-	minPixel = 16383;
+	minPixel = 65535;
 	maxPixel = 0;
 
 	sumPixel = 0.0;
@@ -451,22 +453,109 @@ Varian_4030e::get_image_to_file (int xSize, int ySize,
 
 	return HCP_NO_ERR;
 }
+void Varian_4030e::CalcImageInfo (double& meanVal, double& STDV, double& minVal, double& maxVal, 
+								  int sizeX, int sizeY, USHORT* pImg) //all of the images taken before will be inspected
+{
+	int nTotal;
+	long minPixel, maxPixel;
+	int i;
+	double pixel, sumPixel;
 
+	int npixels = sizeX*sizeY;
+	nTotal = 0;
+	//minPixel = 4095;
+	minPixel = 65535;
+	maxPixel = 0;
+	sumPixel = 0.0;
+
+	for (i = 0; i < npixels; i++)
+	{
+		pixel = (double) pImg[i];
+		sumPixel += pixel;
+		if (pImg[i] > maxPixel)
+			maxPixel = pImg[i];
+		if (pImg[i] < minPixel)
+			minPixel = pImg[i];
+		nTotal++;
+	}
+
+	double meanPixelval = sumPixel / (double)nTotal;    
+
+	double sqrSum = 0.0;
+	for (i = 0; i < npixels; i++)
+	{
+		sqrSum = sqrSum + pow(((double)pImg[i] - meanPixelval),2.0);
+	}
+	double SD = sqrt(sqrSum/(double)nTotal);
+
+	meanVal = meanPixelval;
+	STDV = SD;
+	minVal = minPixel;
+	minVal = maxPixel;
+	return;
+}
+
+bool Varian_4030e::SameImageExist(IMGINFO& curInfo, int& sameImgIndex)
+{
+	bool result = false;
+
+	std::vector<IMGINFO>::iterator it;
+
+	IMGINFO compInfo;
+	//SD and AVG
+	int order = 0;
+	for (it = m_vImageInfo.begin() ; it != m_vImageInfo.end() ; it++)
+	{		
+		compInfo = (*it);
+		if (fabs(curInfo.meanVal - compInfo.meanVal) < 1 && 
+			fabs(curInfo.SD - compInfo.SD) < 1)
+		{
+			result = true;
+			sameImgIndex = order;
+			return result;
+		}		
+		order++;
+	}
+	return result;
+}
 int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to curImage
 {
 	int result;
 	int mode_num = this->current_mode;
-
 	int npixels = xSize * ySize;
 
 	USHORT *image_ptr = (USHORT *)malloc(npixels * sizeof(USHORT));
 	result = vip_get_image(mode_num, VIP_CURRENT_IMAGE, xSize, ySize, image_ptr);
 	//now raw image from panel
+	QMessageBox msgBox;
+	
+	double tmpMean = 0.0;
+	double tmpSD = 0.0;
+	double tmpMin = 0.0;
+	double tmpMax = 0.0;
+	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
 
+	IMGINFO tmpInfo;
+	tmpInfo.meanVal = tmpMean;
+	tmpInfo.SD = tmpSD;
+	tmpInfo.minVal = tmpMin;
+	tmpInfo.maxVal = tmpMax;
+	aqprintf("IMG_INSPECTION(Mean|SD|MIN|MAX): %3.2f | %3.2f | %d | %d\n", tmpInfo.meanVal, tmpInfo.SD, tmpInfo.minVal, tmpInfo.maxVal);
+
+	int sameImageIndex = -1;
+	if (SameImageExist(tmpInfo, sameImageIndex))
+	{
+		QString str = QString("Same image error found in image[%1]! RETAKE the image or call the physicist").arg(sameImageIndex);
+		msgBox.setText(str);	
+		msgBox.exec();
+		aqprintf("******SAME_IMAGE_ERROR!! prevImgNum [%d]\n", sameImageIndex);
+	}
+	m_vImageInfo.push_back(tmpInfo);
+	
 	if (result != HCP_NO_ERR)
 	{		
 		aqprintf("*** vip_get_image returned error %d\n", result);		
-		return HCP_NO_ERR;
+		//return HCP_NO_ERR;
 	}
 
 	if (m_bDarkCorrApply)
@@ -555,10 +644,8 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 				pImageCorr[i] = image_ptr[i]; //raw image
 			}
 		}
-		else
-		{	
-
-
+		else //if not raw image
+		{
 			//get a mean value for m_pGainImage
 			double sum = 0.0;
 			double MeanVal = 0.0; 
@@ -566,14 +653,13 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 				sum = sum + (m_pParent->m_pGainImage->m_pData[i] - m_pParent->m_pDarkImage->m_pData[i]);		
 			}
 			MeanVal = sum/(double)(xSize*ySize);
-			double denom = 0.0;
 
+			double denom = 0.0;
 			int iDenomLessZero = 0;
 			int iDenomLessZero_RawIsGreaterThanDark = 0;
 			int iDenomLessZero_RawIsSmallerThanDark = 0;			
 			int iDenomOK_RawValueMinus = 0;
 			int iValOutOfRange = 0;
-
 
 			for (int i = 0; i < xSize * ySize; i++)
 			{
@@ -602,11 +688,11 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 					if (tmpVal < 0)
 					{
 						pImageCorr[i] = 0;
-						iDenomOK_RawValueMinus;
+						iDenomOK_RawValueMinus++;
 					}
 					else
 					{
-						if (tmpVal < 0 || tmpVal > 16383)
+						if (tmpVal > 65535) //16bit max value
 							iValOutOfRange++;
 
 						pImageCorr[i] = (USHORT)tmpVal;		    					    
@@ -614,9 +700,28 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 				}		    
 			}//end of for
 
-			aqprintf("MeanVal: %3.5f, iDenomLessZero: %d, iDenomLessZero_RawIsGreaterThanDark: %d, iDenomLessZero_RawIsSmallerThanDark: %d, iDenomOK_RawValueMinus: %d, iValOutOfRange: %d"
+			//YKTEMP: test code for audit			
+			aqprintf("MeanVal: %3.5f, iDenomLessZero: %d, iDenomLessZero_RawIsGreaterThanDark: %d, iDenomLessZero_RawIsSmallerThanDark: %d, iDenomOK_RawValueMinus: %d, iValOutOf14bit: %d"
 					, MeanVal, iDenomLessZero, iDenomLessZero_RawIsGreaterThanDark, iDenomLessZero_RawIsSmallerThanDark, iDenomOK_RawValueMinus, iValOutOfRange);
+			
+			//std::ofstream fout;
+			//fout.open("C:\\GainCorrAudit.txt");	
 
+			//		
+			//for (int i = (int)(ySize/2.0); i < (int)(ySize/2.0)+3; i++) //n, n+1, n+2
+			//{
+			//	fout << "RowNum	" << i << std::endl;
+			//	fout << "RawImage" <<"	" << "BackgroundImage" << "	" << "GainImage" <<	"	" << "CorrImage" <<	std::endl;
+
+			//	for (int j= 0 ; j < xSize ; j++)
+			//	{
+			//		int idx = xSize*i+j;
+			//		fout << image_ptr[idx] << "	" << m_pParent->m_pDarkImage->m_pData[idx] << "	"
+			//			<< m_pParent->m_pGainImage->m_pData[idx] << "	" << pImageCorr[xSize*i+j] << std::endl;
+			//	}	
+			//	fout << std::endl;
+			//}
+			//fout.close();
 		}//end if not bRawImage
 	} // else if (m_bDarkCorrApply && m_bGainCorrApply)
 

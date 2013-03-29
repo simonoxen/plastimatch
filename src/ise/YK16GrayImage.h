@@ -3,8 +3,8 @@
 class QPixmap;
 class QLabel;
 
-#define DEFAULT_WINLEVEL_MID 2047
-#define DEFAULT_WINLEVEL_WIDTH 4094
+#define DEFAULT_WINLEVEL_MID 10000
+#define DEFAULT_WINLEVEL_WIDTH 20000
 
 class YK16GrayImage
 {	

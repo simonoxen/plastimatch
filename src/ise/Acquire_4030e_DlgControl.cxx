@@ -255,3 +255,20 @@ void Acquire_4030e_DlgControl::ReDrawImg()
 	qMyApp->ReDraw(lowerVal, upperVal);//current image only
 
 }
+
+
+void Acquire_4030e_DlgControl::CopyCurrentImageForGainImage()
+{
+	QMessageBox msgBox;	
+	Acquire_4030e_child* qMyApp = (Acquire_4030e_child*)qApp;
+	/*if (qMyApp->m_pCurrImage == NULL) // created during init.
+		return;*/
+
+	if (!qMyApp->GetGainImageFromCurrent())
+	{
+		aqprintf("Error on Getting Gain Image from current image. \n");
+		msgBox.setText("Error on Getting Gain Image from current image!");
+		msgBox.exec();
+		return;
+	}	
+}

@@ -18,7 +18,8 @@ See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 #include "HcpFuncDefs.h"
 #include "acquire_4030e_DlgControl.h"
 #include "YK16GrayImage.h"
-#include "dlgprogbaryk.h"
+//#include "dlgprogbaryk.h"
+#include <QProgressDialog>
 
 #define TIMEOUT_MAINLOOP 50
 
@@ -85,7 +86,10 @@ Acquire_4030e_child::Acquire_4030e_child (int argc, char* argv[])
 
 
 	m_dlgControl = new Acquire_4030e_DlgControl();
-	m_dlgProgBar = new DlgProgBarYK((QWidget*)m_dlgControl);
+	//m_dlgProgBar = new DlgProgBarYK((QWidget*)m_dlgControl);
+	m_dlgProgBar = new QProgressDialog("Operation in progress.", "Cancel", 0, 100);
+	m_dlgProgBar->setWindowModality(Qt::WindowModal);
+	//connect(m_dlgProgBar, SIGNAL(canceled()), this, SLOT(ProgressCanceled());
 
 	m_timeOutCnt = 0;
 	m_iNumOfFramesRequested = 1;
@@ -232,6 +236,8 @@ Acquire_4030e_child::init(const char* strProcNum, const char* strRecepterPath)
 		aqprintf("YK Critical error! image size is not valid\n");
 		return false;
 	}
+
+	//result = vip_reset_state();//0328 added. infinte loop of A584-09 panel.
 
 	//this->m_pDarkImage = new USHORT [vp->m_iSizeX * vp->m_iSizeY];
 	m_pCurrImage->CreateImage(vp->m_iSizeX , vp->m_iSizeY,0);
@@ -398,7 +404,7 @@ bool Acquire_4030e_child::PerformDarkFieldCalibration(UQueryProgInfo& crntStatus
 	}
 	int SumSuccessCnt = 0;
 
-	m_dlgProgBar->SetProgVal(10);	
+	m_dlgProgBar->setValue(10);	
 
 	//Repeat below procedure //MultiFrame
 	for (i = 0 ; i< avgFrameCnt ; i++)
@@ -513,7 +519,7 @@ bool Acquire_4030e_child::PerformDarkFieldCalibration(UQueryProgInfo& crntStatus
 		//Repeat above procedure //MultiFrame
 
 		int tmpVal = (int)(80.0 / (double)(avgFrameCnt) * (i+1)); // 10 + 80 + 10
-		m_dlgProgBar->SetProgVal(tmpVal);
+		m_dlgProgBar->setValue(tmpVal);
 		aqprintf("Prog %d\n", tmpVal);
 	} //end of for loop
 
@@ -537,8 +543,8 @@ bool Acquire_4030e_child::PerformDarkFieldCalibration(UQueryProgInfo& crntStatus
 	}
 	delete [] tmpImageSumBuf;
 
-	m_dlgProgBar->SetProgVal(95);
-	aqprintf("Prog 95\n");
+	m_dlgProgBar->setValue(95);
+	//aqprintf("Prog 95\n");
 
 
 	QString strFileName = QString("C:\\DarkImage_Avg%1").arg(SumSuccessCnt);
@@ -563,19 +569,19 @@ bool Acquire_4030e_child::PerformDarkFieldCalibration(UQueryProgInfo& crntStatus
 	m_dlgControl->lineEditDarkPath->setText(strFileName);
 
 	//if (!m_pDarkImage->FillPixMap(m_iCurWinMidVal, m_iCurWinWidthVal)) //16 bit to 8 bit
-	if (!m_pDarkImage->FillPixMap(DEFAULT_WINLEVEL_MID, DEFAULT_WINLEVEL_WIDTH)) //16 bit to 8 bit
+	//if (!m_pDarkImage->FillPixMap(DEFAULT_WINLEVEL_MID, DEFAULT_WINLEVEL_WIDTH)) //16 bit to 8 bit
+	if (!m_pDarkImage->FillPixMap(1500, 3000)) //0 - 3000 is enough
 		aqprintf("Error on FillPixMap\n");
 
 	if (!m_pDarkImage->DrawToLabel(this->m_dlgControl->lbDarkField)) //SetPixMap 
 		aqprintf("Error on drawing");
-	
-	
+		
 	//result = vp->get_image_to_file(vp->m_iSizeX, vp->m_iSizeY, (char*)(strFileName.toLocal8Bit().constData()),VIP_CURRENT_IMAGE);
 	//   if (vp->m_bDarkCorrApply)
 	//	aqprintf("m_bDarkCorrApply is true\n");
 
-	m_dlgProgBar->SetProgVal(99);	
-	aqprintf("Prog 99\n");
+	m_dlgProgBar->setValue(100);	
+	//aqprintf("Prog 99\n");
 
 	if (result != HCP_NO_ERR)
 		return false;   
@@ -617,7 +623,7 @@ bool Acquire_4030e_child::SWSingleAcquisition(UQueryProgInfo& crntStatus)
 
 				Sleep(100);				
 
-				m_dlgProgBar->SetProgVal(25);
+				m_dlgProgBar->setValue(25);
 
 				while(result == HCP_NO_ERR && crntStatus.qpi.ReadyForPulse == FALSE)
 				{				
@@ -639,7 +645,7 @@ bool Acquire_4030e_child::SWSingleAcquisition(UQueryProgInfo& crntStatus)
 				}
 				
 				Sleep(1000);
-				m_dlgProgBar->SetProgVal(50);
+				m_dlgProgBar->setValue(50);
 			}
 		}
 	}
@@ -674,7 +680,7 @@ bool Acquire_4030e_child::SWSingleAcquisition(UQueryProgInfo& crntStatus)
 			}	    
 		}
 	}
-	m_dlgProgBar->SetProgVal(75);
+	m_dlgProgBar->setValue(75);
 	//3] GET IMAGE	
 
 	//aqprintf(str.toLocal8Bit().constData());
@@ -723,7 +729,7 @@ bool Acquire_4030e_child::SWSingleAcquisition(UQueryProgInfo& crntStatus)
 			aqprintf("vip_sw_handshaking(VIP_SW_PREPARE, FALSE) returns %d\n", result);
 	}
 
-	m_dlgProgBar->SetProgVal(100);
+	m_dlgProgBar->setValue(100);
 
 	//in DualRadTest, this code is not existing
 	result = vip_enable_sw_handshaking(FALSE);
@@ -747,7 +753,7 @@ bool Acquire_4030e_child::AuditImage(int sizeX, int sizeY, USHORT* pImg)
 	int npixels = sizeX*sizeY;
 	nTotal = 0;
 	//minPixel = 4095;
-	minPixel = 16383;
+	minPixel = 65535;
 	maxPixel = 0;
 	sumPixel = 0.0;
 
@@ -960,7 +966,8 @@ void Acquire_4030e_child::TimerMainLoop_event() //called every 50 ms
 
 	case COMPLETE_SIGNAL_DETECTED: // Go back to first step  PC_ReStandbyPanel	
 		m_bAcquisitionOK = false; //BUSY flag
-		PC_ReStandbyPanel();
+		//PC_ReStandbyPanel();
+		PC_WaitForStanby();
 		m_bAcquisitionOK = true; //BUSY flag
 		break;
 
@@ -979,7 +986,6 @@ bool Acquire_4030e_child::PC_ReOpenPanel()
 		aqprintf ("PC_ReOpenPanel Error: panel status is not proper\n");
 		return false;
 	}
-
 
 	aqprintf ("PSTAT0: NOT_OPENNED\n");
 	if (!init(this->m_strProcNum.toLocal8Bit().constData(), this->m_strReceptorPath.toLocal8Bit().constData()))
@@ -1005,7 +1011,9 @@ bool Acquire_4030e_child::PC_ActivatePanel()
 	}
 	aqprintf ("PSTAT1: OPENNED\n");
 
-	int result = vip_reset_state(); //Mandatory, without this code, 1 1 0 0 and infinite no X-ray ready
+	//int result = vip_reset_state(); //Mandatory, without this code, 1 1 0 0 and infinite no X-ray ready
+	//0328: no need by adding WaitForStanby(waiting for 0 x x 0)
+	int result = HCP_NO_ERR;
 
 	result = vip_enable_sw_handshaking (FALSE); //mandatory code	
 
@@ -1049,21 +1057,30 @@ bool Acquire_4030e_child::PC_WaitForPanelReady()
 	//aqprintf ("PSTAT2: PANEL_ACTIVE\n");
 	m_pCrntStatus->qpi.ReadyForPulse = FALSE;
 
-	int result = vp->query_prog_info (*m_pCrntStatus);
+	int result = vp->query_prog_info (*m_pCrntStatus); // 0 0 0 0 --> 1 1 0 0
 	m_timeOutCnt += TIMEOUT_MAINLOOP;
 
 
 	if (result != HCP_NO_ERR)
 	{
 		aqprintf("Error on querying_in PC_WaitForPanelReady with an error code of %d\n", result);			
-		m_enPanelStatus = OPENNED; //Go back to first step
 		vip_io_enable(HS_STANDBY); //should be!!
+		m_enPanelStatus = OPENNED; //Go back to first step
+		
 	}
-	else if (m_timeOutCnt > 3000) //Time_out
+	else if (m_timeOutCnt > 2000) //Time_out
 	{
 		aqprintf("*** TIMEOUT ***_wait_on_ready_for_pulse\n"); //just retry
+		
+		aqprintf("frames=%d complete=%d pulses=%d ready=%d\n",
+				m_pCrntStatus->qpi.NumFrames,
+				m_pCrntStatus->qpi.Complete,
+				m_pCrntStatus->qpi.NumPulses,
+				m_pCrntStatus->qpi.ReadyForPulse);
+
 		m_timeOutCnt = 0;
-		m_enPanelStatus = OPENNED;
+		//m_enPanelStatus = OPENNED;
+		m_enPanelStatus = COMPLETE_SIGNAL_DETECTED; // stuck in 1 1 0 0 problem 0328 in A584-09 // Go to Restanby
 		return false;
 	}
 	else
@@ -1215,6 +1232,7 @@ bool Acquire_4030e_child::PC_WaitForComplete()//vp->wait_on_complete
 	if (m_enPanelStatus != IMAGE_ACQUSITION_DONE)
 	{
 		aqprintf ("PC_WaitForComplete Error: panel status is not proper\n");
+		m_enPanelStatus = OPENNED;
 		return false;
 	}	
 
@@ -1259,18 +1277,87 @@ bool Acquire_4030e_child::PC_WaitForComplete()//vp->wait_on_complete
 	return true;
 }
 
-bool Acquire_4030e_child::PC_ReStandbyPanel() //also can be used for SW acquisition for reloop
+//bool Acquire_4030e_child::PC_ReStandbyPanel() //also can be used for SW acquisition for reloop
+bool Acquire_4030e_child::PC_WaitForStanby() //also can be used for SW acquisition for reloop
 {
 	if (m_enPanelStatus != COMPLETE_SIGNAL_DETECTED)
 	{
 		aqprintf ("PC_ReStandbyPanel Error: panel status is not proper\n");
+		m_enPanelStatus = OPENNED;
 		return false;
 	}
+	vip_io_enable(HS_STANDBY);
 
-	m_enPanelStatus = OPENNED;
-	vip_io_enable(HS_STANDBY); // Let's try without this (directly go to PANEL_ACTIVE)
+	QString errorStr;
+	int result = HCP_NO_ERR;
+	//m_pCrntStatus->qpi.Complete = FALSE;	
 
+	m_timeOutCnt += TIMEOUT_MAINLOOP;
+	result = vp->query_prog_info (*m_pCrntStatus); // YK: Everytime, No data error 8
+
+	if (result != HCP_NO_ERR) //Not that serious in this step
+	{	
+		errorStr = QString ("Error in WaitForStanby. Error code is %1. Now, retrying...\n").arg(result);		
+		aqprintf(errorStr.toLocal8Bit().constData());
+		m_enPanelStatus = NOT_OPENNED;//Let's try with PANEL_ACTIVE (without reselection and HS_ACTIVE setting
+		//vip_io_enable(HS_STANDBY); // Let's try without this (directly go to PANEL_ACTIVE)
+		return false;
+	}
+	else if (m_timeOutCnt > 10000) //Time_out
+	{
+		aqprintf("*** TIMEOUT ***Restanby failed! \n"); //just retry
+		m_timeOutCnt = 0;
+		m_enPanelStatus = NOT_OPENNED; //Re open the panel
+		return false;
+	}
+	else
+	{	
+		if(m_pCrntStatus->qpi.NumFrames == 0 && m_pCrntStatus->qpi.ReadyForPulse == 0) //0 0 0 0
+		{			
+			aqprintf("frames=%d complete=%d pulses=%d ready=%d\n",
+				m_pCrntStatus->qpi.NumFrames,
+				m_pCrntStatus->qpi.Complete,
+				m_pCrntStatus->qpi.NumPulses,
+				m_pCrntStatus->qpi.ReadyForPulse);			
+
+			m_enPanelStatus = OPENNED;
+			m_timeOutCnt = 0;
+			aqprintf ("PSTAT7: STANBY_SIGNAL_DETECTED\n");
+		}		
+	}
 	return true;
+
+
+	///////////////////////
+
+
+
+	//int result = vp->query_prog_info (*m_pCrntStatus);
+
+	////if(m_pCrntStatus->qpi.Complete == TRUE)
+	////{			
+	////Should be 1 x x 1
+	//aqprintf("YKTEMP_BEFORE HS_STANBY:frames=%d complete=%d pulses=%d ready=%d\n",
+	//		m_pCrntStatus->qpi.NumFrames,
+	//		m_pCrntStatus->qpi.Complete,
+	//		m_pCrntStatus->qpi.NumPulses,
+	//		m_pCrntStatus->qpi.ReadyForPulse);	
+	////}		
+
+
+	//m_enPanelStatus = OPENNED;
+	//vip_io_enable(HS_STANDBY); // Let's try without this (directly go to PANEL_ACTIVE)
+
+	//Sleep(1000);
+
+	//result = vp->query_prog_info (*m_pCrntStatus);
+	////Should be 0 x x 0
+	//aqprintf("YKTEMP_AFTER HS_STANBY+1s:frames=%d complete=%d pulses=%d ready=%d\n",
+	//		m_pCrntStatus->qpi.NumFrames,
+	//		m_pCrntStatus->qpi.Complete,
+	//		m_pCrntStatus->qpi.NumPulses,
+	//		m_pCrntStatus->qpi.ReadyForPulse);	
+	
 }
 
 
@@ -1287,18 +1374,20 @@ bool Acquire_4030e_child::PC_SoftwareAcquisition_SingleShot() //should be done a
 	//msgBox.exec();	
 
 	m_timeOutCnt = 0;
-	m_dlgProgBar->SetProgVal(0,"Image is being taken...");
+	m_dlgProgBar->setValue(0);
+	//m_dlgProgBar->show();
+	//m_dlgProgBar->setValue(0);
 	m_dlgProgBar->show();
 
 	if (!SWSingleAcquisition(*m_pCrntStatus))
 	{
-		m_dlgProgBar->close();
+		//m_dlgProgBar->close();
 		msgBox.exec();
 	}	
 	else
 	{
 		aqprintf("SWSingleAcquisition Success\n");
-		m_dlgProgBar->close();
+		//m_dlgProgBar->close();
 	}	
 
 	Sleep(300);
@@ -1314,17 +1403,17 @@ bool Acquire_4030e_child::PC_DarkFieldAcquisition_SingleShot(int avgFrames) //sh
 		return false;
 	}	
 
-	m_dlgProgBar->SetProgVal(0,"Image is being taken...");
-	m_dlgProgBar->show();
+	m_dlgProgBar->setValue(0);
+	//m_dlgProgBar->show();
 
 	if (!PerformDarkFieldCalibration(*m_pCrntStatus, avgFrames))
 	{
-		m_dlgProgBar->close();
+		//m_dlgProgBar->close();
 		aqprintf("Error in dark field acquisition\n");		
 	}
 	else
 	{
-		m_dlgProgBar->close();
+		//m_dlgProgBar->close();
 		aqprintf("Dark Field Acquisition Success\n");
 	}
 
@@ -1398,12 +1487,12 @@ void Acquire_4030e_child::ReDraw(int lowerWinVal, int upperWinVal)//current imag
 	//only CurrentImg Redraw for time saving
 	int midVal = (upperWinVal + lowerWinVal)/2.0;
 	//if (midVal < 0 || midVal > 4095)
-	if (midVal < 0 || midVal > 16383)
+	if (midVal < 0 || midVal > 65535)
 		midVal = DEFAULT_WINLEVEL_MID;
 
 	int widthVal = upperWinVal - lowerWinVal;
 	//if (widthVal < 0 || widthVal > 4095)
-	if (widthVal < 0 || widthVal > 16383)
+	if (widthVal < 0 || widthVal > 65535)
 		widthVal = DEFAULT_WINLEVEL_WIDTH;
 
 
@@ -1416,4 +1505,41 @@ void Acquire_4030e_child::ReDraw(int lowerWinVal, int upperWinVal)//current imag
 	if (!m_pCurrImage->DrawToLabel(this->m_dlgControl->lbCurrentImage)) //SetPixMap 
 		aqprintf("Error on drawing");
 
+}
+
+
+
+bool Acquire_4030e_child::GetGainImageFromCurrent()
+{	
+	if (m_pCurrImage->IsEmpty())
+	{		
+		return false;
+	}
+
+	m_pGainImage->CopyFromBuffer(m_pCurrImage->m_pData,
+		m_pCurrImage->m_iWidth, m_pCurrImage->m_iHeight);
+
+	QString strFileName = QString("C:\\GainImage");
+	QTime time = QTime::currentTime();    
+	QString str = time.toString("_hh_mm_ss");        
+	strFileName.append(str);
+	strFileName.append(".raw");
+	
+	if (!m_pGainImage->SaveDataAsRaw(strFileName.toLocal8Bit().constData()))
+	{
+		aqprintf("Cannot export to raw file\n");
+	}
+
+	//UpdateDarkImagePath
+	m_dlgControl->lineEditGainPath->setText(strFileName);
+
+	//if (!m_pDarkImage->FillPixMap(m_iCurWinMidVal, m_iCurWinWidthVal)) //16 bit to 8 bit
+	//if (!m_pDarkImage->FillPixMap(DEFAULT_WINLEVEL_MID, DEFAULT_WINLEVEL_WIDTH)) //16 bit to 8 bit
+	if (!m_pDarkImage->FillPixMap(DEFAULT_WINLEVEL_MID, DEFAULT_WINLEVEL_WIDTH)) //0 - 3000 is enough
+		aqprintf("Error on FillPixMap\n");
+
+	if (!m_pDarkImage->DrawToLabel(this->m_dlgControl->lbGainField)) //SetPixMap 
+		aqprintf("Error on drawing");
+
+	return true;	
 }

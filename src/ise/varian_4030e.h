@@ -11,8 +11,19 @@
 #include "HcpFuncDefs.h"
 #include "iostatus.h"
 #include "acquire_4030e_child.h"
+#include <vector>
 
 class Dips_panel;
+
+struct IMGINFO
+{
+	double meanVal;
+	double SD;
+	double minVal;
+	double maxVal;
+};
+
+
 
 class Varian_4030e {
 public:
@@ -44,11 +55,9 @@ public:
 	int get_image_to_buf (int xSize, int ySize);
     int get_image_to_dips (Dips_panel *dp, int xSize, int ySize);
 
-
 	bool CopyFromBufAndSendToDips (Dips_panel *dp); //get cur image to curImage
-
-
-
+	void CalcImageInfo (double& meanVal, double& STDV, double& minVal, double& maxVal, int sizeX, int sizeY, USHORT* image_ptr); //all of the images taken before will be inspected
+	bool SameImageExist(IMGINFO& curInfo, int& sameImgIndex);
 
     int disable_missing_corrections (int result);
 
@@ -62,13 +71,11 @@ public:
 
     int m_iSizeX;
     int m_iSizeY;
-
     //YK custom variables
-
     bool m_bDarkCorrApply;
     bool m_bGainCorrApply;
 
-
+	std::vector<IMGINFO> m_vImageInfo;
 };
 
 int CheckRecLink();

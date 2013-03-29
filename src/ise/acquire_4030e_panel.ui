@@ -677,56 +677,6 @@
    <property name="title">
     <string>Gain Correction</string>
    </property>
-   <widget class="QPushButton" name="BtnGetGainCorrImage">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>110</y>
-      <width>121</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Get Gain Corr. Image</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_16">
-    <property name="geometry">
-     <rect>
-      <x>150</x>
-      <y>100</y>
-      <width>81</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>8</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Average Frames</string>
-    </property>
-   </widget>
-   <widget class="QSpinBox" name="SpinGainCorrAvgFrames">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>160</x>
-      <y>120</y>
-      <width>61</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="value">
-     <number>1</number>
-    </property>
-   </widget>
    <widget class="QCheckBox" name="ChkGainCorrectionApply">
     <property name="geometry">
      <rect>
@@ -798,6 +748,19 @@
      <bool>true</bool>
     </property>
    </widget>
+   <widget class="QPushButton" name="BtnCopyFromCurrent">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>110</y>
+      <width>121</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Copy Current Image</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QPushButton" name="BtnSaveSettingsDefault">
    <property name="geometry">
@@ -817,7 +780,7 @@
     <rect>
      <x>280</x>
      <y>400</y>
-     <width>161</width>
+     <width>151</width>
      <height>151</height>
     </rect>
    </property>
@@ -839,7 +802,7 @@
     <rect>
      <x>280</x>
      <y>560</y>
-     <width>161</width>
+     <width>151</width>
      <height>151</height>
     </rect>
    </property>
@@ -861,7 +824,7 @@
     <rect>
      <x>280</x>
      <y>50</y>
-     <width>161</width>
+     <width>151</width>
      <height>161</height>
     </rect>
    </property>
@@ -962,13 +925,13 @@
     </rect>
    </property>
    <property name="maximum">
-    <number>16383</number>
+    <number>65535</number>
    </property>
    <property name="singleStep">
     <number>50</number>
    </property>
    <property name="value">
-    <number>16383</number>
+    <number>20000</number>
    </property>
   </widget>
   <widget class="QSpinBox" name="spinLowerVal">
@@ -1314,6 +1277,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>BtnCopyFromCurrent</sender>
+   <signal>pressed()</signal>
+   <receiver>DlgPanelControl</receiver>
+   <slot>CopyCurrentImageForGainImage()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>21</x>
+     <y>684</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-9</x>
+     <y>686</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>CloseLink()</slot>
@@ -1333,5 +1312,6 @@
   <slot>OpenGainImage()</slot>
   <slot>OpenCurImgFolder()</slot>
   <slot>ReDrawImg()</slot>
+  <slot>CopyCurrentImageForGainImage()</slot>
  </slots>
 </ui>
