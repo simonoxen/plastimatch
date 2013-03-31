@@ -572,11 +572,14 @@ load_ct (RTOG_Header* rtog_header, Program_Parms* parms)
 {
     int i;
     unsigned short* b;
-    int num_slices = rtog_header->ct.last_image - rtog_header->ct.first_image + 1;
-    int slice_voxels = rtog_header->ct.size_of_dimension_1 * rtog_header->ct.size_of_dimension_2;
+    int num_slices = rtog_header->ct.last_image 
+        - rtog_header->ct.first_image + 1;
+    size_t slice_voxels = rtog_header->ct.size_of_dimension_1 
+        * rtog_header->ct.size_of_dimension_2;
     int num_voxels = slice_voxels * num_slices;
 
-    rtog_header->ct.image = (void*) malloc (sizeof(unsigned short) * num_voxels);
+    rtog_header->ct.image = (void*) malloc (
+        sizeof(unsigned short) * num_voxels);
     if (!rtog_header->ct.image) {
 	printf ("Error: could not malloc ct image\n");
 	exit (-1);
@@ -598,7 +601,8 @@ load_ct (RTOG_Header* rtog_header, Program_Parms* parms)
 	size_t rc = fread (b, sizeof(unsigned short), slice_voxels, fp);
 
 	if (rc != slice_voxels) {
-	    printf ("Error reading from file %s (%d bytes read)\n", fn, rc);
+	    printf ("Error reading from file %s (%d bytes read)\n", 
+                fn, (int) rc);
 	}
 	fclose (fp);
     }
@@ -684,7 +688,7 @@ load_dose (RTOG_Header* rtog_header, Program_Parms* parms)
 {
     FILE* fp;
     char fn[BUFLEN];
-    int num_voxels = rtog_header->dose.size_of_dimension_1
+    size_t num_voxels = rtog_header->dose.size_of_dimension_1
 	* rtog_header->dose.size_of_dimension_2
 	* rtog_header->dose.size_of_dimension_3;
 
@@ -706,9 +710,11 @@ load_dose (RTOG_Header* rtog_header, Program_Parms* parms)
 	printf ("Error: could not open file \"%s\" for read.\n", fn);
 	exit (-1);
     }
-    size_t rc = fread (rtog_header->dose.image, sizeof(unsigned short), num_voxels, fp);
+    size_t rc = fread (rtog_header->dose.image, sizeof(unsigned short), 
+        num_voxels, fp);
     if (rc != num_voxels) {
-	printf ("Error: could not read dose from file %s (%d bytes read)\n", fn, rc);
+	printf ("Error: could not read dose from file %s (%d bytes read)\n", 
+            fn, (int) rc);
 	exit (-1);
     }
     fclose (fp);

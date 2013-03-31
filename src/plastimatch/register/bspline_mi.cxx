@@ -18,6 +18,7 @@
 #include "bspline_interpolate.h"
 #include "bspline_macros.h"
 #include "bspline_mi.h"
+#include "bspline_mi_hist.h"
 #include "file_util.h"
 #include "interpolate.h"
 #include "interpolate_macros.h"
@@ -121,7 +122,7 @@ vopt_bin_error (int start, int end, double* s_lut, double* ssq_lut, double* cnt_
 static void
 bspline_initialize_mi_bigbin (
     double* hist, 
-    Bspline_mi_hist_Parms* hparms, 
+    Bspline_mi_hist* hparms, 
     Volume* vol
 )
 {
@@ -152,7 +153,7 @@ bspline_initialize_mi_bigbin (
 }
 
 static void
-bspline_initialize_mi_hist_eqsp (Bspline_mi_hist_Parms* hparms, Volume* vol)
+bspline_initialize_mi_hist_eqsp (Bspline_mi_hist* hparms, Volume* vol)
 {
     plm_long i;
     float min_vox, max_vox;
@@ -180,7 +181,7 @@ bspline_initialize_mi_hist_eqsp (Bspline_mi_hist_Parms* hparms, Volume* vol)
 #if defined (commentout)
 static void
 bspline_mi_hist_vopt_dump_ranges (
-    Bspline_mi_hist_Parms* hparms,
+    Bspline_mi_hist* hparms,
     Volume* vol,
     const std::string& prefix
 )
@@ -232,7 +233,7 @@ bspline_mi_hist_vopt_dump_ranges (
  *   http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.92.3195&rep=rep1&type=pdf
  */
 static void
-bspline_initialize_mi_hist_vopt (Bspline_mi_hist_Parms* hparms, Volume* vol)
+bspline_initialize_mi_hist_vopt (Bspline_mi_hist* hparms, Volume* vol)
 {
     int idx_bin;
     plm_long curr, next, bottom;
@@ -364,7 +365,7 @@ bspline_initialize_mi_hist_vopt (Bspline_mi_hist_Parms* hparms, Volume* vol)
 
 
 static void
-bspline_initialize_mi_hist (Bspline_mi_hist_Parms* hparms, Volume* vol)
+bspline_initialize_mi_hist (Bspline_mi_hist* hparms, Volume* vol)
 {
     /* If user wants more than VOPT can offer, fallback to EQSP */
     if ((hparms->bins > VOPT_RES) && (hparms->type == HIST_VOPT)) {
@@ -392,7 +393,7 @@ bspline_initialize_mi (Bspline_parms* parms)
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
 
-    Bspline_mi_hist* mi_hist = &parms->mi_hist;
+    Bspline_mi_hist_set* mi_hist = &parms->mi_hist;
     mi_hist->m_hist = (double*) malloc (sizeof (double) * mi_hist->moving.bins);
     mi_hist->f_hist = (double*) malloc (sizeof (double) * mi_hist->fixed.bins);
     mi_hist->j_hist = (double*) malloc (sizeof (double) * mi_hist->fixed.bins * mi_hist->moving.bins);
@@ -512,7 +513,7 @@ bspline_mi_hist_lookup (
     long m_idxs[2],     /* Output: Moving marginal indices */
     long f_idxs[1],     /* Output: Fixed marginal indices */
     float fxs[2],       /* Output: Fraction contribution at indices */
-    Bspline_mi_hist* mi_hist,   /* Input:  The histogram */
+    Bspline_mi_hist_set* mi_hist,   /* Input:  The histogram */
     float f_val,        /* Input:  Intensity of fixed image */
     float m_val             /* Input:  Intensity of moving image */
 )
@@ -574,7 +575,7 @@ bspline_mi_hist_lookup (
     based on m_val, but one bin based on f_val. */
 inline void
 bspline_mi_hist_add (
-    Bspline_mi_hist* mi_hist,   /* The histogram */
+    Bspline_mi_hist_set* mi_hist,   /* The histogram */
     float f_val,        /* Intensity of fixed image */
     float m_val,        /* Intensity of moving image */
     float amt               /* How much to add to histogram */
@@ -603,7 +604,7 @@ bspline_mi_hist_add (
 
 /* This algorithm uses a un-normalized score. */
 static float
-mi_hist_score (Bspline_mi_hist* mi_hist, int num_vox)
+mi_hist_score (Bspline_mi_hist_set* mi_hist, int num_vox)
 {
     double* f_hist = mi_hist->f_hist;
     double* m_hist = mi_hist->m_hist;
@@ -632,7 +633,7 @@ mi_hist_score (Bspline_mi_hist* mi_hist, int num_vox)
 
 /* This algorithm uses a un-normalized score. */
 static float
-mi_hist_score_omp (Bspline_mi_hist* mi_hist, int num_vox)
+mi_hist_score_omp (Bspline_mi_hist_set* mi_hist, int num_vox)
 {
     double* f_hist = mi_hist->f_hist;
     double* m_hist = mi_hist->m_hist;
@@ -705,7 +706,7 @@ compute_dS_dP (
     return dS_dP;
 }
 
-void dump_xpm_hist (Bspline_mi_hist* mi_hist, char* file_base, int iter)
+void dump_xpm_hist (Bspline_mi_hist_set* mi_hist, char* file_base, int iter)
 {
     int z;
     char c;
@@ -919,7 +920,7 @@ void dump_xpm_hist (Bspline_mi_hist* mi_hist, char* file_base, int iter)
 #if (OPENMP_FOUND)
 static inline void
 bspline_mi_hist_add_pvi_8_omp_v2 (
-    Bspline_mi_hist* mi_hist, 
+    Bspline_mi_hist_set* mi_hist, 
     double* f_hist_omp,
     double* m_hist_omp,
     double* j_hist_omp,
@@ -994,7 +995,7 @@ bspline_mi_hist_add_pvi_8_omp_v2 (
 #if (OPENMP_FOUND)
 static inline void
 bspline_mi_hist_add_pvi_8_omp_crits (
-    Bspline_mi_hist* mi_hist, 
+    Bspline_mi_hist_set* mi_hist, 
     Volume *fixed, 
     Volume *moving, 
     int fv, 
@@ -1074,7 +1075,7 @@ bspline_mi_hist_add_pvi_8_omp_crits (
 #if (OPENMP_FOUND)
 static inline void
 bspline_mi_hist_add_pvi_8_omp (
-    Bspline_mi_hist* mi_hist, 
+    Bspline_mi_hist_set* mi_hist, 
     Volume *fixed, 
     Volume *moving, 
     int fv, 
@@ -1157,7 +1158,7 @@ bspline_mi_hist_add_pvi_8_omp (
 
 static inline void
 bspline_mi_hist_add_pvi_8 (
-    Bspline_mi_hist* mi_hist, 
+    Bspline_mi_hist_set* mi_hist, 
     Volume *fixed, 
     Volume *moving, 
     int fv, 
@@ -1223,7 +1224,7 @@ bspline_mi_hist_add_pvi_8 (
 #if defined (commentout)
 static inline void
 bspline_mi_hist_add_pvi_6 (
-    Bspline_mi_hist* mi_hist, 
+    Bspline_mi_hist_set* mi_hist, 
     Volume *fixed, 
     Volume *moving, 
     int fv, 
@@ -1308,7 +1309,7 @@ bspline_mi_hist_add_pvi_6 (
 static inline void
 bspline_mi_pvi_8_dc_dv (
     float dc_dv[3],                /* Output */
-    Bspline_mi_hist* mi_hist,      /* Input */
+    Bspline_mi_hist_set* mi_hist,      /* Input */
     Bspline_state *bst,            /* Input */
     Volume *fixed,                 /* Input */
     Volume *moving,                /* Input */
@@ -1418,7 +1419,7 @@ bspline_mi_pvi_8_dc_dv (
 static inline void
 bspline_mi_pvi_8_dc_dv_dcos (
     float dc_dv[3],                /* Output */
-    Bspline_mi_hist* mi_hist,      /* Input */
+    Bspline_mi_hist_set* mi_hist,      /* Input */
     Bspline_state *bst,            /* Input */
     Volume *fixed,                 /* Input */
     Volume *moving,                /* Input */
@@ -1533,7 +1534,7 @@ bspline_mi_pvi_8_dc_dv_dcos (
 static inline void
 bspline_mi_pvi_6_dc_dv (
     float dc_dv[3],                /* Output */
-    Bspline_mi_hist* mi_hist,      /* Input */
+    Bspline_mi_hist_set* mi_hist,      /* Input */
     Bspline_state *bst,            /* Input */
     Volume *fixed,                 /* Input */
     Volume *moving,                /* Input */
@@ -1651,7 +1652,7 @@ bspline_score_i_mi (
     Volume *moving = parms->moving;
 
     Bspline_score* ssd = &bst->ssd;
-    Bspline_mi_hist* mi_hist = &parms->mi_hist;
+    Bspline_mi_hist_set* mi_hist = &parms->mi_hist;
     long pidx;
     float num_vox_f;
 
@@ -1983,7 +1984,7 @@ bspline_score_h_mi (
     Volume *moving = parms->moving;
 
     Bspline_score* ssd = &bst->ssd;
-    Bspline_mi_hist* mi_hist = &parms->mi_hist;
+    Bspline_mi_hist_set* mi_hist = &parms->mi_hist;
 //    plm_long rijk[3];
     float diff;
     float* f_img = (float*) fixed->img;
@@ -2266,7 +2267,7 @@ bspline_score_g_mi (
     Volume *moving = parms->moving;
 
     Bspline_score* ssd = &bst->ssd;
-    Bspline_mi_hist* mi_hist = &parms->mi_hist;
+    Bspline_mi_hist_set* mi_hist = &parms->mi_hist;
 //    plm_long rijk[3];
     float diff;
     float* f_img = (float*) fixed->img;
@@ -2524,7 +2525,7 @@ bspline_score_f_mi (
     Volume *moving = parms->moving;
 
     Bspline_score* ssd = &bst->ssd;
-    Bspline_mi_hist* mi_hist = &parms->mi_hist;
+    Bspline_mi_hist_set* mi_hist = &parms->mi_hist;
     int pidx;
     float num_vox_f;
 
@@ -2824,7 +2825,7 @@ bspline_score_e_mi (
     Volume *moving = parms->moving;
 
     Bspline_score* ssd = &bst->ssd;
-    Bspline_mi_hist* mi_hist = &parms->mi_hist;
+    Bspline_mi_hist_set* mi_hist = &parms->mi_hist;
     long pidx;
     float num_vox_f;
 
@@ -3167,7 +3168,7 @@ bspline_score_d_mi (
     Volume *moving = parms->moving;
 
     Bspline_score* ssd = &bst->ssd;
-    Bspline_mi_hist* mi_hist = &parms->mi_hist;
+    Bspline_mi_hist_set* mi_hist = &parms->mi_hist;
     plm_long rijk[3];
     float diff;
     float* f_img = (float*) fixed->img;
@@ -3459,7 +3460,7 @@ bspline_score_c_mi (
     Volume* moving_mask = parms->moving_mask;
 
     Bspline_score* ssd = &bst->ssd;
-    Bspline_mi_hist* mi_hist = &parms->mi_hist;
+    Bspline_mi_hist_set* mi_hist = &parms->mi_hist;
     //plm_long rijk[3];
     plm_long fijk[3], fv;
     float mijk[3];
@@ -3700,7 +3701,7 @@ bspline_score_c_mi_no_dcos (
     Volume *moving = parms->moving;
 
     Bspline_score* ssd = &bst->ssd;
-    Bspline_mi_hist* mi_hist = &parms->mi_hist;
+    Bspline_mi_hist_set* mi_hist = &parms->mi_hist;
     plm_long rijk[3];
     plm_long fijk[3], fv;
     float mijk[3];

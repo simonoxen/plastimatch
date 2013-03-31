@@ -27,7 +27,7 @@ bspline_landmarks_score_a (
 {
     Bspline_score* ssd = &bst->ssd;
     Bspline_landmarks *blm = parms->blm;
-    int lidx;
+    size_t lidx;
 #if defined (commentout)
     FILE *fp, *fp2;
 #endif
@@ -151,7 +151,7 @@ Bspline_landmarks::initialize (const Bspline_xform* bxf)
 
     this->fixed_landmarks_p = new int[3*this->num_landmarks];
     this->fixed_landmarks_q = new int[3*this->num_landmarks];
-    for (int i = 0; i < num_landmarks; i++) {
+    for (size_t i = 0; i < num_landmarks; i++) {
         for (int d = 0; d < 3; d++) {
             plm_long v;
             v = ROUND_INT ((this->fixed_landmarks->point_list[i].p[d] 

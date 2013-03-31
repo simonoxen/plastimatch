@@ -8,9 +8,8 @@
 #include "plm_int.h"
 #include <string>
 
+#include "bspline_mi_hist.h"
 #include "bspline_regularize_state.h"
-
-#define DOUBLE_HISTS	// Use doubles for histogram accumulation
 
 /* JAS 2011.07.23
  * The following is a fix that allows us to more selectively enforce
@@ -54,11 +53,6 @@ enum BsplineMetric {
     BMET_MI
 };
 
-enum BsplineHistType {
-    HIST_EQSP,
-    HIST_VOPT
-};
-
 class Bspline_score {
 public:
     float score;         /* Total Score (sent to optimizer) */
@@ -94,30 +88,6 @@ public:
     Bspline_regularize_state rst;       /* Analytic regularization */
 };
 
-class Bspline_mi_hist_Parms {
-public:
-    /* Used by all histogram types */
-    enum BsplineHistType type;  /* Type of histograms */
-    plm_long bins;           /* # of bins in histogram  */
-    float offset;               /* minimum voxel intensity */
-    plm_long big_bin;             /* fullest bin index       */
-    float delta;                /* bin OR key spacing   */
-
-    /* For V-Optimal Histograms */
-    plm_long keys;                /* # of keys               */
-    int* key_lut;               /* bin keys lookup table   */
-};
-
-class Bspline_mi_hist {
-public:
-    Bspline_mi_hist_Parms moving;
-    Bspline_mi_hist_Parms fixed;
-    Bspline_mi_hist_Parms joint;    // JAS: for big_bin
-    double* m_hist;
-    double* f_hist;
-    double* j_hist;
-};
-
 class PLMREGISTER_API Bspline_parms
 {
 public:
@@ -133,7 +103,7 @@ public:
     int gpuid;                   /* Sets GPU to use for multi-gpu machines */
     double_align8 convergence_tol; /* When to stop iterations based on score */
     int convergence_tol_its;     /* How many iterations to check for convergence tol */
-    Bspline_mi_hist mi_hist;     /* Histogram for MI score */
+    Bspline_mi_hist_set mi_hist; /* Histogram for MI score */
     double_align8 lbfgsb_factr;  /* Function value tolerance for L-BFGS-B */
     double_align8 lbfgsb_pgtol;  /* Projected grad tolerance for L-BFGS-B */
 
@@ -196,7 +166,6 @@ void bspline_update_grad_b (
 );
 int* calc_offsets (int* tile_dims, int* cdims);
 void find_knots (plm_long* knots, plm_long tile_num, plm_long* rdims, plm_long* cdims);
-void dump_hist (Bspline_mi_hist* mi_hist, int it);
 void report_score (
     Bspline_parms *parms,
     Bspline_xform *bxf, 
@@ -210,7 +179,7 @@ void bspline_save_debug_state (
     Bspline_state *bst, 
     Bspline_xform* bxf
 );
-void dump_xpm_hist (Bspline_mi_hist* mi_hist, char* file_base, int iter);
+void dump_xpm_hist (Bspline_mi_hist_set* mi_hist, char* file_base, int iter);
 void bspline_make_grad (
     float* cond_x, float* cond_y, float* cond_z,
     Bspline_xform* bxf,

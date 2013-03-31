@@ -325,58 +325,6 @@ dump_gradient (Bspline_xform* bxf, Bspline_score* ssd, const char* fn)
 }
 
 void
-dump_hist (Bspline_mi_hist* mi_hist, int it, const std::string& prefix)
-{
-    double* f_hist = mi_hist->f_hist;
-    double* m_hist = mi_hist->m_hist;
-    double* j_hist = mi_hist->j_hist;
-    plm_long i, j, v;
-    FILE *fp;
-    //char fn[_MAX_PATH];
-    std::string fn;
-    //char buf[_MAX_PATH];
-    std::string buf;
-
-    buf = string_format ("hist_fix_%02d.csv", it);
-    //sprintf (buf, "hist_fix_%02d.csv", it);
-    fn = prefix + buf;
-    make_directory_recursive (fn.c_str());
-    fp = fopen (fn.c_str(), "wb");
-    if (!fp) return;
-    for (plm_long i = 0; i < mi_hist->fixed.bins; i++) {
-        fprintf (fp, "%u %f\n", (unsigned int) i, f_hist[i]);
-    }
-    fclose (fp);
-
-    //sprintf (buf, "hist_mov_%02d.csv", it);
-    buf = string_format ("hist_mov_%02d.csv", it);
-    fn = prefix + buf;
-    make_directory_recursive (fn.c_str());
-    fp = fopen (fn.c_str(), "wb");
-    if (!fp) return;
-    for (i = 0; i < mi_hist->moving.bins; i++) {
-        fprintf (fp, "%u %f\n", (unsigned int) i, m_hist[i]);
-    }
-    fclose (fp);
-
-    //sprintf (buf, "hist_jnt_%02d.csv", it);
-    buf = string_format ("hist_jnt_%02d.csv", it);
-    fn = prefix + buf;
-    make_directory_recursive (fn.c_str());
-    fp = fopen (fn.c_str(), "wb");
-    if (!fp) return;
-    for (i = 0, v = 0; i < mi_hist->fixed.bins; i++) {
-        for (j = 0; j < mi_hist->moving.bins; j++, v++) {
-            if (j_hist[v] > 0) {
-                fprintf (fp, "%u %u %u %g\n", (unsigned int) i, 
-                    (unsigned int) j, (unsigned int) v, j_hist[v]);
-            }
-        }
-    }
-    fclose (fp);
-}
-
-void
 bspline_display_coeff_stats (Bspline_xform* bxf)
 {
     float cf_min, cf_avg, cf_max;
@@ -423,7 +371,7 @@ bspline_save_debug_state (
         if (parms->metric == BMET_MI) {
             sprintf (buf, "%02d_", parms->debug_stage);
             fn = parms->debug_dir + "/" + buf;
-            dump_hist (&parms->mi_hist, bst->it, fn);
+            parms->mi_hist.dump_hist (bst->it, fn);
         }
     }
 }

@@ -51,13 +51,10 @@ bspline_optimize_steepest_trace (
 
     // JAS 04.19.2010
     // For Testing...
-#ifdef DOUBLE_HISTS
-    if (parms->metric == BMET_MI)
-    {
+    if (parms->metric == BMET_MI) {
         alpha = 1.0f;
         printf ("Using alpha_0 (%f)\n", alpha);
     }
-#endif
 
     /* Allocate memory for search direction */
     x = (float*) malloc (bxf->num_coeff * sizeof(float));
@@ -235,13 +232,10 @@ bspline_optimize_steepest_trust (
 
     // JAS 04.19.2010
     // For testing...
-#ifdef DOUBLE_HISTS
-    if (parms->metric == BMET_MI)
-    {
+    if (parms->metric == BMET_MI) {
         alpha = 1.0f;
         printf ("Using alpha_0 (%f)\n", alpha);
     }
-#endif
 
     /* Allocate memory for search direction */
     x = (float*) malloc (bxf->num_coeff * sizeof(float));
