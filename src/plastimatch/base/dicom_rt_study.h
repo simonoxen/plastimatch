@@ -56,6 +56,8 @@ public:
     const Metadata *get_rtss_metadata () const;
     Metadata *get_dose_metadata ();
     const Metadata *get_dose_metadata () const;
+
+    
 };
 
 #endif

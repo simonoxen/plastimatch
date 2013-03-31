@@ -18,6 +18,7 @@ option (PLM_BUILD_MEX_TEST    "Build mex test program"    OFF)
 option (PLM_BUILD_NLOPT_TEST  "Build NLopt test program"  OFF)
 option (PLM_BUILD_OPENCL_TEST "Build OpenCL test program" OFF)
 option (PLM_BUILD_OPENMP_TEST "Build OpenMP test program" OFF)
+option (PLM_BUILD_SMARTP_TEST "Build Smart pointer test program" OFF)
 option (PLM_BUILD_QT_TEST     "Build Qt test program"     OFF)
 option (PLM_BUILD_RANSAC_TEST "Build RANSAC test program" OFF)
 
@@ -31,6 +32,9 @@ if (CUDA_FOUND AND PLM_BUILD_CUDA_TEST)
     "${CUDA_LIBRARIES}" "" 
     ${BUILD_ALWAYS} ${INSTALL_NEVER})
   set_target_properties (cuda_test PROPERTIES LINKER_LANGUAGE CXX)
+
+  # Test executable -- cuda_tex_test
+  add_subdirectory (CUDA_tex_test)
 endif ()
 
 # Test executable -- dcmtk
@@ -138,9 +142,14 @@ if (PLM_BUILD_OPENMP_TEST AND OPENMP_FOUND)
     ${BUILD_ALWAYS} ${INSTALL_NEVER})
 endif ()
 
-# Test executable -- cuda_tex_test
-if (PLM_BUILD_CUDA_TEST AND CUDA_FOUND)
-  add_subdirectory (CUDA_tex_test)
+# Test executable -- smart pointers
+if (PLM_BUILD_SMARTP_TEST)
+  ## This is a test, in case of deciding to use shared_ptr
+  find_package (TR1)
+
+  plm_add_executable (test_smartp test_smartp.cxx
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+    ${BUILD_ALWAYS} ${INSTALL_NEVER})
 endif ()
 
 # Test executable -- qt
@@ -155,9 +164,6 @@ if (PLM_BUILD_RANSAC_TEST)
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
-
-## This is a test, in case of deciding to use shared_ptr
-find_package (TR1)
 
 plm_add_executable (test_eps test_eps.cxx
   "" "" 

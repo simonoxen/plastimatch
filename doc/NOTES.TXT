@@ -1,4 +1,19 @@
 
+***** Smart pointers redux *****
+
+Prefer to have "internal" smart pointers
+
+Dlib has 3 kinds
+
+#include "smart_pointers/scoped_ptr.h"
+#include "smart_pointers/shared_ptr.h"
+#include "smart_pointers/weak_ptr.h"
+
+- shared_ptr is a standard smart pointer
+- weak_ptr is a shared_ptr that can go away; you make a special call to 
+  see if it's still there
+- scoped_ptr doesn't have reference counting
+
 ***** DICOM re-org 2013-03-24 *****
 
 Future plan:
