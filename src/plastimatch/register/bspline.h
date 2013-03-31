@@ -27,6 +27,7 @@
 #endif
 
 class Bspline_landmarks;
+class Bspline_mi_hist_set;
 class Bspline_xform;
 class Reg_parms;
 class Volume;
@@ -85,7 +86,8 @@ public:
     int feval;           /* Number of function evaluations */
     Bspline_score ssd;   /* Score and Gradient  */
     void* dev_ptrs;      /* GPU Device Pointers */
-    Bspline_regularize_state rst;       /* Analytic regularization */
+    Bspline_regularize_state rst;   /* Analytic regularization */
+    Bspline_mi_hist_set *mi_hist;   /* MI histograms */
 };
 
 class PLMREGISTER_API Bspline_parms
@@ -103,7 +105,13 @@ public:
     int gpuid;                   /* Sets GPU to use for multi-gpu machines */
     double_align8 convergence_tol; /* When to stop iterations based on score */
     int convergence_tol_its;     /* How many iterations to check for convergence tol */
-    Bspline_mi_hist_set mi_hist; /* Histogram for MI score */
+
+    /* MI parms */
+    Bspline_mi_hist_type mi_hist_type;
+    plm_long mi_hist_fixed_bins;
+    plm_long mi_hist_moving_bins;
+
+    /* LBFGSB optimizer parms */
     double_align8 lbfgsb_factr;  /* Function value tolerance for L-BFGS-B */
     double_align8 lbfgsb_pgtol;  /* Projected grad tolerance for L-BFGS-B */
 

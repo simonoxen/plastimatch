@@ -208,12 +208,18 @@ do_gpuit_bspline_stage_internal (
         parms.reg_parms->lambda);
 
     /* Mutual information histograms */
+    parms.mi_hist_type = stage->mi_histogram_type;
+    parms.mi_hist_fixed_bins  = stage->mi_histogram_bins_fixed;
+    parms.mi_hist_moving_bins = stage->mi_histogram_bins_moving;
+
+#if defined (commentout)
     parms.mi_hist.fixed.type  = (BsplineHistType)stage->mi_histogram_type;
     parms.mi_hist.moving.type = (BsplineHistType)stage->mi_histogram_type;
     parms.mi_hist.fixed.bins  = stage->mi_histogram_bins_fixed;
     parms.mi_hist.moving.bins = stage->mi_histogram_bins_moving;
     parms.mi_hist.joint.bins  = parms.mi_hist.fixed.bins
                               * parms.mi_hist.moving.bins;
+#endif
 
     /* Other stuff */
     parms.max_its = stage->max_its;

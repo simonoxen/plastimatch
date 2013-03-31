@@ -40,6 +40,7 @@
 #include "bspline_interpolate.h"
 #include "bspline_landmarks.h"
 #include "bspline_mi.h"
+#include "bspline_mi_hist.h"
 #include "bspline_mse.h"
 #include "bspline_regularize.h"
 #include "bspline_xform.h"
@@ -70,18 +71,9 @@ Bspline_parms::Bspline_parms ()
     this->convergence_tol = 0.1;
     this->convergence_tol_its = 4;
 
-    this->mi_hist.f_hist = 0;
-    this->mi_hist.m_hist = 0;
-    this->mi_hist.j_hist = 0;
-    this->mi_hist.fixed.type = HIST_EQSP;
-    this->mi_hist.moving.type = HIST_EQSP;
-    this->mi_hist.fixed.bins = 32;
-    this->mi_hist.moving.bins = 32;
-    this->mi_hist.joint.bins 
-        = this->mi_hist.fixed.bins * this->mi_hist.moving.bins;
-    this->mi_hist.fixed.big_bin = 0;
-    this->mi_hist.moving.big_bin = 0;
-    this->mi_hist.joint.big_bin = 0;
+    this->mi_hist_type = HIST_EQSP;
+    this->mi_hist_fixed_bins = 32;
+    this->mi_hist_moving_bins = 32;
 
     this->lbfgsb_factr = 1.0e+7;
     this->lbfgsb_pgtol = 1.0e-5;
@@ -92,9 +84,9 @@ Bspline_parms::Bspline_parms ()
     this->fixed_mask = NULL;
     this->moving_mask = NULL;
 
-    this->blm = new Bspline_landmarks;
     this->reg_parms = new Reg_parms;
 
+    this->blm = new Bspline_landmarks;
     this->rbf_radius = 0;
     this->rbf_young_modulus = 0;
     this->xpm_hist_dump = 0;
@@ -189,6 +181,15 @@ bspline_state_create (
         rst->fixed = parms->fixed;
         rst->moving = parms->moving;
         bspline_regularize_initialize (reg_parms, rst, bxf);
+    }
+
+    /* Initialize MI histograms */
+    bst->mi_hist = 0;
+    if (parms->metric == BMET_MI) {
+        bst->mi_hist = new Bspline_mi_hist_set (
+            parms->mi_hist_type,
+            parms->mi_hist_fixed_bins,
+            parms->mi_hist_moving_bins);
     }
 
     /* JAS Fix 2011.09.14
@@ -371,7 +372,7 @@ bspline_save_debug_state (
         if (parms->metric == BMET_MI) {
             sprintf (buf, "%02d_", parms->debug_stage);
             fn = parms->debug_dir + "/" + buf;
-            parms->mi_hist.dump_hist (bst->it, fn);
+            bst->mi_hist->dump_hist (bst->it, fn);
         }
     }
 }
@@ -379,18 +380,6 @@ bspline_save_debug_state (
 void
 bspline_parms_free (Bspline_parms* parms)
 {
-    if (parms->mi_hist.fixed.type == HIST_VOPT) {
-        free (parms->mi_hist.fixed.key_lut);
-    }
-    if (parms->mi_hist.moving.type == HIST_VOPT) {
-        free (parms->mi_hist.moving.key_lut);
-    }
-
-    if (parms->mi_hist.j_hist) {
-        free (parms->mi_hist.f_hist);
-        free (parms->mi_hist.m_hist);
-        free (parms->mi_hist.j_hist);
-    }
 }
 
 void

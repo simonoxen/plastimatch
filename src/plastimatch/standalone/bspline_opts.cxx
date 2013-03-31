@@ -159,16 +159,14 @@ bspline_opts_parse_args (Bspline_options* options, int argc, char* argv[])
 	    unsigned int a, b;
 	    rc = sscanf (argv[i], "%u %u", &a, &b);
 	    if (rc == 1) {
-		parms->mi_hist.fixed.bins = a;
-    		parms->mi_hist.moving.bins = a;
+		parms->mi_hist_fixed_bins = a;
+    		parms->mi_hist_moving_bins = a;
 	    } else if (rc == 2) {
-		parms->mi_hist.fixed.bins = a;
-    		parms->mi_hist.moving.bins = b;
+		parms->mi_hist_fixed_bins = a;
+    		parms->mi_hist_moving_bins = b;
 	    } else {
 		print_usage ();
 	    }
-	    parms->mi_hist.joint.bins = parms->mi_hist.fixed.bins
-		* parms->mi_hist.moving.bins;
 	}
 	else if (!strcmp (argv[i], "-M")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {
@@ -350,8 +348,7 @@ bspline_opts_parse_args (Bspline_options* options, int argc, char* argv[])
 	    }
 	}
 	else if (!strcmp (argv[i], "--vopt")) {
-	    parms->mi_hist.fixed.type = HIST_VOPT;
-	    parms->mi_hist.moving.type = HIST_VOPT;
+	    parms->mi_hist_type = HIST_VOPT;
 	}
 	else if (!strcmp (argv[i], "--list-gpu")) {
 #if (CUDA_FOUND)

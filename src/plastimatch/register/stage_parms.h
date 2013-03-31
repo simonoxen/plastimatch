@@ -9,7 +9,8 @@
 #include <string>
 #include <ctype.h>
 #include <stdlib.h>
-#include "bspline.h"    /* for enums */
+#include "bspline.h"            /* for enums */
+#include "bspline_mi_hist.h"    /* for enums */
 #include "plm_image_type.h"
 #include "plm_path.h"
 #include "pstring.h"
@@ -96,11 +97,11 @@ public:
     float rsg_grad_tol;
     /* Quaternion optimizer */
     float learn_rate;
-    /* Mattes mutual information */
+    /* Mutual information */
     int mi_histogram_bins_fixed;
     int mi_histogram_bins_moving;
     int mi_num_spatial_samples;
-    enum BsplineHistType mi_histogram_type;
+    enum Bspline_mi_hist_type mi_histogram_type;
     /* ITK & GPUIT demons */
     float demons_std;
     /* GPUIT demons */

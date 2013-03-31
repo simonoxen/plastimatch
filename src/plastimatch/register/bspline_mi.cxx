@@ -30,9 +30,6 @@
 #include "volume.h"
 #include "xpm.h"
 
-/* Maximum # of bins for a vopt histogram */
-#define VOPT_RES 1000
-
 /* Some neat debug facilities
  *   Will probably move these somewhere more appropriate soon
  */
@@ -93,330 +90,6 @@ dump_vol_clipped (char* fn, Volume* vin, float bot, float top)
     }
 }
 #endif
-
-/* -----------------------------------------------------------------------
-   Initialization and teardown
-   ----------------------------------------------------------------------- */
-static inline double
-vopt_bin_error (int start, int end, double* s_lut, double* ssq_lut, double* cnt_lut)
-{
-    double sq_diff;
-    double diff;
-    double delta;
-    double v, n;
-
-    sq_diff = ssq_lut[end] - ssq_lut[start];
-    diff = s_lut[end] - s_lut[start];
-    delta = (double)end - (double)start + 1.0;
-    n = cnt_lut[end] - cnt_lut[start];
-    v = sq_diff - (diff*diff)/delta;
-
-    /* Penalize solutions that have bins with less than one voxel */
-    if (n < 1.0) {
-        return DBL_MAX;
-    }
-
-    return v;
-} 
-
-static void
-bspline_initialize_mi_bigbin (
-    double* hist, 
-    Bspline_mi_hist* hparms, 
-    Volume* vol
-)
-{
-    int idx_bin;
-    float* img = (float*) vol->img;
-
-    if (!img) {
-        logfile_printf ("ERROR: trying to pre-scan empty image!\n");
-        exit (-1);
-    }
-
-    /* build a quick histogram */
-    for (plm_long i=0; i<vol->npix; i++) {
-        idx_bin = floor ((img[i] - hparms->offset) / hparms->delta);
-        if (hparms->type == HIST_VOPT) {
-            idx_bin = hparms->key_lut[idx_bin];
-        }
-        hist[idx_bin]++;
-    }
-
-    /* look for biggest bin */
-    for (plm_long i=0; i<hparms->bins; i++) {
-        if (hist[i] > hist[hparms->big_bin]) {
-            hparms->big_bin = i;
-        }
-    }
-//    printf ("big_bin: %i\n", hparms->big_bin);
-}
-
-static void
-bspline_initialize_mi_hist_eqsp (Bspline_mi_hist* hparms, Volume* vol)
-{
-    plm_long i;
-    float min_vox, max_vox;
-    float* img = (float*) vol->img;
-
-    if (!img) {
-        logfile_printf ("Error trying to create histogram from empty image\n");
-        exit (-1);
-    }
-
-    min_vox = max_vox = img[0];
-    for (i = 0; i < vol->npix; i++) {
-        if (img[i] < min_vox) {
-            min_vox = img[i];
-        } else if (img[i] > max_vox) {
-            max_vox = img[i];
-        }
-    }
-
-    /* To avoid rounding issues, top and bottom bin are only half full */
-    hparms->delta = (max_vox - min_vox) / (hparms->bins - 1);
-    hparms->offset = min_vox - 0.5 * hparms->delta;
-}
-
-#if defined (commentout)
-static void
-bspline_mi_hist_vopt_dump_ranges (
-    Bspline_mi_hist* hparms,
-    Volume* vol,
-    const std::string& prefix
-)
-{
-    FILE* fp;
-    std::string fn;
-    char buff[1024];
-    plm_long i, j;
-
-    fn = prefix + "_vopt_ranges.txt";
-    fp = fopen (fn.c_str(), "wb");
-    if (!fp) return;
-
-    printf ("Writing %s vopt debug files to disk...\n", prefix.c_str());
-
-    int old_bin = hparms->key_lut[0];
-    float left = hparms->offset;
-    float right = left;
-    j = 0;
-    for (i=0; i<hparms->keys; i++) {
-        if (hparms->key_lut[i] == old_bin) {
-            right += hparms->delta;
-        } else {
-            fprintf (fp, "Bin %u [%6.2f .. %6.2f]\n", (unsigned int) j, 
-                left, right);
-            sprintf (buff, "%s_vopt_lvl_%03u.mha", prefix.c_str(), 
-                (unsigned int) j);
-            dump_vol_clipped (buff, vol, left, right);
-
-            old_bin = hparms->key_lut[i];
-            left = right;
-            right += hparms->delta;
-            j++;
-        }
-    }
-    /* Pick up the last bin */
-    fprintf (fp, "Bin %u [%6.2f .. %6.2f]\n", (unsigned int) j, 
-        left, right);
-    sprintf (buff, "%s_vopt_lvl_%03u.mha", prefix.c_str(), 
-        (unsigned int) j);
-    dump_vol_clipped (buff, vol, left, right);
-    fclose (fp);
-}
-#endif
-
-/* JAS - 2011.08.08
- * Experimental implementation of V-Optimal Histograms
- * ref: 
- *   http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.92.3195&rep=rep1&type=pdf
- */
-static void
-bspline_initialize_mi_hist_vopt (Bspline_mi_hist* hparms, Volume* vol)
-{
-    int idx_bin;
-    plm_long curr, next, bottom;
-    float min_vox, max_vox;
-
-    int* tracker;
-    double* tmp_hist;
-    double* tmp_avg;
-    double* s_lut;
-    double* ssq_lut;
-    double* err_lut;
-    double* cnt_lut;
-    double candidate;
-    float* img = (float*) vol->img;
-
-    if (!img) {
-        logfile_printf ("Error trying to create histogram from empty image\n");
-        exit (-1);
-    }
-
-    hparms->keys = VOPT_RES;
-    tmp_hist = (double*) malloc (hparms->keys * sizeof (double));
-    tmp_avg  = (double*) malloc (hparms->keys * sizeof (double));
-    memset (tmp_hist, 0, hparms->keys * sizeof (double));
-    memset (tmp_avg,  0, hparms->keys * sizeof (double));
-
-    s_lut   = (double*) malloc (hparms->keys * sizeof (double));
-    ssq_lut = (double*) malloc (hparms->keys * sizeof (double));
-    err_lut = (double*) malloc (hparms->bins * hparms->keys * sizeof (double));
-    cnt_lut = (double*) malloc (hparms->keys* sizeof (double));
-    memset (err_lut, 0, hparms->bins * hparms->keys * sizeof (double));
-
-    tracker = (int*) malloc (hparms->bins * hparms->keys * sizeof (int));
-    memset (tracker, 0, hparms->bins * hparms->keys * sizeof (int));
-
-    /* Determine input image value range */
-    min_vox = max_vox = img[0];
-    for (plm_long i=1; i < vol->npix; i++) {
-        if (img[i] < min_vox) {
-            min_vox = img[i];
-        } else if (img[i] > max_vox) {
-            max_vox = img[i];
-        }
-    }
-
-    /* To avoid rounding issues, top and bottom bin are only half full */
-    hparms->delta = (max_vox - min_vox) / (hparms->keys - 1);
-    hparms->offset = min_vox - 0.5 * hparms->delta;
-
-    /* Construct high resolution histogram w/ bin contribution averages*/
-    for (plm_long i=0; i<vol->npix; i++) {
-        idx_bin = floor ((img[i] - hparms->offset) / hparms->delta);
-        tmp_hist[idx_bin]++;
-        tmp_avg[idx_bin] += img[i] - hparms->offset;
-    }
-
-    /* Sorted estimation table */
-    for (plm_long i=0; i<hparms->keys; i++) {
-        if (tmp_hist[i] > 0) {
-            tmp_avg[i] = tmp_avg[i] / tmp_hist[i];
-        }
-        else if (i > 0) {
-            tmp_avg[i] = tmp_avg[i-1];
-        }
-    }
-
-    /* Create lookup tables for error computations */
-    s_lut[0] = tmp_avg[0];
-    ssq_lut[0] = (tmp_avg[0] * tmp_avg[0]);
-    cnt_lut[0] = tmp_hist[0];
-    for (plm_long i=1; i<hparms->keys; i++) {
-        s_lut[i] = s_lut[i-1] + tmp_avg[i];
-        ssq_lut[i] = ssq_lut[i-1] + (tmp_avg[i] * tmp_avg[i]);
-        cnt_lut[i] = cnt_lut[i-1] + tmp_hist[i];
-//        printf ("[%i] %f\n", i, tmp_avg[i]);
-    }
-
-    free (tmp_avg);
-    free (tmp_hist);
-
-    /* Compute the one-bin scores */
-    for (plm_long i=0; i<hparms->keys; i++) {
-        err_lut[i] = vopt_bin_error (0, i, s_lut, ssq_lut, cnt_lut);
-    }
-
-    /* Compute best multi-bin scores */
-    for (plm_long j=1; j<hparms->bins; j++) {
-        for (plm_long i=0; i<hparms->keys; i++) {
-
-            err_lut[hparms->keys*j+i] = DBL_MAX;
-            tracker[hparms->keys*j+i] = 0;
-
-            for (plm_long k=0; k<i; k++) {
-                candidate = err_lut[hparms->keys*(j-1)+k] + vopt_bin_error (k+1, i, s_lut, ssq_lut, cnt_lut);
-                if (candidate <= err_lut[hparms->keys*j+i]) {
-                    err_lut[hparms->keys*j+i] = candidate;
-                    tracker[hparms->keys*j+i] = k;
-                }
-            }
-        }
-    }
-
-    free (s_lut);
-    free (ssq_lut);
-    free (err_lut);
-    free (cnt_lut);
-
-    /* Build the linear key table */
-    hparms->key_lut = (int*) malloc (hparms->keys * sizeof (int));
-    memset (hparms->key_lut, 0, hparms->keys * sizeof (int));
-
-    curr = hparms->keys-1;
-    for (plm_long j=hparms->bins-1; j>=0; j--) {
-        next = tracker[hparms->keys*j+curr];
-        bottom = next+1;
-        if (j == 0) { bottom = 0; }
-
-//        printf ("[%i] from %i to %i\tErr: %6.2e\n",
-//                  j, bottom, curr, err_lut[hparms->keys*j+curr]);
-        for (plm_long i=bottom; i<=curr; i++) {
-            hparms->key_lut[i] = j;
-        }
-
-        curr = next;
-    }
-
-    free (tracker);
-}
-
-
-static void
-bspline_initialize_mi_hist (Bspline_mi_hist* hparms, Volume* vol)
-{
-    /* If user wants more than VOPT can offer, fallback to EQSP */
-    if ((hparms->bins > VOPT_RES) && (hparms->type == HIST_VOPT)) {
-        printf ("WARNING: Falling back to EQSP histograms.\n"
-                "         (Reason: # bins > %i)\n", VOPT_RES);
-        hparms->type = HIST_EQSP;
-    }
-
-    /* Histogram type specific init procedures */
-    if (hparms->type == HIST_EQSP) {
-        bspline_initialize_mi_hist_eqsp (hparms, vol);
-    }
-    else if (hparms->type == HIST_VOPT) {
-        bspline_initialize_mi_hist_vopt (hparms, vol);
-    }
-    else {
-        fprintf (stderr, "Error: Encountered invalid histogram type.  Terminating...\n");
-        exit (0);
-    }
-}
-
-void
-bspline_initialize_mi (Bspline_parms* parms)
-{
-    Volume *fixed = parms->fixed;
-    Volume *moving = parms->moving;
-
-    Bspline_mi_hist_set* mi_hist = &parms->mi_hist;
-    mi_hist->m_hist = (double*) malloc (sizeof (double) * mi_hist->moving.bins);
-    mi_hist->f_hist = (double*) malloc (sizeof (double) * mi_hist->fixed.bins);
-    mi_hist->j_hist = (double*) malloc (sizeof (double) * mi_hist->fixed.bins * mi_hist->moving.bins);
-    bspline_initialize_mi_hist (&mi_hist->moving, moving);
-    bspline_initialize_mi_hist (&mi_hist->fixed, fixed);
-
-#if defined (commentout)
-    if (parms->debug) {
-        bspline_mi_hist_vopt_dump_ranges (&mi_hist->fixed, fixed, "fixed");
-        bspline_mi_hist_vopt_dump_ranges (&mi_hist->moving, moving, "moving");
-    }
-#endif
-
-    /* Initialize biggest bin trackers for OpenMP MI */
-    bspline_initialize_mi_bigbin (mi_hist->f_hist, &mi_hist->fixed, fixed);
-    bspline_initialize_mi_bigbin (mi_hist->m_hist, &mi_hist->moving, moving);
-
-    /* This estimate /could/ be wrong for certain image sets */
-    /* Will be auto corrected after first evaluation if incorrect */
-    mi_hist->joint.big_bin = mi_hist->fixed.big_bin
-                           * mi_hist->moving.bins
-                           + mi_hist->moving.big_bin;
-}
 
 /* -----------------------------------------------------------------------
    MI computation functions
@@ -1652,7 +1325,7 @@ bspline_score_i_mi (
     Volume *moving = parms->moving;
 
     Bspline_score* ssd = &bst->ssd;
-    Bspline_mi_hist_set* mi_hist = &parms->mi_hist;
+    Bspline_mi_hist_set* mi_hist = bst->mi_hist;
     long pidx;
     float num_vox_f;
 
@@ -1984,8 +1657,7 @@ bspline_score_h_mi (
     Volume *moving = parms->moving;
 
     Bspline_score* ssd = &bst->ssd;
-    Bspline_mi_hist_set* mi_hist = &parms->mi_hist;
-//    plm_long rijk[3];
+    Bspline_mi_hist_set* mi_hist = bst->mi_hist;
     float diff;
     float* f_img = (float*) fixed->img;
     float* m_img = (float*) moving->img;
@@ -2166,14 +1838,14 @@ bspline_score_h_mi (
                     if (fijk[1] >= bxf->roi_offset[1] + bxf->roi_dim[1]) { continue; }
                     if (fijk[2] >= bxf->roi_offset[2] + bxf->roi_dim[2]) { continue; }
 
+                    /* Compute space coordinates of fixed image voxel */
+                    GET_COMMON_REAL_SPACE_COORDS (fxyz, fijk, fixed, bxf);
+
                     /* JAS 2012.03.26: Tends to break the optimizer (PGTOL)   */
                     /* Check to make sure the indices are valid (inside mask) */
                     if (fixed_mask) {
                         if (!inside_mask (fxyz, fixed_mask)) continue;
                     }
-
-                    /* Compute space coordinates of fixed image voxel */
-                    GET_COMMON_REAL_SPACE_COORDS (fxyz, fijk, fixed, bxf);
 
                     /* Compute deformation vector (dxyz) for voxel */
                     bspline_interp_pix_c (dxyz, bxf, pidx, q);
@@ -2267,8 +1939,7 @@ bspline_score_g_mi (
     Volume *moving = parms->moving;
 
     Bspline_score* ssd = &bst->ssd;
-    Bspline_mi_hist_set* mi_hist = &parms->mi_hist;
-//    plm_long rijk[3];
+    Bspline_mi_hist_set* mi_hist = bst->mi_hist;
     float diff;
     float* f_img = (float*) fixed->img;
     float* m_img = (float*) moving->img;
@@ -2525,7 +2196,7 @@ bspline_score_f_mi (
     Volume *moving = parms->moving;
 
     Bspline_score* ssd = &bst->ssd;
-    Bspline_mi_hist_set* mi_hist = &parms->mi_hist;
+    Bspline_mi_hist_set* mi_hist = bst->mi_hist;
     int pidx;
     float num_vox_f;
 
@@ -2825,7 +2496,7 @@ bspline_score_e_mi (
     Volume *moving = parms->moving;
 
     Bspline_score* ssd = &bst->ssd;
-    Bspline_mi_hist_set* mi_hist = &parms->mi_hist;
+    Bspline_mi_hist_set* mi_hist = bst->mi_hist;
     long pidx;
     float num_vox_f;
 
@@ -3168,7 +2839,7 @@ bspline_score_d_mi (
     Volume *moving = parms->moving;
 
     Bspline_score* ssd = &bst->ssd;
-    Bspline_mi_hist_set* mi_hist = &parms->mi_hist;
+    Bspline_mi_hist_set* mi_hist = bst->mi_hist;
     plm_long rijk[3];
     float diff;
     float* f_img = (float*) fixed->img;
@@ -3460,7 +3131,7 @@ bspline_score_c_mi (
     Volume* moving_mask = parms->moving_mask;
 
     Bspline_score* ssd = &bst->ssd;
-    Bspline_mi_hist_set* mi_hist = &parms->mi_hist;
+    Bspline_mi_hist_set* mi_hist = bst->mi_hist;
     //plm_long rijk[3];
     plm_long fijk[3], fv;
     float mijk[3];
@@ -3701,7 +3372,7 @@ bspline_score_c_mi_no_dcos (
     Volume *moving = parms->moving;
 
     Bspline_score* ssd = &bst->ssd;
-    Bspline_mi_hist_set* mi_hist = &parms->mi_hist;
+    Bspline_mi_hist_set* mi_hist = bst->mi_hist;
     plm_long rijk[3];
     plm_long fijk[3], fv;
     float mijk[3];

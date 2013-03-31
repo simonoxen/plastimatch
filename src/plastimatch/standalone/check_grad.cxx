@@ -78,7 +78,7 @@ check_gradient (
     }
 
     if (parms->metric == BMET_MI) {
-        bspline_initialize_mi (parms);
+        bod.bst->mi_hist->initialize (parms->fixed, parms->moving);
     }
 
     /* Get score and gradient */

@@ -100,18 +100,13 @@ bspline_optimize (
     bod.bxf = bxf;
     bod.parms = parms;
 
-#if 0
-    parms->fixed = fixed;
-    parms->moving = moving;
-    parms->moving_grad = moving_grad;
-#endif
-
     bod.bst = bspline_state_create (bxf, parms);
     log_parms (parms);
     log_bxf_header (bxf);
 
+    /* Initialize histograms */
     if (parms->metric == BMET_MI) {
-        bspline_initialize_mi (parms);
+        bod.bst->mi_hist->initialize (parms->fixed, parms->moving);
     }
 
     /* Do the optimization */

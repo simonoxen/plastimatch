@@ -9,7 +9,6 @@
 class Bspline_optimize_data;
 class Bspline_parms;
 
-PLMREGISTER_C_API void bspline_initialize_mi (Bspline_parms* parms);
 PLMREGISTER_C_API void bspline_score_c_mi (Bspline_optimize_data *bod);
 PLMREGISTER_C_API void bspline_score_d_mi (Bspline_optimize_data *bod);
 PLMREGISTER_C_API void bspline_score_e_mi (Bspline_optimize_data *bod);
