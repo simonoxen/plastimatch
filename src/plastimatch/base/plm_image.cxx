@@ -905,9 +905,12 @@ void
 Plm_image::convert_to_itk_float_field (void)
 {
     switch (m_type) {
+    case PLM_IMG_TYPE_ITK_FLOAT_FIELD:
+	/* do nothing */
+	break;
     default:
 	print_and_exit (
-	    "Error: unhandled conversion from %s to itk_float_field\n",
+        "Error: unhandled conversion from %s to itk_float_field\n",
 	    plm_image_type_string (this->m_type));
 	return;
     }

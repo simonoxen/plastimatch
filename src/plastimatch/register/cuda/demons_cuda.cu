@@ -394,7 +394,8 @@ demons_cuda (
     Plm_timer* gpu_timer = new Plm_timer;
     Plm_timer* kernel_timer = new Plm_timer;
 
-    int vol_size, interleaved_vol_size, inlier_size, threadX, threadY, threadZ, blockX, blockY, blockZ, num_elements, half_num_elements, reductionBlocks;
+    int threadX, threadY, threadZ, blockX, blockY, blockZ, num_elements, half_num_elements, reductionBlocks;
+	size_t vol_size, interleaved_vol_size, inlier_size;
     int *d_inliers;
     float total_runtime, spacing_div2[3];
     float *d_vf_est, *d_vf_smooth, *d_moving, *d_fixed, *d_m_grad, *d_m_grad_mag, *d_kerx, *d_kery, *d_kerz, *d_swap, *d_ssd;

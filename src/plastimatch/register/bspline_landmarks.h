@@ -19,7 +19,7 @@ typedef Pointset<Labeled_point> Labeled_pointset;
 
 class PLMREGISTER_API Bspline_landmarks {
 public:
-    int num_landmarks;
+    size_t num_landmarks;
     const Labeled_pointset *fixed_landmarks;
     const Labeled_pointset *moving_landmarks;
     float landmark_stiffness;

@@ -587,7 +587,6 @@ load_ct (RTOG_Header* rtog_header, Program_Parms* parms)
 	FILE* fp;
 	char fn[BUFLEN];
 	int slice_no = rtog_header->ct.first_image + i;
-	int rc;
 	snprintf (fn, BUFLEN, "%s/aapm%04d", parms->indir, slice_no);
 	fp = fopen (fn, "rb");
 	if (!fp) {
@@ -596,7 +595,7 @@ load_ct (RTOG_Header* rtog_header, Program_Parms* parms)
 	}
 
 	b -= slice_voxels;
-	rc = fread (b, sizeof(unsigned short), slice_voxels, fp);
+	size_t rc = fread (b, sizeof(unsigned short), slice_voxels, fp);
 
 	if (rc != slice_voxels) {
 	    printf ("Error reading from file %s (%d bytes read)\n", fn, rc);
@@ -685,7 +684,6 @@ load_dose (RTOG_Header* rtog_header, Program_Parms* parms)
 {
     FILE* fp;
     char fn[BUFLEN];
-    int rc;
     int num_voxels = rtog_header->dose.size_of_dimension_1
 	* rtog_header->dose.size_of_dimension_2
 	* rtog_header->dose.size_of_dimension_3;
@@ -708,7 +706,7 @@ load_dose (RTOG_Header* rtog_header, Program_Parms* parms)
 	printf ("Error: could not open file \"%s\" for read.\n", fn);
 	exit (-1);
     }
-    rc = fread (rtog_header->dose.image, sizeof(unsigned short), num_voxels, fp);
+    size_t rc = fread (rtog_header->dose.image, sizeof(unsigned short), num_voxels, fp);
     if (rc != num_voxels) {
 	printf ("Error: could not read dose from file %s (%d bytes read)\n", fn, rc);
 	exit (-1);

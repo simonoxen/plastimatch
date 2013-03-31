@@ -145,7 +145,7 @@ rasterize_slice (
     memset (edge_table, 0, dims[1] * sizeof(Edge*));
     for (size_t i = 0; i < num_vertices; i++) {
 	int ymin, ymax;
-	int a = i, b = (i==num_vertices-1 ? 0 : i+1);
+	size_t a = i, b = (i==num_vertices-1 ? 0 : i+1);
 	/* Reorder segment so that y[a] > y[b] */
 	if (y[a] == y[b]) continue;
 	if (y[a] < y[b]) a = b, b = i;

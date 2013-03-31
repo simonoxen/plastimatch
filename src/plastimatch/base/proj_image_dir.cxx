@@ -102,7 +102,7 @@ Proj_image_dir::find_pattern ()
 	       %05d.  If, we format as %d. */
 	    if (num[0] == '0') {
 		strcpy (num_pat, "%0_d");
-		num_pat[2] = '0' + strlen (num);
+		num_pat[2] = '0' + ((char) strlen (num));
 	    } else {
 		strcpy (num_pat, "%d");
 	    }

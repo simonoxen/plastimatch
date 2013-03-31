@@ -331,7 +331,7 @@ static void
 mat_load_by_img_filename (Proj_image* proj, const char* img_filename)
 {
     /* No mat file, so try to find automatically */
-    int img_filename_len = strlen (img_filename);
+    size_t img_filename_len = strlen (img_filename);
     if (img_filename_len > 4) {
         char *mat_fn = strdup (img_filename);
         strcpy (&mat_fn[img_filename_len-4], ".txt");

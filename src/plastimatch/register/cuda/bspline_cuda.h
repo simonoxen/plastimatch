@@ -170,7 +170,7 @@ extern "C" {
         float* host_grad_mean,
         float* host_grad_norm,
         Dev_Pointers_Bspline* dev_ptrs,
-        int* num_vox
+        plm_long* num_vox
     );
 
     PLMREGISTERCUDA_API

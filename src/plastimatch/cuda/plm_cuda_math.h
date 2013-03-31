@@ -29,7 +29,7 @@ inline __host__
 int3
 make_int3 (size_t *a)
 {
-    return make_int3 ((plm_long) a[0], (plm_long) a[1], (plm_long) a[2]);
+    return make_int3 ((int) a[0], (int) a[1], (int) a[2]);
 }
 
 inline __host__

@@ -27,7 +27,7 @@ print_command_table (
 {
     unsigned int i;
     unsigned int c,w,n;     /* col, word, command # */
-    unsigned int lc;        /* longest command      */
+    size_t lc;              /* longest command      */
 
     lc = 0;
     for (i=0; i<nc; i++) {

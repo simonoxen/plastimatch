@@ -186,7 +186,7 @@ Xio_dir::analyze ()
 int
 Xio_dir::num_patients () const
 {
-    return this->patient_dir.size();
+    return (int) this->patient_dir.size();
 }
 
 Xio_studyset_dir*

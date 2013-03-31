@@ -350,7 +350,7 @@ void bspline_xform_create_qlut_grad
     int tx, ty, tz;
     float *A, *B, *C;
     float *Ax, *By, *Cz, *Axx, *Byy, *Czz;
-    int q_lut_size;
+    size_t q_lut_size;
 
     q_lut_size = sizeof(float) * bxf->vox_per_rgn[0] 
 	* bxf->vox_per_rgn[1] 

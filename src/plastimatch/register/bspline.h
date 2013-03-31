@@ -65,7 +65,7 @@ public:
     float lmetric;       /* Landmark metric */
     float rmetric;       /* Regularization metric */
     float smetric;       /* Similarity metric */
-    int num_vox;         /* Number of voxel with correspondence */
+    plm_long num_vox;    /* Number of voxel with correspondence */
 
     float* grad;         /* Gradient score wrt control coeff */
 

@@ -112,7 +112,7 @@ Xio_studyset_slice::Xio_studyset_slice (std::string slice_filename_scan, const f
     location = slice_location;
 
     // Get name from slice filename
-    int extension_dot = filename_scan.find_last_of("."); 
+    size_t extension_dot = filename_scan.find_last_of("."); 
     name = filename_scan.substr(0, extension_dot);
 
     filename_contours = name + ".WC";

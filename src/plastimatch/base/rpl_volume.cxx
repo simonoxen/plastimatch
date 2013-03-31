@@ -965,7 +965,7 @@ rpl_ray_trace_callback (
     float *depth_img = (float*) rpl_vol->get_volume()->img;
     int ap_idx = ray_data->ap_idx;
     int ap_area = cd->ires[0] * cd->ires[1];
-    int step_num = vox_index + cd->step_offset;
+    size_t step_num = vox_index + cd->step_offset;
 
     cd->accum += vox_len * lookup_attenuation (vox_value);
 
@@ -990,7 +990,7 @@ rpl_ray_trace_callback (
     /* GCS FIX: I have a rounding error somewhere -- maybe step_num
        starts at 1?  Or maybe proj_vol is not big enough?  
        This is a workaround until I can fix. */
-    if (step_num >= rpl_vol->get_volume()->dim[2]) {
+    if ((plm_long) step_num >= rpl_vol->get_volume()->dim[2]) {
         return;
     }
 
