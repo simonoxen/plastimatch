@@ -30,7 +30,7 @@
 /* HARDWARE IMPOSED CONSTANTS */
 #define GPU_MAX_BINS 32
 
-class Bspline_mi_hist;
+class Bspline_mi_hist_set;
 class Bspline_optimize_data;
 class Bspline_parms;
 class Bspline_state;
@@ -263,18 +263,18 @@ extern "C" {
     PLMREGISTERCUDA_API
     DELAYLOAD_WRAP (
     void CUDA_bspline_mi_init_a,
+        Bspline_xform* bxf,
+        Bspline_state* bst,
         Dev_Pointers_Bspline* dev_ptrs,
         Volume* fixed,
         Volume* moving,
-        Volume* moving_grad,
-        Bspline_xform* bxf,
-        Bspline_parms* parms
+        Volume* moving_grad
     );
 
     int
     CUDA_bspline_mi_hist (
         Dev_Pointers_Bspline *dev_ptrs,
-        Bspline_mi_hist* mi_hist,
+        Bspline_mi_hist_set* mi_hist,
         Volume* fixed,
         Volume* moving,
         Bspline_xform *bxf
@@ -283,7 +283,7 @@ extern "C" {
     void
     CUDA_bspline_mi_hist_fix (
         Dev_Pointers_Bspline *dev_ptrs,
-        Bspline_mi_hist* mi_hist,
+        Bspline_mi_hist_set* mi_hist,
         Volume* fixed,
         Volume* moving,
         Bspline_xform *bxf
@@ -292,7 +292,7 @@ extern "C" {
     void
     CUDA_bspline_mi_hist_mov (
         Dev_Pointers_Bspline *dev_ptrs,
-        Bspline_mi_hist* mi_hist,
+        Bspline_mi_hist_set* mi_hist,
         Volume* fixed,
         Volume* moving,
         Bspline_xform *bxf
@@ -301,7 +301,7 @@ extern "C" {
     int
     CUDA_bspline_mi_hist_jnt (
         Dev_Pointers_Bspline *dev_ptrs,
-        Bspline_mi_hist* mi_hist,
+        Bspline_mi_hist_set* mi_hist,
         Volume* fixed,
         Volume* moving,
         Bspline_xform *bxf
@@ -309,7 +309,6 @@ extern "C" {
 
     void
     CUDA_bspline_mi_grad (
-        Bspline_mi_hist* mi_hist,
         Bspline_state *bst,
         Bspline_xform *bxf,
         Volume* fixed,

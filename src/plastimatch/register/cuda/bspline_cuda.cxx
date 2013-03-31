@@ -159,7 +159,7 @@ bspline_find_correspondence
 
 static inline void
 bspline_mi_hist_add_pvi_8 (
-    Bspline_mi_hist* mi_hist, 
+    Bspline_mi_hist_set* mi_hist, 
     Volume *fixed, 
     Volume *moving, 
     int fv, 
@@ -257,7 +257,7 @@ bspline_mi_hist_add_pvi_8 (
 static inline void
 bspline_mi_pvi_8_dc_dv (
     float dc_dv[3],                /* Output */
-    Bspline_mi_hist* mi_hist,      /* Input */
+    Bspline_mi_hist_set* mi_hist,      /* Input */
     Bspline_state *bst,            /* Input */
     Volume *fixed,                 /* Input */
     Volume *moving,                /* Input */
@@ -442,7 +442,7 @@ bspline_update_grad_b_inline (Bspline_state* bst, Bspline_xform* bxf,
 #endif
 
 #if defined (commentout)
-static void display_hist_totals (Bspline_mi_hist *mi_hist)
+static void display_hist_totals (Bspline_mi_hist_set *mi_hist)
 {
     plm_long i;
     double tmp = 0;
@@ -467,7 +467,7 @@ static void display_hist_totals (Bspline_mi_hist *mi_hist)
 
 ////////////////////////////////////////////////////////////////////////////////
 size_t
-CPU_MI_Hist (Bspline_mi_hist *mi_hist,  // OUTPUT: Histograms
+CPU_MI_Hist (Bspline_mi_hist_set *mi_hist,  // OUTPUT: Histograms
     Bspline_xform *bxf,                 //  INPUT: Bspline X-Form
     Volume* fixed,                      //  INPUT: Fixed Image
     Volume* moving)                     //  INPUT: Moving Image
@@ -538,7 +538,7 @@ CPU_MI_Hist (Bspline_mi_hist *mi_hist,  // OUTPUT: Histograms
 
 
 static float
-CPU_MI_Score (Bspline_mi_hist* mi_hist, int num_vox)
+CPU_MI_Score (Bspline_mi_hist_set* mi_hist, int num_vox)
 {
     double* f_hist = mi_hist->f_hist;
     double* m_hist = mi_hist->m_hist;
@@ -564,7 +564,7 @@ CPU_MI_Score (Bspline_mi_hist* mi_hist, int num_vox)
 
 #if defined (MI_GRAD_CPU)
 void
-CPU_MI_Grad (Bspline_mi_hist *mi_hist, // OUTPUT: Histograms
+CPU_MI_Grad (Bspline_mi_hist_set *mi_hist, // OUTPUT: Histograms
         Bspline_state *bst,     //  INPUT: Bspline State
         Bspline_xform *bxf,     //  INPUT: Bspline X-Form
         Volume* fixed,          //  INPUT: Fixed Image
@@ -657,7 +657,7 @@ CUDA_bspline_mi_a (
     // --- DECLARE LOCAL VARIABLES ------------------------------
     Bspline_score* ssd; // Holds the SSD "Score" information
     Plm_timer* timer = new Plm_timer;
-    Bspline_mi_hist* mi_hist = &parms->mi_hist;
+    Bspline_mi_hist_set* mi_hist = bst->mi_hist;
     double* f_hist = mi_hist->f_hist;
     double* m_hist = mi_hist->m_hist;
     double* j_hist = mi_hist->j_hist;
@@ -757,7 +757,6 @@ CUDA_bspline_mi_a (
 //  printf (" *  grad: %9.3f s\t [CPU]\n", plm_timer_report(&timer0));
 #else
     CUDA_bspline_mi_grad (
-        mi_hist,
         bst,
         bxf,
         fixed,

@@ -12,6 +12,7 @@
 #include "bspline.h"
 #include "bspline_cuda.h"
 #include "bspline_cuda_kernels.h"
+#include "bspline_mi_hist.h"
 #include "bspline_xform.h"
 #include "cuda_util.h"
 #include "cuda_mem.h"
@@ -68,15 +69,15 @@ build_gbd (
 
 void
 CUDA_bspline_mi_init_a (
+    Bspline_xform* bxf,
+    Bspline_state* bst,
     Dev_Pointers_Bspline* dev_ptrs,
     Volume* fixed,
     Volume* moving,
-    Volume* moving_grad,
-    Bspline_xform* bxf,
-    Bspline_parms* parms
+    Volume* moving_grad
 )
 {
-    Bspline_mi_hist* mi_hist = &parms->mi_hist;
+    Bspline_mi_hist_set* mi_hist = bst->mi_hist;
 
     // Keep track of how much memory we allocated in the GPU global memory.
     long unsigned GPU_Memory_Bytes = 0;
@@ -761,7 +762,7 @@ CUDA_bspline_mi_cleanup_a (
 int
 CUDA_bspline_mi_hist (
     Dev_Pointers_Bspline *dev_ptrs,
-    Bspline_mi_hist* mi_hist,
+    Bspline_mi_hist_set* mi_hist,
     Volume* fixed,
     Volume* moving,
     Bspline_xform* bxf)
@@ -778,12 +779,10 @@ CUDA_bspline_mi_hist (
     return CUDA_bspline_mi_hist_jnt (dev_ptrs, mi_hist, fixed, moving, bxf);
 }
 
-
-
 void
 CUDA_bspline_mi_hist_fix (
     Dev_Pointers_Bspline *dev_ptrs,
-    Bspline_mi_hist* mi_hist,
+    Bspline_mi_hist_set* mi_hist,
     Volume* fixed,
     Volume* moving,
     Bspline_xform *bxf)
@@ -807,7 +806,7 @@ CUDA_bspline_mi_hist_fix (
         false              // INPUT: Is threads per block negotiable?
     );
 
-    int smemSize = dimBlock.x * mi_hist->fixed.bins * sizeof(float);
+    int smemSize = (int) (dimBlock.x * mi_hist->fixed.bins * sizeof(float));
 
     dev_ptrs->f_hist_seg_size = mi_hist->fixed.bins * num_blocks * sizeof(float);
     cudaMalloc ((void**)&dev_ptrs->f_hist_seg, dev_ptrs->f_hist_seg_size);
@@ -885,7 +884,7 @@ CUDA_bspline_mi_hist_fix (
 void
 CUDA_bspline_mi_hist_mov (
     Dev_Pointers_Bspline *dev_ptrs,
-    Bspline_mi_hist* mi_hist,
+    Bspline_mi_hist_set* mi_hist,
     Volume* fixed,
     Volume* moving,
     Bspline_xform *bxf)
@@ -909,8 +908,7 @@ CUDA_bspline_mi_hist_mov (
 	    32,                // INPUT: Threads per block
 	    false);            // INPUT: Is threads per block negotiable?
 
-    int smemSize = dimBlock.x * mi_hist->moving.bins * sizeof(float);
-
+    int smemSize = (int) (dimBlock.x * mi_hist->moving.bins * sizeof(float));
 
     dev_ptrs->m_hist_seg_size = mi_hist->moving.bins * num_blocks * sizeof(float);
     cudaMalloc ((void**)&dev_ptrs->m_hist_seg, dev_ptrs->m_hist_seg_size);
@@ -989,7 +987,7 @@ CUDA_bspline_mi_hist_mov (
 int
 CUDA_bspline_mi_hist_jnt (
     Dev_Pointers_Bspline *dev_ptrs,
-    Bspline_mi_hist* mi_hist,
+    Bspline_mi_hist_set* mi_hist,
     Volume* fixed,
     Volume* moving,
     Bspline_xform *bxf)
@@ -1152,7 +1150,6 @@ CUDA_bspline_mi_hist_jnt (
 
 void
 CUDA_bspline_mi_grad (
-    Bspline_mi_hist* mi_hist,
     Bspline_state *bst,
     Bspline_xform *bxf,
     Volume* fixed,
@@ -1161,9 +1158,9 @@ CUDA_bspline_mi_grad (
     Dev_Pointers_Bspline *dev_ptrs
 )
 {
+    Bspline_mi_hist_set* mi_hist = bst->mi_hist;
     GPU_Bspline_Data gbd;
     build_gbd (&gbd, bxf, fixed, moving);
-
 
     Bspline_score* ssd = &bst->ssd;
     float* host_grad = ssd->grad;

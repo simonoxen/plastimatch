@@ -102,8 +102,8 @@ Bspline_parms::~Bspline_parms ()
 
 static void
 bspline_cuda_state_create (
-    Bspline_state *bst,           /* Modified in routine */
     Bspline_xform* bxf,
+    Bspline_state *bst,           /* Modified in routine */
     Bspline_parms *parms
 )
 {
@@ -143,12 +143,12 @@ bspline_cuda_state_create (
 
         switch (parms->implementation) {
         case 'a':
-            CUDA_bspline_mi_init_a (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
+            CUDA_bspline_mi_init_a (bxf, bst, dev_ptrs, fixed, moving, moving_grad);
             break;
         default:
             printf ("Warning: option -f %c unavailble.  Defaulting to -f a\n",
                 parms->implementation);
-            CUDA_bspline_mi_init_a (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
+            CUDA_bspline_mi_init_a (bxf, bst, dev_ptrs, fixed, moving, moving_grad);
             break;
         }
 
@@ -175,7 +175,7 @@ bspline_state_create (
     bst->ssd.grad = (float*) malloc (bxf->num_coeff * sizeof(float));
     memset (bst->ssd.grad, 0, bxf->num_coeff * sizeof(float));
 
-    bspline_cuda_state_create (bst, bxf, parms);
+    bspline_cuda_state_create (bxf, bst, parms);
 
     if (reg_parms->lambda > 0.0f) {
         rst->fixed = parms->fixed;
