@@ -1,5 +1,6 @@
 #include <stdio.h>
-#include "dlib/smart_pointers.h"
+#include "smart_pointer.h"
+//#include "dlib/smart_pointers.h"
 
 class A {
 public:
@@ -32,7 +33,10 @@ test_1 ()
 
 class B {
 public:
-    typedef dlib::shared_ptr<B> Pointer;
+    /* Smart pointer support */
+//    typedef B Self;
+//    typedef plm_shared_ptr<Self> Pointer;
+    SMART_POINTER_SUPPORT (B);
 public:
     int *val;
 public:
@@ -43,10 +47,10 @@ public:
     ~B () {
         delete val;
     }
-public:
-    static B::Pointer New () {
-        return dlib::shared_ptr<B> (new B);
-    }
+//public:
+//    static B::Pointer New () {
+//        return B::Pointer (new B);
+//    }
 };
 
 void
@@ -59,7 +63,7 @@ foo_2 (B::Pointer b)
 void
 test_2 ()
 {
-    B::Pointer b = B::New ();
+    B::Pointer b = B::New (new B);
     for (int i = 0; i < 10; i++) {
         foo_2 (b);
     }
