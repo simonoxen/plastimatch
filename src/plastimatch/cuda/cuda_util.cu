@@ -55,6 +55,8 @@ CUDA_listgpu ()
             cores_per_sm = 8;
         } else if (props.major == 2) {
             cores_per_sm = 32;
+        } else if (props.major == 3) {
+            cores_per_sm = 192;
         } else {
             printf ("GPU Compute Capability: Unknown to Platimatch!\n");
             return;
