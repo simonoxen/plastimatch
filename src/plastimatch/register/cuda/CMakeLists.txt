@@ -100,7 +100,7 @@ if (CUDA_FOUND)
       )
     plm_add_library (plmregistercuda
       "${PLMREGISTERCUDA_LIBRARY_SRC}"
-      ""
+      "plmcuda"
       ""
       "")
   endif ()
