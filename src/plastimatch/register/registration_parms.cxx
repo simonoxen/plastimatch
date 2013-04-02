@@ -475,7 +475,8 @@ Registration_parms::set_key_val (
     }
     else if (!strcmp (key, "iterations") 
         || !strcmp (key, "max_iterations")
-        || !strcmp (key, "max_its"))
+        || !strcmp (key, "max_its")
+        || !strcmp (key, "its"))
     {
         if (section == 0) goto error_not_global;
         if (sscanf (val, "%d", &stage->max_its) != 1) {
@@ -638,7 +639,9 @@ Registration_parms::set_key_val (
         }
         stage->grid_method = 0;
     }
-    else if (!strcmp (key, "grid_spac")) {
+    else if (!strcmp (key, "grid_spac")
+        || !strcmp (key, "grid_spacing"))
+    {
         if (section == 0) goto error_not_global;
         if (sscanf (val, "%g %g %g", &(stage->grid_spac[0]), &(stage->grid_spac[1]), &(stage->grid_spac[2])) != 3) {
             goto error_exit;
@@ -831,6 +834,9 @@ Registration_parms::set_job_paths (void)
             strcpy (this->vf_out_fn, this->vf_out_dir);
             strcat (this->vf_out_fn, this->moving_jobs[this->job_idx]);
         }
+        /* Give a default name */
+        std::string fn = string_format ("%s_vf.mha", this->vf_out_fn);
+        strcpy (this->vf_out_fn, fn.c_str());
     } else {
         /* Output directory not specifed but vf_out was... smart fallback*/
         if (*(this->vf_out_fn)) {

@@ -18,23 +18,19 @@ if (THRUST_INCLUDE_DIR)
   include_directories (AFTER ${THRUST_INCLUDE_DIR})
 endif ()
 
-set (PLMREGISTER_CUDA_SRC
+set (PLMREGISTERCUDA_SRC
   bspline_cuda.cu
   bspline_cuda_kernels.h
   demons_cuda.cu
 #  demons_cuda_kernel.cu
   )
 
-set (PLMREGISTER_CUDA_IFACE_SRC
+set (PLMREGISTERCUDA_IFACE_SRC
   bspline_cuda.cxx
   demons_misc.cxx
   )
 
 if (PLM_BUILD_VISCOUS)
-  set (PLMREGISTER_LIBRARY_SRC
-    ${PLMREGISTER_LIBRARY_SRC}
-    viscous.cxx
-    )
   set (PLMREGISTERCUDA_SRC
     ${PLMREGISTERCUDA_SRC}
     viscous_compute.cu
@@ -48,9 +44,20 @@ if (PLM_BUILD_VISCOUS)
 endif ()
 
 set (PLMREGISTERCUDA_LIBRARY_SRC
-  ${PLMREGISTER_CUDA_IFACE_SRC}
-  ${PLMREGISTER_CUDA_SRC}
+  ${PLMREGISTERCUDA_IFACE_SRC}
+  ${PLMREGISTERCUDA_SRC}
   )
+
+##-----------------------------------------------------------------------------
+##  LIBRARY DEPENDENCIES
+##-----------------------------------------------------------------------------
+set (PLMREGISTERCUDA_LIBRARY_DEPENDENCIES
+  plmbase plmcuda ${PLM_CUDA_LIBRARIES})
+if (PLM_BUILD_VISCOUS)
+  set (PLMREGISTERCUDA_LIBRARY_DEPENDENCIES 
+    ${PLMREGISTERCUDA_LIBRARY_DEPENDENCIES}
+    ${CUDA_CUBLAS_LIBRARIES})
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  SPECIAL BUILD RULES: CUDA
@@ -64,7 +71,9 @@ if (CUDA_FOUND)
 
     # GCS 2013-03-21.  Why can't we link plmregistercuda against plmbase?
     # I'm going to try it and see.
-    target_link_libraries (plmregistercuda plmbase plmcuda ${CUDA_LIBRARIES})
+    message (STATUS ">> ${PLM_CUDA_LIBRARIES}")
+    target_link_libraries (plmregistercuda 
+      ${PLMREGISTERCUDA_LIBRARY_DEPENDENCIES})
 
     # set dependencies that plmregister library needs 
     if (WIN32 AND NOT CYGWIN AND NOT MINGW)
@@ -84,10 +93,10 @@ if (CUDA_FOUND)
   else ()
     # building CUDA into plmregister
     message (STATUS "CUDA_CXX_FLAGS = ${CUDA_CXX_FLAGS}")
-    cuda_compile (CUDA_WRAPPERS ${PLMREGISTER_CUDA_SRC})
+    cuda_compile (CUDA_WRAPPERS ${PLMREGISTERCUDA_SRC})
 #    set (PLMREGISTER_LIBRARY_SRC
 #      ${PLMREGISTER_LIBRARY_SRC}
-#      ${PLMREGISTER_CUDA_IFACE_SRC}
+#      ${PLMREGISTERCUDA_IFACE_SRC}
 #      ${CUDA_WRAPPERS}
 #      )
 #    set (PLMREGISTER_LIBRARY_DEPENDENCIES
@@ -96,11 +105,11 @@ if (CUDA_FOUND)
 #      )
     set (PLMREGISTERCUDA_LIBRARY_SRC
       ${CUDA_WRAPPERS}
-      ${PLMREGISTER_CUDA_IFACE_SRC}
+      ${PLMREGISTERCUDA_IFACE_SRC}
       )
     plm_add_library (plmregistercuda
       "${PLMREGISTERCUDA_LIBRARY_SRC}"
-      "plmcuda"
+      "${PLMREGISTERCUDA_LIBRARY_DEPENDENCIES}"
       ""
       "")
   endif ()

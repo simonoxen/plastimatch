@@ -57,6 +57,7 @@ c******************************************************************/
 // includes, gloable variables
 #include "viscous_global.h"
 //#include "convolution.cu"
+#include "viscous_cuda.h"
  
 // includes, project
 #include <cutil_inline.h>
@@ -141,7 +142,7 @@ cudaDeviceProp dP;
 	main program
 ****************************************************/
 int 
-CUDA_viscous (
+CUDA_viscous_main (
     int argc, 
     char** argv
 )
