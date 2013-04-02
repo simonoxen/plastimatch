@@ -106,6 +106,16 @@ else()
   message (STATUS "  >> Generation 2: [ ]")
 endif()
 
+if(CUDA_VERSION_MAJOR GREATER "3")
+  message (STATUS "  >> Generation 3: [X]")
+    set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
+        -gencode arch=compute_30,code=sm_30
+    )
+else()
+  message (STATUS "  >> Generation 3: [ ]")
+endif()
+
+
   #MESSAGE(STATUS "<<-->>: CUDA_NVCC_FLAGS set to \"${CUDA_NVCC_FLAGS}\"")
 else ()
   message (STATUS "CUDA Build Level: Build system Compute Capability ONLY!")
