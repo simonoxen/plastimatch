@@ -175,8 +175,6 @@ bspline_state_create (
     bst->ssd.grad = (float*) malloc (bxf->num_coeff * sizeof(float));
     memset (bst->ssd.grad, 0, bxf->num_coeff * sizeof(float));
 
-    bspline_cuda_state_create (bxf, bst, parms);
-
     if (reg_parms->lambda > 0.0f) {
         rst->fixed = parms->fixed;
         rst->moving = parms->moving;
@@ -191,6 +189,8 @@ bspline_state_create (
             parms->mi_hist_fixed_bins,
             parms->mi_hist_moving_bins);
     }
+    bspline_cuda_state_create (bxf, bst, parms);
+
 
     /* JAS Fix 2011.09.14
      *   The MI algorithm will get stuck for a set of coefficients all equaling

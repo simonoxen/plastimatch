@@ -94,7 +94,6 @@ CUDA_bspline_mi_init_a (
     printf(".");
     // ----------------------------------------------------------
 
-
     // Moving Image
     // ----------------------------------------------------------
     dev_ptrs->moving_image_size = moving->npix * moving->pix_size;
@@ -116,7 +115,6 @@ CUDA_bspline_mi_init_a (
     GPU_Memory_Bytes += dev_ptrs->skipped_size;
     printf(".");
     // ----------------------------------------------------------
-
 
     // Histograms
     // ----------------------------------------------------------
