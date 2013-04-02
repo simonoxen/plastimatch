@@ -38,6 +38,11 @@ Acquire_4030e_parent::Acquire_4030e_parent (int argc, char* argv[])
 	m_bChildReadyToQuit[0] = true; //exit function can be called in initial status
 	m_bChildReadyToQuit[1] = true;
 
+	m_bBusyParent = false;
+
+	m_bPanelRelayOpen0 = true;
+	m_bPanelRelayOpen1 = true;
+
 }
 
 Acquire_4030e_parent::~Acquire_4030e_parent () //not called!!
@@ -114,7 +119,7 @@ Acquire_4030e_parent::initialize (int argc, char* argv[])
 	this->generator_state = WAITING;
 	this->panel_select = false;
 	this->advantech->relay_open (0);
-	this->advantech->relay_open (3);
+	//this->advantech->relay_open (3);
 	this->advantech->relay_open (4);
 
 	this->panel_timer = 0;
@@ -522,9 +527,9 @@ bool Acquire_4030e_parent::RestartChildProcess(int idx)
 	return true;
 }
 /* On STAR, panel 0 is axial, and panel 1 is g90 */
-void 
-Acquire_4030e_parent::timer_event () //will be runned from the first time.
+void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 {
+
 	//YK
 	UpdateLableStatus(); //based-on m_bPanelReady status; //every 50 ms
 
@@ -542,6 +547,10 @@ Acquire_4030e_parent::timer_event () //will be runned from the first time.
 
 	/* On STAR, there is no distinction between prep & expose, i.e. there 
 	is only prep signal. */    
+	if (m_bBusyParent)
+		return;
+
+	m_bBusyParent = true;
 
 	int res0 = advantech->read_bit (0);
 	int res1 = advantech->read_bit (1);
@@ -587,17 +596,25 @@ Acquire_4030e_parent::timer_event () //will be runned from the first time.
 		/* Close relay, asking panel to begin integration */
 		if (gen_panel_select == 0)
 		{
-			/* Axial */
-			this->log_output (
-				QString("[p] Closing relay to panel: axial"));
-			this->advantech->relay_close (3); //close = connected
+			if (m_bPanelRelayOpen0)
+			{
+				/* Axial */
+				this->log_output (
+					QString("[p] Closing relay to panel: axial"));
+				this->advantech->relay_close (3); //close = connected
+				m_bPanelRelayOpen0 = false;
+			}			
 		}	
 		else if (gen_panel_select == 1)
 		{
-			/* G90 */
-			this->log_output (
-				QString("[p] Closing relay to panel: g90"));
-			this->advantech->relay_close (4);
+			if (m_bPanelRelayOpen1)
+			{
+				/* G90 */
+				this->log_output (
+					QString("[p] Closing relay to panel: g90"));
+				this->advantech->relay_close (4);
+				m_bPanelRelayOpen1 = false;
+			}
 		}	
 		this->generator_state = EXPOSE_REQUEST;
 	}
@@ -608,7 +625,7 @@ Acquire_4030e_parent::timer_event () //will be runned from the first time.
 		if (this->panel_select == false && panel_0_ready) {
 			this->log_output (
 				QString("[p] Closing relay to generator"));
-			this->advantech->relay_close (0);
+			this->advantech->relay_close (0); //beam on signal to gen.
 			this->generator_state = EXPOSING;
 		}
 		else if (this->panel_select == true && panel_1_ready) {
@@ -630,10 +647,30 @@ Acquire_4030e_parent::timer_event () //will be runned from the first time.
 	}    
 
 	/* Check if generator prep request complete */
-	if (!gen_expose_request) { //when exposure is over then relay_open: allow panel to read data
-		this->advantech->relay_open (0); //PANEL SELECTION	
-		this->advantech->relay_open (3); //I'm Done signal
-		this->advantech->relay_open (4);//yk: SEND SOME TRIGGERING TO PANEL?
+	if (!gen_expose_request)
+	{ //when exposure is over then relay_open: allow panel to read data
+		
+		if (panel_0_ready ||panel_1_ready)
+			this->advantech->relay_open (0); //Beam on (N0, COM0)
+
+		if (gen_panel_select == 0 && panel_0_ready )
+		{
+			if (!m_bPanelRelayOpen0)
+			{
+				//Sleep(1000);
+				this->advantech->relay_open (3); //Expose request for panel 0- release
+				m_bPanelRelayOpen0 = true;
+			}
+		}
+		else if (gen_panel_select == 1&& panel_1_ready )
+		{
+			if (!m_bPanelRelayOpen1)
+			{
+				//Sleep(1000);
+				this->advantech->relay_open (4); //Expose request for panel 1- release
+				m_bPanelRelayOpen1 = true;
+			}
+		}
 
 		if (this->generator_state != WAITING) {
 			this->log_output (
@@ -654,8 +691,8 @@ Acquire_4030e_parent::timer_event () //will be runned from the first time.
 		}
 	}
 	//other lable style is coverned by child process
+	m_bBusyParent = false;
 }
-
 
 void 
 Acquire_4030e_parent::UpdateLableStatus()

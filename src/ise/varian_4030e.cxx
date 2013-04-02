@@ -19,6 +19,7 @@ See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 #include "YK16GrayImage.h"
 #include <fstream>
 #include <QMessageBox>
+#include "Acquire_4030e_DlgControl.h"
 
 /* This mutex is a class static variable */
 QMutex Varian_4030e::vip_mutex;
@@ -507,8 +508,8 @@ bool Varian_4030e::SameImageExist(IMGINFO& curInfo, int& sameImgIndex)
 	for (it = m_vImageInfo.begin() ; it != m_vImageInfo.end() ; it++)
 	{		
 		compInfo = (*it);
-		if (fabs(curInfo.meanVal - compInfo.meanVal) < 0.001 && 
-			fabs(curInfo.SD - compInfo.SD) < 0.001)
+		if (fabs(curInfo.meanVal - compInfo.meanVal) < 0.0001 && 
+			fabs(curInfo.SD - compInfo.SD) < 0.0001)
 		{
 			result = true;
 			sameImgIndex = order;
@@ -526,6 +527,7 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 
 	USHORT *image_ptr = (USHORT *)malloc(npixels * sizeof(USHORT));
 	result = vip_get_image(mode_num, VIP_CURRENT_IMAGE, xSize, ySize, image_ptr);
+	//result = vip_get_image(mode_num, VIP_PREVIEW_IMAGE, xSize, ySize, image_ptr); //not working for SAMEIMAGE ERROR
 
 	//now raw image from panel
 	//QMessageBox msgBox;
@@ -1044,9 +1046,9 @@ Varian_4030e::print_sys_info (void)
 int Varian_4030e::query_prog_info (UQueryProgInfo &crntStatus, bool show_all)
 {
 	UQueryProgInfo prevStatus = crntStatus;
+
 	memset(&crntStatus, 0, sizeof(SQueryProgInfo));
 	crntStatus.qpi.StructSize = sizeof(SQueryProgInfo);
-
 	//    QMutexLocker mutex_locker (&vip_mutex);
 	//    vip_select_receptor (this->receptor_no);    
 
@@ -1058,6 +1060,30 @@ int Varian_4030e::query_prog_info (UQueryProgInfo &crntStatus, bool show_all)
 		return result;
 	}
 
+	m_pParent->m_dlgControl->EditFrames->setText(QString("%1").arg(crntStatus.qpi.NumFrames));
+	m_pParent->m_dlgControl->EditComplete->setText(QString("%1").arg(crntStatus.qpi.Complete));
+	m_pParent->m_dlgControl->EditPulses->setText(QString("%1").arg(crntStatus.qpi.NumPulses));
+	m_pParent->m_dlgControl->EditReady->setText(QString("%1").arg(crntStatus.qpi.ReadyForPulse));
+
+	//QString strQPI = QString("Cancelation: %1, Prep: %2, ProgLimit: %3, StatusStr: %4, Resv1: %5, Resv2: %6").arg(crntStatus.qpi.Cancellation).arg(crntStatus.qpi.Prepare)
+	//	.arg(crntStatus.qpi.ProgLimit).arg(crntStatus.qpi.StatusStr).arg(crntStatus.qpi.Reserved1).arg(crntStatus.qpi.Reserved2);
+
+//	UQueryProgInfo QPIRCPT;
+//	QPIRCPT.qpircpt.StructSize = sizeof(SQueryProgInfo);
+//	result = vip_query_prog_info (HCP_U_QPIRCPT, &QPIRCPT);    
+//
+//	//HCP_U_QPIRCPT,   // Receptor ID
+////	HCP_U_QPIFRAME,  // Frame ID/
+//
+//	QString strQPI = QString("param1: %1, param2: %2, param3: %3")
+//		//.arg(QPIRCPT.qpircpt.BoardSNbr)
+//		.arg(QPIRCPT.qpircpt.ReservedRcpt1)
+//		.arg(QPIRCPT.qpircpt.ReservedRcpt2)
+//		.arg(QPIRCPT.qpircpt.ReservedWd);
+//
+//	m_pParent->m_dlgControl->EditOtherParam->setText(strQPI);
+
+		
 	if (show_all
 		|| (prevStatus.qpi.NumFrames != crntStatus.qpi.NumFrames)
 		|| (prevStatus.qpi.Complete != crntStatus.qpi.Complete)

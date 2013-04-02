@@ -147,6 +147,10 @@ void Acquire_4030e_DlgControl::GetPanelInfo()
 {
     //((Acquire_4030e_child*)qApp)->StartCommandTimer(m_iPanelIdx,
 	//Acquire_4030e_parent::GET_PANEL_INFO);    
+
+	Acquire_4030e_child* qMyApp = (Acquire_4030e_child*)qApp;
+	//Go one more stanby cycle
+	qMyApp->m_enPanelStatus = COMPLETE_SIGNAL_DETECTED; //Standby once again
 }
 
 void Acquire_4030e_DlgControl::GetDarkFieldImage()

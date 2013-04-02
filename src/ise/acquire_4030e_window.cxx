@@ -16,6 +16,7 @@
 
 #include "acquire_4030e_window.h"
 #include "acquire_4030e_parent.h"
+#include "advantech.h"
 
 Acquire_4030e_window::Acquire_4030e_window ()
     : QMainWindow ()
@@ -311,6 +312,30 @@ void Acquire_4030e_window::ShowPanelControl_1 ()
     //((Acquire_4030e_parent*)qApp)->m_dlgControl_1->show();
     //((Acquire_4030e_parent*)qApp)->m_dlgControl_1->show();
 	((Acquire_4030e_parent*)qApp)->StartCommandTimer(1, Acquire_4030e_parent::SHOWDLG);
+}
+
+void Acquire_4030e_window::OpenRelay_Panel0()
+{
+	((Acquire_4030e_parent*)qApp)->advantech->relay_open (3);
+
+}
+
+void Acquire_4030e_window::OpenRelay_Panel1()
+{
+	((Acquire_4030e_parent*)qApp)->advantech->relay_open (4);
+
+}
+
+void Acquire_4030e_window::CloseRelay_Panel0()
+{
+	((Acquire_4030e_parent*)qApp)->advantech->relay_close (3);
+
+}
+
+void Acquire_4030e_window::CloseRelay_Panel1()
+{
+	((Acquire_4030e_parent*)qApp)->advantech->relay_close (4);
+
 }
 
 //void Acquire_4030e_window::ForcedQuit()

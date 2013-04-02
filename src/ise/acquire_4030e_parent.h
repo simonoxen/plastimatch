@@ -124,7 +124,12 @@ public:
 	//void quit();//for reimplement
 
 	bool m_bChildReadyToQuit[2]; //flag for child process 
+
+	bool m_bBusyParent;
 	
+
+	bool m_bPanelRelayOpen0;
+	bool m_bPanelRelayOpen1;
 
     //void ShowPanelControlWindow (int idx);   
     //bool SetStatus(int panelIdx, acquire_4030e_window::);
