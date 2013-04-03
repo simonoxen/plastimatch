@@ -86,13 +86,18 @@ dcmtk_save_slice (const Dicom_rt_study *drs, Dcmtk_slice_data *dsd)
     dataset->putAndInsertString (DCM_PixelRepresentation, "1");
     dataset->putAndInsertString (DCM_RescaleIntercept, "0");
     dataset->putAndInsertString (DCM_RescaleSlope, "1");
-//    dataset->putAndInsertString (DCM_RescaleType, "US");
+
+    dataset->putAndInsertString (DCM_RescaleIntercept, "-1024");
+    dataset->putAndInsertString (DCM_RescaleSlope, "1");
     dataset->putAndInsertString (DCM_RescaleType, "HU");
+
+    dataset->putAndInsertString (DCM_WindowCenter, "40");
+    dataset->putAndInsertString (DCM_WindowWidth, "400");
 
     /* Convert to 16-bit signed int */
     for (size_t i = 0; i < dsd->slice_size; i++) {
         float f = dsd->slice_float[i];
-        dsd->slice_int16[i] = (int16_t) f;
+        dsd->slice_int16[i] = (int16_t) (f + 1024);
     }
 
     dataset->putAndInsertUint16Array (DCM_PixelData, 

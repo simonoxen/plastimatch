@@ -317,6 +317,18 @@ Dcmtk_series::load_plm_image (void)
     printf ("High_bit: %d\n", (int) high_bit);
     printf ("Pixel_rep: %d\n", (int) pixel_rep);
 
+    float rescale_slope, rescale_intercept;
+    rc = df->get_ds_float (DCM_RescaleIntercept, &rescale_intercept);
+    if (!rc) {
+        rescale_intercept = 0;
+    }
+    rc = df->get_ds_float (DCM_RescaleSlope, &rescale_slope);
+    if (!rc) {
+        rescale_slope = 1;
+    }
+
+    printf ("S/I = %f/%f\n", rescale_slope, rescale_intercept);
+
     /* Some kinds of images we don't know how to deal with.  
        Don't load these. */
     if (samp_per_pix != 1) {
@@ -345,11 +357,12 @@ Dcmtk_series::load_plm_image (void)
     pli->m_original_type = PLM_IMG_TYPE_GPUIT_SHORT;
     pli->m_gpuit = new Volume (vh, PT_SHORT, 1);
     Volume* vol = (Volume*) pli->m_gpuit;
-    uint16_t* img = (uint16_t*) vol->img;
+    int16_t* img = (int16_t*) vol->img;
 
     for (plm_long i = 0; i < dim[2]; i++) {
 	/* Find the best slice, using nearest neighbor interpolation */
-	std::list<Dcmtk_file*>::iterator best_slice_it = d_ptr->m_flist.begin();
+	std::list<Dcmtk_file*>::iterator 
+            best_slice_it = d_ptr->m_flist.begin();
 	float best_z_dist = FLT_MAX;
 	float z_pos = vh.get_origin()[2] + i * vh.get_spacing()[2];
 	for (it = d_ptr->m_flist.begin(); it != d_ptr->m_flist.end(); ++it) {
@@ -376,7 +389,20 @@ Dcmtk_series::load_plm_image (void)
 	    print_and_exit ("Oops.  Dicom image had wrong length "
 		"(%d vs. %d x %d).\n", length, dim[0], dim[1]);
 	}
-	memcpy (img, pixel_data, length * sizeof(uint16_t));
+
+        /* Convert to short, with slope/offset; maybe should be float ?? */
+        for (plm_long j = 0; j < (plm_long) length; j++) {
+            plm_long vox = ROUND_INT (
+                rescale_slope * ((short) pixel_data[j]) + rescale_intercept);
+            if (vox > SHRT_MAX) {
+                img[j] = SHRT_MAX;
+            } else if (vox < SHRT_MIN) {
+                img[j] = SHRT_MIN;
+            } else {
+                img[j] = (short) vox;
+            }
+        }
+	//memcpy (img, pixel_data, length * sizeof(uint16_t));
 	img += length;
 
 	/* Store slice UID */

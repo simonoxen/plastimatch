@@ -70,6 +70,24 @@ Dcmtk_file::get_uint16 (const DcmTagKey& tag_key, uint16_t* val) const
 }
 
 bool
+Dcmtk_file::get_float (const DcmTagKey& tag_key, float* val) const
+{
+    return m_dfile->getDataset()->findAndGetFloat32(tag_key, (*val)).good();
+}
+
+bool
+Dcmtk_file::get_ds_float (const DcmTagKey& tag_key, float* val) const
+{
+    const char *c = this->get_cstr (tag_key);
+    if (!c) return false;
+
+    int rc = sscanf (c, "%f", val);
+    if (rc != 1) return false;
+
+    return true;
+}
+
+bool
 Dcmtk_file::get_int16_array (const DcmTagKey& tag_key, 
     const int16_t** val, unsigned long* count) const
 {
