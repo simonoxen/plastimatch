@@ -889,15 +889,26 @@ Varian_4030e::open_link (int panelIdx, const char *path)
 
 	orl.RcptNum = panelIdx;
 	this->receptor_no = orl.RcptNum;
+
 	// if we want to turn debug on so that it flushes to a file ..
 	// or other settings see Virtual CP Communications Manual uncomment
 	// and modify the following line if required
 	//	orl.DebugMode = HCP_DBG_ON_FLSH;
+
+	if (panelIdx == 0) {
+		//orl.DebugMode = HCP_DBG_ON_DLG;
+		orl.DebugMode = HCP_DBG_ON_FLSH;
+	}
+
 	aqprintf("Opening link to %s\n", orl.RecDirPath);
 	//PrintCurrentTime();
 	result = vip_open_receptor_link (&orl); //What if panel is unplugged? //what are this func returning?
 
-	aqprintf ("Receptor number %d\n", this->receptor_no);    
+	aqprintf ("panelIdx = %d\n", panelIdx);
+	aqprintf ("RcptNum = %d\n", orl.RcptNum);
+
+	this->receptor_no = orl.RcptNum;
+
 	//PrintCurrentTime();
 
 	vip_mutex.unlock();

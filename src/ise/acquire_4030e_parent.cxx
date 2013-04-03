@@ -159,14 +159,11 @@ Acquire_4030e_parent::initialize (int argc, char* argv[])
 	connect (timer, SIGNAL(timeout()), this, SLOT(timer_event()));
 	timer->start (50);  
 
-
 	this->timerCommandToChild[0] = new QTimer(this);
 	connect (timerCommandToChild[0], SIGNAL(timeout()), this, SLOT(timerCommandToChild0_event()));
 
 	this->timerCommandToChild[1] = new QTimer(this);
 	connect (timerCommandToChild[1], SIGNAL(timeout()), this, SLOT(timerCommandToChild1_event()));
-
-
 
 	this->timerAboutToQuit= new QTimer(this);
 	connect (timerAboutToQuit, SIGNAL(timeout()), this, SLOT(timerAboutToQuit_event()));
@@ -634,15 +631,17 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 			this->advantech->relay_close (0);
 			this->generator_state = EXPOSING;
 		}
-		else if (panel_0_ready || panel_1_ready) {
-			this->log_output (
-				QString("[p] Warning, panel %1 was unexpectedly ready")
-				.arg(panel_0_ready ? 0 : 1));
-		}
 		else {
 			this->log_output (
 				QString("[p] Waiting for panel %1").arg(this->panel_select));	    	    
 		}	
+		if (panel_0_ready && this->panel_select == true
+			|| panel_1_ready && this->panel_select == false)
+		{
+			this->log_output (
+				QString("[p] Warning, panel %1 was unexpectedly ready")
+				.arg(panel_0_ready ? 0 : 1));
+		}
 		//printf("panel_select: %d, panel_0_ready: %d, panel_1_ready: %d\n\n",panel_select, panel_0_ready, panel_1_ready);
 	}    
 
@@ -650,26 +649,24 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 	if (!gen_expose_request)
 	{ //when exposure is over then relay_open: allow panel to read data
 		
-		if (panel_0_ready ||panel_1_ready)
+		if (panel_0_ready ||panel_1_ready) {
+			/* Open relay to generator */
 			this->advantech->relay_open (0); //Beam on (N0, COM0)
+			//this->advantech->relay_open (3); //Expose request for panel 0- release
+			//this->advantech->relay_open (4); //Expose request for panel 0- release
+		}
 
-		if (gen_panel_select == 0 && panel_0_ready )
+		if (!m_bPanelRelayOpen0 && panel_0_ready )
 		{
-			if (!m_bPanelRelayOpen0)
-			{
 				//Sleep(1000);
 				this->advantech->relay_open (3); //Expose request for panel 0- release
 				m_bPanelRelayOpen0 = true;
-			}
 		}
-		else if (gen_panel_select == 1&& panel_1_ready )
-		{
-			if (!m_bPanelRelayOpen1)
-			{
+		else if (!m_bPanelRelayOpen1 && panel_1_ready )
+		{			
 				//Sleep(1000);
 				this->advantech->relay_open (4); //Expose request for panel 1- release
-				m_bPanelRelayOpen1 = true;
-			}
+				m_bPanelRelayOpen1 = true;		
 		}
 
 		if (this->generator_state != WAITING) {
@@ -837,47 +834,7 @@ void Acquire_4030e_parent::SendCommandToChild(int idx, Acquire_4030e_parent::Com
 	case RESTART:
 		process[idx].write("PCOMMAND_RESTART\n");//write stdin of each process
 		break;	
-		//case GET_PANEL_INFO:
-		//	process[idx].write("PCOMMAND_GETINFO\n");//write stdin of each process
-		//	break;
-		//case STOP_LOOP:
-		//	//log_output (QString("Stop loop clicked"));
-		//	process[idx].write("PCOMMAND_STOPLOOP\n");//write stdin of each process
-		//	break;
-		//case RESUME_LOOP:
-		//	//log_output (QString("Resume loop clicked"));
-		//	process[idx].write("PCOMMAND_RESUMELOOP\n");//write stdin of each process
-		//	break;
-		//case SOFTWARE_HANDSHAKING_ENABLE:
-		//	process[idx].write("PCOMMAND_SOFTHANDSHAKING\n");//write stdin of each process
-		//	break;
-
-		//case SOFTWARE_BEAM_ON:
-		//	process[idx].write("PCOMMAND_SOFTBEAMON\n");//write stdin of each process
-		//	break;
-		//case HARDWARE_HANDSHAKING_ENABLE:
-		//	process[idx].write("PCOMMAND_HARDHANDSHAKING\n");//write stdin of each process
-		//	break;	
-		//case GET_DARK_FIELD_IMAGE:
-		//	process[idx].write("PCOMMAND_GETDARK\n");//write stdin of each process
-		//	break;
-		//	/*DARKCORRAPPLYON,
-		//	DARK_CORR_APPLY_OFF,
-
-		//	GAIN_CORR_APPLY_ON,
-		//	GAIN_CORR_APPLY_OFF,*/
-		//case DARK_CORR_APPLY_ON:
-		//	process[idx].write("PCOMMAND_DARKCORRAPPLYON\n");//write stdin of each process
-		//	break;
-		//case DARK_CORR_APPLY_OFF:
-		//	process[idx].write("PCOMMAND_DARKCORRAPPLYOFF\n");//write stdin of each process
-		//	break;
-		//case GAIN_CORR_APPLY_ON:
-		//	process[idx].write("PCOMMAND_GAINCORRAPPLYON\n");//write stdin of each process
-		//	break;
-		//case GAIN_CORR_APPLY_OFF:
-		//	process[idx].write("PCOMMAND_GAINCORRAPPLYOFF\n");//write stdin of each process
-		//	break;
+		
 	case SHOWDLG:
 		//this->log_output("Show Dlg Command sent");
 		process[idx].write("PCOMMAND_SHOWDLG\n");

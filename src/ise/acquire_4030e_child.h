@@ -32,13 +32,13 @@ union UQueryProgInfo;
 struct SModeInfo;
 
 enum PSTAT{	
-	NOT_OPENNED,
+	NOT_OPENNED,	
 	OPENNED, //after openning, go to select receptor, vip_io_enable(active)
 	PANEL_ACTIVE,	
 	READY_FOR_PULSE,//print "ERADY for X-ray and go to wait-on-num-pulses
 	PULSE_CHANGE_DETECTED, //beam signal detected
-	IMAGE_ACQUSITION_DONE,	
-	COMPLETE_SIGNAL_DETECTED,	
+	COMPLETE_SIGNAL_DETECTED,
+	//IMAGE_ACQUSITION_DONE,		
 	DUMMY	
 	//between every step, polling message will be runned,
 	//especially in standby while loop, polling message always runs.

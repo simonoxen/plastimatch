@@ -290,7 +290,6 @@ Acquire_4030e_child::open_receptor (const char* path)
 	//aqprintf ("Log by YKP1_path= [%d] %s\n", idx,path);
 	QMessageBox msgBox;
 	
-
 	//if there is no path exist, return false;    
 	int result;
 	//this->vp = new Varian_4030e (this->idx); //for each child vp will be assigned
@@ -958,20 +957,13 @@ void Acquire_4030e_child::TimerMainLoop_event() //called every 50 ms
 	case PULSE_CHANGE_DETECTED:
 		m_bAcquisitionOK = false; //BUSY flag
 		//PC_GetImageHardware();
-		m_enPanelStatus = IMAGE_ACQUSITION_DONE;
+		//m_enPanelStatus = IMAGE_ACQUSITION_DONE;
+		PC_WaitForComplete(); //inside here image acquisition
 		m_bAcquisitionOK = true; //BUSY flag
-		break;            	    
-
-	case IMAGE_ACQUSITION_DONE:	
-		m_bAcquisitionOK = false; //BUSY flag
-		PC_WaitForComplete();
-		m_bAcquisitionOK = true; //BUSY flag
-		break;
+		break;            	    	
 
 	case COMPLETE_SIGNAL_DETECTED: // Go back to first step  PC_ReStandbyPanel	
-		m_bAcquisitionOK = false; //BUSY flag		
-		//PC_ReStandbyPanel();
-		//PC_GetImageHardware();
+		m_bAcquisitionOK = false; //BUSY flag				
 		PC_WaitForStanby();
 		m_bAcquisitionOK = true; //BUSY flag
 		break;	
@@ -1063,7 +1055,7 @@ bool Acquire_4030e_child::PC_ActivatePanel()
 	//vp->vip_mutex.lock ();
 	//vip_select_receptor (vp->receptor_no);
 	//Sleep(500);
-	result = vip_io_enable (HS_ACTIVE);
+	result = vip_io_enable (HS_ACTIVE); // Frame | Complete | NumPulse | PanelReady
 	//vp->vip_mutex.unlock ();	
 
 	if (result != HCP_NO_ERR) {
@@ -1168,6 +1160,7 @@ bool Acquire_4030e_child::PC_WaitForPulse() //vp->wait_on_num_pulses
 		else if (m_pCrntStatus->qpi.NumFrames != 0  && m_pCrntStatus->qpi.Complete == 1)  // 1 1 0 0
 		{
 			m_enPanelStatus = COMPLETE_SIGNAL_DETECTED; // Go to standby
+			aqprintf ("PSTAT5: COMPLETE_SIGNAL_DETECTED\n");
 		}
 	}
 	return true;
@@ -1225,7 +1218,6 @@ bool Acquire_4030e_child::PC_GetImageHardware()
 
 			if (result == HCP_SAME_IMAGE_ERROR)
 			{
-				aqprintf ("PSTAT5: IMAGE_ACQUSITION_DONE\n");
 				return true;
 			}
 			
@@ -1266,7 +1258,7 @@ bool Acquire_4030e_child::PC_GetImageHardware()
 			//m_enPanelStatus = IMAGE_ACQUSITION_DONE; //even when wait_on_num_frames and sending image is failed..
 
 			m_timeOutCnt = 0;
-			aqprintf ("PSTAT5: IMAGE_ACQUSITION_DONE\n");
+			aqprintf ("IMAGE_ACQUSITION_DONE\n");
 		}
 	//}
 	return true;
@@ -1274,7 +1266,7 @@ bool Acquire_4030e_child::PC_GetImageHardware()
 
 bool Acquire_4030e_child::PC_WaitForComplete()//vp->wait_on_complete
 {
-	if (m_enPanelStatus != IMAGE_ACQUSITION_DONE)
+	if (m_enPanelStatus != PULSE_CHANGE_DETECTED)
 	{
 		aqprintf ("PC_WaitForComplete Error: panel status is not proper\n");
 		m_enPanelStatus = OPENNED;
