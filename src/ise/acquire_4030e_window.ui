@@ -114,28 +114,14 @@
     <item>
      <widget class="QPushButton" name="BtnOpenRelay_p0">
       <property name="text">
-       <string>Open Relay Panel 0</string>
+       <string>Run Relay Panel 0</string>
       </property>
      </widget>
     </item>
     <item>
      <widget class="QPushButton" name="BtnOpenRelay_p1">
       <property name="text">
-       <string>Open Relay Panel 1</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="BtnCloseRelay_p0">
-      <property name="text">
-       <string>Close Relay Panel 0</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="BtnCloseRelay_p1">
-      <property name="text">
-       <string>Close Relay Panel 1</string>
+       <string>Run Relay Panel 1</string>
       </property>
      </widget>
     </item>
@@ -255,7 +241,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>392</x>
-     <y>381</y>
+     <y>439</y>
     </hint>
     <hint type="destinationlabel">
      <x>280</x>
@@ -347,11 +333,11 @@
    <sender>BtnOpenRelay_p0</sender>
    <signal>clicked()</signal>
    <receiver>ui_acquire_4030e_window</receiver>
-   <slot>OpenRelay_Panel0()</slot>
+   <slot>RunRelay_Panel0()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>12</x>
-     <y>404</y>
+     <x>21</x>
+     <y>469</y>
     </hint>
     <hint type="destinationlabel">
      <x>-15</x>
@@ -363,47 +349,15 @@
    <sender>BtnOpenRelay_p1</sender>
    <signal>clicked()</signal>
    <receiver>ui_acquire_4030e_window</receiver>
-   <slot>OpenRelay_Panel1()</slot>
+   <slot>RunRelay_Panel1()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>13</x>
-     <y>432</y>
+     <x>22</x>
+     <y>498</y>
     </hint>
     <hint type="destinationlabel">
      <x>-9</x>
      <y>432</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>BtnCloseRelay_p0</sender>
-   <signal>clicked()</signal>
-   <receiver>ui_acquire_4030e_window</receiver>
-   <slot>CloseRelay_Panel0()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>13</x>
-     <y>456</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>-9</x>
-     <y>459</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>BtnCloseRelay_p1</sender>
-   <signal>clicked()</signal>
-   <receiver>ui_acquire_4030e_window</receiver>
-   <slot>CloseRelay_Panel1()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>9</x>
-     <y>487</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>-10</x>
-     <y>485</y>
     </hint>
    </hints>
   </connection>
@@ -415,9 +369,7 @@
   <slot>RestartPanel_0()</slot>
   <slot>RestartPanel_1()</slot>
   <slot>FinalQuit()</slot>
-  <slot>OpenRelay_Panel0()</slot>
-  <slot>OpenRelay_Panel1()</slot>
-  <slot>CloseRelay_Panel0()</slot>
-  <slot>CloseRelay_Panel1()</slot>
+  <slot>RunRelay_Panel0()</slot>
+  <slot>RunRelay_Panel1()</slot>
  </slots>
 </ui>

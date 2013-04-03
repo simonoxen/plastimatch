@@ -1222,6 +1222,13 @@ bool Acquire_4030e_child::PC_GetImageHardware()
 			}			*/
 
 			result = vp->get_image_to_buf(m_pModeInfo->ColsPerFrame,m_pModeInfo->LinesPerFrame); //fill m_pCurrImage
+
+			if (result == HCP_SAME_IMAGE_ERROR)
+			{
+				aqprintf ("PSTAT5: IMAGE_ACQUSITION_DONE\n");
+				return true;
+			}
+			
 			vp->CopyFromBufAndSendToDips(dp);
 
 			if (result != HCP_NO_ERR){

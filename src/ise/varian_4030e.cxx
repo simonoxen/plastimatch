@@ -27,6 +27,7 @@ QMutex Varian_4030e::vip_mutex;
 #define HCP_SIGNAL_TIMEOUT        (-2)
 
 
+
 //----------------------------------------------------------------------
 //
 //  ShowDllVersions
@@ -552,6 +553,7 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 		//msgBox.setText(str);	
 		//msgBox.exec(); //sometimes kills child process.. don't know why
 		aqprintf("******SAME_IMAGE_ERROR!! prevImgNum [%d]\n", sameImageIndex);
+		return HCP_SAME_IMAGE_ERROR;
 	}
 	m_vImageInfo.push_back(tmpInfo);
 	

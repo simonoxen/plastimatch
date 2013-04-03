@@ -314,29 +314,25 @@ void Acquire_4030e_window::ShowPanelControl_1 ()
 	((Acquire_4030e_parent*)qApp)->StartCommandTimer(1, Acquire_4030e_parent::SHOWDLG);
 }
 
-void Acquire_4030e_window::OpenRelay_Panel0()
+void Acquire_4030e_window::RunRelay_Panel0()
 {
+	((Acquire_4030e_parent*)qApp)->advantech->relay_close(3);
+
+	Sleep(2000);
+
 	((Acquire_4030e_parent*)qApp)->advantech->relay_open (3);
 
 }
 
-void Acquire_4030e_window::OpenRelay_Panel1()
+void Acquire_4030e_window::RunRelay_Panel1()
 {
+	((Acquire_4030e_parent*)qApp)->advantech->relay_close(4);
+
+	Sleep(2000);
+
 	((Acquire_4030e_parent*)qApp)->advantech->relay_open (4);
-
 }
 
-void Acquire_4030e_window::CloseRelay_Panel0()
-{
-	((Acquire_4030e_parent*)qApp)->advantech->relay_close (3);
-
-}
-
-void Acquire_4030e_window::CloseRelay_Panel1()
-{
-	((Acquire_4030e_parent*)qApp)->advantech->relay_close (4);
-
-}
 
 //void Acquire_4030e_window::ForcedQuit()
 //{

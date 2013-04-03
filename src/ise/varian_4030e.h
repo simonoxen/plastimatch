@@ -13,6 +13,8 @@
 #include "acquire_4030e_child.h"
 #include <vector>
 
+#define HCP_SAME_IMAGE_ERROR -115 
+
 class Dips_panel;
 
 struct IMGINFO

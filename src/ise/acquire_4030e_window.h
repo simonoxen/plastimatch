@@ -49,10 +49,8 @@ public slots:
     void ShowPanelControl_1 ();
 	void TimerReadyToQuit_event();
 	void FinalQuit ();
-	void OpenRelay_Panel0();
-	void OpenRelay_Panel1();
-	void CloseRelay_Panel0();
-	void CloseRelay_Panel1();
+	void RunRelay_Panel0();
+	void RunRelay_Panel1();	
 
 public:
     QAction *show_action;
