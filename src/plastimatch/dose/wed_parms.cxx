@@ -177,6 +177,10 @@ Wed_Parms::set_key_val (
         else if (!strcmp (key, "rpl_vol")) {
             this->rpl_vol_fn = val;
         }
+	//Any mode will use the skin dose if specified
+        else if (!strcmp (key, "skin")) {
+            this->skin_fn = val;
+        }
         //If normal wed procedure, input dose
 	if (this->mode==0)  {
 	  if (!strcmp (key, "dose")) {

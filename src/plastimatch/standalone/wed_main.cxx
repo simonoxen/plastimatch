@@ -26,6 +26,35 @@ struct callback_data {
 };
 
 
+static int
+skin_ct (Volume* ct_volume, Volume* skin_volume, float background)
+{
+  float *ct_img = (float*) ct_volume->img;
+  float *skin_img = (float*) skin_volume->img;
+
+  const plm_long *ct_dim = ct_volume->dim; 
+  const plm_long *skin_dim = skin_volume->dim;
+
+  if ((ct_dim[0]!=skin_dim[0])||(ct_dim[1]!=skin_dim[1])||(ct_dim[2]!=skin_dim[2]))  {
+        fprintf (stderr, "\n** ERROR: CT dimensions do not match skin dimensions.\n");
+	return -1;
+  }
+
+  plm_long n_voxels = ct_dim[0]*ct_dim[1]*ct_dim[2];
+  
+  for (plm_long i=0; i!=n_voxels; ++i)  {
+
+    if (skin_img[i] == 0)  {ct_img[i] = background;}
+    else if (skin_img[i] == 1)  {continue;}
+    else {
+      fprintf (stderr, "\n** ERROR: Value other than '0' or '1' in skin input.\n");
+      return -1;
+    }
+  }
+
+  return 0;
+}
+
 static Volume*
 create_wed_volume (Wed_Parms* parms, Proton_Scene *scene)
 {
@@ -91,9 +120,6 @@ create_segdepth_volume (Wed_Parms* parms, Proton_Scene *scene)
 {
  
     Rpl_volume* rpl_vol = scene->rpl_vol;
-
-    float wed_off[3] = {0.0f, 0.0f, 0.0f};
-    float wed_ps[3] = {1.0f, 1.0f, 1.0f};
 
     /* water equivalent depth volume has the same x,y dimensions as the rpl
      * volume. Note: this means the wed x,y dimensions are equal to the
@@ -164,11 +190,21 @@ int
 wed_ct_initialize(Wed_Parms *parms)
 {
   
+
   
   Plm_image* ct_vol;
   Plm_image* dose_vol = 0;
   Proton_Scene scene;
   
+  
+  float background[3];
+  //Background value for wed ct output
+  background[0] = -1000.;
+  //Background value for wed dose output
+  background[1] = 0.;
+ //Background value for radiation length output
+  background[2] = 0.;
+
   /* load the patient and insert into the scene */
   ct_vol = plm_image_load (parms->input_ct_fn, PLM_IMG_TYPE_ITK_FLOAT);
   if (!ct_vol) {
@@ -176,6 +212,24 @@ wed_ct_initialize(Wed_Parms *parms)
     return -1;
   }
   
+  if (parms->skin_fn != "") {
+    fprintf (stderr, "\n** Skin file defined.  Modifying input ct...\n");
+ 
+    Volume* ct_volume = ct_vol->gpuit_float();
+    Plm_image* skin_vol = plm_image_load (parms->skin_fn, PLM_IMG_TYPE_ITK_FLOAT);
+    if (!skin_vol) {
+      fprintf (stderr, "\n** ERROR: Unable to load skin input.\n");
+      return -1;
+    }
+    Volume* skin_volume = skin_vol->gpuit_float();
+    
+    if (skin_ct(ct_volume, skin_volume, background[0]))  {  //apply skin input to ct
+      fprintf (stderr, "\n** ERROR: Unable to apply skin input to ct input.\n");
+    }
+
+  }
+
+
   
   scene.set_patient (ct_vol);
   
@@ -244,15 +298,7 @@ wed_ct_initialize(Wed_Parms *parms)
   if (parms->rpl_vol_fn != "") {
     scene.rpl_vol->save (parms->rpl_vol_fn);
   }
-  
-  float background[3];
-  //Background value for wed ct output
-  background[0] = -1000.;
-  //Background value for wed dose output
-  background[1] = 0.;
- //Background value for radiation length output
-  background[2] = 0.;
-  
+
   printf ("Working...\n");
   fflush(stdout);
   
