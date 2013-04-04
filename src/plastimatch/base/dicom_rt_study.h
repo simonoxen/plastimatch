@@ -57,7 +57,7 @@ public:
     Metadata *get_dose_metadata ();
     const Metadata *get_dose_metadata () const;
 
-    
+    void generate_new_uids ();
 };
 
 #endif

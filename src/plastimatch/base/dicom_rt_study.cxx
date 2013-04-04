@@ -51,6 +51,17 @@ public:
         rtss_metadata.set_parent (&study_metadata);
         dose_metadata.set_parent (&study_metadata);
     }
+public:
+    void
+    generate_new_uids () {
+        study_uid = dicom_uid (PLM_UID_PREFIX);
+        for_uid = dicom_uid (PLM_UID_PREFIX);
+        ct_series_uid = dicom_uid (PLM_UID_PREFIX);
+        rtss_series_uid = dicom_uid (PLM_UID_PREFIX);
+        rtss_instance_uid = dicom_uid (PLM_UID_PREFIX);
+        dose_series_uid = dicom_uid (PLM_UID_PREFIX);
+        dose_instance_uid = dicom_uid (PLM_UID_PREFIX);
+    }
 };
 
 Dicom_rt_study::Dicom_rt_study ()
@@ -245,4 +256,10 @@ const Metadata*
 Dicom_rt_study::get_dose_metadata () const
 {
     return &d_ptr->dose_metadata;
+}
+
+void
+Dicom_rt_study::generate_new_uids () 
+{
+    d_ptr->generate_new_uids ();
 }

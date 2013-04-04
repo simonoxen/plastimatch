@@ -67,12 +67,14 @@ dcmtk_save_slice (const Dicom_rt_study *drs, Dcmtk_slice_data *dsd)
     dcmtk_copy_from_metadata (dataset, image_metadata, DCM_StudyID, "10001");
     dataset->putAndInsertString (DCM_SeriesNumber, "303");
     dataset->putAndInsertString (DCM_InstanceNumber, "0");
-    /* DCM_PatientOrientation is not required.  */
+    /* DCM_PatientOrientation seems to be not required.  */
     // dataset->putAndInsertString (DCM_PatientOrientation, "L\\P");
     dataset->putAndInsertString (DCM_ImagePositionPatient, dsd->ipp);
     dataset->putAndInsertString (DCM_ImageOrientationPatient, dsd->iop);
     dataset->putAndInsertString (DCM_FrameOfReferenceUID, 
         drs->get_frame_of_reference_uid());
+    /* XVI 4.5 requires a DCM_PositionReferenceIndicator */
+    dataset->putAndInsertString (DCM_PositionReferenceIndicator, "SP");
     dataset->putAndInsertString (DCM_SliceLocation, dsd->sloc.c_str());
     dataset->putAndInsertString (DCM_SamplesPerPixel, "1");
     dataset->putAndInsertString (DCM_PhotometricInterpretation, "MONOCHROME2");

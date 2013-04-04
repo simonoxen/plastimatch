@@ -75,3 +75,9 @@ Dcmtk_save::save (const char *dicom_dir)
         this->save_dose (dicom_dir);
     }
 }
+
+void
+Dcmtk_save::generate_new_uids ()
+{
+    d_ptr->m_drs->generate_new_uids ();
+}

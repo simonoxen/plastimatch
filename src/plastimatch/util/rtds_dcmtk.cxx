@@ -47,7 +47,7 @@ Rtds::save_dcmtk (const char *dicom_dir)
     if (d_ptr->m_dose) {
         ds.set_dose (d_ptr->m_dose->gpuit_float());
     }
-
+    ds.generate_new_uids ();
     ds.save (dicom_dir);
 #endif
 }

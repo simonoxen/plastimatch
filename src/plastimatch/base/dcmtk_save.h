@@ -36,6 +36,7 @@ public:
     void save_image (const char *dicom_dir);
     void save_rtss (const char *dicom_dir);
     void save_dose (const char *dicom_dir);
+    void generate_new_uids ();
 };
 
 #endif
