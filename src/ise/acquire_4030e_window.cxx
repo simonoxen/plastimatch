@@ -178,7 +178,7 @@ Acquire_4030e_window::set_label (int panel_no, const QString& log)
 void Acquire_4030e_window::request_quit ()
 {
 	m_bSeqKillReady = true;
-	((Acquire_4030e_parent*)qApp)->StartCommandTimer(0, Acquire_4030e_parent::KILL);	
+	((Acquire_4030e_parent*)qApp)->StartCommandTimer(0, PCOMMAND_KILL);	
 
 	m_TimerReadyToQuit->start(1000);
 	
@@ -214,7 +214,7 @@ void Acquire_4030e_window::TimerReadyToQuit_event()
 {
 	if( ( (Acquire_4030e_parent*)qApp )->m_bChildReadyToQuit[0] && m_bSeqKillReady)
 	{
-		((Acquire_4030e_parent*)qApp)->StartCommandTimer(1, Acquire_4030e_parent::KILL);
+		((Acquire_4030e_parent*)qApp)->StartCommandTimer(1, PCOMMAND_KILL);
 		m_bSeqKillReady = false; //run only once
 		return;
 	}
@@ -227,32 +227,53 @@ void Acquire_4030e_window::TimerReadyToQuit_event()
 	return;
 }
 
-void Acquire_4030e_window::UpdateLabel(int iPanelIdx, Label_style enStyle) // 0 based panel ID //called from child proc except the first time
+void Acquire_4030e_window::UpdateLabel(int iPanelIdx, PSTAT enStyle) // 0 based panel ID //called from child proc except the first time
 {
-    switch (enStyle)
-    {
-    case LABEL_NOT_READY:
-	this->set_label_style (iPanelIdx, Acquire_4030e_window::LABEL_NOT_READY);
-	this->set_label (iPanelIdx, "  Initializing");
-	break;	
+	switch (enStyle)
+	{    
+	case NOT_OPENNED:
+		this->set_label_style (iPanelIdx, LABEL_NOT_READY);
+		this->set_label (iPanelIdx, "  Initializing");
+		break;	
 
-    case LABEL_ACQUIRING:
-	this->set_label_style (iPanelIdx, Acquire_4030e_window::LABEL_ACQUIRING);
-	this->set_label (iPanelIdx, "  Acquiring");
-	break;
+	case OPENNED:
+		this->set_label_style (iPanelIdx, LABEL_PREPARING);
+		this->set_label (iPanelIdx, "  Preparing");
+		break;	
 
-    case LABEL_PREPARING:
-	this->set_label_style (iPanelIdx, Acquire_4030e_window::LABEL_PREPARING);
-	this->set_label (iPanelIdx, "  Resetting");
-	break;
+	case PANEL_ACTIVE:
+		this->set_label_style (iPanelIdx, LABEL_PREPARING);
+		this->set_label (iPanelIdx, "  Preparing");
+		break;	
 
-    case LABEL_READY:
-	this->set_label_style (iPanelIdx, Acquire_4030e_window::LABEL_READY);
-	this->set_label (iPanelIdx, "  Ready");
-	break;
-    default:
-	break;
-    }
+	case READY_FOR_PULSE:
+		this->set_label_style (iPanelIdx, LABEL_ACQUIRING);
+		this->set_label (iPanelIdx, "  Acquiring");
+		break;	
+
+	case PULSE_CHANGE_DETECTED:
+		this->set_label_style (iPanelIdx, LABEL_ACQUIRING);
+		this->set_label (iPanelIdx, "  Acquiring");
+		break;	
+
+	case COMPLETE_SIGNAL_DETECTED:
+		this->set_label_style (iPanelIdx, LABEL_PREPARING);
+		this->set_label (iPanelIdx, "  Resetting");
+		break;	
+
+	case IMAGE_ACQUSITION_DONE:
+		this->set_label_style (iPanelIdx, LABEL_PREPARING);
+		this->set_label (iPanelIdx, "  Resetting");
+		break;
+
+	case STANDBY_SIGNAL_DETECTED:
+		this->set_label_style (iPanelIdx, LABEL_READY);
+		this->set_label (iPanelIdx, "  Ready");
+		break;    
+
+	default:
+		break;
+	}
 }
 
 void 
@@ -298,7 +319,7 @@ void Acquire_4030e_window::ShowPanelControl_0 ()
 
     //((Acquire_4030e_parent*)qApp)->m_dlgControl_0->show();
 
-	((Acquire_4030e_parent*)qApp)->StartCommandTimer(0, Acquire_4030e_parent::SHOWDLG);
+	((Acquire_4030e_parent*)qApp)->StartCommandTimer(0, PCOMMAND_SHOWDLG);
 
 	//m_dlgControl_0->show();
     //else
@@ -311,7 +332,7 @@ void Acquire_4030e_window::ShowPanelControl_1 ()
   //if (((Acquire_4030e_parent*)qApp)->m_dlgControl_1 != NULL) //doens't work. maybe cannot access to the address
     //((Acquire_4030e_parent*)qApp)->m_dlgControl_1->show();
     //((Acquire_4030e_parent*)qApp)->m_dlgControl_1->show();
-	((Acquire_4030e_parent*)qApp)->StartCommandTimer(1, Acquire_4030e_parent::SHOWDLG);
+	((Acquire_4030e_parent*)qApp)->StartCommandTimer(1, PCOMMAND_SHOWDLG);
 }
 
 void Acquire_4030e_window::RunRelay_Panel0()

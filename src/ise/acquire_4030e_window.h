@@ -9,6 +9,7 @@
 #include <QMenu>
 #include <QSystemTrayIcon>
 #include "ui_acquire_4030e_window.h" //virtual h file
+#include "acquire_4030e_define.h"
 
 class QString;
 class QSystemTrayIcon;
@@ -23,13 +24,7 @@ public:
     Acquire_4030e_window ();    
 protected:
     void closeEvent(QCloseEvent *event);
-public:
-    enum Label_style {
-	LABEL_NOT_READY,
-	LABEL_ACQUIRING, //Yellow
-	LABEL_PREPARING, //Orange
-	LABEL_READY
-    };
+
 
 public:
     void create_actions ();
@@ -65,7 +60,7 @@ public:
    
 
     //added by YKP
-    void UpdateLabel(int iPanelIdx, Label_style enStyle); // 0 based panel ID //called from child proc except the first time
+    void UpdateLabel(int iPanelIdx, PSTAT enStyle); // 0 based panel ID //called from child proc except the first time
     //void UpdateTray(Label_style enStyle);
 
 	bool m_bSeqKillReady;

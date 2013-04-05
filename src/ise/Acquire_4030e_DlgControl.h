@@ -1,6 +1,7 @@
 #pragma once
 #include <QDialog>
 #include "ui_acquire_4030e_panel.h"
+#include "acquire_4030e_define.h"
 //#include <QMainWindow>
 //#include "ui_acquire_4030e_window.h"
 class QString;

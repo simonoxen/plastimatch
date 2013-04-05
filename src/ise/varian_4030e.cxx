@@ -20,6 +20,7 @@ See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 #include <fstream>
 #include <QMessageBox>
 #include "Acquire_4030e_DlgControl.h"
+#include <QSystemSemaphore>
 
 /* This mutex is a class static variable */
 QMutex Varian_4030e::vip_mutex;
@@ -493,7 +494,7 @@ void Varian_4030e::CalcImageInfo (double& meanVal, double& STDV, double& minVal,
 	meanVal = meanPixelval;
 	STDV = SD;
 	minVal = minPixel;
-	minVal = maxPixel;
+	maxVal = maxPixel;
 	return;
 }
 
@@ -520,6 +521,155 @@ bool Varian_4030e::SameImageExist(IMGINFO& curInfo, int& sameImgIndex)
 	}
 	return result;
 }
+
+
+////get all image and report their mean and SD value
+//int Varian_4030e::Audit_All_Image (int xSize, int ySize) //get cur image to curImage
+//{	
+//	//m_pParent->m_ImageInfoFout << "TITLE" << "	" << "Mean" <<"	" << "SD"<< "	" << "MIN" <<"	"<<"MAX" << "	" << std::endl;
+//
+//	m_pParent->m_ImageInfoFout << "*******************ALL IMAGE INFO IN BUFFER**************************************" << std::endl;
+//
+//	int result;
+//	int mode_num = this->current_mode;
+//	int npixels = xSize * ySize;
+//
+//	USHORT *image_ptr = (USHORT *)malloc(npixels * sizeof(USHORT));
+//
+//	double tmpMean = 0.0;
+//	double tmpSD = 0.0;
+//	double tmpMin = 0.0;
+//	double tmpMax = 0.0;
+//
+//	m_pParent->m_ImageInfoFout << "mod number" << mode_num << std::endl;
+//
+//	result = vip_get_image(mode_num, VIP_CURRENT_IMAGE, xSize, ySize, image_ptr);		
+//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
+//	m_pParent->m_ImageInfoFout << "VIP_CURRENT_IMAGE:" 
+//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
+//		<< tmpMax << "	" << result << std::endl;
+//
+//	result = vip_get_image(mode_num, VIP_OFFSET_IMAGE, xSize, ySize, image_ptr);		
+//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
+//	m_pParent->m_ImageInfoFout << "VIP_OFFSET_IMAGE:" 
+//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
+//		<< tmpMax << "	" << result << std::endl;
+//
+//	result = vip_get_image(mode_num, VIP_GAIN_IMAGE, xSize, ySize, image_ptr);		
+//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
+//	m_pParent->m_ImageInfoFout << "VIP_GAIN_IMAGE:" 
+//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
+//		<< tmpMax << "	" << result << std::endl;
+//
+//	result = vip_get_image(mode_num, VIP_BASE_DEFECT_IMAGE, xSize, ySize, image_ptr);		
+//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
+//	m_pParent->m_ImageInfoFout << "VIP_BASE_DEFECT_IMAGE:" 
+//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
+//		<< tmpMax << "	" << result << std::endl;
+//
+//	result = vip_get_image(mode_num, VIP_AUX_DEFECT_IMAGE, xSize, ySize, image_ptr);		
+//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
+//	m_pParent->m_ImageInfoFout << "VIP_AUX_DEFECT_IMAGE:" 
+//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
+//		<< tmpMax << "	" << result << std::endl;
+//
+//	result = vip_get_image(mode_num, VIP_TEST_IMAGE, xSize, ySize, image_ptr);		
+//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
+//	m_pParent->m_ImageInfoFout << "VIP_TEST_IMAGE:" 
+//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
+//		<< tmpMax << "	" << result << std::endl;
+//
+//	result = vip_get_image(mode_num, VIP_RECEPTOR_TEST_IMAGE, xSize, ySize, image_ptr);		
+//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
+//	m_pParent->m_ImageInfoFout << "VIP_RECEPTOR_TEST_IMAGE:" 
+//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
+//		<< tmpMax << "	" << result << std::endl;
+//
+//
+//	result = vip_get_image(mode_num, VIP_CURRENT_IMG_0, xSize, ySize, image_ptr);		
+//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
+//	m_pParent->m_ImageInfoFout << "VIP_CURRENT_IMG_0:" 
+//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
+//		<< tmpMax << "	" << result << std::endl;
+//
+//	result = vip_get_image(mode_num, VIP_CURRENT_IMG_1, xSize, ySize, image_ptr);		
+//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
+//	m_pParent->m_ImageInfoFout << "VIP_CURRENT_IMG_1:" 
+//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
+//		<< tmpMax << "	" << result << std::endl;
+//
+//	result = vip_get_image(mode_num, VIP_CURRENT_IMG_2, xSize, ySize, image_ptr);		
+//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
+//	m_pParent->m_ImageInfoFout << "VIP_CURRENT_IMG_2:" 
+//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
+//		<< tmpMax << "	" << result << std::endl;
+//
+//	result = vip_get_image(mode_num, VIP_CURRENT_IMG_RAW, xSize, ySize, image_ptr);		
+//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
+//	m_pParent->m_ImageInfoFout << "VIP_CURRENT_IMG_RAW:" 
+//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
+//		<< tmpMax << "	" << result << std::endl;
+//
+//	result = vip_get_image(mode_num, VIP_OFFSET_IMG_0, xSize, ySize, image_ptr);		
+//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
+//	m_pParent->m_ImageInfoFout << "VIP_OFFSET_IMG_0:" 
+//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
+//		<< tmpMax << "	" << result << std::endl;
+//
+//	result = vip_get_image(mode_num, VIP_OFFSET_IMG_1, xSize, ySize, image_ptr);		
+//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
+//	m_pParent->m_ImageInfoFout << "VIP_OFFSET_IMG_1:" 
+//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
+//		<< tmpMax << "	" << result << std::endl;
+//
+//	result = vip_get_image(mode_num, VIP_OFFSET_IMG_2, xSize, ySize, image_ptr);		
+//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
+//	m_pParent->m_ImageInfoFout << "VIP_OFFSET_IMG_2:" 
+//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
+//		<< tmpMax << "	" << result << std::endl;
+//
+//	result = vip_get_image(mode_num, VIP_OFFSET_IMG_AV, xSize, ySize, image_ptr);		
+//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
+//	m_pParent->m_ImageInfoFout << "VIP_OFFSET_IMG_AV:" 
+//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
+//		<< tmpMax << "	" << result << std::endl;
+//
+//	result = vip_get_image(mode_num, VIP_ANALOG_OFFSET_IMAGE, xSize, ySize, image_ptr);		
+//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
+//	m_pParent->m_ImageInfoFout << "VIP_ANALOG_OFFSET_IMAGE:" 
+//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
+//		<< tmpMax << "	" << result << std::endl;
+//
+//	result = vip_get_image(mode_num, VIP_PREVIEW_IMAGE, xSize, ySize, image_ptr);		
+//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
+//	m_pParent->m_ImageInfoFout << "VIP_PREVIEW_IMAGE:" 
+//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
+//		<< tmpMax << "	" << result << std::endl;
+//
+//	result = vip_get_image(mode_num, VIP_RAD_OFFSET_IMAGE, xSize, ySize, image_ptr);		
+//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
+//	m_pParent->m_ImageInfoFout << "VIP_RAD_OFFSET_IMAGE:" 
+//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
+//		<< tmpMax << "	" << result << std::endl;
+//
+//
+//
+//	//IMGINFO tmpInfo;
+//	//tmpInfo.meanVal = tmpMean;
+//	//tmpInfo.SD = tmpSD;
+//	//tmpInfo.minVal = tmpMin;
+//	//tmpInfo.maxVal = tmpMax;
+//	//aqprintf("IMG_INSPECTION(Mean|SD|MIN|MAX): %3.2f | %3.2f | %d | %d\n", tmpInfo.meanVal, tmpInfo.SD, tmpInfo.minVal, tmpInfo.maxVal);
+//
+//	//m_pParent->m_ImageInfoFout << std::endl;
+//
+//	delete [] image_ptr;
+//
+//	return HCP_NO_ERR;
+//}
+
+
+
 int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to curImage
 {
 	int result;
@@ -527,7 +677,11 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 	int npixels = xSize * ySize;
 
 	USHORT *image_ptr = (USHORT *)malloc(npixels * sizeof(USHORT));
+
+
+	//m_pParent->m_pSysSemaphore->acquire();
 	result = vip_get_image(mode_num, VIP_CURRENT_IMAGE, xSize, ySize, image_ptr);
+	//m_pParent->m_pSysSemaphore->release(3);
 	//result = vip_get_image(mode_num, VIP_PREVIEW_IMAGE, xSize, ySize, image_ptr); //not working for SAMEIMAGE ERROR
 
 	//now raw image from panel
@@ -544,7 +698,7 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 	tmpInfo.SD = tmpSD;
 	tmpInfo.minVal = tmpMin;
 	tmpInfo.maxVal = tmpMax;
-	aqprintf("IMG_INSPECTION(Mean|SD|MIN|MAX): %3.2f | %3.2f | %d | %d\n", tmpInfo.meanVal, tmpInfo.SD, tmpInfo.minVal, tmpInfo.maxVal);
+	aqprintf("IMG_INSPECTION(Mean|SD|MIN|MAX): %3.2f | %3.2f | %3.1f | %3.1f \n", tmpInfo.meanVal, tmpInfo.SD, tmpInfo.minVal, tmpInfo.maxVal);
 
 	int sameImageIndex = -1;
 	if (SameImageExist(tmpInfo, sameImageIndex))
@@ -553,7 +707,8 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 		//msgBox.setText(str);	
 		//msgBox.exec(); //sometimes kills child process.. don't know why
 		aqprintf("******SAME_IMAGE_ERROR!! prevImgNum [%d]\n", sameImageIndex);
-		return HCP_SAME_IMAGE_ERROR;
+		//return HCP_SAME_IMAGE_ERROR;
+		return result;
 	}
 	m_vImageInfo.push_back(tmpInfo);
 	
@@ -895,10 +1050,10 @@ Varian_4030e::open_link (int panelIdx, const char *path)
 	// and modify the following line if required
 	//	orl.DebugMode = HCP_DBG_ON_FLSH;
 
-	if (panelIdx == 0) {
+//	if (panelIdx == 0) {
 		//orl.DebugMode = HCP_DBG_ON_DLG;
-		orl.DebugMode = HCP_DBG_ON_FLSH;
-	}
+	orl.DebugMode = HCP_DBG_ON_FLSH;
+//	}
 
 	aqprintf("Opening link to %s\n", orl.RecDirPath);
 	//PrintCurrentTime();

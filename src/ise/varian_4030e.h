@@ -63,6 +63,8 @@ public:
 
     int disable_missing_corrections (int result);
 
+	//int Audit_All_Image (int xSize, int ySize); //get cur image to curImage
+
 public:
     int idx;
     int current_mode;

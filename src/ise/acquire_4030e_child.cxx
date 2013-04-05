@@ -20,6 +20,7 @@ See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 #include "YK16GrayImage.h"
 //#include "dlgprogbaryk.h"
 #include <QProgressDialog>
+#include <QSystemSemaphore>
 
 #define TIMEOUT_MAINLOOP 50
 
@@ -62,21 +63,12 @@ Acquire_4030e_child::Acquire_4030e_child (int argc, char* argv[])
 	int result = this->open_receptor (argv[3]);    */
 
 	//m_iDarkImageCnt = 8;//number of images for averaging (dark field and flood field)
-	m_iGainImageCnt = 1;
-	//m_pImageArr = NULL; //double pointer for buffer averaging
-	//m_pDarkImage = new YK16GrayImage(); //offset image buffer
-	//m_pGainImage = new YK16GrayImage(); //Gain (flood or flat) image buffer
-	//m_pCurrImage = new YK16GrayImage();
+	m_iGainImageCnt = 1;	
 
 	m_pDarkImage = NULL;
 	m_pGainImage = NULL;
 	m_pCurrImage = NULL;
 
-
-	//this->timerChild = new QTimer(this);
-	//connect (timerChild, SIGNAL(timeout()), this, SLOT(timer_event()));
-	//connect (this, SIGNAL(ready()), this, SLOT(pollMessageFromParent()));
-	//timerChild->start(1000);	
 
 	m_TimerPollMsgFromParent = new QTimer(this);
 	m_TimerMainLoop = new QTimer(this);
@@ -133,6 +125,8 @@ Acquire_4030e_child::~Acquire_4030e_child () // How to call this????
 		m_dlgControl = NULL;
 	}
 
+	//m_ImageInfoFout.close();
+
 }
 
 void Acquire_4030e_child::ReleaseMemory() //Dark or Gain Image buffer for correction
@@ -164,6 +158,8 @@ void Acquire_4030e_child::ReleaseMemory() //Dark or Gain Image buffer for correc
 		delete m_pModeInfo;	
 		m_pModeInfo = NULL;
 	}
+	
+	//delete m_pSysSemaphore;
 
 	return;
 }
@@ -175,8 +171,6 @@ void Acquire_4030e_child::ReleaseMemory() //Dark or Gain Image buffer for correc
 bool
 Acquire_4030e_child::init(const char* strProcNum, const char* strRecepterPath)
 {  
-	//aqprintf(strProcNum);
-
 	if (vp != NULL)
 		vip_close_link(); //for sure, is it working??
 	/*if (this->dp != NULL) {
@@ -252,8 +246,17 @@ Acquire_4030e_child::init(const char* strProcNum, const char* strRecepterPath)
 	vp->m_bDarkCorrApply = false;
 	vp->m_bGainCorrApply = false;
 
-	this->m_TimerPollMsgFromParent->start(100);
-	this->m_TimerMainLoop->start(100);
+	//m_TimerPollMsgFromParent->start(100);
+	m_TimerPollMsgFromParent->start(50);
+	m_TimerMainLoop->start(100);
+
+
+	//QString strImgLogPath = QString("C:\\ImageInfo_panel_%1.txt").arg(m_strProcNum);	
+	//m_ImageInfoFout.open(strImgLogPath.toStdString().c_str());	
+	//m_ImageInfoFout << "TITLE" << "	" << "Mean" <<"	" << "SD"<< "	" << "MIN" <<"	"<<"MAX" << "	" << "ImageAcqusitionResult" << std::endl;
+	
+	//m_pSysSemaphore = new QSystemSemaphore("acquire_4030e",3, QSystemSemaphore::Create);
+	
 	
 	return true;
 }
@@ -852,7 +855,13 @@ void Acquire_4030e_child::InterpretAndFollow ()
 		m_TimerMainLoop->stop(); //if running
 		aqprintf("PRESPP_KILL\n");
 	}	
-	//after interpretation, init msg buffer
+	else if (m_strFromParent.contains("ACTIVATE"))//msg is sent from parent's main loop related to advantech
+	{		
+		aqprintf("PRESPP_ACTIVATE\n");
+		
+		//m_TimerMainLoop->start(100); //from standby (0 0 0 0) --> hardwarehandshaking & HS_ACTIVE
+		m_bAcquisitionOK = true; //resume the main loop timer
+	}	
 	m_strFromParent="";
 	return;
 }
@@ -885,32 +894,21 @@ void Acquire_4030e_child::PrintVoltage()
 }
 
 void Acquire_4030e_child::TimerPollMsgFromParent_event()
-{
-	//aqprintf("TimerPollMsgFromParent_event\n");//정상작동 확인
-	//bool Acquire_4030e_child::pollMessageFromParent() //true if meaningful msg comes
-	//{    
-	//aqprintf("PollMessages Runned\n");
+{	
 	QString tmpStr;
 	char buffer[128];    
 	memset (buffer,0, 128);        
-	fgets(buffer,128,stdin); //stuck in this line when no stream stdin
-	//aqprintf("AfterFgets\n");
+	fgets(buffer,128,stdin);
 	tmpStr = (const char*)buffer;
 
-	fflush(stdin);
-
-	//Sleep(1000);
-	//tmpStr = tmpStr.simplified();    	
+	fflush(stdin);	
 
 	if (tmpStr.length() > 1)
 	{		
-		m_strFromParent=tmpStr;
-		aqprintf("received\n");
+		m_strFromParent=tmpStr;		
 		aqprintf(m_strFromParent.toLocal8Bit().constData());
-
-		InterpretAndFollow ();	
-	}
-	
+		InterpretAndFollow ();
+	}	
 	return;	
 }
 
@@ -932,20 +930,16 @@ void Acquire_4030e_child::TimerMainLoop_event() //called every 50 ms
 		//m_TimerMainLoop->start(TIMEOUT_MAINLOOP)  //should be 100 ms
 		break;		
 
-	case OPENNED:
-		//m_TimerMainLoop->stop(); //first stop!
+	case OPENNED:	
 		m_bAcquisitionOK = false; //BUSY flag
 		PC_ActivatePanel();
-		m_bAcquisitionOK = true; //BUSY flag
-		//m_TimerMainLoop->start(TIMEOUT_MAINLOOP)
+		m_bAcquisitionOK = true; //BUSY flag		
 		break;
 
-	case PANEL_ACTIVE: 
-		//m_TimerMainLoop->stop(); //first stop!
+	case PANEL_ACTIVE: 		
 		m_bAcquisitionOK = false; //BUSY flag
 		PC_WaitForPanelReady(); //will be repeated several times unitl the status change.
-		m_bAcquisitionOK = true; //BUSY flag
-		//m_TimerMainLoop->start(TIMEOUT_MAINLOOP);
+		m_bAcquisitionOK = true; //BUSY flag		
 		break;
 
 	case READY_FOR_PULSE: //Stand-by status			
@@ -964,12 +958,25 @@ void Acquire_4030e_child::TimerMainLoop_event() //called every 50 ms
 
 	case COMPLETE_SIGNAL_DETECTED: // Go back to first step  PC_ReStandbyPanel	
 		m_bAcquisitionOK = false; //BUSY flag				
-		PC_WaitForStanby();
+		PC_GetImageHardware(); //called once		
 		m_bAcquisitionOK = true; //BUSY flag
 		break;	
 
-	case DUMMY:
-		//do nothing		
+	case IMAGE_ACQUSITION_DONE:
+		m_bAcquisitionOK = false; //BUSY flag
+		PC_WaitForStanby(); //inside here image acquisition
+		m_bAcquisitionOK = true; //BUSY flag
+		break;            	    	
+
+	case STANDBY_SIGNAL_DETECTED:
+		m_bAcquisitionOK = false; //Just hold the timer
+		m_enPanelStatus = OPENNED;
+
+		//stop here the loop until getting ACTIVATION msg from parent
+
+		break;            	    	
+
+	case DUMMY:		
 		break;
 	} //end of switch
 }
@@ -988,8 +995,7 @@ bool Acquire_4030e_child::PC_ReOpenPanel()
 	if (!init(this->m_strProcNum.toLocal8Bit().constData(), this->m_strReceptorPath.toLocal8Bit().constData()))
 	{			
 		aqprintf ("Cannot Open the panel! Loop will be stopped.\n");
-		m_bAcquisitionOK = false;
-		//m_enPanelStatus = LOOP_STOP_REQUESTED;		
+		m_bAcquisitionOK = false;		
 	}
 	else
 		m_enPanelStatus = OPENNED;	
@@ -1010,28 +1016,7 @@ bool Acquire_4030e_child::PC_ActivatePanel()
 
 	int result = HCP_NO_ERR;
 
-	//int result = vip_reset_state(); //Mandatory, without this code, 1 1 0 0 and infinite no X-ray ready
-	//0328: no need by adding WaitForStanby(waiting for 0 x x 0)
-
-
-	//result = vip_reset_state(); //re-use for test 0401 --> now, serial acq. no problem. but when change panel, SAME IMAGE occurs	
-	//if (result != HCP_NO_ERR) {
-	//	//aqprintf("**** returns error %d - acquisition not enabled\n", result);
-	//	aqprintf("vip reset state error. Error code = %d \n", result);
-	//	//PrintCurrentTime();
-	//}
-	//Sleep(500);
-
-	/*result = vip_reset_state(); //not needed at all!
-
-	if (result != HCP_NO_ERR)
-	{
-		aqprintf("vip_reset_state. Error code = %d \n", result);
-	}*/
-
-
 	result = vip_enable_sw_handshaking (FALSE); //mandatory code	
-	Sleep(500);
 
 	if (result != HCP_NO_ERR)
 	{
@@ -1048,26 +1033,18 @@ bool Acquire_4030e_child::PC_ActivatePanel()
 			m_enPanelStatus = NOT_OPENNED;
 			Sleep(300);
 		}
-
 		return false;
 	}				
-	
-	//vp->vip_mutex.lock ();
-	//vip_select_receptor (vp->receptor_no);
-	//Sleep(500);
-	result = vip_io_enable (HS_ACTIVE); // Frame | Complete | NumPulse | PanelReady
-	//vp->vip_mutex.unlock ();	
+		
+	result = vip_io_enable (HS_ACTIVE); // Frame | Complete | NumPulse | PanelReady		
 
-	if (result != HCP_NO_ERR) {
-		//aqprintf("**** returns error %d - acquisition not enabled\n", result);
-		aqprintf("**** returns error %d - Panel Activation Error\n", result);
-		//PrintCurrentTime();
+	if (result != HCP_NO_ERR) {	
+		aqprintf("**** returns error %d - Panel Activation Error\n", result);		
 	}
 	m_enPanelStatus = PANEL_ACTIVE;
-	aqprintf ("PSTAT2: PANEL_ACTIVE\n");
+	aqprintf ("PSTAT2: PANEL_ACTIVE\n");	
 
-	m_timeOutCnt = 0;
-	
+	m_timeOutCnt = 0;	
 	return true;
 }
 
@@ -1081,10 +1058,10 @@ bool Acquire_4030e_child::PC_WaitForPanelReady()
 		return false;
 	}
 
-	//aqprintf ("PSTAT2: PANEL_ACTIVE\n");
 	m_pCrntStatus->qpi.ReadyForPulse = FALSE;
+	
+	int result = vp->query_prog_info (*m_pCrntStatus); // 0 0 0 0 --> 1 1 0 0	
 
-	int result = vp->query_prog_info (*m_pCrntStatus); // 0 0 0 0 --> 1 1 0 0
 	m_timeOutCnt += TIMEOUT_MAINLOOP;
 
 	if (result != HCP_NO_ERR)
@@ -1104,19 +1081,18 @@ bool Acquire_4030e_child::PC_WaitForPanelReady()
 				m_pCrntStatus->qpi.ReadyForPulse);
 
 		m_timeOutCnt = 0;
-		//m_enPanelStatus = OPENNED;
-		m_enPanelStatus = COMPLETE_SIGNAL_DETECTED; // stuck in 1 1 0 0 problem 0328 in A584-09 // Go to Restanby
+		vip_io_enable(HS_STANDBY);
+		Sleep(1000);
+		m_enPanelStatus = OPENNED;
 		return false;
 	}
 	else
 	{
 		if (m_pCrntStatus->qpi.ReadyForPulse == 1)
-		{
-			aqprintf("READY FOR X-RAYS - EXPOSE AT ANY TIME\n");
-			//Go next step
+		{			
 			m_enPanelStatus = READY_FOR_PULSE;			
-			aqprintf ("PSTAT3: READY_FOR_PULSE\n");
-			m_timeOutCnt = 0;
+			aqprintf ("PSTAT3: READY_FOR_PULSE\n"); 
+			m_timeOutCnt = 0;		
 		}
 		else
 		{
@@ -1136,13 +1112,15 @@ bool Acquire_4030e_child::PC_WaitForPulse() //vp->wait_on_num_pulses
 		return false;
 	}
 
-	//aqprintf ("PSTAT2: PANEL_ACTIVE\n");
-	//m_crntStatus.qpi.ReadyForPulse = FALSE;
 	int prevNumPulses = m_pCrntStatus->qpi.NumPulses;
 
+	//m_pSysSemaphore->acquire();
 	int result = vp->query_prog_info (*m_pCrntStatus);
+	//m_pSysSemaphore->release(3);
 
-	if (result != HCP_NO_ERR) //YK: standby mode..
+	m_timeOutCnt += TIMEOUT_MAINLOOP;
+
+	if (result != HCP_NO_ERR)
 	{
 		aqprintf("*** Acquisition terminated with error %d\n", result);
 		aqprintf("Error on querying in PC_WaitForPulse with error code of %d\n", result);
@@ -1150,117 +1128,19 @@ bool Acquire_4030e_child::PC_WaitForPulse() //vp->wait_on_num_pulses
 		vip_io_enable(HS_STANDBY);
 		return false;
 	}
+	else if (m_timeOutCnt > 2000) 
+	{		
+		m_enPanelStatus = IMAGE_ACQUSITION_DONE; //GOTO Standby
+		return false;
+	}
 	else
 	{
-		if (m_pCrntStatus->qpi.NumPulses != prevNumPulses) //if thiere is any change
+		if (m_pCrntStatus->qpi.NumPulses != prevNumPulses) //if thiere is any change		
 		{
 			m_enPanelStatus = PULSE_CHANGE_DETECTED;
 			aqprintf ("PSTAT4: PULSE_CHANGE_DETECTED\n");
-		}
-		else if (m_pCrntStatus->qpi.NumFrames != 0  && m_pCrntStatus->qpi.Complete == 1)  // 1 1 0 0
-		{
-			m_enPanelStatus = COMPLETE_SIGNAL_DETECTED; // Go to standby
-			aqprintf ("PSTAT5: COMPLETE_SIGNAL_DETECTED\n");
-		}
+		}	
 	}
-	return true;
-}
-
-bool Acquire_4030e_child::PC_GetImageHardware()
-{
-	//if (m_enPanelStatus != PULSE_CHANGE_DETECTED)
-	//{
-	//	aqprintf ("PC_GetImageHardware Error: panel status is not proper\n");
-	//	return false;
-	//}
-	//int result = vp->wait_on_num_frames (crntStatus, 1, 0); //while3
-
-//////////////////
-	int result = HCP_NO_ERR;
-	QString errorStr;
-
-	//m_pCrntStatus->qpi.Complete = FALSE;
-	m_timeOutCnt += TIMEOUT_MAINLOOP;
-
-	//result = vp->query_prog_info (*m_pCrntStatus); yk0401
-
-	//if (result != HCP_NO_ERR) //Not that serious
-	//{
-	//	//aqprintf("*** Acquisition terminated with error %d\n", result);
-	//	aqprintf("Error on querying in PC_GetImageHardware with an error code of %d\n", result);
-	//	aqprintf ("***** Didn't find expected NUM FRAMES?\n");
-	//	//m_enPanelStatus = OPENNED;//go back to first step	
-	//	//vip_io_enable(HS_STANDBY);
-	//	return false;
-	//}
-	//else if (m_timeOutCnt > 10000) //Time_out
-	//{
-	//	aqprintf("*** TIMEOUT ***Image acquisition failed! \n"); //just retry
-	//	m_timeOutCnt = 0;
-	//	m_enPanelStatus = OPENNED; //move to first step..
-	//	return false;
-	//}
-	//else
-	//{		
-		//if(m_pCrntStatus->qpi.NumFrames >= m_iNumOfFramesRequested && m_pCrntStatus->qpi.Complete ==1)			//reason of the latent image! found in 03/25/2013 test
-		if(m_pCrntStatus->qpi.NumFrames >= m_iNumOfFramesRequested)			
-		{			
-			Sleep(200);
-			//HCP_NO_IMAGE_ERR,	//128 발생
-			//result = vp->get_image_to_dips (dp, m_pModeInfo->ColsPerFrame,m_pModeInfo->LinesPerFrame);		
-
-			/*if (result != HCP_NO_ERR){
-				errorStr = QString ("Error in sending image to dips. Error code is %1..Anyway, going to next step\n").arg(result);
-				aqprintf(errorStr.toLocal8Bit().constData());
-			}			*/
-
-			result = vp->get_image_to_buf(m_pModeInfo->ColsPerFrame,m_pModeInfo->LinesPerFrame); //fill m_pCurrImage
-
-			if (result == HCP_SAME_IMAGE_ERROR)
-			{
-				return true;
-			}
-			
-			vp->CopyFromBufAndSendToDips(dp);
-
-			if (result != HCP_NO_ERR){
-				errorStr = QString ("Error in sending image to currentImageBuffer. Error code is %1..Anyway, going to next step\n").arg(result);
-				aqprintf(errorStr.toLocal8Bit().constData());
-			}			
-			else
-			{
-				//Display on the screen
-				m_pCurrImage->FillPixMap(m_iCurWinMidVal, m_iCurWinWidthVal);
-				m_pCurrImage->DrawToLabel(m_dlgControl->lbCurrentImage);
-
-				//Save as raw file
-				if (m_dlgControl->ChkAutoSave->isChecked())
-				{
-					QString folderPath = m_dlgControl->lineEditCurImageSaveFolder->text();
-					//QLineEdit* edit;
-					//edit->text()
-
-					if (folderPath.length() < 2)
-						folderPath = "C:";
-
-					QString strFileName = QString("%1_CurImg").arg(this->idx); //panel number display
-					QTime time = QTime::currentTime();    
-					QString str = time.toString("_hh_mm_ss");        
-					strFileName.append(str);
-					strFileName.append(".raw");
-
-					strFileName.prepend("\\");
-					strFileName.prepend(folderPath);
-					m_pCurrImage->SaveDataAsRaw(strFileName.toStdString().c_str());			
-				}
-			}
-			//Go next step any way..
-			//m_enPanelStatus = IMAGE_ACQUSITION_DONE; //even when wait_on_num_frames and sending image is failed..
-
-			m_timeOutCnt = 0;
-			aqprintf ("IMAGE_ACQUSITION_DONE\n");
-		}
-	//}
 	return true;
 }
 
@@ -1278,21 +1158,27 @@ bool Acquire_4030e_child::PC_WaitForComplete()//vp->wait_on_complete
 	m_pCrntStatus->qpi.Complete = FALSE;
 
 	m_timeOutCnt += TIMEOUT_MAINLOOP;
+
+	//m_pSysSemaphore->acquire();
 	result = vp->query_prog_info (*m_pCrntStatus); // YK: Everytime, No data error 8
+	//m_pSysSemaphore->release(3);
 
 	if (result != HCP_NO_ERR) //Not that serious in this step
-	{		
-		//aqprintf("Error on querying with error %d\n", result);
+	{	
 		errorStr = QString ("Error in wait_on_complete. Error code is %1. Now, retrying...\n").arg(result);		
 		aqprintf(errorStr.toLocal8Bit().constData());
-		m_enPanelStatus = OPENNED;//Let's try with PANEL_ACTIVE (without reselection and HS_ACTIVE setting
+
 		vip_io_enable(HS_STANDBY); // Let's try without this (directly go to PANEL_ACTIVE)
+		Sleep(1000);
+		m_enPanelStatus = OPENNED;//Let's try with PANEL_ACTIVE (without reselection and HS_ACTIVE setting		
 		return false;
 	}
 	else if (m_timeOutCnt > 10000) //Time_out
 	{
 		aqprintf("*** TIMEOUT ***Completion failed! \n"); //just retry
 		m_timeOutCnt = 0;
+		vip_io_enable(HS_STANDBY); // Let's try without this (directly go to PANEL_ACTIVE)
+		Sleep(1000);
 		m_enPanelStatus = OPENNED; //move to first step..
 		return false;
 	}
@@ -1308,31 +1194,100 @@ bool Acquire_4030e_child::PC_WaitForComplete()//vp->wait_on_complete
 
 			m_enPanelStatus = COMPLETE_SIGNAL_DETECTED;
 			m_timeOutCnt = 0;
-			aqprintf ("PSTAT6: COMPLETE_SIGNAL_DETECTED\n");
+			aqprintf ("PSTAT5: COMPLETE_SIGNAL_DETECTED\n");
 
-			PC_GetImageHardware();
+			//PC_GetImageHardware();
 		}		
 	}
 	return true;
 }
 
-//bool Acquire_4030e_child::PC_ReStandbyPanel() //also can be used for SW acquisition for reloop
-bool Acquire_4030e_child::PC_WaitForStanby() //also can be used for SW acquisition for reloop
+bool Acquire_4030e_child::PC_GetImageHardware()
 {
 	if (m_enPanelStatus != COMPLETE_SIGNAL_DETECTED)
+	{
+		aqprintf ("PC_GetImageHardware Error: panel status is not proper\n");
+		return false;
+	}
+
+	int result = HCP_NO_ERR;
+	QString errorStr;
+	m_timeOutCnt += TIMEOUT_MAINLOOP;
+
+	if(m_pCrntStatus->qpi.NumFrames >= m_iNumOfFramesRequested)			
+	{	
+		result = vp->get_image_to_buf(m_pModeInfo->ColsPerFrame,m_pModeInfo->LinesPerFrame); //fill m_pCurrImage	
+
+		if (result == HCP_SAME_IMAGE_ERROR)
+		{
+			return true;
+		}
+
+		vp->CopyFromBufAndSendToDips(dp);
+
+		if (result != HCP_NO_ERR){
+			errorStr = QString ("Error in sending image to currentImageBuffer. Error code is %1..Anyway, going to next step\n").arg(result);
+			aqprintf(errorStr.toLocal8Bit().constData());
+		}			
+		else
+		{
+			//Display on the screen
+			m_pCurrImage->FillPixMap(m_iCurWinMidVal, m_iCurWinWidthVal);
+			m_pCurrImage->DrawToLabel(m_dlgControl->lbCurrentImage);
+
+			//Save as raw file
+			if (m_dlgControl->ChkAutoSave->isChecked())
+			{
+				QString folderPath = m_dlgControl->lineEditCurImageSaveFolder->text();				
+
+				if (folderPath.length() < 2)
+					folderPath = "C:";
+
+				QString strFileName = QString("%1_CurImg").arg(this->idx); //panel number display
+				QTime time = QTime::currentTime();    
+				QString str = time.toString("_hh_mm_ss");        
+				strFileName.append(str);
+				strFileName.append(".raw");
+
+				strFileName.prepend("\\");
+				strFileName.prepend(folderPath);
+				m_pCurrImage->SaveDataAsRaw(strFileName.toStdString().c_str());			
+			}
+		}
+		
+		m_enPanelStatus = IMAGE_ACQUSITION_DONE; //even when wait_on_num_frames and sending image is failed..
+
+		m_timeOutCnt = 0;
+		aqprintf ("PSTAT6: IMAGE_ACQUSITION_DONE\n");
+	}	
+	return true;
+}
+
+bool Acquire_4030e_child::PC_WaitForStanby() //also can be used for SW acquisition for reloop
+{
+
+	//any time it can be called for next purlpose
+
+	/*if (m_enPanelStatus != IMAGE_ACQUSITION_DONE)
 	{
 		aqprintf ("PC_ReStandbyPanel Error: panel status is not proper\n");
 		m_enPanelStatus = OPENNED;
 		return false;
-	}
+	}*/
+
+	//m_pSysSemaphore->acquire();
 	vip_io_enable(HS_STANDBY);
+	//m_pSysSemaphore->release(3);
 
 	QString errorStr;
 	int result = HCP_NO_ERR;
 	//m_pCrntStatus->qpi.Complete = FALSE;	
 
 	m_timeOutCnt += TIMEOUT_MAINLOOP;
+
+	//m_pSysSemaphore->acquire();
 	result = vp->query_prog_info (*m_pCrntStatus); // YK: Everytime, No data error 8
+	//m_pSysSemaphore->release(3);
 
 	if (result != HCP_NO_ERR) //Not that serious in this step
 	{	
@@ -1342,7 +1297,7 @@ bool Acquire_4030e_child::PC_WaitForStanby() //also can be used for SW acquisiti
 		//vip_io_enable(HS_STANDBY); // Let's try without this (directly go to PANEL_ACTIVE)
 		return false;
 	}
-	else if (m_timeOutCnt > 5000) //Time_out
+	else if (m_timeOutCnt > 5000) //Time_out  --> Impossible! should restart the panel
 	{
 		aqprintf("*** TIMEOUT ***Restanby failed! \n"); //just retry
 		m_timeOutCnt = 0;
@@ -1359,44 +1314,15 @@ bool Acquire_4030e_child::PC_WaitForStanby() //also can be used for SW acquisiti
 				m_pCrntStatus->qpi.NumPulses,
 				m_pCrntStatus->qpi.ReadyForPulse);			
 
-			m_enPanelStatus = OPENNED;
+			m_enPanelStatus = STANDBY_SIGNAL_DETECTED;
 			m_timeOutCnt = 0;
-			aqprintf ("PSTAT7: STANBY_SIGNAL_DETECTED\n");
+			aqprintf ("PSTAT7: STANBY_SIGNAL_DETECTED\n");	
+			aqprintf("READY FOR X-RAYS - EXPOSE AT ANY TIME\n");
+
+			//m_TimerMainLoop->stop(); //will be resumed after getting message from parent //0404 edited -->to avoid "Hardware handshaking interference and image redundancy problem!
 		}		
 	}
 	return true;
-
-
-	///////////////////////
-
-
-
-	//int result = vp->query_prog_info (*m_pCrntStatus);
-
-	////if(m_pCrntStatus->qpi.Complete == TRUE)
-	////{			
-	////Should be 1 x x 1
-	//aqprintf("YKTEMP_BEFORE HS_STANBY:frames=%d complete=%d pulses=%d ready=%d\n",
-	//		m_pCrntStatus->qpi.NumFrames,
-	//		m_pCrntStatus->qpi.Complete,
-	//		m_pCrntStatus->qpi.NumPulses,
-	//		m_pCrntStatus->qpi.ReadyForPulse);	
-	////}		
-
-
-	//m_enPanelStatus = OPENNED;
-	//vip_io_enable(HS_STANDBY); // Let's try without this (directly go to PANEL_ACTIVE)
-
-	//Sleep(1000);
-
-	//result = vp->query_prog_info (*m_pCrntStatus);
-	////Should be 0 x x 0
-	//aqprintf("YKTEMP_AFTER HS_STANBY+1s:frames=%d complete=%d pulses=%d ready=%d\n",
-	//		m_pCrntStatus->qpi.NumFrames,
-	//		m_pCrntStatus->qpi.Complete,
-	//		m_pCrntStatus->qpi.NumPulses,
-	//		m_pCrntStatus->qpi.ReadyForPulse);	
-	
 }
 
 

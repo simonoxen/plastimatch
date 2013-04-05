@@ -33,11 +33,17 @@ public:
 	bool IsEmpty();
 	bool ReleaseBuffer();
 
-	
+	bool CalcImageInfo (double& meanVal, double& STDV, double& minVal, double& maxVal);
+
+	double CalcAveragePixelDiff(YK16GrayImage& other);
+
+
+
+
 	//should be implemented later
 
 	//Flip
 	//mirror
 	//rotation
-	
+
 };

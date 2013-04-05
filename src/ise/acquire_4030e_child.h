@@ -7,17 +7,13 @@
 #include <QApplication>
 #include <QString>
 #include <QCloseEvent>
+#include <fstream>
+#include "acquire_4030e_define.h"
 //#include "HcpErrors.h"
 //#include "HcpFuncDefs.h"
 //#include "HcpSundries.h"
 //#include <stdio.h>
 
-typedef unsigned short USHORT;
-
-#define MAX_CHECK_LINK_RETRY 3
-#define RESTART_NEEDED -101
-#define EXTERNAL_STATUS_CHANGE -102
-#define DELAY_FOR_CHILD_RESPONSE 300
 
 class Dips_panel;
 class QTimer;
@@ -30,19 +26,7 @@ class QProgressDialog;
 
 union UQueryProgInfo;
 struct SModeInfo;
-
-enum PSTAT{	
-	NOT_OPENNED,	
-	OPENNED, //after openning, go to select receptor, vip_io_enable(active)
-	PANEL_ACTIVE,	
-	READY_FOR_PULSE,//print "ERADY for X-ray and go to wait-on-num-pulses
-	PULSE_CHANGE_DETECTED, //beam signal detected
-	COMPLETE_SIGNAL_DETECTED,
-	//IMAGE_ACQUSITION_DONE,		
-	DUMMY	
-	//between every step, polling message will be runned,
-	//especially in standby while loop, polling message always runs.
-};
+//class QSystemSemaphore;
 
 
 class Acquire_4030e_child : public QApplication
@@ -155,7 +139,10 @@ public:
 	//DlgProgBarYK* m_dlgProgBar;	
 	QProgressDialog* m_dlgProgBar;	
 
-	
+
+	//std::ofstream m_ImageInfoFout;	
+
+	//QSystemSemaphore* m_pSysSemaphore;
 
 };
 

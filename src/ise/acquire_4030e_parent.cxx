@@ -15,6 +15,8 @@ See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 #include <QTime>
 #include <windows.h>
 #include <QFileDialog>
+//#include <QSystemSemaphore>
+
 
 #include "acquire_4030e_parent.h"
 //#include "acquire_4030e_window.h"
@@ -32,16 +34,19 @@ Acquire_4030e_parent::Acquire_4030e_parent (int argc, char* argv[])
 	m_bWaitingForChildResponse[0] = false;
 	m_bWaitingForChildResponse[1] = false;
 
-	m_enPrevSentCommand[0] = DUMMY;   	
-	m_enPrevSentCommand[1] = DUMMY;   	
+	m_enPrevSentCommand[0] = PCOMMAND_DUMMY;   	
+	m_enPrevSentCommand[1] = PCOMMAND_DUMMY;   	
 
 	m_bChildReadyToQuit[0] = true; //exit function can be called in initial status
 	m_bChildReadyToQuit[1] = true;
 
-	m_bBusyParent = false;
+//	m_bBusyParent = false;
 
 	m_bPanelRelayOpen0 = true;
 	m_bPanelRelayOpen1 = true;
+
+	m_bActivationHasBeenSent[0] = false;
+	m_bActivationHasBeenSent[1] = false;
 
 }
 
@@ -88,10 +93,10 @@ Acquire_4030e_parent::initialize (int argc, char* argv[])
 	this->window->setWindowTitle("Acquire 4030e v1.0 by MGH RO Physics Team");
 	//this->window->setWindowTitle("acquire_4030e");
 
-	this->window->UpdateLabel(0, Acquire_4030e_window::LABEL_NOT_READY);
-	this->window->UpdateLabel(1, Acquire_4030e_window::LABEL_NOT_READY);
-	this->window->set_icon(0,Acquire_4030e_window::LABEL_NOT_READY);// Tray should be shown after Label is updated.
-	this->window->set_icon(1,Acquire_4030e_window::LABEL_NOT_READY);
+	this->window->UpdateLabel(0, NOT_OPENNED);
+	this->window->UpdateLabel(1, NOT_OPENNED);
+	this->window->set_icon(0,LABEL_NOT_READY);// Tray should be shown after Label is updated.
+	this->window->set_icon(1,LABEL_NOT_READY);
 	this->window->show ();
 	//this->window2->show ();
 
@@ -148,8 +153,8 @@ Acquire_4030e_parent::initialize (int argc, char* argv[])
 		this->process[i].start(m_program[i], m_arguments[i]);
 	}
 
-	m_enPanelStatus[0] = Acquire_4030e_window::LABEL_NOT_READY;
-	m_enPanelStatus[1] = Acquire_4030e_window::LABEL_NOT_READY;
+	m_enPanelStatus[0] = NOT_OPENNED;
+	m_enPanelStatus[1] = NOT_OPENNED;
 
 	m_bPleoraErrorHasBeenOccurredFlag[0] = false;
 	m_bPleoraErrorHasBeenOccurredFlag[1] = false;
@@ -157,7 +162,7 @@ Acquire_4030e_parent::initialize (int argc, char* argv[])
 	/* Spawn the timer for polling devices */
 	this->timer = new QTimer(this);
 	connect (timer, SIGNAL(timeout()), this, SLOT(timer_event()));
-	timer->start (50);  
+	timer->start (200);
 
 	this->timerCommandToChild[0] = new QTimer(this);
 	connect (timerCommandToChild[0], SIGNAL(timeout()), this, SLOT(timerCommandToChild0_event()));
@@ -266,15 +271,6 @@ Acquire_4030e_parent::about_to_quit () //called from window->FinalQuit() as well
 	m_logFout.close();	
 }
 
-//void Acquire_4030e_parent::quit()
-//{
-//	if (true)
-//		QApplication::closeAllWindows()::quit();
-//
-//	return;
-//}
-
-
 void 
 Acquire_4030e_parent::log_output (const QString& log)
 {
@@ -322,103 +318,77 @@ Acquire_4030e_parent::poll_child_messages () //often called even window is close
 			if (line.contains("PRESPP"))
 			{
 				m_bWaitingForChildResponse[i] = false; //start to send dummy message
-
-				if (line.contains("OPENPANEL")) //PRESPP means aleady close the link
+				
+				if (line.contains("ACTIVATE")) //PRESPP means aleady close the link
 				{
-					m_enPanelStatus[i] = Acquire_4030e_window::LABEL_NOT_READY;		
-					m_bPleoraErrorHasBeenOccurredFlag[i] = false;		    
-				}
-				//else if (line.contains("KILLANDEXIT")) //PRESPP means aleady close the link
-				//{
-				//	//printf ("YK: Before kill %d.\n", i);
-				//	//only 0 panel receive this signal
-				//	if (i == 0)
-				//	{
-				//		process[0].close();						
-				//		m_enPanelStatus[0] = Acquire_4030e_window::LABEL_NOT_READY;		
-				//		m_bPleoraErrorHasBeenOccurredFlag[0] = false;
-
-				//		process[1].close();
-				//		m_enPanelStatus[1] = Acquire_4030e_window::LABEL_NOT_READY;						
-				//		m_bPleoraErrorHasBeenOccurredFlag[1] = false;
-
-				//		this->about_to_quit();					
-				//	}
-				//}
+					//m_enPanelStatus[i] = LABEL_PREPARING;		
+					m_bPleoraErrorHasBeenOccurredFlag[i] = false;
+				}			
 				else if (line.contains("KILL")) //PRESPP means aleady close the link
-				{
-					//printf ("YK: Before kill %d.\n", i);
+				{			
 					process[i].close(); //call destructor 
-					m_enPanelStatus[i] = Acquire_4030e_window::LABEL_NOT_READY;		
+					//m_enPanelStatus[i] = LABEL_NOT_READY;		
 					m_bPleoraErrorHasBeenOccurredFlag[i] = false;
 					m_bChildReadyToQuit[i] = true;
-
 				}
 				else if (line.contains("RESTART"))
 				{
-					m_enPanelStatus[i] = Acquire_4030e_window::LABEL_NOT_READY;		
+					//m_enPanelStatus[i] = LABEL_NOT_READY;		
 					m_bPleoraErrorHasBeenOccurredFlag[i] = false;
 					RestartChildProcess(i);
-				}
-				/*else if (line.contains("STOPLOOP"))
-				{
-				m_enPanelStatus[i] = Acquire_4030e_window::LABEL_PREPARING;				 
-				}
-				else if (line.contains("RESUMELOOP"))
-				{		    
-				m_enPanelStatus[i] = Acquire_4030e_window::LABEL_PREPARING;				 
-				}
-				else if (line.contains("OPENPANEL"))
-				{		    
-				m_enPanelStatus[i] = Acquire_4030e_window::LABEL_PREPARING;				 
-				}
-				else if (line.contains("CLOSEPANEL"))
-				{		    
-				m_enPanelStatus[i] = Acquire_4030e_window::LABEL_NOT_READY;				 
-				}*/
+				}			
 			}
 			else if (line.contains("PSTAT0"))
-			{
-				m_enPanelStatus[i] = Acquire_4030e_window::LABEL_NOT_READY;
-				//m_bPleoraErrorHasBeenOccurredFlag[i] = false;
+			{				
+				m_enPanelStatus[i] = NOT_OPENNED;				
 			}
 			else if (line.contains("PSTAT1"))
-			{
-				m_enPanelStatus[i] = Acquire_4030e_window::LABEL_PREPARING;
+			{				
+				//log_output("[p]PTAT1_Chaned");
+				m_enPanelStatus[i] = OPENNED;
 				m_bPleoraErrorHasBeenOccurredFlag[i] = false;
-			}	    
-			else if (line.contains("PSTAT3"))
+			}	 
+			else if (line.contains("PSTAT2"))
 			{
-				this->m_enPanelStatus[i] = Acquire_4030e_window::LABEL_READY;		
+				//log_output("[p]PTAT2_Chaned");
+				m_enPanelStatus[i] = PANEL_ACTIVE;
+				m_bPleoraErrorHasBeenOccurredFlag[i] = false;
+			}	
+			else if (line.contains("PSTAT3")) //Ready for pulse
+			{				
+				//log_output("[p]PTAT3_Chaned");
+				m_enPanelStatus[i] = READY_FOR_PULSE;
 				m_bPleoraErrorHasBeenOccurredFlag[i] = false;
 
 				m_bChildReadyToQuit[0] = false; //cannot exit without quit the child process safely
 				m_bChildReadyToQuit[1] = false;
-
 			}	
 			else if (line.contains("PSTAT4"))
 			{
-				this->m_enPanelStatus[i] = Acquire_4030e_window::LABEL_PREPARING;				
+				//log_output("[p]PTAT4_Chaned");
+				m_enPanelStatus[i] = PULSE_CHANGE_DETECTED;				
 			}
-			else if (line.contains("READY FOR X-RAYS") || line.contains("PSTAT3"))
+			else if (line.contains("PSTAT5"))
 			{
-				this->m_enPanelStatus[i] = Acquire_4030e_window::LABEL_READY;		
-				m_bPleoraErrorHasBeenOccurredFlag[i] = false;
+				m_enPanelStatus[i] = COMPLETE_SIGNAL_DETECTED;				
 			}
-			else if (line.contains("Waiting for Complete_Frames")) //called from wait on num frames first
+			else if (line.contains("PSTAT6"))
 			{
-				this->m_enPanelStatus[i] = Acquire_4030e_window::LABEL_PREPARING;
-				m_bPleoraErrorHasBeenOccurredFlag[i] = false;
+				m_enPanelStatus[i] = IMAGE_ACQUSITION_DONE;				
 			}
+			else if (line.contains("PSTAT7"))
+			{
+				m_enPanelStatus[i] = STANDBY_SIGNAL_DETECTED;				
+			}						
 			else if (line.contains("RESTART_PROCESS")) //
 			{		
-				m_enPanelStatus[i] = Acquire_4030e_window::LABEL_NOT_READY;		
+				m_enPanelStatus[i] = NOT_OPENNED;		
 				m_bPleoraErrorHasBeenOccurredFlag[i] = false;
 				RestartChildProcess(i);
 			}	    
 			else if(line.contains("open_receptor_link returns error")) //error during start
 			{
-				this->m_enPanelStatus[i] = Acquire_4030e_window::LABEL_NOT_READY; //go to init status->red
+				this->m_enPanelStatus[i] = NOT_OPENNED; //go to init status->red
 				//m_bPanelReady[i] = false;
 
 				//messageBox
@@ -444,7 +414,7 @@ Acquire_4030e_parent::poll_child_messages () //often called even window is close
 			}
 			else if(line.contains("Pleora Error")) //error during running 1)ethernet, 2) power
 			{
-				this->m_enPanelStatus[i] = Acquire_4030e_window::LABEL_NOT_READY; //go to init status->red
+				this->m_enPanelStatus[i] = NOT_OPENNED; //go to init status->red
 				m_bPleoraErrorHasBeenOccurredFlag[i] = true;
 				//messageBox
 				QMessageBox msgBox;
@@ -471,7 +441,7 @@ Acquire_4030e_parent::poll_child_messages () //often called even window is close
 			{
 				if (m_bPleoraErrorHasBeenOccurredFlag[i])// only when PleoraError has been occurred just before --> restart is required
 				{
-					this->m_enPanelStatus[i] = Acquire_4030e_window::LABEL_NOT_READY; //go to init status->red
+					this->m_enPanelStatus[i] = NOT_OPENNED; //go to init status->red
 
 					QMessageBox msgBox;
 					QString strTitle = QString("Panel %1 Error").arg(i);
@@ -514,7 +484,7 @@ bool Acquire_4030e_parent::RestartChildProcess(int idx)
 	//process[idx].terminate();//cannot terminate the process //send some event on QApp?
 	//process[idx].aboutToClose();
 	//printf ("YK: Re-creating child process %d.\n", idx);
-	m_enPanelStatus[idx] = Acquire_4030e_window::LABEL_NOT_READY;
+	m_enPanelStatus[idx] = NOT_OPENNED;
 	connect (&this->process[idx], SIGNAL(readyReadStandardOutput()),
 		this, SLOT(poll_child_messages()));
 
@@ -526,7 +496,6 @@ bool Acquire_4030e_parent::RestartChildProcess(int idx)
 /* On STAR, panel 0 is axial, and panel 1 is g90 */
 void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 {
-
 	//YK
 	UpdateLableStatus(); //based-on m_bPanelReady status; //every 50 ms
 
@@ -538,16 +507,13 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 	{
 		process[1].write("\n");//write stdin of each process    		
 	}	
-
-	//process[0].write(" ");//write stdin of each process    
-	//process[1].write(" "); //no in reference but work!
-
+	
 	/* On STAR, there is no distinction between prep & expose, i.e. there 
 	is only prep signal. */    
-	if (m_bBusyParent)
-		return;
+	//if (m_bBusyParent)
+	//	return;
 
-	m_bBusyParent = true;
+	//m_bBusyParent = true;
 
 	int res0 = advantech->read_bit (0);
 	int res1 = advantech->read_bit (1);
@@ -593,39 +559,64 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 		/* Close relay, asking panel to begin integration */
 		if (gen_panel_select == 0)
 		{
-			if (m_bPanelRelayOpen0)
+			if (m_enPanelStatus[0] == STANDBY_SIGNAL_DETECTED && !m_bActivationHasBeenSent[0]) // 0 0 0 0 --> HardwareHandshaking ON --> io_enalbe(1) (HS_ACTIVE) -->  0 0 0 1   ??What if stuck in 1 1 0 0?
 			{
-				/* Axial */
+				this->log_output (
+					QString("[p] Sending message to the panel to be activated: axial"));
+
+				StartCommandTimer(0, PCOMMAND_ACTIVATE); //sent once
+				m_bActivationHasBeenSent[0] = true;
+			}
+			else if (m_enPanelStatus[0] == READY_FOR_PULSE)
+			{
 				this->log_output (
 					QString("[p] Closing relay to panel: axial"));
-				this->advantech->relay_close (3); //close = connected
-				m_bPanelRelayOpen0 = false;
+				this->advantech->relay_close (3); //close = connected	
+				//Sleep(100);
+				this->generator_state = EXPOSE_REQUEST;
+			}
+			else
+			{
+				this->log_output (
+					QString("[p] Waiting for the panel to be activated: axial"));
 			}			
 		}	
 		else if (gen_panel_select == 1)
 		{
-			if (m_bPanelRelayOpen1)
+			if (m_enPanelStatus[1] == STANDBY_SIGNAL_DETECTED && !m_bActivationHasBeenSent[1]) // 0 0 0 0 --> HardwareHandshaking ON --> io_enalbe(1) (HS_ACTIVE) -->  0 0 0 1   ??What if stuck in 1 1 0 0?
 			{
-				/* G90 */
+				this->log_output (
+					QString("[p] Sending message to the panel to be activated: g90"));
+
+				StartCommandTimer(1, PCOMMAND_ACTIVATE); //sent once
+				m_bActivationHasBeenSent[1] = true;
+			}
+			else if (m_enPanelStatus[1] == READY_FOR_PULSE)
+			{
 				this->log_output (
 					QString("[p] Closing relay to panel: g90"));
-				this->advantech->relay_close (4);
-				m_bPanelRelayOpen1 = false;
+				this->advantech->relay_close (4); //close = connected				
+				//Sleep(100);
+				this->generator_state = EXPOSE_REQUEST;
 			}
-		}	
-		this->generator_state = EXPOSE_REQUEST;
+			else
+			{
+				this->log_output (
+					QString("[p] Waiting for the panel to be activated: g90"));
+			}
+		}			
 	}
 
 	/* Check if panel is ready */
 	if (gen_expose_request && this->generator_state == EXPOSE_REQUEST) {
 		/* When panel is ready, close relay on generator */
-		if (this->panel_select == false && panel_0_ready) {
+		if (this->panel_select == 0 && panel_0_ready) {
 			this->log_output (
 				QString("[p] Closing relay to generator"));
 			this->advantech->relay_close (0); //beam on signal to gen.
 			this->generator_state = EXPOSING;
 		}
-		else if (this->panel_select == true && panel_1_ready) {
+		else if (this->panel_select == 1 && panel_1_ready) {
 			this->log_output (
 				QString("[p] Closing relay to generator"));
 			this->advantech->relay_close (0);
@@ -643,52 +634,67 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 				.arg(panel_0_ready ? 0 : 1));
 		}
 		//printf("panel_select: %d, panel_0_ready: %d, panel_1_ready: %d\n\n",panel_select, panel_0_ready, panel_1_ready);
-	}    
+	}   
+
+
+	//beam swithc on 
+	if (gen_panel_select == 0 && (m_enPanelStatus[0] == PULSE_CHANGE_DETECTED || m_enPanelStatus[0] == COMPLETE_SIGNAL_DETECTED))
+	{
+		Sleep(100);
+		this->advantech->relay_open (0); //beam on signal to gen.
+		//this->advantech->relay_open (3);
+	}
+	if (gen_panel_select == 1 && (m_enPanelStatus[1] == PULSE_CHANGE_DETECTED || m_enPanelStatus[1] == COMPLETE_SIGNAL_DETECTED))
+	{
+		Sleep(100);
+		this->advantech->relay_open (0); //beam on signal to gen.
+		//this->advantech->relay_open (4);
+	}
 
 	/* Check if generator prep request complete */
-	if (!gen_expose_request)
-	{ //when exposure is over then relay_open: allow panel to read data
+	//if (!gen_expose_request)
+	if (!gen_expose_request && generator_state != WAITING)
+	{ //when exposure is over then relay_open: allow panel to read data		
 		
-		if (panel_0_ready ||panel_1_ready) {
-			/* Open relay to generator */
-			this->advantech->relay_open (0); //Beam on (N0, COM0)
-			//this->advantech->relay_open (3); //Expose request for panel 0- release
-			//this->advantech->relay_open (4); //Expose request for panel 0- release
-		}
+		this->advantech->relay_open (0); //Beam on (N0, COM0)
 
-		if (!m_bPanelRelayOpen0 && panel_0_ready )
+		if (panel_select == 0)
 		{
-				//Sleep(1000);
-				this->advantech->relay_open (3); //Expose request for panel 0- release
-				m_bPanelRelayOpen0 = true;
+			m_bActivationHasBeenSent[0] = false;
+			this->advantech->relay_open (3); //Expose request for panel 0- release
 		}
-		else if (!m_bPanelRelayOpen1 && panel_1_ready )
-		{			
-				//Sleep(1000);
-				this->advantech->relay_open (4); //Expose request for panel 1- release
-				m_bPanelRelayOpen1 = true;		
+		if (panel_select == 1)
+		{
+			m_bActivationHasBeenSent[1] = false;
+			this->advantech->relay_open (4); //Expose request for panel 0- release
 		}
 
-		if (this->generator_state != WAITING) {
+		//if (!m_bPanelRelayOpen0 && panel_0_ready )
+		//{
+		//		//Sleep(1000);
+		//		this->advantech->relay_open (3); //Expose request for panel 0- release
+		//		m_bPanelRelayOpen0 = true;
+		//}
+		//else if (!m_bPanelRelayOpen1 && panel_1_ready )
+		//{			
+		//		//Sleep(1000);
+		//		this->advantech->relay_open (4); //Expose request for panel 1- release
+		//		m_bPanelRelayOpen1 = true;		
+		//}
+
+		this->log_output (
+			QString("[p] Reset generator state to WAITING."));
+
+		/*if (this->generator_state != WAITING) {
 			this->log_output (
 				QString("[p] Reset generator state to WAITING."));
-		}
+		}*/
 		this->generator_state = WAITING;
 	}
-
-	if (generator_state == EXPOSING)
+	else if (!gen_expose_request && generator_state == WAITING)
 	{
-		if (gen_panel_select == false) // panel_0
-		{
-			this->m_enPanelStatus[0] = Acquire_4030e_window::LABEL_ACQUIRING;
-		}
-		if (gen_panel_select == true) // panel_0
-		{
-			this->m_enPanelStatus[1] = Acquire_4030e_window::LABEL_ACQUIRING;
-		}
+		// do nothing during waiting
 	}
-	//other lable style is coverned by child process
-	m_bBusyParent = false;
 }
 
 void 
@@ -697,29 +703,12 @@ Acquire_4030e_parent::UpdateLableStatus()
 	for (int i = 0 ; i<MAX_PANEL_NUM_YK ; i++)
 	{
 		this->window->UpdateLabel(i,this->m_enPanelStatus[i]);
-		this->window->set_icon((1-i),this->m_enPanelStatus[i]);
+		//this->window->set_icon((1-i),this->m_enPanelStatus[i]); YK0405
 	} 
 }
-//
-//void Acquire_4030e_parent::GetPanelInfo(int idx) //Msg box
-//{
-//    //QTime time = QTime::currentTime();    
-//    //QString strTime = time.toString("@hh:mm:ss.zzz\n"); 
-//
-//    //QString strSendPanel_0 = "MsgFromMainProcessToPanel_0: " + strTime + "\n";
-//    //QString strSendPanel_1= "MsgFromMainProcessToPanel_1: " + strTime + "\n";    
-//
-//    //strSendPanel_0 =" "; //some problem occurred!!! should be  at least length
-//    //strSendPanel_1 =" ";
-//
-//    QString strRequestForInfo = "DISPLAY_PANEL_INFO\n";
-//    process[idx].write(strRequestForInfo.toStdString().c_str());//write stdin of each process
-//    //process[0].closeWriteChannel(); //this will close the channel 
-//    //process[1].write(strSendPanel_1.toStdString().c_str());//no in reference but work!
-//}
 
 //Button click
-void Acquire_4030e_parent::StartCommandTimer(int idx, Acquire_4030e_parent::CommandToChild enCommand)
+void Acquire_4030e_parent::StartCommandTimer(int idx, CommandToChild enCommand)
 {
 	if (m_bWaitingForChildResponse[idx])
 	{
@@ -800,18 +789,18 @@ void Acquire_4030e_parent::timerAboutToQuit_event()
 
 
 //this func will not skipped at any time.
-void Acquire_4030e_parent::SendCommandToChild(int idx, Acquire_4030e_parent::CommandToChild enCommand) //Msg box
+void Acquire_4030e_parent::SendCommandToChild(int idx, CommandToChild enCommand) //Msg box
 {    
 	// if process is not ready, nothing.
 	//RESTART only when the process is killed
 	//int result1 = process[0].isOpen();
 	//int result2 = process[1].isOpen();
-	if (!process[idx].isOpen() && enCommand == RESTART) //if even the process has not been started,
+	if (!process[idx].isOpen() && enCommand == PCOMMAND_RESTART) //if even the process has not been started,
 	{
 		RestartChildProcess(idx);
 		return;
 	}
-	else if (!process[idx].isOpen() && enCommand != RESTART)
+	else if (!process[idx].isOpen() && enCommand != PCOMMAND_RESTART)
 	{
 		return;
 	}    
@@ -827,17 +816,20 @@ void Acquire_4030e_parent::SendCommandToChild(int idx, Acquire_4030e_parent::Com
 		//case CLOSE_PANEL:
 		//	process[idx].write("PCOMMAND_CLOSEPANEL\n");//write stdin of each process
 		//	break;
-	case KILL:
+	case PCOMMAND_KILL:
 		process[idx].write("PCOMMAND_KILL\n");//write stdin of each process
 		//case KILLANDEXIT:
 		//	process[idx].write("PCOMMAND_KILLANDEXIT\n");//write stdin of each process
-	case RESTART:
+	case PCOMMAND_RESTART:
 		process[idx].write("PCOMMAND_RESTART\n");//write stdin of each process
 		break;	
 		
-	case SHOWDLG:
+	case PCOMMAND_SHOWDLG:
 		//this->log_output("Show Dlg Command sent");
 		process[idx].write("PCOMMAND_SHOWDLG\n");
+		break;
+	case PCOMMAND_ACTIVATE:
+		process[idx].write("PCOMMAND_ACTIVATE\n");
 		break;
 	}    
 
