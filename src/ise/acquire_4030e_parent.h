@@ -20,6 +20,9 @@
 class Advantech;
 class QTimer;
 
+class QLocalServer;
+class QLocalSocket;
+
 //class acquire_4030e_window;
 //class Acquire_4030e_DlgControl;
 //class QSystemSemaphore;
@@ -52,7 +55,9 @@ public:
     //Acquire_4030e_window *window2;
     //Acquire_4030e_DlgControl *m_dlgControl_0;
     //Acquire_4030e_DlgControl *m_dlgControl_1;
-     int test;
+	QLocalServer* m_pServer[2];
+	QLocalSocket* m_pClientConnect[2];
+
 
 
     int num_process;
@@ -106,11 +111,10 @@ public:
 	bool m_bPanelRelayOpen0;
 	bool m_bPanelRelayOpen1;
 
+public:
+	bool SOCKET_StartServer(int iPanelIdx);
+	void SOCKET_ConnectClient(int iPanelIdx);
+	
 
-	//QSystemSemaphore* m_pSysSemaphore;
-
-
-    //void ShowPanelControlWindow (int idx);   
-    //bool SetStatus(int panelIdx, acquire_4030e_window::);
 };
 #endif

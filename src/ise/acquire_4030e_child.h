@@ -26,6 +26,8 @@ class QProgressDialog;
 
 union UQueryProgInfo;
 struct SModeInfo;
+
+class QLocalSocket;
 //class QSystemSemaphore;
 
 
@@ -130,19 +132,22 @@ public:
 
 	bool GetGainImageFromCurrent();
 
+	void SOCKET_ConnectToServer(QString& strServerName);	
+	void SOCKET_ReadMessageFromParent(); //when msg comes to client
+
 	int m_iNumOfFramesRequested;// = 1 default
 	Acquire_4030e_DlgControl *m_dlgControl;
 
 	void ReDraw(int lowerWinVal, int upperWinVal);//current image only
 	int m_iCurWinMidVal, m_iCurWinWidthVal; //window level of current image
-
-	//DlgProgBarYK* m_dlgProgBar;	
+	
 	QProgressDialog* m_dlgProgBar;	
 
-
 	//std::ofstream m_ImageInfoFout;	
-
 	//QSystemSemaphore* m_pSysSemaphore;
+
+	QLocalSocket* m_pClient;
+
 
 };
 

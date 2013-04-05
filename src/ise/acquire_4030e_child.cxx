@@ -20,7 +20,7 @@ See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 #include "YK16GrayImage.h"
 //#include "dlgprogbaryk.h"
 #include <QProgressDialog>
-#include <QSystemSemaphore>
+#include <QLocalSocket>
 
 #define TIMEOUT_MAINLOOP 50
 
@@ -92,8 +92,12 @@ Acquire_4030e_child::Acquire_4030e_child (int argc, char* argv[])
 	m_iCurWinMidVal = DEFAULT_WINLEVEL_MID;
 	m_iCurWinWidthVal= DEFAULT_WINLEVEL_WIDTH;
 
-	
-	
+	m_pClient = new QLocalSocket(this);
+	connect(m_pClient, SIGNAL(readRead()), this, SLOT(SOCKET_ReadMessageFromParent()));
+
+	connect(m_pClient, SIGNAL(error(QLocalSocket::LocalSocketErro)), this, SLOT(displayError(QLocalSocket::LocalSocketError)));
+	connect(m_pClient, SIGNAL(disconnected()),m_pClient, SLOT(deleteLater()));
+
 }
 
 //void Acquire_4030e_child::m_timerPollMsg_event()
@@ -125,7 +129,7 @@ Acquire_4030e_child::~Acquire_4030e_child () // How to call this????
 		m_dlgControl = NULL;
 	}
 
-	//m_ImageInfoFout.close();
+	m_pClient->disconnectFromServer();
 
 }
 
@@ -256,9 +260,45 @@ Acquire_4030e_child::init(const char* strProcNum, const char* strRecepterPath)
 	//m_ImageInfoFout << "TITLE" << "	" << "Mean" <<"	" << "SD"<< "	" << "MIN" <<"	"<<"MAX" << "	" << "ImageAcqusitionResult" << std::endl;
 	
 	//m_pSysSemaphore = new QSystemSemaphore("acquire_4030e",3, QSystemSemaphore::Create);
-	
+
+	//Connect server
+	QString strServerName = QString("SOCKET_MSG_TO_CHILD_%1").arg(idx);		
+	SOCKET_ConnectToServer(strServerName);	
 	
 	return true;
+}
+
+void Acquire_4030e_child::SOCKET_ConnectToServer(QString& strServerName)
+{
+	m_pClient->abort();
+	m_pClient->connectToServer(strServerName);
+	aqprintf("SYSTEM_REQUEST_FOR_SERVER_CONNECTION\n");
+}
+
+void Acquire_4030e_child::SOCKET_ReadMessageFromParent() //when msg comes to client
+{
+	while(m_pClient->bytesAvailable()<(int)sizeof(quint32))
+	{
+		m_pClient->waitForReadyRead();
+	}	
+
+	QDataStream in(m_pClient);
+	in.setVersion(QDataStream::Qt_4_0);
+	if (m_pClient->bytesAvailable() < (int)sizeof(quint16))
+	{
+		return;
+	}
+	QString message;
+	in >> message;
+
+	
+	m_strFromParent = message;
+
+	//Response Msg
+	message.prepend("SYSTEM_");
+	aqprintf(message.toLocal8Bit().constData());
+
+	InterpretAndFollow();
 }
 
 bool Acquire_4030e_child::close_receptor () //almost destructor...
@@ -1014,7 +1054,7 @@ bool Acquire_4030e_child::PC_ActivatePanel()
 	}
 	aqprintf ("PSTAT1: OPENNED\n");
 
-	int result = HCP_NO_ERR;
+	int result = HCP_NO_ERR; 
 
 	result = vip_enable_sw_handshaking (FALSE); //mandatory code	
 

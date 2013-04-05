@@ -15,7 +15,8 @@ See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 #include <QTime>
 #include <windows.h>
 #include <QFileDialog>
-//#include <QSystemSemaphore>
+#include <QLocalServer>
+#include <QLocalSocket>
 
 
 #include "acquire_4030e_parent.h"
@@ -46,7 +47,14 @@ Acquire_4030e_parent::Acquire_4030e_parent (int argc, char* argv[])
 	m_bPanelRelayOpen1 = true;
 
 	m_bActivationHasBeenSent[0] = false;
-	m_bActivationHasBeenSent[1] = false;
+	m_bActivationHasBeenSent[1] = false;	
+
+
+	m_pServer[0] = NULL;
+	m_pServer[1] = NULL;
+
+	m_pClientConnect[0] = NULL;
+	m_pClientConnect[1] = NULL;
 
 }
 
@@ -204,7 +212,13 @@ Acquire_4030e_parent::initialize (int argc, char* argv[])
 	{
 		printf("Cannot open log output file");
 	}
+
+	if (!SOCKET_StartServer(0))
+		log_output("[p] Starting server 1 failed");
+	if (!SOCKET_StartServer(1))
+		log_output("[p] Starting server 2 failed");	
 }
+
 
 void 
 Acquire_4030e_parent::kill_rogue_processes ()
@@ -337,6 +351,14 @@ Acquire_4030e_parent::poll_child_messages () //often called even window is close
 					m_bPleoraErrorHasBeenOccurredFlag[i] = false;
 					RestartChildProcess(i);
 				}			
+			}
+
+			else if (line.contains("SYSTEM"))
+			{
+				if (line.contains("REQUEST_FOR_SERVER_CONNECTION"))
+				{
+					SOCKET_ConnectClient(i);
+				}				
 			}
 			else if (line.contains("PSTAT0"))
 			{				
@@ -817,17 +839,19 @@ void Acquire_4030e_parent::SendCommandToChild(int idx, CommandToChild enCommand)
 		//	process[idx].write("PCOMMAND_CLOSEPANEL\n");//write stdin of each process
 		//	break;
 	case PCOMMAND_KILL:
-		process[idx].write("PCOMMAND_KILL\n");//write stdin of each process
-		//case KILLANDEXIT:
-		//	process[idx].write("PCOMMAND_KILLANDEXIT\n");//write stdin of each process
+		//process[idx].write("PCOMMAND_KILL\n");//write stdin of each process
+		SOCKET_SendMessage();
+		
+		break;
+	
 	case PCOMMAND_RESTART:
 		process[idx].write("PCOMMAND_RESTART\n");//write stdin of each process
 		break;	
 		
-	case PCOMMAND_SHOWDLG:
-		//this->log_output("Show Dlg Command sent");
+	case PCOMMAND_SHOWDLG:		
 		process[idx].write("PCOMMAND_SHOWDLG\n");
 		break;
+
 	case PCOMMAND_ACTIVATE:
 		process[idx].write("PCOMMAND_ACTIVATE\n");
 		break;
@@ -835,3 +859,33 @@ void Acquire_4030e_parent::SendCommandToChild(int idx, CommandToChild enCommand)
 
 	return;
 }
+
+
+bool Acquire_4030e_parent::SOCKET_StartServer(int iPanelIdx)
+{
+	if (m_pServer[iPanelIdx] != NULL)
+	{
+		delete m_pServer[iPanelIdx];
+		m_pServer[iPanelIdx] = NULL;
+	}	
+
+	m_pServer[iPanelIdx] = new QLocalServer(this);	
+
+	QString strServerName = QString("SOCKET_MSG_TO_CHILD_").arg(iPanelIdx);
+
+	if (!m_pServer[iPanelIdx]->listen(strServerName))
+	{
+		return false;
+	}
+
+	return true;
+}
+
+
+void Acquire_4030e_parent::SOCKET_ConnectClient(int iPanelIdx)
+{
+	m_pClientConnect[iPanelIdx] = m_pServer[iPanelIdx]->nextPendingConnection();
+	connect(m_pClientConnect[iPanelIdx], SIGNAL(disconnected()), m_pClientConnect[iPanelIdx], SLOT(deleteLater()));
+	log_output(QString("[p] Client For child %1 is approved to be connected").arg(iPanelIdx));
+}
+
