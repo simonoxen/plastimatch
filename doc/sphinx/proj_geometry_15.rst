@@ -41,21 +41,3 @@ geometry description:
 .. figure:: ../figures/drr_geometry.png
    :width: 80 %
 
-   Geometry attributes of a DRR
-
-.. figure:: ../figures/drr_intrinsic.png
-   :width: 50 %
-
-   Intrinsic geometry for DRR computation
-
-The intrinsic geometry is specified by the equation:
-
-.. math::
-
-   K = \left[
-     \begin{array}{cccc}
-     1/\alpha & 0 & 0 & c_i \\
-     0 & 1 / \beta & 0 & c_j \\
-     0 & 0 & f & 0
-     \end{array}
-     \right]
