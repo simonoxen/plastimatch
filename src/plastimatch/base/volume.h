@@ -8,6 +8,7 @@
 
 #include "direction_cosines.h"
 #include "plm_int.h"
+#include "smart_pointer.h"
 #include "volume_macros.h"
 
 //TODO: Change type of directions_cosines to Direction_cosines*
@@ -36,6 +37,8 @@ enum Volume_pixel_type {
  */
 class PLMBASE_API Volume
 {
+public:
+    SMART_POINTER_SUPPORT (Volume);
 public:
     plm_long dim[3];            // x, y, z Dims
     plm_long npix;              // # of voxels in volume

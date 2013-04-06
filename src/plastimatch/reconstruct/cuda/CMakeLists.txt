@@ -11,6 +11,7 @@ include_directories (BEFORE ${CMAKE_SOURCE_DIR}/src/plastimatch/reconstruct)
 include_directories (BEFORE ${CMAKE_SOURCE_DIR}/src/plastimatch/sys)
 include_directories (BEFORE ${CMAKE_SOURCE_DIR}/src/plastimatch/util)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
+include_directories (AFTER ${DLIB_INCLUDE_DIR})
 include_directories (AFTER ${MSINTTYPES_INCLUDE_DIR})
 
 set (PLMRECONSTRUCT_CUDA_SRC
