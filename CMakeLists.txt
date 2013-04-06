@@ -137,6 +137,10 @@ option (PLM_PREFER_SYSTEM_F2C
 option (PLM_PREFER_NO_FORTRAN_NO_F2C
   "Prefer no fortran, no f2c" ON)
 
+# Testing
+option (PLM_BUILD_TESTING 
+  "Enable regression testing" ON)
+
 # Installer Options
 option (PLM_INSTALL_RPATH 
   "Add full RPATH to install" OFF)
@@ -144,34 +148,6 @@ option (PLM_CONFIG_INSTALL_LIBRARIES
   "Include libraries in install" ON)
 option (PLM_PACKAGE_32BIT 
   "Set this when building 32-bit packages on a 64-bit machine" OFF)
-
-# Regression testing
-option (PLM_BUILD_TESTING 
-  "Enable regression testing" ON)
-option (PLM_REDUCED_TESTS 
-  "Run fewer tests (used when debugging tests)" OFF)
-option (PLM_DOWNLOAD_HEADPHANTOM
-  "Additional testing data (download from internet)" OFF)
-option (PLM_DOWNLOAD_DICOMRT_AW
-  "Additional testing data (download from internet)" OFF)
-option (PLM_DOWNLOAD_DICOMRT_CERR
-  "Additional testing data (download from internet)" OFF)
-option (PLM_DOWNLOAD_DICOMRT_CORVUS
-  "Additional testing data (download from internet)" OFF)
-option (PLM_DOWNLOAD_DICOMRT_IRREGULAR
-  "Additional testing data (download from internet)" OFF)
-option (PLM_DOWNLOAD_DICOMRT_PINNACLE 
-  "Additional testing data (download from internet)" OFF)
-option (PLM_DOWNLOAD_DICOMRT_XIO 
-  "Additional testing data (download from internet)" OFF)
-option (PLM_DOWNLOAD_DICOMRT_33_STRUCTURES
-  "Additional testing data (download from internet)" OFF)
-option (PLM_DOWNLOAD_RTOG_CORVUS
-  "Additional testing data (download from internet)" OFF)
-option (PLM_DOWNLOAD_FDK_VARIAN 
-  "Additional testing data (download from internet)" OFF)
-option (PLM_DOWNLOAD_XIO 
-  "Additional testing data (download from internet)" OFF)
 
 # Update options if library build is selected  
 if (PLM_CONFIG_LIBRARY_BUILD)

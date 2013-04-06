@@ -12,6 +12,36 @@ project (PLM_Testing)
 ## both A and B, the graph will be generated incorrectly.  
 ## -------------------------------------------------------------------------
 
+## -------------------------------------------------------------------------
+## Test and data download options
+## -------------------------------------------------------------------------
+option (PLM_REDUCED_TESTS 
+  "Run fewer tests (used when debugging tests)" OFF)
+option (PLM_DOWNLOAD_HEADPHANTOM
+  "Additional testing data (download from internet)" OFF)
+option (PLM_DOWNLOAD_DICOMRT_AW
+  "Additional testing data (download from internet)" OFF)
+option (PLM_DOWNLOAD_DICOMRT_CERR
+  "Additional testing data (download from internet)" OFF)
+option (PLM_DOWNLOAD_DICOMRT_CORVUS
+  "Additional testing data (download from internet)" OFF)
+option (PLM_DOWNLOAD_DICOMRT_IRREGULAR
+  "Additional testing data (download from internet)" OFF)
+option (PLM_DOWNLOAD_DICOMRT_PINNACLE 
+  "Additional testing data (download from internet)" OFF)
+option (PLM_DOWNLOAD_DICOMRT_XIO 
+  "Additional testing data (download from internet)" OFF)
+option (PLM_DOWNLOAD_DICOMRT_33_STRUCTURES
+  "Additional testing data (download from internet)" OFF)
+option (PLM_DOWNLOAD_RTOG_CORVUS
+  "Additional testing data (download from internet)" OFF)
+option (PLM_DOWNLOAD_FDK_VARIAN 
+  "Additional testing data (download from internet)" OFF)
+option (PLM_DOWNLOAD_XIO 
+  "Additional testing data (download from internet)" OFF)
+option (PLM_DOWNLOAD_XIO_IRREGULAR 
+  "Additional testing data (download from internet)" OFF)
+
 ##-----------------------------------------------------------------------------
 ## Configure test input files
 ##-----------------------------------------------------------------------------
@@ -127,8 +157,8 @@ endif ()
 
 if (PLM_DOWNLOAD_DICOMRT_IRREGULAR)
   plm_download_and_extract (
-    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/2163/xio-4.60-irregular-spacing.tar.gz"
-    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/xio-4.60-irregular-spacing.tar.gz"
+    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/2162/dicomrt_xio-4.60-irregular-spacing.tar.gz"
+    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/dicomrt_xio-4.60-irregular-spacing.tar.gz"
     "${PLM_BUILD_TESTING_DIR}/xio-4.60-irregular-spacing")
 endif ()
 
@@ -172,6 +202,13 @@ if (PLM_DOWNLOAD_XIO)
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/939/chest-phantom-xio-4.33.02.tar.gz"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/chest-phantom-xio-4.33.02.tar.gz"
     "${PLM_BUILD_TESTING_DIR}/chest-phantom-xio-4.33.02")
+endif ()
+
+if (PLM_DOWNLOAD_XIO_IRREGULAR)
+  plm_download_and_extract (
+    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/2163/xio-4.60-irregular-spacing.tar.gz"
+    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/xio-4.60-irregular-spacing.tar.gz"
+    "${PLM_BUILD_TESTING_DIR}/20110509")
 endif ()
 
 
