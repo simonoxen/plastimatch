@@ -230,11 +230,11 @@ plm_image_convert_itk_uint32_to_itk_uchar_vec (UInt32ImageType::Pointer im_in)
     return im_out;
 }
 
-UCharVecImageType::Pointer
-plm_image_convert_gpuit_uint32_to_itk_uchar_vec (Plm_image* pli)
+void
+Plm_image::convert_gpuit_uint32_to_itk_uchar_vec ()
 {
     int i, d;
-    Volume* vol = (Volume*) pli->m_gpuit;
+    Volume* vol = this->get_volume ();
     uint32_t* img = (uint32_t*) vol->img;
 
     UCharVecImageType::Pointer im_out = UCharVecImageType::New();
@@ -281,9 +281,10 @@ plm_image_convert_gpuit_uint32_to_itk_uchar_vec (Plm_image* pli)
 
     /* Free gpuit data */
     delete vol;
-    pli->m_gpuit = 0;
+    this->m_gpuit = 0;
 
-    return im_out;
+    /* Set the type */
+    this->m_itk_uchar_vec = im_out;
 }
 
 UCharVecImageType::Pointer

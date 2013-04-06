@@ -39,9 +39,9 @@ do_gpuit_bspline_stage_internal (
     Plm_image_header pih;
 
     logfile_printf ("Converting fixed\n");
-    Volume *fixed = regd->fixed_image->gpuit_float();
+    Volume *fixed = regd->fixed_image->get_volume_float();
     logfile_printf ("Converting moving\n");
-    Volume *moving = regd->moving_image->gpuit_float();
+    Volume *moving = regd->moving_image->get_volume_float();
     logfile_printf ("Done.\n");
 
     Volume *m_mask = NULL;
@@ -56,22 +56,22 @@ do_gpuit_bspline_stage_internal (
     if (stage->fixed_mask_fn[0]) {
         logfile_printf ("Loading fixed mask: %s\n", stage->fixed_mask_fn);
         stage->fixed_mask = plm_image_load (stage->fixed_mask_fn, PLM_IMG_TYPE_ITK_UCHAR);
-        f_mask = stage->fixed_mask->gpuit_uchar();
+        f_mask = stage->fixed_mask->get_volume_uchar();
     } else {
         stage->fixed_mask = 0;
         if (regd->fixed_mask) {
-            f_mask = regd->fixed_mask->gpuit_uchar();
+            f_mask = regd->fixed_mask->get_volume_uchar();
         }
     }
 
     if (stage->moving_mask_fn[0]) {
         logfile_printf ("Loading moving mask: %s\n", stage->moving_mask_fn);
         stage->moving_mask = plm_image_load (stage->moving_mask_fn, PLM_IMG_TYPE_ITK_UCHAR);
-        m_mask = stage->moving_mask->gpuit_uchar();
+        m_mask = stage->moving_mask->get_volume_uchar();
     } else {
         stage->moving_mask = 0;
         if (regd->moving_mask) {
-            m_mask = regd->moving_mask->gpuit_uchar();
+            m_mask = regd->moving_mask->get_volume_uchar();
         }
     }
 

@@ -15,12 +15,14 @@
 class Metadata;
 class Plm_image_header;
 class Plm_image;
+class Plm_image_private;
 class Pstring;
 class Slice_index;
 class Volume;
 
 class PLMBASE_API Plm_image {
-
+public:
+    Plm_image_private *d_ptr;
 public:
     Plm_image ();
     Plm_image (const char* fname);
@@ -48,7 +50,10 @@ public:
     FloatImageType::Pointer m_itk_float;
     DoubleImageType::Pointer m_itk_double;
     UCharVecImageType::Pointer m_itk_uchar_vec;
+
+    /* This should become protected */
     void* m_gpuit;
+protected:
 
 private:
     /* Please don't use copy constructors.  They suck. */
@@ -122,24 +127,13 @@ public:
         convert_to_itk_uchar_vec ();
         return m_itk_uchar_vec;
     }
-    Volume* vol () {
-        return (Volume*) m_gpuit;
-    }
 
+    Volume* get_volume ();
+    Volume* get_volume_uchar ();
     Volume* get_volume_short ();
     Volume* get_volume_float ();
-    Volume* gpuit_float () {
-        convert_to_gpuit_float ();
-        return (Volume*) m_gpuit;
-    }
-    Volume* gpuit_uchar () {
-        convert_to_gpuit_uchar ();
-        return (Volume*) m_gpuit;
-    }
-    Volume* gpuit_uchar_vec () {
-        convert_to_gpuit_uchar_vec ();
-        return (Volume*) m_gpuit;
-    }
+    Volume* get_volume_uchar_vec ();
+
     void convert (Plm_image_type new_type);
     void convert_to_original_type (void);
     void convert_to_itk (void);
@@ -160,6 +154,10 @@ public:
 
     /* Other */
     static int compare_headers (Plm_image *pli1, Plm_image *pli2);
+
+protected:
+    /* Specific converters: implemented in plm_image_convert.cxx */
+    void convert_gpuit_uint32_to_itk_uchar_vec ();
 };
 
 /* -----------------------------------------------------------------------

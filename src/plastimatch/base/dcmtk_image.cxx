@@ -117,7 +117,7 @@ Dcmtk_save::save_image (
     const char *dicom_dir)
 {
     Dcmtk_slice_data dsd;
-    dsd.vol = this->img->gpuit_float();
+    dsd.vol = this->img->get_volume_float();
     dsd.slice_size = dsd.vol->dim[0] * dsd.vol->dim[1];
     dsd.slice_int16 = new int16_t[dsd.slice_size];
     float *dc = dsd.vol->direction_cosines.get();

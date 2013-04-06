@@ -29,9 +29,6 @@ PLMBASE_API UCharVecImageType::Pointer
 plm_image_convert_itk_uint32_to_itk_uchar_vec (UInt32ImageType::Pointer im_in);
 
 PLMBASE_API UCharVecImageType::Pointer
-plm_image_convert_gpuit_uint32_to_itk_uchar_vec (Plm_image* pli);
-
-PLMBASE_API UCharVecImageType::Pointer
 plm_image_convert_gpuit_uchar_vec_to_itk_uchar_vec (Plm_image* pli);
 
 PLMBASE_API void

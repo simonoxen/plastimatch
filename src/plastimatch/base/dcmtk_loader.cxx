@@ -149,7 +149,7 @@ Dcmtk_loader::get_volume ()
     if (!this->img) {
         return 0;
     }
-    return this->img->vol();
+    return this->img->get_volume();
 }
 
 Plm_image *

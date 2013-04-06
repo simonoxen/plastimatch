@@ -90,7 +90,6 @@ public:
         int vox_planes = 1
     );
     /*! \brief Make a copy of the volume */
-    Volume* clone_raw ();
     Volume::Pointer clone ();
 
     /*! \brief Convert the image voxels to a new data type */
@@ -136,6 +135,9 @@ public:
 protected:
     void allocate (void);
     void init ();
+public:
+    /* Some day, these should become protected */
+    Volume* clone_raw ();
 };
 
 PLMBASE_C_API void vf_convert_to_interleaved (Volume* ref);

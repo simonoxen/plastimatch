@@ -600,7 +600,7 @@ rbf_gauss_warp (Landmark_warp *lw)
 
     /* Create output (warped) image */
     printf ("Converting volume to float\n");
-    moving = lw->m_input_img->gpuit_float ();
+    moving = lw->m_input_img->get_volume_float ();
 
     printf ("Creating output vol\n");
     warped_out = new Volume (dim, origin, spacing, direction_cosines,

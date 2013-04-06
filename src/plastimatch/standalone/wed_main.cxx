@@ -162,7 +162,7 @@ wed_ct_compute (
       Volume* wed_vol;
       
       wed_vol = create_wed_volume (parms, scene);
-      rpl_vol->compute_wed_volume (wed_vol, ct_vol->gpuit_float(), background);
+      rpl_vol->compute_wed_volume (wed_vol, ct_vol->get_volume_float(), background);
       plm_image_save_vol (out_fn, wed_vol);
     }
 
@@ -170,7 +170,7 @@ wed_ct_compute (
       Volume* dew_vol;
       
       dew_vol = create_dew_volume (parms, scene);
-      rpl_vol->compute_dew_volume (ct_vol->gpuit_float(), dew_vol, background);
+      rpl_vol->compute_dew_volume (ct_vol->get_volume_float(), dew_vol, background);
       plm_image_save_vol (out_fn, dew_vol);
     }
 
@@ -180,7 +180,7 @@ wed_ct_compute (
       
       aperture_vol = create_segdepth_volume (parms, scene);
       segdepth_vol = create_segdepth_volume (parms, scene);
-      rpl_vol->compute_segdepth_volume (ct_vol->gpuit_float(), aperture_vol, segdepth_vol, background);
+      rpl_vol->compute_segdepth_volume (ct_vol->get_volume_float(), aperture_vol, segdepth_vol, background);
       plm_image_save_vol (out_fn, segdepth_vol);
       plm_image_save_vol (parms->output_ap_fn.c_str(), aperture_vol);
     }
@@ -215,13 +215,13 @@ wed_ct_initialize(Wed_Parms *parms)
   if (parms->skin_fn != "") {
     fprintf (stderr, "\n** Skin file defined.  Modifying input ct...\n");
  
-    Volume* ct_volume = ct_vol->gpuit_float();
+    Volume* ct_volume = ct_vol->get_volume_float();
     Plm_image* skin_vol = plm_image_load (parms->skin_fn, PLM_IMG_TYPE_ITK_FLOAT);
     if (!skin_vol) {
       fprintf (stderr, "\n** ERROR: Unable to load skin input.\n");
       return -1;
     }
-    Volume* skin_volume = skin_vol->gpuit_float();
+    Volume* skin_volume = skin_vol->get_volume_float();
     
     if (skin_ct(ct_volume, skin_volume, background[0]))  {  //apply skin input to ct
       fprintf (stderr, "\n** ERROR: Unable to apply skin input to ct input.\n");
@@ -259,7 +259,7 @@ wed_ct_initialize(Wed_Parms *parms)
   //at some scene dimensions set by input wed image.
   if (parms->mode==1)  {
    if (!parms->have_ires)  {
-      Volume *wed_vol = dose_vol->gpuit_float();
+      Volume *wed_vol = dose_vol->get_volume_float();
       //Grab aperture dimensions from input wed.
       //We also pad each dimension by 1, for the later trilinear interpolations.
       ap_res[0] = (int) (wed_vol->dim[0]+2);

@@ -45,7 +45,7 @@ Rtds::save_dcmtk (const char *dicom_dir)
         ds.set_cxt (this->m_rtss->m_cxt);
     }
     if (d_ptr->m_dose) {
-        ds.set_dose (d_ptr->m_dose->gpuit_float());
+        ds.set_dose (d_ptr->m_dose->get_volume_float());
     }
     ds.generate_new_uids ();
     ds.save (dicom_dir);
@@ -60,7 +60,7 @@ Rtds::save_dcmtk_dose (const char *dicom_dir)
     ds.set_rt_study (d_ptr->m_drs);
 
     if (d_ptr->m_dose) {
-        ds.set_dose (d_ptr->m_dose->gpuit_float());
+        ds.set_dose (d_ptr->m_dose->get_volume_float());
     }
 
     ds.save (dicom_dir);

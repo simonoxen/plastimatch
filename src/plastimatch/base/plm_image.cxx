@@ -28,6 +28,11 @@
 #include "string_util.h"
 #include "volume.h"
 
+class Plm_image_private {
+public:
+    int i;
+};
+
 Plm_image::Plm_image () {
     this->init ();
 }
@@ -71,6 +76,7 @@ Plm_image::Plm_image (Plm_image_type type, const Plm_image_header& pih)
     this->create (type, pih);
 }
 Plm_image::~Plm_image () {
+    delete d_ptr;
     this->free ();
 }
 
@@ -81,6 +87,8 @@ Plm_image::~Plm_image () {
 void
 Plm_image::init ()
 {
+    /* This can only be called by constructor */
+    d_ptr = new Plm_image_private;
     m_original_type = PLM_IMG_TYPE_UNDEFINED;
     m_type = PLM_IMG_TYPE_UNDEFINED;
     m_gpuit = 0;
@@ -89,6 +97,7 @@ Plm_image::init ()
 void
 Plm_image::free ()
 {
+    /* This can only be called by anyone */
     if (m_gpuit) {
         delete (Volume*) m_gpuit;
     }
@@ -555,6 +564,24 @@ Plm_image::set_gpuit (Volume *v)
 }
 
 Volume *
+Plm_image::get_volume ()
+{
+    return (Volume*) m_gpuit;
+}
+
+Volume* 
+Plm_image::get_volume_uchar () {
+    convert_to_gpuit_uchar ();
+    return (Volume*) m_gpuit;
+}
+
+Volume* 
+Plm_image::get_volume_uchar_vec () {
+    convert_to_gpuit_uchar_vec ();
+    return (Volume*) m_gpuit;
+}
+
+Volume *
 Plm_image::get_volume_short ()
 {
     convert_to_gpuit_short ();
@@ -935,8 +962,7 @@ Plm_image::convert_to_itk_uchar_vec (void)
 	break;
     case PLM_IMG_TYPE_GPUIT_UINT32:
 	printf ("Converting from GPUIT_UINT32 to ITK_UCHAR_VEC\n");
-	this->m_itk_uchar_vec
-	    = plm_image_convert_gpuit_uint32_to_itk_uchar_vec (this);
+        this->convert_gpuit_uint32_to_itk_uchar_vec ();
 	break;
     case PLM_IMG_TYPE_ITK_UCHAR_VEC:
 	break;
@@ -1244,7 +1270,7 @@ Plm_image::planes ()
     case PLM_IMG_TYPE_ITK_UCHAR_VEC:
         return this->m_itk_uchar_vec->GetVectorLength();
     case PLM_IMG_TYPE_GPUIT_UCHAR_VEC:
-        return this->vol()->vox_planes;
+        return this->get_volume()->vox_planes;
     default:
         return 1;
     }

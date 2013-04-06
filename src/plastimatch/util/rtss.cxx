@@ -653,7 +653,7 @@ Rtss::rasterize (
         this->m_ss_img->set_itk (rasterizer.m_ss_img->m_itk_uchar_vec);
     }
     else {
-        this->m_ss_img->set_gpuit (rasterizer.m_ss_img->vol());
+        this->m_ss_img->set_gpuit (rasterizer.m_ss_img->get_volume());
         rasterizer.m_ss_img->m_gpuit = 0;
     }
 

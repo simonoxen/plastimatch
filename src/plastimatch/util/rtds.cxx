@@ -466,5 +466,5 @@ Rtds::get_dose_volume_float ()
     if (!d_ptr->m_dose) {
         return 0;
     }
-    return d_ptr->m_dose->gpuit_float ();
+    return d_ptr->m_dose->get_volume_float ();
 }

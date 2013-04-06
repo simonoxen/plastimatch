@@ -128,7 +128,7 @@ astroid_dose_load_cube (
     plm_long i, j, k;
     size_t rc;
 
-    v = (Volume*) pli->m_gpuit;
+    v = pli->get_volume ();
     char* cube_img_read = (char*) v->img;
 
     fp = fopen (filename, "rb");
@@ -221,7 +221,7 @@ astroid_dose_apply_transform (Plm_image *pli, Xio_ct_transform *transform)
     /* Transform coordinates of Astroid dose cube to DICOM coordinates */
 
     Volume *v;
-    v = (Volume*) pli->m_gpuit;
+    v = pli->get_volume ();
 
     /* Set offsets */
     v->offset[0] = (v->offset[0] * transform->direction_cosines[0]) + transform->x_offset;
