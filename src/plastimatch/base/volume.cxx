@@ -290,8 +290,14 @@ volume_clone (const Volume* ref)
 }
 
 Volume*
-Volume::clone () {
+Volume::clone_raw () {
     return volume_clone (this);
+}
+
+Volume::Pointer
+Volume::clone ()
+{
+    return Volume::New (this->clone_raw ());
 }
 
 void

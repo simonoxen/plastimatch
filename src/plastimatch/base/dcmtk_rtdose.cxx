@@ -386,7 +386,8 @@ Dcmtk_save::save_dose (
        maximum dose. */
 
     /* Copy the image so we don't corrupt the original */
-    Volume *dose_copy = this->dose->clone();
+    //Volume *dose_copy = this->dose->clone();
+    Volume::Pointer dose_copy = this->dose->clone();
 
     /* Find the maximum value in the image */
     double min_val, max_val, avg;
@@ -409,7 +410,7 @@ Dcmtk_save::save_dose (
     }
 
     /* Scale the image and add scale factor to dataset */
-    volume_scale (dose_copy, 1 / dose_scale);
+    volume_scale (dose_copy.get(), 1 / dose_scale);
     s = string_format ("%g", dose_scale);
     dataset->putAndInsertString (DCM_DoseGridScaling, s.c_str());
 
@@ -436,5 +437,5 @@ Dcmtk_save::save_dose (
     }
 
     /* Delete the dose copy */
-    delete dose_copy;
+    // delete dose_copy;
 }

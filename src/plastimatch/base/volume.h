@@ -90,7 +90,9 @@ public:
         int vox_planes = 1
     );
     /*! \brief Make a copy of the volume */
-    Volume* clone ();
+    Volume* clone_raw ();
+    Volume::Pointer clone ();
+
     /*! \brief Convert the image voxels to a new data type */
     void convert (Volume_pixel_type new_type);
 

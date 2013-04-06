@@ -400,7 +400,7 @@ Rtds::set_dose (Volume *vol)
     if (d_ptr->m_dose) delete d_ptr->m_dose;
     d_ptr->m_dose = new Plm_image;
     /* Make a copy */
-    d_ptr->m_dose->set_gpuit (vol->clone());
+    d_ptr->m_dose->set_gpuit (vol->clone_raw());
 }
 
 Xio_ct_transform*

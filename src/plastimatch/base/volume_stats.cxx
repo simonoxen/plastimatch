@@ -70,3 +70,11 @@ volume_stats (const Volume *vol, double *min_val, double *max_val,
 	break;
     }
 }
+
+void
+volume_stats (const Volume::Pointer vol, double *min_val, double *max_val, 
+    double *avg, int *non_zero, int *num_vox)
+{
+    const Volume *v = vol.get();
+    volume_stats (v, min_val, max_val, avg, non_zero, num_vox);
+}
