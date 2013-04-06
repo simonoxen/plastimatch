@@ -114,6 +114,8 @@ public:
 public:
 	bool SOCKET_StartServer(int iPanelIdx);
 	void SOCKET_ConnectClient(int iPanelIdx);
+
+	bool SOCKET_SendMessage(int idx, QString& msg);
 	
 
 };

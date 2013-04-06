@@ -7,6 +7,8 @@
 #include <QApplication>
 #include <QString>
 #include <QCloseEvent>
+#include <QLocalSocket>
+
 #include <fstream>
 #include "acquire_4030e_define.h"
 //#include "HcpErrors.h"
@@ -27,7 +29,8 @@ class QProgressDialog;
 union UQueryProgInfo;
 struct SModeInfo;
 
-class QLocalSocket;
+//class QLocalSocket;
+
 //class QSystemSemaphore;
 
 
@@ -40,16 +43,12 @@ class Acquire_4030e_child : public QApplication
 signals:
 	void ready();
 
-public slots:	
-	//void About_To_Quit();
-	//void m_timerPollMsg_event();
-	//void pollMessageFromParent();
-	void TimerPollMsgFromParent_event();
-	//void TimerGetCrntPanelStatus_event();
+public slots:		
+	//void TimerPollMsgFromParent_event();	
 	void TimerMainLoop_event(); //subtitute of large while loop in run func.
-	//void timer_event ();
-	//void test();
-	//void TimerStart();
+	void SOCKET_ConnectToServer(QString& strServerName);	
+	void SOCKET_ReadMessageFromParent(); //when msg comes to client
+	void SOCKET_PrintError(QLocalSocket::LocalSocketError e);
 
 public:
     Acquire_4030e_child (int argc, char* argv[]);
@@ -106,7 +105,7 @@ public:
 	bool LoadDarkImage(QString& filePath);
 	bool LoadGainImage(QString& filePath);
 
-	QTimer * m_TimerPollMsgFromParent;	
+	//QTimer * m_TimerPollMsgFromParent;	
 	QTimer * m_TimerMainLoop;
 	//QTimer * m_TimerGetCrntPanelStatus;
 
@@ -130,10 +129,7 @@ public:
 	bool PC_SoftwareAcquisition_SingleShot(); //should be done at READY_FOR_PULSE
 	bool PC_DarkFieldAcquisition_SingleShot(int avgFrames); //should be done at READY_FOR_PULSE
 
-	bool GetGainImageFromCurrent();
-
-	void SOCKET_ConnectToServer(QString& strServerName);	
-	void SOCKET_ReadMessageFromParent(); //when msg comes to client
+	bool GetGainImageFromCurrent();	
 
 	int m_iNumOfFramesRequested;// = 1 default
 	Acquire_4030e_DlgControl *m_dlgControl;

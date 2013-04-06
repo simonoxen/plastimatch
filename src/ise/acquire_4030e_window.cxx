@@ -178,7 +178,8 @@ Acquire_4030e_window::set_label (int panel_no, const QString& log)
 void Acquire_4030e_window::request_quit ()
 {
 	m_bSeqKillReady = true;
-	((Acquire_4030e_parent*)qApp)->StartCommandTimer(0, PCOMMAND_KILL);	
+	//((Acquire_4030e_parent*)qApp)->StartCommandTimer(0, PCOMMAND_KILL);	
+	((Acquire_4030e_parent*)qApp)->SendCommandToChild(0, PCOMMAND_KILL);	
 
 	m_TimerReadyToQuit->start(1000);
 	
@@ -214,7 +215,8 @@ void Acquire_4030e_window::TimerReadyToQuit_event()
 {
 	if( ( (Acquire_4030e_parent*)qApp )->m_bChildReadyToQuit[0] && m_bSeqKillReady)
 	{
-		((Acquire_4030e_parent*)qApp)->StartCommandTimer(1, PCOMMAND_KILL);
+		//((Acquire_4030e_parent*)qApp)->StartCommandTimer(1, PCOMMAND_KILL);
+		((Acquire_4030e_parent*)qApp)->SendCommandToChild(1, PCOMMAND_KILL);
 		m_bSeqKillReady = false; //run only once
 		return;
 	}
@@ -319,7 +321,8 @@ void Acquire_4030e_window::ShowPanelControl_0 ()
 
     //((Acquire_4030e_parent*)qApp)->m_dlgControl_0->show();
 
-	((Acquire_4030e_parent*)qApp)->StartCommandTimer(0, PCOMMAND_SHOWDLG);
+	//((Acquire_4030e_parent*)qApp)->StartCommandTimer(0, PCOMMAND_SHOWDLG);
+	((Acquire_4030e_parent*)qApp)->SendCommandToChild(0, PCOMMAND_SHOWDLG);
 
 	//m_dlgControl_0->show();
     //else
@@ -332,7 +335,8 @@ void Acquire_4030e_window::ShowPanelControl_1 ()
   //if (((Acquire_4030e_parent*)qApp)->m_dlgControl_1 != NULL) //doens't work. maybe cannot access to the address
     //((Acquire_4030e_parent*)qApp)->m_dlgControl_1->show();
     //((Acquire_4030e_parent*)qApp)->m_dlgControl_1->show();
-	((Acquire_4030e_parent*)qApp)->StartCommandTimer(1, PCOMMAND_SHOWDLG);
+	//((Acquire_4030e_parent*)qApp)->StartCommandTimer(1, PCOMMAND_SHOWDLG);
+	((Acquire_4030e_parent*)qApp)->SendCommandToChild(1, PCOMMAND_SHOWDLG);
 }
 
 void Acquire_4030e_window::RunRelay_Panel0()

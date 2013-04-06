@@ -20,7 +20,7 @@ See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 #include "YK16GrayImage.h"
 //#include "dlgprogbaryk.h"
 #include <QProgressDialog>
-#include <QLocalSocket>
+//#include <QLocalSocket>
 
 #define TIMEOUT_MAINLOOP 50
 
@@ -70,10 +70,10 @@ Acquire_4030e_child::Acquire_4030e_child (int argc, char* argv[])
 	m_pCurrImage = NULL;
 
 
-	m_TimerPollMsgFromParent = new QTimer(this);
+	//m_TimerPollMsgFromParent = new QTimer(this);
 	m_TimerMainLoop = new QTimer(this);
 
-	connect(m_TimerPollMsgFromParent, SIGNAL(timeout()), this, SLOT(TimerPollMsgFromParent_event()));
+	//connect(m_TimerPollMsgFromParent, SIGNAL(timeout()), this, SLOT(TimerPollMsgFromParent_event()));
 	connect(m_TimerMainLoop, SIGNAL(timeout()), this, SLOT(TimerMainLoop_event()));
 
 
@@ -93,9 +93,8 @@ Acquire_4030e_child::Acquire_4030e_child (int argc, char* argv[])
 	m_iCurWinWidthVal= DEFAULT_WINLEVEL_WIDTH;
 
 	m_pClient = new QLocalSocket(this);
-	connect(m_pClient, SIGNAL(readRead()), this, SLOT(SOCKET_ReadMessageFromParent()));
-
-	connect(m_pClient, SIGNAL(error(QLocalSocket::LocalSocketErro)), this, SLOT(displayError(QLocalSocket::LocalSocketError)));
+	connect(m_pClient, SIGNAL(readyRead()), this, SLOT(SOCKET_ReadMessageFromParent()));
+	connect(m_pClient, SIGNAL(error(QLocalSocket::LocalSocketError)), this, SLOT(SOCKET_PrintError(QLocalSocket::LocalSocketError)));
 	connect(m_pClient, SIGNAL(disconnected()),m_pClient, SLOT(deleteLater()));
 
 }
@@ -104,6 +103,11 @@ Acquire_4030e_child::Acquire_4030e_child (int argc, char* argv[])
 //{
 //	aqprintf("Timer test\n");
 //}
+
+void Acquire_4030e_child::SOCKET_PrintError(QLocalSocket::LocalSocketError e)
+{
+	aqprintf("Error occurred in Socket communication, Error code = %d", e);
+}
 
 Acquire_4030e_child::~Acquire_4030e_child () // How to call this????
 {
@@ -130,6 +134,7 @@ Acquire_4030e_child::~Acquire_4030e_child () // How to call this????
 	}
 
 	m_pClient->disconnectFromServer();
+	delete m_pClient;
 
 }
 
@@ -251,9 +256,10 @@ Acquire_4030e_child::init(const char* strProcNum, const char* strRecepterPath)
 	vp->m_bGainCorrApply = false;
 
 	//m_TimerPollMsgFromParent->start(100);
-	m_TimerPollMsgFromParent->start(50);
+	//m_TimerPollMsgFromParent->start(50);
 	m_TimerMainLoop->start(100);
 
+	m_enPanelStatus = IMAGE_ACQUSITION_DONE; //Goto Standby
 
 	//QString strImgLogPath = QString("C:\\ImageInfo_panel_%1.txt").arg(m_strProcNum);	
 	//m_ImageInfoFout.open(strImgLogPath.toStdString().c_str());	
@@ -263,8 +269,9 @@ Acquire_4030e_child::init(const char* strProcNum, const char* strRecepterPath)
 
 	//Connect server
 	QString strServerName = QString("SOCKET_MSG_TO_CHILD_%1").arg(idx);		
-	SOCKET_ConnectToServer(strServerName);	
-	
+	SOCKET_ConnectToServer(strServerName);
+	Sleep(500);	
+
 	return true;
 }
 
@@ -891,7 +898,7 @@ void Acquire_4030e_child::InterpretAndFollow ()
 			dp = NULL;
 		}
 		m_enPanelStatus = NOT_OPENNED;
-		m_TimerPollMsgFromParent->stop();
+		//m_TimerPollMsgFromParent->stop();
 		m_TimerMainLoop->stop(); //if running
 		aqprintf("PRESPP_KILL\n");
 	}	
@@ -932,25 +939,25 @@ void Acquire_4030e_child::PrintVoltage()
 	}
 
 }
-
-void Acquire_4030e_child::TimerPollMsgFromParent_event()
-{	
-	QString tmpStr;
-	char buffer[128];    
-	memset (buffer,0, 128);        
-	fgets(buffer,128,stdin);
-	tmpStr = (const char*)buffer;
-
-	fflush(stdin);	
-
-	if (tmpStr.length() > 1)
-	{		
-		m_strFromParent=tmpStr;		
-		aqprintf(m_strFromParent.toLocal8Bit().constData());
-		InterpretAndFollow ();
-	}	
-	return;	
-}
+//
+//void Acquire_4030e_child::TimerPollMsgFromParent_event()
+//{	
+//	/*QString tmpStr;
+//	char buffer[128];    
+//	memset (buffer,0, 128);        
+//	fgets(buffer,128,stdin);
+//	tmpStr = (const char*)buffer;
+//
+//	fflush(stdin);	
+//
+//	if (tmpStr.length() > 1)
+//	{		
+//		m_strFromParent=tmpStr;		
+//		aqprintf(m_strFromParent.toLocal8Bit().constData());
+//		InterpretAndFollow ();
+//	}	
+//	return;	*/
+//}
 
 void Acquire_4030e_child::TimerMainLoop_event() //called every 50 ms
 {
