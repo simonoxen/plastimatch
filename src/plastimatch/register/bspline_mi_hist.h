@@ -21,7 +21,7 @@ enum Bspline_mi_hist_type {
     HIST_VOPT
 };
 
-class Bspline_mi_hist {
+class PLMREGISTER_API Bspline_mi_hist {
 public:
     Bspline_mi_hist (
         Bspline_mi_hist_type type = HIST_EQSP, 
@@ -40,7 +40,7 @@ public:
     int* key_lut;                     /* bin keys lookup table   */
 };
 
-class Bspline_mi_hist_set {
+class PLMREGISTER_API Bspline_mi_hist_set {
 public:
     Bspline_mi_hist_set ();
     Bspline_mi_hist_set (
