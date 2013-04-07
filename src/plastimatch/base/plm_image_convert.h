@@ -23,9 +23,6 @@ template<class T> PLMBASE_API void plm_image_convert_itk_to_gpuit_float (
 );
 
 #if defined (commentout)
-PLMBASE_API void
-plm_image_convert_itk_uchar_vec_to_gpuit_uchar_vec (Plm_image* pli, 
-    UCharVecImageType::Pointer itk_img);
 #endif
 
 #endif

@@ -164,11 +164,7 @@ protected:
     void convert_gpuit_uchar_vec_to_itk_uchar_vec ();
     void convert_itk_uchar_vec_to_gpuit_uchar_vec ();
 
-#if defined (commentout)
-PLMBASE_API void
-plm_image_convert_itk_uchar_vec_to_gpuit_uchar_vec (Plm_image* pli, 
-    UCharVecImageType::Pointer itk_img);
-#endif
+    template<class T, class U> static T convert_gpuit_to_itk (void *);
 };
 
 /* -----------------------------------------------------------------------

@@ -16,6 +16,56 @@
    ----------------------------------------------------------------------- */
 template<class T, class U> 
 T
+Plm_image::convert_gpuit_to_itk (void *v)
+{
+    typedef typename T::ObjectType ImageType;
+    int i, d1, d2;
+    Volume* vol = (Volume*) v;
+    U* img = (U*) vol->img;
+    typename ImageType::SizeType sz;
+    typename ImageType::IndexType st;
+    typename ImageType::RegionType rg;
+    typename ImageType::PointType og;
+    typename ImageType::SpacingType sp;
+    typename ImageType::DirectionType dc;
+
+    /* Copy header & allocate data for itk */
+    for (d1 = 0; d1 < 3; d1++) {
+	st[d1] = 0;
+	sz[d1] = vol->dim[d1];
+	sp[d1] = vol->spacing[d1];
+	og[d1] = vol->offset[d1];
+	for (d2 = 0; d2 < 3; d2++) {
+	    dc[d1][d2] = vol->direction_cosines[d1*3+d2];
+	}
+    }
+    rg.SetSize (sz);
+    rg.SetIndex (st);
+
+    T itk_img = ImageType::New();
+    itk_img->SetRegions (rg);
+    itk_img->SetOrigin (og);
+    itk_img->SetSpacing (sp);
+    itk_img->SetDirection (dc);
+
+    itk_img->Allocate();
+
+    /* Copy data into itk */
+    typedef itk::ImageRegionIterator< ImageType > IteratorType;
+    IteratorType it (itk_img, rg);
+    for (it.GoToBegin(), i=0; !it.IsAtEnd(); ++it, ++i) {
+	/* Type conversion: U -> itk happens here */
+	it.Set (img[i]);
+    }
+
+    /* Free gpuit data */
+    delete vol;
+
+    return itk_img;
+}
+
+template<class T, class U> 
+T
 plm_image_convert_gpuit_to_itk (Plm_image* pli, T itk_img, U)
 {
     typedef typename T::ObjectType ImageType;
@@ -407,6 +457,10 @@ Plm_image::convert_itk_uchar_vec_to_gpuit_uchar_vec ()
 
 
 /* Explicit instantiations */
+template PLMBASE_API UCharImageType::Pointer
+Plm_image::convert_gpuit_to_itk<UCharImageType::Pointer, unsigned char> (void*);
+
+
 template PLMBASE_API 
 UCharImageType::Pointer
 plm_image_convert_gpuit_to_itk (Plm_image* pli, UCharImageType::Pointer itk_img, unsigned char);

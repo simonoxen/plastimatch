@@ -681,8 +681,13 @@ Plm_image::convert_to_itk_uchar (void)
 	CONVERT_ITK_ITK (uchar, float);
 	break;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
+#if defined (commentout)
 	this->m_itk_uchar = plm_image_convert_gpuit_to_itk (
 	    this, this->m_itk_uchar, (unsigned char) 0);
+#endif
+	this->m_itk_uchar = Plm_image::convert_gpuit_to_itk<
+            UCharImageType::Pointer, unsigned char> (this->m_gpuit);
+        this->m_gpuit = 0;
 	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
 	this->m_itk_uchar = plm_image_convert_gpuit_to_itk (
