@@ -156,6 +156,8 @@ public:
     static int compare_headers (Plm_image *pli1, Plm_image *pli2);
 
 protected:
+    /* Utility functions */
+    void free_volume ();
 
     /* Specific converters: implemented in plm_image_convert.cxx */
     void convert_itk_uchar_to_itk_uchar_vec ();
@@ -164,7 +166,8 @@ protected:
     void convert_gpuit_uchar_vec_to_itk_uchar_vec ();
     void convert_itk_uchar_vec_to_gpuit_uchar_vec ();
 
-    template<class T, class U> static T convert_gpuit_to_itk (void *);
+    /* Generic converters: implemented in plm_image_convert.cxx */
+    template<class T, class U> T convert_gpuit_to_itk (Volume *vol);
 };
 
 /* -----------------------------------------------------------------------

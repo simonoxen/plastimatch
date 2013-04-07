@@ -97,7 +97,7 @@ Plm_image::init ()
 void
 Plm_image::free ()
 {
-    /* This can only be called by anyone */
+    /* This can be called by anyone */
     if (m_gpuit) {
         delete (Volume*) m_gpuit;
     }
@@ -112,6 +112,15 @@ Plm_image::free ()
     m_itk_uint32 = 0;
     m_itk_float = 0;
     m_itk_double = 0;
+    m_gpuit = 0;
+}
+
+void
+Plm_image::free_volume ()
+{
+    if (m_gpuit) {
+        delete (Volume*) m_gpuit;
+    }
     m_gpuit = 0;
 }
 
@@ -681,17 +690,12 @@ Plm_image::convert_to_itk_uchar (void)
 	CONVERT_ITK_ITK (uchar, float);
 	break;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
-#if defined (commentout)
-	this->m_itk_uchar = plm_image_convert_gpuit_to_itk (
-	    this, this->m_itk_uchar, (unsigned char) 0);
-#endif
 	this->m_itk_uchar = Plm_image::convert_gpuit_to_itk<
-            UCharImageType::Pointer, unsigned char> (this->m_gpuit);
-        this->m_gpuit = 0;
+            UCharImageType::Pointer, unsigned char> (this->get_volume());
 	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
-	this->m_itk_uchar = plm_image_convert_gpuit_to_itk (
-	    this, this->m_itk_uchar, float (0));
+	this->m_itk_uchar = Plm_image::convert_gpuit_to_itk<
+            UCharImageType::Pointer, float> (this->get_volume());
 	break;
     default:
 	print_and_exit (
@@ -748,12 +752,12 @@ Plm_image::convert_to_itk_short (void)
 	CONVERT_ITK_ITK (short, float);
 	break;
     case PLM_IMG_TYPE_GPUIT_SHORT:
-	this->m_itk_short = plm_image_convert_gpuit_to_itk (
-	    this, this->m_itk_short, (short) 0);
+	this->m_itk_short = Plm_image::convert_gpuit_to_itk<
+            ShortImageType::Pointer, short> (this->get_volume());
 	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
-	this->m_itk_short = plm_image_convert_gpuit_to_itk (
-	    this, this->m_itk_short, (float) 0);
+	this->m_itk_short = Plm_image::convert_gpuit_to_itk<
+            ShortImageType::Pointer, float> (this->get_volume());
 	break;
     default:
 	print_and_exit (
@@ -777,8 +781,8 @@ Plm_image::convert_to_itk_ushort (void)
 	CONVERT_ITK_ITK (ushort, float);
 	return;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
-	this->m_itk_ushort = plm_image_convert_gpuit_to_itk (
-	    this, this->m_itk_ushort, (float) 0);
+	this->m_itk_ushort = Plm_image::convert_gpuit_to_itk<
+            UShortImageType::Pointer, float> (this->get_volume());
 	break;
     default:
 	print_and_exit (
@@ -799,20 +803,20 @@ Plm_image::convert_to_itk_int32 (void)
 	CONVERT_ITK_ITK (int32, float);
 	break;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
-	this->m_itk_int32 = plm_image_convert_gpuit_to_itk (
-	    this, this->m_itk_int32, (unsigned char) 0);
+	this->m_itk_int32 = Plm_image::convert_gpuit_to_itk<
+            Int32ImageType::Pointer, unsigned char> (this->get_volume());
 	break;
     case PLM_IMG_TYPE_GPUIT_SHORT:
-	this->m_itk_int32 = plm_image_convert_gpuit_to_itk (
-	    this, this->m_itk_int32, (short) 0);
+	this->m_itk_int32 = Plm_image::convert_gpuit_to_itk<
+            Int32ImageType::Pointer, short> (this->get_volume());
 	break;
     case PLM_IMG_TYPE_GPUIT_UINT32:
-	this->m_itk_int32 = plm_image_convert_gpuit_to_itk (
-	    this, this->m_itk_int32, (uint32_t) 0);
+	this->m_itk_int32 = Plm_image::convert_gpuit_to_itk<
+            Int32ImageType::Pointer, uint32_t> (this->get_volume());
 	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
-	this->m_itk_int32 = plm_image_convert_gpuit_to_itk (
-	    this, this->m_itk_int32, (float) 0);
+	this->m_itk_int32 = Plm_image::convert_gpuit_to_itk<
+            Int32ImageType::Pointer, float> (this->get_volume());
 	break;
     default:
 	print_and_exit (
@@ -839,20 +843,20 @@ Plm_image::convert_to_itk_uint32 (void)
 	CONVERT_ITK_ITK (uint32, float);
 	break;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
-	this->m_itk_uint32 = plm_image_convert_gpuit_to_itk (
-	    this, this->m_itk_uint32, (unsigned char) 0);
+	this->m_itk_uint32 = Plm_image::convert_gpuit_to_itk<
+            UInt32ImageType::Pointer, unsigned char> (this->get_volume());
 	break;
     case PLM_IMG_TYPE_GPUIT_SHORT:
-	this->m_itk_uint32 = plm_image_convert_gpuit_to_itk (
-	    this, this->m_itk_uint32, (short) 0);
+	this->m_itk_uint32 = Plm_image::convert_gpuit_to_itk<
+            UInt32ImageType::Pointer, short> (this->get_volume());
 	break;
     case PLM_IMG_TYPE_GPUIT_UINT32:
-	this->m_itk_uint32 = plm_image_convert_gpuit_to_itk (
-	    this, this->m_itk_uint32, (uint32_t) 0);
+	this->m_itk_uint32 = Plm_image::convert_gpuit_to_itk<
+            UInt32ImageType::Pointer, uint32_t> (this->get_volume());
 	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
-	this->m_itk_uint32 = plm_image_convert_gpuit_to_itk (
-	    this, this->m_itk_uint32, (float) 0);
+	this->m_itk_uint32 = Plm_image::convert_gpuit_to_itk<
+            UInt32ImageType::Pointer, float> (this->get_volume());
 	break;
     default:
 	print_and_exit (
@@ -882,12 +886,12 @@ Plm_image::convert_to_itk_float ()
     case PLM_IMG_TYPE_ITK_FLOAT:
 	return;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
-	this->m_itk_float = plm_image_convert_gpuit_to_itk (
-	    this, this->m_itk_float, (unsigned char) 0);
+	this->m_itk_float = Plm_image::convert_gpuit_to_itk<
+            FloatImageType::Pointer, unsigned char> (this->get_volume());
 	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
-	this->m_itk_float = plm_image_convert_gpuit_to_itk (
-	    this, this->m_itk_float, (float) 0);
+	this->m_itk_float = Plm_image::convert_gpuit_to_itk<
+            FloatImageType::Pointer, float> (this->get_volume());
 	break;
     default:
 	print_and_exit (
@@ -917,13 +921,13 @@ Plm_image::convert_to_itk_double ()
     case PLM_IMG_TYPE_ITK_DOUBLE:
 	return;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
-	this->m_itk_double = plm_image_convert_gpuit_to_itk (
-	    this, this->m_itk_double, (unsigned char) 0);
+	this->m_itk_double = Plm_image::convert_gpuit_to_itk<
+            DoubleImageType::Pointer, unsigned char> (this->get_volume());
 	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
-	this->m_itk_double = plm_image_convert_gpuit_to_itk (
-	    this, this->m_itk_double, (float) 0);
-	break;
+	this->m_itk_double = Plm_image::convert_gpuit_to_itk<
+            DoubleImageType::Pointer, float> (this->get_volume());
+        break;
     default:
 	print_and_exit (
 	    "Error: unhandled conversion from %s to itk_double\n",
