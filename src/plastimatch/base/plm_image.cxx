@@ -950,15 +950,11 @@ Plm_image::convert_to_itk_uchar_vec (void)
     switch (m_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
 	printf ("Converting from ITK_UCHAR to ITK_UCHAR_VEC\n");
-	this->m_itk_uchar_vec = plm_image_convert_itk_uchar_to_itk_uchar_vec (
-	    this->m_itk_uchar);
-	this->m_itk_uchar = 0;
+	this->convert_itk_uchar_to_itk_uchar_vec ();
 	break;
     case PLM_IMG_TYPE_ITK_ULONG:
 	printf ("Converting from ITK_ULONG to ITK_UCHAR_VEC\n");
-	this->m_itk_uchar_vec = plm_image_convert_itk_uint32_to_itk_uchar_vec (
-	    this->m_itk_uint32);
-	this->m_itk_uint32 = 0;
+	this->convert_itk_uint32_to_itk_uchar_vec ();
 	break;
     case PLM_IMG_TYPE_GPUIT_UINT32:
 	printf ("Converting from GPUIT_UINT32 to ITK_UCHAR_VEC\n");
@@ -968,8 +964,7 @@ Plm_image::convert_to_itk_uchar_vec (void)
 	break;
     case PLM_IMG_TYPE_GPUIT_UCHAR_VEC:
 	printf ("Converting from GPUIT_UCHAR_VEC to ITK_UCHAR_VEC\n");
-	this->m_itk_uchar_vec
-	    = plm_image_convert_gpuit_uchar_vec_to_itk_uchar_vec (this);
+        this->convert_gpuit_uchar_vec_to_itk_uchar_vec ();
 	break;
     default:
 	print_and_exit (
@@ -1166,10 +1161,7 @@ Plm_image::convert_to_gpuit_uchar_vec ()
     case PLM_IMG_TYPE_GPUIT_UCHAR_VEC:
 	return;
     case PLM_IMG_TYPE_ITK_UCHAR_VEC:
-	plm_image_convert_itk_uchar_vec_to_gpuit_uchar_vec (
-	    this, this->m_itk_uchar_vec);
-	/* Free itk data */
-	this->m_itk_uchar_vec = 0;
+	this->convert_itk_uchar_vec_to_gpuit_uchar_vec ();
 	return;
     default:
 	print_and_exit (

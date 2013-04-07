@@ -156,8 +156,19 @@ public:
     static int compare_headers (Plm_image *pli1, Plm_image *pli2);
 
 protected:
+
     /* Specific converters: implemented in plm_image_convert.cxx */
+    void convert_itk_uchar_to_itk_uchar_vec ();
+    void convert_itk_uint32_to_itk_uchar_vec ();
     void convert_gpuit_uint32_to_itk_uchar_vec ();
+    void convert_gpuit_uchar_vec_to_itk_uchar_vec ();
+    void convert_itk_uchar_vec_to_gpuit_uchar_vec ();
+
+#if defined (commentout)
+PLMBASE_API void
+plm_image_convert_itk_uchar_vec_to_gpuit_uchar_vec (Plm_image* pli, 
+    UCharVecImageType::Pointer itk_img);
+#endif
 };
 
 /* -----------------------------------------------------------------------

@@ -162,20 +162,22 @@ plm_image_convert_itk_to_gpuit_float (Plm_image* pli, T img)
 /* -----------------------------------------------------------------------
    UCharVec image conversion
    ----------------------------------------------------------------------- */
-UCharVecImageType::Pointer
-plm_image_convert_itk_uchar_to_itk_uchar_vec (UCharImageType::Pointer im_in)
+void
+Plm_image::convert_itk_uchar_to_itk_uchar_vec ()
 {
+    UCharImageType::Pointer itk_uchar = this->m_itk_uchar;
+
     /* Create the output image */
     UCharVecImageType::Pointer im_out = UCharVecImageType::New();
-    itk_image_header_copy (im_out, im_in);
+    itk_image_header_copy (im_out, itk_uchar);
     im_out->SetVectorLength (2);
     im_out->Allocate ();
 
     /* Copy data into itk */
     typedef itk::ImageRegionIterator< UCharImageType > UCharIteratorType;
     const UCharImageType::RegionType rgn_in 
-	= im_in->GetLargestPossibleRegion();
-    UCharIteratorType it_in (im_in, rgn_in);
+	= itk_uchar->GetLargestPossibleRegion();
+    UCharIteratorType it_in (itk_uchar, rgn_in);
     typedef itk::ImageRegionIterator< UCharVecImageType > UCharVecIteratorType;
     const UCharVecImageType::RegionType rgn_out
 	= im_out->GetLargestPossibleRegion();
@@ -192,23 +194,29 @@ plm_image_convert_itk_uchar_to_itk_uchar_vec (UCharImageType::Pointer im_in)
 	it_out.Set (v_out);
     }
 
-    return im_out;
+    /* Free input volume */
+    this->m_itk_uchar = 0;
+
+    /* Set output volume */
+    this->m_itk_uchar_vec = im_out;
 }
 
-UCharVecImageType::Pointer
-plm_image_convert_itk_uint32_to_itk_uchar_vec (UInt32ImageType::Pointer im_in)
+void
+Plm_image::convert_itk_uint32_to_itk_uchar_vec ()
 {
+    UInt32ImageType::Pointer itk_uint32 = this->m_itk_uint32;
+
     /* Create the output image */
     UCharVecImageType::Pointer im_out = UCharVecImageType::New();
-    itk_image_header_copy (im_out, im_in);
+    itk_image_header_copy (im_out, itk_uint32);
     im_out->SetVectorLength (4);
     im_out->Allocate ();
 
     /* Copy data into itk */
     typedef itk::ImageRegionIterator< UInt32ImageType > UInt32IteratorType;
     const UInt32ImageType::RegionType rgn_in 
-	= im_in->GetLargestPossibleRegion();
-    UInt32IteratorType it_in (im_in, rgn_in);
+	= itk_uint32->GetLargestPossibleRegion();
+    UInt32IteratorType it_in (itk_uint32, rgn_in);
     typedef itk::ImageRegionIterator< UCharVecImageType > UCharVecIteratorType;
     const UCharVecImageType::RegionType rgn_out
 	= im_out->GetLargestPossibleRegion();
@@ -227,7 +235,11 @@ plm_image_convert_itk_uint32_to_itk_uchar_vec (UInt32ImageType::Pointer im_in)
 	it_out.Set (v_out);
     }
 
-    return im_out;
+    /* Free input volume */
+    this->m_itk_uint32 = 0;
+
+    /* Set output volume */
+    this->m_itk_uchar_vec = im_out;
 }
 
 void
@@ -279,19 +291,19 @@ Plm_image::convert_gpuit_uint32_to_itk_uchar_vec ()
 		(unsigned char*) &img[i], 4));
     }
 
-    /* Free gpuit data */
+    /* Free input volume */
     delete vol;
     this->m_gpuit = 0;
 
-    /* Set the type */
+    /* Set output volume */
     this->m_itk_uchar_vec = im_out;
 }
 
-UCharVecImageType::Pointer
-plm_image_convert_gpuit_uchar_vec_to_itk_uchar_vec (Plm_image* pli)
+void
+Plm_image::convert_gpuit_uchar_vec_to_itk_uchar_vec ()
 {
     int i, d;
-    Volume* vol = (Volume*) pli->m_gpuit;
+    Volume* vol = (Volume*) this->m_gpuit;
     unsigned char* img = (unsigned char*) vol->img;
 
     UCharVecImageType::Pointer im_out = UCharVecImageType::New();
@@ -337,24 +349,27 @@ plm_image_convert_gpuit_uchar_vec_to_itk_uchar_vec (Plm_image* pli)
 	it.Set (v_out);
     }
 
-    /* Free gpuit data */
+    /* Free input volume */
     delete vol;
-    pli->m_gpuit = 0;
+    this->m_gpuit = 0;
 
-    return im_out;
+    /* Set output volume */
+    this->m_itk_uchar_vec = im_out;
 }
 
 void
-plm_image_convert_itk_uchar_vec_to_gpuit_uchar_vec (Plm_image* pli,
-    UCharVecImageType::Pointer itk_img)
+Plm_image::convert_itk_uchar_vec_to_gpuit_uchar_vec ()
 {
+    UCharVecImageType::Pointer itk_uchar_vec = this->m_itk_uchar_vec;
+
     /* Copy header & allocate data for gpuit image */
     int i;
-    UCharVecImageType::RegionType rg = itk_img->GetLargestPossibleRegion ();
-    UCharVecImageType::PointType og = itk_img->GetOrigin();
-    UCharVecImageType::SpacingType sp = itk_img->GetSpacing();
+    UCharVecImageType::RegionType rg 
+        = itk_uchar_vec->GetLargestPossibleRegion ();
+    UCharVecImageType::PointType og = itk_uchar_vec->GetOrigin();
+    UCharVecImageType::SpacingType sp = itk_uchar_vec->GetSpacing();
     UCharVecImageType::SizeType sz = rg.GetSize();
-    UCharVecImageType::DirectionType itk_dc = itk_img->GetDirection();
+    UCharVecImageType::DirectionType itk_dc = itk_uchar_vec->GetDirection();
     plm_long dim[3];
     float offset[3];
     float spacing[3];
@@ -365,7 +380,7 @@ plm_image_convert_itk_uchar_vec_to_gpuit_uchar_vec (Plm_image* pli,
 	spacing[d] = sp[d];
     }
     dc_from_itk_direction (direction_cosines, &itk_dc);
-    int vox_planes = itk_img->GetVectorLength ();
+    int vox_planes = itk_uchar_vec->GetVectorLength ();
 
     Volume* vol = new Volume (dim, offset, spacing, direction_cosines, 
 	PT_UCHAR_VEC_INTERLEAVED, vox_planes);
@@ -374,7 +389,7 @@ plm_image_convert_itk_uchar_vec_to_gpuit_uchar_vec (Plm_image* pli,
 
     /* Copy data into gpuit */
     typedef itk::ImageRegionIterator< UCharVecImageType > IteratorType;
-    IteratorType it (itk_img, rg);
+    IteratorType it (itk_uchar_vec, rg);
     for (it.GoToBegin(), i=0; !it.IsAtEnd(); ++it) {
 	itk::VariableLengthVector<unsigned char> v = it.Get();
 	for (int j = 0; j < vox_planes; ++j, ++i) {
@@ -382,9 +397,12 @@ plm_image_convert_itk_uchar_vec_to_gpuit_uchar_vec (Plm_image* pli,
 	}
     }
 
-    /* Set data type */
-    pli->m_gpuit = vol;
-    pli->m_type = PLM_IMG_TYPE_GPUIT_UCHAR_VEC;
+    /* Free input volume */
+    this->m_itk_uchar_vec = 0;
+
+    /* Set output volume */
+    this->m_gpuit = vol;
+    this->m_type = PLM_IMG_TYPE_GPUIT_UCHAR_VEC;
 }
 
 
