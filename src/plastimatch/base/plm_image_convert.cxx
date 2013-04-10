@@ -67,6 +67,66 @@ Plm_image::convert_gpuit_to_itk (Volume *vol)
 
 template<class T, class U> 
 void
+Plm_image::convert_itk_to_gpuit (T img)
+{
+    typedef typename T::ObjectType ImageType;
+    int i, d1;
+    typename ImageType::RegionType rg = img->GetLargestPossibleRegion ();
+    typename ImageType::PointType og = img->GetOrigin();
+    typename ImageType::SpacingType sp = img->GetSpacing();
+    typename ImageType::SizeType sz = rg.GetSize();
+    typename ImageType::DirectionType dc = img->GetDirection();
+
+    /* Copy header & allocate data for gpuit float */
+    plm_long dim[3];
+    float offset[3];
+    float spacing[3];
+    float direction_cosines[9];
+    for (d1 = 0; d1 < 3; d1++) {
+        dim[d1] = sz[d1];
+        offset[d1] = og[d1];
+        spacing[d1] = sp[d1];
+    }
+    dc_from_itk_direction (direction_cosines, &dc);
+
+    /* Choose output data type */
+    enum Volume_pixel_type pix_type;
+    if (typeid (U) == typeid (unsigned char)){
+        pix_type = PT_UCHAR;
+        this->m_type = PLM_IMG_TYPE_GPUIT_UCHAR;
+    }
+    else if (typeid (U) == typeid (short)){
+        pix_type = PT_SHORT;
+        this->m_type = PLM_IMG_TYPE_GPUIT_SHORT;
+    }
+    else if (typeid (U) == typeid (float)) {
+        pix_type = PT_FLOAT;
+        this->m_type = PLM_IMG_TYPE_GPUIT_FLOAT;
+    }
+    else {
+        printf ("unknown type conversion from itk to gpuit!\n");
+        exit (0);
+    }
+
+    /* Create volume */
+    Volume* vol = new Volume (dim, offset, spacing, direction_cosines, 
+        pix_type, 1);
+    U *vol_img = (U*) vol->img;
+
+    /* Copy data into gpuit */
+    typedef typename itk::ImageRegionIterator< ImageType > IteratorType;
+    IteratorType it (img, rg);
+    for (it.GoToBegin(), i=0; !it.IsAtEnd(); ++it, ++i) {
+        vol_img[i] = it.Get();
+    }
+
+    /* Fix volume into plm_image */
+    this->m_gpuit = vol;
+}
+
+
+template<class T, class U> 
+void
 plm_image_convert_itk_to_gpuit (Plm_image* pli, T img, U)
 {
     typedef typename T::ObjectType ImageType;

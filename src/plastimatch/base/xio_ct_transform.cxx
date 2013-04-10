@@ -104,8 +104,7 @@ Xio_ct_transform::set_from_rdd (
     /* Use original XiO CT geometry and a DICOM directory to determine
        the transformation from XiO coordinates to DICOM coordinates. */
 
-    Volume *v;
-    v = (Volume*) pli->m_gpuit;
+    Volume *v = pli->get_volume ();
 
     /* Offsets */
     this->x_offset = 0;

@@ -129,6 +129,7 @@ public:
     }
 
     Volume* get_volume ();
+    const Volume* get_volume () const;
     Volume* get_volume_uchar ();
     Volume* get_volume_short ();
     Volume* get_volume_float ();
@@ -168,6 +169,7 @@ protected:
 
     /* Generic converters: implemented in plm_image_convert.cxx */
     template<class T, class U> T convert_gpuit_to_itk (Volume *vol);
+    template<class T, class U> void convert_itk_to_gpuit (T img);
 };
 
 /* -----------------------------------------------------------------------

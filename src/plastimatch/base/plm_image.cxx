@@ -578,6 +578,12 @@ Plm_image::get_volume ()
     return (Volume*) m_gpuit;
 }
 
+const Volume *
+Plm_image::get_volume () const
+{
+    return (Volume*) m_gpuit;
+}
+
 Volume* 
 Plm_image::get_volume_uchar () {
     convert_to_gpuit_uchar ();
@@ -690,11 +696,11 @@ Plm_image::convert_to_itk_uchar (void)
 	CONVERT_ITK_ITK (uchar, float);
 	break;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
-	this->m_itk_uchar = Plm_image::convert_gpuit_to_itk<
+	this->m_itk_uchar = this->convert_gpuit_to_itk<
             UCharImageType::Pointer, unsigned char> (this->get_volume());
 	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
-	this->m_itk_uchar = Plm_image::convert_gpuit_to_itk<
+	this->m_itk_uchar = this->convert_gpuit_to_itk<
             UCharImageType::Pointer, float> (this->get_volume());
 	break;
     default:
@@ -752,11 +758,11 @@ Plm_image::convert_to_itk_short (void)
 	CONVERT_ITK_ITK (short, float);
 	break;
     case PLM_IMG_TYPE_GPUIT_SHORT:
-	this->m_itk_short = Plm_image::convert_gpuit_to_itk<
+	this->m_itk_short = this->convert_gpuit_to_itk<
             ShortImageType::Pointer, short> (this->get_volume());
 	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
-	this->m_itk_short = Plm_image::convert_gpuit_to_itk<
+	this->m_itk_short = this->convert_gpuit_to_itk<
             ShortImageType::Pointer, float> (this->get_volume());
 	break;
     default:
@@ -781,7 +787,7 @@ Plm_image::convert_to_itk_ushort (void)
 	CONVERT_ITK_ITK (ushort, float);
 	return;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
-	this->m_itk_ushort = Plm_image::convert_gpuit_to_itk<
+	this->m_itk_ushort = this->convert_gpuit_to_itk<
             UShortImageType::Pointer, float> (this->get_volume());
 	break;
     default:
@@ -803,19 +809,19 @@ Plm_image::convert_to_itk_int32 (void)
 	CONVERT_ITK_ITK (int32, float);
 	break;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
-	this->m_itk_int32 = Plm_image::convert_gpuit_to_itk<
+	this->m_itk_int32 = this->convert_gpuit_to_itk<
             Int32ImageType::Pointer, unsigned char> (this->get_volume());
 	break;
     case PLM_IMG_TYPE_GPUIT_SHORT:
-	this->m_itk_int32 = Plm_image::convert_gpuit_to_itk<
+	this->m_itk_int32 = this->convert_gpuit_to_itk<
             Int32ImageType::Pointer, short> (this->get_volume());
 	break;
     case PLM_IMG_TYPE_GPUIT_UINT32:
-	this->m_itk_int32 = Plm_image::convert_gpuit_to_itk<
+	this->m_itk_int32 = this->convert_gpuit_to_itk<
             Int32ImageType::Pointer, uint32_t> (this->get_volume());
 	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
-	this->m_itk_int32 = Plm_image::convert_gpuit_to_itk<
+	this->m_itk_int32 = this->convert_gpuit_to_itk<
             Int32ImageType::Pointer, float> (this->get_volume());
 	break;
     default:
@@ -843,19 +849,19 @@ Plm_image::convert_to_itk_uint32 (void)
 	CONVERT_ITK_ITK (uint32, float);
 	break;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
-	this->m_itk_uint32 = Plm_image::convert_gpuit_to_itk<
+	this->m_itk_uint32 = this->convert_gpuit_to_itk<
             UInt32ImageType::Pointer, unsigned char> (this->get_volume());
 	break;
     case PLM_IMG_TYPE_GPUIT_SHORT:
-	this->m_itk_uint32 = Plm_image::convert_gpuit_to_itk<
+	this->m_itk_uint32 = this->convert_gpuit_to_itk<
             UInt32ImageType::Pointer, short> (this->get_volume());
 	break;
     case PLM_IMG_TYPE_GPUIT_UINT32:
-	this->m_itk_uint32 = Plm_image::convert_gpuit_to_itk<
+	this->m_itk_uint32 = this->convert_gpuit_to_itk<
             UInt32ImageType::Pointer, uint32_t> (this->get_volume());
 	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
-	this->m_itk_uint32 = Plm_image::convert_gpuit_to_itk<
+	this->m_itk_uint32 = this->convert_gpuit_to_itk<
             UInt32ImageType::Pointer, float> (this->get_volume());
 	break;
     default:
@@ -886,11 +892,11 @@ Plm_image::convert_to_itk_float ()
     case PLM_IMG_TYPE_ITK_FLOAT:
 	return;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
-	this->m_itk_float = Plm_image::convert_gpuit_to_itk<
+	this->m_itk_float = this->convert_gpuit_to_itk<
             FloatImageType::Pointer, unsigned char> (this->get_volume());
 	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
-	this->m_itk_float = Plm_image::convert_gpuit_to_itk<
+	this->m_itk_float = this->convert_gpuit_to_itk<
             FloatImageType::Pointer, float> (this->get_volume());
 	break;
     default:
@@ -921,11 +927,11 @@ Plm_image::convert_to_itk_double ()
     case PLM_IMG_TYPE_ITK_DOUBLE:
 	return;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
-	this->m_itk_double = Plm_image::convert_gpuit_to_itk<
+	this->m_itk_double = this->convert_gpuit_to_itk<
             DoubleImageType::Pointer, unsigned char> (this->get_volume());
 	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
-	this->m_itk_double = Plm_image::convert_gpuit_to_itk<
+	this->m_itk_double = this->convert_gpuit_to_itk<
             DoubleImageType::Pointer, float> (this->get_volume());
         break;
     default:

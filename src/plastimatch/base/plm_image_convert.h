@@ -8,21 +8,18 @@
 
 class Plm_image;
 
-template<class T, class U> PLMBASE_API T plm_image_convert_gpuit_to_itk (
-        Plm_image* pli,
-        T itk_img, U
-);
+#if defined (commentout)
+#endif
+
 template<class T, class U> PLMBASE_API void plm_image_convert_itk_to_gpuit (
         Plm_image* pli,
         T img,
         U
 );
+
 template<class T> PLMBASE_API void plm_image_convert_itk_to_gpuit_float (
         Plm_image* pli,
         T img
 );
-
-#if defined (commentout)
-#endif
 
 #endif
