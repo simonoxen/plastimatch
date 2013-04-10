@@ -205,7 +205,7 @@ void Acquire_4030e_parent::initialize (QString& strEXE_Path)
 	//timerSysTray->start (5000); //every 5 s
 
 	//init log file
-	m_strLogFilePath = DEFAULT_LOGFILE_PATH;
+	m_strLogFilePath = m_OptionSettingParent.m_strPrimaryLogPath;
 
 	//YK_FUTURE
 	//m_strLogFilePath = from option file
