@@ -528,45 +528,44 @@ Plm_image::save_image (const std::string& fname)
    Getting and setting
    ----------------------------------------------------------------------- */
 void 
-Plm_image::set_volume (Volume *v)
+Plm_image::set_volume (Volume *v, Plm_image_type type)
 {
     this->free ();
     m_gpuit = (void*) v;
+    m_original_type = type;
+    m_type = type;
+}
+
+void 
+Plm_image::set_volume (Volume *v)
+{
     switch (v->pix_type) {
     case PT_UCHAR:
-	m_original_type = PLM_IMG_TYPE_GPUIT_UCHAR;
-	m_type = PLM_IMG_TYPE_GPUIT_UCHAR;
+        this->set_volume (v, PLM_IMG_TYPE_GPUIT_UCHAR);
 	break;
     case PT_SHORT:
-	m_original_type = PLM_IMG_TYPE_GPUIT_SHORT;
-	m_type = PLM_IMG_TYPE_GPUIT_SHORT;
+        this->set_volume (v, PLM_IMG_TYPE_GPUIT_SHORT);
 	break;
     case PT_UINT16:
-	m_original_type = PLM_IMG_TYPE_GPUIT_UINT16;
-	m_type = PLM_IMG_TYPE_GPUIT_UINT16;
+        this->set_volume (v, PLM_IMG_TYPE_GPUIT_UINT16);
 	break;
     case PT_UINT32:
-	m_original_type = PLM_IMG_TYPE_GPUIT_UINT32;
-	m_type = PLM_IMG_TYPE_GPUIT_UINT32;
+        this->set_volume (v, PLM_IMG_TYPE_GPUIT_UINT32);
 	break;
     case PT_INT32:
-	m_original_type = PLM_IMG_TYPE_GPUIT_INT32;
-	m_type = PLM_IMG_TYPE_GPUIT_INT32;
+        this->set_volume (v, PLM_IMG_TYPE_GPUIT_INT32);
 	break;
     case PT_FLOAT:
-	m_original_type = PLM_IMG_TYPE_GPUIT_FLOAT;
-	m_type = PLM_IMG_TYPE_GPUIT_FLOAT;
+        this->set_volume (v, PLM_IMG_TYPE_GPUIT_FLOAT);
 	break;
     case PT_VF_FLOAT_INTERLEAVED:
-	m_original_type = PLM_IMG_TYPE_GPUIT_FLOAT_FIELD;
-	m_type = PLM_IMG_TYPE_GPUIT_FLOAT_FIELD;
+        this->set_volume (v, PLM_IMG_TYPE_GPUIT_FLOAT_FIELD);
         break;
     case PT_UCHAR_VEC_INTERLEAVED:
-	m_original_type = PLM_IMG_TYPE_GPUIT_UCHAR_VEC;
-	m_type = PLM_IMG_TYPE_GPUIT_UCHAR_VEC;
+        this->set_volume (v, PLM_IMG_TYPE_GPUIT_UCHAR_VEC);
 	break;
     default:
-	print_and_exit ("Undefined conversion in Plm_image::set_gpuit\n");
+	print_and_exit ("Undefined conversion in Plm_image::set_volume\n");
 	break;
     }
 }
@@ -607,6 +606,16 @@ Plm_image::get_volume_float ()
 {
     convert_to_gpuit_float ();
     return (Volume*) m_gpuit;
+}
+
+Volume *
+Plm_image::steal_volume ()
+{
+    Volume *v = (Volume*) m_gpuit;
+    m_gpuit = 0;
+    m_original_type = PLM_IMG_TYPE_UNDEFINED;
+    m_type = PLM_IMG_TYPE_UNDEFINED;
+    return v;
 }
 
 void 

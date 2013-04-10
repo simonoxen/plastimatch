@@ -653,8 +653,8 @@ Rtss::rasterize (
         this->m_ss_img->set_itk (rasterizer.m_ss_img->m_itk_uchar_vec);
     }
     else {
-        this->m_ss_img->set_volume (rasterizer.m_ss_img->get_volume());
-        rasterizer.m_ss_img->m_gpuit = 0;
+        Volume *v = rasterizer.m_ss_img->steal_volume();
+        this->m_ss_img->set_volume (v);
     }
 
     printf ("Finished rasterization.\n");

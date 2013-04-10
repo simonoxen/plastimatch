@@ -51,9 +51,9 @@ public:
     DoubleImageType::Pointer m_itk_double;
     UCharVecImageType::Pointer m_itk_uchar_vec;
 
+protected:
     /* This should become protected */
     void* m_gpuit;
-protected:
 
 private:
     /* Please don't use copy constructors.  They suck. */
@@ -107,6 +107,7 @@ public:
     void convert_and_save (const std::string& fname, Plm_image_type new_type);
 
     /* assignment */
+    void set_volume (Volume *v, Plm_image_type type);
     void set_volume (Volume *v);
     void set_itk (UCharImageType::Pointer img);
     void set_itk (UShortImageType::Pointer img);
@@ -134,6 +135,8 @@ public:
     Volume* get_volume_short ();
     Volume* get_volume_float ();
     Volume* get_volume_uchar_vec ();
+
+    Volume* steal_volume ();
 
     void convert (Plm_image_type new_type);
     void convert_to_original_type (void);
