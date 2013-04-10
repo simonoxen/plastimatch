@@ -95,7 +95,7 @@ void
 Proton_Scene::set_patient (Volume* ct_vol)
 {
     d_ptr->patient = new Plm_image;
-    d_ptr->patient->set_gpuit (ct_vol);
+    d_ptr->patient->set_volume (ct_vol);
 }
 
 Volume *

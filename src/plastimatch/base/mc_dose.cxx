@@ -138,7 +138,7 @@ mc_dose_create_volume (
 
     v = new Volume (mcdh->dim, mcdh->offset, mcdh->spacing, 0, 
 	PT_FLOAT, 1);
-    pli->set_gpuit (v);
+    pli->set_volume (v);
 
     printf ("img: %p\n", v->img);
     printf ("Image dim: %u %u %u\n", (unsigned int) v->dim[0], 

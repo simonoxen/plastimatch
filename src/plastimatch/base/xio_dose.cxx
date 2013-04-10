@@ -263,7 +263,7 @@ xio_dose_load_cube (
 	}
     }
 
-    pli->set_gpuit (vflip);
+    pli->set_volume (vflip);
 
     /* GCS 2011-01-24: No need to call volume_destroy(v) because set_gpuit() 
        will destroy an existing volume */
@@ -287,7 +287,7 @@ xio_dose_create_volume (
 
     v = new Volume (xdh->dim, xdh->offset, xdh->spacing, 0, 
 	PT_UINT32, 1);
-    pli->set_gpuit (v);
+    pli->set_volume (v);
 
     printf ("img: %p\n", v->img);
     printf ("Image dim: %ld %ld %ld\n", 

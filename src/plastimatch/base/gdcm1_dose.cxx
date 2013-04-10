@@ -217,7 +217,7 @@ gdcm1_dose_load (Plm_image *pli, const char *dose_fn)
     /* GCS FIX: Do I need to do something about endian-ness? */
 
     /* Bind volume to plm_image */
-    pli->set_gpuit (vol);
+    pli->set_volume (vol);
 
 #if defined (commentout)
     printf ("IPP = %f %f %f\n", ipp[0], ipp[1], ipp[2]);
@@ -419,7 +419,7 @@ gdcm1_dose_save (
 
     /* Scale the image */
     tmp->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
-    Volume *vol = (Volume*) tmp->m_gpuit;
+    Volume *vol = tmp->get_volume ();
     volume_scale (vol, 1 / dose_scale);
 
     /* Convert to integer */
@@ -429,7 +429,7 @@ gdcm1_dose_save (
 	tmp->convert (PLM_IMG_TYPE_GPUIT_INT32);
     }
 
-    vol = (Volume*) tmp->m_gpuit;
+    vol = tmp->get_volume ();
 
     /* DoseGridScaling */
     s = gdcm::Util::Format ("%g", dose_scale);

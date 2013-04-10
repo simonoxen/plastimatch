@@ -355,8 +355,8 @@ Dcmtk_series::load_plm_image (void)
     Plm_image *pli = new Plm_image;
     pli->m_type = PLM_IMG_TYPE_GPUIT_SHORT;
     pli->m_original_type = PLM_IMG_TYPE_GPUIT_SHORT;
-    pli->m_gpuit = new Volume (vh, PT_SHORT, 1);
-    Volume* vol = (Volume*) pli->m_gpuit;
+    Volume* vol = new Volume (vh, PT_SHORT, 1);
+    pli->set_volume (vol);
     int16_t* img = (int16_t*) vol->img;
 
     for (plm_long i = 0; i < dim[2]; i++) {

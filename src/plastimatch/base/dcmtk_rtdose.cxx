@@ -223,7 +223,7 @@ Dcmtk_loader::rtdose_load ()
     float *img = (float*) vol->img;
 
     /* Bind volume to plm_image */
-    this->dose->set_gpuit (vol);
+    this->dose->set_volume (vol);
 
     /* PixelData */
     unsigned long length = 0;

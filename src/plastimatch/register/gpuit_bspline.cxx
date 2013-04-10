@@ -318,7 +318,7 @@ do_gpuit_bspline_stage_internal (
 	Volume *moving_ss_clone = new Volume();
 	moving_ss_clone = moving_ss->clone_raw();
 	Plm_image *moving_ss_plmimage = new Plm_image();
-	moving_ss_plmimage->set_gpuit( moving_ss_clone );
+	moving_ss_plmimage->set_volume (moving_ss_clone);
 
 //	lw.m_input_img = regd->moving_image; // Plm_image
         lw.m_input_img = moving_ss_plmimage;

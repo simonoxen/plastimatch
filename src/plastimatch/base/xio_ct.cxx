@@ -190,7 +190,7 @@ xio_ct_create_volume (
     spacing[2] = best_chunk_diff;
 
     v = new Volume (dim, offset, spacing, 0, PT_SHORT, 1);
-    pli->set_gpuit (v);
+    pli->set_volume (v);
 
     printf ("img: %p\n", v->img);
     printf ("Image dim: %u %u %u\n", (unsigned int) v->dim[0], 

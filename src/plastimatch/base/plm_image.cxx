@@ -528,7 +528,7 @@ Plm_image::save_image (const std::string& fname)
    Getting and setting
    ----------------------------------------------------------------------- */
 void 
-Plm_image::set_gpuit (Volume *v)
+Plm_image::set_volume (Volume *v)
 {
     this->free ();
     m_gpuit = (void*) v;
@@ -1464,7 +1464,7 @@ plm_image_save_vol (const char* fname, const Volume *vol)
     Volume *v2 = volume_clone (vol);
     Plm_image pli;
 
-    pli.set_gpuit (v2);
+    pli.set_volume (v2);
     pli.convert_to_itk ();
     pli.convert_to_itk ();
     pli.save_image (fname);

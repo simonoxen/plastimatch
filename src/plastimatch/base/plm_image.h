@@ -107,7 +107,7 @@ public:
     void convert_and_save (const std::string& fname, Plm_image_type new_type);
 
     /* assignment */
-    void set_gpuit (Volume *v);
+    void set_volume (Volume *v);
     void set_itk (UCharImageType::Pointer img);
     void set_itk (UShortImageType::Pointer img);
     void set_itk (UInt32ImageType::Pointer img);

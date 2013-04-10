@@ -166,7 +166,7 @@ astroid_dose_load_cube (
 	}
     }
 
-    pli->set_gpuit (vflip);
+    pli->set_volume (vflip);
 
     /* Convert volume to float for more accurate normalization */
     pli->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
@@ -192,7 +192,7 @@ astroid_dose_create_volume (
 	v = new Volume (adh->dim, adh->offset, adh->spacing, 0,
 	    PT_INT32, 1);
     }
-    pli->set_gpuit (v);
+    pli->set_volume (v);
 
     printf ("img: %p\n", v->img);
     printf ("Image dim: %u %u %u\n", (unsigned int) v->dim[0], 

@@ -178,7 +178,7 @@ plm_warp_native (
 
     /* Return output image to caller */
     if (im_warped) {
-	im_warped->set_gpuit (v_out);
+	im_warped->set_volume (v_out);
 
 	/* Bspline_warp only operates on float.  We need to back-convert */
 	printf ("Back convert to original type...\n");
@@ -252,7 +252,7 @@ plm_warp_native_vec (
 
     /* Return output image to caller */
     if (im_warped) {
-	im_warped->set_gpuit (v_out);
+	im_warped->set_volume (v_out);
 
 	/* Bspline_warp only operates on float.  We need to back-convert */
 	printf ("Back convert to original type...\n");

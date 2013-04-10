@@ -120,7 +120,7 @@ Rasterizer::init (
             if (vol == 0) {
                 print_and_exit ("ERROR: failed allocating ss_img volume");
             }
-            this->m_ss_img->set_gpuit (vol);
+            this->m_ss_img->set_volume (vol);
         }
     }
 
