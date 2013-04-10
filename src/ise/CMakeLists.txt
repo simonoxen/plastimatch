@@ -92,6 +92,7 @@ set (ACQUIRE_4030E_SRC
   kill.cxx kill.h
   varian_4030e.cxx varian_4030e.h 
   YKOptionSetting.cxx YKOptionSetting.h
+  acquire_4030e_define.h
   )
 if (BUILD_ACQUIRE_4030E)
   qt4_wrap_cpp (ACQUIRE_4030E_SRC 
