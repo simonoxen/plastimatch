@@ -34,6 +34,11 @@ else ()
   set (BUILD_ISE_QT FALSE)
 endif ()
 
+if (${QT_QTNETWORK_FOUND})
+  include_directories (${QT_QTNETWORK_INCLUDE_DIR})
+endif ()
+
+
 ##-----------------------------------------------------------------------------
 ##  Source files
 ##-----------------------------------------------------------------------------
