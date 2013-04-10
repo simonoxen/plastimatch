@@ -19,6 +19,7 @@ See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 #include "acquire_4030e_DlgControl.h"
 #include "YK16GrayImage.h"
 #include <QProgressDialog>
+#include <QFileInfo>
 
 
 #define TIMEOUT_MAINLOOP 50
@@ -208,6 +209,7 @@ Acquire_4030e_child::init(int panelIdx) //procNum = panelIdx
 		return false;
 	}
 
+	
 
 	if (vp != NULL)
 		vip_close_link(); //for sure, is it working??
@@ -295,21 +297,24 @@ Acquire_4030e_child::init(int panelIdx) //procNum = panelIdx
 	//vp->m_bDarkCorrApply = false;
 	//vp->m_bGainCorrApply = false;
 
-	m_TimerMainLoop->start(100);
-
-	m_enPanelStatus = IMAGE_ACQUSITION_DONE; //Goto Standby
-
-
+	//Sleep(3000);
 	//Connect server
-	QString strServerName = QString("SOCKET_MSG_TO_CHILD_%1").arg(idx);		
+	Sleep(500);
+	QString strServerName = QString("SOCKET_MSG_TO_CHILD_%1").arg(idx);	
+	SOCKET_ConnectToServer(strServerName);
+	Sleep(500);
+
+	m_TimerMainLoop->start(100);
+	m_enPanelStatus = IMAGE_ACQUSITION_DONE; //Goto Standby		
+	m_timeOutCnt = 0;
 	//aqprintf("SEVERNAME ERROR?\n");
 	//aqprintf(strServerName.toLocal8Bit().constData());
 
-	SOCKET_ConnectToServer(strServerName);
-	Sleep(1000);	
+	//SOCKET_ConnectToServer(strServerName);
+	//Sleep(1000);	
 
 	
-	//aqprintf("about to call UpdateGUIFromSetting_Child");
+	aqprintf("about to call UpdateGUIFromSetting_Child");
 	m_dlgControl->UpdateGUIFromSetting_Child();	//include reload dark/flood images	
 
 	return true;
@@ -458,6 +463,7 @@ int Acquire_4030e_child::open_receptor (const char* path)
 	//after successfully openning the receptor,
 	m_bPleoraErrorHasBeenOccurred = false;
 	m_enPanelStatus = COMPLETE_SIGNAL_DETECTED;  // go to standby
+	this->m_timeOutCnt = 0;
 
 	this->m_bAcquisitionOK = true;
 	return result;
@@ -950,6 +956,7 @@ void Acquire_4030e_child::InterpretAndFollow ()
 			dp = NULL;
 		}
 		m_enPanelStatus = NOT_OPENNED;
+		this->m_timeOutCnt = 0;
 		//m_TimerPollMsgFromParent->stop();
 		m_TimerMainLoop->stop(); //if running
 		aqprintf("PRESPP_KILL\n");
@@ -1060,6 +1067,7 @@ void Acquire_4030e_child::TimerMainLoop_event() //called every 50 ms
 		{
 			aqprintf("Status changed to IMAGE_ACQUSITION_DONE\n");
 			m_enPanelStatus = IMAGE_ACQUSITION_DONE; //GOTO Standby
+			this->m_timeOutCnt = 0;
 			m_bCancelAcqRequest = false;
 		}
 		else
@@ -1097,7 +1105,10 @@ void Acquire_4030e_child::TimerMainLoop_event() //called every 50 ms
 		//m_bAcquisitionOK = false; //Just hold the timer
 
 		if (!m_bLockInPanelStandby)
+		{
 			m_enPanelStatus = OPENNED; //in parent, current state is STANDBY
+			this->m_timeOutCnt = 0;
+		}
 		//m_bAcquisitionOK = true; //BUSY flag
 		//stop here the loop until getting ACTIVATION msg from parent
 
@@ -1126,7 +1137,10 @@ bool Acquire_4030e_child::PC_ReOpenPanel()
 		m_bAcquisitionOK = false;		
 	}
 	else
+	{
 		m_enPanelStatus = OPENNED;	
+		this->m_timeOutCnt = 0;
+	}
 
 	//aqprintf ("PSTAT1: OPENNED\n");
 	return true;
@@ -1159,6 +1173,7 @@ bool Acquire_4030e_child::PC_ActivatePanel()
 		{
 			close_receptor();			
 			m_enPanelStatus = NOT_OPENNED;
+			this->m_timeOutCnt = 0;
 			Sleep(300);
 		}
 		return false;
@@ -1169,7 +1184,7 @@ bool Acquire_4030e_child::PC_ActivatePanel()
 	if (result != HCP_NO_ERR) {	
 		aqprintf("**** returns error %d - Panel Activation Error\n", result);		
 	}
-	m_enPanelStatus = PANEL_ACTIVE;
+	m_enPanelStatus = PANEL_ACTIVE;	
 	aqprintf ("PSTAT2: PANEL_ACTIVE\n");	
 
 	m_timeOutCnt = 0;	
@@ -1197,6 +1212,7 @@ bool Acquire_4030e_child::PC_WaitForPanelReady()
 		aqprintf("Error on querying_in PC_WaitForPanelReady with an error code of %d\n", result);			
 		vip_io_enable(HS_STANDBY); //should be!!
 		m_enPanelStatus = OPENNED; //Go back to first step		
+		this->m_timeOutCnt = 0;
 	}
 	else if (m_timeOutCnt > 5000) //Time_out //5000 is fixed! Optimized value
 	{
@@ -1218,7 +1234,7 @@ bool Acquire_4030e_child::PC_WaitForPanelReady()
 	{
 		if (m_pCrntStatus->qpi.ReadyForPulse == 1)
 		{			
-			m_enPanelStatus = READY_FOR_PULSE;			
+			m_enPanelStatus = READY_FOR_PULSE;
 			aqprintf ("PSTAT3: READY_FOR_PULSE\n");
 			Sleep(100);
 			aqprintf("READY FOR X-RAYS - EXPOSE AT ANY TIME\n");
@@ -1256,6 +1272,7 @@ bool Acquire_4030e_child::PC_WaitForPulse() //vp->wait_on_num_pulses
 		aqprintf("Error on querying in PC_WaitForPulse with error code of %d\n", result);
 		m_enPanelStatus = OPENNED;//go back to first step	
 		vip_io_enable(HS_STANDBY);
+		this->m_timeOutCnt = 0;
 		return false;
 	}
 	//else if (m_timeOutCnt > 5000) 
@@ -1269,6 +1286,7 @@ bool Acquire_4030e_child::PC_WaitForPulse() //vp->wait_on_num_pulses
 		{
 			m_enPanelStatus = PULSE_CHANGE_DETECTED;
 			aqprintf ("PSTAT4: PULSE_CHANGE_DETECTED\n");
+			m_timeOutCnt = 0;
 		}	
 	}
 	return true;
@@ -1301,6 +1319,7 @@ bool Acquire_4030e_child::PC_WaitForComplete()//vp->wait_on_complete
 		vip_io_enable(HS_STANDBY); // Let's try without this (directly go to PANEL_ACTIVE)
 		Sleep(1000);
 		m_enPanelStatus = OPENNED;//Let's try with PANEL_ACTIVE (without reselection and HS_ACTIVE setting		
+		this->m_timeOutCnt = 0;
 		return false;
 	}
 	else if (m_timeOutCnt > 10000) //Time_out
@@ -1545,12 +1564,16 @@ bool Acquire_4030e_child::PC_DarkFieldAcquisition_SingleShot(int avgFrames) //sh
 		aqprintf("Dark Field Acquisition Success\n");
 	}
 
-	Sleep(300);		
+	//Sleep(300);		
 
 	//if current is hardware handshaking:
 
 	if (m_dlgControl->RadioHardHandshakingEnable->isChecked())
+	{
 		m_enPanelStatus = IMAGE_ACQUSITION_DONE; //restandby
+		m_timeOutCnt = 0;
+	}
+
 
 
 	return true;
@@ -1559,6 +1582,11 @@ bool Acquire_4030e_child::PC_DarkFieldAcquisition_SingleShot(int avgFrames) //sh
 
 bool Acquire_4030e_child::LoadDarkImage(QString& filePath)
 {
+	QFileInfo fileInfo = QFileInfo(filePath);
+
+	if (!fileInfo.exists())
+		return false;
+
 	//binary processing for gray 16 bit images	
 	//aqprintf("Start LoadDark\n");
 	int width = vp->m_iSizeX;
@@ -1586,6 +1614,11 @@ bool Acquire_4030e_child::LoadDarkImage(QString& filePath)
 
 bool Acquire_4030e_child::LoadGainImage(QString& filePath)
 {
+	QFileInfo fileInfo = QFileInfo(filePath);
+
+	if (!fileInfo.exists())
+		return false;
+
 	//binary processing for gray 16 bit images	
 	//aqprintf("Start LoadDark\n");
 	int width = vp->m_iSizeX;

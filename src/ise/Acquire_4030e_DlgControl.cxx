@@ -233,8 +233,9 @@ void Acquire_4030e_DlgControl::OpenDarkImage() //Btn
 	
 	if (!qMyApp->LoadDarkImage(filePath))
 	{
-		dlgMsgBox.setText("Error on loading dark image!");
+		dlgMsgBox.setText(QString("Error on loading dark image! path = %1").arg(filePath));
 		dlgMsgBox.exec();
+		this->lineEditDarkPath->setText("");
 	}		
 }
 
@@ -273,8 +274,10 @@ void Acquire_4030e_DlgControl::OpenGainImage() //Btn
 
 	if (!qMyApp->LoadGainImage(filePath))
 	{
-		dlgMsgBox.setText("Error on loading gain image!");
+		dlgMsgBox.setText(QString("Error on loading gain image!%1").arg(filePath));
 		dlgMsgBox.exec();
+
+		this->lineEditGainPath->setText("");
 	}		
 }
 
@@ -394,14 +397,19 @@ void Acquire_4030e_DlgControl::SaveSettingAsDefault_Child()
 //should be called when start
 void Acquire_4030e_DlgControl::UpdateGUIFromSetting_Child() // it can be used as go_back to default setting
 {
+	//aqprintf("test1\n");
 	Acquire_4030e_child* qMyApp = (Acquire_4030e_child*)qApp;
 	YKOptionSetting* pOptionSetting = &(((Acquire_4030e_child*)qApp)->m_OptionSettingChild);
 	int idx = qMyApp->m_iProcNum;
+
+	//aqprintf("test2\n");
 
 	EditDriverPath->setText(pOptionSetting->m_strDriverFolder[idx]);
 			
 	spinUpperVal->setValue(pOptionSetting->m_iWinLevelUpper[idx]);
 	spinLowerVal->setValue(pOptionSetting->m_iWinLevelLower[idx]);	
+
+	//aqprintf("test3\n");
 
 	///* File Save */
 	ChkAutoSave->setChecked(pOptionSetting->m_bSaveToFileAfterAcq[idx]);
@@ -409,6 +417,8 @@ void Acquire_4030e_DlgControl::UpdateGUIFromSetting_Child() // it can be used as
 	ChkDarkCorrectedSave->setChecked(pOptionSetting->m_bSaveDarkCorrectedImage[idx]);
 	ChkRawSave->setChecked(pOptionSetting->m_bSaveRawImage[idx]);		
 	lineEditCurImageSaveFolder->setText(pOptionSetting->m_strAcqFileSavingFolder[idx]);
+
+	//aqprintf("test4\n");
 	
 
 	RadioSoftHandshakingEnable->setChecked(pOptionSetting->m_bSoftwareHandshakingEnabled[idx]);	
@@ -434,6 +444,7 @@ void Acquire_4030e_DlgControl::UpdateGUIFromSetting_Child() // it can be used as
 	this->ChkAutoDarkOn->setChecked(pOptionSetting->m_bTimerAcquisitionEnabled[idx]);
 	this->SpinTimeInterval->setValue(pOptionSetting->m_iTimerAcquisitionMinInterval[idx]);
 	
+	//aqprintf("test5\n");
 	////YK TEMP: not implemented yet. leave it as default value
 	///*m_fDarkCufoffUpperMean[idx] = ;
 	//m_fDarkCufoffLowerMean[idx] = ;
@@ -457,6 +468,8 @@ void Acquire_4030e_DlgControl::UpdateGUIFromSetting_Child() // it can be used as
 	//pOptionSetting->m_fSingleGainCalibFactor[idx] = (this->lineEditSingleCalibFactor->text()).toDouble();	
 	QString tmpStr = QString("%1").arg(pOptionSetting->m_fSingleGainCalibFactor[idx]);
 	this->lineEditSingleCalibFactor->setText(tmpStr);	
+
+	//aqprintf("test6\n");
 
 	ReLoadCalibImages();
 }

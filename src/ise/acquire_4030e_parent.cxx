@@ -210,7 +210,7 @@ void Acquire_4030e_parent::initialize (QString& strEXE_Path)
 	//YK_FUTURE
 	//m_strLogFilePath = from option file
 
-	m_strLogFilePath.append("acquire4030e_log_");
+	m_strLogFilePath.append("\\acquire4030e_log_");
 
 	QDate crntDate = QDate::currentDate ();
 	QString dateFormat = "MM_dd_yyyy";
@@ -391,6 +391,8 @@ Acquire_4030e_parent::poll_child_messages () //often called even window is close
 				if (line.contains("REQUEST_FOR_SERVER_CONNECTION"))
 				{
 					SOCKET_ConnectClient(i);
+					log_output("serverConnection done");
+					
 				}				
 			}
 			else if (line.contains("PSTAT0"))

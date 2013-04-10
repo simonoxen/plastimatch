@@ -124,7 +124,7 @@ public:
 
 	int m_timeOutCnt;
 
-	///* Panel control functions // 03/06/2013
+	///* Panel control functions //		03/06/2013
 	bool PC_ReOpenPanel();
 	bool PC_ActivatePanel();
 	bool PC_WaitForPanelReady();
