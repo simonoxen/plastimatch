@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <tr1/memory>
 #include "smart_pointer.h"
 //#include "dlib/smart_pointers.h"
 
@@ -67,6 +68,20 @@ test_2 ()
     for (int i = 0; i < 10; i++) {
         foo_2 (b);
     }
+#if defined (commentout)
+    /* This doesn't compile */
+    b = 0;
+#endif
+}
+
+void
+test_3 ()
+{
+    std::tr1::shared_ptr<A> a (new A);
+#if defined (commentout)
+    /* This doesn't compile */
+    a = 0;
+#endif
 }
 
 int 
