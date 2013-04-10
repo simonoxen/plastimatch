@@ -717,15 +717,18 @@ Plm_image::convert_to_gpuit_uchar (void)
 {
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
-        plm_image_convert_itk_to_gpuit (this, this->m_itk_uchar, (unsigned char) 0);
+        this->convert_itk_to_gpuit<UCharImageType::Pointer,unsigned char> (
+            this->m_itk_uchar);
         this->m_itk_uchar = 0;
         break;
     case PLM_IMG_TYPE_ITK_SHORT:
-        plm_image_convert_itk_to_gpuit (this, this->m_itk_short, (unsigned char) 0);
+        this->convert_itk_to_gpuit<ShortImageType::Pointer,unsigned char> (
+            this->m_itk_short);
         this->m_itk_short = 0;
         break;
     case PLM_IMG_TYPE_ITK_FLOAT:
-        plm_image_convert_itk_to_gpuit (this, this->m_itk_float, (unsigned char) 0);
+        this->convert_itk_to_gpuit<FloatImageType::Pointer,unsigned char> (
+            this->m_itk_float);
         this->m_itk_float = 0;
         break;
     case PLM_IMG_TYPE_GPUIT_SHORT:

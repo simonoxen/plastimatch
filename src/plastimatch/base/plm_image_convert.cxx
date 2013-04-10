@@ -502,6 +502,16 @@ Plm_image::convert_gpuit_to_itk<DoubleImageType::Pointer, unsigned char> (Volume
 template PLMBASE_API DoubleImageType::Pointer
 Plm_image::convert_gpuit_to_itk<DoubleImageType::Pointer, float> (Volume*);
 
+template PLMBASE_API void
+Plm_image::convert_itk_to_gpuit<UCharImageType::Pointer, unsigned char> (
+    UCharImageType::Pointer);
+template PLMBASE_API void
+Plm_image::convert_itk_to_gpuit<ShortImageType::Pointer, unsigned char> (
+    ShortImageType::Pointer);
+template PLMBASE_API void
+Plm_image::convert_itk_to_gpuit<FloatImageType::Pointer, unsigned char> (
+    FloatImageType::Pointer);
+
 template PLMBASE_API 
 void
 plm_image_convert_itk_to_gpuit_float (Plm_image* pli, UCharImageType::Pointer img);
