@@ -124,101 +124,6 @@ Plm_image::convert_itk_to_gpuit (T img)
     this->m_gpuit = vol;
 }
 
-
-template<class T, class U> 
-void
-plm_image_convert_itk_to_gpuit (Plm_image* pli, T img, U)
-{
-    typedef typename T::ObjectType ImageType;
-    int i, d1;
-    typename ImageType::RegionType rg = img->GetLargestPossibleRegion ();
-    typename ImageType::PointType og = img->GetOrigin();
-    typename ImageType::SpacingType sp = img->GetSpacing();
-    typename ImageType::SizeType sz = rg.GetSize();
-    typename ImageType::DirectionType dc = img->GetDirection();
-
-    /* Copy header & allocate data for gpuit float */
-    plm_long dim[3];
-    float offset[3];
-    float spacing[3];
-    float direction_cosines[9];
-    for (d1 = 0; d1 < 3; d1++) {
-        dim[d1] = sz[d1];
-        offset[d1] = og[d1];
-        spacing[d1] = sp[d1];
-    }
-    dc_from_itk_direction (direction_cosines, &dc);
-    Volume* vol = new Volume (dim, offset, spacing, direction_cosines, 
-        PT_UCHAR, 1);
-
-    U *vol_img = (U*) vol->img;
-
-    /* Copy data into gpuit */
-    typedef typename itk::ImageRegionIterator< ImageType > IteratorType;
-    IteratorType it (img, rg);
-    for (it.GoToBegin(), i=0; !it.IsAtEnd(); ++it, ++i) {
-        vol_img[i] = it.Get();
-    }
-
-    /* Set data type */
-    if (typeid (U) == typeid (unsigned char)){
-        pli->m_type = PLM_IMG_TYPE_GPUIT_UCHAR;
-    }
-    else if (typeid (U) == typeid (short)){
-        pli->m_type = PLM_IMG_TYPE_GPUIT_SHORT;
-    }
-    else if (typeid (U) == typeid (float)) {
-        pli->m_type = PLM_IMG_TYPE_GPUIT_FLOAT;
-    }
-    else {
-        printf ("unknown type conversion from itk to gpuit!\n");
-        exit (0);
-    }
-    pli->m_gpuit = vol;
-}
-
-
-template<class T> 
-void
-plm_image_convert_itk_to_gpuit_float (Plm_image* pli, T img)
-{
-    typedef typename T::ObjectType ImageType;
-    int i, d1;
-    typename ImageType::RegionType rg = img->GetLargestPossibleRegion ();
-    typename ImageType::PointType og = img->GetOrigin();
-    typename ImageType::SpacingType sp = img->GetSpacing();
-    typename ImageType::SizeType sz = rg.GetSize();
-    typename ImageType::DirectionType dc = img->GetDirection();
-
-    /* Copy header & allocate data for gpuit float */
-    plm_long dim[3];
-    float offset[3];
-    float spacing[3];
-    float direction_cosines[9];
-    for (d1 = 0; d1 < 3; d1++) {
-	dim[d1] = sz[d1];
-	offset[d1] = og[d1];
-	spacing[d1] = sp[d1];
-    }
-    dc_from_itk_direction (direction_cosines, &dc);
-    Volume* vol = new Volume (dim, offset, spacing, direction_cosines, 
-	PT_FLOAT, 1);
-
-    float* vol_img = (float*) vol->img;
-
-    /* Copy data into gpuit */
-    typedef typename itk::ImageRegionIterator< ImageType > IteratorType;
-    IteratorType it (img, rg);
-    for (it.GoToBegin(), i=0; !it.IsAtEnd(); ++it, ++i) {
-	vol_img[i] = it.Get();
-    }
-
-    /* Set data type */
-    pli->m_gpuit = vol;
-    pli->m_type = PLM_IMG_TYPE_GPUIT_FLOAT;
-}
-
-
 /* -----------------------------------------------------------------------
    UCharVec image conversion
    ----------------------------------------------------------------------- */
@@ -512,49 +417,18 @@ template PLMBASE_API void
 Plm_image::convert_itk_to_gpuit<FloatImageType::Pointer, unsigned char> (
     FloatImageType::Pointer);
 
-template PLMBASE_API 
-void
-plm_image_convert_itk_to_gpuit_float (Plm_image* pli, UCharImageType::Pointer img);
-template PLMBASE_API 
-void
-plm_image_convert_itk_to_gpuit_float (Plm_image* pli, ShortImageType::Pointer img);
-template PLMBASE_API 
-void
-plm_image_convert_itk_to_gpuit_float (Plm_image* pli, UInt32ImageType::Pointer img);
-template PLMBASE_API 
-void
-plm_image_convert_itk_to_gpuit_float (Plm_image* pli, Int32ImageType::Pointer img);
-template PLMBASE_API 
-void
-plm_image_convert_itk_to_gpuit_float (Plm_image* pli, FloatImageType::Pointer img);
-template PLMBASE_API 
-void
-plm_image_convert_itk_to_gpuit_float (Plm_image* pli, DoubleImageType::Pointer img);
-
-template PLMBASE_API
-void
-plm_image_convert_itk_to_gpuit (Plm_image* pli, UCharImageType::Pointer img, unsigned char);
-template PLMBASE_API
-void
-plm_image_convert_itk_to_gpuit (Plm_image* pli, ShortImageType::Pointer img, unsigned char);
-template PLMBASE_API
-void
-plm_image_convert_itk_to_gpuit (Plm_image* pli, FloatImageType::Pointer img, unsigned char);
-template PLMBASE_API
-void
-plm_image_convert_itk_to_gpuit (Plm_image* pli, UCharImageType::Pointer img, short);
-template PLMBASE_API
-void
-plm_image_convert_itk_to_gpuit (Plm_image* pli, ShortImageType::Pointer img, short);
-template PLMBASE_API
-void
-plm_image_convert_itk_to_gpuit (Plm_image* pli, FloatImageType::Pointer img, short);
-template PLMBASE_API
-void
-plm_image_convert_itk_to_gpuit (Plm_image* pli, UCharImageType::Pointer img, float);
-template PLMBASE_API
-void
-plm_image_convert_itk_to_gpuit (Plm_image* pli, ShortImageType::Pointer img, float);
-template PLMBASE_API
-void
-plm_image_convert_itk_to_gpuit (Plm_image* pli, FloatImageType::Pointer img, float);
+template PLMBASE_API void
+Plm_image::convert_itk_to_gpuit<UCharImageType::Pointer,float> (
+    UCharImageType::Pointer);
+template PLMBASE_API void
+Plm_image::convert_itk_to_gpuit<ShortImageType::Pointer,float> (
+    ShortImageType::Pointer);
+template PLMBASE_API void
+Plm_image::convert_itk_to_gpuit<UInt32ImageType::Pointer,float> (
+    UInt32ImageType::Pointer);
+template PLMBASE_API void
+Plm_image::convert_itk_to_gpuit<Int32ImageType::Pointer,float> (
+    Int32ImageType::Pointer);
+template PLMBASE_API void
+Plm_image::convert_itk_to_gpuit<FloatImageType::Pointer,float> (
+    FloatImageType::Pointer);
