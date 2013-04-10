@@ -7,8 +7,8 @@ See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <QMutex>
-#include <QMutexLocker>
+//#include <QMutex>
+//#include <QMutexLocker>
 #include "HcpErrors.h"
 #include "HcpFuncDefs.h"
 #include "iostatus.h"
@@ -23,7 +23,7 @@ See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 #include <QSystemSemaphore>
 
 /* This mutex is a class static variable */
-QMutex Varian_4030e::vip_mutex;
+//QMutex Varian_4030e::vip_mutex;
 
 #define HCP_SIGNAL_TIMEOUT        (-2)
 
@@ -289,6 +289,8 @@ int
 Varian_4030e::get_image_to_file (int xSize, int ySize, 
 								 char *filename, int imageType)
 {
+	bool bDarkCorrApply = m_pParent->m_dlgControl->ChkDarkFieldApply->isChecked(); 
+	bool bGainCorrApply = m_pParent->m_dlgControl->ChkGainCorrectionApply->isChecked();
 
 	aqprintf("File export\n");
 
@@ -301,22 +303,22 @@ Varian_4030e::get_image_to_file (int xSize, int ySize,
 	result = vip_get_image(mode_num, imageType, xSize, ySize, image_ptr);
 	//now raw image from panel
 
-	if (m_bDarkCorrApply)
+	if (bDarkCorrApply)
 		aqprintf("Dark Correction On\n");
-	if (m_bGainCorrApply)
+	if (bGainCorrApply)
 		aqprintf("Gain Correction On\n");
 
 	/////////////////////***************Manul Correction START***********///////////////////
 	USHORT *pImageCorr = (USHORT *)malloc(npixels * sizeof(USHORT));
 
-	if (!m_bDarkCorrApply && !m_bGainCorrApply)
+	if (!bDarkCorrApply && !bGainCorrApply)
 	{
 		//aqprintf("no correction\n");
 		for (int i = 0; i < xSize * ySize; i++) {
 			pImageCorr[i] = image_ptr[i]; //raw image
 		}
 	}
-	else if (m_bDarkCorrApply && !m_bGainCorrApply)
+	else if (bDarkCorrApply && !bGainCorrApply)
 	{
 		//aqprintf("only dark field correction correction\n");
 		if (m_pParent->m_pDarkImage->IsEmpty())
@@ -336,7 +338,7 @@ Varian_4030e::get_image_to_file (int xSize, int ySize,
 			}
 		}
 	}
-	else if (!m_bDarkCorrApply && m_bGainCorrApply)
+	else if (!bDarkCorrApply && bGainCorrApply)
 	{
 		//aqprintf("only gain field correction correction\n");
 		if (m_pParent->m_pGainImage->IsEmpty())
@@ -365,7 +367,7 @@ Varian_4030e::get_image_to_file (int xSize, int ySize,
 		}
 	}
 
-	else if (m_bDarkCorrApply && m_bGainCorrApply)
+	else if (bDarkCorrApply && bGainCorrApply)
 	{
 		//aqprintf("Dark and gain correction\n");
 		bool bRawImage = false;
@@ -672,11 +674,19 @@ bool Varian_4030e::SameImageExist(IMGINFO& curInfo, int& sameImgIndex)
 
 int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to curImage
 {
+
+	bool bDarkCorrApply = m_pParent->m_dlgControl->ChkDarkFieldApply->isChecked(); 
+	bool bGainCorrApply = m_pParent->m_dlgControl->ChkGainCorrectionApply->isChecked();
+	bool bRawSaveForDebug = m_pParent->m_dlgControl->ChkRawSave->isChecked();
+	bool bDarkSaveForDebug = m_pParent->m_dlgControl->ChkDarkCorrectedSave->isChecked();
+
+
 	int result;
 	int mode_num = this->current_mode;
 	int npixels = xSize * ySize;
 
 	USHORT *image_ptr = (USHORT *)malloc(npixels * sizeof(USHORT));
+
 
 
 	//m_pParent->m_pSysSemaphore->acquire();
@@ -718,22 +728,62 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 		//return HCP_NO_ERR;
 	}
 
-	if (m_bDarkCorrApply)
+	if (bDarkCorrApply)
 		aqprintf("Dark Correction On\n");
-	if (m_bGainCorrApply)
+	if (bGainCorrApply)
 		aqprintf("Gain Correction On\n");
 
 	/////////////////////***************Manul Correction START***********///////////////////
 	USHORT *pImageCorr = (USHORT *)malloc(npixels * sizeof(USHORT));
 
-	if (!m_bDarkCorrApply && !m_bGainCorrApply)
+
+
+	/* DEBUGGING CODE. When save the real image, Raw images and Dark-only corrected images should be saved for debugging purpose */
+
+
+	
+	if (bRawSaveForDebug)
+	{		
+		//aqprintf ("bRawSaveForDebug\n");
+		for (int i = 0; i < xSize * ySize; i++) {
+				m_pParent->m_pCurrImageRaw->m_pData[i] = image_ptr[i]; //raw image
+		}
+	}
+
+	if (bDarkSaveForDebug)
+	{		
+		//aqprintf ("bDarkSaveForDebug\n");
+		if (m_pParent->m_pDarkImage->IsEmpty())
+		{
+			aqprintf("DEBUG for dark-corrected image. No dark ref image. raw image will be sent.\n");
+			for (int i = 0; i < xSize * ySize; i++){
+				m_pParent->m_pCurrImageDarkCorrected->m_pData[i] = image_ptr[i]; //raw image
+			}
+		}
+		else
+		{	
+			for (int i = 0; i < xSize * ySize; i++) {	    
+				if (image_ptr[i] > m_pParent->m_pDarkImage->m_pData[i])
+					m_pParent->m_pCurrImageDarkCorrected->m_pData[i] = image_ptr[i] - m_pParent->m_pDarkImage->m_pData[i];
+				else
+					m_pParent->m_pCurrImageDarkCorrected->m_pData[i] = 0;
+			}
+		}
+	}
+
+	/* DEBUGGING CODE. When save the real image, Raw images and Dark-only corrected images should be saved for debugging purpose */ //END
+
+	aqprintf("After Dark Debug.\n");
+
+
+	if (!bDarkCorrApply && !bGainCorrApply)
 	{
 		//aqprintf("no correction\n");
 		for (int i = 0; i < xSize * ySize; i++) {
 			pImageCorr[i] = image_ptr[i]; //raw image
 		}
 	}
-	else if (m_bDarkCorrApply && !m_bGainCorrApply)
+	else if (bDarkCorrApply && !bGainCorrApply)
 	{
 		//aqprintf("only dark field correction correction\n");
 		if (m_pParent->m_pDarkImage->IsEmpty())
@@ -753,7 +803,7 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 			}
 		}
 	}
-	else if (!m_bDarkCorrApply && m_bGainCorrApply)
+	else if (!bDarkCorrApply && bGainCorrApply)
 	{
 		//aqprintf("only gain field correction correction\n");
 		if (m_pParent->m_pGainImage->IsEmpty())
@@ -782,7 +832,7 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 		}
 	}
 
-	else if (m_bDarkCorrApply && m_bGainCorrApply)
+	else if (bDarkCorrApply && bGainCorrApply)
 	{		
 		aqprintf("Dark and gain correction\n");
 
@@ -819,7 +869,8 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 			int iDenomLessZero_RawIsGreaterThanDark = 0;
 			int iDenomLessZero_RawIsSmallerThanDark = 0;			
 			int iDenomOK_RawValueMinus = 0;
-			int iValOutOfRange = 0;
+			int iValOutOfRange = 0;		
+
 
 			for (int i = 0; i < xSize * ySize; i++)
 			{
@@ -962,8 +1013,8 @@ Varian_4030e::Varian_4030e (int idx)
 	current_mode = 0;
 
 	//This does not work!! don't know why... this code was added in init
-	m_bDarkCorrApply = false;
-	m_bGainCorrApply = false;
+//	m_bDarkCorrApply = false;
+	//m_bGainCorrApply = false;
 }
 
 
@@ -1000,7 +1051,7 @@ Varian_4030e::check_link(int MaxRetryCnt)
 	memset (&clk, 0, sizeof(SCheckLink));
 	clk.StructSize = sizeof(SCheckLink);
 
-	vip_mutex.lock ();
+	//vip_mutex.lock ();
 	vip_select_receptor (this->receptor_no);
 	int result = vip_check_link (&clk);    
 	//aqprintf ("max retry cnt: %d",MaxRetryCnt);
@@ -1021,13 +1072,13 @@ Varian_4030e::check_link(int MaxRetryCnt)
 		tmpCnt++;
 		if (tmpCnt > MaxRetryCnt)
 		{
-			vip_mutex.unlock ();	    
+			//vip_mutex.unlock ();	    
 			// aqprintf ("Restart needed called: %d, %d",tmpCnt, MaxRetryCnt);
 			return RESTART_NEEDED;
 			break;
 		}	
 	}
-	vip_mutex.unlock ();
+	//vip_mutex.unlock ();
 
 	return result;
 }
@@ -1035,7 +1086,7 @@ Varian_4030e::check_link(int MaxRetryCnt)
 int 
 Varian_4030e::open_link (int panelIdx, const char *path)
 {
-	vip_mutex.lock();
+	//vip_mutex.lock();
 	int result;
 	SOpenReceptorLink orl;
 	memset (&orl, 0, sizeof(SOpenReceptorLink));
@@ -1059,14 +1110,14 @@ Varian_4030e::open_link (int panelIdx, const char *path)
 	//PrintCurrentTime();
 	result = vip_open_receptor_link (&orl); //What if panel is unplugged? //what are this func returning?
 
-	aqprintf ("panelIdx = %d\n", panelIdx);
-	aqprintf ("RcptNum = %d\n", orl.RcptNum);
+	//aqprintf ("panelIdx = %d\n", panelIdx);
+	//aqprintf ("RcptNum = %d\n", orl.RcptNum);
 
 	this->receptor_no = orl.RcptNum;
 
 	//PrintCurrentTime();
 
-	vip_mutex.unlock();
+//	vip_mutex.unlock();
 	return result;
 }
 
@@ -1091,7 +1142,7 @@ Varian_4030e::disable_missing_corrections (int result)
 	memset(&corr, 0, sizeof(SCorrections));
 	corr.StructSize = sizeof(SCorrections);
 
-	QMutexLocker mutex_locker (&vip_mutex);
+	//QMutexLocker mutex_locker (&vip_mutex);
 	vip_select_receptor (this->receptor_no);
 
 
@@ -1140,7 +1191,7 @@ Varian_4030e::get_mode_info (SModeInfo &modeInfo, int current_mode)
 	memset(&modeInfo, 0, sizeof(modeInfo));
 	modeInfo.StructSize = sizeof(SModeInfo);
 
-	QMutexLocker mutex_locker (&vip_mutex);
+	//QMutexLocker mutex_locker (&vip_mutex);
 	//vip_select_receptor (this->receptor_no);
 	result = vip_get_mode_info (current_mode, &modeInfo);
 
@@ -1187,10 +1238,10 @@ Varian_4030e::print_sys_info (void)
 
 	memset(&sysInfo, 0, sizeof(sysInfo));
 	sysInfo.StructSize = sizeof(SSysInfo);
-	vip_mutex.lock ();
+	//vip_mutex.lock ();
 	vip_select_receptor (this->receptor_no);
 	result = vip_get_sys_info (&sysInfo);
-	vip_mutex.unlock ();
+	//vip_mutex.unlock ();
 	if (result == HCP_NO_ERR) {
 		aqprintf("> SysDescription=\"%s\"\n", 
 			sysInfo.SysDescription);
@@ -1424,8 +1475,13 @@ Varian_4030e::wait_on_ready_for_pulse (
 
 
 int 
-Varian_4030e::get_image_to_dips (Dips_panel *dp, int xSize, int ySize)
+Varian_4030e::get_image_to_dips (Dips_panel *dp, int xSize, int ySize) //Not used!
 {
+	bool bDarkCorrApply = m_pParent->m_dlgControl->ChkDarkFieldApply->isChecked(); 
+	bool bGainCorrApply = m_pParent->m_dlgControl->ChkGainCorrectionApply->isChecked();
+	//bool bRawSaveForDebug = m_pParent->m_dlgControl->ChkRawSave->isChecked();
+	//bool bDarkSaveForDebug = m_pParent->m_dlgControl->ChkDarkCorrectedSave->isChecked();
+
 	//YK: added
 	//this->vip_mutex.lock();
 	//int result;
@@ -1454,13 +1510,13 @@ Varian_4030e::get_image_to_dips (Dips_panel *dp, int xSize, int ySize)
 
 	/////////////////////***************Manul Correction START***********///////////////////
 
-	if (!m_bDarkCorrApply && !m_bGainCorrApply)
+	if (!bDarkCorrApply && !bGainCorrApply)
 	{
 		for (int i = 0; i < xSize * ySize; i++) {
 			dp->pixelp[i] = image_ptr[i]; //raw image
 		}
 	}
-	else if (m_bDarkCorrApply && !m_bGainCorrApply)
+	else if (bDarkCorrApply && !bGainCorrApply)
 	{
 		if (m_pParent->m_pDarkImage->IsEmpty())
 		{
@@ -1479,7 +1535,7 @@ Varian_4030e::get_image_to_dips (Dips_panel *dp, int xSize, int ySize)
 			}
 		}
 	}
-	else if (!m_bDarkCorrApply && m_bGainCorrApply)
+	else if (!bDarkCorrApply && bGainCorrApply)
 	{
 		if (m_pParent->m_pGainImage->IsEmpty())
 		{
@@ -1507,7 +1563,7 @@ Varian_4030e::get_image_to_dips (Dips_panel *dp, int xSize, int ySize)
 		}
 	}
 
-	else if (m_bDarkCorrApply && m_bGainCorrApply)
+	else if (bDarkCorrApply && bGainCorrApply)
 	{
 		bool bRawImage = false;
 		if (m_pParent->m_pDarkImage->IsEmpty())
@@ -1581,10 +1637,10 @@ int Varian_4030e::SelectReceptor () //in child process, this func is in the "whi
 {    
 	int result = HCP_NO_ERR;
 	//aqprintf("Calling vip_io_enable(HS_ACTIVE)\n");
-	vip_mutex.lock ();
+	//vip_mutex.lock ();
 	vip_select_receptor (this->receptor_no);
 	result = vip_io_enable (HS_ACTIVE);
-	vip_mutex.unlock ();
+	//vip_mutex.unlock ();
 	if (result != HCP_NO_ERR) {
 		aqprintf("**** returns error %d - acquisition not enabled\n", result);
 		return result;

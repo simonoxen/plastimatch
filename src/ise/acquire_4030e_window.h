@@ -42,7 +42,7 @@ public slots:
     void RestartPanel_1 ();    
     void ShowPanelControl_0 ();    
     void ShowPanelControl_1 ();
-	void TimerReadyToQuit_event();
+	//void TimerReadyToQuit_event();
 	void FinalQuit ();
 	void RunRelay_Panel0();
 	void RunRelay_Panel1();	
@@ -64,6 +64,7 @@ public:
     //void UpdateTray(Label_style enStyle);
 
 	bool m_bSeqKillReady;
+	void SaveSettingAsDefault_Parent();
     
     // how to access parent window?
     //bool m_bPanel1Ready

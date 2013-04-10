@@ -9,6 +9,9 @@
 #include "acquire_4030e_window.h"
 #include <fstream>
 #include "acquire_4030e_define.h"
+#include "YKOptionSetting.h"
+
+
 
 
 #define DEFAULT_LOGFILE_PATH "C:\\"
@@ -35,8 +38,9 @@ public:
     Acquire_4030e_parent (int argc, char* argv[]);
     ~Acquire_4030e_parent ();
 
-public:
-    void initialize (int argc, char* argv[]);
+public:    
+	//void initialize ();
+	void initialize (QString& strEXE_Path);
     void kill_rogue_processes ();
     void log_output (const QString& log);
 public slots:
@@ -106,16 +110,21 @@ public:
 
 	//bool m_bBusyParent;	
 
-	bool m_bActivationHasBeenSent[2];
+	//bool m_bActivationHasBeenSent[2];
 
 	bool m_bPanelRelayOpen0;
 	bool m_bPanelRelayOpen1;
+
+
+	bool m_bNowCancelingAcq[2];
 
 public:
 	bool SOCKET_StartServer(int iPanelIdx);
 	void SOCKET_ConnectClient(int iPanelIdx);
 
 	bool SOCKET_SendMessage(int idx, QString& msg);
+
+	YKOptionSetting m_OptionSettingParent;
 	
 
 };

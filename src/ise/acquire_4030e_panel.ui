@@ -6,36 +6,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>453</width>
-    <height>786</height>
+    <width>441</width>
+    <height>834</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Panel Controller</string>
   </property>
-  <widget class="QDialogButtonBox" name="buttonBox">
-   <property name="geometry">
-    <rect>
-     <x>280</x>
-     <y>740</y>
-     <width>171</width>
-     <height>32</height>
-    </rect>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Horizontal</enum>
-   </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-   </property>
-  </widget>
   <widget class="QGroupBox" name="groupBox">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>40</y>
+     <y>10</y>
      <width>251</width>
-     <height>251</height>
+     <height>221</height>
     </rect>
    </property>
    <property name="title">
@@ -44,9 +28,9 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>120</y>
-      <width>61</width>
+      <x>140</x>
+      <y>20</y>
+      <width>21</width>
       <height>21</height>
      </rect>
     </property>
@@ -56,14 +40,14 @@
      </font>
     </property>
     <property name="text">
-     <string>Panel SN</string>
+     <string>SN</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="EditPanelSN">
     <property name="geometry">
      <rect>
-      <x>70</x>
-      <y>120</y>
+      <x>170</x>
+      <y>20</y>
       <width>71</width>
       <height>21</height>
      </rect>
@@ -81,8 +65,8 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>20</y>
-      <width>121</width>
+      <y>50</y>
+      <width>111</width>
       <height>21</height>
      </rect>
     </property>
@@ -99,7 +83,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>50</y>
+      <y>70</y>
       <width>191</width>
       <height>21</height>
      </rect>
@@ -117,7 +101,7 @@
     <property name="geometry">
      <rect>
       <x>210</x>
-      <y>50</y>
+      <y>70</y>
       <width>31</width>
       <height>23</height>
      </rect>
@@ -130,7 +114,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>150</y>
+      <y>100</y>
       <width>221</width>
       <height>21</height>
      </rect>
@@ -144,24 +128,11 @@
      <string>Frames | Complete | Pulses | Ready</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="BtnGetStatusInfo">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>80</y>
-      <width>91</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Get Status Info</string>
-    </property>
-   </widget>
    <widget class="QLineEdit" name="EditFrames">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>180</y>
+      <y>120</y>
       <width>41</width>
       <height>21</height>
      </rect>
@@ -175,29 +146,11 @@
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QLabel" name="label_10">
-    <property name="geometry">
-     <rect>
-      <x>160</x>
-      <y>100</y>
-      <width>81</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Temperature</string>
-    </property>
-   </widget>
    <widget class="QLineEdit" name="EditComplete">
     <property name="geometry">
      <rect>
       <x>70</x>
-      <y>180</y>
+      <y>120</y>
       <width>41</width>
       <height>21</height>
      </rect>
@@ -215,7 +168,7 @@
     <property name="geometry">
      <rect>
       <x>130</x>
-      <y>180</y>
+      <y>120</y>
       <width>41</width>
       <height>21</height>
      </rect>
@@ -233,7 +186,7 @@
     <property name="geometry">
      <rect>
       <x>180</x>
-      <y>180</y>
+      <y>120</y>
       <width>41</width>
       <height>21</height>
      </rect>
@@ -250,11 +203,42 @@
    <widget class="QTextEdit" name="EditOtherParam">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>210</y>
-      <width>251</width>
+      <x>10</x>
+      <y>180</y>
+      <width>231</width>
       <height>31</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_4">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>51</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Mode #</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="BtnGetStatusInfo">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>150</y>
+      <width>91</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Get Status Info</string>
     </property>
    </widget>
   </widget>
@@ -262,8 +246,8 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>290</y>
-     <width>441</width>
+     <y>340</y>
+     <width>421</width>
      <height>91</height>
     </rect>
    </property>
@@ -340,12 +324,12 @@
      <rect>
       <x>360</x>
       <y>20</y>
-      <width>71</width>
+      <width>61</width>
       <height>31</height>
      </rect>
     </property>
     <property name="text">
-     <string>Restart Proc</string>
+     <string>Restart</string>
     </property>
    </widget>
    <widget class="QComboBox" name="Panel0_comboHandshaking">
@@ -397,7 +381,7 @@
      <string>Hardware Handshaking</string>
     </property>
     <property name="checked">
-     <bool>true</bool>
+     <bool>false</bool>
     </property>
    </widget>
    <widget class="QRadioButton" name="RadioSoftHandshakingEnable">
@@ -426,7 +410,7 @@
      <rect>
       <x>340</x>
       <y>60</y>
-      <width>91</width>
+      <width>71</width>
       <height>21</height>
      </rect>
     </property>
@@ -435,49 +419,13 @@
     </property>
    </widget>
   </widget>
-  <widget class="QLabel" name="label">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>10</y>
-     <width>91</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>12</pointsize>
-    </font>
-   </property>
-   <property name="text">
-    <string>Panel Index</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="EditPanelIndex">
-   <property name="geometry">
-    <rect>
-     <x>120</x>
-     <y>10</y>
-     <width>31</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>12</pointsize>
-    </font>
-   </property>
-   <property name="focusPolicy">
-    <enum>Qt::StrongFocus</enum>
-   </property>
-  </widget>
   <widget class="QGroupBox" name="groupBox_8">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>390</y>
+     <y>440</y>
      <width>261</width>
-     <height>161</height>
+     <height>181</height>
     </rect>
    </property>
    <property name="title">
@@ -656,14 +604,27 @@
      <bool>true</bool>
     </property>
    </widget>
+   <widget class="QPushButton" name="BtnShowAdvancedDark">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>160</y>
+      <width>71</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Advanced</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QGroupBox" name="groupBox_9">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>560</y>
+     <y>630</y>
      <width>261</width>
-     <height>161</height>
+     <height>171</height>
     </rect>
    </property>
    <property name="title">
@@ -694,8 +655,8 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>50</y>
-      <width>161</width>
+      <y>90</y>
+      <width>71</width>
       <height>21</height>
      </rect>
     </property>
@@ -705,14 +666,14 @@
      </font>
     </property>
     <property name="text">
-     <string>Gain Correction Image Path</string>
+     <string>Single Path</string>
     </property>
    </widget>
    <widget class="QPushButton" name="BtnSetGainImagePath">
     <property name="geometry">
      <rect>
-      <x>220</x>
-      <y>70</y>
+      <x>230</x>
+      <y>90</y>
       <width>31</width>
       <height>23</height>
      </rect>
@@ -727,9 +688,9 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>70</y>
-      <width>201</width>
+      <x>80</x>
+      <y>90</y>
+      <width>141</width>
       <height>21</height>
      </rect>
     </property>
@@ -740,17 +701,118 @@
      <bool>true</bool>
     </property>
    </widget>
+   <widget class="QRadioButton" name="RadioSingleGain">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>60</y>
+      <width>91</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="layoutDirection">
+     <enum>Qt::RightToLeft</enum>
+    </property>
+    <property name="text">
+     <string>Single Gain</string>
+    </property>
+    <property name="checked">
+     <bool>false</bool>
+    </property>
+   </widget>
    <widget class="QPushButton" name="BtnCopyFromCurrent">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>110</y>
-      <width>121</width>
+      <x>160</x>
+      <y>20</y>
+      <width>91</width>
       <height>31</height>
      </rect>
     </property>
     <property name="text">
-     <string>Copy Current Image</string>
+     <string>Import Current</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="RadioMultiGain">
+    <property name="geometry">
+     <rect>
+      <x>110</x>
+      <y>60</y>
+      <width>111</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="layoutDirection">
+     <enum>Qt::RightToLeft</enum>
+    </property>
+    <property name="text">
+     <string>Multi-Level Gain</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="BtnShowAdvancedGain">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>150</y>
+      <width>71</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Advanced</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_18">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>120</y>
+      <width>111</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Single Calib. Factor</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEditSingleCalibFactor">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>120</y>
+      <width>51</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="autoFillBackground">
+     <bool>true</bool>
+    </property>
+    <property name="text">
+     <string>1.000</string>
+    </property>
+    <property name="readOnly">
+     <bool>true</bool>
     </property>
    </widget>
   </widget>
@@ -758,7 +820,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>740</y>
+     <y>800</y>
      <width>151</width>
      <height>31</height>
     </rect>
@@ -771,9 +833,9 @@
    <property name="geometry">
     <rect>
      <x>280</x>
-     <y>400</y>
+     <y>440</y>
      <width>151</width>
-     <height>151</height>
+     <height>171</height>
     </rect>
    </property>
    <property name="mouseTracking">
@@ -793,9 +855,9 @@
    <property name="geometry">
     <rect>
      <x>280</x>
-     <y>560</y>
+     <y>630</y>
      <width>151</width>
-     <height>151</height>
+     <height>171</height>
     </rect>
    </property>
    <property name="mouseTracking">
@@ -815,9 +877,9 @@
    <property name="geometry">
     <rect>
      <x>280</x>
-     <y>50</y>
+     <y>70</y>
      <width>151</width>
-     <height>161</height>
+     <height>171</height>
     </rect>
    </property>
    <property name="frameShape">
@@ -830,8 +892,8 @@
   <widget class="QCheckBox" name="ChkAutoSave">
    <property name="geometry">
     <rect>
-     <x>250</x>
-     <y>220</y>
+     <x>40</x>
+     <y>250</y>
      <width>191</width>
      <height>20</height>
     </rect>
@@ -857,9 +919,9 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>270</x>
-     <y>260</y>
-     <width>141</width>
+     <x>100</x>
+     <y>310</y>
+     <width>281</width>
      <height>21</height>
     </rect>
    </property>
@@ -879,8 +941,8 @@
   <widget class="QPushButton" name="BtnSetCurImgSaveFolder">
    <property name="geometry">
     <rect>
-     <x>420</x>
-     <y>260</y>
+     <x>390</x>
+     <y>310</y>
      <width>31</width>
      <height>23</height>
     </rect>
@@ -892,9 +954,9 @@
   <widget class="QLabel" name="label_11">
    <property name="geometry">
     <rect>
-     <x>270</x>
-     <y>240</y>
-     <width>81</width>
+     <x>20</x>
+     <y>310</y>
+     <width>71</width>
      <height>21</height>
     </rect>
    </property>
@@ -911,7 +973,7 @@
    <property name="geometry">
     <rect>
      <x>370</x>
-     <y>20</y>
+     <y>40</y>
      <width>61</width>
      <height>22</height>
     </rect>
@@ -930,7 +992,7 @@
    <property name="geometry">
     <rect>
      <x>280</x>
-     <y>20</y>
+     <y>40</y>
      <width>61</width>
      <height>22</height>
     </rect>
@@ -946,7 +1008,7 @@
    <property name="geometry">
     <rect>
      <x>370</x>
-     <y>0</y>
+     <y>20</y>
      <width>61</width>
      <height>21</height>
     </rect>
@@ -964,7 +1026,7 @@
    <property name="geometry">
     <rect>
      <x>280</x>
-     <y>0</y>
+     <y>20</y>
      <width>61</width>
      <height>21</height>
     </rect>
@@ -978,6 +1040,141 @@
     <string>Lower Win</string>
    </property>
   </widget>
+  <widget class="QGroupBox" name="groupBox_2">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>240</y>
+     <width>421</width>
+     <height>101</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>File Save</string>
+   </property>
+   <widget class="QCheckBox" name="ChkAutoSendToDIPS">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>10</y>
+      <width>151</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="layoutDirection">
+     <enum>Qt::RightToLeft</enum>
+    </property>
+    <property name="text">
+     <string>Send Image To DIPS</string>
+    </property>
+    <property name="checked">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="ChkDarkCorrectedSave">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>40</y>
+      <width>211</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="layoutDirection">
+     <enum>Qt::RightToLeft</enum>
+    </property>
+    <property name="text">
+     <string>[Debug] Save  Dark-Corrected</string>
+    </property>
+    <property name="checked">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="ChkRawSave">
+    <property name="geometry">
+     <rect>
+      <x>220</x>
+      <y>40</y>
+      <width>191</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="layoutDirection">
+     <enum>Qt::RightToLeft</enum>
+    </property>
+    <property name="text">
+     <string>[Debug] Save Raw Image</string>
+    </property>
+    <property name="checked">
+     <bool>false</bool>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QLineEdit" name="EditModeNum">
+   <property name="geometry">
+    <rect>
+     <x>70</x>
+     <y>30</y>
+     <width>41</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="readOnly">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="BtnLoadDefaultSettings">
+   <property name="geometry">
+    <rect>
+     <x>180</x>
+     <y>800</y>
+     <width>151</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Load Default Setting</string>
+   </property>
+  </widget>
+  <zorder>groupBox_2</zorder>
+  <zorder>groupBox</zorder>
+  <zorder>groupBox_7</zorder>
+  <zorder>groupBox_8</zorder>
+  <zorder>groupBox_9</zorder>
+  <zorder>BtnSaveSettingsDefault</zorder>
+  <zorder>lbDarkField</zorder>
+  <zorder>lbGainField</zorder>
+  <zorder>lbCurrentImage</zorder>
+  <zorder>ChkAutoSave</zorder>
+  <zorder>lineEditCurImageSaveFolder</zorder>
+  <zorder>BtnSetCurImgSaveFolder</zorder>
+  <zorder>label_11</zorder>
+  <zorder>spinUpperVal</zorder>
+  <zorder>spinLowerVal</zorder>
+  <zorder>label_13</zorder>
+  <zorder>label_14</zorder>
+  <zorder>EditModeNum</zorder>
+  <zorder>BtnLoadDefaultSettings</zorder>
  </widget>
  <resources/>
  <connections>
@@ -1285,6 +1482,70 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>BtnSaveSettingsDefault</sender>
+   <signal>pressed()</signal>
+   <receiver>DlgPanelControl</receiver>
+   <slot>SaveSettingAsDefault_Child()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>157</x>
+     <y>809</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>232</x>
+     <y>865</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>BtnLoadDefaultSettings</sender>
+   <signal>pressed()</signal>
+   <receiver>DlgPanelControl</receiver>
+   <slot>UpdateGUIFromSetting_Child()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>329</x>
+     <y>814</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>458</x>
+     <y>814</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>RadioSingleGain</sender>
+   <signal>clicked()</signal>
+   <receiver>DlgPanelControl</receiver>
+   <slot>SingleGainOn()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>64</x>
+     <y>702</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-7</x>
+     <y>716</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>RadioMultiGain</sender>
+   <signal>pressed()</signal>
+   <receiver>DlgPanelControl</receiver>
+   <slot>MultiGainOn()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>181</x>
+     <y>705</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>482</x>
+     <y>695</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>CloseLink()</slot>
@@ -1305,5 +1566,9 @@
   <slot>OpenCurImgFolder()</slot>
   <slot>ReDrawImg()</slot>
   <slot>CopyCurrentImageForGainImage()</slot>
+  <slot>SaveSettingAsDefault_Child()</slot>
+  <slot>UpdateGUIFromSetting_Child()</slot>
+  <slot>SingleGainOn()</slot>
+  <slot>MultiGainOn()</slot>
  </slots>
 </ui>

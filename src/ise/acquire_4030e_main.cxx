@@ -25,6 +25,8 @@ See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 #include "kill.h"
 #include <QString>
 
+#include "YKOptionSetting.h"
+
 class SleeperThread : public QThread {
 public:
 	static void msleep(unsigned long msecs) {
@@ -41,11 +43,12 @@ public:
 #include <iostream>
 #include <fstream>
 #include <QString>
+
 //
 //#if _WIN32_WINNT < 0x0501
-#define MAX_LINE_LENGTH 512
+//#define MAX_LINE_LENGTH 512
 
-bool gShowConsole;
+//bool gShowConsole;
 //QString gStrLogoutput;//global log
 
 using namespace std;
@@ -74,9 +77,9 @@ main (int argc, char* argv[])
 {
 	// The string such as "A422-07" is the imager serial number
 
-	std::string default_path_1;
-	std::string default_path_2;
-	gShowConsole = true;
+	/*std::string default_path_1;
+	std::string default_path_2;*/
+	//gShowConsole = true;
 
 	//find config file    
 
@@ -87,112 +90,155 @@ main (int argc, char* argv[])
 	//  std::cout << "YK Log " << str << std::endl;
 
 	//CloseWindow(consoleW);
-
 	Acquire_4030e_child *child[2];
 	child[0] = NULL;
 	child[1] = NULL;	
 
+	//YKOptionSetting OptionSettingParent;
+
+	
+
 	/* During debugging, use hard-coded path */
-	if (argc < 2) { //when running without arguments
+	if (argc == 1)
+	{ //when running without arguments -->only parent
+		
 
-		ifstream fin;
-		fin.open("acquire_4030e_config.txt"); //find it in same folder
+		//ifstream fin;
+		//fin.open("acquire_4030e_config.txt"); //find it in same folder
 
-		if (fin.fail())
+		//if (fin.fail())
+		//{
+		//	cout << "acquire_4030e_config.txt file should exist in same folder" << endl;
+		//	cout << "program will be terminated" << endl;
+		//	exit(0);
+		//}
+
+		//char str[MAX_LINE_LENGTH];
+		//memset (str, 0, MAX_LINE_LENGTH);
+		//QString tmpReadString;
+
+		//fin.getline(str, MAX_LINE_LENGTH); // for header
+		//tmpReadString = str;
+
+		//if (!tmpReadString.contains("CONFIG_FILE_FOR_ACQUIRE4030E"))
+		//{
+		//	cout <<"Un-proper config file! Program will be terminated!" << endl;
+		//	exit(0);
+		//}
+
+		//while(!fin.eof())
+		//{
+		//	memset (str, 0, MAX_LINE_LENGTH);
+		//	fin.getline(str, MAX_LINE_LENGTH);
+		//	tmpReadString = str;
+
+		//	if (tmpReadString.contains("SHOW_CONSOLE_WINDOW"))
+		//	{
+		//		//parsing
+		//		QStringList list = tmpReadString.split("\t");		
+		//		if (list.count() == 2)
+		//		{
+		//			QString strConsoleTag = list.at(1);
+		//			if (strConsoleTag.contains("0"))
+		//			{
+		//				gShowConsole = false;
+		//			}
+		//			else
+		//			{
+		//				gShowConsole = true;
+		//			}
+		//		}
+		//	}
+
+		//	else if (tmpReadString.contains("$PANEL_0_PATH"))
+		//	{
+		//		//parsing
+		//		QStringList list = tmpReadString.split("\t");		
+		//		if (list.count() == 2)
+		//		{
+		//			//QString tmp1 = list.at(1);
+		//			//std::string test1 = tmp1.toStdString();
+		//			default_path_1 = list.at(1).toStdString().c_str();
+		//			//default_path_1 = list.at(1).toStdString().c_str();
+		//		}
+		//	}
+		//	else if (tmpReadString.contains("$PANEL_1_PATH"))
+		//	{
+		//		QStringList list = tmpReadString.split("\t");		
+		//		if (list.count() == 2)
+		//		{		    
+		//			default_path_2 = list.at(1).toStdString().c_str();
+		//		}
+		//	}
+		//}
+		//fin.close();
+		//OptionSettingParent.GenDefaultFolders();
+		//OptionSettingParent.CheckAndLoadOptions_Parent();		
+
+
+
+		//char** argv_tmp = (char**) malloc (3 * sizeof(char*));
+		//char** argv_tmp = (char**) malloc (1 * sizeof(char*));
+		//argv_tmp[0] = argv[0]; //exe path		
+		//argv = argv_tmp;		
+		//argc = 1;
+
+
+		/*** Parent process ***/
+
+		/* Spawn child processes */
+		Acquire_4030e_parent *parent //QCoreApplication		
+			= new Acquire_4030e_parent (argc, argv);
+
+		/* Wait forever */
+		printf ("Waiting forever.(parent)\n");
+		parent->exec ();
+		printf ("Wait complete.(parent)\n");
+		//after event, before destroy parent
+
+		if (child[0] != NULL) //Here, child is NULL!!
 		{
-			cout << "acquire_4030e_config.txt file should exist in same folder" << endl;
-			cout << "program will be terminated" << endl;
-			exit(0);
+			child[0]->quit();
+			delete child[0];				
+			child[0] = NULL;
+
+
 		}
-
-		char str[MAX_LINE_LENGTH];
-		memset (str, 0, MAX_LINE_LENGTH);
-		QString tmpReadString;
-
-		fin.getline(str, MAX_LINE_LENGTH); // for header
-		tmpReadString = str;
-
-		if (!tmpReadString.contains("CONFIG_FILE_FOR_ACQUIRE4030E"))
+		if (child[1] != NULL)
 		{
-			cout <<"Un-proper config file! Program will be terminated!" << endl;
-			exit(0);
+			child[1]->quit();
+			delete child[1];				
+			child[1] = NULL;
 		}
-
-		while(!fin.eof())
-		{
-			memset (str, 0, MAX_LINE_LENGTH);
-			fin.getline(str, MAX_LINE_LENGTH);
-			tmpReadString = str;
-
-			if (tmpReadString.contains("SHOW_CONSOLE_WINDOW"))
-			{
-				//parsing
-				QStringList list = tmpReadString.split("\t");		
-				if (list.count() == 2)
-				{
-					QString strConsoleTag = list.at(1);
-					if (strConsoleTag.contains("0"))
-					{
-						gShowConsole = false;
-					}
-					else
-					{
-						gShowConsole = true;
-					}
-				}
-			}
-
-			else if (tmpReadString.contains("$PANEL_0_PATH"))
-			{
-				//parsing
-				QStringList list = tmpReadString.split("\t");		
-				if (list.count() == 2)
-				{
-					//QString tmp1 = list.at(1);
-					//std::string test1 = tmp1.toStdString();
-					default_path_1 = list.at(1).toStdString().c_str();
-					//default_path_1 = list.at(1).toStdString().c_str();
-				}
-			}
-			else if (tmpReadString.contains("$PANEL_1_PATH"))
-			{
-				QStringList list = tmpReadString.split("\t");		
-				if (list.count() == 2)
-				{		    
-					default_path_2 = list.at(1).toStdString().c_str();
-				}
-			}
-		}
-		fin.close();
-
-		char** argv_tmp = (char**) malloc (3 * sizeof(char*));
-		argv_tmp[0] = argv[0];
-		argv_tmp[1] = (char*) default_path_1.c_str();
-		argv_tmp[2] = (char*) default_path_2.c_str();
-		argv = argv_tmp;
-		//argc = 2;
-		argc = 3;
 	}
 
-	if (argc > 1) {
-		if (!strcmp (argv[1], "--child")) {
+	if (argc == 3) //1:exe path, 2: child flag, 3:procIdx
+	{
+		if (!strcmp (argv[1], "--child"))
+		{
 			/*** Child process ***/
 			printf ("A child is born.\n");		
 
-			int panel_ldx = atoi(argv[3]);
+			int panel_ldx = atoi(argv[2]);
 
 			//arguments << "--child" << QString("%1").arg(i).toUtf8() << paths[i];
 			//with no exception, argument number is 3:
+
 			//argv[0] = process path
 			//argv[1] = "--child"
 			//argv[2] = no. of process
-			//argv[3] = path			          
+
+
+			//argv[2] = path
+			
 
 			if (panel_ldx < 2)
 			{
-				child[panel_ldx]= new Acquire_4030e_child (argc, argv);			
+				//child[panel_ldx]= new Acquire_4030e_child (argc, argv);
+				child[panel_ldx]= new Acquire_4030e_child (argc, argv);
 
-				if (!child[panel_ldx]->init(argv[2], argv[3])) //1) DP creation. if fail --> death of program //2) open receptor
+				//if (!child[panel_ldx]->init(argv[2], argv[3])) //1) DP creation. if fail --> death of program //2) open receptor
+				if (!child[panel_ldx]->init(panel_ldx)) //1) DP creation. if fail --> death of program //2) open receptor
 				{
 					//fail = receptor problem.
 					//printf ("Receptor [%s] open failure. Check receptor cables.\n", argv[3]);		
@@ -209,47 +255,12 @@ main (int argc, char* argv[])
 					//printf ("Wait complete (child).After child->run\n");
 				}
 			}			
-
-#if defined (commentout)
-			for (int i = 0; i < 10; i++) {
-				printf ("A child is born.\n");
-				fflush (stdout);
-				SleeperThread::msleep(1000);
-			}
-#endif
-		}
-		else
-		{
-			/*** Parent process ***/
-
-			/* Spawn child processes */
-			Acquire_4030e_parent *parent //QCoreApplication		
-				= new Acquire_4030e_parent (argc, argv);
-
-			/* Wait forever */
-			printf ("Waiting forever.(parent)\n");
-			parent->exec ();
-			printf ("Wait complete.(parent)\n");
-			//after event, before destroy parent
-
-			if (child[0] != NULL) //Here, child is NULL!!
-			{
-				child[0]->quit();
-				delete child[0];				
-				child[0] = NULL;
-				
-
-			}
-			if (child[1] != NULL)
-			{
-				child[1]->quit();
-				delete child[1];				
-				child[1] = NULL;
-			}
-		}
-	} else {
-		printf ("Usage: acquire_4030e image-path-1 [image-path-2]\n");
+		}		
 	}
+	//else
+	//{
+	//	printf ("Usage: acquire_4030e image-path-1 [image-path-2]\n");
+	//}
 
 #if defined (commentout)
 

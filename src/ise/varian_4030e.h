@@ -6,7 +6,7 @@
 
 #include "ise_config.h"
 #include <windows.h>
-#include <QMutex>
+//#include <QMutex>
 #include "HcpErrors.h"
 #include "HcpFuncDefs.h"
 #include "iostatus.h"
@@ -33,7 +33,7 @@ public:
     Varian_4030e (int idx, Acquire_4030e_child* pParent);
     ~Varian_4030e ();
 
-    static QMutex vip_mutex;
+  //  static QMutex vip_mutex;
     static const char* error_string (int error_code);
 
     int open_link (int panelIdx, const char *path);
@@ -76,8 +76,8 @@ public:
     int m_iSizeX;
     int m_iSizeY;
     //YK custom variables
-    bool m_bDarkCorrApply;
-    bool m_bGainCorrApply;
+    //bool m_bDarkCorrApply;
+    //bool m_bGainCorrApply;
 
 	std::vector<IMGINFO> m_vImageInfo;
 };

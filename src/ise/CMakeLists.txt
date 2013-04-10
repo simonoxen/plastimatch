@@ -86,6 +86,7 @@ set (ACQUIRE_4030E_SRC
   dips_if.h
   kill.cxx kill.h
   varian_4030e.cxx varian_4030e.h 
+  YKOptionSetting.cxx YKOptionSetting.h
   )
 if (BUILD_ACQUIRE_4030E)
   qt4_wrap_cpp (ACQUIRE_4030E_SRC 

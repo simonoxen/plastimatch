@@ -111,20 +111,6 @@
       </item>
      </layout>
     </item>
-    <item>
-     <widget class="QPushButton" name="BtnOpenRelay_p0">
-      <property name="text">
-       <string>Run Relay Panel 0</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="BtnOpenRelay_p1">
-      <property name="text">
-       <string>Run Relay Panel 1</string>
-      </property>
-     </widget>
-    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -326,38 +312,6 @@
     <hint type="destinationlabel">
      <x>201</x>
      <y>250</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>BtnOpenRelay_p0</sender>
-   <signal>clicked()</signal>
-   <receiver>ui_acquire_4030e_window</receiver>
-   <slot>RunRelay_Panel0()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>21</x>
-     <y>469</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>-15</x>
-     <y>402</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>BtnOpenRelay_p1</sender>
-   <signal>clicked()</signal>
-   <receiver>ui_acquire_4030e_window</receiver>
-   <slot>RunRelay_Panel1()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>22</x>
-     <y>498</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>-9</x>
-     <y>432</y>
     </hint>
    </hints>
   </connection>

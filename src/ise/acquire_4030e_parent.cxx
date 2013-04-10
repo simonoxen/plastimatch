@@ -27,6 +27,12 @@ See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 Acquire_4030e_parent::Acquire_4030e_parent (int argc, char* argv[]) 
 : QApplication (argc, argv)
 {
+	if (argc != 1)
+	{
+		printf("not proper arguments\n");
+		exit(-1);
+	}
+
 	printf ("Welcome to acquire_4030e\n");
 
 	//m_dlgControl_0 = NULL;
@@ -45,8 +51,8 @@ Acquire_4030e_parent::Acquire_4030e_parent (int argc, char* argv[])
 	m_bPanelRelayOpen0 = true;
 	m_bPanelRelayOpen1 = true;
 
-	m_bActivationHasBeenSent[0] = false;
-	m_bActivationHasBeenSent[1] = false;	
+	//m_bActivationHasBeenSent[0] = false;
+	//m_bActivationHasBeenSent[1] = false;	
 
 
 	m_pServer[0] = NULL;
@@ -55,7 +61,13 @@ Acquire_4030e_parent::Acquire_4030e_parent (int argc, char* argv[])
 	m_pClientConnect[0] = NULL;
 	m_pClientConnect[1] = NULL;
 
-	this->initialize (argc, argv);    
+	m_bNowCancelingAcq[0] = false;
+	m_bNowCancelingAcq[1] = false;
+	
+	QString exePath = argv[0];
+
+	//initialize (argc, argv);    
+	initialize (exePath);	
 
 }
 
@@ -75,10 +87,14 @@ Acquire_4030e_parent::~Acquire_4030e_parent () //not called!!
 	//delete m_dlgControl_1;
 }
 
-void 
-Acquire_4030e_parent::initialize (int argc, char* argv[])
-{
-	char *paths[2];
+
+//void Acquire_4030e_parent::initialize (int argc, char* argv[])
+void Acquire_4030e_parent::initialize (QString& strEXE_Path)
+{	
+	//Generatate default folders	
+	m_OptionSettingParent.GenDefaultFolders();		
+	printf("Generating default folder if it is not exsisting\n");
+	m_OptionSettingParent.CheckAndLoadOptions_Parent();
 
 	/* Set up event handler for cleanup */
 	connect (this, SIGNAL(aboutToQuit()), this, SLOT(about_to_quit())); //whenever quit signal --> run quit
@@ -139,24 +155,26 @@ Acquire_4030e_parent::initialize (int argc, char* argv[])
 	this->panel_timer = 0;
 
 	/* Check for receptor path on the command line */
-	if (argc > 1) {
-		this->num_process = 1;
-		paths[0] = argv[1]; //C:\Imagers\...
-	}
-	if (argc > 2) {
-		this->num_process = 2;
-		paths[1] = argv[2];
-	}
+	//if (argc > 1) {
+	//	this->num_process = 1;
+	//	paths[0] = argv[1]; //C:\Imagers\...
+	//}
+	//if (argc > 2) {
+	//	this->num_process = 2;
+	//	paths[1] = argv[2];
+	//}
+
+	num_process = 2; //fixed!
 
 	/* Start child processes */
 	printf ("Creating child processes.\n");
 	for (int i = 0; i < this->num_process; i++) {
-		m_program[i] = argv[0]; //exe file path
+		m_program[i] = strEXE_Path; //exe file path
 		m_arguments[i].clear();
-		m_arguments[i] << "--child" << QString("%1").arg(i).toUtf8() << paths[i];
+		//m_arguments[i] << "--child" << QString("%1").arg(i).toUtf8() << paths[i];
+		m_arguments[i] << "--child" << QString("%1").arg(i).toUtf8();
 		connect (&this->process[i], SIGNAL(readyReadStandardOutput()),
 			this, SLOT(poll_child_messages()));
-
 
 		//if (i == 0) //YKTEMP: temp code only panel 0 go!
 		this->process[i].start(m_program[i], m_arguments[i]);
@@ -222,9 +240,10 @@ Acquire_4030e_parent::initialize (int argc, char* argv[])
 	if (!SOCKET_StartServer(1))
 		log_output("[p] Starting server 1 failed.");	
 	else
-		log_output("[p] Starting server 1 success.");	
+		log_output("[p] Starting server 1 success.");
 
 }
+	
 
 
 void 
@@ -351,6 +370,9 @@ Acquire_4030e_parent::poll_child_messages () //often called even window is close
 					//m_enPanelStatus[i] = LABEL_NOT_READY;		
 					m_bPleoraErrorHasBeenOccurredFlag[i] = false;
 					m_bChildReadyToQuit[i] = true;
+
+					if (m_bChildReadyToQuit[0] &&  m_bChildReadyToQuit[1])
+						window->FinalQuit ();
 				}
 				else if (line.contains("RESTART"))
 				{
@@ -358,6 +380,10 @@ Acquire_4030e_parent::poll_child_messages () //often called even window is close
 					m_bPleoraErrorHasBeenOccurredFlag[i] = false;
 					RestartChildProcess(i);
 				}			
+				/*else if (line.contains("CANCELACQ"))
+				{
+					m_bNowCancelingAcq[i] = true;					
+				}*/
 			}
 
 			else if (line.contains("SYSTEM"))
@@ -392,6 +418,15 @@ Acquire_4030e_parent::poll_child_messages () //often called even window is close
 				m_bChildReadyToQuit[0] = false; //cannot exit without quit the child process safely
 				m_bChildReadyToQuit[1] = false;
 			}	
+			else if (line.contains("READY FOR X-RAYS - EXPOSE AT ANY TIME"))
+			{
+				m_enPanelStatus[i] = READY_FOR_PULSE;
+				m_bPleoraErrorHasBeenOccurredFlag[i] = false;
+
+				m_bChildReadyToQuit[0] = false; //cannot exit without quit the child process safely
+				m_bChildReadyToQuit[1] = false;
+			}
+
 			else if (line.contains("PSTAT4"))
 			{
 				//log_output("[p]PTAT4_Chaned");
@@ -557,26 +592,48 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 		res4 == Advantech::STATE_ERROR)
 		return;
 
-	bool gen_panel_select = (bool)res0;
-	//= this->advantech->read_bit (0);  //0:false -> panel_0, 1:true ->panel_1
-	bool gen_prep_request = (bool)res1;;
-	//= this->advantech->read_bit (1);	/* Ignored on STAR */
-	bool gen_expose_request = (bool)res2;;
-	//= this->advantech->read_bit (2); //beam-on signal to advantech
-	bool panel_0_ready = (bool)res3;;
-	//= this->advantech->read_bit (3); //signal from panel
-	bool panel_1_ready = (bool)res4;;
-	//= this->advantech->read_bit (4); //signal from panel    
+	bool gen_panel_select = (bool)res0; //0:false -> panel_0, 1:true ->panel_1	
+	bool gen_prep_request = (bool)res1; /* Ignored on STAR */	
+	bool gen_expose_request = (bool)res2;;  //beam-on signal to advantech	
+	bool panel_0_ready = (bool)res3; //signal from panel	
+	bool panel_1_ready = (bool)res4; //signal from panel    	
+
+
+	//if panel is selected and that panel is now Standby, then go to proceed
+	//But if the other panel is not standby mode, please wait.
+
+	if (gen_panel_select == 0 && m_enPanelStatus[0] == STANDBY_SIGNAL_DETECTED)
+	{
+		if (m_enPanelStatus[1] == STANDBY_SIGNAL_DETECTED)
+		{
+			SendCommandToChild(0, PCOMMAND_UNLOCKFORPREPARE); //changes "go further to activate panel". after one cycle has been done, it will be automatically locked in standby mode (stuck in standby)
+		}
+	}
+	else if (gen_panel_select == 1 && m_enPanelStatus[1] == STANDBY_SIGNAL_DETECTED)
+	{
+		if (m_enPanelStatus[0] == STANDBY_SIGNAL_DETECTED)
+		{
+			SendCommandToChild(1, PCOMMAND_UNLOCKFORPREPARE); //changes "go further to activate panel". after one cycle has been done, it will be automatically locked in standby mode (stuck in standby)
+		}
+	}
+
+	//if (gen_panel_select == 0 && m_enPanelStatus[1] == READY_FOR_PULSE && !m_bNowCancelingAcq[0]) //Abnormal case: jump to standby before acquisition.
+	if (gen_panel_select == 0 && m_enPanelStatus[1] == READY_FOR_PULSE) //Abnormal case: jump to standby before acquisition.
+		SendCommandToChild(1, PCOMMAND_CANCELACQ);
+	else if (gen_panel_select == 1 && m_enPanelStatus[0] == READY_FOR_PULSE) //Abnormal case: jump to standby before acquisition.
+		SendCommandToChild(0, PCOMMAND_CANCELACQ);
+
+	
 
 
 	/* Write a debug message */
 	if (gen_expose_request) {
-		if (this->generator_state == WAITING || panel_0_ready || panel_1_ready) {
+		/*if (this->generator_state == WAITING || panel_0_ready || panel_1_ready) {
 			this->log_output (
 				QString("[p] Generator status: %1 %2 %3 %4 %5")
 				.arg(gen_panel_select).arg(gen_prep_request)
 				.arg(gen_expose_request).arg(panel_0_ready).arg(panel_1_ready));	
-		}
+		}*/
 	}
 
 	/* Check for new prep/expose request from generator */
@@ -588,16 +645,16 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 		/* Close relay, asking panel to begin integration */
 		if (gen_panel_select == 0)
 		{
-			if (m_enPanelStatus[0] == STANDBY_SIGNAL_DETECTED && !m_bActivationHasBeenSent[0]) // 0 0 0 0 --> HardwareHandshaking ON --> io_enalbe(1) (HS_ACTIVE) -->  0 0 0 1   ??What if stuck in 1 1 0 0?
-			{
-				this->log_output (
-					QString("[p] Sending message to the panel to be activated: axial"));
+			//if (m_enPanelStatus[0] == STANDBY_SIGNAL_DETECTED ) // 0 0 0 0 --> HardwareHandshaking ON --> io_enalbe(1) (HS_ACTIVE) -->  0 0 0 1   ??What if stuck in 1 1 0 0?
+			//{
+			//	this->log_output (
+			//		QString("[p] Sending message to the panel to be activated: axial"));
 
-				//StartCommandTimer(0, PCOMMAND_ACTIVATE); //sent once
-				SendCommandToChild(0, PCOMMAND_ACTIVATE);
-				m_bActivationHasBeenSent[0] = true;
-			}
-			else if (m_enPanelStatus[0] == READY_FOR_PULSE)
+			//	//StartCommandTimer(0, PCOMMAND_ACTIVATE); //sent once				
+			//	SendCommandToChild(1, PCOMMAND_UNLOCKFORPREPARE);
+			//	//m_bActivationHasBeenSent[0] = true;
+			//}
+			if (m_enPanelStatus[0] == READY_FOR_PULSE )
 			{
 				this->log_output (
 					QString("[p] Closing relay to panel: axial"));
@@ -613,16 +670,17 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 		}	
 		else if (gen_panel_select == 1)
 		{
-			if (m_enPanelStatus[1] == STANDBY_SIGNAL_DETECTED && !m_bActivationHasBeenSent[1]) // 0 0 0 0 --> HardwareHandshaking ON --> io_enalbe(1) (HS_ACTIVE) -->  0 0 0 1   ??What if stuck in 1 1 0 0?
-			{
-				this->log_output (
-					QString("[p] Sending message to the panel to be activated: g90"));
+			//if (m_enPanelStatus[1] == STANDBY_SIGNAL_DETECTED) // 0 0 0 0 --> HardwareHandshaking ON --> io_enalbe(1) (HS_ACTIVE) -->  0 0 0 1   ??What if stuck in 1 1 0 0?
+			//{
+			//	this->log_output (
+			//		QString("[p] Sending message to the panel to be activated: g90"));
 
-				//StartCommandTimer(1, PCOMMAND_ACTIVATE); //sent once
-				SendCommandToChild(1, PCOMMAND_ACTIVATE);
-				m_bActivationHasBeenSent[1] = true;
-			}
-			else if (m_enPanelStatus[1] == READY_FOR_PULSE)
+			//	//StartCommandTimer(1, PCOMMAND_ACTIVATE); //sent once
+			//	//SendCommandToChild(1, PCOMMAND_ACTIVATE);
+			//	SendCommandToChild(1, PCOMMAND_UNLOCKFORPREPARE);
+			//	//m_bActivationHasBeenSent[1] = true;
+			//}
+			if (m_enPanelStatus[1] == READY_FOR_PULSE)
 			{
 				this->log_output (
 					QString("[p] Closing relay to panel: g90"));
@@ -654,8 +712,8 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 			this->generator_state = EXPOSING;
 		}
 		else {
-			this->log_output (
-				QString("[p] Waiting for panel %1").arg(this->panel_select));	    	    
+		//	this->log_output (
+		//		QString("[p] Waiting for panel %1").arg(this->panel_select));	    	    
 		}	
 		if (panel_0_ready && this->panel_select == true
 			|| panel_1_ready && this->panel_select == false)
@@ -691,27 +749,14 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 
 		if (panel_select == 0)
 		{
-			m_bActivationHasBeenSent[0] = false;
+			//m_bActivationHasBeenSent[0] = false;
 			this->advantech->relay_open (3); //Expose request for panel 0- release
 		}
 		if (panel_select == 1)
 		{
-			m_bActivationHasBeenSent[1] = false;
+			//m_bActivationHasBeenSent[1] = false;
 			this->advantech->relay_open (4); //Expose request for panel 0- release
-		}
-
-		//if (!m_bPanelRelayOpen0 && panel_0_ready )
-		//{
-		//		//Sleep(1000);
-		//		this->advantech->relay_open (3); //Expose request for panel 0- release
-		//		m_bPanelRelayOpen0 = true;
-		//}
-		//else if (!m_bPanelRelayOpen1 && panel_1_ready )
-		//{			
-		//		//Sleep(1000);
-		//		this->advantech->relay_open (4); //Expose request for panel 1- release
-		//		m_bPanelRelayOpen1 = true;		
-		//}
+		}	
 
 		this->log_output (
 			QString("[p] Reset generator state to WAITING."));
@@ -721,10 +766,6 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 				QString("[p] Reset generator state to WAITING."));
 		}*/
 		this->generator_state = WAITING;
-	}
-	else if (!gen_expose_request && generator_state == WAITING)
-	{
-		// do nothing during waiting
 	}
 }
 
@@ -855,8 +896,8 @@ void Acquire_4030e_parent::SendCommandToChild(int idx, CommandToChild enCommand)
 		msg = "PCOMMAND_KILL";
 		if (!SOCKET_SendMessage(idx, msg))
 			log_output("[p] Failed to send a message. Client is not connected");
-		else
-			log_output(QString("[p] Sending msg to child process %1.").arg(idx));
+		//else
+			//log_output(QString("[p] Sending msg to child process %1.").arg(idx));
 
 
 		break;
@@ -866,8 +907,8 @@ void Acquire_4030e_parent::SendCommandToChild(int idx, CommandToChild enCommand)
 		msg = "PCOMMAND_RESTART";		
 		if (!SOCKET_SendMessage(idx, msg))
 			log_output("[p] Failed to send a message. Client is not connected");
-		else
-			log_output(QString("[p] Sending msg to child process %1.").arg(idx));
+		//else
+		//	log_output(QString("[p] Sending msg to child process %1.").arg(idx));
 
 
 		break;	
@@ -878,18 +919,38 @@ void Acquire_4030e_parent::SendCommandToChild(int idx, CommandToChild enCommand)
 		msg = "PCOMMAND_SHOWDLG";	
 		if (!SOCKET_SendMessage(idx, msg))
 			log_output("[p] Failed to send a message. Client is not connected");
-		else
-			log_output(QString("[p] Sending msg to child process %1.").arg(idx));
+		//else
+		//	log_output(QString("[p] Sending msg to child process %1.").arg(idx));
 
 		break;
 
-	case PCOMMAND_ACTIVATE:
+	case PCOMMAND_UNLOCKFORPREPARE:
 		//process[idx].write("PCOMMAND_ACTIVATE\n");
-		msg = "PCOMMAND_ACTIVATE";		
+		msg = "PCOMMAND_UNLOCKFORPREPARE";		
 		if (!SOCKET_SendMessage(idx, msg))
 			log_output("[p] Failed to send a message. Client is not connected");
-		else
-			log_output(QString("[p] Sending msg to child process %1.").arg(idx));
+		//else
+		//	log_output(QString("[p] Sending msg to child process %1.").arg(idx));
+
+		break;
+
+
+	case PCOMMAND_CANCELACQ:
+		//m_bNowCancelingAcq[idx] = false;
+
+		msg = "PCOMMAND_CANCELACQ";
+		if (!SOCKET_SendMessage(idx, msg))
+			log_output("[p] Failed to send a message. Client is not connected");
+
+		//if (!m_bNowCancelingAcq[idx])
+		//{
+		//	msg = "PCOMMAND_CANCELACQ";
+		//	if (!SOCKET_SendMessage(idx, msg))
+		//		log_output("[p] Failed to send a message. Client is not connected");
+		////	m_bNowCancelingAcq[idx] = true;
+		//}	
+		//else
+		//	log_output(QString("[p] Sending msg to child process %1.").arg(idx));
 
 		break;
 	}    
@@ -948,7 +1009,12 @@ void Acquire_4030e_parent::SOCKET_ConnectClient(int iPanelIdx)
 	if (m_pClientConnect[iPanelIdx] != NULL)
 		log_output(QString("[p] Client For child %1 is approved to be connected").arg(iPanelIdx));
 	else
+	{
 		log_output(QString("[p] Client For child %1 is not connected. Check the server name.").arg(iPanelIdx));
+		RestartChildProcess(iPanelIdx);
+		//kill_rogue_processes();
+
+	}
 
 	
 

@@ -15,6 +15,7 @@
 //#include "HcpFuncDefs.h"
 //#include "HcpSundries.h"
 //#include <stdio.h>
+#include "YKOptionSetting.h"
 
 
 class Dips_panel;
@@ -52,9 +53,12 @@ public slots:
 
 public:
     Acquire_4030e_child (int argc, char* argv[]);
+	//Acquire_4030e_child ();
     ~Acquire_4030e_child ();
 public:
-    bool init(const char* strProcNum, const char* strRecepterPath);
+    //bool init(const char* strProcNum, const char* strRecepterPath);
+
+	bool init(int panelIdx);
     int open_receptor (const char* path); //return value = result
     bool close_receptor ();
   
@@ -73,7 +77,7 @@ public:
     Varian_4030e *vp;
 
     bool m_bAcquisitionOK; //determine "while" loop go or stop.    
-    QString m_strProcNum;
+    int m_iProcNum;
     QString m_strReceptorPath;
 
     bool m_bPleoraErrorHasBeenOccurred;
@@ -93,6 +97,11 @@ public:
 	YK16GrayImage* m_pCurrImage;
 	YK16GrayImage* m_pDarkImage;
 	YK16GrayImage* m_pGainImage;
+
+
+	YK16GrayImage* m_pCurrImageRaw;
+	YK16GrayImage* m_pCurrImageDarkCorrected;	
+	
     //USHORT* m_pDarkImage; //offset image buffer
     //USHORT* m_pGainImage; //Gain (flood or flat) image buffer
 
@@ -144,7 +153,10 @@ public:
 
 	QLocalSocket* m_pClient;
 
+	YKOptionSetting m_OptionSettingChild; 
 
+	bool m_bLockInPanelStandby;
+	bool m_bCancelAcqRequest;//Skip ReadyForPulse when the other panel is selected
 };
 
 #endif

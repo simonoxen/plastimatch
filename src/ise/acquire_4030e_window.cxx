@@ -29,8 +29,8 @@ Acquire_4030e_window::Acquire_4030e_window ()
     create_tray_icon ();
 
 
-	m_TimerReadyToQuit = new QTimer(this);	
-	connect (m_TimerReadyToQuit, SIGNAL(timeout()), this, SLOT(TimerReadyToQuit_event()));
+	//m_TimerReadyToQuit = new QTimer(this);	
+	//connect (m_TimerReadyToQuit, SIGNAL(timeout()), this, SLOT(TimerReadyToQuit_event()));
 	//timer->start (50);  
 
     //set_icon ();
@@ -39,8 +39,8 @@ Acquire_4030e_window::Acquire_4030e_window ()
     /* Chuck some text into the text box for testing */
     log_viewer->appendPlainText ("Welcome to acquire_4030e.exe.");
 }
-void 
-Acquire_4030e_window::set_icon (int idx, Label_style style)  // set_icon + tray icon
+//void Acquire_4030e_window::set_icon (int idx, Label_style style)  // set_icon + tray icon
+void Acquire_4030e_window::set_icon (int idx, Label_style style)  // set_icon + tray icon
 {   
     if (idx == 0)
     {
@@ -179,11 +179,12 @@ void Acquire_4030e_window::request_quit ()
 {
 	m_bSeqKillReady = true;
 	//((Acquire_4030e_parent*)qApp)->StartCommandTimer(0, PCOMMAND_KILL);	
-	((Acquire_4030e_parent*)qApp)->SendCommandToChild(0, PCOMMAND_KILL);	
+	((Acquire_4030e_parent*)qApp)->SendCommandToChild(0, PCOMMAND_KILL);
+	((Acquire_4030e_parent*)qApp)->SendCommandToChild(1, PCOMMAND_KILL);
 
-	m_TimerReadyToQuit->start(1000);
+	//m_TimerReadyToQuit->start(1000);
 	
-	QTimer::singleShot(15000,this, SLOT(FinalQuit()));	
+	QTimer::singleShot(10000,this, SLOT(FinalQuit()));	
 }
 
 void Acquire_4030e_window::FinalQuit ()
@@ -211,23 +212,23 @@ void Acquire_4030e_window::systray_activated (
     }
 }
 
-void Acquire_4030e_window::TimerReadyToQuit_event()
-{
-	if( ( (Acquire_4030e_parent*)qApp )->m_bChildReadyToQuit[0] && m_bSeqKillReady)
-	{
-		//((Acquire_4030e_parent*)qApp)->StartCommandTimer(1, PCOMMAND_KILL);
-		((Acquire_4030e_parent*)qApp)->SendCommandToChild(1, PCOMMAND_KILL);
-		m_bSeqKillReady = false; //run only once
-		return;
-	}
-	if (((Acquire_4030e_parent*)qApp)->m_bChildReadyToQuit[0] &&((Acquire_4030e_parent*)qApp)->m_bChildReadyToQuit[1]) //check all child process are closed and ready to quit
-	{
-		printf("Now program quits\n");
-		m_TimerReadyToQuit->stop();
-		FinalQuit ();
-	}
-	return;
-}
+//void Acquire_4030e_window::TimerReadyToQuit_event()
+//{
+//	if( ( (Acquire_4030e_parent*)qApp )->m_bChildReadyToQuit[0] && m_bSeqKillReady)
+//	{
+//		//((Acquire_4030e_parent*)qApp)->StartCommandTimer(1, PCOMMAND_KILL);
+//		((Acquire_4030e_parent*)qApp)->SendCommandToChild(1, PCOMMAND_KILL);
+//		m_bSeqKillReady = false; //run only once
+//		return;
+//	}
+//	if (((Acquire_4030e_parent*)qApp)->m_bChildReadyToQuit[0] &&((Acquire_4030e_parent*)qApp)->m_bChildReadyToQuit[1]) //check all child process are closed and ready to quit
+//	{
+//		printf("Now program quits\n");
+//		m_TimerReadyToQuit->stop();
+//		FinalQuit ();
+//	}
+//	return;
+//}
 
 void Acquire_4030e_window::UpdateLabel(int iPanelIdx, PSTAT enStyle) // 0 based panel ID //called from child proc except the first time
 {
@@ -249,8 +250,8 @@ void Acquire_4030e_window::UpdateLabel(int iPanelIdx, PSTAT enStyle) // 0 based 
 		break;	
 
 	case READY_FOR_PULSE:
-		this->set_label_style (iPanelIdx, LABEL_ACQUIRING);
-		this->set_label (iPanelIdx, "  Acquiring");
+		this->set_label_style (iPanelIdx, LABEL_READY);
+		this->set_label (iPanelIdx, "  Ready");
 		break;	
 
 	case PULSE_CHANGE_DETECTED:
@@ -259,18 +260,18 @@ void Acquire_4030e_window::UpdateLabel(int iPanelIdx, PSTAT enStyle) // 0 based 
 		break;	
 
 	case COMPLETE_SIGNAL_DETECTED:
-		this->set_label_style (iPanelIdx, LABEL_PREPARING);
-		this->set_label (iPanelIdx, "  Resetting");
+		this->set_label_style (iPanelIdx, LABEL_ACQUIRING);
+		this->set_label (iPanelIdx, "  Acquiring");
 		break;	
 
 	case IMAGE_ACQUSITION_DONE:
 		this->set_label_style (iPanelIdx, LABEL_PREPARING);
-		this->set_label (iPanelIdx, "  Resetting");
+		this->set_label (iPanelIdx, "  Preparing");
 		break;
 
 	case STANDBY_SIGNAL_DETECTED:
-		this->set_label_style (iPanelIdx, LABEL_READY);
-		this->set_label (iPanelIdx, "  Ready");
+		this->set_label_style (iPanelIdx, LABEL_PREPARING);
+		this->set_label (iPanelIdx, "  Stand-by");
 		break;    
 
 	default:
@@ -365,3 +366,14 @@ void Acquire_4030e_window::RunRelay_Panel1()
 //	tray_icon2->hide ();
 //	qApp->quit();
 //}
+
+void Acquire_4030e_window::SaveSettingAsDefault_Parent()
+{
+	YKOptionSetting* pOptionSetting = &(((Acquire_4030e_parent*)qApp)->m_OptionSettingParent);
+
+	//pOptionSetting->m_strPrimaryLogPath;
+
+	//1. Update setting data
+	//2. Export as a file
+
+}

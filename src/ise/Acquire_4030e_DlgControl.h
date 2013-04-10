@@ -31,6 +31,11 @@ public slots:
 	void OpenCurImgFolder();
 	void ReDrawImg();
 	void CopyCurrentImageForGainImage();
+	void SaveSettingAsDefault_Child();
+	void UpdateGUIFromSetting_Child();
+	void SingleGainOn();
+	void MultiGainOn();
+	void ReLoadCalibImages();
 
 public:
     Acquire_4030e_DlgControl();
@@ -43,4 +48,8 @@ public:
 	void closeEvent(QCloseEvent *event);	
 	//bool DlgLoadDarkImage(QString& filePath);
 	
+
+	
+	//bool SaveSettingAsDefault_Child();
+	//bool UpdateGUIFromSetting_Child();// it can be used as go_back to default setting
 };
