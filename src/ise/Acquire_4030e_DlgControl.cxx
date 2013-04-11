@@ -89,7 +89,7 @@ void Acquire_4030e_DlgControl::HardHandshakingOn()
 		aqprintf("Already checked\n");
 		return;
 	}*/
-	if (qMyApp->m_enPanelStatus != READY_FOR_PULSE) //should be done in standby status
+	if (qMyApp->m_enPanelStatus != READY_FOR_PULSE && qMyApp->m_enPanelStatus != STANDBY_SIGNAL_DETECTED) //should be done in standby status
 	{
 		aqprintf("PCMSG_pannel is not ready\n");
 		RadioHardHandshakingEnable->setChecked(false);
@@ -97,9 +97,11 @@ void Acquire_4030e_DlgControl::HardHandshakingOn()
 		return;
 	}	
 	//qMyApp->m_bSoftHandshakingEnable = false;
+	int result = vip_io_enable (HS_ACTIVE);
+	Sleep(1000);
 
-	qMyApp->m_bAcquisitionOK = true;
-	qMyApp->m_enPanelStatus = OPENNED; //re loop
+	//qMyApp->m_bAcquisitionOK = true;
+	qMyApp->ChangePanelStatus(IMAGE_ACQUSITION_DONE); //re loop //Standby
 	
 	aqprintf("PCMSG_HARDHANDSHAKING_ON\n");
 }
@@ -116,7 +118,7 @@ void Acquire_4030e_DlgControl::SoftHandshakingOn()
 		return;
 	}*/
 
-	if (qMyApp->m_enPanelStatus != READY_FOR_PULSE) //should be done in standby status
+	if (qMyApp->m_enPanelStatus != READY_FOR_PULSE && qMyApp->m_enPanelStatus != STANDBY_SIGNAL_DETECTED) //should be done in standby status
 	{
 		aqprintf("Pannel is not ready\n");		
 		RadioHardHandshakingEnable->setChecked(true);
@@ -128,7 +130,7 @@ void Acquire_4030e_DlgControl::SoftHandshakingOn()
 	qMyApp->m_bAcquisitionOK = false; //stop the main loop
 	//qMyApp->m_bAcquisitionOK = false;	
 	//qMyApp->m_enPanelStatus = OPENNED;
-	aqprintf("PCMSG_HARDHANDSHAKING_ON\n");
+	aqprintf("PCMSG_SOFTHANDSHAKING_ON\n");
 }
 
 void Acquire_4030e_DlgControl::SoftBeamOn()

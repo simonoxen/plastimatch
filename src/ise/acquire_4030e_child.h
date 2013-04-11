@@ -157,6 +157,8 @@ public:
 
 	bool m_bLockInPanelStandby;
 	bool m_bCancelAcqRequest;//Skip ReadyForPulse when the other panel is selected
+
+	void ChangePanelStatus(PSTAT enStatus);
 };
 
 #endif

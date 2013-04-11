@@ -189,7 +189,7 @@ void Acquire_4030e_parent::initialize (QString& strEXE_Path)
 	/* Spawn the timer for polling devices */
 	this->timer = new QTimer(this);
 	connect (timer, SIGNAL(timeout()), this, SLOT(timer_event()));
-	timer->start (200);
+	timer->start (100);
 
 	this->timerCommandToChild[0] = new QTimer(this);
 	connect (timerCommandToChild[0], SIGNAL(timeout()), this, SLOT(timerCommandToChild0_event()));
@@ -620,6 +620,8 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 	}
 
 	//if (gen_panel_select == 0 && m_enPanelStatus[1] == READY_FOR_PULSE && !m_bNowCancelingAcq[0]) //Abnormal case: jump to standby before acquisition.
+
+
 	if (gen_panel_select == 0 && m_enPanelStatus[1] == READY_FOR_PULSE) //Abnormal case: jump to standby before acquisition.
 		SendCommandToChild(1, PCOMMAND_CANCELACQ);
 	else if (gen_panel_select == 1 && m_enPanelStatus[0] == READY_FOR_PULSE) //Abnormal case: jump to standby before acquisition.
@@ -627,15 +629,15 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 
 	
 
-
 	/* Write a debug message */
 	if (gen_expose_request) {
-		/*if (this->generator_state == WAITING || panel_0_ready || panel_1_ready) {
+		//if (this->generator_state == WAITING || panel_0_ready || panel_1_ready)
+		{
 			this->log_output (
 				QString("[p] Generator status: %1 %2 %3 %4 %5")
 				.arg(gen_panel_select).arg(gen_prep_request)
 				.arg(gen_expose_request).arg(panel_0_ready).arg(panel_1_ready));	
-		}*/
+		}
 	}
 
 	/* Check for new prep/expose request from generator */
@@ -729,15 +731,17 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 
 
 	//beam swithc on 
-	if (gen_panel_select == 0 && (m_enPanelStatus[0] == PULSE_CHANGE_DETECTED || m_enPanelStatus[0] == COMPLETE_SIGNAL_DETECTED))
+	//if (gen_panel_select == 0 && (m_enPanelStatus[0] == PULSE_CHANGE_DETECTED || m_enPanelStatus[0] == COMPLETE_SIGNAL_DETECTED ||
+	//	m_enPanelStatus[0] == ))
+	if (gen_panel_select == 0 && m_enPanelStatus[0] != READY_FOR_PULSE)
 	{
-		Sleep(100);
+		//Sleep(300);
 		this->advantech->relay_open (0); //beam on signal to gen.
 		//this->advantech->relay_open (3);
 	}
-	if (gen_panel_select == 1 && (m_enPanelStatus[1] == PULSE_CHANGE_DETECTED || m_enPanelStatus[1] == COMPLETE_SIGNAL_DETECTED))
+	if (gen_panel_select == 1 && m_enPanelStatus[1] != READY_FOR_PULSE)
 	{
-		Sleep(100);
+		//Sleep(300);
 		this->advantech->relay_open (0); //beam on signal to gen.
 		//this->advantech->relay_open (4);
 	}
@@ -1013,7 +1017,8 @@ void Acquire_4030e_parent::SOCKET_ConnectClient(int iPanelIdx)
 	else
 	{
 		log_output(QString("[p] Client For child %1 is not connected. Check the server name.").arg(iPanelIdx));
-		RestartChildProcess(iPanelIdx);
+		kill_rogue_processes();
+		//RestartChildProcess(iPanelIdx);
 		//kill_rogue_processes();
 
 	}
