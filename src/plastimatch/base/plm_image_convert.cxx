@@ -7,6 +7,7 @@
 
 #include "itk_directions.h"
 #include "itk_image_type.h"
+#include "logfile.h"
 #include "plm_image.h"
 #include "plm_image_p.h"
 #include "volume.h"
@@ -104,7 +105,7 @@ Plm_image::convert_itk_to_gpuit (T img)
         this->m_type = PLM_IMG_TYPE_GPUIT_FLOAT;
     }
     else {
-        printf ("unknown type conversion from itk to gpuit!\n");
+        lprintf ("unknown type conversion from itk to gpuit!\n");
         exit (0);
     }
 

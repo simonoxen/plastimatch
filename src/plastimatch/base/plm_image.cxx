@@ -71,8 +71,11 @@ Plm_image::Plm_image (Plm_image_type type, const Plm_image_header& pih)
     this->create (type, pih);
 }
 Plm_image::~Plm_image () {
-    delete d_ptr;
+#if defined (PLM_CONFIG_ENABLE_SMART_POINTERS)
+#else
     this->free ();
+#endif
+    delete d_ptr;
 }
 
 
@@ -108,6 +111,7 @@ Plm_image::free ()
     m_original_type = PLM_IMG_TYPE_UNDEFINED;
     m_type = PLM_IMG_TYPE_UNDEFINED;
 
+    m_itk_char = 0;
     m_itk_uchar = 0;
     m_itk_short = 0;
     m_itk_ushort = 0;
@@ -115,6 +119,7 @@ Plm_image::free ()
     m_itk_uint32 = 0;
     m_itk_float = 0;
     m_itk_double = 0;
+    m_itk_uchar_vec = 0;
 }
 
 void
@@ -371,7 +376,7 @@ Plm_image::load_native (const char* fname)
 	this->m_type = PLM_IMG_TYPE_ITK_DOUBLE;
 	break;
     default:
-	printf ("Error, unsupported input type in load_native(): %d\n",
+	lprintf ("Error, unsupported input type in load_native(): %d\n",
 	    component_type);
         return false;
     }
@@ -1003,21 +1008,21 @@ Plm_image::convert_to_itk_uchar_vec (void)
 {
     switch (m_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
-	printf ("Converting from ITK_UCHAR to ITK_UCHAR_VEC\n");
+	lprintf ("Converting from ITK_UCHAR to ITK_UCHAR_VEC\n");
 	this->convert_itk_uchar_to_itk_uchar_vec ();
 	break;
     case PLM_IMG_TYPE_ITK_ULONG:
-	printf ("Converting from ITK_ULONG to ITK_UCHAR_VEC\n");
+	lprintf ("Converting from ITK_ULONG to ITK_UCHAR_VEC\n");
 	this->convert_itk_uint32_to_itk_uchar_vec ();
 	break;
     case PLM_IMG_TYPE_GPUIT_UINT32:
-	printf ("Converting from GPUIT_UINT32 to ITK_UCHAR_VEC\n");
+	lprintf ("Converting from GPUIT_UINT32 to ITK_UCHAR_VEC\n");
         this->convert_gpuit_uint32_to_itk_uchar_vec ();
 	break;
     case PLM_IMG_TYPE_ITK_UCHAR_VEC:
 	break;
     case PLM_IMG_TYPE_GPUIT_UCHAR_VEC:
-	printf ("Converting from GPUIT_UCHAR_VEC to ITK_UCHAR_VEC\n");
+	lprintf ("Converting from GPUIT_UCHAR_VEC to ITK_UCHAR_VEC\n");
         this->convert_gpuit_uchar_vec_to_itk_uchar_vec ();
 	break;
     default:
@@ -1443,8 +1448,8 @@ Plm_image::spacing (size_t d1)
 void
 Plm_image::print ()
 {
-    printf ("Type = %s\n", plm_image_type_string_simple (this->m_type));
-    printf ("Planes = %d\n", this->planes());
+    lprintf ("Type = %s\n", plm_image_type_string_simple (this->m_type));
+    lprintf ("Planes = %d\n", this->planes());
     Plm_image_header pih;
     pih.set_from_plm_image (this);
     pih.print ();
