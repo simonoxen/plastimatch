@@ -21,16 +21,12 @@
 #include "nki_io.h"
 #include "path_util.h"
 #include "plm_image.h"
+#include "plm_image_p.h"
 #include "plm_image_header.h"
 #include "print_and_exit.h"
 #include "pstring.h"
 #include "string_util.h"
 #include "volume.h"
-
-class Plm_image_private {
-public:
-    int i;
-};
 
 Plm_image::Plm_image () {
     this->init ();
@@ -83,23 +79,31 @@ Plm_image::~Plm_image () {
 /* -----------------------------------------------------------------------
     Creation / Destruction
    ----------------------------------------------------------------------- */
+/* This function can only be called by constructor */
 void
 Plm_image::init ()
 {
-    /* This can only be called by constructor */
     d_ptr = new Plm_image_private;
     m_original_type = PLM_IMG_TYPE_UNDEFINED;
     m_type = PLM_IMG_TYPE_UNDEFINED;
+#if defined (PLM_CONFIG_ENABLE_SMART_POINTERS)
+#else
     m_gpuit = 0;
+#endif
 }
 
+/* This function can be called by anyone */
 void
 Plm_image::free ()
 {
-    /* This can be called by anyone */
+#if defined (PLM_CONFIG_ENABLE_SMART_POINTERS)
+    d_ptr->m_vol.reset ();
+#else
     if (m_gpuit) {
         delete (Volume*) m_gpuit;
     }
+    m_gpuit = 0;
+#endif
 
     m_original_type = PLM_IMG_TYPE_UNDEFINED;
     m_type = PLM_IMG_TYPE_UNDEFINED;
@@ -111,16 +115,19 @@ Plm_image::free ()
     m_itk_uint32 = 0;
     m_itk_float = 0;
     m_itk_double = 0;
-    m_gpuit = 0;
 }
 
 void
 Plm_image::free_volume ()
 {
+#if defined (PLM_CONFIG_ENABLE_SMART_POINTERS)
+    d_ptr->m_vol.reset();
+#else
     if (m_gpuit) {
         delete (Volume*) m_gpuit;
     }
     m_gpuit = 0;
+#endif
 }
 
 bool

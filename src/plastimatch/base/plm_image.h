@@ -52,8 +52,11 @@ public:
     UCharVecImageType::Pointer m_itk_uchar_vec;
 
 protected:
-    /* This should become protected */
+#if defined (PLM_CONFIG_ENABLE_SMART_POINTERS)
+    /* Declared in private */
+#else
     void* m_gpuit;
+#endif
 
 private:
     /* Please don't use copy constructors.  They suck. */

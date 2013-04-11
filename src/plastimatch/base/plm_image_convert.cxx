@@ -8,6 +8,7 @@
 #include "itk_directions.h"
 #include "itk_image_type.h"
 #include "plm_image.h"
+#include "plm_image_p.h"
 #include "volume.h"
 
 /* -----------------------------------------------------------------------
@@ -120,7 +121,11 @@ Plm_image::convert_itk_to_gpuit (T img)
     }
 
     /* Fix volume into plm_image */
+#if defined (PLM_CONFIG_ENABLE_SMART_POINTERS)
+    d_ptr->m_vol.reset (vol);
+#else
     this->m_gpuit = vol;
+#endif
 }
 
 /* -----------------------------------------------------------------------
@@ -256,8 +261,7 @@ Plm_image::convert_gpuit_uint32_to_itk_uchar_vec ()
     }
 
     /* Free input volume */
-    delete vol;
-    this->m_gpuit = 0;
+    this->free_volume ();
 
     /* Set output volume */
     this->m_itk_uchar_vec = im_out;
@@ -267,7 +271,7 @@ void
 Plm_image::convert_gpuit_uchar_vec_to_itk_uchar_vec ()
 {
     int i, d;
-    Volume* vol = (Volume*) this->m_gpuit;
+    Volume* vol = this->get_volume ();
     unsigned char* img = (unsigned char*) vol->img;
 
     UCharVecImageType::Pointer im_out = UCharVecImageType::New();
@@ -314,8 +318,7 @@ Plm_image::convert_gpuit_uchar_vec_to_itk_uchar_vec ()
     }
 
     /* Free input volume */
-    delete vol;
-    this->m_gpuit = 0;
+    this->free_volume ();
 
     /* Set output volume */
     this->m_itk_uchar_vec = im_out;
@@ -365,7 +368,11 @@ Plm_image::convert_itk_uchar_vec_to_gpuit_uchar_vec ()
     this->m_itk_uchar_vec = 0;
 
     /* Set output volume */
+#if defined (PLM_CONFIG_ENABLE_SMART_POINTERS)
+    d_ptr->m_vol.reset (vol);
+#else
     this->m_gpuit = vol;
+#endif
     this->m_type = PLM_IMG_TYPE_GPUIT_UCHAR_VEC;
 }
 
