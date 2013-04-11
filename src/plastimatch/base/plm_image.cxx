@@ -203,7 +203,11 @@ Plm_image::clone (void)
     case PLM_IMG_TYPE_GPUIT_UINT32:
     case PLM_IMG_TYPE_GPUIT_FLOAT:
     case PLM_IMG_TYPE_GPUIT_FLOAT_FIELD:
+#if defined (PLM_CONFIG_ENABLE_SMART_POINTERS)
+        pli->d_ptr->m_vol = this->d_ptr->m_vol->clone ();
+#else
 	pli->m_gpuit = (void*) volume_clone ((Volume*) this->m_gpuit);
+#endif
 	break;
     default:
 	print_and_exit ("Unhandled image type in Plm_image::clone"
@@ -261,9 +265,7 @@ Plm_image::load (const char* fname, Plm_image_type type)
     this->free ();
     switch (type) {
     case PLM_IMG_TYPE_GPUIT_FLOAT:
-        this->m_type = type;
-        this->m_original_type = type;
-        this->m_gpuit = read_mha (fname);
+        this->set_volume (read_mha (fname), type);
         break;
     case PLM_IMG_TYPE_ITK_FLOAT:
         this->m_type = type;
@@ -405,7 +407,11 @@ Plm_image::load_native_nki (const char* fname)
 {
     Volume *v = nki_load (fname);
     if (v) {
+#if defined (PLM_CONFIG_ENABLE_SMART_POINTERS)
+        d_ptr->m_vol.reset(v);
+#else
         this->m_gpuit = v;
+#endif
         this->m_original_type = PLM_IMG_TYPE_ITK_SHORT;
         this->m_type = PLM_IMG_TYPE_GPUIT_SHORT;
         return true;
@@ -538,7 +544,11 @@ void
 Plm_image::set_volume (Volume *v, Plm_image_type type)
 {
     this->free ();
+#if defined (PLM_CONFIG_ENABLE_SMART_POINTERS)
+    d_ptr->m_vol.reset (v);
+#else
     m_gpuit = (void*) v;
+#endif
     m_original_type = type;
     m_type = type;
 }
@@ -580,49 +590,62 @@ Plm_image::set_volume (Volume *v)
 Volume *
 Plm_image::get_volume ()
 {
+#if defined (PLM_CONFIG_ENABLE_SMART_POINTERS)
+    return d_ptr->m_vol.get();
+#else
     return (Volume*) m_gpuit;
+#endif
 }
 
 const Volume *
 Plm_image::get_volume () const
 {
+#if defined (PLM_CONFIG_ENABLE_SMART_POINTERS)
+    return d_ptr->m_vol.get();
+#else
     return (Volume*) m_gpuit;
+#endif
 }
 
 Volume* 
 Plm_image::get_volume_uchar () {
     convert_to_gpuit_uchar ();
-    return (Volume*) m_gpuit;
+    return get_volume ();
 }
 
 Volume* 
 Plm_image::get_volume_uchar_vec () {
     convert_to_gpuit_uchar_vec ();
-    return (Volume*) m_gpuit;
+    return get_volume ();
 }
 
 Volume *
 Plm_image::get_volume_short ()
 {
     convert_to_gpuit_short ();
-    return (Volume*) m_gpuit;
+    return get_volume ();
 }
 
 Volume *
 Plm_image::get_volume_float ()
 {
     convert_to_gpuit_float ();
-    return (Volume*) m_gpuit;
+    return get_volume ();
 }
 
 Volume *
 Plm_image::steal_volume ()
 {
+#if defined (PLM_CONFIG_ENABLE_SMART_POINTERS)
+    /* Stealing should not be needed */
+    return get_volume ();
+#else
     Volume *v = (Volume*) m_gpuit;
     m_gpuit = 0;
     m_original_type = PLM_IMG_TYPE_UNDEFINED;
     m_type = PLM_IMG_TYPE_UNDEFINED;
     return v;
+#endif
 }
 
 void 
@@ -747,10 +770,8 @@ Plm_image::convert_to_gpuit_uchar (void)
         this->m_itk_float = 0;
         break;
     case PLM_IMG_TYPE_GPUIT_SHORT:
-        volume_convert_to_uchar ((Volume *) this->m_gpuit);
-        break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
-        volume_convert_to_uchar ((Volume *) this->m_gpuit);
+        volume_convert_to_uchar (this->get_volume());
         break;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
         return;
@@ -1055,7 +1076,7 @@ Plm_image::convert_to_gpuit_short ()
     case PLM_IMG_TYPE_GPUIT_SHORT:
 	return;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
-	volume_convert_to_short ((Volume *) this->m_gpuit);
+	volume_convert_to_short (this->get_volume());
 	return;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
     case PLM_IMG_TYPE_GPUIT_UINT32:
@@ -1078,7 +1099,7 @@ Plm_image::convert_to_gpuit_uint16 ()
     case PLM_IMG_TYPE_GPUIT_SHORT:
 	return;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
-	volume_convert_to_uint16 ((Volume *) this->m_gpuit);
+	volume_convert_to_uint16 (this->get_volume());
 	return;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
     case PLM_IMG_TYPE_GPUIT_UINT32:
@@ -1101,7 +1122,7 @@ Plm_image::convert_to_gpuit_uint32 ()
     case PLM_IMG_TYPE_GPUIT_UINT32:
 	return;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
-	volume_convert_to_uint32 ((Volume *) this->m_gpuit);
+	volume_convert_to_uint32 (this->get_volume());
 	return;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
     case PLM_IMG_TYPE_GPUIT_SHORT:
@@ -1124,7 +1145,7 @@ Plm_image::convert_to_gpuit_int32 ()
     case PLM_IMG_TYPE_GPUIT_INT32:
 	return;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
-	volume_convert_to_int32 ((Volume *) this->m_gpuit);
+	volume_convert_to_int32 (this->get_volume());
 	return;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
     case PLM_IMG_TYPE_GPUIT_SHORT:
@@ -1177,10 +1198,8 @@ Plm_image::convert_to_gpuit_float ()
     case PLM_IMG_TYPE_GPUIT_UCHAR:
     case PLM_IMG_TYPE_GPUIT_SHORT:
     case PLM_IMG_TYPE_GPUIT_UINT32:
-	volume_convert_to_float ((Volume *) this->m_gpuit);
-	return;
     case PLM_IMG_TYPE_GPUIT_INT32:
-	volume_convert_to_float ((Volume *) this->m_gpuit);
+	volume_convert_to_float (this->get_volume());
 	return;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
 	return;
