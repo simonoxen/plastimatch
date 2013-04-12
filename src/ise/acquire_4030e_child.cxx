@@ -37,7 +37,7 @@ Acquire_4030e_child::Acquire_4030e_child (int argc, char* argv[])
 	vp = NULL;
 
 	m_bAcquisitionOK = false;
-	m_bLockInPanelStandby = true;
+	
 
 	m_bPleoraErrorHasBeenOccurred = false;
 
@@ -98,7 +98,7 @@ Acquire_4030e_child::Acquire_4030e_child (int argc, char* argv[])
 	connect(m_pClient, SIGNAL(disconnected()),m_pClient, SLOT(deleteLater()));		
 
 
-	m_bCancelAcqRequest = false;
+
 }
 
 void Acquire_4030e_child::SOCKET_PrintError(QLocalSocket::LocalSocketError e)
@@ -307,7 +307,11 @@ Acquire_4030e_child::init(int panelIdx) //procNum = panelIdx
 	SOCKET_ConnectToServer(strServerName);
 	//Sleep(1000);
 
-	this->m_bAcquisitionOK = true; 
+
+	m_bLockInPanelStandby = true;
+	m_bCancelAcqRequest = false;
+
+	//this->m_bAcquisitionOK = true; 
 	m_TimerMainLoop->start(100);
 	ChangePanelStatus(IMAGE_ACQUSITION_DONE);	
 	//aqprintf("SEVERNAME ERROR?\n");
@@ -465,10 +469,12 @@ int Acquire_4030e_child::open_receptor (const char* path)
 
 	//after successfully openning the receptor,
 	m_bPleoraErrorHasBeenOccurred = false;
-	m_enPanelStatus = COMPLETE_SIGNAL_DETECTED;  // go to standby
-	this->m_timeOutCnt = 0;
+	//m_enPanelStatus = COMPLETE_SIGNAL_DETECTED;  // go to standby
+	//this->m_timeOutCnt = 0;
+	//this->m_bAcquisitionOK = true;
 
-	this->m_bAcquisitionOK = true;
+	//ChangePanelStatus(IMAGE_ACQUSITION_DONE);
+
 	return result;
 }
 
@@ -508,6 +514,26 @@ bool Acquire_4030e_child::PerformDarkFieldCalibration(UQueryProgInfo& crntStatus
 		tmpImageSumBuf[j] = 0;
 	}
 	int SumSuccessCnt = 0;
+
+
+	//result = vip_io_enable(HS_STANDBY); //Should not be called before vip_enable_sw_handshaking(TRUE);!!! 04 / 12
+	//m_timeOutCnt = 0;
+
+	//while(result == HCP_NO_ERR && (crntStatus.qpi.NumFrames + crntStatus.qpi.ReadyForPulse + crntStatus.qpi.Complete + crntStatus.qpi.NumPulses > 0))		
+	//{
+	//	result = vp->query_prog_info (crntStatus);
+	//	Sleep(500);
+
+	//	m_timeOutCnt += TIMEOUT_MAINLOOP;
+
+	//	if (m_timeOutCnt > 5000)
+	//	{
+	//		aqprintf("*** TIMEOUT ***Stuck in waiting for Standby signal.\n");							
+	//		result = HCP_TIMEOUT;
+	//		//break;
+	//		return false;
+	//	}			
+	//}
 
 	m_dlgProgBar->setValue(10);	
 
@@ -632,9 +658,12 @@ bool Acquire_4030e_child::PerformDarkFieldCalibration(UQueryProgInfo& crntStatus
 			if (result != HCP_NO_ERR)
 				aqprintf("vip_sw_handshaking(VIP_SW_PREPARE, FALSE) returns %d\n", result);
 
-			result = vip_enable_sw_handshaking(FALSE);// YK0411
-			if (result != HCP_NO_ERR)
-				aqprintf("vip_enable_sw_handshaking(FALSE) returns %d\n", result);
+			if (i != avgFrameCnt-1) // in last term, don't do the hardware handshaking on --> will be done in OPENNED
+			{
+				result = vip_enable_sw_handshaking(FALSE);// YK0411
+				if (result != HCP_NO_ERR)
+					aqprintf("vip_enable_sw_handshaking(FALSE) returns %d\n", result);
+			}			
 		}
 		//Repeat above procedure //MultiFrame
 
@@ -1104,13 +1133,22 @@ void Acquire_4030e_child::TimerMainLoop_event() //called every 50 ms
 		m_bAcquisitionOK = true; //BUSY flag
 		break;	
 
-	case IMAGE_ACQUSITION_DONE:
+	case IMAGE_ACQUSITION_DONE: //once called
+		m_bAcquisitionOK = false; //BUSY flag
+
+		this->PC_CallForStanby();
+		m_bLockInPanelStandby = true;
+		m_bCancelAcqRequest = false;
+
+		m_bAcquisitionOK = true; //BUSY flag	
+
+		break;          
+
+	case STANDBY_CALLED:
 		m_bAcquisitionOK = false; //BUSY flag
 		PC_WaitForStanby(); //inside here image acquisition
-		m_bAcquisitionOK = true; //BUSY flag
-
-		m_bLockInPanelStandby = true;
-		break;            	    	
+		m_bAcquisitionOK = true; //BUSY flag		
+		break;
 
 	case STANDBY_SIGNAL_DETECTED:
 		//m_bAcquisitionOK = false; //Just hold the timer
@@ -1479,6 +1517,18 @@ bool Acquire_4030e_child::PC_GetImageHardware()
 	return true;
 }
 
+bool Acquire_4030e_child::PC_CallForStanby() //also can be used for SW acquisition for reloop
+{
+	int result = vip_io_enable(HS_STANDBY);
+	if (result != HCP_NO_ERR)
+		aqprintf("Error on calling vip_io_enable. Result is %d\n", result);
+
+	//Sleep(1000);
+	ChangePanelStatus(STANDBY_CALLED);
+	return true;
+}
+
+
 bool Acquire_4030e_child::PC_WaitForStanby() //also can be used for SW acquisition for reloop
 {
 
@@ -1492,7 +1542,7 @@ bool Acquire_4030e_child::PC_WaitForStanby() //also can be used for SW acquisiti
 	}*/
 
 	//m_pSysSemaphore->acquire();
-	vip_io_enable(HS_STANDBY);
+	//vip_io_enable(HS_STANDBY);
 	//m_pSysSemaphore->release(3);
 
 	QString errorStr;
@@ -1510,11 +1560,12 @@ bool Acquire_4030e_child::PC_WaitForStanby() //also can be used for SW acquisiti
 		errorStr = QString ("Error in WaitForStanby. Error code is %1. Now, retrying...\n").arg(result);		
 		aqprintf(errorStr.toLocal8Bit().constData());
 		//m_enPanelStatus = NOT_OPENNED;//Let's try with PANEL_ACTIVE (without reselection and HS_ACTIVE setting
-
-		vip_reset_state();
-
-		vip_io_enable(HS_ACTIVE);
-		Sleep(1000);	
+		//Sleep(3000);
+		//result = vip_io_enable(HS_ACTIVE);not work
+		//aqprintf("result = %d", result);
+		//vip_reset_state();
+		//result = vip_reset_state(); not work
+		//aqprintf(" vip_reset_state result = %d", result);
 
 		ChangePanelStatus(IMAGE_ACQUSITION_DONE);
 		//vip_io_enable(HS_STANDBY); // Let's try without this (directly go to PANEL_ACTIVE)
@@ -1801,11 +1852,15 @@ void Acquire_4030e_child::ChangePanelStatus(PSTAT enStatus)
 	case IMAGE_ACQUSITION_DONE:
 		aqprintf ("PSTAT6: IMAGE_ACQUSITION_DONE\n");		
 		break;
+
+	case STANDBY_CALLED:
+		aqprintf ("PSTAT7: STANDBY_CALLED\n");		
+		break;
 	case STANDBY_SIGNAL_DETECTED:
-		aqprintf ("PSTAT7: STANBY_SIGNAL_DETECTED\n");			
+		aqprintf ("PSTAT8: STANBY_SIGNAL_DETECTED\n");			
 		break;
 	case ACQUIRING_DARK_IMAGE:
-		aqprintf ("PSTAT8: ACQUIRING_DARK_IMAGE\n");			
+		aqprintf ("PSTAT9: ACQUIRING_DARK_IMAGE\n");			
 		break;
 	}
 }

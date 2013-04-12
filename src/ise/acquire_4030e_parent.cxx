@@ -190,7 +190,9 @@ void Acquire_4030e_parent::initialize (QString& strEXE_Path)
 	/* Spawn the timer for polling devices */
 	this->timer = new QTimer(this);
 	connect (timer, SIGNAL(timeout()), this, SLOT(timer_event()));
+	m_bParentBusy = false;
 	timer->start (100);
+	
 
 	this->timerCommandToChild[0] = new QTimer(this);
 	connect (timerCommandToChild[0], SIGNAL(timeout()), this, SLOT(timerCommandToChild0_event()));
@@ -445,9 +447,13 @@ Acquire_4030e_parent::poll_child_messages () //often called even window is close
 			}
 			else if (line.contains("PSTAT7"))
 			{
-				m_enPanelStatus[i] = STANDBY_SIGNAL_DETECTED;				
+				m_enPanelStatus[i] = STANDBY_CALLED;				
 			}	
 			else if (line.contains("PSTAT8"))
+			{
+				m_enPanelStatus[i] = STANDBY_SIGNAL_DETECTED;				
+			}
+			else if (line.contains("PSTAT9"))
 			{
 				m_enPanelStatus[i] = ACQUIRING_DARK_IMAGE;				
 			}	
@@ -567,6 +573,10 @@ bool Acquire_4030e_parent::RestartChildProcess(int idx)
 /* On STAR, panel 0 is axial, and panel 1 is g90 */
 void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 {
+	if (m_bParentBusy)
+		return;
+
+	m_bParentBusy = true;
 	//YK
 	UpdateLableStatus(); //based-on m_bPanelReady status; //every 50 ms
 
@@ -584,6 +594,7 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 	//if (m_bBusyParent)
 	//	return;
 	//m_bBusyParent = true;
+
 	
 
 	int res0 = advantech->read_bit (0);
@@ -752,17 +763,20 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 	//if (!gen_expose_request)
 	if (!gen_expose_request && generator_state != WAITING)
 	{ //when exposure is over then relay_open: allow panel to read data		
-		
+
+		log_output("[p] Opening relay to generator");		
 		this->advantech->relay_open (0); //Beam on (N0, COM0)
 
 		if (panel_select == 0)
 		{
 			//m_bActivationHasBeenSent[0] = false;
+			log_output("[p] Opening relay to panel: axial");		
 			this->advantech->relay_open (3); //Expose request for panel 0- release
 		}
 		if (panel_select == 1)
 		{
 			//m_bActivationHasBeenSent[1] = false;
+			log_output("[p] Opening relay to panel: g90");		
 			this->advantech->relay_open (4); //Expose request for panel 0- release
 		}	
 
@@ -780,6 +794,8 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 		SendCommandToChild(1, PCOMMAND_CANCELACQ);
 	else if (gen_panel_select == 1 && m_enPanelStatus[0] == READY_FOR_PULSE) //Abnormal case: jump to standby before acquisition.
 		SendCommandToChild(0, PCOMMAND_CANCELACQ);
+
+	m_bParentBusy = false;
 
 }
 

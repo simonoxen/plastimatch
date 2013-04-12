@@ -119,6 +119,7 @@ public:
 	//bool m_bNowCancelingAcq[2];
 
 	//int m_iPrevSelection;
+	bool m_bParentBusy;
 
 public:
 	bool SOCKET_StartServer(int iPanelIdx);

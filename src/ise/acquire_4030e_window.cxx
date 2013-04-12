@@ -70,9 +70,12 @@ void Acquire_4030e_window::set_icon (int idx, PSTAT pstat)  // set_icon + tray i
 		matchingLabelStyle = LABEL_PREPARING;
 
 		break;
+	case STANDBY_CALLED:
+		matchingLabelStyle = LABEL_PREPARING;
+		break;
 	case STANDBY_SIGNAL_DETECTED:
 		matchingLabelStyle = LABEL_STANDBY;
-		break;
+		break;	
 	case ACQUIRING_DARK_IMAGE:
 		matchingLabelStyle = LABEL_ACQUIRING;
 		break;

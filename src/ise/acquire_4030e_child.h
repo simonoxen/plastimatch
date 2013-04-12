@@ -132,6 +132,7 @@ public:
 	bool PC_GetImageHardware();
 	bool PC_WaitForComplete();
 	//bool PC_ReStandbyPanel();
+	bool PC_CallForStanby(); //also can be used for SW acquisition for reloop
 	bool PC_WaitForStanby();
 
 
