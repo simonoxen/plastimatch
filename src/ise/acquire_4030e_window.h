@@ -30,7 +30,7 @@ public:
     void create_actions ();
     void create_tray_icon ();
     //void set_icon ();
-    void set_icon (int idx,Label_style style);   
+    void set_icon (int idx,PSTAT style);   
     void log_output (const QString& log);
     void set_label (int panel_no, const QString& log);
     void set_label_style (int panel_no, Label_style style);

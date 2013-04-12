@@ -40,15 +40,52 @@ Acquire_4030e_window::Acquire_4030e_window ()
     log_viewer->appendPlainText ("Welcome to acquire_4030e.exe.");
 }
 //void Acquire_4030e_window::set_icon (int idx, Label_style style)  // set_icon + tray icon
-void Acquire_4030e_window::set_icon (int idx, Label_style style)  // set_icon + tray icon
+void Acquire_4030e_window::set_icon (int idx, PSTAT pstat)  // set_icon + tray icon
 {   
+	
+
+	Label_style matchingLabelStyle;
+
+	switch (pstat)
+	{
+	case NOT_OPENNED:
+		matchingLabelStyle = LABEL_NOT_READY;
+		break;
+	case OPENNED:
+		matchingLabelStyle = LABEL_PREPARING;
+		break;
+	case PANEL_ACTIVE:
+		matchingLabelStyle = LABEL_PREPARING;
+		break;
+	case READY_FOR_PULSE:
+		matchingLabelStyle = LABEL_READY;
+		break;
+	case PULSE_CHANGE_DETECTED:
+		matchingLabelStyle = LABEL_ACQUIRING;
+		break;
+	case COMPLETE_SIGNAL_DETECTED:
+		matchingLabelStyle = LABEL_ACQUIRING;
+		break;
+	case IMAGE_ACQUSITION_DONE:
+		matchingLabelStyle = LABEL_PREPARING;
+
+		break;
+	case STANDBY_SIGNAL_DETECTED:
+		matchingLabelStyle = LABEL_STANDBY;
+		break;
+	case ACQUIRING_DARK_IMAGE:
+		matchingLabelStyle = LABEL_ACQUIRING;
+		break;
+	}
+
     if (idx == 0)
     {
-	switch (style) {
+	switch (matchingLabelStyle) {
 	case LABEL_NOT_READY:	    
 	    tray_icon1->setIcon (QIcon(":/red_ball.png"));		
 	    tray_icon1->setToolTip (tr("Acquire 4030e_Panel_1"));	    
 	    break;
+
 	case LABEL_ACQUIRING:	    
 	    //tray_icon1->setIcon (QIcon(":/red_ball.svg"));
 		tray_icon1->setIcon (QIcon(":/yellow_ball.png"));
@@ -60,6 +97,13 @@ void Acquire_4030e_window::set_icon (int idx, Label_style style)  // set_icon + 
 	    tray_icon1->setIcon (QIcon(":/orange_ball.png"));
 	    tray_icon1->setToolTip (tr("Acquire 4030e_Panel_1"));	    
 	    break;
+
+	case LABEL_STANDBY:	    
+		//tray_icon1->setIcon (QIcon(":/red_ball.svg"));
+		tray_icon1->setIcon (QIcon(":/blue_ball.png"));
+		tray_icon1->setToolTip (tr("Acquire 4030e_Panel_1"));	    
+		break;
+
 	case LABEL_READY:	    
 		//tray_icon1->setIcon (QIcon(":/green_ball.svg"));
 	    tray_icon1->setIcon (QIcon(":/green_ball.png"));
@@ -70,7 +114,7 @@ void Acquire_4030e_window::set_icon (int idx, Label_style style)  // set_icon + 
     }    
     else if (idx ==1)
     {
-	switch (style) {
+	switch (matchingLabelStyle) {
 	case LABEL_NOT_READY:	    
 		tray_icon2->setIcon (QIcon(":/red_ball.png"));	    	    
 		//tray_icon1->setIcon (QIcon(":/test_plain.svg"));	    	    
@@ -86,6 +130,10 @@ void Acquire_4030e_window::set_icon (int idx, Label_style style)  // set_icon + 
 	    tray_icon2->setIcon (QIcon(":/orange_ball.png"));
 	    tray_icon2->setToolTip (tr("Acquire 4030e_Panel_0"));	    
 	    break;
+	case LABEL_STANDBY:	    		
+		tray_icon2->setIcon (QIcon(":/blue_ball.png"));
+		tray_icon2->setToolTip (tr("Acquire 4030e_Panel_0"));	    
+		break;
 	case LABEL_READY:	    
 	    tray_icon2->setIcon (QIcon(":/green_ball.png"));
 	    tray_icon2->setToolTip (tr("AAcquire 4030e_Panel_0"));
@@ -151,6 +199,9 @@ Acquire_4030e_window::set_label_style (int panel_no, Label_style style) //change
 	case LABEL_PREPARING:
 	    style_sheet = "QLabel { background-color : rgba(255,153,0,200); color : black; font-weight: bold;font-size: 15px}";
 	    break;
+	case LABEL_STANDBY:
+		style_sheet = "QLabel { background-color : rgba(0,0,200,200); color : white; font-weight: bold;font-size: 15px}";
+		break;
 	case LABEL_READY:
 	    style_sheet = "QLabel { background-color : rgba(0,255,0,200); color : black; font-weight: bold;font-size: 15px}";
 	    break;
@@ -270,8 +321,13 @@ void Acquire_4030e_window::UpdateLabel(int iPanelIdx, PSTAT enStyle) // 0 based 
 		break;
 
 	case STANDBY_SIGNAL_DETECTED:
-		this->set_label_style (iPanelIdx, LABEL_PREPARING);
+		this->set_label_style (iPanelIdx, LABEL_STANDBY);
 		this->set_label (iPanelIdx, "  Stand-by");
+		break;    
+
+	case ACQUIRING_DARK_IMAGE:
+		this->set_label_style (iPanelIdx, LABEL_ACQUIRING);
+		this->set_label (iPanelIdx, "  Acquiring dark images");
 		break;    
 
 	default:

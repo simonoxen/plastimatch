@@ -4,5 +4,6 @@
         <file>yellow_ball.png</file>
         <file>red_ball.png</file>
         <file>orange_ball.png</file>
+        <file>blue_ball.png</file>
     </qresource>
 </RCC>

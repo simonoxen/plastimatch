@@ -61,13 +61,14 @@ Acquire_4030e_parent::Acquire_4030e_parent (int argc, char* argv[])
 	m_pClientConnect[0] = NULL;
 	m_pClientConnect[1] = NULL;
 
-	m_bNowCancelingAcq[0] = false;
-	m_bNowCancelingAcq[1] = false;
+	//m_bNowCancelingAcq[0] = false;
+	//m_bNowCancelingAcq[1] = false;
 	
 	QString exePath = argv[0];
 
 	//initialize (argc, argv);    
 	initialize (exePath);	
+	//m_iPrevSelection = -1;
 
 }
 
@@ -120,8 +121,8 @@ void Acquire_4030e_parent::initialize (QString& strEXE_Path)
 
 	this->window->UpdateLabel(0, NOT_OPENNED);
 	this->window->UpdateLabel(1, NOT_OPENNED);
-	this->window->set_icon(0,LABEL_NOT_READY);// Tray should be shown after Label is updated.
-	this->window->set_icon(1,LABEL_NOT_READY);
+	this->window->set_icon(0,NOT_OPENNED);// Tray should be shown after Label is updated.
+	this->window->set_icon(1,NOT_OPENNED);
 	this->window->show ();
 	//this->window2->show ();
 
@@ -213,15 +214,15 @@ void Acquire_4030e_parent::initialize (QString& strEXE_Path)
 	m_strLogFilePath.append("\\acquire4030e_log_");
 
 	QDate crntDate = QDate::currentDate ();
-	QString dateFormat = "MM_dd_yyyy";
+	QString dateFormat = "_yyyy_MM_dd";
 	QString strDate = crntDate.toString(dateFormat);
 
 	QTime crntTime = QTime::currentTime ();
-	QString timeFormat = "hh_mm_";
+	QString timeFormat = "_hh_mm_ss";
 	QString strTime = crntTime.toString(timeFormat);
 
-	m_strLogFilePath.append(strTime);
 	m_strLogFilePath.append(strDate);
+	m_strLogFilePath.append(strTime);	
 
 	m_strLogFilePath.append(".txt");
 
@@ -386,15 +387,15 @@ Acquire_4030e_parent::poll_child_messages () //often called even window is close
 				}*/
 			}
 
-			else if (line.contains("SYSTEM"))
-			{
-				if (line.contains("REQUEST_FOR_SERVER_CONNECTION"))
-				{
-					SOCKET_ConnectClient(i);
-					log_output("serverConnection done");
-					
-				}				
-			}
+			//else if (line.contains("SYSTEM"))
+			//{
+			//	/*if (line.contains("REQUEST_FOR_SERVER_CONNECTION"))
+			//	{
+			//		SOCKET_ConnectClient(i);
+			//		log_output("serverConnection done");
+			//		
+			//	}		*/		
+			//}
 			else if (line.contains("PSTAT0"))
 			{				
 				m_enPanelStatus[i] = NOT_OPENNED;				
@@ -445,7 +446,11 @@ Acquire_4030e_parent::poll_child_messages () //often called even window is close
 			else if (line.contains("PSTAT7"))
 			{
 				m_enPanelStatus[i] = STANDBY_SIGNAL_DETECTED;				
-			}						
+			}	
+			else if (line.contains("PSTAT8"))
+			{
+				m_enPanelStatus[i] = ACQUIRING_DARK_IMAGE;				
+			}	
 			else if (line.contains("RESTART_PROCESS")) //
 			{		
 				m_enPanelStatus[i] = NOT_OPENNED;		
@@ -578,8 +583,8 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 	is only prep signal. */    
 	//if (m_bBusyParent)
 	//	return;
-
 	//m_bBusyParent = true;
+	
 
 	int res0 = advantech->read_bit (0);
 	int res1 = advantech->read_bit (1);
@@ -600,7 +605,14 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 	bool panel_0_ready = (bool)res3; //signal from panel	
 	bool panel_1_ready = (bool)res4; //signal from panel    	
 
-
+	/*if (m_iPrevSelection == -1)
+		m_iPrevSelection = gen_panel_select;
+	else if (m_iPrevSelection != gen_panel_select)
+	{
+		SendCommandToChild(m_iPrevSelection, PCOMMAND_CANCELACQ);
+		m_iPrevSelection = gen_panel_select;
+	}*/
+	
 	//if panel is selected and that panel is now Standby, then go to proceed
 	//But if the other panel is not standby mode, please wait.
 
@@ -621,11 +633,6 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 
 	//if (gen_panel_select == 0 && m_enPanelStatus[1] == READY_FOR_PULSE && !m_bNowCancelingAcq[0]) //Abnormal case: jump to standby before acquisition.
 
-
-	if (gen_panel_select == 0 && m_enPanelStatus[1] == READY_FOR_PULSE) //Abnormal case: jump to standby before acquisition.
-		SendCommandToChild(1, PCOMMAND_CANCELACQ);
-	else if (gen_panel_select == 1 && m_enPanelStatus[0] == READY_FOR_PULSE) //Abnormal case: jump to standby before acquisition.
-		SendCommandToChild(0, PCOMMAND_CANCELACQ);
 
 	
 
@@ -649,21 +656,14 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 		/* Close relay, asking panel to begin integration */
 		if (gen_panel_select == 0)
 		{
-			//if (m_enPanelStatus[0] == STANDBY_SIGNAL_DETECTED ) // 0 0 0 0 --> HardwareHandshaking ON --> io_enalbe(1) (HS_ACTIVE) -->  0 0 0 1   ??What if stuck in 1 1 0 0?
-			//{
-			//	this->log_output (
-			//		QString("[p] Sending message to the panel to be activated: axial"));
-
-			//	//StartCommandTimer(0, PCOMMAND_ACTIVATE); //sent once				
-			//	SendCommandToChild(1, PCOMMAND_UNLOCKFORPREPARE);
-			//	//m_bActivationHasBeenSent[0] = true;
-			//}
 			if (m_enPanelStatus[0] == READY_FOR_PULSE )
-			{
+			{				 
+
 				this->log_output (
 					QString("[p] Closing relay to panel: axial"));
 				this->advantech->relay_close (3); //close = connected	
 				//Sleep(100);
+				m_enPanelStatus[0] = PULSE_CHANGE_DETECTED;
 				this->generator_state = EXPOSE_REQUEST;
 			}
 			else
@@ -686,10 +686,12 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 			//}
 			if (m_enPanelStatus[1] == READY_FOR_PULSE)
 			{
+				
 				this->log_output (
 					QString("[p] Closing relay to panel: g90"));
 				this->advantech->relay_close (4); //close = connected				
 				//Sleep(100);
+				m_enPanelStatus[1] = PULSE_CHANGE_DETECTED;
 				this->generator_state = EXPOSE_REQUEST;
 			}
 			else
@@ -733,18 +735,18 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 	//beam swithc on 
 	//if (gen_panel_select == 0 && (m_enPanelStatus[0] == PULSE_CHANGE_DETECTED || m_enPanelStatus[0] == COMPLETE_SIGNAL_DETECTED ||
 	//	m_enPanelStatus[0] == ))
-	if (gen_panel_select == 0 && m_enPanelStatus[0] != READY_FOR_PULSE)
-	{
-		//Sleep(300);
-		this->advantech->relay_open (0); //beam on signal to gen.
-		//this->advantech->relay_open (3);
-	}
-	if (gen_panel_select == 1 && m_enPanelStatus[1] != READY_FOR_PULSE)
-	{
-		//Sleep(300);
-		this->advantech->relay_open (0); //beam on signal to gen.
-		//this->advantech->relay_open (4);
-	}
+	//if (gen_panel_select == 0 && m_enPanelStatus[0] != READY_FOR_PULSE)
+	//{
+	//	//Sleep(300);
+	//	this->advantech->relay_open (0); //beam on signal to gen.
+	//	//this->advantech->relay_open (3);
+	//}
+	//if (gen_panel_select == 1 && m_enPanelStatus[1] != READY_FOR_PULSE)
+	//{
+	//	//Sleep(300);
+	//	this->advantech->relay_open (0); //beam on signal to gen.
+	//	//this->advantech->relay_open (4);
+	//}
 
 	/* Check if generator prep request complete */
 	//if (!gen_expose_request)
@@ -773,6 +775,12 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 		}*/
 		this->generator_state = WAITING;
 	}
+
+	if (gen_panel_select == 0 && m_enPanelStatus[1] == READY_FOR_PULSE) //Abnormal case: jump to standby before acquisition.
+		SendCommandToChild(1, PCOMMAND_CANCELACQ);
+	else if (gen_panel_select == 1 && m_enPanelStatus[0] == READY_FOR_PULSE) //Abnormal case: jump to standby before acquisition.
+		SendCommandToChild(0, PCOMMAND_CANCELACQ);
+
 }
 
 void 
@@ -781,7 +789,7 @@ Acquire_4030e_parent::UpdateLableStatus()
 	for (int i = 0 ; i<MAX_PANEL_NUM_YK ; i++)
 	{
 		this->window->UpdateLabel(i,this->m_enPanelStatus[i]);
-		//this->window->set_icon((1-i),this->m_enPanelStatus[i]); YK0405
+		this->window->set_icon((1-i),this->m_enPanelStatus[i]);
 	} 
 }
 
@@ -997,10 +1005,15 @@ bool Acquire_4030e_parent::SOCKET_StartServer(int iPanelIdx)
 
 	//QString strServerName = QString("SOCKET_MSG_TO_CHILD_%1").arg(idx);		
 	//SOCKET_ConnectToServer(strServerName);
+	connect(m_pServer[iPanelIdx], SIGNAL(newConnection()), this, SLOT(SOCKET_ConnectClient()));
 
 	if (!m_pServer[iPanelIdx]->listen(strServerName))
 	{
 		return false;
+	}
+	else
+	{
+		log_output("Server is listening");
 	}
 
 	return true;
@@ -1022,8 +1035,39 @@ void Acquire_4030e_parent::SOCKET_ConnectClient(int iPanelIdx)
 		//kill_rogue_processes();
 
 	}
-
-	
-
 }
 
+
+void Acquire_4030e_parent::SOCKET_ConnectClient()
+{
+	if (m_pServer[0]->hasPendingConnections())
+	{
+		m_pClientConnect[0] = m_pServer[0]->nextPendingConnection();
+
+		connect(m_pClientConnect[0], SIGNAL(disconnected()), m_pClientConnect[0], SLOT(deleteLater()));
+		if (m_pClientConnect[0] != NULL)
+			log_output(QString("[p] Client For child %1 is approved to be connected").arg(0));
+		else
+		{
+			log_output(QString("[p] Client For child %1 is not connected. Check the server name.").arg(0));
+		}
+
+	}
+	if (m_pServer[1]->hasPendingConnections())
+	{
+		m_pClientConnect[1] = m_pServer[1]->nextPendingConnection();
+
+		connect(m_pClientConnect[1], SIGNAL(disconnected()), m_pClientConnect[1], SLOT(deleteLater()));
+		if (m_pClientConnect[1] != NULL)
+			log_output(QString("[p] Client For child %1 is approved to be connected").arg(1));
+		else
+		{
+			log_output(QString("[p] Client For child %1 is not connected. Check the server name.").arg(1));
+		}
+	}
+
+	
+	
+
+	
+}

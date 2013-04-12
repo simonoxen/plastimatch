@@ -51,6 +51,7 @@ public slots:
 	void timerAboutToQuit_event ();
     void poll_child_messages ();
     void about_to_quit ();		
+	void SOCKET_ConnectClient();
 	//void FinalQuit();
 
 
@@ -115,8 +116,9 @@ public:
 	bool m_bPanelRelayOpen0;
 	bool m_bPanelRelayOpen1;
 
+	//bool m_bNowCancelingAcq[2];
 
-	bool m_bNowCancelingAcq[2];
+	//int m_iPrevSelection;
 
 public:
 	bool SOCKET_StartServer(int iPanelIdx);

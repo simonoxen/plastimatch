@@ -161,12 +161,15 @@ void Acquire_4030e_DlgControl::GetPanelInfo()
 
 void Acquire_4030e_DlgControl::GetDarkFieldImage()
 {  
-	int iAvgFrames = SpinDarkAvgFrames->value();
-
 	Acquire_4030e_child* qMyApp = (Acquire_4030e_child*)qApp;
-	aqprintf("PCMSG_DARKFIELD_ACQUSITION_START\n");
-	qMyApp->PC_DarkFieldAcquisition_SingleShot(iAvgFrames);
-	aqprintf("PCMSG_DARKFIELD_ACQUSITION_COMPLETE\n");
+	if (qMyApp->m_enPanelStatus != READY_FOR_PULSE)
+	{
+		aqprintf("Dark field acquisition only can be performed in READY FOR PULSE\n");
+		return;
+	}	
+	//aqprintf("PCMSG_DARKFIELD_ACQUSITION_START\n");
+	qMyApp->ChangePanelStatus(ACQUIRING_DARK_IMAGE);
+	//aqprintf("PCMSG_DARKFIELD_ACQUSITION_COMPLETE\n");
 }
 
 void Acquire_4030e_DlgControl::ChkOffsetCorrectionOn()
