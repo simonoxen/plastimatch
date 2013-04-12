@@ -12,6 +12,7 @@
 #include "dcmtk_metadata.h"
 #include "dcmtk_series.h"
 #include "dicom_rt_study.h"
+#include "logfile.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "print_and_exit.h"
@@ -108,7 +109,7 @@ Dcmtk_series::get_referenced_uid (void) const
     if (!rc) {
 	return "";
     }
-    printf ("Found DCM_ReferencedFrameOfReferenceSequence!\n");
+    lprintf ("Found DCM_ReferencedFrameOfReferenceSequence!\n");
 
     DcmItem* rss = 0;
     rc = rfors->findAndGetSequenceItem (
@@ -116,7 +117,7 @@ Dcmtk_series::get_referenced_uid (void) const
     if (!rc) {
 	return "";
     }
-    printf ("Found DCM_RTReferencedStudySequence!\n");
+    lprintf ("Found DCM_RTReferencedStudySequence!\n");
 
     return "";
 }
@@ -235,7 +236,7 @@ Dcmtk_series::load_plm_image (void)
     }
 
     /* Report information about best chunk */
-    printf ("Best chuck:\n  Slices %d to %d from (0 to %d)\n"
+    lprintf ("Best chuck:\n  Slices %d to %d from (0 to %d)\n"
 	"  Z_loc = %f %f\n" 
 	"  Slice spacing = %f\n", 
 	best_chunk_start, best_chunk_start + best_chunk_len - 1, slice_no, 
@@ -244,12 +245,12 @@ Dcmtk_series::load_plm_image (void)
 	best_chunk_diff);
 
     /* Some debugging info */
-    printf ("Slices: ");
+    lprintf ("Slices: ");
     for (it = d_ptr->m_flist.begin(); it != d_ptr->m_flist.end(); ++it) {
 	Dcmtk_file *df = (*it);
-	printf ("%f ", df->m_vh.get_origin()[2]);
+	lprintf ("%f ", df->m_vh.get_origin()[2]);
     }
-    printf ("\n");
+    lprintf ("\n");
 
     /* Create a Volume_header to hold the image geometry */
     Volume_header vh;
@@ -276,11 +277,11 @@ Dcmtk_series::load_plm_image (void)
     vh.print ();
 
     /* Still more debugging info */
-    printf ("Resamples slices: ");
+    lprintf ("Resamples slices: ");
     for (plm_long i = 0; i < dim[2]; i++) {
-	printf ("%f ", vh.get_origin()[2] + i * vh.get_spacing()[2]);
+	lprintf ("%f ", vh.get_origin()[2] + i * vh.get_spacing()[2]);
     }
-    printf ("\n");
+    lprintf ("\n");
 
     /* Divine image type */
     df = (*d_ptr->m_flist.begin());
@@ -310,12 +311,12 @@ Dcmtk_series::load_plm_image (void)
     if (!rc) {
 	return 0;
     }
-    printf ("Samp_per_pix: %d\n", (int) samp_per_pix);
-    printf ("Phot_interp: %s\n", phot_interp);
-    printf ("Bits_alloc: %d\n", (int) bits_alloc);
-    printf ("Bits_stored: %d\n", (int) bits_stored);
-    printf ("High_bit: %d\n", (int) high_bit);
-    printf ("Pixel_rep: %d\n", (int) pixel_rep);
+    lprintf ("Samp_per_pix: %d\n", (int) samp_per_pix);
+    lprintf ("Phot_interp: %s\n", phot_interp);
+    lprintf ("Bits_alloc: %d\n", (int) bits_alloc);
+    lprintf ("Bits_stored: %d\n", (int) bits_stored);
+    lprintf ("High_bit: %d\n", (int) high_bit);
+    lprintf ("Pixel_rep: %d\n", (int) pixel_rep);
 
     float rescale_slope, rescale_intercept;
     rc = df->get_ds_float (DCM_RescaleIntercept, &rescale_intercept);
@@ -327,30 +328,32 @@ Dcmtk_series::load_plm_image (void)
         rescale_slope = 1;
     }
 
-    printf ("S/I = %f/%f\n", rescale_slope, rescale_intercept);
+    lprintf ("S/I = %f/%f\n", rescale_slope, rescale_intercept);
 
     /* Some kinds of images we don't know how to deal with.  
        Don't load these. */
     if (samp_per_pix != 1) {
+        lprintf ("Sorry, couldn't load image: samp_per_pix\n");
 	return 0;
     }
     if (strcmp (phot_interp, "MONOCHROME2")) {
+        lprintf ("Sorry, couldn't load image: phot_interp\n");
 	return 0;
     }
     if (bits_alloc != 16) {
+        lprintf ("Sorry, couldn't load image: bits_alloc\n");
 	return 0;
     }
-    if (bits_stored != 16) {
+    if (bits_stored != high_bit + 1) {
+        lprintf ("Sorry, couldn't load image: bits_stored/high_bit\n");
 	return 0;
     }
-    if (high_bit != 15) {
-	return 0;
-    }
-    if (pixel_rep != 1) {
+    if (pixel_rep != 0 && pixel_rep != 1) {
+        lprintf ("Sorry, couldn't load image: pixel_rep\n");
 	return 0;
     }
 
-    printf ("Image looks ok.  Try to load.\n");
+    lprintf ("Image looks ok.  Try to load.\n");
 
     Plm_image *pli = new Plm_image;
     pli->m_type = PLM_IMG_TYPE_GPUIT_SHORT;
@@ -378,7 +381,7 @@ Dcmtk_series::load_plm_image (void)
 	Dcmtk_file *df = (*best_slice_it);
 	unsigned long length;
 
-	printf ("Loading slice z=%f at location z=%f\n",
+	lprintf ("Loading slice z=%f at location z=%f\n",
 	    (*best_slice_it)->m_vh.get_origin()[2], z_pos);
 
 	rc = df->get_uint16_array (DCM_PixelData, &pixel_data, &length);
