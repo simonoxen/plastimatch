@@ -36,6 +36,23 @@
 #include "warp_parms.h"
 #include "xio_structures.h"
 
+class Rtss_private {
+public:
+    Metadata *m_meta;            /* Metadata specific to this ss_image */
+    Plm_image *m_labelmap;      /* Structure set lossy bitmap form */
+    Plm_image *m_ss_img;        /* Structure set in lossless bitmap form */
+
+public:
+    Rtss_private () {
+        m_meta = new Metadata;
+        m_labelmap = 0;
+        m_ss_img = 0;
+    }
+    ~Rtss_private () {
+        delete m_meta;
+    }
+};
+
 static void
 compose_prefix_fn (
     Pstring *fn, 
@@ -50,32 +67,37 @@ compose_prefix_fn (
         extension);
 }
 
-Rtss::Rtss (Rtds *rtds) {
+Rtss::Rtss (Rtds *rtds)
+{
+    this->d_ptr = new Rtss_private;
+
     m_cxt = 0;
-    m_ss_img = 0;
-    m_labelmap = 0;
     if (rtds) {
-        m_meta.set_parent (rtds->get_metadata());
+        d_ptr->m_meta->set_parent (rtds->get_metadata());
     }
 }
 
-Rtss::~Rtss () {
+Rtss::~Rtss ()
+{
     clear ();
+
+    delete this->d_ptr;
 }
 
 void
-Rtss::clear () {
+Rtss::clear ()
+{
     if (this->m_cxt) {
         delete this->m_cxt;
         this->m_cxt = 0;
     }
-    if (this->m_ss_img) {
-        delete this->m_ss_img;
-        this->m_ss_img = 0;
+    if (d_ptr->m_ss_img) {
+        delete d_ptr->m_ss_img;
+        d_ptr->m_ss_img = 0;
     }
-    if (this->m_labelmap) {
-        delete this->m_labelmap;
-        this->m_labelmap = 0;
+    if (d_ptr->m_labelmap) {
+        delete d_ptr->m_labelmap;
+        d_ptr->m_labelmap = 0;
     }
 }
 
@@ -83,11 +105,11 @@ void
 Rtss::load (const char *ss_img, const char *ss_list)
 {
     /* Load ss_img */
-    if (m_ss_img) {
-        delete this->m_ss_img;
+    if (d_ptr->m_ss_img) {
+        delete d_ptr->m_ss_img;
     }
     if (ss_img && file_exists (ss_img)) {
-        this->m_ss_img = plm_image_load_native (ss_img);
+        d_ptr->m_ss_img = plm_image_load_native (ss_img);
     }
 
     /* Load ss_list */
@@ -160,7 +182,7 @@ Rtss::load_prefix (const Pstring &prefix_dir)
 
         if (first) {
             /* Create ss_image with same resolution as first image */
-            this->m_ss_img = new Plm_image;
+            d_ptr->m_ss_img = new Plm_image;
             ss_img = UCharVecImageType::New ();
             itk_image_set_header (ss_img, pih);
             ss_img->SetVectorLength (out_vec_len);
@@ -181,12 +203,12 @@ Rtss::load_prefix (const Pstring &prefix_dir)
             }
 #endif
 
-            this->m_ss_img->set_itk (ss_img);
+            d_ptr->m_ss_img->set_itk (ss_img);
             Plm_image_header::clone (&ss_img_pih, &pih);
 
             /* Create ss_list to hold strucure names */
             this->m_cxt = new Rtss_structure_set;
-            this->m_cxt->set_geometry (this->m_ss_img);
+            this->m_cxt->set_geometry (d_ptr->m_ss_img);
 
             first = false;
         } else {
@@ -247,7 +269,7 @@ void
 Rtss::load_cxt (const Pstring &input_fn, Slice_index *rdd)
 {
     this->m_cxt = new Rtss_structure_set;
-    cxt_load (this->m_cxt, &this->m_meta, rdd, (const char*) input_fn);
+    cxt_load (this->m_cxt, d_ptr->m_meta, rdd, (const char*) input_fn);
 }
 
 void
@@ -255,7 +277,7 @@ Rtss::load_gdcm_rtss (const char *input_fn, Slice_index *rdd)
 {
 #if GDCM_VERSION_1
     this->m_cxt = new Rtss_structure_set;
-    gdcm_rtss_load (this->m_cxt, &this->m_meta, rdd, input_fn);
+    gdcm_rtss_load (this->m_cxt, d_ptr->m_meta, rdd, input_fn);
 #endif
 }
 
@@ -288,7 +310,7 @@ Rtss::get_structure_name (size_t index)
 UCharImageType::Pointer
 Rtss::get_structure_image (int index)
 {
-    if (!m_ss_img) {
+    if (!d_ptr->m_ss_img) {
         print_and_exit (
             "Error extracting unknown structure image (no ssi %d)\n", index);
     }
@@ -306,7 +328,7 @@ Rtss::get_structure_image (int index)
             "Error extracting unknown structure image (no bit %d)\n", index);
     }
     UCharImageType::Pointer prefix_img 
-        = ss_img_extract_bit (m_ss_img, bit);
+        = ss_img_extract_bit (d_ptr->m_ss_img, bit);
 
     return prefix_img;
 }
@@ -324,7 +346,7 @@ Rtss::save_cxt (
     bool prune_empty
 )
 {
-    cxt_save (this->m_cxt, &this->m_meta, rdd, (const char*) cxt_fn, 
+    cxt_save (this->m_cxt, d_ptr->m_meta, rdd, (const char*) cxt_fn, 
         prune_empty);
 }
 
@@ -352,7 +374,7 @@ Rtss::save_gdcm_rtss (
     snprintf (fn, _MAX_PATH, "%s/%s", output_dir, "rtss.dcm");
 
 #if GDCM_VERSION_1
-    gdcm_rtss_save (this->m_cxt, &this->m_meta, rdd, fn);
+    gdcm_rtss_save (this->m_cxt, d_ptr->m_meta, rdd, fn);
 #else
     /* GDCM 2 not implemented -- you're out of luck. */
 #endif
@@ -398,38 +420,38 @@ Rtss::save_prefix_fcsv (const Pstring &output_prefix)
 void
 Rtss::save_ss_image (const Pstring &ss_img_fn)
 {
-    if (!this->m_ss_img) {
+    if (!d_ptr->m_ss_img) {
         print_and_exit (
             "Error: save_ss_image() tried to write a non-existant file");
     }
-    if (this->m_ss_img->m_type == PLM_IMG_TYPE_GPUIT_UCHAR_VEC
-        || this->m_ss_img->m_type == PLM_IMG_TYPE_ITK_UCHAR_VEC) 
+    if (d_ptr->m_ss_img->m_type == PLM_IMG_TYPE_GPUIT_UCHAR_VEC
+        || d_ptr->m_ss_img->m_type == PLM_IMG_TYPE_ITK_UCHAR_VEC) 
     {
         /* Image type must be uchar vector */
-        this->m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
+        d_ptr->m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
     }
     else {
         /* Image type must be uint32_t */
-        this->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
+        d_ptr->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
     }
 
     /* Set metadata */
-    // this->m_ss_img->set_metadata ("I am a", "Structure set");
+    // d_ptr->m_ss_img->set_metadata ("I am a", "Structure set");
 
-    this->m_ss_img->save_image ((const char*) ss_img_fn);
+    d_ptr->m_ss_img->save_image ((const char*) ss_img_fn);
 }
 
 void
 Rtss::save_labelmap (const Pstring &labelmap_fn)
 {
-    this->m_labelmap->save_image ((const char*) labelmap_fn);
+    d_ptr->m_labelmap->save_image ((const char*) labelmap_fn);
 }
 
 void
 Rtss::save_prefix (const std::string &output_prefix,
     const std::string& extension)
 {
-    if (!m_ss_img) {
+    if (!d_ptr->m_ss_img) {
         return;
     }
 
@@ -445,7 +467,7 @@ Rtss::save_prefix (const std::string &output_prefix,
 
         if (bit == -1) continue;
         UCharImageType::Pointer prefix_img 
-            = ss_img_extract_bit (m_ss_img, bit);
+            = ss_img_extract_bit (d_ptr->m_ss_img, bit);
 
         fn = string_format ("%s/%s.%s", 
             output_prefix.c_str(),
@@ -459,7 +481,7 @@ Rtss::save_prefix (const std::string &output_prefix,
 void
 Rtss::save_prefix (const Pstring &output_prefix)
 {
-    if (!m_ss_img) {
+    if (!d_ptr->m_ss_img) {
         return;
     }
 
@@ -475,7 +497,7 @@ Rtss::save_prefix (const Pstring &output_prefix)
 
         if (bit == -1) continue;
         UCharImageType::Pointer prefix_img 
-            = ss_img_extract_bit (m_ss_img, bit);
+            = ss_img_extract_bit (d_ptr->m_ss_img, bit);
 
         compose_prefix_fn (&fn, output_prefix, curr_structure->name, "mha");
         itk_image_save (prefix_img, (const char*) fn);
@@ -499,28 +521,28 @@ void
 Rtss::save_xio (Xio_ct_transform *xio_transform, Xio_version xio_version, 
     const Pstring &output_dir)
 {
-    xio_structures_save (this->m_cxt, &m_meta, xio_transform,
+    xio_structures_save (this->m_cxt, d_ptr->m_meta, xio_transform,
         xio_version, (const char*) output_dir);
 }
 
 UInt32ImageType::Pointer
 Rtss::get_ss_img_uint32 (void)
 {
-    if (!this->m_ss_img) {
+    if (!d_ptr->m_ss_img) {
         print_and_exit ("Sorry, can't get_ss_img()\n");
     }
-    m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
-    return this->m_ss_img->m_itk_uint32;
+    d_ptr->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
+    return d_ptr->m_ss_img->m_itk_uint32;
 }
 
 UCharVecImageType::Pointer
 Rtss::get_ss_img_uchar_vec (void)
 {
-    if (!this->m_ss_img) {
+    if (!d_ptr->m_ss_img) {
         print_and_exit ("Sorry, can't get_ss_img()\n");
     }
-    m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
-    return this->m_ss_img->m_itk_uchar_vec;
+    d_ptr->m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
+    return d_ptr->m_ss_img->m_itk_uchar_vec;
 }
 
 void
@@ -541,7 +563,7 @@ void
 Rtss::convert_ss_img_to_cxt (void)
 {
     /* Only convert if ss_img found */
-    if (!this->m_ss_img) {
+    if (!d_ptr->m_ss_img) {
         return;
     }
 
@@ -556,26 +578,26 @@ Rtss::convert_ss_img_to_cxt (void)
     }
 
     /* Copy geometry from ss_img to cxt */
-    this->m_cxt->set_geometry (this->m_ss_img);
+    this->m_cxt->set_geometry (d_ptr->m_ss_img);
 
-    if (this->m_ss_img->m_type == PLM_IMG_TYPE_GPUIT_UCHAR_VEC
-        || this->m_ss_img->m_type == PLM_IMG_TYPE_ITK_UCHAR_VEC) 
+    if (d_ptr->m_ss_img->m_type == PLM_IMG_TYPE_GPUIT_UCHAR_VEC
+        || d_ptr->m_ss_img->m_type == PLM_IMG_TYPE_ITK_UCHAR_VEC) 
     {
         /* Image type must be uchar vector */
-        this->m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
+        d_ptr->m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
 
         /* Do extraction */
         lprintf ("Doing extraction\n");
-        cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uchar_vec, 
+        cxt_extract (this->m_cxt, d_ptr->m_ss_img->m_itk_uchar_vec, 
             -1, use_existing_bits);
     }
     else {
         /* Image type must be uint32_t */
-        this->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
+        d_ptr->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
 
         /* Do extraction */
         lprintf ("Doing extraction\n");
-        cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uint32, -1, 
+        cxt_extract (this->m_cxt, d_ptr->m_ss_img->m_itk_uint32, -1, 
             use_existing_bits);
     }
 }
@@ -583,27 +605,27 @@ Rtss::convert_ss_img_to_cxt (void)
 void
 Rtss::convert_to_uchar_vec (void)
 {
-    if (!this->m_ss_img) {
+    if (!d_ptr->m_ss_img) {
         print_and_exit (
             "Error: convert_to_uchar_vec() requires an image");
     }
-    this->m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
+    d_ptr->m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
 }
 
 void
 Rtss::cxt_re_extract (void)
 {
     this->m_cxt->free_all_polylines ();
-    if (this->m_ss_img->m_type == PLM_IMG_TYPE_GPUIT_UCHAR_VEC
-        || this->m_ss_img->m_type == PLM_IMG_TYPE_ITK_UCHAR_VEC) 
+    if (d_ptr->m_ss_img->m_type == PLM_IMG_TYPE_GPUIT_UCHAR_VEC
+        || d_ptr->m_ss_img->m_type == PLM_IMG_TYPE_ITK_UCHAR_VEC) 
     {
-        this->m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
-        cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uchar_vec, 
+        d_ptr->m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
+        cxt_extract (this->m_cxt, d_ptr->m_ss_img->m_itk_uchar_vec, 
             this->m_cxt->num_structures, true);
     }
     else {
-        this->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
-        cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uint32, 
+        d_ptr->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
+        cxt_extract (this->m_cxt, d_ptr->m_ss_img->m_itk_uint32, 
             this->m_cxt->num_structures, true);
     }
 }
@@ -640,21 +662,21 @@ Rtss::rasterize (
     /* Convert rasterized structure sets from vol to plm_image */
     printf ("Converting...\n");
     if (want_labelmap) {
-        this->m_labelmap = new Plm_image;
-        this->m_labelmap->set_volume (rasterizer.labelmap_vol);
+        d_ptr->m_labelmap = new Plm_image;
+        d_ptr->m_labelmap->set_volume (rasterizer.labelmap_vol);
         rasterizer.labelmap_vol = 0;
     }
-    if (this->m_ss_img) {
-        delete this->m_ss_img;
+    if (d_ptr->m_ss_img) {
+        delete d_ptr->m_ss_img;
     }
-    this->m_ss_img = new Plm_image;
+    d_ptr->m_ss_img = new Plm_image;
 
     if (use_ss_img_vec) {
-        this->m_ss_img->set_itk (rasterizer.m_ss_img->m_itk_uchar_vec);
+        d_ptr->m_ss_img->set_itk (rasterizer.m_ss_img->m_itk_uchar_vec);
     }
     else {
         Volume *v = rasterizer.m_ss_img->steal_volume();
-        this->m_ss_img->set_volume (v);
+        d_ptr->m_ss_img->set_volume (v);
     }
 
     printf ("Finished rasterization.\n");
@@ -684,21 +706,21 @@ Rtss::warp (
 {
     Plm_image *tmp;
 
-    if (this->m_labelmap) {
+    if (d_ptr->m_labelmap) {
         printf ("Warping labelmap.\n");
         tmp = new Plm_image;
-        plm_warp (tmp, 0, xf, pih, this->m_labelmap, 0, use_itk, 0);
-        delete this->m_labelmap;
-        this->m_labelmap = tmp;
-        this->m_labelmap->convert (PLM_IMG_TYPE_ITK_ULONG);
+        plm_warp (tmp, 0, xf, pih, d_ptr->m_labelmap, 0, use_itk, 0);
+        delete d_ptr->m_labelmap;
+        d_ptr->m_labelmap = tmp;
+        d_ptr->m_labelmap->convert (PLM_IMG_TYPE_ITK_ULONG);
     }
 
-    if (this->m_ss_img) {
+    if (d_ptr->m_ss_img) {
         printf ("Warping ss_img.\n");
         tmp = new Plm_image;
-        plm_warp (tmp, 0, xf, pih, this->m_ss_img, 0, use_itk, 0);
-        delete this->m_ss_img;
-        this->m_ss_img = tmp;
+        plm_warp (tmp, 0, xf, pih, d_ptr->m_ss_img, 0, use_itk, 0);
+        delete d_ptr->m_ss_img;
+        d_ptr->m_ss_img = tmp;
     }
 
     /* The cxt polylines are now obsolete, but we can't delete it because 
@@ -712,4 +734,26 @@ Rtss::warp (
     Warp_parms *parms)
 {
     this->warp (xf, pih, parms->use_itk);
+}
+
+bool
+Rtss::have_ss_img ()
+{
+    return d_ptr->m_ss_img != 0;
+}
+
+void
+Rtss::set_ss_img (UCharImageType::Pointer ss_img)
+{
+    if (d_ptr->m_ss_img) {
+        delete d_ptr->m_ss_img;
+    }
+    d_ptr->m_ss_img = new Plm_image;
+    d_ptr->m_ss_img->set_itk (ss_img);
+}
+
+Plm_image*
+Rtss::get_ss_img ()
+{
+    return d_ptr->m_ss_img;
 }

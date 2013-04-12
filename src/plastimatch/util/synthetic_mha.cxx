@@ -801,8 +801,7 @@ synthetic_mha (
     rtds->m_img->set_itk (im_out);
     if (parms->m_want_ss_img) {
         rtds->m_rtss = new Rtss (rtds);
-        rtds->m_rtss->m_ss_img = new Plm_image;
-        rtds->m_rtss->m_ss_img->set_itk (ss_img);
+        rtds->m_rtss->set_ss_img (ss_img);
 
         /* Add structure names */
         rtds->m_rtss->m_cxt = new Rtss_structure_set;

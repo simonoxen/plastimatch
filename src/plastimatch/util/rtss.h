@@ -14,6 +14,7 @@
 class Plm_image;
 class Plm_image_header;
 class Rtds;
+class Rtss_private;
 class Rtss_structure_set;
 class Rtss_structure;
 class Slice_index;
@@ -23,10 +24,9 @@ class Warp_parms;
 
 class PLMUTIL_API Rtss {
 public:
+    Rtss_private *d_ptr;
+
     Rtss_structure_set *m_cxt;  /* Structure set in polyline form */
-    Plm_image *m_ss_img;        /* Structure set in lossless bitmap form */
-    Plm_image *m_labelmap;      /* Structure set lossy bitmap form */
-    Metadata m_meta;            /* Metadata specific to this ss_image */
 
 public:
     Rtss (Rtds *rtds = 0);
@@ -72,6 +72,10 @@ public:
     void find_rasterization_geometry (Plm_image_header *pih);
     void warp (Xform *xf, Plm_image_header *pih, bool use_itk = false);
     void warp (Xform *xf, Plm_image_header *pih, Warp_parms *parms);
+
+    bool have_ss_img ();
+    void set_ss_img (UCharImageType::Pointer ss_img);
+    Plm_image* get_ss_img ();
 };
 
 #endif

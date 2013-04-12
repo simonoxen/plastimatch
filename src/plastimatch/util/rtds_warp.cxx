@@ -301,10 +301,10 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
         /* use the spacing of the input image */
         lprintf ("Setting PIH from M_IMG\n");
         pih.set_from_plm_image (rtds->m_img);
-    } else if (rtds->m_rtss && rtds->m_rtss->m_ss_img) {
+    } else if (rtds->m_rtss && rtds->m_rtss->have_ss_img()) {
         /* use the spacing of the input image */
         lprintf ("Setting PIH from M_SS_IMG\n");
-        pih.set_from_plm_image (rtds->m_rtss->m_ss_img);
+        pih.set_from_plm_image (rtds->m_rtss->get_ss_img());
     }
     else if (rtds->m_rtss &&
         rtds->m_rtss->m_cxt && 
