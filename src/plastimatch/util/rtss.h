@@ -26,8 +26,6 @@ class PLMUTIL_API Rtss {
 public:
     Rtss_private *d_ptr;
 
-    Rtss_structure_set *m_cxt;  /* Structure set in polyline form */
-
 public:
     Rtss (Rtds *rtds = 0);
     ~Rtss ();
@@ -76,6 +74,10 @@ public:
     bool have_ss_img ();
     void set_ss_img (UCharImageType::Pointer ss_img);
     Plm_image* get_ss_img ();
+
+    bool have_structure_set ();
+    void set_structure_set (Rtss_structure_set *rtss_ss);
+    Rtss_structure_set* get_structure_set ();
 };
 
 #endif

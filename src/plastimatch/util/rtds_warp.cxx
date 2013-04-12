@@ -208,7 +208,7 @@ warp_and_save_ss (
            geometry.
         */
         Plm_image_header pih;
-        Rtss_structure_set *cxt = rtds->m_rtss->m_cxt;
+        Rtss_structure_set *cxt = rtds->m_rtss->get_structure_set();
         if (parms->xf_in_fn.not_empty()) {
             pih.set_from_gpuit (cxt->rast_dim, cxt->rast_offset, 
                 cxt->rast_spacing, 0);
@@ -307,19 +307,19 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
         pih.set_from_plm_image (rtds->m_rtss->get_ss_img());
     }
     else if (rtds->m_rtss &&
-        rtds->m_rtss->m_cxt && 
-        rtds->m_rtss->m_cxt->have_geometry) {
+        rtds->m_rtss->have_structure_set() && 
+        rtds->m_rtss->get_structure_set()->have_geometry) {
         /* use the spacing of the structure set */
         pih.set_from_gpuit (
-            rtds->m_rtss->m_cxt->m_dim, 
-            rtds->m_rtss->m_cxt->m_offset, 
-            rtds->m_rtss->m_cxt->m_spacing, 
+            rtds->m_rtss->get_structure_set()->m_dim, 
+            rtds->m_rtss->get_structure_set()->m_offset, 
+            rtds->m_rtss->get_structure_set()->m_spacing, 
             0);
     } else if (rtds->has_dose()) {
         /* use the spacing of dose */
         lprintf ("Setting PIH from DOSE\n");
         pih.set_from_plm_image (rtds->get_dose_plm_image());
-    } else if (rtds->m_rtss && rtds->m_rtss->m_cxt) {
+    } else if (rtds->m_rtss && rtds->m_rtss->have_structure_set()) {
         /* we have structure set, but without geometry.  use 
            heuristics to find a good geometry for rasterization */
         rtds->m_rtss->find_rasterization_geometry (&pih);
@@ -458,7 +458,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 
         /* Set rasterization geometry */
         lprintf ("Rtds_warp: Set rasterization geometry.\n");
-        rtds->m_rtss->m_cxt->set_rasterization_geometry ();
+        rtds->m_rtss->get_structure_set()->set_rasterization_geometry ();
     }
 
     /* Warp and save structure set (except dicom) */

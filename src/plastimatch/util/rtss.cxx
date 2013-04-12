@@ -41,12 +41,14 @@ public:
     Metadata *m_meta;            /* Metadata specific to this ss_image */
     Plm_image *m_labelmap;      /* Structure set lossy bitmap form */
     Plm_image *m_ss_img;        /* Structure set in lossless bitmap form */
+    Rtss_structure_set *m_cxt;  /* Structure set in polyline form */
 
 public:
     Rtss_private () {
         m_meta = new Metadata;
         m_labelmap = 0;
         m_ss_img = 0;
+        m_cxt = 0;
     }
     ~Rtss_private () {
         delete m_meta;
@@ -71,7 +73,6 @@ Rtss::Rtss (Rtds *rtds)
 {
     this->d_ptr = new Rtss_private;
 
-    m_cxt = 0;
     if (rtds) {
         d_ptr->m_meta->set_parent (rtds->get_metadata());
     }
@@ -87,9 +88,9 @@ Rtss::~Rtss ()
 void
 Rtss::clear ()
 {
-    if (this->m_cxt) {
-        delete this->m_cxt;
-        this->m_cxt = 0;
+    if (d_ptr->m_cxt) {
+        delete d_ptr->m_cxt;
+        d_ptr->m_cxt = 0;
     }
     if (d_ptr->m_ss_img) {
         delete d_ptr->m_ss_img;
@@ -113,12 +114,12 @@ Rtss::load (const char *ss_img, const char *ss_list)
     }
 
     /* Load ss_list */
-    if (this->m_cxt) {
-        delete this->m_cxt;
+    if (d_ptr->m_cxt) {
+        delete d_ptr->m_cxt;
     }
     if (ss_list && file_exists (ss_list)) {
         printf ("Trying to load ss_list: %s\n", ss_list);
-        this->m_cxt = ss_list_load (0, ss_list);
+        d_ptr->m_cxt = ss_list_load (0, ss_list);
     }
 }
 
@@ -207,8 +208,8 @@ Rtss::load_prefix (const Pstring &prefix_dir)
             Plm_image_header::clone (&ss_img_pih, &pih);
 
             /* Create ss_list to hold strucure names */
-            this->m_cxt = new Rtss_structure_set;
-            this->m_cxt->set_geometry (d_ptr->m_ss_img);
+            d_ptr->m_cxt = new Rtss_structure_set;
+            d_ptr->m_cxt->set_geometry (d_ptr->m_ss_img);
 
             first = false;
         } else {
@@ -218,9 +219,9 @@ Rtss::load_prefix (const Pstring &prefix_dir)
         }
 
         /* Add name to ss_list */
-        this->m_cxt->add_structure (
+        d_ptr->m_cxt->add_structure (
             structure_name, "", 
-            this->m_cxt->num_structures + 1,
+            d_ptr->m_cxt->num_structures + 1,
             bit);
         free (structure_name);
 
@@ -268,32 +269,32 @@ Rtss::load_prefix (const Pstring &prefix_dir)
 void
 Rtss::load_cxt (const Pstring &input_fn, Slice_index *rdd)
 {
-    this->m_cxt = new Rtss_structure_set;
-    cxt_load (this->m_cxt, d_ptr->m_meta, rdd, (const char*) input_fn);
+    d_ptr->m_cxt = new Rtss_structure_set;
+    cxt_load (d_ptr->m_cxt, d_ptr->m_meta, rdd, (const char*) input_fn);
 }
 
 void
 Rtss::load_gdcm_rtss (const char *input_fn, Slice_index *rdd)
 {
 #if GDCM_VERSION_1
-    this->m_cxt = new Rtss_structure_set;
-    gdcm_rtss_load (this->m_cxt, d_ptr->m_meta, rdd, input_fn);
+    d_ptr->m_cxt = new Rtss_structure_set;
+    gdcm_rtss_load (d_ptr->m_cxt, d_ptr->m_meta, rdd, input_fn);
 #endif
 }
 
 void
 Rtss::load_xio (const Xio_studyset& studyset)
 {
-    this->m_cxt = new Rtss_structure_set;
+    d_ptr->m_cxt = new Rtss_structure_set;
     printf ("calling xio_structures_load\n");
-    xio_structures_load (this->m_cxt, studyset);
+    xio_structures_load (d_ptr->m_cxt, studyset);
 }
 
 size_t
 Rtss::get_num_structures ()
 {
-    if (m_cxt) {
-        return m_cxt->num_structures;
+    if (d_ptr->m_cxt) {
+        return d_ptr->m_cxt->num_structures;
     }
     return 0;
 }
@@ -301,8 +302,8 @@ Rtss::get_num_structures ()
 std::string
 Rtss::get_structure_name (size_t index)
 {
-    if (m_cxt) {
-        return m_cxt->get_structure_name (index);
+    if (d_ptr->m_cxt) {
+        return d_ptr->m_cxt->get_structure_name (index);
     }
     return 0;
 }
@@ -315,12 +316,12 @@ Rtss::get_structure_image (int index)
             "Error extracting unknown structure image (no ssi %d)\n", index);
     }
 
-    if (!m_cxt) {
+    if (!d_ptr->m_cxt) {
         print_and_exit (
             "Error extracting unknown structure image (no cxt %d)\n", index);
     }
 
-    Rtss_structure *curr_structure = m_cxt->slist[index];
+    Rtss_structure *curr_structure = d_ptr->m_cxt->slist[index];
     int bit = curr_structure->bit;
 
     if (bit == -1) {
@@ -336,7 +337,7 @@ Rtss::get_structure_image (int index)
 void
 Rtss::save_colormap (const Pstring &colormap_fn)
 {
-    ss_list_save_colormap (this->m_cxt, (const char*) colormap_fn);
+    ss_list_save_colormap (d_ptr->m_cxt, (const char*) colormap_fn);
 }
 
 void
@@ -346,7 +347,7 @@ Rtss::save_cxt (
     bool prune_empty
 )
 {
-    cxt_save (this->m_cxt, d_ptr->m_meta, rdd, (const char*) cxt_fn, 
+    cxt_save (d_ptr->m_cxt, d_ptr->m_meta, rdd, (const char*) cxt_fn, 
         prune_empty);
 }
 
@@ -361,11 +362,11 @@ Rtss::save_gdcm_rtss (
     /* Perform destructive keyholization of the cxt.  This is necessary 
        because DICOM-RT requires that structures with holes be defined 
        using a single structure */
-    this->m_cxt->keyholize ();
+    d_ptr->m_cxt->keyholize ();
 
     /* Some systems (GE ADW) do not allow special characters in 
        structure names.  */
-    this->m_cxt->adjust_structure_names ();
+    d_ptr->m_cxt->adjust_structure_names ();
 
     if (rdd) {
         this->apply_dicom_dir (rdd);
@@ -374,7 +375,7 @@ Rtss::save_gdcm_rtss (
     snprintf (fn, _MAX_PATH, "%s/%s", output_dir, "rtss.dcm");
 
 #if GDCM_VERSION_1
-    gdcm_rtss_save (this->m_cxt, d_ptr->m_meta, rdd, fn);
+    gdcm_rtss_save (d_ptr->m_cxt, d_ptr->m_meta, rdd, fn);
 #else
     /* GDCM 2 not implemented -- you're out of luck. */
 #endif
@@ -402,15 +403,15 @@ Rtss::save_fcsv (
 void
 Rtss::save_prefix_fcsv (const Pstring &output_prefix)
 {
-    if (!this->m_cxt) {
+    if (!d_ptr->m_cxt) {
         print_and_exit (
             "Error: save_prefix_fcsv() tried to save a RTSS without a CXT\n");
     }
 
-    for (size_t i = 0; i < m_cxt->num_structures; i++)
+    for (size_t i = 0; i < d_ptr->m_cxt->num_structures; i++)
     {
         Pstring fn;
-        Rtss_structure *curr_structure = m_cxt->slist[i];
+        Rtss_structure *curr_structure = d_ptr->m_cxt->slist[i];
 
         compose_prefix_fn (&fn, output_prefix, curr_structure->name, "fcsv");
         save_fcsv (curr_structure, fn);
@@ -455,14 +456,14 @@ Rtss::save_prefix (const std::string &output_prefix,
         return;
     }
 
-    if (!m_cxt) {
+    if (!d_ptr->m_cxt) {
         printf ("WTF???\n");
     }
 
-    for (size_t i = 0; i < m_cxt->num_structures; i++)
+    for (size_t i = 0; i < d_ptr->m_cxt->num_structures; i++)
     {
         std::string fn;
-        Rtss_structure *curr_structure = m_cxt->slist[i];
+        Rtss_structure *curr_structure = d_ptr->m_cxt->slist[i];
         int bit = curr_structure->bit;
 
         if (bit == -1) continue;
@@ -485,14 +486,14 @@ Rtss::save_prefix (const Pstring &output_prefix)
         return;
     }
 
-    if (!m_cxt) {
+    if (!d_ptr->m_cxt) {
         printf ("WTF???\n");
     }
 
-    for (size_t i = 0; i < m_cxt->num_structures; i++)
+    for (size_t i = 0; i < d_ptr->m_cxt->num_structures; i++)
     {
         Pstring fn;
-        Rtss_structure *curr_structure = m_cxt->slist[i];
+        Rtss_structure *curr_structure = d_ptr->m_cxt->slist[i];
         int bit = curr_structure->bit;
 
         if (bit == -1) continue;
@@ -514,14 +515,14 @@ Rtss::save_prefix (const char *output_prefix)
 void
 Rtss::save_ss_list (const Pstring &ss_list_fn)
 {
-    ss_list_save (this->m_cxt, (const char*) ss_list_fn);
+    ss_list_save (d_ptr->m_cxt, (const char*) ss_list_fn);
 }
 
 void
 Rtss::save_xio (Xio_ct_transform *xio_transform, Xio_version xio_version, 
     const Pstring &output_dir)
 {
-    xio_structures_save (this->m_cxt, d_ptr->m_meta, xio_transform,
+    xio_structures_save (d_ptr->m_cxt, d_ptr->m_meta, xio_transform,
         xio_version, (const char*) output_dir);
 }
 
@@ -548,7 +549,7 @@ Rtss::get_ss_img_uchar_vec (void)
 void
 Rtss::apply_dicom_dir (const Slice_index *rdd)
 {
-    if (!this->m_cxt) {
+    if (!d_ptr->m_cxt) {
         return;
     }
 
@@ -556,7 +557,7 @@ Rtss::apply_dicom_dir (const Slice_index *rdd)
         return;
     }
 
-    this->m_cxt->apply_slice_index (rdd);
+    d_ptr->m_cxt->apply_slice_index (rdd);
 }
 
 void
@@ -569,16 +570,16 @@ Rtss::convert_ss_img_to_cxt (void)
 
     /* Allocate memory for cxt */
     bool use_existing_bits;
-    if (this->m_cxt) {
+    if (d_ptr->m_cxt) {
         use_existing_bits = true;
     }
     else {
-        this->m_cxt = new Rtss_structure_set;
+        d_ptr->m_cxt = new Rtss_structure_set;
         use_existing_bits = false;
     }
 
     /* Copy geometry from ss_img to cxt */
-    this->m_cxt->set_geometry (d_ptr->m_ss_img);
+    d_ptr->m_cxt->set_geometry (d_ptr->m_ss_img);
 
     if (d_ptr->m_ss_img->m_type == PLM_IMG_TYPE_GPUIT_UCHAR_VEC
         || d_ptr->m_ss_img->m_type == PLM_IMG_TYPE_ITK_UCHAR_VEC) 
@@ -588,7 +589,7 @@ Rtss::convert_ss_img_to_cxt (void)
 
         /* Do extraction */
         lprintf ("Doing extraction\n");
-        cxt_extract (this->m_cxt, d_ptr->m_ss_img->m_itk_uchar_vec, 
+        cxt_extract (d_ptr->m_cxt, d_ptr->m_ss_img->m_itk_uchar_vec, 
             -1, use_existing_bits);
     }
     else {
@@ -597,7 +598,7 @@ Rtss::convert_ss_img_to_cxt (void)
 
         /* Do extraction */
         lprintf ("Doing extraction\n");
-        cxt_extract (this->m_cxt, d_ptr->m_ss_img->m_itk_uint32, -1, 
+        cxt_extract (d_ptr->m_cxt, d_ptr->m_ss_img->m_itk_uint32, -1, 
             use_existing_bits);
     }
 }
@@ -615,26 +616,26 @@ Rtss::convert_to_uchar_vec (void)
 void
 Rtss::cxt_re_extract (void)
 {
-    this->m_cxt->free_all_polylines ();
+    d_ptr->m_cxt->free_all_polylines ();
     if (d_ptr->m_ss_img->m_type == PLM_IMG_TYPE_GPUIT_UCHAR_VEC
         || d_ptr->m_ss_img->m_type == PLM_IMG_TYPE_ITK_UCHAR_VEC) 
     {
         d_ptr->m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
-        cxt_extract (this->m_cxt, d_ptr->m_ss_img->m_itk_uchar_vec, 
-            this->m_cxt->num_structures, true);
+        cxt_extract (d_ptr->m_cxt, d_ptr->m_ss_img->m_itk_uchar_vec, 
+            d_ptr->m_cxt->num_structures, true);
     }
     else {
         d_ptr->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
-        cxt_extract (this->m_cxt, d_ptr->m_ss_img->m_itk_uint32, 
-            this->m_cxt->num_structures, true);
+        cxt_extract (d_ptr->m_cxt, d_ptr->m_ss_img->m_itk_uint32, 
+            d_ptr->m_cxt->num_structures, true);
     }
 }
 
 void
 Rtss::prune_empty (void)
 {
-    if (this->m_cxt) {
-        this->m_cxt->prune_empty ();
+    if (d_ptr->m_cxt) {
+        d_ptr->m_cxt->prune_empty ();
     }
 }
 
@@ -656,7 +657,7 @@ Rtss::rasterize (
 #endif
 
     printf ("Rasterizing...\n");
-    rasterizer.rasterize (this->m_cxt, pih, false, want_labelmap, true,
+    rasterizer.rasterize (d_ptr->m_cxt, pih, false, want_labelmap, true,
         use_ss_img_vec, xor_overlapping);
 
     /* Convert rasterized structure sets from vol to plm_image */
@@ -685,16 +686,16 @@ Rtss::rasterize (
 void
 Rtss::set_geometry (const Plm_image_header *pih)
 {
-    if (this->m_cxt) {
-        this->m_cxt->set_geometry (pih);
+    if (d_ptr->m_cxt) {
+        d_ptr->m_cxt->set_geometry (pih);
     }
 }
 
 void
 Rtss::find_rasterization_geometry (Plm_image_header *pih)
 {
-    if (this->m_cxt) {
-        this->m_cxt->find_rasterization_geometry (pih);
+    if (d_ptr->m_cxt) {
+        d_ptr->m_cxt->find_rasterization_geometry (pih);
     }
 }
 
@@ -756,4 +757,25 @@ Plm_image*
 Rtss::get_ss_img ()
 {
     return d_ptr->m_ss_img;
+}
+
+bool
+Rtss::have_structure_set ()
+{
+    return d_ptr->m_cxt != 0;
+}
+
+void
+Rtss::set_structure_set (Rtss_structure_set *rtss_ss)
+{
+    if (d_ptr->m_cxt) {
+        delete d_ptr->m_cxt;
+    }
+    d_ptr->m_cxt = rtss_ss;
+}
+
+Rtss_structure_set *
+Rtss::get_structure_set ()
+{
+    return d_ptr->m_cxt;
 }

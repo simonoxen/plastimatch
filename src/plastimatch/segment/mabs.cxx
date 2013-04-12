@@ -376,7 +376,7 @@ Mabs::prep (const std::string& input_dir, const std::string& output_dir)
     /* Remove structures which are not part of the atlas */
     timer.start();
     rtds.m_rtss->prune_empty ();
-    Rtss_structure_set *cxt = rtds.m_rtss->m_cxt;
+    Rtss_structure_set *cxt = rtds.m_rtss->get_structure_set();
     for (size_t i = 0; i < rtds.m_rtss->get_num_structures(); i++) {
         /* Check structure name, make sure it is something we 
            want to segment */

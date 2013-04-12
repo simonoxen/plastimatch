@@ -181,8 +181,9 @@ Rtds::load_xio (
     this->m_rtss->load_xio (xst);
 
     /* Apply XiO CT geometry to structures */
-    if (this->m_rtss->m_cxt) {
-        this->m_rtss->m_cxt->set_geometry (this->m_img);
+    if (this->m_rtss->have_structure_set()) {
+        Rtss_structure_set *rtss_ss = this->m_rtss->get_structure_set ();
+        rtss_ss->set_geometry (this->m_img);
     }
 
     /* Load demographics */
@@ -218,8 +219,8 @@ Rtds::load_xio (
     if (this->m_img) {
         xio_ct_apply_transform (this->m_img, d_ptr->m_xio_transform);
     }
-    if (this->m_rtss->m_cxt) {
-        xio_structures_apply_transform (this->m_rtss->m_cxt, 
+    if (this->m_rtss->have_structure_set()) {
+        xio_structures_apply_transform (this->m_rtss->get_structure_set(),
             d_ptr->m_xio_transform);
     }
     if (d_ptr->m_dose) {

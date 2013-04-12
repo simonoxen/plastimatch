@@ -803,27 +803,30 @@ synthetic_mha (
         rtds->m_rtss = new Rtss (rtds);
         rtds->m_rtss->set_ss_img (ss_img);
 
+        /* Insert structure set into rtds */
+        Rtss_structure_set *rtss_ss = new Rtss_structure_set;
+        rtds->m_rtss->set_structure_set (rtss_ss);
+
         /* Add structure names */
-        rtds->m_rtss->m_cxt = new Rtss_structure_set;
         switch (parms->pattern) {
         case PATTERN_OBJSTRUCTDOSE:
-            rtds->m_rtss->m_cxt->add_structure (Pstring ("Object 1"),
+            rtss_ss->add_structure (Pstring ("Object 1"),
                 Pstring(), 1, 0);
-            rtds->m_rtss->m_cxt->add_structure (Pstring ("Object 2"),
+            rtss_ss->add_structure (Pstring ("Object 2"),
                 Pstring(), 2, 1);
-            rtds->m_rtss->m_cxt->add_structure (Pstring ("Object 3"),
+            rtss_ss->add_structure (Pstring ("Object 3"),
                 Pstring(), 3, 2);
             break;
         case PATTERN_LUNG:
-            rtds->m_rtss->m_cxt->add_structure (Pstring ("Body"),
+            rtss_ss->add_structure (Pstring ("Body"),
                 Pstring(), 1, 0);
-            rtds->m_rtss->m_cxt->add_structure (Pstring ("Tumor"),
+            rtss_ss->add_structure (Pstring ("Tumor"),
                 Pstring(), 2, 1);
-            rtds->m_rtss->m_cxt->add_structure (Pstring ("Lung"),
+            rtss_ss->add_structure (Pstring ("Lung"),
                 Pstring(), 3, 2);
             break;
         default:
-            rtds->m_rtss->m_cxt->add_structure (Pstring ("Foreground"),
+            rtss_ss->add_structure (Pstring ("Foreground"),
                 Pstring(), 1, 0);
         }
     }
