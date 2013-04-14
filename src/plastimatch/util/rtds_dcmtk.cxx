@@ -25,7 +25,7 @@ Rtds::load_dcmtk (const char *dicom_path)
     Rtss_structure_set *rtss = dss.steal_rtss_structure_set ();
     if (rtss) {
 	this->m_rtss = new Rtss (this);
-        this->m_rtss->m_cxt = rtss;
+        this->m_rtss->set_structure_set (rtss);
     }
     d_ptr->m_dose = dss.steal_dose_image ();
 
@@ -41,8 +41,8 @@ Rtds::save_dcmtk (const char *dicom_dir)
     ds.set_rt_study (d_ptr->m_drs);
 
     ds.set_image (this->m_img);
-    if (this->m_rtss && this->m_rtss->m_cxt) {
-        ds.set_cxt (this->m_rtss->m_cxt);
+    if (this->m_rtss && this->m_rtss->have_structure_set()) {
+        ds.set_cxt (this->m_rtss->get_structure_set());
     }
     if (d_ptr->m_dose) {
         ds.set_dose (d_ptr->m_dose->get_volume_float());
