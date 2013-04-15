@@ -124,46 +124,16 @@ void Acquire_4030e_parent::initialize (QString& strEXE_Path)
 	this->window->set_icon(0,NOT_OPENNED);// Tray should be shown after Label is updated.
 	this->window->set_icon(1,NOT_OPENNED);
 	this->window->show ();
-	//this->window2->show ();
-
-	//m_dlgControl_0 = new Acquire_4030e_DlgControl();    
-	//m_dlgControl_0->setWindowTitle("Panel Control Dialog: Panel 0");
-	//m_dlgControl_0->m_iPanelIdx = 0;
-
-	//m_dlgControl_1 = new Acquire_4030e_DlgControl();    
-	//m_dlgControl_1->setWindowTitle("Panel Control Dialog: Panel 1");
-	//m_dlgControl_1->m_iPanelIdx = 1;
-
-	//this->m_dlgControl_0->show ();
-	//this->m_dlgControl_1->show ();
-
-	//QDialog *gamatosdialog = new QDialog; it works!
-	//gamatosdialog->show();
-
-	/*  QMessageBox msgBox;
-	QString strTitle = QString("dlgControl has been made");
-	msgBox.setText(strTitle);
-	msgBox.exec();*/
-
+	
 	/* Look for advantech device, spawn advantech thread */
 	this->advantech = new Advantech;
 	this->generator_state = WAITING;
 	this->panel_select = false;
 	this->advantech->relay_open (0);
-	//this->advantech->relay_open (3);
+	this->advantech->relay_open (3);
 	this->advantech->relay_open (4);
 
-	this->panel_timer = 0;
-
-	/* Check for receptor path on the command line */
-	//if (argc > 1) {
-	//	this->num_process = 1;
-	//	paths[0] = argv[1]; //C:\Imagers\...
-	//}
-	//if (argc > 2) {
-	//	this->num_process = 2;
-	//	paths[1] = argv[2];
-	//}
+	this->panel_timer = 0;	
 
 	num_process = 2; //fixed!
 
@@ -177,7 +147,6 @@ void Acquire_4030e_parent::initialize (QString& strEXE_Path)
 		connect (&this->process[i], SIGNAL(readyReadStandardOutput()),
 			this, SLOT(poll_child_messages()));
 
-		//if (i == 0) //YKTEMP: temp code only panel 0 go!
 		this->process[i].start(m_program[i], m_arguments[i]);
 	}
 
@@ -194,24 +163,17 @@ void Acquire_4030e_parent::initialize (QString& strEXE_Path)
 	timer->start (100);
 	
 
-	this->timerCommandToChild[0] = new QTimer(this);
-	connect (timerCommandToChild[0], SIGNAL(timeout()), this, SLOT(timerCommandToChild0_event()));
+	//this->timerCommandToChild[0] = new QTimer(this);
+	//connect (timerCommandToChild[0], SIGNAL(timeout()), this, SLOT(timerCommandToChild0_event()));
 
-	this->timerCommandToChild[1] = new QTimer(this);
-	connect (timerCommandToChild[1], SIGNAL(timeout()), this, SLOT(timerCommandToChild1_event()));
+	//this->timerCommandToChild[1] = new QTimer(this);
+	//connect (timerCommandToChild[1], SIGNAL(timeout()), this, SLOT(timerCommandToChild1_event()));
 
-	this->timerAboutToQuit= new QTimer(this);
-	connect (timerAboutToQuit, SIGNAL(timeout()), this, SLOT(timerAboutToQuit_event()));
-
-	//this->timerSysTray = new QTimer(this);
-	//connect (timerSysTray, SIGNAL(timeout()), this, SLOT(timerSysTray_event()));
-	//timerSysTray->start (5000); //every 5 s
+	//this->timerAboutToQuit= new QTimer(this);
+	//connect (timerAboutToQuit, SIGNAL(timeout()), this, SLOT(timerAboutToQuit_event()));
 
 	//init log file
 	m_strLogFilePath = m_OptionSettingParent.m_strPrimaryLogPath;
-
-	//YK_FUTURE
-	//m_strLogFilePath = from option file
 
 	m_strLogFilePath.append("\\acquire4030e_log_");
 
@@ -577,25 +539,11 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 		return;
 
 	m_bParentBusy = true;
-	//YK
+	
 	UpdateLableStatus(); //based-on m_bPanelReady status; //every 50 ms
-
-	//if (!m_bWaitingForChildResponse[0]) //if m_bWaitingForChildResponse == false send dummy char
-	//{
-	//	process[0].write("\n");//write stdin of each process    		
-	//}
-	//if (!m_bWaitingForChildResponse[1]) //if m_bWaitingForChildResponse == false send dummy char
-	//{
-	//	process[1].write("\n");//write stdin of each process    		
-	//}	
 	
 	/* On STAR, there is no distinction between prep & expose, i.e. there 
-	is only prep signal. */    
-	//if (m_bBusyParent)
-	//	return;
-	//m_bBusyParent = true;
-
-	
+	is only prep signal. */    		
 
 	int res0 = advantech->read_bit (0);
 	int res1 = advantech->read_bit (1);
@@ -614,38 +562,20 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 	bool gen_prep_request = (bool)res1; /* Ignored on STAR */	
 	bool gen_expose_request = (bool)res2;;  //beam-on signal to advantech	
 	bool panel_0_ready = (bool)res3; //signal from panel	
-	bool panel_1_ready = (bool)res4; //signal from panel    	
-
-	/*if (m_iPrevSelection == -1)
-		m_iPrevSelection = gen_panel_select;
-	else if (m_iPrevSelection != gen_panel_select)
-	{
-		SendCommandToChild(m_iPrevSelection, PCOMMAND_CANCELACQ);
-		m_iPrevSelection = gen_panel_select;
-	}*/
+	bool panel_1_ready = (bool)res4; //signal from panel    		
 	
-	//if panel is selected and that panel is now Standby, then go to proceed
-	//But if the other panel is not standby mode, please wait.
+	//if panel is selected and that panel is now Standby, then go to proceed. But if the other panel is not standby mode, please wait.
 
-	if (gen_panel_select == 0 && m_enPanelStatus[0] == STANDBY_SIGNAL_DETECTED)
+	if (gen_panel_select == 0 && m_enPanelStatus[0] == STANDBY_SIGNAL_DETECTED && m_enPanelStatus[1] == STANDBY_SIGNAL_DETECTED)
 	{
-		if (m_enPanelStatus[1] == STANDBY_SIGNAL_DETECTED)
-		{
-			SendCommandToChild(0, PCOMMAND_UNLOCKFORPREPARE); //changes "go further to activate panel". after one cycle has been done, it will be automatically locked in standby mode (stuck in standby)
-		}
-	}
-	else if (gen_panel_select == 1 && m_enPanelStatus[1] == STANDBY_SIGNAL_DETECTED)
+		SendCommandToChild(0, PCOMMAND_UNLOCKFORPREPARE); //changes "go further to activate panel". after one cycle has been done, it will be automatically locked in standby mode (stuck in standby)
+	}	
+	else if (gen_panel_select == 1 && m_enPanelStatus[0] == STANDBY_SIGNAL_DETECTED && m_enPanelStatus[1] == STANDBY_SIGNAL_DETECTED)
 	{
-		if (m_enPanelStatus[0] == STANDBY_SIGNAL_DETECTED)
-		{
-			SendCommandToChild(1, PCOMMAND_UNLOCKFORPREPARE); //changes "go further to activate panel". after one cycle has been done, it will be automatically locked in standby mode (stuck in standby)
-		}
+		SendCommandToChild(1, PCOMMAND_UNLOCKFORPREPARE); //changes "go further to activate panel". after one cycle has been done, it will be automatically locked in standby mode (stuck in standby)
 	}
-
-	//if (gen_panel_select == 0 && m_enPanelStatus[1] == READY_FOR_PULSE && !m_bNowCancelingAcq[0]) //Abnormal case: jump to standby before acquisition.
-
-
 	
+	//if (gen_panel_select == 0 && m_enPanelStatus[1] == READY_FOR_PULSE && !m_bNowCancelingAcq[0]) //Abnormal case: jump to standby before acquisition.		
 
 	/* Write a debug message */
 	if (gen_expose_request) {
@@ -668,12 +598,10 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 		if (gen_panel_select == 0)
 		{
 			if (m_enPanelStatus[0] == READY_FOR_PULSE )
-			{				 
-
+			{
 				this->log_output (
 					QString("[p] Closing relay to panel: axial"));
-				this->advantech->relay_close (3); //close = connected	
-				//Sleep(100);
+				this->advantech->relay_close (3); //close = connected					
 				m_enPanelStatus[0] = PULSE_CHANGE_DETECTED;
 				this->generator_state = EXPOSE_REQUEST;
 			}
@@ -684,24 +612,13 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 			}			
 		}	
 		else if (gen_panel_select == 1)
-		{
-			//if (m_enPanelStatus[1] == STANDBY_SIGNAL_DETECTED) // 0 0 0 0 --> HardwareHandshaking ON --> io_enalbe(1) (HS_ACTIVE) -->  0 0 0 1   ??What if stuck in 1 1 0 0?
-			//{
-			//	this->log_output (
-			//		QString("[p] Sending message to the panel to be activated: g90"));
-
-			//	//StartCommandTimer(1, PCOMMAND_ACTIVATE); //sent once
-			//	//SendCommandToChild(1, PCOMMAND_ACTIVATE);
-			//	SendCommandToChild(1, PCOMMAND_UNLOCKFORPREPARE);
-			//	//m_bActivationHasBeenSent[1] = true;
-			//}
+		{			
 			if (m_enPanelStatus[1] == READY_FOR_PULSE)
 			{
 				
 				this->log_output (
 					QString("[p] Closing relay to panel: g90"));
-				this->advantech->relay_close (4); //close = connected				
-				//Sleep(100);
+				this->advantech->relay_close (4); //close = connected								
 				m_enPanelStatus[1] = PULSE_CHANGE_DETECTED;
 				this->generator_state = EXPOSE_REQUEST;
 			}
@@ -712,7 +629,6 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 			}
 		}			
 	}
-
 	/* Check if panel is ready */
 	if (gen_expose_request && this->generator_state == EXPOSE_REQUEST) {
 		/* When panel is ready, close relay on generator */
@@ -738,29 +654,9 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 			this->log_output (
 				QString("[p] Warning, panel %1 was unexpectedly ready")
 				.arg(panel_0_ready ? 0 : 1));
-		}
-		//printf("panel_select: %d, panel_0_ready: %d, panel_1_ready: %d\n\n",panel_select, panel_0_ready, panel_1_ready);
+		}		
 	}   
-
-
-	//beam swithc on 
-	//if (gen_panel_select == 0 && (m_enPanelStatus[0] == PULSE_CHANGE_DETECTED || m_enPanelStatus[0] == COMPLETE_SIGNAL_DETECTED ||
-	//	m_enPanelStatus[0] == ))
-	//if (gen_panel_select == 0 && m_enPanelStatus[0] != READY_FOR_PULSE)
-	//{
-	//	//Sleep(300);
-	//	this->advantech->relay_open (0); //beam on signal to gen.
-	//	//this->advantech->relay_open (3);
-	//}
-	//if (gen_panel_select == 1 && m_enPanelStatus[1] != READY_FOR_PULSE)
-	//{
-	//	//Sleep(300);
-	//	this->advantech->relay_open (0); //beam on signal to gen.
-	//	//this->advantech->relay_open (4);
-	//}
-
-	/* Check if generator prep request complete */
-	//if (!gen_expose_request)
+	/* Check if generator prep request complete */	
 	if (!gen_expose_request && generator_state != WAITING)
 	{ //when exposure is over then relay_open: allow panel to read data		
 
@@ -768,25 +664,17 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 		this->advantech->relay_open (0); //Beam on (N0, COM0)
 
 		if (panel_select == 0)
-		{
-			//m_bActivationHasBeenSent[0] = false;
+		{			
 			log_output("[p] Opening relay to panel: axial");		
 			this->advantech->relay_open (3); //Expose request for panel 0- release
 		}
 		if (panel_select == 1)
-		{
-			//m_bActivationHasBeenSent[1] = false;
+		{		
 			log_output("[p] Opening relay to panel: g90");		
 			this->advantech->relay_open (4); //Expose request for panel 0- release
-		}	
-
+		}
 		this->log_output (
-			QString("[p] Reset generator state to WAITING."));
-
-		/*if (this->generator_state != WAITING) {
-			this->log_output (
-				QString("[p] Reset generator state to WAITING."));
-		}*/
+			QString("[p] Reset generator state to WAITING."));		
 		this->generator_state = WAITING;
 	}
 
@@ -796,7 +684,6 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 		SendCommandToChild(0, PCOMMAND_CANCELACQ);
 
 	m_bParentBusy = false;
-
 }
 
 void 
