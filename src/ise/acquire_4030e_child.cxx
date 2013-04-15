@@ -1438,20 +1438,13 @@ bool Acquire_4030e_child::PC_GetImageHardware()
 
 	if(m_pCrntStatus->qpi.NumFrames >= m_iNumOfFramesRequested)			
 	{	
-		aqprintf ("before get_image_toBuf\n");
+		result = vp->get_image_to_buf(m_pModeInfo->ColsPerFrame,m_pModeInfo->LinesPerFrame); //fill m_pCurrImage					
 
-		result = vp->get_image_to_buf(m_pModeInfo->ColsPerFrame,m_pModeInfo->LinesPerFrame); //fill m_pCurrImage	
+		if (m_dlgControl->ChkAutoSendToDIPS && result != HCP_SAME_IMAGE_ERROR)
+			vp->CopyFromBufAndSendToDips(dp);		
 
-		aqprintf ("after get_image_toBuf\n");
-
-
-		if (result == HCP_SAME_IMAGE_ERROR)
-		{
-			return true;
-		}
-
-		if (m_dlgControl->ChkAutoSendToDIPS)		
-			vp->CopyFromBufAndSendToDips(dp);
+		if (result == HCP_SAME_IMAGE_ERROR) //even IMAGE dumplication case, procedure except Dips should continue
+			result = HCP_NO_ERR;
 
 		if (result != HCP_NO_ERR){
 			errorStr = QString ("Error in sending image to currentImageBuffer. Error code is %1..Anyway, going to next step\n").arg(result);
@@ -1539,11 +1532,7 @@ bool Acquire_4030e_child::PC_WaitForStanby() //also can be used for SW acquisiti
 		aqprintf ("PC_ReStandbyPanel Error: panel status is not proper\n");
 		m_enPanelStatus = OPENNED;
 		return false;
-	}*/
-
-	//m_pSysSemaphore->acquire();
-	//vip_io_enable(HS_STANDBY);
-	//m_pSysSemaphore->release(3);
+	}*/	
 
 	QString errorStr;
 	int result = HCP_NO_ERR;
@@ -1559,25 +1548,30 @@ bool Acquire_4030e_child::PC_WaitForStanby() //also can be used for SW acquisiti
 	{	
 		errorStr = QString ("Error in WaitForStanby. Error code is %1. Now, retrying...\n").arg(result);		
 		aqprintf(errorStr.toLocal8Bit().constData());
+
+		//--> sometimes error = 30 occurs (time-out) --> should be reActive and reStand-by
 		//m_enPanelStatus = NOT_OPENNED;//Let's try with PANEL_ACTIVE (without reselection and HS_ACTIVE setting
-		//Sleep(3000);
+		
 		//result = vip_io_enable(HS_ACTIVE);not work
 		//aqprintf("result = %d", result);
 		//vip_reset_state();
 		//result = vip_reset_state(); not work
 		//aqprintf(" vip_reset_state result = %d", result);
 
-		ChangePanelStatus(IMAGE_ACQUSITION_DONE);
+		if (result == 30) //query_prog_info time-out //sometimes it occurrs.
+		{			
+			ChangePanelStatus(COMPLETE_SIGNAL_DETECTED); //just pass though it!. It will be resolved in next "ACTIVE" state
+		}			
+		else //though it will not happens..
+			ChangePanelStatus(IMAGE_ACQUSITION_DONE);
+
+		//ChangePanelStatus(IMAGE_ACQUSITION_DONE); //Old --> infinite loop can occur..
 		//vip_io_enable(HS_STANDBY); // Let's try without this (directly go to PANEL_ACTIVE)
 		return false;
 	}
 	else if (m_timeOutCnt > 5000) //Time_out  --> Impossible! should restart the panel
 	{
-		aqprintf("*** TIMEOUT ***Restanby failed! \n"); //just retry
-		//vip_io_enable(HS_STANDBY);
-		//m_timeOutCnt = 0;
-		//m_enPanelStatus = IMAGE_ACQUSITION_DONE; //Re open the panel
-		//aqprintf ("PSTAT6: IMAGE_ACQUSITION_DONE\n");
+		aqprintf("*** TIMEOUT ***Restanby failed! \n"); //just retry		
 		ChangePanelStatus(IMAGE_ACQUSITION_DONE);
 		return false;
 	}
@@ -1591,11 +1585,7 @@ bool Acquire_4030e_child::PC_WaitForStanby() //also can be used for SW acquisiti
 				m_pCrntStatus->qpi.NumPulses,
 				m_pCrntStatus->qpi.ReadyForPulse);			
 
-			ChangePanelStatus(STANDBY_SIGNAL_DETECTED);
-
-			/*m_enPanelStatus = STANDBY_SIGNAL_DETECTED;
-			m_timeOutCnt = 0;
-			aqprintf ("PSTAT7: STANBY_SIGNAL_DETECTED\n");			*/
+			ChangePanelStatus(STANDBY_SIGNAL_DETECTED);			
 
 			//m_TimerMainLoop->stop(); //will be resumed after getting message from parent //0404 edited -->to avoid "Hardware handshaking interference and image redundancy problem!
 		}		
@@ -1629,15 +1619,9 @@ bool Acquire_4030e_child::PC_SoftwareAcquisition_SingleShot() //should be done a
 	}	
 	else
 	{
-		aqprintf("SWSingleAcquisition Success\n");
-		//m_dlgProgBar->close();
+		aqprintf("SWSingleAcquisition Success\n");	
 	}
-
-	//ChangePanelStatus(IMAGE_ACQUSITION_DONE);
-	//ChangePanelStatus(OPENNED);
-
-
-	//Sleep(300);
+	
 	return true;
 }
 
@@ -1695,8 +1679,16 @@ bool Acquire_4030e_child::LoadDarkImage(QString& filePath)
 
 	if (!m_pDarkImage->LoadRawImage(filePath.toStdString().c_str(),width, height)) //Release Buffer is inside this func.
 		aqprintf("Error on LoadRawImage\n");
+
 	
-	if (!m_pDarkImage->FillPixMap(DEFAULT_WINLEVEL_MID, DEFAULT_WINLEVEL_WIDTH))
+	double Mean = 0.0;
+	double SD = 0.0;
+	double MIN = 0.0;
+	double MAX = 0.0;
+
+	m_pDarkImage->CalcImageInfo(Mean, SD, MIN, MAX);
+
+	if (!m_pDarkImage->FillPixMap((int)Mean,(int)(10*SD)))
 		aqprintf("Error on FillPixMap\n");
 
 	if (!m_pDarkImage->DrawToLabel(this->m_dlgControl->lbDarkField)) //SetPixMap 
@@ -1728,7 +1720,14 @@ bool Acquire_4030e_child::LoadGainImage(QString& filePath)
 	if (!m_pGainImage->LoadRawImage(filePath.toStdString().c_str(),width, height)) //Release Buffer is inside this func.
 		aqprintf("Error on Load Gain Image\n");
 
-	if (!m_pGainImage->FillPixMap(DEFAULT_WINLEVEL_MID, DEFAULT_WINLEVEL_WIDTH))
+	double Mean = 0.0;
+	double SD = 0.0;
+	double MIN = 0.0;
+	double MAX = 0.0;
+	m_pGainImage->CalcImageInfo(Mean, SD, MIN, MAX);
+
+
+	if (!m_pGainImage->FillPixMap((int)Mean,(int)(10*SD)))
 		aqprintf("Error on FillPixMap\n");
 
 	if (!m_pGainImage->DrawToLabel(this->m_dlgControl->lbGainField)) //SetPixMap 

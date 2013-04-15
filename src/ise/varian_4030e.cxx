@@ -671,7 +671,6 @@ bool Varian_4030e::SameImageExist(IMGINFO& curInfo, int& sameImgIndex)
 //}
 
 
-
 int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to curImage
 {
 
@@ -687,15 +686,10 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 
 	USHORT *image_ptr = (USHORT *)malloc(npixels * sizeof(USHORT));
 
-
-
-	//m_pParent->m_pSysSemaphore->acquire();
-	result = vip_get_image(mode_num, VIP_CURRENT_IMAGE, xSize, ySize, image_ptr);
-	//m_pParent->m_pSysSemaphore->release(3);
+	result = vip_get_image(mode_num, VIP_CURRENT_IMAGE, xSize, ySize, image_ptr);	
 	//result = vip_get_image(mode_num, VIP_PREVIEW_IMAGE, xSize, ySize, image_ptr); //not working for SAMEIMAGE ERROR
-
-	//now raw image from panel
-	//QMessageBox msgBox;
+	
+	bool bImageDuplicationOccurred = false;
 	
 	double tmpMean = 0.0;
 	double tmpSD = 0.0;
@@ -712,13 +706,10 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 
 	int sameImageIndex = -1;
 	if (SameImageExist(tmpInfo, sameImageIndex))
-	{
-		//QString str = QString("Same image error found in image[%1]! RETAKE the image or call the physicist").arg(sameImageIndex);
-		//msgBox.setText(str);	
-		//msgBox.exec(); //sometimes kills child process.. don't know why
+	{		
 		aqprintf("******SAME_IMAGE_ERROR!! prevImgNum [%d]\n", sameImageIndex);
-		//return HCP_SAME_IMAGE_ERROR;
-		return result;
+		bImageDuplicationOccurred = true;
+		//return HCP_SAME_IMAGE_ERROR;	
 	}
 	m_vImageInfo.push_back(tmpInfo);
 	
@@ -913,47 +904,16 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 
 			//YKTEMP: test code for audit			
 			aqprintf("MeanVal: %3.5f, iDenomLessZero: %d, iDenomLessZero_RawIsGreaterThanDark: %d, iDenomLessZero_RawIsSmallerThanDark: %d, iDenomOK_RawValueMinus: %d, iValOutOf14bit: %d"
-					, MeanVal, iDenomLessZero, iDenomLessZero_RawIsGreaterThanDark, iDenomLessZero_RawIsSmallerThanDark, iDenomOK_RawValueMinus, iValOutOfRange);
-			
-			//std::ofstream fout;
-			//fout.open("C:\\GainCorrAudit.txt");	
-
-			//		
-			//for (int i = (int)(ySize/2.0); i < (int)(ySize/2.0)+3; i++) //n, n+1, n+2
-			//{
-			//	fout << "RowNum	" << i << std::endl;
-			//	fout << "RawImage" <<"	" << "BackgroundImage" << "	" << "GainImage" <<	"	" << "CorrImage" <<	std::endl;
-
-			//	for (int j= 0 ; j < xSize ; j++)
-			//	{
-			//		int idx = xSize*i+j;
-			//		fout << image_ptr[idx] << "	" << m_pParent->m_pDarkImage->m_pData[idx] << "	"
-			//			<< m_pParent->m_pGainImage->m_pData[idx] << "	" << pImageCorr[xSize*i+j] << std::endl;
-			//	}	
-			//	fout << std::endl;
-			//}
-			//fout.close();
+					, MeanVal, iDenomLessZero, iDenomLessZero_RawIsGreaterThanDark, iDenomLessZero_RawIsSmallerThanDark, iDenomOK_RawValueMinus, iValOutOfRange);			
+		
 		}//end if not bRawImage
 	} // else if (m_bDarkCorrApply && m_bGainCorrApply)
 
 
-	/////////////////////***************Manul Correction END***********///////////////////
+	/////////////////////***************Manual Correction END***********///////////////////
 
 	if(result == HCP_NO_ERR)
-	{
-		ShowImageStatistics(npixels, pImageCorr);
-
-		// file on the host computer for storing the image
-		//FILE *finput = fopen(filename, "wb");
-		//if (finput == NULL)
-		//{
-		//	aqprintf("Error opening image file to put file.");
-		//	//PrintCurrentTime();
-		//	exit(-1);
-		//}
-
-		//fwrite(pImageCorr, sizeof(USHORT), npixels, finput);
-		//fclose(finput);
+	{	
 		int size = xSize*ySize;
 
 		if (m_pParent->m_pCurrImage->IsEmpty() || m_pParent->m_pCurrImage->m_iWidth != xSize || m_pParent->m_pCurrImage->m_iHeight != ySize)
@@ -961,16 +921,18 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 
 		for (int i = 0  ; i<size ; i++)
 			m_pParent->m_pCurrImage->m_pData[i] = pImageCorr[i];
-
 	}
 	else
 	{
-		aqprintf("*** vip_get_image returned error %d\n", result);
-		//PrintCurrentTime();
+		aqprintf("*** vip_get_image returned error %d\n", result);		
 	}
 
 	free(image_ptr);
 	free(pImageCorr);
+
+
+	if (bImageDuplicationOccurred)
+		return HCP_SAME_IMAGE_ERROR;
 
 	return HCP_NO_ERR;
 }

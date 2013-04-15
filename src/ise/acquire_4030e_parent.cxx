@@ -578,7 +578,8 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 	//if (gen_panel_select == 0 && m_enPanelStatus[1] == READY_FOR_PULSE && !m_bNowCancelingAcq[0]) //Abnormal case: jump to standby before acquisition.		
 
 	/* Write a debug message */
-	if (gen_expose_request) {
+	//if (gen_expose_request) {
+	if (gen_expose_request || gen_prep_request) {
 		//if (this->generator_state == WAITING || panel_0_ready || panel_1_ready)
 		{
 			this->log_output (
