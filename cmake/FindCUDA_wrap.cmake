@@ -106,7 +106,7 @@ else()
   message (STATUS "  >> Generation 2: [ ]")
 endif()
 
-if(CUDA_VERSION_MAJOR GREATER "3")
+if(CUDA_VERSION_MAJOR GREATER "4")
   message (STATUS "  >> Generation 3: [X]")
     set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
         -gencode arch=compute_30,code=sm_30
