@@ -7,6 +7,7 @@
 #include "plmbase_config.h"
 #include <list>
 
+#include "itk_image.h"
 #include "plm_int.h"
 #include "pstring.h"
 
