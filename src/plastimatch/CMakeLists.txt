@@ -21,7 +21,7 @@ option (PLM_CONFIG_DISABLE_VISCOUS "Disable experimental viscous fluid registrat
 option (PLM_CONFIG_ENABLE_PLASTIMATCH_QT
   "Enable experimental plastimatch_qt executable" OFF)
 option (PLM_CONFIG_ENABLE_SMART_POINTERS
-  "Enable experimental smart pointer support" OFF)
+  "Enable experimental smart pointer support" ON)
 
 ##-----------------------------------------------------------------------------
 ##  Figure out if we should use gdcm or dcmtk

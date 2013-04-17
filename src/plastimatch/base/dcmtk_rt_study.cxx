@@ -30,6 +30,16 @@ public:
     char rtss_series_uid[100];
     char study_uid[100];
     std::vector<Dcmtk_slice_data>* slice_data;
+
+    
+    Dcmtk_series *ds_rtdose;
+    Dcmtk_series *ds_rtss;
+
+    Rtss_structure_set *cxt;
+    Metadata *cxt_metadata;
+    Plm_image::Pointer img;
+    Plm_image::Pointer dose;
+
 public:
     Dcmtk_rt_study_private () {
         DcmDate::getCurrentDate (date_string);

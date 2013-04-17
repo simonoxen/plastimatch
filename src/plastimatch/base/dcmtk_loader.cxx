@@ -228,8 +228,11 @@ Dcmtk_loader::parse_directory (void)
 	    continue;
 	}
 
-	if (modality == "CT") {
-	    printf ("LOADING CT\n");
+        /* Load anything with a PixelData */
+	//if (modality == "CT") {
+	bool rc = ds->get_uint16_array (DCM_PixelData, 0, 0);
+        if (rc) {
+	    printf ("LOADING modality %s\n", modality.c_str());
 
             /* Load image */
             ds->set_rt_study (d_ptr->m_drs);

@@ -105,7 +105,9 @@ Dcmtk_file::get_uint16_array (const DcmTagKey& tag_key,
     const Uint16* foo;
     OFCondition rc = m_dfile->getDataset()->findAndGetUint16Array(
 	tag_key, foo, count, OFFalse);
-    *val = foo;
+    if (val) {
+        *val = foo;
+    }
     return rc.good();
 }
 

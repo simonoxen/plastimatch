@@ -384,6 +384,8 @@ Dcmtk_series::load_plm_image (void)
 	lprintf ("Loading slice z=%f at location z=%f\n",
 	    (*best_slice_it)->m_vh.get_origin()[2], z_pos);
 
+        /* GCS FIX: This should probably use DicomImage::getOutputData()
+           cf. http://support.dcmtk.org/docs/mod_dcmimage.html */
 	rc = df->get_uint16_array (DCM_PixelData, &pixel_data, &length);
 	if (!rc) {
 	    print_and_exit ("Oops.  Error reading pixel data.  Punting.\n");
