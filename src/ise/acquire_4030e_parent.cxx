@@ -208,8 +208,6 @@ void Acquire_4030e_parent::initialize (QString& strEXE_Path)
 		log_output("[p] Starting server 1 success.");
 
 }
-	
-
 
 void 
 Acquire_4030e_parent::kill_rogue_processes ()
@@ -238,6 +236,9 @@ Acquire_4030e_parent::about_to_quit () //called from window->FinalQuit() as well
 	// break;
 
 	//*this->timerAboutToQuit->start(2000);
+	//log_output("parent_about to quit");
+	
+
 	timer->stop();
 
 	if (advantech != NULL)
@@ -252,13 +253,6 @@ Acquire_4030e_parent::about_to_quit () //called from window->FinalQuit() as well
 		advantech = NULL;
 	}	
 
-	if (window != NULL)
-	{
-		window->tray_icon1->hide ();
-		window->tray_icon2->hide ();
-		delete window;
-		window = NULL;
-	}
 
 	//msgBox.setText("test4");
 	//msgBox.exec();
@@ -270,10 +264,23 @@ Acquire_4030e_parent::about_to_quit () //called from window->FinalQuit() as well
 	disconnect (&this->process[0], SIGNAL(readyReadStandardOutput()), this, SLOT(poll_child_messages()));
 	disconnect (&this->process[1], SIGNAL(readyReadStandardOutput()), this, SLOT(poll_child_messages()));
 
+	//log_output("parent_before ill rogue process");
+
+	if (window != NULL)
+	{
+		window->tray_icon1->hide ();
+		window->tray_icon2->hide ();
+		delete window;
+		window = NULL;
+	}
+
+	m_logFout.close();	
+
 	/* Kill children before we die */
 	kill_rogue_processes (); //not safe quit (for child)
 
-	m_logFout.close();	
+	Sleep(1000);
+	
 }
 
 void 
@@ -447,8 +454,9 @@ Acquire_4030e_parent::poll_child_messages () //often called even window is close
 				}
 				else if (result == QMessageBox::Close)
 				{
-					this->about_to_quit();
-					exit(0);
+					quit();
+				//	this->about_to_quit();
+				//	exit(0);
 				}
 			}
 			else if(line.contains("Pleora Error")) //error during running 1)ethernet, 2) power
@@ -472,8 +480,9 @@ Acquire_4030e_parent::poll_child_messages () //often called even window is close
 				}
 				else if (result == QMessageBox::Close)
 				{
-					this->about_to_quit();
-					exit(0);
+					quit();
+					//this->about_to_quit();
+					//exit(0);
 				}		
 			}
 			else if(line.contains("State Error")) //Occassionally, when power was re-plugged in
@@ -498,8 +507,9 @@ Acquire_4030e_parent::poll_child_messages () //often called even window is close
 					else if (result == QMessageBox::Close)
 					{
 						//	this->log_output("YKTEMP: program is shutting down1");
-						this->about_to_quit();
-						exit(0);
+						quit();
+						//this->about_to_quit();
+						//exit(0);
 					}
 				}		
 			}

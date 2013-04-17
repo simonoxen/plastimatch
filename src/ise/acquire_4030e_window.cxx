@@ -246,10 +246,9 @@ void Acquire_4030e_window::FinalQuit ()
 	//printf("Final Quit slot called\n");
 	tray_icon1->hide ();
 	tray_icon2->hide ();
-
 	//this->close();
-	qApp->closeAllWindows(); //qApp = Parent 
-	qApp->quit(); //qApp = Parent	
+	//qApp->closeAllWindows(); //qApp = Parent 
+	qApp->quit(); //qApp = Parent	 -->will call About_to_Quit in parent
 }
 
 void Acquire_4030e_window::systray_activated (

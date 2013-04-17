@@ -1012,6 +1012,7 @@ void Acquire_4030e_child::InterpretAndFollow ()
 		//Sleep(DELAY_FOR_CHILD_RESPONSE);
 
 		close_receptor(); //Like Destructor
+		m_pClient->disconnectFromServer();
 
 		if (this->dp != NULL) {
 			delete this->dp;
