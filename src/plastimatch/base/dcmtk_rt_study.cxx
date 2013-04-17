@@ -16,6 +16,7 @@
 #include "plm_image.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
+#include "smart_pointer.h"
 #include "volume.h"
 
 class Dcmtk_rt_study_private {

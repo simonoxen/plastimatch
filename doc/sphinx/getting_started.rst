@@ -70,11 +70,12 @@ want the DRR and FDK programs, you don't need it.  Get ITK from here:
 
   http://itk.org/
 
-We recommend version ITK 3.20.X.  ITK 4.1 seems to work, but 
-you won't be able to use DICOM-RT.
+We currently recommend version ITK 3.20.X.  
+ITK >= 4.1 is supported, but DICOM support is still in development.
+You will need to install DCMTK.
 
-  ITK 3.20.1            Recommended
-  ITK >= 4.1            Supported
+  ITK 3.20.1            Recommended          
+  ITK >= 4.1            Supported, please install DCMTK for DICOM
 
 When you build ITK, the following settings are recommended::
 
@@ -87,8 +88,8 @@ When you build ITK, the following settings are recommended::
 
 Note, if you are using gcc 4.7 on 32-bit platform, and if you 
 need to load .nrrd files, you will need to patch ITK.  
-I believe this patch is needed for both ITK 3.20.1 and ITK 4.1.
-Here is the patch:
+I believe this patch is needed for both ITK 3.20.1 and ITK 4.1, 
+but the bug is fixed for ITK >= 4.2.  Here is the patch:
 
   http://lists.debian.org/debian-med/2012/06/msg00136.html
 
@@ -131,12 +132,9 @@ The following table will help you with selecting the
 correct CUDA version to install/upgrade::
 
   CUDA 2.X              Not supported
-  CUDA 3.0              Supported
-  CUDA 3.1              Supported
-  CUDA 3.2              Supported
-  CUDA 4.0              Supported
-  CUDA 4.1              Supported
-  CUDA 5.0              Unknown
+  CUDA 3.X              Supported
+  CUDA 4.X              Supported
+  CUDA 5.0              Supported, Required for Kepler
 
 Download CUDA from here:
 

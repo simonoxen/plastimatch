@@ -160,7 +160,7 @@ where K is the *intrinsic matrix*, defined as:
      \begin{array}{cccc}
      1/\alpha & 0 & 0 & 0 \\
      0 & 1 / \beta & 0 & 0 \\
-     0 & 0 & SID & 0
+     0 & 0 & 1 / SID & 0
      \end{array}
      \right]
 

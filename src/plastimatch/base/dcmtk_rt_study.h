@@ -32,6 +32,8 @@ public:
     const char* get_study_time () const;
     const char* get_study_uid () const;
     std::vector<Dcmtk_slice_data>* get_slice_data();
+public:
+    void set_image (FloatImageType::Pointer image);
 };
 
 #endif
