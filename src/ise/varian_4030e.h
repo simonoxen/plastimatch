@@ -23,6 +23,7 @@ struct IMGINFO
 	double SD;
 	double minVal;
 	double maxVal;
+	quint16 chkSum;
 };
 
 
@@ -58,7 +59,9 @@ public:
     int get_image_to_dips (Dips_panel *dp, int xSize, int ySize);
 
 	bool CopyFromBufAndSendToDips (Dips_panel *dp); //get cur image to curImage
-	void CalcImageInfo (double& meanVal, double& STDV, double& minVal, double& maxVal, int sizeX, int sizeY, USHORT* image_ptr); //all of the images taken before will be inspected
+	void CalcImageInfo (double& meanVal, double& STDV, double& minVal, double& maxVal, int sizeX, int sizeY, USHORT* image_ptr); //all of the images taken before will be inspected	
+	quint16 GetCheckSum (unsigned short* pImage, int width, int height);
+
 	bool SameImageExist(IMGINFO& curInfo, int& sameImgIndex);
 
     int disable_missing_corrections (int result);

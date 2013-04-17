@@ -1007,9 +1007,9 @@ void Acquire_4030e_child::InterpretAndFollow ()
 		aqprintf("PRESPP_SHOWDLG\n");		
 	}
 	else if (m_strFromParent.contains("KILL"))//m_enPanelStatus to NoT openned
-	{
-		m_bAcquisitionOK = false;
-		Sleep(DELAY_FOR_CHILD_RESPONSE);
+	{	
+		m_TimerMainLoop->stop(); //if running
+		//Sleep(DELAY_FOR_CHILD_RESPONSE);
 
 		close_receptor(); //Like Destructor
 
@@ -1017,10 +1017,8 @@ void Acquire_4030e_child::InterpretAndFollow ()
 			delete this->dp;
 			dp = NULL;
 		}
-		m_enPanelStatus = NOT_OPENNED;
-		this->m_timeOutCnt = 0;
-		//m_TimerPollMsgFromParent->stop();
-		m_TimerMainLoop->stop(); //if running
+		ChangePanelStatus(NOT_OPENNED);
+		
 		aqprintf("PRESPP_KILL\n");
 	}	
 	else if (m_strFromParent.contains("UNLOCKFORPREPARE"))//msg is sent from parent's main loop related to advantech
@@ -1465,18 +1463,26 @@ bool Acquire_4030e_child::PC_GetImageHardware()
 					folderPath = "C:";
 
 				QString strFileName = QString("%1_CurImg").arg(this->idx); //panel number display
+				QDate Date = QDate::currentDate();    
 				QTime time = QTime::currentTime();    
-				QString str = time.toString("_hh_mm_ss");        
+
+				QString strDate = Date.toString("_yyyy_MM_dd");
+				QString strTime = time.toString("_hh_mm_ss");        
+				
 				// = str; 
-				strFileName.append(str);
+				strFileName.append(strDate);
+				strFileName.append(strTime);
 				strFileName.prepend("\\");
 				strFileName.prepend(folderPath);
 
 				QString strGroupCommonName = strFileName;//before extension
 
+				//Corrected IMage
 				strFileName.append(".raw");
 				m_pCurrImage->SaveDataAsRaw(strFileName.toStdString().c_str());
 
+
+				//Dark Corrected image
 				if (m_dlgControl->ChkDarkCorrectedSave->isChecked())
 				{
 					if (!m_pCurrImageDarkCorrected->IsEmpty())
@@ -1487,6 +1493,7 @@ bool Acquire_4030e_child::PC_GetImageHardware()
 						m_pCurrImageDarkCorrected->SaveDataAsRaw(tmpDarkCorrImgPath.toStdString().c_str());
 					}					
 				}
+				//Gain Corrected image
 				if (m_dlgControl->ChkRawSave->isChecked())
 				{
 					if (!m_pCurrImageRaw->IsEmpty())
@@ -1497,10 +1504,8 @@ bool Acquire_4030e_child::PC_GetImageHardware()
 						m_pCurrImageRaw->SaveDataAsRaw(tmpRawImgPath.toStdString().c_str());
 					}
 				}
-
 			}
-		}
-		
+		}		
 
 		ChangePanelStatus(IMAGE_ACQUSITION_DONE);
 		//m_enPanelStatus = IMAGE_ACQUSITION_DONE; //even when wait_on_num_frames and sending image is failed..
@@ -1560,7 +1565,7 @@ bool Acquire_4030e_child::PC_WaitForStanby() //also can be used for SW acquisiti
 
 		if (result == 30) //query_prog_info time-out //sometimes it occurrs.
 		{			
-			ChangePanelStatus(COMPLETE_SIGNAL_DETECTED); //just pass though it!. It will be resolved in next "ACTIVE" state
+			ChangePanelStatus(STANDBY_SIGNAL_DETECTED); //just pass though it!. It will be resolved in next "ACTIVE" state
 		}			
 		else //though it will not happens..
 			ChangePanelStatus(IMAGE_ACQUSITION_DONE);

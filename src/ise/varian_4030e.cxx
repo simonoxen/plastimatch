@@ -513,7 +513,9 @@ bool Varian_4030e::SameImageExist(IMGINFO& curInfo, int& sameImgIndex)
 	{		
 		compInfo = (*it);
 		if (fabs(curInfo.meanVal - compInfo.meanVal) < 0.0001 && 
-			fabs(curInfo.SD - compInfo.SD) < 0.0001)
+			fabs(curInfo.SD - compInfo.SD) < 0.0001 
+			//&& curInfo.chkSum == compInfo.chkSum)
+			)
 		{
 			result = true;
 			sameImgIndex = order;
@@ -669,6 +671,27 @@ bool Varian_4030e::SameImageExist(IMGINFO& curInfo, int& sameImgIndex)
 //
 //	return HCP_NO_ERR;
 //}
+quint16 Varian_4030e::GetCheckSum (unsigned short* pImage, int width, int height)
+{
+	int size = width*height;
+	
+	int charImgSize = size*2;
+
+	char* charImgBuf = new char (charImgSize);
+
+	for (int i = 0 ; i<size ; i++)	
+	{
+		unsigned short tmpUSHORT = pImage[i];
+
+		charImgBuf[2*i] = (char)(tmpUSHORT); //latter
+		charImgBuf[2*i+1] = (char)(tmpUSHORT >> 8); //former
+	}
+
+	quint16 result = qChecksum(charImgBuf, charImgSize);
+	delete charImgBuf;
+
+	return result;
+}
 
 
 int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to curImage
@@ -695,14 +718,20 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 	double tmpSD = 0.0;
 	double tmpMin = 0.0;
 	double tmpMax = 0.0;
+
 	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
+
+	//quint16 GetCheckSum (unsigned short* image_ptr);
 
 	IMGINFO tmpInfo;
 	tmpInfo.meanVal = tmpMean;
 	tmpInfo.SD = tmpSD;
 	tmpInfo.minVal = tmpMin;
 	tmpInfo.maxVal = tmpMax;
-	aqprintf("IMG_INSPECTION(Mean|SD|MIN|MAX): %3.2f | %3.2f | %3.1f | %3.1f \n", tmpInfo.meanVal, tmpInfo.SD, tmpInfo.minVal, tmpInfo.maxVal);
+	//tmpInfo.chkSum = GetCheckSum (image_ptr, xSize, ySize);
+	
+	//aqprintf("IMG_INSPECTION(Mean|SD|MIN|MAX|CHK): %3.2f | %3.2f | %3.1f | %3.1f | %d \n", tmpInfo.meanVal, tmpInfo.SD, tmpInfo.minVal, tmpInfo.maxVal, tmpInfo.chkSum);	
+	aqprintf("IMG_INSPECTION(Mean|SD|MIN|MAX): %3.2f | %3.2f | %3.1f | %3.1f\n", tmpInfo.meanVal, tmpInfo.SD, tmpInfo.minVal, tmpInfo.maxVal);	
 
 	int sameImageIndex = -1;
 	if (SameImageExist(tmpInfo, sameImageIndex))
@@ -903,7 +932,7 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 			}//end of for
 
 			//YKTEMP: test code for audit			
-			aqprintf("MeanVal: %3.5f, iDenomLessZero: %d, iDenomLessZero_RawIsGreaterThanDark: %d, iDenomLessZero_RawIsSmallerThanDark: %d, iDenomOK_RawValueMinus: %d, iValOutOf14bit: %d"
+			aqprintf("MeanVal: %3.5f, iDenomLessZero: %d, iDenomLessZero_RawIsGreaterThanDark: %d, iDenomLessZero_RawIsSmallerThanDark: %d, iDenomOK_RawValueMinus: %d, iValOutOf14bit: %d\n"
 					, MeanVal, iDenomLessZero, iDenomLessZero_RawIsGreaterThanDark, iDenomLessZero_RawIsSmallerThanDark, iDenomOK_RawValueMinus, iValOutOfRange);			
 		
 		}//end if not bRawImage
