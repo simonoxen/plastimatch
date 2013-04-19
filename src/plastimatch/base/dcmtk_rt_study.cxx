@@ -8,57 +8,16 @@
 
 #include "dcmtk_image.h"
 #include "dcmtk_rt_study.h"
+#include "dcmtk_rt_study_p.h"
 #include "dcmtk_rtss.h"
 #include "dcmtk_save.h"
 #include "dcmtk_series.h"
 #include "dcmtk_slice_data.h"
-#include "dcmtk_uid.h"
+#include "dicom_rt_study.h"
 #include "plm_image.h"
-#include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "smart_pointer.h"
 #include "volume.h"
-
-class Dcmtk_rt_study_private {
-public:
-    OFString date_string;
-    OFString time_string;
-    char ct_series_uid[100];
-    char dose_instance_uid[100];
-    char dose_series_uid[100];
-    char for_uid[100];
-    char rtss_instance_uid[100];
-    char rtss_series_uid[100];
-    char study_uid[100];
-    std::vector<Dcmtk_slice_data>* slice_data;
-
-    
-    Dcmtk_series *ds_rtdose;
-    Dcmtk_series *ds_rtss;
-
-    Rtss_structure_set *cxt;
-    Metadata *cxt_metadata;
-    Plm_image::Pointer img;
-    Plm_image::Pointer dose;
-
-public:
-    Dcmtk_rt_study_private () {
-        DcmDate::getCurrentDate (date_string);
-        DcmTime::getCurrentTime (time_string);
-        dcmtk_uid (study_uid, PLM_UID_PREFIX);
-        dcmtk_uid (for_uid, PLM_UID_PREFIX);
-        dcmtk_uid (ct_series_uid, PLM_UID_PREFIX);
-        dcmtk_uid (rtss_series_uid, PLM_UID_PREFIX);
-        dcmtk_uid (rtss_instance_uid, PLM_UID_PREFIX);
-        dcmtk_uid (dose_series_uid, PLM_UID_PREFIX);
-        dcmtk_uid (dose_instance_uid, PLM_UID_PREFIX);
-        slice_data = new std::vector<Dcmtk_slice_data>;
-    }
-    ~Dcmtk_rt_study_private () {
-        delete slice_data;
-    }
-};
-
 
 Dcmtk_rt_study::Dcmtk_rt_study ()
 {
@@ -128,4 +87,44 @@ std::vector<Dcmtk_slice_data>*
 Dcmtk_rt_study::get_slice_data ()
 {
     return d_ptr->slice_data;
+}
+
+Plm_image::Pointer
+Dcmtk_rt_study::get_image ()
+{
+    return d_ptr->img;
+}
+
+Volume::Pointer
+Dcmtk_rt_study::get_image_volume_float ()
+{
+    return d_ptr->img->get_volume_float ();
+}
+
+void 
+Dcmtk_rt_study::set_image (Plm_image::Pointer image)
+{
+    d_ptr->img = image;
+}
+
+void 
+Dcmtk_rt_study::set_dose (Plm_image::Pointer image)
+{
+    d_ptr->dose = image;
+}
+
+void 
+Dcmtk_rt_study::save (const char *dicom_dir)
+{
+    if (d_ptr->img) {
+        this->save_image (dicom_dir);
+    }
+#if defined (commentout)
+    if (this->cxt) {
+        this->save_rtss (dicom_dir);
+    }
+    if (this->dose) {
+        this->save_dose (dicom_dir);
+    }
+#endif
 }

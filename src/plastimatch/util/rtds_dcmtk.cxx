@@ -6,7 +6,7 @@
 #include "compiler_warnings.h"
 #if PLM_DCM_USE_DCMTK
 #include "dcmtk_loader.h"
-#include "dcmtk_save.h"
+#include "dcmtk_rt_study.h"
 #endif
 #include "plm_image.h"
 #include "rtss.h"
@@ -21,13 +21,13 @@ Rtds::load_dcmtk (const char *dicom_path)
     dss.set_rt_study (d_ptr->m_drs);
     dss.parse_directory ();
 
-    this->m_img = dss.steal_plm_image ();
+//    this->m_img = dss.steal_plm_image ();
     Rtss_structure_set *rtss = dss.steal_rtss_structure_set ();
     if (rtss) {
 	this->m_rtss = new Rtss (this);
         this->m_rtss->set_structure_set (rtss);
     }
-    d_ptr->m_dose = dss.steal_dose_image ();
+    d_ptr->m_dose = dss.get_dose_image ();
 
     printf ("Done.\n");
 #endif
@@ -37,6 +37,7 @@ void
 Rtds::save_dcmtk (const char *dicom_dir)
 {
 #if PLM_DCM_USE_DCMTK
+#if defined (commentout)
     Dcmtk_save ds;
     ds.set_rt_study (d_ptr->m_drs);
 
@@ -50,12 +51,18 @@ Rtds::save_dcmtk (const char *dicom_dir)
     ds.generate_new_uids ();
     ds.save (dicom_dir);
 #endif
+    Dcmtk_rt_study drs;
+    drs.set_image (d_ptr->m_img);
+    drs.set_dose (d_ptr->m_dose);
+    drs.save (dicom_dir);
+#endif
 }
 
 void
 Rtds::save_dcmtk_dose (const char *dicom_dir)
 {
 #if PLM_DCM_USE_DCMTK
+#if defined (commentout)
     Dcmtk_save ds;
     ds.set_rt_study (d_ptr->m_drs);
 
@@ -64,5 +71,9 @@ Rtds::save_dcmtk_dose (const char *dicom_dir)
     }
 
     ds.save (dicom_dir);
+#endif
+    Dcmtk_rt_study drs;
+    drs.set_dose (d_ptr->m_dose);
+    drs.save (dicom_dir);
 #endif
 }

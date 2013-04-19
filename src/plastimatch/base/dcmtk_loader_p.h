@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 #include "dcmtk_series.h"
+#include "plm_image.h"
 
 class Dcmtk_rt_study;
 
@@ -19,6 +20,9 @@ class Dcmtk_loader_private {
 public:
     Dcmtk_series_map m_smap;
     Dicom_rt_study *m_drs;
+
+    Plm_image::Pointer img;
+    Plm_image::Pointer dose;
 
 public:
     Dcmtk_loader_private () {

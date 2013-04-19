@@ -12,8 +12,74 @@ class Hausdorff_distance_private;
 
 /*! \brief 
  * The Hausdorff class computes the worst-case distance between 
- * two regions.
+ * two regions.  There are many variants of the Hausdorff.
+ * See for example:
  *
+ * "A Modified Hausdorff Distance for Object Matching," 
+ * MP Dubuisson and AK Jain, 
+ * Proc. International Conference on Pattern Recognition, pp 566–568, 1994.
+ * 
+ * To understand the variants, we first define the directed Hausdorff 
+ * and the boundary Hausdorff.
+ * 
+ * The directed Hausdorff measure from X to Y is defined as the 
+ * maximum distance, for all points in X, to the closest point in Y.
+ * Mathematically this is given as:
+ * 
+ * \f[
+ *   \vec{d}_{H}(X,Y) = \max_{x \in X} { \min_{y \in Y} d (x,y) }
+ * \f]
+ * 
+ * The (undirected) Hausdorff distance is the maximum of the two directed 
+ * Hausdorff measures.
+ * 
+ * \f[
+ *   d_H(X,Y) = \max \left\{ \vec{d}_{H}(X,Y), \vec{d}_{H}(Y,X) \right\}
+ * \f]
+ * 
+ * The (directed or undirected) boundary Hausdorff is a 
+ * Hausdorff distance which is computed on the boundary of a set 
+ * rather than the set itself.   For example, the (undirected) 
+ * boundary Hausdorff distance is given as:
+ *
+ * \f[
+ *   d_H(\partial X,\partial Y)
+ * \f]
+ * 
+ * The directed average Hausdorff measure is the average distance of 
+ * a point in X to its closest point in Y.  That is:
+ * 
+ * \f[
+ *   \vec{d}_{H,\mathrm{avg}}(X,Y) = \frac{1}{|X|} \sum_{x \in X} \min_{y \in Y} d (x,y)
+ * \f]
+ * 
+ * The (undirected) average Hausdorff measure is the average, 
+ * rather than the sum, 
+ * of the two directed average Hausdorff measures:
+ * 
+ * \f[
+ *   d_{H,\mathrm{avg}}(X,Y) = \frac{\vec{d}_{H,\mathrm{avg}}(X,Y) + \vec{d}_{H,\mathrm{avg}}(Y,X)}{2}
+ * \f]
+ * 
+ * The directed percent Hausdorff measure, for a percentile \f$r\f$, 
+ * is the \f$r\f$th percentile distance over all distances from points 
+ * in X to their closest point in Y.  For example, the directed 95% 
+ * Hausdorff distance is the point in X with distance to its closest 
+ * point in Y is greater or equal to exactly 95% of the other points in X.
+ * In mathematical terms, denoting the 
+ * \f$r\f$th percentile as 
+ * \f$K_r\f$, this is given as:
+ * 
+ * \f[
+ *   \vec{d}_{H,r}(X,Y) = K_{r}  \left( \min_{y \in Y} d (x,y) \right) \forall x \in X
+ * \f]
+ * 
+ * The (undirected) percent Hausdorff measure is defined again with the mean:
+ * 
+ * \f[
+ *   d_{H,r}(X,Y) = \frac{\vec{d}_{H,r}(X,Y) + \vec{d}_{H,r}(Y,X)}{2}
+ * \f]
+ * 
  * If the images do not have the same size and resolution, the compare 
  * image will be resampled onto the reference image geometry prior 
  * to comparison.  

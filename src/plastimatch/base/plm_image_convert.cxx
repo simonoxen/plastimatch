@@ -122,11 +122,7 @@ Plm_image::convert_itk_to_gpuit (T img)
     }
 
     /* Fix volume into plm_image */
-#if defined (PLM_CONFIG_ENABLE_SMART_POINTERS)
     d_ptr->m_vol.reset (vol);
-#else
-    this->m_gpuit = vol;
-#endif
 }
 
 /* -----------------------------------------------------------------------
@@ -369,11 +365,7 @@ Plm_image::convert_itk_uchar_vec_to_gpuit_uchar_vec ()
     this->m_itk_uchar_vec = 0;
 
     /* Set output volume */
-#if defined (PLM_CONFIG_ENABLE_SMART_POINTERS)
     d_ptr->m_vol.reset (vol);
-#else
-    this->m_gpuit = vol;
-#endif
     this->m_type = PLM_IMG_TYPE_GPUIT_UCHAR_VEC;
 }
 

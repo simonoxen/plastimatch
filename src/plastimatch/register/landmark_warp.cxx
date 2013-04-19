@@ -194,7 +194,7 @@ calculate_warped_landmarks( Landmark_warp *lw )
     warped_landmarks = (float *)malloc( 3*num_landmarks * sizeof(float));
 
     vector_field = lw->m_vf->get_gpuit_vf();
-    moving = lw->m_input_img->get_volume_float();
+    moving = lw->m_input_img->get_volume_float_raw ();
 
     // fixed dimensions set come from lw->m_pih //
     lw->m_pih.get_dim (fixed_dim);
@@ -348,8 +348,7 @@ calculate_warped_landmarks_by_vf (Landmark_warp *lw , Volume *vector_field)
     landmark_dxyz = (float *)malloc( 3*num_landmarks * sizeof(float));
     warped_landmarks = (float *)malloc( 3*num_landmarks * sizeof(float));
 
-//    vector_field = lw->m_vf->get_gpuit_vf();
-    moving = lw->m_input_img->get_volume_float();
+    moving = lw->m_input_img->get_volume_float_raw ();
 
     // fixed dimensions set come from lw->m_pih //
     lw->m_pih.get_dim (fixed_dim);

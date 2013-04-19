@@ -7,6 +7,7 @@
 #include "plmutil_config.h"
 #include <vector>
 #include "itk_image_type.h"
+#include "plm_image.h"
 #include "plm_image_type.h"
 
 class Metadata;
@@ -25,13 +26,14 @@ class PLMUTIL_API Rtds {
 public:
     Rtds_private *d_ptr;
 public:
-    Plm_image *m_img;                  /* CT image */
     Rtss *m_rtss;                      /* RT structure set */
 
 public:
     Rtds ();
     ~Rtds ();
 
+    void load_image (const char *fn);
+    void load_image (const std::string& fn);
     void load_dicom_dir (const char *dicom_dir);
     void load_dicom (const char *dicom_dir); 
     void load_dicom_dose (const char *dicom_path);
@@ -53,6 +55,11 @@ public:
     void save_dose (const char* fname, Plm_image_type image_type);
 
     void set_user_metadata (std::vector<std::string>& metadata);
+
+    bool have_image ();
+    void set_image (Plm_image* pli);
+    void set_image (Plm_image::Pointer pli);
+    Plm_image::Pointer get_image ();
 
     void set_dose (Plm_image *pli);
     void set_dose (FloatImageType::Pointer itk_dose);

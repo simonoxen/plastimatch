@@ -10,6 +10,7 @@
 #include "metadata.h"
 #include "plm_image_type.h"
 #include "smart_pointer.h"
+#include "volume.h"
 
 // TODO: Change type of m_meta to Metadata*
 
@@ -19,7 +20,6 @@ class Plm_image;
 class Plm_image_private;
 class Pstring;
 class Slice_index;
-class Volume;
 
 class PLMBASE_API Plm_image {
 public:
@@ -53,13 +53,6 @@ public:
     FloatImageType::Pointer m_itk_float;
     DoubleImageType::Pointer m_itk_double;
     UCharVecImageType::Pointer m_itk_uchar_vec;
-
-protected:
-#if defined (PLM_CONFIG_ENABLE_SMART_POINTERS)
-    /* Declared in private */
-#else
-    void* m_gpuit;
-#endif
 
 private:
     /* Please don't use copy constructors.  They suck. */
@@ -139,8 +132,11 @@ public:
     const Volume* get_volume () const;
     Volume* get_volume_uchar ();
     Volume* get_volume_short ();
-    Volume* get_volume_float ();
+    Volume::Pointer get_volume_float ();
     Volume* get_volume_uchar_vec ();
+
+    /* To be replaced ... */
+    Volume* get_volume_float_raw ();
 
     Volume* steal_volume ();
 

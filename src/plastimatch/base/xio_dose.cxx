@@ -337,7 +337,7 @@ xio_dose_save (
     size_t result;
 
     Volume *v;
-    v = (Volume*) pli->get_volume_float ();
+    v = (Volume*) pli->get_volume_float_raw ();
 
     /* Dose cube definition */
     double rx; double ry; double rz;

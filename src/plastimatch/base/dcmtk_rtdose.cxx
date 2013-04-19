@@ -10,6 +10,7 @@
 
 #include "dcmtk_file.h"
 #include "dcmtk_loader.h"
+#include "dcmtk_loader_p.h"
 #include "dcmtk_metadata.h"
 #include "dcmtk_rtdose.h"
 #include "dcmtk_save.h"
@@ -177,6 +178,7 @@ Dcmtk_loader::rtdose_load ()
 	    }
 	}
     }
+    free (gfov);
 
     /* DoseGridScaling -- if element doesn't exist, scaling is 1.0 */
     float dose_scaling = 1.0;
@@ -215,15 +217,15 @@ Dcmtk_loader::rtdose_load ()
     printf ("Pixel_rep: %d\n", (int) pixel_rep);
 
     /* Create output dose image */
-    delete this->dose;
-    this->dose = new Plm_image;
+    Plm_image::Pointer dose = Plm_image::New();
+    this->set_dose (dose);
 
     /* Create Volume */
     Volume *vol = new Volume (dim, ipp, spacing, 0, PT_FLOAT, 1);
     float *img = (float*) vol->img;
 
     /* Bind volume to plm_image */
-    this->dose->set_volume (vol);
+    dose->set_volume (vol);
 
     /* PixelData */
     unsigned long length = 0;
@@ -240,8 +242,7 @@ Dcmtk_loader::rtdose_load ()
             dcmtk_dose_copy (img, (const uint32_t*) pixel_data, 
                 vol->npix, dose_scaling);
         } else {
-            delete this->dose;
-            this->dose = 0;
+            d_ptr->dose.reset();
             print_and_exit ("Unknown pixel representation (%d %d)\n",
                 bits_stored, pixel_rep);
         }
@@ -256,8 +257,7 @@ Dcmtk_loader::rtdose_load ()
             dcmtk_dose_copy (img, (const int32_t*) pixel_data, 
                 vol->npix, dose_scaling);
         } else {
-            delete this->dose;
-            this->dose = 0;
+            d_ptr->dose.reset();
             print_and_exit ("Unknown pixel representation (%d %d)\n",
                 bits_stored, pixel_rep);
         }

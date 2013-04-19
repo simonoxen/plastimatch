@@ -30,7 +30,7 @@ Rtds::load_gdcm (const char *dicom_dir)
 
      if (gdcm_series->m_rtdose_file_list) {
 	const std::string& filename = gdcm_series->get_rtdose_filename();
-	d_ptr->m_dose = gdcm1_dose_load (0, filename.c_str());
+	d_ptr->m_dose.reset(gdcm1_dose_load (0, filename.c_str()));
     }
     if (gdcm_series->m_rtstruct_file_list) {
 	const std::string& filename = gdcm_series->get_rtstruct_filename();
@@ -42,7 +42,7 @@ Rtds::load_gdcm (const char *dicom_dir)
     /* Use existing itk reader for the image.
        This is required because the native dicom reader doesn't yet 
        handle things like MR. */
-    m_img = plm_image_load_native (dicom_dir);
+    d_ptr->m_img = Plm_image::New (new Plm_image(dicom_dir));
 
 #if GDCM_VERSION_1
     /* Use native reader to set meta */
@@ -54,9 +54,9 @@ Rtds::load_gdcm (const char *dicom_dir)
 void
 Rtds::save_gdcm (const char *output_dir)
 {
-    if (this->m_img) {
+    if (d_ptr->m_img) {
 	printf ("Rtds::save_dicom: save_short_dicom()\n");
-	this->m_img->save_short_dicom (output_dir, d_ptr->m_slice_index,
+	d_ptr->m_img->save_short_dicom (output_dir, d_ptr->m_slice_index,
             this->get_metadata ());
     }
 #if GDCM_VERSION_1
@@ -68,7 +68,7 @@ Rtds::save_gdcm (const char *output_dir)
 	char fn[_MAX_PATH];
 	printf ("Rtds::save_dicom: gdcm_save_dose()\n");
 	snprintf (fn, _MAX_PATH, "%s/%s", output_dir, "dose.dcm");
-	gdcm1_dose_save (d_ptr->m_dose, this->get_metadata(), 
+	gdcm1_dose_save (d_ptr->m_dose.get(), this->get_metadata(), 
             d_ptr->m_slice_index, fn);
     }
 #endif

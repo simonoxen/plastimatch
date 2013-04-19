@@ -71,10 +71,6 @@ Plm_image::Plm_image (Plm_image_type type, const Plm_image_header& pih)
     this->create (type, pih);
 }
 Plm_image::~Plm_image () {
-#if defined (PLM_CONFIG_ENABLE_SMART_POINTERS)
-#else
-    this->free ();
-#endif
     delete d_ptr;
 }
 
@@ -89,24 +85,13 @@ Plm_image::init ()
     d_ptr = new Plm_image_private;
     m_original_type = PLM_IMG_TYPE_UNDEFINED;
     m_type = PLM_IMG_TYPE_UNDEFINED;
-#if defined (PLM_CONFIG_ENABLE_SMART_POINTERS)
-#else
-    m_gpuit = 0;
-#endif
 }
 
 /* This function can be called by anyone */
 void
 Plm_image::free ()
 {
-#if defined (PLM_CONFIG_ENABLE_SMART_POINTERS)
     d_ptr->m_vol.reset ();
-#else
-    if (m_gpuit) {
-        delete (Volume*) m_gpuit;
-    }
-    m_gpuit = 0;
-#endif
 
     m_original_type = PLM_IMG_TYPE_UNDEFINED;
     m_type = PLM_IMG_TYPE_UNDEFINED;
@@ -125,14 +110,7 @@ Plm_image::free ()
 void
 Plm_image::free_volume ()
 {
-#if defined (PLM_CONFIG_ENABLE_SMART_POINTERS)
     d_ptr->m_vol.reset();
-#else
-    if (m_gpuit) {
-        delete (Volume*) m_gpuit;
-    }
-    m_gpuit = 0;
-#endif
 }
 
 bool
@@ -208,12 +186,8 @@ Plm_image::clone (void)
     case PLM_IMG_TYPE_GPUIT_UINT32:
     case PLM_IMG_TYPE_GPUIT_FLOAT:
     case PLM_IMG_TYPE_GPUIT_FLOAT_FIELD:
-#if defined (PLM_CONFIG_ENABLE_SMART_POINTERS)
         pli->d_ptr->m_vol = this->d_ptr->m_vol->clone ();
-#else
-	pli->m_gpuit = (void*) volume_clone ((Volume*) this->m_gpuit);
-#endif
-	break;
+        break;
     default:
 	print_and_exit ("Unhandled image type in Plm_image::clone"
 			" (type = %d)\n", this->m_type);
@@ -412,11 +386,7 @@ Plm_image::load_native_nki (const char* fname)
 {
     Volume *v = nki_load (fname);
     if (v) {
-#if defined (PLM_CONFIG_ENABLE_SMART_POINTERS)
         d_ptr->m_vol.reset(v);
-#else
-        this->m_gpuit = v;
-#endif
         this->m_original_type = PLM_IMG_TYPE_ITK_SHORT;
         this->m_type = PLM_IMG_TYPE_GPUIT_SHORT;
         return true;
@@ -549,11 +519,7 @@ void
 Plm_image::set_volume (Volume *v, Plm_image_type type)
 {
     this->free ();
-#if defined (PLM_CONFIG_ENABLE_SMART_POINTERS)
     d_ptr->m_vol.reset (v);
-#else
-    m_gpuit = (void*) v;
-#endif
     m_original_type = type;
     m_type = type;
 }
@@ -595,21 +561,13 @@ Plm_image::set_volume (Volume *v)
 Volume *
 Plm_image::get_volume ()
 {
-#if defined (PLM_CONFIG_ENABLE_SMART_POINTERS)
     return d_ptr->m_vol.get();
-#else
-    return (Volume*) m_gpuit;
-#endif
 }
 
 const Volume *
 Plm_image::get_volume () const
 {
-#if defined (PLM_CONFIG_ENABLE_SMART_POINTERS)
     return d_ptr->m_vol.get();
-#else
-    return (Volume*) m_gpuit;
-#endif
 }
 
 Volume* 
@@ -632,25 +590,24 @@ Plm_image::get_volume_short ()
 }
 
 Volume *
-Plm_image::get_volume_float ()
+Plm_image::get_volume_float_raw ()
 {
     convert_to_gpuit_float ();
     return get_volume ();
 }
 
+Volume::Pointer
+Plm_image::get_volume_float ()
+{
+    convert_to_gpuit_float ();
+    return d_ptr->m_vol;
+}
+
 Volume *
 Plm_image::steal_volume ()
 {
-#if defined (PLM_CONFIG_ENABLE_SMART_POINTERS)
-    /* Stealing should not be needed */
+    /* GCS FIX: Stealing should not be needed */
     return get_volume ();
-#else
-    Volume *v = (Volume*) m_gpuit;
-    m_gpuit = 0;
-    m_original_type = PLM_IMG_TYPE_UNDEFINED;
-    m_type = PLM_IMG_TYPE_UNDEFINED;
-    return v;
-#endif
 }
 
 void 

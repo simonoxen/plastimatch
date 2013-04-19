@@ -8,12 +8,13 @@
 
 #include "plm_int.h"
 #include "pstring.h"
+#include "volume.h"
 
 class Dcmtk_slice_data
 {
 public:
     Pstring fn;
-    Volume *vol;
+    Volume::Pointer vol;
 
     size_t slice_size;
     float *slice_float;

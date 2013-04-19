@@ -47,8 +47,6 @@ Dcmtk_loader::init ()
     this->ds_rtss = 0;
     this->cxt = 0;
     this->cxt_metadata = 0;
-    this->img = 0;
-    this->dose = 0;
 }
 
 void
@@ -137,21 +135,22 @@ Dcmtk_loader::debug (void) const
 Metadata *
 Dcmtk_loader::get_metadata ()
 {
-    return &this->img->m_meta;
+    return &d_ptr->img->m_meta;
 }
 
 Volume *
 Dcmtk_loader::get_volume ()
 {
-    if (!this->img) {
+    if (!d_ptr->img) {
         this->parse_directory ();
     }
-    if (!this->img) {
+    if (!d_ptr->img) {
         return 0;
     }
-    return this->img->get_volume();
+    return d_ptr->img->get_volume();
 }
 
+#if defined (commentout)
 Plm_image *
 Dcmtk_loader::steal_plm_image ()
 {
@@ -159,6 +158,13 @@ Dcmtk_loader::steal_plm_image ()
     Plm_image *tmp = this->img;
     this->img = 0;
     return tmp;
+}
+#endif
+
+Plm_image::Pointer
+Dcmtk_loader::get_image ()
+{
+    return d_ptr->img;
 }
 
 Rtss_structure_set *
@@ -170,6 +176,7 @@ Dcmtk_loader::steal_rtss_structure_set ()
     return tmp;
 }
 
+#if defined (commentout)
 Plm_image *
 Dcmtk_loader::steal_dose_image ()
 {
@@ -177,6 +184,13 @@ Dcmtk_loader::steal_dose_image ()
     Plm_image *tmp = this->dose;
     this->dose = 0;
     return tmp;
+}
+#endif
+
+Plm_image::Pointer
+Dcmtk_loader::get_dose_image ()
+{
+    return d_ptr->dose;
 }
 
 void
@@ -228,15 +242,15 @@ Dcmtk_loader::parse_directory (void)
 	    continue;
 	}
 
-        /* Load anything with a PixelData */
-	//if (modality == "CT") {
+        /* Load anything with a PixelData as an image */
 	bool rc = ds->get_uint16_array (DCM_PixelData, 0, 0);
         if (rc) {
 	    printf ("LOADING modality %s\n", modality.c_str());
 
             /* Load image */
             ds->set_rt_study (d_ptr->m_drs);
-	    this->img = ds->load_plm_image ();
+            Plm_image *pli = ds->load_plm_image ();
+	    d_ptr->img.reset (pli);
 	    continue;
 	}
     }
@@ -258,4 +272,10 @@ dcmtk_load (const char *dicom_dir)
     ShortImageType::Pointer img = ShortImageType::New ();
     
     return img;
+}
+
+void
+Dcmtk_loader::set_dose (Plm_image::Pointer dose)
+{
+    d_ptr->dose = dose;
 }

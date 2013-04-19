@@ -797,8 +797,9 @@ synthetic_mha (
     }
 
     /* Insert images into rtds */
-    rtds->m_img = new Plm_image;
-    rtds->m_img->set_itk (im_out);
+    Plm_image::Pointer pli = Plm_image::New();
+    pli->set_itk (im_out);
+    rtds->set_image (pli);
     if (parms->m_want_ss_img) {
         rtds->m_rtss = new Rtss (rtds);
         rtds->m_rtss->set_ss_img (ss_img);

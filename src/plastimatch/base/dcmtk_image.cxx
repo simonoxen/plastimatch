@@ -10,8 +10,10 @@
 
 #include "dcmtk_file.h"
 #include "dcmtk_metadata.h"
-#include "dcmtk_save.h"
-#include "dcmtk_save_p.h"
+//#include "dcmtk_save.h"
+//#include "dcmtk_save_p.h"
+#include "dcmtk_rt_study.h"
+#include "dcmtk_rt_study_p.h"
 #include "dcmtk_series.h"
 #include "dcmtk_slice_data.h"
 #include "dcmtk_uid.h"
@@ -27,7 +29,7 @@
 #include "volume.h"
 
 static void
-dcmtk_save_slice (const Dicom_rt_study *drs, Dcmtk_slice_data *dsd)
+dcmtk_save_slice (const Dicom_rt_study::Pointer drs, Dcmtk_slice_data *dsd)
 {
     Pstring tmp;
     DcmFileFormat fileformat;
@@ -113,19 +115,19 @@ dcmtk_save_slice (const Dicom_rt_study *drs, Dcmtk_slice_data *dsd)
 }
 
 void
-Dcmtk_save::save_image (
+Dcmtk_rt_study::save_image (
     const char *dicom_dir)
 {
     Dcmtk_slice_data dsd;
-    dsd.vol = this->img->get_volume_float();
+    dsd.vol = this->get_image_volume_float();
     dsd.slice_size = dsd.vol->dim[0] * dsd.vol->dim[1];
     dsd.slice_int16 = new int16_t[dsd.slice_size];
     float *dc = dsd.vol->direction_cosines.get();
     dsd.iop.format ("%f\\%f\\%f\\%f\\%f\\%f",
         dc[0], dc[1], dc[2], dc[3], dc[4], dc[5]);
 
-    Plm_image_header pih (dsd.vol);
-    d_ptr->m_drs->set_image_header (pih);
+    Plm_image_header pih (dsd.vol.get());
+    d_ptr->dicom_metadata->set_image_header (pih);
 
     for (plm_long k = 0; k < dsd.vol->dim[2]; k++) {
         /* GCS FIX: direction cosines */
@@ -139,10 +141,10 @@ Dcmtk_save::save_image (
         dcmtk_uid (dsd.slice_uid, PLM_UID_PREFIX);
 
         dsd.slice_float = &((float*)dsd.vol->img)[k*dsd.slice_size];
-        dcmtk_save_slice (d_ptr->m_drs, &dsd);
+        dcmtk_save_slice (d_ptr->dicom_metadata, &dsd);
 
-        d_ptr->m_drs->set_slice_uid (k, dsd.slice_uid);
+        d_ptr->dicom_metadata->set_slice_uid (k, dsd.slice_uid);
     }
     delete[] dsd.slice_int16;
-    d_ptr->m_drs->set_slice_list_complete ();
+    d_ptr->dicom_metadata->set_slice_list_complete ();
 }

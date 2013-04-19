@@ -80,7 +80,7 @@ Proton_Scene::init ()
     if (!this->rpl_vol) return false;
 
     /* scan through aperture to fill in rpl_volume */
-    this->rpl_vol->compute (d_ptr->patient->get_volume_float());
+    this->rpl_vol->compute (d_ptr->patient->get_volume_float_raw());
 
     return true;
 }
@@ -101,7 +101,7 @@ Proton_Scene::set_patient (Volume* ct_vol)
 Volume *
 Proton_Scene::get_patient_vol ()
 {
-    return d_ptr->patient->get_volume_float ();
+    return d_ptr->patient->get_volume_float_raw ();
 }
 
 Plm_image *

@@ -20,7 +20,8 @@ public:
                                           coordinates */
     Slice_index *m_slice_index;        /* UIDs, etc -- used by gdcm */
 
-    Plm_image *m_dose;                 /* RT dose */
+    Plm_image::Pointer m_img;          /* CT image */
+    Plm_image::Pointer m_dose;         /* RT dose */
 
 public:
     Rtds_private () {
@@ -29,18 +30,12 @@ public:
         m_meta->create_anonymous ();
         m_xio_transform = new Xio_ct_transform (this->m_meta);
         m_slice_index = new Slice_index;
-
-        m_dose = 0;
     }
     ~Rtds_private () {
         delete m_drs;
         delete m_meta;
         delete m_slice_index;
         delete m_xio_transform;
-
-        if (m_dose) {
-            delete m_dose;
-        }
     }
 };
 

@@ -47,7 +47,7 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
     synthetic_mha (&rtds, sm_parms);
 
     /* Save to file */
-    FloatImageType::Pointer img = rtds.m_img->itk_float();
+    FloatImageType::Pointer img = rtds.get_image()->itk_float();
     if (parms->output_fn.not_empty()) {
         switch (sm_parms->output_type) {
         case PLM_IMG_TYPE_ITK_UCHAR:

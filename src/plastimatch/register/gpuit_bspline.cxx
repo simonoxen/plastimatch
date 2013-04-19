@@ -39,9 +39,9 @@ do_gpuit_bspline_stage_internal (
     Plm_image_header pih;
 
     logfile_printf ("Converting fixed\n");
-    Volume *fixed = regd->fixed_image->get_volume_float();
+    Volume *fixed = regd->fixed_image->get_volume_float_raw ();
     logfile_printf ("Converting moving\n");
-    Volume *moving = regd->moving_image->get_volume_float();
+    Volume *moving = regd->moving_image->get_volume_float_raw ();
     logfile_printf ("Done.\n");
 
     Volume *m_mask = NULL;

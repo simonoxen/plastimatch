@@ -119,16 +119,16 @@ Mabs_vote::vote (
     Plm_image dmp_i (dmap_image);
     Plm_image tgt_i (d_ptr->target);
 
-    Volume *atl_vol = atl_i.get_volume_float ();
-    Volume *dmp_vol = dmp_i.get_volume_float ();
-    Volume *tgt_vol = tgt_i.get_volume_float ();
+    Volume *atl_vol = atl_i.get_volume_float_raw ();
+    Volume *dmp_vol = dmp_i.get_volume_float_raw ();
+    Volume *tgt_vol = tgt_i.get_volume_float_raw ();
 
     float *atl_img = (float*) atl_vol->img;
     float *dmp_img = (float*) dmp_vol->img;
     float *tgt_img = (float*) tgt_vol->img;
 
-    Volume *like0_vol = d_ptr->like0_img->get_volume_float ();
-    Volume *like1_vol = d_ptr->like1_img->get_volume_float ();
+    Volume *like0_vol = d_ptr->like0_img->get_volume_float_raw ();
+    Volume *like1_vol = d_ptr->like1_img->get_volume_float_raw ();
 
     float *like0_img = (float*) like0_vol->img;
     float *like1_img = (float*) like1_vol->img;
@@ -207,9 +207,9 @@ Mabs_vote::normalize_votes ()
         PLM_IMG_TYPE_ITK_FLOAT, 
         Plm_image_header (d_ptr->target));
 
-    Volume *score_vol = d_ptr->score_img->get_volume_float ();
-    Volume *like0_vol = d_ptr->like0_img->get_volume_float ();
-    Volume *like1_vol = d_ptr->like1_img->get_volume_float ();
+    Volume *score_vol = d_ptr->score_img->get_volume_float_raw ();
+    Volume *like0_vol = d_ptr->like0_img->get_volume_float_raw ();
+    Volume *like1_vol = d_ptr->like1_img->get_volume_float_raw ();
     float *score_img = (float*) score_vol->img;
     float *like0_img = (float*) like0_vol->img;
     float *like1_img = (float*) like1_vol->img;

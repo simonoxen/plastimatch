@@ -39,7 +39,7 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
             break;
         case PLM_FILE_FMT_UNKNOWN:
         case PLM_FILE_FMT_IMG:
-            rtds->m_img = plm_image_load_native (parms->input_fn);
+            rtds->load_image (parms->input_fn);
             break;
         case PLM_FILE_FMT_DICOM_DIR:
             rtds->load_dicom_dir ((const char*) parms->input_fn);
@@ -297,10 +297,10 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
         /* use spacing from referenced CT */
         lprintf ("Setting PIH from RDD\n");
         Plm_image_header::clone (&pih, &rtds->get_slice_index()->m_pih);
-    } else if (rtds->m_img) {
+    } else if (rtds->have_image()) {
         /* use the spacing of the input image */
         lprintf ("Setting PIH from M_IMG\n");
-        pih.set_from_plm_image (rtds->m_img);
+        pih.set_from_plm_image (rtds->get_image().get());
     } else if (rtds->m_rtss && rtds->m_rtss->have_ss_img()) {
         /* use the spacing of the input image */
         lprintf ("Setting PIH from M_SS_IMG\n");
@@ -350,7 +350,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     pih.print ();
 
     /* Warp the image and create vf */
-    if (rtds->m_img 
+    if (rtds->have_image()
         && parms->xf_in_fn.not_empty()
         && (parms->output_img_fn.not_empty()
             || parms->output_vf_fn.not_empty()
@@ -359,17 +359,16 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
         Plm_image *im_out;
         im_out = new Plm_image;
         lprintf ("Rtds_warp: Warping m_img\n");
-        plm_warp (im_out, &vf, &xform, &pih, rtds->m_img, parms->default_val, 
-            parms->use_itk, parms->interp_lin);
-        delete rtds->m_img;
-        rtds->m_img = im_out;
+        plm_warp (im_out, &vf, &xform, &pih, rtds->get_image().get(), 
+            parms->default_val, parms->use_itk, parms->interp_lin);
+        rtds->set_image (im_out);
     }
 
     /* Save output image */
-    if (parms->output_img_fn.not_empty() && rtds->m_img) {
+    if (parms->output_img_fn.not_empty() && rtds->have_image()) {
         lprintf ("Rtds_warp: Saving m_img (%s)\n",
             (const char*) parms->output_img_fn);
-        rtds->m_img->convert_and_save (
+        rtds->get_image()->convert_and_save (
             (const char*) parms->output_img_fn, 
             parms->output_type);
     }

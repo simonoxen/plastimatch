@@ -1,4 +1,12 @@
 
+***** Smart pointers part 3 *****
+
+Things to fix
+
+- Plm_image::steal_volume () should be removed
+- Rtds::load_dcmtk (const char *dicom_path) - need to be fixed
+
+
 ***** Smart pointers redux *****
 
 Prefer to have "internal" smart pointers

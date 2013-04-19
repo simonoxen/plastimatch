@@ -371,7 +371,7 @@ Mabs::prep (const std::string& input_dir, const std::string& output_dir)
     /* Save the image as raw files */
     timer.start();
     std::string fn = string_format ("%s/img.nrrd", output_dir.c_str());
-    rtds.m_img->save_image (fn.c_str());
+    rtds.get_image()->save_image (fn.c_str());
 
     /* Remove structures which are not part of the atlas */
     timer.start();
@@ -390,7 +390,7 @@ Mabs::prep (const std::string& input_dir, const std::string& output_dir)
     }
 
     /* Rasterize structure sets and save */
-    Plm_image_header pih (rtds.m_img);
+    Plm_image_header pih (rtds.get_image().get());
     rtds.m_rtss->rasterize (&pih, false, false);
     d_ptr->time_extract += timer.report();
 
@@ -486,7 +486,7 @@ Mabs::run_registration ()
         timer.start();
         std::string fn = string_format ("%s/img.nrrd", 
             atlas_input_path.c_str());
-        rtds.m_img = plm_image_load_native (fn.c_str());
+        rtds.load_image (fn.c_str());
         fn = string_format ("%s/structures", 
             atlas_input_path.c_str());
         rtds.m_rtss = new Rtss;
@@ -549,8 +549,8 @@ Mabs::run_registration ()
 
             /* Manually set input files */
             Registration_data *regd = new Registration_data;
-            regd->fixed_image = d_ptr->ref_rtds.m_img;
-            regd->moving_image = rtds.m_img;
+            regd->fixed_image = d_ptr->ref_rtds.get_image().get();
+            regd->moving_image = rtds.get_image().get();
 
             /* Run the registration */
             Xform *xf_out;
@@ -574,7 +574,7 @@ Mabs::run_registration ()
 
             /* Warp the structures */
             lprintf ("Warp structures...\n");
-            Plm_image_header source_pih (rtds.m_img);
+            Plm_image_header source_pih (rtds.get_image().get());
             timer.start();
             rtds.m_rtss->warp (xf_out, &fixed_pih);
             d_ptr->time_warp_str += timer.report();
@@ -745,7 +745,7 @@ Mabs::segmentation_vote (const std::string& atlas_id)
             vote->set_minimum_similarity (d_ptr->minsim);
             d_ptr->vote_map[mapped_name] = vote;
             vote->set_fixed_image (
-                d_ptr->ref_rtds.m_img->itk_float());
+                d_ptr->ref_rtds.get_image()->itk_float());
         } else {
             vote = vote_it->second;
         }
@@ -942,8 +942,7 @@ Mabs::run ()
 
     /* Load the image to be labeled.  For now, we'll assume this 
        is successful. */
-    d_ptr->ref_rtds.m_img = plm_image_load_native (
-        d_ptr->parms->labeling_input_fn);
+    d_ptr->ref_rtds.load_image (d_ptr->parms->labeling_input_fn);
 
     /* Parse atlas directory */
     this->load_atlas_dir_list ();
@@ -957,7 +956,7 @@ Mabs::run ()
     /* Save it for debugging */
     std::string fn = string_format ("%s/%s", d_ptr->outdir_base.c_str(),
         "img.nrrd");
-    d_ptr->ref_rtds.m_img->save_image (fn.c_str());
+    d_ptr->ref_rtds.get_image()->save_image (fn.c_str());
 
     /* Run the segmentation */
     this->run_registration ();
@@ -1004,7 +1003,7 @@ Mabs::train_internal (bool registration_only)
         timer.start();
         std::string fn = string_format ("%s/atlas/%s/img.nrrd", 
             d_ptr->traindir_base.c_str(), patient_id.c_str());
-        d_ptr->ref_rtds.m_img = plm_image_load_native (fn.c_str());
+        d_ptr->ref_rtds.load_image (fn.c_str());
         fn = string_format ("%s/atlas/%s/structures", 
             d_ptr->traindir_base.c_str(), patient_id.c_str());
         d_ptr->ref_rtds.m_rtss = new Rtss;

@@ -9,6 +9,7 @@
 
 #include "plm_int.h"
 #include "pstring.h"
+#include "smart_pointer.h"
 
 class Dicom_rt_study_private;
 class Metadata;
@@ -18,6 +19,8 @@ class Slice_list;
 class Volume;
 
 class PLMBASE_API Dicom_rt_study {
+public:
+    SMART_POINTER_SUPPORT (Dicom_rt_study);
 public:
     Dicom_rt_study_private *d_ptr;
 public:

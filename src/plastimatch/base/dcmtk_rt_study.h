@@ -8,13 +8,13 @@
 #include <list>
 
 #include "itk_image.h"
+#include "plm_image.h"
 #include "plm_int.h"
 #include "pstring.h"
+#include "volume.h"
 
 class Dcmtk_rt_study_private;
 class Dcmtk_slice_data;
-class Plm_image;
-class Volume;
 
 class PLMBASE_API Dcmtk_rt_study {
 public:
@@ -34,7 +34,14 @@ public:
     const char* get_study_uid () const;
     std::vector<Dcmtk_slice_data>* get_slice_data();
 public:
-    void set_image (FloatImageType::Pointer image);
+    Plm_image::Pointer get_image ();
+    Volume::Pointer get_image_volume_float ();
+    void set_image (Plm_image::Pointer image);
+    void set_dose (Plm_image::Pointer image);
+    void save (const char *dicom_dir);
+public:
+    void save_image (const char *dicom_dir);
+
 };
 
 #endif

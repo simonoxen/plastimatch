@@ -155,34 +155,36 @@ wed_ct_compute (
     float background
 )
 {
-
-  Rpl_volume* rpl_vol = scene->rpl_vol;
+    Rpl_volume* rpl_vol = scene->rpl_vol;
 
     if (parms->mode==0)  {
-      Volume* wed_vol;
+        Volume* wed_vol;
       
-      wed_vol = create_wed_volume (parms, scene);
-      rpl_vol->compute_wed_volume (wed_vol, ct_vol->get_volume_float(), background);
-      plm_image_save_vol (out_fn, wed_vol);
+        wed_vol = create_wed_volume (parms, scene);
+        rpl_vol->compute_wed_volume (wed_vol, ct_vol->get_volume_float_raw(), 
+            background);
+        plm_image_save_vol (out_fn, wed_vol);
     }
 
     if (parms->mode==1)  {
-      Volume* dew_vol;
+        Volume* dew_vol;
       
-      dew_vol = create_dew_volume (parms, scene);
-      rpl_vol->compute_dew_volume (ct_vol->get_volume_float(), dew_vol, background);
-      plm_image_save_vol (out_fn, dew_vol);
+        dew_vol = create_dew_volume (parms, scene);
+        rpl_vol->compute_dew_volume (ct_vol->get_volume_float_raw(), 
+            dew_vol, background);
+        plm_image_save_vol (out_fn, dew_vol);
     }
 
     if (parms->mode==2)  {
-      Volume* aperture_vol;
-      Volume* segdepth_vol;
+        Volume* aperture_vol;
+        Volume* segdepth_vol;
       
-      aperture_vol = create_segdepth_volume (parms, scene);
-      segdepth_vol = create_segdepth_volume (parms, scene);
-      rpl_vol->compute_segdepth_volume (ct_vol->get_volume_float(), aperture_vol, segdepth_vol, background);
-      plm_image_save_vol (out_fn, segdepth_vol);
-      plm_image_save_vol (parms->output_ap_fn.c_str(), aperture_vol);
+        aperture_vol = create_segdepth_volume (parms, scene);
+        segdepth_vol = create_segdepth_volume (parms, scene);
+        rpl_vol->compute_segdepth_volume (ct_vol->get_volume_float_raw(), 
+            aperture_vol, segdepth_vol, background);
+        plm_image_save_vol (out_fn, segdepth_vol);
+        plm_image_save_vol (parms->output_ap_fn.c_str(), aperture_vol);
     }
 }
 
@@ -192,139 +194,138 @@ wed_ct_initialize(Wed_Parms *parms)
   
 
   
-  Plm_image* ct_vol;
-  Plm_image* dose_vol = 0;
-  Proton_Scene scene;
+    Plm_image* ct_vol;
+    Plm_image* dose_vol = 0;
+    Proton_Scene scene;
   
   
-  float background[3];
-  //Background value for wed ct output
-  background[0] = -1000.;
-  //Background value for wed dose output
-  background[1] = 0.;
- //Background value for radiation length output
-  background[2] = 0.;
+    float background[3];
+    //Background value for wed ct output
+    background[0] = -1000.;
+    //Background value for wed dose output
+    background[1] = 0.;
+    //Background value for radiation length output
+    background[2] = 0.;
 
-  /* load the patient and insert into the scene */
-  ct_vol = plm_image_load (parms->input_ct_fn, PLM_IMG_TYPE_ITK_FLOAT);
-  if (!ct_vol) {
-    fprintf (stderr, "\n** ERROR: Unable to load patient volume.\n");
-    return -1;
-  }
-  
-  if (parms->skin_fn != "") {
-    fprintf (stderr, "\n** Skin file defined.  Modifying input ct...\n");
- 
-    Volume* ct_volume = ct_vol->get_volume_float();
-    Plm_image* skin_vol = plm_image_load (parms->skin_fn, PLM_IMG_TYPE_ITK_FLOAT);
-    if (!skin_vol) {
-      fprintf (stderr, "\n** ERROR: Unable to load skin input.\n");
-      return -1;
+    /* load the patient and insert into the scene */
+    ct_vol = plm_image_load (parms->input_ct_fn, PLM_IMG_TYPE_ITK_FLOAT);
+    if (!ct_vol) {
+        fprintf (stderr, "\n** ERROR: Unable to load patient volume.\n");
+        return -1;
     }
-    Volume* skin_volume = skin_vol->get_volume_float();
+  
+    if (parms->skin_fn != "") {
+        fprintf (stderr, "\n** Skin file defined.  Modifying input ct...\n");
+ 
+        Volume* ct_volume = ct_vol->get_volume_float_raw ();
+        Plm_image* skin_vol = plm_image_load (parms->skin_fn, 
+            PLM_IMG_TYPE_ITK_FLOAT);
+        if (!skin_vol) {
+            fprintf (stderr, "\n** ERROR: Unable to load skin input.\n");
+            return -1;
+        }
+        Volume* skin_volume = skin_vol->get_volume_float_raw();
     
-    if (skin_ct(ct_volume, skin_volume, background[0]))  {  //apply skin input to ct
-      fprintf (stderr, "\n** ERROR: Unable to apply skin input to ct input.\n");
+        if (skin_ct(ct_volume, skin_volume, background[0]))  {
+            //apply skin input to ct
+            fprintf (stderr, "\n** ERROR: Unable to apply skin input to ct input.\n");
+        }
     }
-
-  }
-
-
   
-  scene.set_patient (ct_vol);
+    scene.set_patient (ct_vol);
   
-  printf("%s\n",parms->input_dose_fn.c_str());
+    printf("%s\n",parms->input_dose_fn.c_str());
  
-  //  if (parms->input_dose_fn != "" && parms->output_dose_fn != "") {
+    //  if (parms->input_dose_fn != "" && parms->output_dose_fn != "") {
     //Load the input dose, or input wed_dose
     dose_vol = plm_image_load (parms->input_dose_fn.c_str(), 
-			       PLM_IMG_TYPE_ITK_FLOAT);
+        PLM_IMG_TYPE_ITK_FLOAT);
   
-  /* set scene parameters */
-  scene.beam->set_source_position (parms->src);
-  scene.beam->set_isocenter_position (parms->isocenter);
+    /* set scene parameters */
+    scene.beam->set_source_position (parms->src);
+    scene.beam->set_isocenter_position (parms->isocenter);
   
-  scene.ap->set_distance (parms->ap_offset);
-  scene.ap->set_spacing (parms->ap_spacing);
+    scene.ap->set_distance (parms->ap_offset);
+    scene.ap->set_spacing (parms->ap_spacing);
   
-  //Scene dimensions are set by .cfg file
+    //Scene dimensions are set by .cfg file
 
-  //Note: Set dimensions first, THEN center, as set_dim() also changes center
-  int ap_res[2];
-  float ap_center[2];
+    //Note: Set dimensions first, THEN center, as set_dim() also changes center
+    int ap_res[2];
+    float ap_center[2];
 
-  //Aperture dimensions
-  if (parms->have_ires) {scene.ap->set_dim (parms->ires);}
-  //If dew option, and not specified in .cfg files, then we guess
-  //at some scene dimensions set by input wed image.
-  if (parms->mode==1)  {
-   if (!parms->have_ires)  {
-      Volume *wed_vol = dose_vol->get_volume_float();
-      //Grab aperture dimensions from input wed.
-      //We also pad each dimension by 1, for the later trilinear interpolations.
-      ap_res[0] = (int) (wed_vol->dim[0]+2);
-      ap_res[1] = (int) (wed_vol->dim[1]+2);
-      scene.ap->set_dim (ap_res);
-      parms->ires[0]=ap_res[0];
-      parms->ires[1]=ap_res[1];
+    //Aperture dimensions
+    if (parms->have_ires) {scene.ap->set_dim (parms->ires);}
+    //If dew option, and not specified in .cfg files, then we guess
+    //at some scene dimensions set by input wed image.
+    if (parms->mode==1)  {
+        if (!parms->have_ires)  {
+            Volume *wed_vol = dose_vol->get_volume_float_raw ();
+            //Grab aperture dimensions from input wed.
+            //We also pad each dimension by 1, for the later trilinear interpolations.
+            ap_res[0] = (int) (wed_vol->dim[0]+2);
+            ap_res[1] = (int) (wed_vol->dim[1]+2);
+            scene.ap->set_dim (ap_res);
+            parms->ires[0]=ap_res[0];
+            parms->ires[1]=ap_res[1];
+        }
     }
-  }
 
-  //Aperture Center
-  //Note - Center MUST be reset here if set in the config file, as set_dim()
-  //will reset the center.
-  if (parms->have_ic) {scene.ap->set_center (parms->ic);}
-  //And again, guess.
-  if (parms->mode==1)  {
-    if (!parms->have_ic)  {
-      //Set center as half the resolutions.
-      ap_center[0] = (float) ap_res[0]/2.;
-      ap_center[1] = (float) ap_res[1]/2.;
-      scene.ap->set_center (ap_center);
-       parms->ic[0]=ap_center[0];
-      parms->ic[1]=ap_center[1];
-    } 
-  }
-
-  scene.set_step_length(parms->ray_step);
-  
-  /* try to setup the scene with the provided parameters */
-  if (!scene.init ()) {
-    fprintf (stderr, "ERROR: Unable to initilize scene.\n");
-    return -1;
-  }
-  scene.debug ();
-  
-  if (parms->rpl_vol_fn != "") {
-    scene.rpl_vol->save (parms->rpl_vol_fn);
-  }
-
-  printf ("Working...\n");
-  fflush(stdout);
-  
-  if (parms->mode==0)  {
-    printf ("Computing patient wed volume...\n");
-    wed_ct_compute (parms->output_ct_fn, parms, ct_vol, &scene, background[0]);
-    printf ("done.\n");
-  }
-  
-  if (parms->input_dose_fn != "" && parms->output_dose_fn != "") {
-    if ((parms->mode==0)||(parms->mode==1))  {
-      printf ("Calculating dose...\n");
-      wed_ct_compute (parms->output_dose_fn.c_str(), 
-		      parms, dose_vol, &scene, background[1]);
-      printf ("Complete...\n");
+    //Aperture Center
+    //Note - Center MUST be reset here if set in the config file, as set_dim()
+    //will reset the center.
+    if (parms->have_ic) {scene.ap->set_center (parms->ic);}
+    //And again, guess.
+    if (parms->mode==1)  {
+        if (!parms->have_ic)  {
+            //Set center as half the resolutions.
+            ap_center[0] = (float) ap_res[0]/2.;
+            ap_center[1] = (float) ap_res[1]/2.;
+            scene.ap->set_center (ap_center);
+            parms->ic[0]=ap_center[0];
+            parms->ic[1]=ap_center[1];
+        } 
     }
-  }
-  if (parms->mode==2)  {
-    printf ("Calculating depths...\n");
-    wed_ct_compute (parms->output_depth_fn.c_str(), 
-		    parms, dose_vol, &scene, background[2]);
-    printf ("Complete...\n");
-  }
+
+    scene.set_step_length(parms->ray_step);
+  
+    /* try to setup the scene with the provided parameters */
+    if (!scene.init ()) {
+        fprintf (stderr, "ERROR: Unable to initilize scene.\n");
+        return -1;
+    }
+    scene.debug ();
+  
+    if (parms->rpl_vol_fn != "") {
+        scene.rpl_vol->save (parms->rpl_vol_fn);
+    }
+
+    printf ("Working...\n");
+    fflush(stdout);
+  
+    if (parms->mode==0)  {
+        printf ("Computing patient wed volume...\n");
+        wed_ct_compute (parms->output_ct_fn, parms, ct_vol, &scene, background[0]);
+        printf ("done.\n");
+    }
+  
+    if (parms->input_dose_fn != "" && parms->output_dose_fn != "") {
+        if ((parms->mode==0)||(parms->mode==1))  {
+            printf ("Calculating dose...\n");
+            wed_ct_compute (parms->output_dose_fn.c_str(), 
+                parms, dose_vol, &scene, background[1]);
+            printf ("Complete...\n");
+        }
+    }
+    if (parms->mode==2)  {
+        printf ("Calculating depths...\n");
+        wed_ct_compute (parms->output_depth_fn.c_str(), 
+            parms, dose_vol, &scene, background[2]);
+        printf ("Complete...\n");
+    }
 
 
-  return 0;
+    return 0;
 }
 
 int

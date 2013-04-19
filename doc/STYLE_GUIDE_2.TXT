@@ -119,8 +119,8 @@ N.b. The old way is to use the term "parms" for both types of structures.
 N.b. Does this even make sense?  Cxt_to_mha can use the same structure 
 for both uses.
 
-Dim, dims, offset, origin, spacing [implemented]
-------------------------------------------------
+Dim, dims, offset, origin, spacing
+----------------------------------
 To describe the position of an image in mm, use origin, not offset.  
 The term offset is used to describe an ROI in voxels.
 
@@ -143,6 +143,24 @@ UChar, Char, ...
 ----------------
 The ordering is integers, then float, then vectors; 
     smaller, then larger; unsigned, then signed.
+
+Plm_image, ITK image, Volume
+----------------------------
+Overloaded functions which return specific types should specify 
+them as follows:
+
+     object.get_image ();        // Returns Plm_image::Pointer
+     object.get_image_itk ()     // Returns most appropriate itk type
+                                 // (usually FloatImageType::Pointer)
+     object.get_volume ();       // Returns most Volume::Pointer of most 
+                                 // appropriate type (usually float) 
+
+When appropriate, the functions may be suffixed to specify the 
+return type:
+
+     object.get_image_itk_float ();
+     object.get_volume_float ();
+
 
 Variable naming for indexing  [Proposed, not implemented]
 ---------------------------------------------------------

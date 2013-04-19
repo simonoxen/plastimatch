@@ -75,7 +75,7 @@ int preview_portal (void* pli_in)
 
             //attach pli to portal
             portal->resetPortal();
-            portal->setVolume (pli->get_volume_float());
+            portal->setVolume (pli->get_volume_float_raw());
             portal->setView (PortalWidget::Axial);
             portal->show();
             app.exec();

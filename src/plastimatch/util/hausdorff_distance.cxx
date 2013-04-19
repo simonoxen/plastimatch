@@ -110,7 +110,7 @@ Hausdorff_distance::run_internal (
     Volume *vol_uchar = pli_uchar.get_volume_uchar ();
     unsigned char *img_uchar = (unsigned char*) vol_uchar->img;
     Plm_image pli_dmap (dmap);
-    Volume *vol_dmap = pli_dmap.get_volume_float ();
+    Volume *vol_dmap = pli_dmap.get_volume_float_raw ();
     float *img_dmap = (float*) vol_dmap->img;
 
     /* Find boundary pixels */
