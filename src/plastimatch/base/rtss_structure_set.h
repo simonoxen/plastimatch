@@ -10,6 +10,7 @@
 
 #include "plm_int.h"
 #include "pstring.h"
+#include "smart_pointer.h"
 
 class Plm_image;
 class Plm_image_header;
@@ -20,6 +21,8 @@ class Slice_list;
 #define CXT_BUFLEN 2048
 
 class PLMBASE_API Rtss_structure_set {
+public:
+    SMART_POINTER_SUPPORT (Rtss_structure_set);
 public:
     /* Output geometry */
     int have_geometry;

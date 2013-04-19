@@ -119,12 +119,10 @@ Dcmtk_rt_study::save (const char *dicom_dir)
     if (d_ptr->img) {
         this->save_image (dicom_dir);
     }
-#if defined (commentout)
-    if (this->cxt) {
+    if (d_ptr->cxt) {
         this->save_rtss (dicom_dir);
     }
-    if (this->dose) {
+    if (d_ptr->dose) {
         this->save_dose (dicom_dir);
     }
-#endif
 }

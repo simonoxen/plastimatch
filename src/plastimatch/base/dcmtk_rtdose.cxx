@@ -12,6 +12,8 @@
 #include "dcmtk_loader.h"
 #include "dcmtk_loader_p.h"
 #include "dcmtk_metadata.h"
+#include "dcmtk_rt_study.h"
+#include "dcmtk_rt_study_p.h"
 #include "dcmtk_rtdose.h"
 #include "dcmtk_save.h"
 #include "dcmtk_save_p.h"
@@ -265,15 +267,15 @@ Dcmtk_loader::rtdose_load ()
 }
 
 void
-Dcmtk_save::save_dose (
-    const char *dicom_dir)
+Dcmtk_rt_study::save_dose (const char *dicom_dir)
 {
     OFCondition ofc;
     std::string s;
     const Metadata *dose_metadata = 0;
-    if (d_ptr->m_drs) {
-        dose_metadata = d_ptr->m_drs->get_dose_metadata ();
+    if (d_ptr->dicom_metadata) {
+        dose_metadata = d_ptr->dicom_metadata->get_dose_metadata ();
     }
+    Volume* dose_volume = d_ptr->dose->get_volume();
 
     /* Prepare output file */
     std::string filename = string_format ("%s/dose.dcm", dicom_dir);
@@ -289,18 +291,18 @@ Dcmtk_save::save_dose (
     dataset->putAndInsertString (DCM_ImageType, 
         "DERIVED\\SECONDARY\\REFORMATTED");
     dataset->putAndInsertOFStringArray(DCM_InstanceCreationDate, 
-        d_ptr->m_drs->get_study_date());
+        d_ptr->dicom_metadata->get_study_date());
     dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, 
-        d_ptr->m_drs->get_study_time());
+        d_ptr->dicom_metadata->get_study_time());
     dataset->putAndInsertOFStringArray(DCM_InstanceCreatorUID, 
         PLM_UID_PREFIX);
     dataset->putAndInsertString (DCM_SOPClassUID, UID_RTDoseStorage);
     dataset->putAndInsertString (DCM_SOPInstanceUID, 
-        d_ptr->m_drs->get_dose_instance_uid());
+        d_ptr->dicom_metadata->get_dose_instance_uid());
     dataset->putAndInsertOFStringArray (DCM_StudyDate, 
-        d_ptr->m_drs->get_study_date());
+        d_ptr->dicom_metadata->get_study_date());
     dataset->putAndInsertOFStringArray (DCM_StudyTime, 
-        d_ptr->m_drs->get_study_time());
+        d_ptr->dicom_metadata->get_study_time());
     dataset->putAndInsertOFStringArray (DCM_AccessionNumber, "");
     dataset->putAndInsertOFStringArray (DCM_Modality, "RTDOSE");
     dataset->putAndInsertString (DCM_Manufacturer, "Plastimatch");
@@ -318,41 +320,42 @@ Dcmtk_save::save_dose (
     dataset->putAndInsertString (DCM_SoftwareVersions,
         PLASTIMATCH_VERSION_STRING);
     dataset->putAndInsertString (DCM_StudyInstanceUID, 
-        d_ptr->m_drs->get_study_uid());
+        d_ptr->dicom_metadata->get_study_uid());
     dataset->putAndInsertString (DCM_SeriesInstanceUID, 
-        d_ptr->m_drs->get_dose_series_uid());
+        d_ptr->dicom_metadata->get_dose_series_uid());
     dcmtk_copy_from_metadata (dataset, dose_metadata, DCM_StudyID, "10001");
     dataset->putAndInsertString (DCM_SeriesNumber, "");
     dataset->putAndInsertString (DCM_InstanceNumber, "1");
-    s = string_format ("%g\\%g\\%g", 
-	this->dose->offset[0], this->dose->offset[1], this->dose->offset[2]);
+    
+    s = string_format ("%g\\%g\\%g", dose_volume->offset[0], 
+        dose_volume->offset[1], dose_volume->offset[2]);
     /* GCS FIX: PatientOrientation */
     dataset->putAndInsertString (DCM_PatientOrientation, "L/P");
     dataset->putAndInsertString (DCM_ImagePositionPatient, s.c_str());
     s = string_format ("%g\\%g\\%g\\%g\\%g\\%g",
-	this->dose->direction_cosines[0],
-	this->dose->direction_cosines[1],
-	this->dose->direction_cosines[2],
-	this->dose->direction_cosines[3],
-	this->dose->direction_cosines[4],
-	this->dose->direction_cosines[5]);
+	dose_volume->direction_cosines[0],
+	dose_volume->direction_cosines[1],
+	dose_volume->direction_cosines[2],
+	dose_volume->direction_cosines[3],
+	dose_volume->direction_cosines[4],
+	dose_volume->direction_cosines[5]);
     dataset->putAndInsertString (DCM_ImageOrientationPatient, s.c_str());
     dataset->putAndInsertString (DCM_FrameOfReferenceUID, 
-        d_ptr->m_drs->get_frame_of_reference_uid());
+        d_ptr->dicom_metadata->get_frame_of_reference_uid());
 
     dataset->putAndInsertString (DCM_SamplesPerPixel, "1");
     dataset->putAndInsertString (DCM_PhotometricInterpretation, "MONOCHROME2");
-    s = string_format ("%d", (int) this->dose->dim[2]);
+    s = string_format ("%d", (int) dose_volume->dim[2]);
     dataset->putAndInsertString (DCM_NumberOfFrames, s.c_str());
 
     /* GCS FIX: Add FrameIncrementPointer */
     dataset->putAndInsertString (DCM_FrameIncrementPointer, 
         "(3004,000c)");
 
-    dataset->putAndInsertUint16 (DCM_Rows, this->dose->dim[1]);
-    dataset->putAndInsertUint16 (DCM_Columns, this->dose->dim[0]);
+    dataset->putAndInsertUint16 (DCM_Rows, dose_volume->dim[1]);
+    dataset->putAndInsertUint16 (DCM_Columns, dose_volume->dim[0]);
     s = string_format ("%g\\%g", 
-        this->dose->spacing[1], this->dose->spacing[0]);
+        dose_volume->spacing[1], dose_volume->spacing[0]);
     dataset->putAndInsertString (DCM_PixelSpacing, s.c_str());
 
     dataset->putAndInsertString (DCM_BitsAllocated, "32");
@@ -372,8 +375,8 @@ Dcmtk_save::save_dose (
     dataset->putAndInsertString (DCM_DoseSummationType, "PLAN");
 
     s = std::string ("0");
-    for (int i = 1; i < this->dose->dim[2]; i++) {
-	s += string_format ("\\%g", i * this->dose->spacing[2]);
+    for (int i = 1; i < dose_volume->dim[2]; i++) {
+	s += string_format ("\\%g", i * dose_volume->spacing[2]);
     }
     dataset->putAndInsertString (DCM_GridFrameOffsetVector, s.c_str());
     
@@ -386,8 +389,7 @@ Dcmtk_save::save_dose (
        maximum dose. */
 
     /* Copy the image so we don't corrupt the original */
-    //Volume *dose_copy = this->dose->clone();
-    Volume::Pointer dose_copy = this->dose->clone();
+    Volume::Pointer dose_copy = dose_volume->clone();
 
     /* Find the maximum value in the image */
     double min_val, max_val, avg;

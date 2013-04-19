@@ -7,10 +7,10 @@
 #include "plmbase_config.h"
 #include "dicom_rt_study.h"
 #include "plm_image.h"
+#include "rtss_structure_set.h"
 
 class Dcmtk_series;
 class Dcmtk_slice_data;
-class Rtss_structure_set;
 
 class Dcmtk_rt_study_private {
 public:
@@ -29,7 +29,7 @@ public:
     Dcmtk_series *ds_rtdose;
     Dcmtk_series *ds_rtss;
 
-    Rtss_structure_set *cxt;
+    Rtss_structure_set::Pointer cxt;
     Metadata *cxt_metadata;
     Plm_image::Pointer img;
     Plm_image::Pointer dose;
