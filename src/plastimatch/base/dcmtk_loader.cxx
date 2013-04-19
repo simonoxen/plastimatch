@@ -45,12 +45,10 @@ Dcmtk_loader::init ()
 {
     this->ds_rtdose = 0;
     this->ds_rtss = 0;
-    this->cxt = 0;
-    this->cxt_metadata = 0;
 }
 
 void
-Dcmtk_loader::set_rt_study (Dicom_rt_study *drs)
+Dcmtk_loader::set_dicom_metadata (Dicom_rt_study::Pointer drs)
 {
     d_ptr->m_drs = drs;
 }
@@ -167,28 +165,14 @@ Dcmtk_loader::get_image ()
     return d_ptr->img;
 }
 
-Rtss_structure_set *
-Dcmtk_loader::steal_rtss_structure_set ()
+Rtss_structure_set::Pointer
+Dcmtk_loader::get_rtss ()
 {
-    /* Transfer ownership to caller */
-    Rtss_structure_set *tmp = this->cxt;
-    this->cxt = 0;
-    return tmp;
+    return d_ptr->cxt;
 }
-
-#if defined (commentout)
-Plm_image *
-Dcmtk_loader::steal_dose_image ()
-{
-    /* Transfer ownership to caller */
-    Plm_image *tmp = this->dose;
-    this->dose = 0;
-    return tmp;
-}
-#endif
 
 Plm_image::Pointer
-Dcmtk_loader::get_dose_image ()
+Dcmtk_loader::get_dose ()
 {
     return d_ptr->dose;
 }
@@ -248,7 +232,7 @@ Dcmtk_loader::parse_directory (void)
 	    printf ("LOADING modality %s\n", modality.c_str());
 
             /* Load image */
-            ds->set_rt_study (d_ptr->m_drs);
+            ds->set_dicom_metadata (d_ptr->m_drs);
             Plm_image *pli = ds->load_plm_image ();
 	    d_ptr->img.reset (pli);
 	    continue;

@@ -1,4 +1,21 @@
 
+***** Rtss, rtss_structure_set, ... *****
+
+These names are lousy.  Let's get some new names.
+
+DICOM officially refers to the set of all structures 
+as a "RT Structure Set".  The image associated with the structures 
+is called a "Contour Image Sequence".  A single structure is 
+called an "ROI".  A single polyline is called an "ROI Contour".
+
+Proposed names (polyline formats)
+
+  - Contour               replaces Rtss_polyline
+  - Rtss_roi              replaces Rtss_structure
+  - Rtss                  replaces Rtss_structure_set
+  - Segmentation_set      replaces Rtss
+
+
 ***** Smart pointers part 3 *****
 
 Things to fix

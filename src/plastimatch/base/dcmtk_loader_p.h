@@ -8,7 +8,9 @@
 #include <map>
 #include <string>
 #include "dcmtk_series.h"
+#include "dicom_rt_study.h"
 #include "plm_image.h"
+#include "rtss_structure_set.h"
 
 class Dcmtk_rt_study;
 
@@ -19,15 +21,15 @@ typedef std::pair<std::string, Dcmtk_series*> Dcmtk_series_map_pair;
 class Dcmtk_loader_private {
 public:
     Dcmtk_series_map m_smap;
-    Dicom_rt_study *m_drs;
+    Dicom_rt_study::Pointer m_drs;
 
     Plm_image::Pointer img;
     Plm_image::Pointer dose;
 
+    Rtss_structure_set::Pointer cxt;
+
 public:
     Dcmtk_loader_private () {
-        /* Don't create m_drs.  It is set by caller. */
-        m_drs = 0;
     }
     ~Dcmtk_loader_private () {
         /* Delete Dicom_series objects in map */

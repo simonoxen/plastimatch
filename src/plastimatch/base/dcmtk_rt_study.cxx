@@ -6,6 +6,7 @@
 #include "dcmtk/ofstd/ofstream.h"
 #include "dcmtk/dcmdata/dctk.h"
 
+#include "dcmtk_loader.h"
 #include "dcmtk_image.h"
 #include "dcmtk_rt_study.h"
 #include "dcmtk_rt_study_p.h"
@@ -107,10 +108,55 @@ Dcmtk_rt_study::set_image (Plm_image::Pointer image)
     d_ptr->img = image;
 }
 
+Rtss_structure_set::Pointer
+Dcmtk_rt_study::get_rtss ()
+{
+    return d_ptr->cxt;
+}
+
+void 
+Dcmtk_rt_study::set_rtss (Rtss_structure_set::Pointer rtss)
+{
+    d_ptr->cxt = rtss;
+}
+
+Plm_image::Pointer 
+Dcmtk_rt_study::get_dose ()
+{
+    return d_ptr->dose;
+}
+
 void 
 Dcmtk_rt_study::set_dose (Plm_image::Pointer image)
 {
     d_ptr->dose = image;
+}
+
+void 
+Dcmtk_rt_study::set_dicom_metadata (Dicom_rt_study::Pointer dicom_metadata)
+{
+    d_ptr->dicom_metadata = dicom_metadata;
+}
+
+void 
+Dcmtk_rt_study::load (const char *dicom_path)
+{
+    Dcmtk_loader dss (dicom_path);
+    dss.set_dicom_metadata (d_ptr->dicom_metadata);
+    dss.parse_directory ();
+
+    d_ptr->img = dss.get_image ();
+    Rtss_structure_set::Pointer rtss = dss.get_rtss ();
+
+#if defined (commentout)
+    if (rtss) {
+	this->m_rtss = new Rtss (this);
+        this->m_rtss->set_structure_set (rtss);
+    }
+    d_ptr->m_dose = dss.get_dose_image ();
+
+    printf ("Done.\n");
+#endif
 }
 
 void 

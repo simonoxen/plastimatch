@@ -6,6 +6,7 @@
 #include "vnl/vnl_random.h"
 
 #include "itk_pointset.h"
+#include "logfile.h"
 #include "rtds.h"
 #include "rtss.h"
 #include "rtss_structure.h"
@@ -24,7 +25,7 @@ int compare (const void * a, const void * b)
     Actual function that simplifies the contours
    ----------------------------------------------------------------------- */
 void
-do_simplify(Rtds *rtds, float percentage)
+do_simplify (Rtds *rtds, float percentage)
 {
     int num_structures=0;
     int first_index_to_remove=0;
@@ -33,7 +34,9 @@ do_simplify(Rtds *rtds, float percentage)
     
     vnl_random gnr;
 
-    printf("Hello from simplify_points! \n You are going to delete %f percent of points from your dataset\n",percentage);
+    lprintf ("Hello from simplify_points! \n"
+        "You are going to delete %f percent of points from your dataset\n",
+        percentage);
 
     /* Check file_type */
 //    if (file_type != PLM_FILE_FMT_DICOM_RTSS) {
@@ -41,7 +44,7 @@ do_simplify(Rtds *rtds, float percentage)
 //      exit(-1);
 //    }
 
-    Rtss_structure_set *rtss_ss = rtds->m_rtss->get_structure_set ();
+    Rtss_structure_set *rtss_ss = rtds->get_rtss()->get_structure_set_raw ();
     num_structures = rtss_ss->num_structures;
 
     for(int j=0;j<num_structures;j++){

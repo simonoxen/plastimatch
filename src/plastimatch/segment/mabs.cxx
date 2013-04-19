@@ -187,21 +187,20 @@ void
 Mabs_private::extract_reference_image (const std::string& mapped_name)
 {
     this->have_ref_structure = false;
-    if (this->ref_rtds.m_rtss){
-        for (size_t j = 0; 
-             j < this->ref_rtds.m_rtss->get_num_structures(); 
-             j++)
-        {
-            std::string ref_ori_name 
-                = this->ref_rtds.m_rtss->get_structure_name (j);
-            std::string ref_mapped_name 
-                = this->map_structure_name (ref_ori_name);
-            if (ref_mapped_name == mapped_name) {
-                this->ref_structure_image = this->ref_rtds.m_rtss
-                    ->get_structure_image (j);
-                this->have_ref_structure = true;
-                break;
-            }
+    Rtss::Pointer rtss = this->ref_rtds.get_rtss();
+    if (!rtss) {
+        return;
+    }
+    for (size_t j = 0; j < rtss->get_num_structures(); j++)
+    {
+        std::string ref_ori_name 
+            = rtss->get_structure_name (j);
+        std::string ref_mapped_name 
+            = this->map_structure_name (ref_ori_name);
+        if (ref_mapped_name == mapped_name) {
+            this->ref_structure_image = rtss->get_structure_image (j);
+            this->have_ref_structure = true;
+            break;
         }
     }
 }
@@ -375,12 +374,13 @@ Mabs::prep (const std::string& input_dir, const std::string& output_dir)
 
     /* Remove structures which are not part of the atlas */
     timer.start();
-    rtds.m_rtss->prune_empty ();
-    Rtss_structure_set *cxt = rtds.m_rtss->get_structure_set();
-    for (size_t i = 0; i < rtds.m_rtss->get_num_structures(); i++) {
+    Rtss::Pointer rtss = rtds.get_rtss();
+    rtss->prune_empty ();
+    Rtss_structure_set *cxt = rtss->get_structure_set_raw ();
+    for (size_t i = 0; i < rtss->get_num_structures(); i++) {
         /* Check structure name, make sure it is something we 
            want to segment */
-        std::string ori_name = rtds.m_rtss->get_structure_name (i);
+        std::string ori_name = rtss->get_structure_name (i);
         std::string mapped_name = d_ptr->map_structure_name (ori_name);
         if (mapped_name == "") {
             /* If not, delete it (before rasterizing) */
@@ -391,12 +391,12 @@ Mabs::prep (const std::string& input_dir, const std::string& output_dir)
 
     /* Rasterize structure sets and save */
     Plm_image_header pih (rtds.get_image().get());
-    rtds.m_rtss->rasterize (&pih, false, false);
+    rtss->rasterize (&pih, false, false);
     d_ptr->time_extract += timer.report();
 
     /* Save structures which are part of the atlas */
     std::string prefix = string_format ("%s/structures", output_dir.c_str());
-    rtds.m_rtss->save_prefix (prefix, "nrrd");
+    rtss->save_prefix (prefix, "nrrd");
     d_ptr->time_io += timer.report();
 }
 
@@ -489,15 +489,15 @@ Mabs::run_registration ()
         rtds.load_image (fn.c_str());
         fn = string_format ("%s/structures", 
             atlas_input_path.c_str());
-        rtds.m_rtss = new Rtss;
-        rtds.m_rtss->load_prefix (fn.c_str());
+        rtds.load_prefix (fn.c_str());
         d_ptr->time_io += timer.report();
 
         /* Inspect the structures -- we might be able to skip the 
            atlas if it has no relevant structures */
         bool can_skip = true;
-        for (size_t i = 0; i < rtds.m_rtss->get_num_structures(); i++) {
-            std::string ori_name = rtds.m_rtss->get_structure_name (i);
+        Rtss::Pointer rtss = rtds.get_rtss();
+        for (size_t i = 0; i < rtss->get_num_structures(); i++) {
+            std::string ori_name = rtss->get_structure_name (i);
             std::string mapped_name = d_ptr->map_structure_name (ori_name);
             if (mapped_name != "") {
                 can_skip = false;
@@ -576,7 +576,7 @@ Mabs::run_registration ()
             lprintf ("Warp structures...\n");
             Plm_image_header source_pih (rtds.get_image().get());
             timer.start();
-            rtds.m_rtss->warp (xf_out, &fixed_pih);
+            rtss->warp (xf_out, &fixed_pih);
             d_ptr->time_warp_str += timer.report();
 
             /* Save some debugging information */
@@ -591,7 +591,7 @@ Mabs::run_registration ()
                 xf_out->save (fn.c_str());
 
                 fn = string_format ("%s/structures", curr_output_dir.c_str());
-                rtds.m_rtss->save_prefix (fn, "nrrd");
+                rtss->save_prefix (fn, "nrrd");
                 d_ptr->time_io += timer.report();
             }
 
@@ -601,10 +601,10 @@ Mabs::run_registration ()
 
             /* Loop through structures for this atlas image */
             lprintf ("Process structures...\n");
-            for (size_t i = 0; i < rtds.m_rtss->get_num_structures(); i++) {
+            for (size_t i = 0; i < rtss->get_num_structures(); i++) {
                 /* Check structure name, make sure it is something we 
                    want to segment */
-                std::string ori_name = rtds.m_rtss->get_structure_name (i);
+                std::string ori_name = rtss->get_structure_name (i);
                 std::string mapped_name = d_ptr->map_structure_name (ori_name);
                 if (mapped_name == "") {
                     continue;
@@ -613,7 +613,7 @@ Mabs::run_registration ()
                 /* Extract structure as binary mask */
                 timer.start();
                 UCharImageType::Pointer structure_image 
-                    = rtds.m_rtss->get_structure_image (i);
+                    = rtss->get_structure_image (i);
                 d_ptr->time_extract += timer.report();
 
                 /* Make the distance map */
@@ -1006,8 +1006,7 @@ Mabs::train_internal (bool registration_only)
         d_ptr->ref_rtds.load_image (fn.c_str());
         fn = string_format ("%s/atlas/%s/structures", 
             d_ptr->traindir_base.c_str(), patient_id.c_str());
-        d_ptr->ref_rtds.m_rtss = new Rtss;
-        d_ptr->ref_rtds.m_rtss->load_prefix (fn.c_str());
+        d_ptr->ref_rtds.load_prefix (fn.c_str());
         d_ptr->time_io += timer.report();
 
         /* Run the segmentation */

@@ -7,13 +7,13 @@
 #include "plmbase_config.h"
 #include <map>
 #include <string>
+#include "dicom_rt_study.h"
 #include "plm_image.h"
+#include "rtss_structure_set.h"
 
 class Dcmtk_loader_private;
 class Dcmtk_series;
-class Dicom_rt_study;
 class Metadata;
-class Rtss_structure_set;
 class Volume;
 
 class Dcmtk_loader
@@ -30,22 +30,16 @@ public:
     Dcmtk_series *ds_rtdose;
     Dcmtk_series *ds_rtss;
 
-    Rtss_structure_set *cxt;
-    Metadata *cxt_metadata;
-
 public:
     void init ();
     void debug (void) const;
-    void set_rt_study (Dicom_rt_study *drs);
+    void set_dicom_metadata (Dicom_rt_study::Pointer drs);
     Metadata *get_metadata ();
     Volume *get_volume ();
 
     Plm_image::Pointer get_image ();
-    Rtss_structure_set *steal_rtss_structure_set ();
-    Plm_image::Pointer get_dose_image ();
-
-//    Plm_image *steal_plm_image ();
-//    Plm_image *steal_dose_image ();
+    Rtss_structure_set::Pointer get_rtss ();
+    Plm_image::Pointer get_dose ();
 
     void load_rtss (void);
     void insert_file (const char* fn);

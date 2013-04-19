@@ -21,12 +21,10 @@
 class Dcmtk_series_private {
 public:
     std::list<Dcmtk_file*> m_flist;
-    Dicom_rt_study *m_drs;
+    Dicom_rt_study::Pointer m_drs;
 
 public:
     Dcmtk_series_private () {
-        /* Don't create m_drs.  It is set by caller. */
-        m_drs = 0;
     }
     ~Dcmtk_series_private () {
         std::list<Dcmtk_file*>::iterator it;
@@ -135,7 +133,7 @@ Dcmtk_series::sort (void)
 }
 
 void
-Dcmtk_series::set_rt_study (Dicom_rt_study *drs)
+Dcmtk_series::set_dicom_metadata (Dicom_rt_study::Pointer drs)
 {
     d_ptr->m_drs = drs;
 }

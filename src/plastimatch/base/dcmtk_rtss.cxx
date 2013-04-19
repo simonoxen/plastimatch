@@ -11,6 +11,7 @@
 #include "dcmtk_file.h"
 #include "dcmtk_metadata.h"
 #include "dcmtk_loader.h"
+#include "dcmtk_loader_p.h"
 #include "dcmtk_rt_study.h"
 #include "dcmtk_rt_study_p.h"
 #include "dcmtk_save.h"
@@ -53,8 +54,7 @@ dcmtk_rtss_probe (const char *rtss_fn)
 void
 Dcmtk_loader::rtss_load (void)
 {
-    if (this->cxt) delete this->cxt;
-    this->cxt = new Rtss_structure_set;
+    d_ptr->cxt = Rtss_structure_set::New();
     
     /* Modality -- better be RTSTRUCT */
     std::string modality = ds_rtss->get_modality();
@@ -92,7 +92,8 @@ Dcmtk_loader::rtss_load (void)
             val = 0;
             orc = seq->getItem(i)->findAndGetString (DCM_ROIName, val);
             lprintf ("Adding structure (%d), %s\n", structure_id, val);
-            this->cxt->add_structure (Pstring (val), Pstring (), structure_id);
+            d_ptr->cxt->add_structure (
+                Pstring (val), Pstring (), structure_id);
         }
     }
 
@@ -121,7 +122,7 @@ Dcmtk_loader::rtss_load (void)
             lprintf ("Structure %d has color %s\n", structure_id, val);
 
             /* Look up the structure for this id and set color */
-            curr_structure = this->cxt->find_structure_by_id (structure_id);
+            curr_structure = d_ptr->cxt->find_structure_by_id (structure_id);
             if (!curr_structure) {
                 lprintf ("Couldn't reference structure with id %d\n", 
                     structure_id);

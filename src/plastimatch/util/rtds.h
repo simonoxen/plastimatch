@@ -9,11 +9,11 @@
 #include "itk_image_type.h"
 #include "plm_image.h"
 #include "plm_image_type.h"
+#include "rtss.h"
 
 class Metadata;
 class Plm_image;
 class Rtds_private;
-class Rtss;
 class Slice_index;
 class Volume;
 class Xio_ct_transform;
@@ -24,20 +24,20 @@ class Xio_ct_transform;
  */
 class PLMUTIL_API Rtds {
 public:
-    Rtds_private *d_ptr;
+    SMART_POINTER_SUPPORT (Rtds);
 public:
-    Rtss *m_rtss;                      /* RT structure set */
+    Rtds_private *d_ptr;
 
 public:
     Rtds ();
     ~Rtds ();
 
-    void load_image (const char *fn);
-    void load_image (const std::string& fn);
     void load_dicom_dir (const char *dicom_dir);
     void load_dicom (const char *dicom_dir); 
     void load_dicom_dose (const char *dicom_path);
     void load_dicom_rtss (const char *dicom_path);
+    void load_image (const char *fn);
+    void load_image (const std::string& fn);
     void load_xio (const char *xio_dir, Slice_index *rdd);
     void load_ss_img (const char *ss_img, const char *ss_list);
     void load_dose_img (const char *dose_img);
@@ -47,6 +47,9 @@ public:
     void load_rdd (const char *image_directory);
     void load_dcmtk (const char *dicom_dir); 
     void load_gdcm (const char *dicom_dir); 
+
+    void load_cxt (const char *input_fn, Slice_index *rdd);
+    void load_prefix (const char *input_fn);
 
     void save_dicom (const char *output_dir);
     void save_dicom_dose (const char *output_dir);
@@ -64,6 +67,10 @@ public:
     void set_dose (Plm_image *pli);
     void set_dose (FloatImageType::Pointer itk_dose);
     void set_dose (Volume *vol);
+
+    bool have_rtss ();
+    Rtss::Pointer get_rtss ();
+    void set_rtss (Rtss::Pointer rtss);
 
     const std::string& get_xio_dose_filename () const;
     Xio_ct_transform* get_xio_ct_transform ();

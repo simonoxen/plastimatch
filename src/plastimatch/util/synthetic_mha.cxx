@@ -801,12 +801,16 @@ synthetic_mha (
     pli->set_itk (im_out);
     rtds->set_image (pli);
     if (parms->m_want_ss_img) {
-        rtds->m_rtss = new Rtss (rtds);
-        rtds->m_rtss->set_ss_img (ss_img);
+        /* Create rtss & set into rtds */
+        Rtss::Pointer rtss = Rtss::New (new Rtss (rtds));
+        rtds->set_rtss (rtss);
 
-        /* Insert structure set into rtds */
+        /* Insert ss_image into rtss */
+        rtss->set_ss_img (ss_img);
+
+        /* Insert structure set into rtss */
         Rtss_structure_set *rtss_ss = new Rtss_structure_set;
-        rtds->m_rtss->set_structure_set (rtss_ss);
+        rtss->set_structure_set (rtss_ss);
 
         /* Add structure names */
         switch (parms->pattern) {

@@ -17,19 +17,17 @@ void
 Rtds::load_dcmtk (const char *dicom_path)
 {
 #if PLM_DCM_USE_DCMTK
-    Dcmtk_loader dss (dicom_path);
-    dss.set_rt_study (d_ptr->m_drs);
-    dss.parse_directory ();
+    Dcmtk_rt_study drs;
+    drs.set_dicom_metadata (d_ptr->m_drs);
+    drs.load (dicom_path);
 
-//    this->m_img = dss.steal_plm_image ();
-    Rtss_structure_set *rtss = dss.steal_rtss_structure_set ();
+    d_ptr->m_img = drs.get_image ();
+    Rtss_structure_set::Pointer rtss = drs.get_rtss ();
     if (rtss) {
-	this->m_rtss = new Rtss (this);
-        this->m_rtss->set_structure_set (rtss);
+        d_ptr->m_rtss = Rtss::New ();
+        d_ptr->m_rtss->set_structure_set (drs.get_rtss ());
     }
-    d_ptr->m_dose = dss.get_dose_image ();
-
-    printf ("Done.\n");
+    d_ptr->m_dose = drs.get_dose ();
 #endif
 }
 
@@ -37,23 +35,14 @@ void
 Rtds::save_dcmtk (const char *dicom_dir)
 {
 #if PLM_DCM_USE_DCMTK
-#if defined (commentout)
-    Dcmtk_save ds;
-    ds.set_rt_study (d_ptr->m_drs);
-
-    ds.set_image (this->m_img);
-    if (this->m_rtss && this->m_rtss->have_structure_set()) {
-        ds.set_cxt (this->m_rtss->get_structure_set());
-    }
-    if (d_ptr->m_dose) {
-        ds.set_dose (d_ptr->m_dose->get_volume_float());
-    }
-    ds.generate_new_uids ();
-    ds.save (dicom_dir);
-#endif
     Dcmtk_rt_study drs;
+    drs.set_dicom_metadata (d_ptr->m_drs);
     drs.set_image (d_ptr->m_img);
+    if (d_ptr->m_rtss) {
+        drs.set_rtss (d_ptr->m_rtss->get_structure_set());
+    }
     drs.set_dose (d_ptr->m_dose);
+    //ds.generate_new_uids ();   // GCS FIX: Is this needed here?
     drs.save (dicom_dir);
 #endif
 }
@@ -62,17 +51,8 @@ void
 Rtds::save_dcmtk_dose (const char *dicom_dir)
 {
 #if PLM_DCM_USE_DCMTK
-#if defined (commentout)
-    Dcmtk_save ds;
-    ds.set_rt_study (d_ptr->m_drs);
-
-    if (d_ptr->m_dose) {
-        ds.set_dose (d_ptr->m_dose->get_volume_float());
-    }
-
-    ds.save (dicom_dir);
-#endif
     Dcmtk_rt_study drs;
+    drs.set_dicom_metadata (d_ptr->m_drs);
     drs.set_dose (d_ptr->m_dose);
     drs.save (dicom_dir);
 #endif

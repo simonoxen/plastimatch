@@ -74,9 +74,9 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
     /* ss_img */
     if (parms->output_ss_img_fn.not_empty()) {
 #if (PLM_CONFIG_USE_SS_IMAGE_VEC)
-        rtds.m_rtss->convert_to_uchar_vec ();
+        rtds.get_rtss()->convert_to_uchar_vec ();
 #endif
-        rtds.m_rtss->save_ss_image (parms->output_ss_img_fn);
+        rtds.get_rtss()->save_ss_image (parms->output_ss_img_fn);
     }
 
     /* dose_img */
@@ -87,11 +87,11 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
     /* list of structure names */
     if (parms->output_ss_list_fn.not_empty()) {
         printf ("save_ss_img: save_ss_list\n");
-        rtds.m_rtss->save_ss_list (parms->output_ss_list_fn);
+        rtds.get_rtss()->save_ss_list (parms->output_ss_list_fn);
     }
 
     if (parms->output_dicom.not_empty()) {
-        rtds.m_rtss->convert_ss_img_to_cxt ();
+        rtds.get_rtss()->convert_ss_img_to_cxt ();
         rtds.save_dicom ((const char*) parms->output_dicom);
     }
 }

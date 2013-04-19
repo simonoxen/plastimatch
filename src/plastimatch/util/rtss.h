@@ -9,6 +9,7 @@
 #include "itk_image_type.h"
 #include "metadata.h"
 #include "pstring.h"
+#include "rtss_structure_set.h"
 #include "xio_studyset.h"  /* enum Xio_version */
 
 class Plm_image;
@@ -23,6 +24,8 @@ class Xio_ct_transform;
 class Warp_parms;
 
 class PLMUTIL_API Rtss {
+public:
+    SMART_POINTER_SUPPORT (Rtss);
 public:
     Rtss_private *d_ptr;
 
@@ -76,8 +79,10 @@ public:
     Plm_image* get_ss_img ();
 
     bool have_structure_set ();
+    Rtss_structure_set::Pointer get_structure_set ();
+    Rtss_structure_set* get_structure_set_raw ();
+    void set_structure_set (Rtss_structure_set::Pointer rtss_ss);
     void set_structure_set (Rtss_structure_set *rtss_ss);
-    Rtss_structure_set* get_structure_set ();
 };
 
 #endif

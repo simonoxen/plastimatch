@@ -7,10 +7,12 @@
 #include "plmbase_config.h"
 #include <list>
 
+#include "dicom_rt_study.h"
 #include "itk_image.h"
 #include "plm_image.h"
 #include "plm_int.h"
 #include "pstring.h"
+#include "rtss_structure_set.h"
 #include "volume.h"
 
 class Dcmtk_rt_study_private;
@@ -22,6 +24,9 @@ public:
 public:
     Dcmtk_rt_study ();
     ~Dcmtk_rt_study ();
+public:
+    void load (const char *dicom_path);
+    void save (const char *dicom_path);
 public:
     const char* get_ct_series_uid () const;
     const char* get_dose_instance_uid () const;
@@ -37,12 +42,18 @@ public:
     Plm_image::Pointer get_image ();
     Volume::Pointer get_image_volume_float ();
     void set_image (Plm_image::Pointer image);
+
+    Rtss_structure_set::Pointer get_rtss ();
+    void set_rtss (Rtss_structure_set::Pointer rtss);
+
+    Plm_image::Pointer get_dose ();
     void set_dose (Plm_image::Pointer image);
-    void save (const char *dicom_dir);
+
+    void set_dicom_metadata (Dicom_rt_study::Pointer dicom_metadata);
 public:
-    void save_image (const char *dicom_dir);
-    void save_dose (const char *dicom_dir);
-    void save_rtss (const char *dicom_dir);
+    void save_image (const char *dicom_path);
+    void save_dose (const char *dicom_path);
+    void save_rtss (const char *dicom_path);
 
 };
 

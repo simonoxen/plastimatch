@@ -89,7 +89,7 @@ Dvh::run ()
     /* GCS HACK: This should go into rtss.cxx */
     Rtss_structure_set *ss_list;
     if (d_ptr->rtss->have_structure_set()) {
-        ss_list = d_ptr->rtss->get_structure_set();
+        ss_list = d_ptr->rtss->get_structure_set_raw();
     } else {
         ss_list = new Rtss_structure_set;
 #if (PLM_CONFIG_USE_SS_IMAGE_VEC)

@@ -33,15 +33,11 @@
 Rtds::Rtds ()
 {
     d_ptr = new Rtds_private;
-    m_rtss = 0;
 }
 
 Rtds::~Rtds ()
 {
     delete d_ptr;
-    if (m_rtss) {
-        delete m_rtss;
-    }
 }
 
 void
@@ -91,14 +87,12 @@ Rtds::load_dicom (const char *dicom_dir)
 void
 Rtds::load_dicom_rtss (const char *dicom_path)
 {
-    if (this->m_rtss) {
-        delete this->m_rtss;
-    }
+    d_ptr->m_rtss.reset ();
 #if PLM_DCM_USE_DCMTK
     this->load_dcmtk (dicom_path);
 #elif GDCM_VERSION_1
-    this->m_rtss = new Rtss (this);
-    this->m_rtss->load_gdcm_rtss (dicom_path, d_ptr->m_slice_index);
+    d_ptr->m_rtss = Rtss::New (new Rtss (this));
+    d_ptr->m_rtss->load_gdcm_rtss (dicom_path, d_ptr->m_slice_index);
 #else
     /* Do nothing */
 #endif
@@ -185,12 +179,12 @@ Rtds::load_xio (
     xio_ct_load (d_ptr->m_img.get(), &xst);
 
     /* Load the XiO studyset structure set */
-    this->m_rtss = new Rtss (this);
-    this->m_rtss->load_xio (xst);
+    d_ptr->m_rtss = Rtss::New (new Rtss (this));
+    d_ptr->m_rtss->load_xio (xst);
 
     /* Apply XiO CT geometry to structures */
-    if (this->m_rtss->have_structure_set()) {
-        Rtss_structure_set *rtss_ss = this->m_rtss->get_structure_set ();
+    if (d_ptr->m_rtss->have_structure_set()) {
+        Rtss_structure_set *rtss_ss = d_ptr->m_rtss->get_structure_set_raw ();
         rtss_ss->set_geometry (d_ptr->m_img.get());
     }
 
@@ -227,8 +221,8 @@ Rtds::load_xio (
     if (d_ptr->m_img) {
         xio_ct_apply_transform (d_ptr->m_img.get(), d_ptr->m_xio_transform);
     }
-    if (this->m_rtss->have_structure_set()) {
-        xio_structures_apply_transform (this->m_rtss->get_structure_set(),
+    if (d_ptr->m_rtss->have_structure_set()) {
+        xio_structures_apply_transform (d_ptr->m_rtss->get_structure_set_raw(),
             d_ptr->m_xio_transform);
     }
     if (d_ptr->m_dose) {
@@ -239,8 +233,8 @@ Rtds::load_xio (
 void
 Rtds::load_ss_img (const char *ss_img, const char *ss_list)
 {
-    this->m_rtss = new Rtss (this);
-    this->m_rtss->load (ss_img, ss_list);
+    d_ptr->m_rtss = Rtss::New (new Rtss (this));
+    d_ptr->m_rtss->load (ss_img, ss_list);
 }
 
 void
@@ -315,6 +309,20 @@ Rtds::load_dose_mc (const char *dose_mc)
         mc_dose_load (d_ptr->m_dose.get(), dose_mc);
         mc_dose_apply_transform (d_ptr->m_dose.get(), d_ptr->m_xio_transform);
     }
+}
+
+void 
+Rtds::load_cxt (const char *input_fn, Slice_index *rdd)
+{
+    d_ptr->m_rtss = Rtss::New (new Rtss (this));
+    d_ptr->m_rtss->load_cxt (input_fn, rdd);
+}
+
+void 
+Rtds::load_prefix (const char *input_fn)
+{
+    d_ptr->m_rtss = Rtss::New (new Rtss (this));
+    d_ptr->m_rtss->load_prefix (input_fn);
 }
 
 void
@@ -429,6 +437,24 @@ Rtds::set_dose (Volume *vol)
 
     /* GCS FIX: Make a copy */
     d_ptr->m_dose->set_volume (vol->clone_raw());
+}
+
+bool
+Rtds::have_rtss ()
+{
+    return (bool) d_ptr->m_rtss;
+}
+
+Rtss::Pointer
+Rtds::get_rtss ()
+{
+    return d_ptr->m_rtss;
+}
+
+void 
+Rtds::set_rtss (Rtss::Pointer rtss)
+{
+    d_ptr->m_rtss = rtss;
 }
 
 Xio_ct_transform*

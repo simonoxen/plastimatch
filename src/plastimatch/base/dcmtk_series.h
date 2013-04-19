@@ -7,6 +7,7 @@
 #include "plmbase_config.h"
 #include <list>
 
+#include "dicom_rt_study.h"
 #include "plm_int.h"
 #include "pstring.h"
 
@@ -43,7 +44,7 @@ public:
     void insert (Dcmtk_file* df);
     void sort (void);
 
-    void set_rt_study (Dicom_rt_study *drs);
+    void set_dicom_metadata (Dicom_rt_study::Pointer drs);
     Plm_image *load_plm_image ();
 
     void debug (void) const;

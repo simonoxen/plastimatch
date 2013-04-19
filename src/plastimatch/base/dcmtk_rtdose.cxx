@@ -275,7 +275,7 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
     if (d_ptr->dicom_metadata) {
         dose_metadata = d_ptr->dicom_metadata->get_dose_metadata ();
     }
-    Volume* dose_volume = d_ptr->dose->get_volume();
+    Volume::Pointer dose_volume = d_ptr->dose->get_volume_float ();
 
     /* Prepare output file */
     std::string filename = string_format ("%s/dose.dcm", dicom_dir);
