@@ -146,17 +146,10 @@ Dcmtk_rt_study::load (const char *dicom_path)
     dss.parse_directory ();
 
     d_ptr->img = dss.get_image ();
-    Rtss_structure_set::Pointer rtss = dss.get_rtss ();
-
-#if defined (commentout)
-    if (rtss) {
-	this->m_rtss = new Rtss (this);
-        this->m_rtss->set_structure_set (rtss);
-    }
-    d_ptr->m_dose = dss.get_dose_image ();
+    d_ptr->cxt = dss.get_rtss ();
+    d_ptr->dose = dss.get_dose ();
 
     printf ("Done.\n");
-#endif
 }
 
 void 
