@@ -120,6 +120,12 @@ Dcmtk_series::get_referenced_uid (void) const
     return "";
 }
 
+size_t
+Dcmtk_series::get_number_of_files (void) const
+{
+    return d_ptr->m_flist.size();
+}
+
 void
 Dcmtk_series::insert (Dcmtk_file *df)
 {
@@ -138,9 +144,11 @@ Dcmtk_series::set_dicom_metadata (Dicom_rt_study::Pointer drs)
     d_ptr->m_drs = drs;
 }
 
-Plm_image*
+Plm_image::Pointer
 Dcmtk_series::load_plm_image (void)
 {
+    Plm_image::Pointer pli = Plm_image::New();
+
     /* Sort in Z direction */
     this->sort ();
 
@@ -155,7 +163,7 @@ Dcmtk_series::load_plm_image (void)
 
     /* Check for minimum 2 slices */
     if (d_ptr->m_flist.size() < 2) {
-	return 0;
+	return pli;
     }
     
     /* Get first slice */
@@ -287,27 +295,27 @@ Dcmtk_series::load_plm_image (void)
     const char* phot_interp;
     bool rc = df->get_uint16 (DCM_SamplesPerPixel, &samp_per_pix);
     if (!rc) {
-	return 0;
+	return pli;
     }
     phot_interp = df->get_cstr (DCM_PhotometricInterpretation);
     if (!phot_interp) {
-	return 0;
+	return pli;
     }
     rc = df->get_uint16 (DCM_BitsAllocated, &bits_alloc);
     if (!rc) {
-	return 0;
+	return pli;
     }
     rc = df->get_uint16 (DCM_BitsStored, &bits_stored);
     if (!rc) {
-	return 0;
+	return pli;
     }
     rc = df->get_uint16 (DCM_HighBit, &high_bit);
     if (!rc) {
-	return 0;
+	return pli;
     }
     rc = df->get_uint16 (DCM_PixelRepresentation, &pixel_rep);
     if (!rc) {
-	return 0;
+	return pli;
     }
     lprintf ("Samp_per_pix: %d\n", (int) samp_per_pix);
     lprintf ("Phot_interp: %s\n", phot_interp);
@@ -332,28 +340,27 @@ Dcmtk_series::load_plm_image (void)
        Don't load these. */
     if (samp_per_pix != 1) {
         lprintf ("Sorry, couldn't load image: samp_per_pix\n");
-	return 0;
+	return pli;
     }
     if (strcmp (phot_interp, "MONOCHROME2")) {
         lprintf ("Sorry, couldn't load image: phot_interp\n");
-	return 0;
+	return pli;
     }
     if (bits_alloc != 16) {
         lprintf ("Sorry, couldn't load image: bits_alloc\n");
-	return 0;
+	return pli;
     }
     if (bits_stored != high_bit + 1) {
         lprintf ("Sorry, couldn't load image: bits_stored/high_bit\n");
-	return 0;
+	return pli;
     }
     if (pixel_rep != 0 && pixel_rep != 1) {
         lprintf ("Sorry, couldn't load image: pixel_rep\n");
-	return 0;
+	return pli;
     }
 
     lprintf ("Image looks ok.  Try to load.\n");
 
-    Plm_image *pli = new Plm_image;
     pli->m_type = PLM_IMG_TYPE_GPUIT_SHORT;
     pli->m_original_type = PLM_IMG_TYPE_GPUIT_SHORT;
     Volume* vol = new Volume (vh, PT_SHORT, 1);

@@ -8,6 +8,7 @@
 #include <list>
 
 #include "dicom_rt_study.h"
+#include "plm_image.h"
 #include "plm_int.h"
 #include "pstring.h"
 
@@ -41,11 +42,13 @@ public:
     std::string get_modality (void) const;
     std::string get_referenced_uid (void) const;
 
+    size_t get_number_of_files () const;
+
     void insert (Dcmtk_file* df);
     void sort (void);
 
     void set_dicom_metadata (Dicom_rt_study::Pointer drs);
-    Plm_image *load_plm_image ();
+    Plm_image::Pointer load_plm_image ();
 
     void debug (void) const;
 };

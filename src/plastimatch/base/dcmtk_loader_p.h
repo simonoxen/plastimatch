@@ -28,8 +28,10 @@ public:
 
 public:
     Dcmtk_series_map m_smap;
-    Dcmtk_series *ds_rtdose;
+
+    Dcmtk_series *ds_image;
     Dcmtk_series *ds_rtss;
+    Dcmtk_series *ds_rtdose;
 
 public:
     Dcmtk_loader_private () {

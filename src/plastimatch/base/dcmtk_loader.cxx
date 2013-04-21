@@ -148,17 +148,6 @@ Dcmtk_loader::get_volume ()
     return d_ptr->img->get_volume();
 }
 
-#if defined (commentout)
-Plm_image *
-Dcmtk_loader::steal_plm_image ()
-{
-    /* Transfer ownership to caller */
-    Plm_image *tmp = this->img;
-    this->img = 0;
-    return tmp;
-}
-#endif
-
 Plm_image::Pointer
 Dcmtk_loader::get_image ()
 {
@@ -181,13 +170,12 @@ void
 Dcmtk_loader::parse_directory (void)
 {
     Dcmtk_series_map::iterator it;
-    d_ptr->ds_rtdose = 0;
+    d_ptr->ds_image = 0;
     d_ptr->ds_rtss = 0;
+    d_ptr->ds_rtdose = 0;
 
-    /* First pass: loop through series and find ss, dose */
-    /* GCS FIX: maybe need additional pass, make sure ss & dose 
-       refer to same CT, in case of multiple ss & dose in same 
-       directory */
+    /* Loop through all series in directory, and find image, ss, dose */
+    size_t best_image_slices = 0;
     for (it = d_ptr->m_smap.begin(); it != d_ptr->m_smap.end(); ++it) {
 	const std::string& key = (*it).first;
 	Dcmtk_series *ds = (*it).second;
@@ -206,37 +194,32 @@ Dcmtk_loader::parse_directory (void)
 	    d_ptr->ds_rtdose = ds;
 	    continue;
 	}
+
+	/* Check for image.  An image is anything with a PixelData.
+           Current heuristic: load the image with the most slices
+           (as determined by the number of files) */
+	bool rc = ds->get_uint16_array (DCM_PixelData, 0, 0);
+        if (rc) {
+            size_t num_slices = ds->get_number_of_files ();
+            if (num_slices > best_image_slices) {
+                best_image_slices = num_slices;
+                d_ptr->ds_image = ds;
+            }
+	    continue;
+	}
     }
 
-    /* Check if uid matches refereneced uid of rtstruct */
+    /* GCS FIX: need additional logic that checks if ss & dose 
+       refer to the image.  The below logic doesn't do anything. */
     std::string referenced_uid = "";
     if (d_ptr->ds_rtss) {
 	referenced_uid = d_ptr->ds_rtss->get_referenced_uid ();
     }
 
-    /* Second pass: loop through series and find img */
-    for (it = d_ptr->m_smap.begin(); it != d_ptr->m_smap.end(); ++it) {
-	const std::string& key = (*it).first;
-	Dcmtk_series *ds = (*it).second;
-	UNUSED_VARIABLE (key);
-
-	/* Skip stuff we're not interested in */
-	const std::string& modality = ds->get_modality();
-	if (modality == "RTSTRUCT" || modality == "RTDOSE") {
-	    continue;
-	}
-
-        /* Load anything with a PixelData as an image */
-	bool rc = ds->get_uint16_array (DCM_PixelData, 0, 0);
-        if (rc) {
-	    printf ("LOADING modality %s\n", modality.c_str());
-
-            /* Load image */
-            ds->set_dicom_metadata (d_ptr->m_drs);
-            Plm_image *pli = ds->load_plm_image ();
-	    d_ptr->img.reset (pli);
-	    continue;
-	}
+    /* Load image */
+    if (d_ptr->ds_image) {
+        d_ptr->ds_image->set_dicom_metadata (d_ptr->m_drs);
+        d_ptr->img = d_ptr->ds_image->load_plm_image ();
     }
 
     /* Load rtss */
