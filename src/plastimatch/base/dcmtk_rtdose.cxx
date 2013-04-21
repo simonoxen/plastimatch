@@ -80,7 +80,7 @@ Dcmtk_loader::rtdose_load ()
     const char *gfov_str;
 
     /* Modality -- better be RTDOSE */
-    std::string modality = this->ds_rtdose->get_modality();
+    std::string modality = d_ptr->ds_rtdose->get_modality();
     if (modality == "RTDOSE") {
         printf ("Trying to load rt dose.\n");
     } else {
@@ -90,7 +90,7 @@ Dcmtk_loader::rtdose_load ()
     /* FIX: load metadata such as patient name, etc. */
 
     /* ImagePositionPatient */
-    val = this->ds_rtdose->get_cstr (DCM_ImagePositionPatient);
+    val = d_ptr->ds_rtdose->get_cstr (DCM_ImagePositionPatient);
     if (!val) {
         print_and_exit ("Couldn't find DCM_ImagePositionPatient in rtdose\n");
     }
@@ -100,19 +100,19 @@ Dcmtk_loader::rtdose_load ()
     }
 
     /* Rows */
-    if (!this->ds_rtdose->get_uint16 (DCM_Rows, &val_u16)) {
+    if (!d_ptr->ds_rtdose->get_uint16 (DCM_Rows, &val_u16)) {
         print_and_exit ("Couldn't find DCM_Rows in rtdose\n");
     }
     dim[1] = val_u16;
 
     /* Columns */
-    if (!this->ds_rtdose->get_uint16 (DCM_Columns, &val_u16)) {
+    if (!d_ptr->ds_rtdose->get_uint16 (DCM_Columns, &val_u16)) {
         print_and_exit ("Couldn't find DCM_Columns in rtdose\n");
     }
     dim[0] = val_u16;
 
     /* PixelSpacing */
-    val = this->ds_rtdose->get_cstr (DCM_PixelSpacing);
+    val = d_ptr->ds_rtdose->get_cstr (DCM_PixelSpacing);
     if (!val) {
         print_and_exit ("Couldn't find DCM_PixelSpacing in rtdose\n");
     }
@@ -122,7 +122,7 @@ Dcmtk_loader::rtdose_load ()
     }
 
     /* GridFrameOffsetVector */
-    val = this->ds_rtdose->get_cstr (DCM_GridFrameOffsetVector);
+    val = d_ptr->ds_rtdose->get_cstr (DCM_GridFrameOffsetVector);
     if (!val) {
         print_and_exit ("Couldn't find DCM_GridFrameOffsetVector in rtdose\n");
     }
@@ -184,7 +184,7 @@ Dcmtk_loader::rtdose_load ()
 
     /* DoseGridScaling -- if element doesn't exist, scaling is 1.0 */
     float dose_scaling = 1.0;
-    val = this->ds_rtdose->get_cstr (DCM_DoseGridScaling);
+    val = d_ptr->ds_rtdose->get_cstr (DCM_DoseGridScaling);
     if (val) {
         /* No need to check for success, let scaling be 1.0 if failure */
         sscanf (val, "%f", &dose_scaling);
@@ -196,19 +196,19 @@ Dcmtk_loader::rtdose_load ()
         spacing[0], spacing[1], spacing[2]);
 
     uint16_t bits_alloc, bits_stored, high_bit, pixel_rep;
-    rc = this->ds_rtdose->get_uint16 (DCM_BitsAllocated, &bits_alloc);
+    rc = d_ptr->ds_rtdose->get_uint16 (DCM_BitsAllocated, &bits_alloc);
     if (!rc) {
         print_and_exit ("Couldn't find DCM_BitsAllocated in rtdose\n");
     }
-    rc = this->ds_rtdose->get_uint16 (DCM_BitsStored, &bits_stored);
+    rc = d_ptr->ds_rtdose->get_uint16 (DCM_BitsStored, &bits_stored);
     if (!rc) {
         print_and_exit ("Couldn't find DCM_BitsStored in rtdose\n");
     }
-    rc = this->ds_rtdose->get_uint16 (DCM_HighBit, &high_bit);
+    rc = d_ptr->ds_rtdose->get_uint16 (DCM_HighBit, &high_bit);
     if (!rc) {
         print_and_exit ("Couldn't find DCM_HighBit in rtdose\n");
     }
-    rc = this->ds_rtdose->get_uint16 (DCM_PixelRepresentation, &pixel_rep);
+    rc = d_ptr->ds_rtdose->get_uint16 (DCM_PixelRepresentation, &pixel_rep);
     if (!rc) {
         print_and_exit ("Couldn't find DCM_PixelRepresentation in rtdose\n");
     }
@@ -233,7 +233,7 @@ Dcmtk_loader::rtdose_load ()
     unsigned long length = 0;
     if (pixel_rep == 0) {
         const uint16_t* pixel_data;
-        rc = this->ds_rtdose->get_uint16_array (
+        rc = d_ptr->ds_rtdose->get_uint16_array (
             DCM_PixelData, &pixel_data, &length);
         printf ("rc = %d, length = %lu, npix = %ld\n", 
             rc, length, (long) vol->npix);
@@ -250,7 +250,7 @@ Dcmtk_loader::rtdose_load ()
         }
     } else {
         const int16_t* pixel_data;
-        rc = this->ds_rtdose->get_int16_array (
+        rc = d_ptr->ds_rtdose->get_int16_array (
             DCM_PixelData, &pixel_data, &length);
         if (bits_stored == 16) {
             dcmtk_dose_copy (img, (const int16_t*) pixel_data, 

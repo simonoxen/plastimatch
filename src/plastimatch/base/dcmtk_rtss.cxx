@@ -54,8 +54,9 @@ dcmtk_rtss_probe (const char *rtss_fn)
 void
 Dcmtk_loader::rtss_load (void)
 {
+    Dcmtk_series *ds_rtss = d_ptr->ds_rtss;
     d_ptr->cxt = Rtss_structure_set::New();
-    
+
     /* Modality -- better be RTSTRUCT */
     std::string modality = ds_rtss->get_modality();
     if (modality == "RTSTRUCT") {

@@ -20,13 +20,16 @@ typedef std::pair<std::string, Dcmtk_series*> Dcmtk_series_map_pair;
 
 class Dcmtk_loader_private {
 public:
-    Dcmtk_series_map m_smap;
     Dicom_rt_study::Pointer m_drs;
 
     Plm_image::Pointer img;
     Plm_image::Pointer dose;
-
     Rtss_structure_set::Pointer cxt;
+
+public:
+    Dcmtk_series_map m_smap;
+    Dcmtk_series *ds_rtdose;
+    Dcmtk_series *ds_rtss;
 
 public:
     Dcmtk_loader_private () {

@@ -27,10 +27,6 @@ public:
     Dcmtk_loader_private *d_ptr;
 
 public:
-    Dcmtk_series *ds_rtdose;
-    Dcmtk_series *ds_rtss;
-
-public:
     void init ();
     void debug (void) const;
     void set_dicom_metadata (Dicom_rt_study::Pointer drs);

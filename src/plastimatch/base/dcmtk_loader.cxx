@@ -43,8 +43,8 @@ Dcmtk_loader::~Dcmtk_loader ()
 void
 Dcmtk_loader::init ()
 {
-    this->ds_rtdose = 0;
-    this->ds_rtss = 0;
+    d_ptr->ds_rtdose = 0;
+    d_ptr->ds_rtss = 0;
 }
 
 void
@@ -181,8 +181,8 @@ void
 Dcmtk_loader::parse_directory (void)
 {
     Dcmtk_series_map::iterator it;
-    this->ds_rtdose = 0;
-    this->ds_rtss = 0;
+    d_ptr->ds_rtdose = 0;
+    d_ptr->ds_rtss = 0;
 
     /* First pass: loop through series and find ss, dose */
     /* GCS FIX: maybe need additional pass, make sure ss & dose 
@@ -194,24 +194,24 @@ Dcmtk_loader::parse_directory (void)
 	UNUSED_VARIABLE (key);
 
 	/* Check for rtstruct */
-	if (!ds_rtss && ds->get_modality() == "RTSTRUCT") {
+	if (!d_ptr->ds_rtss && ds->get_modality() == "RTSTRUCT") {
 	    printf ("Found RTSTUCT, UID=%s\n", key.c_str());
-	    ds_rtss = ds;
+	    d_ptr->ds_rtss = ds;
 	    continue;
 	}
 
 	/* Check for rtdose */
-	if (!ds_rtdose && ds->get_modality() == "RTDOSE") {
+	if (!d_ptr->ds_rtdose && ds->get_modality() == "RTDOSE") {
 	    printf ("Found RTDOSE, UID=%s\n", key.c_str());
-	    ds_rtdose = ds;
+	    d_ptr->ds_rtdose = ds;
 	    continue;
 	}
     }
 
     /* Check if uid matches refereneced uid of rtstruct */
     std::string referenced_uid = "";
-    if (ds_rtss) {
-	referenced_uid = ds_rtss->get_referenced_uid ();
+    if (d_ptr->ds_rtss) {
+	referenced_uid = d_ptr->ds_rtss->get_referenced_uid ();
     }
 
     /* Second pass: loop through series and find img */
@@ -240,12 +240,12 @@ Dcmtk_loader::parse_directory (void)
     }
 
     /* Load rtss */
-    if (ds_rtss) {
+    if (d_ptr->ds_rtss) {
         this->rtss_load ();
     }
 
     /* Load dose */
-    if (ds_rtdose) {
+    if (d_ptr->ds_rtdose) {
         this->rtdose_load ();
     }
 }
