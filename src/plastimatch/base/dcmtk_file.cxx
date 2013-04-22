@@ -9,6 +9,7 @@
 #include "dcmtk/dcmdata/dctk.h"
 
 #include "dcmtk_file.h"
+#include "logfile.h"
 #include "print_and_exit.h"
 #include "string_util.h"
 
@@ -17,11 +18,13 @@ public:
     std::string m_fn;
     DcmFileFormat *m_dfile;
     Volume_header m_vh;
+    bool m_valid;
     
 public:
     Dcmtk_file_private () {
         m_dfile = new DcmFileFormat;
         m_fn = "";
+        m_valid = false;
     }
     ~Dcmtk_file_private () {
         delete m_dfile;
@@ -39,6 +42,12 @@ Dcmtk_file::Dcmtk_file (const char *fn) {
 
 Dcmtk_file::~Dcmtk_file () {
     delete d_ptr;
+}
+
+bool
+Dcmtk_file::is_valid () const
+{
+    return d_ptr->m_valid;
 }
 
 void
@@ -157,7 +166,8 @@ Dcmtk_file::load_header (const char *fn) {
     /* Open the file */
     OFCondition cond = d_ptr->m_dfile->loadFile (fn, EXS_Unknown, EGL_noChange);
     if (cond.bad()) {
-	print_and_exit ("Sorry, couldn't open file as dicom: %s\n", fn);
+        /* If it's not a dicom file, loadFile() fails. */
+        return;
     }
 
     /* Load image header */
@@ -219,6 +229,8 @@ Dcmtk_file::load_header (const char *fn) {
 	    d_ptr->m_vh.set_spacing (spacing);
 	}
     }
+
+    d_ptr->m_valid = true;
 }
 
 bool

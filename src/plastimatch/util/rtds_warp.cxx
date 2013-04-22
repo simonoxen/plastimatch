@@ -104,6 +104,10 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     if (parms->input_dose_mc_fn.not_empty()) {
         rtds->load_dose_mc ((const char*) parms->input_dose_mc_fn);
     }
+
+    if (!rtds->have_image() && !rtds->have_rtss() && !rtds->have_dose()) {
+        print_and_exit ("Sorry, could not load input as any known type.\n");
+    }
 }
 
 static void

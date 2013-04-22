@@ -393,6 +393,18 @@ Rtds::set_user_metadata (std::vector<std::string>& metadata)
     d_ptr->m_xio_transform->set (d_ptr->m_meta);
 }
 
+bool
+Rtds::have_image ()
+{
+    return (bool) d_ptr->m_img;
+}
+
+Plm_image::Pointer
+Rtds::get_image ()
+{
+    return d_ptr->m_img;
+}
+
 void 
 Rtds::set_image (Plm_image* pli)
 {
@@ -405,16 +417,10 @@ Rtds::set_image (Plm_image::Pointer pli)
     d_ptr->m_img = pli;
 }
 
-Plm_image::Pointer
-Rtds::get_image ()
-{
-    return d_ptr->m_img;
-}
-
 bool
-Rtds::have_image ()
+Rtds::have_dose ()
 {
-    return (bool) d_ptr->m_img;
+    return (bool) d_ptr->m_dose;
 }
 
 void 

@@ -26,6 +26,7 @@ public:
     Dcmtk_file_private *d_ptr;
 
 public:
+    bool is_valid () const;
     void debug () const;
     DcmDataset* get_dataset (void) const;
     const char* get_cstr (const DcmTagKey& tag_key) const;

@@ -8,6 +8,9 @@
 #include "dcmtk/ofstd/ofstream.h"
 #include "dcmtk/dcmdata/dctk.h"
 
+#include "dcmtk/config/osconfig.h"
+#include "dcmtk/oflog/oflog.h"
+
 #include "compiler_warnings.h"
 #include "dcmtk_file.h"
 #include "dcmtk_loader.h"
@@ -28,6 +31,12 @@ Dcmtk_loader::Dcmtk_loader (const char* dicom_path)
 {
     d_ptr = new Dcmtk_loader_private;
     init ();
+
+    /* GCS FIX: Need a way to turn this on via configuration. 
+       But for now, just unilaterally disable logging. 
+       http://support.dcmtk.org/wiki/dcmtk/howto/logprogram */
+    OFLog::configure (OFLogger::FATAL_LOG_LEVEL);
+
     if (is_directory (dicom_path)) {
         this->insert_directory (dicom_path);
     } else {
@@ -57,6 +66,12 @@ void
 Dcmtk_loader::insert_file (const char* fn)
 {
     Dcmtk_file *df = new Dcmtk_file (fn);
+
+    /* Discard non-dicom files */
+    if (!df->is_valid()) {
+        delete df;
+        return;
+    }
 
     /* Get the SeriesInstanceUID */
     const char *c = NULL;
