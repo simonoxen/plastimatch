@@ -12,37 +12,46 @@
 #include "print_and_exit.h"
 #include "string_util.h"
 
+class Dcmtk_file_private {
+public:
+    std::string m_fn;
+    DcmFileFormat *m_dfile;
+    Volume_header m_vh;
+    
+public:
+    Dcmtk_file_private () {
+        m_dfile = new DcmFileFormat;
+        m_fn = "";
+    }
+    ~Dcmtk_file_private () {
+        delete m_dfile;
+    }
+};
+
 Dcmtk_file::Dcmtk_file () {
-    init ();
+    d_ptr = new Dcmtk_file_private;
 }
 
 Dcmtk_file::Dcmtk_file (const char *fn) {
-    init ();
+    d_ptr = new Dcmtk_file_private;
     this->load_header (fn);
 }
 
 Dcmtk_file::~Dcmtk_file () {
-    delete m_dfile;
+    delete d_ptr;
 }
 
 void
 Dcmtk_file::debug () const
 {
-    printf (" %s\n", m_fn.c_str());
-    m_vh.print ();
-}
-
-void
-Dcmtk_file::init ()
-{
-    m_dfile = new DcmFileFormat;
-    m_fn = "";
+    printf (" %s\n", d_ptr->m_fn.c_str());
+    d_ptr->m_vh.print ();
 }
 
 DcmDataset*
 Dcmtk_file::get_dataset (void) const
 {
-    return m_dfile->getDataset();
+    return d_ptr->m_dfile->getDataset();
 }
 
 /* Look up DICOM value from tag */
@@ -50,7 +59,7 @@ const char*
 Dcmtk_file::get_cstr (const DcmTagKey& tag_key) const
 {
     const char *c = 0;
-    DcmDataset *dset = m_dfile->getDataset();
+    DcmDataset *dset = d_ptr->m_dfile->getDataset();
     if (dset->findAndGetString(tag_key, c).good() && c) {
 	return c;
     }
@@ -60,19 +69,22 @@ Dcmtk_file::get_cstr (const DcmTagKey& tag_key) const
 bool
 Dcmtk_file::get_uint8 (const DcmTagKey& tag_key, uint8_t* val) const
 {
-    return m_dfile->getDataset()->findAndGetUint8(tag_key, (*val)).good();
+    return d_ptr->m_dfile->getDataset()->findAndGetUint8 (
+        tag_key, (*val)).good();
 }
 
 bool
 Dcmtk_file::get_uint16 (const DcmTagKey& tag_key, uint16_t* val) const
 {
-    return m_dfile->getDataset()->findAndGetUint16(tag_key, (*val)).good();
+    return d_ptr->m_dfile->getDataset()->findAndGetUint16 (
+        tag_key, (*val)).good();
 }
 
 bool
 Dcmtk_file::get_float (const DcmTagKey& tag_key, float* val) const
 {
-    return m_dfile->getDataset()->findAndGetFloat32(tag_key, (*val)).good();
+    return d_ptr->m_dfile->getDataset()->findAndGetFloat32 (
+        tag_key, (*val)).good();
 }
 
 bool
@@ -92,7 +104,7 @@ Dcmtk_file::get_int16_array (const DcmTagKey& tag_key,
     const int16_t** val, unsigned long* count) const
 {
     const Sint16* foo;
-    OFCondition rc = m_dfile->getDataset()->findAndGetSint16Array(
+    OFCondition rc = d_ptr->m_dfile->getDataset()->findAndGetSint16Array (
 	tag_key, foo, count, OFFalse);
     *val = foo;
     return rc.good();
@@ -103,7 +115,7 @@ Dcmtk_file::get_uint16_array (const DcmTagKey& tag_key,
     const uint16_t** val, unsigned long* count) const
 {
     const Uint16* foo;
-    OFCondition rc = m_dfile->getDataset()->findAndGetUint16Array(
+    OFCondition rc = d_ptr->m_dfile->getDataset()->findAndGetUint16Array (
 	tag_key, foo, count, OFFalse);
     if (val) {
         *val = foo;
@@ -114,29 +126,42 @@ Dcmtk_file::get_uint16_array (const DcmTagKey& tag_key,
 bool
 Dcmtk_file::get_element (const DcmTagKey& tag_key, DcmElement* val) const
 {
-    return m_dfile->getDataset()->findAndGetElement(tag_key, val).good();
+    return d_ptr->m_dfile->getDataset()->findAndGetElement(tag_key, val).good();
 }
 
 bool
 Dcmtk_file::get_sequence (const DcmTagKey& tag_key, 
     DcmSequenceOfItems*& seq) const
 {
-    return m_dfile->getDataset()->findAndGetSequence (tag_key, seq).good();
+    return d_ptr->m_dfile->getDataset()->findAndGetSequence (
+        tag_key, seq).good();
+}
+
+const Volume_header*
+Dcmtk_file::get_volume_header () const
+{
+    return &d_ptr->m_vh;
+}
+
+plm_long
+Dcmtk_file::get_z_position () const
+{
+    return d_ptr->m_vh.get_origin()[2];
 }
 
 void
 Dcmtk_file::load_header (const char *fn) {
     /* Save a copy of the filename */
-    m_fn = fn;
+    d_ptr->m_fn = fn;
 
     /* Open the file */
-    OFCondition cond = m_dfile->loadFile (fn, EXS_Unknown, EGL_noChange);
+    OFCondition cond = d_ptr->m_dfile->loadFile (fn, EXS_Unknown, EGL_noChange);
     if (cond.bad()) {
 	print_and_exit ("Sorry, couldn't open file as dicom: %s\n", fn);
     }
 
     /* Load image header */
-    DcmDataset *dset = m_dfile->getDataset();    
+    DcmDataset *dset = d_ptr->m_dfile->getDataset();    
     OFCondition ofrc;
     const char *c;
     uint16_t rows;
@@ -148,7 +173,7 @@ Dcmtk_file::load_header (const char *fn) {
 	float origin[3];
 	int rc = parse_dicom_float3 (origin, c);
 	if (!rc) {
-	    this->m_vh.set_origin (origin);
+	    d_ptr->m_vh.set_origin (origin);
 	}
     }
 
@@ -161,7 +186,7 @@ Dcmtk_file::load_header (const char *fn) {
 	    dim[0] = cols;
 	    dim[1] = rows;
 	    dim[2] = 1;
-	    this->m_vh.set_dim (dim);
+	    d_ptr->m_vh.set_dim (dim);
 	}
     }
 
@@ -180,7 +205,7 @@ Dcmtk_file::load_header (const char *fn) {
 	    direction_cosines[8] 
 		= direction_cosines[0]*direction_cosines[4] 
 		- direction_cosines[1]*direction_cosines[3];
-	    this->m_vh.set_direction_cosines (direction_cosines);
+	    d_ptr->m_vh.set_direction_cosines (direction_cosines);
 	}
     }
 
@@ -191,7 +216,7 @@ Dcmtk_file::load_header (const char *fn) {
 	int rc = parse_dicom_float2 (spacing, c);
 	if (!rc) {
 	    spacing[2] = 0.0;
-	    this->m_vh.set_spacing (spacing);
+	    d_ptr->m_vh.set_spacing (spacing);
 	}
     }
 }
@@ -199,7 +224,8 @@ Dcmtk_file::load_header (const char *fn) {
 bool
 dcmtk_file_compare_z_position (const Dcmtk_file* f1, const Dcmtk_file* f2)
 {
-    return f1->m_vh.get_origin()[2] < f2->m_vh.get_origin()[2];
+    //return f1->d_ptr->m_vh.get_origin()[2] < f2->d_ptr->m_vh.get_origin()[2];
+    return f1->get_z_position () < f2->get_z_position ();
 }
 
 void

@@ -8,13 +8,12 @@
 #include "sys/plm_int.h"
 #include "volume_header.h"
 
-// TODO: change type of m_vh to Volume_header*
-
 class DcmDataset;
 class DcmElement;
 class DcmSequenceOfItems;
 class DcmTagKey;
-//class Volume_header;
+
+class Dcmtk_file_private;
 
 class Dcmtk_file
 {
@@ -24,10 +23,8 @@ public:
     ~Dcmtk_file ();
 
 public:
-    std::string m_fn;
-    DcmFileFormat *m_dfile;
-    Volume_header m_vh;
-    
+    Dcmtk_file_private *d_ptr;
+
 public:
     void debug () const;
     DcmDataset* get_dataset (void) const;
@@ -47,7 +44,9 @@ public:
     bool get_element (const DcmTagKey& tag_key, DcmElement* val) const;
     bool get_sequence (const DcmTagKey& tag_key, 
         DcmSequenceOfItems*& seq) const;
-    void init ();
+    const Volume_header* get_volume_header () const;
+    plm_long get_z_position () const;
+
     void load_header (const char *fn);
 };
 

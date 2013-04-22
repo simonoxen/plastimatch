@@ -171,7 +171,7 @@ Dcmtk_series::load_plm_image (void)
     Dcmtk_file *df = (*it);
     float z_init, z_prev, z_diff, z_last;
     int slice_no = 0;
-    float best_chunk_z_start = z_init = z_prev = df->m_vh.get_origin()[2];
+    float best_chunk_z_start = z_init = z_prev = df->get_z_position ();
     
     /* Store UIDs */
     if (d_ptr->m_drs) {
@@ -201,8 +201,8 @@ Dcmtk_series::load_plm_image (void)
     /* Get next slice */
     ++it; ++slice_no;
     df = (*it);
-    z_diff = df->m_vh.get_origin()[2] - z_prev;
-    z_last = z_prev = df->m_vh.get_origin()[2];
+    z_diff = df->get_z_position() - z_prev;
+    z_last = z_prev = df->get_z_position();
 
     /* We want to find the largest chunk with equal spacing.  This will 
        be used to resample in the case of irregular spacing. */
@@ -215,8 +215,8 @@ Dcmtk_series::load_plm_image (void)
     {
 	++slice_no;
 	df = (*it);
-	z_diff = df->m_vh.get_origin()[2] - z_prev;
-	z_last = z_prev = df->m_vh.get_origin()[2];
+	z_diff = df->get_z_position() - z_prev;
+	z_last = z_prev = df->get_z_position();
 
 	if (fabs (this_chunk_diff - z_diff) > 0.11) {
 	    /* Start a new chunk if difference in thickness is 
@@ -254,7 +254,7 @@ Dcmtk_series::load_plm_image (void)
     lprintf ("Slices: ");
     for (it = d_ptr->m_flist.begin(); it != d_ptr->m_flist.end(); ++it) {
 	Dcmtk_file *df = (*it);
-	lprintf ("%f ", df->m_vh.get_origin()[2]);
+	lprintf ("%f ", df->get_z_position());
     }
     lprintf ("\n");
 
@@ -269,7 +269,7 @@ Dcmtk_series::load_plm_image (void)
 	ROUND_INT ((z_last - best_chunk_z_start 
 		- (best_chunk_len - 1) * best_chunk_diff) / best_chunk_diff);
     df = (*d_ptr->m_flist.begin());
-    vh.clone (&df->m_vh);
+    vh.clone (df->get_volume_header());
     dim[2] = slices_before + best_chunk_len + slices_after;
     vh.get_origin()[2] = best_chunk_z_start - slices_before * best_chunk_diff;
     vh.get_spacing()[2] = best_chunk_diff;
@@ -374,7 +374,7 @@ Dcmtk_series::load_plm_image (void)
 	float best_z_dist = FLT_MAX;
 	float z_pos = vh.get_origin()[2] + i * vh.get_spacing()[2];
 	for (it = d_ptr->m_flist.begin(); it != d_ptr->m_flist.end(); ++it) {
-	    float this_z_dist = fabs ((*it)->m_vh.get_origin()[2] - z_pos);
+	    float this_z_dist = fabs ((*it)->get_z_position() - z_pos);
 	    if (this_z_dist < best_z_dist) {
 		best_z_dist = this_z_dist;
 		best_slice_it = it;
@@ -387,7 +387,7 @@ Dcmtk_series::load_plm_image (void)
 	unsigned long length;
 
 	lprintf ("Loading slice z=%f at location z=%f\n",
-	    (*best_slice_it)->m_vh.get_origin()[2], z_pos);
+	    (*best_slice_it)->get_z_position(), z_pos);
 
         /* GCS FIX: This should probably use DicomImage::getOutputData()
            cf. http://support.dcmtk.org/docs/mod_dcmimage.html */
