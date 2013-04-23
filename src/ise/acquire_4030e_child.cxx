@@ -1743,6 +1743,66 @@ bool Acquire_4030e_child::LoadGainImage(QString& filePath)
 }
 
 
+
+bool Acquire_4030e_child::LoadBadPixelMap( const char* filePath )
+{
+
+	QString tmpPath = filePath;
+
+	QFileInfo fileInfo = QFileInfo(tmpPath);
+
+	if (!fileInfo.exists())
+		return false;
+
+	m_vBadPixelMap.clear();
+
+	ifstream fin;
+	fin.open(filePath);
+
+	if (fin.fail())
+		return false;
+
+	char str[MAX_LINE_LENGTH];
+	//memset(str, 0, MAX_LINE_LENGTH);
+
+	while (!fin.eof())
+	{
+		memset(str, 0, MAX_LINE_LENGTH);
+		fin.getline(str, MAX_LINE_LENGTH);
+		QString tmpStr = QString(str);
+
+		if (tmpStr.contains("#ORIGINAL_X"))
+			break;
+	}
+
+	while (!fin.eof())
+	{
+		memset(str, 0, MAX_LINE_LENGTH);
+		fin.getline(str, MAX_LINE_LENGTH);
+		QString tmpStr = QString(str);
+
+		QStringList strList = tmpStr.split("	"); //tab
+
+		if (strList.size() == 4)
+		{
+			BADPIXELMAP tmpData;
+			tmpData.BadPixX = strList.at(0).toInt();
+			tmpData.BadPixY = strList.at(1).toInt();
+			tmpData.ReplPixX = strList.at(2).toInt();
+			tmpData.ReplPixY = strList.at(3).toInt();
+			m_vBadPixelMap.push_back(tmpData);
+		}	
+	}
+
+	fin.close();
+
+	if (m_vBadPixelMap.size() < 1)
+		return false;
+
+	return true;
+}
+
+
 void Acquire_4030e_child::ReDraw(int lowerWinVal, int upperWinVal)//current image only
 {
 	//only CurrentImg Redraw for time saving

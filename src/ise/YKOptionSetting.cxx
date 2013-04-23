@@ -4,10 +4,10 @@
 #include <QFileDialog>
 #include <fstream>
 #include "aqprintf.h"
+#include "acquire_4030e_define.h"
 
 using namespace std;
 
-#define MAX_LINE_LENGTH 1024
 
 YKOptionSetting::YKOptionSetting(void)
 {
@@ -27,9 +27,8 @@ YKOptionSetting::YKOptionSetting(void)
 		m_strAcqFileSavingFolder[idx] = crntPathStr + "\\ProgramData" + QString("\\PANEL_%1").arg(idx) + "\\01_RAD_2304_3200" + "\\IMAGE_DATA";
 		m_strDarkImageSavingFolder[idx]= crntPathStr + "\\ProgramData" + QString("\\PANEL_%1").arg(idx) + "\\01_RAD_2304_3200" + "\\DARK"; //not explicitly editable
 		m_strGainImageSavingFolder[idx]= crntPathStr + "\\ProgramData" + QString("\\PANEL_%1").arg(idx) + "\\01_RAD_2304_3200" + "\\GAIN"; //not explicitly editable
-	}
-
-	
+		m_strDefectMapSavingFolder[idx]= crntPathStr + "\\ProgramData" + QString("\\PANEL_%1").arg(idx) + "\\01_RAD_2304_3200" + "\\DEFECT"; //not explicitly editable;
+	}	
 }
 
 
@@ -460,6 +459,23 @@ bool YKOptionSetting::LoadChildOption( QString& childOptionPath, int idx )
 		{
 			m_fSingleGainCalibFactor[idx] =  tokenSecond.toDouble();
 		}		
+
+
+		else if (tokenFirst.contains("BAD_PIXEL_MAP_PATH"))
+		{
+			m_strDefectMapPath[idx] = tokenSecond;			
+
+			QFileInfo tmpInfo = QFileInfo(m_strDefectMapPath[idx]);			
+
+			if (!tmpInfo.exists())
+			{
+				m_strDefectMapPath[idx] = "";
+			}
+		}
+		else if (tokenFirst.contains("ENABLE_DEFECT_CORRECTION_APPLY"))
+		{
+			m_bDefectMapApply[idx] = (bool)tokenSecond.toInt();
+		}		
 	}
 	return true;
 }
@@ -528,6 +544,10 @@ bool YKOptionSetting::LoadChildOptionDefault( int idx ) //should be called after
 	m_strGainImageSavingFolder[idx] = crntPathStr + "\\ProgramData" + QString("\\PANEL_%1").arg(idx) + "\\01_RAD_2304_3200" + "\\GAIN";
 	m_strSingleGainPath[idx] = ""; //should be set later
 	m_fSingleGainCalibFactor[idx] = 1.000;
+
+	m_strDefectMapPath[idx] = crntPathStr + "\\ProgramData" + QString("\\PANEL_%1").arg(idx) + "\\01_RAD_2304_3200" + "\\DEFECT";
+	m_strDefectMapPath[idx] = "";//should be set later	
+	m_bDefectMapApply[idx] = false;
 
 	return true;
 }
@@ -623,7 +643,7 @@ bool YKOptionSetting::ExportChildOption( QString& filePath, int idx)
 	fout << "#DARK_CUTOFF_UPPER_SD" << "	" << m_fDarkCufoffUpperSD[idx] << endl;
 	fout << "#DARK_CUTOFF_LOWER_SD" << "	" << m_fDarkCufoffLowerSD[idx] << endl;
 
-	fout << "$END_OF_GAINCORRECTION" << endl;
+	fout << "$END_OF_DARKCORRECTION" << endl;
 	fout << endl;
 	/**********************************************/
 
@@ -634,10 +654,13 @@ bool YKOptionSetting::ExportChildOption( QString& filePath, int idx)
 	fout << "#GAIN_SINGLE_PATH" << "	" << m_strSingleGainPath[idx].toLocal8Bit().constData() << endl;
 	fout << "#GAIN_CALIB_FACTOR" << "	" << m_fSingleGainCalibFactor[idx] << endl;
 
-
-
-
 	fout << "$END_OF_GAINCORRECTION" << endl;	
+	/**********************************************/
+
+	fout << "$BEGIN_OF_DEFECT_CORRECTION" << endl;	
+	fout << "#ENABLE_DEFECT_CORRECTION_APPLY" << "	" << m_bDefectMapApply[idx] << endl;	
+	fout << "#BAD_PIXEL_MAP_PATH" << "	" << m_strDefectMapPath[idx].toLocal8Bit().constData() << endl;	
+	fout << "$END_OF_DEFECT_CORRECTION" << endl;	
 	/**********************************************/
 
 	fout.close();
@@ -648,7 +671,7 @@ bool YKOptionSetting::ExportChildOption( QString& filePath, int idx)
 
 //Copy all of the options from src to target except for panel dependent information
 
-bool YKOptionSetting::CopyTrivialChildOptions(int idxS, int idxT)
+bool YKOptionSetting::CopyTrivialChildOptions(int idxS, int idxT) //not used
 {
 	if (idxS != 0 && idxS != 1)
 		return false;

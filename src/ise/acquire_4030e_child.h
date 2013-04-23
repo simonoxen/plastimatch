@@ -130,8 +130,7 @@ public:
 	bool PC_WaitForPanelReady();
 	bool PC_WaitForPulse();
 	bool PC_GetImageHardware();
-	bool PC_WaitForComplete();
-	//bool PC_ReStandbyPanel();
+	bool PC_WaitForComplete();	
 	bool PC_CallForStanby(); //also can be used for SW acquisition for reloop
 	bool PC_WaitForStanby();
 
@@ -153,13 +152,18 @@ public:
 	//QSystemSemaphore* m_pSysSemaphore;
 
 	QLocalSocket* m_pClient;
-
 	YKOptionSetting m_OptionSettingChild; 
 
 	bool m_bLockInPanelStandby;
 	bool m_bCancelAcqRequest;//Skip ReadyForPulse when the other panel is selected
-
 	void ChangePanelStatus(PSTAT enStatus);
+
+
+	std::vector<BADPIXELMAP> m_vBadPixelMap;
+	bool LoadBadPixelMap(const char* filePath); //fill m_vBadPixelMap with loaded data(mapping)
+
+
+
 };
 
 #endif

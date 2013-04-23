@@ -24,6 +24,8 @@ typedef unsigned short USHORT;
 #define EXTERNAL_STATUS_CHANGE -102
 #define DELAY_FOR_CHILD_RESPONSE 300
 
+#define MAX_LINE_LENGTH 1024
+
 
 
 enum PSTAT{	
@@ -46,4 +48,12 @@ enum Label_style {
 	LABEL_PREPARING, //Orange
 	LABEL_STANDBY, //Orange
 	LABEL_READY
+};
+
+
+struct BADPIXELMAP{
+	int BadPixX;
+	int BadPixY;
+	int ReplPixX;
+	int ReplPixY;
 };

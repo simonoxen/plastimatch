@@ -697,11 +697,11 @@ quint16 Varian_4030e::GetCheckSum (unsigned short* pImage, int width, int height
 int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to curImage
 {
 
+	bool bDefectMapApply = m_pParent->m_dlgControl->ChkBadPixelCorrApply->isChecked();	
 	bool bDarkCorrApply = m_pParent->m_dlgControl->ChkDarkFieldApply->isChecked(); 
 	bool bGainCorrApply = m_pParent->m_dlgControl->ChkGainCorrectionApply->isChecked();
 	bool bRawSaveForDebug = m_pParent->m_dlgControl->ChkRawSave->isChecked();
-	bool bDarkSaveForDebug = m_pParent->m_dlgControl->ChkDarkCorrectedSave->isChecked();
-
+	bool bDarkSaveForDebug = m_pParent->m_dlgControl->ChkDarkCorrectedSave->isChecked();	
 
 	int result;
 	int mode_num = this->current_mode;
@@ -748,6 +748,8 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 		//return HCP_NO_ERR;
 	}
 
+	if (bDefectMapApply)
+		aqprintf("Bad Pixel Correction On\n");
 	if (bDarkCorrApply)
 		aqprintf("Dark Correction On\n");
 	if (bGainCorrApply)
@@ -756,11 +758,7 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 	/////////////////////***************Manul Correction START***********///////////////////
 	USHORT *pImageCorr = (USHORT *)malloc(npixels * sizeof(USHORT));
 
-
-
 	/* DEBUGGING CODE. When save the real image, Raw images and Dark-only corrected images should be saved for debugging purpose */
-
-
 	
 	if (bRawSaveForDebug)
 	{		
@@ -789,12 +787,30 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 					m_pParent->m_pCurrImageDarkCorrected->m_pData[i] = 0;
 			}
 		}
+
+		if (bDefectMapApply)
+		{
+			if (!m_pParent->m_vBadPixelMap.empty())
+				m_pParent->m_pCurrImageDarkCorrected->DoPixelReplacement(m_pParent->m_vBadPixelMap);
+		}		
 	}
-
 	/* DEBUGGING CODE. When save the real image, Raw images and Dark-only corrected images should be saved for debugging purpose */ //END
+	//aqprintf("After Dark Debug.\n");
 
-	aqprintf("After Dark Debug.\n");
+	if (bDefectMapApply && !m_pParent->m_vBadPixelMap.empty()) //pixel replacement
+	{
+		aqprintf("Bad pixel correction is under progress. Bad pixel numbers = %d.\n",m_pParent->m_vBadPixelMap.size());
+		std::vector<BADPIXELMAP>::iterator it;
+		int oriIdx, replIdx;
 
+		for (it = m_pParent->m_vBadPixelMap.begin() ; it != m_pParent->m_vBadPixelMap.end() ; it++)
+		{
+			BADPIXELMAP tmpData= (*it);
+			oriIdx = tmpData.BadPixY * xSize + tmpData.BadPixX;
+			replIdx = tmpData.ReplPixY * xSize + tmpData.ReplPixX;
+			image_ptr[oriIdx] = image_ptr[replIdx];
+		}
+	}
 
 	if (!bDarkCorrApply && !bGainCorrApply)
 	{
@@ -854,7 +870,7 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 
 	else if (bDarkCorrApply && bGainCorrApply)
 	{		
-		aqprintf("Dark and gain correction\n");
+		//aqprintf("Dark and gain correction\n");
 
 		bool bRawImage = false;
 		if (m_pParent->m_pDarkImage->IsEmpty())
@@ -932,8 +948,8 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 			}//end of for
 
 			//YKTEMP: test code for audit			
-			aqprintf("MeanVal: %3.5f, iDenomLessZero: %d, iDenomLessZero_RawIsGreaterThanDark: %d, iDenomLessZero_RawIsSmallerThanDark: %d, iDenomOK_RawValueMinus: %d, iValOutOf14bit: %d\n"
-					, MeanVal, iDenomLessZero, iDenomLessZero_RawIsGreaterThanDark, iDenomLessZero_RawIsSmallerThanDark, iDenomOK_RawValueMinus, iValOutOfRange);			
+			//aqprintf("MeanVal: %3.5f, iDenomLessZero: %d, iDenomLessZero_RawIsGreaterThanDark: %d, iDenomLessZero_RawIsSmallerThanDark: %d, iDenomOK_RawValueMinus: %d, iValOutOf14bit: %d\n"
+			//		, MeanVal, iDenomLessZero, iDenomLessZero_RawIsGreaterThanDark, iDenomLessZero_RawIsSmallerThanDark, iDenomOK_RawValueMinus, iValOutOfRange);			
 		
 		}//end if not bRawImage
 	} // else if (m_bDarkCorrApply && m_bGainCorrApply)

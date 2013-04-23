@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>441</width>
-    <height>834</height>
+    <height>915</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -423,7 +423,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>440</y>
+     <y>510</y>
      <width>261</width>
      <height>181</height>
     </rect>
@@ -622,7 +622,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>630</y>
+     <y>700</y>
      <width>261</width>
      <height>171</height>
     </rect>
@@ -820,7 +820,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>800</y>
+     <y>880</y>
      <width>151</width>
      <height>31</height>
     </rect>
@@ -833,7 +833,7 @@
    <property name="geometry">
     <rect>
      <x>280</x>
-     <y>440</y>
+     <y>520</y>
      <width>151</width>
      <height>171</height>
     </rect>
@@ -855,7 +855,7 @@
    <property name="geometry">
     <rect>
      <x>280</x>
-     <y>630</y>
+     <y>700</y>
      <width>151</width>
      <height>171</height>
     </rect>
@@ -1147,7 +1147,7 @@
    <property name="geometry">
     <rect>
      <x>180</x>
-     <y>800</y>
+     <y>880</y>
      <width>151</width>
      <height>31</height>
     </rect>
@@ -1155,6 +1155,99 @@
    <property name="text">
     <string>Load Default Setting</string>
    </property>
+  </widget>
+  <widget class="QGroupBox" name="groupBox_3">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>430</y>
+     <width>421</width>
+     <height>71</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Pixel defect correction</string>
+   </property>
+   <widget class="QCheckBox" name="ChkBadPixelCorrApply">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>20</y>
+      <width>181</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="layoutDirection">
+     <enum>Qt::RightToLeft</enum>
+    </property>
+    <property name="text">
+     <string>Bad Pixel Correction Apply</string>
+    </property>
+    <property name="checked">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_10">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>40</y>
+      <width>141</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Pixel mapping file path</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEditBadPixelMapPath">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>40</y>
+      <width>221</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="cursor">
+     <cursorShape>IBeamCursor</cursorShape>
+    </property>
+    <property name="contextMenuPolicy">
+     <enum>Qt::DefaultContextMenu</enum>
+    </property>
+    <property name="autoFillBackground">
+     <bool>true</bool>
+    </property>
+    <property name="readOnly">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="BtnSetBadPixMapPath">
+    <property name="geometry">
+     <rect>
+      <x>380</x>
+      <y>40</y>
+      <width>31</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>...</string>
+    </property>
+   </widget>
   </widget>
   <zorder>groupBox_2</zorder>
   <zorder>groupBox</zorder>
@@ -1175,6 +1268,7 @@
   <zorder>label_14</zorder>
   <zorder>EditModeNum</zorder>
   <zorder>BtnLoadDefaultSettings</zorder>
+  <zorder>groupBox_3</zorder>
  </widget>
  <resources/>
  <connections>
@@ -1189,7 +1283,7 @@
      <y>319</y>
     </hint>
     <hint type="destinationlabel">
-     <x>450</x>
+     <x>440</x>
      <y>323</y>
     </hint>
    </hints>
@@ -1205,7 +1299,7 @@
      <y>329</y>
     </hint>
     <hint type="destinationlabel">
-     <x>450</x>
+     <x>440</x>
      <y>368</y>
     </hint>
    </hints>
@@ -1221,7 +1315,7 @@
      <y>336</y>
     </hint>
     <hint type="destinationlabel">
-     <x>450</x>
+     <x>440</x>
      <y>350</y>
     </hint>
    </hints>
@@ -1237,7 +1331,7 @@
      <y>337</y>
     </hint>
     <hint type="destinationlabel">
-     <x>450</x>
+     <x>440</x>
      <y>314</y>
     </hint>
    </hints>
@@ -1253,7 +1347,7 @@
      <y>310</y>
     </hint>
     <hint type="destinationlabel">
-     <x>450</x>
+     <x>440</x>
      <y>206</y>
     </hint>
    </hints>
@@ -1269,7 +1363,7 @@
      <y>318</y>
     </hint>
     <hint type="destinationlabel">
-     <x>450</x>
+     <x>440</x>
      <y>231</y>
     </hint>
    </hints>
@@ -1285,7 +1379,7 @@
      <y>364</y>
     </hint>
     <hint type="destinationlabel">
-     <x>450</x>
+     <x>440</x>
      <y>303</y>
     </hint>
    </hints>
@@ -1301,7 +1395,7 @@
      <y>368</y>
     </hint>
     <hint type="destinationlabel">
-     <x>450</x>
+     <x>440</x>
      <y>292</y>
     </hint>
    </hints>
@@ -1317,7 +1411,7 @@
      <y>132</y>
     </hint>
     <hint type="destinationlabel">
-     <x>450</x>
+     <x>440</x>
      <y>97</y>
     </hint>
    </hints>
@@ -1333,7 +1427,7 @@
      <y>356</y>
     </hint>
     <hint type="destinationlabel">
-     <x>469</x>
+     <x>440</x>
      <y>496</y>
     </hint>
    </hints>
@@ -1346,10 +1440,10 @@
    <hints>
     <hint type="sourcelabel">
      <x>199</x>
-     <y>420</y>
+     <y>530</y>
     </hint>
     <hint type="destinationlabel">
-     <x>469</x>
+     <x>440</x>
      <y>394</y>
     </hint>
    </hints>
@@ -1362,10 +1456,10 @@
    <hints>
     <hint type="sourcelabel">
      <x>134</x>
-     <y>460</y>
+     <y>560</y>
     </hint>
     <hint type="destinationlabel">
-     <x>469</x>
+     <x>440</x>
      <y>422</y>
     </hint>
    </hints>
@@ -1378,10 +1472,10 @@
    <hints>
     <hint type="sourcelabel">
      <x>159</x>
-     <y>589</y>
+     <y>720</y>
     </hint>
     <hint type="destinationlabel">
-     <x>469</x>
+     <x>440</x>
      <y>504</y>
     </hint>
    </hints>
@@ -1394,10 +1488,10 @@
    <hints>
     <hint type="sourcelabel">
      <x>260</x>
-     <y>498</y>
+     <y>610</y>
     </hint>
     <hint type="destinationlabel">
-     <x>469</x>
+     <x>440</x>
      <y>436</y>
     </hint>
    </hints>
@@ -1413,7 +1507,7 @@
      <y>264</y>
     </hint>
     <hint type="destinationlabel">
-     <x>477</x>
+     <x>440</x>
      <y>265</y>
     </hint>
    </hints>
@@ -1426,10 +1520,10 @@
    <hints>
     <hint type="sourcelabel">
      <x>240</x>
-     <y>643</y>
+     <y>790</y>
     </hint>
     <hint type="destinationlabel">
-     <x>537</x>
+     <x>440</x>
      <y>647</y>
     </hint>
    </hints>
@@ -1446,7 +1540,7 @@
     </hint>
     <hint type="destinationlabel">
      <x>357</x>
-     <y>-18</y>
+     <y>0</y>
     </hint>
    </hints>
   </connection>
@@ -1461,7 +1555,7 @@
      <y>35</y>
     </hint>
     <hint type="destinationlabel">
-     <x>485</x>
+     <x>440</x>
      <y>35</y>
     </hint>
    </hints>
@@ -1473,11 +1567,11 @@
    <slot>CopyCurrentImageForGainImage()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>21</x>
-     <y>684</y>
+     <x>170</x>
+     <y>750</y>
     </hint>
     <hint type="destinationlabel">
-     <x>-9</x>
+     <x>0</x>
      <y>686</y>
     </hint>
    </hints>
@@ -1490,7 +1584,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>157</x>
-     <y>809</y>
+     <y>889</y>
     </hint>
     <hint type="destinationlabel">
      <x>232</x>
@@ -1506,10 +1600,10 @@
    <hints>
     <hint type="sourcelabel">
      <x>329</x>
-     <y>814</y>
+     <y>894</y>
     </hint>
     <hint type="destinationlabel">
-     <x>458</x>
+     <x>440</x>
      <y>814</y>
     </hint>
    </hints>
@@ -1522,10 +1616,10 @@
    <hints>
     <hint type="sourcelabel">
      <x>64</x>
-     <y>702</y>
+     <y>772</y>
     </hint>
     <hint type="destinationlabel">
-     <x>-7</x>
+     <x>0</x>
      <y>716</y>
     </hint>
    </hints>
@@ -1538,11 +1632,27 @@
    <hints>
     <hint type="sourcelabel">
      <x>181</x>
-     <y>705</y>
+     <y>775</y>
     </hint>
     <hint type="destinationlabel">
-     <x>482</x>
+     <x>440</x>
      <y>695</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>BtnSetBadPixMapPath</sender>
+   <signal>clicked()</signal>
+   <receiver>DlgPanelControl</receiver>
+   <slot>OpenDefectMapFile()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>418</x>
+     <y>478</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>465</x>
+     <y>478</y>
     </hint>
    </hints>
   </connection>
@@ -1570,5 +1680,6 @@
   <slot>UpdateGUIFromSetting_Child()</slot>
   <slot>SingleGainOn()</slot>
   <slot>MultiGainOn()</slot>
+  <slot>OpenDefectMapFile()</slot>
  </slots>
 </ui>

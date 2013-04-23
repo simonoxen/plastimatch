@@ -391,8 +391,10 @@ void Acquire_4030e_DlgControl::SaveSettingAsDefault_Child()
 	//m_strGainImageSavingFolder[idx] = leave it as default
 	pOptionSetting->m_strSingleGainPath[idx] = this->lineEditGainPath->text();
 	pOptionSetting->m_fSingleGainCalibFactor[idx] = (this->lineEditSingleCalibFactor->text()).toDouble();
-	
 
+
+	pOptionSetting->m_bDefectMapApply[idx] = this->ChkBadPixelCorrApply->isChecked();
+	pOptionSetting->m_strDefectMapPath[idx] = this->lineEditBadPixelMapPath->text();
 
 	pOptionSetting->ExportChildOption(pOptionSetting->m_defaultChildOptionPath[idx], idx);
 
@@ -472,9 +474,12 @@ void Acquire_4030e_DlgControl::UpdateGUIFromSetting_Child() // it can be used as
 
 	//pOptionSetting->m_fSingleGainCalibFactor[idx] = (this->lineEditSingleCalibFactor->text()).toDouble();	
 	QString tmpStr = QString("%1").arg(pOptionSetting->m_fSingleGainCalibFactor[idx]);
-	this->lineEditSingleCalibFactor->setText(tmpStr);	
+	this->lineEditSingleCalibFactor->setText(tmpStr);
 
-	//aqprintf("test6\n");
+	tmpStr = QString("%1").arg(pOptionSetting->m_strDefectMapPath[idx]);
+	this->lineEditBadPixelMapPath->setText(tmpStr);
+	this->ChkBadPixelCorrApply->setChecked(pOptionSetting->m_bDefectMapApply[idx]);
+
 
 	ReLoadCalibImages();
 }
@@ -493,6 +498,49 @@ void Acquire_4030e_DlgControl::MultiGainOn()
 void Acquire_4030e_DlgControl::ReLoadCalibImages()
 {
 	Acquire_4030e_child* qMyApp = (Acquire_4030e_child*)qApp;
+
+	qMyApp->LoadBadPixelMap(this->lineEditBadPixelMapPath->text().toLocal8Bit().constData());
 	qMyApp->LoadDarkImage(this->lineEditDarkPath->text());
 	qMyApp->LoadGainImage(this->lineEditGainPath->text());
+}
+
+
+void Acquire_4030e_DlgControl::OpenDefectMapFile() //Btn
+{
+	Acquire_4030e_child* qMyApp = (Acquire_4030e_child*)qApp;
+
+	//QString filePath;
+	int idx =qMyApp->m_iProcNum;
+
+	//= QFileDialog::getOpenFileName(this, "Open Image","", "Image Files (*.raw)",0,0);
+
+	QString defaultSearchFolder = qMyApp->m_OptionSettingChild.m_strDefectMapSavingFolder[idx];
+
+	aqprintf("defaultSerchFolderForDefectMap =  %s\n",defaultSearchFolder.toLocal8Bit().constData());
+
+	QString filePath;
+	if (defaultSearchFolder.length() < 2)
+	{
+		filePath = QFileDialog::getOpenFileName(this, "Open pixel mapping file","", "Pixel Mapping Files (*.pmf)",0,0);
+	}
+	else
+	{
+		filePath = QFileDialog::getOpenFileName(this, "Open pixel mapping file",defaultSearchFolder, "Pixel Mapping Files (*.pmf)",0,0);
+	}
+
+	if (filePath.length() < 3)
+		return;
+
+	lineEditBadPixelMapPath->setText(filePath);
+	//Fill Dark Image Array with this file
+
+	QMessageBox dlgMsgBox;
+
+	if (!qMyApp->LoadBadPixelMap(filePath.toLocal8Bit().constData()))
+	{
+		dlgMsgBox.setText(QString("Error on loading pixel mapping file!_%1").arg(filePath));
+		dlgMsgBox.exec();
+
+		this->lineEditBadPixelMapPath->setText("");
+	}		
 }

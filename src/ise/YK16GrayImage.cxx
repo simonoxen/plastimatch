@@ -3,6 +3,10 @@
 #include <fstream>
 #include <QLabel>
 #include <math.h>
+//#include "itkImageRegionIterator.h"
+#include <QPainter>
+
+using namespace std;
 
 YK16GrayImage::YK16GrayImage(void)
 {
@@ -19,8 +23,10 @@ YK16GrayImage::YK16GrayImage(int width, int height)
 	m_pData = NULL;
 	m_pPixmap = NULL;// for display
 
-	m_iWidth = 0;
-	m_iHeight = 0;
+	//m_pQImage = NULL;
+
+	m_iWidth = width;
+	m_iHeight = height;	
 
 	CreateImage(width, height, 0);		
 }
@@ -80,7 +86,9 @@ bool YK16GrayImage::CreateImage(int width, int height, unsigned short usVal)
 	for (int i = 0 ; i<imgSize ; i++)
 	{
 		m_pData[i] = usVal;
-	}	
+	}
+
+	//m_QImage = QImage(m_iWidth, m_iHeight,QImage::Format_RGB888);
 
 	return true;
 }
@@ -105,6 +113,10 @@ bool YK16GrayImage::LoadRawImage(const char *filePath, int width, int height)
 
 	FILE* fd = NULL;
 	fd = fopen(filePath, "rb");
+
+	if (fd == NULL)
+		return false;
+
 	unsigned short buf = 0;	
 
 	for (int i = 0 ; i<imgSize ; i++)
@@ -166,33 +178,61 @@ bool YK16GrayImage::FillPixMap(int winMid, int winWidth) //0-65535 Сп window lev
 
 			if (m_pData[i*m_iWidth+j] >= uppVal)
 			{
+				//QRgb rgbVal = qRgb(255, 255, 255);
+				//m_QImage.setPixel(j,i,qRgb(255, 255, 255));
+
 				tmpData[tmpIdx+0] = 255;
 				tmpData[tmpIdx+1] = 255;
 				tmpData[tmpIdx+2] = 255;
+				
 			}
 			else if (m_pData[i*m_iWidth+j] <= lowVal)
 			{
 				tmpData[tmpIdx+0] = 0;
 				tmpData[tmpIdx+1] = 0;
 				tmpData[tmpIdx+2] = 0;
+				//QRgb rgbVal = qRgb(0, 0, 0);
+				//m_QImage.setPixel(j,i,qRgb(0, 0, 0));
 			}
 			else
 			{
 				tmpData[tmpIdx+0] = (uchar) ((m_pData[i*m_iWidth+j] - lowVal)/(double)winWidth * 255.0); //success
 				tmpData[tmpIdx+1] = (uchar) ((m_pData[i*m_iWidth+j] - lowVal)/(double)winWidth * 255.0); //success
 				tmpData[tmpIdx+2] = (uchar) ((m_pData[i*m_iWidth+j] - lowVal)/(double)winWidth * 255.0); //success
+
+				//uchar val = (uchar) ((m_pData[i*m_iWidth+j] - lowVal)/(double)winWidth * 255.0);
+				//QRgb rgbVal = qRgb(val, val, val);
+				//m_QImage.setPixel(j,i,qRgb(val, val, val));
 				//if (i<10000)
 				//	fout << (int)(tmpData[i]) << std::endl;
 			}
 		}		
-	}
-	QImage tmpQImage = QImage((unsigned char*)tmpData,m_iWidth, m_iHeight,QImage::Format_RGB888);
-	*m_pPixmap = QPixmap::fromImage(tmpQImage);
+	}	
+
+	///m_QImage.save("C:\\FromFillPixmap.png");//it works well
+	QImage tmpQImage = QImage((unsigned char*)tmpData,m_iWidth, m_iHeight,QImage::Format_RGB888); //not deep copy!
+
+	m_QImage = tmpQImage.copy(0,0,m_iWidth, m_iHeight); //memory allocated here!!!
+
+	//*m_pPixmap = QPixmap::fromImage(tmpQImage); //copy data to pre-allcated pixmap buffer
+	*m_pPixmap = QPixmap::fromImage(m_QImage); //copy data to pre-allcated pixmap buffer
 
 	delete [] tmpData;
-
-
 	return true;
+}
+
+bool YK16GrayImage::FillPixMapMinMax(int winMin, int winMax) //0-65535 Сп window level
+{
+	if (winMin < 0 || winMax > 65535 || winMin > winMax)
+	{
+		winMin = 0;
+		winMax = 65535;
+	}
+
+	int midVal = (int)((winMin + winMax)/2.0);
+	int widthVal = winMax - winMin;
+
+	return FillPixMap(midVal, widthVal);	
 }
 
 bool YK16GrayImage::SaveDataAsRaw (const char *filePath) //save 16 bit gray raw file
@@ -215,7 +255,7 @@ bool YK16GrayImage::SaveDataAsRaw (const char *filePath) //save 16 bit gray raw 
 	return true;
 }
 
-bool YK16GrayImage::DrawToLabel( QLabel* lbDisplay )
+bool YK16GrayImage::DrawToLabel( QLabel* lbDisplay ) //using pixmap
 {
 	if (m_pPixmap == NULL)
 		return false;
@@ -224,6 +264,11 @@ bool YK16GrayImage::DrawToLabel( QLabel* lbDisplay )
 	int height = lbDisplay->height();
 	//m_pPixmap->scaled(wid,showHeght,Qt::IgnoreAspectRatio)
 	lbDisplay->setPixmap(m_pPixmap->scaled(width, height, Qt::IgnoreAspectRatio));
+
+	/*int w = m_QImage.width();
+	int h = m_QImage.height();*/
+	//bool result = m_QImage.save("C:\\abcdefg.png");
+
 	return true;
 }
 
@@ -287,3 +332,81 @@ double YK16GrayImage::CalcAveragePixelDiff(YK16GrayImage& other)
 
 	return tmpSum / (double)totalPixCnt;
 }
+
+bool YK16GrayImage::DoPixelReplacement(vector<BADPIXELMAP>& vPixelMapping )
+{
+	if (vPixelMapping.empty())
+		return false;		
+
+	if (m_pData == NULL)
+		return false;
+		
+
+	int oriIdx, replIdx;
+
+	vector<BADPIXELMAP>::iterator it;
+
+	for (it = vPixelMapping.begin() ; it != vPixelMapping.end() ; it++)
+	{
+		BADPIXELMAP tmpData= (*it);
+		oriIdx = tmpData.BadPixY * m_iWidth + tmpData.BadPixX;
+		replIdx = tmpData.ReplPixY * m_iWidth + tmpData.ReplPixX;
+		m_pData[oriIdx] = m_pData[replIdx];
+	}
+
+
+
+	return true;
+}
+
+
+//
+//void YK16GrayImage::CopyYKImage2ItkImage(YK16GrayImage* pYKImage, UnsignedShortImageType::Pointer& spTarImage)
+//{
+//	if (pYKImage == NULL)
+//		return;
+//	//Raw File open	
+//	//UnsignedShortImageType::SizeType tmpSize = 
+//	UnsignedShortImageType::RegionType region = spTarImage->GetRequestedRegion();
+//	UnsignedShortImageType::SizeType tmpSize = region.GetSize();
+//
+//	int sizeX = tmpSize[0];
+//	int sizeY = tmpSize[1];
+//
+//	if (sizeX < 1 || sizeY <1)
+//		return;
+//
+//	itk::ImageRegionIterator<UnsignedShortImageType> it(spTarImage, region);
+//
+//	int i = 0;
+//	for (it.GoToBegin() ; !it.IsAtEnd(); it++)
+//	{
+//		it.Set(pYKImage->m_pData[i]);
+//		i++;
+//	}
+//}
+//void YK16GrayImage::CopyItkImage2YKImage(UnsignedShortImageType::Pointer& spSrcImage, YK16GrayImage* pYKImage)
+//{
+//	if (pYKImage == NULL)
+//		return;
+//	//Raw File open	
+//	//UnsignedShortImageType::SizeType tmpSize = 
+//	UnsignedShortImageType::RegionType region = spSrcImage->GetRequestedRegion();
+//	UnsignedShortImageType::SizeType tmpSize = region.GetSize();
+//
+//	int sizeX = tmpSize[0];
+//	int sizeY = tmpSize[1];
+//
+//	if (sizeX < 1 || sizeY <1)
+//		return;
+//
+//	//itk::ImageRegionConstIterator<UnsignedShortImageType> it(spSrcImage, region);
+//	itk::ImageRegionIterator<UnsignedShortImageType> it(spSrcImage, region);
+//
+//	int i = 0;
+//	for (it.GoToBegin() ; !it.IsAtEnd() ; it++)
+//	{
+//		pYKImage->m_pData[i] = it.Get();
+//		i++;
+//	}	
+//}

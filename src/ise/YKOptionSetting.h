@@ -93,6 +93,10 @@ public:
 	QString m_strGainImageSavingFolder[2]; //not explicitly editable
 	QString m_strSingleGainPath[2];
 	double m_fSingleGainCalibFactor[2];
+
+	QString m_strDefectMapSavingFolder[2]; //default
+	QString m_strDefectMapPath[2];
+	bool m_bDefectMapApply[2];
 	
 	bool CopyTrivialChildOptions(int idxS, int idxT);
 };
