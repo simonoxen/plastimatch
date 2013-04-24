@@ -1,7 +1,7 @@
 """
 This class reads and writes mha files (images or vector fields)
 Author: Paolo Zaffino  (p.zaffino@unicz.it)
-Rev 18
+Rev 19
 NOT TESTED ON PYTHON 3
 """
 
@@ -92,6 +92,7 @@ class new():
 					self.size=map(int, row.split())
 				elif row.startswith('ElementNumberOfChannels = 3'):
 					data='vf' ## The matrix is a vf
+					self.size.append(3)
 				elif row.startswith('ElementType ='):
 					data_type=row.split('=')[1].strip()
 				elif row.startswith('ElementDataFile ='):
