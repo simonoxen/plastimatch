@@ -152,7 +152,7 @@ Dcmtk_file::get_volume_header () const
     return &d_ptr->m_vh;
 }
 
-plm_long
+float
 Dcmtk_file::get_z_position () const
 {
     return d_ptr->m_vh.get_origin()[2];
