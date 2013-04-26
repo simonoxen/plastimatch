@@ -824,7 +824,7 @@ Rpl_volume::compute_segdepth_volume (Volume *seg_vol, Volume *aperture_vol, Volu
   Ray_data *seg_ray;
 
   std::vector<double> seg_wed_storage;  //vector containing all wed's
-  seg_wed_storage.resize(ires[0]*ires[1]-1);
+  seg_wed_storage.resize(ires[0]*ires[1]);
   double max_seg_depth = 0;  //maximum seg volume depth
 
   for (aij[1] = 0; aij[1] < ires[1]; aij[1]++) {
