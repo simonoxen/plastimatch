@@ -10,7 +10,7 @@
 
 class Dvh_private;
 class Plm_image;
-class Rtss;
+class Segmentation;
 
 class PLMUTIL_API Dvh {
 public:
@@ -68,8 +68,8 @@ public:
       image list will be loaded. */
     void set_structure_set_image (const char* ss_image_fn, 
         const char *ss_list_fn);
-    /*! \brief Set the structure set image as an Rtss */
-    void set_structure_set_image (Rtss* image);
+    /*! \brief Set the structure set image as an Segmentation */
+    void set_structure_set_image (Segmentation* image);
     /*! \brief Set the dose image.  The image will be loaded
       from the specified filename. */
     void set_dose_image (const char* image_fn);

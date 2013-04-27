@@ -15,9 +15,9 @@
 #include "plm_image_header.h"
 #include "print_and_exit.h"
 #include "rt_study.h"
-#include "rtss.h"
 #include "rtss_structure.h"
 #include "rtss_structure_set.h"
+#include "segmentation.h"
 
 Dvh_private::Dvh_private () {
     this->dose_units = Dvh::default_dose_units ();
@@ -42,7 +42,7 @@ void
 Dvh::set_structure_set_image (
     const char* ss_image_fn, const char *ss_list_fn)
 {
-    d_ptr->rtss = new Rtss;
+    d_ptr->rtss = new Segmentation;
     d_ptr->rtss->load (ss_image_fn, ss_list_fn);
 }
 

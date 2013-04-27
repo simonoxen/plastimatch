@@ -8,7 +8,6 @@
 
 class Metadata;
 class Slice_index;
-class Rtss;
 class Rtss_structure_set;
 
 PLMBASE_C_API Rtss_structure_set* cxt_load_ss_list (

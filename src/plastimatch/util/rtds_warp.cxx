@@ -19,8 +19,8 @@
 #include "pstring.h"
 #include "rt_study.h"
 #include "rtds_warp.h"
-#include "rtss.h"
 #include "rtss_structure_set.h"
+#include "segmentation.h"
 #include "simplify_points.h"
 #include "slice_index.h"
 #include "warp_parms.h"
@@ -118,7 +118,7 @@ save_ss_img (
     Warp_parms *parms
 )
 {
-    Rtss::Pointer rtss = rtds->get_rtss();
+    Segmentation::Pointer rtss = rtds->get_rtss();
 
     /* labelmap */
     if (parms->output_labelmap_fn.not_empty()) {
@@ -187,7 +187,7 @@ warp_and_save_ss (
         return;
     }
 
-    Rtss::Pointer rtss = rtds->get_rtss();
+    Segmentation::Pointer rtss = rtds->get_rtss();
 
     /* If we have need to create image outputs, or if we have to 
        warp something, then we need to rasterize the volume */
@@ -438,7 +438,7 @@ rtds_warp (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms)
 
     /* Preprocess structure sets */
     if (rtds->have_rtss()) {
-        Rtss::Pointer rtss = rtds->get_rtss();
+        Segmentation::Pointer rtss = rtds->get_rtss();
 
         /* Convert ss_img to cxt */
         lprintf ("Rt_study_warp: Convert ss_img to cxt.\n");

@@ -15,8 +15,8 @@
 #include "plm_image_header.h"
 #include "plm_math.h"
 #include "rt_study.h"
-#include "rtss.h"
 #include "rtss_structure_set.h"
+#include "segmentation.h"
 #include "synthetic_mha.h"
 
 static void 
@@ -802,7 +802,8 @@ synthetic_mha (
     rtds->set_image (pli);
     if (parms->m_want_ss_img) {
         /* Create rtss & set into rtds */
-        Rtss::Pointer rtss = Rtss::New (new Rtss (rtds));
+        Segmentation::Pointer rtss = Segmentation::New (
+            new Segmentation (rtds));
         rtds->set_rtss (rtss);
 
         /* Insert ss_image into rtss */

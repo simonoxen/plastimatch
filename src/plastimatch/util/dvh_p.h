@@ -9,12 +9,15 @@
 #include "itk_image_type.h"
 #include "dvh.h"
 
+class Plm_image;
+class Segmentation;
+
 class Dvh_private {
 public:
     Dvh_private ();
     ~Dvh_private ();
 public:
-    Rtss *rtss;
+    Segmentation *rtss;
     Plm_image *dose;
     enum Dvh::Dvh_units dose_units;
     enum Dvh::Dvh_normalization normalization;

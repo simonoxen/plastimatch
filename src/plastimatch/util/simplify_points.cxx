@@ -8,7 +8,6 @@
 #include "itk_pointset.h"
 #include "logfile.h"
 #include "rt_study.h"
-#include "rtss.h"
 #include "rtss_structure.h"
 #include "rtss_structure_set.h"
 #include "simplify_points.h"

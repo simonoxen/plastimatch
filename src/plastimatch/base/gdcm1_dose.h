@@ -8,7 +8,6 @@
 
 class Metadata;
 class Plm_image;
-class Rtss;
 class Slice_index;
 
 #if GDCM_VERSION_1

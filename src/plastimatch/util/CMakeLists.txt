@@ -48,7 +48,7 @@ set (PLMUTIL_LIBRARY_SRC
   rtds_dcmtk.cxx
   rtds_gdcm.cxx
   rtds_warp.cxx 
-  rtss.cxx
+  segmentation.cxx segmentation.h 
   sift.cxx
   simplify_points.cxx 
   slice_extract.cxx

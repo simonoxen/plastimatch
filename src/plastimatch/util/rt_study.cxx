@@ -18,8 +18,8 @@
 #include "print_and_exit.h"
 #include "rt_study.h"
 #include "rt_study_p.h"
-#include "rtss.h"
 #include "rtss_structure_set.h"
+#include "segmentation.h"
 #include "slice_index.h"
 #include "volume.h"
 #include "xio_ct.h"
@@ -91,7 +91,7 @@ Rt_study::load_dicom_rtss (const char *dicom_path)
 #if PLM_DCM_USE_DCMTK
     this->load_dcmtk (dicom_path);
 #elif GDCM_VERSION_1
-    d_ptr->m_rtss = Rtss::New (new Rtss (this));
+    d_ptr->m_rtss = Segmentation::New (new Segmentation (this));
     d_ptr->m_rtss->load_gdcm_rtss (dicom_path, d_ptr->m_slice_index);
 #else
     /* Do nothing */
@@ -179,7 +179,7 @@ Rt_study::load_xio (
     xio_ct_load (d_ptr->m_img.get(), &xst);
 
     /* Load the XiO studyset structure set */
-    d_ptr->m_rtss = Rtss::New (new Rtss (this));
+    d_ptr->m_rtss = Segmentation::New (new Segmentation (this));
     d_ptr->m_rtss->load_xio (xst);
 
     /* Apply XiO CT geometry to structures */
@@ -233,7 +233,7 @@ Rt_study::load_xio (
 void
 Rt_study::load_ss_img (const char *ss_img, const char *ss_list)
 {
-    d_ptr->m_rtss = Rtss::New (new Rtss (this));
+    d_ptr->m_rtss = Segmentation::New (new Segmentation (this));
     d_ptr->m_rtss->load (ss_img, ss_list);
 }
 
@@ -314,14 +314,14 @@ Rt_study::load_dose_mc (const char *dose_mc)
 void 
 Rt_study::load_cxt (const char *input_fn, Slice_index *rdd)
 {
-    d_ptr->m_rtss = Rtss::New (new Rtss (this));
+    d_ptr->m_rtss = Segmentation::New (new Segmentation (this));
     d_ptr->m_rtss->load_cxt (input_fn, rdd);
 }
 
 void 
 Rt_study::load_prefix (const char *input_fn)
 {
-    d_ptr->m_rtss = Rtss::New (new Rtss (this));
+    d_ptr->m_rtss = Segmentation::New (new Segmentation (this));
     d_ptr->m_rtss->load_prefix (input_fn);
 }
 
@@ -451,14 +451,14 @@ Rt_study::have_rtss ()
     return (bool) d_ptr->m_rtss;
 }
 
-Rtss::Pointer
+Segmentation::Pointer
 Rt_study::get_rtss ()
 {
     return d_ptr->m_rtss;
 }
 
 void 
-Rt_study::set_rtss (Rtss::Pointer rtss)
+Rt_study::set_rtss (Segmentation::Pointer rtss)
 {
     d_ptr->m_rtss = rtss;
 }

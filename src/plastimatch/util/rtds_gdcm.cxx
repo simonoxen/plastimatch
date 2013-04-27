@@ -14,7 +14,7 @@
 #include "plm_path.h"
 #include "rt_study.h"
 #include "rt_study_p.h"
-#include "rtss.h"
+#include "segmentation.h"
 
 void
 Rt_study::load_gdcm (const char *dicom_dir)
@@ -34,7 +34,7 @@ Rt_study::load_gdcm (const char *dicom_dir)
     }
     if (gdcm_series->m_rtstruct_file_list) {
 	const std::string& filename = gdcm_series->get_rtstruct_filename();
-	d_ptr->m_rtss = Rtss::New (new Rtss (this));
+	d_ptr->m_rtss = Segmentation::New (new Segmentation (this));
 	d_ptr->m_rtss->load_gdcm_rtss (filename.c_str(), d_ptr->m_slice_index);
     }
 #endif

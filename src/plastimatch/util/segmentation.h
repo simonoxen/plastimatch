@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _rtss_h_
-#define _rtss_h_
+#ifndef _segmentation_h_
+#define _segmentation_h_
 
 #include "plmutil_config.h"
 
@@ -15,7 +15,7 @@
 class Plm_image;
 class Plm_image_header;
 class Rt_study;
-class Rtss_private;
+class Segmentation_private;
 class Rtss_structure_set;
 class Rtss_structure;
 class Slice_index;
@@ -23,15 +23,15 @@ class Xform;
 class Xio_ct_transform;
 class Warp_parms;
 
-class PLMUTIL_API Rtss {
+class PLMUTIL_API Segmentation {
 public:
-    SMART_POINTER_SUPPORT (Rtss);
+    SMART_POINTER_SUPPORT (Segmentation);
 public:
-    Rtss_private *d_ptr;
+    Segmentation_private *d_ptr;
 
 public:
-    Rtss (Rt_study *rtds = 0);
-    ~Rtss ();
+    Segmentation (Rt_study *rtds = 0);
+    ~Segmentation ();
 
     void clear ();
     void load (const char *ss_img, const char *ss_list);

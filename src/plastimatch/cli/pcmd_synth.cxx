@@ -13,7 +13,6 @@
 #include "plm_math.h"
 #include "pstring.h"
 #include "rt_study.h"
-#include "rtss.h"
 #include "synthetic_mha.h"
 
 typedef struct synthetic_mha_main_parms Synthetic_mha_main_parms;

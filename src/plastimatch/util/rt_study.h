@@ -9,7 +9,7 @@
 #include "itk_image_type.h"
 #include "plm_image.h"
 #include "plm_image_type.h"
-#include "rtss.h"
+#include "segmentation.h"
 
 class Metadata;
 class Plm_image;
@@ -70,8 +70,8 @@ public:
     void set_dose (Volume *vol);
 
     bool have_rtss ();
-    Rtss::Pointer get_rtss ();
-    void set_rtss (Rtss::Pointer rtss);
+    Segmentation::Pointer get_rtss ();
+    void set_rtss (Segmentation::Pointer rtss);
 
     const std::string& get_xio_dose_filename () const;
     Xio_ct_transform* get_xio_ct_transform ();

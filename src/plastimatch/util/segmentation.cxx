@@ -26,9 +26,9 @@
 #include "pstring.h"
 #include "rasterizer.h"
 #include "rt_study.h"
-#include "rtss.h"
 #include "rtss_structure.h"
 #include "rtss_structure_set.h"
+#include "segmentation.h"
 #include "slice_index.h"
 #include "ss_list_io.h"
 #include "ss_img_extract.h"
@@ -36,7 +36,7 @@
 #include "warp_parms.h"
 #include "xio_structures.h"
 
-class Rtss_private {
+class Segmentation_private {
 public:
     Metadata *m_meta;           /* Metadata specific to this ss_image */
     Plm_image *m_labelmap;      /* Structure set lossy bitmap form */
@@ -44,12 +44,12 @@ public:
     Rtss_structure_set::Pointer m_cxt;  /* Structure set in polyline form */
 
 public:
-    Rtss_private () {
+    Segmentation_private () {
         m_meta = new Metadata;
         m_labelmap = 0;
         m_ss_img = 0;
     }
-    ~Rtss_private () {
+    ~Segmentation_private () {
         delete m_meta;
     }
 };
@@ -68,16 +68,16 @@ compose_prefix_fn (
         extension);
 }
 
-Rtss::Rtss (Rt_study *rtds)
+Segmentation::Segmentation (Rt_study *rtds)
 {
-    this->d_ptr = new Rtss_private;
+    this->d_ptr = new Segmentation_private;
 
     if (rtds) {
         d_ptr->m_meta->set_parent (rtds->get_metadata());
     }
 }
 
-Rtss::~Rtss ()
+Segmentation::~Segmentation ()
 {
     clear ();
 
@@ -85,7 +85,7 @@ Rtss::~Rtss ()
 }
 
 void
-Rtss::clear ()
+Segmentation::clear ()
 {
     if (d_ptr->m_cxt) {
         d_ptr->m_cxt.reset();
@@ -101,7 +101,7 @@ Rtss::clear ()
 }
 
 void
-Rtss::load (const char *ss_img, const char *ss_list)
+Segmentation::load (const char *ss_img, const char *ss_list)
 {
     /* Load ss_img */
     if (d_ptr->m_ss_img) {
@@ -122,14 +122,14 @@ Rtss::load (const char *ss_img, const char *ss_list)
 }
 
 void
-Rtss::load_prefix (const char *prefix_dir)
+Segmentation::load_prefix (const char *prefix_dir)
 {
     Pstring pd = prefix_dir;
     this->load_prefix (pd);
 }
 
 void
-Rtss::load_prefix (const Pstring &prefix_dir)
+Segmentation::load_prefix (const Pstring &prefix_dir)
 {
     /* Clear out any existing structures */
     this->clear ();
@@ -265,14 +265,14 @@ Rtss::load_prefix (const Pstring &prefix_dir)
 }
 
 void
-Rtss::load_cxt (const Pstring &input_fn, Slice_index *rdd)
+Segmentation::load_cxt (const Pstring &input_fn, Slice_index *rdd)
 {
     d_ptr->m_cxt = Rtss_structure_set::New();
     cxt_load (d_ptr->m_cxt.get(), d_ptr->m_meta, rdd, (const char*) input_fn);
 }
 
 void
-Rtss::load_gdcm_rtss (const char *input_fn, Slice_index *rdd)
+Segmentation::load_gdcm_rtss (const char *input_fn, Slice_index *rdd)
 {
 #if GDCM_VERSION_1
     d_ptr->m_cxt = Rtss_structure_set::New();
@@ -281,7 +281,7 @@ Rtss::load_gdcm_rtss (const char *input_fn, Slice_index *rdd)
 }
 
 void
-Rtss::load_xio (const Xio_studyset& studyset)
+Segmentation::load_xio (const Xio_studyset& studyset)
 {
     d_ptr->m_cxt = Rtss_structure_set::New();
     printf ("calling xio_structures_load\n");
@@ -289,7 +289,7 @@ Rtss::load_xio (const Xio_studyset& studyset)
 }
 
 size_t
-Rtss::get_num_structures ()
+Segmentation::get_num_structures ()
 {
     if (d_ptr->m_cxt) {
         return d_ptr->m_cxt->num_structures;
@@ -298,7 +298,7 @@ Rtss::get_num_structures ()
 }
 
 std::string
-Rtss::get_structure_name (size_t index)
+Segmentation::get_structure_name (size_t index)
 {
     if (d_ptr->m_cxt) {
         return d_ptr->m_cxt->get_structure_name (index);
@@ -307,7 +307,7 @@ Rtss::get_structure_name (size_t index)
 }
 
 UCharImageType::Pointer
-Rtss::get_structure_image (int index)
+Segmentation::get_structure_image (int index)
 {
     if (!d_ptr->m_ss_img) {
         print_and_exit (
@@ -333,13 +333,13 @@ Rtss::get_structure_image (int index)
 }
 
 void
-Rtss::save_colormap (const Pstring &colormap_fn)
+Segmentation::save_colormap (const Pstring &colormap_fn)
 {
     ss_list_save_colormap (d_ptr->m_cxt.get(), (const char*) colormap_fn);
 }
 
 void
-Rtss::save_cxt (
+Segmentation::save_cxt (
     Slice_index *rdd, 
     const Pstring &cxt_fn, 
     bool prune_empty
@@ -350,7 +350,7 @@ Rtss::save_cxt (
 }
 
 void
-Rtss::save_gdcm_rtss (
+Segmentation::save_gdcm_rtss (
     const char *output_dir, 
     Slice_index *rdd
 )
@@ -380,7 +380,7 @@ Rtss::save_gdcm_rtss (
 }
 
 void
-Rtss::save_fcsv (
+Segmentation::save_fcsv (
     const Rtss_structure *curr_structure, 
     const Pstring& fn
 )
@@ -399,7 +399,7 @@ Rtss::save_fcsv (
 }
 
 void
-Rtss::save_prefix_fcsv (const Pstring &output_prefix)
+Segmentation::save_prefix_fcsv (const Pstring &output_prefix)
 {
     if (!d_ptr->m_cxt) {
         print_and_exit (
@@ -417,7 +417,7 @@ Rtss::save_prefix_fcsv (const Pstring &output_prefix)
 }
 
 void
-Rtss::save_ss_image (const Pstring &ss_img_fn)
+Segmentation::save_ss_image (const Pstring &ss_img_fn)
 {
     if (!d_ptr->m_ss_img) {
         print_and_exit (
@@ -441,13 +441,13 @@ Rtss::save_ss_image (const Pstring &ss_img_fn)
 }
 
 void
-Rtss::save_labelmap (const Pstring &labelmap_fn)
+Segmentation::save_labelmap (const Pstring &labelmap_fn)
 {
     d_ptr->m_labelmap->save_image ((const char*) labelmap_fn);
 }
 
 void
-Rtss::save_prefix (const std::string &output_prefix,
+Segmentation::save_prefix (const std::string &output_prefix,
     const std::string& extension)
 {
     if (!d_ptr->m_ss_img) {
@@ -478,7 +478,7 @@ Rtss::save_prefix (const std::string &output_prefix,
 
 /* GCS FIX: This is obsolete, and should invoke the above function */
 void
-Rtss::save_prefix (const Pstring &output_prefix)
+Segmentation::save_prefix (const Pstring &output_prefix)
 {
     if (!d_ptr->m_ss_img) {
         return;
@@ -504,20 +504,20 @@ Rtss::save_prefix (const Pstring &output_prefix)
 }
 
 void
-Rtss::save_prefix (const char *output_prefix)
+Segmentation::save_prefix (const char *output_prefix)
 {
     Pstring op = output_prefix;
     this->save_prefix (op);
 }
 
 void
-Rtss::save_ss_list (const Pstring &ss_list_fn)
+Segmentation::save_ss_list (const Pstring &ss_list_fn)
 {
     ss_list_save (d_ptr->m_cxt.get(), (const char*) ss_list_fn);
 }
 
 void
-Rtss::save_xio (Xio_ct_transform *xio_transform, Xio_version xio_version, 
+Segmentation::save_xio (Xio_ct_transform *xio_transform, Xio_version xio_version, 
     const Pstring &output_dir)
 {
     xio_structures_save (d_ptr->m_cxt.get(), d_ptr->m_meta, xio_transform,
@@ -525,7 +525,7 @@ Rtss::save_xio (Xio_ct_transform *xio_transform, Xio_version xio_version,
 }
 
 UInt32ImageType::Pointer
-Rtss::get_ss_img_uint32 (void)
+Segmentation::get_ss_img_uint32 (void)
 {
     if (!d_ptr->m_ss_img) {
         print_and_exit ("Sorry, can't get_ss_img()\n");
@@ -535,7 +535,7 @@ Rtss::get_ss_img_uint32 (void)
 }
 
 UCharVecImageType::Pointer
-Rtss::get_ss_img_uchar_vec (void)
+Segmentation::get_ss_img_uchar_vec (void)
 {
     if (!d_ptr->m_ss_img) {
         print_and_exit ("Sorry, can't get_ss_img()\n");
@@ -545,7 +545,7 @@ Rtss::get_ss_img_uchar_vec (void)
 }
 
 void
-Rtss::apply_dicom_dir (const Slice_index *rdd)
+Segmentation::apply_dicom_dir (const Slice_index *rdd)
 {
     if (!d_ptr->m_cxt) {
         return;
@@ -559,7 +559,7 @@ Rtss::apply_dicom_dir (const Slice_index *rdd)
 }
 
 void
-Rtss::convert_ss_img_to_cxt (void)
+Segmentation::convert_ss_img_to_cxt (void)
 {
     /* Only convert if ss_img found */
     if (!d_ptr->m_ss_img) {
@@ -602,7 +602,7 @@ Rtss::convert_ss_img_to_cxt (void)
 }
 
 void
-Rtss::convert_to_uchar_vec (void)
+Segmentation::convert_to_uchar_vec (void)
 {
     if (!d_ptr->m_ss_img) {
         print_and_exit (
@@ -612,7 +612,7 @@ Rtss::convert_to_uchar_vec (void)
 }
 
 void
-Rtss::cxt_re_extract (void)
+Segmentation::cxt_re_extract (void)
 {
     d_ptr->m_cxt->free_all_polylines ();
     if (d_ptr->m_ss_img->m_type == PLM_IMG_TYPE_GPUIT_UCHAR_VEC
@@ -630,7 +630,7 @@ Rtss::cxt_re_extract (void)
 }
 
 void
-Rtss::prune_empty (void)
+Segmentation::prune_empty (void)
 {
     if (d_ptr->m_cxt) {
         d_ptr->m_cxt->prune_empty ();
@@ -638,7 +638,7 @@ Rtss::prune_empty (void)
 }
 
 void
-Rtss::rasterize (
+Segmentation::rasterize (
     Plm_image_header *pih,
     bool want_labelmap,
     bool xor_overlapping
@@ -682,7 +682,7 @@ Rtss::rasterize (
 }
 
 void
-Rtss::set_geometry (const Plm_image_header *pih)
+Segmentation::set_geometry (const Plm_image_header *pih)
 {
     if (d_ptr->m_cxt) {
         d_ptr->m_cxt->set_geometry (pih);
@@ -690,7 +690,7 @@ Rtss::set_geometry (const Plm_image_header *pih)
 }
 
 void
-Rtss::find_rasterization_geometry (Plm_image_header *pih)
+Segmentation::find_rasterization_geometry (Plm_image_header *pih)
 {
     if (d_ptr->m_cxt) {
         d_ptr->m_cxt->find_rasterization_geometry (pih);
@@ -698,7 +698,7 @@ Rtss::find_rasterization_geometry (Plm_image_header *pih)
 }
 
 void
-Rtss::warp (
+Segmentation::warp (
     Xform *xf, 
     Plm_image_header *pih, 
     bool use_itk)
@@ -727,7 +727,7 @@ Rtss::warp (
 }
 
 void
-Rtss::warp (
+Segmentation::warp (
     Xform *xf, 
     Plm_image_header *pih, 
     Warp_parms *parms)
@@ -736,13 +736,13 @@ Rtss::warp (
 }
 
 bool
-Rtss::have_ss_img ()
+Segmentation::have_ss_img ()
 {
     return d_ptr->m_ss_img != 0;
 }
 
 void
-Rtss::set_ss_img (UCharImageType::Pointer ss_img)
+Segmentation::set_ss_img (UCharImageType::Pointer ss_img)
 {
     if (d_ptr->m_ss_img) {
         delete d_ptr->m_ss_img;
@@ -752,38 +752,38 @@ Rtss::set_ss_img (UCharImageType::Pointer ss_img)
 }
 
 Plm_image*
-Rtss::get_ss_img ()
+Segmentation::get_ss_img ()
 {
     return d_ptr->m_ss_img;
 }
 
 bool
-Rtss::have_structure_set ()
+Segmentation::have_structure_set ()
 {
     return d_ptr->m_cxt != 0;
 }
 
 
 Rtss_structure_set::Pointer
-Rtss::get_structure_set ()
+Segmentation::get_structure_set ()
 {
     return d_ptr->m_cxt;
 }
 
 Rtss_structure_set *
-Rtss::get_structure_set_raw ()
+Segmentation::get_structure_set_raw ()
 {
     return d_ptr->m_cxt.get();
 }
 
 void
-Rtss::set_structure_set (Rtss_structure_set::Pointer rtss_ss)
+Segmentation::set_structure_set (Rtss_structure_set::Pointer rtss_ss)
 {
     d_ptr->m_cxt = rtss_ss;
 }
 
 void
-Rtss::set_structure_set (Rtss_structure_set *rtss_ss)
+Segmentation::set_structure_set (Rtss_structure_set *rtss_ss)
 {
     d_ptr->m_cxt.reset (rtss_ss);
 }

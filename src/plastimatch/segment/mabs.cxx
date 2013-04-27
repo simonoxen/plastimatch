@@ -29,8 +29,8 @@
 #include "registration_data.h"
 #include "registration_parms.h"
 #include "rt_study.h"
-#include "rtss.h"
 #include "rtss_structure_set.h"
+#include "segmentation.h"
 #include "string_util.h"
 #include "xform.h"
 
@@ -187,7 +187,7 @@ void
 Mabs_private::extract_reference_image (const std::string& mapped_name)
 {
     this->have_ref_structure = false;
-    Rtss::Pointer rtss = this->ref_rtds.get_rtss();
+    Segmentation::Pointer rtss = this->ref_rtds.get_rtss();
     if (!rtss) {
         return;
     }
@@ -374,7 +374,7 @@ Mabs::prep (const std::string& input_dir, const std::string& output_dir)
 
     /* Remove structures which are not part of the atlas */
     timer.start();
-    Rtss::Pointer rtss = rtds.get_rtss();
+    Segmentation::Pointer rtss = rtds.get_rtss();
     rtss->prune_empty ();
     Rtss_structure_set *cxt = rtss->get_structure_set_raw ();
     for (size_t i = 0; i < rtss->get_num_structures(); i++) {
@@ -495,7 +495,7 @@ Mabs::run_registration ()
         /* Inspect the structures -- we might be able to skip the 
            atlas if it has no relevant structures */
         bool can_skip = true;
-        Rtss::Pointer rtss = rtds.get_rtss();
+        Segmentation::Pointer rtss = rtds.get_rtss();
         for (size_t i = 0; i < rtss->get_num_structures(); i++) {
             std::string ori_name = rtss->get_structure_name (i);
             std::string mapped_name = d_ptr->map_structure_name (ori_name);

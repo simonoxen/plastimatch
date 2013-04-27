@@ -8,12 +8,16 @@ as a "RT Structure Set".  The image associated with the structures
 is called a "Contour Image Sequence".  A single structure is 
 called an "ROI".  A single polyline is called an "ROI Contour".
 
-Proposed names (polyline formats)
+Proposed names (polyline types)
 
-  - Contour               replaces Rtss_polyline
+  - Rtss_contour          replaces Rtss_polyline
   - Rtss_roi              replaces Rtss_structure
   - Rtss                  replaces Rtss_structure_set
-  - Segmentation_set      replaces Rtss
+
+Proposed names (image & polymorphic types)
+
+  - Segmentation          replaces Rtss
+  - Segmentation_image    replaces Ss_img
 
 
 ***** Smart pointers part 3 *****
