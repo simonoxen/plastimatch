@@ -10,13 +10,15 @@
 #include "file_util.h"
 #include "plm_math.h"
 #include "pstring.h"
+#include "rtss.h"
 #include "rtss_roi.h"
-#include "rtss_structure_set.h"
 #include "slice_index.h"
+
+#define CXT_BUFLEN 2048
 
 void
 cxt_load (
-    Rtss_structure_set *cxt,         /* Output: load into this object */
+    Rtss *cxt,         /* Output: load into this object */
     Metadata *meta,                  /* Output: load into this object */
     Slice_index *rdd,                /* Output: Also set some values here */
     const char *cxt_fn               /* Input: file to load from */
@@ -259,7 +261,7 @@ not_successful:
 
 void
 cxt_save (
-    Rtss_structure_set *cxt,    /* Input: load into this object */
+    Rtss *cxt,    /* Input: load into this object */
     Metadata *meta,             /* Input: load into this object */
     Slice_index *rdd,           /* Input: Also save some values from here */
     const char* cxt_fn,         /* Input: File to save to */

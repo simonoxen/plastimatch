@@ -19,7 +19,7 @@
 #include "pstring.h"
 #include "rt_study.h"
 #include "rtds_warp.h"
-#include "rtss_structure_set.h"
+#include "rtss.h"
 #include "segmentation.h"
 #include "simplify_points.h"
 #include "slice_index.h"
@@ -211,7 +211,7 @@ warp_and_save_ss (
            geometry.
         */
         Plm_image_header pih;
-        Rtss_structure_set *cxt = rtss->get_structure_set_raw ();
+        Rtss *cxt = rtss->get_structure_set_raw ();
         if (parms->xf_in_fn.not_empty()) {
             pih.set_from_gpuit (cxt->rast_dim, cxt->rast_offset, 
                 cxt->rast_spacing, 0);

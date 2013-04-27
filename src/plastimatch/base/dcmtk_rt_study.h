@@ -12,7 +12,7 @@
 #include "plm_image.h"
 #include "plm_int.h"
 #include "pstring.h"
-#include "rtss_structure_set.h"
+#include "rtss.h"
 #include "volume.h"
 
 class Dcmtk_rt_study_private;
@@ -43,8 +43,8 @@ public:
     Volume::Pointer get_image_volume_float ();
     void set_image (Plm_image::Pointer image);
 
-    Rtss_structure_set::Pointer get_rtss ();
-    void set_rtss (Rtss_structure_set::Pointer rtss);
+    Rtss::Pointer get_rtss ();
+    void set_rtss (Rtss::Pointer rtss);
 
     Plm_image::Pointer get_dose ();
     void set_dose (Plm_image::Pointer image);

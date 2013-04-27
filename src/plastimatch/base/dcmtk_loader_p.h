@@ -10,7 +10,7 @@
 #include "dcmtk_series.h"
 #include "dicom_rt_study.h"
 #include "plm_image.h"
-#include "rtss_structure_set.h"
+#include "rtss.h"
 
 class Dcmtk_rt_study;
 
@@ -24,7 +24,7 @@ public:
 
     Plm_image::Pointer img;
     Plm_image::Pointer dose;
-    Rtss_structure_set::Pointer cxt;
+    Rtss::Pointer cxt;
 
 public:
     Dcmtk_series_map m_smap;

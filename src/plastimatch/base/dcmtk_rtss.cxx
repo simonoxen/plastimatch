@@ -25,8 +25,8 @@
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "print_and_exit.h"
+#include "rtss.h"
 #include "rtss_roi.h"
-#include "rtss_structure_set.h"
 
 PLMBASE_C_API bool 
 dcmtk_rtss_probe (const char *rtss_fn)
@@ -55,7 +55,7 @@ void
 Dcmtk_loader::rtss_load (void)
 {
     Dcmtk_series *ds_rtss = d_ptr->ds_rtss;
-    d_ptr->cxt = Rtss_structure_set::New();
+    d_ptr->cxt = Rtss::New();
 
     /* Modality -- better be RTSTRUCT */
     std::string modality = ds_rtss->get_modality();
@@ -239,7 +239,7 @@ void
 Dcmtk_rt_study::save_rtss (const char *dicom_dir)
 {
     OFCondition ofc;
-    Rtss_structure_set::Pointer& cxt = d_ptr->cxt;
+    Rtss::Pointer& cxt = d_ptr->cxt;
     const Metadata *rtss_metadata = 0;
     if (d_ptr->dicom_metadata) {
         rtss_metadata = d_ptr->dicom_metadata->get_rtss_metadata ();

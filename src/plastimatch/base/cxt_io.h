@@ -8,20 +8,20 @@
 
 class Metadata;
 class Slice_index;
-class Rtss_structure_set;
+class Rtss;
 
-PLMBASE_C_API Rtss_structure_set* cxt_load_ss_list (
-        Rtss_structure_set* cxt,
+PLMBASE_C_API Rtss* cxt_load_ss_list (
+        Rtss* cxt,
         const char* xorlist_fn
 );
 PLMBASE_C_API void cxt_load (
-    Rtss_structure_set *cxt,         /* Output: load into this object */
+    Rtss *cxt,         /* Output: load into this object */
     Metadata *meta,                  /* Output: load into this object */
     Slice_index *rdd,                /* Output: Also set some values here */
     const char *cxt_fn               /* Input: file to load from */
 );
 PLMBASE_C_API void cxt_save (
-    Rtss_structure_set *cxt,    /* Output: load into this object */
+    Rtss *cxt,    /* Output: load into this object */
     Metadata *meta,             /* Output: load into this object */
     Slice_index *rdd,           /* Input: Also save some values from here */
     const char* cxt_fn,         /* Input: File to save to */

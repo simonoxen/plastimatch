@@ -20,6 +20,7 @@
 #include "file_util.h"
 #include "plm_image.h"
 #include "print_and_exit.h"
+#include "rtss.h"
 
 Dcmtk_loader::Dcmtk_loader ()
 {
@@ -169,7 +170,7 @@ Dcmtk_loader::get_image ()
     return d_ptr->img;
 }
 
-Rtss_structure_set::Pointer
+Rtss::Pointer
 Dcmtk_loader::get_rtss ()
 {
     return d_ptr->cxt;

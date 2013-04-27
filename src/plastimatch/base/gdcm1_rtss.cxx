@@ -21,7 +21,7 @@
 #include "plm_version.h"
 #include "print_and_exit.h"
 #include "rtss_roi.h"
-#include "rtss_structure_set.h"
+#include "rtss.h"
 #include "slice_index.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */
@@ -53,7 +53,7 @@ gdcm_rtss_probe (const char *rtss_fn)
 
 void
 gdcm_rtss_load (
-    Rtss_structure_set *cxt,   /* Output: this gets loaded into */
+    Rtss *cxt,   /* Output: this gets loaded into */
     Metadata *meta,            /* Output: this gets updated too */
     Slice_index *rdd,          /* Output: this gets updated too */
     const char *rtss_fn        /* Input: the file that gets read */
@@ -313,7 +313,7 @@ plm_ComputeGroup0002Length (gdcm::File *gf)
 
 void
 gdcm_rtss_save (
-    Rtss_structure_set *cxt,   /* Input: this is what gets saved */
+    Rtss *cxt,   /* Input: this is what gets saved */
     Metadata *meta,            /* Input: need to look at this too */
     Slice_index *rdd,          /* Input: need to look at this too */
     char *rtss_fn              /* Input: name of file to write to */

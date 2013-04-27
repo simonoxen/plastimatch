@@ -9,7 +9,7 @@
 #include <string>
 #include "dicom_rt_study.h"
 #include "plm_image.h"
-#include "rtss_structure_set.h"
+#include "rtss.h"
 
 class Dcmtk_loader_private;
 class Dcmtk_series;
@@ -34,7 +34,7 @@ public:
     Volume *get_volume ();
 
     Plm_image::Pointer get_image ();
-    Rtss_structure_set::Pointer get_rtss ();
+    Rtss::Pointer get_rtss ();
     Plm_image::Pointer get_dose ();
 
     void load_rtss (void);

@@ -16,6 +16,7 @@
 #include "dicom_rt_study.h"
 #include "plm_image.h"
 #include "plm_version.h"
+#include "rtss.h"
 #include "smart_pointer.h"
 #include "volume.h"
 
@@ -107,14 +108,14 @@ Dcmtk_rt_study::set_image (Plm_image::Pointer image)
     d_ptr->img = image;
 }
 
-Rtss_structure_set::Pointer
+Rtss::Pointer
 Dcmtk_rt_study::get_rtss ()
 {
     return d_ptr->cxt;
 }
 
 void 
-Dcmtk_rt_study::set_rtss (Rtss_structure_set::Pointer rtss)
+Dcmtk_rt_study::set_rtss (Rtss::Pointer rtss)
 {
     d_ptr->cxt = rtss;
 }

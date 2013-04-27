@@ -38,7 +38,7 @@ Dcmtk_save::set_rt_study (Dicom_rt_study *drs)
     d_ptr->m_drs = drs;
 }
 
-void Dcmtk_save::set_cxt (Rtss_structure_set *cxt)
+void Dcmtk_save::set_cxt (Rtss *cxt)
 {
     this->cxt = cxt;
 }

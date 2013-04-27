@@ -15,7 +15,7 @@
 #include "plm_image_header.h"
 #include "plm_math.h"
 #include "rt_study.h"
-#include "rtss_structure_set.h"
+#include "rtss.h"
 #include "segmentation.h"
 #include "synthetic_mha.h"
 
@@ -810,7 +810,7 @@ synthetic_mha (
         rtss->set_ss_img (ss_img);
 
         /* Insert structure set into rtss */
-        Rtss_structure_set *rtss_ss = new Rtss_structure_set;
+        Rtss *rtss_ss = new Rtss;
         rtss->set_structure_set (rtss_ss);
 
         /* Add structure names */

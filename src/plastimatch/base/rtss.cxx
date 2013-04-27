@@ -14,7 +14,7 @@
 #include "plm_math.h"
 #include "pstring.h"
 #include "rtss_roi.h"
-#include "rtss_structure_set.h"
+#include "rtss.h"
 #include "slice_index.h"
 #include "slice_list.h"
 
@@ -56,18 +56,18 @@ assign_random_color (Pstring& color)
 
 #define SPACING_TOL 0.2    /* How close you need to be to be on the slice */
 
-Rtss_structure_set::Rtss_structure_set ()
+Rtss::Rtss ()
 {
     this->init ();
 }
 
-Rtss_structure_set::~Rtss_structure_set ()
+Rtss::~Rtss ()
 {
     this->clear ();
 }
 
 void
-Rtss_structure_set::init (void)
+Rtss::init (void)
 {
     this->have_geometry = 0;
     this->num_structures = 0;
@@ -75,7 +75,7 @@ Rtss_structure_set::init (void)
 }
 
 void
-Rtss_structure_set::clear (void)
+Rtss::clear (void)
 {
     for (size_t i = 0; i < this->num_structures; i++) {
 	delete (this->slist[i]);
@@ -86,7 +86,7 @@ Rtss_structure_set::clear (void)
 }
 
 Pstring
-Rtss_structure_set::find_unused_structure_name (void)
+Rtss::find_unused_structure_name (void)
 {
     Pstring test_name;
     for (int n = 1; n < std::numeric_limits<int>::max(); ++n) {
@@ -109,7 +109,7 @@ Rtss_structure_set::find_unused_structure_name (void)
 
 /* Add structure (if it doesn't already exist) */
 Rtss_roi*
-Rtss_structure_set::add_structure (
+Rtss::add_structure (
     const Pstring& structure_name, 
     const Pstring& color, 
     int structure_id,
@@ -148,7 +148,7 @@ Rtss_structure_set::add_structure (
 }
 
 void
-Rtss_structure_set::delete_structure (int index)
+Rtss::delete_structure (int index)
 {
     Rtss_roi* curr_structure = this->slist[index];
     delete curr_structure;
@@ -161,7 +161,7 @@ Rtss_structure_set::delete_structure (int index)
 }
 
 Rtss_roi*
-Rtss_structure_set::find_structure_by_id (int structure_id)
+Rtss::find_structure_by_id (int structure_id)
 {
     for (size_t i = 0; i < this->num_structures; i++) {
 	Rtss_roi* curr_structure;
@@ -174,7 +174,7 @@ Rtss_structure_set::find_structure_by_id (int structure_id)
 }
 
 std::string
-Rtss_structure_set::get_structure_name (size_t index)
+Rtss::get_structure_name (size_t index)
 {
     if (index < this->num_structures) {
         return std::string (this->slist[index]->name.c_str());
@@ -184,7 +184,7 @@ Rtss_structure_set::get_structure_name (size_t index)
 }
 
 void
-Rtss_structure_set::debug (void)
+Rtss::debug (void)
 {
     Rtss_roi* curr_structure;
 
@@ -227,7 +227,7 @@ Rtss_structure_set::debug (void)
 }
 
 void
-Rtss_structure_set::adjust_structure_names (void)
+Rtss::adjust_structure_names (void)
 {
     Rtss_roi* curr_structure;
 
@@ -250,7 +250,7 @@ Rtss_structure_set::adjust_structure_names (void)
 }
 
 void
-Rtss_structure_set::prune_empty (void)
+Rtss::prune_empty (void)
 {
     for (size_t i = 0; i < this->num_structures; i++) {
 	Rtss_roi* curr_structure;
@@ -268,17 +268,17 @@ Rtss_structure_set::prune_empty (void)
 }
 
 /* Copy structure name, id, color, but not contents */
-Rtss_structure_set*
-Rtss_structure_set::clone_empty (
-    Rtss_structure_set* cxt_out,
-    Rtss_structure_set* cxt_in
+Rtss*
+Rtss::clone_empty (
+    Rtss* cxt_out,
+    Rtss* cxt_in
 )
 {
     /* Initialize output cxt */
     if (cxt_out) {
 	cxt_out->clear ();
     } else {
-	cxt_out = new Rtss_structure_set;
+	cxt_out = new Rtss;
     }
 
     for (size_t i = 0; i < cxt_in->num_structures; i++) {
@@ -294,7 +294,7 @@ Rtss_structure_set::clone_empty (
 
 /* Clear the polylines, but keep structure name, id, color */
 void
-Rtss_structure_set::free_all_polylines (void)
+Rtss::free_all_polylines (void)
 {
     for (size_t i = 0; i < this->num_structures; i++) {
 	Rtss_roi *curr_structure = this->slist[i];
@@ -309,7 +309,7 @@ Rtss_structure_set::free_all_polylines (void)
 }
 
 void
-Rtss_structure_set::find_rasterization_geometry (
+Rtss::find_rasterization_geometry (
     float offset[3],
     float spacing[3],
     plm_long dims[3]
@@ -415,7 +415,7 @@ Rtss_structure_set::find_rasterization_geometry (
 }
 
 void
-Rtss_structure_set::find_rasterization_geometry (Plm_image_header *pih)
+Rtss::find_rasterization_geometry (Plm_image_header *pih)
 {
     /* use some generic default parameters */
     plm_long dim[3];
@@ -428,7 +428,7 @@ Rtss_structure_set::find_rasterization_geometry (Plm_image_header *pih)
 }
 
 void
-Rtss_structure_set::set_rasterization_geometry (void)
+Rtss::set_rasterization_geometry (void)
 {
     this->find_rasterization_geometry (
 	this->rast_offset,
@@ -446,7 +446,7 @@ Rtss_structure_set::set_rasterization_geometry (void)
 }
 
 void
-Rtss_structure_set::apply_slice_index (const Slice_index *rdd)
+Rtss::apply_slice_index (const Slice_index *rdd)
 {
     /* Geometry */
     for (int d = 0; d < 3; d++) {
@@ -472,7 +472,7 @@ Rtss_structure_set::apply_slice_index (const Slice_index *rdd)
 }
 
 void
-Rtss_structure_set::apply_slice_list (const Slice_list *slice_list)
+Rtss::apply_slice_list (const Slice_list *slice_list)
 {
     if (!slice_list->slice_list_complete()) {
         return;
@@ -509,7 +509,7 @@ Rtss_structure_set::apply_slice_list (const Slice_list *slice_list)
 }
 
 void
-Rtss_structure_set::fix_polyline_slice_numbers (void)
+Rtss::fix_polyline_slice_numbers (void)
 {
     if (!this->have_geometry) return;
 
@@ -534,7 +534,7 @@ Rtss_structure_set::fix_polyline_slice_numbers (void)
 }
 
 void
-Rtss_structure_set::set_geometry (
+Rtss::set_geometry (
     const Plm_image_header *pih
 )
 {
@@ -547,7 +547,7 @@ Rtss_structure_set::set_geometry (
 }
 
 void
-Rtss_structure_set::set_geometry (
+Rtss::set_geometry (
     const Plm_image *pli
 )
 {
@@ -557,7 +557,7 @@ Rtss_structure_set::set_geometry (
 }
 
 void
-Rtss_structure_set::keyholize (void)
+Rtss::keyholize (void)
 {
 #if defined (PLM_CONFIG_KEYHOLIZE)
     printf ("Keyholizing...\n");

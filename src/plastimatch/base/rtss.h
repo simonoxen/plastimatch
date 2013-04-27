@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _rtss_structure_set_h_
-#define _rtss_structure_set_h_
+#ifndef _rtss_h_
+#define _rtss_h_
 
 #include "plmbase_config.h"
 #include <list>
@@ -18,11 +18,9 @@ class Rtss_roi;
 class Slice_index;
 class Slice_list;
 
-#define CXT_BUFLEN 2048
-
-class PLMBASE_API Rtss_structure_set {
+class PLMBASE_API Rtss {
 public:
-    SMART_POINTER_SUPPORT (Rtss_structure_set);
+    SMART_POINTER_SUPPORT (Rtss);
 public:
     /* Output geometry */
     int have_geometry;
@@ -37,8 +35,8 @@ public:
     size_t num_structures;
     Rtss_roi **slist;
 public:
-    Rtss_structure_set ();
-    ~Rtss_structure_set ();
+    Rtss ();
+    ~Rtss ();
     void init (void);
     void clear (void);
     Rtss_roi* add_structure (
@@ -53,8 +51,8 @@ public:
     void adjust_structure_names (void);
     void prune_empty (void);
     static 
-    Rtss_structure_set* clone_empty (Rtss_structure_set* cxt_out, 
-	Rtss_structure_set* cxt_in);
+    Rtss* clone_empty (Rtss* cxt_out, 
+	Rtss* cxt_in);
     void find_default_geometry (Plm_image_header *pih);
     void find_rasterization_geometry (float offset[3], 
 	float spacing[3], plm_long dims[3]);

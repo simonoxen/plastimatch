@@ -10,7 +10,7 @@ class Dcmtk_save_private;
 class Dicom_rt_study;
 class Metadata;
 class Plm_image;
-class Rtss_structure_set;
+class Rtss;
 class Volume;
 
 class
@@ -19,16 +19,16 @@ public:
     Dcmtk_save ();
     ~Dcmtk_save ();
 public:
-//    void set_cxt (Rtss_structure_set *cxt, Metadata *meta = 0);
+//    void set_cxt (Rtss *cxt, Metadata *meta = 0);
     void set_rt_study (Dicom_rt_study *drs);
-    void set_cxt (Rtss_structure_set *cxt);
+    void set_cxt (Rtss *cxt);
     void set_dose (Volume *vol);
     void set_dose (Volume *vol, Metadata *meta);
     void set_image (Plm_image* img);
 public:
     Dcmtk_save_private *d_ptr;
 public:
-    Rtss_structure_set *cxt;
+    Rtss *cxt;
     Volume *dose;
     Plm_image* img;
 public:

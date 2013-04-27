@@ -73,7 +73,7 @@ set (PLMBASE_LIBRARY_SRC
   ray_trace_uniform.cxx
   rpl_volume.cxx
   rtog_io.cxx
-  rtss_structure_set.cxx
+  rtss.cxx rtss.h 
   rtss_roi.cxx rtss_roi.h 
   slice_index.cxx
   slice_list.cxx

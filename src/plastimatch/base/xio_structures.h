@@ -8,16 +8,17 @@
 
 #include "xio_studyset.h"
 
+class Rtss;
 class Metadata;
 class Xio_studyset;
 
 PLMBASE_C_API void xio_structures_load (
-        Rtss_structure_set *structures,
+        Rtss *structures,
         const Xio_studyset& xsl
 );
 
 PLMBASE_C_API void xio_structures_save (
-        Rtss_structure_set *cxt, 
+        Rtss *cxt, 
         Metadata *meta,
         Xio_ct_transform *transform, 
         Xio_version xio_version, 
@@ -25,7 +26,7 @@ PLMBASE_C_API void xio_structures_save (
 );
 
 PLMBASE_C_API void xio_structures_apply_transform (
-        Rtss_structure_set *structures,
+        Rtss *structures,
         Xio_ct_transform *transform
 );
 

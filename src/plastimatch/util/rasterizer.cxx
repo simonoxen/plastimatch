@@ -16,8 +16,8 @@
 #include "plm_path.h"
 #include "rasterize_slice.h"
 #include "rasterizer.h"
+#include "rtss.h"
 #include "rtss_roi.h"
-#include "rtss_structure_set.h"
 #include "volume.h"
 
 Rasterizer::Rasterizer ()
@@ -52,7 +52,7 @@ Rasterizer::~Rasterizer (void)
 
 void
 Rasterizer::init (
-    Rtss_structure_set *cxt,            /* Input */
+    Rtss *cxt,            /* Input */
     Plm_image_header *pih,             /* Input */
     bool want_prefix_imgs,             /* Input */
     bool want_labelmap,                /* Input */
@@ -132,7 +132,7 @@ Rasterizer::init (
 /* Return true if an image was processed */
 bool
 Rasterizer::process_next (
-    Rtss_structure_set *cxt                          /* In/out */
+    Rtss *cxt                          /* In/out */
 )
 {
     Rtss_roi* curr_structure;
@@ -278,7 +278,7 @@ Rasterizer::process_next (
 
 const char*
 Rasterizer::current_name (
-    Rtss_structure_set *cxt
+    Rtss *cxt
 )
 {
     if (this->curr_struct_no < cxt->num_structures + 1) {
@@ -292,7 +292,7 @@ Rasterizer::current_name (
 
 void
 Rasterizer::rasterize (
-    Rtss_structure_set *cxt,            /* Input */
+    Rtss *cxt,            /* Input */
     Plm_image_header *pih,             /* Input */
     bool want_prefix_imgs,             /* Input */
     bool want_labelmap,                /* Input */

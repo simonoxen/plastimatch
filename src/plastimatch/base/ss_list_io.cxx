@@ -8,12 +8,14 @@
 
 #include "file_util.h"
 #include "print_and_exit.h"
+#include "rtss.h"
 #include "rtss_roi.h"
-#include "rtss_structure_set.h"
 #include "ss_list_io.h"
 
-Rtss_structure_set*
-ss_list_load (Rtss_structure_set* cxt, const char* ss_list_fn)
+#define CXT_BUFLEN 2048
+
+Rtss*
+ss_list_load (Rtss* cxt, const char* ss_list_fn)
 {
     FILE* fp;
     int struct_id;
@@ -24,7 +26,7 @@ ss_list_load (Rtss_structure_set* cxt, const char* ss_list_fn)
 	    "Could not open ss_list file for read: %s\n", ss_list_fn);
     }
     if (!cxt) {
-	cxt = new Rtss_structure_set;
+	cxt = new Rtss;
     }
 
     /* Part 2: Structures info */
@@ -59,7 +61,7 @@ ss_list_load (Rtss_structure_set* cxt, const char* ss_list_fn)
 }
 
 void
-ss_list_save (Rtss_structure_set* cxt, const char* ss_list_fn)
+ss_list_save (Rtss* cxt, const char* ss_list_fn)
 {
     FILE *fp;
 	
@@ -85,7 +87,7 @@ ss_list_save (Rtss_structure_set* cxt, const char* ss_list_fn)
 }
 
 void
-ss_list_save_colormap (Rtss_structure_set* cxt, const char* colormap_fn)
+ss_list_save_colormap (Rtss* cxt, const char* colormap_fn)
 {
     int color_no;
     FILE *fp;

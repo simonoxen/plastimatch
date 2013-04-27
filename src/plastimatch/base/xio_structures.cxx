@@ -20,14 +20,14 @@
 #include "plm_path.h"
 #include "print_and_exit.h"
 #include "pstring.h"
+#include "rtss.h"
 #include "rtss_roi.h"
-#include "rtss_structure_set.h"
 #include "xio_ct.h"
 #include "xio_ct_transform.h"
 #include "xio_structures.h"
 
 static void
-add_cms_contournames (Rtss_structure_set *rtss, const char *filename)
+add_cms_contournames (Rtss *rtss, const char *filename)
 {
     FILE *fp;
     struct bStream * bs;
@@ -115,7 +115,7 @@ add_cms_contournames (Rtss_structure_set *rtss, const char *filename)
 }
 
 static void
-add_cms_structure (Rtss_structure_set *rtss, const char *filename, 
+add_cms_structure (Rtss *rtss, const char *filename, 
 		   float z_loc)
 {
     FILE *fp;
@@ -222,7 +222,7 @@ add_cms_structure (Rtss_structure_set *rtss, const char *filename,
 
 void
 xio_structures_load (
-    Rtss_structure_set *rtss, 
+    Rtss *rtss, 
     const Xio_studyset& studyset
 )
 {
@@ -283,7 +283,7 @@ format_xio_filename (char *fn, const char *output_dir, float z_loc)
 
 void
 xio_structures_save (
-    Rtss_structure_set *cxt,
+    Rtss *cxt,
     Metadata *meta,
     Xio_ct_transform *transform,
     Xio_version xio_version,
@@ -393,7 +393,7 @@ xio_structures_save (
 
 void
 xio_structures_apply_transform (
-    Rtss_structure_set *rtss, 
+    Rtss *rtss, 
     Xio_ct_transform *transform
 )
 {

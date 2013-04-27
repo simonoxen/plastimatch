@@ -16,8 +16,8 @@
 #include "cxt_extract.h"
 #include "itk_image.h"
 #include "itk_image_type.h"
+#include "rtss.h"
 #include "rtss_roi.h"
-#include "rtss_structure_set.h"
 #include "slice_extract.h"
 #include "ss_img_extract.h"
 #include "volume.h"
@@ -133,7 +133,7 @@ run_marching_squares (
 template<class T>
 void
 cxt_extract (
-    Rtss_structure_set *cxt, 
+    Rtss *cxt, 
     T image, 
     int num_structs, 
     bool check_cxt_bits
@@ -223,7 +223,7 @@ cxt_extract (
 template<>
 void
 cxt_extract (
-    Rtss_structure_set *cxt, 
+    Rtss *cxt, 
     UCharVecImageType::Pointer image, 
     int num_structs, 
     bool check_cxt_bits
@@ -315,4 +315,4 @@ cxt_extract (
 }
 
 /* Explicit instantiations */
-template PLMUTIL_API void cxt_extract (Rtss_structure_set *cxt, UInt32ImageType::Pointer image, int num_structs, bool check_cxt_bits);
+template PLMUTIL_API void cxt_extract (Rtss *cxt, UInt32ImageType::Pointer image, int num_structs, bool check_cxt_bits);

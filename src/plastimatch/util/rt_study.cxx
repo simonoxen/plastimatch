@@ -18,7 +18,7 @@
 #include "print_and_exit.h"
 #include "rt_study.h"
 #include "rt_study_p.h"
-#include "rtss_structure_set.h"
+#include "rtss.h"
 #include "segmentation.h"
 #include "slice_index.h"
 #include "volume.h"
@@ -184,7 +184,7 @@ Rt_study::load_xio (
 
     /* Apply XiO CT geometry to structures */
     if (d_ptr->m_rtss->have_structure_set()) {
-        Rtss_structure_set *rtss_ss = d_ptr->m_rtss->get_structure_set_raw ();
+        Rtss *rtss_ss = d_ptr->m_rtss->get_structure_set_raw ();
         rtss_ss->set_geometry (d_ptr->m_img.get());
     }
 

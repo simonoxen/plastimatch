@@ -26,8 +26,8 @@
 #include "pstring.h"
 #include "rasterizer.h"
 #include "rt_study.h"
+#include "rtss.h"
 #include "rtss_roi.h"
-#include "rtss_structure_set.h"
 #include "segmentation.h"
 #include "slice_index.h"
 #include "ss_list_io.h"
@@ -41,7 +41,7 @@ public:
     Metadata *m_meta;           /* Metadata specific to this ss_image */
     Plm_image *m_labelmap;      /* Structure set lossy bitmap form */
     Plm_image *m_ss_img;        /* Structure set in lossless bitmap form */
-    Rtss_structure_set::Pointer m_cxt;  /* Structure set in polyline form */
+    Rtss::Pointer m_cxt;  /* Structure set in polyline form */
 
 public:
     Segmentation_private () {
@@ -206,7 +206,7 @@ Segmentation::load_prefix (const Pstring &prefix_dir)
             Plm_image_header::clone (&ss_img_pih, &pih);
 
             /* Create ss_list to hold strucure names */
-            d_ptr->m_cxt = Rtss_structure_set::New();
+            d_ptr->m_cxt = Rtss::New();
             d_ptr->m_cxt->set_geometry (d_ptr->m_ss_img);
 
             first = false;
@@ -267,7 +267,7 @@ Segmentation::load_prefix (const Pstring &prefix_dir)
 void
 Segmentation::load_cxt (const Pstring &input_fn, Slice_index *rdd)
 {
-    d_ptr->m_cxt = Rtss_structure_set::New();
+    d_ptr->m_cxt = Rtss::New();
     cxt_load (d_ptr->m_cxt.get(), d_ptr->m_meta, rdd, (const char*) input_fn);
 }
 
@@ -275,7 +275,7 @@ void
 Segmentation::load_gdcm_rtss (const char *input_fn, Slice_index *rdd)
 {
 #if GDCM_VERSION_1
-    d_ptr->m_cxt = Rtss_structure_set::New();
+    d_ptr->m_cxt = Rtss::New();
     gdcm_rtss_load (d_ptr->m_cxt.get(), d_ptr->m_meta, rdd, input_fn);
 #endif
 }
@@ -283,7 +283,7 @@ Segmentation::load_gdcm_rtss (const char *input_fn, Slice_index *rdd)
 void
 Segmentation::load_xio (const Xio_studyset& studyset)
 {
-    d_ptr->m_cxt = Rtss_structure_set::New();
+    d_ptr->m_cxt = Rtss::New();
     printf ("calling xio_structures_load\n");
     xio_structures_load (d_ptr->m_cxt.get(), studyset);
 }
@@ -572,7 +572,7 @@ Segmentation::convert_ss_img_to_cxt (void)
         use_existing_bits = true;
     }
     else {
-        d_ptr->m_cxt = Rtss_structure_set::New();
+        d_ptr->m_cxt = Rtss::New();
         use_existing_bits = false;
     }
 
@@ -764,26 +764,26 @@ Segmentation::have_structure_set ()
 }
 
 
-Rtss_structure_set::Pointer
+Rtss::Pointer
 Segmentation::get_structure_set ()
 {
     return d_ptr->m_cxt;
 }
 
-Rtss_structure_set *
+Rtss *
 Segmentation::get_structure_set_raw ()
 {
     return d_ptr->m_cxt.get();
 }
 
 void
-Segmentation::set_structure_set (Rtss_structure_set::Pointer rtss_ss)
+Segmentation::set_structure_set (Rtss::Pointer rtss_ss)
 {
     d_ptr->m_cxt = rtss_ss;
 }
 
 void
-Segmentation::set_structure_set (Rtss_structure_set *rtss_ss)
+Segmentation::set_structure_set (Rtss *rtss_ss)
 {
     d_ptr->m_cxt.reset (rtss_ss);
 }

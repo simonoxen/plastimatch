@@ -9,7 +9,7 @@
 #include "logfile.h"
 #include "rt_study.h"
 #include "rtss_roi.h"
-#include "rtss_structure_set.h"
+#include "rtss.h"
 #include "simplify_points.h"
 
 /* -----------------------------------------------------------------------
@@ -43,7 +43,7 @@ do_simplify (Rt_study *rtds, float percentage)
 //      exit(-1);
 //    }
 
-    Rtss_structure_set *rtss_ss = rtds->get_rtss()->get_structure_set_raw ();
+    Rtss *rtss_ss = rtds->get_rtss()->get_structure_set_raw ();
     num_structures = rtss_ss->num_structures;
 
     for(int j=0;j<num_structures;j++){

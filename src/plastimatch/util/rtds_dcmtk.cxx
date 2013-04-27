@@ -22,7 +22,7 @@ Rt_study::load_dcmtk (const char *dicom_path)
     drs.load (dicom_path);
 
     d_ptr->m_img = drs.get_image ();
-    Rtss_structure_set::Pointer rtss = drs.get_rtss ();
+    Rtss::Pointer rtss = drs.get_rtss ();
     if (rtss) {
         d_ptr->m_rtss = Segmentation::New ();
         d_ptr->m_rtss->set_structure_set (drs.get_rtss ());

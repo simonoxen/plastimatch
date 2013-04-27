@@ -29,7 +29,7 @@
 #include "registration_data.h"
 #include "registration_parms.h"
 #include "rt_study.h"
-#include "rtss_structure_set.h"
+#include "rtss.h"
 #include "segmentation.h"
 #include "string_util.h"
 #include "xform.h"
@@ -376,7 +376,7 @@ Mabs::prep (const std::string& input_dir, const std::string& output_dir)
     timer.start();
     Segmentation::Pointer rtss = rtds.get_rtss();
     rtss->prune_empty ();
-    Rtss_structure_set *cxt = rtss->get_structure_set_raw ();
+    Rtss *cxt = rtss->get_structure_set_raw ();
     for (size_t i = 0; i < rtss->get_num_structures(); i++) {
         /* Check structure name, make sure it is something we 
            want to segment */

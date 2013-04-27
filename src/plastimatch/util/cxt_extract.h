@@ -6,10 +6,10 @@
 
 #include "plmutil_config.h"
 
-class Rtss_structure_set;
+class Rtss;
 
 template<class T> void cxt_extract (
-        Rtss_structure_set *cxt, 
+        Rtss *cxt, 
         T image,
         int num_structs,
         bool check_cxt_bits

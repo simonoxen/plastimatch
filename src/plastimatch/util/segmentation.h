@@ -9,7 +9,7 @@
 #include "itk_image_type.h"
 #include "metadata.h"
 #include "pstring.h"
-#include "rtss_structure_set.h"
+#include "rtss.h"
 #include "xio_studyset.h"  /* enum Xio_version */
 
 class Plm_image;
@@ -17,7 +17,6 @@ class Plm_image_header;
 class Rt_study;
 class Segmentation_private;
 class Rtss_roi;
-class Rtss_structure_set;
 class Slice_index;
 class Xform;
 class Xio_ct_transform;
@@ -79,10 +78,10 @@ public:
     Plm_image* get_ss_img ();
 
     bool have_structure_set ();
-    Rtss_structure_set::Pointer get_structure_set ();
-    Rtss_structure_set* get_structure_set_raw ();
-    void set_structure_set (Rtss_structure_set::Pointer rtss_ss);
-    void set_structure_set (Rtss_structure_set *rtss_ss);
+    Rtss::Pointer get_structure_set ();
+    Rtss* get_structure_set_raw ();
+    void set_structure_set (Rtss::Pointer rtss_ss);
+    void set_structure_set (Rtss *rtss_ss);
 };
 
 #endif

@@ -16,7 +16,7 @@
 #include "print_and_exit.h"
 #include "rt_study.h"
 #include "rtss_roi.h"
-#include "rtss_structure_set.h"
+#include "rtss.h"
 #include "segmentation.h"
 
 Dvh_private::Dvh_private () {
@@ -87,11 +87,11 @@ Dvh::run ()
 #endif
 
     /* GCS HACK: This should go into rtss.cxx */
-    Rtss_structure_set *ss_list;
+    Rtss *ss_list;
     if (d_ptr->rtss->have_structure_set()) {
         ss_list = d_ptr->rtss->get_structure_set_raw();
     } else {
-        ss_list = new Rtss_structure_set;
+        ss_list = new Rtss;
 #if (PLM_CONFIG_USE_SS_IMAGE_VEC)
         int num_structures = ss_img->GetVectorLength() * 8;
 #else
