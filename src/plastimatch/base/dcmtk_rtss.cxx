@@ -14,8 +14,6 @@
 #include "dcmtk_loader_p.h"
 #include "dcmtk_rt_study.h"
 #include "dcmtk_rt_study_p.h"
-#include "dcmtk_save.h"
-#include "dcmtk_save_p.h"
 #include "dcmtk_series.h"
 #include "dcmtk_slice_data.h"
 #include "dicom_rt_study.h"

@@ -134,7 +134,6 @@ if (DCMTK_FOUND)
     dcmtk_rdd.cxx
     dcmtk_rtdose.cxx 
     dcmtk_rtss.cxx
-#    dcmtk_save.cxx
     dcmtk_series.cxx
     dcmtk_rt_study.cxx dcmtk_rt_study.h
     dcmtk_rt_study_p.cxx dcmtk_rt_study_p.h

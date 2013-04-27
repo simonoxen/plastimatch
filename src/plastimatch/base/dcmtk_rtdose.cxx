@@ -15,8 +15,6 @@
 #include "dcmtk_rt_study.h"
 #include "dcmtk_rt_study_p.h"
 #include "dcmtk_rtdose.h"
-#include "dcmtk_save.h"
-#include "dcmtk_save_p.h"
 #include "dcmtk_series.h"
 #include "dicom_rt_study.h"
 #include "file_util.h"
