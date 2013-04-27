@@ -10,7 +10,7 @@
 #include "file_util.h"
 #include "plm_math.h"
 #include "pstring.h"
-#include "rtss_structure.h"
+#include "rtss_roi.h"
 #include "rtss_structure_set.h"
 #include "slice_index.h"
 
@@ -174,7 +174,7 @@ cxt_load (
 	int struct_id = 0;
 	int slice_idx;
 	char slice_uid[1024];
-	Rtss_structure* curr_structure;
+	Rtss_roi* curr_structure;
 
 	/* Structure id */
         if (1 != fscanf (fp, " %d", &struct_id)) {
@@ -318,7 +318,7 @@ cxt_save (
     /* Part 2: Structures info */
     fprintf (fp, "ROI_NAMES\n");
     for (size_t i = 0; i < cxt->num_structures; i++) {
-	Rtss_structure *curr_structure = cxt->slist[i];
+	Rtss_roi *curr_structure = cxt->slist[i];
 	if (prune_empty && curr_structure->num_contours <= 0) {
 	    continue;
 	}
@@ -333,7 +333,7 @@ cxt_save (
 
     /* Part 3: Contour info */
     for (size_t i = 0; i < cxt->num_structures; i++) {
-	Rtss_structure *curr_structure = cxt->slist[i];
+	Rtss_roi *curr_structure = cxt->slist[i];
 	if (prune_empty && curr_structure->num_contours <= 0) {
 	    continue;
 	}

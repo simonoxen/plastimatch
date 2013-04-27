@@ -26,7 +26,7 @@
 #include "pstring.h"
 #include "rasterizer.h"
 #include "rt_study.h"
-#include "rtss_structure.h"
+#include "rtss_roi.h"
 #include "rtss_structure_set.h"
 #include "segmentation.h"
 #include "slice_index.h"
@@ -319,7 +319,7 @@ Segmentation::get_structure_image (int index)
             "Error extracting unknown structure image (no cxt %d)\n", index);
     }
 
-    Rtss_structure *curr_structure = d_ptr->m_cxt->slist[index];
+    Rtss_roi *curr_structure = d_ptr->m_cxt->slist[index];
     int bit = curr_structure->bit;
 
     if (bit == -1) {
@@ -381,7 +381,7 @@ Segmentation::save_gdcm_rtss (
 
 void
 Segmentation::save_fcsv (
-    const Rtss_structure *curr_structure, 
+    const Rtss_roi *curr_structure, 
     const Pstring& fn
 )
 {
@@ -409,7 +409,7 @@ Segmentation::save_prefix_fcsv (const Pstring &output_prefix)
     for (size_t i = 0; i < d_ptr->m_cxt->num_structures; i++)
     {
         Pstring fn;
-        Rtss_structure *curr_structure = d_ptr->m_cxt->slist[i];
+        Rtss_roi *curr_structure = d_ptr->m_cxt->slist[i];
 
         compose_prefix_fn (&fn, output_prefix, curr_structure->name, "fcsv");
         save_fcsv (curr_structure, fn);
@@ -461,7 +461,7 @@ Segmentation::save_prefix (const std::string &output_prefix,
     for (size_t i = 0; i < d_ptr->m_cxt->num_structures; i++)
     {
         std::string fn;
-        Rtss_structure *curr_structure = d_ptr->m_cxt->slist[i];
+        Rtss_roi *curr_structure = d_ptr->m_cxt->slist[i];
         int bit = curr_structure->bit;
 
         if (bit == -1) continue;
@@ -491,7 +491,7 @@ Segmentation::save_prefix (const Pstring &output_prefix)
     for (size_t i = 0; i < d_ptr->m_cxt->num_structures; i++)
     {
         Pstring fn;
-        Rtss_structure *curr_structure = d_ptr->m_cxt->slist[i];
+        Rtss_roi *curr_structure = d_ptr->m_cxt->slist[i];
         int bit = curr_structure->bit;
 
         if (bit == -1) continue;

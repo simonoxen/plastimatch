@@ -25,7 +25,7 @@
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "print_and_exit.h"
-#include "rtss_structure.h"
+#include "rtss_roi.h"
 #include "rtss_structure_set.h"
 
 PLMBASE_C_API bool 
@@ -103,7 +103,7 @@ Dcmtk_loader::rtss_load (void)
     rc = ds_rtss->get_sequence (DCM_ROIContourSequence, seq);
     if (rc) {
         for (unsigned long i = 0; i < seq->card(); i++) {
-            Rtss_structure *curr_structure;
+            Rtss_roi *curr_structure;
             int structure_id;
             OFCondition orc;
             const char *val = 0;
@@ -366,7 +366,7 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
     /*     Part 4  -- Contour info                                       */
     /* ----------------------------------------------------------------- */
     for (size_t i = 0; i < cxt->num_structures; i++) {
-	Rtss_structure *curr_structure = cxt->slist[i];
+	Rtss_roi *curr_structure = cxt->slist[i];
         DcmItem *roic_item = 0;
 	Pstring tmp;
         dataset->findOrCreateSequenceItem (
@@ -429,7 +429,7 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
     /*     Part 5  -- More structure info                                */
     /* ----------------------------------------------------------------- */
     for (size_t i = 0; i < cxt->num_structures; i++) {
-	Rtss_structure *curr_structure = cxt->slist[i];
+	Rtss_roi *curr_structure = cxt->slist[i];
 	Pstring tmp;
 
         /* RTROIObservationsSequence */

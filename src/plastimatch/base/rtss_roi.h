@@ -1,14 +1,12 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _rtss_structure_h_
-#define _rtss_structure_h_
+#ifndef _rtss_roi_h_
+#define _rtss_roi_h_
 
 #include "plmbase_config.h"
 #include "pstring.h"
 #include "plmbase_config.h"
-
-#define CXT_BUFLEN 2048
 
 class Plm_image;
 class Plm_image_header;
@@ -26,7 +24,7 @@ public:
     PLMBASE_API ~Rtss_contour ();
 };
 
-class Rtss_structure {
+class Rtss_roi {
 public:
     Pstring name;
     Pstring color;
@@ -35,8 +33,8 @@ public:
     size_t num_contours;
     Rtss_contour** pslist;
 public:
-    PLMBASE_API Rtss_structure ();
-    PLMBASE_API ~Rtss_structure ();
+    PLMBASE_API Rtss_roi ();
+    PLMBASE_API ~Rtss_roi ();
 
     PLMBASE_API void clear ();
     PLMBASE_API Rtss_contour* add_polyline ();

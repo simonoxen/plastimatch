@@ -20,7 +20,7 @@
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "print_and_exit.h"
-#include "rtss_structure.h"
+#include "rtss_roi.h"
 #include "rtss_structure_set.h"
 #include "slice_index.h"
 
@@ -162,7 +162,7 @@ gdcm_rtss_load (
 	std::string roi_display_color, referenced_roi_number;
 	gdcm::SeqEntry *c_seq;
 	gdcm::SQItem *c_item;
-	Rtss_structure *curr_structure;
+	Rtss_roi *curr_structure;
 
 	/* Get id and color */
 	referenced_roi_number = item->GetEntryValue (0x3006,0x0084);
@@ -492,7 +492,7 @@ gdcm_rtss_save (
     /* ROIContourSequence */
     gdcm::SeqEntry *roic_seq = gf->InsertSeqEntry (0x3006, 0x0039);
     for (size_t i = 0; i < cxt->num_structures; i++) {
-	Rtss_structure *curr_structure = cxt->slist[i];
+	Rtss_roi *curr_structure = cxt->slist[i];
 	gdcm::SQItem *roic_item 
 	    = new gdcm::SQItem (roic_seq->GetDepthLevel());
 	roic_seq->AddSQItem (roic_item, i+1);
@@ -566,7 +566,7 @@ gdcm_rtss_save (
     /* RTROIObservationsSequence */
     gdcm::SeqEntry *rtroio_seq = gf->InsertSeqEntry (0x3006, 0x0080);
     for (size_t i = 0; i < cxt->num_structures; i++) {
-	Rtss_structure *curr_structure = cxt->slist[i];
+	Rtss_roi *curr_structure = cxt->slist[i];
 	gdcm::SQItem *rtroio_item 
 	    = new gdcm::SQItem (rtroio_seq->GetDepthLevel());
 	rtroio_seq->AddSQItem (rtroio_item, i+1);

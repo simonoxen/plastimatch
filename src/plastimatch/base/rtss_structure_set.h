@@ -14,7 +14,7 @@
 
 class Plm_image;
 class Plm_image_header;
-class Rtss_structure;
+class Rtss_roi;
 class Slice_index;
 class Slice_list;
 
@@ -35,19 +35,19 @@ public:
     float rast_offset[3];
     /* Structures */
     size_t num_structures;
-    Rtss_structure **slist;
+    Rtss_roi **slist;
 public:
     Rtss_structure_set ();
     ~Rtss_structure_set ();
     void init (void);
     void clear (void);
-    Rtss_structure* add_structure (
+    Rtss_roi* add_structure (
 	const Pstring& structure_name, 
 	const Pstring& color, 
 	int structure_id,
         int bit = -1);
     void delete_structure (int index);
-    Rtss_structure* find_structure_by_id (int structure_id);
+    Rtss_roi* find_structure_by_id (int structure_id);
     std::string get_structure_name (size_t index);
     void debug (void);
     void adjust_structure_names (void);

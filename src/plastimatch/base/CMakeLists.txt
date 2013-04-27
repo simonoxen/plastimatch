@@ -74,7 +74,7 @@ set (PLMBASE_LIBRARY_SRC
   rpl_volume.cxx
   rtog_io.cxx
   rtss_structure_set.cxx
-  rtss_structure.cxx
+  rtss_roi.cxx rtss_roi.h 
   slice_index.cxx
   slice_list.cxx
   ss_list_io.cxx

@@ -13,7 +13,7 @@
 #include "plm_int.h"
 #include "plm_math.h"
 #include "pstring.h"
-#include "rtss_structure.h"
+#include "rtss_roi.h"
 #include "rtss_structure_set.h"
 #include "slice_index.h"
 #include "slice_list.h"
@@ -93,7 +93,7 @@ Rtss_structure_set::find_unused_structure_name (void)
 	test_name.format ("%s (%d)", "Unknown structure", n);
 	bool dup_found = 0;
 	for (size_t i = 0; i < this->num_structures; ++i) {
-	    Rtss_structure* curr_structure = this->slist[i];
+	    Rtss_roi* curr_structure = this->slist[i];
 	    if (test_name == curr_structure->name) {
 		dup_found = true;
 		break;
@@ -108,14 +108,14 @@ Rtss_structure_set::find_unused_structure_name (void)
 }
 
 /* Add structure (if it doesn't already exist) */
-Rtss_structure*
+Rtss_roi*
 Rtss_structure_set::add_structure (
     const Pstring& structure_name, 
     const Pstring& color, 
     int structure_id,
     int bit)
 {
-    Rtss_structure* new_structure;
+    Rtss_roi* new_structure;
 
     new_structure = this->find_structure_by_id (structure_id);
     if (new_structure) {
@@ -123,12 +123,12 @@ Rtss_structure_set::add_structure (
     }
 
     this->num_structures++;
-    this->slist = (Rtss_structure**) 
+    this->slist = (Rtss_roi**) 
         realloc (this->slist, 
-            this->num_structures * sizeof(Rtss_structure*));
+            this->num_structures * sizeof(Rtss_roi*));
     new_structure 
 	= this->slist[this->num_structures - 1] 
-	= new Rtss_structure;
+	= new Rtss_roi;
 
     new_structure->name = structure_name;
     if (structure_name == "" || structure_name == "Unknown structure") {
@@ -150,7 +150,7 @@ Rtss_structure_set::add_structure (
 void
 Rtss_structure_set::delete_structure (int index)
 {
-    Rtss_structure* curr_structure = this->slist[index];
+    Rtss_roi* curr_structure = this->slist[index];
     delete curr_structure;
 
     /* Remark: the below two lines are correct but redundant if 
@@ -160,11 +160,11 @@ Rtss_structure_set::delete_structure (int index)
     this->num_structures --;
 }
 
-Rtss_structure*
+Rtss_roi*
 Rtss_structure_set::find_structure_by_id (int structure_id)
 {
     for (size_t i = 0; i < this->num_structures; i++) {
-	Rtss_structure* curr_structure;
+	Rtss_roi* curr_structure;
 	curr_structure = this->slist[i];
 	if (curr_structure->id == structure_id) {
 	    return curr_structure;
@@ -186,7 +186,7 @@ Rtss_structure_set::get_structure_name (size_t index)
 void
 Rtss_structure_set::debug (void)
 {
-    Rtss_structure* curr_structure;
+    Rtss_roi* curr_structure;
 
     if (this->have_geometry) {
 	printf ("rps::dim = %u %u %u\n", 
@@ -229,7 +229,7 @@ Rtss_structure_set::debug (void)
 void
 Rtss_structure_set::adjust_structure_names (void)
 {
-    Rtss_structure* curr_structure;
+    Rtss_roi* curr_structure;
 
     for (size_t i = 0; i < this->num_structures; i++) {
         curr_structure = this->slist[i];
@@ -253,7 +253,7 @@ void
 Rtss_structure_set::prune_empty (void)
 {
     for (size_t i = 0; i < this->num_structures; i++) {
-	Rtss_structure* curr_structure;
+	Rtss_roi* curr_structure;
 	curr_structure = this->slist[i];
 	if (curr_structure->num_contours == 0) {
 	    delete curr_structure;
@@ -282,8 +282,8 @@ Rtss_structure_set::clone_empty (
     }
 
     for (size_t i = 0; i < cxt_in->num_structures; i++) {
-	Rtss_structure *old_structure = cxt_in->slist[i];
-	Rtss_structure *new_structure = cxt_out->add_structure (
+	Rtss_roi *old_structure = cxt_in->slist[i];
+	Rtss_roi *new_structure = cxt_out->add_structure (
 	    old_structure->name, old_structure->color, old_structure->id);
 
 	/* Copy bit */
@@ -297,7 +297,7 @@ void
 Rtss_structure_set::free_all_polylines (void)
 {
     for (size_t i = 0; i < this->num_structures; i++) {
-	Rtss_structure *curr_structure = this->slist[i];
+	Rtss_roi *curr_structure = this->slist[i];
 	for (size_t j = 0; j < curr_structure->num_contours; j++) {
 	    delete curr_structure->pslist[j];
 	}
@@ -323,7 +323,7 @@ Rtss_structure_set::find_rasterization_geometry (
 
     /* Scan points to find image size, spacing */
     for (size_t i = 0; i < this->num_structures; i++) {
-	Rtss_structure *curr_structure = this->slist[i];
+	Rtss_roi *curr_structure = this->slist[i];
 	for (size_t j = 0; j < curr_structure->num_contours; j++) {
 	    Rtss_contour *curr_polyline = curr_structure->pslist[j];
 	    for (int k = 0; k < curr_polyline->num_vertices; k++) {
@@ -457,7 +457,7 @@ Rtss_structure_set::apply_slice_index (const Slice_index *rdd)
 
     /* Slice numbers and slice uids */
     for (size_t i = 0; i < this->num_structures; i++) {
-        Rtss_structure *curr_structure = this->slist[i];
+        Rtss_roi *curr_structure = this->slist[i];
         for (size_t j = 0; j < curr_structure->num_contours; j++) {
             Rtss_contour *curr_polyline = curr_structure->pslist[j];
             if (curr_polyline->num_vertices <= 0) {
@@ -488,7 +488,7 @@ Rtss_structure_set::apply_slice_list (const Slice_list *slice_list)
 
     /* Slice numbers and slice uids */
     for (size_t i = 0; i < this->num_structures; i++) {
-        Rtss_structure *curr_structure = this->slist[i];
+        Rtss_roi *curr_structure = this->slist[i];
         for (size_t j = 0; j < curr_structure->num_contours; j++) {
             Rtss_contour *curr_polyline = curr_structure->pslist[j];
             if (curr_polyline->num_vertices <= 0) {
@@ -514,7 +514,7 @@ Rtss_structure_set::fix_polyline_slice_numbers (void)
     if (!this->have_geometry) return;
 
     for (size_t i = 0; i < this->num_structures; i++) {
-	Rtss_structure *curr_structure = this->slist[i];
+	Rtss_roi *curr_structure = this->slist[i];
 	for (size_t j = 0; j < curr_structure->num_contours; j++) {
 	    Rtss_contour *curr_polyline = curr_structure->pslist[j];
 	    if (curr_polyline->num_vertices == 0) {
@@ -564,7 +564,7 @@ Rtss_structure_set::keyholize (void)
 
     /* Loop through structures */
     for (int i = 0; i < this->num_structures; i++) {
-	Rtss_structure *curr_structure = this->slist[i];
+	Rtss_roi *curr_structure = this->slist[i];
 
 	/* Find groups of contours which lie on the same slice */
 	std::vector<bool> used_contours;

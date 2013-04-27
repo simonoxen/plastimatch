@@ -8,7 +8,7 @@
 
 #include "file_util.h"
 #include "print_and_exit.h"
-#include "rtss_structure.h"
+#include "rtss_roi.h"
 #include "rtss_structure_set.h"
 #include "ss_list_io.h"
 
@@ -48,7 +48,7 @@ ss_list_load (Rtss_structure_set* cxt, const char* ss_list_fn)
 		ss_list_fn);
         }
 
-	Rtss_structure *curr_structure = cxt->add_structure (
+	Rtss_roi *curr_structure = cxt->add_structure (
 	    Pstring (name), Pstring (color), struct_id);
 	curr_structure->bit = bit;
 	struct_id ++;
@@ -71,7 +71,7 @@ ss_list_save (Rtss_structure_set* cxt, const char* ss_list_fn)
     }
 
     for (size_t i = 0; i < cxt->num_structures; i++) {
-	Rtss_structure *curr_structure;
+	Rtss_roi *curr_structure;
 	curr_structure = cxt->slist[i];
 	fprintf (fp, "%d|%s|%s\n", 
 	    curr_structure->bit, 
@@ -105,13 +105,13 @@ ss_list_save_colormap (Rtss_structure_set* cxt, const char* colormap_fn)
     color_no = 0;
     for (size_t i = 0; i < cxt->num_structures; i++) {
 	int r, g, b;
-	Rtss_structure *curr_structure;
+	Rtss_roi *curr_structure;
 	Pstring adjusted_name;
 
 	curr_structure = cxt->slist[i];
 	if (curr_structure->bit >= 0) {
 	    curr_structure->structure_rgb (&r, &g, &b);
-	    Rtss_structure::adjust_name (&adjusted_name, &curr_structure->name);
+	    Rtss_roi::adjust_name (&adjusted_name, &curr_structure->name);
 	    fprintf (fp, "%d %s %d %d %d 255\n", 
 		curr_structure->bit + 1, (const char*) adjusted_name, r, g, b);
 	    color_no = curr_structure->bit + 1;
@@ -120,13 +120,13 @@ ss_list_save_colormap (Rtss_structure_set* cxt, const char* colormap_fn)
 
     for (size_t i = 0; i < cxt->num_structures; i++) {
 	int r, g, b;
-	Rtss_structure *curr_structure;
+	Rtss_roi *curr_structure;
 	Pstring adjusted_name;
 
 	curr_structure = cxt->slist[i];
 	if (curr_structure->bit == -1) {
 	    curr_structure->structure_rgb (&r, &g, &b);
-	    Rtss_structure::adjust_name (&adjusted_name, &curr_structure->name);
+	    Rtss_roi::adjust_name (&adjusted_name, &curr_structure->name);
 	    fprintf (fp, "%d %s %d %d %d 255\n", 
 		color_no + 1, (const char*) adjusted_name, r, g, b);
 	    color_no ++;

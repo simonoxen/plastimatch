@@ -8,7 +8,7 @@
 #include "itk_pointset.h"
 #include "logfile.h"
 #include "rt_study.h"
-#include "rtss_structure.h"
+#include "rtss_roi.h"
 #include "rtss_structure_set.h"
 #include "simplify_points.h"
 
@@ -28,7 +28,7 @@ do_simplify (Rt_study *rtds, float percentage)
 {
     int num_structures=0;
     int first_index_to_remove=0;
-    Rtss_structure *curr_struct;
+    Rtss_roi *curr_struct;
     Rtss_contour *curr_polyline;
     
     vnl_random gnr;

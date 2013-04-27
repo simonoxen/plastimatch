@@ -16,7 +16,7 @@
 #include "cxt_extract.h"
 #include "itk_image.h"
 #include "itk_image_type.h"
-#include "rtss_structure.h"
+#include "rtss_roi.h"
 #include "rtss_structure_set.h"
 #include "slice_extract.h"
 #include "ss_img_extract.h"
@@ -62,7 +62,7 @@ debug_uint32_slice (UInt32Image2DType::Pointer slice, uint32_t val)
 
 static void
 run_marching_squares (
-    Rtss_structure *curr_structure, 
+    Rtss_roi *curr_structure, 
     const UCharImage2DType::Pointer uchar_slice,
     unsigned int slice_no,
     const OriginType& origin,
@@ -184,7 +184,7 @@ cxt_extract (
 	for (int j = 0; j < num_structs; j++)
 	{
 	    /* And the current slice with the mask for this structure */
-	    Rtss_structure *curr_structure = cxt->slist[j];
+	    Rtss_roi *curr_structure = cxt->slist[j];
 
 	    /* Choose the bit value for this structure */
 	    uint32_t val;
@@ -274,7 +274,7 @@ cxt_extract (
 
 	    /* Look for structures which use this uchar */
 	    for (int j = 0; j < num_structs; j++) {
-		Rtss_structure *curr_structure = cxt->slist[j];
+		Rtss_roi *curr_structure = cxt->slist[j];
 		int bit;
 		unsigned char mask;
 

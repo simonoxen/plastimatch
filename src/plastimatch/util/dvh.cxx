@@ -15,7 +15,7 @@
 #include "plm_image_header.h"
 #include "print_and_exit.h"
 #include "rt_study.h"
-#include "rtss_structure.h"
+#include "rtss_roi.h"
 #include "rtss_structure_set.h"
 #include "segmentation.h"
 
@@ -200,7 +200,7 @@ Dvh::run ()
         }
 
         for (size_t sno = 0; sno < ss_list->num_structures; sno++) {
-            Rtss_structure *curr_structure = ss_list->slist[sno];
+            Rtss_roi *curr_structure = ss_list->slist[sno];
                     
             /* Is this pixel in the current structure? */
 #if (PLM_CONFIG_USE_SS_IMAGE_VEC)
@@ -240,7 +240,7 @@ Dvh::run ()
     /* Create output string */
     d_ptr->output_string = "Dose (Gy)";
     for (size_t sno = 0; sno < ss_list->num_structures; sno++) {
-        Rtss_structure *curr_structure = ss_list->slist[sno];
+        Rtss_roi *curr_structure = ss_list->slist[sno];
         d_ptr->output_string += ",";
         d_ptr->output_string += (const char*) curr_structure->name;
     }

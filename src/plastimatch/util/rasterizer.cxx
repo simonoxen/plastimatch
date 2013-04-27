@@ -16,7 +16,7 @@
 #include "plm_path.h"
 #include "rasterize_slice.h"
 #include "rasterizer.h"
-#include "rtss_structure.h"
+#include "rtss_roi.h"
 #include "rtss_structure_set.h"
 #include "volume.h"
 
@@ -135,7 +135,7 @@ Rasterizer::process_next (
     Rtss_structure_set *cxt                          /* In/out */
 )
 {
-    Rtss_structure* curr_structure;
+    Rtss_roi* curr_structure;
     unsigned char* uchar_img = (unsigned char*) this->uchar_vol->img;
     size_t slice_voxels;
 
@@ -282,7 +282,7 @@ Rasterizer::current_name (
 )
 {
     if (this->curr_struct_no < cxt->num_structures + 1) {
-	Rtss_structure *curr_structure;
+	Rtss_roi *curr_structure;
 	curr_structure = cxt->slist[this->curr_struct_no-1];
 	return curr_structure->name;
     } else {

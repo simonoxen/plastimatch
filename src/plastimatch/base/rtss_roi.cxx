@@ -8,7 +8,7 @@
 
 #include "plm_math.h"
 #include "pstring.h"
-#include "rtss_structure.h"
+#include "rtss_roi.h"
 
 Rtss_contour::Rtss_contour ()
 {
@@ -34,7 +34,7 @@ Rtss_contour::~Rtss_contour ()
     this->z = 0;
 }
 
-Rtss_structure::Rtss_structure ()
+Rtss_roi::Rtss_roi ()
 {
     this->id = -1;
     this->bit = 0;
@@ -42,13 +42,13 @@ Rtss_structure::Rtss_structure ()
     this->pslist = 0;
 }
 
-Rtss_structure::~Rtss_structure ()
+Rtss_roi::~Rtss_roi ()
 {
     this->clear ();
 }
 
 void
-Rtss_structure::clear ()
+Rtss_roi::clear ()
 {
     for (size_t i = 0; i < this->num_contours; i++) {
 	delete this->pslist[i];
@@ -64,7 +64,7 @@ Rtss_structure::clear ()
 }
 
 Rtss_contour*
-Rtss_structure::add_polyline ()
+Rtss_roi::add_polyline ()
 {
     Rtss_contour* new_polyline;
 
@@ -79,7 +79,7 @@ Rtss_structure::add_polyline ()
 }
 
 void
-Rtss_structure::adjust_name (Pstring *name_out, const Pstring *name_in)
+Rtss_roi::adjust_name (Pstring *name_out, const Pstring *name_in)
 {
     int i;
 
@@ -97,7 +97,7 @@ Rtss_structure::adjust_name (Pstring *name_out, const Pstring *name_in)
 }
 
 void
-Rtss_structure::set_color (const char* color_string)
+Rtss_roi::set_color (const char* color_string)
 {
     int r, g, b;
     if (3 == sscanf (color_string, "%d %d %d", &r, &g, &b)) {
@@ -115,7 +115,7 @@ Rtss_structure::set_color (const char* color_string)
 }
 
 void
-Rtss_structure::get_dcm_color_string (Pstring *dcm_color) const
+Rtss_roi::get_dcm_color_string (Pstring *dcm_color) const
 {
     int r, g, b;
     this->structure_rgb (&r, &g, &b);
@@ -123,7 +123,7 @@ Rtss_structure::get_dcm_color_string (Pstring *dcm_color) const
 }
 
 void
-Rtss_structure::structure_rgb (int *r, int *g, int *b) const
+Rtss_roi::structure_rgb (int *r, int *g, int *b) const
 {
     *r = 255;
     *g = 0;

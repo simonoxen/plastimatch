@@ -16,8 +16,8 @@ class Plm_image;
 class Plm_image_header;
 class Rt_study;
 class Segmentation_private;
+class Rtss_roi;
 class Rtss_structure_set;
-class Rtss_structure;
 class Slice_index;
 class Xform;
 class Xio_ct_transform;
@@ -48,7 +48,7 @@ public:
     void save_colormap (const Pstring &colormap_fn);
     void save_cxt (Slice_index *rdd, const Pstring &cxt_fn, bool prune_empty);
     void save_gdcm_rtss (const char *output_dir, Slice_index *rdd);
-    void save_fcsv (const Rtss_structure *curr_structure, const Pstring& fn);
+    void save_fcsv (const Rtss_roi *curr_structure, const Pstring& fn);
     void save_prefix_fcsv (const Pstring &output_prefix);
     void save_ss_image (const Pstring &ss_img_fn);
     void save_labelmap (const Pstring &labelmap_fn);

@@ -20,7 +20,7 @@
 #include "plm_path.h"
 #include "print_and_exit.h"
 #include "pstring.h"
-#include "rtss_structure.h"
+#include "rtss_roi.h"
 #include "rtss_structure_set.h"
 #include "xio_ct.h"
 #include "xio_ct_transform.h"
@@ -138,7 +138,7 @@ add_cms_structure (Rtss_structure_set *rtss, const char *filename,
 	int rc;
 	int structure_id, num_points;
 	int point_idx, remaining_points;
-	Rtss_structure *curr_structure;
+	Rtss_roi *curr_structure;
 	Rtss_contour *curr_polyline;
 
 	/* Get num points */
@@ -316,7 +316,7 @@ xio_structures_save (
     fprintf (fp, "%lu\n", (unsigned long) cxt->num_structures);
 
     for (size_t i = 0; i < cxt->num_structures; i++) {
-	Rtss_structure *curr_structure = cxt->slist[i];
+	Rtss_roi *curr_structure = cxt->slist[i];
 	int color = 1 + (i % 8);
 	int pen = 1;
 	/* Class 0 is "patient", class 1 is "Int" */
@@ -360,7 +360,7 @@ xio_structures_save (
 	/* GCS FIX: These seem to be min/max */
 	fprintf (fp, "-158.1,-135.6, 147.7,  81.6\n");
 	for (size_t i = 0; i < cxt->num_structures; i++) {
-	    Rtss_structure *curr_structure = cxt->slist[i];
+	    Rtss_roi *curr_structure = cxt->slist[i];
 	    for (size_t j = 0; j < curr_structure->num_contours; j++) {
 		Rtss_contour *curr_polyline = curr_structure->pslist[j];
 		if (z != curr_polyline->slice_no) {
@@ -405,7 +405,7 @@ xio_structures_apply_transform (
 
     /* Transform structures */
     for (size_t i = 0; i < rtss->num_structures; i++) {
-	Rtss_structure *curr_structure = rtss->slist[i];
+	Rtss_roi *curr_structure = rtss->slist[i];
 	for (size_t j = 0; j < curr_structure->num_contours; j++) {
 	    Rtss_contour *curr_polyline = curr_structure->pslist[j];
 	    for (int k = 0; k < curr_polyline->num_vertices; k++) {
