@@ -325,7 +325,7 @@ Rtss_structure_set::find_rasterization_geometry (
     for (size_t i = 0; i < this->num_structures; i++) {
 	Rtss_structure *curr_structure = this->slist[i];
 	for (size_t j = 0; j < curr_structure->num_contours; j++) {
-	    Rtss_polyline *curr_polyline = curr_structure->pslist[j];
+	    Rtss_contour *curr_polyline = curr_structure->pslist[j];
 	    for (int k = 0; k < curr_polyline->num_vertices; k++) {
 		z_values.insert (curr_polyline->z[k]);
 		if (first) {
@@ -459,7 +459,7 @@ Rtss_structure_set::apply_slice_index (const Slice_index *rdd)
     for (size_t i = 0; i < this->num_structures; i++) {
         Rtss_structure *curr_structure = this->slist[i];
         for (size_t j = 0; j < curr_structure->num_contours; j++) {
-            Rtss_polyline *curr_polyline = curr_structure->pslist[j];
+            Rtss_contour *curr_polyline = curr_structure->pslist[j];
             if (curr_polyline->num_vertices <= 0) {
                 continue;
             }
@@ -490,7 +490,7 @@ Rtss_structure_set::apply_slice_list (const Slice_list *slice_list)
     for (size_t i = 0; i < this->num_structures; i++) {
         Rtss_structure *curr_structure = this->slist[i];
         for (size_t j = 0; j < curr_structure->num_contours; j++) {
-            Rtss_polyline *curr_polyline = curr_structure->pslist[j];
+            Rtss_contour *curr_polyline = curr_structure->pslist[j];
             if (curr_polyline->num_vertices <= 0) {
                 continue;
             }
@@ -516,7 +516,7 @@ Rtss_structure_set::fix_polyline_slice_numbers (void)
     for (size_t i = 0; i < this->num_structures; i++) {
 	Rtss_structure *curr_structure = this->slist[i];
 	for (size_t j = 0; j < curr_structure->num_contours; j++) {
-	    Rtss_polyline *curr_polyline = curr_structure->pslist[j];
+	    Rtss_contour *curr_polyline = curr_structure->pslist[j];
 	    if (curr_polyline->num_vertices == 0) {
 		curr_polyline->slice_no = -1;
 		continue;
@@ -572,7 +572,7 @@ Rtss_structure_set::keyholize (void)
 
 	for (int j = 0; j < curr_structure->num_contours; j++) {
 	    std::vector<int> group_contours;
-	    Rtss_polyline *group_polyline = curr_structure->pslist[j];
+	    Rtss_contour *group_polyline = curr_structure->pslist[j];
 	    if (group_polyline->num_vertices == 0) {
 		group_polyline->slice_no = -1;
 		continue;
@@ -583,7 +583,7 @@ Rtss_structure_set::keyholize (void)
 	    float group_z = group_polyline->z[0];
 	    group_contours.push_back (j);
 	    for (int k = j+1; k < curr_structure->num_contours; k++) {
-		Rtss_polyline *curr_polyline = curr_structure->pslist[k];
+		Rtss_contour *curr_polyline = curr_structure->pslist[k];
 		if (curr_polyline->num_vertices == 0) {
 		    curr_polyline->slice_no = -1;
 		    continue;
@@ -607,7 +607,7 @@ Rtss_structure_set::keyholize (void)
 	    float xmin = FLT_MAX;
 	    for (unsigned int k = 0; k < group_contours.size(); k++) {
 		int cidx = group_contours[k];
-		Rtss_polyline *curr_polyline = curr_structure->pslist[cidx];
+		Rtss_contour *curr_polyline = curr_structure->pslist[cidx];
 
 		float curr_xmin = FLT_MAX;
 		for (int l = 0; l < curr_polyline->num_vertices; l++) {
@@ -626,7 +626,7 @@ Rtss_structure_set::keyholize (void)
 	       in this contour */
 	    for (unsigned int k = 0; k < group_contours.size(); k++) {
 		int cidx = group_contours[k];
-		Rtss_polyline *curr_polyline = curr_structure->pslist[cidx];
+		Rtss_contour *curr_polyline = curr_structure->pslist[cidx];
 		if (cidx == cidx_xmin) {
 		    continue;
 		}

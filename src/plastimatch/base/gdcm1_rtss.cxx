@@ -191,7 +191,7 @@ gdcm_rtss_load (
 		std::string contour_geometric_type;
 		std::string contour_data;
 		std::string number_of_contour_points;
-		Rtss_polyline *curr_polyline;
+		Rtss_contour *curr_polyline;
 
 		/* Grab data from dicom */
 		contour_geometric_type = c_item->GetEntryValue (0x3006,0x0042);
@@ -505,7 +505,7 @@ gdcm_rtss_save (
 	/* ContourSequence */
 	gdcm::SeqEntry *c_seq = roic_item->InsertSeqEntry (0x3006, 0x0040);
 	for (size_t j = 0; j < curr_structure->num_contours; j++) {
-	    Rtss_polyline *curr_contour = curr_structure->pslist[j];
+	    Rtss_contour *curr_contour = curr_structure->pslist[j];
 	    if (curr_contour->num_vertices <= 0) continue;
 
 	    /* GE -> XiO transfer does not work if contour does not have 

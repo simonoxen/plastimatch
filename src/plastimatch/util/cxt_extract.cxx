@@ -98,7 +98,7 @@ run_marching_squares (
     {
 	ContourFilterType::VertexListConstPointer vertices 
 	    = contour_filter->GetOutput(i)->GetVertexList();
-	Rtss_polyline *curr_polyline = curr_structure->add_polyline ();
+	Rtss_contour *curr_polyline = curr_structure->add_polyline ();
 
 	curr_polyline->num_vertices = vertices->Size();
 	curr_polyline->x = (float*) 

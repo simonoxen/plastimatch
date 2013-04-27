@@ -23,7 +23,7 @@ cxt_load (
 )
 {
     FILE* fp;
-    Rtss_polyline* curr_contour;
+    Rtss_contour* curr_contour;
 
     float val_x = 0;
     float val_y = 0;
@@ -339,7 +339,7 @@ cxt_save (
 	}
 	for (size_t j = 0; j < curr_structure->num_contours; j++) {
 	    int k;
-	    Rtss_polyline *curr_polyline = curr_structure->pslist[j];
+	    Rtss_contour *curr_polyline = curr_structure->pslist[j];
 
 	    /* struct_no|contour_thickness|num_points|slice_no|slice_uid|points */
 	    /* I don't think contour thickness is used. */

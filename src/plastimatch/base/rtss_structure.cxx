@@ -10,7 +10,7 @@
 #include "pstring.h"
 #include "rtss_structure.h"
 
-Rtss_polyline::Rtss_polyline ()
+Rtss_contour::Rtss_contour ()
 {
     this->slice_no = -1;
     this->ct_slice_uid = "";
@@ -20,7 +20,7 @@ Rtss_polyline::Rtss_polyline ()
     this->z = 0;
 }
 
-Rtss_polyline::~Rtss_polyline ()
+Rtss_contour::~Rtss_contour ()
 {
     free (this->x);
     free (this->y);
@@ -63,18 +63,18 @@ Rtss_structure::clear ()
     this->pslist = 0;
 }
 
-Rtss_polyline*
+Rtss_contour*
 Rtss_structure::add_polyline ()
 {
-    Rtss_polyline* new_polyline;
+    Rtss_contour* new_polyline;
 
     this->num_contours++;
-    this->pslist = (Rtss_polyline**) realloc (this->pslist, 
-	    this->num_contours * sizeof(Rtss_polyline*));
+    this->pslist = (Rtss_contour**) realloc (this->pslist, 
+	    this->num_contours * sizeof(Rtss_contour*));
 
     new_polyline 
 	= this->pslist[this->num_contours - 1]
-	= new Rtss_polyline;
+	= new Rtss_contour;
     return new_polyline;
 }
 

@@ -144,7 +144,7 @@ Dcmtk_loader::rtss_load (void)
 		const char *contour_geometric_type;
 		const char *contour_data;
 		const char *number_of_contour_points;
-		Rtss_polyline *curr_polyline;
+		Rtss_contour *curr_polyline;
                 DcmItem *c_item = c_seq->getItem(j);
 
 		/* ContourGeometricType */
@@ -374,7 +374,7 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
         curr_structure->get_dcm_color_string (&tmp);
         roic_item->putAndInsertString (DCM_ROIDisplayColor, tmp.c_str());
 	for (size_t j = 0; j < curr_structure->num_contours; j++) {
-	    Rtss_polyline *curr_contour = curr_structure->pslist[j];
+	    Rtss_contour *curr_contour = curr_structure->pslist[j];
 	    if (curr_contour->num_vertices <= 0) continue;
 
 	    /* GE -> XiO transfer does not work if contour does not have 

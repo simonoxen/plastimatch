@@ -160,7 +160,7 @@ Rasterizer::process_next (
 
     /* Loop through polylines in this structure */
     for (size_t i = 0; i < curr_structure->num_contours; i++) {
-	Rtss_polyline* curr_contour;
+	Rtss_contour* curr_contour;
 	unsigned char* uchar_slice;
 	plm_long slice_no;
 

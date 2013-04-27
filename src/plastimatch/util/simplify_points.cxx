@@ -29,7 +29,7 @@ do_simplify (Rt_study *rtds, float percentage)
     int num_structures=0;
     int first_index_to_remove=0;
     Rtss_structure *curr_struct;
-    Rtss_polyline *curr_polyline;
+    Rtss_contour *curr_polyline;
     
     vnl_random gnr;
 
@@ -76,7 +76,7 @@ do_simplify (Rt_study *rtds, float percentage)
             //bubble_sort(ordered_index,first_index_to_remove);
             qsort(ordered_index,first_index_to_remove,sizeof(int),compare);
                 
-            Rtss_polyline *new_polyline=new Rtss_polyline();
+            Rtss_contour *new_polyline=new Rtss_contour();
             new_polyline->num_vertices=first_index_to_remove;
             new_polyline->slice_no=curr_polyline->slice_no;
             new_polyline->ct_slice_uid=curr_polyline->ct_slice_uid;

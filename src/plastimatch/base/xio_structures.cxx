@@ -139,7 +139,7 @@ add_cms_structure (Rtss_structure_set *rtss, const char *filename,
 	int structure_id, num_points;
 	int point_idx, remaining_points;
 	Rtss_structure *curr_structure;
-	Rtss_polyline *curr_polyline;
+	Rtss_contour *curr_polyline;
 
 	/* Get num points */
 	fgets (buf, 1024, fp);
@@ -362,7 +362,7 @@ xio_structures_save (
 	for (size_t i = 0; i < cxt->num_structures; i++) {
 	    Rtss_structure *curr_structure = cxt->slist[i];
 	    for (size_t j = 0; j < curr_structure->num_contours; j++) {
-		Rtss_polyline *curr_polyline = curr_structure->pslist[j];
+		Rtss_contour *curr_polyline = curr_structure->pslist[j];
 		if (z != curr_polyline->slice_no) {
 		    continue;
 		}
@@ -407,7 +407,7 @@ xio_structures_apply_transform (
     for (size_t i = 0; i < rtss->num_structures; i++) {
 	Rtss_structure *curr_structure = rtss->slist[i];
 	for (size_t j = 0; j < curr_structure->num_contours; j++) {
-	    Rtss_polyline *curr_polyline = curr_structure->pslist[j];
+	    Rtss_contour *curr_polyline = curr_structure->pslist[j];
 	    for (int k = 0; k < curr_polyline->num_vertices; k++) {
 		curr_polyline->x[k] =
 		    (curr_polyline->x[k] * transform->direction_cosines[0])
