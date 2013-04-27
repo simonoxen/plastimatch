@@ -12,7 +12,7 @@
 #include "plm_image.h"
 #include "plm_math.h"
 #include "pstring.h"
-#include "rtds.h"
+#include "rt_study.h"
 #include "rtss.h"
 #include "synthetic_mha.h"
 
@@ -32,7 +32,7 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
     Synthetic_mha_parms *sm_parms = &parms->sm_parms;
 
     /* Create image */
-    Rtds rtds;
+    Rt_study rtds;
     if (parms->output_dicom.not_empty() 
         || parms->output_ss_img_fn.not_empty()
         || parms->output_ss_list_fn.not_empty())

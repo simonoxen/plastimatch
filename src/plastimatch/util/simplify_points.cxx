@@ -7,7 +7,7 @@
 
 #include "itk_pointset.h"
 #include "logfile.h"
-#include "rtds.h"
+#include "rt_study.h"
 #include "rtss.h"
 #include "rtss_structure.h"
 #include "rtss_structure_set.h"
@@ -25,7 +25,7 @@ int compare (const void * a, const void * b)
     Actual function that simplifies the contours
    ----------------------------------------------------------------------- */
 void
-do_simplify (Rtds *rtds, float percentage)
+do_simplify (Rt_study *rtds, float percentage)
 {
     int num_structures=0;
     int first_index_to_remove=0;

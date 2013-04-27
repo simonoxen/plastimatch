@@ -16,8 +16,8 @@
 #include "path_util.h"
 #include "plm_image.h"
 #include "print_and_exit.h"
-#include "rtds.h"
-#include "rtds_p.h"
+#include "rt_study.h"
+#include "rt_study_p.h"
 #include "rtss.h"
 #include "rtss_structure_set.h"
 #include "slice_index.h"
@@ -30,30 +30,30 @@
 #include "xio_patient.h"
 #include "xio_structures.h"
 
-Rtds::Rtds ()
+Rt_study::Rt_study ()
 {
-    d_ptr = new Rtds_private;
+    d_ptr = new Rt_study_private;
 }
 
-Rtds::~Rtds ()
+Rt_study::~Rt_study ()
 {
     delete d_ptr;
 }
 
 void
-Rtds::load_image (const char *fn)
+Rt_study::load_image (const char *fn)
 {
     d_ptr->m_img = Plm_image::New (new Plm_image (fn));
 }
 
 void
-Rtds::load_image (const std::string& fn)
+Rt_study::load_image (const std::string& fn)
 {
     this->load_image (fn.c_str());
 }
 
 void
-Rtds::load_dicom_dir (const char *dicom_dir)
+Rt_study::load_dicom_dir (const char *dicom_dir)
 {
     const char *dicom_dir_tmp;  /* In case dicom_dir is a file, not dir */
 
@@ -71,7 +71,7 @@ Rtds::load_dicom_dir (const char *dicom_dir)
 }
 
 void
-Rtds::load_dicom (const char *dicom_dir)
+Rt_study::load_dicom (const char *dicom_dir)
 {
     if (!dicom_dir) {
         return;
@@ -85,7 +85,7 @@ Rtds::load_dicom (const char *dicom_dir)
 }
 
 void
-Rtds::load_dicom_rtss (const char *dicom_path)
+Rt_study::load_dicom_rtss (const char *dicom_path)
 {
     d_ptr->m_rtss.reset ();
 #if PLM_DCM_USE_DCMTK
@@ -99,7 +99,7 @@ Rtds::load_dicom_rtss (const char *dicom_path)
 }
 
 void
-Rtds::load_dicom_dose (const char *dicom_path)
+Rt_study::load_dicom_dose (const char *dicom_path)
 {
 #if PLM_DCM_USE_DCMTK
     this->load_dcmtk (dicom_path);
@@ -111,7 +111,7 @@ Rtds::load_dicom_dose (const char *dicom_path)
 }
 
 void
-Rtds::load_xio (
+Rt_study::load_xio (
     const char *xio_dir,
     Slice_index *rdd
 )
@@ -231,14 +231,14 @@ Rtds::load_xio (
 }
 
 void
-Rtds::load_ss_img (const char *ss_img, const char *ss_list)
+Rt_study::load_ss_img (const char *ss_img, const char *ss_list)
 {
     d_ptr->m_rtss = Rtss::New (new Rtss (this));
     d_ptr->m_rtss->load (ss_img, ss_list);
 }
 
 void
-Rtds::load_dose_img (const char *dose_img)
+Rt_study::load_dose_img (const char *dose_img)
 {
     if (d_ptr->m_dose) {
         d_ptr->m_dose.reset();
@@ -249,7 +249,7 @@ Rtds::load_dose_img (const char *dose_img)
 }
 
 void
-Rtds::load_rdd (const char *image_directory)
+Rt_study::load_rdd (const char *image_directory)
 {
     d_ptr->m_slice_index->load (image_directory);
 
@@ -271,7 +271,7 @@ Rtds::load_rdd (const char *image_directory)
 }
 
 void
-Rtds::load_dose_xio (const char *dose_xio)
+Rt_study::load_dose_xio (const char *dose_xio)
 {
     if (d_ptr->m_dose) {
         d_ptr->m_dose.reset();
@@ -285,7 +285,7 @@ Rtds::load_dose_xio (const char *dose_xio)
 }
 
 void
-Rtds::load_dose_astroid (const char *dose_astroid)
+Rt_study::load_dose_astroid (const char *dose_astroid)
 {
     if (d_ptr->m_dose) {
         d_ptr->m_dose.reset();
@@ -299,7 +299,7 @@ Rtds::load_dose_astroid (const char *dose_astroid)
 }
 
 void
-Rtds::load_dose_mc (const char *dose_mc)
+Rt_study::load_dose_mc (const char *dose_mc)
 {
     if (d_ptr->m_dose) {
         d_ptr->m_dose.reset();
@@ -312,21 +312,21 @@ Rtds::load_dose_mc (const char *dose_mc)
 }
 
 void 
-Rtds::load_cxt (const char *input_fn, Slice_index *rdd)
+Rt_study::load_cxt (const char *input_fn, Slice_index *rdd)
 {
     d_ptr->m_rtss = Rtss::New (new Rtss (this));
     d_ptr->m_rtss->load_cxt (input_fn, rdd);
 }
 
 void 
-Rtds::load_prefix (const char *input_fn)
+Rt_study::load_prefix (const char *input_fn)
 {
     d_ptr->m_rtss = Rtss::New (new Rtss (this));
     d_ptr->m_rtss->load_prefix (input_fn);
 }
 
 void
-Rtds::save_dicom (const char *dicom_dir)
+Rt_study::save_dicom (const char *dicom_dir)
 {
     if (!dicom_dir) {
         return;
@@ -340,7 +340,7 @@ Rtds::save_dicom (const char *dicom_dir)
 }
 
 void
-Rtds::save_dicom_dose (const char *dicom_dir)
+Rt_study::save_dicom_dose (const char *dicom_dir)
 {
     if (!dicom_dir) {
         return;
@@ -355,7 +355,7 @@ Rtds::save_dicom_dose (const char *dicom_dir)
 }
 
 void
-Rtds::save_dose (const char* fname)
+Rt_study::save_dose (const char* fname)
 {
     if (d_ptr->m_dose) {
         d_ptr->m_dose->save_image (fname);
@@ -363,7 +363,7 @@ Rtds::save_dose (const char* fname)
 }
 
 void
-Rtds::save_dose (const char* fname, Plm_image_type image_type)
+Rt_study::save_dose (const char* fname, Plm_image_type image_type)
 {
     if (d_ptr->m_dose) {
         d_ptr->m_dose->convert_and_save (fname, image_type);
@@ -371,7 +371,7 @@ Rtds::save_dose (const char* fname, Plm_image_type image_type)
 }
 
 void 
-Rtds::set_user_metadata (std::vector<std::string>& metadata)
+Rt_study::set_user_metadata (std::vector<std::string>& metadata)
 {
     Metadata *study_metadata = d_ptr->m_drs->get_study_metadata ();
 
@@ -394,49 +394,49 @@ Rtds::set_user_metadata (std::vector<std::string>& metadata)
 }
 
 bool
-Rtds::have_image ()
+Rt_study::have_image ()
 {
     return (bool) d_ptr->m_img;
 }
 
 Plm_image::Pointer
-Rtds::get_image ()
+Rt_study::get_image ()
 {
     return d_ptr->m_img;
 }
 
 void 
-Rtds::set_image (Plm_image* pli)
+Rt_study::set_image (Plm_image* pli)
 {
     d_ptr->m_img.reset (pli);
 }
 
 void 
-Rtds::set_image (Plm_image::Pointer pli)
+Rt_study::set_image (Plm_image::Pointer pli)
 {
     d_ptr->m_img = pli;
 }
 
 bool
-Rtds::have_dose ()
+Rt_study::have_dose ()
 {
     return (bool) d_ptr->m_dose;
 }
 
 void 
-Rtds::set_dose (Plm_image *pli)
+Rt_study::set_dose (Plm_image *pli)
 {
     d_ptr->m_dose.reset (pli);
 }
 
 void 
-Rtds::set_dose (FloatImageType::Pointer itk_dose)
+Rt_study::set_dose (FloatImageType::Pointer itk_dose)
 {
     d_ptr->m_dose.reset (new Plm_image (itk_dose));
 }
 
 void 
-Rtds::set_dose (Volume *vol)
+Rt_study::set_dose (Volume *vol)
 {
     if (!vol) return;
     d_ptr->m_dose = Plm_image::New();
@@ -446,49 +446,49 @@ Rtds::set_dose (Volume *vol)
 }
 
 bool
-Rtds::have_rtss ()
+Rt_study::have_rtss ()
 {
     return (bool) d_ptr->m_rtss;
 }
 
 Rtss::Pointer
-Rtds::get_rtss ()
+Rt_study::get_rtss ()
 {
     return d_ptr->m_rtss;
 }
 
 void 
-Rtds::set_rtss (Rtss::Pointer rtss)
+Rt_study::set_rtss (Rtss::Pointer rtss)
 {
     d_ptr->m_rtss = rtss;
 }
 
 Xio_ct_transform*
-Rtds::get_xio_ct_transform ()
+Rt_study::get_xio_ct_transform ()
 {
     return d_ptr->m_xio_transform;
 }
 
 const std::string&
-Rtds::get_xio_dose_filename (void) const
+Rt_study::get_xio_dose_filename (void) const
 {
     return d_ptr->m_xio_dose_filename;
 }
 
 Metadata*
-Rtds::get_metadata (void)
+Rt_study::get_metadata (void)
 {
     return d_ptr->m_meta;
 }
 
 Slice_index*
-Rtds::get_slice_index ()
+Rt_study::get_slice_index ()
 {
     return d_ptr->m_slice_index;
 }
 
 Volume*
-Rtds::get_image_volume_short ()
+Rt_study::get_image_volume_short ()
 {
     if (!d_ptr->m_img) {
         return 0;
@@ -497,7 +497,7 @@ Rtds::get_image_volume_short ()
 }
 
 Volume*
-Rtds::get_image_volume_float (void)
+Rt_study::get_image_volume_float (void)
 {
     if (!d_ptr->m_img) {
         return 0;
@@ -506,13 +506,13 @@ Rtds::get_image_volume_float (void)
 }
 
 bool
-Rtds::has_dose ()
+Rt_study::has_dose ()
 {
     return (d_ptr->m_dose != 0);
 }
 
 Plm_image*
-Rtds::get_dose_plm_image ()
+Rt_study::get_dose_plm_image ()
 {
     if (!d_ptr->m_dose) {
         return 0;
@@ -521,7 +521,7 @@ Rtds::get_dose_plm_image ()
 }
 
 Volume*
-Rtds::get_dose_volume_float ()
+Rt_study::get_dose_volume_float ()
 {
     if (!d_ptr->m_dose) {
         return 0;

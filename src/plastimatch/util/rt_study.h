@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _rtds_h_
-#define _rtds_h_
+#ifndef _rt_study_h_
+#define _rt_study_h_
 
 #include "plmutil_config.h"
 #include <vector>
@@ -13,24 +13,24 @@
 
 class Metadata;
 class Plm_image;
-class Rtds_private;
+class Rt_study_private;
 class Slice_index;
 class Volume;
 class Xio_ct_transform;
 
 /*! \brief 
- * The Rtds class encapsulates the concept of a radiotherapy planning 
+ * The Rt_study class encapsulates the concept of a radiotherapy planning 
  * data set, including image, structure set, and dose.
  */
-class PLMUTIL_API Rtds {
+class PLMUTIL_API Rt_study {
 public:
-    SMART_POINTER_SUPPORT (Rtds);
+    SMART_POINTER_SUPPORT (Rt_study);
 public:
-    Rtds_private *d_ptr;
+    Rt_study_private *d_ptr;
 
 public:
-    Rtds ();
-    ~Rtds ();
+    Rt_study ();
+    ~Rt_study ();
 
     void load_dicom_dir (const char *dicom_dir);
     void load_dicom (const char *dicom_dir); 

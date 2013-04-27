@@ -12,12 +12,12 @@
 #endif
 #include "plm_image.h"
 #include "plm_path.h"
-#include "rtds.h"
-#include "rtds_p.h"
+#include "rt_study.h"
+#include "rt_study_p.h"
 #include "rtss.h"
 
 void
-Rtds::load_gdcm (const char *dicom_dir)
+Rt_study::load_gdcm (const char *dicom_dir)
 {
     if (!dicom_dir) {
 	return;
@@ -52,21 +52,21 @@ Rtds::load_gdcm (const char *dicom_dir)
 }
 
 void
-Rtds::save_gdcm (const char *output_dir)
+Rt_study::save_gdcm (const char *output_dir)
 {
     if (d_ptr->m_img) {
-	printf ("Rtds::save_dicom: save_short_dicom()\n");
+	printf ("Rt_study::save_dicom: save_short_dicom()\n");
 	d_ptr->m_img->save_short_dicom (output_dir, d_ptr->m_slice_index,
             this->get_metadata ());
     }
 #if GDCM_VERSION_1
     if (d_ptr->m_rtss) {
-	printf ("Rtds::save_dicom: save_gdcm_rtss()\n");
+	printf ("Rt_study::save_dicom: save_gdcm_rtss()\n");
 	d_ptr->m_rtss->save_gdcm_rtss (output_dir, d_ptr->m_slice_index);
     }
     if (this->has_dose()) {
 	char fn[_MAX_PATH];
-	printf ("Rtds::save_dicom: gdcm_save_dose()\n");
+	printf ("Rt_study::save_dicom: gdcm_save_dose()\n");
 	snprintf (fn, _MAX_PATH, "%s/%s", output_dir, "dose.dcm");
 	gdcm1_dose_save (d_ptr->m_dose.get(), this->get_metadata(), 
             d_ptr->m_slice_index, fn);

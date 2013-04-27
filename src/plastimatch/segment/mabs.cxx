@@ -28,7 +28,7 @@
 #include "print_and_exit.h"
 #include "registration_data.h"
 #include "registration_parms.h"
-#include "rtds.h"
+#include "rt_study.h"
 #include "rtss.h"
 #include "rtss_structure_set.h"
 #include "string_util.h"
@@ -63,7 +63,7 @@ public:
     /* There is one reference image at a time, which is the 
        image we are segmenting. */
     std::string ref_id;
-    Rtds ref_rtds;
+    Rt_study ref_rtds;
     std::list<std::string> atlas_list;
 
     /* Segmentation parameters */
@@ -358,7 +358,7 @@ Mabs::load_atlas_dir_list ()
 void
 Mabs::prep (const std::string& input_dir, const std::string& output_dir)
 {
-    Rtds rtds;
+    Rt_study rtds;
     Plm_timer timer;
 
     /* Load the rtds for the atlas */
@@ -464,7 +464,7 @@ Mabs::run_registration ()
     for (atl_it = d_ptr->atlas_list.begin();
          atl_it != d_ptr->atlas_list.end(); atl_it++)
     {
-        Rtds rtds;
+        Rt_study rtds;
         std::string path = *atl_it;
         std::string atlas_id = basename (path);
         std::string atlas_input_path = string_format ("%s/atlas/%s",

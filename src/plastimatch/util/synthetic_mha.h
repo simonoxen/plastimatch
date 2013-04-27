@@ -9,7 +9,7 @@
 #include "plm_image_type.h"
 #include "pstring.h"
 
-class Rtds;
+class Rt_study;
 
 enum Pattern_type {
     PATTERN_DOSE,
@@ -115,6 +115,6 @@ public:
     }
 };
 
-PLMUTIL_API void synthetic_mha (Rtds *rtds, Synthetic_mha_parms *parms);
+PLMUTIL_API void synthetic_mha (Rt_study *rtds, Synthetic_mha_parms *parms);
 
 #endif

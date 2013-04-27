@@ -6,7 +6,6 @@
 #include "dcmtk/ofstd/ofstream.h"
 #include "dcmtk/dcmdata/dctk.h"
 
-#include "dcmtk_image.h"
 #include "dcmtk_rtss.h"
 #include "dcmtk_save.h"
 #include "dcmtk_save_p.h"

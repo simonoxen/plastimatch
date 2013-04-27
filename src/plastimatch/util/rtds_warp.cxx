@@ -17,7 +17,7 @@
 #include "plm_warp.h"
 #include "print_and_exit.h"
 #include "pstring.h"
-#include "rtds.h"
+#include "rt_study.h"
 #include "rtds_warp.h"
 #include "rtss.h"
 #include "rtss_structure_set.h"
@@ -29,7 +29,7 @@
 #include "xio_dose.h"
 
 static void
-load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
+load_input_files (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms)
 {
     if (parms->input_fn.not_empty ()) {
         switch (file_type) {
@@ -112,7 +112,7 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 
 static void
 save_ss_img (
-    Rtds *rtds, 
+    Rt_study *rtds, 
     Xform *xf, 
     Plm_image_header *pih, 
     Warp_parms *parms
@@ -178,7 +178,7 @@ save_ss_img (
 
 static void
 warp_and_save_ss (
-    Rtds *rtds,  
+    Rt_study *rtds,  
     Xform *xf, 
     Plm_image_header *pih, 
     Warp_parms *parms)
@@ -251,7 +251,7 @@ warp_and_save_ss (
 }
 
 void
-rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
+rtds_warp (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms)
 {
     Plm_patient plm_patient;
 
@@ -361,7 +361,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     {
         Plm_image *im_out;
         im_out = new Plm_image;
-        lprintf ("Rtds_warp: Warping m_img\n");
+        lprintf ("Rt_study_warp: Warping m_img\n");
         plm_warp (im_out, &vf, &xform, &pih, rtds->get_image().get(), 
             parms->default_val, parms->use_itk, parms->interp_lin);
         rtds->set_image (im_out);
@@ -369,7 +369,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 
     /* Save output image */
     if (parms->output_img_fn.not_empty() && rtds->have_image()) {
-        lprintf ("Rtds_warp: Saving m_img (%s)\n",
+        lprintf ("Rt_study_warp: Saving m_img (%s)\n",
             (const char*) parms->output_img_fn);
         rtds->get_image()->convert_and_save (
             (const char*) parms->output_img_fn, 
@@ -383,7 +383,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
             || parms->output_xio_dirname.not_empty()
             || parms->output_dicom.not_empty()))
     {
-        lprintf ("Rtds_warp: Warping dose\n");
+        lprintf ("Rt_study_warp: Warping dose\n");
         Plm_image *im_out;
         im_out = new Plm_image;
         plm_warp (im_out, 0, &xform, &pih, rtds->get_dose_plm_image(), 0, 
@@ -399,7 +399,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     /* Save output dose image */
     if (parms->output_dose_img_fn.not_empty() && rtds->has_dose())
     {
-        lprintf ("Rtds_warp: Saving dose image (%s)\n", 
+        lprintf ("Rt_study_warp: Saving dose image (%s)\n", 
             (const char*) parms->output_dose_img_fn);
 #if defined (commentout)
         rtds->m_dose->convert_and_save (
@@ -418,7 +418,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     {
         Pstring fn;
 
-        lprintf ("Rtds_warp: Saving xio dose.\n");
+        lprintf ("Rt_study_warp: Saving xio dose.\n");
         fn.format ("%s/%s", (const char*) parms->output_xio_dirname, "dose");
         xio_dose_save (
             rtds->get_dose_plm_image(),
@@ -432,7 +432,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     if (parms->xf_in_fn.not_empty() 
         && parms->output_vf_fn.not_empty())
     {
-        lprintf ("Rtds_warp: Saving vf.\n");
+        lprintf ("Rt_study_warp: Saving vf.\n");
         itk_image_save (vf, (const char*) parms->output_vf_fn);
     }
 
@@ -441,36 +441,36 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
         Rtss::Pointer rtss = rtds->get_rtss();
 
         /* Convert ss_img to cxt */
-        lprintf ("Rtds_warp: Convert ss_img to cxt.\n");
+        lprintf ("Rt_study_warp: Convert ss_img to cxt.\n");
         rtss->convert_ss_img_to_cxt ();
 
         /* Delete empty structures */
         if (parms->prune_empty) {
-            lprintf ("Rtds_warp: Prune empty structures.\n");
+            lprintf ("Rt_study_warp: Prune empty structures.\n");
             rtss->prune_empty ();
         }
 
         /* Set the DICOM reference info -- this sets the internal geometry 
            of the ss_image so we rasterize on the same slices as the CT? */
-        lprintf ("Rtds_warp: Apply dicom_dir.\n");
+        lprintf ("Rt_study_warp: Apply dicom_dir.\n");
         rtss->apply_dicom_dir (rtds->get_slice_index());
         
         /* Set the output geometry */
-        lprintf ("Rtds_warp: Set geometry from PIH.\n");
+        lprintf ("Rt_study_warp: Set geometry from PIH.\n");
         rtss->set_geometry (&pih);
 
         /* Set rasterization geometry */
-        lprintf ("Rtds_warp: Set rasterization geometry.\n");
+        lprintf ("Rt_study_warp: Set rasterization geometry.\n");
         rtss->get_structure_set()->set_rasterization_geometry ();
     }
 
     /* Warp and save structure set (except dicom) */
-    lprintf ("Rtds_warp: warp and save ss.\n");
+    lprintf ("Rt_study_warp: warp and save ss.\n");
     warp_and_save_ss (rtds, &xform, &pih, parms);
 
     /* Save dicom */
     if (parms->output_dicom.not_empty()) {
-        lprintf ("Rtds_warp: Save dicom.\n");
+        lprintf ("Rt_study_warp: Save dicom.\n");
         rtds->save_dicom ((const char*) parms->output_dicom);
     }
 }

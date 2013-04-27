@@ -14,7 +14,7 @@
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "plm_math.h"
-#include "rtds.h"
+#include "rt_study.h"
 #include "rtss.h"
 #include "rtss_structure_set.h"
 #include "synthetic_mha.h"
@@ -632,7 +632,7 @@ intens_dosemha (
 
 void
 synthetic_mha (
-    Rtds *rtds,
+    Rt_study *rtds,
     Synthetic_mha_parms *parms
 )
 {

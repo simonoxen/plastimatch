@@ -7,7 +7,6 @@
 #include "dcmtk/dcmdata/dctk.h"
 
 #include "dcmtk_loader.h"
-#include "dcmtk_image.h"
 #include "dcmtk_rt_study.h"
 #include "dcmtk_rt_study_p.h"
 #include "dcmtk_rtss.h"

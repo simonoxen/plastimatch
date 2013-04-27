@@ -44,7 +44,7 @@ set (PLMUTIL_LIBRARY_SRC
   plm_warp.cxx
   rasterize_slice.cxx
   rasterizer.cxx 
-  rtds.cxx 
+  rt_study.cxx rt_study.h 
   rtds_dcmtk.cxx
   rtds_gdcm.cxx
   rtds_warp.cxx 

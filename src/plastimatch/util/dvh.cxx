@@ -14,7 +14,7 @@
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "print_and_exit.h"
-#include "rtds.h"
+#include "rt_study.h"
 #include "rtss.h"
 #include "rtss_structure.h"
 #include "rtss_structure_set.h"

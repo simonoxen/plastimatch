@@ -10,7 +10,6 @@
 
 class Dvh_private;
 class Plm_image;
-class Rtds;
 class Rtss;
 
 class PLMUTIL_API Dvh {

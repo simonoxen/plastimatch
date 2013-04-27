@@ -6,9 +6,8 @@
 
 #include "plmutil_config.h"
 
-class Rtds;
+class Rt_study;
 
-PLMUTIL_C_API void do_simplify (Rtds *rtds, float percentage);
-//void do_simplify (Rtds *rtds, Plm_file_format file_type,int percentage);
+PLMUTIL_C_API void do_simplify (Rt_study *rtds, float percentage);
 
 #endif

@@ -14,7 +14,7 @@
 
 class Plm_image;
 class Plm_image_header;
-class Rtds;
+class Rt_study;
 class Rtss_private;
 class Rtss_structure_set;
 class Rtss_structure;
@@ -30,7 +30,7 @@ public:
     Rtss_private *d_ptr;
 
 public:
-    Rtss (Rtds *rtds = 0);
+    Rtss (Rt_study *rtds = 0);
     ~Rtss ();
 
     void clear ();

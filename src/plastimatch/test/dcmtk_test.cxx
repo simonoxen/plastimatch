@@ -18,7 +18,7 @@ dcmtk_series_set_test (char *dicom_dir)
     dss.sort_all ();
     //dss.debug ();
 
-    Rtds rtds;
+    Rt_study rtds;
     dss.load_rtds (&rtds);
 
     if (rtds.m_img) {

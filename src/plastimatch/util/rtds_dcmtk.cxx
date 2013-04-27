@@ -10,11 +10,11 @@
 #endif
 #include "plm_image.h"
 #include "rtss.h"
-#include "rtds.h"
-#include "rtds_p.h"
+#include "rt_study.h"
+#include "rt_study_p.h"
 
 void
-Rtds::load_dcmtk (const char *dicom_path)
+Rt_study::load_dcmtk (const char *dicom_path)
 {
 #if PLM_DCM_USE_DCMTK
     Dcmtk_rt_study drs;
@@ -32,7 +32,7 @@ Rtds::load_dcmtk (const char *dicom_path)
 }
 
 void
-Rtds::save_dcmtk (const char *dicom_dir)
+Rt_study::save_dcmtk (const char *dicom_dir)
 {
 #if PLM_DCM_USE_DCMTK
     Dcmtk_rt_study drs;
@@ -48,7 +48,7 @@ Rtds::save_dcmtk (const char *dicom_dir)
 }
 
 void
-Rtds::save_dcmtk_dose (const char *dicom_dir)
+Rt_study::save_dcmtk_dose (const char *dicom_dir)
 {
 #if PLM_DCM_USE_DCMTK
     Dcmtk_rt_study drs;

@@ -7,9 +7,9 @@
 #include "plmutil_config.h"
 #include "base/plm_file_format.h"
 
-class Rtds;
+class Rt_study;
 class Warp_parms;
 
-PLMUTIL_API void rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms);
+PLMUTIL_API void rtds_warp (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms);
 
 #endif

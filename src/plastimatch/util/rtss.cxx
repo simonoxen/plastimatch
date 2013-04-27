@@ -25,7 +25,7 @@
 #include "print_and_exit.h"
 #include "pstring.h"
 #include "rasterizer.h"
-#include "rtds.h"
+#include "rt_study.h"
 #include "rtss.h"
 #include "rtss_structure.h"
 #include "rtss_structure_set.h"
@@ -68,7 +68,7 @@ compose_prefix_fn (
         extension);
 }
 
-Rtss::Rtss (Rtds *rtds)
+Rtss::Rtss (Rt_study *rtds)
 {
     this->d_ptr = new Rtss_private;
 

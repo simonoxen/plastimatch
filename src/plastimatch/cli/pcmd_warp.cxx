@@ -11,7 +11,7 @@
 #include "plm_file_format.h"
 #include "print_and_exit.h"
 #include "pstring.h"
-#include "rtds.h"
+#include "rt_study.h"
 #include "rtds_warp.h"
 #include "warp_parms.h"
 
@@ -318,7 +318,7 @@ do_command_warp (int argc, char* argv[])
 {
     Warp_parms parms;
     Plm_file_format file_type;
-    Rtds rtds;
+    Rt_study rtds;
 
     /* Parse command line parameters */
     plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv, 1);
