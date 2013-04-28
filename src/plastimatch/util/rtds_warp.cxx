@@ -13,7 +13,6 @@
 #include "logfile.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
-#include "plm_patient.h"
 #include "plm_warp.h"
 #include "print_and_exit.h"
 #include "pstring.h"
@@ -253,8 +252,6 @@ warp_and_save_ss (
 void
 rtds_warp (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms)
 {
-    Plm_patient plm_patient;
-
     DeformationFieldType::Pointer vf = DeformationFieldType::New();
     Xform xform;
     Plm_image_header pih;
@@ -262,7 +259,6 @@ rtds_warp (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms)
     /* Load referenced DICOM directory */
     if (parms->referenced_dicom_dir.not_empty()) {
         lprintf ("Loading RDD\n");
-        plm_patient.load_rdd ((const char*) parms->referenced_dicom_dir);
         rtds->load_rdd ((const char*) parms->referenced_dicom_dir);
     }
 
