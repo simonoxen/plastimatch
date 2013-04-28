@@ -1250,6 +1250,7 @@ set_tests_properties (plm-boundary-a-check
 ##   plm convert dicom c: make prefix images from lung-1
 ##   plm convert dicom d: error testing on non-existant directory
 ##   plm convert dicom e: error testing on directory without dicom files
+##   plm convert dicom f: dicom rtss -> dicom rtss, with referenced ct
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-convert-dicom-a" 
@@ -1331,6 +1332,15 @@ plm_add_test (
   "convert;--input;${PLM_BUILD_TESTING_DIR}/tmp/;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-e.nrrd"
   "-DEXPECTED_ERRNO=1"
   )
+
+plm_add_test (
+  "plm-convert-dicom-f" 
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/rect-1-dicom/rtss.dcm;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-f-dicom;--referenced-ct;${PLM_BUILD_TESTING_DIR}/rect-2-dicom"
+  )
+## GCS FIX: Normally, I would want to probe the dicom data to see if they 
+## match.  But dicom_info only works with images, not rtss.
+set_tests_properties (plm-convert-dicom-f PROPERTIES DEPENDS "rect-1;rect2")
 
 ## -------------------------------------------------------------------------
 ## These tests are designed to check the handling of overlapping structures 
@@ -1451,13 +1461,13 @@ plm_add_test (
 ## -------------------------------------------------------------------------
 ## plastimatch-convert-dicom-xio (xio)
 ##   plm-convert-dicom-xio-a: ct only
-##   plm-convert-dicom-xio-b: rtss only, with referenced-ct
-##   plm-convert-dicom-xio-c: rtss only, with fixed image reference
+##   plm-convert-dicom-xio-b: rtss -> ss_img, with referenced-ct
+##   plm-convert-dicom-xio-c: rtss -> ss_img, with fixed image reference
 ##   plm-convert-dicom-xio-d: dose only, native sampling rate
-##   plm-convert-dicom-xio-e: input xio dicom, output plastimatch dicom
-##   plm-convert-dicom-xio-f: input plastimatch dicom, output plm dicom
+##   plm-convert-dicom-xio-e: input xio dicom, output plm dicom
+##   plm-convert-dicom-xio-f: input plm dicom, output plm dicom
 ##   plm-convert-dicom-xio-g: all inputs, image outputs
-##   plm-warp-dicom-xio-a:    all inputs, with transform, all outputs
+##   plm-warp-dicom-xio-a:    all inputs, bspline transform, all outputs
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-convert-dicom-xio-a"

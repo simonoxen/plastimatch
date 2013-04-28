@@ -60,11 +60,6 @@ Slice_list
     dicom_rt_study
     rtss
 
--- Test cases
-
-   
-
-
 
 ***** Rtss, rtss_structure_set, ... *****
 
