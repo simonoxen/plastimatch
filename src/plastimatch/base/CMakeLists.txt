@@ -20,7 +20,6 @@ set (PLMBASE_LIBRARY_SRC
   bspline_xform.cxx
   cxt_io.cxx
   dicom_probe.cxx
-  dicom_rt_study.cxx
   dicom_util.cxx
   dicom.dic
   direction_cosines.cxx 
@@ -72,6 +71,7 @@ set (PLMBASE_LIBRARY_SRC
   ray_trace_probe.cxx
   ray_trace_uniform.cxx
   rpl_volume.cxx
+  rt_study_metadata.cxx rt_study_metadata.h 
   rtog_io.cxx
   rtss.cxx rtss.h 
   rtss_roi.cxx rtss_roi.h 

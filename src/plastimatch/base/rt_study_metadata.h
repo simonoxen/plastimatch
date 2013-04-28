@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _dicom_rt_study_h_
-#define _dicom_rt_study_h_
+#ifndef _rt_study_metadata_h_
+#define _rt_study_metadata_h_
 
 #include "plmbase_config.h"
 #include <list>
@@ -11,21 +11,21 @@
 #include "pstring.h"
 #include "smart_pointer.h"
 
-class Dicom_rt_study_private;
+class Rt_study_metadata_private;
 class Metadata;
 class Plm_image;
 class Plm_image_header;
 class Slice_list;
 class Volume;
 
-class PLMBASE_API Dicom_rt_study {
+class PLMBASE_API Rt_study_metadata {
 public:
-    SMART_POINTER_SUPPORT (Dicom_rt_study);
+    SMART_POINTER_SUPPORT (Rt_study_metadata);
 public:
-    Dicom_rt_study_private *d_ptr;
+    Rt_study_metadata_private *d_ptr;
 public:
-    Dicom_rt_study ();
-    ~Dicom_rt_study ();
+    Rt_study_metadata ();
+    ~Rt_study_metadata ();
 public:
     void load (const char* dicom_path);
     void save (const char* dicom_path);

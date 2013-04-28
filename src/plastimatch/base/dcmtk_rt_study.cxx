@@ -12,9 +12,9 @@
 #include "dcmtk_rtss.h"
 #include "dcmtk_series.h"
 #include "dcmtk_slice_data.h"
-#include "dicom_rt_study.h"
 #include "plm_image.h"
 #include "plm_version.h"
+#include "rt_study_metadata.h"
 #include "rtss.h"
 #include "smart_pointer.h"
 #include "volume.h"
@@ -132,7 +132,7 @@ Dcmtk_rt_study::set_dose (Plm_image::Pointer image)
 }
 
 void 
-Dcmtk_rt_study::set_dicom_metadata (Dicom_rt_study::Pointer dicom_metadata)
+Dcmtk_rt_study::set_dicom_metadata (Rt_study_metadata::Pointer dicom_metadata)
 {
     d_ptr->dicom_metadata = dicom_metadata;
 }

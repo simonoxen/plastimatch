@@ -10,14 +10,12 @@
 
 #include "dcmtk_file.h"
 #include "dcmtk_metadata.h"
-//#include "dcmtk_save.h"
-//#include "dcmtk_save_p.h"
 #include "dcmtk_rt_study.h"
 #include "dcmtk_rt_study_p.h"
 #include "dcmtk_series.h"
 #include "dcmtk_slice_data.h"
 #include "dcmtk_uid.h"
-#include "dicom_rt_study.h"
+#include "rt_study_metadata.h"
 #include "file_util.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
@@ -29,7 +27,7 @@
 #include "volume.h"
 
 static void
-dcmtk_save_slice (const Dicom_rt_study::Pointer drs, Dcmtk_slice_data *dsd)
+dcmtk_save_slice (const Rt_study_metadata::Pointer drs, Dcmtk_slice_data *dsd)
 {
     Pstring tmp;
     DcmFileFormat fileformat;

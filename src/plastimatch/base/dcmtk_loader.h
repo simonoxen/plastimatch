@@ -7,8 +7,8 @@
 #include "plmbase_config.h"
 #include <map>
 #include <string>
-#include "dicom_rt_study.h"
 #include "plm_image.h"
+#include "rt_study_metadata.h"
 #include "rtss.h"
 
 class Dcmtk_loader_private;
@@ -29,7 +29,7 @@ public:
 public:
     void init ();
     void debug (void) const;
-    void set_dicom_metadata (Dicom_rt_study::Pointer drs);
+    void set_dicom_metadata (Rt_study_metadata::Pointer drs);
     Metadata *get_metadata ();
     Volume *get_volume ();
 

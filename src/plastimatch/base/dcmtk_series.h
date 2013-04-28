@@ -7,7 +7,7 @@
 #include "plmbase_config.h"
 #include <list>
 
-#include "dicom_rt_study.h"
+#include "rt_study_metadata.h"
 #include "plm_image.h"
 #include "plm_int.h"
 #include "pstring.h"
@@ -16,7 +16,7 @@ class DcmTagKey;
 
 class Dcmtk_file;
 class Dcmtk_series_private;
-class Dicom_rt_study;
+class Rt_study_metadata;
 class Plm_image;
 
 class Dcmtk_series 
@@ -47,7 +47,7 @@ public:
     void insert (Dcmtk_file* df);
     void sort (void);
 
-    void set_dicom_metadata (Dicom_rt_study::Pointer drs);
+    void set_dicom_metadata (Rt_study_metadata::Pointer drs);
     Plm_image::Pointer load_plm_image ();
 
     void debug (void) const;

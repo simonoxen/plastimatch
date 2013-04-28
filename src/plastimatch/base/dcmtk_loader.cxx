@@ -16,10 +16,10 @@
 #include "dcmtk_loader.h"
 #include "dcmtk_loader_p.h"
 #include "dcmtk_series.h"
-#include "dicom_rt_study.h"
 #include "file_util.h"
 #include "plm_image.h"
 #include "print_and_exit.h"
+#include "rt_study_metadata.h"
 #include "rtss.h"
 
 Dcmtk_loader::Dcmtk_loader ()
@@ -58,7 +58,7 @@ Dcmtk_loader::init ()
 }
 
 void
-Dcmtk_loader::set_dicom_metadata (Dicom_rt_study::Pointer drs)
+Dcmtk_loader::set_dicom_metadata (Rt_study_metadata::Pointer drs)
 {
     d_ptr->m_drs = drs;
 }

@@ -11,17 +11,17 @@
 #include "dcmtk_file.h"
 #include "dcmtk_metadata.h"
 #include "dcmtk_series.h"
-#include "dicom_rt_study.h"
 #include "logfile.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "print_and_exit.h"
+#include "rt_study_metadata.h"
 #include "volume.h"
 
 class Dcmtk_series_private {
 public:
     std::list<Dcmtk_file*> m_flist;
-    Dicom_rt_study::Pointer m_drs;
+    Rt_study_metadata::Pointer m_drs;
 
 public:
     Dcmtk_series_private () {
@@ -139,7 +139,7 @@ Dcmtk_series::sort (void)
 }
 
 void
-Dcmtk_series::set_dicom_metadata (Dicom_rt_study::Pointer drs)
+Dcmtk_series::set_dicom_metadata (Rt_study_metadata::Pointer drs)
 {
     d_ptr->m_drs = drs;
 }

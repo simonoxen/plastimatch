@@ -7,11 +7,11 @@
 #include "plmbase_config.h"
 #include <list>
 
-#include "dicom_rt_study.h"
 #include "itk_image.h"
 #include "plm_image.h"
 #include "plm_int.h"
 #include "pstring.h"
+#include "rt_study_metadata.h"
 #include "rtss.h"
 #include "volume.h"
 
@@ -49,7 +49,7 @@ public:
     Plm_image::Pointer get_dose ();
     void set_dose (Plm_image::Pointer image);
 
-    void set_dicom_metadata (Dicom_rt_study::Pointer dicom_metadata);
+    void set_dicom_metadata (Rt_study_metadata::Pointer dicom_metadata);
 public:
     void save_image (const char *dicom_path);
     void save_dose (const char *dicom_path);

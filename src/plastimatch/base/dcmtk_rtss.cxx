@@ -16,7 +16,6 @@
 #include "dcmtk_rt_study_p.h"
 #include "dcmtk_series.h"
 #include "dcmtk_slice_data.h"
-#include "dicom_rt_study.h"
 #include "file_util.h"
 #include "logfile.h"
 #include "metadata.h"

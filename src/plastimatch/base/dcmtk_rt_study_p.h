@@ -5,8 +5,8 @@
 #define _dcmtk_rt_study_p_h_
 
 #include "plmbase_config.h"
-#include "dicom_rt_study.h"
 #include "plm_image.h"
+#include "rt_study_metadata.h"
 #include "rtss.h"
 
 class Dcmtk_series;
@@ -34,7 +34,7 @@ public:
     Plm_image::Pointer img;
     Plm_image::Pointer dose;
 
-    Dicom_rt_study::Pointer dicom_metadata;
+    Rt_study_metadata::Pointer dicom_metadata;
 
 public:
     Dcmtk_rt_study_private ();

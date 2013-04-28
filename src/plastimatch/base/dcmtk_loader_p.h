@@ -8,8 +8,8 @@
 #include <map>
 #include <string>
 #include "dcmtk_series.h"
-#include "dicom_rt_study.h"
 #include "plm_image.h"
+#include "rt_study_metadata.h"
 #include "rtss.h"
 
 class Dcmtk_rt_study;
@@ -20,7 +20,7 @@ typedef std::pair<std::string, Dcmtk_series*> Dcmtk_series_map_pair;
 
 class Dcmtk_loader_private {
 public:
-    Dicom_rt_study::Pointer m_drs;
+    Rt_study_metadata::Pointer m_drs;
 
     Plm_image::Pointer img;
     Plm_image::Pointer dose;
@@ -42,8 +42,6 @@ public:
         for (it = m_smap.begin(); it != m_smap.end(); ++it) {
             delete (*it).second;
         }
-
-        /* Don't delete m_drs.  It belongs to caller. */
     }
 };
 
