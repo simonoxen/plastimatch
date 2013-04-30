@@ -30,7 +30,6 @@
 #include "rtss.h"
 #include "rtss_roi.h"
 #include "segmentation.h"
-#include "slice_index.h"
 #include "ss_list_io.h"
 #include "ss_img_extract.h"
 #include "string_util.h"

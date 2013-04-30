@@ -21,7 +21,6 @@
 #include "metadata.h"
 #include "plm_uid_prefix.h"
 #include "rt_study_metadata.h"
-#include "slice_index.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */
 #if defined GetCurrentTime

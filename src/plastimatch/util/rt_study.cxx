@@ -20,7 +20,6 @@
 #include "rt_study_p.h"
 #include "rtss.h"
 #include "segmentation.h"
-#include "slice_index.h"
 #include "volume.h"
 #include "xio_ct.h"
 #include "xio_ct_transform.h"

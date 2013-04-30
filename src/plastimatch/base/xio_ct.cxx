@@ -19,7 +19,6 @@
 #include "plm_endian.h"
 #include "plm_image.h"
 #include "print_and_exit.h"
-#include "slice_index.h"
 #include "volume.h"
 #include "xio_ct.h"
 #include "xio_ct_transform.h"

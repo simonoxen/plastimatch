@@ -1,4 +1,42 @@
 
+***** Rt_study API example *****
+
+/* Example #1, simple save using images */
+itk::Image<short,3>::Pointer itk_image;
+itk::Image<float,3>::Pointer itk_dose;
+itk::Image<unsigned char,3>::Pointer itk_structure_1;
+itk::Image<unsigned char,3>::Pointer itk_structure_2;
+
+Rt_study rt_study;
+rt_study.set_image (itk_image);
+rt_study.set_dose (itk_dose);
+rt_study.add_structure (itk_structure_1, "Body", "255\\0\\0");
+rt_study.add_structure (itk_structure_2, "Tumor", "0\\255\\0");
+rt_study.save ("output_directory");
+
+
+/* Example #2, save structure set that references existing CT image */
+Rt_study rt_study;
+rt_study.add_structure (itk_structure_1, "Body", "255\\0\\0");
+rt_study.add_structure (itk_structure_2, "Tumor", "0\\255\\0");
+
+const char *study_uid, *ct_series_uid, *for_uid;
+Rt_study_metadata::Pointer = rt_study.get_study_metadata();
+rt_study_metadata.set_study_uid (study_uid);
+rt_study_metadata.set_ct_series_uid (ct_series_uid);
+rt_study_metadata.set_frame_of_reference_uid (for_uid);
+rt_study_metadata.set_study_metadata (0x0010, 0x0010, "PATIENT^NAME");
+rt_study_metadata.set_study_metadata (0x0010, 0x0020, "PATIENT^ID");
+
+itk::Image<short,3>::Pointer itk_image;
+rt_study_metadata.set_image_header (itk_reference_image);
+for (int slice = 0; slice < num_slices; slice++) {
+    rt_study_metadata.set_slice_uid (slice, uid_string[slice]);
+}
+
+rt_study.save ("output_directory");
+
+
 ***** Which metadata goes where? *****
 
 PatientPosition ?

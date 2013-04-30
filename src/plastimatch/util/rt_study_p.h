@@ -8,7 +8,6 @@
 #include "metadata.h"
 #include "rt_study_metadata.h"
 #include "segmentation.h"
-#include "slice_index.h"
 #include "xio_ct_transform.h"
 
 class PLMUTIL_API Rt_study_private {

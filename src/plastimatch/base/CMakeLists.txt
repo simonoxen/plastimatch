@@ -75,8 +75,7 @@ set (PLMBASE_LIBRARY_SRC
   rtog_io.cxx
   rtss.cxx rtss.h 
   rtss_roi.cxx rtss_roi.h 
-#  slice_index.cxx
-  slice_list.cxx
+  slice_list.cxx slice_list.h
   ss_list_io.cxx
   thumbnail.cxx
   vf_convolve.cxx
