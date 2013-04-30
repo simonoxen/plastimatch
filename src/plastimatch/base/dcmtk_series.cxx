@@ -420,6 +420,9 @@ Dcmtk_series::load_plm_image (void)
             d_ptr->m_drs->set_slice_uid (i, df->get_cstr (DCM_SOPInstanceUID));
         }
     }
+    if (d_ptr->m_drs) {
+        d_ptr->m_drs->set_slice_list_complete ();
+    }
 
     return pli;
 }

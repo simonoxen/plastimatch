@@ -6,12 +6,13 @@
 
 #include "plmbase_config.h"
 #include <string>
+#include "rt_study_metadata.h"
 
-class Slice_index;
+class Rt_study_metadata;
 
 std::string dicom_anon_patient_id (void);
 
-void dicom_load_rdd (Slice_index* rdd, const char* dicom_dir);
+void dicom_load_rdd (Rt_study_metadata::Pointer rsm, const char* dicom_dir);
 
 PLMBASE_C_API void 
 dicom_get_date_time (

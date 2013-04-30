@@ -121,7 +121,7 @@ public:
         m_region = image->GetLargestPossibleRegion ();
         m_direction = image->GetDirection ();
     }
-    static void clone (Plm_image_header *dest, Plm_image_header *src) {
+    static void clone (Plm_image_header *dest, const Plm_image_header *src) {
         dest->m_origin = src->m_origin;
         dest->m_spacing = src->m_spacing;
         dest->m_region = src->m_region;

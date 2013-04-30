@@ -7,11 +7,11 @@
 #include "plmbase_config.h"
 #if GDCM_VERSION_1
 
-class Slice_index;
+class Rt_study_metadata;
 
 void
 gdcm1_load_rdd (
-    Slice_index *rdd,
+    Rt_study_metadata *rdd,
     const char *dicom_dir
 );
 

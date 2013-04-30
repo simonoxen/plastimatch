@@ -8,19 +8,19 @@
 
 #include "cxt_io.h"
 #include "file_util.h"
+#include "metadata.h"
 #include "plm_math.h"
 #include "pstring.h"
+#include "rt_study_metadata.h"
 #include "rtss.h"
 #include "rtss_roi.h"
-#include "slice_index.h"
 
 #define CXT_BUFLEN 2048
 
 void
 cxt_load (
-    Rtss *cxt,         /* Output: load into this object */
-    Metadata *meta,                  /* Output: load into this object */
-    Slice_index *rdd,                /* Output: Also set some values here */
+    Rtss *cxt,                       /* Output: load into this object */
+    Rt_study_metadata *rsm,          /* Output: load into this object */
     const char *cxt_fn               /* Input: file to load from */
 )
 {
@@ -44,6 +44,8 @@ cxt_load (
 	fprintf (stderr, "Could not open contour file for read: %s\n", cxt_fn);
         exit (-1);
     }
+
+    Metadata *meta = rsm->get_study_metadata ();
 
     /* Part 1: Dicom info */
     while (1) {
@@ -90,24 +92,17 @@ cxt_load (
 		(const char*) val->data);
 	}
         else if (biseqcstr (tag, "STUDY_ID")) {
-	    if (rdd->m_study_id.empty()) {
-		rdd->m_study_id = (const char*) val->data;
-	    }
+            meta->set_metadata (0x0020, 0x0010, 
+                (const char*) val->data);
 	}
         else if (biseqcstr (tag, "CT_STUDY_UID")) {
-	    if (rdd->m_ct_study_uid.empty()) {
-		rdd->m_ct_study_uid = (const char*) val->data;
-	    }
+            rsm->set_study_uid ((const char*) val->data);
 	}
         else if (biseqcstr (tag, "CT_SERIES_UID")) {
-	    if (rdd->m_ct_series_uid.empty()) {
-		rdd->m_ct_series_uid = (const char*) val->data;
-	    }
+            rsm->set_ct_series_uid ((const char*) val->data);
 	}
         else if (biseqcstr (tag, "CT_FRAME_OF_REFERENCE_UID")) {
-	    if (rdd->m_ct_fref_uid.empty()) {
-		rdd->m_ct_fref_uid = (const char*) val->data;
-	    }
+            rsm->set_frame_of_reference_uid ((const char*) val->data);
 	}
         else if (biseqcstr (tag, "OFFSET")) {
 	    if (3 == sscanf ((const char*) val->data, "%f %f %f", 
@@ -261,9 +256,8 @@ not_successful:
 
 void
 cxt_save (
-    Rtss *cxt,    /* Input: load into this object */
-    Metadata *meta,             /* Input: load into this object */
-    Slice_index *rdd,           /* Input: Also save some values from here */
+    Rtss *cxt,                  /* Input: save this object */
+    Rt_study_metadata *rsm,     /* Input: save this object */
     const char* cxt_fn,         /* Input: File to save to */
     bool prune_empty            /* Input: Should we prune empty structures? */
 )
@@ -281,19 +275,22 @@ cxt_save (
     }
 
     /* Part 1: Dicom info */
-    if (rdd && rdd->m_ct_series_uid.not_empty()) {
-	fprintf (fp, "CT_SERIES_UID %s\n", (const char*) rdd->m_ct_series_uid);
+    Metadata *meta = rsm->get_study_metadata ();
+    /* GCS FIX: There needs to be a way that tells if these are 
+       loaded or some default anonymous value */
+    if (rsm) {
+	fprintf (fp, "CT_SERIES_UID %s\n", rsm->get_ct_series_uid());
     } else {
 	fprintf (fp, "CT_SERIES_UID\n");
     }
-    if (rdd && rdd->m_ct_study_uid.not_empty()) {
-	fprintf (fp, "CT_STUDY_UID %s\n", (const char*) rdd->m_ct_study_uid);
+    if (rsm) {
+	fprintf (fp, "CT_STUDY_UID %s\n", rsm->get_study_uid());
     } else {
 	fprintf (fp, "CT_STUDY_UID\n");
     }
-    if (rdd && rdd->m_ct_fref_uid.not_empty()) {
+    if (rsm) {
 	fprintf (fp, "CT_FRAME_OF_REFERENCE_UID %s\n", 
-	    (const char*) rdd->m_ct_fref_uid);
+	    rsm->get_frame_of_reference_uid());
     } else {
 	fprintf (fp, "CT_FRAME_OF_REFERENCE_UID\n");
     }
@@ -303,11 +300,8 @@ cxt_save (
 	meta->get_metadata (0x0010, 0x0020).c_str());
     fprintf (fp, "PATIENT_SEX %s\n",
 	meta->get_metadata (0x0010, 0x0040).c_str());
-    if (rdd && rdd->m_study_id.not_empty()) {
-	fprintf (fp, "STUDY_ID %s\n", (const char*) rdd->m_study_id);
-    } else {
-	fprintf (fp, "STUDY_ID\n");
-    }
+    fprintf (fp, "STUDY_ID %s\n", 
+	meta->get_metadata (0x0020, 0x0010).c_str());
     if (cxt->have_geometry) {
 	fprintf (fp, "OFFSET %g %g %g\n", cxt->m_offset[0],
 	    cxt->m_offset[1], cxt->m_offset[2]);

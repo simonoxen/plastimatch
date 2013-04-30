@@ -15,7 +15,7 @@
 #include "pstring.h"
 #include "rtss_roi.h"
 #include "rtss.h"
-#include "slice_index.h"
+#include "rt_study_metadata.h"
 #include "slice_list.h"
 
 static void
@@ -446,29 +446,9 @@ Rtss::set_rasterization_geometry (void)
 }
 
 void
-Rtss::apply_slice_index (const Slice_index *rdd)
+Rtss::apply_slice_index (const Rt_study_metadata *rsm)
 {
-    /* Geometry */
-    for (int d = 0; d < 3; d++) {
-        this->m_offset[d] = rdd->m_pih.m_origin[d];
-        this->m_dim[d] = rdd->m_pih.Size(d);
-        this->m_spacing[d] = rdd->m_pih.m_spacing[d];
-    }
-
-    /* Slice numbers and slice uids */
-    for (size_t i = 0; i < this->num_structures; i++) {
-        Rtss_roi *curr_structure = this->slist[i];
-        for (size_t j = 0; j < curr_structure->num_contours; j++) {
-            Rtss_contour *curr_polyline = curr_structure->pslist[j];
-            if (curr_polyline->num_vertices <= 0) {
-                continue;
-            }
-            rdd->get_slice_info (
-                &curr_polyline->slice_no,
-                &curr_polyline->ct_slice_uid,
-                curr_polyline->z[0]);
-        }
-    }
+    this->apply_slice_list (rsm->get_slice_list());
 }
 
 void

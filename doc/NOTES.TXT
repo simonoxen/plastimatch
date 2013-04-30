@@ -1,4 +1,9 @@
 
+***** Which metadata goes where? *****
+
+PatientPosition ?
+StudyID ?
+
 ***** Slice list, slice index *****
 
 Slice_list

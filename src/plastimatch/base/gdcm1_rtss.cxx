@@ -17,12 +17,13 @@
 #include "file_util.h"
 #include "gdcm1_rtss.h"
 #include "gdcm1_util.h"
+#include "metadata.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "print_and_exit.h"
+#include "rt_study_metadata.h"
 #include "rtss_roi.h"
 #include "rtss.h"
-#include "slice_index.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */
 #if defined GetCurrentTime
@@ -54,8 +55,7 @@ gdcm_rtss_probe (const char *rtss_fn)
 void
 gdcm_rtss_load (
     Rtss *cxt,   /* Output: this gets loaded into */
-    Metadata *meta,            /* Output: this gets updated too */
-    Slice_index *rdd,          /* Output: this gets updated too */
+    Rt_study_metadata *rsm,    /* Output: this gets updated too */
     const char *rtss_fn        /* Input: the file that gets read */
 )
 {
@@ -76,6 +76,8 @@ gdcm_rtss_load (
 	    rtss_fn);
     }
 
+    Metadata *meta = rsm->get_study_metadata ();
+
     /* PatientName */
     set_metadata_from_gdcm_file (meta, rtss_file, 0x0010, 0x0010);
 
@@ -86,18 +88,32 @@ gdcm_rtss_load (
     set_metadata_from_gdcm_file (meta, rtss_file, 0x0010, 0x0040);
 
     /* StudyID */
+    /* GCS FIX: It would be useful to distinguish a loaded value 
+       from a generated one */
+#if defined (commentout)
     if (rdd->m_study_id.empty()) {
 	tmp = rtss_file->GetEntryValue (0x0020, 0x0010);
 	if (tmp != gdcm::GDCM_UNFOUND) {
 	    rdd->m_study_id = tmp.c_str();
 	}
     }
+#endif
+    tmp = rtss_file->GetEntryValue (0x0020, 0x0010);
+    if (tmp != gdcm::GDCM_UNFOUND) {
+        meta->set_metadata (0x0020, 0x0010, tmp.c_str());
+    }
 
     /* StudyInstanceUID */
+    /* GCS FIX: Here is another case where it would be useful to distinguish
+       a loaded UID from a generated UID. 
+       Until I get a fix, I'll omit loading this, and presume it is 
+       loaded through either image load or referenced-ct */
+#if defined (commentout)
     if (rdd->m_ct_study_uid.empty()) {
 	tmp = rtss_file->GetEntryValue (0x0020, 0x000d);
 	rdd->m_ct_study_uid = tmp.c_str();
     }
+#endif
 
     /* ReferencedFrameOfReferenceSequence */
     gdcm::SeqEntry *rfor_seq = rtss_file->GetSeqEntry (0x3006,0x0010);
@@ -106,13 +122,15 @@ gdcm_rtss_load (
 	/* FrameOfReferenceUID */
 	item = rfor_seq->GetFirstSQItem ();
 	if (item) {
+            /* GCS FIX: Ditto */
+#if defined (commentout)
 	    tmp = item->GetEntryValue (0x0020,0x0052);
 	    if (rdd->m_ct_fref_uid.empty()) {
 		if (tmp != gdcm::GDCM_UNFOUND) {
 		    rdd->m_ct_fref_uid = tmp.c_str();
 		}
 	    }
-	
+#endif
 	    /* RTReferencedStudySequence */
 	    gdcm::SeqEntry *rtrstudy_seq 
 		= item->GetSeqEntry (0x3006, 0x0012);
@@ -128,12 +146,15 @@ gdcm_rtss_load (
 
 			/* SeriesInstanceUID */
 			if (item) {
+                            /* GCS FIX: Ditto */
+#if defined (commentout)
 			    tmp = item->GetEntryValue (0x0020, 0x000e);
 			    if (rdd->m_ct_series_uid.empty()) {
 				if (tmp != gdcm::GDCM_UNFOUND) {
 				    rdd->m_ct_series_uid = tmp.c_str();
 				}
 			    }
+#endif
 			}
 		    }
 		}
@@ -314,8 +335,7 @@ plm_ComputeGroup0002Length (gdcm::File *gf)
 void
 gdcm_rtss_save (
     Rtss *cxt,   /* Input: this is what gets saved */
-    Metadata *meta,            /* Input: need to look at this too */
-    Slice_index *rdd,          /* Input: need to look at this too */
+    Rt_study_metadata *rsm,    /* Input: need to look at this too */
     char *rtss_fn              /* Input: name of file to write to */
 )
 {
@@ -344,6 +364,8 @@ gdcm_rtss_save (
     /* FIX: DICOM file meta information cannot be stored when writing with
        Document::WriteContent(). So there's no TransferSyntaxUID etc.
        We need a better workaround for the gdcm bug. */
+
+    Metadata *meta = rsm->get_study_metadata();
 
     /* InstanceCreationDate */
     gf->InsertValEntry (current_date, 0x0008, 0x0012);
@@ -389,12 +411,12 @@ gdcm_rtss_save (
     /* PatientPosition */
     // gf->InsertValEntry (xxx, 0x0018, 0x5100);
     /* StudyInstanceUID */
-    gf->InsertValEntry ((const char*) rdd->m_ct_study_uid, 0x0020, 0x000d);
+    gf->InsertValEntry ((const char*) rsm->get_study_uid(), 0x0020, 0x000d);
     /* SeriesInstanceUID */
     gf->InsertValEntry (gdcm::Util::CreateUniqueUID (PLM_UID_PREFIX), 
 	0x0020, 0x000e);
     /* StudyID */
-    gf->InsertValEntry ((const char*) rdd->m_study_id, 0x0020, 0x0010);
+    set_gdcm_file_from_metadata (gf, meta, 0x0020, 0x0010);
     /* SeriesNumber */
     gf->InsertValEntry ("103", 0x0020, 0x0011);
     /* InstanceNumber */
@@ -417,7 +439,7 @@ gdcm_rtss_save (
     gdcm::SQItem *rfor_item = new gdcm::SQItem (rfor_seq->GetDepthLevel());
     rfor_seq->AddSQItem (rfor_item, 1);
     /* FrameOfReferenceUID */
-    rfor_item->InsertValEntry ((const char*) rdd->m_ct_fref_uid, 
+    rfor_item->InsertValEntry (rsm->get_frame_of_reference_uid(),
 	0x0020, 0x0052);
     /* RTReferencedStudySequence */
     gdcm::SeqEntry *rtrstudy_seq = rfor_item->InsertSeqEntry (0x3006, 0x0012);
@@ -427,7 +449,7 @@ gdcm_rtss_save (
     /* ReferencedSOPClassUID = DetachedStudyManagementSOPClass */
     rtrstudy_item->InsertValEntry ("1.2.840.10008.3.1.2.3.1", 0x0008, 0x1150);
     /* ReferencedSOPInstanceUID */
-    rtrstudy_item->InsertValEntry ((const char*) rdd->m_ct_study_uid, 
+    rtrstudy_item->InsertValEntry (rsm->get_study_uid(),
 	0x0008, 0x1155);
     /* RTReferencedSeriesSequence */
     gdcm::SeqEntry *rtrseries_seq 
@@ -436,14 +458,15 @@ gdcm_rtss_save (
 	= new gdcm::SQItem (rtrseries_seq->GetDepthLevel());
     rtrseries_seq->AddSQItem (rtrseries_item, 1);
     /* SeriesInstanceUID */
-    rtrseries_item->InsertValEntry ((const char*) rdd->m_ct_series_uid,
+    rtrseries_item->InsertValEntry (rsm->get_ct_series_uid(),
 	0x0020, 0x000e);
     /* ContourImageSequence */
     gdcm::SeqEntry *ci_seq = rtrseries_item->InsertSeqEntry (0x3006, 0x0016);
-    if (rdd->m_ct_slice_uids.empty()) {
-	printf ("Warning: CT not found. "
+    if (!rsm->slice_list_complete()) {
+	printf ("Warning: CT UIDs not found. "
 	    "ContourImageSequence not generated.\n");
     }
+#if defined (commentout)
     int i = 1;
     for (std::vector<Pstring>::iterator it = rdd->m_ct_slice_uids.begin();
 	 it != rdd->m_ct_slice_uids.end();
@@ -454,6 +477,19 @@ gdcm_rtss_save (
 	/* Put item into sequence */
 	gdcm::SQItem *ci_item = new gdcm::SQItem (ci_seq->GetDepthLevel());
 	ci_seq->AddSQItem (ci_item, i++);
+	/* ReferencedSOPClassUID = CTImageStorage */
+	ci_item->InsertValEntry ("1.2.840.10008.5.1.4.1.1.2", 
+	    0x0008, 0x1150);
+	/* Put ReferencedSOPInstanceUID into item */
+	ci_item->InsertValEntry (tmp, 0x0008, 0x1155);
+    }
+#endif
+    for (int slice = 0, sqi = 1; slice < rsm->num_slices(); slice++, sqi++) {
+	/* Get SOPInstanceUID of CT slice */
+	std::string tmp = rsm->get_slice_uid (slice);
+	/* Put item into sequence */
+	gdcm::SQItem *ci_item = new gdcm::SQItem (ci_seq->GetDepthLevel());
+	ci_seq->AddSQItem (ci_item, sqi++);
 	/* ReferencedSOPClassUID = CTImageStorage */
 	ci_item->InsertValEntry ("1.2.840.10008.5.1.4.1.1.2", 
 	    0x0008, 0x1150);
@@ -477,7 +513,7 @@ gdcm_rtss_save (
 	    0x3006, 0x0022);
 	/* ReferencedFrameOfReferenceUID */
 	ssroi_item->InsertValEntry (
-		(const char*) rdd->m_ct_fref_uid, 0x3006, 0x0024);
+            rsm->get_frame_of_reference_uid(), 0x3006, 0x0024);
 	/* ROIName */
 	ssroi_item->InsertValEntry (
 	    (const char*) cxt->slist[i]->name, 0x3006, 0x0026);

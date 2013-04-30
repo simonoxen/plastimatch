@@ -26,7 +26,7 @@
 #include "plm_int.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
-#include "slice_index.h"
+#include "rt_study_metadata.h"
 #include "volume.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */
@@ -236,8 +236,7 @@ gdcm1_dose_load (Plm_image *pli, const char *dose_fn)
 void
 gdcm1_dose_save (
     Plm_image *pli,                     /* Input: dose image */
-    const Metadata *meta,           /* Input: patient name, etc. */
-    const Slice_index *rdd,    /* Input: CT series info */
+    const Rt_study_metadata *rsm, 
     const char *dose_fn                 /* Input: file to write to */
 )
 {
@@ -255,7 +254,8 @@ gdcm1_dose_save (
 
     make_directory_recursive (dose_fn);
 
-    
+    const Metadata *meta = rsm->get_dose_metadata ();
+
     /* ----------------------------------------------------------------- */
     /*     Part 1  -- General header                                     */
     /* ----------------------------------------------------------------- */
@@ -299,12 +299,12 @@ gdcm1_dose_save (
     /* SoftwareVersions */
     gf->InsertValEntry (PLASTIMATCH_VERSION_STRING, 0x0018, 0x1020);
     /* StudyInstanceUID */
-    gf->InsertValEntry ((const char*) rdd->m_ct_study_uid, 0x0020, 0x000d);
+    gf->InsertValEntry ((const char*) rsm->get_study_uid(), 0x0020, 0x000d);
     /* SeriesInstanceUID */
     gf->InsertValEntry (gdcm::Util::CreateUniqueUID (PLM_UID_PREFIX), 
 			0x0020, 0x000e);
     /* StudyID */
-    gf->InsertValEntry ((const char*) rdd->m_study_id, 0x0020, 0x0010);
+    set_gdcm_file_from_metadata (gf, meta, 0x0020, 0x0010);
     /* SeriesNumber */
     gf->InsertValEntry ("", 0x0020, 0x0011);
     /* InstanceNumber */
@@ -325,7 +325,7 @@ gdcm1_dose_save (
     gf->InsertValEntry (s, 0x0020, 0x0037);
 
     /* FrameOfReferenceUID */
-    gf->InsertValEntry ((const char*) rdd->m_ct_fref_uid, 0x0020, 0x0052);
+    gf->InsertValEntry (rsm->get_frame_of_reference_uid(), 0x0020, 0x0052);
 
     /* SamplesPerPixel */
     gf->InsertValEntry ("1", 0x0028, 0x0002);

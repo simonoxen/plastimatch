@@ -675,6 +675,38 @@ else ()
 endif ()
 
 ##-----------------------------------------------------------------------------
+##  GCS Temporary hack
+##  -- I had moved this to the src/plastimatch directory, but it needs to 
+##     be used to configure the tests as well...
+##  -- The final solution is probably to move Testing into src/plastimatch
+##-----------------------------------------------------------------------------
+
+option (PLM_CONFIG_PREFER_DCMTK 
+  "Use DCMTK instead of GDCM for DICOM operations" OFF)
+
+set (PLM_DCM_USE_DCMTK 0)
+if (PLM_CONFIG_DEBIAN_BUILD)
+  set (PLM_CONFIG_DISABLE_DCMTK FALSE)
+  set (PLM_CONFIG_PREFER_DCMTK TRUE)
+endif ()
+if (PLM_CONFIG_DISABLE_DCMTK)
+  set (DCMTK_FOUND FALSE)
+endif ()
+if (DCMTK_FOUND)
+  if (PLM_CONFIG_PREFER_DCMTK)
+    # User requested dcmtk
+    set (PLM_DCM_USE_DCMTK 1)
+  elseif (GDCM_VERSION_2)
+    # Gdcm 2.x
+    set (PLM_DCM_USE_DCMTK 1)
+  else ()
+    # Gdcm 1.x
+    set (PLM_DCM_USE_DCMTK 0)
+  endif ()
+endif ()
+
+
+##-----------------------------------------------------------------------------
 ##  VTK
 ##-----------------------------------------------------------------------------
 find_package (VTK)

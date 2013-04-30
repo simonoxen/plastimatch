@@ -21,6 +21,7 @@
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "print_and_exit.h"
+#include "rt_study_metadata.h"
 
 void
 gdcm1_series_test (char *dicom_dir)
@@ -268,19 +269,21 @@ Gdcm_series::get_slice_info (
 }
 
 void
-Gdcm_series::get_slice_uids (std::vector<Pstring> *slice_uids)
+Gdcm_series::get_slice_uids (Rt_study_metadata *rsm)
 {
-    slice_uids->clear ();
+    rsm->reset_slice_uids ();
     if (!this->m_have_ct) {
 	return;
     }
 
-    for (gdcm::FileList::iterator it =  this->m_ct_file_list->begin();
+    int i = 0;
+    for (gdcm::FileList::iterator it = this->m_ct_file_list->begin();
 	 it != this->m_ct_file_list->end(); 
 	 ++it)
     {
 	std::string slice_uid = (*it)->GetEntryValue (0x0008, 0x0018);
-	slice_uids->push_back ((*it)->GetEntryValue (0x0008, 0x0018).c_str());
+        rsm->set_slice_uid (i, slice_uid.c_str());
+        i++;
     }
 }
 

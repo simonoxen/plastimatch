@@ -221,7 +221,7 @@ save_output (
                     im_warped.convert_and_save (img_out_fn, img_out_type);
                 }
             } else {
-                im_warped.save_short_dicom (img_out_fn, 0, 0);
+                im_warped.save_short_dicom (img_out_fn, 0);
             }
         }
         if (vf_out_fn[0]) {

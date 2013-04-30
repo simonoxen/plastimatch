@@ -92,7 +92,7 @@ Rt_study::load_dicom_rtss (const char *dicom_path)
     this->load_dcmtk (dicom_path);
 #elif GDCM_VERSION_1
     d_ptr->m_rtss = Segmentation::New (new Segmentation (this));
-    d_ptr->m_rtss->load_gdcm_rtss (dicom_path, d_ptr->m_slice_index);
+    d_ptr->m_rtss->load_gdcm_rtss (dicom_path, d_ptr->m_drs.get());
 #else
     /* Do nothing */
 #endif
@@ -111,10 +111,7 @@ Rt_study::load_dicom_dose (const char *dicom_path)
 }
 
 void
-Rt_study::load_xio (
-    const char *xio_dir,
-    Slice_index *rdd
-)
+Rt_study::load_xio (const char *xio_dir)
 {
     Xio_dir xd (xio_dir);
     Xio_patient *xpd;
@@ -145,7 +142,9 @@ Rt_study::load_xio (
         d_ptr->m_dose = Plm_image::New ();
         printf ("calling xio_dose_load\n");
         d_ptr->m_xio_dose_filename = std::string(xtpd->path) + "/dose.1";
-        xio_dose_load (d_ptr->m_dose.get(), d_ptr->m_meta,
+        xio_dose_load (d_ptr->m_dose.get(), 
+            //d_ptr->m_meta,
+            d_ptr->m_drs->get_dose_metadata (),
             d_ptr->m_xio_dose_filename.c_str());
 
         /* Find studyset associated with plan */
@@ -192,11 +191,11 @@ Rt_study::load_xio (
     if (xpd->m_demographic_fn.not_empty()) {
         Xio_demographic demographic ((const char*) xpd->m_demographic_fn);
         if (demographic.m_patient_name.not_empty()) {
-            d_ptr->m_meta->set_metadata (0x0010, 0x0010, 
+            d_ptr->m_drs->set_study_metadata (0x0010, 0x0010, 
                 (const char*) demographic.m_patient_name);
         }
         if (demographic.m_patient_id.not_empty()) {
-            d_ptr->m_meta->set_metadata (0x0010, 0x0020, 
+            d_ptr->m_drs->set_study_metadata (0x0010, 0x0020, 
                 (const char*) demographic.m_patient_id);
         }
     }
@@ -211,10 +210,10 @@ Rt_study::load_xio (
        and the origin will remain the same. */
 
     if (d_ptr->m_img) {
-        if (d_ptr->m_slice_index->m_loaded) {
+        if (d_ptr->m_drs->slice_list_complete()) {
             /* Determine transformation based on original DICOM */
             d_ptr->m_xio_transform->set_from_rdd (d_ptr->m_img.get(), 
-                d_ptr->m_meta, rdd);
+                d_ptr->m_drs.get());
         }
     }
 
@@ -251,10 +250,15 @@ Rt_study::load_dose_img (const char *dose_img)
 void
 Rt_study::load_rdd (const char *image_directory)
 {
-    d_ptr->m_slice_index->load (image_directory);
+    d_ptr->m_drs = Rt_study_metadata::load (image_directory);
 
-    Slice_index *si = d_ptr->m_slice_index;
-    if (si->m_loaded) {
+    /* GCS FIX: I think the below is not needed any more, but there 
+       might be some edge cases, such as converting image with referenced 
+       ct, which should copy patient name but not slice uids */
+#if defined (commentout)
+    Rt_study_metadata *rsm = d_ptr->m_drs.get ();
+    Metadata *meta = rsm->get_study_metadata ();
+    if (rsm->slice_list_complete()) {
         /* Default to patient position in referenced DICOM */
         d_ptr->m_meta->set_metadata(0x0018, 0x5100,
             si->m_demographics.get_metadata(0x0018, 0x5100));
@@ -268,6 +272,7 @@ Rt_study::load_rdd (const char *image_directory)
         d_ptr->m_meta->set_metadata(0x0010, 0x0040,
             si->m_demographics.get_metadata(0x0010, 0x0040));
     }
+#endif
 }
 
 void
@@ -279,7 +284,8 @@ Rt_study::load_dose_xio (const char *dose_xio)
     if (dose_xio) {
         d_ptr->m_xio_dose_filename = dose_xio;
         d_ptr->m_dose = Plm_image::New ();
-        xio_dose_load (d_ptr->m_dose.get(), d_ptr->m_meta, dose_xio);
+        Metadata *dose_meta = d_ptr->m_drs->get_dose_metadata ();
+        xio_dose_load (d_ptr->m_dose.get(), dose_meta, dose_xio);
         xio_dose_apply_transform (d_ptr->m_dose.get(), d_ptr->m_xio_transform);
     }
 }
@@ -292,7 +298,8 @@ Rt_study::load_dose_astroid (const char *dose_astroid)
     }
     if (dose_astroid) {
         d_ptr->m_dose = Plm_image::New ();
-        astroid_dose_load (d_ptr->m_dose.get(), d_ptr->m_meta, dose_astroid);
+        Metadata *dose_meta = d_ptr->m_drs->get_dose_metadata ();
+        astroid_dose_load (d_ptr->m_dose.get(), dose_meta, dose_astroid);
         astroid_dose_apply_transform (d_ptr->m_dose.get(), 
             d_ptr->m_xio_transform);
     }
@@ -312,10 +319,10 @@ Rt_study::load_dose_mc (const char *dose_mc)
 }
 
 void 
-Rt_study::load_cxt (const char *input_fn, Slice_index *rdd)
+Rt_study::load_cxt (const char *input_fn)
 {
     d_ptr->m_rtss = Segmentation::New (new Segmentation (this));
-    d_ptr->m_rtss->load_cxt (input_fn, rdd);
+    d_ptr->m_rtss->load_cxt (input_fn, d_ptr->m_drs.get());
 }
 
 void 
@@ -330,6 +337,10 @@ Rt_study::save_dicom (const char *dicom_dir)
 {
     if (!dicom_dir) {
         return;
+    }
+
+    if (d_ptr->m_img) {
+        d_ptr->m_drs->set_image_header (d_ptr->m_img);
     }
 
 #if PLM_DCM_USE_DCMTK
@@ -370,6 +381,12 @@ Rt_study::save_dose (const char* fname, Plm_image_type image_type)
     }
 }
 
+Rt_study_metadata *
+Rt_study::get_rt_study_metadata ()
+{
+    return d_ptr->m_drs.get();
+}
+
 void 
 Rt_study::set_user_metadata (std::vector<std::string>& metadata)
 {
@@ -382,15 +399,17 @@ Rt_study::set_user_metadata (std::vector<std::string>& metadata)
         if (eq_pos != std::string::npos) {
             std::string key = str.substr (0, eq_pos);
             std::string val = str.substr (eq_pos+1);
+#if defined (commentout)
             /* Set older-style metadata, used by gdcm */
             d_ptr->m_meta->set_metadata (key, val);
+#endif
             /* Set newer-style metadata, used by dcmtk */
             study_metadata->set_metadata (key, val);
         }
         ++it;
     }
 
-    d_ptr->m_xio_transform->set (d_ptr->m_meta);
+    d_ptr->m_xio_transform->set (d_ptr->m_drs->get_image_metadata());
 }
 
 bool
@@ -478,13 +497,7 @@ Rt_study::get_xio_dose_filename (void) const
 Metadata*
 Rt_study::get_metadata (void)
 {
-    return d_ptr->m_meta;
-}
-
-Slice_index*
-Rt_study::get_slice_index ()
-{
-    return d_ptr->m_slice_index;
+    return d_ptr->m_drs->get_study_metadata();
 }
 
 Volume*

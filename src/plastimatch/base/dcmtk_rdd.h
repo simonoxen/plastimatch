@@ -5,12 +5,11 @@
 #define _dcmtk_rdd_h_
 
 #include "plmbase_config.h"
-
-class Slice_index;
+#include "rt_study_metadata.h"
 
 void
 dcmtk_load_rdd (
-    Slice_index *rdd,
+    Rt_study_metadata::Pointer rsd,
     const char *dicom_dir
 );
 

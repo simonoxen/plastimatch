@@ -55,12 +55,12 @@ dicom_anon_patient_id (void)
 }
 
 void
-dicom_load_rdd (Slice_index* rdd, const char* dicom_dir)
+dicom_load_rdd (Rt_study_metadata::Pointer rsm, const char* dicom_dir)
 {
 #if PLM_DCM_USE_DCMTK
-    dcmtk_load_rdd (rdd, dicom_dir);
+    dcmtk_load_rdd (rsm, dicom_dir);
 #elif GDCM_VERSION_1
-    gdcm1_load_rdd (rdd, dicom_dir);
+    gdcm1_load_rdd (rsm.get(), dicom_dir);
 #else
     /* Do nothing */
 #endif

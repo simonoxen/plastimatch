@@ -35,7 +35,7 @@ Rt_study::load_gdcm (const char *dicom_dir)
     if (gdcm_series->m_rtstruct_file_list) {
 	const std::string& filename = gdcm_series->get_rtstruct_filename();
 	d_ptr->m_rtss = Segmentation::New (new Segmentation (this));
-	d_ptr->m_rtss->load_gdcm_rtss (filename.c_str(), d_ptr->m_slice_index);
+	d_ptr->m_rtss->load_gdcm_rtss (filename.c_str(), d_ptr->m_drs.get());
     }
 #endif
 
@@ -56,20 +56,18 @@ Rt_study::save_gdcm (const char *output_dir)
 {
     if (d_ptr->m_img) {
 	printf ("Rt_study::save_dicom: save_short_dicom()\n");
-	d_ptr->m_img->save_short_dicom (output_dir, d_ptr->m_slice_index,
-            this->get_metadata ());
+	d_ptr->m_img->save_short_dicom (output_dir, d_ptr->m_drs.get());
     }
 #if GDCM_VERSION_1
     if (d_ptr->m_rtss) {
 	printf ("Rt_study::save_dicom: save_gdcm_rtss()\n");
-	d_ptr->m_rtss->save_gdcm_rtss (output_dir, d_ptr->m_slice_index);
+	d_ptr->m_rtss->save_gdcm_rtss (output_dir, d_ptr->m_drs.get());
     }
     if (this->has_dose()) {
 	char fn[_MAX_PATH];
 	printf ("Rt_study::save_dicom: gdcm_save_dose()\n");
 	snprintf (fn, _MAX_PATH, "%s/%s", output_dir, "dose.dcm");
-	gdcm1_dose_save (d_ptr->m_dose.get(), this->get_metadata(), 
-            d_ptr->m_slice_index, fn);
+	gdcm1_dose_save (d_ptr->m_dose.get(), d_ptr->m_drs.get(), fn);
     }
 #endif
 }

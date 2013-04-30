@@ -16,9 +16,11 @@
 #include "gdcm1_util.h"
 #include "gdcm2_util.h"
 #include "itk_dicom_save.h"
+#include "logfile.h"
 #include "make_string.h"
 #include "metadata.h"
 #include "plm_uid_prefix.h"
+#include "rt_study_metadata.h"
 #include "slice_index.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */
@@ -88,8 +90,7 @@ void
 itk_dicom_save (
     ShortImageType::Pointer short_img,    /* Input: image to write */
     const char *dir_name,                 /* Input: name of output dir */
-    Slice_index *rdd,            /* Output: gets filled in */
-    const Metadata *meta              /* Input: output files get these */
+    Rt_study_metadata *rsm                /* In/out: slice uids get set */
 )
 {
     typedef itk::NumericSeriesFileNames NamesGeneratorType;
@@ -112,14 +113,21 @@ itk_dicom_save (
     gdcmIO->SetKeepOriginalUID (true);
 
     /* Set up a few things in referenced_dicom_dir */
-    if (rdd) {
-	rdd->m_loaded = true;
-	rdd->m_pih.set_from_itk_image (short_img);
-	rdd->m_ct_slice_uids.clear();
+    if (rsm) {
+	rsm->set_image_header (short_img);
+	rsm->reset_slice_uids ();
     }
 
-    std::string tagkey, value;
+    /* PLM (input) metadata */
+    Metadata *meta = 0, *study_meta = 0;
+    if (rsm) {
+        meta = rsm->get_image_metadata ();
+        study_meta = rsm->get_image_metadata ();
+    }
+
+    /* ITK (output) metadata */
     itk::MetaDataDictionary& dict = gdcmIO->GetMetaDataDictionary();
+
     if (export_as_ct) {
 	/* Image Type */
 	encapsulate (dict, "0008|0008", "DERIVED\\SECONDARY\\REFORMATTED");
@@ -173,6 +181,7 @@ itk_dicom_save (
     }
 
     /* Slice thickness */
+    std::string value;
     value = make_string ((double) (short_img->GetSpacing()[2]));
     encapsulate (dict, "0018|0050", value);
 
@@ -198,31 +207,31 @@ itk_dicom_save (
 	value = meta->get_metadata (0x0020, 0x000d);
     }
     if (value == "") {
-        value = itk_make_uid(gdcmIO);
+        value = itk_make_uid (gdcmIO);
     }
     encapsulate (dict, "0020|000d", value);
-    if (rdd) {
-        rdd->m_ct_study_uid = value.c_str();
+    if (rsm) {
+        rsm->set_study_uid (value.c_str());
     }
     /* SeriesInstanceUID */
-    value = itk_make_uid(gdcmIO);
+    value = itk_make_uid (gdcmIO);
     encapsulate (dict, "0020|000e", value);
-    if (rdd) {
-	rdd->m_ct_series_uid = value.c_str();
+    if (rsm) {
+        rsm->set_ct_series_uid (value.c_str());
     }
     /* StudyId */
     value = "10001";
     encapsulate (dict, "0020|0010", value);
-    if (rdd) {
-	rdd->m_study_id = value.c_str();
+    if (study_meta) {
+        study_meta->set_metadata (0x0020, 0x0010, value.c_str());
     }
     /* SeriesNumber */
     encapsulate (dict, "0020|0011", "303");
     /* Frame of Reference UID */
     value = itk_make_uid(gdcmIO);
     encapsulate (dict, "0020|0052", value);
-    if (rdd) {
-	rdd->m_ct_fref_uid = value.c_str();
+    if (rsm) {
+	rsm->set_frame_of_reference_uid (value.c_str());
     }
     /* Position Reference Indicator */
     encapsulate (dict, "0020|1040", "");
@@ -257,8 +266,11 @@ itk_dicom_save (
 	/* SOPInstanceUID */
 	value = itk_make_uid(gdcmIO);
 	encapsulate (*slice_dict, "0008|0018", value);
-	if (rdd) {
+	if (rsm) {
+#if defined (commentout)
 	    rdd->m_ct_slice_uids.push_back(value.c_str());
+#endif
+            rsm->set_slice_uid (f, value.c_str());
 	}
 	
 	/* Image Number */
@@ -282,6 +294,9 @@ itk_dicom_save (
 	encapsulate (*slice_dict, "0020|1041", value);      
 
 	dict_array.push_back (slice_dict);
+    }
+    if (rsm) {
+        rsm->set_slice_list_complete ();
     }
 
     /* Create file names */

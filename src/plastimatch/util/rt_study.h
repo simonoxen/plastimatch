@@ -38,7 +38,7 @@ public:
     void load_dicom_rtss (const char *dicom_path);
     void load_image (const char *fn);
     void load_image (const std::string& fn);
-    void load_xio (const char *xio_dir, Slice_index *rdd);
+    void load_xio (const char *xio_dir);
     void load_ss_img (const char *ss_img, const char *ss_list);
     void load_dose_img (const char *dose_img);
     void load_dose_xio (const char *dose_xio);
@@ -48,7 +48,7 @@ public:
     void load_dcmtk (const char *dicom_dir); 
     void load_gdcm (const char *dicom_dir); 
 
-    void load_cxt (const char *input_fn, Slice_index *rdd);
+    void load_cxt (const char *input_fn);
     void load_prefix (const char *input_fn);
 
     void save_dicom (const char *output_dir);
@@ -57,6 +57,7 @@ public:
     void save_dose (const char* fname);
     void save_dose (const char* fname, Plm_image_type image_type);
 
+    Rt_study_metadata *get_rt_study_metadata ();
     void set_user_metadata (std::vector<std::string>& metadata);
 
     bool have_image ();
@@ -77,8 +78,6 @@ public:
     Xio_ct_transform* get_xio_ct_transform ();
 
     Metadata* get_metadata ();
-
-    Slice_index* get_slice_index ();
 
     Volume* get_image_volume_short ();
     Volume* get_image_volume_float ();

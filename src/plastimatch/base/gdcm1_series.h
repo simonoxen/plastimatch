@@ -13,6 +13,7 @@
 #include "pstring.h"
 
 class Metadata;
+class Rt_study_metadata;
 
 /* Forward declarations */
 namespace gdcm {
@@ -31,7 +32,7 @@ public:
     void digest_files (void);
     void get_slice_info (int *slice_no, Pstring *ct_slice_uid, float z);
     gdcm::File *get_ct_slice (void);
-    void get_slice_uids (std::vector<Pstring> *slice_uids);
+    void get_slice_uids (Rt_study_metadata *rsm);
     std::string get_patient_position ();
     const std::string& get_rtdose_filename ();
     const std::string& get_rtstruct_filename ();

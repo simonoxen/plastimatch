@@ -18,8 +18,9 @@
 #include "metadata.h"
 #include "plm_endian.h"
 #include "plm_image.h"
+#include "plm_image_header.h"
 #include "print_and_exit.h"
-#include "slice_index.h"
+#include "rt_study_metadata.h"
 #include "volume.h"
 #include "xio_ct.h"
 #include "xio_ct_transform.h"
@@ -98,8 +99,7 @@ Xio_ct_transform::set (const char* ppos)
 void
 Xio_ct_transform::set_from_rdd (
     Plm_image *pli,
-    Metadata *meta,
-    Slice_index *rdd)
+    Rt_study_metadata *rsm)
 {
     /* Use original XiO CT geometry and a DICOM directory to determine
        the transformation from XiO coordinates to DICOM coordinates. */
@@ -118,13 +118,15 @@ Xio_ct_transform::set_from_rdd (
     this->direction_cosines[4] = 1.0f;
     this->direction_cosines[8] = 1.0f;
 
+    Metadata *meta = rsm->get_image_metadata ();
+    const Plm_image_header *pih = rsm->get_image_header ();
     std::string patient_pos = meta->get_metadata(0x0018, 0x5100);
 
     if (patient_pos == "HFS" ||	patient_pos == "") {
 
 	/* Offsets */
-	this->x_offset = v->offset[0] - rdd->m_pih.m_origin[0];
-	this->y_offset = v->offset[1] - rdd->m_pih.m_origin[1];
+	this->x_offset = v->offset[0] - pih->m_origin[0];
+	this->y_offset = v->offset[1] - pih->m_origin[1];
 
 	/* Direction cosines */
 	this->direction_cosines[0] = 1.0f;
@@ -134,8 +136,8 @@ Xio_ct_transform::set_from_rdd (
     } else if (patient_pos == "HFP") {
 
 	/* Offsets */
-	this->x_offset = v->offset[0] + rdd->m_pih.m_origin[0];
-	this->y_offset = v->offset[1] + rdd->m_pih.m_origin[1];
+	this->x_offset = v->offset[0] + pih->m_origin[0];
+	this->y_offset = v->offset[1] + pih->m_origin[1];
 
 	/* Direction cosines */
 	this->direction_cosines[0] = -1.0f;
@@ -145,8 +147,8 @@ Xio_ct_transform::set_from_rdd (
     } else if (patient_pos == "FFS") {
 
 	/* Offsets */
-	this->x_offset = v->offset[0] + rdd->m_pih.m_origin[0];
-	this->y_offset = v->offset[1] - rdd->m_pih.m_origin[1];
+	this->x_offset = v->offset[0] + pih->m_origin[0];
+	this->y_offset = v->offset[1] - pih->m_origin[1];
 
 	/* Direction cosines */
 	this->direction_cosines[0] = -1.0f;
@@ -156,8 +158,8 @@ Xio_ct_transform::set_from_rdd (
     } else if (patient_pos == "FFP") {
 
 	/* Offsets */
-	this->x_offset = v->offset[0] - rdd->m_pih.m_origin[0];
-	this->y_offset = v->offset[1] + rdd->m_pih.m_origin[1];
+	this->x_offset = v->offset[0] - pih->m_origin[0];
+	this->y_offset = v->offset[1] + pih->m_origin[1];
 
 	/* Direction cosines */
 	this->direction_cosines[0] = 1.0f;

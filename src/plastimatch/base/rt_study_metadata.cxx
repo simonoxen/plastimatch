@@ -14,11 +14,6 @@
 
 class Rt_study_metadata_private {
 public:
-    /* Set this if we have m_pih && ct slice uids */
-    bool m_loaded;
-
-    Plm_image_header m_pih;
-
     std::string date_string;
     std::string time_string;
     std::string ct_series_uid;
@@ -74,14 +69,12 @@ Rt_study_metadata::~Rt_study_metadata ()
     delete this->d_ptr;
 }
 
-void 
+Rt_study_metadata::Pointer
 Rt_study_metadata::load (const char* dicom_path)
 {
-}
-
-void 
-Rt_study_metadata::save (const char* dicom_path)
-{
+    Rt_study_metadata::Pointer rsm = Rt_study_metadata::New ();
+    dicom_load_rdd (rsm, dicom_path);
+    return rsm;
 }
 
 const char*
@@ -173,10 +166,40 @@ Rt_study_metadata::set_study_uid (const char* uid)
     d_ptr->study_uid = uid;
 }
 
+const Plm_image_header*
+Rt_study_metadata::get_image_header () const
+{
+    return d_ptr->slice_list.get_image_header ();
+}
+
+void
+Rt_study_metadata::set_image_header (const Plm_image::Pointer& pli)
+{
+    d_ptr->slice_list.set_image_header (Plm_image_header (pli.get()));
+}
+
 void
 Rt_study_metadata::set_image_header (const Plm_image_header& pih)
 {
     d_ptr->slice_list.set_image_header (pih);
+}
+
+void
+Rt_study_metadata::set_image_header (ShortImageType::Pointer img)
+{
+    d_ptr->slice_list.set_image_header (img);
+}
+
+const Slice_list* 
+Rt_study_metadata::get_slice_list () const
+{
+    return &d_ptr->slice_list;
+}
+
+void
+Rt_study_metadata::reset_slice_uids ()
+{
+    return d_ptr->slice_list.reset_slice_uids ();
 }
 
 const char*
@@ -198,14 +221,14 @@ Rt_study_metadata::set_slice_list_complete ()
     d_ptr->slice_list.set_slice_list_complete ();
 }
 
-const Slice_list* 
-Rt_study_metadata::get_slice_list ()
+bool
+Rt_study_metadata::slice_list_complete () const
 {
-    return &d_ptr->slice_list;
+    return d_ptr->slice_list.slice_list_complete ();
 }
 
 int 
-Rt_study_metadata::num_slices ()
+Rt_study_metadata::num_slices () const
 {
     return d_ptr->slice_list.num_slices ();
 }
@@ -220,6 +243,15 @@ const Metadata*
 Rt_study_metadata::get_study_metadata () const
 {
     return &d_ptr->study_metadata;
+}
+
+void
+Rt_study_metadata::set_study_metadata (
+    unsigned short key1, 
+    unsigned short key2,
+    const std::string& val
+) {
+    d_ptr->study_metadata.set_metadata (key1, key2, val);
 }
 
 Metadata*

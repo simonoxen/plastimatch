@@ -307,6 +307,7 @@ xio_dose_load (
     xio_dose_create_volume (pli, &xdh);
     xio_dose_load_cube (pli, &xdh, filename);
 
+    /* GCS FIX: The below seems to be hard coded for pXiO? */
     /* XiO dose is in Gy RBE */
     meta->set_metadata(0x3004, 0x0004, "EFFECTIVE");
 }

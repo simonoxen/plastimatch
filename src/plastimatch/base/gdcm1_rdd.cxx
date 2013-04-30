@@ -10,13 +10,15 @@
 #include "gdcm1_rdd.h"
 #include "gdcm1_series.h"
 #include "gdcm1_util.h"
+#include "metadata.h"
+#include "plm_image_header.h"
 #include "plm_math.h"
 #include "plm_uid_prefix.h"
-#include "slice_index.h"
+#include "rt_study_metadata.h"
 
 void
 gdcm1_load_rdd (
-    Slice_index *rdd,
+    Rt_study_metadata *rdd,
     const char *dicom_dir
 )
 {
@@ -37,44 +39,49 @@ gdcm1_load_rdd (
     /* Add geometry */
     int d;
     float offset[3], spacing[3];
-    rdd->m_loaded = 1;
     /* Convert double to float */
     for (d = 0; d < 3; d++) {
 	offset[d] = gs.m_origin[d];
 	spacing[d] = gs.m_spacing[d];
     }
-    rdd->m_pih.set_from_gpuit (gs.m_dim, offset, spacing, 0);
+    rdd->set_image_header (Plm_image_header (gs.m_dim, offset, spacing, 0));
+
+    /* Store metadata into here */
+    Metadata *meta = rdd->get_study_metadata ();
 
     /* PatientName */
-    set_metadata_from_gdcm_file (&rdd->m_demographics, file, 0x0010, 0x0010);
+    set_metadata_from_gdcm_file (meta, file, 0x0010, 0x0010);
 
     /* PatientID */
-    set_metadata_from_gdcm_file (&rdd->m_demographics, file, 0x0010, 0x0020);
+    set_metadata_from_gdcm_file (meta, file, 0x0010, 0x0020);
 
     /* PatientSex */
-    set_metadata_from_gdcm_file (&rdd->m_demographics, file, 0x0010, 0x0040);
+    set_metadata_from_gdcm_file (meta, file, 0x0010, 0x0040);
 
     /* PatientPosition */
-    set_metadata_from_gdcm_file (&rdd->m_demographics, file, 0x0018, 0x5100);
+    set_metadata_from_gdcm_file (meta, file, 0x0018, 0x5100);
 
     /* StudyID */
     tmp = gdcm_file_GetEntryValue (file, 0x0020, 0x0010);
     if (tmp != gdcm_file_GDCM_UNFOUND()) {
-	rdd->m_study_id = tmp.c_str();
+        meta->set_metadata (0x0020, 0x0010, tmp.c_str());
     }
 
     /* StudyInstanceUID */
     tmp = gdcm_file_GetEntryValue (file, 0x0020, 0x000d);
-    rdd->m_ct_study_uid = tmp.c_str();
+    rdd->set_study_uid (tmp.c_str());
 
     /* SeriesInstanceUID */
     tmp = gdcm_file_GetEntryValue (file, 0x0020, 0x000e);
-    rdd->m_ct_series_uid = tmp.c_str();
+    rdd->set_ct_series_uid (tmp.c_str());
 	
     /* FrameOfReferenceUID */
     tmp = gdcm_file_GetEntryValue (file, 0x0020, 0x0052);
-    rdd->m_ct_fref_uid = tmp.c_str();
+    rdd->set_frame_of_reference_uid (tmp.c_str());
 
     /* Slice uids */
-    gs.get_slice_uids (&rdd->m_ct_slice_uids);
+    gs.get_slice_uids (rdd);
+
+    /* Done */
+    rdd->set_slice_list_complete ();
 }

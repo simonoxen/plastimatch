@@ -19,6 +19,7 @@ class Plm_image_header;
 class Plm_image;
 class Plm_image_private;
 class Pstring;
+class Rt_study_metadata;
 class Slice_index;
 
 class PLMBASE_API Plm_image {
@@ -97,8 +98,7 @@ public:
     bool load_native_nki (const char* fname);
 
     /* Saving */
-    void save_short_dicom (const char* fname, Slice_index *rdd, 
-        Metadata *meta);
+    void save_short_dicom (const char* fname, Rt_study_metadata *rsm);
     void save_image (const char* fname);
     void save_image (const Pstring& fname);
     void save_image (const std::string& fname);

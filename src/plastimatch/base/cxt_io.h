@@ -7,7 +7,7 @@
 #include "plmbase_config.h"
 
 class Metadata;
-class Slice_index;
+class Rt_study_metadata;
 class Rtss;
 
 PLMBASE_C_API Rtss* cxt_load_ss_list (
@@ -16,14 +16,12 @@ PLMBASE_C_API Rtss* cxt_load_ss_list (
 );
 PLMBASE_C_API void cxt_load (
     Rtss *cxt,                  /* Output: load into this object */
-    Metadata *meta,             /* Output: load into this object */
-    Slice_index *rdd,           /* Output: Also set some values here */
+    Rt_study_metadata *rsm,     /* Output: load into this object */
     const char *cxt_fn          /* Input: file to load from */
 );
 PLMBASE_C_API void cxt_save (
-    Rtss *cxt,                  /* Output: load into this object */
-    Metadata *meta,             /* Output: load into this object */
-    Slice_index *rdd,           /* Input: Also save some values from here */
+    Rtss *cxt,                  /* Input: save this object */
+    Rt_study_metadata *rsm,     /* Input: save this object */
     const char* cxt_fn,         /* Input: File to save to */
     bool prune_empty            /* Input: Should we prune empty structures? */
 );

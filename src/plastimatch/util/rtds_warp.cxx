@@ -17,11 +17,11 @@
 #include "print_and_exit.h"
 #include "pstring.h"
 #include "rt_study.h"
+#include "rt_study_metadata.h"
 #include "rtds_warp.h"
 #include "rtss.h"
 #include "segmentation.h"
 #include "simplify_points.h"
-#include "slice_index.h"
 #include "warp_parms.h"
 #include "volume.h"
 #include "xform.h"
@@ -44,8 +44,7 @@ load_input_files (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms)
             rtds->load_dicom_dir ((const char*) parms->input_fn);
             break;
         case PLM_FILE_FMT_XIO_DIR:
-            rtds->load_xio (
-                (const char*) parms->input_fn, rtds->get_slice_index());
+            rtds->load_xio ((const char*) parms->input_fn);
             break;
         case PLM_FILE_FMT_DIJ:
             print_and_exit (
@@ -58,7 +57,7 @@ load_input_files (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms)
             rtds->load_dicom_dose ((const char*) parms->input_fn);
             break;
         case PLM_FILE_FMT_CXT:
-            rtds->load_cxt (parms->input_fn, rtds->get_slice_index());
+            rtds->load_cxt (parms->input_fn);
             break;
         case PLM_FILE_FMT_SS_IMG_VEC:
         default:
@@ -71,7 +70,7 @@ load_input_files (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms)
     }
 
     if (parms->input_cxt_fn.not_empty()) {
-        rtds->load_cxt (parms->input_cxt_fn, rtds->get_slice_index());
+        rtds->load_cxt (parms->input_cxt_fn);
     }
 
     if (parms->input_prefix.not_empty()) {
@@ -160,7 +159,7 @@ save_ss_img (
     /* cxt */
     if (parms->output_cxt_fn.not_empty()) {
         lprintf ("save_ss_img: save_cxt\n");
-        rtss->save_cxt (rtds->get_slice_index(), 
+        rtss->save_cxt (rtds->get_rt_study_metadata (),
             parms->output_cxt_fn, false);
     }
 
@@ -260,6 +259,7 @@ rtds_warp (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms)
     if (parms->referenced_dicom_dir.not_empty()) {
         lprintf ("Loading RDD\n");
         rtds->load_rdd ((const char*) parms->referenced_dicom_dir);
+        lprintf ("Loading RDD complete\n");
     }
 
     /* Set user-supplied metadata also prior to loading files,
@@ -287,15 +287,17 @@ rtds_warp (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms)
         pih.set_from_itk_image (fixed);
     } else if (xform.m_type == XFORM_ITK_VECTOR_FIELD) {
         /* use the spacing from input vector field */
+        lprintf ("Setting PIH from VF\n");
         pih.set_from_itk_image (xform.get_itk_vf());
     } else if (xform.m_type == XFORM_GPUIT_BSPLINE) {
         /* use the spacing from input bxf file */
         lprintf ("Setting PIH from XFORM\n");
         pih.set_from_gpuit_bspline (xform.get_gpuit_bsp());
-    } else if (rtds->get_slice_index()->m_loaded) {
+    } else if (rtds->get_rt_study_metadata()->slice_list_complete()) {
         /* use spacing from referenced CT */
         lprintf ("Setting PIH from RDD\n");
-        Plm_image_header::clone (&pih, &rtds->get_slice_index()->m_pih);
+        Plm_image_header::clone (&pih, 
+            rtds->get_rt_study_metadata()->get_image_header());
     } else if (rtds->have_image()) {
         /* use the spacing of the input image */
         lprintf ("Setting PIH from M_IMG\n");
@@ -306,9 +308,9 @@ rtds_warp (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms)
         pih.set_from_plm_image (rtds->get_rtss()->get_ss_img());
     }
     else if (rtds->have_rtss() &&
+        /* use the spacing of the structure set */
         rtds->get_rtss()->have_structure_set() && 
         rtds->get_rtss()->get_structure_set()->have_geometry) {
-        /* use the spacing of the structure set */
         pih.set_from_gpuit (
             rtds->get_rtss()->get_structure_set()->m_dim, 
             rtds->get_rtss()->get_structure_set()->m_offset, 
@@ -449,7 +451,7 @@ rtds_warp (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms)
         /* Set the DICOM reference info -- this sets the internal geometry 
            of the ss_image so we rasterize on the same slices as the CT? */
         lprintf ("Rt_study_warp: Apply dicom_dir.\n");
-        rtss->apply_dicom_dir (rtds->get_slice_index());
+        rtss->apply_dicom_dir (rtds->get_rt_study_metadata());
         
         /* Set the output geometry */
         lprintf ("Rt_study_warp: Set geometry from PIH.\n");

@@ -15,7 +15,7 @@
 class Plm_image;
 class Plm_image_header;
 class Rtss_roi;
-class Slice_index;
+class Rt_study_metadata;
 class Slice_list;
 
 class PLMBASE_API Rtss {
@@ -59,7 +59,7 @@ public:
     void find_rasterization_geometry (Plm_image_header *pih);
     Pstring find_unused_structure_name (void);
     void fix_polyline_slice_numbers (void);
-    void apply_slice_index (const Slice_index *rdd);
+    void apply_slice_index (const Rt_study_metadata *rsm);
     void apply_slice_list (const Slice_list *slice_list);
     void free_all_polylines (void);
     void keyholize (void);

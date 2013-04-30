@@ -26,6 +26,7 @@
 #include "pstring.h"
 #include "rasterizer.h"
 #include "rt_study.h"
+#include "rt_study_metadata.h"
 #include "rtss.h"
 #include "rtss_roi.h"
 #include "segmentation.h"
@@ -41,7 +42,7 @@ public:
     Metadata *m_meta;           /* Metadata specific to this ss_image */
     Plm_image *m_labelmap;      /* Structure set lossy bitmap form */
     Plm_image *m_ss_img;        /* Structure set in lossless bitmap form */
-    Rtss::Pointer m_cxt;  /* Structure set in polyline form */
+    Rtss::Pointer m_cxt;        /* Structure set in polyline form */
 
 public:
     Segmentation_private () {
@@ -265,18 +266,18 @@ Segmentation::load_prefix (const Pstring &prefix_dir)
 }
 
 void
-Segmentation::load_cxt (const Pstring &input_fn, Slice_index *rdd)
+Segmentation::load_cxt (const Pstring &input_fn, Rt_study_metadata *rsm)
 {
     d_ptr->m_cxt = Rtss::New();
-    cxt_load (d_ptr->m_cxt.get(), d_ptr->m_meta, rdd, (const char*) input_fn);
+    cxt_load (d_ptr->m_cxt.get(), rsm, (const char*) input_fn);
 }
 
 void
-Segmentation::load_gdcm_rtss (const char *input_fn, Slice_index *rdd)
+Segmentation::load_gdcm_rtss (const char *input_fn, Rt_study_metadata *rsm)
 {
 #if GDCM_VERSION_1
     d_ptr->m_cxt = Rtss::New();
-    gdcm_rtss_load (d_ptr->m_cxt.get(), d_ptr->m_meta, rdd, input_fn);
+    gdcm_rtss_load (d_ptr->m_cxt.get(), rsm, input_fn);
 #endif
 }
 
@@ -340,19 +341,18 @@ Segmentation::save_colormap (const Pstring &colormap_fn)
 
 void
 Segmentation::save_cxt (
-    Slice_index *rdd, 
+    Rt_study_metadata *rsm, 
     const Pstring &cxt_fn, 
     bool prune_empty
 )
 {
-    cxt_save (d_ptr->m_cxt.get(), d_ptr->m_meta, rdd, (const char*) cxt_fn, 
-        prune_empty);
+    cxt_save (d_ptr->m_cxt.get(), rsm, (const char*) cxt_fn, prune_empty);
 }
 
 void
 Segmentation::save_gdcm_rtss (
     const char *output_dir, 
-    Slice_index *rdd
+    Rt_study_metadata *rsm
 )
 {
     char fn[_MAX_PATH];
@@ -366,14 +366,14 @@ Segmentation::save_gdcm_rtss (
        structure names.  */
     d_ptr->m_cxt->adjust_structure_names ();
 
-    if (rdd) {
-        this->apply_dicom_dir (rdd);
+    if (rsm) {
+        this->apply_dicom_dir (rsm);
     }
 
     snprintf (fn, _MAX_PATH, "%s/%s", output_dir, "rtss.dcm");
 
 #if GDCM_VERSION_1
-    gdcm_rtss_save (d_ptr->m_cxt.get(), d_ptr->m_meta, rdd, fn);
+    gdcm_rtss_save (d_ptr->m_cxt.get(), rsm, fn);
 #else
     /* GDCM 2 not implemented -- you're out of luck. */
 #endif
@@ -545,17 +545,17 @@ Segmentation::get_ss_img_uchar_vec (void)
 }
 
 void
-Segmentation::apply_dicom_dir (const Slice_index *rdd)
+Segmentation::apply_dicom_dir (const Rt_study_metadata *rsm)
 {
     if (!d_ptr->m_cxt) {
         return;
     }
 
-    if (!rdd || !rdd->m_loaded) {
+    if (!rsm || !rsm->slice_list_complete()) {
         return;
     }
 
-    d_ptr->m_cxt->apply_slice_index (rdd);
+    d_ptr->m_cxt->apply_slice_index (rsm);
 }
 
 void

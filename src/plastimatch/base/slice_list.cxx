@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include "dicom_util.h"
+#include "logfile.h"
 #include "plm_image_header.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
@@ -14,16 +15,16 @@
 
 class Slice_list_private {
 public:
-    /* Set this if we have m_pih && ct slice uids */
-    bool m_loaded;
-
+    bool m_have_pih;
+    bool m_have_slice_uids;
     Plm_image_header m_pih;
 
     /* These must be sorted in order, starting with origin slice */
     std::vector<Pstring> m_ct_slice_uids;
 public:
     Slice_list_private () {
-        this->m_loaded = false;
+        this->m_have_pih = false;
+        this->m_have_slice_uids = false;
     }
 };
 
@@ -48,16 +49,33 @@ Slice_list::set_image_header (const Plm_image_header& pih)
 {
     d_ptr->m_pih = pih;
     d_ptr->m_ct_slice_uids.resize (pih.dim(2));
+    d_ptr->m_have_pih = true;
+}
+
+void
+Slice_list::set_image_header (ShortImageType::Pointer img)
+{
+    Plm_image_header pih (img);
+    this->set_image_header (pih);
 }
 
 const char*
 Slice_list::get_slice_uid (int index) const
 {
-    if (!d_ptr->m_loaded) {
+    if (!d_ptr->m_have_slice_uids) {
 	return "";
     }
     
     return d_ptr->m_ct_slice_uids[index];
+}
+
+void
+Slice_list::reset_slice_uids ()
+{
+    d_ptr->m_ct_slice_uids.clear();
+    if (d_ptr->m_have_pih) {
+        d_ptr->m_ct_slice_uids.resize (d_ptr->m_pih.dim(2));
+    }
 }
 
 void
@@ -75,19 +93,20 @@ Slice_list::set_slice_uid (int index, const char* slice_uid)
 bool
 Slice_list::slice_list_complete () const
 {
-    return d_ptr->m_loaded;
+    /* This is equivalent to the old "m_loaded" flag */
+    return d_ptr->m_have_pih && d_ptr->m_have_slice_uids;
 }
 
 void
 Slice_list::set_slice_list_complete ()
 {
-    d_ptr->m_loaded = true;
+    d_ptr->m_have_slice_uids = true;
 }
 
 int 
 Slice_list::num_slices ()
 {
-    if (!d_ptr->m_loaded) {
+    if (!d_ptr->m_have_pih) {
 	return 0;
     }
 
@@ -97,7 +116,7 @@ Slice_list::num_slices ()
 int
 Slice_list::get_slice_index (float z) const
 {
-    if (!d_ptr->m_loaded) {
+    if (!this->slice_list_complete()) {
 	return -1;
     }
 

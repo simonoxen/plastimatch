@@ -69,7 +69,7 @@ mask_main (Mask_parms* parms)
     }
 
     if (parms->output_dicom) {
-	img->save_short_dicom ((const char*) parms->output_fn, 0, 0);
+	img->save_short_dicom ((const char*) parms->output_fn, 0);
     } else {
 	if (parms->output_type) {
 	    img->convert (parms->output_type);

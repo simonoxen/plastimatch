@@ -91,12 +91,11 @@ void
 itk_image_save_short_dicom (
     T image, 
     const char* dir_name, 
-    Slice_index *rdd, 
-    const Metadata *meta
+    Rt_study_metadata *rsm
 )
 {
     ShortImageType::Pointer short_img = cast_short (image);
-    itk_dicom_save (short_img, dir_name, rdd, meta);
+    itk_dicom_save (short_img, dir_name, rsm);
 }
 
 template<class T> 
@@ -145,9 +144,9 @@ template PLMBASE_API void itk_image_save_uint32 (FloatImageType::Pointer, const 
 template PLMBASE_API void itk_image_save_float (FloatImageType::Pointer, const char*);
 template PLMBASE_API void itk_image_save_double (FloatImageType::Pointer, const char*);
 
-template PLMBASE_API void itk_image_save_short_dicom (UCharImageType::Pointer, const char*, Slice_index *, const Metadata *meta);
-template PLMBASE_API void itk_image_save_short_dicom (ShortImageType::Pointer, const char*, Slice_index *, const Metadata *meta);
-template PLMBASE_API void itk_image_save_short_dicom (UShortImageType::Pointer, const char*, Slice_index *, const Metadata *meta);
-template PLMBASE_API void itk_image_save_short_dicom (UInt32ImageType::Pointer, const char*, Slice_index *, const Metadata *meta);
-template PLMBASE_API void itk_image_save_short_dicom (FloatImageType::Pointer, const char*, Slice_index *, const Metadata *meta);
+template PLMBASE_API void itk_image_save_short_dicom (UCharImageType::Pointer, const char*, Rt_study_metadata *rsm);
+template PLMBASE_API void itk_image_save_short_dicom (ShortImageType::Pointer, const char*, Rt_study_metadata *rsm);
+template PLMBASE_API void itk_image_save_short_dicom (UShortImageType::Pointer, const char*, Rt_study_metadata *rsm);
+template PLMBASE_API void itk_image_save_short_dicom (UInt32ImageType::Pointer, const char*, Rt_study_metadata *rsm);
+template PLMBASE_API void itk_image_save_short_dicom (FloatImageType::Pointer, const char*, Rt_study_metadata *rsm);
 

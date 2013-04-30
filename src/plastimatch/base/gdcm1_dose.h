@@ -8,7 +8,7 @@
 
 class Metadata;
 class Plm_image;
-class Slice_index;
+class Rt_study_metadata;
 
 #if GDCM_VERSION_1
 /* gdcm1_dose.cxx */
@@ -18,8 +18,7 @@ PLMBASE_C_API Plm_image* gdcm1_dose_load (
         const char *dose_fn);
 PLMBASE_C_API void gdcm1_dose_save (
         Plm_image *pli, 
-        const Metadata *meta, 
-        const Slice_index *rdd, 
+        const Rt_study_metadata *rsm, 
         const char *dose_fn);
 
 /* gdcm1_series.cxx */

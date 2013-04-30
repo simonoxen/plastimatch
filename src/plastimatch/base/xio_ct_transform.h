@@ -8,7 +8,7 @@
 
 class Metadata;
 class Plm_image;
-class Slice_index;
+class Rt_study_metadata;
 
 class PLMBASE_API Xio_ct_transform {
 public:
@@ -23,8 +23,7 @@ public:
     void set (const char* ppos);
     void set_from_rdd (
         Plm_image *pli,
-        Metadata *meta,
-        Slice_index *rdd);
+        Rt_study_metadata *rsm);
 };
 
 #endif

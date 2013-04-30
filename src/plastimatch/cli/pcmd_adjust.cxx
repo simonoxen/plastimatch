@@ -131,7 +131,7 @@ adjust_main (Adjust_parms* parms)
 
     if (parms->output_dicom) {
 	itk_image_save_short_dicom (
-	    img, (const char*) parms->img_out_fn, 0, 0);
+	    img, (const char*) parms->img_out_fn, 0);
     } else {
 	if (parms->output_type) {
 	    plm_image->convert (parms->output_type);
