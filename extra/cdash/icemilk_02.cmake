@@ -25,7 +25,16 @@ if (NOT EXISTS "${CTEST_SOURCE_DIRECTORY}")
   set (CTEST_CHECKOUT_COMMAND "${CTEST_SVN_COMMAND} --username anonymous --password \\\"\\\" https://forge.abcd.harvard.edu/svn/plastimatch/plastimatch/trunk ${CTEST_SOURCE_DIRECTORY}")
 endif ()
 
+# This doesn't work
+#set (CTEST_UPDATE_COMMAND ${CTEST_SVN_COMMAND} --username anonymous --password \"\")
+# This doesn't work either
+#set (CTEST_UPDATE_COMMAND "${CTEST_SVN_COMMAND} --username anonymous --password \"\"")
+
+# But this does work.
+# Cf. http://cmake.3232098.n2.nabble.com/CTEST-CHECKOUT-COMMAND-vs-CTEST-UPDATE-COMMAND-td5218040.html
 set (CTEST_UPDATE_COMMAND "${CTEST_SVN_COMMAND}")
+set (SVN_UPDATE_OPTIONS "--username anonymous --password \"\"")
+
 
 set (CTEST_CONFIGURE_COMMAND "${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE:STRING=${CTEST_BUILD_CONFIGURATION}")
 set (CTEST_CONFIGURE_COMMAND "${CTEST_CONFIGURE_COMMAND} -DWITH_TESTING:BOOL=ON ${CTEST_BUILD_OPTIONS}")
