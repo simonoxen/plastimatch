@@ -463,6 +463,12 @@ Rt_study::set_dose (Volume *vol)
     d_ptr->m_dose->set_volume (vol->clone_raw());
 }
 
+Plm_image::Pointer
+Rt_study::get_dose ()
+{
+    return d_ptr->m_dose;
+}
+
 bool
 Rt_study::have_rtss ()
 {

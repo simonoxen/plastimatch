@@ -69,6 +69,7 @@ public:
     void set_dose (Plm_image *pli);
     void set_dose (FloatImageType::Pointer itk_dose);
     void set_dose (Volume *vol);
+    Plm_image::Pointer get_dose ();
 
     bool have_rtss ();
     Segmentation::Pointer get_rtss ();

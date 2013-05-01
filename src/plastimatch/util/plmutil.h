@@ -37,7 +37,7 @@
 #include "rasterize_slice.h"
 #if (!PLM_CUDA_COMPILE)
 #include "rasterizer.h"
-#include "rtds.h"
+#include "rt_study.h"
 #include "rtds_warp.h"
 #include "rtss.h"
 #include "simplify_points.h"
