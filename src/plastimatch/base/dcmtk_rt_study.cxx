@@ -154,6 +154,12 @@ Dcmtk_rt_study::load (const char *dicom_path)
 void 
 Dcmtk_rt_study::save (const char *dicom_dir)
 {
+    /* GCS FIX: If we're writing an image, we always want new metadata;
+       but this should probably be handled by somewhere else in the 
+       code. */
+    if (d_ptr->img) {
+        d_ptr->dicom_metadata->generate_new_uids ();
+    }
     if (d_ptr->img) {
         this->save_image (dicom_dir);
     }
