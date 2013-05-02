@@ -271,13 +271,6 @@ Registration_parms::set_key_val (
     else if (!strcmp (key, "xf_out") || !strcmp (key, "xform_out")) {
         /* xf_out is special.  You can have more than one of these.  
            This capability is used by the slicer plugin. */
-#if defined (commentout)
-        if (section == 0) {
-            strncpy (this->xf_out_fn, val, _MAX_PATH);
-        } else {
-            strncpy (stage->xf_out_fn, val, _MAX_PATH);
-        }
-#endif
         if (section == 0) {
             this->xf_out_fn.push_back (val);
         } else {
@@ -704,41 +697,7 @@ Registration_parms::set_command_string (
                 || buf.find ("[stage]") != std::string::npos)
             {
                 section = 1;
-
-#if defined (commentout)
-                this->num_stages ++;
-#endif
-
-#if defined (commentout)
-                this->stages = (Stage_parms**) realloc (
-                    this->stages, this->num_stages * sizeof(Stage_parms*));
-                if (this->num_stages == 1) {
-                    this->stages[this->num_stages-1] = new Stage_parms();
-                } else {
-                    this->stages[this->num_stages-1] = new Stage_parms(
-                        *(this->stages[this->num_stages-2]));
-                }
-                this->stages[this->num_stages-1]->stage_no = this->num_stages;
-#endif
-
-#if defined (commentout)
-                Stage_parms *sp;
-                if (this->num_stages == 1) {
-                    sp = new Stage_parms();
-                } else {
-                    sp = new Stage_parms(*d_ptr->stages.back());
-                }
-                d_ptr->stages.push_back (sp);
-
-                /* Some parameters that should be copied from global 
-                   to the first stage. */
-                if (this->num_stages == 1) {
-                    sp->default_value = this->default_value;
-                }
-#endif
-
                 this->append_stage ();
-
                 continue;
             }
             else if (buf.find ("[COMMENT]") != std::string::npos
@@ -883,6 +842,8 @@ Registration_parms::append_stage ()
     if (this->num_stages == 1) {
         sp->default_value = this->default_value;
     }
+
+    sp->stage_no = this->num_stages;
 
     return sp;
 }
