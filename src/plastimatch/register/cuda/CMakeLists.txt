@@ -72,7 +72,6 @@ if (CUDA_FOUND)
 
     # GCS 2013-03-21.  Why can't we link plmregistercuda against plmbase?
     # I'm going to try it and see.
-    message (STATUS ">> ${PLM_CUDA_LIBRARIES}")
     target_link_libraries (plmregistercuda 
       ${PLMREGISTERCUDA_LIBRARY_DEPENDENCIES})
 
@@ -93,7 +92,6 @@ if (CUDA_FOUND)
     endif ()
   else ()
     # building CUDA into plmregister
-    message (STATUS "CUDA_CXX_FLAGS = ${CUDA_CXX_FLAGS}")
     cuda_compile (CUDA_WRAPPERS ${PLMREGISTERCUDA_SRC})
 #    set (PLMREGISTER_LIBRARY_SRC
 #      ${PLMREGISTER_LIBRARY_SRC}

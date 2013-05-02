@@ -57,7 +57,6 @@ if (CUDA_FOUND)
     endif ()
   else ()
     # building CUDA into plmreconstruct
-    message (STATUS "CUDA_CXX_FLAGS = ${CUDA_CXX_FLAGS}")
     cuda_compile (CUDA_WRAPPERS ${PLMRECONSTRUCT_CUDA_SRC})
 #    set (PLMRECONSTRUCT_LIBRARY_SRC
 #      ${PLMRECONSTRUCT_LIBRARY_SRC}
