@@ -8,6 +8,8 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 ##-----------------------------------------------------------------------------
 ##  CMAKE FLAGS
 ##-----------------------------------------------------------------------------
+option (PLM_BUILD_API_TEST    "Build Plastimatch API test programs" OFF)
+option (PLM_BUILD_CPROP_TEST  "Build C++ properties test programs"  OFF)
 option (PLM_BUILD_CUDA_TEST   "Build CUDA test program"   OFF)
 option (PLM_BUILD_DCMTK_TEST  "Build DCMTK test program"  OFF)
 option (PLM_BUILD_DLIB_TEST   "Build dlib test program"   OFF)
@@ -25,6 +27,26 @@ option (PLM_BUILD_RANSAC_TEST "Build RANSAC test program" OFF)
 ##-----------------------------------------------------------------------------
 ##  BUILD TARGETS
 ##-----------------------------------------------------------------------------
+# Test executable -- plastimatch api
+if (PLM_BUILD_API_TEST)
+  plm_add_executable (api_test api_test.cxx
+    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
+    ${BUILD_ALWAYS} ${INSTALL_NEVER})
+endif ()
+
+# Test executable -- c++ properties
+if (PLM_BUILD_CPROP_TEST)
+  plm_add_executable (test_eps test_eps.cxx
+    "" "" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+  plm_add_executable (test_limits test_limits.cxx
+    "" "" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+  plm_add_executable (test_overflow test_overflow.cxx
+    "" "" 
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+endif ()
+
 # Test executable -- cuda
 if (CUDA_FOUND AND PLM_BUILD_CUDA_TEST)
   cuda_compile (CUDA_TEST_WRAPPERS cuda_test.cu)
@@ -159,18 +181,10 @@ if (PLM_BUILD_QT_TEST AND QT4_FOUND)
     ${BUILD_ALWAYS} ${INSTALL_NEVER})
 endif ()
 
+# Test executable -- ransac
 if (PLM_BUILD_RANSAC_TEST)
   plm_add_executable (ransac_test ransac_test.cxx
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
 
-plm_add_executable (test_eps test_eps.cxx
-  "" "" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-plm_add_executable (test_limits test_limits.cxx
-  "" "" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-plm_add_executable (test_overflow test_overflow.cxx
-  "" "" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})

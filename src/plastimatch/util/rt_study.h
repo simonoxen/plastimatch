@@ -61,6 +61,8 @@ public:
     void set_user_metadata (std::vector<std::string>& metadata);
 
     bool have_image ();
+    void set_image (ShortImageType::Pointer itk_image);
+    void set_image (FloatImageType::Pointer itk_image);
     void set_image (Plm_image* pli);
     void set_image (Plm_image::Pointer pli);
     Plm_image::Pointer get_image ();
@@ -74,6 +76,11 @@ public:
     bool have_rtss ();
     Segmentation::Pointer get_rtss ();
     void set_rtss (Segmentation::Pointer rtss);
+
+    void add_structure (
+        UCharImageType::Pointer itk_image, 
+        const char *structure_name = 0,
+        const char *structure_color = 0);
 
     const std::string& get_xio_dose_filename () const;
     Xio_ct_transform* get_xio_ct_transform ();

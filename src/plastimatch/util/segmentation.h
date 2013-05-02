@@ -65,6 +65,7 @@ public:
     void apply_dicom_dir (const Rt_study_metadata *rsm);
     void convert_ss_img_to_cxt (void);
     void convert_to_uchar_vec (void);
+    void cxt_extract (void);
     void cxt_re_extract (void);
     void prune_empty (void);
     void rasterize (Plm_image_header *pih, bool want_labelmap, 
@@ -73,6 +74,11 @@ public:
     void find_rasterization_geometry (Plm_image_header *pih);
     void warp (Xform *xf, Plm_image_header *pih, bool use_itk = false);
     void warp (Xform *xf, Plm_image_header *pih, Warp_parms *parms);
+
+    void add_structure (
+        UCharImageType::Pointer itk_image, 
+        const char *structure_name = 0,
+        const char *structure_color = 0);
 
     bool have_ss_img ();
     void set_ss_img (UCharImageType::Pointer ss_img);
@@ -83,6 +89,13 @@ public:
     Rtss* get_structure_set_raw ();
     void set_structure_set (Rtss::Pointer rtss_ss);
     void set_structure_set (Rtss *rtss_ss);
+
+protected:
+    void initialize_ss_image (
+        const Plm_image_header& pih, int vector_length);
+    void broaden_ss_image (
+        int new_vector_length);
+
 };
 
 #endif

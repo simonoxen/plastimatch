@@ -60,6 +60,11 @@ Plm_image::Plm_image (UCharImageType::Pointer img)
     this->init ();
     this->set_itk (img);
 }
+Plm_image::Plm_image (ShortImageType::Pointer img)
+{
+    this->init ();
+    this->set_itk (img);
+}
 Plm_image::Plm_image (FloatImageType::Pointer img)
 {
     this->init ();
@@ -625,6 +630,15 @@ Plm_image::set_itk (UShortImageType::Pointer img)
     m_original_type = PLM_IMG_TYPE_ITK_USHORT;
     m_type = PLM_IMG_TYPE_ITK_USHORT;
     this->m_itk_ushort = img;
+}
+
+void 
+Plm_image::set_itk (ShortImageType::Pointer img)
+{
+    this->free ();
+    m_original_type = PLM_IMG_TYPE_ITK_SHORT;
+    m_type = PLM_IMG_TYPE_ITK_SHORT;
+    this->m_itk_short = img;
 }
 
 void 

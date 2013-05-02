@@ -341,6 +341,9 @@ Rt_study::save_dicom (const char *dicom_dir)
     if (d_ptr->m_img) {
         d_ptr->m_drs->set_image_header (d_ptr->m_img);
     }
+    if (d_ptr->m_rtss) {
+        d_ptr->m_rtss->cxt_extract ();
+    }
 
 #if PLM_DCM_USE_DCMTK
     this->save_dcmtk (dicom_dir);
@@ -424,6 +427,18 @@ Rt_study::get_image ()
 }
 
 void 
+Rt_study::set_image (ShortImageType::Pointer itk_image)
+{
+    d_ptr->m_img = Plm_image::New (new Plm_image(itk_image));
+}
+
+void 
+Rt_study::set_image (FloatImageType::Pointer itk_image)
+{
+    d_ptr->m_img = Plm_image::New (new Plm_image(itk_image));
+}
+
+void 
 Rt_study::set_image (Plm_image* pli)
 {
     d_ptr->m_img.reset (pli);
@@ -485,6 +500,18 @@ void
 Rt_study::set_rtss (Segmentation::Pointer rtss)
 {
     d_ptr->m_rtss = rtss;
+}
+
+void 
+Rt_study::add_structure (
+    UCharImageType::Pointer itk_image,
+    const char *structure_name,
+    const char *structure_color)
+{
+    if (!have_rtss()) {
+        d_ptr->m_rtss = Segmentation::New ();
+    }
+    d_ptr->m_rtss->add_structure (itk_image, structure_name, structure_color);
 }
 
 Xio_ct_transform*

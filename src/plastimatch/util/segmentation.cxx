@@ -32,6 +32,7 @@
 #include "segmentation.h"
 #include "ss_list_io.h"
 #include "ss_img_extract.h"
+#include "ss_img_stats.h"
 #include "string_util.h"
 #include "warp_parms.h"
 #include "xio_structures.h"
@@ -180,34 +181,10 @@ Segmentation::load_prefix (const Pstring &prefix_dir)
         Plm_image_header pih (img);
 
         if (first) {
-            /* Create ss_image with same resolution as first image */
-            d_ptr->m_ss_img = new Plm_image;
-            ss_img = UCharVecImageType::New ();
-            itk_image_set_header (ss_img, pih);
-            ss_img->SetVectorLength (out_vec_len);
-            ss_img->Allocate ();
+            this->initialize_ss_image (pih, out_vec_len);
 
-            /* GCS NOTE: For some reason, ss_img->FillBuffer (0) 
-               doesn't do what I want. */
-            itk::VariableLengthVector<unsigned char> v;
-            v.SetSize (out_vec_len);
-            v.Fill (0);
-            ss_img->FillBuffer (v);
-#if defined (commentout)
-            typedef itk::ImageRegionIterator< 
-                UCharVecImageType > UCharVecIteratorType;
-            UCharVecIteratorType it (ss_img, pih.m_region);
-            for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
-                it.Set (v);
-            }
-#endif
-
-            d_ptr->m_ss_img->set_itk (ss_img);
+            ss_img = d_ptr->m_ss_img->itk_uchar_vec ();
             Plm_image_header::clone (&ss_img_pih, &pih);
-
-            /* Create ss_list to hold strucure names */
-            d_ptr->m_cxt = Rtss::New();
-            d_ptr->m_cxt->set_geometry (d_ptr->m_ss_img);
 
             first = false;
         } else {
@@ -261,6 +238,78 @@ Segmentation::load_prefix (const Pstring &prefix_dir)
 
         /* Move to next bit */
         bit++;
+    }
+}
+
+void
+Segmentation::add_structure (
+    UCharImageType::Pointer itk_image, 
+    const char *structure_name,
+    const char *structure_color)
+{
+    Plm_image_header pih (itk_image);
+
+    /* Allocate image if this is the first structure */
+    if (!d_ptr->m_ss_img) {
+        this->initialize_ss_image (pih, 2);
+    }
+
+    else {
+        /* Make sure image size is the same */
+        Plm_image_header ss_img_pih (d_ptr->m_ss_img);
+        if (!Plm_image_header::compare (&pih, &ss_img_pih)) {
+            print_and_exit ("Image size mismatch when adding structure");
+        }
+    }
+
+    /* Figure out basic structure info */
+    if (!structure_name) {
+        structure_name = "";
+    }
+    if (!structure_color) {
+        structure_color = "";
+    }
+    int bit = d_ptr->m_cxt->num_structures; /* GCS FIX: I hope this is ok */
+    unsigned int uchar_no = bit / 8;
+    unsigned int bit_no = bit % 8;
+    unsigned char bit_mask = 1 << bit_no;
+
+    /* Add structure to rtss */
+    d_ptr->m_cxt->add_structure (
+        structure_name, structure_color,
+        d_ptr->m_cxt->num_structures + 1,
+        bit);
+
+    /* Expand vector length if needed */
+    UCharVecImageType::Pointer ss_img = d_ptr->m_ss_img->itk_uchar_vec ();
+    if (uchar_no > ss_img->GetVectorLength()) {
+        this->broaden_ss_image (uchar_no);
+    }
+
+    /* Set up iterators for looping through images */
+    typedef itk::ImageRegionConstIterator< UCharImageType > 
+        UCharIteratorType;
+    typedef itk::ImageRegionIterator< UCharVecImageType > 
+        UCharVecIteratorType;
+    UCharIteratorType uchar_img_it (itk_image, 
+        itk_image->GetLargestPossibleRegion());
+    UCharVecIteratorType ss_img_it (ss_img, 
+        ss_img->GetLargestPossibleRegion());
+
+    /* Loop through voxels, or'ing them into ss_img */
+    /* GCS FIX: This is inefficient, due to undesirable construct 
+       and destruct of itk::VariableLengthVector of each pixel */
+    for (uchar_img_it.GoToBegin(), ss_img_it.GoToBegin();
+        !uchar_img_it.IsAtEnd();
+        ++uchar_img_it, ++ss_img_it
+    ) {
+        unsigned char u = uchar_img_it.Get ();
+        if (!u) continue;
+
+        itk::VariableLengthVector<unsigned char> v 
+            = ss_img_it.Get ();
+        v[uchar_no] |= bit_mask;
+        ss_img_it.Set (v);
     }
 }
 
@@ -586,7 +635,7 @@ Segmentation::convert_ss_img_to_cxt (void)
 
         /* Do extraction */
         lprintf ("Doing extraction\n");
-        cxt_extract (d_ptr->m_cxt.get(), d_ptr->m_ss_img->m_itk_uchar_vec, 
+        ::cxt_extract (d_ptr->m_cxt.get(), d_ptr->m_ss_img->m_itk_uchar_vec, 
             -1, use_existing_bits);
     }
     else {
@@ -595,7 +644,7 @@ Segmentation::convert_ss_img_to_cxt (void)
 
         /* Do extraction */
         lprintf ("Doing extraction\n");
-        cxt_extract (d_ptr->m_cxt.get(), d_ptr->m_ss_img->m_itk_uint32, -1, 
+        ::cxt_extract (d_ptr->m_cxt.get(), d_ptr->m_ss_img->m_itk_uint32, -1, 
             use_existing_bits);
     }
 }
@@ -611,6 +660,14 @@ Segmentation::convert_to_uchar_vec (void)
 }
 
 void
+Segmentation::cxt_extract (void)
+{
+    if (d_ptr->m_ss_img && !d_ptr->m_cxt) {
+        this->convert_ss_img_to_cxt ();
+    }
+}
+
+void
 Segmentation::cxt_re_extract (void)
 {
     d_ptr->m_cxt->free_all_polylines ();
@@ -618,12 +675,12 @@ Segmentation::cxt_re_extract (void)
         || d_ptr->m_ss_img->m_type == PLM_IMG_TYPE_ITK_UCHAR_VEC) 
     {
         d_ptr->m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
-        cxt_extract (d_ptr->m_cxt.get(), d_ptr->m_ss_img->m_itk_uchar_vec, 
+        ::cxt_extract (d_ptr->m_cxt.get(), d_ptr->m_ss_img->m_itk_uchar_vec, 
             d_ptr->m_cxt->num_structures, true);
     }
     else {
         d_ptr->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
-        cxt_extract (d_ptr->m_cxt.get(), d_ptr->m_ss_img->m_itk_uint32, 
+        ::cxt_extract (d_ptr->m_cxt.get(), d_ptr->m_ss_img->m_itk_uint32, 
             d_ptr->m_cxt->num_structures, true);
     }
 }
@@ -785,4 +842,83 @@ void
 Segmentation::set_structure_set (Rtss *rtss_ss)
 {
     d_ptr->m_cxt.reset (rtss_ss);
+}
+
+void
+Segmentation::initialize_ss_image (
+    const Plm_image_header& pih, int vector_length)
+{
+    UCharVecImageType::Pointer ss_img;
+    Plm_image_header ss_img_pih;
+
+    /* Create ss_image with same resolution as first image */
+    d_ptr->m_ss_img = new Plm_image;
+    ss_img = UCharVecImageType::New ();
+    itk_image_set_header (ss_img, pih);
+    ss_img->SetVectorLength (vector_length);
+    ss_img->Allocate ();
+
+    /* GCS NOTE: For some reason, ss_img->FillBuffer (0) 
+       doesn't do what I want. */
+    itk::VariableLengthVector<unsigned char> v;
+    v.SetSize (vector_length);
+    v.Fill (0);
+    ss_img->FillBuffer (v);
+#if defined (commentout)
+    typedef itk::ImageRegionIterator< 
+        UCharVecImageType > UCharVecIteratorType;
+    UCharVecIteratorType it (ss_img, pih.m_region);
+    for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
+        it.Set (v);
+    }
+#endif
+
+    d_ptr->m_ss_img->set_itk (ss_img);
+    Plm_image_header::clone (&ss_img_pih, &pih);
+
+    /* Create ss_list to hold strucure names */
+    d_ptr->m_cxt = Rtss::New();
+    d_ptr->m_cxt->set_geometry (d_ptr->m_ss_img);
+}
+
+void
+Segmentation::broaden_ss_image (int new_vector_length)
+{
+    /* Get old image */
+    UCharVecImageType::Pointer old_ss_img = d_ptr->m_ss_img->itk_uchar_vec ();
+    Plm_image_header pih (old_ss_img);
+
+    /* Create new image */
+    UCharVecImageType::Pointer new_ss_img = UCharVecImageType::New ();
+    itk_image_set_header (new_ss_img, pih);
+    new_ss_img->SetVectorLength (new_vector_length);
+    new_ss_img->Allocate ();
+
+    /* Create "pixels" */
+    itk::VariableLengthVector<unsigned char> v_old;
+    itk::VariableLengthVector<unsigned char> v_new;
+    int old_vector_length = old_ss_img->GetVectorLength();
+    v_old.SetSize (old_vector_length);
+    v_new.SetSize (new_vector_length);
+    v_new.Fill (0);
+
+    /* Loop through image */
+    typedef itk::ImageRegionIterator< 
+        UCharVecImageType > UCharVecIteratorType;
+    UCharVecIteratorType it_old (old_ss_img, pih.m_region);
+    UCharVecIteratorType it_new (new_ss_img, pih.m_region);
+    for (it_old.GoToBegin(), it_new.GoToBegin(); 
+         !it_old.IsAtEnd(); 
+         ++it_old, ++it_new)
+    {
+        /* Copy old pixel bytes into new */
+        v_old = it_old.Get();
+        for (int i = 0; i < old_vector_length; i++) {
+            v_new[i] = v_old[i];
+        }
+        it_new.Set (v_new);
+    }
+
+    /* Fixate new image */
+    d_ptr->m_ss_img->set_itk (new_ss_img);
 }
