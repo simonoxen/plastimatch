@@ -171,7 +171,7 @@ check_gradient (
 
             /* Create new location for x */
             for (j = 0; j < bxf->num_coeff; j++) {
-                bxf->coeff[j] = x[j] + i * options->step_size * grad[j];
+                bxf->coeff[j] = x[j] - i * options->step_size * grad[j];
             }
 
             /* Get score */
