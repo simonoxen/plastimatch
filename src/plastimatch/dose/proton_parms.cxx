@@ -20,6 +20,9 @@
 
 class Proton_parms_private {
 public:
+    /* Scene */
+    Proton_scene::Pointer scene;
+
     /* [BEAM] */
     float src[3];
     float isocenter[3];
@@ -54,6 +57,8 @@ public:
         this->ap_spacing[0] = 1.;
         this->ap_spacing[1] = 1.;
         this->ap_offset = 100;
+
+        this->scene = Proton_scene::New ();
     }
 };
 
@@ -68,13 +73,10 @@ Proton_parms::Proton_parms ()
     this->detail = 0;
     this->ray_step = 1.0f;
     this->scale = 1.0f;
-
-    this->scene = 0;
 }
 
 Proton_parms::~Proton_parms ()
 {
-    /* Don't delete scene.  You don't own it. */
 }
 
 static void
@@ -163,7 +165,7 @@ Proton_parms::set_key_val (
     /* [BEAM] */
     case 1:
         if (!strcmp (key, "bragg_curve")) {
-            scene->beam->load (val);
+            d_ptr->scene->beam->load (val);
         }
         else if (!strcmp (key, "pos")) {
             int rc = sscanf (val, "%f %f %f", 
@@ -180,22 +182,22 @@ Proton_parms::set_key_val (
             }
         }
         else if (!strcmp (key, "energy")) {
-            if (sscanf (val, "%lf", &(scene->beam->E0)) != 1) {
+            if (sscanf (val, "%lf", &(d_ptr->scene->beam->E0)) != 1) {
                 goto error_exit;
             }
         }
         else if (!strcmp (key, "spread")) {
-            if (sscanf (val, "%lf", &(scene->beam->spread)) != 1) {
+            if (sscanf (val, "%lf", &(d_ptr->scene->beam->spread)) != 1) {
                 goto error_exit;
             }
         }
         else if (!strcmp (key, "depth")) {
-            if (sscanf (val, "%lf", &(scene->beam->dmax)) != 1) {
+            if (sscanf (val, "%lf", &(d_ptr->scene->beam->dmax)) != 1) {
                 goto error_exit;
             }
         }
         else if (!strcmp (key, "res")) {
-            if (sscanf (val, "%lf", &(scene->beam->dres)) != 1) {
+            if (sscanf (val, "%lf", &(d_ptr->scene->beam->dres)) != 1) {
                 goto error_exit;
             }
         }
@@ -231,22 +233,22 @@ Proton_parms::set_key_val (
         /* [PEAK] */
     case 3:
         if (!strcmp (key, "energy")) {
-            if (sscanf (val, "%lf", &(scene->beam->E0)) != 1) {
+            if (sscanf (val, "%lf", &(d_ptr->scene->beam->E0)) != 1) {
                 goto error_exit;
             }
         }
         else if (!strcmp (key, "spread")) {
-            if (sscanf (val, "%lf", &(scene->beam->spread)) != 1) {
+            if (sscanf (val, "%lf", &(d_ptr->scene->beam->spread)) != 1) {
                 goto error_exit;
             }
         }
         else if (!strcmp (key, "depth")) {
-            if (sscanf (val, "%lf", &(scene->beam->dmax)) != 1) {
+            if (sscanf (val, "%lf", &(d_ptr->scene->beam->dmax)) != 1) {
                 goto error_exit;
             }
         }
         else if (!strcmp (key, "weight")) {
-            if (sscanf (val, "%lf", &(scene->beam->weight)) != 1) {
+            if (sscanf (val, "%lf", &(d_ptr->scene->beam->weight)) != 1) {
                 goto error_exit;
             }
         }
@@ -275,11 +277,18 @@ Proton_parms::handle_end_of_section (int section)
         break;
     case 3:
         /* Peak */
-        scene->beam->add_peak ();
+        d_ptr->scene->beam->add_peak ();
         break;
     }
 }
 
+Proton_scene::Pointer& 
+Proton_parms::get_scene ()
+{
+    return d_ptr->scene;
+}
+
+#if defined (commentout)
 void
 Proton_parms::set_scene (
     Proton_scene *scene
@@ -287,6 +296,7 @@ Proton_parms::set_scene (
 {
     this->scene = scene;
 }
+#endif
 
 void
 Proton_parms::parse_config (
@@ -367,7 +377,7 @@ Proton_parms::parse_args (int argc, char** argv)
         if (argv[i][0] != '-') break;
 
         if (!strcmp (argv[i], "--debug")) {
-            scene->set_debug (true);
+            d_ptr->scene->set_debug (true);
         }
         else {
             print_usage ();
@@ -398,27 +408,27 @@ Proton_parms::parse_args (int argc, char** argv)
         fprintf (stderr, "\n** ERROR: Unable to load patient volume.\n");
         return false;
     }
-    this->scene->set_patient (ct);
+    d_ptr->scene->set_patient (ct);
 
     /* Generate PDD */
-    if (!scene->beam->generate ()) {
+    if (!d_ptr->scene->beam->generate ()) {
         return false;
     }
 
     /* set scene parameters */
-    scene->beam->set_source_position (d_ptr->src);
-    scene->beam->set_isocenter_position (d_ptr->isocenter);
+    d_ptr->scene->beam->set_source_position (d_ptr->src);
+    d_ptr->scene->beam->set_isocenter_position (d_ptr->isocenter);
 
-    scene->ap->set_distance (d_ptr->ap_offset);
-    scene->ap->set_dim (d_ptr->ires);
-    scene->ap->set_spacing (d_ptr->ap_spacing);
+    d_ptr->scene->ap->set_distance (d_ptr->ap_offset);
+    d_ptr->scene->ap->set_dim (d_ptr->ires);
+    d_ptr->scene->ap->set_spacing (d_ptr->ap_spacing);
     if (d_ptr->have_ic) {
-        scene->ap->set_center (d_ptr->ic);
+        d_ptr->scene->ap->set_center (d_ptr->ic);
     }
 
     /* try to setup the scene with the provided parameters */
-    this->scene->set_step_length (this->ray_step);
-    if (!this->scene->init ()) {
+    d_ptr->scene->set_step_length (this->ray_step);
+    if (!d_ptr->scene->init ()) {
         fprintf (stderr, "ERROR: Unable to initilize scene.\n");
         return false;
     }

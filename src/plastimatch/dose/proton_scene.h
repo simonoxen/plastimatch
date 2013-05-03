@@ -5,6 +5,7 @@
 #define _proton_scene_h_
 
 #include "plmdose_config.h"
+#include "smart_pointer.h"
 
 class Aperture;
 class Plm_image;
@@ -16,6 +17,8 @@ class Volume;
 class Rpl_volume;
 
 class PLMDOSE_API Proton_scene {
+public:
+    SMART_POINTER_SUPPORT (Proton_scene);
 public:
     Proton_scene ();
     ~Proton_scene ();

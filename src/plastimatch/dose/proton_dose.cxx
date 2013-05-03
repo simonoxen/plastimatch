@@ -224,7 +224,7 @@ gaus_kernel (
 static double
 dose_direct (
     double* ct_xyz,             /* voxel to dose */
-    Proton_scene* scene
+    Proton_scene::Pointer& scene
 )
 {
 #if defined (commentout)
@@ -246,8 +246,6 @@ dose_direct (
         printf ("(%f %f %f) %f\n", ct_xyz[0], ct_xyz[1], ct_xyz[2], 
             rgdepth);
     }
-#if 0
-#endif
 
     /* return the dose at this radiographic depth */
     return scene->beam->lookup_energy (rgdepth);
@@ -256,7 +254,7 @@ dose_direct (
 static double
 dose_debug (
     double* ct_xyz,             /* voxel to dose */
-    Proton_scene* scene
+    Proton_scene::Pointer& scene
 )
 {
 #if defined (commentout)
@@ -272,7 +270,7 @@ static double
 dose_scatter (
     double* ct_xyz,
     int* ct_ijk,            // DEBUG
-    Proton_scene* scene
+    Proton_scene::Pointer& scene
 )
 {
     Aperture*     ap      = scene->ap;
@@ -432,7 +430,7 @@ static double
 dose_hong (
     double* ct_xyz,
     int* ct_ijk,            // DEBUG
-    Proton_scene* scene
+    Proton_scene::Pointer& scene
 )
 {
     Aperture*     ap      = scene->ap;
@@ -585,7 +583,7 @@ dose_hong (
 }
 
 Volume*
-proton_dose_compute (Proton_scene *scene)
+proton_dose_compute (Proton_scene::Pointer& scene)
 {
     Proton_beam*  beam    = scene->beam;
     Proj_matrix*  pmat    = scene->pmat;

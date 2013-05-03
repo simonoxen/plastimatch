@@ -7,27 +7,33 @@
 #include "plmdose_config.h"
 #include <string>
 #include "plm_path.h"
+#include "proton_scene.h"
 #include "threading.h"
 
 class Plm_image;
 class Proton_parms_private;
 class Proton_scene;
 
-class PLMDOSE_API Proton_parms {
+class PLMDOSE_API Proton_parms
+{
+public:
+    Proton_parms_private *d_ptr;
 public:
     Proton_parms ();
     ~Proton_parms ();
 
-    void set_scene (Proton_scene *scene);
     bool parse_args (int argc, char** argv);
 
-private:
+public:
+    Proton_scene::Pointer& get_scene ();
+#if defined (commentout)
+    void set_scene (Proton_scene *scene);
+#endif
+
+protected:
     void handle_end_of_section (int section);
     void parse_config (const char* config_fn);
     int set_key_val (const char* key, const char* val, int section);
-
-public:
-    Proton_parms_private *d_ptr;
 
 public:
     /* [SETTINGS] */
@@ -42,9 +48,6 @@ public:
     std::string output_dose_fn; /* output: dose volume */
 
     /* GCS FIX: Copy-paste with wed_parms.h */
-
-    /* Scene (owned by caller) */
-    Proton_scene* scene;
 };
 
 #endif

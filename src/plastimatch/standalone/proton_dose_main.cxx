@@ -18,9 +18,10 @@ main (int argc, char* argv[])
 {
     Volume* dose;
     Proton_parms parms;
-    Proton_scene scene;
+    //Proton_scene scene;
+    //parms.set_scene (&scene);
 
-    parms.set_scene (&scene);
+    Proton_scene::Pointer scene = parms.get_scene ();
     if (!parms.parse_args (argc, argv)) {
         exit (0);
     }
@@ -28,7 +29,7 @@ main (int argc, char* argv[])
     printf ("Working...\n");
     fflush(stdout);
 
-    dose = proton_dose_compute (&scene);
+    dose = proton_dose_compute (scene);
     write_mha (parms.output_dose_fn.c_str(), dose);
     printf ("done.  \n\n");
 
