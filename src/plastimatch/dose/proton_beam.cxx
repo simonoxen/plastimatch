@@ -32,7 +32,7 @@ public:
 };
 
 
-Proton_Beam::Proton_Beam ()
+Proton_beam::Proton_beam ()
 {
     this->d_ptr = new Proton_beam_private;
 
@@ -46,14 +46,14 @@ Proton_Beam::Proton_Beam ()
     this->weight = 1.0;
 }
 
-Proton_Beam::~Proton_Beam ()
+Proton_beam::~Proton_beam ()
 {
     delete this->d_ptr;
     delete this->sobp;
 }
 
 bool
-Proton_Beam::load (const char* fn)
+Proton_beam::load (const char* fn)
 {
     FILE* fp = fopen (fn, "r");
     char linebuf[128];
@@ -73,19 +73,19 @@ Proton_Beam::load (const char* fn)
 }
 
 const double*
-Proton_Beam::get_source_position ()
+Proton_beam::get_source_position ()
 {
     return d_ptr->source;
 }
 
 double
-Proton_Beam::get_source_position (int dim)
+Proton_beam::get_source_position (int dim)
 {
     return d_ptr->source[dim];
 }
 
 void
-Proton_Beam::set_source_position (const float* position)
+Proton_beam::set_source_position (const float* position)
 {
     for (int d = 0; d < 3; d++) {
         d_ptr->source[d] = position[d];
@@ -93,7 +93,7 @@ Proton_Beam::set_source_position (const float* position)
 }
 
 void
-Proton_Beam::set_source_position (const double* position)
+Proton_beam::set_source_position (const double* position)
 {
     for (int d = 0; d < 3; d++) {
         d_ptr->source[d] = position[d];
@@ -101,19 +101,19 @@ Proton_Beam::set_source_position (const double* position)
 }
 
 const double*
-Proton_Beam::get_isocenter_position ()
+Proton_beam::get_isocenter_position ()
 {
     return d_ptr->isocenter;
 }
 
 double
-Proton_Beam::get_isocenter_position (int dim)
+Proton_beam::get_isocenter_position (int dim)
 {
     return d_ptr->isocenter[dim];
 }
 
 void
-Proton_Beam::set_isocenter_position (const float* position)
+Proton_beam::set_isocenter_position (const float* position)
 {
     for (int d = 0; d < 3; d++) {
         d_ptr->isocenter[d] = position[d];
@@ -121,7 +121,7 @@ Proton_Beam::set_isocenter_position (const float* position)
 }
 
 void
-Proton_Beam::set_isocenter_position (const double* position)
+Proton_beam::set_isocenter_position (const double* position)
 {
     for (int d = 0; d < 3; d++) {
         d_ptr->isocenter[d] = position[d];
@@ -129,31 +129,31 @@ Proton_Beam::set_isocenter_position (const double* position)
 }
 
 int
-Proton_Beam::get_detail (void) const
+Proton_beam::get_detail (void) const
 {
     return d_ptr->detail;
 }
 
 void
-Proton_Beam::set_detail (int detail)
+Proton_beam::set_detail (int detail)
 {
     d_ptr->detail = detail;
 }
 
 char
-Proton_Beam::get_flavor (void) const
+Proton_beam::get_flavor (void) const
 {
     return d_ptr->flavor;
 }
 
 void
-Proton_Beam::set_flavor (char flavor)
+Proton_beam::set_flavor (char flavor)
 {
     d_ptr->flavor = flavor;
 }
 
 bool
-Proton_Beam::load_xio (const char* fn)
+Proton_beam::load_xio (const char* fn)
 {
 #if defined (commentout)
     int i, j;
@@ -206,7 +206,7 @@ Proton_Beam::load_xio (const char* fn)
 }
 
 bool
-Proton_Beam::load_txt (const char* fn)
+Proton_beam::load_txt (const char* fn)
 {
 #if defined (commentout)
     char linebuf[128];
@@ -239,14 +239,14 @@ Proton_Beam::load_txt (const char* fn)
 }
 
 void
-Proton_Beam::add_peak ()
+Proton_beam::add_peak ()
 {
     this->sobp->add (this->E0, this->spread, this->dres, this->dmax, 
         this->weight);
 }
 
 float
-Proton_Beam::lookup_energy (
+Proton_beam::lookup_energy (
     float depth
 )
 {
@@ -254,13 +254,13 @@ Proton_Beam::lookup_energy (
 }
 
 bool
-Proton_Beam::generate ()
+Proton_beam::generate ()
 {
     return this->sobp->generate ();
 }
 
 void
-Proton_Beam::dump (const char* fn)
+Proton_beam::dump (const char* fn)
 {
     this->sobp->dump (fn);
 }

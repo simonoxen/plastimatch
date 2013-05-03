@@ -17,8 +17,8 @@ int
 main (int argc, char* argv[])
 {
     Volume* dose;
-    Proton_Parms parms;
-    Proton_Scene scene;
+    Proton_parms parms;
+    Proton_scene scene;
 
     parms.set_scene (&scene);
     if (!parms.parse_args (argc, argv)) {

@@ -57,7 +57,7 @@ public:
     }
 };
 
-Proton_Parms::Proton_Parms ()
+Proton_parms::Proton_parms ()
 {
     this->d_ptr = new Proton_parms_private;
 
@@ -72,7 +72,7 @@ Proton_Parms::Proton_Parms ()
     this->scene = 0;
 }
 
-Proton_Parms::~Proton_Parms ()
+Proton_parms::~Proton_parms ()
 {
     /* Don't delete scene.  You don't own it. */
 }
@@ -89,7 +89,7 @@ print_usage (void)
 }
 
 int
-Proton_Parms::set_key_val (
+Proton_parms::set_key_val (
     const char* key, 
     const char* val, 
     int section
@@ -261,7 +261,7 @@ Proton_Parms::set_key_val (
 }
 
 void
-Proton_Parms::handle_end_of_section (int section)
+Proton_parms::handle_end_of_section (int section)
 {
     switch (section) {
     case 0:
@@ -281,15 +281,15 @@ Proton_Parms::handle_end_of_section (int section)
 }
 
 void
-Proton_Parms::set_scene (
-    Proton_Scene *scene
+Proton_parms::set_scene (
+    Proton_scene *scene
 )
 {
     this->scene = scene;
 }
 
 void
-Proton_Parms::parse_config (
+Proton_parms::parse_config (
     const char* config_fn
 )
 {
@@ -360,7 +360,7 @@ Proton_Parms::parse_config (
 }
 
 bool
-Proton_Parms::parse_args (int argc, char** argv)
+Proton_parms::parse_args (int argc, char** argv)
 {
     int i;
     for (i=1; i<argc; i++) {

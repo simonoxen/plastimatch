@@ -9,21 +9,21 @@
 class Aperture;
 class Plm_image;
 class Proj_matrix;
-class Proton_Beam;
+class Proton_beam;
 class Proton_scene_private;
 class Volume;
 
 class Rpl_volume;
 
-class PLMDOSE_API Proton_Scene {
+class PLMDOSE_API Proton_scene {
 public:
-    Proton_Scene ();
-    ~Proton_Scene ();
+    Proton_scene ();
+    ~Proton_scene ();
 
     bool init ();
 
     /* Set the CT volume for dose calculation.
-       The Proton_Scene takes ownership of this CT. */
+       The Proton_scene takes ownership of this CT. */
     void set_patient (Plm_image*);
     void set_patient (Volume*);
     Volume *get_patient_vol ();
@@ -44,7 +44,7 @@ public:
     Proton_scene_private *d_ptr;
 public:
     Aperture* ap;
-    Proton_Beam *beam;
+    Proton_beam *beam;
     Proj_matrix* pmat;
     Rpl_volume* rpl_vol;
 };

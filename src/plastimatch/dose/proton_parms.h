@@ -11,14 +11,14 @@
 
 class Plm_image;
 class Proton_parms_private;
-class Proton_Scene;
+class Proton_scene;
 
-class PLMDOSE_API Proton_Parms {
+class PLMDOSE_API Proton_parms {
 public:
-    Proton_Parms ();
-    ~Proton_Parms ();
+    Proton_parms ();
+    ~Proton_parms ();
 
-    void set_scene (Proton_Scene *scene);
+    void set_scene (Proton_scene *scene);
     bool parse_args (int argc, char** argv);
 
 private:
@@ -44,7 +44,7 @@ public:
     /* GCS FIX: Copy-paste with wed_parms.h */
 
     /* Scene (owned by caller) */
-    Proton_Scene* scene;
+    Proton_scene* scene;
 };
 
 #endif

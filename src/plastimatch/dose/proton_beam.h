@@ -9,10 +9,10 @@
 class Proton_beam_private;
 class Proton_sobp;
 
-class PLMDOSE_API Proton_Beam {
+class PLMDOSE_API Proton_beam {
 public:
-    Proton_Beam ();
-    ~Proton_Beam ();
+    Proton_beam ();
+    ~Proton_beam ();
 public:
     Proton_beam_private *d_ptr;
 

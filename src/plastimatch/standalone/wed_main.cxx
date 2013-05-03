@@ -56,7 +56,7 @@ skin_ct (Volume* ct_volume, Volume* skin_volume, float background)
 }
 
 static Volume*
-create_wed_volume (Wed_Parms* parms, Proton_Scene *scene)
+create_wed_volume (Wed_Parms* parms, Proton_scene *scene)
 {
     Rpl_volume* rpl_vol = scene->rpl_vol;
 
@@ -79,7 +79,7 @@ create_wed_volume (Wed_Parms* parms, Proton_Scene *scene)
 }
 
 static Volume*
-create_dew_volume (Wed_Parms* parms, Proton_Scene *scene)
+create_dew_volume (Wed_Parms* parms, Proton_scene *scene)
 {
  
     Volume* patient_vol = scene->get_patient_vol();
@@ -116,7 +116,7 @@ create_dew_volume (Wed_Parms* parms, Proton_Scene *scene)
 }
 
 static Volume*
-create_segdepth_volume (Wed_Parms* parms, Proton_Scene *scene)
+create_segdepth_volume (Wed_Parms* parms, Proton_scene *scene)
 {
  
     Rpl_volume* rpl_vol = scene->rpl_vol;
@@ -151,7 +151,7 @@ wed_ct_compute (
     const char* out_fn,
     Wed_Parms* parms,
     Plm_image *ct_vol,
-    Proton_Scene *scene,
+    Proton_scene *scene,
     float background
 )
 {
@@ -196,7 +196,7 @@ wed_ct_initialize(Wed_Parms *parms)
   
     Plm_image* ct_vol;
     Plm_image* dose_vol = 0;
-    Proton_Scene scene;
+    Proton_scene scene;
   
   
     float background[3];

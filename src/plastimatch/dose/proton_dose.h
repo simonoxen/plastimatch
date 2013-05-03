@@ -8,11 +8,11 @@
 #include "threading.h"
 #include "plm_path.h"
 
-class Proton_Scene;
+class Proton_scene;
 class Volume;
 
 PLMDOSE_C_API
 Volume*
-proton_dose_compute (Proton_Scene* scene);
+proton_dose_compute (Proton_scene* scene);
 
 #endif

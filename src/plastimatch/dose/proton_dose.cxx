@@ -153,7 +153,7 @@ debug_voxel (
 static double
 highland (
     double rgdepth,
-    Proton_Beam* beam
+    Proton_beam* beam
 )
 {
 #if defined (commentout)
@@ -224,7 +224,7 @@ gaus_kernel (
 static double
 dose_direct (
     double* ct_xyz,             /* voxel to dose */
-    Proton_Scene* scene
+    Proton_scene* scene
 )
 {
 #if defined (commentout)
@@ -256,7 +256,7 @@ dose_direct (
 static double
 dose_debug (
     double* ct_xyz,             /* voxel to dose */
-    Proton_Scene* scene
+    Proton_scene* scene
 )
 {
 #if defined (commentout)
@@ -272,11 +272,11 @@ static double
 dose_scatter (
     double* ct_xyz,
     int* ct_ijk,            // DEBUG
-    Proton_Scene* scene
+    Proton_scene* scene
 )
 {
     Aperture*     ap      = scene->ap;
-    Proton_Beam*  beam    = scene->beam;
+    Proton_beam*  beam    = scene->beam;
     Rpl_volume*   rpl_vol = scene->rpl_vol;
 
     double rgdepth;
@@ -432,11 +432,11 @@ static double
 dose_hong (
     double* ct_xyz,
     int* ct_ijk,            // DEBUG
-    Proton_Scene* scene
+    Proton_scene* scene
 )
 {
     Aperture*     ap      = scene->ap;
-    Proton_Beam*  beam    = scene->beam;
+    Proton_beam*  beam    = scene->beam;
     Rpl_volume*   rpl_vol = scene->rpl_vol;
 
     double rgdepth;
@@ -585,9 +585,9 @@ dose_hong (
 }
 
 Volume*
-proton_dose_compute (Proton_Scene *scene)
+proton_dose_compute (Proton_scene *scene)
 {
-    Proton_Beam*  beam    = scene->beam;
+    Proton_beam*  beam    = scene->beam;
     Proj_matrix*  pmat    = scene->pmat;
     Volume*       ct_vol  = scene->get_patient_vol ();
     Rpl_volume*   rpl_vol = scene->rpl_vol;

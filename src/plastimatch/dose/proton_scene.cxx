@@ -32,17 +32,17 @@ public:
     Plm_image *patient;
 };
 
-Proton_Scene::Proton_Scene ()
+Proton_scene::Proton_scene ()
 {
     this->d_ptr = new Proton_scene_private;
     this->ap = new Aperture;
-    this->beam = new Proton_Beam;
+    this->beam = new Proton_beam;
     this->pmat = new Proj_matrix;
 
     this->rpl_vol = 0;
 }
 
-Proton_Scene::~Proton_Scene ()
+Proton_scene::~Proton_scene ()
 {
     delete this->d_ptr;
     delete this->ap;
@@ -54,13 +54,13 @@ Proton_Scene::~Proton_Scene ()
 }
 
 void
-Proton_Scene::set_step_length (double step_length)
+Proton_scene::set_step_length (double step_length)
 {
     d_ptr->step_length = step_length;
 }
 
 bool
-Proton_Scene::init ()
+Proton_scene::init ()
 {
     if (!this->ap) return false;
     if (!this->beam) return false;
@@ -86,47 +86,47 @@ Proton_Scene::init ()
 }
 
 void
-Proton_Scene::set_patient (Plm_image* ct_vol)
+Proton_scene::set_patient (Plm_image* ct_vol)
 {
     d_ptr->patient = ct_vol;
 }
 
 void
-Proton_Scene::set_patient (Volume* ct_vol)
+Proton_scene::set_patient (Volume* ct_vol)
 {
     d_ptr->patient = new Plm_image;
     d_ptr->patient->set_volume (ct_vol);
 }
 
 Volume *
-Proton_Scene::get_patient_vol ()
+Proton_scene::get_patient_vol ()
 {
     return d_ptr->patient->get_volume_float_raw ();
 }
 
 Plm_image *
-Proton_Scene::get_patient ()
+Proton_scene::get_patient ()
 {
     return d_ptr->patient;
 }
 
 bool
-Proton_Scene::get_debug (void) const
+Proton_scene::get_debug (void) const
 {
     return d_ptr->debug;
 }
 
 void
-Proton_Scene::set_debug (bool debug)
+Proton_scene::set_debug (bool debug)
 {
     d_ptr->debug = debug;
 }
 
 void
-Proton_Scene::debug ()
+Proton_scene::debug ()
 {
     Aperture* ap = this->ap;
-    Proton_Beam* beam = this->beam;
+    Proton_beam* beam = this->beam;
 
     printf ("BEAM\n");
     printf ("  -- [POS] Source :   %g %g %g\n", 
