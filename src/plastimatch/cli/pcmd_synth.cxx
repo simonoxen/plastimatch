@@ -295,9 +295,9 @@ parse_fn (
 
     /* If origin not specified, volume is centered about size */
     float volume_size[3];
-    parser->assign_float13 (volume_size, "volume-size");
+    parser->assign_float_13 (volume_size, "volume-size");
     if (parser->option ("origin")) {
-        parser->assign_float13 (sm_parms->origin, "origin");
+        parser->assign_float_13 (sm_parms->origin, "origin");
     } else {
         for (int d = 0; d < 3; d++) {
             /* GCS FIX: This should include direction cosines */
@@ -308,7 +308,7 @@ parse_fn (
 
     /* If spacing not specified, set spacing from size and resolution */
     if (parser->option ("spacing")) {
-        parser->assign_float13 (sm_parms->spacing, "spacing");
+        parser->assign_float_13 (sm_parms->spacing, "spacing");
     } else {
         for (int d = 0; d < 3; d++) {
             sm_parms->spacing[d] 
@@ -331,13 +331,13 @@ parse_fn (
     sm_parms->foreground = parser->get_float ("foreground");
 
     /* Donut options */
-    parser->assign_float13 (sm_parms->donut_center, "donut-center");
-    parser->assign_float13 (sm_parms->donut_radius, "donut-radius");
+    parser->assign_float_13 (sm_parms->donut_center, "donut-center");
+    parser->assign_float_13 (sm_parms->donut_radius, "donut-radius");
     sm_parms->donut_rings = parser->get_int ("donut-rings");
 
     /* Gaussian options */
-    parser->assign_float13 (sm_parms->gauss_center, "gauss-center");
-    parser->assign_float13 (sm_parms->gauss_std, "gauss-std");
+    parser->assign_float_13 (sm_parms->gauss_center, "gauss-center");
+    parser->assign_float_13 (sm_parms->gauss_std, "gauss-std");
 
     /* Rect options */
     int rc = sscanf (parser->get_string("rect-size").c_str(), 
@@ -370,15 +370,15 @@ parse_fn (
     }
 
     /* Sphere options */
-    parser->assign_float13 (sm_parms->sphere_center, "sphere-center");
-    parser->assign_float13 (sm_parms->sphere_radius, "sphere-radius");
+    parser->assign_float_13 (sm_parms->sphere_center, "sphere-center");
+    parser->assign_float_13 (sm_parms->sphere_radius, "sphere-radius");
 
     /* Grid pattern options */
     parser->assign_int13 (sm_parms->grid_spacing, "grid-pattern");
 
     /* Dose options */
     sm_parms->penumbra = parser->get_float ("penumbra");
-    parser->assign_float13 (sm_parms->dose_center, "dose-center");
+    parser->assign_float_13 (sm_parms->dose_center, "dose-center");
     rc = sscanf (parser->get_string("dose-size").c_str(), 
         "%g %g %g %g %g %g", 
         &(sm_parms->dose_size[0]), 

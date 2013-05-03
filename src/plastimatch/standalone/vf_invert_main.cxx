@@ -321,11 +321,11 @@ parse_fn (
     }
     if (parser->option ("origin")) {
         parms->have_origin = true;
-        parser->assign_float13 (parms->origin, "origin");
+        parser->assign_float_13 (parms->origin, "origin");
     }
     if (parser->option ("spacing")) {
         parms->have_spacing = true;
-        parser->assign_float13 (parms->spacing, "spacing");
+        parser->assign_float_13 (parms->spacing, "spacing");
     }
     if (parser->option ("old-algorithm")) {
         parms->old_algorithm = true;

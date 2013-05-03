@@ -307,11 +307,11 @@ parse_fn (
     }
     if (parser->option ("origin")) {
 	parms->m_have_origin = 1;
-	parser->assign_float13 (parms->origin, "origin");
+	parser->assign_float_13 (parms->origin, "origin");
     }
     if (parser->option ("spacing")) {
 	parms->m_have_spacing = 1;
-	parser->assign_float13 (parms->spacing, "spacing");
+	parser->assign_float_13 (parms->spacing, "spacing");
     }
     if (parser->option ("subsample")) {
 	parms->m_have_subsample = 1;

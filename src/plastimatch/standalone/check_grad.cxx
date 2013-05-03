@@ -8,11 +8,69 @@
 #include <string.h>
 #include <time.h>
 
+#include "bspline.h"
 #include "bspline_mi.h"
 #include "bspline_xform.h"
-#include "check_grad_opts.h"
 #include "mha_io.h"
+#include "plm_clp.h"
+#include "plm_image.h"
 #include "volume.h"
+
+enum Check_grad_process {
+    CHECK_GRAD_PROCESS_FWD,
+    CHECK_GRAD_PROCESS_BKD,
+    CHECK_GRAD_PROCESS_CTR,
+    CHECK_GRAD_PROCESS_LINE
+};
+
+class Check_grad_opts {
+public:
+    std::string fixed_fn;
+    std::string moving_fn;
+    std::string input_xf_fn;
+    std::string output_fn;
+    const char* xpm_hist_prefix;
+
+    float factr;
+    float pgtol;
+    float step_size;
+    int line_range[2];
+    plm_long vox_per_rgn[3];
+    Check_grad_process process;
+    int random;
+    float random_range[2];
+
+    bool debug;
+
+    char bsp_implementation;
+    BsplineThreading bsp_threading;
+    BsplineMetric bsp_metric;
+
+public:
+    Check_grad_opts () {
+	fixed_fn = "";
+	moving_fn = "";
+	input_xf_fn = "";
+	output_fn = "";
+        xpm_hist_prefix = 0;
+	factr = 0;
+	pgtol = 0;
+	step_size = 1e-4;
+	line_range[0] = 0;
+	line_range[1] = 30;
+	for (int d = 0; d < 3; d++) {
+	    vox_per_rgn[d] = 15;
+	}
+	process = CHECK_GRAD_PROCESS_FWD;
+	random = 0;
+	random_range[0] = 0;
+	random_range[1] = 0;
+        debug = false;
+        bsp_implementation = '0';
+        bsp_threading = BTHR_CPU;
+        bsp_metric = BMET_MSE;
+    }
+};
 
 void
 check_gradient (
@@ -30,11 +88,11 @@ check_gradient (
     plm_long roi_offset[3];
 
     Bspline_optimize_data bod;
-    Bspline_state *bst = bod.bst;
-    Bspline_xform *bxf = bod.bxf;
-    Bspline_parms *parms = bod.parms;
+    Bspline_state *bst;
+    Bspline_xform *bxf;
+    Bspline_parms *parms = new Bspline_parms;
 
-    parms = &options->parms;
+    /* Fixate images into bspline parms */
     parms->fixed = fixed;
     parms->moving = moving;
     parms->moving_grad = moving_grad;
@@ -42,8 +100,8 @@ check_gradient (
     /* Allocate memory and build lookup tables */
     printf ("Allocating lookup tables\n");
     memset (roi_offset, 0, 3*sizeof(plm_long));
-    if (options->input_xf_fn) {
-        bxf = bspline_xform_load (options->input_xf_fn);
+    if (!options->input_xf_fn.empty()) {
+        bxf = bspline_xform_load (options->input_xf_fn.c_str());
     } else {
         bxf = new Bspline_xform;
         bspline_xform_initialize (
@@ -66,6 +124,11 @@ check_gradient (
         }
     }
     bst = bspline_state_create (bxf, parms);
+
+    /* Fixate items into bod structure */
+    bod.bxf = bxf;
+    bod.bst = bst;
+    bod.parms = parms;
 
     /* Create scratch variables */
     x = (float*) malloc (sizeof(float) * bxf->num_coeff);
@@ -90,7 +153,11 @@ check_gradient (
     }
     score = bst->ssd.score;
 
-    fp = fopen (options->output_fn, "w");
+    if (options->output_fn.empty()) {
+        fp = stdout;
+    } else {
+        fp = fopen (options->output_fn.c_str(), "w");
+    }
     if (options->process == CHECK_GRAD_PROCESS_LINE) {
         /* For each step along line */
         for (i = options->line_range[0]; i < options->line_range[1]; i++) {
@@ -140,43 +207,181 @@ check_gradient (
         }
     }
 
-    fclose (fp);
+    if (!options->output_fn.empty()) {
+        fclose (fp);
+    }
     free (x);
     free (grad);
     free (grad_fd);
     bspline_state_destroy (bst, parms, bxf);
+    delete parms;
     delete bxf;
     bspline_parms_free (parms);
+}
+
+static void
+usage_fn (dlib::Plm_clp* parser, int argc, char *argv[])
+{
+    std::cout << "Usage: check_grad [options] fixed-image moving-image\n";
+    parser->print_options (std::cout);
+    std::cout << std::endl;
+}
+
+/*
+-A hardware             Either "cpu" or "cuda" (default=cpu)
+-M { mse | mi }         Registration metric (default is mse)
+    -f implementation       Choose implementation (a single letter: a, b, etc.)
+    -s "i j k"              Integer knot spacing (voxels)
+ -h prefix               Generate histograms for each MI iteration
+ --debug                 Create various debug files
+ -p process              Choices: "fwd", "bkd", "ctr" (for forward,
+     backward, or central difference, or "line" for
+     line profile. (default=fwd)
+     -e step                 Step size (default is 1e-4)
+     -l "min max"            Min, max range for line profile (default "0 30")
+     -R "min max"          Random starting point (coeff between min, max)
+ -X infile               Input bspline coefficients
+ -O file                 Output file
+*/
+static void
+parse_fn (
+    Check_grad_opts *parms,
+    dlib::Plm_clp *parser, 
+    int argc, 
+    char* argv[]
+)
+{
+    /* Add --help, --version */
+    parser->add_default_options ();
+
+    /* Algorithm options */
+    parser->add_long_option ("A", "hardware",
+	"algorithm hardware, either \"cpu\" or \"cuda\", "
+        "default is cpu", 1, "cpu");
+    parser->add_long_option ("f", "flavor", 
+	"algroithm flavor, a single letter such as 'c' or 'f'",
+        1, "");
+    parser->add_long_option ("M", "metric",
+	"registration metric, either \"mse\" or \"mi\", "
+        "default is mse", 1, "mse");
+    parser->add_long_option ("p", "process", 
+	"analysis process, either \"fwd\", \"bkd\", or \"ctr\" "
+        "for forward, backward, or central differencing, "
+        "or \"line\" for line profile; default is \"fwd\"", 1, "fwd");
+    parser->add_long_option ("e", "step",
+        "step size; default is 1e-4", 1, "1e-4");
+    parser->add_long_option ("l", "line-range", 
+        "range of line profile as number of steps between \"min max\"; "
+        "default is \"0 30\"", 1, "0 30");
+    parser->add_long_option ("R", "random-start", 
+        "use random coefficient values in range between \"min max\"", 1, "");
+
+    /* Input/output files */
+    parser->add_long_option ("X", "input-xform",
+	"input bspline transform", 1, "");
+    parser->add_long_option ("O", "output",
+	"output file", 1, "");
+    parser->add_long_option ("", "debug", 
+        "create various debug files", 0, "");
+    parser->add_long_option ("H", "histogram-prefix", 
+        "create MI histograms files with the specified prefix", 1, "");
+
+    /* Parse the command line arguments */
+    parser->parse (argc,argv);
+
+    /* Handle --help, --version */
+    parser->check_default_options ();
+
+    /* Check that two, and only two, input files were given */
+    if (parser->number_of_arguments() < 2) {
+	throw (dlib::error ("Error.  You must specify two input files"));
+    } else if (parser->number_of_arguments() > 2) {
+	std::string extra_arg = (*parser)[2];
+	throw (dlib::error ("Error.  Unknown option " + extra_arg));
+    }
+
+    /* Copy algorithm values into parms struct */
+    std::string val;
+    val = parser->get_string("hardware").c_str();
+    if (val == "cpu") {
+        parms->bsp_threading = BTHR_CPU;
+    } else if (val == "cuda") {
+        parms->bsp_threading = BTHR_CUDA;
+    } else {
+        throw (dlib::error ("Error parsing --hardware, unknown option."));
+    }
+    val = parser->get_string("metric").c_str();
+    if (val == "mse") {
+        parms->bsp_metric = BMET_MSE;
+    } else if (val == "cuda") {
+        parms->bsp_metric = BMET_MI;
+    } else {
+        throw (dlib::error ("Error parsing --metric, unknown option."));
+    }
+    val = parser->get_string("flavor").c_str();
+    parms->bsp_implementation = val[0];
+    val = parser->get_string("process").c_str();
+    if (val == "fwd") {
+        parms->process = CHECK_GRAD_PROCESS_FWD;
+    } else if (val == "bkd") {
+        parms->process = CHECK_GRAD_PROCESS_BKD;
+    } else if (val == "ctr") {
+        parms->process = CHECK_GRAD_PROCESS_CTR;
+    } else if (val == "line") {
+        parms->process = CHECK_GRAD_PROCESS_LINE;
+    } else {
+        throw (dlib::error ("Error parsing --metric, unknown option."));
+    }
+    parms->step_size = parser->get_float ("step");
+    parser->assign_int_2 (parms->line_range, "line-range");
+    if (parser->option ("random-start")) {
+        parser->assign_float_2 (parms->random_range, "random-start");
+    }
+
+    /* Copy input filenames to parms struct */
+    parms->fixed_fn = (*parser)[0];
+    parms->moving_fn = (*parser)[1];
+    if (parser->option ("input-xform")) {
+        parms->input_xf_fn = parser->get_string("input-xform");
+    }
+    if (parser->option ("output")) {
+        parms->output_fn = parser->get_string("output");
+    }
+    if (parser->option ("debug")) {
+        parms->debug = true;
+    }
+    if (parser->option ("histogram-prefix")) {
+        parms->xpm_hist_prefix 
+            = parser->get_string("histogram-prefix").c_str();
+    }
 }
 
 int
 main (int argc, char* argv[])
 {
-    Check_grad_opts options;
+    Check_grad_opts parms;
     Volume *moving, *fixed, *moving_grad;
 
-    check_grad_opts_parse_args (&options, argc, argv);
+//    check_grad_opts_parse_args (&options, argc, argv);
 
-    fixed = read_mha (options.fixed_fn);
-    if (!fixed) exit (-1);
-    moving = read_mha (options.moving_fn);
-    if (!moving) exit (-1);
+    plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv);
 
-    volume_convert_to_float (moving);
-    volume_convert_to_float (fixed);
+    /* Load images */
+    Plm_image::Pointer pli_fixed 
+        = Plm_image::New (new Plm_image (parms.fixed_fn));
+    Plm_image::Pointer pli_moving 
+        = Plm_image::New (new Plm_image (parms.moving_fn));
+    fixed = pli_fixed->get_volume_float_raw ();
+    moving = pli_moving->get_volume_float_raw ();
 
-    printf ("Making gradient\n");
+    /* Compute spatial gradient */
     moving_grad = volume_make_gradient (moving);
 
     /* Check the gradient */
-    check_gradient (&options, fixed, moving, moving_grad);
+    check_gradient (&parms, fixed, moving, moving_grad);
 
     /* Free memory */
-    delete fixed;
-    delete moving;
     delete moving_grad;
-
-    printf ("Done freeing memory\n");
 
     return 0;
 }

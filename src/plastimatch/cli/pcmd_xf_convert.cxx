@@ -179,15 +179,15 @@ parse_fn (
     }
     if (parser->option ("origin")) {
         parms->m_have_origin = true;
-        parser->assign_float13 (parms->m_vh.get_origin(), "origin");
+        parser->assign_float_13 (parms->m_vh.get_origin(), "origin");
     }
     if (parser->option ("spacing")) {
         parms->m_have_spacing = true;
-        parser->assign_float13 (parms->m_vh.get_spacing(), "spacing");
+        parser->assign_float_13 (parms->m_vh.get_spacing(), "spacing");
     }
     if (parser->option ("grid-spacing")) {
         parms->m_have_grid_spacing = true;
-        parser->assign_float13 (parms->m_grid_spacing, "grid-spacing");
+        parser->assign_float_13 (parms->m_grid_spacing, "grid-spacing");
     }
 
     if (parser->option ("nobulk")) {

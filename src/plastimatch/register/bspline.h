@@ -144,6 +144,15 @@ public:
     Volume *fixed;
     Volume *moving;
     Volume *moving_grad;
+public:
+    Bspline_optimize_data () {
+        bxf = 0;
+        bst = 0;
+        parms = 0;
+        fixed = 0;
+        moving = 0;
+        moving_grad = 0;
+    }
 };
 
 

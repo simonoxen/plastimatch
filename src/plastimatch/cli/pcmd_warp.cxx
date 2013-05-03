@@ -271,11 +271,11 @@ parse_fn (
     }
     if (parser->option ("origin")) {
         parms->m_have_origin = true;
-        parser->assign_float13 (parms->m_origin, "origin");
+        parser->assign_float_13 (parms->m_origin, "origin");
     }
     if (parser->option ("spacing")) {
         parms->m_have_spacing = true;
-        parser->assign_float13 (parms->m_spacing, "spacing");
+        parser->assign_float_13 (parms->m_spacing, "spacing");
     }
     parms->fixed_img_fn = parser->get_string("fixed").c_str();
 

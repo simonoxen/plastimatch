@@ -102,6 +102,27 @@ Plm_clp::assign_int13 (int *arr, const string_type& name)
 }
 
 void 
+Plm_clp::assign_int_2 (
+    int *arr, 
+    const string_type& name)
+{
+    int rc;
+    int a, b;
+    rc = sscanf (get_string(name).c_str(), "%d %d", 
+        &a, &b);
+    if (rc == 2) {
+        arr[0] = a;
+        arr[1] = b;
+    } else {
+        string_type error_string = 
+            "Error. Option "
+            + get_option_string (name) 
+            + " takes two integer arguments.";
+        throw dlib::error (error_string);
+    }
+}
+
+void 
 Plm_clp::assign_int_6 (
     int *arr, 
     const string_type& name)
@@ -172,6 +193,54 @@ Plm_clp::assign_plm_long_6 (
             "Error. Option "
             + get_option_string (name) 
             + " takes six integer arguments.";
+        throw dlib::error (error_string);
+    }
+}
+
+void Plm_clp::assign_float_13 (float *arr, const string_type& name) 
+{
+    float rc;
+    rc = sscanf (get_string(name).c_str(), "%g %g %g", 
+        &arr[0], &arr[1], &arr[2]);
+    if (rc == 1) {
+        arr[1] = arr[2] = arr[0];
+    } else if (rc != 3) {
+        string_type error_string = 
+            "Error. Option "
+            + get_option_string (name) 
+            + " takes one or three float arguments.";
+        throw dlib::error (error_string);
+    }
+}
+
+void Plm_clp::assign_float_2 (float *arr, const string_type& name)
+{
+    float rc;
+    rc = sscanf (get_string(name).c_str(), 
+        "%g %g",
+        &arr[0], &arr[1]);
+    if (rc != 2) {
+        string_type error_string = 
+            "Error. Option "
+            + get_option_string (name) 
+            + " takes two float arguments.";
+        throw dlib::error (error_string);
+    }
+}
+
+void Plm_clp::assign_float_9 (float *arr, const string_type& name)
+{
+    float rc;
+    rc = sscanf (get_string(name).c_str(), 
+        "%g %g %g %g %g %g %g %g %g", 
+        &arr[0], &arr[1], &arr[2], 
+        &arr[3], &arr[4], &arr[5],
+        &arr[6], &arr[7], &arr[8]);
+    if (rc != 9) {
+        string_type error_string = 
+            "Error. Option "
+            + get_option_string (name) 
+            + " takes nine float arguments.";
         throw dlib::error (error_string);
     }
 }

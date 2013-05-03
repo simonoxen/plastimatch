@@ -154,7 +154,7 @@ parse_fn (
 	sv_parms->pattern = Synthetic_vf_parms::PATTERN_ZERO;
     } else if (parser->option("xf-trans")) {
 	sv_parms->pattern = Synthetic_vf_parms::PATTERN_TRANSLATION;
-	parser->assign_float13 (sv_parms->translation, "xf-trans");
+	parser->assign_float_13 (sv_parms->translation, "xf-trans");
     } else if (parser->option("xf-radial")) {
 	sv_parms->pattern = Synthetic_vf_parms::PATTERN_RADIAL;
     } else if (parser->option("xf-gauss")) {
@@ -182,9 +182,9 @@ parse_fn (
 
     /* If origin not specified, volume is centered about size */
     float volume_size[3];
-    parser->assign_float13 (volume_size, "volume-size");
+    parser->assign_float_13 (volume_size, "volume-size");
     if (parser->option ("origin")) {
-	parser->assign_float13 (vh.get_origin(), "origin");
+	parser->assign_float_13 (vh.get_origin(), "origin");
     } else {
 	for (int d = 0; d < 3; d++) {
 	    /* GCS FIX: This should include direction cosines */
@@ -195,7 +195,7 @@ parse_fn (
 
     /* If spacing not specified, set spacing from size and resolution */
     if (parser->option ("spacing")) {
-	parser->assign_float13 (vh.get_spacing(), "spacing");
+	parser->assign_float_13 (vh.get_spacing(), "spacing");
     } else {
 	for (int d = 0; d < 3; d++) {
 	    vh.get_spacing()[d] 
@@ -207,13 +207,13 @@ parse_fn (
     sv_parms->pih.set (vh);
 
     /* Radial options */
-    parser->assign_float13 (sv_parms->radial_center, "radial-center");
-    parser->assign_float13 (sv_parms->radial_mag, "radial-mag");
+    parser->assign_float_13 (sv_parms->radial_center, "radial-center");
+    parser->assign_float_13 (sv_parms->radial_mag, "radial-mag");
 
     /* Gaussian options */
-    parser->assign_float13 (sv_parms->gaussian_center, "gauss-center");
-    parser->assign_float13 (sv_parms->gaussian_mag, "gauss-mag");
-    parser->assign_float13 (sv_parms->gaussian_std, "gauss-std");
+    parser->assign_float_13 (sv_parms->gaussian_center, "gauss-center");
+    parser->assign_float_13 (sv_parms->gaussian_mag, "gauss-mag");
+    parser->assign_float_13 (sv_parms->gaussian_std, "gauss-std");
 }
 
 void
