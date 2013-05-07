@@ -18,8 +18,6 @@ main (int argc, char* argv[])
 {
     Volume* dose;
     Proton_parms parms;
-    //Proton_scene scene;
-    //parms.set_scene (&scene);
 
     Proton_scene::Pointer scene = parms.get_scene ();
     if (!parms.parse_args (argc, argv)) {

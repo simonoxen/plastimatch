@@ -31,10 +31,14 @@ public:
     /* [APERTURE] */
     float vup[3];
     int ires[2];
+#if defined (commentout)
     bool have_ic;
     float ic[2];
-    float ap_spacing[2];
+#endif
     float ap_offset;
+    float ap_have_origin;
+    float ap_origin[2];
+    float ap_spacing[2];
 public:
     Proton_parms_private () {
         /* GCS FIX: Copy-paste with wed_parms.cxx */
@@ -51,12 +55,17 @@ public:
         this->vup[2] = 1.f;
         this->ires[0] = 200;
         this->ires[1] = 200;
+#if defined (commentout)
         this->have_ic = false;
         this->ic[0] = 99.5f;
         this->ic[1] = 99.5f;
+#endif
+        this->ap_offset = 100;
+        this->ap_have_origin = false;
+        this->ap_origin[0] = 0.;
+        this->ap_origin[1] = 0.;
         this->ap_spacing[0] = 1.;
         this->ap_spacing[1] = 1.;
-        this->ap_offset = 100;
 
         this->scene = Proton_scene::New ();
     }
@@ -159,7 +168,9 @@ Proton_parms::set_key_val (
         else if (!strcmp (key, "dose")) {
             this->output_dose_fn = val;
         }
-
+        else {
+            goto error_exit;
+        }
         break;
 
     /* [BEAM] */
@@ -201,7 +212,9 @@ Proton_parms::set_key_val (
                 goto error_exit;
             }
         }
-
+        else {
+            goto error_exit;
+        }
         break;
 
     /* [APERTURE] */
@@ -213,13 +226,21 @@ Proton_parms::set_key_val (
                 goto error_exit;
             }
         }
+#if defined (commentout)
         else if (!strcmp (key, "center")) {
             if (sscanf (val, "%f %f", &d_ptr->ic[0], &d_ptr->ic[1]) != 2) {
                 goto error_exit;
             }
         }
+#endif
         else if (!strcmp (key, "offset")) {
             if (sscanf (val, "%f", &d_ptr->ap_offset) != 1) {
+                goto error_exit;
+            }
+        }
+        else if (!strcmp (key, "origin")) {
+            if (sscanf (val, "%f %f", 
+                    &d_ptr->ap_origin[0], &d_ptr->ap_origin[1]) != 2) {
                 goto error_exit;
             }
         }
@@ -227,6 +248,15 @@ Proton_parms::set_key_val (
             if (sscanf (val, "%i %i", &d_ptr->ires[0], &d_ptr->ires[1]) != 2) {
                 goto error_exit;
             }
+        }
+        else if (!strcmp (key, "spacing")) {
+            if (sscanf (val, "%f %f", 
+                    &d_ptr->ap_spacing[0], &d_ptr->ap_spacing[1]) != 2) {
+                goto error_exit;
+            }
+        }
+        else {
+            goto error_exit;
         }
         break;
 
@@ -251,6 +281,9 @@ Proton_parms::set_key_val (
             if (sscanf (val, "%lf", &(d_ptr->scene->beam->weight)) != 1) {
                 goto error_exit;
             }
+        }
+        else {
+            goto error_exit;
         }
         break;
 
@@ -422,8 +455,13 @@ Proton_parms::parse_args (int argc, char** argv)
     d_ptr->scene->ap->set_distance (d_ptr->ap_offset);
     d_ptr->scene->ap->set_dim (d_ptr->ires);
     d_ptr->scene->ap->set_spacing (d_ptr->ap_spacing);
+#if defined (commentout)
     if (d_ptr->have_ic) {
         d_ptr->scene->ap->set_center (d_ptr->ic);
+    }
+#endif
+    if (d_ptr->ap_have_origin) {
+        d_ptr->scene->ap->set_origin (d_ptr->ap_origin);
     }
 
     /* try to setup the scene with the provided parameters */

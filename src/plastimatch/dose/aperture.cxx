@@ -106,6 +106,18 @@ Aperture::set_center (const double* center)
     d_ptr->center[1] = center[1];
 }
 
+void
+Aperture::set_origin (const float* origin)
+{
+    /* GCS FIX: This should be saved internally as an origin, 
+       then only converted to pixel coordinates as needed */
+
+    /* Compute & save as pixel coordinates */
+    for (int i = 0; i < 2; i++) {
+        d_ptr->center[i] = ((double) -origin[i]) / d_ptr->spacing[i];
+    }
+}
+
 const double*
 Aperture::get_spacing () const
 {

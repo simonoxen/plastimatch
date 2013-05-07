@@ -34,6 +34,10 @@ public:
     void set_center (const float* center);
     void set_center (const double* center);
 
+    /*! \brief Set the aperture origin, in mm */
+    void set_origin (const float* center);
+    void set_origin (const double* center);
+
     /*! \brief Get the aperture offset: the distance from the
       beam source to closest point on the aperture plane */
     double get_distance () const;
