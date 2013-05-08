@@ -48,7 +48,6 @@ public:
 public:
     Aperture* ap;
     Proton_beam *beam;
-    Proj_matrix* pmat;
     Rpl_volume* rpl_vol;
 };
 

@@ -37,7 +37,6 @@ Proton_scene::Proton_scene ()
     this->d_ptr = new Proton_scene_private;
     this->ap = new Aperture;
     this->beam = new Proton_beam;
-    this->pmat = new Proj_matrix;
 
     this->rpl_vol = 0;
 }
@@ -47,7 +46,6 @@ Proton_scene::~Proton_scene ()
     delete this->d_ptr;
     delete this->ap;
     delete this->beam;
-    delete this->pmat;
     if (this->rpl_vol) {
         delete this->rpl_vol;
     }

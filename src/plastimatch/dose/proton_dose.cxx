@@ -39,6 +39,8 @@
 //#define DEBUG_VOXEL 1
 //#define DOSE_GAUSS 1
 
+static bool voxel_debug = false;
+
 
 #define INDEX_OF(ijk, dim) \
     (((ijk[2] * dim[1] + ijk[1]) * dim[0]) + ijk[0])
@@ -235,6 +237,10 @@ dose_direct (
 #endif
     /* Find radiological depth at voxel ct_xyz */
     double rgdepth = scene->rpl_vol->get_rgdepth (ct_xyz);
+
+    if (voxel_debug) {
+        printf ("Rgdepth = %f\n", rgdepth);
+    }
 
     /* The voxel was not hit directly by the beam */
     if (rgdepth < 0.0f) {
@@ -586,34 +592,8 @@ Volume*
 proton_dose_compute (Proton_scene::Pointer& scene)
 {
     Proton_beam*  beam    = scene->beam;
-    Proj_matrix*  pmat    = scene->pmat;
     Volume*       ct_vol  = scene->get_patient_vol ();
     Rpl_volume*   rpl_vol = scene->rpl_vol;
-
-#if defined (commentout)
-    /* load the patient and insert into the scene */
-    //ct_vol = plm_image_load (parms->input_ct_fn, PLM_IMG_TYPE_ITK_FLOAT);
-    Plm_image plm_image (parms->input_ct_fn, PLM_IMG_TYPE_ITK_FLOAT);
-    if (!plm_image.have_image()) {
-        print_and_exit ("** ERROR: Unable to load patient volume.\n");
-    }
-    scene->set_patient (plm_image.gpuit_float());
-
-    /* set scene parameters */
-    scene->beam->set_source_position (parms->src);
-    scene->beam->set_isocenter_position (parms->isocenter);
-
-    scene->ap->set_distance (parms->ap_offset);
-    scene->ap->set_dim (parms->ires);
-    scene->ap->set_spacing (parms->ap_spacing);
-    if (parms->have_ic) {
-        scene->ap->set_center (parms->ic);
-    }
-
-    scene->set_step_length(parms->ray_step);
-#endif
-
-    scene->debug ();
 
     Volume* dose_vol = volume_clone_empty (ct_vol);
     float* dose_img = (float*) dose_vol->img;
@@ -621,7 +601,7 @@ proton_dose_compute (Proton_scene::Pointer& scene)
     if (scene->get_debug()) {
         rpl_vol->save ("depth_vol.mha");
         beam->dump ("bragg_curve.txt");
-        proj_matrix_debug (pmat);
+        printf ("Printing proj matrix during proton_dose_compute.\n");
     }
 
     printf ("About to loop.\n");
@@ -635,11 +615,24 @@ proton_dose_compute (Proton_scene::Pointer& scene)
             for (ct_ijk[0] = 0; ct_ijk[0] < ct_vol->dim[0]; ct_ijk[0]++) {
                 double dose = 0.0;
 
+                voxel_debug = false;
+#if defined (commentout)
+                if (ct_ijk[2] == 60 && ct_ijk[1] == 44 && ct_ijk[0] == 5) {
+                    voxel_debug = true;
+                }
+#endif
+
                 /* Transform vol index into space coords */
                 ct_xyz[0] = (double) (ct_vol->offset[0] + ct_ijk[0] * ct_vol->spacing[0]);
                 ct_xyz[1] = (double) (ct_vol->offset[1] + ct_ijk[1] * ct_vol->spacing[1]);
                 ct_xyz[2] = (double) (ct_vol->offset[2] + ct_ijk[2] * ct_vol->spacing[2]);
                 ct_xyz[3] = (double) 1.0;
+
+                if (voxel_debug) {
+                    printf ("Voxel (%d, %d, %d) -> (%f, %f, %f)\n",
+                        ct_ijk[0], ct_ijk[1], ct_ijk[2], 
+                        ct_xyz[0], ct_xyz[1], ct_xyz[2]);
+                }
 
                 switch (beam->get_flavor()) {
                 case 'a':

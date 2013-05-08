@@ -91,7 +91,6 @@ Rpl_volume::set_geometry (
 {
     double clipping_dist[2] = {sid, sid};
 
-#if defined (commentout)
     printf ("> src = %f %f %f\n", src[0], src[1], src[2]);
     printf ("> iso = %f %f %f\n", iso[0], iso[1], iso[2]);
     printf ("> vup = %f %f %f\n", vup[0], vup[1], vup[2]);
@@ -100,6 +99,7 @@ Rpl_volume::set_geometry (
     printf ("> ictr = %f %f\n", image_center[0], image_center[1]);
     printf ("> isp = %f %f\n", image_spacing[0], image_spacing[1]);
     printf ("> stp = %f\n", step_length);
+#if defined (commentout)
 #endif
 
     /* This sets everything except the clipping planes.  We don't know 
@@ -173,19 +173,23 @@ Rpl_volume::get_rgdepth (
     double dist, rgdepth = 0.;
     int debug = 0;
 
+#if defined (commentout)
     /* For debugging */
-    if ((ct_xyz[0] > -198 && ct_xyz[0] < -196)
-	&& (ct_xyz[1] > 132 && ct_xyz[1] < 134)
-	&& (ct_xyz[2] > -6 && ct_xyz[2] < 6))
+    if ((ct_xyz[0] > -223 && ct_xyz[0] < -221)
+	&& (ct_xyz[1] > -28 && ct_xyz[1] < -26)
+	&& (ct_xyz[2] > 52 && ct_xyz[2] < 54))
     {
 	debug = 1;
     }
-#if defined (commentout)
 #endif
 
     /* A couple of abbreviations */
     const int *ires = d_ptr->proj_vol->get_image_dim();
     Proj_matrix *pmat = d_ptr->proj_vol->get_proj_matrix();
+
+    if (debug) {
+        proj_matrix_debug (pmat);
+    }
 
     /* Back project the voxel to the aperture plane */
     mat43_mult_vec3 (ap_xy, pmat->matrix, ct_xyz);
@@ -224,15 +228,16 @@ Rpl_volume::get_rgdepth (
     /* Compute distance from aperture to voxel */
     dist = vec3_dist (ap_xyz, ct_xyz);
 
+    /* Subtract off standoff distance */
+    dist -= d_ptr->front_clipping_dist;
+
     /* Retrieve the radiographic depth */
     rgdepth = lookup_rgdepth (this, ap_ij, dist);
 
     if (debug) {
 	printf ("(%g %g %g / %g %g %g) -> (%d %d %g) -> %g\n", 
 	    ct_xyz[0], ct_xyz[1], ct_xyz[2], 
-	    (ct_xyz[0] + 249) / 2,
-	    (ct_xyz[1] + 249) / 2,
-	    (ct_xyz[2] + 249) / 2,
+            ap_xyz[0], ap_xyz[1], ap_xyz[2], 
 	    ap_ij[0], ap_ij[1], dist, 
 	    rgdepth);
     }
