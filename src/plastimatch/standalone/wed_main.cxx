@@ -121,15 +121,15 @@ create_segdepth_volume (Wed_Parms* parms, Proton_scene *scene)
  
     Rpl_volume* rpl_vol = scene->rpl_vol;
 
-    /* water equivalent depth volume has the same x,y dimensions as the rpl
-     * volume. Note: this means the wed x,y dimensions are equal to the
-     * aperture dimensions and the z-dimension is equal to the sampling
-     * resolution chosen for the rpl */
     plm_long segdepth_dims[3];
 
     Volume *vol = rpl_vol->get_volume ();
+    //    segdepth_dims[0] = (plm_long) (vol->dim[0]*1.2);
+    //    segdepth_dims[1] = (plm_long) (vol->dim[1]*1.2);
+
     segdepth_dims[0] = vol->dim[0];
     segdepth_dims[1] = vol->dim[1];
+
     segdepth_dims[2] = 1;
 
   

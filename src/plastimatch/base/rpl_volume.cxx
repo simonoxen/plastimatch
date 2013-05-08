@@ -836,12 +836,15 @@ Rpl_volume::compute_segdepth_volume (Volume *seg_vol, Volume *aperture_vol, Volu
   float *seg_img = (float*) seg_vol->img;
   float *aperture_img = (float*) aperture_vol->img;
   float *segdepth_img = (float*) segdepth_vol->img;
-  const int *ires = proj_vol->get_image_dim();
-
+  const int *ires = proj_vol->get_image_dim();  //resolution of the 2-D proj vol aperture
+  int ires2[2];  //resolution of the output - user defined aperuture and segdepth_vol
+  ires2[0] = aperture_vol->dim[0];
+  ires2[1] = aperture_vol->dim[1];
   
 
   int aij[2];  /* Index within aperture plane */
   plm_long ap_idx;  /* Image index of aperture*/
+  plm_long output_idx;  /* Image index of output*/
 
   plm_long rijk[3]; /* Index with rvol */
 
@@ -862,14 +865,47 @@ Rpl_volume::compute_segdepth_volume (Volume *seg_vol, Volume *aperture_vol, Volu
 
   double current_depth; //current wed depth
   double previous_depth; //previous wed depth
-  bool seq_check;  //boolean to confirm depths are sequential
-  double total_ray_wed; //running total of wed along ray within seg. volume
+  bool intersect_seg; //boolean that checks whether or not ray intersects with seg. volume
+  bool first_seg_check; //first point along a ray in the seg volume, to determine min energy
+
 
   Ray_data *seg_ray;
 
-  std::vector<double> seg_wed_storage;  //vector containing all wed's
-  seg_wed_storage.resize(ires[0]*ires[1]);
-  double max_seg_depth = 0;  //maximum seg volume depth
+  std::vector< std::vector<double> > seg_max_wed;  //vector containing all max wed's in seg volume
+  seg_max_wed.resize( ires[1] );
+  for (int i=0;i!=ires[1];++i)  {
+    seg_max_wed[i].resize( ires[0] );
+  }
+
+  std::vector< std::vector<double> > seg_min_wed;  //vector containing all min wed's in seg volume
+  seg_min_wed.resize( ires[1] );
+  for (int i=0;i!=ires[1];++i)  {
+    seg_min_wed[i].resize( ires[0] );
+  }
+
+  double min_seg_depth = 0; //value we assign the minimum wed in the seg volume
+  double max_seg_depth = 0;  //value we assign the maximum wed in the seg volume
+
+  double max_comp_depth = 0;  //maximum compensator volume depth
+
+  //Disposable variables
+  double max_wed_print = 0;
+  double min_wed_print = 0;
+
+
+  for (int i=0; i!=ires2[1]; ++i) {
+    for (int j=0; j!=ires2[0]; ++j) {
+
+      output_idx = i*ires[0]+j;
+
+      //Set aperture grid to 0 background.
+      aperture_img[output_idx] = 0.;
+      //Set segdepth background.
+      segdepth_img[output_idx]= background;
+    }
+  }
+
+
 
   for (aij[1] = 0; aij[1] < ires[1]; aij[1]++) {
     for (aij[0] = 0; aij[0] < ires[0]; aij[0]++) {
@@ -880,10 +916,7 @@ Rpl_volume::compute_segdepth_volume (Volume *seg_vol, Volume *aperture_vol, Volu
       vec3_copy(cp_origin, seg_ray->cp);
       vec3_copy(seg_unit_ray, seg_ray->ray);
 
-      //Set aperture grid to 0 background.
-      aperture_img[ap_idx] = 0.;
-      //Set segdepth background.
-      segdepth_img[ap_idx]= background;
+
 
       rijk[0] = aij[0];
       rijk[1] = aij[1];
@@ -892,8 +925,10 @@ Rpl_volume::compute_segdepth_volume (Volume *seg_vol, Volume *aperture_vol, Volu
       //Reset ray variables.
       current_depth = 0;
       previous_depth = 0;
-      seq_check = false;
-      total_ray_wed = 0;
+      min_seg_depth = 0;
+      max_seg_depth = 0;
+      first_seg_check = true;
+      intersect_seg = false;
 
       //Increment by 1 along each ray, getting the position at each point.
       while (rijk[2] < rvol->dim[2]) {
@@ -911,45 +946,96 @@ Rpl_volume::compute_segdepth_volume (Volume *seg_vol, Volume *aperture_vol, Volu
 	idx_floor = volume_index(seg_vol->dim, ijk_floor);
 	interp_seg_value = li_value(li_1[0], li_2[0],li_1[1], li_2[1],li_1[2], li_2[2],idx_floor,seg_img,seg_vol);
 
-	if (interp_seg_value < threshold)  {
-	  seq_check = false;	  
-	  rijk[2]++;
-	  continue;
+	if (interp_seg_value > threshold)  {
+
+	  intersect_seg = true; //this ray intersects the segmentation volume
+
+	  //If point is within segmentation volume, set wed.
+	  current_depth = lookup_rgdepth(this,aij,rijk[2]);
+	  
+	  if (first_seg_check)  {
+	    min_seg_depth = current_depth;
+	    first_seg_check = false;
+	  }
+
+	  previous_depth = current_depth;
 	}
 
-	//If point is within segmentation volume, set wed.
-	current_depth = lookup_rgdepth(this,aij,rijk[2]);
-
-	if (seq_check)  {
-	  total_ray_wed += (current_depth - previous_depth);
+	else {
+	  if (intersect_seg)  { 
+	    //while we aren't currently in the seg. volume, this ray has been,
+	    //so check if we just exited to set the max_seg_depth
+	    if (previous_depth>0)  {
+	      max_seg_depth = previous_depth;
+	      previous_depth = 0; //redundant
+	    }
+	  }
 	}
 
-	seq_check = true;
-	previous_depth = current_depth;
 	rijk[2]++;
       }
       //Total ray wed tabulated
-      seg_wed_storage[ap_idx] = total_ray_wed;
+
+      seg_min_wed[ aij[1] ][ aij[0] ] = min_seg_depth;
+      seg_max_wed[ aij[1] ][ aij[0] ] = max_seg_depth;
 
     }
   }
   
   //Get max wed
-  for (unsigned i=0; i!=seg_wed_storage.size(); ++i)  {
-    if (seg_wed_storage[i]>max_seg_depth)  {max_seg_depth = seg_wed_storage[i];}
+  for (int i=0; i!=ires2[1]; ++i)  {
+    for (int j=0; j!=ires2[0]; ++j)  {
+      if (seg_max_wed[i][j]>max_comp_depth)  {max_comp_depth = seg_max_wed[i][j];}
+    }
   }
 
   //Assign final values to volumes
-  for (unsigned i=0; i!=seg_wed_storage.size(); ++i)  {
-  
-    //Assign aperture volume
-    if (seg_wed_storage[i]>0) {aperture_img[i] = 1.;}
-    else {aperture_img[i] = 0.;}
+  for (int i=0; i!=ires[1]; ++i)  {
+    for (int j=0; j!=ires[0]; ++j)  {
 
-    //Assign seg depth volume
-    segdepth_img[i] = max_seg_depth - seg_wed_storage[i];
-
+      output_idx = i*ires[0]+j;
+      //      output_idx = ((int) ((ires2[1]-ires[1])/2.) + i)*ires[0] + (int) ((ires2[0]-ires[0])/2.) + j;
+      //Fix the above line eventually, wrap up work to make output not tied to aperture size.
+      
+      //Assign aperture volume  //Check this in the future: >0 is a silly threshold.
+      if (seg_max_wed[i][j]>0) {aperture_img[output_idx] = 1.;}
+      else {aperture_img[output_idx] = 0.;}
+      
+      //Assign seg depth volume
+      segdepth_img[output_idx] = max_comp_depth - seg_max_wed[i][j];
+    }
   }
+
+
+  //Extra code to determine max and min wed for seg volume + compensator, needs to be cleaned up ///////////////////////////////////////////
+  
+  for (int i=0; i!=ires2[1]; ++i) {
+    for (int j=0; j!=ires2[0]; ++j) {
+      output_idx = i*ires[0]+j;
+      
+      //Find max wed (should be same as max_comp_depth)
+      if (max_wed_print < seg_max_wed[i][j] + segdepth_img[output_idx])  {max_wed_print = seg_max_wed[i][j] + segdepth_img[output_idx];}
+    }
+  }
+
+  min_wed_print = max_wed_print; //start the minimum at the maximum, so we can go down from there
+
+  for (int i=0; i!=ires2[1]; ++i) {
+    for (int j=0; j!=ires2[0]; ++j) {
+
+      output_idx = i*ires[0]+j;
+     
+      //Find min wed.
+      if (aperture_img[output_idx]==1)  {
+	if (min_wed_print > seg_min_wed[i][j] + segdepth_img[output_idx])  {min_wed_print = seg_min_wed[i][j] + segdepth_img[output_idx];}	
+      }
+    }
+  }
+
+  std::cout<<"Max wed in the target is "<<max_wed_print<<" mm."<<std::endl;
+  std::cout<<"Min wed in the target is "<<min_wed_print<<" mm."<<std::endl;
+
+  //End extra code //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 }
 
