@@ -54,6 +54,9 @@ public:
     double front_clipping_dist;
     double back_clipping_dist;
 
+    Plm_image::Pointer ap_image;
+    Plm_image::Pointer rc_image;
+
 public:
     Rpl_volume_private () {
         proj_vol = new Proj_volume;
@@ -107,6 +110,18 @@ Rpl_volume::set_geometry (
     d_ptr->proj_vol->set_geometry (
         src, iso, vup, sid, image_dim, image_center, image_spacing,
         clipping_dist, step_length);
+}
+
+void 
+Rpl_volume::set_aperture_image (Plm_image::Pointer& ap_image)
+{
+    d_ptr->ap_image = ap_image;
+}
+
+void 
+Rpl_volume::set_range_compensator_image (Plm_image::Pointer& rc_image)
+{
+    d_ptr->rc_image = rc_image;
 }
 
 static double
@@ -257,6 +272,16 @@ Rpl_volume::compute (Volume *ct_vol)
     const double *nrm = proj_vol->get_nrm();
     ires[0] = d_ptr->proj_vol->get_image_dim (0);
     ires[1] = d_ptr->proj_vol->get_image_dim (1);
+    unsigned char *ap_img = 0;
+    float *rc_img = 0;
+    if (d_ptr->ap_image) {
+        Volume *ap_vol = d_ptr->ap_image->get_volume_uchar ();
+        ap_img = (unsigned char*) ap_vol->img;
+    }
+    if (d_ptr->rc_image) {
+        Volume *rc_vol = d_ptr->rc_image->get_volume_float_raw ();
+        rc_img = (float*) rc_vol->img;
+    }
 
     /* Compute volume boundary box */
     volume_limit_set (&ct_limit, ct_vol);
@@ -392,11 +417,25 @@ Rpl_volume::compute (Volume *ct_vol)
 	    printf ("Tracing ray (%d,%d)\n", r, c);
 #endif
 
+            /* Check if beamlet is inside aperture, if not 
+               we skip ray tracing */
+            if (ap_img && ap_img[r*ires[0]+c] == 0) {
+                continue;
+            }
+
+            /* Initialize ray trace accum to range compensator thickness */
+            double rc_thk = 0.;
+            if (rc_img) {
+                rc_thk = rc_img[r*ires[0]+c];
+                printf ("Setting rc_thk = %g\n", rc_thk);
+            }
+
             this->ray_trace (
                 ct_vol,       /* I: CT volume */
                 ray_data,     /* I: Pre-computed data for this ray */
                 &ct_limit,    /* I: CT bounding region */
                 src,          /* I: @ source */
+                rc_thk,       /* I: range compensator thickness */
                 ires          /* I: ray cast resolution */
             );
 
@@ -1008,6 +1047,7 @@ Rpl_volume::ray_trace (
     Ray_data *ray_data,          /* I: Pre-computed data for this ray */
     Volume_limit *vol_limit,     /* I: CT bounding region */
     const double *src,           /* I: @ source */
+    double rc_thk,               /* I: range compensator thickness */
     int* ires                    /* I: ray cast resolution */
 )
 {
@@ -1017,10 +1057,10 @@ Rpl_volume::ray_trace (
         return;
     }
 
-    /* init callback data for this ray */
+    /* Initialize callback data for this ray */
     cd.rpl_vol = this;
     cd.ray_data = ray_data;
-    cd.accum = 0.0f;
+    cd.accum = rc_thk;
     cd.ires = ires;
 
     /* Figure out how many steps to first step within volume */

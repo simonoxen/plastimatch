@@ -77,6 +77,14 @@ Proton_scene::init ()
         
     if (!this->rpl_vol) return false;
 
+    if (this->ap->have_aperture_image()) {
+        this->rpl_vol->set_aperture_image (this->ap->get_aperture_image());
+    }
+    if (this->ap->have_range_compensator_image()) {
+        this->rpl_vol->set_range_compensator_image (
+            this->ap->get_range_compensator_image());
+    }
+
     /* scan through aperture to fill in rpl_volume */
     this->rpl_vol->compute (d_ptr->patient->get_volume_float_raw());
 

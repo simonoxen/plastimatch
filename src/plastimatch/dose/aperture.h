@@ -5,6 +5,7 @@
 #define _aperture_h_
 
 #include "plmdose_config.h"
+#include "plm_image.h"
 #include "plm_int.h"
 
 class Aperture_private;
@@ -54,6 +55,20 @@ public:
       sampling points in the aperture plane */
     void set_spacing (const float* spacing);
     void set_spacing (const double* spacing);
+
+    /*! \brief Test if the aperture has a bitmap image describing shape */
+    bool have_aperture_image ();
+    /*! \brief Get the aperture image, if this aperture has one */
+    Plm_image::Pointer& get_aperture_image ();
+    /*! \brief Load the aperture image from a file */
+    void set_aperture_image (const char *ap_filename);
+    /*! \brief Test if the aperture has a float image describing 
+      range compensator thicknesses */
+    bool have_range_compensator_image ();
+    /*! \brief Get the range_compensator image, if this aperture has one */
+    Plm_image::Pointer& get_range_compensator_image ();
+    /*! \brief Load the range_compensator image from a file */
+    void set_range_compensator_image (const char *rc_filename);
     ///@}
 
 public:

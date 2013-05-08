@@ -39,6 +39,9 @@ public:
     float ap_have_origin;
     float ap_origin[2];
     float ap_spacing[2];
+
+    std::string ap_filename;
+    std::string rc_filename;
 public:
     Proton_parms_private () {
         /* GCS FIX: Copy-paste with wed_parms.cxx */
@@ -255,6 +258,12 @@ Proton_parms::set_key_val (
                 goto error_exit;
             }
         }
+        else if (!strcmp (key, "aperture")) {
+            d_ptr->ap_filename = val;
+        }
+        else if (!strcmp (key, "range_compensator")) {
+            d_ptr->rc_filename = val;
+        }
         else {
             goto error_exit;
         }
@@ -462,6 +471,13 @@ Proton_parms::parse_args (int argc, char** argv)
 #endif
     if (d_ptr->ap_have_origin) {
         d_ptr->scene->ap->set_origin (d_ptr->ap_origin);
+    }
+    if (d_ptr->ap_filename != "") {
+        d_ptr->scene->ap->set_aperture_image (d_ptr->ap_filename.c_str());
+    }
+    if (d_ptr->rc_filename != "") {
+        d_ptr->scene->ap->set_range_compensator_image (
+            d_ptr->rc_filename.c_str());
     }
 
     /* try to setup the scene with the provided parameters */

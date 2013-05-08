@@ -6,6 +6,7 @@
 
 #include "plmbase_config.h"
 #include <string>
+#include "plm_image.h"
 
 class Proj_volume;
 class Ray_data;
@@ -31,10 +32,15 @@ public:
         const double image_spacing[2], // pixel size (mm)
         const double step_length       // spacing between planes
     );
+
+    void set_aperture_image (Plm_image::Pointer& ap_image);
+    void set_range_compensator_image (Plm_image::Pointer& rc_image);
+
     void compute (Volume *ct_vol);
     Volume* get_volume ();
     Proj_volume *get_proj_volume ();
     double get_rgdepth (const double *xyz);
+
     void save (const std::string& filename);
     void save (const char* filename);
 
@@ -48,6 +54,7 @@ protected:
         Ray_data *ray_data,          /* I: Pre-computed data for this ray */
         Volume_limit *vol_limit,     /* I: CT bounding region */
         const double *src,           /* I: @ source */
+        double rc_thk,               /* I: range compensator thickness */
         int* ires                    /* I: ray cast resolution */
     );
 };

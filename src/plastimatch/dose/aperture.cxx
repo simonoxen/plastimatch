@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "aperture.h"
+#include "plm_image.h"
 
 class Aperture_private {
 public:
@@ -21,6 +22,9 @@ public:
         spacing[1] = 0;
     }
 public:
+    Plm_image::Pointer aperture_image;
+    Plm_image::Pointer range_compensator_image;
+
     double distance;
     int dim[2];
     double center[2];
@@ -142,4 +146,41 @@ Aperture::set_spacing (const double* spacing)
 {
     d_ptr->spacing[0] = spacing[0];
     d_ptr->spacing[1] = spacing[1];
+}
+
+bool
+Aperture::have_aperture_image ()
+{
+    return (bool) d_ptr->aperture_image;
+}
+
+Plm_image::Pointer&
+Aperture::get_aperture_image ()
+{
+    return d_ptr->aperture_image;
+}
+
+void 
+Aperture::set_aperture_image (const char *ap_filename)
+{
+    d_ptr->aperture_image = Plm_image::New (new Plm_image(ap_filename));
+}
+
+bool
+Aperture::have_range_compensator_image ()
+{
+    return (bool) d_ptr->range_compensator_image;
+}
+
+Plm_image::Pointer&
+Aperture::get_range_compensator_image ()
+{
+    return d_ptr->range_compensator_image;
+}
+
+void 
+Aperture::set_range_compensator_image (const char *rc_filename)
+{
+    d_ptr->range_compensator_image 
+        = Plm_image::New (new Plm_image(rc_filename));
 }

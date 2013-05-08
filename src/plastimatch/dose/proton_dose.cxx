@@ -243,15 +243,17 @@ dose_direct (
     }
 
     /* The voxel was not hit directly by the beam */
-    if (rgdepth < 0.0f) {
+    if (rgdepth <= 0.0f) {
         return 0.0f;
     }
 
+#if defined (commentout)
     if (ct_xyz[1] > 0.0 && ct_xyz[1] < 2.0 
         && ct_xyz[2] > 0.0 && ct_xyz[2] < 2.0) {
         printf ("(%f %f %f) %f\n", ct_xyz[0], ct_xyz[1], ct_xyz[2], 
             rgdepth);
     }
+#endif
 
     /* return the dose at this radiographic depth */
     return scene->beam->lookup_energy (rgdepth);
