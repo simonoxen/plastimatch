@@ -18,6 +18,7 @@ option (PLM_BUILD_GDCM1_TEST  "Build GDCM test program"   OFF)
 option (PLM_BUILD_ITK_TEST    "Build ITK test program"    OFF)
 option (PLM_BUILD_MEX_TEST    "Build mex test program"    OFF)
 option (PLM_BUILD_NLOPT_TEST  "Build NLopt test program"  OFF)
+option (PLM_BUILD_NM_TEST     "Build Nelder-Meade test program" OFF)
 option (PLM_BUILD_OPENCL_TEST "Build OpenCL test program" OFF)
 option (PLM_BUILD_OPENMP_TEST "Build OpenMP test program" OFF)
 option (PLM_BUILD_SMARTP_TEST "Build Smart pointer test program" OFF)
@@ -132,6 +133,13 @@ if (PLM_BUILD_NLOPT_TEST AND NLOPT_FOUND)
     "${NLOPT_TEST_LIBS}" "${OPENMP_LDFLAGS}" 
     ${BUILD_ALWAYS} ${INSTALL_NEVER})
   set_target_properties (nlopt_test PROPERTIES LINKER_LANGUAGE CXX)
+endif ()
+
+# Test executable -- nm
+if (PLM_BUILD_NM_TEST)
+  plm_add_executable (nelder_mead_test nelder_mead_test.cxx
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}" 
+    ${BUILD_ALWAYS} ${INSTALL_NEVER})
 endif ()
 
 # Test executable -- opencl
