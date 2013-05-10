@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <tr1/memory>
+//#include <tr1/memory>
 #include "smart_pointer.h"
 //#include "dlib/smart_pointers.h"
 
