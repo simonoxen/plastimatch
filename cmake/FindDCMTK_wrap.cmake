@@ -9,7 +9,7 @@ if (DCMTK_DIR)
   endif ()
 endif ()
 if (NOT DCMTK_FOUND)
-  find_package (DCMTK MODULE)
+  find_package (DCMTK)
 endif ()
 
 
