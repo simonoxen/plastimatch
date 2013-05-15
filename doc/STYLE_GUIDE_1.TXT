@@ -7,8 +7,8 @@ Unified coding style is important because it eases software review
 and maintenance.  This file specifies guidelines which can be broken 
 for specific cases, but should be adhered to as closely as possible.
 
-Plastimatch can't be properly formatted by GNU indent or astyle.
-The closest match is uncrustify, for which an uncrustify configuration 
+Plastimatch can't be properly formatted automatically by GNU indent 
+or astyle.  Uncrustify will do a decent job; an uncrustify configuration 
 file is included in the distribution.
 
 Files
@@ -93,7 +93,8 @@ Declaritors and return values go on a separate line (GNU style):
     foo (int bar)
     {
 
-Use explicit "void" in the argument list if there are no arguments:
+Use explicit "void" in the argument list if there are no arguments
+is optional:
 
     void
     foo (void)
@@ -127,9 +128,7 @@ variables of the same type in a single statement.
 
     char *p, *q, *pv, *pq;
 
-References should not be used, except as required to interface with 
-third party libraries.  When required, they go together with the type 
-rather than the name.
+However, references go together with the type rather than the name.
 
     char& linux_banner = s1;
     char& bar (char& baz, char*& boo);
