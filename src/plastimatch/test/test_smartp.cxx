@@ -77,8 +77,9 @@ test_2 ()
 void
 test_3 ()
 {
-    std::tr1::shared_ptr<A> a (new A);
 #if defined (commentout)
+    std::tr1::shared_ptr<A> a (new A);
+
     /* This doesn't compile */
     a = 0;
 #endif
