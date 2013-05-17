@@ -1,4 +1,17 @@
 
+***** What to do about const smart pointers *****
+
+(Your answer here)f
+
+
+***** A trick for forward declaration of nested classes *****
+
+http://stackoverflow.com/questions/2600385/c-nested-class-forward-declaration-issue
+
+(Not the first answer that was accepted though.  The second one 
+is the one you want.)
+
+
 ***** Rt_study API example *****
 
 /* Example #1, simple save using images */
