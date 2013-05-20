@@ -14,7 +14,6 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 ##  SOURCE FILES
 ##-----------------------------------------------------------------------------
 set (PLMDOSE_LIBRARY_SRC
-  aperture.cxx
   bragg_curve.cxx
   proton_beam.cxx
   proton_pristine_peak.cxx

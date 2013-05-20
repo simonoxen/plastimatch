@@ -281,7 +281,7 @@ dose_scatter (
     Proton_scene::Pointer& scene
 )
 {
-    Aperture*     ap      = scene->ap;
+    Aperture::Pointer& ap = scene->get_aperture();
     Proton_beam*  beam    = scene->beam;
     Rpl_volume*   rpl_vol = scene->rpl_vol;
 
@@ -441,7 +441,7 @@ dose_hong (
     Proton_scene::Pointer& scene
 )
 {
-    Aperture*     ap      = scene->ap;
+    Aperture::Pointer& ap = scene->get_aperture();
     Proton_beam*  beam    = scene->beam;
     Rpl_volume*   rpl_vol = scene->rpl_vol;
 

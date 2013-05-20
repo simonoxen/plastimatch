@@ -501,8 +501,5 @@ Wed_Parms::parse_args (int argc, char** argv)
         return false;
       }
     }
-
-
-
     return true;
 }

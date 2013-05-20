@@ -461,22 +461,23 @@ Proton_parms::parse_args (int argc, char** argv)
     d_ptr->scene->beam->set_source_position (d_ptr->src);
     d_ptr->scene->beam->set_isocenter_position (d_ptr->isocenter);
 
-    d_ptr->scene->ap->set_distance (d_ptr->ap_offset);
-    d_ptr->scene->ap->set_dim (d_ptr->ires);
-    d_ptr->scene->ap->set_spacing (d_ptr->ap_spacing);
+    d_ptr->scene->get_aperture()->set_distance (d_ptr->ap_offset);
+    d_ptr->scene->get_aperture()->set_dim (d_ptr->ires);
+    d_ptr->scene->get_aperture()->set_spacing (d_ptr->ap_spacing);
 #if defined (commentout)
     if (d_ptr->have_ic) {
         d_ptr->scene->ap->set_center (d_ptr->ic);
     }
 #endif
     if (d_ptr->ap_have_origin) {
-        d_ptr->scene->ap->set_origin (d_ptr->ap_origin);
+        d_ptr->scene->get_aperture()->set_origin (d_ptr->ap_origin);
     }
     if (d_ptr->ap_filename != "") {
-        d_ptr->scene->ap->set_aperture_image (d_ptr->ap_filename.c_str());
+        d_ptr->scene->get_aperture()->set_aperture_image (
+            d_ptr->ap_filename.c_str());
     }
     if (d_ptr->rc_filename != "") {
-        d_ptr->scene->ap->set_range_compensator_image (
+        d_ptr->scene->get_aperture()->set_range_compensator_image (
             d_ptr->rc_filename.c_str());
     }
 

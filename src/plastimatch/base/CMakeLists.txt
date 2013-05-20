@@ -15,6 +15,7 @@ include_directories (AFTER ${NKIDECOMPRESS_INCLUDE_DIR})
 ##  SOURCE FILES
 ##-----------------------------------------------------------------------------
 set (PLMBASE_LIBRARY_SRC
+  aperture.cxx aperture.h 
   astroid_dose.cxx
   bspline_interpolate.cxx
   bspline_xform.cxx

@@ -20,6 +20,7 @@ public:
         debug = false;
         step_length = 0.;
         patient = 0;
+        ap = Aperture::New();
     }
     ~Proton_scene_private () {
         if (patient) {
@@ -30,21 +31,19 @@ public:
     bool debug;
     double step_length;
     Plm_image *patient;
+    Aperture::Pointer ap;
 };
 
 Proton_scene::Proton_scene ()
 {
     this->d_ptr = new Proton_scene_private;
-    this->ap = new Aperture;
     this->beam = new Proton_beam;
-
     this->rpl_vol = 0;
 }
 
 Proton_scene::~Proton_scene ()
 {
     delete this->d_ptr;
-    delete this->ap;
     delete this->beam;
     if (this->rpl_vol) {
         delete this->rpl_vol;
@@ -60,7 +59,6 @@ Proton_scene::set_step_length (double step_length)
 bool
 Proton_scene::init ()
 {
-    if (!this->ap) return false;
     if (!this->beam) return false;
     if (!this->get_patient()) return false;
 
@@ -68,24 +66,19 @@ Proton_scene::init ()
     this->rpl_vol->set_geometry (
         this->beam->get_source_position(),
         this->beam->get_isocenter_position(),
-        this->ap->vup,
-        this->ap->get_distance(),
-        this->ap->get_dim(),
-        this->ap->get_center(),
-        this->ap->get_spacing(),
+        d_ptr->ap->vup,
+        d_ptr->ap->get_distance(),
+        d_ptr->ap->get_dim(),
+        d_ptr->ap->get_center(),
+        d_ptr->ap->get_spacing(),
         d_ptr->step_length);
         
     if (!this->rpl_vol) return false;
 
-    if (this->ap->have_aperture_image()) {
-        this->rpl_vol->set_aperture_image (this->ap->get_aperture_image());
-    }
-    if (this->ap->have_range_compensator_image()) {
-        this->rpl_vol->set_range_compensator_image (
-            this->ap->get_range_compensator_image());
-    }
+    /* Copy aperture from scene into rpl volume */
+    this->rpl_vol->set_aperture (d_ptr->ap);
 
-    /* scan through aperture to fill in rpl_volume */
+    /* Scan through aperture to fill in rpl_volume */
     this->rpl_vol->compute (d_ptr->patient->get_volume_float_raw());
 
     return true;
@@ -116,6 +109,12 @@ Proton_scene::get_patient ()
     return d_ptr->patient;
 }
 
+Aperture::Pointer&
+Proton_scene::get_aperture ()
+{
+    return d_ptr->ap;
+}
+
 bool
 Proton_scene::get_debug (void) const
 {
@@ -131,7 +130,7 @@ Proton_scene::set_debug (bool debug)
 void
 Proton_scene::debug ()
 {
-    Aperture* ap = this->ap;
+    Aperture::Pointer& ap = d_ptr->ap;
     Proton_beam* beam = this->beam;
 
     printf ("BEAM\n");

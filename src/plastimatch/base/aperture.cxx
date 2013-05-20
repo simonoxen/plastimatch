@@ -148,6 +148,28 @@ Aperture::set_spacing (const double* spacing)
     d_ptr->spacing[1] = spacing[1];
 }
 
+void
+Aperture::allocate_aperture_images ()
+{
+    plm_long dim[3] = {
+        d_ptr->dim[0],
+        d_ptr->dim[1],
+        1
+    };
+    float origin[3] = { 0, 0, 0 };
+    float spacing[3] = {
+        d_ptr->spacing[0], 
+        d_ptr->spacing[1],
+        1
+    };
+
+    Volume *ap_vol = new Volume (dim, origin, spacing, NULL, PT_UCHAR, 1);
+    Volume *rc_vol = new Volume (dim, origin, spacing, NULL, PT_FLOAT, 1);
+
+    d_ptr->aperture_image = Plm_image::New (new Plm_image (ap_vol));
+    d_ptr->range_compensator_image = Plm_image::New (new Plm_image (rc_vol));
+}
+
 bool
 Aperture::have_aperture_image ()
 {
@@ -158,6 +180,15 @@ Plm_image::Pointer&
 Aperture::get_aperture_image ()
 {
     return d_ptr->aperture_image;
+}
+
+Volume*
+Aperture::get_aperture_volume ()
+{
+    if (!d_ptr->aperture_image) {
+        return 0;
+    }
+    return d_ptr->aperture_image->get_volume_uchar();
 }
 
 void 
@@ -176,6 +207,15 @@ Plm_image::Pointer&
 Aperture::get_range_compensator_image ()
 {
     return d_ptr->range_compensator_image;
+}
+
+Volume*
+Aperture::get_range_compensator_volume ()
+{
+    if (!d_ptr->range_compensator_image) {
+        return 0;
+    }
+    return d_ptr->range_compensator_image->get_volume_float_raw();
 }
 
 void 

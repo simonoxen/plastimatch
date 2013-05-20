@@ -4,18 +4,20 @@
 #ifndef _aperture_h_
 #define _aperture_h_
 
-#include "plmdose_config.h"
+#include "plmbase_config.h"
 #include "plm_image.h"
 #include "plm_int.h"
 
 class Aperture_private;
 
-class PLMDOSE_API Aperture {
+class PLMBASE_API Aperture {
+public:
+    SMART_POINTER_SUPPORT (Aperture);
+public:
+    Aperture_private *d_ptr;
 public:
     Aperture ();
     ~Aperture ();
-public:
-    Aperture_private *d_ptr;
 public:
     /*! \name Inputs */
     ///@{
@@ -56,10 +58,16 @@ public:
     void set_spacing (const float* spacing);
     void set_spacing (const double* spacing);
 
+    /*! \brief Allocate aperture and range compensator images */
+    void allocate_aperture_images ();
+
     /*! \brief Test if the aperture has a bitmap image describing shape */
     bool have_aperture_image ();
     /*! \brief Get the aperture image, if this aperture has one */
     Plm_image::Pointer& get_aperture_image ();
+    /*! \brief Get the aperture image as Volume, if this aperture has one.
+      Otherwise, return null. */
+    Volume* get_aperture_volume ();
     /*! \brief Load the aperture image from a file */
     void set_aperture_image (const char *ap_filename);
     /*! \brief Test if the aperture has a float image describing 
@@ -67,6 +75,9 @@ public:
     bool have_range_compensator_image ();
     /*! \brief Get the range_compensator image, if this aperture has one */
     Plm_image::Pointer& get_range_compensator_image ();
+    /*! \brief Get the range_compensator image as Volume, if this 
+      aperture has one.  Otherwise, return null. */
+    Volume* get_range_compensator_volume ();
     /*! \brief Load the range_compensator image from a file */
     void set_range_compensator_image (const char *rc_filename);
     ///@}

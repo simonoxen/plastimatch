@@ -56,7 +56,6 @@ public:
     float dew_dim[3];
     float dew_origin[3];
     float dew_spacing[3];
-
 };
 
 #endif

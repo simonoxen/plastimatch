@@ -33,20 +33,21 @@ public:
         const double step_length       // spacing between planes
     );
 
-    void set_aperture_image (Plm_image::Pointer& ap_image);
-    void set_range_compensator_image (Plm_image::Pointer& rc_image);
+    Aperture::Pointer& get_aperture ();
+    void set_aperture (Aperture::Pointer& ap);
 
-    void compute (Volume *ct_vol);
     Volume* get_volume ();
     Proj_volume *get_proj_volume ();
     double get_rgdepth (const double *xyz);
 
-    void save (const std::string& filename);
-    void save (const char* filename);
-
+    void compute (Volume *ct_vol);
     void compute_wed_volume (Volume *wed_vol, Volume *in_vol, float background);
     void compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float background);
-    void compute_segdepth_volume (Volume *seg_vol, Volume *aperture_vol, Volume *segdepth_vol, float background);
+    void compute_segdepth_volume (Volume *seg_vol, 
+        float background);
+
+    void save (const std::string& filename);
+    void save (const char* filename);
 
 protected:
     void ray_trace (
