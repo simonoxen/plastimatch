@@ -19,18 +19,14 @@ public:
     Proton_scene_private () {
         debug = false;
         step_length = 0.;
-        patient = 0;
+        patient = Plm_image::New();
         ap = Aperture::New();
     }
-    ~Proton_scene_private () {
-        if (patient) {
-            delete patient;
-        }
-    }
+    ~Proton_scene_private () { }
 public:
     bool debug;
     double step_length;
-    Plm_image *patient;
+    Plm_image::Pointer patient;
     Aperture::Pointer ap;
 };
 
@@ -87,13 +83,18 @@ Proton_scene::init ()
 void
 Proton_scene::set_patient (Plm_image* ct_vol)
 {
-    d_ptr->patient = ct_vol;
+    d_ptr->patient.reset(ct_vol);
+}
+
+void
+Proton_scene::set_patient (FloatImageType::Pointer& ct_vol)
+{
+    d_ptr->patient->set_itk (ct_vol);
 }
 
 void
 Proton_scene::set_patient (Volume* ct_vol)
 {
-    d_ptr->patient = new Plm_image;
     d_ptr->patient->set_volume (ct_vol);
 }
 
@@ -106,7 +107,7 @@ Proton_scene::get_patient_vol ()
 Plm_image *
 Proton_scene::get_patient ()
 {
-    return d_ptr->patient;
+    return d_ptr->patient.get();
 }
 
 Aperture::Pointer&

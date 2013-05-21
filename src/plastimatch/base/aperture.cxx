@@ -157,11 +157,10 @@ Aperture::allocate_aperture_images ()
         1
     };
     float origin[3] = { 0, 0, 0 };
-    float spacing[3] = {
-        d_ptr->spacing[0], 
-        d_ptr->spacing[1],
-        1
-    };
+    float spacing[3];
+    spacing[0] = d_ptr->spacing[0];
+    spacing[1] = d_ptr->spacing[1];
+    spacing[2] = 1;
 
     Volume *ap_vol = new Volume (dim, origin, spacing, NULL, PT_UCHAR, 1);
     Volume *rc_vol = new Volume (dim, origin, spacing, NULL, PT_FLOAT, 1);

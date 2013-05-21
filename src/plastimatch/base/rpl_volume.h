@@ -6,6 +6,7 @@
 
 #include "plmbase_config.h"
 #include <string>
+#include "aperture.h"
 #include "plm_image.h"
 
 class Proj_volume;

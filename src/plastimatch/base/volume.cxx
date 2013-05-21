@@ -643,6 +643,37 @@ volume_scale (Volume* vol, float scale)
 }
 
 void
+Volume::debug ()
+{
+    lprintf ("dim:%d %d %d\n",
+	(int) dim[0],
+	(int) dim[1],
+	(int) dim[2]
+    );
+    lprintf ("org:%f %f %f\n",
+	offset[0],
+	offset[1],
+	offset[2]
+    );
+    lprintf ("spac:%f %f %f\n",
+	spacing[0],
+	spacing[1],
+	spacing[2]
+    );
+    lprintf ("dc:%8f %8f %8f\n%8f %8f %8f\n%8f %8f %8f\n",
+	direction_cosines[0],
+	direction_cosines[1],
+	direction_cosines[2],
+	direction_cosines[3],
+	direction_cosines[4],
+	direction_cosines[5],
+	direction_cosines[6],
+	direction_cosines[7],
+	direction_cosines[8]
+    );
+}
+
+void
 Volume::direction_cosines_debug ()
 {
     lprintf ("org:%f %f %f\n",

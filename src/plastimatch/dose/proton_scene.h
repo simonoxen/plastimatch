@@ -30,6 +30,7 @@ public:
     /* Set the CT volume for dose calculation.
        The Proton_scene takes ownership of this CT. */
     void set_patient (Plm_image*);
+    void set_patient (FloatImageType::Pointer&);
     void set_patient (Volume*);
     Volume *get_patient_vol ();
     Plm_image *get_patient ();

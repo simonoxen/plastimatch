@@ -131,6 +131,7 @@ public:
     */
     const float* get_proj (void) const;
 
+    void debug ();
     void direction_cosines_debug ();
 protected:
     void allocate (void);

@@ -303,7 +303,10 @@ Rpl_volume::compute (Volume *ct_vol)
     /* Compute volume boundary box */
     volume_limit_set (&ct_limit, ct_vol);
 
+    lprintf ("Proj vol:\n");
     proj_vol->debug ();
+    lprintf ("Ref vol:\n");
+    ct_vol->debug ();
 
     /* Make two passes through the aperture grid.  The first pass 
        is used to find the clipping planes.  The second pass actually 
