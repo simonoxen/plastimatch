@@ -27,6 +27,7 @@ set (PLMSYS_LIBRARY_SRC
   option_range.cxx option_range.h 
   path_util.cxx path_util.h
   plm_endian.cxx plm_endian.h
+  plm_exception.h 
   plm_fwrite.cxx plm_fwrite.h
   plm_int.h
   plm_macros.h

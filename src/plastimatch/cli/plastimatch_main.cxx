@@ -36,6 +36,7 @@
 #include "pcmd_union.h"
 #include "pcmd_warp.h"
 #include "pcmd_xf_convert.h"
+#include "plm_exception.h"
 #include "plm_stages.h"
 #include "plm_version.h"
 #include "print_and_exit.h"
@@ -261,7 +262,12 @@ do_command (int argc, char* argv[])
 int
 main (int argc, char *argv[])
 {
-    do_command (argc, argv);
+    try {
+        do_command (argc, argv);
+    } catch (const Plm_exception& pe) {
+        fprintf (stderr, "%s", pe.what());
+        return 1;
+    }
 
     return 0;
 }

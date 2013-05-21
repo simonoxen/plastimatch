@@ -6,7 +6,9 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+#include "plm_exception.h"
 #include "print_and_exit.h"
+#include "string_util.h"
 
 #if (defined(_WIN32) || defined(WIN32))
 	#define vsnprintf _vsnprintf
@@ -28,6 +30,7 @@ print_and_wait (char* prompt_fmt, ...)
 void
 print_and_exit (char* prompt_fmt, ...)
 {
+#if defined (commentout)
     if (prompt_fmt) {
         va_list argptr;
 	va_start (argptr, prompt_fmt);
@@ -35,4 +38,13 @@ print_and_exit (char* prompt_fmt, ...)
 	va_end (argptr);
     }
     exit (1);
+#endif
+    if (prompt_fmt) {
+        va_list argptr;
+        va_start (argptr, prompt_fmt);
+        Plm_exception pe = Plm_exception (string_format (prompt_fmt, argptr));
+        va_end (argptr);
+        throw pe;
+    }
+    throw Plm_exception ("Plastimatch: unknown error.");
 }
