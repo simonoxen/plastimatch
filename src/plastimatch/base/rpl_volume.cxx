@@ -56,6 +56,8 @@ public:
     double back_clipping_dist;
 
     Aperture::Pointer aperture;
+    double max_wed;
+    double min_wed;
 
 public:
     Rpl_volume_private () {
@@ -64,6 +66,8 @@ public:
         front_clipping_dist = DBL_MAX;
         back_clipping_dist = -DBL_MAX;
         aperture = Aperture::New ();
+        min_wed = 0.;
+        max_wed = 0.;
     }
     ~Rpl_volume_private () {
         delete proj_vol;
@@ -261,6 +265,18 @@ Rpl_volume::get_rgdepth (
     return rgdepth;
 }
 
+double
+Rpl_volume::get_max_wed ()
+{
+    return d_ptr->max_wed;
+}
+
+double
+Rpl_volume::get_min_wed ()
+{
+    return d_ptr->min_wed;
+}
+
 void 
 Rpl_volume::compute (Volume *ct_vol)
 {
@@ -445,7 +461,8 @@ Rpl_volume::compute (Volume *ct_vol)
 }
 
 void 
-Rpl_volume::compute_wed_volume (Volume *wed_vol, Volume *in_vol, float background)
+Rpl_volume::compute_wed_volume (
+    Volume *wed_vol, Volume *in_vol, float background)
 {
   /* A couple of abbreviations */
     Proj_volume *proj_vol = d_ptr->proj_vol;
@@ -1044,6 +1061,10 @@ Rpl_volume::compute_segdepth_volume (
 
     std::cout<<"Max wed in the target is "<<max_wed_print<<" mm."<<std::endl;
     std::cout<<"Min wed in the target is "<<min_wed_print<<" mm."<<std::endl;
+
+    /* Save these values in private data store */
+    d_ptr->max_wed = max_wed_print;
+    d_ptr->min_wed = min_wed_print;
 
     //End extra code //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

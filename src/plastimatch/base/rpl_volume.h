@@ -40,6 +40,9 @@ public:
     Proj_volume *get_proj_volume ();
     double get_rgdepth (const double *xyz);
 
+    double get_max_wed ();
+    double get_min_wed ();
+
     void compute (Volume *ct_vol);
     void compute_wed_volume (Volume *wed_vol, Volume *in_vol, float background);
     void compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float background);
