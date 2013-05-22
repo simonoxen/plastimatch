@@ -274,10 +274,10 @@ MyFrame::OnButtonSend (wxCommandEvent& event)
        dcm storage (grayscale), and one with a simple filename for 
        transmission using storescu. */
     wxString filename_base = wxString::Format ("%s [%s] [%s]",
-	    (const char*) wxDateTime::Now().Format("%Y-%m-%d-%H%M%S"),
-	    (const char*) patient_id,
-	    (const char*) patient_name
-	    );
+        (const char*) wxDateTime::Now().Format("%Y-%m-%d-%H%M%S"),
+        (const char*) patient_id,
+        (const char*) patient_name
+    );
     for (unsigned int i = 0; i < wxFileName::GetForbiddenChars().Len(); i++) {
 	filename_base.Replace (wxFileName::GetForbiddenChars().Mid(i,1), "-", true);
     }
@@ -289,61 +289,173 @@ MyFrame::OnButtonSend (wxCommandEvent& event)
     /* Save the color image as png */
     this->m_bitmap.SaveFile (png_filename, wxBITMAP_TYPE_PNG);
 
-    /* Convert to grayscale for dicom */
+    /* Get an image we can manipulate */
     wxImage image = this->m_bitmap.ConvertToImage ();
-    image = image.ConvertToGreyscale ();
 
-    /* wxImage is a pretty bad implementation of images.  
-       The ConvertToGreyscale gives us an RGB with equal values for 
-       R, G, and B, but there is no way to receive a grayscale pointer.  
-       So we make our own.  We'll modify the RGB image in-place to get 
-       the proper grayscale image for transmission and storage. */
+    /* Convert to grayscale for dicom.  Also, do whitening if requested. */
+    if (::config.white_checkbox) {
+
+        /* Get the ROI which should be whitened */
+        // cmin, cmax, rmin, rmax
+        int white_roi[4] = { 0, image.GetWidth()-1, 0, image.GetHeight()-1 };
+        long value;
+        if (::config.white_roi_cmin.ToLong(&value)) {
+            white_roi[0] = value;
+        }
+        if (::config.white_roi_cmax.ToLong(&value)) {
+            white_roi[1] = value;
+        }
+        if (::config.white_roi_rmin.ToLong(&value)) {
+            white_roi[2] = value;
+        }
+        if (::config.white_roi_rmax.ToLong(&value)) {
+            white_roi[3] = value;
+        }
+        if (white_roi[0] < 0) {
+            white_roi[0] = 0;
+        }
+        if (white_roi[1] > image.GetWidth()-1) {
+            white_roi[1] = image.GetWidth()-1;
+        }
+        if (white_roi[2] < 0) {
+            white_roi[2] = 0;
+        }
+        if (white_roi[3] > image.GetHeight()-1) {
+            white_roi[3] = image.GetHeight()-1;
+        }
+
+        /* Here we do a manual overwriting of the image data, setting 
+           color pixels to white. */
+        unsigned char* bytes = image.GetData ();
+        for (int r = 0; r < image.GetHeight (); r++) {
+            for (int c = 0; c < image.GetWidth (); c++) {
+                int p = r * image.GetWidth() + c;
+                float rd = (float) bytes[3 * p + 0];
+                float gn = (float) bytes[3 * p + 1];
+                float bl = (float) bytes[3 * p + 2];
+                float intensity = (rd + gn + bl) / 3;
+                float min_rgb = rd;
+                if (gn < min_rgb) min_rgb = gn;
+                if (bl < min_rgb) min_rgb = bl;
+                float saturation = 0;
+                if (intensity > 0) {
+                    saturation = 1 - min_rgb / intensity;
+                }
+
+                if (c >= white_roi[0] && c <= white_roi[1]
+                    && r >= white_roi[2] && r <= white_roi[3]
+                    && saturation > 0)
+                {
+                    /* Do white replacement */
+                    bytes[3 * p] = 255;
+                }
+                else {
+                    bytes[3 * p] = intensity;
+                }
+            }
+        }
+    } else {
+        image = image.ConvertToGreyscale ();
+    }
+
+    /* Figure out screen region of interest to save */
+    // cmin, cmax, rmin, rmax
+    int capture_roi[4] = { 0, image.GetWidth()-1, 0, image.GetHeight()-1 };
+    if (::config.capture_checkbox) {
+        long value;
+        if (::config.capture_roi_cmin.ToLong(&value)) {
+            capture_roi[0] = value;
+        }
+        if (::config.capture_roi_cmax.ToLong(&value)) {
+            capture_roi[1] = value;
+        }
+        if (::config.capture_roi_rmin.ToLong(&value)) {
+            capture_roi[2] = value;
+        }
+        if (::config.capture_roi_rmax.ToLong(&value)) {
+            capture_roi[3] = value;
+        }
+        if (capture_roi[0] < 0) {
+            capture_roi[0] = 0;
+        }
+        if (capture_roi[1] > image.GetWidth()-1) {
+            capture_roi[1] = image.GetWidth()-1;
+        }
+        if (capture_roi[2] < 0) {
+            capture_roi[2] = 0;
+        }
+        if (capture_roi[3] > image.GetHeight()-1) {
+            capture_roi[3] = image.GetHeight()-1;
+        }
+    }
+
+    /* Convert tri-plane RGB to single plane grayscale for transmission 
+       and storage.  Simultaneously crop to capture ROI.  We modify the 
+       RGB image in-place to accomplish this. */
     unsigned char* bytes = image.GetData ();
+#if defined (commentout)
     for (int r = 0; r < image.GetHeight (); r++) {
-	for (int c = 0; c < image.GetWidth (); c++) {
-	    int p = r * image.GetWidth() + c;
-	    bytes[p] = bytes[3 * p];
-	}
+        for (int c = 0; c < image.GetWidth (); c++) {
+            int p = r * image.GetWidth() + c;
+            bytes[p] = bytes[3 * p];
+        }
+    }
+#endif
+    for (int r = capture_roi[2]; r <= capture_roi[3]; r++) {
+        for (int c = capture_roi[0]; c <= capture_roi[1]; c++) {
+            int img_p = r * image.GetWidth() + c;
+            int roi_p = (r - capture_roi[2]) 
+                * (capture_roi[1] - capture_roi[0] + 1)
+                + c - capture_roi[0];
+            bytes[roi_p] = bytes[3 * img_p];
+        }
     }
 
     /* Create dicom storage file */
     mondoshot_dicom_create_file (
-	    image.GetHeight (), 
-	    image.GetWidth (),
-	    bytes, 
-	    0, 
-	    (event.GetId() == ID_BUTTON_SEND_PORTAL), 
-	    (const char*) patient_id,
-	    (const char*) patient_name,
-	    (const char*) dcm_filename);
+//        image.GetHeight (), 
+//        image.GetWidth (),
+        capture_roi[3] - capture_roi[2] + 1,
+        capture_roi[1] - capture_roi[0] + 1,
+        bytes, 
+        0, 
+        (event.GetId() == ID_BUTTON_SEND_PORTAL), 
+        (const char*) patient_id,
+        (const char*) patient_name,
+        (const char*) dcm_filename);
 
     /* Unfortunately, the storescu program can't be used with these 
-	kinds of complex filenames.  We create the second file with 
-	the more mundane filename.  Normally I would rename (or link) 
-	the file instead of creating two, but wxWidgets doesn't have an 
-	API call for renaming. */
+       kinds of complex filenames.  We create the second file with 
+       the more mundane filename.  Normally I would rename (or link) 
+       the file instead of creating two, but wxWidgets doesn't have an 
+       API call for renaming. */
     mondoshot_dicom_create_file (
-	    image.GetHeight (), 
-	    image.GetWidth (),
-	    bytes, 
-	    0, 
-	    (event.GetId() == ID_BUTTON_SEND_PORTAL), 
-	    (const char*) patient_id,
-	    (const char*) patient_name,
-	    (const char*) storescu_filename);
+//        image.GetHeight (), 
+//        image.GetWidth (),
+        capture_roi[3] - capture_roi[2] + 1,
+        capture_roi[1] - capture_roi[0] + 1,
+        bytes, 
+        0, 
+        (event.GetId() == ID_BUTTON_SEND_PORTAL), 
+        (const char*) patient_id,
+        (const char*) patient_name,
+        (const char*) storescu_filename);
 
     /* Send the file, using the short filename */
     wxString cmd = wxString ("storescu -v ")
-	+ wxString ("-aet ") + ::config.local_aet + " "
-	+ wxString ("-aec ") + ::config.remote_aet + " "
-	+ ::config.remote_ip + " "
-	+ ::config.remote_port + " "
-	+ "\"" + storescu_filename + "\"";
+        + wxString ("-aet ") + ::config.local_aet + " "
+        + wxString ("-aec ") + ::config.remote_aet + " "
+        + ::config.remote_ip + " "
+        + ::config.remote_port + " "
+        + "\"" + storescu_filename + "\"";
 
+    /* GCS DEBUG -- commented out during debugging */
+#if defined (commentout)
     long rc = ::wxExecute (cmd, wxEXEC_SYNC);
     if (rc != 0) {
-	popup ("Mondoshot failed to send image to relay");
+        popup ("Mondoshot failed to send image to relay");
     }
+#endif
 
     /* Insert patient into the database */
     sqlite_patients_insert_record (patient_id, patient_name);
@@ -406,14 +518,14 @@ MyListCtrl::OnSelected (wxListEvent& event)
     info.m_col = 0;
     rc = this->GetItem (info);
     if (!rc) {
-	return;
+        return;
     }
     patient_id = info.m_text;
 
     info.m_col = 1;
     rc = this->GetItem (info);
     if (!rc) {
-	return;
+        return;
     }
     patient_name = info.m_text;
 
@@ -426,11 +538,15 @@ MyListCtrl::OnSelected (wxListEvent& event)
    Config_dialog
    ----------------------------------------------------------------------- */
 Config_dialog::Config_dialog (wxWindow *parent)
-             : wxDialog(parent, wxID_ANY, wxString(_T("Mondoshot Configuration")))
+    : wxDialog(parent, wxID_ANY, wxString(_T("Mondoshot Configuration")))
 {
     wxBoxSizer *vbox = new wxBoxSizer (wxVERTICAL);
-    wxBoxSizer *button_sizer = new wxBoxSizer(wxHORIZONTAL);
     wxFlexGridSizer *edit_sizer = new wxFlexGridSizer (5, 2, 9, 25);
+    wxBoxSizer *capture_checkbox_sizer = new wxBoxSizer(wxHORIZONTAL);
+    wxFlexGridSizer *capture_roi_sizer = new wxFlexGridSizer (2, 4, 9, 25);
+    wxBoxSizer *white_checkbox_sizer = new wxBoxSizer(wxHORIZONTAL);
+    wxFlexGridSizer *white_roi_sizer = new wxFlexGridSizer (2, 4, 9, 25);
+    wxBoxSizer *button_sizer = new wxBoxSizer(wxHORIZONTAL);
 
     /* Edit fields at top */
     wxStaticText *label_remote_ip =  new wxStaticText (this, wxID_ANY, wxT("Dicom Remote IP"));
@@ -456,6 +572,50 @@ Config_dialog::Config_dialog (wxWindow *parent)
     edit_sizer->AddGrowableCol (1, 1);
     edit_sizer->Layout ();
 
+    /* Capture checkbox */
+    m_capture_checkbox =  new wxCheckBox (this, wxID_ANY, wxT("Limit capture to region"));
+    capture_checkbox_sizer->Add (m_capture_checkbox, 0, wxALIGN_LEFT | wxALL, 10);
+    
+    /* Capture ROI */
+    wxStaticText *label_capture_roi_cmin =  new wxStaticText (this, wxID_ANY, wxT("Col min"));
+    wxStaticText *label_capture_roi_cmax =  new wxStaticText (this, wxID_ANY, wxT("Col max"));
+    wxStaticText *label_capture_roi_rmin =  new wxStaticText (this, wxID_ANY, wxT("Row min"));
+    wxStaticText *label_capture_roi_rmax =  new wxStaticText (this, wxID_ANY, wxT("Row max"));
+    this->m_textctrl_capture_roi_cmin = new wxTextCtrl (this, wxID_ANY, _T(""));
+    this->m_textctrl_capture_roi_cmax = new wxTextCtrl (this, wxID_ANY, _T(""));
+    this->m_textctrl_capture_roi_rmin = new wxTextCtrl (this, wxID_ANY, _T(""));
+    this->m_textctrl_capture_roi_rmax = new wxTextCtrl (this, wxID_ANY, _T(""));
+    capture_roi_sizer->Add (label_capture_roi_cmin);
+    capture_roi_sizer->Add (m_textctrl_capture_roi_cmin, 1, wxEXPAND);
+    capture_roi_sizer->Add (label_capture_roi_cmax);
+    capture_roi_sizer->Add (m_textctrl_capture_roi_cmax, 1, wxEXPAND);
+    capture_roi_sizer->Add (label_capture_roi_rmin);
+    capture_roi_sizer->Add (m_textctrl_capture_roi_rmin, 1, wxEXPAND);
+    capture_roi_sizer->Add (label_capture_roi_rmax);
+    capture_roi_sizer->Add (m_textctrl_capture_roi_rmax, 1, wxEXPAND);
+    
+    /* Whiting checkbox */
+    m_white_checkbox =  new wxCheckBox (this, wxID_ANY, wxT("Convert colors to white"));
+    white_checkbox_sizer->Add (m_white_checkbox, 0, wxALIGN_LEFT | wxALL, 10);
+    
+    /* Whitening ROI */
+    wxStaticText *label_white_roi_cmin =  new wxStaticText (this, wxID_ANY, wxT("Col min"));
+    wxStaticText *label_white_roi_cmax =  new wxStaticText (this, wxID_ANY, wxT("Col max"));
+    wxStaticText *label_white_roi_rmin =  new wxStaticText (this, wxID_ANY, wxT("Row min"));
+    wxStaticText *label_white_roi_rmax =  new wxStaticText (this, wxID_ANY, wxT("Row max"));
+    this->m_textctrl_white_roi_cmin = new wxTextCtrl (this, wxID_ANY, _T(""));
+    this->m_textctrl_white_roi_cmax = new wxTextCtrl (this, wxID_ANY, _T(""));
+    this->m_textctrl_white_roi_rmin = new wxTextCtrl (this, wxID_ANY, _T(""));
+    this->m_textctrl_white_roi_rmax = new wxTextCtrl (this, wxID_ANY, _T(""));
+    white_roi_sizer->Add (label_white_roi_cmin);
+    white_roi_sizer->Add (m_textctrl_white_roi_cmin, 1, wxEXPAND);
+    white_roi_sizer->Add (label_white_roi_cmax);
+    white_roi_sizer->Add (m_textctrl_white_roi_cmax, 1, wxEXPAND);
+    white_roi_sizer->Add (label_white_roi_rmin);
+    white_roi_sizer->Add (m_textctrl_white_roi_rmin, 1, wxEXPAND);
+    white_roi_sizer->Add (label_white_roi_rmax);
+    white_roi_sizer->Add (m_textctrl_white_roi_rmax, 1, wxEXPAND);
+    
     /* Buttons at bottom */
     m_button_save = new wxButton (this, wxID_ANY, _T("&Save"));
     m_button_cancel = new wxButton (this, wxID_CANCEL, _T("&Cancel"));
@@ -468,9 +628,23 @@ Config_dialog::Config_dialog (wxWindow *parent)
     m_textctrl_remote_aet->SetValue (::config.remote_aet);
     m_textctrl_local_aet->SetValue (::config.local_aet);
     m_textctrl_data_directory->SetValue (::config.data_directory);
+    m_capture_checkbox->SetValue (::config.capture_checkbox);
+    m_textctrl_capture_roi_cmin->SetValue (::config.capture_roi_cmin);
+    m_textctrl_capture_roi_cmax->SetValue (::config.capture_roi_cmax);
+    m_textctrl_capture_roi_rmin->SetValue (::config.capture_roi_rmin);
+    m_textctrl_capture_roi_rmax->SetValue (::config.capture_roi_rmax);
+    m_white_checkbox->SetValue (::config.white_checkbox);
+    m_textctrl_white_roi_cmin->SetValue (::config.white_roi_cmin);
+    m_textctrl_white_roi_cmax->SetValue (::config.white_roi_cmax);
+    m_textctrl_white_roi_rmin->SetValue (::config.white_roi_rmin);
+    m_textctrl_white_roi_rmax->SetValue (::config.white_roi_rmax);
 
     /* Sizer stuff */
     vbox->Add (edit_sizer, 0, wxALL | wxEXPAND, 15);
+    vbox->Add (capture_checkbox_sizer, 0, wxALL | wxEXPAND, 10);
+    vbox->Add (capture_roi_sizer, 0, wxALL | wxEXPAND, 10);
+    vbox->Add (white_checkbox_sizer, 0, wxALL | wxEXPAND, 10);
+    vbox->Add (white_roi_sizer, 0, wxALL | wxEXPAND, 10);
     vbox->Add (button_sizer, 0, wxALIGN_RIGHT | wxRIGHT | wxBOTTOM, 10);
     this->SetSizer (vbox);
     vbox->SetSizeHints (this);
@@ -484,16 +658,26 @@ void Config_dialog::OnButton (wxCommandEvent& event)
 {
     if (event.GetEventObject() == m_button_save) {
 
-	::config.remote_ip = m_textctrl_remote_ip->GetValue ();
-	::config.remote_port = m_textctrl_remote_port->GetValue ();
-	::config.remote_aet = m_textctrl_remote_aet->GetValue ();
-	::config.local_aet = m_textctrl_local_aet->GetValue ();
-	::config.data_directory = m_textctrl_data_directory->GetValue ();
-	config_save ();
+        ::config.remote_ip = m_textctrl_remote_ip->GetValue ();
+        ::config.remote_port = m_textctrl_remote_port->GetValue ();
+        ::config.remote_aet = m_textctrl_remote_aet->GetValue ();
+        ::config.local_aet = m_textctrl_local_aet->GetValue ();
+        ::config.data_directory = m_textctrl_data_directory->GetValue ();
+        ::config.capture_checkbox = m_capture_checkbox->GetValue ();
+        ::config.capture_roi_cmin = m_textctrl_capture_roi_cmin->GetValue ();
+        ::config.capture_roi_cmax = m_textctrl_capture_roi_cmax->GetValue ();
+        ::config.capture_roi_rmin = m_textctrl_capture_roi_rmin->GetValue ();
+        ::config.capture_roi_rmax = m_textctrl_capture_roi_rmax->GetValue ();
+        ::config.white_checkbox = m_white_checkbox->GetValue ();
+        ::config.white_roi_cmin = m_textctrl_white_roi_cmin->GetValue ();
+        ::config.white_roi_cmax = m_textctrl_white_roi_cmax->GetValue ();
+        ::config.white_roi_rmin = m_textctrl_white_roi_rmin->GetValue ();
+        ::config.white_roi_rmax = m_textctrl_white_roi_rmax->GetValue ();
+        config_save ();
 
-	wxMessageBox(_T("Configuration saved!"));
+        wxMessageBox(_T("Configuration saved!"));
 
-	this->EndModal (0);
+        this->EndModal (0);
 
     } else {
         event.Skip();
@@ -513,6 +697,18 @@ config_save (void)
     wxconfig->Write ("remote_aet", ::config.remote_aet);
     wxconfig->Write ("local_aet", ::config.local_aet);
     wxconfig->Write ("data_directory", ::config.data_directory);
+    wxconfig->Write ("capture_checkbox", ::config.capture_checkbox);
+    wxconfig->Write ("capture_roi_cmin", ::config.capture_roi_cmin);
+    wxconfig->Write ("capture_roi_cmax", ::config.capture_roi_cmax);
+    wxconfig->Write ("capture_roi_rmin", ::config.capture_roi_rmin);
+    wxconfig->Write ("capture_roi_rmax", ::config.capture_roi_rmax);
+    wxconfig->Write ("white_checkbox", ::config.white_checkbox);
+    wxconfig->Write ("white_roi_cmin", ::config.white_roi_cmin);
+    wxconfig->Write ("white_roi_cmax", ::config.white_roi_cmax);
+    wxconfig->Write ("white_roi_rmin", ::config.white_roi_rmin);
+    wxconfig->Write ("white_roi_rmax", ::config.white_roi_rmax);
+
+    delete wxconfig;
 }
 
 void
@@ -525,9 +721,21 @@ config_initialize (void)
     wxconfig->Read ("remote_aet", &::config.remote_aet, wxT("IMPAC_DCM_SCP"));
     wxconfig->Read ("local_aet", &::config.local_aet, wxT("MONDOSHOT"));
     wxconfig->Read ("data_directory", &::config.data_directory, wxT("C:/tmp"));
+    wxconfig->Read ("capture_checkbox", &::config.capture_checkbox, false);
+    wxconfig->Read ("capture_roi_cmin", &::config.capture_roi_cmin, wxT("0"));
+    wxconfig->Read ("capture_roi_cmax", &::config.capture_roi_cmax, wxT("-1"));
+    wxconfig->Read ("capture_roi_rmin", &::config.capture_roi_rmin, wxT("0"));
+    wxconfig->Read ("capture_roi_rmax", &::config.capture_roi_rmax, wxT("-1"));
+    wxconfig->Read ("white_checkbox", &::config.white_checkbox, false);
+    wxconfig->Read ("white_roi_cmin", &::config.white_roi_cmin, wxT("0"));
+    wxconfig->Read ("white_roi_cmax", &::config.white_roi_cmax, wxT("-1"));
+    wxconfig->Read ("white_roi_rmin", &::config.white_roi_rmin, wxT("0"));
+    wxconfig->Read ("white_roi_rmax", &::config.white_roi_rmax, wxT("-1"));
 
     /* Save settings */
     config_save ();
+
+    delete wxconfig;
 }
 
 /* -----------------------------------------------------------------------
@@ -550,20 +758,20 @@ sqlite_patients_insert_record (wxString patient_id, wxString patient_name)
     //rc = sqlite3_open ("C:/tmp/mondoshot.sqlite", &db);
     rc = sqlite3_open ((const char*) filename, &db);
     if (rc) {
-	popup ("Can't open database: %s\n", sqlite3_errmsg(db));
-	sqlite3_close (db);
-	exit (1);
+        popup ("Can't open database: %s\n", sqlite3_errmsg(db));
+        sqlite3_close (db);
+        exit (1);
     }
 
     wx_sql = wxString::Format (
-	"INSERT INTO patient_screenshots (patient_id, patient_name, screenshot_timestamp)"
-	"values ('%s', '%s', julianday('now'));",
-	patient_id, patient_name);
+        "INSERT INTO patient_screenshots (patient_id, patient_name, screenshot_timestamp)"
+        "values ('%s', '%s', julianday('now'));",
+        patient_id, patient_name);
     sql = (const char*) wx_sql;
     rc = sqlite3_exec (db, sql, 0, 0, &sqlite3_err);
     if (rc != SQLITE_OK) {
-	popup ("SQL error: %s\n", sqlite3_err);
-	sqlite3_free (sqlite3_err);
+        popup ("SQL error: %s\n", sqlite3_err);
+        sqlite3_free (sqlite3_err);
     }
 
     sqlite3_close (db);
@@ -582,18 +790,18 @@ sqlite_patients_query_callback (void* data, int argc, char** argv, char** column
 
     /* Check column_names */
     for (i = 0; i < argc; i++) {
-	if (!strcmp (column_names[i], "patient_name")) {
-	    patient_name_idx = i;
-	}
-	if (!strcmp (column_names[i], "patient_id")) {
-	    patient_id_idx = i;
-	}
-	if (!strcmp (column_names[i], "datetime(MAX(screenshot_timestamp))")) {
-	    last_image_idx = i;
-	}
+        if (!strcmp (column_names[i], "patient_name")) {
+            patient_name_idx = i;
+        }
+        if (!strcmp (column_names[i], "patient_id")) {
+            patient_id_idx = i;
+        }
+        if (!strcmp (column_names[i], "datetime(MAX(screenshot_timestamp))")) {
+            last_image_idx = i;
+        }
     }
     if (patient_name_idx == -1 || patient_id_idx == -1) {
-	return -1;
+        return -1;
     }
 
     char* patient_name = argv[patient_name_idx];
@@ -601,18 +809,18 @@ sqlite_patients_query_callback (void* data, int argc, char** argv, char** column
     char* last_image = argv[last_image_idx];
 
     if (patient_name && patient_id && last_image) {
-	wxString buf;
-	int list_index = cbstruct->m_list_index ++;
+        wxString buf;
+        int list_index = cbstruct->m_list_index ++;
 
-	buf = patient_id;
-	long tmp = patient_list->InsertItem (list_index, buf, 0);
-	patient_list->SetItemData (tmp, list_index);
+        buf = patient_id;
+        long tmp = patient_list->InsertItem (list_index, buf, 0);
+        patient_list->SetItemData (tmp, list_index);
 
-	buf = patient_name;
-	patient_list->SetItem (tmp, 1, buf);
+        buf = patient_name;
+        patient_list->SetItem (tmp, 1, buf);
 
-	buf = last_image;
-	patient_list->SetItem (tmp, 2, buf);
+        buf = last_image;
+        patient_list->SetItem (tmp, 2, buf);
     }
 
     return 0;
@@ -632,28 +840,28 @@ sqlite_patients_query (MyFrame* frame)
     //rc = sqlite3_open ("C:/tmp/mondoshot.sqlite", &db);
     rc = sqlite3_open ((const char*) filename, &db);
     if (rc) {
-	popup ("Can't open database: %s\n", sqlite3_errmsg(db));
-	sqlite3_close (db);
-	exit (1);
+        popup ("Can't open database: %s\n", sqlite3_errmsg(db));
+        sqlite3_close (db);
+        exit (1);
     }
 
     sql = "CREATE TABLE IF NOT EXISTS patient_screenshots ( oi INTEGER PRIMARY KEY, patient_id TEXT, patient_name TEXT, screenshot_timestamp DATE );";
     rc = sqlite3_exec (db, sql, 0, 0, &sqlite3_err);
     if (rc != SQLITE_OK) {
-	popup ("SQL error: %s\n", sqlite3_err);
-	sqlite3_free (sqlite3_err);
+        popup ("SQL error: %s\n", sqlite3_err);
+        sqlite3_free (sqlite3_err);
     }
 
     cbstruct.m_frame = frame;
     cbstruct.m_list_index = 0;
     sql = 
-	"SELECT patient_id,patient_name,datetime(MAX(screenshot_timestamp)) "
-	"FROM patient_screenshots GROUP BY patient_id,patient_name "
-	"ORDER BY MAX(screenshot_timestamp) DESC;";
+        "SELECT patient_id,patient_name,datetime(MAX(screenshot_timestamp)) "
+        "FROM patient_screenshots GROUP BY patient_id,patient_name "
+        "ORDER BY MAX(screenshot_timestamp) DESC;";
     rc = sqlite3_exec (db, sql, sqlite_patients_query_callback, &cbstruct, &sqlite3_err);
     if (rc != SQLITE_OK) {
-	popup ("SQL error: %s\n", sqlite3_err);
-	sqlite3_free (sqlite3_err);
+        popup ("SQL error: %s\n", sqlite3_err);
+        sqlite3_free (sqlite3_err);
     }
 
     sqlite3_close (db);

@@ -106,6 +106,16 @@ public:
     wxString remote_ip;
     wxString remote_port;
     wxString data_directory;
+    bool capture_checkbox;
+    wxString capture_roi_cmin;
+    wxString capture_roi_cmax;
+    wxString capture_roi_rmin;
+    wxString capture_roi_rmax;
+    bool white_checkbox;
+    wxString white_roi_cmin;
+    wxString white_roi_cmax;
+    wxString white_roi_rmin;
+    wxString white_roi_rmax;
 };
 
 class MyFrame : public wxFrame
@@ -146,6 +156,16 @@ public:
     wxTextCtrl *m_textctrl_remote_port;
     wxTextCtrl *m_textctrl_remote_aet;
     wxTextCtrl *m_textctrl_local_aet;
+    wxCheckBox *m_capture_checkbox;
+    wxTextCtrl *m_textctrl_capture_roi_cmin;
+    wxTextCtrl *m_textctrl_capture_roi_cmax;
+    wxTextCtrl *m_textctrl_capture_roi_rmin;
+    wxTextCtrl *m_textctrl_capture_roi_rmax;
+    wxCheckBox *m_white_checkbox;
+    wxTextCtrl *m_textctrl_white_roi_cmin;
+    wxTextCtrl *m_textctrl_white_roi_cmax;
+    wxTextCtrl *m_textctrl_white_roi_rmin;
+    wxTextCtrl *m_textctrl_white_roi_rmax;
 
 private:
     wxButton *m_button_save;
