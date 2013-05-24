@@ -393,14 +393,6 @@ MyFrame::OnButtonSend (wxCommandEvent& event)
        and storage.  Simultaneously crop to capture ROI.  We modify the 
        RGB image in-place to accomplish this. */
     unsigned char* bytes = image.GetData ();
-#if defined (commentout)
-    for (int r = 0; r < image.GetHeight (); r++) {
-        for (int c = 0; c < image.GetWidth (); c++) {
-            int p = r * image.GetWidth() + c;
-            bytes[p] = bytes[3 * p];
-        }
-    }
-#endif
     for (int r = capture_roi[2]; r <= capture_roi[3]; r++) {
         for (int c = capture_roi[0]; c <= capture_roi[1]; c++) {
             int img_p = r * image.GetWidth() + c;
@@ -413,8 +405,6 @@ MyFrame::OnButtonSend (wxCommandEvent& event)
 
     /* Create dicom storage file */
     mondoshot_dicom_create_file (
-//        image.GetHeight (), 
-//        image.GetWidth (),
         capture_roi[3] - capture_roi[2] + 1,
         capture_roi[1] - capture_roi[0] + 1,
         bytes, 
@@ -430,8 +420,6 @@ MyFrame::OnButtonSend (wxCommandEvent& event)
        the file instead of creating two, but wxWidgets doesn't have an 
        API call for renaming. */
     mondoshot_dicom_create_file (
-//        image.GetHeight (), 
-//        image.GetWidth (),
         capture_roi[3] - capture_roi[2] + 1,
         capture_roi[1] - capture_roi[0] + 1,
         bytes, 
@@ -449,13 +437,10 @@ MyFrame::OnButtonSend (wxCommandEvent& event)
         + ::config.remote_port + " "
         + "\"" + storescu_filename + "\"";
 
-    /* GCS DEBUG -- commented out during debugging */
-#if defined (commentout)
     long rc = ::wxExecute (cmd, wxEXEC_SYNC);
     if (rc != 0) {
         popup ("Mondoshot failed to send image to relay");
     }
-#endif
 
     /* Insert patient into the database */
     sqlite_patients_insert_record (patient_id, patient_name);
