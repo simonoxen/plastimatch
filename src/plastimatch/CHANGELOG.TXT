@@ -1,3 +1,14 @@
+Version 1.5.13 (build @PLASTIMATCH_SVN_VERSION@)
+@TIMESTAMP@
+* DICOM interchange using dcmtk now complete
+* ITK 4 support now complete
+* The wed command can now generate beam apertures and range compenators
+* Better support for Kepler architecture GPUs
+* Many external API improvements
+* Internal smart pointer support for plastimatch native types
+* Bug fixes in mutual information
+* Bug fixes in hausdorff computation
+
 Version 1.5.12 (build 4075)
 Sun Jan 27 09:19:01 EST 2013
 * B-spline support for direction cosines
@@ -6,7 +17,6 @@ Sun Jan 27 09:19:01 EST 2013
 * Add "adjust" command for changing image intensities
 * Better support for masks in B-spline registration
 * Better ITK4 and DCMTK support
-* Better support for Kepler architecture GPUs
 * Add support for loading Elkta/NKI CBCT format images
 * Beta version of "mabs" command for atlas-based segmentation
 * Beta version of "wed" command for water-equivalent pathlength computation
@@ -14,7 +24,6 @@ Sun Jan 27 09:19:01 EST 2013
 * Move structure set union command into plastimatch executable
 * Move sift feature detection command into plastimatch executable
 * Fix potential divide by zero in B-spline registration
-* Internal smart pointer support for plastimatch native types
 * Bug fixes in DVH computation
 * Bug fixes and speed improvements for B-spline warper
 * Speed improvements for Dice calculation
