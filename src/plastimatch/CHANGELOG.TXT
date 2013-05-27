@@ -1,5 +1,8 @@
-Version 1.5.13 (build @PLASTIMATCH_SVN_VERSION@)
+Version 1.5.14 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
+
+Version 1.5.13 (build 4289)
+Mon May 27 12:46:04 EDT 2013
 * DICOM interchange using dcmtk now complete
 * ITK 4 support now complete
 * The wed command can now generate beam apertures and range compenators
