@@ -998,7 +998,7 @@ set (CPACK_SOURCE_IGNORE_FILES
 # and version number correctly into the changelog, without needing 
 # to commit these changes into the svn repository.
 file (WRITE "${CMAKE_BINARY_DIR}/extra_stuff/plastimatch_version.txt" 
-  "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH} ($PLASTIMATCH_SVN_VERSION)")
+  "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH} (${PLASTIMATCH_SVN_VERSION})")
 execute_process (COMMAND date
   RESULT_VARIABLE DATE_RESULT
   OUTPUT_VARIABLE DATE_OUTPUT
