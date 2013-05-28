@@ -13,6 +13,9 @@ set (BRAGG_CURVE_SRC
   bragg_curve_main.cxx 
   bragg_curve_opts.cxx
   )
+set (SOBP_SRC
+  sobp_main.cxx 
+  )
 set (BSPLINE_SRC
   bspline_main.cxx 
   bspline_opts.cxx
@@ -191,6 +194,9 @@ plm_add_executable (raw_to_mha "${RAW_TO_MHA_SRC}"
   "" "" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
 plm_add_executable (bragg_curve "${BRAGG_CURVE_SRC}" 
+  "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
+  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+plm_add_executable (sobp "${SOBP_SRC}" 
   "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 
