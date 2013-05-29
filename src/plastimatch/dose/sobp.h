@@ -36,9 +36,9 @@ private:
 	int m_z_min, m_z_max;			// Depth min and max to be reached by the sobp, in mm
 	int m_z_end;						// Final depth of the matrix, in mm
 	std::vector<double> m_weights;				// Matrix containing the weights and the associated BP energy
-	std::vector<std::vector<double>> m_sobpDoseDepth;		    // Matrix containing the sobp depth dose curve
+	std::vector<std::vector<double> > m_sobpDoseDepth;		    // Matrix containing the sobp depth dose curve
 };
 
-double cost_function_calculation(std::vector<std::vector<double>> depth_dose, std::vector<double> weights, int peak_number, int z_max, std::vector<int> depth_in, std::vector<int> depth_out);
+double cost_function_calculation(std::vector<std::vector<double> > depth_dose, std::vector<double> weights, int peak_number, int z_max, std::vector<int> depth_in, std::vector<int> depth_out);
 
 #endif

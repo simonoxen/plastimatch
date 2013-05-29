@@ -175,7 +175,7 @@ void Sobp::Optimizer() // the optimizer to get the optimized weights of the beam
 	std::vector<int> z (m_z_end, 0);
 
 	std::vector<double> init_vector (m_z_end,0);
-	std::vector<std::vector<double>> depth_dose (n,init_vector);
+	std::vector<std::vector<double> > depth_dose (n,init_vector);
 	std::vector<double> weight (n,(double)(floor((15.0/(50*n))*1000)/1000)); // "/n speeds up the calculation - 15 for the normalisation of the function to 15 and 50 because the BP are normalized closed to 50 when created by plastimatch)
 
 	std::vector<double> weight_minimum (n,0);
@@ -347,7 +347,7 @@ void Sobp::SobpDepthDose() // we print the depth dose on the command line
 }
 
 
-double cost_function_calculation(std::vector<std::vector<double>> depth_dose, std::vector<double> weights, int peak_number, int z_end, std::vector<int> depth_in, std::vector<int> depth_out) // cost function to be optimized in order to find the best weights and fit a perfect sobp
+double cost_function_calculation(std::vector<std::vector<double> > depth_dose, std::vector<double> weights, int peak_number, int z_end, std::vector<int> depth_in, std::vector<int> depth_out) // cost function to be optimized in order to find the best weights and fit a perfect sobp
 {
 	std::vector<double> diff (z_end, 0);
 	std::vector<double> excess (z_end, 0);
