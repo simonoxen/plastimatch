@@ -86,8 +86,7 @@ set (ACQUIRE_4030E_SRC
   advantech.cxx advantech.h
   aqprintf.cxx aqprintf.h 
   dips_panel.cxx dips_panel.h
-  YK16GrayImage.cxx YK16GrayImage.h
-  ykqtutil.cxx ykqtutil.h
+  YK16GrayImage.cxx YK16GrayImage.h  
   dips_if.h
   kill.cxx kill.h
   varian_4030e.cxx varian_4030e.h 

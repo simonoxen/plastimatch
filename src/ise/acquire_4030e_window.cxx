@@ -13,7 +13,6 @@
 #include <QTimer>
 #include <windows.h>
 
-
 #include "acquire_4030e_window.h"
 #include "acquire_4030e_parent.h"
 #include "advantech.h"
@@ -26,23 +25,15 @@ Acquire_4030e_window::Acquire_4030e_window ()
 
     /* Set up the icon for the system tray */
     create_actions ();
-    create_tray_icon ();
-
-
-	//m_TimerReadyToQuit = new QTimer(this);	
-	//connect (m_TimerReadyToQuit, SIGNAL(timeout()), this, SLOT(TimerReadyToQuit_event()));
-	//timer->start (50);  
-
-    //set_icon ();
-    //tray_icon->show ();
+    create_tray_icon ();    
 
     /* Chuck some text into the text box for testing */
     log_viewer->appendPlainText ("Welcome to acquire_4030e.exe.");
 }
-//void Acquire_4030e_window::set_icon (int idx, Label_style style)  // set_icon + tray icon
+
 void Acquire_4030e_window::set_icon (int idx, PSTAT pstat)  // set_icon + tray icon
 {   
-	
+
 
 	Label_style matchingLabelStyle;
 
@@ -81,72 +72,63 @@ void Acquire_4030e_window::set_icon (int idx, PSTAT pstat)  // set_icon + tray i
 		break;
 	}
 
-    if (idx == 0)
-    {
-	switch (matchingLabelStyle) {
+	if (idx == 0)
+	{
+		switch (matchingLabelStyle) {
 	case LABEL_NOT_READY:	    
-	    tray_icon1->setIcon (QIcon(":/red_ball.png"));		
-	    tray_icon1->setToolTip (tr("Acquire 4030e_Panel_1"));	    
-	    break;
+		tray_icon1->setIcon (QIcon(":/red_ball.png"));		
+		tray_icon1->setToolTip (tr("Acquire 4030e_Panel_1"));	    
+		break;
 
-	case LABEL_ACQUIRING:	    
-	    //tray_icon1->setIcon (QIcon(":/red_ball.svg"));
+	case LABEL_ACQUIRING:	    		
 		tray_icon1->setIcon (QIcon(":/yellow_ball.png"));
-	    tray_icon1->setToolTip (tr("Acquire 4030e_Panel_1"));	    
-	    break;
+		tray_icon1->setToolTip (tr("Acquire 4030e_Panel_1"));	    
+		break;
 
-	case LABEL_PREPARING:	    
-		//tray_icon1->setIcon (QIcon(":/red_ball.svg"));
-	    tray_icon1->setIcon (QIcon(":/orange_ball.png"));
-	    tray_icon1->setToolTip (tr("Acquire 4030e_Panel_1"));	    
-	    break;
+	case LABEL_PREPARING:	    		
+		tray_icon1->setIcon (QIcon(":/orange_ball.png"));
+		tray_icon1->setToolTip (tr("Acquire 4030e_Panel_1"));	    
+		break;
 
-	case LABEL_STANDBY:	    
-		//tray_icon1->setIcon (QIcon(":/red_ball.svg"));
+	case LABEL_STANDBY:	    		
 		tray_icon1->setIcon (QIcon(":/blue_ball.png"));
 		tray_icon1->setToolTip (tr("Acquire 4030e_Panel_1"));	    
 		break;
 
-	case LABEL_READY:	    
-		//tray_icon1->setIcon (QIcon(":/green_ball.svg"));
-	    tray_icon1->setIcon (QIcon(":/green_ball.png"));
-	    tray_icon1->setToolTip (tr("AAcquire 4030e_Panel_1"));
-	    break;
-	}
-	tray_icon1->show ();
-    }    
-    else if (idx ==1)
-    {
-	switch (matchingLabelStyle) {
+	case LABEL_READY:	    		
+		tray_icon1->setIcon (QIcon(":/green_ball.png"));
+		tray_icon1->setToolTip (tr("AAcquire 4030e_Panel_1"));
+		break;
+		}
+		tray_icon1->show ();
+	}    
+	else if (idx ==1)
+	{
+		switch (matchingLabelStyle) {
 	case LABEL_NOT_READY:	    
-		tray_icon2->setIcon (QIcon(":/red_ball.png"));	    	    
-		//tray_icon1->setIcon (QIcon(":/test_plain.svg"));	    	    
+		tray_icon2->setIcon (QIcon(":/red_ball.png"));	    	    		
 		tray_icon2->setToolTip (tr("Acquire 4030e_Panel_0"));	
-	    break;
-	case LABEL_ACQUIRING:	    
-	    //tray_icon2->setIcon (QIcon(":/red_ball.svg"));
+		break;
+	case LABEL_ACQUIRING:	    		
 		tray_icon2->setIcon (QIcon(":/yellow_ball.png"));
-	    tray_icon2->setToolTip (tr("Acquire 4030e_Panel_0"));	    
-	    break;
+		tray_icon2->setToolTip (tr("Acquire 4030e_Panel_0"));	    
+		break;
 
 	case LABEL_PREPARING:	    
-	    tray_icon2->setIcon (QIcon(":/orange_ball.png"));
-	    tray_icon2->setToolTip (tr("Acquire 4030e_Panel_0"));	    
-	    break;
+		tray_icon2->setIcon (QIcon(":/orange_ball.png"));
+		tray_icon2->setToolTip (tr("Acquire 4030e_Panel_0"));	    
+		break;
 	case LABEL_STANDBY:	    		
 		tray_icon2->setIcon (QIcon(":/blue_ball.png"));
 		tray_icon2->setToolTip (tr("Acquire 4030e_Panel_0"));	    
 		break;
 	case LABEL_READY:	    
-	    tray_icon2->setIcon (QIcon(":/green_ball.png"));
-	    tray_icon2->setToolTip (tr("AAcquire 4030e_Panel_0"));
-	    break;
-	}
-	tray_icon2->show ();
-
-    }
-    //QString style_sheet;    
-    //tray_icon2->show ();
+		tray_icon2->setIcon (QIcon(":/green_ball.png"));
+		tray_icon2->setToolTip (tr("AAcquire 4030e_Panel_0"));
+		break;
+		}
+		tray_icon2->show ();
+	}    
 }
 
 
@@ -232,22 +214,18 @@ Acquire_4030e_window::set_label (int panel_no, const QString& log)
 void Acquire_4030e_window::request_quit ()
 {
 	m_bSeqKillReady = true;
-	//((Acquire_4030e_parent*)qApp)->StartCommandTimer(0, PCOMMAND_KILL);	
+	
 	((Acquire_4030e_parent*)qApp)->SendCommandToChild(0, PCOMMAND_KILL);
-	((Acquire_4030e_parent*)qApp)->SendCommandToChild(1, PCOMMAND_KILL);
-
-	//m_TimerReadyToQuit->start(1000);
+	((Acquire_4030e_parent*)qApp)->SendCommandToChild(1, PCOMMAND_KILL);	
 	
 	QTimer::singleShot(10000,this, SLOT(FinalQuit()));	
 }
 
 void Acquire_4030e_window::FinalQuit ()
-{	
-	//printf("Final Quit slot called\n");
+{		
 	tray_icon1->hide ();
 	tray_icon2->hide ();
-	//this->close();
-	//qApp->closeAllWindows(); //qApp = Parent 
+	
 	qApp->quit(); //qApp = Parent	 -->will call About_to_Quit in parent
 }
 
@@ -265,23 +243,6 @@ void Acquire_4030e_window::systray_activated (
     }
 }
 
-//void Acquire_4030e_window::TimerReadyToQuit_event()
-//{
-//	if( ( (Acquire_4030e_parent*)qApp )->m_bChildReadyToQuit[0] && m_bSeqKillReady)
-//	{
-//		//((Acquire_4030e_parent*)qApp)->StartCommandTimer(1, PCOMMAND_KILL);
-//		((Acquire_4030e_parent*)qApp)->SendCommandToChild(1, PCOMMAND_KILL);
-//		m_bSeqKillReady = false; //run only once
-//		return;
-//	}
-//	if (((Acquire_4030e_parent*)qApp)->m_bChildReadyToQuit[0] &&((Acquire_4030e_parent*)qApp)->m_bChildReadyToQuit[1]) //check all child process are closed and ready to quit
-//	{
-//		printf("Now program quits\n");
-//		m_TimerReadyToQuit->stop();
-//		FinalQuit ();
-//	}
-//	return;
-//}
 
 void Acquire_4030e_window::UpdateLabel(int iPanelIdx, PSTAT enStyle) // 0 based panel ID //called from child proc except the first time
 {
@@ -344,21 +305,14 @@ Acquire_4030e_window::closeEvent(QCloseEvent *event)
         hide();        
     }
     if (tray_icon2->isVisible()) {
-        hide();
-        //event->ignore();
+        hide();        
     }
     event->ignore();
 }
 
 void 
 Acquire_4030e_window::RestartPanel_0 ()
-{
-       /* QMessageBox msgBox;	
-	int test2 = ((Acquire_4030e_parent*)qApp)->test;
-	QString strTitle = QString("%1").arg(test2);
-	msgBox.setText(strTitle);
-	msgBox.exec();*/
-    //(Acquire_4030e_parent*)qApp->RestartChildProcess(0); //casting not work
+{      
     ((Acquire_4030e_parent*)qApp)->RestartChildProcess(0);
 }
 
@@ -369,69 +323,36 @@ Acquire_4030e_window::RestartPanel_1 ()
 }
 
 void Acquire_4030e_window::ShowPanelControl_0 ()
-{    
-    //QMessageBox msgBox;
-    //QString strTitle = QString("test");
-    //msgBox.setText(strTitle);    
-
-    //((Acquire_4030e_parent*)qApp)->test = 5;
-    //if (((Acquire_4030e_parent*)qApp)->m_dlgControl_0 != NULL) //This filter is not working
-    //((Acquire_4030e_parent*)qApp)->ShowPanelControlWindow(0);    
-
-    //((Acquire_4030e_parent*)qApp)->m_dlgControl_0->show();
-
-	//((Acquire_4030e_parent*)qApp)->StartCommandTimer(0, PCOMMAND_SHOWDLG);
+{        
 	((Acquire_4030e_parent*)qApp)->SendCommandToChild(0, PCOMMAND_SHOWDLG);
-
-	//m_dlgControl_0->show();
-    //else
-	//msgBox.exec();
-
 }
 
 void Acquire_4030e_window::ShowPanelControl_1 ()
-{    
-  //if (((Acquire_4030e_parent*)qApp)->m_dlgControl_1 != NULL) //doens't work. maybe cannot access to the address
-    //((Acquire_4030e_parent*)qApp)->m_dlgControl_1->show();
-    //((Acquire_4030e_parent*)qApp)->m_dlgControl_1->show();
-	//((Acquire_4030e_parent*)qApp)->StartCommandTimer(1, PCOMMAND_SHOWDLG);
+{ 
 	((Acquire_4030e_parent*)qApp)->SendCommandToChild(1, PCOMMAND_SHOWDLG);
 }
-
-void Acquire_4030e_window::RunRelay_Panel0()
-{
-	((Acquire_4030e_parent*)qApp)->advantech->relay_close(3);
-
-	Sleep(2000);
-
-	((Acquire_4030e_parent*)qApp)->advantech->relay_open (3);
-
-}
-
-void Acquire_4030e_window::RunRelay_Panel1()
-{
-	((Acquire_4030e_parent*)qApp)->advantech->relay_close(4);
-
-	Sleep(2000);
-
-	((Acquire_4030e_parent*)qApp)->advantech->relay_open (4);
-}
-
-
-//void Acquire_4030e_window::ForcedQuit()
+//
+//void Acquire_4030e_window::RunRelay_Panel0()
 //{
-//	tray_icon1->hide ();
-//	tray_icon2->hide ();
-//	qApp->quit();
+//	((Acquire_4030e_parent*)qApp)->advantech->relay_close(3);
+//
+//	Sleep(2000);
+//
+//	((Acquire_4030e_parent*)qApp)->advantech->relay_open (3);
+//
+//}
+//
+//void Acquire_4030e_window::RunRelay_Panel1()
+//{
+//	((Acquire_4030e_parent*)qApp)->advantech->relay_close(4);
+//
+//	Sleep(2000);
+//
+//	((Acquire_4030e_parent*)qApp)->advantech->relay_open (4);
 //}
 
 void Acquire_4030e_window::SaveSettingAsDefault_Parent()
 {
-	YKOptionSetting* pOptionSetting = &(((Acquire_4030e_parent*)qApp)->m_OptionSettingParent);
-
-	//pOptionSetting->m_strPrimaryLogPath;
-
-	//1. Update setting data
-	//2. Export as a file
+	YKOptionSetting* pOptionSetting = &(((Acquire_4030e_parent*)qApp)->m_OptionSettingParent);		
 
 }

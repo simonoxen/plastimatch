@@ -7,8 +7,7 @@ See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-//#include <QMutex>
-//#include <QMutexLocker>
+
 #include "HcpErrors.h"
 #include "HcpFuncDefs.h"
 #include "iostatus.h"
@@ -22,9 +21,6 @@ See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 #include "Acquire_4030e_DlgControl.h"
 #include <QSystemSemaphore>
 
-/* This mutex is a class static variable */
-//QMutex Varian_4030e::vip_mutex;
-
 #define HCP_SIGNAL_TIMEOUT        (-2)
 
 
@@ -34,36 +30,36 @@ See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 //  ShowDllVersions
 //
 //----------------------------------------------------------------------
-
-void ShowDllVersions()
-{
-	static char version[512];
-	static char dllName[512];
-
-	aqprintf("calling vip_get_dlls_versions\n");
-	//PrintCurrentTime();
-
-	int result = vip_get_dll_version(version, dllName, 512);
-	if (result == HCP_NO_ERR)
-	{
-		char *v = version;
-		char *n = dllName;
-		int vLen = strlen(v);
-		int nLen = strlen(n);
-		aqprintf("--------------------------------------------------------\n");
-		//PrintCurrentTime();
-
-		while ((vLen > 0) && (nLen > 0))
-		{
-			aqprintf("%-24s %s\n", n, v);
-			v += (vLen + 1);
-			n += (nLen + 1);
-			vLen = strlen(v);
-			nLen = strlen(n);
-		}
-		aqprintf("--------------------------------------------------------\n");
-	}
-}
+//
+//void ShowDllVersions()
+//{
+//	static char version[512];
+//	static char dllName[512];
+//
+//	aqprintf("calling vip_get_dlls_versions\n");
+//	
+//
+//	int result = vip_get_dll_version(version, dllName, 512);
+//	if (result == HCP_NO_ERR)
+//	{
+//		char *v = version;
+//		char *n = dllName;
+//		int vLen = strlen(v);
+//		int nLen = strlen(n);
+//		aqprintf("--------------------------------------------------------\n");
+//		
+//
+//		while ((vLen > 0) && (nLen > 0))
+//		{
+//			aqprintf("%-24s %s\n", n, v);
+//			v += (vLen + 1);
+//			n += (nLen + 1);
+//			vLen = strlen(v);
+//			nLen = strlen(n);
+//		}
+//		aqprintf("--------------------------------------------------------\n");
+//	}
+//}
 
 //----------------------------------------------------------------------
 //
@@ -75,32 +71,31 @@ void ShowDllVersions()
 //  Results valid only AFTER an image has been acquired.
 //
 //----------------------------------------------------------------------
-
-void ShowDiagData()
-{
-	UQueryProgInfo  uqpi;
-
-	memset(&uqpi.qpidiag, 0, sizeof(SDiagData));
-	uqpi.qpidiag.StructSize = sizeof(SDiagData);
-
-	int result = vip_query_prog_info(HCP_U_QPIDIAGDATA, &uqpi);
-	if (result == HCP_NO_ERR)
-	{
-		aqprintf("  Receptor PanelType=%d, FwVersion=0x%.3X BoardId=%.4X %.4X %.4X\n",
-			uqpi.qpidiag.PanelType,
-			uqpi.qpidiag.FwVersion,
-			uqpi.qpidiag.BoardSNbr[2],
-			uqpi.qpidiag.BoardSNbr[1],
-			uqpi.qpidiag.BoardSNbr[0]);	
-		aqprintf("  RcptFrameId=%d ExposureStatus=0x%.4X\n",
-			uqpi.qpidiag.RcptFrameId, uqpi.qpidiag.Exposed);
-		//PrintCurrentTime();
-	}
-	else{
-		aqprintf("Diag data returns %d\n", result);
-		//PrintCurrentTime();
-	}
-}
+//
+//void ShowDiagData()
+//{
+//	UQueryProgInfo  uqpi;
+//
+//	memset(&uqpi.qpidiag, 0, sizeof(SDiagData));
+//	uqpi.qpidiag.StructSize = sizeof(SDiagData);
+//
+//	int result = vip_query_prog_info(HCP_U_QPIDIAGDATA, &uqpi);
+//	if (result == HCP_NO_ERR)
+//	{
+//		aqprintf("  Receptor PanelType=%d, FwVersion=0x%.3X BoardId=%.4X %.4X %.4X\n",
+//			uqpi.qpidiag.PanelType,
+//			uqpi.qpidiag.FwVersion,
+//			uqpi.qpidiag.BoardSNbr[2],
+//			uqpi.qpidiag.BoardSNbr[1],
+//			uqpi.qpidiag.BoardSNbr[0]);	
+//		aqprintf("  RcptFrameId=%d ExposureStatus=0x%.4X\n",
+//			uqpi.qpidiag.RcptFrameId, uqpi.qpidiag.Exposed);
+//		
+//	}
+//	else{
+//		aqprintf("Diag data returns %d\n", result);	
+//	}
+//}
 
 //----------------------------------------------------------------------
 //
@@ -111,25 +106,25 @@ void ShowDiagData()
 //  an image has been acquired.
 //
 //----------------------------------------------------------------------
-
-void ShowFrameData(int crntReq=0)
-{
-	UQueryProgInfo  uqpi;
-	int  uType = HCP_U_QPIFRAME;
-	if (crntReq)
-		uType |= HCP_U_QPI_CRNT_DIAG_DATA;
-
-	memset(&uqpi.qpitemps, 0, sizeof(SQueryProgInfoFrame));
-	uqpi.qpitemps.StructSize = sizeof(SQueryProgInfoFrame);
-
-	int result = vip_query_prog_info(uType, &uqpi);
-	if (result == HCP_NO_ERR)
-	{
-		aqprintf("RcptFrameId=%d ExposureStatus=0x%.4X\n",
-			uqpi.qpiframe.RcptFrameId, uqpi.qpiframe.Exposed);
-		//PrintCurrentTime();
-	}
-}
+//
+//void ShowFrameData(int crntReq=0)
+//{
+//	UQueryProgInfo  uqpi;
+//	int  uType = HCP_U_QPIFRAME;
+//	if (crntReq)
+//		uType |= HCP_U_QPI_CRNT_DIAG_DATA;
+//
+//	memset(&uqpi.qpitemps, 0, sizeof(SQueryProgInfoFrame));
+//	uqpi.qpitemps.StructSize = sizeof(SQueryProgInfoFrame);
+//
+//	int result = vip_query_prog_info(uType, &uqpi);
+//	if (result == HCP_NO_ERR)
+//	{
+//		aqprintf("RcptFrameId=%d ExposureStatus=0x%.4X\n",
+//			uqpi.qpiframe.RcptFrameId, uqpi.qpiframe.Exposed);
+//		//PrintCurrentTime();
+//	}
+//}
 
 //----------------------------------------------------------------------
 //
@@ -140,38 +135,35 @@ void ShowFrameData(int crntReq=0)
 //  an image has been acquired.
 //
 //----------------------------------------------------------------------
-
-void ShowReceptorData()
-{
-	UQueryProgInfo  uqpi;
-	int  uType = HCP_U_QPIRCPT;
-
-	memset(&uqpi.qpircpt, 0, sizeof(SQueryProgInfoRcpt));
-	uqpi.qpircpt.StructSize = 28; // sizeof(SQueryProgInfoRcpt);
-
-	aqprintf("Calling vip_query_prog_info(HCP_U_QPIRCPT, %d)\n", 
-		sizeof(SQueryProgInfoRcpt));
-
-	//PrintCurrentTime();
-
-
-	int result = vip_query_prog_info(uType, &uqpi);
-	if (result == HCP_NO_ERR) {
-		aqprintf(
-			"Receptor PanelType=%d, FwVersion=0x%.3X "
-			"BoardId=%.2X%.2X%.2X\n",
-			uqpi.qpircpt.PanelType,
-			uqpi.qpircpt.FwVersion,
-			uqpi.qpircpt.BoardSNbr[1],
-			uqpi.qpircpt.BoardSNbr[1],
-			uqpi.qpircpt.BoardSNbr[0]);
-		//PrintCurrentTime();
-	} else {
-		aqprintf ("*** vip_query_prog_info returns %d (%s)\n", result,
-			Varian_4030e::error_string (result));
-		//PrintCurrentTime();
-	}
-}
+//
+//void ShowReceptorData()
+//{
+//	UQueryProgInfo  uqpi;
+//	int  uType = HCP_U_QPIRCPT;
+//
+//	memset(&uqpi.qpircpt, 0, sizeof(SQueryProgInfoRcpt));
+//	uqpi.qpircpt.StructSize = 28; // sizeof(SQueryProgInfoRcpt);
+//
+//	aqprintf("Calling vip_query_prog_info(HCP_U_QPIRCPT, %d)\n", 
+//		sizeof(SQueryProgInfoRcpt));
+//
+//
+//	int result = vip_query_prog_info(uType, &uqpi);
+//	if (result == HCP_NO_ERR) {
+//		aqprintf(
+//			"Receptor PanelType=%d, FwVersion=0x%.3X "
+//			"BoardId=%.2X%.2X%.2X\n",
+//			uqpi.qpircpt.PanelType,
+//			uqpi.qpircpt.FwVersion,
+//			uqpi.qpircpt.BoardSNbr[1],
+//			uqpi.qpircpt.BoardSNbr[1],
+//			uqpi.qpircpt.BoardSNbr[0]);
+//		
+//	} else {
+//		aqprintf ("*** vip_query_prog_info returns %d (%s)\n", result,
+//			Varian_4030e::error_string (result));		
+//	}
+//}
 
 //----------------------------------------------------------------------
 //
@@ -182,34 +174,15 @@ void ShowReceptorData()
 //  Results valid only AFTER an image has been acquired.
 //
 //----------------------------------------------------------------------
-
-void ShowTemperatureData(UQueryProgInfo& uqpi, int crntReq=0)
-{
-	aqprintf("Temperature\n");
-	for (int i = 0; i < uqpi.qpitemps.NumSensors; i++)
-	{
-		aqprintf("Temperature[%d]=%5.2f\n", i, uqpi.qpitemps.Celsius[i]);
-		//PrintCurrentTime();
-	}
-
-	//UQueryProgInfo  uqpi;
-	//int  uType = HCP_U_QPITEMPS;
-	/* if (crntReq)
-	uType |= HCP_U_QPI_CRNT_DIAG_DATA;
-
-	memset(&uqpi.qpitemps, 0, sizeof(SQueryProgInfoTemps));
-	uqpi.qpitemps.StructSize = sizeof(SQueryProgInfoTemps);
-
-	int result = vip_query_prog_info(uType, &uqpi);
-	if (result == HCP_NO_ERR)
-	{
-	for (int i = 0; i < uqpi.qpitemps.NumSensors; i++)
-	{
-	aqprintf("T[%d]=%5.2f\n", i, uqpi.qpitemps.Celsius[i]);
-	//PrintCurrentTime();
-	}
-	}*/
-}
+//
+//void ShowTemperatureData(UQueryProgInfo& uqpi, int crntReq=0)
+//{
+//	aqprintf("Temperature\n");
+//	for (int i = 0; i < uqpi.qpitemps.NumSensors; i++)
+//	{
+//		aqprintf("Temperature[%d]=%5.2f\n", i, uqpi.qpitemps.Celsius[i]);	
+//	}
+//}
 
 //----------------------------------------------------------------------
 //
@@ -220,26 +193,26 @@ void ShowTemperatureData(UQueryProgInfo& uqpi, int crntReq=0)
 //  Results valid only AFTER an image has been acquired.
 //
 //----------------------------------------------------------------------
-
-void ShowVoltageData(int crntReq=0)
-{
-	UQueryProgInfo  uqpi;
-	int  uType = HCP_U_QPIVOLTS;
-	if (crntReq)
-		uType |= HCP_U_QPI_CRNT_DIAG_DATA;
-
-	memset(&uqpi.qpitemps, 0, sizeof(SQueryProgInfoVolts));
-	uqpi.qpitemps.StructSize = sizeof(SQueryProgInfoVolts);
-
-	int result = vip_query_prog_info(uType, &uqpi);
-	if (result == HCP_NO_ERR)
-	{
-		for (int i = 0; i < uqpi.qpitemps.NumSensors; i++){
-			aqprintf("V[%2d]=%f\n", i, uqpi.qpivolts.Volts[i]);
-			//PrintCurrentTime();
-		}
-	}
-}
+//
+//void ShowVoltageData(int crntReq=0)
+//{
+//	UQueryProgInfo  uqpi;
+//	int  uType = HCP_U_QPIVOLTS;
+//	if (crntReq)
+//		uType |= HCP_U_QPI_CRNT_DIAG_DATA;
+//
+//	memset(&uqpi.qpitemps, 0, sizeof(SQueryProgInfoVolts));
+//	uqpi.qpitemps.StructSize = sizeof(SQueryProgInfoVolts);
+//
+//	int result = vip_query_prog_info(uType, &uqpi);
+//	if (result == HCP_NO_ERR)
+//	{
+//		for (int i = 0; i < uqpi.qpitemps.NumSensors; i++){
+//			aqprintf("V[%2d]=%f\n", i, uqpi.qpivolts.Volts[i]);
+//			//PrintCurrentTime();
+//		}
+//	}
+//}
 
 
 //----------------------------------------------------------------------
@@ -255,8 +228,7 @@ void ShowImageStatistics(int npixels, USHORT *image_ptr)
 	int i;
 	double pixel, sumPixel;
 
-	nTotal = 0;
-	//minPixel = 4095;
+	nTotal = 0;	
 	minPixel = 65535;
 	maxPixel = 0;
 
@@ -274,190 +246,10 @@ void ShowImageStatistics(int npixels, USHORT *image_ptr)
 	}
 
 	aqprintf("Image: %d pixels, average=%9.2f min=%d max=%d\n",
-		nTotal, sumPixel / nTotal, minPixel, maxPixel);
-	//PrintCurrentTime();
+		nTotal, sumPixel / nTotal, minPixel, maxPixel);	
 }
 
 
-//----------------------------------------------------------------------
-//
-//  GetImageToFile
-//
-//----------------------------------------------------------------------
-
-int 
-Varian_4030e::get_image_to_file (int xSize, int ySize, 
-								 char *filename, int imageType)
-{
-	bool bDarkCorrApply = m_pParent->m_dlgControl->ChkDarkFieldApply->isChecked(); 
-	bool bGainCorrApply = m_pParent->m_dlgControl->ChkGainCorrectionApply->isChecked();
-
-	aqprintf("File export\n");
-
-	int result;
-	int mode_num = this->current_mode;
-
-	int npixels = xSize * ySize;
-
-	USHORT *image_ptr = (USHORT *)malloc(npixels * sizeof(USHORT));
-	result = vip_get_image(mode_num, imageType, xSize, ySize, image_ptr);
-	//now raw image from panel
-
-	if (bDarkCorrApply)
-		aqprintf("Dark Correction On\n");
-	if (bGainCorrApply)
-		aqprintf("Gain Correction On\n");
-
-	/////////////////////***************Manul Correction START***********///////////////////
-	USHORT *pImageCorr = (USHORT *)malloc(npixels * sizeof(USHORT));
-
-	if (!bDarkCorrApply && !bGainCorrApply)
-	{
-		//aqprintf("no correction\n");
-		for (int i = 0; i < xSize * ySize; i++) {
-			pImageCorr[i] = image_ptr[i]; //raw image
-		}
-	}
-	else if (bDarkCorrApply && !bGainCorrApply)
-	{
-		//aqprintf("only dark field correction correction\n");
-		if (m_pParent->m_pDarkImage->IsEmpty())
-		{
-			aqprintf("No dark ref image. raw image will be sent.\n");
-			for (int i = 0; i < xSize * ySize; i++) {
-				pImageCorr[i] = image_ptr[i]; //raw image
-			}
-		}
-		else
-		{
-			for (int i = 0; i < xSize * ySize; i++) {	    
-				if (image_ptr[i] > m_pParent->m_pDarkImage->m_pData[i])
-					pImageCorr[i] = image_ptr[i] - m_pParent->m_pDarkImage->m_pData[i];
-				else
-					pImageCorr[i] = 0;
-			}
-		}
-	}
-	else if (!bDarkCorrApply && bGainCorrApply)
-	{
-		//aqprintf("only gain field correction correction\n");
-		if (m_pParent->m_pGainImage->IsEmpty())
-		{
-			aqprintf("No gain ref image. raw image will be sent.\n");
-			for (int i = 0; i < xSize * ySize; i++) {
-				pImageCorr[i] = image_ptr[i]; //raw image
-			}
-		}
-		else
-		{
-			//get a mean value for m_pGainImage
-			double sum = 0.0;
-			double MeanVal = 0.0; 
-			for (int i = 0; i < xSize * ySize; i++) {	    		
-				sum = sum + m_pParent->m_pGainImage->m_pData[i];		
-			}
-			MeanVal = sum/(double)(xSize*ySize);
-
-			for (int i = 0; i < xSize * ySize; i++) {	    
-				if (m_pParent->m_pGainImage->m_pData[i] == 0)
-					pImageCorr[i] = image_ptr[i];
-				else
-					pImageCorr[i] = (USHORT)((double)image_ptr[i]/(double)(m_pParent->m_pGainImage->m_pData[i])*MeanVal);
-			}
-		}
-	}
-
-	else if (bDarkCorrApply && bGainCorrApply)
-	{
-		//aqprintf("Dark and gain correction\n");
-		bool bRawImage = false;
-		if (m_pParent->m_pDarkImage->IsEmpty())
-		{
-			aqprintf("No dark ref image. raw image will be sent.\n");	    
-			bRawImage = true;
-		}
-		if (m_pParent->m_pGainImage->IsEmpty())
-		{
-			aqprintf("No gain ref image. raw image will be sent.\n");	    
-			bRawImage = true;
-		}
-
-		if (bRawImage)
-		{
-			for (int i = 0; i < xSize * ySize; i++) {
-				pImageCorr[i] = image_ptr[i]; //raw image
-			}
-		}
-		else
-		{	    
-			//get a mean value for m_pGainImage
-			double sum = 0.0;
-			double MeanVal = 0.0; 
-
-			for (int i = 0; i < xSize * ySize; i++) {
-				sum = sum + (m_pParent->m_pGainImage->m_pData[i] - m_pParent->m_pDarkImage->m_pData[i]);		
-			}
-			MeanVal = sum/(double)(xSize*ySize);
-
-			aqprintf("YK: Mean value of denometer is %3.4f",MeanVal);
-
-			double denom = 0.0;
-			for (int i = 0; i < xSize * ySize; i++)
-			{
-				denom = (double)(m_pParent->m_pGainImage->m_pData[i] - m_pParent->m_pDarkImage->m_pData[i]);
-
-				if (denom <= 0)
-				{
-					if (image_ptr[i] > m_pParent->m_pDarkImage->m_pData[i])
-						pImageCorr[i] = image_ptr[i] - m_pParent->m_pDarkImage->m_pData[i];
-					else
-						pImageCorr[i] = 0;
-				}		    
-				else
-				{
-					double tmpVal = 0.0;
-					tmpVal = (image_ptr[i] - m_pParent->m_pDarkImage->m_pData[i]) / denom * MeanVal;
-
-					if (tmpVal < 0)
-						pImageCorr[i] = 0;
-					else
-						pImageCorr[i] = (USHORT)tmpVal;
-				}		    
-			}//end of for
-		}//end if not bRawImage
-	} // else if (m_bDarkCorrApply && m_bGainCorrApply)
-
-
-	/////////////////////***************Manul Correction END***********///////////////////
-
-	if(result == HCP_NO_ERR)
-	{
-		ShowImageStatistics(npixels, pImageCorr);
-
-		// file on the host computer for storing the image
-		FILE *finput = fopen(filename, "wb");
-		if (finput == NULL)
-		{
-			aqprintf("Error opening image file to put file.");
-			//PrintCurrentTime();
-			exit(-1);
-		}
-
-		fwrite(pImageCorr, sizeof(USHORT), npixels, finput);
-		fclose(finput);
-
-	}
-	else
-	{
-		aqprintf("*** vip_get_image returned error %d\n", result);
-		//PrintCurrentTime();
-	}
-
-	free(image_ptr);
-	free(pImageCorr);
-
-	return HCP_NO_ERR;
-}
 void Varian_4030e::CalcImageInfo (double& meanVal, double& STDV, double& minVal, double& maxVal, 
 								  int sizeX, int sizeY, USHORT* pImg) //all of the images taken before will be inspected
 {
@@ -467,8 +259,7 @@ void Varian_4030e::CalcImageInfo (double& meanVal, double& STDV, double& minVal,
 	double pixel, sumPixel;
 
 	int npixels = sizeX*sizeY;
-	nTotal = 0;
-	//minPixel = 4095;
+	nTotal = 0;	
 	minPixel = 65535;
 	maxPixel = 0;
 	sumPixel = 0.0;
@@ -513,8 +304,7 @@ bool Varian_4030e::SameImageExist(IMGINFO& curInfo, int& sameImgIndex)
 	{		
 		compInfo = (*it);
 		if (fabs(curInfo.meanVal - compInfo.meanVal) < 0.0001 && 
-			fabs(curInfo.SD - compInfo.SD) < 0.0001 
-			//&& curInfo.chkSum == compInfo.chkSum)
+			fabs(curInfo.SD - compInfo.SD) < 0.0001 			
 			)
 		{
 			result = true;
@@ -526,172 +316,6 @@ bool Varian_4030e::SameImageExist(IMGINFO& curInfo, int& sameImgIndex)
 	return result;
 }
 
-
-////get all image and report their mean and SD value
-//int Varian_4030e::Audit_All_Image (int xSize, int ySize) //get cur image to curImage
-//{	
-//	//m_pParent->m_ImageInfoFout << "TITLE" << "	" << "Mean" <<"	" << "SD"<< "	" << "MIN" <<"	"<<"MAX" << "	" << std::endl;
-//
-//	m_pParent->m_ImageInfoFout << "*******************ALL IMAGE INFO IN BUFFER**************************************" << std::endl;
-//
-//	int result;
-//	int mode_num = this->current_mode;
-//	int npixels = xSize * ySize;
-//
-//	USHORT *image_ptr = (USHORT *)malloc(npixels * sizeof(USHORT));
-//
-//	double tmpMean = 0.0;
-//	double tmpSD = 0.0;
-//	double tmpMin = 0.0;
-//	double tmpMax = 0.0;
-//
-//	m_pParent->m_ImageInfoFout << "mod number" << mode_num << std::endl;
-//
-//	result = vip_get_image(mode_num, VIP_CURRENT_IMAGE, xSize, ySize, image_ptr);		
-//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
-//	m_pParent->m_ImageInfoFout << "VIP_CURRENT_IMAGE:" 
-//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
-//		<< tmpMax << "	" << result << std::endl;
-//
-//	result = vip_get_image(mode_num, VIP_OFFSET_IMAGE, xSize, ySize, image_ptr);		
-//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
-//	m_pParent->m_ImageInfoFout << "VIP_OFFSET_IMAGE:" 
-//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
-//		<< tmpMax << "	" << result << std::endl;
-//
-//	result = vip_get_image(mode_num, VIP_GAIN_IMAGE, xSize, ySize, image_ptr);		
-//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
-//	m_pParent->m_ImageInfoFout << "VIP_GAIN_IMAGE:" 
-//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
-//		<< tmpMax << "	" << result << std::endl;
-//
-//	result = vip_get_image(mode_num, VIP_BASE_DEFECT_IMAGE, xSize, ySize, image_ptr);		
-//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
-//	m_pParent->m_ImageInfoFout << "VIP_BASE_DEFECT_IMAGE:" 
-//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
-//		<< tmpMax << "	" << result << std::endl;
-//
-//	result = vip_get_image(mode_num, VIP_AUX_DEFECT_IMAGE, xSize, ySize, image_ptr);		
-//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
-//	m_pParent->m_ImageInfoFout << "VIP_AUX_DEFECT_IMAGE:" 
-//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
-//		<< tmpMax << "	" << result << std::endl;
-//
-//	result = vip_get_image(mode_num, VIP_TEST_IMAGE, xSize, ySize, image_ptr);		
-//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
-//	m_pParent->m_ImageInfoFout << "VIP_TEST_IMAGE:" 
-//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
-//		<< tmpMax << "	" << result << std::endl;
-//
-//	result = vip_get_image(mode_num, VIP_RECEPTOR_TEST_IMAGE, xSize, ySize, image_ptr);		
-//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
-//	m_pParent->m_ImageInfoFout << "VIP_RECEPTOR_TEST_IMAGE:" 
-//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
-//		<< tmpMax << "	" << result << std::endl;
-//
-//
-//	result = vip_get_image(mode_num, VIP_CURRENT_IMG_0, xSize, ySize, image_ptr);		
-//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
-//	m_pParent->m_ImageInfoFout << "VIP_CURRENT_IMG_0:" 
-//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
-//		<< tmpMax << "	" << result << std::endl;
-//
-//	result = vip_get_image(mode_num, VIP_CURRENT_IMG_1, xSize, ySize, image_ptr);		
-//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
-//	m_pParent->m_ImageInfoFout << "VIP_CURRENT_IMG_1:" 
-//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
-//		<< tmpMax << "	" << result << std::endl;
-//
-//	result = vip_get_image(mode_num, VIP_CURRENT_IMG_2, xSize, ySize, image_ptr);		
-//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
-//	m_pParent->m_ImageInfoFout << "VIP_CURRENT_IMG_2:" 
-//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
-//		<< tmpMax << "	" << result << std::endl;
-//
-//	result = vip_get_image(mode_num, VIP_CURRENT_IMG_RAW, xSize, ySize, image_ptr);		
-//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
-//	m_pParent->m_ImageInfoFout << "VIP_CURRENT_IMG_RAW:" 
-//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
-//		<< tmpMax << "	" << result << std::endl;
-//
-//	result = vip_get_image(mode_num, VIP_OFFSET_IMG_0, xSize, ySize, image_ptr);		
-//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
-//	m_pParent->m_ImageInfoFout << "VIP_OFFSET_IMG_0:" 
-//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
-//		<< tmpMax << "	" << result << std::endl;
-//
-//	result = vip_get_image(mode_num, VIP_OFFSET_IMG_1, xSize, ySize, image_ptr);		
-//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
-//	m_pParent->m_ImageInfoFout << "VIP_OFFSET_IMG_1:" 
-//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
-//		<< tmpMax << "	" << result << std::endl;
-//
-//	result = vip_get_image(mode_num, VIP_OFFSET_IMG_2, xSize, ySize, image_ptr);		
-//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
-//	m_pParent->m_ImageInfoFout << "VIP_OFFSET_IMG_2:" 
-//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
-//		<< tmpMax << "	" << result << std::endl;
-//
-//	result = vip_get_image(mode_num, VIP_OFFSET_IMG_AV, xSize, ySize, image_ptr);		
-//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
-//	m_pParent->m_ImageInfoFout << "VIP_OFFSET_IMG_AV:" 
-//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
-//		<< tmpMax << "	" << result << std::endl;
-//
-//	result = vip_get_image(mode_num, VIP_ANALOG_OFFSET_IMAGE, xSize, ySize, image_ptr);		
-//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
-//	m_pParent->m_ImageInfoFout << "VIP_ANALOG_OFFSET_IMAGE:" 
-//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
-//		<< tmpMax << "	" << result << std::endl;
-//
-//	result = vip_get_image(mode_num, VIP_PREVIEW_IMAGE, xSize, ySize, image_ptr);		
-//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
-//	m_pParent->m_ImageInfoFout << "VIP_PREVIEW_IMAGE:" 
-//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
-//		<< tmpMax << "	" << result << std::endl;
-//
-//	result = vip_get_image(mode_num, VIP_RAD_OFFSET_IMAGE, xSize, ySize, image_ptr);		
-//	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
-//	m_pParent->m_ImageInfoFout << "VIP_RAD_OFFSET_IMAGE:" 
-//		<< "	" << tmpMean << "	" << tmpSD << "	" << tmpMin <<	"	"
-//		<< tmpMax << "	" << result << std::endl;
-//
-//
-//
-//	//IMGINFO tmpInfo;
-//	//tmpInfo.meanVal = tmpMean;
-//	//tmpInfo.SD = tmpSD;
-//	//tmpInfo.minVal = tmpMin;
-//	//tmpInfo.maxVal = tmpMax;
-//	//aqprintf("IMG_INSPECTION(Mean|SD|MIN|MAX): %3.2f | %3.2f | %d | %d\n", tmpInfo.meanVal, tmpInfo.SD, tmpInfo.minVal, tmpInfo.maxVal);
-//
-//	//m_pParent->m_ImageInfoFout << std::endl;
-//
-//	delete [] image_ptr;
-//
-//	return HCP_NO_ERR;
-//}
-quint16 Varian_4030e::GetCheckSum (unsigned short* pImage, int width, int height)
-{
-	int size = width*height;
-	
-	int charImgSize = size*2;
-
-	char* charImgBuf = new char (charImgSize);
-
-	for (int i = 0 ; i<size ; i++)	
-	{
-		unsigned short tmpUSHORT = pImage[i];
-
-		charImgBuf[2*i] = (char)(tmpUSHORT); //latter
-		charImgBuf[2*i+1] = (char)(tmpUSHORT >> 8); //former
-	}
-
-	quint16 result = qChecksum(charImgBuf, charImgSize);
-	delete charImgBuf;
-
-	return result;
-}
 
 
 int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to curImage
@@ -709,8 +333,7 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 
 	USHORT *image_ptr = (USHORT *)malloc(npixels * sizeof(USHORT));
 
-	result = vip_get_image(mode_num, VIP_CURRENT_IMAGE, xSize, ySize, image_ptr);	
-	//result = vip_get_image(mode_num, VIP_PREVIEW_IMAGE, xSize, ySize, image_ptr); //not working for SAMEIMAGE ERROR
+	result = vip_get_image(mode_num, VIP_CURRENT_IMAGE, xSize, ySize, image_ptr);		
 	
 	bool bImageDuplicationOccurred = false;
 	
@@ -719,33 +342,27 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 	double tmpMin = 0.0;
 	double tmpMax = 0.0;
 
-	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);
-
-	//quint16 GetCheckSum (unsigned short* image_ptr);
+	CalcImageInfo (tmpMean, tmpSD, tmpMin, tmpMax, xSize, ySize, image_ptr);	
 
 	IMGINFO tmpInfo;
 	tmpInfo.meanVal = tmpMean;
 	tmpInfo.SD = tmpSD;
 	tmpInfo.minVal = tmpMin;
-	tmpInfo.maxVal = tmpMax;
-	//tmpInfo.chkSum = GetCheckSum (image_ptr, xSize, ySize);
+	tmpInfo.maxVal = tmpMax;		
 	
-	//aqprintf("IMG_INSPECTION(Mean|SD|MIN|MAX|CHK): %3.2f | %3.2f | %3.1f | %3.1f | %d \n", tmpInfo.meanVal, tmpInfo.SD, tmpInfo.minVal, tmpInfo.maxVal, tmpInfo.chkSum);	
 	aqprintf("IMG_INSPECTION(Mean|SD|MIN|MAX): %3.2f | %3.2f | %3.1f | %3.1f\n", tmpInfo.meanVal, tmpInfo.SD, tmpInfo.minVal, tmpInfo.maxVal);	
 
 	int sameImageIndex = -1;
 	if (SameImageExist(tmpInfo, sameImageIndex))
 	{		
 		aqprintf("******SAME_IMAGE_ERROR!! prevImgNum [%d]\n", sameImageIndex);
-		bImageDuplicationOccurred = true;
-		//return HCP_SAME_IMAGE_ERROR;	
+		bImageDuplicationOccurred = true;		
 	}
 	m_vImageInfo.push_back(tmpInfo);
 	
 	if (result != HCP_NO_ERR)
 	{		
-		aqprintf("*** vip_get_image returned error %d\n", result);		
-		//return HCP_NO_ERR;
+		aqprintf("*** vip_get_image returned error %d\n", result);				
 	}
 
 	if (bDefectMapApply)
@@ -761,16 +378,14 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 	/* DEBUGGING CODE. When save the real image, Raw images and Dark-only corrected images should be saved for debugging purpose */
 	
 	if (bRawSaveForDebug)
-	{		
-		//aqprintf ("bRawSaveForDebug\n");
+	{				
 		for (int i = 0; i < xSize * ySize; i++) {
 				m_pParent->m_pCurrImageRaw->m_pData[i] = image_ptr[i]; //raw image
 		}
 	}
 
 	if (bDarkSaveForDebug)
-	{		
-		//aqprintf ("bDarkSaveForDebug\n");
+	{	
 		if (m_pParent->m_pDarkImage->IsEmpty())
 		{
 			aqprintf("DEBUG for dark-corrected image. No dark ref image. raw image will be sent.\n");
@@ -795,33 +410,15 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 		}		
 	}
 	/* DEBUGGING CODE. When save the real image, Raw images and Dark-only corrected images should be saved for debugging purpose */ //END
-	//aqprintf("After Dark Debug.\n");
-
-	if (bDefectMapApply && !m_pParent->m_vBadPixelMap.empty()) //pixel replacement
-	{
-		aqprintf("Bad pixel correction is under progress. Bad pixel numbers = %d.\n",m_pParent->m_vBadPixelMap.size());
-		std::vector<BADPIXELMAP>::iterator it;
-		int oriIdx, replIdx;
-
-		for (it = m_pParent->m_vBadPixelMap.begin() ; it != m_pParent->m_vBadPixelMap.end() ; it++)
-		{
-			BADPIXELMAP tmpData= (*it);
-			oriIdx = tmpData.BadPixY * xSize + tmpData.BadPixX;
-			replIdx = tmpData.ReplPixY * xSize + tmpData.ReplPixX;
-			image_ptr[oriIdx] = image_ptr[replIdx];
-		}
-	}
-
+	
 	if (!bDarkCorrApply && !bGainCorrApply)
-	{
-		//aqprintf("no correction\n");
+	{		
 		for (int i = 0; i < xSize * ySize; i++) {
 			pImageCorr[i] = image_ptr[i]; //raw image
 		}
 	}
 	else if (bDarkCorrApply && !bGainCorrApply)
-	{
-		//aqprintf("only dark field correction correction\n");
+	{		
 		if (m_pParent->m_pDarkImage->IsEmpty())
 		{
 			aqprintf("No dark ref image. raw image will be sent.\n");
@@ -840,8 +437,7 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 		}
 	}
 	else if (!bDarkCorrApply && bGainCorrApply)
-	{
-		//aqprintf("only gain field correction correction\n");
+	{		
 		if (m_pParent->m_pGainImage->IsEmpty())
 		{
 			aqprintf("No gain ref image. raw image will be sent.\n");
@@ -946,13 +542,23 @@ int Varian_4030e::get_image_to_buf (int xSize, int ySize) //get cur image to cur
 					}
 				}		    
 			}//end of for
-
-			//YKTEMP: test code for audit			
-			//aqprintf("MeanVal: %3.5f, iDenomLessZero: %d, iDenomLessZero_RawIsGreaterThanDark: %d, iDenomLessZero_RawIsSmallerThanDark: %d, iDenomOK_RawValueMinus: %d, iValOutOf14bit: %d\n"
-			//		, MeanVal, iDenomLessZero, iDenomLessZero_RawIsGreaterThanDark, iDenomLessZero_RawIsSmallerThanDark, iDenomOK_RawValueMinus, iValOutOfRange);			
-		
 		}//end if not bRawImage
 	} // else if (m_bDarkCorrApply && m_bGainCorrApply)
+
+	if (bDefectMapApply && !m_pParent->m_vBadPixelMap.empty()) //pixel replacement
+	{
+		aqprintf("Bad pixel correction is under progress. Bad pixel numbers = %d.\n",m_pParent->m_vBadPixelMap.size());
+		std::vector<BADPIXELMAP>::iterator it;
+		int oriIdx, replIdx;
+
+		for (it = m_pParent->m_vBadPixelMap.begin() ; it != m_pParent->m_vBadPixelMap.end() ; it++)
+		{
+			BADPIXELMAP tmpData= (*it);
+			oriIdx = tmpData.BadPixY * xSize + tmpData.BadPixX;
+			replIdx = tmpData.ReplPixY * xSize + tmpData.ReplPixX;
+			pImageCorr[oriIdx] = pImageCorr[replIdx];			
+		}
+	}
 
 
 	/////////////////////***************Manual Correction END***********///////////////////
@@ -1017,11 +623,7 @@ bool Varian_4030e::CopyFromBufAndSendToDips (Dips_panel *dp) //get cur image to 
 Varian_4030e::Varian_4030e (int idx)
 {
 	this->idx = idx;
-	current_mode = 0;
-
-	//This does not work!! don't know why... this code was added in init
-//	m_bDarkCorrApply = false;
-	//m_bGainCorrApply = false;
+	current_mode = 0;	
 }
 
 
@@ -1058,42 +660,30 @@ Varian_4030e::check_link(int MaxRetryCnt)
 	memset (&clk, 0, sizeof(SCheckLink));
 	clk.StructSize = sizeof(SCheckLink);
 
-	//vip_mutex.lock ();
 	vip_select_receptor (this->receptor_no);
-	int result = vip_check_link (&clk);    
-	//aqprintf ("max retry cnt: %d",MaxRetryCnt);
+	int result = vip_check_link (&clk);    	
 
 	int tmpCnt = 0;
 
-	while (result != HCP_NO_ERR) {
-		// vip_mutex.unlock ();
-		//Sleep (300);
-		aqprintf ("Retry vip_check_link.\n"); //frequently shown at second panel initialization
-		//aqprintf ("Retry cnt: %d",tmpCnt); //YKTEMP
-		//PrintCurrentTime();	
-
-		// vip_mutex.lock ();
+	while (result != HCP_NO_ERR) {		
+		aqprintf ("Retry vip_check_link.\n"); //frequently shown at second panel initialization		
 		vip_select_receptor (this->receptor_no);
 		result = vip_check_link (&clk);
 
 		tmpCnt++;
 		if (tmpCnt > MaxRetryCnt)
-		{
-			//vip_mutex.unlock ();	    
-			// aqprintf ("Restart needed called: %d, %d",tmpCnt, MaxRetryCnt);
+		{			
 			return RESTART_NEEDED;
 			break;
 		}	
 	}
-	//vip_mutex.unlock ();
 
 	return result;
 }
 
 int 
 Varian_4030e::open_link (int panelIdx, const char *path)
-{
-	//vip_mutex.lock();
+{	
 	int result;
 	SOpenReceptorLink orl;
 	memset (&orl, 0, sizeof(SOpenReceptorLink));
@@ -1105,26 +695,15 @@ Varian_4030e::open_link (int panelIdx, const char *path)
 
 	// if we want to turn debug on so that it flushes to a file ..
 	// or other settings see Virtual CP Communications Manual uncomment
-	// and modify the following line if required
-	//	orl.DebugMode = HCP_DBG_ON_FLSH;
+	// and modify the following line if required	
 
-//	if (panelIdx == 0) {
-		//orl.DebugMode = HCP_DBG_ON_DLG;
-	orl.DebugMode = HCP_DBG_ON_FLSH;
-//	}
+	//orl.DebugMode = HCP_DBG_ON_DLG; OR
+	//orl.DebugMode = HCP_DBG_ON_FLSH;
 
-	aqprintf("Opening link to %s\n", orl.RecDirPath);
-	//PrintCurrentTime();
+	aqprintf("Opening link to %s\n", orl.RecDirPath);	
 	result = vip_open_receptor_link (&orl); //What if panel is unplugged? //what are this func returning?
-
-	//aqprintf ("panelIdx = %d\n", panelIdx);
-	//aqprintf ("RcptNum = %d\n", orl.RcptNum);
-
 	this->receptor_no = orl.RcptNum;
 
-	//PrintCurrentTime();
-
-//	vip_mutex.unlock();
 	return result;
 }
 
@@ -1148,11 +727,8 @@ Varian_4030e::disable_missing_corrections (int result)
 	SCorrections corr;
 	memset(&corr, 0, sizeof(SCorrections));
 	corr.StructSize = sizeof(SCorrections);
-
-	//QMutexLocker mutex_locker (&vip_mutex);
+	
 	vip_select_receptor (this->receptor_no);
-
-
 
 	/* If caller has no error, try to fetch the correction error */
 	if (result == HCP_NO_ERR) {
@@ -1197,9 +773,7 @@ Varian_4030e::get_mode_info (SModeInfo &modeInfo, int current_mode)
 
 	memset(&modeInfo, 0, sizeof(modeInfo));
 	modeInfo.StructSize = sizeof(SModeInfo);
-
-	//QMutexLocker mutex_locker (&vip_mutex);
-	//vip_select_receptor (this->receptor_no);
+	
 	result = vip_get_mode_info (current_mode, &modeInfo);
 
 	this->m_iSizeX = modeInfo.ColsPerFrame;
@@ -1227,12 +801,10 @@ Varian_4030e::print_mode_info ()
 			modeInfo.LinesPerFrame, modeInfo.ColsPerFrame);
 		aqprintf (">> LinesPerPixel=       %5d,"
 			" ColsPerPixel=        %5d\n",
-			modeInfo.LinesPerPixel, modeInfo.ColsPerPixel);
-		//PrintCurrentTime();
+			modeInfo.LinesPerPixel, modeInfo.ColsPerPixel);		
 	} else {
 		aqprintf ("**** vip_get_mode_info returns error %d\n", 
-			result);
-		//	PrintCurrentTime();
+			result);		
 	}
 	return result;
 }
@@ -1245,10 +817,10 @@ Varian_4030e::print_sys_info (void)
 
 	memset(&sysInfo, 0, sizeof(sysInfo));
 	sysInfo.StructSize = sizeof(SSysInfo);
-	//vip_mutex.lock ();
+
 	vip_select_receptor (this->receptor_no);
 	result = vip_get_sys_info (&sysInfo);
-	//vip_mutex.unlock ();
+
 	if (result == HCP_NO_ERR) {
 		aqprintf("> SysDescription=\"%s\"\n", 
 			sysInfo.SysDescription);
@@ -1262,10 +834,9 @@ Varian_4030e::print_sys_info (void)
 			sysInfo.StartUpConfig, sysInfo.NumAsics);
 		aqprintf("> ReceptorType=     %5d\n", 
 			sysInfo.ReceptorType);
-		//	PrintCurrentTime();
+		
 	} else {
-		aqprintf("**** vip_get_sys_info returns error %d\n", result);
-		//PrintCurrentTime();
+		aqprintf("**** vip_get_sys_info returns error %d\n", result);		
 	}
 }
 
@@ -1274,9 +845,7 @@ int Varian_4030e::query_prog_info (UQueryProgInfo &crntStatus, bool show_all)
 	UQueryProgInfo prevStatus = crntStatus;
 
 	memset(&crntStatus, 0, sizeof(SQueryProgInfo));
-	crntStatus.qpi.StructSize = sizeof(SQueryProgInfo);
-	//    QMutexLocker mutex_locker (&vip_mutex);
-	//    vip_select_receptor (this->receptor_no);    
+	crntStatus.qpi.StructSize = sizeof(SQueryProgInfo);	
 
 	int result = vip_query_prog_info (HCP_U_QPI, &crntStatus);    
 
@@ -1290,24 +859,6 @@ int Varian_4030e::query_prog_info (UQueryProgInfo &crntStatus, bool show_all)
 	m_pParent->m_dlgControl->EditComplete->setText(QString("%1").arg(crntStatus.qpi.Complete));
 	m_pParent->m_dlgControl->EditPulses->setText(QString("%1").arg(crntStatus.qpi.NumPulses));
 	m_pParent->m_dlgControl->EditReady->setText(QString("%1").arg(crntStatus.qpi.ReadyForPulse));
-
-	//QString strQPI = QString("Cancelation: %1, Prep: %2, ProgLimit: %3, StatusStr: %4, Resv1: %5, Resv2: %6").arg(crntStatus.qpi.Cancellation).arg(crntStatus.qpi.Prepare)
-	//	.arg(crntStatus.qpi.ProgLimit).arg(crntStatus.qpi.StatusStr).arg(crntStatus.qpi.Reserved1).arg(crntStatus.qpi.Reserved2);
-
-//	UQueryProgInfo QPIRCPT;
-//	QPIRCPT.qpircpt.StructSize = sizeof(SQueryProgInfo);
-//	result = vip_query_prog_info (HCP_U_QPIRCPT, &QPIRCPT);    
-//
-//	//HCP_U_QPIRCPT,   // Receptor ID
-////	HCP_U_QPIFRAME,  // Frame ID/
-//
-//	QString strQPI = QString("param1: %1, param2: %2, param3: %3")
-//		//.arg(QPIRCPT.qpircpt.BoardSNbr)
-//		.arg(QPIRCPT.qpircpt.ReservedRcpt1)
-//		.arg(QPIRCPT.qpircpt.ReservedRcpt2)
-//		.arg(QPIRCPT.qpircpt.ReservedWd);
-//
-//	m_pParent->m_dlgControl->EditOtherParam->setText(strQPI);
 
 		
 	if (show_all
@@ -1325,6 +876,14 @@ int Varian_4030e::query_prog_info (UQueryProgInfo &crntStatus, bool show_all)
 	return result;
 }
 
+
+
+
+
+
+/* Can be useful functions but not currently used. START */
+
+/*
 int 
 Varian_4030e::wait_on_complete (UQueryProgInfo &crntStatus, int timeoutMsec)
 {
@@ -1338,8 +897,7 @@ Varian_4030e::wait_on_complete (UQueryProgInfo &crntStatus, int timeoutMsec)
 	{
 		result = query_prog_info (crntStatus); // YK: Everytime, No data error 8
 		if(crntStatus.qpi.Complete == TRUE)
-		{
-			//aqprintf("YK: Got the complete Signal \n");
+		{			
 			aqprintf("frames=%d complete=%d pulses=%d ready=%d\n",
 				crntStatus.qpi.NumFrames,
 				crntStatus.qpi.Complete,
@@ -1352,8 +910,7 @@ Varian_4030e::wait_on_complete (UQueryProgInfo &crntStatus, int timeoutMsec)
 			totalMsec += 100;
 			if (totalMsec >= timeoutMsec)
 			{
-				aqprintf("*** TIMEOUT ***from wait_on_complete\n");
-				//		PrintCurrentTime();
+				aqprintf("*** TIMEOUT ***from wait_on_complete\n");				
 				return HCP_SIGNAL_TIMEOUT;
 			}
 		}
@@ -1361,296 +918,465 @@ Varian_4030e::wait_on_complete (UQueryProgInfo &crntStatus, int timeoutMsec)
 	}
 	return result;
 }
-
-int 
-Varian_4030e::wait_on_num_frames (
-								  UQueryProgInfo &crntStatus, int numRequested, int timeoutMsec)
-{
-	int result = HCP_NO_ERR;
-	int totalMsec = 0;
-
-	crntStatus.qpi.Complete = FALSE;
-	aqprintf("Waiting for Complete_Frames\n");
-	//    PrintCurrentTime();
-	while (result == HCP_NO_ERR)
-	{
-		result = query_prog_info (crntStatus);
-		//result = query_prog_info (crntStatus,true);//YKTEMP true = show info everytime
-
-
-		//YKTEMP
-		if(crntStatus.qpi.NumFrames >= numRequested && crntStatus.qpi.Complete ==1)
-			//if(crntStatus.qpi.NumFrames >= numRequested)
-			break;
-		if (timeoutMsec > 0)
-		{
-			totalMsec += 100;
-			if (totalMsec >= timeoutMsec)
-			{
-				aqprintf("*** TIMEOUT ***from wait_on_num_frames\n");
-				//		PrintCurrentTime();
-				return HCP_SIGNAL_TIMEOUT;
-			}
-		}
-		Sleep(100);
-	}
-	return result;
-}
-
-int 
-Varian_4030e::wait_on_num_pulses (UQueryProgInfo &crntStatus, int timeoutMsec)
-{
-	int result = HCP_NO_ERR;
-	int totalMsec = 0;
-
-	int numPulses = crntStatus.qpi.NumPulses;
-	aqprintf("Waiting for Complete == TRUE...From wait_on_num_pulses\n");
-	while (result == HCP_NO_ERR) //YK: standby mode..
-	{
-		result = query_prog_info (crntStatus);
-
-		if(crntStatus.qpi.NumPulses != numPulses)
-		{
-			break;
-		}
-		//else // if there is no change in pulse --> stand-by mode
-		//{	   
-		//aqprintf("AboutTo PollMessages\n");
-		//   if (m_pParent->pollMessageFromParent())
-		//   {	
-		////aqprintf("YKTEMP: some has come\n");
-		//result = EXTERNAL_STATUS_CHANGE; //-112
-		//   }
-		//}
-
-		if (timeoutMsec > 0)
-		{
-			totalMsec += 100;
-			if (totalMsec >= timeoutMsec)
-			{
-				aqprintf("*** TIMEOUT ***_from wait_on_num_pulses\n");
-				//		PrintCurrentTime();
-				return HCP_SIGNAL_TIMEOUT;
-			}
-		}
-		Sleep(100);	
-	}
-
-	//aqprintf("OutOfThe num pulses loop\n");
-	return result;
-}
-
-/* busy / wait loop until panel is ready for pulse */
-int 
-Varian_4030e::wait_on_ready_for_pulse (
-									   UQueryProgInfo &crntStatus, 
-									   int timeoutMsec,
-									   int expectedState
-									   )
-{
-	int result = HCP_NO_ERR;
-	int totalMsec = 0;
-
-	crntStatus.qpi.ReadyForPulse = FALSE;
-	if (expectedState) {
-		aqprintf ("Waiting for ReadyForPulse == TRUE...\n");
-		//	PrintCurrentTime();
-	} else {
-		aqprintf ("Waiting for ReadyForPulse == FALSE...\n");
-		//	PrintCurrentTime();
-	}
-
-	bool first = true;
-	while (result == HCP_NO_ERR) {
-		result = query_prog_info (crntStatus, first);
-		first = false;
-		if (crntStatus.qpi.ReadyForPulse == expectedState) {
-			break;
-		}
-		if (timeoutMsec > 0) {
-			totalMsec += 100;
-			if (totalMsec >= timeoutMsec) {
-				aqprintf("*** TIMEOUT ***_wait_on_ready_for_pulse\n");
-				//		PrintCurrentTime();
-				return HCP_SIGNAL_TIMEOUT;
-			}
-		}
-		Sleep(100);
-	}
-	return result;
-}
-
-
-int 
-Varian_4030e::get_image_to_dips (Dips_panel *dp, int xSize, int ySize) //Not used!
-{
-	bool bDarkCorrApply = m_pParent->m_dlgControl->ChkDarkFieldApply->isChecked(); 
-	bool bGainCorrApply = m_pParent->m_dlgControl->ChkGainCorrectionApply->isChecked();
-	//bool bRawSaveForDebug = m_pParent->m_dlgControl->ChkRawSave->isChecked();
-	//bool bDarkSaveForDebug = m_pParent->m_dlgControl->ChkDarkCorrectedSave->isChecked();
-
-	//YK: added
-	//this->vip_mutex.lock();
-	//int result;
-	int result =1;
-	int mode_num = this->current_mode;
-
-	int npixels = xSize * ySize;
-
-	USHORT *image_ptr = (USHORT *)malloc(npixels * sizeof(USHORT));
-
-	//aqprintf("YK: current mode in get image to dips: %d",mode_num);
-
-	result = vip_get_image(mode_num, VIP_CURRENT_IMAGE, 
-		xSize, ySize, image_ptr);
-
-	//aqprintf("mode number is %d",mode_num);
-
-	if (result == HCP_NO_ERR) {
-		ShowImageStatistics(npixels, image_ptr); //raw image
-	} else {
-		aqprintf("*** vip_get_image returned error %d\n", result);
-		//	PrintCurrentTime();
-		return HCP_NO_ERR;
-	}
-	dp->wait_for_dips ();
-
-	/////////////////////***************Manul Correction START***********///////////////////
-
-	if (!bDarkCorrApply && !bGainCorrApply)
-	{
-		for (int i = 0; i < xSize * ySize; i++) {
-			dp->pixelp[i] = image_ptr[i]; //raw image
-		}
-	}
-	else if (bDarkCorrApply && !bGainCorrApply)
-	{
-		if (m_pParent->m_pDarkImage->IsEmpty())
-		{
-			aqprintf("No dark ref image. raw image will be sent.\n");
-			for (int i = 0; i < xSize * ySize; i++) {
-				dp->pixelp[i] = image_ptr[i]; //raw image
-			}
-		}
-		else
-		{
-			for (int i = 0; i < xSize * ySize; i++) {	    
-				if (image_ptr[i] > m_pParent->m_pDarkImage->m_pData[i])
-					dp->pixelp[i] = image_ptr[i] - m_pParent->m_pDarkImage->m_pData[i];
-				else
-					dp->pixelp[i] = 0;
-			}
-		}
-	}
-	else if (!bDarkCorrApply && bGainCorrApply)
-	{
-		if (m_pParent->m_pGainImage->IsEmpty())
-		{
-			aqprintf("No gain ref image. raw image will be sent.\n");
-			for (int i = 0; i < xSize * ySize; i++) {
-				dp->pixelp[i] = image_ptr[i]; //raw image
-			}
-		}
-		else
-		{
-			//get a mean value for m_pGainImage
-			double sum = 0.0;
-			double MeanVal = 0.0; 
-			for (int i = 0; i < xSize * ySize; i++) {	    		
-				sum = sum + m_pParent->m_pGainImage->m_pData[i];		
-			}
-			MeanVal = sum/(double)(xSize*ySize);
-
-			for (int i = 0; i < xSize * ySize; i++) {	    
-				if (m_pParent->m_pGainImage->m_pData[i] == 0)
-					dp->pixelp[i] = image_ptr[i];
-				else
-					dp->pixelp[i] = (USHORT)((double)image_ptr[i]/(double)(m_pParent->m_pGainImage->m_pData[i])*MeanVal);
-			}
-		}
-	}
-
-	else if (bDarkCorrApply && bGainCorrApply)
-	{
-		bool bRawImage = false;
-		if (m_pParent->m_pDarkImage->IsEmpty())
-		{
-			aqprintf("No dark ref image. raw image will be sent.\n");	    
-			bRawImage = true;
-		}
-		if (m_pParent->m_pGainImage->IsEmpty())
-		{
-			aqprintf("No gain ref image. raw image will be sent.\n");	    
-			bRawImage = true;
-		}
-
-		if (bRawImage)
-		{
-			for (int i = 0; i < xSize * ySize; i++) {
-				dp->pixelp[i] = image_ptr[i]; //raw image
-			}
-		}
-		else
-		{	    
-			//get a mean value for m_pGainImage
-			double sum = 0.0;
-			double MeanVal = 0.0; 
-			for (int i = 0; i < xSize * ySize; i++) {
-				sum = sum + (m_pParent->m_pGainImage->m_pData[i] - m_pParent->m_pDarkImage->m_pData[i]);		
-			}
-			MeanVal = sum/(double)(xSize*ySize);
-
-			double denom = 0.0;
-			for (int i = 0; i < xSize * ySize; i++)
-			{
-				denom = (double)(m_pParent->m_pGainImage->m_pData[i] - m_pParent->m_pDarkImage->m_pData[i]);
-
-				if (denom <= 0)
-				{
-					if (image_ptr[i] > m_pParent->m_pDarkImage->m_pData[i])
-						dp->pixelp[i] = image_ptr[i] - m_pParent->m_pDarkImage->m_pData[i];
-					else
-						dp->pixelp[i] = 0;
-				}		    
-				else
-				{
-					double tmpVal = 0.0;
-					tmpVal = (image_ptr[i] - m_pParent->m_pDarkImage->m_pData[i]) / denom * MeanVal;
-
-					if (tmpVal < 0)
-						dp->pixelp[i] = 0;
-					else
-						dp->pixelp[i] = (USHORT)tmpVal;		    					    
-				}		    
-			}//end of for
-		}//end if not bRawImage
-	} // else if (m_bDarkCorrApply && m_bGainCorrApply)
-
-
-	/////////////////////***************Manul Correction END***********///////////////////
-
-	//YKFUTURE defect map applying
-
-	dp->send_image (); //Sending IMage to dips message sent
-	free(image_ptr);
-	//YK: added
-	//this->vip_mutex.unlock();    
-
-	return HCP_NO_ERR;
-}
-
+*/
 //
-int Varian_4030e::SelectReceptor () //in child process, this func is in the "while" loop, no Timer, no gaps.
-{    
-	int result = HCP_NO_ERR;
-	//aqprintf("Calling vip_io_enable(HS_ACTIVE)\n");
-	//vip_mutex.lock ();
-	vip_select_receptor (this->receptor_no);
-	result = vip_io_enable (HS_ACTIVE);
-	//vip_mutex.unlock ();
-	if (result != HCP_NO_ERR) {
-		aqprintf("**** returns error %d - acquisition not enabled\n", result);
-		return result;
-	}
-	return HCP_NO_ERR;
-}
+//int 
+//Varian_4030e::wait_on_num_frames (
+//								  UQueryProgInfo &crntStatus, int numRequested, int timeoutMsec)
+//{
+//	int result = HCP_NO_ERR;
+//	int totalMsec = 0;
+//
+//	crntStatus.qpi.Complete = FALSE;
+//	aqprintf("Waiting for Complete_Frames\n");
+//	
+//	while (result == HCP_NO_ERR)
+//	{
+//		result = query_prog_info (crntStatus);	
+//
+//		if(crntStatus.qpi.NumFrames >= numRequested && crntStatus.qpi.Complete ==1)
+//			break;
+//		if (timeoutMsec > 0)
+//		{
+//			totalMsec += 100;
+//			if (totalMsec >= timeoutMsec)
+//			{
+//				aqprintf("*** TIMEOUT ***from wait_on_num_frames\n");
+//				//		PrintCurrentTime();
+//				return HCP_SIGNAL_TIMEOUT;
+//			}
+//		}
+//		Sleep(100);
+//	}
+//	return result;
+//}
+//
+//int 
+//Varian_4030e::wait_on_num_pulses (UQueryProgInfo &crntStatus, int timeoutMsec)
+//{
+//	int result = HCP_NO_ERR;
+//	int totalMsec = 0;
+//
+//	int numPulses = crntStatus.qpi.NumPulses;
+//	aqprintf("Waiting for Complete == TRUE...From wait_on_num_pulses\n");
+//	while (result == HCP_NO_ERR) //YK: standby mode..
+//	{
+//		result = query_prog_info (crntStatus);
+//
+//		if(crntStatus.qpi.NumPulses != numPulses)
+//		{
+//			break;
+//		}	
+//
+//		if (timeoutMsec > 0)
+//		{
+//			totalMsec += 100;
+//			if (totalMsec >= timeoutMsec)
+//			{
+//				aqprintf("*** TIMEOUT ***_from wait_on_num_pulses\n");				
+//				return HCP_SIGNAL_TIMEOUT;
+//			}
+//		}
+//		Sleep(100);	
+//	}	
+//	return result;
+//}
+
+//wait loop until panel is ready for pulse 
+//int 
+//Varian_4030e::wait_on_ready_for_pulse (
+//									   UQueryProgInfo &crntStatus, 
+//									   int timeoutMsec,
+//									   int expectedState
+//									   )
+//{
+//	int result = HCP_NO_ERR;
+//	int totalMsec = 0;
+//
+//	crntStatus.qpi.ReadyForPulse = FALSE;
+//	if (expectedState) {
+//		aqprintf ("Waiting for ReadyForPulse == TRUE...\n");		
+//	} else {
+//		aqprintf ("Waiting for ReadyForPulse == FALSE...\n");		
+//	}
+//
+//	bool first = true;
+//	while (result == HCP_NO_ERR) {
+//		result = query_prog_info (crntStatus, first);
+//		first = false;
+//		if (crntStatus.qpi.ReadyForPulse == expectedState) {
+//			break;
+//		}
+//		if (timeoutMsec > 0) {
+//			totalMsec += 100;
+//			if (totalMsec >= timeoutMsec) {
+//				aqprintf("*** TIMEOUT ***_wait_on_ready_for_pulse\n");				
+//				return HCP_SIGNAL_TIMEOUT;
+//			}
+//		}
+//		Sleep(100);
+//	}
+//	return result;
+//}
+//
+//int Varian_4030e::SelectReceptor () //in child process, this func is in the "while" loop, no Timer, no gaps.
+//{    
+//	int result = HCP_NO_ERR;
+//	
+//	vip_select_receptor (this->receptor_no);
+//	result = vip_io_enable (HS_ACTIVE);
+//	
+//	if (result != HCP_NO_ERR) {
+//		aqprintf("**** returns error %d - acquisition not enabled\n", result);
+//		return result;
+//	}
+//	return HCP_NO_ERR;
+//}
+//
+//
+//quint16 Varian_4030e::GetCheckSum (unsigned short* pImage, int width, int height)
+//{
+//	int size = width*height;
+//
+//	int charImgSize = size*2;
+//
+//	char* charImgBuf = new char (charImgSize);
+//
+//	for (int i = 0 ; i<size ; i++)	
+//	{
+//		unsigned short tmpUSHORT = pImage[i];
+//
+//		charImgBuf[2*i] = (char)(tmpUSHORT); //latter
+//		charImgBuf[2*i+1] = (char)(tmpUSHORT >> 8); //former
+//	}
+//
+//	quint16 result = qChecksum(charImgBuf, charImgSize);
+//	delete charImgBuf;
+//
+//	return result;
+//}
+//
+//int Varian_4030e::get_image_to_dips (Dips_panel *dp, int xSize, int ySize) //Not used!
+//{
+//	bool bDarkCorrApply = m_pParent->m_dlgControl->ChkDarkFieldApply->isChecked(); 
+//	bool bGainCorrApply = m_pParent->m_dlgControl->ChkGainCorrectionApply->isChecked();
+//
+//	int result =1;
+//	int mode_num = this->current_mode;
+//
+//	int npixels = xSize * ySize;
+//
+//	USHORT *image_ptr = (USHORT *)malloc(npixels * sizeof(USHORT));	
+//
+//	result = vip_get_image(mode_num, VIP_CURRENT_IMAGE, 
+//		xSize, ySize, image_ptr);
+//
+//	if (result == HCP_NO_ERR) {
+//		ShowImageStatistics(npixels, image_ptr); //raw image
+//	} else {
+//		aqprintf("*** vip_get_image returned error %d\n", result);		
+//		return HCP_NO_ERR;
+//	}
+//	dp->wait_for_dips ();
+//
+//	/////////////////////***************Manul Correction START***********///////////////////
+//
+//	if (!bDarkCorrApply && !bGainCorrApply)
+//	{
+//		for (int i = 0; i < xSize * ySize; i++) {
+//			dp->pixelp[i] = image_ptr[i]; //raw image
+//		}
+//	}
+//	else if (bDarkCorrApply && !bGainCorrApply)
+//	{
+//		if (m_pParent->m_pDarkImage->IsEmpty())
+//		{
+//			aqprintf("No dark ref image. raw image will be sent.\n");
+//			for (int i = 0; i < xSize * ySize; i++) {
+//				dp->pixelp[i] = image_ptr[i]; //raw image
+//			}
+//		}
+//		else
+//		{
+//			for (int i = 0; i < xSize * ySize; i++) {	    
+//				if (image_ptr[i] > m_pParent->m_pDarkImage->m_pData[i])
+//					dp->pixelp[i] = image_ptr[i] - m_pParent->m_pDarkImage->m_pData[i];
+//				else
+//					dp->pixelp[i] = 0;
+//			}
+//		}
+//	}
+//	else if (!bDarkCorrApply && bGainCorrApply)
+//	{
+//		if (m_pParent->m_pGainImage->IsEmpty())
+//		{
+//			aqprintf("No gain ref image. raw image will be sent.\n");
+//			for (int i = 0; i < xSize * ySize; i++) {
+//				dp->pixelp[i] = image_ptr[i]; //raw image
+//			}
+//		}
+//		else
+//		{
+//			//get a mean value for m_pGainImage
+//			double sum = 0.0;
+//			double MeanVal = 0.0; 
+//			for (int i = 0; i < xSize * ySize; i++) {	    		
+//				sum = sum + m_pParent->m_pGainImage->m_pData[i];		
+//			}
+//			MeanVal = sum/(double)(xSize*ySize);
+//
+//			for (int i = 0; i < xSize * ySize; i++) {	    
+//				if (m_pParent->m_pGainImage->m_pData[i] == 0)
+//					dp->pixelp[i] = image_ptr[i];
+//				else
+//					dp->pixelp[i] = (USHORT)((double)image_ptr[i]/(double)(m_pParent->m_pGainImage->m_pData[i])*MeanVal);
+//			}
+//		}
+//	}
+//
+//	else if (bDarkCorrApply && bGainCorrApply)
+//	{
+//		bool bRawImage = false;
+//		if (m_pParent->m_pDarkImage->IsEmpty())
+//		{
+//			aqprintf("No dark ref image. raw image will be sent.\n");	    
+//			bRawImage = true;
+//		}
+//		if (m_pParent->m_pGainImage->IsEmpty())
+//		{
+//			aqprintf("No gain ref image. raw image will be sent.\n");	    
+//			bRawImage = true;
+//		}
+//
+//		if (bRawImage)
+//		{
+//			for (int i = 0; i < xSize * ySize; i++) {
+//				dp->pixelp[i] = image_ptr[i]; //raw image
+//			}
+//		}
+//		else
+//		{	    
+//			//get a mean value for m_pGainImage
+//			double sum = 0.0;
+//			double MeanVal = 0.0; 
+//			for (int i = 0; i < xSize * ySize; i++) {
+//				sum = sum + (m_pParent->m_pGainImage->m_pData[i] - m_pParent->m_pDarkImage->m_pData[i]);		
+//			}
+//			MeanVal = sum/(double)(xSize*ySize);
+//
+//			double denom = 0.0;
+//			for (int i = 0; i < xSize * ySize; i++)
+//			{
+//				denom = (double)(m_pParent->m_pGainImage->m_pData[i] - m_pParent->m_pDarkImage->m_pData[i]);
+//
+//				if (denom <= 0)
+//				{
+//					if (image_ptr[i] > m_pParent->m_pDarkImage->m_pData[i])
+//						dp->pixelp[i] = image_ptr[i] - m_pParent->m_pDarkImage->m_pData[i];
+//					else
+//						dp->pixelp[i] = 0;
+//				}		    
+//				else
+//				{
+//					double tmpVal = 0.0;
+//					tmpVal = (image_ptr[i] - m_pParent->m_pDarkImage->m_pData[i]) / denom * MeanVal;
+//
+//					if (tmpVal < 0)
+//						dp->pixelp[i] = 0;
+//					else
+//						dp->pixelp[i] = (USHORT)tmpVal;		    					    
+//				}		    
+//			}//end of for
+//		}//end if not bRawImage
+//	} // else if (m_bDarkCorrApply && m_bGainCorrApply)
+//
+//	/////////////////////***************Manual Correction END***********///////////////////	
+//
+//	dp->send_image (); //Sending IMage to dips message sent
+//	free(image_ptr);	
+//
+//	return HCP_NO_ERR;
+//}
+
+
+//----------------------------------------------------------------------
+//
+//  GetImageToFile
+//
+//----------------------------------------------------------------------
+//
+//int Varian_4030e::get_image_to_file (int xSize, int ySize, 
+//									 char *filename, int imageType)
+//{
+//	bool bDarkCorrApply = m_pParent->m_dlgControl->ChkDarkFieldApply->isChecked(); 
+//	bool bGainCorrApply = m_pParent->m_dlgControl->ChkGainCorrectionApply->isChecked();
+//
+//	aqprintf("File export\n");
+//
+//	int result;
+//	int mode_num = this->current_mode;
+//
+//	int npixels = xSize * ySize;
+//
+//	USHORT *image_ptr = (USHORT *)malloc(npixels * sizeof(USHORT));
+//	result = vip_get_image(mode_num, imageType, xSize, ySize, image_ptr);
+//	//now raw image from panel
+//
+//	if (bDarkCorrApply)
+//		aqprintf("Dark Correction On\n");
+//	if (bGainCorrApply)
+//		aqprintf("Gain Correction On\n");
+//
+//	/////////////////////***************Manul Correction START***********///////////////////
+//	USHORT *pImageCorr = (USHORT *)malloc(npixels * sizeof(USHORT));
+//
+//	if (!bDarkCorrApply && !bGainCorrApply)
+//	{
+//		//aqprintf("no correction\n");
+//		for (int i = 0; i < xSize * ySize; i++) {
+//			pImageCorr[i] = image_ptr[i]; //raw image
+//		}
+//	}
+//	else if (bDarkCorrApply && !bGainCorrApply)
+//	{
+//		//aqprintf("only dark field correction correction\n");
+//		if (m_pParent->m_pDarkImage->IsEmpty())
+//		{
+//			aqprintf("No dark ref image. raw image will be sent.\n");
+//			for (int i = 0; i < xSize * ySize; i++) {
+//				pImageCorr[i] = image_ptr[i]; //raw image
+//			}
+//		}
+//		else
+//		{
+//			for (int i = 0; i < xSize * ySize; i++) {	    
+//				if (image_ptr[i] > m_pParent->m_pDarkImage->m_pData[i])
+//					pImageCorr[i] = image_ptr[i] - m_pParent->m_pDarkImage->m_pData[i];
+//				else
+//					pImageCorr[i] = 0;
+//			}
+//		}
+//	}
+//	else if (!bDarkCorrApply && bGainCorrApply)
+//	{
+//		//aqprintf("only gain field correction correction\n");
+//		if (m_pParent->m_pGainImage->IsEmpty())
+//		{
+//			aqprintf("No gain ref image. raw image will be sent.\n");
+//			for (int i = 0; i < xSize * ySize; i++) {
+//				pImageCorr[i] = image_ptr[i]; //raw image
+//			}
+//		}
+//		else
+//		{
+//			//get a mean value for m_pGainImage
+//			double sum = 0.0;
+//			double MeanVal = 0.0; 
+//			for (int i = 0; i < xSize * ySize; i++) {	    		
+//				sum = sum + m_pParent->m_pGainImage->m_pData[i];		
+//			}
+//			MeanVal = sum/(double)(xSize*ySize);
+//
+//			for (int i = 0; i < xSize * ySize; i++) {	    
+//				if (m_pParent->m_pGainImage->m_pData[i] == 0)
+//					pImageCorr[i] = image_ptr[i];
+//				else
+//					pImageCorr[i] = (USHORT)((double)image_ptr[i]/(double)(m_pParent->m_pGainImage->m_pData[i])*MeanVal);
+//			}
+//		}
+//	}
+//
+//	else if (bDarkCorrApply && bGainCorrApply)
+//	{
+//		//aqprintf("Dark and gain correction\n");
+//		bool bRawImage = false;
+//		if (m_pParent->m_pDarkImage->IsEmpty())
+//		{
+//			aqprintf("No dark ref image. raw image will be sent.\n");	    
+//			bRawImage = true;
+//		}
+//		if (m_pParent->m_pGainImage->IsEmpty())
+//		{
+//			aqprintf("No gain ref image. raw image will be sent.\n");	    
+//			bRawImage = true;
+//		}
+//
+//		if (bRawImage)
+//		{
+//			for (int i = 0; i < xSize * ySize; i++) {
+//				pImageCorr[i] = image_ptr[i]; //raw image
+//			}
+//		}
+//		else
+//		{	    
+//			//get a mean value for m_pGainImage
+//			double sum = 0.0;
+//			double MeanVal = 0.0; 
+//
+//			for (int i = 0; i < xSize * ySize; i++) {
+//				sum = sum + (m_pParent->m_pGainImage->m_pData[i] - m_pParent->m_pDarkImage->m_pData[i]);		
+//			}
+//			MeanVal = sum/(double)(xSize*ySize);
+//
+//			aqprintf("YK: Mean value of denometer is %3.4f",MeanVal);
+//
+//			double denom = 0.0;
+//			for (int i = 0; i < xSize * ySize; i++)
+//			{
+//				denom = (double)(m_pParent->m_pGainImage->m_pData[i] - m_pParent->m_pDarkImage->m_pData[i]);
+//
+//				if (denom <= 0)
+//				{
+//					if (image_ptr[i] > m_pParent->m_pDarkImage->m_pData[i])
+//						pImageCorr[i] = image_ptr[i] - m_pParent->m_pDarkImage->m_pData[i];
+//					else
+//						pImageCorr[i] = 0;
+//				}		    
+//				else
+//				{
+//					double tmpVal = 0.0;
+//					tmpVal = (image_ptr[i] - m_pParent->m_pDarkImage->m_pData[i]) / denom * MeanVal;
+//
+//					if (tmpVal < 0)
+//						pImageCorr[i] = 0;
+//					else
+//						pImageCorr[i] = (USHORT)tmpVal;
+//				}		    
+//			}//end of for
+//		}//end if not bRawImage
+//	} // else if (m_bDarkCorrApply && m_bGainCorrApply)
+//
+//
+//	/////////////////////***************Manul Correction END***********///////////////////
+//
+//	if(result == HCP_NO_ERR)
+//	{
+//		ShowImageStatistics(npixels, pImageCorr);
+//
+//		// file on the host computer for storing the image
+//		FILE *finput = fopen(filename, "wb");
+//		if (finput == NULL)
+//		{
+//			aqprintf("Error opening image file to put file.");
+//			//PrintCurrentTime();
+//			exit(-1);
+//		}
+//
+//		fwrite(pImageCorr, sizeof(USHORT), npixels, finput);
+//		fclose(finput);
+//
+//	}
+//	else
+//	{
+//		aqprintf("*** vip_get_image returned error %d\n", result);
+//		//PrintCurrentTime();
+//	}
+//
+//	free(image_ptr);
+//	free(pImageCorr);
+//
+//	return HCP_NO_ERR;
+//}
+
+
+/*Can be useful functions but not currently used. END */

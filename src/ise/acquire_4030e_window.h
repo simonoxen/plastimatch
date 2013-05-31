@@ -28,8 +28,7 @@ protected:
 
 public:
     void create_actions ();
-    void create_tray_icon ();
-    //void set_icon ();
+    void create_tray_icon ();    
     void set_icon (int idx,PSTAT style);   
     void log_output (const QString& log);
     void set_label (int panel_no, const QString& log);
@@ -41,11 +40,8 @@ public slots:
     void RestartPanel_0 ();
     void RestartPanel_1 ();    
     void ShowPanelControl_0 ();    
-    void ShowPanelControl_1 ();
-	//void TimerReadyToQuit_event();
-	void FinalQuit ();
-	void RunRelay_Panel0();
-	void RunRelay_Panel1();	
+    void ShowPanelControl_1 ();	
+	void FinalQuit ();	
 
 public:
     QAction *show_action;
@@ -60,15 +56,10 @@ public:
    
 
     //added by YKP
-    void UpdateLabel(int iPanelIdx, PSTAT enStyle); // 0 based panel ID //called from child proc except the first time
-    //void UpdateTray(Label_style enStyle);
+    void UpdateLabel(int iPanelIdx, PSTAT enStyle); // 0 based panel ID //called from child proc except the first time    
 
 	bool m_bSeqKillReady;
 	void SaveSettingAsDefault_Parent();
-    
-    // how to access parent window?
-    //bool m_bPanel1Ready
-        
 };
 
 #endif

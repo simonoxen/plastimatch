@@ -8,7 +8,5 @@
 int 
 aqprintf (const char * format, ...);
 
-//void
-//PrintCurrentTime();
 
 #endif

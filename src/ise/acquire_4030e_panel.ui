@@ -821,12 +821,12 @@
     <rect>
      <x>10</x>
      <y>880</y>
-     <width>151</width>
+     <width>171</width>
      <height>31</height>
     </rect>
    </property>
    <property name="text">
-    <string>Save Settins As Default</string>
+    <string>Save This Setting As Default</string>
    </property>
   </widget>
   <widget class="QLabel" name="lbDarkField">
@@ -1146,9 +1146,9 @@
   <widget class="QPushButton" name="BtnLoadDefaultSettings">
    <property name="geometry">
     <rect>
-     <x>180</x>
+     <x>200</x>
      <y>880</y>
-     <width>151</width>
+     <width>161</width>
      <height>31</height>
     </rect>
    </property>
@@ -1433,22 +1433,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>ChkDarkFieldApply</sender>
-   <signal>clicked()</signal>
-   <receiver>DlgPanelControl</receiver>
-   <slot>ChkOffsetCorrectionOn()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>199</x>
-     <y>530</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>440</x>
-     <y>394</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>BtnGetDarkField</sender>
    <signal>pressed()</signal>
    <receiver>DlgPanelControl</receiver>
@@ -1461,22 +1445,6 @@
     <hint type="destinationlabel">
      <x>440</x>
      <y>422</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>ChkGainCorrectionApply</sender>
-   <signal>clicked()</signal>
-   <receiver>DlgPanelControl</receiver>
-   <slot>ChkGainCorrectionOn()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>159</x>
-     <y>720</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>440</x>
-     <y>504</y>
     </hint>
    </hints>
   </connection>

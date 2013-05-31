@@ -283,7 +283,7 @@ bool YK16GrayImage::CalcImageInfo (double& meanVal, double& STDV, double& minVal
 	int i;
 	double pixel, sumPixel;
 
-	int npixels = m_iWidth*m_iWidth;
+	int npixels = m_iWidth*m_iHeight;
 	nTotal = 0;
 	//minPixel = 4095;
 	minPixel = 65535;

@@ -14,11 +14,9 @@ Acquire_4030e_DlgControl::Acquire_4030e_DlgControl(): QDialog ()
 
 	this->SpinDarkAvgFrames->setValue(4);
 
-	Acquire_4030e_child* qMyApp = (Acquire_4030e_child*)qApp;
-
-	
+	Acquire_4030e_child* qMyApp = (Acquire_4030e_child*)qApp;	
 	QString str= QString("%1").arg(qMyApp->idx);
-	//EditPanelIndex->setText(str);
+	
 }
 
 Acquire_4030e_DlgControl::~Acquire_4030e_DlgControl()
@@ -26,9 +24,7 @@ Acquire_4030e_DlgControl::~Acquire_4030e_DlgControl()
 }
 
 void Acquire_4030e_DlgControl::CloseLink()
-{
-    //((Acquire_4030e_parent*)qApp)->SendCommandToChild(m_iPanelIdx,
-//	Acquire_4030e_parent::CLOSE_PANEL);
+{    
 	Acquire_4030e_child* qMyApp = (Acquire_4030e_child*)qApp;
 
 	if (!qMyApp->close_receptor())
@@ -45,9 +41,7 @@ void Acquire_4030e_DlgControl::CloseLink()
 	return;
 }
 void Acquire_4030e_DlgControl::OpenLink()
-{
-    //((Acquire_4030e_child*)qApp)->StartCommandTimer(m_iPanelIdx,
-	//Acquire_4030e_child::OPEN_PANEL);
+{ 
 	Acquire_4030e_child* qMyApp = (Acquire_4030e_child*)qApp;
 	qMyApp->m_enPanelStatus = NOT_OPENNED;
 	qMyApp->m_bAcquisitionOK = true; //or Timer start
@@ -68,9 +62,7 @@ void Acquire_4030e_DlgControl::Pause()
 	aqprintf("PCMSG_LOOP_STOPPED\n");    
 }
 void Acquire_4030e_DlgControl::EndProc() //KILL
-{
-    //((Acquire_4030e_child*)qApp)->StartCommandTimer(m_iPanelIdx,
-	//Acquire_4030e_parent::KILL);
+{ 
 	Acquire_4030e_child* qMyApp = (Acquire_4030e_child*)qApp;
 	CloseLink();
 	qMyApp->quit();
@@ -84,25 +76,17 @@ void Acquire_4030e_DlgControl::HardHandshakingOn()
 {
 	Acquire_4030e_child* qMyApp = (Acquire_4030e_child*)qApp;
 
-	/*if (RadioHardHandshakingEnable->isChecked())
-	{
-		aqprintf("Already checked\n");
-		return;
-	}*/
 	if (qMyApp->m_enPanelStatus != READY_FOR_PULSE && qMyApp->m_enPanelStatus != STANDBY_SIGNAL_DETECTED) //should be done in standby status
 	{
 		aqprintf("PCMSG_pannel is not ready\n");
 		RadioHardHandshakingEnable->setChecked(false);
 		RadioSoftHandshakingEnable->setChecked(true);		
 		return;
-	}	
-	//qMyApp->m_bSoftHandshakingEnable = false;
+	}		
 	int result = vip_io_enable (HS_ACTIVE);
 	Sleep(1000);
-
-	//qMyApp->m_bAcquisitionOK = true;
-	qMyApp->ChangePanelStatus(IMAGE_ACQUSITION_DONE); //re loop //Standby
 	
+	qMyApp->ChangePanelStatus(IMAGE_ACQUSITION_DONE); //re loop //Standby	
 	aqprintf("PCMSG_HARDHANDSHAKING_ON\n");
 }
 
@@ -110,13 +94,7 @@ void Acquire_4030e_DlgControl::HardHandshakingOn()
 
 void Acquire_4030e_DlgControl::SoftHandshakingOn()
 {	
-	Acquire_4030e_child* qMyApp = (Acquire_4030e_child*)qApp;
-
-	/*if (RadioSoftHandshakingEnable->isChecked())
-	{
-		aqprintf("Already checked\n");
-		return;
-	}*/
+	Acquire_4030e_child* qMyApp = (Acquire_4030e_child*)qApp;	
 
 	if (qMyApp->m_enPanelStatus != READY_FOR_PULSE && qMyApp->m_enPanelStatus != STANDBY_SIGNAL_DETECTED) //should be done in standby status
 	{
@@ -125,11 +103,7 @@ void Acquire_4030e_DlgControl::SoftHandshakingOn()
 		RadioSoftHandshakingEnable->setChecked(false);
 		return;
 	}
-	
-	//qMyApp->m_bSoftHandshakingEnable = true;
-	qMyApp->m_bAcquisitionOK = false; //stop the main loop
-	//qMyApp->m_bAcquisitionOK = false;	
-	//qMyApp->m_enPanelStatus = OPENNED;
+	qMyApp->m_bAcquisitionOK = false;
 	aqprintf("PCMSG_SOFTHANDSHAKING_ON\n");
 }
 
@@ -151,12 +125,8 @@ void Acquire_4030e_DlgControl::SoftBeamOn()
 
 void Acquire_4030e_DlgControl::GetPanelInfo()
 {
-    //((Acquire_4030e_child*)qApp)->StartCommandTimer(m_iPanelIdx,
-	//Acquire_4030e_parent::GET_PANEL_INFO);    
-
-	Acquire_4030e_child* qMyApp = (Acquire_4030e_child*)qApp;
-	//Go one more stanby cycle
-	qMyApp->m_enPanelStatus = COMPLETE_SIGNAL_DETECTED; //Standby once again
+	//Acquire_4030e_child* qMyApp = (Acquire_4030e_child*)qApp;
+	//qMyApp->m_enPanelStatus = COMPLETE_SIGNAL_DETECTED; //Standby once again
 }
 
 void Acquire_4030e_DlgControl::GetDarkFieldImage()
@@ -166,48 +136,15 @@ void Acquire_4030e_DlgControl::GetDarkFieldImage()
 	{
 		aqprintf("Dark field acquisition only can be performed in READY FOR PULSE\n");
 		return;
-	}	
-	//aqprintf("PCMSG_DARKFIELD_ACQUSITION_START\n");
-	qMyApp->ChangePanelStatus(ACQUIRING_DARK_IMAGE);
-	//aqprintf("PCMSG_DARKFIELD_ACQUSITION_COMPLETE\n");
+	}		
+	qMyApp->ChangePanelStatus(ACQUIRING_DARK_IMAGE);	
 }
-
-void Acquire_4030e_DlgControl::ChkOffsetCorrectionOn()
-{  
-	Acquire_4030e_child* qMyApp = (Acquire_4030e_child*)qApp;	
-	
-	//if (ChkDarkFieldApply->isChecked())    
- //   {
-	//	/*((Acquire_4030e_child*)qApp)->StartCommandTimer(m_iPanelIdx,
-	//	Acquire_4030e_parent::DARK_CORR_APPLY_ON);	*/
-	//	qMyApp->vp->m_bDarkCorrApply = true;		
- //   }
- //   else
- //   {
-	//	qMyApp->vp->m_bDarkCorrApply = false;	
- //   }
-}
-void Acquire_4030e_DlgControl::ChkGainCorrectionOn()
-{
-	/*Acquire_4030e_child* qMyApp = (Acquire_4030e_child*)qApp;	
-
-	if(ChkGainCorrectionApply->isChecked())
-	{
-		qMyApp->vp->m_bGainCorrApply = true;
-	}
-	else
-	{
-		qMyApp->vp->m_bGainCorrApply = false;
-	}*/
-}
-
 
 void Acquire_4030e_DlgControl::closeEvent(QCloseEvent *event)
 {
 	hide();	
 	event->ignore();
 }
-
 
 void Acquire_4030e_DlgControl::OpenDarkImage() //Btn
 {
@@ -244,15 +181,12 @@ void Acquire_4030e_DlgControl::OpenDarkImage() //Btn
 	}		
 }
 
-
 void Acquire_4030e_DlgControl::OpenGainImage() //Btn
 {
 	Acquire_4030e_child* qMyApp = (Acquire_4030e_child*)qApp;
 
 	//QString filePath;
 	int idx =qMyApp->m_iProcNum;
-	
-	//= QFileDialog::getOpenFileName(this, "Open Image","", "Image Files (*.raw)",0,0);
 
 	QString defaultSearchFolder = qMyApp->m_OptionSettingChild.m_strGainImageSavingFolder[idx];
 
@@ -271,9 +205,7 @@ void Acquire_4030e_DlgControl::OpenGainImage() //Btn
 	if (filePath.length() < 3)
 		return;
 
-
-	lineEditGainPath->setText(filePath);
-	//Fill Dark Image Array with this file
+	lineEditGainPath->setText(filePath);	
 
 	QMessageBox dlgMsgBox;
 
@@ -322,9 +254,7 @@ void Acquire_4030e_DlgControl::ReDrawImg()
 void Acquire_4030e_DlgControl::CopyCurrentImageForGainImage()
 {
 	QMessageBox msgBox;	
-	Acquire_4030e_child* qMyApp = (Acquire_4030e_child*)qApp;
-	/*if (qMyApp->m_pCurrImage == NULL) // created during init.
-		return;*/
+	Acquire_4030e_child* qMyApp = (Acquire_4030e_child*)qApp;	
 
 	if (!qMyApp->GetGainImageFromCurrent())
 	{
@@ -343,10 +273,9 @@ void Acquire_4030e_DlgControl::SaveSettingAsDefault_Child()
 	//2. Export as a file
 	Acquire_4030e_child* qMyApp = (Acquire_4030e_child*)qApp;
 	YKOptionSetting* pOptionSetting = &(((Acquire_4030e_child*)qApp)->m_OptionSettingChild);
-	//pOptionSetting->m_strPrimaryLogPath;
+
 	int idx = qMyApp->m_iProcNum;
 	
-
 	//Image Panel directory should be set	
 	pOptionSetting->m_strDriverFolder[idx] = this->EditDriverPath->text();
 
@@ -378,12 +307,7 @@ void Acquire_4030e_DlgControl::SaveSettingAsDefault_Child()
 	pOptionSetting->m_bTimerAcquisitionEnabled[idx] = this->ChkAutoDarkOn->isChecked(); //not implemented yet
 	pOptionSetting->m_iTimerAcquisitionMinInterval[idx] = this->SpinTimeInterval->value();//not implemented yet
 
-	//YK TEMP: not implemented yet. leave it as default value
-	/*m_fDarkCufoffUpperMean[idx] = ;
-	m_fDarkCufoffLowerMean[idx] = ;
-
-	m_fDarkCufoffUpperSD[idx] = ;
-	m_fDarkCufoffLowerSD[idx] = ;	*/
+	//YK TEMP: not implemented yet. leave it as default value	
 
 	/*Gain Image Correction */
 	pOptionSetting->m_bGainCorrectionOn[idx] = this->ChkGainCorrectionApply->isChecked();
@@ -409,14 +333,10 @@ void Acquire_4030e_DlgControl::UpdateGUIFromSetting_Child() // it can be used as
 	YKOptionSetting* pOptionSetting = &(((Acquire_4030e_child*)qApp)->m_OptionSettingChild);
 	int idx = qMyApp->m_iProcNum;
 
-	//aqprintf("test2\n");
-
 	EditDriverPath->setText(pOptionSetting->m_strDriverFolder[idx]);
 			
 	spinUpperVal->setValue(pOptionSetting->m_iWinLevelUpper[idx]);
 	spinLowerVal->setValue(pOptionSetting->m_iWinLevelLower[idx]);	
-
-	//aqprintf("test3\n");
 
 	///* File Save */
 	ChkAutoSave->setChecked(pOptionSetting->m_bSaveToFileAfterAcq[idx]);
@@ -425,61 +345,33 @@ void Acquire_4030e_DlgControl::UpdateGUIFromSetting_Child() // it can be used as
 	ChkRawSave->setChecked(pOptionSetting->m_bSaveRawImage[idx]);		
 	lineEditCurImageSaveFolder->setText(pOptionSetting->m_strAcqFileSavingFolder[idx]);
 
-	//aqprintf("test4\n");
-	
-
 	RadioSoftHandshakingEnable->setChecked(pOptionSetting->m_bSoftwareHandshakingEnabled[idx]);	
 	RadioHardHandshakingEnable->setChecked(!pOptionSetting->m_bSoftwareHandshakingEnabled[idx]);	
 	
-
 	this->ChkDarkFieldApply->setChecked(pOptionSetting->m_bDarkCorrectionOn[idx]);
 
-	///*Dark Image Correction */
-	//pOptionSetting->m_bDarkCorrectionOn[idx] = this->ChkDarkFieldApply->isChecked();
-
-	//pOptionSetting->m_iDarkFrameNum[idx] =  this->SpinDarkAvgFrames->value();
-	this->SpinDarkAvgFrames->setValue(pOptionSetting->m_iDarkFrameNum[idx]);
-
-	////m_strDarkImageSavingFolder[idx] = 
-
-	//pOptionSetting->m_strDarkImagePath[idx] = this->lineEditDarkPath->text(); //should be set later
+	///*Dark Image Correction */	
+	this->SpinDarkAvgFrames->setValue(pOptionSetting->m_iDarkFrameNum[idx]);	
+	
 	lineEditDarkPath->setText(pOptionSetting->m_strDarkImagePath[idx]);
 
-	//aqprintf(pOptionSetting->m_strDarkImagePath[idx].toLocal8Bit().constData());
-
-
 	this->ChkAutoDarkOn->setChecked(pOptionSetting->m_bTimerAcquisitionEnabled[idx]);
-	this->SpinTimeInterval->setValue(pOptionSetting->m_iTimerAcquisitionMinInterval[idx]);
-	
-	//aqprintf("test5\n");
-	////YK TEMP: not implemented yet. leave it as default value
-	///*m_fDarkCufoffUpperMean[idx] = ;
-	//m_fDarkCufoffLowerMean[idx] = ;
+	this->SpinTimeInterval->setValue(pOptionSetting->m_iTimerAcquisitionMinInterval[idx]);	
 
-	//m_fDarkCufoffUpperSD[idx] = ;
-	//m_fDarkCufoffLowerSD[idx] = ;	*/
-
-	///*Gain Image Correction */
-	//pOptionSetting->m_bGainCorrectionOn[idx] = this->ChkGainCorrectionApply->isChecked();
+	///*Gain Image Correction */	
 	this->ChkGainCorrectionApply->setChecked(pOptionSetting->m_bGainCorrectionOn[idx]);
-
-
-	//pOptionSetting->m_bMultiLevelGainEnabled[idx] = this->RadioMultiGain->isChecked(); // false = single gain correction	
+	
 	this->RadioMultiGain->setChecked(pOptionSetting->m_bMultiLevelGainEnabled[idx]);
 	this->RadioSingleGain->setChecked(!pOptionSetting->m_bMultiLevelGainEnabled[idx]);
-
-	////m_strGainImageSavingFolder[idx] = leave it as default
-	//pOptionSetting->m_strSingleGainPath[idx] = this->lineEditGainPath->text();
+	
 	this->lineEditGainPath->setText(pOptionSetting->m_strSingleGainPath[idx]);
-
-	//pOptionSetting->m_fSingleGainCalibFactor[idx] = (this->lineEditSingleCalibFactor->text()).toDouble();	
+	
 	QString tmpStr = QString("%1").arg(pOptionSetting->m_fSingleGainCalibFactor[idx]);
 	this->lineEditSingleCalibFactor->setText(tmpStr);
 
 	tmpStr = QString("%1").arg(pOptionSetting->m_strDefectMapPath[idx]);
 	this->lineEditBadPixelMapPath->setText(tmpStr);
 	this->ChkBadPixelCorrApply->setChecked(pOptionSetting->m_bDefectMapApply[idx]);
-
 
 	ReLoadCalibImages();
 }
@@ -510,9 +402,7 @@ void Acquire_4030e_DlgControl::OpenDefectMapFile() //Btn
 	Acquire_4030e_child* qMyApp = (Acquire_4030e_child*)qApp;
 
 	//QString filePath;
-	int idx =qMyApp->m_iProcNum;
-
-	//= QFileDialog::getOpenFileName(this, "Open Image","", "Image Files (*.raw)",0,0);
+	int idx =qMyApp->m_iProcNum;	
 
 	QString defaultSearchFolder = qMyApp->m_OptionSettingChild.m_strDefectMapSavingFolder[idx];
 
@@ -531,8 +421,7 @@ void Acquire_4030e_DlgControl::OpenDefectMapFile() //Btn
 	if (filePath.length() < 3)
 		return;
 
-	lineEditBadPixelMapPath->setText(filePath);
-	//Fill Dark Image Array with this file
+	lineEditBadPixelMapPath->setText(filePath);	
 
 	QMessageBox dlgMsgBox;
 

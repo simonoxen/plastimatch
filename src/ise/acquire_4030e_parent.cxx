@@ -18,9 +18,7 @@ See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 #include <QLocalServer>
 #include <QLocalSocket>
 
-
 #include "acquire_4030e_parent.h"
-//#include "acquire_4030e_window.h"
 #include "advantech.h"
 #include "kill.h"
 
@@ -33,43 +31,20 @@ Acquire_4030e_parent::Acquire_4030e_parent (int argc, char* argv[])
 		exit(-1);
 	}
 
-	printf ("Welcome to acquire_4030e\n");
-
-	//m_dlgControl_0 = NULL;
-	// m_dlgControl_1 = NULL;
-	m_bWaitingForChildResponse[0] = false;
-	m_bWaitingForChildResponse[1] = false;
-
-	m_enPrevSentCommand[0] = PCOMMAND_DUMMY;   	
-	m_enPrevSentCommand[1] = PCOMMAND_DUMMY;   	
+	printf ("Welcome to acquire_4030e\n"); 	
 
 	m_bChildReadyToQuit[0] = true; //exit function can be called in initial status
 	m_bChildReadyToQuit[1] = true;
-
-//	m_bBusyParent = false;
-
-	m_bPanelRelayOpen0 = true;
-	m_bPanelRelayOpen1 = true;
-
-	//m_bActivationHasBeenSent[0] = false;
-	//m_bActivationHasBeenSent[1] = false;	
-
 
 	m_pServer[0] = NULL;
 	m_pServer[1] = NULL;
 
 	m_pClientConnect[0] = NULL;
-	m_pClientConnect[1] = NULL;
-
-	//m_bNowCancelingAcq[0] = false;
-	//m_bNowCancelingAcq[1] = false;
+	m_pClientConnect[1] = NULL;	
 	
 	QString exePath = argv[0];
-
-	//initialize (argc, argv);    
+	
 	initialize (exePath);	
-	//m_iPrevSelection = -1;
-
 }
 
 Acquire_4030e_parent::~Acquire_4030e_parent () //not called!!
@@ -83,13 +58,10 @@ Acquire_4030e_parent::~Acquire_4030e_parent () //not called!!
 	delete this->advantech;
 
 	/* Destroy window */
-	delete this->window;
-	//delete m_dlgControl_0;
-	//delete m_dlgControl_1;
+	delete this->window;	
 }
 
 
-//void Acquire_4030e_parent::initialize (int argc, char* argv[])
 void Acquire_4030e_parent::initialize (QString& strEXE_Path)
 {	
 	//Generatate default folders	
@@ -111,13 +83,22 @@ void Acquire_4030e_parent::initialize (QString& strEXE_Path)
 		printf ("System tray not found.\n");
 	}
 
-	/* Start up main window */
-	//this->setQuitOnLastWindowClosed (false);
-	this->window = new Acquire_4030e_window();  //GUI-linked window
-	//this->window2 = new Acquire_4030e_window();  //GUI-linked window
+	/* Start up main window */	
+	this->window = new Acquire_4030e_window();  //GUI-linked window	
 
-	this->window->setWindowTitle("Acquire 4030e v1.0 by MGH RO Physics Team");
-	//this->window->setWindowTitle("acquire_4030e");
+	QString strSVNDate = QString(SVN_DATE);
+	QString strSVNVer = QString(SVN_VERSION);
+	
+	strSVNDate.remove(QChar('$'));
+
+	QStringList dateList = strSVNDate.split(" ");//space bar
+	QString newStrDate = dateList.at(1);
+
+	strSVNVer.remove(QChar('$'));
+	QStringList verList = strSVNVer.split(" ");//space bar
+	QString newStrVer = verList.at(1);
+
+	this->window->setWindowTitle(QString("Acquire 4030e v%1 (%2)").arg(newStrVer).arg(newStrDate));	
 
 	this->window->UpdateLabel(0, NOT_OPENNED);
 	this->window->UpdateLabel(1, NOT_OPENNED);
@@ -133,8 +114,6 @@ void Acquire_4030e_parent::initialize (QString& strEXE_Path)
 	this->advantech->relay_open (3);
 	this->advantech->relay_open (4);
 
-	this->panel_timer = 0;	
-
 	num_process = 2; //fixed!
 
 	/* Start child processes */
@@ -142,7 +121,7 @@ void Acquire_4030e_parent::initialize (QString& strEXE_Path)
 	for (int i = 0; i < this->num_process; i++) {
 		m_program[i] = strEXE_Path; //exe file path
 		m_arguments[i].clear();
-		//m_arguments[i] << "--child" << QString("%1").arg(i).toUtf8() << paths[i];
+
 		m_arguments[i] << "--child" << QString("%1").arg(i).toUtf8();
 		connect (&this->process[i], SIGNAL(readyReadStandardOutput()),
 			this, SLOT(poll_child_messages()));
@@ -161,16 +140,6 @@ void Acquire_4030e_parent::initialize (QString& strEXE_Path)
 	connect (timer, SIGNAL(timeout()), this, SLOT(timer_event()));
 	m_bParentBusy = false;
 	timer->start (100);
-	
-
-	//this->timerCommandToChild[0] = new QTimer(this);
-	//connect (timerCommandToChild[0], SIGNAL(timeout()), this, SLOT(timerCommandToChild0_event()));
-
-	//this->timerCommandToChild[1] = new QTimer(this);
-	//connect (timerCommandToChild[1], SIGNAL(timeout()), this, SLOT(timerCommandToChild1_event()));
-
-	//this->timerAboutToQuit= new QTimer(this);
-	//connect (timerAboutToQuit, SIGNAL(timeout()), this, SLOT(timerAboutToQuit_event()));
 
 	//init log file
 	m_strLogFilePath = m_OptionSettingParent.m_strPrimaryLogPath;
@@ -212,32 +181,13 @@ void Acquire_4030e_parent::initialize (QString& strEXE_Path)
 void 
 Acquire_4030e_parent::kill_rogue_processes ()
 {
-	/* Kill child processes (either ours, or from previous instances) */
-	//window->log_output("YKTEMP: program is shutting down2");
+	/* Kill child processes (either ours, or from previous instances) */	
 	kill_process ("acquire_4030e.exe");
 }
 
 void 
 Acquire_4030e_parent::about_to_quit () //called from window->FinalQuit() as well
-{
-	//*StartCommandTimer(0, Acquire_4030e_parent::KILLANDEXIT);
-
-
-	//StartCommandTimer(1, Acquire_4030e_parent::KILLANDEXIT);
-
-	//Call destructor of child
-	//this->SendCommandToChild(0,CommandToChild::KILL);
-	//this->SendCommandToChild(1,CommandToChild::KILL);
-	//case GAIN_CORR_APPLY_OFF:
-	// process[idx].write("PCOMMAND_GAINCORRAPPLYOFF\n");//write stdin of each process
-	// break;
-
-	//process[idx].write("PCOMMAND_GAINCORRAPPLYOFF\n");//write stdin of each process
-	// break;
-
-	//*this->timerAboutToQuit->start(2000);
-	//log_output("parent_about to quit");
-	
+{	
 
 	timer->stop();
 
@@ -253,19 +203,11 @@ Acquire_4030e_parent::about_to_quit () //called from window->FinalQuit() as well
 		advantech = NULL;
 	}	
 
-
-	//msgBox.setText("test4");
-	//msgBox.exec();
-
-	//after response of child arrives, quit the parent
-
 	//disconnect
-
 	disconnect (&this->process[0], SIGNAL(readyReadStandardOutput()), this, SLOT(poll_child_messages()));
 	disconnect (&this->process[1], SIGNAL(readyReadStandardOutput()), this, SLOT(poll_child_messages()));
 
 	//log_output("parent_before ill rogue process");
-
 	if (window != NULL)
 	{
 		window->tray_icon1->hide ();
@@ -320,26 +262,16 @@ Acquire_4030e_parent::poll_child_messages () //often called even window is close
 			line.append(strTime);
 			this->log_output (line);
 
-			/********************* YKP 0126 2013 added ****************************/
-			//cannot directly receive from acquire4030e_children --> different process
-			//connect has been done btw. Qproc (not child) and parents 
-			//It seems that the only way to upward-communicate of child is this status msg.
-			//Using string-process, parents can action according to child's (Qprocess of child) feedback
-
 			//Assumming that process number = panel number
 			if (line.contains("PRESPP"))
-			{
-				m_bWaitingForChildResponse[i] = false; //start to send dummy message
-				
+			{	
 				if (line.contains("ACTIVATE")) //PRESPP means aleady close the link
-				{
-					//m_enPanelStatus[i] = LABEL_PREPARING;		
+				{					
 					m_bPleoraErrorHasBeenOccurredFlag[i] = false;
 				}			
 				else if (line.contains("KILL")) //PRESPP means aleady close the link
 				{			
-					process[i].close(); //call destructor 
-					//m_enPanelStatus[i] = LABEL_NOT_READY;		
+					process[i].close(); //call destructor 				
 					m_bPleoraErrorHasBeenOccurredFlag[i] = false;
 					m_bChildReadyToQuit[i] = true;
 
@@ -347,45 +279,27 @@ Acquire_4030e_parent::poll_child_messages () //often called even window is close
 						window->FinalQuit ();
 				}
 				else if (line.contains("RESTART"))
-				{
-					//m_enPanelStatus[i] = LABEL_NOT_READY;		
+				{				
 					m_bPleoraErrorHasBeenOccurredFlag[i] = false;
 					RestartChildProcess(i);
-				}			
-				/*else if (line.contains("CANCELACQ"))
-				{
-					m_bNowCancelingAcq[i] = true;					
-				}*/
-			}
-
-			//else if (line.contains("SYSTEM"))
-			//{
-			//	/*if (line.contains("REQUEST_FOR_SERVER_CONNECTION"))
-			//	{
-			//		SOCKET_ConnectClient(i);
-			//		log_output("serverConnection done");
-			//		
-			//	}		*/		
-			//}
+				}							
+			}			
 			else if (line.contains("PSTAT0"))
 			{				
 				m_enPanelStatus[i] = NOT_OPENNED;				
 			}
 			else if (line.contains("PSTAT1"))
-			{				
-				//log_output("[p]PTAT1_Chaned");
+			{								
 				m_enPanelStatus[i] = OPENNED;
 				m_bPleoraErrorHasBeenOccurredFlag[i] = false;
 			}	 
 			else if (line.contains("PSTAT2"))
-			{
-				//log_output("[p]PTAT2_Chaned");
+			{				
 				m_enPanelStatus[i] = PANEL_ACTIVE;
 				m_bPleoraErrorHasBeenOccurredFlag[i] = false;
 			}	
 			else if (line.contains("PSTAT3")) //Ready for pulse
-			{				
-				//log_output("[p]PTAT3_Chaned");
+			{							
 				m_enPanelStatus[i] = READY_FOR_PULSE;
 				m_bPleoraErrorHasBeenOccurredFlag[i] = false;
 
@@ -435,11 +349,9 @@ Acquire_4030e_parent::poll_child_messages () //often called even window is close
 			else if(line.contains("open_receptor_link returns error")) //error during start
 			{
 				this->m_enPanelStatus[i] = NOT_OPENNED; //go to init status->red
-				//m_bPanelReady[i] = false;
 
 				//messageBox
-				QMessageBox msgBox;
-				//QString str = "Child cannot be created";
+				QMessageBox msgBox;				
 				QString strTitle = QString("Panel %1 Error").arg(i);
 				msgBox.setWindowTitle(strTitle);
 
@@ -455,15 +367,13 @@ Acquire_4030e_parent::poll_child_messages () //often called even window is close
 				else if (result == QMessageBox::Close)
 				{
 					quit();
-				//	this->about_to_quit();
-				//	exit(0);
 				}
 			}
 			else if(line.contains("Pleora Error")) //error during running 1)ethernet, 2) power
 			{
 				this->m_enPanelStatus[i] = NOT_OPENNED; //go to init status->red
 				m_bPleoraErrorHasBeenOccurredFlag[i] = true;
-				//messageBox
+				
 				QMessageBox msgBox;
 				QString strTitle = QString("Panel %1 Error").arg(i);
 				msgBox.setWindowTitle(strTitle);
@@ -480,9 +390,7 @@ Acquire_4030e_parent::poll_child_messages () //often called even window is close
 				}
 				else if (result == QMessageBox::Close)
 				{
-					quit();
-					//this->about_to_quit();
-					//exit(0);
+					quit();					
 				}		
 			}
 			else if(line.contains("State Error")) //Occassionally, when power was re-plugged in
@@ -505,11 +413,8 @@ Acquire_4030e_parent::poll_child_messages () //often called even window is close
 						RestartChildProcess(i);
 					}
 					else if (result == QMessageBox::Close)
-					{
-						//	this->log_output("YKTEMP: program is shutting down1");
-						quit();
-						//this->about_to_quit();
-						//exit(0);
+					{						
+						quit();					
 					}
 				}		
 			}
@@ -523,19 +428,10 @@ bool Acquire_4030e_parent::RestartChildProcess(int idx)
 	if (idx >=2)
 		return false;
 
-	//YK: it didn't work
-	//if (!process[idx].atEnd()) //if program is running //Actually the process already has been terminated before this message.
-	//{
-	//process[idx].kill();
-	//}
-	//printf ("YK: Before kill %d.\n", idx);
 	process[idx].close();
-	//process[idx].terminate();//cannot terminate the process //send some event on QApp?
-	//process[idx].aboutToClose();
-	//printf ("YK: Re-creating child process %d.\n", idx);
+	
 	m_enPanelStatus[idx] = NOT_OPENNED;
-	connect (&this->process[idx], SIGNAL(readyReadStandardOutput()),
-		this, SLOT(poll_child_messages()));
+	connect (&this->process[idx], SIGNAL(readyReadStandardOutput()), this, SLOT(poll_child_messages()));
 
 	this->process[idx].start(m_program[idx], m_arguments[idx]); //temporary deleted //Restart the main
 
@@ -585,12 +481,9 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 		SendCommandToChild(1, PCOMMAND_UNLOCKFORPREPARE); //changes "go further to activate panel". after one cycle has been done, it will be automatically locked in standby mode (stuck in standby)
 	}
 	
-	//if (gen_panel_select == 0 && m_enPanelStatus[1] == READY_FOR_PULSE && !m_bNowCancelingAcq[0]) //Abnormal case: jump to standby before acquisition.		
-
 	/* Write a debug message */
-	//if (gen_expose_request) {
+
 	if (gen_expose_request || gen_prep_request) {
-		//if (this->generator_state == WAITING || panel_0_ready || panel_1_ready)
 		{
 			this->log_output (
 				QString("[p] Generator status: %1 %2 %3 %4 %5")
@@ -655,10 +548,7 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 			this->advantech->relay_close (0);
 			this->generator_state = EXPOSING;
 		}
-		else {
-		//	this->log_output (
-		//		QString("[p] Waiting for panel %1").arg(this->panel_select));	    	    
-		}	
+		
 		if (panel_0_ready && this->panel_select == true
 			|| panel_1_ready && this->panel_select == false)
 		{
@@ -707,94 +597,11 @@ Acquire_4030e_parent::UpdateLableStatus()
 	} 
 }
 
-//Button click
-void Acquire_4030e_parent::StartCommandTimer(int idx, CommandToChild enCommand)
-{
-	if (m_bWaitingForChildResponse[idx])
-	{
-		QString strLog = "Cannot send command to child because still waiting for response";
-		log_output(strLog);
-		return;
-	}    
-	SendCommandToChild(idx, enCommand); //Msg box  
-	//Sleep(2000);
-	Sleep(2000); //minimum delay
-
-	//m_iPrevSentPanelIdx = idx;
-	m_enPrevSentCommand[idx] = enCommand;
-	m_iMaxResendTryCnt[idx] = 0;
-	timerCommandToChild[idx]->start (2000);  
-}
-
-void Acquire_4030e_parent::timerCommandToChild0_event()
-{
-	if (!m_bWaitingForChildResponse[0]) //when child response has arrived
-	{
-		timerCommandToChild[0]->stop();
-		return;
-	}
-	if (m_iMaxResendTryCnt[0] > MAX_RESEND_TRY)
-	{
-		timerCommandToChild[0]->stop();
-		m_bWaitingForChildResponse[0] = false;
-		return;
-	}
-
-	m_iMaxResendTryCnt[0]++;    
-	SendCommandToChild(0, m_enPrevSentCommand[0]); //write at process
-}
-void Acquire_4030e_parent::timerCommandToChild1_event()
-{
-	if (!m_bWaitingForChildResponse[1]) //when child response has arrived
-	{
-		timerCommandToChild[1]->stop();
-		return;
-	}
-	if (m_iMaxResendTryCnt[1] > MAX_RESEND_TRY)
-	{
-		timerCommandToChild[1]->stop();
-		m_bWaitingForChildResponse[1] = false;
-		return;
-	}
-
-	m_iMaxResendTryCnt[1]++;
-	SendCommandToChild(1, m_enPrevSentCommand[1]); //write at process
-}
-
-void Acquire_4030e_parent::timerAboutToQuit_event()
-{
-	//if (!m_bWaitingForChildResponse 
-	//	&& m_enPanelStatus[0] == Acquire_4030e_window::LABEL_NOT_READY
-	//	&& m_enPanelStatus[1] == Acquire_4030e_window::LABEL_NOT_READY) //when child response has arrived
-	//{
-	//	timerAboutToQuit->stop ();  
-
-	//	this->advantech->relay_open (0);
-	//	this->advantech->relay_open (3);
-	//	this->advantech->relay_open (4);
-
-	//	/* Destroy window */
-	//	//yk: WHEN KILL COMMAND OCCURRED	
-
-	//	delete this->advantech;
-	//	delete this->window;
-
-	//	m_logFout.close();
-	//	//after response of child arrives, quit the parent
-	//	/* Kill children before we die */
-	//	kill_rogue_processes ();				
-	//}	
-	return;
-}
-
-
-//this func will not skipped at any time.
 void Acquire_4030e_parent::SendCommandToChild(int idx, CommandToChild enCommand) //Msg box
 {    
 	// if process is not ready, nothing.
 	//RESTART only when the process is killed
-	//int result1 = process[0].isOpen();
-	//int result2 = process[1].isOpen();
+	
 	if (!process[idx].isOpen() && enCommand == PCOMMAND_RESTART) //if even the process has not been started,
 	{
 		RestartChildProcess(idx);
@@ -803,82 +610,45 @@ void Acquire_4030e_parent::SendCommandToChild(int idx, CommandToChild enCommand)
 	else if (!process[idx].isOpen() && enCommand != PCOMMAND_RESTART)
 	{
 		return;
-	}    
-	m_enPrevSentCommand[idx] = enCommand;
-
-	m_bWaitingForChildResponse[idx] = true;       
+	}   
 
 	QString msg;
 
 	switch (enCommand)
-	{		
-		//case OPEN_PANEL:
-		//	process[idx].write("PCOMMAND_OPENPANEL\n");//write stdin of each process
-		//	break;
-		//case CLOSE_PANEL:
-		//	process[idx].write("PCOMMAND_CLOSEPANEL\n");//write stdin of each process
-		//	break;
-	case PCOMMAND_KILL:
-		//process[idx].write("PCOMMAND_KILL\n");//write stdin of each process
+	{	
+	case PCOMMAND_KILL:		
 
 		msg = "PCOMMAND_KILL";
 		if (!SOCKET_SendMessage(idx, msg))
 			log_output("[p] Failed to send a message. Client is not connected");
-		//else
-			//log_output(QString("[p] Sending msg to child process %1.").arg(idx));
-
-
 		break;
 	
-	case PCOMMAND_RESTART:
-		//process[idx].write("PCOMMAND_RESTART\n");//write stdin of each process
+	case PCOMMAND_RESTART:		
 		msg = "PCOMMAND_RESTART";		
 		if (!SOCKET_SendMessage(idx, msg))
 			log_output("[p] Failed to send a message. Client is not connected");
-		//else
-		//	log_output(QString("[p] Sending msg to child process %1.").arg(idx));
-
-
 		break;	
 		
 	case PCOMMAND_SHOWDLG:		
-		//process[idx].write("PCOMMAND_SHOWDLG\n");
-
 		msg = "PCOMMAND_SHOWDLG";	
 		if (!SOCKET_SendMessage(idx, msg))
-			log_output("[p] Failed to send a message. Client is not connected");
-		//else
-		//	log_output(QString("[p] Sending msg to child process %1.").arg(idx));
+			log_output("[p] Failed to send a message. Client is not connected");	
 
 		break;
 
-	case PCOMMAND_UNLOCKFORPREPARE:
-		//process[idx].write("PCOMMAND_ACTIVATE\n");
+	case PCOMMAND_UNLOCKFORPREPARE:		
 		msg = "PCOMMAND_UNLOCKFORPREPARE";		
 		if (!SOCKET_SendMessage(idx, msg))
-			log_output("[p] Failed to send a message. Client is not connected");
-		//else
-		//	log_output(QString("[p] Sending msg to child process %1.").arg(idx));
+			log_output("[p] Failed to send a message. Client is not connected");		
 
 		break;
 
 
-	case PCOMMAND_CANCELACQ:
-		//m_bNowCancelingAcq[idx] = false;
+	case PCOMMAND_CANCELACQ:		
 
 		msg = "PCOMMAND_CANCELACQ";
 		if (!SOCKET_SendMessage(idx, msg))
 			log_output("[p] Failed to send a message. Client is not connected");
-
-		//if (!m_bNowCancelingAcq[idx])
-		//{
-		//	msg = "PCOMMAND_CANCELACQ";
-		//	if (!SOCKET_SendMessage(idx, msg))
-		//		log_output("[p] Failed to send a message. Client is not connected");
-		////	m_bNowCancelingAcq[idx] = true;
-		//}	
-		//else
-		//	log_output(QString("[p] Sending msg to child process %1.").arg(idx));
 
 		break;
 	}    
@@ -916,9 +686,7 @@ bool Acquire_4030e_parent::SOCKET_StartServer(int iPanelIdx)
 	m_pServer[iPanelIdx] = new QLocalServer(this);	
 
 	QString strServerName = QString("SOCKET_MSG_TO_CHILD_%1").arg(iPanelIdx);
-
-	//QString strServerName = QString("SOCKET_MSG_TO_CHILD_%1").arg(idx);		
-	//SOCKET_ConnectToServer(strServerName);
+	
 	connect(m_pServer[iPanelIdx], SIGNAL(newConnection()), this, SLOT(SOCKET_ConnectClient()));
 
 	if (!m_pServer[iPanelIdx]->listen(strServerName))
@@ -945,9 +713,6 @@ void Acquire_4030e_parent::SOCKET_ConnectClient(int iPanelIdx)
 	{
 		log_output(QString("[p] Client For child %1 is not connected. Check the server name.").arg(iPanelIdx));
 		kill_rogue_processes();
-		//RestartChildProcess(iPanelIdx);
-		//kill_rogue_processes();
-
 	}
 }
 
@@ -978,10 +743,5 @@ void Acquire_4030e_parent::SOCKET_ConnectClient()
 		{
 			log_output(QString("[p] Client For child %1 is not connected. Check the server name.").arg(1));
 		}
-	}
-
-	
-	
-
-	
+	}	
 }

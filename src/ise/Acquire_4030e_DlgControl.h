@@ -2,8 +2,7 @@
 #include <QDialog>
 #include "ui_acquire_4030e_panel.h"
 #include "acquire_4030e_define.h"
-//#include <QMainWindow>
-//#include "ui_acquire_4030e_window.h"
+
 class QString;
 
 class Acquire_4030e_DlgControl : public QDialog,
@@ -22,9 +21,7 @@ public slots:
     void HardHandshakingOn();    
     void SoftHandshakingOn();
     void SoftBeamOn();    
-    void GetDarkFieldImage();
-    void ChkOffsetCorrectionOn();
-    void ChkGainCorrectionOn();
+    void GetDarkFieldImage();    
     void GetPanelInfo();    
 	void OpenDarkImage();
 	void OpenGainImage(); //Btn
@@ -44,13 +41,6 @@ public:
 
 public:
     int m_iPanelIdx;
-    //bool m_bOffsetCorrOn; //offset corr = dark field corr
-    //bool m_bGainCorrOn; //offset corr = dark field corr
 	void closeEvent(QCloseEvent *event);	
-	//bool DlgLoadDarkImage(QString& filePath);
 	
-
-	
-	//bool SaveSettingAsDefault_Child();
-	//bool UpdateGUIFromSetting_Child();// it can be used as go_back to default setting
 };

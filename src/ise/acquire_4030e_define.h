@@ -26,6 +26,8 @@ typedef unsigned short USHORT;
 
 #define MAX_LINE_LENGTH 1024
 
+#define DEFAULT_LOGFILE_PATH "C:\\"
+#define MAX_PANEL_NUM_YK 2
 
 
 enum PSTAT{	
