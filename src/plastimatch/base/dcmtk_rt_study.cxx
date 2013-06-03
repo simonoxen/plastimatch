@@ -107,7 +107,7 @@ Dcmtk_rt_study::set_image (Plm_image::Pointer image)
     d_ptr->img = image;
 }
 
-Rtss::Pointer
+Rtss::Pointer&
 Dcmtk_rt_study::get_rtss ()
 {
     return d_ptr->cxt;

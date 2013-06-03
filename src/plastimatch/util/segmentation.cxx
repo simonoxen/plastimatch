@@ -44,11 +44,17 @@ public:
     Plm_image *m_ss_img;        /* Structure set in lossless bitmap form */
     Rtss::Pointer m_cxt;        /* Structure set in polyline form */
 
+    bool m_rtss_valid;
+    bool m_ss_img_valid;
+
 public:
     Segmentation_private () {
         m_meta = new Metadata;
         m_labelmap = 0;
         m_ss_img = 0;
+
+        m_rtss_valid = false;
+        m_ss_img_valid = false;
     }
     ~Segmentation_private () {
         delete m_meta;
@@ -99,6 +105,9 @@ Segmentation::clear ()
         delete d_ptr->m_labelmap;
         d_ptr->m_labelmap = 0;
     }
+
+    d_ptr->m_rtss_valid = false;
+    d_ptr->m_ss_img_valid = false;
 }
 
 void
@@ -120,6 +129,12 @@ Segmentation::load (const char *ss_img, const char *ss_list)
         printf ("Trying to load ss_list: %s\n", ss_list);
         d_ptr->m_cxt.reset (ss_list_load (0, ss_list));
     }
+
+    if (d_ptr->m_cxt) {
+        d_ptr->m_cxt->free_all_polylines ();
+    }
+    d_ptr->m_rtss_valid = false;
+    d_ptr->m_ss_img_valid = true;
 }
 
 void
@@ -239,6 +254,12 @@ Segmentation::load_prefix (const Pstring &prefix_dir)
         /* Move to next bit */
         bit++;
     }
+
+    if (d_ptr->m_cxt) {
+        d_ptr->m_cxt->free_all_polylines ();
+    }
+    d_ptr->m_rtss_valid = false;
+    d_ptr->m_ss_img_valid = true;
 }
 
 void
@@ -311,6 +332,12 @@ Segmentation::add_structure (
         v[uchar_no] |= bit_mask;
         ss_img_it.Set (v);
     }
+
+    if (d_ptr->m_cxt) {
+        d_ptr->m_cxt->free_all_polylines ();
+    }
+    d_ptr->m_rtss_valid = false;
+    d_ptr->m_ss_img_valid = true;
 }
 
 void
@@ -318,6 +345,9 @@ Segmentation::load_cxt (const Pstring &input_fn, Rt_study_metadata *rsm)
 {
     d_ptr->m_cxt = Rtss::New();
     cxt_load (d_ptr->m_cxt.get(), rsm, (const char*) input_fn);
+
+    d_ptr->m_rtss_valid = true;
+    d_ptr->m_ss_img_valid = false;
 }
 
 void
@@ -326,6 +356,9 @@ Segmentation::load_gdcm_rtss (const char *input_fn, Rt_study_metadata *rsm)
 #if GDCM_VERSION_1
     d_ptr->m_cxt = Rtss::New();
     gdcm_rtss_load (d_ptr->m_cxt.get(), rsm, input_fn);
+
+    d_ptr->m_rtss_valid = true;
+    d_ptr->m_ss_img_valid = false;
 #endif
 }
 
@@ -335,6 +368,9 @@ Segmentation::load_xio (const Xio_studyset& studyset)
     d_ptr->m_cxt = Rtss::New();
     printf ("calling xio_structures_load\n");
     xio_structures_load (d_ptr->m_cxt.get(), studyset);
+
+    d_ptr->m_rtss_valid = true;
+    d_ptr->m_ss_img_valid = false;
 }
 
 size_t
@@ -469,7 +505,7 @@ Segmentation::save_ss_image (const Pstring &ss_img_fn)
 {
     if (!d_ptr->m_ss_img) {
         print_and_exit (
-            "Error: save_ss_image() tried to write a non-existant file");
+            "Error: save_ss_image() tried to write a non-existant ss_img");
     }
     if (d_ptr->m_ss_img->m_type == PLM_IMG_TYPE_GPUIT_UCHAR_VEC
         || d_ptr->m_ss_img->m_type == PLM_IMG_TYPE_ITK_UCHAR_VEC) 
@@ -647,6 +683,8 @@ Segmentation::convert_ss_img_to_cxt (void)
         ::cxt_extract (d_ptr->m_cxt.get(), d_ptr->m_ss_img->m_itk_uint32, -1, 
             use_existing_bits);
     }
+
+    d_ptr->m_rtss_valid = true;
 }
 
 void
@@ -662,7 +700,7 @@ Segmentation::convert_to_uchar_vec (void)
 void
 Segmentation::cxt_extract (void)
 {
-    if (d_ptr->m_ss_img && !d_ptr->m_cxt) {
+    if (d_ptr->m_ss_img && !d_ptr->m_rtss_valid) {
         this->convert_ss_img_to_cxt ();
     }
 }
@@ -683,6 +721,8 @@ Segmentation::cxt_re_extract (void)
         ::cxt_extract (d_ptr->m_cxt.get(), d_ptr->m_ss_img->m_itk_uint32, 
             d_ptr->m_cxt->num_structures, true);
     }
+
+    d_ptr->m_rtss_valid = true;
 }
 
 void
@@ -733,8 +773,9 @@ Segmentation::rasterize (
         Volume *v = rasterizer.m_ss_img->steal_volume();
         d_ptr->m_ss_img->set_volume (v);
     }
-
     printf ("Finished rasterization.\n");
+
+    d_ptr->m_ss_img_valid = true;
 }
 
 void
@@ -778,8 +819,11 @@ Segmentation::warp (
         d_ptr->m_ss_img = tmp;
     }
 
-    /* The cxt polylines are now obsolete, but we can't delete it because 
-       it contains our "bits", used e.g. by prefix extraction.  */
+    /* The cxt polylines are now obsolete */
+    if (d_ptr->m_cxt) {
+        d_ptr->m_cxt->free_all_polylines ();
+    }
+    d_ptr->m_rtss_valid = false;
 }
 
 void
@@ -805,6 +849,12 @@ Segmentation::set_ss_img (UCharImageType::Pointer ss_img)
     }
     d_ptr->m_ss_img = new Plm_image;
     d_ptr->m_ss_img->set_itk (ss_img);
+
+    if (d_ptr->m_cxt) {
+        d_ptr->m_cxt->free_all_polylines ();
+    }
+    d_ptr->m_rtss_valid = false;
+    d_ptr->m_ss_img_valid = true;
 }
 
 Plm_image*
@@ -819,8 +869,7 @@ Segmentation::have_structure_set ()
     return d_ptr->m_cxt != 0;
 }
 
-
-Rtss::Pointer
+Rtss::Pointer&
 Segmentation::get_structure_set ()
 {
     return d_ptr->m_cxt;
@@ -833,17 +882,26 @@ Segmentation::get_structure_set_raw ()
 }
 
 void
-Segmentation::set_structure_set (Rtss::Pointer rtss_ss)
+Segmentation::set_structure_set (Rtss::Pointer& rtss_ss)
 {
     d_ptr->m_cxt = rtss_ss;
+
+    d_ptr->m_rtss_valid = true;
+    d_ptr->m_ss_img_valid = false;
 }
 
 void
 Segmentation::set_structure_set (Rtss *rtss_ss)
 {
     d_ptr->m_cxt.reset (rtss_ss);
+
+    d_ptr->m_rtss_valid = true;
+    d_ptr->m_ss_img_valid = false;
 }
 
+/* -----------------------------------------------------------------------
+   Protected member functions
+   ----------------------------------------------------------------------- */
 void
 Segmentation::initialize_ss_image (
     const Plm_image_header& pih, int vector_length)

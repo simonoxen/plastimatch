@@ -39,6 +39,14 @@ Rt_study::save_dcmtk (const char *dicom_dir)
     drs.set_dicom_metadata (d_ptr->m_drs);
     drs.set_image (d_ptr->m_img);
     if (d_ptr->m_rtss) {
+        /* GCS FIX. This call to prune_empty() is a hack. 
+           It should be allowed to write empty structures, but 
+           current plastimatch logic sets num_structures to max 
+           when performing cxt_extract().  Segmentation class 
+           logic should be improved to better keep track of 
+           when structure names are valid to avoid this. */
+        d_ptr->m_rtss->prune_empty ();
+
         drs.set_rtss (d_ptr->m_rtss->get_structure_set());
     }
     drs.set_dose (d_ptr->m_dose);

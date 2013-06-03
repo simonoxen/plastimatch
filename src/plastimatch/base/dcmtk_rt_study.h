@@ -43,7 +43,7 @@ public:
     Volume::Pointer get_image_volume_float ();
     void set_image (Plm_image::Pointer image);
 
-    Rtss::Pointer get_rtss ();
+    Rtss::Pointer& get_rtss ();
     void set_rtss (Rtss::Pointer rtss);
 
     Plm_image::Pointer get_dose ();

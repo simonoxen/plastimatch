@@ -85,9 +85,9 @@ public:
     Plm_image* get_ss_img ();
 
     bool have_structure_set ();
-    Rtss::Pointer get_structure_set ();
+    Rtss::Pointer& get_structure_set ();
     Rtss* get_structure_set_raw ();
-    void set_structure_set (Rtss::Pointer rtss_ss);
+    void set_structure_set (Rtss::Pointer& rtss_ss);
     void set_structure_set (Rtss *rtss_ss);
 
 protected:
