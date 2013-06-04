@@ -97,7 +97,6 @@ public:
 	bool PC_CallForStanby(); //also can be used for SW acquisition for reloop
 	bool PC_WaitForStanby();
 
-
 	bool PC_SoftwareAcquisition_SingleShot(); //should be done at READY_FOR_PULSE
 	bool PC_DarkFieldAcquisition_SingleShot(int avgFrames); //should be done at READY_FOR_PULSE
 
@@ -121,6 +120,10 @@ public:
 
 	std::vector<BADPIXELMAP> m_vBadPixelMap;
 	bool LoadBadPixelMap(const char* filePath); //fill m_vBadPixelMap with loaded data(mapping)
+
+
+	bool m_bFirstBoot_OpenSuccess;	
+	bool m_bFirstBoot_TimeOutOccurred;
 };
 
 #endif

@@ -1,5 +1,5 @@
 //Whenever There is change, minimum change should be given to this file!
-//
+//changed 0604
 
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
@@ -7,13 +7,12 @@
 #ifndef _acquire_4030e_parent_h_
 #define _acquire_4030e_parent_h_
 
-
 #include "ise_config.h"
 #include <QApplication>
 #include <QProcess>
-#include "acquire_4030e_window.h"
 #include <fstream>
 #include "acquire_4030e_define.h"
+#include "acquire_4030e_window.h"
 #include "YKOptionSetting.h"
 
 #define SVN_VERSION "$Rev$"
@@ -22,9 +21,11 @@
 
 class Advantech;
 class QTimer;
-
 class QLocalServer;
 class QLocalSocket;
+
+
+using namespace std;
 
 class Acquire_4030e_parent : public QApplication
 {
@@ -74,21 +75,26 @@ public:
 
     void SendCommandToChild(int idx, CommandToChild enCommand); //Msg box    
     
-    QString m_strLogFilePath;    
+    QString m_strLogFilePath;
 
-    std::ofstream m_logFout;	
+    ofstream m_logFout;
 
-	bool m_bChildReadyToQuit[2]; //flag for child process		
+	bool m_bChildReadyToQuit[2]; //flag for child process
+	bool m_bPanelOpeningSuccess[2]; //for sequencial starting
 
 	bool m_bParentBusy;
 
 public:
 	bool SOCKET_StartServer(int iPanelIdx);
-	void SOCKET_ConnectClient(int iPanelIdx);
+	//void SOCKET_ConnectClient(int iPanelIdx);
 	bool SOCKET_SendMessage(int idx, QString& msg);
 
 	YKOptionSetting m_OptionSettingParent;
-	
 
+	QString m_strEXEPath;
+	void Acquire_4030e_parent::Start_Process (int procIdx);
+
+	void BackupLogFiles ();
+	QString m_strReceptorDriverFolder[2]; //only used for Debug file setting //this variable can be filled when child is initialized	
 };
 #endif

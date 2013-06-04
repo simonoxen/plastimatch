@@ -22,6 +22,8 @@ See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 #include "advantech.h"
 #include "kill.h"
 
+using namespace std;
+
 Acquire_4030e_parent::Acquire_4030e_parent (int argc, char* argv[]) 
 : QApplication (argc, argv)
 {
@@ -43,6 +45,9 @@ Acquire_4030e_parent::Acquire_4030e_parent (int argc, char* argv[])
 	m_pClientConnect[1] = NULL;	
 	
 	QString exePath = argv[0];
+
+	m_bPanelOpeningSuccess[0] = false; //for sequencial starting
+	m_bPanelOpeningSuccess[1] = false; //for sequencial starting
 	
 	initialize (exePath);	
 }
@@ -83,6 +88,34 @@ void Acquire_4030e_parent::initialize (QString& strEXE_Path)
 		printf ("System tray not found.\n");
 	}
 
+	m_strEXEPath = strEXE_Path;
+	num_process = 2; //fixed!
+
+
+	//init log file
+	m_strLogFilePath = m_OptionSettingParent.m_strPrimaryLogPath;
+
+	m_strLogFilePath.append("\\acquire4030e_log_");
+
+	QDate crntDate = QDate::currentDate ();
+	QString dateFormat = "_yyyy_MM_dd";
+	QString strDate = crntDate.toString(dateFormat);
+
+	QTime crntTime = QTime::currentTime ();
+	QString timeFormat = "_hh_mm_ss";
+	QString strTime = crntTime.toString(timeFormat);
+
+	m_strLogFilePath.append(strDate);
+	m_strLogFilePath.append(strTime);
+	m_strLogFilePath.append(".txt");
+
+	m_logFout.open(m_strLogFilePath.toLocal8Bit().constData());		
+	if (m_logFout.fail())
+	{
+		printf("Cannot open log output file");
+	}
+
+
 	/* Start up main window */	
 	this->window = new Acquire_4030e_window();  //GUI-linked window	
 
@@ -114,68 +147,47 @@ void Acquire_4030e_parent::initialize (QString& strEXE_Path)
 	this->advantech->relay_open (3);
 	this->advantech->relay_open (4);
 
-	num_process = 2; //fixed!
-
-	/* Start child processes */
-	printf ("Creating child processes.\n");
-	for (int i = 0; i < this->num_process; i++) {
-		m_program[i] = strEXE_Path; //exe file path
-		m_arguments[i].clear();
-
-		m_arguments[i] << "--child" << QString("%1").arg(i).toUtf8();
-		connect (&this->process[i], SIGNAL(readyReadStandardOutput()),
-			this, SLOT(poll_child_messages()));
-
-		this->process[i].start(m_program[i], m_arguments[i]);
+	if (!SOCKET_StartServer(0))
+	{
+		log_output("[p] Starting server 0 failed. Exit program");
+		exit(1);
 	}
+	else
+		log_output("[p] Starting server 0 success.");
+
+	if (!SOCKET_StartServer(1))
+	{
+		log_output("[p] Starting server 1 failed.Exit Program");	
+		exit(1);
+	}
+	else
+		log_output("[p] Starting server 1 success.");
+
 
 	m_enPanelStatus[0] = NOT_OPENNED;
 	m_enPanelStatus[1] = NOT_OPENNED;
 
 	m_bPleoraErrorHasBeenOccurredFlag[0] = false;
-	m_bPleoraErrorHasBeenOccurredFlag[1] = false;
+	m_bPleoraErrorHasBeenOccurredFlag[1] = false;	
+	
+	///* Start child processes */
+	//printf ("Creating First child process.\n");
+
+	///*for (int i = 0; i < this->num_process; i++)
+	//{*/
+	//	m_program[0] = strEXE_Path; //exe file path
+	//	m_arguments[0].clear();
+	//	m_arguments[0] << "--child" << QString("%1").arg(0).toUtf8();
+	//	connect (&this->process[0], SIGNAL(readyReadStandardOutput()),this, SLOT(poll_child_messages()));
+	//	this->process[0].start(m_program[0], m_arguments[0]);
+	////}
+	Start_Process (0);
 
 	/* Spawn the timer for polling devices */
 	this->timer = new QTimer(this);
 	connect (timer, SIGNAL(timeout()), this, SLOT(timer_event()));
 	m_bParentBusy = false;
 	timer->start (100);
-
-	//init log file
-	m_strLogFilePath = m_OptionSettingParent.m_strPrimaryLogPath;
-
-	m_strLogFilePath.append("\\acquire4030e_log_");
-
-	QDate crntDate = QDate::currentDate ();
-	QString dateFormat = "_yyyy_MM_dd";
-	QString strDate = crntDate.toString(dateFormat);
-
-	QTime crntTime = QTime::currentTime ();
-	QString timeFormat = "_hh_mm_ss";
-	QString strTime = crntTime.toString(timeFormat);
-
-	m_strLogFilePath.append(strDate);
-	m_strLogFilePath.append(strTime);	
-
-	m_strLogFilePath.append(".txt");
-
-	m_logFout.open(m_strLogFilePath.toLocal8Bit().constData());
-
-	if (m_logFout.fail())
-	{
-		printf("Cannot open log output file");
-	}
-
-	if (!SOCKET_StartServer(0))
-		log_output("[p] Starting server 0 failed.");
-	else
-		log_output("[p] Starting server 0 success.");
-
-	if (!SOCKET_StartServer(1))
-		log_output("[p] Starting server 1 failed.");	
-	else
-		log_output("[p] Starting server 1 success.");
-
 }
 
 void 
@@ -183,6 +195,19 @@ Acquire_4030e_parent::kill_rogue_processes ()
 {
 	/* Kill child processes (either ours, or from previous instances) */	
 	kill_process ("acquire_4030e.exe");
+}
+
+void Acquire_4030e_parent::Start_Process (int procIdx)
+{
+	/* Start child processes */
+	printf ("Creating child process %d.\n",procIdx);
+	
+	m_program[procIdx] = m_strEXEPath; //exe file path
+	m_arguments[procIdx].clear();
+	m_arguments[procIdx] << "--child" << QString("%1").arg(procIdx).toUtf8();
+	connect (&this->process[procIdx], SIGNAL(readyReadStandardOutput()),this, SLOT(poll_child_messages()));
+	this->process[procIdx].start(m_program[procIdx], m_arguments[procIdx]);	
+
 }
 
 void 
@@ -215,14 +240,79 @@ Acquire_4030e_parent::about_to_quit () //called from window->FinalQuit() as well
 		delete window;
 		window = NULL;
 	}
-
 	m_logFout.close();	
+	
+
+	/*Panel Debug File Backup*/
+
+	//Log file: 
+	//Target Path = 	
 
 	/* Kill children before we die */
 	kill_rogue_processes (); //not safe quit (for child)
 
-	Sleep(1000);
+	BackupLogFiles();
+
+	Sleep(1000);	
+}
+
+void Acquire_4030e_parent::BackupLogFiles ()
+{
+	/*Log file backup in Network drive */
+	QFileInfo tmpInfo(m_strLogFilePath);
+	QString acquireLogFileName = tmpInfo.fileName();
+	QString newFilePath = m_OptionSettingParent.m_strAlternateLogPath;
+	newFilePath.append(QString("\\%1").arg(acquireLogFileName));
+	QFile::copy(m_strLogFilePath, newFilePath);
+
+	/*Debug file backup in Network drive */
+	//m_OptionSettingParent.m_strDriverFolder[]; //this info is saved in child-Option class
+	QString DebugFileOldPath[2];
+	QString DebugFileNewPath[2];
+
+	DebugFileOldPath[0] = m_strReceptorDriverFolder[0];
+	DebugFileOldPath[1] = m_strReceptorDriverFolder[1];
+
+	DebugFileNewPath[0] = m_strReceptorDriverFolder[0];
+	DebugFileNewPath[1] = m_strReceptorDriverFolder[1];
+
+	DebugFileOldPath[0].append("\\HcpDebug.txt");
+	DebugFileOldPath[1].append("\\HcpDebug.txt");	
+
+	DebugFileNewPath[0].append(QString("\\HcpDebug_0_%1").arg(acquireLogFileName));
+	DebugFileNewPath[1].append(QString("\\HcpDebug_1_%1").arg(acquireLogFileName));
+
+	QFile::rename(DebugFileOldPath[0], DebugFileNewPath[0]); //no prob even if file doesn't exist
+	QFile::rename(DebugFileOldPath[1], DebugFileNewPath[1]);
+
+	QFileInfo DebugFileInfo[2];
+	DebugFileInfo[0] = QFileInfo(DebugFileNewPath[0]);
+	DebugFileInfo[1] = QFileInfo(DebugFileNewPath[1]);
+
+	QString debugFileName[2];
+	debugFileName[0] = DebugFileInfo[0].fileName();
+	debugFileName[1] = DebugFileInfo[1].fileName();
+
+	QString newDebugFilePath_0 = m_OptionSettingParent.m_strAlternateLogPath;
+	QString newDebugFilePath_1 = m_OptionSettingParent.m_strAlternateLogPath;
+
+	newDebugFilePath_0.append(QString("\\%1").arg(debugFileName[0]));
+	newDebugFilePath_1.append(QString("\\%1").arg(debugFileName[1]));
+
+	QFile::copy(DebugFileNewPath[0], newDebugFilePath_0);
+	QFile::copy(DebugFileNewPath[1], newDebugFilePath_1);
 	
+	QFile::remove(DebugFileNewPath[0]);
+	QFile::remove(DebugFileNewPath[1]);
+
+	/*QString newFilePathForDebug = m_OptionSettingParent.m_strAlternateLogPath;
+
+	newFilePath.append(QString("\\%1").arg(acquireLogFileName));
+
+	QFileInfo tmpInfoDebug(m_strLogFilePath);
+	QString acquireLogFileName = tmpInfo.fileName();*/
+
+	//  -->//"HcpDebug.txt" should be renamed --> copied to network folder
 }
 
 void 
@@ -242,11 +332,12 @@ Acquire_4030e_parent::log_output (const QString& log)
 void 
 Acquire_4030e_parent::poll_child_messages () //often called even window is closed
 {	
-
 	for (int i = 0; i < this->num_process; i++)
 	{
 		QByteArray result = process[i].readAllStandardOutput();
 		QStringList lines = QString(result).split("\n");
+		QString originalLine;
+
 		foreach (QString line, lines)
 		{
 			line = line.trimmed();
@@ -258,6 +349,9 @@ Acquire_4030e_parent::poll_child_messages () //often called even window is close
 
 			QTime time = QTime::currentTime();    
 			QString strTime = time.toString("\t@hh:mm:ss.zzz");
+
+			originalLine = line;
+
 			line = QString("[%1] %2").arg(i).arg(line);
 			line.append(strTime);
 			this->log_output (line);
@@ -340,6 +434,19 @@ Acquire_4030e_parent::poll_child_messages () //often called even window is close
 			{
 				m_enPanelStatus[i] = ACQUIRING_DARK_IMAGE;				
 			}	
+			else if (line.contains("PANEL_OPEN_SUCCESS")) //called only once
+			{					
+				m_bPanelOpeningSuccess[i] = true; //for sequencial starting
+				
+				if (m_bPanelOpeningSuccess[0] && !m_bPanelOpeningSuccess[1])
+					Start_Process(1);				
+			}	
+			else if (line.contains("DRIVER_PATH_OF_PANEL")) //called only once
+			{	
+				QStringList tmpStrList = originalLine.split(" "); //space
+				m_strReceptorDriverFolder[i] = tmpStrList.at(1); //
+				//log_output(m_strReceptorDriverFolder[i]);
+			}				
 			else if (line.contains("RESTART_PROCESS")) //
 			{		
 				m_enPanelStatus[i] = NOT_OPENNED;		
@@ -689,32 +796,30 @@ bool Acquire_4030e_parent::SOCKET_StartServer(int iPanelIdx)
 	
 	connect(m_pServer[iPanelIdx], SIGNAL(newConnection()), this, SLOT(SOCKET_ConnectClient()));
 
-	if (!m_pServer[iPanelIdx]->listen(strServerName))
-	{
-		return false;
-	}
-	else
+	if (!m_pServer[iPanelIdx]->listen(strServerName))	
+		return false;	
+	/*else
 	{
 		log_output("Server is listening");
-	}
+	}*/
 
 	return true;
 }
 
-
-void Acquire_4030e_parent::SOCKET_ConnectClient(int iPanelIdx)
-{
-	m_pClientConnect[iPanelIdx] = m_pServer[iPanelIdx]->nextPendingConnection();
-	connect(m_pClientConnect[iPanelIdx], SIGNAL(disconnected()), m_pClientConnect[iPanelIdx], SLOT(deleteLater()));
-
-	if (m_pClientConnect[iPanelIdx] != NULL)
-		log_output(QString("[p] Client For child %1 is approved to be connected").arg(iPanelIdx));
-	else
-	{
-		log_output(QString("[p] Client For child %1 is not connected. Check the server name.").arg(iPanelIdx));
-		kill_rogue_processes();
-	}
-}
+//
+//void Acquire_4030e_parent::SOCKET_ConnectClient(int iPanelIdx)
+//{
+//	m_pClientConnect[iPanelIdx] = m_pServer[iPanelIdx]->nextPendingConnection();
+//	connect(m_pClientConnect[iPanelIdx], SIGNAL(disconnected()), m_pClientConnect[iPanelIdx], SLOT(deleteLater()));
+//
+//	if (m_pClientConnect[iPanelIdx] != NULL)
+//		log_output(QString("[p] Client For child %1 is approved to be connected").arg(iPanelIdx));
+//	else
+//	{
+//		log_output(QString("[p] Client For child %1 is not connected. Check the server name.").arg(iPanelIdx));
+//		kill_rogue_processes();
+//	}
+//}
 
 
 void Acquire_4030e_parent::SOCKET_ConnectClient()

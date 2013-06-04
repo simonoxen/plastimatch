@@ -32,9 +32,7 @@ Acquire_4030e_window::Acquire_4030e_window ()
 }
 
 void Acquire_4030e_window::set_icon (int idx, PSTAT pstat)  // set_icon + tray icon
-{   
-
-
+{
 	Label_style matchingLabelStyle;
 
 	switch (pstat)
@@ -213,12 +211,12 @@ Acquire_4030e_window::set_label (int panel_no, const QString& log)
 
 void Acquire_4030e_window::request_quit ()
 {
-	m_bSeqKillReady = true;
+	//m_bSeqKillReady = true;
 	
 	((Acquire_4030e_parent*)qApp)->SendCommandToChild(0, PCOMMAND_KILL);
 	((Acquire_4030e_parent*)qApp)->SendCommandToChild(1, PCOMMAND_KILL);	
 	
-	QTimer::singleShot(10000,this, SLOT(FinalQuit()));	
+	QTimer::singleShot(5000,this, SLOT(FinalQuit()));	
 }
 
 void Acquire_4030e_window::FinalQuit ()

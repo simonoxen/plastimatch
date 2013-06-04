@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>441</width>
-    <height>915</height>
+    <height>991</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -722,7 +722,7 @@
      <string>Single Gain</string>
     </property>
     <property name="checked">
-     <bool>false</bool>
+     <bool>true</bool>
     </property>
    </widget>
    <widget class="QPushButton" name="BtnCopyFromCurrent">
@@ -759,13 +759,13 @@
      <string>Multi-Level Gain</string>
     </property>
     <property name="checked">
-     <bool>true</bool>
+     <bool>false</bool>
     </property>
    </widget>
    <widget class="QPushButton" name="BtnShowAdvancedGain">
     <property name="geometry">
      <rect>
-      <x>190</x>
+      <x>180</x>
       <y>150</y>
       <width>71</width>
       <height>21</height>
@@ -775,35 +775,23 @@
      <string>Advanced</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_18">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>120</y>
-      <width>111</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Single Calib. Factor</string>
-    </property>
-   </widget>
    <widget class="QLineEdit" name="lineEditSingleCalibFactor">
     <property name="enabled">
      <bool>true</bool>
     </property>
     <property name="geometry">
      <rect>
-      <x>130</x>
+      <x>140</x>
       <y>120</y>
-      <width>51</width>
+      <width>71</width>
       <height>21</height>
      </rect>
+    </property>
+    <property name="cursor">
+     <cursorShape>IBeamCursor</cursorShape>
+    </property>
+    <property name="contextMenuPolicy">
+     <enum>Qt::DefaultContextMenu</enum>
     </property>
     <property name="autoFillBackground">
      <bool>true</bool>
@@ -815,12 +803,30 @@
      <bool>true</bool>
     </property>
    </widget>
+   <widget class="QLabel" name="label_19">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>120</y>
+      <width>131</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Single Multiply Factor</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QPushButton" name="BtnSaveSettingsDefault">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>880</y>
+     <y>950</y>
      <width>171</width>
      <height>31</height>
     </rect>
@@ -1147,7 +1153,7 @@
    <property name="geometry">
     <rect>
      <x>200</x>
-     <y>880</y>
+     <y>950</y>
      <width>161</width>
      <height>31</height>
     </rect>
@@ -1249,6 +1255,162 @@
     </property>
    </widget>
   </widget>
+  <widget class="QGroupBox" name="groupBox_4">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>870</y>
+     <width>421</width>
+     <height>71</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Misceleneous</string>
+   </property>
+   <widget class="QCheckBox" name="ChkForcedThresholding">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>20</y>
+      <width>151</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="layoutDirection">
+     <enum>Qt::RightToLeft</enum>
+    </property>
+    <property name="text">
+     <string>Forced Thresholding</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_15">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>40</y>
+      <width>101</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Threshold Value</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEditForcedThresholdVal">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>110</x>
+      <y>40</y>
+      <width>61</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="autoFillBackground">
+     <bool>true</bool>
+    </property>
+    <property name="text">
+     <string>13000</string>
+    </property>
+    <property name="readOnly">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="ChkDeleteImgAfter">
+    <property name="geometry">
+     <rect>
+      <x>230</x>
+      <y>20</y>
+      <width>161</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="layoutDirection">
+     <enum>Qt::LeftToRight</enum>
+    </property>
+    <property name="text">
+     <string>Delete Old Image Files</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_16">
+    <property name="geometry">
+     <rect>
+      <x>220</x>
+      <y>40</y>
+      <width>31</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>After</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEditDeleteOldImgFiles">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>40</y>
+      <width>41</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="autoFillBackground">
+     <bool>true</bool>
+    </property>
+    <property name="text">
+     <string>15</string>
+    </property>
+    <property name="readOnly">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_18">
+    <property name="geometry">
+     <rect>
+      <x>310</x>
+      <y>40</y>
+      <width>31</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>days</string>
+    </property>
+   </widget>
+  </widget>
   <zorder>groupBox_2</zorder>
   <zorder>groupBox</zorder>
   <zorder>groupBox_7</zorder>
@@ -1269,6 +1431,7 @@
   <zorder>EditModeNum</zorder>
   <zorder>BtnLoadDefaultSettings</zorder>
   <zorder>groupBox_3</zorder>
+  <zorder>groupBox_4</zorder>
  </widget>
  <resources/>
  <connections>

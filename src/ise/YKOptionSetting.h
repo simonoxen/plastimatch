@@ -97,6 +97,9 @@ public:
 	QString m_strDefectMapSavingFolder[2]; //default
 	QString m_strDefectMapPath[2];
 	bool m_bDefectMapApply[2];
+
+	bool m_bEnbleCustomThre[2]; //apply after Gain Correction
+	unsigned short m_iCustomThreshold[2]; //apply after Gain Correction
 	
 	bool CopyTrivialChildOptions(int idxS, int idxT);
 };

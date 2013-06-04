@@ -58,7 +58,7 @@ public:
     //added by YKP
     void UpdateLabel(int iPanelIdx, PSTAT enStyle); // 0 based panel ID //called from child proc except the first time    
 
-	bool m_bSeqKillReady;
+	//bool m_bSeqKillReady;
 	void SaveSettingAsDefault_Parent();
 };
 

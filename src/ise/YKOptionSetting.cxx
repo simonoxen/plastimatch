@@ -20,8 +20,6 @@ YKOptionSetting::YKOptionSetting(void)
 	m_defaultChildOptionPath[0] = crntPathStr + "\\ProgramData" + "\\PANEL_0" + "\\ChildOption_0.cfg"; //this file contains all3 mode's option
 	m_defaultChildOptionPath[1]= crntPathStr + "\\ProgramData" + "\\PANEL_1" + "\\ChildOption_1.cfg";	 
 
-
-
 	for (int idx = 0 ; idx<2 ; idx++)
 	{
 		m_strAcqFileSavingFolder[idx] = crntPathStr + "\\ProgramData" + QString("\\PANEL_%1").arg(idx) + "\\01_RAD_2304_3200" + "\\IMAGE_DATA";
@@ -29,6 +27,11 @@ YKOptionSetting::YKOptionSetting(void)
 		m_strGainImageSavingFolder[idx]= crntPathStr + "\\ProgramData" + QString("\\PANEL_%1").arg(idx) + "\\01_RAD_2304_3200" + "\\GAIN"; //not explicitly editable
 		m_strDefectMapSavingFolder[idx]= crntPathStr + "\\ProgramData" + QString("\\PANEL_%1").arg(idx) + "\\01_RAD_2304_3200" + "\\DEFECT"; //not explicitly editable;
 	}	
+
+	m_iCustomThreshold[0] = 13000; //apply after Gain Correction
+	m_iCustomThreshold[1] = 13000;
+	m_bEnbleCustomThre[0] = false; //apply after Gain Correction
+	m_bEnbleCustomThre[1] = false; //apply after Gain Correction
 }
 
 
@@ -265,8 +268,7 @@ bool YKOptionSetting::LoadParentOption( QString& parentOptionPath )
 		else if (tokenFirst.contains("ALTERNATIVE_LOG_PATH"))
 		{
 			m_strAlternateLogPath = tokenSecond;
-		}
-		
+		}		
 	}	
 	return true;
 }
@@ -487,7 +489,7 @@ bool YKOptionSetting::LoadParentOptionDefault()
 	QString crntPathStr = m_crntDir.absolutePath();	
 
 	m_strPrimaryLogPath = crntPathStr + "\\" + "ProgramData" + "\\" + "LOG";
-	m_strAlternateLogPath = "\\\\Dfa15\\ro_publc$\\Proton_Fluoro\\4030e_replacement\\LOG_STAR";
+	m_strAlternateLogPath = "\\\\Dfa15\\ro_publc$\\Proton_Fluoro\\4030E_LOG\\STAR";
 	//will be filled later, if in case.
 	crntPathStr = m_crntDir.absolutePath();		
 
