@@ -382,7 +382,7 @@ set_optimization_scales_translation (RegistrationType::Pointer registration,
 {
     itk::Array<double> optimizerScales(3);
 
-    const double translationScale = 1.0 / 100000.0;
+    const double translationScale = 1.0 / (double) stage->translation_scale_factor;
     optimizerScales[0] = translationScale;
     optimizerScales[1] = translationScale;
     optimizerScales[2] = translationScale;
@@ -402,7 +402,7 @@ set_optimization_scales_versor (RegistrationType::Pointer registration,
     } else {
 	rotation_scale = 1.0;
 	// translation_scale = 1.0 / 10000.0;
-	translation_scale = 1.0 / 20000.0;
+	translation_scale = 1.0 / (double) stage->translation_scale_factor;
     }
 
     optimizerScales[0] = rotation_scale;
@@ -424,7 +424,7 @@ set_optimization_scales_quaternion (
     itk::Array<double> optimizerScales(7);
 
     rotation_scale = 1.0;
-    translation_scale = 1.0 / 10000.0;
+    translation_scale = 1.0 / (double) stage->translation_scale_factor;
 
     /* GCS FIX: Changing the scale fudge_factor is one way to avoid 
        ITK "Too many samples..." problem */
@@ -452,7 +452,7 @@ set_optimization_scales_affine (RegistrationType::Pointer registration,
 
     const double matrix_scale = 1.0;
     //const double translationScale = 1.0 / 10000.0;
-    const double translation_scale = 1.0 / 100000.0;
+    const double translation_scale = 1.0 / (double) stage->translation_scale_factor;
     //const double translation_scale = 1.0 / 1000000.0;
     optimizerScales[0] = matrix_scale;
     optimizerScales[1] = matrix_scale;

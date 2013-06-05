@@ -512,6 +512,12 @@ Registration_parms::set_key_val (
             goto error_exit;
         }
     }
+    else if (!strcmp (key, "translation_scale_factor")) {
+        if (section == 0) goto error_not_global;
+        if (sscanf (val, "%d", &stage->translation_scale_factor) != 1) {
+            goto error_exit;
+        }
+    }
     else if (!strcmp (key, "convergence_tol")) {
         if (section == 0) goto error_not_global;
         if (sscanf (val, "%g", &stage->convergence_tol) != 1) {

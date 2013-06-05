@@ -95,6 +95,7 @@ public:
     float max_step;
     float min_step;
     float rsg_grad_tol;
+    int translation_scale_factor;
     /* Quaternion optimizer */
     float learn_rate;
     /* Mutual information */
@@ -170,6 +171,7 @@ public:
         max_step = 10.0;
         min_step = 0.5;
         rsg_grad_tol = 0.0001;
+        translation_scale_factor = 1000;
         /* Quaternion optimizer */
         learn_rate = 0.01 ;
         /* Mattes mutual information */
