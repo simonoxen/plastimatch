@@ -44,12 +44,19 @@ Acquire_4030e_parent::Acquire_4030e_parent (int argc, char* argv[])
 	m_pClientConnect[0] = NULL;
 	m_pClientConnect[1] = NULL;	
 	
-	QString exePath = argv[0];
+	//QString exePath = argv[0];
 
 	m_bPanelOpeningSuccess[0] = false; //for sequencial starting
 	m_bPanelOpeningSuccess[1] = false; //for sequencial starting
 	
-	initialize (exePath);	
+//	if (!initialize (exePath))
+//		close();	
+
+	for (int i = 0 ; i < 8 ; i++)
+	{
+		m_ArrAdvantechIDI[i] = 0;
+	}
+
 }
 
 Acquire_4030e_parent::~Acquire_4030e_parent () //not called!!
@@ -67,7 +74,7 @@ Acquire_4030e_parent::~Acquire_4030e_parent () //not called!!
 }
 
 
-void Acquire_4030e_parent::initialize (QString& strEXE_Path)
+bool Acquire_4030e_parent::initialize (QString& strEXE_Path)
 {	
 	//Generatate default folders	
 	m_OptionSettingParent.GenDefaultFolders();		
@@ -77,20 +84,9 @@ void Acquire_4030e_parent::initialize (QString& strEXE_Path)
 	/* Set up event handler for cleanup */
 	connect (this, SIGNAL(aboutToQuit()), this, SLOT(about_to_quit())); //whenever quit signal --> run quit
 
-	/* Kill any leftover rogue processes */
-	kill_rogue_processes (); //delete same process
-
-	/* Check for system tray to store the UI */
-	if (QSystemTrayIcon::isSystemTrayAvailable()) {
-		printf ("System tray found.\n");
-	}	
-	else {
-		printf ("System tray not found.\n");
-	}
 
 	m_strEXEPath = strEXE_Path;
 	num_process = 2; //fixed!
-
 
 	//init log file
 	m_strLogFilePath = m_OptionSettingParent.m_strPrimaryLogPath;
@@ -115,13 +111,12 @@ void Acquire_4030e_parent::initialize (QString& strEXE_Path)
 		printf("Cannot open log output file");
 	}
 
-
 	/* Start up main window */	
 	this->window = new Acquire_4030e_window();  //GUI-linked window	
 
 	QString strSVNDate = QString(SVN_DATE);
 	QString strSVNVer = QString(SVN_VERSION);
-	
+
 	strSVNDate.remove(QChar('$'));
 
 	QStringList dateList = strSVNDate.split(" ");//space bar
@@ -135,22 +130,51 @@ void Acquire_4030e_parent::initialize (QString& strEXE_Path)
 
 	this->window->UpdateLabel(0, NOT_OPENNED);
 	this->window->UpdateLabel(1, NOT_OPENNED);
-	this->window->set_icon(0,NOT_OPENNED);// Tray should be shown after Label is updated.
-	this->window->set_icon(1,NOT_OPENNED);
-	this->window->show ();
 	
-	/* Look for advantech device, spawn advantech thread */
+	this->window->show ();
+
+		/* Look for advantech device, spawn advantech thread */
 	this->advantech = new Advantech;
+	int advantechResult = this->advantech->Init();
+
+	if (advantechResult != ADVANTECH_NO_ERROR)
+	{
+		QString strMsg = QString("Advantech Error. Error code = %1. Check USB connection. Program is exiting.").arg(advantechResult);
+
+		log_output(strMsg);
+
+		//about_to_quit();
+		m_logFout.close();
+		BackupLogFiles();
+
+		/*QMessageBox msgBox = QMessageBox(this,"Warning", strMsg);
+		msgBox.exec();		*/
+		QMessageBox::warning(window, "Warning",strMsg );		
+		return false;
+	}
+
 	this->generator_state = WAITING;
 	this->panel_select = false;
 	this->advantech->relay_open (0);
 	this->advantech->relay_open (3);
 	this->advantech->relay_open (4);
 
+
+	/* Kill any leftover rogue processes */
+	kill_rogue_processes (); //delete same process
+
+	/* Check for system tray to store the UI */
+	if (QSystemTrayIcon::isSystemTrayAvailable()) {
+		printf ("System tray found.\n");
+	}	
+	else {
+		printf ("System tray not found.\n");
+	}
+
 	if (!SOCKET_StartServer(0))
 	{
 		log_output("[p] Starting server 0 failed. Exit program");
-		exit(1);
+		return false;
 	}
 	else
 		log_output("[p] Starting server 0 success.");
@@ -158,7 +182,7 @@ void Acquire_4030e_parent::initialize (QString& strEXE_Path)
 	if (!SOCKET_StartServer(1))
 	{
 		log_output("[p] Starting server 1 failed.Exit Program");	
-		exit(1);
+		return false;
 	}
 	else
 		log_output("[p] Starting server 1 success.");
@@ -169,6 +193,8 @@ void Acquire_4030e_parent::initialize (QString& strEXE_Path)
 
 	m_bPleoraErrorHasBeenOccurredFlag[0] = false;
 	m_bPleoraErrorHasBeenOccurredFlag[1] = false;	
+
+	UpdateAdvantechIDIVal ();
 	
 	///* Start child processes */
 	//printf ("Creating First child process.\n");
@@ -181,6 +207,10 @@ void Acquire_4030e_parent::initialize (QString& strEXE_Path)
 	//	connect (&this->process[0], SIGNAL(readyReadStandardOutput()),this, SLOT(poll_child_messages()));
 	//	this->process[0].start(m_program[0], m_arguments[0]);
 	////}
+
+	this->window->set_icon(0,NOT_OPENNED);// Tray should be shown after Label is updated.
+	this->window->set_icon(1,NOT_OPENNED);
+
 	Start_Process (0);
 
 	/* Spawn the timer for polling devices */
@@ -188,6 +218,52 @@ void Acquire_4030e_parent::initialize (QString& strEXE_Path)
 	connect (timer, SIGNAL(timeout()), this, SLOT(timer_event()));
 	m_bParentBusy = false;
 	timer->start (100);
+
+	return true;
+}
+
+void 
+Acquire_4030e_parent::UpdateAdvantechIDIVal () //IDI = Advantech Isolated Digital Input
+{
+	int tmpCurArr[8];
+	for (int i = 0 ; i<8 ; i++)
+	{
+		tmpCurArr[i] = advantech->read_bit (i);
+	}
+	/*int res0 = advantech->read_bit (0);
+	int res1 = advantech->read_bit (1);
+	int res2 = advantech->read_bit (2);
+	int res3 = advantech->read_bit (3);
+	int res4 = advantech->read_bit (4);*/
+	
+	//Update IDI info on GUI
+	QString strIDIVal = QString("IDI_INFO [0]Slct:%1 [1]Prep:%2 [2]Beam:%3 [3]Rdy0:%4 [4]Rdy1:%5 [567]%6%7%8")
+		.arg(tmpCurArr[0])
+		.arg(tmpCurArr[1])
+		.arg(tmpCurArr[2])
+		.arg(tmpCurArr[3])
+		.arg(tmpCurArr[4])
+		.arg(tmpCurArr[5])
+		.arg(tmpCurArr[6])
+		.arg(tmpCurArr[7]);
+	window->ShowROIVal(strIDIVal);
+
+	bool bChanged = false;
+
+	for (int i = 0 ; i<8 ; i++)
+	{
+		if (tmpCurArr[i] != m_ArrAdvantechIDI[i])
+		{
+			bChanged = true;		
+			m_ArrAdvantechIDI[i] = tmpCurArr[i];
+		}
+	}	
+	//Log out only when there is change in values
+
+	if (bChanged)
+	{
+		log_output(QString(strIDIVal).prepend("[p] "));
+	}
 }
 
 void 
@@ -558,11 +634,13 @@ void Acquire_4030e_parent::timer_event () //will be runned from the first time.
 	/* On STAR, there is no distinction between prep & expose, i.e. there 
 	is only prep signal. */    		
 
-	int res0 = advantech->read_bit (0);
-	int res1 = advantech->read_bit (1);
-	int res2 = advantech->read_bit (2);
-	int res3 = advantech->read_bit (3);
-	int res4 = advantech->read_bit (4);
+	UpdateAdvantechIDIVal ();
+
+	int res0 = m_ArrAdvantechIDI[0];
+	int res1 = m_ArrAdvantechIDI[1];
+	int res2 = m_ArrAdvantechIDI[2];
+	int res3 = m_ArrAdvantechIDI[3];
+	int res4 = m_ArrAdvantechIDI[4];
 
 	if (res0 == Advantech::STATE_ERROR ||
 		res1 == Advantech::STATE_ERROR ||

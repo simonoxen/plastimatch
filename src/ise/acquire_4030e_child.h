@@ -121,9 +121,10 @@ public:
 	std::vector<BADPIXELMAP> m_vBadPixelMap;
 	bool LoadBadPixelMap(const char* filePath); //fill m_vBadPixelMap with loaded data(mapping)
 
+	bool m_bFirstBoot_OpenSuccess; // send aqprintf("PANEL_OPEN_SUCCESS\n"); to parent for Sequencial Booting of the panels
 
-	bool m_bFirstBoot_OpenSuccess;	
-	bool m_bFirstBoot_TimeOutOccurred;
+	//void DeleteOldImageFiles(QString& folderName, int iDaysAgo); //returns number of deleted files
+	void DeleteOldImageFiles();
 };
 
 #endif

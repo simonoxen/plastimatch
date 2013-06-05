@@ -34,6 +34,7 @@ public slots:
 	void MultiGainOn();
 	void ReLoadCalibImages();
 	void OpenDefectMapFile(); //Btn
+	void SeeSavingFolder();
 
 public:
     Acquire_4030e_DlgControl();

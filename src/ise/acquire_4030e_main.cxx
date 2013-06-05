@@ -55,6 +55,9 @@ main (int argc, char* argv[])
 		/* Spawn child processes */
 		Acquire_4030e_parent *parent //QCoreApplication		
 			= new Acquire_4030e_parent (argc, argv);
+		QString exePath = argv[0];
+		if (!parent->initialize(exePath))
+			return 0;
 
 		/* Wait forever */
 		printf ("Waiting forever.(parent)\n");

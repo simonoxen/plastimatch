@@ -28,10 +28,7 @@ YKOptionSetting::YKOptionSetting(void)
 		m_strDefectMapSavingFolder[idx]= crntPathStr + "\\ProgramData" + QString("\\PANEL_%1").arg(idx) + "\\01_RAD_2304_3200" + "\\DEFECT"; //not explicitly editable;
 	}	
 
-	m_iCustomThreshold[0] = 13000; //apply after Gain Correction
-	m_iCustomThreshold[1] = 13000;
-	m_bEnbleCustomThre[0] = false; //apply after Gain Correction
-	m_bEnbleCustomThre[1] = false; //apply after Gain Correction
+	
 }
 
 
@@ -477,7 +474,24 @@ bool YKOptionSetting::LoadChildOption( QString& childOptionPath, int idx )
 		else if (tokenFirst.contains("ENABLE_DEFECT_CORRECTION_APPLY"))
 		{
 			m_bDefectMapApply[idx] = (bool)tokenSecond.toInt();
-		}		
+		}	
+
+		else if (tokenFirst.contains("ENABLE_FORCED_THRESHOLDING"))
+		{
+			m_bEnableForcedThresholding[idx] = (bool)tokenSecond.toInt();
+		}	
+		else if (tokenFirst.contains("THRESHOLDING_VALUE"))
+		{
+			m_iThresholdVal[idx] = tokenSecond.toInt();
+		}	
+		else if (tokenFirst.contains("ENABLE_OLD_IMG_DELETION"))
+		{
+			m_bDeleteOldImg[idx] = (bool)tokenSecond.toInt();
+		}	
+		else if (tokenFirst.contains("OLD_IMG_DELETION_PERIOD"))
+		{
+			m_iAfterDays[idx] = tokenSecond.toInt();
+		}	
 	}
 	return true;
 }
@@ -550,6 +564,13 @@ bool YKOptionSetting::LoadChildOptionDefault( int idx ) //should be called after
 	m_strDefectMapPath[idx] = crntPathStr + "\\ProgramData" + QString("\\PANEL_%1").arg(idx) + "\\01_RAD_2304_3200" + "\\DEFECT";
 	m_strDefectMapPath[idx] = "";//should be set later	
 	m_bDefectMapApply[idx] = false;
+
+
+//	m_bEnbleCustomThre[idx] = false; //apply after Gain Correction
+//	m_iCustomThreshold[idx] = 13000; //apply after Gain Correction		
+
+	m_bDeleteOldImg[idx] = true;
+	m_iAfterDays[idx] = 15;	
 
 	return true;
 }
@@ -665,6 +686,14 @@ bool YKOptionSetting::ExportChildOption( QString& filePath, int idx)
 	fout << "$END_OF_DEFECT_CORRECTION" << endl;	
 	/**********************************************/
 
+	//Miscelleneous//
+	fout << "$BEGIN_OF_MISCELLENEOUS" << endl;	
+	fout << "#ENABLE_FORCED_THRESHOLDING" << "	" << m_bEnableForcedThresholding[idx] << endl;	
+	fout << "#THRESHOLDING_VALUE" << "	" << m_iThresholdVal[idx] << endl;	
+	fout << "#ENABLE_OLD_IMG_DELETION_" << "	" << m_bDeleteOldImg[idx] << endl;	
+	fout << "#OLD_IMG_DELETION_PERIOD" << "	" << m_iAfterDays[idx] << endl;	
+	fout << "$END_OF_MISCELLENEOUS" << endl;	
+
 	fout.close();
 
 	return true;
@@ -672,50 +701,50 @@ bool YKOptionSetting::ExportChildOption( QString& filePath, int idx)
 
 
 //Copy all of the options from src to target except for panel dependent information
-
-bool YKOptionSetting::CopyTrivialChildOptions(int idxS, int idxT) //not used
-{
-	if (idxS != 0 && idxS != 1)
-		return false;
-	if (idxT != 0 && idxT != 1)
-		return false;
-	if (idxS == idxT)
-		return false;
-
-	//m_strDriverFolder[idxT] = m_strDriverFolder[idxS]; // should not be copied
-	m_iWinLevelUpper[idxT] = m_iWinLevelUpper[idxS];
-	m_iWinLevelLower[idxT] = m_iWinLevelLower[idxS];	
-
-	/* File Save */
-	m_bSaveToFileAfterAcq[idxT] = m_bSaveToFileAfterAcq[idxS];
-	m_bSendImageToDipsAfterAcq[idxT] = m_bSendImageToDipsAfterAcq[idxS];
-	m_bSaveDarkCorrectedImage[idxT] = m_bSaveDarkCorrectedImage[idxS];
-	m_bSaveRawImage[idxT] = m_bSaveRawImage[idxS];
-	//m_strAcqFileSavingFolder[idxT] = m_strAcqFileSavingFolder[idxS];
-
-	/* Panel Control */
-	m_bSoftwareHandshakingEnabled[idxT] = m_bSoftwareHandshakingEnabled[idxS]; //false = hardware handshaking
-
-	/*Dark Image Correction */
-	m_bDarkCorrectionOn[idxT] = m_bDarkCorrectionOn[idxS];
-	m_iDarkFrameNum[idxT] =  m_iDarkFrameNum[idxS];
-	//m_strDarkImageSavingFolder[idxT] = m_strDarkImageSavingFolder[idxS];
-	//m_strDarkImagePath[idxT] = m_strDarkImagePath[idxS]; //should be set later
-	m_bTimerAcquisitionEnabled[idxT] = m_bTimerAcquisitionEnabled[idxS]; //not implemented yet
-	m_iTimerAcquisitionMinInterval[idxT] = m_iTimerAcquisitionMinInterval[idxS];//not implemented yet
-
-	m_fDarkCufoffUpperMean[idxT] = m_fDarkCufoffUpperMean[idxS];
-	m_fDarkCufoffLowerMean[idxT] = m_fDarkCufoffLowerMean[idxS];
-
-	m_fDarkCufoffUpperSD[idxT] = m_fDarkCufoffUpperSD[idxS];
-	m_fDarkCufoffLowerSD[idxT] = m_fDarkCufoffLowerSD[idxS];	
-
-	/*Gain Image Correction */
-	m_bGainCorrectionOn[idxT] = m_bGainCorrectionOn[idxS];
-	m_bMultiLevelGainEnabled[idxT] = m_bMultiLevelGainEnabled[idxS]; // false = single gain correction	
-	//m_strGainImageSavingFolder[idxT] = m_strGainImageSavingFolder[idxS];
-	//m_strSingleGainPath[idxT] = m_strSingleGainPath[idxS];
-	m_fSingleGainCalibFactor[idxT] = m_fSingleGainCalibFactor[idxS];
-
-	return true;
-}
+//
+//bool YKOptionSetting::CopyTrivialChildOptions(int idxS, int idxT) //not used
+//{
+//	if (idxS != 0 && idxS != 1)
+//		return false;
+//	if (idxT != 0 && idxT != 1)
+//		return false;
+//	if (idxS == idxT)
+//		return false;
+//
+//	//m_strDriverFolder[idxT] = m_strDriverFolder[idxS]; // should not be copied
+//	m_iWinLevelUpper[idxT] = m_iWinLevelUpper[idxS];
+//	m_iWinLevelLower[idxT] = m_iWinLevelLower[idxS];	
+//
+//	/* File Save */
+//	m_bSaveToFileAfterAcq[idxT] = m_bSaveToFileAfterAcq[idxS];
+//	m_bSendImageToDipsAfterAcq[idxT] = m_bSendImageToDipsAfterAcq[idxS];
+//	m_bSaveDarkCorrectedImage[idxT] = m_bSaveDarkCorrectedImage[idxS];
+//	m_bSaveRawImage[idxT] = m_bSaveRawImage[idxS];
+//	//m_strAcqFileSavingFolder[idxT] = m_strAcqFileSavingFolder[idxS];
+//
+//	/* Panel Control */
+//	m_bSoftwareHandshakingEnabled[idxT] = m_bSoftwareHandshakingEnabled[idxS]; //false = hardware handshaking
+//
+//	/*Dark Image Correction */
+//	m_bDarkCorrectionOn[idxT] = m_bDarkCorrectionOn[idxS];
+//	m_iDarkFrameNum[idxT] =  m_iDarkFrameNum[idxS];
+//	//m_strDarkImageSavingFolder[idxT] = m_strDarkImageSavingFolder[idxS];
+//	//m_strDarkImagePath[idxT] = m_strDarkImagePath[idxS]; //should be set later
+//	m_bTimerAcquisitionEnabled[idxT] = m_bTimerAcquisitionEnabled[idxS]; //not implemented yet
+//	m_iTimerAcquisitionMinInterval[idxT] = m_iTimerAcquisitionMinInterval[idxS];//not implemented yet
+//
+//	m_fDarkCufoffUpperMean[idxT] = m_fDarkCufoffUpperMean[idxS];
+//	m_fDarkCufoffLowerMean[idxT] = m_fDarkCufoffLowerMean[idxS];
+//
+//	m_fDarkCufoffUpperSD[idxT] = m_fDarkCufoffUpperSD[idxS];
+//	m_fDarkCufoffLowerSD[idxT] = m_fDarkCufoffLowerSD[idxS];	
+//
+//	/*Gain Image Correction */
+//	m_bGainCorrectionOn[idxT] = m_bGainCorrectionOn[idxS];
+//	m_bMultiLevelGainEnabled[idxT] = m_bMultiLevelGainEnabled[idxS]; // false = single gain correction	
+//	//m_strGainImageSavingFolder[idxT] = m_strGainImageSavingFolder[idxS];
+//	//m_strSingleGainPath[idxT] = m_strSingleGainPath[idxS];
+//	m_fSingleGainCalibFactor[idxT] = m_fSingleGainCalibFactor[idxS];
+//
+//	return true;
+//}

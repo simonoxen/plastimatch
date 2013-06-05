@@ -168,8 +168,13 @@ Acquire_4030e_window::log_output (const QString& log)
     log_viewer->appendPlainText (log);
 }
 
-void 
-Acquire_4030e_window::set_label_style (int panel_no, Label_style style) //change Label_style color
+
+void Acquire_4030e_window::ShowROIVal(const QString& strIDIVal)
+{
+	this->lineEditAdvantechIDI->setText(strIDIVal);
+}
+
+void Acquire_4030e_window::set_label_style (int panel_no, Label_style style) //change Label_style color
 {
     QString style_sheet;
     switch (style) {

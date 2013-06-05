@@ -98,8 +98,12 @@ public:
 	QString m_strDefectMapPath[2];
 	bool m_bDefectMapApply[2];
 
-	bool m_bEnbleCustomThre[2]; //apply after Gain Correction
-	unsigned short m_iCustomThreshold[2]; //apply after Gain Correction
 	
-	bool CopyTrivialChildOptions(int idxS, int idxT);
+	bool m_bEnableForcedThresholding[2];
+	int m_iThresholdVal[2];
+
+	bool m_bDeleteOldImg[2];
+	int m_iAfterDays[2];
+	
+	//bool CopyTrivialChildOptions(int idxS, int idxT);
 };

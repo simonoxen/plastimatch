@@ -60,6 +60,8 @@ public:
 
 	//bool m_bSeqKillReady;
 	void SaveSettingAsDefault_Parent();
+
+	void ShowROIVal(const QString& strIDIVal);
 };
 
 #endif

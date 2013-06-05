@@ -17,6 +17,16 @@ enum CommandToChild {
 };
 
 
+enum AdvantechError {
+	ADVANTECH_NO_ERROR = 0,
+	ADVANTECH_DRV_GET_NUM_ERROR,
+	ADVANTECH_DRV_GET_LIST_ERROR,
+	ADVANTECH_FIND_USB_ERROR,
+	ADVANTECH_DRV_OPEN_ERROR 	
+};
+
+
+
 typedef unsigned short USHORT;
 
 #define MAX_CHECK_LINK_RETRY 3

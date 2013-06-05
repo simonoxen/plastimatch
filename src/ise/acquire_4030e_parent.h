@@ -1,5 +1,5 @@
 //Whenever There is change, minimum change should be given to this file!
-//changed 0604
+//changed 0604 0605
 
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
@@ -24,7 +24,6 @@ class QTimer;
 class QLocalServer;
 class QLocalSocket;
 
-
 using namespace std;
 
 class Acquire_4030e_parent : public QApplication
@@ -36,7 +35,7 @@ public:
     ~Acquire_4030e_parent ();
 
 public:    	
-	void initialize (QString& strEXE_Path);
+	bool initialize (QString& strEXE_Path);
     void kill_rogue_processes ();
     void log_output (const QString& log);
 public slots:
@@ -54,7 +53,6 @@ public:
     int num_process;
     QProcess process[2];
     QTimer *timer;
-
 	
     Advantech *advantech;    
     Generator_state generator_state;
@@ -96,5 +94,8 @@ public:
 
 	void BackupLogFiles ();
 	QString m_strReceptorDriverFolder[2]; //only used for Debug file setting //this variable can be filled when child is initialized	
+
+	int m_ArrAdvantechIDI[8]; //Advantech Isolated Diginal Input Value (not Relay)
+	void UpdateAdvantechIDIVal (); //IDI = Advantech Isolated Digital Input
 };
 #endif

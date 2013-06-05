@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>403</width>
-    <height>526</height>
+    <width>404</width>
+    <height>548</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -111,6 +111,9 @@
       </item>
      </layout>
     </item>
+    <item>
+     <widget class="QLineEdit" name="lineEditAdvantechIDI"/>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -118,7 +121,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>403</width>
+     <width>404</width>
      <height>20</height>
     </rect>
    </property>

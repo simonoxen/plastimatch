@@ -2,6 +2,7 @@
 #include "Acquire_4030e_child.h"
 #include <QCheckBox>
 #include <QFileDialog>
+#include <windows.h>
 #include <QMessageBox>
 #include "aqprintf.h"
 #include "varian_4030e.h"
@@ -316,9 +317,18 @@ void Acquire_4030e_DlgControl::SaveSettingAsDefault_Child()
 	pOptionSetting->m_strSingleGainPath[idx] = this->lineEditGainPath->text();
 	pOptionSetting->m_fSingleGainCalibFactor[idx] = (this->lineEditSingleCalibFactor->text()).toDouble();
 
-
 	pOptionSetting->m_bDefectMapApply[idx] = this->ChkBadPixelCorrApply->isChecked();
 	pOptionSetting->m_strDefectMapPath[idx] = this->lineEditBadPixelMapPath->text();
+
+
+
+	pOptionSetting->m_bEnableForcedThresholding[idx] = this->ChkForcedThresholding->isChecked();
+	pOptionSetting->m_iThresholdVal[idx] = this->lineEditForcedThresholdVal->text().toInt();
+	pOptionSetting->m_bDeleteOldImg[idx] = this->ChkDeleteImgAfter->isChecked();
+	pOptionSetting->m_iAfterDays[idx] = this->lineEditDeleteAfterDays->text().toInt();
+	
+
+
 
 	pOptionSetting->ExportChildOption(pOptionSetting->m_defaultChildOptionPath[idx], idx);
 
@@ -373,6 +383,13 @@ void Acquire_4030e_DlgControl::UpdateGUIFromSetting_Child() // it can be used as
 	this->lineEditBadPixelMapPath->setText(tmpStr);
 	this->ChkBadPixelCorrApply->setChecked(pOptionSetting->m_bDefectMapApply[idx]);
 
+	
+	this->ChkForcedThresholding->setChecked(pOptionSetting->m_bEnableForcedThresholding[idx]);
+	this->lineEditForcedThresholdVal->setText(QString("%1").arg(pOptionSetting->m_iThresholdVal[idx]));	
+
+	this->ChkDeleteImgAfter->setChecked(pOptionSetting->m_bDeleteOldImg[idx]);
+	this->lineEditDeleteAfterDays->setText(QString("%1").arg(pOptionSetting->m_iAfterDays[idx]));
+	
 	ReLoadCalibImages();
 }
 
@@ -432,4 +449,13 @@ void Acquire_4030e_DlgControl::OpenDefectMapFile() //Btn
 
 		this->lineEditBadPixelMapPath->setText("");
 	}		
+}
+
+void Acquire_4030e_DlgControl::SeeSavingFolder() //Window Explorer for saving folder
+{
+	QString strCurFolder = this->lineEditCurImageSaveFolder->text();
+	strCurFolder.replace('/','\\');
+	QString strCommand = QString("explorer %1").arg(strCurFolder);
+	::system(strCommand.toLocal8Bit().constData());
+	
 }
