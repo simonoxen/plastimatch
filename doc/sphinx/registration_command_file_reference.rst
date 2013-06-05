@@ -204,9 +204,16 @@ specific parameters are available.
      - (needs description)
    * - num_samples
      - any+any+itk
-     - 10000
+     - -1
      - voxels
      - Number of voxels to randomly sample to score the cost function. 
+       Only used for itk mattes metric.  If this parameter is not 
+       specified, num_samples_pct will be used instead.
+   * - num_samples_pct
+     - any+any+itk
+     - 0.3
+     - percent
+     - Percent of voxels to randomly sample to score the cost function. 
        Only used for itk mattes metric.
    * - regularization_lambda
      - bspline+any+plastimatch

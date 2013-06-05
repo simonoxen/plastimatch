@@ -64,9 +64,15 @@ get_image_header (plm_long dim[3], float offset[3], float spacing[3], T image)
 
     /* Copy header & allocate data for gpuit float */
     for (int d = 0; d < 3; d++) {
-	dim[d] = sz[d];
-	offset[d] = og[d];
-	spacing[d] = sp[d];
+        if (dim) {
+            dim[d] = sz[d];
+        }
+        if (offset) {
+            offset[d] = og[d];
+        }
+        if (spacing) {
+            spacing[d] = sp[d];
+        }
     }
 }
 

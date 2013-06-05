@@ -22,6 +22,7 @@
 
 #include "compiler_warnings.h"
 #include "itk_demons.h"
+#include "itk_image.h"
 #include "itk_image_type.h"
 #include "itk_optimizer.h"
 #include "itk_registration.h"
@@ -148,7 +149,7 @@ Itk_registration_private::set_best_xform ()
 }
 
 void
-Itk_registration_private::set_metric ()
+Itk_registration_private::set_metric (FloatImageType::Pointer& fixed_ss)
 {
     switch (stage->metric_type) {
     case METRIC_MSE:
@@ -193,7 +194,24 @@ Itk_registration_private::set_metric ()
             much higher proportion, such as $20$ percent. */
         MattesMIMetricType::Pointer metric = MattesMIMetricType::New();
         metric->SetNumberOfHistogramBins(stage->mi_histogram_bins_fixed);
-        metric->SetNumberOfSpatialSamples(stage->mi_num_spatial_samples);
+
+        if (stage->mi_num_spatial_samples > 0) {
+            lprintf ("Setting spatial samples to %d\n",
+                stage->mi_num_spatial_samples);
+            metric->SetNumberOfSpatialSamples (
+                stage->mi_num_spatial_samples);
+        } else {
+            plm_long dim[3], num_voxels;
+            get_image_header (dim, 0, 0, fixed_ss);
+            num_voxels = dim[0] * dim[1] * dim[2];
+            metric->SetNumberOfSpatialSamples (
+                (unsigned int) 
+                (stage->mi_num_spatial_samples_pct * num_voxels));
+            lprintf ("Setting spatial samples to %f x %d = %u\n",
+                stage->mi_num_spatial_samples_pct, (int) num_voxels,
+                (unsigned int) 
+                (stage->mi_num_spatial_samples_pct * num_voxels));
+        } 
         registration->SetMetric(metric);
     }
     break;
@@ -555,7 +573,7 @@ itk_registration_stage (
     irp.registration->SetFixedImage (fixed_ss);
     irp.registration->SetMovingImage (moving_ss);
 
-    irp.set_metric ();              // must be after setting images
+    irp.set_metric (fixed_ss);      // must be after setting images
     irp.set_mask_images ();         // must be after set_metric
     irp.set_fixed_image_region ();  // must be after set_mask_images
     irp.show_stats ();

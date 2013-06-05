@@ -101,6 +101,7 @@ public:
     int mi_histogram_bins_fixed;
     int mi_histogram_bins_moving;
     int mi_num_spatial_samples;
+    float mi_num_spatial_samples_pct;
     enum Bspline_mi_hist_type mi_histogram_type;
     /* ITK & GPUIT demons */
     float demons_std;
@@ -174,7 +175,8 @@ public:
         /* Mattes mutual information */
         mi_histogram_bins_fixed = 20;
         mi_histogram_bins_moving = 20;
-        mi_num_spatial_samples = 10000;
+        mi_num_spatial_samples = -1;
+        mi_num_spatial_samples_pct = 0.3;
         mi_histogram_type = HIST_EQSP;
         /* ITK & GPUIT demons */
         demons_std = 6.0;

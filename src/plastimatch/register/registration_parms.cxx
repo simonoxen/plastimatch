@@ -537,6 +537,12 @@ Registration_parms::set_key_val (
             goto error_exit;
         }
     }
+    else if (!strcmp (key, "num_samples_pct")) {
+        if (section == 0) goto error_not_global;
+        if (sscanf (val, "%f", &stage->mi_num_spatial_samples_pct) != 1) {
+            goto error_exit;
+        }
+    }
     else if (!strcmp (key, "demons_std")) {
         if (section == 0) goto error_not_global;
         if (sscanf (val, "%g", &stage->demons_std) != 1) {

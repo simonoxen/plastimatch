@@ -48,7 +48,7 @@ public:
     void set_best_xform ();
     void set_fixed_image_region ();
     void set_mask_images ();
-    void set_metric ();
+    void set_metric (FloatImageType::Pointer& fixed_ss);
     void set_observer ();
     void set_optimization ();
     void set_transform ();
