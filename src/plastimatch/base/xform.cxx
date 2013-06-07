@@ -15,6 +15,7 @@
 
 #include "bspline_interpolate.h"
 #include "bspline_xform.h"
+#include "itk_directions.h"
 #include "itk_image_load.h"
 #include "itk_image_save.h"
 #include "itk_resample.h"
@@ -580,7 +581,8 @@ xform_vrs_to_aff (Xform *xf_out, Xform* xf_in)
    ----------------------------------------------------------------------- */
 /* Initialize using bspline spacing */
 void
-xform_itk_bsp_set_grid (Xform *xf,
+xform_itk_bsp_set_grid (
+    Xform *xf,
     const BsplineTransformType::OriginType bsp_origin,
     const BsplineTransformType::SpacingType bsp_spacing,
     const BsplineTransformType::RegionType bsp_region,
@@ -604,22 +606,31 @@ xform_itk_bsp_set_grid (Xform *xf,
 /* Initialize using image spacing */
 static void
 bsp_grid_from_img_grid (
-    BsplineTransformType::OriginType& bsp_origin,    /* Output */
-    BsplineTransformType::SpacingType& bsp_spacing,  /* Output */
-    BsplineTransformType::RegionType& bsp_region,    /* Output */
-    const Plm_image_header* pih,                     /* Input */
-    float* grid_spac)                                /* Input */
+    BsplineTransformType::OriginType& bsp_origin,       /* Output */
+    BsplineTransformType::SpacingType& bsp_spacing,     /* Output */
+    BsplineTransformType::RegionType& bsp_region,       /* Output */
+    BsplineTransformType::DirectionType& bsp_direction, /* Output */
+    const Plm_image_header* pih,                        /* Input */
+    float* grid_spac)                                   /* Input */
 {
     BsplineTransformType::RegionType::SizeType bsp_size;
 
     /* Convert image specifications to grid specifications */
     for (int d=0; d<3; d++) {
         float img_ext = (pih->Size(d) - 1) * fabs (pih->m_spacing[d]);
-        bsp_origin[d] = pih->m_origin[d] - grid_spac[d];
+        bsp_origin[d] = pih->m_origin[d];
         bsp_spacing[d] = grid_spac[d];
         bsp_size[d] = 4 + (int) floor (img_ext / grid_spac[d]);
     }
+    bsp_direction = pih->m_direction;
     bsp_region.SetSize (bsp_size);
+
+    /* Adjust origin based on direction cosines */
+    for (int d1=0; d1<3; d1++) {
+        for (int d2=0; d2<3; d2++) {
+            bsp_origin[d2] -= grid_spac[d1] * pih->m_direction[d1][d2];
+        }
+    }
 }
 
 /* Initialize using image spacing */
@@ -635,9 +646,8 @@ itk_bsp_set_grid_img (
     BsplineTransformType::DirectionType bsp_direction;
 
     /* Compute bspline grid specifications */
-    bsp_direction = pih->m_direction;
     bsp_grid_from_img_grid (bsp_origin, bsp_spacing, bsp_region, 
-        pih, grid_spac);
+        bsp_direction, pih, grid_spac);
 
     /* Set grid specifications into xf structure */
     xform_itk_bsp_set_grid (xf, bsp_origin, bsp_spacing, bsp_region, 
@@ -715,10 +725,7 @@ xform_any_to_itk_bsp_nobulk (
     BsplineTransformType::RegionType bsp_region;
     BsplineTransformType::DirectionType bsp_direction;
     bsp_grid_from_img_grid (bsp_origin, bsp_spacing, 
-        bsp_region, pih, grid_spac);
-
-    /* GCS FIX: above should set m_direction */
-    bsp_direction[0][0] = bsp_direction[1][1] = bsp_direction[2][2] = 1.0;
+        bsp_region, bsp_direction, pih, grid_spac);
 
     /* Make a vector field at bspline grid spacing */
     pih_bsp.m_origin = bsp_origin;
@@ -942,20 +949,29 @@ xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
 /* Compute itk_bsp grid specifications from gpuit specifications */
 static void
 gpuit_bsp_grid_to_itk_bsp_grid (
-        BsplineTransformType::OriginType& bsp_origin,       /* Output */
-        BsplineTransformType::SpacingType& bsp_spacing,     /* Output */
-        BsplineTransformType::RegionType& bsp_region,  /* Output */
-        Bspline_xform* bxf)                         /* Input */
+    BsplineTransformType::OriginType& bsp_origin,        /* Output */
+    BsplineTransformType::SpacingType& bsp_spacing,      /* Output */
+    BsplineTransformType::RegionType& bsp_region,        /* Output */
+    BsplineTransformType::DirectionType& bsp_direction,  /* Output */
+    Bspline_xform* bxf)                                  /* Input */
 {
     BsplineTransformType::SizeType bsp_size;
 
+    /* Convert bxf specifications to grid specifications */
     for (int d = 0; d < 3; d++) {
         bsp_size[d] = bxf->cdims[d];
-        bsp_origin[d] = bxf->img_origin[d] 
-            + bxf->roi_offset[d] * bxf->img_spacing[d] - bxf->grid_spac[d];
+        bsp_origin[d] = bxf->img_origin[d];
         bsp_spacing[d] = bxf->grid_spac[d];
     }
+    itk_direction_from_dc (&bsp_direction, bxf->dc);
     bsp_region.SetSize (bsp_size);
+
+    /* Adjust origin based on direction cosines */
+    for (int d1=0; d1<3; d1++) {
+        for (int d2=0; d2<3; d2++) {
+            bsp_origin[d2] -= bxf->grid_spac[d1] * bsp_direction[d1][d2];
+        }
+    }
 }
 
 static void
@@ -973,7 +989,8 @@ gpuit_bsp_to_itk_bsp_raw (
     BsplineTransformType::DirectionType bsp_direction = pih->m_direction;
 
     /* Convert bspline grid geometry from gpuit to itk */
-    gpuit_bsp_grid_to_itk_bsp_grid (bsp_origin, bsp_spacing, bsp_region, bxf);
+    gpuit_bsp_grid_to_itk_bsp_grid (bsp_origin, bsp_spacing, bsp_region, 
+        bsp_direction, bxf);
 
     /* Create itk bspline structure */
     xform_itk_bsp_init_default (xf_out);
