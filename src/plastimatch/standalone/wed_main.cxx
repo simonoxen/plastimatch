@@ -119,7 +119,8 @@ void
 wed_ct_compute (
     const char* out_fn,
     Wed_Parms* parms,
-    Plm_image *ct_vol,
+    Plm_image *ct_vol,       // This is not always ct, sometimes it is dose or 
+                             // sometimes it is target mask.
     Proton_scene *scene,
     float background
 )

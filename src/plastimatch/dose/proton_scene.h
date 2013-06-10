@@ -30,10 +30,18 @@ public:
     /* Set the CT volume for dose calculation.
        The Proton_scene takes ownership of this CT. */
     void set_patient (Plm_image*);
+    void set_patient (ShortImageType::Pointer&);
     void set_patient (FloatImageType::Pointer&);
     void set_patient (Volume*);
     Volume *get_patient_vol ();
     Plm_image *get_patient ();
+
+    void set_target (UCharImageType::Pointer&);
+    void set_target (FloatImageType::Pointer&);
+    Plm_image::Pointer& get_target ();
+
+    /* This computes the aperture and range compensator */
+    void compute_beam_modifiers ();
 
     Aperture::Pointer& get_aperture ();
 

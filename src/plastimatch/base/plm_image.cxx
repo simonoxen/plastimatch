@@ -1185,8 +1185,8 @@ Plm_image::convert_to_gpuit_float ()
 	return;
     default:
 	print_and_exit (
-	    "Error: unhandled conversion from %s to gpuit_float\n",
-	    plm_image_type_string (this->m_type));
+	    "Error: unhandled conversion from %s (%d) to gpuit_float\n",
+	    plm_image_type_string (this->m_type), this->m_type);
 	return;
     }
 }

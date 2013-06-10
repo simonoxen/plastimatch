@@ -20,6 +20,7 @@ public:
         debug = false;
         step_length = 0.;
         patient = Plm_image::New();
+        target = Plm_image::New();
         ap = Aperture::New();
     }
     ~Proton_scene_private () { }
@@ -27,11 +28,13 @@ public:
     bool debug;
     double step_length;
     Plm_image::Pointer patient;
+    Plm_image::Pointer target;
     Aperture::Pointer ap;
 };
 
 Proton_scene::Proton_scene ()
 {
+    printf ("*** Creating proton scene ***\n");
     this->d_ptr = new Proton_scene_private;
     this->beam = new Proton_beam;
     this->rpl_vol = 0;
@@ -87,6 +90,15 @@ Proton_scene::set_patient (Plm_image* ct_vol)
 }
 
 void
+Proton_scene::set_patient (ShortImageType::Pointer& ct_vol)
+{
+    d_ptr->patient->set_itk (ct_vol);
+
+    /* compute_segdepth_volume assumes float */
+    d_ptr->patient->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
+}
+
+void
 Proton_scene::set_patient (FloatImageType::Pointer& ct_vol)
 {
     d_ptr->patient->set_itk (ct_vol);
@@ -108,6 +120,34 @@ Plm_image *
 Proton_scene::get_patient ()
 {
     return d_ptr->patient.get();
+}
+
+void
+Proton_scene::set_target (UCharImageType::Pointer& target_vol)
+{
+    d_ptr->target->set_itk (target_vol);
+
+    /* compute_segdepth_volume assumes float */
+    d_ptr->target->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
+}
+
+void
+Proton_scene::set_target (FloatImageType::Pointer& target_vol)
+{
+    d_ptr->target->set_itk (target_vol);
+}
+
+Plm_image::Pointer&
+Proton_scene::get_target ()
+{
+    return d_ptr->target;
+}
+
+void
+Proton_scene::compute_beam_modifiers ()
+{
+    this->rpl_vol->compute_segdepth_volume (
+        d_ptr->target->get_volume(), 0);
 }
 
 Aperture::Pointer&
