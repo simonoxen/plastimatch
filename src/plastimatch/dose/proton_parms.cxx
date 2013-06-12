@@ -330,16 +330,6 @@ Proton_parms::get_scene ()
     return d_ptr->scene;
 }
 
-#if defined (commentout)
-void
-Proton_parms::set_scene (
-    Proton_scene *scene
-)
-{
-    this->scene = scene;
-}
-#endif
-
 void
 Proton_parms::parse_config (
     const char* config_fn

@@ -42,7 +42,8 @@ print_and_exit (char* prompt_fmt, ...)
     if (prompt_fmt) {
         va_list argptr;
         va_start (argptr, prompt_fmt);
-        Plm_exception pe = Plm_exception (string_format (prompt_fmt, argptr));
+        std::string error_message = string_format (prompt_fmt, argptr);
+        Plm_exception pe = Plm_exception (error_message);
         va_end (argptr);
         throw pe;
     }

@@ -186,16 +186,16 @@ slurp_file (const std::string& fn)
    http://creativecommons.org/licenses/by-sa/3.0/
 */
 std::string 
-string_format (const char *fmt, ...)
+string_format (const char *fmt, va_list ap)
 {
     int size=100;
     std::string str;
-    va_list ap;
     while (1) {
         str.resize(size);
-        va_start(ap, fmt);
-        int n = vsnprintf((char *)str.c_str(), size, fmt, ap);
-        va_end(ap);
+        va_list ap_copy;
+        va_copy (ap_copy, ap);
+        int n = vsnprintf((char *)str.c_str(), size, fmt, ap_copy);
+        va_end (ap_copy);
         if (n > -1 && n < size) {
             str = std::string (str.c_str());  /* Strip excess padding */
             return str;
@@ -205,6 +205,16 @@ string_format (const char *fmt, ...)
         else
             size*=2;
     }
+}
+
+std::string 
+string_format (const char *fmt, ...)
+{
+    va_list ap;
+    va_start (ap, fmt);
+    std::string string = string_format (fmt, ap);
+    va_end (ap);
+    return string;
 }
 
 /* Case-insensitive string::find() by Kirill V. Lyadvinsky 
