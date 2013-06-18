@@ -23,7 +23,7 @@ set (PLMUTIL_LIBRARY_SRC
   distance_map.cxx
   diff.cxx
   dvh.cxx 
-  gamma_analysis.cxx
+#  gamma_analysis.cxx
   gamma_dose_comparison.cxx gamma_dose_comparison.h
   geometry_chooser.cxx geometry_chooser.h 
   hausdorff_distance.cxx hausdorff_distance.h 

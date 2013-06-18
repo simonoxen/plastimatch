@@ -70,13 +70,25 @@ public:
     /*! \brief Set the reference dose (prescription dose).  This 
       is used in dose comparison. */
     void set_reference_dose (float dose);
-    /*! \brief Set the dose threshold for gamma analysis.  
-      This is used to ignore voxels which have dose below a certain value.  
+    /*! \brief Set an absolute dose threshold for gamma analysis, 
+      in Gray.  This is used to ignore voxels which have dose 
+      below a certain value.  
+      For example, you may wish to consider only voxels which 
+      have dose greater than 10% of the prescription dose.
+      If the prescription dose is 60 Gy, you would 
+      call set_analysis_threshold_abs (6.0).
+      The threshold is applied to the reference image. 
+    */
+    void set_analysis_threshold_abs (float abs_thresh);
+    /*! \brief Set a dose threshold for gamma analysis, as a 
+      percent of the maximum dose.  This is used to ignore 
+      voxels which have dose below a certain value.  
       For example, to consider only voxels which have dose greater 
-      than 10% of the prescription dose, set the analysis threshold to 
-      0.10.  The threshold is applied to the reference image. 
-      <b>Not yet implemented - threshold is hard-coded</b> */
-    void set_analysis_threshold (float percent);
+      than 10% of the maximum dose, you would call
+      set_analysis_threshold_pct_max (0.1).
+      The threshold is applied to the reference image. 
+    */
+    void set_analysis_threshold_pct_max (float pct_thresh);
     /*! \brief Set the maximum gamma computed by the class.  This is 
       used to speed up computation.  A typical value is 2 or 3.  */
     void set_gamma_max (float gamma_max);
