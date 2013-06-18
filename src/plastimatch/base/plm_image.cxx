@@ -899,14 +899,17 @@ Plm_image::convert_to_itk_float ()
     case PLM_IMG_TYPE_ITK_UCHAR:
 	CONVERT_ITK_ITK (float, uchar);
 	break;
-    case PLM_IMG_TYPE_ITK_SHORT:
-	CONVERT_ITK_ITK (float, short);
-	break;
     case PLM_IMG_TYPE_ITK_USHORT:
 	CONVERT_ITK_ITK (float, ushort);
 	break;
+    case PLM_IMG_TYPE_ITK_SHORT:
+	CONVERT_ITK_ITK (float, short);
+	break;
     case PLM_IMG_TYPE_ITK_ULONG:
 	CONVERT_ITK_ITK (float, uint32);
+	break;
+    case PLM_IMG_TYPE_ITK_LONG:
+	CONVERT_ITK_ITK (float, int32);
 	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
 	return;
