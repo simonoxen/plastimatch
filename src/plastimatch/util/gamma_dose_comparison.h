@@ -67,28 +67,25 @@ public:
       percent of the maximum dose in the reference volume.  
       To use a 3% dose tolerance, you would set this value to 0.03.  */
     void set_dose_difference_tolerance (float dose_tol);
-    /*! \brief Set the reference dose (prescription dose).  This 
-      is used in dose comparison. */
+    /*! \brief Set the reference dose (prescription dose).  
+      The reference dose is used for dose comparison and analysis 
+      threshold.  If the reference dose is not set, the maximum dose in the 
+      reference dose volume is used as the reference dose. */
     void set_reference_dose (float dose);
-    /*! \brief Set an absolute dose threshold for gamma analysis, 
-      in Gray.  This is used to ignore voxels which have dose 
-      below a certain value.  
-      For example, you may wish to consider only voxels which 
-      have dose greater than 10% of the prescription dose.
-      If the prescription dose is 60 Gy, you would 
-      call set_analysis_threshold_abs (6.0).
-      The threshold is applied to the reference image. 
-    */
-    void set_analysis_threshold_abs (float abs_thresh);
+    /*! \brief Unset the reference dose (prescription dose).  
+      The reference dose is used for dose comparison and analysis 
+      threshold.  If the reference dose is not set, the maximum dose in the 
+      reference dose volume is used as the reference dose. */
+    void unset_reference_dose ();
     /*! \brief Set a dose threshold for gamma analysis, as a 
-      percent of the maximum dose.  This is used to ignore 
+      percent of the reference dose.  This is used to ignore 
       voxels which have dose below a certain value.  
       For example, to consider only voxels which have dose greater 
       than 10% of the maximum dose, you would call
       set_analysis_threshold_pct_max (0.1).
-      The threshold is applied to the reference image. 
+      The threshold is applied to dose voxels in the reference dose volume.
     */
-    void set_analysis_threshold_pct_max (float pct_thresh);
+    void set_analysis_threshold (float thresh);
     /*! \brief Set the maximum gamma computed by the class.  This is 
       used to speed up computation.  A typical value is 2 or 3.  */
     void set_gamma_max (float gamma_max);
@@ -114,6 +111,9 @@ public:
     Plm_image* get_fail_image ();
     /*! \brief Return a binary image of failing voxels as an ITK image. */
     UCharImageType::Pointer get_fail_image_itk ();
+    /*! \brief Return fraction of passing points, subject to reference dose 
+      being greater than analysis threshold */
+    float get_pass_fraction ();
     ///@}
     /*! \brief Resample image_moving to image_reference */
     void resample_image_to_reference (Plm_image *image_reference, Plm_image *image_moving);
