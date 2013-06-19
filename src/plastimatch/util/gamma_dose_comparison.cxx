@@ -59,7 +59,7 @@ public:
 
         dta_tolerance = 3.0;
         dose_difference_tolerance = 0.03;
-        gamma_max = 3.0;
+        gamma_max = 2.0;
 
         have_reference_dose = false;
         reference_dose = 0.f;
@@ -373,7 +373,7 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
     FloatImageType::SizeType region_size;
     FloatPoint3DType phys;
 
-    int reg_pixsize; 
+    //int reg_pixsize; 
     float level1, level2, dr2, dd2, gg;
     float f0,f1,f2,f3;
 
@@ -384,7 +384,8 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
     f2 = spacing_in[2]/this->dta_tolerance; f2=f2*f2;
     float dose_tol = this->reference_dose * this->dose_difference_tolerance;
     f3 = 1./dose_tol; f3 = f3*f3;
-
+    
+#if defined (commentout)
     // get min spacing, safeguard against negative spacings.
     float min_spc = fabs(spacing_in[0]);
     if (fabs(spacing_in[1])<min_spc) min_spc=fabs(spacing_in[1]);
@@ -397,11 +398,19 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
     offset[0]=reg_pixsize;
     offset[1]=reg_pixsize;
     offset[2]=reg_pixsize;
+#endif
+
+    // compute search region size
+    float gmax_dist = this->dta_tolerance * this->gamma_max;
+    offset[0] = (int) ceil (gmax_dist /fabs(spacing_in[0]));
+    offset[1] = (int) ceil (gmax_dist /fabs(spacing_in[1]));
+    offset[2] = (int) ceil (gmax_dist /fabs(spacing_in[2]));
 
     float analysis_threshold = this->analysis_thresh * this->reference_dose;
 
     gamma_img_iterator.GoToBegin();
 
+    
     for (img_in1_iterator.GoToBegin(); 
          !img_in1_iterator.IsAtEnd(); 
          ++img_in1_iterator)
@@ -419,10 +428,12 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
         // assume (approx) same pix spacing in img1 and img2
         // crop the region by the entire image to be safe
         k2 -= offset;  
-        subset_of_img2.SetIndex(k2);
-        region_size.Fill( 2*reg_pixsize ); 
-        subset_of_img2.SetSize( region_size);
-        subset_of_img2.Crop( all_of_img2 );
+        subset_of_img2.SetIndex (k2);
+        region_size[0] = 2 * offset[0] + 1;
+        region_size[1] = 2 * offset[1] + 1;
+        region_size[2] = 2 * offset[2] + 1;
+        subset_of_img2.SetSize (region_size);
+        subset_of_img2.Crop (all_of_img2);
 
         FloatIteratorType img_in2_iterator (img_in2, subset_of_img2);
 
