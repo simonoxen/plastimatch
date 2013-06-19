@@ -476,8 +476,13 @@ public:
     std::string output_pointset_2;
     std::string output_match_1;
     std::string output_match_2;
+
+    float contrast_threshold;
+    float curvature_threshold;
 public:
     Sift_parms_pcmd () {
+        contrast_threshold = 0.f;
+        curvature_threshold = 0.f;
     }
 };
 
@@ -500,7 +505,13 @@ parse_fn (
     /* Add --help, --version */
     parser->add_default_options ();
 
-    /* Parameters */
+    /* Sift options */
+    parser->add_long_option ("", "contrast-threshold", 
+        "threshold on image curvature (default is 0.03)", 1, "0.03");
+    parser->add_long_option ("", "curvature-threshold", 
+        "threshold on image curvature (default is 172.3)", 1, "172.3025");
+
+    /* Output files */
     parser->add_long_option ("", "output-ps-1", 
         "output all detected SIFT features of image_1 in fcsv format", 
         1, "");
@@ -520,13 +531,17 @@ parse_fn (
     /* Handle --help, --version */
     parser->check_default_options ();
 
-    /* Check that only one argument was given */
+    /* Check that either one or two input image argument were given */
     if (parser->number_of_arguments() < 1
         || parser->number_of_arguments() > 2)
     {
 	throw (dlib::error (
                 "Error.  Please specify either one or two image files."));
     }
+
+    /* Sift options */
+    parms->contrast_threshold = parser->get_float("contrast-threshold");
+    parms->curvature_threshold = parser->get_float("curvature-threshold");
 
     /* Output files */
     parms->output_pointset_1 = parser->get_string("output-ps-1").c_str();

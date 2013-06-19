@@ -78,6 +78,18 @@ Sift::set_image (const std::string& image_fn)
 }
 
 void
+Sift::set_contrast_threshold (float contrast_threshold)
+{
+    d_ptr->contrast = contrast_threshold;
+}
+
+void
+Sift::set_curvature_threshold (float curvature_threshold)
+{
+    d_ptr->curvature = curvature_threshold;
+}
+
+void
 Sift::run ()
 {
     if (!d_ptr->image) {

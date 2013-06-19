@@ -36,6 +36,11 @@ public:
     void set_image (Plm_image* image);
     /*! \brief Set the input image as an ITK image. */
     void set_image (const FloatImageType::Pointer image);
+
+    /*! \brief Set the contrast threshold */
+    void set_contrast_threshold (float contrast_threshold);
+    /*! \brief Set the curvature threshold */
+    void set_curvature_threshold (float curvature_threshold);
     ///@}
 
     /*! \name Execution */
