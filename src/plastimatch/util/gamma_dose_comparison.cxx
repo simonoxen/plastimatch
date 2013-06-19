@@ -18,9 +18,6 @@
 
 class Gamma_parms;
 
-void do_gamma_threshold (Gamma_parms *parms);
-
-
 /*! \enum Gamma_output_mode Selector for output image type (gamma, or binary pass/fail)
 */
 enum Gamma_labelmap_mode {
@@ -46,7 +43,6 @@ public:
 
     Plm_image *img_in1; /*!< input dose image 1 for gamma analysis*/
     Plm_image *img_in2; /*!< input dose image 2 for gamma analysis*/
-    Plm_image *img_out; /*!< output float type image, voxel value = calculated gamma value */
     Plm_image *labelmap_out; /*!< output uchar type labelmap, voxel value = 1/0 for pass/fail */
 
     Gamma_labelmap_mode mode; /*!< output mode selector for 3D Slicer plugin*/
@@ -56,7 +52,6 @@ public:
                        for the 3D Slicer plugin */
         img_in1 = 0;
         img_in2 = 0;
-        img_out = 0;
         labelmap_out = 0;
         r_tol = d_tol = gamma_max = 3; 
         mode = NONE;
@@ -66,8 +61,10 @@ public:
 
 class Gamma_dose_comparison_private {
 public:
-    Gamma_dose_comparison_private () {
+    Gamma_dose_comparison_private ()
+    {
         have_gamma_image = false;
+        gamma_image = Plm_image::New();
 
         have_reference_dose = false;
         reference_dose = 0.f;
@@ -81,7 +78,10 @@ public:
     }
 public:
     Gamma_parms gp;
+
+    /* Gamma image is float type image, voxel value = calculated gamma value */
     bool have_gamma_image;
+    Plm_image::Pointer gamma_image;
 
     /* reference dose value, used for gamma analysis and analysis 
        thresholding.  */
@@ -101,6 +101,7 @@ public:
 public:
     void find_reference_max_dose ();
     void do_gamma_analysis ();
+    void do_gamma_threshold ();
 };
 
 Gamma_dose_comparison::Gamma_dose_comparison () {
@@ -205,13 +206,13 @@ Gamma_dose_comparison::run ()
     d_ptr->do_gamma_analysis ();
 }
 
-Plm_image*
+Plm_image::Pointer
 Gamma_dose_comparison::get_gamma_image ()
 {
     if (!d_ptr->have_gamma_image) {
         this->run();
     }
-    return d_ptr->gp.img_out;
+    return d_ptr->gamma_image;
 }
 
 FloatImageType::Pointer
@@ -227,7 +228,7 @@ Gamma_dose_comparison::get_pass_image ()
         this->run();
     }
     d_ptr->gp.mode = PASS;
-    do_gamma_threshold (&d_ptr->gp);
+    d_ptr->do_gamma_threshold ();
     return d_ptr->gp.labelmap_out;
 }
 
@@ -244,7 +245,7 @@ Gamma_dose_comparison::get_fail_image ()
         this->run();
     }
     d_ptr->gp.mode = FAIL;
-    do_gamma_threshold (&d_ptr->gp);
+    d_ptr->do_gamma_threshold ();
     return d_ptr->gp.labelmap_out;
 }
 
@@ -279,9 +280,6 @@ Gamma_dose_comparison::resample_image_to_reference (
     image_moving->set_itk(resampledMovingImage);
 }
 
-/* -------------------------------------------------------------------------
-   from gamma_analysis.cxx
-   ------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------
    Private functions
    ------------------------------------------------------------------------- */
@@ -364,7 +362,6 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
 
     FloatIteratorType img_in1_iterator (img_in1, all_of_img1);
     FloatIteratorType gamma_img_iterator (gamma_img, gamma_img->GetLargestPossibleRegion());
-    UCharIteratorType gamma_labelmap_iterator (gamma_labelmap, gamma_labelmap->GetLargestPossibleRegion());
 
     FloatImageType::IndexType k1, k2, k3;
     FloatImageType::OffsetType offset;
@@ -397,7 +394,6 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
     float analysis_threshold = this->analysis_thresh * this->reference_dose;
 
     gamma_img_iterator.GoToBegin();
-    gamma_labelmap_iterator.GoToBegin();
 
     for (img_in1_iterator.GoToBegin(); 
          !img_in1_iterator.IsAtEnd(); 
@@ -434,16 +430,16 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
             dr2 = (k3[0]-k1[0])*(k3[0]-k1[0])*f0 +
                 (k3[1]-k1[1])*(k3[1]-k1[1])*f1 +
                 (k3[2]-k1[2])*(k3[2]-k1[2])*f2 ;
-            dd2 = (level1 - level2)*(level1-level2)*f3;
+            dd2 = (level1 - level2) * (level1 - level2) * f3;
             gg = dr2 + dd2;
             if (gg < gamma) gamma=gg;
-            //test only: if (k1[0]==k3[0]) gamma = k3[0];
         }
         gamma = sqrt(gamma);
         if (gamma > gp.gamma_max) {
             gamma = gp.gamma_max;
         }
         gamma_img_iterator.Set (gamma);
+        ++gamma_img_iterator;
 
         /* Get statistics */
         if (this->have_analysis_thresh) {
@@ -456,26 +452,24 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
         }
     }
 
-    gp.img_out = new Plm_image;
-    gp.img_out->set_itk (gamma_img);
+    this->gamma_image->set_itk (gamma_img);
 }
 
-static
 void 
-do_gamma_threshold (Gamma_parms *parms)
+Gamma_dose_comparison_private::do_gamma_threshold ()
 { 
-    FloatImageType::Pointer ref_img = parms->img_in1->itk_float();
-    FloatImageType::Pointer gamma_img = parms->img_out->itk_float();
+    FloatImageType::Pointer ref_img = gp.img_in1->itk_float();
+    FloatImageType::Pointer gamma_img = this->gamma_image->itk_float();
 
     /* Create labelmap image if not already created */
-    if (!parms->labelmap_out) {
-        parms->labelmap_out = new Plm_image;
+    if (!gp.labelmap_out) {
+        gp.labelmap_out = new Plm_image;
         UCharImageType::Pointer gamma_labelmap = UCharImageType::New();
         itk_image_header_copy (gamma_labelmap, gamma_img);
         gamma_labelmap->Allocate();
-        parms->labelmap_out = new Plm_image (gamma_labelmap);
+        gp.labelmap_out = new Plm_image (gamma_labelmap);
     }
-    UCharImageType::Pointer gamma_labelmap = parms->labelmap_out->itk_uchar();
+    UCharImageType::Pointer gamma_labelmap = gp.labelmap_out->itk_uchar();
 
     typedef itk::ImageRegionIteratorWithIndex< UCharImageType > 
         UCharIteratorType;
@@ -497,7 +491,7 @@ do_gamma_threshold (Gamma_parms *parms)
     {
         float ref_dose = ref_it.Get();
         float gamma = gam_it.Get();
-        switch (parms->mode) {
+        switch (gp.mode) {
         case PASS:
             if ((gamma >=0) && (gamma <= 1) && ref_dose > 0) {
                 lab_it.Set (1);

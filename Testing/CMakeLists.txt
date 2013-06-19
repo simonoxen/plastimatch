@@ -306,6 +306,9 @@ endif ()
 ##   rect-7            Standard rect, centered, direction cosines alt-3
 ##   rect-8            Uchar rect, off-center
 ##   rect-9            Uchar rect, centered, higher resolution
+##   rect-12           Small rect, bg=0, fg=10
+##   rect-13           Small rect, bg=0, fg=11
+##   rect-14           Small, off-center rect, bg=0, fg=10
 ##   sphere-1          Uchar sphere, bg=0, fg=255
 ##   sphere-2          Standard sphere, centered
 ## -------------------------------------------------------------------------
@@ -455,6 +458,21 @@ plm_add_test (
   "rect-11-mask"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-11-mask.mha;--output-type;uchar;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;1;--rect-size;-50 80 -50 80 -50 80"
+  )
+plm_add_test (
+  "rect-12"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-12.mha;--output-type;float;--pattern;rect;--dim;20 20 20;--origin;-9.5 -9.5 -9.5;--spacing;1 1 1;--background;0;--foreground;10;--rect-size;-4.5 4.5 -4.5 4.5 -4.5 4.5"
+  )
+plm_add_test (
+  "rect-13"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-13.mha;--output-type;float;--pattern;rect;--dim;20 20 20;--origin;-9.5 -9.5 -9.5;--spacing;1 1 1;--background;0;--foreground;11;--rect-size;-4.5 4.5 -4.5 4.5 -4.5 4.5"
+  )
+plm_add_test (
+  "rect-14"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-14.mha;--output-type;float;--pattern;rect;--dim;20 20 20;--origin;-9.5 -9.5 -9.5;--spacing;1 1 1;--background;0;--foreground;10;--rect-size;-2.5 6.5 -4.5 4.5 -4.5 4.5"
   )
 plm_add_test (
   "sphere-1"
@@ -2002,6 +2020,24 @@ plmtest_check_interval ("plm-mask-a-check"
 set_tests_properties (plm-mask-a PROPERTIES DEPENDS "rect-1;rect-4")
 set_tests_properties (plm-mask-a-stats PROPERTIES DEPENDS plm-mask-a)
 set_tests_properties (plm-mask-a-check PROPERTIES DEPENDS plm-mask-a-stats)
+
+## -------------------------------------------------------------------------
+## plm-gamma-a  centered and off-center rectangle, centered as reference
+## plm-gamma-b  centered rectangles with different dosees
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-gamma-a"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "gamma;--output;${PLM_BUILD_TESTING_DIR}/plm-gamma-a.mha;${PLM_BUILD_TESTING_DIR}/rect-12.mha;${PLM_BUILD_TESTING_DIR}/rect-14.mha"
+  )
+set_tests_properties (plm-mask-a PROPERTIES DEPENDS "rect-12;rect-14")
+
+plm_add_test (
+  "plm-gamma-b"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "gamma;--output;${PLM_BUILD_TESTING_DIR}/plm-gamma-b.mha;${PLM_BUILD_TESTING_DIR}/rect-12.mha;${PLM_BUILD_TESTING_DIR}/rect-13.mha"
+  )
+set_tests_properties (plm-mask-a PROPERTIES DEPENDS "rect-12;rect-13")
 
 ## -------------------------------------------------------------------------
 ## plastimatch usage

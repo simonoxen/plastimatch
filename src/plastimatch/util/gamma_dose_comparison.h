@@ -5,6 +5,7 @@
 #define _gamma_dose_comparison_h_
 
 #include "plmutil_config.h"
+#include "plm_image.h"
 #include "plm_macros.h"
 #include "itk_image_type.h"
 
@@ -100,7 +101,7 @@ public:
     /*! \name Outputs */
     ///@{
     /*! \brief Return the gamma image as a Plm_image.  */
-    Plm_image* get_gamma_image ();
+    Plm_image::Pointer get_gamma_image ();
     /*! \brief Return the gamma image as an ITK image.  */
     FloatImageType::Pointer get_gamma_image_itk ();
     /*! \brief Return a binary image of passing voxels as a Plm image. */

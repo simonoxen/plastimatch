@@ -18,7 +18,7 @@
 #include "pcmd_diff.h"
 #include "pcmd_drr.h"
 #include "pcmd_dvh.h"
-#include "pcmd_xio_dvh.h"
+#include "pcmd_gamma.h"
 #include "pcmd_mabs.h"
 #include "pcmd_mask.h"
 #include "pcmd_header.h"
@@ -36,6 +36,7 @@
 #include "pcmd_union.h"
 #include "pcmd_warp.h"
 #include "pcmd_xf_convert.h"
+#include "pcmd_xio_dvh.h"
 #include "plm_exception.h"
 #include "plm_stages.h"
 #include "plm_version.h"
@@ -71,23 +72,24 @@ print_usage (int return_code)
 //        "  drr         "
         "  dvh         "
         "  fill        "
+        "  gamma       "
         "  header      "
 	"  jacobian    "
-        "  mask        "
         "\n"
+        "  mask        "
         "  probe       "
         "  register    "
         "  resample    "
         "  scale       "
-        "  segment     "
         "\n"
+        "  segment     "
 //        "  sift        "
         "  stats       "
         "  synth       "
         "  synth-vf    "
         "  thumbnail   "
-        "  union       "
         "\n"
+        "  union       "
         "  warp        "
         "  xf-convert  "
 //        "  xio-dvh     "
@@ -181,15 +183,18 @@ do_command (int argc, char* argv[])
     else if (!strcmp (command, "dvh")) {
         do_command_dvh (argc, argv);
     }
+    else if (!strcmp (command, "fill")) {
+        /* fill and mask are the same */
+        do_command_mask (argc, argv);
+    }
+    else if (!strcmp (command, "gamma")) {
+        do_command_gamma (argc, argv);
+    }
     else if (!strcmp (command, "header")) {
         do_command_header (argc, argv);
     }
     else if (!strcmp (command, "jacobian")) {
         do_command_jacobian (argc, argv);
-    }
-    else if (!strcmp (command, "fill")) {
-        /* fill and mask are the same */
-        do_command_mask (argc, argv);
     }
     else if (!strcmp (command, "mabs")) {
         do_command_mabs (argc, argv);
