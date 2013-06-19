@@ -20,6 +20,9 @@ gamma_main (Gamma_parms* parms)
 
     gdc.set_spatial_tolerance (parms->dta_tolerance);
     gdc.set_dose_difference_tolerance (parms->dose_tolerance);
+    if (parms->have_reference_dose) {
+        gdc.set_reference_dose (parms->reference_dose);
+    }
 
     gdc.run ();
 
@@ -56,6 +59,10 @@ parse_fn (
     parser->add_long_option ("", "dta-tolerance", 
         "the distance-to-agreement (DTA) scaling coefficient in mm "
         "(default is 3)", 1, "3");
+    parser->add_long_option ("", "reference-dose", 
+        "the prescription dose used to compute dose tolerance; if not "
+        "specified, then maximum dose in reference volume is used",
+        1, "");
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -88,6 +95,10 @@ parse_fn (
     /* Gamma options */
     parms->dose_tolerance = parser->get_float("dose-tolerance");
     parms->dta_tolerance = parser->get_float("dta-tolerance");
+    if (parser->option("reference-dose")) {
+        parms->have_reference_dose = true;
+        parms->reference_dose = parser->get_float("reference-dose");
+    }
 }
 
 void
@@ -95,11 +106,8 @@ do_command_gamma (int argc, char *argv[])
 {
     Gamma_parms parms;
 
-    printf ("Hello world.\n");
-    
     /* Parse command line parameters */
     plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv, 1);
 
-    printf ("Running gamma_main.\n");
     gamma_main (&parms);
 }

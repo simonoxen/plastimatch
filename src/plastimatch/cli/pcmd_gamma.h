@@ -19,10 +19,14 @@ public:
     /* Gamma options */
     float dose_tolerance;
     float dta_tolerance;
+    bool have_reference_dose;
+    float reference_dose;
 public:
     Gamma_parms () {
-        dose_tolerance = 3.f;
-        dta_tolerance = .03f;
+        dose_tolerance = .03f;
+        dta_tolerance = 3.f;
+        have_reference_dose = false;
+        reference_dose = 0.f;
     }
 };
 

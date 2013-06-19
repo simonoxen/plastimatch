@@ -33,14 +33,6 @@ enum Gamma_labelmap_mode {
 class Gamma_parms {
 public:
     
-    float r_tol, /*!< distance-to-agreement (DTA) criterion, input parameter */ 
-        d_tol, /*!< dose-difference criterion, input for do_gamma_analysis, in Gy 
-                 Set from 3D Slicer plugin either directly or as percentrage of
-                 dose_max, as found by find_dose_threshold().
-               */
-    //        dose_max, /*!< maximum dose (max voxel value) in the img_in1, set by find_dose_threshold() */
-        gamma_max; /*!< maximum gamma to calculate */
-
     Plm_image *img_in1; /*!< input dose image 1 for gamma analysis*/
     Plm_image *img_in2; /*!< input dose image 2 for gamma analysis*/
     Plm_image *labelmap_out; /*!< output uchar type labelmap, voxel value = 1/0 for pass/fail */
@@ -53,7 +45,6 @@ public:
         img_in1 = 0;
         img_in2 = 0;
         labelmap_out = 0;
-        r_tol = d_tol = gamma_max = 3; 
         mode = NONE;
     }
 };
@@ -65,6 +56,10 @@ public:
     {
         have_gamma_image = false;
         gamma_image = Plm_image::New();
+
+        dta_tolerance = 3.0;
+        dose_difference_tolerance = 0.03;
+        gamma_max = 3.0;
 
         have_reference_dose = false;
         reference_dose = 0.f;
@@ -82,6 +77,16 @@ public:
     /* Gamma image is float type image, voxel value = calculated gamma value */
     bool have_gamma_image;
     Plm_image::Pointer gamma_image;
+
+
+    /* distance-to-agreement (DTA) criterion, input parameter */ 
+    float dta_tolerance;
+    /* dose-difference criterion, in percent.  Either as percent of 
+       prescription (as requested by user), or as percent of 
+       computed dose_max */
+    float dose_difference_tolerance;
+    /* maximum gamma to calculate */
+    float gamma_max;
 
     /* reference dose value, used for gamma analysis and analysis 
        thresholding.  */
@@ -153,25 +158,25 @@ Gamma_dose_comparison::set_compare_image (
 float
 Gamma_dose_comparison::get_spatial_tolerance ()
 {
-    return d_ptr->gp.r_tol;
+    return d_ptr->dta_tolerance;
 }
 
 void 
 Gamma_dose_comparison::set_spatial_tolerance (float spatial_tol)
 {
-    d_ptr->gp.r_tol = spatial_tol;
+    d_ptr->dta_tolerance = spatial_tol;
 }
 
 float
 Gamma_dose_comparison::get_dose_difference_tolerance ()
 {
-    return d_ptr->gp.d_tol;
+    return d_ptr->dose_difference_tolerance;
 }
 
 void 
 Gamma_dose_comparison::set_dose_difference_tolerance (float dose_tol)
 {
-    d_ptr->gp.d_tol = dose_tol;
+    d_ptr->dose_difference_tolerance = dose_tol;
 }
 
 void 
@@ -191,7 +196,7 @@ Gamma_dose_comparison::set_analysis_threshold (float thresh)
 void 
 Gamma_dose_comparison::set_gamma_max (float gamma_max)
 {
-    d_ptr->gp.gamma_max = gamma_max;
+    d_ptr->gamma_max = gamma_max;
 }
 
 void 
@@ -372,11 +377,13 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
     float level1, level2, dr2, dd2, gg;
     float f0,f1,f2,f3;
 
-    //vox-to-mm-to-gamma conversion factors; strictly, these should come from IMAGE2, not 1
-    f0 = spacing_in[0]/gp.r_tol; f0=f0*f0;
-    f1 = spacing_in[1]/gp.r_tol; f1=f1*f1;
-    f2 = spacing_in[2]/gp.r_tol; f2=f2*f2;
-    f3 = 1./gp.d_tol; f3 = f3*f3;
+    // vox-to-mm-to-gamma conversion factors
+    // strictly, these should come from IMAGE2, not 1
+    f0 = spacing_in[0]/this->dta_tolerance; f0=f0*f0;
+    f1 = spacing_in[1]/this->dta_tolerance; f1=f1*f1;
+    f2 = spacing_in[2]/this->dta_tolerance; f2=f2*f2;
+    float dose_tol = this->reference_dose * this->dose_difference_tolerance;
+    f3 = 1./dose_tol; f3 = f3*f3;
 
     // get min spacing, safeguard against negative spacings.
     float min_spc = fabs(spacing_in[0]);
@@ -385,7 +392,7 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
 
     // if gamma is limited to gamma_max, 
     // no need to look beyond reg_pixsize away from the current voxel
-    reg_pixsize = (int)ceil(1+  gp.gamma_max/min_spc);
+    reg_pixsize = (int)ceil(1+  this->gamma_max/min_spc);
     
     offset[0]=reg_pixsize;
     offset[1]=reg_pixsize;
@@ -435,8 +442,8 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
             if (gg < gamma) gamma=gg;
         }
         gamma = sqrt(gamma);
-        if (gamma > gp.gamma_max) {
-            gamma = gp.gamma_max;
+        if (gamma > this->gamma_max) {
+            gamma = this->gamma_max;
         }
         gamma_img_iterator.Set (gamma);
         ++gamma_img_iterator;
