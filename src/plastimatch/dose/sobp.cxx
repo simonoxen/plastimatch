@@ -168,58 +168,58 @@ void Sobp::SetEnergieStep(int step) // set the sobp parameters by introducing on
 
 void Sobp::Optimizer() // the optimizer to get the optimized weights of the beams, optimized by a cost function (see below)
 {
-	int n = (int)(((m_E_max-m_E_min-1)/m_EnergyStep)+2); // calculation of the energies between E_max and E_min separated by the step
-	m_EnergyNumber = n;
+    int n = (int)(((m_E_max-m_E_min-1)/m_EnergyStep)+2); // calculation of the energies between E_max and E_min separated by the step
+    m_EnergyNumber = n;
 
-	std::vector<int> energies (n,0);
-	std::vector<int> z (m_z_end, 0);
+    std::vector<int> energies (n,0);
+    std::vector<int> z (m_z_end, 0);
 
-	std::vector<double> init_vector (m_z_end,0);
-	std::vector<std::vector<double> > depth_dose (n,init_vector);
-	std::vector<double> weight (n,(double)(floor((15.0/(50*n))*1000)/1000)); // "/n speeds up the calculation - 15 for the normalisation of the function to 15 and 50 because the BP are normalized closed to 50 when created by plastimatch)
+    std::vector<double> init_vector (m_z_end,0);
+    std::vector<std::vector<double> > depth_dose (n,init_vector);
+    std::vector<double> weight (n,(double)(floor((15.0/(50*n))*1000)/1000)); // "/n speeds up the calculation - 15 for the normalisation of the function to 15 and 50 because the BP are normalized closed to 50 when created by plastimatch)
 
-	std::vector<double> weight_minimum (n,0);
+    std::vector<double> weight_minimum (n,0);
     std::vector<double> weight_compare (n,0);
     bool compare = 0;
     std::vector<int> depth_in (m_z_end, 0);
-	std::vector<int> depth_out (m_z_end, 0);
+    std::vector<int> depth_out (m_z_end, 0);
 
-	printf("\n %d Mono-energetic BP used: ", n);
+    printf("\n %d Mono-energetic BP used: ", n);
 
-	energies[0]= m_E_min;
-	depth_dose[0][0] = bragg_curve(energies[0],1,0);  // creation of the matrix gathering all the depth dose of the BP constituting the sobp
+    energies[0]= m_E_min;
+    depth_dose[0][0] = bragg_curve(energies[0],1,0);  // creation of the matrix gathering all the depth dose of the BP constituting the sobp
 
-	for (int j = 0; j < m_z_end; j++)
-	{
-		depth_dose[0][j] = bragg_curve(energies[0],1,j);
-		z[j] = j;
-	}
+    for (int j = 0; j < m_z_end; j++)
+    {
+        depth_dose[0][j] = bragg_curve(energies[0],1,j);
+        z[j] = j;
+    }
 
-	printf("%d ", energies[0]);
+    printf("%d ", energies[0]);
     for (int i=1; i < n-1; i++)
     {
         energies[i]=energies[i-1]+m_EnergyStep;
         printf("%d ",energies[i]);
-		for (int j = 0; j < m_z_end; j++)
-		{
-			depth_dose[i][j] = bragg_curve(energies[i],1,j);
-		}
+        for (int j = 0; j < m_z_end; j++)
+        {
+            depth_dose[i][j] = bragg_curve(energies[i],1,j);
+        }
     }
-	energies[n-1]= m_E_max;
-	printf("%d ", energies[n-1]);
+    energies[n-1]= m_E_max;
+    printf("%d ", energies[n-1]);
 
-	for (int j = 0; j < m_z_end; j++)
-	{
-		depth_dose[n-1][j] = bragg_curve(energies[n-1],1,j);
-	}
+    for (int j = 0; j < m_z_end; j++)
+    {
+        depth_dose[n-1][j] = bragg_curve(energies[n-1],1,j);
+    }
 
     for (int i = 0; i < m_z_end ; i++) // creation of the two intervals that represents the inner part of the sobp and the outer part
     {
 
         if (z[i]>=m_z_min && z[i]<=m_z_max)
         {
-                depth_in[i] = 1;
-                depth_out[i] = 0;
+            depth_in[i] = 1;
+            depth_out[i] = 0;
         }
         else
         {
@@ -282,9 +282,9 @@ void Sobp::Optimizer() // the optimizer to get the optimized weights of the beam
                 SUPER_TOT = f_tot;
                 weight_min = 1;
                 for (int k = 0; k < n; k++)
-                    {
-                        weight_minimum[k] = weight[k];
-                    }
+                {
+                    weight_minimum[k] = weight[k];
+                }
             }
             weight[i] = weight[i]-0.001;
 
@@ -293,40 +293,40 @@ void Sobp::Optimizer() // the optimizer to get the optimized weights of the beam
 
         compare = 1; 
         for (int k = 0; k < n ; k++) // then we check if the weights are different with respect to the last run, if yes, we continue, if no we are in a minimum, so we break the optimization
-        if (weight_minimum[k] == weight_compare[k] && compare ==1)
-        {
-            compare = compare;
-        }
-        else
-        {
-            compare = 0;
-        }
+            if (weight_minimum[k] == weight_compare[k] && compare ==1)
+            {
+                compare = compare;
+            }
+            else
+            {
+                compare = 0;
+            }
 
         for (int k = 0; k < n ; k++) // we copy the optimized parameters in the weight matrix
         {
             weight[k] = weight_minimum[k];
             weight_compare[k] = weight[k];
         }
-	}
+    }
 
-     for (int i = 0; i < n; i++) // we send the weight matrix to the member of the sobp class
-            {
-				m_weights.push_back(weight[i]);
-            }
+    for (int i = 0; i < n; i++) // we send the weight matrix to the member of the sobp class
+    {
+        m_weights.push_back(weight[i]);
+    }
 
-	 double sum =0; // we send the depth dose matrix to the member of the sobp class
-	 m_sobpDoseDepth.push_back(init_vector);
-	 m_sobpDoseDepth.push_back(init_vector);
-	 for (int j = 0; j < m_z_end; j++)
-	 {
-		 sum = 0;
-		 for (int i = 0; i < n ; i++)
-		 {
-			sum = sum + weight[i]*depth_dose[i][j];
-		 }
-		 m_sobpDoseDepth[0][j] = j;
-		 m_sobpDoseDepth[1][j] = sum;
-	 }
+    double sum =0; // we send the depth dose matrix to the member of the sobp class
+    m_sobpDoseDepth.push_back(init_vector);
+    m_sobpDoseDepth.push_back(init_vector);
+    for (int j = 0; j < m_z_end; j++)
+    {
+        sum = 0;
+        for (int i = 0; i < n ; i++)
+        {
+            sum = sum + weight[i]*depth_dose[i][j];
+        }
+        m_sobpDoseDepth[0][j] = j;
+        m_sobpDoseDepth[1][j] = sum;
+    }
 }
 
 void Sobp::SobpOptimizedWeights() // we print the weights on the command line

@@ -5,13 +5,12 @@
 #define _proton_dose_h_
 
 #include "plmdose_config.h"
+#include "plm_image.h"
 #include "proton_scene.h"
+#include "proton_scene_p.h"
 
-class Proton_scene;
-class Volume;
-
-PLMDOSE_C_API
-Volume*
+PLMDOSE_API
+Plm_image::Pointer
 proton_dose_compute (Proton_scene::Pointer& scene);
 
 #endif

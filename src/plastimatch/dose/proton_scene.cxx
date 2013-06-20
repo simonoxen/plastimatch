@@ -10,27 +10,12 @@
 #include "plm_image.h"
 #include "proton_beam.h"
 #include "proj_matrix.h"
+#include "proton_dose.h"
 #include "proton_scene.h"
+#include "proton_scene_p.h"
 #include "rpl_volume.h"
+#include "sobp.h"
 #include "volume.h"
-
-class Proton_scene_private {
-public:
-    Proton_scene_private () {
-        debug = false;
-        step_length = 0.;
-        patient = Plm_image::New();
-        target = Plm_image::New();
-        ap = Aperture::New();
-    }
-    ~Proton_scene_private () { }
-public:
-    bool debug;
-    double step_length;
-    Plm_image::Pointer patient;
-    Plm_image::Pointer target;
-    Aperture::Pointer ap;
-};
 
 Proton_scene::Proton_scene ()
 {
@@ -151,7 +136,13 @@ Proton_scene::compute_beam_modifiers ()
 }
 
 Aperture::Pointer&
-Proton_scene::get_aperture ()
+Proton_scene::get_aperture () 
+{
+    return d_ptr->ap;
+}
+
+const Aperture::Pointer&
+Proton_scene::get_aperture () const
 {
     return d_ptr->ap;
 }
@@ -166,6 +157,22 @@ void
 Proton_scene::set_debug (bool debug)
 {
     d_ptr->debug = debug;
+}
+
+void
+Proton_scene::set_beam_depth (float z_min, float z_max, float z_step)
+{
+    d_ptr->z_min = z_min;
+    d_ptr->z_max = z_max;
+    d_ptr->z_step = z_step;
+
+    Sobp sobp;
+}
+
+Plm_image::Pointer
+Proton_scene::get_dose ()
+{
+    return d_ptr->dose;
 }
 
 void

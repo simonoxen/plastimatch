@@ -21,6 +21,7 @@ set (PLMDOSE_LIBRARY_SRC
   proton_dose.cxx
   proton_parms.cxx
   proton_scene.cxx
+  proton_scene_p.cxx
   sobp.cxx
   wed_parms.cxx
   )

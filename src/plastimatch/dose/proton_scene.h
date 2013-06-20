@@ -4,8 +4,8 @@
 #ifndef _proton_scene_h_
 #define _proton_scene_h_
 
-#include "aperture.h"
 #include "plmdose_config.h"
+#include "aperture.h"
 #include "smart_pointer.h"
 
 class Plm_image;
@@ -44,6 +44,7 @@ public:
     void compute_beam_modifiers ();
 
     Aperture::Pointer& get_aperture ();
+    const Aperture::Pointer& get_aperture () const;
 
     void set_step_length (double ray_step);
 
@@ -55,6 +56,12 @@ public:
     void set_debug (bool debug);
     /* Dump state information to the console */
     void debug ();
+
+    /* Set beam depth, in mm */
+    void set_beam_depth (float z_min, float z_max, float z_step);
+    /* Compute dose */
+    void compute_dose ();
+    Plm_image::Pointer get_dose ();
 
 public:
     Proton_beam *beam;

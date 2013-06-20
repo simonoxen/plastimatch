@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "mha_io.h"
 #include "plm_math.h"
 #include "proton_dose.h"
 #include "proton_parms.h"
@@ -16,7 +15,6 @@
 int
 main (int argc, char* argv[])
 {
-    Volume* dose;
     Proton_parms parms;
 
     Proton_scene::Pointer scene = parms.get_scene ();
@@ -27,10 +25,10 @@ main (int argc, char* argv[])
     printf ("Working...\n");
     fflush(stdout);
 
-    dose = proton_dose_compute (scene);
-    write_mha (parms.output_dose_fn.c_str(), dose);
+    scene->compute_dose ();
+    Plm_image::Pointer dose = scene->get_dose ();
+    dose->save_image (parms.output_dose_fn.c_str());
     printf ("done.  \n\n");
 
-    delete dose;
     return 0;
 }

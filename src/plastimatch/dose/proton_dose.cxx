@@ -226,7 +226,7 @@ gaus_kernel (
 static double
 dose_direct (
     double* ct_xyz,             /* voxel to dose */
-    Proton_scene::Pointer& scene
+    const Proton_scene* scene
 )
 {
 #if defined (commentout)
@@ -262,7 +262,7 @@ dose_direct (
 static double
 dose_debug (
     double* ct_xyz,             /* voxel to dose */
-    Proton_scene::Pointer& scene
+    const Proton_scene* scene
 )
 {
 #if defined (commentout)
@@ -278,10 +278,10 @@ static double
 dose_scatter (
     double* ct_xyz,
     int* ct_ijk,            // DEBUG
-    Proton_scene::Pointer& scene
+    const Proton_scene* scene
 )
 {
-    Aperture::Pointer& ap = scene->get_aperture();
+    const Aperture::Pointer& ap = scene->get_aperture();
     Proton_beam*  beam    = scene->beam;
     Rpl_volume*   rpl_vol = scene->rpl_vol;
 
@@ -438,10 +438,10 @@ static double
 dose_hong (
     double* ct_xyz,
     int* ct_ijk,            // DEBUG
-    Proton_scene::Pointer& scene
+    const Proton_scene* scene
 )
 {
-    Aperture::Pointer& ap = scene->get_aperture();
+    const Aperture::Pointer& ap = scene->get_aperture();
     Proton_beam*  beam    = scene->beam;
     Rpl_volume*   rpl_vol = scene->rpl_vol;
 
@@ -590,17 +590,17 @@ dose_hong (
 
 }
 
-Volume*
-proton_dose_compute (Proton_scene::Pointer& scene)
+void
+Proton_scene::compute_dose ()
 {
-    Proton_beam*  beam    = scene->beam;
-    Volume*       ct_vol  = scene->get_patient_vol ();
-    Rpl_volume*   rpl_vol = scene->rpl_vol;
+    Proton_beam*  beam    = this->beam;
+    Volume*       ct_vol  = this->get_patient_vol ();
+    Rpl_volume*   rpl_vol = this->rpl_vol;
 
     Volume* dose_vol = volume_clone_empty (ct_vol);
     float* dose_img = (float*) dose_vol->img;
 
-    if (scene->get_debug()) {
+    if (this->get_debug()) {
         rpl_vol->save ("depth_vol.mha");
         beam->dump ("bragg_curve.txt");
         printf ("Printing proj matrix during proton_dose_compute.\n");
@@ -638,26 +638,27 @@ proton_dose_compute (Proton_scene::Pointer& scene)
 
                 switch (beam->get_flavor()) {
                 case 'a':
-                    dose = dose_direct (ct_xyz, scene);
+                    dose = dose_direct (ct_xyz, this);
                     break;
                 case 'b':
-                    dose = dose_scatter (ct_xyz, ct_ijk, scene);
+                    dose = dose_scatter (ct_xyz, ct_ijk, this);
                     break;
                 case 'c':
-                    dose = dose_hong (ct_xyz, ct_ijk, scene);
+                    dose = dose_hong (ct_xyz, ct_ijk, this);
                     break;
                 case 'd':
-                    dose = dose_debug (ct_xyz, scene);
+                    dose = dose_debug (ct_xyz, this);
                     break;
                 }
 
                 /* Insert the dose into the dose volume */
                 idx = INDEX_OF (ct_ijk, dose_vol->dim);
-                dose_img[idx] = dose;
             }
         }
         display_progress ((float)idx, (float)ct_vol->npix);
     }
 
-    return dose_vol;
+    Plm_image::Pointer dose = Plm_image::New();
+    dose->set_volume (dose_vol);
+    d_ptr->dose = dose;
 }
