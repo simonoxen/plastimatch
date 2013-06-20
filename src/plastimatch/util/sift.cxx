@@ -86,6 +86,13 @@ Sift::set_contrast_threshold (float contrast_threshold)
 void
 Sift::set_curvature_threshold (float curvature_threshold)
 {
+    if (curvature_threshold > 0.f) {
+        /* Use curvature */
+        d_ptr->flag_curve = true;
+    } else {
+        /* Don't use curvature */
+        d_ptr->flag_curve = false;
+    }
     d_ptr->curvature = curvature_threshold;
 }
 
@@ -102,6 +109,9 @@ Sift::run ()
     d_ptr->sift_filter.SetCurvature(d_ptr->curvature);
     d_ptr->sift_filter.SetDescriptorDimension(d_ptr->descriptor_dimension);
     d_ptr->sift_filter.SetMatchRatio(d_ptr->match_ratio);
+
+    printf ("Contrast threshold = %f\n", d_ptr->contrast);
+    printf ("Curvature threshold = %f\n", d_ptr->curvature);
 
     /* output keypoints from image */
     d_ptr->keypoints = d_ptr->sift_filter.getSiftFeatures (

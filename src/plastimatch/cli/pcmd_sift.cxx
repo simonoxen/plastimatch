@@ -567,6 +567,8 @@ do_command_sift (int argc, char *argv[])
 
     /* Get keypoints */
     sift1.set_image (parms.image_fn_1);
+    sift1.set_contrast_threshold (parms.contrast_threshold);
+    sift1.set_curvature_threshold (parms.curvature_threshold);
     sift1.run ();
     if (parms.output_pointset_1 != "") {
         sift1.save_pointset (parms.output_pointset_1.c_str());
@@ -575,6 +577,8 @@ do_command_sift (int argc, char *argv[])
     if (parms.image_fn_2 != "") {
         /* Get keypoints */
         sift2.set_image (parms.image_fn_2);
+        sift2.set_contrast_threshold (parms.contrast_threshold);
+        sift2.set_curvature_threshold (parms.curvature_threshold);
         sift2.run ();
         if (parms.output_pointset_2 != "") {
             sift2.save_pointset (parms.output_pointset_2.c_str());
