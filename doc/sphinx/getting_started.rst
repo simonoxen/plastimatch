@@ -173,11 +173,13 @@ use the dcmtk that comes from your package manager (that's what I do).
 There are special considerations to building dcmtk:
 
 #. PNG, TIFF, and ZLIB are not required
-#. You will need to install dcmtk, so set install directory to something
-   that works for you; I use $HOME/build/dcmtk-3.6.0-install
+#. Set CMAKE_INSTALL_PREFIX to an install directory of your 
+   choice; I use $HOME/build/dcmtk-3.6.0-install
 #. On linux x86_64 platforms, you need to add -fPIC to 
    CMAKE_CXX_FLAGS and CMAKE_C_FLAGS
-#. After building, you need to install
+#. On windows, you need to set DCMTK_OVERWRITE_WIN32_COMPILER_FLAGS to OFF
+#. After building, you need to install; on linux do "make install", or 
+   on Visual Studio build the INSTALL target
 #. When you run cmake on plastimatch, set DCMTK_DIR to the install directory
 
 
