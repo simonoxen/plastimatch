@@ -192,6 +192,18 @@ specific parameters are available.
      - 20
      - number of histogram bins
      - Only used for plastimatch mi metric, and itk mattes metric.
+   * - mattes_fixed_minVal, mattes_fixed_maxVal
+     - bspline+any+itk
+     - 0
+     - image intensity
+     - Min and max intensity values of intensity range for fixed image used for MI calculation.
+       If values are not set by user min and max values will be calculated from images. Only used for optimized version of itk implementation.
+   * - mattes_moving_minVal, mattes_moving_maxVal
+     - bspline+any+itk
+     - 0
+     - image intensity
+     - Min and max intensity values of intensity range for moving image used for MI calculation.
+       If values are not set by user min and max values will be calculated from images. Only used for optimized version of itk implementation.
    * - min_its
      - any+any+any
      - 2
