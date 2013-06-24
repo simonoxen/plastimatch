@@ -13,7 +13,7 @@
 #include "itkRegularStepGradientDescentOptimizer.h"
 
 #if defined(ITK_USE_OPTIMIZED_REGISTRATION_METHODS)
-#include "itkOptMattesMutualInformationImageToImageMetric.h"
+#include "plm_OptMattesMutualInformationImageToImageMetric.h"
 #include "itkOptMeanSquaresImageToImageMetric.h"
 #else
 #include "itkMattesMutualInformationImageToImageMetric.h"
@@ -40,8 +40,15 @@ typedef itk::MeanSquaresImageToImageMetric <
     FloatImageType, FloatImageType > MSEMetricType;
 typedef itk::MutualInformationImageToImageMetric <
     FloatImageType, FloatImageType > MIMetricType;
+
+///modified Mattes mutual information class only available when using ITK_USE_OPTIMIZED_REGISTRATION_METHODS
+#if defined(ITK_USE_OPTIMIZED_REGISTRATION_METHODS)
+typedef itk::plm_MattesMutualInformationImageToImageMetric <
+    FloatImageType, FloatImageType > MattesMIMetricType;
+#else
 typedef itk::MattesMutualInformationImageToImageMetric <
     FloatImageType, FloatImageType > MattesMIMetricType;
+#endif
 typedef itk::ImageToImageMetric < 
     FloatImageType, FloatImageType > MetricType;
 
@@ -212,6 +219,14 @@ Itk_registration_private::set_metric (FloatImageType::Pointer& fixed_ss)
                 (unsigned int) 
                 (stage->mi_num_spatial_samples_pct * num_voxels));
         } 
+        #if defined(ITK_USE_OPTIMIZED_REGISTRATION_METHODS)
+            //Setting maxVal and minVal for MI calculation (default==0 --> minVal and maxVal will be calculated from images)
+            metric->SetFixedImageMin(stage->mi_fixed_image_minVal);
+            metric->SetMovingImageMin(stage->mi_moving_image_minVal);
+            metric->SetFixedImageMax(stage->mi_fixed_image_maxVal);
+            metric->SetMovingImageMax(stage->mi_moving_image_maxVal);
+        #endif
+	
         registration->SetMetric(metric);
     }
     break;

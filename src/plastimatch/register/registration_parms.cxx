@@ -535,6 +535,30 @@ Registration_parms::set_key_val (
         goto error_exit;
     }
     }
+    else if (!strcmp (key, "mattes_fixed_minVal")) {
+        if (section == 0) goto error_not_global;
+        if (sscanf (val, "%g", &stage->mi_fixed_image_minVal) != 1) {
+            goto error_exit;
+        }
+    }
+    else if (!strcmp (key, "mattes_fixed_maxVal")) {
+        if (section == 0) goto error_not_global;
+        if (sscanf (val, "%g", &stage->mi_fixed_image_maxVal) != 1) {
+            goto error_exit;
+        }
+    }
+    else if (!strcmp (key, "mattes_moving_minVal")) {
+        if (section == 0) goto error_not_global;
+        if (sscanf (val, "%g", &stage->mi_moving_image_minVal) != 1) {
+            goto error_exit;
+        }
+    }
+    else if (!strcmp (key, "mattes_moving_maxVal")) {
+        if (section == 0) goto error_not_global;
+        if (sscanf (val, "%g", &stage->mi_moving_image_maxVal) != 1) {
+            goto error_exit;
+        }
+    }
     else if (!strcmp (key, "num_samples")
         || !strcmp (key, "mattes_num_spatial_samples")
         || !strcmp (key, "mi_num_spatial_samples")) {

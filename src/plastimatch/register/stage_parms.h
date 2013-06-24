@@ -104,6 +104,10 @@ public:
     int mi_num_spatial_samples;
     float mi_num_spatial_samples_pct;
     enum Bspline_mi_hist_type mi_histogram_type;
+    float mi_fixed_image_minVal;
+    float mi_fixed_image_maxVal;
+    float mi_moving_image_minVal;
+    float mi_moving_image_maxVal;
     /* ITK & GPUIT demons */
     float demons_std;
     /* GPUIT demons */
@@ -180,6 +184,11 @@ public:
         mi_num_spatial_samples = -1;
         mi_num_spatial_samples_pct = 0.3;
         mi_histogram_type = HIST_EQSP;
+	/*Setting values to zero by default. In this case minVal and maxVal will be calculated from image*/
+        mi_fixed_image_minVal=0;
+        mi_fixed_image_maxVal=0;
+        mi_moving_image_minVal=0;
+        mi_moving_image_maxVal=0;
         /* ITK & GPUIT demons */
         demons_std = 6.0;
         /* GPUIT demons */
