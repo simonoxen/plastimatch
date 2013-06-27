@@ -181,6 +181,13 @@ if (BITFLOW_FOUND)
 endif ()
 
 set (ACQUIRE_4030E_LDFLAGS "/subsystem:windows /ENTRY:mainCRTStartup")
+ # Set compiler options.
+set(variables
+    CMAKE_C_FLAGS_DEBUG      
+    CMAKE_C_FLAGS_RELEASE      
+    CMAKE_CXX_FLAGS_DEBUG      
+    CMAKE_CXX_FLAGS_RELEASE      
+    )
 
 link_directories ("${CMAKE_BINARY_DIR}/src/fatm")
 
@@ -228,6 +235,13 @@ set (ACQUIRE_4030E_LIBRARIES
   ${PAXSCAN_LIBRARIES} ${ADVANTECH_LIBRARIES} ${QT_LIBRARIES})
 
 if (PAXSCAN_FOUND AND ADVANTECH_FOUND AND QT_FOUND)
+
+	foreach(variable ${variables})
+        if(${variable} MATCHES "/MD")
+          string(REGEX REPLACE "/MD" "/MT" ${variable} "${${variable}}")
+        endif()
+    endforeach()
+    
   plm_add_executable (acquire_4030e "${ACQUIRE_4030E_SRC}" 
     "${ACQUIRE_4030E_LIBRARIES}" "${ACQUIRE_4030E_LDFLAGS}"
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
