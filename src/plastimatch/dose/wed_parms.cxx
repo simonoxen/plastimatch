@@ -430,7 +430,7 @@ Wed_Parms::parse_args (int argc, char** argv)
 	  this->mode = 1;
         }
 
-	if (!strcmp (argv[i], "--segdepth")) {
+	else if (!strcmp (argv[i], "--segdepth")) {
 	  this->mode = 2;
         }
 

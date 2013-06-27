@@ -158,7 +158,7 @@ main (int argc, char* argv[])
   std::cout<<"Number of files in list to add is "<<parms_vec->size()<<":"<<std::endl;
 
   //Create, initialize variables we'll need to construct the added image
-  plm_long added_dim[3];
+  float added_dim[3];
   float added_spacing[3];
   float added_origin[3];
   float aobuffer;
@@ -191,8 +191,8 @@ main (int argc, char* argv[])
     }
 
     else {
-      for (int i=0;i!=3;++i)  {
-	
+      for (int i=0;i!=3;++i)  {	
+
 	if ( added_spacing[i] > spacing[i] ) {added_spacing[i]=spacing[i];} //Set added resolution to highest res. member
 	if ( added_origin[i] > (origin[i] + it->offset[i]) ) {
 	  aobuffer = added_origin[i];
@@ -202,13 +202,13 @@ main (int argc, char* argv[])
 	if ( (added_dim[i]+added_origin[i]) < (image_dim[i]+origin[i]+it->offset[i]) ) {added_dim[i]=image_dim[i]+(origin[i]-added_origin[i]+(it->offset[i]));}
       }
     }
-   }
+  }
 
   //Synth the new, added image with default value 0
   
   Synthetic_mha_main_parms added_parms;
   for (int i=0;i!=3;++i)  {
-    added_parms.sm_parms.dim[i] = added_dim[i];
+    added_parms.sm_parms.dim[i] = (plm_long) added_dim[i];
     added_parms.sm_parms.spacing[i] = added_spacing[i];
     added_parms.sm_parms.origin[i] = added_origin[i];
     added_parms.sm_parms.background = 0.; //set background to 0 for wed doses
@@ -273,9 +273,9 @@ main (int argc, char* argv[])
 	  z_low2 = (int) floor((z_low-added_origin[2])/added_spacing[2]+.5);
 	  z_high2 = (int) floor((z_high-added_origin[2])/added_spacing[2]+.5);
 
-	  for (int ii=x_low2; ii<=x_high2; ++ii)  {
-	    for (int jj=y_low2; jj<=y_high2; ++jj)  {
-	      for (int kk=z_low2; kk<=z_high2; ++kk)  {
+	  for (int ii=x_low2; ii<x_high2; ++ii)  {
+	    for (int jj=y_low2; jj<y_high2; ++jj)  {
+	      for (int kk=z_low2; kk<z_high2; ++kk)  {
 
 		float unit = 1.;
 		
