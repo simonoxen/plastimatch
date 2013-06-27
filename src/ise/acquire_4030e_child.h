@@ -125,6 +125,8 @@ public:
 
 	//void DeleteOldImageFiles(QString& folderName, int iDaysAgo); //returns number of deleted files
 	void DeleteOldImageFiles();
+
+	bool Debug_GetImageFromFile(QString& filePath);
 };
 
 #endif

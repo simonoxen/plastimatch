@@ -35,6 +35,7 @@ public slots:
 	void ReLoadCalibImages();
 	void OpenDefectMapFile(); //Btn
 	void SeeSavingFolder();
+	void LoadTestRawImage();
 
 public:
     Acquire_4030e_DlgControl();

@@ -459,3 +459,19 @@ void Acquire_4030e_DlgControl::SeeSavingFolder() //Window Explorer for saving fo
 	::system(strCommand.toLocal8Bit().constData());
 	
 }
+
+void Acquire_4030e_DlgControl::LoadTestRawImage()
+{
+	Acquire_4030e_child* qMyApp = (Acquire_4030e_child*)qApp;
+
+	QString filePath;
+
+	filePath = QFileDialog::getOpenFileName(this, "Open Image","", "Image Files (*.raw)",0,0);	
+	
+	if (filePath.length() < 3)
+		return;	
+
+	QMessageBox dlgMsgBox;
+
+	qMyApp->Debug_GetImageFromFile(filePath);
+}

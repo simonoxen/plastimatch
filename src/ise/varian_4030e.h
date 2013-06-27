@@ -46,6 +46,7 @@ public:
     int query_prog_info (UQueryProgInfo &crntStatus, bool showAll = FALSE);
    
 	int get_image_to_buf (int xSize, int ySize); 
+	int DBG_get_image_to_buf (unsigned short* pImgData, int xSize, int ySize); //receives external image buffer
 	bool CopyFromBufAndSendToDips (Dips_panel *dp); //get cur image to curImage
 
 	void CalcImageInfo (double& meanVal, double& STDV, double& minVal, double& maxVal, int sizeX, int sizeY, USHORT* image_ptr); //all of the images taken before will be inspected		

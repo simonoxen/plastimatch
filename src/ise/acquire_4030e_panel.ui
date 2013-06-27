@@ -895,10 +895,10 @@
   <widget class="QLabel" name="lbCurrentImage">
    <property name="geometry">
     <rect>
-     <x>280</x>
-     <y>20</y>
-     <width>151</width>
-     <height>171</height>
+     <x>290</x>
+     <y>30</y>
+     <width>141</width>
+     <height>161</height>
     </rect>
    </property>
    <property name="frameShape">
@@ -1366,6 +1366,19 @@
     </property>
    </widget>
   </widget>
+  <widget class="QPushButton" name="BtnDBGLoadRawImg">
+   <property name="geometry">
+    <rect>
+     <x>290</x>
+     <y>0</y>
+     <width>141</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>[Debug] Load raw image</string>
+   </property>
+  </widget>
   <zorder>groupBox_2</zorder>
   <zorder>groupBox</zorder>
   <zorder>groupBox_7</zorder>
@@ -1380,6 +1393,7 @@
   <zorder>BtnLoadDefaultSettings</zorder>
   <zorder>groupBox_3</zorder>
   <zorder>groupBox_4</zorder>
+  <zorder>BtnDBGLoadRawImg</zorder>
  </widget>
  <resources/>
  <connections>
@@ -1735,6 +1749,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>BtnDBGLoadRawImg</sender>
+   <signal>clicked()</signal>
+   <receiver>DlgPanelControl</receiver>
+   <slot>LoadTestRawImage()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>308</x>
+     <y>9</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>267</x>
+     <y>9</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>CloseLink()</slot>
@@ -1761,5 +1791,6 @@
   <slot>MultiGainOn()</slot>
   <slot>OpenDefectMapFile()</slot>
   <slot>SeeSavingFolder()</slot>
+  <slot>LoadTestRawImage()</slot>
  </slots>
 </ui>
