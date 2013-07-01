@@ -175,6 +175,12 @@ if (PLM_BUILD_REG23
   set (PLM_BUILD_ORAIFUTILS 0) ## REMOVE WHEN DONE
   set (PLM_BUILD_REG23 0)
 endif ()
+if (PLM_BUILD_REG23 
+    AND ${QT_VERSION_MAJOR}.${QT_VERSION_MINOR} VERSION_GREATER 4.6)
+  message (STATUS "Reg-2-3 will not be built (wrong QT version)")
+  set (PLM_BUILD_ORAIFUTILS 0) ## REMOVE WHEN DONE
+  set (PLM_BUILD_REG23 0)
+endif ()
 if (PLM_BUILD_REG23 AND NOT QT_QMAKE_EXECUTABLE)
   message (STATUS "Reg-2-3 will not be built (no qmake executable)")
   set (PLM_BUILD_ORAIFUTILS 0) ## REMOVE WHEN DONE
