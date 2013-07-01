@@ -147,8 +147,8 @@ Mabs_atlases_selection::compute_nmi(Plm_image* img1, Plm_image* img2, MaskTypePo
 	
     /* Set histogram interval if defined */
     if (min_value != 0 && max_value != 0) {
-       	metric->SetLowerBound(min_value);
-       	metric->SetUpperBound(max_value);
+       	//metric->SetLowerBound(min_value);
+       	//metric->SetUpperBound(max_value);
     }
     
     /* Metric settings */
