@@ -39,8 +39,8 @@ Mabs_atlases_selection::nmi_ranking(std::string patient_id, const Mabs_parms* pa
 	
     int size_nmi_ranking_array = (int) this->atlas_dir_list.size();
     printf ("NUMBER OF INITIAL ATLASES = %d \n", size_nmi_ranking_array);
-    double nmi_vector [size_nmi_ranking_array];
-    	
+    double* nmi_vector = new double[size_nmi_ranking_array];
+    
     MaskTypePointer mask;
 	
     if (parms->roi_mask_fn.compare("")!=0)
@@ -114,7 +114,9 @@ Mabs_atlases_selection::nmi_ranking(std::string patient_id, const Mabs_parms* pa
 	 }
     }
     printf("NUMBER OF SELECTED ATLASES = %d \n", (int) atlas_most_similar.size());
-
+    
+    delete nmi_vector;
+    
     return atlas_most_similar;
 }
 
