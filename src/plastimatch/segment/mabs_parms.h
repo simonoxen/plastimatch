@@ -27,6 +27,16 @@ private:
         int section);
 
 public:
+    /* [PREALIGNMENT] */
+    std::string prealignment_mode;
+    
+    /* [ATLASES-SELECTION] */
+    bool enable_atlases_selection;
+    float mi_percent_thershold;
+    std::string roi_mask_fn;
+    int lower_mi_value;
+    int upper_mi_value;
+    
     /* [TRAINING] */
     std::string atlas_dir;
     std::string training_dir;

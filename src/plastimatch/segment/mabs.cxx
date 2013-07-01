@@ -16,6 +16,7 @@
 #include "itk_threshold.h"
 #include "logfile.h"
 #include "mabs.h"
+#include "mabs_atlases_selection.h"
 #include "mabs_parms.h"
 #include "mabs_vote.h"
 #include "option_range.h"
@@ -982,6 +983,9 @@ Mabs::train_internal (bool registration_only)
 
     /* Parse atlas directory */
     this->load_atlas_dir_list ();
+    
+    /* Copy the atlases list */
+	std::list<std::string> full_atlas_dir_list = d_ptr->atlas_dir_list;
 
     /* Loop through atlas_dir, choosing reference images to segment */
     for (std::list<std::string>::iterator it = d_ptr->atlas_dir_list.begin();
@@ -1008,6 +1012,26 @@ Mabs::train_internal (bool registration_only)
             d_ptr->traindir_base.c_str(), patient_id.c_str());
         d_ptr->ref_rtds.load_prefix (fn.c_str());
         d_ptr->time_io += timer.report();
+        
+        /* Prealignment */
+        if (d_ptr->parms->prealignment_mode != "disable")
+        {
+            if (d_ptr->parms->prealignment_mode != "default") {
+                // default prealignment
+            }
+            else if (d_ptr->parms->prealignment_mode != "custom") {
+                // custom prealignment
+            }
+        }
+        
+        /* Select atlases */
+        if (d_ptr->parms->enable_atlases_selection)
+        {
+	    Mabs_atlases_selection* select_atlases = new Mabs_atlases_selection;
+	    select_atlases->atlas_dir_list = d_ptr->atlas_dir_list;
+	    select_atlases->subject_rtds = &d_ptr->ref_rtds;
+	    d_ptr->atlas_list = select_atlases->nmi_ranking(patient_id, d_ptr->parms);
+	}
 
         /* Run the segmentation */
         this->run_registration ();

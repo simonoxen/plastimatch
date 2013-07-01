@@ -29,11 +29,12 @@ set (PLMSEGMENT_LIBRARY_SRC
   autolabel_ransac_est.cxx
   dlib_trainer.cxx
   mabs.cxx
+  mabs_atlases_selection.cxx
   mabs_parms.cxx
   mabs_subject.cxx
   mabs_vote.cxx
   segment_body.cxx
-  )
+ )
 
 ##-----------------------------------------------------------------------------
 ##  SPECIAL BUILD RULES: OpenMP

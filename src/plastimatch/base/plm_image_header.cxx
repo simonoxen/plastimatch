@@ -420,9 +420,9 @@ Plm_image_header::compare (Plm_image_header *pli1, Plm_image_header *pli2)
 {
     int d;
     for (d = 0; d < 3; d++) {
-	if (pli1->m_origin[d] != pli2->m_origin[d]) return 0;
-	if (pli1->m_spacing[d] != pli2->m_spacing[d]) return 0;
-	if (pli1->Size(d) != pli2->Size(d)) return 0;
+    if (round(pli1->m_origin[d]*10000) != round(pli2->m_origin[d]*10000)) return 0;
+    if (round(pli1->m_spacing[d]*10000) != round(pli2->m_spacing[d]*10000)) return 0;
+    if (round(pli1->Size(d)*10000) != round(pli2->Size(d)*10000)) return 0;
     }
 
     /* GCS FIX: check direction cosines */

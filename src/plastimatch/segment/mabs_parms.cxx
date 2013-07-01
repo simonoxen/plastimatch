@@ -17,6 +17,16 @@
 
 Mabs_parms::Mabs_parms ()
 {
+    /* [PREALIGNMENT] */
+    this->prealignment_mode="default";
+    
+    /* [ATLASES-SELECTION] */
+    this->enable_atlases_selection = false;
+    this->mi_percent_thershold = 0.95;
+    this->roi_mask_fn = "";
+    this->lower_mi_value = 0;
+    this->upper_mi_value = 0;
+	
     this->sman = new Mabs_subject_manager;
     this->debug = false;
     this->minsim_values = "L 0.0001:1:0.0001";
@@ -75,8 +85,48 @@ Mabs_parms::set_key_val (
     Mabs_subject* subject = this->sman->current ();
 
     switch (section) {
-    /* [TRAINING] */
+    /* [PREALIGNMENT] */
     case 0:
+    if (key == "prealignment_mode") {
+        if (val == "DISABLE" || val == "disable" || val == "Disable" || val == "0") {
+            this->prealignment_mode = "disable";
+        }
+        else if (val == "DEFAULT" || val == "default" || val == "Default") {
+            this->prealignment_mode = "default";
+        }
+       else if (val == "CUSTOM" || val == "custom" || val == "Custom") {
+            this->prealignment_mode = "custom";
+        }
+    }
+    break;
+
+    /* [ATLASES-SELECTION] */
+    case 1:
+    if (key == "enable_atlases_selection") {
+        if (val == "True" || val == "true" || val == "1") {
+            this->enable_atlases_selection = true;
+        }
+        else {
+            this->enable_atlases_selection = false;
+        }   
+    }
+    else if (key == "mi_percent_thershold") {
+        sscanf (val.c_str(), "%g", &this->mi_percent_thershold);
+    }
+    else if (key == "roi_mask_fn" || key == "roi_mask") {
+        this->roi_mask_fn = val;
+    }
+    else if (key == "lower_mi_value") {
+        sscanf (val.c_str(), "%d", &this->lower_mi_value);
+    }
+    else if (key == "upper_mi_value") {
+        sscanf (val.c_str(), "%d", &this->upper_mi_value);
+    }
+    
+    break;
+        	
+    /* [TRAINING] */
+    case 2:
         if (key == "atlas_dir") {
             this->atlas_dir = val;
         }
@@ -108,14 +158,14 @@ Mabs_parms::set_key_val (
         break;
 
     /* [REGISTRATION] */
-    case 1:
+    case 3:
         if (key == "registration_config") {
             this->registration_config = val;
         }
         break;
 
     /* [SUBJECT] */
-    case 2:
+    case 4:
         /* head is the most recent addition to the list */
         if (key == "image") {
             strncpy ((char*)subject->img_fn, val.c_str(), _MAX_PATH);
@@ -126,7 +176,7 @@ Mabs_parms::set_key_val (
         break;
 
     /* [STRUCTURES] */
-    case 3:
+    case 5:
         /* Add key to list of structures */
         this->structure_map[key] = key;
         if (val != "") {
@@ -136,7 +186,7 @@ Mabs_parms::set_key_val (
         break;
 
     /* [LABELING] */
-    case 4:
+    case 6:
         if (key == "input") {
             this->labeling_input_fn = val;
         }
@@ -179,22 +229,28 @@ Mabs_parms::parse_config (
         if (buf[0] == '#') continue;
 
         if (buf[0] == '[') {
-            if (buf.find ("[TRAINING]") != std::string::npos
+            if (buf.find ("[ATLASES-SELECTION]") != std::string::npos
+                || buf.find ("[atlases-selection]") != std::string::npos)
+            {
+                section = 1;
+                continue;
+            }
+            else if (buf.find ("[TRAINING]") != std::string::npos
                 || buf.find ("[training]") != std::string::npos)
             {
-                section = 0;
+                section = 2;
                 continue;
             }
             else if (buf.find ("[REGISTRATION]") != std::string::npos
                 || buf.find ("[registration]") != std::string::npos)
             {
-                section = 1;
+                section = 3;
                 continue;
             }
             else if (buf.find ("[SUBJECT]") != std::string::npos
                 || buf.find ("[subject]") != std::string::npos)
             {
-                section = 2;
+                section = 4;
                 this->sman->add ();
                 this->sman->select_head ();
                 continue;
@@ -202,13 +258,13 @@ Mabs_parms::parse_config (
             else if (buf.find ("[STRUCTURES]") != std::string::npos
                 || buf.find ("[structures]") != std::string::npos)
             {
-                section = 3;
+                section = 5;
                 continue;
             }
             else if (buf.find ("[LABELING]") != std::string::npos
                 || buf.find ("[labeling]") != std::string::npos)
             {
-                section = 4;
+                section = 6;
                 continue;
             }
             else {
