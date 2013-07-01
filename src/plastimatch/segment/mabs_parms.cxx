@@ -22,7 +22,7 @@ Mabs_parms::Mabs_parms ()
     
     /* [ATLASES-SELECTION] */
     this->enable_atlases_selection = false;
-    this->mi_percent_thershold = 0.95;
+    this->mi_percent_thershold = 0.70;
     this->roi_mask_fn = "";
     this->lower_mi_value = 0;
     this->upper_mi_value = 0;

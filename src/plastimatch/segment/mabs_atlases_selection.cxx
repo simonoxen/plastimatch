@@ -38,6 +38,7 @@ Mabs_atlases_selection::nmi_ranking(std::string patient_id, const Mabs_parms* pa
     lprintf("MI RANKING \n");
 	
     int size_nmi_ranking_array = (int) this->atlas_dir_list.size();
+    printf ("NUMBER OF INITIAL ATLASES = %d \n", size_nmi_ranking_array);
     double nmi_vector [size_nmi_ranking_array];
     	
     MaskTypePointer mask;
@@ -76,14 +77,26 @@ Mabs_atlases_selection::nmi_ranking(std::string patient_id, const Mabs_parms* pa
     } 
     
     // Find maximum nmi
-    double max_nmi=0;
-    for (int i=0; i <= size_nmi_ranking_array; i++)
+    double max_nmi = nmi_vector[0];
+    for (int i=1; i < size_nmi_ranking_array; i++)
     {
 	if (nmi_vector[i] > max_nmi)
         {
-	    max_nmi=nmi_vector[i];
+	    max_nmi = nmi_vector[i];
 	}
     }
+    
+    // Find min nmi
+    double min_nmi = max_nmi;
+    for (int i=0; i < size_nmi_ranking_array; i++)
+    {
+        if (nmi_vector[i] < min_nmi && nmi_vector[i] != -1)
+        {
+            min_nmi = nmi_vector[i];
+        }
+    }
+   
+    printf("MINIMUM NMI = %g \n", min_nmi);
     printf("MAXIMUM NMI = %g \n", max_nmi);
 	
     // Find atlas to include in the registration
@@ -94,7 +107,7 @@ Mabs_atlases_selection::nmi_ranking(std::string patient_id, const Mabs_parms* pa
         reg_it != this->atlas_dir_list.end(); reg_it++, i++)
     {
          std::string atlas = basename (*reg_it);
-         if (nmi_vector[i] >= (max_nmi * parms->mi_percent_thershold))
+         if (nmi_vector[i] >= (((max_nmi-min_nmi) * parms->mi_percent_thershold) + min_nmi))
 	 {
 	     atlas_most_similar.push_front(atlas);
 	     printf("ATLAS %s HAVING NMI = %f \n", atlas.c_str(), nmi_vector[i]);
