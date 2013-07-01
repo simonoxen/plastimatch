@@ -12,6 +12,7 @@
 //#include "gamma_analysis.h"
 #include "gamma_dose_comparison.h"
 #include "itk_resample.h"
+#include "logfile.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "plm_math.h"
@@ -385,21 +386,6 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
     float dose_tol = this->reference_dose * this->dose_difference_tolerance;
     f3 = 1./dose_tol; f3 = f3*f3;
     
-#if defined (commentout)
-    // get min spacing, safeguard against negative spacings.
-    float min_spc = fabs(spacing_in[0]);
-    if (fabs(spacing_in[1])<min_spc) min_spc=fabs(spacing_in[1]);
-    if (fabs(spacing_in[2])<min_spc) min_spc=fabs(spacing_in[2]);
-
-    // if gamma is limited to gamma_max, 
-    // no need to look beyond reg_pixsize away from the current voxel
-    reg_pixsize = (int)ceil(1+  this->gamma_max/min_spc);
-    
-    offset[0]=reg_pixsize;
-    offset[1]=reg_pixsize;
-    offset[2]=reg_pixsize;
-#endif
-
     // compute search region size
     float gmax_dist = this->dta_tolerance * this->gamma_max;
     offset[0] = (int) ceil (gmax_dist /fabs(spacing_in[0]));
@@ -410,7 +396,6 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
 
     gamma_img_iterator.GoToBegin();
 
-    
     for (img_in1_iterator.GoToBegin(); 
          !img_in1_iterator.IsAtEnd(); 
          ++img_in1_iterator)

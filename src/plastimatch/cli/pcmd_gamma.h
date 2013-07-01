@@ -21,12 +21,14 @@ public:
     float dta_tolerance;
     bool have_reference_dose;
     float reference_dose;
+    float gamma_max;
 public:
     Gamma_parms () {
         dose_tolerance = .03f;
         dta_tolerance = 3.f;
         have_reference_dose = false;
         reference_dose = 0.f;
+        gamma_max = 2.0f;
     }
 };
 

@@ -63,6 +63,9 @@ parse_fn (
         "the prescription dose used to compute dose tolerance; if not "
         "specified, then maximum dose in reference volume is used",
         1, "");
+    parser->add_long_option ("", "gamma-max", 
+        "the maximum value of gamma to compute; smaller values run faster "
+        "(default is 2.0)", 1, "2.0");
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -95,6 +98,7 @@ parse_fn (
     /* Gamma options */
     parms->dose_tolerance = parser->get_float("dose-tolerance");
     parms->dta_tolerance = parser->get_float("dta-tolerance");
+    parms->gamma_max = parser->get_float("gamma-max");
     if (parser->option("reference-dose")) {
         parms->have_reference_dose = true;
         parms->reference_dose = parser->get_float("reference-dose");
