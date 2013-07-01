@@ -67,8 +67,9 @@ public:
     int dim (int d) const { return m_region.GetSize()[d]; }
     const SizeType& GetSize (void) const { return m_region.GetSize (); }
 public:
-    /*! \brief Return true if the two headers are the same */
-    static bool compare (Plm_image_header *pli1, Plm_image_header *pli2);
+    /*! \brief Return true if the two headers are the same. Tolerance can be specified via using digits (=number of digits used for rounding values) */
+    static bool compare (Plm_image_header *pli1, Plm_image_header *pli2,int digits=5);
+    static double plm_round(double val, int digits);
 
 public:
     void set_dim (const plm_long dim[3]);
@@ -153,6 +154,7 @@ public:
     FloatPoint3DType get_index (const FloatPoint3DType& pos) const;
     FloatPoint3DType get_position (const float index[3]) const;
     void get_image_center (float center[3]) const;
+
 };
 
 /* -----------------------------------------------------------------------
@@ -163,5 +165,7 @@ direction_cosines_from_itk (
     float direction_cosines[9],
     DirectionType* itk_direction
 );
+
+
 
 #endif

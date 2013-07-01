@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <math.h>
 #include "itkImageRegionIterator.h"
 
 #include "bspline_xform.h"
@@ -414,15 +415,21 @@ Plm_image_header::get_image_center (float center[3]) const
     }
 }
 
-/* Return 1 if the two headers are the same */
+double 
+Plm_image_header::plm_round(double val, int digits)
+{
+	return floor(val * pow((double)10, digits) + 0.5) / pow((double)10, digits);
+}
+
+/* Return 1 if the two headers are the same. Added tolerance (5 digits) */
 bool
-Plm_image_header::compare (Plm_image_header *pli1, Plm_image_header *pli2)
+Plm_image_header::compare (Plm_image_header *pli1, Plm_image_header *pli2,int digits)
 {
     int d;
     for (d = 0; d < 3; d++) {
-    if (round(pli1->m_origin[d]*10000) != round(pli2->m_origin[d]*10000)) return 0;
-    if (round(pli1->m_spacing[d]*10000) != round(pli2->m_spacing[d]*10000)) return 0;
-    if (round(pli1->Size(d)*10000) != round(pli2->Size(d)*10000)) return 0;
+    if (plm_round(pli1->m_origin[d],5) != plm_round(pli2->m_origin[d],5)) return 0;
+    if (plm_round(pli1->m_spacing[d],5) != plm_round(pli2->m_spacing[d],5)) return 0;
+    if (plm_round(pli1->Size(d),5) != plm_round(pli2->Size(d),5)) return 0;
     }
 
     /* GCS FIX: check direction cosines */
