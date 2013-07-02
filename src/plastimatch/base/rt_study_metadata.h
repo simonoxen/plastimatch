@@ -36,6 +36,7 @@ public:
     const char* get_dose_series_uid () const;
     const char* get_frame_of_reference_uid () const;
     void set_frame_of_reference_uid (const char* uid);
+    const char* get_plan_instance_uid () const;
     const char* get_rtss_instance_uid () const;
     const char* get_rtss_series_uid () const;
     const char* get_study_date () const;

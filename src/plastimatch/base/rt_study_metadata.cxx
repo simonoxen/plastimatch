@@ -20,6 +20,7 @@ public:
     std::string dose_instance_uid;
     std::string dose_series_uid;
     std::string for_uid;
+    std::string plan_instance_uid;
     std::string rtss_instance_uid;
     std::string rtss_series_uid;
     std::string study_uid;
@@ -36,10 +37,11 @@ public:
         study_uid = dicom_uid (PLM_UID_PREFIX);
         for_uid = dicom_uid (PLM_UID_PREFIX);
         ct_series_uid = dicom_uid (PLM_UID_PREFIX);
-        rtss_series_uid = dicom_uid (PLM_UID_PREFIX);
+        plan_instance_uid = dicom_uid (PLM_UID_PREFIX);
         rtss_instance_uid = dicom_uid (PLM_UID_PREFIX);
-        dose_series_uid = dicom_uid (PLM_UID_PREFIX);
+        rtss_series_uid = dicom_uid (PLM_UID_PREFIX);
         dose_instance_uid = dicom_uid (PLM_UID_PREFIX);
+        dose_series_uid = dicom_uid (PLM_UID_PREFIX);
 
         study_metadata.create_anonymous ();
         image_metadata.set_parent (&study_metadata);
@@ -52,10 +54,11 @@ public:
         study_uid = dicom_uid (PLM_UID_PREFIX);
         for_uid = dicom_uid (PLM_UID_PREFIX);
         ct_series_uid = dicom_uid (PLM_UID_PREFIX);
-        rtss_series_uid = dicom_uid (PLM_UID_PREFIX);
+        plan_instance_uid = dicom_uid (PLM_UID_PREFIX);
         rtss_instance_uid = dicom_uid (PLM_UID_PREFIX);
-        dose_series_uid = dicom_uid (PLM_UID_PREFIX);
+        rtss_series_uid = dicom_uid (PLM_UID_PREFIX);
         dose_instance_uid = dicom_uid (PLM_UID_PREFIX);
+        dose_series_uid = dicom_uid (PLM_UID_PREFIX);
     }
 };
 
@@ -113,6 +116,12 @@ Rt_study_metadata::set_frame_of_reference_uid (const char* uid)
 {
     if (!uid) return;
     d_ptr->for_uid = uid;
+}
+
+const char*
+Rt_study_metadata::get_plan_instance_uid () const
+{
+    return d_ptr->plan_instance_uid.c_str();
 }
 
 const char*

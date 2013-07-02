@@ -18,8 +18,9 @@ Dcmtk_rt_study_private::Dcmtk_rt_study_private ()
     dcmtk_uid (study_uid, PLM_UID_PREFIX);
     dcmtk_uid (for_uid, PLM_UID_PREFIX);
     dcmtk_uid (ct_series_uid, PLM_UID_PREFIX);
-    dcmtk_uid (rtss_series_uid, PLM_UID_PREFIX);
+    dcmtk_uid (plan_instance_uid, PLM_UID_PREFIX);
     dcmtk_uid (rtss_instance_uid, PLM_UID_PREFIX);
+    dcmtk_uid (rtss_series_uid, PLM_UID_PREFIX);
     dcmtk_uid (dose_series_uid, PLM_UID_PREFIX);
     dcmtk_uid (dose_instance_uid, PLM_UID_PREFIX);
     slice_data = new std::vector<Dcmtk_slice_data>;

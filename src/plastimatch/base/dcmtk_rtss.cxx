@@ -297,7 +297,7 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
         d_ptr->dicom_metadata->get_study_uid());
     dataset->putAndInsertString (DCM_SeriesInstanceUID, 
         d_ptr->dicom_metadata->get_rtss_series_uid());
-    dcmtk_copy_from_metadata (dataset, rtss_metadata, DCM_StudyID, "");
+    dcmtk_copy_from_metadata (dataset, rtss_metadata, DCM_StudyID, "10001");
     dataset->putAndInsertString (DCM_SeriesNumber, "103");
     dataset->putAndInsertString (DCM_InstanceNumber, "1");
     dataset->putAndInsertString (DCM_StructureSetLabel, "AutoSS");

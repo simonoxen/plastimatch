@@ -20,6 +20,7 @@ public:
     char dose_instance_uid[100];
     char dose_series_uid[100];
     char for_uid[100];
+    char plan_instance_uid[100];
     char rtss_instance_uid[100];
     char rtss_series_uid[100];
     char study_uid[100];

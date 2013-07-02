@@ -281,6 +281,7 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
     /* Prepare dcmtk */
     DcmFileFormat fileformat;
     DcmDataset *dataset = fileformat.getDataset();
+    DcmItem *dcm_item = 0;
 
     /* ----------------------------------------------------------------- */
     /*     Part 1  -- General header                                     */
@@ -309,6 +310,27 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
     dcmtk_copy_from_metadata (dataset, dose_metadata, 
         DCM_SeriesDescription, "");
     dataset->putAndInsertString (DCM_ManufacturerModelName, "Plastimatch");
+
+#if defined (commentout)
+    /* (0008,1110) DCM_ReferencedStudySequence -- probably not needed */
+    dcm_item = 0;
+    dataset->findOrCreateSequenceItem (
+        DCM_ReferencedStudySequence, dcm_item, -2);
+    dcm_item->putAndInsertString (DCM_ReferencedSOPClassUID,
+        UID_RETIRED_StudyComponentManagementSOPClass);
+    dcm_item->putAndInsertString (DCM_ReferencedSOPInstanceUID,
+        d_ptr->dicom_metadata->get_study_uid());
+#endif
+
+    /* (0008,1140) DCM_ReferencedImageSequence -- MIM likes this */
+    dcm_item = 0;
+    dataset->findOrCreateSequenceItem (
+        DCM_ReferencedImageSequence, dcm_item, -2);
+    dcm_item->putAndInsertString (DCM_ReferencedSOPClassUID,
+        UID_CTImageStorage);
+    dcm_item->putAndInsertString (DCM_ReferencedSOPInstanceUID,
+        d_ptr->dicom_metadata->get_ct_series_uid());
+
     dcmtk_copy_from_metadata (dataset, dose_metadata, DCM_PatientName, "");
     dcmtk_copy_from_metadata (dataset, dose_metadata, DCM_PatientID, "");
     dataset->putAndInsertString (DCM_PatientBirthDate, "");
@@ -412,6 +434,24 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
     volume_scale (dose_copy.get(), 1 / dose_scale);
     s = string_format ("%g", dose_scale);
     dataset->putAndInsertString (DCM_DoseGridScaling, s.c_str());
+
+    /* (300c,0002) ReferencedRTPlanSequence -- for future expansion */
+    dcm_item = 0;
+    dataset->findOrCreateSequenceItem (
+        DCM_ReferencedRTPlanSequence, dcm_item, -2);
+    dcm_item->putAndInsertString (DCM_ReferencedSOPClassUID,
+        UID_RTPlanStorage);
+    dcm_item->putAndInsertString (DCM_ReferencedSOPInstanceUID,
+        d_ptr->dicom_metadata->get_plan_instance_uid());
+
+    /* (300c,0060) DCM_ReferencedStructureSetSequence -- MIM likes this */
+    dcm_item = 0;
+    dataset->findOrCreateSequenceItem (
+        DCM_ReferencedStructureSetSequence, dcm_item, -2);
+    dcm_item->putAndInsertString (DCM_ReferencedSOPClassUID,
+        UID_RTStructureSetStorage);
+    dcm_item->putAndInsertString (DCM_ReferencedSOPInstanceUID,
+        d_ptr->dicom_metadata->get_rtss_instance_uid());
 
     /* Convert image bytes to integer, then add to dataset */
     if (dose_metadata 

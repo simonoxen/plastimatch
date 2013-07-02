@@ -54,6 +54,12 @@ Dcmtk_rt_study::get_frame_of_reference_uid () const
 }
 
 const char*
+Dcmtk_rt_study::get_plan_instance_uid () const
+{
+    return d_ptr->plan_instance_uid;
+}
+
+const char*
 Dcmtk_rt_study::get_rtss_instance_uid () const
 {
     return d_ptr->rtss_instance_uid;
