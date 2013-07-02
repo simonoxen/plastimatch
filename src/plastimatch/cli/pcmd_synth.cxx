@@ -23,6 +23,8 @@ struct synthetic_mha_main_parms {
     Pstring output_ss_list_fn;
     Pstring output_dicom;
     Synthetic_mha_parms sm_parms;
+
+    std::vector<std::string> m_metadata;
 };
 
 void
@@ -44,6 +46,9 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
         sm_parms->m_want_dose_img = true;
     }
     synthetic_mha (&rtds, sm_parms);
+
+    /* metadata */
+    rtds.set_user_metadata (parms->m_metadata);
 
     /* Save to file */
     FloatImageType::Pointer img = rtds.get_image()->itk_float();
@@ -93,6 +98,7 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
         rtds.get_rtss()->convert_ss_img_to_cxt ();
         rtds.save_dicom ((const char*) parms->output_dicom);
     }
+
 }
 
 static void
@@ -204,6 +210,16 @@ parse_fn (
     /* Lung options */
     parser->add_long_option ("", "lung-tumor-pos", 
         "position of tumor in mm \"z\" or \"x y z\"", 1, "0");
+
+    /* Metadata options */
+    parser->add_long_option ("", "metadata",
+        "patient metadata (you may use this option multiple times)", 1, "");
+    parser->add_long_option ("", "patient-id",
+        "patient id metadata: string", 1);
+    parser->add_long_option ("", "patient-name",
+        "patient name metadata: string", 1);
+    parser->add_long_option ("", "patient-pos",
+        "patient position metadata: one of {hfs,hfp,ffs,ffp}", 1, "hfs");
 
     /* Parse the command line arguments */
     parser->parse (argc,argv);
@@ -422,6 +438,29 @@ parse_fn (
     else if (rc != 3) {
         throw (dlib::error ("Error. Option --lung-tumor-pos must have "
                 "one or three arguments\n"));
+    }
+
+    /* Metadata options */
+    for (unsigned int i = 0; i < parser->option("metadata").count(); i++) {
+        parms->m_metadata.push_back (
+            parser->option("metadata").argument(0,i));
+    }
+    if (parser->option ("patient-name")) {
+        std::string arg = parser->get_string ("patient-name");
+        std::string metadata_string = "0010,0010=" + arg;
+        parms->m_metadata.push_back (metadata_string);
+    }
+    if (parser->option ("patient-id")) {
+        std::string arg = parser->get_string ("patient-id");
+        std::string metadata_string = "0010,0020=" + arg;
+        parms->m_metadata.push_back (metadata_string);
+    }
+    if (parser->option ("patient-pos")) {
+        std::string arg = parser->get_string ("patient-pos");
+        std::transform (arg.begin(), arg.end(), arg.begin(), 
+            (int(*)(int)) toupper);
+        std::string metadata_string = "0018,5100=" + arg;
+        parms->m_metadata.push_back (metadata_string);
     }
 }
 
