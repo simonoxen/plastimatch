@@ -51,6 +51,8 @@ dcmtk_save_slice (const Rt_study_metadata::Pointer drs, Dcmtk_slice_data *dsd)
     dcmtk_copy_from_metadata (dataset, image_metadata, DCM_Modality, "CT");
     dataset->putAndInsertString (DCM_Manufacturer, "Plastimatch");
     dataset->putAndInsertString (DCM_ReferringPhysicianName, "");
+    dcmtk_copy_from_metadata (dataset, image_metadata, 
+        DCM_SeriesDescription, "");
     dcmtk_copy_from_metadata (dataset, image_metadata, DCM_PatientName, "");
     dcmtk_copy_from_metadata (dataset, image_metadata, DCM_PatientID, "");
     dcmtk_copy_from_metadata (dataset, image_metadata, 
