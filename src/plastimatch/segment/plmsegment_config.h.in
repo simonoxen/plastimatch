@@ -19,4 +19,8 @@
 # define PLMSEGMENT_API 
 #endif
 
+#if (ITK_VERSION_MAJOR == 4)
+#define ITK4
+#endif
+
 #endif

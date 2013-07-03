@@ -71,7 +71,8 @@ Mabs_atlases_selection::nmi_ranking(std::string patient_id, const Mabs_parms* pa
        	}
         else
 	{
-	    nmi_vector[i] = compute_nmi(subject_rtds->get_image().get(), rtds_atl.get_image().get(), mask, parms->lower_mi_value, parms->upper_mi_value);
+	    nmi_vector[i] = compute_nmi(subject_rtds->get_image().get(), rtds_atl.get_image().get(),
+                            parms->mi_histogram_bins, mask, parms->lower_mi_value, parms->upper_mi_value);
 	    lprintf("NMI %s - %s = %g \n", patient_id.c_str(), atlas_id.c_str(), nmi_vector[i]);
 	}
     } 
@@ -121,7 +122,8 @@ Mabs_atlases_selection::nmi_ranking(std::string patient_id, const Mabs_parms* pa
 }
 
 double
-Mabs_atlases_selection::compute_nmi(Plm_image* img1, Plm_image* img2, MaskTypePointer mask, int min_value, int max_value) {
+Mabs_atlases_selection::compute_nmi(Plm_image* img1, Plm_image* img2, int hist_bins,
+                                    MaskTypePointer mask, int min_value, int max_value) {
 	
     /* Cost function */
     typedef float PixelComponentType;
@@ -139,23 +141,32 @@ Mabs_atlases_selection::compute_nmi(Plm_image* img1, Plm_image* img2, MaskTypePo
     /* Linear Interpolator */
     typedef itk::LinearInterpolateImageFunction< ImageType, double > InterpolatorType;
     InterpolatorType::Pointer interpolator = InterpolatorType::New();
-	
+    
     /* Set mask if defined */
     if (mask) {
        	metric->SetFixedImageMask(mask);	
     }
-	
+    
     /* Set histogram interval if defined */
     if (min_value != 0 && max_value != 0) {
-       	//metric->SetLowerBound(min_value);
-       	//metric->SetUpperBound(max_value);
+        MetricType::MeasurementVectorType lower_bounds, upper_bounds;
+        #ifdef ITK4 
+	lower_bounds.SetSize(2);
+	upper_bounds.SetSize(2);
+        #endif
+	lower_bounds.Fill(min_value);
+        upper_bounds.Fill(max_value);
+        metric->SetLowerBound(lower_bounds);
+        metric->SetUpperBound(upper_bounds);
     }
     
     /* Metric settings */
-    unsigned int numberOfHistogramBins =  255;
+    unsigned int numberOfHistogramBins = hist_bins;
     MetricType::HistogramType::SizeType histogramSize;
-    histogramSize[0] = numberOfHistogramBins;
-    histogramSize[1] = numberOfHistogramBins;
+    #ifdef ITK4
+    histogramSize.SetSize(2);
+    #endif
+    histogramSize.Fill(numberOfHistogramBins);
     metric->SetHistogramSize(histogramSize);
     
     metric->SetFixedImage(img1->itk_float());

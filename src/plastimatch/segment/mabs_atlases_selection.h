@@ -26,7 +26,8 @@ public:
     ~Mabs_atlases_selection();
     
     std::list<std::string> nmi_ranking(std::string patient_id, const Mabs_parms* parms);
-    double compute_nmi(Plm_image* img1, Plm_image* img2, MaskTypePointer mask,  int min_value, int max_value);
+    double compute_nmi(Plm_image* img1, Plm_image* img2, int hist_bins, MaskTypePointer mask,
+                        int min_value, int max_value);
 
 
 public:

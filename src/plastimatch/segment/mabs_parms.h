@@ -33,6 +33,7 @@ public:
     /* [ATLASES-SELECTION] */
     bool enable_atlases_selection;
     float mi_percent_thershold;
+    int mi_histogram_bins;
     std::string roi_mask_fn;
     int lower_mi_value;
     int upper_mi_value;

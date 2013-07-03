@@ -23,6 +23,7 @@ Mabs_parms::Mabs_parms ()
     /* [ATLASES-SELECTION] */
     this->enable_atlases_selection = false;
     this->mi_percent_thershold = 0.70;
+    this->mi_histogram_bins = 100;
     this->roi_mask_fn = "";
     this->lower_mi_value = 0;
     this->upper_mi_value = 0;
@@ -112,6 +113,9 @@ Mabs_parms::set_key_val (
     }
     else if (key == "mi_percent_thershold") {
         sscanf (val.c_str(), "%g", &this->mi_percent_thershold);
+    }
+    else if (key == "mi_histogram_bins") {
+        sscanf (val.c_str(), "%d", &this->mi_histogram_bins);
     }
     else if (key == "roi_mask_fn" || key == "roi_mask") {
         this->roi_mask_fn = val;
