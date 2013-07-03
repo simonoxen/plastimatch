@@ -374,6 +374,10 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
 	    Rtss_contour *curr_contour = curr_structure->pslist[j];
 	    if (curr_contour->num_vertices <= 0) continue;
 
+#if defined (commentout)
+            /* GCS 2013-07-02:  DICOM standard allows contours without 
+               an associated slice UID.  Maybe this bug is now 
+               fixed in XiO??? */
 	    /* GE -> XiO transfer does not work if contour does not have 
 	       corresponding slice uid */
 	    if (curr_contour->ct_slice_uid.empty()) {
@@ -381,18 +385,23 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
                     (long) i, (long) j);
 		continue;
 	    }
+#endif
 
-	    /* ContourImageSequence */
+            /* Add item to ContourSequence */
             DcmItem *c_item = 0;
             roic_item->findOrCreateSequenceItem (
                 DCM_ContourSequence, c_item, -2);
-            DcmItem *ci_item = 0;
-            c_item->findOrCreateSequenceItem (
-                DCM_ContourImageSequence, ci_item, -2);
-            ci_item->putAndInsertString (DCM_ReferencedSOPClassUID,
-                UID_CTImageStorage);
-            ci_item->putAndInsertString (DCM_ReferencedSOPInstanceUID,
-                curr_contour->ct_slice_uid.c_str());
+
+	    /* ContourImageSequence */
+	    if (curr_contour->ct_slice_uid.not_empty()) {
+                DcmItem *ci_item = 0;
+                c_item->findOrCreateSequenceItem (
+                    DCM_ContourImageSequence, ci_item, -2);
+                ci_item->putAndInsertString (DCM_ReferencedSOPClassUID,
+                    UID_CTImageStorage);
+                ci_item->putAndInsertString (DCM_ReferencedSOPInstanceUID,
+                    curr_contour->ct_slice_uid.c_str());
+            }
 
             /* ContourGeometricType */
             c_item->putAndInsertString (DCM_ContourGeometricType, 

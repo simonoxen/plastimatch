@@ -466,24 +466,6 @@ gdcm_rtss_save (
 	printf ("Warning: CT UIDs not found. "
 	    "ContourImageSequence not generated.\n");
     }
-#if defined (commentout)
-    int i = 1;
-    for (std::vector<Pstring>::iterator it = rdd->m_ct_slice_uids.begin();
-	 it != rdd->m_ct_slice_uids.end();
-	 it++)
-    {
-	/* Get SOPInstanceUID of CT slice */
-	std::string tmp = (const char*) (*it);
-	/* Put item into sequence */
-	gdcm::SQItem *ci_item = new gdcm::SQItem (ci_seq->GetDepthLevel());
-	ci_seq->AddSQItem (ci_item, i++);
-	/* ReferencedSOPClassUID = CTImageStorage */
-	ci_item->InsertValEntry ("1.2.840.10008.5.1.4.1.1.2", 
-	    0x0008, 0x1150);
-	/* Put ReferencedSOPInstanceUID into item */
-	ci_item->InsertValEntry (tmp, 0x0008, 0x1155);
-    }
-#endif
     for (int slice = 0, sqi = 1; slice < rsm->num_slices(); slice++, sqi++) {
 	/* Get SOPInstanceUID of CT slice */
 	std::string tmp = rsm->get_slice_uid (slice);
@@ -544,6 +526,10 @@ gdcm_rtss_save (
 	    Rtss_contour *curr_contour = curr_structure->pslist[j];
 	    if (curr_contour->num_vertices <= 0) continue;
 
+#if defined (commentout)
+            /* GCS 2013-07-02:  DICOM standard allows contours without 
+               an associated slice UID.  Maybe this bug is now 
+               fixed in XiO??? */
 	    /* GE -> XiO transfer does not work if contour does not have 
 	       corresponding slice uid */
 	    if (curr_contour->ct_slice_uid.empty()) {
@@ -551,24 +537,29 @@ gdcm_rtss_save (
                     (long) i, (long) j);
 		continue;
 	    }
+#endif
 
-	    gdcm::SQItem *c_item = new gdcm::SQItem (c_seq->GetDepthLevel());
-	    c_seq->AddSQItem (c_item, j+1);
-	    /* ContourImageSequence */
-	    if (curr_contour->ct_slice_uid.not_empty()) {
-		gdcm::SeqEntry *ci_seq 
-		    = c_item->InsertSeqEntry (0x3006, 0x0016);
-		gdcm::SQItem *ci_item 
-		    = new gdcm::SQItem (ci_seq->GetDepthLevel());
-		ci_seq->AddSQItem (ci_item, 1);
-		/* ReferencedSOPClassUID = CTImageStorage */
-		ci_item->InsertValEntry ("1.2.840.10008.5.1.4.1.1.2", 
-		    0x0008, 0x1150);
-		/* ReferencedSOPInstanceUID */
-		ci_item->InsertValEntry (
-		    (const char*) curr_contour->ct_slice_uid,
-		    0x0008, 0x1155);
-	    }
+            /* Add item to ContourSequence */
+            gdcm::SQItem *c_item = new gdcm::SQItem (
+                c_seq->GetDepthLevel());
+            c_seq->AddSQItem (c_item, j+1);
+
+            /* ContourImageSequence */
+            if (curr_contour->ct_slice_uid.not_empty()) {
+                gdcm::SeqEntry *ci_seq 
+                    = c_item->InsertSeqEntry (0x3006, 0x0016);
+                gdcm::SQItem *ci_item 
+                    = new gdcm::SQItem (ci_seq->GetDepthLevel());
+                ci_seq->AddSQItem (ci_item, 1);
+                /* ReferencedSOPClassUID = CTImageStorage */
+                ci_item->InsertValEntry ("1.2.840.10008.5.1.4.1.1.2", 
+                    0x0008, 0x1150);
+                /* ReferencedSOPInstanceUID */
+                ci_item->InsertValEntry (
+                    (const char*) curr_contour->ct_slice_uid,
+                    0x0008, 0x1155);
+            }
+
 	    /* ContourGeometricType */
 	    c_item->InsertValEntry ("CLOSED_PLANAR", 0x3006, 0x0042);
 	    /* NumberOfContourPoints */

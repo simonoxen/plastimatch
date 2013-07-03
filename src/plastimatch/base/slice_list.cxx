@@ -65,7 +65,9 @@ Slice_list::get_slice_uid (int index) const
     if (!d_ptr->m_have_slice_uids) {
 	return "";
     }
-    
+    if (index < 0 || ((size_t) index) >= d_ptr->m_ct_slice_uids.size()) {
+	return "";
+    }
     return d_ptr->m_ct_slice_uids[index];
 }
 
