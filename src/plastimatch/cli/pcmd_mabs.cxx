@@ -12,14 +12,17 @@
 class Mabs_parms_pcmd {
 public:
     Pstring cmd_file_fn;
-    bool prep;
-    bool train;
+    bool convert;
+    bool prealign;
     bool train_registration;
+    bool train;
 public:
     Mabs_parms_pcmd () {
-        prep = false;
+        convert = false;
+        prealign = false;
         train = false;
         train_registration = false;
+        train = false;
     }
 };
 
@@ -43,7 +46,9 @@ parse_fn (
     parser->add_default_options ();
 
     /* Parameters */
-    parser->add_long_option ("", "prep", 
+    parser->add_long_option ("", "convert", 
+        "pre-process atlas", 0);
+    parser->add_long_option ("", "pre-align", 
         "pre-process atlas", 0);
     parser->add_long_option ("", "train", 
         "perform full training to find the best registration "
@@ -68,8 +73,11 @@ parse_fn (
     parms->cmd_file_fn = (*parser)[0].c_str();
 
     /* Parameters */
-    if (parser->have_option ("prep")) {
-        parms->prep = true;
+    if (parser->have_option ("convert")) {
+        parms->convert = true;
+    }
+    if (parser->have_option ("pre-align")) {
+        parms->prealign = true;
     }
     if (parser->have_option ("train")) {
         parms->train = true;
@@ -91,14 +99,17 @@ do_command_mabs (int argc, char *argv[])
 
     Mabs mabs;
     mabs.set_parms (&mabs_parms);
-    if (parms.prep) {
-        mabs.atlas_prep ();
+    if (parms.convert) {
+        mabs.atlas_convert ();
     }
-    else if (parms.train) {
-        mabs.train ();
+    else if (parms.prealign) {
+        mabs.atlas_prealign ();
     }
     else if (parms.train_registration) {
         mabs.train_registration ();
+    }
+    else if (parms.train) {
+        mabs.train ();
     }
     else {
         mabs.run ();

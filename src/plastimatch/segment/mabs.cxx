@@ -12,6 +12,7 @@
 #include "file_util.h"
 #include "hausdorff_distance.h"
 #include "itk_adjust.h"
+#include "itk_resample.h"
 #include "itk_image_save.h"
 #include "itk_threshold.h"
 #include "logfile.h"
@@ -40,18 +41,19 @@ public:
     /* These are the input parameters */
     const Mabs_parms *parms;
     
-    /* atlas_dir_list is a list of the input directories where the 
-       original (dicom) atlas files live, one directory per case */
-    std::list<std::string> atlas_dir_list;
-    /* outdir_base is the output directory when we are 
-       doing a labeling task (i.e. not training)
-    */
-    std::string outdir_base;
     /* traindir_base is the output directory when we are 
        doing a training task (i.e. not labeling), and is of the form:
-       training/
-    */
+       training/ */
     std::string traindir_base;
+
+    /* ".../train_dir/convert" */
+    std::string convert_dir;
+    /* ".../train_dir/prealign" */
+    std::string prealign_dir;
+
+    /* outdir_base is the output directory when we are 
+       doing a labeling task (i.e. not training) */
+    std::string outdir_base;
     /* registration_list is the list of registration parameter files */
     std::list<std::string> registration_list;
     /* output_dir is ??? */
@@ -61,11 +63,25 @@ public:
     */
     std::string segmentation_training_dir;
 
+    /* process_dir_list is a list of the input directories which 
+       need to be processed, one directory per case
+       - during the atlas_convert stage, it is the list of 
+         original (dicom) atlas directories
+       - during the atlas_prealign stage, it is the list of 
+         converted atlas directories
+       - <need more detail here for later stages>
+    */
+    std::list<std::string> process_dir_list;
+
     /* There is one reference image at a time, which is the 
        image we are segmenting. */
     std::string ref_id;
     Rt_study ref_rtds;
     std::list<std::string> atlas_list;
+
+    /* Prealign parameters */
+    bool prealign_resample;
+    float prealign_spacing[3];
 
     /* Segmentation parameters */
     std::string registration_id;
@@ -112,6 +128,8 @@ public:
         write_registration_files = true;
         have_ref_structure = false;
         this->reset_timers ();
+
+        prealign_resample = false;
 
         registration_id = "";
         minsim = 0.0;
@@ -317,24 +335,12 @@ Mabs::sanity_checks ()
                 d_ptr->parms->registration_config.c_str());
         }
     }
-
-    /* Make sure there is an output directory */
-    d_ptr->outdir_base = d_ptr->parms->labeling_output_fn;
-    if (d_ptr->outdir_base == "") {
-        d_ptr->outdir_base = "mabs";
-    }
-
-    /* Make sure there is a training directory */
-    d_ptr->traindir_base = d_ptr->parms->training_dir;
-    if (d_ptr->traindir_base == "") {
-        d_ptr->traindir_base = "training";
-    }
 }
 
 void
-Mabs::load_atlas_dir_list ()
+Mabs::load_process_dir_list (const std::string& dir)
 {
-    Dir_list d (d_ptr->parms->atlas_dir);
+    Dir_list d (dir);
     for (int i = 0; i < d.num_entries; i++)
     {
         /* Skip "." and ".." */
@@ -343,8 +349,7 @@ Mabs::load_atlas_dir_list ()
         }
 
         /* Build string containing full path to atlas item */
-        std::string path = compose_filename (
-            d_ptr->parms->atlas_dir, d.entries[i]);
+        std::string path = compose_filename (dir, d.entries[i]);
 
         /* Only consider directories */
         if (!is_directory (path.c_str())) {
@@ -352,12 +357,12 @@ Mabs::load_atlas_dir_list ()
         }
 
         /* Add directory to atlas_dir_list */
-        d_ptr->atlas_dir_list.push_back (path);
+        d_ptr->process_dir_list.push_back (path);
     }
 }
 
 void
-Mabs::prep (const std::string& input_dir, const std::string& output_dir)
+Mabs::convert (const std::string& input_dir, const std::string& output_dir)
 {
     Rt_study rtds;
     Plm_timer timer;
@@ -402,29 +407,138 @@ Mabs::prep (const std::string& input_dir, const std::string& output_dir)
 }
 
 void
-Mabs::atlas_prep ()
+Mabs::atlas_convert ()
 {
     /* Do a few sanity checks */
     this->sanity_checks ();
 
     /* Parse atlas directory */
-    this->load_atlas_dir_list ();
+    this->load_process_dir_list (d_ptr->parms->atlas_dir);
 
     /* Loop through atlas_dir, converting file formats */
-    for (std::list<std::string>::iterator it = d_ptr->atlas_dir_list.begin();
-         it != d_ptr->atlas_dir_list.end(); it++)
+    for (std::list<std::string>::iterator it = d_ptr->process_dir_list.begin();
+         it != d_ptr->process_dir_list.end(); it++)
     {
         std::string input_dir = *it;
         std::string atlas_id = basename (input_dir);
         std::string output_dir = string_format (
-            "%s/atlas/%s", d_ptr->traindir_base.c_str(), 
+            "%s/%s", d_ptr->convert_dir.c_str(), 
             atlas_id.c_str());
 
-        this->prep (input_dir, output_dir);
+        this->convert (input_dir, output_dir);
     }
     lprintf ("Rasterization time:   %10.1f seconds\n", d_ptr->time_extract);
     lprintf ("I/O time:             %10.1f seconds\n", d_ptr->time_io);
     lprintf ("MABS prep complete\n");
+}
+
+void
+Mabs::prealign (const std::string& input_dir, const std::string& output_dir)
+{
+    /* GCS FIX: this doesn't actually do any pre-alignment.  It just 
+       writes the files into the prealign directory */
+    Rt_study::Pointer rtds = Rt_study::New ();
+
+    /* Load input image and structures */
+    std::string input_img_fn = string_format (
+        "%s/img.nrrd", input_dir.c_str());
+    std::string input_structures_dir = string_format (
+        "%s/structures", input_dir.c_str());
+    rtds->load_image (input_img_fn);
+    rtds->load_prefix (input_structures_dir.c_str());
+
+    /* Save output image and structures */
+    std::string output_img_fn = string_format (
+        "%s/img.nrrd", output_dir.c_str());
+    std::string output_structures_dir = string_format (
+        "%s/structures", output_dir.c_str());
+    rtds->get_image()->save_image (output_img_fn);
+    rtds->save_prefix (output_structures_dir, "nrrd");
+}
+
+void
+Mabs::atlas_prealign ()
+{
+    /* Do a few sanity checks */
+    this->sanity_checks ();
+
+    /* Parse convert directory */
+    this->load_process_dir_list (d_ptr->convert_dir);
+    if (d_ptr->process_dir_list.size() < 2) {
+        print_and_exit ("Error.  Prealignment requires at least two "
+            "images in the convert directory.");
+    }
+
+    /* Identify directory of reference image */
+    std::string reference_id;
+    std::string reference_dir;
+    if (d_ptr->parms->prealign_reference != "") {
+        reference_id = d_ptr->parms->prealign_reference;
+        reference_dir = string_format (
+            "%s/%s", d_ptr->convert_dir.c_str(), 
+            d_ptr->parms->prealign_reference.c_str());
+        if (!is_directory (reference_dir)) {
+            print_and_exit ("Error.  Prealignment reference directory (%s) "
+                " was not found.", reference_dir.c_str());
+        }
+    } else {
+        reference_dir = d_ptr->process_dir_list.front();
+        reference_id = basename (reference_dir);
+    }
+
+    lprintf ("Prealignment reference directory is %s\n",
+        reference_dir.c_str());
+
+    /* Load reference image and structures */
+    std::string reference_convert_img_fn = string_format (
+        "%s/img.nrrd", reference_dir.c_str());
+    std::string reference_convert_structures_dir = string_format (
+        "%s/structures", reference_dir.c_str());
+    Rt_study::Pointer rtds = Rt_study::New ();
+    rtds->load_image (reference_convert_img_fn);
+    rtds->load_prefix (reference_convert_structures_dir.c_str());
+
+    /* Resample and save reference image and structures */
+    std::string reference_prealign_img_fn = string_format (
+        "%s/%s/img.nrrd", d_ptr->prealign_dir.c_str(), reference_id.c_str());
+    std::string reference_prealign_structures_dir = string_format (
+        "%s/%s/structures", d_ptr->prealign_dir.c_str(), reference_id.c_str());
+    Plm_image::Pointer reference_image = rtds->get_image ();
+    if (d_ptr->prealign_resample) {
+        reference_image->set_itk (
+            resample_image (reference_image->itk_float(), 
+                d_ptr->prealign_spacing));
+    }
+    reference_image->save_image (reference_prealign_img_fn);
+    rtds->save_prefix (reference_prealign_structures_dir, "nrrd");
+
+    /* GCS FIX: there is a bug in resampling the image -- origin is \
+       incorrect */
+
+    /* GCS FIX: structures need to be resampled */
+
+    /* Loop through convert_dir, prealigning images and labelmaps */
+    for (std::list<std::string>::iterator it = d_ptr->process_dir_list.begin();
+         it != d_ptr->process_dir_list.end(); it++)
+    {
+        std::string input_dir = *it;
+        std::string atlas_id = basename (input_dir);
+        std::string output_dir = string_format (
+            "%s/%s", d_ptr->prealign_dir.c_str(), 
+            atlas_id.c_str());
+
+        /* Skip reference dir */
+        if (atlas_id == reference_id) {
+            continue;
+        }
+
+        lprintf ("Prealignment: %s -> %s\n", 
+            input_dir.c_str(), output_dir.c_str());
+        this->prealign (input_dir, output_dir);
+    }
+//    lprintf ("Rasterization time:   %10.1f seconds\n", d_ptr->time_extract);
+//    lprintf ("I/O time:             %10.1f seconds\n", d_ptr->time_io);
+    lprintf ("MABS pre-align complete\n");
 }
 
 void
@@ -468,8 +582,8 @@ Mabs::run_registration ()
         Rt_study rtds;
         std::string path = *atl_it;
         std::string atlas_id = basename (path);
-        std::string atlas_input_path = string_format ("%s/atlas/%s",
-            d_ptr->traindir_base.c_str(), atlas_id.c_str());
+        std::string atlas_input_path = string_format ("%s/%s",
+            d_ptr->convert_dir.c_str(), atlas_id.c_str());
         std::string atlas_output_path = string_format ("%s/%s",
             d_ptr->output_dir.c_str(), atlas_id.c_str());
 
@@ -927,7 +1041,35 @@ Mabs::run_segmentation_loop ()
 void 
 Mabs::set_parms (const Mabs_parms *parms)
 {
+    int rc;
+
     d_ptr->parms = parms;
+
+    /* Set up directory strings */
+    d_ptr->outdir_base = d_ptr->parms->labeling_output_fn;
+    if (d_ptr->outdir_base == "") {
+        d_ptr->outdir_base = "mabs";
+    }
+    d_ptr->traindir_base = d_ptr->parms->training_dir;
+    if (d_ptr->traindir_base == "") {
+        d_ptr->traindir_base = "training";
+    }
+    d_ptr->convert_dir = string_format (
+        "%s/convert", d_ptr->traindir_base.c_str());
+    d_ptr->prealign_dir = string_format (
+        "%s/prealign", d_ptr->traindir_base.c_str());
+
+    /* Prealgnment section */
+    d_ptr->prealign_resample = false;
+    rc = sscanf (parms->prealign_spacing.c_str(), "%f %f %f", 
+        &d_ptr->prealign_spacing[0], 
+        &d_ptr->prealign_spacing[1], 
+        &d_ptr->prealign_spacing[2]);
+    if (rc == 3) {
+        d_ptr->prealign_resample = true;
+    }
+
+    /* Segmentation training */
     d_ptr->write_thresholded_files = parms->write_thresholded_files;
     d_ptr->write_weight_files = parms->write_weight_files;
 }
@@ -946,10 +1088,10 @@ Mabs::run ()
     d_ptr->ref_rtds.load_image (d_ptr->parms->labeling_input_fn);
 
     /* Parse atlas directory */
-    this->load_atlas_dir_list ();
+    this->load_process_dir_list (d_ptr->prealign_dir);
 
     /* Set atlas_list */
-    d_ptr->atlas_list = d_ptr->atlas_dir_list;
+    d_ptr->atlas_list = d_ptr->process_dir_list;
 
     /* Set output dir for this test case */
     d_ptr->output_dir = d_ptr->outdir_base;
@@ -982,18 +1124,15 @@ Mabs::train_internal (bool registration_only)
     this->parse_registration_dir ();
 
     /* Parse atlas directory */
-    this->load_atlas_dir_list ();
+    this->load_process_dir_list (d_ptr->prealign_dir);
     
-    /* Copy the atlases list */
-	std::list<std::string> full_atlas_dir_list = d_ptr->atlas_dir_list;
-
     /* Loop through atlas_dir, choosing reference images to segment */
-    for (std::list<std::string>::iterator it = d_ptr->atlas_dir_list.begin();
-         it != d_ptr->atlas_dir_list.end(); it++)
+    for (std::list<std::string>::iterator it = d_ptr->process_dir_list.begin();
+         it != d_ptr->process_dir_list.end(); it++)
     {
         /* Create atlas list for this test case */
         std::string path = *it;
-        d_ptr->atlas_list = d_ptr->atlas_dir_list;
+        d_ptr->atlas_list = d_ptr->process_dir_list;
         d_ptr->atlas_list.remove (path);
 
         /* Set output dir for this test case */
@@ -1005,21 +1144,21 @@ Mabs::train_internal (bool registration_only)
 
         /* Load image & structures from "prep" directory */
         timer.start();
-        std::string fn = string_format ("%s/atlas/%s/img.nrrd", 
-            d_ptr->traindir_base.c_str(), patient_id.c_str());
+        std::string fn = string_format ("%s/%s/img.nrrd", 
+            d_ptr->convert_dir.c_str(), patient_id.c_str());
         d_ptr->ref_rtds.load_image (fn.c_str());
-        fn = string_format ("%s/atlas/%s/structures", 
-            d_ptr->traindir_base.c_str(), patient_id.c_str());
+        fn = string_format ("%s/%s/structures", 
+            d_ptr->convert_dir.c_str(), patient_id.c_str());
         d_ptr->ref_rtds.load_prefix (fn.c_str());
         d_ptr->time_io += timer.report();
         
         /* Prealignment */
-        if (d_ptr->parms->prealignment_mode != "disable")
+        if (d_ptr->parms->prealign_mode != "disable")
         {
-            if (d_ptr->parms->prealignment_mode != "default") {
+            if (d_ptr->parms->prealign_mode != "default") {
                 // default prealignment
             }
-            else if (d_ptr->parms->prealignment_mode != "custom") {
+            else if (d_ptr->parms->prealign_mode != "custom") {
                 // custom prealignment
             }
         }
@@ -1028,9 +1167,10 @@ Mabs::train_internal (bool registration_only)
         if (d_ptr->parms->enable_atlases_selection)
         {
 	    Mabs_atlases_selection* select_atlases = new Mabs_atlases_selection;
-	    select_atlases->atlas_dir_list = d_ptr->atlas_dir_list;
+	    select_atlases->atlas_dir_list = d_ptr->process_dir_list;
 	    select_atlases->subject_rtds = &d_ptr->ref_rtds;
-	    d_ptr->atlas_list = select_atlases->nmi_ranking(patient_id, d_ptr->parms);
+	    d_ptr->atlas_list = select_atlases->nmi_ranking (
+                patient_id, d_ptr->parms);
 	}
 
         /* Run the segmentation */

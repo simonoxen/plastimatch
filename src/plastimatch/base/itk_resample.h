@@ -8,24 +8,22 @@
 
 class Plm_image_header;
 
-template <class T, class U>
-T
+template <class T, class U> T
 vector_resample_image (T& vf_image, U& ref_image);
-template <class T>
-T
+template <class T> T
 vector_resample_image (T& image, float x_spacing,
         float y_spacing, float z_spacing);
-template <class T>
-T
+template <class T> T
 vector_resample_image (T& vf_image, Plm_image_header* pih);
 
-template <class T>
-T
-resample_image (T& image, const Plm_image_header* pih, float default_val, int interp_lin);
-
-template <class T>
-T
-resample_image (T& image, const Plm_image_header& pih, float default_val, int interp_lin);
+template <class T> T
+resample_image (T& image, const Plm_image_header* pih, 
+    float default_val, int interp_lin);
+template <class T> T
+resample_image (T& image, const Plm_image_header& pih, 
+    float default_val, int interp_lin);
+template <class T> T
+resample_image (T& image, float spacing[3]);
 
 template <class T>
 T

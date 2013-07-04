@@ -22,13 +22,15 @@ public:
     void print ();
 
     void parse_config (const char* config_fn);
-private:
+protected:
     int set_key_val (const std::string& key, const std::string& val, 
-        int section);
+        const std::string& section);
 
 public:
     /* [PREALIGNMENT] */
-    std::string prealignment_mode;
+    std::string prealign_mode;
+    std::string prealign_reference;
+    std::string prealign_spacing;
     
     /* [ATLASES-SELECTION] */
     bool enable_atlases_selection;

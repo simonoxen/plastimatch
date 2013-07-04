@@ -19,7 +19,9 @@ public:
 
 protected:
     void sanity_checks ();
-    void load_atlas_dir_list ();
+    void load_process_dir_list (const std::string& dir);
+    void convert (const std::string& input_dir, const std::string& output_dir);
+    void prealign (const std::string& input_dir, const std::string& output_dir);
     void run_single_registration ();
     void run_registration ();
     void run_segmentation ();
@@ -32,8 +34,8 @@ public:
     void set_parms (const Mabs_parms *parms);
     void parse_registration_dir (void);
 
-    void prep (const std::string& input_dir, const std::string& output_dir);
-    void atlas_prep ();
+    void atlas_convert ();
+    void atlas_prealign ();
     void train_registration ();
     void train ();
     void run ();

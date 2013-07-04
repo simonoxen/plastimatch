@@ -57,6 +57,9 @@ public:
     void save_dose (const char* fname);
     void save_dose (const char* fname, Plm_image_type image_type);
 
+    void save_prefix (const std::string& output_prefix, 
+        const std::string& extension = "mha");
+
     Rt_study_metadata *get_rt_study_metadata ();
     void set_user_metadata (std::vector<std::string>& metadata);
 

@@ -11,6 +11,7 @@
 
 #include "itk_image_type.h"
 #include "itk_resample.h"
+#include "logfile.h"
 #include "plm_image_header.h"
 
 template <class T>
@@ -274,6 +275,88 @@ resample_image (
 
 template <class T>
 T
+resample_image (T& image, float spacing[3])
+{
+    typedef typename T::ObjectType ImageType;
+    typedef typename T::ObjectType::PixelType PixelType;
+    typedef itk::ResampleImageFilter < ImageType, ImageType > FilterType;
+    typedef itk::LinearInterpolateImageFunction< 
+            ImageType, double >  InterpolatorType;
+
+    typename FilterType::Pointer filter = FilterType::New();
+
+    const typename ImageType::SpacingType& old_spacing = image->GetSpacing();
+    const typename ImageType::PointType& old_origin = image->GetOrigin();
+    typename ImageType::SizeType old_size 
+        = image->GetLargestPossibleRegion().GetSize();
+
+    typename ImageType::SpacingType itk_spacing;
+    itk_spacing[0] = spacing[0];
+    itk_spacing[1] = spacing[1];
+    itk_spacing[2] = spacing[2];
+    filter->SetOutputSpacing (itk_spacing);
+    lprintf ("New spacing at %f %f %f\n", spacing[0], spacing[1], spacing[2]);
+
+    float old_coverage[3];
+    old_coverage[0] = (old_size[0]+1) * old_spacing[0];
+    old_coverage[1] = (old_size[1]+1) * old_spacing[1];
+    old_coverage[2] = (old_size[2]+1) * old_spacing[2];
+
+    typename ImageType::SizeType size;
+    size[0] = (unsigned long) (old_coverage[0] / spacing[0]);
+    size[1] = (unsigned long) (old_coverage[1] / spacing[1]);
+    size[2] = (unsigned long) (old_coverage[2] / spacing[2]);
+    lprintf ("Resample size was %ld %ld %ld\n", 
+        old_size[0], old_size[1], old_size[2]);
+    lprintf ("Resample size will be %ld %ld %ld\n", 
+        size[0], size[1], size[2]);
+    filter->SetSize (size);
+
+    float coverage[3];
+    coverage[0] = (size[0]+1) * spacing[0];
+    coverage[1] = (size[1]+1) * spacing[1];
+    coverage[2] = (size[2]+1) * spacing[2];
+    lprintf ("Resample coverage was %g %g %g\n", 
+        old_coverage[0], old_coverage[1], old_coverage[2]);
+    lprintf ("Resample coverage will be %g %g %g\n", 
+        coverage[0], coverage[1], coverage[2]);
+
+    typename ImageType::PointType origin;
+    origin[0] =  old_origin[0] 
+                    - (old_spacing[0]/2.0) 
+                    + (spacing[0]/2.0)
+                    + ((old_coverage[0]-coverage[0])/2.0);
+    filter->SetOutputOrigin (origin);
+
+    filter->SetOutputDirection (image->GetDirection());
+
+    typedef itk::AffineTransform< double, 3 > TransformType;
+    TransformType::Pointer transform = TransformType::New();
+    filter->SetTransform (transform);
+
+    typename InterpolatorType::Pointer interpolator = InterpolatorType::New();
+    filter->SetInterpolator (interpolator);
+    const PixelType default_val = 0;  /* Hard coded... */
+    filter->SetDefaultPixelValue ((PixelType) default_val);
+
+    filter->SetInput (image);
+    try {
+        filter->Update();
+    }
+    catch(itk::ExceptionObject & ex) {
+        printf ("Exception running resample image filter!\n");
+        std::cout << ex << std::endl;
+        getchar();
+        exit(1);
+    }
+
+    T out_image = filter->GetOutput();
+    return out_image;
+}
+
+
+template <class T>
+T
 subsample_image (T& image, int x_sampling_rate,
                 int y_sampling_rate, int z_sampling_rate,
                 float default_val)
@@ -353,6 +436,7 @@ template PLMBASE_API UShortImageType::Pointer resample_image (UShortImageType::P
 template PLMBASE_API Int32ImageType::Pointer resample_image (Int32ImageType::Pointer&, const Plm_image_header&, float default_val, int interp_lin);
 template PLMBASE_API UInt32ImageType::Pointer resample_image (UInt32ImageType::Pointer&, const Plm_image_header&, float default_val, int interp_lin);
 template PLMBASE_API FloatImageType::Pointer resample_image (FloatImageType::Pointer&, const Plm_image_header&, float default_val, int interp_lin);
+template PLMBASE_API FloatImageType::Pointer resample_image (FloatImageType::Pointer&, float spacing[3]);
 
 template PLMBASE_API UCharImageType::Pointer subsample_image (UCharImageType::Pointer&, int, int, int, float);
 template PLMBASE_API ShortImageType::Pointer subsample_image (ShortImageType::Pointer&, int, int, int, float);

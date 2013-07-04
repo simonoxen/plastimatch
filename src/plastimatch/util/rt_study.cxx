@@ -383,6 +383,14 @@ Rt_study::save_dose (const char* fname, Plm_image_type image_type)
     }
 }
 
+void
+Rt_study::save_prefix (
+    const std::string& output_prefix, 
+    const std::string& extension)
+{
+    d_ptr->m_rtss->save_prefix (output_prefix, extension);
+}
+
 Rt_study_metadata *
 Rt_study::get_rt_study_metadata ()
 {
