@@ -75,6 +75,11 @@ Bspline_parms::Bspline_parms ()
     this->mi_hist_fixed_bins = 32;
     this->mi_hist_moving_bins = 32;
 
+    this->mi_fixed_image_minVal=0;
+    this->mi_fixed_image_maxVal=0;
+    this->mi_moving_image_minVal=0;
+    this->mi_moving_image_maxVal=0;
+
     this->lbfgsb_factr = 1.0e+7;
     this->lbfgsb_pgtol = 1.0e-5;
 
@@ -658,6 +663,8 @@ bspline_score (Bspline_optimize_data *bod)
     Volume* fixed_mask  = parms->fixed_mask;
     Volume* moving_mask = parms->moving_mask;
     bool have_mask = fixed_mask || moving_mask;
+    bool have_histogram_minmax_val=(parms->mi_fixed_image_minVal!=0)||(parms->mi_fixed_image_maxVal!=0)||(parms->mi_moving_image_minVal!=0)||(parms->mi_moving_image_maxVal!=0);
+
 
     /* CPU Implementations */
     if (parms->threading == BTHR_CPU) {
@@ -680,8 +687,8 @@ bspline_score (Bspline_optimize_data *bod)
             }
         } /* end MSE */
 
-        /* Metric: Mutual Information with mask */
-        else if (parms->metric == BMET_MI && have_mask) {
+        /* Metric: Mutual Information with mask or intensity min/max values*/
+        else if ((parms->metric == BMET_MI && (have_mask || have_histogram_minmax_val)) ) {
             switch (parms->implementation) {
             case 'c':
                 bspline_score_c_mi (bod);
@@ -780,7 +787,7 @@ bspline_score (Bspline_optimize_data *bod)
             case 'a':
                 CUDA_bspline_mi_a (bod);
                 break;
-            default: 
+            default:
                 CUDA_bspline_mi_a (bod);
                 break;
             }

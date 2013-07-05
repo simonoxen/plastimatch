@@ -8,6 +8,7 @@ class Registration_parms;
 class Registration_data;
 class Xform;
 class Stage_parms;
+class Volume;
 
 void
 do_gpuit_bspline_stage (
@@ -16,5 +17,8 @@ do_gpuit_bspline_stage (
     Xform *xf_out,
     Xform *xf_in,
     Stage_parms* stage);
+
+void update_mask(Volume* mask, Volume* image, float min_val, float max_val, bool fill_empty_mask);
+
 
 #endif

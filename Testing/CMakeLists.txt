@@ -2007,6 +2007,11 @@ plm_add_test (
   "mask;--input;${PLM_BUILD_TESTING_DIR}/rect-1.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-mask-a.mha;--mask;${PLM_BUILD_TESTING_DIR}/rect-4.mha;--mask-value;-1000"
   )
 plm_add_test (
+  "plm-reg-mask-hist_minmax-a"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "mask;--input;${PLM_BUILD_TESTING_DIR}/rect-1.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-mask-a.mha;--mask;${PLM_BUILD_TESTING_DIR}/rect-4.mha;--mask-value;-1000"
+)
+plm_add_test (
   "plm-mask-a-stats"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;${PLM_BUILD_TESTING_DIR}/plm-mask-a.mha"

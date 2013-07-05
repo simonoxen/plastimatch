@@ -22,10 +22,13 @@
 #include "stage_parms.h"
 #include "volume.h"
 #include "volume_resample.h"
+#include "volume_header.h"
 #include "xform.h"
 #include "landmark_warp.h"
 #include "pointset.h"
 #include "raw_pointset.h"
+
+#include "itk_image_save.h"
 
 static void
 do_gpuit_bspline_stage_internal (
@@ -95,6 +98,48 @@ do_gpuit_bspline_stage_internal (
     );
     moving_ss = volume_subsample (moving, stage->moving_subsample_rate);
     fixed_ss = volume_subsample (fixed, stage->fixed_subsample_rate);
+
+    //Set parameter values for min/max histogram values
+    parms.mi_fixed_image_minVal = stage->mi_fixed_image_minVal;
+    parms.mi_fixed_image_maxVal = stage->mi_fixed_image_maxVal;
+    parms.mi_moving_image_minVal = stage->mi_moving_image_minVal;
+    parms.mi_moving_image_maxVal = stage->mi_moving_image_maxVal;
+    //Check if min/max values for moving image are set (correctly)
+    if((parms.mi_moving_image_minVal!=0 || parms.mi_moving_image_maxVal!=0) && (parms.mi_moving_image_minVal<parms.mi_moving_image_maxVal))
+    {
+        bool fill=!m_mask;
+
+        //create new moving mask if not available
+        if(!m_mask)
+        {
+            m_mask=new Volume();
+            m_mask->create(moving->dim,moving->offset,moving->spacing,moving->direction_cosines,PT_UCHAR);
+        }
+
+        //Modify fixed mask according to min and max values for moving image
+        update_mask(m_mask,moving,parms.mi_moving_image_minVal,parms.mi_moving_image_maxVal,fill);
+        plm_image_save_vol("/home/kfritscher/MovingMaskUpdated.mhd",m_mask);
+    }
+
+
+
+    //Check if min/max values for fixed image are set (correctly)
+    if((parms.mi_fixed_image_minVal!=0 || parms.mi_fixed_image_maxVal!=0) && (parms.mi_fixed_image_minVal<parms.mi_fixed_image_maxVal))
+    {
+        bool fill=!f_mask;
+
+        //create new fixed mask if not available
+        if(!f_mask)
+        {
+            f_mask=new Volume();
+            f_mask->create(fixed->dim,fixed->offset,fixed->spacing,fixed->direction_cosines,PT_UCHAR);
+        }
+
+        //Modify fixed mask according to min and max values for fixed image
+        update_mask(f_mask,fixed,parms.mi_fixed_image_minVal,parms.mi_fixed_image_maxVal,fill);
+        plm_image_save_vol("/home/kfritscher/FixedMaskUpdated.mhd",f_mask);
+    }
+
 
     /* Subsample masks (if we are using them) */
     if (m_mask) {
@@ -366,6 +411,26 @@ do_gpuit_bspline_stage_internal (
     delete moving_ss;
     delete moving_grad;
     bspline_parms_free (&parms);
+}
+
+void update_mask(Volume* mask, Volume* image,float min_val,float max_val,bool fill_empty_mask)
+{
+    plm_long p=0;
+    float* image_temp=(float*)image->img;
+    unsigned char* mask_temp=(unsigned char*)mask->img;
+    for (unsigned int i=0; i < mask->dim[2]; i++) {
+        for (unsigned int j=0; j < mask->dim[1]; j++) {
+            for (unsigned int k=0; k < mask->dim[0]; k++) {
+                if(fill_empty_mask && (image_temp[p]>=min_val && image_temp[p]<=max_val))
+                {
+                    mask_temp[p]=(unsigned char)1;
+                }
+                else if((image_temp[p]<min_val || image_temp[p]>max_val) && mask_temp[p]>0)
+                    mask_temp[p]=(unsigned char)0;
+                p++;
+            }
+        }
+    }
 }
 
 void

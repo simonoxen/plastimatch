@@ -111,6 +111,11 @@ public:
     plm_long mi_hist_fixed_bins;
     plm_long mi_hist_moving_bins;
 
+    float mi_fixed_image_minVal;
+    float mi_fixed_image_maxVal;
+    float mi_moving_image_minVal;
+    float mi_moving_image_maxVal;
+
     /* LBFGSB optimizer parms */
     double_align8 lbfgsb_factr;  /* Function value tolerance for L-BFGS-B */
     double_align8 lbfgsb_pgtol;  /* Projected grad tolerance for L-BFGS-B */
