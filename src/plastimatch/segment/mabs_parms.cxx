@@ -211,9 +211,7 @@ Mabs_parms::set_key_val (
             /* Key/value pair, so add for renaming */
             this->structure_map[val] = key;
         }
-        else {
-            goto error_exit;
-        }
+        /* There is no filtering of structures values */
     }
 
 
