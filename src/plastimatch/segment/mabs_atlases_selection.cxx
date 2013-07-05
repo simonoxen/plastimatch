@@ -123,7 +123,7 @@ Mabs_atlases_selection::nmi_ranking(std::string patient_id, const Mabs_parms* pa
 
 double
 Mabs_atlases_selection::compute_nmi(Plm_image* img1, Plm_image* img2, int hist_bins,
-                                    MaskTypePointer mask, int min_value, int max_value) {
+                                    MaskTypePointer mask, std::string min_value, std::string max_value) {
 	
     /* Cost function */
     typedef float PixelComponentType;
@@ -148,15 +148,21 @@ Mabs_atlases_selection::compute_nmi(Plm_image* img1, Plm_image* img2, int hist_b
     }
     
     /* Set histogram interval if defined */
-    if (min_value != 0 && max_value != 0) {
-        MetricType::MeasurementVectorType lower_bounds, upper_bounds;
+        if (min_value != "") {
+        MetricType::MeasurementVectorType lower_bounds;
         #ifdef ITK4 
-	lower_bounds.SetSize(2);
-	upper_bounds.SetSize(2);
+        lower_bounds.SetSize(2);
         #endif
-	lower_bounds.Fill(min_value);
-        upper_bounds.Fill(max_value);
+        lower_bounds.Fill((double) atoi(min_value.c_str()));
         metric->SetLowerBound(lower_bounds);
+    }
+
+    if (max_value != "") {
+        MetricType::MeasurementVectorType upper_bounds;
+        #ifdef ITK4 
+        upper_bounds.SetSize(2);
+        #endif
+        upper_bounds.Fill((double) atoi(max_value.c_str()));
         metric->SetUpperBound(upper_bounds);
     }
     

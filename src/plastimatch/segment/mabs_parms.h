@@ -37,8 +37,8 @@ public:
     float mi_percent_thershold;
     int mi_histogram_bins;
     std::string roi_mask_fn;
-    int lower_mi_value;
-    int upper_mi_value;
+    std::string lower_mi_value;
+    std::string upper_mi_value;
     
     /* [TRAINING] */
     std::string atlas_dir;
