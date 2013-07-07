@@ -606,8 +606,16 @@ gdcm_rtss_save (
 	    ("%d", curr_structure->id),
 	    0x3006, 0x0084);
 	/* ROIObservationLabel */
-	rtroio_item->InsertValEntry (
-	    (const char*) curr_structure->name, 0x3006, 0x0085);
+        if (curr_structure->name.length() <= 16) {
+            rtroio_item->InsertValEntry (
+                (const char*) curr_structure->name, 0x3006, 0x0085);
+        } else {
+            /* VR is SH, max length 16 */
+            Pstring tmp_name = curr_structure->name;
+            tmp_name.trunc (16);
+            rtroio_item->InsertValEntry (
+                (const char*) tmp_name, 0x3006, 0x0085);
+        }
 	/* RTROIInterpretedType */
 	rtroio_item->InsertValEntry ("", 0x3006, 0x00a4);
 	/* ROIInterpreter */
