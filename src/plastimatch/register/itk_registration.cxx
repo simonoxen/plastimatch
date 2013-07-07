@@ -423,9 +423,9 @@ show_image_stats (T image)
     const typename Img::SpacingType& sp = image->GetSpacing();
     const typename Img::DirectionType& di = image->GetDirection();
 
+    lprintf ("Dim = %d %d %d\n", sz[0], sz[1], sz[2]);
     lprintf ("Origin = %g %g %g\n", ori[0], ori[1], ori[2]);
-    lprintf ("Dim = %g %g %g\n", sp[0], sp[1], sp[2]);
-    lprintf ("Spacing = %d %d %d\n", sz[0], sz[1], sz[2]);
+    lprintf ("Spacing = %g %g %g\n", sp[0], sp[1], sp[2]);
     lprintf ("Direction Cosines =\n");
     for (unsigned int d1 = 0; d1 < 3; d1++) {
         for (unsigned int d2 = 0; d2 < 3; d2++) {
@@ -438,17 +438,20 @@ show_image_stats (T image)
 void
 Itk_registration_private::show_stats ()
 {
+    lprintf ("Fixed image for this stage:\n");
     show_image_stats(static_cast < FloatImageType::ConstPointer > (
             registration->GetFixedImage()));
+    lprintf ("Moving image for this stage:\n");
     show_image_stats(static_cast < FloatImageType::ConstPointer > (
             registration->GetMovingImage()));
 }
 
 void
-set_transform_translation (RegistrationType::Pointer registration,
-                        Xform *xf_out,
-                        Xform *xf_in,
-                        Stage_parms* stage)
+set_transform_translation (
+    RegistrationType::Pointer registration,
+    Xform *xf_out,
+    Xform *xf_in,
+    Stage_parms* stage)
 {
     Plm_image_header pih;
     pih.set_from_itk_image (registration->GetFixedImage());
@@ -482,10 +485,11 @@ set_transform_quaternion (
 }
 
 void
-set_transform_affine (RegistrationType::Pointer registration,
-                        Xform *xf_out,
-                        Xform *xf_in,
-                        Stage_parms* stage)
+set_transform_affine (
+    RegistrationType::Pointer registration,
+    Xform *xf_out,
+    Xform *xf_in,
+    Stage_parms* stage)
 {
     Plm_image_header pih;
     pih.set_from_itk_image (registration->GetFixedImage());

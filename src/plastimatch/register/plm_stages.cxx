@@ -147,19 +147,6 @@ set_fixed_image_region_global (Registration_data* regd)
     }
 }
 
-#if defined (commentout)
-static Plm_image_type
-choose_image_type (int xform_type, int optim_type, int impl_type)
-{
-    switch (impl_type) {
-    case IMPLEMENTATION_PLASTIMATCH:
-        return PLM_IMG_TYPE_GPUIT_FLOAT;
-    default:
-        return PLM_IMG_TYPE_ITK_FLOAT;
-    }
-}
-#endif
-
 static void
 save_output (
     Registration_data* regd, 
@@ -286,17 +273,6 @@ set_auto_subsampling (int subsample_rate[], Plm_image *pli)
 static void
 set_automatic_parameters (Registration_data* regd, Registration_parms* regp)
 {
-#if defined (commentout)
-    for (int i = 0; i < regp->num_stages; i++) {
-        Stage_parms *sp = regp->stages[i];
-        if (sp->subsampling_type == SUBSAMPLING_AUTO) {
-            set_auto_subsampling (
-                sp->fixed_subsample_rate, regd->fixed_image);
-            set_auto_subsampling (
-                sp->moving_subsample_rate, regd->moving_image);
-        }
-    }
-#endif
     std::list<Stage_parms*>& stages = regp->get_stages();
     std::list<Stage_parms*>::iterator it;
     for (it = stages.begin(); it != stages.end(); it++) {
@@ -372,15 +348,6 @@ do_registration_pure (
 
     /* Set automatic parameters based on image size */
     set_automatic_parameters (regd, regp);
-
-#if defined (commentout)
-    for (i = 0; i < regp->num_stages; i++) {
-        /* Swap xf_in and xf_out */
-        xf_tmp = xf_out; xf_out = xf_in; xf_in = xf_tmp;
-        /* Run registation, results are stored in xf_out */
-        do_registration_stage (regp, regd, xf_out, xf_in, regp->stages[i]);
-    }
-#endif
 
     std::list<Stage_parms*>& stages = regp->get_stages();
     std::list<Stage_parms*>::iterator it;
