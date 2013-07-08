@@ -6,6 +6,7 @@
 
 #include "plmsegment_config.h"
 #include <string>
+#include "itk_image.h"
 
 class Mabs_private;
 class Mabs_parms;
@@ -21,7 +22,12 @@ protected:
     void sanity_checks ();
     void load_process_dir_list (const std::string& dir);
     void convert (const std::string& input_dir, const std::string& output_dir);
-    void prealign (const std::string& input_dir, const std::string& output_dir);
+    void prealign (const std::string& input_dir, 
+        const std::string& output_dir);
+    FloatImageType::Pointer compute_dmap (
+        UCharImageType::Pointer& structure_image,
+        const std::string& curr_output_dir,
+        const std::string& mapped_name);
     void run_single_registration ();
     void run_registration ();
     void run_segmentation ();

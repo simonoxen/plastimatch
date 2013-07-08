@@ -569,6 +569,43 @@ Mabs::parse_registration_dir (void)
     }
 }
 
+FloatImageType::Pointer
+Mabs::compute_dmap (
+    UCharImageType::Pointer& structure_image,
+    const std::string& curr_output_dir,
+    const std::string& mapped_name)
+{
+    Plm_timer timer;
+    Distance_map dmap;
+
+    /* Compute the dmap */
+    dmap.set_input_image (structure_image);
+    dmap.run ();
+    FloatImageType::Pointer dmap_image = dmap.get_output_image ();
+
+    /* Truncate the dmap.  This is to save disk space. 
+       Maybe we won't need this if we can crop. */
+    Adjustment_list al;
+    al.push_back (std::make_pair (
+            -std::numeric_limits<float>::max(), 0));
+    al.push_back (std::make_pair (-400, -400));
+    al.push_back (std::make_pair (400, 400));
+    al.push_back (std::make_pair (
+            std::numeric_limits<float>::max(), 0));
+    itk_adjust (dmap_image, al);
+    d_ptr->time_dmap += timer.report();
+
+    if (d_ptr->write_distance_map) {
+        timer.start();
+        std::string fn = string_format ("%s/dmap_%s.nrrd", 
+            curr_output_dir.c_str(), mapped_name.c_str());
+        itk_image_save (dmap_image, fn.c_str());
+        d_ptr->time_io += timer.report();
+    }
+
+    return dmap_image;
+}
+
 void
 Mabs::run_registration ()
 {
@@ -734,31 +771,9 @@ Mabs::run_registration ()
                 /* Make the distance map */
                 timer.start();
                 lprintf ("Computing distance map...\n");
-                Distance_map dmap;
                 if (d_ptr->compute_distance_map) {
-                    dmap.set_input_image (structure_image);
-                    dmap.run ();
-                    FloatImageType::Pointer dmap_image 
-                        = dmap.get_output_image ();
-                    d_ptr->time_dmap += timer.report();
-
-                    /* Truncate the dmap.  This is to save disk space. 
-                       Maybe we won't need this if we can crop. */
-                    Adjustment_list al;
-                    al.push_back (std::make_pair (
-                            -std::numeric_limits<float>::max(), 0));
-                    al.push_back (std::make_pair (-400, -400));
-                    al.push_back (std::make_pair (400, 400));
-                    al.push_back (std::make_pair (
-                            std::numeric_limits<float>::max(), 0));
-                    itk_adjust (dmap_image, al);
-                    if (d_ptr->write_distance_map) {
-                        timer.start();
-                        fn = string_format ("%s/dmap_%s.nrrd", 
-                            curr_output_dir.c_str(), mapped_name.c_str());
-                        itk_image_save (dmap_image, fn.c_str());
-                        d_ptr->time_io += timer.report();
-                    }
+                    this->compute_dmap (structure_image,
+                        curr_output_dir, mapped_name);
                 }
 
                 /* Extract reference structure as binary mask. */
@@ -874,7 +889,17 @@ Mabs::segmentation_vote (const std::string& atlas_id)
             dmap_fn.c_str());
         d_ptr->time_io += timer.report();
         if (!dmap_image) {
-            continue;
+            /* Load warped structure */
+            std::string warped_structure_fn = string_format (
+                "%s/structures/%s.nrrd", curr_output_dir.c_str(),
+                mapped_name.c_str());
+            Plm_image *warped_structure = plm_image_load_native (
+                warped_structure_fn);
+            /* Recompute distance map */
+            FloatImageType::Pointer dmap_image_itk = this->compute_dmap (
+                warped_structure->itk_uchar(),
+                curr_output_dir, mapped_name);
+            dmap_image = new Plm_image (dmap_image_itk);
         }
 
         /* Vote */
