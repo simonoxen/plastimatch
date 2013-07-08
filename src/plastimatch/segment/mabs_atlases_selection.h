@@ -27,7 +27,7 @@ public:
     
     std::list<std::string> nmi_ranking(std::string patient_id, const Mabs_parms* parms);
     double compute_nmi(Plm_image* img1, Plm_image* img2, int hist_bins, MaskTypePointer mask,
-                        std::string min_value, std::string max_value);
+                       bool min_value_defined, int min_value, bool max_value_defined, int max_value);
 
 
 public:

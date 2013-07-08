@@ -28,8 +28,10 @@ Mabs_parms::Mabs_parms ()
     this->mi_percent_thershold = 0.70;
     this->mi_histogram_bins = 100;
     this->roi_mask_fn = "";
-    this->lower_mi_value = "";
-    this->upper_mi_value = "";
+    this->lower_mi_value_defined=false;
+    this->lower_mi_value = 0;
+    this->upper_mi_value_defined=false;
+    this->upper_mi_value = 0;
 	
     this->sman = new Mabs_subject_manager;
     this->debug = false;
@@ -134,10 +136,12 @@ Mabs_parms::set_key_val (
             this->roi_mask_fn = val;
         }
         else if (key == "lower_mi_value") {
-            this->lower_mi_value = key;
+            sscanf (val.c_str(), "%d", &this->lower_mi_value);
+            this->lower_mi_value_defined = true;
         }
         else if (key == "upper_mi_value") {
-            this->upper_mi_value = key;
+            sscanf (val.c_str(), "%d", &this->upper_mi_value);
+            this->upper_mi_value_defined = true;
         }
         else {
             goto error_exit;

@@ -72,7 +72,8 @@ Mabs_atlases_selection::nmi_ranking(std::string patient_id, const Mabs_parms* pa
         else
 	{
 	    nmi_vector[i] = compute_nmi(subject_rtds->get_image().get(), rtds_atl.get_image().get(),
-                            parms->mi_histogram_bins, mask, parms->lower_mi_value, parms->upper_mi_value);
+                            parms->mi_histogram_bins, mask, parms->lower_mi_value_defined, parms->lower_mi_value,
+                            parms->upper_mi_value_defined, parms->upper_mi_value);
 	    lprintf("NMI %s - %s = %g \n", patient_id.c_str(), atlas_id.c_str(), nmi_vector[i]);
 	}
     } 
@@ -122,8 +123,8 @@ Mabs_atlases_selection::nmi_ranking(std::string patient_id, const Mabs_parms* pa
 }
 
 double
-Mabs_atlases_selection::compute_nmi(Plm_image* img1, Plm_image* img2, int hist_bins,
-                                    MaskTypePointer mask, std::string min_value, std::string max_value) {
+Mabs_atlases_selection::compute_nmi(Plm_image* img1, Plm_image* img2, int hist_bins, MaskTypePointer mask,
+                                    bool min_value_defined, int min_value, bool max_value_defined, int max_value) {
 	
     /* Cost function */
     typedef float PixelComponentType;
@@ -148,21 +149,21 @@ Mabs_atlases_selection::compute_nmi(Plm_image* img1, Plm_image* img2, int hist_b
     }
     
     /* Set histogram interval if defined */
-        if (min_value != "") {
+    if (min_value_defined) {
         MetricType::MeasurementVectorType lower_bounds;
         #ifdef ITK4 
         lower_bounds.SetSize(2);
         #endif
-        lower_bounds.Fill((double) atoi(min_value.c_str()));
+        lower_bounds.Fill(min_value);
         metric->SetLowerBound(lower_bounds);
     }
 
-    if (max_value != "") {
+    if (max_value_defined) {
         MetricType::MeasurementVectorType upper_bounds;
         #ifdef ITK4 
         upper_bounds.SetSize(2);
         #endif
-        upper_bounds.Fill((double) atoi(max_value.c_str()));
+        upper_bounds.Fill(max_value);
         metric->SetUpperBound(upper_bounds);
     }
     
