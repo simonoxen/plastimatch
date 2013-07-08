@@ -579,6 +579,7 @@ Mabs::compute_dmap (
     Distance_map dmap;
 
     /* Compute the dmap */
+    timer.start ();
     dmap.set_input_image (structure_image);
     dmap.run ();
     FloatImageType::Pointer dmap_image = dmap.get_output_image ();
