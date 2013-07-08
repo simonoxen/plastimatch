@@ -10,6 +10,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "file_util.h"
 #include "mabs_parms.h"
 #include "mabs_subject.h"
 #include "plm_math.h"
@@ -244,6 +245,11 @@ Mabs_parms::parse_config (
     const char* config_fn
 )
 {
+    /* Confirm file can be read */
+    if (!file_exists (config_fn)) {
+        print_and_exit ("Error reading config file: %s\n", config_fn);
+    }
+
     /* Read file into string */
     std::ifstream t (config_fn);
     std::stringstream buffer;

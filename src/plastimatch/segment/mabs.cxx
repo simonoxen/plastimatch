@@ -43,7 +43,7 @@ public:
     
     /* traindir_base is the output directory when we are 
        doing a training task (i.e. not labeling), and is of the form:
-       training/ */
+       ".../train_dir */
     std::string traindir_base;
 
     /* ".../train_dir/convert" */
