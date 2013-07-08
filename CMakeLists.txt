@@ -687,7 +687,7 @@ endif ()
 ##-----------------------------------------------------------------------------
 
 option (PLM_CONFIG_PREFER_DCMTK 
-  "Use DCMTK instead of GDCM for DICOM operations" OFF)
+  "Use DCMTK instead of GDCM for DICOM operations" ON)
 
 set (PLM_DCM_USE_DCMTK 0)
 if (PLM_CONFIG_DEBIAN_BUILD)
