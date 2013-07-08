@@ -583,7 +583,7 @@ Mabs::run_registration ()
         std::string path = *atl_it;
         std::string atlas_id = basename (path);
         std::string atlas_input_path = string_format ("%s/%s",
-            d_ptr->convert_dir.c_str(), atlas_id.c_str());
+            d_ptr->prealign_dir.c_str(), atlas_id.c_str());
         std::string atlas_output_path = string_format ("%s/%s",
             d_ptr->output_dir.c_str(), atlas_id.c_str());
 
@@ -1145,10 +1145,10 @@ Mabs::train_internal (bool registration_only)
         /* Load image & structures from "prep" directory */
         timer.start();
         std::string fn = string_format ("%s/%s/img.nrrd", 
-            d_ptr->convert_dir.c_str(), patient_id.c_str());
+            d_ptr->prealign_dir.c_str(), patient_id.c_str());
         d_ptr->ref_rtds.load_image (fn.c_str());
         fn = string_format ("%s/%s/structures", 
-            d_ptr->convert_dir.c_str(), patient_id.c_str());
+            d_ptr->prealign_dir.c_str(), patient_id.c_str());
         d_ptr->ref_rtds.load_prefix (fn.c_str());
         d_ptr->time_io += timer.report();
         
