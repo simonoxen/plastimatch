@@ -61,7 +61,7 @@ Mabs_atlases_selection::nmi_ranking(std::string patient_id, const Mabs_parms* pa
         Rt_study rtds_atl;
        	std::string path_atl = *atl_it;
         std::string atlas_id = basename (path_atl);
-        std::string atlas_input_path = string_format ("%s/atlas/%s", "training-mgh", atlas_id.c_str());
+        std::string atlas_input_path = string_format ("%s/prealign/%s", "training-mgh", atlas_id.c_str());
         std::string fn = string_format ("%s/img.nrrd", atlas_input_path.c_str());
         rtds_atl.load_image (fn.c_str());
         
