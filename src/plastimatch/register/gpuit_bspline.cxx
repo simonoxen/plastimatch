@@ -118,7 +118,7 @@ do_gpuit_bspline_stage_internal (
 
         //Modify fixed mask according to min and max values for moving image
         update_mask(m_mask,moving,parms.mi_moving_image_minVal,parms.mi_moving_image_maxVal,fill);
-        plm_image_save_vol("/home/kfritscher/MovingMaskUpdated.mhd",m_mask);
+
     }
 
 
@@ -137,7 +137,7 @@ do_gpuit_bspline_stage_internal (
 
         //Modify fixed mask according to min and max values for fixed image
         update_mask(f_mask,fixed,parms.mi_fixed_image_minVal,parms.mi_fixed_image_maxVal,fill);
-        plm_image_save_vol("/home/kfritscher/FixedMaskUpdated.mhd",f_mask);
+
     }
 
 
