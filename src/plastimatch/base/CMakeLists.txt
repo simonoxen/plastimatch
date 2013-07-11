@@ -77,6 +77,7 @@ set (PLMBASE_LIBRARY_SRC
   rtss.cxx rtss.h 
   rtss_roi.cxx rtss_roi.h 
   slice_list.cxx slice_list.h
+  ss_img_extract.cxx
   ss_list_io.cxx
   thumbnail.cxx
   vf_convolve.cxx

@@ -118,6 +118,18 @@ basename (const std::string& fn)
 }
 
 std::string
+dirname (const std::string& fn)
+{
+    std::string tmp = trim_trailing_slashes (fn);
+    size_t s = tmp.find_last_of ("/");
+    if (s == tmp.npos) {
+        return tmp;
+    }
+    tmp = tmp.substr(0, s+1);
+    return trim_trailing_slashes (tmp);
+}
+
+std::string
 compose_filename (const char *a, const char *b)
 {
     std::string output_fn;

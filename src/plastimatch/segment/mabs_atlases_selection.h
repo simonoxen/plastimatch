@@ -32,7 +32,7 @@ public:
 
 public:
     std::list<std::string> atlas_dir_list;
-    Rt_study* subject_rtds;
+    Rt_study::Pointer subject_rtds;
     
 };
 

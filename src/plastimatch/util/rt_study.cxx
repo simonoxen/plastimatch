@@ -12,6 +12,7 @@
 #endif
 #include "astroid_dose.h"
 #include "file_util.h"
+#include "itk_resample.h"
 #include "mc_dose.h"
 #include "path_util.h"
 #include "plm_image.h"
@@ -580,4 +581,13 @@ Rt_study::get_dose_volume_float ()
         return 0;
     }
     return d_ptr->m_dose->get_volume_float_raw ();
+}
+
+/* Resample image and ss_img */
+void
+Rt_study::resample (float spacing[3])
+{
+    d_ptr->m_img->set_itk (resample_image (
+            d_ptr->m_img->itk_float(), spacing));
+    d_ptr->m_rtss->resample (spacing);
 }

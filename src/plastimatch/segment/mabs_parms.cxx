@@ -23,6 +23,7 @@ Mabs_parms::Mabs_parms ()
     this->prealign_mode="default";
     this->prealign_reference = "";
     this->prealign_spacing = "";
+    this->prealign_registration_config = "";
 
     /* [ATLASES-SELECTION] */
     this->enable_atlases_selection = false;
@@ -111,6 +112,9 @@ Mabs_parms::set_key_val (
         }
         else if (key == "spacing") {
             this->prealign_spacing = val;
+        }
+        else if (key == "registration_config") {
+            this->prealign_registration_config = val;
         }
         else {
             goto error_exit;

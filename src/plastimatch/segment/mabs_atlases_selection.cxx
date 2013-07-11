@@ -20,7 +20,7 @@
 Mabs_atlases_selection::Mabs_atlases_selection ()
 {
     //constructor
-    subject_rtds = new Rt_study;
+    subject_rtds = Rt_study::New ();
 }
 
 
@@ -28,7 +28,6 @@ Mabs_atlases_selection::~Mabs_atlases_selection ()
 {
     //destructor
     delete &atlas_dir_list;
-    delete subject_rtds;
 }
 
 std::list<std::string>

@@ -13,6 +13,7 @@
 #include "itk_resample.h"
 #include "logfile.h"
 #include "plm_image_header.h"
+#include "ss_img_extract.h"
 
 template <class T>
 T
@@ -281,53 +282,41 @@ resample_image (T& image, float spacing[3])
     typedef typename T::ObjectType::PixelType PixelType;
     typedef itk::ResampleImageFilter < ImageType, ImageType > FilterType;
     typedef itk::LinearInterpolateImageFunction< 
-            ImageType, double >  InterpolatorType;
-
-    typename FilterType::Pointer filter = FilterType::New();
+        ImageType, double >  InterpolatorType;
 
     const typename ImageType::SpacingType& old_spacing = image->GetSpacing();
     const typename ImageType::PointType& old_origin = image->GetOrigin();
     typename ImageType::SizeType old_size 
         = image->GetLargestPossibleRegion().GetSize();
 
-    typename ImageType::SpacingType itk_spacing;
-    itk_spacing[0] = spacing[0];
-    itk_spacing[1] = spacing[1];
-    itk_spacing[2] = spacing[2];
-    filter->SetOutputSpacing (itk_spacing);
-    lprintf ("New spacing at %f %f %f\n", spacing[0], spacing[1], spacing[2]);
-
     float old_coverage[3];
-    old_coverage[0] = (old_size[0]+1) * old_spacing[0];
-    old_coverage[1] = (old_size[1]+1) * old_spacing[1];
-    old_coverage[2] = (old_size[2]+1) * old_spacing[2];
-
+    float coverage[3];
+    typename ImageType::SpacingType itk_spacing;
     typename ImageType::SizeType size;
-    size[0] = (unsigned long) (old_coverage[0] / spacing[0]);
-    size[1] = (unsigned long) (old_coverage[1] / spacing[1]);
-    size[2] = (unsigned long) (old_coverage[2] / spacing[2]);
+    typename ImageType::PointType origin;
+
+    for (int d = 0; d < 3; d++) {
+        itk_spacing[d] = spacing[d];
+        old_coverage[d] = old_size[d] * old_spacing[d];
+        size[d] = (unsigned long) (old_coverage[d] / spacing[d]);
+        coverage[d] = size[d] * spacing[d];
+        origin[d] = old_origin[d];
+    }
+
+    lprintf ("New spacing at %f %f %f\n", spacing[0], spacing[1], spacing[2]);
     lprintf ("Resample size was %ld %ld %ld\n", 
         old_size[0], old_size[1], old_size[2]);
     lprintf ("Resample size will be %ld %ld %ld\n", 
         size[0], size[1], size[2]);
-    filter->SetSize (size);
-
-    float coverage[3];
-    coverage[0] = (size[0]+1) * spacing[0];
-    coverage[1] = (size[1]+1) * spacing[1];
-    coverage[2] = (size[2]+1) * spacing[2];
     lprintf ("Resample coverage was %g %g %g\n", 
         old_coverage[0], old_coverage[1], old_coverage[2]);
     lprintf ("Resample coverage will be %g %g %g\n", 
         coverage[0], coverage[1], coverage[2]);
 
-    typename ImageType::PointType origin;
-    origin[0] =  old_origin[0] 
-                    - (old_spacing[0]/2.0) 
-                    + (spacing[0]/2.0)
-                    + ((old_coverage[0]-coverage[0])/2.0);
+    typename FilterType::Pointer filter = FilterType::New();
+    filter->SetSize (size);
     filter->SetOutputOrigin (origin);
-
+    filter->SetOutputSpacing (itk_spacing);
     filter->SetOutputDirection (image->GetDirection());
 
     typedef itk::AffineTransform< double, 3 > TransformType;
@@ -352,6 +341,50 @@ resample_image (T& image, float spacing[3])
 
     T out_image = filter->GetOutput();
     return out_image;
+}
+
+UCharVecImageType::Pointer
+resample_image (UCharVecImageType::Pointer image, float spacing[3])
+{
+    typedef UCharVecImageType ImageType;
+    const ImageType::SpacingType& old_spacing = image->GetSpacing();
+    const ImageType::PointType& old_origin = image->GetOrigin();
+    ImageType::SizeType old_size 
+        = image->GetLargestPossibleRegion().GetSize();
+
+    float old_coverage[3];
+    float coverage[3];
+    ImageType::SpacingType itk_spacing;
+    ImageType::SizeType size;
+    ImageType::PointType origin;
+    ImageType::RegionType rg;
+
+    for (int d = 0; d < 3; d++) {
+        itk_spacing[d] = spacing[d];
+        old_coverage[d] = old_size[d] * old_spacing[d];
+        size[d] = (unsigned long) (old_coverage[d] / spacing[d]);
+        coverage[d] = size[d] * spacing[d];
+        origin[d] = old_origin[d];
+    }
+    rg.SetSize (size);
+    unsigned int num_uchar = image->GetVectorLength();
+
+    UCharVecImageType::Pointer im_out = UCharVecImageType::New();
+    im_out->SetOrigin (origin);
+    im_out->SetSpacing (itk_spacing);
+    im_out->SetRegions (rg);
+    im_out->SetDirection (image->GetDirection());
+    im_out->SetVectorLength (image->GetVectorLength());
+    im_out->Allocate ();
+
+    for (unsigned int uchar_no = 0; uchar_no < num_uchar; uchar_no++) {
+	UCharImageType::Pointer uchar_img 
+	    = ss_img_extract_uchar (image, uchar_no);
+	UCharImageType::Pointer uchar_img_resampled
+	    = resample_image (uchar_img, Plm_image_header (im_out), 0.f, 0);
+	ss_img_insert_uchar (im_out, uchar_img_resampled, uchar_no);
+    }
+    return im_out;
 }
 
 
@@ -436,6 +469,7 @@ template PLMBASE_API UShortImageType::Pointer resample_image (UShortImageType::P
 template PLMBASE_API Int32ImageType::Pointer resample_image (Int32ImageType::Pointer&, const Plm_image_header&, float default_val, int interp_lin);
 template PLMBASE_API UInt32ImageType::Pointer resample_image (UInt32ImageType::Pointer&, const Plm_image_header&, float default_val, int interp_lin);
 template PLMBASE_API FloatImageType::Pointer resample_image (FloatImageType::Pointer&, const Plm_image_header&, float default_val, int interp_lin);
+
 template PLMBASE_API FloatImageType::Pointer resample_image (FloatImageType::Pointer&, float spacing[3]);
 
 template PLMBASE_API UCharImageType::Pointer subsample_image (UCharImageType::Pointer&, int, int, int, float);

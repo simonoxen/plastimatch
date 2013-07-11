@@ -97,6 +97,8 @@ public:
     Plm_image* get_dose_plm_image ();
     Volume* get_dose_volume_float ();
 
+    void resample (float spacing[3]);
+
 protected:
     void save_dcmtk (const char *dicom_dir);
     void save_dcmtk_dose (const char *dicom_dir);

@@ -90,6 +90,13 @@ public:
     void set_structure_set (Rtss::Pointer& rtss_ss);
     void set_structure_set (Rtss *rtss_ss);
 
+    void set_structure_image (
+        UCharImageType::Pointer uchar_img, 
+        unsigned int bit
+    );
+
+    void resample (float spacing[3]);
+
 protected:
     void initialize_ss_image (
         const Plm_image_header& pih, int vector_length);

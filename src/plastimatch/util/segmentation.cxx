@@ -15,6 +15,7 @@
 #include "file_util.h"
 #include "itk_image_save.h"
 #include "itk_image_type.h"
+#include "itk_resample.h"
 #include "logfile.h"
 #include "path_util.h"
 #include "plm_image.h"
@@ -291,9 +292,6 @@ Segmentation::add_structure (
         structure_color = "";
     }
     int bit = d_ptr->m_cxt->num_structures; /* GCS FIX: I hope this is ok */
-    unsigned int uchar_no = bit / 8;
-    unsigned int bit_no = bit % 8;
-    unsigned char bit_mask = 1 << bit_no;
 
     /* Add structure to rtss */
     d_ptr->m_cxt->add_structure (
@@ -301,6 +299,7 @@ Segmentation::add_structure (
         d_ptr->m_cxt->num_structures + 1,
         bit);
 
+#if defined (commentout)
     /* Expand vector length if needed */
     UCharVecImageType::Pointer ss_img = d_ptr->m_ss_img->itk_uchar_vec ();
     if (uchar_no > ss_img->GetVectorLength()) {
@@ -332,6 +331,10 @@ Segmentation::add_structure (
         v[uchar_no] |= bit_mask;
         ss_img_it.Set (v);
     }
+#endif
+
+    /* Set bit within ss_img */
+    this->set_structure_image (itk_image, bit);
 
     if (d_ptr->m_cxt) {
         d_ptr->m_cxt->free_all_polylines ();
@@ -899,6 +902,58 @@ Segmentation::set_structure_set (Rtss *rtss_ss)
     d_ptr->m_ss_img_valid = false;
 }
 
+void
+Segmentation::set_structure_image (
+    UCharImageType::Pointer uchar_img, 
+    unsigned int bit
+)
+{
+    /* Figure out which bit of which byte to change */
+    unsigned int uchar_no = bit / 8;
+    unsigned int bit_no = bit % 8;
+    unsigned char bit_mask = 1 << bit_no;
+
+    /* Expand vector length if needed */
+    UCharVecImageType::Pointer ss_img = d_ptr->m_ss_img->itk_uchar_vec ();
+    if (uchar_no > ss_img->GetVectorLength()) {
+        this->broaden_ss_image (uchar_no);
+    }
+
+    /* Set up iterators for looping through images */
+    typedef itk::ImageRegionConstIterator< UCharImageType > 
+        UCharIteratorType;
+    typedef itk::ImageRegionIterator< UCharVecImageType > 
+        UCharVecIteratorType;
+    UCharIteratorType uchar_img_it (uchar_img, 
+        uchar_img->GetLargestPossibleRegion());
+    UCharVecIteratorType ss_img_it (ss_img, 
+        ss_img->GetLargestPossibleRegion());
+
+    /* Loop through voxels, or'ing them into ss_img */
+    /* GCS FIX: This is inefficient, due to undesirable construct 
+       and destruct of itk::VariableLengthVector of each pixel */
+    for (uchar_img_it.GoToBegin(), ss_img_it.GoToBegin();
+        !uchar_img_it.IsAtEnd();
+        ++uchar_img_it, ++ss_img_it
+    ) {
+        unsigned char u = uchar_img_it.Get ();
+        if (!u) continue;
+
+        itk::VariableLengthVector<unsigned char> v 
+            = ss_img_it.Get ();
+        v[uchar_no] |= bit_mask;
+        ss_img_it.Set (v);
+    }
+}
+
+void
+Segmentation::resample (float spacing[3])
+{
+    Plm_image *ss_img = d_ptr->m_ss_img;
+    ss_img->set_itk (resample_image (ss_img->itk_uchar_vec (), spacing));
+}
+
+
 /* -----------------------------------------------------------------------
    Protected member functions
    ----------------------------------------------------------------------- */
@@ -922,14 +977,6 @@ Segmentation::initialize_ss_image (
     v.SetSize (vector_length);
     v.Fill (0);
     ss_img->FillBuffer (v);
-#if defined (commentout)
-    typedef itk::ImageRegionIterator< 
-        UCharVecImageType > UCharVecIteratorType;
-    UCharVecIteratorType it (ss_img, pih.m_region);
-    for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
-        it.Set (v);
-    }
-#endif
 
     d_ptr->m_ss_img->set_itk (ss_img);
     Plm_image_header::clone (&ss_img_pih, &pih);

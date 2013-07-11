@@ -31,6 +31,7 @@ public:
     std::string prealign_mode;
     std::string prealign_reference;
     std::string prealign_spacing;
+    std::string prealign_registration_config;
     
     /* [ATLASES-SELECTION] */
     bool enable_atlases_selection;
