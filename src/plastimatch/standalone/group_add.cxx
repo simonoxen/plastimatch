@@ -266,16 +266,21 @@ main (int argc, char* argv[])
 	  z_low = origin[2] + it->offset[2] + (k-.5)*spacing[2];
 	  z_high = z_low+spacing[2];
 
+	  //The extra "if's" account for some fuzziness with the maximum values not being cut off -
+	  //chopping off everything above the added max value.
 	  x_low2 = (int) floor((x_low-added_origin[0])/added_spacing[0]+.5);
 	  x_high2 = (int) floor((x_high-added_origin[0])/added_spacing[0]+.5);
+	  if (x_high2 > added_length[0]-1)  {x_high2 = added_length[0]-1;}
 	  y_low2 = (int) floor((y_low-added_origin[1])/added_spacing[1]+.5);
 	  y_high2 = (int) floor((y_high-added_origin[1])/added_spacing[1]+.5);
+	  if (y_high2 > added_length[1]-1)  {y_high2 = added_length[1]-1;}
 	  z_low2 = (int) floor((z_low-added_origin[2])/added_spacing[2]+.5);
 	  z_high2 = (int) floor((z_high-added_origin[2])/added_spacing[2]+.5);
+	  if (z_high2 > added_length[2]-1)  {z_high2 = added_length[2]-1;}
 
-	  for (int ii=x_low2; ii<x_high2; ++ii)  {
-	    for (int jj=y_low2; jj<y_high2; ++jj)  {
-	      for (int kk=z_low2; kk<z_high2; ++kk)  {
+	  for (int ii=x_low2; ii<=x_high2; ++ii)  {
+	    for (int jj=y_low2; jj<=y_high2; ++jj)  {
+	      for (int kk=z_low2; kk<=z_high2; ++kk)  {
 
 		float unit = 1.;
 		
@@ -290,7 +295,6 @@ main (int argc, char* argv[])
 		if ((x_low2<0)||(y_low2<0)||(z_low2<0)||(x_high2>=added_dim[0])||(y_high2>=added_dim[1])||(z_high2>=added_dim[2]))  {continue;}
 
 		added_vect[ii][jj][kk] += unit*input_vect[i][j][k]*it->weight;
-		
 	      }
 	    }
 	  }

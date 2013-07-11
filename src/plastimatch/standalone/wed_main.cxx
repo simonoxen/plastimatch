@@ -227,28 +227,40 @@ wed_ct_initialize(Wed_Parms *parms)
     //Aperture dimensions
     if (parms->have_ires) {
         scene.get_aperture()->set_dim (parms->ires);
+	//If dew, pad each by one for interpolations
+	if (parms->mode==1)  {
+	  ap_res[0] = (int) (parms->ires[0]+2);
+	  ap_res[1] = (int) (parms->ires[1]+2);
+	  scene.get_aperture()->set_dim (ap_res);
+	  parms->ires[0]=ap_res[0];
+	  parms->ires[1]=ap_res[1];
+	}
     }
     //If dew option, and not specified in .cfg files, then we guess
     //at some scene dimensions set by input wed image.
+
     else if (parms->mode==1)  {
-        Volume *wed_vol = dose_vol->get_volume_float_raw ();
-        //Grab aperture dimensions from input wed.
-        //We also pad each dimension by 1, for the later trilinear 
-        //interpolations.
-        ap_res[0] = (int) (wed_vol->dim[0]+2);
-        ap_res[1] = (int) (wed_vol->dim[1]+2);
-        scene.get_aperture()->set_dim (ap_res);
-        parms->ires[0]=ap_res[0];
-        parms->ires[1]=ap_res[1];
+      Volume *wed_vol = dose_vol->get_volume_float_raw ();
+      //Grab aperture dimensions from input wed.
+      //We also pad each dimension by 1, for the later trilinear 
+      //interpolations.
+      ap_res[0] = (int) (wed_vol->dim[0]+2);
+      ap_res[1] = (int) (wed_vol->dim[1]+2);
+  
+      scene.get_aperture()->set_dim (ap_res);
+      parms->ires[0]=ap_res[0];
+      parms->ires[1]=ap_res[1];
     }
 
     //Aperture Center
     //Note - Center MUST be reset here if set in the config file, as set_dim()
     //will reset the center.
     if (parms->have_ic) {
-        scene.get_aperture()->set_center (parms->ic);
+	ap_center[0] = parms->ic[0]+1.*parms->ap_spacing[0];
+	ap_center[1] = parms->ic[1]+1.*parms->ap_spacing[1];
+        scene.get_aperture()->set_center (ap_center);
     }
-    //And again, guess.
+    //And again, guess if not specified.
     else if (parms->mode==1)  {
         //Set center as half the resolutions.
         ap_center[0] = (float) ap_res[0]/2.;

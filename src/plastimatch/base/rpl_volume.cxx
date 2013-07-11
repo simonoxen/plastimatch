@@ -773,7 +773,7 @@ Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float backgrou
 	//Now compute the distance along each of the 4 rays
 	//Distance chosen to be the intersection of each ray with the plane that both
 	//contains the voxel and is normal to the aperture plane.
-	  
+
 	for (int i=0;i!=4;++i)  {
 	  //Compute distance along each ray.
 	  //Vector along ray from source to aperture
