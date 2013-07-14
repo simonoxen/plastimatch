@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "itkImage.h"
+#include "itkImageRegionIterator.h"
 #include "itkAndConstantToImageFilter.h"
 
 #include "itk_image.h"
