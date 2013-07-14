@@ -20,6 +20,7 @@ public:
         d_lut = 0;
         e_lut = 0;
         dres = 0.0;
+        dmax = 0.0;
         num_samples = 0;
     }
     ~Ion_sobp_private () {
@@ -33,6 +34,7 @@ public:
     float* d_lut;                   /* depth array (mm) */
     float* e_lut;                   /* energy array (MeV) */
     double dres;
+    double dmax;                    /* maximum depth in SOBP curve (mm) */
     int num_samples;
 };
 
@@ -50,6 +52,8 @@ void
 Ion_sobp::add (const Ion_pristine_peak* pristine_peak)
 {
     d_ptr->peaks.push_back (pristine_peak);
+
+    /* GCS FIX: This should probably update the max depth too */
 }
 
 void
@@ -62,6 +66,17 @@ Ion_sobp::add (double E0, double spread, double dres, double dmax,
     Ion_pristine_peak *peak = new Ion_pristine_peak (
         E0, spread, dres, dmax, weight);
     d_ptr->peaks.push_back (peak);
+
+    /* Update maximum */
+    if (dmax > d_ptr->dmax) {
+        d_ptr->dmax = dmax;
+    }
+}
+
+double
+Ion_sobp::get_maximum_depth ()
+{
+    return d_ptr->dmax;
 }
 
 float

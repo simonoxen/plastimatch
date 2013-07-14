@@ -31,18 +31,19 @@ Layout of a public class definition
 -----------------------------------
 The first entries of the class definition specify the API 
 linkage, smart pointer support, and private class data.
-For example:
+Next are the constructors and destructors.  For example:
 
 class PLMBASE_API Plm_image {
 public:
     SMART_POINTER_SUPPORT (Plm_image);
-public:
     Plm_image_private *d_ptr;
+public:
+    Plm_image ();
 
 The token PLMBASE_API is defined in plmbase_config.h, and is 
-reqired for linking with the library on windows.  Next, this class 
-specifies that it allows the use of smart pointers.  
-Finally the private pointer is defined.
+reqired for linking with the library on windows.  The macro 
+SMART_POINTER_SUPPORT specifies that this class allows the use 
+of smart pointers, and is defined in smart_pointer.h.
 
 Native layer, itk layer, wrapper layer [Proposed, not implemented]
 ------------------------------------------------------------------

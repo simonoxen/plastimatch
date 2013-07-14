@@ -25,7 +25,6 @@ class Slice_index;
 class PLMBASE_API Plm_image {
 public:
     SMART_POINTER_SUPPORT (Plm_image);
-public:
     Plm_image_private *d_ptr;
 public:
     Plm_image ();

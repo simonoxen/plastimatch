@@ -9,6 +9,10 @@
 class Ion_beam_private;
 class Ion_sobp;
 
+/*! \brief 
+ * The Ion_beam class encapsulates a single SOBP ion beam, including 
+ * its associated aperture and range compensator.
+ */
 class PLMDOSE_API Ion_beam {
 public:
     Ion_beam ();
@@ -42,6 +46,14 @@ public:
     /*! \brief Set the position of the beam isocenter in world coordinates. */
     void set_isocenter_position (const double position[3]);
 
+    /*! \brief Add an SOBP pristine peak to this beam */
+    void add_peak (
+        double E0,                 /* initial ion energy (MeV) */
+        double spread,             /* beam energy sigma (MeV) */
+        double dres,               /* spatial resolution of bragg curve (mm)*/
+        double dmax,               /* maximum w.e.d. (mm) */
+        double weight);
+
     /*! \brief Get "detail" parameter of dose calculation algorithm */
     int get_detail () const;
     /*! \brief Set "detail" parameter of dose calculation algorithm */
@@ -51,6 +63,8 @@ public:
     /*! \brief Set "flavor" parameter of dose calculation algorithm */
     void set_flavor (char flavor);
 
+    /*! \brief Get maximum depth (in mm) in SOBP curve */
+    double get_sobp_maximum_depth ();
     ///@}
 
     /*! \name Execution */
@@ -61,7 +75,6 @@ public:
     /*! \name Outputs */
     ///@{
     void dump (const char* fn);     /* debug: print bragg curve to file */
-    void add_peak ();
     float lookup_energy (float depth);
     ///@}
 
@@ -69,15 +82,6 @@ private:
     bool load_xio (const char* fn);
     bool load_txt (const char* fn);
 
-public:
-    Ion_sobp *sobp;
-
-    double E0;                      /* initial ion energy (MeV) */
-    double spread;                  /* beam energy sigma (MeV) */
-    double dres;                    /* spatial resolution of bragg curve (mm)*/
-    double dmax;                    /* maximum w.e.d. (mm) */
-    int num_samples;                /* # of discrete bragg curve samples */
-    double weight;
 };
 
 #endif

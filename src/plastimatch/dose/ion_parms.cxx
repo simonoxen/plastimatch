@@ -31,14 +31,17 @@ public:
     /* [APERTURE] */
     float vup[3];
     int ires[2];
-#if defined (commentout)
-    bool have_ic;
-    float ic[2];
-#endif
     float ap_offset;
     float ap_have_origin;
     float ap_origin[2];
     float ap_spacing[2];
+
+    /* [PEAK] */
+    double E0;
+    double spread;
+    double dres;
+    double dmax;
+    double weight;
 
     std::string ap_filename;
     std::string rc_filename;
@@ -69,6 +72,11 @@ public:
         this->ap_origin[1] = 0.;
         this->ap_spacing[0] = 1.;
         this->ap_spacing[1] = 1.;
+
+        this-> E0 = 0.;
+        this->spread = 0.;
+        this->dres = 0.;
+        this->dmax = 0.;
 
         this->scene = Ion_plan::New ();
     }
@@ -195,26 +203,6 @@ Ion_parms::set_key_val (
                 goto error_exit;
             }
         }
-        else if (!strcmp (key, "energy")) {
-            if (sscanf (val, "%lf", &(d_ptr->scene->beam->E0)) != 1) {
-                goto error_exit;
-            }
-        }
-        else if (!strcmp (key, "spread")) {
-            if (sscanf (val, "%lf", &(d_ptr->scene->beam->spread)) != 1) {
-                goto error_exit;
-            }
-        }
-        else if (!strcmp (key, "depth")) {
-            if (sscanf (val, "%lf", &(d_ptr->scene->beam->dmax)) != 1) {
-                goto error_exit;
-            }
-        }
-        else if (!strcmp (key, "res")) {
-            if (sscanf (val, "%lf", &(d_ptr->scene->beam->dres)) != 1) {
-                goto error_exit;
-            }
-        }
         else {
             goto error_exit;
         }
@@ -272,22 +260,27 @@ Ion_parms::set_key_val (
         /* [PEAK] */
     case 3:
         if (!strcmp (key, "energy")) {
-            if (sscanf (val, "%lf", &(d_ptr->scene->beam->E0)) != 1) {
+            if (sscanf (val, "%lf", &(d_ptr->E0)) != 1) {
                 goto error_exit;
             }
         }
         else if (!strcmp (key, "spread")) {
-            if (sscanf (val, "%lf", &(d_ptr->scene->beam->spread)) != 1) {
+            if (sscanf (val, "%lf", &(d_ptr->spread)) != 1) {
                 goto error_exit;
             }
         }
         else if (!strcmp (key, "depth")) {
-            if (sscanf (val, "%lf", &(d_ptr->scene->beam->dmax)) != 1) {
+            if (sscanf (val, "%lf", &(d_ptr->dmax)) != 1) {
+                goto error_exit;
+            }
+        }
+        else if (!strcmp (key, "res")) {
+            if (sscanf (val, "%lf", &(d_ptr->dres)) != 1) {
                 goto error_exit;
             }
         }
         else if (!strcmp (key, "weight")) {
-            if (sscanf (val, "%lf", &(d_ptr->scene->beam->weight)) != 1) {
+            if (sscanf (val, "%lf", &(d_ptr->weight)) != 1) {
                 goto error_exit;
             }
         }
@@ -319,7 +312,8 @@ Ion_parms::handle_end_of_section (int section)
         break;
     case 3:
         /* Peak */
-        d_ptr->scene->beam->add_peak ();
+        d_ptr->scene->beam->add_peak (
+            d_ptr->E0, d_ptr->spread, d_ptr->dres, d_ptr->dmax, d_ptr->weight);
         break;
     }
 }

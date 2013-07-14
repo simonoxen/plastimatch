@@ -5,11 +5,15 @@
 #define _ion_sobp_h_
 
 #include "plmdose_config.h"
+#include "smart_pointer.h"
 
 class Ion_pristine_peak;
 class Ion_sobp_private;
 
 class PLMDOSE_API Ion_sobp {
+public:
+    SMART_POINTER_SUPPORT (Ion_sobp);
+    Ion_sobp_private *d_ptr;
 public:
     Ion_sobp ();
     ~Ion_sobp ();
@@ -21,6 +25,9 @@ public:
     void add (double E0, double spread, double dres, double dmax, 
         double weight);
 
+    /* Return the maximum depth in the SOBP array */
+    double get_maximum_depth ();
+
     /* Save the depth dose to a file */
     void dump (const char* fn);
 
@@ -30,8 +37,6 @@ public:
     /* Return simple pdd result at depth */
     float lookup_energy (float depth);
 
-public:
-    Ion_sobp_private *d_ptr;
 };
 
 #endif

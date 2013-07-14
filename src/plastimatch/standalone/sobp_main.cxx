@@ -5,9 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#if (OPENMP_FOUND)
-#include <omp.h>
-#endif
 
 #include "bragg_curve.h"
 #include "ion_sobp_optimize.h"

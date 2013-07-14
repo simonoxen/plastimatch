@@ -13,6 +13,24 @@
 
 class Ion_beam_private {
 public:
+    double source[3];
+    double isocenter[3];
+    int detail;
+    char flavor;
+
+public:
+    Ion_sobp::Pointer sobp;
+
+#if defined (commentout)
+    double E0;                      /* initial ion energy (MeV) */
+    double spread;                  /* beam energy sigma (MeV) */
+    double dres;                    /* spatial resolution of bragg curve (mm)*/
+    double dmax;                    /* maximum w.e.d. (mm) */
+    int num_samples;                /* # of discrete bragg curve samples */
+    double weight;
+#endif
+
+public:
     Ion_beam_private ()
     {
         this->source[0] = -1000.f;
@@ -23,33 +41,29 @@ public:
         this->isocenter[2] = 0.f;
         this->detail = 1;
         this->flavor = 'a';
+
+        this->sobp = Ion_sobp::New ();
+
+#if defined (commentout)
+        this->E0 = 0.0;
+        this->spread = 0.0;
+        this->dres = 1.0;
+        this->dmax = 0.0;
+        this->num_samples = 0;
+        this->weight = 1.0;
+#endif
     }
-public:
-    double source[3];
-    double isocenter[3];
-    int detail;
-    char flavor;
 };
 
 
 Ion_beam::Ion_beam ()
 {
     this->d_ptr = new Ion_beam_private;
-
-    this->sobp = new Ion_sobp;
-
-    this->E0 = 0.0;
-    this->spread = 0.0;
-    this->dres = 1.0;
-    this->dmax = 0.0;
-    this->num_samples = 0;
-    this->weight = 1.0;
 }
 
 Ion_beam::~Ion_beam ()
 {
     delete this->d_ptr;
-    delete this->sobp;
 }
 
 bool
@@ -152,6 +166,12 @@ Ion_beam::set_flavor (char flavor)
     d_ptr->flavor = flavor;
 }
 
+double 
+Ion_beam::get_sobp_maximum_depth ()
+{
+    return d_ptr->sobp->get_maximum_depth ();
+}
+
 bool
 Ion_beam::load_xio (const char* fn)
 {
@@ -239,10 +259,14 @@ Ion_beam::load_txt (const char* fn)
 }
 
 void
-Ion_beam::add_peak ()
+Ion_beam::add_peak (
+    double E0,                      /* initial ion energy (MeV) */
+    double spread,                  /* beam energy sigma (MeV) */
+    double dres,                    /* spatial resolution of bragg curve (mm)*/
+    double dmax,                    /* maximum w.e.d. (mm) */
+    double weight)
 {
-    this->sobp->add (this->E0, this->spread, this->dres, this->dmax, 
-        this->weight);
+    d_ptr->sobp->add (E0, spread, dres, dmax, weight);
 }
 
 float
@@ -250,17 +274,17 @@ Ion_beam::lookup_energy (
     float depth
 )
 {
-    return this->sobp->lookup_energy(depth);
+    return d_ptr->sobp->lookup_energy(depth);
 }
 
 bool
 Ion_beam::generate ()
 {
-    return this->sobp->generate ();
+    return d_ptr->sobp->generate ();
 }
 
 void
 Ion_beam::dump (const char* fn)
 {
-    this->sobp->dump (fn);
+    d_ptr->sobp->dump (fn);
 }
