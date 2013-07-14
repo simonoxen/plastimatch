@@ -90,8 +90,28 @@ void
 Ion_sobp::optimize ()
 {
     Ion_sobp_optimize op;
+    double energy_step = 1.0;
+    double energy_spread = 1.0;
+    double depth_res = 1.0;
 
-    /* To be written */
+    op.SetMinMaxDepths (
+        d_ptr->prescription_dmin,
+        d_ptr->prescription_dmax,
+        energy_step);
+    op.Optimizer();
+
+    /* In the future, the optimizer should use Ion_pristine_peak, 
+       which would allow one to optimize user-defined depth-dose curves.
+       For example, user-selected "spread" is ignored. */
+    double max_depth = (double) op.m_z_end;
+    for (int i = 0; i < op.m_EnergyNumber; i++) {
+        double energy = d_ptr->prescription_dmin + i * energy_step;
+        double weight = op.m_weights[i];
+        this->add (energy, energy_spread, depth_res, 
+            max_depth, weight);
+    }
+
+    this->generate ();
 }
 
 double

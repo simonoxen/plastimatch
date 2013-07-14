@@ -39,7 +39,7 @@ public:
     void SobpDepthDose();
     void printparameters();
 
-private:
+public:
     // Energies min and max of the Bragg Peak used to create the sobp, in MeV
     double m_E_min, m_E_max;
     // Step between the energies used to create the sobp, in MeV

@@ -34,14 +34,16 @@ public:
     /* Save the depth dose to a file */
     void dump (const char* fn);
 
-   /* Compute the sobp depth dose curve from weighted pristine peaks */
+    /* Optimize, then generate sobp depth curve from prescription 
+       range and modulation */
+    void optimize ();
+
+    /* Compute the sobp depth dose curve from weighted pristine peaks */
     bool generate ();
 
     /* Return simple depth dose result at depth */
     float lookup_energy (float depth);
 
-protected:
-    void optimize ();
 };
 
 #endif
