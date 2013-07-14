@@ -9,20 +9,20 @@
    optimization process to get the weight of the pristine peaks.
    ----------------------------------------------------------------------- */
 
-#ifndef _sobp_h_
-#define _sobp_h_
+#ifndef _ion_sobp_optimize_h_
+#define _ion_sobp_optimize_h_
 
 #include "plmdose_config.h"
 
 #include <vector>
 #include "bragg_curve.h"
 
-/* the sobp function are wrapped in a class */
-class PLMDOSE_API Sobp
+class PLMDOSE_API Ion_sobp_optimize
 {
 public:
-    Sobp();
-    ~Sobp();
+    Ion_sobp_optimize();
+    ~Ion_sobp_optimize();
+
     void SetMinMaxEnergies(int E_min, int E_max);			// set the minimal and maximal energy to buld the sobp peak
     void SetMinMaxEnergies(int E_min, int E_max, int step); // set the minimal and maximal energy to buld the sobp peak and energy step
     void SetMinMaxDepths(int z_min, int z_max);				// set the minimal and maximal depth covered by the sobp
@@ -42,7 +42,5 @@ private:
     std::vector<double> m_weights;				// Matrix containing the weights and the associated BP energy
     std::vector<std::vector<double> > m_sobpDoseDepth;		    // Matrix containing the sobp depth dose curve
 };
-
-double cost_function_calculation(std::vector<std::vector<double> > depth_dose, std::vector<double> weights, int peak_number, int z_max, std::vector<int> depth_in, std::vector<int> depth_out);
 
 #endif

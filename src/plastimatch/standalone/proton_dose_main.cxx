@@ -7,17 +7,17 @@
 #include <math.h>
 
 #include "plm_math.h"
-#include "proton_dose.h"
-#include "proton_parms.h"
-#include "proton_scene.h"
+#include "ion_dose.h"
+#include "ion_parms.h"
+#include "ion_plan.h"
 #include "volume.h"
 
 int
 main (int argc, char* argv[])
 {
-    Proton_parms parms;
+    Ion_parms parms;
 
-    Proton_scene::Pointer scene = parms.get_scene ();
+    Ion_plan::Pointer scene = parms.get_scene ();
     if (!parms.parse_args (argc, argv)) {
         exit (0);
     }

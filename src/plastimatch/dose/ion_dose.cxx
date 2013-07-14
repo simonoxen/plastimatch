@@ -21,15 +21,15 @@
 #include <string.h>
 
 #include "aperture.h"
+#include "ion_sobp.h"
 #include "plm_image.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
 #include "proj_matrix.h"
-#include "proton_beam.h"
-#include "proton_dose.h"
-#include "proton_parms.h"
-#include "proton_scene.h"
-#include "proton_sobp.h"
+#include "ion_beam.h"
+#include "ion_dose.h"
+#include "ion_parms.h"
+#include "ion_plan.h"
 #include "rpl_volume.h"
 #include "threading.h"
 #include "volume.h"
@@ -39,12 +39,9 @@
 //#define DEBUG_VOXEL 1
 //#define DOSE_GAUSS 1
 
+#if defined (commentout)
 static bool voxel_debug = false;
-
-
-#define INDEX_OF(ijk, dim) \
-    (((ijk[2] * dim[1] + ijk[1]) * dim[0]) + ijk[0])
-
+#endif
 
 /* This function is used to rotate a point about a ray in an orbit
  * perpendicular to the ray.  It is assumed that the arbitrary axis of
@@ -107,19 +104,6 @@ rotate_about_ray (
     mat43_mult_vec3(xyz_new, M, xyz);
 }
 
-static inline void
-display_progress (
-    float is,
-    float of
-) 
-{
-#if defined (PROGRESS)
-    printf (" [%3i%%]\b\b\b\b\b\b\b",
-           (int)floorf((is/of)*100.0f));
-    fflush (stdout);
-#endif
-}
-
 #if defined (DEBUG_VOXEL)
 static void 
 debug_voxel (
@@ -155,14 +139,14 @@ debug_voxel (
 static double
 highland (
     double rgdepth,
-    Proton_beam* beam
+    Ion_beam* beam
 )
 {
 #if defined (commentout)
     float rad_length = 1.0;     /* Radiation length of material (g/cm2) */
     float density    = 1.0;     /* Density of material (g/cm3)          */
-    float p          = 0.0;     /* Proton momentum (passed in)          */
-    float v          = 0.0;     /* Proton velocity (passed in)          */
+    float p          = 0.0;     /* Ion momentum (passed in)          */
+    float v          = 0.0;     /* Ion velocity (passed in)          */
     float sum        = 0.0;
     float i, tmp;
 
@@ -223,10 +207,10 @@ gaus_kernel (
  * working properly.  GCS: This funcion is useful for debugging.  Let's keep
  * it as flavor 'a'.
  */
-static double
+double
 dose_direct (
     double* ct_xyz,             /* voxel to dose */
-    const Proton_scene* scene
+    const Ion_plan* scene
 )
 {
 #if defined (commentout)
@@ -238,9 +222,11 @@ dose_direct (
     /* Find radiological depth at voxel ct_xyz */
     double rgdepth = scene->rpl_vol->get_rgdepth (ct_xyz);
 
+#if defined (commentout)
     if (voxel_debug) {
         printf ("Rgdepth = %f\n", rgdepth);
     }
+#endif
 
     /* The voxel was not hit directly by the beam */
     if (rgdepth <= 0.0f) {
@@ -259,10 +245,10 @@ dose_direct (
     return scene->beam->lookup_energy (rgdepth);
 }
 
-static double
+double
 dose_debug (
     double* ct_xyz,             /* voxel to dose */
-    const Proton_scene* scene
+    const Ion_plan* scene
 )
 {
 #if defined (commentout)
@@ -274,15 +260,15 @@ dose_debug (
 }
 
 /* Accounts for small angle scattering due to Columbic interactions */
-static double
+double
 dose_scatter (
     double* ct_xyz,
-    int* ct_ijk,            // DEBUG
-    const Proton_scene* scene
+    plm_long* ct_ijk,            // DEBUG
+    const Ion_plan* scene
 )
 {
     const Aperture::Pointer& ap = scene->get_aperture();
-    Proton_beam*  beam    = scene->beam;
+    Ion_beam*  beam    = scene->beam;
     Rpl_volume*   rpl_vol = scene->rpl_vol;
 
     double rgdepth;
@@ -384,7 +370,7 @@ dose_scatter (
                 t,            // I: angle of rotation
                 ct_xyz);      // I: axis of rotation
 
-            /* neighbor (or self) hit by proton beam? */
+            /* neighbor (or self) hit by ion beam? */
 #if defined (commentout)
             rgdepth = rpl_volume_get_rgdepth (rpl_vol, scatter_xyz);
 #endif
@@ -434,15 +420,15 @@ dose_scatter (
     return dose;    
 }
 
-static double
+double
 dose_hong (
     double* ct_xyz,
-    int* ct_ijk,            // DEBUG
-    const Proton_scene* scene
+    plm_long* ct_ijk,            // DEBUG
+    const Ion_plan* scene
 )
 {
     const Aperture::Pointer& ap = scene->get_aperture();
-    Proton_beam*  beam    = scene->beam;
+    Ion_beam*  beam    = scene->beam;
     Rpl_volume*   rpl_vol = scene->rpl_vol;
 
     double rgdepth;
@@ -540,7 +526,7 @@ dose_hong (
                 t,            // I: angle of rotation
                 ct_xyz);      // I: axis of rotation
 
-            /* neighbor (or self) hit by proton beam? */
+            /* neighbor (or self) hit by ion beam? */
 #if defined (commentout)
             rgdepth = rpl_volume_get_rgdepth (rpl_vol, scatter_xyz);
 #endif
@@ -588,77 +574,4 @@ dose_hong (
     }
     return dose;    
 
-}
-
-void
-Proton_scene::compute_dose ()
-{
-    Proton_beam*  beam    = this->beam;
-    Volume*       ct_vol  = this->get_patient_vol ();
-    Rpl_volume*   rpl_vol = this->rpl_vol;
-
-    Volume* dose_vol = volume_clone_empty (ct_vol);
-    float* dose_img = (float*) dose_vol->img;
-
-    if (this->get_debug()) {
-        rpl_vol->save ("depth_vol.mha");
-        beam->dump ("bragg_curve.txt");
-        printf ("Printing proj matrix during proton_dose_compute.\n");
-    }
-
-    printf ("About to loop.\n");
-
-    /* scan through patient CT Volume */
-    int ct_ijk[3];
-    double ct_xyz[4];
-    int idx = 0;
-    for (ct_ijk[2] = 0; ct_ijk[2] < ct_vol->dim[2]; ct_ijk[2]++) {
-        for (ct_ijk[1] = 0; ct_ijk[1] < ct_vol->dim[1]; ct_ijk[1]++) {
-            for (ct_ijk[0] = 0; ct_ijk[0] < ct_vol->dim[0]; ct_ijk[0]++) {
-                double dose = 0.0;
-
-                voxel_debug = false;
-#if defined (commentout)
-                if (ct_ijk[2] == 60 && ct_ijk[1] == 44 && ct_ijk[0] == 5) {
-                    voxel_debug = true;
-                }
-#endif
-
-                /* Transform vol index into space coords */
-                ct_xyz[0] = (double) (ct_vol->offset[0] + ct_ijk[0] * ct_vol->spacing[0]);
-                ct_xyz[1] = (double) (ct_vol->offset[1] + ct_ijk[1] * ct_vol->spacing[1]);
-                ct_xyz[2] = (double) (ct_vol->offset[2] + ct_ijk[2] * ct_vol->spacing[2]);
-                ct_xyz[3] = (double) 1.0;
-
-                if (voxel_debug) {
-                    printf ("Voxel (%d, %d, %d) -> (%f, %f, %f)\n",
-                        ct_ijk[0], ct_ijk[1], ct_ijk[2], 
-                        ct_xyz[0], ct_xyz[1], ct_xyz[2]);
-                }
-
-                switch (beam->get_flavor()) {
-                case 'a':
-                    dose = dose_direct (ct_xyz, this);
-                    break;
-                case 'b':
-                    dose = dose_scatter (ct_xyz, ct_ijk, this);
-                    break;
-                case 'c':
-                    dose = dose_hong (ct_xyz, ct_ijk, this);
-                    break;
-                case 'd':
-                    dose = dose_debug (ct_xyz, this);
-                    break;
-                }
-
-                /* Insert the dose into the dose volume */
-                idx = INDEX_OF (ct_ijk, dose_vol->dim);
-            }
-        }
-        display_progress ((float)idx, (float)ct_vol->npix);
-    }
-
-    Plm_image::Pointer dose = Plm_image::New();
-    dose->set_volume (dose_vol);
-    d_ptr->dose = dose;
 }

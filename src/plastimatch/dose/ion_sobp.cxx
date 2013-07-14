@@ -10,25 +10,25 @@
 #include "file_util.h"
 #include "path_util.h"
 #include "print_and_exit.h"
-#include "proton_sobp.h"
-#include "proton_pristine_peak.h"
+#include "ion_pristine_peak.h"
+#include "ion_sobp.h"
 #include "string_util.h"
 
-class Proton_sobp_private {
+class Ion_sobp_private {
 public:
-    Proton_sobp_private () {
+    Ion_sobp_private () {
         d_lut = 0;
         e_lut = 0;
         dres = 0.0;
         num_samples = 0;
     }
-    ~Proton_sobp_private () {
+    ~Ion_sobp_private () {
         if (d_lut) delete[] d_lut;
         if (e_lut) delete[] e_lut;
         /* GCS FIX: This leaks memory in "peaks" */
     }
 public:
-    std::vector<const Proton_pristine_peak*> peaks;
+    std::vector<const Ion_pristine_peak*> peaks;
 
     float* d_lut;                   /* depth array (mm) */
     float* e_lut;                   /* energy array (MeV) */
@@ -36,36 +36,36 @@ public:
     int num_samples;
 };
 
-Proton_sobp::Proton_sobp ()
+Ion_sobp::Ion_sobp ()
 {
-    d_ptr = new Proton_sobp_private;
+    d_ptr = new Ion_sobp_private;
 }
 
-Proton_sobp::~Proton_sobp ()
+Ion_sobp::~Ion_sobp ()
 {
     delete d_ptr;
 }
 
 void
-Proton_sobp::add (const Proton_pristine_peak* pristine_peak)
+Ion_sobp::add (const Ion_pristine_peak* pristine_peak)
 {
     d_ptr->peaks.push_back (pristine_peak);
 }
 
 void
-Proton_sobp::add (double E0, double spread, double dres, double dmax, 
+Ion_sobp::add (double E0, double spread, double dres, double dmax, 
     double weight)
 {
     printf ("Adding peak to sobp (%f, %f, %f) [%f, %f]\n", 
         (float) E0, (float) spread, (float) weight,
         (float) dres, (float) dmax);
-    Proton_pristine_peak *peak = new Proton_pristine_peak (
+    Ion_pristine_peak *peak = new Ion_pristine_peak (
         E0, spread, dres, dmax, weight);
     d_ptr->peaks.push_back (peak);
 }
 
 float
-Proton_sobp::lookup_energy (
+Ion_sobp::lookup_energy (
     float depth
 )
 {
@@ -103,12 +103,12 @@ Proton_sobp::lookup_energy (
 }
 
 bool
-Proton_sobp::generate ()
+Ion_sobp::generate ()
 {
-    std::vector<const Proton_pristine_peak*>::const_iterator it 
+    std::vector<const Ion_pristine_peak*>::const_iterator it 
         = d_ptr->peaks.begin();
     while (it != d_ptr->peaks.end ()) {
-        const Proton_pristine_peak *ppp = *it;
+        const Ion_pristine_peak *ppp = *it;
 
         /* Construct the data structure first time through */
         if (!d_ptr->d_lut) {
@@ -143,7 +143,7 @@ Proton_sobp::generate ()
 }
 
 void
-Proton_sobp::dump (const char* fn)
+Ion_sobp::dump (const char* fn)
 {
     /* Dump SOBP */
     FILE* fp = fopen (fn, "w");
@@ -154,7 +154,7 @@ Proton_sobp::dump (const char* fn)
 
     /* Dump pristine peaks */
     std::string dirname = file_util_dirname_string (fn);
-    std::vector<const Proton_pristine_peak*>::const_iterator it 
+    std::vector<const Ion_pristine_peak*>::const_iterator it 
         = d_ptr->peaks.begin();
     while (it != d_ptr->peaks.end ()) {
         std::string fn = string_format ("%s/pristine_%4.2f.txt",

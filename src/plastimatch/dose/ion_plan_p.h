@@ -1,18 +1,18 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _proton_scene_p_h_
-#define _proton_scene_p_h_
+#ifndef _ion_plan_p_h_
+#define _ion_plan_p_h_
 
 #include "plmdose_config.h"
 
 #include "aperture.h"
 #include "plm_image.h"
 
-class PLMDOSE_API Proton_scene_private {
+class PLMDOSE_API Ion_plan_private {
 public:
-    Proton_scene_private ();
-    ~Proton_scene_private ();
+    Ion_plan_private ();
+    ~Ion_plan_private ();
 public:
     bool debug;
     double step_length;

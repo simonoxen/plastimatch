@@ -8,52 +8,49 @@
 #include <math.h>
 
 #include "bragg_curve.h"
-#include "proton_beam.h"
-#include "proton_sobp.h"
+#include "ion_pristine_peak.h"
 
-class Proton_beam_private {
-public:
-    Proton_beam_private ()
-    {
-        this->source[0] = -1000.f;
-        this->source[1] = 0.f;
-        this->source[2] = 0.f;
-        this->isocenter[0] = 0.f;
-        this->isocenter[1] = 0.f;
-        this->isocenter[2] = 0.f;
-        this->detail = 1;
-        this->flavor = 'a';
-    }
-public:
-    double source[3];
-    double isocenter[3];
-    int detail;
-    char flavor;
-};
-
-
-Proton_beam::Proton_beam ()
+Ion_pristine_peak::Ion_pristine_peak ()
 {
-    this->d_ptr = new Proton_beam_private;
-
-    this->sobp = new Proton_sobp;
+    this->d_lut = NULL;
+    this->e_lut = NULL;
 
     this->E0 = 0.0;
     this->spread = 0.0;
     this->dres = 1.0;
     this->dmax = 0.0;
-    this->num_samples = 0;
     this->weight = 1.0;
+
+    this->num_samples = 0;
 }
 
-Proton_beam::~Proton_beam ()
+Ion_pristine_peak::Ion_pristine_peak (
+    double E0, double spread, double dres, double dmax, double weight)
 {
-    delete this->d_ptr;
-    delete this->sobp;
+    this->d_lut = NULL;
+    this->e_lut = NULL;
+
+    this->E0 = E0;
+    this->spread = spread;
+    this->dres = dres;
+    this->dmax = dmax;
+    this->weight = weight;
+
+    this->generate();
+}
+
+Ion_pristine_peak::~Ion_pristine_peak ()
+{
+    if (this->d_lut) {
+        free (this->d_lut);
+    }
+    if (this->e_lut) {
+        free (this->e_lut);
+    }
 }
 
 bool
-Proton_beam::load (const char* fn)
+Ion_pristine_peak::load (const char* fn)
 {
     FILE* fp = fopen (fn, "r");
     char linebuf[128];
@@ -72,90 +69,9 @@ Proton_beam::load (const char* fn)
     }
 }
 
-const double*
-Proton_beam::get_source_position ()
-{
-    return d_ptr->source;
-}
-
-double
-Proton_beam::get_source_position (int dim)
-{
-    return d_ptr->source[dim];
-}
-
-void
-Proton_beam::set_source_position (const float* position)
-{
-    for (int d = 0; d < 3; d++) {
-        d_ptr->source[d] = position[d];
-    }
-}
-
-void
-Proton_beam::set_source_position (const double* position)
-{
-    for (int d = 0; d < 3; d++) {
-        d_ptr->source[d] = position[d];
-    }
-}
-
-const double*
-Proton_beam::get_isocenter_position ()
-{
-    return d_ptr->isocenter;
-}
-
-double
-Proton_beam::get_isocenter_position (int dim)
-{
-    return d_ptr->isocenter[dim];
-}
-
-void
-Proton_beam::set_isocenter_position (const float* position)
-{
-    for (int d = 0; d < 3; d++) {
-        d_ptr->isocenter[d] = position[d];
-    }
-}
-
-void
-Proton_beam::set_isocenter_position (const double* position)
-{
-    for (int d = 0; d < 3; d++) {
-        d_ptr->isocenter[d] = position[d];
-    }
-}
-
-int
-Proton_beam::get_detail (void) const
-{
-    return d_ptr->detail;
-}
-
-void
-Proton_beam::set_detail (int detail)
-{
-    d_ptr->detail = detail;
-}
-
-char
-Proton_beam::get_flavor (void) const
-{
-    return d_ptr->flavor;
-}
-
-void
-Proton_beam::set_flavor (char flavor)
-{
-    d_ptr->flavor = flavor;
-}
-
 bool
-Proton_beam::load_xio (const char* fn)
+Ion_pristine_peak::load_xio (const char* fn)
 {
-#if defined (commentout)
     int i, j;
     char* ptoken;
     char linebuf[128];
@@ -201,14 +117,12 @@ Proton_beam::load_xio (const char* fn)
     }
 
     fclose (fp);
-#endif
     return true;
 }
 
 bool
-Proton_beam::load_txt (const char* fn)
+Ion_pristine_peak::load_txt (const char* fn)
 {
-#if defined (commentout)
     char linebuf[128];
     FILE* fp = fopen (fn, "r");
 
@@ -234,33 +148,57 @@ Proton_beam::load_txt (const char* fn)
     }
 
     fclose (fp);
-#endif
     return true;
 }
 
-void
-Proton_beam::add_peak ()
-{
-    this->sobp->add (this->E0, this->spread, this->dres, this->dmax, 
-        this->weight);
-}
-
-float
-Proton_beam::lookup_energy (
-    float depth
-)
-{
-    return this->sobp->lookup_energy(depth);
-}
-
 bool
-Proton_beam::generate ()
+Ion_pristine_peak::generate ()
 {
-    return this->sobp->generate ();
+    int i;
+    double d;
+
+#if SPECFUN_FOUND
+    if (!this->E0) {
+        printf ("ERROR: Failed to generate beam -- energy not specified.\n");
+        return false;
+    }
+    if (!this->spread) {
+        printf ("ERROR: Failed to generate beam -- energy spread not specified.\n");
+        return false;
+    }
+    if (!this->dmax) {
+        printf ("ERROR: Failed to generate beam -- max depth not specified.\n");
+        return false;
+    }
+
+    this->num_samples = (int) floorf (this->dmax / this->dres);
+
+    this->d_lut = (float*) malloc (this->num_samples*sizeof(float));
+    this->e_lut = (float*) malloc (this->num_samples*sizeof(float));
+    
+    memset (this->d_lut, 0, this->num_samples*sizeof(float));
+    memset (this->e_lut, 0, this->num_samples*sizeof(float));
+
+    for (d=0, i=0; i<this->num_samples; d+=this->dres, i++) {
+        d_lut[i] = d;
+        e_lut[i] = bragg_curve (this->E0, this->spread, d);
+    }
+
+    return true;
+#else
+    printf ("ERROR: No specfun found.\n");
+    return false;
+#endif
 }
 
 void
-Proton_beam::dump (const char* fn)
+Ion_pristine_peak::dump (const char* fn) const
 {
-    this->sobp->dump (fn);
+    FILE* fp = fopen (fn, "w");
+
+    for (int i=0; i<this->num_samples; i++) {
+       fprintf (fp, "%3.2f %3.2f\n", this->d_lut[i], this->e_lut[i]);
+    }
+
+    fclose (fp);
 }

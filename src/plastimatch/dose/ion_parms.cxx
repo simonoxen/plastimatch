@@ -10,18 +10,18 @@
 #include <string.h>
 
 #include "aperture.h"
+#include "ion_beam.h"
+#include "ion_parms.h"
+#include "ion_plan.h"
 #include "plm_image.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
-#include "proton_beam.h"
-#include "proton_parms.h"
-#include "proton_scene.h"
 #include "string_util.h"
 
-class Proton_parms_private {
+class Ion_parms_private {
 public:
     /* Scene */
-    Proton_scene::Pointer scene;
+    Ion_plan::Pointer scene;
 
     /* [BEAM] */
     float src[3];
@@ -43,7 +43,7 @@ public:
     std::string ap_filename;
     std::string rc_filename;
 public:
-    Proton_parms_private () {
+    Ion_parms_private () {
         /* GCS FIX: Copy-paste with wed_parms.cxx */
         this->src[0] = -1000.f;
         this->src[1] = 0.f;
@@ -70,13 +70,13 @@ public:
         this->ap_spacing[0] = 1.;
         this->ap_spacing[1] = 1.;
 
-        this->scene = Proton_scene::New ();
+        this->scene = Ion_plan::New ();
     }
 };
 
-Proton_parms::Proton_parms ()
+Ion_parms::Ion_parms ()
 {
-    this->d_ptr = new Proton_parms_private;
+    this->d_ptr = new Ion_parms_private;
 
     this->threading = THREADING_CPU_OPENMP;
     this->flavor = 'a';
@@ -87,7 +87,7 @@ Proton_parms::Proton_parms ()
     this->scale = 1.0f;
 }
 
-Proton_parms::~Proton_parms ()
+Ion_parms::~Ion_parms ()
 {
 }
 
@@ -103,7 +103,7 @@ print_usage (void)
 }
 
 int
-Proton_parms::set_key_val (
+Ion_parms::set_key_val (
     const char* key, 
     const char* val, 
     int section
@@ -305,7 +305,7 @@ Proton_parms::set_key_val (
 }
 
 void
-Proton_parms::handle_end_of_section (int section)
+Ion_parms::handle_end_of_section (int section)
 {
     switch (section) {
     case 0:
@@ -324,14 +324,14 @@ Proton_parms::handle_end_of_section (int section)
     }
 }
 
-Proton_scene::Pointer& 
-Proton_parms::get_scene ()
+Ion_plan::Pointer& 
+Ion_parms::get_scene ()
 {
     return d_ptr->scene;
 }
 
 void
-Proton_parms::parse_config (
+Ion_parms::parse_config (
     const char* config_fn
 )
 {
@@ -402,7 +402,7 @@ Proton_parms::parse_config (
 }
 
 bool
-Proton_parms::parse_args (int argc, char** argv)
+Ion_parms::parse_args (int argc, char** argv)
 {
     int i;
     for (i=1; i<argc; i++) {

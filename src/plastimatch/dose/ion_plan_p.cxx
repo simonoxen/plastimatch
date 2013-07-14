@@ -2,9 +2,10 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
-#include "proton_scene_p.h"
+#include "ion_plan.h"
+#include "ion_plan_p.h"
 
-Proton_scene_private::Proton_scene_private ()
+Ion_plan_private::Ion_plan_private ()
 {
     debug = false;
     step_length = 0.;
@@ -13,6 +14,6 @@ Proton_scene_private::Proton_scene_private ()
     ap = Aperture::New();
 }
 
-Proton_scene_private::~Proton_scene_private ()
+Ion_plan_private::~Ion_plan_private ()
 {
 }

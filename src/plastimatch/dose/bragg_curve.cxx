@@ -1,6 +1,9 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <math.h>
-#include "plmdose.h"
-//#include "plm_fortran.h"
+#include "bragg_curve.h"
 
 typedef double doublereal;
 

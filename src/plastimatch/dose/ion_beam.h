@@ -1,20 +1,20 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _proton_beam_h_
-#define _proton_beam_h_
+#ifndef _ion_beam_h_
+#define _ion_beam_h_
 
 #include "plmdose_config.h"
 
-class Proton_beam_private;
-class Proton_sobp;
+class Ion_beam_private;
+class Ion_sobp;
 
-class PLMDOSE_API Proton_beam {
+class PLMDOSE_API Ion_beam {
 public:
-    Proton_beam ();
-    ~Proton_beam ();
+    Ion_beam ();
+    ~Ion_beam ();
 public:
-    Proton_beam_private *d_ptr;
+    Ion_beam_private *d_ptr;
 
 public:
     /*! \name Inputs */
@@ -70,9 +70,9 @@ private:
     bool load_txt (const char* fn);
 
 public:
-    Proton_sobp *sobp;
+    Ion_sobp *sobp;
 
-    double E0;                      /* initial proton energy (MeV) */
+    double E0;                      /* initial ion energy (MeV) */
     double spread;                  /* beam energy sigma (MeV) */
     double dres;                    /* spatial resolution of bragg curve (mm)*/
     double dmax;                    /* maximum w.e.d. (mm) */

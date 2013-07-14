@@ -1,15 +1,15 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _proton_pristine_peak_h_
-#define _proton_pristine_peak_h_
+#ifndef _ion_pristine_peak_h_
+#define _ion_pristine_peak_h_
 
-class PLMDOSE_API Proton_pristine_peak {
+class PLMDOSE_API Ion_pristine_peak {
 public:
-    Proton_pristine_peak ();
-    Proton_pristine_peak (double E0, double spread, double dres, 
+    Ion_pristine_peak ();
+    Ion_pristine_peak (double E0, double spread, double dres, 
         double dmax, double weight);
-    ~Proton_pristine_peak ();
+    ~Ion_pristine_peak ();
 
     bool load (const char* fn);     /* load from file */
     bool generate ();               /* generate analytically */
@@ -25,7 +25,7 @@ public:
     float* d_lut;                   /* depth array (mm) */
     float* e_lut;                   /* energy array (MeV) */
 
-    double E0;                      /* initial proton energy (MeV) */
+    double E0;                      /* initial ion energy (MeV) */
     double spread;                  /* beam energy sigma (MeV) */
     double dres;                    /* spatial resolution of bragg curve (mm)*/
     double dmax;                    /* maximum w.e.d. (mm) */

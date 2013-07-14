@@ -1,33 +1,33 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _proton_parms_h_
-#define _proton_parms_h_
+#ifndef _ion_parms_h_
+#define _ion_parms_h_
 
 #include "plmdose_config.h"
 #include <string>
 #include "plm_path.h"
-#include "proton_scene.h"
+#include "ion_plan.h"
 #include "threading.h"
 
 class Plm_image;
-class Proton_parms_private;
-class Proton_scene;
+class Ion_parms_private;
+class Ion_plan;
 
-class PLMDOSE_API Proton_parms
+class PLMDOSE_API Ion_parms
 {
 public:
-    Proton_parms_private *d_ptr;
+    Ion_parms_private *d_ptr;
 public:
-    Proton_parms ();
-    ~Proton_parms ();
+    Ion_parms ();
+    ~Ion_parms ();
 
     bool parse_args (int argc, char** argv);
 
 public:
-    Proton_scene::Pointer& get_scene ();
+    Ion_plan::Pointer& get_scene ();
 #if defined (commentout)
-    void set_scene (Proton_scene *scene);
+    void set_scene (Ion_plan *scene);
 #endif
 
 protected:

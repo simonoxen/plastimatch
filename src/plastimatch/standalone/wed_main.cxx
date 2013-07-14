@@ -1,4 +1,4 @@
-/* -----------------------------------------------------------------------
+ /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
@@ -7,11 +7,11 @@
 #include <math.h>
 
 #include "aperture.h"
+#include "ion_beam.h"
+#include "ion_plan.h"
 #include "plm_image.h"
 #include "plm_math.h"
 #include "proj_volume.h"
-#include "proton_beam.h"
-#include "proton_scene.h"
 #include "ray_trace_probe.h"
 #include "rpl_volume.h"
 #include "volume.h"
@@ -56,7 +56,7 @@ skin_ct (Volume* ct_volume, Volume* skin_volume, float background)
 }
 
 static Volume*
-create_wed_volume (Wed_Parms* parms, Proton_scene *scene)
+create_wed_volume (Wed_Parms* parms, Ion_plan *scene)
 {
     Rpl_volume* rpl_vol = scene->rpl_vol;
 
@@ -79,7 +79,7 @@ create_wed_volume (Wed_Parms* parms, Proton_scene *scene)
 }
 
 static Volume*
-create_dew_volume (Wed_Parms* parms, Proton_scene *scene)
+create_dew_volume (Wed_Parms* parms, Ion_plan *scene)
 {
  
     Volume* patient_vol = scene->get_patient_vol();
@@ -121,7 +121,7 @@ wed_ct_compute (
     Wed_Parms* parms,
     Plm_image *ct_vol,       // This is not always ct, sometimes it is dose or 
                              // sometimes it is target mask.
-    Proton_scene *scene,
+    Ion_plan *scene,
     float background
 )
 {
@@ -167,7 +167,7 @@ wed_ct_initialize(Wed_Parms *parms)
 {
     Plm_image* ct_vol;
     Plm_image* dose_vol = 0;
-    Proton_scene scene;
+    Ion_plan scene;
     float background[3];
 
     //Background value for wed ct output

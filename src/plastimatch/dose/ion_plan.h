@@ -1,34 +1,34 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _proton_scene_h_
-#define _proton_scene_h_
+#ifndef _ion_plan_h_
+#define _ion_plan_h_
 
 #include "plmdose_config.h"
 #include "aperture.h"
 #include "smart_pointer.h"
 
+class Ion_beam;
+class Ion_plan_private;
 class Plm_image;
 class Proj_matrix;
-class Proton_beam;
-class Proton_scene_private;
 class Volume;
 
 class Rpl_volume;
 
-class PLMDOSE_API Proton_scene {
+class PLMDOSE_API Ion_plan {
 public:
-    SMART_POINTER_SUPPORT (Proton_scene);
+    SMART_POINTER_SUPPORT (Ion_plan);
 public:
-    Proton_scene_private *d_ptr;
+    Ion_plan_private *d_ptr;
 public:
-    Proton_scene ();
-    ~Proton_scene ();
+    Ion_plan ();
+    ~Ion_plan ();
 
     bool init ();
 
     /* Set the CT volume for dose calculation.
-       The Proton_scene takes ownership of this CT. */
+       The Ion_plan takes ownership of this CT. */
     void set_patient (Plm_image*);
     void set_patient (ShortImageType::Pointer&);
     void set_patient (FloatImageType::Pointer&);
@@ -64,7 +64,7 @@ public:
     Plm_image::Pointer get_dose ();
 
 public:
-    Proton_beam *beam;
+    Ion_beam *beam;
     Rpl_volume* rpl_vol;
 };
 
