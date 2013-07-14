@@ -65,6 +65,9 @@ public:
 
     /*! \brief Get maximum depth (in mm) in SOBP curve */
     double get_sobp_maximum_depth ();
+    /*! \brief Set SOBP range and modulation for prescription 
+      as minimum and maximum depth (in mm) */
+    void set_sobp_prescription_min_max (float d_min, float d_max);
     ///@}
 
     /*! \name Execution */
@@ -75,7 +78,7 @@ public:
     /*! \name Outputs */
     ///@{
     void dump (const char* fn);     /* debug: print bragg curve to file */
-    float lookup_energy (float depth);
+    float lookup_sobp_dose (float depth);
     ///@}
 
 private:

@@ -12,6 +12,7 @@
 #include "print_and_exit.h"
 #include "ion_pristine_peak.h"
 #include "ion_sobp.h"
+#include "ion_sobp_optimize.h"
 #include "string_util.h"
 
 class Ion_sobp_private {
@@ -22,6 +23,8 @@ public:
         dres = 0.0;
         dmax = 0.0;
         num_samples = 0;
+        prescription_dmin = 0.f;
+        prescription_dmax = 0.f;
     }
     ~Ion_sobp_private () {
         if (d_lut) delete[] d_lut;
@@ -36,6 +39,9 @@ public:
     double dres;
     double dmax;                    /* maximum depth in SOBP curve (mm) */
     int num_samples;
+
+    float prescription_dmin;
+    float prescription_dmax;
 };
 
 Ion_sobp::Ion_sobp ()
@@ -71,6 +77,21 @@ Ion_sobp::add (double E0, double spread, double dres, double dmax,
     if (dmax > d_ptr->dmax) {
         d_ptr->dmax = dmax;
     }
+}
+
+void
+Ion_sobp::set_prescription_min_max (float d_min, float d_max)
+{
+    d_ptr->prescription_dmin = d_min;
+    d_ptr->prescription_dmax = d_max;
+}
+
+void
+Ion_sobp::optimize ()
+{
+    Ion_sobp_optimize op;
+
+    /* To be written */
 }
 
 double

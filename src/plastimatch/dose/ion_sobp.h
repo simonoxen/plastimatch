@@ -25,18 +25,23 @@ public:
     void add (double E0, double spread, double dres, double dmax, 
         double weight);
 
+    /* Set the min & max depth for automatic sobp optimization */
+    void set_prescription_min_max (float d_min, float d_max);
+
     /* Return the maximum depth in the SOBP array */
     double get_maximum_depth ();
 
     /* Save the depth dose to a file */
     void dump (const char* fn);
 
-    /* Compute the sobp depth dose curve from weighted pristine peaks */
+   /* Compute the sobp depth dose curve from weighted pristine peaks */
     bool generate ();
 
-    /* Return simple pdd result at depth */
+    /* Return simple depth dose result at depth */
     float lookup_energy (float depth);
 
+protected:
+    void optimize ();
 };
 
 #endif

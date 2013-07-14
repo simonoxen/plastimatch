@@ -11,62 +11,47 @@
 #include <stdlib.h>
 #include "ion_sobp_optimize.h"
 
-double cost_function_calculation(std::vector<std::vector<double> > depth_dose, std::vector<double> weights, int peak_number, int z_max, std::vector<int> depth_in, std::vector<int> depth_out);
-
+double 
+cost_function_calculation (
+    std::vector<std::vector<double> > depth_dose, 
+    std::vector<double> weights, 
+    int peak_number, 
+    int z_end, 
+    std::vector<int> depth_in, 
+    std::vector<int> depth_out);
 
 // initialisation of the parameter using a default configuration, 
 // a sobp constituted of 11 BP.
 Ion_sobp_optimize::Ion_sobp_optimize()
 {
-    m_E_min = 80;
-    m_E_max = 90;
-    m_EnergyStep = 1;
-    m_EnergyNumber = (int)(((m_E_max-m_E_min-1)/m_EnergyStep)+2);
-    m_z_min = int((0.022)*pow(m_E_min, 1.77));
-    m_z_max = int((0.022)*pow(m_E_max, 1.77))+1;
-    m_z_end = m_z_max+50;
+    this->SetMinMaxEnergies (80.0, 90.0, 1.0);
 }
 
 Ion_sobp_optimize::~Ion_sobp_optimize()
 {
-
 }
 
-void Ion_sobp_optimize::printparameters()  // return on the command line the parameters of the sobp to be build
+// return on the command line the parameters of the sobp to be build
+void Ion_sobp_optimize::printparameters()
 {
-    printf("E_min : %d\n",m_E_min);
-    printf("E_max : %d\n",m_E_max);
-    printf("E_EnergyStep : %d\n",m_EnergyStep);
-    printf("z_min : %d\n",m_z_min);
-    printf("z_max : %d\n",m_z_max);
-    printf("z_end : %d\n",m_z_end);
+    printf("E_min : %lf\n", m_E_min);
+    printf("E_max : %lf\n", m_E_max);
+    printf("E_EnergyStep : %lf\n", m_EnergyStep);
+    printf("z_min : %lf\n", m_z_min);
+    printf("z_max : %lf\n", m_z_max);
+    printf("z_end : %d\n", m_z_end);
 }
 
-void Ion_sobp_optimize::SetMinMaxEnergies(int E_min, int E_max) // set the sobp parameters by introducing the min and max energies
+// set the sobp parameters by introducing the min and max energies
+void Ion_sobp_optimize::SetMinMaxEnergies (double E_min, double E_max)
 {
-    if (E_max <= 0 || E_min <= 0)
-    {
-        printf("The energies min and max of the Sobp must be positive!\n");
-    }
-	
-    if (E_max >= E_min)
-    {
-        m_E_min = E_min;
-        m_E_max = E_max;
-    }
-    else
-    {
-        m_E_min = E_max;
-        m_E_max = E_min;
-    }
-
-    m_z_min = int((0.022)*pow(m_E_min, 1.77));
-    m_z_max = int((0.022)*pow(m_E_max, 1.77))+1;
-    m_z_end = m_z_max + 50;
-    m_EnergyNumber = (int)(((m_E_max-m_E_min-1)/m_EnergyStep)+2);
+    this->SetMinMaxEnergies (E_min, E_max, this->m_EnergyStep);
 }
 
-void Ion_sobp_optimize::SetMinMaxEnergies(int E_min, int E_max, int step) // set the sobp parameters by introducing the min and max energies, and the step between them
+// set the sobp parameters by introducing the min and max energies, 
+// and the step between them
+void Ion_sobp_optimize::SetMinMaxEnergies (
+    double E_min, double E_max, double step)
 {
     if (E_max <= 0 || E_min <= 0)
     {
@@ -92,34 +77,17 @@ void Ion_sobp_optimize::SetMinMaxEnergies(int E_min, int E_max, int step) // set
     m_EnergyNumber = (int)(((m_E_max-m_E_min-1)/m_EnergyStep)+2);
 }
 
-void Ion_sobp_optimize::SetMinMaxDepths(int z_min, int z_max) // set the sobp parameters by introducing the proximal and distal distances
+// set the sobp parameters by introducing the proximal and distal distances
+void Ion_sobp_optimize::SetMinMaxDepths (double z_min, double z_max)
 {
-	if (z_max <= 0 || z_min <= 0)
-		{
-			printf("Error: The depth min and max of the Sobp must be positive!\n");
-			printf("zmin = %d, zmax = %d\n", z_min, z_max);
-		}
-	else
-	{	
-		if (z_max >= z_min)
-		{
-			m_z_min = z_min;
-			m_z_max = z_max;
-		}
-		else
-		{
-			m_z_min = z_max;
-			m_z_max = z_min;
-		}
-
-		m_E_min = int(pow((m_z_min/0.022),(1/1.77)));
-		m_E_max = int(pow((m_z_max/0.022),(1/1.77)))+1;
-		m_z_end = m_z_max + 50;
-		m_EnergyNumber = (int)(((m_E_max-m_E_min-1)/m_EnergyStep)+2);
-	}
+    this->SetMinMaxDepths (z_min, z_max, this->m_EnergyStep);
 }
 
-void Ion_sobp_optimize::SetMinMaxDepths(int z_min, int z_max, int step) // set the sobp parameters by introducing the proximal and distal distances and the step between the energies to be used
+// set the sobp parameters by introducing the proximal and distal 
+// distances and the step between the energies to be used
+void 
+Ion_sobp_optimize::SetMinMaxDepths (
+    double z_min, double z_max, double step)
 {
     if (step < 0)
     {
@@ -128,7 +96,7 @@ void Ion_sobp_optimize::SetMinMaxDepths(int z_min, int z_max, int step) // set t
     if (z_max <= 0 || z_min <= 0 )
     {
         printf("Error: The depth min and max of the Sobp must be positive!\n");
-        printf("zmin = %d, zmax = %d\n", z_min, z_max);
+        printf("zmin = %lf, zmax = %lf\n", z_min, z_max);
     }
     else if (step == 0)
     {
@@ -147,15 +115,16 @@ void Ion_sobp_optimize::SetMinMaxDepths(int z_min, int z_max, int step) // set t
             m_z_max = z_min;
         }
 
-        m_E_min = int(pow((m_z_min/0.022),(1/1.77)));
-        m_E_max = int(pow((m_z_max/0.022),(1/1.77)))+1;
+        m_E_min = pow((m_z_min/0.022),(1/1.77));
+        m_E_max = pow((m_z_max/0.022),(1/1.77))+1;
         m_z_end = m_z_max + 50;
         m_EnergyStep = step;
         m_EnergyNumber = (int)(((m_E_max-m_E_min-1)/m_EnergyStep)+2);
     }
 }
 
-void Ion_sobp_optimize::SetEnergieStep(int step) // set the sobp parameters by introducing only step between energies
+// set the sobp parameters by introducing only step between energies
+void Ion_sobp_optimize::SetEnergieStep (double step)
 {
     if (step == 0)
     {
@@ -172,9 +141,12 @@ void Ion_sobp_optimize::SetEnergieStep(int step) // set the sobp parameters by i
     }
 }
 
-void Ion_sobp_optimize::Optimizer() // the optimizer to get the optimized weights of the beams, optimized by a cost function (see below)
+// the optimizer to get the optimized weights of the beams, 
+// optimized by a cost function (see below)
+void Ion_sobp_optimize::Optimizer()
 {
-    int n = (int)(((m_E_max-m_E_min-1)/m_EnergyStep)+2); // calculation of the energies between E_max and E_min separated by the step
+    // calculation of the energies between E_max and E_min separated by the step
+    int n = (int)(((m_E_max-m_E_min-1)/m_EnergyStep)+2);
     m_EnergyNumber = n;
 
     std::vector<int> energies (n,0);
@@ -182,7 +154,10 @@ void Ion_sobp_optimize::Optimizer() // the optimizer to get the optimized weight
 
     std::vector<double> init_vector (m_z_end,0);
     std::vector<std::vector<double> > depth_dose (n,init_vector);
-    std::vector<double> weight (n,(double)(floor((15.0/(50*n))*1000)/1000)); // "/n speeds up the calculation - 15 for the normalisation of the function to 15 and 50 because the BP are normalized closed to 50 when created by plastimatch)
+    // "/n speeds up the calculation - 15 for the normalisation of 
+    // the function to 15 and 50 because the BP are normalized closed 
+    // to 50 when created by plastimatch)
+    std::vector<double> weight (n,(double)(floor((15.0/(50*n))*1000)/1000));
 
     std::vector<double> weight_minimum (n,0);
     std::vector<double> weight_compare (n,0);
@@ -193,7 +168,10 @@ void Ion_sobp_optimize::Optimizer() // the optimizer to get the optimized weight
     printf("\n %d Mono-energetic BP used: ", n);
 
     energies[0]= m_E_min;
-    depth_dose[0][0] = bragg_curve(energies[0],1,0);  // creation of the matrix gathering all the depth dose of the BP constituting the sobp
+
+    // creation of the matrix gathering all the depth dose of the 
+    // BP constituting the sobp
+    depth_dose[0][0] = bragg_curve(energies[0],1,0); 
 
     for (int j = 0; j < m_z_end; j++)
     {
@@ -219,7 +197,9 @@ void Ion_sobp_optimize::Optimizer() // the optimizer to get the optimized weight
         depth_dose[n-1][j] = bragg_curve(energies[n-1],1,j);
     }
 
-    for (int i = 0; i < m_z_end ; i++) // creation of the two intervals that represents the inner part of the sobp and the outer part
+    // creation of the two intervals that represents the inner 
+    // part of the sobp and the outer part
+    for (int i = 0; i < m_z_end ; i++) 
     {
 
         if (z[i]>=m_z_min && z[i]<=m_z_max)
@@ -238,21 +218,31 @@ void Ion_sobp_optimize::Optimizer() // the optimizer to get the optimized weight
     double SUPER_TOT = 0;
     int weight_min = 0;
 
-    SUPER_TOT = cost_function_calculation(depth_dose,weight, n, m_z_end, depth_in, depth_out); // we calculate the cost function for the first time
+    // we calculate the cost function for the first time
+    SUPER_TOT = cost_function_calculation (depth_dose, weight, n, 
+        m_z_end, depth_in, depth_out); 
 
-    for (int k = 0; k < n; k++) // at first try, the weights are the best we found by now...
+    // at first try, the weights are the best we found by now...
+    for (int k = 0; k < n; k++) 
     {
         weight_minimum[k] = weight[k];
     }
 
-    while (compare!=1) // compare equals 0 only when the weights between the 2 last optimization using the cost function are equal - we are trapped in a minimum
+    // compare equals 0 only when the weights between the 2 last 
+    // optimization using the cost function are equal - we are trapped 
+    // in a minimum
+    while (compare!=1) 
     {
         f_tot = SUPER_TOT;
-        for (int i = 0; i < n; i++) // we calculate if the cost function is reduce by changing a little bit one weight after another
+        // we calculate if the cost function is reduce by changing
+        // a little bit one weight after another
+        for (int i = 0; i < n; i++) 
         {
             weight_min = 0;
   
-            f_tot = cost_function_calculation(depth_dose,weight, n, m_z_end, depth_in, depth_out); // fcost value??
+            // fcost value??
+            f_tot = cost_function_calculation (depth_dose,weight, n, 
+                m_z_end, depth_in, depth_out); 
 
             if (f_tot < SUPER_TOT)
             {
@@ -265,8 +255,10 @@ void Ion_sobp_optimize::Optimizer() // the optimizer to get the optimized weight
 
             if (weight[i] > 0.0001) 
             {
-                weight[i] = weight[i]-0.001; // we try with a lower weight (that must be > 0)
-                f_tot = cost_function_calculation(depth_dose,weight, n, m_z_end, depth_in, depth_out);
+                // we try with a lower weight (that must be > 0)
+                weight[i] = weight[i]-0.001; 
+                f_tot = cost_function_calculation (depth_dose, weight, n, 
+                    m_z_end, depth_in, depth_out);
 
                 if (f_tot < SUPER_TOT) // idem
                 {
@@ -281,7 +273,8 @@ void Ion_sobp_optimize::Optimizer() // the optimizer to get the optimized weight
             }
 
             weight[i] = weight[i]+0.001;  // we try with a higher weight
-            f_tot = cost_function_calculation(depth_dose,weight, n, m_z_end, depth_in, depth_out);
+            f_tot = cost_function_calculation (depth_dose, weight, n, m_z_end, 
+                depth_in, depth_out);
 
             if (f_tot < SUPER_TOT) // idem
             {
@@ -294,11 +287,16 @@ void Ion_sobp_optimize::Optimizer() // the optimizer to get the optimized weight
             }
             weight[i] = weight[i]-0.001;
 
-            weight[i] = weight[i]+weight_min*0.001; // in this step, we continue with the best weight set between w, w-d, and w+d
+            // in this step, we continue with the best weight 
+            // set between w, w-d, and w+d
+            weight[i] = weight[i]+weight_min*0.001; 
         } // and we do that for all the weights
 
+        // then we check if the weights are different with respect to 
+        // the last run, if yes, we continue, if no we are in a minimum, 
+        // so we break the optimization
         compare = 1; 
-        for (int k = 0; k < n ; k++) // then we check if the weights are different with respect to the last run, if yes, we continue, if no we are in a minimum, so we break the optimization
+        for (int k = 0; k < n ; k++) 
             if (weight_minimum[k] == weight_compare[k] && compare ==1)
             {
                 compare = compare;
@@ -308,19 +306,22 @@ void Ion_sobp_optimize::Optimizer() // the optimizer to get the optimized weight
                 compare = 0;
             }
 
-        for (int k = 0; k < n ; k++) // we copy the optimized parameters in the weight matrix
+        // we copy the optimized parameters in the weight matrix
+        for (int k = 0; k < n ; k++) 
         {
             weight[k] = weight_minimum[k];
             weight_compare[k] = weight[k];
         }
     }
 
-    for (int i = 0; i < n; i++) // we send the weight matrix to the member of the sobp class
+    // we send the weight matrix to the member of the sobp class
+    for (int i = 0; i < n; i++) 
     {
         m_weights.push_back(weight[i]);
     }
 
-    double sum =0; // we send the depth dose matrix to the member of the sobp class
+    // we send the depth dose matrix to the member of the sobp class
+    double sum =0; 
     m_sobpDoseDepth.push_back(init_vector);
     m_sobpDoseDepth.push_back(init_vector);
     for (int j = 0; j < m_z_end; j++)
@@ -335,7 +336,8 @@ void Ion_sobp_optimize::Optimizer() // the optimizer to get the optimized weight
     }
 }
 
-void Ion_sobp_optimize::SobpOptimizedWeights() // we print the weights on the command line
+// we print the weights on the command line
+void Ion_sobp_optimize::SobpOptimizedWeights() 
 {
     for (int i = 0; i < m_EnergyNumber; i++)
     {
@@ -353,13 +355,22 @@ void Ion_sobp_optimize::SobpDepthDose() // we print the depth dose on the comman
 }
 
 
-double cost_function_calculation(std::vector<std::vector<double> > depth_dose, std::vector<double> weights, int peak_number, int z_end, std::vector<int> depth_in, std::vector<int> depth_out) // cost function to be optimized in order to find the best weights and fit a perfect sobp
+// cost function to be optimized in order to find the best weights and 
+// fit a perfect sobp
+double 
+cost_function_calculation (
+    std::vector<std::vector<double> > depth_dose, 
+    std::vector<double> weights, 
+    int peak_number, 
+    int z_end, 
+    std::vector<int> depth_in, 
+    std::vector<int> depth_out) 
 {
     std::vector<double> diff (z_end, 0);
     std::vector<double> excess (z_end, 0);
     std::vector<double> f (z_end, 0);
     double f_tot = 0;
-    double max = 0;
+    double sobp_max_diff = 0;
     double sum = 0;
 
     for (int j = 0; j < z_end; j++) // we fit the curve on all the depth
@@ -369,19 +380,39 @@ double cost_function_calculation(std::vector<std::vector<double> > depth_dose, s
         {
             sum = sum + weights[k]*depth_dose[k][j];
         }
-        diff[j] = depth_in[j] * fabs(sum-15); // first parameters: the difference sqrt(standard deviation) between the curve and the perfect sobp, in the sobp area
-        if (diff[j] > max)
+        // first parameters: the difference sqrt(standard deviation) 
+        // between the curve and the perfect sobp, in the sobp area
+        diff[j] = depth_in[j] * fabs(sum-15); 
+        if (diff[j] > sobp_max_diff)
         {
-            max = diff[j];					// second parameters: the max difference between the curve and the perfect sobp, in the sobp area
+            // second parameters: the max difference between the curve and 
+            // the perfect sobp, in the sobp area
+            sobp_max_diff = diff[j];					
         }
 
-        excess[j] = depth_out[j] * (sum-15);// first parameters: the excess difference sqrt(standard deviation) between the curve and the perfect sobp, out of the sobp area (we want it far lower that the sobp flat region
+        // first parameters: the excess difference sqrt(standard deviation) 
+        // between the curve and the perfect sobp, out of the sobp area 
+        // (we want it far lower that the sobp flat region
+        excess[j] = depth_out[j] * (sum-15);
         if (excess[j] < 0)
         {
             excess[j] = 0;
         }
-        f[j]= 0.5 * max + 0.05 * diff[j]*diff[j] + 0.1 * excess[j] * excess[j]; // this 3 parameters are assessed, and weighted by 3 coefficient (to be optimized to get a beautiful sobp) and the value of the global function is returned
+        // this 3 parameters are assessed, and weighted by 3 coefficient 
+        // (to be optimized to get a beautiful sobp) and the value 
+        // of the global function is returned
+#if defined (commentout)
+        /* GCS FIX:  This equation is wrong.  The max diff should be 
+           added after the loop completes */
+        f[j]= 0.5 * max + 0.05 * diff[j]*diff[j] + 0.1 * excess[j] * excess[j]; 
+#endif
+        f[j]= 0.05 * diff[j]*diff[j] + 0.1 * excess[j] * excess[j]; 
         f_tot = f_tot+f[j];
     }
+
+    /* GCS: Add in the maximum difference factor.  Not sure quite how 
+       to weigh correctly... */
+    f_tot += 0.005 * z_end * sobp_max_diff;
+
     return f_tot; //we return the fcost value
 }

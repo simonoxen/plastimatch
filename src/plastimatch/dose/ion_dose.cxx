@@ -242,7 +242,7 @@ dose_direct (
 #endif
 
     /* return the dose at this radiographic depth */
-    return scene->beam->lookup_energy (rgdepth);
+    return scene->beam->lookup_sobp_dose (rgdepth);
 }
 
 double
@@ -384,7 +384,7 @@ dose_scatter (
                 }
                 continue;
             } else {
-                d = beam->lookup_energy (rgdepth);
+                d = beam->lookup_sobp_dose (rgdepth);
 #if defined (DEBUG_VOXEL)
                 d0 = d;
 #endif
@@ -542,7 +542,7 @@ dose_hong (
                 }
                 continue;
             } else {
-                d = beam->lookup_energy (rgdepth);
+                d = beam->lookup_sobp_dose (rgdepth);
 #if defined (DEBUG_VOXEL)
                 d0 = d;
 #endif

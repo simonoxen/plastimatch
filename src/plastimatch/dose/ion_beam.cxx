@@ -172,6 +172,12 @@ Ion_beam::get_sobp_maximum_depth ()
     return d_ptr->sobp->get_maximum_depth ();
 }
 
+void 
+Ion_beam::set_sobp_prescription_min_max (float d_min, float d_max)
+{
+    d_ptr->sobp->set_prescription_min_max (d_min, d_max);
+}
+
 bool
 Ion_beam::load_xio (const char* fn)
 {
@@ -270,7 +276,7 @@ Ion_beam::add_peak (
 }
 
 float
-Ion_beam::lookup_energy (
+Ion_beam::lookup_sobp_dose (
     float depth
 )
 {
