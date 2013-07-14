@@ -72,7 +72,8 @@ public:
 
     /*! \name Execution */
     ///@{
-    bool generate ();               /* generate analytically */
+    void optimize_sobp ();          /* automatically create, weigh peaks */
+    bool generate ();               /* use manually weighted peaks */
     ///@}
 
     /*! \name Outputs */

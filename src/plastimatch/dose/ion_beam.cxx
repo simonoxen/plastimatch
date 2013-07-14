@@ -283,6 +283,12 @@ Ion_beam::lookup_sobp_dose (
     return d_ptr->sobp->lookup_energy(depth);
 }
 
+void
+Ion_beam::optimize_sobp ()
+{
+    d_ptr->sobp->optimize ();
+}
+
 bool
 Ion_beam::generate ()
 {

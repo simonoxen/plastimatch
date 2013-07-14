@@ -27,6 +27,8 @@ public:
     float src[3];
     float isocenter[3];
     float beam_res;
+    float prescription_min;
+    float prescription_max;
 
     /* [APERTURE] */
     float vup[3];
@@ -37,6 +39,7 @@ public:
     float ap_spacing[2];
 
     /* [PEAK] */
+    bool have_manual_peaks;
     double E0;
     double spread;
     double dres;
@@ -55,6 +58,8 @@ public:
         this->isocenter[1] = 0.f;
         this->isocenter[2] = 0.f;
         this->beam_res = 1.f;
+        this->prescription_min = 50.0f;
+        this->prescription_max = 100.0f;
 
         this->vup[0] = 0.f;
         this->vup[1] = 0.f;
@@ -73,7 +78,8 @@ public:
         this->ap_spacing[0] = 1.;
         this->ap_spacing[1] = 1.;
 
-        this-> E0 = 0.;
+        this->have_manual_peaks = false;
+        this->E0 = 0.;
         this->spread = 0.;
         this->dres = 0.;
         this->dmax = 0.;
@@ -203,6 +209,18 @@ Ion_parms::set_key_val (
                 goto error_exit;
             }
         }
+        else if (!strcmp (key, "prescription_min")) {
+            int rc = sscanf (val, "%f", &d_ptr->prescription_min);
+            if (rc != 1) {
+                goto error_exit;
+            }
+        }
+        else if (!strcmp (key, "prescription_max")) {
+            int rc = sscanf (val, "%f", &d_ptr->prescription_max);
+            if (rc != 1) {
+                goto error_exit;
+            }
+        }
         else {
             goto error_exit;
         }
@@ -313,7 +331,9 @@ Ion_parms::handle_end_of_section (int section)
     case 3:
         /* Peak */
         d_ptr->scene->beam->add_peak (
-            d_ptr->E0, d_ptr->spread, d_ptr->dres, d_ptr->dmax, d_ptr->weight);
+            d_ptr->E0, d_ptr->spread, d_ptr->dres, 
+            d_ptr->dmax, d_ptr->weight);
+        d_ptr->have_manual_peaks = true;
         break;
     }
 }
@@ -436,9 +456,16 @@ Ion_parms::parse_args (int argc, char** argv)
     }
     d_ptr->scene->set_patient (ct);
 
-    /* Generate PDD */
-    if (!d_ptr->scene->beam->generate ()) {
-        return false;
+    /* generate depth dose curve, might be manual peaks or 
+       automatically optimized */
+    if (d_ptr->have_manual_peaks) {
+        if (!d_ptr->scene->beam->generate ()) {
+            return false;
+        }
+    } else {
+        d_ptr->scene->beam->set_sobp_prescription_min_max (
+            d_ptr->prescription_min, d_ptr->prescription_max);
+        d_ptr->scene->beam->optimize_sobp ();
     }
 
     /* set scene parameters */
