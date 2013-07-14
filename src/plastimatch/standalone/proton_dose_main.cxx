@@ -25,6 +25,7 @@ main (int argc, char* argv[])
     printf ("Working...\n");
     fflush(stdout);
 
+    scene->set_debug (true);
     scene->compute_dose ();
     Plm_image::Pointer dose = scene->get_dose ();
     dose->save_image (parms.output_dose_fn.c_str());

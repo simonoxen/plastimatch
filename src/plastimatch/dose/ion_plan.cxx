@@ -226,7 +226,6 @@ Ion_plan::compute_dose ()
     if (this->get_debug()) {
         rpl_vol->save ("depth_vol.mha");
         beam->dump ("bragg_curve.txt");
-        printf ("Printing proj matrix during proton_dose_compute.\n");
     }
 
     printf ("About to loop.\n");
@@ -276,6 +275,7 @@ Ion_plan::compute_dose ()
 
                 /* Insert the dose into the dose volume */
                 idx = volume_index (dose_vol->dim, ct_ijk);
+                dose_img[idx] = dose;
             }
         }
         display_progress ((float)idx, (float)ct_vol->npix);

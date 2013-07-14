@@ -105,7 +105,7 @@ Ion_sobp::optimize ()
        For example, user-selected "spread" is ignored. */
     double max_depth = (double) op.m_z_end;
     for (int i = 0; i < op.m_EnergyNumber; i++) {
-        double energy = d_ptr->prescription_dmin + i * energy_step;
+        double energy = op.m_E_min + i * energy_step;
         double weight = op.m_weights[i];
         this->add (energy, energy_spread, depth_res, 
             max_depth, weight);
