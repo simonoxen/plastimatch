@@ -174,6 +174,12 @@ Ion_plan::get_dose ()
     return d_ptr->dose;
 }
 
+FloatImageType::Pointer
+Ion_plan::get_dose_itk ()
+{
+    return d_ptr->dose->itk_float();
+}
+
 void
 Ion_plan::debug ()
 {
@@ -227,8 +233,6 @@ Ion_plan::compute_dose ()
         rpl_vol->save ("depth_vol.mha");
         beam->dump ("bragg_curve.txt");
     }
-
-    printf ("About to loop.\n");
 
     /* scan through patient CT Volume */
     plm_long ct_ijk[3];

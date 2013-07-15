@@ -59,9 +59,13 @@ public:
 
     /* Set beam depth, in mm */
     void set_beam_depth (float z_min, float z_max, float z_step);
+
     /* Compute dose */
     void compute_dose ();
+
+    /* Return dose to caller */
     Plm_image::Pointer get_dose ();
+    FloatImageType::Pointer get_dose_itk ();
 
 public:
     Ion_beam *beam;
