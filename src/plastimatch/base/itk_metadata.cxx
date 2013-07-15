@@ -2,9 +2,10 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
-#include <time.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "itkImageRegionIterator.h"
 #include "itkMetaDataDictionary.h"
 #include "itkMetaDataObject.h"
