@@ -327,6 +327,7 @@ void
 Mabs::sanity_checks ()
 {
     /* Do a few sanity checks */
+    /*
     if (!is_directory (d_ptr->parms->atlas_dir)) {
         print_and_exit ("Atlas dir (%s) is not a directory\n",
             d_ptr->parms->atlas_dir.c_str());
@@ -337,6 +338,7 @@ Mabs::sanity_checks ()
                 d_ptr->parms->registration_config.c_str());
         }
     }
+    */
 }
 
 void
