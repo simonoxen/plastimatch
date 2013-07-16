@@ -27,6 +27,7 @@ Mabs_parms::Mabs_parms ()
 
     /* [ATLASES-SELECTION] */
     this->enable_atlases_selection = false;
+    this->atlases_selection_criteria="nmi";
     this->mi_percent_thershold = 0.70;
     this->mi_histogram_bins = 100;
     this->roi_mask_fn = "";
@@ -130,6 +131,14 @@ Mabs_parms::set_key_val (
             else {
                 this->enable_atlases_selection = false;
             }   
+        }
+        else if (key == "atlases_selection_criteria") {
+            if (val == "nmi" || val == "NMI") {
+                this->atlases_selection_criteria="nmi";
+            }
+            else if (val == "random" || val == "RANDOM") { // Just for testing purpose
+                this->atlases_selection_criteria="random";
+            }
         }
         else if (key == "mi_percent_thershold") {
             sscanf (val.c_str(), "%g", &this->mi_percent_thershold);

@@ -3,6 +3,9 @@
  *       ----------------------------------------------------------------------- */
 #include "plmsegment_config.h"
 
+#include <stdlib.h>
+#include <iterator>
+
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include <itkNormalizedMutualInformationHistogramImageToImageMetric.h>
@@ -17,17 +20,21 @@
 #include "plm_image.h"
 #include "string_util.h"
 
-Mabs_atlases_selection::Mabs_atlases_selection ()
+Mabs_atlases_selection::Mabs_atlases_selection (std::list<std::string> atlases_list, Rt_study::Pointer subject)
 {
     //constructor
-    subject_rtds = Rt_study::New ();
+    this->atlas_dir_list = atlases_list;
+    this->subject_rtds = subject;
+    this->number_of_atlases = (int) this->atlas_dir_list.size();
 }
 
 
 Mabs_atlases_selection::~Mabs_atlases_selection ()
 {
     //destructor
-    delete &atlas_dir_list;
+    //delete &atlas_dir_list;
+    //delete &subject_rtds;
+    delete &number_of_atlases;
 }
 
 std::list<std::string>
@@ -36,9 +43,8 @@ Mabs_atlases_selection::nmi_ranking(std::string patient_id, const Mabs_parms* pa
 
     lprintf("MI RANKING \n");
 	
-    int size_nmi_ranking_array = (int) this->atlas_dir_list.size();
-    printf ("NUMBER OF INITIAL ATLASES = %d \n", size_nmi_ranking_array);
-    double* nmi_vector = new double[size_nmi_ranking_array];
+    printf ("NUMBER OF INITIAL ATLASES = %d \n", number_of_atlases);
+    double* nmi_vector = new double[number_of_atlases];
     
     MaskTypePointer mask;
 	
@@ -79,7 +85,7 @@ Mabs_atlases_selection::nmi_ranking(std::string patient_id, const Mabs_parms* pa
     
     // Find maximum nmi
     double max_nmi = nmi_vector[0];
-    for (int i=1; i < size_nmi_ranking_array; i++)
+    for (int i=1; i < number_of_atlases; i++)
     {
 	if (nmi_vector[i] > max_nmi)
         {
@@ -89,7 +95,7 @@ Mabs_atlases_selection::nmi_ranking(std::string patient_id, const Mabs_parms* pa
     
     // Find min nmi
     double min_nmi = max_nmi;
-    for (int i=0; i < size_nmi_ranking_array; i++)
+    for (int i=0; i < number_of_atlases; i++)
     {
         if (nmi_vector[i] < min_nmi && nmi_vector[i] != -1)
         {
@@ -120,6 +126,36 @@ Mabs_atlases_selection::nmi_ranking(std::string patient_id, const Mabs_parms* pa
     
     return atlas_most_similar;
 }
+
+
+std::list<std::string>
+Mabs_atlases_selection::random_ranking(std::string patient_id) // Just for testing purpose
+{
+    lprintf("RANDOM RANKING \n");
+    
+    std::list<std::string> random_atlases;
+    int min_atlases = 4;
+    int max_atlases = 12;
+    int random_number_of_atlases = rand() % (max_atlases-min_atlases) + min_atlases;
+    printf("Selectd %d random atlases \n", random_number_of_atlases);
+
+    int i=0;
+    while ((int) random_atlases.size() < random_number_of_atlases) {
+        int random_index = rand() % (this->number_of_atlases-min_atlases) + min_atlases;
+        std::list<std::string>::iterator atlases_iterator = this->atlas_dir_list.begin();
+        std::advance (atlases_iterator, random_index);
+        
+        if (find(random_atlases.begin(), random_atlases.end(), *atlases_iterator) == random_atlases.end()) {
+            i++;
+            std::string atlas = basename(*atlases_iterator);
+            printf("Atlas number %d is %s \n", i, atlas.c_str());
+            random_atlases.push_front(*atlases_iterator);
+        }
+    }
+
+    return random_atlases;
+}
+
 
 double
 Mabs_atlases_selection::compute_nmi(Plm_image* img1, Plm_image* img2, int hist_bins, MaskTypePointer mask,

@@ -22,18 +22,19 @@ typedef MaskType::Pointer MaskTypePointer;
 class PLMSEGMENT_API Mabs_atlases_selection {
 
 public:
-    Mabs_atlases_selection();
+    Mabs_atlases_selection(std::list<std::string> atlases_list, Rt_study::Pointer subject);
     ~Mabs_atlases_selection();
     
     std::list<std::string> nmi_ranking(std::string patient_id, const Mabs_parms* parms);
+    std::list<std::string> random_ranking(std::string patient_id); // Just for testing purpose
     double compute_nmi(Plm_image* img1, Plm_image* img2, int hist_bins, MaskTypePointer mask,
                        bool min_value_defined, int min_value, bool max_value_defined, int max_value);
 
 
 public:
-    std::list<std::string> atlas_dir_list;
     Rt_study::Pointer subject_rtds;
-    
+    std::list<std::string> atlas_dir_list;
+    int number_of_atlases; 
 };
 
 #endif /* #ifndef _mabs_atlases_selection_h_ */

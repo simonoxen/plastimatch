@@ -1152,11 +1152,16 @@ Mabs::train_internal (bool registration_only)
         if (d_ptr->parms->enable_atlases_selection)
         {
 	    Mabs_atlases_selection* select_atlases 
-                = new Mabs_atlases_selection;
-	    select_atlases->atlas_dir_list = d_ptr->process_dir_list;
-	    select_atlases->subject_rtds = d_ptr->ref_rtds;
-	    d_ptr->atlas_list = select_atlases->nmi_ranking (
-                patient_id, d_ptr->parms);
+                = new Mabs_atlases_selection(d_ptr->process_dir_list, d_ptr->ref_rtds);
+            
+            if (d_ptr->parms->atlases_selection_criteria == "nmi") {
+	        d_ptr->atlas_list = select_atlases->nmi_ranking (
+                    patient_id, d_ptr->parms);
+            }
+            
+            else if (d_ptr->parms->atlases_selection_criteria == "random") { // Just for testing purpose
+               d_ptr->atlas_list = select_atlases->random_ranking (patient_id); 
+            }
 	}
 
         /* Run the segmentation */
