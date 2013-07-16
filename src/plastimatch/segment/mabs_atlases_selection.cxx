@@ -116,7 +116,7 @@ Mabs_atlases_selection::nmi_ranking(std::string patient_id, const Mabs_parms* pa
          std::string atlas = basename (*reg_it);
          if (nmi_vector[i] >= (((max_nmi-min_nmi) * parms->mi_percent_thershold) + min_nmi))
 	 {
-	     atlas_most_similar.push_front(atlas);
+	     atlas_most_similar.push_front(*reg_it);
 	     printf("ATLAS %s HAVING NMI = %f \n", atlas.c_str(), nmi_vector[i]);
 	 }
     }
