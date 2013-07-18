@@ -109,7 +109,7 @@ namespace ora
  *
  * @author phil 
  * @author VTK-community
- * @author Markus 
+ * @author Markus Neuner 
  * @version 2.3.2
  *
  * \ingroup Mappers
@@ -117,6 +117,10 @@ namespace ora
 class GLSLDRRRayCastMapper:
     public vtkGPUVolumeRayCastMapper
 {
+  /*
+   TRANSLATOR ora::GLSLDRRRayCastMapper
+   */
+
 public:
   /** VTK standard instantiation **/
   static GLSLDRRRayCastMapper *New();
@@ -403,7 +407,14 @@ vtkTypeRevisionMacro(GLSLDRRRayCastMapper, vtkGPUVolumeRayCastMapper)
   vtkBooleanMacro(UnsharpMasking, bool)
 
   vtkSetMacro(UnsharpMaskingRadius, int)
-  vtkGetMacro(UnsharpMaskingRadius, int)
+  vtkGetMacro(UnsharpMaskingRadius, int)  
+
+  vtkSetMacro(UseMappingIDs, bool)
+  vtkGetMacro(UseMappingIDs, bool)
+  vtkBooleanMacro(UseMappingIDs, bool)
+
+  /** Generate a new ID for the next mappingmapping process. */
+  void GenerateNextMappingID();
 
 protected:
   /**
@@ -588,6 +599,14 @@ protected:
   bool UnsharpMasking;
   /** Radius for unsharp masking (auto if <= 0). **/
   int UnsharpMaskingRadius;
+  /** Helper variable for preventing the mapper from rendering the same scene
+   * multiple times. ID of last mapping process. */
+  int LastMappingID;
+  /** Helper variable for preventing the mapper from rendering the same scene
+   * multiple times. ID of current mapping process. */
+  int CurrentMappingID;
+  /** Flag indicating wehther mapping IDs are used or not. */
+  bool UseMappingIDs;
 
   /** Default constructor. **/
   GLSLDRRRayCastMapper();

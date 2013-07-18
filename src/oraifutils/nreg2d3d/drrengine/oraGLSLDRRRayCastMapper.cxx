@@ -135,6 +135,9 @@ GLSLDRRRayCastMapper::GLSLDRRRayCastMapper() :
   this->VerticalFlip = false;
   this->UnsharpMasking = false;
   this->UnsharpMaskingRadius = 0;
+  this->LastMappingID = -1;
+  this->CurrentMappingID = 0;
+  this->UseMappingIDsOff(); // do not use this feature by default
 }
 
 GLSLDRRRayCastMapper::~GLSLDRRRayCastMapper()
@@ -819,6 +822,14 @@ bool GLSLDRRRayCastMapper::CreateGLSLAndOpenGLObjects()
 bool GLSLDRRRayCastMapper::ComputeDRR()
 {
   bool success = false;
+
+  if (UseMappingIDs) // prevent multiple processing of same mapping ID
+  {
+    if (CurrentMappingID == LastMappingID)
+      return true; // already computed
+    else
+      LastMappingID = CurrentMappingID; // and resume processing
+  }
 
   Clocks[0]->StartTimer();
 
@@ -2453,6 +2464,13 @@ bool GLSLDRRRayCastMapper::ReleaseGPUTexture(vtkImageData *textureImage)
     }
   }
   return false;
+}
+
+void GLSLDRRRayCastMapper::GenerateNextMappingID()
+{
+  CurrentMappingID++;
+  if (CurrentMappingID > 100000)
+    CurrentMappingID = 0;
 }
 
 void GLSLDRRRayCastMapper::PreRender(vtkRenderer *ren, vtkVolume *vol,

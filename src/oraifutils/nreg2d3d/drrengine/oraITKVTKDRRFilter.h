@@ -97,6 +97,10 @@ class ITKVTKDRRFilter:
     public itk::ImageToImageFilter<itk::Image<TInputPixelType, 3>, itk::Image<
         TOutputPixelType, 3> >
 {
+  /*
+   TRANSLATOR ora::ITKVTKDRRFilter
+   */
+
 public:
   /** Standard class typedefs. */
   typedef ITKVTKDRRFilter Self;

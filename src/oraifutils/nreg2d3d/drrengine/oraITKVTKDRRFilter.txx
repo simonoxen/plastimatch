@@ -243,6 +243,7 @@ void ITKVTKDRRFilter<TInputPixelType, TOutputPixelType>::BuildRenderPipeline()
 
   // volume mapper
   this->m_GPURayCaster = GPURayCasterPointer::New();
+  this->m_GPURayCaster->SetUseMappingIDs(true); // prevent multiple rendering of same DRR
   this->m_GPURayCaster->SetVerticalFlip(false); // we are in WCS, it's OK!
   this->m_GPURayCaster->SetInput(this->m_VTKInput);
   this->m_GPURayCaster->SetRenderWindow(this->m_RenderWindow);
@@ -1066,6 +1067,7 @@ void ITKVTKDRRFilter<TInputPixelType, TOutputPixelType>::GenerateData()
   // possibly multi-threaded GL environment:
   if (m_FireStartEndEvents)
     m_EventObject->InvokeEvent(vtkCommand::StartEvent);
+  this->m_GPURayCaster->GenerateNextMappingID(); // prevent multiple rendering
 #if !( ( defined( _WIN32 ) || defined ( _WIN64 ) ) && !defined( __CYGWIN__ ) )
   XLockDisplay((Display*)this->m_RenderWindow->GetGenericDisplayId());
 #endif
