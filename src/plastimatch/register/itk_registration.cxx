@@ -300,6 +300,12 @@ set_fixed_image_region_new_unfinished (
 void
 Itk_registration_private::set_fixed_image_region ()
 {
+    /* GCS 2013-07-19.  The automatic region setting appears to be buggy 
+       let's comment it out until it can be fixed. */
+    registration->SetFixedImageRegion (
+       registration->GetFixedImage()->GetLargestPossibleRegion());
+
+#if defined (commentout)
     int use_magic_value = 0;
     if (regd->fixed_mask) {
         FloatImageType::RegionType valid_region;
@@ -411,6 +417,7 @@ Itk_registration_private::set_fixed_image_region ()
         registration->SetFixedImageRegion (
             registration->GetFixedImage()->GetLargestPossibleRegion());
     }
+#endif
 }
 
 template<class T>
