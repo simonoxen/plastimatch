@@ -26,6 +26,10 @@
 
 //#define VERBOSE 1
 
+#if VERBOSE
+static bool global_debug = false;
+#endif
+
 class Ray_data {
 public:
     int ap_idx;
@@ -41,11 +45,12 @@ public:
 
 typedef struct callback_data Callback_data;
 struct callback_data {
-    Rpl_volume *rpl_vol;    /* Radiographic depth volume */
-    Ray_data *ray_data;
-    int* ires;              /* Aperture Dimensions */
-    int step_offset;        /* Number of steps before first ray sample */
-    double accum;           /* Accumulated intensity */
+    Rpl_volume *rpl_vol;         /* Radiographic depth volume */
+    Ray_data *ray_data;          /* Data specific to the ray */
+    int* ires;                   /* Aperture Dimensions */
+    int step_offset;             /* Number of steps before first ray sample */
+    double accum;                /* Accumulated intensity */
+    int last_step_completed;     /* Last step written to output image */
 };
 
 class Rpl_volume_private {
@@ -337,6 +342,13 @@ Rpl_volume::compute (Volume *ct_vol)
             double *p2 = ray_data->p2;
             double *ray = ray_data->ray;
 
+#if VERBOSE
+            global_debug = false;
+            if (r == 49 && (c == 49 || c == 50)) {
+                global_debug = true;
+            }
+#endif
+
             /* Save the aperture index */
             ray_data->ap_idx = ap_idx;
 
@@ -353,7 +365,7 @@ Rpl_volume::compute (Volume *ct_vol)
 	    if (!volume_limit_clip_ray (&ct_limit, ip1, ip2, src, ray)) {
 		continue;
 	    }
-            
+
 	    /* If intersect points are before or after aperture. 
                If before, clip them at aperture plane. */
 
@@ -370,12 +382,14 @@ Rpl_volume::compute (Volume *ct_vol)
             /* OK, by now we know this ray does intersect the volume */
             ray_data->intersects_volume = true;
 
-#if defined (commentout)
-	    printf ("(%d,%d)\n", r, c);
-	    printf ("%d",ap_idx);
-	    printf ("ap  = %f %f %f\n", p2[0], p2[1], p2[2]);
-	    printf ("ip1 = %f %f %f\n", ip1[0], ip1[1], ip1[2]);
-	    printf ("ip2 = %f %f %f\n", ip2[0], ip2[1], ip2[2]);
+#if VERBOSE
+            if (global_debug) {
+                printf ("(%d,%d)\n", r, c);
+                printf ("%d\n", (int) ap_idx);
+                printf ("ap  = %f %f %f\n", p2[0], p2[1], p2[2]);
+                printf ("ip1 = %f %f %f\n", ip1[0], ip1[1], ip1[2]);
+                printf ("ip2 = %f %f %f\n", ip2[0], ip2[1], ip2[2]);
+            }
 #endif
 
             /* Compute distance to front intersection point, and set 
@@ -396,9 +410,11 @@ Rpl_volume::compute (Volume *ct_vol)
             if (ray_data->back_dist > d_ptr->back_clipping_dist) {
                 d_ptr->back_clipping_dist = ray_data->back_dist;
             }
-#if defined (commentout)
-	    printf ("fd/bd = %f %f\n", ray_data->front_dist,
-                ray_data->back_dist);
+#if VERBOSE
+            if (global_debug) {
+                printf ("fd/bd = %f %f\n", ray_data->front_dist,
+                    ray_data->back_dist);
+            }
 #endif
         }
     }
@@ -433,8 +449,15 @@ Rpl_volume::compute (Volume *ct_vol)
             vec3_scale3 (ray_data->cp, ray_data->ray, 
                 d_ptr->front_clipping_dist);
             vec3_add2 (ray_data->cp, ray_data->p2);
-#if defined (commentout)
-	    printf ("Tracing ray (%d,%d)\n", r, c);
+
+#if VERBOSE
+            global_debug = false;
+            if (r == 49 && (c == 49 || c == 50)) {
+                global_debug = true;
+            }
+            if (global_debug) {
+                printf ("Tracing ray (%d,%d)\n", r, c);
+            }
 #endif
 
             /* Check if beamlet is inside aperture, if not 
@@ -447,7 +470,7 @@ Rpl_volume::compute (Volume *ct_vol)
             double rc_thk = 0.;
             if (rc_img) {
                 rc_thk = rc_img[r*ires[0]+c];
-                printf ("Setting rc_thk = %g\n", rc_thk);
+                //printf ("Setting rc_thk = %g\n", rc_thk);
             }
 
             this->ray_trace (
@@ -1133,23 +1156,20 @@ rpl_ray_trace_callback (
 
     cd->accum += vox_len * lookup_attenuation (vox_value);
 
-#if defined (commentout)
-    if (ap_idx == 99 || ap_idx == 90) {
-	printf ("%d %4d: %20g %20g\n", ap_idx, step_num, 
+#if VERBOSE
+    if (global_debug) {
+	printf ("%d %4d: %20g %20g\n", ap_idx, (int) step_num, 
 	    vox_value, cd->accum);
+        printf ("dim = %d %d %d\n", 
+            (int) rpl_vol->get_volume()->dim[0],
+            (int) rpl_vol->get_volume()->dim[1],
+            (int) rpl_vol->get_volume()->dim[2]);
+        printf ("ap_area = %d, ap_idx = %d, vox_len = %g\n", 
+            ap_area, (int) ap_idx, vox_len);
     }
 #endif
 
-#if defined (commentout)
-    if (ap_idx >= 600) {
-    printf ("--\ndim = %d %d %d\n", 
-        rpl_vol->get_volume()->dim[0],
-        rpl_vol->get_volume()->dim[1],
-        rpl_vol->get_volume()->dim[2]);
-    printf ("ap_area = %d, step_num = %d, ap_idx = %d\n", 
-        ap_area, step_num, ap_idx);
-    }
-#endif
+    cd->last_step_completed = step_num;
 
     /* GCS FIX: I have a rounding error somewhere -- maybe step_num
        starts at 1?  Or maybe proj_vol is not big enough?  
@@ -1188,13 +1208,6 @@ Rpl_volume::ray_trace (
     double dist = ray_data->front_dist - d_ptr->front_clipping_dist;
     cd.step_offset = (int) ceil (dist / d_ptr->proj_vol->get_step_length ());
 
-#if VERBOSE
-    printf ("front_dist = %f\n", ray_data->front_dist);
-    printf ("front_clip = %f\n", d_ptr->front_clipping_dist);
-    printf ("dist = %f\n", dist);
-    printf ("step_offset = %d\n", cd.step_offset);
-#endif
-	
     /* Find location of first step within volume */
     double tmp[3];
     double first_loc[3];
@@ -1203,8 +1216,17 @@ Rpl_volume::ray_trace (
     vec3_add3 (first_loc, ray_data->p2, tmp);
 
 #if VERBOSE
-    printf ("first_loc = (%f, %f, %f)\n", 
-        first_loc[0], first_loc[1], first_loc[2]);
+    if (global_debug) {
+        printf ("front_dist = %f\n", ray_data->front_dist);
+        printf ("front_clip = %f\n", d_ptr->front_clipping_dist);
+        printf ("dist = %f\n", dist);
+        printf ("step_offset = %d\n", cd.step_offset);
+        printf ("first_loc = (%f, %f, %f)\n", 
+            first_loc[0], first_loc[1], first_loc[2]);
+        printf ("ip2 = (%f, %f, %f)\n", 
+            ray_data->ip2[0], ray_data->ip2[1], ray_data->ip2[2]);
+        printf ("rlen = %g\n", vec3_dist (first_loc, ray_data->ip2));
+    }
 #endif
 
     /* get radiographic depth along ray */
@@ -1216,4 +1238,16 @@ Rpl_volume::ray_trace (
         first_loc,                  // INPUT: ray starting point
         ray_data->ip2,              // INPUT: ray ending point
         d_ptr->proj_vol->get_step_length()); // INPUT: uniform ray step size
+
+    /* Ray tracer will stop short of rpl volume for central rays. 
+       We should continue padding the remaining voxels */
+    float *depth_img = (float*) this->get_volume()->img;
+    for (int s = cd.last_step_completed+1; 
+         s < this->get_volume()->dim[2];
+         s++)
+    {
+        int ap_nvox = cd.ires[0] * cd.ires[1];
+        printf ("Extending step %d\n", s);
+        depth_img[ap_nvox*s + ray_data->ap_idx] = cd.accum;
+    }
 }

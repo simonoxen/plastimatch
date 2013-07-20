@@ -20,8 +20,8 @@
 
 class Ion_parms_private {
 public:
-    /* Scene */
-    Ion_plan::Pointer scene;
+    /* Plan */
+    Ion_plan::Pointer plan;
 
     /* [BEAM] */
     float src[3];
@@ -82,7 +82,7 @@ public:
         this->E0 = 0.;
         this->spread = 0.;
 
-        this->scene = Ion_plan::New ();
+        this->plan = Ion_plan::New ();
     }
 };
 
@@ -191,7 +191,7 @@ Ion_parms::set_key_val (
     /* [BEAM] */
     case 1:
         if (!strcmp (key, "bragg_curve")) {
-            d_ptr->scene->beam->load (val);
+            d_ptr->plan->beam->load (val);
         }
         else if (!strcmp (key, "pos")) {
             int rc = sscanf (val, "%f %f %f", 
@@ -230,7 +230,7 @@ Ion_parms::set_key_val (
             }
         }
         else if (!strcmp (key, "debug")) {
-            d_ptr->scene->beam->set_debug (val);
+            d_ptr->plan->beam->set_debug (val);
         }
         else {
             goto error_exit;
@@ -331,7 +331,7 @@ Ion_parms::handle_end_of_section (int section)
         break;
     case 3:
         /* Peak */
-        d_ptr->scene->beam->add_peak (
+        d_ptr->plan->beam->add_peak (
             d_ptr->E0, d_ptr->spread, d_ptr->depth_res, 
             d_ptr->max_depth, d_ptr->weight);
         d_ptr->have_manual_peaks = true;
@@ -340,9 +340,9 @@ Ion_parms::handle_end_of_section (int section)
 }
 
 Ion_plan::Pointer& 
-Ion_parms::get_scene ()
+Ion_parms::get_plan ()
 {
-    return d_ptr->scene;
+    return d_ptr->plan;
 }
 
 void
@@ -424,7 +424,7 @@ Ion_parms::parse_args (int argc, char** argv)
         if (argv[i][0] != '-') break;
 
         if (!strcmp (argv[i], "--debug")) {
-            d_ptr->scene->set_debug (true);
+            d_ptr->plan->set_debug (true);
         }
         else {
             print_usage ();
@@ -448,55 +448,50 @@ Ion_parms::parse_args (int argc, char** argv)
         return false;
     }
 
-    /* load the patient and insert into the scene */
+    /* load the patient and insert into the plan */
     Plm_image *ct = plm_image_load (this->input_ct_fn.c_str(), 
         PLM_IMG_TYPE_ITK_FLOAT);
     if (!ct) {
         fprintf (stderr, "\n** ERROR: Unable to load patient volume.\n");
         return false;
     }
-    d_ptr->scene->set_patient (ct);
+    d_ptr->plan->set_patient (ct);
 
     /* generate depth dose curve, might be manual peaks or 
        automatically optimized */
     if (d_ptr->have_manual_peaks) {
-        if (!d_ptr->scene->beam->generate ()) {
+        if (!d_ptr->plan->beam->generate ()) {
             return false;
         }
     } else {
-        d_ptr->scene->beam->set_sobp_prescription_min_max (
+        d_ptr->plan->beam->set_sobp_prescription_min_max (
             d_ptr->prescription_min, d_ptr->prescription_max);
-        d_ptr->scene->beam->optimize_sobp ();
+        d_ptr->plan->beam->optimize_sobp ();
     }
 
-    /* set scene parameters */
-    d_ptr->scene->beam->set_source_position (d_ptr->src);
-    d_ptr->scene->beam->set_isocenter_position (d_ptr->isocenter);
+    /* set plan parameters */
+    d_ptr->plan->beam->set_source_position (d_ptr->src);
+    d_ptr->plan->beam->set_isocenter_position (d_ptr->isocenter);
 
-    d_ptr->scene->get_aperture()->set_distance (d_ptr->ap_offset);
-    d_ptr->scene->get_aperture()->set_dim (d_ptr->ires);
-    d_ptr->scene->get_aperture()->set_spacing (d_ptr->ap_spacing);
-#if defined (commentout)
-    if (d_ptr->have_ic) {
-        d_ptr->scene->ap->set_center (d_ptr->ic);
-    }
-#endif
+    d_ptr->plan->get_aperture()->set_distance (d_ptr->ap_offset);
+    d_ptr->plan->get_aperture()->set_dim (d_ptr->ires);
+    d_ptr->plan->get_aperture()->set_spacing (d_ptr->ap_spacing);
     if (d_ptr->ap_have_origin) {
-        d_ptr->scene->get_aperture()->set_origin (d_ptr->ap_origin);
+        d_ptr->plan->get_aperture()->set_origin (d_ptr->ap_origin);
     }
     if (d_ptr->ap_filename != "") {
-        d_ptr->scene->get_aperture()->set_aperture_image (
+        d_ptr->plan->get_aperture()->set_aperture_image (
             d_ptr->ap_filename.c_str());
     }
     if (d_ptr->rc_filename != "") {
-        d_ptr->scene->get_aperture()->set_range_compensator_image (
+        d_ptr->plan->get_aperture()->set_range_compensator_image (
             d_ptr->rc_filename.c_str());
     }
 
-    /* try to setup the scene with the provided parameters */
-    d_ptr->scene->set_step_length (this->ray_step);
-    if (!d_ptr->scene->init ()) {
-        fprintf (stderr, "ERROR: Unable to initilize scene.\n");
+    /* try to setup the plan with the provided parameters */
+    d_ptr->plan->set_step_length (this->ray_step);
+    if (!d_ptr->plan->init ()) {
+        fprintf (stderr, "ERROR: Unable to initilize plan.\n");
         return false;
     }
 

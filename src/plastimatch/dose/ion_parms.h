@@ -25,10 +25,7 @@ public:
     bool parse_args (int argc, char** argv);
 
 public:
-    Ion_plan::Pointer& get_scene ();
-#if defined (commentout)
-    void set_scene (Ion_plan *scene);
-#endif
+    Ion_plan::Pointer& get_plan ();
 
 protected:
     void handle_end_of_section (int section);

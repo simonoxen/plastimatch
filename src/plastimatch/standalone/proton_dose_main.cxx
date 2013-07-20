@@ -17,7 +17,7 @@ main (int argc, char* argv[])
 {
     Ion_parms parms;
 
-    Ion_plan::Pointer scene = parms.get_scene ();
+    Ion_plan::Pointer plan = parms.get_plan ();
     if (!parms.parse_args (argc, argv)) {
         exit (0);
     }
@@ -25,9 +25,9 @@ main (int argc, char* argv[])
     printf ("Working...\n");
     fflush(stdout);
 
-    scene->set_debug (true);
-    scene->compute_dose ();
-    Plm_image::Pointer dose = scene->get_dose ();
+    plan->set_debug (true);
+    plan->compute_dose ();
+    Plm_image::Pointer dose = plan->get_dose ();
     dose->save_image (parms.output_dose_fn.c_str());
     printf ("done.  \n\n");
 
