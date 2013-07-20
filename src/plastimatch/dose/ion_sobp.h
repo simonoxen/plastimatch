@@ -32,7 +32,7 @@ public:
     double get_maximum_depth ();
 
     /* Save the depth dose to a file */
-    void dump (const char* fn);
+    void dump (const char* dir);
 
     /* Optimize, then generate sobp depth curve from prescription 
        range and modulation */

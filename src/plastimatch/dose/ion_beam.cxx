@@ -20,6 +20,7 @@ public:
 
 public:
     Ion_sobp::Pointer sobp;
+    std::string debug_dir;
 
 #if defined (commentout)
     double E0;                      /* initial ion energy (MeV) */
@@ -43,6 +44,8 @@ public:
         this->flavor = 'a';
 
         this->sobp = Ion_sobp::New ();
+
+        this->debug_dir = "";
 
 #if defined (commentout)
         this->E0 = 0.0;
@@ -178,6 +181,12 @@ Ion_beam::set_sobp_prescription_min_max (float d_min, float d_max)
     d_ptr->sobp->set_prescription_min_max (d_min, d_max);
 }
 
+void
+Ion_beam::set_debug (const std::string& dir)
+{
+    d_ptr->debug_dir = dir;
+}
+
 bool
 Ion_beam::load_xio (const char* fn)
 {
@@ -296,7 +305,7 @@ Ion_beam::generate ()
 }
 
 void
-Ion_beam::dump (const char* fn)
+Ion_beam::dump (const char* dir)
 {
-    d_ptr->sobp->dump (fn);
+    d_ptr->sobp->dump (dir);
 }

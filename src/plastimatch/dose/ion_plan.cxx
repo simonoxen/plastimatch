@@ -230,8 +230,8 @@ Ion_plan::compute_dose ()
     float* dose_img = (float*) dose_vol->img;
 
     if (this->get_debug()) {
-        rpl_vol->save ("depth_vol.mha");
-        beam->dump ("bragg_curve.txt");
+        rpl_vol->save ("beam_debug/depth_vol.mha");
+        beam->dump ("beam_debug");
     }
 
     /* scan through patient CT Volume */

@@ -199,22 +199,24 @@ Ion_sobp::generate ()
 }
 
 void
-Ion_sobp::dump (const char* fn)
+Ion_sobp::dump (const char* dir)
 {
+    std::string dirname = dir;
+
     /* Dump SOBP */
-    FILE* fp = fopen (fn, "w");
+    std::string sobp_fn = string_format ("%s/bragg_curve.txt", dir);
+    FILE* fp = fopen (sobp_fn.c_str(), "w");
     for (int i=0; i < d_ptr->num_samples; i++) {
        fprintf (fp, "%3.2f %3.2f\n", d_ptr->d_lut[i], d_ptr->e_lut[i]);
     }
     fclose (fp);
 
     /* Dump pristine peaks */
-    std::string dirname = file_util_dirname_string (fn);
     std::vector<const Ion_pristine_peak*>::const_iterator it 
         = d_ptr->peaks.begin();
     while (it != d_ptr->peaks.end ()) {
-        std::string fn = string_format ("%s/pristine_%4.2f.txt",
-            dirname.c_str(), (float) (*it)->E0);
+        std::string fn = string_format ("%s/pristine_%4.2f.txt", dir, 
+            (float) (*it)->E0);
         (*it)->dump (fn.c_str());
         it++;
     }

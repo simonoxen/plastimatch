@@ -5,6 +5,7 @@
 #define _ion_beam_h_
 
 #include "plmdose_config.h"
+#include <string>
 
 class Ion_beam_private;
 class Ion_sobp;
@@ -68,6 +69,10 @@ public:
     /*! \brief Set SOBP range and modulation for prescription 
       as minimum and maximum depth (in mm) */
     void set_sobp_prescription_min_max (float d_min, float d_max);
+
+    /*! \brief Request debugging information to be written to directory */
+    void set_debug (const std::string& dir);
+
     ///@}
 
     /*! \name Execution */
@@ -78,7 +83,7 @@ public:
 
     /*! \name Outputs */
     ///@{
-    void dump (const char* fn);     /* debug: print bragg curve to file */
+    void dump (const char* dir);     /* Print debugging information */
     float lookup_sobp_dose (float depth);
     ///@}
 

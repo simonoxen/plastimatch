@@ -229,6 +229,9 @@ Ion_parms::set_key_val (
                 goto error_exit;
             }
         }
+        else if (!strcmp (key, "debug")) {
+            d_ptr->scene->beam->set_debug (val);
+        }
         else {
             goto error_exit;
         }
