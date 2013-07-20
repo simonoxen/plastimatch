@@ -134,13 +134,16 @@ Ion_sobp::lookup_energy (
     }
 
     /* Find index into profile arrays */
-    for (i = 0; i < d_ptr->num_samples; i++) {
+    for (i = 0; i < d_ptr->num_samples-1; i++) {
         if (d_ptr->d_lut[i] > depth) {
             i--;
             break;
-        } else if (d_ptr->d_lut[i] == depth) {
-            return d_ptr->e_lut[i];
         }
+    }
+
+    /* Clip input depth to maximum in lookup table */
+    if (i == d_ptr->num_samples-1) {
+        depth = d_ptr->d_lut[i];
     }
 
     /* Use index to lookup and interpolate energy */

@@ -213,20 +213,8 @@ dose_direct (
     const Ion_plan* scene
 )
 {
-#if defined (commentout)
-    double rgdepth = rpl_volume_get_rgdepth (
-        scene->rpl_vol,     /* volume of radiological path lengths */
-        ct_xyz              /* find depth @ this voxel */
-    );
-#endif
     /* Find radiological depth at voxel ct_xyz */
     double rgdepth = scene->rpl_vol->get_rgdepth (ct_xyz);
-
-#if defined (commentout)
-    if (voxel_debug) {
-        printf ("Rgdepth = %f\n", rgdepth);
-    }
-#endif
 
     /* The voxel was not hit directly by the beam */
     if (rgdepth <= 0.0f) {
@@ -234,11 +222,9 @@ dose_direct (
     }
 
 #if defined (commentout)
-    if (ct_xyz[1] > 0.0 && ct_xyz[1] < 2.0 
-        && ct_xyz[2] > 0.0 && ct_xyz[2] < 2.0) {
-        printf ("(%f %f %f) %f\n", ct_xyz[0], ct_xyz[1], ct_xyz[2], 
-            rgdepth);
-    }
+    printf ("RGD [%g %g %g] = %f, %f\n", 
+        ct_xyz[0], ct_xyz[1], ct_xyz[2], rgdepth,
+        scene->beam->lookup_sobp_dose (rgdepth));
 #endif
 
     /* return the dose at this radiographic depth */
