@@ -8,6 +8,8 @@
 #include <math.h>
 
 #include "direction_matrices.h"
+#include "interpolate.h"
+#include "interpolate_macros.h"
 #include "logfile.h"
 #include "plm_int.h"
 #include "plm_math.h"
@@ -228,18 +230,6 @@ Volume::set_direction_cosines (
 
     compute_direction_matrices (step, proj, 
         this->direction_cosines, this->spacing);
-
-#if defined (commentout)
-    const float* inv_dc = this->direction_cosines.get_inverse ();
-    for (int i = 0; i < 3; i++) {
-	for (int j = 0; j < 3; j++) {
-	    this->step[3*i+j] = this->direction_cosines[3*i+j] 
-		* this->spacing[i];
-	    this->proj[3*i+j] = inv_dc[3*i+j] 
-		/ this->spacing[j];
-	}
-    }
-#endif
 }
 
 const float* 
@@ -642,6 +632,36 @@ volume_scale (Volume* vol, float scale)
     }
 }
 
+template<class T>
+T
+Volume::get_ijk_value (const float ijk[3])
+{
+    plm_long ijk_f[3];
+    plm_long ijk_r[3];
+    float li_1[3];
+    float li_2[3];
+
+    // Compute linear interpolation fractions
+    li_clamp_3d (ijk, ijk_f, ijk_r, li_1, li_2, this);
+
+    // Find linear indices of corner voxel
+    plm_long idx_floor = volume_index (this->dim, ijk_f);
+
+    // Calc. moving voxel intensity via linear interpolation
+    float val;
+    float* img = (float*) this->img;
+    LI_VALUE (
+        val, 
+        li_1[0], li_2[0],
+        li_1[1], li_2[1],
+        li_1[2], li_2[2],
+        idx_floor,
+        img, this
+    );
+
+    return (T) val;
+}
+
 void
 Volume::debug ()
 {
@@ -882,3 +902,6 @@ volume_difference (Volume* vol, Volume* warped)
     }
     return temp;
 }
+
+/* Explicit instantiations */
+template PLMBASE_API float Volume::get_ijk_value<float> (const float*);

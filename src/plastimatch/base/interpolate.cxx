@@ -42,12 +42,12 @@ li_clamp (
 
 void
 li_clamp_3d (
-    float mijk[3],         /* Input:  Unrounded pixel coordinates in vox */
-    plm_long mijk_f[3],      /* Output: "floor" pixel in moving img in vox*/
-    plm_long mijk_r[3],      /* Ouptut: "round" pixel in moving img in vox*/
-    float li_frac_1[3],    /* Output: Fraction for upper index voxel */
-    float li_frac_2[3],    /* Output: Fraction for lower index voxel */
-    Volume *moving         /* Input:  Volume (for dims) */
+    const float mijk[3],  /* Input:  Unrounded pixel coordinates in vox */
+    plm_long mijk_f[3],   /* Output: "floor" pixel in moving img in vox*/
+    plm_long mijk_r[3],   /* Ouptut: "round" pixel in moving img in vox*/
+    float li_frac_1[3],   /* Output: Fraction for upper index voxel */
+    float li_frac_2[3],   /* Output: Fraction for lower index voxel */
+    Volume *moving        /* Input:  Volume (for dims) */
 )
 {
     li_clamp (mijk[0], moving->dim[0]-1, &mijk_f[0], 

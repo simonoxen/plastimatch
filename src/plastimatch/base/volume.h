@@ -131,6 +131,12 @@ public:
     */
     const float* get_proj (void) const;
 
+    /*! \brief Get the value at a voxel coordinate, clamped and 
+      tri-linearly interpolated
+    */
+    template<class T>
+        T get_ijk_value (const float xyz[3]);
+
     void debug ();
     void direction_cosines_debug ();
 protected:

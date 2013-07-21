@@ -39,6 +39,9 @@ public:
 
     Volume* get_volume ();
     Proj_volume *get_proj_volume ();
+
+    double get_rgdepth (int ap_ij[2], double dist);
+    double get_rgdepth (double ap_ij[2], double dist);
     double get_rgdepth (const double *xyz);
 
     double get_max_wed ();
