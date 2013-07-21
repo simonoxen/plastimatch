@@ -209,7 +209,7 @@ xio_dose_load_cube (
     size_t rc2;
     
 
-    v = pli->get_volume ();
+    v = pli->get_vol ();
     cube_img_read = (uint32_t*) v->img;
 
     fp = fopen (filename, "rb");
@@ -338,7 +338,7 @@ xio_dose_save (
     size_t result;
 
     Volume *v;
-    v = (Volume*) pli->get_volume_float_raw ();
+    v = (Volume*) pli->get_vol_float ();
 
     /* Dose cube definition */
     double rx; double ry; double rz;
@@ -474,7 +474,7 @@ xio_dose_apply_transform (Plm_image *pli, Xio_ct_transform *transform)
 {
     /* Transform coordinates of XiO dose cube to DICOM coordinates */
 
-    Volume *v = pli->get_volume ();
+    Volume *v = pli->get_vol ();
 
     /* Set offsets */
     v->offset[0] = (v->offset[0] * transform->direction_cosines[0]) + transform->x_offset;

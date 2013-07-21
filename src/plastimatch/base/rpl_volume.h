@@ -34,10 +34,12 @@ public:
         const double step_length       // spacing between planes
     );
 
+    void set_ct_volume (Plm_image::Pointer& ct_volume);
+
     Aperture::Pointer& get_aperture ();
     void set_aperture (Aperture::Pointer& ap);
 
-    Volume* get_volume ();
+    Volume* get_vol ();
     Proj_volume *get_proj_volume ();
 
     double get_rgdepth (int ap_ij[2], double dist);
@@ -47,17 +49,28 @@ public:
     double get_max_wed ();
     double get_min_wed ();
 
+    void compute_rpl ();
     void compute (Volume *ct_vol);
     void compute_wed_volume (Volume *wed_vol, Volume *in_vol, float background);
     void compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float background);
-    void compute_segdepth_volume (Volume *seg_vol, 
-        float background);
+    void compute_segdepth_volume (Volume *seg_vol, float background);
+    void compute_aperture (Volume *tgt_vol, float background);
 
     void save (const std::string& filename);
     void save (const char* filename);
 
 protected:
-    void ray_trace (
+    void compute_ray_data ();
+
+    void aprc_ray_trace (
+        Volume *tgt_vol,             /* I: CT volume */
+        Ray_data *ray_data,          /* I: Pre-computed data for this ray */
+        Volume_limit *vol_limit,     /* I: CT bounding region */
+        const double *src,           /* I: @ source */
+        double rc_thk,               /* I: range compensator thickness */
+        int* ires                    /* I: ray cast resolution */
+    );
+    void rpl_ray_trace (
         Volume *ct_vol,              /* I: CT volume */
         Ray_data *ray_data,          /* I: Pre-computed data for this ray */
         Volume_limit *vol_limit,     /* I: CT bounding region */

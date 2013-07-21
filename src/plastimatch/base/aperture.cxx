@@ -187,7 +187,7 @@ Aperture::get_aperture_volume ()
     if (!d_ptr->aperture_image) {
         return 0;
     }
-    return d_ptr->aperture_image->get_volume_uchar();
+    return d_ptr->aperture_image->get_vol_uchar();
 }
 
 void 
@@ -214,7 +214,7 @@ Aperture::get_range_compensator_volume ()
     if (!d_ptr->range_compensator_image) {
         return 0;
     }
-    return d_ptr->range_compensator_image->get_volume_float_raw();
+    return d_ptr->range_compensator_image->get_vol_float();
 }
 
 void 

@@ -97,7 +97,7 @@ mc_dose_load_cube (
     Volume *v;
     float *cube_img_read;
 
-    v = pli->get_volume ();
+    v = pli->get_vol ();
     cube_img_read = (float*) v->img;
 
     if (!input) {
@@ -160,7 +160,7 @@ mc_dose_apply_transform (Plm_image *pli, Xio_ct_transform *transform)
 {
     /* Transform coordinates of MC dose cube to DICOM coordinates */
 
-    Volume *v = pli->get_volume ();
+    Volume *v = pli->get_vol ();
 
     /* Set offsets */
     v->offset[0] = (v->offset[0] * transform->direction_cosines[0]) + transform->x_offset;

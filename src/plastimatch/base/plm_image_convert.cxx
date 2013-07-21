@@ -212,7 +212,7 @@ void
 Plm_image::convert_gpuit_uint32_to_itk_uchar_vec ()
 {
     int i, d;
-    Volume* vol = this->get_volume ();
+    Volume* vol = this->get_vol ();
     uint32_t* img = (uint32_t*) vol->img;
 
     UCharVecImageType::Pointer im_out = UCharVecImageType::New();
@@ -268,7 +268,7 @@ void
 Plm_image::convert_gpuit_uchar_vec_to_itk_uchar_vec ()
 {
     int i, d;
-    Volume* vol = this->get_volume ();
+    Volume* vol = this->get_vol ();
     unsigned char* img = (unsigned char*) vol->img;
 
     UCharVecImageType::Pointer im_out = UCharVecImageType::New();

@@ -161,7 +161,7 @@ Dcmtk_loader::get_volume ()
     if (!d_ptr->img) {
         return 0;
     }
-    return d_ptr->img->get_volume();
+    return d_ptr->img->get_vol();
 }
 
 Plm_image::Pointer

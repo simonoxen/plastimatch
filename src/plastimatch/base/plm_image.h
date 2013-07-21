@@ -130,16 +130,16 @@ public:
         return m_itk_uchar_vec;
     }
 
-    Volume* get_volume ();
-    const Volume* get_volume () const;
-    Volume* get_volume_uchar ();
-    Volume* get_volume_short ();
     Volume::Pointer get_volume_float ();
-    Volume* get_volume_uchar_vec ();
+
+    Volume* get_vol ();
+    const Volume* get_vol () const;
+    Volume* get_vol_uchar ();
+    Volume* get_vol_short ();
+    Volume* get_vol_float ();
+    Volume* get_vol_uchar_vec ();
 
     /* To be replaced ... */
-    Volume* get_volume_float_raw ();
-
     Volume* steal_volume ();
 
     void convert (Plm_image_type new_type);

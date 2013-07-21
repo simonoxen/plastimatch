@@ -419,7 +419,7 @@ gdcm1_dose_save (
 
     /* Scale the image */
     tmp->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
-    Volume *vol = tmp->get_volume ();
+    Volume *vol = tmp->get_vol ();
     volume_scale (vol, 1 / dose_scale);
 
     /* Convert to integer */
@@ -429,7 +429,7 @@ gdcm1_dose_save (
 	tmp->convert (PLM_IMG_TYPE_GPUIT_INT32);
     }
 
-    vol = tmp->get_volume ();
+    vol = tmp->get_vol ();
 
     /* DoseGridScaling */
     s = gdcm::Util::Format ("%g", dose_scale);

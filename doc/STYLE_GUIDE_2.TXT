@@ -136,8 +136,9 @@ them as follows:
      object.get_image ();        // Returns Plm_image::Pointer
      object.get_image_itk ()     // Returns most appropriate itk type
                                  // (usually FloatImageType::Pointer)
-     object.get_volume ();       // Returns most Volume::Pointer of most 
+     object.get_volume ();       // Returns Volume::Pointer of most 
                                  // appropriate type (usually float) 
+     object.get_vol ();          // Returns Volume*
 
 When appropriate, the functions may be suffixed to specify the 
 return type:

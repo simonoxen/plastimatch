@@ -146,7 +146,7 @@ Plm_image_header::set_from_plm_image (const Plm_image *pli)
     case PLM_IMG_TYPE_GPUIT_FLOAT:
     case PLM_IMG_TYPE_GPUIT_FLOAT_FIELD:
     {
-	const Volume* vol = pli->get_volume ();
+	const Volume* vol = pli->get_vol ();
 	set_from_gpuit (vol->dim, vol->offset, vol->spacing,
 	    vol->direction_cosines);
 	break;

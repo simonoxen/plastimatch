@@ -289,7 +289,7 @@ set_automatic_parameters (Registration_data* regd, Registration_parms* regp)
 static void
 check_output_resolution (Xform* xf_out, Registration_data* regd)
 {
-    Volume *fixed = regd->fixed_image->get_volume ();
+    Volume *fixed = regd->fixed_image->get_vol ();
     int ss[3];
     Plm_image_header pih;
     float grid_spacing[3];

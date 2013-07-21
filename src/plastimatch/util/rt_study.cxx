@@ -547,7 +547,7 @@ Rt_study::get_image_volume_short ()
     if (!d_ptr->m_img) {
         return 0;
     }
-    return d_ptr->m_img->get_volume_short ();
+    return d_ptr->m_img->get_vol_short ();
 }
 
 Volume*
@@ -556,7 +556,7 @@ Rt_study::get_image_volume_float (void)
     if (!d_ptr->m_img) {
         return 0;
     }
-    return d_ptr->m_img->get_volume_float_raw ();
+    return d_ptr->m_img->get_vol_float ();
 }
 
 bool
@@ -580,7 +580,7 @@ Rt_study::get_dose_volume_float ()
     if (!d_ptr->m_dose) {
         return 0;
     }
-    return d_ptr->m_dose->get_volume_float_raw ();
+    return d_ptr->m_dose->get_vol_float ();
 }
 
 /* Resample image and ss_img */

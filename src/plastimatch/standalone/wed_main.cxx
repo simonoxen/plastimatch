@@ -69,7 +69,7 @@ create_wed_volume (Wed_Parms* parms, Ion_plan *scene)
      * resolution chosen for the rpl */
     plm_long wed_dims[3];
 
-    Volume *vol = rpl_vol->get_volume ();
+    Volume *vol = rpl_vol->get_vol ();
     wed_dims[0] = vol->dim[0];
     wed_dims[1] = vol->dim[1];
     wed_dims[2] = vol->dim[2];
@@ -131,7 +131,7 @@ wed_ct_compute (
         Volume* wed_vol;
       
         wed_vol = create_wed_volume (parms, scene);
-        rpl_vol->compute_wed_volume (wed_vol, ct_vol->get_volume_float_raw(), 
+        rpl_vol->compute_wed_volume (wed_vol, ct_vol->get_vol_float(), 
             background);
         plm_image_save_vol (out_fn, wed_vol);
     }
@@ -140,7 +140,7 @@ wed_ct_compute (
         Volume* dew_vol;
       
         dew_vol = create_dew_volume (parms, scene);
-        rpl_vol->compute_dew_volume (ct_vol->get_volume_float_raw(), 
+        rpl_vol->compute_dew_volume (ct_vol->get_vol_float(), 
             dew_vol, background);
         plm_image_save_vol (out_fn, dew_vol);
     }
@@ -148,7 +148,7 @@ wed_ct_compute (
     if (parms->mode==2) {
         /* Compute the aperture and range compensator */
         rpl_vol->compute_segdepth_volume (
-            ct_vol->get_volume_float_raw(), 
+            ct_vol->get_vol_float(), 
             background);
 
         /* Save files as output */
@@ -187,14 +187,14 @@ wed_ct_initialize(Wed_Parms *parms)
     if (parms->skin_fn != "") {
         fprintf (stderr, "\n** Skin file defined.  Modifying input ct...\n");
  
-        Volume* ct_volume = ct_vol->get_volume_float_raw ();
+        Volume* ct_volume = ct_vol->get_vol_float ();
         Plm_image* skin_vol = plm_image_load (parms->skin_fn, 
             PLM_IMG_TYPE_ITK_FLOAT);
         if (!skin_vol) {
             fprintf (stderr, "\n** ERROR: Unable to load skin input.\n");
             return -1;
         }
-        Volume* skin_volume = skin_vol->get_volume_float_raw();
+        Volume* skin_volume = skin_vol->get_vol_float();
     
         if (skin_ct(ct_volume, skin_volume, background[0]))  {
             //apply skin input to ct
@@ -240,7 +240,7 @@ wed_ct_initialize(Wed_Parms *parms)
     //at some scene dimensions set by input wed image.
 
     else if (parms->mode==1)  {
-      Volume *wed_vol = dose_vol->get_volume_float_raw ();
+      Volume *wed_vol = dose_vol->get_vol_float ();
       //Grab aperture dimensions from input wed.
       //We also pad each dimension by 1, for the later trilinear 
       //interpolations.
@@ -256,8 +256,12 @@ wed_ct_initialize(Wed_Parms *parms)
     //Note - Center MUST be reset here if set in the config file, as set_dim()
     //will reset the center.
     if (parms->have_ic) {
+#if defined (commentout)
 	ap_center[0] = parms->ic[0]+1.*parms->ap_spacing[0];
 	ap_center[1] = parms->ic[1]+1.*parms->ap_spacing[1];
+#endif
+	ap_center[0] = parms->ic[0];
+	ap_center[1] = parms->ic[1];
         scene.get_aperture()->set_center (ap_center);
     }
     //And again, guess if not specified.

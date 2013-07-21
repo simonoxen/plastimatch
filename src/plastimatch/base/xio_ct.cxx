@@ -134,7 +134,7 @@ xio_ct_load_image (
     int rc1;
     size_t rc2;
 
-    v = pli->get_volume ();
+    v = pli->get_vol ();
     img = (short*) v->img;
     slice_img = &img[slice_no * v->dim[0] * v->dim[1]];
 
@@ -224,7 +224,7 @@ xio_ct_apply_transform (Plm_image *pli, Xio_ct_transform *transform)
 {
     /* Transform coordinates of an XiO CT scan to DICOM coordinates */
 
-    Volume *v = pli->get_volume ();
+    Volume *v = pli->get_vol ();
 
     /* Set offsets */
     v->offset[0] = (v->offset[0] * transform->direction_cosines[0]) + transform->x_offset;

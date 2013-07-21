@@ -56,6 +56,8 @@ struct callback_data {
 class Rpl_volume_private {
 public:
     Proj_volume *proj_vol;
+    Plm_image::Pointer ct;
+    Volume_limit ct_limit;
     Ray_data *ray_data;
     double front_clipping_dist;
     double back_clipping_dist;
@@ -67,6 +69,7 @@ public:
 public:
     Rpl_volume_private () {
         proj_vol = new Proj_volume;
+        ct = Plm_image::New ();
         ray_data = 0;
         front_clipping_dist = DBL_MAX;
         back_clipping_dist = -DBL_MAX;
@@ -122,6 +125,15 @@ Rpl_volume::set_geometry (
         clipping_dist, step_length);
 }
 
+void 
+Rpl_volume::set_ct_volume (Plm_image::Pointer& ct_volume)
+{
+    d_ptr->ct = ct_volume;
+
+    /* Compute volume boundary box */
+    volume_limit_set (&d_ptr->ct_limit, ct_volume->get_vol_float());
+}
+
 Aperture::Pointer& 
 Rpl_volume::get_aperture ()
 {
@@ -145,7 +157,7 @@ Rpl_volume::get_rgdepth (
     plm_long ijk[3];
     double rg1, rg2, rgdepth, frac;
     Proj_volume *proj_vol = this->get_proj_volume ();
-    Volume *vol = this->get_volume();
+    Volume *vol = this->get_vol();
     float* d_img = (float*) vol->img;
 
     if (dist < 0) {
@@ -190,7 +202,7 @@ Rpl_volume::get_rgdepth (
 )
 {
     Proj_volume *proj_vol = this->get_proj_volume ();
-    Volume *vol = this->get_volume();
+    Volume *vol = this->get_vol();
 
     if (dist < 0) {
         return 0.0;
@@ -283,10 +295,9 @@ Rpl_volume::get_min_wed ()
 }
 
 void 
-Rpl_volume::compute (Volume *ct_vol)
+Rpl_volume::compute_ray_data ()
 {
     int ires[2];
-    Volume_limit ct_limit;
 
     /* A couple of abbreviations */
     Proj_volume *proj_vol = d_ptr->proj_vol;
@@ -294,19 +305,7 @@ Rpl_volume::compute (Volume *ct_vol)
     const double *nrm = proj_vol->get_nrm();
     ires[0] = d_ptr->proj_vol->get_image_dim (0);
     ires[1] = d_ptr->proj_vol->get_image_dim (1);
-    unsigned char *ap_img = 0;
-    float *rc_img = 0;
-    if (d_ptr->aperture->have_aperture_image()) {
-        Volume *ap_vol = d_ptr->aperture->get_aperture_volume();
-        ap_img = (unsigned char*) ap_vol->img;
-    }
-    if (d_ptr->aperture->have_range_compensator_image()) {
-        Volume *rc_vol = d_ptr->aperture->get_range_compensator_volume();
-        rc_img = (float*) rc_vol->img;
-    }
-
-    /* Compute volume boundary box */
-    volume_limit_set (&ct_limit, ct_vol);
+    Volume *ct_vol = d_ptr->ct->get_vol();
 
     lprintf ("Proj vol:\n");
     proj_vol->debug ();
@@ -362,7 +361,8 @@ Rpl_volume::compute (Volume *ct_vol)
 
 	    /* Test if ray intersects volume and create intersection points */
             ray_data->intersects_volume = false;
-	    if (!volume_limit_clip_ray (&ct_limit, ip1, ip2, src, ray)) {
+	    if (!volume_limit_clip_ray (&d_ptr->ct_limit, ip1, ip2, src, ray))
+            {
 		continue;
 	    }
 
@@ -418,6 +418,33 @@ Rpl_volume::compute (Volume *ct_vol)
 #endif
         }
     }
+}
+
+void 
+Rpl_volume::compute_rpl ()
+{
+    int ires[2];
+
+    /* A couple of abbreviations */
+    Proj_volume *proj_vol = d_ptr->proj_vol;
+    const double *src = proj_vol->get_src();
+    const double *nrm = proj_vol->get_nrm();
+    ires[0] = d_ptr->proj_vol->get_image_dim (0);
+    ires[1] = d_ptr->proj_vol->get_image_dim (1);
+    unsigned char *ap_img = 0;
+    float *rc_img = 0;
+    if (d_ptr->aperture->have_aperture_image()) {
+        Volume *ap_vol = d_ptr->aperture->get_aperture_volume();
+        ap_img = (unsigned char*) ap_vol->img;
+    }
+    if (d_ptr->aperture->have_range_compensator_image()) {
+        Volume *rc_vol = d_ptr->aperture->get_range_compensator_volume();
+        rc_img = (float*) rc_vol->img;
+    }
+    Volume *ct_vol = d_ptr->ct->get_vol();
+
+    /* Preprocess data by clipping against volume */
+    this->compute_ray_data ();
 
     if (d_ptr->front_clipping_dist == DBL_MAX) {
         print_and_exit ("Sorry, total failure intersecting volume\n");
@@ -473,13 +500,13 @@ Rpl_volume::compute (Volume *ct_vol)
                 //printf ("Setting rc_thk = %g\n", rc_thk);
             }
 
-            this->ray_trace (
-                ct_vol,       /* I: CT volume */
-                ray_data,     /* I: Pre-computed data for this ray */
-                &ct_limit,    /* I: CT bounding region */
-                src,          /* I: @ source */
-                rc_thk,       /* I: range compensator thickness */
-                ires          /* I: ray cast resolution */
+            this->rpl_ray_trace (
+                ct_vol,            /* I: CT volume */
+                ray_data,          /* I: Pre-computed data for this ray */
+                &d_ptr->ct_limit,  /* I: CT bounding region */
+                src,               /* I: @ source */
+                rc_thk,            /* I: range compensator thickness */
+                ires               /* I: ray cast resolution */
             );
 
         }
@@ -492,7 +519,7 @@ Rpl_volume::compute_wed_volume (
 {
   /* A couple of abbreviations */
     Proj_volume *proj_vol = d_ptr->proj_vol;
-    Volume *rvol = proj_vol->get_volume();
+    Volume *rvol = proj_vol->get_vol();
     float *rvol_img = (float*) rvol->img;
     float *in_vol_img = (float*) in_vol->img;
     float *wed_vol_img = (float*) wed_vol->img;
@@ -873,6 +900,7 @@ Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float backgrou
     }
 }
 
+
 void 
 Rpl_volume::compute_segdepth_volume (
     Volume *seg_vol, 
@@ -888,7 +916,7 @@ Rpl_volume::compute_segdepth_volume (
     Volume *segdepth_vol = d_ptr->aperture->get_range_compensator_volume();
 
     Proj_volume *proj_vol = d_ptr->proj_vol;
-    Volume *rvol = proj_vol->get_volume();
+    Volume *rvol = proj_vol->get_vol();
     float *seg_img = (float*) seg_vol->img;
 
     unsigned char *aperture_img = (unsigned char*) aperture_vol->img;
@@ -1100,10 +1128,30 @@ Rpl_volume::compute_segdepth_volume (
 
 }
 
-Volume* 
-Rpl_volume::get_volume ()
+void 
+Rpl_volume::compute_aperture (
+    Volume *tgt_vol, 
+    float background
+)
 {
-    return d_ptr->proj_vol->get_volume ();
+    /* This assumes that dim & spacing are correctly set in aperture */
+    d_ptr->aperture->allocate_aperture_images ();
+
+    Volume *ap_vol = d_ptr->aperture->get_aperture_volume();
+    Volume *rc_vol = d_ptr->aperture->get_range_compensator_volume();
+    unsigned char *ap_img = (unsigned char*) ap_vol->img;
+    float *rc_img = (float*) rc_vol->img;
+
+    Proj_volume *proj_vol = d_ptr->proj_vol;
+    Volume *rvol = proj_vol->get_vol();
+
+    float *tgt_img = (float*) tgt_vol->img;
+}
+
+Volume* 
+Rpl_volume::get_vol ()
+{
+    return d_ptr->proj_vol->get_vol ();
 }
 
 Proj_volume* 
@@ -1141,6 +1189,17 @@ lookup_attenuation (float density)
     return lookup_attenuation_weq (density);
 }
 
+void Rpl_volume::aprc_ray_trace (
+    Volume *tgt_vol,             /* I: CT volume */
+    Ray_data *ray_data,          /* I: Pre-computed data for this ray */
+    Volume_limit *vol_limit,     /* I: CT bounding region */
+    const double *src,           /* I: @ source */
+    double rc_thk,               /* I: range compensator thickness */
+    int* ires                    /* I: ray cast resolution */
+)
+{
+}
+
 static
 void
 rpl_ray_trace_callback (
@@ -1153,7 +1212,7 @@ rpl_ray_trace_callback (
     Callback_data *cd = (Callback_data *) callback_data;
     Rpl_volume *rpl_vol = cd->rpl_vol;
     Ray_data *ray_data = cd->ray_data;
-    float *depth_img = (float*) rpl_vol->get_volume()->img;
+    float *depth_img = (float*) rpl_vol->get_vol()->img;
     int ap_idx = ray_data->ap_idx;
     int ap_area = cd->ires[0] * cd->ires[1];
     size_t step_num = vox_index + cd->step_offset;
@@ -1165,9 +1224,9 @@ rpl_ray_trace_callback (
 	printf ("%d %4d: %20g %20g\n", ap_idx, (int) step_num, 
 	    vox_value, cd->accum);
         printf ("dim = %d %d %d\n", 
-            (int) rpl_vol->get_volume()->dim[0],
-            (int) rpl_vol->get_volume()->dim[1],
-            (int) rpl_vol->get_volume()->dim[2]);
+            (int) rpl_vol->get_vol()->dim[0],
+            (int) rpl_vol->get_vol()->dim[1],
+            (int) rpl_vol->get_vol()->dim[2]);
         printf ("ap_area = %d, ap_idx = %d, vox_len = %g\n", 
             ap_area, (int) ap_idx, vox_len);
     }
@@ -1178,16 +1237,15 @@ rpl_ray_trace_callback (
     /* GCS FIX: I have a rounding error somewhere -- maybe step_num
        starts at 1?  Or maybe proj_vol is not big enough?  
        This is a workaround until I can fix. */
-    if ((plm_long) step_num >= rpl_vol->get_volume()->dim[2]) {
+    if ((plm_long) step_num >= rpl_vol->get_vol()->dim[2]) {
         return;
     }
 
     depth_img[ap_area*step_num + ap_idx] = cd->accum;
 }
 
-
 void
-Rpl_volume::ray_trace (
+Rpl_volume::rpl_ray_trace (
     Volume *ct_vol,              /* I: CT volume */
     Ray_data *ray_data,          /* I: Pre-computed data for this ray */
     Volume_limit *vol_limit,     /* I: CT bounding region */
@@ -1245,9 +1303,9 @@ Rpl_volume::ray_trace (
 
     /* Ray tracer will stop short of rpl volume for central rays. 
        We should continue padding the remaining voxels */
-    float *depth_img = (float*) this->get_volume()->img;
+    float *depth_img = (float*) this->get_vol()->img;
     for (int s = cd.last_step_completed+1; 
-         s < this->get_volume()->dim[2];
+         s < this->get_vol()->dim[2];
          s++)
     {
         int ap_nvox = cd.ires[0] * cd.ires[1];

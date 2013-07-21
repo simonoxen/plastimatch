@@ -45,7 +45,7 @@ public:
     const double* get_src ();
     double get_step_length ();
     const double* get_ul_room ();
-    Volume *get_volume ();
+    Volume *get_vol ();
 
     void allocate ();
     void save (const char* filename);

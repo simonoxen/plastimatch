@@ -371,8 +371,8 @@ main (int argc, char* argv[])
         = Plm_image::New (new Plm_image (parms.fixed_fn));
     Plm_image::Pointer pli_moving 
         = Plm_image::New (new Plm_image (parms.moving_fn));
-    fixed = pli_fixed->get_volume_float_raw ();
-    moving = pli_moving->get_volume_float_raw ();
+    fixed = pli_fixed->get_vol_float ();
+    moving = pli_moving->get_vol_float ();
 
     /* Compute spatial gradient */
     moving_grad = volume_make_gradient (moving);

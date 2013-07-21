@@ -64,7 +64,8 @@ Ion_plan::init ()
     this->rpl_vol->set_aperture (d_ptr->ap);
 
     /* Scan through aperture to fill in rpl_volume */
-    this->rpl_vol->compute (d_ptr->patient->get_volume_float_raw());
+    this->rpl_vol->set_ct_volume (d_ptr->patient);
+    this->rpl_vol->compute_rpl ();
 
     return true;
 }
@@ -99,7 +100,7 @@ Ion_plan::set_patient (Volume* ct_vol)
 Volume *
 Ion_plan::get_patient_vol ()
 {
-    return d_ptr->patient->get_volume_float_raw ();
+    return d_ptr->patient->get_vol_float ();
 }
 
 Plm_image *
@@ -133,7 +134,7 @@ void
 Ion_plan::compute_beam_modifiers ()
 {
     this->rpl_vol->compute_segdepth_volume (
-        d_ptr->target->get_volume(), 0);
+        d_ptr->target->get_vol(), 0);
 }
 
 Aperture::Pointer&

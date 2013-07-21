@@ -251,7 +251,7 @@ Rasterizer::process_next (
                 uint32_t* ss_img = 0;
                 uint32_t* uint32_slice;
                 uint32_t bit_mask = 1 << this->curr_bit;
-                ss_img = (uint32_t*) this->m_ss_img->get_volume()->img;
+                ss_img = (uint32_t*) this->m_ss_img->get_vol()->img;
                 uint32_slice = &ss_img[slice_no * slice_voxels];
                 for (size_t k = 0; k < slice_voxels; k++) {
                     if (this->acc_img[k]) {

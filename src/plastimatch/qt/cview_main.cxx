@@ -83,7 +83,7 @@ CrystalWindow::openVol (const char* fn)
         return false;
     }
 
-    input_vol = pli->get_volume_float_raw ();
+    input_vol = pli->get_vol_float ();
 
     if (!input_vol) {
         return false;

@@ -56,6 +56,8 @@ Proj_volume::debug ()
     const double* nrm = this->get_nrm ();
     printf ("src = %f %f %f\n", d_ptr->src[0], d_ptr->src[1], d_ptr->src[2]);
     printf ("nrm = %f %f %f\n", nrm[0], nrm[1], nrm[2]);
+    printf ("ul_room = %f %f %f\n", d_ptr->ul_room[0], 
+        d_ptr->ul_room[1], d_ptr->ul_room[2]);
 }
 
 void
@@ -195,7 +197,7 @@ Proj_volume::get_ul_room ()
 }
 
 Volume*
-Proj_volume::get_volume ()
+Proj_volume::get_vol ()
 {
     return d_ptr->vol;
 }

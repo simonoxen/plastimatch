@@ -35,7 +35,7 @@ public:
     float vup[3];
     int ires[2];
     float ap_offset;
-    float ap_have_origin;
+    bool ap_have_origin;
     float ap_origin[2];
     float ap_spacing[2];
 
@@ -263,6 +263,7 @@ Ion_parms::set_key_val (
                     &d_ptr->ap_origin[0], &d_ptr->ap_origin[1]) != 2) {
                 goto error_exit;
             }
+            d_ptr->ap_have_origin = true;
         }
         else if (!strcmp (key, "resolution")) {
             if (sscanf (val, "%i %i", &d_ptr->ires[0], &d_ptr->ires[1]) != 2) {
