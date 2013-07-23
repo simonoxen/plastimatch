@@ -866,6 +866,7 @@ Mabs::segmentation_vote (const std::string& atlas_id)
                 mapped_name.c_str());
             Plm_image *warped_structure = plm_image_load_native (
                 warped_structure_fn);
+            if(!warped_structure) continue;
             /* Recompute distance map */
             FloatImageType::Pointer dmap_image_itk = this->compute_dmap (
                 warped_structure->itk_uchar(),
