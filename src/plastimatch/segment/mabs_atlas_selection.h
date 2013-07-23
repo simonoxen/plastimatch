@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
  *    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
  *       ----------------------------------------------------------------------- */
-#ifndef _mabs_atlases_selection_h_
-#define _mabs_atlases_selection_h_
+#ifndef _mabs_atlas_selection_h_
+#define _mabs_atlas_selection_h_
 
 #include "plmsegment_config.h"
 
@@ -19,11 +19,11 @@
 typedef itk::ImageMaskSpatialObject<3> MaskType;
 typedef MaskType::Pointer MaskTypePointer;
 
-class PLMSEGMENT_API Mabs_atlases_selection {
+class PLMSEGMENT_API Mabs_atlas_selection {
 
 public:
-    Mabs_atlases_selection(std::list<std::string> atlases_list, Rt_study::Pointer subject);
-    ~Mabs_atlases_selection();
+    Mabs_atlas_selection(std::list<std::string> atlases_list, Rt_study::Pointer subject);
+    ~Mabs_atlas_selection();
     
     std::list<std::string> nmi_ranking(std::string patient_id, const Mabs_parms* parms);
     std::list<std::string> random_ranking(std::string patient_id); // Just for testing purpose

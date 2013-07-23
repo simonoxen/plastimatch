@@ -26,8 +26,8 @@ Mabs_parms::Mabs_parms ()
     this->prealign_registration_config = "";
 
     /* [ATLASES-SELECTION] */
-    this->enable_atlases_selection = false;
-    this->atlases_selection_criteria="nmi";
+    this->enable_atlas_selection = false;
+    this->atlas_selection_criteria="nmi";
     this->mi_percent_thershold = 0.70;
     this->mi_histogram_bins = 100;
     this->roi_mask_fn = "";
@@ -124,20 +124,20 @@ Mabs_parms::set_key_val (
 
     /* [ATLASES-SELECTION] */
     if (section == "ATLAS-SELECTION") {
-        if (key == "enable_atlases_selection") {
+        if (key == "enable_atlas_selection") {
             if (val == "True" || val == "true" || val == "1") {
-                this->enable_atlases_selection = true;
+                this->enable_atlas_selection = true;
             }
             else {
-                this->enable_atlases_selection = false;
+                this->enable_atlas_selection = false;
             }   
         }
-        else if (key == "atlases_selection_criteria") {
+        else if (key == "atlas_selection_criteria") {
             if (val == "nmi" || val == "NMI") {
-                this->atlases_selection_criteria="nmi";
+                this->atlas_selection_criteria="nmi";
             }
             else if (val == "random" || val == "RANDOM") { // Just for testing purpose
-                this->atlases_selection_criteria="random";
+                this->atlas_selection_criteria="random";
             }
         }
         else if (key == "mi_percent_thershold") {

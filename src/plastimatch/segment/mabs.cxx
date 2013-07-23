@@ -17,7 +17,7 @@
 #include "itk_threshold.h"
 #include "logfile.h"
 #include "mabs.h"
-#include "mabs_atlases_selection.h"
+#include "mabs_atlas_selection.h"
 #include "mabs_parms.h"
 #include "mabs_vote.h"
 #include "option_range.h"
@@ -1149,18 +1149,18 @@ Mabs::train_internal (bool registration_only)
         d_ptr->time_io += timer.report();
         
         /* Select atlases */
-        if (d_ptr->parms->enable_atlases_selection)
+        if (d_ptr->parms->enable_atlas_selection)
         {
-	    Mabs_atlases_selection* select_atlases 
-                = new Mabs_atlases_selection(d_ptr->process_dir_list, d_ptr->ref_rtds);
+	    Mabs_atlas_selection* select_atlas 
+                = new Mabs_atlas_selection(d_ptr->process_dir_list, d_ptr->ref_rtds);
             
-            if (d_ptr->parms->atlases_selection_criteria == "nmi") {
-	        d_ptr->atlas_list = select_atlases->nmi_ranking (
+            if (d_ptr->parms->atlas_selection_criteria == "nmi") {
+	        d_ptr->atlas_list = select_atlas->nmi_ranking (
                     patient_id, d_ptr->parms);
             }
             
-            else if (d_ptr->parms->atlases_selection_criteria == "random") { // Just for testing purpose
-               d_ptr->atlas_list = select_atlases->random_ranking (patient_id); 
+            else if (d_ptr->parms->atlas_selection_criteria == "random") { // Just for testing purpose
+               d_ptr->atlas_list = select_atlas->random_ranking (patient_id); 
             }
 	}
 

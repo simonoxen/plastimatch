@@ -15,12 +15,12 @@
 #include "dir_list.h"
 #include "logfile.h"
 #include "mabs.h"
-#include "mabs_atlases_selection.h"
+#include "mabs_atlas_selection.h"
 #include "path_util.h"
 #include "plm_image.h"
 #include "string_util.h"
 
-Mabs_atlases_selection::Mabs_atlases_selection (std::list<std::string> atlases_list, Rt_study::Pointer subject)
+Mabs_atlas_selection::Mabs_atlas_selection (std::list<std::string> atlases_list, Rt_study::Pointer subject)
 {
     //constructor
     this->atlas_dir_list = atlases_list;
@@ -29,7 +29,7 @@ Mabs_atlases_selection::Mabs_atlases_selection (std::list<std::string> atlases_l
 }
 
 
-Mabs_atlases_selection::~Mabs_atlases_selection ()
+Mabs_atlas_selection::~Mabs_atlas_selection ()
 {
     //destructor
     //delete &atlas_dir_list;
@@ -38,7 +38,7 @@ Mabs_atlases_selection::~Mabs_atlases_selection ()
 }
 
 std::list<std::string>
-Mabs_atlases_selection::nmi_ranking(std::string patient_id, const Mabs_parms* parms)
+Mabs_atlas_selection::nmi_ranking(std::string patient_id, const Mabs_parms* parms)
 {
 
     lprintf("MI RANKING \n");
@@ -129,7 +129,7 @@ Mabs_atlases_selection::nmi_ranking(std::string patient_id, const Mabs_parms* pa
 
 
 std::list<std::string>
-Mabs_atlases_selection::random_ranking(std::string patient_id) // Just for testing purpose
+Mabs_atlas_selection::random_ranking(std::string patient_id) // Just for testing purpose
 {
     lprintf("RANDOM RANKING \n");
     
@@ -158,7 +158,7 @@ Mabs_atlases_selection::random_ranking(std::string patient_id) // Just for testi
 
 
 double
-Mabs_atlases_selection::compute_nmi(Plm_image* img1, Plm_image* img2, int hist_bins, MaskTypePointer mask,
+Mabs_atlas_selection::compute_nmi(Plm_image* img1, Plm_image* img2, int hist_bins, MaskTypePointer mask,
                                     bool min_value_defined, int min_value, bool max_value_defined, int max_value) {
 	
     /* Cost function */
