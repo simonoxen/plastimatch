@@ -213,7 +213,7 @@ Rpl_volume::get_rgdepth (
         (float) ap_ij[1], 
         (float) (dist / proj_vol->get_step_length())
     };
-    float val = vol->get_ijk_value<float> (ijk);
+    float val = vol->get_ijk_value (ijk);
     return val;
 }
 

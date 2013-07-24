@@ -632,8 +632,7 @@ volume_scale (Volume* vol, float scale)
     }
 }
 
-template<class T>
-T
+float
 Volume::get_ijk_value (const float ijk[3])
 {
     plm_long ijk_f[3];
@@ -659,7 +658,7 @@ Volume::get_ijk_value (const float ijk[3])
         img, this
     );
 
-    return (T) val;
+    return val;
 }
 
 void
@@ -902,6 +901,3 @@ volume_difference (Volume* vol, Volume* warped)
     }
     return temp;
 }
-
-/* Explicit instantiations */
-template PLMBASE_API float Volume::get_ijk_value<float> (const float*);
