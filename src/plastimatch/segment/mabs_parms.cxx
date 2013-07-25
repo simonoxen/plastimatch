@@ -25,7 +25,7 @@ Mabs_parms::Mabs_parms ()
     this->prealign_spacing = "";
     this->prealign_registration_config = "";
 
-    /* [ATLASES-SELECTION] */
+    /* [ATLAS-SELECTION] */
     this->enable_atlas_selection = false;
     this->atlas_selection_criteria="nmi";
     this->mi_percent_thershold = 0.70;
@@ -122,7 +122,7 @@ Mabs_parms::set_key_val (
         }
     }
 
-    /* [ATLASES-SELECTION] */
+    /* [ATLAS-SELECTION] */
     if (section == "ATLAS-SELECTION") {
         if (key == "enable_atlas_selection") {
             if (val == "True" || val == "true" || val == "1") {
