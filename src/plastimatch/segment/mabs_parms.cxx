@@ -289,8 +289,8 @@ Mabs_parms::parse_config (
                 section = "PREALIGNMENT";
                 continue;
             }
-            else if (buf.find ("[ATLASES-SELECTION]") != std::string::npos
-                || buf.find ("[atlases-selection]") != std::string::npos)
+            else if (buf.find ("[ATLAS-SELECTION]") != std::string::npos
+                || buf.find ("[atlas-selection]") != std::string::npos)
             {
                 section = "ATLAS-SELECTION";
                 continue;
