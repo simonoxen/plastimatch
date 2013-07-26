@@ -36,12 +36,17 @@ public:
     Volume *get_patient_vol ();
     Plm_image *get_patient ();
 
+    void set_target (const std::string& target_fn);
     void set_target (UCharImageType::Pointer&);
     void set_target (FloatImageType::Pointer&);
     Plm_image::Pointer& get_target ();
 
     /* This computes the aperture and range compensator */
     void compute_beam_modifiers ();
+
+    /* This modifies the rpl_volume to account for aperture and 
+       range compensator */
+    void apply_beam_modifiers ();
 
     Aperture::Pointer& get_aperture ();
     const Aperture::Pointer& get_aperture () const;

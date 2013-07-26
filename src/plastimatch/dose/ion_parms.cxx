@@ -16,12 +16,19 @@
 #include "plm_image.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
+#include "rpl_volume.h"
 #include "string_util.h"
 
 class Ion_parms_private {
 public:
     /* Plan */
     Ion_plan::Pointer plan;
+
+    /* [SETTINGS] */
+    std::string target_fn;
+    std::string output_dose_fn;
+    std::string output_aperture_fn;
+    std::string output_range_compensator_fn;
 
     /* [BEAM] */
     float src[3];
@@ -180,8 +187,17 @@ Ion_parms::set_key_val (
         else if (!strcmp (key, "patient")) {
             this->input_ct_fn = val;
         }
-        else if (!strcmp (key, "dose")) {
-            this->output_dose_fn = val;
+        else if (!strcmp (key, "target")) {
+            d_ptr->target_fn = val;
+        }
+        else if (!strcmp (key, "aperture_out")) {
+            d_ptr->output_aperture_fn = val;
+        }
+        else if (!strcmp (key, "range_compensator_out")) {
+            d_ptr->output_range_compensator_fn = val;
+        }
+        else if (!strcmp (key, "dose_out")) {
+            d_ptr->output_dose_fn = val;
         }
         else {
             goto error_exit;
@@ -439,7 +455,7 @@ Ion_parms::parse_args (int argc, char** argv)
         this->parse_config (argv[i]);
     }
 
-    if (this->output_dose_fn == "") {
+    if (d_ptr->output_dose_fn == "") {
         fprintf (stderr, "\n** ERROR: Output dose not specified in configuration file!\n");
         return false;
     }
@@ -470,33 +486,60 @@ Ion_parms::parse_args (int argc, char** argv)
         d_ptr->plan->beam->optimize_sobp ();
     }
 
-    /* set plan parameters */
+    /* set beam & aperture parameters */
     d_ptr->plan->beam->set_source_position (d_ptr->src);
     d_ptr->plan->beam->set_isocenter_position (d_ptr->isocenter);
-
     d_ptr->plan->get_aperture()->set_distance (d_ptr->ap_offset);
     d_ptr->plan->get_aperture()->set_dim (d_ptr->ires);
     d_ptr->plan->get_aperture()->set_spacing (d_ptr->ap_spacing);
     if (d_ptr->ap_have_origin) {
         d_ptr->plan->get_aperture()->set_origin (d_ptr->ap_origin);
     }
-    if (d_ptr->ap_filename != "") {
-        d_ptr->plan->get_aperture()->set_aperture_image (
-            d_ptr->ap_filename.c_str());
-    }
-    if (d_ptr->rc_filename != "") {
-        d_ptr->plan->get_aperture()->set_range_compensator_image (
-            d_ptr->rc_filename.c_str());
-    }
-
-    /* try to setup the plan with the provided parameters */
     d_ptr->plan->set_step_length (this->ray_step);
-    if (!d_ptr->plan->init ()) {
-        fprintf (stderr, "ERROR: Unable to initilize plan.\n");
-        return false;
+
+    /* handle pre-computed beam modifiers */
+    if (d_ptr->target_fn == "") {
+        if (d_ptr->ap_filename != "") {
+            d_ptr->plan->get_aperture()->set_aperture_image (
+                d_ptr->ap_filename.c_str());
+        }
+        if (d_ptr->rc_filename != "") {
+            d_ptr->plan->get_aperture()->set_range_compensator_image (
+                d_ptr->rc_filename.c_str());
+        }
     }
 
-    printf ("parse_args complete.\n");
+    /* try to generate plan with the provided parameters */
+    if (!d_ptr->plan->init ()) {
+        print_and_exit ("ERROR: Unable to initilize plan.\n");
+    }
 
+    /* handle auto-generated beam modifiers */
+    if (d_ptr->target_fn != "") {
+        printf ("Target fn = %s\n", d_ptr->target_fn.c_str());
+        d_ptr->plan->set_target (d_ptr->target_fn);
+        d_ptr->plan->compute_beam_modifiers ();
+        d_ptr->plan->apply_beam_modifiers ();
+    }
+
+    /* generate dose */
+    d_ptr->plan->set_debug (true);
+    d_ptr->plan->compute_dose ();
+
+    /* save beam modifiers */
+    if (d_ptr->output_aperture_fn != "") {
+        Rpl_volume *rpl_vol = d_ptr->plan->rpl_vol;
+        Plm_image::Pointer& ap = rpl_vol->get_aperture()->get_aperture_image();
+        ap->save_image (d_ptr->output_aperture_fn);
+        Plm_image::Pointer& rc = rpl_vol->get_aperture()
+            ->get_range_compensator_image();
+        rc->save_image (d_ptr->output_range_compensator_fn);
+    }
+
+    /* save dose output */
+    Plm_image::Pointer dose = d_ptr->plan->get_dose ();
+    dose->save_image (d_ptr->output_dose_fn.c_str());
+
+    printf ("done.  \n\n");
     return true;
 }

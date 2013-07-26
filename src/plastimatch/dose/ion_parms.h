@@ -42,7 +42,6 @@ public:
     float scale;          /* scale dose intensity */
                           /* 1 = only consider voxels in beam path */
     std::string input_ct_fn;    /* input:  patient volume */
-    std::string output_dose_fn; /* output: dose volume */
 
     /* GCS FIX: Copy-paste with wed_parms.h */
 };

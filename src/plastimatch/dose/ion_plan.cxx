@@ -110,6 +110,15 @@ Ion_plan::get_patient ()
 }
 
 void
+Ion_plan::set_target (const std::string& target_fn)
+{
+    d_ptr->target = Plm_image::New (new Plm_image (target_fn));
+
+    /* compute_segdepth_volume assumes float */
+    d_ptr->target->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
+}
+
+void
 Ion_plan::set_target (UCharImageType::Pointer& target_vol)
 {
     d_ptr->target->set_itk (target_vol);
@@ -133,8 +142,14 @@ Ion_plan::get_target ()
 void
 Ion_plan::compute_beam_modifiers ()
 {
-    this->rpl_vol->compute_segdepth_volume (
+    this->rpl_vol->compute_beam_modifiers (
         d_ptr->target->get_vol(), 0);
+}
+
+void
+Ion_plan::apply_beam_modifiers ()
+{
+    this->rpl_vol->apply_beam_modifiers ();
 }
 
 Aperture::Pointer&
@@ -223,9 +238,9 @@ display_progress (
 void
 Ion_plan::compute_dose ()
 {
-    Ion_beam*  beam    = this->beam;
-    Volume*       ct_vol  = this->get_patient_vol ();
-    Rpl_volume*   rpl_vol = this->rpl_vol;
+    Ion_beam* beam = this->beam;
+    Volume* ct_vol = this->get_patient_vol ();
+    Rpl_volume* rpl_vol = this->rpl_vol;
 
     Volume* dose_vol = volume_clone_empty (ct_vol);
     float* dose_img = (float*) dose_vol->img;

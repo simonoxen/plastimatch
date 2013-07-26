@@ -167,6 +167,7 @@ Rpl_volume::get_rgdepth (
     ijk[0] = ap_ij[0];
     ijk[1] = ap_ij[1];
     ijk[2] = (int) floorf (dist / proj_vol->get_step_length());
+
     /* Depth to step before point */
     idx1 = volume_index (vol->dim, ijk);
     if (idx1 < vol->npix) {
@@ -428,7 +429,6 @@ Rpl_volume::compute_rpl ()
     /* A couple of abbreviations */
     Proj_volume *proj_vol = d_ptr->proj_vol;
     const double *src = proj_vol->get_src();
-    const double *nrm = proj_vol->get_nrm();
     ires[0] = d_ptr->proj_vol->get_image_dim (0);
     ires[1] = d_ptr->proj_vol->get_image_dim (1);
     unsigned char *ap_img = 0;
@@ -900,9 +900,8 @@ Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float backgrou
     }
 }
 
-
 void 
-Rpl_volume::compute_segdepth_volume (
+Rpl_volume::compute_beam_modifiers (
     Volume *seg_vol, 
     float background
 )
@@ -1126,6 +1125,43 @@ Rpl_volume::compute_segdepth_volume (
 
     //End extra code //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+}
+
+void 
+Rpl_volume::apply_beam_modifiers ()
+{
+    Volume *ap_vol = d_ptr->aperture->get_aperture_volume();
+    unsigned char *ap_img = (unsigned char*) ap_vol->img;
+    Volume *rc_vol = d_ptr->aperture->get_range_compensator_volume();
+    float *rc_img = (float*) rc_vol->img;
+    Volume *proj_vol = d_ptr->proj_vol->get_vol();
+    float *proj_img = (float*) proj_vol->img;
+
+    /* For each ray in aperture */
+    const int *ires = d_ptr->proj_vol->get_image_dim();
+
+    printf ("ires = %d %d\n", ires[0], ires[1]);
+    printf ("proj_vol dim = %d %d %d\n", proj_vol->dim[0], 
+        proj_vol->dim[1], proj_vol->dim[2]);
+
+    int ap_nvox = ires[0] * ires[1];
+    for (int r = 0; r < ires[1]; r++) {
+        for (int c = 0; c < ires[0]; c++) {
+
+            /* Get aperture and rc values */
+            plm_long ap_idx = r * ires[0] + c;
+            float ap_val = (float) ap_img[ap_idx];
+            float rc_val = rc_img[ap_idx];
+
+            /* For each voxel in ray */
+            for (int z = 0; z < proj_vol->dim[2]; z++) {
+
+                /* Adjust value of voxel */
+                plm_long vol_idx = z * ap_nvox + ap_idx;
+                proj_img[vol_idx] = ap_val * (proj_img[vol_idx] + rc_val);
+            }
+        }
+    }
 }
 
 void 

@@ -53,8 +53,10 @@ public:
     void compute (Volume *ct_vol);
     void compute_wed_volume (Volume *wed_vol, Volume *in_vol, float background);
     void compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float background);
-    void compute_segdepth_volume (Volume *seg_vol, float background);
+    void compute_beam_modifiers (Volume *seg_vol, float background);
     void compute_aperture (Volume *tgt_vol, float background);
+
+    void apply_beam_modifiers ();
 
     void save (const std::string& filename);
     void save (const char* filename);

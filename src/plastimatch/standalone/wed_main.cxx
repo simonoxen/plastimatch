@@ -147,7 +147,7 @@ wed_ct_compute (
 
     if (parms->mode==2) {
         /* Compute the aperture and range compensator */
-        rpl_vol->compute_segdepth_volume (
+        rpl_vol->compute_beam_modifiers (
             ct_vol->get_vol_float(), 
             background);
 
