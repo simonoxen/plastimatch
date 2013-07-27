@@ -254,7 +254,7 @@ Aperture::apply_smearing (float smearing)
             int idx = r*strel_size[0] + c;
 
             strel[idx] = 0;
-            if ((rf*rf + cf*cf) < smearing*smearing) {
+            if ((rf*rf + cf*cf) <= smearing*smearing) {
                 strel[idx] = 1;
             }
         }
@@ -305,10 +305,6 @@ Aperture::apply_smearing (float smearing)
                     }
                     if (rc_img[pidx] < rc_acc) {
                         rc_acc = rc_img[pidx];
-                    }
-
-                    if (ar == 60 && ac == 61) {
-                        printf (">> %g %g %g\n", rc_img[aidx], rc_img[pidx], rc_acc);
                     }
                 }
             }
