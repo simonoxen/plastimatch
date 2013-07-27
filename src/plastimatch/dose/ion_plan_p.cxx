@@ -9,6 +9,7 @@ Ion_plan_private::Ion_plan_private ()
 {
     debug = false;
     step_length = 0.;
+    smearing = 0.f;
     patient = Plm_image::New();
     target = Plm_image::New();
     ap = Aperture::New();

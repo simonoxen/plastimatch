@@ -16,6 +16,8 @@ public:
 public:
     bool debug;
     double step_length;
+    float smearing;
+
     Plm_image::Pointer patient;
     Plm_image::Pointer target;
     Plm_image::Pointer dose;

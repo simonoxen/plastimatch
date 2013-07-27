@@ -527,6 +527,49 @@ Plm_image::save_image (const std::string& fname)
    Getting and setting
    ----------------------------------------------------------------------- */
 void 
+Plm_image::set_volume (Volume::Pointer& v, Plm_image_type type)
+{
+    this->free ();
+    d_ptr->m_vol = v;
+    m_original_type = type;
+    m_type = type;
+}
+
+void 
+Plm_image::set_volume (Volume::Pointer& v)
+{
+    switch (v->pix_type) {
+    case PT_UCHAR:
+        this->set_volume (v, PLM_IMG_TYPE_GPUIT_UCHAR);
+	break;
+    case PT_SHORT:
+        this->set_volume (v, PLM_IMG_TYPE_GPUIT_SHORT);
+	break;
+    case PT_UINT16:
+        this->set_volume (v, PLM_IMG_TYPE_GPUIT_UINT16);
+	break;
+    case PT_UINT32:
+        this->set_volume (v, PLM_IMG_TYPE_GPUIT_UINT32);
+	break;
+    case PT_INT32:
+        this->set_volume (v, PLM_IMG_TYPE_GPUIT_INT32);
+	break;
+    case PT_FLOAT:
+        this->set_volume (v, PLM_IMG_TYPE_GPUIT_FLOAT);
+	break;
+    case PT_VF_FLOAT_INTERLEAVED:
+        this->set_volume (v, PLM_IMG_TYPE_GPUIT_FLOAT_FIELD);
+        break;
+    case PT_UCHAR_VEC_INTERLEAVED:
+        this->set_volume (v, PLM_IMG_TYPE_GPUIT_UCHAR_VEC);
+	break;
+    default:
+	print_and_exit ("Undefined conversion in Plm_image::set_volume\n");
+	break;
+    }
+}
+
+void 
 Plm_image::set_volume (Volume *v, Plm_image_type type)
 {
     this->free ();
@@ -569,7 +612,14 @@ Plm_image::set_volume (Volume *v)
     }
 }
 
-Volume::Pointer
+Volume::Pointer&
+Plm_image::get_volume_uchar ()
+{
+    convert_to_gpuit_uchar ();
+    return d_ptr->m_vol;
+}
+
+Volume::Pointer&
 Plm_image::get_volume_float ()
 {
     convert_to_gpuit_float ();

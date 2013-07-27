@@ -434,11 +434,11 @@ Rpl_volume::compute_rpl ()
     unsigned char *ap_img = 0;
     float *rc_img = 0;
     if (d_ptr->aperture->have_aperture_image()) {
-        Volume *ap_vol = d_ptr->aperture->get_aperture_volume();
+        Volume *ap_vol = d_ptr->aperture->get_aperture_vol ();
         ap_img = (unsigned char*) ap_vol->img;
     }
     if (d_ptr->aperture->have_range_compensator_image()) {
-        Volume *rc_vol = d_ptr->aperture->get_range_compensator_volume();
+        Volume *rc_vol = d_ptr->aperture->get_range_compensator_vol ();
         rc_img = (float*) rc_vol->img;
     }
     Volume *ct_vol = d_ptr->ct->get_vol();
@@ -911,8 +911,8 @@ Rpl_volume::compute_beam_modifiers (
     /* This assumes that dim & spacing are correctly set in aperture */
     d_ptr->aperture->allocate_aperture_images ();
 
-    Volume *aperture_vol = d_ptr->aperture->get_aperture_volume();
-    Volume *segdepth_vol = d_ptr->aperture->get_range_compensator_volume();
+    Volume *aperture_vol = d_ptr->aperture->get_aperture_vol();
+    Volume *segdepth_vol = d_ptr->aperture->get_range_compensator_vol();
 
     Proj_volume *proj_vol = d_ptr->proj_vol;
     Volume *rvol = proj_vol->get_vol();
@@ -1130,9 +1130,9 @@ Rpl_volume::compute_beam_modifiers (
 void 
 Rpl_volume::apply_beam_modifiers ()
 {
-    Volume *ap_vol = d_ptr->aperture->get_aperture_volume();
+    Volume *ap_vol = d_ptr->aperture->get_aperture_vol();
     unsigned char *ap_img = (unsigned char*) ap_vol->img;
-    Volume *rc_vol = d_ptr->aperture->get_range_compensator_volume();
+    Volume *rc_vol = d_ptr->aperture->get_range_compensator_vol();
     float *rc_img = (float*) rc_vol->img;
     Volume *proj_vol = d_ptr->proj_vol->get_vol();
     float *proj_img = (float*) proj_vol->img;
@@ -1141,8 +1141,8 @@ Rpl_volume::apply_beam_modifiers ()
     const int *ires = d_ptr->proj_vol->get_image_dim();
 
     printf ("ires = %d %d\n", ires[0], ires[1]);
-    printf ("proj_vol dim = %d %d %d\n", proj_vol->dim[0], 
-        proj_vol->dim[1], proj_vol->dim[2]);
+    printf ("proj_vol dim = %d %d %d\n", (int) proj_vol->dim[0], 
+        (int) proj_vol->dim[1], (int) proj_vol->dim[2]);
 
     int ap_nvox = ires[0] * ires[1];
     for (int r = 0; r < ires[1]; r++) {
@@ -1173,8 +1173,8 @@ Rpl_volume::compute_aperture (
     /* This assumes that dim & spacing are correctly set in aperture */
     d_ptr->aperture->allocate_aperture_images ();
 
-    Volume *ap_vol = d_ptr->aperture->get_aperture_volume();
-    Volume *rc_vol = d_ptr->aperture->get_range_compensator_volume();
+    Volume *ap_vol = d_ptr->aperture->get_aperture_vol();
+    Volume *rc_vol = d_ptr->aperture->get_range_compensator_vol();
     unsigned char *ap_img = (unsigned char*) ap_vol->img;
     float *rc_img = (float*) rc_vol->img;
 

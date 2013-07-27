@@ -36,6 +36,12 @@ Ion_plan::~Ion_plan ()
 }
 
 void
+Ion_plan::set_smearing (float smearing)
+{
+    d_ptr->smearing = smearing;
+}
+
+void
 Ion_plan::set_step_length (double step_length)
 {
     d_ptr->step_length = step_length;
@@ -142,8 +148,12 @@ Ion_plan::get_target ()
 void
 Ion_plan::compute_beam_modifiers ()
 {
+    /* Compute the aperture and compensator */
     this->rpl_vol->compute_beam_modifiers (
         d_ptr->target->get_vol(), 0);
+
+    /* Apply smearing */
+    d_ptr->ap->apply_smearing (d_ptr->smearing);
 }
 
 void

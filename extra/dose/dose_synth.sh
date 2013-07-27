@@ -8,7 +8,7 @@ plastimatch convert --input lung-dicom --output-img lung_mha/ct.mha --output-pre
 rm -rf lung-dicom
 
 # Use wed command to make aperture, range compensator
-wed --segdepth wed.cfg
+## wed --segdepth wed.cfg
 
 # Compute dose
 proton_dose dose_2.cfg

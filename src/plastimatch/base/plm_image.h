@@ -107,6 +107,8 @@ public:
     void convert_and_save (const std::string& fname, Plm_image_type new_type);
 
     /* assignment */
+    void set_volume (Volume::Pointer& v, Plm_image_type type);
+    void set_volume (Volume::Pointer& v);
     void set_volume (Volume *v, Plm_image_type type);
     void set_volume (Volume *v);
     void set_itk (UCharImageType::Pointer img);
@@ -130,7 +132,8 @@ public:
         return m_itk_uchar_vec;
     }
 
-    Volume::Pointer get_volume_float ();
+    Volume::Pointer& get_volume_uchar ();
+    Volume::Pointer& get_volume_float ();
 
     Volume* get_vol ();
     const Volume* get_vol () const;

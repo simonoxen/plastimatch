@@ -51,6 +51,7 @@ public:
     Aperture::Pointer& get_aperture ();
     const Aperture::Pointer& get_aperture () const;
 
+    void set_smearing (float smearing);
     void set_step_length (double ray_step);
 
     /* Return the state of the debug flag, which generates debug 

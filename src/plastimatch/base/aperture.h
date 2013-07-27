@@ -63,30 +63,35 @@ public:
 
     /*! \brief Test if the aperture has a bitmap image describing shape */
     bool have_aperture_image ();
-    /*! \brief Get the aperture image, if this aperture has one */
+    /*! \brief Get the aperture image as Plm_image */
     Plm_image::Pointer& get_aperture_image ();
+    /*! \brief Get the aperture image as Volume */
+    Volume::Pointer& get_aperture_volume ();
     /*! \brief Get the aperture image as Volume, if this aperture has one.
       Otherwise, return null. */
-    Volume* get_aperture_volume ();
+    Volume* get_aperture_vol ();
     /*! \brief Load the aperture image from a file */
     void set_aperture_image (const char *ap_filename);
     /*! \brief Test if the aperture has a float image describing 
       range compensator thicknesses */
     bool have_range_compensator_image ();
-    /*! \brief Get the range_compensator image, if this aperture has one */
+    /*! \brief Get the range_compensator image as Plm_image */
     Plm_image::Pointer& get_range_compensator_image ();
+    /*! \brief Get the range_compensator image as Volume */
+    Volume::Pointer& get_range_compensator_volume ();
     /*! \brief Get the range_compensator image as Volume, if this 
       aperture has one.  Otherwise, return null. */
-    Volume* get_range_compensator_volume ();
+    Volume* get_range_compensator_vol ();
     /*! \brief Load the range_compensator image from a file */
     void set_range_compensator_image (const char *rc_filename);
+
+    /*! \brief Expand aperture and smear compensator.  The smearing 
+      parameters is defined as mm in aperture plane. */
+    void apply_smearing (float smearing);
     ///@}
 
 public:
-//    double ap_offset;     /* distance from beam nozzle */
     double vup[3];        /* orientation */
-//    double ic [2];        /* center */
-//    int ires[2];          /* resolution (vox) */
     double ic_room[3];    /* loc of center (room coords) */
     double ul_room[3];    /* loc of upper left corder (room coords) */
     double incr_r[3];     /* row increment vector */

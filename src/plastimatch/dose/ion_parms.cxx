@@ -45,6 +45,7 @@ public:
     bool ap_have_origin;
     float ap_origin[2];
     float ap_spacing[2];
+    float smearing;
 
     /* [PEAK] */
     bool have_manual_peaks;
@@ -84,6 +85,7 @@ public:
         this->ap_origin[1] = 0.;
         this->ap_spacing[0] = 1.;
         this->ap_spacing[1] = 1.;
+        this->smearing = 0.;
 
         this->have_manual_peaks = false;
         this->E0 = 0.;
@@ -298,6 +300,11 @@ Ion_parms::set_key_val (
         else if (!strcmp (key, "range_compensator")) {
             d_ptr->rc_filename = val;
         }
+        else if (!strcmp (key, "smearing")) {
+            if (sscanf (val, "%f", &d_ptr->smearing) != 1) {
+                goto error_exit;
+            }
+        }
         else {
             goto error_exit;
         }
@@ -495,6 +502,7 @@ Ion_parms::parse_args (int argc, char** argv)
     if (d_ptr->ap_have_origin) {
         d_ptr->plan->get_aperture()->set_origin (d_ptr->ap_origin);
     }
+    d_ptr->plan->set_smearing (d_ptr->smearing);
     d_ptr->plan->set_step_length (this->ray_step);
 
     /* handle pre-computed beam modifiers */
