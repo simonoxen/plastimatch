@@ -33,6 +33,7 @@ public:
     /* [BEAM] */
     float src[3];
     float isocenter[3];
+    bool have_prescription;
     float prescription_min;
     float prescription_max;
     double max_depth;
@@ -46,6 +47,8 @@ public:
     float ap_origin[2];
     float ap_spacing[2];
     float smearing;
+    float proximal_margin;
+    float distal_margin;
 
     /* [PEAK] */
     bool have_manual_peaks;
@@ -86,6 +89,8 @@ public:
         this->ap_spacing[0] = 1.;
         this->ap_spacing[1] = 1.;
         this->smearing = 0.;
+        this->proximal_margin = 0.;
+        this->distal_margin = 0.;
 
         this->have_manual_peaks = false;
         this->E0 = 0.;
@@ -240,12 +245,14 @@ Ion_parms::set_key_val (
             if (rc != 1) {
                 goto error_exit;
             }
+            d_ptr->have_prescription = true;
         }
         else if (!strcmp (key, "prescription_max")) {
             int rc = sscanf (val, "%f", &d_ptr->prescription_max);
             if (rc != 1) {
                 goto error_exit;
             }
+            d_ptr->have_prescription = true;
         }
         else if (!strcmp (key, "debug")) {
             d_ptr->plan->beam->set_debug (val);
@@ -302,6 +309,16 @@ Ion_parms::set_key_val (
         }
         else if (!strcmp (key, "smearing")) {
             if (sscanf (val, "%f", &d_ptr->smearing) != 1) {
+                goto error_exit;
+            }
+        }
+        else if (!strcmp (key, "proximal_margin")) {
+            if (sscanf (val, "%f", &d_ptr->proximal_margin) != 1) {
+                goto error_exit;
+            }
+        }
+        else if (!strcmp (key, "distal_margin")) {
+            if (sscanf (val, "%f", &d_ptr->distal_margin) != 1) {
                 goto error_exit;
             }
         }
@@ -481,18 +498,6 @@ Ion_parms::parse_args (int argc, char** argv)
     }
     d_ptr->plan->set_patient (ct);
 
-    /* generate depth dose curve, might be manual peaks or 
-       automatically optimized */
-    if (d_ptr->have_manual_peaks) {
-        if (!d_ptr->plan->beam->generate ()) {
-            return false;
-        }
-    } else {
-        d_ptr->plan->beam->set_sobp_prescription_min_max (
-            d_ptr->prescription_min, d_ptr->prescription_max);
-        d_ptr->plan->beam->optimize_sobp ();
-    }
-
     /* set beam & aperture parameters */
     d_ptr->plan->beam->set_source_position (d_ptr->src);
     d_ptr->plan->beam->set_isocenter_position (d_ptr->isocenter);
@@ -503,6 +508,8 @@ Ion_parms::parse_args (int argc, char** argv)
         d_ptr->plan->get_aperture()->set_origin (d_ptr->ap_origin);
     }
     d_ptr->plan->set_smearing (d_ptr->smearing);
+    d_ptr->plan->beam->set_proximal_margin (d_ptr->proximal_margin);
+    d_ptr->plan->beam->set_distal_margin (d_ptr->distal_margin);
     d_ptr->plan->set_step_length (this->ray_step);
 
     /* handle pre-computed beam modifiers */
@@ -530,11 +537,33 @@ Ion_parms::parse_args (int argc, char** argv)
         d_ptr->plan->apply_beam_modifiers ();
     }
 
-    /* generate dose */
+    /* generate depth dose curve, might be manual peaks or 
+       optimized based on prescription, or automatic based on target */
+    d_ptr->plan->beam->set_proximal_margin (d_ptr->proximal_margin);
+    d_ptr->plan->beam->set_distal_margin (d_ptr->distal_margin);
+    if (d_ptr->have_manual_peaks) {
+        /* Manually specified, so do not optimize */
+        if (!d_ptr->plan->beam->generate ()) {
+            return false;
+        }
+    } else if (d_ptr->target_fn != "" && !d_ptr->have_prescription) {
+        /* Optimize based on target volume */
+        Rpl_volume *rpl_vol = d_ptr->plan->rpl_vol;
+        d_ptr->plan->beam->set_sobp_prescription_min_max (
+            rpl_vol->get_min_wed(), rpl_vol->get_max_wed());
+        d_ptr->plan->beam->optimize_sobp ();
+    } else {
+        /* Optimize based on manually specified range and modulation */
+        d_ptr->plan->beam->set_sobp_prescription_min_max (
+            d_ptr->prescription_min, d_ptr->prescription_max);
+        d_ptr->plan->beam->optimize_sobp ();
+    }
+
+    /* Generate dose */
     d_ptr->plan->set_debug (true);
     d_ptr->plan->compute_dose ();
 
-    /* save beam modifiers */
+    /* Save beam modifiers */
     if (d_ptr->output_aperture_fn != "") {
         Rpl_volume *rpl_vol = d_ptr->plan->rpl_vol;
         Plm_image::Pointer& ap = rpl_vol->get_aperture()->get_aperture_image();
@@ -544,7 +573,7 @@ Ion_parms::parse_args (int argc, char** argv)
         rc->save_image (d_ptr->output_range_compensator_fn);
     }
 
-    /* save dose output */
+    /* Save dose output */
     Plm_image::Pointer dose = d_ptr->plan->get_dose ();
     dose->save_image (d_ptr->output_dose_fn.c_str());
 

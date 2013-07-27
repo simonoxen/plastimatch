@@ -66,6 +66,12 @@ public:
 
     /*! \brief Get maximum depth (in mm) in SOBP curve */
     double get_sobp_maximum_depth ();
+    /*! \brief Set proximal margin; this is subtracted from the 
+      minimum depth */
+    void set_proximal_margin (float proximal_margin);
+    /*! \brief Set distal margin; this is added onto the prescription
+      maximum depth */
+    void set_distal_margin (float distal_margin);
     /*! \brief Set SOBP range and modulation for prescription 
       as minimum and maximum depth (in mm) */
     void set_sobp_prescription_min_max (float d_min, float d_max);
