@@ -256,15 +256,22 @@ wed_ct_initialize(Wed_Parms *parms)
     //Note - Center MUST be reset here if set in the config file, as set_dim()
     //will reset the center.
     if (parms->have_ic) {
-#if defined (commentout)
+
+      if (parms->mode==1)  {
 	ap_center[0] = parms->ic[0]+1.*parms->ap_spacing[0];
 	ap_center[1] = parms->ic[1]+1.*parms->ap_spacing[1];
-#endif
+	scene.get_aperture()->set_center (ap_center);
+      }
+
+      else {
 	ap_center[0] = parms->ic[0];
 	ap_center[1] = parms->ic[1];
         scene.get_aperture()->set_center (ap_center);
+      }
+
     }
     //And again, guess if not specified.
+    //Note - add the dew option below if not specified.
     else if (parms->mode==1)  {
         //Set center as half the resolutions.
         ap_center[0] = (float) ap_res[0]/2.;
