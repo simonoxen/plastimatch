@@ -12,6 +12,7 @@
 #include "bspline_interpolate.h"
 #include "bspline_landmarks.h"
 #include "bspline_xform.h"
+#include "direction_matrices.h"
 #include "file_util.h"
 #include "plm_math.h"
 #include "pointset.h"
@@ -149,17 +150,36 @@ Bspline_landmarks::initialize (const Bspline_xform* bxf)
         return;
     }
 
+    float step[9];
+    float proj[9];
+    compute_direction_matrices (step, proj, bxf->dc, bxf->img_spacing);
+
     this->fixed_landmarks_p = new int[3*this->num_landmarks];
     this->fixed_landmarks_q = new int[3*this->num_landmarks];
     for (size_t i = 0; i < num_landmarks; i++) {
+        const Labeled_point& fp = this->fixed_landmarks->point_list[i];
+        float landmark_ijk[3];
+        float landmark_xyz[3];
+        landmark_xyz[0] = fp.p[0] - bxf->img_origin[0];
+        landmark_xyz[1] = fp.p[1] - bxf->img_origin[1];
+        landmark_xyz[2] = fp.p[2] - bxf->img_origin[2];
+        landmark_ijk[0] = PROJECT_X (landmark_xyz, proj);
+        landmark_ijk[1] = PROJECT_Y (landmark_xyz, proj);
+        landmark_ijk[2] = PROJECT_Z (landmark_xyz, proj);
+        printf ("[%d], (%g %g %g) -> (%f %f %f)\n", 
+            (int) i, fp.p[0], fp.p[1], fp.p[2], landmark_ijk[0],
+            landmark_ijk[1], landmark_ijk[2]);
         for (int d = 0; d < 3; d++) {
             plm_long v;
+#if defined (commentout)
             v = ROUND_INT ((this->fixed_landmarks->point_list[i].p[d] 
                     - bxf->img_origin[d]) / bxf->img_spacing[d]);
             printf ("(%f - %f) / %f = %u\n",
                 this->fixed_landmarks->point_list[i].p[d], 
                 bxf->img_origin[d], bxf->img_spacing[d], 
                 (unsigned int) v);
+#endif
+            v = landmark_ijk[d];
             if (v < 0 || v >= bxf->img_dim[d])
             {
                 print_and_exit (

@@ -343,7 +343,7 @@ bspline_display_coeff_stats (Bspline_xform* bxf)
         if (cf_min > bxf->coeff[i]) cf_min = bxf->coeff[i];
         if (cf_max < bxf->coeff[i]) cf_max = bxf->coeff[i];
     }
-    logfile_printf ("                    "
+    logfile_printf ("         "
                     "CMIN %6.2f CAVG %6.2f CMAX %6.2f\n", 
                     cf_min, cf_avg / bxf->num_coeff, cf_max);
 }
@@ -645,6 +645,8 @@ report_score (
         if (reg_parms->lambda > 0) {
             logfile_printf ("[ %9.3f | %9.3f ]\n", 
                 ssd->time_smetric, ssd->time_rmetric);
+        } else {
+            logfile_printf ("\n");
         }
     }
 }

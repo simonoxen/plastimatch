@@ -263,7 +263,7 @@ do_gpuit_bspline_stage_internal (
     parms.mi_hist.fixed.bins  = stage->mi_histogram_bins_fixed;
     parms.mi_hist.moving.bins = stage->mi_histogram_bins_moving;
     parms.mi_hist.joint.bins  = parms.mi_hist.fixed.bins
-                              * parms.mi_hist.moving.bins;
+        * parms.mi_hist.moving.bins;
 #endif
 
     /* Other stuff */
@@ -303,19 +303,17 @@ do_gpuit_bspline_stage_internal (
     /* Warp landmarks and write them out */
 
 // NSh uncomment 2013-02-14
-//#if defined (commentout)
+#if defined (commentout)
  
-	logfile_printf("Trying to start landmark warper\n");
-	printf("stdout, Trying to start landmark warper\n");
-
-    if (   regd->fixed_landmarks   // does not exist if landmarks are not used 
+    logfile_printf("Trying to start landmark warper\n");
+    if (regd->fixed_landmarks   // does not exist if landmarks are not used 
 	&& regd->moving_landmarks
 	&& !regd->fixed_landmarks->point_list.empty()  
         && !regd->moving_landmarks->point_list.empty() 
         && regp->warped_landmarks_fn.not_empty() ) {
         logfile_printf("Trying to warp %d landmarks, output file: %s\n",
-		regd->fixed_landmarks->point_list.size(),            
-		(const char*) regp->warped_landmarks_fn);
+            regd->fixed_landmarks->point_list.size(),            
+            (const char*) regp->warped_landmarks_fn);
 	Volume *vector_field;        
 	vector_field = new Volume (fixed_ss->dim, fixed_ss->offset, 
             fixed_ss->spacing, fixed_ss->direction_cosines, 
@@ -323,79 +321,79 @@ do_gpuit_bspline_stage_internal (
         bspline_interpolate_vf (vector_field, xf_out->get_gpuit_bsp() );
         if (vector_field) {
 
-	logfile_printf("... vector field ok\n");
+            logfile_printf("... vector field ok\n");
 
- 	// using Landmark_warp code from RBF
-	Landmark_warp lw;
-	lw.m_fixed_landmarks  = pointset_create ();
-	lw.m_moving_landmarks = pointset_create ();
+            // using Landmark_warp code from RBF
+            Landmark_warp lw;
+            lw.m_fixed_landmarks  = pointset_create ();
+            lw.m_moving_landmarks = pointset_create ();
 	
-	// regd->fixed_landmarks is Pointset, lw.m_fixed_landmarks is Raw_pointset 
+            // regd->fixed_landmarks is Pointset, lw.m_fixed_landmarks is Raw_pointset 
 
-	for(std::vector<Labeled_point>::iterator it = 
-	          regd->fixed_landmarks->point_list.begin();
-	    it != regd->fixed_landmarks->point_list.end();
-	    ++it
+            for(std::vector<Labeled_point>::iterator it = 
+                    regd->fixed_landmarks->point_list.begin();
+                it != regd->fixed_landmarks->point_list.end();
+                ++it
 	    ) 
-	{	
-	float lm[3];
-	lm[0]=(*it).p[0];
-	lm[1]=(*it).p[1];
-	lm[2]=(*it).p[2];
-	pointset_add_point_noadjust( lw.m_fixed_landmarks, lm); 
-	}
+            {	
+                float lm[3];
+                lm[0]=(*it).p[0];
+                lm[1]=(*it).p[1];
+                lm[2]=(*it).p[2];
+                pointset_add_point_noadjust( lw.m_fixed_landmarks, lm); 
+            }
 
-	for(std::vector<Labeled_point>::iterator it = 
-	          regd->moving_landmarks->point_list.begin();
-	    it != regd->moving_landmarks->point_list.end();
-	    ++it
+            for(std::vector<Labeled_point>::iterator it = 
+                    regd->moving_landmarks->point_list.begin();
+                it != regd->moving_landmarks->point_list.end();
+                ++it
 	    ) 
-	{	
-	float lm[3];
-	lm[0]=(*it).p[0];
-	lm[1]=(*it).p[1];
-	lm[2]=(*it).p[2];
-	pointset_add_point_noadjust( lw.m_moving_landmarks, lm); 
-	}
+            {	
+                float lm[3];
+                lm[0]=(*it).p[0];
+                lm[1]=(*it).p[1];
+                lm[2]=(*it).p[2];
+                pointset_add_point_noadjust( lw.m_moving_landmarks, lm); 
+            }
 
-	//moving_ss is Volume*, lw.m_input_img is Plm_image*
+            //moving_ss is Volume*, lw.m_input_img is Plm_image*
 
-	Volume *moving_ss_clone = new Volume();
-	moving_ss_clone = moving_ss->clone_raw();
-	Plm_image *moving_ss_plmimage = new Plm_image();
-	moving_ss_plmimage->set_volume (moving_ss_clone);
+            Volume *moving_ss_clone = new Volume();
+            moving_ss_clone = moving_ss->clone_raw();
+            Plm_image *moving_ss_plmimage = new Plm_image();
+            moving_ss_plmimage->set_volume (moving_ss_clone);
 
 //	lw.m_input_img = regd->moving_image; // Plm_image
-        lw.m_input_img = moving_ss_plmimage;
-	lw.m_pih.set_from_plm_image (lw.m_input_img); // see landmark_warp_main.cxx
+            lw.m_input_img = moving_ss_plmimage;
+            lw.m_pih.set_from_plm_image (lw.m_input_img); // see landmark_warp_main.cxx
 
-	// how to pass vector field into lw via Xform lw->m_vf ? 
-	// lw.m_vf = xf_out;
-	// this results in a runtime error:
-	// Typecast error in get_gpuit_vf() - in calculate_warped_landmarks(), line 200 of landmark_warp.cxx 
+            // how to pass vector field into lw via Xform lw->m_vf ? 
+            // lw.m_vf = xf_out;
+            // this results in a runtime error:
+            // Typecast error in get_gpuit_vf() - in calculate_warped_landmarks(), line 200 of landmark_warp.cxx 
 
-	// warp & save
-	lw.m_warped_landmarks = pointset_create ();
-	calculate_warped_landmarks_by_vf ( &lw, vector_field);
-	//calculate_warped_landmarks ( &lw);
-	logfile_printf("... trying to save landmarks to %s\n",regp->warped_landmarks_fn.c_str());
-	pointset_save (lw.m_warped_landmarks, regp->warped_landmarks_fn.c_str());
+            // warp & save
+            lw.m_warped_landmarks = pointset_create ();
+            calculate_warped_landmarks_by_vf ( &lw, vector_field);
+            //calculate_warped_landmarks ( &lw);
+            logfile_printf("... trying to save landmarks to %s\n",regp->warped_landmarks_fn.c_str());
+            pointset_save (lw.m_warped_landmarks, regp->warped_landmarks_fn.c_str());
 
-	/*  // obsolete code using Blm 
-           bspline_landmarks_warp (vector_field, &parms, 
+            /*  // obsolete code using Blm 
+                bspline_landmarks_warp (vector_field, &parms, 
                 xf_out->get_gpuit_bsp(), fixed_ss, moving_ss );
-            bspline_landmarks_write_file (
+                bspline_landmarks_write_file (
                 (const char*) regp->warped_landmarks_fn, 
                 "warped", 
                 regp->landmarks->warped_landmarks, 
                 regp->landmarks->num_landmarks);
-	*/
+            */
 
             delete vector_field;
         } else 
             print_and_exit ("Could not interpolate vector field for landmark warping\n");
     }
-//#endif
+#endif
 
     /* Free up temporary memory */
     if (stage->fixed_mask) {

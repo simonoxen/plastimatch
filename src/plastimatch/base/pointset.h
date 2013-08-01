@@ -52,7 +52,7 @@ public:
     void set_label (const char* s) {
         this->label = s;
     }
-    std::string get_label (void) const {
+    const std::string& get_label (void) const {
         return this->label;
     }
 };

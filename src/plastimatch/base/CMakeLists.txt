@@ -63,6 +63,7 @@ set (PLMBASE_LIBRARY_SRC
   plm_image_header.cxx
   plm_image_type.cxx
   pointset.cxx
+  pointset_warp.cxx
   proj_image.cxx
   proj_image_dir.cxx
   proj_matrix.cxx

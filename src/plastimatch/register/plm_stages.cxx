@@ -18,6 +18,7 @@
 #include "plm_stages.h"
 #include "plm_timer.h"
 #include "plm_warp.h"
+#include "pointset_warp.h"
 #include "registration_data.h"
 #include "registration_parms.h"
 #include "stage_parms.h"
@@ -157,7 +158,8 @@ save_output (
     Plm_image_type img_out_type,
     float default_value, 
     const char *img_out_fn,
-    const char *vf_out_fn
+    const char *vf_out_fn,
+    const char *warped_landmarks_fn
 )
 {
     /* Save xf to all filenames in list */
@@ -175,14 +177,14 @@ save_output (
         }
     }
 
-    if (img_out_fn[0] || vf_out_fn[0]) {
+    if (img_out_fn[0] || vf_out_fn[0] || warped_landmarks_fn[0]) {
         DeformationFieldType::Pointer vf;
         DeformationFieldType::Pointer *vfp;
         Plm_image im_warped;
         Plm_image *imp;
         Plm_image_header pih;
 
-        if (vf_out_fn[0]) {
+        if (vf_out_fn[0] || warped_landmarks_fn[0]) {
             vfp = &vf;
         } else {
             vfp = 0;
@@ -210,6 +212,12 @@ save_output (
             } else {
                 im_warped.save_short_dicom (img_out_fn, 0);
             }
+        }
+        if (warped_landmarks_fn[0]) {
+            Labeled_pointset warped_pointset;
+            logfile_printf ("Saving warped landmarks...\n");
+            pointset_warp (&warped_pointset, regd->moving_landmarks, vf);
+            warped_pointset.save (warped_landmarks_fn);
         }
         if (vf_out_fn[0]) {
             logfile_printf ("Saving vf...\n");
@@ -257,7 +265,8 @@ do_registration_stage (
     /* Save intermediate output */
     save_output (regd, xf_out, stage->xf_out_fn, stage->xf_out_itk, 
         stage->img_out_fmt, stage->img_out_type, 
-        stage->default_value, stage->img_out_fn, stage->vf_out_fn);
+        stage->default_value, stage->img_out_fn, stage->vf_out_fn,
+        stage->warped_landmarks_fn.c_str());
 }
 
 static void
@@ -402,7 +411,8 @@ do_registration (Registration_parms* regp)
         save_output (&regd, xf_out, regp->xf_out_fn, regp->xf_out_itk, 
             regp->img_out_fmt, regp->img_out_type, 
             regp->default_value, regp->img_out_fn, 
-            regp->vf_out_fn);
+            regp->vf_out_fn, regp->warped_landmarks_fn.c_str());
+
         timer3.stop();
     
         delete xf_out;
