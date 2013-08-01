@@ -85,15 +85,15 @@ while (<FP>) {
     }
 }
 
-foreach $keystring (sort keys %brainstem_hash) {
-#    print "$brainstem_hash{$keystring},$left_eye_hash{$keystring}\n";
-    print "$brainstem_hash{$keystring},$left_parotid{$keystring}\n";
-}
+# foreach $keystring (sort keys %brainstem_hash) {
+# #    print "$brainstem_hash{$keystring},$left_eye_hash{$keystring}\n";
+#     print "$brainstem_hash{$keystring},$left_parotid{$keystring}\n";
+# }
 
 
-exit (0);
+# exit (0);
 
 foreach $keystring (sort keys %dice_sum) {
     $avg_dice = $dice_sum{$keystring} / $dice_num{$keystring};
-    print "$keystring: $avg_dice\n";
+    print "$keystring,$avg_dice\n";
 }

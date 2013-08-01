@@ -280,7 +280,7 @@ Mabs_private::segmentation_threshold_weight (
 
         std::string seg_log_string = string_format (
             "%s,%s,%s,"
-            "rho=%f,sigma=%f,minsum=%f,thresh=%f,"
+            "rho=%f,sigma=%f,minsim=%f,thresh=%f,"
             "dice=%f,tp=%d,tn=%d,fp=%d,fn=%d,"
             "hd=%f,95hd=%f,ahd=%f,"
             "bhd=%f,95bhd=%f,abhd=%f\n",
