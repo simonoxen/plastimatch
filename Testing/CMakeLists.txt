@@ -55,6 +55,7 @@ set (CONFIG_FILE_LIST
   "plm-bsp-dcos-e.txt"
   "plm-bsp-dcos-f.txt"
   "plm-bsp-landmark-a.txt"
+  "plm-bsp-landmark-b.txt"
   "plm-reg-mask-a.txt"
   "plm-reg-multi-a.txt"
   "plm-reg-dv-itk-translation.txt"
@@ -309,6 +310,8 @@ endif ()
 ##   rect-12           Small rect, bg=0, fg=10
 ##   rect-13           Small rect, bg=0, fg=11
 ##   rect-14           Small, off-center rect, bg=0, fg=10
+##   rect-15           Standard rect, slicer direction cosines
+##   rect-16           Off-center rect, slicer direction cosines
 ##   sphere-1          Uchar sphere, bg=0, fg=255
 ##   sphere-2          Standard sphere, centered
 ## -------------------------------------------------------------------------
@@ -473,6 +476,16 @@ plm_add_test (
   "rect-14"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-14.mha;--output-type;float;--pattern;rect;--dim;20 20 20;--origin;-9.5 -9.5 -9.5;--spacing;1 1 1;--background;0;--foreground;10;--rect-size;-2.5 6.5 -4.5 4.5 -4.5 4.5"
+  )
+plm_add_test (
+  "rect-15"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-15.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-50 50 -50 50 -50 50;--origin;243.421 243.421 -243.421;--spacing;13.1579 13.1579 13.1579;--direction-cosines;-1 0 0 0 -1 0 0 0 1"
+  )
+plm_add_test (
+  "rect-16"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-16.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-30 70 -50 50 -50 50;--origin;243.421 243.421 -243.421;--spacing;13.1579 13.1579 13.1579;--direction-cosines;-1 0 0 0 -1 0 0 0 1"
   )
 plm_add_test (
   "sphere-1"
@@ -2504,6 +2517,12 @@ plm_add_test (
   "${PLM_BUILD_TESTING_DIR}/plm-bsp-landmark-a.txt"
   )
 set_tests_properties (plm-bsp-landmark-a PROPERTIES DEPENDS "rect-2;sphere-2")
+plm_add_test (
+  "plm-bsp-landmark-b"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-landmark-b.txt"
+  )
+set_tests_properties (plm-bsp-landmark-b PROPERTIES DEPENDS "rect-15;rect-16")
 
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 5)
