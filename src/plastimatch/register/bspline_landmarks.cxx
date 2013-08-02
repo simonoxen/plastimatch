@@ -206,5 +206,3 @@ Bspline_landmarks::set_landmarks (
         this->num_landmarks = moving_landmarks->count();
     }
 }
-
-

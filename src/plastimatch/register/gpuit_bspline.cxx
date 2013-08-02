@@ -218,6 +218,7 @@ do_gpuit_bspline_stage_internal (
     default:
         print_and_exit ("Undefined impl type in gpuit_bspline\n");
     }
+    logfile_printf ("Algorithm flavor = %c\n", parms.implementation);
 
     /* Regularization */
     parms.reg_parms->lambda = stage->regularization_lambda;

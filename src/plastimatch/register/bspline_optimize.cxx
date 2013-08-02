@@ -31,9 +31,13 @@ static void
 log_bxf_header (Bspline_xform* bxf)
 {
     logfile_printf ("BSPLINE XFORM HEADER\n");
-    logfile_printf ("vox_per_rgn = %d %d %d\n", bxf->vox_per_rgn[0], bxf->vox_per_rgn[1], bxf->vox_per_rgn[2]);
-    logfile_printf ("roi_offset = %d %d %d\n", bxf->roi_offset[0], bxf->roi_offset[1], bxf->roi_offset[2]);
-    logfile_printf ("roi_dim = %d %d %d\n", bxf->roi_dim[0], bxf->roi_dim[1], bxf->roi_dim[2]);
+    logfile_printf ("vox_per_rgn = %d %d %d\n", 
+        bxf->vox_per_rgn[0], bxf->vox_per_rgn[1], bxf->vox_per_rgn[2]);
+    logfile_printf ("roi_offset = %d %d %d\n", 
+        bxf->roi_offset[0], bxf->roi_offset[1], bxf->roi_offset[2]);
+    logfile_printf ("roi_dim = %d %d %d\n", 
+        bxf->roi_dim[0], bxf->roi_dim[1], bxf->roi_dim[2]);
+    logfile_printf ("img_dc = %s\n", bxf->dc.get_string().c_str());
 }
 
 static void

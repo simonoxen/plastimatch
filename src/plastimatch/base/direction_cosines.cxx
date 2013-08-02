@@ -8,6 +8,7 @@
 #include "itk_image.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
+#include "string_util.h"
 
 #define DIRECTION_COSINES_IDENTITY_THRESH 1e-9
 
@@ -229,4 +230,20 @@ bool Direction_cosines::is_identity () {
             - id.d_ptr->direction_cosines[i]);
     }
     return frob < DIRECTION_COSINES_IDENTITY_THRESH;
+}
+
+std::string
+Direction_cosines::get_string ()
+{
+    std::string s = string_format ("%g %g %g %g %g %g %g %g %g", 
+        d_ptr->direction_cosines[0],
+        d_ptr->direction_cosines[1],
+        d_ptr->direction_cosines[2],
+        d_ptr->direction_cosines[3],
+        d_ptr->direction_cosines[4],
+        d_ptr->direction_cosines[5],
+        d_ptr->direction_cosines[6],
+        d_ptr->direction_cosines[7],
+        d_ptr->direction_cosines[8]);
+    return s;
 }
