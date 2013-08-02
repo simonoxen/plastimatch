@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+#include "logfile.h"
 #include "plm_exception.h"
 #include "print_and_exit.h"
 #include "string_util.h"
@@ -43,6 +44,7 @@ print_and_exit (char* prompt_fmt, ...)
         va_list argptr;
         va_start (argptr, prompt_fmt);
         std::string error_message = string_format (prompt_fmt, argptr);
+        lprintf ("%s\n", error_message.c_str());
         Plm_exception pe = Plm_exception (error_message);
         va_end (argptr);
         throw pe;
