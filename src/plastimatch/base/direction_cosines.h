@@ -45,7 +45,7 @@ class PLMBASE_API Direction_cosines {
     void set (const DirectionType& itk_dc);
     bool set_from_string (std::string& str);
     bool is_identity ();
-    std::string get_string ();
+    std::string get_string () const;
 protected:
     void solve_inverse ();
 };

@@ -14,6 +14,7 @@
 #include "bspline_xform.h"
 #include "direction_matrices.h"
 #include "file_util.h"
+#include "logfile.h"
 #include "plm_math.h"
 #include "pointset.h"
 #include "print_and_exit.h"
@@ -152,6 +153,18 @@ Bspline_landmarks::initialize (const Bspline_xform* bxf)
 
     float step[9];
     float proj[9];
+    lprintf ("Computing landmark grid coordinates\n"
+        "image dc=%s\n"
+        "image or=%g %g %g\n"
+        "image dm=%d %d %d\n",
+        bxf->dc.get_string().c_str(),
+        bxf->img_origin[0],
+        bxf->img_origin[1],
+        bxf->img_origin[2],
+        (int) bxf->img_dim[0],
+        (int) bxf->img_dim[1],
+        (int) bxf->img_dim[2]
+    );
     compute_direction_matrices (step, proj, bxf->dc, bxf->img_spacing);
 
     this->fixed_landmarks_p = new int[3*this->num_landmarks];
@@ -171,14 +184,6 @@ Bspline_landmarks::initialize (const Bspline_xform* bxf)
             landmark_ijk[1], landmark_ijk[2]);
         for (int d = 0; d < 3; d++) {
             plm_long v;
-#if defined (commentout)
-            v = ROUND_INT ((this->fixed_landmarks->point_list[i].p[d] 
-                    - bxf->img_origin[d]) / bxf->img_spacing[d]);
-            printf ("(%f - %f) / %f = %u\n",
-                this->fixed_landmarks->point_list[i].p[d], 
-                bxf->img_origin[d], bxf->img_spacing[d], 
-                (unsigned int) v);
-#endif
             v = landmark_ijk[d];
             if (v < 0 || v >= bxf->img_dim[d])
             {

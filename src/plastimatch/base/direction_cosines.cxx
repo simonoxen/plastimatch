@@ -233,7 +233,7 @@ bool Direction_cosines::is_identity () {
 }
 
 std::string
-Direction_cosines::get_string ()
+Direction_cosines::get_string () const
 {
     std::string s = string_format ("%g %g %g %g %g %g %g %g %g", 
         d_ptr->direction_cosines[0],
