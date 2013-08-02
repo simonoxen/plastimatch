@@ -71,6 +71,7 @@ while (<FP>) {
 
     $dice_num{$keystring} ++;
     $dice_sum{$keystring} += $dice;
+    $hd95_sum{$keystring} += $hd95;
 
 
     $alt_key = "$target,$rho,$sigma,$minsim,$thresh";
@@ -95,5 +96,6 @@ while (<FP>) {
 
 foreach $keystring (sort keys %dice_sum) {
     $avg_dice = $dice_sum{$keystring} / $dice_num{$keystring};
-    print "$keystring,$avg_dice\n";
+    $avg_hd95 = $hd95_sum{$keystring} / $dice_num{$keystring};
+    print "$keystring,$avg_dice,$avg_hd95\n";
 }
