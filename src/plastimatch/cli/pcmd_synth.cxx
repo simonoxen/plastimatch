@@ -121,6 +121,8 @@ parse_fn (
     parser->add_default_options ();
 
     /* Input files */
+    parser->add_long_option ("", "input", 
+        "input image (add synthetic pattern onto existing image)", 1, "");
     parser->add_long_option ("", "fixed", 
         "fixed image (match output size to this image)", 1, "");
 
@@ -143,7 +145,7 @@ parse_fn (
     /* Main pattern */
     parser->add_long_option ("", "pattern",
         "synthetic pattern to create: {"
-        "donut, dose, enclosed_rect, gauss, grid, lung, osd, rect, sphere, "
+        "donut, dose, gauss, grid, lung, rect, sphere, "
         "xramp, yramp, zramp}, default is gauss", 
         1, "gauss");
 
@@ -263,12 +265,6 @@ parse_fn (
     else if (arg == "multi-sphere") {
         sm_parms->pattern = PATTERN_MULTI_SPHERE;
     }
-    else if (arg == "osd") {
-        sm_parms->pattern = PATTERN_OBJSTRUCTDOSE;
-    }
-    else if (arg == "enclosed_rect") {
-        sm_parms->pattern = PATTERN_ENCLOSED_RECT;
-    }
     else if (arg == "donut") {
         sm_parms->pattern = PATTERN_DONUT;
     }
@@ -294,8 +290,9 @@ parse_fn (
         throw (dlib::error ("Error. Unknown --pattern argument: " + arg));
     }
 
-    /* Fixed image */
+    /* Input files */
     sm_parms->fixed_fn = parser->get_string("fixed").c_str();
+    sm_parms->input_fn = parser->get_string("input");
 
     /* Image size */
     parser->assign_int13 (sm_parms->dim, "dim");

@@ -312,6 +312,8 @@ endif ()
 ##   rect-14           Small, off-center rect, bg=0, fg=10
 ##   rect-15           Standard rect, slicer direction cosines
 ##   rect-16           Off-center rect, slicer direction cosines
+##   rectarr-01        Two rectangles, both centered
+##   rectarr-02        Two rectangles, lower rect offset
 ##   sphere-1          Uchar sphere, bg=0, fg=255
 ##   sphere-2          Standard sphere, centered
 ## -------------------------------------------------------------------------
@@ -487,6 +489,23 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-16.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-30 70 -50 50 -50 50;--origin;243.421 243.421 -243.421;--spacing;13.1579 13.1579 13.1579;--direction-cosines;-1 0 0 0 -1 0 0 0 1"
   )
+plm_add_test (
+  "rectarr-01-a"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rectarr-01-a.mha;--output-type;float;--pattern;rect;--dim;30 50 30;--background;-1000;--foreground;0;--rect-size;-5 5 -15 -5 -5 5;--origin;-14.5 -24.5 -14.5;--spacing;1 1 1"
+  )
+plm_add_test (
+  "rectarr-01"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--input;${PLM_BUILD_TESTING_DIR}/rectarr-01-a.mha;--output;${PLM_BUILD_TESTING_DIR}/rectarr-01.mha;--output-type;float;--pattern;rect;--background;-1000;--foreground;0;--rect-size;-5 5 5 15 -5 5"
+  )
+plm_add_test (
+  "rectarr-02"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--input;${PLM_BUILD_TESTING_DIR}/rectarr-01-a.mha;--output;${PLM_BUILD_TESTING_DIR}/rectarr-02.mha;--output-type;float;--pattern;rect;--background;-1000;--foreground;0;--rect-size;-10 0 5 15 -5 5"
+  )
+set_property (TEST rectarr-01 APPEND PROPERTY DEPENDS rectarr-01-a)
+set_property (TEST rectarr-02 APPEND PROPERTY DEPENDS rectarr-01-a)
 plm_add_test (
   "sphere-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch

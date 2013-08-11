@@ -5,6 +5,7 @@
 #define _synthetic_mha_h_
 
 #include "plmutil_config.h"
+#include <string>
 #include "direction_cosines.h"
 #include "plm_image_type.h"
 #include "pstring.h"
@@ -17,8 +18,6 @@ enum Pattern_type {
     PATTERN_RECT,
     PATTERN_SPHERE,
     PATTERN_MULTI_SPHERE,
-    PATTERN_ENCLOSED_RECT,
-    PATTERN_OBJSTRUCTDOSE,
     PATTERN_DONUT,
     PATTERN_GRID,
     PATTERN_LUNG,
@@ -27,18 +26,12 @@ enum Pattern_type {
     PATTERN_ZRAMP
 };
 
-enum Pattern_structset_type {
-    PATTERN_SS_ONE,
-    PATTERN_SS_TWO_APART,
-    PATTERN_SS_TWO_OVERLAP_PLUS_ONE,
-    PATTERN_SS_TWO_OVERLAP_PLUS_ONE_PLUS_EMBED
-};
-
 class Synthetic_mha_parms {
 public:
     int output_type;
     Pattern_type pattern;
     Pstring fixed_fn;
+    std::string input_fn;
     int dim[3];
     float origin[3];
     float spacing[3];
@@ -46,6 +39,8 @@ public:
 
     float background;
     float foreground;
+    float background_alpha;
+    float foreground_alpha;
     bool m_want_ss_img;
     bool m_want_dose_img;
 
@@ -63,17 +58,14 @@ public:
     int grid_spacing[3];
     float lung_tumor_pos[3];
     
-    float enclosed_intens_f1, enclosed_intens_f2;
-    float enclosed_xlat1[3], enclosed_xlat2[3];
-
-    Pattern_structset_type pattern_ss;
-
     int num_multi_sphere;
 
 public:
     Synthetic_mha_parms () {
         output_type = PLM_IMG_TYPE_ITK_FLOAT;
         pattern = PATTERN_GAUSS;
+        input_fn = "";
+
         for (int i = 0; i < 3; i++) {
             spacing[i] = 5.0f;
             dim[i] = 100;
@@ -88,6 +80,8 @@ public:
         }
         background = -1000.0f;
         foreground = 0.0f;
+        background_alpha = 1.0f;
+        foreground_alpha = 1.0f;
         m_want_ss_img = false;
         m_want_dose_img = false;
         rect_size[0] = -50.0f;
@@ -103,8 +97,6 @@ public:
         grid_spacing[0] = 10;
         grid_spacing[1] = 10;
         grid_spacing[2] = 10;
-        pattern_ss = PATTERN_SS_ONE;
-        num_multi_sphere = 33;
         penumbra = 5.0f;
         dose_size[0] = -50.0f;
         dose_size[1] = +50.0f;
@@ -112,6 +104,7 @@ public:
         dose_size[3] = +50.0f;
         dose_size[4] = -50.0f;
         dose_size[5] = +50.0f;
+        num_multi_sphere = 33;
     }
 };
 
