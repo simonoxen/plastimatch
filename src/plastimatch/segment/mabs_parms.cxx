@@ -136,6 +136,9 @@ Mabs_parms::set_key_val (
             if (val == "nmi" || val == "NMI") {
                 this->atlas_selection_criteria="nmi";
             }
+            else if (val == "nmi-ratio" || val == "NMI-RATIO") {
+                this->atlas_selection_criteria="nmi-ratio";
+            }
             else if (val == "random" || val == "RANDOM") { // Just for testing purpose
                 this->atlas_selection_criteria="random";
             }

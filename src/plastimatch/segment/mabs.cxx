@@ -1155,11 +1155,12 @@ Mabs::train_internal (bool registration_only)
 	    Mabs_atlas_selection* select_atlas 
                 = new Mabs_atlas_selection(d_ptr->process_dir_list, d_ptr->ref_rtds);
             
-            if (d_ptr->parms->atlas_selection_criteria == "nmi") {
-	        d_ptr->atlas_list = select_atlas->nmi_ranking (
-                    patient_id, d_ptr->parms);
+            if (d_ptr->parms->atlas_selection_criteria == "nmi" ||
+                d_ptr->parms->atlas_selection_criteria == "nmi-ratio") {
+
+	            d_ptr->atlas_list = select_atlas->nmi_ranking (patient_id, d_ptr->parms);
             }
-            
+
             else if (d_ptr->parms->atlas_selection_criteria == "random") { // Just for testing purpose
                d_ptr->atlas_list = select_atlas->random_ranking (patient_id); 
             }
