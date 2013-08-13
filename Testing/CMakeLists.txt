@@ -314,6 +314,8 @@ endif ()
 ##   rect-16           Off-center rect, slicer direction cosines
 ##   rectarr-01        Two rectangles, both centered
 ##   rectarr-02        Two rectangles, lower rect offset
+##   rectarr-m-01      Upper mask for rectarr-01 and rectarr-02
+##   rectarr-m-02      Lower mask for rectarr-01 and rectarr-02
 ##   sphere-1          Uchar sphere, bg=0, fg=255
 ##   sphere-2          Standard sphere, centered
 ## -------------------------------------------------------------------------
@@ -506,6 +508,18 @@ plm_add_test (
   )
 set_property (TEST rectarr-01 APPEND PROPERTY DEPENDS rectarr-01-a)
 set_property (TEST rectarr-02 APPEND PROPERTY DEPENDS rectarr-01-a)
+plm_add_test (
+  "rectarr-m-01"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--fixed;rectarr-01-a.mha;--output;${PLM_BUILD_TESTING_DIR}/rectarr-m-01.mha;--output-type;uchar;--pattern;rect;--background;0;--foreground;1;--rect-size;-13 13 -20 0 -13 13"
+  )
+plm_add_test (
+  "rectarr-m-02"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--fixed;rectarr-01-a.mha;--output;${PLM_BUILD_TESTING_DIR}/rectarr-m-02.mha;--output-type;uchar;--pattern;rect;--background;0;--foreground;1;--rect-size;-13 13 0 20 -13 13"
+  )
+set_property (TEST rectarr-m-01 APPEND PROPERTY DEPENDS rectarr-01-a)
+set_property (TEST rectarr-m-02 APPEND PROPERTY DEPENDS rectarr-01-a)
 plm_add_test (
   "sphere-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
