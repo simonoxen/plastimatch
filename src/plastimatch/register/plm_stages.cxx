@@ -7,12 +7,12 @@
 #include "itkImageRegionConstIteratorWithIndex.h"
 
 #include "bspline_xform.h"
-#include "gpuit_bspline.h"
 #include "gpuit_demons.h"
 #include "itk_demons.h"
 #include "itk_image_save.h"
 #include "itk_registration.h"
 #include "logfile.h"
+#include "plm_bspline.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "plm_stages.h"

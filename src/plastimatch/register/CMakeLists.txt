@@ -37,7 +37,6 @@ set (PLMREGISTER_LIBRARY_SRC
   demons_cpu.cxx
   demons_misc.cxx
   demons_state.cxx
-  gpuit_bspline.cxx
   gpuit_demons.cxx
   itk_demons.cxx
   itk_optimizer.cxx
@@ -45,6 +44,7 @@ set (PLMREGISTER_LIBRARY_SRC
   itk_registration_observer.cxx
   itk_tps.cxx
   landmark_warp.cxx 
+  plm_bspline.cxx
   plm_stages.cxx
   rbf_cluster.cxx
   rbf_gauss.cxx

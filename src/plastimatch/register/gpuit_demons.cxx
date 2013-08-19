@@ -72,7 +72,8 @@ do_gpuit_demons_stage_internal (
     vf_out = demons (fixed_ss, moving_ss, moving_grad, vf_in, &parms);
 
     /* Do something with output vector field */
-    xf_out->set_gpuit_vf (vf_out);
+    //xf_out->set_gpuit_vf (vf_out);
+    xf_out->set_gpuit_vf (Volume::Pointer(vf_out));
 
     delete fixed_ss;
     delete moving_ss;

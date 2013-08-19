@@ -13,13 +13,15 @@
 #include "itkThinPlateSplineKernelTransform.h"
 
 #include "itk_image_type.h"
+#include "smart_pointer.h"
+#include "volume.h"
 
 class Bspline_xform;
 class Plm_image_header;
 class Pstring;
-class Volume;
 class Volume_header;
 class Xform;
+class Xform_private;
 
 enum XFormInternalType {
     XFORM_NONE                  = 0,
@@ -56,6 +58,14 @@ typedef DoubleTpsTransformType TpsTransformType;
 
 class PLMBASE_API Xform {
 public:
+    SMART_POINTER_SUPPORT (Xform);
+    Xform_private *d_ptr;
+public:
+    Xform ();
+    ~Xform ();
+    Xform (Xform& xf);
+
+public:
     XFormInternalType m_type;
     
     /* The actual xform is one of the following. */
@@ -66,13 +76,9 @@ public:
     DeformationFieldType::Pointer m_itk_vf;
     BsplineTransformType::Pointer m_itk_bsp;
     TpsTransformType::Pointer m_itk_tps;
-    void* m_gpuit;
+    //void* m_gpuit;
 
 public:
-    Xform ();
-    Xform (Xform& xf);
-    ~Xform ();
-
     void clear ();
 
     void load (const char* fn);
@@ -103,7 +109,7 @@ public:
     void set_itk_tps (TpsTransformType::Pointer tps);
     void set_itk_vf (DeformationFieldType::Pointer vf);
     void set_gpuit_bsp (Bspline_xform* xgb);
-    void set_gpuit_vf (Volume* vf);
+    void set_gpuit_vf (const Volume::Pointer& vf);
 
     void get_volume_header (Volume_header *vh);
     Plm_image_header get_plm_image_header ();
@@ -112,18 +118,7 @@ public:
     void print ();
 
 public:
-    Xform& operator= (Xform& xf) {
-        m_type = xf.m_type;
-        m_trn = xf.m_trn;
-        m_vrs = xf.m_vrs;
-        m_quat = xf.m_quat;
-        m_aff = xf.m_aff;
-        m_itk_vf = xf.m_itk_vf;
-        m_itk_bsp = xf.m_itk_bsp;
-        m_itk_tps = xf.m_itk_tps;
-        m_gpuit = xf.m_gpuit;                  /* Shallow copy */
-        return *this;
-    }
+    Xform& operator= (Xform& xf);
 };
 
 

@@ -5,8 +5,9 @@
 #define _bspline_xform_h_
 
 #include "plmbase_config.h"
-#include "plm_int.h"
 #include "direction_cosines.h"
+#include "smart_pointer.h"
+#include "plm_int.h"
 
 //TODO: Change type of dc to Direction_cosines*
 
@@ -16,19 +17,21 @@ class Volume_header;
 
 class PLMBASE_API Bspline_xform {
 public:
+    SMART_POINTER_SUPPORT (Bspline_xform);
+public:
     Bspline_xform ();
     ~Bspline_xform ();
 public:
     float img_origin[3];         /* Image origin (in mm) */
     float img_spacing[3];        /* Image spacing (in mm) */
-    plm_long img_dim[3];           /* Image size (in vox) */
+    plm_long img_dim[3];         /* Image size (in vox) */
     Direction_cosines dc;        /* Image direction cosines */
     plm_long roi_offset[3];	 /* Position of first vox in ROI (in vox) */
-    plm_long roi_dim[3];		 /* Dimension of ROI (in vox) */
+    plm_long roi_dim[3];	 /* Dimension of ROI (in vox) */
     plm_long vox_per_rgn[3];	 /* Knot spacing (in vox) */
     float grid_spac[3];          /* Knot spacing (in mm) */
-    plm_long rdims[3];             /* # of regions in (x,y,z) */
-    plm_long cdims[3];             /* # of knots in (x,y,z) */
+    plm_long rdims[3];           /* # of regions in (x,y,z) */
+    plm_long cdims[3];           /* # of knots in (x,y,z) */
     int num_knots;               /* Total number of knots (= product(cdims)) */
     int num_coeff;               /* Total number of coefficents (= product(cdims) * 3) */
     float* coeff;                /* Coefficients.  Vector directions interleaved. */

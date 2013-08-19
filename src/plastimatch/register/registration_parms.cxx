@@ -286,6 +286,12 @@ Registration_parms::set_key_val (
     }
 
     /* The following keywords are only allowed in stages */
+    else if (!strcmp (key, "resume")) {
+        if (section == 0) goto error_not_global;
+        if (!strcmp (val, "1")) {
+            stage->resume_stage = true;
+        }
+    }
     else if (!strcmp (key, "xform")) {
         if (section == 0) goto error_not_global;
         if (!strcmp (val,"translation")) {

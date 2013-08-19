@@ -156,7 +156,6 @@ main (int argc, char* argv[])
 
     /* Free memory */
     printf ("Done warping images.\n");
-    bspline_parms_free (parms);
     delete bxf;
     delete fixed;
     delete moving;

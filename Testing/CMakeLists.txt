@@ -46,7 +46,9 @@ option (PLM_DOWNLOAD_XIO_IRREGULAR
 ## Configure test input files
 ##-----------------------------------------------------------------------------
 set (CONFIG_FILE_LIST
+  "plm-bsp-single-c.txt"
   "plm-bsp-cuda.txt"
+  "plm-bsp-resume.txt"
   "plm-bsp-logfile.txt"
   "plm-bsp-dcos-a.txt"
   "plm-bsp-dcos-b.txt"
@@ -2254,10 +2256,11 @@ set_tests_properties (plm-reg-itk-demons-check-2 PROPERTIES
 
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 2)
-##   plm-bspline-single-c
+##   plm-bsp-single-c
 ##   plm-bspline-single-h
 ##   plm-bspline-openmp
 ##   plm-bsp-cuda
+##   plm-bsp-resume
 ##   plm-bsp-logfile
 ##   plm-reg-bspline-ushort
 ##   plm-reg-bspline-double
@@ -2265,27 +2268,27 @@ set_tests_properties (plm-reg-itk-demons-check-2 PROPERTIES
 ##   plm-reg-bspline-char-output
 ## -------------------------------------------------------------------------
 plm_add_test (
-  "plm-bspline-single-c" 
+  "plm-bsp-single-c" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-bspline-single-c.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-single-c.txt"
   )
 plm_add_test (
-  "plm-bspline-single-c-stats"
+  "plm-bsp-single-c-stats"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;${PLM_BUILD_TESTING_DIR}/plm-bspline-single-c-img.mha"
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-single-c-img.mha"
   )
-plmtest_check_interval ("plm-bspline-single-c-check"
-  "${PLM_BUILD_TESTING_DIR}/plm-bspline-single-c-stats.stdout.txt"
+plmtest_check_interval ("plm-bsp-single-c-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-single-c-stats.stdout.txt"
   "AVE *([-0-9.]*)"
   "${PLM_BSPLINE_TEST_LOWER_THRESH}"
   "${PLM_BSPLINE_TEST_UPPER_THRESH}"
   )
-set_property (TEST plm-bspline-single-c APPEND PROPERTY DEPENDS gauss-1)
-set_property (TEST plm-bspline-single-c APPEND PROPERTY DEPENDS gauss-2)
-set_tests_properties (plm-bspline-single-c-stats PROPERTIES 
-  DEPENDS plm-bspline-single-c)
-set_tests_properties (plm-bspline-single-c-check PROPERTIES 
-  DEPENDS plm-bspline-single-c-stats)
+set_property (TEST plm-bsp-single-c APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-bsp-single-c APPEND PROPERTY DEPENDS gauss-2)
+set_tests_properties (plm-bsp-single-c-stats PROPERTIES 
+  DEPENDS plm-bsp-single-c)
+set_tests_properties (plm-bsp-single-c-check PROPERTIES 
+  DEPENDS plm-bsp-single-c-stats)
 
 plm_add_test (
   "plm-bspline-single-h" 
@@ -2355,6 +2358,29 @@ set_tests_properties (plm-bsp-cuda-stats PROPERTIES
   DEPENDS plm-bsp-cuda)
 set_tests_properties (plm-bsp-cuda-check PROPERTIES 
   DEPENDS plm-bsp-cuda-stats)
+
+plm_add_test (
+  "plm-bsp-resume" 
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-resume.txt"
+  )
+plm_add_test (
+  "plm-bsp-resume-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-resume-img.mha"
+  )
+# plmtest_check_interval ("plm-bsp-resume-check"
+#   "${PLM_BUILD_TESTING_DIR}/plm-bsp-resume-stats.stdout.txt"
+#   "AVE *([-0-9.]*)"
+#   "${PLM_BSPLINE_TEST_LOWER_THRESH}"
+#   "${PLM_BSPLINE_TEST_UPPER_THRESH}"
+#   )
+set_property (TEST plm-bsp-resume APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-bsp-resume APPEND PROPERTY DEPENDS gauss-2)
+set_tests_properties (plm-bsp-resume-stats PROPERTIES 
+  DEPENDS plm-bsp-resume)
+# set_tests_properties (plm-bsp-resume-check PROPERTIES 
+#   DEPENDS plm-bsp-resume-stats)
 
 plm_add_test (
   "plm-bsp-logfile" 

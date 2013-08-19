@@ -67,6 +67,8 @@ class PLMREGISTER_API Stage_parms {
 public:
     /* Stage # */
     int stage_no;
+    /* Stage resume? */
+    bool resume_stage;
     /* Generic optimization parms */
     int xform_type;
     int optim_type;
@@ -143,6 +145,8 @@ public:
     Stage_parms () {
         /* Stage # */
         stage_no = -1;
+        /* Stage resume? */
+        resume_stage = false;
         /* Generic optimization parms */
         xform_type = STAGE_TRANSFORM_VERSOR;
         optim_type = OPTIMIZATION_VERSOR;
@@ -224,12 +228,15 @@ public:
         *vf_out_fn = 0;
     }
     Stage_parms (Stage_parms& s) {
-        /* Copy all the parameters except the file names */
+        /* Copy all the parameters */
         *this = s;
+        /* ...but not the output filenames */
         img_out_fmt = IMG_OUT_FMT_AUTO;
         *img_out_fn = 0;
         xf_out_fn.clear ();
         *vf_out_fn = 0;
+        /* ...and don't to resume unless specifically requested */
+        resume_stage = false;
     }
 };
 

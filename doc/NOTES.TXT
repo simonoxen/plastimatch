@@ -1,7 +1,77 @@
 
+***** Plastimatch 2.0 *****
+
+Proposal #1, extend existing language.  The below is an example,
+but many improvements could be made.
+
+[GLOBAL]
+fixed[0]=image_1a.mha           // support for multi-planar registration
+fixed[1]=image_1b.mha
+moving[0]=image_2a.mha
+moving[1]=image_2b.mha
+$aux=image_1a_mask.mha          // load image into a variable
+img_out[0]=warped_1a.mha
+
+[FILTER]
+action=dmap                     // could be lua script here...
+input_1=$fixed[0]               // set input from variable
+input_2=$aux                    // set input from variable
+input_3=image_1c.mha            // load image into a variable
+$f1=$fixed[0]                   // save a copy of the old fixed[0]
+fixed[0]=$output                // overwrite fixed[0] with filter output
+
+[STAGE]
+xform=translation
+optim=rsg
+max_its=30
+res=4 4 2
+
+[RESUME_STAGE]                  // continue existing stage (yuck)
+max_its=50
+
+[STAGE]
+fixed[0]=$f1                    // replace fixed image for this stage
+xform=bspline
+
+Proposal #2, extend lua scripting.  Something like this:
+
+-- Global (inputs)
+r = Registration()
+r:fixed[0] = Image.load("image_1a.mha")
+r:fixed[1] = Image.load("image_1b.mha")
+r:moving[0] = Image.load("image_2a.mha")
+r:moving[1] = Image.load("image_2b.mha")
+aux = Image.load("image_1a_mask.mha")
+
+-- Filter
+f1 = fixed[0]
+r:fixed[0] = Dmap:get_output (r:fixed[0], aux, Image.load("Image_1c.mha"))
+
+-- Stage
+s = r:Stage ()
+s:xform = 'translation'
+s:optim = 'rsg'
+s:max_its = 30
+s:res = '4 4 2'
+s:run()
+
+-- Stage (continuation)
+s:max_its = 30
+s:run()
+
+-- Stage
+s = r:Stage(s)
+s:fixed[0] = f1
+s:xform = 'bspline'
+s:run()
+
+-- Global (outputs)
+r:get_output():save("warped_1a.mha")
+
+
 ***** What to do about const smart pointers *****
 
-(Your answer here)f
+(Your answer here)
 
 
 ***** A trick for forward declaration of nested classes *****

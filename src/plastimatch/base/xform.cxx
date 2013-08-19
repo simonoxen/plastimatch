@@ -39,24 +39,53 @@ itk_bsp_set_grid_img (Xform *xf,
 static void load_gpuit_bsp (Xform *xf, const char* fn);
 static void itk_xform_load (Xform *xf, const char* fn);
 
+/* Xform_private is currently a stub... */
+class Xform_private {
+public:
+    Bspline_xform::Pointer m_bsp;
+    Volume::Pointer m_vf;
+public:
+    Xform_private () {
+        m_bsp = Bspline_xform::New ();
+        m_vf = Volume::New ();
+    }
+};
 
 Xform::Xform ()
 {
-    m_gpuit = 0;
+    d_ptr = new Xform_private;
     clear ();
-}
-
-Xform::Xform (Xform& xf) {
-    *this = xf;
 }
 
 Xform::~Xform () {
     clear ();
 }
 
+Xform::Xform (Xform& xf) {
+    d_ptr = new Xform_private;
+    *this = xf;
+}
+
+Xform& Xform::operator= (Xform& xf) {
+    d_ptr->m_bsp = xf.d_ptr->m_bsp;
+    d_ptr->m_vf = xf.d_ptr->m_vf;
+
+    m_type = xf.m_type;
+    m_trn = xf.m_trn;
+    m_vrs = xf.m_vrs;
+    m_quat = xf.m_quat;
+    m_aff = xf.m_aff;
+    m_itk_vf = xf.m_itk_vf;
+    m_itk_bsp = xf.m_itk_bsp;
+    m_itk_tps = xf.m_itk_tps;
+//    m_gpuit = xf.m_gpuit;                  /* Shallow copy */
+    return *this;
+}
+
 void
 Xform::clear ()
 {
+#if defined (commentout)
     if (m_gpuit) {
         if (m_type == XFORM_GPUIT_VECTOR_FIELD) {
             delete (Volume*) m_gpuit;
@@ -65,6 +94,11 @@ Xform::clear ()
         }
         m_gpuit = 0;
     }
+#endif
+
+    d_ptr->m_bsp.reset();
+    d_ptr->m_vf.reset();
+
     m_type = XFORM_NONE;
     m_trn = 0;
     m_vrs = 0;
@@ -148,7 +182,8 @@ Xform::get_gpuit_bsp ()
     if (m_type != XFORM_GPUIT_BSPLINE) {
         print_and_exit ("Typecast error in get_gpuit_bsp()\n");
     }
-    return (Bspline_xform*) m_gpuit;
+    // return (Bspline_xform*) m_gpuit;
+    return d_ptr->m_bsp.get();
 }
 
 Volume*
@@ -161,7 +196,9 @@ Xform::get_gpuit_vf ()
     if (m_type != XFORM_GPUIT_VECTOR_FIELD) {
         print_and_exit ("Typecast error in get_gpuit_vf()\n");
     }
-    return (Volume*) m_gpuit;
+
+    //return (Volume*) m_gpuit;
+    return d_ptr->m_vf.get();
 }
 
 void
@@ -261,15 +298,19 @@ Xform::set_gpuit_bsp (Bspline_xform* xgb)
 {
     clear ();
     m_type = XFORM_GPUIT_BSPLINE;
-    m_gpuit = (void*) xgb;
+
+    //m_gpuit = (void*) xgb;
+    d_ptr->m_bsp.reset (xgb);
 }
 
 void
-Xform::set_gpuit_vf (Volume* vf)
+Xform::set_gpuit_vf (const Volume::Pointer& vf)
 {
     clear ();
     m_type = XFORM_GPUIT_VECTOR_FIELD;
-    m_gpuit = (void*) vf;
+    //m_gpuit = (void*) vf;
+    //d_ptr->m_vf.reset (vf);
+    d_ptr->m_vf = vf;
 }
 
 
@@ -1745,7 +1786,8 @@ xform_to_gpuit_vf (
         break;
     }
 
-    xf_out->set_gpuit_vf (vf);
+    //xf_out->set_gpuit_vf (vf);
+    xf_out->set_gpuit_vf (Volume::Pointer(vf));
 }
 
 void

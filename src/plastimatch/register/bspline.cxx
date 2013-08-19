@@ -383,11 +383,6 @@ bspline_save_debug_state (
 }
 
 void
-bspline_parms_free (Bspline_parms* parms)
-{
-}
-
-void
 bspline_state_destroy (
     Bspline_state *bst,
     Bspline_parms *parms, 

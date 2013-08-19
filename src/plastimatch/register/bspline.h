@@ -165,7 +165,6 @@ PLMREGISTER_C_API Bspline_state* bspline_state_create (
     Bspline_xform *bxf, 
     Bspline_parms *parms
 );
-PLMREGISTER_C_API void bspline_parms_free (Bspline_parms* parms);
 PLMREGISTER_C_API void bspline_state_destroy (
     Bspline_state *bst,
     Bspline_parms *parms,

@@ -614,7 +614,8 @@ rbf_gauss_warp (Landmark_warp *lw)
 
     /* Copy outputs to lw structure */
     lw->m_vf = new Xform;
-    lw->m_vf->set_gpuit_vf (vf_out);
+    //lw->m_vf->set_gpuit_vf (vf_out);
+    lw->m_vf->set_gpuit_vf (Volume::Pointer(vf_out));
     lw->m_warped_img = new Plm_image;
     lw->m_warped_img->set_volume (warped_out);
 

@@ -216,7 +216,6 @@ check_gradient (
     bspline_state_destroy (bst, parms, bxf);
     delete parms;
     delete bxf;
-    bspline_parms_free (parms);
 }
 
 static void
