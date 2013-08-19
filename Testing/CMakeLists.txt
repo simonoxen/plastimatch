@@ -59,6 +59,8 @@ set (CONFIG_FILE_LIST
   "plm-bsp-landmark-a.txt"
   "plm-bsp-landmark-b.txt"
   "plm-reg-mask-a.txt"
+  "plm-reg-mask-b.txt"
+  "plm-reg-mask-c.txt"
   "plm-reg-multi-a.txt"
   "plm-reg-dv-itk-translation.txt"
   "plm-reg-itk-bspline.txt"
@@ -2055,11 +2057,6 @@ plm_add_test (
   "mask;--input;${PLM_BUILD_TESTING_DIR}/rect-1.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-mask-a.mha;--mask;${PLM_BUILD_TESTING_DIR}/rect-4.mha;--mask-value;-1000"
   )
 plm_add_test (
-  "plm-reg-mask-hist_minmax-a"
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "mask;--input;${PLM_BUILD_TESTING_DIR}/rect-1.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-mask-a.mha;--mask;${PLM_BUILD_TESTING_DIR}/rect-4.mha;--mask-value;-1000"
-)
-plm_add_test (
   "plm-mask-a-stats"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;${PLM_BUILD_TESTING_DIR}/plm-mask-a.mha"
@@ -2794,13 +2791,29 @@ set_tests_properties (plm-reg-dv-itk-translation-check PROPERTIES
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 8)
 ##   plm-reg-mask-a
+##   plm-reg-mask-b
+##   plm-reg-mask-c
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-reg-mask-a"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "${PLM_BUILD_TESTING_DIR}/plm-reg-mask-a.txt"
   )
-set_tests_properties (plm-bsp-landmark-a PROPERTIES DEPENDS "rect-10;rect-10-mask-1;rect-11;rect-11-mask")
+set_tests_properties (plm-reg-mask-a PROPERTIES DEPENDS "rect-10;rect-10-mask-1;rect-11;rect-11-mask")
+
+plm_add_test (
+  "plm-reg-mask-b"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-mask-b.txt"
+  )
+set_tests_properties (plm-reg-mask-b PROPERTIES DEPENDS "rectarr-01;rectarr-02;rectarr-m-01")
+
+plm_add_test (
+  "plm-reg-mask-c"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-mask-c.txt"
+  )
+set_tests_properties (plm-reg-mask-c PROPERTIES DEPENDS "rectarr-01;rectarr-02;rectarr-m-02")
 
 
 ## -------------------------------------------------------------------------
