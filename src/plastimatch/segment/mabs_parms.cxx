@@ -31,10 +31,13 @@ Mabs_parms::Mabs_parms ()
     this->mi_percent_thershold = 0.70;
     this->mi_histogram_bins = 100;
     this->roi_mask_fn = "";
+    this->nmi_ratio_registration_config_fn = "";
     this->lower_mi_value_defined=false;
     this->lower_mi_value = 0;
     this->upper_mi_value_defined=false;
     this->upper_mi_value = 0;
+    this->min_random_atlases = 4;
+    this->max_random_atlases = 12;
 	
     this->sman = new Mabs_subject_manager;
     this->debug = false;
@@ -152,6 +155,9 @@ Mabs_parms::set_key_val (
         else if (key == "roi_mask_fn" || key == "roi_mask") {
             this->roi_mask_fn = val;
         }
+         else if (key == "nmi_ratio_registration_config") {
+            this->nmi_ratio_registration_config_fn = val;
+        }
         else if (key == "lower_mi_value") {
             sscanf (val.c_str(), "%d", &this->lower_mi_value);
             this->lower_mi_value_defined = true;
@@ -160,7 +166,13 @@ Mabs_parms::set_key_val (
             sscanf (val.c_str(), "%d", &this->upper_mi_value);
             this->upper_mi_value_defined = true;
         }
-        else {
+         else if (key == "min_random_atlases") {
+            sscanf (val.c_str(), "%d", &this->min_random_atlases);
+        }
+        else if (key == "max_random_atlases") {
+            sscanf (val.c_str(), "%d", &this->max_random_atlases);
+        }
+       else {
             goto error_exit;
         }
     }

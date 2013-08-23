@@ -13,8 +13,6 @@
 
 #include "mabs_parms.h"
 #include "plm_image.h"
-#include "rt_study.h"
-
 
 typedef itk::ImageMaskSpatialObject<3> MaskType;
 typedef MaskType::Pointer MaskTypePointer;
@@ -22,28 +20,29 @@ typedef MaskType::Pointer MaskTypePointer;
 class PLMSEGMENT_API Mabs_atlas_selection {
 
 public:
-    Mabs_atlas_selection(std::list<std::string> atlases_list, Rt_study::Pointer subject);
-
+    Mabs_atlas_selection();
     ~Mabs_atlas_selection();
-    
-    std::list<std::string> nmi_ranking(std::string patient_id, const Mabs_parms* parms);
-
-    std::list<std::string> random_ranking(std::string patient_id); // Just for testing purpose
-
-    double compute_nmi(Plm_image* img1, Plm_image* img2, int hist_bins, MaskTypePointer mask,
-                       bool min_value_defined, int min_value, bool max_value_defined, int max_value);
-
-    double compute_nmi_ratio(Plm_image* subject, Plm_image* atlas, int hist_bins, MaskTypePointer mask,
-                       bool min_value_defined, int min_value, bool max_value_defined, int max_value);
-
-    double compute_nmi_general_score(Plm_image* subject, Plm_image* atlas, std::string score_type, int hist_bins,
-                       MaskTypePointer mask, bool min_value_defined, int min_value, bool max_value_defined,
-                       int max_value);
+    void run_selection();
+    void nmi_ranking();
+    double compute_nmi_general_score();
+    double compute_nmi_ratio();
+    double compute_nmi(Plm_image* img1, Plm_image* img2);
+    void random_ranking(); /* Just for testing purpose */
 
 public:
-    Rt_study::Pointer subject_rtds;
+    Plm_image* subject;
+    std::string subject_id;
     std::list<std::string> atlas_dir_list;
-    int number_of_atlases; 
+    int number_of_atlases;
+    Plm_image* atlas;
+    const Mabs_parms* atlas_selection_parms;
+    int hist_bins;
+    MaskTypePointer mask;
+    bool min_value_defined;
+    int min_value;
+    bool max_value_defined;
+    int max_value;
+    std::list<std::string> selected_atlases;
 };
 
 #endif /* #ifndef _mabs_atlases_selection_h_ */

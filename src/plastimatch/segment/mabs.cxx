@@ -1152,19 +1152,18 @@ Mabs::train_internal (bool registration_only)
         /* Select atlases */
         if (d_ptr->parms->enable_atlas_selection)
         {
-	    Mabs_atlas_selection* select_atlas 
-                = new Mabs_atlas_selection(d_ptr->process_dir_list, d_ptr->ref_rtds);
+	        Mabs_atlas_selection* select_atlas = new Mabs_atlas_selection();
             
-            if (d_ptr->parms->atlas_selection_criteria == "nmi" ||
-                d_ptr->parms->atlas_selection_criteria == "nmi-ratio") {
+            select_atlas->subject = d_ptr->ref_rtds->get_image().get();
+            select_atlas->subject_id = patient_id;
+            select_atlas->atlas_dir_list = d_ptr->process_dir_list;
+            select_atlas->number_of_atlases = (int) d_ptr->process_dir_list.size();
+            select_atlas->atlas_selection_parms = d_ptr->parms;
+	        
+            select_atlas->run_selection();
 
-	            d_ptr->atlas_list = select_atlas->nmi_ranking (patient_id, d_ptr->parms);
-            }
-
-            else if (d_ptr->parms->atlas_selection_criteria == "random") { // Just for testing purpose
-               d_ptr->atlas_list = select_atlas->random_ranking (patient_id); 
-            }
-	}
+	        d_ptr->atlas_list=select_atlas->selected_atlases;
+        }
 
         /* Run the segmentation */
         this->run_registration_loop ();

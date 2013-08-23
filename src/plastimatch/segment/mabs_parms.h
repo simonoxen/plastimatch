@@ -39,10 +39,13 @@ public:
     float mi_percent_thershold;
     int mi_histogram_bins;
     std::string roi_mask_fn;
+    std::string nmi_ratio_registration_config_fn;
     bool lower_mi_value_defined;
     int lower_mi_value;
     bool upper_mi_value_defined;
     int upper_mi_value;
+    int min_random_atlases;
+    int max_random_atlases;
     
     /* [TRAINING] */
     std::string atlas_dir;
