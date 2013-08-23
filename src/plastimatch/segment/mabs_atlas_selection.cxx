@@ -291,14 +291,14 @@ Mabs_atlas_selection::random_ranking() /* Just for testing purpose */
     std::list<std::string> random_atlases;
 
     int min_atlases = this->atlas_selection_parms->min_random_atlases;
-    int max_atlases = this->atlas_selection_parms->max_random_atlases;
+    int max_atlases = this->atlas_selection_parms->max_random_atlases + 1;
 
     int random_number_of_atlases = rand() % (max_atlases-min_atlases) + min_atlases;
     printf("Selectd %d random atlases \n", random_number_of_atlases);
 
     int i=0;
     while ((int) random_atlases.size() < random_number_of_atlases) {
-        int random_index = rand() % (this->number_of_atlases-min_atlases) + min_atlases;
+        int random_index = rand() % (this->number_of_atlases);
         std::list<std::string>::iterator atlases_iterator = this->atlas_dir_list.begin();
         std::advance (atlases_iterator, random_index);
         
