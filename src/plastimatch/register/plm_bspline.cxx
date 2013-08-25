@@ -108,7 +108,6 @@ Plm_bspline::run_stage ()
 void
 Plm_bspline::initialize ()
 {
-    Registration_parms *regp = d_ptr->regp;
     Registration_data *regd = d_ptr->regd;
     Stage_parms *stage = d_ptr->stage;
     Xform *xf_in = d_ptr->xf_in;

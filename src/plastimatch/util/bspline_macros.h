@@ -17,7 +17,7 @@
 
 /* ITERATORS */
 
-/* Foor looping through volume ROI.  Here: 
+/* For looping through volume ROI.  Here: 
  *    roi_ijk - coordinates within ROI
  *    vol_ijk - volume coordinate of ROI point roi_ijk
  */
@@ -114,29 +114,28 @@ get_region_offset (plm_long i, plm_long j, plm_long k, const Bspline_xform *bxf)
     return volume_index (bxf->vox_per_rgn, q);
 }
 
-#define GET_REAL_SPACE_COORD_X(ijk_vol, bxf)                \
+#define GET_WORLD_COORD_X_NO_DCOS(ijk_vol, bxf)                 \
     (bxf->img_origin[0] + bxf->img_spacing[0] * ijk_vol[0])
 
-#define GET_REAL_SPACE_COORD_Y(ijk_vol, bxf)                \
+#define GET_WORLD_COORD_Y_NO_DCOS(ijk_vol, bxf)                 \
     (bxf->img_origin[1] + bxf->img_spacing[1] * ijk_vol[1])
 
-#define GET_REAL_SPACE_COORD_Z(ijk_vol, bxf)                \
+#define GET_WORLD_COORD_Z_NO_DCOS(ijk_vol, bxf)                 \
     (bxf->img_origin[2] + bxf->img_spacing[2] * ijk_vol[2])
 
-
-#define GET_COMMON_REAL_SPACE_COORD_X(ijk_vol, vol, bxf)                \
+#define GET_WORLD_COORD_X(ijk_vol, vol, bxf)                            \
     (bxf->img_origin[0]                                                 \
         + ijk_vol[0]*vol->step[0*3+0]                                   \
         + ijk_vol[1]*vol->step[0*3+1]                                   \
         + ijk_vol[2]*vol->step[0*3+2])
 
-#define GET_COMMON_REAL_SPACE_COORD_Y(ijk_vol, vol, bxf)                \
+#define GET_WORLD_COORD_Y(ijk_vol, vol, bxf)                            \
     (bxf->img_origin[1]                                                 \
         + ijk_vol[0]*vol->step[1*3+0]                                   \
         + ijk_vol[1]*vol->step[1*3+1]                                   \
         + ijk_vol[2]*vol->step[1*3+2])
 
-#define GET_COMMON_REAL_SPACE_COORD_Z(ijk_vol, vol, bxf)                \
+#define GET_WORLD_COORD_Z(ijk_vol, vol, bxf)                            \
     (bxf->img_origin[2]                                                 \
         + ijk_vol[0]*vol->step[2*3+0]                                   \
         + ijk_vol[1]*vol->step[2*3+1]                                   \
@@ -185,7 +184,7 @@ get_region_offset (plm_long i, plm_long j, plm_long k, const Bspline_xform *bxf)
 
 
 /* Direction cosines - IJK to XYZ */
-#define GET_COMMON_REAL_SPACE_COORDS(xyz_vol, ijk_vol, vol, bxf)        \
+#define GET_WORLD_COORDS(xyz_vol, ijk_vol, vol, bxf)                    \
     do {                                                                \
         xyz_vol[0] = bxf->img_origin[0]                                 \
             + ijk_vol[0]*vol->step[3*0+0]                               \

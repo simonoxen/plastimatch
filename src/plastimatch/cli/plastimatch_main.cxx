@@ -10,6 +10,7 @@
 #include "pcmd_adjust.h"
 #include "pcmd_autolabel.h"
 #include "pcmd_autolabel_train.h"
+#include "pcmd_benchmark.h"
 #include "pcmd_boundary.h"
 #include "pcmd_compare.h"
 #include "pcmd_compose.h"
@@ -58,9 +59,10 @@ print_usage (int return_code)
         "Commands:\n"
         "  add         "
         "  adjust      "
-        "  average     "
-        "  boundary    "
 //        "  autolabel   "
+        "  average     "
+//        "  benchmark   "
+        "  boundary    "
         "  crop        "
         "\n"
         "  compare     "
@@ -154,6 +156,9 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "autolabel-train")) {
         do_command_autolabel_train (argc, argv);
+    }
+    else if (!strcmp (command, "benchmark")) {
+        do_command_benchmark (argc, argv);
     }
     else if (!strcmp (command, "boundary")) {
         do_command_boundary (argc, argv);

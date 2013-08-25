@@ -616,9 +616,9 @@ report_score (
     }
     /* First line, part 3 - misc stats */
     logfile_printf (
-            "NV %6d GM %9.3f GN %9.3f [ %9.3f s ]\n",
-            ssd->num_vox, ssd_grad_mean, ssd_grad_norm, 
-            ssd->time_smetric + ssd->time_rmetric);
+        "NV %6d GM %9.3f GN %9.3f [ %9.3f s ]\n",
+        ssd->num_vox, ssd_grad_mean, ssd_grad_norm, 
+        ssd->time_smetric + ssd->time_rmetric);
 
     /* Second line - extra stats if regularization is enabled */
     if (reg_parms->lambda > 0 || blm->num_landmarks > 0) {
@@ -662,12 +662,14 @@ bspline_score (Bspline_optimize_data *bod)
     bool have_mask = fixed_mask || moving_mask;
     bool have_histogram_minmax_val=(parms->mi_fixed_image_minVal!=0)||(parms->mi_fixed_image_maxVal!=0)||(parms->mi_moving_image_minVal!=0)||(parms->mi_moving_image_maxVal!=0);
 
-
     /* CPU Implementations */
     if (parms->threading == BTHR_CPU) {
             
         /* Metric: Mean Squared Error */
-        if (parms->metric == BMET_MSE) {
+        if (parms->metric == BMET_MSE && have_mask) {
+            bspline_score_i_mse (bod);
+        }
+        else if (parms->metric == BMET_MSE) {
             switch (parms->implementation) {
             case 'c':
                 bspline_score_c_mse (bod);
@@ -677,6 +679,9 @@ bspline_score (Bspline_optimize_data *bod)
                 break;
             case 'h':
                 bspline_score_h_mse (bod);
+                break;
+            case 'i':
+                bspline_score_i_mse (bod);
                 break;
             default:
                 bspline_score_g_mse (bod);

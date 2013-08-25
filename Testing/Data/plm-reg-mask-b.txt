@@ -16,10 +16,3 @@ xform=translation
 optim=rsg
 max_its=10
 res=2 2 2
-
-[STAGE]
-xform=bspline
-res=2 2 2
-max_its=10
-regularization_lambda=0.1
-grid_spac=10 10 10

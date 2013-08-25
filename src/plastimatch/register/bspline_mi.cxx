@@ -1839,7 +1839,7 @@ bspline_score_h_mi (
                     if (fijk[2] >= bxf->roi_offset[2] + bxf->roi_dim[2]) { continue; }
 
                     /* Compute space coordinates of fixed image voxel */
-                    GET_COMMON_REAL_SPACE_COORDS (fxyz, fijk, fixed, bxf);
+                    GET_WORLD_COORDS (fxyz, fijk, fixed, bxf);
 
                     /* JAS 2012.03.26: Tends to break the optimizer (PGTOL)   */
                     /* Check to make sure the indices are valid (inside mask) */
@@ -2095,7 +2095,7 @@ bspline_score_g_mi (
                     if (fijk[2] >= bxf->roi_offset[2] + bxf->roi_dim[2]) { continue; }
 
                     /* Compute space coordinates of fixed image voxel */
-                    GET_COMMON_REAL_SPACE_COORDS (fxyz, fijk, fixed, bxf);
+                    GET_WORLD_COORDS (fxyz, fijk, fixed, bxf);
 
                     /* Compute deformation vector (dxyz) for voxel */
                     bspline_interp_pix_c (dxyz, bxf, pidx, q);
@@ -2898,18 +2898,18 @@ bspline_score_d_mi (
     LOOP_THRU_ROI_Z (rijk, fijk, bxf) {
         p[2] = REGION_INDEX_Z (rijk, bxf);
         q[2] = REGION_OFFSET_Z (rijk, bxf);
-        fxyz[2] = GET_REAL_SPACE_COORD_Z (fijk, bxf);
+        fxyz[2] = GET_WORLD_COORD_Z_NO_DCOS (fijk, bxf);
 
         LOOP_THRU_ROI_Y (rijk, fijk, bxf) {
             p[1] = REGION_INDEX_Y (rijk, bxf);
             q[1] = REGION_OFFSET_Y (rijk, bxf);
-            fxyz[1] = GET_REAL_SPACE_COORD_Y (fijk, bxf);
+            fxyz[1] = GET_WORLD_COORD_Y_NO_DCOS (fijk, bxf);
 
             LOOP_THRU_ROI_X (rijk, fijk, bxf) {
                 int rc;
                 p[0] = REGION_INDEX_X (rijk, bxf);
                 q[0] = REGION_OFFSET_X (rijk, bxf);
-                fxyz[0] = GET_REAL_SPACE_COORD_X (fijk, bxf);
+                fxyz[0] = GET_WORLD_COORD_X_NO_DCOS (fijk, bxf);
 
                 /* Get B-spline deformation vector */
                 pidx = volume_index (bxf->rdims, p);
@@ -3421,18 +3421,18 @@ bspline_score_c_mi_no_dcos (
     LOOP_THRU_ROI_Z (rijk, fijk, bxf) {
         p[2] = REGION_INDEX_Z (rijk, bxf);
         q[2] = REGION_OFFSET_Z (rijk, bxf);
-        fxyz[2] = GET_REAL_SPACE_COORD_Z (fijk, bxf);
+        fxyz[2] = GET_WORLD_COORD_Z_NO_DCOS (fijk, bxf);
 
         LOOP_THRU_ROI_Y (rijk, fijk, bxf) {
             p[1] = REGION_INDEX_Y (rijk, bxf);
             q[1] = REGION_OFFSET_Y (rijk, bxf);
-            fxyz[1] = GET_REAL_SPACE_COORD_Y (fijk, bxf);
+            fxyz[1] = GET_WORLD_COORD_Y_NO_DCOS (fijk, bxf);
 
             LOOP_THRU_ROI_X (rijk, fijk, bxf) {
                 int rc;
                 p[0] = REGION_INDEX_X (rijk, bxf);
                 q[0] = REGION_OFFSET_X (rijk, bxf);
-                fxyz[0] = GET_REAL_SPACE_COORD_X (fijk, bxf);
+                fxyz[0] = GET_WORLD_COORD_X_NO_DCOS (fijk, bxf);
 
                 /* Get B-spline deformation vector */
                 pidx = volume_index (bxf->rdims, p);
@@ -3527,18 +3527,18 @@ bspline_score_c_mi_no_dcos (
     LOOP_THRU_ROI_Z (rijk, fijk, bxf) {
         p[2] = REGION_INDEX_Z (rijk, bxf);
         q[2] = REGION_OFFSET_Z (rijk, bxf);
-        fxyz[2] = GET_REAL_SPACE_COORD_Z (fijk, bxf);
+        fxyz[2] = GET_WORLD_COORD_Z_NO_DCOS (fijk, bxf);
 
         LOOP_THRU_ROI_Y (rijk, fijk, bxf) {
             p[1] = REGION_INDEX_Y (rijk, bxf);
             q[1] = REGION_OFFSET_Y (rijk, bxf);
-            fxyz[1] = GET_REAL_SPACE_COORD_Y (fijk, bxf);
+            fxyz[1] = GET_WORLD_COORD_Y_NO_DCOS (fijk, bxf);
 
             LOOP_THRU_ROI_X (rijk, fijk, bxf) {
                 int rc;
                 p[0] = REGION_INDEX_X (rijk, bxf);
                 q[0] = REGION_OFFSET_X (rijk, bxf);
-                fxyz[0] = GET_REAL_SPACE_COORD_X (fijk, bxf);
+                fxyz[0] = GET_WORLD_COORD_X_NO_DCOS (fijk, bxf);
 
                 /* Get B-spline deformation vector */
                 pidx = volume_index (bxf->rdims, p);

@@ -61,6 +61,7 @@ set (CONFIG_FILE_LIST
   "plm-reg-mask-a.txt"
   "plm-reg-mask-b.txt"
   "plm-reg-mask-c.txt"
+  "plm-reg-mask-d.txt"
   "plm-reg-multi-a.txt"
   "plm-reg-dv-itk-translation.txt"
   "plm-reg-itk-bspline.txt"
@@ -2790,9 +2791,10 @@ set_tests_properties (plm-reg-dv-itk-translation-check PROPERTIES
 
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 8)
-##   plm-reg-mask-a
-##   plm-reg-mask-b
-##   plm-reg-mask-c
+##   plm-reg-mask-a    bspline + mi
+##   plm-reg-mask-b    itk 
+##   plm-reg-mask-c    B-spline 
+##   plm-reg-mask-d
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-reg-mask-a"
@@ -2813,7 +2815,14 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "${PLM_BUILD_TESTING_DIR}/plm-reg-mask-c.txt"
   )
-set_tests_properties (plm-reg-mask-c PROPERTIES DEPENDS "rectarr-01;rectarr-02;rectarr-m-02")
+set_tests_properties (plm-reg-mask-c PROPERTIES DEPENDS "rectarr-01;rectarr-02;rectarr-m-01")
+
+plm_add_test (
+  "plm-reg-mask-d"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-mask-d.txt"
+  )
+set_tests_properties (plm-reg-mask-d PROPERTIES DEPENDS "rectarr-01;rectarr-02;rectarr-m-02")
 
 
 ## -------------------------------------------------------------------------

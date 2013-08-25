@@ -149,12 +149,12 @@ return type:
 
 Variable naming for indexing  [Proposed, not implemented]
 ---------------------------------------------------------
-Fixed image voxel                   (f[3]), fidx <currently (fi,fj,fk),fv>
-Moving image voxel                  (m[3]), midx < ditto >
-    - what about ROI's              ?
-    - what about physical coords    ?
-Tile (fixed)                        (t[3]), tidx <currently p[3]>
-Offset within tile (fixed)          (o[3]), oidx <currently q[3]>
+Fixed image voxel                   fijk[3], fidx <currently (fi,fj,fk),fv>
+Fixed world coord                   fxyz[3]
+Moving image voxel                  mijk[3], midx < ditto >
+Moving world voxel                  mxyz[3]
+Tile                                p[3], pidx
+Offset within tile                  q[3], qidx
 Control point                       (c[3]), cidx <currently (i,j,k), m>
 Coefficient array                   ?                <currently cidx>
 Multiplier LUT                      qidx
