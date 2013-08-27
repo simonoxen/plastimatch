@@ -6,16 +6,15 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "bragg_curve.h"
-#include "ion_sobp_optimize.h"
+#include "ion_sobp.h"
 
 int main (int argc, char* argv[])
 {
-    double dmin, dmax;
-    double Emin, Emax;
-    char choice;
+    float dmin, dmax;
+    int Emin, Emax;
+    int particle;
 
-    Ion_sobp_optimize test;
+	Particle_type particle_type;
 
     if (argc < 4) {
         printf (
@@ -25,41 +24,69 @@ int main (int argc, char* argv[])
         exit (0);
     }
 
+		sscanf(argv[1],"%d", &particle);
+
+	if(particle ==1)
+	{
+		particle_type = P;
+	}
+	else if (particle ==2)
+	{
+		particle_type = HE;
+	}
+	else if (particle ==3)
+	{
+		particle_type = LI;
+	}
+	else if (particle ==4)
+	{
+		particle_type = BE;
+	}
+	else if (particle ==5)
+	{
+		particle_type = B;
+	}
+	else if (particle ==6)
+	{
+		particle_type = C;
+	}
+	else if (particle ==8)
+	{
+		particle_type = O;
+	}
+	else
+	{
+		particle_type = P;
+		printf("Invalid particle type");
+	}
+
+	if (particle_type != P) // no data for ions... to be implemented (ion bragg peaks!!)
+	{
+		particle_type = P;
+		printf("Ions data are not ready yet - beam switched to proton beams");
+	}
+
+	Ion_sobp sobp(particle_type);
+
     // construction of the sobp using the proximal and distal limits
-    if (argv[1][0]=='d')
+    if (argv[2][0]=='d')
     {
-        sscanf (argv[2], "%lf", &dmin);
-        sscanf (argv[3], "%lf", &dmax);
-        test.SetMinMaxDepths(dmin, dmax);
+        sscanf (argv[3], "%f", &dmin);
+        sscanf (argv[4], "%f", &dmax);
+        sobp.SetMinMaxDepths(dmin, dmax);
     }
     // construction of the sobp using the lower and higher energy
-    else if (argv[1][0]=='e')
+    else if (argv[2][0]=='e')
     {
-        sscanf (argv[2], "%lf", &Emin);
-        sscanf (argv[3], "%lf", &Emax);
-        test.SetMinMaxDepths(Emin, Emax);
+        sscanf (argv[3], "%d", &Emin);
+        sscanf (argv[4], "%d", &Emax);
+        sobp.SetMinMaxDepths(Emin, Emax);
     }
 
-    test.printparameters();
-    test.Optimizer();
+    sobp.printparameters();
+    sobp.Optimizer();
 
-    // give the choice for returning the optimized weights, 
-    // the sobp depth dose, or both of them
-    printf("\n Do you want to see the peak weights (1), sobp output (2) or both (3)? ");
-    scanf("%c", &choice);
-    if (choice =='1')
-    {
-        test.SobpOptimizedWeights();
-    }
-    else if (choice =='2')
-    {
-        test.SobpDepthDose();
-    }
-    else if (choice =='3')
-    {
-        test.SobpOptimizedWeights();
-        test.SobpDepthDose();
-    }
+    sobp.print_sobp_curve();
 
     return 0;
 }

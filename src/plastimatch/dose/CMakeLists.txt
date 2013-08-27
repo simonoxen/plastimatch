@@ -22,7 +22,8 @@ set (PLMDOSE_LIBRARY_SRC
   ion_plan_p.cxx
   ion_pristine_peak.cxx
   ion_sobp.cxx
-  ion_sobp_optimize.cxx
+  lookup_range.cxx
+  lookup_stop.cxx
   wed_parms.cxx
   )
 

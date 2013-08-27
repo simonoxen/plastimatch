@@ -264,7 +264,26 @@ Ion_plan::compute_dose ()
     plm_long ct_ijk[3];
     double ct_xyz[4];
     plm_long idx = 0;
+
+	/* Max is playing */
+
+	/* for (ct_ijk[2] = 74; ct_ijk[2] < 76; ct_ijk[2]++) {
+	//printf("\nX : %3.2f%% ", (double)(((double)ct_ijk[2])/(double)ct_vol->dim[2]*100));
+       for (ct_ijk[1] = 74; ct_ijk[1] < 76; ct_ijk[1]++) {
+		   //if (ct_ijk[1]%10 == 0) {printf ("-");}
+           for (ct_ijk[0] =74; ct_ijk[0] < 76; ct_ijk[0]++) { */
+
+	/*FILE* profile_file;
+	profile_file= fopen("C:/Work/test/profile.txt","w");
+	
+	ct_ijk[2] = 74;
+	ct_ijk[0] = 74;
+	for (ct_ijk[1] = 0; ct_ijk[1] < ct_vol->dim[1]; ct_ijk[1]++) { */
+
+	/* Max is not playing anymore */
+
     for (ct_ijk[2] = 0; ct_ijk[2] < ct_vol->dim[2]; ct_ijk[2]++) {
+		printf("\nX : %3.2f%% ", (double)(((double)ct_ijk[2])/(double)ct_vol->dim[2]*100));
         for (ct_ijk[1] = 0; ct_ijk[1] < ct_vol->dim[1]; ct_ijk[1]++) {
             for (ct_ijk[0] = 0; ct_ijk[0] < ct_vol->dim[0]; ct_ijk[0]++) {
                 double dose = 0.0;
@@ -301,7 +320,21 @@ Ion_plan::compute_dose ()
                 case 'd':
                     dose = dose_debug (ct_xyz, this);
                     break;
+				case 'e':
+					dose = dose_hong_maxime (ct_xyz, ct_ijk, this);
+					break;
                 }
+
+				/* Max is playing - getting the dose in the center of the volume and doing a profile */
+
+				//fprintf(profile_file,"%d %lg\n",ct_ijk[1], dose);
+
+				/*if (ct_ijk[2] == 50 && ct_ijk[1] == 50 && ct_ijk[0] == 50)
+				{
+					printf (" \n pixel numero: %d %d %d", ct_ijk[0], ct_ijk[1], ct_ijk[2]);
+					printf (" \n coordonnées: %f %f %f", ct_xyz[0], ct_xyz[1], ct_xyz[2]);
+					printf (" \n dose: %lg\n", dose);
+				} */
 
                 /* Insert the dose into the dose volume */
                 idx = volume_index (dose_vol->dim, ct_ijk);
@@ -311,6 +344,10 @@ Ion_plan::compute_dose ()
         display_progress ((float)idx, (float)ct_vol->npix);
     }
 
+	/* Max is playing - closing the profile dose */
+	//fclose(profile_file);
+
+	printf("\n");
     Plm_image::Pointer dose = Plm_image::New();
     dose->set_volume (dose_vol);
     d_ptr->dose = dose;

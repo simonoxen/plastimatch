@@ -9,7 +9,6 @@
 
 #include "bragg_curve.h"
 #include "ion_beam.h"
-#include "ion_sobp.h"
 
 class Ion_beam_private {
 public:
@@ -17,6 +16,7 @@ public:
     double isocenter[3];
     int detail;
     char flavor;
+	Particle_type part;
 
 public:
     Ion_sobp::Pointer sobp;
@@ -37,7 +37,7 @@ public:
 #endif
 
 public:
-    Ion_beam_private ()
+    Ion_beam_private (Particle_type part)
     {
         this->source[0] = -1000.f;
         this->source[1] = 0.f;
@@ -47,8 +47,9 @@ public:
         this->isocenter[2] = 0.f;
         this->detail = 1;
         this->flavor = 'a';
+		this->part = part;
 
-        this->sobp = Ion_sobp::New ();
+		this->sobp = Ion_sobp::New(new Ion_sobp(part));
 
         this->debug_dir = "";
 
@@ -68,10 +69,14 @@ public:
     }
 };
 
-
 Ion_beam::Ion_beam ()
 {
-    this->d_ptr = new Ion_beam_private;
+    this->d_ptr = new Ion_beam_private(P);
+}
+
+Ion_beam::Ion_beam (Particle_type part)
+{
+    this->d_ptr = new Ion_beam_private(part);
 }
 
 Ion_beam::~Ion_beam ()

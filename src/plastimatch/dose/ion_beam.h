@@ -6,6 +6,7 @@
 
 #include "plmdose_config.h"
 #include <string>
+#include "ion_sobp.h"
 
 class Ion_beam_private;
 class Ion_sobp;
@@ -17,6 +18,7 @@ class Ion_sobp;
 class PLMDOSE_API Ion_beam {
 public:
     Ion_beam ();
+	Ion_beam (Particle_type);
     ~Ion_beam ();
 public:
     Ion_beam_private *d_ptr;

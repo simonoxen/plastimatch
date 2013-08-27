@@ -39,6 +39,15 @@ Aperture::Aperture ()
     this->vup[1] = 0.0;
     this->vup[2] = 1.0;
 
+    this->pdn[0] = 0.0;
+    this->pdn[1] = 0.0;
+    this->pdn[2] = -1.0;
+
+    this->prt[0] = 0.0;
+    this->prt[1] = 1.0;
+    this->prt[2] = 0.0;
+
+
     //memset (this->ic,   0, 2*sizeof (double));
     memset (this->ic_room, 0, 3*sizeof (double));
     memset (this->ul_room, 0, 3*sizeof (double));

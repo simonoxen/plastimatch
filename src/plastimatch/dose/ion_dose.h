@@ -35,4 +35,11 @@ dose_hong (
     const Ion_plan* scene
 );
 
+double
+dose_hong_maxime (
+    double* ct_xyz,
+    plm_long* ct_ijk,            // DEBUG
+    const Ion_plan* scene
+);
+
 #endif
