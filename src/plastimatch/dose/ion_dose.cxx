@@ -687,7 +687,7 @@ dose_hong (
 double /* to be implemented */
 dose_hong_maxime (
     double* ct_xyz,
-    int* ct_ijk,            // DEBUG
+    plm_long* ct_ijk,            // DEBUG
     const Ion_plan* scene
 )
 {

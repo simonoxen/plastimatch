@@ -320,9 +320,9 @@ Ion_plan::compute_dose ()
                 case 'd':
                     dose = dose_debug (ct_xyz, this);
                     break;
-				case 'e':
-					dose = dose_hong_maxime (ct_xyz, ct_ijk, this);
-					break;
+		case 'e':
+		    dose = dose_hong_maxime (ct_xyz, ct_ijk, this);
+		    break;
                 }
 
 				/* Max is playing - getting the dose in the center of the volume and doing a profile */
