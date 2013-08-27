@@ -513,6 +513,29 @@ Rpl_volume::compute_rpl ()
     }
 }
 
+Volume*
+Rpl_volume::create_wed_volume (Ion_plan *scene)
+{
+    Rpl_volume* rpl_vol = scene->rpl_vol;
+
+    float wed_off[3] = {0.0f, 0.0f, 0.0f};
+    float wed_ps[3] = {1.0f, 1.0f, 1.0f};
+
+    /* water equivalent depth volume has the same x,y dimensions as the rpl
+     * volume. Note: this means the wed x,y dimensions are equal to the
+     * aperture dimensions and the z-dimension is equal to the sampling
+     * resolution chosen for the rpl */
+    plm_long wed_dims[3];
+
+    Volume *vol = rpl_vol->get_vol ();
+    wed_dims[0] = vol->dim[0];
+    wed_dims[1] = vol->dim[1];
+    wed_dims[2] = vol->dim[2];
+
+
+    return new Volume (wed_dims, wed_off, wed_ps, NULL, PT_FLOAT, 1);
+}
+
 void 
 Rpl_volume::compute_wed_volume (
     Volume *wed_vol, Volume *in_vol, float background)
@@ -673,6 +696,12 @@ Rpl_volume::compute_wed_volume (
     }
 }
 
+Volume*
+Rpl_volume::create_dew_volume(Ion_plan *scene)
+{
+  //Implement later
+  return NULL;
+}
 
 void 
 Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float background)

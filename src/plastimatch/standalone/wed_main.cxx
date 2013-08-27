@@ -25,7 +25,6 @@ struct callback_data {
     int ap_idx;        /* Current Aperture Coord */
 };
 
-
 static int
 skin_ct (Volume* ct_volume, Volume* skin_volume, float background)
 {
@@ -53,29 +52,6 @@ skin_ct (Volume* ct_volume, Volume* skin_volume, float background)
   }
 
   return 0;
-}
-
-static Volume*
-create_wed_volume (Wed_Parms* parms, Ion_plan *scene)
-{
-    Rpl_volume* rpl_vol = scene->rpl_vol;
-
-    float wed_off[3] = {0.0f, 0.0f, 0.0f};
-    float wed_ps[3] = {1.0f, 1.0f, 1.0f};
-
-    /* water equivalent depth volume has the same x,y dimensions as the rpl
-     * volume. Note: this means the wed x,y dimensions are equal to the
-     * aperture dimensions and the z-dimension is equal to the sampling
-     * resolution chosen for the rpl */
-    plm_long wed_dims[3];
-
-    Volume *vol = rpl_vol->get_vol ();
-    wed_dims[0] = vol->dim[0];
-    wed_dims[1] = vol->dim[1];
-    wed_dims[2] = vol->dim[2];
-
-
-    return new Volume (wed_dims, wed_off, wed_ps, NULL, PT_FLOAT, 1);
 }
 
 static Volume*
@@ -129,8 +105,7 @@ wed_ct_compute (
 
     if (parms->mode==0)  {
         Volume* wed_vol;
-      
-        wed_vol = create_wed_volume (parms, scene);
+	wed_vol = rpl_vol->create_wed_volume(scene);
         rpl_vol->compute_wed_volume (wed_vol, ct_vol->get_vol_float(), 
             background);
         plm_image_save_vol (out_fn, wed_vol);
@@ -138,7 +113,8 @@ wed_ct_compute (
 
     if (parms->mode==1)  {
         Volume* dew_vol;
-      
+	//Fix below function, move to rpl_volume as create_wed_volume above.
+	//Dew parameters will need to be incorporated into ion_scene
         dew_vol = create_dew_volume (parms, scene);
         rpl_vol->compute_dew_volume (ct_vol->get_vol_float(), 
             dew_vol, background);

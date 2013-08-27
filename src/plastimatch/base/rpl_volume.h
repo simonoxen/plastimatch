@@ -7,7 +7,9 @@
 #include "plmbase_config.h"
 #include <string>
 #include "aperture.h"
+#include "ion_plan.h"
 #include "plm_image.h"
+
 
 class Proj_volume;
 class Ray_data;
@@ -51,7 +53,9 @@ public:
 
     void compute_rpl ();
     void compute (Volume *ct_vol);
+    Volume* create_wed_volume (Ion_plan *scene);
     void compute_wed_volume (Volume *wed_vol, Volume *in_vol, float background);
+    Volume* create_dew_volume (Ion_plan *scene);
     void compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float background);
     void compute_beam_modifiers (Volume *seg_vol, float background);
     void compute_aperture (Volume *tgt_vol, float background);
