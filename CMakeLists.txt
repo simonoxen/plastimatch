@@ -661,9 +661,9 @@ if (ITK_FOUND)
       string (REGEX REPLACE "[^\"]*\"([^\"]*)\".*" "\\1"
 	GDCM_VERSION "${GDCM_VERSION}")
     endif ()
-    #In case the GDCM config file does not configure correctly,
-    #ensure version still gets set without that input.
-    if ("${GDCM_VERSION}" STREQUAL "@GDCM_VERSION@")
+    # When GDCM config file does not configure correctly, the value of 
+    # the version might be "@GDCM_VERSION@".  
+    if ("${GDCM_VERSION}" STREQUAL "\@GDCM_VERSION@")
       set (GDCM_VERSION "2.0")
     endif ()
     set (GDCM_FOUND 1)
