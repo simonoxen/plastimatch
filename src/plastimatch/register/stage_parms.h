@@ -105,6 +105,7 @@ public:
     int mi_histogram_bins_moving;
     int mi_num_spatial_samples;
     float mi_num_spatial_samples_pct;
+
     enum Bspline_mi_hist_type mi_histogram_type;
     float mi_fixed_image_minVal;
     float mi_fixed_image_maxVal;
@@ -127,8 +128,8 @@ public:
     float landmark_stiffness; //strength of attraction between landmarks
     char landmark_flavor;
     /* Masks */
-    char moving_mask_fn[_MAX_PATH];
-    char fixed_mask_fn[_MAX_PATH];
+    std::string moving_mask_fn;
+    std::string fixed_mask_fn;
     Plm_image *moving_mask;
     Plm_image *fixed_mask;
     /* Output files */
@@ -216,8 +217,6 @@ public:
         landmark_stiffness = 1.0;
         landmark_flavor = 'a';
         /* Masks */
-        moving_mask_fn[0] = '\0';
-        fixed_mask_fn[0] = '\0';
         moving_mask = NULL;
         fixed_mask = NULL;
         /* Output files */

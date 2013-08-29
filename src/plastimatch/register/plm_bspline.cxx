@@ -130,8 +130,9 @@ Plm_bspline::initialize ()
     Volume *moving_grad = 0;
 
     /* load "stage" masks; stage mask overrides a global mask */
-    if (stage->fixed_mask_fn[0]) {
-        logfile_printf ("Loading fixed mask: %s\n", stage->fixed_mask_fn);
+    if (stage->fixed_mask_fn != "") {
+        logfile_printf ("Loading fixed mask: %s\n", 
+            stage->fixed_mask_fn.c_str());
         stage->fixed_mask = plm_image_load (stage->fixed_mask_fn, 
             PLM_IMG_TYPE_ITK_UCHAR);
         f_mask = stage->fixed_mask->get_vol_uchar();
@@ -142,8 +143,9 @@ Plm_bspline::initialize ()
         }
     }
 
-    if (stage->moving_mask_fn[0]) {
-        logfile_printf ("Loading moving mask: %s\n", stage->moving_mask_fn);
+    if (stage->moving_mask_fn != "") {
+        logfile_printf ("Loading moving mask: %s\n", 
+            stage->moving_mask_fn.c_str());
         stage->moving_mask = plm_image_load (stage->moving_mask_fn, 
             PLM_IMG_TYPE_ITK_UCHAR);
         m_mask = stage->moving_mask->get_vol_uchar();

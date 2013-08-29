@@ -57,10 +57,8 @@ public:
     Registration_parms_private *d_ptr;
 public:
     int num_stages;
-//    char moving_fn[_MAX_PATH];
-//    char fixed_fn[_MAX_PATH];
-    char moving_mask_fn[_MAX_PATH];
-    char fixed_mask_fn[_MAX_PATH];
+    std::string moving_mask_fn;
+    std::string fixed_mask_fn;
     int img_out_fmt;
     Plm_image_type img_out_type;
     char img_out_fn[_MAX_PATH];
@@ -78,8 +76,6 @@ public:
     float default_value;           /* Replacement when out-of-view */
     int init_type;
     double init[12];
-
-//    Stage_parms** stages;
 
     /* for 4D and atlas */
     char moving_dir[_MAX_PATH];

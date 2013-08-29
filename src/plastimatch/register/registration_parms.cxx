@@ -37,8 +37,6 @@ Registration_parms::Registration_parms()
 {
     d_ptr = new Registration_parms_private;
 
-    *moving_mask_fn = 0;
-    *fixed_mask_fn = 0;
     img_out_fmt = IMG_OUT_FMT_AUTO;
     img_out_type = PLM_IMG_TYPE_UNDEFINED;
     *img_out_fn = 0;
@@ -207,16 +205,16 @@ Registration_parms::set_key_val (
     }
     else if (!strcmp (key, "fixed_mask")) {
         if (section == 0) {
-            strncpy (this->fixed_mask_fn, val, _MAX_PATH);
+            this->fixed_mask_fn = val;
         } else {
-            strncpy (stage->fixed_mask_fn, val, _MAX_PATH);
+            stage->fixed_mask_fn = val;
         }
     }
     else if (!strcmp (key, "moving_mask")) {
         if (section == 0) {
-            strncpy (this->moving_mask_fn, val, _MAX_PATH);
+            this->moving_mask_fn = val;
         } else {
-            strncpy (stage->moving_mask_fn, val, _MAX_PATH);
+            stage->moving_mask_fn = val;
         }
     }
     else if (!strcmp (key, "img_out") || !strcmp (key, "image_out")) {
