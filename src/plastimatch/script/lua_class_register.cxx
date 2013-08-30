@@ -32,8 +32,8 @@ init_register_instance (lua_register* lregister)
     lregister->regp = NULL;
     lregister->moving = NULL;
     lregister->fixed = NULL;
-    lregister->moving_mask = NULL;
-    lregister->fixed_mask = NULL;
+    lregister->moving_roi = NULL;
+    lregister->fixed_roi = NULL;
 }
 
 /*******************************************************/
@@ -89,8 +89,8 @@ register_go (lua_State *L)
     regp = lreg->regp;
     regd.moving_image = lreg->moving->pli;
     regd.fixed_image  = lreg->fixed->pli;
-    if (lreg->moving_mask) { regd.moving_mask = lreg->moving_mask->ss_img; }
-    if (lreg->fixed_mask)  { regd.fixed_mask  = lreg->fixed_mask->ss_img;  }
+    if (lreg->moving_roi) { regd.moving_roi = lreg->moving_roi->ss_img; }
+    if (lreg->fixed_roi)  { regd.fixed_roi  = lreg->fixed_roi->ss_img;  }
     /* Landmarks not yet implemented  - no class */
 
     lua_xform *lxf = (lua_xform*)lua_new_instance (L,
@@ -145,8 +145,8 @@ static const lua_sc_glue
 getters[] = {
     {"moving",      sc_get_ptr,  offsetof (lua_register, moving)       },
     {"fixed",       sc_get_ptr,  offsetof (lua_register, fixed)        },
-    {"moving_mask", sc_get_ptr,  offsetof (lua_register, moving_mask)  },
-    {"fixed_mask",  sc_get_ptr,  offsetof (lua_register, fixed_mask)   },
+    {"moving_mask", sc_get_ptr,  offsetof (lua_register, moving_roi)  },
+    {"fixed_mask",  sc_get_ptr,  offsetof (lua_register, fixed_roi)   },
     {0, 0}
 };
 
@@ -154,8 +154,8 @@ static const lua_sc_glue
 setters[] = {
     {"moving",      sc_set_ptr,  offsetof (lua_register, moving)      },
     {"fixed",       sc_set_ptr,  offsetof (lua_register, fixed)       },
-    {"moving_mask", sc_set_ptr,  offsetof (lua_register, moving_mask) },
-    {"fixed_mask",  sc_set_ptr,  offsetof (lua_register, fixed_mask)  },
+    {"moving_mask", sc_set_ptr,  offsetof (lua_register, moving_roi) },
+    {"fixed_mask",  sc_set_ptr,  offsetof (lua_register, fixed_roi)  },
     {0, 0}
 };
 

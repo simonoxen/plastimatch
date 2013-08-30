@@ -26,6 +26,14 @@ plm_strcmp (const char* s1, const char* s2)
     return strncmp (s1, s2, strlen(s2));
 }
 
+std::string 
+make_lowercase (const std::string& s)
+{
+    std::string out;
+    std::transform (s.begin(), s.end(), std::back_inserter(out), ::tolower);
+    return out;
+}
+
 void
 string_util_rtrim_whitespace (char *s)
 {
@@ -240,4 +248,15 @@ size_t ci_find (const std::string& str1, const std::string& str2)
         str2.begin(), str2.end(), my_equal());
     if (it != str1.end()) return it - str1.begin();
     else return std::string::npos;
+}
+// Return true for "true", "1", or "on"
+bool string_value_true (const char* s)
+{
+    return string_value_true (std::string(s));
+}
+
+bool string_value_true (const std::string& s)
+{
+    std::string t = make_lowercase (s);
+    return t == "1" || t == "true" || t == "on";
 }

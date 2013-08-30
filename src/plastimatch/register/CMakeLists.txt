@@ -51,6 +51,7 @@ set (PLMREGISTER_LIBRARY_SRC
   rbf_wendland.cxx
   registration_data.cxx
   registration_parms.cxx
+  stage_parms.cxx
   )
 
 if (OPENCL_FOUND)

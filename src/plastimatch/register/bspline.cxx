@@ -86,8 +86,8 @@ Bspline_parms::Bspline_parms ()
     this->fixed = NULL;
     this->moving = NULL;
     this->moving_grad = NULL;
-    this->fixed_mask = NULL;
-    this->moving_mask = NULL;
+    this->fixed_roi = NULL;
+    this->moving_roi = NULL;
 
     this->reg_parms = new Reg_parms;
 
@@ -657,16 +657,16 @@ bspline_score (Bspline_optimize_data *bod)
     Reg_parms* reg_parms = parms->reg_parms;
     Bspline_landmarks* blm = parms->blm;
 
-    Volume* fixed_mask  = parms->fixed_mask;
-    Volume* moving_mask = parms->moving_mask;
-    bool have_mask = fixed_mask || moving_mask;
+    Volume* fixed_roi  = parms->fixed_roi;
+    Volume* moving_roi = parms->moving_roi;
+    bool have_roi = fixed_roi || moving_roi;
     bool have_histogram_minmax_val=(parms->mi_fixed_image_minVal!=0)||(parms->mi_fixed_image_maxVal!=0)||(parms->mi_moving_image_minVal!=0)||(parms->mi_moving_image_maxVal!=0);
 
     /* CPU Implementations */
     if (parms->threading == BTHR_CPU) {
             
         /* Metric: Mean Squared Error */
-        if (parms->metric == BMET_MSE && have_mask) {
+        if (parms->metric == BMET_MSE && have_roi) {
             bspline_score_i_mse (bod);
         }
         else if (parms->metric == BMET_MSE) {
@@ -689,8 +689,8 @@ bspline_score (Bspline_optimize_data *bod)
             }
         } /* end MSE */
 
-        /* Metric: Mutual Information with mask or intensity min/max values*/
-        else if ((parms->metric == BMET_MI && (have_mask || have_histogram_minmax_val)) ) {
+        /* Metric: Mutual Information with roi or intensity min/max values*/
+        else if ((parms->metric == BMET_MI && (have_roi || have_histogram_minmax_val)) ) {
             switch (parms->implementation) {
             case 'c':
                 bspline_score_c_mi (bod);
@@ -715,7 +715,7 @@ bspline_score (Bspline_optimize_data *bod)
             }
         }
 
-        /* Metric: Mutual Information without mask */
+        /* Metric: Mutual Information without roi */
         else if (parms->metric == BMET_MI) {
             switch (parms->implementation) {
             case 'c':

@@ -14,8 +14,8 @@ Registration_data::Registration_data ()
 {
     fixed_image = 0;
     moving_image = 0;
-    fixed_mask = 0;
-    moving_mask = 0;
+    fixed_roi = 0;
+    moving_roi = 0;
     fixed_landmarks = 0;
     moving_landmarks = 0;
 }
@@ -24,8 +24,8 @@ Registration_data::~Registration_data ()
 {
     if (fixed_landmarks) delete fixed_landmarks;
     if (moving_landmarks) delete moving_landmarks;
-    if (fixed_mask) delete fixed_mask;
-    if (moving_mask) delete moving_mask;
+    if (fixed_roi) delete fixed_roi;
+    if (moving_roi) delete moving_roi;
 }
 
 void
@@ -42,22 +42,22 @@ Registration_data::load_input_files (Registration_parms* regp)
         regp->get_moving_fn().c_str());
     this->moving_image = plm_image_load (regp->get_moving_fn(), image_type);
 
-    /* load "global" masks */
-    if (regp->fixed_mask_fn != "") {
-        logfile_printf ("Loading fixed mask: %s\n", 
-            regp->fixed_mask_fn.c_str());
-        this->fixed_mask = plm_image_load (
-            regp->fixed_mask_fn, PLM_IMG_TYPE_ITK_UCHAR);
+    /* load "global" rois */
+    if (regp->fixed_roi_fn != "") {
+        logfile_printf ("Loading fixed roi: %s\n", 
+            regp->fixed_roi_fn.c_str());
+        this->fixed_roi = plm_image_load (
+            regp->fixed_roi_fn, PLM_IMG_TYPE_ITK_UCHAR);
     } else {
-        this->fixed_mask = 0;
+        this->fixed_roi = 0;
     }
-    if (regp->moving_mask_fn != "") {
-        logfile_printf ("Loading moving mask: %s\n", 
-            regp->moving_mask_fn.c_str());
-        this->moving_mask = plm_image_load (
-            regp->moving_mask_fn, PLM_IMG_TYPE_ITK_UCHAR);
+    if (regp->moving_roi_fn != "") {
+        logfile_printf ("Loading moving roi: %s\n", 
+            regp->moving_roi_fn.c_str());
+        this->moving_roi = plm_image_load (
+            regp->moving_roi_fn, PLM_IMG_TYPE_ITK_UCHAR);
     } else {
-        this->moving_mask = 0;
+        this->moving_roi = 0;
     }
 
     /* Load landmarks */

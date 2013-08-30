@@ -70,24 +70,24 @@ Plm_bspline::~Plm_bspline ()
 }
 
 static void
-update_mask (Volume* mask, Volume* image, float min_val, 
-    float max_val, bool fill_empty_mask)
+update_roi (Volume* roi, Volume* image, float min_val, 
+    float max_val, bool fill_empty_roi)
 {
     plm_long p=0;
     float* image_temp=(float*)image->img;
-    unsigned char* mask_temp=(unsigned char*)mask->img;
-    for (unsigned int i=0; i < mask->dim[2]; i++) {
-        for (unsigned int j=0; j < mask->dim[1]; j++) {
-            for (unsigned int k=0; k < mask->dim[0]; k++) {
-                if (fill_empty_mask 
+    unsigned char* roi_temp=(unsigned char*)roi->img;
+    for (unsigned int i=0; i < roi->dim[2]; i++) {
+        for (unsigned int j=0; j < roi->dim[1]; j++) {
+            for (unsigned int k=0; k < roi->dim[0]; k++) {
+                if (fill_empty_roi 
                     && (image_temp[p]>=min_val && image_temp[p]<=max_val))
                 {
-                    mask_temp[p]=(unsigned char)1;
+                    roi_temp[p]=(unsigned char)1;
                 }
                 else if ((image_temp[p]<min_val || image_temp[p]>max_val) 
-                    && mask_temp[p]>0)
+                    && roi_temp[p]>0)
                 {
-                    mask_temp[p]=(unsigned char)0;
+                    roi_temp[p]=(unsigned char)0;
                 }
                 p++;
             }
@@ -122,37 +122,37 @@ Plm_bspline::initialize ()
     Volume *moving = regd->moving_image->get_vol_float ();
     logfile_printf ("Done.\n");
 
-    Volume *m_mask = NULL;
-    Volume *m_mask_ss = NULL;
-    Volume *f_mask = NULL;
-    Volume *f_mask_ss = NULL;
+    Volume *m_roi = NULL;
+    Volume *m_roi_ss = NULL;
+    Volume *f_roi = NULL;
+    Volume *f_roi_ss = NULL;
     Volume *moving_ss, *fixed_ss;
     Volume *moving_grad = 0;
 
-    /* load "stage" masks; stage mask overrides a global mask */
-    if (stage->fixed_mask_fn != "") {
-        logfile_printf ("Loading fixed mask: %s\n", 
-            stage->fixed_mask_fn.c_str());
-        stage->fixed_mask = plm_image_load (stage->fixed_mask_fn, 
+    /* load "stage" rois; stage roi overrides a global roi */
+    if (stage->fixed_roi_fn != "") {
+        logfile_printf ("Loading fixed roi: %s\n", 
+            stage->fixed_roi_fn.c_str());
+        stage->fixed_roi = plm_image_load (stage->fixed_roi_fn, 
             PLM_IMG_TYPE_ITK_UCHAR);
-        f_mask = stage->fixed_mask->get_vol_uchar();
+        f_roi = stage->fixed_roi->get_vol_uchar();
     } else {
-        stage->fixed_mask = 0;
-        if (regd->fixed_mask) {
-            f_mask = regd->fixed_mask->get_vol_uchar();
+        stage->fixed_roi = 0;
+        if (regd->fixed_roi) {
+            f_roi = regd->fixed_roi->get_vol_uchar();
         }
     }
 
-    if (stage->moving_mask_fn != "") {
-        logfile_printf ("Loading moving mask: %s\n", 
-            stage->moving_mask_fn.c_str());
-        stage->moving_mask = plm_image_load (stage->moving_mask_fn, 
+    if (stage->moving_roi_fn != "") {
+        logfile_printf ("Loading moving roi: %s\n", 
+            stage->moving_roi_fn.c_str());
+        stage->moving_roi = plm_image_load (stage->moving_roi_fn, 
             PLM_IMG_TYPE_ITK_UCHAR);
-        m_mask = stage->moving_mask->get_vol_uchar();
+        m_roi = stage->moving_roi->get_vol_uchar();
     } else {
-        stage->moving_mask = 0;
-        if (regd->moving_mask) {
-            m_mask = regd->moving_mask->get_vol_uchar();
+        stage->moving_roi = 0;
+        if (regd->moving_roi) {
+            m_roi = regd->moving_roi->get_vol_uchar();
         }
     }
 
@@ -189,18 +189,18 @@ Plm_bspline::initialize ()
         && (bsp_parms->mi_moving_image_minVal < 
             bsp_parms->mi_moving_image_maxVal))
     {
-        bool fill=!m_mask;
+        bool fill=!m_roi;
 
-        //create new moving mask if not available
-        if (!m_mask)
+        //create new moving roi if not available
+        if (!m_roi)
         {
-            m_mask = new Volume();
-            m_mask->create (moving->dim, moving->offset, moving->spacing,
+            m_roi = new Volume();
+            m_roi->create (moving->dim, moving->offset, moving->spacing,
                 moving->direction_cosines, PT_UCHAR);
         }
 
-        //Modify fixed mask according to min and max values for moving image
-        update_mask (m_mask, moving, bsp_parms->mi_moving_image_minVal,
+        //Modify fixed roi according to min and max values for moving image
+        update_roi (m_roi, moving, bsp_parms->mi_moving_image_minVal,
             bsp_parms->mi_moving_image_maxVal,fill);
     }
 
@@ -210,27 +210,27 @@ Plm_bspline::initialize ()
         && (bsp_parms->mi_fixed_image_minVal < 
             bsp_parms->mi_fixed_image_maxVal))
     {
-        bool fill=!f_mask;
+        bool fill=!f_roi;
 
-        //create new fixed mask if not available
-        if(!f_mask)
+        //create new fixed roi if not available
+        if(!f_roi)
         {
-            f_mask=new Volume();
-            f_mask->create (fixed->dim, fixed->offset, fixed->spacing,
+            f_roi=new Volume();
+            f_roi->create (fixed->dim, fixed->offset, fixed->spacing,
                 fixed->direction_cosines, PT_UCHAR);
         }
 
-        //Modify fixed mask according to min and max values for fixed image
-        update_mask (f_mask, fixed, bsp_parms->mi_fixed_image_minVal,
+        //Modify fixed roi according to min and max values for fixed image
+        update_roi (f_roi, fixed, bsp_parms->mi_fixed_image_minVal,
             bsp_parms->mi_fixed_image_maxVal, fill);
     }
 
-    /* Subsample masks (if we are using them) */
-    if (m_mask) {
-        m_mask_ss = volume_subsample_nn (m_mask, stage->moving_subsample_rate);
+    /* Subsample rois (if we are using them) */
+    if (m_roi) {
+        m_roi_ss = volume_subsample_nn (m_roi, stage->moving_subsample_rate);
     }
-    if (f_mask) {
-        f_mask_ss = volume_subsample_nn (f_mask, stage->fixed_subsample_rate);
+    if (f_roi) {
+        f_roi_ss = volume_subsample_nn (f_roi, stage->fixed_subsample_rate);
     }
 
     logfile_printf ("moving_ss size = %d %d %d\n", moving_ss->dim[0], 
@@ -247,8 +247,8 @@ Plm_bspline::initialize ()
     bsp_parms->fixed = fixed_ss;
     bsp_parms->moving = moving_ss;
     bsp_parms->moving_grad = moving_grad;
-    if (f_mask) bsp_parms->fixed_mask = f_mask_ss;
-    if (m_mask) bsp_parms->moving_mask = m_mask_ss;
+    if (f_roi) bsp_parms->fixed_roi = f_roi_ss;
+    if (m_roi) bsp_parms->moving_roi = m_roi_ss;
 
     /* Optimization */
     if (stage->optim_type == OPTIMIZATION_STEEPEST) {
@@ -380,13 +380,13 @@ Plm_bspline::cleanup ()
     Stage_parms *stage = d_ptr->stage;
 
     /* Free up temporary memory */
-    if (stage->fixed_mask) {
-        logfile_printf ("Freeing fixed mask.\n");
-        delete stage->fixed_mask;
+    if (stage->fixed_roi) {
+        logfile_printf ("Freeing fixed roi.\n");
+        delete stage->fixed_roi;
     }
-    if (stage->moving_mask) {
-        logfile_printf ("Freeing moving mask.\n");
-        delete stage->moving_mask;
+    if (stage->moving_roi) {
+        logfile_printf ("Freeing moving roi.\n");
+        delete stage->moving_roi;
     }
 
     delete d_ptr->fixed_ss;

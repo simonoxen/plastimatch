@@ -57,8 +57,8 @@ public:
     Registration_parms_private *d_ptr;
 public:
     int num_stages;
-    std::string moving_mask_fn;
-    std::string fixed_mask_fn;
+    std::string moving_roi_fn;
+    std::string fixed_roi_fn;
     int img_out_fmt;
     Plm_image_type img_out_type;
     char img_out_fn[_MAX_PATH];

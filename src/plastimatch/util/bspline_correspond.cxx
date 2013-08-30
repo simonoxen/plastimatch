@@ -50,26 +50,26 @@ float_to_plm_long_clamp (plm_long* p, float* f, const plm_long* max)
 }
 
 int
-inside_mask (float* xyz, const Volume* mask)
+inside_roi (float* xyz, const Volume* roi)
 {
     float p_f[3];
     float tmp[3];
     plm_long p[3];
 
-    tmp[0] = xyz[0] - mask->offset[0];
-    tmp[1] = xyz[1] - mask->offset[1];
-    tmp[2] = xyz[2] - mask->offset[2];
+    tmp[0] = xyz[0] - roi->offset[0];
+    tmp[1] = xyz[1] - roi->offset[1];
+    tmp[2] = xyz[2] - roi->offset[2];
 
-    p_f[0] = PROJECT_X (tmp, mask->proj);
-    p_f[1] = PROJECT_Y (tmp, mask->proj);
-    p_f[2] = PROJECT_Z (tmp, mask->proj);
+    p_f[0] = PROJECT_X (tmp, roi->proj);
+    p_f[1] = PROJECT_Y (tmp, roi->proj);
+    p_f[2] = PROJECT_Z (tmp, roi->proj);
 
-    float_to_plm_long_clamp (p, p_f, mask->dim);
+    float_to_plm_long_clamp (p, p_f, roi->dim);
 
-    unsigned char *m = (unsigned char*)mask->img;
-    plm_long i = volume_index (mask->dim, p);
+    unsigned char *m = (unsigned char*)roi->img;
+    plm_long i = volume_index (roi->dim, p);
 
-    /* 0 outside mask, 1 inside */
+    /* 0 outside roi, 1 inside */
     return (int)m[i];
 }
 
@@ -137,18 +137,18 @@ bspline_find_correspondence_dcos
 }
 
 /* Find location and index of corresponding voxel in moving image.
- * This version takes direction cosines and true masking into consideration
+ * This version takes direction cosines and true roiing into consideration
    Return 1 if corresponding voxel lies within the moving image, 
    return 0 if outside the moving image.  */
 int
-bspline_find_correspondence_dcos_mask
+bspline_find_correspondence_dcos_roi
 (
  float *mxyz,               /* Output: xyz coordinates in moving image (mm) */
  float *mijk,               /* Output: ijk indices in moving image (vox) */
  const float *fxyz,         /* Input:  xyz coordinates in fixed image (mm) */
  const float *dxyz,         /* Input:  displacement from fixed to moving (mm) */
  const Volume *moving,      /* Input:  moving image */
- const Volume *moving_mask  /* Input:  moving image mask */
+ const Volume *moving_roi  /* Input:  moving image roi */
  )
 {
     float tmp[3];
@@ -169,8 +169,8 @@ bspline_find_correspondence_dcos_mask
     if (mijk[1] < -0.5 || mijk[1] > moving->dim[1] - 0.5) return 0;
     if (mijk[2] < -0.5 || mijk[2] > moving->dim[2] - 0.5) return 0;
 
-    if (moving_mask) {
-        return inside_mask (mxyz, moving_mask);
+    if (moving_roi) {
+        return inside_roi (mxyz, moving_roi);
     }
 
     return 1;

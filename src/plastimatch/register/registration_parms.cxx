@@ -203,18 +203,34 @@ Registration_parms::set_key_val (
             stage->default_value = f;
         }
     }
-    else if (!strcmp (key, "fixed_mask")) {
+    else if (!strcmp (key, "fixed_mask")
+        || !strcmp (key, "fixed_roi")) {
         if (section == 0) {
-            this->fixed_mask_fn = val;
+            this->fixed_roi_fn = val;
         } else {
-            stage->fixed_mask_fn = val;
+            stage->fixed_roi_fn = val;
         }
     }
-    else if (!strcmp (key, "moving_mask")) {
+    else if (!strcmp (key, "moving_mask")
+        || !strcmp (key, "moving_roi")) {
         if (section == 0) {
-            this->moving_mask_fn = val;
+            this->moving_roi_fn = val;
         } else {
-            stage->moving_mask_fn = val;
+            stage->moving_roi_fn = val;
+        }
+    }
+    else if (!strcmp (key, "fixed_roi_enable")) {
+        if (section == 0) {
+//            this->fixed_roi_enable = string_value_true (val);
+        } else {
+            stage->fixed_roi_enable = string_value_true (val);
+        }
+    }
+    else if (!strcmp (key, "moving_roi_enable")) {
+        if (section == 0) {
+//            this->moving_roi_enable = string_value_true (val);
+        } else {
+            stage->moving_roi_enable = string_value_true (val);
         }
     }
     else if (!strcmp (key, "img_out") || !strcmp (key, "image_out")) {

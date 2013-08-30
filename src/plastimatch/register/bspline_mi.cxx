@@ -1639,7 +1639,7 @@ bspline_score_i_mi (
 
 
 /* B-Spline Registration using Mutual Information
- * Implementation H  (D w/ direction cosines & true mask support)
+ * Implementation H  (D w/ direction cosines & true roi support)
  *   -- Uses OpenMP for Cost & dc_dv computation
  *   -- Uses methods introduced in bspline_score_g_mse
  *        to compute dc_dp more rapidly.
@@ -1688,8 +1688,8 @@ bspline_score_h_mi (
     float* cond_y = (float*)malloc(cond_size);
     float* cond_z = (float*)malloc(cond_size);
 
-    Volume* fixed_mask  = parms->fixed_mask;
-    Volume* moving_mask = parms->moving_mask;
+    Volume* fixed_roi  = parms->fixed_roi;
+    Volume* moving_roi = parms->moving_roi;
 
 #if 0
     Volume* dbg_vol = volume_clone_empty (moving);
@@ -1731,17 +1731,17 @@ bspline_score_h_mi (
                 q[0] = REGION_OFFSET_X (fijk, bxf);
 
                 /* JAS 2012.03.26: Tends to break the optimizer (PGTOL)   */
-                /* Check to make sure the indices are valid (inside mask) */
-                if (fixed_mask) {
-                    if (!inside_mask (fxyz, fixed_mask)) continue;
+                /* Check to make sure the indices are valid (inside roi) */
+                if (fixed_roi) {
+                    if (!inside_roi (fxyz, fixed_roi)) continue;
                 }
 
                 /* Get B-spline deformation vector */
                 pidx = volume_index (bxf->rdims, p);
                 bspline_interp_pix_c (dxyz, bxf, pidx, q);
 
-                rc = bspline_find_correspondence_dcos_mask (
-                    mxyz, mijk, fxyz, dxyz, moving, moving_mask);
+                rc = bspline_find_correspondence_dcos_roi (
+                    mxyz, mijk, fxyz, dxyz, moving, moving_roi);
 
                 /* If voxel is not inside moving image */
                 if (!rc) continue;
@@ -1842,17 +1842,17 @@ bspline_score_h_mi (
                     GET_WORLD_COORDS (fxyz, fijk, fixed, bxf);
 
                     /* JAS 2012.03.26: Tends to break the optimizer (PGTOL)   */
-                    /* Check to make sure the indices are valid (inside mask) */
-                    if (fixed_mask) {
-                        if (!inside_mask (fxyz, fixed_mask)) continue;
+                    /* Check to make sure the indices are valid (inside roi) */
+                    if (fixed_roi) {
+                        if (!inside_roi (fxyz, fixed_roi)) continue;
                     }
 
                     /* Compute deformation vector (dxyz) for voxel */
                     bspline_interp_pix_c (dxyz, bxf, pidx, q);
 
                     /* Find correspondence in moving image */
-                    rc = bspline_find_correspondence_dcos_mask (
-                        mxyz, mijk, fxyz, dxyz, moving, moving_mask);
+                    rc = bspline_find_correspondence_dcos_roi (
+                        mxyz, mijk, fxyz, dxyz, moving, moving_roi);
 
                     /* If voxel is not inside moving image */
                     if (!rc) continue;
@@ -3127,8 +3127,8 @@ bspline_score_c_mi (
 
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
-    Volume* fixed_mask  = parms->fixed_mask;
-    Volume* moving_mask = parms->moving_mask;
+    Volume* fixed_roi  = parms->fixed_roi;
+    Volume* moving_roi = parms->moving_roi;
 
     Bspline_score* ssd = &bst->ssd;
     Bspline_mi_hist_set* mi_hist = bst->mi_hist;
@@ -3187,8 +3187,8 @@ bspline_score_c_mi (
                 p[0] = REGION_INDEX_X (fijk, bxf);
                 q[0] = REGION_OFFSET_X (fijk, bxf);
 
-                if (fixed_mask) {
-                    if (!inside_mask (fxyz, fixed_mask)) continue;
+                if (fixed_roi) {
+                    if (!inside_roi (fxyz, fixed_roi)) continue;
                 }
 
                 /* Get B-spline deformation vector */
@@ -3198,8 +3198,8 @@ bspline_score_c_mi (
 
                 /* Find correspondence in moving image */
                 int rc;
-                rc = bspline_find_correspondence_dcos_mask (
-                    mxyz, mijk, fxyz, dxyz, moving, moving_mask);
+                rc = bspline_find_correspondence_dcos_roi (
+                    mxyz, mijk, fxyz, dxyz, moving, moving_roi);
 
                 /* If voxel is not inside moving image */
                 if (!rc) continue;
@@ -3290,8 +3290,8 @@ bspline_score_c_mi (
                 p[0] = REGION_INDEX_X (fijk, bxf);
                 q[0] = REGION_OFFSET_X (fijk, bxf);
 
-                if (fixed_mask) {
-                    if (!inside_mask (fxyz, fixed_mask)) continue;
+                if (fixed_roi) {
+                    if (!inside_roi (fxyz, fixed_roi)) continue;
                 }
 
                 /* Get B-spline deformation vector */
@@ -3304,8 +3304,8 @@ bspline_score_c_mi (
 
                 /* Find correspondence in moving image */
                 int rc;
-                rc = bspline_find_correspondence_dcos_mask (
-                    mxyz, mijk, fxyz, dxyz, moving, moving_mask);
+                rc = bspline_find_correspondence_dcos_roi (
+                    mxyz, mijk, fxyz, dxyz, moving, moving_roi);
 
                 /* If voxel is not inside moving image */
                 if (!rc) continue;

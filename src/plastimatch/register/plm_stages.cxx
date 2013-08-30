@@ -30,7 +30,7 @@
 
 /* This helps speed up the registration, by setting the bounding box to the 
    smallest size needed.  To find the bounding box, either use the extent 
-   of the fixed_mask (if one is used), or by eliminating excess air 
+   of the fixed_roi (if one is used), or by eliminating excess air 
    by thresholding */
 static void
 set_fixed_image_region_global (Registration_data* regd)
@@ -40,16 +40,16 @@ set_fixed_image_region_global (Registration_data* regd)
     regd->fixed_region_origin = regd->fixed_image->itk_float()->GetOrigin();
     regd->fixed_region_spacing = regd->fixed_image->itk_float()->GetSpacing();
 
-    if (regd->fixed_mask) {
+    if (regd->fixed_roi) {
         FloatImageType::RegionType::IndexType valid_index;
         FloatImageType::RegionType::SizeType valid_size;
 
-        /* Search for bounding box of fixed mask */
+        /* Search for bounding box of fixed roi */
         typedef itk::ImageRegionConstIteratorWithIndex< 
             UCharImageType > IteratorType;
         UCharImageType::RegionType region 
-            = regd->fixed_mask->itk_uchar()->GetLargestPossibleRegion();
-        IteratorType it (regd->fixed_mask->itk_uchar(), region);
+            = regd->fixed_roi->itk_uchar()->GetLargestPossibleRegion();
+        IteratorType it (regd->fixed_roi->itk_uchar(), region);
 
         int first = 1;
         valid_index[0] = 0;

@@ -11,6 +11,7 @@
 
 PLMSYS_API bool string_starts_with (const char* s1, const char* s2);
 PLMSYS_API int plm_strcmp (const char* s1, const char* s2);
+PLMSYS_API std::string make_lowercase (const std::string& s);
 PLMSYS_API void string_util_rtrim_whitespace (char *s);
 PLMSYS_API int parse_int13 (int *arr, const char *string);
 PLMSYS_API int parse_dicom_float2 (float *arr, const char *string);
@@ -27,5 +28,8 @@ PLMSYS_API std::string slurp_file (const std::string& fn);
 PLMSYS_API std::string string_format (const char* fmt, ...);
 PLMSYS_API std::string string_format (const char* fmt, va_list ap);
 PLMSYS_API size_t ci_find (const std::string& str1, const std::string& str2);
+
+PLMSYS_API bool string_value_true (const char* s);
+PLMSYS_API bool string_value_true (const std::string& s);
 
 #endif

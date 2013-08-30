@@ -237,25 +237,25 @@ Itk_registration_private::set_metric (FloatImageType::Pointer& fixed_ss)
 }
 
 void
-Itk_registration_private::set_mask_images ()
+Itk_registration_private::set_roi_images ()
 {
-    if (regd->fixed_mask) {
-        Mask_SOType::Pointer mask_so = Mask_SOType::New();
-        mask_so->SetImage(regd->fixed_mask->itk_uchar());
-        mask_so->Update();
-        registration->GetMetric()->SetFixedImageMask (mask_so);
+    if (regd->fixed_roi) {
+        Mask_SOType::Pointer roi_so = Mask_SOType::New();
+        roi_so->SetImage(regd->fixed_roi->itk_uchar());
+        roi_so->Update();
+        registration->GetMetric()->SetFixedImageMask (roi_so);
     }
-    if (regd->moving_mask) {
-        Mask_SOType::Pointer mask_so = Mask_SOType::New();
-        mask_so->SetImage(regd->moving_mask->itk_uchar());
-        mask_so->Update();
-        registration->GetMetric()->SetMovingImageMask (mask_so);
+    if (regd->moving_roi) {
+        Mask_SOType::Pointer roi_so = Mask_SOType::New();
+        roi_so->SetImage(regd->moving_roi->itk_uchar());
+        roi_so->Update();
+        registration->GetMetric()->SetMovingImageMask (roi_so);
     }
 }
 
 /* This helps speed up the registration, by setting the bounding box to the 
    smallest size needed.  To find the bounding box, either use the extent 
-   of the fixed_mask (if one is used), or by eliminating 
+   of the fixed_roi (if one is used), or by eliminating 
    excess air by thresholding
 */
 void
@@ -307,7 +307,7 @@ Itk_registration_private::set_fixed_image_region ()
 
 #if defined (commentout)
     int use_magic_value = 0;
-    if (regd->fixed_mask) {
+    if (regd->fixed_roi) {
         FloatImageType::RegionType valid_region;
         FloatImageType::RegionType::IndexType valid_index;
         FloatImageType::RegionType::SizeType valid_size;
@@ -318,7 +318,7 @@ Itk_registration_private::set_fixed_image_region ()
         valid_size[1] = 1;
         valid_size[2] = 1;
 
-        /* Search for bounding box of fixed mask */
+        /* Search for bounding box of fixed roi */
         typedef Mask_SOType* Mask_SOPointer;
         Mask_SOPointer so = (Mask_SOPointer) 
             registration->GetMetric()->GetFixedImageMask();
@@ -600,8 +600,8 @@ itk_registration_stage (
     irp.registration->SetMovingImage (moving_ss);
 
     irp.set_metric (fixed_ss);      // must be after setting images
-    irp.set_mask_images ();         // must be after set_metric
-    irp.set_fixed_image_region ();  // must be after set_mask_images
+    irp.set_roi_images ();         // must be after set_metric
+    irp.set_fixed_image_region ();  // must be after set_roi_images
     irp.show_stats ();
     irp.set_transform ();           // must be after set_fixed_image_region
     irp.set_optimization ();

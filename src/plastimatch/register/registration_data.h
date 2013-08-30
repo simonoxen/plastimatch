@@ -18,8 +18,8 @@ public:
     /* Input images */
     Plm_image *fixed_image;
     Plm_image *moving_image;
-    Plm_image *fixed_mask;
-    Plm_image *moving_mask;
+    Plm_image *fixed_roi;
+    Plm_image *moving_roi;
 
     /* Input landmarks */
     Labeled_pointset *fixed_landmarks;

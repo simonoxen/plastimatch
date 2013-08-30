@@ -124,8 +124,8 @@ public:
     Volume* fixed;
     Volume* moving;
     Volume* moving_grad;
-    Volume* fixed_mask;
-    Volume* moving_mask;
+    Volume* fixed_roi;
+    Volume* moving_roi;
 
     /* Regularization */
     Reg_parms* reg_parms;        /* Regularization Parameters */

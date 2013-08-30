@@ -204,8 +204,8 @@ Mabs_atlas_selection::compute_nmi_ratio()
     regd->moving_image=this->atlas;
 
     /* Make sure to have just the right inputs */
-    regd->fixed_mask = NULL;
-    regd->moving_mask = NULL;
+    regd->fixed_roi = NULL;
+    regd->moving_roi = NULL;
     regd->fixed_landmarks = NULL;
     regd->moving_landmarks = NULL;
 

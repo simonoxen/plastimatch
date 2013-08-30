@@ -68,7 +68,7 @@ bspline_score_normalize (
 //
 // This is a multi-CPU implementation using OpenMP, using the tile 
 // "condense" method.  It is similar to flavor "g", but respects 
-// image masks.
+// image rois.
 ///////////////////////////////////////////////////////////////////////////////
 void
 bspline_score_i_mse (
@@ -97,8 +97,8 @@ bspline_score_i_mse (
     float* cond_y = (float*)malloc(cond_size);
     float* cond_z = (float*)malloc(cond_size);
 
-    Volume* fixed_mask  = parms->fixed_mask;
-    Volume* moving_mask = parms->moving_mask;
+    Volume* fixed_roi  = parms->fixed_roi;
+    Volume* moving_roi = parms->moving_roi;
 
     static int it = 0;
 
@@ -184,9 +184,9 @@ bspline_score_i_mse (
                     GET_WORLD_COORDS (xyz_fixed, ijk_fixed, fixed, bxf);
 
                     /* JAS 2012.03.26: Tends to break the optimizer (PGTOL)   */
-                    /* Check to make sure the indices are valid (inside mask) */
-                    if (fixed_mask) {
-                        if (!inside_mask (xyz_fixed, fixed_mask)) continue;
+                    /* Check to make sure the indices are valid (inside roi) */
+                    if (fixed_roi) {
+                        if (!inside_roi (xyz_fixed, fixed_roi)) continue;
                     }
 
                     // Construct the image volume index
@@ -197,9 +197,9 @@ bspline_score_i_mse (
 
                     // Calc. moving image coordinate from the deformation 
                     // vector
-                    rc = bspline_find_correspondence_dcos_mask (
+                    rc = bspline_find_correspondence_dcos_roi (
                         xyz_moving, ijk_moving, xyz_fixed, dxyz, moving,
-                        moving_mask);
+                        moving_roi);
 
                     if (parms->debug) {
                         fprintf (corr_fp, 
