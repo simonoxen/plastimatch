@@ -1152,7 +1152,7 @@ Mabs::train_internal (bool registration_only)
         /* Select atlases */
         if (d_ptr->parms->enable_atlas_selection)
         {
-	        Mabs_atlas_selection* select_atlas = new Mabs_atlas_selection();
+	    Mabs_atlas_selection* select_atlas = new Mabs_atlas_selection();
             
             select_atlas->subject = d_ptr->ref_rtds->get_image().get();
             select_atlas->subject_id = patient_id;
@@ -1161,8 +1161,10 @@ Mabs::train_internal (bool registration_only)
             select_atlas->atlas_selection_parms = d_ptr->parms;
 	        
             select_atlas->run_selection();
+            
+            d_ptr->atlas_list.assign(select_atlas->selected_atlases.begin(), select_atlas->selected_atlases.end());
 
-	        d_ptr->atlas_list=select_atlas->selected_atlases;
+            delete select_atlas;
         }
 
         /* Run the segmentation */
