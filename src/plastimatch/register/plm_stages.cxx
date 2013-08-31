@@ -21,6 +21,7 @@
 #include "pointset_warp.h"
 #include "registration_data.h"
 #include "registration_parms.h"
+#include "shared_parms.h"
 #include "stage_parms.h"
 #include "volume.h"
 #include "xform.h"
@@ -362,6 +363,10 @@ do_registration_pure (
     std::list<Stage_parms*>::iterator it;
     for (it = stages.begin(); it != stages.end(); it++) {
         Stage_parms* sp = *it;
+
+        printf ("fixed_roi = %s, enable = %d\n", 
+            sp->get_shared_parms()->fixed_roi_fn.c_str(), 
+            sp->get_shared_parms()->fixed_roi_enable);
 
         /* Swap xf_in and xf_out */
         xf_tmp = xf_out; xf_out = xf_in; xf_in = xf_tmp;

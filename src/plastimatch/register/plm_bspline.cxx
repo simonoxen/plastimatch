@@ -131,31 +131,12 @@ Plm_bspline::initialize ()
     Volume *moving_ss, *fixed_ss;
     Volume *moving_grad = 0;
 
-    /* load "stage" rois; stage roi overrides a global roi */
-    if (shared->fixed_roi_fn != "") {
-        logfile_printf ("Loading fixed roi: %s\n", 
-            shared->fixed_roi_fn.c_str());
-        stage->fixed_roi = plm_image_load (shared->fixed_roi_fn, 
-            PLM_IMG_TYPE_ITK_UCHAR);
-        f_roi = stage->fixed_roi->get_vol_uchar();
-    } else {
-        stage->fixed_roi = 0;
-        if (regd->fixed_roi) {
-            f_roi = regd->fixed_roi->get_vol_uchar();
-        }
+    /* Set roi's */
+    if (shared->fixed_roi_enable && regd->fixed_roi) {
+        f_roi = regd->fixed_roi->get_vol_uchar();
     }
-
-    if (shared->moving_roi_fn != "") {
-        logfile_printf ("Loading moving roi: %s\n", 
-            shared->moving_roi_fn.c_str());
-        stage->moving_roi = plm_image_load (shared->moving_roi_fn, 
-            PLM_IMG_TYPE_ITK_UCHAR);
-        m_roi = stage->moving_roi->get_vol_uchar();
-    } else {
-        stage->moving_roi = 0;
-        if (regd->moving_roi) {
-            m_roi = regd->moving_roi->get_vol_uchar();
-        }
+    if (shared->moving_roi_enable && regd->moving_roi) {
+        m_roi = regd->moving_roi->get_vol_uchar();
     }
 
     /* Confirm grid method.  This should go away? */
@@ -379,18 +360,6 @@ Plm_bspline::initialize ()
 void
 Plm_bspline::cleanup ()
 {
-    Stage_parms *stage = d_ptr->stage;
-
-    /* Free up temporary memory */
-    if (stage->fixed_roi) {
-        logfile_printf ("Freeing fixed roi.\n");
-        delete stage->fixed_roi;
-    }
-    if (stage->moving_roi) {
-        logfile_printf ("Freeing moving roi.\n");
-        delete stage->moving_roi;
-    }
-
     delete d_ptr->fixed_ss;
     delete d_ptr->moving_ss;
     delete d_ptr->moving_grad;
@@ -404,10 +373,6 @@ do_gpuit_bspline_stage (
     Xform *xf_in,
     Stage_parms* stage)
 {
-#if defined (commentout)
-    do_gpuit_bspline_stage_internal (regp, regd, xf_out, xf_in, stage);
-#endif
-
     Plm_bspline pb (regp, regd, stage, xf_in);
     pb.run_stage ();
     *xf_out = pb.d_ptr->xf_out;

@@ -135,10 +135,6 @@ public:
     /* Landmarks */
     float landmark_stiffness; //strength of attraction between landmarks
     char landmark_flavor;
-    /* Masks -- to be implemented */
-    /* ROI */
-    Plm_image *fixed_roi;
-    Plm_image *moving_roi;
     /* Output files */
     int img_out_fmt;
     Plm_image_type img_out_type;

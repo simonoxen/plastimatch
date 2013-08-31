@@ -101,13 +101,6 @@ Stage_parms::Stage_parms ()
     /* Landmarks */
     landmark_stiffness = 1.0;
     landmark_flavor = 'a';
-    /* ROI */
-#if defined (commentout)
-    fixed_roi_enable = false;
-    moving_roi_enable = false;
-#endif
-    fixed_roi = 0;
-    moving_roi = 0;
     /* Output files */
     img_out_fmt = IMG_OUT_FMT_AUTO;
     img_out_type = PLM_IMG_TYPE_UNDEFINED;
@@ -192,9 +185,6 @@ Stage_parms::Stage_parms (const Stage_parms& s)
     /* Landmarks */
     landmark_stiffness = s.landmark_stiffness;
     landmark_flavor = s.landmark_flavor;
-    /* ROI */
-    fixed_roi = s.fixed_roi;
-    moving_roi = s.moving_roi;
     /* Output files */
     img_out_type = s.img_out_type;
     xf_out_itk = s.xf_out_itk;
