@@ -1,9 +1,10 @@
 [GLOBAL]
-fixed=rect-3.mha
-moving=rect-2.mha
-vf_out=plm-reg-itk-rigid-vf.mha
-xform_out=plm-reg-itk-rigid-xf.txt
-img_out=plm-reg-itk-rigid-img.mha
+fixed=@PLM_BUILD_TESTING_DIR@/rect-3.mha
+moving=@PLM_BUILD_TESTING_DIR@/rect-2.mha
+
+vf_out=@PLM_BUILD_TESTING_DIR@/plm-reg-itk-rigid-vf.mha
+xform_out=@PLM_BUILD_TESTING_DIR@/plm-reg-itk-rigid-xf.txt
+img_out=@PLM_BUILD_TESTING_DIR@/plm-reg-itk-rigid-img.mha
 
 [STAGE]
 xform=rigid

@@ -20,6 +20,7 @@
 #include "plm_path.h"
 #include "print_and_exit.h"
 #include "registration_parms.h"
+#include "shared_parms.h"
 #include "stage_parms.h"
 #include "string_util.h"
 
@@ -31,6 +32,18 @@ public:
     std::string moving_fn;
     std::string fixed_fn;
     std::list<Stage_parms*> stages;
+    Shared_parms *shared;
+public:
+    Registration_parms_private () {
+        shared = new Shared_parms;
+    }
+    ~Registration_parms_private () {
+        std::list<Stage_parms*>::iterator it;
+        for (it = stages.begin(); it != stages.end(); it++) {
+            delete *it;
+        }
+        delete shared;
+    }
 };
 
 Registration_parms::Registration_parms()
@@ -47,7 +60,6 @@ Registration_parms::Registration_parms()
     init_type = STAGE_TRANSFORM_NONE;
     default_value = 0.0;
     num_stages = 0;
-//    stages = 0;
     *moving_dir = 0;
     *fixed_dir = 0;
     *img_out_dir = 0;
@@ -62,10 +74,6 @@ Registration_parms::Registration_parms()
 
 Registration_parms::~Registration_parms()
 {
-    std::list<Stage_parms*>::iterator it;
-    for (it = d_ptr->stages.begin(); it != d_ptr->stages.end(); it++) {
-        delete *it;
-    }
     delete d_ptr;
 }
 
@@ -123,9 +131,14 @@ Registration_parms::set_key_val (
 {
     int rc;
     Stage_parms* stage = 0;
+    Shared_parms* shared = 0;
+
     if (section != 0) {
-        //stage = this->stages[this->num_stages-1];
         stage = d_ptr->stages.back();
+        shared = stage->get_shared_parms();
+    }
+    else {
+        shared = d_ptr->shared;
     }
 
     /* The following keywords are only allowed globally */
@@ -203,35 +216,18 @@ Registration_parms::set_key_val (
             stage->default_value = f;
         }
     }
-    else if (!strcmp (key, "fixed_mask")
-        || !strcmp (key, "fixed_roi")) {
-        if (section == 0) {
-            this->fixed_roi_fn = val;
-        } else {
-            stage->fixed_roi_fn = val;
-        }
+    else if (!strcmp (key, "fixed_mask") || !strcmp (key, "fixed_roi")) {
+        shared->fixed_roi_fn = val;
     }
-    else if (!strcmp (key, "moving_mask")
-        || !strcmp (key, "moving_roi")) {
-        if (section == 0) {
-            this->moving_roi_fn = val;
-        } else {
-            stage->moving_roi_fn = val;
-        }
+    else if (!strcmp (key, "moving_mask") || !strcmp (key, "moving_roi")) {
+        shared->moving_roi_fn = val;
     }
     else if (!strcmp (key, "fixed_roi_enable")) {
-        if (section == 0) {
-//            this->fixed_roi_enable = string_value_true (val);
-        } else {
-            stage->fixed_roi_enable = string_value_true (val);
-        }
+        shared->fixed_roi_enable = val;
     }
-    else if (!strcmp (key, "moving_roi_enable")) {
-        if (section == 0) {
-//            this->moving_roi_enable = string_value_true (val);
-        } else {
-            stage->moving_roi_enable = string_value_true (val);
-        }
+    else if (!strcmp (key, "moving_roi_enable"))
+    {
+        shared->moving_roi_enable = val;
     }
     else if (!strcmp (key, "img_out") || !strcmp (key, "image_out")) {
         if (section == 0) {
@@ -876,6 +872,12 @@ const std::string&
 Registration_parms::get_moving_fn ()
 {
     return d_ptr->moving_fn;
+}
+
+Shared_parms*
+Registration_parms::get_shared_parms ()
+{
+    return d_ptr->shared;
 }
 
 std::list<Stage_parms*>& 

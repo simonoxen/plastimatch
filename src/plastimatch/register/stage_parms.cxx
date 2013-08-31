@@ -3,12 +3,33 @@
    ----------------------------------------------------------------------- */
 #include "plmregister_config.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
+#include "shared_parms.h"
 #include "stage_parms.h"
+
+class Stage_parms_private
+{
+public:
+    Shared_parms *shared;
+public:
+    Stage_parms_private () {
+        shared = new Shared_parms;
+    }
+    Stage_parms_private (const Stage_parms_private& s) {
+        this->shared = new Shared_parms (*s.shared);
+    }
+    ~Stage_parms_private () {
+        delete shared;
+    }
+};
 
 Stage_parms::Stage_parms ()
 {
+    d_ptr = new Stage_parms_private;
+    printf ("Created d_ptr = %p\n", d_ptr);
+
     /* Stage # */
     stage_no = -1;
     /* Stage resume? */
@@ -82,8 +103,10 @@ Stage_parms::Stage_parms ()
     landmark_stiffness = 1.0;
     landmark_flavor = 'a';
     /* ROI */
+#if defined (commentout)
     fixed_roi_enable = false;
     moving_roi_enable = false;
+#endif
     fixed_roi = 0;
     moving_roi = 0;
     /* Output files */
@@ -94,15 +117,114 @@ Stage_parms::Stage_parms ()
     *vf_out_fn = 0;
 }
 
-Stage_parms::Stage_parms (const Stage_parms& s)
+Stage_parms::Stage_parms (const Stage_parms& s) 
 {
-    /* Copy all the parameters */
-    *this = s;
+    d_ptr = new Stage_parms_private (*s.d_ptr);
+    printf ("Created d_ptr = %p\n", d_ptr);
+
+    /* Copy most of the parameters ... */
+
+    /* Stage # */
+    stage_no = s.stage_no;
+    /* Generic optimization parms */
+    xform_type = s.xform_type;
+    optim_type = s.optim_type;
+    impl_type = s.impl_type;
+    alg_flavor = s.alg_flavor;
+    threading_type = s.threading_type;
+    metric_type = s.metric_type;
+    regularization_type = s.regularization_type;
+    regularization_lambda = s.regularization_lambda;
+    /* Image subsampling */
+    subsampling_type = s.subsampling_type;
+    fixed_subsample_rate[0] = s.fixed_subsample_rate[0];
+    fixed_subsample_rate[1] = s.fixed_subsample_rate[1];
+    fixed_subsample_rate[2] = s.fixed_subsample_rate[2];
+    moving_subsample_rate[0] = s.moving_subsample_rate[0];
+    moving_subsample_rate[1] = s.moving_subsample_rate[1];
+    moving_subsample_rate[2] = s.moving_subsample_rate[2];
+    /* Intensity values for air */
+    background_max = s.background_max;
+    default_value = s.default_value;
+    /* Generic optimization parms */
+    min_its = s.min_its;
+    max_its = s.max_its;
+    convergence_tol = s.convergence_tol;
+    /* LBGFG optimizer */
+    grad_tol = s.grad_tol;
+    /* LBGFGB optimizer */
+    pgtol = s.pgtol;
+    /* Versor & RSG optimizer */
+    max_step = s.max_step;
+    min_step = s.min_step;
+    rsg_grad_tol = s.rsg_grad_tol;
+    translation_scale_factor = s.translation_scale_factor;
+    /* Quaternion optimizer */
+    learn_rate = s.learn_rate;
+    /* Mattes mutual information */
+    mi_histogram_bins_fixed = s.mi_histogram_bins_fixed;
+    mi_histogram_bins_moving = s.mi_histogram_bins_moving;
+    mi_num_spatial_samples = s.mi_num_spatial_samples;
+    mi_num_spatial_samples_pct = s.mi_num_spatial_samples_pct;
+    mi_histogram_type = s.mi_histogram_type;
+    /*Setting values to zero by default. In this case minVal and maxVal will be calculated from image*/
+    mi_fixed_image_minVal = s.mi_fixed_image_minVal;
+    mi_fixed_image_maxVal = s.mi_fixed_image_maxVal;
+    mi_moving_image_minVal = s.mi_moving_image_minVal;
+    mi_moving_image_maxVal = s.mi_moving_image_maxVal;
+    /* ITK & GPUIT demons */
+    demons_std = s.demons_std;
+    /* GPUIT demons */
+    demons_acceleration = s.demons_acceleration;
+    demons_homogenization = s.demons_homogenization;
+    demons_filter_width[0] = s.demons_filter_width[0];
+    demons_filter_width[1] = s.demons_filter_width[1];
+    demons_filter_width[2] = s.demons_filter_width[2];
+    /* ITK amoeba */
+    amoeba_parameter_tol = s.amoeba_parameter_tol;
+    /* Bspline parms */
+    num_grid[0] = s.num_grid[0];
+    num_grid[1] = s.num_grid[1];
+    num_grid[2] = s.num_grid[2];
+    grid_spac[0] = s.grid_spac[0];
+    grid_spac[1] = s.grid_spac[1];
+    grid_spac[2] = s.grid_spac[2];
+    grid_method = s.grid_method;
+    histoeq = s.histoeq;
+    /* Landmarks */
+    landmark_stiffness = s.landmark_stiffness;
+    landmark_flavor = s.landmark_flavor;
+    /* ROI */
+    fixed_roi = s.fixed_roi;
+    moving_roi = s.moving_roi;
+    /* Output files */
+    img_out_type = s.img_out_type;
+    xf_out_itk = s.xf_out_itk;
+
     /* ...but not the output filenames */
     img_out_fmt = IMG_OUT_FMT_AUTO;
     *img_out_fn = 0;
     xf_out_fn.clear ();
     *vf_out_fn = 0;
+
     /* ...and don't to resume unless specifically requested */
     resume_stage = false;
+}
+
+Stage_parms::~Stage_parms ()
+{
+    printf ("Deleting d_ptr = %p\n", d_ptr);
+    delete d_ptr;
+}
+
+Shared_parms*
+Stage_parms::get_shared_parms () 
+{
+    return d_ptr->shared;
+}
+
+const Shared_parms*
+Stage_parms::get_shared_parms () const
+{
+    return d_ptr->shared;
 }

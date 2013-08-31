@@ -19,6 +19,7 @@
 #include "print_and_exit.h"
 #include "registration_data.h"
 #include "registration_parms.h"
+#include "shared_parms.h"
 #include "stage_parms.h"
 #include "volume.h"
 #include "volume_resample.h"
@@ -110,6 +111,7 @@ Plm_bspline::initialize ()
 {
     Registration_data *regd = d_ptr->regd;
     Stage_parms *stage = d_ptr->stage;
+    Shared_parms *shared = d_ptr->stage->get_shared_parms();
     Xform *xf_in = d_ptr->xf_in;
     Xform *xf_out = &d_ptr->xf_out;
     Bspline_parms *bsp_parms = &d_ptr->bsp_parms;
@@ -130,10 +132,10 @@ Plm_bspline::initialize ()
     Volume *moving_grad = 0;
 
     /* load "stage" rois; stage roi overrides a global roi */
-    if (stage->fixed_roi_fn != "") {
+    if (shared->fixed_roi_fn != "") {
         logfile_printf ("Loading fixed roi: %s\n", 
-            stage->fixed_roi_fn.c_str());
-        stage->fixed_roi = plm_image_load (stage->fixed_roi_fn, 
+            shared->fixed_roi_fn.c_str());
+        stage->fixed_roi = plm_image_load (shared->fixed_roi_fn, 
             PLM_IMG_TYPE_ITK_UCHAR);
         f_roi = stage->fixed_roi->get_vol_uchar();
     } else {
@@ -143,10 +145,10 @@ Plm_bspline::initialize ()
         }
     }
 
-    if (stage->moving_roi_fn != "") {
+    if (shared->moving_roi_fn != "") {
         logfile_printf ("Loading moving roi: %s\n", 
-            stage->moving_roi_fn.c_str());
-        stage->moving_roi = plm_image_load (stage->moving_roi_fn, 
+            shared->moving_roi_fn.c_str());
+        stage->moving_roi = plm_image_load (shared->moving_roi_fn, 
             PLM_IMG_TYPE_ITK_UCHAR);
         m_roi = stage->moving_roi->get_vol_uchar();
     } else {

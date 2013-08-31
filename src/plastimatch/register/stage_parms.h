@@ -62,11 +62,16 @@ enum Regularization_type {
 };
 
 class Plm_image;
+class Shared_parms;
+class Stage_parms_private;
 
 class PLMREGISTER_API Stage_parms {
 public:
+    Stage_parms_private *d_ptr;
+public:
     Stage_parms ();
     Stage_parms (const Stage_parms& s);
+    ~Stage_parms ();
 public:
     /* Stage # */
     int stage_no;
@@ -132,10 +137,6 @@ public:
     char landmark_flavor;
     /* Masks -- to be implemented */
     /* ROI */
-    bool fixed_roi_enable;
-    bool moving_roi_enable;
-    std::string fixed_roi_fn;
-    std::string moving_roi_fn;
     Plm_image *fixed_roi;
     Plm_image *moving_roi;
     /* Output files */
@@ -147,6 +148,9 @@ public:
     char vf_out_fn[_MAX_PATH];
     std::string debug_dir;
     Pstring warped_landmarks_fn;
+public:
+    Shared_parms *get_shared_parms ();
+    const Shared_parms *get_shared_parms () const;
 };
 
 #endif

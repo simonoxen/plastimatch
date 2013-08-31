@@ -64,6 +64,7 @@ set (CONFIG_FILE_LIST
   "plm-reg-mask-d.txt"
   "plm-reg-multi-a.txt"
   "plm-reg-dv-itk-translation.txt"
+  "plm-reg-itk-rigid.txt"
   "plm-reg-itk-bspline.txt"
 )
 foreach (CONFIG_FILE ${CONFIG_FILE_LIST})
@@ -2163,7 +2164,7 @@ set_tests_properties (plm-reg-itk-translation-check PROPERTIES
 plm_add_test (
   "plm-reg-itk-rigid"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-reg-itk-rigid.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-rigid.txt"
   )
 plm_add_test (
   "plm-reg-itk-rigid-stats-1"
