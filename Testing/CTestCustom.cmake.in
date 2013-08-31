@@ -3,6 +3,7 @@ set (CMAKE_Fortran_COMPILER_WORKS @CMAKE_Fortran_COMPILER_WORKS@)
 set (CUDA_FOUND @CUDA_FOUND@)
 set (FFTW_FOUND @FFTW_FOUND@)
 set (GDCM_VERSION_1 @GDCM_VERSION_1@)
+set (ITK_VERSION "@ITK_VERSION@")
 set (OPENCL_FOUND @OPENCL_FOUND@)
 set (PLM_DCM_USE_DCMTK "@PLM_DCM_USE_DCMTK@")
 set (PLM_PLASTIMATCH_PATH "@PLM_PLASTIMATCH_PATH@")
@@ -54,6 +55,14 @@ if (OPENCL_FOUND)
   if (NOT OPENCL_PROBE_RESULT AND NOT OPENCL_PROBE_NOT_CAPABLE)
     set (RUN_OPENCL_TESTS ON)
   endif ()
+endif ()
+
+# In ITK 3.20.1 (official release), masked registration is broken
+if (NOT ${ITK_VERSION} VERSION_GREATER "3.20.1")
+set (CTEST_CUSTOM_TESTS_IGNORE
+  ${CTEST_CUSTOM_TESTS_IGNORE}
+  "plm-reg-roi-b"
+  )
 endif ()
 
 # plm-convert-rtog-corvus-a doen't work yet

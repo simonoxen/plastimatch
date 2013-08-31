@@ -3155,7 +3155,7 @@ set_tests_properties (plm-thumbnail-c-check PROPERTIES
 plm_add_test (
   "plm-union"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "union;--output;${PLM_BUILD_TESTING_DIR}/plm-union.mha;${PLM_BUILD_TESTING_DIR}/rect-10-mask-1.mha;${PLM_BUILD_TESTING_DIR}/rect-11-mask.mha"
+  "union;--output;${PLM_BUILD_TESTING_DIR}/plm-union.mha;${PLM_BUILD_TESTING_DIR}/rect-10-roi-1.mha;${PLM_BUILD_TESTING_DIR}/rect-11-roi.mha"
   )
 plm_add_test (
   "plm-union-stats"
