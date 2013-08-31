@@ -10,6 +10,7 @@
 #include "registration_data.h"
 #include "registration_parms.h"
 #include "shared_parms.h"
+#include "stage_parms.h"
 
 Registration_data::Registration_data ()
 {
@@ -30,7 +31,7 @@ Registration_data::~Registration_data ()
 }
 
 void
-Registration_data::load_input_files (Registration_parms* regp)
+Registration_data::load_global_input_files (Registration_parms* regp)
 {
     Plm_image_type image_type = PLM_IMG_TYPE_ITK_FLOAT;
     Shared_parms *shared = regp->get_shared_parms();
@@ -91,5 +92,25 @@ Registration_data::load_input_files (Registration_parms* regp)
             fixed_landmarks->set_ras (regp->fixed_landmarks_list);
             moving_landmarks->set_ras (regp->moving_landmarks_list);
         }
+    }
+}
+
+void
+Registration_data::load_stage_input_files (Stage_parms* stage)
+{
+    Shared_parms *shared = stage->get_shared_parms();
+
+    if (shared->fixed_roi_fn != "") {
+        logfile_printf ("Loading fixed roi: %s\n", 
+            shared->fixed_roi_fn.c_str());
+        this->fixed_roi = plm_image_load (
+            shared->fixed_roi_fn, PLM_IMG_TYPE_ITK_UCHAR);
+    }
+
+    if (shared->moving_roi_fn != "") {
+        logfile_printf ("Loading moving roi: %s\n", 
+            shared->moving_roi_fn.c_str());
+        this->moving_roi = plm_image_load (
+            shared->moving_roi_fn, PLM_IMG_TYPE_ITK_UCHAR);
     }
 }

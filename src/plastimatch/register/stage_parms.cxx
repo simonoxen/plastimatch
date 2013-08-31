@@ -28,7 +28,6 @@ public:
 Stage_parms::Stage_parms ()
 {
     d_ptr = new Stage_parms_private;
-    printf ("Created d_ptr = %p\n", d_ptr);
 
     /* Stage # */
     stage_no = -1;
@@ -120,7 +119,6 @@ Stage_parms::Stage_parms ()
 Stage_parms::Stage_parms (const Stage_parms& s) 
 {
     d_ptr = new Stage_parms_private (*s.d_ptr);
-    printf ("Created d_ptr = %p\n", d_ptr);
 
     /* Copy most of the parameters ... */
 
@@ -213,7 +211,6 @@ Stage_parms::Stage_parms (const Stage_parms& s)
 
 Stage_parms::~Stage_parms ()
 {
-    printf ("Deleting d_ptr = %p\n", d_ptr);
     delete d_ptr;
 }
 

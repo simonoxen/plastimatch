@@ -12,6 +12,7 @@
 
 class Plm_image;
 class Registration_parms;
+class Stage_parms;
 
 class PLMREGISTER_API Registration_data {
 public:
@@ -32,7 +33,8 @@ public:
 public:
     Registration_data ();
     ~Registration_data ();
-    void load_input_files (Registration_parms* regp);
+    void load_global_input_files (Registration_parms* regp);
+    void load_stage_input_files (Stage_parms* regp);
 };
 
 #endif

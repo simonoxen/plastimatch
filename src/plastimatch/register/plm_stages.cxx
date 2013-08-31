@@ -361,10 +361,15 @@ do_registration_pure (
     std::list<Stage_parms*>& stages = regp->get_stages();
     std::list<Stage_parms*>::iterator it;
     for (it = stages.begin(); it != stages.end(); it++) {
+        Stage_parms* sp = *it;
+
         /* Swap xf_in and xf_out */
         xf_tmp = xf_out; xf_out = xf_in; xf_in = xf_tmp;
+
+        /* Load stage images */
+        regd->load_stage_input_files (sp);
+
         /* Run registation, results are stored in xf_out */
-        Stage_parms* sp = *it;
         do_registration_stage (regp, regd, xf_out, xf_in, sp);
     }
 
@@ -398,7 +403,7 @@ do_registration (Registration_parms* regp)
         }
 
         timer1.start();
-        regd.load_input_files (regp);
+        regd.load_global_input_files (regp);
         timer1.stop();
     
         timer2.start();

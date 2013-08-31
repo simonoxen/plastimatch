@@ -4,9 +4,9 @@ moving=@PLM_BUILD_TESTING_DIR@/rectarr-02.mha
 fixed_mask=@PLM_BUILD_TESTING_DIR@/rectarr-m-02.mha
 #moving_mask=@PLM_BUILD_TESTING_DIR@/rectarr-m-02.mha
 
-vf_out=@PLM_BUILD_TESTING_DIR@/plm-reg-mask-d-vf.mha
-xform_out=@PLM_BUILD_TESTING_DIR@/plm-reg-mask-d-xf.txt
-img_out=@PLM_BUILD_TESTING_DIR@/plm-reg-mask-d-img.mha
+vf_out=@PLM_BUILD_TESTING_DIR@/plm-reg-roi-d-vf.mha
+xform_out=@PLM_BUILD_TESTING_DIR@/plm-reg-roi-d-xf.txt
+img_out=@PLM_BUILD_TESTING_DIR@/plm-reg-roi-d-img.mha
 
 [STAGE]
 xform=bspline

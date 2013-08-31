@@ -58,10 +58,11 @@ set (CONFIG_FILE_LIST
   "plm-bsp-dcos-f.txt"
   "plm-bsp-landmark-a.txt"
   "plm-bsp-landmark-b.txt"
-  "plm-reg-mask-a.txt"
-  "plm-reg-mask-b.txt"
-  "plm-reg-mask-c.txt"
-  "plm-reg-mask-d.txt"
+  "plm-reg-roi-a.txt"
+  "plm-reg-roi-b.txt"
+  "plm-reg-roi-c.txt"
+  "plm-reg-roi-d.txt"
+  "plm-reg-roi-e.txt"
   "plm-reg-multi-a.txt"
   "plm-reg-dv-itk-translation.txt"
   "plm-reg-itk-rigid.txt"
@@ -453,14 +454,14 @@ plm_add_test (
   "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-10.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-200 50 -50 50 -50 50"
   )
 plm_add_test (
-  "rect-10-mask-1"
+  "rect-10-roi-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-10-mask-1.mha;--output-type;uchar;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;1;--rect-size;-60 60 -60 60 -60 60"
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-10-roi-1.mha;--output-type;uchar;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;1;--rect-size;-60 60 -60 60 -60 60"
   )
 plm_add_test (
-  "rect-10-mask-2"
+  "rect-10-roi-2"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-10-mask-2.mha;--output-type;uchar;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;1;--rect-size;-220 60 -60 60 -60 60"
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-10-roi-2.mha;--output-type;uchar;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;1;--rect-size;-220 60 -60 60 -60 60"
   )
 plm_add_test (
   "rect-11"
@@ -468,9 +469,9 @@ plm_add_test (
   "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-11.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;-1000;--rect-size;-40 60 -40 60 -40 60"
   )
 plm_add_test (
-  "rect-11-mask"
+  "rect-11-roi"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-11-mask.mha;--output-type;uchar;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;1;--rect-size;-50 80 -50 80 -50 80"
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-11-roi.mha;--output-type;uchar;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;1;--rect-size;-50 80 -50 80 -50 80"
   )
 plm_add_test (
   "rect-12"
@@ -2792,38 +2793,46 @@ set_tests_properties (plm-reg-dv-itk-translation-check PROPERTIES
 
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 8)
-##   plm-reg-mask-a    bspline + mi
-##   plm-reg-mask-b    itk 
-##   plm-reg-mask-c    B-spline 
-##   plm-reg-mask-d
+##   plm-reg-roi-a    bspline + mi
+##   plm-reg-roi-b    itk 
+##   plm-reg-roi-c    b-spline, upper rectangle
+##   plm-reg-roi-d    b-spline, lower rectangle
+##   plm-reg-roi-e    itk (no roi), b-spline (roi)
 ## -------------------------------------------------------------------------
 plm_add_test (
-  "plm-reg-mask-a"
+  "plm-reg-roi-a"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_BUILD_TESTING_DIR}/plm-reg-mask-a.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-roi-a.txt"
   )
-set_tests_properties (plm-reg-mask-a PROPERTIES DEPENDS "rect-10;rect-10-mask-1;rect-11;rect-11-mask")
+set_tests_properties (plm-reg-roi-a PROPERTIES DEPENDS "rect-10;rect-10-mask-1;rect-11;rect-11-mask")
 
 plm_add_test (
-  "plm-reg-mask-b"
+  "plm-reg-roi-b"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_BUILD_TESTING_DIR}/plm-reg-mask-b.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-roi-b.txt"
   )
-set_tests_properties (plm-reg-mask-b PROPERTIES DEPENDS "rectarr-01;rectarr-02;rectarr-m-01")
+set_tests_properties (plm-reg-roi-b PROPERTIES DEPENDS "rectarr-01;rectarr-02;rectarr-m-01")
 
 plm_add_test (
-  "plm-reg-mask-c"
+  "plm-reg-roi-c"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_BUILD_TESTING_DIR}/plm-reg-mask-c.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-roi-c.txt"
   )
-set_tests_properties (plm-reg-mask-c PROPERTIES DEPENDS "rectarr-01;rectarr-02;rectarr-m-01")
+set_tests_properties (plm-reg-roi-c PROPERTIES DEPENDS "rectarr-01;rectarr-02;rectarr-m-01")
 
 plm_add_test (
-  "plm-reg-mask-d"
+  "plm-reg-roi-d"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_BUILD_TESTING_DIR}/plm-reg-mask-d.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-roi-d.txt"
   )
-set_tests_properties (plm-reg-mask-d PROPERTIES DEPENDS "rectarr-01;rectarr-02;rectarr-m-02")
+set_tests_properties (plm-reg-roi-d PROPERTIES DEPENDS "rectarr-01;rectarr-02;rectarr-m-02")
+
+plm_add_test (
+  "plm-reg-roi-e"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-roi-e.txt"
+  )
+set_tests_properties (plm-reg-roi-e PROPERTIES DEPENDS "rectarr-01;rectarr-02;rectarr-m-02")
 
 
 ## -------------------------------------------------------------------------

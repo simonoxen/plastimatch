@@ -223,11 +223,11 @@ Registration_parms::set_key_val (
         shared->moving_roi_fn = val;
     }
     else if (!strcmp (key, "fixed_roi_enable")) {
-        shared->fixed_roi_enable = val;
+        shared->fixed_roi_enable = string_value_true (val);
     }
     else if (!strcmp (key, "moving_roi_enable"))
     {
-        shared->moving_roi_enable = val;
+        shared->moving_roi_enable = string_value_true (val);
     }
     else if (!strcmp (key, "img_out") || !strcmp (key, "image_out")) {
         if (section == 0) {
