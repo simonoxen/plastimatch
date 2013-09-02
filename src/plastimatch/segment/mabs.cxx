@@ -50,6 +50,8 @@ public:
     std::string convert_dir;
     /* ".../train_dir/prealign" */
     std::string prealign_dir;
+    /* ".../train_dir/mabs-train" */
+    std::string mabs_train_dir;
 
     /* outdir_base is the output directory when we are 
        doing a labeling task (i.e. not training) */
@@ -308,7 +310,7 @@ Mabs_private::segmentation_threshold_weight (
         /* Update seg_dice file */
         std::string seg_dice_log_fn = string_format (
             "%s/seg_dice.csv",
-            this->traindir_base.c_str());
+            this->mabs_train_dir.c_str());
         FILE *fp = fopen (seg_dice_log_fn.c_str(), "a");
         fprintf (fp, "%s", seg_log_string.c_str());
         fclose (fp);
@@ -366,9 +368,11 @@ Mabs::load_process_dir_list (const std::string& dir)
 }
 
 /* The following variables should be set before running this:
-   atlas_list
-   output_dir
-   registration_list
+   d_ptr->ref_rtds           the fixed image and its structure set
+   d_ptr->atlas_list         list of images that should be registred
+   d_ptr->output_dir         directory containing output results
+                             (e.g. .../prealign or .../mabs-train)
+   d_ptr->registration_list  list of registration command files
 */
 void
 Mabs::run_registration_loop ()
@@ -573,7 +577,7 @@ Mabs::run_registration_loop ()
                     /* Update reg_dice file */
                     std::string reg_dice_log_fn = string_format (
                         "%s/reg_dice.csv",
-                        d_ptr->traindir_base.c_str());
+                        d_ptr->output_dir.c_str());
                     FILE *fp = fopen (reg_dice_log_fn.c_str(), "a");
                     fprintf (fp, "%s", reg_log_string.c_str());
                     fclose (fp);
@@ -672,6 +676,11 @@ Mabs::atlas_prealign ()
     /* Do a few sanity checks */
     this->sanity_checks ();
 
+    /* Open logfile */
+    std::string logfile_path = string_format (
+        "%s/%s", d_ptr->prealign_dir.c_str(), "logfile.txt");
+    logfile_open (logfile_path.c_str());
+
     /* Parse directory with registration files */
     this->parse_registration_dir (d_ptr->parms->prealign_registration_config);
 
@@ -709,7 +718,7 @@ Mabs::atlas_prealign ()
         "%s/structures", reference_dir.c_str());
 
     /* Load reference image -- we assume this is successful */
-    Rt_study::Pointer& ref_rtds = d_ptr->ref_rtds;
+    Rt_study::Pointer ref_rtds = Rt_study::New();
     ref_rtds->load_image (reference_convert_img_fn);
     ref_rtds->load_prefix (reference_convert_structures_dir.c_str());
 
@@ -726,11 +735,15 @@ Mabs::atlas_prealign ()
     ref_rtds->save_prefix (reference_prealign_structures_dir, "nrrd");
 
     /* Do it. */
+    d_ptr->ref_rtds = ref_rtds;
+    d_ptr->ref_id = reference_id;
     d_ptr->atlas_list = d_ptr->process_dir_list;
     d_ptr->output_dir = d_ptr->prealign_dir;
     run_registration_loop ();
 
     lprintf ("MABS pre-align complete\n");
+
+    logfile_close ();
 }
 
 void
@@ -1055,6 +1068,8 @@ Mabs::set_parms (const Mabs_parms *parms)
         "%s/convert", d_ptr->traindir_base.c_str());
     d_ptr->prealign_dir = string_format (
         "%s/prealign", d_ptr->traindir_base.c_str());
+    d_ptr->mabs_train_dir = string_format (
+        "%s/mabs-train", d_ptr->traindir_base.c_str());
 
     /* Prealgnment section */
     d_ptr->prealign_resample = false;
@@ -1114,7 +1129,7 @@ Mabs::train_internal (bool registration_only)
 
     /* Open logfile */
     std::string logfile_path = string_format (
-        "%s/%s", d_ptr->traindir_base.c_str(), "logfile.txt");
+        "%s/%s", d_ptr->mabs_train_dir.c_str(), "logfile.txt");
     logfile_open (logfile_path.c_str());
 
     /* Parse directory with registration files */
@@ -1135,8 +1150,9 @@ Mabs::train_internal (bool registration_only)
         /* Set output dir for this test case */
         std::string patient_id = basename (path);
         d_ptr->ref_id = patient_id;
+
         d_ptr->output_dir = string_format ("%s/%s",
-            d_ptr->traindir_base.c_str(), patient_id.c_str());
+            d_ptr->mabs_train_dir.c_str(), patient_id.c_str());
         lprintf ("outdir = %s\n", d_ptr->output_dir.c_str());
 
         /* Load image & structures from "prep" directory */
@@ -1157,12 +1173,14 @@ Mabs::train_internal (bool registration_only)
             select_atlas->subject = d_ptr->ref_rtds->get_image().get();
             select_atlas->subject_id = patient_id;
             select_atlas->atlas_dir_list = d_ptr->process_dir_list;
-            select_atlas->number_of_atlases = (int) d_ptr->process_dir_list.size();
+            select_atlas->number_of_atlases 
+                = (int) d_ptr->process_dir_list.size();
             select_atlas->atlas_selection_parms = d_ptr->parms;
 	        
             select_atlas->run_selection();
             
-            d_ptr->atlas_list.assign(select_atlas->selected_atlases.begin(), select_atlas->selected_atlases.end());
+            d_ptr->atlas_list.assign (select_atlas->selected_atlases.begin(), 
+                select_atlas->selected_atlases.end());
 
             delete select_atlas;
         }

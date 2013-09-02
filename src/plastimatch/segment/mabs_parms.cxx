@@ -97,7 +97,7 @@ Mabs_parms::set_key_val (
     Mabs_subject* subject = this->sman->current ();
 
     /* [PREALIGNMENT] */
-    if (section == "PREALIGNMENT") {
+    if (section == "PREALIGN" || section == "PREALIGNMENT") {
         if (key == "mode") {
             if (val == "DISABLE" || val == "disable" 
                 || val == "Disable" || val == "0")
