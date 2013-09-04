@@ -8,7 +8,7 @@
 #include "pointset.h"
 #include "itk_image_type.h"
 
-void
+PLMBASE_API void
 pointset_warp (
     Labeled_pointset *warped_pointset,
     Labeled_pointset *input_pointset,
