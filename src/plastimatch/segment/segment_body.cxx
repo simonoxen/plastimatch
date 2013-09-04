@@ -12,6 +12,7 @@
 #include "itkBinaryBallStructuringElement.h"
 #include "itkBinaryDilateImageFilter.h"
 #include "itkBinaryErodeImageFilter.h"
+#include "itkVotingBinaryIterativeHoleFillingImageFilter.h"
 
 #include "itk_image_save.h"
 #include "itk_resample.h"
@@ -236,6 +237,41 @@ get_largest_connected_component (UCharImageType::Pointer i2)
     return i2;
 }
 
+UCharImageType::Pointer
+Segment_body::fill_holes (UCharImageType::Pointer mask, int radius, int max_its)
+{
+   /* PAOLO ZAFFINO 9-4-13
+   * Often the mask has some big holes inside (for example the structures that contain air).
+   * Try to fill that holes.
+   * This step can be very slow but anyway it seems to fix the issue. */
+   
+   typedef itk::VotingBinaryIterativeHoleFillingImageFilter<
+        UCharImageType > holeFillerFilter;
+
+    holeFillerFilter::Pointer filler = holeFillerFilter::New();
+
+    filler->SetInput(mask);
+
+    UCharImageType::SizeType indexRadius;
+    indexRadius[0] = radius;
+    indexRadius[1] = radius;
+    indexRadius[2] = radius/2.0;
+    filler->SetRadius(indexRadius);
+
+    filler->SetMajorityThreshold(0);
+    
+    filler->SetBackgroundValue(1);
+    filler->SetForegroundValue(0);
+    
+    filler->SetMaximumNumberOfIterations(max_its);
+
+    filler->Update();
+
+    printf("Changed voxels = %d \n", (int) filler->GetNumberOfPixelsChanged());
+
+    return filler->GetOutput();
+}
+
 void
 invert_image (UCharImageType::Pointer i2)
 {
@@ -324,6 +360,26 @@ Segment_body::do_segmentation ()
 
     if (m_debug) {
         itk_image_save (i2, "3_re_invert.nrrd");
+    }
+
+    /* Fill holes */
+    /* PAOLO ZAFFINO 9-4-13
+     * Often the mask has some big holes inside (for example the structures that contain air).
+     * Try to fill that holes.
+     * This step can be very slow but anyway it seems to fix the issue. */
+    if (m_fill_holes) {
+        printf("fill holes \n");
+        printf("fill parameters: \n");
+        printf("radius1 = %d, radius2 = %d, radius3 = %d \n",
+            m_fill_parms[0], m_fill_parms[1], m_fill_parms[2]);
+        printf("iterations1 = %d, iterations2 = %d, iterations3 = %d \n",
+            m_fill_parms[3], m_fill_parms[4], m_fill_parms[5]);
+        i2 = fill_holes(i2, m_fill_parms[0], m_fill_parms[3]);
+        i2 = fill_holes(i2, m_fill_parms[1], m_fill_parms[4]);
+        i2 = fill_holes(i2, m_fill_parms[2], m_fill_parms[5]);
+        if (m_debug) {
+            itk_image_save (i2, "4_filled.nrrd");
+        }
     }
 
     /* Invert the image */

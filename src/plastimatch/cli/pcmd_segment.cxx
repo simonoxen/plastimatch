@@ -77,6 +77,8 @@ parse_fn (
 #endif
     parser->add_long_option ("", "debug", "Create debug images", 0);
     parser->add_long_option ("", "fast", "Use reduced image size", 0);
+    parser->add_long_option ("", "fill-holes", "Fill the holes inside the mask (can be slow)", 0);
+    parser->add_long_option ("", "fill-options", "Set fill holes options as radius1, radius2, radius3, itr1, itr2, itr3", 1);
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -108,6 +110,12 @@ parse_fn (
     }
     if (parser->option ("fast")) {
 	sb->m_fast = true;
+    }
+    if (parser->option ("fill-holes")) {
+	sb->m_fill_holes = true;
+    }
+    if (parser->option("fill-options")){
+    parser->assign_int_6(sb->m_fill_parms, "fill-options");
     }
     if (parser->option ("debug")) {
 	sb->m_debug = true;
