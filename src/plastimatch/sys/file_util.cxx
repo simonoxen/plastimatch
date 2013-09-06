@@ -2,6 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmsys_config.h"
+#include <fstream>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -13,10 +14,9 @@
 #include <unistd.h>    /* sleep() */
 #include <dirent.h>
 #endif
-#if HAVE_SYS_STAT
+#if HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
-#include <sys/stat.h>
 
 #include "file_util.h"
 #include "path_util.h"
@@ -83,6 +83,18 @@ touch_file (const std::string& filename)
     fclose (fp);
 }
 
+/* N.b. there might be a faster way for MSVC debug mode:
+   http://bytes.com/topic/c/answers/62145-filecopy-std-copy
+*/
+void
+copy_file (const std::string& dst_fn, const std::string& src_fn)
+{
+    std::ifstream src (src_fn.c_str(), std::ios::binary);
+    std::ofstream dst (dst_fn.c_str(), std::ios::binary);
+
+    dst << src.rdbuf();
+}
+
 void
 make_directory (const char *dirname)
 {
@@ -131,14 +143,6 @@ make_directory_recursive (const std::string& dirname)
 {
     make_directory_recursive (dirname.c_str());
 }
-
-#if 0
-void
-make_directory_recursive (const Pstring& filename)
-{
-    make_directory_recursive (filename.c_str());
-}
-#endif
 
 FILE*
 plm_fopen (const char *path, const char *mode)

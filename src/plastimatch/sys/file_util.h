@@ -15,6 +15,8 @@ PLMSYS_C_API uint64_t file_size (const char *filename);
 PLMSYS_C_API int is_directory (const char *dir);
 PLMSYS_API int is_directory (const std::string& dir);
 PLMSYS_API void touch_file (const std::string& filename);
+PLMSYS_API void copy_file (const std::string& dst_fn, 
+    const std::string& src_fn);
 PLMSYS_C_API void make_directory (const char *dirname);
 PLMSYS_API void make_directory_recursive (const char *dirname);
 PLMSYS_API void make_directory_recursive (const std::string& dirname);

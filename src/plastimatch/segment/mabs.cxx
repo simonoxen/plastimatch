@@ -85,6 +85,9 @@ public:
     bool prealign_resample;
     float prealign_spacing[3];
 
+    /* Keep track of score, for choosing best parameters */
+    std::map<std::string, double> score_map;
+
     /* Segmentation parameters */
     std::string registration_id;
     float minsim;
@@ -167,6 +170,8 @@ public:
         const std::string& structure_label, 
         float thresh_val);
 };
+
+
 
 /* Map an input-specific structure name to a canonical structure name 
    Return "" if no canonical name */
@@ -391,7 +396,7 @@ Mabs::run_registration_loop ()
         printf ("%s\n -> %s\n -> %s\n",
             path.c_str(), input_dir.c_str(), atlas_id.c_str());
         std::string atlas_input_path = string_format ("%s/%s",
-           input_dir.c_str(), atlas_id.c_str());
+            input_dir.c_str(), atlas_id.c_str());
         std::string atlas_output_path = string_format ("%s/%s",
             d_ptr->output_dir.c_str(), atlas_id.c_str());
 
@@ -581,6 +586,17 @@ Mabs::run_registration_loop ()
                     FILE *fp = fopen (reg_dice_log_fn.c_str(), "a");
                     fprintf (fp, "%s", reg_log_string.c_str());
                     fclose (fp);
+
+                    /* Update registration statistics -- these are used 
+                       to keep track of which registration 
+                       approach is the best */
+                    std::map<std::string, double>::const_iterator score_it 
+                        = d_ptr->score_map.find (registration_id);
+                    if (score_it == d_ptr->score_map.end()) {
+                        d_ptr->score_map[registration_id] = dice.get_dice();
+                    } else {
+                        d_ptr->score_map[registration_id] += dice.get_dice();
+                    }
                 }
                 d_ptr->time_dice += timer.report();
             }
@@ -740,6 +756,74 @@ Mabs::atlas_prealign ()
     d_ptr->atlas_list = d_ptr->process_dir_list;
     d_ptr->output_dir = d_ptr->prealign_dir;
     run_registration_loop ();
+
+    /* Select best pre-alignment result */
+    std::map<std::string, double>::const_iterator score_it;
+    score_it = d_ptr->score_map.begin();
+    double best_score = 0;
+    std::string best_registration_name = "";
+    while (score_it != d_ptr->score_map.end()) {
+        std::string registration_name = score_it->first;
+        double this_score = d_ptr->score_map[registration_name];
+        printf ("Recovered score: %s, %f\n", registration_name.c_str(),
+            (float) this_score);
+        if (this_score > best_score) {
+            best_score = this_score;
+            best_registration_name = registration_name;
+        }
+        score_it ++;
+    }
+
+    /* Copy results of best pre-alignment method into prealign base */
+    std::list<std::string>::iterator atl_it;
+    for (atl_it = d_ptr->atlas_list.begin();
+         atl_it != d_ptr->atlas_list.end(); atl_it++)
+    {
+        std::string path = *atl_it;
+        std::string atlas_id = basename (path);
+
+        /* Don't copy over results for reference image */
+        if (atlas_id == d_ptr->ref_id) {
+            continue;
+        }
+
+        std::string src_directory = string_format ("%s/%s/%s", 
+            d_ptr->prealign_dir.c_str(), atlas_id.c_str(), 
+            best_registration_name.c_str());
+        std::string dst_directory = string_format ("%s/%s", 
+            d_ptr->prealign_dir.c_str(), atlas_id.c_str());
+        std::string src_img = string_format ("%s/%s",
+            src_directory.c_str(), "img.nrrd");
+        std::string dst_img = string_format ("%s/%s",
+            dst_directory.c_str(), "img.nrrd");
+
+        /* Copy image */
+        printf ("copying %s <- %s\n", dst_img.c_str(), src_img.c_str());
+        copy_file (dst_img, src_img);
+
+        /* Copy structures */
+        std::string src_structures_dir = string_format ("%s/%s",
+            src_directory.c_str(), "structures");
+        std::string dst_structures_dir = string_format ("%s/%s",
+            dst_directory.c_str(), "structures");
+        make_directory (dst_structures_dir.c_str());
+        Dir_list d (src_structures_dir);
+        for (int i = 0; i < d.num_entries; i++)
+        {
+            /* Skip "." and ".." */
+            if (!strcmp (d.entries[i], ".") || !strcmp (d.entries[i], "..")) {
+                continue;
+            }
+
+            std::string src_structure = compose_filename (src_structures_dir, 
+                d.entries[i]);
+            std::string dst_structure = compose_filename (dst_structures_dir, 
+                d.entries[i]);
+            printf ("copying %s <- %s\n", 
+                dst_structure.c_str(), src_structure.c_str());
+            copy_file (dst_structure, src_structure);
+        }
+    }
 
     lprintf ("MABS pre-align complete\n");
 
