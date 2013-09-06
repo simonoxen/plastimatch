@@ -202,6 +202,9 @@ Hausdorff_distance::run_internal (
             += 0.5 * (sum_bh_distance / num_bh_vox);
         d_ptr->pct_boundary_hausdorff_distance += 0.5 * bh_pct;
     }
+
+    delete h_distance_array;
+    delete bh_distance_array;
 }
 
 void 
