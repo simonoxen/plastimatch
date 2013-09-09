@@ -152,7 +152,7 @@ Mabs_atlas_selection::nmi_ranking()
     {
         std::string atlas = basename (*reg_it);
         if (similarity_value_vector[i] >=
-            (((max_similarity_value-min_similarity_value) * this->atlas_selection_parms->mi_percent_thershold) + min_similarity_value))
+            (((max_similarity_value-min_similarity_value) * this->atlas_selection_parms->mi_percent_threshold) + min_similarity_value))
     	{
             most_similar_atlases.push_front(*reg_it);
             printf("Atlas %s having similarity value = %f \n", atlas.c_str(), similarity_value_vector[i]);

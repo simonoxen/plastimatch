@@ -36,7 +36,7 @@ public:
     /* [ATLASES-SELECTION] */
     bool enable_atlas_selection;
     std::string atlas_selection_criteria;
-    float mi_percent_thershold;
+    float mi_percent_threshold;
     int mi_histogram_bins;
     std::string roi_mask_fn;
     std::string nmi_ratio_registration_config_fn;
