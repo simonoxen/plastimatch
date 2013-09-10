@@ -695,7 +695,7 @@ Mabs::atlas_prealign ()
     /* Open logfile */
     std::string logfile_path = string_format (
         "%s/%s", d_ptr->prealign_dir.c_str(), "logfile.txt");
-    logfile_open (logfile_path.c_str());
+    logfile_open (logfile_path.c_str(), "a");
 
     /* Parse directory with registration files */
     this->parse_registration_dir (d_ptr->parms->prealign_registration_config);
@@ -1214,7 +1214,7 @@ Mabs::train_internal (bool registration_only)
     /* Open logfile */
     std::string logfile_path = string_format (
         "%s/%s", d_ptr->mabs_train_dir.c_str(), "logfile.txt");
-    logfile_open (logfile_path.c_str());
+    logfile_open (logfile_path.c_str(), "a");
 
     /* Parse directory with registration files */
     this->parse_registration_dir (d_ptr->parms->registration_config);
@@ -1252,7 +1252,7 @@ Mabs::train_internal (bool registration_only)
         /* Select atlases */
         if (d_ptr->parms->enable_atlas_selection)
         {
-	    Mabs_atlas_selection* select_atlas = new Mabs_atlas_selection();
+            Mabs_atlas_selection* select_atlas = new Mabs_atlas_selection();
             
             select_atlas->subject = d_ptr->ref_rtds->get_image().get();
             select_atlas->subject_id = patient_id;
@@ -1261,10 +1261,26 @@ Mabs::train_internal (bool registration_only)
                 = (int) d_ptr->process_dir_list.size();
             select_atlas->atlas_selection_parms = d_ptr->parms;
 	        
+            logfile_printf("Patient = %s, initial atlases = %d, selection criteria = %s \n",
+                select_atlas->subject_id.c_str(),
+                select_atlas->number_of_atlases,
+                select_atlas->atlas_selection_parms->atlas_selection_criteria.c_str());
+            
             select_atlas->run_selection();
             
             d_ptr->atlas_list.assign (select_atlas->selected_atlases.begin(), 
                 select_atlas->selected_atlases.end());
+            
+            logfile_printf("Selected atlases for patient %s: (%d) \n",
+                select_atlas->subject_id.c_str(),
+                (int) d_ptr->atlas_list.size());
+
+            for (std::list<std::string>::iterator it_selected_atlases = d_ptr->atlas_list.begin();
+                it_selected_atlases != d_ptr->atlas_list.end(); it_selected_atlases++) {
+                
+                logfile_printf("Atlas %s \n", it_selected_atlases->c_str());
+
+            }
 
             delete select_atlas;
         }

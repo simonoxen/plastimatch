@@ -72,8 +72,8 @@ Mabs_atlas_selection::nmi_ranking()
     this->max_value_defined = this->atlas_selection_parms->upper_mi_value_defined;
     this->max_value = this->atlas_selection_parms->upper_mi_value;
 
-    printf ("Number of initial atlases = %d \n", number_of_atlases);
-    double* similarity_value_vector = new double[number_of_atlases];
+    printf ("Number of initial atlases = %d \n", this->number_of_atlases);
+    double* similarity_value_vector = new double[this->number_of_atlases];
     
     if (this->atlas_selection_parms->roi_mask_fn.compare("")!=0)
     {
