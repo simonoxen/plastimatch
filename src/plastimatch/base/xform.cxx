@@ -59,6 +59,7 @@ Xform::Xform ()
 
 Xform::~Xform () {
     clear ();
+    delete d_ptr;
 }
 
 Xform::Xform (Xform& xf) {
@@ -85,17 +86,6 @@ Xform& Xform::operator= (Xform& xf) {
 void
 Xform::clear ()
 {
-#if defined (commentout)
-    if (m_gpuit) {
-        if (m_type == XFORM_GPUIT_VECTOR_FIELD) {
-            delete (Volume*) m_gpuit;
-        } else {
-            delete (Bspline_xform*) m_gpuit;
-        }
-        m_gpuit = 0;
-    }
-#endif
-
     d_ptr->m_bsp.reset();
     d_ptr->m_vf.reset();
 
