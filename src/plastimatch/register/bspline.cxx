@@ -103,8 +103,6 @@ Bspline_parms::~Bspline_parms ()
     delete this->reg_parms;
 }
 
-
-
 static void
 bspline_cuda_state_create (
     Bspline_xform* bxf,

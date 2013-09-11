@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------
- *    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
- *       ----------------------------------------------------------------------- */
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 #include "plmsegment_config.h"
 
 #include <stdlib.h>
@@ -30,8 +30,6 @@
 Mabs_atlas_selection::Mabs_atlas_selection ()
 {
     /* constructor */
-    subject = NULL;
-    atlas = NULL;
     atlas_selection_parms = NULL;
     mask = NULL;
     min_value_defined = false;
@@ -99,7 +97,7 @@ Mabs_atlas_selection::nmi_ranking()
         std::string fn = string_format ("%s/img.nrrd", atlas_input_path.c_str());
         rtds_atl->load_image (fn.c_str());
         
-        this->atlas = rtds_atl->get_image().get();
+        this->atlas = rtds_atl->get_image();
 
         /* subject compared with itself */
         if (!this->subject_id.compare(atlas_id))
@@ -114,7 +112,6 @@ Mabs_atlas_selection::nmi_ranking()
 	    similarity_value_vector[i] = this->compute_nmi_general_score();
         }
        
-        this->atlas = NULL;
         delete rtds_atl;
     } 
    
@@ -200,28 +197,26 @@ Mabs_atlas_selection::compute_nmi_ratio()
 
     regp->parse_command_file(this->atlas_selection_parms->nmi_ratio_registration_config_fn.c_str());
     
-    regd->fixed_image=this->subject;
-    regd->moving_image=this->atlas;
+    regd->fixed_image = this->subject;
+    regd->moving_image = this->atlas;
 
     /* Make sure to have just the right inputs */
-    regd->fixed_roi = NULL;
-    regd->moving_roi = NULL;
     regd->fixed_landmarks = NULL;
     regd->moving_landmarks = NULL;
 
-    Plm_image* deformed_atlas = new Plm_image();
+    Plm_image::Pointer deformed_atlas = Plm_image::New ();
     Xform* transformation = new Xform();
     Plm_image_header fixed_pih (regd->fixed_image);
-    
+
     do_registration_pure (&transformation, regd, regp);
-    plm_warp (deformed_atlas, 0, transformation, &fixed_pih, regd->moving_image,
+    plm_warp (deformed_atlas.get(), 0, transformation, &fixed_pih, 
+        regd->moving_image.get(),
         regp->default_value, 0, 1);
     
-    double nmi_post = this->compute_nmi(this->subject, deformed_atlas);
+    double nmi_post = this->compute_nmi (this->subject, deformed_atlas);
     
     delete regd;
     delete regp;
-    delete deformed_atlas;
     delete transformation;
 
     lprintf("Similarity value post = %g \n", nmi_post);
@@ -231,7 +226,9 @@ Mabs_atlas_selection::compute_nmi_ratio()
 
 
 double
-Mabs_atlas_selection::compute_nmi(Plm_image* img1, Plm_image* img2)
+Mabs_atlas_selection::compute_nmi (
+    const Plm_image::Pointer& img1, 
+    const Plm_image::Pointer& img2)
 {	
     /* Cost function */
     typedef float PixelComponentType;

@@ -11,26 +11,30 @@
 #include "interpolate_macros.h"
 #include "plm_int.h"
 #include "plm_math.h"
+#include "print_and_exit.h"
 #include "volume.h"
 #include "volume_header.h"
 #include "volume_resample.h"
 
 /* Nearest neighbor interpolation */
-static Volume*
+static Volume::Pointer
 volume_resample_float_nn (
-    Volume* vol_in, const plm_long* dim, const float* offset, const float* spacing)
+    Volume* vol_in, 
+    const plm_long* dim, 
+    const float* offset, 
+    const float* spacing)
 {
     plm_long i, j, k, v;
     float x, y, z;
     float x_in, y_in, z_in;
     plm_long xidx, yidx, zidx;
-    Volume* vol_out;
+    Volume::Pointer vol_out;
     float *in_img, *out_img;
     float val;
     float default_val = 0.0f;
 
-    vol_out = new Volume (dim, offset, spacing, vol_in->direction_cosines, 
-        PT_FLOAT, 1);
+    vol_out = Volume::New(new Volume (
+            dim, offset, spacing, vol_in->direction_cosines, PT_FLOAT, 1));
     in_img = (float*) vol_in->img;
     out_img = (float*) vol_out->img;
 
@@ -58,22 +62,25 @@ volume_resample_float_nn (
 }
 
 /* Linear interpolation */
-static Volume*
+static Volume::Pointer
 volume_resample_float_li (
-    Volume* vol_in, const plm_long* dim, const float* offset, const float* spacing)
+    Volume* vol_in, 
+    const plm_long* dim, 
+    const float* offset, 
+    const float* spacing)
 {
     plm_long i, j, k, v;
     float x, y, z;
     //float x_in, y_in, z_in;
     plm_long xidx, yidx, zidx;
-    Volume* vol_out;
+    Volume::Pointer vol_out;
     float *in_img, *out_img;
     float val;
     float default_val = 0.0f;
     float ijk[3];
 
-    vol_out = new Volume (dim, offset, spacing, vol_in->direction_cosines, 
-        PT_FLOAT, 1);
+    vol_out = Volume::New (new Volume (
+            dim, offset, spacing, vol_in->direction_cosines, PT_FLOAT, 1));
     in_img = (float*) vol_in->img;
     out_img = (float*) vol_out->img;
 
@@ -123,7 +130,7 @@ volume_resample_float_li (
 }
 
 /* Nearest neighbor interpolation */
-static Volume*
+static Volume::Pointer
 volume_resample_vf_float_interleaved (
     Volume* vol_in, const plm_long* dim, 
     const float* offset, const float* spacing)
@@ -132,13 +139,14 @@ volume_resample_vf_float_interleaved (
     float x, y, z;
     float x_in, y_in, z_in;
     plm_long xidx, yidx, zidx;
-    Volume* vol_out;
+    Volume::Pointer vol_out;
     float *in_img, *out_img;
     float* val;
     float default_val[3] = { 0.0f, 0.0f, 0.0f };
 
-    vol_out = new Volume (dim, offset, spacing, vol_in->direction_cosines, 
-        PT_VF_FLOAT_INTERLEAVED, 3);
+    vol_out = Volume::New (new Volume (
+            dim, offset, spacing, vol_in->direction_cosines, 
+            PT_VF_FLOAT_INTERLEAVED, 3));
     in_img = (float*) vol_in->img;
     out_img = (float*) vol_out->img;
 
@@ -168,7 +176,7 @@ volume_resample_vf_float_interleaved (
 }
 
 /* Nearest neighbor interpolation */
-static Volume*
+static Volume::Pointer
 volume_resample_vf_float_planar (
     Volume* vol_in, const plm_long* dim, 
     const float* offset, const float* spacing)
@@ -177,11 +185,12 @@ volume_resample_vf_float_planar (
     float x, y, z;
     float x_in, y_in, z_in;
     plm_long xidx, yidx, zidx;
-    Volume* vol_out;
+    Volume::Pointer vol_out;
     float **in_img, **out_img;
 
-    vol_out = new Volume (dim, offset, spacing, vol_in->direction_cosines, 
-        PT_VF_FLOAT_PLANAR, 3);
+    vol_out = Volume::New( new Volume (
+            dim, offset, spacing, vol_in->direction_cosines, 
+            PT_VF_FLOAT_PLANAR, 3));
     in_img = (float**) vol_in->img;
     out_img = (float**) vol_out->img;
 
@@ -211,15 +220,20 @@ volume_resample_vf_float_planar (
     return vol_out;
 }
 
-Volume*
-volume_resample (Volume* vol_in, const plm_long* dim, const float* offset, const float* spacing)
+Volume::Pointer
+volume_resample (
+    Volume* vol_in, 
+    const plm_long* dim, 
+    const float* offset, 
+    const float* spacing)
 {
+    Volume::Pointer error_volume = Volume::New();
     switch (vol_in->pix_type) {
     case PT_UCHAR:
     case PT_SHORT:
     case PT_UINT32:
         fprintf (stderr, "Error, resampling PT_SHORT, PT_UCHAR, PT_UINT32 is unsupported\n");
-        return 0;
+        return error_volume;
     case PT_FLOAT:
         return volume_resample_float_li (vol_in, dim, offset, spacing);
     case PT_VF_FLOAT_INTERLEAVED:
@@ -228,14 +242,14 @@ volume_resample (Volume* vol_in, const plm_long* dim, const float* offset, const
         return volume_resample_vf_float_planar (vol_in, dim, offset, spacing);
     case PT_UCHAR_VEC_INTERLEAVED:
         fprintf (stderr, "Error, resampling PT_UCHAR_VEC_INTERLEAVED is unsupported\n");
-        return 0;
+        return error_volume;
     default:
-        fprintf (stderr, "Error, unknown pix_type: %d\n", vol_in->pix_type);
-        return 0;
+        print_and_exit ("Error, unknown pix_type: %d\n", vol_in->pix_type);
+        return error_volume;
     }
 }
 
-Volume*
+Volume::Pointer
 volume_resample (Volume* vol_in, const Volume_header *vh)
 {
     /* GCS FIX: direction cosines */
@@ -243,20 +257,26 @@ volume_resample (Volume* vol_in, const Volume_header *vh)
         vh->get_spacing());
 }
 
-Volume*
-volume_resample_nn (Volume* vol_in, const plm_long* dim, const float* offset, const float* spacing)
+Volume::Pointer
+volume_resample_nn (
+    Volume* vol_in, 
+    const plm_long* dim, 
+    const float* offset, 
+    const float* spacing)
 {
+    Volume::Pointer error_volume = Volume::New();
     switch (vol_in->pix_type) {
-    case PT_UCHAR:
-        Volume* rvol;
+    case PT_UCHAR: {
+        Volume::Pointer rvol;
         volume_convert_to_float (vol_in);
         rvol = volume_resample_float_nn (vol_in, dim, offset, spacing);
-        volume_convert_to_uchar (rvol);
+        volume_convert_to_uchar (rvol.get());
         return rvol;
+    }
     case PT_SHORT:
     case PT_UINT32:
         fprintf (stderr, "Error, resampling PT_SHORT and PT_UINT32 is unsupported\n");
-        return 0;
+        return error_volume;
     case PT_FLOAT:
         return volume_resample_float_nn (vol_in, dim, offset, spacing);
     case PT_VF_FLOAT_INTERLEAVED:
@@ -265,14 +285,14 @@ volume_resample_nn (Volume* vol_in, const plm_long* dim, const float* offset, co
         return volume_resample_vf_float_planar (vol_in, dim, offset, spacing);
     case PT_UCHAR_VEC_INTERLEAVED:
         fprintf (stderr, "Error, resampling PT_UCHAR_VEC_INTERLEAVED is unsupported\n");
-        return 0;
+        return error_volume;
     default:
         fprintf (stderr, "Error, unknown pix_type: %d\n", vol_in->pix_type);
-        return 0;
+        return error_volume;
     }
 }
 
-Volume*
+Volume::Pointer
 volume_subsample (Volume* vol_in, int* sampling_rate)
 {
     int d;
@@ -292,7 +312,7 @@ volume_subsample (Volume* vol_in, int* sampling_rate)
     return volume_resample (vol_in, dim, offset, spacing);
 }
 
-Volume*
+Volume::Pointer
 volume_subsample_nn (Volume* vol_in, int* sampling_rate)
 {
     int d;

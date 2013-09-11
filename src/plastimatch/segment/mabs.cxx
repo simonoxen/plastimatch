@@ -477,8 +477,8 @@ Mabs::run_registration_loop ()
 
             /* Manually set input files */
             Registration_data *regd = new Registration_data;
-            regd->fixed_image = d_ptr->ref_rtds->get_image().get();
-            regd->moving_image = rtds.get_image().get();
+            regd->fixed_image = d_ptr->ref_rtds->get_image();
+            regd->moving_image = rtds.get_image();
 
             /* Run the registration */
             Xform *xf_out;
@@ -493,7 +493,8 @@ Mabs::run_registration_loop ()
             Plm_image_header fixed_pih (regd->fixed_image);
             Plm_image *warped_image = new Plm_image;
             timer.start();
-            plm_warp (warped_image, 0, xf_out, &fixed_pih, regd->moving_image, 
+            plm_warp (warped_image, 0, xf_out, &fixed_pih, 
+                regd->moving_image.get(), 
                 regp->default_value, 0, 1);
             d_ptr->time_warp_img += timer.report();
             
@@ -1254,7 +1255,7 @@ Mabs::train_internal (bool registration_only)
         {
             Mabs_atlas_selection* select_atlas = new Mabs_atlas_selection();
             
-            select_atlas->subject = d_ptr->ref_rtds->get_image().get();
+            select_atlas->subject = d_ptr->ref_rtds->get_image();
             select_atlas->subject_id = patient_id;
             select_atlas->atlas_dir_list = d_ptr->process_dir_list;
             select_atlas->number_of_atlases 

@@ -29,8 +29,9 @@ do_gpuit_demons_stage_internal (
 
     Volume* fixed = regd->fixed_image->get_vol_float ();
     Volume* moving = regd->moving_image->get_vol_float ();
-    Volume *moving_ss, *fixed_ss;
-    Volume* moving_grad = 0;
+    Volume::Pointer moving_ss;
+    Volume::Pointer fixed_ss;
+    Volume::Pointer moving_grad;
     Volume* vf_out = 0;
     Volume* vf_in = 0;
 
@@ -45,7 +46,7 @@ do_gpuit_demons_stage_internal (
     moving_ss = volume_subsample (moving, stage->moving_subsample_rate);
     fixed_ss = volume_subsample (fixed, stage->fixed_subsample_rate);
 
-    moving_grad = volume_make_gradient (moving_ss);
+    moving_grad = Volume::New(volume_make_gradient (moving_ss.get()));
 
     demons_default_parms (&parms);
     parms.max_its = stage->max_its;
@@ -69,15 +70,12 @@ do_gpuit_demons_stage_internal (
     }
 
     /* Run demons */
-    vf_out = demons (fixed_ss, moving_ss, moving_grad, vf_in, &parms);
+    vf_out = demons (fixed_ss.get(), moving_ss.get(), moving_grad.get(), 
+        vf_in, &parms);
 
     /* Do something with output vector field */
     //xf_out->set_gpuit_vf (vf_out);
     xf_out->set_gpuit_vf (Volume::Pointer(vf_out));
-
-    delete fixed_ss;
-    delete moving_ss;
-    delete moving_grad;
 }
 
 void
@@ -88,6 +86,4 @@ do_gpuit_demons_stage (
     Stage_parms* stage)
 {
     do_gpuit_demons_stage_internal (regd, xf_out, xf_in, stage);
-    //    printf ("Deformation stats (out)\n");
-    //    deformation_stats (xf_out->get_itk_vf());
 }

@@ -27,7 +27,7 @@
 #include "pcmd_probe.h"
 #include "pcmd_resample.h"
 #include "pcmd_scale.h"
-#include "pcmd_script.h"
+//#include "pcmd_script.h"
 #include "pcmd_segment.h"
 #include "pcmd_sift.h"
 #include "pcmd_stats.h"
@@ -220,9 +220,11 @@ do_command (int argc, char* argv[])
     else if (!strcmp (command, "scale")) {
         do_command_scale (argc, argv);
     }
+#if defined (commentout)
     else if (!strcmp (command, "script")) {
         do_command_script (argc, argv);
     }
+#endif
     else if (!strcmp (command, "segment")) {
         do_command_segment (argc, argv);
     }

@@ -7,10 +7,10 @@
 #include "plmbase_config.h"
 #include "direction_cosines.h"
 #include "itk_image.h"
+#include "plm_image.h"
 
 class Bspline_xform;
 class Plm_image_header;
-class Plm_image;
 class Volume;
 class Volume_header;
 
@@ -43,6 +43,9 @@ public:
         this->set_from_plm_image (pli);
     }
     Plm_image_header (const Plm_image& pli) {
+        this->set_from_plm_image (pli);
+    }
+    Plm_image_header (const Plm_image::Pointer& pli) {
         this->set_from_plm_image (pli);
     }
     Plm_image_header (const Volume_header& vh) {
@@ -98,6 +101,7 @@ public:
     void set_from_gpuit_bspline (Bspline_xform *bxf);
     void set_from_plm_image (const Plm_image *pli);
     void set_from_plm_image (const Plm_image& pli);
+    void set_from_plm_image (const Plm_image::Pointer& pli);
     void set_from_volume_header (const Volume_header& vh);
     void set (const Volume_header& vh);
     void set (const Volume& vol);

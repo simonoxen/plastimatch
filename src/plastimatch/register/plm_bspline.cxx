@@ -40,9 +40,11 @@ public:
     Xform xf_out;
     Bspline_parms bsp_parms;
 
-    Volume *moving_ss;
-    Volume *fixed_ss;
-    Volume *moving_grad;
+    Volume::Pointer moving_ss;
+    Volume::Pointer fixed_ss;
+    Volume::Pointer moving_grad;
+    Volume::Pointer m_roi_ss;
+    Volume::Pointer f_roi_ss;
 };
 
 Plm_bspline::Plm_bspline (
@@ -56,10 +58,6 @@ Plm_bspline::Plm_bspline (
     d_ptr->regd = regd;
     d_ptr->stage = stage;
     d_ptr->xf_in = xf_in;
-
-    d_ptr->moving_ss = 0;
-    d_ptr->fixed_ss = 0;
-    d_ptr->moving_grad = 0;
 
     initialize ();
 }
@@ -125,11 +123,7 @@ Plm_bspline::initialize ()
     logfile_printf ("Done.\n");
 
     Volume *m_roi = NULL;
-    Volume *m_roi_ss = NULL;
     Volume *f_roi = NULL;
-    Volume *f_roi_ss = NULL;
-    Volume *moving_ss, *fixed_ss;
-    Volume *moving_grad = 0;
 
     /* Set roi's */
     if (shared->fixed_roi_enable && regd->fixed_roi) {
@@ -157,8 +151,8 @@ Plm_bspline::initialize ()
         stage->fixed_subsample_rate[2], stage->moving_subsample_rate[0], 
         stage->moving_subsample_rate[1], stage->moving_subsample_rate[2]
     );
-    moving_ss = volume_subsample (moving, stage->moving_subsample_rate);
-    fixed_ss = volume_subsample (fixed, stage->fixed_subsample_rate);
+    d_ptr->moving_ss = volume_subsample (moving, stage->moving_subsample_rate);
+    d_ptr->fixed_ss = volume_subsample (fixed, stage->fixed_subsample_rate);
 
     //Set parameter values for min/max histogram values
     bsp_parms->mi_fixed_image_minVal = stage->mi_fixed_image_minVal;
@@ -210,28 +204,39 @@ Plm_bspline::initialize ()
 
     /* Subsample rois (if we are using them) */
     if (m_roi) {
-        m_roi_ss = volume_subsample_nn (m_roi, stage->moving_subsample_rate);
+        d_ptr->m_roi_ss = volume_subsample_nn (
+            m_roi, stage->moving_subsample_rate);
     }
     if (f_roi) {
-        f_roi_ss = volume_subsample_nn (f_roi, stage->fixed_subsample_rate);
+        d_ptr->f_roi_ss = volume_subsample_nn (
+            f_roi, stage->fixed_subsample_rate);
     }
 
-    logfile_printf ("moving_ss size = %d %d %d\n", moving_ss->dim[0], 
-        moving_ss->dim[1], moving_ss->dim[2]);
-    logfile_printf ("fixed_ss size = %d %d %d\n", fixed_ss->dim[0], 
-        fixed_ss->dim[1], fixed_ss->dim[2]);
+    logfile_printf ("moving_ss size = %d %d %d\n", 
+        d_ptr->moving_ss->dim[0], 
+        d_ptr->moving_ss->dim[1], 
+        d_ptr->moving_ss->dim[2]);
+    logfile_printf ("fixed_ss size = %d %d %d\n", 
+        d_ptr->fixed_ss->dim[0], 
+        d_ptr->fixed_ss->dim[1], 
+        d_ptr->fixed_ss->dim[2]);
 
     /* Make spatial gradient image */
-    moving_grad = volume_make_gradient (moving_ss);
+    Volume *moving_grad = volume_make_gradient (d_ptr->moving_ss.get());
+    d_ptr->moving_grad = Volume::New (moving_grad);
 
     /* --- Initialize parms --- */
 
     /* Images */
-    bsp_parms->fixed = fixed_ss;
-    bsp_parms->moving = moving_ss;
-    bsp_parms->moving_grad = moving_grad;
-    if (f_roi) bsp_parms->fixed_roi = f_roi_ss;
-    if (m_roi) bsp_parms->moving_roi = m_roi_ss;
+    bsp_parms->fixed = d_ptr->fixed_ss.get();
+    bsp_parms->moving = d_ptr->moving_ss.get();
+    bsp_parms->moving_grad = d_ptr->moving_grad.get();
+    if (f_roi) {
+        bsp_parms->fixed_roi = d_ptr->f_roi_ss.get();
+    }
+    if (m_roi) {
+        bsp_parms->moving_roi = d_ptr->m_roi_ss.get();
+    }
 
     /* Optimization */
     if (stage->optim_type == OPTIMIZATION_STEEPEST) {
@@ -342,9 +347,9 @@ Plm_bspline::initialize ()
     }
 
     /* Transform input xform to gpuit vector field */
-    pih.set_from_gpuit (fixed_ss->dim, 
-        fixed_ss->offset, fixed_ss->spacing, 
-        fixed_ss->direction_cosines);
+    pih.set_from_gpuit (d_ptr->fixed_ss->dim, 
+        d_ptr->fixed_ss->offset, d_ptr->fixed_ss->spacing, 
+        d_ptr->fixed_ss->direction_cosines);
     xform_to_gpuit_bsp (xf_out, xf_in, &pih, stage->grid_spac);
 
     /* Set debugging directory */
@@ -360,9 +365,6 @@ Plm_bspline::initialize ()
 void
 Plm_bspline::cleanup ()
 {
-    delete d_ptr->fixed_ss;
-    delete d_ptr->moving_ss;
-    delete d_ptr->moving_grad;
 }
 
 void

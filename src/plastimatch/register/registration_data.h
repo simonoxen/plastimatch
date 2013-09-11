@@ -17,10 +17,10 @@ class Stage_parms;
 class PLMREGISTER_API Registration_data {
 public:
     /* Input images */
-    Plm_image *fixed_image;
-    Plm_image *moving_image;
-    Plm_image *fixed_roi;
-    Plm_image *moving_roi;
+    Plm_image::Pointer fixed_image;
+    Plm_image::Pointer moving_image;
+    Plm_image::Pointer fixed_roi;
+    Plm_image::Pointer moving_roi;
 
     /* Input landmarks */
     Labeled_pointset *fixed_landmarks;

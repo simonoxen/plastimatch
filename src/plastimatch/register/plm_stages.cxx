@@ -199,7 +199,7 @@ save_output (
         pih.set_from_plm_image (regd->fixed_image);
 
         logfile_printf ("Warping...\n");
-        plm_warp (imp, vfp, xf_out, &pih, regd->moving_image, 
+        plm_warp (imp, vfp, xf_out, &pih, regd->moving_image.get(), 
             default_value, 0, 1);
 
         if (img_out_fn[0]) {
@@ -289,9 +289,9 @@ set_automatic_parameters (Registration_data* regd, Registration_parms* regp)
         Stage_parms* sp = *it;
         if (sp->subsampling_type == SUBSAMPLING_AUTO) {
             set_auto_subsampling (
-                sp->fixed_subsample_rate, regd->fixed_image);
+                sp->fixed_subsample_rate, regd->fixed_image.get());
             set_auto_subsampling (
-                sp->moving_subsample_rate, regd->moving_image);
+                sp->moving_subsample_rate, regd->moving_image.get());
         }
     }
 }

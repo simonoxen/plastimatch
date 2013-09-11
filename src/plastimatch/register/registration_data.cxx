@@ -14,10 +14,6 @@
 
 Registration_data::Registration_data ()
 {
-    fixed_image = 0;
-    moving_image = 0;
-    fixed_roi = 0;
-    moving_roi = 0;
     fixed_landmarks = 0;
     moving_landmarks = 0;
 }
@@ -26,8 +22,6 @@ Registration_data::~Registration_data ()
 {
     if (fixed_landmarks) delete fixed_landmarks;
     if (moving_landmarks) delete moving_landmarks;
-    if (fixed_roi) delete fixed_roi;
-    if (moving_roi) delete moving_roi;
 }
 
 void
@@ -39,28 +33,26 @@ Registration_data::load_global_input_files (Registration_parms* regp)
     /* Load images */
     logfile_printf ("Loading fixed image: %s\n", 
         regp->get_fixed_fn().c_str());
-    this->fixed_image = plm_image_load (regp->get_fixed_fn(), image_type);
+    this->fixed_image = Plm_image::New (new Plm_image (
+            regp->get_fixed_fn(), image_type));
 
     logfile_printf ("Loading moving image: %s\n", 
         regp->get_moving_fn().c_str());
-    this->moving_image = plm_image_load (regp->get_moving_fn(), image_type);
+    this->moving_image = Plm_image::New (new Plm_image (
+            regp->get_moving_fn(), image_type));
 
     /* load "global" rois */
     if (shared->fixed_roi_fn != "") {
         logfile_printf ("Loading fixed roi: %s\n", 
             shared->fixed_roi_fn.c_str());
-        this->fixed_roi = plm_image_load (
-            shared->fixed_roi_fn, PLM_IMG_TYPE_ITK_UCHAR);
-    } else {
-        this->fixed_roi = 0;
+        this->fixed_roi = Plm_image::New (new Plm_image (
+                shared->fixed_roi_fn, PLM_IMG_TYPE_ITK_UCHAR));
     }
     if (shared->moving_roi_fn != "") {
         logfile_printf ("Loading moving roi: %s\n", 
             shared->moving_roi_fn.c_str());
-        this->moving_roi = plm_image_load (
-            shared->moving_roi_fn, PLM_IMG_TYPE_ITK_UCHAR);
-    } else {
-        this->moving_roi = 0;
+        this->moving_roi = Plm_image::New (new Plm_image (
+                shared->moving_roi_fn, PLM_IMG_TYPE_ITK_UCHAR));
     }
 
     /* Load landmarks */
@@ -103,14 +95,14 @@ Registration_data::load_stage_input_files (Stage_parms* stage)
     if (shared->fixed_roi_fn != "") {
         logfile_printf ("Loading fixed roi: %s\n", 
             shared->fixed_roi_fn.c_str());
-        this->fixed_roi = plm_image_load (
-            shared->fixed_roi_fn, PLM_IMG_TYPE_ITK_UCHAR);
+        this->fixed_roi = Plm_image::New (new Plm_image (
+                shared->fixed_roi_fn, PLM_IMG_TYPE_ITK_UCHAR));
     }
 
     if (shared->moving_roi_fn != "") {
         logfile_printf ("Loading moving roi: %s\n", 
             shared->moving_roi_fn.c_str());
-        this->moving_roi = plm_image_load (
-            shared->moving_roi_fn, PLM_IMG_TYPE_ITK_UCHAR);
+        this->moving_roi = Plm_image::New (new Plm_image (
+                shared->moving_roi_fn, PLM_IMG_TYPE_ITK_UCHAR));
     }
 }

@@ -1342,13 +1342,14 @@ xform_gpuit_vf_to_gpuit_bsp (
 /* -----------------------------------------------------------------------
    Conversion to gpuit_vf
    ----------------------------------------------------------------------- */
-static Volume*
+static Volume::Pointer
 xform_itk_any_to_gpuit_vf (
     itk::Transform<double,3,3>* xf,
     const Plm_image_header* pih)
 {
     Volume_header vh = pih->get_volume_header();
-    Volume* vf_out = new Volume (vh, PT_VF_FLOAT_INTERLEAVED, 3);
+    Volume::Pointer vf_out = Volume::New (new Volume (
+            vh, PT_VF_FLOAT_INTERLEAVED, 3));
     float* img = (float*) vf_out->img;
 
     DoublePoint3DType fixed_point;
@@ -1373,33 +1374,34 @@ xform_itk_any_to_gpuit_vf (
     return vf_out;
 }
 
-Volume*
+Volume::Pointer
 xform_gpuit_vf_to_gpuit_vf (Volume* vf_in, const Plm_image_header *pih)
 {
-    Volume* vf_out;
+    Volume::Pointer vf_out;
     Volume_header vh = pih->get_volume_header();
     vf_out = volume_resample (vf_in, &vh);
     return vf_out;
 }
 
-Volume*
+Volume::Pointer
 xform_gpuit_bsp_to_gpuit_vf (Xform *xf_in, const Plm_image_header *pih)
 {
     Bspline_xform* bxf = xf_in->get_gpuit_bsp();
-    Volume* vf_out;
+    Volume::Pointer vf_out;
 
     Volume_header vh = pih->get_volume_header ();
-    vf_out = new Volume (vh, PT_VF_FLOAT_INTERLEAVED, 3);
-    bspline_interpolate_vf (vf_out, bxf);
+    vf_out = Volume::New (new Volume (vh, PT_VF_FLOAT_INTERLEAVED, 3));
+    bspline_interpolate_vf (vf_out.get(), bxf);
     return vf_out;
 }
 
-Volume*
+Volume::Pointer
 xform_itk_vf_to_gpuit_vf (
     DeformationFieldType::Pointer itk_vf, const Plm_image_header *pih)
 {
     Volume_header vh = pih->get_volume_header();
-    Volume* vf_out = new Volume (vh, PT_VF_FLOAT_INTERLEAVED, 3);
+    Volume::Pointer vf_out = Volume::New (new Volume (
+            vh, PT_VF_FLOAT_INTERLEAVED, 3));
     float* img = (float*) vf_out->img;
     FloatVector3DType displacement;
 
@@ -1739,7 +1741,7 @@ void
 xform_to_gpuit_vf (
     Xform* xf_out, Xform *xf_in, const Plm_image_header* pih)
 {
-    Volume* vf = 0;
+    Volume::Pointer vf = Volume::New();
     switch (xf_in->m_type) {
     case XFORM_NONE:
         print_and_exit ("Sorry, couldn't convert NONE to gpuit_vf\n");
@@ -1776,8 +1778,8 @@ xform_to_gpuit_vf (
         break;
     }
 
-    //xf_out->set_gpuit_vf (vf);
-    xf_out->set_gpuit_vf (Volume::Pointer(vf));
+    //xf_out->set_gpuit_vf (Volume::Pointer(vf));
+    xf_out->set_gpuit_vf (vf);
 }
 
 void

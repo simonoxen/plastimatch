@@ -40,7 +40,7 @@ set (PLASTIMATCH_SRC
   pcmd_probe.cxx 
   pcmd_resample.cxx 
   pcmd_scale.cxx
-  pcmd_script.cxx 
+#  pcmd_script.cxx 
   pcmd_segment.cxx 
   pcmd_sift.cxx
   pcmd_stats.cxx 

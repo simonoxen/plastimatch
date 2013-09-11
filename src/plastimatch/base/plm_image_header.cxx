@@ -170,6 +170,12 @@ Plm_image_header::set_from_plm_image (const Plm_image& pli)
 }
 
 void
+Plm_image_header::set_from_plm_image (const Plm_image::Pointer& pli)
+{
+    this->set_from_plm_image (pli.get());
+}
+
+void
 Plm_image_header::set (const Volume_header& vh)
 {
     this->set_from_gpuit (vh.get_dim(), vh.get_origin(), 

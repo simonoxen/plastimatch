@@ -10,7 +10,7 @@ project (src)
 ##-----------------------------------------------------------------------------
 set (PLASTIMATCH_LIBS
   plmclp
-  plmscript
+#  plmscript
   plmsegment
   plmregister
   plmreconstruct
