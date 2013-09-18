@@ -62,33 +62,41 @@ intermediate output).
        determine the registration region of interest.
 
 Optimization parameters.  There are three key parameters that decide
-which algorithm is used for optimization. 
+which algorithm is used for optimization. One additional parameter( optim_subtype) is
+only available for ITK demons and determines which ITK demons algorithm is used: 
 
 .. list-table::
-   :widths: 20 40 40
+   :widths: 20 40 40 40
    :header-rows: 1
 
    * - xform
      - optim
      - impl
+     - optim_subtype
    * - align_center
      - N/A
      - itk
+     - ---
    * - translation
      - rsg, amoeba
      - itk
+     - ---
    * - rigid
      - versor, amoeba
      - itk
+     - ---
    * - affine
      - rsg, amoeba
      - itk
+     - ---
    * - vf
      - demons
      - plastimatch, itk
+     - fsf(default),diffeomorphic,log_domain,sym_log_domain (only for impl=ITK) 
    * - bspline
      - steepest, lbfgs, lbfgsb
      - plastimatch, itk
+     - ---
 
 Notes:
 
@@ -141,6 +149,36 @@ specific parameters are available.
      - 6.0
      - mm
      - width of demons smoothing kernel
+   * - demons_gradient_type
+     - vf+demons+itk
+     - symmetric
+     - symmetric,fixed,warped_moving,mapped_moving
+     - Type of gradient that will be used to compute update force
+   * - demons_smooth_update_field
+     - vf+demons+itk
+     - false
+     - bool
+     - Set whether the update field is smoothed
+   * - demons_std_update_field
+     - vf+demons+itk
+     - 1
+     - std-dev.
+     - Width of Gaussian used to smooth update field
+   * - demons_smooth_deformation_field
+     - vf+demons+itk
+     - true
+     - bool
+     - Set whether the deformation field is smoothed
+   * - demons_std_deformation_field
+     - vf+demons+itk
+     - 1
+     - std-dev.
+     - Width of Gaussian used to smooth deformation field
+   * - demons_step_length
+     - vf+demons+itk
+     - 1
+     - mm
+     - maximum update step length. 0 implies no restriction 
    * - histoeq
      - vf+demons+itk
      - 0

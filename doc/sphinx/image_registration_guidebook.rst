@@ -97,6 +97,63 @@ The following example illustrates their use::
   demons_homogenization=30
   # This is the size of the filter (in voxels)
   demons_filter_width=5 5 5
+  
+  
+Currently there are also 4 different versions of itk demons available in plastimatch:
+
+- fast symmetric forces (=fsf) demons 
+- difffeomorphic demons
+- log-domain demons(~diffeopmorphic demons with directly accessible inverted deformation field)
+- symmetric log domain diffeomorphic demons (symetric log-domain demons computing forward and backward update) 
+
+More information on these demons variants can be found here: http://hdl.handle.net/10380/3060
+
+
+The following example illustrates the use of the ITK demons::
+
+  [STAGE]
+  xform=vf
+  impl=itk
+  optim=demons
+  # Demons implementation that should be used: 
+  # fsf(default),diffeomorphic,log_domain,sym_log_domain
+  optim_subtype=sym_log_domain
+ 
+  # Type of gradient that will be used to compute update force: 
+  # symmetric(compute gradient in fixed and moving image),fixed,
+  # warped_moving,mapped_moving(=not warped moving image) 
+  demons_gradient_type=symmetric
+  
+  # Set whether the update field is smoothed
+  # (regularized). Smoothing the update field yields a solution
+  # viscous in nature. If demons_smooth_update_field is on, then the
+  # update field is smoothed with a Gaussian whose standard
+  # deviations are specified with demons_std_update_field
+  demons_smooth_update_field=0
+  demons_std_update_field=1
+  
+  #Set whether the deformation field should be smoothed
+  #(regularized). Smoothing the deformation field yields a solution
+  #elastic in nature. If demons_smooth_deformation_field is on, then the
+  #deformation field is smoothed with a Gaussian whose standard
+  #deviations are specified with demons_std_deformation_field
+  demons_smooth_deformation_field=1
+  demons_std_deformation_field=2
+
+  #Set the maximum update step length. In Thirion this is 0.5.
+  #Setting it to 0 implies no restriction (beware of numerical
+  #instability in this case. 
+  demons_step_length=1;
+
+  max_its=30
+  res=4 4 2
+
+
+The ITK demons implementation is also capable of using fixed and moving image masks. 
+When using masks the deformation field will only be updated for the region where the masks overlap.
+If only one mask is used the calculation of the update field is restricted to this region. 
+More information on ITK demons registration with masks can be found here:  http://hdl.handle.net/10380/3105
+
 
 B-spline registration
 ---------------------
