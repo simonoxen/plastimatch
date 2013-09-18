@@ -2231,8 +2231,8 @@ plm_add_test (
 plmtest_check_interval ("plm-reg-itk-demons-check-1"
   "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-demons.stdout.txt"
   "VF_AVG +[^ ] +([-0-9.]*)"
-  "8.55"
-  "8.65"
+  "31.85"
+  "34.95"
   )
 plm_add_test (
   "plm-reg-itk-demons-stats-2"
@@ -2242,8 +2242,41 @@ plm_add_test (
 plmtest_check_interval ("plm-reg-itk-demons-check-2"
   "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-demons-stats-2.stdout.txt"
   "AVE *([-0-9.]*)"
-  "-853.0"
-  "-852.6"
+  "-755.3"
+  "-754.6"
+  )
+plm_add_test (
+  "plm-reg-itk-demons-diff"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_TESTING_DATA_DIR}/plm-reg-itk-demons_diff.txt"
+  )
+plmtest_check_interval ("plm-reg-itk-demons-diff-check-1"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-demons-diff.stdout.txt"
+  "VF_AVG +[^ ] +([-0-9.]*)"
+  "31.2"
+  "31.3"
+  )
+plm_add_test (
+  "plm-reg-itk-demons-logdom"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_TESTING_DATA_DIR}/plm-reg-itk-demons_logdom.txt"
+  )
+plmtest_check_interval ("plm-reg-itk-demons-logdom-check-1"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-demons-logdom.stdout.txt"
+  "VF_AVG +[^ ] +([-0-9.]*)"
+  "32.65"
+  "32.75"
+  )
+plm_add_test (
+  "plm-reg-itk-demons-sym_logdom"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_TESTING_DATA_DIR}/plm-reg-itk-demons_sym_logdom.txt"
+  )
+plmtest_check_interval ("plm-reg-itk-demons-sym-logdom-check-1"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-demons-sym_logdom.stdout.txt"
+  "VF_AVG +[^ ] +([-0-9.]*)"
+  "31.85"
+  "35.95"
   )
 set_property (TEST plm-reg-itk-demons APPEND PROPERTY DEPENDS gauss-1)
 set_property (TEST plm-reg-itk-demons APPEND PROPERTY DEPENDS gauss-2)
@@ -2754,8 +2787,8 @@ plmtest_check_interval (
   "plm-reg-multi-a-check"
   "${PLM_BUILD_TESTING_DIR}/plm-reg-multi-a-stats.stdout.txt"
   "Max: *([-0-9.]*)"
-  "-19.95"
-  "-19.85"
+  "-19.82"
+  "-19.80"
   )
 set_tests_properties (plm-reg-multi-a PROPERTIES 
   DEPENDS "rect-2;sphere-2")
