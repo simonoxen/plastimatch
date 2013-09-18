@@ -40,6 +40,11 @@
 #define IMPLEMENTATION_ITK                  1
 #define IMPLEMENTATION_PLASTIMATCH          2
 
+#define OPTIMIZATION_SUB_FSF                0
+#define OPTIMIZATION_SUB_DIFF_ITK           1
+#define OPTIMIZATION_SUB_LOGDOM_ITK         2
+#define OPTIMIZATION_SUB_SYM_LOGDOM_ITK     3
+
 #define METRIC_NONE                         0
 #define METRIC_MSE                          1
 #define METRIC_MI                           2
@@ -59,6 +64,13 @@ enum Regularization_type {
     REGULARIZATION_BSPLINE_ANALYTIC, 
     REGULARIZATION_BSPLINE_SEMI_ANALYTIC, 
     REGULARIZATION_BSPLINE_NUMERIC
+};
+
+enum Demons_gradient_type {
+    SYMMETRIC,
+    FIXED_IMAGE,
+    WARPED_MOVING,
+    MAPPED_MOVING
 };
 
 class Plm_image;
@@ -81,6 +93,8 @@ public:
     int xform_type;
     int optim_type;
     int impl_type;
+    // sub_type used for different types of demons reg (e.g. non-diffeomorphic, diffeomorphic)
+    int optim_subtype;
     char alg_flavor;
     Threading threading_type;
     int metric_type;
@@ -121,6 +135,11 @@ public:
     float mi_moving_image_maxVal;
     /* ITK & GPUIT demons */
     float demons_std;
+    float demons_std_update_field;
+    float demons_step_length;
+    bool demons_smooth_update_field, demons_smooth_deformation_field;
+    unsigned int num_approx_terms_log_demons;
+    Demons_gradient_type demons_gradient_type;
     /* GPUIT demons */
     float demons_acceleration;
     float demons_homogenization;

@@ -37,10 +37,12 @@ Stage_parms::Stage_parms ()
     xform_type = STAGE_TRANSFORM_VERSOR;
     optim_type = OPTIMIZATION_VERSOR;
     impl_type = IMPLEMENTATION_NONE;
+    optim_subtype = OPTIMIZATION_SUB_FSF;
     alg_flavor = 0;
     threading_type = THREADING_CPU_OPENMP;
     metric_type = METRIC_MSE;
     regularization_type = REGULARIZATION_BSPLINE_ANALYTIC;
+    demons_gradient_type = SYMMETRIC;
     regularization_lambda = 0.0f;
     /* Image subsampling */
     subsampling_type = SUBSAMPLING_AUTO;
@@ -80,7 +82,12 @@ Stage_parms::Stage_parms ()
     mi_moving_image_minVal=0;
     mi_moving_image_maxVal=0;
     /* ITK & GPUIT demons */
-    demons_std = 6.0;
+    demons_std = 1.0;
+    demons_std_update_field = 1.0;
+    demons_smooth_deformation_field =true;
+    demons_smooth_update_field=false;
+    demons_step_length = 2.0;
+    num_approx_terms_log_demons=2;
     /* GPUIT demons */
     demons_acceleration = 1.0;
     demons_homogenization = 1.0;
@@ -165,6 +172,12 @@ Stage_parms::Stage_parms (const Stage_parms& s)
     mi_moving_image_maxVal = s.mi_moving_image_maxVal;
     /* ITK & GPUIT demons */
     demons_std = s.demons_std;
+    demons_std_update_field=s.demons_std_update_field;
+    demons_smooth_deformation_field=s.demons_smooth_deformation_field;
+    demons_smooth_update_field=s.demons_smooth_update_field;
+    demons_step_length=s.demons_step_length;
+    demons_gradient_type=s.demons_gradient_type;
+    num_approx_terms_log_demons=s.num_approx_terms_log_demons;
     /* GPUIT demons */
     demons_acceleration = s.demons_acceleration;
     demons_homogenization = s.demons_homogenization;

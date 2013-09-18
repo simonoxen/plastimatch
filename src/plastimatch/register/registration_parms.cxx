@@ -380,6 +380,24 @@ Registration_parms::set_key_val (
             goto error_exit;
         }
     }
+    else if (!strcmp (key, "optim_subtype")) {
+        if (section == 0) goto error_not_global;
+        if (!strcmp(val,"fsf")) {
+            stage->optim_subtype = OPTIMIZATION_SUB_FSF;
+        }
+        else if (!strcmp(val,"diffeomorphic")) {
+            stage->optim_subtype = OPTIMIZATION_SUB_DIFF_ITK;
+        }
+        else if (!strcmp(val,"log_domain")) {
+            stage->optim_subtype = OPTIMIZATION_SUB_LOGDOM_ITK;
+        }
+        else if (!strcmp(val,"sym_log_domain")) {
+            stage->optim_subtype = OPTIMIZATION_SUB_SYM_LOGDOM_ITK;
+        }
+        else {
+            goto error_exit;
+        }
+    }
     else if (!strcmp (key, "threading")) {
         if (section == 0) goto error_not_global;
         if (!strcmp(val,"single")) {
@@ -593,15 +611,62 @@ Registration_parms::set_key_val (
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "demons_std")) {
+    else if (!strcmp (key, "demons_std_deformation_field")) {
         if (section == 0) goto error_not_global;
         if (sscanf (val, "%g", &stage->demons_std) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "demons_acceleration")) {
+    else if (!strcmp (key, "demons_std_update_field")) {
         if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g", &stage->demons_acceleration) != 1) {
+        if (sscanf (val, "%g", &stage->demons_std_update_field) != 1) {
+            goto error_exit;
+        }
+    }
+    else if (!strcmp (key, "demons_step_length")) {
+        if (section == 0) goto error_not_global;
+        if (sscanf (val, "%g", &stage->demons_step_length) != 1) {
+            goto error_exit;
+        }
+    }
+    else if (!strcmp (key, "demons_smooth_deformation_field")) {
+        if (section == 0) goto error_not_global;
+        if (!strcmp (val, "1")) {
+            stage->demons_smooth_deformation_field = true;
+        }
+        else
+           stage->demons_smooth_deformation_field = false;
+    }
+    else if (!strcmp (key, "demons_smooth_update_field")) {
+        if (section == 0) goto error_not_global;
+        if (!strcmp (val, "1")) {
+            stage->demons_smooth_update_field = true;
+        }
+        else
+           stage->demons_smooth_update_field = false;
+    }
+    else if (!strcmp (key, "demons_gradient_type"))
+    {
+        if (section == 0) goto error_not_global;
+        if (!strcmp(val,"symmetric")) {
+            stage->demons_gradient_type = SYMMETRIC;
+        }
+        else if (!strcmp(val,"fixed")) {
+            stage->demons_gradient_type = FIXED_IMAGE;
+        }
+        else if (!strcmp(val,"warped_moving")) {
+            stage->demons_gradient_type = WARPED_MOVING;
+        }
+        else if (!strcmp(val,"mapped_moving")) {
+            stage->demons_gradient_type = MAPPED_MOVING;
+        }
+        else {
+            goto error_exit;
+        }
+    }
+    else if (!strcmp (key, "num_approx_terms_log_demons")) {
+        if (section == 0) goto error_not_global;
+        if (sscanf (val, "%g", &stage->demons_homogenization) != 1) {
             goto error_exit;
         }
     }

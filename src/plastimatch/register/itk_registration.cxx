@@ -21,7 +21,7 @@
 #endif
 
 #include "compiler_warnings.h"
-#include "itk_demons.h"
+//#include "itk_demons.h"
 #include "itk_image.h"
 #include "itk_image_type.h"
 #include "itk_optimizer.h"

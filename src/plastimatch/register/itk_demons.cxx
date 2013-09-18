@@ -1,20 +1,17 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include "plmregister_config.h"
-#include <iostream>
-#include <stdlib.h>
-#include <string.h>
+
 #include "itkArray.h"
 #include "itkCommand.h"
-#include "itkDemonsRegistrationFilter.h"
-#include "itkHistogramMatchingImageFilter.h"
-#include "itkIdentityTransform.h"
-#include "itkImage.h"
-#include "itkLinearInterpolateImageFunction.h"
 
 #include "itk_demons.h"
-#include "itk_image.h"
+#include "itk_diff_demons.h"
+#include "itk_log_demons.h"
+#include "itk_sym_log_demons.h"
+#include "itk_fsf_demons.h"
+#include "itk_demons_util.h"
+#include "itk_demons_registration_filter.h"
 #include "itk_resample.h"
 #include "logfile.h"
 #include "plm_image.h"
@@ -23,11 +20,13 @@
 #include "registration_data.h"
 #include "stage_parms.h"
 #include "xform.h"
+#include "itkPDEDeformableRegistrationWithMaskFilter.h"
 
-typedef itk::DemonsRegistrationFilter<
-    FloatImageType,
-    FloatImageType,
-    DeformationFieldType> DemonsFilterType;
+typedef itk::PDEDeformableRegistrationWithMaskFilter<FloatImageType,FloatImageType,DeformationFieldType>  PDEDeformableRegistrationFilterType;
+
+typedef itk::ImageMaskSpatialObject< 3 >                                                                  MaskType;
+
+PDEDeformableRegistrationFilterType::Pointer m_filter;
 
 class Demons_Observer : public itk::Command
 {
@@ -50,8 +49,10 @@ protected:
     ~Demons_Observer () {
         delete timer;
     }
+    unsigned int filtertype;
 
 public:
+    void SetFilterType(unsigned int f){filtertype=f;}
     void Execute(itk::Object *caller, const itk::EventObject & event)
     {
 	Execute( (const itk::Object *)caller, event);
@@ -59,85 +60,93 @@ public:
 
     void Execute(const itk::Object * object, const itk::EventObject & event)
     {
-	const DemonsFilterType * filter =
-	    dynamic_cast< const DemonsFilterType* >(object);
-	double val = filter->GetMetric();
-	double duration = timer->report ();
-	if (typeid(event) == typeid(itk::IterationEvent)) {
-	    logfile_printf ("MSE [%4d] %9.3f [%6.3f secs]\n", 
-		m_feval, val, duration);
-	    timer->start ();
-	    m_feval++;
-	}
-	else {
-	    std::cout << "Unknown event type." << std::endl;
-	    event.Print(std::cout);
-	}
+        //using update version of PDEDeformableRegistrationFilter class
+        const PDEDeformableRegistrationFilterType * filter=dynamic_cast< const PDEDeformableRegistrationFilterType* >(object);
+
+        double val = filter->GetMetric();
+        double duration = timer->report ();
+        if (typeid(event) == typeid(itk::IterationEvent)) {
+            logfile_printf ("MSE [%4d] %9.3f [%6.3f secs]\n",
+            m_feval, val, duration);
+            timer->start ();
+            m_feval++;
+        }
+        else {
+            std::cout << "Unknown event type." << std::endl;
+            event.Print(std::cout);
+        }
     }
 };
 
-static void
-deformation_stats (DeformationFieldType::Pointer vf)
+//*Setting fixed and moving image masks if available
+static void set_and_subsample_masks(Registration_data* regd,Stage_parms* stage )
 {
-    typedef itk::ImageRegionIterator< DeformationFieldType > FieldIterator;
-    FieldIterator fi (vf, vf->GetLargestPossibleRegion());
-    const DeformationFieldType::SizeType vf_size 
-	= vf->GetLargestPossibleRegion().GetSize();
-    double max_sq_len = 0.0;
-    double avg_sq_len = 0.0;
-
-    for (fi.GoToBegin(); !fi.IsAtEnd(); ++fi) {
-	//index = fi.GetIndex();
-	const FloatVector3DType& d = fi.Get();
-	double sq_len = d[0]*d[0] + d[1]*d[1] + d[2]*d[2];
-	if (sq_len > max_sq_len) {
-	    max_sq_len = sq_len;
-	}
-	avg_sq_len += sq_len;
+    /* Subsample fixed & moving images */
+    if(regd->fixed_roi)
+    {
+      MaskType::Pointer fixedSpatialObjectMask = MaskType::New();
+      UCharImageType::Pointer fixed_mask
+        = subsample_image (regd->fixed_roi->itk_uchar(),
+        stage->fixed_subsample_rate[0],
+        stage->fixed_subsample_rate[1],
+        stage->fixed_subsample_rate[2],
+        0);
+      fixedSpatialObjectMask->SetImage(fixed_mask);
+      fixedSpatialObjectMask->Update();
+      m_filter->SetFixedImageMask (fixedSpatialObjectMask);
     }
-    avg_sq_len /= (vf_size[0] * vf_size[1] * vf_size[2]);
+    if(regd->moving_roi)
+    {
+      MaskType::Pointer movingSpatialObjectMask = MaskType::New();
+      UCharImageType::Pointer moving_mask
+        = subsample_image (regd->moving_roi->itk_uchar(),
+        stage->fixed_subsample_rate[0],
+        stage->fixed_subsample_rate[1],
+        stage->fixed_subsample_rate[2],
+        0);
+      movingSpatialObjectMask->SetImage(moving_mask);
+      movingSpatialObjectMask->Update();
+      m_filter->SetMovingImageMask(movingSpatialObjectMask);
+    }
+}
 
-    printf ("VF_MAX = %g   VF_AVG = %g\n", max_sq_len, avg_sq_len);
+//*Setting fixed and moving image masks if available
+static void set_general_parameters(Stage_parms* stage )
+{
+    m_filter->SetNumberOfIterations (stage->max_its);
+    m_filter->SetStandardDeviations (stage->demons_std);
+    m_filter->SetUpdateFieldStandardDeviations(stage->demons_std_update_field);
+    m_filter->SetSmoothUpdateField(stage->demons_smooth_update_field);
 }
 
 static void
-do_demons_stage_internal (
-    Registration_data* regd, 
+do_demons_stage_internal (Registration_data* regd,
     Xform *xf_out, 
     Xform *xf_in,
     Stage_parms* stage)
 {
-    DemonsFilterType::Pointer filter = DemonsFilterType::New();
-    DeformationFieldType::Pointer vf;
-
     /* Subsample fixed & moving images */
     FloatImageType::Pointer fixed_ss
-	= subsample_image (regd->fixed_image->itk_float(), 
-	    stage->fixed_subsample_rate[0], 
-	    stage->fixed_subsample_rate[1], 
-	    stage->fixed_subsample_rate[2], 
-	    stage->default_value);
+    = subsample_image (regd->fixed_image->itk_float(),
+        stage->fixed_subsample_rate[0],
+        stage->fixed_subsample_rate[1],
+        stage->fixed_subsample_rate[2],
+        stage->default_value);
     FloatImageType::Pointer moving_ss
-	= subsample_image (regd->moving_image->itk_float(), 
-	    stage->moving_subsample_rate[0], 
-	    stage->moving_subsample_rate[1], 
-	    stage->moving_subsample_rate[2], 
-	    stage->default_value);
+    = subsample_image (regd->moving_image->itk_float(),
+        stage->moving_subsample_rate[0],
+        stage->moving_subsample_rate[1],
+        stage->moving_subsample_rate[2],
+        stage->default_value);
 
-    filter->SetFixedImage (fixed_ss);
-    filter->SetMovingImage (moving_ss);
-
-    Demons_Observer::Pointer observer = Demons_Observer::New();
-    filter->AddObserver (itk::IterationEvent(), observer);
-
-    filter->SetNumberOfIterations (stage->max_its);
-    filter->SetStandardDeviations (stage->demons_std);
-
+    m_filter->SetFixedImage (fixed_ss);
+    m_filter->SetMovingImage (moving_ss);
     /* Get vector field of matching resolution */
     if (xf_in->m_type != STAGE_TRANSFORM_NONE) {
 	xform_to_itk_vf (xf_out, xf_in, fixed_ss);
-	//filter->SetInitialDeformationField (xf_out->get_itk_vf());
-	filter->SetInput (xf_out->get_itk_vf());
+
+    //Set initial deformation field
+    m_filter->SetInput (xf_out->get_itk_vf());
     }
 
     if (stage->max_its <= 0) {
@@ -147,29 +156,54 @@ do_demons_stage_internal (
 	print_and_exit ("Error demons std must be greater than 0\n");
     }
 
-#if defined (commentout)
-    DemonsFilterType::DemonsRegistrationFunctionType *drfp = 
-	dynamic_cast<DemonsFilterType::DemonsRegistrationFunctionType *>
-	(filter->GetDifferenceFunction().GetPointer());
-    drfp->SetUseMovingImageGradient(1);
-
-    filter->SetIntensityDifferenceThreshold (33.210);
-#endif
-
     printf ("Ready to start registration.\n");
-    filter->Update();
+    m_filter->Update();
     printf ("Done with registration.  Writing output...\n");
 
-    xf_out->set_itk_vf (filter->GetOutput());
+    xf_out->set_itk_vf (m_filter->GetOutput());
 }
 
 void
-do_demons_stage (Registration_data* regd, 
+do_demons_stage (Registration_data* regd,
 		 Xform *xf_out, 
 		 Xform *xf_in,
 		 Stage_parms* stage)
 {
+    itk_demons_registration_filter* demons_filter = NULL;
+    if(stage->optim_subtype == OPTIMIZATION_SUB_FSF)
+    {
+        demons_filter = new itk_fsf_demons_filter();
+    }
+    else if(stage->optim_subtype == OPTIMIZATION_SUB_DIFF_ITK)
+    {
+        demons_filter = new itk_diffeomorphic_demons_filter();
+    }
+    else if(stage->optim_subtype ==OPTIMIZATION_SUB_LOGDOM_ITK)
+    {
+        demons_filter = new itk_log_domain_demons_filter();
+    }
+    else if(stage->optim_subtype ==OPTIMIZATION_SUB_SYM_LOGDOM_ITK)
+    {
+        demons_filter = new itk_sym_log_domain_demons_filter();
+    }
+
+    m_filter=demons_filter->get_demons_filter_impl();
+
+    //Set mask if available for implementation
+    set_and_subsample_masks(regd,stage);
+
+    //Set paramters that are used by all demons implementations
+    set_general_parameters(stage);
+
+    //Adding observer
+    Demons_Observer::Pointer observer = Demons_Observer::New();
+    m_filter->AddObserver (itk::IterationEvent(), observer);
+
+    //Let filter set filter specific parameters
+    demons_filter->update_specific_parameters(stage);
+
     do_demons_stage_internal (regd, xf_out, xf_in, stage);
     printf ("Deformation stats (out)\n");
-    deformation_stats (xf_out->get_itk_vf());
+    itk_demons_util::deformation_stats (xf_out->get_itk_vf());
+    delete demons_filter;
 }

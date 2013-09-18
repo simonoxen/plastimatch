@@ -16,6 +16,8 @@ if (CUDA_FOUND)
   include_directories (BEFORE "${CMAKE_CURRENT_SOURCE_DIR}/cuda")
 endif ()
 
+
+
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES
 ##-----------------------------------------------------------------------------
@@ -34,11 +36,17 @@ set (PLMREGISTER_LIBRARY_SRC
   bspline_regularize_analytic.cxx
   bspline_regularize_numeric.cxx
   demons.cxx
+  itk_demons.cxx
+  itk_demons.cxx
+  itk_demons_util.cxx
+  itk_fsf_demons.cxx
+  itk_diff_demons.cxx
+  itk_log_demons.cxx
+  itk_sym_log_demons.cxx
   demons_cpu.cxx
   demons_misc.cxx
   demons_state.cxx
   gpuit_demons.cxx
-  itk_demons.cxx
   itk_optimizer.cxx
   itk_registration.cxx
   itk_registration_observer.cxx
