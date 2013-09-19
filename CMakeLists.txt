@@ -258,6 +258,21 @@ check_include_files ("stdint.h" HAVE_STDINT_H)
 check_include_files ("sys/stat.h" HAVE_SYS_STAT_H)
 
 ##-----------------------------------------------------------------------------
+##  A few constants used to control build & install
+##-----------------------------------------------------------------------------
+set (INSTALL_NEVER 0)
+set (INSTALL_ALWAYS 1)
+if (PLM_CONFIG_DEBIAN_BUILD)
+  set (INSTALL_IF_NOT_DEBIAN 0)
+else ()
+  set (INSTALL_IF_NOT_DEBIAN 1)
+endif ()
+
+set (BUILD_NEVER 0)
+set (BUILD_ALWAYS 1)
+set (BUILD_IF_NOT_SLICER_EXT 1)
+
+##-----------------------------------------------------------------------------
 ##  Set the math library -- need this variable to configure libf2c
 ##-----------------------------------------------------------------------------
 if (UNIX)
@@ -416,6 +431,14 @@ endif ()
 add_subdirectory (libs/bstrlib-05122010)
 set (BSTRLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/bstrlib-05122010")
 link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/bstrlib-05122010)
+
+##-----------------------------------------------------------------------------
+##  Only use local dbf, dbf-core
+##-----------------------------------------------------------------------------
+set (DBF_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/libdbf")
+set (DBFCORE_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/dbf-core")
+add_subdirectory (libs/libdbf)
+add_subdirectory (libs/dbf-core)
 
 ##-----------------------------------------------------------------------------
 ##  Only use local devillard
@@ -762,24 +785,6 @@ set (PLM_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
 
 #configure_file (${CMAKE_CURRENT_SOURCE_DIR}/src/plastimatch/plm_fortran.h.in
 #  ${CMAKE_CURRENT_BINARY_DIR}/plm_fortran.h)
-
-##-----------------------------------------------------------------------------
-##  Debian install excludes some items
-##-----------------------------------------------------------------------------
-set (INSTALL_NEVER 0)
-set (INSTALL_ALWAYS 1)
-if (PLM_CONFIG_DEBIAN_BUILD)
-  set (INSTALL_IF_NOT_DEBIAN 0)
-else ()
-  set (INSTALL_IF_NOT_DEBIAN 1)
-endif ()
-
-##-----------------------------------------------------------------------------
-##  Slicer extension build excludes some items
-##-----------------------------------------------------------------------------
-set (BUILD_NEVER 0)
-set (BUILD_ALWAYS 1)
-set (BUILD_IF_NOT_SLICER_EXT 1)
 
 ##-----------------------------------------------------------------------------
 ##  Subdirectories
