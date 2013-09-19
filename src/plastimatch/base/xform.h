@@ -86,6 +86,7 @@ public:
     void load (const std::string& fn);
     void save (const char* fn);
     void save (const Pstring& fn);
+    void save (const std::string& fn);
 
     TranslationTransformType::Pointer get_trn ();
     VersorTransformType::Pointer get_vrs ();

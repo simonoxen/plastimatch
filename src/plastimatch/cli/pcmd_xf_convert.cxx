@@ -16,8 +16,12 @@
 class Xf_convert_parms {
 public:
     Pstring input_fn;
-    Pstring output_fn;
-    Pstring output_type;
+    std::string output_type;
+    std::string output_fn;
+    std::string output_dicom_dir;
+
+    std::string source_rcs;
+    std::string registered_rcs;
 
     /* Geometry options */
     bool m_have_dim;
@@ -39,7 +43,7 @@ public:
 };
 
 void
-set_output_xform_type (Xform_convert *xfc, const Pstring& output_type)
+set_output_xform_type (Xform_convert *xfc, const std::string& output_type)
 {
     if (output_type == "vf") {
         xfc->m_xf_out_type = XFORM_ITK_VECTOR_FIELD;
@@ -49,6 +53,9 @@ set_output_xform_type (Xform_convert *xfc, const Pstring& output_type)
     }
     else if (output_type == "itk_bsp" || output_type == "itk_bspline") {
         xfc->m_xf_out_type = XFORM_ITK_BSPLINE;
+    }
+    else if (output_type == "none") {
+        xfc->m_xf_out_type = XFORM_NONE;
     }
     else {
         print_and_exit ("Sorry, can't convert output type\n");
@@ -105,12 +112,23 @@ do_xf_convert (Xf_convert_parms *parms)
     }
     
     /* Do conversion */
-    printf ("about to xform_convert\n");
-    xform_convert (xfc);
-    printf ("did xform_convert\n");
+    /* GCS FIX: This is not quite right.  Probably one should be 
+       allowed to run xf-convert e.g. on a B-spline, and regrid 
+       the b-spline, with the expectation that the xform 
+       type will be read from the input file.  */
+    if (xfc->m_xf_out_type != XFORM_NONE) {
+        printf ("about to xform_convert\n");
+        xform_convert (xfc);
+        printf ("did xform_convert\n");
+    }
 
     /* Save output file */
-    xform_save (xfc->m_xf_out, parms->output_fn);
+    if (!parms->output_fn.empty()) {
+        xfc->m_xf_out->save (parms->output_fn);
+    }
+    if (!parms->output_dicom_dir.empty()) {
+        /* GCS FIX: Do something */
+    }
 }
 
 static void
@@ -136,10 +154,12 @@ parse_fn (
     parser->add_long_option ("", "input", 
         "Input xform filename (required)", 1, "");
     parser->add_long_option ("", "output", 
-        "Output xform filename (required)", 1, "");
+        "Output xform filename", 1, "");
     parser->add_long_option ("", "output-type", 
         "Type of xform to create (required), choose from "
-        "{bspline, itk_bspline, vf}", 1, "");
+        "{bspline, itk_bspline, vf}", 1, "none");
+    parser->add_long_option ("", "output-dicom", 
+        "Directory for output of dicom spatial registration IOD", 1, "");
 
     parser->add_long_option ("", "dim", 
         "Size of output image in voxels \"x [y z]\"", 1, "");
@@ -152,25 +172,42 @@ parse_fn (
     parser->add_long_option ("", "nobulk", 
         "Omit bulk transform for itk_bspline", 0);
 
+    /* DICOM spatial registration */
+    parser->add_long_option ("", "source-rcs", 
+        "Directory containing source reference coordinate system"
+        " (i.e. moving image)", 
+        1, "");
+    parser->add_long_option ("", "registered-rcs", 
+        "Directory containing registered reference coordinate system"
+        " (i.e. fixed image)", 
+        1, "");
+
     /* Parse options */
     parser->parse (argc,argv);
 
     /* Handle --help, --version */
     parser->check_default_options ();
 
-    /* Check that an input file was given */
+    /* Input location */
     parser->check_required ("input");
-    parser->check_required ("output");
-    parser->check_required ("output-type");
+    parms->input_fn = parser->get_string("input").c_str();
+
+    /* Output location */
+    if (parser->option ("output")) {
+        parms->output_fn = parser->get_string("output");
+    }
+    if (parser->option ("output-dicom")) {
+        parms->output_dicom_dir = parser->get_string("output-dicom");
+    }
+    if (parms->output_dicom_dir.empty() && parms->output_fn.empty()) {
+        throw (dlib::error ("Error.  You must specify either the --output "
+                "or the --output-dicom option"));
+    }
 
     Xform_convert *xfc = &parms->xfc;
 
     /* Copy values into output struct */
-    parms->output_fn = parser->get_string("output").c_str();
-    parms->input_fn = parser->get_string("input").c_str();
-    if (parser->option ("output-type")) {
-        parms->output_type = parser->get_string("output-type").c_str();
-    }
+    parms->output_type = parser->get_string("output-type").c_str();
 
     /* Geometry options */
     if (parser->option ("dim")) {

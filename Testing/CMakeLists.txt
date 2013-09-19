@@ -3405,6 +3405,7 @@ set_tests_properties (plm-warp-i-check-1 PROPERTIES DEPENDS plm-warp-i-stats-1)
 ## plm-xf-convert-b    vf to plm bspline
 ## plm-xf-convert-c    plm bspline to vf
 ## plm-xf-convert-d    plm bspline to itk bspline
+## plm-xf-convert-e    itk rigid to dicom rigid
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-xf-convert-a" 
@@ -3481,6 +3482,12 @@ set_tests_properties (plm-xf-convert-d-warp-2-stats PROPERTIES
   DEPENDS plm-xf-convert-d-warp-2)
 set_tests_properties (plm-xf-convert-d-warp-2-check PROPERTIES 
   DEPENDS plm-xf-convert-d-warp-2-stats)
+
+plm_add_test (
+  "plm-xf-convert-e" 
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "xf-convert;--input;${PLM_TESTING_DATA_DIR}/itk-rigid-a.tfm;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-xf-convert-e;--source-rcs;${PLM_TESTING_DATA_DIR}/rect-2-dicom;--registered-rcs;${PLM_TESTING_DATA_DIR}/rect-3-dicom"
+  )
 
 ## -------------------------------------------------------------------------
 ## vf-invert

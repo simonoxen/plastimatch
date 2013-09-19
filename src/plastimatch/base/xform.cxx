@@ -523,6 +523,12 @@ Xform::save (const Pstring& fn)
 }
 
 void
+Xform::save (const std::string& fn)
+{
+    this->save (fn.c_str());
+}
+
+void
 xform_save (Xform *xf, const char* fn)
 {
     xf->save (fn);
