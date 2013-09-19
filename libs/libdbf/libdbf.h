@@ -320,7 +320,7 @@ int dbf_ReadRecord(P_DBF *p_dbf, char *record, int len);
 
 	\return number of records written, -1 on error
 */
-int dbf_WriteRecord(P_DBF *p_dbf, char *record, int len);
+int dbf_WriteRecord(P_DBF *p_dbf, const char *record, int len);
 
 /*! \fn int dbf_IsMemo(P_DBF *p_dbf)
 	\brief dbf_IsMemo tells if dbf provides also a memo file

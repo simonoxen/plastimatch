@@ -558,7 +558,7 @@ int dbf_ReadRecord(P_DBF *p_dbf, char *record, int len) {
 
 /* dbf_WriteRecord() {{{
  */
-int dbf_WriteRecord(P_DBF *p_dbf, char *record, int len) {
+int dbf_WriteRecord(P_DBF *p_dbf, const char *record, int len) {
 
 	if(len != p_dbf->header->record_length-1) {
 		fprintf(stderr, _("Length of record mismatches expected length (%d != %d)."), len, p_dbf->header->record_length);
