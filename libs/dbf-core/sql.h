@@ -17,7 +17,7 @@
 #ifndef _SQL_H_
 #define _SQL_H_
 
-#include "dbf.h"
+#include "libdbf.h"
 
 int setNoDrop (FILE *fp, P_DBF *p_dbf,
     const char *input, const char *separator);

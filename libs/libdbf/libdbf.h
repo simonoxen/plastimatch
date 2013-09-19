@@ -20,6 +20,7 @@
 #define __LIBDBF_H__
 
 #include <sys/types.h>
+#include "dbf.h"
 
 /*! \file libdbf.h
 	\brief provides access to libdbf.
@@ -87,14 +88,6 @@
 	which returns it if the dBASE file could be successfully opened.
 */
 typedef struct _P_DBF P_DBF;
-
-/*! \brief Structure to store specification for one field
-
-  A pointer of type DB_FIELD is passed to \ref dbf_Create and
-	\ref dbf_CreateFH.
-*/
-typedef struct _DB_FIELD DB_FIELD;
-#define SIZE_OF_DB_FIELD 32
 
 /*
  *	FUNCTIONS

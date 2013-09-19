@@ -20,8 +20,6 @@
 #ifndef __DBF_CORE__
 #define __DBF_CORE__
 
-#include <libdbf.h>
-
 #ifdef ENABLE_NLS
 #include <libintl.h>
 #define _(a) dgettext(GETTEXT_PACKAGE, a)
@@ -42,6 +40,7 @@
 #include <io.h>
 #include <sys\stat.h>
 #include <windows.h>
+#include <fcntl.h>
 #ifndef __ANUBISNET_TYPES__
 #define __ANUBISNET_TYPES__
 	typedef UINT32 u_int32_t;
@@ -140,6 +139,13 @@ struct _DB_FIELD {
 	/*! Byte: 31; Production MDX field flag */
 	unsigned char mdx;
 };
+/*! \brief Structure to store specification for one field
+
+  A pointer of type DB_FIELD is passed to \ref dbf_Create and
+	\ref dbf_CreateFH.
+*/
+typedef struct _DB_FIELD DB_FIELD;
+#define SIZE_OF_DB_FIELD 32
 
 /*! \struct P_DBF
 	\brief P_DBF is a global file handler

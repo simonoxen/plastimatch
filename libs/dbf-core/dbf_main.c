@@ -19,8 +19,10 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <libgen.h>
 #include <assert.h>
+#if __unix__
+#include <libgen.h>
+#endif
 #include "dbf_main.h"
 #include "statistic.h"
 #include "csv.h"
@@ -447,6 +449,26 @@ usage(const char *pname)
 	exit(1);
 }
 /* }}} */
+
+#if WIN32
+/* Crude approximation to POSIX basename().  GCS 2013-09-19 */
+char *basename (char* path)
+{
+    char *p = path;
+    char *path_sep = 0;
+    while (*p) {
+	if (*p == '/' || *p == ':' || *p == '\\') {
+	    path_sep = p;
+	}
+	p++;
+    }
+    if (path_sep) {
+	*path_sep = 0;
+	return path_sep ++;
+    }
+    return path;
+}
+#endif
 
 /* main() {{{
  */

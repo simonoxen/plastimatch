@@ -11,7 +11,7 @@
 #ifndef _DBF_STATS_
 #define _DBF_STATS_
 #include "congraph.h"
-#include "dbf.h"
+#include "libdbf.h"
 
 static const char *get_db_version (int version);
 void dbf_file_info (P_DBF *p_dbf);
