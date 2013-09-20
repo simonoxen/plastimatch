@@ -80,6 +80,12 @@ Rt_study_metadata::load (const char* dicom_path)
     return rsm;
 }
 
+Rt_study_metadata::Pointer
+Rt_study_metadata::load (const std::string& dicom_path)
+{
+    return Rt_study_metadata::load (dicom_path.c_str());
+}
+
 const char*
 Rt_study_metadata::get_ct_series_uid () const
 {

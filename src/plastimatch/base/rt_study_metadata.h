@@ -28,6 +28,7 @@ public:
     Rt_study_metadata ();
     ~Rt_study_metadata ();
 public:
+    static Rt_study_metadata::Pointer load (const std::string& dicom_path);
     static Rt_study_metadata::Pointer load (const char* dicom_path);
 public:
     const char* get_ct_series_uid () const;

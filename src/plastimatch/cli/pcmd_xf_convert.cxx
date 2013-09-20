@@ -5,10 +5,13 @@
 #include <stdlib.h>
 
 #include "bspline_xform.h"
+#include "dcmtk_sro.h"
+#include "logfile.h"
 #include "pcmd_xf_convert.h"
 #include "plm_clp.h"
 #include "print_and_exit.h"
 #include "pstring.h"
+#include "rt_study_metadata.h"
 #include "volume_header.h"
 #include "xform.h"
 #include "xform_convert.h"
@@ -126,8 +129,26 @@ do_xf_convert (Xf_convert_parms *parms)
     if (!parms->output_fn.empty()) {
         xfc->m_xf_out->save (parms->output_fn);
     }
+
+    /* Save output dicom */
     if (!parms->output_dicom_dir.empty()) {
-        /* GCS FIX: Do something */
+        /* Load referenced image sets */
+#if PLM_DCM_USE_DCMTK
+        Rt_study_metadata::Pointer rtm_src;
+        Rt_study_metadata::Pointer rtm_reg;
+        
+        if (!parms->source_rcs.empty()) {
+            lprintf ("Loading source...\n");
+            rtm_src = Rt_study_metadata::load (parms->source_rcs);
+        }
+        if (!parms->registered_rcs.empty()) {
+            lprintf ("Loading registered...\n");
+            rtm_reg = Rt_study_metadata::load (parms->registered_rcs);
+        }
+
+        Dcmtk_sro::save (
+            xfc->m_xf_out, rtm_src, rtm_reg, parms->output_dicom_dir);
+#endif
     }
 }
 
@@ -188,11 +209,11 @@ parse_fn (
     /* Handle --help, --version */
     parser->check_default_options ();
 
-    /* Input location */
+    /* Input files */
     parser->check_required ("input");
     parms->input_fn = parser->get_string("input").c_str();
 
-    /* Output location */
+    /* Output files */
     if (parser->option ("output")) {
         parms->output_fn = parser->get_string("output");
     }
@@ -203,6 +224,10 @@ parse_fn (
         throw (dlib::error ("Error.  You must specify either the --output "
                 "or the --output-dicom option"));
     }
+
+    /* DICOM spatial registration */
+    parms->source_rcs = parser->get_string("source-rcs");
+    parms->registered_rcs = parser->get_string("registered-rcs");
 
     Xform_convert *xfc = &parms->xfc;
 
