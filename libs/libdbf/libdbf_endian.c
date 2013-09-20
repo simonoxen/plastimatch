@@ -10,7 +10,7 @@
  * $Id: endian.c,v 1.3 2004/09/09 10:32:22 steinm Exp $
  ****************************************************************************/
 
-#include "endian.h"
+#include "libdbf_endian.h"
 
 /*******************************************************************
  * Changes byte construction if dbf is used on another platform

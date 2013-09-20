@@ -11,8 +11,8 @@
  * $Id: endian.h,v 1.2 2004/09/09 10:32:22 steinm Exp $
  ***************************************************************************/
 
-#ifndef __ENDIAN_H__
-#define __ENDIAN_H__
+#ifndef __LIBDBF_ENDIAN_H__
+#define __LIBDBF_ENDIAN_H__
 
 /*
  * I N C L U D E S

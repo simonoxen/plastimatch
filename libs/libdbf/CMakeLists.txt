@@ -12,8 +12,8 @@ include_directories ("${DBF_INCLUDE_DIR}")
 set (DBF_SRC
   dbf.c
   dbf.h
-  endian.c
-  endian.h
+  libdbf_endian.c
+  libdbf_endian.h
 )
 
 plm_add_static_library (dbf "${DBF_SRC}" "" "" "")
