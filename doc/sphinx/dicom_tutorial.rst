@@ -64,6 +64,19 @@ The data in this group is called the meta-information header.
 Explanation of the meta information header is described in 
 section 10 of the standard.
 
+Attribute types
+~~~~~~~~~~~~~~~
+Attributes can be required, conditionally requried, or optional.
+The attribute type tells us which of these holds.
+
+- 1 Required, cannot be empty
+- 1C Conditionally required, cannot be empty
+- 2 Required, can be empty
+- 2C Conditionally required, can be empty
+- 3 Optional
+
+I still don't know which section of the standard explains this.
+
 DICOM RT
 ~~~~~~~~
 These are extra IODs (information objects) defined in the DICOM standard: 

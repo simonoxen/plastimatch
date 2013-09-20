@@ -280,6 +280,7 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
     dcmtk_copy_from_metadata (dataset, rtss_metadata, 
         DCM_SeriesDescription, "");
     dataset->putAndInsertString (DCM_ManufacturerModelName, "Plastimatch");
+
     dcmtk_copy_from_metadata (dataset, rtss_metadata, DCM_PatientName, "");
     dcmtk_copy_from_metadata (dataset, rtss_metadata, DCM_PatientID, "");
     dataset->putAndInsertString (DCM_PatientBirthDate, "");

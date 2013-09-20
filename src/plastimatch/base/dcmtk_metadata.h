@@ -8,6 +8,8 @@
 
 class DcmDataset;
 class DcmTagKey;
+
+class Dcmtk_file;
 class Metadata;
 
 void
