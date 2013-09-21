@@ -6,13 +6,14 @@
 
 #include "plmbase_config.h"
 #include <string>
+#include "rt_study_metadata.h"
 
 class DcmDataset;
-class Metadata;
 
 class PLMBASE_API Dcmtk_module_general_study {
 public:
-    static void set (DcmDataset *dataset, const Metadata* meta);
+    static void set (DcmDataset *dataset, 
+        const Rt_study_metadata::Pointer& rsm);
 };
 
 #endif

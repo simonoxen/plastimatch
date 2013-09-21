@@ -133,6 +133,7 @@ if (DCMTK_FOUND)
     dcmtk_image.cxx
     dcmtk_loader.cxx
     dcmtk_metadata.cxx
+    dcmtk_module_general_series.cxx
     dcmtk_module_general_study.cxx
     dcmtk_module_patient.cxx
     dcmtk_rdd.cxx

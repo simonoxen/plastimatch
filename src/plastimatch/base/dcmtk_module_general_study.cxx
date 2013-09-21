@@ -11,18 +11,19 @@
 #include "metadata.h"
 
 void
-Dcmtk_module_general_study::set (DcmDataset *dataset, const Metadata* meta)
+Dcmtk_module_general_study::set (
+    DcmDataset *dataset, 
+    const Rt_study_metadata::Pointer& rsm)
 {
     /* These are stored in Dcmtk_rt_study class */
-#if defined (commentout)
     dataset->putAndInsertString (DCM_StudyInstanceUID, 
-        d_ptr->dicom_metadata->get_study_uid());
+        rsm->get_study_uid());
     dataset->putAndInsertOFStringArray (DCM_StudyDate, 
-        d_ptr->dicom_metadata->get_study_date());
+        rsm->get_study_date());
     dataset->putAndInsertOFStringArray (DCM_StudyTime, 
-        d_ptr->dicom_metadata->get_study_time());
+        rsm->get_study_time());
     dataset->putAndInsertString (DCM_ReferringPhysicianName, "");
-    dcmtk_copy_from_metadata (dataset, rtss_metadata, DCM_StudyID, "10001");
+    dcmtk_copy_from_metadata (dataset, rsm->get_study_metadata(), 
+        DCM_StudyID, "");
     dataset->putAndInsertOFStringArray (DCM_AccessionNumber, "");
-#endif
 }

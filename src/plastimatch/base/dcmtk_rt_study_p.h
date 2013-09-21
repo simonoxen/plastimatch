@@ -26,7 +26,6 @@ public:
     char study_uid[100];
     std::vector<Dcmtk_slice_data>* slice_data;
 
-    
     Dcmtk_series *ds_rtdose;
     Dcmtk_series *ds_rtss;
 
