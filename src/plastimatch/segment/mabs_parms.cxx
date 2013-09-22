@@ -39,7 +39,8 @@ Mabs_parms::Mabs_parms ()
     this->min_random_atlases = 4;
     this->max_random_atlases = 12;
     this->precomputed_ranking_fn = "";
-    this->atlases_from_precomputed_ranking = 5;
+    this->atlases_from_precomputed_ranking = 0;
+    this->atlases_from_precomputed_ranking_defined = false;
 	
     this->sman = new Mabs_subject_manager;
     this->debug = false;
@@ -182,6 +183,7 @@ Mabs_parms::set_key_val (
         }
          else if (key == "atlases_from_precomputed_ranking") {
             sscanf (val.c_str(), "%d", &this->atlases_from_precomputed_ranking);
+            this->atlases_from_precomputed_ranking_defined = true;
         }
         else {
             goto error_exit;

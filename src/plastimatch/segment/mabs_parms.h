@@ -48,6 +48,7 @@ public:
     int max_random_atlases;
     std::string precomputed_ranking_fn;
     int atlases_from_precomputed_ranking;
+    bool atlases_from_precomputed_ranking_defined;
     
     /* [TRAINING] */
     std::string atlas_dir;

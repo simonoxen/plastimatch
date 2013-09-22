@@ -364,8 +364,9 @@ Mabs_atlas_selection::precomputed_ranking() /* Just for testing purpose */
         /* Split a line using the spaces */
         while(std::getline(atlases_line_stream, item, ' ')) {
 
-            /* Select the first n atlases from the ranking */
-            if ((int) this->selected_atlases.size() >=
+            /* If defined select the first n atlases from the ranking */
+            if (this->atlas_selection_parms->atlases_from_precomputed_ranking_defined &&
+                (int) this->selected_atlases.size() >=
                 this->atlas_selection_parms->atlases_from_precomputed_ranking) {
                 break;
             }
