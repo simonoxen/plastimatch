@@ -185,6 +185,21 @@ specific parameters are available.
      - boolean
      - specify whether or not to equalize intensity histograms before 
        registration
+   * - num_hist_levels_equal
+     - vf+demons+itk
+     - 1000
+     - unsigned int
+     - set number of histogram levels for histogram equalization
+   * - num_matching_points
+     - vf+demons+itk
+     - 500
+     - unsigned int
+     - set number of histogram levels for histogram equalization
+   * - thresh_mean_intensity
+     - vf+demons+itk
+     - 0
+     - boolean
+     - Set the threshold at mean intensity flag. If true, only source (reference) pixels which are greater than the mean source (reference) intensity is used in the histogram matching. If false, all pixels are used.
    * - grad_tol
      - any+{lbfgs}+itk
      - 1.5

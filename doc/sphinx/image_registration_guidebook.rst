@@ -145,6 +145,17 @@ The following example illustrates the use of the ITK demons::
   #instability in this case. 
   demons_step_length=1;
 
+  #Flag to turn on/off histogram equalization
+  histo_equ=0
+  #Number of histogram levels used for histogram equalization
+  num_hist_levels=100
+  #Number of matching points used for histogram equalization
+  num_matching_points=10
+  #Flag to turn on /off threshold at mean intensity. If true, only source (reference) pixels which are
+  #greater than the mean source (reference) intensity is used in the histogram matching. If false, all 
+  #pixels are used.
+  thresh_mean_intensity=1
+
   max_its=30
   res=4 4 2
 
