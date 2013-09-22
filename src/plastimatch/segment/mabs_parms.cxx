@@ -38,6 +38,8 @@ Mabs_parms::Mabs_parms ()
     this->upper_mi_value = 0;
     this->min_random_atlases = 4;
     this->max_random_atlases = 12;
+    this->precomputed_ranking_fn = "";
+    this->atlases_from_precomputed_ranking = 5;
 	
     this->sman = new Mabs_subject_manager;
     this->debug = false;
@@ -145,7 +147,10 @@ Mabs_parms::set_key_val (
             else if (val == "random" || val == "RANDOM") { // Just for testing purpose
                 this->atlas_selection_criteria="random";
             }
-        }
+            else if (val == "precomputed" || val == "PRECOMPUTED") { // Just for testing purpose
+                this->atlas_selection_criteria="precomputed";
+            }
+       }
         else if (key == "mi_percent_threshold") {
             sscanf (val.c_str(), "%g", &this->mi_percent_threshold);
         }
@@ -172,7 +177,13 @@ Mabs_parms::set_key_val (
         else if (key == "max_random_atlases") {
             sscanf (val.c_str(), "%d", &this->max_random_atlases);
         }
-       else {
+        else if (key == "precomputed_ranking") {
+            this->precomputed_ranking_fn = val;
+        }
+         else if (key == "atlases_from_precomputed_ranking") {
+            sscanf (val.c_str(), "%d", &this->atlases_from_precomputed_ranking);
+        }
+        else {
             goto error_exit;
         }
     }

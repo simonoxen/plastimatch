@@ -81,6 +81,9 @@ public:
     Rt_study::Pointer ref_rtds;
     std::list<std::string> atlas_list;
 
+    /* Select atlas parameters */
+    std::map<std::string,  std::list<std::pair<std::string, double> > > selected_atlases;
+
     /* Prealign parameters */
     bool prealign_resample;
     float prealign_spacing[3];
@@ -113,6 +116,7 @@ public:
     std::map<std::string, Mabs_vote*> vote_map;
 
     /* Store timing information for performance evaluation */
+    double time_atlas_selection;
     double time_dice;
     double time_dmap;
     double time_extract;
@@ -144,6 +148,7 @@ public:
         ref_rtds = Rt_study::New ();
     }
     void reset_timers () {
+        time_atlas_selection = 0;
         time_dice = 0;
         time_dmap = 0;
         time_extract = 0;
@@ -351,6 +356,10 @@ Mabs::sanity_checks ()
 void
 Mabs::load_process_dir_list (const std::string& dir)
 {
+    /* Clear process_dir_list to avoid multiple entries in case of multiple
+     * calls to this function */
+    d_ptr->process_dir_list.clear();
+
     Dir_list d (dir);
     for (int i = 0; i < d.num_entries; i++)
     {
@@ -685,6 +694,99 @@ Mabs::atlas_convert ()
     lprintf ("Rasterization time:   %10.1f seconds\n", d_ptr->time_extract);
     lprintf ("I/O time:             %10.1f seconds\n", d_ptr->time_io);
     lprintf ("MABS prep complete\n");
+}
+
+void
+Mabs::atlas_selection ()
+{
+    /* Create and start timer */
+    Plm_timer timer;
+    timer.start();
+
+    /* Open log file for atlas selection */
+    std::string atlas_selection_log_file_name = string_format ("%s/log_atlas_seletion.txt",
+        "training-mgh");
+    FILE *atlas_selection_log_file = fopen (atlas_selection_log_file_name.c_str(), "w");
+    
+    if (atlas_selection_log_file == NULL)
+    {
+        printf("Error opening file!\n");
+        exit(1);
+    }
+
+   /* Parse atlas directory */
+    this->load_process_dir_list (d_ptr->prealign_dir);
+    
+    /* Loop through atlas_dir, choosing reference images to segment */
+    for (std::list<std::string>::iterator it = d_ptr->process_dir_list.begin();
+         it != d_ptr->process_dir_list.end(); it++)
+    {
+        /* Create atlas list for this test case */
+        std::string path = *it;
+        d_ptr->atlas_list = d_ptr->process_dir_list;
+        d_ptr->atlas_list.remove (path);
+
+        std::string patient_id = basename (path);
+        d_ptr->ref_id = patient_id;
+        
+        /* Load image & structures from "prep" directory */
+        std::string fn = string_format ("%s/%s/img.nrrd", 
+            d_ptr->prealign_dir.c_str(), patient_id.c_str());
+        d_ptr->ref_rtds->load_image (fn.c_str());
+        
+        /* Create object and set the parameters */
+        Mabs_atlas_selection* select_atlas = new Mabs_atlas_selection();
+        select_atlas->subject = d_ptr->ref_rtds->get_image();
+        select_atlas->subject_id = patient_id;
+        select_atlas->atlas_dir_list = d_ptr->process_dir_list;
+        select_atlas->number_of_atlases 
+            = (int) d_ptr->process_dir_list.size();
+        select_atlas->atlas_selection_parms = d_ptr->parms;
+        
+        /* Write into the log file preliminary information about the selection process */
+        fprintf(atlas_selection_log_file,
+            "Patient = %s, initial atlases = %d, selection criteria = %s \n",
+            select_atlas->subject_id.c_str(),
+            select_atlas->number_of_atlases,
+            select_atlas->atlas_selection_parms->atlas_selection_criteria.c_str());
+        
+        /* Run selection */
+        select_atlas->run_selection();
+        
+        /* Print into the log file information about the selection process */
+        fprintf(atlas_selection_log_file,
+            "Selected atlases for patient %s: (%d) \n",
+            select_atlas->subject_id.c_str(),
+            (int) select_atlas->selected_atlases.size());
+       
+        for (std::list<std::pair<std::string, double> >::iterator it_selected_atlases =
+            select_atlas->selected_atlases.begin();
+            it_selected_atlases != select_atlas->selected_atlases.end();
+            it_selected_atlases++) {
+        
+            fprintf(atlas_selection_log_file,
+                "Atlas %s with score value equal to = %f \n",
+                it_selected_atlases->first.c_str(),
+                it_selected_atlases->second);
+        }
+         
+        fprintf(atlas_selection_log_file, "\n");
+        
+        /* Fill the map structure */
+        d_ptr->selected_atlases.insert(std::make_pair(select_atlas->subject_id,
+            select_atlas->selected_atlases));
+
+        /* Delete object */
+        delete select_atlas;
+    }
+
+    /* Close log file */
+    fclose(atlas_selection_log_file);
+
+    /* Stop timer */
+    d_ptr->time_atlas_selection += timer.report();
+
+    printf("Atlas selection done! \n");
 }
 
 void
@@ -1222,7 +1324,13 @@ Mabs::train_internal (bool registration_only)
 
     /* Parse atlas directory */
     this->load_process_dir_list (d_ptr->prealign_dir);
-    
+ 
+    /* If setted, run atlas selection */
+    if (d_ptr->parms->enable_atlas_selection)
+    {
+        this->atlas_selection();
+    }
+   
     /* Loop through atlas_dir, choosing reference images to segment */
     for (std::list<std::string>::iterator it = d_ptr->process_dir_list.begin();
          it != d_ptr->process_dir_list.end(); it++)
@@ -1250,40 +1358,22 @@ Mabs::train_internal (bool registration_only)
         d_ptr->ref_rtds->load_prefix (fn.c_str());
         d_ptr->time_io += timer.report();
         
-        /* Select atlases */
-        if (d_ptr->parms->enable_atlas_selection)
+        /* Use the atlases coming from the selection step */
+        if (!d_ptr->selected_atlases.empty())
         {
-            Mabs_atlas_selection* select_atlas = new Mabs_atlas_selection();
-            
-            select_atlas->subject = d_ptr->ref_rtds->get_image();
-            select_atlas->subject_id = patient_id;
-            select_atlas->atlas_dir_list = d_ptr->process_dir_list;
-            select_atlas->number_of_atlases 
-                = (int) d_ptr->process_dir_list.size();
-            select_atlas->atlas_selection_parms = d_ptr->parms;
-	        
-            logfile_printf("Patient = %s, initial atlases = %d, selection criteria = %s \n",
-                select_atlas->subject_id.c_str(),
-                select_atlas->number_of_atlases,
-                select_atlas->atlas_selection_parms->atlas_selection_criteria.c_str());
-            
-            select_atlas->run_selection();
-            
-            d_ptr->atlas_list.assign (select_atlas->selected_atlases.begin(), 
-                select_atlas->selected_atlases.end());
-            
-            logfile_printf("Selected atlases for patient %s: (%d) \n",
-                select_atlas->subject_id.c_str(),
-                (int) d_ptr->atlas_list.size());
-
-            for (std::list<std::string>::iterator it_selected_atlases = d_ptr->atlas_list.begin();
-                it_selected_atlases != d_ptr->atlas_list.end(); it_selected_atlases++) {
-                
-                logfile_printf("Atlas %s \n", it_selected_atlases->c_str());
-
+            /* Extract from map structure only the atlases choosen for the current patient*/
+            std::list<std::string> atlases_for_subject;
+            std::list<std::pair<std::string, double> >::iterator atl_it;
+            for (atl_it = d_ptr->selected_atlases[patient_id].begin();
+                atl_it != d_ptr->selected_atlases[patient_id].end(); atl_it++)
+            {
+                std::string complete_atlas_path = string_format("%s/%s",
+                    d_ptr->prealign_dir.c_str(), atl_it->first.c_str());
+                atlases_for_subject.push_back(complete_atlas_path);
             }
-
-            delete select_atlas;
+            
+            /* Assign the selected atlases */
+            d_ptr->atlas_list = atlases_for_subject;
         }
 
         /* Run the segmentation */
@@ -1293,6 +1383,7 @@ Mabs::train_internal (bool registration_only)
         }
     }
 
+    lprintf ("Atlas selection time: %10.1f seconds\n", d_ptr->time_atlas_selection);
     lprintf ("Registration time:    %10.1f seconds\n", d_ptr->time_reg);
     lprintf ("Warping time (img):   %10.1f seconds\n", d_ptr->time_warp_img);
     lprintf ("Warping time (str):   %10.1f seconds\n", d_ptr->time_warp_str);

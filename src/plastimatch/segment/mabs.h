@@ -40,6 +40,7 @@ public:
     void set_parms (const Mabs_parms *parms);
     void parse_registration_dir (const std::string registration_config);
 
+    void atlas_selection ();
     void atlas_convert ();
     void atlas_prealign ();
     void train_registration ();

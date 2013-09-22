@@ -46,6 +46,8 @@ public:
     int upper_mi_value;
     int min_random_atlases;
     int max_random_atlases;
+    std::string precomputed_ranking_fn;
+    int atlases_from_precomputed_ranking;
     
     /* [TRAINING] */
     std::string atlas_dir;

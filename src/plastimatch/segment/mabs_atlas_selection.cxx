@@ -3,8 +3,10 @@
    ----------------------------------------------------------------------- */
 #include "plmsegment_config.h"
 
-#include <stdlib.h>
+#include <fstream>
+#include <iostream>
 #include <iterator>
+#include <stdlib.h>
 
 #include "itkImage.h"
 #include "itkImageFileReader.h"
@@ -55,6 +57,11 @@ Mabs_atlas_selection::run_selection()
     else if (this->atlas_selection_parms->atlas_selection_criteria == "random")
     {
         this->random_ranking ();
+    }
+
+    else if (this->atlas_selection_parms->atlas_selection_criteria == "precomputed")
+    {
+        this->precomputed_ranking ();
     }
 
 }
@@ -141,7 +148,7 @@ Mabs_atlas_selection::nmi_ranking()
     printf("Maximum similarity value = %g \n", max_similarity_value);
 	
     /* Find atlas to include in the registration */
-    std::list<std::string> most_similar_atlases;
+    std::list<std::pair<std::string, double> > most_similar_atlases;
     std::list<std::string>::iterator reg_it;
     printf("List of the selected atlases: \n");
     for (reg_it = this->atlas_dir_list.begin(), i=0; 
@@ -151,7 +158,7 @@ Mabs_atlas_selection::nmi_ranking()
         if (similarity_value_vector[i] >=
             (((max_similarity_value-min_similarity_value) * this->atlas_selection_parms->mi_percent_threshold) + min_similarity_value))
     	{
-            most_similar_atlases.push_front(*reg_it);
+            most_similar_atlases.push_back(std::make_pair(atlas, (double) similarity_value_vector[i]));
             printf("Atlas %s having similarity value = %f \n", atlas.c_str(), similarity_value_vector[i]);
         }
     }
@@ -321,10 +328,74 @@ Mabs_atlas_selection::random_ranking() /* Just for testing purpose */
             i++;
             std::string atlas = basename(*atlases_iterator);
             printf("Atlas number %d is %s \n", i, atlas.c_str());
-            random_atlases.push_front(*atlases_iterator);
-        }
+            random_atlases.push_front(atlas);
+        } 
     }
-
-    this->selected_atlases = random_atlases;
+    
+    /* Fill this->selected_atlas */
+    std::list<std::string>::iterator atl_it;
+    for (atl_it = random_atlases.begin(); 
+        atl_it != random_atlases.end(); atl_it++)
+    {
+        this->selected_atlases.push_back(std::make_pair(*atl_it, 0.0));
+    }
+ 
 }
 
+
+void
+Mabs_atlas_selection::precomputed_ranking() /* Just for testing purpose */
+{
+    /* Open the file where is stored the precomputed ranking*/
+    std::ifstream ranking_file (this->atlas_selection_parms->precomputed_ranking_fn.c_str());
+    
+    std::string atlases_line;
+
+    /* Read line by line*/
+    while(std::getline(ranking_file, atlases_line)) {
+      
+        std::istringstream atlases_line_stream (atlases_line);
+        std::string item;
+        
+        /* item_index is equal to 0 for the first element in the line (the subject id) and
+         * greater than 0 for the atlases */
+        int item_index = -1;
+
+        /* Split a line using the spaces */
+        while(std::getline(atlases_line_stream, item, ' ')) {
+
+            /* Select the first n atlases from the ranking */
+            if ((int) this->selected_atlases.size() >=
+                this->atlas_selection_parms->atlases_from_precomputed_ranking) {
+                break;
+            }
+            
+            item_index++;
+            
+            /* Delete space, colon and equals sign from single item name */
+            char chars_to_remove [] = " :=";
+            for (unsigned int i = 0; i < strlen(chars_to_remove); i++) {
+                item.erase(std::remove(item.begin(), item.end(), chars_to_remove[i]), item.end());
+            }
+
+            /* First element in the line is the subject */
+            if (item_index == 0) {
+
+                /* This row doesn't contain data regarding the current subject, jump it */
+                if (item != this->subject_id) break; 
+                 
+                /* This row contains the data regarding the current subject,
+                 * jump just the subject id */
+                else if (item == this->subject_id) continue;
+            }
+            
+            /* After the first element there are the selected atlases */
+            else {
+                this->selected_atlases.push_back(std::make_pair(item, 0.0));
+            }
+        }
+    }
+    
+    /* Close log file */    
+    ranking_file.close();
+}

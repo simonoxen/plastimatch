@@ -12,12 +12,14 @@
 class Mabs_parms_pcmd {
 public:
     Pstring cmd_file_fn;
+    bool atlas_selection;
     bool convert;
     bool prealign;
     bool train_registration;
     bool train;
 public:
     Mabs_parms_pcmd () {
+        atlas_selection = false;
         convert = false;
         prealign = false;
         train = false;
@@ -46,6 +48,8 @@ parse_fn (
     parser->add_default_options ();
 
     /* Parameters */
+    parser->add_long_option ("", "atlas-selection", 
+        "run just atlas selection", 0);
     parser->add_long_option ("", "convert", 
         "pre-process atlas", 0);
     parser->add_long_option ("", "pre-align", 
@@ -73,6 +77,9 @@ parse_fn (
     parms->cmd_file_fn = (*parser)[0].c_str();
 
     /* Parameters */
+    if (parser->have_option ("atlas-selection")) {
+        parms->atlas_selection = true;
+    }
     if (parser->have_option ("convert")) {
         parms->convert = true;
     }
@@ -99,7 +106,10 @@ do_command_mabs (int argc, char *argv[])
 
     Mabs mabs;
     mabs.set_parms (&mabs_parms);
-    if (parms.convert) {
+    if (parms.atlas_selection) {
+        mabs.atlas_selection ();
+    }
+    else if (parms.convert) {
         mabs.atlas_convert ();
     }
     else if (parms.prealign) {

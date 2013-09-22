@@ -28,6 +28,7 @@ public:
         const Plm_image::Pointer& img1, 
         const Plm_image::Pointer& img2);
     void random_ranking(); /* Just for testing purpose */
+    void precomputed_ranking(); /* Just for testing purpose */
 
 public:
     Plm_image::Pointer subject;
@@ -42,7 +43,7 @@ public:
     int min_value;
     bool max_value_defined;
     int max_value;
-    std::list<std::string> selected_atlases;
+    std::list<std::pair<std::string, double> > selected_atlases;
 };
 
 #endif /* #ifndef _mabs_atlases_selection_h_ */
