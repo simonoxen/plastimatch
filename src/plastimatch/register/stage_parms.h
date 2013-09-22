@@ -133,12 +133,18 @@ public:
     float mi_fixed_image_maxVal;
     float mi_moving_image_minVal;
     float mi_moving_image_maxVal;
-    /* ITK & GPUIT demons */
+    /* ITK (& GPUIT) demons */
     float demons_std;
     float demons_std_update_field;
     float demons_step_length;
     bool demons_smooth_update_field, demons_smooth_deformation_field;
     unsigned int num_approx_terms_log_demons;
+    bool histoeq;         // histogram matching flag
+    bool thresh_mean_intensity;
+    unsigned int num_matching_points;
+    unsigned int num_hist_levels;
+
+
     Demons_gradient_type demons_gradient_type;
     /* GPUIT demons */
     float demons_acceleration;
@@ -150,7 +156,6 @@ public:
     int num_grid[3];     // number of grid points in x,y,z directions
     float grid_spac[3];  // absolute grid spacing in mm in x,y,z directions
     int grid_method;     // num control points (0) or absolute spacing (1)
-    int histoeq;         // histogram matching flag on (1) or off (0)
     /* Landmarks */
     float landmark_stiffness; //strength of attraction between landmarks
     char landmark_flavor;

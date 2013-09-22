@@ -104,7 +104,10 @@ Stage_parms::Stage_parms ()
     grid_spac[1] = 20.;
     grid_spac[2] = 20.; 
     grid_method = 1;     // by default goes to the absolute spacing
-    histoeq = 0;         // by default, don't do it
+    histoeq = false;         // by default, don't do it
+    thresh_mean_intensity=false;
+    num_matching_points=500;
+    num_hist_levels=1000;
     /* Landmarks */
     landmark_stiffness = 1.0;
     landmark_flavor = 'a';
@@ -195,6 +198,9 @@ Stage_parms::Stage_parms (const Stage_parms& s)
     grid_spac[2] = s.grid_spac[2];
     grid_method = s.grid_method;
     histoeq = s.histoeq;
+    thresh_mean_intensity= s.thresh_mean_intensity;
+    num_matching_points= s.num_matching_points;
+    num_hist_levels= s.num_hist_levels;
     /* Landmarks */
     landmark_stiffness = s.landmark_stiffness;
     landmark_flavor = s.landmark_flavor;

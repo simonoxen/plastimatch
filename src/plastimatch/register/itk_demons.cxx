@@ -13,6 +13,7 @@
 #include "itk_demons_util.h"
 #include "itk_demons_registration_filter.h"
 #include "itk_resample.h"
+#include "itkHistogramMatchingImageFilter.h"
 #include "logfile.h"
 #include "plm_image.h"
 #include "plm_timer.h"
@@ -23,9 +24,10 @@
 #include "itkPDEDeformableRegistrationWithMaskFilter.h"
 
 typedef itk::PDEDeformableRegistrationWithMaskFilter<FloatImageType,FloatImageType,DeformationFieldType>  PDEDeformableRegistrationFilterType;
-
 typedef itk::ImageMaskSpatialObject< 3 >                                                                  MaskType;
+typedef itk::HistogramMatchingImageFilter<FloatImageType,FloatImageType>                                  HistogramMatchingFilter;
 
+HistogramMatchingFilter::Pointer histo_equ;
 PDEDeformableRegistrationFilterType::Pointer m_filter;
 
 class Demons_Observer : public itk::Command
@@ -139,8 +141,20 @@ do_demons_stage_internal (Registration_data* regd,
         stage->moving_subsample_rate[2],
         stage->default_value);
 
+    if(stage->histoeq)
+      {
+        histo_equ=HistogramMatchingFilter::New();
+        histo_equ->SetInput(moving_ss);
+        histo_equ->SetReferenceImage(fixed_ss);
+        histo_equ->SetNumberOfHistogramLevels(stage->num_hist_levels);
+        histo_equ->SetNumberOfMatchPoints(stage->num_matching_points);
+        m_filter->SetMovingImage (histo_equ->GetOutput());
+      }
+    else
+      m_filter->SetMovingImage (moving_ss);
+
     m_filter->SetFixedImage (fixed_ss);
-    m_filter->SetMovingImage (moving_ss);
+
     /* Get vector field of matching resolution */
     if (xf_in->m_type != STAGE_TRANSFORM_NONE) {
 	xform_to_itk_vf (xf_out, xf_in, fixed_ss);
@@ -160,7 +174,11 @@ do_demons_stage_internal (Registration_data* regd,
     m_filter->Update();
     printf ("Done with registration.  Writing output...\n");
 
-    xf_out->set_itk_vf (m_filter->GetOutput());
+    DeformationFieldType::Pointer output_field=m_filter->GetOutput();
+    output_field->DisconnectPipeline();
+
+    xf_out->set_itk_vf (output_field);
+    histo_equ=NULL;
 }
 
 void

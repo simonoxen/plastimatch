@@ -666,7 +666,7 @@ Registration_parms::set_key_val (
     }
     else if (!strcmp (key, "num_approx_terms_log_demons")) {
         if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g", &stage->demons_homogenization) != 1) {
+        if (sscanf (val, "%d", &stage->num_approx_terms_log_demons) != 1) {
             goto error_exit;
         }
     }
@@ -762,9 +762,31 @@ Registration_parms::set_key_val (
         }
         stage->grid_method = 1;
     }
-    else if (!strcmp (key, "histoeq")) {
+    else if (!strcmp (key, "histo_equ")) {
         if (section == 0) goto error_not_global;
-        if (sscanf (val, "%d", &(stage->histoeq)) != 1) {
+        if (!strcmp (val, "1")) {
+            stage->histoeq = true;
+        }
+        else
+           stage->histoeq= false;
+    }
+    else if (!strcmp (key, "thresh_mean_intensity")) {
+        if (section == 0) goto error_not_global;
+        if (!strcmp (val, "1")) {
+            stage->thresh_mean_intensity = true;
+        }
+        else
+           stage->thresh_mean_intensity= false;
+    }
+    else if (!strcmp (key, "num_hist_levels")) {
+        if (section == 0) goto error_not_global;
+        if (sscanf (val, "%d", &stage->num_hist_levels) != 1) {
+            goto error_exit;
+        }
+    }
+    else if (!strcmp (key, "num_matching_points")) {
+        if (section == 0) goto error_not_global;
+        if (sscanf (val, "%d", &stage->num_matching_points) != 1) {
             goto error_exit;
         }
     }
