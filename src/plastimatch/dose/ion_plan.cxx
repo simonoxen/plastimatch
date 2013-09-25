@@ -71,7 +71,13 @@ Ion_plan::init ()
 
     /* Scan through aperture to fill in rpl_volume */
     this->rpl_vol->set_ct_volume (d_ptr->patient);
-    this->rpl_vol->compute_rpl ();
+
+    if (this->beam->get_flavor() == 'e') {
+//        this->rpl_vol->compute_rpl_ct ();
+        this->rpl_vol->compute_rpl ();
+    } else {
+        this->rpl_vol->compute_rpl ();
+    }
 
     return true;
 }
