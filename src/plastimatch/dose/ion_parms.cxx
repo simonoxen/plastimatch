@@ -499,8 +499,8 @@ Ion_parms::parse_args (int argc, char** argv)
     d_ptr->plan->set_patient (ct);
 
     /* set beam & aperture parameters */
-	d_ptr->plan->beam->set_flavor(this->flavor);
-	d_ptr->plan->beam->set_detail(this->detail);
+    d_ptr->plan->beam->set_flavor(this->flavor);
+    d_ptr->plan->beam->set_detail(this->detail);
     d_ptr->plan->beam->set_source_position (d_ptr->src);
     d_ptr->plan->beam->set_isocenter_position (d_ptr->isocenter);
     d_ptr->plan->get_aperture()->set_distance (d_ptr->ap_offset);
@@ -513,7 +513,7 @@ Ion_parms::parse_args (int argc, char** argv)
     d_ptr->plan->beam->set_proximal_margin (d_ptr->proximal_margin);
     d_ptr->plan->beam->set_distal_margin (d_ptr->distal_margin);
     d_ptr->plan->set_step_length (this->ray_step);
-	d_ptr->plan->set_debug (this->debug);
+    d_ptr->plan->set_debug (this->debug);
 
     /* handle pre-computed beam modifiers */
     if (d_ptr->target_fn == "") {
@@ -545,7 +545,7 @@ Ion_parms::parse_args (int argc, char** argv)
     d_ptr->plan->beam->set_proximal_margin (d_ptr->proximal_margin);
     d_ptr->plan->beam->set_distal_margin (d_ptr->distal_margin);
     
-	if (d_ptr->have_manual_peaks == true && d_ptr->have_prescription == false) {
+    if (d_ptr->have_manual_peaks == true && d_ptr->have_prescription == false) {
         /* Manually specified, so do not optimize */
         if (!d_ptr->plan->beam->generate ()) {
             return false;

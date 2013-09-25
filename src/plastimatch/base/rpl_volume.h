@@ -9,6 +9,7 @@
 #include "aperture.h"
 #include "ion_plan.h"
 #include "plm_image.h"
+#include "ray_trace_callback.h"
 
 
 class Proj_volume;
@@ -52,6 +53,7 @@ public:
     double get_min_wed ();
 
     void compute_rpl ();
+    void compute_rpl_ct ();
     void compute (Volume *ct_vol);
     Volume* create_wed_volume (Ion_plan *scene);
     void compute_wed_volume (Volume *wed_vol, Volume *in_vol, float background);
@@ -79,6 +81,7 @@ protected:
     void rpl_ray_trace (
         Volume *ct_vol,              /* I: CT volume */
         Ray_data *ray_data,          /* I: Pre-computed data for this ray */
+        Ray_trace_callback callback, /* I: Ray trace callback function */
         Volume_limit *vol_limit,     /* I: CT bounding region */
         const double *src,           /* I: @ source */
         double rc_thk,               /* I: range compensator thickness */
