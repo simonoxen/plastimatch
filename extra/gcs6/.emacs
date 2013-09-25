@@ -121,7 +121,7 @@
     . (
        (access-label               . -)
        (arglist-intro              . +)
-       ;;(arglist-cont-nonempty      . +)
+       (arglist-cont-nonempty      . +)
        (arglist-close              . 0)
        (inline-open                . 0)
        (innamespace                . 0)
