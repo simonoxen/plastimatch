@@ -32,10 +32,17 @@
 Mabs_atlas_selection::Mabs_atlas_selection ()
 {
     /* constructor */
-    atlas_selection_parms = NULL;
-    mask = NULL;
-    min_hist_sub_value_defined = false;
-    max_hist_sub_value_defined = false;
+    this->hist_bins = 100;
+    this->atlas_selection_parms = NULL;
+    this->mask = NULL;
+    this->min_hist_sub_value_defined = false;
+    this->min_hist_sub_value=0;
+    this->max_hist_sub_value_defined = false;
+    this->max_hist_sub_value=0;
+    this->min_hist_atl_value_defined = false;
+    this->min_hist_atl_value=0;
+    this->max_hist_atl_value_defined = false;
+    this->max_hist_atl_value=0;
 }
 
 
