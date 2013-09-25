@@ -39,10 +39,14 @@ public:
     const Mabs_parms* atlas_selection_parms;
     int hist_bins;
     MaskTypePointer mask;
-    bool min_value_defined;
-    int min_value;
-    bool max_value_defined;
-    int max_value;
+    bool min_hist_sub_value_defined;
+    int min_hist_sub_value;
+    bool max_hist_sub_value_defined;
+    int max_hist_sub_value;
+    bool min_hist_atl_value_defined;
+    int min_hist_atl_value;
+    bool max_hist_atl_value_defined;
+    int max_hist_atl_value;
     std::list<std::pair<std::string, double> > selected_atlases;
 };
 

@@ -40,10 +40,14 @@ public:
     int mi_histogram_bins;
     std::string roi_mask_fn;
     std::string nmi_ratio_registration_config_fn;
-    bool lower_mi_value_defined;
-    int lower_mi_value;
-    bool upper_mi_value_defined;
-    int upper_mi_value;
+    bool lower_mi_value_sub_defined;
+    int lower_mi_value_sub;
+    bool upper_mi_value_sub_defined;
+    int upper_mi_value_sub;
+    bool lower_mi_value_atl_defined;
+    int lower_mi_value_atl;
+    bool upper_mi_value_atl_defined;
+    int upper_mi_value_atl;
     int min_random_atlases;
     int max_random_atlases;
     std::string precomputed_ranking_fn;

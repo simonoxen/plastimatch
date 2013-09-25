@@ -34,8 +34,8 @@ Mabs_atlas_selection::Mabs_atlas_selection ()
     /* constructor */
     atlas_selection_parms = NULL;
     mask = NULL;
-    min_value_defined = false;
-    max_value_defined = false;
+    min_hist_sub_value_defined = false;
+    max_hist_sub_value_defined = false;
 }
 
 
@@ -72,14 +72,19 @@ Mabs_atlas_selection::nmi_ranking()
     lprintf("NMI RANKING \n");
 
     this->hist_bins = this->atlas_selection_parms->mi_histogram_bins;
-    this->min_value_defined = this->atlas_selection_parms->lower_mi_value_defined;
-    this->min_value = this->atlas_selection_parms->lower_mi_value;
-    this->max_value_defined = this->atlas_selection_parms->upper_mi_value_defined;
-    this->max_value = this->atlas_selection_parms->upper_mi_value;
+    this->min_hist_sub_value_defined = this->atlas_selection_parms->lower_mi_value_sub_defined;
+    this->min_hist_sub_value = this->atlas_selection_parms->lower_mi_value_sub;
+    this->max_hist_sub_value_defined = this->atlas_selection_parms->upper_mi_value_sub_defined;
+    this->max_hist_sub_value = this->atlas_selection_parms->upper_mi_value_sub;
+    this->min_hist_atl_value_defined = this->atlas_selection_parms->lower_mi_value_atl_defined;
+    this->min_hist_atl_value = this->atlas_selection_parms->lower_mi_value_atl;
+    this->max_hist_atl_value_defined = this->atlas_selection_parms->upper_mi_value_atl_defined;
+    this->max_hist_atl_value = this->atlas_selection_parms->upper_mi_value_atl;
 
     printf ("Number of initial atlases = %d \n", this->number_of_atlases);
     double* similarity_value_vector = new double[this->number_of_atlases];
     
+    /* Set the mask if defined */
     if (this->atlas_selection_parms->roi_mask_fn.compare("")!=0)
     {
        	Plm_image* mask_plm = plm_image_load (this->atlas_selection_parms->roi_mask_fn, PLM_IMG_TYPE_ITK_FLOAT);
@@ -109,14 +114,14 @@ Mabs_atlas_selection::nmi_ranking()
         /* subject compared with itself */
         if (!this->subject_id.compare(atlas_id))
         {
-	    similarity_value_vector[i]=-1;
+            similarity_value_vector[i]=-1;
        	}
 
         /* subject compared with atlas */
         else
         {
             lprintf("Similarity values %s - %s \n", this->subject_id.c_str(), atlas_id.c_str());
-	    similarity_value_vector[i] = this->compute_nmi_general_score();
+            similarity_value_vector[i] = this->compute_nmi_general_score();
         }
        
         delete rtds_atl;
@@ -130,8 +135,8 @@ Mabs_atlas_selection::nmi_ranking()
     {
         if (similarity_value_vector[i] > max_similarity_value)
         {
-	    max_similarity_value = similarity_value_vector[i];
-	}
+            max_similarity_value = similarity_value_vector[i];
+        }
     }
     
     /* Find min similarity value */
@@ -234,8 +239,8 @@ Mabs_atlas_selection::compute_nmi_ratio()
 
 double
 Mabs_atlas_selection::compute_nmi (
-    const Plm_image::Pointer& img1, 
-    const Plm_image::Pointer& img2)
+    const Plm_image::Pointer& img1, /* Subject */ 
+    const Plm_image::Pointer& img2) /* Atlas */
 {	
     /* Cost function */
     typedef float PixelComponentType;
@@ -261,23 +266,27 @@ Mabs_atlas_selection::compute_nmi (
     }
     
     /* Set histogram interval if defined */
-    if (this->min_value_defined)
+    if (this->min_hist_sub_value_defined &&
+        this->min_hist_atl_value_defined)
     {
         MetricType::MeasurementVectorType lower_bounds;
         #ifdef ITK4 
         lower_bounds.SetSize(2);
         #endif
-        lower_bounds.Fill(this->min_value);
+        lower_bounds.SetElement(0, this->min_hist_sub_value);
+        lower_bounds.SetElement(1, this->min_hist_atl_value);
         metric->SetLowerBound(lower_bounds);
     }
 
-    if (this->max_value_defined)
+    if (this->max_hist_sub_value_defined &&
+        this->max_hist_atl_value_defined)
     {
         MetricType::MeasurementVectorType upper_bounds;
         #ifdef ITK4 
         upper_bounds.SetSize(2);
         #endif
-        upper_bounds.Fill(this->max_value);
+        upper_bounds.SetElement(0, this->max_hist_sub_value);
+        upper_bounds.SetElement(1, this->max_hist_atl_value);
         metric->SetUpperBound(upper_bounds);
     }
     
@@ -352,7 +361,8 @@ Mabs_atlas_selection::precomputed_ranking() /* Just for testing purpose */
     std::string atlases_line;
 
     /* Read line by line*/
-    while(std::getline(ranking_file, atlases_line)) {
+    while(std::getline(ranking_file, atlases_line))
+    {
       
         std::istringstream atlases_line_stream (atlases_line);
         std::string item;
@@ -362,12 +372,14 @@ Mabs_atlas_selection::precomputed_ranking() /* Just for testing purpose */
         int item_index = -1;
 
         /* Split a line using the spaces */
-        while(std::getline(atlases_line_stream, item, ' ')) {
+        while(std::getline(atlases_line_stream, item, ' '))
+        {
 
             /* If defined select the first n atlases from the ranking */
             if (this->atlas_selection_parms->atlases_from_precomputed_ranking_defined &&
                 (int) this->selected_atlases.size() >=
-                this->atlas_selection_parms->atlases_from_precomputed_ranking) {
+                this->atlas_selection_parms->atlases_from_precomputed_ranking)
+            {
                 break;
             }
             
@@ -375,7 +387,8 @@ Mabs_atlas_selection::precomputed_ranking() /* Just for testing purpose */
             
             /* Delete space, colon and equals sign from single item name */
             char chars_to_remove [] = " :=";
-            for (unsigned int i = 0; i < strlen(chars_to_remove); i++) {
+            for (unsigned int i = 0; i < strlen(chars_to_remove); i++)
+            {
                 item.erase(std::remove(item.begin(), item.end(), chars_to_remove[i]), item.end());
             }
 
@@ -391,7 +404,8 @@ Mabs_atlas_selection::precomputed_ranking() /* Just for testing purpose */
             }
             
             /* After the first element there are the selected atlases */
-            else {
+            else
+            {
                 this->selected_atlases.push_back(std::make_pair(item, 0.0));
             }
         }

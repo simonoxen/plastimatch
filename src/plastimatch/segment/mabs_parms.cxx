@@ -32,10 +32,14 @@ Mabs_parms::Mabs_parms ()
     this->mi_histogram_bins = 100;
     this->roi_mask_fn = "";
     this->nmi_ratio_registration_config_fn = "";
-    this->lower_mi_value_defined=false;
-    this->lower_mi_value = 0;
-    this->upper_mi_value_defined=false;
-    this->upper_mi_value = 0;
+    this->lower_mi_value_sub_defined=false;
+    this->lower_mi_value_sub = 0;
+    this->upper_mi_value_sub_defined=false;
+    this->upper_mi_value_sub = 0;
+    this->lower_mi_value_atl_defined=false;
+    this->lower_mi_value_atl = 0;
+    this->upper_mi_value_atl_defined=false;
+    this->upper_mi_value_atl = 0;
     this->min_random_atlases = 4;
     this->max_random_atlases = 12;
     this->precomputed_ranking_fn = "";
@@ -164,13 +168,21 @@ Mabs_parms::set_key_val (
          else if (key == "nmi_ratio_registration_config") {
             this->nmi_ratio_registration_config_fn = val;
         }
-        else if (key == "lower_mi_value") {
-            sscanf (val.c_str(), "%d", &this->lower_mi_value);
-            this->lower_mi_value_defined = true;
+        else if (key == "lower_mi_value_subject") {
+            sscanf (val.c_str(), "%d", &this->lower_mi_value_sub);
+            this->lower_mi_value_sub_defined = true;
         }
-        else if (key == "upper_mi_value") {
-            sscanf (val.c_str(), "%d", &this->upper_mi_value);
-            this->upper_mi_value_defined = true;
+        else if (key == "upper_mi_value_subject") {
+            sscanf (val.c_str(), "%d", &this->upper_mi_value_sub);
+            this->upper_mi_value_sub_defined = true;
+        }
+        else if (key == "lower_mi_value_atlas") {
+            sscanf (val.c_str(), "%d", &this->lower_mi_value_atl);
+            this->lower_mi_value_atl_defined = true;
+        }
+        else if (key == "upper_mi_value_atlas") {
+            sscanf (val.c_str(), "%d", &this->upper_mi_value_atl);
+            this->upper_mi_value_atl_defined = true;
         }
          else if (key == "min_random_atlases") {
             sscanf (val.c_str(), "%d", &this->min_random_atlases);
