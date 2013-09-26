@@ -203,8 +203,8 @@ Hausdorff_distance::run_internal (
         d_ptr->pct_boundary_hausdorff_distance += 0.5 * bh_pct;
     }
 
-    delete h_distance_array;
-    delete bh_distance_array;
+    delete[] h_distance_array;
+    delete[] bh_distance_array;
 }
 
 void 
