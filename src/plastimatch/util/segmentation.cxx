@@ -797,6 +797,36 @@ Segmentation::find_rasterization_geometry (Plm_image_header *pih)
     }
 }
 
+Segmentation::Pointer 
+Segmentation::warp_nondestructive (
+    Xform *xf, 
+    Plm_image_header *pih, 
+    bool use_itk) const
+{
+    Segmentation::Pointer rtss_warped = Segmentation::New ();
+
+    rtss_warped->d_ptr->m_cxt = Rtss::New (
+        Rtss::clone_empty (0, d_ptr->m_cxt.get()));
+    rtss_warped->d_ptr->m_rtss_valid = false;
+
+    if (d_ptr->m_labelmap) {
+        printf ("Warping labelmap.\n");
+        Plm_image *tmp = new Plm_image;
+        plm_warp (tmp, 0, xf, pih, d_ptr->m_labelmap, 0, use_itk, 0);
+        rtss_warped->d_ptr->m_labelmap = tmp;
+        rtss_warped->d_ptr->m_labelmap->convert (PLM_IMG_TYPE_ITK_ULONG);
+    }
+
+    if (d_ptr->m_ss_img) {
+        printf ("Warping ss_img.\n");
+        Plm_image *tmp = new Plm_image;
+        plm_warp (tmp, 0, xf, pih, d_ptr->m_ss_img, 0, use_itk, 0);
+        rtss_warped->d_ptr->m_ss_img = tmp;
+    }
+
+    return rtss_warped;
+}
+
 void
 Segmentation::warp (
     Xform *xf, 

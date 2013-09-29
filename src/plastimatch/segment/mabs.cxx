@@ -491,7 +491,9 @@ Mabs::run_registration_loop ()
             lprintf ("Warp structures...\n");
             Plm_image_header source_pih (rtds.get_image().get());
             timer.start();
-            rtss->warp (xf_out, &fixed_pih);
+            //rtss->warp (xf_out, &fixed_pih);
+            Segmentation::Pointer warped_rtss 
+                = rtss->warp_nondestructive (xf_out, &fixed_pih);
             d_ptr->time_warp_str += timer.report();
 
             /* Save some debugging information */
@@ -506,7 +508,7 @@ Mabs::run_registration_loop ()
                 xf_out->save (fn.c_str());
 
                 fn = string_format ("%s/structures", curr_output_dir.c_str());
-                rtss->save_prefix (fn, "nrrd");
+                warped_rtss->save_prefix (fn, "nrrd");
                 d_ptr->time_io += timer.report();
             }
 
@@ -516,10 +518,10 @@ Mabs::run_registration_loop ()
 
             /* Loop through structures for this atlas image */
             lprintf ("Process structures...\n");
-            for (size_t i = 0; i < rtss->get_num_structures(); i++) {
+            for (size_t i = 0; i < warped_rtss->get_num_structures(); i++) {
                 /* Check structure name, make sure it is something we 
                    want to segment */
-                std::string ori_name = rtss->get_structure_name (i);
+                std::string ori_name = warped_rtss->get_structure_name (i);
                 std::string mapped_name = d_ptr->map_structure_name (ori_name);
                 if (mapped_name == "") {
                     continue;
@@ -528,7 +530,7 @@ Mabs::run_registration_loop ()
                 /* Extract structure as binary mask */
                 timer.start();
                 UCharImageType::Pointer structure_image 
-                    = rtss->get_structure_image (i);
+                    = warped_rtss->get_structure_image (i);
                 d_ptr->time_extract += timer.report();
 
                 /* Make the distance map */

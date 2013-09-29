@@ -72,6 +72,8 @@ public:
         bool xor_overlapping);
     void set_geometry (const Plm_image_header *pih);
     void find_rasterization_geometry (Plm_image_header *pih);
+    Segmentation::Pointer warp_nondestructive (
+        Xform *xf, Plm_image_header *pih, bool use_itk = false) const;
     void warp (Xform *xf, Plm_image_header *pih, bool use_itk = false);
     void warp (Xform *xf, Plm_image_header *pih, Warp_parms *parms);
 
