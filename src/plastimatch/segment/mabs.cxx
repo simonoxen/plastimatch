@@ -705,7 +705,8 @@ Mabs::atlas_selection ()
 
     /* Open log file for atlas selection */
     std::string atlas_selection_log_file_name = string_format ("%s/log_atlas_seletion.txt",
-        "training-mgh");
+        d_ptr->traindir_base.c_str());
+    
     FILE *atlas_selection_log_file = fopen (atlas_selection_log_file_name.c_str(), "w");
     
     if (atlas_selection_log_file == NULL)
