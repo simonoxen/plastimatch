@@ -19,6 +19,7 @@
 #include "mabs.h"
 #include "mabs_atlas_selection.h"
 #include "mabs_parms.h"
+#include "mabs_stats.h"
 #include "mabs_vote.h"
 #include "option_range.h"
 #include "path_util.h"
@@ -88,8 +89,8 @@ public:
     bool prealign_resample;
     float prealign_spacing[3];
 
-    /* Keep track of score, for choosing best parameters */
-    std::map<std::string, double> score_map;
+    /* Utility class for keeping track of statistics */
+    Mabs_stats stats;
 
     /* Segmentation parameters */
     std::string registration_id;
@@ -117,10 +118,10 @@ public:
 
     /* Store timing information for performance evaluation */
     double time_atlas_selection;
-    double time_dice;
+//    double time_dice;
     double time_dmap;
     double time_extract;
-    double time_hausdorff;
+//    double time_hausdorff;
     double time_io;
     double time_reg;
     double time_vote;
@@ -149,10 +150,10 @@ public:
     }
     void reset_timers () {
         time_atlas_selection = 0;
-        time_dice = 0;
+//        time_dice = 0;
         time_dmap = 0;
         time_extract = 0;
-        time_hausdorff = 0;
+//        time_hausdorff = 0;
         time_io = 0;
         time_reg = 0;
         time_vote = 0;
@@ -274,47 +275,23 @@ Mabs_private::segmentation_threshold_weight (
 
     /* Compute Dice, etc. */
     if (this->have_ref_structure) {
-        timer.start();
-        lprintf ("Computing Dice...\n");
-        Dice_statistics dice;
-        dice.set_reference_image (this->ref_structure_image);
-        dice.set_compare_image (thresh_img);
-        dice.run ();
-        this->time_dice += timer.report();
 
-        timer.start();
-        lprintf ("Computing Hausdorff...\n");
-        Hausdorff_distance hd;
-        hd.set_reference_image (this->ref_structure_image);
-        hd.set_compare_image (thresh_img);
-        hd.run ();
-        this->time_hausdorff += timer.report();
-
+        std::string stats_string = this->stats.compute_statistics (
+            "segmentation", /* Not used yet */
+            this->ref_structure_image,
+            thresh_img);
         std::string seg_log_string = string_format (
             "%s,%s,%s,"
             "rho=%f,sigma=%f,minsim=%f,thresh=%f,"
-            "dice=%f,tp=%d,tn=%d,fp=%d,fn=%d,"
-            "hd=%f,95hd=%f,ahd=%f,"
-            "bhd=%f,95bhd=%f,abhd=%f\n",
+            "%s\n",
             this->ref_id.c_str(),
             this->registration_id.c_str(),
             mapped_name.c_str(),
             this->rho,
             this->sigma,
             this->minsim,
-            thresh_val, 
-            dice.get_dice(),
-            (int) dice.get_true_positives(),
-            (int) dice.get_true_negatives(),
-            (int) dice.get_false_positives(),
-            (int) dice.get_false_negatives(),
-            hd.get_hausdorff(),
-            hd.get_percent_hausdorff(),
-            hd.get_average_hausdorff(),
-            hd.get_boundary_hausdorff(),
-            hd.get_percent_boundary_hausdorff(),
-            hd.get_average_boundary_hausdorff()
-        );
+            thresh_val,
+            stats_string.c_str());
         lprintf ("%s", seg_log_string.c_str());
 
         /* Update seg_dice file */
@@ -570,23 +547,19 @@ Mabs::run_registration_loop ()
                 /* Compute Dice, etc. */
                 timer.start();
                 if (d_ptr->have_ref_structure) {
-                    lprintf ("Computing Dice...\n");
-                    Dice_statistics dice;
-                    dice.set_reference_image (d_ptr->ref_structure_image);
-                    dice.set_compare_image (structure_image);
-                    dice.run ();
 
+                    std::string stats_string 
+                        = d_ptr->stats.compute_statistics (
+                            registration_id,
+                            d_ptr->ref_structure_image,
+                            structure_image);
                     std::string reg_log_string = string_format (
-                        "%s,%s,%s,%s,%f,%d,%d,%d,%d\n",
+                        "%s,%s,%s,%s,%s\n",
                         d_ptr->ref_id.c_str(), 
                         atlas_id.c_str(),
                         registration_id.c_str(),
                         mapped_name.c_str(), 
-                        dice.get_dice(),
-                        (int) dice.get_true_positives(),
-                        (int) dice.get_true_negatives(),
-                        (int) dice.get_false_positives(),
-                        (int) dice.get_false_negatives());
+                        stats_string.c_str());
                     lprintf ("%s", reg_log_string.c_str());
 
                     /* Update reg_dice file */
@@ -596,19 +569,7 @@ Mabs::run_registration_loop ()
                     FILE *fp = fopen (reg_dice_log_fn.c_str(), "a");
                     fprintf (fp, "%s", reg_log_string.c_str());
                     fclose (fp);
-
-                    /* Update registration statistics -- these are used 
-                       to keep track of which registration 
-                       approach is the best */
-                    std::map<std::string, double>::const_iterator score_it 
-                        = d_ptr->score_map.find (registration_id);
-                    if (score_it == d_ptr->score_map.end()) {
-                        d_ptr->score_map[registration_id] = dice.get_dice();
-                    } else {
-                        d_ptr->score_map[registration_id] += dice.get_dice();
-                    }
                 }
-                d_ptr->time_dice += timer.report();
             }
 
             /* Create checkpoint file which means that this registration
@@ -861,22 +822,8 @@ Mabs::atlas_prealign ()
     d_ptr->output_dir = d_ptr->prealign_dir;
     run_registration_loop ();
 
-    /* Select best pre-alignment result */
-    std::map<std::string, double>::const_iterator score_it;
-    score_it = d_ptr->score_map.begin();
-    double best_score = 0;
-    std::string best_registration_name = "";
-    while (score_it != d_ptr->score_map.end()) {
-        std::string registration_name = score_it->first;
-        double this_score = d_ptr->score_map[registration_name];
-        printf ("Recovered score: %s, %f\n", registration_name.c_str(),
-            (float) this_score);
-        if (this_score > best_score) {
-            best_score = this_score;
-            best_registration_name = registration_name;
-        }
-        score_it ++;
-    }
+    /* Choose best registration parameter settings based on statistics */
+    std::string best_registration_name = d_ptr->stats.choose_best ();
 
     /* Copy results of best pre-alignment method into prealign base */
     std::list<std::string>::iterator atl_it;
@@ -1384,13 +1331,16 @@ Mabs::train_internal (bool registration_only)
         }
     }
 
-    lprintf ("Atlas selection time: %10.1f seconds\n", d_ptr->time_atlas_selection);
+    lprintf ("Atlas selection time: %10.1f seconds\n", 
+        d_ptr->time_atlas_selection);
     lprintf ("Registration time:    %10.1f seconds\n", d_ptr->time_reg);
     lprintf ("Warping time (img):   %10.1f seconds\n", d_ptr->time_warp_img);
     lprintf ("Warping time (str):   %10.1f seconds\n", d_ptr->time_warp_str);
     lprintf ("Extraction time:      %10.1f seconds\n", d_ptr->time_extract);
-    lprintf ("Dice time:            %10.1f seconds\n", d_ptr->time_dice);
-    lprintf ("Hausdorff time:       %10.1f seconds\n", d_ptr->time_hausdorff);
+    lprintf ("Dice time:            %10.1f seconds\n", 
+        d_ptr->stats.get_time_dice());
+    lprintf ("Hausdorff time:       %10.1f seconds\n", 
+        d_ptr->stats.get_time_dice());
     lprintf ("Distance map time:    %10.1f seconds\n", d_ptr->time_dmap);
     lprintf ("Voting time:          %10.1f seconds\n", d_ptr->time_vote);
     lprintf ("I/O time:             %10.1f seconds\n", d_ptr->time_io);

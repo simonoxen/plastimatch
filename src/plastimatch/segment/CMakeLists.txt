@@ -32,6 +32,7 @@ set (PLMSEGMENT_LIBRARY_SRC
   mabs_atlas_selection.cxx
   mabs_parms.cxx
   mabs_subject.cxx
+  mabs_stats.cxx
   mabs_vote.cxx
   segment_body.cxx
  )
