@@ -14,8 +14,12 @@
 #include "itkRegularStepGradientDescentOptimizer.h"
 #include "itkQuaternionRigidTransformGradientDescentOptimizer.h"
 #include "itkAmoebaOptimizer.h"
+#include "itkOnePlusOneEvolutionaryOptimizer.h"
 #include "itkLBFGSOptimizer.h"
 #include "itkLBFGSBOptimizer.h"
+#include "itkNormalVariateGenerator.h"
+#include "itkFRPROptimizer.h"
+
 
 #include "itk_optimizer.h"
 #include "itk_registration.h"
@@ -25,12 +29,16 @@
 #include "stage_parms.h"
 
 /* Types of optimizers */
-typedef itk::AmoebaOptimizer AmoebaOptimizerType;
-typedef itk::RegularStepGradientDescentOptimizer RSGOptimizerType;
-typedef itk::VersorRigid3DTransformOptimizer VersorOptimizerType;
+typedef itk::OnePlusOneEvolutionaryOptimizer      OnePlusOneOptimizerType;
+typedef itk::FRPROptimizer                        FRPROptimizerType;
+typedef itk::AmoebaOptimizer                      AmoebaOptimizerType;
+typedef itk::RegularStepGradientDescentOptimizer  RSGOptimizerType;
+typedef itk::VersorRigid3DTransformOptimizer      VersorOptimizerType;
 typedef itk::QuaternionRigidTransformGradientDescentOptimizer QuatOptimizerType;
 typedef itk::LBFGSOptimizer LBFGSOptimizerType;
 typedef itk::LBFGSBOptimizer LBFGSBOptimizerType;
+
+typedef itk::Statistics::NormalVariateGenerator  OptimizerNormalGeneratorType;
 
 void
 Itk_registration_private::optimizer_set_max_iterations (int its)
@@ -40,6 +48,18 @@ Itk_registration_private::optimizer_set_max_iterations (int its)
 	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
 			   registration->GetOptimizer());
         optimizer->SetMaximumNumberOfIterations(its);
+    }
+    else if (stage->optim_type == OPTIMIZATION_ONEPLUSONE) {
+        typedef OnePlusOneOptimizerType * OptimizerPointer;
+        OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
+                           registration->GetOptimizer());
+        optimizer->SetMaximumIteration(its);
+    }
+    else if (stage->optim_type == OPTIMIZATION_FRPR) {
+        typedef FRPROptimizerType * OptimizerPointer;
+        OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
+                           registration->GetOptimizer());
+        optimizer->SetMaximumIteration(its);
     }
     else if (stage->optim_type == OPTIMIZATION_RSG) {
 	typedef RSGOptimizerType * OptimizerPointer;
@@ -86,6 +106,18 @@ Itk_registration_private::optimizer_get_value ()
 			   registration->GetOptimizer());
 	return optimizer->GetCachedValue();
     }
+    else if (stage->optim_type == OPTIMIZATION_ONEPLUSONE) {
+        typedef OnePlusOneOptimizerType * OptimizerPointer;
+        OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
+                           registration->GetOptimizer());
+        return optimizer->GetValue();
+    }
+    else if (stage->optim_type == OPTIMIZATION_FRPR) {
+        typedef FRPROptimizerType * OptimizerPointer;
+        OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
+                           registration->GetOptimizer());
+        return optimizer->GetValue();
+    }
     else if (stage->optim_type == OPTIMIZATION_RSG) {
 	typedef RSGOptimizerType * OptimizerPointer;
 	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
@@ -131,6 +163,15 @@ Itk_registration_private::optimizer_get_step_length ()
 			   registration->GetOptimizer());
 #endif
 	return -1.0;
+    }
+    else if (stage->optim_type == OPTIMIZATION_ONEPLUSONE) {
+        return -1.0;
+    }
+    else if (stage->optim_type == OPTIMIZATION_FRPR) {
+        typedef FRPROptimizerType * OptimizerPointer;
+        OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
+                           registration->GetOptimizer());
+        return optimizer->GetStepLength();
     }
     else if (stage->optim_type == OPTIMIZATION_RSG) {
 	typedef RSGOptimizerType * OptimizerPointer;
@@ -182,6 +223,18 @@ Itk_registration_private::optimizer_get_current_iteration ()
 #endif
 	return -1;
     }
+    if (stage->optim_type == OPTIMIZATION_ONEPLUSONE) {
+        typedef OnePlusOneOptimizerType * OptimizerPointer;
+        OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
+                           registration->GetOptimizer());
+        return optimizer->GetCurrentIteration();
+    }
+    else if (stage->optim_type == OPTIMIZATION_FRPR) {
+        typedef FRPROptimizerType * OptimizerPointer;
+        OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
+                           registration->GetOptimizer());
+        return optimizer->GetCurrentIteration();
+    }
     else if (stage->optim_type == OPTIMIZATION_RSG) {
 	typedef RSGOptimizerType * OptimizerPointer;
 	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
@@ -227,6 +280,18 @@ Itk_registration_private::optimizer_get_current_position ()
 	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
 			   registration->GetOptimizer());
 	return optimizer->GetCachedCurrentPosition();
+    }
+    else if (stage->optim_type == OPTIMIZATION_ONEPLUSONE) {
+        typedef OnePlusOneOptimizerType * OptimizerPointer;
+        OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
+                           registration->GetOptimizer());
+        return optimizer->GetCurrentPosition();
+    }
+    else if (stage->optim_type == OPTIMIZATION_FRPR) {
+        typedef FRPROptimizerType * OptimizerPointer;
+        OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
+                           registration->GetOptimizer());
+        return optimizer->GetCurrentPosition();
     }
     else if (stage->optim_type == OPTIMIZATION_RSG) {
         return registration->GetTransform()->GetParameters();
@@ -300,6 +365,33 @@ set_optimization_rsg (RegistrationType::Pointer registration,
     registration->SetOptimizer(optimizer);
 }
 
+
+void
+set_optimization_oneplusone(RegistrationType::Pointer registration,
+                           Stage_parms* stage)
+{
+  OnePlusOneOptimizerType::Pointer optimizer = OnePlusOneOptimizerType::New();
+  optimizer->SetNormalVariateGenerator(OptimizerNormalGeneratorType::New() );
+  optimizer->SetMaximumIteration(stage->max_its);
+  optimizer->SetEpsilon(stage->opo_epsilon);
+  optimizer->Initialize(stage->opo_initial_search_rad); // Initial search radius
+  registration->SetOptimizer(optimizer);
+}
+
+
+void
+set_optimization_frpr(RegistrationType::Pointer registration,
+                           Stage_parms* stage)
+{
+  FRPROptimizerType::Pointer optimizer = FRPROptimizerType::New();
+  optimizer->SetMaximize(false);
+  optimizer->SetStepLength(5);
+  optimizer->SetStepTolerance(stage->frpr_step_tol);
+  optimizer->SetMaximumIteration(stage->max_its);
+  optimizer->SetMaximumLineIteration(stage->frpr_max_line_its);
+  registration->SetOptimizer(optimizer);
+}
+
 void
 set_optimization_versor (RegistrationType::Pointer registration, 
 			 Stage_parms* stage)
@@ -309,6 +401,7 @@ set_optimization_versor (RegistrationType::Pointer registration,
     optimizer->SetMinimumStepLength(stage->min_step);
     optimizer->SetNumberOfIterations(stage->max_its);
     optimizer->SetGradientMagnitudeTolerance (stage->rsg_grad_tol);
+
     registration->SetOptimizer(optimizer);
 }
 
@@ -390,7 +483,7 @@ set_optimization_scales_translation (RegistrationType::Pointer registration,
 }
 
 void
-set_optimization_scales_versor (RegistrationType::Pointer registration, 
+set_optimization_scales_versor (RegistrationType::Pointer registration,
 				Stage_parms* stage)
 {
     double rotation_scale, translation_scale;
@@ -400,9 +493,8 @@ set_optimization_scales_versor (RegistrationType::Pointer registration,
 	rotation_scale = 1.0;
 	translation_scale = 1.0;
     } else {
-	rotation_scale = 1.0;
-	// translation_scale = 1.0 / 10000.0;
-	translation_scale = 1.0 / (double) stage->translation_scale_factor;
+        rotation_scale = 1.0*(double) stage->translation_scale_factor;
+        translation_scale = 1.0;
     }
 
     optimizerScales[0] = rotation_scale;
@@ -494,6 +586,12 @@ Itk_registration_private::set_optimization ()
     case OPTIMIZATION_AMOEBA:
 	set_optimization_amoeba(registration,stage);
 	break;
+    case OPTIMIZATION_ONEPLUSONE:
+        set_optimization_oneplusone(registration,stage);
+        break;
+    case OPTIMIZATION_FRPR:
+        set_optimization_frpr(registration,stage);
+        break;
     case OPTIMIZATION_RSG:
 	set_optimization_rsg(registration,stage);
 	break;

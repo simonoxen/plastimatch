@@ -35,6 +35,8 @@
 #define OPTIMIZATION_STEEPEST               7
 #define OPTIMIZATION_QUAT                   8
 #define OPTIMIZATION_LIBLBFGS               9
+#define OPTIMIZATION_ONEPLUSONE            10
+#define OPTIMIZATION_FRPR                  11
 
 #define IMPLEMENTATION_NONE                 0
 #define IMPLEMENTATION_ITK                  1
@@ -120,6 +122,15 @@ public:
     float min_step;
     float rsg_grad_tol;
     int translation_scale_factor;
+    /*OnePlusOne evvolutionary optimizer*/
+
+    float opo_epsilon;
+    float opo_initial_search_rad;
+
+    /*FRPR optimizer*/
+    float frpr_step_tol;
+    float frpr_step_length;
+    int frpr_max_line_its;
     /* Quaternion optimizer */
     float learn_rate;
     /* Mutual information */

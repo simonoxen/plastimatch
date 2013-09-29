@@ -337,6 +337,12 @@ Registration_parms::set_key_val (
         else if (!strcmp(val,"amoeba")) {
             stage->optim_type = OPTIMIZATION_AMOEBA;
         }
+        else if (!strcmp(val,"oneplusone")) {
+            stage->optim_type = OPTIMIZATION_ONEPLUSONE;
+        }
+        else if (!strcmp(val,"frpr")) {
+            stage->optim_type = OPTIMIZATION_FRPR;
+        }
         else if (!strcmp(val,"demons")) {
             stage->optim_type = OPTIMIZATION_DEMONS;
         }
@@ -555,6 +561,36 @@ Registration_parms::set_key_val (
     else if (!strcmp (key, "convergence_tol")) {
         if (section == 0) goto error_not_global;
         if (sscanf (val, "%g", &stage->convergence_tol) != 1) {
+            goto error_exit;
+        }
+    }
+    else if (!strcmp (key, "opo_epsilon")) {
+        if (section == 0) goto error_not_global;
+        if (sscanf (val, "%g", &stage->opo_epsilon) != 1) {
+            goto error_exit;
+        }
+    }
+    else if (!strcmp (key, "opo_initial_search_rad")) {
+        if (section == 0) goto error_not_global;
+        if (sscanf (val, "%g", &stage->opo_initial_search_rad) != 1) {
+            goto error_exit;
+        }
+    }
+    else if (!strcmp (key, "frpr_step_tol")) {
+        if (section == 0) goto error_not_global;
+        if (sscanf (val, "%g", &stage->frpr_step_tol) != 1) {
+            goto error_exit;
+        }
+    }
+    else if (!strcmp (key, "frpr_step_length")) {
+        if (section == 0) goto error_not_global;
+        if (sscanf (val, "%g", &stage->frpr_step_length) != 1) {
+            goto error_exit;
+        }
+    }
+    else if (!strcmp (key, "frpr_max_line_its")) {
+        if (section == 0) goto error_not_global;
+        if (sscanf (val, "%g", &stage->frpr_max_line_its) != 1) {
             goto error_exit;
         }
     }

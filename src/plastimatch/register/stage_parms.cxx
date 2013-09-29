@@ -67,7 +67,14 @@ Stage_parms::Stage_parms ()
     max_step = 10.0;
     min_step = 0.5;
     rsg_grad_tol = 0.0001;
-    translation_scale_factor = 1000;
+    translation_scale_factor = 100;
+    /*OnePlusOne evolutionary optimizer*/
+    opo_initial_search_rad=1.01;
+    opo_epsilon=1e-7;
+    /*frpr optimizer*/
+    frpr_step_tol=0.000001;
+    frpr_step_length=5.0;
+    frpr_max_line_its=100;
     /* Quaternion optimizer */
     learn_rate = 0.01 ;
     /* Mattes mutual information */
@@ -160,6 +167,16 @@ Stage_parms::Stage_parms (const Stage_parms& s)
     min_step = s.min_step;
     rsg_grad_tol = s.rsg_grad_tol;
     translation_scale_factor = s.translation_scale_factor;
+
+    /*OnePlusOne optmizer*/
+    opo_epsilon=s.opo_epsilon;
+    opo_initial_search_rad=s.opo_initial_search_rad;
+
+   /*FRPR optmizer*/
+    frpr_step_length=s.frpr_step_length;
+    frpr_step_tol=s.frpr_step_tol;
+    frpr_max_line_its=s.frpr_max_line_its;
+
     /* Quaternion optimizer */
     learn_rate = s.learn_rate;
     /* Mattes mutual information */
