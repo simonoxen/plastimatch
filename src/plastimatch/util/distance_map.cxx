@@ -18,13 +18,60 @@ public:
     Distance_map_private () {
         inside_is_positive = true;
         use_squared_distance = true;
+        algorithm = Distance_map::ITK_SIGNED_MAURER;
     }
 public:
+    Distance_map::Algorithm algorithm;
     bool inside_is_positive;
     bool use_squared_distance;
     UCharImageType::Pointer input;
     FloatImageType::Pointer output;
+public:
+    void run_itk_signed_maurer ();
+    void run ();
 };
+
+void
+Distance_map_private::run_itk_signed_maurer ()
+{
+    typedef itk::SignedMaurerDistanceMapImageFilter< 
+        UCharImageType, FloatImageType >  FilterType;
+    FilterType::Pointer filter = FilterType::New ();
+
+    if (this->use_squared_distance) {
+        filter->SetSquaredDistance (true);
+    } else {
+        filter->SetSquaredDistance (false);
+    }
+
+    /* Always compute map in millimeters, never voxels */
+    filter->SetUseImageSpacing (true);
+
+    if (this->inside_is_positive) {
+        filter->SetInsideIsPositive (true);
+    } else {
+        filter->SetInsideIsPositive (false);
+    }
+
+    /* ??? */
+    /* filter->SetNumberOfThreads (2); */
+
+    /* Run the filter */
+    filter->SetInput (this->input);
+    filter->Update();
+    this->output = filter->GetOutput ();
+}
+
+void
+Distance_map_private::run ()
+{
+    switch (this->algorithm) {
+    case Distance_map::ITK_SIGNED_MAURER:
+    default:
+        this->run_itk_signed_maurer ();
+        break;
+    }
+}
 
 Distance_map::Distance_map () {
     d_ptr = new Distance_map_private;
@@ -32,6 +79,13 @@ Distance_map::Distance_map () {
 
 Distance_map::~Distance_map () {
     delete d_ptr;
+}
+
+void
+Distance_map::set_input_image (const std::string& image_fn)
+{
+    Plm_image pli (image_fn);
+    d_ptr->input = pli.itk_uchar();
 }
 
 void
@@ -59,35 +113,16 @@ Distance_map::set_inside_is_positive (bool inside_is_positive)
     d_ptr->inside_is_positive = inside_is_positive;
 }
 
+void 
+Distance_map::set_algorithm (Distance_map::Algorithm algorithm)
+{
+    d_ptr->algorithm = algorithm;
+}
+
 void
 Distance_map::run ()
 {
-    typedef itk::SignedMaurerDistanceMapImageFilter< 
-        UCharImageType, FloatImageType >  FilterType;
-    FilterType::Pointer filter = FilterType::New ();
-
-    if (d_ptr->use_squared_distance) {
-        filter->SetSquaredDistance (true);
-    } else {
-        filter->SetSquaredDistance (false);
-    }
-
-    /* Always compute map in millimeters, never voxels */
-    filter->SetUseImageSpacing (true);
-
-    if (d_ptr->inside_is_positive) {
-        filter->SetInsideIsPositive (true);
-    } else {
-        filter->SetInsideIsPositive (false);
-    }
-
-    /* ??? */
-    /* filter->SetNumberOfThreads (2); */
-
-    /* Run the filter */
-    filter->SetInput (d_ptr->input);
-    filter->Update();
-    d_ptr->output = filter->GetOutput ();
+    d_ptr->run ();
 }
 
 FloatImageType::Pointer

@@ -534,9 +534,9 @@ Mabs::run_registration_loop ()
                 d_ptr->time_extract += timer.report();
 
                 /* Make the distance map */
-                timer.start();
-                lprintf ("Computing distance map...\n");
                 if (d_ptr->compute_distance_map) {
+                    timer.start();
+                    lprintf ("Computing distance map...\n");
                     this->compute_dmap (structure_image,
                         curr_output_dir, mapped_name);
                 }

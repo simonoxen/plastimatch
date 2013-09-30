@@ -30,6 +30,7 @@ set (PLASTIMATCH_SRC
   pcmd_crop.cxx 
   pcmd_dice.cxx 
   pcmd_diff.cxx 
+  pcmd_dmap.cxx
   pcmd_drr.cxx 
   pcmd_dvh.cxx 
   pcmd_gamma.cxx

@@ -18,10 +18,18 @@ public:
     Distance_map_private *d_ptr;
 
 public:
+    /*! \brief Different distance map algorithms. */
+    enum Algorithm {
+        ITK_SIGNED_MAURER,
+        ITK_SIGNED_DANIELSSON
+    };
+
+public:
     /*! \name Inputs */
     ///@{
     /*! \brief Set the input image.  The image will be loaded from 
-      the specified filename as a binary mask image (unsigned char). */
+      the specified filename as a binary mask (unsigned char) image. */
+    void set_input_image (const std::string& image_fn);
     void set_input_image (const char* image_fn);
     /*! \brief Set the input image as an ITK image. */
     void set_input_image (const UCharImageType::Pointer image);
@@ -31,6 +39,8 @@ public:
     /*! \brief Choose whether the inside is positive or negative.  
       The default is inside positive. */
     void set_inside_is_positive (bool inside_is_positive);
+    /*! \brief Choose which algorithm to use */
+    void set_algorithm (Algorithm algorithm);
     ///@}
 
     /*! \name Execution */

@@ -17,6 +17,7 @@
 #include "pcmd_crop.h"
 #include "pcmd_dice.h"
 #include "pcmd_diff.h"
+#include "pcmd_dmap.h"
 #include "pcmd_drr.h"
 #include "pcmd_dvh.h"
 #include "pcmd_gamma.h"
@@ -71,26 +72,27 @@ print_usage (int return_code)
         "  dice        "
         "  diff        "
         "\n"
+        "  dmap        "
 //        "  drr         "
         "  dvh         "
         "  fill        "
         "  gamma       "
         "  header      "
-	"  jacobian    "
         "\n"
+	"  jacobian    "
         "  mask        "
         "  probe       "
         "  register    "
         "  resample    "
-        "  scale       "
         "\n"
+        "  scale       "
         "  segment     "
 //        "  sift        "
         "  stats       "
         "  synth       "
         "  synth-vf    "
-        "  thumbnail   "
         "\n"
+        "  thumbnail   "
         "  union       "
         "  warp        "
         "  xf-convert  "
@@ -184,6 +186,9 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "drr")) {
         do_command_drr (argc, argv);
+    }
+    else if (!strcmp (command, "dmap")) {
+        do_command_dmap (argc, argv);
     }
     else if (!strcmp (command, "dvh")) {
         do_command_dvh (argc, argv);
