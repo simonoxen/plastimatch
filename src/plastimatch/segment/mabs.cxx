@@ -281,7 +281,7 @@ Mabs_private::segmentation_threshold_weight (
             this->ref_structure_image,
             thresh_img);
         std::string seg_log_string = string_format (
-            "%s,%s,%s,"
+            "%s,reg=%s,struct=%s,"
             "rho=%f,sigma=%f,minsim=%f,thresh=%f,"
             "%s\n",
             this->ref_id.c_str(),
@@ -556,7 +556,7 @@ Mabs::run_registration_loop ()
                             d_ptr->ref_structure_image,
                             structure_image);
                     std::string reg_log_string = string_format (
-                        "%s,%s,%s,%s,%s\n",
+                        "%s,%s,reg=%s,struct=%s,%s\n",
                         d_ptr->ref_id.c_str(), 
                         atlas_id.c_str(),
                         registration_id.c_str(),
