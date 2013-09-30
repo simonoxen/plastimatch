@@ -590,7 +590,7 @@ Registration_parms::set_key_val (
     }
     else if (!strcmp (key, "frpr_max_line_its")) {
         if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g", &stage->frpr_max_line_its) != 1) {
+        if (sscanf (val, "%d", &stage->frpr_max_line_its) != 1) {
             goto error_exit;
         }
     }
