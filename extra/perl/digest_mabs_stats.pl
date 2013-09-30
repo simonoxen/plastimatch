@@ -6,9 +6,13 @@ if ($#ARGV < 0) {
 
 $seg_dice_fn = shift;
 
+$max_hd = 200;
+
 open (FP, "<$seg_dice_fn") or die "Couldn't open file $seg_dice_fn for read";
 while (<FP>) {
-    ($target,$reg,$structure,$_) = split (',',$_,4);
+    ($target,$_) = split (',',$_,2);
+    $reg = "";
+    $structure = "";
     $rho = -1;
     $sigma = -1;
     $minsim = -1;
@@ -21,6 +25,14 @@ while (<FP>) {
     $ahd = -1;
     $abhd = -1;
     while (($val,$_) = split (',',$_,2)) {
+	if ($val =~ /reg=(.*)/) {
+	    $reg = $1;
+	    next;
+	}
+	if ($val =~ /struct=(.*)/) {
+	    $structure = $1;
+	    next;
+	}
 	if ($val =~ /rho=(.*)/) {
 	    $rho = $1;
 	    next;
@@ -51,6 +63,9 @@ while (<FP>) {
 	}
 	if ($val =~ /^95hd=(.*)/) {
 	    $hd95 = $1;
+	    if ($hd95 > $max_hd) {
+		$hd95 = $max_hd;
+	    }
 	    next;
 	}
 	if ($val =~ /^95bhd=(.*)/) {
@@ -67,22 +82,29 @@ while (<FP>) {
 	}
     }
 
-    $keystring = "$structure,$rho,$sigma,$minsim,$thresh";
+    # For registration evaluation
+    $key_0 = "$reg";
+    $key_0_dice_num{$key_0} ++;
+    $key_0_dice_sum{$key_0} += $dice;
+    $key_0_hd95_sum{$key_0} += $hd95;
 
-    $dice_num{$keystring} ++;
-    $dice_sum{$keystring} += $dice;
-    $hd95_sum{$keystring} += $hd95;
+    # For segmentation evaluation
+    if ($thresh > -1) {
+	$key_1 = "$structure,$rho,$sigma,$minsim,$thresh";
+	$key_1_dice_num{$key_1} ++;
+	$key_1_dice_sum{$key_1} += $dice;
+	$key_1_hd95_sum{$key_1} += $hd95;
+    }
 
-
-    $alt_key = "$target,$rho,$sigma,$minsim,$thresh";
+    $key_2 = "$target,$rho,$sigma,$minsim,$thresh";
     if ($structure eq "brainstem") {
-	$brainstem_hash{$alt_key} = $dice;
+	$brainstem_hash{$key_2} = $dice;
     }
     if ($structure eq "left_eye_ball") {
-	$left_eye_hash{$alt_key} = $dice;
+	$left_eye_hash{$key_2} = $dice;
     }
     if ($structure eq "left_parotid") {
-	$left_parotid{$alt_key} = $dice;
+	$left_parotid{$key_2} = $dice;
     }
 }
 
@@ -94,8 +116,15 @@ while (<FP>) {
 
 # exit (0);
 
-foreach $keystring (sort keys %dice_sum) {
-    $avg_dice = $dice_sum{$keystring} / $dice_num{$keystring};
-    $avg_hd95 = $hd95_sum{$keystring} / $dice_num{$keystring};
-    print "$keystring,$avg_dice,$avg_hd95\n";
+
+foreach $k (sort keys %key_0_dice_sum) {
+    $avg_dice = $key_0_dice_sum{$k} / $key_0_dice_num{$k};
+    $avg_hd95 = $key_0_hd95_sum{$k} / $key_0_dice_num{$k};
+    print "$k,$avg_dice,$avg_hd95\n";
+}
+
+foreach $k (sort keys %key_1_dice_sum) {
+    $avg_dice = $key_1_dice_sum{$k} / $key_1_dice_num{$k};
+    $avg_hd95 = $key_1_hd95_sum{$k} / $key_1_dice_num{$k};
+    print "$k,$avg_dice,$avg_hd95\n";
 }
