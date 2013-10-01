@@ -729,7 +729,7 @@ Mabs::atlas_selection ()
             it_selected_atlases++) {
         
             fprintf(atlas_selection_log_file,
-                "Atlas %s with score value equal to = %f \n",
+                "Atlas %s with score value equal to %f \n",
                 it_selected_atlases->first.c_str(),
                 it_selected_atlases->second);
         }
