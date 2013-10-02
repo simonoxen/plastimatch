@@ -42,9 +42,6 @@ set (DICOM_INFO_SRC
 set (DICOM_UID_SRC
   dicom_uid_main.cxx
   )
-set (DISTANCE_MAP_SRC
-  distance_map_main.cxx
-  )
 set (DLIB_TRAIN_SRC 
   dlib_train.cxx
   )
@@ -125,9 +122,6 @@ if (ITK_FOUND)
   plm_add_executable (dicom_info "${DICOM_INFO_SRC}"
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-  plm_add_executable (distance_map "${DISTANCE_MAP_SRC}"
-    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   plm_add_executable (extract_contour "${EXTRACT_CONTOUR_SRC}"
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
