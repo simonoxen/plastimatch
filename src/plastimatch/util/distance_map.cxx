@@ -7,6 +7,7 @@
 #include <string.h>
 #include <math.h>
 #include "itkImage.h"
+#include "itkSignedDanielssonDistanceMapImageFilter.h"
 #include "itkSignedMaurerDistanceMapImageFilter.h"
 
 #include "distance_map.h"
@@ -27,9 +28,41 @@ public:
     UCharImageType::Pointer input;
     FloatImageType::Pointer output;
 public:
+    void run_itk_signed_danielsson ();
     void run_itk_signed_maurer ();
     void run ();
 };
+
+void
+Distance_map_private::run_itk_signed_danielsson ()
+{
+    typedef itk::SignedDanielssonDistanceMapImageFilter< 
+        UCharImageType, FloatImageType >  FilterType;
+    FilterType::Pointer filter = FilterType::New ();
+
+    if (this->use_squared_distance) {
+        filter->SetSquaredDistance (true);
+    } else {
+        filter->SetSquaredDistance (false);
+    }
+
+    /* Always compute map in millimeters, never voxels */
+    filter->SetUseImageSpacing (true);
+
+    if (this->inside_is_positive) {
+        filter->SetInsideIsPositive (true);
+    } else {
+        filter->SetInsideIsPositive (false);
+    }
+
+    /* ??? */
+    /* filter->SetNumberOfThreads (2); */
+
+    /* Run the filter */
+    filter->SetInput (this->input);
+    filter->Update();
+    this->output = filter->GetOutput ();
+}
 
 void
 Distance_map_private::run_itk_signed_maurer ()
@@ -69,6 +102,9 @@ Distance_map_private::run ()
     case Distance_map::ITK_SIGNED_MAURER:
     default:
         this->run_itk_signed_maurer ();
+        break;
+    case Distance_map::ITK_SIGNED_DANIELSSON:
+        this->run_itk_signed_danielsson ();
         break;
     }
 }
