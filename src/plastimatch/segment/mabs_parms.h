@@ -65,6 +65,8 @@ public:
 
     bool write_thresholded_files;
     bool write_weight_files;
+    bool write_warped_images;
+    bool write_warped_structures;
 
     /* [REGISTRATION] */
     std::string registration_config;

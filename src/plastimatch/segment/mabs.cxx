@@ -499,16 +499,22 @@ Mabs::run_registration_loop ()
             /* Save some debugging information */
             if (d_ptr->write_registration_files) {
                 timer.start();
-                lprintf ("Saving registration_files\n");
                 std::string fn;
-                fn = string_format ("%s/img.nrrd", curr_output_dir.c_str());
-                warped_image->save_image (fn.c_str());
+                lprintf ("Saving registration_files\n");
+                if (d_ptr->parms->write_warped_images) {
+                    fn = string_format ("%s/img.nrrd", 
+                        curr_output_dir.c_str());
+                    warped_image->save_image (fn.c_str());
+                }
 
                 fn = string_format ("%s/xf.txt", curr_output_dir.c_str());
                 xf_out->save (fn.c_str());
 
-                fn = string_format ("%s/structures", curr_output_dir.c_str());
-                warped_rtss->save_prefix (fn, "nrrd");
+                if (d_ptr->parms->write_warped_structures) {
+                    fn = string_format ("%s/structures", 
+                        curr_output_dir.c_str());
+                    warped_rtss->save_prefix (fn, "nrrd");
+                }
                 d_ptr->time_io += timer.report();
             }
 
