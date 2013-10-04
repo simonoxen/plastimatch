@@ -30,11 +30,14 @@ dmap_main (Dmap_parms* parms)
 {
     Distance_map dmap;
     dmap.set_input_image (parms->img_in_fn);
-    if (parms->algorithm == "maurer") {
-        dmap.set_algorithm (Distance_map::ITK_SIGNED_MAURER);
+    if (parms->algorithm == "approximate") {
+        dmap.set_algorithm (Distance_map::ITK_SIGNED_APPROXIMATE);
     }
     else if (parms->algorithm == "danielsson") {
         dmap.set_algorithm (Distance_map::ITK_SIGNED_DANIELSSON);
+    }
+    else if (parms->algorithm == "maurer") {
+        dmap.set_algorithm (Distance_map::ITK_SIGNED_MAURER);
     }
     else {
         print_and_exit ("Error.  Unknown algorithm option: %s",
@@ -79,8 +82,8 @@ parse_fn (
     /* Algorithm options */
     parser->add_long_option ("", "algorithm", 
         "a string that specifies the algorithm used for distance "
-        "map calculation, either \"maurer\" or \"danielsson\" "
-        "(default is \"maurer\")",
+        "map calculation, either \"approximate\", \"maurer\""
+        " or \"danielsson\" (default is \"maurer\")",
         1, "maurer");
     parser->add_long_option ("", "squared-distance",
         "return the squared distance instead of distance", 0);

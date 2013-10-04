@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "itkApproximateSignedDistanceMapImageFilter.h"
 #include "itkImage.h"
 #include "itkSignedDanielssonDistanceMapImageFilter.h"
 #include "itkSignedMaurerDistanceMapImageFilter.h"
@@ -28,10 +29,56 @@ public:
     UCharImageType::Pointer input;
     FloatImageType::Pointer output;
 public:
+    void run_native ();
+    void run_itk_signed_approximate ();
     void run_itk_signed_danielsson ();
     void run_itk_signed_maurer ();
+    void run_itk_signed_native ();
     void run ();
 };
+
+void
+Distance_map_private::run_native ()
+{
+    Plm_image pi (this->input);
+    Volume::Pointer v = pi.get_volume_uchar();
+//    Volume::Pointer d = 
+    
+}
+
+void
+Distance_map_private::run_itk_signed_approximate ()
+{
+    typedef itk::ApproximateSignedDistanceMapImageFilter< 
+        UCharImageType, FloatImageType >  FilterType;
+    FilterType::Pointer filter = FilterType::New ();
+
+#if defined (commentout)
+    if (this->use_squared_distance) {
+        filter->SetSquaredDistance (true);
+    } else {
+        filter->SetSquaredDistance (false);
+    }
+
+    /* Always compute map in millimeters, never voxels */
+    filter->SetUseImageSpacing (true);
+
+    if (this->inside_is_positive) {
+        filter->SetInsideIsPositive (true);
+    } else {
+        filter->SetInsideIsPositive (false);
+    }
+#endif
+
+    /* ITK is very odd... */
+    filter->SetOutsideValue (0);
+    filter->SetInsideValue (1);
+
+    /* Run the filter */
+    filter->SetInput (this->input);
+    filter->Update();
+    this->output = filter->GetOutput ();
+}
 
 void
 Distance_map_private::run_itk_signed_danielsson ()
@@ -54,9 +101,6 @@ Distance_map_private::run_itk_signed_danielsson ()
     } else {
         filter->SetInsideIsPositive (false);
     }
-
-    /* ??? */
-    /* filter->SetNumberOfThreads (2); */
 
     /* Run the filter */
     filter->SetInput (this->input);
@@ -86,9 +130,6 @@ Distance_map_private::run_itk_signed_maurer ()
         filter->SetInsideIsPositive (false);
     }
 
-    /* ??? */
-    /* filter->SetNumberOfThreads (2); */
-
     /* Run the filter */
     filter->SetInput (this->input);
     filter->Update();
@@ -99,12 +140,15 @@ void
 Distance_map_private::run ()
 {
     switch (this->algorithm) {
-    case Distance_map::ITK_SIGNED_MAURER:
-    default:
-        this->run_itk_signed_maurer ();
+    case Distance_map::ITK_SIGNED_APPROXIMATE:
+        this->run_itk_signed_approximate ();
         break;
     case Distance_map::ITK_SIGNED_DANIELSSON:
         this->run_itk_signed_danielsson ();
+        break;
+    case Distance_map::ITK_SIGNED_MAURER:
+    default:
+        this->run_itk_signed_maurer ();
         break;
     }
 }
