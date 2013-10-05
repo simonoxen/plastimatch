@@ -1985,6 +1985,25 @@ set_tests_properties (plm-dice-c PROPERTIES DEPENDS "rect-4;rect-8")
 set_tests_properties (plm-dice-c-check-1 PROPERTIES DEPENDS "plm-dice-c")
 set_tests_properties (plm-dice-c-check-2 PROPERTIES DEPENDS "plm-dice-c")
 
+
+## -------------------------------------------------------------------------
+## plm-dmap-a  distance map, itk maurer
+## plm-dmap-b  distance map, native danielsson
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-dmap-a"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "dmap;--algorithm;maurer;--input;${PLM_BUILD_TESTING_DIR}/rect-4.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-dmap-a.mha"
+  )
+set_tests_properties (plm-dmap-a PROPERTIES DEPENDS "rect-4")
+
+plm_add_test (
+  "plm-dmap-b"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "dmap;--algorithm;danielsson;--input;${PLM_BUILD_TESTING_DIR}/rect-4.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-dmap-b.mha"
+  )
+set_tests_properties (plm-dmap-b PROPERTIES DEPENDS "rect-4")
+
 ## -------------------------------------------------------------------------
 ## plm-dvh-a  ss-img, without ss-list
 ## plm-dvh-b  ss-img, with ss-list

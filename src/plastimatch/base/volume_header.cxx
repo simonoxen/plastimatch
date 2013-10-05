@@ -35,6 +35,7 @@ Volume_header::Volume_header ()
 Volume_header::Volume_header (
     plm_long dim[3], float origin[3], float spacing[3])
 {
+    this->d_ptr = new Volume_header_private;
     this->set_dim (dim);
     this->set_origin (origin);
     this->set_spacing (spacing);
@@ -45,7 +46,15 @@ Volume_header::Volume_header (
     plm_long dim[3], float origin[3], float spacing[3],
     float direction_cosines[9])
 {
+    this->d_ptr = new Volume_header_private;
     this->set (dim, origin, spacing, direction_cosines);
+}
+
+Volume_header::Volume_header (
+    const Volume::Pointer& vol)
+{
+    this->d_ptr = new Volume_header_private;
+    this->set (vol->dim, vol->offset, vol->spacing, vol->direction_cosines);
 }
 
 Volume_header::~Volume_header ()
