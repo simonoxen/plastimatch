@@ -29,6 +29,7 @@ set (PLMUTIL_LIBRARY_SRC
   hausdorff_distance.cxx hausdorff_distance.h 
   image_boundary.cxx image_boundary.h
   itk_adjust.cxx
+  itk_distance_map.cxx
   itk_crop.cxx
   itk_gabor.cxx
   itk_mask.cxx

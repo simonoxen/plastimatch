@@ -1348,7 +1348,7 @@ Mabs::train_internal (bool registration_only)
     lprintf ("Dice time:            %10.1f seconds\n", 
         d_ptr->stats.get_time_dice());
     lprintf ("Hausdorff time:       %10.1f seconds\n", 
-        d_ptr->stats.get_time_dice());
+        d_ptr->stats.get_time_hausdorff());
     lprintf ("Distance map time:    %10.1f seconds\n", d_ptr->time_dmap);
     lprintf ("Voting time:          %10.1f seconds\n", d_ptr->time_vote);
     lprintf ("I/O time:             %10.1f seconds\n", d_ptr->time_io);

@@ -20,9 +20,9 @@ public:
 public:
     /*! \brief Different distance map algorithms. */
     enum Algorithm {
-        ITK_SIGNED_APPROXIMATE,
-        ITK_SIGNED_DANIELSSON,
-        ITK_SIGNED_MAURER,
+        DANIELSSON,
+        ITK_DANIELSSON,
+        ITK_MAURER,
     };
 
 public:

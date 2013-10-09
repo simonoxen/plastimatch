@@ -6,12 +6,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "itkApproximateSignedDistanceMapImageFilter.h"
 #include "itkImage.h"
-#include "itkSignedDanielssonDistanceMapImageFilter.h"
-#include "itkSignedMaurerDistanceMapImageFilter.h"
 
+#include "image_boundary.h"
 #include "distance_map.h"
+#include "itk_distance_map.h"
 #include "itk_image_type.h"
 #include "plm_image.h"
 #include "volume.h"
@@ -20,9 +19,9 @@
 class Distance_map_private {
 public:
     Distance_map_private () {
-        inside_is_positive = true;
-        use_squared_distance = true;
-        algorithm = Distance_map::ITK_SIGNED_MAURER;
+        inside_is_positive = false;
+        use_squared_distance = false;
+        algorithm = Distance_map::ITK_MAURER;
     }
 public:
     Distance_map::Algorithm algorithm;
@@ -32,7 +31,6 @@ public:
     FloatImageType::Pointer output;
 public:
     void run_native_danielsson ();
-    void run_itk_signed_approximate ();
     void run_itk_signed_danielsson ();
     void run_itk_signed_maurer ();
     void run_itk_signed_native ();
@@ -42,19 +40,22 @@ public:
 void
 Distance_map_private::run_native_danielsson ()
 {
-    Plm_image pi (this->input);
-    Volume::Pointer vol = pi.get_volume_uchar();
-    unsigned char *img = (unsigned char*) vol->img;
-    float sp2[3] = {
-        vol->spacing[0] * vol->spacing[0],
-        vol->spacing[1] * vol->spacing[1],
-        vol->spacing[2] * vol->spacing[2]
-    };
+    /* Compute boundary of image
+       vb = volume of boundary, imgb = img of boundary */
+    Plm_image pib (do_image_boundary (this->input));
+    Volume::Pointer vb = pib.get_volume_uchar();
+    unsigned char *imgb = (unsigned char*) vb->img;
 
-    /* Allocate and initialize array */
-    float *dm = new float[3*vol->npix];
-    for (plm_long v = 0; v < vol->npix; v++) {
-        bool inside = (bool) img[v];
+    /* Convert image to native volume 
+       vs = volume of set, imgs = img of set */
+    Plm_image pi (this->input);
+    Volume::Pointer vs = pi.get_volume_uchar();
+    unsigned char *imgs = (unsigned char*) vs->img;
+
+    /* Allocate and initialize "Danielsson array" */
+    float *dm = new float[3*vb->npix];
+    for (plm_long v = 0; v < vb->npix; v++) {
+        bool inside = (bool) imgb[v];
         if (inside) {
             dm[3*v+0] = 0;
             dm[3*v+1] = 0;
@@ -65,36 +66,41 @@ Distance_map_private::run_native_danielsson ()
             dm[3*v+2] = FLT_MAX;
         }
     }
+    float sp2[3] = {
+        vb->spacing[0] * vb->spacing[0],
+        vb->spacing[1] * vb->spacing[1],
+        vb->spacing[2] * vb->spacing[2]
+    };
 
-#define SQ_DIST(idx,sp2)                                   \
-    dm[3*idx+0]*dm[3*idx+0]*sp2[0]                         \
-        + dm[3*idx+1]*dm[3*idx+1]*sp2[1]                   \
+    /* Define some macros */
+#define SQ_DIST(idx,sp2)                        \
+    dm[3*idx+0]*dm[3*idx+0]*sp2[0]              \
+        + dm[3*idx+1]*dm[3*idx+1]*sp2[1]        \
         + dm[3*idx+2]*dm[3*idx+2]*sp2[2]
-
-#define SQ_DIST_I(idx,sp2)                                 \
-    (dm[3*idx+0]+1)*(dm[3*idx+0]+1)*sp2[0]                 \
-        + dm[3*idx+1]*dm[3*idx+1]*sp2[1]                   \
+#define SQ_DIST_I(idx,sp2)                      \
+    (dm[3*idx+0]+1)*(dm[3*idx+0]+1)*sp2[0]      \
+        + dm[3*idx+1]*dm[3*idx+1]*sp2[1]        \
         + dm[3*idx+2]*dm[3*idx+2]*sp2[2]
-#define SQ_DIST_J(idx,sp2)                                 \
-    dm[3*idx+0]*dm[3*idx+0]*sp2[0]                         \
-        + (dm[3*idx+1]+1)*(dm[3*idx+1]+1)*sp2[1]           \
+#define SQ_DIST_J(idx,sp2)                              \
+    dm[3*idx+0]*dm[3*idx+0]*sp2[0]                      \
+        + (dm[3*idx+1]+1)*(dm[3*idx+1]+1)*sp2[1]        \
         + dm[3*idx+2]*dm[3*idx+2]*sp2[2]
-#define SQ_DIST_K(idx,sp2)                                 \
-    dm[3*idx+0]*dm[3*idx+0]*sp2[0]                         \
-        + dm[3*idx+1]*dm[3*idx+1]*sp2[1]                   \
+#define SQ_DIST_K(idx,sp2)                              \
+    dm[3*idx+0]*dm[3*idx+0]*sp2[0]                      \
+        + dm[3*idx+1]*dm[3*idx+1]*sp2[1]                \
         + (dm[3*idx+2]+1)*(dm[3*idx+2]+1)*sp2[2]
 
-#define COPY_I(new_idx,old_idx)                            \
-    dm[3*new_idx+0] = dm[3*old_idx+0] + 1;                 \
-    dm[3*new_idx+1] = dm[3*old_idx+1];                     \
+#define COPY_I(new_idx,old_idx)                 \
+    dm[3*new_idx+0] = dm[3*old_idx+0] + 1;      \
+    dm[3*new_idx+1] = dm[3*old_idx+1];          \
     dm[3*new_idx+2] = dm[3*old_idx+2];
-#define COPY_J(new_idx,old_idx)                            \
-    dm[3*new_idx+0] = dm[3*old_idx+0];                     \
-    dm[3*new_idx+1] = dm[3*old_idx+1] + 1;                 \
+#define COPY_J(new_idx,old_idx)                 \
+    dm[3*new_idx+0] = dm[3*old_idx+0];          \
+    dm[3*new_idx+1] = dm[3*old_idx+1] + 1;      \
     dm[3*new_idx+2] = dm[3*old_idx+2];
-#define COPY_K(new_idx,old_idx)                            \
-    dm[3*new_idx+0] = dm[3*old_idx+0];                     \
-    dm[3*new_idx+1] = dm[3*old_idx+1];                     \
+#define COPY_K(new_idx,old_idx)                 \
+    dm[3*new_idx+0] = dm[3*old_idx+0];          \
+    dm[3*new_idx+1] = dm[3*old_idx+1];          \
     dm[3*new_idx+2] = dm[3*old_idx+2] + 1;
 
     /* GCS FIX -- This is only implemented as distance to set, 
@@ -104,12 +110,12 @@ Distance_map_private::run_native_danielsson ()
        both forward and backward for j direction.  Need to test. */
 
     /* Forward scan k */
-    for (plm_long k = 1; k < vol->dim[2]; k++) {
+    for (plm_long k = 1; k < vb->dim[2]; k++) {
         /* Propagate k */
-        for (plm_long j = 0; j < vol->dim[1]; j++) {
-            for (plm_long i = 0; i < vol->dim[0]; i++) {
-                plm_long vo = vol->index (i, j, k-1);   /* "old" voxel */
-                plm_long vn = vol->index (i, j, k);     /* "new" voxel */
+        for (plm_long j = 0; j < vb->dim[1]; j++) {
+            for (plm_long i = 0; i < vb->dim[0]; i++) {
+                plm_long vo = vb->index (i, j, k-1);   /* "old" voxel */
+                plm_long vn = vb->index (i, j, k);     /* "new" voxel */
                 if (dm[3*vo] == FLT_MAX) {
                     continue;
                 }
@@ -125,11 +131,11 @@ Distance_map_private::run_native_danielsson ()
             }
         }
         /* Forward scan j */
-        for (plm_long j = 1; j < vol->dim[1]; j++) {
+        for (plm_long j = 1; j < vb->dim[1]; j++) {
             /* Propagate j */
-            for (plm_long i = 0; i < vol->dim[0]; i++) {
-                plm_long vo = vol->index (i, j-1, k);   /* "old" voxel */
-                plm_long vn = vol->index (i, j, k);     /* "new" voxel */
+            for (plm_long i = 0; i < vb->dim[0]; i++) {
+                plm_long vo = vb->index (i, j-1, k);   /* "old" voxel */
+                plm_long vn = vb->index (i, j, k);     /* "new" voxel */
                 if (dm[3*vo] == FLT_MAX) {
                     continue;
                 }
@@ -144,9 +150,9 @@ Distance_map_private::run_native_danielsson ()
                 }
             }
             /* Forward propagate i */
-            for (plm_long i = 1; i < vol->dim[0]; i++) {
-                plm_long vo = vol->index (i-1, j, k);   /* "old" voxel */
-                plm_long vn = vol->index (i, j, k);     /* "new" voxel */
+            for (plm_long i = 1; i < vb->dim[0]; i++) {
+                plm_long vo = vb->index (i-1, j, k);   /* "old" voxel */
+                plm_long vn = vb->index (i, j, k);     /* "new" voxel */
                 if (dm[3*vo] == FLT_MAX) {
                     continue;
                 }
@@ -161,9 +167,9 @@ Distance_map_private::run_native_danielsson ()
                 }
             }
             /* Backward propagate i */
-            for (plm_long i = vol->dim[0] - 2; i >= 0; i--) {
-                plm_long vo = vol->index (i+1, j, k);   /* "old" voxel */
-                plm_long vn = vol->index (i, j, k);     /* "new" voxel */
+            for (plm_long i = vb->dim[0] - 2; i >= 0; i--) {
+                plm_long vo = vb->index (i+1, j, k);   /* "old" voxel */
+                plm_long vn = vb->index (i, j, k);     /* "new" voxel */
                 if (dm[3*vo] == FLT_MAX) {
                     continue;
                 }
@@ -179,11 +185,11 @@ Distance_map_private::run_native_danielsson ()
             }
         }
         /* Backward scan j */
-        for (plm_long j = vol->dim[1] - 2; j >= 0; j--) {
+        for (plm_long j = vb->dim[1] - 2; j >= 0; j--) {
             /* Propagate j */
-            for (plm_long i = 0; i < vol->dim[0]; i++) {
-                plm_long vo = vol->index (i, j+1, k);   /* "old" voxel */
-                plm_long vn = vol->index (i, j, k);     /* "new" voxel */
+            for (plm_long i = 0; i < vb->dim[0]; i++) {
+                plm_long vo = vb->index (i, j+1, k);   /* "old" voxel */
+                plm_long vn = vb->index (i, j, k);     /* "new" voxel */
                 if (dm[3*vo] == FLT_MAX) {
                     continue;
                 }
@@ -198,9 +204,9 @@ Distance_map_private::run_native_danielsson ()
                 }
             }
             /* Forward propagate i */
-            for (plm_long i = 1; i < vol->dim[0]; i++) {
-                plm_long vo = vol->index (i-1, j, k);   /* "old" voxel */
-                plm_long vn = vol->index (i, j, k);     /* "new" voxel */
+            for (plm_long i = 1; i < vb->dim[0]; i++) {
+                plm_long vo = vb->index (i-1, j, k);   /* "old" voxel */
+                plm_long vn = vb->index (i, j, k);     /* "new" voxel */
                 if (dm[3*vo] == FLT_MAX) {
                     continue;
                 }
@@ -215,9 +221,9 @@ Distance_map_private::run_native_danielsson ()
                 }
             }
             /* Backward propagate i */
-            for (plm_long i = vol->dim[0] - 2; i >= 0; i--) {
-                plm_long vo = vol->index (i+1, j, k);   /* "old" voxel */
-                plm_long vn = vol->index (i, j, k);     /* "new" voxel */
+            for (plm_long i = vb->dim[0] - 2; i >= 0; i--) {
+                plm_long vo = vb->index (i+1, j, k);   /* "old" voxel */
+                plm_long vn = vb->index (i, j, k);     /* "new" voxel */
                 if (dm[3*vo] == FLT_MAX) {
                     continue;
                 }
@@ -235,12 +241,12 @@ Distance_map_private::run_native_danielsson ()
     }
 
     /* Backward scan k */
-    for (plm_long k = vol->dim[2] - 2; k >= 0; k--) {
+    for (plm_long k = vb->dim[2] - 2; k >= 0; k--) {
         /* Propagate k */
-        for (plm_long j = 0; j < vol->dim[1]; j++) {
-            for (plm_long i = 0; i < vol->dim[0]; i++) {
-                plm_long vo = vol->index (i, j, k+1);   /* "old" voxel */
-                plm_long vn = vol->index (i, j, k);     /* "new" voxel */
+        for (plm_long j = 0; j < vb->dim[1]; j++) {
+            for (plm_long i = 0; i < vb->dim[0]; i++) {
+                plm_long vo = vb->index (i, j, k+1);   /* "old" voxel */
+                plm_long vn = vb->index (i, j, k);     /* "new" voxel */
                 if (dm[3*vo] == FLT_MAX) {
                     continue;
                 }
@@ -256,11 +262,11 @@ Distance_map_private::run_native_danielsson ()
             }
         }
         /* Forward scan j */
-        for (plm_long j = 1; j < vol->dim[1]; j++) {
+        for (plm_long j = 1; j < vb->dim[1]; j++) {
             /* Propagate j */
-            for (plm_long i = 0; i < vol->dim[0]; i++) {
-                plm_long vo = vol->index (i, j-1, k);   /* "old" voxel */
-                plm_long vn = vol->index (i, j, k);     /* "new" voxel */
+            for (plm_long i = 0; i < vb->dim[0]; i++) {
+                plm_long vo = vb->index (i, j-1, k);   /* "old" voxel */
+                plm_long vn = vb->index (i, j, k);     /* "new" voxel */
                 if (dm[3*vo] == FLT_MAX) {
                     continue;
                 }
@@ -275,9 +281,9 @@ Distance_map_private::run_native_danielsson ()
                 }
             }
             /* Forward propagate i */
-            for (plm_long i = 1; i < vol->dim[0]; i++) {
-                plm_long vo = vol->index (i-1, j, k);   /* "old" voxel */
-                plm_long vn = vol->index (i, j, k);     /* "new" voxel */
+            for (plm_long i = 1; i < vb->dim[0]; i++) {
+                plm_long vo = vb->index (i-1, j, k);   /* "old" voxel */
+                plm_long vn = vb->index (i, j, k);     /* "new" voxel */
                 if (dm[3*vo] == FLT_MAX) {
                     continue;
                 }
@@ -292,9 +298,9 @@ Distance_map_private::run_native_danielsson ()
                 }
             }
             /* Backward propagate i */
-            for (plm_long i = vol->dim[0] - 2; i >= 0; i--) {
-                plm_long vo = vol->index (i+1, j, k);   /* "old" voxel */
-                plm_long vn = vol->index (i, j, k);     /* "new" voxel */
+            for (plm_long i = vb->dim[0] - 2; i >= 0; i--) {
+                plm_long vo = vb->index (i+1, j, k);   /* "old" voxel */
+                plm_long vn = vb->index (i, j, k);     /* "new" voxel */
                 if (dm[3*vo] == FLT_MAX) {
                     continue;
                 }
@@ -310,11 +316,11 @@ Distance_map_private::run_native_danielsson ()
             }
         }
         /* Backward scan j */
-        for (plm_long j = vol->dim[1] - 2; j >= 0; j--) {
+        for (plm_long j = vb->dim[1] - 2; j >= 0; j--) {
             /* Propagate j */
-            for (plm_long i = 0; i < vol->dim[0]; i++) {
-                plm_long vo = vol->index (i, j+1, k);   /* "old" voxel */
-                plm_long vn = vol->index (i, j, k);     /* "new" voxel */
+            for (plm_long i = 0; i < vb->dim[0]; i++) {
+                plm_long vo = vb->index (i, j+1, k);   /* "old" voxel */
+                plm_long vn = vb->index (i, j, k);     /* "new" voxel */
                 if (dm[3*vo] == FLT_MAX) {
                     continue;
                 }
@@ -329,9 +335,9 @@ Distance_map_private::run_native_danielsson ()
                 }
             }
             /* Forward propagate i */
-            for (plm_long i = 1; i < vol->dim[0]; i++) {
-                plm_long vo = vol->index (i-1, j, k);   /* "old" voxel */
-                plm_long vn = vol->index (i, j, k);     /* "new" voxel */
+            for (plm_long i = 1; i < vb->dim[0]; i++) {
+                plm_long vo = vb->index (i-1, j, k);   /* "old" voxel */
+                plm_long vn = vb->index (i, j, k);     /* "new" voxel */
                 if (dm[3*vo] == FLT_MAX) {
                     continue;
                 }
@@ -346,9 +352,9 @@ Distance_map_private::run_native_danielsson ()
                 }
             }
             /* Backward propagate i */
-            for (plm_long i = vol->dim[0] - 2; i >= 0; i--) {
-                plm_long vo = vol->index (i+1, j, k);   /* "old" voxel */
-                plm_long vn = vol->index (i, j, k);     /* "new" voxel */
+            for (plm_long i = vb->dim[0] - 2; i >= 0; i--) {
+                plm_long vo = vb->index (i+1, j, k);   /* "old" voxel */
+                plm_long vn = vb->index (i, j, k);     /* "new" voxel */
                 if (dm[3*vo] == FLT_MAX) {
                     continue;
                 }
@@ -368,15 +374,19 @@ Distance_map_private::run_native_danielsson ()
     /* Fill in output image */
     Plm_image::Pointer dmap = Plm_image::New (
         new Plm_image (
-            new Volume (Volume_header (vol), PT_FLOAT, 1)));
+            new Volume (Volume_header (vb), PT_FLOAT, 1)));
     Volume::Pointer dmap_vol = dmap->get_volume_float ();
     float *dmap_img = (float*) dmap_vol->img;
-    for (plm_long v = 0; v < vol->npix; v++) {
-        if (dm[3*v] == FLT_MAX) {
-            dmap_img[v] = 100.f;
-        } else {
+    for (plm_long v = 0; v < vb->npix; v++) {
+        if (!this->use_squared_distance) {
             dmap_img[v] = sqrt(SQ_DIST(v,sp2));
         }
+        if ((this->inside_is_positive && !imgs[v])
+            || (!this->inside_is_positive && imgs[v]))
+        {
+            dmap_img[v] = -dmap_img[v];
+        }
+
     }
     
     /* Free temporary memory */
@@ -386,115 +396,35 @@ Distance_map_private::run_native_danielsson ()
     this->output = dmap->itk_float ();
 }
 
-/* Commented out to improve compile speed */
-#if defined (commentout)
-void
-Distance_map_private::run_itk_signed_approximate ()
-{
-    typedef itk::ApproximateSignedDistanceMapImageFilter< 
-        UCharImageType, FloatImageType >  FilterType;
-    FilterType::Pointer filter = FilterType::New ();
-
-#if defined (commentout)
-    if (this->use_squared_distance) {
-        filter->SetSquaredDistance (true);
-    } else {
-        filter->SetSquaredDistance (false);
-    }
-
-    /* Always compute map in millimeters, never voxels */
-    filter->SetUseImageSpacing (true);
-
-    if (this->inside_is_positive) {
-        filter->SetInsideIsPositive (true);
-    } else {
-        filter->SetInsideIsPositive (false);
-    }
-#endif
-
-    /* ITK is very odd... */
-    filter->SetOutsideValue (0);
-    filter->SetInsideValue (1);
-
-    /* Run the filter */
-    filter->SetInput (this->input);
-    filter->Update();
-    this->output = filter->GetOutput ();
-}
-
 void
 Distance_map_private::run_itk_signed_danielsson ()
 {
-    typedef itk::SignedDanielssonDistanceMapImageFilter< 
-        UCharImageType, FloatImageType >  FilterType;
-    FilterType::Pointer filter = FilterType::New ();
-
-    if (this->use_squared_distance) {
-        filter->SetSquaredDistance (true);
-    } else {
-        filter->SetSquaredDistance (false);
-    }
-
-    /* Always compute map in millimeters, never voxels */
-    filter->SetUseImageSpacing (true);
-
-    if (this->inside_is_positive) {
-        filter->SetInsideIsPositive (true);
-    } else {
-        filter->SetInsideIsPositive (false);
-    }
-
-    /* Run the filter */
-    filter->SetInput (this->input);
-    filter->Update();
-    this->output = filter->GetOutput ();
+    this->output = itk_distance_map_danielsson (
+        this->input,
+        this->use_squared_distance,
+        this->inside_is_positive);
 }
-#endif
 
 void
 Distance_map_private::run_itk_signed_maurer ()
 {
-    typedef itk::SignedMaurerDistanceMapImageFilter< 
-        UCharImageType, FloatImageType >  FilterType;
-    FilterType::Pointer filter = FilterType::New ();
-
-    if (this->use_squared_distance) {
-        filter->SetSquaredDistance (true);
-    } else {
-        filter->SetSquaredDistance (false);
-    }
-
-    /* Always compute map in millimeters, never voxels */
-    filter->SetUseImageSpacing (true);
-
-    if (this->inside_is_positive) {
-        filter->SetInsideIsPositive (true);
-    } else {
-        filter->SetInsideIsPositive (false);
-    }
-
-    /* Run the filter */
-    filter->SetInput (this->input);
-    filter->Update();
-    this->output = filter->GetOutput ();
+    this->output = itk_distance_map_maurer (
+        this->input,
+        this->use_squared_distance,
+        this->inside_is_positive);
 }
 
 void
 Distance_map_private::run ()
 {
     switch (this->algorithm) {
-#if defined (commentout)
-    case Distance_map::ITK_SIGNED_APPROXIMATE:
-        this->run_itk_signed_approximate ();
-        break;
-    case Distance_map::ITK_SIGNED_DANIELSSON:
-        this->run_itk_signed_danielsson ();
-        break;
-#endif
-    case Distance_map::ITK_SIGNED_DANIELSSON:
+    case Distance_map::DANIELSSON:
         this->run_native_danielsson ();
         break;
-    case Distance_map::ITK_SIGNED_MAURER:
+    case Distance_map::ITK_DANIELSSON:
+        this->run_itk_signed_danielsson ();
+        break;
+    case Distance_map::ITK_MAURER:
     default:
         this->run_itk_signed_maurer ();
         break;
