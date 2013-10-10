@@ -80,12 +80,12 @@ want the DRR and FDK programs, you don't need it.  Get ITK from here:
 
   http://itk.org/
 
-We currently recommend version ITK 3.20.X.  
-ITK >= 4.1 is supported, but DICOM support is still in development.
-You will need to install DCMTK.
+We currently support version ITK 3.20.X, and ITK 4.1 and greater.
+For ITK 4, you will need to install DCMTK if you want DICOM support.
 
-  ITK 3.20.1            Recommended          
-  ITK >= 4.1            Supported, please install DCMTK for DICOM
+  ITK 3.20.1            Supported (with caveats)
+  ITK 3.20.2            Recommended
+  ITK >= 4.1            Recommended (install DCMTK)
 
 When you build ITK, the following settings are recommended::
 
@@ -94,20 +94,16 @@ When you build ITK, the following settings are recommended::
   BUILD_SHARED_LIBS                         (EITHER)
   BUILD_TESTING                             OFF
   ITK_USE_REVIEW                            ON
-  ITK_USE_OPTIMIZED_REGISTRATION_METHODS    ON
+  ITK_USE_OPTIMIZED_REGISTRATION_METHODS    ON         # ITK 3.20 only
 
-Note, if you are using gcc 4.7 on 32-bit platform, and if you 
-need to load .nrrd files, you will need to patch ITK.  
-I believe this patch is needed for both ITK 3.20.1 and ITK 4.1, 
-but the bug is fixed for ITK >= 4.2.  Here is the patch:
+ITK 3.20.2 is a maintenance release, and fixes several bugs 
+related to recent versions of the gcc compiler.  To get ITK 3.20.2, 
+do the following::
 
-  http://lists.debian.org/debian-med/2012/06/msg00136.html
+  git clone git://itk.org/ITK.git
+  cd ITK
+  git checkout -b release-3.20 origin/release-3.20
 
-Note, if you are using Debian, Ubuntu, or related distributions, 
-the ITK package provided by the repository is compiled against 
-GDCM 2.X instead of GDCM 1.X.  You can use this ITK, but you 
-should also install dcmtk and dcmtk-dev if you wish to 
-import or export in DICOM-RT.
 
 VTK (optional)
 ^^^^^^^^^^^^^^
