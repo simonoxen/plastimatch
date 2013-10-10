@@ -10,8 +10,8 @@
 #include "itkImageMaskSpatialObject.h"
 #include "itkLinearInterpolateImageFunction.h"
 #include "itkMutualInformationImageToImageMetric.h"
+#include "itkNormalizedMutualInformationHistogramImageToImageMetric.h"
 #include "itkRegularStepGradientDescentOptimizer.h"
-
 #if defined(ITK_USE_OPTIMIZED_REGISTRATION_METHODS)
 #include "plm_OptMattesMutualInformationImageToImageMetric.h"
 #include "itkOptMeanSquaresImageToImageMetric.h"
@@ -21,7 +21,6 @@
 #endif
 
 #include "compiler_warnings.h"
-//#include "itk_demons.h"
 #include "itk_image.h"
 #include "itk_image_type.h"
 #include "itk_optimizer.h"
@@ -40,7 +39,8 @@ typedef itk::MeanSquaresImageToImageMetric <
     FloatImageType, FloatImageType > MSEMetricType;
 typedef itk::MutualInformationImageToImageMetric <
     FloatImageType, FloatImageType > MIMetricType;
-
+typedef itk::NormalizedMutualInformationHistogramImageToImageMetric <
+    FloatImageType, FloatImageType > NMIMetricType;
 ///modified Mattes mutual information class only available when using ITK_USE_OPTIMIZED_REGISTRATION_METHODS
 #if defined(ITK_USE_OPTIMIZED_REGISTRATION_METHODS)
 typedef itk::plm_MattesMutualInformationImageToImageMetric <
@@ -56,6 +56,8 @@ typedef itk::ImageMaskSpatialObject< 3 > Mask_SOType;
 
 typedef itk::LinearInterpolateImageFunction <
     FloatImageType, double >InterpolatorType;
+
+
 
 void
 itk_align_center (
@@ -117,6 +119,28 @@ Itk_registration_private::evaluate_initial_transform ()
         exit (-1);
     }
     return value;
+}
+
+unsigned int
+Itk_registration_private::compute_num_samples (
+    FloatImageType::Pointer& fixed_ss)
+{
+    if (stage->mi_num_spatial_samples > 0) {
+        lprintf ("Setting spatial samples to %d\n",
+            stage->mi_num_spatial_samples);
+        return stage->mi_num_spatial_samples;
+    } else {
+        plm_long dim[3], num_voxels;
+        get_image_header (dim, 0, 0, fixed_ss);
+        num_voxels = dim[0] * dim[1] * dim[2];
+        unsigned int num_samples 
+            = stage->mi_num_spatial_samples_pct * num_voxels;
+        lprintf ("Setting spatial samples to %f x %d = %u\n",
+            stage->mi_num_spatial_samples_pct, (int) num_voxels,
+            (unsigned int) 
+            (stage->mi_num_spatial_samples_pct * num_voxels));
+        return num_samples;
+    } 
 }
 
 void
@@ -202,6 +226,7 @@ Itk_registration_private::set_metric (FloatImageType::Pointer& fixed_ss)
         MattesMIMetricType::Pointer metric = MattesMIMetricType::New();
         metric->SetNumberOfHistogramBins(stage->mi_histogram_bins_fixed);
 
+#if defined (commentout)
         if (stage->mi_num_spatial_samples > 0) {
             lprintf ("Setting spatial samples to %d\n",
                 stage->mi_num_spatial_samples);
@@ -219,14 +244,37 @@ Itk_registration_private::set_metric (FloatImageType::Pointer& fixed_ss)
                 (unsigned int) 
                 (stage->mi_num_spatial_samples_pct * num_voxels));
         } 
-        #if defined(ITK_USE_OPTIMIZED_REGISTRATION_METHODS)
-            //Setting maxVal and minVal for MI calculation (default==0 --> minVal and maxVal will be calculated from images)
-            metric->SetFixedImageMin(stage->mi_fixed_image_minVal);
-            metric->SetMovingImageMin(stage->mi_moving_image_minVal);
-            metric->SetFixedImageMax(stage->mi_fixed_image_maxVal);
-            metric->SetMovingImageMax(stage->mi_moving_image_maxVal);
-        #endif
+#endif
+
+        metric->SetNumberOfSpatialSamples (
+            this->compute_num_samples (fixed_ss));
+
+#if defined(ITK_USE_OPTIMIZED_REGISTRATION_METHODS)
+        //Setting maxVal and minVal for MI calculation (default==0 --> minVal and maxVal will be calculated from images)
+        metric->SetFixedImageMin(stage->mi_fixed_image_minVal);
+        metric->SetMovingImageMin(stage->mi_moving_image_minVal);
+        metric->SetFixedImageMax(stage->mi_fixed_image_maxVal);
+        metric->SetMovingImageMax(stage->mi_moving_image_maxVal);
+#endif
 	
+        registration->SetMetric(metric);
+    }
+    case METRIC_NMI:
+    {
+        NMIMetricType::Pointer metric = NMIMetricType::New();
+
+        NMIMetricType::HistogramSizeType hist;
+        hist[0] = stage->mi_histogram_bins_fixed;
+        hist[2] = stage->mi_histogram_bins_moving;
+        metric->SetHistogramSize (hist);
+
+        /* Apparently sampling is not implemented in ITK 3 
+           unless optimized registration methods are specified. */
+#if defined(ITK_USE_OPTIMIZED_REGISTRATION_METHODS) || (ITK_VERSION_MAJOR >= 4)
+        metric->SetNumberOfSpatialSamples (
+            this->compute_num_samples (fixed_ss));
+#endif
+
         registration->SetMetric(metric);
     }
     break;

@@ -45,6 +45,7 @@ public:
     void optimizer_stop ();
     void optimizer_set_max_iterations (int its);
 
+    unsigned int compute_num_samples (FloatImageType::Pointer& fixed_ss);
     void set_best_xform ();
     void set_fixed_image_region ();
     void set_roi_images ();

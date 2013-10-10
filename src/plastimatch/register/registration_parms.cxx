@@ -448,6 +448,9 @@ Registration_parms::set_key_val (
         else if (!strcmp(val,"mi") || !strcmp(val,"MI")) {
             stage->metric_type = METRIC_MI;
         }
+        else if (!strcmp(val,"nmi") || !strcmp(val,"NMI")) {
+            stage->metric_type = METRIC_NMI;
+        }
         else if (!strcmp(val,"mattes")) {
             stage->metric_type = METRIC_MI_MATTES;
         }

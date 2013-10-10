@@ -51,6 +51,7 @@
 #define METRIC_MSE                          1
 #define METRIC_MI                           2
 #define METRIC_MI_MATTES                    3
+#define METRIC_NMI                          4
 
 #define IMG_OUT_FMT_AUTO                    0
 #define IMG_OUT_FMT_DICOM                   1
