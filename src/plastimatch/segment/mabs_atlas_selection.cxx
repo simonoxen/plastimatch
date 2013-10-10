@@ -339,7 +339,8 @@ Mabs_atlas_selection::random_ranking() /* Just for testing purpose */
         std::list<std::string>::iterator atlases_iterator = this->atlas_dir_list.begin();
         std::advance (atlases_iterator, random_index);
         
-        if (find(random_atlases.begin(), random_atlases.end(), *atlases_iterator) == random_atlases.end())
+        if (find(random_atlases.begin(), random_atlases.end(), *atlases_iterator) == random_atlases.end() &&
+            *atlases_iterator != this->subject_id)
         {
             i++;
             std::string atlas = basename(*atlases_iterator);
