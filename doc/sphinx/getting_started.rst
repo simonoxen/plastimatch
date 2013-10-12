@@ -81,11 +81,21 @@ want the DRR and FDK programs, you don't need it.  Get ITK from here:
   http://itk.org/
 
 We currently support version ITK 3.20.X, and ITK 4.1 and greater.
-For ITK 4, you will need to install DCMTK if you want DICOM support.
+For ITK 4, you will need to install DCMTK if you want DICOM support. ::
 
   ITK 3.20.1            Supported (with caveats)
   ITK 3.20.2            Recommended
+  ITK 4.0               Not supported
   ITK >= 4.1            Recommended (install DCMTK)
+
+ITK 3.20.2 is a maintenance release.  It is preferred over 
+ITK 3.20.1 on linux because it fixes several bugs related to recent 
+versions of the gcc compiler.  To get ITK 3.20.2, 
+do the following::
+
+  git clone git://itk.org/ITK.git
+  cd ITK
+  git checkout -b release-3.20 origin/release-3.20
 
 When you build ITK, the following settings are recommended::
 
@@ -94,15 +104,26 @@ When you build ITK, the following settings are recommended::
   BUILD_SHARED_LIBS                         (EITHER)
   BUILD_TESTING                             OFF
   ITK_USE_REVIEW                            ON
-  ITK_USE_OPTIMIZED_REGISTRATION_METHODS    ON         # ITK 3.20 only
+  ITK_USE_OPTIMIZED_REGISTRATION_METHODS    ON         # ITK 3.20.X only
 
-ITK 3.20.2 is a maintenance release, and fixes several bugs 
-related to recent versions of the gcc compiler.  To get ITK 3.20.2, 
-do the following::
 
-  git clone git://itk.org/ITK.git
-  cd ITK
-  git checkout -b release-3.20 origin/release-3.20
+DCMTK (optional)
+^^^^^^^^^^^^^^^^
+DCMTK is needed for DICOM-RT support with ITK 4.  
+The supported version is 3.6.  On linux, feel free to 
+use the dcmtk that comes from your package manager (that's what I do).
+
+There are special considerations to building dcmtk:
+
+#. PNG, TIFF, and ZLIB are not required
+#. Set CMAKE_INSTALL_PREFIX to an install directory of your 
+   choice; I use $HOME/build/dcmtk-3.6.0-install
+#. On linux x86_64 platforms, you need to add -fPIC to 
+   CMAKE_CXX_FLAGS and CMAKE_C_FLAGS
+#. On windows, you need to set DCMTK_OVERWRITE_WIN32_COMPILER_FLAGS to OFF
+#. After building, you need to install; on linux do "make install", or 
+   on Visual Studio build the INSTALL target
+#. When you run cmake on plastimatch, set DCMTK_DIR to the install directory
 
 
 VTK (optional)
@@ -159,25 +180,6 @@ However, you do need to create the import libraries.
 See this page for details:
 
   http://www.fftw.org/install/windows.html  
-
-DCMTK (optional)
-^^^^^^^^^^^^^^^^
-DCMTK is needed for DICOM-RT support with ITK 4.  
-The supported version is 3.6.  On linux, feel free to 
-use the dcmtk that comes from your package manager (that's what I do).
-
-There are special considerations to building dcmtk:
-
-#. PNG, TIFF, and ZLIB are not required
-#. Set CMAKE_INSTALL_PREFIX to an install directory of your 
-   choice; I use $HOME/build/dcmtk-3.6.0-install
-#. On linux x86_64 platforms, you need to add -fPIC to 
-   CMAKE_CXX_FLAGS and CMAKE_C_FLAGS
-#. On windows, you need to set DCMTK_OVERWRITE_WIN32_COMPILER_FLAGS to OFF
-#. After building, you need to install; on linux do "make install", or 
-   on Visual Studio build the INSTALL target
-#. When you run cmake on plastimatch, set DCMTK_DIR to the install directory
-
 
 WxWidgets (optional)
 ^^^^^^^^^^^^^^^^^^^^
