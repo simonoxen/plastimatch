@@ -1,8 +1,8 @@
 [GLOBAL]
 fixed=gauss-1.mha
 moving=gauss-2.mha
-vf_out=plm-reg-itk-demons-vf.mha
-img_out=plm-reg-itk-demons-img.mha
+vf_out=plm-reg-itk-demons-diff-vf.mha
+img_out=plm-reg-itk-demons-diff-img.mha
 
 [STAGE]
 xform=vf

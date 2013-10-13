@@ -2264,6 +2264,14 @@ plmtest_check_interval ("plm-reg-itk-demons-check-2"
   "-755.3"
   "-754.6"
   )
+set_property (TEST plm-reg-itk-demons PROPERTY DEPENDS "gauss-1;gauss-2")
+set_tests_properties (plm-reg-itk-demons-check-1 
+  PROPERTIES DEPENDS plm-reg-itk-demons)
+set_tests_properties (plm-reg-itk-demons-stats-2 
+  PROPERTIES DEPENDS plm-reg-itk-demons)
+set_tests_properties (plm-reg-itk-demons-check-2 
+  PROPERTIES DEPENDS plm-reg-itk-demons-stats-2)
+
 plm_add_test (
   "plm-reg-itk-demons-diff"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -2275,6 +2283,11 @@ plmtest_check_interval ("plm-reg-itk-demons-diff-check-1"
   "31.2"
   "31.3"
   )
+set_property (TEST plm-reg-itk-demons-diff 
+  PROPERTY DEPENDS "gauss-1;gauss-2")
+set_tests_properties (plm-reg-itk-demons-diff-check-1 
+  PROPERTIES DEPENDS plm-reg-itk-demons-diff)
+
 plm_add_test (
   "plm-reg-itk-demons-logdom"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -2286,8 +2299,13 @@ plmtest_check_interval ("plm-reg-itk-demons-logdom-check-1"
   "32.65"
   "32.75"
   )
+set_property (TEST plm-reg-itk-demons-logdom 
+  PROPERTY DEPENDS "gauss-1;gauss-2")
+set_tests_properties (plm-reg-itk-demons-logdom-check-1 
+  PROPERTIES DEPENDS plm-reg-itk-demons-logdom)
+
 plm_add_test (
-  "plm-reg-itk-demons-sym_logdom"
+  "plm-reg-itk-demons-sym-logdom"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "${PLM_TESTING_DATA_DIR}/plm-reg-itk-demons_sym_logdom.txt"
   )
@@ -2297,14 +2315,10 @@ plmtest_check_interval ("plm-reg-itk-demons-sym-logdom-check-1"
   "31.85"
   "35.95"
   )
-set_property (TEST plm-reg-itk-demons APPEND PROPERTY DEPENDS gauss-1)
-set_property (TEST plm-reg-itk-demons APPEND PROPERTY DEPENDS gauss-2)
-set_tests_properties (plm-reg-itk-demons-check-1 PROPERTIES 
-  DEPENDS plm-reg-itk-demons)
-set_tests_properties (plm-reg-itk-demons-stats-2 PROPERTIES 
-  DEPENDS plm-reg-itk-demons)
-set_tests_properties (plm-reg-itk-demons-check-2 PROPERTIES 
-  DEPENDS plm-reg-itk-demons-stats-2)
+set_property (TEST plm-reg-itk-demons-sym-logdom 
+  PROPERTY DEPENDS "gauss-1;gauss-2")
+set_tests_properties (plm-reg-itk-demons-sym-logdom-check-1 
+  PROPERTIES DEPENDS plm-reg-itk-demons-sym-logdom)
 
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 2)
@@ -3128,8 +3142,7 @@ plmtest_check_string ("plm-sift-a-check-2"
   "^p1-1,(.*)"
   "-7.500,7.500,-22.500"
   )
-set_tests_properties (plm-sift-a PROPERTIES DEPENDS "lung-1")
-set_tests_properties (plm-sift-a PROPERTIES DEPENDS "lung-2")
+set_tests_properties (plm-sift-a PROPERTIES DEPENDS "lung-1;lung-2")
 set_tests_properties (plm-sift-a-check-1 PROPERTIES DEPENDS plm-sift-a)
 set_tests_properties (plm-sift-a-check-2 PROPERTIES DEPENDS plm-sift-a)
 
