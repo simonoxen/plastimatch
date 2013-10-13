@@ -2310,7 +2310,7 @@ plm_add_test (
   "${PLM_TESTING_DATA_DIR}/plm-reg-itk-demons_sym_logdom.txt"
   )
 plmtest_check_interval ("plm-reg-itk-demons-sym-logdom-check-1"
-  "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-demons-sym_logdom.stdout.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-demons-sym-logdom.stdout.txt"
   "VF_AVG +[^ ] +([-0-9.]*)"
   "31.85"
   "35.95"
