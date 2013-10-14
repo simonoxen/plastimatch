@@ -260,6 +260,16 @@ Itk_registration_private::set_metric (FloatImageType::Pointer& fixed_ss)
             this->compute_num_samples (fixed_ss));
 #endif
 
+#if defined (commentout)
+        /* The ITK example program has this, but it's out of order 
+           compared to existing sequence (transform hasn't 
+           yet been set)... */
+        NMIMetricType::ScalesType scales (
+            registration->GetTransform()->GetNumberOfParameters());
+        scales.Fill (1.0);
+        metric->SetDerivativeStepLengthScales (scales);
+#endif
+
         registration->SetMetric(metric);
     }
     break;

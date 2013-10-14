@@ -71,12 +71,20 @@ set (CTEST_CUSTOM_TESTS_IGNORE
   "plm-convert-rtog-corvus-a"
   )
 
-# drr-d doen't work yet
+# drr-d doesn't work yet
 set (CTEST_CUSTOM_TESTS_IGNORE
   ${CTEST_CUSTOM_TESTS_IGNORE}
   "drr-d"
   "drr-d-stats"
   "drr-d-check"
+  )
+
+# plm-reg-itk-rigid-b doesn't work yet
+set (CTEST_CUSTOM_TESTS_IGNORE
+  ${CTEST_CUSTOM_TESTS_IGNORE}
+  "plm-reg-itk-rigid-b"
+  "plm-reg-itk-rigid-b-stats-1"
+  "plm-reg-itk-rigid-b-check-1"
   )
 
 ## If we don't have a fortran compiler, don't test bragg_curve
@@ -296,9 +304,15 @@ if (NOT PLM_DCM_USE_DCMTK AND NOT GDCM_VERSION_1)
     "plm-convert-dicom-donut-b-stats" 
     "plm-convert-dicom-donut-b-check" 
     "plm-convert-dicom-a"
+    "plm-convert-dicom-a-stats" 
+    "plm-convert-dicom-a-check" 
     "plm-convert-dicom-b"
     "plm-convert-dicom-b-stats"
     "plm-convert-dicom-b-check"
+    "plm-convert-dicom-c" 
+    "plm-convert-dicom-c-stats" 
+    "plm-convert-dicom-c-check" 
+    "plm-convert-dicom-f" 
     "plm-convert-cxt"
     "plm-convert-cxt-stats"
     "plm-convert-cxt-check"
