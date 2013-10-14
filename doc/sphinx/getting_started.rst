@@ -88,10 +88,10 @@ For ITK 4, you will need to install DCMTK if you want DICOM support. ::
   ITK 4.0               Not supported
   ITK >= 4.1            Recommended (install DCMTK)
 
-ITK 3.20.2 is a maintenance release.  It is preferred over 
-ITK 3.20.1 on linux because it fixes several bugs related to recent 
-versions of the gcc compiler.  To get ITK 3.20.2, 
-do the following::
+ITK 3.20.1 is a decent version, but it has a few bugs 
+that cause problems on recent versions of gcc.  
+These bugs are fixed in the ITK 3.20.2 maintenance release.  
+To get ITK 3.20.2, do the following::
 
   git clone git://itk.org/ITK.git
   cd ITK

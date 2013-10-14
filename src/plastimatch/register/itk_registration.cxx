@@ -41,7 +41,8 @@ typedef itk::MutualInformationImageToImageMetric <
     FloatImageType, FloatImageType > MIMetricType;
 typedef itk::NormalizedMutualInformationHistogramImageToImageMetric <
     FloatImageType, FloatImageType > NMIMetricType;
-///modified Mattes mutual information class only available when using ITK_USE_OPTIMIZED_REGISTRATION_METHODS
+/* modified Mattes mutual information class only available when 
+   using ITK_USE_OPTIMIZED_REGISTRATION_METHODS */
 #if defined(ITK_USE_OPTIMIZED_REGISTRATION_METHODS)
 typedef itk::plm_MattesMutualInformationImageToImageMetric <
     FloatImageType, FloatImageType > MattesMIMetricType;
@@ -51,12 +52,9 @@ typedef itk::MattesMutualInformationImageToImageMetric <
 #endif
 typedef itk::ImageToImageMetric < 
     FloatImageType, FloatImageType > MetricType;
-
 typedef itk::ImageMaskSpatialObject< 3 > Mask_SOType;
-
 typedef itk::LinearInterpolateImageFunction <
     FloatImageType, double >InterpolatorType;
-
 
 
 void
@@ -224,33 +222,15 @@ Itk_registration_private::set_metric (FloatImageType::Pointer& fixed_ss)
             the images are detailed, it may be necessary to use a
             much higher proportion, such as $20$ percent. */
         MattesMIMetricType::Pointer metric = MattesMIMetricType::New();
-        metric->SetNumberOfHistogramBins(stage->mi_histogram_bins_fixed);
-
-#if defined (commentout)
-        if (stage->mi_num_spatial_samples > 0) {
-            lprintf ("Setting spatial samples to %d\n",
-                stage->mi_num_spatial_samples);
-            metric->SetNumberOfSpatialSamples (
-                stage->mi_num_spatial_samples);
-        } else {
-            plm_long dim[3], num_voxels;
-            get_image_header (dim, 0, 0, fixed_ss);
-            num_voxels = dim[0] * dim[1] * dim[2];
-            metric->SetNumberOfSpatialSamples (
-                (unsigned int) 
-                (stage->mi_num_spatial_samples_pct * num_voxels));
-            lprintf ("Setting spatial samples to %f x %d = %u\n",
-                stage->mi_num_spatial_samples_pct, (int) num_voxels,
-                (unsigned int) 
-                (stage->mi_num_spatial_samples_pct * num_voxels));
-        } 
-#endif
-
+        metric->SetNumberOfHistogramBins(
+            stage->mi_histogram_bins_fixed);
         metric->SetNumberOfSpatialSamples (
             this->compute_num_samples (fixed_ss));
 
 #if defined(ITK_USE_OPTIMIZED_REGISTRATION_METHODS)
-        //Setting maxVal and minVal for MI calculation (default==0 --> minVal and maxVal will be calculated from images)
+        /* Setting maxVal and minVal for MI calculation 
+           (default==0 --> minVal and maxVal will be calculated from 
+           images) */
         metric->SetFixedImageMin(stage->mi_fixed_image_minVal);
         metric->SetMovingImageMin(stage->mi_moving_image_minVal);
         metric->SetFixedImageMax(stage->mi_fixed_image_maxVal);
@@ -263,14 +243,18 @@ Itk_registration_private::set_metric (FloatImageType::Pointer& fixed_ss)
     {
         NMIMetricType::Pointer metric = NMIMetricType::New();
 
-        NMIMetricType::HistogramSizeType hist;
+        //NMIMetricType::HistogramSizeType hist;
+        NMIMetricType::HistogramType::SizeType hist;
+#if defined (ITK_USE_REVIEW_STATISTICS) || (ITK_VERSION_MAJOR >= 4)
+        hist.SetSize(2);
+#endif
         hist[0] = stage->mi_histogram_bins_fixed;
-        hist[2] = stage->mi_histogram_bins_moving;
+        hist[1] = stage->mi_histogram_bins_moving;
         metric->SetHistogramSize (hist);
 
         /* Apparently sampling is not implemented in ITK 3 
            unless optimized registration methods are specified. */
-#if defined(ITK_USE_OPTIMIZED_REGISTRATION_METHODS) || (ITK_VERSION_MAJOR >= 4)
+#if defined (ITK_USE_OPTIMIZED_REGISTRATION_METHODS) || (ITK_VERSION_MAJOR >= 4)
         metric->SetNumberOfSpatialSamples (
             this->compute_num_samples (fixed_ss));
 #endif

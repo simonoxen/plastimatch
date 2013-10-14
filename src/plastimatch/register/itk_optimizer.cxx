@@ -70,7 +70,6 @@ Itk_registration_private::optimizer_set_max_iterations (int its)
     else if (stage->optim_type == OPTIMIZATION_VERSOR) {
 	typedef VersorOptimizerType * OptimizerPointer;
 	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
-
 			   registration->GetOptimizer());
 	optimizer->SetNumberOfIterations(its);
     }
@@ -278,19 +277,19 @@ Itk_registration_private::optimizer_get_current_position ()
     if (stage->optim_type == OPTIMIZATION_AMOEBA) {
 	typedef AmoebaOptimizerType * OptimizerPointer;
 	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
-			   registration->GetOptimizer());
+            registration->GetOptimizer());
 	return optimizer->GetCachedCurrentPosition();
     }
     else if (stage->optim_type == OPTIMIZATION_ONEPLUSONE) {
         typedef OnePlusOneOptimizerType * OptimizerPointer;
         OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
-                           registration->GetOptimizer());
+            registration->GetOptimizer());
         return optimizer->GetCurrentPosition();
     }
     else if (stage->optim_type == OPTIMIZATION_FRPR) {
         typedef FRPROptimizerType * OptimizerPointer;
         OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
-                           registration->GetOptimizer());
+            registration->GetOptimizer());
         return optimizer->GetCurrentPosition();
     }
     else if (stage->optim_type == OPTIMIZATION_RSG) {
@@ -299,25 +298,25 @@ Itk_registration_private::optimizer_get_current_position ()
     else if (stage->optim_type == OPTIMIZATION_VERSOR) {
 	typedef VersorOptimizerType * OptimizerPointer;
 	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
-			   registration->GetOptimizer());
+            registration->GetOptimizer());
 	return optimizer->GetCurrentPosition();
     }
     else if (stage->optim_type == OPTIMIZATION_QUAT) {
 	typedef QuatOptimizerType * OptimizerPointer;
 	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
-			   registration->GetOptimizer());
+            registration->GetOptimizer());
 	return optimizer->GetCurrentPosition();
     }
     else if (stage->optim_type == OPTIMIZATION_LBFGS) {
 	typedef LBFGSOptimizerType * OptimizerPointer;
 	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
-			   registration->GetOptimizer());
+            registration->GetOptimizer());
 	return optimizer->GetCurrentPosition();
     }
     else if (stage->optim_type == OPTIMIZATION_LBFGSB) {
 	typedef LBFGSBOptimizerType * OptimizerPointer;
 	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
-			   registration->GetOptimizer());
+            registration->GetOptimizer());
 	return optimizer->GetCurrentPosition();
     } else {
         print_and_exit ("Error: Unknown optimizer value.\n");
@@ -483,8 +482,9 @@ set_optimization_scales_translation (RegistrationType::Pointer registration,
 }
 
 void
-set_optimization_scales_versor (RegistrationType::Pointer registration,
-				Stage_parms* stage)
+set_optimization_scales_versor (
+    RegistrationType::Pointer registration,
+    Stage_parms* stage)
 {
     double rotation_scale, translation_scale;
     itk::Array<double> optimizerScales(6);
@@ -493,7 +493,7 @@ set_optimization_scales_versor (RegistrationType::Pointer registration,
 	rotation_scale = 1.0;
 	translation_scale = 1.0;
     } else {
-        rotation_scale = 1.0*(double) stage->translation_scale_factor;
+        rotation_scale = 1.0 * (double) stage->translation_scale_factor;
         translation_scale = 1.0;
     }
 

@@ -65,7 +65,8 @@ set (CONFIG_FILE_LIST
   "plm-reg-roi-e.txt"
   "plm-reg-multi-a.txt"
   "plm-reg-dv-itk-translation.txt"
-  "plm-reg-itk-rigid.txt"
+  "plm-reg-itk-rigid-a.txt"
+  "plm-reg-itk-rigid-b.txt"
   "plm-reg-itk-bspline.txt"
 )
 foreach (CONFIG_FILE ${CONFIG_FILE_LIST})
@@ -2124,7 +2125,8 @@ plm_add_test (
 ## plastimatch register (group 1) - basic functionality
 ##   plm-reg-align-center
 ##   plm-reg-itk-translation
-##   plm-reg-itk-rigid
+##   plm-reg-itk-rigid-a
+##   plm-reg-itk-rigid-b
 ##   plm-reg-itk-bspline
 ##   plm-reg-itk-demons
 ## -------------------------------------------------------------------------
@@ -2182,42 +2184,65 @@ set_tests_properties (plm-reg-itk-translation-check PROPERTIES
   DEPENDS plm-reg-itk-translation-stats)
 
 plm_add_test (
-  "plm-reg-itk-rigid"
+  "plm-reg-itk-rigid-a"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-rigid.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-rigid-a.txt"
   )
 plm_add_test (
-  "plm-reg-itk-rigid-stats-1"
+  "plm-reg-itk-rigid-a-stats-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;${PLM_BUILD_TESTING_DIR}/plm-reg-itk-rigid-intermediate-img.mha"
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-reg-itk-rigid-a-intermediate-img.mha"
   )
-plmtest_check_interval ("plm-reg-itk-rigid-check-1"
-  "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-rigid-stats-1.stdout.txt"
+plmtest_check_interval ("plm-reg-itk-rigid-a-check-1"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-rigid-a-stats-1.stdout.txt"
   "AVE *([-0-9.]*)"
   "-939.3"
   "-939.1"
   )
 plm_add_test (
-  "plm-reg-itk-rigid-stats-2"
+  "plm-reg-itk-rigid-a-stats-2"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;${PLM_BUILD_TESTING_DIR}/plm-reg-itk-rigid-img.mha"
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-reg-itk-rigid-a-img.mha"
   )
-plmtest_check_interval ("plm-reg-itk-rigid-check-2"
-  "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-rigid-stats-2.stdout.txt"
+plmtest_check_interval ("plm-reg-itk-rigid-a-check-2"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-rigid-a-stats-2.stdout.txt"
   "AVE *([-0-9.]*)"
   "-939.3"
   "-939.1"
   )
-set_tests_properties (plm-reg-itk-rigid PROPERTIES 
+set_tests_properties (plm-reg-itk-rigid-a PROPERTIES 
   DEPENDS "rect-2;rect-3")
-set_tests_properties (plm-reg-itk-rigid-stats-1 PROPERTIES 
-  DEPENDS plm-reg-itk-rigid)
-set_tests_properties (plm-reg-itk-rigid-check-1 PROPERTIES 
-  DEPENDS plm-reg-itk-rigid-stats-1)
-set_tests_properties (plm-reg-itk-rigid-stats-2 PROPERTIES 
-  DEPENDS plm-reg-itk-rigid)
-set_tests_properties (plm-reg-itk-rigid-check-2 PROPERTIES 
-  DEPENDS plm-reg-itk-rigid-stats-2)
+set_tests_properties (plm-reg-itk-rigid-a-stats-1 PROPERTIES 
+  DEPENDS plm-reg-itk-rigid-a)
+set_tests_properties (plm-reg-itk-rigid-a-check-1 PROPERTIES 
+  DEPENDS plm-reg-itk-rigid-a-stats-1)
+set_tests_properties (plm-reg-itk-rigid-a-stats-2 PROPERTIES 
+  DEPENDS plm-reg-itk-rigid-a)
+set_tests_properties (plm-reg-itk-rigid-a-check-2 PROPERTIES 
+  DEPENDS plm-reg-itk-rigid-a-stats-2)
+
+plm_add_test (
+  "plm-reg-itk-rigid-b"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-rigid-b.txt"
+  )
+plm_add_test (
+  "plm-reg-itk-rigid-b-stats-1"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-reg-itk-rigid-b-intermediate-img.mha"
+  )
+plmtest_check_interval ("plm-reg-itk-rigid-b-check-1"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-rigid-b-stats-1.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-939.3"
+  "-939.1"
+  )
+set_tests_properties (plm-reg-itk-rigid-b PROPERTIES 
+  DEPENDS "rect-1;rect-2")
+set_tests_properties (plm-reg-itk-rigid-b-stats-1 PROPERTIES 
+  DEPENDS plm-reg-itk-rigid-b)
+set_tests_properties (plm-reg-itk-rigid-b-check-1 PROPERTIES 
+  DEPENDS plm-reg-itk-rigid-b-stats-1)
 
 plm_add_test (
   "plm-reg-itk-bspline"
