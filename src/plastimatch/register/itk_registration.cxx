@@ -32,6 +32,7 @@
 #include "plm_image_header.h"
 #include "print_and_exit.h"
 #include "registration_data.h"
+#include "shared_parms.h"
 #include "stage_parms.h"
 #include "xform.h"
 
@@ -282,13 +283,14 @@ Itk_registration_private::set_metric (FloatImageType::Pointer& fixed_ss)
 void
 Itk_registration_private::set_roi_images ()
 {
-    if (regd->fixed_roi) {
+    const Shared_parms *shared = stage->get_shared_parms();
+    if (shared->fixed_roi_enable && regd->fixed_roi) {
         Mask_SOType::Pointer roi_so = Mask_SOType::New();
         roi_so->SetImage(regd->fixed_roi->itk_uchar());
         roi_so->Update();
         registration->GetMetric()->SetFixedImageMask (roi_so);
     }
-    if (regd->moving_roi) {
+    if (shared->moving_roi_enable && regd->moving_roi) {
         Mask_SOType::Pointer roi_so = Mask_SOType::New();
         roi_so->SetImage(regd->moving_roi->itk_uchar());
         roi_so->Update();

@@ -364,10 +364,6 @@ do_registration_pure (
     for (it = stages.begin(); it != stages.end(); it++) {
         Stage_parms* sp = *it;
 
-        printf ("fixed_roi = %s, enable = %d\n", 
-            sp->get_shared_parms()->fixed_roi_fn.c_str(), 
-            sp->get_shared_parms()->fixed_roi_enable);
-
         /* Swap xf_in and xf_out */
         xf_tmp = xf_out; xf_out = xf_in; xf_in = xf_tmp;
 
