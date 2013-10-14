@@ -239,6 +239,7 @@ Itk_registration_private::set_metric (FloatImageType::Pointer& fixed_ss)
 	
         registration->SetMetric(metric);
     }
+    break;
     case METRIC_NMI:
     {
         NMIMetricType::Pointer metric = NMIMetricType::New();
