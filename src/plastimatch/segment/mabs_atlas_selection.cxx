@@ -331,21 +331,25 @@ Mabs_atlas_selection::random_ranking() /* Just for testing purpose */
     int max_atlases = this->atlas_selection_parms->max_random_atlases + 1;
 
     int random_number_of_atlases = rand() % (max_atlases-min_atlases) + min_atlases;
-    printf("Selectd %d random atlases \n", random_number_of_atlases);
+    printf("Selected %d random atlases for the subject %s \n", random_number_of_atlases, this->subject_id.c_str());
 
+    /* Select the random atlases */
     int i=0;
     while ((int) random_atlases.size() < random_number_of_atlases) {
+
+        /* Choose a random atlas */
         int random_index = rand() % (this->number_of_atlases);
         std::list<std::string>::iterator atlases_iterator = this->atlas_dir_list.begin();
         std::advance (atlases_iterator, random_index);
-        
-        if (find(random_atlases.begin(), random_atlases.end(), *atlases_iterator) == random_atlases.end() &&
-            *atlases_iterator != this->subject_id)
+
+        /* Check if the random atlas has been already included and if it is different from the subject */
+        if (find(random_atlases.begin(), random_atlases.end(), basename(*atlases_iterator)) == random_atlases.end() &&
+            basename(*atlases_iterator) != this->subject_id)
         {
             i++;
             std::string atlas = basename(*atlases_iterator);
             printf("Atlas number %d is %s \n", i, atlas.c_str());
-            random_atlases.push_front(atlas);
+            random_atlases.push_back(atlas);
         } 
     }
     
