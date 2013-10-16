@@ -49,6 +49,8 @@ public:
 
     /* ".../train_dir/convert" */
     std::string convert_dir;
+    /* ".../train_dir/atlas-train" */
+    std::string atlas_train_dir;
     /* ".../train_dir/prealign" */
     std::string prealign_dir;
     /* ".../train_dir/mabs-train" */
@@ -672,19 +674,22 @@ Mabs::atlas_selection ()
     Plm_timer timer;
     timer.start();
 
+    /* Create atlas-train directory */
+    make_directory(d_ptr->atlas_train_dir.c_str());
+
     /* Open log file for atlas selection */
     std::string atlas_selection_log_file_name = string_format ("%s/log_atlas_seletion.txt",
-        d_ptr->traindir_base.c_str());
+        d_ptr->atlas_train_dir.c_str());
     
     FILE *atlas_selection_log_file = fopen (atlas_selection_log_file_name.c_str(), "w");
     
     if (atlas_selection_log_file == NULL)
     {
-        printf("Error opening file!\n");
+        printf("Error opening atlas selection log file!\n");
         exit(1);
     }
 
-   /* Parse atlas directory */
+    /* Parse atlas directory */
     this->load_process_dir_list (d_ptr->prealign_dir);
     
     /* Loop through atlas_dir, choosing reference images to segment */
@@ -1209,6 +1214,8 @@ Mabs::set_parms (const Mabs_parms *parms)
     }
     d_ptr->convert_dir = string_format (
         "%s/convert", d_ptr->traindir_base.c_str());
+    d_ptr->atlas_train_dir = string_format (
+        "%s/atlas-train", d_ptr->traindir_base.c_str());
     d_ptr->prealign_dir = string_format (
         "%s/prealign", d_ptr->traindir_base.c_str());
     d_ptr->mabs_train_dir = string_format (
