@@ -5,6 +5,7 @@
 # (3) Run get-orig-source
 
 use Getopt::Long;
+use Cwd 'abs_path';
 
 # --working option uses standard dir instead of pristine dir
 my $working;
@@ -12,7 +13,8 @@ $result = GetOptions (
     "working" => \$working
     );
 
-$debmed_dir = $ENV{HOME} . "/debian-med/packages/plastimatch";
+#$debmed_dir = $ENV{HOME} . "/debian-med/plastimatch";
+$debmed_dir = abs_path(".");
 my $pristine = 1;
 $run_cmake = 1;
 $make_tarball = 1;
