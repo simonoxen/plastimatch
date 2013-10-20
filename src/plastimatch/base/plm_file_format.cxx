@@ -106,7 +106,8 @@ plm_file_format_deduce (const char* path)
 	&component_type, &num_components);
     if (pixel_type == itk::ImageIOBase::VECTOR) {
 	/* Maybe vector field? */
-	if (component_type == itk::ImageIOBase::FLOAT) {
+	if (component_type == itk::ImageIOBase::FLOAT
+            || component_type == itk::ImageIOBase::DOUBLE) {
 	    return PLM_FILE_FMT_VF;
 	}
 	/* Maybe ss_image? */
