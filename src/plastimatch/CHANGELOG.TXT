@@ -1,5 +1,17 @@
 Version 1.5.14 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
+* Many MABS improvements, especially atlas selection and configuration
+* Implement per-stage masking capabilities
+* Add ITK diff, ldd, sym-ldd demons
+* Add ITK optimizers FRPR and OnePlusOne
+* Add MI intensity threshold options
+* Add ITK normalized mutual information
+* Add plastimatch dmap command
+* New fast native Danielsson distance map implementation
+* Many improvements in wed, dew, and proton_dose
+* Many DICOM improvements
+* Add capability to load Elekta XVI format
+* Fix for important gamma calculation bug
 
 Version 1.5.13 (build 4289)
 Mon May 27 12:46:04 EDT 2013
