@@ -120,10 +120,8 @@ public:
 
     /* Store timing information for performance evaluation */
     double time_atlas_selection;
-//    double time_dice;
     double time_dmap;
     double time_extract;
-//    double time_hausdorff;
     double time_io;
     double time_reg;
     double time_vote;
@@ -934,6 +932,8 @@ Mabs::compute_dmap (
     /* Compute the dmap */
     timer.start ();
     dmap.set_input_image (structure_image);
+    dmap.set_inside_is_positive (false);
+    dmap.set_use_squared_distance (false);
     dmap.run ();
     FloatImageType::Pointer dmap_image = dmap.get_output_image ();
 

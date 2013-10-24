@@ -157,6 +157,8 @@ Mabs_vote::vote (
 
         /* Compute the chance of being in the structure. */
         double dmap_value = dmp_img[v];
+
+#if defined (commentout)
         /* GCS 2013-01-31: Distance map is squared.  This should 
            probably be corrected before saving */
         if (dmap_value > 0) {
@@ -164,6 +166,7 @@ Mabs_vote::vote (
         } else {
             dmap_value = -sqrt(-dmap_value);
         }
+#endif
 
         /* Nb. we need to check to make sure exp(dmap_value) 
            doesn't overflow.  The actual overflow is at about exp(700) 
@@ -171,17 +174,19 @@ Mabs_vote::vote (
            a little more conservative. */
         double label_likelihood_0, label_likelihood_1;
         if (dmap_value > 50) {
-            label_likelihood_0 = 0;
-            label_likelihood_1 = 1;
-        } else if (dmap_value > -50) {
-            label_likelihood_0 = exp (-d_ptr->rho*dmap_value);
-            label_likelihood_1 = exp (+d_ptr->rho*dmap_value);
-        } else {
             label_likelihood_0 = 1;
             label_likelihood_1 = 0;
+        } else if (dmap_value > -50) {
+            label_likelihood_0 = exp (+d_ptr->rho*dmap_value);
+            label_likelihood_1 = exp (-d_ptr->rho*dmap_value);
+        } else {
+            label_likelihood_0 = 0;
+            label_likelihood_1 = 1;
         }
 
-        /* Compute total score, weighted by image similarity */
+        /* Compute total score, weighted by image similarity 
+           L0 is likelihood for being outside structure
+           L1 is likelihood for being inside structure  */
         double sum = label_likelihood_0 + label_likelihood_1;
         double l0 = (label_likelihood_0 / sum) * similarity_value;
         double l1 = (label_likelihood_1 / sum) * similarity_value;

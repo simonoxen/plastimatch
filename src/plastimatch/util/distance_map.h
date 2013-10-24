@@ -35,10 +35,10 @@ public:
     /*! \brief Set the input image as an ITK image. */
     void set_input_image (const UCharImageType::Pointer image);
     /*! \brief Choose whether the output image is distance or squared 
-      distance. The default is squared distance. */
+      distance. The default is not squared distance. */
     void set_use_squared_distance (bool use_squared_distance);
     /*! \brief Choose whether the inside is positive or negative.  
-      The default is inside positive. */
+      The default is inside negative */
     void set_inside_is_positive (bool inside_is_positive);
     /*! \brief Choose which algorithm to use */
     void set_algorithm (Algorithm algorithm);
