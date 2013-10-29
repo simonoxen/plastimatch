@@ -5,6 +5,7 @@
 #define _drr_h_
 
 #include "plmreconstruct_config.h"
+#include <string>
 #include "plm_math.h"
 #include "threading.h"
 
@@ -52,7 +53,8 @@ public:
     float scale;
     int exponential_mapping;
     int output_format;
-    int multispectral;
+    bool preprocess_attenuation;
+    std::string output_details_fn;
     Drr_algorithm algorithm;
     char* input_file;
     int geometry_only;

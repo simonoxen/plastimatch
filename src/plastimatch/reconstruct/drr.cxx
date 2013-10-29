@@ -24,13 +24,30 @@
 #include "volume.h"
 #include "volume_limit.h"
 
-typedef struct callback_data Callback_data;
-struct callback_data {
-    double accum;               /* Accumulated intensity */
-    int num_pix;                /* Number of pixels traversed */
+class Callback_data {
+public:
+    Volume *vol;                 /* Volume being traced */
+    int r;                       /* Row of ray */
+    int c;                       /* Column of ray */
+    FILE *details_fp;            /* Write ray trace details to this file */
+    double accum;                /* Accumulated intensity */
+    int num_pix;                 /* Number of pixels traversed */
+    bool process_attenuation;    /* Should input voxels be mapped from 
+                                    HU to attenuation? */
+public:
+    Callback_data () {
+        vol = 0;
+        r = 0;
+        c = 0;
+        details_fp = 0;
+        accum = 0.;
+        num_pix = 0;
+        process_attenuation = false;
+    }
 };
 
 
+//#define DRR_DEBUG_CALLBACK 1
 //#define DEBUG_INTENSITIES 1
 
 /* According to NIST, the mass attenuation coefficient of H2O at 50 keV
@@ -82,46 +99,53 @@ drr_ray_trace_callback (
 {
     Callback_data *cd = (Callback_data *) callback_data;
 
-#if defined (DRR_PREPROCESS_ATTENUATION)
-    cd->accum += vox_len * vox_value;
+    if (cd->process_attenuation) {
+        cd->accum += vox_len * attenuation_lookup (vox_value);
+    } else {
+        cd->accum += vox_len * vox_value;
+    }
+
 #if defined (DRR_DEBUG_CALLBACK)
     printf ("idx: %d len: %10g dens: %10g acc: %10g\n", 
-	vox_index, vox_len, vox_value, cd->accum);
+	(int) vox_index, vox_len, vox_value, cd->accum);
 #endif
-#else
-    accum += vox_len * attenuation_lookup (vox_value);
-#endif
+
+    if (cd->details_fp) {
+        plm_long ijk[3];
+        COORDS_FROM_INDEX (ijk, vox_index, cd->vol->dim);
+        fprintf (cd->details_fp,
+            "%d,%d,%d,%d,%d,%g,%g,%g\n",
+            cd->r, cd->c, (int) ijk[0], (int) ijk[1], (int) ijk[2],
+            vox_len, vox_value, cd->accum);
+    }
+
     cd->num_pix++;
 }
 
 double                            /* Return value: intensity of ray */
 drr_ray_trace_exact (
+    Callback_data *cd,            /* Input: callback data */
     Volume *vol,                  /* Input: volume */
     Volume_limit *vol_limit,      /* Input: min/max coordinates of volume */
     double *p1in,                 /* Input: start point for ray */
     double *p2in                  /* Input: end point for ray */
 )
 {
-    Callback_data cd;
-    memset (&cd, 0, sizeof (Callback_data));
-
-    ray_trace_exact (vol, vol_limit, &drr_ray_trace_callback, &cd, 
+    ray_trace_exact (vol, vol_limit, &drr_ray_trace_callback, cd, 
 	p1in, p2in);
-    return cd.accum;
+    return cd->accum;
 }
 
 double                            /* Return value: intensity of ray */
 drr_ray_trace_uniform (
+    Callback_data *cd,            /* Input: callback data */
     Volume *vol,                  /* Input: volume */
     Volume_limit *vol_limit,      /* Input: min/max coordinates of volume */
     double *p1in,                 /* Input: start point for ray */
     double *p2in                  /* Input: end point for ray */
 )
 {
-    Callback_data cd;
     float ray_step;
-
-    memset (&cd, 0, sizeof (Callback_data));
 
     /* Set ray_step proportional to voxel size */
     ray_step = vol->spacing[0];
@@ -134,9 +158,9 @@ drr_ray_trace_uniform (
     printf ("p2 = %f %f %f\n", p2in[0], p2in[1], p2in[2]);
 #endif
 
-    ray_trace_uniform (vol, vol_limit, &drr_ray_trace_callback, &cd, 
+    ray_trace_uniform (vol, vol_limit, &drr_ray_trace_callback, cd, 
 	p1in, p2in, ray_step);
-    return cd.accum;
+    return cd->accum;
 }
 
 void
@@ -156,6 +180,11 @@ drr_ray_trace_image (
     int rows = options->image_window[1] - options->image_window[0] + 1;
 #endif
     int cols = options->image_window[3] - options->image_window[2] + 1;
+
+    FILE *details_fp = 0;
+    if (options->output_details_fn != "") {
+        details_fp = fopen (options->output_details_fn.c_str(), "w");
+    }
 
     /* Compute the drr pixels */
 #pragma omp parallel for
@@ -181,9 +210,15 @@ drr_ray_trace_image (
 	    vec3_scale3 (tmp, incr_c, (double) c);
 	    vec3_add3 (p2, r_tgt, tmp);
 
+            Callback_data cd;
+            cd.vol = vol;
+            cd.r = r;
+            cd.c = c;
+            cd.details_fp = details_fp;
+            cd.process_attenuation = ! options->preprocess_attenuation;
 	    switch (options->algorithm) {
 	    case DRR_ALGORITHM_EXACT:
-		value = drr_ray_trace_exact (vol, vol_limit, p1, p2);
+		value = drr_ray_trace_exact (&cd, vol, vol_limit, p1, p2);
 		break;
 	    case DRR_ALGORITHM_TRILINEAR_EXACT:
 		value = drr_trace_ray_trilin_exact (vol, p1, p2);
@@ -192,7 +227,7 @@ drr_ray_trace_image (
 		value = drr_trace_ray_trilin_approx (vol, p1, p2);
 		break;
 	    case DRR_ALGORITHM_UNIFORM:
-		value = drr_ray_trace_uniform (vol, vol_limit, p1, p2);
+		value = drr_ray_trace_uniform (&cd, vol, vol_limit, p1, p2);
 		break;
 	    default:
 		print_and_exit ("Error, unknown drr algorithm\n");
@@ -206,6 +241,11 @@ drr_ray_trace_image (
 
 	    proj->img[idx] = (float) value;
 	}
+    }
+    if (options->output_details_fn != "") {
+        fclose (details_fp);
+    } else {
+        printf ("NOT SET\n");
     }
 }
 

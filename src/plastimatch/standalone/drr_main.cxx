@@ -256,11 +256,9 @@ main (int argc, char* argv[])
 	volume_convert_to_float (vol);
     }
 
-#if defined (DRR_PREPROCESS_ATTENUATION)
-    if (!options.geometry_only) {
+    if (options.preprocess_attenuation && !options.geometry_only) {
 	drr_preprocess_attenuation (vol);
     }
-#endif
 
     drr_render_volume (vol, &options);
 
