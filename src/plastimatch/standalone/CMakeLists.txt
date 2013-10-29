@@ -112,6 +112,21 @@ set (XF_TO_EMPIREFMT_SRC
   xf_to_empirefmt.cxx
   )
 
+
+if (QT4_FOUND)
+set(nki2mha_converter_SRC
+	nki2mha_converter_main.cpp
+	nki2mha_converter.cpp 	nki2mha_converter.h)
+
+QT4_WRAP_CPP(nki2mha_converter_SRC
+	nki2mha_converter.h)
+QT4_WRAP_UI(nki2mha_converter_SRC
+	nki2mha_converter.ui)
+
+QT4_ADD_RESOURCES (nki2mha_converter_SRC
+	nki2mha_converter.qrc)
+endif()
+
 ##-----------------------------------------------------------------------------
 ##  BUILD TARGETS
 ##-----------------------------------------------------------------------------
@@ -155,6 +170,20 @@ plm_add_executable (group_add "${GROUP_ADD_SRC}"
 #    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
 #    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
+
+
+if (QT4_FOUND)
+
+	set (nki2mha_converter_LIBRARIES ${QT_LIBRARIES} ${PLASTIMATCH_LIBS})
+	ADD_EXECUTABLE(nki2mha_converter ${nki2mha_converter_SRC})
+	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
+	TARGET_LINK_LIBRARIES(nki2mha_converter ${nki2mha_converter_LIBRARIES})
+
+	#plm_add_executable (nki2mha_converter "${nki2mha_converter_SRC}" 
+	 #"${PLASTIMATCH_LIBS} ${QT_LIBRARIES} ${QT_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
+	 # ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+
+endif()
 
 
 plm_add_executable (bspline "${BSPLINE_SRC}" 
