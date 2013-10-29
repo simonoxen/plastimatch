@@ -46,8 +46,9 @@ Mabs_parms::Mabs_parms ()
     this->atlases_from_precomputed_ranking = 0;
     this->atlases_from_precomputed_ranking_defined = false;
 	
-    this->sman = new Mabs_subject_manager;
-    this->debug = false;
+    /* [TRAINING] */
+    //this->distance_map = 
+
     this->minsim_values = "L 0.0001:1:0.0001";
     this->rho_values = "1:1:1";
     this->sigma_values = "L 1.7:1:1.7";
@@ -57,6 +58,12 @@ Mabs_parms::Mabs_parms ()
     this->write_weight_files = true;
     this->write_warped_images = true;
     this->write_warped_structures = true;
+
+    /* [SUBJECT] */
+    this->sman = new Mabs_subject_manager;
+
+    /* misc */
+    this->debug = false;
 }
 
 Mabs_parms::~Mabs_parms ()

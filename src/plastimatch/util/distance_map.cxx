@@ -21,7 +21,8 @@ public:
     Distance_map_private () {
         inside_is_positive = false;
         use_squared_distance = false;
-        algorithm = Distance_map::ITK_MAURER;
+        //algorithm = Distance_map::ITK_MAURER;
+        algorithm = Distance_map::DANIELSSON;
     }
 public:
     Distance_map::Algorithm algorithm;
