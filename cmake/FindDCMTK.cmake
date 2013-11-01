@@ -79,6 +79,7 @@ find_library (DCMTK_dcmimgle_LIBRARY
   ${DCMTK_DIR}/dcmimgle/Release
   ${DCMTK_DIR}/dcmimgle/Debug
   ${DCMTK_DIR}/lib
+  /usr/lib/dcmtk
   /usr/local/dicom/lib
 )
 
@@ -90,6 +91,7 @@ find_library (DCMTK_imagedb_LIBRARY
   ${DCMTK_DIR}/imagectn/libsrc/
   ${DCMTK_DIR}/imagectn/libsrc/Debug
   ${DCMTK_DIR}/lib/
+  /usr/lib/dcmtk
   /usr/local/dicom/lib
 )
 
@@ -103,6 +105,7 @@ find_library (DCMTK_dcmtls_LIBRARY
   ${DCMTK_DIR}/dcmtls/libsrc/Debug
   ${DCMTK_DIR}/dcmtls/libsrc
   ${DCMTK_DIR}/lib
+  /usr/lib/dcmtk
   /usr/local/dicom/lib
 )
 
@@ -113,6 +116,7 @@ find_library (DCMTK_dcmnet_LIBRARY
   ${DCMTK_DIR}/dcmnet/libsrc/Debug
   ${DCMTK_DIR}/dcmnet/libsrc/
   ${DCMTK_DIR}/lib/
+  /usr/lib/dcmtk
   /usr/local/dicom/lib
 )
 
@@ -125,6 +129,7 @@ find_library (DCMTK_dcmdata_LIBRARY
   ${DCMTK_DIR}/dcmdata/Release
   ${DCMTK_DIR}/dcmdata/Debug
   ${DCMTK_DIR}/lib
+  /usr/lib/dcmtk
   /usr/local/dicom/lib
 )
 
@@ -133,6 +138,7 @@ find_library (DCMTK_oflog_LIBRARY
   NAMES oflog
   HINTS
   ${DCMTK_DIR}/lib
+  /usr/lib/dcmtk
   /usr/local/dicom/lib
 )
 
@@ -145,6 +151,7 @@ find_library (DCMTK_ofstd_LIBRARY
   ${DCMTK_DIR}/ofstd/Release
   ${DCMTK_DIR}/ofstd/Debug
   ${DCMTK_DIR}/lib
+  /usr/lib/dcmtk
   /usr/local/dicom/lib
 )
 
