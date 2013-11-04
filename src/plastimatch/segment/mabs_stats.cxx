@@ -18,11 +18,15 @@ public:
     /* Keep track of score, for choosing best parameters */
     std::map<std::string, double> score_map;
 
+    /* Which distance map algorithm to use */
+    std::string dmap_alg;
+
     /* Timing statistics */
     double time_dice;
     double time_hausdorff;
 public:
     Mabs_stats_private () {
+        this->dmap_alg = "";
         this->time_dice = 0;
         this->time_hausdorff = 0;
     }
@@ -36,6 +40,13 @@ Mabs_stats::Mabs_stats ()
 Mabs_stats::~Mabs_stats ()
 {
     delete this->d_ptr;
+}
+
+void
+Mabs_stats::set_distance_map_algorithm (
+    const std::string& dmap_alg)
+{
+    d_ptr->dmap_alg = dmap_alg;
 }
 
 std::string
@@ -58,6 +69,7 @@ Mabs_stats::compute_statistics (
     Hausdorff_distance hd;
     hd.set_reference_image (ref_img);
     hd.set_compare_image (cmp_img);
+    hd.set_distance_map_algorithm (d_ptr->dmap_alg);
     hd.run ();
     d_ptr->time_hausdorff += timer.report();
 

@@ -17,6 +17,8 @@ public:
 public:
     Mabs_stats_private *d_ptr;
 public:
+    void set_distance_map_algorithm (
+        const std::string& dmap_alg);
     std::string compute_statistics (
         const std::string& score_id,
         const UCharImageType::Pointer& ref_img,

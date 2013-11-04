@@ -24,6 +24,7 @@ class Hausdorff_distance_private {
 public:
     Hausdorff_distance_private () {
         pct_hausdorff_distance_fraction = 0.95;
+        dmap_alg = "";
         this->clear_statistics ();
     }
 public:
@@ -43,6 +44,8 @@ public:
     float avg_boundary_hausdorff_distance;
     float pct_boundary_hausdorff_distance;
     float pct_hausdorff_distance_fraction;
+
+    std::string dmap_alg;
 
     UCharImageType::Pointer ref_image;
     UCharImageType::Pointer cmp_image;
@@ -92,6 +95,12 @@ Hausdorff_distance::set_hausdorff_distance_fraction (
 }
 
 void 
+Hausdorff_distance::set_distance_map_algorithm (const std::string& dmap_alg)
+{
+    d_ptr->dmap_alg = dmap_alg;
+}
+
+void 
 Hausdorff_distance::run_internal (
     UCharImageType::Pointer image1,
     UCharImageType::Pointer image2
@@ -99,7 +108,7 @@ Hausdorff_distance::run_internal (
 {
     /* Compute distance map */
     Distance_map dmap_filter;
-    dmap_filter.set_algorithm (Distance_map::ITK_MAURER);
+    dmap_filter.set_algorithm ("itk-maurer");
     dmap_filter.set_input_image (image2);
     dmap_filter.set_inside_is_positive (false);
     dmap_filter.set_use_squared_distance (false);

@@ -41,7 +41,7 @@ public:
       The default is inside negative */
     void set_inside_is_positive (bool inside_is_positive);
     /*! \brief Choose which algorithm to use */
-    void set_algorithm (Algorithm algorithm);
+    void set_algorithm (const std::string& algorithm);
     ///@}
 
     /*! \name Execution */

@@ -47,7 +47,7 @@ Mabs_parms::Mabs_parms ()
     this->atlases_from_precomputed_ranking_defined = false;
 	
     /* [TRAINING] */
-    //this->distance_map = 
+    this->distance_map_algorithm = "";
 
     this->minsim_values = "L 0.0001:1:0.0001";
     this->rho_values = "1:1:1";
@@ -216,6 +216,9 @@ Mabs_parms::set_key_val (
     if (section == "TRAINING") {
         if (key == "atlas_dir") {
             this->atlas_dir = val;
+        }
+        else if (key == "distance_map_algorithm") {
+            this->distance_map_algorithm = key;
         }
         else if (key == "minimum_similarity") {
             this->minsim_values = val;

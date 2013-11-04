@@ -105,7 +105,7 @@ wed_ct_compute (
 
     if (parms->mode==0)  {
         Volume* wed_vol;
-	wed_vol = rpl_vol->create_wed_volume(scene);
+	wed_vol = rpl_vol->create_wed_volume ();
         rpl_vol->compute_wed_volume (wed_vol, ct_vol->get_vol_float(), 
             background);
         plm_image_save_vol (out_fn, wed_vol);

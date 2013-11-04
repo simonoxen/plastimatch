@@ -3546,7 +3546,7 @@ set_tests_properties (plm-xf-convert-d-warp-2-check PROPERTIES
 plm_add_test (
   "plm-xf-convert-e" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "xf-convert;--input;${PLM_TESTING_DATA_DIR}/itk-rigid-a.tfm;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-xf-convert-e;--source-rcs;${PLM_TESTING_DATA_DIR}/rect-2-dicom;--registered-rcs;${PLM_TESTING_DATA_DIR}/rect-3-dicom"
+  "xf-convert;--input;${PLM_TESTING_DATA_DIR}/itk-rigid-a.tfm;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-xf-convert-e;--source-rcs;${PLM_BUILD_TESTING_DIR}/rect-2-dicom;--registered-rcs;${PLM_BUILD_TESTING_DIR}/rect-3-dicom"
   )
 
 ## -------------------------------------------------------------------------

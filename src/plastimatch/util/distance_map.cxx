@@ -473,9 +473,21 @@ Distance_map::set_inside_is_positive (bool inside_is_positive)
 }
 
 void 
-Distance_map::set_algorithm (Distance_map::Algorithm algorithm)
+Distance_map::set_algorithm (const std::string& algorithm)
 {
-    d_ptr->algorithm = algorithm;
+    if (algorithm == "danielsson" || algorithm == "native_danielsson") {
+        d_ptr->algorithm = Distance_map::DANIELSSON;
+    }
+    else if (algorithm == "itk-danielsson") {
+        d_ptr->algorithm = Distance_map::ITK_DANIELSSON;
+    }
+    else if (algorithm == "maurer") {
+        d_ptr->algorithm = Distance_map::ITK_MAURER;
+    }
+    else if (algorithm == "itk-maurer") {
+        d_ptr->algorithm = Distance_map::ITK_MAURER;
+    }
+    /* Else do nothing */
 }
 
 void

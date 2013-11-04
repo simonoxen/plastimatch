@@ -30,22 +30,7 @@ dmap_main (Dmap_parms* parms)
 {
     Distance_map dmap;
     dmap.set_input_image (parms->img_in_fn);
-    if (parms->algorithm == "danielsson") {
-        dmap.set_algorithm (Distance_map::DANIELSSON);
-    }
-    else if (parms->algorithm == "itk-danielsson") {
-        dmap.set_algorithm (Distance_map::ITK_DANIELSSON);
-    }
-    else if (parms->algorithm == "maurer") {
-        dmap.set_algorithm (Distance_map::ITK_MAURER);
-    }
-    else if (parms->algorithm == "itk-maurer") {
-        dmap.set_algorithm (Distance_map::ITK_MAURER);
-    }
-    else {
-        print_and_exit ("Error.  Unknown algorithm option: %s",
-            parms->algorithm.c_str());
-    }
+    dmap.set_algorithm (parms->algorithm);
 
     dmap.set_inside_is_positive (parms->inside_positive);
     dmap.set_use_squared_distance (parms->squared_distance);

@@ -109,6 +109,8 @@ public:
       a number between 0 and 1.  The default value is 0.95. */
     void set_hausdorff_distance_fraction (
         float hausdorff_distance_fraction);
+    /*! \brief Choose which distance map algorithm to use */
+    void set_distance_map_algorithm (const std::string& dmap_alg);
     ///@}
 
     /*! \name Execution */
