@@ -1221,6 +1221,9 @@ Mabs::set_parms (const Mabs_parms *parms)
     d_ptr->mabs_train_dir = string_format (
         "%s/mabs-train", d_ptr->traindir_base.c_str());
 
+    /* Training section */
+    d_ptr->stats.set_distance_map_algorithm (parms->distance_map_algorithm);
+
     /* Prealgnment section */
     d_ptr->prealign_resample = false;
     rc = sscanf (parms->prealign_spacing.c_str(), "%f %f %f", 

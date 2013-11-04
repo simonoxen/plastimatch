@@ -218,7 +218,7 @@ Mabs_parms::set_key_val (
             this->atlas_dir = val;
         }
         else if (key == "distance_map_algorithm") {
-            this->distance_map_algorithm = key;
+            this->distance_map_algorithm = val;
         }
         else if (key == "minimum_similarity") {
             this->minsim_values = val;

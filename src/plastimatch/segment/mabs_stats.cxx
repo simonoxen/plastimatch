@@ -65,7 +65,7 @@ Mabs_stats::compute_statistics (
     d_ptr->time_dice += timer.report();
 
     timer.start();
-    lprintf ("Computing Hausdorff...\n");
+    lprintf ("Computing Hausdorff (alg=%s).\n", d_ptr->dmap_alg.c_str());
     Hausdorff_distance hd;
     hd.set_reference_image (ref_img);
     hd.set_compare_image (cmp_img);

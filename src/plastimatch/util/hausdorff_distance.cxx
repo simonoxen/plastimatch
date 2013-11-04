@@ -108,7 +108,8 @@ Hausdorff_distance::run_internal (
 {
     /* Compute distance map */
     Distance_map dmap_filter;
-    dmap_filter.set_algorithm ("itk-maurer");
+//    dmap_filter.set_algorithm ("itk-maurer");
+    dmap_filter.set_algorithm (d_ptr->dmap_alg);
     dmap_filter.set_input_image (image2);
     dmap_filter.set_inside_is_positive (false);
     dmap_filter.set_use_squared_distance (false);
