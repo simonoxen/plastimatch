@@ -187,25 +187,26 @@ highland_maxime_aperture_theta0 (
 )
 {
     float energy = 158.6;		/*Beam energy (MeV)*/
-	float mc2 = 939.4; /* proton mass at rest (MeV) */
-	float c = 299792458; /* speed of light (m/s2) */
-	float rad_length = 36.08;     /* Radiation length of material (g/cm2) */
+    float mc2 = 939.4; /* proton mass at rest (MeV) */
+    float c = 299792458; /* speed of light (m/s2) */
+    float rad_length = 36.08;     /* Radiation length of material (g/cm2) */
     float density    = 1.0;     /* Density of material (g/cm3) */
     float p = 0.0;     /* Proton momentum (passed in)          */
     float v = 0.0;     /* Proton velocity (passed in)          */
     float range = 0;			/* Mean range of the proton beam (g/cm2) */
-	float stop = 0;				/* stopping power energy (MeV.cm2/g) */
+    float stop = 0;				/* stopping power energy (MeV.cm2/g) */
 	
-	float sum = 0.0;			/* integration expression */
+    float sum = 0.0;			/* integration expression */
+    float step = 0.1;			/*step of the integration along the pathway (cm)*/
 
-	float step = 0.1;			/*step of the integration along the pathway (cm)*/
+    float function_to_be_integrated = 0.0; /* expression to be integrated on dz, second part of the highland's formula */
+    range = getrange(energy);
 
-	float function_to_be_integrated = 0.0; /* expression to be integrated on dz, second part of the highland's formula */
-	range = getrange(energy);
+    rgdepth = rgdepth/10;   /* in the Hong algorithm, rgdepth is in cm but given in mm by plastimatch
 
-	/* integration of the integrale part of the highland's formula */
+    /* integration of the integrale part of the highland's formula */
 
-	for (float i = 0; i <= rgdepth && energy > 1; i+=step)
+    for (float i = 0; i <= rgdepth && energy > 0.5; i+=step)
     {
 		/* p & v are updated */
 
@@ -231,42 +232,45 @@ highland_maxime_patient_theta_pt (
 )
 {
     float energy = 85;		/*Beam energy (MeV)*/
-	float mc2 = 939.4; /* proton mass at rest (MeV) */
-	float c = 299792458; /* speed of light (m/s2) */
-	float rad_length = 36.08;     /* Radiation length of material (g/cm2) */
+    float mc2 = 939.4;          /* proton mass at rest (MeV) */
+    float c = 299792458;        /* speed of light (m/s2) */
+    float rad_length = 36.08;   /* Radiation length of material (g/cm2) */
     float density    = 1.0;     /* Density of material (g/cm3) !!!!!!!!!! to be determined!! */
-    float p = 0.0;     /* Proton momentum (passed in)          */
-    float v = 0.0;     /* Proton velocity (passed in)          */
-    float range = 0;			/* Mean range of the proton beam (g/cm2) */
-	float stop = 0;				/* stopping power energy (MeV.cm2/g) */
+    float p = 0.0;              /* Proton momentum (passed in)          */
+    float v = 0.0;              /* Proton velocity (passed in)          */
+    float range = 0;		/* Mean range of the proton beam (g/cm2) */
+    float stop = 0;		/* stopping power energy (MeV.cm2/g) */
 	
-	float sum = 0.0;			/* integration expression */
+    float sum = 0.0;		/* integration expression */
 
-	float step = 0.1;			/*step of the integration along the pathway (cm)*/
+    float step = 0.1;		/*step of the integration along the pathway (cm)*/
 
-	float function_to_be_integrated = 0.0; /* expression to be integrated on dz, second part of the highland's formula */
+    float function_to_be_integrated = 0.0; /* expression to be integrated on dz, second part of the highland's formula */
 
-	range = getrange(energy);
+    rgdepth = rgdepth /10; /* rgdepth is given in mm by plastimatch, but is in cm in the hong algorithm */
 
-	/* integration of the integrale part of the highland's formula */
+    range = getrange(energy);
 
-	for (float i = 0; i <= rgdepth && energy > 1; i+=step)
+    /* integration of the integrale part of the highland's formula */
+
+    for (float i = 0; i <= rgdepth && energy > 0.5; i+=step)
     {
-		/* p & v are updated */
+	/* p & v are updated */
 
         p= sqrt(2*energy*mc2+energy*energy)/c; // in MeV.s.m-1
         v= c*sqrt(1-pow((mc2/(energy+mc2)),2)); //in m.s-1
-		/*integration*/
+	/*integration*/
 
-        function_to_be_integrated = (pow(((rgdepth-i)/(p*v)),2)* density / rad_length); // x rho????
+        function_to_be_integrated = (pow(((rgdepth-i)/(p*v)),2)* density / rad_length);
         sum += function_to_be_integrated*step;
 
-		/* energy is updated after passing through dz */
+	/* energy is updated after passing through dz */
         stop = getstop(energy);
         energy = energy - stop*step;
     }
 
-    return 14.1 * (1 + (1/9) * log10(rgdepth/rad_length)) * sqrt(sum) * rgdepth; /* yo * rpl */
+    //printf(" theta: %lg",  14.1 * (1 + (1/9) * log10(rgdepth/rad_length)) * sqrt(sum) * 10 * rgdepth);
+    return 14.1 * (1 + (1/9) * log10(rgdepth/rad_length)) * sqrt(sum) * 10; // y0 * 10 (cm->mm)
 }
 
 static double
@@ -300,24 +304,18 @@ gaus_kernel (
 
 static double
 off_axis_maxime (
-    double* p,
+    double r,
     double sigma_srm /*,
 	double sigma_pt*/
 )
 {
-    double w1, w2;
     double denom;
     double sigma_tot2;
 
     sigma_tot2 = /*sigma_source +*/ sigma_srm * sigma_srm /*+ sigma_pt * sigma_pt*/; /* !! source !! and sigma patient*/
 
     denom = 1/ (2.0f * M_PI * sigma_tot2);
-    denom = sqrt (denom);
-    denom = 1.0f / denom;
-    w1 = denom * exp ( (-1.0*p[0]*p[0]) / (2.0f*sigma_tot2) );
-    w2 = denom * exp ( (-1.0*p[1]*p[1]) / (2.0f*sigma_tot2) );
-
-    return w1 * w2;  /* Off-axis term */
+    return denom * exp (-1.0*r*r / (2.0f*sigma_tot2));  /* Off-axis term */
 }
 
 
@@ -387,7 +385,6 @@ dose_scatter (
     double proj_xy[2] = {0.0, 0.0};
     double sctoct[3] = {0.0, 0.0, 0.0};
     double tmp[3] = {0.0, 0.0, 0.0};
-
 
     double d = 0.0f;
     double dose = 0.0f;
@@ -691,7 +688,7 @@ dose_hong_maxime (
     const Ion_plan* scene
 )
 {
-	const Aperture::Pointer& ap = scene->get_aperture();
+    const Aperture::Pointer& ap = scene->get_aperture();
     Ion_beam* beam = scene->beam;
     Rpl_volume* rpl_vol = scene->rpl_vol;
 
@@ -702,8 +699,8 @@ dose_hong_maxime (
     double r_step, t_step;
     double r_max;
 
-	double r_number = 4; // the number of segmentations
-	double t_number = 16; 
+    double r_number = 4; // the number of segmentations
+    double t_number = 16; 
 
     double sp_pos[3] = {0.0, 0.0, 0.0};
     double scatter_xyz[4] = {0.0, 0.0, 0.0, 1.0};
@@ -711,29 +708,36 @@ dose_hong_maxime (
     double sctoct[3] = {0.0, 0.0, 0.0};
     double tmp[3] = {0.0, 0.0, 0.0};
 
-	double center_ct_xyz[3] = {0.0,0.0,0.0};
-	double axis[3] = {1.0,0.0,0.0};
-	double aperture_right[3] = {0.0,1.0,0.0};
-	double aperture_down[3] = {0.0,0.0,-1.0};
+    double center_ct_xyz[3] = {0.0, 0.0, 0.0};
+
+    double axis[3] = {ct_xyz[0]-beam->get_source_position(0),ct_xyz[1]-beam->get_source_position(1),ct_xyz[2]-beam->get_source_position(2)};
+    
+    double aperture_right[3] = {0.0,1.0,0.0};
+    double aperture_down[3] = {0.0,0.0,-1.0};
 
     double d = 0.0f;
     double dose = 0.0f;
     double w;
-
-    /* Get approximation for scatterer search radius
+    
+    /* creation of a vector perpendicular to axis to initiate the rotation around */
+    double vector_init[3] = {1.0,0.0,0.0};
+    double vector_opposite[3] = {0.0,0.0,0.0};
+    double vector_norm_axis[3] = {0.0,0.0,0.0};
+    rotate_about_ray(vector_opposite,vector_init,M_PI,axis);
+    vec3_sub3 (vector_norm_axis,vector_init,vector_opposite);
+    vec3_scale2(vector_norm_axis,1/sqrt(vector_norm_axis[0]*vector_norm_axis[0]+vector_norm_axis[1]*vector_norm_axis[1]+vector_norm_axis[2]*vector_norm_axis[2]));
+    
+     /* Get approximation for scatterer search radius
      * NOTE: This is not used to define the Gaussian
      */
     rgdepth = rpl_vol->get_rgdepth (ct_xyz);
-	//printf("\n center rgdepth = %lg - pixel : %lg %lg %lg", rgdepth, ct_xyz[0], ct_xyz[1], ct_xyz[2]);
-
+	
 	if (rgdepth < 0.0f) {
-			dose = 0;
-			rgdepth = rpl_vol->get_rgdepth(center_ct_xyz);
+            dose = 0;
+	    rgdepth = rpl_vol->get_rgdepth(center_ct_xyz);
             } else {
-                dose = beam->lookup_sobp_dose (rgdepth);
-				//printf("\n dose ok point");
+                dose = 0;
             }
-				//printf("\n Direct dose : %lg", dose);
 
     /* If the voxel was not hit *directly* by the beam, there is still a
      * chance that it was hit by scatterers generated by a neighbor who
@@ -741,80 +745,58 @@ dose_hong_maxime (
      * a resonable estimate, so we assume the largest scattering radius.
      */
 
-    sigma = 3* highland_maxime_aperture_theta0 (rgdepth, beam); /*should be highland_patient_theta0 - !! multiplied by 10 to see it */
+    sigma = highland_maxime_patient_theta_pt (rgdepth, beam); /*should be highland_patient_theta0 - !! multiplied by 10 to see it */
     r_max = 3.0*sigma;
 
     r_step = r_max/r_number;
 
     t_step =2 * M_PI / t_number;   // radians
 
-   /*if (debug) {
-        printf ("sigma = %f\n", sigma);
-        printf ("r_max = %f\n", r_max);
-        printf ("r_step = %f\n", r_step);
-        printf ("t_step = %f\n", t_step);
-    } */
-
     /* Step radius */
     for (int i = 0; i < r_number; i++) {
         r = r_step*(i+1);
-		//printf("\n base1 r= %lg",r);
-		vec3_copy (sp_pos, ct_xyz);
-		//printf("\n base1 sp_pos: %lg %lg %lg",sp_pos[0],sp_pos[1],sp_pos[2]);
-        vec3_scale3 (tmp, aperture_down, r);
-		//printf("\n base ap->pdn: %lg %lg %lg - ap->prt: %lg %lg %lg",ap->pdn[0],ap->pdn[1],ap->pdn[2],ap->prt[0],ap->prt[1],ap->prt[2]);
-		//printf("\n base2 R = %lg",r);
-		//printf("\n base tmp: %lg %lg %lg",tmp[0],tmp[1],tmp[2]);
-
-        vec3_add2 (sp_pos, tmp);
-		//printf("\n base2 sp_pos: %lg %lg %lg",sp_pos[0],sp_pos[1],sp_pos[2]);
+        vec3_scale3 (tmp, vector_norm_axis, r);
 
         /* Step angle */
         for (t = 0.0f; t < 2.0*M_PI; t += t_step) {
 
             rotate_about_ray (
                 scatter_xyz,  // O: new xyz coordinate
-                sp_pos,       // I: init xyz coordinate
+                tmp,       // I: init xyz coordinate
                 t,            // I: angle of rotation
-				axis);      // I: axis of rotation
+	        axis);      // I: axis of rotation
 
             /* neighbor (or self) hit by proton beam? */
 
+            vec3_add2(scatter_xyz, ct_xyz);
+
             rgdepth = rpl_vol->get_rgdepth (scatter_xyz);
-			//printf("\n init_pos : %lg %lg %lg - t= %lg - axis rot %lg %lg %lg", sp_pos[0],sp_pos[1],sp_pos[2], t, axis[0],axis[1],axis[2]);
-			//printf("\n turning rgdepth = %lg - pixel : %lg %lg %lg", rgdepth, scatter_xyz[0], scatter_xyz[1], scatter_xyz[2]);
 
             if (rgdepth < 0.0f) {
-				d=0;
-				//printf("X");
+		d=0;
             } else {
                 d = beam->lookup_sobp_dose (rgdepth);
-				//printf("O");
 
-			//printf("\n Dose_at_scattering point : %lg", d);
+                proj_xy[0] = vec3_dot (scatter_xyz, aperture_right);
+                proj_xy[1] = vec3_dot (scatter_xyz, aperture_down);
 
-            vec3_sub3 (sctoct, scatter_xyz, ct_xyz);
+                sigma = highland_maxime_patient_theta_pt(rgdepth, beam); /* should be the global one: highland_max_patient_theta0 once the density rho problem will be fixed*/
 
-            proj_xy[0] = vec3_dot (sctoct, aperture_right);
-            proj_xy[1] = vec3_dot (sctoct, aperture_down);
-
-            sigma = 3 * highland_maxime_aperture_theta0(rgdepth, beam); /* should be the global one: highland_max_patient_theta0 once the density rho problem will be fixed*/
-
-            /* weight by gaussian kernel */
-            w = off_axis_maxime (proj_xy, sigma /*, sigma patient*/);
-            d *= M_PI*(pow(r,2)-pow(r-r_step, 2))/t_number*w; //integration of the pencil beams of this area
+                /* weight by gaussian kernel */
+                w = off_axis_maxime (r, sigma);
+                d *= M_PI*(pow(r,2)-pow(r-r_step, 2))/t_number*w; //integration of the pencil beams of this area
 			
-            /* Add to total dose for our target voxel */
-            dose += d;
-			}
+                /* Add to total dose for our target voxel */
+                dose += d;
+	    }
 
 
             /* Don't spin at the origin! */
             if (r == 0) {
                 break;
             }
-		}
-		r += r_step;
+	}
+	r += r_step;
     }
     return dose;    
 
@@ -827,28 +809,27 @@ static double getrange(double energy)
     double energy2 = 0;
     double range1 = 0;
     double range2 = 0;
-	int i=0;
+    int i=0;
 
-	if (energy >0)
+    if (energy >0)
+    {
+	while (energy >= energy1)
 	{
-		while (energy >= energy1)
+		energy1 = lookup_range_proton[i][0];
+		range1 = lookup_range_proton[i][1];
+		if (energy >= energy1)
 		{
-			energy1 = lookup_range[i][0];
-			range1 = lookup_range[i][1];
-
-			if (energy >= energy1)
-			{
-				energy2 = energy1;
-				range2 = range1;
-			}
-			i++;
+			energy2 = energy1;
+			range2 = range1;
 		}
-		return (range2+(energy-energy2)*(range1-range2)/(energy1-energy2));
+		i++;
 	}
-	else
-	{
-		return 0;
-	}
+	return (range2+(energy-energy2)*(range1-range2)/(energy1-energy2));
+    }
+    else
+    {
+	return 0;
+    }
 }
 
 static double getstop(double energy)
@@ -857,26 +838,26 @@ static double getstop(double energy)
     double energy2 = 0;
     double stop1 = 0;
     double stop2 = 0;
-	int i=0;
+    int i=0;
 
-	if (energy >0)
+    if (energy >0)
+    {
+    	while (energy >= energy1)
 	{
-		while (energy >= energy1)
+		energy1 = lookup_stop_proton[i][0];
+		stop1 = lookup_stop_proton[i][1];
+
+                if (energy >= energy1)
 		{
-			energy1 = lookup_stop[i][0];
-			stop1 = lookup_stop[i][1];
-
-			if (energy >= energy1)
-			{
-				energy2 = energy1;
-				stop2 = stop1;
-			}
-			i++;
+			energy2 = energy1;
+			stop2 = stop1;
 		}
-		return (stop2+(energy-energy2)*(stop1-stop2)/(energy1-energy2));
+		i++;
 	}
-	else
-	{
-		return 0;
-	}
+	return (stop2+(energy-energy2)*(stop1-stop2)/(energy1-energy2));
+    }
+    else
+    {
+	return 0;
+    }
 }

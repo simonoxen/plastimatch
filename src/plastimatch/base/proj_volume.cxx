@@ -98,8 +98,29 @@ Proj_volume::set_geometry (
     /* populate aperture orientation unit vectors */
     double nrm[3], pdn[3], prt[3];
     d_ptr->pmat->get_nrm (nrm);
-    d_ptr->pmat->get_pdn (pdn);
-    d_ptr->pmat->get_prt (prt);
+
+    if (nrm[0] == 0 && nrm[1] == 0)
+    {
+        if (nrm[2] == 0) 
+        { 
+            printf("source and isocenter are at the same location - no beam created\n");
+        }
+        else
+        {
+            printf("the vector nrm is parallel to the z axis, pdn is defined by default as x vector and pdr as -y\n");
+            pdn[0] = 0;
+            pdn[1] = -1;
+            pdn[2] = 0; 
+            prt[0] = 1; 
+            prt[1] = 0; 
+            prt[2] = 0;
+        }
+    }
+    else
+    {
+        d_ptr->pmat->get_pdn (pdn);
+        d_ptr->pmat->get_prt (prt);
+    }
 
     /* compute position of aperture in room coordinates */
     double ic_room[3];
@@ -182,6 +203,12 @@ const double*
 Proj_volume::get_src ()
 {
     return d_ptr->src;
+}
+
+const double*
+Proj_volume::get_clipping_dist ()
+{
+    return d_ptr->clipping_dist;
 }
 
 double

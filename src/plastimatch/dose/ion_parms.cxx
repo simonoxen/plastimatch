@@ -565,7 +565,9 @@ Ion_parms::parse_args (int argc, char** argv)
 
     /* Generate dose */
     d_ptr->plan->set_debug (true);
-    d_ptr->plan->compute_dose ();
+    if (d_ptr->plan->beam->get_flavor() != 'f')
+    {
+        d_ptr->plan->compute_dose ();
 
     /* Save beam modifiers */
     if (d_ptr->output_aperture_fn != "") {
@@ -575,11 +577,16 @@ Ion_parms::parse_args (int argc, char** argv)
         Plm_image::Pointer& rc = rpl_vol->get_aperture()
             ->get_range_compensator_image();
         rc->save_image (d_ptr->output_range_compensator_fn);
-    }
+        }
 
     /* Save dose output */
     Plm_image::Pointer dose = d_ptr->plan->get_dose ();
     dose->save_image (d_ptr->output_dose_fn.c_str());
+    }
+    else
+    {
+        d_ptr->plan->compute_dose_push();
+    }
 
     printf ("done.  \n\n");
     return true;

@@ -14,7 +14,7 @@ int main (int argc, char* argv[])
     int Emin, Emax;
     int particle;
 
-	Particle_type particle_type;
+    Particle_type particle_type;
 
     if (argc < 4) {
         printf (
@@ -28,41 +28,41 @@ int main (int argc, char* argv[])
 
 	if(particle ==1)
 	{
-		particle_type = P;
+		particle_type = PARTICLE_TYPE_P;
 	}
 	else if (particle ==2)
 	{
-		particle_type = HE;
+		particle_type = PARTICLE_TYPE_HE;
 	}
 	else if (particle ==3)
 	{
-		particle_type = LI;
+		particle_type = PARTICLE_TYPE_LI;
 	}
 	else if (particle ==4)
 	{
-		particle_type = BE;
+		particle_type = PARTICLE_TYPE_BE;
 	}
 	else if (particle ==5)
 	{
-		particle_type = B;
+		particle_type = PARTICLE_TYPE_B;
 	}
 	else if (particle ==6)
 	{
-		particle_type = C;
+		particle_type = PARTICLE_TYPE_C;
 	}
 	else if (particle ==8)
 	{
-		particle_type = O;
+		particle_type = PARTICLE_TYPE_O;
 	}
 	else
 	{
-		particle_type = P;
+		particle_type = PARTICLE_TYPE_P;
 		printf("Invalid particle type");
 	}
 
-	if (particle_type != P) // no data for ions... to be implemented (ion bragg peaks!!)
+	if (particle_type != PARTICLE_TYPE_P) // no data for ions... to be implemented (ion bragg peaks!!)
 	{
-		particle_type = P;
+		particle_type = PARTICLE_TYPE_P;
 		printf("Ions data are not ready yet - beam switched to proton beams");
 	}
 

@@ -49,77 +49,77 @@ public:
         e_lut = new float[0];
         dres = 1.0;
         num_samples = 0;
-		eres = 1.0;
-		num_peaks = 0;
-		E_min = 0;
-		E_max = 0;
-		dmin = 0.0;
-		dmax = 0.0;
-		dend = 0.0;
-		particle_type = part;
+	eres = 1.0;
+	num_peaks = 0;
+	E_min = 0;
+	E_max = 0;
+	dmin = 0.0;
+	dmax = 0.0;
+	dend = 0.0;
+	particle_type = part;
         prescription_dmin = 0.f;
         prescription_dmax = 0.f;
 
-		switch(particle_type)
-		{
-			case 1:			// proton
-			{
-				alpha = 0.0022;
-				p = 1.77;
-				break;
-			}
-			case 2:			// helium
-			{
-				alpha = 0.0022;
-				p = 1.77;
-				printf("data for helium particle are not available - based on proton beam data");
-				break;
-			}
-			case 3:			// lithium
-			{
-				alpha = 0.0022;
-				p = 1.77;
-				printf("data for lithium particle type are not available - based on proton beam data");
-				break;
-			}
-			case 4:			// berilium
-			{
-				alpha = 0.0022;
-				p = 1.77;
-				printf("data for berilium particle type are not available - based on proton beam data");
-				break;
-			}
-			case 5:			// bore
-			{
-				alpha = 0.0022;
-				p = 1.77;
-				printf("data for bore particle type are not available - based on proton beam data");
-				break;
-			}
-			case 6:			// carbon
-			{
-				alpha = 0.0022;
-				p = 1.77;
-				printf("data for carbon particle type are not available - based on proton beam data");
-				break;
-			}
-			case 8:			// oxygen
-			{
-				alpha = 0.0022;
-				p = 1.77;
-				printf("data for oxygen particle type are not available - based on proton beam data");
-				break;
-			}
-			default:
-			{
-				alpha = 0.0022;
-				p = 1.77;
-				particle_type =P;
-				printf("particle not found - proton beam chosen");
-				break;
-			}
-		}
-	}
+        switch(particle_type)
+        {
+            case 1:			// proton
+	    {
+	        alpha = particle_parameters[0][0];
+	        p = particle_parameters[0][1];
+	        break;
+	    }
+       	    case 2:			// helium
+	    {
+	        alpha = particle_parameters[1][0];
+	        p = particle_parameters[1][1];
+	        printf("data for helium particle are not available - based on proton beam data");
+	        break;
+	    }
+	    case 3:			// lithium
+	    {
+	        alpha = particle_parameters[2][0];
+	        p = particle_parameters[2][1];
+	        printf("data for lithium particle type are not available - based on proton beam data");
+	        break;
+	    }
+	    case 4:			// berilium
+	    {
+	        alpha = particle_parameters[3][0];
+	        p = particle_parameters[3][1];
+	        printf("data for berilium particle type are not available - based on proton beam data");
+	        break;
+	    }
+	    case 5:			// bore
+	    {
+	        alpha = particle_parameters[4][0];
+	        p = particle_parameters[4][1];
+	        printf("data for bore particle type are not available - based on proton beam data");
+	        break;
+	    }
+	    case 6:			// carbon
+	    {
+	        alpha = particle_parameters[5][0];
+	        p = particle_parameters[5][1];
+	        printf("data for carbon particle type are not available - based on proton beam data");
+	        break;
+	    }
+	    case 8:			// oxygen
+	    {
+	        alpha = particle_parameters[7][0];
+	        p = particle_parameters[7][1];
+	        printf("data for oxygen particle type are not available - based on proton beam data");
+	        break;
+	    }
+	    default:
+	    {
+	        alpha = particle_parameters[0][0];
+	        p = particle_parameters[0][1];
+	        particle_type = PARTICLE_TYPE_P;
+	        printf("particle not found - proton beam chosen");
+	        break;
+	    }
+        }
+    }
     ~Ion_sobp_private () {
         if (d_lut) delete[] d_lut;
         if (e_lut) delete[] e_lut;
@@ -133,21 +133,21 @@ public:
     double dres;
     int num_samples;				/* number of depths */
 
-	int eres;						/* energy resolution */
-	int num_peaks;					/* number of peaks */
+    int eres;						/* energy resolution */
+    int num_peaks;					/* number of peaks */
 
-	std::vector<double> sobp_weight;
+    std::vector<double> sobp_weight;
 
-	int E_min;						/* lower energy */
-	int E_max;						/* higher energy */
+    int E_min;						/* lower energy */
+    int E_max;						/* higher energy */
 
-	float dmin;					/* lower depth */
-	float dmax;					/* higher depth */
-	float dend;					/* end of the depth array */
+    float dmin;					/* lower depth */
+    float dmax;					/* higher depth */
+    float dend;					/* end of the depth array */
 
-	Particle_type particle_type;
-	double p;						/* p  & alpha are parameters that bind depth and energy according to ICRU */
-	double alpha;
+    Particle_type particle_type;
+    double p;						/* p  & alpha are parameters that bind depth and energy according to ICRU */
+    double alpha;
 
     float prescription_dmin;
     float prescription_dmax;
@@ -155,13 +155,14 @@ public:
 
 Ion_sobp::Ion_sobp ()
 {
-    d_ptr = new Ion_sobp_private(P);
+    d_ptr = new Ion_sobp_private(PARTICLE_TYPE_P);
 }
 
 Ion_sobp::Ion_sobp (Particle_type part)
 {
     d_ptr = new Ion_sobp_private(part);
 }
+
 
 Ion_sobp::~Ion_sobp ()
 {
@@ -181,57 +182,57 @@ Ion_sobp::add (double E0, double spread, double dres, double dmax,
     double weight)
 {
     switch(d_ptr->particle_type)
-	{
-		case P:			// proton
-		{
-		printf ("Adding peak to sobp (%f, %f, %f) [%f, %f]\n", 
-			(float) E0, (float) spread, (float) weight,
-			(float) dres, (float) dmax);
-		Ion_pristine_peak *peak = new Ion_pristine_peak (
-			E0, spread, dres, dmax, weight);
+    {
+        case PARTICLE_TYPE_P:			// proton
+        {
+            printf ("Adding peak to sobp (%f, %f, %f) [%f, %f]\n", 
+		(float) E0, (float) spread, (float) weight,
+		(float) dres, (float) dmax);
+	    Ion_pristine_peak *peak = new Ion_pristine_peak (
+		E0, spread, dres, dmax, weight);
 		d_ptr->peaks.push_back (peak);
 
-		/* Update maximum */
-		if (dmax > d_ptr->dmax) {
-			d_ptr->dmax = dmax;
-				break;
-			}
-		}
-		case HE:			// helium
-		{
-			//to be implemented
-		}
-		break;
-		case LI:			// lithium
-		{
-			//to be implemented
-		}
-		break;
-		case BE:			// berilium
-		{
-			//to be implemented
-		}
-		break;
-		case B:			// bore
-		{
-			//to be implemented
-		}
-		break;
-		case C:			// carbon
-		{
-			//to be implemented
-		}
-		break;
-		case O:			// oxygen
-		{
-			//to be implemented
-		}
-		break;
-		default:
-		{
-			//to be implemented
+	/* Update maximum */
+	if (dmax > d_ptr->dmax) {
+		d_ptr->dmax = dmax;
+			break;
 		}
 	}
+	case PARTICLE_TYPE_HE:			// helium
+	{
+		//to be implemented
+	}
+	break;
+	case PARTICLE_TYPE_LI:			// lithium
+	{
+		//to be implemented
+	}
+	break;
+	case PARTICLE_TYPE_BE:			// berilium
+	{
+		//to be implemented
+	}
+	break;
+	case PARTICLE_TYPE_B:			// bore
+	{
+		//to be implemented
+	}
+	break;
+	case PARTICLE_TYPE_C:			// carbon
+	{
+		//to be implemented
+	}
+	break;
+	case PARTICLE_TYPE_O:			// oxygen
+	{
+		//to be implemented
+        }
+	break;
+	default:
+	{
+		//to be implemented
+	}
+    }
 }
 
 void
@@ -305,8 +306,8 @@ Ion_sobp::generate ()
             d_ptr->num_samples = ppp->num_samples;
             d_ptr->dres = ppp->dres;
 
-			if (d_ptr->d_lut) delete[] d_ptr->d_lut;
-			if (d_ptr->e_lut) delete[] d_ptr->e_lut;
+	    if (d_ptr->d_lut) delete[] d_ptr->d_lut;
+	    if (d_ptr->e_lut) delete[] d_ptr->e_lut;
 
             d_ptr->d_lut = new float [ppp->num_samples];
             d_ptr->e_lut = new float [ppp->num_samples];
@@ -364,99 +365,99 @@ void Ion_sobp::SetParticleType(Particle_type particle_type)
 {
 	switch(particle_type)
 	{
-		case P:			// proton
+		case PARTICLE_TYPE_P:			// proton
 		{
-			d_ptr->particle_type = particle_type;
-			d_ptr->alpha = 0.0022;
-			d_ptr->p = 1.77;
-			if (d_ptr->dmin !=0 && d_ptr->dmax !=0)
-			{
-				SetMinMaxDepths(d_ptr->dmin, d_ptr->dmax); // we redefined the energies used to create the sobp
-			}
+		    d_ptr->particle_type = particle_type;
+		    d_ptr->alpha = particle_parameters[0][0];
+		    d_ptr->p = particle_parameters[0][1];
+		    if (d_ptr->dmin !=0 && d_ptr->dmax !=0)
+		    {
+		    	SetMinMaxDepths(d_ptr->dmin, d_ptr->dmax); // we redefined the energies used to create the sobp
+		    }
 		}
 		break;
-		case HE:			// helium
+		case PARTICLE_TYPE_HE:			// helium
 		{
-			d_ptr->particle_type = particle_type;
-			d_ptr->alpha = 0.0022; //to be updated
-			d_ptr->p = 1.77; //to be updated
-			if (d_ptr->dmin !=0 && d_ptr->dmax !=0)
-			{
-				SetMinMaxDepths(d_ptr->dmin, d_ptr->dmax); // we redefined the energies used to create the sobp
-			}
-			printf("data for helium particle are not available - proton beam chosen\n");
+		    d_ptr->particle_type = particle_type;
+		    d_ptr->alpha = particle_parameters[1][0]; //to be updated
+		    d_ptr->p = particle_parameters[1][1]; //to be updated
+		    if (d_ptr->dmin !=0 && d_ptr->dmax !=0)
+		    {
+			SetMinMaxDepths(d_ptr->dmin, d_ptr->dmax); // we redefined the energies used to create the sobp
+		    }
+		    printf("data for helium particle are not available - proton beam chosen\n");
 		}
 		break;
-		case LI:			// lithium
+		case PARTICLE_TYPE_LI:			// lithium
 		{
-			d_ptr->particle_type = particle_type;
-			d_ptr->alpha = 0.0022; //to be updated
-			d_ptr->p = 1.77; //to be updated
-			if (d_ptr->dmin !=0 && d_ptr->dmax !=0)
-			{
-				SetMinMaxDepths(d_ptr->dmin, d_ptr->dmax); // we redefined the energies used to create the sobp
-			}
-			printf("data for lithium particle type are not available - proton beam chosen\n");
+		    d_ptr->particle_type = particle_type;
+		    d_ptr->alpha = particle_parameters[2][0]; //to be updated
+		    d_ptr->p = particle_parameters[2][1]; //to be updated
+		    if (d_ptr->dmin !=0 && d_ptr->dmax !=0)
+		    {
+		    	SetMinMaxDepths(d_ptr->dmin, d_ptr->dmax); // we redefined the energies used to create the sobp
+		    }
+		    printf("data for lithium particle type are not available - proton beam chosen\n");
 		}
 		break;
-		case BE:			// berilium
+		case PARTICLE_TYPE_BE:			// berilium
 		{
-			d_ptr->particle_type = particle_type;
-			d_ptr->alpha = 0.0022; //to be updated
-			d_ptr->p = 1.77; //to be updated
-			if (d_ptr->dmin !=0 && d_ptr->dmax !=0)
-			{
-				SetMinMaxDepths(d_ptr->dmin, d_ptr->dmax); // we redefined the energies used to create the sobp
-			}
-			printf("data for berilium particle type are not available - proton beam chosen\n");
+		    d_ptr->particle_type = particle_type;
+		    d_ptr->alpha = particle_parameters[3][0]; //to be updated
+		    d_ptr->p = particle_parameters[3][1]; //to be updated
+		    if (d_ptr->dmin !=0 && d_ptr->dmax !=0)
+		    {
+		    	SetMinMaxDepths(d_ptr->dmin, d_ptr->dmax); // we redefined the energies used to create the sobp
+		    }
+		    printf("data for berilium particle type are not available - proton beam chosen\n");
 		}
 		break;
-		case B:			// bore
+		case PARTICLE_TYPE_B:			// bore
 		{
-			d_ptr->particle_type = particle_type;
-			d_ptr->alpha = 0.0022; //to be updated
-			d_ptr->p = 1.77; //to be updated
-			if (d_ptr->dmin !=0 && d_ptr->dmax !=0)
-			{
-				SetMinMaxDepths(d_ptr->dmin, d_ptr->dmax); // we redefined the energies used to create the sobp
-			}
-			printf("data for bore particle type are not available - proton beam chosen\n");
+		    d_ptr->particle_type = particle_type;
+		    d_ptr->alpha = particle_parameters[4][0]; //to be updated
+		    d_ptr->p = particle_parameters[4][1]; //to be updated
+		    if (d_ptr->dmin !=0 && d_ptr->dmax !=0)
+		    {
+		    	SetMinMaxDepths(d_ptr->dmin, d_ptr->dmax); // we redefined the energies used to create the sobp
+		    }
+		    printf("data for bore particle type are not available - proton beam chosen\n");
 		}
 		break;
-		case C:			// carbon
+		case PARTICLE_TYPE_C:			// carbon
 		{
-			d_ptr->particle_type = particle_type;
-			d_ptr->alpha = 0.0022; //to be updated
-			d_ptr->p = 1.77; //to be updated
-			if (d_ptr->dmin !=0 && d_ptr->dmax !=0)
-			{
-				SetMinMaxDepths(d_ptr->dmin, d_ptr->dmax); // we redefined the energies used to create the sobp
-			}
-			printf("data for carbon particle type are not available - proton beam chosen\n");
+		    d_ptr->particle_type = particle_type;
+		    d_ptr->alpha = particle_parameters[5][0]; //to be updated
+		    d_ptr->p = particle_parameters[5][1]; //to be updated
+		    if (d_ptr->dmin !=0 && d_ptr->dmax !=0)
+		    {
+		    	SetMinMaxDepths(d_ptr->dmin, d_ptr->dmax); // we redefined the energies used to create the sobp
+		    }
+		    printf("data for carbon particle type are not available - proton beam chosen\n");
 		}
 		break;
-		case O:			// oxygen
+		case PARTICLE_TYPE_O:			// oxygen
 		{
-			d_ptr->particle_type = particle_type;
-			d_ptr->alpha = 0.0022; //to be updated
-			d_ptr->p = 1.77; //to be updated
-			if (d_ptr->dmin !=0 && d_ptr->dmax !=0)
-			{
-				SetMinMaxDepths(d_ptr->dmin, d_ptr->dmax); // we redefined the energies used to create the sobp
-			}
-			printf("data for oxygen particle type are not available - proton beam chosen\n");
+		    d_ptr->particle_type = particle_type;
+		    d_ptr->alpha = particle_parameters[7][0]; //to be updated
+		    d_ptr->p = particle_parameters[7][1]; //to be updated
+		    if (d_ptr->dmin !=0 && d_ptr->dmax !=0)
+		    {
+		    	SetMinMaxDepths(d_ptr->dmin, d_ptr->dmax); // we redefined the energies used to create the sobp
+		    }
+		    printf("data for oxygen particle type are not available - proton beam chosen\n");
 		}
 		break;
 		default:
 		{
-			d_ptr->particle_type = particle_type;
-			d_ptr->alpha = 0.0022; //to be updated
-			d_ptr->p = 1.77; //to be updated
-			if (d_ptr->dmin !=0 && d_ptr->dmax !=0)
-			{
-				SetMinMaxDepths(d_ptr->dmin, d_ptr->dmax); // we redefined the energies used to create the sobp
-			}
-			printf("particle not found - proton beam chosen\n");
+		    d_ptr->particle_type = particle_type;
+		    d_ptr->alpha = particle_parameters[0][0]; //to be updated
+		    d_ptr->p = particle_parameters[0][1]; //to be updated
+		    if (d_ptr->dmin !=0 && d_ptr->dmax !=0)
+		    {
+			SetMinMaxDepths(d_ptr->dmin, d_ptr->dmax); // we redefined the energies used to create the sobp
+		    }
+		    printf("particle not found - proton beam chosen\n");
 		}
 	}
 }
@@ -466,37 +467,37 @@ void Ion_sobp::printparameters()  // return on the command line the parameters o
 	printf("\nParticle type : ");
 	switch(d_ptr->particle_type)
 	{
-		case P:			// proton
+		case PARTICLE_TYPE_P:			// proton
 		{
 			printf("Proton\n");
 		}
 		break;
-		case HE:			// helium
+		case PARTICLE_TYPE_HE:			// helium
 		{
 			printf("Helium\n");
 		}
 		break;
-		case LI:			// lithium
+		case PARTICLE_TYPE_LI:			// lithium
 		{
 			printf("Lithium\n");
 		}
 		break;
-		case BE:			// berilium
+		case PARTICLE_TYPE_BE:			// berilium
 		{
 			printf("Berillium\n");
 		}
 		break;
-		case B:			// bore
+		case PARTICLE_TYPE_B:			// bore
 		{
 			printf("Bore\n");
 		}
 		break;
-		case C:			// carbon
+		case PARTICLE_TYPE_C:			// carbon
 		{
 			printf("Carbon\n");
 		}
 		break;
-		case O:			// oxygen
+		case PARTICLE_TYPE_O:			// oxygen
 		{
 			printf("Oxygen\n");
 		}
@@ -898,3 +899,17 @@ double cost_function_calculation(std::vector<std::vector<double> > depth_dose, s
 
 	return f_tot; //we return the fcost value
 }
+
+/* matrix that contains the alpha and p parameters Range = f(E, alpha, p)
+    First line is proton, second line is He... */
+
+extern const double particle_parameters[][2] = {
+    0.0022, 1.77,   //P
+    0.0022, 1.77,   //HE
+    0.0022, 1.77,   //LI
+    0.0022, 1.77,   //BE
+    0.0022, 1.77,   //B
+    0.0022, 1.77,   //C
+    0.00,   0.00,   //N not used for ion therapy - set to 0
+    0.0022, 1.77    //O
+};

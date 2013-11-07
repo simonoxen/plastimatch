@@ -66,8 +66,12 @@ public:
     /* Set beam depth, in mm */
     void set_beam_depth (float z_min, float z_max, float z_step);
 
+    /* Create a dose_volume in the beam frame */
+    void dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volume);
+
     /* Compute dose */
     void compute_dose ();
+    void compute_dose_push();
 
     /* Return dose to caller */
     Plm_image::Pointer get_dose ();
@@ -75,7 +79,9 @@ public:
 
 public:
     Ion_beam *beam;
-    Rpl_volume* rpl_vol;
+    Rpl_volume* rpl_vol; // contains the radiologic path length along a ray
+    Rpl_volume* ct_vol_density; // contains the ct_density along the ray
+    Rpl_volume* sigma_vol;  // contains the sigma (lateral spread of the pencil beam - used to calculate the off-axis term) along the ray
 };
 
 #endif

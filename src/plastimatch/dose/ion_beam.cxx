@@ -71,7 +71,7 @@ public:
 
 Ion_beam::Ion_beam ()
 {
-    this->d_ptr = new Ion_beam_private(P);
+    this->d_ptr = new Ion_beam_private(PARTICLE_TYPE_P);
 }
 
 Ion_beam::Ion_beam (Particle_type part)

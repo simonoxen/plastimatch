@@ -33,6 +33,7 @@ public:
     const double* get_center () const;
     /*! \brief Get the aperture center in the i or j dimension, in pixels */
     double get_center (int dim) const;
+
     /*! \brief Set the aperture center, in pixels */
     void set_center (const float* center);
     void set_center (const double* center);

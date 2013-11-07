@@ -20,7 +20,7 @@
 #include "plm_config.h"
 #include "smart_pointer.h"
 
-enum Particle_type { P=1, HE=2, LI=3, BE=4, B=5, C=6, O=8};
+enum Particle_type {PARTICLE_TYPE_P=1, PARTICLE_TYPE_HE=2, PARTICLE_TYPE_LI=3, PARTICLE_TYPE_BE=4, PARTICLE_TYPE_B=5, PARTICLE_TYPE_C=6, PARTICLE_TYPE_O=8};
 
 class Ion_pristine_peak;
 class Ion_sobp_private;
@@ -60,32 +60,36 @@ public:
     /* Return simple depth dose result at depth */
     float lookup_energy (float depth);
 
-	/* Return zmax */
-	float get_maximum_depth();
+    /* Return zmax */
+    float get_maximum_depth();
 
-	/* Print the parameters of the sobp */
-	void printparameters();
+    /* Print the parameters of the sobp */
+    void printparameters();
 
-	/* print sobp curve */
-	void print_sobp_curve();
+    /* print sobp curve */
+    void print_sobp_curve();
 
-	/* set the minimal and maximal energy to buld the sobp peak */
-	void SetMinMaxEnergies(int new_E_min, int new_E_max);
-	/* set the minimal and maximal energy to buld the sobp peak and energy step */
-	void SetMinMaxEnergies(int new_E_min, int new_E_max, int new_step); 
-	/* set the minimal and maximal depth covered by the sobp */
-	void SetMinMaxDepths(float new_z_min, float new_z_max);
-	/* set the minimal and maximal depth covered by the sobp */
-	void SetMinMaxDepths(float new_z_min, float new_z_max, float new_step);
-	/* set the energy step only */
-	void SetEnergyStep(int new_step);
-	/* set energy step */
-	void SetDepthStep(float new_step);		
-	/* Weight optimizer */
-	void Optimizer();
+    /* set the minimal and maximal energy to buld the sobp peak */
+    void SetMinMaxEnergies(int new_E_min, int new_E_max);
+    /* set the minimal and maximal energy to buld the sobp peak and energy step */
+    void SetMinMaxEnergies(int new_E_min, int new_E_max, int new_step); 
+    /* set the minimal and maximal depth covered by the sobp */
+    void SetMinMaxDepths(float new_z_min, float new_z_max);
+    /* set the minimal and maximal depth covered by the sobp */
+    void SetMinMaxDepths(float new_z_min, float new_z_max, float new_step);
+    /* set the energy step only */
+    void SetEnergyStep(int new_step);
+    /* set energy step */
+    void SetDepthStep(float new_step);		
+    /* Weight optimizer */
+    void Optimizer();
 
 };
 
+/* cost function used to optimize the sobp shape */
 double cost_function_calculation(std::vector<std::vector<double> > depth_dose, std::vector<double> weights, int num_peaks, int num_samples, std::vector<int> depth_in, std::vector<int> depth_out);
+
+/* declaration of a matrix that contains the alpha and p parameters of the particles (Range = f(E, alpha, p) */
+extern const double particle_parameters[][2];
 
 #endif

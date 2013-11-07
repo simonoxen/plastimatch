@@ -1,6 +1,6 @@
 #include "lookup_range.h"
 
-extern const double lookup_range[][2] ={
+extern const double lookup_range_proton[][2] ={
 1.000E-03,	6.319E-06,
 1.500E-03,	8.969E-06,	
 2.000E-03,	1.137E-05,	

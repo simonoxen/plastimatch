@@ -43,6 +43,7 @@ public:
     Proj_matrix *get_proj_matrix ();
     const double* get_nrm ();
     const double* get_src ();
+    const double* get_clipping_dist();
     double get_step_length ();
     const double* get_ul_room ();
     Volume *get_vol ();

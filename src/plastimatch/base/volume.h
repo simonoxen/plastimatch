@@ -135,6 +135,8 @@ public:
       tri-linearly interpolated.  Only applies to float volumes.
     */
     float get_ijk_value (const float xyz[3]);
+    void get_xyz_from_ijk (double xyz[3], const int ijk[3]);
+    void get_ijk_from_xyz (int ijk[3],const float xyz[3], bool* in);
 
     void debug ();
     void direction_cosines_debug ();

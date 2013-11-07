@@ -24,6 +24,7 @@ set (PLMDOSE_LIBRARY_SRC
   ion_sobp.cxx
   lookup_range.cxx
   lookup_stop.cxx
+  sigma_spread.cxx
   wed_parms.cxx
   )
 

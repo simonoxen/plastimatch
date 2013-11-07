@@ -661,6 +661,30 @@ Volume::get_ijk_value (const float ijk[3])
     return val;
 }
 
+void 
+Volume::get_xyz_from_ijk (double xyz[3], const int ijk[3])
+{
+    xyz[0] = this->offset[0] + ijk[0] * this->spacing[0];
+    xyz[1] = this->offset[1] + ijk[1] * this->spacing[1];
+    xyz[2] = this->offset[2] + ijk[2] * this->spacing[2];
+}
+
+void
+Volume::get_ijk_from_xyz (int ijk[3],const float xyz[3], bool* in)
+{
+    *in = true;
+
+    for (int i = 0; i < 3; i++)
+    {
+        ijk[i] = (int) floor(xyz[i]-this->offset[i])/this->spacing[i];
+        if (ijk[i] < 0 || ijk[i] >= this->dim[i])
+        {
+            *in = false;
+            return;
+        }
+    }
+}
+
 void
 Volume::debug ()
 {
