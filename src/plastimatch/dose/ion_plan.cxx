@@ -118,7 +118,7 @@ Ion_plan::init ()
         if(this->rpl_vol->get_ct() && this->rpl_vol->get_ct_limit())
         {
             /* We don't do everything again, we just copy the ct & ct_limits as all the volumes geometrically equal*/
-            this->ct_vol_density->set_ct(this->rpl_vol->get_ct());
+            this->ct_vol_density->set_ct (this->rpl_vol->get_ct());
             this->ct_vol_density->set_ct_limit(this->rpl_vol->get_ct_limit());
         
             this->sigma_vol->set_ct(this->rpl_vol->get_ct());
@@ -447,7 +447,9 @@ Ion_plan::compute_dose_push()
     float *sigma_max =&sigmaMax; // used to find the max sigma in the volume and add extra margins during the dose creation volume
 
     this->ct_vol_density->compute_rpl_ct ();
+#if defined (commentout)
     this->sigma_vol->compute_rpl_sigma(this->ct_vol_density, sigma_max);
+#endif
 
     Ion_beam* beam = this->beam;
     Volume* ct_vol = this->get_patient_vol ();
@@ -459,10 +461,10 @@ Ion_plan::compute_dose_push()
  
     Volume* dose_volume = new Volume;
     dose_volume_create(dose_volume, sigma_max, this->sigma_vol);
-    
+
+#if defined (commentout)    
     sigma_vol->compute_dose_ray(dose_volume, ct_vol, rpl_vol, sigma_vol, ct_vol_density, this->beam);
-    
-   
+#endif
 
         /* Insert the dose into the dose volume 
         idx = volume_index (dose_vol->dim, ct_ijk);

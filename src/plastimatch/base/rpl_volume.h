@@ -48,7 +48,7 @@ public:
     double get_rgdepth (double ap_ij[2], double dist);
     double get_rgdepth (const double *xyz);
 
-    void set_ct(Plm_image::Pointer& ct_volume);
+    void set_ct (const Plm_image::Pointer& ct_volume);
     Plm_image::Pointer get_ct();
     void set_ct_limit(Volume_limit* ct_limit);
     Volume_limit* get_ct_limit();

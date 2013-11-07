@@ -298,7 +298,7 @@ Rpl_volume::get_rgdepth (
     return rgdepth;
 }
 
-void Rpl_volume::set_ct(Plm_image::Pointer& ct_volume)
+void Rpl_volume::set_ct (const Plm_image::Pointer& ct_volume)
 {
     d_ptr->ct = ct_volume;
 }
@@ -653,6 +653,7 @@ Rpl_volume::compute_rpl ()
     }
 }
 
+#if defined (commentout)
 void 
 Rpl_volume::compute_rpl_sigma (Rpl_volume* ct_vol_density, float* sigma_max)
 {
@@ -756,6 +757,7 @@ Rpl_volume::compute_rpl_sigma (Rpl_volume* ct_vol_density, float* sigma_max)
     printf("sigma_max = %lg\n", *sigma_max);
     return;
 }
+#endif
 
 Volume*
 Rpl_volume::create_wed_volume ()
@@ -1667,6 +1669,7 @@ Rpl_volume::rpl_ray_trace (
     }
 }
 
+#if defined (commentout)
 void 
 Rpl_volume::compute_dose_ray(Volume* dose_volume, Volume* ct_vol, Rpl_volume* rpl_volume, Rpl_volume* sigma_volume, Rpl_volume* ct_rpl_volume, Ion_beam* beam)
 {
@@ -1864,6 +1867,7 @@ Rpl_volume::compute_dose_ray(Volume* dose_volume, Volume* ct_vol, Rpl_volume* rp
 
     return;
 }
+#endif
 
 void 
 Rpl_volume::find_xyz_center(double* xyz_ray_center, double* ray, float z_axis_offset, int k)
