@@ -71,7 +71,7 @@ public:
 
     /* Compute dose */
     void compute_dose ();
-    void compute_dose_push();
+    //void compute_dose_push();
 
     /* Return dose to caller */
     Plm_image::Pointer get_dose ();

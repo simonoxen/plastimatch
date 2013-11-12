@@ -565,9 +565,7 @@ Ion_parms::parse_args (int argc, char** argv)
 
     /* Generate dose */
     d_ptr->plan->set_debug (true);
-    if (d_ptr->plan->beam->get_flavor() != 'f')
-    {
-        d_ptr->plan->compute_dose ();
+    d_ptr->plan->compute_dose ();
 
     /* Save beam modifiers */
     if (d_ptr->output_aperture_fn != "") {
@@ -582,11 +580,6 @@ Ion_parms::parse_args (int argc, char** argv)
     /* Save dose output */
     Plm_image::Pointer dose = d_ptr->plan->get_dose ();
     dose->save_image (d_ptr->output_dose_fn.c_str());
-    }
-    else
-    {
-        d_ptr->plan->compute_dose_push();
-    }
 
     printf ("done.  \n\n");
     return true;

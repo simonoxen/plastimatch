@@ -15,6 +15,7 @@
 #include "plm_image.h"
 #include "proj_matrix.h"
 #include "rpl_volume.h"
+#include "sigma_spread.h"
 #include "volume.h"
 #include "volume_macros.h"
 
@@ -338,145 +339,92 @@ Ion_plan::compute_dose ()
     Volume* dose_vol = volume_clone_empty (ct_vol);
     float* dose_img = (float*) dose_vol->img;
 
-    if (this->get_debug()) {
-        rpl_vol->save ("beam_debug/depth_vol.mha");
-        beam->dump ("beam_debug");
+    Volume* dose_volume_tmp = new Volume;
+    float* dose_img_tmp = (float*) dose_volume_tmp->img;
+
+    if (this->beam->get_flavor() == 'f') // push algorithm + creation of the sigma volume
+    {
+        float sigmaMax = 0;
+        float *sigma_max =&sigmaMax; // used to find the max sigma in the volume and add extra margins during the dose creation volume
+
+        this->ct_vol_density->compute_rpl_ct ();
+
+        this->sigma_vol->compute_rpl_sigma(this->ct_vol_density);
+        convert_radiologic_length_to_sigma(this->sigma_vol,this->ct_vol_density,100,this->sigma_vol->get_vol()->spacing[2], sigma_max);
+
+        Rpl_volume* rpl_vol = this->rpl_vol;
+        Rpl_volume* sigma_vol = this->sigma_vol;
+
+        dose_volume_create(dose_volume_tmp, sigma_max, this->sigma_vol);
+        compute_dose_ray(dose_volume_tmp, ct_vol, rpl_vol, sigma_vol, ct_vol_density, this->beam, dose_vol);
     }
+    else // pull algorithm
+    {     
+        if (this->get_debug()) {
+            rpl_vol->save ("beam_debug/depth_vol.mha");
+            beam->dump ("beam_debug");
+        }
 
-    /* scan through patient CT Volume */
-    plm_long ct_ijk[3];
-    double ct_xyz[4];
-    plm_long idx = 0;
+        /* scan through patient CT Volume */
+        plm_long ct_ijk[3];
+        double ct_xyz[4];
+        plm_long idx = 0;
 
-	/* Max is playing */
-
-	/* for (ct_ijk[2] = 74; ct_ijk[2] < 76; ct_ijk[2]++) {
-	//printf("\nX : %3.2f%% ", (double)(((double)ct_ijk[2])/(double)ct_vol->dim[2]*100));
-       for (ct_ijk[1] = 74; ct_ijk[1] < 76; ct_ijk[1]++) {
-		   //if (ct_ijk[1]%10 == 0) {printf ("-");}
-           for (ct_ijk[0] =74; ct_ijk[0] < 76; ct_ijk[0]++) { */
-
-	/*FILE* profile_file;
-	profile_file= fopen("C:/Work/test/profile.txt","w");
-	
-	ct_ijk[2] = 74;
-	ct_ijk[0] = 74;
-	for (ct_ijk[1] = 0; ct_ijk[1] < ct_vol->dim[1]; ct_ijk[1]++) { */
-
-	/* Max is not playing anymore */
-
-    for (ct_ijk[2] = 0; ct_ijk[2] < ct_vol->dim[2]; ct_ijk[2]++) {
+        for (ct_ijk[2] = 0; ct_ijk[2] < ct_vol->dim[2]; ct_ijk[2]++) {
 		printf("\nX : %3.2f%% ", (double)(((double)ct_ijk[2])/(double)ct_vol->dim[2]*100));
-        for (ct_ijk[1] = 0; ct_ijk[1] < ct_vol->dim[1]; ct_ijk[1]++) {
-            for (ct_ijk[0] = 0; ct_ijk[0] < ct_vol->dim[0]; ct_ijk[0]++) {
-                double dose = 0.0;
+            for (ct_ijk[1] = 0; ct_ijk[1] < ct_vol->dim[1]; ct_ijk[1]++) {
+                for (ct_ijk[0] = 0; ct_ijk[0] < ct_vol->dim[0]; ct_ijk[0]++) {
+                    double dose = 0.0;
 
-                bool voxel_debug = false;
-#if defined (commentout)
-                if (ct_ijk[2] == 60 && ct_ijk[1] == 44 && ct_ijk[0] == 5) {
-                    voxel_debug = true;
+                    bool voxel_debug = false;
+    #if defined (commentout)
+                    if (ct_ijk[2] == 60 && ct_ijk[1] == 44 && ct_ijk[0] == 5) {
+                        voxel_debug = true;
+                    }
+    #endif
+
+                    /* Transform vol index into space coords */
+                    ct_xyz[0] = (double) (ct_vol->offset[0] + ct_ijk[0] * ct_vol->spacing[0]);
+                    ct_xyz[1] = (double) (ct_vol->offset[1] + ct_ijk[1] * ct_vol->spacing[1]);
+                    ct_xyz[2] = (double) (ct_vol->offset[2] + ct_ijk[2] * ct_vol->spacing[2]);
+                    ct_xyz[3] = (double) 1.0;
+    
+                    if (voxel_debug) {
+                        printf ("Voxel (%d, %d, %d) -> (%f, %f, %f)\n",
+                            (int) ct_ijk[0], (int) ct_ijk[1], (int) ct_ijk[2], 
+                            ct_xyz[0], ct_xyz[1], ct_xyz[2]);
+                    }
+                    switch (beam->get_flavor()) {
+                    case 'a':
+                        dose = dose_direct (ct_xyz, this);
+                        break;
+                    case 'b':
+                        dose = dose_scatter (ct_xyz, ct_ijk, this);
+                        break;
+                    case 'c':
+                        dose = dose_hong (ct_xyz, ct_ijk, this);
+                        break;
+                    case 'd':
+                        dose = dose_debug (ct_xyz, this);
+                        break;
+                    case 'e':
+        	        dose = dose_hong_maxime (ct_xyz, ct_ijk, this);
+		        break;
+                    }
+
+                    /* Insert the dose into the dose volume */
+                    idx = volume_index (dose_vol->dim, ct_ijk);
+                    dose_img[idx] = dose;
                 }
-#endif
-
-                /* Transform vol index into space coords */
-                ct_xyz[0] = (double) (ct_vol->offset[0] + ct_ijk[0] * ct_vol->spacing[0]);
-                ct_xyz[1] = (double) (ct_vol->offset[1] + ct_ijk[1] * ct_vol->spacing[1]);
-                ct_xyz[2] = (double) (ct_vol->offset[2] + ct_ijk[2] * ct_vol->spacing[2]);
-                ct_xyz[3] = (double) 1.0;
-
-                if (voxel_debug) {
-                    printf ("Voxel (%d, %d, %d) -> (%f, %f, %f)\n",
-                        (int) ct_ijk[0], (int) ct_ijk[1], (int) ct_ijk[2], 
-                        ct_xyz[0], ct_xyz[1], ct_xyz[2]);
-                }
-
-                switch (beam->get_flavor()) {
-                case 'a':
-                    dose = dose_direct (ct_xyz, this);
-                    break;
-                case 'b':
-                    dose = dose_scatter (ct_xyz, ct_ijk, this);
-                    break;
-                case 'c':
-                    dose = dose_hong (ct_xyz, ct_ijk, this);
-                    break;
-                case 'd':
-                    dose = dose_debug (ct_xyz, this);
-                    break;
-		case 'e':
-		    dose = dose_hong_maxime (ct_xyz, ct_ijk, this);
-		    break;
-                case 'f':
-                    dose = 4; // the loop doesn't reach this point if flavor = f
-                    //printf("the Max's algorithm is not defined yet\n");
-                    // dose = max_algorithm (ct_xyz, ct_ijk, this);
-                }
-
-		/* Max is playing - getting the dose in the center of the volume and doing a profile */
-
-		//fprintf(profile_file,"%d %lg\n",ct_ijk[1], dose);
-
-		/*if (ct_ijk[2] == 50 && ct_ijk[1] == 50 && ct_ijk[0] == 50)
-		{
-			printf (" \n pixel numero: %d %d %d", ct_ijk[0], ct_ijk[1], ct_ijk[2]);
-			printf (" \n coordonnées: %f %f %f", ct_xyz[0], ct_xyz[1], ct_xyz[2]);
-			printf (" \n dose: %lg\n", dose);
-		} */
-
-                /* Insert the dose into the dose volume */
-                idx = volume_index (dose_vol->dim, ct_ijk);
-                dose_img[idx] = dose;
             }
         }
-        display_progress ((float)idx, (float)ct_vol->npix);
-    }
-
-	/* Max is playing - closing the profile dose */
-	//fclose(profile_file);
-
-	printf("\n");
-    Plm_image::Pointer dose = Plm_image::New();
-    dose->set_volume (dose_vol);
-    d_ptr->dose = dose;
-}
-
-void
-Ion_plan::compute_dose_push()
-{
-    float sigmaMax = 0;
-    float *sigma_max =&sigmaMax; // used to find the max sigma in the volume and add extra margins during the dose creation volume
-
-    this->ct_vol_density->compute_rpl_ct ();
-#if defined (commentout)
-    this->sigma_vol->compute_rpl_sigma(this->ct_vol_density, sigma_max);
-#endif
-
-    Ion_beam* beam = this->beam;
-    Volume* ct_vol = this->get_patient_vol ();
-    Volume* dose_vol = volume_clone_empty (ct_vol);
-    float* dose_img = (float*) dose_vol->img;
-
-    Rpl_volume* rpl_vol = this->rpl_vol;
-    Rpl_volume* sigma_vol = this->sigma_vol;
- 
-    Volume* dose_volume = new Volume;
-    dose_volume_create(dose_volume, sigma_max, this->sigma_vol);
-
-#if defined (commentout)    
-    sigma_vol->compute_dose_ray(dose_volume, ct_vol, rpl_vol, sigma_vol, ct_vol_density, this->beam);
-#endif
-
-        /* Insert the dose into the dose volume 
-        idx = volume_index (dose_vol->dim, ct_ijk);
-        dose_img[idx] = dose;
-
         display_progress ((float)idx, (float)ct_vol->npix);
     }
 
     printf("\n");
     Plm_image::Pointer dose = Plm_image::New();
     dose->set_volume (dose_vol);
-    d_ptr->dose = dose; */
+    d_ptr->dose = dose;
 }
 
 void 

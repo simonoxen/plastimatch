@@ -31,6 +31,7 @@
 #include "ion_parms.h"
 #include "ion_plan.h"
 #include "rpl_volume.h"
+#include "sigma_spread.h"
 #include "threading.h"
 #include "volume.h"
 
@@ -45,10 +46,6 @@
 #if defined (commentout)
 static bool voxel_debug = false;
 #endif
-
-/* Call of the look-up table functions used by the dose calculation*/
-static double getrange(double energy);
-static double getstop(double energy);
 
 /* This function is used to rotate a point about a ray in an orbit
  * perpendicular to the ray.  It is assumed that the arbitrary axis of
@@ -799,65 +796,4 @@ dose_hong_maxime (
 	r += r_step;
     }
     return dose;    
-
-}
-
-
-static double getrange(double energy)
-{
-    double energy1 = 0;
-    double energy2 = 0;
-    double range1 = 0;
-    double range2 = 0;
-    int i=0;
-
-    if (energy >0)
-    {
-	while (energy >= energy1)
-	{
-		energy1 = lookup_range_proton[i][0];
-		range1 = lookup_range_proton[i][1];
-		if (energy >= energy1)
-		{
-			energy2 = energy1;
-			range2 = range1;
-		}
-		i++;
-	}
-	return (range2+(energy-energy2)*(range1-range2)/(energy1-energy2));
-    }
-    else
-    {
-	return 0;
-    }
-}
-
-static double getstop(double energy)
-{
-    double energy1 = 0;
-    double energy2 = 0;
-    double stop1 = 0;
-    double stop2 = 0;
-    int i=0;
-
-    if (energy >0)
-    {
-    	while (energy >= energy1)
-	{
-		energy1 = lookup_stop_proton[i][0];
-		stop1 = lookup_stop_proton[i][1];
-
-                if (energy >= energy1)
-		{
-			energy2 = energy1;
-			stop2 = stop1;
-		}
-		i++;
-	}
-	return (stop2+(energy-energy2)*(stop1-stop2)/(energy1-energy2));
-    }
-    else
-    {
-	return 0;
-    }
 }

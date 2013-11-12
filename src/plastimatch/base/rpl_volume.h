@@ -64,7 +64,7 @@ public:
 
     void compute_rpl ();
     void compute_rpl_ct ();
-    void compute_rpl_sigma (Rpl_volume* ct_vol_density, float* sigma_max); // compute rpl_sigma and return sigma_max
+    void compute_rpl_sigma (Rpl_volume* ct_vol_density);
     void compute (Volume *ct_vol);
     Volume* create_wed_volume ();
     void compute_wed_volume (Volume *wed_vol, Volume *in_vol, float background);
@@ -72,16 +72,11 @@ public:
     void compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float background);
     void compute_beam_modifiers (Volume *seg_vol, float background);
     void compute_aperture (Volume *tgt_vol, float background);
-    void compute_dose_ray(Volume* dose_volume, Volume* ct_vol, Rpl_volume* rpl_volume, Rpl_volume* sigma_volume, Rpl_volume* ct_rpl_volume, Ion_beam* beam);
 
     void apply_beam_modifiers ();
 
     void save (const std::string& filename);
     void save (const char* filename);
-
-    void find_ijk_pixel(int* ijk_idx, double* xyz_ray_center, Volume* dose_volume);
-    void find_xyz_center(double* xyz_ray_center, double* ray, float z_axis_offset, int k);
-    void find_xyz_from_ijk(double* xyz, Volume* volume, int* ijk);
 
 protected:
     void compute_ray_data ();
