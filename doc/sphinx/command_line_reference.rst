@@ -1,5 +1,5 @@
-Command line reference
-======================
+Man pages
+=========
 
 .. toctree::
    :maxdepth: 2

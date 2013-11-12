@@ -152,8 +152,8 @@ specific parameters are available.
    * - demons_gradient_type
      - vf+demons+itk
      - symmetric
-     - symmetric,fixed,warped_moving,mapped_moving
-     - Type of gradient that will be used to compute update force
+     - enumeration
+     - Type of gradient that will be used to compute update force, choose from {symmetric,fixed,warped_moving,mapped_moving}
    * - demons_smooth_update_field
      - vf+demons+itk
      - false
