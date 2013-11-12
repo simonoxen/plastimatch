@@ -20,9 +20,13 @@ PLMBASE_API Volume::Pointer volume_resample_nn (
         const float* offset,
         const float* spacing
 );
-PLMBASE_API Volume::Pointer volume_subsample (
-    Volume* vol_in, int* sampling_rate);
-PLMBASE_API Volume::Pointer volume_subsample_nn (
-    Volume* vol_in, int* sampling_rate);
+PLMBASE_API Volume::Pointer volume_subsample_vox (
+    Volume* vol_in, float* sampling_rate);
+PLMBASE_API Volume::Pointer volume_subsample_vox_nn (
+    Volume* vol_in, float* sampling_rate);
+PLMBASE_API Volume::Pointer volume_subsample_vox_legacy (
+    Volume* vol_in, float* sampling_rate);
+PLMBASE_API Volume::Pointer volume_subsample_vox_legacy_nn (
+    Volume* vol_in, float* sampling_rate);
 
 #endif

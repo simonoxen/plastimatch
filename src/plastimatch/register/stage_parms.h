@@ -59,7 +59,9 @@
 
 enum Subsampling_type {
     SUBSAMPLING_AUTO,
-    SUBSAMPLING_VOXEL_RATE
+    SUBSAMPLING_VOXEL_RATE,           /* res, ss */
+    SUBSAMPLING_MM_RATE,              /* sampling_rate, sr */
+    SUBSAMPLING_PCT_RATE
 };
 
 enum Regularization_type {
@@ -105,8 +107,8 @@ public:
     float regularization_lambda;
     /* Image subsampling */
     Subsampling_type subsampling_type;
-    int fixed_subsample_rate[3];   /* In voxels */
-    int moving_subsample_rate[3];  /* In voxels */
+    float fixed_subsample_rate[3];     /* voxels for res, mm for sr */
+    float moving_subsample_rate[3];
     /* Intensity values for air */
     float background_max;          /* Threshold to find the valid region */
     float default_value;           /* Replacement when out-of-view */

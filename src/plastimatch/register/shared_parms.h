@@ -12,12 +12,16 @@ public:
     Shared_parms ();
     Shared_parms (const Shared_parms& s);
     ~Shared_parms ();
+
 public:
     /* ROI */
     bool fixed_roi_enable;
     bool moving_roi_enable;
     std::string fixed_roi_fn;
     std::string moving_roi_fn;
+    /* Subsampling */
+    bool legacy_subsampling;
+
 public:
     void copy (const Shared_parms *s);
 };

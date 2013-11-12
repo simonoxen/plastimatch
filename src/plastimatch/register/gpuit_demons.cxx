@@ -8,6 +8,7 @@
 
 #include "demons.h"
 #include "gpuit_demons.h"
+#include "logfile.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "registration_data.h"
@@ -38,13 +39,15 @@ do_gpuit_demons_stage_internal (
     volume_convert_to_float (moving);		    /* Maybe not necessary? */
     volume_convert_to_float (fixed);		    /* Maybe not necessary? */
 
-    printf ("SUBSAMPLE: (%d %d %d), (%d %d %d)\n", 
+    lprintf ("SUBSAMPLE: (%g %g %g), (%g %g %g)\n", 
 	stage->fixed_subsample_rate[0], stage->fixed_subsample_rate[1], 
 	stage->fixed_subsample_rate[2], stage->moving_subsample_rate[0], 
 	stage->moving_subsample_rate[1], stage->moving_subsample_rate[2]
     );
-    moving_ss = volume_subsample (moving, stage->moving_subsample_rate);
-    fixed_ss = volume_subsample (fixed, stage->fixed_subsample_rate);
+    moving_ss = volume_subsample_vox_legacy (
+        moving, stage->moving_subsample_rate);
+    fixed_ss = volume_subsample_vox_legacy (
+        fixed, stage->fixed_subsample_rate);
 
     moving_grad = Volume::New(volume_make_gradient (moving_ss.get()));
 

@@ -293,7 +293,43 @@ volume_resample_nn (
 }
 
 Volume::Pointer
-volume_subsample (Volume* vol_in, int* sampling_rate)
+volume_subsample_vox (Volume* vol_in, float* sampling_rate)
+{
+    int d;
+    plm_long dim[3];
+    float offset[3];
+    float spacing[3];
+
+    for (d = 0; d < 3; d++) {
+        plm_long int_rate = ROUND_PLM_LONG (sampling_rate[d]);
+
+        dim[d] = (vol_in->dim[d] + int_rate - 1) / int_rate;
+        offset[d] = vol_in->offset[d];
+        spacing[d] = vol_in->spacing[d] * int_rate;
+    }
+    return volume_resample (vol_in, dim, offset, spacing);
+}
+
+Volume::Pointer
+volume_subsample_vox_nn (Volume* vol_in, float* sampling_rate)
+{
+    int d;
+    plm_long dim[3];
+    float offset[3];
+    float spacing[3];
+
+    for (d = 0; d < 3; d++) {
+        plm_long int_rate = ROUND_PLM_LONG (sampling_rate[d]);
+
+        dim[d] = (vol_in->dim[d] + int_rate - 1) / int_rate;
+        offset[d] = vol_in->offset[d];
+        spacing[d] = vol_in->spacing[d] * int_rate;
+    }
+    return volume_resample_nn (vol_in, dim, offset, spacing);
+}
+
+Volume::Pointer
+volume_subsample_vox_legacy (Volume* vol_in, float* sampling_rate)
 {
     int d;
     plm_long dim[3];
@@ -303,7 +339,7 @@ volume_subsample (Volume* vol_in, int* sampling_rate)
     for (d = 0; d < 3; d++) {
         float in_size = vol_in->dim[d] * vol_in->spacing[d];
 
-        dim[d] = vol_in->dim[d] / sampling_rate[d];
+        dim[d] = vol_in->dim[d] / (plm_long) sampling_rate[d];
         if (dim[d] < 1) dim[d] = 1;
         spacing[d] = in_size / dim[d];
         offset[d] = (float) (vol_in->offset[d] - 0.5 * vol_in->spacing[d] 
@@ -313,7 +349,7 @@ volume_subsample (Volume* vol_in, int* sampling_rate)
 }
 
 Volume::Pointer
-volume_subsample_nn (Volume* vol_in, int* sampling_rate)
+volume_subsample_vox_legacy_nn (Volume* vol_in, float* sampling_rate)
 {
     int d;
     plm_long dim[3];
@@ -323,7 +359,7 @@ volume_subsample_nn (Volume* vol_in, int* sampling_rate)
     for (d = 0; d < 3; d++) {
         float in_size = vol_in->dim[d] * vol_in->spacing[d];
 
-        dim[d] = vol_in->dim[d] / sampling_rate[d];
+        dim[d] = vol_in->dim[d] / (plm_long) sampling_rate[d];
         if (dim[d] < 1) dim[d] = 1;
         spacing[d] = in_size / dim[d];
         offset[d] = (float) (vol_in->offset[d] - 0.5 * vol_in->spacing[d] 

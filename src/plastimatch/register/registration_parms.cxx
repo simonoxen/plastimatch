@@ -229,6 +229,9 @@ Registration_parms::set_key_val (
     {
         shared->moving_roi_enable = string_value_true (val);
     }
+    else if (!strcmp (key, "legacy_subsampling")) {
+        shared->legacy_subsampling = string_value_true (val);
+    }
     else if (!strcmp (key, "img_out") || !strcmp (key, "image_out")) {
         if (section == 0) {
             strncpy (this->img_out_fn, val, _MAX_PATH);
@@ -600,37 +603,37 @@ Registration_parms::set_key_val (
     else if (!strcmp (key, "mattes_histogram_bins") 
         || !strcmp (key, "mi_histogram_bins")) {
         if (section == 0) goto error_not_global;
-    rc = sscanf (val, "%d %d", &stage->mi_histogram_bins_fixed,
-                               &stage->mi_histogram_bins_moving);
-    if (rc == 1) {
-        stage->mi_histogram_bins_moving = stage->mi_histogram_bins_fixed;
-    } else if (rc != 2) {
-        goto error_exit;
-    }
+        rc = sscanf (val, "%d %d", &stage->mi_histogram_bins_fixed,
+            &stage->mi_histogram_bins_moving);
+        if (rc == 1) {
+            stage->mi_histogram_bins_moving = stage->mi_histogram_bins_fixed;
+        } else if (rc != 2) {
+            goto error_exit;
+        }
     }
     else if (!strcmp (key, "mattes_fixed_minVal")
-             ||!strcmp (key, "mi_fixed_minVal")) {
+        ||!strcmp (key, "mi_fixed_minVal")) {
         if (section == 0) goto error_not_global;
         if (sscanf (val, "%g", &stage->mi_fixed_image_minVal) != 1) {
             goto error_exit;
         }
     }
     else if (!strcmp (key, "mattes_fixed_maxVal")
-             ||!strcmp (key, "mi_fixed_maxVal")) {
+        ||!strcmp (key, "mi_fixed_maxVal")) {
         if (section == 0) goto error_not_global;
         if (sscanf (val, "%g", &stage->mi_fixed_image_maxVal) != 1) {
             goto error_exit;
         }
     }
     else if (!strcmp (key, "mattes_moving_minVal")
-             ||!strcmp (key, "mi_moving_minVal")) {
+        ||!strcmp (key, "mi_moving_minVal")) {
         if (section == 0) goto error_not_global;
         if (sscanf (val, "%g", &stage->mi_moving_image_minVal) != 1) {
             goto error_exit;
         }
     }
     else if (!strcmp (key, "mattes_moving_maxVal")
-             ||!strcmp (key, "mi_moving_maxVal")) {
+        ||!strcmp (key, "mi_moving_maxVal")) {
         if (section == 0) goto error_not_global;
         if (sscanf (val, "%g", &stage->mi_moving_image_maxVal) != 1) {
             goto error_exit;
@@ -674,7 +677,7 @@ Registration_parms::set_key_val (
             stage->demons_smooth_deformation_field = true;
         }
         else
-           stage->demons_smooth_deformation_field = false;
+            stage->demons_smooth_deformation_field = false;
     }
     else if (!strcmp (key, "demons_smooth_update_field")) {
         if (section == 0) goto error_not_global;
@@ -682,7 +685,7 @@ Registration_parms::set_key_val (
             stage->demons_smooth_update_field = true;
         }
         else
-           stage->demons_smooth_update_field = false;
+            stage->demons_smooth_update_field = false;
     }
     else if (!strcmp (key, "demons_gradient_type"))
     {
@@ -745,7 +748,7 @@ Registration_parms::set_key_val (
     else if (!strcmp (key, "res") || !strcmp (key, "ss")) {
         if (section == 0) goto error_not_global;
         stage->subsampling_type = SUBSAMPLING_VOXEL_RATE;
-        if (sscanf (val, "%d %d %d", 
+        if (sscanf (val, "%g %g %g", 
                 &(stage->fixed_subsample_rate[0]), 
                 &(stage->fixed_subsample_rate[1]), 
                 &(stage->fixed_subsample_rate[2])) != 3) {
@@ -757,7 +760,7 @@ Registration_parms::set_key_val (
     }
     else if (!strcmp (key, "ss_fixed") || !strcmp (key, "fixed_ss")) {
         if (section == 0) goto error_not_global;
-        if (sscanf (val, "%d %d %d", 
+        if (sscanf (val, "%g %g %g", 
                 &(stage->fixed_subsample_rate[0]), 
                 &(stage->fixed_subsample_rate[1]), 
                 &(stage->fixed_subsample_rate[2])) != 3) {
@@ -772,7 +775,7 @@ Registration_parms::set_key_val (
     }
     else if (!strcmp (key, "ss_moving") || !strcmp (key, "moving_ss")) {
         if (section == 0) goto error_not_global;
-        if (sscanf (val, "%d %d %d", 
+        if (sscanf (val, "%g %g %g", 
                 &(stage->moving_subsample_rate[0]), 
                 &(stage->moving_subsample_rate[1]), 
                 &(stage->moving_subsample_rate[2])) != 3) {
@@ -785,9 +788,26 @@ Registration_parms::set_key_val (
         }
         stage->subsampling_type = SUBSAMPLING_VOXEL_RATE;
     }
-    else if (!strcmp (key, "num_grid")) {
+    else if (!strcmp (key, "sampling_rate") || !strcmp (key, "sr")) {
         if (section == 0) goto error_not_global;
-        if (sscanf (val, "%d %d %d", &(stage->num_grid[0]), &(stage->num_grid[1]), &(stage->num_grid[2])) != 3) {
+        stage->subsampling_type = SUBSAMPLING_VOXEL_RATE;
+        if (sscanf (val, "%g %g %g", 
+                &(stage->fixed_subsample_rate[0]), 
+                &(stage->fixed_subsample_rate[1]), 
+                &(stage->fixed_subsample_rate[2])) != 3) {
+            goto error_exit;
+        }
+        stage->moving_subsample_rate[0] = stage->fixed_subsample_rate[0];
+        stage->moving_subsample_rate[1] = stage->fixed_subsample_rate[1];
+        stage->moving_subsample_rate[2] = stage->fixed_subsample_rate[2];
+    }
+    else if (!strcmp (key, "num_grid")) {
+        /* Obsolete */
+        if (section == 0) goto error_not_global;
+        if (sscanf (val, "%d %d %d", 
+                &(stage->num_grid[0]), 
+                &(stage->num_grid[1]), 
+                &(stage->num_grid[2])) != 3) {
             goto error_exit;
         }
         stage->grid_method = 0;
@@ -796,7 +816,10 @@ Registration_parms::set_key_val (
         || !strcmp (key, "grid_spacing"))
     {
         if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g %g %g", &(stage->grid_spac[0]), &(stage->grid_spac[1]), &(stage->grid_spac[2])) != 3) {
+        if (sscanf (val, "%g %g %g", 
+                &(stage->grid_spac[0]), 
+                &(stage->grid_spac[1]), 
+                &(stage->grid_spac[2])) != 3) {
             goto error_exit;
         }
         stage->grid_method = 1;
@@ -807,7 +830,7 @@ Registration_parms::set_key_val (
             stage->histoeq = true;
         }
         else
-           stage->histoeq= false;
+            stage->histoeq= false;
     }
     else if (!strcmp (key, "thresh_mean_intensity")) {
         if (section == 0) goto error_not_global;
@@ -815,7 +838,7 @@ Registration_parms::set_key_val (
             stage->thresh_mean_intensity = true;
         }
         else
-           stage->thresh_mean_intensity= false;
+            stage->thresh_mean_intensity= false;
     }
     else if (!strcmp (key, "num_hist_levels")) {
         if (section == 0) goto error_not_global;
@@ -838,15 +861,15 @@ Registration_parms::set_key_val (
     }
     return 0;
 
-  error_not_stages:
+error_not_stages:
     print_and_exit ("This key (%s) not allowed in a stages section\n", key);
     return -1;
 
-  error_not_global:
+error_not_global:
     print_and_exit ("This key (%s) not is allowed in a global section\n", key);
     return -1;
 
-  error_exit:
+error_exit:
     print_and_exit ("Unknown (key,val) combination: (%s,%s)\n", key, val);
     return -1;
 }

@@ -151,8 +151,10 @@ Plm_bspline::initialize ()
         stage->fixed_subsample_rate[2], stage->moving_subsample_rate[0], 
         stage->moving_subsample_rate[1], stage->moving_subsample_rate[2]
     );
-    d_ptr->moving_ss = volume_subsample (moving, stage->moving_subsample_rate);
-    d_ptr->fixed_ss = volume_subsample (fixed, stage->fixed_subsample_rate);
+    d_ptr->moving_ss = volume_subsample_vox_legacy (
+        moving, stage->moving_subsample_rate);
+    d_ptr->fixed_ss = volume_subsample_vox_legacy (
+        fixed, stage->fixed_subsample_rate);
 
     //Set parameter values for min/max histogram values
     bsp_parms->mi_fixed_image_minVal = stage->mi_fixed_image_minVal;
@@ -204,11 +206,11 @@ Plm_bspline::initialize ()
 
     /* Subsample rois (if we are using them) */
     if (m_roi) {
-        d_ptr->m_roi_ss = volume_subsample_nn (
+        d_ptr->m_roi_ss = volume_subsample_vox_legacy_nn (
             m_roi, stage->moving_subsample_rate);
     }
     if (f_roi) {
-        d_ptr->f_roi_ss = volume_subsample_nn (
+        d_ptr->f_roi_ss = volume_subsample_vox_legacy_nn (
             f_roi, stage->fixed_subsample_rate);
     }
 
