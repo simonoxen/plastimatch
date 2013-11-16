@@ -119,7 +119,10 @@ do_xf_convert (Xf_convert_parms *parms)
        allowed to run xf-convert e.g. on a B-spline, and regrid 
        the b-spline, with the expectation that the xform 
        type will be read from the input file.  */
-    if (xfc->m_xf_out_type != XFORM_NONE) {
+    if (xfc->m_xf_out_type == XFORM_NONE) {
+        /* Copy input to output */
+        *xfc->m_xf_out = *xfc->m_xf_in;
+    } else {
         printf ("about to xform_convert\n");
         xform_convert (xfc);
         printf ("did xform_convert\n");

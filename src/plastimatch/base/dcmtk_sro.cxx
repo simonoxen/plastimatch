@@ -12,7 +12,9 @@
 #include "dcmtk_module_general_study.h"
 #include "dcmtk_module_patient.h"
 #include "dcmtk_sro.h"
+#include "dicom_util.h"
 #include "file_util.h"
+#include "plm_uid_prefix.h"
 #include "print_and_exit.h"
 #include "string_util.h"
 #include "xform.h"
@@ -57,6 +59,10 @@ Dcmtk_sro::save (
     Dcmtk_module_general_series::set_sro (dataset, rsm);
 
     /* Spatial registration module */
+    dataset->putAndInsertString (DCM_SOPClassUID, 
+        UID_SpatialRegistrationStorage);
+    dataset->putAndInsertString (DCM_SOPInstanceUID, 
+        dicom_uid(PLM_UID_PREFIX).c_str());
     dataset->putAndInsertOFStringArray (DCM_ContentDate, 
         rsm->get_study_date());
     dataset->putAndInsertOFStringArray (DCM_ContentTime, 

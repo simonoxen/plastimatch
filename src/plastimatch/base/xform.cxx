@@ -1886,6 +1886,7 @@ Xform::print ()
         break;
     case XFORM_ITK_AFFINE:
         lprintf ("XFORM_ITK_AFFINE\n");
+        std::cout << this->get_aff ();
         break;
     case XFORM_ITK_BSPLINE:
         lprintf ("XFORM_ITK_BSPLINE\n");
