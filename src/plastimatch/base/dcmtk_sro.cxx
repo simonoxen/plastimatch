@@ -58,6 +58,33 @@ Dcmtk_sro::save (
     /* General series module */
     Dcmtk_module_general_series::set_sro (dataset, rsm);
 
+    /* ReferencedSeriesSequence */
+    DcmItem *rss_item = 0;
+    DcmItem *ris_item = 0;
+    dataset->findOrCreateSequenceItem (
+        DCM_ReferencedSeriesSequence, rss_item, -2);
+    rss_item->findOrCreateSequenceItem (
+        DCM_ReferencedInstanceSequence, ris_item, -2);
+    ris_item->putAndInsertString (DCM_ReferencedSOPClassUID,
+        UID_CTImageStorage);
+    ris_item->putAndInsertString (DCM_ReferencedSOPInstanceUID,
+        rsm_src->get_slice_uid (0));
+    rss_item->putAndInsertString (DCM_SeriesInstanceUID,
+        rsm_src->get_ct_series_uid ());
+
+    dataset->findOrCreateSequenceItem (
+        DCM_ReferencedSeriesSequence, rss_item, -2);
+    rss_item->findOrCreateSequenceItem (
+        DCM_ReferencedInstanceSequence, ris_item, -2);
+    ris_item->putAndInsertString (DCM_ReferencedSOPClassUID,
+        UID_CTImageStorage);
+    ris_item->putAndInsertString (DCM_ReferencedSOPInstanceUID,
+        rsm_reg->get_slice_uid (0));
+    rss_item->putAndInsertString (DCM_SeriesInstanceUID,
+        rsm_reg->get_ct_series_uid ());
+
+    /* FrameOfReferenceUID */
+
     /* Spatial registration module */
     dataset->putAndInsertString (DCM_SOPClassUID, 
         UID_SpatialRegistrationStorage);
