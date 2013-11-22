@@ -5,6 +5,7 @@
 #define _mabs_atlas_selection_h_
 
 #include "plmsegment_config.h"
+#include <algorithm>
 #include <list>
 #include <stdio.h>
 #include "itkImageMaskSpatialObject.h"
@@ -48,6 +49,7 @@ public:
     bool max_hist_atl_value_defined;
     int max_hist_atl_value;
     std::list<std::pair<std::string, double> > selected_atlases;
+
 };
 
 #endif /* #ifndef _mabs_atlases_selection_h_ */

@@ -37,6 +37,8 @@ public:
     bool enable_atlas_selection;
     std::string atlas_selection_criteria;
     float mi_percent_threshold;
+    int atlases_from_ranking;
+    bool atlases_from_ranking_defined;
     int mi_histogram_bins;
     std::string roi_mask_fn;
     std::string nmi_ratio_registration_config_fn;
@@ -51,8 +53,6 @@ public:
     int min_random_atlases;
     int max_random_atlases;
     std::string precomputed_ranking_fn;
-    int atlases_from_precomputed_ranking;
-    bool atlases_from_precomputed_ranking_defined;
     
     /* [TRAINING] */
     std::string atlas_dir;

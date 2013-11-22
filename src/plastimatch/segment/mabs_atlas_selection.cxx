@@ -29,6 +29,16 @@
 #include "rt_study.h"
 #include "xform.h"
 
+/* Utility function to compare similarity value in the list of atlases */
+bool
+compare_similarity_value_from_pairs(
+    const std::pair<std::string, double>& first_atlas,
+    const std::pair<std::string, double>& second_atlas)
+{
+    return (first_atlas.second >= second_atlas.second);
+} 
+
+
 Mabs_atlas_selection::Mabs_atlas_selection ()
 {
     /* constructor */
@@ -73,6 +83,7 @@ Mabs_atlas_selection::run_selection()
 
 }
 
+
 void
 Mabs_atlas_selection::nmi_ranking()
 {
@@ -89,7 +100,6 @@ Mabs_atlas_selection::nmi_ranking()
     this->max_hist_atl_value = this->atlas_selection_parms->upper_mi_value_atl;
 
     printf ("Number of initial atlases = %d \n", this->number_of_atlases);
-    double* similarity_value_vector = new double[this->number_of_atlases];
     
     /* Set the mask if defined */
     if (this->atlas_selection_parms->roi_mask_fn.compare("")!=0)
@@ -103,7 +113,8 @@ Mabs_atlas_selection::nmi_ranking()
         delete mask_plm;
     }
 	
-    /* Loop through images in the atlas */
+    /* Loop through images in the atlas and compute similarity value */
+    std::list<std::pair<std::string, double> > atlas_and_similarity;
     std::list<std::string>::iterator atl_it;
     int i;
     for (atl_it = this->atlas_dir_list.begin(), i=0;
@@ -118,67 +129,71 @@ Mabs_atlas_selection::nmi_ranking()
         
         this->atlas = rtds_atl->get_image();
 
-        /* subject compared with itself */
-        if (!this->subject_id.compare(atlas_id))
-        {
-            similarity_value_vector[i]=-1;
-       	}
-
-        /* subject compared with atlas */
-        else
+        /* Subject compared with atlas, not subject vs itself */
+        if (this->subject_id.compare(atlas_id))
         {
             lprintf("Similarity values %s - %s \n", this->subject_id.c_str(), atlas_id.c_str());
-            similarity_value_vector[i] = this->compute_nmi_general_score();
+            atlas_and_similarity.push_back(
+                std::make_pair(basename(atlas_id), this->compute_nmi_general_score()));
         }
        
         delete rtds_atl;
     } 
-   
+  
+    /* If defined delete mask */
     if (!mask) mask = NULL;
-    
-    /* Find maximum similarity value */
-    double max_similarity_value = similarity_value_vector[0];
-    for (int i=1; i < number_of_atlases; i++)
-    {
-        if (similarity_value_vector[i] > max_similarity_value)
-        {
-            max_similarity_value = similarity_value_vector[i];
-        }
-    }
-    
-    /* Find min similarity value */
-    double min_similarity_value = max_similarity_value;
-    for (int i=0; i < number_of_atlases; i++)
-    {
-        if (similarity_value_vector[i] < min_similarity_value && similarity_value_vector[i] != -1)
-        {
-            min_similarity_value = similarity_value_vector[i];
-        }
-    }
-   
+
+    /* Sort atlases in basis of the similarity value */
+    atlas_and_similarity.sort(compare_similarity_value_from_pairs);
+
+    /* Find min and max similarity value */
+    double min_similarity_value = atlas_and_similarity.back().second;
+    double max_similarity_value = atlas_and_similarity.front().second;
     printf("Minimum similarity value = %g \n", min_similarity_value);
     printf("Maximum similarity value = %g \n", max_similarity_value);
-	
-    /* Find atlas to include in the registration */
+
+    /* Create items to select the atlases */	
     std::list<std::pair<std::string, double> > most_similar_atlases;
-    std::list<std::string>::iterator reg_it;
+    std::list<std::pair<std::string, double> >::iterator reg_it;
     printf("List of the selected atlases: \n");
-    for (reg_it = this->atlas_dir_list.begin(), i=0; 
-        reg_it != this->atlas_dir_list.end(); reg_it++, i++)
-    {
-        std::string atlas = basename (*reg_it);
-        if (similarity_value_vector[i] >=
-            (((max_similarity_value-min_similarity_value) * this->atlas_selection_parms->mi_percent_threshold) + min_similarity_value))
-    	{
-            most_similar_atlases.push_back(std::make_pair(atlas, (double) similarity_value_vector[i]));
-            printf("Atlas %s having similarity value = %f \n", atlas.c_str(), similarity_value_vector[i]);
+    
+    /* Find atlas to include in the registration - THRESHOLD - */
+    if (!this->atlas_selection_parms->atlases_from_ranking_defined) {
+        for(reg_it = atlas_and_similarity.begin();
+            reg_it != atlas_and_similarity.end(); reg_it++)
+        {
+            /* Similarity value greater than the threshold, take the atlas */
+            if (reg_it->second >=
+                (((max_similarity_value-min_similarity_value) * this->atlas_selection_parms->mi_percent_threshold) + min_similarity_value))
+    	    {
+                most_similar_atlases.push_back(*reg_it);
+                printf("Atlas %s having similarity value = %f \n", reg_it->first.c_str(), reg_it->second);
+            }
+        
+            /* The list is sorted, all the next atlases have a similarity value lower than the threshold
+             * exit from the cycle
+             * */
+            else break; 
         }
     }
+    
+    /* Find atlas to include in the registration - TOP - */
+    if (this->atlas_selection_parms->atlases_from_ranking_defined) {
+        reg_it = atlas_and_similarity.begin();
+        printf("Atlas to select = %d \n", this->atlas_selection_parms->atlases_from_ranking);
+
+        for (int i = 1;
+            ((i <= this->atlas_selection_parms->atlases_from_ranking) && (i <= (int) atlas_and_similarity.size())); 
+            reg_it++, i++)
+        {
+            printf("Atlas %s (# %d) having similarity value = %f \n", reg_it->first.c_str(), i, reg_it->second);
+            most_similar_atlases.push_back(*reg_it);
+        }
+    }
+   
+    /* Prepare to exit from function */
     printf("Number of selected atlases = %d \n", (int) most_similar_atlases.size());
-    
-    delete similarity_value_vector;
-    
-    this->selected_atlases = most_similar_atlases;
+    this->selected_atlases = most_similar_atlases; 
 }
 
 
@@ -388,9 +403,9 @@ Mabs_atlas_selection::precomputed_ranking() /* Just for testing purpose */
         {
 
             /* If defined select the first n atlases from the ranking */
-            if (this->atlas_selection_parms->atlases_from_precomputed_ranking_defined &&
+            if (this->atlas_selection_parms->atlases_from_ranking_defined &&
                 (int) this->selected_atlases.size() >=
-                this->atlas_selection_parms->atlases_from_precomputed_ranking)
+                this->atlas_selection_parms->atlases_from_ranking)
             {
                 break;
             }

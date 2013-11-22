@@ -29,6 +29,8 @@ Mabs_parms::Mabs_parms ()
     this->enable_atlas_selection = false;
     this->atlas_selection_criteria="nmi";
     this->mi_percent_threshold = 0.70;
+    this->atlases_from_ranking = 0;
+    this->atlases_from_ranking_defined = false;
     this->mi_histogram_bins = 100;
     this->roi_mask_fn = "";
     this->nmi_ratio_registration_config_fn = "";
@@ -43,8 +45,6 @@ Mabs_parms::Mabs_parms ()
     this->min_random_atlases = 4;
     this->max_random_atlases = 12;
     this->precomputed_ranking_fn = "";
-    this->atlases_from_precomputed_ranking = 0;
-    this->atlases_from_precomputed_ranking_defined = false;
 	
     /* [TRAINING] */
     this->distance_map_algorithm = "";
@@ -169,6 +169,10 @@ Mabs_parms::set_key_val (
         else if (key == "mi_percent_threshold") {
             sscanf (val.c_str(), "%g", &this->mi_percent_threshold);
         }
+        else if (key == "atlases_from_ranking") {
+            sscanf (val.c_str(), "%d", &this->atlases_from_ranking);
+            this->atlases_from_ranking_defined = true;
+        }
         else if (key == "mi_histogram_bins") {
             sscanf (val.c_str(), "%d", &this->mi_histogram_bins);
         }
@@ -202,10 +206,6 @@ Mabs_parms::set_key_val (
         }
         else if (key == "precomputed_ranking") {
             this->precomputed_ranking_fn = val;
-        }
-         else if (key == "atlases_from_precomputed_ranking") {
-            sscanf (val.c_str(), "%d", &this->atlases_from_precomputed_ranking);
-            this->atlases_from_precomputed_ranking_defined = true;
         }
         else {
             goto error_exit;
