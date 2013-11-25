@@ -2300,7 +2300,7 @@ set_tests_properties (plm-reg-itk-demons-check-2
 plm_add_test (
   "plm-reg-itk-demons-diff"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-reg-itk-demons_diff.txt"
+  "${PLM_TESTING_DATA_DIR}/plm-reg-itk-demons-diff.txt"
   )
 plmtest_check_interval ("plm-reg-itk-demons-diff-check-1"
   "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-demons-diff.stdout.txt"
@@ -2314,36 +2314,36 @@ set_tests_properties (plm-reg-itk-demons-diff-check-1
   PROPERTIES DEPENDS plm-reg-itk-demons-diff)
 
 plm_add_test (
-  "plm-reg-itk-demons-logdom"
+  "plm-reg-itk-demons-logd"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-reg-itk-demons_logdom.txt"
+  "${PLM_TESTING_DATA_DIR}/plm-reg-itk-demons-logd.txt"
   )
-plmtest_check_interval ("plm-reg-itk-demons-logdom-check-1"
-  "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-demons-logdom.stdout.txt"
+plmtest_check_interval ("plm-reg-itk-demons-logd-check-1"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-demons-logd.stdout.txt"
   "VF_AVG +[^ ] +([-0-9.]*)"
   "32.65"
   "32.75"
   )
-set_property (TEST plm-reg-itk-demons-logdom 
+set_property (TEST plm-reg-itk-demons-logd 
   PROPERTY DEPENDS "gauss-1;gauss-2")
-set_tests_properties (plm-reg-itk-demons-logdom-check-1 
-  PROPERTIES DEPENDS plm-reg-itk-demons-logdom)
+set_tests_properties (plm-reg-itk-demons-logd-check-1 
+  PROPERTIES DEPENDS plm-reg-itk-demons-logd)
 
 plm_add_test (
-  "plm-reg-itk-demons-sym-logdom"
+  "plm-reg-itk-demons-sym-logd"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-reg-itk-demons_sym_logdom.txt"
+  "${PLM_TESTING_DATA_DIR}/plm-reg-itk-demons-sym-logd.txt"
   )
-plmtest_check_interval ("plm-reg-itk-demons-sym-logdom-check-1"
-  "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-demons-sym-logdom.stdout.txt"
+plmtest_check_interval ("plm-reg-itk-demons-sym-logd-check-1"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-demons-sym-logd.stdout.txt"
   "VF_AVG +[^ ] +([-0-9.]*)"
   "31.85"
   "35.95"
   )
-set_property (TEST plm-reg-itk-demons-sym-logdom 
+set_property (TEST plm-reg-itk-demons-sym-logd 
   PROPERTY DEPENDS "gauss-1;gauss-2")
-set_tests_properties (plm-reg-itk-demons-sym-logdom-check-1 
-  PROPERTIES DEPENDS plm-reg-itk-demons-sym-logdom)
+set_tests_properties (plm-reg-itk-demons-sym-logd-check-1 
+  PROPERTIES DEPENDS plm-reg-itk-demons-sym-logd)
 
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 2)
