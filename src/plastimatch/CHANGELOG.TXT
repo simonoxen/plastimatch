@@ -1,5 +1,8 @@
-Version 1.5.14 (build @PLASTIMATCH_SVN_VERSION@)
+Version 1.5.15 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
+
+Version 1.5.14 (build 4503)
+Sun Nov 24 16:35:22 EST 2013
 * Many MABS improvements, especially atlas selection and configuration
 * Implement per-stage masking capabilities
 * Add ITK diff, ldd, sym-ldd demons
