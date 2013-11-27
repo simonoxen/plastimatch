@@ -41,7 +41,7 @@ public:
     bool atlases_from_ranking_defined;
     int mi_histogram_bins;
     std::string roi_mask_fn;
-    std::string nmi_ratio_registration_config_fn;
+    std::string selection_reg_parms_fn;
     bool lower_mi_value_sub_defined;
     int lower_mi_value_sub;
     bool upper_mi_value_sub_defined;

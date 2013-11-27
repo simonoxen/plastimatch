@@ -25,6 +25,7 @@ public:
     void nmi_ranking();
     double compute_nmi_general_score();
     double compute_nmi_ratio();
+    double compute_nmi_post();
     double compute_nmi (
         const Plm_image::Pointer& img1, 
         const Plm_image::Pointer& img2);

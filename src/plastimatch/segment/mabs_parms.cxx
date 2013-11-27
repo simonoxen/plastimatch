@@ -33,7 +33,7 @@ Mabs_parms::Mabs_parms ()
     this->atlases_from_ranking_defined = false;
     this->mi_histogram_bins = 100;
     this->roi_mask_fn = "";
-    this->nmi_ratio_registration_config_fn = "";
+    this->selection_reg_parms_fn = "";
     this->lower_mi_value_sub_defined=false;
     this->lower_mi_value_sub = 0;
     this->upper_mi_value_sub_defined=false;
@@ -157,6 +157,9 @@ Mabs_parms::set_key_val (
             if (val == "nmi" || val == "NMI") {
                 this->atlas_selection_criteria="nmi";
             }
+            else if (val == "nmi-post" || val == "NMI-POST") {
+                this->atlas_selection_criteria="nmi-post";
+            }
             else if (val == "nmi-ratio" || val == "NMI-RATIO") {
                 this->atlas_selection_criteria="nmi-ratio";
             }
@@ -180,8 +183,8 @@ Mabs_parms::set_key_val (
         else if (key == "roi_mask_fn" || key == "roi_mask") {
             this->roi_mask_fn = val;
         }
-         else if (key == "nmi_ratio_registration_config") {
-            this->nmi_ratio_registration_config_fn = val;
+         else if (key == "selection_reg_parms") {
+            this->selection_reg_parms_fn = val;
         }
         else if (key == "lower_mi_value_subject") {
             sscanf (val.c_str(), "%d", &this->lower_mi_value_sub);

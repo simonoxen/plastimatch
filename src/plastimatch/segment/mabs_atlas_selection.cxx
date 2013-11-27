@@ -66,6 +66,7 @@ void
 Mabs_atlas_selection::run_selection()
 {
     if (this->atlas_selection_parms->atlas_selection_criteria == "nmi" ||
+        this->atlas_selection_parms->atlas_selection_criteria == "nmi-post" ||
         this->atlas_selection_parms->atlas_selection_criteria == "nmi-ratio")
     {
         this->nmi_ranking();
@@ -133,8 +134,10 @@ Mabs_atlas_selection::nmi_ranking()
         if (this->subject_id.compare(atlas_id))
         {
             lprintf("Similarity values %s - %s \n", this->subject_id.c_str(), atlas_id.c_str());
+            /* Compute similarity value */
             atlas_and_similarity.push_back(
-                std::make_pair(basename(atlas_id), this->compute_nmi_general_score()));
+                std::make_pair(basename(atlas_id),
+                this->compute_nmi_general_score()));
         }
        
         delete rtds_atl;
@@ -209,6 +212,12 @@ Mabs_atlas_selection::compute_nmi_general_score()
         lprintf("nmi value = %g \n", score);
     }
 
+    /* metric: NMI POST */
+    else if (this->atlas_selection_parms->atlas_selection_criteria == "nmi-post")
+    {
+        score = this->compute_nmi_post();
+    }
+    
     /* metric: NMI RATIO */
     else if (this->atlas_selection_parms->atlas_selection_criteria == "nmi-ratio")
     {
@@ -216,6 +225,43 @@ Mabs_atlas_selection::compute_nmi_general_score()
     }
 
     return score;
+}
+
+
+double
+Mabs_atlas_selection::compute_nmi_post()
+{
+    
+    Registration_parms* regp = new Registration_parms;
+    Registration_data* regd = new Registration_data;
+
+    regp->parse_command_file(this->atlas_selection_parms->selection_reg_parms_fn.c_str());
+    
+    regd->fixed_image = this->subject;
+    regd->moving_image = this->atlas;
+
+    /* Make sure to have just the right inputs */
+    regd->fixed_landmarks = NULL;
+    regd->moving_landmarks = NULL;
+
+    Plm_image::Pointer deformed_atlas = Plm_image::New ();
+    Xform* transformation = new Xform();
+    Plm_image_header fixed_pih (regd->fixed_image);
+
+    do_registration_pure (&transformation, regd, regp);
+    plm_warp (deformed_atlas.get(), 0, transformation, &fixed_pih, 
+        regd->moving_image.get(),
+        regp->default_value, 0, 1);
+    
+    double nmi_post = this->compute_nmi (this->subject, deformed_atlas);
+    
+    delete regd;
+    delete regp;
+    delete transformation;
+
+    lprintf("NMI post = %g \n", nmi_post);
+
+    return nmi_post;
 }
 
 
@@ -229,7 +275,7 @@ Mabs_atlas_selection::compute_nmi_ratio()
     Registration_parms* regp = new Registration_parms;
     Registration_data* regd = new Registration_data;
 
-    regp->parse_command_file(this->atlas_selection_parms->nmi_ratio_registration_config_fn.c_str());
+    regp->parse_command_file(this->atlas_selection_parms->selection_reg_parms_fn.c_str());
     
     regd->fixed_image = this->subject;
     regd->moving_image = this->atlas;
