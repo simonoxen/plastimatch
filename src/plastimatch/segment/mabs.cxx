@@ -112,7 +112,7 @@ public:
     bool compute_distance_map;
     bool write_weight_files;
     bool write_thresholded_files;
-    bool write_distance_map;
+    bool write_distance_map_files;
     bool write_registration_files;
 
     /* While looping through atlases, the voting information is stored here */
@@ -134,7 +134,7 @@ public:
         compute_distance_map = true;
         write_weight_files = false;
         write_thresholded_files = true;
-        write_distance_map = true;
+        write_distance_map_files = true;
         write_registration_files = true;
         have_ref_structure = false;
         this->reset_timers ();
@@ -949,7 +949,7 @@ Mabs::compute_dmap (
     itk_adjust (dmap_image, al);
     d_ptr->time_dmap += timer.report();
 
-    if (d_ptr->write_distance_map) {
+    if (d_ptr->write_distance_map_files) {
         timer.start();
         std::string fn = string_format ("%s/dmap_%s.nrrd", 
             curr_output_dir.c_str(), mapped_name.c_str());
@@ -1235,6 +1235,7 @@ Mabs::set_parms (const Mabs_parms *parms)
     }
 
     /* Segmentation training */
+    d_ptr->write_distance_map_files = parms->write_distance_map_files;
     d_ptr->write_thresholded_files = parms->write_thresholded_files;
     d_ptr->write_weight_files = parms->write_weight_files;
 }
@@ -1372,7 +1373,6 @@ void
 Mabs::train ()
 {
     d_ptr->compute_distance_map = true;
-    d_ptr->write_distance_map = true;
     this->train_internal (false);
 }
 
@@ -1380,6 +1380,5 @@ void
 Mabs::train_registration ()
 {
     d_ptr->compute_distance_map = false;
-    d_ptr->write_distance_map = false;
     this->train_internal (true);
 }

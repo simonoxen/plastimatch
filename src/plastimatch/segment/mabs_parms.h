@@ -64,6 +64,7 @@ public:
     std::string sigma_values;
     std::string threshold_values;
 
+    bool write_distance_map_files;
     bool write_thresholded_files;
     bool write_weight_files;
     bool write_warped_images;
