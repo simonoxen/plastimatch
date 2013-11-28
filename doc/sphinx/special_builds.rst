@@ -1,6 +1,30 @@
 Special build instructions
 ==========================
 
+SlicerRT embedded build
+-----------------------
+#. Build plastimatch in "reduced" mode with special flags::
+
+   cmake \
+    -DBUILD_SHARED_LIBS:BOOL=OFF \
+    -DBUILD_TESTING:BOOL=OFF \
+    -DPLM_CONFIG_INSTALL_LIBRARIES:BOOL=ON \
+    -DPLM_CONFIG_DISABLE_CUDA:BOOL=ON \
+    -DPLM_CONFIG_LIBRARY_BUILD:BOOL=ON \
+    -DPLMLIB_CONFIG_ENABLE_REGISTER:BOOL=TRUE \
+    -DPLMLIB_CONFIG_ENABLE_DOSE:BOOL=TRUE \
+    -DDCMTK_DIR:STRING=/PHShome/gcs6/build/slicer-4/Slicer-build/DCMTK-build \
+    -DITK_DIR:STRING=/PHShome/gcs6/build/slicer-4/Slicer-build/ITKv4-build
+
+#. Then, when building SlicerRT, tell it where the plastimatch build is 
+located::
+
+   cmake \
+    -DSLICERRT_ENABLE_EXPERIMENTAL_MODULES:BOOL=TRUE \
+    -DSlicer_DIR:STRING=/PHShome/gcs6/build/slicer-4/Slicer-build/Slicer-build \
+    -DPlastimatch_DIR:STRING=/PHShome/gcs6/build/slicer-4/plastimatch-build
+    
+
 Coverage (gcov) build
 ---------------------
 #. Build plastimatch in debug mode, with special flags::
