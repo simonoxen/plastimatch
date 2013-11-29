@@ -257,7 +257,7 @@ not_successful:
 void
 cxt_save (
     Rtss *cxt,                  /* Input: save this object */
-    Rt_study_metadata *rsm,     /* Input: save this object */
+    const Rt_study_metadata::Pointer& rsm, /* In: save this object */
     const char* cxt_fn,         /* Input: File to save to */
     bool prune_empty            /* Input: Should we prune empty structures? */
 )

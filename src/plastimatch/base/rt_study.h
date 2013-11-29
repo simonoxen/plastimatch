@@ -9,6 +9,7 @@
 #include "itk_image_type.h"
 #include "plm_image.h"
 #include "plm_image_type.h"
+#include "rt_study_metadata.h"
 #include "segmentation.h"
 
 class Metadata;
@@ -60,7 +61,8 @@ public:
     void save_prefix (const std::string& output_prefix, 
         const std::string& extension = "mha");
 
-    Rt_study_metadata *get_rt_study_metadata ();
+    const Rt_study_metadata::Pointer& get_rt_study_metadata () const;
+    Rt_study_metadata::Pointer& get_rt_study_metadata ();
     void set_user_metadata (std::vector<std::string>& metadata);
 
     bool have_image ();

@@ -45,9 +45,10 @@ public:
     UCharImageType::Pointer get_structure_image (int index);
 
     void save_colormap (const Pstring &colormap_fn);
-    void save_cxt (Rt_study_metadata *rsm, 
+    void save_cxt (const Rt_study_metadata::Pointer& rsm, 
         const Pstring &cxt_fn, bool prune_empty);
-    void save_gdcm_rtss (const char *output_dir, Rt_study_metadata *rsm);
+    void save_gdcm_rtss (const char *output_dir, 
+        const Rt_study_metadata::Pointer& rsm);
     void save_fcsv (const Rtss_roi *curr_structure, const Pstring& fn);
     void save_prefix_fcsv (const Pstring &output_prefix);
     void save_ss_image (const Pstring &ss_img_fn);
@@ -62,7 +63,7 @@ public:
     UInt32ImageType::Pointer get_ss_img_uint32 (void);
     UCharVecImageType::Pointer get_ss_img_uchar_vec (void);
 
-    void apply_dicom_dir (const Rt_study_metadata *rsm);
+    void apply_dicom_dir (const Rt_study_metadata::Pointer& rsm);
     void convert_ss_img_to_cxt (void);
     void convert_to_uchar_vec (void);
     void cxt_extract (void);

@@ -392,10 +392,16 @@ Rt_study::save_prefix (
     d_ptr->m_rtss->save_prefix (output_prefix, extension);
 }
 
-Rt_study_metadata *
+const Rt_study_metadata::Pointer&
+Rt_study::get_rt_study_metadata () const
+{
+    return d_ptr->m_drs;
+}
+
+Rt_study_metadata::Pointer&
 Rt_study::get_rt_study_metadata ()
 {
-    return d_ptr->m_drs.get();
+    return d_ptr->m_drs;
 }
 
 void 

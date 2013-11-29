@@ -428,7 +428,7 @@ Segmentation::save_colormap (const Pstring &colormap_fn)
 
 void
 Segmentation::save_cxt (
-    Rt_study_metadata *rsm, 
+    const Rt_study_metadata::Pointer& rsm, 
     const Pstring &cxt_fn, 
     bool prune_empty
 )
@@ -439,7 +439,7 @@ Segmentation::save_cxt (
 void
 Segmentation::save_gdcm_rtss (
     const char *output_dir, 
-    Rt_study_metadata *rsm
+    const Rt_study_metadata::Pointer& rsm
 )
 {
     char fn[_MAX_PATH];
@@ -632,7 +632,7 @@ Segmentation::get_ss_img_uchar_vec (void)
 }
 
 void
-Segmentation::apply_dicom_dir (const Rt_study_metadata *rsm)
+Segmentation::apply_dicom_dir (const Rt_study_metadata::Pointer& rsm)
 {
     if (!d_ptr->m_cxt) {
         return;
