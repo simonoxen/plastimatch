@@ -184,11 +184,24 @@ if (DCMTK_FOUND)
 endif ()
 
 ##-----------------------------------------------------------------------------
+##  SPECIAL BUILD RULES: OpenMP & SSE2
+##-----------------------------------------------------------------------------
+if (OPENMP_FOUND)
+  set (PLMBASE_LIBRARY_LDFLAGS "${OPENMP_LDFLAGS}")
+  set_source_files_properties (bspline_warp.cxx
+    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
+endif ()
+
+if (SSE2_FOUND)
+  plm_set_sse2_flags (bspline_warp.cxx)
+endif ()
+
+##-----------------------------------------------------------------------------
 ##  BUILD TARGETS
 ##-----------------------------------------------------------------------------
 plm_add_library (
   plmbase
   "${PLMBASE_LIBRARY_SRC}" 
   "${PLMBASE_LIBRARY_DEPENDENCIES}"
-  ""
+  "${PLMBASE_LIBRARY_LDFLAGS}"
   "${PLMBASE_LIBRARY_HEADERS}")

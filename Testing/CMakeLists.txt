@@ -3466,7 +3466,8 @@ set_tests_properties (plm-warp-i-check-1 PROPERTIES DEPENDS plm-warp-i-stats-1)
 ## plm-xf-convert-b    vf to plm bspline
 ## plm-xf-convert-c    plm bspline to vf
 ## plm-xf-convert-d    plm bspline to itk bspline
-## plm-xf-convert-e    itk rigid to dicom rigid
+## plm-xf-convert-e    itk rigid to dicom rigid (referenced dicom images)
+## plm-xf-convert-f    itk rigid to dicom rigid (exported dicom images)
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-xf-convert-a" 
@@ -3549,6 +3550,14 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "xf-convert;--input;${PLM_TESTING_DATA_DIR}/itk-rigid-a.tfm;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-xf-convert-e;--source-rcs;${PLM_BUILD_TESTING_DIR}/rect-2-dicom;--registered-rcs;${PLM_BUILD_TESTING_DIR}/rect-3-dicom"
   )
+set_tests_properties (plm-xf-convert-e PROPERTIES DEPENDS "rect-2;rect-3")
+
+plm_add_test (
+  "plm-xf-convert-f" 
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "xf-convert;--input;${PLM_TESTING_DATA_DIR}/itk-rigid-a.tfm;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-xf-convert-f;--fixed-image;${PLM_BUILD_TESTING_DIR}/rect-2.mha;--moving-image;${PLM_BUILD_TESTING_DIR}/rect-3.mha"
+  )
+set_tests_properties (plm-xf-convert-f PROPERTIES DEPENDS "rect-2;rect-3")
 
 ## -------------------------------------------------------------------------
 ## vf-invert

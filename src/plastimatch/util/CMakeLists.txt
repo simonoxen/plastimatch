@@ -78,16 +78,10 @@ set (PLMUTIL_LIBRARY_DEPENDENCIES
 ##-----------------------------------------------------------------------------
 if (OPENMP_FOUND)
   set (PLMUTIL_LIBRARY_LDFLAGS "${OPENMP_LDFLAGS}")
-  set_source_files_properties (bspline_warp.cxx
-    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
   set_source_files_properties (dice_statistics.cxx
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
   set_source_files_properties (vf_invert.cxx
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
-endif ()
-
-if (SSE2_FOUND)
-  plm_set_sse2_flags (bspline_warp.cxx)
 endif ()
 
 ##-----------------------------------------------------------------------------
