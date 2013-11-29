@@ -79,6 +79,9 @@ set (PLMBASE_LIBRARY_SRC
   ray_trace_probe.cxx
   ray_trace_uniform.cxx
   rpl_volume.cxx
+  rtds_dcmtk.cxx
+  rtds_gdcm.cxx
+  rt_study.cxx rt_study.h 
   rt_study_metadata.cxx rt_study_metadata.h 
   rtog_io.cxx
   rtss.cxx rtss.h 

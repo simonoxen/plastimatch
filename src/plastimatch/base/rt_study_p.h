@@ -4,13 +4,13 @@
 #ifndef _rt_study_p_h_
 #define _rt_study_p_h_
 
-#include "plmutil_config.h"
+#include "plmbase_config.h"
 #include "metadata.h"
 #include "rt_study_metadata.h"
 #include "segmentation.h"
 #include "xio_ct_transform.h"
 
-class PLMUTIL_API Rt_study_private {
+class PLMBASE_API Rt_study_private {
 public:
     Rt_study_metadata::Pointer m_drs;  /* UIDs, etc -- used by dcmtk */
     std::string m_xio_dose_filename;   /* XiO dose file to use as template 

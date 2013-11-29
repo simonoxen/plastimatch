@@ -37,9 +37,6 @@ set (PLMUTIL_LIBRARY_SRC
   proj_image_filter.cxx
   plm_series.cxx
   plm_study.cxx
-  rt_study.cxx rt_study.h 
-  rtds_dcmtk.cxx
-  rtds_gdcm.cxx
   rtds_warp.cxx 
   sift.cxx
   simplify_points.cxx 

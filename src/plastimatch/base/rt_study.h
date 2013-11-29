@@ -4,7 +4,7 @@
 #ifndef _rt_study_h_
 #define _rt_study_h_
 
-#include "plmutil_config.h"
+#include "plmbase_config.h"
 #include <vector>
 #include "itk_image_type.h"
 #include "plm_image.h"
@@ -22,7 +22,7 @@ class Xio_ct_transform;
  * The Rt_study class encapsulates the concept of a radiotherapy planning 
  * data set, including image, structure set, and dose.
  */
-class PLMUTIL_API Rt_study {
+class PLMBASE_API Rt_study {
 public:
     SMART_POINTER_SUPPORT (Rt_study);
 public:

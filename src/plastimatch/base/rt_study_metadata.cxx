@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include "plmbase_config.h"
+#include "plm_config.h"
 
 #include "dicom_util.h"
 #include "plm_image.h"
