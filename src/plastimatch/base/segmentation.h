@@ -4,7 +4,7 @@
 #ifndef _segmentation_h_
 #define _segmentation_h_
 
-#include "plmutil_config.h"
+#include "plmbase_config.h"
 
 #include "itk_image_type.h"
 #include "metadata.h"
@@ -22,7 +22,7 @@ class Xform;
 class Xio_ct_transform;
 class Warp_parms;
 
-class PLMUTIL_API Segmentation {
+class PLMBASE_API Segmentation {
 public:
     SMART_POINTER_SUPPORT (Segmentation);
 public:

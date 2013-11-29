@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include "plmutil_config.h"
+#include "plm_config.h"
 #include "itkExtractImageFilter.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
@@ -102,6 +102,6 @@ slice_extract
     return out_img;
 }
 
-template PLMUTIL_API UCharImage2DType::Pointer slice_extract (UCharImageType::Pointer, int);
-template PLMUTIL_API FloatImage2DType::Pointer slice_extract (FloatImageType::Pointer, int);
-template PLMUTIL_API UInt32Image2DType::Pointer slice_extract (UInt32ImageType::Pointer, int);
+template PLMBASE_API UCharImage2DType::Pointer slice_extract (UCharImageType::Pointer, int);
+template PLMBASE_API FloatImage2DType::Pointer slice_extract (FloatImageType::Pointer, int);
+template PLMBASE_API UInt32Image2DType::Pointer slice_extract (UInt32ImageType::Pointer, int);

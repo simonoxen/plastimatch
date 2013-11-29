@@ -4,10 +4,12 @@
 #ifndef _BSPLINE_WARP_H_
 #define _BSPLINE_WARP_H_
 
+#include "plmbase_config.h"
+
 class Bspline_xform;
 class Volume;
 
-PLMUTIL_API void bspline_warp (
+PLMBASE_API void bspline_warp (
     Volume *vout,         /* Output image (already sized and allocated) */
     Volume *vf_out,       /* Output vf (already sized and allocated, can be null) */
     Bspline_xform* bxf,   /* Bspline transform coefficients */

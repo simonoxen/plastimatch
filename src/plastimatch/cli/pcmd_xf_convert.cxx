@@ -11,6 +11,7 @@
 #include "plm_clp.h"
 #include "print_and_exit.h"
 #include "pstring.h"
+#include "rt_study.h"
 #include "rt_study_metadata.h"
 #include "volume_header.h"
 #include "xform.h"
@@ -23,8 +24,10 @@ public:
     std::string output_fn;
     std::string output_dicom_dir;
 
-    std::string source_rcs;
+    std::string fixed_image;
+    std::string moving_image;
     std::string registered_rcs;
+    std::string source_rcs;
 
     /* Geometry options */
     bool m_have_dim;
@@ -137,16 +140,28 @@ do_xf_convert (Xf_convert_parms *parms)
     if (!parms->output_dicom_dir.empty()) {
         /* Load referenced image sets */
 #if PLM_DCM_USE_DCMTK
-        Rt_study_metadata::Pointer rtm_src;
         Rt_study_metadata::Pointer rtm_reg;
-        
-        if (!parms->source_rcs.empty()) {
-            lprintf ("Loading source...\n");
-            rtm_src = Rt_study_metadata::load (parms->source_rcs);
+        Rt_study_metadata::Pointer rtm_src;
+
+        /* Fixed image */
+        if (!parms->fixed_image.empty()) {
+            lprintf ("Loading fixed...\n");
+            Rt_study::Pointer rtds = Rt_study::New ();
+            rtds->load_image (parms->fixed_image);
         }
-        if (!parms->registered_rcs.empty()) {
+        else if (!parms->registered_rcs.empty()) {
             lprintf ("Loading registered...\n");
             rtm_reg = Rt_study_metadata::load (parms->registered_rcs);
+        }
+
+        /* Moving image */
+        if (!parms->moving_image.empty()) {
+            lprintf ("Loading moving...\n");
+            
+        }
+        else if (!parms->source_rcs.empty()) {
+            lprintf ("Loading source...\n");
+            rtm_src = Rt_study_metadata::load (parms->source_rcs);
         }
 
         Dcmtk_sro::save (
@@ -197,13 +212,17 @@ parse_fn (
         "Omit bulk transform for itk_bspline", 0);
 
     /* DICOM spatial registration */
-    parser->add_long_option ("", "source-rcs", 
-        "Directory containing source reference coordinate system"
-        " (i.e. moving image)", 
-        1, "");
+    parser->add_long_option ("", "fixed-image",
+        "Fixed image, to be converted to dicom", 1, "");
+    parser->add_long_option ("", "moving-image",
+        "Moving image, to be converted to dicom", 1, "");
     parser->add_long_option ("", "registered-rcs", 
-        "Directory containing registered reference coordinate system"
-        " (i.e. fixed image)", 
+        "Directory containing DICOM image with registered reference "
+        "(i.e. fixed image) coordinate system", 
+        1, "");
+    parser->add_long_option ("", "source-rcs", 
+        "Directory containing DICOM image with source reference "
+        "(i.e. moving image) coordinate system", 
         1, "");
 
     /* Parse options */
@@ -229,8 +248,10 @@ parse_fn (
     }
 
     /* DICOM spatial registration */
-    parms->source_rcs = parser->get_string("source-rcs");
+    parms->fixed_image = parser->get_string("fixed-image");
+    parms->moving_image = parser->get_string("moving-image");
     parms->registered_rcs = parser->get_string("registered-rcs");
+    parms->source_rcs = parser->get_string("source-rcs");
 
     Xform_convert *xfc = &parms->xfc;
 

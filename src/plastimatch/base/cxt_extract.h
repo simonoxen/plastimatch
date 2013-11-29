@@ -4,7 +4,7 @@
 #ifndef _cxt_extract_h_
 #define _cxt_extract_h_
 
-#include "plmutil_config.h"
+#include "plmbase_config.h"
 
 class Rtss;
 

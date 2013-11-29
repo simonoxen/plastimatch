@@ -16,14 +16,11 @@ include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/devillard)
 ##-----------------------------------------------------------------------------
 set (PLMUTIL_LIBRARY_SRC
   bspline_correspond.cxx
-  bspline_warp.cxx
   contour_distance.cxx contour_distance.h 
-  cxt_extract.cxx
   dice_statistics.cxx
   distance_map.cxx
   diff.cxx
   dvh.cxx 
-#  gamma_analysis.cxx
   gamma_dose_comparison.cxx gamma_dose_comparison.h
   geometry_chooser.cxx geometry_chooser.h 
   hausdorff_distance.cxx hausdorff_distance.h 
@@ -36,22 +33,16 @@ set (PLMUTIL_LIBRARY_SRC
   itk_scale.cxx
   itk_threshold.cxx
   itk_union.cxx
-  itk_warp.cxx
   landmark_diff.cxx
   proj_image_filter.cxx
   plm_series.cxx
   plm_study.cxx
-  plm_warp.cxx
-  rasterize_slice.cxx
-  rasterizer.cxx 
   rt_study.cxx rt_study.h 
   rtds_dcmtk.cxx
   rtds_gdcm.cxx
   rtds_warp.cxx 
-  segmentation.cxx segmentation.h 
   sift.cxx
   simplify_points.cxx 
-  slice_extract.cxx
   ss_img_stats.cxx 
   synthetic_mha.cxx
   synthetic_vf.cxx

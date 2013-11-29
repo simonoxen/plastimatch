@@ -4,14 +4,14 @@
 #ifndef _rasterizer_h_
 #define _rasterizer_h_
 
-#include "plmutil_config.h"
+#include "plmbase_config.h"
 
 #include "itk_image_type.h"
 
 class Rtss;
 class Plm_image_header;
 
-class PLMUTIL_API Rasterizer {
+class PLMBASE_API Rasterizer {
   public:
     Rasterizer ();
     ~Rasterizer ();

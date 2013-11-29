@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include "plmutil_config.h"
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -315,4 +315,4 @@ cxt_extract (
 }
 
 /* Explicit instantiations */
-template PLMUTIL_API void cxt_extract (Rtss *cxt, UInt32ImageType::Pointer image, int num_structs, bool check_cxt_bits);
+template PLMBASE_API void cxt_extract (Rtss *cxt, UInt32ImageType::Pointer image, int num_structs, bool check_cxt_bits);

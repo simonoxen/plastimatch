@@ -4,11 +4,11 @@
 #ifndef _rasterize_slice_h_
 #define _rasterize_slice_h_
 
-#include "plmutil_config.h"
+#include "plmbase_config.h"
 #include "plm_int.h"
 
 
-PLMUTIL_C_API void rasterize_slice (
+PLMBASE_C_API void rasterize_slice (
     unsigned char* acc_img,
     plm_long* dims,
     float* spacing,

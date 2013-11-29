@@ -4,7 +4,7 @@
 #ifndef _plm_warp_h_
 #define _plm_warp_h_
 
-#include "plmutil_config.h"
+#include "plmbase_config.h"
 #include "itkBSplineDeformableTransform.h"
 
 class Plm_image;
@@ -13,7 +13,7 @@ class Xform;
 /* -----------------------------------------------------------------------
    Public functions
    ----------------------------------------------------------------------- */
-PLMUTIL_API void plm_warp (
+PLMBASE_API void plm_warp (
     Plm_image *im_warped,   /* Output: Output image */
     DeformationFieldType::Pointer *vf,    /* Output: Output vf (optional) */
     Xform *xf_in,          /* Input:  Input image warped by this xform */

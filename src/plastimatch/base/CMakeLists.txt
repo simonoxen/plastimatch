@@ -18,7 +18,9 @@ set (PLMBASE_LIBRARY_SRC
   aperture.cxx aperture.h 
   astroid_dose.cxx
   bspline_interpolate.cxx
+  bspline_warp.cxx
   bspline_xform.cxx
+  cxt_extract.cxx
   cxt_io.cxx
   dicom_probe.cxx
   dicom_util.cxx
@@ -53,6 +55,7 @@ set (PLMBASE_LIBRARY_SRC
   itk_pointset.cxx
   itk_resample.cxx
   itk_volume_header.cxx
+  itk_warp.cxx
   mc_dose.cxx
   metadata.cxx
   mha_io.cxx
@@ -62,12 +65,15 @@ set (PLMBASE_LIBRARY_SRC
   plm_image_convert.cxx
   plm_image_header.cxx
   plm_image_type.cxx
+  plm_warp.cxx
   pointset.cxx
   pointset_warp.cxx
   proj_image.cxx
   proj_image_dir.cxx
   proj_matrix.cxx
   proj_volume.cxx proj_volume.h
+  rasterize_slice.cxx
+  rasterizer.cxx 
   raw_pointset.cxx
   ray_trace_exact.cxx
   ray_trace_probe.cxx
@@ -77,6 +83,8 @@ set (PLMBASE_LIBRARY_SRC
   rtog_io.cxx
   rtss.cxx rtss.h 
   rtss_roi.cxx rtss_roi.h 
+  segmentation.cxx segmentation.h 
+  slice_extract.cxx
   slice_list.cxx slice_list.h
   ss_img_extract.cxx
   ss_list_io.cxx
