@@ -213,12 +213,13 @@ if (PLM_DOWNLOAD_XIO)
     "${PLM_BUILD_TESTING_DIR}/chest-phantom-xio-4.33.02")
 endif ()
 
-if (PLM_DOWNLOAD_XIO_IRREGULAR)
-  plm_download_and_extract (
-    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/2163/xio-4.60-irregular-spacing.tar.gz"
-    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/xio-4.60-irregular-spacing.tar.gz"
-    "${PLM_BUILD_TESTING_DIR}/20110509")
-endif ()
+#### This seems to be a duplicate of the dicom-rt data, not the xio data
+# if (PLM_DOWNLOAD_XIO_IRREGULAR)
+#   plm_download_and_extract (
+#     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/2163/xio-4.60-irregular-spacing.tar.gz"
+#     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/xio-4.60-irregular-spacing.tar.gz"
+#     "${PLM_BUILD_TESTING_DIR}/20110509")
+# endif ()
 
 
 ## -------------------------------------------------------------------------
