@@ -760,8 +760,23 @@ endif ()
 #find_package (Qt4 4.6.2 COMPONENTS QtCore QtGui OPTIONAL)
 find_package (Qt4 4.6.3 COMPONENTS QtCore QtGui QtWebKit)
 if (QT4_FOUND)
-  message (STATUS "Looking for Qt4 - found")
-  include (${QT_USE_FILE})
+
+  # Debian qtchooser is broken, so we disable.
+  # http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=730423
+  execute_process (
+    COMMAND 
+    rcc
+    RESULT_VARIABLE rcc_result
+    OUTPUT_VARIABLE rcc_output
+    ERROR_VARIABLE rcc_error)
+  if (${rcc_error} MATCHES "could not find a Qt installation")
+    message (STATUS "Sorry, your Qt build environment is broken")
+    set (QT4_FOUND FALSE)
+  else ()
+    message (STATUS "Looking for Qt4 - found")
+    include (${QT_USE_FILE})
+  endif ()
+
 else ()
   message (STATUS "Looking for Qt4 - not found")
 endif ()
