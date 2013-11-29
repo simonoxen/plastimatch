@@ -354,6 +354,12 @@ Rt_study::save_dicom (const char *dicom_dir)
 }
 
 void
+Rt_study::save_dicom (const std::string& dicom_dir)
+{
+    this->save_dicom (dicom_dir.c_str());
+}
+
+void
 Rt_study::save_dicom_dose (const char *dicom_dir)
 {
     if (!dicom_dir) {

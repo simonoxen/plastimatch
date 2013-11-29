@@ -148,6 +148,9 @@ do_xf_convert (Xf_convert_parms *parms)
             lprintf ("Loading fixed...\n");
             Rt_study::Pointer rtds = Rt_study::New ();
             rtds->load_image (parms->fixed_image);
+            std::string fixed_path = parms->output_dicom_dir + "/fixed";
+            rtds->save_dicom (fixed_path);
+            rtm_reg = rtds->get_rt_study_metadata();
         }
         else if (!parms->registered_rcs.empty()) {
             lprintf ("Loading registered...\n");
@@ -157,7 +160,11 @@ do_xf_convert (Xf_convert_parms *parms)
         /* Moving image */
         if (!parms->moving_image.empty()) {
             lprintf ("Loading moving...\n");
-            
+            Rt_study::Pointer rtds = Rt_study::New ();
+            rtds->load_image (parms->fixed_image);
+            std::string moving_path = parms->output_dicom_dir + "/moving";
+            rtds->save_dicom (moving_path);
+            rtm_src = rtds->get_rt_study_metadata();
         }
         else if (!parms->source_rcs.empty()) {
             lprintf ("Loading source...\n");

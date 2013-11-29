@@ -52,6 +52,7 @@ public:
     void load_cxt (const char *input_fn);
     void load_prefix (const char *input_fn);
 
+    void save_dicom (const std::string& output_dir);
     void save_dicom (const char *output_dir);
     void save_dicom_dose (const char *output_dir);
 
