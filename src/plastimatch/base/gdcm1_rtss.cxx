@@ -335,7 +335,7 @@ plm_ComputeGroup0002Length (gdcm::File *gf)
 void
 gdcm_rtss_save (
     Rtss *cxt,   /* Input: this is what gets saved */
-    Rt_study_metadata *rsm,    /* Input: need to look at this too */
+    const Rt_study_metadata::Pointer& rsm,    /* In: save this too */
     char *rtss_fn              /* Input: name of file to write to */
 )
 {

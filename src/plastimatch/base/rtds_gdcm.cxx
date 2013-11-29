@@ -61,7 +61,7 @@ Rt_study::save_gdcm (const char *output_dir)
 #if GDCM_VERSION_1
     if (d_ptr->m_rtss) {
 	printf ("Rt_study::save_dicom: save_gdcm_rtss()\n");
-	d_ptr->m_rtss->save_gdcm_rtss (output_dir, d_ptr->m_drs.get());
+	d_ptr->m_rtss->save_gdcm_rtss (output_dir, d_ptr->m_drs);
     }
     if (this->has_dose()) {
 	char fn[_MAX_PATH];
