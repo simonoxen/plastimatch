@@ -8,7 +8,9 @@ $infile = shift;
 
 $min_count = 100;
 #$max_date = 20130701;
-$max_date = 20131001;
+#$max_date = 20131001;
+#$max_date = 20131114;
+$max_date = `date --date="-1 month" +"%Y%m%d"`;
 
 open (FP, "<$infile") or die "Couldn't open file $infile for read";
 while (<FP>) {
