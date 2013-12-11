@@ -1300,6 +1300,9 @@ Plm_image::convert (Plm_image_type new_type)
     case PLM_IMG_TYPE_ITK_DOUBLE:
 	this->convert_to_itk_double ();
 	break;
+    case PLM_IMG_TYPE_GPUIT_UCHAR:
+	this->convert_to_gpuit_uchar ();
+	break;
     case PLM_IMG_TYPE_GPUIT_SHORT:
 	this->convert_to_gpuit_short ();
 	break;

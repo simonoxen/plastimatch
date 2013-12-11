@@ -438,10 +438,6 @@ vf_analyze_mask (Volume* vol, Volume *mask)
 		        if (dxyz[d] > maxs[d]) {
 			    maxs[d] = dxyz[d];
 		        } else if (dxyz[d] < mins[d]) {
-                            if (d == 0) {
-                                printf ("New masked min: %d %d %d (%g)\n",
-                                    i, j, k, dxyz[d]);
-                            }
 			    mins[d] = dxyz[d];
                         }
 		    }
