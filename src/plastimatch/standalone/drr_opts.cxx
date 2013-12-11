@@ -117,7 +117,7 @@ parse_args (Drr_options* options, int argc, char* argv[])
 		fprintf(stderr, "option %s requires an argument\n", argv[i]);
 		exit(1);
 	    }
-	    i++;
+	    if (++i >= argc) { print_usage(); }
 #if CUDA_FOUND
 	    if (!strcmp(argv[i], "cuda") || !strcmp(argv[i], "CUDA")
 		|| !strcmp(argv[i], "gpu") || !strcmp(argv[i], "GPU")) {
@@ -138,7 +138,7 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	else if (!strcmp (argv[i], "-r")) {
 	    /* Note: user inputs row, then column.  But internally they 
 	       are stored as column, then row. */
-	    i++;
+	    if (++i >= argc) { print_usage(); }
 	    rc = sscanf (argv[i], "%d %d", 
 		&options->image_resolution[1], 
 		&options->image_resolution[0]);
@@ -149,22 +149,22 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	    }
 	}
 	else if (!strcmp (argv[i], "-I")) {
-	    i++;
+	    if (++i >= argc) { print_usage(); }
 	    options->input_file = strdup (argv[i]);
 	}
 	else if (!strcmp (argv[i], "-O")) {
-	    i++;
+	    if (++i >= argc) { print_usage(); }
 	    options->output_prefix = strdup (argv[i]);
 	}
 	else if (!strcmp (argv[i], "-a")) {
-	    i++;
+	    if (++i >= argc) { print_usage(); }
 	    rc = sscanf (argv[i], "%d" , &options->num_angles);
 	    if (rc != 1) {
 		print_usage ();
 	    }
 	}
 	else if (!strcmp (argv[i], "-N")) {
-	    i++;
+	    if (++i >= argc) { print_usage(); }
 	    rc = sscanf (argv[i], "%g" , &options->angle_diff);
 	    if (rc != 1) {
 		print_usage ();
@@ -172,7 +172,7 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	    options->have_angle_diff = 1;
 	}
 	else if (!strcmp (argv[i], "-nrm")) {
-	    i++;
+	    if (++i >= argc) { print_usage(); }
 	    rc = sscanf (argv[i], "%f %f %f", &options->nrm[0],
 		&options->nrm[1], &options->nrm[2]);
 	    if (rc != 3) {
@@ -181,7 +181,7 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	    options->have_nrm = 1;
 	}
 	else if (!strcmp (argv[i], "-vup")) {
-	    i++;
+	    if (++i >= argc) { print_usage(); }
 	    rc = sscanf (argv[i], "%f %f %f", &options->vup[0],
 		&options->vup[1], &options->vup[2]);
 	    if (rc != 3) {
@@ -189,14 +189,14 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	    }
 	}
 	else if (!strcmp (argv[i], "-s")) {
-	    i++;
+	    if (++i >= argc) { print_usage(); }
 	    rc = sscanf (argv[i], "%g" , &options->scale);
 	    if (rc != 1) {
 		print_usage ();
 	    }
 	}
 	else if (!strcmp (argv[i], "-t")) {
-	    i++;
+	    if (++i >= argc) { print_usage(); }
 	    if (!strcmp (argv[i], "pfm")) {
 		options->output_format = OUTPUT_FORMAT_PFM;
 	    }
@@ -213,7 +213,7 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	else if (!strcmp (argv[i], "-c")) {
 	    /* Note: user inputs row, then column.  But internally they 
 	       are stored as column, then row. */
-	    i++;
+	    if (++i >= argc) { print_usage(); }
 	    rc = sscanf (argv[i], "%g %g", 
 		&options->image_center[1],
 		&options->image_center[0]);
@@ -227,7 +227,7 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	else if (!strcmp (argv[i], "-z")) {
 	    /* Note: user inputs row, then column.  But internally they 
 	       are stored as column, then row. */
-	    i++;
+	    if (++i >= argc) { print_usage(); }
 	    rc = sscanf (argv[i], "%g %g", 
 		&options->image_size[1],
 		&options->image_size[0]);
@@ -238,7 +238,7 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	    }
 	}
 	else if (!strcmp (argv[i], "-g")) {
-	    i++;
+	    if (++i >= argc) { print_usage(); }
 	    rc = sscanf (argv[i], "%g %g", &options->sad, &options->sid);
 	    if (rc != 2) {
 		print_usage ();
@@ -247,7 +247,7 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	else if (!strcmp (argv[i], "-w")) {
 	    /* Note: user inputs row, then column.  But internally they 
 	       are stored as column, then row. */
-	    i++;
+	    if (++i >= argc) { print_usage(); }
 	    rc = sscanf (argv[i], "%d %d %d %d",
 		&options->image_window[2],
 		&options->image_window[3],
@@ -262,7 +262,7 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	    options->have_image_window = 1;
 	}
 	else if (!strcmp (argv[i], "-i")) {
-	    i++;
+	    if (++i >= argc) { print_usage(); }
 	    if (!strcmp(argv[i], "exact")) {
 		options->algorithm = DRR_ALGORITHM_EXACT;
 	    } else if (!strcmp(argv[i], "tri_exact")) {
@@ -276,7 +276,7 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	    }
 	}
 	else if (!strcmp (argv[i], "-o")) {
-	    i++;
+	    if (++i >= argc) { print_usage(); }
 	    rc = sscanf (argv[i], "%g %g %g" , 
 		&options->isocenter[0],
 		&options->isocenter[1],
@@ -286,7 +286,7 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	    }
 	}
 	else if (!strcmp (argv[i], "-S")) {
-	    i++;
+	    if (++i >= argc) { print_usage(); }
 	    options->output_details_fn = argv[i];
 	}
 	else if (!strcmp (argv[i], "-e")) {
