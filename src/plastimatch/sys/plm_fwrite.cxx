@@ -9,6 +9,7 @@
 #include <io.h>
 #endif
 
+#include "plm_int.h"
 #include "plm_fwrite.h"
 #include "print_and_exit.h"
 
