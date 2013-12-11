@@ -5,9 +5,9 @@
    Analyze a vector field for invertibility, smoothness.
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
 #include "vf_stats.h"
 #include "volume.h"
@@ -23,7 +23,8 @@ vf_analyze (Volume* vol)
 
     for (int d = 0; d < 3; d++) {
 	mean_av[d] = mean_v[d] = 0.0;
-	mins[d] = maxs[d] = img[d];
+	mins[d] = FLT_MAX;
+        maxs[d] = -FLT_MIN;
     }
 
     for (v = 0, k = 0; k < vol->dim[2]; k++) {
@@ -420,7 +421,8 @@ vf_analyze_mask (Volume* vol, Volume *mask)
 
     for (d = 0; d < 3; d++) {
 	mean_av[d] = mean_v[d] = 0.0;
-	mins[d] = maxs[d] = img[d];
+	mins[d] = FLT_MAX;
+        maxs[d] = -FLT_MIN;
     }
 
     for (v = 0, k = 0; k < vol->dim[2]; k++) {
@@ -436,6 +438,10 @@ vf_analyze_mask (Volume* vol, Volume *mask)
 		        if (dxyz[d] > maxs[d]) {
 			    maxs[d] = dxyz[d];
 		        } else if (dxyz[d] < mins[d]) {
+                            if (d == 0) {
+                                printf ("New masked min: %d %d %d (%g)\n",
+                                    i, j, k, dxyz[d]);
+                            }
 			    mins[d] = dxyz[d];
                         }
 		    }
@@ -448,10 +454,16 @@ vf_analyze_mask (Volume* vol, Volume *mask)
 	mean_av[d] /= mask_npixels;
     }
 
-    printf ("Min within mask:       %10.3f %10.3f %10.3f\n", mins[0], mins[1], mins[2]);
-    printf ("Mean within mask:      %10.3f %10.3f %10.3f\n", mean_v[0], mean_v[1], mean_v[2]);
-    printf ("Max within mask:       %10.3f %10.3f %10.3f\n", maxs[0], maxs[1], maxs[2]);
-    printf ("Mean abs within mask:  %10.3f %10.3f %10.3f\n", mean_av[0], mean_av[1], mean_av[2]);
+    printf ("%d / %d voxels inside mask\n",
+        (int) mask_npixels, (int) vol->npix);
+    printf ("Min within mask:       %10.3f %10.3f %10.3f\n", 
+        mins[0], mins[1], mins[2]);
+    printf ("Mean within mask:      %10.3f %10.3f %10.3f\n", 
+        mean_v[0], mean_v[1], mean_v[2]);
+    printf ("Max within mask:       %10.3f %10.3f %10.3f\n", 
+        maxs[0], maxs[1], maxs[2]);
+    printf ("Mean abs within mask:  %10.3f %10.3f %10.3f\n", 
+        mean_av[0], mean_av[1], mean_av[2]);
 }
 
 void
