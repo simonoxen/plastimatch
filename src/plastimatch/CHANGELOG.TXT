@@ -1,5 +1,8 @@
 Version 1.5.15 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
+* Support for DICOM export of spatial registration object
+* Fix bug in computing statistics with a mask
+* Fix two debian bugs
 
 Version 1.5.14 (build 4503)
 Sun Nov 24 16:35:22 EST 2013
