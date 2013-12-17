@@ -146,7 +146,7 @@ Plm_bspline::initialize ()
     volume_convert_to_float (fixed);                /* Maybe not necessary? */
 
     /* Subsample images */
-    logfile_printf ("SUBSAMPLE: (%d %d %d), (%d %d %d)\n", 
+    logfile_printf ("SUBSAMPLE: (%f %f %f), (%f %f %f)\n", 
         stage->fixed_subsample_rate[0], stage->fixed_subsample_rate[1], 
         stage->fixed_subsample_rate[2], stage->moving_subsample_rate[0], 
         stage->moving_subsample_rate[1], stage->moving_subsample_rate[2]
