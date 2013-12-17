@@ -45,6 +45,8 @@ public:
     /*Xform * */
     DeformationFieldType::Pointer vf;
     Pstring vfjacstats_fn;
+    float jacobian_min;
+    float jacobian_max;
 
 public:
     Jacobian();

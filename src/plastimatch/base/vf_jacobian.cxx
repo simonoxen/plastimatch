@@ -9,6 +9,8 @@ Jacobian::Jacobian ()
 {
     vf = 0;
     vfjacstats_fn = " ";
+    jacobian_min = 0;
+    jacobian_max = 0;
 }
 void 
 Jacobian::set_output_vfstats_name (Pstring vfjacstats){
@@ -65,6 +67,9 @@ Jacobian::make_jacobian ()
     std::cout<<"Minimum of the determinant of the Jacobian of the warp: " <<minmaxfilter->GetMinimum()<<std::endl;
     std::cout<<"Maximum of the determinant of the Jacobian of the warp: " <<minmaxfilter->GetMaximum()<<std::endl;
     
+    this->jacobian_min = minmaxfilter->GetMinimum();
+    this->jacobian_max = minmaxfilter->GetMaximum();
+
     Jacobian_stats JacoStats;
     JacoStats.min = minmaxfilter->GetMinimum();
     JacoStats.max = minmaxfilter->GetMaximum();

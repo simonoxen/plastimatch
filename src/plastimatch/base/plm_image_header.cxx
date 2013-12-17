@@ -7,6 +7,9 @@
 #include <time.h>
 #include <math.h>
 #include "itkImageRegionIterator.h"
+#include <stdio.h>
+#include <math.h>
+
 
 #include "bspline_xform.h"
 #include "direction_cosines.h"
