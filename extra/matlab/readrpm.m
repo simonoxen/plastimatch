@@ -142,8 +142,9 @@ if (strcmp(rpm.version,'DAT 1.4'))
     %%   <TTL_In>,<Beam_On>
     while (1)
         %% Store this line into p, break if end
-        s = deblank(fgetl(fp));
+	s = fgetl(fp);
         if ~ischar(s), break, end
+        s = deblank(s);
         p = sscanf(s,'%g,',inf);
         
         %% Add p into rpm_data, extending if necessary
@@ -169,7 +170,9 @@ elseif (strcmp(rpm.version,'DAT 1.7'))
     %%   <TTL_In>,<Beam_On>
     while (1)
         %% Store this line into p, break if end
-        s = deblank(fgetl(fp));
+	s = fgetl(fp);
+        if ~ischar(s), break, end
+        s = deblank(s);
         if ~ischar(s), break, end
         p = sscanf(s,'%g,',inf);
         
@@ -207,8 +210,9 @@ else
     while (1)
 
         %% Get line, break if end of file
-        s = deblank(fgetl(fp));
+	s = fgetl(fp);
         if ~ischar(s), break, end
+        s = deblank(s);
         
         %% Convert line of text into numeric, store into variable "p"
         commas = findstr (s, ',');
