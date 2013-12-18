@@ -12,6 +12,7 @@
 #include "itk_image_save.h"
 #include "itk_registration.h"
 #include "logfile.h"
+#include "native_translation.h"
 #include "plm_bspline.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
@@ -255,6 +256,19 @@ do_registration_stage (
     else if (stage->xform_type == STAGE_TRANSFORM_ALIGN_CENTER) {
         itk_registration_stage (regd, xf_out, xf_in, stage);
         lprintf ("Centering done\n");
+    }
+    else if (stage->xform_type == STAGE_TRANSFORM_TRANSLATION) {
+        if (stage->impl_type == IMPLEMENTATION_ITK) {
+            itk_registration_stage (regd, xf_out, xf_in, stage);
+        } else if (stage->impl_type == IMPLEMENTATION_PLASTIMATCH) {
+            native_translation_stage (regd, xf_out, xf_in, stage);
+        } else {
+            if (stage->optim_type == OPTIMIZATION_GRID_SEARCH) {
+                native_translation_stage (regd, xf_out, xf_in, stage);
+            } else {
+                itk_registration_stage (regd, xf_out, xf_in, stage);
+            }
+        }
     }
     else {
         itk_registration_stage (regd, xf_out, xf_in, stage);

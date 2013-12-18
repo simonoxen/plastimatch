@@ -37,6 +37,7 @@
 #define OPTIMIZATION_LIBLBFGS               9
 #define OPTIMIZATION_ONEPLUSONE            10
 #define OPTIMIZATION_FRPR                  11
+#define OPTIMIZATION_GRID_SEARCH           12
 
 #define IMPLEMENTATION_NONE                 0
 #define IMPLEMENTATION_ITK                  1

@@ -52,6 +52,7 @@ set (PLMREGISTER_LIBRARY_SRC
   itk_registration_observer.cxx
   itk_tps.cxx
   landmark_warp.cxx 
+  native_translation.cxx
   plm_bspline.cxx
   plm_stages.cxx
   rbf_cluster.cxx

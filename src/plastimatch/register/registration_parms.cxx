@@ -349,6 +349,9 @@ Registration_parms::set_key_val (
         else if (!strcmp(val,"demons")) {
             stage->optim_type = OPTIMIZATION_DEMONS;
         }
+        else if (!strcmp(val,"grid")) {
+            stage->optim_type = OPTIMIZATION_GRID_SEARCH;
+        }
         else if (!strcmp(val,"lbfgs")) {
             stage->optim_type = OPTIMIZATION_LBFGS;
         }
