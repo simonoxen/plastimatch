@@ -18,7 +18,7 @@
 #include "volume_resample.h"
 #include "xform.h"
 
-float
+static float
 native_translation_score (
     const Volume::Pointer& fixed,
     const Volume::Pointer& moving,
@@ -96,9 +96,10 @@ native_translation_score (
     return final_metric;
 }
 
-void
+static void
 native_translation (
     Xform *xf_out, 
+    Stage_parms* stage,
     const Volume::Pointer& fixed,
     const Volume::Pointer& moving)
 {
@@ -113,19 +114,27 @@ native_translation (
 
     /* Compute search extent -- range of search is up to 50% overlap 
        in any one dimension */
+    lprintf ("min_overlap = %g %g %g\n",
+        stage->gridsearch_min_overlap[0],
+        stage->gridsearch_min_overlap[1],
+        stage->gridsearch_min_overlap[2]);
+
     float search_min[3];
     float search_max[3];
     for (int d = 0; d < 3; d++) {
+        float mo = stage->gridsearch_min_overlap[d];
         float mov_siz = moving->dim[d] *  moving->spacing[d];
         float fix_siz = fixed->dim[d] *  fixed->spacing[d];
-        if (mov_siz > fix_siz) {
+        if (fix_siz > mov_siz) {
             search_min[d] = fixed->offset[d] - moving->offset[d] 
-                - mov_siz + 0.5 * fix_siz;
-            search_max[d] = search_min[d] + mov_siz;
+                - mov_siz + mo * mov_siz;
+            search_max[d] = fixed->offset[d] - moving->offset[d] 
+                + fix_siz - mo * mov_siz;
         } else {
             search_min[d] = fixed->offset[d] - moving->offset[d] 
-                - 0.5 * mov_siz;
-            search_max[d] = search_min[d] + fix_siz;
+                - mov_siz + mo * fix_siz;
+            search_max[d] = fixed->offset[d] - moving->offset[d] 
+                + fix_siz - mo * fix_siz;
         }
     }
     lprintf ("Native grid search extent: "
@@ -144,7 +153,7 @@ native_translation (
     }
     int num_steps[3];
     float search_step[3] = { 0.f, 0.f, 0.f };
-    float nominal_step = max_range / 2;
+    float nominal_step = max_range / 5;
     for (int d = 0; d < 3; d++) {
         float search_range = search_max[d] - search_min[d];
         num_steps[d] = ROUND_INT (search_range / nominal_step) + 1;
@@ -153,6 +162,8 @@ native_translation (
         }
     }
 
+    float best_translation[3] = { 0.f, 0.f, 0.f };
+    float best_score = FLT_MAX;
     for (plm_long k = 0; k < num_steps[2]; k++) {
         for (plm_long j = 0; j < num_steps[1]; j++) {
             for (plm_long i = 0; i < num_steps[0]; i++) {
@@ -160,18 +171,25 @@ native_translation (
                     search_min[0] + i * search_step[0],
                     search_min[1] + j * search_step[1],
                     search_min[2] + k * search_step[2] };
-                lprintf ("[%g %g %g] %g\n", dxyz[0], dxyz[1], dxyz[2],
-                    native_translation_score (fixed, moving, dxyz));
+                float score = native_translation_score (fixed, moving, dxyz);
+                lprintf ("[%g %g %g] %g", 
+                    dxyz[0], dxyz[1], dxyz[2], score);
+                if (score < best_score) {
+                    best_score = score;
+                    best_translation[0] = dxyz[0];
+                    best_translation[1] = dxyz[1];
+                    best_translation[2] = dxyz[2];
+                    lprintf (" *");
+                }
+                lprintf ("\n");
             }
         }
     }
 
-    
-
     /* Find the best translation */
-    xfp[0] = 3;
-    xfp[1] = 0;
-    xfp[2] = 0;
+    xfp[0] = best_translation[0];
+    xfp[1] = best_translation[1];
+    xfp[2] = best_translation[2];
 
     /* Fixate translation into xform */
     trn->SetParameters(xfp);
@@ -213,5 +231,5 @@ native_translation_stage (
     }
 
     /* Run the translation optimizer */
-    native_translation (xf_out, fixed_ss, moving_ss);
+    native_translation (xf_out, stage, fixed_ss, moving_ss);
 }

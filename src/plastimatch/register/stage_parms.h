@@ -171,6 +171,8 @@ public:
     int num_grid[3];     // number of grid points in x,y,z directions
     float grid_spac[3];  // absolute grid spacing in mm in x,y,z directions
     int grid_method;     // num control points (0) or absolute spacing (1)
+    /* Native grid search */
+    float gridsearch_min_overlap[3];
     /* Landmarks */
     float landmark_stiffness; //strength of attraction between landmarks
     char landmark_flavor;

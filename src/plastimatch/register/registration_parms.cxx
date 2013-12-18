@@ -736,6 +736,15 @@ Registration_parms::set_key_val (
             goto error_exit;
         }
     }
+    else if (!strcmp (key, "gridsearch_min_overlap")) {
+        if (section == 0) goto error_not_global;
+        if (sscanf (val, "%g %g %g", 
+                &(stage->gridsearch_min_overlap[0]), 
+                &(stage->gridsearch_min_overlap[1]), 
+                &(stage->gridsearch_min_overlap[2])) != 3) {
+            goto error_exit;
+        }
+    }
     else if (!strcmp (key, "landmark_stiffness")) {
         if (section == 0) goto error_not_global;
         if (sscanf (val, "%g", &stage->landmark_stiffness) != 1) {

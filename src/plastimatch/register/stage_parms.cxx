@@ -115,6 +115,10 @@ Stage_parms::Stage_parms ()
     thresh_mean_intensity=false;
     num_matching_points=500;
     num_hist_levels=1000;
+    /* Native grid search */
+    gridsearch_min_overlap[0] = -1;
+    gridsearch_min_overlap[1] = -1;
+    gridsearch_min_overlap[2] = -1;
     /* Landmarks */
     landmark_stiffness = 1.0;
     landmark_flavor = 'a';
@@ -218,6 +222,10 @@ Stage_parms::Stage_parms (const Stage_parms& s)
     thresh_mean_intensity= s.thresh_mean_intensity;
     num_matching_points= s.num_matching_points;
     num_hist_levels= s.num_hist_levels;
+    /* Native grid search */
+    gridsearch_min_overlap[0] = s.gridsearch_min_overlap[0];
+    gridsearch_min_overlap[1] = s.gridsearch_min_overlap[1];
+    gridsearch_min_overlap[2] = s.gridsearch_min_overlap[2];
     /* Landmarks */
     landmark_stiffness = s.landmark_stiffness;
     landmark_flavor = s.landmark_flavor;
