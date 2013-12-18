@@ -114,15 +114,13 @@ native_translation (
 
     /* Compute search extent -- range of search is up to 50% overlap 
        in any one dimension */
-    lprintf ("min_overlap = %g %g %g\n",
-        stage->gridsearch_min_overlap[0],
-        stage->gridsearch_min_overlap[1],
-        stage->gridsearch_min_overlap[2]);
-
     float search_min[3];
     float search_max[3];
     for (int d = 0; d < 3; d++) {
         float mo = stage->gridsearch_min_overlap[d];
+        if (mo < 0.1) { mo = 0.1; }
+        else if (mo > 0.9) { mo = 0.9; }
+
         float mov_siz = moving->dim[d] *  moving->spacing[d];
         float fix_siz = fixed->dim[d] *  fixed->spacing[d];
         if (fix_siz > mov_siz) {
@@ -162,6 +160,7 @@ native_translation (
         }
     }
 
+    /* Run grid search */
     float best_translation[3] = { 0.f, 0.f, 0.f };
     float best_score = FLT_MAX;
     for (plm_long k = 0; k < num_steps[2]; k++) {
