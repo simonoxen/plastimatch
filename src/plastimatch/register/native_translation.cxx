@@ -160,9 +160,37 @@ native_translation (
         }
     }
 
-    /* Run grid search */
+    /* Run grid search -- phase 1 */
     float best_translation[3] = { 0.f, 0.f, 0.f };
     float best_score = FLT_MAX;
+    for (plm_long k = 0; k < num_steps[2]; k++) {
+        for (plm_long j = 0; j < num_steps[1]; j++) {
+            for (plm_long i = 0; i < num_steps[0]; i++) {
+                float dxyz[3] = {
+                    search_min[0] + i * search_step[0],
+                    search_min[1] + j * search_step[1],
+                    search_min[2] + k * search_step[2] };
+                float score = native_translation_score (fixed, moving, dxyz);
+                lprintf ("[%g %g %g] %g", 
+                    dxyz[0], dxyz[1], dxyz[2], score);
+                if (score < best_score) {
+                    best_score = score;
+                    best_translation[0] = dxyz[0];
+                    best_translation[1] = dxyz[1];
+                    best_translation[2] = dxyz[2];
+                    lprintf (" *");
+                }
+                lprintf ("\n");
+            }
+        }
+    }
+
+    /* Run grid search -- phase 2 */
+    for (int d = 0; d < 3; d++) {
+        num_steps[d] = 4;
+        search_step[d] = nominal_step / 2;
+        search_min[d] = best_translation[d] - 1.5 * search_step[d];
+    }
     for (plm_long k = 0; k < num_steps[2]; k++) {
         for (plm_long j = 0; j < num_steps[1]; j++) {
             for (plm_long i = 0; i < num_steps[0]; i++) {
