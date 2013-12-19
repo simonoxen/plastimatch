@@ -8,12 +8,11 @@
 
 class Volume;
 
-PLMBASE_C_API void vf_analyze (Volume* vol);
-PLMBASE_C_API void vf_analyze_strain (Volume* vol);
-PLMBASE_C_API void vf_analyze_jacobian (Volume* vol);
+PLMBASE_C_API void vf_analyze (const Volume* vol, const Volume *mask);
+PLMBASE_C_API void vf_analyze_jacobian (const Volume* vol, const Volume* mask);
 PLMBASE_C_API void vf_analyze_second_deriv (Volume* vol);
-PLMBASE_C_API void vf_analyze_mask (Volume* vol, Volume* mask);
-PLMBASE_C_API void vf_analyze_strain_mask (Volume* vol, Volume* mask);
+PLMBASE_C_API void vf_analyze_strain (const Volume* vol, const Volume* mask);
+
 PLMBASE_C_API void vf_print_stats (Volume* vol);
 
 

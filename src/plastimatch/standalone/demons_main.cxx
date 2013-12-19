@@ -49,7 +49,7 @@ main (int argc, char* argv[])
     vector_field = demons (fixed, moving, moving_grad, 0, 
 	&options.parms);
 
-    vf_analyze (vector_field);
+    vf_analyze (vector_field, 0);
 
     if (options.output_vf_fn) {
 	write_mha (options.output_vf_fn, vector_field);

@@ -60,24 +60,20 @@ stats_vf_main (Stats_parms* parms, const std::string& current_fn)
     }
 
     if (parms->mask_fn.length() == 0) {
-    	vf_analyze (vol);
-    	vf_analyze_strain (vol);
-	vf_analyze_jacobian (vol);
+    	vf_analyze (vol, 0);
+	vf_analyze_jacobian (vol, 0);
+    	vf_analyze_strain (vol, 0);
 	vf_analyze_second_deriv (vol);
     }
     else {
-	/* GCS FIX: Mask should be read as xform (to enable use of mhd) */
-	//Volume* mask = read_mha (current_fn.c_str());
         Plm_image::Pointer pli = Plm_image::New (new Plm_image(
                 parms->mask_fn));
         pli->convert (PLM_IMG_TYPE_GPUIT_UCHAR);
         Volume* mask = pli->get_vol();
-	vf_analyze (vol); 
-	vf_analyze_strain (vol);
-	vf_analyze_jacobian (vol);
+	vf_analyze (vol, mask);
+	vf_analyze_jacobian (vol, mask);
+	vf_analyze_strain (vol, mask);
 	vf_analyze_second_deriv (vol);
-	vf_analyze_mask (vol, mask);
-	vf_analyze_strain_mask (vol, mask);
     }
 }
 
