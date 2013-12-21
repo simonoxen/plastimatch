@@ -66,6 +66,7 @@ public:
     Shared_parms* get_shared_parms ();
     std::list<Stage_parms*>& get_stages ();
     Stage_parms* append_stage ();
+    Stage_parms* append_process_stage ();
 };
 
 #endif

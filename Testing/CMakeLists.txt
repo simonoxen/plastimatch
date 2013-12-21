@@ -68,6 +68,7 @@ set (CONFIG_FILE_LIST
   "plm-reg-itk-rigid-a.txt"
   "plm-reg-itk-rigid-b.txt"
   "plm-reg-itk-bspline.txt"
+  "plm-reg-process-a.txt"
 )
 foreach (CONFIG_FILE ${CONFIG_FILE_LIST})
   configure_file ("${PLM_TESTING_DATA_DIR}/${CONFIG_FILE}"
@@ -2929,6 +2930,31 @@ plm_add_test (
   )
 set_tests_properties (plm-reg-roi-e PROPERTIES DEPENDS "rectarr-01;rectarr-02;rectarr-m-02")
 
+## -------------------------------------------------------------------------
+## plastimatch register (group 9)
+##   plm-reg-process-a
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-reg-process-a"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-process-a.txt"
+  )
+plm_add_test (
+  "plm-reg-process-a-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-reg-process-a.mha"
+  )
+plmtest_check_interval ("plm-reg-process-a-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-process-a-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-467.1"
+  "-366.9"
+  )
+set_property (TEST plm-reg-process-a APPEND PROPERTY DEPENDS gauss-1)
+set_tests_properties (plm-reg-process-a-stats PROPERTIES 
+  DEPENDS plm-reg-process-a)
+set_tests_properties (plm-reg-process-a-check PROPERTIES 
+  DEPENDS plm-reg-process-a-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch compose

@@ -13,12 +13,11 @@ class Stage_parms_private
 {
 public:
     Stage_type stage_type;
-    Process_parms *process_parms;
+    Process_parms::Pointer process_parms;
     Shared_parms *shared;
 public:
     Stage_parms_private () {
         stage_type = STAGE_TYPE_REGISTER;
-        process_parms = 0;
         shared = new Shared_parms;
     }
     Stage_parms_private (const Stage_parms_private& s) {
@@ -268,4 +267,23 @@ const Shared_parms*
 Stage_parms::get_shared_parms () const
 {
     return d_ptr->shared;
+}
+
+Process_parms::Pointer 
+Stage_parms::get_process_parms ()
+{
+    return d_ptr->process_parms;
+}
+
+const Process_parms::Pointer 
+Stage_parms::get_process_parms () const
+{
+    return d_ptr->process_parms;
+}
+
+void 
+Stage_parms::set_process_parms (const Process_parms::Pointer& pp)
+{
+    d_ptr->stage_type = STAGE_TYPE_PROCESS;
+    d_ptr->process_parms = pp;
 }

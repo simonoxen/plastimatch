@@ -9,10 +9,12 @@
 #include <string>
 #include <ctype.h>
 #include <stdlib.h>
+
 #include "bspline.h"            /* for enums */
 #include "bspline_mi_hist.h"    /* for enums */
 #include "plm_image_type.h"
 #include "plm_path.h"
+#include "process_parms.h"
 #include "pstring.h"
 #include "threading.h"
 
@@ -189,9 +191,9 @@ public:
     Stage_type get_stage_type ();
     Shared_parms *get_shared_parms ();
     const Shared_parms *get_shared_parms () const;
-    Process_parms *get_process_parms ();
-    const Process_parms *get_process_parms () const;
-
+    Process_parms::Pointer get_process_parms ();
+    const Process_parms::Pointer get_process_parms () const;
+    void set_process_parms (const Process_parms::Pointer&);
 };
 
 #endif

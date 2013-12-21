@@ -25,8 +25,6 @@
 #include "stage_parms.h"
 #include "string_util.h"
 
-#define BUFLEN 2048
-
 class Registration_parms_private
 {
 public:
@@ -155,7 +153,7 @@ Registration_parms_parser::process_section (const std::string& section)
         return 0;
     }
     if (section == "PROCESS") {
-        rp->append_stage ();
+        rp->append_process_stage ();
         return 0;
     }
 
@@ -173,8 +171,10 @@ Registration_parms_parser::process_key_value (
     Registration_parms_private *d_ptr = this->rp->d_ptr;
     Stage_parms *stage = 0;
     Shared_parms *shared = 0;
+    Process_parms::Pointer process;
     bool section_global = false;
     bool section_stage = false;
+    bool section_process = false;
 
     if (section == "COMMENT") {
         return 0;
@@ -189,35 +189,40 @@ Registration_parms_parser::process_key_value (
         shared = stage->get_shared_parms();
         section_stage = true;
     }
+    else if (section == "PROCESS") {
+        stage = d_ptr->stages.back();
+        process = stage->get_process_parms();
+        section_process = true;
+    }
 
     /* The following keywords are only allowed globally */
     if (key == "fixed") {
-        if (!section_global) goto error_not_stages;
+        if (!section_global) goto key_only_allowed_in_section_global;
         d_ptr->fixed_fn = val;
     }
     else if (key == "moving") {
-        if (!section_global) goto error_not_stages;
+        if (!section_global) goto key_only_allowed_in_section_global;
         d_ptr->moving_fn = val;
     }
     else if (key == "fixed_dir") {
-        if (!section_global) goto error_not_stages;
+        if (!section_global) goto key_only_allowed_in_section_global;
         strncpy (rp->fixed_dir, val.c_str(), _MAX_PATH);
         check_trailing_slash (rp->fixed_dir);
         rp->num_jobs = populate_jobs (rp->fixed_jobs, rp->fixed_dir);
     }
     else if (key == "moving_dir") {
-        if (!section_global) goto error_not_stages;
+        if (!section_global) goto key_only_allowed_in_section_global;
         strncpy (rp->moving_dir, val.c_str(), _MAX_PATH);
         check_trailing_slash (rp->moving_dir);
         rp->num_jobs = populate_jobs (rp->moving_jobs, rp->moving_dir);
     }
     else if (key == "img_out_dir") {
-        if (!section_global) goto error_not_stages;
+        if (!section_global) goto key_only_allowed_in_section_global;
         strncpy (rp->img_out_dir, val.c_str(), _MAX_PATH);
         check_trailing_slash (rp->img_out_dir);
     }
     else if (key == "vf_out_dir") {
-        if (!section_global) goto error_not_stages;
+        if (!section_global) goto key_only_allowed_in_section_global;
         strncpy (rp->vf_out_dir, val.c_str(), _MAX_PATH);
         check_trailing_slash (rp->vf_out_dir);
     }
@@ -225,27 +230,27 @@ Registration_parms_parser::process_key_value (
         || key == "xform_in"
         || key == "vf_in")
     {
-        if (!section_global) goto error_not_stages;
+        if (!section_global) goto key_only_allowed_in_section_global;
         strncpy (rp->xf_in_fn, val.c_str(), _MAX_PATH);
     }
     else if (key == "log" || key == "logfile") {
-        if (!section_global) goto error_not_stages;
+        if (!section_global) goto key_only_allowed_in_section_global;
         strncpy (rp->log_fn, val.c_str(), _MAX_PATH);
     }
     else if (key == "fixed_landmarks") {
-        if (!section_global) goto error_not_global;
+        if (!section_global) goto key_only_allowed_in_section_stage;
         rp->fixed_landmarks_fn = val;
     }
     else if (key == "moving_landmarks") {
-        if (!section_global) goto error_not_global;
+        if (!section_global) goto key_only_allowed_in_section_stage;
         rp->moving_landmarks_fn = val;
     }
     else if (key == "fixed_landmark_list") {
-        if (!section_global) goto error_not_global;
+        if (!section_global) goto key_only_allowed_in_section_stage;
         rp->fixed_landmarks_list = val;
     }
     else if (key == "moving_landmark_list") {
-        if (!section_global) goto error_not_global;
+        if (!section_global) goto key_only_allowed_in_section_stage;
         rp->moving_landmarks_list = val;
     }
 
@@ -261,29 +266,38 @@ Registration_parms_parser::process_key_value (
             rp->default_value = f;
         } else if (section_stage) {
             stage->default_value = f;
+        } else {
+            goto key_not_allowed_in_section_process;
         }
     }
     else if (key == "fixed_mask" || key == "fixed_roi") {
+        if (section_process) goto key_not_allowed_in_section_process;
         shared->fixed_roi_fn = val;
     }
     else if (key == "moving_mask" || key == "moving_roi") {
+        if (section_process) goto key_not_allowed_in_section_process;
         shared->moving_roi_fn = val;
     }
     else if (key == "fixed_roi_enable") {
+        if (section_process) goto key_not_allowed_in_section_process;
         shared->fixed_roi_enable = string_value_true (val);
     }
     else if (key == "moving_roi_enable")
     {
+        if (section_process) goto key_not_allowed_in_section_process;
         shared->moving_roi_enable = string_value_true (val);
     }
     else if (key == "legacy_subsampling") {
+        if (section_process) goto key_not_allowed_in_section_process;
         shared->legacy_subsampling = string_value_true (val);
     }
     else if (key == "img_out" || key == "image_out") {
         if (section_global) {
             strncpy (rp->img_out_fn, val.c_str(), _MAX_PATH);
-        } else {
+        } else if (section_stage) {
             strncpy (stage->img_out_fn, val.c_str(), _MAX_PATH);
+        } else {
+            goto key_not_allowed_in_section_process;
         }
     }
     else if (key == "img_out_fmt") {
@@ -297,6 +311,8 @@ Registration_parms_parser::process_key_value (
             rp->img_out_fmt = fmt;
         } else if (section_stage) {
             stage->img_out_fmt = fmt;
+        } else {
+            goto key_not_allowed_in_section_process;
         }
     }
     else if (key == "img_out_type") {
@@ -306,15 +322,19 @@ Registration_parms_parser::process_key_value (
         }
         if (section_global) {
             rp->img_out_type = type;
-        } else {
+        } else if (section_stage) {
             stage->img_out_type = type;
+        } else {
+            goto key_not_allowed_in_section_process;
         }
     }
     else if (key == "vf_out") {
         if (section_global) {
             strncpy (rp->vf_out_fn, val.c_str(), _MAX_PATH);
-        } else {
+        } else if (section_stage) {
             strncpy (stage->vf_out_fn, val.c_str(), _MAX_PATH);
+        } else {
+            goto key_not_allowed_in_section_process;
         }
     }
     else if (key == "xf_out_itk") {
@@ -326,8 +346,10 @@ Registration_parms_parser::process_key_value (
         }
         if (section_global) {
             rp->xf_out_itk = value;
-        } else {
+        } else if (section_stage) {
             stage->xf_out_itk = value;
+        } else {
+            goto key_not_allowed_in_section_process;
         }
     }
     else if (key == "xf_out" || key == "xform_out") {
@@ -335,27 +357,31 @@ Registration_parms_parser::process_key_value (
            This capability is used by the slicer plugin. */
         if (section_global) {
             rp->xf_out_fn.push_back (val.c_str());
-        } else {
+        } else if (section_stage) {
             stage->xf_out_fn.push_back (val.c_str());
+        } else {
+            goto key_not_allowed_in_section_process;
         }
     }
     else if (key == "warped_landmarks") {
         if (section_global) {
             rp->warped_landmarks_fn = val;
-        } else {
+        } else if (section_stage) {
             stage->warped_landmarks_fn = val;
+        } else {
+            goto key_not_allowed_in_section_process;
         }
     }
 
     /* The following keywords are only allowed in stages */
     else if (key == "resume") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (string_value_true (val)) {
             stage->resume_stage = true;
         }
     }
     else if (key == "xform") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (val == "translation") {
             stage->xform_type = STAGE_TRANSFORM_TRANSLATION;
         }
@@ -382,7 +408,7 @@ Registration_parms_parser::process_key_value (
         }
     }
     else if (key == "optim") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (val == "none") {
             stage->optim_type = OPTIMIZATION_NO_REGISTRATION;
         }
@@ -427,7 +453,7 @@ Registration_parms_parser::process_key_value (
         }
     }
     else if (key == "impl") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (val == "none") {
             stage->impl_type = IMPLEMENTATION_NONE;
         }
@@ -442,7 +468,7 @@ Registration_parms_parser::process_key_value (
         }
     }
     else if (key == "optim_subtype") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (val == "fsf") {
             stage->optim_subtype = OPTIMIZATION_SUB_FSF;
         }
@@ -460,7 +486,7 @@ Registration_parms_parser::process_key_value (
         }
     }
     else if (key == "threading") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (val == "single") {
             stage->threading_type = THREADING_CPU_SINGLE;
         }
@@ -487,7 +513,7 @@ Registration_parms_parser::process_key_value (
     else if (key == "alg_flavor"
         || key == "flavor")
     {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (val.length() >= 1) {
             stage->alg_flavor = val[0];
         }
@@ -496,7 +522,7 @@ Registration_parms_parser::process_key_value (
         }
     }
     else if (key == "metric") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (val == "mse" || val == "MSE") {
             stage->metric_type = METRIC_MSE;
         }
@@ -514,7 +540,7 @@ Registration_parms_parser::process_key_value (
         }
     }
     else if (key == "histogram_type") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (val == "eqsp" || val == "EQSP") {
             stage->mi_histogram_type = HIST_EQSP;
         }
@@ -527,7 +553,7 @@ Registration_parms_parser::process_key_value (
     }
     else if (key == "regularization")
     {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (val == "none") {
             stage->regularization_type = REGULARIZATION_NONE;
         }
@@ -546,19 +572,19 @@ Registration_parms_parser::process_key_value (
     }
     else if (key == "regularization_lambda"
         || key == "young_modulus") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%f", &stage->regularization_lambda) != 1) {
             goto error_exit;
         }
     }
     else if (key == "background_max") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &stage->background_max) != 1) {
             goto error_exit;
         }
     }
     else if (key == "min_its") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%d", &stage->min_its) != 1) {
             goto error_exit;
         }
@@ -568,92 +594,92 @@ Registration_parms_parser::process_key_value (
         || key == "max_its"
         || key == "its")
     {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%d", &stage->max_its) != 1) {
             goto error_exit;
         }
     }
     else if (key == "learn_rate") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &stage->learn_rate) != 1) {
             goto error_exit;
         }
     }
     else if (key == "grad_tol") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &stage->grad_tol) != 1) {
             goto error_exit;
         }
     }
     else if (key == "pgtol") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%f", &stage->pgtol) != 1) {
             goto error_exit;
         }
     }
     else if (key == "max_step") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &stage->max_step) != 1) {
             goto error_exit;
         }
     }
     else if (key == "min_step") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &stage->min_step) != 1) {
             goto error_exit;
         }
     }
     else if (key == "rsg_grad_tol") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &stage->rsg_grad_tol) != 1) {
             goto error_exit;
         }
     }
     else if (key == "translation_scale_factor") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%d", &stage->translation_scale_factor) != 1) {
             goto error_exit;
         }
     }
     else if (key == "convergence_tol") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &stage->convergence_tol) != 1) {
             goto error_exit;
         }
     }
     else if (key == "opo_epsilon") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &stage->opo_epsilon) != 1) {
             goto error_exit;
         }
     }
     else if (key == "opo_initial_search_rad") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &stage->opo_initial_search_rad) != 1) {
             goto error_exit;
         }
     }
     else if (key == "frpr_step_tol") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &stage->frpr_step_tol) != 1) {
             goto error_exit;
         }
     }
     else if (key == "frpr_step_length") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &stage->frpr_step_length) != 1) {
             goto error_exit;
         }
     }
     else if (key == "frpr_max_line_its") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%d", &stage->frpr_max_line_its) != 1) {
             goto error_exit;
         }
     }
     else if (key == "mattes_histogram_bins" 
         || key == "mi_histogram_bins") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         rc = sscanf (val.c_str(), "%d %d", &stage->mi_histogram_bins_fixed,
             &stage->mi_histogram_bins_moving);
         if (rc == 1) {
@@ -664,28 +690,28 @@ Registration_parms_parser::process_key_value (
     }
     else if (key == "mattes_fixed_minVal"
         ||key == "mi_fixed_minVal") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &stage->mi_fixed_image_minVal) != 1) {
             goto error_exit;
         }
     }
     else if (key == "mattes_fixed_maxVal"
         ||key == "mi_fixed_maxVal") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &stage->mi_fixed_image_maxVal) != 1) {
             goto error_exit;
         }
     }
     else if (key == "mattes_moving_minVal"
         ||key == "mi_moving_minVal") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &stage->mi_moving_image_minVal) != 1) {
             goto error_exit;
         }
     }
     else if (key == "mattes_moving_maxVal"
         ||key == "mi_moving_maxVal") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &stage->mi_moving_image_maxVal) != 1) {
             goto error_exit;
         }
@@ -693,37 +719,37 @@ Registration_parms_parser::process_key_value (
     else if (key == "num_samples"
         || key == "mattes_num_spatial_samples"
         || key == "mi_num_spatial_samples") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%d", &stage->mi_num_spatial_samples) != 1) {
             goto error_exit;
         }
     }
     else if (key == "num_samples_pct") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%f", &stage->mi_num_spatial_samples_pct) != 1) {
             goto error_exit;
         }
     }
     else if (key == "demons_std_deformation_field") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &stage->demons_std) != 1) {
             goto error_exit;
         }
     }
     else if (key == "demons_std_update_field") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &stage->demons_std_update_field) != 1) {
             goto error_exit;
         }
     }
     else if (key == "demons_step_length") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &stage->demons_step_length) != 1) {
             goto error_exit;
         }
     }
     else if (key == "demons_smooth_deformation_field") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (string_value_true (val)) {
             stage->demons_smooth_deformation_field = true;
         }
@@ -731,7 +757,7 @@ Registration_parms_parser::process_key_value (
             stage->demons_smooth_deformation_field = false;
     }
     else if (key == "demons_smooth_update_field") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (string_value_true (val)) {
             stage->demons_smooth_update_field = true;
         }
@@ -740,7 +766,7 @@ Registration_parms_parser::process_key_value (
     }
     else if (key == "demons_gradient_type")
     {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (val == "symmetric") {
             stage->demons_gradient_type = SYMMETRIC;
         }
@@ -758,19 +784,19 @@ Registration_parms_parser::process_key_value (
         }
     }
     else if (key == "num_approx_terms_log_demons") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%d", &stage->num_approx_terms_log_demons) != 1) {
             goto error_exit;
         }
     }
     else if (key == "demons_homogenization") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &stage->demons_homogenization) != 1) {
             goto error_exit;
         }
     }
     else if (key == "demons_filter_width") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%d %d %d", 
                 &(stage->demons_filter_width[0]), 
                 &(stage->demons_filter_width[1]), 
@@ -779,13 +805,13 @@ Registration_parms_parser::process_key_value (
         }
     }
     else if (key == "amoeba_parameter_tol") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &(stage->amoeba_parameter_tol)) != 1) {
             goto error_exit;
         }
     }
     else if (key == "gridsearch_min_overlap") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g %g %g", 
                 &(stage->gridsearch_min_overlap[0]), 
                 &(stage->gridsearch_min_overlap[1]), 
@@ -794,19 +820,19 @@ Registration_parms_parser::process_key_value (
         }
     }
     else if (key == "landmark_stiffness") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &stage->landmark_stiffness) != 1) {
             goto error_exit;
         }
     }   
     else if (key == "landmark_flavor") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%c", &stage->landmark_flavor) != 1) {
             goto error_exit;
         }
     }   
     else if (key == "res" || key == "ss") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         stage->subsampling_type = SUBSAMPLING_VOXEL_RATE;
         if (sscanf (val.c_str(), "%g %g %g", 
                 &(stage->fixed_subsample_rate[0]), 
@@ -819,7 +845,7 @@ Registration_parms_parser::process_key_value (
         stage->moving_subsample_rate[2] = stage->fixed_subsample_rate[2];
     }
     else if (key == "ss_fixed" || key == "fixed_ss") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g %g %g", 
                 &(stage->fixed_subsample_rate[0]), 
                 &(stage->fixed_subsample_rate[1]), 
@@ -834,7 +860,7 @@ Registration_parms_parser::process_key_value (
         stage->subsampling_type = SUBSAMPLING_VOXEL_RATE;
     }
     else if (key == "ss_moving" || key == "moving_ss") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g %g %g", 
                 &(stage->moving_subsample_rate[0]), 
                 &(stage->moving_subsample_rate[1]), 
@@ -849,7 +875,7 @@ Registration_parms_parser::process_key_value (
         stage->subsampling_type = SUBSAMPLING_VOXEL_RATE;
     }
     else if (key == "sampling_rate" || key == "sr") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         stage->subsampling_type = SUBSAMPLING_VOXEL_RATE;
         if (sscanf (val.c_str(), "%g %g %g", 
                 &(stage->fixed_subsample_rate[0]), 
@@ -863,7 +889,7 @@ Registration_parms_parser::process_key_value (
     }
     else if (key == "num_grid") {
         /* Obsolete */
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%d %d %d", 
                 &(stage->num_grid[0]), 
                 &(stage->num_grid[1]), 
@@ -875,7 +901,7 @@ Registration_parms_parser::process_key_value (
     else if (key == "grid_spac"
         || key == "grid_spacing")
     {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g %g %g", 
                 &(stage->grid_spac[0]), 
                 &(stage->grid_spac[1]), 
@@ -885,7 +911,7 @@ Registration_parms_parser::process_key_value (
         stage->grid_method = 1;
     }
     else if (key == "histo_equ") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (string_value_true (val)) {
             stage->histoeq = true;
         }
@@ -893,7 +919,7 @@ Registration_parms_parser::process_key_value (
             stage->histoeq= false;
     }
     else if (key == "thresh_mean_intensity") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (string_value_true (val)) {
             stage->thresh_mean_intensity = true;
         }
@@ -901,34 +927,60 @@ Registration_parms_parser::process_key_value (
             stage->thresh_mean_intensity= false;
     }
     else if (key == "num_hist_levels") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%d", &stage->num_hist_levels) != 1) {
             goto error_exit;
         }
     }
     else if (key == "num_matching_points") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%d", &stage->num_matching_points) != 1) {
             goto error_exit;
         }
     }
     else if (key == "debug_dir") {
-        if (section_global) goto error_not_global;
+        if (!section_stage) goto key_only_allowed_in_section_stage;
         stage->debug_dir = val;
     }
+
+    /* The following keywords are only allowed in process section */
+    else if (key == "action") {
+        if (!section_process) goto key_only_allowed_in_section_process;
+        
+        //stage->debug_dir = val;
+    }
+    else if (key == "parms") {
+        if (!section_process) goto key_only_allowed_in_section_process;
+        //stage->debug_dir = val;
+    }
+    else if (key == "images") {
+        if (!section_process) goto key_only_allowed_in_section_process;
+        //stage->debug_dir = val;
+    }
+
     else {
         goto error_exit;
     }
     return 0;
 
-error_not_stages:
+key_only_allowed_in_section_global:
     print_and_exit (
-        "This key (%s) not allowed in a stages section\n", key.c_str());
+        "This key (%s) is only allowed in a global section\n", key.c_str());
     return -1;
 
-error_not_global:
+key_only_allowed_in_section_stage:
     print_and_exit (
-        "This key (%s) not is allowed in a global section\n", key.c_str());
+        "This key (%s) is only allowed in a stage section\n", key.c_str());
+    return -1;
+
+key_only_allowed_in_section_process:
+    print_and_exit (
+        "This key (%s) is only allowed in a process section\n", key.c_str());
+    return -1;
+
+key_not_allowed_in_section_process:
+    print_and_exit (
+        "This key (%s) not is allowed in a process section\n", key.c_str());
     return -1;
 
 error_exit:
@@ -1069,3 +1121,12 @@ Registration_parms::append_stage ()
     return sp;
 }
 
+Stage_parms* 
+Registration_parms::append_process_stage ()
+{
+    Stage_parms *sp = this->append_stage ();
+
+    Process_parms::Pointer pp = Process_parms::New ();
+    sp->set_process_parms (pp);
+    return sp;
+}

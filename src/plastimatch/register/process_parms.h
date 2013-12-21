@@ -10,17 +10,22 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-class Plm_image;
-class Shared_parms;
+#include "smart_pointer.h"
+
 class Process_parms_private;
 
 class PLMREGISTER_API Process_parms {
 public:
+    SMART_POINTER_SUPPORT (Process_parms);
     Process_parms_private *d_ptr;
 public:
     Process_parms ();
     Process_parms (const Process_parms& s);
     ~Process_parms ();
+public:
+    void set_action (const std::string& action);
+    void set_parms (const std::string& parms);
+    void set_images (const std::string& images);
 };
 
 #endif

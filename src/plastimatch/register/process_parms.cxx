@@ -13,6 +13,10 @@ class Process_parms_private
 {
 public:
     Shared_parms *shared;
+    
+    std::string action;
+    std::string parms;
+    std::string images;
 public:
     Process_parms_private () {
         shared = new Shared_parms;
@@ -39,4 +43,22 @@ Process_parms::Process_parms (const Process_parms& s)
 Process_parms::~Process_parms ()
 {
     delete d_ptr;
+}
+
+void 
+Process_parms::set_action (const std::string& action)
+{
+    d_ptr->action = action;
+}
+
+void 
+Process_parms::set_parms (const std::string& parms)
+{
+    d_ptr->parms = parms;
+}
+
+void 
+Process_parms::set_images (const std::string& images)
+{
+    d_ptr->images = images;
 }
