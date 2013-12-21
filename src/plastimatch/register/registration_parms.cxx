@@ -154,6 +154,10 @@ Registration_parms_parser::process_section (const std::string& section)
     if (section == "COMMENT") {
         return 0;
     }
+    if (section == "PROCESS") {
+        rp->append_stage ();
+        return 0;
+    }
 
     /* else, unknown section */
     return -1;
@@ -1064,3 +1068,4 @@ Registration_parms::append_stage ()
 
     return sp;
 }
+

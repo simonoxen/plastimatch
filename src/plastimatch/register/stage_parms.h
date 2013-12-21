@@ -58,6 +58,11 @@
 #define IMG_OUT_FMT_DICOM                   1
 
 
+enum Stage_type {
+    STAGE_TYPE_PROCESS,
+    STAGE_TYPE_REGISTER
+};
+
 enum Subsampling_type {
     SUBSAMPLING_AUTO,
     SUBSAMPLING_VOXEL_RATE,           /* res, ss */
@@ -80,6 +85,7 @@ enum Demons_gradient_type {
 };
 
 class Plm_image;
+class Process_parms;
 class Shared_parms;
 class Stage_parms_private;
 
@@ -99,8 +105,7 @@ public:
     int xform_type;
     int optim_type;
     int impl_type;
-    // sub_type used for different types of demons reg (e.g. non-diffeomorphic, diffeomorphic)
-    int optim_subtype;
+    int optim_subtype;       /* used for demons types (diffeomorphic, etc.) */
     char alg_flavor;
     Threading threading_type;
     int metric_type;
@@ -111,8 +116,8 @@ public:
     float fixed_subsample_rate[3];     /* voxels for res, mm for sr */
     float moving_subsample_rate[3];
     /* Intensity values for air */
-    float background_max;          /* Threshold to find the valid region */
-    float default_value;           /* Replacement when out-of-view */
+    float background_max;              /* Threshold to find the valid region */
+    float default_value;               /* Replacement when out-of-view */
     /* Generic optimization parms */
     int min_its;
     int max_its;
@@ -127,10 +132,8 @@ public:
     float rsg_grad_tol;
     int translation_scale_factor;
     /*OnePlusOne evvolutionary optimizer*/
-
     float opo_epsilon;
     float opo_initial_search_rad;
-
     /*FRPR optimizer*/
     float frpr_step_tol;
     float frpr_step_length;
@@ -142,7 +145,6 @@ public:
     int mi_histogram_bins_moving;
     int mi_num_spatial_samples;
     float mi_num_spatial_samples_pct;
-
     enum Bspline_mi_hist_type mi_histogram_type;
     float mi_fixed_image_minVal;
     float mi_fixed_image_maxVal;
@@ -158,8 +160,6 @@ public:
     bool thresh_mean_intensity;
     unsigned int num_matching_points;
     unsigned int num_hist_levels;
-
-
     Demons_gradient_type demons_gradient_type;
     /* GPUIT demons */
     float demons_acceleration;
@@ -186,8 +186,12 @@ public:
     std::string debug_dir;
     Pstring warped_landmarks_fn;
 public:
+    Stage_type get_stage_type ();
     Shared_parms *get_shared_parms ();
     const Shared_parms *get_shared_parms () const;
+    Process_parms *get_process_parms ();
+    const Process_parms *get_process_parms () const;
+
 };
 
 #endif

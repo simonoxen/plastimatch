@@ -55,6 +55,7 @@ set (PLMREGISTER_LIBRARY_SRC
   native_translation.cxx
   plm_bspline.cxx
   plm_stages.cxx
+  process_parms.cxx
   rbf_cluster.cxx
   rbf_gauss.cxx
   rbf_wendland.cxx

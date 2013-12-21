@@ -379,14 +379,19 @@ do_registration_pure (
     for (it = stages.begin(); it != stages.end(); it++) {
         Stage_parms* sp = *it;
 
-        /* Swap xf_in and xf_out */
-        xf_tmp = xf_out; xf_out = xf_in; xf_in = xf_tmp;
+        if (sp->get_stage_type() == STAGE_TYPE_PROCESS) {
+            /* do something */
 
-        /* Load stage images */
-        regd->load_stage_input_files (sp);
+        } else if (sp->get_stage_type() == STAGE_TYPE_REGISTER) {
+            /* Swap xf_in and xf_out */
+            xf_tmp = xf_out; xf_out = xf_in; xf_in = xf_tmp;
 
-        /* Run registation, results are stored in xf_out */
-        do_registration_stage (regp, regd, xf_out, xf_in, sp);
+            /* Load stage images */
+            regd->load_stage_input_files (sp);
+
+            /* Run registation, results are stored in xf_out */
+            do_registration_stage (regp, regd, xf_out, xf_in, sp);
+        } 
     }
 
     /* JAS 2012.03.29 - for GPUIT Bspline
