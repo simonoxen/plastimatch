@@ -60,6 +60,7 @@ set (PLMBASE_LIBRARY_SRC
   metadata.cxx
   mha_io.cxx
   nki_io.cxx
+  parameter_parser.cxx
   plm_file_format.cxx
   plm_image.cxx
   plm_image_convert.cxx

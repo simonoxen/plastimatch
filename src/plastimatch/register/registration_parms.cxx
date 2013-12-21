@@ -17,6 +17,7 @@
 #include <dirent.h>
 #endif
 
+#include "parameter_parser.h"
 #include "plm_path.h"
 #include "print_and_exit.h"
 #include "registration_parms.h"
@@ -44,6 +45,24 @@ public:
         }
         delete shared;
     }
+};
+
+class Registration_parms_parser : public Parameter_parser
+{
+public:
+    Registration_parms *rp;
+public:
+    Registration_parms_parser (Registration_parms *rp)
+    {
+        this->rp = rp;
+    }
+public:
+    virtual int process_section (
+        const std::string& section);
+    virtual int process_key_value (
+        const std::string& key, 
+        const std::string& val, 
+        const std::string& section);
 };
 
 Registration_parms::Registration_parms()
@@ -123,306 +142,332 @@ populate_jobs (char jobs[255][_MAX_PATH], char* dir)
 }
 
 int
-Registration_parms::set_key_val (
-    const char* key, 
-    const char* val, 
-    int section
-)
+Registration_parms_parser::process_section (const std::string& section)
+{
+    if (section == "GLOBAL") {
+        return 0;
+    }
+    if (section == "STAGE") {
+        rp->append_stage ();
+        return 0;
+    }
+    if (section == "COMMENT") {
+        return 0;
+    }
+
+    /* else, unknown section */
+    return -1;
+}
+
+int 
+Registration_parms_parser::process_key_value (
+    const std::string& section,
+    const std::string& key, 
+    const std::string& val)
 {
     int rc;
-    Stage_parms* stage = 0;
-    Shared_parms* shared = 0;
+    Registration_parms_private *d_ptr = this->rp->d_ptr;
+    Stage_parms *stage = 0;
+    Shared_parms *shared = 0;
+    bool section_global = false;
+    bool section_stage = false;
 
-    if (section != 0) {
+    if (section == "COMMENT") {
+        return 0;
+    }
+
+    if (section == "GLOBAL") {
+        shared = d_ptr->shared;
+        section_global = true;
+    }
+    else if (section == "STAGE") {
         stage = d_ptr->stages.back();
         shared = stage->get_shared_parms();
-    }
-    else {
-        shared = d_ptr->shared;
+        section_stage = true;
     }
 
     /* The following keywords are only allowed globally */
-    if (!strcmp (key, "fixed")) {
-        if (section != 0) goto error_not_stages;
+    if (key == "fixed") {
+        if (!section_global) goto error_not_stages;
         d_ptr->fixed_fn = val;
     }
-    else if (!strcmp (key, "moving")) {
-        if (section != 0) goto error_not_stages;
+    else if (key == "moving") {
+        if (!section_global) goto error_not_stages;
         d_ptr->moving_fn = val;
     }
-    else if (!strcmp (key, "fixed_dir")) {
-        if (section != 0) goto error_not_stages;
-        strncpy (this->fixed_dir, val, _MAX_PATH);
-        check_trailing_slash (this->fixed_dir);
-        this->num_jobs = populate_jobs (this->fixed_jobs, this->fixed_dir);
+    else if (key == "fixed_dir") {
+        if (!section_global) goto error_not_stages;
+        strncpy (rp->fixed_dir, val.c_str(), _MAX_PATH);
+        check_trailing_slash (rp->fixed_dir);
+        rp->num_jobs = populate_jobs (rp->fixed_jobs, rp->fixed_dir);
     }
-    else if (!strcmp (key, "moving_dir")) {
-        if (section != 0) goto error_not_stages;
-        strncpy (this->moving_dir, val, _MAX_PATH);
-        check_trailing_slash (this->moving_dir);
-        this->num_jobs = populate_jobs (this->moving_jobs, this->moving_dir);
+    else if (key == "moving_dir") {
+        if (!section_global) goto error_not_stages;
+        strncpy (rp->moving_dir, val.c_str(), _MAX_PATH);
+        check_trailing_slash (rp->moving_dir);
+        rp->num_jobs = populate_jobs (rp->moving_jobs, rp->moving_dir);
     }
-    else if (!strcmp (key, "img_out_dir")) {
-        if (section != 0) goto error_not_stages;
-        strncpy (this->img_out_dir, val, _MAX_PATH);
-        check_trailing_slash (this->img_out_dir);
+    else if (key == "img_out_dir") {
+        if (!section_global) goto error_not_stages;
+        strncpy (rp->img_out_dir, val.c_str(), _MAX_PATH);
+        check_trailing_slash (rp->img_out_dir);
     }
-    else if (!strcmp (key, "vf_out_dir")) {
-        if (section != 0) goto error_not_stages;
-        strncpy (this->vf_out_dir, val, _MAX_PATH);
-        check_trailing_slash (this->vf_out_dir);
+    else if (key == "vf_out_dir") {
+        if (!section_global) goto error_not_stages;
+        strncpy (rp->vf_out_dir, val.c_str(), _MAX_PATH);
+        check_trailing_slash (rp->vf_out_dir);
     }
-    else if (!strcmp (key, "xf_in") 
-        || !strcmp (key, "xform_in") 
-        || !strcmp (key, "vf_in"))
+    else if (key == "xf_in"
+        || key == "xform_in"
+        || key == "vf_in")
     {
-        if (section != 0) goto error_not_stages;
-        strncpy (this->xf_in_fn, val, _MAX_PATH);
+        if (!section_global) goto error_not_stages;
+        strncpy (rp->xf_in_fn, val.c_str(), _MAX_PATH);
     }
-    else if (!strcmp (key, "log") || !strcmp (key, "logfile")) {
-        if (section != 0) goto error_not_stages;
-        strncpy (this->log_fn, val, _MAX_PATH);
+    else if (key == "log" || key == "logfile") {
+        if (!section_global) goto error_not_stages;
+        strncpy (rp->log_fn, val.c_str(), _MAX_PATH);
     }
-    else if (!strcmp (key, "fixed_landmarks")) {
-        if (section != 0) goto error_not_global;
-        this->fixed_landmarks_fn = val;
+    else if (key == "fixed_landmarks") {
+        if (!section_global) goto error_not_global;
+        rp->fixed_landmarks_fn = val;
     }
-    else if (!strcmp (key, "moving_landmarks")) {
-        if (section != 0) goto error_not_global;
-        this->moving_landmarks_fn = val;
+    else if (key == "moving_landmarks") {
+        if (!section_global) goto error_not_global;
+        rp->moving_landmarks_fn = val;
     }
-    else if (!strcmp (key, "fixed_landmark_list")) {
-        if (section != 0) goto error_not_global;
-        this->fixed_landmarks_list = val;
+    else if (key == "fixed_landmark_list") {
+        if (!section_global) goto error_not_global;
+        rp->fixed_landmarks_list = val;
     }
-    else if (!strcmp (key, "moving_landmark_list")) {
-        if (section != 0) goto error_not_global;
-        this->moving_landmarks_list = val;
+    else if (key == "moving_landmark_list") {
+        if (!section_global) goto error_not_global;
+        rp->moving_landmarks_list = val;
     }
 
     /* The following keywords are allowed either globally or in stages */
-    else if (!strcmp (key, "background_val")
-        || !strcmp (key, "background-val")
-        || !strcmp (key, "default_value")
-        || !strcmp (key, "default-value"))
+    else if (key == "background_val"
+        || key == "default_value")
     {
         float f;
-        if (sscanf (val, "%g", &f) != 1) {
+        if (sscanf (val.c_str(), "%g", &f) != 1) {
             goto error_exit;
         }
-        if (section == 0) {
-            this->default_value = f;
-        } else {
+        if (section_global) {
+            rp->default_value = f;
+        } else if (section_stage) {
             stage->default_value = f;
         }
     }
-    else if (!strcmp (key, "fixed_mask") || !strcmp (key, "fixed_roi")) {
+    else if (key == "fixed_mask" || key == "fixed_roi") {
         shared->fixed_roi_fn = val;
     }
-    else if (!strcmp (key, "moving_mask") || !strcmp (key, "moving_roi")) {
+    else if (key == "moving_mask" || key == "moving_roi") {
         shared->moving_roi_fn = val;
     }
-    else if (!strcmp (key, "fixed_roi_enable")) {
+    else if (key == "fixed_roi_enable") {
         shared->fixed_roi_enable = string_value_true (val);
     }
-    else if (!strcmp (key, "moving_roi_enable"))
+    else if (key == "moving_roi_enable")
     {
         shared->moving_roi_enable = string_value_true (val);
     }
-    else if (!strcmp (key, "legacy_subsampling")) {
+    else if (key == "legacy_subsampling") {
         shared->legacy_subsampling = string_value_true (val);
     }
-    else if (!strcmp (key, "img_out") || !strcmp (key, "image_out")) {
-        if (section == 0) {
-            strncpy (this->img_out_fn, val, _MAX_PATH);
+    else if (key == "img_out" || key == "image_out") {
+        if (section_global) {
+            strncpy (rp->img_out_fn, val.c_str(), _MAX_PATH);
         } else {
-            strncpy (stage->img_out_fn, val, _MAX_PATH);
+            strncpy (stage->img_out_fn, val.c_str(), _MAX_PATH);
         }
     }
-    else if (!strcmp (key, "img_out_fmt")) {
+    else if (key == "img_out_fmt") {
         int fmt = IMG_OUT_FMT_AUTO;
-        if (!strcmp (val, "dicom")) {
+        if (val == "dicom") {
             fmt = IMG_OUT_FMT_DICOM;
         } else {
             goto error_exit;
         }
-        if (section == 0) {
-            this->img_out_fmt = fmt;
-        } else {
+        if (section_global) {
+            rp->img_out_fmt = fmt;
+        } else if (section_stage) {
             stage->img_out_fmt = fmt;
         }
     }
-    else if (!strcmp (key, "img_out_type")) {
-        Plm_image_type type = plm_image_type_parse (val);
+    else if (key == "img_out_type") {
+        Plm_image_type type = plm_image_type_parse (val.c_str());
         if (type == PLM_IMG_TYPE_UNDEFINED) {
             goto error_exit;
         }
-        if (section == 0) {
-            this->img_out_type = type;
+        if (section_global) {
+            rp->img_out_type = type;
         } else {
             stage->img_out_type = type;
         }
     }
-    else if (!strcmp (key, "vf_out")) {
-        if (section == 0) {
-            strncpy (this->vf_out_fn, val, _MAX_PATH);
+    else if (key == "vf_out") {
+        if (section_global) {
+            strncpy (rp->vf_out_fn, val.c_str(), _MAX_PATH);
         } else {
-            strncpy (stage->vf_out_fn, val, _MAX_PATH);
+            strncpy (stage->vf_out_fn, val.c_str(), _MAX_PATH);
         }
     }
-    else if (!strcmp (key, "xf_out_itk")) {
-        bool value = true;
-        if (!strcmp (val, "false")) {
+    else if (key == "xf_out_itk") {
+        bool value;
+        if (string_value_true (val)) {
+            value = true;
+        } else {
             value = false;
         }
-        if (section == 0) {
-            this->xf_out_itk = value;
+        if (section_global) {
+            rp->xf_out_itk = value;
         } else {
             stage->xf_out_itk = value;
         }
     }
-    else if (!strcmp (key, "xf_out") || !strcmp (key, "xform_out")) {
+    else if (key == "xf_out" || key == "xform_out") {
         /* xf_out is special.  You can have more than one of these.  
            This capability is used by the slicer plugin. */
-        if (section == 0) {
-            this->xf_out_fn.push_back (val);
+        if (section_global) {
+            rp->xf_out_fn.push_back (val.c_str());
         } else {
-            stage->xf_out_fn.push_back (val);
+            stage->xf_out_fn.push_back (val.c_str());
         }
     }
-    else if (!strcmp (key, "warped_landmarks")) {
-        if (section == 0) {
-            this->warped_landmarks_fn = val;
+    else if (key == "warped_landmarks") {
+        if (section_global) {
+            rp->warped_landmarks_fn = val;
         } else {
             stage->warped_landmarks_fn = val;
         }
     }
 
     /* The following keywords are only allowed in stages */
-    else if (!strcmp (key, "resume")) {
-        if (section == 0) goto error_not_global;
-        if (!strcmp (val, "1")) {
+    else if (key == "resume") {
+        if (section_global) goto error_not_global;
+        if (string_value_true (val)) {
             stage->resume_stage = true;
         }
     }
-    else if (!strcmp (key, "xform")) {
-        if (section == 0) goto error_not_global;
-        if (!strcmp (val,"translation")) {
+    else if (key == "xform") {
+        if (section_global) goto error_not_global;
+        if (val == "translation") {
             stage->xform_type = STAGE_TRANSFORM_TRANSLATION;
         }
-        else if (!strcmp(val,"rigid") || !strcmp(val,"versor")) {
+        else if (val == "rigid" || val == "versor") {
             stage->xform_type = STAGE_TRANSFORM_VERSOR;
         }
-        else if (!strcmp (val,"quaternion")) {
+        else if (val == "quaternion") {
             stage->xform_type = STAGE_TRANSFORM_QUATERNION;
         }
-        else if (!strcmp (val,"affine")) {
+        else if (val == "affine") {
             stage->xform_type = STAGE_TRANSFORM_AFFINE;
         }
-        else if (!strcmp (val,"bspline")) {
+        else if (val == "bspline") {
             stage->xform_type = STAGE_TRANSFORM_BSPLINE;
         }
-        else if (!strcmp (val,"vf")) {
+        else if (val == "vf") {
             stage->xform_type = STAGE_TRANSFORM_VECTOR_FIELD;
         }
-        else if (!strcmp (val,"align_center")) {
+        else if (val == "align_center") {
             stage->xform_type = STAGE_TRANSFORM_ALIGN_CENTER;
         }
         else {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "optim")) {
-        if (section == 0) goto error_not_global;
-        if (!strcmp(val,"none")) {
+    else if (key == "optim") {
+        if (section_global) goto error_not_global;
+        if (val == "none") {
             stage->optim_type = OPTIMIZATION_NO_REGISTRATION;
         }
-        else if (!strcmp(val,"amoeba")) {
+        else if (val == "amoeba") {
             stage->optim_type = OPTIMIZATION_AMOEBA;
         }
-        else if (!strcmp(val,"oneplusone")) {
+        else if (val == "oneplusone") {
             stage->optim_type = OPTIMIZATION_ONEPLUSONE;
         }
-        else if (!strcmp(val,"frpr")) {
+        else if (val == "frpr") {
             stage->optim_type = OPTIMIZATION_FRPR;
         }
-        else if (!strcmp(val,"demons")) {
+        else if (val == "demons") {
             stage->optim_type = OPTIMIZATION_DEMONS;
         }
-        else if (!strcmp(val,"grid")) {
+        else if (val == "grid") {
             stage->optim_type = OPTIMIZATION_GRID_SEARCH;
         }
-        else if (!strcmp(val,"lbfgs")) {
+        else if (val == "lbfgs") {
             stage->optim_type = OPTIMIZATION_LBFGS;
         }
-        else if (!strcmp(val,"lbfgsb")) {
+        else if (val == "lbfgsb") {
             stage->optim_type = OPTIMIZATION_LBFGSB;
         }
-        else if (!strcmp(val,"liblbfgs")) {
+        else if (val == "liblbfgs") {
             stage->optim_type = OPTIMIZATION_LIBLBFGS;
         }
-        else if (!strcmp(val,"nocedal")) {
+        else if (val == "nocedal") {
             stage->optim_type = OPTIMIZATION_LBFGSB;
         }
-        else if (!strcmp(val,"rsg")) {
+        else if (val == "rsg") {
             stage->optim_type = OPTIMIZATION_RSG;
         }
-        else if (!strcmp(val,"steepest")) {
+        else if (val == "steepest") {
             stage->optim_type = OPTIMIZATION_STEEPEST;
         }
-        else if (!strcmp(val,"versor")) {
+        else if (val == "versor") {
             stage->optim_type = OPTIMIZATION_VERSOR;
         }
         else {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "impl")) {
-        if (section == 0) goto error_not_global;
-        if (!strcmp(val,"none")) {
+    else if (key == "impl") {
+        if (section_global) goto error_not_global;
+        if (val == "none") {
             stage->impl_type = IMPLEMENTATION_NONE;
         }
-        else if (!strcmp(val,"itk")) {
+        else if (val == "itk") {
             stage->impl_type = IMPLEMENTATION_ITK;
         }
-        else if (!strcmp(val,"plastimatch")) {
+        else if (val == "plastimatch") {
             stage->impl_type = IMPLEMENTATION_PLASTIMATCH;
         }
         else {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "optim_subtype")) {
-        if (section == 0) goto error_not_global;
-        if (!strcmp(val,"fsf")) {
+    else if (key == "optim_subtype") {
+        if (section_global) goto error_not_global;
+        if (val == "fsf") {
             stage->optim_subtype = OPTIMIZATION_SUB_FSF;
         }
-        else if (!strcmp(val,"diffeomorphic")) {
+        else if (val == "diffeomorphic") {
             stage->optim_subtype = OPTIMIZATION_SUB_DIFF_ITK;
         }
-        else if (!strcmp(val,"log_domain")) {
+        else if (val == "log_domain") {
             stage->optim_subtype = OPTIMIZATION_SUB_LOGDOM_ITK;
         }
-        else if (!strcmp(val,"sym_log_domain")) {
+        else if (val == "sym_log_domain") {
             stage->optim_subtype = OPTIMIZATION_SUB_SYM_LOGDOM_ITK;
         }
         else {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "threading")) {
-        if (section == 0) goto error_not_global;
-        if (!strcmp(val,"single")) {
+    else if (key == "threading") {
+        if (section_global) goto error_not_global;
+        if (val == "single") {
             stage->threading_type = THREADING_CPU_SINGLE;
         }
-        else if (!strcmp(val,"openmp")) {
+        else if (val == "openmp") {
 #if (OPENMP_FOUND)
             stage->threading_type = THREADING_CPU_OPENMP;
 #else
             stage->threading_type = THREADING_CPU_SINGLE;
 #endif
         }
-        else if (!strcmp(val,"cuda")) {
+        else if (val == "cuda") {
 #if (CUDA_FOUND)
             stage->threading_type = THREADING_CUDA;
 #elif (OPENMP_FOUND)
@@ -435,178 +480,177 @@ Registration_parms::set_key_val (
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "alg_flavor")
-        || !strcmp (key, "flavor"))
+    else if (key == "alg_flavor"
+        || key == "flavor")
     {
-        if (section == 0) goto error_not_global;
-        if (strlen (val) >= 1) {
+        if (section_global) goto error_not_global;
+        if (val.length() >= 1) {
             stage->alg_flavor = val[0];
         }
         else {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "metric")) {
-        if (section == 0) goto error_not_global;
-        if (!strcmp(val,"mse") || !strcmp(val,"MSE")) {
+    else if (key == "metric") {
+        if (section_global) goto error_not_global;
+        if (val == "mse" || val == "MSE") {
             stage->metric_type = METRIC_MSE;
         }
-        else if (!strcmp(val,"mi") || !strcmp(val,"MI")) {
+        else if (val == "mi" || val == "MI") {
             stage->metric_type = METRIC_MI;
         }
-        else if (!strcmp(val,"nmi") || !strcmp(val,"NMI")) {
+        else if (val == "nmi" || val == "NMI") {
             stage->metric_type = METRIC_NMI;
         }
-        else if (!strcmp(val,"mattes")) {
+        else if (val == "mattes") {
             stage->metric_type = METRIC_MI_MATTES;
         }
         else {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "histogram_type")) {
-        if (section == 0) goto error_not_global;
-        if (!strcmp(val,"eqsp") || !strcmp(val,"EQSP")) {
+    else if (key == "histogram_type") {
+        if (section_global) goto error_not_global;
+        if (val == "eqsp" || val == "EQSP") {
             stage->mi_histogram_type = HIST_EQSP;
         }
-        else if (!strcmp(val,"vopt") || !strcmp(val,"VOPT")) {
+        else if (val == "vopt" || val == "VOPT") {
             stage->mi_histogram_type = HIST_VOPT;
         }
         else {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "regularization"))
+    else if (key == "regularization")
     {
-        if (section == 0) goto error_not_global;
-        if (!strcmp(val,"none")) {
+        if (section_global) goto error_not_global;
+        if (val == "none") {
             stage->regularization_type = REGULARIZATION_NONE;
         }
-        else if (!strcmp(val,"analytic")) {
+        else if (val == "analytic") {
             stage->regularization_type = REGULARIZATION_BSPLINE_ANALYTIC;
         }
-        else if (!strcmp(val,"semi-analytic")
-            || !strcmp(val,"semi_analytic")) {
+        else if (val == "semi_analytic") {
             stage->regularization_type = REGULARIZATION_BSPLINE_SEMI_ANALYTIC;
         }
-        else if (!strcmp(val,"numeric")) {
+        else if (val == "numeric") {
             stage->regularization_type = REGULARIZATION_BSPLINE_NUMERIC;
         }
         else {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "regularization_lambda")
-        || !strcmp (key, "young_modulus")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%f", &stage->regularization_lambda) != 1) {
+    else if (key == "regularization_lambda"
+        || key == "young_modulus") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%f", &stage->regularization_lambda) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "background_max")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g", &stage->background_max) != 1) {
+    else if (key == "background_max") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%g", &stage->background_max) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "min_its")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%d", &stage->min_its) != 1) {
+    else if (key == "min_its") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%d", &stage->min_its) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "iterations") 
-        || !strcmp (key, "max_iterations")
-        || !strcmp (key, "max_its")
-        || !strcmp (key, "its"))
+    else if (key == "iterations" 
+        || key == "max_iterations"
+        || key == "max_its"
+        || key == "its")
     {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%d", &stage->max_its) != 1) {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%d", &stage->max_its) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "learn_rate")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g", &stage->learn_rate) != 1) {
+    else if (key == "learn_rate") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%g", &stage->learn_rate) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "grad_tol")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g", &stage->grad_tol) != 1) {
+    else if (key == "grad_tol") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%g", &stage->grad_tol) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "pgtol")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%f", &stage->pgtol) != 1) {
+    else if (key == "pgtol") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%f", &stage->pgtol) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "max_step")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g", &stage->max_step) != 1) {
+    else if (key == "max_step") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%g", &stage->max_step) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "min_step")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g", &stage->min_step) != 1) {
+    else if (key == "min_step") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%g", &stage->min_step) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "rsg_grad_tol")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g", &stage->rsg_grad_tol) != 1) {
+    else if (key == "rsg_grad_tol") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%g", &stage->rsg_grad_tol) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "translation_scale_factor")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%d", &stage->translation_scale_factor) != 1) {
+    else if (key == "translation_scale_factor") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%d", &stage->translation_scale_factor) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "convergence_tol")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g", &stage->convergence_tol) != 1) {
+    else if (key == "convergence_tol") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%g", &stage->convergence_tol) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "opo_epsilon")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g", &stage->opo_epsilon) != 1) {
+    else if (key == "opo_epsilon") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%g", &stage->opo_epsilon) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "opo_initial_search_rad")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g", &stage->opo_initial_search_rad) != 1) {
+    else if (key == "opo_initial_search_rad") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%g", &stage->opo_initial_search_rad) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "frpr_step_tol")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g", &stage->frpr_step_tol) != 1) {
+    else if (key == "frpr_step_tol") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%g", &stage->frpr_step_tol) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "frpr_step_length")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g", &stage->frpr_step_length) != 1) {
+    else if (key == "frpr_step_length") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%g", &stage->frpr_step_length) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "frpr_max_line_its")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%d", &stage->frpr_max_line_its) != 1) {
+    else if (key == "frpr_max_line_its") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%d", &stage->frpr_max_line_its) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "mattes_histogram_bins") 
-        || !strcmp (key, "mi_histogram_bins")) {
-        if (section == 0) goto error_not_global;
-        rc = sscanf (val, "%d %d", &stage->mi_histogram_bins_fixed,
+    else if (key == "mattes_histogram_bins" 
+        || key == "mi_histogram_bins") {
+        if (section_global) goto error_not_global;
+        rc = sscanf (val.c_str(), "%d %d", &stage->mi_histogram_bins_fixed,
             &stage->mi_histogram_bins_moving);
         if (rc == 1) {
             stage->mi_histogram_bins_moving = stage->mi_histogram_bins_fixed;
@@ -614,153 +658,153 @@ Registration_parms::set_key_val (
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "mattes_fixed_minVal")
-        ||!strcmp (key, "mi_fixed_minVal")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g", &stage->mi_fixed_image_minVal) != 1) {
+    else if (key == "mattes_fixed_minVal"
+        ||key == "mi_fixed_minVal") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%g", &stage->mi_fixed_image_minVal) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "mattes_fixed_maxVal")
-        ||!strcmp (key, "mi_fixed_maxVal")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g", &stage->mi_fixed_image_maxVal) != 1) {
+    else if (key == "mattes_fixed_maxVal"
+        ||key == "mi_fixed_maxVal") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%g", &stage->mi_fixed_image_maxVal) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "mattes_moving_minVal")
-        ||!strcmp (key, "mi_moving_minVal")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g", &stage->mi_moving_image_minVal) != 1) {
+    else if (key == "mattes_moving_minVal"
+        ||key == "mi_moving_minVal") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%g", &stage->mi_moving_image_minVal) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "mattes_moving_maxVal")
-        ||!strcmp (key, "mi_moving_maxVal")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g", &stage->mi_moving_image_maxVal) != 1) {
+    else if (key == "mattes_moving_maxVal"
+        ||key == "mi_moving_maxVal") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%g", &stage->mi_moving_image_maxVal) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "num_samples")
-        || !strcmp (key, "mattes_num_spatial_samples")
-        || !strcmp (key, "mi_num_spatial_samples")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%d", &stage->mi_num_spatial_samples) != 1) {
+    else if (key == "num_samples"
+        || key == "mattes_num_spatial_samples"
+        || key == "mi_num_spatial_samples") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%d", &stage->mi_num_spatial_samples) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "num_samples_pct")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%f", &stage->mi_num_spatial_samples_pct) != 1) {
+    else if (key == "num_samples_pct") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%f", &stage->mi_num_spatial_samples_pct) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "demons_std_deformation_field")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g", &stage->demons_std) != 1) {
+    else if (key == "demons_std_deformation_field") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%g", &stage->demons_std) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "demons_std_update_field")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g", &stage->demons_std_update_field) != 1) {
+    else if (key == "demons_std_update_field") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%g", &stage->demons_std_update_field) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "demons_step_length")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g", &stage->demons_step_length) != 1) {
+    else if (key == "demons_step_length") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%g", &stage->demons_step_length) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "demons_smooth_deformation_field")) {
-        if (section == 0) goto error_not_global;
-        if (!strcmp (val, "1")) {
+    else if (key == "demons_smooth_deformation_field") {
+        if (section_global) goto error_not_global;
+        if (string_value_true (val)) {
             stage->demons_smooth_deformation_field = true;
         }
         else
             stage->demons_smooth_deformation_field = false;
     }
-    else if (!strcmp (key, "demons_smooth_update_field")) {
-        if (section == 0) goto error_not_global;
-        if (!strcmp (val, "1")) {
+    else if (key == "demons_smooth_update_field") {
+        if (section_global) goto error_not_global;
+        if (string_value_true (val)) {
             stage->demons_smooth_update_field = true;
         }
         else
             stage->demons_smooth_update_field = false;
     }
-    else if (!strcmp (key, "demons_gradient_type"))
+    else if (key == "demons_gradient_type")
     {
-        if (section == 0) goto error_not_global;
-        if (!strcmp(val,"symmetric")) {
+        if (section_global) goto error_not_global;
+        if (val == "symmetric") {
             stage->demons_gradient_type = SYMMETRIC;
         }
-        else if (!strcmp(val,"fixed")) {
+        else if (val == "fixed") {
             stage->demons_gradient_type = FIXED_IMAGE;
         }
-        else if (!strcmp(val,"warped_moving")) {
+        else if (val == "warped_moving") {
             stage->demons_gradient_type = WARPED_MOVING;
         }
-        else if (!strcmp(val,"mapped_moving")) {
+        else if (val == "mapped_moving") {
             stage->demons_gradient_type = MAPPED_MOVING;
         }
         else {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "num_approx_terms_log_demons")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%d", &stage->num_approx_terms_log_demons) != 1) {
+    else if (key == "num_approx_terms_log_demons") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%d", &stage->num_approx_terms_log_demons) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "demons_homogenization")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g", &stage->demons_homogenization) != 1) {
+    else if (key == "demons_homogenization") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%g", &stage->demons_homogenization) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "demons_filter_width")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%d %d %d", 
+    else if (key == "demons_filter_width") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%d %d %d", 
                 &(stage->demons_filter_width[0]), 
                 &(stage->demons_filter_width[1]), 
                 &(stage->demons_filter_width[2])) != 3) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "amoeba_parameter_tol")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g", &(stage->amoeba_parameter_tol)) != 1) {
+    else if (key == "amoeba_parameter_tol") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%g", &(stage->amoeba_parameter_tol)) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "gridsearch_min_overlap")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g %g %g", 
+    else if (key == "gridsearch_min_overlap") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%g %g %g", 
                 &(stage->gridsearch_min_overlap[0]), 
                 &(stage->gridsearch_min_overlap[1]), 
                 &(stage->gridsearch_min_overlap[2])) != 3) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "landmark_stiffness")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g", &stage->landmark_stiffness) != 1) {
+    else if (key == "landmark_stiffness") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%g", &stage->landmark_stiffness) != 1) {
             goto error_exit;
         }
     }   
-    else if (!strcmp (key, "landmark_flavor")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%c", &stage->landmark_flavor) != 1) {
+    else if (key == "landmark_flavor") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%c", &stage->landmark_flavor) != 1) {
             goto error_exit;
         }
     }   
-    else if (!strcmp (key, "res") || !strcmp (key, "ss")) {
-        if (section == 0) goto error_not_global;
+    else if (key == "res" || key == "ss") {
+        if (section_global) goto error_not_global;
         stage->subsampling_type = SUBSAMPLING_VOXEL_RATE;
-        if (sscanf (val, "%g %g %g", 
+        if (sscanf (val.c_str(), "%g %g %g", 
                 &(stage->fixed_subsample_rate[0]), 
                 &(stage->fixed_subsample_rate[1]), 
                 &(stage->fixed_subsample_rate[2])) != 3) {
@@ -770,9 +814,9 @@ Registration_parms::set_key_val (
         stage->moving_subsample_rate[1] = stage->fixed_subsample_rate[1];
         stage->moving_subsample_rate[2] = stage->fixed_subsample_rate[2];
     }
-    else if (!strcmp (key, "ss_fixed") || !strcmp (key, "fixed_ss")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g %g %g", 
+    else if (key == "ss_fixed" || key == "fixed_ss") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%g %g %g", 
                 &(stage->fixed_subsample_rate[0]), 
                 &(stage->fixed_subsample_rate[1]), 
                 &(stage->fixed_subsample_rate[2])) != 3) {
@@ -785,9 +829,9 @@ Registration_parms::set_key_val (
         }
         stage->subsampling_type = SUBSAMPLING_VOXEL_RATE;
     }
-    else if (!strcmp (key, "ss_moving") || !strcmp (key, "moving_ss")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g %g %g", 
+    else if (key == "ss_moving" || key == "moving_ss") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%g %g %g", 
                 &(stage->moving_subsample_rate[0]), 
                 &(stage->moving_subsample_rate[1]), 
                 &(stage->moving_subsample_rate[2])) != 3) {
@@ -800,10 +844,10 @@ Registration_parms::set_key_val (
         }
         stage->subsampling_type = SUBSAMPLING_VOXEL_RATE;
     }
-    else if (!strcmp (key, "sampling_rate") || !strcmp (key, "sr")) {
-        if (section == 0) goto error_not_global;
+    else if (key == "sampling_rate" || key == "sr") {
+        if (section_global) goto error_not_global;
         stage->subsampling_type = SUBSAMPLING_VOXEL_RATE;
-        if (sscanf (val, "%g %g %g", 
+        if (sscanf (val.c_str(), "%g %g %g", 
                 &(stage->fixed_subsample_rate[0]), 
                 &(stage->fixed_subsample_rate[1]), 
                 &(stage->fixed_subsample_rate[2])) != 3) {
@@ -813,10 +857,10 @@ Registration_parms::set_key_val (
         stage->moving_subsample_rate[1] = stage->fixed_subsample_rate[1];
         stage->moving_subsample_rate[2] = stage->fixed_subsample_rate[2];
     }
-    else if (!strcmp (key, "num_grid")) {
+    else if (key == "num_grid") {
         /* Obsolete */
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%d %d %d", 
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%d %d %d", 
                 &(stage->num_grid[0]), 
                 &(stage->num_grid[1]), 
                 &(stage->num_grid[2])) != 3) {
@@ -824,11 +868,11 @@ Registration_parms::set_key_val (
         }
         stage->grid_method = 0;
     }
-    else if (!strcmp (key, "grid_spac")
-        || !strcmp (key, "grid_spacing"))
+    else if (key == "grid_spac"
+        || key == "grid_spacing")
     {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%g %g %g", 
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%g %g %g", 
                 &(stage->grid_spac[0]), 
                 &(stage->grid_spac[1]), 
                 &(stage->grid_spac[2])) != 3) {
@@ -836,36 +880,36 @@ Registration_parms::set_key_val (
         }
         stage->grid_method = 1;
     }
-    else if (!strcmp (key, "histo_equ")) {
-        if (section == 0) goto error_not_global;
-        if (!strcmp (val, "1")) {
+    else if (key == "histo_equ") {
+        if (section_global) goto error_not_global;
+        if (string_value_true (val)) {
             stage->histoeq = true;
         }
         else
             stage->histoeq= false;
     }
-    else if (!strcmp (key, "thresh_mean_intensity")) {
-        if (section == 0) goto error_not_global;
-        if (!strcmp (val, "1")) {
+    else if (key == "thresh_mean_intensity") {
+        if (section_global) goto error_not_global;
+        if (string_value_true (val)) {
             stage->thresh_mean_intensity = true;
         }
         else
             stage->thresh_mean_intensity= false;
     }
-    else if (!strcmp (key, "num_hist_levels")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%d", &stage->num_hist_levels) != 1) {
+    else if (key == "num_hist_levels") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%d", &stage->num_hist_levels) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "num_matching_points")) {
-        if (section == 0) goto error_not_global;
-        if (sscanf (val, "%d", &stage->num_matching_points) != 1) {
+    else if (key == "num_matching_points") {
+        if (section_global) goto error_not_global;
+        if (sscanf (val.c_str(), "%d", &stage->num_matching_points) != 1) {
             goto error_exit;
         }
     }
-    else if (!strcmp (key, "debug_dir")) {
-        if (section == 0) goto error_not_global;
+    else if (key == "debug_dir") {
+        if (section_global) goto error_not_global;
         stage->debug_dir = val;
     }
     else {
@@ -874,15 +918,18 @@ Registration_parms::set_key_val (
     return 0;
 
 error_not_stages:
-    print_and_exit ("This key (%s) not allowed in a stages section\n", key);
+    print_and_exit (
+        "This key (%s) not allowed in a stages section\n", key.c_str());
     return -1;
 
 error_not_global:
-    print_and_exit ("This key (%s) not is allowed in a global section\n", key);
+    print_and_exit (
+        "This key (%s) not is allowed in a global section\n", key.c_str());
     return -1;
 
 error_exit:
-    print_and_exit ("Unknown (key,val) combination: (%s,%s)\n", key, val);
+    print_and_exit (
+        "Unknown (key,val) combination: (%s,%s)\n", key.c_str(), val.c_str());
     return -1;
 }
 
@@ -891,61 +938,8 @@ Registration_parms::set_command_string (
     const std::string& command_string
 )
 {
-    std::string buf;
-    std::string buf_ori;    /* An extra copy for diagnostics */
-    int section = 0;
-
-    std::stringstream ss (command_string);
-
-    while (getline (ss, buf)) {
-        buf_ori = buf;
-        buf = trim (buf);
-        buf_ori = trim (buf_ori, "\r\n");
-        if (buf == "") continue;
-        if (buf[0] == '#') continue;
-        if (buf[0] == '[') {
-            if (buf.find ("[GLOBAL]") != std::string::npos
-                || buf.find ("[global]") != std::string::npos)
-            {
-                section = 0;
-                continue;
-            }
-            else if (buf.find ("[STAGE]") != std::string::npos
-                || buf.find ("[stage]") != std::string::npos)
-            {
-                section = 1;
-                this->append_stage ();
-                continue;
-            }
-            else if (buf.find ("[COMMENT]") != std::string::npos
-                || buf.find ("[comment]") != std::string::npos)
-            {
-                section = 2;
-                continue;
-            }
-            else {
-                printf ("Parse error: %s\n", buf_ori.c_str());
-                return -1;
-            }
-        }
-        if (section == 2) continue;
-        size_t key_loc = buf.find ("=");
-        if (key_loc == std::string::npos) {
-            continue;
-        }
-        std::string key = buf.substr (0, key_loc);
-        std::string val = buf.substr (key_loc+1);
-        key = trim (key);
-        val = trim (val);
-
-        if (key != "" && val != "") {
-            if (this->set_key_val (key.c_str(), val.c_str(), section) < 0) {
-                printf ("Parse error: %s\n", buf_ori.c_str());
-                return -1;
-            }
-        }
-    }
-    return 0;
+    Registration_parms_parser rpp (this);
+    return rpp.parse_config_string (command_string);
 }
 
 int

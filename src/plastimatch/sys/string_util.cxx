@@ -35,6 +35,34 @@ make_lowercase (const std::string& s)
     return out;
 }
 
+std::string 
+make_uppercase (const std::string& s)
+{
+    std::string out;
+    std::transform (s.begin(), s.end(), std::back_inserter(out), ::toupper);
+    return out;
+}
+
+static int 
+regularize_parameter_key_callback (int c)
+{
+    int o = ::tolower (c);
+    if (o == '-') {
+        o = '_';
+    }
+    return o;
+}
+
+/* Make lower case, and convert dash '-' to underscore '_' */
+std::string 
+regularize_parameter_key (const std::string& s)
+{
+    std::string out;
+    std::transform (s.begin(), s.end(), std::back_inserter(out), 
+        regularize_parameter_key_callback);
+    return out;
+}
+
 void
 string_util_rtrim_whitespace (char *s)
 {
