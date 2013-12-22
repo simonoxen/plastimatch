@@ -57,7 +57,10 @@ public:
     ~Registration_parms();
 public:
     int set_command_string (const std::string& command_string);
-    int set_key_val (const char* key, const char* val, int section);
+    int set_key_value (
+        const std::string& section,
+        const std::string& key, 
+        const std::string& val);
     int parse_command_file (const char* options_fn);
     void set_job_paths (void);
 public:

@@ -56,11 +56,33 @@ public:
     }
 public:
     virtual int process_section (
-        const std::string& section);
+        const std::string& section)
+    {
+        if (section == "GLOBAL") {
+            return 0;
+        }
+        if (section == "STAGE") {
+            rp->append_stage ();
+            return 0;
+        }
+        if (section == "COMMENT") {
+            return 0;
+        }
+        if (section == "PROCESS") {
+            rp->append_process_stage ();
+            return 0;
+        }
+
+        /* else, unknown section */
+        return -1;
+    }
     virtual int process_key_value (
+        const std::string& section,
         const std::string& key, 
-        const std::string& val, 
-        const std::string& section);
+        const std::string& val)
+    {
+        return this->rp->set_key_value (section, key, val);
+    }
 };
 
 Registration_parms::Registration_parms()
@@ -139,36 +161,13 @@ populate_jobs (char jobs[255][_MAX_PATH], char* dir)
 #endif
 }
 
-int
-Registration_parms_parser::process_section (const std::string& section)
-{
-    if (section == "GLOBAL") {
-        return 0;
-    }
-    if (section == "STAGE") {
-        rp->append_stage ();
-        return 0;
-    }
-    if (section == "COMMENT") {
-        return 0;
-    }
-    if (section == "PROCESS") {
-        rp->append_process_stage ();
-        return 0;
-    }
-
-    /* else, unknown section */
-    return -1;
-}
-
 int 
-Registration_parms_parser::process_key_value (
+Registration_parms::set_key_value (
     const std::string& section,
     const std::string& key, 
     const std::string& val)
 {
     int rc;
-    Registration_parms_private *d_ptr = this->rp->d_ptr;
     Stage_parms *stage = 0;
     Shared_parms *shared = 0;
     Process_parms::Pointer process;
@@ -206,52 +205,52 @@ Registration_parms_parser::process_key_value (
     }
     else if (key == "fixed_dir") {
         if (!section_global) goto key_only_allowed_in_section_global;
-        strncpy (rp->fixed_dir, val.c_str(), _MAX_PATH);
-        check_trailing_slash (rp->fixed_dir);
-        rp->num_jobs = populate_jobs (rp->fixed_jobs, rp->fixed_dir);
+        strncpy (this->fixed_dir, val.c_str(), _MAX_PATH);
+        check_trailing_slash (this->fixed_dir);
+        this->num_jobs = populate_jobs (this->fixed_jobs, this->fixed_dir);
     }
     else if (key == "moving_dir") {
         if (!section_global) goto key_only_allowed_in_section_global;
-        strncpy (rp->moving_dir, val.c_str(), _MAX_PATH);
-        check_trailing_slash (rp->moving_dir);
-        rp->num_jobs = populate_jobs (rp->moving_jobs, rp->moving_dir);
+        strncpy (this->moving_dir, val.c_str(), _MAX_PATH);
+        check_trailing_slash (this->moving_dir);
+        this->num_jobs = populate_jobs (this->moving_jobs, this->moving_dir);
     }
     else if (key == "img_out_dir") {
         if (!section_global) goto key_only_allowed_in_section_global;
-        strncpy (rp->img_out_dir, val.c_str(), _MAX_PATH);
-        check_trailing_slash (rp->img_out_dir);
+        strncpy (this->img_out_dir, val.c_str(), _MAX_PATH);
+        check_trailing_slash (this->img_out_dir);
     }
     else if (key == "vf_out_dir") {
         if (!section_global) goto key_only_allowed_in_section_global;
-        strncpy (rp->vf_out_dir, val.c_str(), _MAX_PATH);
-        check_trailing_slash (rp->vf_out_dir);
+        strncpy (this->vf_out_dir, val.c_str(), _MAX_PATH);
+        check_trailing_slash (this->vf_out_dir);
     }
     else if (key == "xf_in"
         || key == "xform_in"
         || key == "vf_in")
     {
         if (!section_global) goto key_only_allowed_in_section_global;
-        strncpy (rp->xf_in_fn, val.c_str(), _MAX_PATH);
+        strncpy (this->xf_in_fn, val.c_str(), _MAX_PATH);
     }
     else if (key == "log" || key == "logfile") {
         if (!section_global) goto key_only_allowed_in_section_global;
-        strncpy (rp->log_fn, val.c_str(), _MAX_PATH);
+        strncpy (this->log_fn, val.c_str(), _MAX_PATH);
     }
     else if (key == "fixed_landmarks") {
         if (!section_global) goto key_only_allowed_in_section_stage;
-        rp->fixed_landmarks_fn = val;
+        this->fixed_landmarks_fn = val;
     }
     else if (key == "moving_landmarks") {
         if (!section_global) goto key_only_allowed_in_section_stage;
-        rp->moving_landmarks_fn = val;
+        this->moving_landmarks_fn = val;
     }
     else if (key == "fixed_landmark_list") {
         if (!section_global) goto key_only_allowed_in_section_stage;
-        rp->fixed_landmarks_list = val;
+        this->fixed_landmarks_list = val;
     }
     else if (key == "moving_landmark_list") {
         if (!section_global) goto key_only_allowed_in_section_stage;
-        rp->moving_landmarks_list = val;
+        this->moving_landmarks_list = val;
     }
 
     /* The following keywords are allowed either globally or in stages */
@@ -263,7 +262,7 @@ Registration_parms_parser::process_key_value (
             goto error_exit;
         }
         if (section_global) {
-            rp->default_value = f;
+            this->default_value = f;
         } else if (section_stage) {
             stage->default_value = f;
         } else {
@@ -293,7 +292,7 @@ Registration_parms_parser::process_key_value (
     }
     else if (key == "img_out" || key == "image_out") {
         if (section_global) {
-            strncpy (rp->img_out_fn, val.c_str(), _MAX_PATH);
+            strncpy (this->img_out_fn, val.c_str(), _MAX_PATH);
         } else if (section_stage) {
             strncpy (stage->img_out_fn, val.c_str(), _MAX_PATH);
         } else {
@@ -308,7 +307,7 @@ Registration_parms_parser::process_key_value (
             goto error_exit;
         }
         if (section_global) {
-            rp->img_out_fmt = fmt;
+            this->img_out_fmt = fmt;
         } else if (section_stage) {
             stage->img_out_fmt = fmt;
         } else {
@@ -321,7 +320,7 @@ Registration_parms_parser::process_key_value (
             goto error_exit;
         }
         if (section_global) {
-            rp->img_out_type = type;
+            this->img_out_type = type;
         } else if (section_stage) {
             stage->img_out_type = type;
         } else {
@@ -330,7 +329,7 @@ Registration_parms_parser::process_key_value (
     }
     else if (key == "vf_out") {
         if (section_global) {
-            strncpy (rp->vf_out_fn, val.c_str(), _MAX_PATH);
+            strncpy (this->vf_out_fn, val.c_str(), _MAX_PATH);
         } else if (section_stage) {
             strncpy (stage->vf_out_fn, val.c_str(), _MAX_PATH);
         } else {
@@ -345,7 +344,7 @@ Registration_parms_parser::process_key_value (
             value = false;
         }
         if (section_global) {
-            rp->xf_out_itk = value;
+            this->xf_out_itk = value;
         } else if (section_stage) {
             stage->xf_out_itk = value;
         } else {
@@ -356,7 +355,7 @@ Registration_parms_parser::process_key_value (
         /* xf_out is special.  You can have more than one of these.  
            This capability is used by the slicer plugin. */
         if (section_global) {
-            rp->xf_out_fn.push_back (val.c_str());
+            this->xf_out_fn.push_back (val.c_str());
         } else if (section_stage) {
             stage->xf_out_fn.push_back (val.c_str());
         } else {
@@ -365,7 +364,7 @@ Registration_parms_parser::process_key_value (
     }
     else if (key == "warped_landmarks") {
         if (section_global) {
-            rp->warped_landmarks_fn = val;
+            this->warped_landmarks_fn = val;
         } else if (section_stage) {
             stage->warped_landmarks_fn = val;
         } else {

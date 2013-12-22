@@ -11,9 +11,9 @@ public:
     virtual int process_section (
         const std::string& section) = 0;
     virtual int process_key_value (
+        const std::string& section, 
         const std::string& key, 
-        const std::string& val, 
-        const std::string& section) = 0;
+        const std::string& val) = 0;
 
     /* Return zero if config string is correctly parsed */
     int parse_config_string (
