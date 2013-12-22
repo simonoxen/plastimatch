@@ -11,7 +11,6 @@
 #include "aperture.h"
 #include "interpolate.h"
 #include "compiler_warnings.h"
-#include "ion_beam.h"
 #include "logfile.h"
 #include "mha_io.h"
 #include "plm_int.h"
