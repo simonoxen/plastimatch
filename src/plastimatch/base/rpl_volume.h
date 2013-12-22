@@ -7,7 +7,6 @@
 #include "plmbase_config.h"
 #include <string>
 #include "aperture.h"
-#include "ion_plan.h"
 #include "plm_image.h"
 #include "ray_trace_callback.h"
 

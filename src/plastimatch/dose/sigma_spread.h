@@ -1,3 +1,10 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
+#ifndef _sigma_spread_h_
+#define _sigma_spread_h_
+
+#include "plmdose_config.h"
 #include <math.h>
 #include <vector>
 #include "volume.h"
@@ -6,8 +13,9 @@
 
 extern const double lookup_range_water[][2];
 extern const double lookup_stop_water[][2];
-
 extern const double lookup_r2_over_sigma2[][2];
+
+class Ion_beam;
 
 void convert_radiologic_length_to_sigma(Rpl_volume* sigma_vol, Rpl_volume* ct_vol, float energy, float spacing_z, float* sigma_max); // compute the sigma_vol and return sigma_max
 void length_to_sigma(std::vector<float>* p_sigma, std::vector<float>* p_density, float spacing_z,float* sigma_max, float energy);
@@ -24,4 +32,4 @@ float WER_interpolation(float density);
 double getrange(double energy);
 double getstop(double energy);
 
-
+#endif
