@@ -1032,6 +1032,7 @@ Mabs::segmentation_vote (const std::string& atlas_id)
             FloatImageType::Pointer dmap_image_itk = this->compute_dmap (
                 warped_structure->itk_uchar(),
                 curr_output_dir, mapped_name);
+            delete warped_structure;
             dmap_image = new Plm_image (dmap_image_itk);
         }
 
