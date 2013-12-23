@@ -5,15 +5,15 @@
 #define _pcmd_adjust_h_
 
 #include "plmcli_config.h"
+#include <string>
 #include <string.h>
 #include <stdlib.h>
-#include "pstring.h"
 #include "plm_image_type.h"
 
 class Adjust_parms {
 public:
-    Pstring img_in_fn;
-    Pstring img_out_fn;
+    std::string img_in_fn;
+    std::string img_out_fn;
     float truncate_above;
     bool have_truncate_above;
     float truncate_below;
@@ -24,7 +24,7 @@ public:
     bool have_scale;
 
     /* Piecewise linear adjustment */
-    Pstring pw_linear;
+    std::string pw_linear;
 
     /* Alpha-beta scaling */
     float alpha_beta;

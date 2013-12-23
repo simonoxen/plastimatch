@@ -13,6 +13,7 @@
 #include "smart_pointer.h"
 
 class Process_parms_private;
+class Registration_data;
 
 class PLMREGISTER_API Process_parms {
 public:
@@ -24,8 +25,8 @@ public:
     ~Process_parms ();
 public:
     void set_action (const std::string& action);
-    void set_parms (const std::string& parms);
-    void set_images (const std::string& images);
+    void set_key_value (const std::string& key, const std::string& value);
+    void execute_process (Registration_data* regd) const;
 };
 
 #endif

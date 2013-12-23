@@ -13,6 +13,9 @@ typedef std::list< std::pair< float, float > > Adjustment_list;
 
 /* Does destructive, in-place adjustment */
 PLMUTIL_API void itk_adjust (FloatImageType::Pointer image, const Adjustment_list& al);
+/* Does destructive, in-place adjustment -- return -1 if adjustment 
+   string is invalid */
+PLMUTIL_API int itk_adjust (FloatImageType::Pointer image, const std::string& adj_string);
 PLMUTIL_API void itk_auto_adjust (FloatImageType::Pointer image);
 
 #endif

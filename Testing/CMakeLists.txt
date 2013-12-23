@@ -2947,8 +2947,8 @@ plm_add_test (
 plmtest_check_interval ("plm-reg-process-a-check"
   "${PLM_BUILD_TESTING_DIR}/plm-reg-process-a-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "-467.1"
-  "-366.9"
+  "-491.0"
+  "-490.0"
   )
 set_property (TEST plm-reg-process-a APPEND PROPERTY DEPENDS gauss-1)
 set_tests_properties (plm-reg-process-a-stats PROPERTIES 

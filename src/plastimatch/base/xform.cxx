@@ -537,11 +537,11 @@ xform_save (Xform *xf, const char* fn)
 /* -----------------------------------------------------------------------
    Defaults
    ----------------------------------------------------------------------- */
-static void
-init_translation_default (Xform *xf_out)
+void
+Xform::init_trn ()
 {
     TranslationTransformType::Pointer trn = TranslationTransformType::New();
-    xf_out->set_trn (trn);
+    this->set_trn (trn);
 }
 
 static void
@@ -1434,7 +1434,7 @@ xform_to_trn (
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:
-        init_translation_default (xf_out);
+        xf_out->init_trn ();
         break;
     case XFORM_ITK_TRANSLATION:
         *xf_out = *xf_in;

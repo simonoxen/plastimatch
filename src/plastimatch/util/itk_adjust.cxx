@@ -6,6 +6,7 @@
 #include "itkImageRegionIterator.h"
 
 #include "itk_adjust.h"
+#include "plm_math.h"
 
 void
 itk_adjust (FloatImageType::Pointer image, const Adjustment_list& al)
@@ -30,17 +31,19 @@ itk_adjust (FloatImageType::Pointer image, const Adjustment_list& al)
 
     /* Debug adjustment lists */
 #if defined (commentout)
-    for (Adjustment_list::const_iterator ait = al.begin();
-         ait != al.end(); ait++)
-    {
-        printf ("[%f,%f] ", ait->first, ait->second);
+    Adjustment_list::const_iterator it_d = ait_start;
+    while (it_d != ait_end) {
+        printf ("[%f,%f]\n", it_d->first, it_d->second);
+        it_d ++;
     }
-    printf ("\n");
+    printf ("[%f,%f]\n", it_d->first, it_d->second);
+    printf ("slopes [%f,%f]\n", left_slope, right_slope);
 #endif
     
     for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
         float vin = it.Get();
         float vout;
+
         /* Three possible cases: before first node, between two nodes, and 
            after last node */
 
@@ -52,7 +55,7 @@ itk_adjust (FloatImageType::Pointer image, const Adjustment_list& al)
 #endif
             goto found_vout;
         }
-        else if (ait_start != al.end()) {
+        else if (ait_start != ait_end) {
             Adjustment_list::const_iterator ait = ait_start;
             Adjustment_list::const_iterator prev = ait_start;
             ait++;
@@ -79,6 +82,46 @@ itk_adjust (FloatImageType::Pointer image, const Adjustment_list& al)
     found_vout:
         it.Set (vout);
     }
+}
+
+int 
+itk_adjust (FloatImageType::Pointer image, const std::string& adj_string)
+{
+    Adjustment_list al;
+    const char* c = adj_string.c_str();
+    bool have_curve = false;
+
+    while (1) {
+        int n;
+        float f1, f2;
+        int rc = sscanf (c, " %f , %f %n", &f1, &f2, &n);
+        if (rc < 2) {
+            break;
+        }
+        have_curve = true;
+
+        /* Look for end-caps */
+        if (!is_number(f1)) {
+            if (al.size() == 0) {
+                f1 = -std::numeric_limits<float>::max();
+            } else {
+                f1 = std::numeric_limits<float>::max();
+            }
+        }
+        /* Append (x,y) pair to list */
+        al.push_back (std::make_pair (f1, f2));
+
+        /* Look for next pair in string */
+        c += n;
+        if (*c == ',') c++;
+    }
+
+    if (!have_curve) {
+        return -1;
+    }
+
+    itk_adjust (image, al);
+    return 0;
 }
 
 void

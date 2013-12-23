@@ -164,6 +164,11 @@ save_output (
     const char *warped_landmarks_fn
 )
 {
+    /* Handle null xf, make it zero translation */
+    if (xf_out->m_type == XFORM_NONE) {
+        xf_out->init_trn ();
+    }
+
     /* Save xf to all filenames in list */
     std::list<std::string>::const_iterator it;
     for (it = xf_out_fn.begin(); it != xf_out_fn.end(); ++it) {
@@ -380,7 +385,8 @@ do_registration_pure (
         Stage_parms* sp = *it;
 
         if (sp->get_stage_type() == STAGE_TYPE_PROCESS) {
-            /* do something */
+            const Process_parms::Pointer& pp = sp->get_process_parms ();
+            pp->execute_process (regd);
 
         } else if (sp->get_stage_type() == STAGE_TYPE_REGISTER) {
             /* Swap xf_in and xf_out */

@@ -98,6 +98,8 @@ public:
     Bspline_xform* get_gpuit_bsp ();
     Volume* get_gpuit_vf ();
 
+    void init_trn ();
+
     void set_trn (TranslationTransformType::Pointer trn);
     void set_trn (const itk::Array<double>& trn);
     void set_vrs (VersorTransformType::Pointer vrs);

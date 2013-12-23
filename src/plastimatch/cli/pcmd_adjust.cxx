@@ -16,6 +16,7 @@
 static void
 do_itk_adjust (FloatImageType::Pointer image, Adjust_parms *parms)
 {
+#if defined (commentout)
     Adjustment_list al;
     const char* c = parms->pw_linear.c_str();
     bool have_curve = false;
@@ -51,6 +52,12 @@ do_itk_adjust (FloatImageType::Pointer image, Adjust_parms *parms)
         print_and_exit ("Error parsing --pw-linear option: %s\n",
             parms->pw_linear.c_str());
     }
+#endif
+
+    if (!itk_adjust (image, parms->pw_linear)) {
+        print_and_exit ("Error parsing --pw-linear option: %s\n",
+            parms->pw_linear.c_str());
+    }
 }
 
 static void
@@ -59,7 +66,7 @@ adjust_main (Adjust_parms* parms)
     typedef itk::ImageRegionIterator< FloatImageType > FloatIteratorType;
 
     Plm_image *plm_image = plm_image_load (
-	(const char*) parms->img_in_fn, 
+	parms->img_in_fn, 
 	PLM_IMG_TYPE_ITK_FLOAT);
     FloatImageType::Pointer img = plm_image->m_itk_float;
     FloatImageType::RegionType rg = img->GetLargestPossibleRegion ();
@@ -125,18 +132,18 @@ adjust_main (Adjust_parms* parms)
 	}
     }
 
-    if (parms->pw_linear.not_empty()) {
+    if (parms->pw_linear != "") {
         do_itk_adjust (img, parms);
     }
 
     if (parms->output_dicom) {
 	itk_image_save_short_dicom (
-	    img, (const char*) parms->img_out_fn, 0);
+	    img, parms->img_out_fn.c_str(), 0);
     } else {
 	if (parms->output_type) {
 	    plm_image->convert (parms->output_type);
 	}
-	plm_image->save_image ((const char*) parms->img_out_fn);
+	plm_image->save_image (parms->img_out_fn);
     }
 
     delete plm_image;

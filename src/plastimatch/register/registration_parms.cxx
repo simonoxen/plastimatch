@@ -943,18 +943,13 @@ Registration_parms::set_key_value (
     }
 
     /* The following keywords are only allowed in process section */
-    else if (key == "action") {
-        if (!section_process) goto key_only_allowed_in_section_process;
-        
-        //stage->debug_dir = val;
-    }
-    else if (key == "parms") {
-        if (!section_process) goto key_only_allowed_in_section_process;
-        //stage->debug_dir = val;
-    }
-    else if (key == "images") {
-        if (!section_process) goto key_only_allowed_in_section_process;
-        //stage->debug_dir = val;
+    else if (section_process) {
+        Process_parms::Pointer pp = stage->get_process_parms ();
+        if (key == "action") {
+            pp->set_action (val);
+        } else {
+            pp->set_key_value (key, val);
+        }
     }
 
     else {
@@ -970,11 +965,6 @@ key_only_allowed_in_section_global:
 key_only_allowed_in_section_stage:
     print_and_exit (
         "This key (%s) is only allowed in a stage section\n", key.c_str());
-    return -1;
-
-key_only_allowed_in_section_process:
-    print_and_exit (
-        "This key (%s) is only allowed in a process section\n", key.c_str());
     return -1;
 
 key_not_allowed_in_section_process:
