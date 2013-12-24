@@ -33,16 +33,13 @@ public:
         minimum_similarity = 0.0001;
     }
     ~Mabs_vote_private () {
-        delete score_img;
-        delete like0_img;
-        delete like1_img;
     }
 public:
     FloatImageType::Pointer target;
 
-    Plm_image *score_img;
-    Plm_image *like0_img;
-    Plm_image *like1_img;
+    Plm_image::Pointer score_img;
+    Plm_image::Pointer like0_img;
+    Plm_image::Pointer like1_img;
 
     double rho;
     double sigma;
@@ -68,14 +65,16 @@ Mabs_vote::set_fixed_image (
     d_ptr->target = target;
 
     /* Create a like0 image */
-    d_ptr->like0_img = new Plm_image (
-        PLM_IMG_TYPE_ITK_FLOAT, 
-        Plm_image_header (d_ptr->target));
+    d_ptr->like0_img = Plm_image::New (
+        new Plm_image (
+            PLM_IMG_TYPE_ITK_FLOAT, 
+            Plm_image_header (d_ptr->target)));
 
     /* Create a like1 image */
-    d_ptr->like1_img = new Plm_image (
-        PLM_IMG_TYPE_ITK_FLOAT, 
-        Plm_image_header (d_ptr->target));
+    d_ptr->like1_img = Plm_image::New (
+        new Plm_image (
+            PLM_IMG_TYPE_ITK_FLOAT, 
+            Plm_image_header (d_ptr->target)));
 }
 
 void
@@ -202,9 +201,10 @@ void
 Mabs_vote::normalize_votes ()
 {
     /* Create weight image */
-    d_ptr->score_img = new Plm_image(
-        PLM_IMG_TYPE_ITK_FLOAT, 
-        Plm_image_header (d_ptr->target));
+    d_ptr->score_img = Plm_image::New (
+        new Plm_image(
+            PLM_IMG_TYPE_ITK_FLOAT, 
+            Plm_image_header (d_ptr->target)));
 
     Volume *score_vol = d_ptr->score_img->get_vol_float ();
     Volume *like0_vol = d_ptr->like0_img->get_vol_float ();
