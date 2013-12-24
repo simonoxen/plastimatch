@@ -98,6 +98,7 @@ Process_parms::execute_process (Registration_data *regd) const
             }
         }
         
+        /* GCS FIX: Should check return code here */
         if (adjust_fixed) {
             itk_adjust (
                 regd->fixed_image->itk_float(),

@@ -16,45 +16,7 @@
 static void
 do_itk_adjust (FloatImageType::Pointer image, Adjust_parms *parms)
 {
-#if defined (commentout)
-    Adjustment_list al;
-    const char* c = parms->pw_linear.c_str();
-    bool have_curve = false;
-
-    while (1) {
-        int n;
-        float f1, f2;
-        int rc = sscanf (c, " %f , %f %n", &f1, &f2, &n);
-        if (rc < 2) {
-            break;
-        }
-        have_curve = true;
-
-        /* Look for end-caps */
-        if (!is_number(f1)) {
-            if (al.size() == 0) {
-                f1 = -std::numeric_limits<float>::max();
-            } else {
-                f1 = std::numeric_limits<float>::max();
-            }
-        }
-        /* Append (x,y) pair to list */
-        al.push_back (std::make_pair (f1, f2));
-
-        /* Look for next pair in string */
-        c += n;
-        if (*c == ',') c++;
-    }
-    
-    if (have_curve) {
-        itk_adjust (image, al);
-    } else {
-        print_and_exit ("Error parsing --pw-linear option: %s\n",
-            parms->pw_linear.c_str());
-    }
-#endif
-
-    if (!itk_adjust (image, parms->pw_linear)) {
+    if (itk_adjust (image, parms->pw_linear) != 0) {
         print_and_exit ("Error parsing --pw-linear option: %s\n",
             parms->pw_linear.c_str());
     }
