@@ -31,7 +31,16 @@ bool
 dcmtk_dose_probe (const char *fn)
 {
     DcmFileFormat dfile;
+
+    /* Suppress warning messages */
+    OFLog::configure(OFLogger::FATAL_LOG_LEVEL);
+
     OFCondition ofrc = dfile.loadFile (fn, EXS_Unknown, EGL_noChange);
+
+    /* Restore error messages -- n.b. dcmtk doesn't have a way to 
+       query current setting, so I just set to default */
+    OFLog::configure(OFLogger::WARN_LOG_LEVEL);
+
     if (ofrc.bad()) {
         return false;
     }

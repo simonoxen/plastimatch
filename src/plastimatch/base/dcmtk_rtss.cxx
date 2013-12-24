@@ -29,7 +29,16 @@ PLMBASE_C_API bool
 dcmtk_rtss_probe (const char *rtss_fn)
 {
     DcmFileFormat dfile;
+
+    /* Suppress warning messages */
+    OFLog::configure(OFLogger::FATAL_LOG_LEVEL);
+
     OFCondition ofrc = dfile.loadFile (rtss_fn, EXS_Unknown, EGL_noChange);
+
+    /* Restore error messages -- n.b. dcmtk doesn't have a way to 
+       query current setting, so I just set to default */
+    OFLog::configure(OFLogger::WARN_LOG_LEVEL);
+
     if (ofrc.bad()) {
         return false;
     }
