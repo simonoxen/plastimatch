@@ -98,16 +98,17 @@ Process_parms::execute_process (Registration_data *regd) const
             }
         }
         
-        /* GCS FIX: Should check return code here */
         if (adjust_fixed) {
-            itk_adjust (
-                regd->fixed_image->itk_float(),
-                parms);
+            regd->fixed_image->set_itk (
+                itk_adjust (
+                    regd->fixed_image->itk_float(),
+                    parms));
         }
         if (adjust_moving) {
-            itk_adjust (
-                regd->moving_image->itk_float(),
-                parms);
+            regd->moving_image->set_itk (
+                itk_adjust (
+                    regd->moving_image->itk_float(),
+                    parms));
         }
     }
 }

@@ -13,14 +13,6 @@
 #include "pcmd_adjust.h"
 #include "print_and_exit.h"
 
-static void
-do_itk_adjust (FloatImageType::Pointer image, Adjust_parms *parms)
-{
-    if (itk_adjust (image, parms->pw_linear) != 0) {
-        print_and_exit ("Error parsing --pw-linear option: %s\n",
-            parms->pw_linear.c_str());
-    }
-}
 
 static void
 adjust_main (Adjust_parms* parms)
@@ -95,7 +87,8 @@ adjust_main (Adjust_parms* parms)
     }
 
     if (parms->pw_linear != "") {
-        do_itk_adjust (img, parms);
+        img = itk_adjust (img, parms->pw_linear);
+        plm_image->set_itk (img);
     }
 
     if (parms->output_dicom) {

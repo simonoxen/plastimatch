@@ -53,7 +53,7 @@ thumbnail_main (Thumbnail_parms* parms)
     /* Adjust the intensities */
     if (parms->auto_adjust) {
         printf ("Auto-adjusting intensities...\n");
-        itk_auto_adjust (pli->m_itk_float);
+        pli->set_itk (itk_auto_adjust (pli->m_itk_float));
     }
 
     /* Can't write float for these types... */

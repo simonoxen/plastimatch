@@ -463,8 +463,12 @@ Mabs::run_registration_loop ()
 
             /* Manually set input files */
             Registration_data *regd = new Registration_data;
-            regd->fixed_image = d_ptr->ref_rtds->get_image();
-            regd->moving_image = rtds.get_image();
+            regd->fixed_image = Plm_image::New ();
+            regd->fixed_image->set_itk (
+                d_ptr->ref_rtds->get_image()->itk_float());
+            regd->moving_image = Plm_image::New ();
+            regd->moving_image->set_itk (
+                rtds.get_image()->itk_float());
 
             /* Run the registration */
             Xform *xf_out;

@@ -6,15 +6,18 @@
 #include "itkImageRegionIterator.h"
 
 #include "itk_adjust.h"
+#include "itk_image_clone.h"
 #include "plm_math.h"
+#include "print_and_exit.h"
 
-void
-itk_adjust (FloatImageType::Pointer image, const Adjustment_list& al)
+FloatImageType::Pointer
+itk_adjust (FloatImageType::Pointer image_in, const Adjustment_list& al)
 {
-    typedef itk::ImageRegionIterator< FloatImageType > FloatIteratorType;
+    FloatImageType::Pointer image_out = itk_image_clone (image_in);
 
-    FloatImageType::RegionType rg = image->GetLargestPossibleRegion ();
-    FloatIteratorType it (image, rg);
+    typedef itk::ImageRegionIterator< FloatImageType > FloatIteratorType;
+    FloatImageType::RegionType rg = image_out->GetLargestPossibleRegion ();
+    FloatIteratorType it (image_out, rg);
 
     /* Special processing for end caps */
     float left_slope = 1.0;
@@ -82,10 +85,11 @@ itk_adjust (FloatImageType::Pointer image, const Adjustment_list& al)
     found_vout:
         it.Set (vout);
     }
+    return image_out;
 }
 
-int 
-itk_adjust (FloatImageType::Pointer image, const std::string& adj_string)
+FloatImageType::Pointer
+itk_adjust (FloatImageType::Pointer image_in, const std::string& adj_string)
 {
     Adjustment_list al;
     const char* c = adj_string.c_str();
@@ -117,20 +121,20 @@ itk_adjust (FloatImageType::Pointer image, const std::string& adj_string)
     }
 
     if (!have_curve) {
-        return -1;
+        print_and_exit ("Error: couldn't parse adjust string: %s\n",
+            adj_string.c_str());
     }
 
-    itk_adjust (image, al);
-    return 0;
+    return itk_adjust (image_in, al);
 }
 
-void
-itk_auto_adjust (FloatImageType::Pointer image)
+FloatImageType::Pointer
+itk_auto_adjust (FloatImageType::Pointer image_in)
 {
     typedef itk::ImageRegionIterator< FloatImageType > FloatIteratorType;
 
-    FloatImageType::RegionType rg = image->GetLargestPossibleRegion ();
-    FloatIteratorType it (image, rg);
+    FloatImageType::RegionType rg = image_in->GetLargestPossibleRegion ();
+    FloatIteratorType it (image_in, rg);
     Adjustment_list::const_iterator ait;
 
     /* GCS: This is just something for spark, works for CT image differencing
@@ -142,5 +146,5 @@ itk_auto_adjust (FloatImageType::Pointer image)
     al.push_back (std::make_pair (+200.0,255));
     al.push_back (std::make_pair (std::numeric_limits<float>::max(), 0.0));
 
-    itk_adjust (image, al);
+    return itk_adjust (image_in, al);
 }

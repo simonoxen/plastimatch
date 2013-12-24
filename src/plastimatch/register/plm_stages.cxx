@@ -10,6 +10,7 @@
 #include "gpuit_demons.h"
 #include "itk_demons.h"
 #include "itk_image_save.h"
+#include "itk_image_stats.h"
 #include "itk_registration.h"
 #include "logfile.h"
 #include "native_translation.h"
@@ -385,8 +386,23 @@ do_registration_pure (
         Stage_parms* sp = *it;
 
         if (sp->get_stage_type() == STAGE_TYPE_PROCESS) {
+
+#if defined (commentout)
+            int non_zero, num_vox;
+            double min_val, max_val, avg;
+            itk_image_stats (regd->moving_image->itk_float (),
+                &min_val, &max_val, &avg, &non_zero, &num_vox);
+            printf ("min = %g, max = %g\n", min_val, max_val);
+#endif
+
             const Process_parms::Pointer& pp = sp->get_process_parms ();
             pp->execute_process (regd);
+
+#if defined (commentout)
+            itk_image_stats (regd->moving_image->itk_float (),
+                &min_val, &max_val, &avg, &non_zero, &num_vox);
+            printf ("min = %g, max = %g\n", min_val, max_val);
+#endif
 
         } else if (sp->get_stage_type() == STAGE_TYPE_REGISTER) {
             /* Swap xf_in and xf_out */
