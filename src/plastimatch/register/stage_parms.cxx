@@ -17,10 +17,11 @@ public:
     Shared_parms *shared;
 public:
     Stage_parms_private () {
-        stage_type = STAGE_TYPE_REGISTER;
-        shared = new Shared_parms;
+        this->stage_type = STAGE_TYPE_REGISTER;
+        this->shared = new Shared_parms;
     }
     Stage_parms_private (const Stage_parms_private& s) {
+        this->stage_type = STAGE_TYPE_REGISTER;
         this->shared = new Shared_parms (*s.shared);
     }
     ~Stage_parms_private () {
