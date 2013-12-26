@@ -38,14 +38,17 @@ protected:
 
 public:
     void set_parms (const Mabs_parms *parms);
-    void parse_registration_dir (const std::string registration_config);
+    void parse_registration_dir (const std::string& registration_config);
+
+    void set_segment_input (const std::string& input_fn);
+    void set_segment_output_dicom (const std::string& output_dicom_dir);
 
     void atlas_selection ();
     void atlas_convert ();
     void atlas_prealign ();
     void train_registration ();
     void train ();
-    void run ();
+    void segment ();
 };
 
 #endif

@@ -56,9 +56,12 @@ public:
     /* ".../train_dir/mabs-train" */
     std::string mabs_train_dir;
 
+    /* segment_input_fn is the input location for a segmentation task */
+    std::string segment_input_fn;
     /* outdir_base is the output directory when we are 
        doing a labeling task (i.e. not training) */
-    std::string outdir_base;
+    std::string segment_outdir_base;
+
     /* registration_list is the list of registration parameter files */
     std::list<std::string> registration_list;
     /* output_dir is ??? */
@@ -897,7 +900,7 @@ Mabs::atlas_prealign ()
 }
 
 void
-Mabs::parse_registration_dir (const std::string registration_config)
+Mabs::parse_registration_dir (const std::string& registration_config)
 {
     /* Figure out whether we need to do a single registration 
        or multiple registrations (for atlas tuning) */
@@ -1209,9 +1212,10 @@ Mabs::set_parms (const Mabs_parms *parms)
     d_ptr->parms = parms;
 
     /* Set up directory strings */
-    d_ptr->outdir_base = d_ptr->parms->labeling_output_fn;
-    if (d_ptr->outdir_base == "") {
-        d_ptr->outdir_base = "mabs";
+    d_ptr->segment_input_fn = d_ptr->parms->labeling_input_fn;
+    d_ptr->segment_outdir_base = d_ptr->parms->labeling_output_fn;
+    if (d_ptr->segment_outdir_base == "") {
+        d_ptr->segment_outdir_base = "mabs";
     }
     d_ptr->traindir_base = d_ptr->parms->training_dir;
     if (d_ptr->traindir_base == "") {
@@ -1246,34 +1250,15 @@ Mabs::set_parms (const Mabs_parms *parms)
 }
 
 void
-Mabs::run ()
+Mabs::set_segment_input (const std::string& input_fn)
 {
-    /* Do a few sanity checks */
-    this->sanity_checks ();
+    d_ptr->segment_input_fn = input_fn;
+}
 
-    /* Parse directory with registration files */
-    this->parse_registration_dir (d_ptr->parms->registration_config);
-
-    /* Load the image to be labeled.  For now, we'll assume this 
-       is successful. */
-    d_ptr->ref_rtds->load_image (d_ptr->parms->labeling_input_fn);
-
-    /* Parse atlas directory */
-    this->load_process_dir_list (d_ptr->prealign_dir);
-
-    /* Set atlas_list */
-    d_ptr->atlas_list = d_ptr->process_dir_list;
-
-    /* Set output dir for this test case */
-    d_ptr->output_dir = d_ptr->outdir_base;
-
-    /* Save it for debugging */
-    std::string fn = string_format ("%s/%s", d_ptr->outdir_base.c_str(),
-        "img.nrrd");
-    d_ptr->ref_rtds->get_image()->save_image (fn.c_str());
-
-    /* Run the segmentation */
-    this->run_registration_loop ();
+void 
+Mabs::set_segment_output_dicom (const std::string& output_dicom_dir)
+{
+    d_ptr->segment_outdir_base = output_dicom_dir;
 }
 
 void
@@ -1372,6 +1357,38 @@ Mabs::train_internal (bool registration_only)
     lprintf ("MABS training complete\n");
 
     logfile_close ();
+}
+
+void
+Mabs::segment ()
+{
+    /* Do a few sanity checks */
+    this->sanity_checks ();
+
+    /* Parse directory with registration files */
+    this->parse_registration_dir (d_ptr->parms->registration_config);
+
+    /* Load the image to be labeled.  For now, we'll assume this 
+       is successful. */
+    d_ptr->ref_rtds->load_image (d_ptr->segment_input_fn);
+
+    /* Parse atlas directory */
+    this->load_process_dir_list (d_ptr->prealign_dir);
+
+    /* Set atlas_list */
+    d_ptr->atlas_list = d_ptr->process_dir_list;
+
+    /* Set output dir for this test case */
+    d_ptr->output_dir = d_ptr->segment_outdir_base;
+
+    /* Save it for debugging */
+    std::string fn = string_format ("%s/%s", 
+        d_ptr->segment_outdir_base.c_str(), 
+        "img.nrrd");
+    d_ptr->ref_rtds->get_image()->save_image (fn.c_str());
+
+    /* Run the segmentation */
+    this->run_registration_loop ();
 }
 
 void

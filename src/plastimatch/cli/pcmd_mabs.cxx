@@ -7,16 +7,19 @@
 #include "mabs_parms.h"
 #include "pcmd_mabs.h"
 #include "plm_clp.h"
-#include "pstring.h"
 
 class Mabs_parms_pcmd {
 public:
-    Pstring cmd_file_fn;
     bool atlas_selection;
     bool convert;
     bool prealign;
     bool train_registration;
     bool train;
+
+    std::string cmd_file_fn;
+    std::string input_fn;
+    std::string output_dicom_dir;
+
 public:
     Mabs_parms_pcmd () {
         atlas_selection = false;
@@ -24,7 +27,6 @@ public:
         prealign = false;
         train = false;
         train_registration = false;
-        train = false;
     }
 };
 
@@ -60,6 +62,10 @@ parse_fn (
     parser->add_long_option ("", "train-registration", 
         "perform limited training to find the best registration "
         "parameters only", 0);
+    parser->add_long_option ("", "input", 
+        "input image or directory for doing a segmentation", 1, "");
+    parser->add_long_option ("", "output-dicom", 
+        "output dicom directory when doing a segmentation", 1, "");
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -92,6 +98,12 @@ parse_fn (
     if (parser->have_option ("train-registration")) {
         parms->train_registration = true;
     }
+    if (parser->have_option ("input")) {
+        parms->input_fn = parser->get_string ("input");
+    }
+    if (parser->have_option ("output-dicom")) {
+        parms->output_dicom_dir = parser->get_string ("output-dicom");
+    }
 }
 
 void
@@ -106,6 +118,7 @@ do_command_mabs (int argc, char *argv[])
 
     Mabs mabs;
     mabs.set_parms (&mabs_parms);
+
     if (parms.atlas_selection) {
         mabs.atlas_selection ();
     }
@@ -122,6 +135,12 @@ do_command_mabs (int argc, char *argv[])
         mabs.train ();
     }
     else {
-        mabs.run ();
+        if (parms.input_fn != "") {
+            mabs.set_segment_input (parms.input_fn);
+        }
+        if (parms.output_dicom_dir != "") {
+            mabs.set_segment_output_dicom (parms.output_dicom_dir);
+        }
+        mabs.segment ();
     }
 }
