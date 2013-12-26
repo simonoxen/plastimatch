@@ -11,20 +11,18 @@
 #include "plm_path.h"
 #include "pstring.h"
 
-class Mabs_subject_manager;
-
 class PLMSEGMENT_API Mabs_parms {
 public:
     Mabs_parms ();
     ~Mabs_parms ();
 
+public:
     bool parse_args (int argc, char** argv);
-    void print ();
-
     void parse_config (const char* config_fn);
-protected:
-    int set_key_val (const std::string& key, const std::string& val, 
-        const std::string& section);
+    int set_key_value (
+        const std::string& section,
+        const std::string& key, 
+        const std::string& val);
 
 public:
     /* [PREALIGNMENT] */
@@ -72,9 +70,6 @@ public:
 
     /* [REGISTRATION] */
     std::string registration_config;
-
-    /* [SUBJECT] */
-    Mabs_subject_manager* sman;    
 
     /* [STRUCTURES] */
     std::map<std::string, std::string> structure_map;

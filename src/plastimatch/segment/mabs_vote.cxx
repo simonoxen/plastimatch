@@ -16,7 +16,6 @@
 #include "itkImageRegionIterator.h"
 
 #include "logfile.h"
-#include "mabs_subject.h"
 #include "mabs_vote.h"
 #include "plm_image.h"
 #include "plm_image_header.h"

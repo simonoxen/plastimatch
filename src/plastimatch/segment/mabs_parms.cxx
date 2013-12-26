@@ -11,11 +11,55 @@
 #include <sstream>
 
 #include "file_util.h"
+#include "parameter_parser.h"
 #include "mabs_parms.h"
-#include "mabs_subject.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
 #include "string_util.h"
+
+class Mabs_parms_parser : public Parameter_parser
+{
+public:
+    Mabs_parms *mp;
+public:
+    Mabs_parms_parser (Mabs_parms *mp)
+    {
+        this->mp = mp;
+    }
+public:
+    virtual int process_section (
+        const std::string& section)
+    {
+        if (section == "PREALIGN" || section == "PREALIGNMENT") {
+            return 0;
+        }
+        if (section == "ATLAS-SELECTION") {
+            return 0;
+        }
+        if (section == "TRAINING") {
+            return 0;
+        }
+        if (section == "REGISTRATION") {
+            return 0;
+        }
+        if (section == "STRUCTURES") {
+            return 0;
+        }
+        if (section == "LABELING") {
+            return 0;
+        }
+
+        /* else, unknown section */
+        return -1;
+    }
+    virtual int process_key_value (
+        const std::string& section,
+        const std::string& key, 
+        const std::string& val)
+    {
+        return this->mp->set_key_value (section, key, val);
+    }
+};
 
 Mabs_parms::Mabs_parms ()
 {
@@ -60,16 +104,12 @@ Mabs_parms::Mabs_parms ()
     this->write_warped_images = true;
     this->write_warped_structures = true;
 
-    /* [SUBJECT] */
-    this->sman = new Mabs_subject_manager;
-
     /* misc */
     this->debug = false;
 }
 
 Mabs_parms::~Mabs_parms ()
 {
-    delete this->sman;
 }
 
 static void
@@ -83,37 +123,13 @@ print_usage ()
     exit (1);
 }
 
-void
-Mabs_parms::print ()
-{
-    Mabs_subject* sub = this->sman->current ();
-
-    fprintf (stderr, "Mabs_parms:\n");
-    fprintf (stderr, "-- atlas_dir: %s\n", this->atlas_dir.c_str());
-    fprintf (stderr, "-- training_dir: %s\n", this->training_dir.c_str());
-    fprintf (stderr, "-- registration_config: %s\n", 
-        this->registration_config.c_str());
-    while (sub) {
-        fprintf (stderr, "-- subject\n");
-        fprintf (stderr, "   -- img: %s [%p]\n", sub->img_fn, sub->img);
-        fprintf (stderr, "   -- ss : %s [%p]\n", sub->ss_fn, sub->ss);
-        sub = this->sman->next ();
-    }
-    fprintf (stderr, "-- labeling_input_fn: %s\n", 
-        this->labeling_input_fn.c_str());
-    fprintf (stderr, "-- labeling_output_fn: %s\n", 
-        this->labeling_output_fn.c_str());
-}
-
 int
-Mabs_parms::set_key_val (
+Mabs_parms::set_key_value (
+    const std::string& section, 
     const std::string& key, 
-    const std::string& val, 
-    const std::string& section
+    const std::string& val
 )
 {
-    Mabs_subject* subject = this->sman->current ();
-
     /* [PREALIGNMENT] */
     if (section == "PREALIGN" || section == "PREALIGNMENT") {
         if (key == "mode") {
@@ -279,20 +295,6 @@ Mabs_parms::set_key_val (
         }
     }
 
-    /* [SUBJECT] */
-    if (section == "SUBJECT") {
-        /* head is the most recent addition to the list */
-        if (key == "image") {
-            strncpy ((char*)subject->img_fn, val.c_str(), _MAX_PATH);
-        }
-        else if (key == "structs") {
-            strncpy ((char*)subject->ss_fn, val.c_str(), _MAX_PATH);
-        }
-        else {
-            goto error_exit;
-        }
-    }
-
     /* [STRUCTURES] */
     if (section == "STRUCTURES") {
         /* Add key to list of structures */
@@ -330,99 +332,8 @@ Mabs_parms::parse_config (
     const char* config_fn
 )
 {
-    /* Confirm file can be read */
-    if (!file_exists (config_fn)) {
-        print_and_exit ("Error reading config file: %s\n", config_fn);
-    }
-
-    /* Read file into string */
-    std::ifstream t (config_fn);
-    std::stringstream buffer;
-    buffer << t.rdbuf();
-
-    std::string buf;
-    std::string buf_ori;    /* An extra copy for diagnostics */
-    std::string section = "";
-
-    std::stringstream ss (buffer.str());
-
-    while (getline (ss, buf)) {
-        buf_ori = buf;
-        buf = trim (buf);
-        buf_ori = trim (buf_ori, "\r\n");
-
-        if (buf == "") continue;
-        if (buf[0] == '#') continue;
-
-        if (buf[0] == '[') {
-            if (buf.find ("[PREALIGNMENT]") != std::string::npos
-                || buf.find ("[prealignment]") != std::string::npos)
-            {
-                section = "PREALIGNMENT";
-                continue;
-            }
-            else if (buf.find ("[ATLAS-SELECTION]") != std::string::npos
-                || buf.find ("[atlas-selection]") != std::string::npos)
-            {
-                section = "ATLAS-SELECTION";
-                continue;
-            }
-            else if (buf.find ("[TRAINING]") != std::string::npos
-                || buf.find ("[training]") != std::string::npos)
-            {
-                section = "TRAINING";
-                continue;
-            }
-            else if (buf.find ("[REGISTRATION]") != std::string::npos
-                || buf.find ("[registration]") != std::string::npos)
-            {
-                section = "REGISTRATION";
-                continue;
-            }
-            else if (buf.find ("[SUBJECT]") != std::string::npos
-                || buf.find ("[subject]") != std::string::npos)
-            {
-                section = "SUBJECT";
-                this->sman->add ();
-                this->sman->select_head ();
-                continue;
-            }
-            else if (buf.find ("[STRUCTURES]") != std::string::npos
-                || buf.find ("[structures]") != std::string::npos)
-            {
-                section = "STRUCTURES";
-                continue;
-            }
-            else if (buf.find ("[LABELING]") != std::string::npos
-                || buf.find ("[labeling]") != std::string::npos)
-            {
-                section = "LABELING";
-                continue;
-            }
-            else {
-                printf ("Parse error: %s\n", buf_ori.c_str());
-            }
-        }
-
-        std::string key;
-        std::string val;
-        size_t key_loc = buf.find ("=");
-        if (key_loc == std::string::npos) {
-            key = buf;
-            val = "";
-        } else {
-            key = buf.substr (0, key_loc);
-            val = buf.substr (key_loc+1);
-        }
-        key = trim (key);
-        val = trim (val);
-
-        if (key != "") {
-            if (this->set_key_val (key, val, section) < 0) {
-                printf ("Parse error: %s\n", buf_ori.c_str());
-            }
-        }
-    }
+    Mabs_parms_parser mpp (this);
+    mpp.parse_config_file (config_fn);
 }
 
 bool
