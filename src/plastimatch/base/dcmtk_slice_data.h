@@ -25,6 +25,7 @@ public:
     Pstring iop;
     Pstring sloc;
     Pstring sthk;
+    int instance_no;
 };
 
 #endif

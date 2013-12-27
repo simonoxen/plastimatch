@@ -68,7 +68,9 @@ dcmtk_save_slice (const Rt_study_metadata::Pointer drs, Dcmtk_slice_data *dsd)
         drs->get_ct_series_uid());
     dcmtk_copy_from_metadata (dataset, image_metadata, DCM_StudyID, "10001");
     dataset->putAndInsertString (DCM_SeriesNumber, "303");
-    dataset->putAndInsertString (DCM_InstanceNumber, "0");
+    tmp.format ("%d", dsd->instance_no);
+    dataset->putAndInsertString (DCM_InstanceNumber, tmp.c_str());
+        //dataset->putAndInsertString (DCM_InstanceNumber, "0");
     /* DCM_PatientOrientation seems to be not required.  */
     // dataset->putAndInsertString (DCM_PatientOrientation, "L\\P");
     dataset->putAndInsertString (DCM_ImagePositionPatient, dsd->ipp);
@@ -132,6 +134,7 @@ Dcmtk_rt_study::save_image (
     for (plm_long k = 0; k < dsd.vol->dim[2]; k++) {
         /* GCS FIX: direction cosines */
         float z_loc = dsd.vol->offset[2] + k * dsd.vol->spacing[2];
+        dsd.instance_no = k;
         dsd.fn.format ("%s/image%03d.dcm", dicom_dir, (int) k);
         make_directory_recursive (dsd.fn);
         dsd.sthk.format ("%f", dsd.vol->spacing[2]);
