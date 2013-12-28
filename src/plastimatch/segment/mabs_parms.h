@@ -78,6 +78,9 @@ public:
     std::string labeling_input_fn;
     std::string labeling_output_fn;
 
+    /* [OPTIMIZATION-RESULT] */
+    std::string optimization_result_reg;
+
     /* misc */
     bool debug;
 };

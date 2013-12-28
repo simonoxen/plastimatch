@@ -102,6 +102,7 @@ public:
     float minsim;
     float rho;
     float sigma;
+    std::string threshold_values;
 
     /* While segmenting an image, we sometimes loop through 
        the structures for evaluation.  This holds the 
@@ -117,6 +118,7 @@ public:
     bool write_thresholded_files;
     bool write_distance_map_files;
     bool write_registration_files;
+    bool write_warped_images;
 
     /* While looping through atlases, the voting information is stored here */
     std::map<std::string, Mabs_vote*> vote_map;
@@ -139,6 +141,7 @@ public:
         write_thresholded_files = true;
         write_distance_map_files = true;
         write_registration_files = true;
+        write_warped_images = true;
         have_ref_structure = false;
         this->reset_timers ();
 
@@ -148,15 +151,14 @@ public:
         minsim = 0.0;
         rho = 0.0;
         sigma = 0.0;
+        threshold_values = "";
 
         ref_rtds = Rt_study::New ();
     }
     void reset_timers () {
         time_atlas_selection = 0;
-//        time_dice = 0;
         time_dmap = 0;
         time_extract = 0;
-//        time_hausdorff = 0;
         time_io = 0;
         time_reg = 0;
         time_vote = 0;
@@ -508,7 +510,7 @@ Mabs::run_registration_loop ()
                 timer.start();
                 std::string fn;
                 lprintf ("Saving registration_files\n");
-                if (d_ptr->parms->write_warped_images) {
+                if (d_ptr->write_warped_images) {
                     fn = string_format ("%s/img.nrrd", 
                         curr_output_dir.c_str());
                     warped_image->save_image (fn.c_str());
@@ -1100,7 +1102,7 @@ Mabs::segmentation_label ()
         }
 
         Option_range thresh_range;
-        thresh_range.set_range (d_ptr->parms->threshold_values);
+        thresh_range.set_range (d_ptr->threshold_values);
 
         /* Loop through each threshold value, do thresholding,
            and then record score */
@@ -1166,6 +1168,8 @@ Mabs::run_segmentation_loop ()
     minsim_range.set_range (d_ptr->parms->minsim_values);
     rho_range.set_range (d_ptr->parms->rho_values);
     sigma_range.set_range (d_ptr->parms->sigma_values);
+
+    d_ptr->threshold_values = d_ptr->parms->threshold_values;
 
     /* Loop through each registration parameter set */
     std::list<std::string>::iterator reg_it;
@@ -1247,6 +1251,7 @@ Mabs::set_parms (const Mabs_parms *parms)
     d_ptr->write_distance_map_files = parms->write_distance_map_files;
     d_ptr->write_thresholded_files = parms->write_thresholded_files;
     d_ptr->write_weight_files = parms->write_weight_files;
+    d_ptr->write_warped_images = parms->write_warped_images;
 }
 
 void
@@ -1365,12 +1370,21 @@ Mabs::segment ()
     /* Do a few sanity checks */
     this->sanity_checks ();
 
-    /* Parse directory with registration files */
-    this->parse_registration_dir (d_ptr->parms->registration_config);
+    /* Prepare registration parameters */
+    if (d_ptr->parms->optimization_result_reg != "") {
+        /* We know the best registration result from an optimization file */
+        std::string registration_fn = string_format ("%s/%s",
+            d_ptr->parms->registration_config.c_str(),
+            d_ptr->parms->optimization_result_reg.c_str());
+        this->parse_registration_dir (registration_fn);
+    } else {
+        /* Else, parse directory with registration files */
+        this->parse_registration_dir (d_ptr->parms->registration_config);
+    }
 
     /* Load the image to be labeled.  For now, we'll assume this 
        is successful. */
-    d_ptr->ref_rtds->load_image (d_ptr->segment_input_fn);
+    d_ptr->ref_rtds->load (d_ptr->segment_input_fn.c_str());
 
     /* Parse atlas directory */
     this->load_process_dir_list (d_ptr->prealign_dir);
@@ -1387,8 +1401,25 @@ Mabs::segment ()
         "img.nrrd");
     d_ptr->ref_rtds->get_image()->save_image (fn.c_str());
 
-    /* Run the segmentation */
+    /* Run the registrations */
+    d_ptr->write_warped_images = true;
     this->run_registration_loop ();
+
+    /* Run the segmentation */
+
+    /* GCS FIX: 
+       1) registration_id must be set to something sane when 
+       optimization results are not available
+       2) need better default values for rho, etc.
+       3) need to read optimized values of rho, etc.
+    */
+    d_ptr->registration_id = d_ptr->parms->optimization_result_reg;
+    d_ptr->rho = 0.13;
+    d_ptr->sigma = 0.2;
+    d_ptr->minsim = 0.25;
+    d_ptr->threshold_values = "0.4";
+    
+    run_segmentation ();
 }
 
 void

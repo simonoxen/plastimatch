@@ -155,18 +155,40 @@ if (-f $dice_source) {
     die "Can't open \"$dice_source\" for parsing";
 }
 
+$best_reg = "";
+$best_reg_score = 0;
 foreach $reg (sort keys %reghash) {
     ($num,$dice_sum,$hd95_sum) = split (',', $reghash{$reg});
     $avg_dice = $dice_sum / $num;
     $avg_hd95 = $hd95_sum / $num;
     print "$reg,$avg_dice,$avg_hd95\n";
+    if ($avg_dice > $best_reg_score) {
+	$best_reg_score = $avg_dice;
+	$best_reg = $reg;
+    }
+}
+if (-d $dice_source && $best_reg ne "") {
+    ## Update training file
+    $fn = "$dice_source/optimization_result_reg.txt";
+    open FP, ">$fn";
+    print FP "[OPTIMIZATION_RESULT]\nregistration=$best_reg\n";
+    close FP;
 }
 
+$best_seg = "";
+$best_seg_score = 0;
 foreach $seg (sort keys %seghash) {
     ($num,$dice_sum,$hd95_sum) = split (',', $seghash{$seg});
     $avg_dice = $dice_sum / $num;
     $avg_hd95 = $hd95_sum / $num;
     print "$seg,$avg_dice,$avg_hd95\n";
+}
+if (-d $dice_source && $best_seg ne "") {
+    ## Update training file
+    $fn = "$dice_source/optimization_result_seg.txt";
+    open FP, ">$fn";
+    print FP "[OPTIMIZATION_RESULT]\nregistration=$best_seg\n";
+    close FP;
 }
 
 # exit (0);

@@ -40,6 +40,53 @@ Rt_study::~Rt_study ()
     delete d_ptr;
 }
 
+
+void 
+Rt_study::load (const char* input_path, 
+    Plm_file_format file_type)
+{
+    if (file_type == PLM_FILE_FMT_UNKNOWN) {
+        file_type = plm_file_format_deduce (input_path);
+    }
+
+    switch (file_type) {
+    case PLM_FILE_FMT_NO_FILE:
+        print_and_exit ("Could not open input file %s for read\n",
+            input_path);
+        break;
+    case PLM_FILE_FMT_UNKNOWN:
+    case PLM_FILE_FMT_IMG:
+        this->load_image (input_path);
+        break;
+    case PLM_FILE_FMT_DICOM_DIR:
+        this->load_dicom_dir ((const char*) input_path);
+        break;
+    case PLM_FILE_FMT_XIO_DIR:
+        this->load_xio ((const char*) input_path);
+        break;
+    case PLM_FILE_FMT_DIJ:
+        print_and_exit (
+            "Warping dij files requires ctatts_in, dif_in files\n");
+        break;
+    case PLM_FILE_FMT_DICOM_RTSS:
+        this->load_dicom_rtss ((const char*) input_path);
+        break;
+    case PLM_FILE_FMT_DICOM_DOSE:
+        this->load_dicom_dose ((const char*) input_path);
+        break;
+    case PLM_FILE_FMT_CXT:
+        this->load_cxt (input_path);
+        break;
+    case PLM_FILE_FMT_SS_IMG_VEC:
+    default:
+        print_and_exit (
+            "Sorry, don't know how to load/convert/warp/segment "
+            "input type %s (%s)\n",
+            plm_file_format_string (file_type), input_path);
+        break;
+    }
+}
+
 void
 Rt_study::load_image (const char *fn)
 {

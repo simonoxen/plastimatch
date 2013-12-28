@@ -48,6 +48,9 @@ public:
         if (section == "LABELING") {
             return 0;
         }
+        if (section == "OPTIMIZATION_RESULT") {
+            return 0;
+        }
 
         /* else, unknown section */
         return -1;
@@ -103,6 +106,9 @@ Mabs_parms::Mabs_parms ()
     this->write_weight_files = true;
     this->write_warped_images = true;
     this->write_warped_structures = true;
+
+    /* [OPTIMIZATION-RESULT] */
+    this->optimization_result_reg = "";
 
     /* misc */
     this->debug = false;
@@ -179,10 +185,10 @@ Mabs_parms::set_key_value (
             else if (val == "nmi-ratio" || val == "NMI-RATIO") {
                 this->atlas_selection_criteria="nmi-ratio";
             }
-            else if (val == "random" || val == "RANDOM") { // Just for testing purpose
+            else if (val == "random" || val == "RANDOM") {
                 this->atlas_selection_criteria="random";
             }
-            else if (val == "precomputed" || val == "PRECOMPUTED") { // Just for testing purpose
+            else if (val == "precomputed" || val == "PRECOMPUTED") {
                 this->atlas_selection_criteria="precomputed";
             }
        }
@@ -319,6 +325,18 @@ Mabs_parms::set_key_value (
             goto error_exit;
         }
     }
+
+    /* [OPTIMIZATION-RESULT] */
+    if (section == "OPTIMIZATION_RESULT") {
+        if (key == "registration") {
+            this->optimization_result_reg = val;
+        }
+        else {
+            goto error_exit;
+        }
+    }
+
+
     return 0;
 
 error_exit:
@@ -333,7 +351,25 @@ Mabs_parms::parse_config (
 )
 {
     Mabs_parms_parser mpp (this);
+
+    /* Parse the main config file */
     mpp.parse_config_file (config_fn);
+
+    /* After parsing main config file, also parse 
+       optimization result files */
+
+    std::string reg_fn = string_format (
+        "%s/mabs-train/optimization_result_reg.txt",
+        this->training_dir.c_str());
+    std::string seg_fn = string_format (
+        "%s/mabs-train/optimization_result_seg.txt",
+        this->training_dir.c_str());
+    if (file_exists (reg_fn)) {
+        mpp.parse_config_file (reg_fn.c_str());
+    }
+    if (file_exists (seg_fn)) {
+        mpp.parse_config_file (seg_fn.c_str());
+    }
 }
 
 bool

@@ -30,6 +30,7 @@
 static void
 load_input_files (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms)
 {
+#if defined (commentout)
     if (parms->input_fn.not_empty ()) {
         switch (file_type) {
         case PLM_FILE_FMT_NO_FILE:
@@ -67,6 +68,11 @@ load_input_files (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms)
                 (const char*) parms->input_fn);
             break;
         }
+    }
+#endif
+
+    if (parms->input_fn.not_empty ()) {
+        rtds->load (parms->input_fn.c_str(), file_type);
     }
 
     if (parms->input_cxt_fn.not_empty()) {

@@ -7,6 +7,7 @@
 #include "plmbase_config.h"
 #include <vector>
 #include "itk_image_type.h"
+#include "plm_file_format.h"
 #include "plm_image.h"
 #include "plm_image_type.h"
 #include "rt_study_metadata.h"
@@ -33,6 +34,8 @@ public:
     Rt_study ();
     ~Rt_study ();
 
+    void load (const char* input_path, 
+        Plm_file_format file_type = PLM_FILE_FMT_UNKNOWN);
     void load_dicom_dir (const char *dicom_dir);
     void load_dicom (const char *dicom_dir); 
     void load_dicom_dose (const char *dicom_path);
