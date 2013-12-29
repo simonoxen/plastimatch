@@ -44,7 +44,7 @@ make_uppercase (const std::string& s)
 }
 
 static int 
-regularize_parameter_key_callback (int c)
+regularize_string_callback (int c)
 {
     int o = ::tolower (c);
     if (o == '-') {
@@ -55,11 +55,11 @@ regularize_parameter_key_callback (int c)
 
 /* Make lower case, and convert dash '-' to underscore '_' */
 std::string 
-regularize_parameter_key (const std::string& s)
+regularize_string (const std::string& s)
 {
     std::string out;
     std::transform (s.begin(), s.end(), std::back_inserter(out), 
-        regularize_parameter_key_callback);
+        regularize_string_callback);
     return out;
 }
 

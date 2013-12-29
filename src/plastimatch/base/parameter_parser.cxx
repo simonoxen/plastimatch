@@ -16,6 +16,10 @@
 #include "print_and_exit.h"
 #include "string_util.h"
 
+Parameter_parser::Parameter_parser () {
+    key_regularization = true;
+}
+
 int
 Parameter_parser::parse_config_string (
     const char* config_string
@@ -66,7 +70,9 @@ Parameter_parser::parse_config_string (
             val = buf.substr (key_loc+1);
         }
         key = trim (key);
-        key = regularize_parameter_key (key);
+        if (this->key_regularization) {
+            key = regularize_string (key);
+        }
         val = trim (val);
 
         if (key != "") {
@@ -78,6 +84,14 @@ Parameter_parser::parse_config_string (
         }
     }
     return 0;
+}
+
+void 
+Parameter_parser::enable_key_regularization (
+    bool enable
+)
+{
+    this->key_regularization = enable;
 }
 
 int

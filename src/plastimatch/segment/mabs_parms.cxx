@@ -31,24 +31,31 @@ public:
         const std::string& section)
     {
         if (section == "PREALIGN" || section == "PREALIGNMENT") {
+            this->enable_key_regularization (true);
             return 0;
         }
         if (section == "ATLAS-SELECTION") {
+            this->enable_key_regularization (true);
             return 0;
         }
         if (section == "TRAINING") {
+            this->enable_key_regularization (true);
             return 0;
         }
         if (section == "REGISTRATION") {
+            this->enable_key_regularization (true);
             return 0;
         }
         if (section == "STRUCTURES") {
+            this->enable_key_regularization (false);
             return 0;
         }
         if (section == "LABELING") {
+            this->enable_key_regularization (true);
             return 0;
         }
         if (section == "OPTIMIZATION_RESULT") {
+            this->enable_key_regularization (true);
             return 0;
         }
 

@@ -8,12 +8,23 @@
 
 class PLMBASE_API Parameter_parser {
 public:
+    Parameter_parser ();
+public:
+    bool key_regularization;
+public:
+    /* Callbacks */
     virtual int process_section (
         const std::string& section) = 0;
     virtual int process_key_value (
         const std::string& section, 
         const std::string& key, 
         const std::string& val) = 0;
+
+    /* Pass in "true" to enable key regularization, or "false" to 
+       disable it.   Default is "true". */
+    void enable_key_regularization (
+        bool enable
+    );
 
     /* Return zero if config string is correctly parsed */
     int parse_config_string (

@@ -179,6 +179,7 @@ public:
         vote_map.clear ();
     }
 public:
+    void print_structure_map ();
     std::string map_structure_name (const std::string& ori_name);
     void extract_reference_image (const std::string& mapped_name);
     void segmentation_threshold_weight (
@@ -188,7 +189,18 @@ public:
         float thresh_val);
 };
 
-
+/* Print out structure map */
+void
+Mabs_private::print_structure_map ()
+{
+    std::map<std::string, std::string>::const_iterator it;
+    for (it = this->parms->structure_map.begin ();
+         it != this->parms->structure_map.end (); 
+         it++)
+    {
+        lprintf ("SM> %s\n", (*it).first.c_str());
+    }
+}
 
 /* Map an input-specific structure name to a canonical structure name 
    Return "" if no canonical name */
@@ -636,8 +648,11 @@ Mabs::convert (const std::string& input_dir, const std::string& output_dir)
            want to segment */
         std::string ori_name = rtss->get_structure_name (i);
         std::string mapped_name = d_ptr->map_structure_name (ori_name);
+        lprintf ("Structure i (%s), checking for mapped name\n",
+            ori_name.c_str());
         if (mapped_name == "") {
             /* If not, delete it (before rasterizing) */
+            lprintf ("Deleted structure %s\n");
             cxt->delete_structure (i);
             --i;
         }
@@ -662,6 +677,9 @@ Mabs::atlas_convert ()
 
     /* Parse atlas directory */
     this->load_process_dir_list (d_ptr->parms->atlas_dir);
+
+    /* Just a little debugging */
+    d_ptr->print_structure_map ();
 
     /* Loop through atlas_dir, converting file formats */
     for (std::list<std::string>::iterator it = d_ptr->process_dir_list.begin();

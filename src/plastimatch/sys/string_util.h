@@ -13,7 +13,7 @@ PLMSYS_API bool string_starts_with (const char* s1, const char* s2);
 PLMSYS_API int plm_strcmp (const char* s1, const char* s2);
 PLMSYS_API std::string make_lowercase (const std::string& s);
 PLMSYS_API std::string make_uppercase (const std::string& s);
-PLMSYS_API std::string regularize_parameter_key (const std::string& s);
+PLMSYS_API std::string regularize_string (const std::string& s);
 PLMSYS_API void string_util_rtrim_whitespace (char *s);
 PLMSYS_API int parse_int13 (int *arr, const char *string);
 PLMSYS_API int parse_dicom_float2 (float *arr, const char *string);
