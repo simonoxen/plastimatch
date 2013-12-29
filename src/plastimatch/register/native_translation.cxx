@@ -114,6 +114,7 @@ native_translation (
 
     /* Compute search extent -- range of search is up to 50% overlap 
        in any one dimension */
+    lprintf ("Computing grid search extent.\n");
     float search_min[3];
     float search_max[3];
     for (int d = 0; d < 3; d++) {
@@ -121,18 +122,22 @@ native_translation (
         if (mo < 0.1) { mo = 0.1; }
         else if (mo > 0.9) { mo = 0.9; }
 
-        float mov_siz = moving->dim[d] *  moving->spacing[d];
-        float fix_siz = fixed->dim[d] *  fixed->spacing[d];
+        float mov_siz = moving->dim[d] * moving->spacing[d];
+        float fix_siz = fixed->dim[d] * fixed->spacing[d];
+        lprintf ("Dimension %d, mo=%g F=(%g, %g) M=(%g, %g)\n",
+            d, mo, fixed->offset[d], fix_siz,
+            moving->offset[d], mov_siz);
+        
         if (fix_siz > mov_siz) {
-            search_min[d] = fixed->offset[d] - moving->offset[d] 
-                - mov_siz + mo * mov_siz;
-            search_max[d] = fixed->offset[d] - moving->offset[d] 
-                + fix_siz - mo * mov_siz;
+            search_min[d] = moving->offset[d] - fixed->offset[d] 
+                - fix_siz + mo * mov_siz;
+            search_max[d] = moving->offset[d] - fixed->offset[d] 
+                + mov_siz - mo * mov_siz;
         } else {
-            search_min[d] = fixed->offset[d] - moving->offset[d] 
-                - mov_siz + mo * fix_siz;
-            search_max[d] = fixed->offset[d] - moving->offset[d] 
-                + fix_siz - mo * fix_siz;
+            search_min[d] = moving->offset[d] - fixed->offset[d] 
+                - fix_siz + mo * fix_siz;
+            search_max[d] = moving->offset[d] - fixed->offset[d] 
+                + mov_siz - mo * fix_siz;
         }
     }
     lprintf ("Native grid search extent: "
