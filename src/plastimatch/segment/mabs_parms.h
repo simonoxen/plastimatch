@@ -80,6 +80,10 @@ public:
 
     /* [OPTIMIZATION-RESULT] */
     std::string optimization_result_reg;
+    float optimization_result_seg_rho;
+    float optimization_result_seg_sigma;
+    float optimization_result_seg_minsim;
+    std::string optimization_result_seg_thresh;
 
     /* misc */
     bool debug;

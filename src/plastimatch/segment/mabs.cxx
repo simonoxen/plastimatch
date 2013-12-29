@@ -1527,10 +1527,10 @@ Mabs::segment ()
        3) need to read optimized values of rho, etc.
     */
     d_ptr->registration_id = d_ptr->parms->optimization_result_reg;
-    d_ptr->rho = 0.13;
-    d_ptr->sigma = 0.2;
-    d_ptr->minsim = 0.25;
-    d_ptr->threshold_values = "0.4";
+    d_ptr->rho = d_ptr->parms->optimization_result_seg_rho;
+    d_ptr->sigma = d_ptr->parms->optimization_result_seg_sigma;
+    d_ptr->minsim = d_ptr->parms->optimization_result_seg_minsim;
+    d_ptr->threshold_values = d_ptr->parms->optimization_result_seg_thresh;
     
     run_segmentation ();
 }

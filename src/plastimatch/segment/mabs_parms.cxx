@@ -116,6 +116,10 @@ Mabs_parms::Mabs_parms ()
 
     /* [OPTIMIZATION-RESULT] */
     this->optimization_result_reg = "";
+    this->optimization_result_seg_rho = 1.0;
+    this->optimization_result_seg_sigma = 30.;
+    this->optimization_result_seg_minsim = 0.3;
+    this->optimization_result_seg_thresh = "0.4";
 
     /* misc */
     this->debug = false;
@@ -198,7 +202,7 @@ Mabs_parms::set_key_value (
             else if (val == "precomputed" || val == "PRECOMPUTED") {
                 this->atlas_selection_criteria="precomputed";
             }
-       }
+        }
         else if (key == "mi_percent_threshold") {
             sscanf (val.c_str(), "%g", &this->mi_percent_threshold);
         }
@@ -212,7 +216,7 @@ Mabs_parms::set_key_value (
         else if (key == "roi_mask_fn" || key == "roi_mask") {
             this->roi_mask_fn = val;
         }
-         else if (key == "selection_reg_parms") {
+        else if (key == "selection_reg_parms") {
             this->selection_reg_parms_fn = val;
         }
         else if (key == "lower_mi_value_subject") {
@@ -231,7 +235,7 @@ Mabs_parms::set_key_value (
             sscanf (val.c_str(), "%d", &this->upper_mi_value_atl);
             this->upper_mi_value_atl_defined = true;
         }
-         else if (key == "min_random_atlases") {
+        else if (key == "min_random_atlases") {
             sscanf (val.c_str(), "%d", &this->min_random_atlases);
         }
         else if (key == "max_random_atlases") {
@@ -338,11 +342,22 @@ Mabs_parms::set_key_value (
         if (key == "registration") {
             this->optimization_result_reg = val;
         }
+        else if (key == "gaussian_weighting_voting_rho") {
+            sscanf (val.c_str(), "%g", &this->optimization_result_seg_rho);
+        }
+        else if (key == "gaussian_weighting_voting_sigma") {
+            sscanf (val.c_str(), "%g", &this->optimization_result_seg_sigma);
+        }
+        else if (key == "gaussian_weighting_voting_minsim") {
+            sscanf (val.c_str(), "%g", &this->optimization_result_seg_minsim);
+        }
+        else if (key == "gaussian_weighting_voting_thresh") {
+            this->optimization_result_seg_thresh = val;
+        }
         else {
             goto error_exit;
         }
     }
-
 
     return 0;
 
