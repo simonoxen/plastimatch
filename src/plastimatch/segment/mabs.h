@@ -34,7 +34,7 @@ protected:
     void run_segmentation_loop ();
     void segmentation_vote (const std::string& atlas_id);
     void segmentation_label ();
-    void train_internal (bool registration_only);
+    void train_internal ();
 
 public:
     void set_parms (const Mabs_parms *parms);

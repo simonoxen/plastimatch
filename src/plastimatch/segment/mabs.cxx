@@ -88,7 +88,8 @@ public:
     std::list<std::string> atlas_list;
 
     /* Select atlas parameters */
-    std::map<std::string,  std::list<std::pair<std::string, double> > > selected_atlases;
+    std::map<std::string,  std::list<std::pair<std::string, double> > 
+             > selected_atlases;
 
     /* Prealign parameters */
     bool prealign_resample;
@@ -110,6 +111,10 @@ public:
        evaluating. */
     bool have_ref_structure;
     UCharImageType::Pointer ref_structure_image;
+
+    /* This configures the trainer to evaluate segmentation parameters,
+       it is set to false when --train-registration is used */
+    bool train_segmentation;
 
     /* You can set these variables to save some intermediate data 
        for debugging and tuning */
@@ -136,6 +141,7 @@ public:
 public:
     Mabs_private () {
         parms = 0;
+        train_segmentation = true;
         compute_distance_map = true;
         write_weight_files = false;
         write_thresholded_files = true;
@@ -975,11 +981,15 @@ Mabs::segmentation_vote (const std::string& atlas_id)
     Plm_timer timer;
     
     /* Set up files & directories for this job */
+    std::string atlas_input_path;
+    atlas_input_path = string_format ("%s/%s",
+        d_ptr->prealign_dir.c_str(), atlas_id.c_str());
+    lprintf ("atlas_input_path: %s\n",
+        atlas_input_path.c_str());
     std::string atlas_output_path;
     atlas_output_path = string_format ("%s/%s",
         d_ptr->output_dir.c_str(), atlas_id.c_str());
-    lprintf ("atlas_output_path: %s, %s, %s\n",
-        d_ptr->output_dir.c_str(), atlas_id.c_str(),
+    lprintf ("atlas_output_path: %s\n",
         atlas_output_path.c_str());
     std::string curr_output_dir;
     curr_output_dir = string_format ("%s/%s",
@@ -987,16 +997,55 @@ Mabs::segmentation_vote (const std::string& atlas_id)
         d_ptr->registration_id.c_str());
     lprintf ("curr_output_dir: %s\n", curr_output_dir.c_str());
 
+    /* Load xform */
+    timer.start();
+    std::string xf_fn = string_format ("%s/%s",
+        curr_output_dir.c_str(),
+        "xf.txt");
+    lprintf ("Loading xform: %s\n", xf_fn.c_str());
+    Xform xf;
+    xf.load (xf_fn);
+    d_ptr->time_io += timer.report();
+
     /* Load warped image */
     timer.start();
     std::string warped_image_fn;
     warped_image_fn = string_format (
         "%s/img.nrrd", curr_output_dir.c_str());
-    lprintf ("Loading warped image: %s\n", warped_image_fn.c_str());
-    Plm_image *warped_image = plm_image_load_native (
-        warped_image_fn);
+    Plm_image *warped_image = plm_image_load_native (warped_image_fn);
     d_ptr->time_io += timer.report();
-            
+    if (!warped_image) {
+        /* Load atlas image */
+        timer.start();
+        std::string atlas_image_fn;
+        atlas_image_fn = string_format ("%s/img.nrrd", 
+            atlas_input_path.c_str());
+        lprintf ("That's ok.  Loading atlas image instead: %s\n", 
+            atlas_image_fn.c_str());
+        Plm_image *atlas_image = 
+            plm_image_load_native (atlas_image_fn);
+        d_ptr->time_io += timer.report();
+        /* Warp atlas image */
+        lprintf ("Warping atlas image.\n");
+        timer.start();
+        warped_image = new Plm_image;
+        Plm_image_header fixed_pih (d_ptr->ref_rtds->get_image());
+        plm_warp (warped_image, 0, &xf, 
+            &fixed_pih, 
+            atlas_image, 
+            0, 0, 1);
+        delete atlas_image;
+        d_ptr->time_warp_img += timer.report();
+        /* Save warped image */
+        if (d_ptr->write_warped_images) {
+            timer.start();
+            lprintf ("Saving warped atlas image: %s\n",
+                warped_image_fn.c_str());
+            warped_image->save_image (warped_image_fn.c_str());
+            d_ptr->time_io += timer.report();
+        }
+    }
+
     /* Loop through structures for this atlas image */
     std::map<std::string, std::string>::const_iterator it;
     for (it = d_ptr->parms->structure_map.begin ();
@@ -1031,18 +1080,52 @@ Mabs::segmentation_vote (const std::string& atlas_id)
         d_ptr->time_io += timer.report();
         if (!dmap_image) {
             /* Load warped structure */
+            timer.start();
             std::string warped_structure_fn = string_format (
                 "%s/structures/%s.nrrd", curr_output_dir.c_str(),
                 mapped_name.c_str());
+            lprintf ("That's ok, loading warped structure instead: %s\n",
+                warped_structure_fn.c_str());
             Plm_image *warped_structure = plm_image_load_native (
                 warped_structure_fn);
-            if(!warped_structure) continue;
+            d_ptr->time_io += timer.report();
+            if (!warped_structure) {
+                /* Load original structure */
+                timer.start();
+                std::string atlas_struct_fn;
+                atlas_struct_fn = string_format ("%s/structures/%s.nrrd", 
+                    atlas_input_path.c_str(), mapped_name.c_str());
+                lprintf ("That's ok, loading atlas structure instead: %s\n", 
+                    atlas_struct_fn.c_str());
+                Plm_image *atlas_struct = 
+                    plm_image_load_native (atlas_struct_fn);
+                d_ptr->time_io += timer.report();
+                if (!atlas_struct) {
+                    lprintf ("Atlas %s doesn't have structure %s\n",
+                        atlas_id.c_str(), mapped_name.c_str());
+                    continue;
+                }
+                /* Warp structure */
+                timer.start();
+                warped_structure = new Plm_image;
+                Plm_image_header fixed_pih (d_ptr->ref_rtds->get_image());
+                lprintf ("Warping atlas structure.\n");
+                plm_warp (warped_structure, 0, &xf, 
+                    &fixed_pih, 
+                    atlas_struct,
+                    0, 0, 1);
+                delete atlas_struct;
+                d_ptr->time_warp_str += timer.report();
+            }
+            if (!warped_structure) continue;
             /* Recompute distance map */
+            timer.start();
             FloatImageType::Pointer dmap_image_itk = this->compute_dmap (
                 warped_structure->itk_uchar(),
                 curr_output_dir, mapped_name);
             delete warped_structure;
             dmap_image = new Plm_image (dmap_image_itk);
+            d_ptr->time_dmap += timer.report();
         }
 
         /* Vote */
@@ -1267,7 +1350,7 @@ Mabs::set_segment_output_dicom (const std::string& output_dicom_dir)
 }
 
 void
-Mabs::train_internal (bool registration_only)
+Mabs::train_internal ()
 {
     Plm_timer timer;
     Plm_timer timer_total;
@@ -1281,8 +1364,19 @@ Mabs::train_internal (bool registration_only)
         "%s/%s", d_ptr->mabs_train_dir.c_str(), "logfile.txt");
     logfile_open (logfile_path.c_str(), "a");
 
-    /* Parse directory with registration files */
-    this->parse_registration_dir (d_ptr->parms->registration_config);
+    /* Prepare registration parameters */
+    if (d_ptr->train_segmentation && 
+        d_ptr->parms->optimization_result_reg != "")
+    {
+        /* We get the best registration result from an optimization file */
+        std::string registration_fn = string_format ("%s/%s",
+            d_ptr->parms->registration_config.c_str(),
+            d_ptr->parms->optimization_result_reg.c_str());
+        this->parse_registration_dir (registration_fn);
+    } else {
+        /* Else, parse directory with registration files */
+        this->parse_registration_dir (d_ptr->parms->registration_config);
+    }
 
     /* Parse atlas directory */
     this->load_process_dir_list (d_ptr->prealign_dir);
@@ -1323,7 +1417,8 @@ Mabs::train_internal (bool registration_only)
         /* Use the atlases coming from the selection step */
         if (!d_ptr->selected_atlases.empty())
         {
-            /* Extract from map structure only the atlases choosen for the current patient*/
+            /* Extract from map structure only the atlases 
+               choosen for the current patient*/
             std::list<std::string> atlases_for_subject;
             std::list<std::pair<std::string, double> >::iterator atl_it;
             for (atl_it = d_ptr->selected_atlases[patient_id].begin();
@@ -1340,7 +1435,7 @@ Mabs::train_internal (bool registration_only)
 
         /* Run the segmentation */
         this->run_registration_loop ();
-        if (!registration_only) {
+        if (d_ptr->train_segmentation == true) {
             this->run_segmentation_loop ();
         }
     }
@@ -1425,13 +1520,16 @@ Mabs::segment ()
 void
 Mabs::train ()
 {
+    d_ptr->train_segmentation = true;
     d_ptr->compute_distance_map = true;
-    this->train_internal (false);
+    d_ptr->write_warped_images = true;    /* Should be configurable */
+    this->train_internal ();
 }
 
 void
 Mabs::train_registration ()
 {
+    d_ptr->train_segmentation = false;
     d_ptr->compute_distance_map = false;
-    this->train_internal (true);
+    this->train_internal ();
 }
