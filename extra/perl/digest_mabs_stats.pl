@@ -141,6 +141,13 @@ if (-f $dice_source) {
     opendir DIR, $dice_source or die "Can't open \"$dice_source\" for parsing";
     while (my $f = readdir(DIR)) {
 	($f eq "." || $f eq "..") and next;
+	$fn = "$dice_source/$f";
+	if (-f $fn) {
+	    if ($f eq "seg_dice.csv") {
+		digest_file ($fn, \%reghash, \%seghash);
+	    }
+	    next;
+	}
 	$fn = "$dice_source/$f/reg_dice.csv";
 	if (-f "$fn") {
 	    digest_file ($fn, \%reghash, \%seghash);
@@ -169,11 +176,58 @@ foreach $reg (sort keys %reghash) {
 }
 if (-d $dice_source && $best_reg ne "") {
     ## Update training file
-    $fn = "$dice_source/optimization_result_reg.txt";
+##    $fn = "$dice_source/optimization_result_reg.txt";
+##    open FP, ">$fn";
+##    print FP "[OPTIMIZATION_RESULT]\nregistration=$best_reg\n";
+##    close FP;
+}
+
+## This is a hack for version 1.0.   Use the same parameters 
+## for all structures.
+foreach $seg (sort keys %seghash) {
+    ($num,$dice_sum,$hd95_sum) = split (',', $seghash{$seg});
+    ($struct,$parms) = split (',', $seg, 2);
+    if (exists $seg_dice_hash{$parms}) {
+	$seg_dice_hash{$parms} = $dice_sum;
+	$seg_hd95_hash{$parms} = $hd95_sum;
+	$seg_num{$parms} = $num;
+    } else {
+	$seg_dice_hash{$parms} += $dice_sum;
+	$seg_hd95_hash{$parms} += $hd95_sum;
+	$seg_num{$parms} += $num;
+    }
+}
+$best_seg = "";
+$best_seg_score = 0;
+foreach $parms (sort keys %seg_dice_hash) {
+    $avg_dice = $seg_dice_hash{$parms} / $seg_num{$parms};
+    $avg_hd95 = $seg_hd95_hash{$parms} / $seg_num{$parms};
+    if ($avg_dice > $best_seg_score) {
+	$best_seg = $parms;
+	$best_seg_score = $avg_dice;
+    }
+}
+print "seg: $best_seg,$best_seg_score\n";
+if (-d $dice_source && $best_seg ne "") {
+    ## Update training file
+    ($rho,$sigma,$minsim,$thresh) = split (',', $best_seg);
+
+    ;
+    $output_string = <<EOSTRING
+[OPTIMIZATION_RESULT]
+gaussian_weighting_voting_rho=$rho
+gaussian_weighting_voting_sigma=$sigma
+gaussian_weighting_voting_minsim=$minsim
+gaussian_weighting_voting_thresh=$thresh
+EOSTRING
+    ;
+    $fn = "$dice_source/optimization_result_seg.txt";
     open FP, ">$fn";
-    print FP "[OPTIMIZATION_RESULT]\nregistration=$best_reg\n";
+    print FP $output_string;
     close FP;
 }
+
+exit (0);
 
 $best_seg = "";
 $best_seg_score = 0;
@@ -181,7 +235,7 @@ foreach $seg (sort keys %seghash) {
     ($num,$dice_sum,$hd95_sum) = split (',', $seghash{$seg});
     $avg_dice = $dice_sum / $num;
     $avg_hd95 = $hd95_sum / $num;
-    print "$seg,$avg_dice,$avg_hd95\n";
+    print "$seg,$num,$avg_dice,$avg_hd95\n";
 }
 if (-d $dice_source && $best_seg ne "") {
     ## Update training file
