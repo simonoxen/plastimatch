@@ -262,7 +262,7 @@ Step 5: Running a segmentation
 Whew!  That was a lot of work.  But now you are ready to run segmentations.
 If your images are in directory "input-dicom", you can do this::
 
-  plastimatch mabs --input dicom-in --output-dicom dicom-out task01.cfg
+  plastimatch mabs --input dicom-in --output result-directory task01.cfg
 
 This will segment the input image, and create an output directory
-which contains the images (and for now, a lot of other files too).::
+which contains the segmented structures (and a lot of other files too).
