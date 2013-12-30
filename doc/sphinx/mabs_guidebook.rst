@@ -12,31 +12,31 @@ Image segmentation (MABS) guidebook
 
    .. container:: leftside
 
-	  MABS stands for "Multi Atlas Based Segmentation."  It is a flexible 
+	  MABS (Multi Atlas Based Segmentation) is a flexible 
 	  system for performing automatic segmentation of medical images. 
 	  This guidebook explains how to prepare an atlas for
 	  segmentation, how to perform a segmentation, 
 	  and how to tune MABS for optimal accuracy.
 
 So far, MABS has only been tested on linux, but 
-it probably works on other platforms.  Please contact 
+it probably can work on other platforms.  Please contact 
 the email list if you desire to run MABS on other platforms.
 
 Step 1: Creating a master configuration file
 --------------------------------------------
-The first step is to create a new directory for 
-holding all of your configuration and training data.
+First, you should create a new directory for 
+holding your configuration files and training data.
 You can start with the following layout::
 
   --+------- mabs/
     +------- mabs/task01.cfg
 
-In this context, "task01" is a specific segmentation task, 
+In this context, "task01" refers to a segmentation task 
 with an associated atlas.  You can have multiple tasks, 
-such as one task for head and neck and one for prostate.
+such as one task for head and neck, one for prostate, and so on. 
 You don't have to call it "task01", you can call it anything.
 The file "mabs/task01.cfg" is a master configuration file that 
-controls MABS.  For purposes of the guidebook, we will use 
+controls MABS for task01.  For purposes of the guidebook, we will use 
 the configuration file specified below::
 
   [TRAINING]
