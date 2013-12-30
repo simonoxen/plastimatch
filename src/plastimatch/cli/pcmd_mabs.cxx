@@ -18,6 +18,7 @@ public:
 
     std::string cmd_file_fn;
     std::string input_fn;
+    std::string output_dir;
     std::string output_dicom_dir;
 
 public:
@@ -64,6 +65,8 @@ parse_fn (
         "parameters only", 0);
     parser->add_long_option ("", "input", 
         "input image or directory for doing a segmentation", 1, "");
+    parser->add_long_option ("", "output", 
+        "output (non-dicom) directory when doing a segmentation", 1, "");
     parser->add_long_option ("", "output-dicom", 
         "output dicom directory when doing a segmentation", 1, "");
 
@@ -101,6 +104,9 @@ parse_fn (
     if (parser->have_option ("input")) {
         parms->input_fn = parser->get_string ("input");
     }
+    if (parser->have_option ("output")) {
+        parms->output_dir = parser->get_string ("output");
+    }
     if (parser->have_option ("output-dicom")) {
         parms->output_dicom_dir = parser->get_string ("output-dicom");
     }
@@ -137,6 +143,9 @@ do_command_mabs (int argc, char *argv[])
     else {
         if (parms.input_fn != "") {
             mabs.set_segment_input (parms.input_fn);
+        }
+        if (parms.output_dir != "") {
+            mabs.set_segment_output (parms.output_dir);
         }
         if (parms.output_dicom_dir != "") {
             mabs.set_segment_output_dicom (parms.output_dicom_dir);

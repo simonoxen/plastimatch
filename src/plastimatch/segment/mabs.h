@@ -41,6 +41,7 @@ public:
     void parse_registration_dir (const std::string& registration_config);
 
     void set_segment_input (const std::string& input_fn);
+    void set_segment_output (const std::string& output_dir);
     void set_segment_output_dicom (const std::string& output_dicom_dir);
 
     void atlas_selection ();

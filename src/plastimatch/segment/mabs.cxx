@@ -1362,9 +1362,15 @@ Mabs::set_segment_input (const std::string& input_fn)
 }
 
 void 
+Mabs::set_segment_output (const std::string& output_dir)
+{
+    d_ptr->segment_outdir_base = output_dir;
+}
+
+void 
 Mabs::set_segment_output_dicom (const std::string& output_dicom_dir)
 {
-    d_ptr->segment_outdir_base = output_dicom_dir;
+    /* Not yet implemented */
 }
 
 void
