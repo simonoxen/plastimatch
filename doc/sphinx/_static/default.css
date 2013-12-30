@@ -165,6 +165,17 @@ div.documentwrapper {
 }
 */
 
+/* As per http://stackoverflow.com/questions/4550021/working-example-of-floating-image-in-restructured-text */
+div.leftside {
+    margin-right: 425px;
+}
+
+div.rightside {
+    width: 414px;
+    padding: 0px 3px 0px 0px;
+    float: right;
+}
+
 div.clearer {
     clear: both;
 }
