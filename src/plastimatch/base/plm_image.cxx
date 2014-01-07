@@ -60,6 +60,11 @@ Plm_image::Plm_image (UCharImageType::Pointer img)
     this->init ();
     this->set_itk (img);
 }
+Plm_image::Plm_image (CharImageType::Pointer img)
+{
+    this->init ();
+    this->set_itk (img);
+}
 Plm_image::Plm_image (ShortImageType::Pointer img)
 {
     this->init ();
@@ -681,6 +686,15 @@ Plm_image::set_itk (UCharImageType::Pointer img)
 }
 
 void 
+Plm_image::set_itk (CharImageType::Pointer img)
+{
+    this->free ();
+    m_original_type = PLM_IMG_TYPE_ITK_CHAR;
+    m_type = PLM_IMG_TYPE_ITK_CHAR;
+    this->m_itk_char = img;
+}
+
+void 
 Plm_image::set_itk (UShortImageType::Pointer img)
 {
     this->free ();
@@ -708,12 +722,30 @@ Plm_image::set_itk (UInt32ImageType::Pointer img)
 }
 
 void 
+Plm_image::set_itk (Int32ImageType::Pointer img)
+{
+    this->free ();
+    m_original_type = PLM_IMG_TYPE_ITK_LONG;
+    m_type = PLM_IMG_TYPE_ITK_LONG;
+    this->m_itk_int32 = img;
+}
+
+void 
 Plm_image::set_itk (FloatImageType::Pointer img)
 {
     this->free ();
     m_original_type = PLM_IMG_TYPE_ITK_FLOAT;
     m_type = PLM_IMG_TYPE_ITK_FLOAT;
     this->m_itk_float = img;
+}
+
+void 
+Plm_image::set_itk (DoubleImageType::Pointer img)
+{
+    this->free ();
+    m_original_type = PLM_IMG_TYPE_ITK_DOUBLE;
+    m_type = PLM_IMG_TYPE_ITK_DOUBLE;
+    this->m_itk_double = img;
 }
 
 void 

@@ -34,6 +34,7 @@ public:
     Plm_image (const char* fname, Plm_image_type type);
     Plm_image (const std::string& fname, Plm_image_type type);
     Plm_image (UCharImageType::Pointer img);
+    Plm_image (CharImageType::Pointer img);
     Plm_image (ShortImageType::Pointer img);
     Plm_image (FloatImageType::Pointer img);
     Plm_image (Volume *vol);
@@ -112,10 +113,13 @@ public:
     void set_volume (Volume *v, Plm_image_type type);
     void set_volume (Volume *v);
     void set_itk (UCharImageType::Pointer img);
+    void set_itk (CharImageType::Pointer img);
     void set_itk (UShortImageType::Pointer img);
     void set_itk (ShortImageType::Pointer img);
     void set_itk (UInt32ImageType::Pointer img);
+    void set_itk (Int32ImageType::Pointer img);
     void set_itk (FloatImageType::Pointer img);
+    void set_itk (DoubleImageType::Pointer img);
     void set_itk (UCharVecImageType::Pointer img);
 
     /* conversion */
