@@ -28,18 +28,20 @@ public:
 
 public:
 Rt_study_metadata::Pointer load_rt_study (
-    Plm_image::Pointer& image, const std::string& path);
+    Plm_image::Pointer& image, const std::string& path, 
+    const std::string& output_suffix);
 };
 
 /* Utility function */
 Rt_study_metadata::Pointer 
 Dicom_sro_save_private::load_rt_study (
-    Plm_image::Pointer& image, const std::string& path)
+    Plm_image::Pointer& image, const std::string& path,
+    const std::string& output_suffix)
 {
     if (image) {
         Rt_study::Pointer rtds = Rt_study::New ();
         rtds->set_image (image);
-        std::string fixed_path = this->output_dir + "/fixed";
+        std::string fixed_path = this->output_dir + "/" + output_suffix;
         rtds->save_dicom (fixed_path);
         return rtds->get_rt_study_metadata();
     }
@@ -50,7 +52,7 @@ Dicom_sro_save_private::load_rt_study (
         }
         Plm_image::Pointer new_image = Plm_image::New ();
         new_image->load_native (path);
-        return this->load_rt_study (new_image, path);
+        return this->load_rt_study (new_image, path, output_suffix);
     }
     /* Return null pointer */
     return Rt_study_metadata::Pointer();
@@ -112,11 +114,11 @@ Dicom_sro_save::run ()
 
     /* Fixed image */
     rtm_reg = d_ptr->load_rt_study (
-        d_ptr->fixed_image, d_ptr->fixed_image_path);
+        d_ptr->fixed_image, d_ptr->fixed_image_path, "fixed");
 
     /* Moving image */
     rtm_src = d_ptr->load_rt_study (
-        d_ptr->moving_image, d_ptr->moving_image_path);
+        d_ptr->moving_image, d_ptr->moving_image_path, "moving");
 
     Dcmtk_sro::save (
         d_ptr->xform, rtm_src, rtm_reg, d_ptr->output_dir);
