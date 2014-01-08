@@ -1,4 +1,13 @@
 
+***** How to detect a "Null" smart pointer *****
+
+Just like a regular pointer.
+
+Plm_image::Pointer p;
+if (p) {
+   /* Will not be executed because p is null */
+}
+
 ***** Plastimatch 2.0 *****
 
 Proposal #1, extend existing language.  The below is an example,

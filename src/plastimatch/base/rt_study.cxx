@@ -13,6 +13,7 @@
 #include "astroid_dose.h"
 #include "file_util.h"
 #include "itk_resample.h"
+#include "logfile.h"
 #include "mc_dose.h"
 #include "path_util.h"
 #include "plm_image.h"

@@ -18,6 +18,7 @@ set (PLMUTIL_LIBRARY_SRC
   bspline_correspond.cxx
   contour_distance.cxx contour_distance.h 
   dice_statistics.cxx
+  dicom_sro_save.cxx
   distance_map.cxx
   diff.cxx
   dvh.cxx 

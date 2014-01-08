@@ -12,6 +12,7 @@
 #include "dcmtk_rtss.h"
 #include "dcmtk_series.h"
 #include "dcmtk_slice_data.h"
+#include "logfile.h"
 #include "plm_image.h"
 #include "plm_version.h"
 #include "rt_study_metadata.h"
@@ -153,8 +154,6 @@ Dcmtk_rt_study::load (const char *dicom_path)
     d_ptr->img = dss.get_image ();
     d_ptr->cxt = dss.get_rtss ();
     d_ptr->dose = dss.get_dose ();
-
-    printf ("Done.\n");
 }
 
 void 

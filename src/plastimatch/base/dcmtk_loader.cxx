@@ -17,6 +17,7 @@
 #include "dcmtk_loader_p.h"
 #include "dcmtk_series.h"
 #include "file_util.h"
+#include "logfile.h"
 #include "plm_image.h"
 #include "print_and_exit.h"
 #include "rt_study_metadata.h"
@@ -113,6 +114,8 @@ Dcmtk_loader::insert_directory (const char* dir)
     OFStandard::searchDirectoryRecursively (
 	dir, input_files, "", "", recurse);
 
+    /* GCS FIX: I found on windows this method doesn't work 
+       if the path is like c:/dir/dir, it must be c:\dir\dir */
     OFListIterator(OFString) if_iter = input_files.begin();
     OFListIterator(OFString) if_last = input_files.end();
     while (if_iter != if_last) {

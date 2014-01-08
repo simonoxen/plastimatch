@@ -8,6 +8,7 @@
 #include "dcmtk_loader.h"
 #include "dcmtk_rt_study.h"
 #endif
+#include "logfile.h"
 #include "plm_image.h"
 #include "rt_study.h"
 #include "rt_study_p.h"

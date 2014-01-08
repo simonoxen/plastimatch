@@ -14,6 +14,7 @@
 #include "dcmtk_sro.h"
 #include "dicom_util.h"
 #include "file_util.h"
+#include "logfile.h"
 #include "plm_uid_prefix.h"
 #include "print_and_exit.h"
 #include "string_util.h"
@@ -26,8 +27,22 @@ Dcmtk_sro::save (
     const Rt_study_metadata::Pointer& rsm_reg,   /* Moving image */
     const std::string& dicom_dir)
 {
+    Xform::Pointer xf1 = Xform::New (xf);
+    lprintf ("Trying to save\n");
+    Dcmtk_sro::save (xf1, rsm_src, rsm_reg, dicom_dir);
+    lprintf ("Trying to reset\n");
+    xf1.reset();
+}
+
+void
+Dcmtk_sro::save (
+    const Xform::Pointer& xf,
+    const Rt_study_metadata::Pointer& rsm_src,   /* Fixed image */
+    const Rt_study_metadata::Pointer& rsm_reg,   /* Moving image */
+    const std::string& dicom_dir)
+{
     Xform xf_aff;
-    xform_to_aff (&xf_aff, xf, 0);
+    xform_to_aff (&xf_aff, xf.get(), 0);
 
     AffineTransformType::Pointer itk_aff = xf_aff.get_aff();
 
@@ -167,10 +182,12 @@ Dcmtk_sro::save (
     /* ----------------------------------------------------------------- *
      *  Write the output file
      * ----------------------------------------------------------------- */
+    lprintf ("Trying to save SRO: %s\n", sro_fn.c_str());
     ofc = fileformat.saveFile (sro_fn.c_str(), EXS_LittleEndianExplicit);
     if (ofc.bad()) {
         print_and_exit (
-            "Error: cannot write DICOM Spatial Registration (%s)\n", 
+            "Error: cannot write DICOM Spatial Registration (%s) (%s)\n", 
+            sro_fn.c_str(),
             ofc.text());
     }
 }

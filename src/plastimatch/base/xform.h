@@ -100,14 +100,14 @@ public:
 
     void init_trn ();
 
-    void set_trn (TranslationTransformType::Pointer trn);
     void set_trn (const itk::Array<double>& trn);
-    void set_vrs (VersorTransformType::Pointer vrs);
+    void set_trn (TranslationTransformType::Pointer trn);
     void set_vrs (const itk::Array<double>& vrs);
-    void set_quat (QuaternionTransformType::Pointer quat);
+    void set_vrs (VersorTransformType::Pointer vrs);
     void set_quat (const itk::Array<double>& quat);
-    void set_aff (AffineTransformType::Pointer aff);
+    void set_quat (QuaternionTransformType::Pointer quat);
     void set_aff (const itk::Array<double>& aff);
+    void set_aff (AffineTransformType::Pointer aff);
     void set_itk_bsp (BsplineTransformType::Pointer bsp);
     void set_itk_tps (TpsTransformType::Pointer tps);
     void set_itk_vf (DeformationFieldType::Pointer vf);

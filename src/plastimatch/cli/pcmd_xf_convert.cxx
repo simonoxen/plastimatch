@@ -171,8 +171,10 @@ do_xf_convert (Xf_convert_parms *parms)
             rtm_src = Rt_study_metadata::load (parms->source_rcs);
         }
 
+        lprintf ("Saving sro\n");
         Dcmtk_sro::save (
             xfc->m_xf_out, rtm_src, rtm_reg, parms->output_dicom_dir);
+        lprintf ("Done saving sro\n");
 #endif
     }
 }
