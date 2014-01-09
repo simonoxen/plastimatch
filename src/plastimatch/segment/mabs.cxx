@@ -88,7 +88,7 @@ public:
     std::list<std::string> atlas_list;
 
     /* Select atlas parameters */
-    std::map<std::string,  std::list<std::pair<std::string, double> > 
+    std::map<std::string, std::list<std::pair<std::string, double> > 
              > selected_atlases;
 
     /* Prealign parameters */
@@ -705,8 +705,43 @@ Mabs::atlas_selection ()
     Plm_timer timer;
     timer.start();
 
+    /* Parse atlas directory */
+    this->load_process_dir_list (d_ptr->prealign_dir);
+
+    /* Define stuff to save ranking */
+    std::map<std::string, std::list<std::pair<std::string, double> > > ranked_atlases; // Only ranked, not selected
+    
+    std::string atlas_ranking_file_name = 
+      string_format ("%s/atlas_ranking.txt", d_ptr->atlas_train_dir.c_str());
+   
+    bool compute_new_ranking = true;
+
+    /* Check if a precomputed ranking (not specified by user) can be used */
+    if (is_directory(d_ptr->atlas_train_dir.c_str()) &&
+        file_exists(atlas_ranking_file_name.c_str()) &&
+        d_ptr->parms->atlases_from_ranking != -1) {
+        
+        /* Count lines */
+        FILE *count_lines_file = fopen (atlas_ranking_file_name.c_str(), "r");
+        char ch;
+        int lines_number = 1; /* The last line doesn't have \n */
+        
+        while ((ch=getc(count_lines_file)) != EOF) {
+            if (ch == '\n') ++lines_number;
+        }
+
+        fclose(count_lines_file);
+
+        /* If number of lines is equal to number of  atlases use precomputed ranking */
+        if (lines_number == (int) d_ptr->process_dir_list.size()) {
+            compute_new_ranking = false;
+        }
+    }
+
     /* Create atlas-train directory */
-    make_directory(d_ptr->atlas_train_dir.c_str());
+    if (compute_new_ranking) {
+        make_directory(d_ptr->atlas_train_dir.c_str());
+    }
 
     /* Open log file for atlas selection */
     std::string atlas_selection_log_file_name = string_format ("%s/log_atlas_seletion.txt",
@@ -714,15 +749,11 @@ Mabs::atlas_selection ()
     
     FILE *atlas_selection_log_file = fopen (atlas_selection_log_file_name.c_str(), "w");
     
-    if (atlas_selection_log_file == NULL)
-    {
+    if (atlas_selection_log_file == NULL) {
         printf("Error opening atlas selection log file!\n");
         exit(1);
     }
 
-    /* Parse atlas directory */
-    this->load_process_dir_list (d_ptr->prealign_dir);
-    
     /* Loop through atlas_dir, choosing reference images to segment */
     for (std::list<std::string>::iterator it = d_ptr->process_dir_list.begin();
          it != d_ptr->process_dir_list.end(); it++)
@@ -736,19 +767,32 @@ Mabs::atlas_selection ()
         d_ptr->ref_id = patient_id;
         
         /* Load image & structures from "prep" directory */
-        std::string fn = string_format ("%s/%s/img.nrrd", 
-            d_ptr->prealign_dir.c_str(), patient_id.c_str());
-        d_ptr->ref_rtds->load_image (fn.c_str());
+        if (compute_new_ranking) {
+            std::string fn = string_format ("%s/%s/img.nrrd", 
+                d_ptr->prealign_dir.c_str(), patient_id.c_str());
+            d_ptr->ref_rtds->load_image (fn.c_str());
+        }
         
         /* Create object and set the parameters */
         Mabs_atlas_selection* select_atlas = new Mabs_atlas_selection();
-        select_atlas->subject = d_ptr->ref_rtds->get_image();
-        select_atlas->subject_id = patient_id;
-        select_atlas->atlas_dir_list = d_ptr->process_dir_list;
-        select_atlas->number_of_atlases 
-            = (int) d_ptr->process_dir_list.size();
         select_atlas->atlas_selection_parms = d_ptr->parms;
-        
+        select_atlas->subject_id = patient_id;
+        select_atlas->number_of_atlases = (int) d_ptr->process_dir_list.size();
+       
+        /* New selection is required, execute it */
+        if (compute_new_ranking) {
+            select_atlas->subject = d_ptr->ref_rtds->get_image();
+            select_atlas->atlas_dir_list = d_ptr->process_dir_list;
+            select_atlas->run_selection();
+        }
+
+        /* Use a precomputed ranking */
+        else if (!compute_new_ranking) {
+            select_atlas->precomputed_ranking_fn = atlas_ranking_file_name.c_str();
+            select_atlas->atlases_from_ranking = d_ptr->parms->atlases_from_ranking;
+            select_atlas->precomputed_ranking();
+        }
+
         /* Write into the log file preliminary information about the selection process */
         fprintf(atlas_selection_log_file,
             "Patient = %s, initial atlases = %d, selection criteria = %s \n",
@@ -756,8 +800,10 @@ Mabs::atlas_selection ()
             select_atlas->number_of_atlases,
             select_atlas->atlas_selection_parms->atlas_selection_criteria.c_str());
         
-        /* Run selection */
-        select_atlas->run_selection();
+        if (!compute_new_ranking) {
+            fprintf(atlas_selection_log_file,
+            "SELECTION MADE USING A PRECOMPUTED RANKING\n");   
+        }
         
         /* Print into the log file information about the selection process */
         fprintf(atlas_selection_log_file,
@@ -778,9 +824,12 @@ Mabs::atlas_selection ()
          
         fprintf(atlas_selection_log_file, "\n");
         
-        /* Fill the map structure */
+        /* Fill the map structures */
         d_ptr->selected_atlases.insert(std::make_pair(select_atlas->subject_id,
             select_atlas->selected_atlases));
+
+        ranked_atlases.insert(std::make_pair(select_atlas->subject_id,
+            select_atlas->ranked_atlases));
 
         /* Delete object */
         delete select_atlas;
@@ -788,6 +837,31 @@ Mabs::atlas_selection ()
 
     /* Close log file */
     fclose(atlas_selection_log_file);
+    
+    /* Write the new ranking */
+    if (compute_new_ranking) {
+
+        FILE *ranking_file = fopen (atlas_ranking_file_name.c_str(), "w");
+       
+        /* Cycle over reference images */
+        std::map<std::string, std::list<std::pair<std::string, double> > >::iterator it_map;
+        for (it_map = ranked_atlases.begin(); it_map != ranked_atlases.end(); it_map++) {
+            
+            fprintf(ranking_file, "%s: ", it_map->first.c_str());
+            
+            /* Cycle over atlases */
+            for (std::list<std::pair<std::string, double> >::iterator it_list = it_map->second.begin();
+                 it_list != it_map->second.end(); it_list++) {
+                fprintf(ranking_file, "%s ", it_list->first.c_str());
+            }
+
+            /* If it is not the last subject write on a new line */
+            if (it_map != (--ranked_atlases.end()))
+                fprintf(ranking_file, "\n");
+        }
+        
+        fclose(ranking_file);
+    }
 
     /* Stop timer */
     d_ptr->time_atlas_selection += timer.report();

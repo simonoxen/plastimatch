@@ -23,6 +23,7 @@
 #include "plm_image_header.h"
 #include "plm_stages.h"
 #include "plm_warp.h"
+#include "print_and_exit.h"
 #include "string_util.h"
 #include "registration_parms.h"
 #include "registration_data.h"
@@ -42,6 +43,8 @@ compare_similarity_value_from_pairs(
 Mabs_atlas_selection::Mabs_atlas_selection ()
 {
     /* constructor */
+    this->mi_percent_threshold = 0.0;
+    this->atlases_from_ranking = -1;
     this->hist_bins = 100;
     this->atlas_selection_parms = NULL;
     this->mask = NULL;
@@ -53,6 +56,7 @@ Mabs_atlas_selection::Mabs_atlas_selection ()
     this->min_hist_atl_value=0;
     this->max_hist_atl_value_defined = false;
     this->max_hist_atl_value=0;
+    this->precomputed_ranking_fn = "";
 }
 
 
@@ -69,6 +73,19 @@ Mabs_atlas_selection::run_selection()
         this->atlas_selection_parms->atlas_selection_criteria == "nmi-post" ||
         this->atlas_selection_parms->atlas_selection_criteria == "nmi-ratio")
     {
+
+        this->mi_percent_threshold = this->atlas_selection_parms->mi_percent_threshold;
+        this->atlases_from_ranking = this->atlas_selection_parms->atlases_from_ranking;
+        this->hist_bins = this->atlas_selection_parms->mi_histogram_bins;
+        this->min_hist_sub_value_defined = this->atlas_selection_parms->lower_mi_value_sub_defined;
+        this->min_hist_sub_value = this->atlas_selection_parms->lower_mi_value_sub;
+        this->max_hist_sub_value_defined = this->atlas_selection_parms->upper_mi_value_sub_defined;
+        this->max_hist_sub_value = this->atlas_selection_parms->upper_mi_value_sub;
+        this->min_hist_atl_value_defined = this->atlas_selection_parms->lower_mi_value_atl_defined;
+        this->min_hist_atl_value = this->atlas_selection_parms->lower_mi_value_atl;
+        this->max_hist_atl_value_defined = this->atlas_selection_parms->upper_mi_value_atl_defined;
+        this->max_hist_atl_value = this->atlas_selection_parms->upper_mi_value_atl;
+
         this->nmi_ranking();
     }
 
@@ -79,6 +96,9 @@ Mabs_atlas_selection::run_selection()
 
     else if (this->atlas_selection_parms->atlas_selection_criteria == "precomputed")
     {
+        this->precomputed_ranking_fn = this->atlas_selection_parms->precomputed_ranking_fn;
+        this->atlases_from_ranking = this->atlas_selection_parms->atlases_from_ranking;
+
         this->precomputed_ranking ();
     }
 
@@ -89,16 +109,6 @@ void
 Mabs_atlas_selection::nmi_ranking()
 {
     lprintf("NMI RANKING \n");
-
-    this->hist_bins = this->atlas_selection_parms->mi_histogram_bins;
-    this->min_hist_sub_value_defined = this->atlas_selection_parms->lower_mi_value_sub_defined;
-    this->min_hist_sub_value = this->atlas_selection_parms->lower_mi_value_sub;
-    this->max_hist_sub_value_defined = this->atlas_selection_parms->upper_mi_value_sub_defined;
-    this->max_hist_sub_value = this->atlas_selection_parms->upper_mi_value_sub;
-    this->min_hist_atl_value_defined = this->atlas_selection_parms->lower_mi_value_atl_defined;
-    this->min_hist_atl_value = this->atlas_selection_parms->lower_mi_value_atl;
-    this->max_hist_atl_value_defined = this->atlas_selection_parms->upper_mi_value_atl_defined;
-    this->max_hist_atl_value = this->atlas_selection_parms->upper_mi_value_atl;
 
     printf ("Number of initial atlases = %d \n", this->number_of_atlases);
     
@@ -150,6 +160,9 @@ Mabs_atlas_selection::nmi_ranking()
     /* Sort atlases in basis of the similarity value */
     atlas_and_similarity.sort(compare_similarity_value_from_pairs);
 
+    /* Copy ranked atlases (not selected) */
+    this->ranked_atlases.assign(atlas_and_similarity.begin(), atlas_and_similarity.end());
+
     /* Find min and max similarity value */
     double min_similarity_value = atlas_and_similarity.back().second;
     double max_similarity_value = atlas_and_similarity.front().second;
@@ -159,16 +172,16 @@ Mabs_atlas_selection::nmi_ranking()
     /* Create items to select the atlases */	
     std::list<std::pair<std::string, double> > most_similar_atlases;
     std::list<std::pair<std::string, double> >::iterator reg_it;
-    printf("List of the selected atlases: \n");
+    printf("List of the selected atlases for subject %s: \n", this->subject_id.c_str());
     
     /* Find atlas to include in the registration - THRESHOLD - */
-    if (!this->atlas_selection_parms->atlases_from_ranking_defined) {
+    if (this->atlases_from_ranking == -1) {
         for(reg_it = atlas_and_similarity.begin();
             reg_it != atlas_and_similarity.end(); reg_it++)
         {
             /* Similarity value greater than the threshold, take the atlas */
             if (reg_it->second >=
-                (((max_similarity_value-min_similarity_value) * this->atlas_selection_parms->mi_percent_threshold) + min_similarity_value))
+                (((max_similarity_value-min_similarity_value) * this->mi_percent_threshold) + min_similarity_value))
     	    {
                 most_similar_atlases.push_back(*reg_it);
                 printf("Atlas %s having similarity value = %f \n", reg_it->first.c_str(), reg_it->second);
@@ -182,12 +195,17 @@ Mabs_atlas_selection::nmi_ranking()
     }
     
     /* Find atlas to include in the registration - TOP - */
-    if (this->atlas_selection_parms->atlases_from_ranking_defined) {
+    if (this->atlases_from_ranking != -1) {
+
+        /* Check if atlases_from_ranking is greater than number_of_atlases */
+        if (this->atlases_from_ranking >= this->number_of_atlases)
+            print_and_exit("Atlases_from_ranking is greater than number of atlases\n");
+
         reg_it = atlas_and_similarity.begin();
-        printf("Atlas to select = %d \n", this->atlas_selection_parms->atlases_from_ranking);
+        printf("Atlas to select = %d \n", this->atlases_from_ranking);
 
         for (int i = 1;
-            ((i <= this->atlas_selection_parms->atlases_from_ranking) && (i <= (int) atlas_and_similarity.size())); 
+            ((i <= this->atlases_from_ranking) && (i <= (int) atlas_and_similarity.size())); 
             reg_it++, i++)
         {
             printf("Atlas %s (# %d) having similarity value = %f \n", reg_it->first.c_str(), i, reg_it->second);
@@ -383,7 +401,7 @@ Mabs_atlas_selection::compute_nmi (
 
 
 void
-Mabs_atlas_selection::random_ranking() /* Just for testing purpose */
+Mabs_atlas_selection::random_ranking()
 {
     lprintf("RANDOM RANKING \n");
     
@@ -391,6 +409,10 @@ Mabs_atlas_selection::random_ranking() /* Just for testing purpose */
 
     int min_atlases = this->atlas_selection_parms->min_random_atlases;
     int max_atlases = this->atlas_selection_parms->max_random_atlases + 1;
+
+    /* Check if atlases_from_ranking is greater than number_of_atlases */
+    if (min_atlases < 1 || max_atlases > this->number_of_atlases)
+        print_and_exit("Bounds for random selection are not correct\n");
 
     int random_number_of_atlases = rand() % (max_atlases-min_atlases) + min_atlases;
     printf("Selected %d random atlases for the subject %s \n", random_number_of_atlases, this->subject_id.c_str());
@@ -427,17 +449,23 @@ Mabs_atlas_selection::random_ranking() /* Just for testing purpose */
 
 
 void
-Mabs_atlas_selection::precomputed_ranking() /* Just for testing purpose */
+Mabs_atlas_selection::precomputed_ranking()
 {
-    /* Open the file where is stored the precomputed ranking*/
-    std::ifstream ranking_file (this->atlas_selection_parms->precomputed_ranking_fn.c_str());
+    /* Check if atlases_from_ranking is greater than number_of_atlases */
+    if (this->atlases_from_ranking >= this->number_of_atlases)
+        print_and_exit("Atlases_from_ranking is greater than number of atlases\n");
+
+    /* Open the file where the precomputed ranking is stored */
+    std::ifstream ranking_file (this->precomputed_ranking_fn.c_str());
     
     std::string atlases_line;
+
+    printf("Atlases to select = %d \n", this->atlases_from_ranking);
 
     /* Read line by line*/
     while(std::getline(ranking_file, atlases_line))
     {
-      
+        
         std::istringstream atlases_line_stream (atlases_line);
         std::string item;
         
@@ -450,16 +478,16 @@ Mabs_atlas_selection::precomputed_ranking() /* Just for testing purpose */
         {
 
             /* If defined select the first n atlases from the ranking */
-            if (this->atlas_selection_parms->atlases_from_ranking_defined &&
+            if (this->atlases_from_ranking != -1 &&
                 (int) this->selected_atlases.size() >=
-                this->atlas_selection_parms->atlases_from_ranking)
+                this->atlases_from_ranking)
             {
                 break;
             }
             
             item_index++;
-            
-            /* Delete space, colon and equals sign from single item name */
+
+            /* Delete space, colon and equal signs from single item name */
             char chars_to_remove [] = " :=";
             for (unsigned int i = 0; i < strlen(chars_to_remove); i++)
             {
@@ -468,19 +496,23 @@ Mabs_atlas_selection::precomputed_ranking() /* Just for testing purpose */
 
             /* First element in the line is the subject */
             if (item_index == 0) {
-
+                
                 /* This row doesn't contain data regarding the current subject, jump it */
                 if (item != this->subject_id) break; 
                  
                 /* This row contains the data regarding the current subject,
                  * jump just the subject id */
-                else if (item == this->subject_id) continue;
+                else if (item == this->subject_id) { 
+                    printf("Subject = %s \n", item.c_str());
+                    continue;
+                }
             }
             
             /* After the first element there are the selected atlases */
             else
             {
                 this->selected_atlases.push_back(std::make_pair(item, 0.0));
+                printf("  Selected atlas %s \n", item.c_str());
             }
         }
     }

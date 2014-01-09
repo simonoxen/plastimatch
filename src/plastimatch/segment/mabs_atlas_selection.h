@@ -29,13 +29,15 @@ public:
     double compute_nmi (
         const Plm_image::Pointer& img1, 
         const Plm_image::Pointer& img2);
-    void random_ranking(); /* Just for testing purpose */
-    void precomputed_ranking(); /* Just for testing purpose */
+    void random_ranking();
+    void precomputed_ranking(); 
 
 public:
     Plm_image::Pointer subject;
     std::string subject_id;
     std::list<std::string> atlas_dir_list;
+    float mi_percent_threshold;
+    int atlases_from_ranking; // -1 if this paramter is not defined
     int number_of_atlases;
     Plm_image::Pointer atlas;
     const Mabs_parms* atlas_selection_parms;
@@ -49,7 +51,9 @@ public:
     int min_hist_atl_value;
     bool max_hist_atl_value_defined;
     int max_hist_atl_value;
-    std::list<std::pair<std::string, double> > selected_atlases;
+    std::string precomputed_ranking_fn;
+    std::list<std::pair<std::string, double> > ranked_atlases; // all the atlases, only ranked
+    std::list<std::pair<std::string, double> > selected_atlases; // selected_atlases, subset of ranked_atlases
 
 };
 

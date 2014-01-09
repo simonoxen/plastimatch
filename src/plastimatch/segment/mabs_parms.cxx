@@ -83,8 +83,7 @@ Mabs_parms::Mabs_parms ()
     this->enable_atlas_selection = false;
     this->atlas_selection_criteria="nmi";
     this->mi_percent_threshold = 0.70;
-    this->atlases_from_ranking = 0;
-    this->atlases_from_ranking_defined = false;
+    this->atlases_from_ranking = -1;
     this->mi_histogram_bins = 100;
     this->roi_mask_fn = "";
     this->selection_reg_parms_fn = "";
@@ -208,7 +207,6 @@ Mabs_parms::set_key_value (
         }
         else if (key == "atlases_from_ranking") {
             sscanf (val.c_str(), "%d", &this->atlases_from_ranking);
-            this->atlases_from_ranking_defined = true;
         }
         else if (key == "mi_histogram_bins") {
             sscanf (val.c_str(), "%d", &this->mi_histogram_bins);
