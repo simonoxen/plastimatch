@@ -1,9 +1,12 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 
 #include "itkArray.h"
 #include "itkCommand.h"
+#include "itkHistogramMatchingImageFilter.h"
+#include "itkPDEDeformableRegistrationWithMaskFilter.h"
 
 #include "itk_demons.h"
 #include "itk_diff_demons.h"
@@ -13,7 +16,6 @@
 #include "itk_demons_util.h"
 #include "itk_demons_registration_filter.h"
 #include "itk_resample.h"
-#include "itkHistogramMatchingImageFilter.h"
 #include "logfile.h"
 #include "plm_image.h"
 #include "plm_timer.h"
@@ -21,7 +23,6 @@
 #include "registration_data.h"
 #include "stage_parms.h"
 #include "xform.h"
-#include "itkPDEDeformableRegistrationWithMaskFilter.h"
 
 typedef itk::PDEDeformableRegistrationWithMaskFilter<FloatImageType,FloatImageType,DeformationFieldType>  PDEDeformableRegistrationFilterType;
 typedef itk::ImageMaskSpatialObject< 3 >                                                                  MaskType;
@@ -181,12 +182,13 @@ do_demons_stage_internal (Registration_data* regd,
     histo_equ=NULL;
 }
 
-void
-do_demons_stage (Registration_data* regd,
-		 Xform *xf_out, 
-		 Xform *xf_in,
-		 Stage_parms* stage)
+Xform::Pointer
+do_itk_demons_stage (
+    Registration_data* regd,
+    const Xform::Pointer& xf_in,
+    Stage_parms* stage)
 {
+    Xform::Pointer xf_out = Xform::New ();
     itk_demons_registration_filter* demons_filter = NULL;
     if(stage->optim_subtype == OPTIMIZATION_SUB_FSF)
     {
@@ -220,8 +222,10 @@ do_demons_stage (Registration_data* regd,
     //Let filter set filter specific parameters
     demons_filter->update_specific_parameters(stage);
 
-    do_demons_stage_internal (regd, xf_out, xf_in, stage);
+    do_demons_stage_internal (regd, xf_out.get(), xf_in.get(), stage);
     printf ("Deformation stats (out)\n");
     itk_demons_util::deformation_stats (xf_out->get_itk_vf());
     delete demons_filter;
+
+    return xf_out;
 }

@@ -264,11 +264,10 @@ Mabs_atlas_selection::compute_nmi_post()
     regd->moving_landmarks = NULL;
 
     Plm_image::Pointer deformed_atlas = Plm_image::New ();
-    Xform* transformation = new Xform();
     Plm_image_header fixed_pih (regd->fixed_image);
 
-    do_registration_pure (&transformation, regd, regp);
-    plm_warp (deformed_atlas.get(), 0, transformation, &fixed_pih, 
+    Xform::Pointer xf = do_registration_pure (regd, regp);
+    plm_warp (deformed_atlas.get(), 0, xf, &fixed_pih, 
         regd->moving_image.get(),
         regp->default_value, 0, 1);
     
@@ -276,7 +275,6 @@ Mabs_atlas_selection::compute_nmi_post()
     
     delete regd;
     delete regp;
-    delete transformation;
 
     lprintf("NMI post = %g \n", nmi_post);
 
@@ -304,11 +302,10 @@ Mabs_atlas_selection::compute_nmi_ratio()
     regd->moving_landmarks = NULL;
 
     Plm_image::Pointer deformed_atlas = Plm_image::New ();
-    Xform* transformation = new Xform();
     Plm_image_header fixed_pih (regd->fixed_image);
 
-    do_registration_pure (&transformation, regd, regp);
-    plm_warp (deformed_atlas.get(), 0, transformation, &fixed_pih, 
+    Xform::Pointer xf = do_registration_pure (regd, regp);
+    plm_warp (deformed_atlas.get(), 0, xf, &fixed_pih, 
         regd->moving_image.get(),
         regp->default_value, 0, 1);
     
@@ -316,7 +313,6 @@ Mabs_atlas_selection::compute_nmi_ratio()
     
     delete regd;
     delete regp;
-    delete transformation;
 
     lprintf("Similarity value post = %g \n", nmi_post);
 

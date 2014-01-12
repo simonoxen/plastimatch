@@ -10,6 +10,7 @@
 #include "metadata.h"
 #include "pstring.h"
 #include "rtss.h"
+#include "xform.h"
 #include "xio_studyset.h"  /* enum Xio_version */
 
 class Plm_image;
@@ -18,7 +19,6 @@ class Rt_study;
 class Segmentation_private;
 class Rtss_roi;
 class Slice_index;
-class Xform;
 class Xio_ct_transform;
 class Warp_parms;
 
@@ -74,9 +74,12 @@ public:
     void set_geometry (const Plm_image_header *pih);
     void find_rasterization_geometry (Plm_image_header *pih);
     Segmentation::Pointer warp_nondestructive (
-        Xform *xf, Plm_image_header *pih, bool use_itk = false) const;
-    void warp (Xform *xf, Plm_image_header *pih, bool use_itk = false);
-    void warp (Xform *xf, Plm_image_header *pih, Warp_parms *parms);
+        const Xform::Pointer& xf, Plm_image_header *pih, 
+        bool use_itk = false) const;
+    void warp (const Xform::Pointer& xf, Plm_image_header *pih, 
+        bool use_itk = false);
+    void warp (const Xform::Pointer& xf, Plm_image_header *pih, 
+        Warp_parms *parms);
 
     void add_structure (
         UCharImageType::Pointer itk_image, 

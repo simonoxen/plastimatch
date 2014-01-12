@@ -228,13 +228,13 @@ native_translation (
     xf_out->set_trn (trn);
 }
 
-void
+Xform::Pointer
 native_translation_stage (
     Registration_data* regd, 
-    Xform *xf_out, 
-    Xform *xf_in, 
+    const Xform::Pointer& xf_in,
     Stage_parms* stage)
 {
+    Xform::Pointer xf_out = Xform::New ();
     Plm_image_header pih;
 
     Volume* fixed = regd->fixed_image->get_vol_float ();
@@ -256,12 +256,14 @@ native_translation_stage (
         fixed, stage->fixed_subsample_rate);
 
     /* Transform input xform to gpuit vector field */
-    if (xf_in->m_type == STAGE_TRANSFORM_NONE) {
+    if (xf_in->get_type() == STAGE_TRANSFORM_NONE) {
         /* Do nothing */
     } else {
         /* Do something, tbd */
     }
 
     /* Run the translation optimizer */
-    native_translation (xf_out, stage, fixed_ss, moving_ss);
+    native_translation (xf_out.get(), stage, fixed_ss, moving_ss);
+
+    return xf_out;
 }

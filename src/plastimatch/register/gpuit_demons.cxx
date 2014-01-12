@@ -17,13 +17,13 @@
 #include "volume_resample.h"
 #include "xform.h"
 
-void
+Xform::Pointer
 do_gpuit_demons_stage_internal (
     Registration_data* regd, 
-    Xform *xf_out, 
-    Xform *xf_in, 
+    const Xform::Pointer& xf_in, 
     Stage_parms* stage)
 {
+    Xform::Pointer xf_out = Xform::New ();
     int d;
     Demons_parms parms;
     Plm_image_header pih;
@@ -68,8 +68,8 @@ do_gpuit_demons_stage_internal (
         pih.set_from_gpuit (fixed_ss->dim, 
             fixed_ss->offset, fixed_ss->spacing, 
             fixed_ss->direction_cosines);
-	xform_to_gpuit_vf (xf_out, xf_in, &pih);
-	vf_in = xf_out->get_gpuit_vf();
+	xf_out = xform_to_gpuit_vf (xf_in, &pih);
+	vf_in = xf_out->get_gpuit_vf().get();
     }
 
     /* Run demons */
@@ -77,16 +77,15 @@ do_gpuit_demons_stage_internal (
         vf_in, &parms);
 
     /* Do something with output vector field */
-    //xf_out->set_gpuit_vf (vf_out);
     xf_out->set_gpuit_vf (Volume::Pointer(vf_out));
+    return xf_out;
 }
 
-void
+Xform::Pointer
 do_gpuit_demons_stage (
     Registration_data* regd, 
-    Xform *xf_out, 
-    Xform *xf_in,
+    const Xform::Pointer& xf_in,
     Stage_parms* stage)
 {
-    do_gpuit_demons_stage_internal (regd, xf_out, xf_in, stage);
+    return do_gpuit_demons_stage_internal (regd, xf_in, stage);
 }

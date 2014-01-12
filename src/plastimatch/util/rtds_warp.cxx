@@ -117,35 +117,35 @@ load_input_files (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms)
 static void
 save_ss_img (
     Rt_study *rtds, 
-    Xform *xf, 
+    const Xform *xf, 
     Plm_image_header *pih, 
     Warp_parms *parms
 )
 {
-    Segmentation::Pointer rtss = rtds->get_rtss();
+    Segmentation::Pointer seg = rtds->get_rtss();
 
     /* labelmap */
     if (parms->output_labelmap_fn.not_empty()) {
         lprintf ("save_ss_img: save_labelmap\n");
-        rtss->save_labelmap (parms->output_labelmap_fn);
+        seg->save_labelmap (parms->output_labelmap_fn);
     }
 
     /* ss_img */
     if (parms->output_ss_img_fn.not_empty()) {
         lprintf ("save_ss_img: save_ss_image\n");
-        rtss->save_ss_image (parms->output_ss_img_fn);
+        seg->save_ss_image (parms->output_ss_img_fn);
     }
 
     /* list of structure names */
     if (parms->output_ss_list_fn.not_empty()) {
         lprintf ("save_ss_img: save_ss_list\n");
-        rtss->save_ss_list (parms->output_ss_list_fn);
+        seg->save_ss_list (parms->output_ss_list_fn);
     }
 
     /* prefix images */
     if (parms->output_prefix.not_empty()) {
         lprintf ("save_ss_img: save_prefix\n");
-        rtss->save_prefix (parms->output_prefix);
+        seg->save_prefix (parms->output_prefix);
     }
 
     /* prefix fcsv files */
@@ -153,19 +153,19 @@ save_ss_img (
         lprintf ("save_ss_img: save_prefix_fcsv\n");
         lprintf ("save_ss_img: save_prefix_fcsv (%s)\n",
             (const char*) parms->output_prefix_fcsv);
-        rtss->save_prefix_fcsv (parms->output_prefix_fcsv);
+        seg->save_prefix_fcsv (parms->output_prefix_fcsv);
     }
 
     /* 3D Slicer color table */
     if (parms->output_colormap_fn.not_empty()) {
         lprintf ("save_ss_img: save_colormap\n");
-        rtss->save_colormap (parms->output_colormap_fn);
+        seg->save_colormap (parms->output_colormap_fn);
     }
 
     /* cxt */
     if (parms->output_cxt_fn.not_empty()) {
         lprintf ("save_ss_img: save_cxt\n");
-        rtss->save_cxt (rtds->get_rt_study_metadata (),
+        seg->save_cxt (rtds->get_rt_study_metadata (),
             parms->output_cxt_fn, false);
     }
 
@@ -173,7 +173,7 @@ save_ss_img (
     if (parms->output_xio_dirname.not_empty()) {
         lprintf ("save_ss_img: save_xio (dirname = %s)\n", 
             (const char*) parms->output_xio_dirname);
-        rtss->save_xio (
+        seg->save_xio (
             rtds->get_xio_ct_transform(),
             parms->output_xio_version,
             parms->output_xio_dirname);
@@ -183,7 +183,7 @@ save_ss_img (
 static void
 warp_and_save_ss (
     Rt_study *rtds,  
-    Xform *xf, 
+    const Xform::Pointer& xf, 
     Plm_image_header *pih, 
     Warp_parms *parms)
 {
@@ -191,7 +191,7 @@ warp_and_save_ss (
         return;
     }
 
-    Segmentation::Pointer rtss = rtds->get_rtss();
+    Segmentation::Pointer seg = rtds->get_rtss();
 
     /* If we have need to create image outputs, or if we have to 
        warp something, then we need to rasterize the volume */
@@ -215,31 +215,31 @@ warp_and_save_ss (
            geometry.
         */
         Plm_image_header pih;
-        Rtss *cxt = rtss->get_structure_set_raw ();
+        Rtss *cxt = seg->get_structure_set_raw ();
         if (parms->xf_in_fn.not_empty()) {
             pih.set_from_gpuit (cxt->rast_dim, cxt->rast_offset, 
                 cxt->rast_spacing, 0);
         } else {
             pih.set_from_gpuit (cxt->m_dim, cxt->m_offset, cxt->m_spacing, 0);
         }
-        lprintf ("Warp_and_save_ss: m_rtss->rasterize\n");
-        rtss->rasterize (&pih,
+        lprintf ("Warp_and_save_ss: seg->rasterize\n");
+        seg->rasterize (&pih,
             parms->output_labelmap_fn.not_empty(),
             parms->xor_contours);
     }
 
     /* Do the warp */
     if (parms->xf_in_fn.not_empty()) {
-        lprintf ("Warp_and_save_ss: m_rtss->warp\n");
-        rtss->warp (xf, pih, parms);
+        lprintf ("Warp_and_save_ss: seg->warp\n");
+        seg->warp (xf, pih, parms);
     }
 
     /* If we are warping, re-extract polylines into cxt */
     /* GCS FIX: This is only necessary if we are outputting polylines. 
        Otherwise it is wasting users time. */
     if (parms->xf_in_fn.not_empty()) {
-        lprintf ("Warp_and_save_ss: m_rtss->cxt_re_extract\n");
-        rtss->cxt_re_extract ();
+        lprintf ("Warp_and_save_ss: seg->cxt_re_extract\n");
+        seg->cxt_re_extract ();
     }
 
     /* If we need to reduce the number of points (aka if simplify-perc 
@@ -251,14 +251,14 @@ warp_and_save_ss (
 
     /* Save non-dicom formats, such as mha, cxt, xio */
     lprintf ("Warp_and_save_ss: save_ss_img\n");
-    save_ss_img (rtds, xf, pih, parms);
+    save_ss_img (rtds, xf.get(), pih, parms);
 }
 
 void
 rtds_warp (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms)
 {
     DeformationFieldType::Pointer vf = DeformationFieldType::New();
-    Xform xform;
+    Xform::Pointer xform = Xform::New ();
     Plm_image_header pih;
 
     /* Load referenced DICOM directory */
@@ -281,24 +281,25 @@ rtds_warp (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms)
     /* Load transform */
     if (parms->xf_in_fn.not_empty()) {
         lprintf ("Loading xform (%s)\n", (const char*) parms->xf_in_fn);
-        xform_load (&xform, (const char*) parms->xf_in_fn);
+        xform = xform_load ((const char*) parms->xf_in_fn);
     }
 
     /* Try to guess the proper dimensions and spacing for output image */
+    Xform_type xform_type = xform->get_type ();
     if (parms->fixed_img_fn.not_empty()) {
         /* use the spacing of user-supplied fixed image */
         lprintf ("Setting PIH from FIXED\n");
         FloatImageType::Pointer fixed = itk_image_load_float (
             parms->fixed_img_fn, 0);
         pih.set_from_itk_image (fixed);
-    } else if (xform.m_type == XFORM_ITK_VECTOR_FIELD) {
+    } else if (xform_type == XFORM_ITK_VECTOR_FIELD) {
         /* use the spacing from input vector field */
         lprintf ("Setting PIH from VF\n");
-        pih.set_from_itk_image (xform.get_itk_vf());
-    } else if (xform.m_type == XFORM_GPUIT_BSPLINE) {
+        pih.set_from_itk_image (xform->get_itk_vf());
+    } else if (xform_type == XFORM_GPUIT_BSPLINE) {
         /* use the spacing from input bxf file */
         lprintf ("Setting PIH from XFORM\n");
-        pih.set_from_gpuit_bspline (xform.get_gpuit_bsp());
+        pih.set_from_gpuit_bspline (xform->get_gpuit_bsp());
     } else if (rtds->get_rt_study_metadata()->slice_list_complete()) {
         /* use spacing from referenced CT */
         lprintf ("Setting PIH from RDD\n");
@@ -366,7 +367,7 @@ rtds_warp (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms)
         Plm_image *im_out;
         im_out = new Plm_image;
         lprintf ("Rt_study_warp: Warping m_img\n");
-        plm_warp (im_out, &vf, &xform, &pih, rtds->get_image().get(), 
+        plm_warp (im_out, &vf, xform, &pih, rtds->get_image().get(), 
             parms->default_val, parms->use_itk, parms->interp_lin);
         rtds->set_image (im_out);
     }
@@ -390,7 +391,7 @@ rtds_warp (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms)
         lprintf ("Rt_study_warp: Warping dose\n");
         Plm_image *im_out;
         im_out = new Plm_image;
-        plm_warp (im_out, 0, &xform, &pih, rtds->get_dose_plm_image(), 0, 
+        plm_warp (im_out, 0, xform, &pih, rtds->get_dose_plm_image(), 0, 
             parms->use_itk, 1);
         rtds->set_dose (im_out);
     }
@@ -442,35 +443,35 @@ rtds_warp (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms)
 
     /* Preprocess structure sets */
     if (rtds->have_rtss()) {
-        Segmentation::Pointer rtss = rtds->get_rtss();
+        Segmentation::Pointer seg = rtds->get_rtss();
 
         /* Convert ss_img to cxt */
         lprintf ("Rt_study_warp: Convert ss_img to cxt.\n");
-        rtss->convert_ss_img_to_cxt ();
+        seg->convert_ss_img_to_cxt ();
 
         /* Delete empty structures */
         if (parms->prune_empty) {
             lprintf ("Rt_study_warp: Prune empty structures.\n");
-            rtss->prune_empty ();
+            seg->prune_empty ();
         }
 
         /* Set the DICOM reference info -- this sets the internal geometry 
            of the ss_image so we rasterize on the same slices as the CT? */
         lprintf ("Rt_study_warp: Apply dicom_dir.\n");
-        rtss->apply_dicom_dir (rtds->get_rt_study_metadata());
+        seg->apply_dicom_dir (rtds->get_rt_study_metadata());
         
         /* Set the output geometry */
         lprintf ("Rt_study_warp: Set geometry from PIH.\n");
-        rtss->set_geometry (&pih);
+        seg->set_geometry (&pih);
 
         /* Set rasterization geometry */
         lprintf ("Rt_study_warp: Set rasterization geometry.\n");
-        rtss->get_structure_set()->set_rasterization_geometry ();
+        seg->get_structure_set()->set_rasterization_geometry ();
     }
 
     /* Warp and save structure set (except dicom) */
     lprintf ("Rt_study_warp: warp and save ss.\n");
-    warp_and_save_ss (rtds, &xform, &pih, parms);
+    warp_and_save_ss (rtds, xform, &pih, parms);
 
     /* Save dicom */
     if (parms->output_dicom.not_empty()) {

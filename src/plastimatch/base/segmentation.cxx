@@ -799,7 +799,7 @@ Segmentation::find_rasterization_geometry (Plm_image_header *pih)
 
 Segmentation::Pointer 
 Segmentation::warp_nondestructive (
-    Xform *xf, 
+    const Xform::Pointer& xf, 
     Plm_image_header *pih, 
     bool use_itk) const
 {
@@ -829,7 +829,7 @@ Segmentation::warp_nondestructive (
 
 void
 Segmentation::warp (
-    Xform *xf, 
+    const Xform::Pointer& xf, 
     Plm_image_header *pih, 
     bool use_itk)
 {
@@ -861,7 +861,7 @@ Segmentation::warp (
 
 void
 Segmentation::warp (
-    Xform *xf, 
+    const Xform::Pointer& xf, 
     Plm_image_header *pih, 
     Warp_parms *parms)
 {

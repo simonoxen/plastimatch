@@ -9,13 +9,48 @@
 #include "xform.h"
 #include "xform_convert.h"
 
-void 
-xform_convert (Xform_convert *xfc)
+class Xform_convert_private
+{
+public:
+    Xform::Pointer m_xf_out;
+    Xform::Pointer m_xf_in;
+public:
+    Xform_convert_private () {
+        m_xf_out =  Xform::New ();
+    }
+};
+
+Xform_convert::Xform_convert ()
+{
+    d_ptr = new Xform_convert_private;
+
+    m_xf_out_type = XFORM_NONE;
+
+    for (int d = 0; d < 3; d++) {
+        m_grid_spac[d] = 100.f;
+    }
+    m_nobulk = false;
+}
+
+Xform_convert::~Xform_convert ()
+{
+    delete d_ptr;
+}
+
+void
+Xform_convert::set_input_xform (const Xform::Pointer& xf_in)
+{
+    d_ptr->m_xf_in = xf_in;
+}
+
+void
+Xform_convert::run ()
 {
     Plm_image_header pih;
-    pih.set_from_volume_header (xfc->m_volume_header);
+    pih.set_from_volume_header (this->m_volume_header);
+    Xform_type xf_in_type = d_ptr->m_xf_in->get_type();
 
-    switch (xfc->m_xf_out_type) {
+    switch (this->m_xf_out_type) {
     case XFORM_NONE:
 	print_and_exit ("Sorry, couldn't convert to XFORM_NONE\n");
 	break;
@@ -29,29 +64,30 @@ xform_convert (Xform_convert *xfc)
 	print_and_exit ("Sorry, couldn't convert to XFORM_ITK_AFFINE\n");
 	break;
     case XFORM_ITK_BSPLINE:
-	if (xfc->m_grid_spac[0] <= 0.0f) {
-	    if (xfc->m_xf_in->m_type == XFORM_GPUIT_BSPLINE 
-		|| xfc->m_xf_in->m_type == XFORM_ITK_BSPLINE)
+	if (this->m_grid_spac[0] <= 0.0f) {
+	    if (xf_in_type == XFORM_GPUIT_BSPLINE 
+		|| xf_in_type == XFORM_ITK_BSPLINE)
 	    {
 		/* Use grid spacing of input bspline */
-		if (xfc->m_nobulk) {
-		    xform_to_itk_bsp_nobulk (xfc->m_xf_out, 
-			xfc->m_xf_in, &pih, 0);
+		if (this->m_nobulk) {
+                    d_ptr->m_xf_out = xform_to_itk_bsp_nobulk (
+			d_ptr->m_xf_in, &pih, 0);
 		} else {
 		    printf ("Standard case.\n");
 		    pih.print ();
-		    xform_to_itk_bsp (xfc->m_xf_out, xfc->m_xf_in, &pih, 0);
+		    d_ptr->m_xf_out = xform_to_itk_bsp (
+                        d_ptr->m_xf_in, &pih, 0);
 		}
 	    } else {
 		print_and_exit ("Sorry, grid spacing cannot be zero\n");
 	    }
 	} else {
-	    if (xfc->m_nobulk) {
-		xform_to_itk_bsp_nobulk (xfc->m_xf_out, xfc->m_xf_in, &pih, 
-		    xfc->m_grid_spac);
+	    if (this->m_nobulk) {
+                d_ptr->m_xf_out = xform_to_itk_bsp_nobulk (
+                    d_ptr->m_xf_in, &pih, this->m_grid_spac);
 	    } else {
-		xform_to_itk_bsp (xfc->m_xf_out, xfc->m_xf_in, &pih, 
-		    xfc->m_grid_spac);
+                d_ptr->m_xf_out = xform_to_itk_bsp (
+                    d_ptr->m_xf_in, &pih, this->m_grid_spac);
 	    }
 	}
 	break;
@@ -60,26 +96,33 @@ xform_convert (Xform_convert *xfc)
 	break;
     case XFORM_ITK_VECTOR_FIELD:
 	printf ("Converting to (itk) vector field\n");
-	xform_to_itk_vf (xfc->m_xf_out, xfc->m_xf_in, &pih);
+	d_ptr->m_xf_out = xform_to_itk_vf (d_ptr->m_xf_in, &pih);
 	break;
     case XFORM_GPUIT_BSPLINE:
-	if (xfc->m_grid_spac[0] <=0.0f) {
-	    if (xfc->m_xf_in->m_type == XFORM_GPUIT_BSPLINE 
-		|| xfc->m_xf_in->m_type == XFORM_ITK_BSPLINE)
+	if (this->m_grid_spac[0] <=0.0f) {
+	    if (xf_in_type == XFORM_GPUIT_BSPLINE 
+		|| xf_in_type == XFORM_ITK_BSPLINE)
 	    {
-		xform_to_gpuit_bsp (xfc->m_xf_out, xfc->m_xf_in, &pih, 0);
+		d_ptr->m_xf_out = xform_to_gpuit_bsp (
+                    d_ptr->m_xf_in, &pih, 0);
 	    } else {
 		print_and_exit ("Sorry, grid spacing cannot be zero for conversion to gpuit_bsp\n");
 	    }
 	} else {
-	    xform_to_gpuit_bsp (xfc->m_xf_out, xfc->m_xf_in, &pih, 
-		xfc->m_grid_spac);
+	    d_ptr->m_xf_out = xform_to_gpuit_bsp (
+                d_ptr->m_xf_in, &pih, this->m_grid_spac);
 	}
 	break;
     case XFORM_GPUIT_VECTOR_FIELD:
     default:
 	print_and_exit ("Sorry, couldn't convert to xform (type = %d)\n",
-	    xfc->m_xf_out_type);
+	    this->m_xf_out_type);
 	break;
     }
+}
+
+Xform::Pointer&
+Xform_convert::get_output_xform ()
+{
+    return d_ptr->m_xf_out;
 }

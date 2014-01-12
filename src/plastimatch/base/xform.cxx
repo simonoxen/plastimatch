@@ -62,12 +62,12 @@ Xform::~Xform () {
     delete d_ptr;
 }
 
-Xform::Xform (Xform& xf) {
+Xform::Xform (const Xform& xf) {
     d_ptr = new Xform_private;
     *this = xf;
 }
 
-Xform& Xform::operator= (Xform& xf) {
+Xform& Xform::operator= (const Xform& xf) {
     d_ptr->m_bsp = xf.d_ptr->m_bsp;
     d_ptr->m_vf = xf.d_ptr->m_vf;
 
@@ -103,7 +103,7 @@ Xform::clear ()
    Type casting
    ----------------------------------------------------------------------- */
 TranslationTransformType::Pointer
-Xform::get_trn ()
+Xform::get_trn () const
 {
     if (m_type != XFORM_ITK_TRANSLATION) {
         print_and_exit ("Typecast error in get_trn()\n");
@@ -112,7 +112,7 @@ Xform::get_trn ()
 }
 
 VersorTransformType::Pointer
-Xform::get_vrs ()
+Xform::get_vrs () const
 {
     if (m_type != XFORM_ITK_VERSOR) {
         printf ("Got type = %d\n", m_type);
@@ -122,7 +122,7 @@ Xform::get_vrs ()
 }
 
 QuaternionTransformType::Pointer
-Xform::get_quat ()
+Xform::get_quat () const
 {
     if (m_type != XFORM_ITK_QUATERNION) {
         print_and_exit ("Typecast error in get_quat()\n");
@@ -131,7 +131,7 @@ Xform::get_quat ()
 }
 
 AffineTransformType::Pointer
-Xform::get_aff ()
+Xform::get_aff () const
 {
     if (m_type != XFORM_ITK_AFFINE) {
         print_and_exit ("Typecast error in get_aff()\n");
@@ -140,7 +140,7 @@ Xform::get_aff ()
 }
 
 BsplineTransformType::Pointer
-Xform::get_itk_bsp ()
+Xform::get_itk_bsp () const
 {
     if (m_type != XFORM_ITK_BSPLINE) {
         print_and_exit ("Typecast error in get_itk_bsp()\n");
@@ -149,7 +149,7 @@ Xform::get_itk_bsp ()
 }
 
 TpsTransformType::Pointer
-Xform::get_itk_tps ()
+Xform::get_itk_tps () const
 {
     if (m_type != XFORM_ITK_TPS) {
         print_and_exit ("Typecast error in get_tps()\n");
@@ -158,7 +158,7 @@ Xform::get_itk_tps ()
 }
 
 DeformationFieldType::Pointer
-Xform::get_itk_vf ()
+Xform::get_itk_vf () const
 {
     if (m_type != XFORM_ITK_VECTOR_FIELD) {
         print_and_exit ("Typecast error in get_itk_vf()\n");
@@ -167,28 +167,23 @@ Xform::get_itk_vf ()
 }
 
 Bspline_xform*
-Xform::get_gpuit_bsp ()
+Xform::get_gpuit_bsp () const
 {
     if (m_type != XFORM_GPUIT_BSPLINE) {
         print_and_exit ("Typecast error in get_gpuit_bsp()\n");
     }
-    // return (Bspline_xform*) m_gpuit;
+
     return d_ptr->m_bsp.get();
 }
 
-Volume*
-Xform::get_gpuit_vf ()
+Volume::Pointer&
+Xform::get_gpuit_vf () const
 {
-    if (m_type != XFORM_GPUIT_VECTOR_FIELD) {
-        Plm_image_header pih = this->get_plm_image_header();
-        xform_to_gpuit_vf (this, this, &pih);
-    }
     if (m_type != XFORM_GPUIT_VECTOR_FIELD) {
         print_and_exit ("Typecast error in get_gpuit_vf()\n");
     }
 
-    //return (Volume*) m_gpuit;
-    return d_ptr->m_vf.get();
+    return d_ptr->m_vf;
 }
 
 void
@@ -360,6 +355,18 @@ xform_load (Xform *xf, const char* fn)
     xf->load (fn);
 }
 
+Xform::Pointer xform_load (const char* fn)
+{
+    Xform::Pointer xf = Xform::New ();
+    xf->load (fn);
+    return xf;
+}
+
+Xform::Pointer xform_load (const std::string& fn)
+{
+    return xform_load (fn.c_str());
+}
+
 static void
 load_gpuit_bsp (Xform *xf, const char* fn)
 {
@@ -505,7 +512,7 @@ Xform::save (const char* fn)
         bspline_xform_save (this->get_gpuit_bsp(), fn);
         break;
     case XFORM_GPUIT_VECTOR_FIELD:
-        write_mha (fn, this->get_gpuit_vf());
+        write_mha (fn, this->get_gpuit_vf().get());
         break;
     case XFORM_NONE:
         print_and_exit ("Error trying to save null transform\n");
@@ -575,22 +582,22 @@ xform_itk_bsp_init_default (Xform *xf)
 /* -----------------------------------------------------------------------
    Conversions for trn, vrs, aff
    ----------------------------------------------------------------------- */
-void
-xform_trn_to_vrs (Xform *xf_out, Xform* xf_in)
+static void
+xform_trn_to_vrs (Xform *xf_out, const Xform* xf_in)
 {
     init_versor_default (xf_out);
     xf_out->get_vrs()->SetOffset(xf_in->get_trn()->GetOffset());
 }
 
-void
-xform_trn_to_aff (Xform *xf_out, Xform* xf_in)
+static void
+xform_trn_to_aff (Xform *xf_out, const Xform* xf_in)
 {
     init_affine_default (xf_out);
     xf_out->get_aff()->SetOffset(xf_in->get_trn()->GetOffset());
 }
 
-void
-xform_vrs_to_quat (Xform *xf_out, Xform* xf_in)
+static void
+xform_vrs_to_quat (Xform *xf_out, const Xform* xf_in)
 {
     init_quaternion_default (xf_out);
 #if ITK_VERSION_MAJOR == 3
@@ -601,8 +608,8 @@ xform_vrs_to_quat (Xform *xf_out, Xform* xf_in)
     xf_out->get_quat()->SetOffset(xf_in->get_vrs()->GetOffset());
 }
 
-void
-xform_vrs_to_aff (Xform *xf_out, Xform* xf_in)
+static void
+xform_vrs_to_aff (Xform *xf_out, const Xform* xf_in)
 {
     init_affine_default (xf_out);
 #if ITK_VERSION_MAJOR == 3
@@ -693,7 +700,8 @@ itk_bsp_set_grid_img (
 
 static void
 xform_trn_to_itk_bsp_bulk (
-    Xform *xf_out, Xform* xf_in,
+    Xform *xf_out, 
+    const Xform* xf_in,
     const Plm_image_header* pih,
     float* grid_spac)
 {
@@ -704,7 +712,8 @@ xform_trn_to_itk_bsp_bulk (
 
 static void
 xform_vrs_to_itk_bsp_bulk (
-    Xform *xf_out, Xform* xf_in,
+    Xform *xf_out, 
+    const Xform* xf_in,
     const Plm_image_header* pih,
     float* grid_spac)
 {
@@ -715,7 +724,8 @@ xform_vrs_to_itk_bsp_bulk (
 
 static void
 xform_quat_to_itk_bsp_bulk (
-    Xform *xf_out, Xform* xf_in,
+    Xform *xf_out, 
+    const Xform* xf_in,
     const Plm_image_header* pih,
     float* grid_spac)
 {
@@ -726,7 +736,8 @@ xform_quat_to_itk_bsp_bulk (
 
 static void
 xform_aff_to_itk_bsp_bulk (
-    Xform *xf_out, Xform* xf_in,
+    Xform *xf_out, 
+    const Xform* xf_in,
     const Plm_image_header* pih,
     float* grid_spac)
 {
@@ -896,9 +907,11 @@ itk_bsp_extend_to_region (Xform* xf,
 }
 
 static void
-xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
-                      const Plm_image_header* pih,
-                      float* grid_spac)
+xform_itk_bsp_to_itk_bsp (
+    Xform *xf_out, 
+    const Xform* xf_in,
+    const Plm_image_header* pih,
+    float* grid_spac)
 {
     BsplineTransformType::Pointer bsp_old = xf_in->get_itk_bsp();
 
@@ -916,23 +929,23 @@ xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
     bsp_coeff.SetSize (num_parms);
 
     /* GCS May 12, 2008.  I feel like the below algorithm suggested 
-        by ITK is wrong.  If BSplineResampleImageFunction interpolates the 
-        coefficient image, the resulting resampled B-spline will be smoother 
-        than the original.  But maybe the algorithm is OK, just a problem with 
-        the lack of proper ITK documentation.  Need to test this.
+       by ITK is wrong.  If BSplineResampleImageFunction interpolates the 
+       coefficient image, the resulting resampled B-spline will be smoother 
+       than the original.  But maybe the algorithm is OK, just a problem with 
+       the lack of proper ITK documentation.  Need to test this.
 
        What this code does is this:
-         1) Resample coefficient image using B-Spline interpolator
-         2) Pass resampled image to decomposition filter
-         3) Copy decomposition filter output into new coefficient image
+       1) Resample coefficient image using B-Spline interpolator
+       2) Pass resampled image to decomposition filter
+       3) Copy decomposition filter output into new coefficient image
 
        This is the original comment from the ITK code:
-         Now we need to initialize the BSpline coefficients of the higher 
-         resolution transform. This is done by first computing the actual 
-         deformation field at the higher resolution from the lower 
-         resolution BSpline coefficients. Then a BSpline decomposition 
-         is done to obtain the BSpline coefficient of the higher 
-         resolution transform. */
+       Now we need to initialize the BSpline coefficients of the higher 
+       resolution transform. This is done by first computing the actual 
+       deformation field at the higher resolution from the lower 
+       resolution BSpline coefficients. Then a BSpline decomposition 
+       is done to obtain the BSpline coefficient of the higher 
+       resolution transform. */
     unsigned int counter = 0;
     for (unsigned int k = 0; k < 3; k++) {
         typedef BsplineTransformType::ImageType ParametersImageType;
@@ -1013,7 +1026,8 @@ gpuit_bsp_grid_to_itk_bsp_grid (
 
 static void
 gpuit_bsp_to_itk_bsp_raw (
-    Xform *xf_out, Xform* xf_in, 
+    Xform *xf_out, 
+    const Xform* xf_in, 
     const Plm_image_header* pih)
 {
     typedef BsplineTransformType::ImageType ParametersImageType;
@@ -1056,9 +1070,10 @@ gpuit_bsp_to_itk_bsp_raw (
 }
 
 /* If grid_spac is null, then don't resample */
-void
+static void
 xform_gpuit_bsp_to_itk_bsp (
-    Xform *xf_out, Xform* xf_in,
+    Xform *xf_out, 
+    const Xform* xf_in,
     const Plm_image_header* pih,
     const ImageRegionType* roi, /* Not yet used */
     float* grid_spac)
@@ -1389,8 +1404,8 @@ xform_gpuit_vf_to_gpuit_vf (Volume* vf_in, const Plm_image_header *pih)
     return vf_out;
 }
 
-Volume::Pointer
-xform_gpuit_bsp_to_gpuit_vf (Xform *xf_in, const Plm_image_header *pih)
+static Volume::Pointer
+xform_gpuit_bsp_to_gpuit_vf (const Xform *xf_in, const Plm_image_header *pih)
 {
     Bspline_xform* bxf = xf_in->get_gpuit_bsp();
     Volume::Pointer vf_out;
@@ -1429,7 +1444,8 @@ xform_itk_vf_to_gpuit_vf (
    ----------------------------------------------------------------------- */
 void
 xform_to_trn (
-    Xform *xf_out, Xform *xf_in, 
+    Xform *xf_out, 
+    const Xform *xf_in, 
     Plm_image_header *pih)
 {
     switch (xf_in->m_type) {
@@ -1459,7 +1475,8 @@ xform_to_trn (
 
 void
 xform_to_vrs (
-    Xform *xf_out, Xform *xf_in, 
+    Xform *xf_out, 
+    const Xform *xf_in, 
     Plm_image_header *pih)
 {
     switch (xf_in->m_type) {
@@ -1491,7 +1508,8 @@ xform_to_vrs (
 
 void
 xform_to_quat (
-    Xform *xf_out, Xform *xf_in, 
+    Xform *xf_out, 
+    const Xform *xf_in, 
     Plm_image_header *pih)
 {
     switch (xf_in->m_type) {
@@ -1523,7 +1541,8 @@ xform_to_quat (
 
 void
 xform_to_aff (
-    Xform *xf_out, Xform *xf_in, 
+    Xform *xf_out, 
+    const Xform *xf_in, 
     Plm_image_header *pih)
 {
     switch (xf_in->m_type) {
@@ -1560,7 +1579,7 @@ xform_to_aff (
 void
 xform_to_itk_bsp (
     Xform *xf_out, 
-    Xform *xf_in, 
+    const Xform *xf_in, 
     Plm_image_header* pih,
     float* grid_spac
 )
@@ -1604,6 +1623,18 @@ xform_to_itk_bsp (
         print_and_exit ("Program error.  Bad xform type.\n");
         break;
     }
+}
+
+Xform::Pointer
+xform_to_itk_bsp (
+    const Xform::Pointer& xf_in, 
+    Plm_image_header* pih,
+    float* grid_spac
+)
+{
+    Xform::Pointer xf_out = Xform::New ();
+    xform_to_itk_bsp (xf_out.get(), xf_in.get(), pih, grid_spac);
+    return xf_out;
 }
 
 void
@@ -1650,6 +1681,18 @@ xform_to_itk_bsp_nobulk (
     }
 }
 
+Xform::Pointer
+xform_to_itk_bsp_nobulk (
+    const Xform::Pointer& xf_in, 
+    Plm_image_header* pih,
+    float* grid_spac
+)
+{
+    Xform::Pointer xf_out = Xform::New ();
+    xform_to_itk_bsp_nobulk (xf_out.get(), xf_in.get(), pih, grid_spac);
+    return xf_out;
+}
+
 void
 xform_to_itk_vf (Xform* xf_out, Xform *xf_in, Plm_image_header* pih)
 {
@@ -1684,7 +1727,7 @@ xform_to_itk_vf (Xform* xf_out, Xform *xf_in, Plm_image_header* pih)
         vf = xform_gpuit_bsp_to_itk_vf (xf_in, pih);
         break;
     case XFORM_GPUIT_VECTOR_FIELD:
-        vf = xform_gpuit_vf_to_itk_vf (xf_in->get_gpuit_vf(), pih);
+        vf = xform_gpuit_vf_to_itk_vf (xf_in->get_gpuit_vf().get(), pih);
         break;
     default:
         print_and_exit ("Program error.  Bad xform type.\n");
@@ -1693,13 +1736,21 @@ xform_to_itk_vf (Xform* xf_out, Xform *xf_in, Plm_image_header* pih)
     xf_out->set_itk_vf (vf);
 }
 
-/* Overloaded fn.  Fix soon... */
+/* Overloaded fn. GCS FIX -- maybe this function is not needed */
 void
 xform_to_itk_vf (Xform* xf_out, Xform *xf_in, FloatImageType::Pointer image)
 {
     Plm_image_header pih;
     pih.set_from_itk_image (image);
     xform_to_itk_vf (xf_out, xf_in, &pih);
+}
+
+Xform::Pointer
+xform_to_itk_vf (const Xform::Pointer& xf_in, Plm_image_header* pih)
+{
+    Xform::Pointer xf_out = Xform::New ();
+    xform_to_itk_vf (xf_out.get(), xf_in.get(), pih);
+    return xf_out;
 }
 
 void
@@ -1743,9 +1794,21 @@ xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih,
     }
 }
 
+Xform::Pointer
+xform_to_gpuit_bsp (
+    const Xform::Pointer& xf_in, 
+    Plm_image_header* pih,
+    float* grid_spac
+)
+{
+    Xform::Pointer xf_out = Xform::New ();
+    xform_to_gpuit_bsp (xf_out.get(), xf_in.get(), pih, grid_spac);
+    return xf_out;
+}
+
 void
 xform_to_gpuit_vf (
-    Xform* xf_out, Xform *xf_in, const Plm_image_header* pih)
+    Xform* xf_out, const Xform *xf_in, const Plm_image_header* pih)
 {
     Volume::Pointer vf = Volume::New();
     switch (xf_in->m_type) {
@@ -1777,7 +1840,7 @@ xform_to_gpuit_vf (
         vf = xform_gpuit_bsp_to_gpuit_vf (xf_in, pih);
         break;
     case XFORM_GPUIT_VECTOR_FIELD:
-        vf = xform_gpuit_vf_to_gpuit_vf (xf_in->get_gpuit_vf(), pih);
+        vf = xform_gpuit_vf_to_gpuit_vf (xf_in->get_gpuit_vf().get(), pih);
         break;
     default:
         print_and_exit ("Program error.  Bad xform type.\n");
@@ -1786,6 +1849,22 @@ xform_to_gpuit_vf (
 
     //xf_out->set_gpuit_vf (Volume::Pointer(vf));
     xf_out->set_gpuit_vf (vf);
+}
+
+Xform::Pointer
+xform_to_gpuit_vf (
+    const Xform::Pointer& xf_in, const Plm_image_header* pih)
+{
+    Xform::Pointer xf_out = Xform::New ();
+    xform_to_gpuit_vf (xf_out.get(), xf_in.get(), pih);
+    return xf_out;
+}
+
+
+Xform_type
+Xform::get_type () const
+{
+    return this->m_type;
 }
 
 void

@@ -4,6 +4,7 @@
     This is a command line program that can try different regression 
     algorithms on a libsvm-formatted data set.
 */
+#include "plm_config.h"
 #include <iostream>
 #include <map>
 #include <vector>

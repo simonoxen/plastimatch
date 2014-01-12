@@ -199,9 +199,9 @@ highland_maxime_aperture_theta0 (
     float function_to_be_integrated = 0.0; /* expression to be integrated on dz, second part of the highland's formula */
     range = getrange(energy);
 
-    rgdepth = rgdepth/10;   /* in the Hong algorithm, rgdepth is in cm but given in mm by plastimatch
-
-    /* integration of the integrale part of the highland's formula */
+    /* in the Hong algorithm, rgdepth is in cm but given in mm by plastimatch
+       integration of the integrale part of the highland's formula */
+    rgdepth = rgdepth/10;   
 
     for (float i = 0; i <= rgdepth && energy > 0.5; i+=step)
     {

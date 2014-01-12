@@ -5,13 +5,12 @@
 #define _plm_stages_h_
 
 #include "plmregister_config.h"
+#include "xform.h"
 
 class Registration_data;
 class Registration_parms;
-class Xform;
 
-PLMREGISTER_API void do_registration_pure (
-    Xform** xf_result,
+PLMREGISTER_API Xform::Pointer do_registration_pure (
     Registration_data* regd,
     Registration_parms* regp
 );

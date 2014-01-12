@@ -22,20 +22,6 @@
 
 void
 Dcmtk_sro::save (
-    Xform* xf,
-    const Rt_study_metadata::Pointer& rsm_src,   /* Fixed image */
-    const Rt_study_metadata::Pointer& rsm_reg,   /* Moving image */
-    const std::string& dicom_dir)
-{
-    Xform::Pointer xf1 = Xform::New (xf);
-    lprintf ("Trying to save\n");
-    Dcmtk_sro::save (xf1, rsm_src, rsm_reg, dicom_dir);
-    lprintf ("Trying to reset\n");
-    xf1.reset();
-}
-
-void
-Dcmtk_sro::save (
     const Xform::Pointer& xf,
     const Rt_study_metadata::Pointer& rsm_src,   /* Fixed image */
     const Rt_study_metadata::Pointer& rsm_reg,   /* Moving image */

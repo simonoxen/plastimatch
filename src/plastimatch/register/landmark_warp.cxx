@@ -166,7 +166,7 @@ landmark_convert_mm_to_voxel (
   vector field. Adapted from bspline_landmarks_warp(...) in 
   bspline_landmarks.c to use Landmark_warp */
 void
-calculate_warped_landmarks( Landmark_warp *lw )
+calculate_warped_landmarks (Landmark_warp *lw)
 {
     plm_long ri, rj, rk;
     plm_long fi, fj, fk, fv;
@@ -193,7 +193,11 @@ calculate_warped_landmarks( Landmark_warp *lw )
     landmark_dxyz = (float *)malloc( 3*num_landmarks * sizeof(float));
     warped_landmarks = (float *)malloc( 3*num_landmarks * sizeof(float));
 
-    vector_field = lw->m_vf->get_gpuit_vf();
+    if (lw->m_vf->get_type() != XFORM_GPUIT_VECTOR_FIELD) {
+        Plm_image_header pih = lw->m_vf->get_plm_image_header();
+        xform_to_gpuit_vf (lw->m_vf, lw->m_vf, &pih);
+    }
+    vector_field = lw->m_vf->get_gpuit_vf().get();
     moving = lw->m_input_img->get_vol_float ();
 
     // fixed dimensions set come from lw->m_pih //

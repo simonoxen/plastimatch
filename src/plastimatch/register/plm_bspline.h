@@ -5,11 +5,11 @@
 #define _gpuit_bspline_h_
 
 #include "plmregister_config.h"
+#include "xform.h"
 
 class Plm_bspline_private;
 class Registration_parms;
 class Registration_data;
-class Xform;
 class Stage_parms;
 class Volume;
 
@@ -31,12 +31,11 @@ protected:
     void cleanup ();
 };
 
-void
+Xform::Pointer
 do_gpuit_bspline_stage (
     Registration_parms* regp, 
     Registration_data* regd, 
-    Xform *xf_out, 
-    Xform *xf_in, 
+    const Xform::Pointer& xf_in, 
     Stage_parms* stage);
 
 #endif

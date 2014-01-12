@@ -74,20 +74,19 @@ do_xf_convert (Xf_convert_parms *parms)
     Xform_convert *xfc = &parms->xfc;
 
     /* Set up inputs */
-    xfc->m_xf_in = new Xform;
-    xfc->m_xf_out = new Xform;
-    xform_load (xfc->m_xf_in, parms->input_fn);
+    Xform::Pointer xf_in = xform_load (parms->input_fn);
+    Xform::Pointer xf_out = Xform::New ();
     set_output_xform_type (xfc, parms->output_type);
 
     /* Set grid spacing as needed */
-    xfc->m_xf_in->get_grid_spacing (xfc->m_grid_spac);
+    xf_in->get_grid_spacing (xfc->m_grid_spac);
     if (parms->m_have_grid_spacing) {
         for (int d = 0; d < 3; d++) {
             xfc->m_grid_spac[d] = parms->m_grid_spacing[d];
         }
     }
-    if (xfc->m_xf_in->m_type == XFORM_GPUIT_BSPLINE) {
-        Bspline_xform* bxf = xfc->m_xf_in->get_gpuit_bsp();
+    if (xf_in->get_type() == XFORM_GPUIT_BSPLINE) {
+        Bspline_xform* bxf = xf_in->get_gpuit_bsp();
         printf ("vox_per_rgn = %u %u %u\n", 
             (unsigned int) bxf->vox_per_rgn[0],
             (unsigned int) bxf->vox_per_rgn[1],
@@ -106,7 +105,7 @@ do_xf_convert (Xf_convert_parms *parms)
     }
 
     /* Set volume header as needed */
-    xfc->m_xf_in->get_volume_header (&xfc->m_volume_header);
+    xf_in->get_volume_header (&xfc->m_volume_header);
     if (parms->m_have_dim) {
         xfc->m_volume_header.set_dim (parms->m_vh.get_dim());
     }
@@ -124,16 +123,18 @@ do_xf_convert (Xf_convert_parms *parms)
        type will be read from the input file.  */
     if (xfc->m_xf_out_type == XFORM_NONE) {
         /* Copy input to output */
-        *xfc->m_xf_out = *xfc->m_xf_in;
+        xf_out = xf_in;
     } else {
         printf ("about to xform_convert\n");
-        xform_convert (xfc);
+        xfc->set_input_xform (xf_in);
+        xfc->run ();
+        xf_out = xfc->get_output_xform ();
         printf ("did xform_convert\n");
     }
 
     /* Save output file */
     if (!parms->output_fn.empty()) {
-        xfc->m_xf_out->save (parms->output_fn);
+        xf_out->save (parms->output_fn);
     }
 
     /* Save output dicom */
@@ -173,7 +174,7 @@ do_xf_convert (Xf_convert_parms *parms)
 
         lprintf ("Saving sro\n");
         Dcmtk_sro::save (
-            xfc->m_xf_out, rtm_src, rtm_reg, parms->output_dicom_dir);
+            xf_out, rtm_src, rtm_reg, parms->output_dicom_dir);
         lprintf ("Done saving sro\n");
 #endif
     }

@@ -5,12 +5,13 @@
 #define _itk_registration_h_
 
 #include "plmregister_config.h"
+#include "xform.h"
 
 class Registration_data;
 class Stage_parms;
-class Xform;
 
-void itk_registration_stage (Registration_data* regd, Xform *xf_out, 
-    Xform *xf_in, Stage_parms* stage);
+Xform::Pointer
+do_itk_registration_stage (Registration_data* regd, 
+    const Xform::Pointer& xf_in, Stage_parms* stage);
 
 #endif

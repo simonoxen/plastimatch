@@ -1,8 +1,7 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-
-
+#include "plmregister_config.h"
 #include "itk_log_demons.h"
 #include "stage_parms.h"
 

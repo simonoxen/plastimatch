@@ -23,7 +23,7 @@ class Volume_header;
 class Xform;
 class Xform_private;
 
-enum XFormInternalType {
+enum Xform_type {
     XFORM_NONE                  = 0,
     XFORM_ITK_TRANSLATION       = 1,
     XFORM_ITK_VERSOR            = 2,
@@ -63,10 +63,10 @@ public:
 public:
     Xform ();
     ~Xform ();
-    Xform (Xform& xf);
+    Xform (const Xform& xf);
 
 public:
-    XFormInternalType m_type;
+    Xform_type m_type;
     
     /* The actual xform is one of the following. */
     TranslationTransformType::Pointer m_trn;
@@ -76,7 +76,6 @@ public:
     DeformationFieldType::Pointer m_itk_vf;
     BsplineTransformType::Pointer m_itk_bsp;
     TpsTransformType::Pointer m_itk_tps;
-    //void* m_gpuit;
 
 public:
     void clear ();
@@ -88,15 +87,15 @@ public:
     void save (const Pstring& fn);
     void save (const std::string& fn);
 
-    TranslationTransformType::Pointer get_trn ();
-    VersorTransformType::Pointer get_vrs ();
-    QuaternionTransformType::Pointer get_quat ();
-    AffineTransformType::Pointer get_aff ();
-    BsplineTransformType::Pointer get_itk_bsp ();
-    TpsTransformType::Pointer get_itk_tps ();
-    DeformationFieldType::Pointer get_itk_vf ();
-    Bspline_xform* get_gpuit_bsp ();
-    Volume* get_gpuit_vf ();
+    TranslationTransformType::Pointer get_trn () const;
+    VersorTransformType::Pointer get_vrs () const;
+    QuaternionTransformType::Pointer get_quat () const;
+    AffineTransformType::Pointer get_aff () const;
+    BsplineTransformType::Pointer get_itk_bsp () const;
+    TpsTransformType::Pointer get_itk_tps () const;
+    DeformationFieldType::Pointer get_itk_vf () const;
+    Bspline_xform* get_gpuit_bsp () const;
+    Volume::Pointer& get_gpuit_vf () const;
 
     void init_trn ();
 
@@ -114,6 +113,7 @@ public:
     void set_gpuit_bsp (Bspline_xform* xgb);
     void set_gpuit_vf (const Volume::Pointer& vf);
 
+    Xform_type get_type () const;
     void get_volume_header (Volume_header *vh);
     Plm_image_header get_plm_image_header ();
     void get_grid_spacing (float grid_spacing[3]);
@@ -121,10 +121,12 @@ public:
     void print ();
 
 public:
-    Xform& operator= (Xform& xf);
+    Xform& operator= (const Xform& xf);
 };
 
 
+PLMBASE_API Xform::Pointer xform_load (const std::string& fn);
+PLMBASE_API Xform::Pointer xform_load (const char* fn);
 PLMBASE_API void xform_load (Xform *xf, const char* fn);
 PLMBASE_API void xform_save (Xform *xf, const char* fn);
 PLMBASE_API void xform_itk_bsp_init_default (Xform *xf);
@@ -134,22 +136,30 @@ PLMBASE_API void xform_itk_bsp_set_grid (Xform *xf,
     const BsplineTransformType::RegionType bsp_region,
     const BsplineTransformType::DirectionType bsp_direction);
 PLMBASE_API void xform_to_trn (
-    Xform *xf_out, Xform *xf_in, Plm_image_header* pih);
+    Xform *xf_out, const Xform *xf_in, Plm_image_header* pih);
 PLMBASE_API void xform_to_vrs (
-    Xform *xf_out, Xform *xf_in, Plm_image_header* pih);
+    Xform *xf_out, const Xform *xf_in, Plm_image_header* pih);
 PLMBASE_API void xform_to_quat (
-    Xform *xf_out, Xform *xf_in, Plm_image_header* pih);
+    Xform *xf_out, const Xform *xf_in, Plm_image_header* pih);
 PLMBASE_API void xform_to_aff (
-    Xform *xf_out, Xform *xf_in, Plm_image_header* pih);
+    Xform *xf_out, const Xform *xf_in, Plm_image_header* pih);
 PLMBASE_API DeformationFieldType::Pointer xform_gpuit_vf_to_itk_vf (
     Volume* vf,              /* Input */
     Plm_image_header* pih    /* Input, can be null */
 );
-PLMBASE_API void xform_to_itk_bsp (Xform *xf_out, Xform *xf_in, Plm_image_header* pih, float* grid_spac);
+PLMBASE_API void xform_to_itk_bsp (Xform *xf_out, const Xform *xf_in, 
+    Plm_image_header* pih, float* grid_spac);
 PLMBASE_API void xform_to_itk_bsp_nobulk (Xform *xf_out, Xform *xf_in, Plm_image_header* pih, float* grid_spac);
 PLMBASE_API void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, Plm_image_header* pih);
 PLMBASE_API void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, FloatImageType::Pointer image);
 PLMBASE_API void xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih, float* grid_spac);
-PLMBASE_API void xform_to_gpuit_vf (Xform* xf_out, Xform *xf_in, const Plm_image_header* pih);
+PLMBASE_API void xform_to_gpuit_vf (Xform* xf_out, const Xform *xf_in, const Plm_image_header* pih);
+
+PLMBASE_API Xform::Pointer xform_to_itk_bsp (const Xform::Pointer& xf_in, 
+    Plm_image_header* pih, float* grid_spac);
+PLMBASE_API Xform::Pointer xform_to_itk_bsp_nobulk (const Xform::Pointer& xf_in, Plm_image_header* pih, float* grid_spac);
+PLMBASE_API Xform::Pointer xform_to_itk_vf (const Xform::Pointer& xf_in, Plm_image_header* pih);
+PLMBASE_API Xform::Pointer xform_to_gpuit_bsp (const Xform::Pointer& xf_in, Plm_image_header* pih, float* grid_spac);
+PLMBASE_API Xform::Pointer xform_to_gpuit_vf (const Xform::Pointer& xf_in, const Plm_image_header* pih);
 
 #endif

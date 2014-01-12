@@ -118,8 +118,8 @@ Vf_invert::run ()
     Xform *xf = new Xform;
     const Plm_image_header pih_in (d_ptr->input_vf);
     xform_to_gpuit_vf (xf, &xf_itk, &pih_in);
-    Volume *vf_in = xf->get_gpuit_vf ();
-    vf_convert_to_interleaved (vf_in);
+    Volume::Pointer vf_in = xf->get_gpuit_vf ();
+    vf_convert_to_interleaved (vf_in.get());
 
     /* Populate mask & tmp volume */
     unsigned char *img_mask = (unsigned char*) mask->img;

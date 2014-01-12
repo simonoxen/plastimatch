@@ -20,7 +20,7 @@ public:
     Itk_registration_private (
         Registration_data* regd, 
         Xform *xf_out, 
-        Xform *xf_in, 
+        const Xform *xf_in, 
         Stage_parms* stage
     );
     ~Itk_registration_private ();
@@ -28,7 +28,7 @@ public:
 public:
     Registration_data *regd;
     Xform *xf_out;
-    Xform *xf_in;
+    const Xform *xf_in;
     Stage_parms *stage;
 
     RegistrationType::Pointer registration;

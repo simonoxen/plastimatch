@@ -35,14 +35,14 @@ stats_vf_main (Stats_parms* parms, const std::string& current_fn)
     xf1.load (current_fn);
 
     if (xf1.m_type == XFORM_GPUIT_VECTOR_FIELD) {
-	vol = xf1.get_gpuit_vf();
+	vol = xf1.get_gpuit_vf().get();
     }
     else if (xf1.m_type == XFORM_ITK_VECTOR_FIELD) {
 	/* GCS FIX: This logic should be moved inside of xform class */
 	Plm_image_header pih;
 	pih.set_from_itk_image (xf1.get_itk_vf ());
 	xform_to_gpuit_vf (&xf2, &xf1, &pih);
-	vol = xf2.get_gpuit_vf();
+	vol = xf2.get_gpuit_vf().get();
     }
     else 
     {

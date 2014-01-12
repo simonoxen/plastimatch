@@ -494,11 +494,10 @@ Mabs::run_registration_loop ()
                 rtds.get_image()->itk_float());
 
             /* Run the registration */
-            Xform *xf_out;
             lprintf ("DO_REGISTRATION_PURE\n");
             lprintf ("regp->num_stages = %d\n", regp->num_stages);
             timer.start();
-            do_registration_pure (&xf_out, regd, regp);
+            Xform::Pointer xf_out = do_registration_pure (regd, regp);
             d_ptr->time_reg += timer.report();
 
             /* Warp the output image */
@@ -611,8 +610,6 @@ Mabs::run_registration_loop ()
                is complete */
             touch_file (reg_checkpoint_fn);
 
-            /* Clean up */
-            delete xf_out;
         } /* end for each registration parameter */
 
         /* Create checkpoint file which means that training for 
@@ -1095,8 +1092,7 @@ Mabs::segmentation_vote (const std::string& atlas_id)
         curr_output_dir.c_str(),
         "xf.txt");
     lprintf ("Loading xform: %s\n", xf_fn.c_str());
-    Xform xf;
-    xf.load (xf_fn);
+    Xform::Pointer xf = xform_load (xf_fn);
     d_ptr->time_io += timer.report();
 
     /* Load warped image */
@@ -1122,7 +1118,7 @@ Mabs::segmentation_vote (const std::string& atlas_id)
         timer.start();
         warped_image = new Plm_image;
         Plm_image_header fixed_pih (d_ptr->ref_rtds->get_image());
-        plm_warp (warped_image, 0, &xf, 
+        plm_warp (warped_image, 0, xf, 
             &fixed_pih, 
             atlas_image, 
             0, 0, 1);
@@ -1202,7 +1198,7 @@ Mabs::segmentation_vote (const std::string& atlas_id)
                 warped_structure = new Plm_image;
                 Plm_image_header fixed_pih (d_ptr->ref_rtds->get_image());
                 lprintf ("Warping atlas structure.\n");
-                plm_warp (warped_structure, 0, &xf, 
+                plm_warp (warped_structure, 0, xf, 
                     &fixed_pih, 
                     atlas_struct,
                     0, 0, 1);

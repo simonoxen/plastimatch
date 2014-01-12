@@ -154,7 +154,7 @@ set_fixed_image_region_global (Registration_data* regd)
 static void
 save_output (
     Registration_data* regd, 
-    Xform *xf_out, 
+    Xform::Pointer& xf_out, 
     const std::list<std::string>& xf_out_fn, 
     bool xf_out_itk,
     int img_out_fmt,
@@ -175,13 +175,12 @@ save_output (
     for (it = xf_out_fn.begin(); it != xf_out_fn.end(); ++it) {
         logfile_printf ("Writing transformation ...\n");
         if (xf_out_itk && xf_out->m_type == XFORM_GPUIT_BSPLINE) {
-            Xform xf_tmp;
             Plm_image_header pih;
             pih.set_from_plm_image (regd->fixed_image);
-            xform_to_itk_bsp (&xf_tmp, xf_out, &pih, 0);
-            xform_save (&xf_tmp, (*it).c_str());
+            Xform::Pointer xf_tmp = xform_to_itk_bsp (xf_out, &pih, 0);
+            xf_tmp->save (*it);
         } else {
-            xform_save (xf_out, (*it).c_str());
+            xf_out->save (*it);
         }
     }
 
@@ -234,50 +233,52 @@ save_output (
     }
 }
 
-static void
+static Xform::Pointer
 do_registration_stage (
-    Registration_parms* regp, 
-    Registration_data* regd, 
-    Xform *xf_out, Xform *xf_in, 
-    Stage_parms* stage)
+    Registration_parms* regp,     /* Input */
+    Registration_data* regd,      /* Input */
+    const Xform::Pointer& xf_in,  /* Input */
+    Stage_parms* stage            /* Input */
+)
 {
+    Xform::Pointer xf_out = Xform::New ();
     lprintf ("[1] xf_in->m_type = %d, xf_out->m_type = %d\n", 
         xf_in->m_type, xf_out->m_type);
 
     /* Run registration */
     if (stage->optim_type == OPTIMIZATION_DEMONS) {
         if (stage->impl_type == IMPLEMENTATION_ITK) {
-            do_demons_stage (regd, xf_out, xf_in, stage);
+            xf_out = do_itk_demons_stage (regd, xf_in, stage);
         } else {
-            do_gpuit_demons_stage (regd, xf_out, xf_in, stage);
+            xf_out = do_gpuit_demons_stage (regd, xf_in, stage);
         }
     }
     else if (stage->xform_type == STAGE_TRANSFORM_BSPLINE) {
         if (stage->impl_type == IMPLEMENTATION_ITK) {
-            itk_registration_stage (regd, xf_out, xf_in, stage);
+            xf_out = do_itk_registration_stage (regd, xf_in, stage);
         } else {
-            do_gpuit_bspline_stage (regp, regd, xf_out, xf_in, stage);
+            xf_out = do_gpuit_bspline_stage (regp, regd, xf_in, stage);
         }
     }
     else if (stage->xform_type == STAGE_TRANSFORM_ALIGN_CENTER) {
-        itk_registration_stage (regd, xf_out, xf_in, stage);
+        xf_out = do_itk_registration_stage (regd, xf_in, stage);
         lprintf ("Centering done\n");
     }
     else if (stage->xform_type == STAGE_TRANSFORM_TRANSLATION) {
         if (stage->impl_type == IMPLEMENTATION_ITK) {
-            itk_registration_stage (regd, xf_out, xf_in, stage);
+            xf_out = do_itk_registration_stage (regd, xf_in, stage);
         } else if (stage->impl_type == IMPLEMENTATION_PLASTIMATCH) {
-            native_translation_stage (regd, xf_out, xf_in, stage);
+            xf_out = native_translation_stage (regd, xf_in, stage);
         } else {
             if (stage->optim_type == OPTIMIZATION_GRID_SEARCH) {
-                native_translation_stage (regd, xf_out, xf_in, stage);
+                xf_out = native_translation_stage (regd, xf_in, stage);
             } else {
-                itk_registration_stage (regd, xf_out, xf_in, stage);
+                xf_out = do_itk_registration_stage (regd, xf_in, stage);
             }
         }
     }
     else {
-        itk_registration_stage (regd, xf_out, xf_in, stage);
+        xf_out = do_itk_registration_stage (regd, xf_in, stage);
     }
 
     lprintf ("[2] xf_out->m_type = %d, xf_in->m_type = %d\n", 
@@ -288,6 +289,8 @@ do_registration_stage (
         stage->img_out_fmt, stage->img_out_type, 
         stage->default_value, stage->img_out_fn, stage->vf_out_fn,
         stage->warped_landmarks_fn.c_str());
+
+    return xf_out;
 }
 
 static void
@@ -318,14 +321,14 @@ set_automatic_parameters (Registration_data* regd, Registration_parms* regp)
 }
 
 static void
-check_output_resolution (Xform* xf_out, Registration_data* regd)
+check_output_resolution (Xform::Pointer& xf_out, Registration_data* regd)
 {
     Volume *fixed = regd->fixed_image->get_vol ();
     int ss[3];
     Plm_image_header pih;
     float grid_spacing[3];
 
-    if (xf_out->m_type != XFORM_GPUIT_BSPLINE) {
+    if (xf_out->get_type() != XFORM_GPUIT_BSPLINE) {
         return;
     }
 
@@ -350,28 +353,23 @@ check_output_resolution (Xform* xf_out, Registration_data* regd)
             fixed->direction_cosines
         );
         xf_out->get_grid_spacing (grid_spacing);
-        xform_to_gpuit_bsp (xf_out, xf_out, &pih, grid_spacing);
+        xform_to_gpuit_bsp (xf_out.get(), xf_out.get(), &pih, grid_spacing);
     }
 }
 
-/* xf_result must be freed by caller */
-void
+Xform::Pointer
 do_registration_pure (
-    Xform** xf_result,
     Registration_data* regd,
     Registration_parms* regp
 )
 {
-    Xform *xf1 = new Xform;
-    Xform *xf2 = new Xform;
-    Xform *xf_in, *xf_out, *xf_tmp;
-
-    xf_in = xf1;
-    xf_out = xf2;
+    Xform::Pointer xf_in = Xform::New ();
+    Xform::Pointer xf_out = Xform::New ();
+    Xform::Pointer xf_tmp;
 
     /* Load initial guess of xform */
     if (regp->xf_in_fn[0]) {
-        xform_load (xf_out, regp->xf_in_fn);
+        xf_out = xform_load (regp->xf_in_fn);
     }
 
     /* Set fixed image region */
@@ -405,14 +403,15 @@ do_registration_pure (
 #endif
 
         } else if (sp->get_stage_type() == STAGE_TYPE_REGISTER) {
-            /* Swap xf_in and xf_out */
-            xf_tmp = xf_out; xf_out = xf_in; xf_in = xf_tmp;
+            /* Swap xf_in and xf_out.  Memory for previous xf_in 
+               gets released at this time. */
+            xf_in = xf_out;
 
             /* Load stage images */
             regd->load_stage_input_files (sp);
 
             /* Run registation, results are stored in xf_out */
-            do_registration_stage (regp, regd, xf_out, xf_in, sp);
+            xf_out = do_registration_stage (regp, regd, xf_in, sp);
         } 
     }
 
@@ -420,15 +419,14 @@ do_registration_pure (
      * make output match input resolution - not final stage resolution */
     check_output_resolution (xf_out, regd);
 
-    *xf_result = xf_out;
-    delete xf_in;
+    return xf_out;
 }
 
 void
 do_registration (Registration_parms* regp)
 {
     Registration_data regd;
-    Xform* xf_out = NULL;
+    Xform::Pointer xf_out = Xform::New ();
     Plm_timer timer1, timer2, timer3;
 
     /* Start logging */
@@ -450,7 +448,8 @@ do_registration (Registration_parms* regp)
         timer1.stop();
     
         timer2.start();
-        do_registration_pure (&xf_out, &regd, regp);
+        //do_registration_pure (&xf_out, &regd, regp);
+        xf_out = do_registration_pure (&regd, regp);
         timer2.stop();
 
         /* RMK: If no stages, we still generate output (same as input) */
@@ -462,8 +461,6 @@ do_registration (Registration_parms* regp)
             regp->vf_out_fn, regp->warped_landmarks_fn.c_str());
 
         timer3.stop();
-    
-        delete xf_out;
     
         logfile_open (regp->log_fn);
         logfile_printf (

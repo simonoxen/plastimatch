@@ -58,14 +58,15 @@ typedef itk::LinearInterpolateImageFunction <
     FloatImageType, double >InterpolatorType;
 
 
-void
+static void
 itk_align_center (
-    Registration_data* regd, Xform *xf_out, Xform *xf_in, Stage_parms* stage);
+    Registration_data* regd, Xform *xf_out, 
+    const Xform *xf_in, Stage_parms* stage);
 
 Itk_registration_private::Itk_registration_private (
     Registration_data* regd, 
     Xform *xf_out, 
-    Xform *xf_in, 
+    const Xform *xf_in, 
     Stage_parms* stage
 )
 {
@@ -498,11 +499,11 @@ Itk_registration_private::show_stats ()
             registration->GetMovingImage()));
 }
 
-void
+static void
 set_transform_translation (
     RegistrationType::Pointer registration,
     Xform *xf_out,
-    Xform *xf_in,
+    const Xform *xf_in,
     Stage_parms* stage)
 {
     Plm_image_header pih;
@@ -511,11 +512,12 @@ set_transform_translation (
     registration->SetTransform (xf_out->get_trn());
 }
 
-void
-set_transform_versor (RegistrationType::Pointer registration,
-                        Xform *xf_out,
-                        Xform *xf_in,
-                        Stage_parms* stage)
+static void
+set_transform_versor (
+    RegistrationType::Pointer registration,
+    Xform *xf_out,
+    const Xform *xf_in,
+    Stage_parms* stage)
 {
     Plm_image_header pih;
     pih.set_from_itk_image (registration->GetFixedImage());
@@ -523,11 +525,11 @@ set_transform_versor (RegistrationType::Pointer registration,
     registration->SetTransform (xf_out->get_vrs());
 }
 
-void
+static void
 set_transform_quaternion (
     RegistrationType::Pointer registration,
     Xform *xf_out,
-    Xform *xf_in,
+    const Xform *xf_in,
     Stage_parms* stage)
 {
     Plm_image_header pih;
@@ -536,11 +538,11 @@ set_transform_quaternion (
     registration->SetTransform (xf_out->get_quat());
 }
 
-void
+static void
 set_transform_affine (
     RegistrationType::Pointer registration,
     Xform *xf_out,
-    Xform *xf_in,
+    const Xform *xf_in,
     Stage_parms* stage)
 {
     Plm_image_header pih;
@@ -549,11 +551,11 @@ set_transform_affine (
     registration->SetTransform (xf_out->get_aff());
 }
 
-void
+static void
 set_transform_bspline (
     RegistrationType::Pointer registration,
     Xform *xf_out,
-    Xform *xf_in,
+    const Xform *xf_in,
     Stage_parms* stage
 )
 {
@@ -611,11 +613,11 @@ Itk_registration_private::set_xf_out ()
     }
 }
 
-void
+static void
 itk_registration_stage (
     Registration_data* regd, 
     Xform *xf_out, 
-    Xform *xf_in, 
+    const Xform *xf_in, 
     Stage_parms* stage
 )
 {
@@ -685,28 +687,11 @@ itk_registration_stage (
     }
 }
 
-void
+static void
 itk_align_center (
-    Registration_data* regd, Xform *xf_out, Xform *xf_in, Stage_parms* stage)
+    Registration_data* regd, Xform *xf_out, 
+    const Xform *xf_in, Stage_parms* stage)
 {
-#if defined (commentout)
-    typedef itk::CenteredTransformInitializer < 
-        VersorTransformType, FloatImageType, FloatImageType 
-        > TransformInitializerType;
-    TransformInitializerType::Pointer initializer 
-        = TransformInitializerType::New();
-        
-    VersorTransformType::Pointer trn = VersorTransformType::New();
-    initializer->SetTransform (trn);
-    initializer->SetFixedImage (regd->fixed_image->itk_float());
-    initializer->SetMovingImage (regd->moving_image->itk_float());
-    initializer->GeometryOn ();
-
-    lprintf ("Centering images\n");
-    initializer->InitializeTransform();
-
-    xf_out->set_vrs (trn);
-#endif
     float fixed_center[3];
     float moving_center[3];
     itk_volume_center (fixed_center, regd->fixed_image->itk_float());
@@ -752,3 +737,15 @@ itk_align_center (
    copies these into BSplineTransform using xform_itk_bsp_set_grid ().
    Note: SetGridRegion() will zero the region, but does not allocate it.
 */
+
+Xform::Pointer
+do_itk_registration_stage (
+    Registration_data* regd, 
+    const Xform::Pointer& xf_in, 
+    Stage_parms* stage
+)
+{
+    Xform::Pointer xf_out = Xform::New ();
+    itk_registration_stage (regd, xf_out.get(), xf_in.get(), stage);
+    return xf_out;
+}
