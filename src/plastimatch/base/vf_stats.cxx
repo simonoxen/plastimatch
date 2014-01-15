@@ -33,6 +33,8 @@ vf_analyze (const Volume* vol, const Volume *mask)
     float mask_mean_v[3];
     float mask_mins[3];
     float mask_maxs[3];
+    float length_acc;
+    float length_mask_acc;
 
     for (int d = 0; d < 3; d++) {
 	mean_av[d] = 0.f;
@@ -44,12 +46,14 @@ vf_analyze (const Volume* vol, const Volume *mask)
 	mask_mins[d] = FLT_MAX;
         mask_maxs[d] = -FLT_MIN;
     }
+    length_acc = 0.f;
+    length_mask_acc = 0.f;
 
     for (v = 0, k = 0; k < vol->dim[2]; k++) {
 	for (j = 0; j < vol->dim[1]; j++) {
 	    for (i = 0; i < vol->dim[0]; i++, v++) {
 		float* dxyz = &img[3*v];
-
+                float len = 0.f;
 		for (int d = 0; d < 3; d++) {
 		    mean_v[d] += dxyz[d];
 		    mean_av[d] += fabs(dxyz[d]);
@@ -58,7 +62,10 @@ vf_analyze (const Volume* vol, const Volume *mask)
 		    } else if (dxyz[d] < mins[d]) {
 			mins[d] = dxyz[d];
 		    }
+                    len += dxyz[d] * dxyz[d];
 		}
+                len = sqrt(len);
+                length_acc += len;
 
                 if (mask && mask_img[v]) {
 		    mask_npixels ++;
@@ -71,6 +78,7 @@ vf_analyze (const Volume* vol, const Volume *mask)
 			    mask_mins[d] = dxyz[d];
                         }
 		    }
+                    length_mask_acc += len;
                 }
 	    }
 	}
@@ -93,6 +101,8 @@ vf_analyze (const Volume* vol, const Volume *mask)
 	maxs[0], maxs[1], maxs[2]);
     lprintf ("Mean abs:        %10.3f %10.3f %10.3f\n", 
 	mean_av[0], mean_av[1], mean_av[2]);
+    lprintf ("Ave len:         %10.3f\n",
+	length_acc / vol->npix);
 
     if (mask) {
         for (int d = 0; d < 3; d++) {
@@ -107,6 +117,8 @@ vf_analyze (const Volume* vol, const Volume *mask)
             mask_maxs[0], mask_maxs[1], mask_maxs[2]);
         lprintf ("Mean abs (mask): %10.3f %10.3f %10.3f\n", 
             mask_mean_av[0], mask_mean_av[1], mask_mean_av[2]);
+        lprintf ("Ave len (mask):  %10.3f\n",
+            length_mask_acc / mask_npixels);
     }
 }
 
