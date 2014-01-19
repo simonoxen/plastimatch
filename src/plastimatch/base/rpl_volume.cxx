@@ -487,7 +487,6 @@ Rpl_volume::compute_rpl_ct ()
     ires[0] = d_ptr->proj_vol->get_image_dim (0);
     ires[1] = d_ptr->proj_vol->get_image_dim (1);
     unsigned char *ap_img = 0;
-    float *rc_img = 0;
     if (d_ptr->aperture->have_aperture_image()) {
         Volume *ap_vol = d_ptr->aperture->get_aperture_vol ();
         ap_img = (unsigned char*) ap_vol->img;
@@ -651,14 +650,13 @@ Rpl_volume::compute_rpl_sigma (Rpl_volume* ct_vol_density)
     ires[1] = d_ptr->proj_vol->get_image_dim (1);
 
     unsigned char *ap_img = 0;
-    float *rc_img = 0;
     if (d_ptr->aperture->have_aperture_image()) {
         Volume *ap_vol = d_ptr->aperture->get_aperture_vol ();
         ap_img = (unsigned char*) ap_vol->img;
     }
     if (d_ptr->aperture->have_range_compensator_image()) { // we'll need the compensator for sigma source!!
         Volume *rc_vol = d_ptr->aperture->get_range_compensator_vol ();
-        rc_img = (float*) rc_vol->img;
+        UNUSED_VARIABLE (rc_vol);
     }
     Volume *ct_vol = d_ptr->ct->get_vol();
     
@@ -1401,6 +1399,7 @@ Rpl_volume::compute_aperture (
     float background
 )
 {
+#if defined (commentout)
     /* This assumes that dim & spacing are correctly set in aperture */
     d_ptr->aperture->allocate_aperture_images ();
 
@@ -1413,6 +1412,7 @@ Rpl_volume::compute_aperture (
     Volume *rvol = proj_vol->get_vol();
 
     float *tgt_img = (float*) tgt_vol->img;
+#endif
 }
 
 Volume* 

@@ -232,6 +232,11 @@ Volume::set_direction_cosines (
         this->direction_cosines, this->spacing);
 }
 
+template<class T> T* Volume::get_raw ()
+{
+    return (T*) this->img;
+}
+
 const float* 
 Volume::get_step (void) const
 {
@@ -925,3 +930,7 @@ volume_difference (Volume* vol, Volume* warped)
     }
     return temp;
 }
+
+/* Explicit instantiations */
+template float* Volume::get_raw<float> ();
+

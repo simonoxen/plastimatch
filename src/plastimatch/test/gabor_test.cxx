@@ -4,9 +4,7 @@
 #include "plm_config.h"
 #include <stdio.h>
 
-#include "plmutil.h"
-#include "pstring.h"
-#include "itk_image_save.h"
+#include "gabor.h"
 
 int 
 main (int argc, char *argv[])
@@ -19,6 +17,8 @@ main (int argc, char *argv[])
     FloatImageType::Pointer image = itk_image_load_float (argv[1], 0);
 #endif
 
+#if defined (commentout)
+    /* Anti-functional itk gabor program */
     plm_long dim[3] = { 11, 11, 11 };
     float origin[3] = { -2.5, -2.5, -2.5 };
     float spacing[3] = { .5, .5, .5 };
@@ -26,5 +26,9 @@ main (int argc, char *argv[])
     FloatImageType::Pointer g_img = itk_gabor_create (&pih);
 
     itk_image_save (g_img, "tmp.mha");
+#endif
+
+    
+
     return 0;
 }

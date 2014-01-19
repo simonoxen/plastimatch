@@ -50,7 +50,8 @@ set (PLMUTIL_LIBRARY_SRC
 if (FFTW_FOUND)
   set (PLMUTIL_LIBRARY_SRC
     ${PLMUTIL_LIBRARY_SRC}
-    ramp_filter.cxx
+    gabor.cxx gabor.h 
+    ramp_filter.cxx ramp_filter.h
    )
 endif ()
 

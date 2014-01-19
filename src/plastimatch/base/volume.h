@@ -120,6 +120,11 @@ public:
     */
     void set_direction_cosines (const float direction_cosines[9]);
 
+    /*! \brief Get the raw image pointer as specified type.
+      No error checking done.
+    */
+    template<class T> T* get_raw ();
+
     /*! \brief Get the step matrix.
       The step matrix encodes the transform from voxel coordinates 
       to world coordinates.
