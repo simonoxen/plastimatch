@@ -118,10 +118,10 @@ Hausdorff_distance::run_internal (
 
     /* Convert to Plm_image type */
     Plm_image pli_uchar (image1);
-    Volume *vol_uchar = pli_uchar.get_vol_uchar ();
+    Volume::Pointer vol_uchar = pli_uchar.get_volume_uchar ();
     unsigned char *img_uchar = (unsigned char*) vol_uchar->img;
     Plm_image pli_dmap (dmap);
-    Volume *vol_dmap = pli_dmap.get_vol_float ();
+    Volume::Pointer vol_dmap = pli_dmap.get_volume_float ();
     float *img_dmap = (float*) vol_dmap->img;
 
     /* Find boundary pixels */
@@ -132,7 +132,7 @@ Hausdorff_distance::run_internal (
 
     /* Convert to plm_image */
     Plm_image pli_ib (itk_ib);
-    Volume *vol_ib = pli_ib.get_vol_uchar ();
+    Volume::Pointer vol_ib = pli_ib.get_volume_uchar ();
     unsigned char *img_ib = (unsigned char*) vol_ib->img;
 
     /* Make an array to store the distances */

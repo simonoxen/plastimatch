@@ -83,14 +83,14 @@ CrystalWindow::openVol (const char* fn)
         return false;
     }
 
-    input_vol = pli->get_vol_float ();
+    input_vol = pli->get_volume_float ();
 
     if (!input_vol) {
         return false;
     }
     for (int i=0; i<4; i++) {
         portalGrid->portal[i]->resetPortal();
-        portalGrid->portal[i]->setVolume (input_vol);
+        portalGrid->portal[i]->setVolume (input_vol.get());
     }
 
     portalGrid->portal[0]->setView (PortalWidget::Axial);
@@ -157,7 +157,6 @@ CrystalWindow::open ()
 CrystalWindow::CrystalWindow (int argc, char** argv, QWidget *parent)
     :QMainWindow (parent)
 {
-    input_vol = NULL;
     pli = NULL;
 
     createActions ();

@@ -96,12 +96,12 @@ public:
 
     Metadata* get_metadata ();
 
-    Volume* get_image_volume_short ();
-    Volume* get_image_volume_float ();
+    Volume::Pointer get_image_volume_short ();
+    Volume::Pointer get_image_volume_float ();
 
     bool has_dose ();
     Plm_image* get_dose_plm_image ();
-    Volume* get_dose_volume_float ();
+    Volume::Pointer get_dose_volume_float ();
 
     void resample (float spacing[3]);
 

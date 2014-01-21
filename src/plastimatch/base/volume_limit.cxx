@@ -202,7 +202,7 @@ volume_limit_clip_segment (
 }
 
 void
-volume_limit_set (Volume_limit *vol_limit, Volume *vol)
+volume_limit_set (Volume_limit *vol_limit, const Volume *vol)
 {
     int d;
 
@@ -224,4 +224,10 @@ volume_limit_set (Volume_limit *vol_limit, Volume *vol)
         vol_limit->lower_limit[d] += DRR_BOUNDARY_TOLERANCE;
         vol_limit->upper_limit[d] -= DRR_BOUNDARY_TOLERANCE;
     }
+}
+
+void
+volume_limit_set (Volume_limit *vol_limit, const Volume::Pointer& vol)
+{
+    volume_limit_set (vol_limit, vol.get());
 }

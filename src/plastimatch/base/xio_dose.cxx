@@ -272,7 +272,7 @@ xio_dose_load_cube (
     pli->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
 
     /* Normalize dose. Factor 0.01 is to convert from cGy to Gy */
-    volume_scale (vflip, xdh->dose_weight * xdh->dose_scale_factor * 0.01);
+    vflip->scale_inplace (xdh->dose_weight * xdh->dose_scale_factor * 0.01);
 
     fclose (fp);
 }
@@ -337,8 +337,7 @@ xio_dose_save (
     char header;
     size_t result;
 
-    Volume *v;
-    v = (Volume*) pli->get_vol_float ();
+    Volume::Pointer v = pli->get_volume_float ();
 
     /* Dose cube definition */
     double rx; double ry; double rz;
@@ -434,7 +433,7 @@ xio_dose_save (
     volume_convert_to_float (v_write);
 
     /* Apply normalization backwards */
-    volume_scale (v_write, 
+    v_write->scale_inplace (
 	1 / (xdh.dose_weight * xdh.dose_scale_factor * 0.01));
 
     /* Convert to unsigned 32-bit integer */

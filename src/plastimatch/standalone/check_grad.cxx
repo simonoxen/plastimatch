@@ -359,9 +359,8 @@ int
 main (int argc, char* argv[])
 {
     Check_grad_opts parms;
-    Volume *moving, *fixed, *moving_grad;
-
-//    check_grad_opts_parse_args (&options, argc, argv);
+    Volume::Pointer moving, fixed;
+    Volume *moving_grad;
 
     plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv);
 
@@ -370,14 +369,14 @@ main (int argc, char* argv[])
         = Plm_image::New (new Plm_image (parms.fixed_fn));
     Plm_image::Pointer pli_moving 
         = Plm_image::New (new Plm_image (parms.moving_fn));
-    fixed = pli_fixed->get_vol_float ();
-    moving = pli_moving->get_vol_float ();
+    fixed = pli_fixed->get_volume_float ();
+    moving = pli_moving->get_volume_float ();
 
     /* Compute spatial gradient */
-    moving_grad = volume_make_gradient (moving);
+    moving_grad = volume_make_gradient (moving.get());
 
     /* Check the gradient */
-    check_gradient (&parms, fixed, moving, moving_grad);
+    check_gradient (&parms, fixed.get(), moving.get(), moving_grad);
 
     /* Free memory */
     delete moving_grad;

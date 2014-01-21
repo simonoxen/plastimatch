@@ -22,6 +22,13 @@ class Pstring;
 class Rt_study_metadata;
 class Slice_index;
 
+/*! \brief 
+ * The Plm_image class represents a three-dimensional volume.  
+ * The volume is an abstraction that can contain a volume in either 
+ * native format (Volume), or ITK format (itk::Image), in any 
+ * type (unsigned char, float, etc.), or in several commonly used 
+ * extensions ()
+ */
 class PLMBASE_API Plm_image {
 public:
     SMART_POINTER_SUPPORT (Plm_image);
@@ -136,18 +143,14 @@ public:
         return m_itk_uchar_vec;
     }
 
+    Volume::Pointer& get_volume ();
     Volume::Pointer& get_volume_uchar ();
+    Volume::Pointer& get_volume_short ();
     Volume::Pointer& get_volume_float ();
+    Volume::Pointer& get_volume_uchar_vec ();
 
     Volume* get_vol ();
     const Volume* get_vol () const;
-    Volume* get_vol_uchar ();
-    Volume* get_vol_short ();
-    Volume* get_vol_float ();
-    Volume* get_vol_uchar_vec ();
-
-    /* To be replaced ... */
-    Volume* steal_volume ();
 
     void convert (Plm_image_type new_type);
     void convert_to_original_type (void);

@@ -18,8 +18,8 @@ class Volume_header;
 enum Volume_pixel_type {
     PT_UNDEFINED,
     PT_UCHAR,
-    PT_SHORT,
     PT_UINT16,
+    PT_SHORT,
     PT_UINT32,
     PT_INT32,
     PT_FLOAT,
@@ -92,6 +92,15 @@ public:
     /*! \brief Make a copy of the volume */
     Volume::Pointer clone ();
 
+    /*! \brief Make a copy of the volume with the same geometry 
+      and same voxel values, but converted to a 
+      different data type */
+    Volume::Pointer clone (Volume_pixel_type new_type) const;
+
+    /*! \brief Make a copy of the volume with the same geometry, 
+      but set all the voxel values to zero. */
+    Volume::Pointer clone_empty ();
+
     /*! \brief Convert the image voxels to a new data type */
     void convert (Volume_pixel_type new_type);
 
@@ -124,6 +133,7 @@ public:
       No error checking done.
     */
     template<class T> T* get_raw ();
+    template<class T> const T* get_raw () const;
 
     /*! \brief Get the step matrix.
       The step matrix encodes the transform from voxel coordinates 
@@ -142,6 +152,10 @@ public:
     float get_ijk_value (const float xyz[3]);
     void get_xyz_from_ijk (double xyz[3], const int ijk[3]);
     void get_ijk_from_xyz (int ijk[3],const float xyz[3], bool* in);
+
+    /*! \brief In-place (destructive) scaling of the image according to the 
+      supplied scale factor */
+    void scale_inplace (float scale);
 
     void debug ();
     void direction_cosines_debug ();
@@ -167,8 +181,5 @@ PLMBASE_C_API void volume_convert_to_uint32 (Volume* ref);
 PLMBASE_C_API Volume* volume_difference (Volume* vol, Volume* warped);
 PLMBASE_C_API Volume* volume_make_gradient (Volume* ref);
 PLMBASE_C_API void volume_matrix3x3inverse (float *out, const float *m);
-PLMBASE_C_API void volume_scale (Volume *vol, float scale);
-PLMBASE_C_API Volume* volume_warp (Volume* vout, Volume* vin, Volume* vf);
-
 
 #endif

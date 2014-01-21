@@ -92,7 +92,7 @@ Thumbnail::make_thumbnail ()
 
     /* Reshuffle dimensions to 2D */
     if (axis == 0) {
-        Volume *vol = plm_resampled_image.get_vol_float ();
+        Volume::Pointer vol = plm_resampled_image.get_volume_float ();
         vol->dim[0] = vol->dim[1];
         vol->dim[1] = vol->dim[2];
         vol->dim[2] = 1;
@@ -100,7 +100,7 @@ Thumbnail::make_thumbnail ()
         /* GCS FIX: Do something about direction cosines here */
     }
     else if (axis == 1) {
-        Volume *vol = plm_resampled_image.get_vol_float ();
+        Volume::Pointer vol = plm_resampled_image.get_volume_float ();
         vol->dim[1] = vol->dim[2];
         vol->dim[2] = 1;
         /* GCS FIX: Do something about spacing here */

@@ -51,12 +51,12 @@ Image_boundary::run ()
 {
     /* Convert to Plm_image type */
     Plm_image pli_in (d_ptr->input_image);
-    Volume *vol_in = pli_in.get_vol_uchar ();
+    Volume::Pointer vol_in = pli_in.get_volume_uchar ();
     unsigned char *img_in = (unsigned char*) vol_in->img;
 
     /* Allocate output image */
     Plm_image *pli_out = pli_in.clone ();
-    Volume *vol_out = pli_out->get_vol_uchar ();
+    Volume::Pointer vol_out = pli_out->get_volume_uchar ();
     unsigned char *img_out = (unsigned char*) vol_out->img;
 
     /* Compute the boundary */

@@ -22,6 +22,14 @@ volume_index (const plm_long dims[3], const plm_long ijk[3])
     return ijk[0] + (dims[0] * (ijk[1] + dims[1] * ijk[2]));
 }
 
+static inline bool
+index_in_volume (const plm_long dims[3], const plm_long ijk[3])
+{
+    return ijk[0] >= 0 && ijk[0] < dims[0]
+        && ijk[1] >= 0 && ijk[1] < dims[1]
+        && ijk[2] >= 0 && ijk[2] < dims[2];
+}
+
 #define COORDS_FROM_INDEX(ijk, idx, dim)                                \
     ijk[2] = idx / (dim[0] * dim[1]);                                   \
     ijk[1] = (idx - (ijk[2] * dim[0] * dim[1])) / dim[0];               \

@@ -204,7 +204,8 @@ rbf_wendland_warp (Landmark_warp *lw)
     plm_long dim[3];
     float direction_cosines[9];
     int i;
-    Volume *moving, *vf_out, *warped_out;
+    Volume::Pointer moving;
+    Volume *vf_out, *warped_out;
 
     //printf ("Wendland Radial basis functions requested, radius %.2f\n", lw->rbf_radius);
 
@@ -246,14 +247,14 @@ rbf_wendland_warp (Landmark_warp *lw)
 
     /* Create output (warped) image */
     printf ("Converting volume to float\n");
-    moving = lw->m_input_img->get_vol_float ();
+    moving = lw->m_input_img->get_volume_float ();
 
     printf ("Creating output vol\n");
     warped_out = new Volume (dim, origin, spacing, direction_cosines, 
 	PT_FLOAT, 1);
 
     printf ("Warping image\n");
-    vf_warp (warped_out, moving, vf_out);
+    vf_warp (warped_out, moving.get(), vf_out);
 
     printf ("Freeing coeff\n");
     free (coeff);

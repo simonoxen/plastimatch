@@ -440,7 +440,7 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
     }
 
     /* Scale the image and add scale factor to dataset */
-    volume_scale (dose_copy.get(), 1 / dose_scale);
+    dose_copy->scale_inplace (1 / dose_scale);
     s = string_format ("%g", dose_scale);
     dataset->putAndInsertString (DCM_DoseGridScaling, s.c_str());
 

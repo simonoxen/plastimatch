@@ -1395,8 +1395,10 @@ xform_itk_any_to_gpuit_vf (
     return vf_out;
 }
 
-Volume::Pointer
-xform_gpuit_vf_to_gpuit_vf (Volume* vf_in, const Plm_image_header *pih)
+static Volume::Pointer
+xform_gpuit_vf_to_gpuit_vf (
+    const Volume::Pointer& vf_in, 
+    const Plm_image_header *pih)
 {
     Volume::Pointer vf_out;
     Volume_header vh = pih->get_volume_header();
@@ -1840,7 +1842,7 @@ xform_to_gpuit_vf (
         vf = xform_gpuit_bsp_to_gpuit_vf (xf_in, pih);
         break;
     case XFORM_GPUIT_VECTOR_FIELD:
-        vf = xform_gpuit_vf_to_gpuit_vf (xf_in->get_gpuit_vf().get(), pih);
+        vf = xform_gpuit_vf_to_gpuit_vf (xf_in->get_gpuit_vf(), pih);
         break;
     default:
         print_and_exit ("Program error.  Bad xform type.\n");

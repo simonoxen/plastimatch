@@ -28,16 +28,16 @@ do_gpuit_demons_stage_internal (
     Demons_parms parms;
     Plm_image_header pih;
 
-    Volume* fixed = regd->fixed_image->get_vol_float ();
-    Volume* moving = regd->moving_image->get_vol_float ();
+    Volume::Pointer& fixed = regd->fixed_image->get_volume_float ();
+    Volume::Pointer& moving = regd->moving_image->get_volume_float ();
     Volume::Pointer moving_ss;
     Volume::Pointer fixed_ss;
     Volume::Pointer moving_grad;
     Volume* vf_out = 0;
     Volume* vf_in = 0;
 
-    volume_convert_to_float (moving);		    /* Maybe not necessary? */
-    volume_convert_to_float (fixed);		    /* Maybe not necessary? */
+    fixed->convert (PT_FLOAT);              /* Maybe not necessary? */
+    moving->convert (PT_FLOAT);             /* Maybe not necessary? */
 
     lprintf ("SUBSAMPLE: (%g %g %g), (%g %g %g)\n", 
 	stage->fixed_subsample_rate[0], stage->fixed_subsample_rate[1], 

@@ -353,7 +353,6 @@ resample_image (UCharVecImageType::Pointer image, float spacing[3])
         = image->GetLargestPossibleRegion().GetSize();
 
     float old_coverage[3];
-    float coverage[3];
     ImageType::SpacingType itk_spacing;
     ImageType::SizeType size;
     ImageType::PointType origin;
@@ -363,7 +362,6 @@ resample_image (UCharVecImageType::Pointer image, float spacing[3])
         itk_spacing[d] = spacing[d];
         old_coverage[d] = old_size[d] * old_spacing[d];
         size[d] = (unsigned long) (old_coverage[d] / spacing[d]);
-        coverage[d] = size[d] * spacing[d];
         origin[d] = old_origin[d];
     }
     rg.SetSize (size);

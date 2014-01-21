@@ -17,9 +17,10 @@
 #include "volume_resample.h"
 
 /* Nearest neighbor interpolation */
+/* GCS FIX: doesn't respect direction cosines */
 static Volume::Pointer
 volume_resample_float_nn (
-    Volume* vol_in, 
+    const Volume::Pointer& vol_in, 
     const plm_long* dim, 
     const float* offset, 
     const float* spacing)
@@ -27,7 +28,7 @@ volume_resample_float_nn (
     plm_long i, j, k, v;
     float x, y, z;
     float x_in, y_in, z_in;
-    plm_long xidx, yidx, zidx;
+    plm_long ijk[3];
     Volume::Pointer vol_out;
     float *in_img, *out_img;
     float val;
@@ -40,18 +41,18 @@ volume_resample_float_nn (
 
     for (k = 0, v = 0, z = offset[2]; k < dim[2]; k++, z += spacing[2]) {
         z_in = (z - vol_in->offset[2]) / vol_in->spacing[2];
-        zidx = ROUND_INT (z_in);
+        ijk[2] = ROUND_INT (z_in);
         for (j = 0, y = offset[1]; j < dim[1]; j++, y += spacing[1]) {
             y_in = (y - vol_in->offset[1]) / vol_in->spacing[1];
-            yidx = ROUND_INT (y_in);
+            ijk[1] = ROUND_INT (y_in);
             for (i = 0, x = offset[0]; i < dim[0]; i++, x += spacing[0], v++) {
                 x_in = (x - vol_in->offset[0]) / vol_in->spacing[0];
-                xidx = ROUND_INT (x_in);
-                if (zidx < 0 || zidx >= vol_in->dim[2] || yidx < 0 || yidx >= vol_in->dim[1] || xidx < 0 || xidx >= vol_in->dim[0]) {
-                    val = default_val;
-                } else {
-                    int idx = zidx*vol_in->dim[1]*vol_in->dim[0] + yidx*vol_in->dim[0] + xidx;
+                ijk[0] = ROUND_INT (x_in);
+                if (index_in_volume (vol_in->dim, ijk)) {
+                    plm_long idx = volume_index (vol_in->dim, ijk);
                     val = in_img[idx];
+                } else {
+                    val = default_val;
                 }
                 out_img[v] = val;
             }
@@ -64,7 +65,7 @@ volume_resample_float_nn (
 /* Linear interpolation */
 static Volume::Pointer
 volume_resample_float_li (
-    Volume* vol_in, 
+    const Volume::Pointer& vol_in, 
     const plm_long* dim, 
     const float* offset, 
     const float* spacing)
@@ -106,7 +107,7 @@ volume_resample_float_li (
 
                     // Compute linear interpolation fractions
                     li_clamp_3d (ijk, ijk_floor, ijk_round,
-                        li_1, li_2, vol_in);
+                        li_1, li_2, vol_in.get());
 
                     // Find linear indices for moving image
                     idx_floor = volume_index (vol_in->dim, ijk_floor);
@@ -132,7 +133,7 @@ volume_resample_float_li (
 /* Nearest neighbor interpolation */
 static Volume::Pointer
 volume_resample_vf_float_interleaved (
-    Volume* vol_in, const plm_long* dim, 
+    const Volume::Pointer& vol_in, const plm_long* dim, 
     const float* offset, const float* spacing)
 {
     plm_long d, i, j, k, v;
@@ -178,7 +179,7 @@ volume_resample_vf_float_interleaved (
 /* Nearest neighbor interpolation */
 static Volume::Pointer
 volume_resample_vf_float_planar (
-    Volume* vol_in, const plm_long* dim, 
+    const Volume::Pointer& vol_in, const plm_long* dim, 
     const float* offset, const float* spacing)
 {
     plm_long d, i, j, k, v;
@@ -222,7 +223,7 @@ volume_resample_vf_float_planar (
 
 Volume::Pointer
 volume_resample (
-    Volume* vol_in, 
+    const Volume::Pointer& vol_in, 
     const plm_long* dim, 
     const float* offset, 
     const float* spacing)
@@ -250,7 +251,7 @@ volume_resample (
 }
 
 Volume::Pointer
-volume_resample (Volume* vol_in, const Volume_header *vh)
+volume_resample (const Volume::Pointer& vol_in, const Volume_header *vh)
 {
     /* GCS FIX: direction cosines */
     return volume_resample (vol_in, vh->get_dim(), vh->get_origin(), 
@@ -259,7 +260,7 @@ volume_resample (Volume* vol_in, const Volume_header *vh)
 
 Volume::Pointer
 volume_resample_nn (
-    Volume* vol_in, 
+    const Volume::Pointer& vol_in, 
     const plm_long* dim, 
     const float* offset, 
     const float* spacing)
@@ -267,10 +268,9 @@ volume_resample_nn (
     Volume::Pointer error_volume = Volume::New();
     switch (vol_in->pix_type) {
     case PT_UCHAR: {
-        Volume::Pointer rvol;
-        volume_convert_to_float (vol_in);
+        Volume::Pointer rvol = vol_in->clone (PT_FLOAT);
         rvol = volume_resample_float_nn (vol_in, dim, offset, spacing);
-        volume_convert_to_uchar (rvol.get());
+        rvol->convert (PT_UCHAR);
         return rvol;
     }
     case PT_SHORT:
@@ -293,7 +293,7 @@ volume_resample_nn (
 }
 
 Volume::Pointer
-volume_subsample_vox (Volume* vol_in, float* sampling_rate)
+volume_subsample_vox (const Volume::Pointer& vol_in, float* sampling_rate)
 {
     int d;
     plm_long dim[3];
@@ -311,7 +311,7 @@ volume_subsample_vox (Volume* vol_in, float* sampling_rate)
 }
 
 Volume::Pointer
-volume_subsample_vox_nn (Volume* vol_in, float* sampling_rate)
+volume_subsample_vox_nn (const Volume::Pointer& vol_in, float* sampling_rate)
 {
     int d;
     plm_long dim[3];
@@ -329,7 +329,9 @@ volume_subsample_vox_nn (Volume* vol_in, float* sampling_rate)
 }
 
 Volume::Pointer
-volume_subsample_vox_legacy (Volume* vol_in, float* sampling_rate)
+volume_subsample_vox_legacy (
+    const Volume::Pointer& vol_in, 
+    float* sampling_rate)
 {
     int d;
     plm_long dim[3];
@@ -349,7 +351,9 @@ volume_subsample_vox_legacy (Volume* vol_in, float* sampling_rate)
 }
 
 Volume::Pointer
-volume_subsample_vox_legacy_nn (Volume* vol_in, float* sampling_rate)
+volume_subsample_vox_legacy_nn (
+    const Volume::Pointer& vol_in, 
+    float* sampling_rate)
 {
     int d;
     plm_long dim[3];

@@ -95,10 +95,10 @@ Dice_statistics::run ()
 
     /* Convert to Plm_image type */
     Plm_image ref (d_ptr->ref_image);
-    Volume *vol_ref = ref.get_vol_uchar ();
+    Volume::Pointer vol_ref = ref.get_volume_uchar ();
     unsigned char *img_ref = (unsigned char*) vol_ref->img;
     Plm_image cmp (d_ptr->cmp_image);
-    Volume *vol_cmp = cmp.get_vol_uchar ();
+    Volume::Pointer vol_cmp = cmp.get_volume_uchar ();
     unsigned char *img_cmp = (unsigned char*) vol_cmp->img;
 
     size_t tp = 0;

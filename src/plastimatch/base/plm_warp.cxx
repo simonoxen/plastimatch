@@ -149,7 +149,7 @@ plm_warp_native (
     /* Convert input image to gpuit format */
     printf ("Running: plm_warp_native\n");
     printf ("Converting input image...\n");
-    Volume *v_in = im_in->get_vol_float ();
+    Volume::Pointer v_in = im_in->get_volume_float ();
 
     /* Transform input xform to gpuit bspline with correct voxel spacing */
     printf ("Converting xform...\n");
@@ -223,7 +223,7 @@ plm_warp_native_vec (
     /* Convert input image to gpuit format */
     printf ("Running: plm_warp_native_vec\n");
     printf ("Converting input image...\n");
-    Volume *v_in = im_in->get_vol_uchar_vec ();
+    Volume::Pointer v_in = im_in->get_volume_uchar_vec ();
 
     /* Transform input xform to gpuit bspline with correct voxel spacing */
     printf ("Converting xform...\n");

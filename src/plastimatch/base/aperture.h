@@ -68,9 +68,6 @@ public:
     Plm_image::Pointer& get_aperture_image ();
     /*! \brief Get the aperture image as Volume */
     Volume::Pointer& get_aperture_volume ();
-    /*! \brief Get the aperture image as Volume, if this aperture has one.
-      Otherwise, return null. */
-    Volume* get_aperture_vol ();
     /*! \brief Load the aperture image from a file */
     void set_aperture_image (const char *ap_filename);
     /*! \brief Test if the aperture has a float image describing 
@@ -80,9 +77,6 @@ public:
     Plm_image::Pointer& get_range_compensator_image ();
     /*! \brief Get the range_compensator image as Volume */
     Volume::Pointer& get_range_compensator_volume ();
-    /*! \brief Get the range_compensator image as Volume, if this 
-      aperture has one.  Otherwise, return null. */
-    Volume* get_range_compensator_vol ();
     /*! \brief Load the range_compensator image from a file */
     void set_range_compensator_image (const char *rc_filename);
 

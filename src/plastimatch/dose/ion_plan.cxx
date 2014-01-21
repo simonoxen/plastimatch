@@ -187,10 +187,10 @@ Ion_plan::set_patient (Volume* ct_vol)
     d_ptr->patient->set_volume (ct_vol);
 }
 
-Volume *
-Ion_plan::get_patient_vol ()
+Volume::Pointer
+Ion_plan::get_patient_volume ()
 {
-    return d_ptr->patient->get_vol_float ();
+    return d_ptr->patient->get_volume_float ();
 }
 
 Plm_image *
@@ -333,14 +333,15 @@ void
 Ion_plan::compute_dose ()
 {
     Ion_beam* beam = this->beam;
-    Volume* ct_vol = this->get_patient_vol ();
+    Volume::Pointer ct_vol = this->get_patient_volume ();
     Rpl_volume* rpl_vol = this->rpl_vol;
 
-    Volume* dose_vol = volume_clone_empty (ct_vol);
+    Volume::Pointer dose_vol = ct_vol->clone_empty ();
     float* dose_img = (float*) dose_vol->img;
 
     Volume* dose_volume_tmp = new Volume;
     float* dose_img_tmp = (float*) dose_volume_tmp->img;
+    UNUSED_VARIABLE (dose_img_tmp);
 
     if (this->beam->get_flavor() == 'f') // push algorithm + creation of the sigma volume
     {
@@ -356,7 +357,8 @@ Ion_plan::compute_dose ()
         Rpl_volume* sigma_vol = this->sigma_vol;
 
         dose_volume_create(dose_volume_tmp, sigma_max, this->sigma_vol);
-        compute_dose_ray(dose_volume_tmp, ct_vol, rpl_vol, sigma_vol, ct_vol_density, this->beam, dose_vol);
+        compute_dose_ray (dose_volume_tmp, ct_vol.get(), rpl_vol, 
+            sigma_vol, ct_vol_density, this->beam, dose_vol.get());
     }
     else // pull algorithm
     {     

@@ -33,7 +33,7 @@ public:
     void set_patient (ShortImageType::Pointer&);
     void set_patient (FloatImageType::Pointer&);
     void set_patient (Volume*);
-    Volume *get_patient_vol ();
+    Volume::Pointer get_patient_volume ();
     Plm_image *get_patient ();
 
     void set_target (const std::string& target_fn);

@@ -8,6 +8,12 @@ if (p) {
    /* Will not be executed because p is null */
 }
 
+You can return a null pointer like this:
+
+if (error) {
+  return Plm_image::Pointer();
+}
+
 ***** Plastimatch 2.0 *****
 
 Proposal #1, extend existing language.  The below is an example,

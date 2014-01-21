@@ -132,7 +132,7 @@ Rpl_volume::set_ct_volume (Plm_image::Pointer& ct_volume)
     d_ptr->ct = ct_volume;
 
     /* Compute volume boundary box */
-    volume_limit_set (&d_ptr->ct_limit, ct_volume->get_vol_float());
+    volume_limit_set (&d_ptr->ct_limit, ct_volume->get_volume_float());
 }
 
 Aperture::Pointer& 
@@ -488,7 +488,7 @@ Rpl_volume::compute_rpl_ct ()
     ires[1] = d_ptr->proj_vol->get_image_dim (1);
     unsigned char *ap_img = 0;
     if (d_ptr->aperture->have_aperture_image()) {
-        Volume *ap_vol = d_ptr->aperture->get_aperture_vol ();
+        Volume::Pointer ap_vol = d_ptr->aperture->get_aperture_volume ();
         ap_img = (unsigned char*) ap_vol->img;
     }
     Volume *ct_vol = d_ptr->ct->get_vol();
@@ -562,11 +562,12 @@ Rpl_volume::compute_rpl ()
     unsigned char *ap_img = 0;
     float *rc_img = 0;
     if (d_ptr->aperture->have_aperture_image()) {
-        Volume *ap_vol = d_ptr->aperture->get_aperture_vol ();
+        Volume::Pointer ap_vol = d_ptr->aperture->get_aperture_volume ();
         ap_img = (unsigned char*) ap_vol->img;
     }
     if (d_ptr->aperture->have_range_compensator_image()) {
-        Volume *rc_vol = d_ptr->aperture->get_range_compensator_vol ();
+        Volume::Pointer rc_vol 
+            = d_ptr->aperture->get_range_compensator_volume ();
         rc_img = (float*) rc_vol->img;
     }
     Volume *ct_vol = d_ptr->ct->get_vol();
@@ -651,11 +652,12 @@ Rpl_volume::compute_rpl_sigma (Rpl_volume* ct_vol_density)
 
     unsigned char *ap_img = 0;
     if (d_ptr->aperture->have_aperture_image()) {
-        Volume *ap_vol = d_ptr->aperture->get_aperture_vol ();
+        Volume::Pointer ap_vol = d_ptr->aperture->get_aperture_volume ();
         ap_img = (unsigned char*) ap_vol->img;
     }
     if (d_ptr->aperture->have_range_compensator_image()) { // we'll need the compensator for sigma source!!
-        Volume *rc_vol = d_ptr->aperture->get_range_compensator_vol ();
+        Volume::Pointer rc_vol 
+            = d_ptr->aperture->get_range_compensator_volume ();
         UNUSED_VARIABLE (rc_vol);
     }
     Volume *ct_vol = d_ptr->ct->get_vol();
@@ -1140,8 +1142,9 @@ Rpl_volume::compute_beam_modifiers (
     /* This assumes that dim & spacing are correctly set in aperture */
     d_ptr->aperture->allocate_aperture_images ();
 
-    Volume *aperture_vol = d_ptr->aperture->get_aperture_vol();
-    Volume *segdepth_vol = d_ptr->aperture->get_range_compensator_vol();
+    Volume::Pointer aperture_vol = d_ptr->aperture->get_aperture_volume ();
+    Volume::Pointer segdepth_vol 
+        = d_ptr->aperture->get_range_compensator_volume ();
 
     Proj_volume *proj_vol = d_ptr->proj_vol;
     Volume *rvol = proj_vol->get_vol();
@@ -1359,9 +1362,9 @@ Rpl_volume::compute_beam_modifiers (
 void 
 Rpl_volume::apply_beam_modifiers ()
 {
-    Volume *ap_vol = d_ptr->aperture->get_aperture_vol();
+    Volume::Pointer ap_vol = d_ptr->aperture->get_aperture_volume ();
     unsigned char *ap_img = (unsigned char*) ap_vol->img;
-    Volume *rc_vol = d_ptr->aperture->get_range_compensator_vol();
+    Volume::Pointer rc_vol = d_ptr->aperture->get_range_compensator_volume();
     float *rc_img = (float*) rc_vol->img;
     Volume *proj_vol = d_ptr->proj_vol->get_vol();
     float *proj_img = (float*) proj_vol->img;

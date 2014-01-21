@@ -420,7 +420,7 @@ gdcm1_dose_save (
     /* Scale the image */
     tmp->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
     Volume *vol = tmp->get_vol ();
-    volume_scale (vol, 1 / dose_scale);
+    vol->scale_inplace (1 / dose_scale);
 
     /* Convert to integer */
     if (meta->get_metadata(0x3004, 0x0004) != "ERROR") {

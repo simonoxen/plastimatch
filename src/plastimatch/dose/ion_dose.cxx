@@ -197,6 +197,10 @@ highland_maxime_aperture_theta0 (
     float step = 0.1;			/*step of the integration along the pathway (cm)*/
 
     float function_to_be_integrated = 0.0; /* expression to be integrated on dz, second part of the highland's formula */
+
+    UNUSED_VARIABLE (density);
+    UNUSED_VARIABLE (range);
+
     range = getrange(energy);
 
     /* in the Hong algorithm, rgdepth is in cm but given in mm by plastimatch
@@ -243,6 +247,8 @@ highland_maxime_patient_theta_pt (
     float step = 0.1;		/*step of the integration along the pathway (cm)*/
 
     float function_to_be_integrated = 0.0; /* expression to be integrated on dz, second part of the highland's formula */
+
+    UNUSED_VARIABLE (range);
 
     rgdepth = rgdepth /10; /* rgdepth is given in mm by plastimatch, but is in cm in the hong algorithm */
 
@@ -720,6 +726,12 @@ dose_hong_maxime (
     double vector_init[3] = {1.0,0.0,0.0};
     double vector_opposite[3] = {0.0,0.0,0.0};
     double vector_norm_axis[3] = {0.0,0.0,0.0};
+
+    UNUSED_VARIABLE (ap);
+    UNUSED_VARIABLE (sp_pos);
+    UNUSED_VARIABLE (proj_xy);
+    UNUSED_VARIABLE (sctoct);
+
     rotate_about_ray(vector_opposite,vector_init,M_PI,axis);
     vec3_sub3 (vector_norm_axis,vector_init,vector_opposite);
     vec3_scale2(vector_norm_axis,1/sqrt(vector_norm_axis[0]*vector_norm_axis[0]+vector_norm_axis[1]*vector_norm_axis[1]+vector_norm_axis[2]*vector_norm_axis[2]));

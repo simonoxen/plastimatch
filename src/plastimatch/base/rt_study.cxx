@@ -601,22 +601,22 @@ Rt_study::get_metadata (void)
     return d_ptr->m_drs->get_study_metadata();
 }
 
-Volume*
+Volume::Pointer
 Rt_study::get_image_volume_short ()
 {
     if (!d_ptr->m_img) {
-        return 0;
+        return Volume::Pointer();
     }
-    return d_ptr->m_img->get_vol_short ();
+    return d_ptr->m_img->get_volume_short ();
 }
 
-Volume*
+Volume::Pointer
 Rt_study::get_image_volume_float (void)
 {
     if (!d_ptr->m_img) {
-        return 0;
+        return Volume::Pointer();
     }
-    return d_ptr->m_img->get_vol_float ();
+    return d_ptr->m_img->get_volume_float ();
 }
 
 bool
@@ -634,13 +634,13 @@ Rt_study::get_dose_plm_image ()
     return d_ptr->m_dose.get();
 }
 
-Volume*
+Volume::Pointer
 Rt_study::get_dose_volume_float ()
 {
     if (!d_ptr->m_dose) {
-        return 0;
+        return Volume::Pointer();
     }
-    return d_ptr->m_dose->get_vol_float ();
+    return d_ptr->m_dose->get_volume_float ();
 }
 
 /* Resample image and ss_img */

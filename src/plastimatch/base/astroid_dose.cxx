@@ -172,7 +172,7 @@ astroid_dose_load_cube (
     pli->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
 
     /* Convert from cGy to Gy */
-    volume_scale (vflip, 0.01);
+    vflip->scale_inplace (0.01);
 
     fclose (fp);
 }

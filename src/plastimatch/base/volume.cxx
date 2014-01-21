@@ -17,24 +17,33 @@
 #include "volume_header.h"
 #include "volume.h"
 
-#define CONVERT_VOLUME(old_type,new_type,new_type_enum)			\
-    {									\
-	plm_long v;							\
-	old_type* old_img;						\
-	new_type* new_img;						\
-	old_img = (old_type*) ref->img;					\
-	new_img = (new_type*) malloc (sizeof(new_type) * ref->npix);	\
-	if (!new_img) {							\
-	    fprintf (stderr, "Memory allocation failed.\n");		\
-	    exit(1);							\
-	}								\
-	for (v = 0; v < ref->npix; v++) {				\
-	    new_img[v] = (new_type) old_img[v];				\
-	}								\
+template<class T, class U> static void
+convert_raw (T* new_img, const Volume* vol)
+{
+    U* old_img = (U*) vol->img;
+    if (!new_img) {
+        print_and_exit ("Memory allocation failed.\n");
+    }
+    for (plm_long v = 0; v < vol->npix; v++) {
+        new_img[v] = (T) old_img[v];
+    }
+}
+
+template<class T, class U> static T* 
+convert_raw (const Volume* vol)
+{
+    T* new_img = (T*) malloc (sizeof(T) * vol->npix);
+    convert_raw<T,U> (new_img, vol);
+    return new_img;
+}
+
+#define CONVERT_INPLACE(new_type,old_type,new_type_enum)                \
+    {                                                                   \
+        new_type *new_img = convert_raw<new_type,old_type> (ref);       \
 	ref->pix_size = sizeof(new_type);				\
 	ref->pix_type = new_type_enum;					\
+	free (ref->img);                                                \
 	ref->img = (void*) new_img;					\
-	free (old_img);							\
     }
 
 Volume::Volume () {
@@ -237,6 +246,11 @@ template<class T> T* Volume::get_raw ()
     return (T*) this->img;
 }
 
+template<class T> const T* Volume::get_raw () const
+{
+    return (const T*) this->img;
+}
+
 const float* 
 Volume::get_step (void) const
 {
@@ -295,24 +309,31 @@ Volume::clone ()
     return Volume::New (this->clone_raw ());
 }
 
+Volume::Pointer
+Volume::clone_empty ()
+{
+    Volume* vout = volume_clone_empty (this);
+    return Volume::Pointer (vout);
+}
+
 void
 volume_convert_to_float (Volume* ref)
 {
     switch (ref->pix_type) {
     case PT_UCHAR:
-	CONVERT_VOLUME (unsigned char, float, PT_FLOAT);
+	CONVERT_INPLACE (float, unsigned char, PT_FLOAT);
 	break;
     case PT_SHORT:
-	CONVERT_VOLUME (short, float, PT_FLOAT);
+	CONVERT_INPLACE (float, short, PT_FLOAT);
 	break;
     case PT_UINT16:
-	CONVERT_VOLUME (uint16_t, float, PT_FLOAT);
+	CONVERT_INPLACE (float, uint16_t, PT_FLOAT);
 	break;
     case PT_UINT32:
-	CONVERT_VOLUME (uint32_t, float, PT_FLOAT);
+	CONVERT_INPLACE (float, uint32_t, PT_FLOAT);
 	break;
     case PT_INT32:
-	CONVERT_VOLUME (int32_t, float, PT_FLOAT);
+	CONVERT_INPLACE (float, int32_t, PT_FLOAT);
 	break;
     case PT_FLOAT:
 	/* Nothing to do */
@@ -346,7 +367,7 @@ volume_convert_to_short (Volume* ref)
 	exit (-1);
 	break;
     case PT_FLOAT:
-	CONVERT_VOLUME (float, short, PT_SHORT);
+	CONVERT_INPLACE (short, float, PT_SHORT);
 	break;
     case PT_VF_FLOAT_INTERLEAVED:
     case PT_VF_FLOAT_PLANAR:
@@ -367,19 +388,19 @@ volume_convert_to_uchar (Volume* ref)
 	/* Nothing to do */
 	break;
     case PT_SHORT:
-	CONVERT_VOLUME (short, unsigned char, PT_UCHAR);
+	CONVERT_INPLACE (unsigned char, short, PT_UCHAR);
 	break;
     case PT_UINT16:
-	CONVERT_VOLUME (uint16_t, unsigned char, PT_UCHAR);
+	CONVERT_INPLACE (unsigned char, uint16_t, PT_UCHAR);
 	break;
     case PT_UINT32:
-	CONVERT_VOLUME (uint32_t, unsigned char, PT_UCHAR);
+	CONVERT_INPLACE (unsigned char, uint32_t, PT_UCHAR);
 	break;
     case PT_INT32:
-	CONVERT_VOLUME (int32_t, unsigned char, PT_UCHAR);
+	CONVERT_INPLACE (unsigned char, int32_t, PT_UCHAR);
 	break;
     case PT_FLOAT:
-	CONVERT_VOLUME (float, unsigned char, PT_UCHAR);
+	CONVERT_INPLACE (unsigned char, float, PT_UCHAR);
 	break;
     case PT_VF_FLOAT_INTERLEAVED:
     case PT_VF_FLOAT_PLANAR:
@@ -411,7 +432,7 @@ volume_convert_to_uint16 (Volume* ref)
 	fprintf (stderr, "Sorry, UINT32 to INT32 is not implemented\n");
 	break;
     case PT_FLOAT:
-	CONVERT_VOLUME (float, uint16_t, PT_UINT32);
+	CONVERT_INPLACE (uint16_t, float, PT_UINT32);
 	break;
     case PT_VF_FLOAT_INTERLEAVED:
     case PT_VF_FLOAT_PLANAR:
@@ -445,7 +466,7 @@ volume_convert_to_uint32 (Volume* ref)
 	exit (-1);
 	break;
     case PT_FLOAT:
-	CONVERT_VOLUME (float, uint32_t, PT_UINT32);
+	CONVERT_INPLACE (uint32_t, float, PT_UINT32);
 	break;
     case PT_VF_FLOAT_INTERLEAVED:
     case PT_VF_FLOAT_PLANAR:
@@ -479,7 +500,7 @@ volume_convert_to_int32 (Volume* ref)
 	exit (-1);
 	break;
     case PT_FLOAT:
-	CONVERT_VOLUME (float, int32_t, PT_INT32);
+	CONVERT_INPLACE (int32_t, float, PT_INT32);
 	break;
     case PT_VF_FLOAT_INTERLEAVED:
     case PT_VF_FLOAT_PLANAR:
@@ -622,20 +643,121 @@ Volume::convert (Volume_pixel_type new_type)
     }
 }
 
-void
-volume_scale (Volume* vol, float scale)
+template<class T> static void
+clone_inner (
+    Volume::Pointer& vol_out, 
+    const Volume* vol_in)
 {
-    float *img;
-
-    if (vol->pix_type != PT_FLOAT) {
-	print_and_exit ("volume_scale required PT_FLOAT type.\n");
-    }
-
-    img = (float*) vol->img;
-    for (plm_long i = 0; i < vol->npix; i++) {
-	img[i] = img[i] * scale;
+    switch (vol_in->pix_type) {
+    case PT_UCHAR:
+        convert_raw<T,unsigned char> (
+            vol_out->get_raw<T>(), vol_in);
+        break;
+    case PT_UINT16:
+        convert_raw<T,uint16_t> (
+            vol_out->get_raw<T>(), vol_in);
+	break;
+    case PT_SHORT:
+        convert_raw<T,short> (
+            vol_out->get_raw<T>(), vol_in);
+	break;
+    case PT_UINT32:
+        convert_raw<T,uint32_t> (
+            vol_out->get_raw<T>(), vol_in);
+	break;
+    case PT_INT32:
+        convert_raw<T,int32_t> (
+            vol_out->get_raw<T>(), vol_in);
+	break;
+    case PT_FLOAT:
+        convert_raw<T,float> (
+            vol_out->get_raw<T>(), vol_in);
+	break;
+    case PT_VF_FLOAT_INTERLEAVED:
+    case PT_VF_FLOAT_PLANAR:
+    case PT_UCHAR_VEC_INTERLEAVED:
+    default:
+	/* Can't convert this */
+	fprintf (stderr, "Sorry, unsupported conversion to INT32\n");
+	exit (-1);
+	break;
     }
 }
+
+Volume::Pointer
+Volume::clone (Volume_pixel_type new_type) const
+{
+    Volume::Pointer vol_out = Volume::New ();
+    vol_out->create (
+        this->dim, this->offset, this->spacing, 
+	this->direction_cosines, new_type,
+        this->vox_planes);
+    switch (new_type) {
+    case PT_UCHAR:
+        clone_inner<unsigned char> (vol_out, this);
+        return vol_out;
+    case PT_UINT16:
+        clone_inner<uint16_t> (vol_out, this);
+        return vol_out;
+    case PT_SHORT:
+        clone_inner<short> (vol_out, this);
+        return vol_out;
+    case PT_UINT32:
+        clone_inner<uint32_t> (vol_out, this);
+        return vol_out;
+    case PT_INT32:
+        clone_inner<int32_t> (vol_out, this);
+        return vol_out;
+    case PT_FLOAT:
+        clone_inner<float> (vol_out, this);
+        return vol_out;
+    case PT_VF_FLOAT_INTERLEAVED:
+    case PT_VF_FLOAT_PLANAR:
+    case PT_UCHAR_VEC_INTERLEAVED:
+    default:
+	/* Can't convert this */
+	print_and_exit (
+            "Sorry, unsupported conversion type to %d in Volume::convert_gcs()\n",
+            new_type);
+        return vol_out;
+    }
+}
+
+#if defined (commentout)
+    switch (new_type) {
+    case PT_UCHAR:
+        volume_convert_to_uchar (this);
+        break;
+    case PT_SHORT:
+        volume_convert_to_short (this);
+        break;
+    case PT_UINT16:
+        volume_convert_to_uint16 (this);
+        break;
+    case PT_UINT32:
+        volume_convert_to_uint32 (this);
+        break;
+    case PT_INT32:
+        volume_convert_to_int32 (this);
+        break;
+    case PT_FLOAT:
+        volume_convert_to_float (this);
+        break;
+    case PT_VF_FLOAT_INTERLEAVED:
+        vf_convert_to_interleaved (this);
+        break;
+    case PT_VF_FLOAT_PLANAR:
+        vf_convert_to_planar (this);
+        break;
+    case PT_UCHAR_VEC_INTERLEAVED:
+    default:
+	/* Can't convert this */
+	print_and_exit (
+            "Sorry, unsupported conversion type to %d in Volume::convert()\n",
+            new_type);
+	break;
+    }
+#endif
 
 float
 Volume::get_ijk_value (const float ijk[3])
@@ -687,6 +809,21 @@ Volume::get_ijk_from_xyz (int ijk[3],const float xyz[3], bool* in)
             *in = false;
             return;
         }
+    }
+}
+
+void
+Volume::scale_inplace (float scale)
+{
+    float *img;
+
+    if (this->pix_type != PT_FLOAT) {
+	print_and_exit ("Volume::scale_inplace requires PT_FLOAT type.\n");
+    }
+
+    img = (float*) this->img;
+    for (plm_long i = 0; i < this->npix; i++) {
+	img[i] = img[i] * scale;
     }
 }
 
@@ -932,5 +1069,7 @@ volume_difference (Volume* vol, Volume* warped)
 }
 
 /* Explicit instantiations */
+template unsigned char* Volume::get_raw<unsigned char> ();
+template const unsigned char* Volume::get_raw<unsigned char> () const;
 template float* Volume::get_raw<float> ();
-
+template const float* Volume::get_raw<float> () const;

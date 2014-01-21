@@ -6,6 +6,7 @@
 
 #include <QtGui>
 #include "cview_portal.h"
+#include "volume.h"
 
 class Plm_image;
 
@@ -22,26 +23,26 @@ class CrystalWindow : public QMainWindow
 {
     Q_OBJECT;
 
-    public:
-        CrystalWindow (int argc, char** argv, QWidget *parent = 0);
+public:
+    CrystalWindow (int argc, char** argv, QWidget *parent = 0);
 
-    public slots:
-        void open ();
+public slots:
+    void open ();
 
-    private: /* methods */
-        bool openVol (const char* fn);
-        void createActions ();
-        void createMenu ();
+private: /* methods */
+    bool openVol (const char* fn);
+    void createActions ();
+    void createMenu ();
 
-    private: /* variables */
-        PortalGrid *portalGrid;
-        Plm_image* pli;
-        Volume* input_vol;
-        QMenu *menuFile;
-        QMenu *menuHelp;
-        QAction *actionOpen;
-        QAction *actionExit;
-        QAction *actionAboutQt;
+private: /* variables */
+    PortalGrid *portalGrid;
+    Plm_image* pli;
+    Volume::Pointer input_vol;
+    QMenu *menuFile;
+    QMenu *menuHelp;
+    QAction *actionOpen;
+    QAction *actionExit;
+    QAction *actionAboutQt;
 };
 
 #endif

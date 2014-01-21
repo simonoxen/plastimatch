@@ -618,6 +618,12 @@ Plm_image::set_volume (Volume *v)
 }
 
 Volume::Pointer&
+Plm_image::get_volume ()
+{
+    return d_ptr->m_vol;
+}
+
+Volume::Pointer&
 Plm_image::get_volume_uchar ()
 {
     convert_to_gpuit_uchar ();
@@ -625,9 +631,22 @@ Plm_image::get_volume_uchar ()
 }
 
 Volume::Pointer&
+Plm_image::get_volume_short ()
+{
+    convert_to_gpuit_short ();
+    return d_ptr->m_vol;
+}
+
+Volume::Pointer&
 Plm_image::get_volume_float ()
 {
     convert_to_gpuit_float ();
+    return d_ptr->m_vol;
+}
+
+Volume::Pointer&
+Plm_image::get_volume_uchar_vec () {
+    convert_to_gpuit_uchar_vec ();
     return d_ptr->m_vol;
 }
 
@@ -641,39 +660,6 @@ const Volume *
 Plm_image::get_vol () const
 {
     return d_ptr->m_vol.get();
-}
-
-Volume* 
-Plm_image::get_vol_uchar () {
-    convert_to_gpuit_uchar ();
-    return get_vol ();
-}
-
-Volume* 
-Plm_image::get_vol_uchar_vec () {
-    convert_to_gpuit_uchar_vec ();
-    return get_vol ();
-}
-
-Volume *
-Plm_image::get_vol_short ()
-{
-    convert_to_gpuit_short ();
-    return get_vol ();
-}
-
-Volume *
-Plm_image::get_vol_float ()
-{
-    convert_to_gpuit_float ();
-    return d_ptr->m_vol.get();
-}
-
-Volume *
-Plm_image::steal_volume ()
-{
-    /* GCS FIX: Stealing should not be needed */
-    return get_vol ();
 }
 
 void 

@@ -127,7 +127,7 @@ Segmentation::load (const char *ss_img, const char *ss_list)
         d_ptr->m_cxt.reset();
     }
     if (ss_list && file_exists (ss_list)) {
-        printf ("Trying to load ss_list: %s\n", ss_list);
+        lprintf ("Trying to load ss_list: %s\n", ss_list);
         d_ptr->m_cxt.reset (ss_list_load (0, ss_list));
     }
 
@@ -369,7 +369,7 @@ void
 Segmentation::load_xio (const Xio_studyset& studyset)
 {
     d_ptr->m_cxt = Rtss::New();
-    printf ("calling xio_structures_load\n");
+    lprintf ("calling xio_structures_load\n");
     xio_structures_load (d_ptr->m_cxt.get(), studyset);
 
     d_ptr->m_rtss_valid = true;
@@ -773,10 +773,10 @@ Segmentation::rasterize (
         d_ptr->m_ss_img->set_itk (rasterizer.m_ss_img->m_itk_uchar_vec);
     }
     else {
-        Volume *v = rasterizer.m_ss_img->steal_volume();
+        Volume::Pointer v = rasterizer.m_ss_img->get_volume();
         d_ptr->m_ss_img->set_volume (v);
     }
-    printf ("Finished rasterization.\n");
+    lprintf ("Finished rasterization.\n");
 
     d_ptr->m_ss_img_valid = true;
 }

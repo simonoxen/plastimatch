@@ -37,7 +37,10 @@ PLMBASE_C_API int volume_limit_clip_segment (
         double *p1,                 /* INPUT:  Line segment point 1 */
         double *p2                  /* INPUT:  Line segment point 2 */
 );
-PLMBASE_C_API void volume_limit_set (Volume_limit *vol_limit, Volume *vol);
+PLMBASE_API void volume_limit_set (Volume_limit *vol_limit, 
+    const Volume *vol);
+PLMBASE_API void volume_limit_set (Volume_limit *vol_limit, 
+    const Volume::Pointer& volume);
 
 
 #endif

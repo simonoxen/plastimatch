@@ -73,12 +73,12 @@ Plm_bspline::~Plm_bspline ()
 }
 
 static void
-update_roi (Volume* roi, Volume* image, float min_val, 
+update_roi (Volume::Pointer& roi, Volume::Pointer& image, float min_val, 
     float max_val, bool fill_empty_roi)
 {
     plm_long p=0;
-    float* image_temp=(float*)image->img;
-    unsigned char* roi_temp=(unsigned char*)roi->img;
+    float* image_temp = (float*)image->img;
+    unsigned char* roi_temp = roi->get_raw<unsigned char> ();
     for (unsigned int i=0; i < roi->dim[2]; i++) {
         for (unsigned int j=0; j < roi->dim[1]; j++) {
             for (unsigned int k=0; k < roi->dim[0]; k++) {
@@ -121,20 +121,20 @@ Plm_bspline::initialize ()
     Plm_image_header pih;
 
     logfile_printf ("Converting fixed\n");
-    Volume *fixed = regd->fixed_image->get_vol_float ();
-    logfile_printf ("Converting moving\n");
-    Volume *moving = regd->moving_image->get_vol_float ();
+    Volume::Pointer& fixed = regd->fixed_image->get_volume_float ();
+    logfile_printf ("Converting movingn");
+    Volume::Pointer& moving = regd->moving_image->get_volume_float ();
     logfile_printf ("Done.\n");
 
-    Volume *m_roi = NULL;
-    Volume *f_roi = NULL;
+    Volume::Pointer m_roi;
+    Volume::Pointer f_roi;
 
     /* Set roi's */
     if (shared->fixed_roi_enable && regd->fixed_roi) {
-        f_roi = regd->fixed_roi->get_vol_uchar();
+        f_roi = regd->fixed_roi->get_volume_uchar();
     }
     if (shared->moving_roi_enable && regd->moving_roi) {
-        m_roi = regd->moving_roi->get_vol_uchar();
+        m_roi = regd->moving_roi->get_volume_uchar();
     }
 
     /* Confirm grid method.  This should go away? */
@@ -146,8 +146,8 @@ Plm_bspline::initialize ()
     /* Note: Image subregion registration not yet supported */
 
     /* Convert images to gpuit format */
-    volume_convert_to_float (moving);               /* Maybe not necessary? */
-    volume_convert_to_float (fixed);                /* Maybe not necessary? */
+    fixed->convert (PT_FLOAT);              /* Maybe not necessary? */
+    moving->convert (PT_FLOAT);             /* Maybe not necessary? */
 
     /* Subsample images */
     logfile_printf ("SUBSAMPLE: (%g %g %g), (%g %g %g)\n", 
@@ -177,7 +177,7 @@ Plm_bspline::initialize ()
         //create new moving roi if not available
         if (!m_roi)
         {
-            m_roi = new Volume();
+            m_roi = Volume::New ();
             m_roi->create (moving->dim, moving->offset, moving->spacing,
                 moving->direction_cosines, PT_UCHAR);
         }
@@ -198,7 +198,7 @@ Plm_bspline::initialize ()
         //create new fixed roi if not available
         if(!f_roi)
         {
-            f_roi=new Volume();
+            f_roi = Volume::New ();
             f_roi->create (fixed->dim, fixed->offset, fixed->spacing,
                 fixed->direction_cosines, PT_UCHAR);
         }

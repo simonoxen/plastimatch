@@ -196,15 +196,6 @@ Aperture::get_aperture_volume ()
     return d_ptr->aperture_image->get_volume_uchar ();
 }
 
-Volume*
-Aperture::get_aperture_vol ()
-{
-    if (!d_ptr->aperture_image) {
-        return 0;
-    }
-    return d_ptr->aperture_image->get_vol_uchar();
-}
-
 void 
 Aperture::set_aperture_image (const char *ap_filename)
 {
@@ -227,15 +218,6 @@ Volume::Pointer&
 Aperture::get_range_compensator_volume ()
 {
     return d_ptr->range_compensator_image->get_volume_float();
-}
-
-Volume*
-Aperture::get_range_compensator_vol ()
-{
-    if (!d_ptr->range_compensator_image) {
-        return 0;
-    }
-    return d_ptr->range_compensator_image->get_vol_float();
 }
 
 void 

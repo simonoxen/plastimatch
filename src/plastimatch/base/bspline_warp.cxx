@@ -356,3 +356,16 @@ bspline_warp (
         break;
     }
 }
+
+void
+bspline_warp (
+    Volume *vout,       /* Output image (sized and allocated) */
+    Volume *vf_out,     /* Output vf (sized and allocated, can be null) */
+    Bspline_xform* bxf, /* Bspline transform coefficients */
+    const Volume::Pointer& moving,       /* Input image */
+    int linear_interp,  /* 1 = trilinear, 0 = nearest neighbors */
+    float default_val   /* Fill in this value outside of image */
+)
+{
+    bspline_warp (vout, vf_out, bxf, moving.get(), linear_interp, default_val);
+}
