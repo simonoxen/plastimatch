@@ -269,7 +269,7 @@ volume_resample_nn (
     switch (vol_in->pix_type) {
     case PT_UCHAR: {
         Volume::Pointer rvol = vol_in->clone (PT_FLOAT);
-        rvol = volume_resample_float_nn (vol_in, dim, offset, spacing);
+        rvol = volume_resample_float_nn (rvol, dim, offset, spacing);
         rvol->convert (PT_UCHAR);
         return rvol;
     }
