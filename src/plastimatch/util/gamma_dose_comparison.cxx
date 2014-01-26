@@ -36,6 +36,7 @@ public:
     
     Plm_image *img_in1; /*!< input dose image 1 for gamma analysis*/
     Plm_image *img_in2; /*!< input dose image 2 for gamma analysis*/
+    Plm_image *img_mask; /*!< input mask image for gamma analysis*/
     Plm_image *labelmap_out; /*!< output uchar type labelmap, voxel value = 1/0 for pass/fail */
 
     Gamma_labelmap_mode mode; /*!< output mode selector for 3D Slicer plugin*/
@@ -45,6 +46,7 @@ public:
                        for the 3D Slicer plugin */
         img_in1 = 0;
         img_in2 = 0;
+        img_mask = 0;
         labelmap_out = 0;
         mode = NONE;
     }
@@ -105,6 +107,7 @@ public:
     plm_long analysis_num_vox;
     plm_long analysis_num_pass;
 public:
+    void do_mask_threshold ();
     void find_reference_max_dose ();
     void do_gamma_analysis ();
     void do_gamma_threshold ();
@@ -154,6 +157,25 @@ Gamma_dose_comparison::set_compare_image (
     const FloatImageType::Pointer image)
 {
     d_ptr->gp.img_in2 = new Plm_image (image);
+}
+
+void 
+Gamma_dose_comparison::set_mask_image (const char* image_fn)
+{
+  d_ptr->gp.img_mask = new Plm_image (image_fn);
+}
+
+void 
+Gamma_dose_comparison::set_mask_image (Plm_image* image)
+{
+  d_ptr->gp.img_mask = image;
+}
+
+void 
+Gamma_dose_comparison::set_mask_image (
+  const UCharImageType::Pointer image)
+{
+  d_ptr->gp.img_mask = new Plm_image (image);
 }
 
 float
@@ -208,6 +230,13 @@ Gamma_dose_comparison::run ()
         d_ptr->reference_dose = d_ptr->dose_max;
     }
     d_ptr->have_gamma_image = true;
+
+    // Threshold mask image to have values 1 and 0 and resample it to reference
+    if (d_ptr->gp.img_mask) {
+        d_ptr->do_mask_threshold ();
+        resample_image_to_reference (d_ptr->gp.img_in1, d_ptr->gp.img_mask);
+    }
+
     resample_image_to_reference (d_ptr->gp.img_in1, d_ptr->gp.img_in2);
     d_ptr->do_gamma_analysis ();
 }
@@ -320,6 +349,7 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
 
     FloatImageType::Pointer img_in1 = gp.img_in1->itk_float();
     FloatImageType::Pointer img_in2 = gp.img_in2->itk_float();
+    UCharImageType::Pointer mask_img = gp.img_mask->itk_uchar();
 
     pih.set_from_itk_image (img_in1);
     pih.get_dim (dim_in );
@@ -366,8 +396,10 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
     FloatRegionType all_of_img2 = img_in2->GetLargestPossibleRegion();
     FloatRegionType subset_of_img2;
 
+
     FloatIteratorType img_in1_iterator (img_in1, all_of_img1);
     FloatIteratorType gamma_img_iterator (gamma_img, gamma_img->GetLargestPossibleRegion());
+    UCharIteratorType mask_img_iterator (mask_img, mask_img->GetLargestPossibleRegion());
 
     FloatImageType::IndexType k1, k2, k3;
     FloatImageType::OffsetType offset;
@@ -396,10 +428,19 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
 
     gamma_img_iterator.GoToBegin();
 
-    for (img_in1_iterator.GoToBegin(); 
+    for (img_in1_iterator.GoToBegin(), mask_img_iterator.GoToBegin(); 
          !img_in1_iterator.IsAtEnd(); 
-         ++img_in1_iterator)
+         ++img_in1_iterator, ++mask_img_iterator)
     {
+        // skip masked out voxels
+        // (mask may be interpolated so we use a value of 0.5 for threshold)
+        unsigned char mask_value = mask_img_iterator.Get();
+        if (mask_value < 0.5) {
+            gamma_img_iterator.Set (0.0);
+            ++gamma_img_iterator;
+            continue;
+        }
+
         //calculate gamma for this voxel of input image
         level1 = img_in1_iterator.Get();
         k1=img_in1_iterator.GetIndex();
@@ -515,4 +556,22 @@ Gamma_dose_comparison_private::do_gamma_threshold ()
             break;
         }
     }
+}
+
+void 
+Gamma_dose_comparison_private::do_mask_threshold ()
+{ 
+  UCharImageType::Pointer mask_img = gp.img_mask->itk_uchar();
+
+  typedef itk::ImageRegionIteratorWithIndex< UCharImageType > 
+    UCharIteratorType;
+  UCharIteratorType mask_it (mask_img, 
+    mask_img->GetLargestPossibleRegion());
+
+  /* Loop through mask image, threshold */
+  for (mask_it.GoToBegin(); !mask_it.IsAtEnd(); ++mask_it)
+  {
+    unsigned char mask_val = mask_it.Get();
+    mask_it.Set( mask_val<1 ? 0 : 1 );
+  }
 }

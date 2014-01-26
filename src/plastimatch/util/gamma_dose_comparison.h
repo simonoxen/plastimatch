@@ -55,6 +55,14 @@ public:
     /*! \brief Set the compare image as an ITK image. */
     void set_compare_image (const FloatImageType::Pointer image);
 
+    /*! \brief Set the mask image.  The image will be loaded
+      from the specified filename. */
+    void set_mask_image (const char* image_fn);
+    /*! \brief Set the mask image as a Plm image. */
+    void set_mask_image (Plm_image* image);
+    /*! \brief Set the mask image as an ITK image. */
+    void set_mask_image (const UCharImageType::Pointer image);
+
     /*! \brief Get the distance to agreement (DTA) tolerance, in mm. */
     float get_spatial_tolerance ();
     /*! \brief Set the distance to agreement (DTA) tolerance, in mm. */
