@@ -47,6 +47,7 @@ set (PLASTIMATCH_SRC
   pcmd_stats.cxx 
   pcmd_synth.cxx 
   pcmd_synth_vf.cxx 
+  pcmd_threshold.cxx
   pcmd_thumbnail.cxx 
   pcmd_union.cxx
   pcmd_warp.cxx 

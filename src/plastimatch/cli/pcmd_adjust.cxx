@@ -26,24 +26,6 @@ adjust_main (Adjust_parms* parms)
     FloatImageType::RegionType rg = img->GetLargestPossibleRegion ();
     FloatIteratorType it (img, rg);
 
-    if (parms->have_truncate_above) {
-	for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
-	    float v = it.Get();
-	    if (v > parms->truncate_above) {
-		it.Set (parms->truncate_above);
-	    }
-	}
-    }
-
-    if (parms->have_truncate_below) {
-	for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
-	    float v = it.Get();
-	    if (v < parms->truncate_below) {
-		it.Set (parms->truncate_below);
-	    }
-	}
-    }
-
     if (parms->have_ab_scale) {
 	it.GoToBegin();
 	for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
@@ -51,37 +33,6 @@ adjust_main (Adjust_parms* parms)
 	    float d_per_fx = v / parms->num_fx;
 	    v = v * (parms->alpha_beta + d_per_fx) 
 		/ (parms->alpha_beta + parms->norm_dose_per_fx);
-	    it.Set (v);
-	}
-    }
-
-    if (parms->have_scale) {
-	it.GoToBegin();
-	for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
-	    float v = it.Get();
-	    v = v * parms->scale;
-	    it.Set (v);
-	}
-    }
-
-    if (parms->have_stretch) {
-	float vmin, vmax;
-	it.GoToBegin();
-	vmin = it.Get();
-	vmax = it.Get();
-	for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
-	    float v = it.Get();
-	    if (v > vmax) {
-		vmax = v;
-	    } else if (v < vmin) {
-		vmin = v;
-	    }
-	}
-	for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
-	    float v = it.Get();
-	    v = (v - vmin) / (vmax - vmin);
-	    v = (v + parms->stretch[0]) 
-		* (parms->stretch[1] - parms->stretch[0]);
 	    it.Set (v);
 	}
     }

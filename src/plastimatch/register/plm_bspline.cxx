@@ -22,14 +22,9 @@
 #include "shared_parms.h"
 #include "stage_parms.h"
 #include "volume.h"
-#include "volume_resample.h"
 #include "volume_header.h"
+#include "volume_resample.h"
 #include "xform.h"
-#include "landmark_warp.h"
-#include "pointset.h"
-#include "raw_pointset.h"
-
-#include "itk_image_save.h"
 
 class Plm_bspline_private {
 public:

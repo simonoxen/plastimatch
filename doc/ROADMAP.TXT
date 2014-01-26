@@ -1,23 +1,29 @@
 1.6.0
 
 *  B-spline auto-parameters
-*  B-spline direction cosines
+**  Needs improved subsampling framework
+*  B-spline direction cosines (done)
 *  B-spline regularization (done)
-*  B-spline ROI
-*  DCMTK support
-*  Irregular slice spacing
+*  B-spline ROI (done)
+*  DCMTK support (done)
 *  Large image support (done)
-*  plastimatch average
-*  plastimatch dice
-*  plastimatch dmap
-*  plastimatch threshold
+*  plastimatch average (done)
+*  plastimatch dice (done)
+*  plastimatch dmap (done)
+*  plastimatch threshold (done)
 
 Unspecified future release
 
 *  Autolabel (la,tsv1,tsv2)
+*  Command parsing improvements (command file, command line, python)
+*  Copy-free conversion between itk and native volumes
 *  CUDA demons
+*  Multi-value registration
 *  DRR/FDK dicom
-*  Native translation registration
+*  Evaluate native vs itk jacobian
+*  Irregular slice spacing
+*  MSVC express multicore strategy
+*  Native translation registration (partly done, needs mi)
 *  Native rigid registration
 *  Normalized MI
 *  Proton/photon/electron dose calculation

@@ -34,6 +34,7 @@
 #include "pcmd_stats.h"
 #include "pcmd_synth.h"
 #include "pcmd_synth_vf.h"
+#include "pcmd_threshold.h"
 #include "pcmd_thumbnail.h"
 #include "pcmd_union.h"
 #include "pcmd_warp.h"
@@ -92,6 +93,7 @@ print_usage (int return_code)
         "  synth       "
         "  synth-vf    "
         "\n"
+        "  threshold   "
         "  thumbnail   "
         "  union       "
         "  warp        "
@@ -247,6 +249,9 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "synth-vf")) {
         do_command_synth_vf (argc, argv);
+    }
+    else if (!strcmp (command, "threshold")) {
+        do_command_threshold (argc, argv);
     }
     else if (!strcmp (command, "thumbnail")) {
         do_command_thumbnail (argc, argv);

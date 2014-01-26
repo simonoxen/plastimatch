@@ -3294,6 +3294,77 @@ set_tests_properties (plm-union-stats PROPERTIES DEPENDS plm-union)
 set_tests_properties (plm-union-check PROPERTIES DEPENDS plm-union-stats)
 
 ## -------------------------------------------------------------------------
+## plm-threshold-a
+## plm-threshold-b
+## plm-threshold-c
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-threshold-a"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "threshold;--input;${PLM_BUILD_TESTING_DIR}/gauss-1.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-threshold-a.mha;--above;-888"
+  )
+plm_add_test (
+  "plm-threshold-a-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-threshold-a.mha"
+  )
+plmtest_check_interval ("plm-threshold-a-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-threshold-a-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "0.306"
+  "0.308"
+  )
+set_tests_properties (plm-threshold-a PROPERTIES DEPENDS "gauss-1")
+set_tests_properties (plm-threshold-a-stats 
+  PROPERTIES DEPENDS plm-threshold-a)
+set_tests_properties (plm-threshold-a-check 
+  PROPERTIES DEPENDS plm-threshold-a-stats)
+
+plm_add_test (
+  "plm-threshold-b"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "threshold;--input;${PLM_BUILD_TESTING_DIR}/gauss-1.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-threshold-b.mha;--below;-900"
+  )
+plm_add_test (
+  "plm-threshold-b-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-threshold-b.mha"
+  )
+plmtest_check_interval ("plm-threshold-b-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-threshold-b-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "0.670"
+  "0.672"
+  )
+set_tests_properties (plm-threshold-b PROPERTIES DEPENDS "gauss-1")
+set_tests_properties (plm-threshold-b-stats 
+  PROPERTIES DEPENDS plm-threshold-b)
+set_tests_properties (plm-threshold-b-check 
+  PROPERTIES DEPENDS plm-threshold-b-stats)
+
+plm_add_test (
+  "plm-threshold-c"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "threshold;--input;${PLM_BUILD_TESTING_DIR}/gauss-1.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-threshold-c.mha;--range;-900,-888"
+  )
+plm_add_test (
+  "plm-threshold-c-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-threshold-c.mha"
+  )
+plmtest_check_interval ("plm-threshold-c-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-threshold-c-stats.stdout.txt"
+  "NONZERO *([-0-9.]*)"
+  "1206"
+  "1206"
+  )
+set_tests_properties (plm-threshold-c PROPERTIES DEPENDS "gauss-1")
+set_tests_properties (plm-threshold-c-stats 
+  PROPERTIES DEPENDS plm-threshold-c)
+set_tests_properties (plm-threshold-c-check 
+  PROPERTIES DEPENDS plm-threshold-c-stats)
+
+## -------------------------------------------------------------------------
 ## plastimatch warp pointset
 ##   plm-warp-pointset-a:  xf = bspline, output fcsv
 ##   plm-warp-pointset-b:  xf = bspline, output txt

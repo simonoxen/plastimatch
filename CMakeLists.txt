@@ -676,6 +676,7 @@ if (ITK_FOUND)
   # GDCM_VERSION is already known.  If this is not the case, we look 
   # in the ITK build dir for the header file which contains the version.
   if (NOT GDCM_VERSION)
+    unset (GDCM_CONFIGURE_H CACHE)
     find_file (GDCM_CONFIGURE_H gdcmConfigure.h PATHS ${ITK_INCLUDE_DIRS})
     if (GDCM_CONFIGURE_H)
       file (STRINGS "${GDCM_CONFIGURE_H}"
