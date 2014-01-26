@@ -349,7 +349,10 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
 
     FloatImageType::Pointer img_in1 = gp.img_in1->itk_float();
     FloatImageType::Pointer img_in2 = gp.img_in2->itk_float();
-    UCharImageType::Pointer mask_img = gp.img_mask->itk_uchar();
+    UCharImageType::Pointer mask_img;
+    if (gp.img_mask) {
+        mask_img = gp.img_mask->itk_uchar();
+    }
 
     pih.set_from_itk_image (img_in1);
     pih.get_dim (dim_in );
@@ -399,7 +402,10 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
 
     FloatIteratorType img_in1_iterator (img_in1, all_of_img1);
     FloatIteratorType gamma_img_iterator (gamma_img, gamma_img->GetLargestPossibleRegion());
-    UCharIteratorType mask_img_iterator (mask_img, mask_img->GetLargestPossibleRegion());
+    UCharIteratorType mask_img_iterator;
+    if (mask_img) {
+        mask_img_iterator = UCharIteratorType (mask_img, mask_img->GetLargestPossibleRegion());
+    }
 
     FloatImageType::IndexType k1, k2, k3;
     FloatImageType::OffsetType offset;
@@ -427,18 +433,24 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
     float analysis_threshold = this->analysis_thresh * this->reference_dose;
 
     gamma_img_iterator.GoToBegin();
+    if (mask_img) {
+        mask_img_iterator.GoToBegin();
+    }
 
-    for (img_in1_iterator.GoToBegin(), mask_img_iterator.GoToBegin(); 
+    for (img_in1_iterator.GoToBegin(); 
          !img_in1_iterator.IsAtEnd(); 
-         ++img_in1_iterator, ++mask_img_iterator)
+         ++img_in1_iterator)
     {
         // skip masked out voxels
         // (mask may be interpolated so we use a value of 0.5 for threshold)
-        unsigned char mask_value = mask_img_iterator.Get();
-        if (mask_value < 0.5) {
-            gamma_img_iterator.Set (0.0);
-            ++gamma_img_iterator;
-            continue;
+        if (mask_img) {
+            unsigned char mask_value = mask_img_iterator.Get();
+            ++mask_img_iterator;
+            if (mask_value < 0.5) {
+                gamma_img_iterator.Set (0.0);
+                ++gamma_img_iterator;
+                continue;
+            }
         }
 
         //calculate gamma for this voxel of input image
