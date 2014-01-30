@@ -19,6 +19,7 @@ function (get_nvcc_version)
     string(REGEX REPLACE ".*release ([0-9]+)\\.([0-9]+).*" "\\2" NVCC_VERSION_MINOR ${NVCC_OUT})
     set (CUDA_VERSION_MAJOR ${NVCC_VERSION_MAJOR} PARENT_SCOPE)
     set (CUDA_VERSION_MINOR ${NVCC_VERSION_MINOR} PARENT_SCOPE)
+    set (CUDA_VERSION_STRING "${NVCC_VERSION_MAJOR}.${NVCC_VERSION_MINOR}" PARENT_SCOPE)
 endfunction ()
 
 #: FUNCTION: find_gcc_version (major_version minor_version)
@@ -75,25 +76,27 @@ if (CUDA_FOUND AND CMAKE_SYSTEM_NAME MATCHES "Linux" AND CMAKE_COMPILER_IS_GNUCC
         list (APPEND CUDA_NVCC_FLAGS --host-compilation C++)
     endif ()
 
-    #: CUDA 4.X+: gcc-4.4 or gcc-4.3
+    #: CUDA 4.0, 4.1: gcc-4.4 or gcc-4.3
     #  ----------------------------------------------------------------
-    if (CUDA_VERSION_MAJOR MATCHES "4")
-        find_gcc_version (4 4)
-        if (NVC_GCC_STATUS MATCHES "0")
+    if ((NVC_GCC_STATUS STREQUAL "0") AND 
+	    (CUDA_VERSION_STRING VERSION_LESS "4.2"))
+	find_gcc_version (4 4)
+	if (NVC_GCC_STATUS MATCHES "0")
             find_gcc_version (4 3)
-        endif ()
+	endif ()
     endif ()
 
-    #: CUDA 5.X+: gcc-4.6, gcc-4.4 or gcc-4.3
+    #: CUDA 4.2+, CUDA 5.X+: gcc-4.6, gcc-4.4 or gcc-4.3
     #  ----------------------------------------------------------------
-    if (CUDA_VERSION_MAJOR MATCHES "5")
-        find_gcc_version (4 6)
-        if (NVC_GCC_STATUS MATCHES "0")
+    if ((NVC_GCC_STATUS STREQUAL "0") AND 
+	    (CUDA_VERSION_STRING VERSION_GREATER "4.1"))
+	find_gcc_version (4 6)
+	if (NVC_GCC_STATUS MATCHES "0")
             find_gcc_version (4 4)
-        endif ()
-        if (NVC_GCC_STATUS MATCHES "0")
+	endif ()
+	if (NVC_GCC_STATUS MATCHES "0")
             find_gcc_version (4 3)
-        endif ()
+	endif ()
     endif ()
 
     #: Set CUDA_NVCC_FLAGS and give the user a little feedback
