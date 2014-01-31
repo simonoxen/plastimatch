@@ -134,6 +134,10 @@ public:
         convert_to_itk_float ();
         return m_itk_float;
     }
+    ShortImageType::Pointer& itk_short () {
+        convert_to_itk_short ();
+        return m_itk_short;
+    }
     UCharImageType::Pointer& itk_uchar () {
         convert_to_itk_uchar ();
         return m_itk_uchar;
