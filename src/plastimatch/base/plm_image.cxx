@@ -840,8 +840,11 @@ Plm_image::convert_to_itk_short (void)
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_SHORT:
 	return;
-    case PLM_IMG_TYPE_ITK_LONG:
+    case PLM_IMG_TYPE_ITK_ULONG:
 	CONVERT_ITK_ITK (short, uint32);
+	break;
+    case PLM_IMG_TYPE_ITK_LONG:
+	CONVERT_ITK_ITK (short, int32);
 	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
 	CONVERT_ITK_ITK (short, float);
