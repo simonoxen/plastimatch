@@ -39,7 +39,9 @@ class nki2mha_converter : public QMainWindow
 public:
 	nki2mha_converter(QWidget *parent = 0, Qt::WFlags flags = 0);
 	~nki2mha_converter();
-	QString CorrectSingleFile(const char* filePath);
+	QString CorrectSingle_NKI2MHA(const char* filePath);
+	QString CorrectSingle_NKI2DCM(const char* filePath);
+	QString CorrectSingle_NKI2RAW( const char* filePath );
 	//void LoadBadPixelMap(const char* filePath);
 	//void BadPixReplacement(YK16GrayImage* targetImg);
 	//void SaveBadPixelMap(vector<BADPIXELMAP>& vBadPixels);
@@ -49,7 +51,9 @@ public:
 		//void SLT_OpenGainFile();
 		//void SLT_OpenBadpixelFile();
 		void SLT_OpenMultipleRaw();
-		void SLT_Correct(); //NKI to MHA
+		void SLT_Correct_NKI2MHA(); //NKI to MHA
+		void SLT_Correct_NKI2DCM(); //NKI to MHA
+		void SLT_Correct_NKI2RAW(); //NKI to RAW: signed short!
 
 public:
 	//YK16GrayImage* m_pImgOffset;
