@@ -88,7 +88,7 @@ QString nki2mha_converter::CorrectSingle_NKI2MHA(const char* filePath)
 	QString extName = "mha";
 
 	QString newFileName = baseName.append(endFix).append(".").append(extName);
-	QString newPath = dir.absolutePath() + newFileName;	
+	QString newPath = dir.absolutePath() + "\\" + newFileName;	
 
 	write_mha(newPath.toLocal8Bit().constData(), v);	
 
