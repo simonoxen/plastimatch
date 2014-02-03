@@ -2,6 +2,7 @@
 #include <QString>
 #include <QFileDialog>
 #include <QListView>
+#include <QMessageBox>
 //#include "YK16GrayImage.h"
 #include <fstream>
 
@@ -106,15 +107,23 @@ void nki2mha_converter::SLT_Correct_NKI2MHA()
 	if (listSize < 1)
 		return;
 
+	int cnt = 0;
 	for (int i = 0 ; i<listSize ; i++)
 	{
 		QString filePath = m_strlistPath.at(i);
 		QString corrFilePath = CorrectSingle_NKI2MHA(filePath.toLocal8Bit().constData());
-		ui.plainTextEdit_Corrected->appendPlainText(corrFilePath);
+
+		if (corrFilePath.length() > 0 )
+		{
+			ui.plainTextEdit_Corrected->appendPlainText(corrFilePath);
+			cnt++;
+		}
 	}
 
-	cout << "mha images were successfully saved!" << endl;
+	QString msgStr = QString("%1 files were converted").arg(cnt);
+	QMessageBox::information(this, "Procedure Done",msgStr);
 
+	cout << "MHA Conversion completed" << endl;
 }
 
 void nki2mha_converter::SLT_Correct_NKI2DCM()
@@ -124,14 +133,25 @@ void nki2mha_converter::SLT_Correct_NKI2DCM()
 	if (listSize < 1)
 		return;
 
+
+	int cnt = 0;
 	for (int i = 0 ; i<listSize ; i++)
 	{
 		QString filePath = m_strlistPath.at(i);
 		QString corrFilePath = CorrectSingle_NKI2DCM(filePath.toLocal8Bit().constData());
-		ui.plainTextEdit_Corrected->appendPlainText(corrFilePath);
+
+		if (corrFilePath.length() > 0 )
+		{
+			ui.plainTextEdit_Corrected->appendPlainText(corrFilePath);
+			cnt++;
+		}
+		//ui.plainTextEdit_Corrected->appendPlainText(corrFilePath);
 	}
 
-	cout << "Dicom images were successfully saved!" << endl;
+	QString msgStr = QString("%1 files were converted").arg(cnt);
+	QMessageBox::information(this, "Procedure Done",msgStr);
+
+	cout << "DCM Conversion completed" << endl;
 }
 
 void nki2mha_converter::SLT_Correct_NKI2RAW()
@@ -141,14 +161,24 @@ void nki2mha_converter::SLT_Correct_NKI2RAW()
 	if (listSize < 1)
 		return;
 
+
+	int cnt = 0;
 	for (int i = 0 ; i<listSize ; i++)
 	{
 		QString filePath = m_strlistPath.at(i);
 		QString corrFilePath = CorrectSingle_NKI2RAW(filePath.toLocal8Bit().constData());
-		ui.plainTextEdit_Corrected->appendPlainText(corrFilePath);
+		//ui.plainTextEdit_Corrected->appendPlainText(corrFilePath);
+		if (corrFilePath.length() > 0 )
+		{
+			ui.plainTextEdit_Corrected->appendPlainText(corrFilePath);
+			cnt++;
+		}
 	}
 
-	cout << "RAW images and an info file were successfully saved! Note that it is [signed short]!" << endl;
+	QString msgStr = QString("%1 files were converted").arg(cnt);
+	QMessageBox::information(this, "Procedure Done",msgStr);
+
+	cout << "RAW Conversion completed" << endl;
 }
 
 QString nki2mha_converter::CorrectSingle_NKI2DCM( const char* filePath )
