@@ -97,6 +97,7 @@ protected:
         double rc_thk,               /* I: range compensator thickness */
         int* ires                    /* I: ray cast resolution */
     );
+
 };
 
 #endif

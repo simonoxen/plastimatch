@@ -72,7 +72,7 @@ Ion_plan::init ()
         
     if (!this->rpl_vol) return false;
 
-    if (this->beam->get_flavor() == 'f')
+    if (this->beam->get_flavor() == 'f'|| this->beam->get_flavor() == 'g')
     {
     /* building the ct_density_vol */
     this->ct_vol_density = new Rpl_volume;
@@ -105,7 +105,7 @@ Ion_plan::init ()
     /* Copy aperture from scene into rpl volume */
     this->rpl_vol->set_aperture (d_ptr->ap);
 
-    if (this->beam->get_flavor() == 'f')
+    if (this->beam->get_flavor() == 'f' || this->beam->get_flavor() == 'g')
     {
         this->ct_vol_density->set_aperture (d_ptr->ap);
         this->sigma_vol->set_aperture (d_ptr->ap);
@@ -114,7 +114,7 @@ Ion_plan::init ()
         /* Scan through aperture to fill in rpl_volume */
     this->rpl_vol->set_ct_volume (d_ptr->patient);
 
-    if (this->beam->get_flavor() == 'f')
+    if (this->beam->get_flavor() == 'f' || this->beam->get_flavor() == 'g')
     {
         if(this->rpl_vol->get_ct() && this->rpl_vol->get_ct_limit())
         {
@@ -137,7 +137,7 @@ Ion_plan::init ()
     
     //printf("b\n");
     /* and the others */
-    if (this->beam->get_flavor() == 'f')
+    if (this->beam->get_flavor() == 'f' || this->beam->get_flavor() == 'g')
     {
         if(this->rpl_vol->get_Ray_data() && this->rpl_vol->get_front_clipping_plane() && this->rpl_vol->get_back_clipping_plane())
         {
@@ -343,7 +343,7 @@ Ion_plan::compute_dose ()
     float* dose_img_tmp = (float*) dose_volume_tmp->img;
     UNUSED_VARIABLE (dose_img_tmp);
 
-    if (this->beam->get_flavor() == 'f') // push algorithm + creation of the sigma volume
+    if (this->beam->get_flavor() == 'f' || this->beam->get_flavor() == 'g') // push algorithm + creation of the sigma volume (Desplanques))
     {
         float sigmaMax = 0;
         float *sigma_max =&sigmaMax; // used to find the max sigma in the volume and add extra margins during the dose creation volume
@@ -356,13 +356,39 @@ Ion_plan::compute_dose ()
         Rpl_volume* rpl_vol = this->rpl_vol;
         Rpl_volume* sigma_vol = this->sigma_vol;
 
-        dose_volume_create(dose_volume_tmp, sigma_max, this->sigma_vol);
-        compute_dose_ray (dose_volume_tmp, ct_vol.get(), rpl_vol, 
-            sigma_vol, ct_vol_density, this->beam, dose_vol.get());
+		if (this->beam->get_flavor() == 'f')
+        {
+            dose_volume_create(dose_volume_tmp, sigma_max, this->sigma_vol);
+            compute_dose_ray_desplanques(dose_volume_tmp, ct_vol, rpl_vol, sigma_vol, ct_vol_density, this->beam, dose_vol);
+        }
+        else if(this->beam->get_flavor() == 'g')
+        {
+            /* building the sigma_vol */
+            this->rpl_dose_vol = new Rpl_volume;
+            this->rpl_dose_vol->set_geometry (
+            this->beam->get_source_position(),
+            this->beam->get_isocenter_position(),
+            d_ptr->ap->vup,
+            d_ptr->ap->get_distance(),
+            d_ptr->ap->get_dim(),
+            d_ptr->ap->get_center(),
+            d_ptr->ap->get_spacing(),
+            d_ptr->step_length);
+
+            this->rpl_dose_vol->set_ct(this->rpl_vol->get_ct());
+            this->rpl_dose_vol->set_ct_limit(this->rpl_vol->get_ct_limit());
+            this->rpl_dose_vol->set_ray(this->rpl_vol->get_Ray_data());
+            this->rpl_dose_vol->set_front_clipping_plane(this->rpl_vol->get_front_clipping_plane());
+            this->rpl_dose_vol->set_back_clipping_plane(this->rpl_vol->get_back_clipping_plane());
+            this->rpl_dose_vol->compute_rpl_ct();
+
+            /* dose calculation in the rpl_dose_volume */
+            compute_dose_ray_sharp(ct_vol, rpl_vol, sigma_vol, ct_vol_density, this->beam, dose_vol, rpl_dose_vol, d_ptr->ap);
+        }
     }
-    else // pull algorithm
+    if (this->beam->get_flavor() != 'f') // pull algorithm
     {     
-        if (this->get_debug()) {
+		if (this->get_debug()) {
             rpl_vol->save ("beam_debug/depth_vol.mha");
             beam->dump ("beam_debug");
         }
@@ -412,6 +438,9 @@ Ion_plan::compute_dose ()
                     case 'e':
         	        dose = dose_hong_maxime (ct_xyz, ct_ijk, this);
 		        break;
+					case 'g':
+                        dose = dose_hong_sharp (ct_xyz, this);
+                        break;
                     }
 
                     /* Insert the dose into the dose volume */

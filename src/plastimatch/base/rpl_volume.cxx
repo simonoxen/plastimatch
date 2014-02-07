@@ -456,7 +456,7 @@ Rpl_volume::compute_ray_data ()
                 ray_data->front_dist = vec3_dist (p2, ip1);
             }
             if (ray_data->front_dist < d_ptr->front_clipping_dist) {
-                d_ptr->front_clipping_dist = ray_data->front_dist;
+                d_ptr->front_clipping_dist = ray_data->front_dist - 0.001; // - 0.001 mm to avoid the closest ray to intersect the volume with a step inferior to its neighbours. The minimal ray will be the only one to touch the volume when offset_step = 0.
             }
 
             /* Compute distance to back intersection point, and set 
@@ -634,7 +634,6 @@ Rpl_volume::compute_rpl ()
                 rc_thk,            /* I: range compensator thickness */
                 ires               /* I: ray cast resolution */
             );
-
         }
     }
 }

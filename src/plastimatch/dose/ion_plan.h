@@ -82,6 +82,7 @@ public:
     Rpl_volume* rpl_vol; // contains the radiologic path length along a ray
     Rpl_volume* ct_vol_density; // contains the ct_density along the ray
     Rpl_volume* sigma_vol;  // contains the sigma (lateral spread of the pencil beam - used to calculate the off-axis term) along the ray
+    Rpl_volume* rpl_dose_vol;
 };
 
 #endif

@@ -42,4 +42,10 @@ dose_hong_maxime (
     const Ion_plan* scene
 );
 
+double
+dose_hong_sharp (
+    double* ct_xyz,             /* voxel to dose */
+    const Ion_plan* scene
+);
+
 #endif

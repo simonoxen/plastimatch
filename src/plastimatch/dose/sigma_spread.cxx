@@ -154,13 +154,13 @@ void length_to_sigma(std::vector<float>* p_sigma, std::vector<float>* p_density,
 }
 
 void 
-compute_dose_ray(Volume* dose_volume, Volume* ct_vol, Rpl_volume* rpl_volume, Rpl_volume* sigma_volume, Rpl_volume* ct_rpl_volume, Ion_beam* beam, Volume* final_dose_volume)
+compute_dose_ray_desplanques(Volume* dose_volume, Volume::Pointer ct_vol, Rpl_volume* rpl_volume, Rpl_volume* sigma_volume, Rpl_volume* ct_rpl_volume, Ion_beam* beam, Volume::Pointer final_dose_volume)
 {
     int ijk_idx[3] = {0,0,0};
     int ijk_travel[3] = {0,0,0};
     double xyz_travel[3] = {0.0,0.0,0.0};
 
-    int ap_ij[2] = {0,0};
+    int ap_ij[2] = {1,0};
     int dim[2] = {0,0};
 
     double ray_bev[3] = {0,0,0};
@@ -168,7 +168,8 @@ compute_dose_ray(Volume* dose_volume, Volume* ct_vol, Rpl_volume* rpl_volume, Rp
     double xyz_ray_center[3] = {0.0, 0.0, 0.0};
     double xyz_ray_pixel_center[3] = {0.0, 0.0, 0.0};
 
-    double p2_bev[3] = {0.0f, 0.0f, 0.0f}; // coordinates of intersection with the aperture in the bev frame
+    double entrance_bev[3] = {0.0f, 0.0f, 0.0f}; // coordinates of intersection with the volume in the bev frame
+    double aperture_bev[3] = {0.0f, 0.0f, 0.0f}; // coordinates of intersection with the aperture in the bev frame
     double distance = 0; // distance from the aperture to the POI
     double tmp[3] = {0.0f, 0.0f, 0.0f};
 
@@ -200,10 +201,13 @@ compute_dose_ray(Volume* dose_volume, Volume* ct_vol, Rpl_volume* rpl_volume, Rp
 
     float* img = (float*) dose_volume->img;
     float* ct_img = (float*) ct_vol->img;
+    float* rpl_image = (float*) rpl_volume->get_vol()->img;
+
+    double dist = 0;
+    int offset_step = 0;
 
     for (int i = 0; i < dim[0]*dim[1];i++)
     {
-        
         Ray_data* ray_data = &rpl_volume->get_Ray_data()[i];
 
         ap_ij[1] = i / dim[0];
@@ -215,24 +219,30 @@ compute_dose_ray(Volume* dose_volume, Volume* ct_vol, Rpl_volume* rpl_volume, Rp
         ray_bev[1] = vec3_dot(ray_data->ray, rpl_volume->get_aperture()->pdn);
         ray_bev[2] = -vec3_dot(ray_data->ray, rpl_volume->get_proj_volume()->get_nrm()); // ray_beam_eye_view is already normalized
 
-        /* Calculation of the coordinates of the intersection of the ray with the aperture */
-        find_xyz_center(p2_bev, ray_bev, rpl_volume->get_aperture()->get_distance()+ rpl_volume->get_front_clipping_plane(), 0);
-        
+        /* Calculation of the coordinates of the intersection of the ray with the clipping plane */
+        find_xyz_center(aperture_bev, ray_bev, rpl_volume->get_aperture()->get_distance(),0);
+        find_xyz_center_entrance(entrance_bev, ray_bev, dose_volume->offset[2]-rpl_volume->get_aperture()->get_distance());
+        vec3_add2(entrance_bev, aperture_bev);
+
         if (ray_bev[2]  > DRR_BOUNDARY_TOLERANCE)
         {
             for(int k = 0; k < dose_volume->dim[2];k++)
             {
-                find_xyz_center(xyz_ray_center, ray_bev, dose_volume->offset[2], k);
-                distance = vec3_dist(p2_bev, xyz_ray_center);
+                find_xyz_center(xyz_ray_center, ray_bev, vec3_len(entrance_bev),k);
+                distance = vec3_dist(entrance_bev, xyz_ray_center);
 
                 ct_density = ct_rpl_volume->get_rgdepth(ap_ij, distance);
-
                 if (ct_density <= 0) // no medium, no dose... (air = void)
                 {
                     continue;
                 }
                 else
                 {
+                    rg_length = rpl_volume->get_rgdepth(ap_ij, distance);
+                    //printf("%d %lg %lg %lg -- %lg %lg\n", k, xyz_ray_center[0], xyz_ray_center[1], xyz_ray_center[2], distance,rg_length);
+                    central_axis_dose = beam->lookup_sobp_dose((float) rg_length);
+                    //printf("%d %lg %lg %lg %lg\n", k, ct_density, distance, rg_length, central_axis_dose);
+
                     sigma = sigma_volume->get_rgdepth(ap_ij, distance);
                     sigma_x3 = (int) ceil(3 * sigma);
                     rg_length = rpl_volume->get_rgdepth(ap_ij, distance);
@@ -248,9 +258,9 @@ compute_dose_ray(Volume* dose_volume, Volume* ct_vol, Rpl_volume* rpl_volume, Rp
 
                     central_axis_dose = beam->lookup_sobp_dose((float) rg_length);
                     
-                    for (int i2 = i_min; i2 < i_max; i2++)
+                    for (int i2 = i_min; i2 <= i_max; i2++)
                     {
-                        for (int j2 = j_min; j2 < j_max; j2++)
+                        for (int j2 = j_min; j2 <= j_max; j2++)
                         {
                             idx = i2 + (dose_volume->dim[0] * (j2 + dose_volume->dim[1] * k));
 
@@ -261,6 +271,13 @@ compute_dose_ray(Volume* dose_volume, Volume* ct_vol, Rpl_volume* rpl_volume, Rp
                             find_xyz_from_ijk(xyz_travel,dose_volume,ijk_travel);
                             
                             radius = vec3_dist(xyz_travel,xyz_ray_center);
+
+                            if (radius < dose_volume->spacing[0]/2 || radius < dose_volume->spacing[0]/2)
+                            {
+                                radius = 0;
+                            }
+                            else {radius = radius - dose_volume->spacing[0]/2;}
+                            
                             
                             r_over_sigma = radius / sigma;
                             if (r_over_sigma >=3)
@@ -303,6 +320,7 @@ compute_dose_ray(Volume* dose_volume, Volume* ct_vol, Rpl_volume* rpl_volume, Rp
                 if ( ct_img[idx] > -1000) // in air we have no dose, we let the voxel number at 0!
                 {   
                     final_dose_volume->get_xyz_from_ijk(xyz_room, ijk);
+
                     /* xyz contains the coordinates of the pixel in the room coordinates */
                     /* we now calculate the coordinates of this pixel in the dose_volume coordinates */
                     /* need to be fixed after the extrinsic homogeneous coordinates is fixed */
@@ -332,19 +350,217 @@ compute_dose_ray(Volume* dose_volume, Volume* ct_vol, Rpl_volume* rpl_volume, Rp
         }
         
     }
-
     return;
+}
+
+void 
+compute_dose_ray_sharp(Volume::Pointer ct_vol, Rpl_volume* rpl_volume, Rpl_volume* sigma_volume, Rpl_volume* ct_rpl_volume, Ion_beam* beam, Volume::Pointer final_dose_volume, Rpl_volume* rpl_dose_volume, Aperture::Pointer ap)
+{
+    int ap_ij[2] = {0,0};
+    int dim[3] = {0,0,0};
+
+    double ct_density = 0;
+    double sigma = 0;
+    double sigma_x3 = 0;
+    float rg_length = 0;
+
+    float central_axis_dose = 0;
+    double r_over_sigma = 0;
+    int r_over_sigma_round = 0;
+    float off_axis_factor = 0;
+
+    int idx2d = 0;
+    int idx3d = 0;
+    int idx3d_travel = 0;
+
+    double minimal_lateral = 0;
+    int i_min = 0;
+    int i_max = 0;
+    int j_min = 0;
+    int j_max = 0;
+
+    dim[0] = rpl_volume->get_vol()->dim[0];
+    dim[1] = rpl_volume->get_vol()->dim[1];
+    dim[2] = rpl_volume->get_vol()->dim[2];
+
+    //float* ct_img = (float*) ct_vol->img;
+    float* rpl_img = (float*) rpl_volume->get_vol()->img;
+    float* sigma_img = (float*) sigma_volume->get_vol()->img;
+    float* rpl_dose_img = (float*) rpl_dose_volume->get_vol()->img;
+    float* ct_rpl_img = (float*) ct_rpl_volume->get_vol()->img;
+
+    double dist = 0;
+    
+    /* Creation of the rpl_volume containing the coordinates xyz (beam eye view) */
+    std::vector<double> xyz_init (3,0);
+    std::vector< std::vector<double> > xyz_coor_vol (dim[0]*dim[1]*dim[2], xyz_init); 
+    calculate_rpl_coordinates_xyz(&xyz_coor_vol, rpl_volume);
+
+    /* calculation of the lateral steps in which the dose is searched constant with depth */
+    std::vector <double> lateral_minimal_step (dim[2],0);
+    minimal_lateral = ap->get_spacing(0);
+    
+    if (minimal_lateral < ap->get_spacing(1))
+    {
+        minimal_lateral = ap->get_spacing(1);
+    }
+    for(int k = 0; k < dim[2]; k++)
+    {
+        lateral_minimal_step[k] = (rpl_volume->get_front_clipping_plane() + (double) k) * minimal_lateral / rpl_volume->get_aperture()->get_distance();
+    }
+
+    /* calculation of the dose in the rpl_volume */
+    for (ap_ij[0] = 0; ap_ij[0] < dim[0]; ap_ij[0]++){
+        for (ap_ij[1] = 0; ap_ij[1] < dim[1]; ap_ij[1]++){
+            printf("-");
+            idx2d = ap_ij[1] * dim[0] + ap_ij[0];
+            Ray_data* ray_data = &rpl_volume->get_Ray_data()[idx2d];
+
+        if (-vec3_dot(ray_data->ray, rpl_volume->get_proj_volume()->get_nrm()) > DRR_BOUNDARY_TOLERANCE)
+            {
+                for(int k = 0; k < dim[2]; k++)
+                {
+                    idx3d = idx2d + k * dim[0]*dim[1];
+
+                    ct_density = (double) rpl_img[idx3d];
+                    if (ct_density <= 0) // no medium, no dose... (air = void)
+                    {
+                        rpl_dose_img[idx3d] = 0;
+                        continue;
+                    }
+                    else
+                    {
+                        rg_length = rpl_img[idx3d];
+                        central_axis_dose = beam->lookup_sobp_dose(rg_length);
+
+                        if (central_axis_dose <=0) 
+                        {
+                            rpl_dose_img[idx3d] = 0;
+                            continue;
+                        } // no dose on the axis, no dose scattered
+
+                        //printf("%d %lg %lg %lg %lg\n", k, ct_density, distance, rg_length, central_axis_dose);
+                        sigma = (double) sigma_img[idx3d];
+                        
+                        sigma_x3 = sigma * 3;
+
+                        /* finding the rpl_volume pixels that are contained in the the 3 sigma range */                    
+                        i_min = ap_ij[0] - (int) ceil(sigma_x3 / lateral_minimal_step[k]);
+                        if (i_min < 0 ) {i_min = 0;}
+                        i_max = ap_ij[0] + (int) ceil(sigma_x3 / lateral_minimal_step[k]);
+                        if (i_max > dim[0]-1 ) {i_max = dim[0]-1;}
+                        j_min = ap_ij[1] - (int) ceil(sigma_x3 / lateral_minimal_step[k]);
+                        if (j_min < 0 ) {j_min = 0;}
+                        j_max = ap_ij[1] + (int) ceil(sigma_x3 / lateral_minimal_step[k]);
+                        if (j_max > dim[1]-1 ) {j_max = dim[1]-1;}
+
+                        //if( ap_ij[0] == 5 && ap_ij[1] == 5 ) {printf("%d %lg %lg %d %d %d %d\n", idx3d, rg_length, sigma, i_min, i_max, j_min, j_max);} 
+    
+                        for (int i1 = i_min; i1 <= i_max; i1++){
+                            for (int j1 = j_min; j1 <= j_max; j1++){
+                                
+                                idx3d_travel = k * dim[0]*dim[1] + j1 * dim[0] + i1;
+                                if (idx3d == idx3d_travel)
+                                {
+                                    rpl_dose_img[idx3d] = beam->lookup_sobp_dose((float) rg_length);
+                                    //printf("A:%d %lg %lg \n", k, rpl_dose_img[idx3d], sigma);
+                                }
+                                else
+                                {
+                                    if (sigma != 0) 
+                                    {
+                                        dist = distance(xyz_coor_vol, idx3d_travel, idx3d);
+                                        r_over_sigma = dist / sigma;
+                                    }
+                                    else { continue;}
+
+                                    if (ct_rpl_img[idx3d_travel] <= 0 || ct_rpl_img[idx3d] <= 0 || r_over_sigma >=3)
+                                    {
+                                        continue;
+                                    }
+                                    else
+                                    {
+                                        r_over_sigma_round = (int) floor(r_over_sigma * 100+0.5);
+                                        off_axis_factor = (float) lookup_r2_over_sigma2[r_over_sigma_round][1];
+                                        
+                                        rpl_dose_img[idx3d_travel] += central_axis_dose * off_axis_factor;
+                                        //printf("B: %lg %lg %lg %lg\n", r_over_sigma, off_axis_factor, central_axis_dose, rpl_dose_img[idx3d_travel]);
+                                    }
+
+                                } // if idx3d != idx3d_travel
+                            } //for j1
+                        } //for i1
+                    } // else
+                } // for k
+            } // if
+        } // ap_ij[1]
+        printf(" status: %d / %d\n", ap_ij[0]+1, dim[0]);
+        /*for (int r = 0; r < rpl_dose_volume->get_vol()->dim[0]*rpl_dose_volume->get_vol()->dim[1]*rpl_dose_volume->get_vol()->dim[2]; r++)
+                                    {
+                                        printf("%d %lg\n", r, rpl_dose_img[r]);
+                                    }*/
+    } // ap_ij[0]
+    return;
+}
+
+void
+calculate_rpl_coordinates_xyz(std::vector<std:: vector<double> >* xyz_coordinates_volume, Rpl_volume* rpl_volume)
+{
+    double aperture[3] = {0.0,0.0,0.0};
+    double entrance[3] = {0.0,0.0,0.0};
+    double ray_bev[3] = {0.0,0.0,0.0};
+    double vec_antibug_prt[3] = {0.0,0.0,0.0};
+
+    int dim[3] = {rpl_volume->get_vol()->dim[0],rpl_volume->get_vol()->dim[1],rpl_volume->get_vol()->dim[2]};
+    int idx2d = 0;   
+    int idx3d = 0;
+
+    for (int i = 0; i < rpl_volume->get_vol()->dim[0];i++){
+        for (int j = 0; j < rpl_volume->get_vol()->dim[1];j++){
+        
+            idx2d = j * dim[0] + i;
+            Ray_data* ray_data = &rpl_volume->get_Ray_data()[idx2d];
+
+            vec3_cross(vec_antibug_prt, rpl_volume->get_aperture()->pdn, rpl_volume->get_proj_volume()->get_nrm());
+            ray_bev[0] = vec3_dot(ray_data->ray, vec_antibug_prt);
+            ray_bev[1] = vec3_dot(ray_data->ray, rpl_volume->get_aperture()->pdn);
+            ray_bev[2] = -vec3_dot(ray_data->ray, rpl_volume->get_proj_volume()->get_nrm()); // ray_beam_eye_view is already normalized
+
+            find_xyz_center(aperture, ray_bev, rpl_volume->get_aperture()->get_distance(),0);
+            find_xyz_center_entrance(entrance, ray_bev, rpl_volume->get_front_clipping_plane()-rpl_volume->get_aperture()->get_distance());
+            vec3_add2(entrance, aperture);
+
+            for (int k = 0; k < rpl_volume->get_vol()->dim[2]; k++){
+                idx3d = k*dim[0]*dim[1] + idx2d;
+                for (int l = 0; l < 3; l++)
+                {
+                    (*xyz_coordinates_volume)[idx3d][l] = entrance[l] + (double) k * ray_bev[l];
+                }
+            }
+        }
+    }
 }
 
 void 
 find_xyz_center(double* xyz_ray_center, double* ray, float z_axis_offset, int k)
 {
     float alpha = 0.0f;
+
     xyz_ray_center[2] = z_axis_offset+(double)k;
 
     alpha = xyz_ray_center[2] /(double) ray[2];
     xyz_ray_center[0] = alpha * ray[0];
     xyz_ray_center[1] = alpha * ray[1];
+    return;
+}
+
+void 
+find_xyz_center_entrance(double* xyz_ray_center, double* ray, float z_axis_offset)
+{
+    xyz_ray_center[0] = z_axis_offset * ray[0];
+    xyz_ray_center[1] = z_axis_offset * ray[1];
+    xyz_ray_center[2] = z_axis_offset * ray[2];
+
     return;
 }
 
@@ -362,6 +578,12 @@ find_xyz_from_ijk(double* xyz, Volume* volume, int* ijk)
     xyz[0] = volume->offset[0] + ijk[0]*volume->spacing[0];
     xyz[1] = volume->offset[1] + ijk[1]*volume->spacing[1];
     xyz[2] = volume->offset[2] + ijk[2]*volume->spacing[2];
+}
+
+double distance(std::vector< std::vector<double> > v, int i1, int i2)
+{
+    //printf("%lg %d %d %lg %lg %lg %lg %lg %lg\n", sqrt( pow(v[i1][0]-v[i2][0],2) + pow(v[i1][1]-v[i2][1],2) + pow(v[i1][2]-v[i2][2],2) ), i1, i2, v[i1][0], v[i2][0], v[i1][1], v[i2][1], v[i1][2], v[i2][2]);
+    return sqrt( pow(v[i1][0]-v[i2][0],2) + pow(v[i1][1]-v[i2][1],2) + pow(v[i1][2]-v[i2][2],2) );
 }
 
 

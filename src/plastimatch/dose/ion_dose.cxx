@@ -809,3 +809,15 @@ dose_hong_maxime (
     }
     return dose;    
 }
+
+double
+dose_hong_sharp (
+    double* ct_xyz,             /* voxel to dose */
+    const Ion_plan* scene
+)
+{
+    double value = scene->rpl_dose_vol->get_rgdepth(ct_xyz);
+    /* return the dose at this radiographic depth */
+    if (value < 0) {return 0;}
+    else {return value;}
+}
