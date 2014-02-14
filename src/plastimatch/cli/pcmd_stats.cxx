@@ -6,12 +6,14 @@
 #include "gdcm1_dose.h"
 #include "itk_image_load.h"
 #include "itk_image_stats.h"
+#include "logfile.h"
 #include "mha_io.h"
 #include "pcmd_stats.h"
 #include "plm_clp.h"
 #include "plm_file_format.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
+#include "pointset.h"
 #include "print_and_exit.h"
 #include "proj_image.h"
 #include "ss_img_stats.h"
@@ -75,6 +77,14 @@ stats_vf_main (Stats_parms* parms, const std::string& current_fn)
 	vf_analyze_strain (vol, mask);
 	vf_analyze_second_deriv (vol);
     }
+}
+
+static void
+stats_pointset_main (Stats_parms* parms, const std::string& current_fn)
+{
+    Labeled_pointset ps;
+    ps.load (current_fn.c_str());
+    lprintf ("Pointset has %d points\n", ps.count());
 }
 
 static void
@@ -149,6 +159,9 @@ stats_main (Stats_parms* parms)
             break;
         case PLM_FILE_FMT_VF:
             stats_vf_main (parms, current_fn);
+            break;
+        case PLM_FILE_FMT_POINTSET:
+            stats_pointset_main (parms, current_fn);
             break;
         case PLM_FILE_FMT_PROJ_IMG:
             stats_proj_image_main (parms, current_fn);
