@@ -244,8 +244,6 @@ drr_ray_trace_image (
     }
     if (options->output_details_fn != "") {
         fclose (details_fp);
-    } else {
-        printf ("NOT SET\n");
     }
 }
 
