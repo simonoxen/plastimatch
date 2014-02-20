@@ -1069,7 +1069,7 @@ volume_difference (Volume* vol, Volume* warped)
 }
 
 /* Explicit instantiations */
-template unsigned char* Volume::get_raw<unsigned char> ();
-template const unsigned char* Volume::get_raw<unsigned char> () const;
-template float* Volume::get_raw<float> ();
-template const float* Volume::get_raw<float> () const;
+template PLMBASE_API unsigned char* Volume::get_raw<unsigned char> ();
+template PLMBASE_API const unsigned char* Volume::get_raw<unsigned char> () const;
+template PLMBASE_API float* Volume::get_raw<float> ();
+template PLMBASE_API const float* Volume::get_raw<float> () const;
