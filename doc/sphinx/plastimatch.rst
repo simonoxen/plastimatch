@@ -1050,13 +1050,13 @@ rather than linear interpolation. ::
 Sometimes, voxels located outside of the geometry of the input image 
 will be warped into the geometry of the output image.  By default, these 
 areas are "filled in" with an intensity of zero.  You can choose a different 
-value for these areas using the --default-val option. ::
+value for these areas using the --default-value option. ::
 
   plastimatch warp \
     --input infile.nrrd \
     --output outfile.nrrd \
     --xf bspline.txt \
-    --default-val -1000
+    --default-value -1000
 
 In addition to images and structures, landmarks exported from 3D Slicer can
 also be warped. ::
