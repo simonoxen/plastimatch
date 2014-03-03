@@ -332,8 +332,10 @@ Plm_bspline::initialize ()
     bsp_parms->mi_hist_moving_bins = stage->mi_histogram_bins_moving;
 
     /* Other stuff */
+    bsp_parms->min_its = stage->min_its;
     bsp_parms->max_its = stage->max_its;
     bsp_parms->max_feval = stage->max_its;
+    bsp_parms->convergence_tol = stage->convergence_tol;
 
     /* Landmarks */
     if (regd->fixed_landmarks && regd->moving_landmarks) {

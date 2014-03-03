@@ -16,46 +16,8 @@
 #include "plm_math.h"
 #include "print_and_exit.h"
 
-//#include "plm_fortran.h"
-/* Defined in f2c.h, conflicts with std::numeric_limits::max */
-//#if defined max
-//#undef max
-//#endif
-
 #include "v3p_netlib.h"
 #include "v3p_f2c_mangle.h"
-
-#if defined (commentout)
-#if defined __cplusplus
-extern "C" {
-#endif
-void
-setulb_ (integer*       n,
-         integer*       m,
-         doublereal*    x,
-         doublereal*    l,
-         doublereal*    u,
-         integer*       nbd,
-         doublereal*    f,
-         doublereal*    g,
-         doublereal*    factr,
-         doublereal*    pgtol,
-         doublereal*    wa,
-         integer*       iwa,
-         char*          task,
-         integer*       iprint,
-         char*          csave,
-         logical*       lsave,
-         integer*       isave,
-         doublereal*    dsave
-//         doublereal*    dsave,
-//         ftnlen         task_len,
-//         ftnlen         csave_len
-         );
-#if defined __cplusplus
-}
-#endif
-#endif
 
 class Nocedal_optimizer
 {
@@ -76,10 +38,6 @@ public:
         free (wa);
     }
     void setulb () {
-#if defined (commentout)
-        setulb_ (&n,&m,x,l,u,nbd,&f,g,&factr,&pgtol,wa,iwa,task,&iprint,
-            csave,lsave,isave,dsave,60,60);
-#endif
         v3p_netlib_setulb_(&n,&m,x,l,u,nbd,&f,g,&factr,&pgtol,wa,iwa,
             task,&iprint,csave,lsave,isave,dsave);
     }
@@ -197,6 +155,7 @@ bspline_optimize_lbfgsb (
     Bspline_parms *parms = bod->parms;
     Bspline_score* ssd = &bst->ssd;
     FILE *fp = 0;
+    double old_best_score = DBL_MAX;
     double best_score = DBL_MAX;
     float *best_coeff = (float*) malloc (sizeof(float) * bxf->num_coeff);
 
@@ -255,8 +214,22 @@ bspline_optimize_lbfgsb (
         } else if (memcmp (optimizer.task, "NEW_X", strlen ("NEW_X")) == 0) {
             /* Optimizer has completed a line search. */
 
+            /* Check convergence tolerance */
+            if (old_best_score != DBL_MAX) {
+                double score_diff = old_best_score - ssd->score;
+                if (score_diff < parms->convergence_tol 
+                    && bst->it >= parms->min_its)
+                {
+                    break;
+                }
+            }
+            old_best_score = ssd->score;
+
             /* Check iterations */
-            if (bst->it >= parms->max_its) break;
+            if (bst->it >= parms->max_its) {
+                break;
+            }
+
             bst->it ++;
 
         } else {

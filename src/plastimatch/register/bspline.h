@@ -97,6 +97,7 @@ public:
     enum BsplineOptimization optimization;
     enum BsplineMetric metric;
     char implementation;         /* Implementation ('a', 'b', etc.) */
+    int min_its;                 /* Miniumum iterations (line searches) */
     int max_its;                 /* Max iterations (line searches) */
     int max_feval;               /* Max function evaluations */
     int debug;                   /* Create grad & histogram files */
@@ -104,7 +105,6 @@ public:
     int debug_stage;             /* Used to tag debug files by stage */
     int gpuid;                   /* Sets GPU to use for multi-gpu machines */
     double_align8 convergence_tol; /* When to stop iterations based on score */
-    int convergence_tol_its;     /* How many iterations to check for convergence tol */
 
     /* MI parms */
     Bspline_mi_hist_type mi_hist_type;

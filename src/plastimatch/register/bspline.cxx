@@ -62,14 +62,14 @@ Bspline_parms::Bspline_parms ()
     this->optimization = BOPT_LBFGSB;
     this->metric = BMET_MSE;
     this->implementation = '\0';
+    this->min_its = 0;
     this->max_its = 10;
     this->max_feval = 10;
     this->debug = 0;
     this->debug_dir = ".";
     this->debug_stage = 0;
     this->gpuid = 0;
-    this->convergence_tol = 0.1;
-    this->convergence_tol_its = 4;
+    this->convergence_tol = 1e-6;
 
     this->mi_hist_type = HIST_EQSP;
     this->mi_hist_fixed_bins = 32;

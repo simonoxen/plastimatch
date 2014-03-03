@@ -126,9 +126,10 @@ specific parameters are available.
      - (needs description)
    * - convergence_tol
      - any+not demons+any
-     - 5.0
+     - 1e-6
      - score
-     - Stop optimization if score (change?) falls below this value
+     - Stop optimization if change in score between iterations 
+       falls below this value
    * - demons_acceleration
      - vf+demons+plastimatch
      - 1.0

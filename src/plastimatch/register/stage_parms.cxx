@@ -62,7 +62,7 @@ Stage_parms::Stage_parms ()
     /* Generic optimization parms */
     min_its = 2;
     max_its = 25;
-    convergence_tol = 5.0;
+    convergence_tol = 1e-6;
     /* LBGFG optimizer */
     grad_tol = 1.5;
     /* LBGFGB optimizer */
