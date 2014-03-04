@@ -46,7 +46,7 @@ nki2mha_converter::~nki2mha_converter()
 
 void nki2mha_converter::SLT_OpenMultipleRaw()
 {
-	QStringList tmpList = QFileDialog::getOpenFileNames(this,"Select one or more files to open","/home","NKI Images (*.scan)");
+	QStringList tmpList = QFileDialog::getOpenFileNames(this,"Select one or more files to open","/home","3D Image file (*.scan *.mha)");
 
 	int iFileCnt = tmpList.size();
 
@@ -132,20 +132,32 @@ void nki2mha_converter::SLT_Correct_NKI2DCM()
 
 	if (listSize < 1)
 		return;
-
+		
 
 	int cnt = 0;
 	for (int i = 0 ; i<listSize ; i++)
 	{
 		QString filePath = m_strlistPath.at(i);
-		QString corrFilePath = CorrectSingle_NKI2DCM(filePath.toLocal8Bit().constData());
+
+		QFileInfo fileInfo  = QFileInfo(filePath);
+		QString extName = fileInfo.completeSuffix();
+		QString corrFilePath;
+
+
+		if (extName == "scan" || extName == "SCAN")
+		{
+			corrFilePath = CorrectSingle_NKI2DCM(filePath.toLocal8Bit().constData());
+		}
+		else if (extName == "mha" || extName == "MHA")
+		{
+			corrFilePath = CorrectSingle_MHA2DCM(filePath.toLocal8Bit().constData());			
+		}
 
 		if (corrFilePath.length() > 0 )
 		{
 			ui.plainTextEdit_Corrected->appendPlainText(corrFilePath);
 			cnt++;
-		}
-		//ui.plainTextEdit_Corrected->appendPlainText(corrFilePath);
+		}		
 	}
 
 	QString msgStr = QString("%1 files were converted").arg(cnt);
@@ -166,8 +178,23 @@ void nki2mha_converter::SLT_Correct_NKI2RAW()
 	for (int i = 0 ; i<listSize ; i++)
 	{
 		QString filePath = m_strlistPath.at(i);
-		QString corrFilePath = CorrectSingle_NKI2RAW(filePath.toLocal8Bit().constData());
-		//ui.plainTextEdit_Corrected->appendPlainText(corrFilePath);
+
+		//look into extension name:
+		QFileInfo fileInfo  = QFileInfo(filePath);
+		QString extName = fileInfo.completeSuffix();
+
+		QString corrFilePath;
+		if (extName == "scan" || extName == "SCAN")
+		{
+			corrFilePath = CorrectSingle_NKI2RAW(filePath.toLocal8Bit().constData());			
+		}
+
+		else if (extName == "mha" || extName == "MHA")
+		{
+			//corrFilePath = CorrectSingle_MHA2RAW(filePath.toLocal8Bit().constData());			
+		}
+
+
 		if (corrFilePath.length() > 0 )
 		{
 			ui.plainTextEdit_Corrected->appendPlainText(corrFilePath);
@@ -183,6 +210,7 @@ void nki2mha_converter::SLT_Correct_NKI2RAW()
 
 QString nki2mha_converter::CorrectSingle_NKI2DCM( const char* filePath )
 {
+
 	Volume *v = nki_load (filePath);
 	if (!v)
 	{
@@ -197,7 +225,6 @@ QString nki2mha_converter::CorrectSingle_NKI2DCM( const char* filePath )
 	QFileInfo srcFileInfo = QFileInfo(filePath);
 	QDir dir = srcFileInfo.absoluteDir();
 	QString baseName = srcFileInfo.completeBaseName();	
-
 	
 	baseName.append(endFix);	
 	QString newDirPath = dir.absolutePath() + "\\" + baseName;	
@@ -206,11 +233,44 @@ QString nki2mha_converter::CorrectSingle_NKI2DCM( const char* filePath )
 	if (!dirNew.exists()){
 		dirNew.mkdir(".");
 	}		
-
 	plm_img.save_short_dicom(newDirPath.toLocal8Bit().constData(), 0);	
 
 	return newDirPath;
 }
+
+
+QString nki2mha_converter::CorrectSingle_MHA2DCM( const char* filePath )
+{
+	//Volume *v = nki_load (filePath);
+	Volume *v  = read_mha(filePath);
+
+	if (!v)
+	{
+		printf("file reading error\n");	
+		return "";
+	}	
+
+	Plm_image plm_img(v);
+
+	QString endFix = "_DCM";
+
+	QFileInfo srcFileInfo = QFileInfo(filePath);
+	QDir dir = srcFileInfo.absoluteDir();
+	QString baseName = srcFileInfo.completeBaseName();	
+
+	baseName.append(endFix);	
+	QString newDirPath = dir.absolutePath() + "\\" + baseName;	
+
+	QDir dirNew(newDirPath);
+	if (!dirNew.exists()){
+		dirNew.mkdir(".");
+	}		
+	plm_img.save_short_dicom(newDirPath.toLocal8Bit().constData(), 0);	
+
+	return newDirPath;
+}
+
+
 QString nki2mha_converter::CorrectSingle_NKI2RAW( const char* filePath )
 {
 	Volume *v = nki_load (filePath);
