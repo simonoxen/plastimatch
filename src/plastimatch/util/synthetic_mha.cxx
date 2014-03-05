@@ -240,10 +240,14 @@ synth_sphere (
         f += f1 * f1;
     }
     if (f > 1.0) {
-        *intens = parms->background;
+        *intens 
+            = (1 - parms->background_alpha) * (*intens) 
+            + parms->background_alpha * parms->background;
         *label = 0;
     } else {
-        *intens = parms->foreground;
+        *intens 
+            = (1 - parms->foreground_alpha) * (*intens) 
+            + parms->foreground_alpha * parms->foreground;
         *label = 1;
     }
 }
@@ -415,7 +419,7 @@ synthetic_mha (
         /* GCS FIX: Ideally, the calling code will set the alpha values 
            properly.  Instead, here we set the background alpha to 0, 
            with the understanding that the caller probably wants to 
-           paste a rectangle onto the existing image */
+           paste a sphere or rectangle onto the existing image */
         parms->background_alpha = 0.0f;
 
     } else {

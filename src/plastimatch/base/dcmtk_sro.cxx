@@ -73,6 +73,18 @@ Dcmtk_sro::save (
     /* ReferencedSeriesSequence */
     DcmItem *rss_item = 0;
     DcmItem *ris_item = 0;
+    /* fixed */
+    dataset->findOrCreateSequenceItem (
+        DCM_ReferencedSeriesSequence, rss_item, -2);
+    rss_item->findOrCreateSequenceItem (
+        DCM_ReferencedInstanceSequence, ris_item, -2);
+    ris_item->putAndInsertString (DCM_ReferencedSOPClassUID,
+        UID_CTImageStorage);
+    ris_item->putAndInsertString (DCM_ReferencedSOPInstanceUID,
+        rsm_reg->get_slice_uid (0));
+    rss_item->putAndInsertString (DCM_SeriesInstanceUID,
+        rsm_reg->get_ct_series_uid ());
+    /* moving */
     dataset->findOrCreateSequenceItem (
         DCM_ReferencedSeriesSequence, rss_item, -2);
     rss_item->findOrCreateSequenceItem (
@@ -84,21 +96,10 @@ Dcmtk_sro::save (
     rss_item->putAndInsertString (DCM_SeriesInstanceUID,
         rsm_src->get_ct_series_uid ());
 
-    dataset->findOrCreateSequenceItem (
-        DCM_ReferencedSeriesSequence, rss_item, -2);
-    rss_item->findOrCreateSequenceItem (
-        DCM_ReferencedInstanceSequence, ris_item, -2);
-    ris_item->putAndInsertString (DCM_ReferencedSOPClassUID,
-        UID_CTImageStorage);
-    ris_item->putAndInsertString (DCM_ReferencedSOPInstanceUID,
-        rsm_reg->get_slice_uid (0));
-    rss_item->putAndInsertString (DCM_SeriesInstanceUID,
-        rsm_reg->get_ct_series_uid ());
-
     /* FrameOfReferenceUID -- of fixed image */
     dataset->putAndInsertString (
         DCM_FrameOfReferenceUID, 
-        rsm_src->get_frame_of_reference_uid());
+        rsm_reg->get_frame_of_reference_uid());
 
     /* Spatial registration module -- fixed image */
     DcmItem *reg_item = 0;
@@ -106,7 +107,7 @@ Dcmtk_sro::save (
         DCM_RegistrationSequence, reg_item, -2);
     reg_item->putAndInsertString (
         DCM_FrameOfReferenceUID, 
-        rsm_src->get_frame_of_reference_uid());
+        rsm_reg->get_frame_of_reference_uid());
     DcmItem *mr_item = 0;
     reg_item->findOrCreateSequenceItem (
         DCM_MatrixRegistrationSequence, mr_item, -2);
@@ -129,7 +130,7 @@ Dcmtk_sro::save (
         DCM_RegistrationSequence, reg_item, -2);
     reg_item->putAndInsertString (
         DCM_FrameOfReferenceUID, 
-        rsm_reg->get_frame_of_reference_uid());
+        rsm_src->get_frame_of_reference_uid());
     reg_item->findOrCreateSequenceItem (
         DCM_MatrixRegistrationSequence, mr_item, -2);
     mr_item->findOrCreateSequenceItem (
