@@ -716,6 +716,83 @@ Rpl_volume::compute_rpl_sigma (Rpl_volume* ct_vol_density)
 }
 
 Volume*
+Rpl_volume::create_proj_wed_volume ()
+{
+    float proj_wed_off[3] = {0.0f, 0.0f, 0.0f};
+    float proj_wed_ps[3] = {1.0f, 1.0f, 1.0f};
+    plm_long proj_wed_dims[3];
+
+    Volume *vol = this->get_vol ();
+    proj_wed_dims[0] = vol->dim[0];
+    proj_wed_dims[1] = vol->dim[1];
+    proj_wed_dims[2] = 1;
+
+    return new Volume (proj_wed_dims, proj_wed_off, proj_wed_ps, NULL, PT_FLOAT, 1);
+}
+
+void 
+Rpl_volume::compute_proj_wed_volume (
+    Volume *proj_wed_vol, float background)
+{
+
+  //A few abbreviations
+  Proj_volume *proj_vol = d_ptr->proj_vol;
+  float *proj_wed_vol_img = (float*) proj_wed_vol->img;
+
+  //Get some parameters from the proj volume, calculate src to isocenter distance
+  const double *src = proj_vol->get_src();
+  const double *iso = proj_vol->get_iso();
+  const double sid_length = proj_vol->get_proj_matrix()->sid; //distance from source to aperture
+  double src_iso_vec[3];  
+  vec3_sub3(src_iso_vec,src,iso);
+  const double src_iso_distance = vec3_len(src_iso_vec);
+  const double ap_iso_distance = src_iso_distance - sid_length;
+
+  /* Subtract off standoff distance */
+  //This is the perpendicular "base" distance that we calculate all rgdepths from.
+  double base_rg_dist = ap_iso_distance - d_ptr->front_clipping_dist;
+
+  //This is the perpendicular "base" distance that we calculate how much
+  //each geometric distance should increase, due to divergence.
+  const double base_dist = proj_vol->get_proj_matrix()->sid; //distance from source to aperture
+
+
+
+
+  const int *ires = proj_vol->get_image_dim();
+
+  int ap_ij[2]; //ray index of rvol
+  plm_long ap_idx = 0;  //ray number
+  Ray_data *ray_data;
+  double ray_ap[3]; //vector from src to ray intersection with ap plane
+  double ray_ap_length; //length of vector from src to ray intersection with ap plane
+  double rglength; //length that we insert into get_rgdepth for each ray
+
+  for (ap_ij[1] = 0; ap_ij[1] < ires[1]; ap_ij[1]++) {
+    for (ap_ij[0] = 0; ap_ij[0] < ires[0]; ap_ij[0]++) {
+
+      /* Ray number */
+      ap_idx = ap_ij[1] * ires[0] + ap_ij[0];
+      ray_data = &d_ptr->ray_data[ap_idx];
+
+      /* Set each ray to "background", defined in wed_main (default 0) */
+      proj_wed_vol_img[ap_idx] = background;
+
+      /* Coordinate of ray intersection with aperture plane */
+      double *ap_xyz = ray_data->p2;
+      vec3_sub3 (ray_ap, ap_xyz, src);
+      ray_ap_length = vec3_len(ray_ap);
+
+      rglength = base_rg_dist*(ray_ap_length/base_dist);
+
+      proj_wed_vol_img[ap_idx] = (float) (this->get_rgdepth(ap_ij,rglength));
+      
+    }
+  }
+
+}
+
+Volume*
 Rpl_volume::create_wed_volume ()
 {
 //    Rpl_volume* rpl_vol = scene->rpl_vol;

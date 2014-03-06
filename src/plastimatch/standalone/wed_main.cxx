@@ -135,6 +135,26 @@ wed_ct_compute (
         ap->save_image (parms->output_ap_fn.c_str());
         rc->save_image (out_fn);
     }
+
+    if (parms->mode==3)  {
+        Volume* proj_wed_vol;
+        proj_wed_vol = rpl_vol->create_proj_wed_volume ();
+        rpl_vol->compute_proj_wed_volume (proj_wed_vol, background);
+        plm_image_save_vol (out_fn, proj_wed_vol);
+    }
+
+}
+
+void
+wed_ct_compute (
+    const char* out_fn,
+    Wed_Parms* parms,
+    Ion_plan *scene,
+    float background
+)
+{
+  Plm_image *ct_vol = new Plm_image();
+  wed_ct_compute(out_fn, parms, ct_vol, scene, background);
 }
 
 int
@@ -143,7 +163,7 @@ wed_ct_initialize(Wed_Parms *parms)
     Plm_image* ct_vol;
     Plm_image* dose_vol = 0;
     Ion_plan scene;
-    float background[3];
+    float background[4];
 
     //Background value for wed ct output
     background[0] = -1000.;
@@ -151,6 +171,8 @@ wed_ct_initialize(Wed_Parms *parms)
     background[1] = 0.;
     //Background value for radiation length output
     background[2] = 0.;
+    //Background value for projection of wed
+    background[3] = 0.;
 
     /* load the patient and insert into the scene */
     ct_vol = plm_image_load (parms->input_ct_fn, PLM_IMG_TYPE_ITK_FLOAT);
@@ -183,9 +205,10 @@ wed_ct_initialize(Wed_Parms *parms)
  
     //  if (parms->input_dose_fn != "" && parms->output_dose_fn != "") {
     //Load the input dose, or input wed_dose
-    dose_vol = plm_image_load (parms->input_dose_fn.c_str(), 
-        PLM_IMG_TYPE_ITK_FLOAT);
-  
+    if ((parms->mode==1)||(parms->mode==1))  {
+            dose_vol = plm_image_load (parms->input_dose_fn.c_str(), 
+				 PLM_IMG_TYPE_ITK_FLOAT);
+    }
     /* set scene parameters */
     scene.beam->set_source_position (parms->src);
     scene.beam->set_isocenter_position (parms->isocenter);
@@ -296,6 +319,14 @@ wed_ct_initialize(Wed_Parms *parms)
         printf ("Calculating depths...\n");
         wed_ct_compute (parms->output_depth_fn.c_str(), 
             parms, dose_vol, &scene, background[2]);
+        printf ("Complete...\n");
+    }
+
+    /* Compute the projective wed volume */
+    if (parms->mode==3)  {
+        printf ("Calculating wed projection...\n");
+        wed_ct_compute (parms->output_proj_wed_fn.c_str(), 
+            parms, &scene, background[3]);
         printf ("Complete...\n");
     }
 

@@ -36,7 +36,7 @@ public:
     std::string rpl_vol_fn;         /* output: rpl volume */
     std::string output_ap_fn;       /* output: aperture volume */
     std::string output_depth_fn;    /* output: depth volume */
-
+    std::string output_proj_wed_fn;  /* output: projective wed volume */
 
     /* [BEAM] */
     float src[3];

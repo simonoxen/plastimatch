@@ -23,6 +23,7 @@ public:
         for (int d = 0; d < 3; d++) {
             nrm[d] = 0.;
             src[d] = 0.;
+            iso[d] = 0.;
             ul_room[d] = 0.;
             incr_c[d] = 0.;
             incr_r[d] = 0.;
@@ -37,6 +38,7 @@ public:
     double clipping_dist[2];
     double nrm[3];
     double src[3];
+    double iso[3];
     double ul_room[3];
     double incr_r[3];
     double incr_c[3];
@@ -81,6 +83,9 @@ Proj_volume::set_geometry (
     d_ptr->src[0] = src[0];
     d_ptr->src[1] = src[1];
     d_ptr->src[2] = src[2];
+    d_ptr->iso[0] = iso[0];
+    d_ptr->iso[1] = iso[1];
+    d_ptr->iso[2] = iso[2];
     d_ptr->step_length = step_length;
 
     /* build projection matrix */
@@ -203,6 +208,12 @@ const double*
 Proj_volume::get_src ()
 {
     return d_ptr->src;
+}
+
+const double*
+Proj_volume::get_iso ()
+{
+    return d_ptr->iso;
 }
 
 const double*

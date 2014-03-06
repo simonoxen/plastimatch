@@ -70,7 +70,8 @@ print_usage (void)
     printf ("Usage: wed config_file\n");
     printf ("Options:\n");
     printf ("\t--dew (reverse wed calculation)\n");
-    printf ("\t--group <input .txt file> (computes multiple wed computations)\n");
+    printf ("\t--segdepth \n");
+    printf ("\t--projwed \n");
     exit (1);
 }
 
@@ -227,6 +228,13 @@ Wed_Parms::set_key_val (
 	  }
 	  else if (!strcmp (key, "aperture")) {
             this->output_ap_fn = val;
+	  }
+	}
+
+	//If in proj wed mode, output projection wed volume
+        if (this->mode==3)  {
+	  if (!strcmp (key, "proj_wed")) {
+            this->output_proj_wed_fn = val;
 	  }
 	}
 
@@ -434,6 +442,10 @@ Wed_Parms::parse_args (int argc, char** argv)
 	  this->mode = 2;
         }
 
+	else if (!strcmp (argv[i], "--projwed")) {
+	  this->mode = 3;
+        }
+
         else {
             print_usage ();
             break;
@@ -468,9 +480,11 @@ Wed_Parms::parse_args (int argc, char** argv)
     }
 
     //Input "dose" always required
-    if (this->input_dose_fn[0] == '\0') {
+    if ((this->mode==0)||(this->mode==1))  {
+      if (this->input_dose_fn[0] == '\0') {
         fprintf (stderr, "\n** ERROR: Input dose not specified in configuration file!\n");
         return false;
+      }
     }
 
     //For wed mode, patient wed name is required.
@@ -495,11 +509,19 @@ Wed_Parms::parse_args (int argc, char** argv)
         fprintf (stderr, "\n** ERROR: Output file for depths not specified in configuration file!\n");
         return false;
       }
-
       if (this->output_ap_fn[0] == '\0') {
         fprintf (stderr, "\n** ERROR: Output file for aperture not specified in configuration file!\n");
         return false;
       }
     }
+
+  //For projection wed mode, proj_wed output volume is required.
+    if (this->mode==3)  {
+      if (this->output_proj_wed_fn[0] == '\0') {
+        fprintf (stderr, "\n** ERROR: Output file for projection wed not specified in configuration file!\n");
+        return false;
+      }
+    }
+
     return true;
 }
