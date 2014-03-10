@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "itkImageRegionIteratorWithIndex.h"
+#include "vnl/vnl_random.h"
 
 #include "itk_directions.h"
 #include "itk_image_type.h"
@@ -18,6 +19,69 @@
 #include "rtss.h"
 #include "segmentation.h"
 #include "synthetic_mha.h"
+
+
+class Synthetic_mha_parms_private {
+public:
+    vnl_random v;
+};
+
+
+Synthetic_mha_parms::Synthetic_mha_parms ()
+{
+    d_ptr = new Synthetic_mha_parms_private;
+
+    output_type = PLM_IMG_TYPE_ITK_FLOAT;
+    pattern = PATTERN_GAUSS;
+    input_fn = "";
+
+    for (int i = 0; i < 3; i++) {
+        spacing[i] = 5.0f;
+        dim[i] = 100;
+        origin[i] = 0.0f;
+        gauss_center[i] = 0.0f;
+        gauss_std[i] = 100.0f;
+        sphere_center[i] = 0.0f;
+        sphere_radius[i] = 50.0f;
+        donut_center[i] = 0.0f;
+        lung_tumor_pos[i] = 0.0f;
+        dose_center[i] = 0.0f;
+    }
+    background = -1000.0f;
+    foreground = 0.0f;
+    background_alpha = 1.0f;
+    foreground_alpha = 1.0f;
+    m_want_ss_img = false;
+    m_want_dose_img = false;
+    rect_size[0] = -50.0f;
+    rect_size[1] = +50.0f;
+    rect_size[2] = -50.0f;
+    rect_size[3] = +50.0f;
+    rect_size[4] = -50.0f;
+    rect_size[5] = +50.0f;
+    donut_radius[0] = 50.0f;
+    donut_radius[1] = 50.0f;
+    donut_radius[2] = 20.0f;
+    donut_rings = 2;
+    grid_spacing[0] = 10;
+    grid_spacing[1] = 10;
+    grid_spacing[2] = 10;
+    penumbra = 5.0f;
+    dose_size[0] = -50.0f;
+    dose_size[1] = +50.0f;
+    dose_size[2] = -50.0f;
+    dose_size[3] = +50.0f;
+    dose_size[4] = -50.0f;
+    dose_size[5] = +50.0f;
+    num_multi_sphere = 33;
+    noise_mean = 0;
+    noise_std = 1.f;
+}
+
+Synthetic_mha_parms::~Synthetic_mha_parms ()
+{
+    delete d_ptr;
+}
 
 static void 
 synth_dose (
@@ -397,6 +461,21 @@ synth_ramp (
     *intens = d;
 }
 
+static void 
+synth_noise (
+    float *intens, 
+    unsigned char *label,
+    const FloatPoint3DType& phys, 
+    const Synthetic_mha_parms *parms
+)
+{
+    double r = parms->d_ptr->v.normal64();
+    
+    /* Set intensity */
+    *label = 0;
+    *intens = parms->noise_mean + (float) r;
+}
+
 void
 synthetic_mha (
     Rt_study *rtds,
@@ -534,6 +613,9 @@ synthetic_mha (
         case PATTERN_YRAMP:
         case PATTERN_ZRAMP:
             synth_ramp (&intens, &label_uchar, phys, parms);
+            break;
+        case PATTERN_NOISE:
+            synth_noise (&intens, &label_uchar, phys, parms);
             break;
         default:
             intens = 0.0f;

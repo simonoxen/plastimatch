@@ -145,7 +145,7 @@ parse_fn (
     /* Main pattern */
     parser->add_long_option ("", "pattern",
         "synthetic pattern to create: {"
-        "donut, dose, gauss, grid, lung, rect, sphere, "
+        "donut, dose, gauss, grid, lung, noise, rect, sphere, "
         "xramp, yramp, zramp}, default is gauss", 
         1, "gauss");
 
@@ -212,6 +212,12 @@ parse_fn (
     /* Lung options */
     parser->add_long_option ("", "lung-tumor-pos", 
         "position of tumor in mm \"z\" or \"x y z\"", 1, "0");
+
+    /* Noise options */
+    parser->add_long_option ("", "noise-mean", 
+        "mean intensity of gaussian noise", 1, "0.0");
+    parser->add_long_option ("", "noise-std", 
+        "standard deviation of gaussian noise", 1, "1.0");
 
     /* Metadata options */
     parser->add_long_option ("", "metadata",
@@ -285,6 +291,9 @@ parse_fn (
     }
     else if (arg == "zramp") {
         sm_parms->pattern = PATTERN_ZRAMP;
+    }
+    else if (arg == "noise") {
+        sm_parms->pattern = PATTERN_NOISE;
     }
     else {
         throw (dlib::error ("Error. Unknown --pattern argument: " + arg));
@@ -435,6 +444,20 @@ parse_fn (
     else if (rc != 3) {
         throw (dlib::error ("Error. Option --lung-tumor-pos must have "
                 "one or three arguments\n"));
+    }
+
+    /* Noise options */
+    rc = sscanf (parser->get_string("noise-mean").c_str(), 
+        "%g", &sm_parms->noise_mean);
+    if (rc != 1) {
+        throw (dlib::error ("Error. Option --noise-mean must have "
+                "a floating point argument\n"));
+    }
+    rc = sscanf (parser->get_string("noise-std").c_str(), 
+        "%g", &sm_parms->noise_std);
+    if (rc != 1) {
+        throw (dlib::error ("Error. Option --noise-std must have "
+                "a floating point argument\n"));
     }
 
     /* Metadata options */
