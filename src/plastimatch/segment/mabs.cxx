@@ -744,7 +744,7 @@ Mabs::atlas_selection ()
     std::string atlas_selection_log_file_name = string_format ("%s/log_atlas_seletion.txt",
         d_ptr->atlas_train_dir.c_str());
     
-    FILE *atlas_selection_log_file = fopen (atlas_selection_log_file_name.c_str(), "w");
+    FILE *atlas_selection_log_file = plm_fopen (atlas_selection_log_file_name.c_str(), "w");
     
     if (atlas_selection_log_file == NULL) {
         printf("Error opening atlas selection log file!\n");
