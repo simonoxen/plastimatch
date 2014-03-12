@@ -97,15 +97,15 @@ To get ITK 3.20.2, do the following::
   cd ITK
   git checkout -b release-3.20 origin/release-3.20
 
-When you build ITK, the following settings are recommended::
+When you build ITK, the following settings are recommended or required::
 
   CMAKE_BUILD_TYPE                          Release
   BUILD_EXAMPLES                            OFF
   BUILD_SHARED_LIBS                         (EITHER)
   BUILD_TESTING                             OFF
-  ITK_USE_REVIEW                            ON
+  ITK_USE_REVIEW                            ON         # Below ITK 4.5
+  Module_ITKReview                          ON         # ITK 4.5 and greater
   ITK_USE_OPTIMIZED_REGISTRATION_METHODS    ON         # ITK 3.20.X only
-
 
 DCMTK (optional)
 ^^^^^^^^^^^^^^^^
