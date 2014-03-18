@@ -29,7 +29,7 @@ enum Pattern_type {
 
 class Synthetic_mha_parms_private;
 
-class Synthetic_mha_parms {
+class PLMUTIL_API Synthetic_mha_parms {
 public:
     Synthetic_mha_parms_private *d_ptr;
 public:
