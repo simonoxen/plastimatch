@@ -6,6 +6,7 @@
 
 #include "plmbase_config.h"
 #include "plm_image.h"
+//#include "plm_image_set.h"
 #include "rt_study_metadata.h"
 #include "rtss.h"
 
@@ -31,6 +32,7 @@ public:
 
     Rtss::Pointer cxt;
     Metadata *cxt_metadata;
+    //Plm_image_set::Pointer img;
     Plm_image::Pointer img;
     Plm_image::Pointer dose;
 

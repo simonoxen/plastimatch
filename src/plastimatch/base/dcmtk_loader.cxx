@@ -67,11 +67,10 @@ Dcmtk_loader::set_dicom_metadata (Rt_study_metadata::Pointer drs)
 void
 Dcmtk_loader::insert_file (const char* fn)
 {
-    Dcmtk_file *df = new Dcmtk_file (fn);
+    Dcmtk_file::Pointer df = Dcmtk_file::New (fn);
 
     /* Discard non-dicom files */
     if (!df->is_valid()) {
-        delete df;
         return;
     }
 
@@ -80,7 +79,6 @@ Dcmtk_loader::insert_file (const char* fn)
     c = df->get_cstr (DCM_SeriesInstanceUID);
     if (!c) {
 	/* No SeriesInstanceUID? */
-	delete df;
 	return;
     }
 
@@ -238,7 +236,7 @@ Dcmtk_loader::parse_directory (void)
     /* Load image */
     if (d_ptr->ds_image) {
         d_ptr->ds_image->set_dicom_metadata (d_ptr->m_drs);
-        d_ptr->img = d_ptr->ds_image->load_plm_image ();
+        this->image_load ();
     }
 
     /* Load rtss */

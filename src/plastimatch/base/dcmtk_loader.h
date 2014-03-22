@@ -37,12 +37,13 @@ public:
     Rtss::Pointer get_rtss ();
     Plm_image::Pointer get_dose ();
 
-    void load_rtss (void);
+    void image_load ();
+    void rtss_load ();
+    void rtdose_load ();
+
     void insert_file (const char* fn);
     void insert_directory (const char* fn);
     void parse_directory (void);
-    void rtss_load (void);
-    void rtdose_load (void);
     void sort_all (void);
 protected:
     void set_dose (Plm_image::Pointer dose);

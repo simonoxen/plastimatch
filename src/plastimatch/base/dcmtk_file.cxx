@@ -18,12 +18,14 @@ public:
     std::string m_fn;
     DcmFileFormat *m_dfile;
     Volume_header m_vh;
+    float m_zpos;
     bool m_valid;
     
 public:
     Dcmtk_file_private () {
         m_dfile = new DcmFileFormat;
         m_fn = "";
+        m_zpos = 0.f;
         m_valid = false;
     }
     ~Dcmtk_file_private () {
@@ -155,7 +157,10 @@ Dcmtk_file::get_volume_header () const
 float
 Dcmtk_file::get_z_position () const
 {
+#if defined (commentout)
     return d_ptr->m_vh.get_origin()[2];
+#endif
+    return d_ptr->m_zpos;
 }
 
 void
@@ -178,9 +183,9 @@ Dcmtk_file::load_header (const char *fn) {
     uint16_t cols;
 
     /* ImagePositionPatient */
+    float origin[3];
     ofrc = dset->findAndGetString (DCM_ImagePositionPatient, c);
     if (ofrc.good() && c) {
-	float origin[3];
 	int rc = parse_dicom_float3 (origin, c);
 	if (!rc) {
 	    d_ptr->m_vh.set_origin (origin);
@@ -201,9 +206,9 @@ Dcmtk_file::load_header (const char *fn) {
     }
 
     /* ImageOrientationPatient */
+    float direction_cosines[9];
     ofrc = dset->findAndGetString (DCM_ImageOrientationPatient, c);
     if (ofrc.good() && c) {
-	float direction_cosines[9];
 	int rc = parse_dicom_float6 (direction_cosines, c);
 	if (!rc) {
 	    direction_cosines[6] 
@@ -230,13 +235,25 @@ Dcmtk_file::load_header (const char *fn) {
 	}
     }
 
+    /* Compute z position */
+    d_ptr->m_zpos =
+        + direction_cosines[6] * origin[0]
+        + direction_cosines[7] * origin[1]
+        + direction_cosines[8] * origin[2];
+
     d_ptr->m_valid = true;
 }
 
 bool
 dcmtk_file_compare_z_position (const Dcmtk_file* f1, const Dcmtk_file* f2)
 {
-    //return f1->d_ptr->m_vh.get_origin()[2] < f2->d_ptr->m_vh.get_origin()[2];
+    return f1->get_z_position () < f2->get_z_position ();
+}
+
+bool
+dcmtk_file_compare_z_position (const Dcmtk_file::Pointer& f1, 
+    const Dcmtk_file::Pointer& f2)
+{
     return f1->get_z_position () < f2->get_z_position ();
 }
 

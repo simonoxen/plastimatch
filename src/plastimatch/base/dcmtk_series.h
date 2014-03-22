@@ -7,6 +7,7 @@
 #include "plmbase_config.h"
 #include <list>
 
+#include "dcmtk_file.h"
 #include "rt_study_metadata.h"
 #include "plm_image.h"
 #include "plm_int.h"
@@ -19,6 +20,8 @@ class Dcmtk_series_private;
 class Rt_study_metadata;
 class Plm_image;
 
+typedef std::list<Dcmtk_file::Pointer> Dcmtk_file_list;
+
 class Dcmtk_series 
 {
 public:
@@ -29,6 +32,7 @@ public:
     Dcmtk_series_private *d_ptr;
 
 public:
+    const std::list<Dcmtk_file::Pointer>& get_flist () const;
     const char* get_cstr (const DcmTagKey& tag_key) const;
     bool get_int16_array (const DcmTagKey& tag_key, 
         const int16_t** val, unsigned long* count) const;
@@ -44,11 +48,10 @@ public:
 
     size_t get_number_of_files () const;
 
-    void insert (Dcmtk_file* df);
+    void insert (Dcmtk_file::Pointer& df);
     void sort (void);
 
-    void set_dicom_metadata (Rt_study_metadata::Pointer drs);
-    Plm_image::Pointer load_plm_image ();
+    void set_dicom_metadata (Rt_study_metadata::Pointer& drs);
 
     void debug (void) const;
 };

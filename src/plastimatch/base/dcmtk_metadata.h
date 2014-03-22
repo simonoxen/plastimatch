@@ -5,6 +5,7 @@
 #define _dcmtk_metadata_h_
 
 #include "plmbase_config.h"
+#include "dcmtk_file.h"
 
 class DcmDataset;
 class DcmTagKey;
@@ -22,7 +23,13 @@ dcmtk_copy_from_metadata (
 void
 dcmtk_copy_into_metadata (
     Metadata *meta, 
-    const Dcmtk_file *df, 
+    const Dcmtk_file::Pointer& df, 
+    const DcmTagKey& tagkey);
+
+void
+dcmtk_copy_into_metadata (
+    Metadata *meta, 
+    const Dcmtk_file* df, 
     const DcmTagKey& tagkey);
 
 #endif

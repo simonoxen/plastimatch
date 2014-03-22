@@ -5,7 +5,8 @@
 #define _dcmtk_file_h_
 
 #include "plmbase_config.h"
-#include "sys/plm_int.h"
+#include "plm_int.h"
+#include "smart_pointer.h"
 #include "volume_header.h"
 
 class DcmDataset;
@@ -18,12 +19,12 @@ class Dcmtk_file_private;
 class Dcmtk_file
 {
 public:
+    SMART_POINTER_SUPPORT (Dcmtk_file);
+    Dcmtk_file_private *d_ptr;
+public:
     Dcmtk_file ();
     Dcmtk_file (const char *fn);
     ~Dcmtk_file ();
-
-public:
-    Dcmtk_file_private *d_ptr;
 
 public:
     bool is_valid () const;
@@ -54,9 +55,8 @@ public:
 
 PLMBASE_C_API void dcmtk_series_test (char *dicom_dir);
 PLMBASE_C_API bool dcmtk_file_compare_z_position (
-        const Dcmtk_file* f1,
-        const Dcmtk_file* f2
+    const Dcmtk_file::Pointer& f1,
+    const Dcmtk_file::Pointer& f2
 );
-
 
 #endif

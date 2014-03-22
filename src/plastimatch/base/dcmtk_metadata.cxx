@@ -34,7 +34,16 @@ dcmtk_copy_from_metadata (
 void
 dcmtk_copy_into_metadata (
     Metadata *meta, 
-    const Dcmtk_file *df, 
+    const Dcmtk_file::Pointer& df, 
+    const DcmTagKey& tag_key)
+{
+    dcmtk_copy_into_metadata (meta, df.get(), tag_key);
+}
+
+void
+dcmtk_copy_into_metadata (
+    Metadata *meta, 
+    const Dcmtk_file* df, 
     const DcmTagKey& tag_key)
 {
     const char* value = df->get_cstr (tag_key);

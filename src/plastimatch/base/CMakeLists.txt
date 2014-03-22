@@ -66,6 +66,7 @@ set (PLMBASE_LIBRARY_SRC
   plm_image.cxx
   plm_image_convert.cxx
   plm_image_header.cxx
+  plm_image_set.cxx
   plm_image_type.cxx
   plm_warp.cxx
   pointset.cxx
