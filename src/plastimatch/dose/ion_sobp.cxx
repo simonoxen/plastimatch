@@ -749,6 +749,14 @@ float Ion_sobp::get_maximum_depth()
 	return d_ptr->dmax;
 }
 
+std::vector<const Ion_pristine_peak*>
+Ion_sobp::getPeaks()
+{
+	return d_ptr->peaks;
+}
+
+
+
 void Ion_sobp::Optimizer() // the optimizer to get the optimized weights of the beams, optimized by a cost function (see below)
 {
 	/* Create function object (for function to be minimized) */

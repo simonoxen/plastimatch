@@ -68,6 +68,10 @@ public:
 
     /*! \brief Get maximum depth (in mm) in SOBP curve */
     double get_sobp_maximum_depth ();
+
+	/*! \brief Get Sobp */
+	Ion_sobp::Pointer get_sobp();
+
     /*! \brief Set proximal margin; this is subtracted from the 
       minimum depth */
     void set_proximal_margin (float proximal_margin);

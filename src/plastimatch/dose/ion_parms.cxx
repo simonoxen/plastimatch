@@ -46,6 +46,7 @@ public:
     bool ap_have_origin;
     float ap_origin[2];
     float ap_spacing[2];
+	float source_size;
     float smearing;
     float proximal_margin;
     float distal_margin;
@@ -88,6 +89,7 @@ public:
         this->ap_origin[1] = 0.;
         this->ap_spacing[0] = 1.;
         this->ap_spacing[1] = 1.;
+		this->source_size = 0.38;
         this->smearing = 0.;
         this->proximal_margin = 0.;
         this->distal_margin = 0.;
@@ -301,6 +303,11 @@ Ion_parms::set_key_val (
                 goto error_exit;
             }
         }
+		else if (!strcmp (key, "sourcesize")) {
+			if (sscanf (val, "%f", &d_ptr->source_size) !=1) {
+				goto error_exit;
+			}
+		}
         else if (!strcmp (key, "aperture")) {
             d_ptr->ap_filename = val;
         }
@@ -496,6 +503,12 @@ Ion_parms::parse_args (int argc, char** argv)
         fprintf (stderr, "\n** ERROR: Unable to load patient volume.\n");
         return false;
     }
+
+	if (d_ptr->have_manual_peaks == true && d_ptr->have_prescription == true) {
+		fprintf (stderr, "\n** ERROR: SOBP generation from prescribed distance and manual peaks insertion are incompatible. Please select only one of the two options.\n");
+		return false;
+	}
+
     d_ptr->plan->set_patient (ct);
 
     /* set beam & aperture parameters */
@@ -505,6 +518,7 @@ Ion_parms::parse_args (int argc, char** argv)
     d_ptr->plan->beam->set_isocenter_position (d_ptr->isocenter);
     d_ptr->plan->get_aperture()->set_distance (d_ptr->ap_offset);
     d_ptr->plan->get_aperture()->set_dim (d_ptr->ires);
+	d_ptr->plan->set_source_size(d_ptr->source_size);
     d_ptr->plan->get_aperture()->set_spacing (d_ptr->ap_spacing);
     if (d_ptr->ap_have_origin) {
         d_ptr->plan->get_aperture()->set_origin (d_ptr->ap_origin);
@@ -572,8 +586,7 @@ Ion_parms::parse_args (int argc, char** argv)
         Rpl_volume *rpl_vol = d_ptr->plan->rpl_vol;
         Plm_image::Pointer& ap = rpl_vol->get_aperture()->get_aperture_image();
         ap->save_image (d_ptr->output_aperture_fn);
-        Plm_image::Pointer& rc = rpl_vol->get_aperture()
-            ->get_range_compensator_image();
+        Plm_image::Pointer& rc = rpl_vol->get_aperture()->get_range_compensator_image();
         rc->save_image (d_ptr->output_range_compensator_fn);
         }
 

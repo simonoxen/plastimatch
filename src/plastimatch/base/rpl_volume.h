@@ -63,7 +63,7 @@ public:
 
     void compute_rpl ();
     void compute_rpl_ct ();
-    void compute_rpl_sigma (Rpl_volume* ct_vol_density);
+    void compute_rpl_rglength (Rpl_volume* ct_vol_density);
     void compute (Volume *ct_vol);
     Volume* create_wed_volume ();
     void compute_wed_volume (Volume *wed_vol, Volume *in_vol, float background);
@@ -79,8 +79,9 @@ public:
     void save (const std::string& filename);
     void save (const char* filename);
 
+	void compute_ray_data ();
+
 protected:
-    void compute_ray_data ();
 
     void aprc_ray_trace (
         Volume *tgt_vol,             /* I: CT volume */

@@ -66,11 +66,18 @@ public:
     /* Set beam depth, in mm */
     void set_beam_depth (float z_min, float z_max, float z_step);
 
+	/* Set source size in mm */
+	void set_source_size(float source_size);
+
+	/* Get source size in mm */
+	float get_source_size();
+
     /* Create a dose_volume in the beam frame */
     void dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volume);
 
     /* Compute dose */
     void compute_dose ();
+
     //void compute_dose_push();
 
     /* Return dose to caller */

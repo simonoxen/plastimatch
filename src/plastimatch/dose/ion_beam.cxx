@@ -346,3 +346,9 @@ Ion_beam::dump (const char* dir)
 {
     d_ptr->sobp->dump (dir);
 }
+
+Ion_sobp::Pointer
+Ion_beam::get_sobp()
+{
+	return d_ptr->sobp;
+}

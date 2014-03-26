@@ -17,6 +17,7 @@ public:
     double front_dist;   /* Distance from aperture to ip1 */
     double back_dist;    /* Distance from aperture to ip2 */
     double cp[3];        /* Intersection with front clipping plane */
+	int step_offset;	 /* Number of steps before reaching k = 0 */
 };
 
 #endif

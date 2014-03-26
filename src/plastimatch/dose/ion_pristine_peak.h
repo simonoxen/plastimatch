@@ -17,6 +17,8 @@ public:
     /* debug: print bragg curve to file */
     void dump (const char* fn) const;
 
+	float lookup_energy(float depth) const;
+
 private:
     bool load_xio (const char* fn);
     bool load_txt (const char* fn);

@@ -54,6 +54,7 @@ public:
     const double* get_spacing () const;
     /*! \brief Get the aperture spacing in the i or j dimension, in mm */
     double get_spacing (int dim) const;
+
     /*! \brief Get the aperture spacing: the distance between 
       sampling points in the aperture plane */
     void set_spacing (const float* spacing);
@@ -70,6 +71,10 @@ public:
     Volume::Pointer& get_aperture_volume ();
     /*! \brief Load the aperture image from a file */
     void set_aperture_image (const char *ap_filename);
+
+	/*! \brief Load the aperture volume from a file */
+	void set_aperture_volume (Volume::Pointer ap);
+
     /*! \brief Test if the aperture has a float image describing 
       range compensator thicknesses */
     bool have_range_compensator_image ();
@@ -77,8 +82,12 @@ public:
     Plm_image::Pointer& get_range_compensator_image ();
     /*! \brief Get the range_compensator image as Volume */
     Volume::Pointer& get_range_compensator_volume ();
+
     /*! \brief Load the range_compensator image from a file */
     void set_range_compensator_image (const char *rc_filename);
+
+	/*! \brief Load the range_compensator volume from a file */
+	void set_range_compensator_volume (Volume::Pointer ap);
 
     /*! \brief Expand aperture and smear compensator.  The smearing 
       parameters is defined as mm in aperture plane. */

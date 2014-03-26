@@ -11,9 +11,11 @@
 #include "ion_dose.h"
 #include "ion_plan.h"
 #include "ion_plan_p.h"
+#include "ion_pristine_peak.h"
 #include "ion_sobp.h"
 #include "plm_image.h"
 #include "proj_matrix.h"
+#include "ray_data.h"
 #include "rpl_volume.h"
 #include "sigma_spread.h"
 #include "volume.h"
@@ -265,6 +267,18 @@ Ion_plan::get_debug (void) const
 }
 
 void
+Ion_plan::set_source_size(float source_size)
+{
+	d_ptr->source_size = source_size;
+}
+
+float
+Ion_plan::get_source_size()
+{
+	return d_ptr->source_size;
+}
+
+void
 Ion_plan::set_debug (bool debug)
 {
     d_ptr->debug = debug;
@@ -343,6 +357,11 @@ Ion_plan::compute_dose ()
     float* dose_img_tmp = (float*) dose_volume_tmp->img;
     UNUSED_VARIABLE (dose_img_tmp);
 
+	float margin = 0;
+	int margins[2] = {0,0};
+	int new_dim[2]={0,0};
+	double new_center[2]={0,0};
+
     if (this->beam->get_flavor() == 'f' || this->beam->get_flavor() == 'g') // push algorithm + creation of the sigma volume (Desplanques))
     {
         float sigmaMax = 0;
@@ -350,107 +369,159 @@ Ion_plan::compute_dose ()
 
         this->ct_vol_density->compute_rpl_ct ();
 
-        this->sigma_vol->compute_rpl_sigma(this->ct_vol_density);
-        convert_radiologic_length_to_sigma(this->sigma_vol,this->ct_vol_density,100,this->sigma_vol->get_vol()->spacing[2], sigma_max);
+        this->sigma_vol->compute_rpl_rglength(this->ct_vol_density);
 
-        Rpl_volume* rpl_vol = this->rpl_vol;
+		Rpl_volume* rpl_vol = this->rpl_vol;
         Rpl_volume* sigma_vol = this->sigma_vol;
+		float* sigma_img = (float*) sigma_vol->get_vol()->img;
 
-		if (this->beam->get_flavor() == 'f')
-        {
-            dose_volume_create(dose_volume_tmp, sigma_max, this->sigma_vol);
-            compute_dose_ray_desplanques(dose_volume_tmp, ct_vol, rpl_vol, sigma_vol, ct_vol_density, this->beam, dose_vol);
-        }
-        else if(this->beam->get_flavor() == 'g')
-        {
-            /* building the sigma_vol */
-            this->rpl_dose_vol = new Rpl_volume;
-            this->rpl_dose_vol->set_geometry (
-            this->beam->get_source_position(),
-            this->beam->get_isocenter_position(),
-            d_ptr->ap->vup,
-            d_ptr->ap->get_distance(),
-            d_ptr->ap->get_dim(),
-            d_ptr->ap->get_center(),
-            d_ptr->ap->get_spacing(),
-            d_ptr->step_length);
+		/* building the sigma_dose_vol */
+		this->rpl_dose_vol = new Rpl_volume;
 
-            this->rpl_dose_vol->set_ct(this->rpl_vol->get_ct());
-            this->rpl_dose_vol->set_ct_limit(this->rpl_vol->get_ct_limit());
-            this->rpl_dose_vol->set_ray(this->rpl_vol->get_Ray_data());
-            this->rpl_dose_vol->set_front_clipping_plane(this->rpl_vol->get_front_clipping_plane());
-            this->rpl_dose_vol->set_back_clipping_plane(this->rpl_vol->get_back_clipping_plane());
-            this->rpl_dose_vol->compute_rpl_ct();
+		std::vector<const Ion_pristine_peak*> peaks = this->beam->get_sobp()->getPeaks();
 
-            /* dose calculation in the rpl_dose_volume */
-            compute_dose_ray_sharp(ct_vol, rpl_vol, sigma_vol, ct_vol_density, this->beam, dose_vol, rpl_dose_vol, d_ptr->ap);
-        }
-    }
-    if (this->beam->get_flavor() != 'f') // pull algorithm
-    {     
-		if (this->get_debug()) {
-            rpl_vol->save ("beam_debug/depth_vol.mha");
-            beam->dump ("beam_debug");
-        }
+		std::vector<const Ion_pristine_peak*>::const_iterator it = peaks.begin();
+		for (it = peaks.begin (); it <peaks.end(); it++) {
+			const Ion_pristine_peak *ppp = *it;
+			printf("\nBuilding dose matrix for %lg MeV beamlets - ", ppp->E0);
 
-        /* scan through patient CT Volume */
-        plm_long ct_ijk[3];
-        double ct_xyz[4];
-        plm_long idx = 0;
+			/* sigma_vol is reinitialized */
+			for (int l = 0; l < sigma_vol->get_vol()->dim[0] * sigma_vol->get_vol()->dim[1] * sigma_vol->get_vol()->dim[2]; l++)
+			{
+				sigma_img[l] = 0;
+			}
+			*sigma_max = 0;
 
-        for (ct_ijk[2] = 0; ct_ijk[2] < ct_vol->dim[2]; ct_ijk[2]++) {
-		printf("\nX : %3.2f%% ", (double)(((double)ct_ijk[2])/(double)ct_vol->dim[2]*100));
-            for (ct_ijk[1] = 0; ct_ijk[1] < ct_vol->dim[1]; ct_ijk[1]++) {
-                for (ct_ijk[0] = 0; ct_ijk[0] < ct_vol->dim[0]; ct_ijk[0]++) {
-                    double dose = 0.0;
+			convert_radiologic_length_to_sigma(this, ppp->E0, sigma_max);//this->sigma_vol->get_vol()->spacing[2], sigma_max);
 
-                    bool voxel_debug = false;
-    #if defined (commentout)
-                    if (ct_ijk[2] == 60 && ct_ijk[1] == 44 && ct_ijk[0] == 5) {
-                        voxel_debug = true;
-                    }
-    #endif
+			if (this->beam->get_flavor() == 'f')
+		    {
+				dose_volume_create(dose_volume_tmp, sigma_max, this->sigma_vol);
+				compute_dose_ray_desplanques(dose_volume_tmp, ct_vol, rpl_vol, sigma_vol, ct_vol_density, this->beam, dose_vol, ppp);
+			}
+			else if(this->beam->get_flavor() == 'g')
+			{
+				/* Calculating the pixel-margins of the aperture to take into account the scattering*/
+				margin = (float) 3 * (*sigma_max)/(this->get_aperture()->get_distance()+this->rpl_vol->get_front_clipping_plane()) * this->get_aperture()->get_distance();
+				margins[0] = ceil (margin/vec3_len(this->rpl_vol->get_proj_volume()->get_incr_c()));
+				margins[1] = ceil (margin/vec3_len(this->rpl_vol->get_proj_volume()->get_incr_r()));
+				new_dim[0] = this->rpl_vol->get_aperture()->get_dim(0) + 2 * margins[0];
+				new_dim[1] = this->rpl_vol->get_aperture()->get_dim(1) + 2 * margins[1];
+				new_center[0] = this->rpl_vol->get_aperture()->get_center(0) + margins[0];
+				new_center[1] = this->rpl_vol->get_aperture()->get_center(1) + margins[1];
 
-                    /* Transform vol index into space coords */
-                    ct_xyz[0] = (double) (ct_vol->offset[0] + ct_ijk[0] * ct_vol->spacing[0]);
-                    ct_xyz[1] = (double) (ct_vol->offset[1] + ct_ijk[1] * ct_vol->spacing[1]);
-                    ct_xyz[2] = (double) (ct_vol->offset[2] + ct_ijk[2] * ct_vol->spacing[2]);
-                    ct_xyz[3] = (double) 1.0;
-    
-                    if (voxel_debug) {
-                        printf ("Voxel (%d, %d, %d) -> (%f, %f, %f)\n",
-                            (int) ct_ijk[0], (int) ct_ijk[1], (int) ct_ijk[2], 
-                            ct_xyz[0], ct_xyz[1], ct_xyz[2]);
-                    }
-                    switch (beam->get_flavor()) {
-                    case 'a':
-                        dose = dose_direct (ct_xyz, this);
-                        break;
-                    case 'b':
-                        dose = dose_scatter (ct_xyz, ct_ijk, this);
-                        break;
-                    case 'c':
-                        dose = dose_hong (ct_xyz, ct_ijk, this);
-                        break;
-                    case 'd':
-                        dose = dose_debug (ct_xyz, this);
-                        break;
-                    case 'e':
-        	        dose = dose_hong_maxime (ct_xyz, ct_ijk, this);
-		        break;
-					case 'g':
-                        dose = dose_hong_sharp (ct_xyz, this);
-                        break;
-                    }
+				this->rpl_dose_vol->get_aperture()->set_center(new_center);
+				this->rpl_dose_vol->get_aperture()->set_dim(new_dim);
+				this->rpl_dose_vol->get_aperture()->set_distance(this->rpl_vol->get_aperture()->get_distance());
+				this->rpl_dose_vol->get_aperture()->set_spacing(this->rpl_vol->get_aperture()->get_spacing());
+				
+				this->rpl_dose_vol->set_geometry (
+				this->beam->get_source_position(),
+				this->beam->get_isocenter_position(),
+				d_ptr->ap->vup,
+				d_ptr->ap->get_distance(),
+				this->rpl_dose_vol->get_aperture()->get_dim(),
+				this->rpl_dose_vol->get_aperture()->get_center(),
+				d_ptr->ap->get_spacing(),
+				d_ptr->step_length);
 
-                    /* Insert the dose into the dose volume */
-                    idx = volume_index (dose_vol->dim, ct_ijk);
-                    dose_img[idx] = dose;
-                }
-            }
-        }
-        display_progress ((float)idx, (float)ct_vol->npix);
-    }
+				printf("\n end calc");
+				this->rpl_dose_vol->set_ct(this->rpl_vol->get_ct());
+				this->rpl_dose_vol->set_ct_limit(this->rpl_vol->get_ct_limit());
+				this->rpl_dose_vol->compute_ray_data();
+
+				for (int l=0; l < new_dim[0]*new_dim[1];l++)
+				{
+					Ray_data* ray_data = &this->rpl_dose_vol->get_Ray_data()[l];
+				}
+
+		        this->rpl_dose_vol->set_front_clipping_plane(this->rpl_vol->get_front_clipping_plane());
+			    this->rpl_dose_vol->set_back_clipping_plane(this->rpl_vol->get_back_clipping_plane());
+				
+				this->rpl_dose_vol->compute_rpl_ct();
+
+	            /* dose calculation in the rpl_dose_volume */
+				compute_dose_ray_sharp(ct_vol, rpl_vol, sigma_vol, ct_vol_density, this->beam, rpl_dose_vol, d_ptr->ap, ppp, margins);
+				/*if (ppp->E0 == 91) {rpl_dose_vol->save("foo91.mha");}
+				if (ppp->E0 == 92) {rpl_dose_vol->save("foo92.mha");}
+				if (ppp->E0 == 93) {rpl_dose_vol->save("foo93.mha");}
+				if (ppp->E0 == 94) {rpl_dose_vol->save("foo94.mha");}
+				if (ppp->E0 == 95) {rpl_dose_vol->save("foo95.mha");}
+				if (ppp->E0 == 96) {rpl_dose_vol->save("foo96.mha");}
+				if (ppp->E0 == 97) {rpl_dose_vol->save("foo97.mha");}
+				if (ppp->E0 == 98) {rpl_dose_vol->save("foo98.mha");}
+				if (ppp->E0 == 99) {rpl_dose_vol->save("foo99.mha");}
+				if (ppp->E0 == 100) {rpl_dose_vol->save("foo100.mha");} */
+				printf("%d %d %d", rpl_dose_vol->get_vol()->offset[0],rpl_dose_vol->get_vol()->offset[1],rpl_dose_vol->get_vol()->offset[2]);
+				dose_volume_reconstruction(rpl_dose_vol, dose_vol, this);
+			}
+			printf("dose computed");
+		}
+	}
+		if (this->beam->get_flavor() != 'f' && this->beam->get_flavor() != 'g') // pull algorithm
+		{     
+			if (this->get_debug()) {
+				rpl_vol->save ("beam_debug/depth_vol.mha");
+				beam->dump ("beam_debug");
+			}
+
+			/* scan through patient CT Volume */
+			plm_long ct_ijk[3];
+			double ct_xyz[4];
+			plm_long idx = 0;
+
+			for (ct_ijk[2] = 0; ct_ijk[2] < ct_vol->dim[2]; ct_ijk[2]++) {
+				for (ct_ijk[1] = 0; ct_ijk[1] < ct_vol->dim[1]; ct_ijk[1]++) {
+					for (ct_ijk[0] = 0; ct_ijk[0] < ct_vol->dim[0]; ct_ijk[0]++) {
+						double dose = 0.0;
+
+						bool voxel_debug = false;
+		#if defined (commentout)
+	                    if (ct_ijk[2] == 60 && ct_ijk[1] == 44 && ct_ijk[0] == 5) {
+							voxel_debug = true;
+						}
+		#endif
+	
+						/* Transform vol index into space coords */
+						ct_xyz[0] = (double) (ct_vol->offset[0] + ct_ijk[0] * ct_vol->spacing[0]);
+						ct_xyz[1] = (double) (ct_vol->offset[1] + ct_ijk[1] * ct_vol->spacing[1]);
+						ct_xyz[2] = (double) (ct_vol->offset[2] + ct_ijk[2] * ct_vol->spacing[2]);
+						ct_xyz[3] = (double) 1.0;
+	    
+						if (voxel_debug) {
+	                        printf ("Voxel (%d, %d, %d) -> (%f, %f, %f)\n",
+								(int) ct_ijk[0], (int) ct_ijk[1], (int) ct_ijk[2], 
+								ct_xyz[0], ct_xyz[1], ct_xyz[2]);
+						}
+						switch (beam->get_flavor()) {
+						case 'a':
+	                        dose = dose_direct (ct_xyz, this);
+							break;
+						case 'b':
+	                        dose = dose_scatter (ct_xyz, ct_ijk, this);
+							break;
+						case 'c':
+	                        dose = dose_hong (ct_xyz, ct_ijk, this);
+							break;
+						case 'd':
+	                        dose = dose_debug (ct_xyz, this);
+							break;
+						case 'e':
+        				dose = dose_hong_maxime (ct_xyz, ct_ijk, this);
+					break;
+						case 'g':
+							dose = dose_hong_sharp (ct_xyz, this);
+							break;
+						}
+
+						/* Insert the dose into the dose volume */
+						idx = volume_index (dose_vol->dim, ct_ijk);
+						dose_img[idx] = dose;
+					}
+				}
+			}
+			display_progress ((float)idx, (float)ct_vol->npix);
+		}
 
     printf("\n");
     Plm_image::Pointer dose = Plm_image::New();
@@ -502,17 +573,6 @@ Ion_plan::dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* 
         dose_volume->direction_cosines[i] = volume->get_vol()->direction_cosines[i];
     }
     dose_volume->npix = dose_volume->dim[0]*dose_volume->dim[1]*dose_volume->dim[2];
-
-    /* debug print
-    printf("first pixel : %lg %lg %lg\n", ap_ul_pixel[0], ap_ul_pixel[1], ap_ul_pixel[2]);
-    printf("proj pixel : %lg %lg %lg\n", proj_pixel[0], proj_pixel[1], proj_pixel[2]);
-    printf("dim : %lg %lg %lg\n", (float) dose_volume->dim[0], (float) dose_volume->dim[1], (float) dose_volume->dim[2]);
-    printf("npix : %lg\n", (float) dose_volume->npix);
-    printf("spacing : %lg %lg %lg\n", dose_volume->spacing[0], dose_volume->spacing[1],dose_volume->spacing[2]);
-    printf("offset : %lg %lg %lg\n", dose_volume->offset[0], dose_volume->offset[1],dose_volume->offset[2]);
-    printf("cosines : %lg %lg %lg %lg %lg %lg %lg %lg %lg\n", dose_volume->direction_cosines[0], dose_volume->direction_cosines[1], dose_volume->direction_cosines[2], dose_volume->direction_cosines[3], dose_volume->direction_cosines[4], dose_volume->direction_cosines[5], dose_volume->direction_cosines[6], dose_volume->direction_cosines[7], dose_volume->direction_cosines[8]);
-    */
-
     dose_volume->create(dose_volume->dim,dose_volume->offset,dose_volume->spacing,dose_volume->direction_cosines,PT_FLOAT,1);
 }
 

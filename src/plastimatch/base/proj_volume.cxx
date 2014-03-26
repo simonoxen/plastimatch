@@ -56,6 +56,9 @@ void
 Proj_volume::debug ()
 {
     const double* nrm = this->get_nrm ();
+	double dr_room[3];
+	double tmp[3];
+
     printf ("src = %f %f %f\n", d_ptr->src[0], d_ptr->src[1], d_ptr->src[2]);
     printf ("nrm = %f %f %f\n", nrm[0], nrm[1], nrm[2]);
     printf ("ul_room = %f %f %f\n", d_ptr->ul_room[0], 

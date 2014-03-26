@@ -9,6 +9,7 @@
 #include <omp.h>
 #endif
 
+#include "interpolate.h"
 #include "plm_math.h"
 #include "ray_trace.h"
 #include "volume.h"
@@ -34,6 +35,7 @@ ray_trace_uniform (
     double phy_step_mag;
 
     int ai[3];
+	double frac[3];
 
     float pix_density;
     double pt;  
@@ -41,12 +43,19 @@ ray_trace_uniform (
     int idx;
     size_t z;
 
+	float mijk[3];
+	float li_frac1[3];
+	float li_frac2[3];
+	plm_long mijk_f[3];
+	plm_long mijk_r[3];
+
     float* img = (float*) vol->img;
 
     /* Test if ray intersects volume */
     if (!volume_limit_clip_segment (vol_limit, ip1, ip2, ip1in, ip2in)) {
 	return;
     }
+	
 
     ps[0] = vol->spacing[0];
     ps[1] = vol->spacing[1];
@@ -73,15 +82,28 @@ ray_trace_uniform (
         ipx[1] = ip1[1] + phy_step[1] * z;
         ipx[2] = ip1[2] + phy_step[2] * z;
 
-        // Compute CT Volume indices @ point
+        /* OLD VERSION - Compute CT Volume indices @ point
         ai[0] = (int) floorf ((ipx[0] - vol->offset[0] + 0.5 * ps[0]) / ps[0]);
         ai[1] = (int) floorf ((ipx[1] - vol->offset[1] + 0.5 * ps[1]) / ps[1]);
         ai[2] = (int) floorf ((ipx[2] - vol->offset[2] + 0.5 * ps[2]) / ps[2]);
+		idx = ((ai[2]*vol->dim[1] + ai[1]) * vol->dim[0]) + ai[0];
+		pix_density = img[idx]; */
 
-        idx = ((ai[2]*vol->dim[1] + ai[1]) * vol->dim[0]) + ai[0];
-        pix_density = img[idx];
 
-        // I am passing the current step along the ray (z) through
+		// NEW VERSION - Compute CT volume indices and their fraction @ point + interpolation
+
+		mijk[0] = (float) ((ipx[0] - vol->offset[0])/ps[0]);
+		mijk[1] = (float) ((ipx[1] - vol->offset[1])/ps[1]);
+		mijk[2] = (float) ((ipx[2] - vol->offset[2])/ps[2]);
+
+		li_clamp_3d(mijk, mijk_f, mijk_r, li_frac1, li_frac2, vol);
+		idx = (plm_long) ((mijk_r[2] * vol->dim[1] + mijk_r[1]) * vol->dim[0]) + mijk_r[0];
+		pix_density = li_value (li_frac1[0], li_frac2[0], li_frac1[1], li_frac2[1], li_frac1[2], li_frac2[2], idx, img, vol);
+		//if (pt/phy_step_mag < 30 && pt/phy_step_mag > 24){
+		//	printf("%lg - %lg %lg %lg - %lg %lg %lg\n", pt/phy_step_mag, mijk[0], li_frac1[1], li_frac1[2], li_frac2[0], li_frac2[1], li_frac2[2]);}
+		if (pix_density <= -999 || pix_density >= 1000) {pix_density = -1000;}
+		
+		// I am passing the current step along the ray (z) through
         // vox_index here... not exactly great but not horrible.
 //        (*callback) (callback_data, z++, ray_step, pix_density);
         (*callback) (callback_data, z++, phy_step_mag, pix_density);

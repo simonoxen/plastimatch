@@ -202,3 +202,42 @@ Ion_pristine_peak::dump (const char* fn) const
 
     fclose (fp);
 }
+
+float
+Ion_pristine_peak::lookup_energy (float depth) const
+{	
+	int i;
+    float energy = 0.0f;
+
+    /* Sanity check */
+    if (depth < 0) {
+        return 0.0f;
+    }
+
+    /* Find index into profile arrays */
+    for (i = 0; i < this->num_samples-1; i++) {
+        if (this->d_lut[i] > depth) {
+            i--;
+            break;
+        }
+    }
+
+    /* Clip input depth to maximum in lookup table */
+    if (i == this->num_samples-1) {
+        depth = this->d_lut[i];
+    }
+
+    /* Use index to lookup and interpolate energy */
+    if (i >= 0 || i < this->num_samples) {
+        // linear interpolation
+        energy = this->e_lut[i]
+                 + (depth - this->d_lut[i])
+                 * ((this->e_lut[i+1] - this->e_lut[i]) 
+                 / (this->d_lut[i+1] - this->d_lut[i]));
+    } else {
+        // we wen't past the end of the lookup table
+        energy = 0.0f;
+    }
+
+    return energy;   
+}
