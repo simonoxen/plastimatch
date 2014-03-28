@@ -132,12 +132,10 @@ Ion_plan::init ()
             printf("ray_data or clipping planes to be copied from rpl volume don't exist\n");
         }
     }
-     //printf("a\n");
     
     /*Now we can compute the rpl_volume*/
     this->rpl_vol->compute_rpl ();
     
-    //printf("b\n");
     /* and the others */
     if (this->beam->get_flavor() == 'f' || this->beam->get_flavor() == 'g')
     {
@@ -157,8 +155,6 @@ Ion_plan::init ()
             printf("ct or ct_limits to be copied from rpl_vol don't exist\n");
         }
     }
-    //printf("c\n");
-
     return true;
 }
 
@@ -361,6 +357,7 @@ Ion_plan::compute_dose ()
 	int margins[2] = {0,0};
 	int new_dim[2]={0,0};
 	double new_center[2]={0,0};
+	double clipping_dist[2] = {0,0};
 
     if (this->beam->get_flavor() == 'f' || this->beam->get_flavor() == 'g') // push algorithm + creation of the sigma volume (Desplanques))
     {
@@ -402,7 +399,7 @@ Ion_plan::compute_dose ()
 			else if(this->beam->get_flavor() == 'g')
 			{
 				/* Calculating the pixel-margins of the aperture to take into account the scattering*/
-				margin = (float) 3 * (*sigma_max)/(this->get_aperture()->get_distance()+this->rpl_vol->get_front_clipping_plane()) * this->get_aperture()->get_distance();
+				margin = (float) 3 * (*sigma_max)/(this->get_aperture()->get_distance()+this->rpl_vol->get_front_clipping_plane()) * this->get_aperture()->get_distance()+1;
 				margins[0] = ceil (margin/vec3_len(this->rpl_vol->get_proj_volume()->get_incr_c()));
 				margins[1] = ceil (margin/vec3_len(this->rpl_vol->get_proj_volume()->get_incr_r()));
 				new_dim[0] = this->rpl_vol->get_aperture()->get_dim(0) + 2 * margins[0];
@@ -414,6 +411,9 @@ Ion_plan::compute_dose ()
 				this->rpl_dose_vol->get_aperture()->set_dim(new_dim);
 				this->rpl_dose_vol->get_aperture()->set_distance(this->rpl_vol->get_aperture()->get_distance());
 				this->rpl_dose_vol->get_aperture()->set_spacing(this->rpl_vol->get_aperture()->get_spacing());
+
+				clipping_dist[0] = this->rpl_dose_vol->get_front_clipping_plane();
+				clipping_dist[1] = this->rpl_dose_vol->get_back_clipping_plane();
 				
 				this->rpl_dose_vol->set_geometry (
 				this->beam->get_source_position(),
@@ -425,37 +425,25 @@ Ion_plan::compute_dose ()
 				d_ptr->ap->get_spacing(),
 				d_ptr->step_length);
 
-				printf("\n end calc");
 				this->rpl_dose_vol->set_ct(this->rpl_vol->get_ct());
 				this->rpl_dose_vol->set_ct_limit(this->rpl_vol->get_ct_limit());
 				this->rpl_dose_vol->compute_ray_data();
+				
+				this->rpl_dose_vol->set_front_clipping_plane(this->rpl_vol->get_front_clipping_plane());
+			    this->rpl_dose_vol->set_back_clipping_plane(this->rpl_vol->get_back_clipping_plane());
 
 				for (int l=0; l < new_dim[0]*new_dim[1];l++)
 				{
 					Ray_data* ray_data = &this->rpl_dose_vol->get_Ray_data()[l];
 				}
-
-		        this->rpl_dose_vol->set_front_clipping_plane(this->rpl_vol->get_front_clipping_plane());
-			    this->rpl_dose_vol->set_back_clipping_plane(this->rpl_vol->get_back_clipping_plane());
 				
 				this->rpl_dose_vol->compute_rpl_ct();
 
 	            /* dose calculation in the rpl_dose_volume */
 				compute_dose_ray_sharp(ct_vol, rpl_vol, sigma_vol, ct_vol_density, this->beam, rpl_dose_vol, d_ptr->ap, ppp, margins);
-				/*if (ppp->E0 == 91) {rpl_dose_vol->save("foo91.mha");}
-				if (ppp->E0 == 92) {rpl_dose_vol->save("foo92.mha");}
-				if (ppp->E0 == 93) {rpl_dose_vol->save("foo93.mha");}
-				if (ppp->E0 == 94) {rpl_dose_vol->save("foo94.mha");}
-				if (ppp->E0 == 95) {rpl_dose_vol->save("foo95.mha");}
-				if (ppp->E0 == 96) {rpl_dose_vol->save("foo96.mha");}
-				if (ppp->E0 == 97) {rpl_dose_vol->save("foo97.mha");}
-				if (ppp->E0 == 98) {rpl_dose_vol->save("foo98.mha");}
-				if (ppp->E0 == 99) {rpl_dose_vol->save("foo99.mha");}
-				if (ppp->E0 == 100) {rpl_dose_vol->save("foo100.mha");} */
-				printf("%d %d %d", rpl_dose_vol->get_vol()->offset[0],rpl_dose_vol->get_vol()->offset[1],rpl_dose_vol->get_vol()->offset[2]);
 				dose_volume_reconstruction(rpl_dose_vol, dose_vol, this);
 			}
-			printf("dose computed");
+			printf("dose computed\n");
 		}
 	}
 		if (this->beam->get_flavor() != 'f' && this->beam->get_flavor() != 'g') // pull algorithm

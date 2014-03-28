@@ -597,6 +597,7 @@ void dose_volume_reconstruction(Rpl_volume* rpl_dose_vol, Volume::Pointer dose_v
 	double dose = 0;
 
 	float* dose_img = (float*) dose_vol->img;
+	float* ct_img = (float*) plan->get_patient_volume()->img;
 
 	for (ct_ijk[2] = 0; ct_ijk[2] < dose_vol->dim[2]; ct_ijk[2]++) {
 		for (ct_ijk[1] = 0; ct_ijk[1] < dose_vol->dim[1]; ct_ijk[1]++) {
@@ -608,18 +609,19 @@ void dose_volume_reconstruction(Rpl_volume* rpl_dose_vol, Volume::Pointer dose_v
 				ct_xyz[1] = (double) (dose_vol->offset[1] + ct_ijk[1] * dose_vol->spacing[1]);
 				ct_xyz[2] = (double) (dose_vol->offset[2] + ct_ijk[2] * dose_vol->spacing[2]);
 				ct_xyz[3] = (double) 1.0;
-	    
-				if (plan->ct_vol_density->get_rgdepth(ct_xyz) <= 0)
+				idx = volume_index (dose_vol->dim, ct_ijk);
+
+				if (ct_img[idx] <= -1000) // if air, no dose
 				{
 					continue;
 				}
 				else
 				{
 					dose = plan->rpl_dose_vol->get_rgdepth(ct_xyz);
+					if (dose <=0){continue;}
 				}
 
 				/* Insert the dose into the dose volume */
-				idx = volume_index (dose_vol->dim, ct_ijk);
 				dose_img[idx] += dose;
 			}
 		}
