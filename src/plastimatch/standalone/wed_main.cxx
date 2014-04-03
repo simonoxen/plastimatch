@@ -205,7 +205,7 @@ wed_ct_initialize(Wed_Parms *parms)
  
     //  if (parms->input_dose_fn != "" && parms->output_dose_fn != "") {
     //Load the input dose, or input wed_dose
-    if ((parms->mode==1)||(parms->mode==1))  {
+    if ((parms->mode==0)||(parms->mode==1))  {
             dose_vol = plm_image_load (parms->input_dose_fn.c_str(), 
 				 PLM_IMG_TYPE_ITK_FLOAT);
     }
