@@ -24,7 +24,6 @@ The command line usage is::
    -z "s1 s2 s3"          Physical size of the reconstruction (in mm)
    -I indir               The input directory
    -O outfile             The output file
-   -F {F,H}               Full or half fan bow-tie filter correction
 
 The usage of the fdk program is best understood by following along 
 with the tutorials: :ref:`fdk_tutorial_i` and :ref:`fdk_tutorial_ii`.
