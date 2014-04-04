@@ -25,28 +25,26 @@
 int
 countumlauts (const char *src)
 {
-	int count;
-	count = 0;
-	for(; *src; src++) {
-		printf("%c\n", *src);
+    int count;
+    count = 0;
+    for(; *src; src++) {
+        printf("%c\n", *src);
     	switch(*src) {
       	case '\341':
-			printf("ß gefunden\n");
-        	count++;
-        	break;
+            count++;
+            break;
       	case '\204':
-        	count++;
-        	break;
+            count++;
+            break;
       	case '\216':
-        	count++;
-        	break;
+            count++;
+            break;
       	case '\224':
-			printf("ü gefunden\n");
-        	count++;
-        	break;
+            count++;
+            break;
     	}
-	}
-	return count;
+    }
+    return count;
 
 }
 
@@ -56,28 +54,28 @@ countumlauts (const char *src)
 void
 convuml(char *dest, const char *src)
 {
-	while(*src != '\0') {
-    switch(*src) {
-      case 'ß':
-        *dest++ = 's';
-        *dest++ = 's';
-        break;
-      case 'ä':
-        *dest++ = 'a';
-        *dest++ = 'e';
-        break;
-      case 'ö':
-        *dest++ = 'o';
-        *dest++ = 'e';
-        break;
-      case 'ü':
-        *dest++ = 'u';
-        *dest++ = 'e';
-        break;
-      default:
-        *dest++ = *src;
+    while(*src != '\0') {
+        switch(*src) {
+      	case '\341':
+            *dest++ = 's';
+            *dest++ = 's';
+            break;
+      	case '\204':
+            *dest++ = 'a';
+            *dest++ = 'e';
+            break;
+      	case '\216':
+            *dest++ = 'o';
+            *dest++ = 'e';
+            break;
+      	case '\224':
+            *dest++ = 'u';
+            *dest++ = 'e';
+            break;
+        default:
+            *dest++ = *src;
+        }
+        src++;
     }
-    src++;
-  }
-  *dest = '\0';
+    *dest = '\0';
 }
