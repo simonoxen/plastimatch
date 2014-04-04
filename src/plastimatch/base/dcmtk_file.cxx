@@ -154,6 +154,12 @@ Dcmtk_file::get_volume_header () const
     return &d_ptr->m_vh;
 }
 
+const Direction_cosines&
+Dcmtk_file::get_direction_cosines () const
+{
+    return d_ptr->m_vh.get_direction_cosines();
+}
+
 float
 Dcmtk_file::get_z_position () const
 {

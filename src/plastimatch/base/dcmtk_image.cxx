@@ -42,6 +42,57 @@ Dcmtk_loader::image_load ()
     Dcmtk_series *ds_image = d_ptr->ds_image;
     const Dcmtk_file_list& flist = ds_image->get_flist ();
 
+    /* Create a container to hold different groups of files */
+    std::list<Dcmtk_file_list> group_list;
+
+    /* Insert files into groups according to direction cosines */
+    {
+        printf ("----------\n");
+        Dcmtk_file_list::const_iterator it;
+        for (it = flist.begin(); it != flist.end(); ++it) {
+            const Dcmtk_file::Pointer& df = (*it);
+
+            df->debug ();
+
+            bool match_found = false;
+            std::list<Dcmtk_file_list>::iterator grit;
+            for (grit = group_list.begin(); grit != group_list.end(); ++grit) {
+                Dcmtk_file_list& flp = *grit;
+                const Dcmtk_file::Pointer& flp_df = flp.front();
+
+                if (flp_df->get_direction_cosines() 
+                    == df->get_direction_cosines())
+                {
+                    /* Add logic to append to flp */
+                    printf ("Match found.  :)\n");
+                    match_found = true;
+                    flp.push_back (df);
+                    break;
+                }
+            }
+            if (match_found) {
+                continue;
+            }
+            /* Else insert new element into group_list */
+            printf ("Need to insert.\n");
+            group_list.push_back (Dcmtk_file_list());
+            group_list.back().push_back (df);
+        }
+        printf ("----------\n");
+    }
+
+    /* Sort each group in Z direction */
+    {
+        std::list<Dcmtk_file_list>::iterator grit;
+        for (grit = group_list.begin(); grit != group_list.end(); ++grit) {
+            grit->sort();
+        }
+    }
+
+    /* Regroup as needed according to inter-slice spacing */
+    {
+    }
+
     /* Sort in Z direction */
     ds_image->sort ();
 

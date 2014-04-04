@@ -47,6 +47,7 @@ public:
     bool get_sequence (const DcmTagKey& tag_key, 
         DcmSequenceOfItems*& seq) const;
     const Volume_header* get_volume_header () const;
+    const Direction_cosines& get_direction_cosines () const;
     float get_z_position () const;
 
     void load_header (const char *fn);

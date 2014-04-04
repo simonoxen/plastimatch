@@ -45,6 +45,18 @@ Direction_cosines::operator float* ()
     return d_ptr->direction_cosines;
 }
 
+bool Direction_cosines::operator==(const Direction_cosines& dc) const
+{
+    for (int i = 0; i < 9; i++) {
+        float diff = fabs(this->d_ptr->direction_cosines[i]
+            - dc.d_ptr->direction_cosines[i]);
+        if (diff > DIRECTION_COSINES_EQUALITY_THRESH) {
+            return false;
+        }
+    }
+    return true;
+}
+
 void Direction_cosines::set_identity () {
     d_ptr->direction_cosines[0] = 1.;
     d_ptr->direction_cosines[1] = 0.;

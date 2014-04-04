@@ -11,6 +11,7 @@
 #include "plm_math.h"
 
 #define DIRECTION_COSINES_IDENTITY_THRESH 1e-9
+#define DIRECTION_COSINES_EQUALITY_THRESH 1e-9
 
 namespace itk { template<class T, unsigned int NRows, unsigned int NColumns> class Matrix; }
 typedef itk::Matrix < double, 3, 3 > DirectionType;
@@ -29,6 +30,7 @@ class PLMBASE_API Direction_cosines {
   public:
     operator const float* () const;
     operator float* ();
+    bool operator==(const Direction_cosines& dc) const;
   public:
     void set_identity ();
 

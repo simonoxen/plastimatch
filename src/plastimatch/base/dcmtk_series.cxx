@@ -22,7 +22,6 @@
 class Dcmtk_series_private {
 public:
     Dcmtk_file_list m_flist;
-    std::list<plm_shared_ptr<Dcmtk_file_list> > m_group_list;
     Rt_study_metadata::Pointer m_drs;
 
 public:
