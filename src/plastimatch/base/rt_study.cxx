@@ -496,13 +496,13 @@ Rt_study::get_image ()
 }
 
 void 
-Rt_study::set_image (ShortImageType::Pointer itk_image)
+Rt_study::set_image (ShortImageType::Pointer& itk_image)
 {
     d_ptr->m_img = Plm_image::New (new Plm_image(itk_image));
 }
 
 void 
-Rt_study::set_image (FloatImageType::Pointer itk_image)
+Rt_study::set_image (FloatImageType::Pointer& itk_image)
 {
     d_ptr->m_img = Plm_image::New (new Plm_image(itk_image));
 }
@@ -514,7 +514,7 @@ Rt_study::set_image (Plm_image* pli)
 }
 
 void 
-Rt_study::set_image (Plm_image::Pointer pli)
+Rt_study::set_image (const Plm_image::Pointer& pli)
 {
     d_ptr->m_img = pli;
 }
@@ -547,6 +547,12 @@ Rt_study::set_dose (Volume *vol)
     d_ptr->m_dose->set_volume (vol->clone_raw());
 }
 
+void 
+Rt_study::set_dose (const Plm_image::Pointer& pli)
+{
+    d_ptr->m_dose = pli;
+}
+
 Plm_image::Pointer
 Rt_study::get_dose ()
 {
@@ -573,7 +579,7 @@ Rt_study::set_rtss (Segmentation::Pointer rtss)
 
 void 
 Rt_study::add_structure (
-    UCharImageType::Pointer itk_image,
+    const UCharImageType::Pointer& itk_image,
     const char *structure_name,
     const char *structure_color)
 {
