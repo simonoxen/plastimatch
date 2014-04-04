@@ -818,6 +818,7 @@ void
 Rpl_volume::compute_wed_volume (
     Volume *wed_vol, Volume *in_vol, float background)
 {
+
   /* A couple of abbreviations */
     Proj_volume *proj_vol = d_ptr->proj_vol;
     Volume *rvol = proj_vol->get_vol();
@@ -826,15 +827,13 @@ Rpl_volume::compute_wed_volume (
     float *wed_vol_img = (float*) wed_vol->img;
     const int *ires = proj_vol->get_image_dim();
 
-
-
     plm_long wijk[3];  /* Index within wed_volume */
-
    
     //   printf("ires is %d %d %d %d \n",ires[0],ires[1],ires[2],ires[3]);
     for (wijk[1] = 0; wijk[1] < ires[1]; wijk[1]++) {
 
         for (wijk[0] = 0; wijk[0] < ires[0]; wijk[0]++) {
+
             /* Compute index of aperture pixel */
             plm_long ap_idx = wijk[1] * ires[0] + wijk[0];
 
@@ -897,16 +896,16 @@ Rpl_volume::compute_wed_volume (
                         vec3_add2 (xyz, ray_data->cp);
                         
 			//NEW
-			
+
 			float in_ijk_f[3];
 			in_ijk_f[0] = (xyz[0] - in_vol->offset[0]) / in_vol->spacing[0];
 			in_ijk_f[1] = (xyz[1] - in_vol->offset[1]) / in_vol->spacing[1];
 			in_ijk_f[2] = (xyz[2] - in_vol->offset[2]) / in_vol->spacing[2];
-	
-			if (in_ijk_f[0] < 0 || in_ijk_f[0] >= in_vol->dim[0]) {break;}
-			if (in_ijk_f[1] < 0 || in_ijk_f[1] >= in_vol->dim[1]) {break;}
-			if (in_ijk_f[2] < 0 || in_ijk_f[2] >= in_vol->dim[2]) {break;}
 
+			if (ROUND_PLM_LONG(in_ijk_f[0]) < 0 || ROUND_PLM_LONG(in_ijk_f[0]) >= in_vol->dim[0]) {break;}
+			if (ROUND_PLM_LONG(in_ijk_f[1]) < 0 || ROUND_PLM_LONG(in_ijk_f[1]) >= in_vol->dim[0]) {break;}
+			if (ROUND_PLM_LONG(in_ijk_f[2]) < 0 || ROUND_PLM_LONG(in_ijk_f[2]) >= in_vol->dim[0]) {break;}
+	
 			plm_long ijk_floor[3];
 			plm_long ijk_round[3];
 			float li_1[3], li_2[3];
@@ -924,7 +923,7 @@ Rpl_volume::compute_wed_volume (
 			/////////////////
 			
                         /* Look up value at coordinate in input image */
-
+			
 			//OLD
 			/*
                         plm_long in_ijk[3];
@@ -940,6 +939,7 @@ Rpl_volume::compute_wed_volume (
                             printf ("%d %d %d\n", (int) in_ijk[0], 
                                 (int) in_ijk[1], (int) in_ijk[2]);
                         }
+
 
                         if (in_ijk[2] < 0 || in_ijk[2] >= in_vol->dim[2])
                             break;
@@ -957,8 +957,6 @@ Rpl_volume::compute_wed_volume (
 
 			/* Write value to output image */
 			wed_vol_img[widx] = value;
-
-
 
                         /* Suitable voxel found and processed, so move on 
                            to the next output voxel */
