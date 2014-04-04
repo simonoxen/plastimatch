@@ -37,12 +37,12 @@ public:
       from the specified filename. */
     void set_reference_image (const char* image_fn);
     /*! \brief Set the reference image as an ITK image. */
-    void set_reference_image (const UCharImageType::Pointer image);
+    void set_reference_image (const UCharImageType::Pointer& image);
     /*! \brief Set the compare image.  The image will be loaded
       from the specified filename. */
     void set_compare_image (const char* image_fn);
     /*! \brief Set the compare image as an ITK image. */
-    void set_compare_image (const UCharImageType::Pointer image);
+    void set_compare_image (const UCharImageType::Pointer& image);
     ///@}
 
     /*! \name Execution */

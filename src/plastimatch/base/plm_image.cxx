@@ -212,6 +212,13 @@ Plm_image::clone (void)
     return pli;
 }
 
+Plm_image::Pointer
+Plm_image::clone (const Plm_image::Pointer& pli)
+{
+    Plm_image* new_pli = pli->clone();
+    return Plm_image::New (new_pli);
+}
+
 /* -----------------------------------------------------------------------
    Loading
    ----------------------------------------------------------------------- */
@@ -292,7 +299,7 @@ Plm_image::load_native (const char* fname)
     }
 
     if (!file_exists (fname) && !string_starts_with (fname, "slicer:")) {
-	lprintf ("Couldn't open %s for read\n", fname);
+ 	lprintf ("Couldn't open %s for read\n", fname);
         return false;
     }
 
@@ -751,6 +758,50 @@ Plm_image::set_itk (UCharVecImageType::Pointer img)
 	this->m_itk_##in_type = 0)
 
 void
+Plm_image::convert_to_itk_uchar (void)
+{
+    switch (this->m_type) {
+    case PLM_IMG_TYPE_ITK_UCHAR:
+	return;
+    case PLM_IMG_TYPE_ITK_CHAR:
+	CONVERT_ITK_ITK (uchar, char);
+	return;
+    case PLM_IMG_TYPE_ITK_USHORT:
+	CONVERT_ITK_ITK (uchar, ushort);
+	break;
+    case PLM_IMG_TYPE_ITK_SHORT:
+	CONVERT_ITK_ITK (uchar, short);
+	break;
+    case PLM_IMG_TYPE_ITK_ULONG:
+	CONVERT_ITK_ITK (uchar, uint32);
+	break;
+    case PLM_IMG_TYPE_ITK_LONG:
+	CONVERT_ITK_ITK (uchar, int32);
+	break;
+    case PLM_IMG_TYPE_ITK_FLOAT:
+	CONVERT_ITK_ITK (uchar, float);
+	break;
+    case PLM_IMG_TYPE_ITK_DOUBLE:
+	CONVERT_ITK_ITK (uchar, double);
+	break;
+    case PLM_IMG_TYPE_GPUIT_UCHAR:
+	this->m_itk_uchar = this->convert_gpuit_to_itk<
+            UCharImageType::Pointer, unsigned char> (this->get_vol());
+	break;
+    case PLM_IMG_TYPE_GPUIT_FLOAT:
+	this->m_itk_uchar = this->convert_gpuit_to_itk<
+            UCharImageType::Pointer, float> (this->get_vol());
+	break;
+    default:
+	print_and_exit (
+	    "Error: unhandled conversion from %s to itk_uchar\n",
+	    plm_image_type_string (this->m_type));
+	return;
+    }
+    this->m_type = PLM_IMG_TYPE_ITK_UCHAR;
+}
+
+void
 Plm_image::convert_to_itk_char (void)
 {
     switch (this->m_type) {
@@ -769,35 +820,6 @@ Plm_image::convert_to_itk_char (void)
 	return;
     }
     this->m_type = PLM_IMG_TYPE_ITK_CHAR;
-}
-
-void
-Plm_image::convert_to_itk_uchar (void)
-{
-    switch (this->m_type) {
-    case PLM_IMG_TYPE_ITK_UCHAR:
-	return;
-    case PLM_IMG_TYPE_ITK_SHORT:
-	CONVERT_ITK_ITK (uchar, short);
-	break;
-    case PLM_IMG_TYPE_ITK_FLOAT:
-	CONVERT_ITK_ITK (uchar, float);
-	break;
-    case PLM_IMG_TYPE_GPUIT_UCHAR:
-	this->m_itk_uchar = this->convert_gpuit_to_itk<
-            UCharImageType::Pointer, unsigned char> (this->get_vol());
-	break;
-    case PLM_IMG_TYPE_GPUIT_FLOAT:
-	this->m_itk_uchar = this->convert_gpuit_to_itk<
-            UCharImageType::Pointer, float> (this->get_vol());
-	break;
-    default:
-	print_and_exit (
-	    "Error: unhandled conversion from %s to itk_uchar\n",
-	    plm_image_type_string (this->m_type));
-	return;
-    }
-    this->m_type = PLM_IMG_TYPE_ITK_UCHAR;
 }
 
 void

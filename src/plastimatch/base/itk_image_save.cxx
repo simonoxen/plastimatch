@@ -100,6 +100,14 @@ itk_image_save_short_dicom (
 
 template<class T> 
 void
+itk_image_save_int32 (T image, const char* fname)
+{
+    Int32ImageType::Pointer int32_img = cast_int32 (image);
+    itk_image_save (int32_img, fname);
+}
+
+template<class T> 
+void
 itk_image_save_uint32 (T image, const char* fname)
 {
     UInt32ImageType::Pointer uint32_img = cast_uint32 (image);
@@ -140,6 +148,7 @@ template PLMBASE_API void itk_image_save_char (FloatImageType::Pointer, const ch
 template PLMBASE_API void itk_image_save_uchar (FloatImageType::Pointer, const char*);
 template PLMBASE_API void itk_image_save_short (FloatImageType::Pointer, const char*);
 template PLMBASE_API void itk_image_save_ushort (FloatImageType::Pointer, const char*);
+template PLMBASE_API void itk_image_save_int32 (FloatImageType::Pointer, const char*);
 template PLMBASE_API void itk_image_save_uint32 (FloatImageType::Pointer, const char*);
 template PLMBASE_API void itk_image_save_float (FloatImageType::Pointer, const char*);
 template PLMBASE_API void itk_image_save_double (FloatImageType::Pointer, const char*);

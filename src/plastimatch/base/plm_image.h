@@ -174,8 +174,9 @@ public:
     /* debug */
     void print ();
 
-    /* Other */
+    /* Static functions */
     static int compare_headers (Plm_image *pli1, Plm_image *pli2);
+    static Plm_image::Pointer clone (const Plm_image::Pointer& pli);
 
 protected:
     /* Utility functions */

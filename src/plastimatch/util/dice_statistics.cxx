@@ -58,7 +58,7 @@ Dice_statistics::set_reference_image (const char* image_fn)
 
 void 
 Dice_statistics::set_reference_image (
-    const UCharImageType::Pointer image)
+    const UCharImageType::Pointer& image)
 {
     d_ptr->ref_image = image;
 }
@@ -71,7 +71,7 @@ Dice_statistics::set_compare_image (const char* image_fn)
 
 void 
 Dice_statistics::set_compare_image (
-    const UCharImageType::Pointer image)
+    const UCharImageType::Pointer& image)
 {
     d_ptr->cmp_image = image;
 }
