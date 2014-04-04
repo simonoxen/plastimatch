@@ -11,6 +11,7 @@
 #include "plm_clp.h"
 #include "plm_image.h"
 #include "plm_math.h"
+#include "print_and_exit.h"
 #include "pstring.h"
 #include "rt_study.h"
 #include "synthetic_mha.h"
@@ -63,6 +64,9 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
         case PLM_IMG_TYPE_ITK_USHORT:
             itk_image_save_ushort (img, (const char*) parms->output_fn);
             break;
+        case PLM_IMG_TYPE_ITK_LONG:
+            itk_image_save_int32 (img, (const char*) parms->output_fn);
+            break;
         case PLM_IMG_TYPE_ITK_ULONG:
             itk_image_save_uint32 (img, (const char*) parms->output_fn);
             break;
@@ -71,6 +75,9 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
             break;
         case PLM_IMG_TYPE_ITK_DOUBLE:
             itk_image_save_double (img, (const char*) parms->output_fn);
+            break;
+        default:
+            print_and_exit ("Output type is not supported.\n");
             break;
         }
     }
