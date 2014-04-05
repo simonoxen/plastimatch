@@ -21,6 +21,7 @@ option (PLM_BUILD_NLOPT_TEST  "Build NLopt test program"  OFF)
 option (PLM_BUILD_NM_TEST     "Build Nelder-Meade test program" OFF)
 option (PLM_BUILD_OPENCL_TEST "Build OpenCL test program" OFF)
 option (PLM_BUILD_OPENMP_TEST "Build OpenMP test program" OFF)
+option (PLM_BUILD_SIZEOF_TEST "Build test program for data sizes" OFF)
 option (PLM_BUILD_SMARTP_TEST "Build Smart pointer test program" OFF)
 option (PLM_BUILD_QT_TEST     "Build Qt test program"     OFF)
 option (PLM_BUILD_RANSAC_TEST "Build RANSAC test program" OFF)
@@ -169,6 +170,14 @@ if (PLM_BUILD_OPENMP_TEST AND OPENMP_FOUND)
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
   plm_add_executable (openmp_test openmp_test.cxx
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}" 
+    ${BUILD_ALWAYS} ${INSTALL_NEVER})
+endif ()
+
+# Test executable -- smart pointers
+if (PLM_BUILD_SIZEOF_TEST)
+  ## This is a test, in case of deciding to use shared_ptr
+  plm_add_executable (sizeof_test sizeof_test.cxx
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${BUILD_ALWAYS} ${INSTALL_NEVER})
 endif ()
 

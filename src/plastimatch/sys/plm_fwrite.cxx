@@ -23,7 +23,10 @@
     samba mount fails.  This seems to be a bug in the C runtime library.
     This function works around the problem by breaking up the large write 
     into many "medium-sized" writes. */
-#if _MSC_VER <= 1400
+/* GCS Apr 4, 2014.  It seems this is a problem for writes > 4GB, 
+   even 64-bit builds and MSVC 2010.  Sigh.
+ */
+#if _MSC_VER
 static size_t 
 fwrite_internal (void* buf, size_t size, size_t count, FILE* fp)
 {
@@ -36,6 +39,7 @@ fwrite_internal (void* buf, size_t size, size_t count, FILE* fp)
 
 	this_write = left_to_write;
 	if (this_write > WRITE_BLOCK) this_write = WRITE_BLOCK;
+
 	rc = fwrite (&bufc[cur], 1, this_write, fp);
 	cur += rc;
 	left_to_write -= rc;
