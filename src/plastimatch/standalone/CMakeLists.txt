@@ -102,11 +102,11 @@ set (WED_SRC
 set (GROUP_ADD_SRC
   group_add.cxx
   )
-set (GAMMA_THRESH_SRC
-  Gamma_Thresh.cxx
-  )
 set (FILTER_SRC
   filter.cxx
+  )
+set (GAMMA_THRESH_SRC
+  Gamma_Thresh.cxx
   )
 set (FLIP_IMAGE_SRC
   flip_image.cxx
@@ -184,12 +184,15 @@ plm_add_executable (wed "${WED_SRC}"
 plm_add_executable (group_add "${GROUP_ADD_SRC}" 
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+if (COMMENT_OUT)
 plm_add_executable (gamma_thresh "${GAMMA_THRESH_SRC}" 
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+endif ()
 plm_add_executable (filter "${FILTER_SRC}" 
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+if (COMMENT_OUT)
 plm_add_executable (flip_image "${FLIP_IMAGE_SRC}" 
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
@@ -202,6 +205,7 @@ plm_add_executable (template "${TEMPLATE_SRC}"
 plm_add_executable (find_center "${FIND_CENTER_SRC}" 
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+endif ()
 #  plm_add_executable (xf_to_EMPIREFMT "${XF_TO_EMPIREFMT_SRC}"
 #    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
 #    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})

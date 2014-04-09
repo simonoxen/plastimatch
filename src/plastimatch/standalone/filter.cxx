@@ -122,7 +122,7 @@ main (int argc, char* argv[])
   ct_image_header.get_spacing(ct_spacing);
   ct_image_header.get_origin(ct_origin);
 
-  Volume *ct_vol = ct_image->get_vol_float();
+  Volume::Pointer ct_vol = ct_image->get_volume_float();
   float* ct_img = (float*) ct_vol->img;
 
 

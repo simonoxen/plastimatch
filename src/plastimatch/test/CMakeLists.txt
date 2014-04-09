@@ -8,6 +8,9 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 ##-----------------------------------------------------------------------------
 ##  CMAKE FLAGS
 ##-----------------------------------------------------------------------------
+option (PLM_CONFIG_BUILD_TEST_PROGRAMS
+    "Build extra test program executables" OFF)
+
 option (PLM_BUILD_API_TEST    "Build Plastimatch API test programs" OFF)
 option (PLM_BUILD_CPROP_TEST  "Build C++ properties test programs"  OFF)
 option (PLM_BUILD_CUDA_TEST   "Build CUDA test program"   OFF)
@@ -30,14 +33,14 @@ option (PLM_BUILD_RANSAC_TEST "Build RANSAC test program" OFF)
 ##  BUILD TARGETS
 ##-----------------------------------------------------------------------------
 # Test executable -- plastimatch api
-if (PLM_BUILD_API_TEST)
+if (PLM_CONFIG_BUILD_TEST_PROGRAMS)
   plm_add_executable (api_test api_test.cxx
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_ALWAYS} ${INSTALL_NEVER})
 endif ()
 
 # Test executable -- c++ properties
-if (PLM_BUILD_CPROP_TEST)
+if (PLM_CONFIG_BUILD_TEST_PROGRAMS)
   plm_add_executable (test_eps test_eps.cxx
     "" "" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
@@ -50,7 +53,7 @@ if (PLM_BUILD_CPROP_TEST)
 endif ()
 
 # Test executable -- cuda
-if (CUDA_FOUND AND PLM_BUILD_CUDA_TEST)
+if (CUDA_FOUND AND PLM_CONFIG_BUILD_TEST_PROGRAMS)
   cuda_compile (CUDA_TEST_WRAPPERS cuda_test.cu)
   plm_add_executable (cuda_test "${CUDA_TEST_WRAPPERS}" 
     "${CUDA_LIBRARIES}" "" 
