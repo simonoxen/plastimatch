@@ -29,7 +29,8 @@ public:
 
     /* Set the CT volume for dose calculation.
        The Ion_plan takes ownership of this CT. */
-    void set_patient (Plm_image*);
+    //void set_patient (Plm_image*);
+    void set_patient (Plm_image::Pointer&);
     void set_patient (ShortImageType::Pointer&);
     void set_patient (FloatImageType::Pointer&);
     void set_patient (Volume*);

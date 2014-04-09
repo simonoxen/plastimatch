@@ -17,7 +17,7 @@ public:
     bool debug;
     double step_length;
     float smearing;
-	float source_size;
+    float source_size;
 
     Plm_image::Pointer patient;
     Plm_image::Pointer target;

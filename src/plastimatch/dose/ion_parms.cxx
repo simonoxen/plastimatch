@@ -497,7 +497,8 @@ Ion_parms::parse_args (int argc, char** argv)
     }
 
     /* load the patient and insert into the plan */
-    Plm_image *ct = plm_image_load (this->input_ct_fn.c_str(), 
+    //Plm_image *ct = plm_image_load (this->input_ct_fn.c_str(), 
+    Plm_image::Pointer ct = Plm_image::New (this->input_ct_fn.c_str(), 
         PLM_IMG_TYPE_ITK_FLOAT);
     if (!ct) {
         fprintf (stderr, "\n** ERROR: Unable to load patient volume.\n");

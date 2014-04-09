@@ -160,7 +160,6 @@ wed_ct_compute (
 int
 wed_ct_initialize(Wed_Parms *parms)
 {
-    Plm_image* ct_vol;
     Plm_image* dose_vol = 0;
     Ion_plan scene;
     float background[4];
@@ -175,7 +174,8 @@ wed_ct_initialize(Wed_Parms *parms)
     background[3] = 0.;
 
     /* load the patient and insert into the scene */
-    ct_vol = plm_image_load (parms->input_ct_fn, PLM_IMG_TYPE_ITK_FLOAT);
+    Plm_image::Pointer ct_vol = Plm_image::New (
+        parms->input_ct_fn, PLM_IMG_TYPE_ITK_FLOAT);
     if (!ct_vol) {
         fprintf (stderr, "\n** ERROR: Unable to load patient volume.\n");
         return -1;
@@ -206,8 +206,8 @@ wed_ct_initialize(Wed_Parms *parms)
     //  if (parms->input_dose_fn != "" && parms->output_dose_fn != "") {
     //Load the input dose, or input wed_dose
     if ((parms->mode==0)||(parms->mode==1))  {
-            dose_vol = plm_image_load (parms->input_dose_fn.c_str(), 
-				 PLM_IMG_TYPE_ITK_FLOAT);
+        dose_vol = plm_image_load (parms->input_dose_fn.c_str(), 
+            PLM_IMG_TYPE_ITK_FLOAT);
     }
     /* set scene parameters */
     scene.beam->set_source_position (parms->src);
@@ -300,7 +300,7 @@ wed_ct_initialize(Wed_Parms *parms)
     /* Compute the ct-wed volume */
     if (parms->mode==0)  {
         printf ("Computing patient wed volume...\n");
-        wed_ct_compute (parms->output_ct_fn, parms, ct_vol, &scene, background[0]);
+        wed_ct_compute (parms->output_ct_fn, parms, ct_vol.get(), &scene, background[0]);
         printf ("done.\n");
     }
   

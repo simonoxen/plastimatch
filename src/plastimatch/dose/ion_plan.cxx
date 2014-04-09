@@ -159,9 +159,9 @@ Ion_plan::init ()
 }
 
 void
-Ion_plan::set_patient (Plm_image* ct_vol)
+Ion_plan::set_patient (Plm_image::Pointer& ct_vol)
 {
-    d_ptr->patient.reset(ct_vol);
+    d_ptr->patient = ct_vol;
 }
 
 void
