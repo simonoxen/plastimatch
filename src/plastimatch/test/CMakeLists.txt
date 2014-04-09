@@ -154,9 +154,14 @@ if (PLM_CONFIG_BUILD_TEST_PROGRAMS)
 	"${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
 	${BUILD_ALWAYS} ${INSTALL_NEVER})
 
-    # Test executable -- smart pointers
+    # Test executable -- smart pointers I
     ## find_package (TR1)
-    plm_add_executable (test_smartp test_smartp.cxx
+    plm_add_executable (smartp_test_i smartp_test_i.cxx
+	"${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+	${BUILD_ALWAYS} ${INSTALL_NEVER})
+
+    # Test executable -- smart pointers II
+    plm_add_executable (smartp_test_ii smartp_test_ii.cxx
 	"${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
 	${BUILD_ALWAYS} ${INSTALL_NEVER})
 
