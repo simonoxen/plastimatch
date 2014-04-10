@@ -903,8 +903,8 @@ Rpl_volume::compute_wed_volume (
 			in_ijk_f[2] = (xyz[2] - in_vol->offset[2]) / in_vol->spacing[2];
 
 			if (ROUND_PLM_LONG(in_ijk_f[0]) < 0 || ROUND_PLM_LONG(in_ijk_f[0]) >= in_vol->dim[0]) {break;}
-			if (ROUND_PLM_LONG(in_ijk_f[1]) < 0 || ROUND_PLM_LONG(in_ijk_f[1]) >= in_vol->dim[0]) {break;}
-			if (ROUND_PLM_LONG(in_ijk_f[2]) < 0 || ROUND_PLM_LONG(in_ijk_f[2]) >= in_vol->dim[0]) {break;}
+			if (ROUND_PLM_LONG(in_ijk_f[1]) < 0 || ROUND_PLM_LONG(in_ijk_f[1]) >= in_vol->dim[1]) {break;}
+			if (ROUND_PLM_LONG(in_ijk_f[2]) < 0 || ROUND_PLM_LONG(in_ijk_f[2]) >= in_vol->dim[2]) {break;}
 	
 			plm_long ijk_floor[3];
 			plm_long ijk_round[3];
