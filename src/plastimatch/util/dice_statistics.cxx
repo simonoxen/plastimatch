@@ -242,6 +242,18 @@ Dice_statistics::get_dice ()
     return dice;
 }
 
+float
+Dice_statistics::get_sensitivity()
+{
+    return ((float) d_ptr->TP) / ((float) (d_ptr->TP + d_ptr->FN));
+}
+
+float
+Dice_statistics::get_specificity()
+{
+    return ((float) d_ptr->TN) / ((float) (d_ptr->TN + d_ptr->FP));
+}
+
 size_t
 Dice_statistics::get_true_positives ()
 {
@@ -306,4 +318,7 @@ Dice_statistics::debug ()
     lprintf ("FP: %13d\n",d_ptr->FP);
 
     lprintf ("DICE: %13f\n", this->get_dice());
+    
+    lprintf ("SE: %13f\n", this->get_sensitivity());
+    lprintf ("SP: %13f\n", this->get_specificity());
 }

@@ -55,6 +55,10 @@ public:
     ///@{
     /*! \brief Return the Dice coefficient value */
     float get_dice ();
+    /*! \brief Return sensitivity value */
+    float get_sensitivity ();
+    /*! \brief Return specificity value */
+    float get_specificity ();
     /*! \brief Return the number of true positive voxels, i.e. positive 
       reference voxels that are positive in compare image */
     size_t get_true_positives ();
