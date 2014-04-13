@@ -1,3 +1,4 @@
+#include "plmdose_config.h"
 #include "lookup_stop.h"
 
 extern const double lookup_stop_proton[][2] ={

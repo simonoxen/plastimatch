@@ -5,21 +5,16 @@
 #define _landmark_warp_h_
 
 #include "plmregister_config.h"
-#include "plm_image_header.h"
 
-//NSh for calculate_warped_landmarks
+#include "plm_image.h"
+#include "plm_image_header.h"
+#include "print_and_exit.h"
 #include "volume.h"
 #include "xform.h"
-#include "plm_image.h"
-#include "print_and_exit.h"
-
-// TODO: change type of m_pih to Plm_image_header*
 
 class Plm_image;
-//class Plm_image_header;
 class Xform;
 typedef struct raw_pointset Raw_pointset;
-
 
 class PLMREGISTER_API Landmark_warp
 {
@@ -27,7 +22,7 @@ public:
     /* Inputs */
     Raw_pointset *m_fixed_landmarks;
     Raw_pointset *m_moving_landmarks;
-    Plm_image *m_input_img;
+    Plm_image::Pointer m_input_img;
     Plm_image_header m_pih;
 
     /* Config */

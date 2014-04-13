@@ -88,7 +88,7 @@ public:
 
     bool have_ss_img ();
     void set_ss_img (UCharImageType::Pointer ss_img);
-    Plm_image* get_ss_img ();
+    Plm_image::Pointer get_ss_img ();
 
     bool have_structure_set ();
     Rtss::Pointer& get_structure_set ();

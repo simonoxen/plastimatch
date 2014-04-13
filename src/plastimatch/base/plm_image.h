@@ -175,7 +175,9 @@ public:
     void print ();
 
     /* Static functions */
-    static int compare_headers (Plm_image *pli1, Plm_image *pli2);
+    static int compare_headers (
+        const Plm_image::Pointer& pli1, 
+        const Plm_image::Pointer& pli2);
     static Plm_image::Pointer clone (const Plm_image::Pointer& pli);
 
 protected:
@@ -200,8 +202,8 @@ protected:
 PLMBASE_API Plm_image* plm_image_load (const char* fname, Plm_image_type type);
 PLMBASE_API Plm_image* plm_image_load (
     const std::string& fname, Plm_image_type type);
-PLMBASE_API Plm_image* plm_image_load_native (const char* fname);
-PLMBASE_API Plm_image* plm_image_load_native (const std::string& fname);
+PLMBASE_API Plm_image::Pointer plm_image_load_native (const char* fname);
+PLMBASE_API Plm_image::Pointer plm_image_load_native (const std::string& fname);
 PLMBASE_API void plm_image_save_vol (const char* fname, const Volume *vol);
 
 #endif

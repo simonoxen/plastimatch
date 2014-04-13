@@ -78,7 +78,7 @@ ss_img_extract_bit (
 
 UCharImageType::Pointer
 ss_img_extract_bit (
-    Plm_image *image,
+    const Plm_image::Pointer& image,
     unsigned int bit
 )
 {

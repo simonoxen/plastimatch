@@ -267,8 +267,8 @@ Mabs_atlas_selection::compute_nmi_post()
     Plm_image_header fixed_pih (regd->fixed_image);
 
     Xform::Pointer xf = do_registration_pure (regd, regp);
-    plm_warp (deformed_atlas.get(), 0, xf, &fixed_pih, 
-        regd->moving_image.get(),
+    plm_warp (deformed_atlas, 0, xf, &fixed_pih, 
+        regd->moving_image,
         regp->default_value, 0, 1);
     
     double nmi_post = this->compute_nmi (this->subject, deformed_atlas);
@@ -305,8 +305,8 @@ Mabs_atlas_selection::compute_nmi_ratio()
     Plm_image_header fixed_pih (regd->fixed_image);
 
     Xform::Pointer xf = do_registration_pure (regd, regp);
-    plm_warp (deformed_atlas.get(), 0, xf, &fixed_pih, 
-        regd->moving_image.get(),
+    plm_warp (deformed_atlas, 0, xf, &fixed_pih, 
+        regd->moving_image,
         regp->default_value, 0, 1);
     
     double nmi_post = this->compute_nmi (this->subject, deformed_atlas);

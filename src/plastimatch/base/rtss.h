@@ -65,7 +65,7 @@ public:
     void keyholize (void);
     void set_rasterization_geometry (void);
     void set_geometry (const Plm_image_header *pih);
-    void set_geometry (const Plm_image *pli);
+    void set_geometry (const Plm_image::Pointer& pli);
 };
 
 #endif

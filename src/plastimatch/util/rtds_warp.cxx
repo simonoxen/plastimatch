@@ -326,7 +326,7 @@ rtds_warp (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms)
     } else if (rtds->has_dose()) {
         /* use the spacing of dose */
         lprintf ("Setting PIH from DOSE\n");
-        pih.set_from_plm_image (rtds->get_dose_plm_image());
+        pih.set_from_plm_image (rtds->get_dose());
     } else if (rtds->have_rtss() && rtds->get_rtss()->have_structure_set()) {
         /* we have structure set, but without geometry.  use 
            heuristics to find a good geometry for rasterization */
@@ -364,10 +364,9 @@ rtds_warp (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms)
             || parms->output_vf_fn.not_empty()
             || parms->output_dicom.not_empty()))
     {
-        Plm_image *im_out;
-        im_out = new Plm_image;
+        Plm_image::Pointer im_out = Plm_image::New();
         lprintf ("Rt_study_warp: Warping m_img\n");
-        plm_warp (im_out, &vf, xform, &pih, rtds->get_image().get(), 
+        plm_warp (im_out, &vf, xform, &pih, rtds->get_image(), 
             parms->default_val, parms->use_itk, parms->interp_lin);
         rtds->set_image (im_out);
     }
@@ -389,9 +388,8 @@ rtds_warp (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms)
             || parms->output_dicom.not_empty()))
     {
         lprintf ("Rt_study_warp: Warping dose\n");
-        Plm_image *im_out;
-        im_out = new Plm_image;
-        plm_warp (im_out, 0, xform, &pih, rtds->get_dose_plm_image(), 0, 
+        Plm_image::Pointer im_out = Plm_image::New();
+        plm_warp (im_out, 0, xform, &pih, rtds->get_dose(), 0, 
             parms->use_itk, 1);
         rtds->set_dose (im_out);
     }
@@ -426,7 +424,7 @@ rtds_warp (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms)
         lprintf ("Rt_study_warp: Saving xio dose.\n");
         fn.format ("%s/%s", (const char*) parms->output_xio_dirname, "dose");
         xio_dose_save (
-            rtds->get_dose_plm_image(),
+            rtds->get_dose(),
             rtds->get_metadata(), 
             rtds->get_xio_ct_transform(),
             (const char*) fn, 

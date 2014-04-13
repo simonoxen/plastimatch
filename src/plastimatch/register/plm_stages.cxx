@@ -187,8 +187,7 @@ save_output (
     if (img_out_fn[0] || vf_out_fn[0] || warped_landmarks_fn[0]) {
         DeformationFieldType::Pointer vf;
         DeformationFieldType::Pointer *vfp;
-        Plm_image im_warped;
-        Plm_image *imp;
+        Plm_image::Pointer im_warped;
         Plm_image_header pih;
 
         if (vf_out_fn[0] || warped_landmarks_fn[0]) {
@@ -197,27 +196,25 @@ save_output (
             vfp = 0;
         }
         if (img_out_fn[0]) {
-            imp = &im_warped;
-        } else {
-            imp = 0;
+            im_warped = Plm_image::New();
         }
         
         pih.set_from_plm_image (regd->fixed_image);
 
         logfile_printf ("Warping...\n");
-        plm_warp (imp, vfp, xf_out, &pih, regd->moving_image.get(), 
+        plm_warp (im_warped, vfp, xf_out, &pih, regd->moving_image, 
             default_value, 0, 1);
 
         if (img_out_fn[0]) {
             logfile_printf ("Saving image...\n");
             if (img_out_fmt == IMG_OUT_FMT_AUTO) {
                 if (img_out_type == PLM_IMG_TYPE_UNDEFINED) {
-                    im_warped.save_image (img_out_fn);
+                    im_warped->save_image (img_out_fn);
                 } else {
-                    im_warped.convert_and_save (img_out_fn, img_out_type);
+                    im_warped->convert_and_save (img_out_fn, img_out_type);
                 }
             } else {
-                im_warped.save_short_dicom (img_out_fn, 0);
+                im_warped->save_short_dicom (img_out_fn, 0);
             }
         }
         if (warped_landmarks_fn[0]) {

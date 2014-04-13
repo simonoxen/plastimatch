@@ -105,7 +105,7 @@ vf_compare (Compare_parms* parms)
 static void
 img_compare (Compare_parms* parms)
 {
-    Plm_image *img1, *img2;
+    Plm_image::Pointer img1, img2;
 
     img1 = plm_image_load_native ((const char*) parms->img_in_1_fn);
     if (!img1) {
@@ -177,9 +177,6 @@ img_compare (Compare_parms* parms)
 	(float) (mse / num), 
 	num_dif, 
 	num);
-
-    delete img1;
-    delete img2;
 }
 
 static void

@@ -18,11 +18,11 @@
 
 static void
 plm_warp_itk (
-    Plm_image *im_warped,                    /* Output (optional) */
+    Plm_image::Pointer& im_warped,     /* Output (optional) */
     DeformationFieldType::Pointer *vf_out,   /* Output (optional) */
-    Xform *xf_in,                            /* Input */
+    const Xform::Pointer& xf_in,             /* Input */
     Plm_image_header *pih,                   /* Input */
-    Plm_image *im_in,                        /* Input */
+    const Plm_image::Pointer& im_in,                        /* Input */
     float default_val,     /* Input:  Value for pixels without match */
     int interp_lin         /* Input:  Trilinear (1) or nn (0) */
 )
@@ -32,7 +32,7 @@ plm_warp_itk (
 
     /* Create an itk vector field from xf_in */
     printf ("plm_warp_itk: xform_to_itk_vf\n");
-    xform_to_itk_vf (&xform_tmp, xf_in, pih);
+    xform_to_itk_vf (&xform_tmp, xf_in.get(), pih);
     vf = xform_tmp.get_itk_vf ();
 
     /* If caller wants the vf, we assign it here */
@@ -127,11 +127,11 @@ plm_warp_itk (
 /* Native warping (only gpuit bspline + float) */
 static void
 plm_warp_native (
-    Plm_image *im_warped,                 /* Output */
+    Plm_image::Pointer& im_warped,        /* Output */
     DeformationFieldType::Pointer *vf,    /* Output */
-    Xform *xf_in,                         /* Input */
+    const Xform::Pointer& xf_in,          /* Input */
     Plm_image_header *pih,                /* Input */
-    Plm_image *im_in,                     /* Input */
+    const Plm_image::Pointer& im_in,      /* Input */
     float default_val,     /* Input:  Value for pixels without match */
     int interp_lin         /* Input:  Trilinear (1) or nn (0) */
 )
@@ -153,7 +153,7 @@ plm_warp_native (
 
     /* Transform input xform to gpuit bspline with correct voxel spacing */
     printf ("Converting xform...\n");
-    xform_to_gpuit_bsp (&xf_tmp, xf_in, pih, bxf_in->grid_spac);
+    xform_to_gpuit_bsp (&xf_tmp, xf_in.get(), pih, bxf_in->grid_spac);
 
     /* Create output vf */
     pih->get_origin (origin);
@@ -201,11 +201,11 @@ plm_warp_native (
 /* Native vector warping (only gpuit bspline + uchar_vec) */
 static void
 plm_warp_native_vec (
-    Plm_image *im_warped,                 /* Output */
+    Plm_image::Pointer& im_warped,        /* Output */
     DeformationFieldType::Pointer *vf,    /* Output */
-    Xform *xf_in,                         /* Input */
+    const Xform::Pointer& xf_in,          /* Input */
     Plm_image_header *pih,                /* Input */
-    Plm_image *im_in,                     /* Input */
+    const Plm_image::Pointer& im_in,      /* Input */
     float default_val,     /* Input:  Value for pixels without match */
     int interp_lin         /* Input:  Trilinear (1) or nn (0) */
 )
@@ -227,7 +227,7 @@ plm_warp_native_vec (
 
     /* Transform input xform to gpuit bspline with correct voxel spacing */
     printf ("Converting xform...\n");
-    xform_to_gpuit_bsp (&xf_tmp, xf_in, pih, bxf_in->grid_spac);
+    xform_to_gpuit_bsp (&xf_tmp, xf_in.get(), pih, bxf_in->grid_spac);
 
     /* Create output vf */
     pih->get_origin (origin);
@@ -274,11 +274,11 @@ plm_warp_native_vec (
 
 void
 plm_warp (
-    Plm_image *im_warped,  /* Output: Output image */
+    Plm_image::Pointer& im_warped,  /* Output: Output image (optional) */
     DeformationFieldType::Pointer* vf,    /* Output: Output vf (optional) */
-    Xform *xf_in,          /* Input:  Input image warped by this xform */
+    const Xform::Pointer& xf_in, /* Input:  Input image warped by this xform */
     Plm_image_header *pih, /* Input:  Size of output image */
-    Plm_image *im_in,      /* Input:  Input image */
+    const Plm_image::Pointer& im_in,      /* Input:  Input image */
     float default_val,     /* Input:  Value for pixels without match */
     int use_itk,           /* Input:  Force use of itk (1) or not (0) */
     int interp_lin         /* Input:  Trilinear (1) or nn (0) */
@@ -319,28 +319,4 @@ plm_warp (
 	plm_warp_itk (im_warped, vf, xf_in, pih, im_in, default_val,
 	    interp_lin);
     }
-}
-
-void
-plm_warp (
-    Plm_image *im_warped,  /* Output: Output image */
-    DeformationFieldType::Pointer* vf,    /* Output: Output vf (optional) */
-    const Xform::Pointer& xf_in, /* Input:  Input image warped by this xform */
-    Plm_image_header *pih, /* Input:  Size of output image */
-    Plm_image *im_in,      /* Input:  Input image */
-    float default_val,     /* Input:  Value for pixels without match */
-    int use_itk,           /* Input:  Force use of itk (1) or not (0) */
-    int interp_lin         /* Input:  Trilinear (1) or nn (0) */
-)
-{
-    plm_warp (
-        im_warped,
-        vf,
-        xf_in.get(),
-        pih,
-        im_in,
-        default_val,
-        use_itk,
-        interp_lin
-    );
 }

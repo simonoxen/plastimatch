@@ -528,7 +528,7 @@ Rtss::set_geometry (
 
 void
 Rtss::set_geometry (
-    const Plm_image *pli
+    const Plm_image::Pointer& pli
 )
 {
     Plm_image_header pih;

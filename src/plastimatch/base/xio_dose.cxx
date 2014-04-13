@@ -314,7 +314,7 @@ xio_dose_load (
 
 void
 xio_dose_save (
-    Plm_image *pli,
+    const Plm_image::Pointer& pli,
     Metadata *meta,
     Xio_ct_transform *transform,
     const char *filename,

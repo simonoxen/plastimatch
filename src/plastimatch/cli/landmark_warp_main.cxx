@@ -103,13 +103,12 @@ load_input_files (Landmark_warp_main_parms *parms)
 	|| !parms->have_spacing || !parms->have_direction_cosines)
     {
 	if (parms->fixed_img_fn.not_empty()) {
-	    Plm_image *pli = plm_image_load_native (parms->fixed_img_fn);
+            Plm_image::Pointer pli = plm_image_load_native (parms->fixed_img_fn);
 	    if (!pli) {
 		print_and_exit ("Error loading fixed image: %s\n",
 		    (const char*) parms->fixed_img_fn);
 	    }
 	    lw->m_pih.set_from_plm_image (pli);
-	    delete pli;
 	}
     }
     if (parms->have_dim) {

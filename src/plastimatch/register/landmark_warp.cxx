@@ -14,7 +14,6 @@ Landmark_warp::Landmark_warp (void)
 {
     m_fixed_landmarks = 0;
     m_moving_landmarks = 0;
-    m_input_img = 0;
 
     default_val = 0;
     rbf_radius = 0;

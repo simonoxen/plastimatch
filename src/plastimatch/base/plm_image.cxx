@@ -241,20 +241,20 @@ plm_image_load (const std::string& fname, Plm_image_type type)
     return plm_image_load (fname.c_str(), type);
 }
 
-Plm_image*
+Plm_image::Pointer
 plm_image_load_native (const char* fname)
 {
-    Plm_image *pli = new Plm_image;
-    if (!pli) return 0;
+    Plm_image::Pointer pli = Plm_image::New();
 
     if (pli->load_native (fname)) {
         return pli;
     }
-    delete pli;
-    return 0;
+    else {
+        return Plm_image::Pointer();
+    }
 }
 
-Plm_image*
+Plm_image::Pointer
 plm_image_load_native (const std::string& fname)
 {
     return plm_image_load_native (fname.c_str());
@@ -1533,7 +1533,9 @@ Plm_image::print ()
 
 /* Return 1 if the two headers are the same */
 int
-Plm_image::compare_headers (Plm_image *pli1, Plm_image *pli2)
+Plm_image::compare_headers (
+    const Plm_image::Pointer& pli1, 
+    const Plm_image::Pointer& pli2)
 {
     Plm_image_header pih1, pih2;
 

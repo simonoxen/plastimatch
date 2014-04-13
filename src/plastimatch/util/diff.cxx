@@ -18,7 +18,7 @@ Diff_parms::Diff_parms ()
 void
 diff_main (Diff_parms* parms)
 {
-    Plm_image *img1, *img2;
+    Plm_image::Pointer img1, img2;
 
     img1 = plm_image_load_native ((const char*) parms->img_in_1_fn);
     if (!img1) {

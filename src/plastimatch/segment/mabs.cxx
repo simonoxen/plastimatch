@@ -503,10 +503,10 @@ Mabs::run_registration_loop ()
             /* Warp the output image */
             lprintf ("Warp output image...\n");
             Plm_image_header fixed_pih (regd->fixed_image);
-            Plm_image *warped_image = new Plm_image;
+            Plm_image::Pointer warped_image = Plm_image::New();
             timer.start();
             plm_warp (warped_image, 0, xf_out, &fixed_pih, 
-                regd->moving_image.get(), 
+                regd->moving_image, 
                 regp->default_value, 0, 1);
             d_ptr->time_warp_img += timer.report();
             
@@ -546,7 +546,6 @@ Mabs::run_registration_loop ()
 
             /* We're done with these */
             delete regd;
-            delete warped_image;
 
             /* Loop through structures for this atlas image */
             lprintf ("Process structures...\n");
@@ -1100,7 +1099,7 @@ Mabs::segmentation_vote (const std::string& atlas_id)
     std::string warped_image_fn;
     warped_image_fn = string_format (
         "%s/img.nrrd", curr_output_dir.c_str());
-    Plm_image *warped_image = plm_image_load_native (warped_image_fn);
+    Plm_image::Pointer warped_image = plm_image_load_native (warped_image_fn);
     d_ptr->time_io += timer.report();
     if (!warped_image) {
         /* Load atlas image */
@@ -1110,19 +1109,18 @@ Mabs::segmentation_vote (const std::string& atlas_id)
             atlas_input_path.c_str());
         lprintf ("That's ok.  Loading atlas image instead: %s\n", 
             atlas_image_fn.c_str());
-        Plm_image *atlas_image = 
+        Plm_image::Pointer atlas_image = 
             plm_image_load_native (atlas_image_fn);
         d_ptr->time_io += timer.report();
         /* Warp atlas image */
         lprintf ("Warping atlas image.\n");
         timer.start();
-        warped_image = new Plm_image;
+        warped_image = Plm_image::New();
         Plm_image_header fixed_pih (d_ptr->ref_rtds->get_image());
         plm_warp (warped_image, 0, xf, 
             &fixed_pih, 
             atlas_image, 
             0, 0, 1);
-        delete atlas_image;
         d_ptr->time_warp_img += timer.report();
         /* Save warped image */
         if (d_ptr->write_warped_images) {
@@ -1163,7 +1161,7 @@ Mabs::segmentation_vote (const std::string& atlas_id)
         lprintf ("Loading dmap\n");
         std::string dmap_fn = string_format ("%s/dmap_%s.nrrd", 
             curr_output_dir.c_str(), mapped_name.c_str());
-        Plm_image *dmap_image = plm_image_load_native (
+        Plm_image::Pointer dmap_image = plm_image_load_native (
             dmap_fn.c_str());
         d_ptr->time_io += timer.report();
         if (!dmap_image) {
@@ -1174,7 +1172,7 @@ Mabs::segmentation_vote (const std::string& atlas_id)
                 mapped_name.c_str());
             lprintf ("That's ok, loading warped structure instead: %s\n",
                 warped_structure_fn.c_str());
-            Plm_image *warped_structure = plm_image_load_native (
+            Plm_image::Pointer warped_structure = plm_image_load_native (
                 warped_structure_fn);
             d_ptr->time_io += timer.report();
             if (!warped_structure) {
@@ -1185,7 +1183,7 @@ Mabs::segmentation_vote (const std::string& atlas_id)
                     atlas_input_path.c_str(), mapped_name.c_str());
                 lprintf ("That's ok, loading atlas structure instead: %s\n", 
                     atlas_struct_fn.c_str());
-                Plm_image *atlas_struct = 
+                Plm_image::Pointer atlas_struct = 
                     plm_image_load_native (atlas_struct_fn);
                 d_ptr->time_io += timer.report();
                 if (!atlas_struct) {
@@ -1195,14 +1193,13 @@ Mabs::segmentation_vote (const std::string& atlas_id)
                 }
                 /* Warp structure */
                 timer.start();
-                warped_structure = new Plm_image;
+                warped_structure = Plm_image::New();
                 Plm_image_header fixed_pih (d_ptr->ref_rtds->get_image());
                 lprintf ("Warping atlas structure.\n");
                 plm_warp (warped_structure, 0, xf, 
                     &fixed_pih, 
                     atlas_struct,
                     0, 0, 1);
-                delete atlas_struct;
                 d_ptr->time_warp_str += timer.report();
             }
             if (!warped_structure) continue;
@@ -1211,8 +1208,7 @@ Mabs::segmentation_vote (const std::string& atlas_id)
             FloatImageType::Pointer dmap_image_itk = this->compute_dmap (
                 warped_structure->itk_uchar(),
                 curr_output_dir, mapped_name);
-            delete warped_structure;
-            dmap_image = new Plm_image (dmap_image_itk);
+            dmap_image = Plm_image::New (dmap_image_itk);
             d_ptr->time_dmap += timer.report();
         }
 
@@ -1222,13 +1218,7 @@ Mabs::segmentation_vote (const std::string& atlas_id)
         vote->vote (warped_image->itk_float(), 
             dmap_image->itk_float());
         d_ptr->time_vote += timer.report();
-
-        /* We don't need this any more */
-        delete dmap_image;
     }
-
-    /* We don't need this any more */
-    delete warped_image;
 }
 
 void

@@ -41,8 +41,8 @@
 class Segmentation_private {
 public:
     Metadata *m_meta;           /* Metadata specific to this ss_image */
-    Plm_image *m_labelmap;      /* Structure set lossy bitmap form */
-    Plm_image *m_ss_img;        /* Structure set in lossless bitmap form */
+    Plm_image::Pointer m_labelmap; /* Structure set lossy bitmap form */
+    Plm_image::Pointer m_ss_img;   /* Structure set in lossless bitmap form */
     Rtss::Pointer m_cxt;        /* Structure set in polyline form */
 
     bool m_rtss_valid;
@@ -51,9 +51,6 @@ public:
 public:
     Segmentation_private () {
         m_meta = new Metadata;
-        m_labelmap = 0;
-        m_ss_img = 0;
-
         m_rtss_valid = false;
         m_ss_img_valid = false;
     }
@@ -95,18 +92,9 @@ Segmentation::~Segmentation ()
 void
 Segmentation::clear ()
 {
-    if (d_ptr->m_cxt) {
-        d_ptr->m_cxt.reset();
-    }
-    if (d_ptr->m_ss_img) {
-        delete d_ptr->m_ss_img;
-        d_ptr->m_ss_img = 0;
-    }
-    if (d_ptr->m_labelmap) {
-        delete d_ptr->m_labelmap;
-        d_ptr->m_labelmap = 0;
-    }
-
+    d_ptr->m_cxt.reset();
+    d_ptr->m_ss_img.reset();
+    d_ptr->m_labelmap.reset();
     d_ptr->m_rtss_valid = false;
     d_ptr->m_ss_img_valid = false;
 }
@@ -116,7 +104,7 @@ Segmentation::load (const char *ss_img, const char *ss_list)
 {
     /* Load ss_img */
     if (d_ptr->m_ss_img) {
-        delete d_ptr->m_ss_img;
+        d_ptr->m_ss_img.reset();
     }
     if (ss_img && file_exists (ss_img)) {
         d_ptr->m_ss_img = plm_image_load_native (ss_img);
@@ -760,14 +748,11 @@ Segmentation::rasterize (
     /* Convert rasterized structure sets from vol to plm_image */
     printf ("Converting...\n");
     if (want_labelmap) {
-        d_ptr->m_labelmap = new Plm_image;
+        d_ptr->m_labelmap = Plm_image::New();
         d_ptr->m_labelmap->set_volume (rasterizer.labelmap_vol);
         rasterizer.labelmap_vol = 0;
     }
-    if (d_ptr->m_ss_img) {
-        delete d_ptr->m_ss_img;
-    }
-    d_ptr->m_ss_img = new Plm_image;
+    d_ptr->m_ss_img = Plm_image::New();
 
     if (use_ss_img_vec) {
         d_ptr->m_ss_img->set_itk (rasterizer.m_ss_img->m_itk_uchar_vec);
@@ -811,7 +796,7 @@ Segmentation::warp_nondestructive (
 
     if (d_ptr->m_labelmap) {
         printf ("Warping labelmap.\n");
-        Plm_image *tmp = new Plm_image;
+        Plm_image::Pointer tmp = Plm_image::New();
         plm_warp (tmp, 0, xf, pih, d_ptr->m_labelmap, 0, use_itk, 0);
         rtss_warped->d_ptr->m_labelmap = tmp;
         rtss_warped->d_ptr->m_labelmap->convert (PLM_IMG_TYPE_ITK_ULONG);
@@ -819,7 +804,7 @@ Segmentation::warp_nondestructive (
 
     if (d_ptr->m_ss_img) {
         printf ("Warping ss_img.\n");
-        Plm_image *tmp = new Plm_image;
+        Plm_image::Pointer tmp = Plm_image::New();
         plm_warp (tmp, 0, xf, pih, d_ptr->m_ss_img, 0, use_itk, 0);
         rtss_warped->d_ptr->m_ss_img = tmp;
     }
@@ -833,22 +818,18 @@ Segmentation::warp (
     Plm_image_header *pih, 
     bool use_itk)
 {
-    Plm_image *tmp;
-
     if (d_ptr->m_labelmap) {
         printf ("Warping labelmap.\n");
-        tmp = new Plm_image;
+        Plm_image::Pointer tmp = Plm_image::New();
         plm_warp (tmp, 0, xf, pih, d_ptr->m_labelmap, 0, use_itk, 0);
-        delete d_ptr->m_labelmap;
         d_ptr->m_labelmap = tmp;
         d_ptr->m_labelmap->convert (PLM_IMG_TYPE_ITK_ULONG);
     }
 
     if (d_ptr->m_ss_img) {
         printf ("Warping ss_img.\n");
-        tmp = new Plm_image;
+        Plm_image::Pointer tmp = Plm_image::New();
         plm_warp (tmp, 0, xf, pih, d_ptr->m_ss_img, 0, use_itk, 0);
-        delete d_ptr->m_ss_img;
         d_ptr->m_ss_img = tmp;
     }
 
@@ -877,10 +858,7 @@ Segmentation::have_ss_img ()
 void
 Segmentation::set_ss_img (UCharImageType::Pointer ss_img)
 {
-    if (d_ptr->m_ss_img) {
-        delete d_ptr->m_ss_img;
-    }
-    d_ptr->m_ss_img = new Plm_image;
+    d_ptr->m_ss_img = Plm_image::New();
     d_ptr->m_ss_img->set_itk (ss_img);
 
     if (d_ptr->m_cxt) {
@@ -890,7 +868,7 @@ Segmentation::set_ss_img (UCharImageType::Pointer ss_img)
     d_ptr->m_ss_img_valid = true;
 }
 
-Plm_image*
+Plm_image::Pointer
 Segmentation::get_ss_img ()
 {
     return d_ptr->m_ss_img;
@@ -979,8 +957,8 @@ Segmentation::set_structure_image (
 void
 Segmentation::resample (float spacing[3])
 {
-    Plm_image *ss_img = d_ptr->m_ss_img;
-    ss_img->set_itk (resample_image (ss_img->itk_uchar_vec (), spacing));
+    d_ptr->m_ss_img->set_itk (
+        resample_image (d_ptr->m_ss_img->itk_uchar_vec (), spacing));
 }
 
 
@@ -995,7 +973,7 @@ Segmentation::initialize_ss_image (
     Plm_image_header ss_img_pih;
 
     /* Create ss_image with same resolution as first image */
-    d_ptr->m_ss_img = new Plm_image;
+    d_ptr->m_ss_img = Plm_image::New ();
     ss_img = UCharVecImageType::New ();
     itk_image_set_header (ss_img, pih);
     ss_img->SetVectorLength (vector_length);

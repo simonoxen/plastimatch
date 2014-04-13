@@ -16,7 +16,7 @@ PLMBASE_API void xio_dose_load (
     const char *filename
 );
 PLMBASE_API void xio_dose_save (
-    Plm_image *plm,
+    const Plm_image::Pointer& plm,
     Metadata* meta,
     Xio_ct_transform *transform,
     const char *filename,

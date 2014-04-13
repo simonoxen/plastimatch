@@ -101,7 +101,6 @@ public:
     Volume::Pointer get_image_volume_float ();
 
     bool has_dose ();
-    Plm_image* get_dose_plm_image ();
     Volume::Pointer get_dose_volume_float ();
 
     void resample (float spacing[3]);

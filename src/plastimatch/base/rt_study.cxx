@@ -232,7 +232,7 @@ Rt_study::load_xio (const char *xio_dir)
     /* Apply XiO CT geometry to structures */
     if (d_ptr->m_rtss->have_structure_set()) {
         Rtss *rtss_ss = d_ptr->m_rtss->get_structure_set_raw ();
-        rtss_ss->set_geometry (d_ptr->m_img.get());
+        rtss_ss->set_geometry (d_ptr->m_img);
     }
 
     /* Load demographics */
@@ -291,7 +291,7 @@ Rt_study::load_dose_img (const char *dose_img)
         d_ptr->m_dose.reset();
     }
     if (dose_img) {
-        d_ptr->m_dose.reset(plm_image_load_native (dose_img));
+        d_ptr->m_dose = plm_image_load_native (dose_img);
     }
 }
 
@@ -629,15 +629,6 @@ bool
 Rt_study::has_dose ()
 {
     return (d_ptr->m_dose != 0);
-}
-
-Plm_image*
-Rt_study::get_dose_plm_image ()
-{
-    if (!d_ptr->m_dose) {
-        return 0;
-    }
-    return d_ptr->m_dose.get();
 }
 
 Volume::Pointer

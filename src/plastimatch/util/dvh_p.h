@@ -6,10 +6,10 @@
 
 #include "plmutil_config.h"
 #include <string>
-#include "itk_image_type.h"
 #include "dvh.h"
+#include "itk_image_type.h"
+#include "plm_image.h"
 
-class Plm_image;
 class Segmentation;
 
 class Dvh_private {
@@ -18,7 +18,7 @@ public:
     ~Dvh_private ();
 public:
     Segmentation *rtss;
-    Plm_image *dose;
+    Plm_image::Pointer dose;
     enum Dvh::Dvh_units dose_units;
     enum Dvh::Dvh_normalization normalization;
     enum Dvh::Histogram_type histogram_type;

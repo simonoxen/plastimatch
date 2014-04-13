@@ -6,11 +6,10 @@
 
 #include "plmbase_config.h"
 #include "itk_image_type.h"
-
-class Plm_image;
+#include "plm_image.h"
 
 PLMBASE_API UCharImageType::Pointer ss_img_extract_bit (
-    Plm_image *image,
+    const Plm_image::Pointer& image,
     unsigned int bit
 );
 PLMBASE_API UCharImageType::Pointer ss_img_extract_bit (
