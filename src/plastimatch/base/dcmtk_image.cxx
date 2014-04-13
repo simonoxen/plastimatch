@@ -47,12 +47,12 @@ Dcmtk_loader::image_load ()
 
     /* Insert files into groups according to direction cosines */
     {
-        printf ("----------\n");
+        //printf ("----------\n");
         Dcmtk_file_list::const_iterator it;
         for (it = flist.begin(); it != flist.end(); ++it) {
             const Dcmtk_file::Pointer& df = (*it);
 
-            df->debug ();
+            //df->debug ();
 
             bool match_found = false;
             std::list<Dcmtk_file_list>::iterator grit;
@@ -64,7 +64,7 @@ Dcmtk_loader::image_load ()
                     == df->get_direction_cosines())
                 {
                     /* Add logic to append to flp */
-                    printf ("Match found.  :)\n");
+                    //printf ("Match found.  :)\n");
                     match_found = true;
                     flp.push_back (df);
                     break;
@@ -74,11 +74,11 @@ Dcmtk_loader::image_load ()
                 continue;
             }
             /* Else insert new element into group_list */
-            printf ("Need to insert.\n");
+            //printf ("Need to insert.\n");
             group_list.push_back (Dcmtk_file_list());
             group_list.back().push_back (df);
         }
-        printf ("----------\n");
+        //printf ("----------\n");
     }
 
     /* Sort each group in Z direction */
@@ -186,7 +186,7 @@ Dcmtk_loader::image_load ()
     }
 
     /* Report information about best chunk */
-    lprintf ("Best chuck:\n  Slices %d to %d from (0 to %d)\n"
+    lprintf ("Best chunck:\n  Slices %d to %d from (0 to %d)\n"
 	"  Z_loc = %f %f\n" 
 	"  Slice spacing = %f\n", 
 	best_chunk_start, best_chunk_start + best_chunk_len - 1, slice_no, 
@@ -195,12 +195,14 @@ Dcmtk_loader::image_load ()
 	best_chunk_diff);
 
     /* Some debugging info */
+#if defined (commentout)
     lprintf ("Slices: ");
     for (it = flist.begin(); it != flist.end(); ++it) {
         df = (*it).get();
 	lprintf ("%f ", df->get_z_position());
     }
     lprintf ("\n");
+#endif
 
     /* Create a Volume_header to hold the image geometry */
     Volume_header vh;
@@ -224,14 +226,16 @@ Dcmtk_loader::image_load ()
     }
 
     /* More debugging info */
-    vh.print ();
+    //vh.print ();
 
     /* Still more debugging info */
+#if defined (commentout)
     lprintf ("Resamples slices: ");
     for (plm_long i = 0; i < dim[2]; i++) {
 	lprintf ("%f ", vh.get_origin()[2] + i * vh.get_spacing()[2]);
     }
     lprintf ("\n");
+#endif
 
     /* Divine image type */
     df = (*flist.begin()).get();
@@ -341,8 +345,10 @@ Dcmtk_loader::image_load ()
 	df = (*best_slice_it).get();
 	unsigned long length;
 
+#if defined (commentout)
 	lprintf ("Loading slice z=%f at location z=%f\n",
 	    (*best_slice_it)->get_z_position(), z_pos);
+#endif
 
         /* GCS FIX: This should probably use DicomImage::getOutputData()
            cf. http://support.dcmtk.org/docs/mod_dcmimage.html */
