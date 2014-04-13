@@ -54,12 +54,12 @@ public:
     Plm_image_type m_type;
 
     /* The actual image is one of the following. */
-    CharImageType::Pointer m_itk_char;
     UCharImageType::Pointer m_itk_uchar;
-    ShortImageType::Pointer m_itk_short;
+    CharImageType::Pointer m_itk_char;
     UShortImageType::Pointer m_itk_ushort;
-    Int32ImageType::Pointer m_itk_int32;
+    ShortImageType::Pointer m_itk_short;
     UInt32ImageType::Pointer m_itk_uint32;
+    Int32ImageType::Pointer m_itk_int32;
     FloatImageType::Pointer m_itk_float;
     DoubleImageType::Pointer m_itk_double;
     UCharVecImageType::Pointer m_itk_uchar_vec;
@@ -115,6 +115,7 @@ public:
     void convert_and_save (const std::string& fname, Plm_image_type new_type);
 
     /* assignment */
+    void set (const Plm_image::Pointer& pli);
     void set_volume (Volume::Pointer& v, Plm_image_type type);
     void set_volume (Volume::Pointer& v);
     void set_volume (Volume *v, Plm_image_type type);

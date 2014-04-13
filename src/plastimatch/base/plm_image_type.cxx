@@ -86,8 +86,6 @@ plm_image_type_string (Plm_image_type type)
         return "PLM_IMG_TYPE_GPUIT_FLOAT";
     case PLM_IMG_TYPE_GPUIT_FLOAT_FIELD:
         return "PLM_IMG_TYPE_GPUIT_FLOAT_FIELD";
-    case PLM_IMG_TYPE_ITK_UCHAR_4D:
-        return "PLM_IMG_TYPE_ITK_UCHAR_4D";
     case PLM_IMG_TYPE_ITK_UCHAR_VEC:
         return "PLM_IMG_TYPE_ITK_UCHAR_VEC";
     case PLM_IMG_TYPE_GPUIT_UCHAR_VEC:
@@ -135,8 +133,6 @@ plm_image_type_string_simple (Plm_image_type type)
         return "float";
     case PLM_IMG_TYPE_GPUIT_FLOAT_FIELD:
         return "float";
-    case PLM_IMG_TYPE_ITK_UCHAR_4D:
-        return "unsigned char";
     case PLM_IMG_TYPE_ITK_UCHAR_VEC:
         return "unsigned char";
     case PLM_IMG_TYPE_GPUIT_UCHAR_VEC:

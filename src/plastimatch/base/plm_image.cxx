@@ -9,6 +9,9 @@
 #include "itkMetaDataDictionary.h"
 #include "itkMetaDataObject.h"
 
+#if PLM_CONFIG_PREFER_DCMTK
+#include "dcmtk_loader.h"
+#endif
 #include "file_util.h"
 #include "itk_image_cast.h"
 #include "itk_image_create.h"
@@ -22,6 +25,7 @@
 #include "path_util.h"
 #include "plm_image.h"
 #include "plm_image_p.h"
+#include "plm_image_type.h"
 #include "plm_image_header.h"
 #include "print_and_exit.h"
 #include "pstring.h"
@@ -389,10 +393,17 @@ bool
 Plm_image::load_native_dicom (const char* fname)
 {
 #if PLM_CONFIG_PREFER_DCMTK
+#if defined (commentout)
     /* GCS FIX: This should load using dcmtk! */
     this->m_itk_short = itk_image_load_short (fname, 0);
     this->m_original_type = PLM_IMG_TYPE_ITK_SHORT;
     this->m_type = PLM_IMG_TYPE_ITK_SHORT;
+#endif
+
+    Dcmtk_loader dicom_loader (fname);
+    dicom_loader.parse_directory ();
+    this->set (dicom_loader.get_image ());
+
 #else
     /* GCS FIX: We don't yet have a way of getting original pixel type 
 	for dicom.  Force SHORT */
@@ -538,6 +549,58 @@ Plm_image::save_image (const std::string& fname)
 /* -----------------------------------------------------------------------
    Getting and setting
    ----------------------------------------------------------------------- */
+void 
+Plm_image::set (const Plm_image::Pointer& pli)
+{
+    switch (pli->m_type) {
+    case PLM_IMG_TYPE_ITK_UCHAR:
+        m_itk_uchar = pli->m_itk_uchar;
+	break;
+    case PLM_IMG_TYPE_ITK_CHAR:
+        m_itk_char = pli->m_itk_char;
+	break;
+    case PLM_IMG_TYPE_ITK_USHORT:
+        m_itk_ushort = pli->m_itk_ushort;
+	break;
+    case PLM_IMG_TYPE_ITK_SHORT:
+        m_itk_short = pli->m_itk_short;
+	break;
+    case PLM_IMG_TYPE_ITK_ULONG:
+        m_itk_uint32 = pli->m_itk_uint32;
+	break;
+    case PLM_IMG_TYPE_ITK_LONG:
+        m_itk_int32 = pli->m_itk_int32;
+	break;
+    case PLM_IMG_TYPE_ITK_FLOAT:
+        m_itk_float = pli->m_itk_float;
+	break;
+    case PLM_IMG_TYPE_ITK_DOUBLE:
+        m_itk_double = pli->m_itk_double;
+	break;
+    case PLM_IMG_TYPE_ITK_UCHAR_VEC:
+        m_itk_uchar_vec = pli->m_itk_uchar_vec;
+	break;
+    case PLM_IMG_TYPE_GPUIT_UCHAR:
+    case PLM_IMG_TYPE_GPUIT_SHORT:
+    case PLM_IMG_TYPE_GPUIT_UINT16:
+    case PLM_IMG_TYPE_GPUIT_UINT32:
+    case PLM_IMG_TYPE_GPUIT_INT32:
+    case PLM_IMG_TYPE_GPUIT_FLOAT:
+    case PLM_IMG_TYPE_GPUIT_FLOAT_FIELD:
+    case PLM_IMG_TYPE_GPUIT_UCHAR_VEC:
+        d_ptr->m_vol = pli->d_ptr->m_vol;
+	break;
+    default:
+	print_and_exit ("Unhandled image type in Plm_image::set()"
+	    " (type = %s)\n", plm_image_type_string (pli->m_type));
+	break;
+    }
+
+    this->m_meta = pli->m_meta;
+    this->m_original_type = pli->m_original_type;
+    this->m_type = pli->m_type;
+}
+
 void 
 Plm_image::set_volume (Volume::Pointer& v, Plm_image_type type)
 {

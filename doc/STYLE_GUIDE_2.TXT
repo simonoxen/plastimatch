@@ -125,8 +125,11 @@ but it becomes non-alphabetic:
 
 UChar, Char, ...
 ----------------
-The ordering is integers, then float, then vectors; 
-    smaller, then larger; unsigned, then signed.
+The ordering is: 
+    itk, then gpuit,
+    integers, then float, then vectors,
+    smaller, then larger,
+    unsigned, then signed.
 
 Plm_image, ITK image, Volume
 ----------------------------
