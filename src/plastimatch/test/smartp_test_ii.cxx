@@ -22,10 +22,19 @@ main (int argc, char* argv[])
     A::Pointer a;
 
     if (a) {
-        printf ("A is non-null\n");
+        printf ("a is non-null\n");
     } else {
-        printf ("A is null\n");
+        printf ("a is null\n");
     }
+
+    A::Pointer b = A::New();
+
+    if (b) {
+        printf ("b is non-null\n");
+    } else {
+        printf ("b is null\n");
+    }
+
 
     return 0;
 }
