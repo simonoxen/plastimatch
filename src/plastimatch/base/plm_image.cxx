@@ -9,7 +9,7 @@
 #include "itkMetaDataDictionary.h"
 #include "itkMetaDataObject.h"
 
-#if PLM_CONFIG_PREFER_DCMTK
+#if PLM_DCM_USE_DCMTK
 #include "dcmtk_loader.h"
 #endif
 #include "file_util.h"
@@ -392,7 +392,7 @@ Plm_image::load_native (const std::string& fn)
 bool
 Plm_image::load_native_dicom (const char* fname)
 {
-#if PLM_CONFIG_PREFER_DCMTK
+#if PLM_DCM_USE_DCMTK
 #if defined (commentout)
     /* GCS FIX: This should load using dcmtk! */
     this->m_itk_short = itk_image_load_short (fname, 0);
