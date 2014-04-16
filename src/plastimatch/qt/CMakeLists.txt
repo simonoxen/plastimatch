@@ -30,6 +30,13 @@ set (CRYSTALVIEW_SRC
   cview_main.cxx cview_main.h
   )
 
+if (PLM_CONFIG_BUILD_QT_PLUGINS)
+  set (QT_DESIGNER_PLUGINS_SRC
+    cview_portal.cxx cview_portal.h
+    cview_portal_plugin.cxx cview_portal_plugin.h
+    )
+endif()
+
 ##-----------------------------------------------------------------------------
 ##  SPECIAL BUILD RULES: Qt
 ##-----------------------------------------------------------------------------
@@ -40,6 +47,12 @@ if (QT4_FOUND)
   qt4_wrap_cpp (CRYSTALVIEW_MOC_SRC
     cview_main.h
     )
+  if (PLM_CONFIG_BUILD_QT_PLUGINS)
+    qt4_wrap_cpp (QT_DESIGNER_PLUGINS_MOC_SRC
+      cview_portal.h
+      cview_portal_plugin.h
+    )
+  endif()
   set (CRYSTALVIEW_SRC
     ${CRYSTALVIEW_SRC}
     ${CRYSTALVIEW_MOC_SRC}
@@ -80,3 +93,24 @@ if (ITK_FOUND AND QT4_FOUND AND QT_QTSQL_FOUND)
       ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   endif ()
 endif ()
+
+##-----------------------------------------------------------------------------
+##  BUILD QT DESIGNER PLUGINS
+##-----------------------------------------------------------------------------
+if (PLM_CONFIG_BUILD_QT_PLUGINS)
+  add_definitions(-DQT_PLUGIN)
+  add_definitions(-DQT_NO_DEBUG)
+  add_definitions(-DQT_SHARED)
+  add_definitions(-DQDESIGNER_EXPORT_WIDGETS)
+  
+  add_library(cview_portal_plugin SHARED
+      ${QT_DESIGNER_PLUGINS_SRC}
+      ${QT_DESIGNER_PLUGINS_MOC_SRC}
+  )
+  set (QT_DESIGNER_PLUGINS_LIBRARIES ${PLASTIMATCH_LIBS} ${QT_LIBRARIES})
+  target_link_libraries(cview_portal_plugin ${QT_DESIGNER_PLUGINS_LIBRARIES})
+  
+  install (TARGETS cview_portal_plugin
+      DESTINATION ${QT_PLUGINS_DIR}/designer
+  )
+endif()

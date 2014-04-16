@@ -119,6 +119,7 @@ option (PLM_CONFIG_ENABLE_MATLAB "Set to ON to build Matlab plugins" OFF)
 set (PLM_CONFIG_VERSION_STRING "" CACHE STRING "Version string")
 option (PLM_CONFIG_LIBRARY_BUILD "Set to ON to build only libraries" OFF)
 option (PLM_CONFIG_DEBIAN_BUILD "Set to ON to configure build for debian" OFF)
+option (PLM_CONFIG_BUILD_QT_PLUGINS "Build QT4 Designer Plugins?" OFF)
 
 # Optional components
 option (PLM_BUILD_ISE "Build ISE fluoro program" OFF)
@@ -759,7 +760,7 @@ endif ()
 ##  QT
 ##-----------------------------------------------------------------------------
 #find_package (Qt4 4.6.2 COMPONENTS QtCore QtGui OPTIONAL)
-find_package (Qt4 4.6.3 COMPONENTS QtCore QtGui QtWebKit)
+find_package (Qt4 4.6.3 COMPONENTS QtCore QtGui QtWebKit QtDesigner)
 if (QT4_FOUND)
 
   # Debian qtchooser is broken, so we disable.
