@@ -17,7 +17,6 @@
 
 // TODO: * Clean up this file!
 //       * Add: Multi-Volume / Layered Rendering System
-//       * Add: Qt Designer hooks
 
 /* This just determines the amount of black space
  * a portal has within it */
