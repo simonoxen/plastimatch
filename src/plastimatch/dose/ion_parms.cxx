@@ -95,6 +95,7 @@ public:
         this->distal_margin = 0.;
 
         this->have_manual_peaks = false;
+		this->have_prescription = false;
         this->E0 = 0.;
         this->spread = 0.;
 
@@ -510,6 +511,11 @@ Ion_parms::parse_args (int argc, char** argv)
 		return false;
 	}
 
+	if (d_ptr->have_manual_peaks == false && d_ptr->have_prescription == false) {
+		fprintf (stderr, "\n** ERROR: No prescription made, please use the functions prescription_min & prescription_max, or manually created peaks .\n");
+		return false;
+	}
+
     d_ptr->plan->set_patient (ct);
 
     /* set beam & aperture parameters */
@@ -559,7 +565,6 @@ Ion_parms::parse_args (int argc, char** argv)
        optimized based on prescription, or automatic based on target */
     d_ptr->plan->beam->set_proximal_margin (d_ptr->proximal_margin);
     d_ptr->plan->beam->set_distal_margin (d_ptr->distal_margin);
-    
     if (d_ptr->have_manual_peaks == true && d_ptr->have_prescription == false) {
         /* Manually specified, so do not optimize */
         if (!d_ptr->plan->beam->generate ()) {

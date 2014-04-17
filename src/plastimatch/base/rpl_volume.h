@@ -46,6 +46,7 @@ public:
     double get_rgdepth (int ap_ij[2], double dist);
     double get_rgdepth (double ap_ij[2], double dist);
     double get_rgdepth (const double *xyz);
+	double get_rgdepth2 (const double *xyz);
 
     void set_ct (const Plm_image::Pointer& ct_volume);
     Plm_image::Pointer get_ct();
@@ -63,7 +64,7 @@ public:
 
     void compute_rpl ();
     void compute_rpl_ct ();
-    void compute_rpl_rglength (Rpl_volume* ct_vol_density);
+    void compute_rpl_rglength ();
     void compute (Volume *ct_vol);
     Volume* create_wed_volume ();
     void compute_wed_volume (Volume *wed_vol, Volume *in_vol, float background);

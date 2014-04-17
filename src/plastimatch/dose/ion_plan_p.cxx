@@ -13,6 +13,7 @@ Ion_plan_private::Ion_plan_private ()
     patient = Plm_image::New();
     target = Plm_image::New();
     ap = Aperture::New();
+	source_size = 0.;
 }
 
 Ion_plan_private::~Ion_plan_private ()

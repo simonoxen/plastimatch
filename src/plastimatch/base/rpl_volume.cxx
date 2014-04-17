@@ -284,6 +284,70 @@ Rpl_volume::get_rgdepth (
     return rgdepth;
 }
 
+double
+Rpl_volume::get_rgdepth2 (
+    const double* ct_xyz         /* I: location of voxel in world space */
+)
+{
+    int ap_ij[2], ap_idx;
+    double ap_xy[3];
+    double dist, rgdepth = 0.;
+    int debug = 0;
+
+    /* A couple of abbreviations */
+    const int *ires = d_ptr->proj_vol->get_image_dim();
+    Proj_matrix *pmat = d_ptr->proj_vol->get_proj_matrix();
+
+    if (debug) {
+        proj_matrix_debug (pmat);
+    }
+    /* Back project the voxel to the aperture plane */
+    mat43_mult_vec3 (ap_xy, pmat->matrix, ct_xyz);
+    ap_xy[0] = pmat->ic[0] + ap_xy[0] / ap_xy[2];
+    ap_xy[1] = pmat->ic[1] + ap_xy[1] / ap_xy[2];
+
+    /* Make sure value is not inf or NaN */
+    if (!is_number (ap_xy[0]) || !is_number (ap_xy[1])) {
+    	printf("no");
+		return -1;
+    }
+
+	printf ("ap_xy = %lg %lg ->", ap_xy[0], ap_xy[1]);
+
+    /* Round to nearest aperture index */
+    ap_ij[0] = ROUND_INT (ap_xy[0]);
+    ap_ij[1] = ROUND_INT (ap_xy[1]);
+
+	printf (" %g %g", ap_xy[0], ap_xy[1]);
+
+    /* Only handle voxels inside the (square) aperture */
+    if (ap_ij[0] < 0 || ap_ij[0] >= ires[0] ||
+        ap_ij[1] < 0 || ap_ij[1] >= ires[1]) {
+        return -1;
+    }
+
+    ap_idx = ap_ij[1] * ires[0] + ap_ij[0];
+
+    /* Look up pre-computed data for this ray */
+    Ray_data *ray_data = &d_ptr->ray_data[ap_idx];
+    double *ap_xyz = ray_data->p2;
+
+    if (debug) {
+	printf ("ap_xyz = %g %g %g\n", ap_xyz[0], ap_xyz[1], ap_xyz[2]);
+    }
+
+    /* Compute distance from aperture to voxel */
+    dist = vec3_dist (ap_xyz, ct_xyz);
+
+    /* Subtract off standoff distance */
+    dist -= d_ptr->front_clipping_dist;
+
+    /* Retrieve the radiographic depth */
+    rgdepth = this->get_rgdepth (ap_xy, dist);
+
+    return rgdepth;
+}
+
 void Rpl_volume::set_ct (const Plm_image::Pointer& ct_volume)
 {
     d_ptr->ct = ct_volume;
@@ -639,7 +703,7 @@ Rpl_volume::compute_rpl ()
 }
 
 void 
-Rpl_volume::compute_rpl_rglength (Rpl_volume* ct_vol_density)
+Rpl_volume::compute_rpl_rglength ()
 {
     int ires[2];
 

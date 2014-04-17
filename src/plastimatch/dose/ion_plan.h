@@ -55,6 +55,8 @@ public:
     void set_smearing (float smearing);
     void set_step_length (double ray_step);
 
+	double get_step_length();
+
     /* Return the state of the debug flag, which generates debug 
        information on the console */
     bool get_debug () const;
@@ -90,7 +92,13 @@ public:
     Rpl_volume* rpl_vol; // contains the radiologic path length along a ray
     Rpl_volume* ct_vol_density; // contains the ct_density along the ray
     Rpl_volume* sigma_vol;  // contains the sigma (lateral spread of the pencil beam - used to calculate the off-axis term) along the ray
-    Rpl_volume* rpl_dose_vol;
+    Rpl_volume* rpl_dose_vol; // contains the dose vol for Sp algorithm
+	
+	/* larger volumes for Sf algorithm */
+	Rpl_volume* rpl_vol_lg;
+	Rpl_volume* ct_vol_density_lg;
+	Rpl_volume* sigma_vol_lg;
+
 };
 
 #endif

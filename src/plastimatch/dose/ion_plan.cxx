@@ -55,6 +55,12 @@ Ion_plan::set_step_length (double step_length)
     d_ptr->step_length = step_length;
 }
 
+double 
+Ion_plan::get_step_length()
+{
+	return d_ptr->step_length;
+}
+
 bool
 Ion_plan::init ()
 {
@@ -74,7 +80,7 @@ Ion_plan::init ()
         
     if (!this->rpl_vol) return false;
 
-    if (this->beam->get_flavor() == 'f'|| this->beam->get_flavor() == 'g')
+    if (this->beam->get_flavor() == 'f'|| this->beam->get_flavor() == 'g' || this->beam->get_flavor() == 'h')
     {
     /* building the ct_density_vol */
     this->ct_vol_density = new Rpl_volume;
@@ -107,7 +113,7 @@ Ion_plan::init ()
     /* Copy aperture from scene into rpl volume */
     this->rpl_vol->set_aperture (d_ptr->ap);
 
-    if (this->beam->get_flavor() == 'f' || this->beam->get_flavor() == 'g')
+    if (this->beam->get_flavor() == 'f' || this->beam->get_flavor() == 'g' || this->beam->get_flavor() == 'h')
     {
         this->ct_vol_density->set_aperture (d_ptr->ap);
         this->sigma_vol->set_aperture (d_ptr->ap);
@@ -116,7 +122,7 @@ Ion_plan::init ()
         /* Scan through aperture to fill in rpl_volume */
     this->rpl_vol->set_ct_volume (d_ptr->patient);
 
-    if (this->beam->get_flavor() == 'f' || this->beam->get_flavor() == 'g')
+    if (this->beam->get_flavor() == 'f' || this->beam->get_flavor() == 'g' || this->beam->get_flavor() == 'h')
     {
         if(this->rpl_vol->get_ct() && this->rpl_vol->get_ct_limit())
         {
@@ -137,7 +143,7 @@ Ion_plan::init ()
     this->rpl_vol->compute_rpl ();
     
     /* and the others */
-    if (this->beam->get_flavor() == 'f' || this->beam->get_flavor() == 'g')
+	if (this->beam->get_flavor() == 'f' || this->beam->get_flavor() == 'g' || this->beam->get_flavor() == 'h')
     {
         if(this->rpl_vol->get_Ray_data() && this->rpl_vol->get_front_clipping_plane() && this->rpl_vol->get_back_clipping_plane())
         {
@@ -359,21 +365,29 @@ Ion_plan::compute_dose ()
 	double new_center[2]={0,0};
 	double clipping_dist[2] = {0,0};
 
-    if (this->beam->get_flavor() == 'f' || this->beam->get_flavor() == 'g') // push algorithm + creation of the sigma volume (Desplanques))
+    if (this->beam->get_flavor() == 'f' || this->beam->get_flavor() == 'g' || this->beam->get_flavor() == 'h') // push algorithm + creation of the sigma volume (Desplanques))
     {
         float sigmaMax = 0;
         float *sigma_max =&sigmaMax; // used to find the max sigma in the volume and add extra margins during the dose creation volume
 
         this->ct_vol_density->compute_rpl_ct ();
 
-        this->sigma_vol->compute_rpl_rglength(this->ct_vol_density);
+        this->sigma_vol->compute_rpl_rglength();
 
 		Rpl_volume* rpl_vol = this->rpl_vol;
         Rpl_volume* sigma_vol = this->sigma_vol;
 		float* sigma_img = (float*) sigma_vol->get_vol()->img;
 
 		/* building the sigma_dose_vol */
-		this->rpl_dose_vol = new Rpl_volume;
+		if (this->beam->get_flavor() == 'g') {
+			this->rpl_dose_vol = new Rpl_volume;
+		}
+
+		if (this->beam->get_flavor() == 'h') {
+			this->rpl_vol_lg = new Rpl_volume;
+			this->ct_vol_density_lg = new Rpl_volume;
+			this->sigma_vol_lg = new Rpl_volume;
+		}
 
 		std::vector<const Ion_pristine_peak*> peaks = this->beam->get_sobp()->getPeaks();
 
@@ -389,14 +403,14 @@ Ion_plan::compute_dose ()
 			}
 			*sigma_max = 0;
 
-			convert_radiologic_length_to_sigma(this, ppp->E0, sigma_max);//this->sigma_vol->get_vol()->spacing[2], sigma_max);
+			convert_radiologic_length_to_sigma(this, ppp->E0, sigma_max);
 
-			if (this->beam->get_flavor() == 'f')
+			if (this->beam->get_flavor() == 'f') // Desplanques' algorithm
 		    {
 				dose_volume_create(dose_volume_tmp, sigma_max, this->sigma_vol);
 				compute_dose_ray_desplanques(dose_volume_tmp, ct_vol, rpl_vol, sigma_vol, ct_vol_density, this->beam, dose_vol, ppp);
 			}
-			else if(this->beam->get_flavor() == 'g')
+			else if(this->beam->get_flavor() == 'g' || this->beam->get_flavor() == 'h')
 			{
 				/* Calculating the pixel-margins of the aperture to take into account the scattering*/
 				margin = (float) 3 * (*sigma_max)/(this->get_aperture()->get_distance()+this->rpl_vol->get_front_clipping_plane()) * this->get_aperture()->get_distance()+1;
@@ -407,46 +421,88 @@ Ion_plan::compute_dose ()
 				new_center[0] = this->rpl_vol->get_aperture()->get_center(0) + margins[0];
 				new_center[1] = this->rpl_vol->get_aperture()->get_center(1) + margins[1];
 
-				this->rpl_dose_vol->get_aperture()->set_center(new_center);
-				this->rpl_dose_vol->get_aperture()->set_dim(new_dim);
-				this->rpl_dose_vol->get_aperture()->set_distance(this->rpl_vol->get_aperture()->get_distance());
-				this->rpl_dose_vol->get_aperture()->set_spacing(this->rpl_vol->get_aperture()->get_spacing());
-
-				clipping_dist[0] = this->rpl_dose_vol->get_front_clipping_plane();
-				clipping_dist[1] = this->rpl_dose_vol->get_back_clipping_plane();
-				
-				this->rpl_dose_vol->set_geometry (
-				this->beam->get_source_position(),
-				this->beam->get_isocenter_position(),
-				d_ptr->ap->vup,
-				d_ptr->ap->get_distance(),
-				this->rpl_dose_vol->get_aperture()->get_dim(),
-				this->rpl_dose_vol->get_aperture()->get_center(),
-				d_ptr->ap->get_spacing(),
-				d_ptr->step_length);
-
-				this->rpl_dose_vol->set_ct(this->rpl_vol->get_ct());
-				this->rpl_dose_vol->set_ct_limit(this->rpl_vol->get_ct_limit());
-				this->rpl_dose_vol->compute_ray_data();
-				
-				this->rpl_dose_vol->set_front_clipping_plane(this->rpl_vol->get_front_clipping_plane());
-			    this->rpl_dose_vol->set_back_clipping_plane(this->rpl_vol->get_back_clipping_plane());
-
-				for (int l=0; l < new_dim[0]*new_dim[1];l++)
+				if(this->beam->get_flavor() == 'g') // Sharp algorithm
 				{
-					Ray_data* ray_data = &this->rpl_dose_vol->get_Ray_data()[l];
-				}
-				
-				this->rpl_dose_vol->compute_rpl_ct();
+					this->rpl_dose_vol->get_aperture()->set_center(new_center);
+					this->rpl_dose_vol->get_aperture()->set_dim(new_dim);
+					this->rpl_dose_vol->get_aperture()->set_distance(this->rpl_vol->get_aperture()->get_distance());
+					this->rpl_dose_vol->get_aperture()->set_spacing(this->rpl_vol->get_aperture()->get_spacing());
 
-	            /* dose calculation in the rpl_dose_volume */
-				compute_dose_ray_sharp(ct_vol, rpl_vol, sigma_vol, ct_vol_density, this->beam, rpl_dose_vol, d_ptr->ap, ppp, margins);
-				dose_volume_reconstruction(rpl_dose_vol, dose_vol, this);
+					this->rpl_dose_vol->set_geometry (
+					this->beam->get_source_position(),
+					this->beam->get_isocenter_position(),
+					d_ptr->ap->vup,
+					d_ptr->ap->get_distance(),
+					this->rpl_dose_vol->get_aperture()->get_dim(),
+					this->rpl_dose_vol->get_aperture()->get_center(),
+					d_ptr->ap->get_spacing(),
+					d_ptr->step_length);
+
+					this->rpl_dose_vol->set_ct(this->rpl_vol->get_ct());
+					this->rpl_dose_vol->set_ct_limit(this->rpl_vol->get_ct_limit());
+					this->rpl_dose_vol->compute_ray_data();
+				
+					this->rpl_dose_vol->set_front_clipping_plane(this->rpl_vol->get_front_clipping_plane());
+					this->rpl_dose_vol->set_back_clipping_plane(this->rpl_vol->get_back_clipping_plane());
+				
+					this->rpl_dose_vol->compute_rpl_ct();
+
+					/* dose calculation in the rpl_dose_volume */
+					compute_dose_ray_sharp(ct_vol, rpl_vol, sigma_vol, ct_vol_density, this->beam, rpl_dose_vol, d_ptr->ap, ppp, margins);
+					dose_volume_reconstruction(rpl_dose_vol, dose_vol, this);
+				}
+
+				if (this->beam->get_flavor() == 'h') // Shackleford's algorithm
+				{
+					int radius_sample = 4;
+					int theta_sample = 8;
+					std::vector<double> xy_grid (2*(radius_sample * theta_sample),0); // contains the xy coordinates of the sectors in the plane; the central pixel is not included in this vector. 
+					std::vector<double> area (radius_sample, 0); // contains the areas of the sectors
+
+					this->rpl_vol_lg->get_aperture()->set_center(new_center);
+					this->rpl_vol_lg->get_aperture()->set_dim(new_dim);
+					this->rpl_vol_lg->get_aperture()->set_distance(this->rpl_vol->get_aperture()->get_distance());
+					this->rpl_vol_lg->get_aperture()->set_spacing(this->rpl_vol->get_aperture()->get_spacing());
+					this->rpl_vol_lg->set_geometry (this->beam->get_source_position(), this->beam->get_isocenter_position(), this->get_aperture()->vup, this->get_aperture()->get_distance(), this->rpl_vol_lg->get_aperture()->get_dim(), this->rpl_vol_lg->get_aperture()->get_center(), this->get_aperture()->get_spacing(), this->get_step_length());
+					this->rpl_vol_lg->set_ct(this->rpl_vol->get_ct());
+					this->rpl_vol_lg->set_ct_limit(this->rpl_vol->get_ct_limit());
+					this->rpl_vol_lg->compute_ray_data();
+					this->rpl_vol_lg->compute_rpl();
+
+					this->ct_vol_density_lg->get_aperture()->set_center(new_center);
+					this->ct_vol_density_lg->get_aperture()->set_dim(new_dim);
+					this->ct_vol_density_lg->get_aperture()->set_distance(this->rpl_vol->get_aperture()->get_distance());
+					this->ct_vol_density_lg->get_aperture()->set_spacing(this->rpl_vol->get_aperture()->get_spacing());
+					this->ct_vol_density_lg->set_geometry (this->beam->get_source_position(), this->beam->get_isocenter_position(), this->get_aperture()->vup, this->get_aperture()->get_distance(), this->rpl_vol_lg->get_aperture()->get_dim(), this->rpl_vol_lg->get_aperture()->get_center(), this->get_aperture()->get_spacing(), this->get_step_length());
+					this->ct_vol_density_lg->set_ct(this->rpl_vol->get_ct());
+					this->ct_vol_density_lg->set_ct_limit(this->rpl_vol->get_ct_limit());
+					this->ct_vol_density_lg->compute_ray_data();
+					this->rpl_vol_lg->set_front_clipping_plane(this->rpl_vol_lg->get_front_clipping_plane());
+					this->rpl_vol_lg->set_back_clipping_plane(this->rpl_vol_lg->get_back_clipping_plane());
+					this->ct_vol_density_lg->compute_rpl_ct();
+
+					this->sigma_vol_lg->get_aperture()->set_center(new_center);
+					this->sigma_vol_lg->get_aperture()->set_dim(new_dim);
+					this->sigma_vol_lg->get_aperture()->set_distance(this->rpl_vol->get_aperture()->get_distance());
+					this->sigma_vol_lg->get_aperture()->set_spacing(this->rpl_vol->get_aperture()->get_spacing());
+					this->sigma_vol_lg->set_geometry (this->beam->get_source_position(), this->beam->get_isocenter_position(), this->get_aperture()->vup, this->get_aperture()->get_distance(), this->rpl_vol_lg->get_aperture()->get_dim(), this->rpl_vol_lg->get_aperture()->get_center(), this->get_aperture()->get_spacing(), this->get_step_length());
+					this->sigma_vol_lg->set_ct(this->rpl_vol->get_ct());
+					this->sigma_vol_lg->set_ct_limit(this->rpl_vol->get_ct_limit());
+					this->sigma_vol_lg->compute_ray_data();
+					this->sigma_vol_lg->set_front_clipping_plane(this->rpl_vol_lg->get_front_clipping_plane());
+					this->sigma_vol_lg->set_back_clipping_plane(this->rpl_vol_lg->get_back_clipping_plane());
+					this->sigma_vol_lg->compute_rpl_rglength();
+
+					convert_radiologic_length_to_sigma_lg(this, ppp->E0, sigma_max);
+
+					build_hong_grid(&area, &xy_grid, radius_sample, theta_sample);
+					compute_dose_ray_shackleford(dose_vol, this, ppp, &area, &xy_grid, radius_sample, theta_sample);
+				}
 			}
 			printf("dose computed\n");
 		}
 	}
-		if (this->beam->get_flavor() != 'f' && this->beam->get_flavor() != 'g') // pull algorithm
+	if (this->beam->get_flavor() != 'f' && this->beam->get_flavor() != 'g' && this->beam->get_flavor() != 'h') // pull algorithm
 		{     
 			if (this->get_debug()) {
 				rpl_vol->save ("beam_debug/depth_vol.mha");
@@ -497,9 +553,6 @@ Ion_plan::compute_dose ()
 						case 'e':
         				dose = dose_hong_maxime (ct_xyz, ct_ijk, this);
 					break;
-						case 'g':
-							dose = dose_hong_sharp (ct_xyz, this);
-							break;
 						}
 
 						/* Insert the dose into the dose volume */

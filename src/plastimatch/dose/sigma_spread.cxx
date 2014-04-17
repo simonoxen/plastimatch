@@ -41,6 +41,39 @@ void convert_radiologic_length_to_sigma(Ion_plan* ion_plan, float energy, float*
     printf("sigma_max = %lg\n", *sigma_max);
 }
 
+void convert_radiologic_length_to_sigma_lg(Ion_plan* ion_plan, float energy, float* sigma_max) //Rpl_volume* sigma_vol, Rpl_volume* ct_vol, float energy, float spacing_z, float* sigma_max)
+{
+    /* Now we only have a rpl_volume without compensator, from which we need to compute the sigma along this ray */
+    /* we extract a ray, we apply the sigma_function given the y0 according to the Hong algorithm and we put it back in the volum */
+    /* at the end we have transformed our rpl_volume (not cumulative) in a sigma (in reality y0) volume */
+
+    float *sigma_img = (float*) ion_plan->sigma_vol_lg->get_vol()->img;
+	float *ct_img = (float*) ion_plan->ct_vol_density_lg->get_vol()->img;
+	float *ct_rglength = (float*) ion_plan->rpl_vol_lg->get_vol()->img;
+
+    int ires[3] = {ion_plan->sigma_vol_lg->get_vol()->dim[0], ion_plan->sigma_vol_lg->get_vol()->dim[1], ion_plan->sigma_vol_lg->get_vol()->dim[2]};
+
+    std::vector<float> french_fries_sigma (ires[2],0);
+    std::vector<float> french_fries_density (ires[2],0);
+
+    for (int apert_idx = 0; apert_idx < ires[0]*ires[1]; apert_idx++)
+    {   
+        for (int s = 0; s < ires[2]; s++)
+        {
+            french_fries_sigma[s] = ct_rglength[ires[0]*ires[1]*s + apert_idx]; // the sigma fries is initialized with density
+            french_fries_density[s] = ct_img[ires[0]*ires[1]*s + apert_idx];
+        }
+
+		length_to_sigma(&french_fries_sigma,&french_fries_density, ion_plan->sigma_vol_lg->get_vol()->spacing[2], sigma_max, energy, ion_plan->get_source_size());
+
+        for (int s = 0; s < ires[2]; s++)
+        {
+            sigma_img[ires[0]*ires[1]*s + apert_idx] = french_fries_sigma[s];
+        }
+    }
+    printf("new sigma_max = %lg\n", *sigma_max);
+}
+
 void length_to_sigma(std::vector<float>* p_sigma, std::vector<float>* p_density, float spacing_z, float* sigma_max, float energy, float sourcesize)
 {
     std::vector<float> tmp_rglength (p_sigma->size(),0);
@@ -155,7 +188,7 @@ void length_to_sigma(std::vector<float>* p_sigma, std::vector<float>* p_density,
 			sigma_range_compensator = 0.331 * 0.00313 * (20 + POI_depth + 4.4); // 4.4 is the fraction of the RC - effective scattering depth on 13cm
             sigma_patient = 14.10f *(1.0f+1.0f/9.0f*log10(inverse_rad_length_integrated))* (float) sqrt(sum); // in cm
 			(*p_sigma)[i] = 10* ( //*10 because sigma is used later in mm
-				sqrt(sigma_source * sigma_source + sigma_range_compensator * sigma_range_compensator + sigma_patient * sigma_patient)); 
+				sqrt(sigma_source * sigma_source + sigma_range_compensator * sigma_range_compensator + sigma_patient * sigma_patient));
 
             if (*sigma_max < (*p_sigma)[i])
             {
@@ -540,6 +573,101 @@ compute_dose_ray_sharp(Volume::Pointer ct_vol, Rpl_volume* rpl_volume, Rpl_volum
     return;
 }
 
+void compute_dose_ray_shackleford(Volume::Pointer dose_vol, Ion_plan* plan, const Ion_pristine_peak* ppp, std::vector<double>* area, std::vector<double>* xy_grid, int radius_sample, int theta_sample)
+{
+	int ijk[3] = {0,0,0};
+	double xyz[4] = {0,0,0,1};
+	double xyz_travel[4] = {0,0,0,1};
+	double tmp_xy[4] = {0,0,0,1};
+	double tmp_cst = 0;
+
+	int idx = 0;
+	
+	int ct_dim[3] = {dose_vol->dim[0], dose_vol->dim[1], dose_vol->dim[2]};
+	double vec_ud[4] = {0,0,0,1};
+	double vec_rl[4] = {0,0,0,1};
+
+	float* ct_img = (float*) plan->get_patient_volume()->img;
+	float* dose_img = (float*) dose_vol->img;
+
+	double sigma_travel = 0;
+	double sigma_3 = 0;
+	double rg_length = 0;
+	double central_sector_dose = 0;
+	double radius = 0;
+	double theta = 0;
+	double r_s = 0;
+
+	vec3_copy(vec_ud, plan->get_aperture()->pdn);
+	vec3_normalize1(vec_ud);
+	vec3_copy(vec_rl, plan->get_aperture()->prt);
+	vec3_normalize1(vec_rl);
+
+	for (ijk[0] = 0; ijk[0] < ct_dim[0]; ijk[0]++){
+		for (ijk[1] = 0; ijk[1] < ct_dim[1]; ijk[1]++){
+			for (ijk[2] = 0; ijk[2] < ct_dim[2]; ijk[2]++){
+				idx = ijk[0] + ct_dim[0] * (ijk[1] + ct_dim[1] * ijk[2]);
+
+				if (ct_img[idx] <= -1000) {continue;} // if this pixel is in the air, no dose delivered
+
+				/* calculation of the pixel coordinates in the room coordinates */
+				xyz[0] = (double) dose_vol->offset[0] + ijk[0] * dose_vol->spacing[0];
+				xyz[1] = (double) dose_vol->offset[1] + ijk[1] * dose_vol->spacing[1];
+				xyz[2] = (double) dose_vol->offset[2] + ijk[2] * dose_vol->spacing[2]; // xyz[3] always = 1.0
+				
+				sigma_3 = 3 * plan->sigma_vol_lg->get_rgdepth(xyz);
+				if (sigma_3 <= 0)
+				{
+					continue;
+				}
+				else
+				{
+					for (int i = 0; i < radius_sample; i++)
+					{
+						for (int j =0; j < theta_sample; j++)
+						{
+							vec3_copy(xyz_travel, xyz);
+
+							/* calculation of the center of the sector */
+							vec3_copy(tmp_xy, vec_ud);
+							tmp_cst = (double) (*xy_grid)[2*(i*theta_sample+j)] * sigma_3; // xy_grid is normalized to a circle of radius sigma x 3 = 1
+							vec3_scale2(tmp_xy, tmp_cst);
+							vec3_add2(xyz_travel,tmp_xy);
+
+							vec3_copy(tmp_xy, vec_rl);
+							tmp_cst = (double) (*xy_grid)[2*(i*theta_sample+j)+1] * sigma_3;
+							vec3_scale2(tmp_xy, tmp_cst);
+							vec3_add2(xyz_travel,tmp_xy);
+							
+							rg_length = plan->rpl_vol->get_rgdepth(xyz_travel);
+							if (rg_length <= 0)
+							{
+								continue;
+							}
+							else
+							{
+								/* the dose from that sector is summed */
+								sigma_travel = plan->sigma_vol->get_rgdepth(xyz_travel);
+								if (sigma_travel <= 0) 
+								{
+									continue;
+								}
+								else
+								{
+									central_sector_dose = plan->beam->lookup_sobp_dose((float) rg_length)* (1/(sigma_travel*sqrt(2*M_PI)));
+									radius = vec3_dist(xyz, xyz_travel);
+									r_s = radius/sigma_travel;
+									dose_img[idx] += central_sector_dose * get_off_axis(r_s) * (*area)[i] * sigma_3 * sigma_3 * ppp->weight; // * is normalized to a radius =1, need to be adapted to a 3_sigma radius circle
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 void
 calculate_rpl_coordinates_xyz(std::vector<std:: vector<double> >* xyz_coordinates_volume, Rpl_volume* rpl_volume)
 {
@@ -586,6 +714,23 @@ void copy_rpl_density(std::vector<double>* CT_density_vol, Rpl_volume* rpl_dose_
 	{
 		(*CT_density_vol)[i] = img[i];
 	}
+}
+
+void build_hong_grid(std::vector<double>* area, std::vector<double>* xy_grid, int radius_sample, int theta_sample)
+{
+	double dr = 1.0 / (double) radius_sample;
+	double dt = 2.0 * M_PI / (double) theta_sample;
+
+	for (int i = 0; i < radius_sample; i++)
+	{
+		(*area)[i] = M_PI * dr * dr * ( 2 * i + 1 ) / (double) theta_sample; // [(i+1)^2 - i^2] * dr^2
+
+		for (int j = 0; j < theta_sample; j++)
+		{
+			(*xy_grid)[2*(i*theta_sample+j)] = ((double) i + 0.5)* dr * sin ((double) j * dt);
+			(*xy_grid)[2*(i*theta_sample+j)+1] = ((double) i + 0.5) * dr * cos ((double) j * dt);
+		}
+	}	
 }
 
 void dose_volume_reconstruction(Rpl_volume* rpl_dose_vol, Volume::Pointer dose_vol, Ion_plan* plan)
@@ -789,6 +934,37 @@ double getstop(double energy)
     else
     {
 	return 0;
+    }
+}
+
+double get_off_axis(double r_s)
+{
+    double r_s_1 = 0;
+    double r_s_2 = 0;
+	double off_axis1 = 0;
+    double off_axis2 = 0;
+
+    int i=0;
+
+    if (r_s >0)
+    {
+		while (r_s >= r_s_1)
+		{
+			r_s_1 = lookup_off_axis[i][0];
+			off_axis1 = lookup_off_axis[i][1];
+
+			if (r_s >= r_s_1)
+			{
+	    		r_s_2 = r_s_1;
+				off_axis2 = off_axis1;
+			}
+			i++;
+		}
+		return (off_axis2+(r_s-r_s_2)*(off_axis1-off_axis2)/(r_s_1-r_s_2));
+    }
+    else
+    {
+		return 0;
     }
 }
 
@@ -1062,7 +1238,7 @@ extern const double lookup_stop_water[][2] ={
 10000,	2.126,
 };
 
-extern const double lookup_r2_over_sigma2[][2]={
+extern const double lookup_off_axis[][2]={ // x[0] = r/sigma, x[1] = exp(-x²/(2 * sigma²))
 0.00, 1.0000,
 0.01, 1.0000,
 0.02, 0.9998,
