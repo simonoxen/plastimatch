@@ -110,7 +110,11 @@ if (PLM_CONFIG_BUILD_QT_PLUGINS)
   set (QT_DESIGNER_PLUGINS_LIBRARIES ${PLASTIMATCH_LIBS} ${QT_LIBRARIES})
   target_link_libraries(cview_portal_plugin ${QT_DESIGNER_PLUGINS_LIBRARIES})
   
-  install (TARGETS cview_portal_plugin
-      DESTINATION ${QT_PLUGINS_DIR}/designer
-  )
+  set_target_properties (cview_portal_plugin PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY designer)
+
+  install (TARGETS cview_portal_plugin 
+#      DESTINATION ${QT_PLUGINS_DIR}/designer
+      DESTINATION ${PLM_INSTALL_LIB_DIR}/designer)
+
 endif()
