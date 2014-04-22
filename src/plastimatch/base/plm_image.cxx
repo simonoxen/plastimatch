@@ -1075,6 +1075,10 @@ Plm_image::convert_to_itk_float ()
 	this->m_itk_float = this->convert_gpuit_to_itk<
             FloatImageType::Pointer, unsigned char> (this->get_vol());
 	break;
+    case PLM_IMG_TYPE_GPUIT_SHORT:
+	this->m_itk_float = this->convert_gpuit_to_itk<
+            FloatImageType::Pointer, short> (this->get_vol());
+	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
 	this->m_itk_float = this->convert_gpuit_to_itk<
             FloatImageType::Pointer, float> (this->get_vol());

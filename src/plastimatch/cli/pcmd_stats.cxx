@@ -116,8 +116,8 @@ stats_ss_image_main (Stats_parms* parms, const std::string& current_fn)
 static void
 stats_img_main (Stats_parms* parms, const std::string& current_fn)
 {
-    FloatImageType::Pointer img = itk_image_load_float (
-        current_fn, 0);
+    Plm_image pli (current_fn);
+    FloatImageType::Pointer img = pli.itk_float();
 
     double min_val, max_val, avg;
     int non_zero, num_vox;
