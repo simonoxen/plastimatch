@@ -107,7 +107,7 @@ wed_ct_compute (
 	wed_vol = rpl_vol->create_wed_volume ();
         rpl_vol->compute_wed_volume (wed_vol, ct_vol->get_volume_float().get(), 
             background);
-        plm_image_save_vol (out_fn, wed_vol);
+        Plm_image(wed_vol).save_image(out_fn);
     }
 
     if (parms->mode==1)  {
@@ -117,7 +117,7 @@ wed_ct_compute (
         dew_vol = create_dew_volume (parms, scene);
         rpl_vol->compute_dew_volume (ct_vol->get_volume_float().get(), 
             dew_vol, background);
-        plm_image_save_vol (out_fn, dew_vol);
+        Plm_image(dew_vol).save_image(out_fn);
     }
 
     if (parms->mode==2) {
@@ -140,9 +140,8 @@ wed_ct_compute (
         Volume* proj_wed_vol;
         proj_wed_vol = rpl_vol->create_proj_wed_volume ();
         rpl_vol->compute_proj_wed_volume (proj_wed_vol, background);
-        plm_image_save_vol (out_fn, proj_wed_vol);
+        Plm_image(proj_wed_vol).save_image(out_fn);
     }
-
 }
 
 void

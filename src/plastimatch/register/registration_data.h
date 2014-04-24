@@ -9,8 +9,6 @@
 #include "plm_image.h"
 #include "pointset.h"
 
-//template<class T> class PLMREGISTER_API Pointset;
-
 class Plm_image;
 class Registration_parms;
 class Stage_parms;

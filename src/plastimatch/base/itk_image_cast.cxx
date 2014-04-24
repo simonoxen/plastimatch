@@ -216,11 +216,13 @@ template PLMBASE_API UInt32ImageType::Pointer cast_uint32 (UCharImageType::Point
 template PLMBASE_API UInt32ImageType::Pointer cast_uint32 (ShortImageType::Pointer);
 template PLMBASE_API UInt32ImageType::Pointer cast_uint32 (FloatImageType::Pointer);
 template PLMBASE_API FloatImageType::Pointer cast_float (UCharImageType::Pointer);
+template PLMBASE_API FloatImageType::Pointer cast_float (CharImageType::Pointer);
 template PLMBASE_API FloatImageType::Pointer cast_float (UShortImageType::Pointer);
 template PLMBASE_API FloatImageType::Pointer cast_float (ShortImageType::Pointer);
 template PLMBASE_API FloatImageType::Pointer cast_float (UInt32ImageType::Pointer);
 template PLMBASE_API FloatImageType::Pointer cast_float (Int32ImageType::Pointer);
 template PLMBASE_API FloatImageType::Pointer cast_float (FloatImageType::Pointer);
+template PLMBASE_API FloatImageType::Pointer cast_float (DoubleImageType::Pointer);
 template PLMBASE_API DoubleImageType::Pointer cast_double (UCharImageType::Pointer);
 template PLMBASE_API DoubleImageType::Pointer cast_double (ShortImageType::Pointer);
 template PLMBASE_API DoubleImageType::Pointer cast_double (UInt32ImageType::Pointer);

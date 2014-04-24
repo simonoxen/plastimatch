@@ -1722,7 +1722,7 @@ Rpl_volume::rpl_ray_trace (
     /* Figure out how many steps to first step within volume */
     double dist = ray_data->front_dist - d_ptr->front_clipping_dist;
     cd.step_offset = 0; //(int) ceil (dist / d_ptr->proj_vol->get_step_length ());
-	ray_data->step_offset = cd.step_offset;
+    ray_data->step_offset = cd.step_offset;
 
     /* Find location of first step within volume */
     double tmp[3];

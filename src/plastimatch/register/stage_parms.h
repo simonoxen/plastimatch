@@ -50,19 +50,21 @@
 #define OPTIMIZATION_SUB_LOGDOM_ITK         2
 #define OPTIMIZATION_SUB_SYM_LOGDOM_ITK     3
 
-#define METRIC_NONE                         0
-#define METRIC_MSE                          1
-#define METRIC_MI                           2
-#define METRIC_MI_MATTES                    3
-#define METRIC_NMI                          4
-
 #define IMG_OUT_FMT_AUTO                    0
 #define IMG_OUT_FMT_DICOM                   1
-
 
 enum Stage_type {
     STAGE_TYPE_PROCESS,
     STAGE_TYPE_REGISTER
+};
+
+enum Registration_metric_type {
+    METRIC_NONE,
+    METRIC_MSE,
+    METRIC_MI,
+    METRIC_MI_MATTES,
+    METRIC_NMI,
+    METRIC_GM
 };
 
 enum Subsampling_type {
@@ -110,7 +112,7 @@ public:
     int optim_subtype;       /* used for demons types (diffeomorphic, etc.) */
     char alg_flavor;
     Threading threading_type;
-    int metric_type;
+    Registration_metric_type metric_type;
     Regularization_type regularization_type;
     float regularization_lambda;
     /* Image subsampling */

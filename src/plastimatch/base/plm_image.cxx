@@ -1057,6 +1057,9 @@ Plm_image::convert_to_itk_float ()
     case PLM_IMG_TYPE_ITK_UCHAR:
 	CONVERT_ITK_ITK (float, uchar);
 	break;
+    case PLM_IMG_TYPE_ITK_CHAR:
+	CONVERT_ITK_ITK (float, char);
+	break;
     case PLM_IMG_TYPE_ITK_USHORT:
 	CONVERT_ITK_ITK (float, ushort);
 	break;
@@ -1070,6 +1073,9 @@ Plm_image::convert_to_itk_float ()
 	CONVERT_ITK_ITK (float, int32);
 	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
+	return;
+    case PLM_IMG_TYPE_ITK_DOUBLE:
+	CONVERT_ITK_ITK (float, double);
 	return;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
 	this->m_itk_float = this->convert_gpuit_to_itk<
@@ -1635,22 +1641,4 @@ Plm_image::set_metadata (char *tag, char *value)
 	    this->m_type);
 	break;
     }
-}
-
-/* GCS FIX:  This is inefficient.  Because the pli owns the vol, 
-   it will free it when it converts to itk.  Therefore we make an 
-   extra copy just for this deletion.  Maybe we could switch to 
-   reference counting?  See e.g. 
-   http://blog.placidhacker.com/2008/11/reference-counting-in-c.html
-   for an example of ref counting in C.  */
-void
-plm_image_save_vol (const char* fname, const Volume *vol)
-{
-    Volume *v2 = volume_clone (vol);
-    Plm_image pli;
-
-    pli.set_volume (v2);
-    pli.convert_to_itk ();
-    pli.convert_to_itk ();
-    pli.save_image (fname);
 }

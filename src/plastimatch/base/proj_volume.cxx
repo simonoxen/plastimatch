@@ -56,8 +56,6 @@ void
 Proj_volume::debug ()
 {
     const double* nrm = this->get_nrm ();
-	double dr_room[3];
-	double tmp[3];
 
     printf ("src = %f %f %f\n", d_ptr->src[0], d_ptr->src[1], d_ptr->src[2]);
     printf ("nrm = %f %f %f\n", nrm[0], nrm[1], nrm[2]);
@@ -246,5 +244,5 @@ Proj_volume::get_vol ()
 void
 Proj_volume::save (const char *filename)
 {
-    plm_image_save_vol (filename, d_ptr->vol);
+    Plm_image(d_ptr->vol).save_image(filename);
 }
