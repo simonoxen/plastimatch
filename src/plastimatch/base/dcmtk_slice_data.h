@@ -20,6 +20,9 @@ public:
     float *slice_float;
     int16_t *slice_int16;
 
+    float intercept;
+    float slope;
+
     char slice_uid[100];
     Pstring ipp;
     Pstring iop;

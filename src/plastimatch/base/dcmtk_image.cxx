@@ -100,7 +100,7 @@ Dcmtk_loader::image_load ()
        (1) Direction cosines
        (2) Minimum 2 slices
        (3) Consistency of images w/in series
-       (4) Rescale offset/slope
+       (4) done
        (5) Different image types
        (6) Refine slice spacing based on entire chunk size
     */
@@ -320,11 +320,12 @@ Dcmtk_loader::image_load ()
 
     lprintf ("Image looks ok.  Try to load.\n");
 
-    pli->m_type = PLM_IMG_TYPE_GPUIT_SHORT;
-    pli->m_original_type = PLM_IMG_TYPE_GPUIT_SHORT;
-    Volume* vol = new Volume (vh, PT_SHORT, 1);
+    pli->m_type = PLM_IMG_TYPE_GPUIT_FLOAT;
+    pli->m_original_type = PLM_IMG_TYPE_GPUIT_FLOAT;
+    Volume* vol = new Volume (vh, PT_FLOAT, 1);
+
     pli->set_volume (vol);
-    int16_t* img = (int16_t*) vol->img;
+    float* img = (float*) vol->img;
 
     for (plm_long i = 0; i < dim[2]; i++) {
 	/* Find the best slice, using nearest neighbor interpolation */
@@ -361,19 +362,10 @@ Dcmtk_loader::image_load ()
 		"(%d vs. %d x %d).\n", length, dim[0], dim[1]);
 	}
 
-        /* Convert to short, with slope/offset; maybe should be float ?? */
+        /* Apply slope and offset */
         for (plm_long j = 0; j < (plm_long) length; j++) {
-            plm_long vox = ROUND_INT (
-                rescale_slope * ((short) pixel_data[j]) + rescale_intercept);
-            if (vox > SHRT_MAX) {
-                img[j] = SHRT_MAX;
-            } else if (vox < SHRT_MIN) {
-                img[j] = SHRT_MIN;
-            } else {
-                img[j] = (short) vox;
-            }
+            img[j] = rescale_slope * pixel_data[j] + rescale_intercept;
         }
-	//memcpy (img, pixel_data, length * sizeof(uint16_t));
 	img += length;
 
 	/* Store slice UID */
@@ -430,7 +422,7 @@ dcmtk_save_slice (const Rt_study_metadata::Pointer drs, Dcmtk_slice_data *dsd)
     dataset->putAndInsertString (DCM_SeriesNumber, "303");
     tmp.format ("%d", dsd->instance_no);
     dataset->putAndInsertString (DCM_InstanceNumber, tmp.c_str());
-        //dataset->putAndInsertString (DCM_InstanceNumber, "0");
+    //dataset->putAndInsertString (DCM_InstanceNumber, "0");
     /* DCM_PatientOrientation seems to be not required.  */
     // dataset->putAndInsertString (DCM_PatientOrientation, "L\\P");
     dataset->putAndInsertString (DCM_ImagePositionPatient, dsd->ipp);
@@ -450,11 +442,14 @@ dcmtk_save_slice (const Rt_study_metadata::Pointer drs, Dcmtk_slice_data *dsd)
     dataset->putAndInsertString (DCM_BitsStored, "16");
     dataset->putAndInsertString (DCM_HighBit, "15");
     dataset->putAndInsertString (DCM_PixelRepresentation, "1");
-    dataset->putAndInsertString (DCM_RescaleIntercept, "0");
-    dataset->putAndInsertString (DCM_RescaleSlope, "1");
 
-    dataset->putAndInsertString (DCM_RescaleIntercept, "-1024");
-    dataset->putAndInsertString (DCM_RescaleSlope, "1");
+    tmp.format ("%f", dsd->intercept);
+    dataset->putAndInsertString (DCM_RescaleIntercept, tmp.c_str());
+    tmp.format ("%f", dsd->slope);
+    dataset->putAndInsertString (DCM_RescaleSlope, tmp.c_str());
+
+    //dataset->putAndInsertString (DCM_RescaleIntercept, "-1024");
+    //dataset->putAndInsertString (DCM_RescaleSlope, "1");
     dataset->putAndInsertString (DCM_RescaleType, "HU");
 
     dataset->putAndInsertString (DCM_WindowCenter, "40");
@@ -463,7 +458,9 @@ dcmtk_save_slice (const Rt_study_metadata::Pointer drs, Dcmtk_slice_data *dsd)
     /* Convert to 16-bit signed int */
     for (size_t i = 0; i < dsd->slice_size; i++) {
         float f = dsd->slice_float[i];
-        dsd->slice_int16[i] = (int16_t) (f + 1024);
+        //dsd->slice_int16[i] = (int16_t) (f + 1024);
+        dsd->slice_int16[i] = (int16_t) 
+            ((f - dsd->intercept) / dsd->slope);
     }
 
     dataset->putAndInsertUint16Array (DCM_PixelData, 
@@ -490,6 +487,43 @@ Dcmtk_rt_study::save_image (
 
     Plm_image_header pih (dsd.vol.get());
     d_ptr->dicom_metadata->set_image_header (pih);
+
+    /* Find slope / offset on a per-volume basis */
+    float vol_min = FLT_MAX;
+    float vol_max = - FLT_MAX;
+    float *img = (float*) dsd.vol->img;
+    bool all_integers = true;
+    for (plm_long v = 0; v < dsd.vol->npix; v++) {
+        if (vol_min > img[v]) {
+            vol_min = img[v];
+        }
+        else if (vol_max < img[v]) {
+            vol_max = img[v];
+        }
+        if (img[v] != floorf(img[v])) {
+            all_integers = false;
+        }
+    }
+    /* Use a heuristic to determine intercept and offset.
+       The heuristic is designed around the following principles:
+       - prevent underflow when using low-precision DICOM string-encoded
+         floating point numbers
+       - map integers to integers
+    */
+    dsd.intercept = floorf (vol_min);
+    if (all_integers) {
+        dsd.slope = 1;
+    }
+    else {
+        float range = vol_max - dsd.intercept;
+        if (range < 1) {
+            range = 1;
+        }
+        dsd.slope = range / (SHRT_MAX - 100);
+        std::string tmp = string_format ("%f", dsd.slope);
+        sscanf (tmp.c_str(), "%f", &dsd.slope);
+    }
+    printf ("OFF = %f, SLO = %f\n", dsd.intercept, dsd.slope);
 
     for (plm_long k = 0; k < dsd.vol->dim[2]; k++) {
         /* GCS FIX: direction cosines */
