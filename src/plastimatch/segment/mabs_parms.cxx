@@ -82,7 +82,7 @@ Mabs_parms::Mabs_parms ()
     /* [ATLAS-SELECTION] */
     this->enable_atlas_selection = false;
     this->atlas_selection_criteria="nmi";
-    this->mi_percent_threshold = 0.70;
+    this->mi_percent_threshold = 0.40;
     this->atlases_from_ranking = -1;
     this->mi_histogram_bins = 100;
     this->roi_mask_fn = "";
@@ -95,8 +95,8 @@ Mabs_parms::Mabs_parms ()
     this->lower_mi_value_atl = 0;
     this->upper_mi_value_atl_defined=false;
     this->upper_mi_value_atl = 0;
-    this->min_random_atlases = 4;
-    this->max_random_atlases = 12;
+    this->max_random_atlases = 14;
+    this->min_random_atlases = 6;
     this->precomputed_ranking_fn = "";
 	
     /* [TRAINING] */

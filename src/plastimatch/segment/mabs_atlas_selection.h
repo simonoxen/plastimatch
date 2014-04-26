@@ -10,7 +10,6 @@
 #include <stdio.h>
 #include "itkImageMaskSpatialObject.h"
 
-#include "mabs_parms.h"
 #include "plm_image.h"
 
 typedef itk::ImageMaskSpatialObject<3> MaskType;
@@ -36,11 +35,14 @@ public:
     Plm_image::Pointer subject;
     std::string subject_id;
     std::list<std::string> atlas_dir_list;
+    std::string atlas_selection_criteria;
+    std::string selection_reg_parms_fn;
+    std::string roi_mask_fn;
+    std::string atlas_dir;
     float mi_percent_threshold;
     int atlases_from_ranking; // -1 if this paramter is not defined
     int number_of_atlases;
     Plm_image::Pointer atlas;
-    const Mabs_parms* atlas_selection_parms;
     int hist_bins;
     MaskTypePointer mask;
     bool min_hist_sub_value_defined;
@@ -51,6 +53,8 @@ public:
     int min_hist_atl_value;
     bool max_hist_atl_value_defined;
     int max_hist_atl_value;
+    int max_random_atlases;
+    int min_random_atlases;
     std::string precomputed_ranking_fn;
     std::list<std::pair<std::string, double> > ranked_atlases; // all the atlases, only ranked
     std::list<std::pair<std::string, double> > selected_atlases; // selected_atlases, subset of ranked_atlases

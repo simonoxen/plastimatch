@@ -43,10 +43,15 @@ compare_similarity_value_from_pairs(
 Mabs_atlas_selection::Mabs_atlas_selection ()
 {
     /* constructor */
-    this->mi_percent_threshold = 0.0;
+    this->subject_id = "";
+    this->atlas_selection_criteria = "nmi";
+    this->selection_reg_parms_fn = "";
+    this->roi_mask_fn = "";
+    this->atlas_dir = "";
+    this->mi_percent_threshold = 0.40;
     this->atlases_from_ranking = -1;
+    this->number_of_atlases = -1;
     this->hist_bins = 100;
-    this->atlas_selection_parms = NULL;
     this->mask = NULL;
     this->min_hist_sub_value_defined = false;
     this->min_hist_sub_value=0;
@@ -56,6 +61,8 @@ Mabs_atlas_selection::Mabs_atlas_selection ()
     this->min_hist_atl_value=0;
     this->max_hist_atl_value_defined = false;
     this->max_hist_atl_value=0;
+    this->max_random_atlases = 14;
+    this->min_random_atlases = 6;
     this->precomputed_ranking_fn = "";
 }
 
@@ -69,36 +76,20 @@ Mabs_atlas_selection::~Mabs_atlas_selection ()
 void
 Mabs_atlas_selection::run_selection()
 {
-    if (this->atlas_selection_parms->atlas_selection_criteria == "nmi" ||
-        this->atlas_selection_parms->atlas_selection_criteria == "nmi-post" ||
-        this->atlas_selection_parms->atlas_selection_criteria == "nmi-ratio")
+    if (this->atlas_selection_criteria == "nmi" ||
+        this->atlas_selection_criteria == "nmi-post" ||
+        this->atlas_selection_criteria == "nmi-ratio")
     {
-
-        this->mi_percent_threshold = this->atlas_selection_parms->mi_percent_threshold;
-        this->atlases_from_ranking = this->atlas_selection_parms->atlases_from_ranking;
-        this->hist_bins = this->atlas_selection_parms->mi_histogram_bins;
-        this->min_hist_sub_value_defined = this->atlas_selection_parms->lower_mi_value_sub_defined;
-        this->min_hist_sub_value = this->atlas_selection_parms->lower_mi_value_sub;
-        this->max_hist_sub_value_defined = this->atlas_selection_parms->upper_mi_value_sub_defined;
-        this->max_hist_sub_value = this->atlas_selection_parms->upper_mi_value_sub;
-        this->min_hist_atl_value_defined = this->atlas_selection_parms->lower_mi_value_atl_defined;
-        this->min_hist_atl_value = this->atlas_selection_parms->lower_mi_value_atl;
-        this->max_hist_atl_value_defined = this->atlas_selection_parms->upper_mi_value_atl_defined;
-        this->max_hist_atl_value = this->atlas_selection_parms->upper_mi_value_atl;
-
         this->nmi_ranking();
     }
 
-    else if (this->atlas_selection_parms->atlas_selection_criteria == "random")
+    else if (this->atlas_selection_criteria == "random")
     {
         this->random_ranking ();
     }
 
-    else if (this->atlas_selection_parms->atlas_selection_criteria == "precomputed")
+    else if (this->atlas_selection_criteria == "precomputed")
     {
-        this->precomputed_ranking_fn = this->atlas_selection_parms->precomputed_ranking_fn;
-        this->atlases_from_ranking = this->atlas_selection_parms->atlases_from_ranking;
-
         this->precomputed_ranking ();
     }
 
@@ -113,9 +104,9 @@ Mabs_atlas_selection::nmi_ranking()
     printf ("Number of initial atlases = %d \n", this->number_of_atlases);
     
     /* Set the mask if defined */
-    if (this->atlas_selection_parms->roi_mask_fn.compare("")!=0)
+    if (this->roi_mask_fn.compare("")!=0)
     {
-       	Plm_image* mask_plm = plm_image_load (this->atlas_selection_parms->roi_mask_fn, PLM_IMG_TYPE_ITK_FLOAT);
+       	Plm_image* mask_plm = plm_image_load (this->roi_mask_fn, PLM_IMG_TYPE_ITK_FLOAT);
     	
        	this->mask = MaskType::New();
        	this->mask->SetImage(mask_plm->itk_uchar());
@@ -135,7 +126,7 @@ Mabs_atlas_selection::nmi_ranking()
        	std::string path_atl = *atl_it;
         std::string atlas_id = basename (path_atl);
         std::string atlas_input_path = string_format ("%s/prealign/%s", 
-            this->atlas_selection_parms->atlas_dir.c_str(), atlas_id.c_str());
+            this->atlas_dir.c_str(), atlas_id.c_str());
         std::string fn = string_format ("%s/img.nrrd", atlas_input_path.c_str());
         rtds_atl->load_image (fn.c_str());
         
@@ -225,20 +216,20 @@ Mabs_atlas_selection::compute_nmi_general_score()
     double score = 0;
 
     /* metric: NMI */
-    if (this->atlas_selection_parms->atlas_selection_criteria == "nmi") 
+    if (this->atlas_selection_criteria == "nmi") 
     {
         score = this->compute_nmi(this->subject, this->atlas);
         lprintf("nmi value = %g \n", score);
     }
 
     /* metric: NMI POST */
-    else if (this->atlas_selection_parms->atlas_selection_criteria == "nmi-post")
+    else if (this->atlas_selection_criteria == "nmi-post")
     {
         score = this->compute_nmi_post();
     }
     
     /* metric: NMI RATIO */
-    else if (this->atlas_selection_parms->atlas_selection_criteria == "nmi-ratio")
+    else if (this->atlas_selection_criteria == "nmi-ratio")
     {
         score = this->compute_nmi_ratio();
     }
@@ -254,7 +245,7 @@ Mabs_atlas_selection::compute_nmi_post()
     Registration_parms* regp = new Registration_parms;
     Registration_data* regd = new Registration_data;
 
-    regp->parse_command_file(this->atlas_selection_parms->selection_reg_parms_fn.c_str());
+    regp->parse_command_file(this->selection_reg_parms_fn.c_str());
     
     regd->fixed_image = this->subject;
     regd->moving_image = this->atlas;
@@ -292,7 +283,7 @@ Mabs_atlas_selection::compute_nmi_ratio()
     Registration_parms* regp = new Registration_parms;
     Registration_data* regd = new Registration_data;
 
-    regp->parse_command_file(this->atlas_selection_parms->selection_reg_parms_fn.c_str());
+    regp->parse_command_file(this->selection_reg_parms_fn.c_str());
     
     regd->fixed_image = this->subject;
     regd->moving_image = this->atlas;
@@ -403,14 +394,12 @@ Mabs_atlas_selection::random_ranking()
     
     std::list<std::string> random_atlases;
 
-    int min_atlases = this->atlas_selection_parms->min_random_atlases;
-    int max_atlases = this->atlas_selection_parms->max_random_atlases + 1;
-
     /* Check if atlases_from_ranking is greater than number_of_atlases */
-    if (min_atlases < 1 || max_atlases > this->number_of_atlases)
+    if (this->min_random_atlases < 1 || (this->max_random_atlases + 1) > this->number_of_atlases)
         print_and_exit("Bounds for random selection are not correct\n");
 
-    int random_number_of_atlases = rand() % (max_atlases-min_atlases) + min_atlases;
+    int random_number_of_atlases = rand() %
+        (this->max_random_atlases + 1 - this->min_random_atlases) + this->min_random_atlases;
     printf("Selected %d random atlases for the subject %s \n", random_number_of_atlases, this->subject_id.c_str());
 
     /* Select the random atlases */

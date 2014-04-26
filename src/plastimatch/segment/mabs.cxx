@@ -771,9 +771,28 @@ Mabs::atlas_selection ()
         
         /* Create object and set the parameters */
         Mabs_atlas_selection* select_atlas = new Mabs_atlas_selection();
-        select_atlas->atlas_selection_parms = d_ptr->parms;
+        select_atlas->atlas_selection_criteria = d_ptr->parms->atlas_selection_criteria;
+        select_atlas->selection_reg_parms_fn = d_ptr->parms->selection_reg_parms_fn;
+        select_atlas->roi_mask_fn = d_ptr->parms->roi_mask_fn;
+        select_atlas->mi_percent_threshold = d_ptr->parms->mi_percent_threshold;
+        select_atlas->max_random_atlases = d_ptr->parms->max_random_atlases;
+        select_atlas->min_random_atlases = d_ptr->parms->min_random_atlases;
+        select_atlas->hist_bins = d_ptr->parms->mi_histogram_bins;
+        select_atlas->atlases_from_ranking = d_ptr->parms->atlases_from_ranking;
+        select_atlas->precomputed_ranking_fn = d_ptr->parms->precomputed_ranking_fn;
         select_atlas->subject_id = patient_id;
+        select_atlas->atlas_dir = d_ptr->parms->atlas_dir;
         select_atlas->number_of_atlases = (int) d_ptr->process_dir_list.size();
+
+        select_atlas->min_hist_sub_value_defined = d_ptr->parms->lower_mi_value_sub_defined;
+        select_atlas->min_hist_sub_value = d_ptr->parms->lower_mi_value_sub;
+        select_atlas->max_hist_sub_value_defined = d_ptr->parms->upper_mi_value_sub_defined;
+        select_atlas->max_hist_sub_value = d_ptr->parms->upper_mi_value_sub;
+        select_atlas->min_hist_atl_value_defined = d_ptr->parms->lower_mi_value_atl_defined;
+        select_atlas->min_hist_atl_value = d_ptr->parms->lower_mi_value_atl;
+        select_atlas->max_hist_atl_value_defined = d_ptr->parms->upper_mi_value_atl_defined;
+        select_atlas->max_hist_atl_value = d_ptr->parms->upper_mi_value_atl;
+                                                                
        
         /* New selection is required, execute it */
         if (compute_new_ranking) {
@@ -794,7 +813,7 @@ Mabs::atlas_selection ()
             "Patient = %s, initial atlases = %d, selection criteria = %s \n",
             select_atlas->subject_id.c_str(),
             select_atlas->number_of_atlases,
-            select_atlas->atlas_selection_parms->atlas_selection_criteria.c_str());
+            select_atlas->atlas_selection_criteria.c_str());
         
         if (!compute_new_ranking) {
             fprintf(atlas_selection_log_file,
