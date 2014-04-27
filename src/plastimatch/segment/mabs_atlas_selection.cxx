@@ -10,6 +10,7 @@
 
 #include "itkImage.h"
 #include "itkImageFileReader.h"
+#include <itkMeanSquaresImageToImageMetric.h>
 #include <itkNormalizedMutualInformationHistogramImageToImageMetric.h>
 #include <itkTranslationTransform.h>
 #include "itkLinearInterpolateImageFunction.h"
@@ -47,7 +48,7 @@ Mabs_atlas_selection::Mabs_atlas_selection ()
     this->atlas_selection_criteria = "nmi";
     this->selection_reg_parms_fn = "";
     this->atlas_dir = "";
-    this->mi_percent_threshold = 0.40;
+    this->similarity_percent_threshold = 0.40;
     this->atlases_from_ranking = -1;
     this->number_of_atlases = -1;
     this->hist_bins = 100;
@@ -77,9 +78,12 @@ Mabs_atlas_selection::run_selection()
 {
     if (this->atlas_selection_criteria == "nmi" ||
         this->atlas_selection_criteria == "nmi-post" ||
-        this->atlas_selection_criteria == "nmi-ratio")
+        this->atlas_selection_criteria == "nmi-ratio" ||
+        this->atlas_selection_criteria == "mse" ||
+        this->atlas_selection_criteria == "mse-post" ||
+        this->atlas_selection_criteria == "mse-ratio")
     {
-        this->nmi_ranking();
+        this->similarity_ranking();
     }
 
     else if (this->atlas_selection_criteria == "random")
@@ -96,9 +100,9 @@ Mabs_atlas_selection::run_selection()
 
 
 void
-Mabs_atlas_selection::nmi_ranking()
+Mabs_atlas_selection::similarity_ranking()
 {
-    lprintf("NMI RANKING \n");
+    lprintf("SIMILARITY RANKING \n");
 
     printf ("Number of initial atlases = %d \n", this->number_of_atlases);
     
@@ -126,7 +130,7 @@ Mabs_atlas_selection::nmi_ranking()
             /* Compute similarity value */
             atlas_and_similarity.push_back(
                 std::make_pair(basename(atlas_id),
-                this->compute_nmi_general_score()));
+                this->compute_general_similarity_value())); 
         }
        
         delete rtds_atl;
@@ -156,7 +160,7 @@ Mabs_atlas_selection::nmi_ranking()
         {
             /* Similarity value greater than the threshold, take the atlas */
             if (reg_it->second >=
-                (((max_similarity_value-min_similarity_value) * this->mi_percent_threshold) + min_similarity_value))
+                (((max_similarity_value-min_similarity_value) * this->similarity_percent_threshold) + min_similarity_value))
     	    {
                 most_similar_atlases.push_back(*reg_it);
                 printf("Atlas %s having similarity value = %f \n", reg_it->first.c_str(), reg_it->second);
@@ -195,7 +199,7 @@ Mabs_atlas_selection::nmi_ranking()
 
 
 double
-Mabs_atlas_selection::compute_nmi_general_score()
+Mabs_atlas_selection::compute_general_similarity_value()
 {
     double score = 0;
 
@@ -203,19 +207,28 @@ Mabs_atlas_selection::compute_nmi_general_score()
     if (this->atlas_selection_criteria == "nmi") 
     {
         score = this->compute_nmi(this->subject, this->atlas);
-        lprintf("nmi value = %g \n", score);
+        lprintf("NMI value = %g \n", score);
     }
 
-    /* metric: NMI POST */
-    else if (this->atlas_selection_criteria == "nmi-post")
+    /* metric: MSE */
+    else if (this->atlas_selection_criteria == "mse") 
     {
-        score = this->compute_nmi_post();
+        score = this->compute_mse(this->subject, this->atlas);
+        lprintf("MSE value = %g \n", score);
+    }
+
+    /* metrics: NMI POST & MSE POST */
+    else if (this->atlas_selection_criteria == "nmi-post" ||
+             this->atlas_selection_criteria == "mse-post")
+    {
+        score = this->compute_similarity_value_post();
     }
     
-    /* metric: NMI RATIO */
-    else if (this->atlas_selection_criteria == "nmi-ratio")
+    /* metrics: NMI RATIO & MSE RATIO */
+    else if (this->atlas_selection_criteria == "nmi-ratio" ||
+             this->atlas_selection_criteria == "mse-ratio")
     {
-        score = this->compute_nmi_ratio();
+        score = this->compute_similarity_value_ratio();
     }
 
     return score;
@@ -223,7 +236,7 @@ Mabs_atlas_selection::compute_nmi_general_score()
 
 
 double
-Mabs_atlas_selection::compute_nmi_post()
+Mabs_atlas_selection::compute_similarity_value_post()
 {
     
     Registration_parms* regp = new Registration_parms;
@@ -245,24 +258,36 @@ Mabs_atlas_selection::compute_nmi_post()
     plm_warp (deformed_atlas, 0, xf, &fixed_pih, 
         regd->moving_image,
         regp->default_value, 0, 1);
-    
-    double nmi_post = this->compute_nmi (this->subject, deformed_atlas);
-    
+   
+    double similarity_value_post = 0;
+    if (this->atlas_selection_criteria == "nmi-post") {
+        similarity_value_post = this->compute_nmi (this->subject, deformed_atlas);
+        lprintf("NMI post = %g \n", similarity_value_post);
+    }
+ 
+    else if (this->atlas_selection_criteria == "mse-post") {
+        similarity_value_post = this->compute_mse (this->subject, deformed_atlas);
+        lprintf("MSE post = %g \n", similarity_value_post);
+    }
+   
     delete regd;
     delete regp;
 
-    lprintf("NMI post = %g \n", nmi_post);
-
-    return nmi_post;
+    return similarity_value_post;
 }
 
 
 double
-Mabs_atlas_selection::compute_nmi_ratio()
+Mabs_atlas_selection::compute_similarity_value_ratio()
 {
-    double nmi_pre = this->compute_nmi(this->subject, this->atlas);
-    
-    lprintf("Similarity value pre = %g \n", nmi_pre);
+    double similarity_value_pre = 0;
+
+    if (this->atlas_selection_criteria == "nmi-ratio")
+        similarity_value_pre = this->compute_nmi(this->subject, this->atlas);
+    else if (this->atlas_selection_criteria == "mse-ratio")
+        similarity_value_pre = this->compute_mse(this->subject, this->atlas);
+   
+    lprintf("Similarity value pre = %g \n", similarity_value_pre);
     
     Registration_parms* regp = new Registration_parms;
     Registration_data* regd = new Registration_data;
@@ -284,14 +309,19 @@ Mabs_atlas_selection::compute_nmi_ratio()
         regd->moving_image,
         regp->default_value, 0, 1);
     
-    double nmi_post = this->compute_nmi (this->subject, deformed_atlas);
+    double similarity_value_post = 0;
+
+    if (this->atlas_selection_criteria == "nmi-ratio")
+        similarity_value_post = this->compute_nmi (this->subject, deformed_atlas);
+    else if (this->atlas_selection_criteria == "mse-ratio")
+        similarity_value_post = this->compute_mse (this->subject, deformed_atlas);
+   
+    lprintf("Similarity value post = %g \n", similarity_value_post);
     
     delete regd;
     delete regp;
 
-    lprintf("Similarity value post = %g \n", nmi_post);
-
-    return ((nmi_post/nmi_pre)-1) * nmi_post;
+    return ((similarity_value_post/similarity_value_pre)-1) * similarity_value_post;
 }
 
 
@@ -304,8 +334,8 @@ Mabs_atlas_selection::compute_nmi (
     typedef float PixelComponentType;
     const unsigned int Dimension = 3;
     typedef itk::Image< PixelComponentType, Dimension > ImageType;
-    typedef itk::NormalizedMutualInformationHistogramImageToImageMetric<ImageType, ImageType > MetricType;
-    MetricType::Pointer metric = MetricType::New();
+    typedef itk::NormalizedMutualInformationHistogramImageToImageMetric<ImageType, ImageType > NmiMetricType;
+    NmiMetricType::Pointer nmi_metric = NmiMetricType::New();
     
     /* Identity transformation */
     typedef itk::TranslationTransform< double, Dimension > TranslationTransformType;
@@ -320,54 +350,97 @@ Mabs_atlas_selection::compute_nmi (
     /* Set mask if defined */
     if (this->mask)
     {
-       	metric->SetFixedImageMask(this->mask);	
+       	nmi_metric->SetFixedImageMask(this->mask);	
     }
     
     /* Set histogram interval if defined */
     if (this->min_hist_sub_value_defined &&
         this->min_hist_atl_value_defined)
     {
-        MetricType::MeasurementVectorType lower_bounds;
+        NmiMetricType::MeasurementVectorType lower_bounds;
         #ifdef ITK4 
         lower_bounds.SetSize(2);
         #endif
         lower_bounds.SetElement(0, this->min_hist_sub_value);
         lower_bounds.SetElement(1, this->min_hist_atl_value);
-        metric->SetLowerBound(lower_bounds);
+        nmi_metric->SetLowerBound(lower_bounds);
     }
 
     if (this->max_hist_sub_value_defined &&
         this->max_hist_atl_value_defined)
     {
-        MetricType::MeasurementVectorType upper_bounds;
+        NmiMetricType::MeasurementVectorType upper_bounds;
         #ifdef ITK4 
         upper_bounds.SetSize(2);
         #endif
         upper_bounds.SetElement(0, this->max_hist_sub_value);
         upper_bounds.SetElement(1, this->max_hist_atl_value);
-        metric->SetUpperBound(upper_bounds);
+        nmi_metric->SetUpperBound(upper_bounds);
     }
     
     /* Metric settings */
     unsigned int numberOfHistogramBins = this->hist_bins;
-    MetricType::HistogramType::SizeType histogramSize;
+    NmiMetricType::HistogramType::SizeType histogramSize;
     #ifdef ITK4
     histogramSize.SetSize(2);
     #endif
     histogramSize.Fill(numberOfHistogramBins);
-    metric->SetHistogramSize(histogramSize);
+    nmi_metric->SetHistogramSize(histogramSize);
     
-    metric->SetFixedImage(img1->itk_float());
-    metric->SetMovingImage(img2->itk_float());
-    metric->SetFixedImageRegion(img1->itk_float()->GetLargestPossibleRegion());
+    nmi_metric->SetFixedImage(img1->itk_float());
+    nmi_metric->SetMovingImage(img2->itk_float());
+    nmi_metric->SetFixedImageRegion(img1->itk_float()->GetLargestPossibleRegion());
     
-    metric->SetTransform(transform);
-    metric->SetInterpolator(interpolator);
+    nmi_metric->SetTransform(transform);
+    nmi_metric->SetInterpolator(interpolator);
     
-    metric->Initialize();
+    nmi_metric->Initialize();
     
-    /* MNI compute */
-    return (double) metric->GetValue(transform->GetParameters());
+    /* NMI compute */
+    return (double) nmi_metric->GetValue(transform->GetParameters());
+}
+
+
+double
+Mabs_atlas_selection::compute_mse (
+    const Plm_image::Pointer& img1, /* Subject */ 
+    const Plm_image::Pointer& img2) /* Atlas */
+{	
+    /* Cost function */
+    typedef float PixelComponentType;
+    const unsigned int Dimension = 3;
+    typedef itk::Image< PixelComponentType, Dimension > ImageType;
+    typedef itk::MeanSquaresImageToImageMetric<ImageType, ImageType > MseMetricType;
+    MseMetricType::Pointer mse_metric = MseMetricType::New();
+    
+    /* Identity transformation */
+    typedef itk::TranslationTransform< double, Dimension > TranslationTransformType;
+    typedef TranslationTransformType::Pointer TranslationTransformPointer;
+    TranslationTransformPointer transform = TranslationTransformType::New();
+    transform->SetIdentity();
+	
+    /* Linear Interpolator */
+    typedef itk::LinearInterpolateImageFunction< ImageType, double > InterpolatorType;
+    InterpolatorType::Pointer interpolator = InterpolatorType::New();
+    
+    /* Set mask if defined */
+    if (this->mask)
+    {
+       	mse_metric->SetFixedImageMask(this->mask);	
+    }
+    
+    /* Metric settings */
+    mse_metric->SetFixedImage(img1->itk_float());
+    mse_metric->SetMovingImage(img2->itk_float());
+    mse_metric->SetFixedImageRegion(img1->itk_float()->GetLargestPossibleRegion());
+    
+    mse_metric->SetTransform(transform);
+    mse_metric->SetInterpolator(interpolator);
+    
+    mse_metric->Initialize();
+    
+    /* MSE compute */
+    return (double) mse_metric->GetValue(transform->GetParameters());
 }
 
 

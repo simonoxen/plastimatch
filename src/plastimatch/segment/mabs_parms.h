@@ -34,7 +34,7 @@ public:
     /* [ATLASES-SELECTION] */
     bool enable_atlas_selection;
     std::string atlas_selection_criteria;
-    float mi_percent_threshold;
+    float similarity_percent_threshold;
     int atlases_from_ranking; // -1 if it is not defined
     int mi_histogram_bins;
     std::string roi_mask_fn;

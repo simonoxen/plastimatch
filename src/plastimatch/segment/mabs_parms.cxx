@@ -82,7 +82,7 @@ Mabs_parms::Mabs_parms ()
     /* [ATLAS-SELECTION] */
     this->enable_atlas_selection = false;
     this->atlas_selection_criteria="nmi";
-    this->mi_percent_threshold = 0.40;
+    this->similarity_percent_threshold = 0.40;
     this->atlases_from_ranking = -1;
     this->mi_histogram_bins = 100;
     this->roi_mask_fn = "";
@@ -195,6 +195,15 @@ Mabs_parms::set_key_value (
             else if (val == "nmi-ratio" || val == "NMI-RATIO") {
                 this->atlas_selection_criteria="nmi-ratio";
             }
+            else if (val == "mse" || val == "MSE") {
+                this->atlas_selection_criteria="mse";
+            }
+            else if (val == "mse-post" || val == "MSE-POST") {
+                this->atlas_selection_criteria="mse-post";
+            }
+            else if (val == "mse-ratio" || val == "MSE-RATIO") {
+                this->atlas_selection_criteria="mse-ratio";
+            }
             else if (val == "random" || val == "RANDOM") {
                 this->atlas_selection_criteria="random";
             }
@@ -202,8 +211,8 @@ Mabs_parms::set_key_value (
                 this->atlas_selection_criteria="precomputed";
             }
         }
-        else if (key == "mi_percent_threshold") {
-            sscanf (val.c_str(), "%g", &this->mi_percent_threshold);
+        else if (key == "similarity_percent_threshold") {
+            sscanf (val.c_str(), "%g", &this->similarity_percent_threshold);
         }
         else if (key == "atlases_from_ranking") {
             sscanf (val.c_str(), "%d", &this->atlases_from_ranking);

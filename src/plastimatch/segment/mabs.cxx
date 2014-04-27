@@ -773,7 +773,7 @@ Mabs::atlas_selection ()
         Mabs_atlas_selection* atlas_selector = new Mabs_atlas_selection();
         atlas_selector->atlas_selection_criteria = d_ptr->parms->atlas_selection_criteria;
         atlas_selector->selection_reg_parms_fn = d_ptr->parms->selection_reg_parms_fn;
-        atlas_selector->mi_percent_threshold = d_ptr->parms->mi_percent_threshold;
+        atlas_selector->similarity_percent_threshold = d_ptr->parms->similarity_percent_threshold;
         atlas_selector->max_random_atlases = d_ptr->parms->max_random_atlases;
         atlas_selector->min_random_atlases = d_ptr->parms->min_random_atlases;
         atlas_selector->hist_bins = d_ptr->parms->mi_histogram_bins;
@@ -799,7 +799,6 @@ Mabs::atlas_selection ()
         atlas_selector->max_hist_atl_value_defined = d_ptr->parms->upper_mi_value_atl_defined;
         atlas_selector->max_hist_atl_value = d_ptr->parms->upper_mi_value_atl;
                                                                 
-       
         /* New selection is required, execute it */
         if (compute_new_ranking) {
             atlas_selector->subject = d_ptr->ref_rtds->get_image();

@@ -21,11 +21,14 @@ public:
     Mabs_atlas_selection();
     ~Mabs_atlas_selection();
     void run_selection();
-    void nmi_ranking();
-    double compute_nmi_general_score();
-    double compute_nmi_ratio();
-    double compute_nmi_post();
+    void similarity_ranking();
+    double compute_general_similarity_value();
+    double compute_similarity_value_ratio();
+    double compute_similarity_value_post();
     double compute_nmi (
+        const Plm_image::Pointer& img1, 
+        const Plm_image::Pointer& img2);
+    double compute_mse (
         const Plm_image::Pointer& img1, 
         const Plm_image::Pointer& img2);
     void random_ranking();
@@ -38,7 +41,7 @@ public:
     std::string atlas_selection_criteria;
     std::string selection_reg_parms_fn;
     std::string atlas_dir;
-    float mi_percent_threshold;
+    float similarity_percent_threshold;
     int atlases_from_ranking; // -1 if this paramter is not defined
     int number_of_atlases;
     Plm_image::Pointer atlas;
