@@ -37,7 +37,6 @@ public:
     std::list<std::string> atlas_dir_list;
     std::string atlas_selection_criteria;
     std::string selection_reg_parms_fn;
-    std::string roi_mask_fn;
     std::string atlas_dir;
     float mi_percent_threshold;
     int atlases_from_ranking; // -1 if this paramter is not defined

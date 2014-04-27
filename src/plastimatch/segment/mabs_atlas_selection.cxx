@@ -46,13 +46,12 @@ Mabs_atlas_selection::Mabs_atlas_selection ()
     this->subject_id = "";
     this->atlas_selection_criteria = "nmi";
     this->selection_reg_parms_fn = "";
-    this->roi_mask_fn = "";
     this->atlas_dir = "";
     this->mi_percent_threshold = 0.40;
     this->atlases_from_ranking = -1;
     this->number_of_atlases = -1;
     this->hist_bins = 100;
-    this->mask = NULL;
+    this->mask = MaskType::New();
     this->min_hist_sub_value_defined = false;
     this->min_hist_sub_value=0;
     this->max_hist_sub_value_defined = false;
@@ -103,18 +102,6 @@ Mabs_atlas_selection::nmi_ranking()
 
     printf ("Number of initial atlases = %d \n", this->number_of_atlases);
     
-    /* Set the mask if defined */
-    if (this->roi_mask_fn.compare("")!=0)
-    {
-       	Plm_image* mask_plm = plm_image_load (this->roi_mask_fn, PLM_IMG_TYPE_ITK_FLOAT);
-    	
-       	this->mask = MaskType::New();
-       	this->mask->SetImage(mask_plm->itk_uchar());
-       	this->mask->Update();
-        
-        delete mask_plm;
-    }
-	
     /* Loop through images in the atlas and compute similarity value */
     std::list<std::pair<std::string, double> > atlas_and_similarity;
     std::list<std::string>::iterator atl_it;
@@ -145,9 +132,6 @@ Mabs_atlas_selection::nmi_ranking()
         delete rtds_atl;
     } 
   
-    /* If defined delete mask */
-    if (!mask) mask = NULL;
-
     /* Sort atlases in basis of the similarity value */
     atlas_and_similarity.sort(compare_similarity_value_from_pairs);
 
