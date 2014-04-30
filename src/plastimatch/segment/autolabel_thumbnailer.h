@@ -6,6 +6,7 @@
 
 #include "plmsegment_config.h"
 #include "dlib_trainer.h"
+#include "plm_image.h"
 
 class Plm_image;
 class Thumbnail;
@@ -15,7 +16,7 @@ public:
     Autolabel_thumbnailer ();
     ~Autolabel_thumbnailer ();
 public:
-    Plm_image *pli;
+    Plm_image::Pointer pli;
     Thumbnail *thumb;
 public:
     void set_input_image (const char* fn);

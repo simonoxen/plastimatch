@@ -6,12 +6,11 @@
 
 #include "plmbase_config.h"
 #include "itk_image_type.h"
-
-class Plm_image;
+#include "plm_image.h"
 
 class PLMBASE_API Thumbnail {
 public:
-    Plm_image *pli;
+    Plm_image::Pointer pli;
     float origin[3];
     float center[3];
     float spacing[3];
@@ -25,7 +24,7 @@ public:
 
 public:
     Thumbnail ();
-    void set_input_image (Plm_image *pli);
+    void set_input_image (const Plm_image::Pointer& pli);
     void set_axis (int axis);
     void set_slice_loc (float slice_loc);
     void set_thumbnail_dim (int thumb_dim);

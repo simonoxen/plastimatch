@@ -226,20 +226,19 @@ Plm_image::clone (const Plm_image::Pointer& pli)
 /* -----------------------------------------------------------------------
    Loading
    ----------------------------------------------------------------------- */
-Plm_image*
+Plm_image::Pointer
 plm_image_load (const char* fname, Plm_image_type type)
 {
-    Plm_image *pli = new Plm_image;
-    if (!pli) return 0;
-
+    Plm_image::Pointer pli = Plm_image::New();
     if (pli->load (fname, type)) {
         return pli;
+    } 
+    else {
+        return Plm_image::Pointer();
     }
-    delete pli;
-    return 0;
 }
 
-Plm_image*
+Plm_image::Pointer
 plm_image_load (const std::string& fname, Plm_image_type type)
 {
     return plm_image_load (fname.c_str(), type);
@@ -268,24 +267,10 @@ bool
 Plm_image::load (const char* fname, Plm_image_type type)
 {
     this->free ();
-    switch (type) {
-    case PLM_IMG_TYPE_GPUIT_FLOAT:
-        this->set_volume (read_mha (fname), type);
-        break;
-    case PLM_IMG_TYPE_ITK_FLOAT:
-        this->m_type = type;
-        this->m_itk_float = itk_image_load_float (fname, 
-            &this->m_original_type);
-        break;
-    case PLM_IMG_TYPE_ITK_UCHAR:
-        this->m_type = type;
-        this->m_original_type = type;
-        this->m_itk_uchar = itk_image_load_uchar (fname, 0);
-        break;
-    default:
-        print_and_exit ("Unhandled image load in plm_image_load\n");
-        break;
+    if (!this->load_native(fname)) {
+        return false;
     }
+    this->convert (type);
     return true;
 }
 

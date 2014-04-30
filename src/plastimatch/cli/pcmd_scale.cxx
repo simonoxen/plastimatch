@@ -23,7 +23,7 @@ public:
 };
 
 static void
-scale_image (Plm_image *img, float weight)
+scale_image (Plm_image::Pointer& img, float weight)
 {
     img->set_itk (itk_scale (img->itk_float(), weight));
 }
@@ -52,7 +52,8 @@ void
 scale_vol_main (Scale_parms *parms)
 {
     /* Load the input */
-    Plm_image *img = plm_image_load (parms->input_fn, PLM_IMG_TYPE_ITK_FLOAT);
+    Plm_image::Pointer img = plm_image_load (parms->input_fn, 
+        PLM_IMG_TYPE_ITK_FLOAT);
 
     /* Weigh it */
     scale_image (img, parms->weight);
@@ -60,8 +61,6 @@ scale_vol_main (Scale_parms *parms)
     /* Save it */
     img->convert_to_original_type ();
     img->save_image (parms->output_fn);
-
-    delete img;
 }
 
 void

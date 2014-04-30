@@ -13,7 +13,6 @@
 
 Thumbnail::Thumbnail ()
 {
-    pli = 0;
     axis = 2;
     thumbnail_dim = 16;
     thumbnail_spacing = 30.0;
@@ -36,19 +35,9 @@ Thumbnail::set_internal_geometry ()
 }
 
 void 
-Thumbnail::set_input_image (Plm_image *pli)
+Thumbnail::set_input_image (const Plm_image::Pointer& pli)
 {
-    Plm_image_header pih;
-
     this->pli = pli;
-
-/* This should be explicit request by caller */
-#if defined (commentout)
-    pih.get_image_center (this->center);
-    if (!slice_loc_was_set) {
-	slice_loc = center[axis];
-    }
-#endif
 }
 
 void 

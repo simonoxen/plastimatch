@@ -35,7 +35,7 @@ public:
 static void
 thumbnail_main (Thumbnail_parms* parms)
 {
-    Plm_image *pli;
+    Plm_image::Pointer pli;
 
     /* Load image */
     pli = plm_image_load ((const char*) parms->input_fn, 
@@ -66,8 +66,6 @@ thumbnail_main (Thumbnail_parms* parms)
 
     /* Save the output file */
     pli->save_image ((const char*) parms->output_fn);
-
-    delete (pli);
 }
 
 static void

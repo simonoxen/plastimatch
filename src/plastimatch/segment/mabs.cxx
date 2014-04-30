@@ -708,7 +708,7 @@ Mabs::atlas_selection ()
     std::map<std::string, std::list<std::pair<std::string, double> > > ranked_atlases; // Only ranked, not selected
     
     std::string atlas_ranking_file_name = 
-      string_format ("%s/atlas_ranking.txt", d_ptr->atlas_train_dir.c_str());
+        string_format ("%s/atlas_ranking.txt", d_ptr->atlas_train_dir.c_str());
    
     bool compute_new_ranking = true;
 
@@ -784,10 +784,9 @@ Mabs::atlas_selection ()
         atlas_selector->number_of_atlases = (int) d_ptr->process_dir_list.size();
         
         if (d_ptr->parms->roi_mask_fn.compare("")!=0) { /* Set the mask if defined */
-            Plm_image* mask_plm = plm_image_load (d_ptr->parms->roi_mask_fn, PLM_IMG_TYPE_ITK_UCHAR);
+            Plm_image::Pointer mask_plm = plm_image_load (d_ptr->parms->roi_mask_fn, PLM_IMG_TYPE_ITK_UCHAR);
             atlas_selector->mask->SetImage(mask_plm->itk_uchar());
             atlas_selector->mask->Update();
-            delete mask_plm;
         }
 
         atlas_selector->min_hist_sub_value_defined = d_ptr->parms->lower_mi_value_sub_defined;
@@ -822,7 +821,7 @@ Mabs::atlas_selection ()
         
         if (!compute_new_ranking) {
             fprintf(atlas_selection_log_file,
-            "SELECTION MADE USING A PRECOMPUTED RANKING\n");   
+                "SELECTION MADE USING A PRECOMPUTED RANKING\n");   
         }
         
         /* Print into the log file information about the selection process */
@@ -832,9 +831,9 @@ Mabs::atlas_selection ()
             (int) atlas_selector->selected_atlases.size());
        
         for (std::list<std::pair<std::string, double> >::iterator it_selected_atlases =
-            atlas_selector->selected_atlases.begin();
-            it_selected_atlases != atlas_selector->selected_atlases.end();
-            it_selected_atlases++) {
+                 atlas_selector->selected_atlases.begin();
+             it_selected_atlases != atlas_selector->selected_atlases.end();
+             it_selected_atlases++) {
         
             fprintf(atlas_selection_log_file,
                 "Atlas %s with score value equal to %f \n",
@@ -846,10 +845,10 @@ Mabs::atlas_selection ()
         
         /* Fill the map structures */
         d_ptr->selected_atlases.insert(std::make_pair(atlas_selector->subject_id,
-            atlas_selector->selected_atlases));
+                atlas_selector->selected_atlases));
 
         ranked_atlases.insert(std::make_pair(atlas_selector->subject_id,
-            atlas_selector->ranked_atlases));
+                atlas_selector->ranked_atlases));
 
         /* Delete object */
         delete atlas_selector;

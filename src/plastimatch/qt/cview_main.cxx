@@ -74,7 +74,6 @@ CrystalWindow::openVol (const char* fn)
         for (int i=0; i<4; i++) {
             portalGrid->portal[i]->detachVolume();
         }
-        delete pli;
     }
 
     pli = plm_image_load (fn, PLM_IMG_TYPE_ITK_FLOAT);
@@ -157,7 +156,7 @@ CrystalWindow::open ()
 CrystalWindow::CrystalWindow (int argc, char** argv, QWidget *parent)
     :QMainWindow (parent)
 {
-    pli = NULL;
+    pli.reset();
 
     createActions ();
     createMenu ();

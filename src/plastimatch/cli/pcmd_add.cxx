@@ -27,7 +27,7 @@ public:
 };
 
 static void
-scale_image (Plm_image *img, float weight)
+scale_image (Plm_image::Pointer& img, float weight)
 {
     img->set_itk (itk_scale (img->itk_float(), weight));
 }
@@ -100,7 +100,7 @@ add_vol_main (Add_parms *parms)
 
     /* Load the first input image */
     std::list<Pstring>::iterator it = parms->input_fns.begin();
-    Plm_image *sum = plm_image_load (*it, PLM_IMG_TYPE_ITK_FLOAT);
+    Plm_image::Pointer sum = plm_image_load (*it, PLM_IMG_TYPE_ITK_FLOAT);
     ++it;
 
     /* Weigh the first input image */
@@ -113,7 +113,7 @@ add_vol_main (Add_parms *parms)
     /* Loop through remaining images */
     while (it != parms->input_fns.end()) {
         /* Load the images */
-        Plm_image *tmp = plm_image_load (*it, PLM_IMG_TYPE_ITK_FLOAT);
+        Plm_image::Pointer tmp = plm_image_load (*it, PLM_IMG_TYPE_ITK_FLOAT);
 
         /* Weigh it */
         if (parms->weight_vector.size() > 0) {
@@ -138,8 +138,6 @@ add_vol_main (Add_parms *parms)
     /* Save the sum image */
     sum->convert_to_original_type ();
     sum->save_image (parms->output_fn);
-
-    delete sum;
 }
 
 void

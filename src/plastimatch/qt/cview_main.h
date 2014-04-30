@@ -6,9 +6,8 @@
 
 #include <QtGui>
 #include "cview_portal.h"
+#include "plm_image.h"
 #include "volume.h"
-
-class Plm_image;
 
 class PortalGrid : public QWidget
 {
@@ -36,7 +35,7 @@ private: /* methods */
 
 private: /* variables */
     PortalGrid *portalGrid;
-    Plm_image* pli;
+    Plm_image::Pointer pli;
     Volume::Pointer input_vol;
     QMenu *menuFile;
     QMenu *menuHelp;

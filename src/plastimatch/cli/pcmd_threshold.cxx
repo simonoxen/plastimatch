@@ -15,7 +15,7 @@
 static void
 threshold_main (Pcmd_threshold* parms)
 {
-    Plm_image *plm_image = plm_image_load (
+    Plm_image::Pointer plm_image = plm_image_load (
 	parms->img_in_fn, 
 	PLM_IMG_TYPE_ITK_FLOAT);
     FloatImageType::Pointer img_in = plm_image->m_itk_float;
@@ -35,8 +35,6 @@ threshold_main (Pcmd_threshold* parms)
 	}
 	pli.save_image (parms->img_out_fn);
     }
-
-    delete plm_image;
 }
 
 static void

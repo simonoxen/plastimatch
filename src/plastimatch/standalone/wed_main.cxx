@@ -94,8 +94,9 @@ void
 wed_ct_compute (
     const char* out_fn,
     Wed_Parms* parms,
-    Plm_image *ct_vol,       // This is not always ct, sometimes it is dose or 
-                             // sometimes it is target mask.
+    Plm_image::Pointer& ct_vol,  // This is not always ct, 
+                                 //  sometimes it is dose or 
+                                 //  sometimes it is target mask.
     Ion_plan *scene,
     float background
 )
@@ -152,14 +153,14 @@ wed_ct_compute (
     float background
 )
 {
-  Plm_image *ct_vol = new Plm_image();
-  wed_ct_compute(out_fn, parms, ct_vol, scene, background);
+    Plm_image::Pointer ct_vol = Plm_image::New();
+    wed_ct_compute (out_fn, parms, ct_vol, scene, background);
 }
 
 int
 wed_ct_initialize(Wed_Parms *parms)
 {
-    Plm_image* dose_vol = 0;
+    Plm_image::Pointer dose_vol;
     Ion_plan scene;
     float background[4];
 
@@ -184,7 +185,7 @@ wed_ct_initialize(Wed_Parms *parms)
         fprintf (stderr, "\n** Skin file defined.  Modifying input ct...\n");
  
         Volume* ct_volume = ct_vol->get_volume_float().get();
-        Plm_image* skin_vol = plm_image_load (parms->skin_fn, 
+        Plm_image::Pointer skin_vol = plm_image_load (parms->skin_fn, 
             PLM_IMG_TYPE_ITK_FLOAT);
         if (!skin_vol) {
             fprintf (stderr, "\n** ERROR: Unable to load skin input.\n");
@@ -299,7 +300,7 @@ wed_ct_initialize(Wed_Parms *parms)
     /* Compute the ct-wed volume */
     if (parms->mode==0)  {
         printf ("Computing patient wed volume...\n");
-        wed_ct_compute (parms->output_ct_fn, parms, ct_vol.get(), &scene, background[0]);
+        wed_ct_compute (parms->output_ct_fn, parms, ct_vol, &scene, background[0]);
         printf ("done.\n");
     }
   

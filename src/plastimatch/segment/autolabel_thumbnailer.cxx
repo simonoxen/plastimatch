@@ -11,20 +11,17 @@
 
 Autolabel_thumbnailer::Autolabel_thumbnailer ()
 {
-    pli = 0;
     thumb = new Thumbnail;
 }
 
 Autolabel_thumbnailer::~Autolabel_thumbnailer ()
 {
-    if (pli) delete pli;
     if (thumb) delete thumb;
 }
 
 void
 Autolabel_thumbnailer::set_input_image (const char* fn)
 {
-    if (pli) delete pli;
     pli = plm_image_load (fn, PLM_IMG_TYPE_ITK_FLOAT);
     thumb->set_input_image (pli);
     thumb->set_thumbnail_dim (16);
