@@ -30,6 +30,7 @@ itk_adjust (FloatImageType::Pointer image_in, const Adjustment_list& al)
     }
     if ((--ait_end)->first == std::numeric_limits<float>::max()) {
         right_slope = ait_end->second;
+        --ait_end;
     }
 
     /* Debug adjustment lists */
