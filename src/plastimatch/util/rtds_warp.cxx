@@ -143,9 +143,9 @@ save_ss_img (
     }
 
     /* prefix images */
-    if (parms->output_prefix.not_empty()) {
+    if (parms->output_prefix != "") {
         lprintf ("save_ss_img: save_prefix\n");
-        seg->save_prefix (parms->output_prefix);
+        seg->save_prefix (parms->output_prefix, parms->prefix_format);
     }
 
     /* prefix fcsv files */
@@ -200,7 +200,7 @@ warp_and_save_ss (
     if (parms->output_labelmap_fn.not_empty()
         || parms->output_ss_img_fn.not_empty()
         || parms->xf_in_fn.not_empty()
-        || parms->output_prefix.not_empty())
+        || parms->output_prefix != "")
     {
 
         /* In the following cases, we should use the default 

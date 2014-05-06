@@ -106,6 +106,9 @@ parse_fn (
     /* Output options */
     parser->add_long_option ("", "output-type", 
         "type of output image, one of {uchar, short, float, ...}", 1, "");
+    parser->add_long_option ("", "prefix-format", 
+        "file format of rasterized structures, either \"mha\" or \"nrrd\"",
+        1, "mha");
 
     /* Algorithm options */
     parser->add_long_option ("", "algorithm", 
@@ -219,6 +222,11 @@ parse_fn (
             throw (dlib::error ("Error. Unknown --output-type argument: " 
                     + parser->get_string("output-type")));
         }
+    }
+    if (parser->option("prefix-format")) {
+        parms->prefix_format = parser->get_string ("prefix-format");
+    } else {
+        parms->prefix_format = "mha";
     }
 
     /* Algorithm options */

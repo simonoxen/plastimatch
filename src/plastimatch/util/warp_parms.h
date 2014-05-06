@@ -41,7 +41,7 @@ public:
     Pstring output_img_fn;
     Pstring output_labelmap_fn;
     Pstring output_pointset_fn;
-    Pstring output_prefix;
+    std::string output_prefix;
     Pstring output_prefix_fcsv;
     Pstring output_ss_img_fn;
     Pstring output_ss_list_fn;
@@ -50,6 +50,7 @@ public:
 
     /* Output options */
     Plm_image_type output_type;
+    std::string prefix_format;
     Xio_version output_xio_version;
 
     /* Algorithm options */
@@ -89,6 +90,7 @@ public:
 	dose_scale = 1.0f;
 	default_val = 0.0f;
 	interp_lin = 1;
+	prefix_format = "mha";
 	output_type = PLM_IMG_TYPE_UNDEFINED;
 	output_xio_version = XIO_VERSION_4_2_1;
 	prune_empty = 0;
