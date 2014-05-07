@@ -102,6 +102,8 @@ Mabs_parms::Mabs_parms ()
     /* [TRAINING] */
     this->distance_map_algorithm = "";
 
+    this->fusion_criteria = "gaussian";
+
     this->minsim_values = "L 0.0001:1:0.0001";
     this->rho_values = "1:1:1";
     this->sigma_values = "L 1.7:1:1.7";
@@ -260,6 +262,14 @@ Mabs_parms::set_key_value (
     if (section == "TRAINING") {
         if (key == "atlas_dir") {
             this->atlas_dir = val;
+        }
+        else if (key == "fusion_criteria") {
+            if (val == "gaussian" || val == "GAUSSIAN" || val == "Gaussian") {
+                this->fusion_criteria = "gaussian";
+            }
+            else if (val == "staple" || val == "STAPLE" || val == "Staple") {
+                this->fusion_criteria = "staple";
+            }
         }
         else if (key == "distance_map_algorithm") {
             this->distance_map_algorithm = val;

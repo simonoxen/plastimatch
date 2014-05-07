@@ -32,8 +32,10 @@ protected:
     void run_single_registration ();
     void run_segmentation ();
     void run_segmentation_loop ();
-    void segmentation_vote (const std::string& atlas_id);
-    void segmentation_label ();
+    void gaussian_segmentation_vote (const std::string& atlas_id);
+    void gaussian_segmentation_label ();
+    void prepare_staple_segmentation (const std::string& atlas_id);
+    void staple_segmentation_label ();
     void train_internal ();
 
 public:

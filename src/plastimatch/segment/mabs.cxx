@@ -19,6 +19,7 @@
 #include "mabs.h"
 #include "mabs_atlas_selection.h"
 #include "mabs_parms.h"
+#include "mabs_staple.h"
 #include "mabs_stats.h"
 #include "mabs_vote.h"
 #include "option_range.h"
@@ -125,8 +126,9 @@ public:
     bool write_registration_files;
     bool write_warped_images;
 
-    /* While looping through atlases, the voting information is stored here */
+    /* While looping through atlases, the gaussin voting/staple information is stored here */
     std::map<std::string, Mabs_vote*> vote_map;
+    std::map<std::string, Mabs_staple*> staple_map;
 
     /* Store timing information for performance evaluation */
     double time_atlas_selection;
@@ -135,6 +137,7 @@ public:
     double time_io;
     double time_reg;
     double time_vote;
+    double time_staple;
     double time_warp_img;
     double time_warp_str;
 
@@ -168,6 +171,7 @@ public:
         time_io = 0;
         time_reg = 0;
         time_vote = 0;
+        time_staple = 0;
         time_warp_img = 0;
         time_warp_str = 0;
     }
@@ -565,7 +569,7 @@ Mabs::run_registration_loop ()
                 d_ptr->time_extract += timer.report();
 
                 /* Make the distance map */
-                if (d_ptr->compute_distance_map) {
+                if (d_ptr->compute_distance_map && d_ptr->parms->fusion_criteria == "gaussian") {
                     timer.start();
                     lprintf ("Computing distance map...\n");
                     this->compute_dmap (structure_image,
@@ -1087,7 +1091,7 @@ Mabs::compute_dmap (
 }
 
 void
-Mabs::segmentation_vote (const std::string& atlas_id)
+Mabs::gaussian_segmentation_vote (const std::string& atlas_id)
 {
     Plm_timer timer;
     
@@ -1245,7 +1249,111 @@ Mabs::segmentation_vote (const std::string& atlas_id)
 }
 
 void
-Mabs::segmentation_label ()
+Mabs::prepare_staple_segmentation (const std::string& atlas_id)
+{
+    Plm_timer timer;
+    timer.start();
+    
+    std::string current_dir;
+    current_dir = string_format ("%s/%s/%s",
+        d_ptr->output_dir.c_str(), atlas_id.c_str(), d_ptr->registration_id.c_str());
+
+    /* Loop through structures for this atlas image */
+    std::map<std::string, std::string>::const_iterator it;
+    for (it = d_ptr->parms->structure_map.begin ();
+         it != d_ptr->parms->structure_map.end (); it++)
+    {
+        std::string mapped_name = it->first;
+        lprintf ("Preparing structure: %s (atl %s)\n", mapped_name.c_str(), atlas_id.c_str());
+
+        std::string warped_structure_fn = string_format (
+            "%s/structures/%s.nrrd", current_dir.c_str(),
+            mapped_name.c_str());
+        Plm_image::Pointer warped_structures = 
+            plm_image_load_native (warped_structure_fn);
+
+        /* Make a new staple object if needed */
+        Mabs_staple *staple;
+        std::map<std::string, Mabs_staple*>::const_iterator staple_it 
+            = d_ptr->staple_map.find (mapped_name);
+        if (staple_it == d_ptr->staple_map.end()) {
+            staple = new Mabs_staple;
+            staple->add_input_structure (warped_structures);
+            d_ptr->staple_map[mapped_name] = staple;
+        } else {
+            d_ptr->staple_map[mapped_name]->add_input_structure (warped_structures);
+        }
+
+    }
+
+    d_ptr->time_staple += timer.report();
+}
+
+void
+Mabs::staple_segmentation_label ()
+{
+    Plm_timer timer;
+    timer.start();
+
+    /* Set up files & directories for this job */
+    d_ptr->segmentation_training_dir
+        = string_format ("%s/segmentations/%s/staple",
+            d_ptr->output_dir.c_str(), d_ptr->registration_id.c_str());
+    lprintf ("segmentation_training_dir: %s\n", 
+        d_ptr->segmentation_training_dir.c_str());
+
+    /* Get output image for each label */
+    lprintf ("Extracting and saving final contour\n");
+    for (std::map<std::string, Mabs_staple*>::const_iterator staple_it 
+             = d_ptr->staple_map.begin(); 
+         staple_it != d_ptr->staple_map.end(); staple_it++)
+    {
+        const std::string& mapped_name = staple_it->first;
+        staple_it->second->run();
+
+        std::string final_segmentation_img_fn = string_format (
+            "%s/%s_staple.nrrd", 
+            d_ptr->segmentation_training_dir.c_str(), 
+            mapped_name.c_str()); 
+        itk_image_save (staple_it->second->output_img->itk_uchar(), final_segmentation_img_fn.c_str());
+       
+       std::string atl_name = basename (d_ptr->output_dir);
+        
+        std::string ref_stru_fn;
+        ref_stru_fn = string_format ("%s/%s/structures/%s.nrrd",
+            d_ptr->prealign_dir.c_str(), atl_name.c_str(), mapped_name.c_str());
+        Plm_image::Pointer ref_stru = 
+            plm_image_load_native (ref_stru_fn);
+
+        /* Compute Dice, etc. */
+        std::string stats_string = d_ptr->stats.compute_statistics (
+            "segmentation", /* Not used yet */
+            ref_stru->itk_uchar(),
+            staple_it->second->output_img->itk_uchar());
+        std::string seg_log_string = string_format (
+            "%s,reg=%s,struct=%s,"
+            "rho=0,sigma=0,minsim=0,thresh=0,"
+            "%s\n",
+            d_ptr->ref_id.c_str(),
+            d_ptr->registration_id.c_str(),
+            mapped_name.c_str(),
+            stats_string.c_str());
+        lprintf ("%s", seg_log_string.c_str());
+
+        /* Update seg_dice file */
+        std::string seg_dice_log_fn = string_format (
+            "%s/seg_dice.csv",
+            d_ptr->mabs_train_dir.c_str());
+        FILE *fp = fopen (seg_dice_log_fn.c_str(), "a");
+        fprintf (fp, "%s", seg_log_string.c_str());
+        fclose (fp);
+    }
+
+    d_ptr->time_staple += timer.report();
+}
+
+void
+Mabs::gaussian_segmentation_label ()
 {
     Plm_timer timer;
 
@@ -1312,10 +1420,19 @@ Mabs::run_segmentation ()
     /* Check if this segmentation is already complete.
        We might be able to skip it. */
     std::string curr_output_dir;
-    curr_output_dir = string_format (
-        "%s/segmentations/%s/rho_%f_sig_%f_ms_%f",
-        d_ptr->output_dir.c_str(), d_ptr->registration_id.c_str(),
-        d_ptr->rho, d_ptr->sigma, d_ptr->minsim);
+    if (d_ptr->parms->fusion_criteria == "gaussian") {
+        curr_output_dir = string_format (
+            "%s/segmentations/%s/rho_%f_sig_%f_ms_%f",
+            d_ptr->output_dir.c_str(), d_ptr->registration_id.c_str(),
+            d_ptr->rho, d_ptr->sigma, d_ptr->minsim);
+    }
+
+    else if (d_ptr->parms->fusion_criteria == "staple"){
+        curr_output_dir = string_format (
+            "%s/segmentations/%s/staple",
+            d_ptr->output_dir.c_str(), d_ptr->registration_id.c_str());
+    }
+
     std::string seg_checkpoint_fn = string_format (
         "%s/checkpoint.txt", curr_output_dir.c_str());
     if (file_exists (seg_checkpoint_fn)) {
@@ -1330,24 +1447,36 @@ Mabs::run_segmentation ()
          atl_it != d_ptr->atlas_list.end(); atl_it++)
     {
         std::string atlas_id = basename (*atl_it);
-        segmentation_vote (atlas_id);
+        if (d_ptr->parms->fusion_criteria == "gaussian") {
+            gaussian_segmentation_vote (atlas_id);
+        }
+        else if (d_ptr->parms->fusion_criteria == "staple") {
+            prepare_staple_segmentation (atlas_id);
+        }
     }
+    
+    if (d_ptr->parms->fusion_criteria == "gaussian") {
+        /* Threshold images based on weight */
+        gaussian_segmentation_label ();
 
-    /* Threshold images based on weight */
-    segmentation_label ();
+        /* Clear out internal structure */
+        d_ptr->clear_vote_map ();
+    }
+    else if (d_ptr->parms->fusion_criteria == "staple") {
+        staple_segmentation_label ();
+    }
 
     /* Create checkpoint file which means that this segmentation
        is complete */
     touch_file (seg_checkpoint_fn);
 
-    /* Clear out internal structure */
-    d_ptr->clear_vote_map ();
 }
 
 
 void
 Mabs::run_segmentation_loop ()
 {
+
     Option_range minsim_range, rho_range, sigma_range;
     minsim_range.set_range (d_ptr->parms->minsim_values);
     rho_range.set_range (d_ptr->parms->rho_values);
@@ -1362,33 +1491,43 @@ Mabs::run_segmentation_loop ()
     {
         d_ptr->registration_id = basename (*reg_it);
 
-        /* Loop through each training parameter: rho */
-        const std::list<float>& rho_list = rho_range.get_range();
-        std::list<float>::const_iterator rho_it;
-        for (rho_it = rho_list.begin(); rho_it != rho_list.end(); rho_it++) 
-        {
-            d_ptr->rho = *rho_it;
+        if (d_ptr->parms->fusion_criteria == "gaussian") {
 
-            /* Loop through each training parameter: sigma */
-            const std::list<float>& sigma_list = sigma_range.get_range();
-            std::list<float>::const_iterator sigma_it;
-            for (sigma_it = sigma_list.begin(); 
-                 sigma_it != sigma_list.end(); sigma_it++) 
+            /* Loop through each training parameter: rho */
+            const std::list<float>& rho_list = rho_range.get_range();
+            std::list<float>::const_iterator rho_it;
+            for (rho_it = rho_list.begin(); rho_it != rho_list.end(); rho_it++) 
             {
-                d_ptr->sigma = *sigma_it;
+                d_ptr->rho = *rho_it;
 
-                /* Loop through each training parameter: minimum similarity */
-                const std::list<float>& minsim_list = minsim_range.get_range();
-                std::list<float>::const_iterator minsim_it;
-                for (minsim_it = minsim_list.begin(); 
-                     minsim_it != minsim_list.end(); minsim_it++) 
+                /* Loop through each training parameter: sigma */
+                const std::list<float>& sigma_list = sigma_range.get_range();
+                std::list<float>::const_iterator sigma_it;
+                for (sigma_it = sigma_list.begin(); 
+                     sigma_it != sigma_list.end(); sigma_it++) 
                 {
-                    d_ptr->minsim = *minsim_it;
+                    d_ptr->sigma = *sigma_it;
 
-                    run_segmentation ();
+                    /* Loop through each training parameter: minimum similarity */
+                    const std::list<float>& minsim_list = minsim_range.get_range();
+                    std::list<float>::const_iterator minsim_it;
+                    for (minsim_it = minsim_list.begin(); 
+                         minsim_it != minsim_list.end(); minsim_it++) 
+                    {
+                        d_ptr->minsim = *minsim_it;
+
+                        run_segmentation ();
+                    }
                 }
             }
         }
+
+        else if (d_ptr->parms->fusion_criteria == "staple") {
+
+            run_segmentation ();
+
+        }
+
     }
 }
 
@@ -1559,6 +1698,7 @@ Mabs::train_internal ()
         d_ptr->stats.get_time_hausdorff());
     lprintf ("Distance map time:    %10.1f seconds\n", d_ptr->time_dmap);
     lprintf ("Voting time:          %10.1f seconds\n", d_ptr->time_vote);
+    lprintf ("Staple time:          %10.1f seconds\n", d_ptr->time_staple);
     lprintf ("I/O time:             %10.1f seconds\n", d_ptr->time_io);
     lprintf ("Total time:           %10.1f seconds\n", timer_total.report());
     lprintf ("MABS training complete\n");

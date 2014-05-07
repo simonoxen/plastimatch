@@ -55,6 +55,8 @@ public:
     std::string atlas_dir;
     std::string training_dir;
 
+    std::string fusion_criteria;
+
     std::string distance_map_algorithm;
     std::string minsim_values;
     std::string rho_values;
