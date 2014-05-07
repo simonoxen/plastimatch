@@ -364,7 +364,8 @@ Dcmtk_loader::image_load ()
 
         /* Apply slope and offset */
         for (plm_long j = 0; j < (plm_long) length; j++) {
-            img[j] = rescale_slope * pixel_data[j] + rescale_intercept;
+            img[j] = rescale_slope * (int16_t) pixel_data[j] 
+                + rescale_intercept;
         }
 	img += length;
 
