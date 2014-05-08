@@ -524,7 +524,6 @@ Dcmtk_rt_study::save_image (
         std::string tmp = string_format ("%f", dsd.slope);
         sscanf (tmp.c_str(), "%f", &dsd.slope);
     }
-    printf ("OFF = %f, SLO = %f\n", dsd.intercept, dsd.slope);
 
     for (plm_long k = 0; k < dsd.vol->dim[2]; k++) {
         /* GCS FIX: direction cosines */
