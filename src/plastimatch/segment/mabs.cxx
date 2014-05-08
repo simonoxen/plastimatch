@@ -1271,17 +1271,19 @@ Mabs::prepare_staple_segmentation (const std::string& atlas_id)
             mapped_name.c_str());
         Plm_image::Pointer warped_structures = 
             plm_image_load_native (warped_structure_fn);
-
-        /* Make a new staple object if needed */
-        Mabs_staple *staple;
-        std::map<std::string, Mabs_staple*>::const_iterator staple_it 
-            = d_ptr->staple_map.find (mapped_name);
-        if (staple_it == d_ptr->staple_map.end()) {
-            staple = new Mabs_staple;
-            staple->add_input_structure (warped_structures);
-            d_ptr->staple_map[mapped_name] = staple;
-        } else {
-            d_ptr->staple_map[mapped_name]->add_input_structure (warped_structures);
+        
+        if (warped_structures) {
+            /* Make a new staple object if needed */
+            Mabs_staple *staple;
+            std::map<std::string, Mabs_staple*>::const_iterator staple_it 
+                = d_ptr->staple_map.find (mapped_name);
+            if (staple_it == d_ptr->staple_map.end()) {
+                staple = new Mabs_staple;
+                staple->add_input_structure (warped_structures);
+                d_ptr->staple_map[mapped_name] = staple;
+            } else {
+                d_ptr->staple_map[mapped_name]->add_input_structure (warped_structures);
+            }
         }
 
     }
@@ -1301,6 +1303,7 @@ Mabs::staple_segmentation_label ()
             d_ptr->output_dir.c_str(), d_ptr->registration_id.c_str());
     lprintf ("segmentation_training_dir: %s\n", 
         d_ptr->segmentation_training_dir.c_str());
+    make_directory (d_ptr->segmentation_training_dir.c_str());
 
     /* Get output image for each label */
     lprintf ("Extracting and saving final contour\n");
@@ -1314,7 +1317,7 @@ Mabs::staple_segmentation_label ()
         std::string final_segmentation_img_fn = string_format (
             "%s/%s_staple.nrrd", 
             d_ptr->segmentation_training_dir.c_str(), 
-            mapped_name.c_str()); 
+            mapped_name.c_str());
         itk_image_save (staple_it->second->output_img->itk_uchar(), final_segmentation_img_fn.c_str());
        
        std::string atl_name = basename (d_ptr->output_dir);

@@ -33,7 +33,7 @@ Mabs_staple::add_input_structure(Plm_image::Pointer& structure) {
 void
 Mabs_staple::run() {
 
-    typedef float PixelComponentType;
+    typedef unsigned char PixelComponentType;
     const unsigned int Dimension = 3;
     typedef itk::Image< PixelComponentType, Dimension > ImageType;
     typedef itk::STAPLEImageFilter< ImageType, ImageType > StapleType;
@@ -44,8 +44,7 @@ Mabs_staple::run() {
     for (stru_it = this->structures.begin(), i=0;
          stru_it != this->structures.end(); stru_it++, i++) {
 
-        staple->SetInput(i, (*stru_it)->itk_float());
-
+        staple->SetInput(i, (*stru_it)->itk_uchar());
     }
 
     staple->SetForegroundValue(this->foreground_val);
