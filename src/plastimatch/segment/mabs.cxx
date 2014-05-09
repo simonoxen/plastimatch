@@ -182,6 +182,14 @@ public:
         }
         vote_map.clear ();
     }
+    void clear_staple_map () {
+        std::map<std::string, Mabs_staple*>::iterator it;
+        for (it = staple_map.begin(); it != staple_map.end(); ++it) {
+            delete it->second;
+        }
+        staple_map.clear ();
+    }
+
 public:
     void print_structure_map ();
     std::string map_structure_name (const std::string& ori_name);
@@ -1320,7 +1328,7 @@ Mabs::staple_segmentation_label ()
             mapped_name.c_str());
         itk_image_save (staple_it->second->output_img->itk_uchar(), final_segmentation_img_fn.c_str());
        
-       std::string atl_name = basename (d_ptr->output_dir);
+        std::string atl_name = basename (d_ptr->output_dir);
         
         std::string ref_stru_fn;
         ref_stru_fn = string_format ("%s/%s/structures/%s.nrrd",
@@ -1417,8 +1425,9 @@ Mabs::gaussian_segmentation_label ()
 void
 Mabs::run_segmentation ()
 {
-    /* Clear out internal structure */
+    /* Clear out internal structures */
     d_ptr->clear_vote_map ();
+    d_ptr->clear_staple_map ();
 
     /* Check if this segmentation is already complete.
        We might be able to skip it. */
@@ -1466,7 +1475,11 @@ Mabs::run_segmentation ()
         d_ptr->clear_vote_map ();
     }
     else if (d_ptr->parms->fusion_criteria == "staple") {
+        /* Threshold images */
         staple_segmentation_label ();
+
+        /* Clear out internal structure */
+        d_ptr->clear_staple_map ();
     }
 
     /* Create checkpoint file which means that this segmentation
