@@ -26,8 +26,10 @@ gamma_main (Gamma_parms* parms)
 
     gdc.run ();
 
-    Plm_image::Pointer gamma_image = gdc.get_gamma_image ();
-    gamma_image->save_image (parms->out_image_fn);
+    if (parms->out_image_fn != "") {
+        Plm_image::Pointer gamma_image = gdc.get_gamma_image ();
+        gamma_image->save_image (parms->out_image_fn);
+    }
 }
 
 static void
@@ -73,12 +75,6 @@ parse_fn (
     /* Handle --help, --version */
     parser->check_default_options ();
 
-    /* Check that an output file was given */
-    if (!parser->option ("output")) {
-	throw (dlib::error ("Error.  Please specify an output file "
-		"using the --output option"));
-    }
-
     /* Check that two input files were given */
     if (parser->number_of_arguments() < 2) {
 	throw (dlib::error ("Error.  You must specify two input files"));
@@ -93,7 +89,9 @@ parse_fn (
     parms->cmp_image_fn = (*parser)[1].c_str();
 
     /* Output files */
-    parms->out_image_fn = parser->get_string("output").c_str();
+    if (parser->option ("output")) {
+        parms->out_image_fn = parser->get_string("output").c_str();
+    }
 
     /* Gamma options */
     parms->dose_tolerance = parser->get_float("dose-tolerance");

@@ -573,17 +573,17 @@ Gamma_dose_comparison_private::do_gamma_threshold ()
 void 
 Gamma_dose_comparison_private::do_mask_threshold ()
 { 
-  UCharImageType::Pointer mask_img = gp.img_mask->itk_uchar();
+    UCharImageType::Pointer mask_img = gp.img_mask->itk_uchar();
 
-  typedef itk::ImageRegionIteratorWithIndex< UCharImageType > 
-    UCharIteratorType;
-  UCharIteratorType mask_it (mask_img, 
-    mask_img->GetLargestPossibleRegion());
+    typedef itk::ImageRegionIteratorWithIndex< UCharImageType > 
+        UCharIteratorType;
+    UCharIteratorType mask_it (mask_img, 
+        mask_img->GetLargestPossibleRegion());
 
-  /* Loop through mask image, threshold */
-  for (mask_it.GoToBegin(); !mask_it.IsAtEnd(); ++mask_it)
-  {
-    unsigned char mask_val = mask_it.Get();
-    mask_it.Set( mask_val<1 ? 0 : 1 );
-  }
+    /* Loop through mask image, threshold */
+    for (mask_it.GoToBegin(); !mask_it.IsAtEnd(); ++mask_it)
+    {
+        unsigned char mask_val = mask_it.Get();
+        mask_it.Set( mask_val<1 ? 0 : 1 );
+    }
 }
