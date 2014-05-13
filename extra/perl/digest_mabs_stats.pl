@@ -187,7 +187,7 @@ if (-d $dice_source && $best_reg ne "") {
 foreach $seg (sort keys %seghash) {
     ($num,$dice_sum,$hd95_sum) = split (',', $seghash{$seg});
     ($struct,$parms) = split (',', $seg, 2);
-    if (exists $seg_dice_hash{$parms}) {
+    if (not exists $seg_dice_hash{$parms}) {
 	$seg_dice_hash{$parms} = $dice_sum;
 	$seg_hd95_hash{$parms} = $hd95_sum;
 	$seg_num{$parms} = $num;
