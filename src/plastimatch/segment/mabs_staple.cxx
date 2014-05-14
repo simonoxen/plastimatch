@@ -33,10 +33,10 @@ Mabs_staple::add_input_structure(Plm_image::Pointer& structure) {
 void
 Mabs_staple::run() {
 
-    typedef unsigned char PixelComponentType;
-    const unsigned int Dimension = 3;
-    typedef itk::Image< PixelComponentType, Dimension > ImageType;
-    typedef itk::STAPLEImageFilter< ImageType, ImageType > StapleType;
+    typedef itk::Image<unsigned char, 3 > InputImageType;
+    typedef itk::Image<float, 3 > OutputImageType;
+
+    typedef itk::STAPLEImageFilter< InputImageType, OutputImageType > StapleType;
     StapleType::Pointer staple = StapleType::New();
 
     std::list<Plm_image::Pointer>::iterator stru_it;
