@@ -1261,7 +1261,13 @@ Mabs::prepare_staple_segmentation (const std::string& atlas_id)
 {
     Plm_timer timer;
     timer.start();
-    
+
+    /* Set up files & directories for this job */
+    std::string atlas_input_path;
+    atlas_input_path = string_format ("%s/%s",
+        d_ptr->prealign_dir.c_str(), atlas_id.c_str());
+    lprintf ("atlas_input_path: %s\n",
+        atlas_input_path.c_str());
     std::string current_dir;
     current_dir = string_format ("%s/%s/%s",
         d_ptr->output_dir.c_str(), atlas_id.c_str(), d_ptr->registration_id.c_str());
@@ -1272,6 +1278,19 @@ Mabs::prepare_staple_segmentation (const std::string& atlas_id)
          it != d_ptr->parms->structure_map.end (); it++)
     {
         std::string mapped_name = it->first;
+
+        std::string atlas_struct_fn;
+        atlas_struct_fn = string_format ("%s/structures/%s.nrrd",
+            atlas_input_path.c_str(), mapped_name.c_str());
+        Plm_image::Pointer atlas_struct =
+            plm_image_load_native (atlas_struct_fn);
+
+        if (!atlas_struct) {
+            lprintf ("Atlas %s doesn't have structure %s\n",
+                atlas_id.c_str(), mapped_name.c_str());
+            continue;
+        }
+
         lprintf ("Preparing structure: %s (atl %s)\n", mapped_name.c_str(), atlas_id.c_str());
 
         std::string warped_structure_fn = string_format (
@@ -1279,7 +1298,8 @@ Mabs::prepare_staple_segmentation (const std::string& atlas_id)
             mapped_name.c_str());
         Plm_image::Pointer warped_structures = 
             plm_image_load_native (warped_structure_fn);
-        
+       
+
         if (warped_structures) {
             /* Make a new staple object if needed */
             Mabs_staple *staple;
@@ -1320,6 +1340,18 @@ Mabs::staple_segmentation_label ()
          staple_it != d_ptr->staple_map.end(); staple_it++)
     {
         const std::string& mapped_name = staple_it->first;
+        std::string atl_name = basename (d_ptr->output_dir);
+
+        std::string ref_stru_fn;
+        ref_stru_fn = string_format ("%s/%s/structures/%s.nrrd",
+            d_ptr->prealign_dir.c_str(), atl_name.c_str(), mapped_name.c_str());
+        Plm_image::Pointer ref_stru = 
+            plm_image_load_native (ref_stru_fn);
+
+        if (!ref_stru) {
+            continue;
+        }
+
         staple_it->second->run();
 
         std::string final_segmentation_img_fn = string_format (
@@ -1327,15 +1359,7 @@ Mabs::staple_segmentation_label ()
             d_ptr->segmentation_training_dir.c_str(), 
             mapped_name.c_str());
         itk_image_save (staple_it->second->output_img->itk_uchar(), final_segmentation_img_fn.c_str());
-       
-        std::string atl_name = basename (d_ptr->output_dir);
         
-        std::string ref_stru_fn;
-        ref_stru_fn = string_format ("%s/%s/structures/%s.nrrd",
-            d_ptr->prealign_dir.c_str(), atl_name.c_str(), mapped_name.c_str());
-        Plm_image::Pointer ref_stru = 
-            plm_image_load_native (ref_stru_fn);
-
         /* Compute Dice, etc. */
         std::string stats_string = d_ptr->stats.compute_statistics (
             "segmentation", /* Not used yet */
