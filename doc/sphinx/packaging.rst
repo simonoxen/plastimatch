@@ -21,6 +21,12 @@ Setting up a build system for the first time
 
      ssh-keygen -f ~/.ssh/id_rsa_alioth
 
+   Be sure to set up your ~/.ssh/config file to tell it where to find the key::
+
+     # Add this to ~/.ssh/config
+     Host svn.debian.org
+             IdentityFile ~/.ssh/id_rsa_alioth
+
    Then go to https://alioth.debian.org/account/editsshkeys.php to register the public key.  Wait up to one hour for the key to be registered.
 
 #. Download the debian-med repository::
