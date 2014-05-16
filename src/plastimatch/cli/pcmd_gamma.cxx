@@ -4,6 +4,7 @@
 #include "plmcli_config.h"
 
 #include "gamma_dose_comparison.h"
+#include "logfile.h"
 #include "plm_clp.h"
 #include "plm_image.h"
 #include "plm_math.h"
@@ -23,13 +24,16 @@ gamma_main (Gamma_parms* parms)
     if (parms->have_reference_dose) {
         gdc.set_reference_dose (parms->reference_dose);
     }
-
+    gdc.set_gamma_max (parms->gamma_max);
+    gdc.set_analysis_threshold (0.10);
     gdc.run ();
 
     if (parms->out_image_fn != "") {
         Plm_image::Pointer gamma_image = gdc.get_gamma_image ();
         gamma_image->save_image (parms->out_image_fn);
     }
+
+    lprintf ("Pass rate = %2.6f %%\n", gdc.get_pass_fraction() * 100.0);
 }
 
 static void

@@ -9,7 +9,6 @@
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkImageRegion.h"
 
-//#include "gamma_analysis.h"
 #include "gamma_dose_comparison.h"
 #include "itk_resample.h"
 #include "logfile.h"
@@ -337,6 +336,8 @@ Gamma_dose_comparison_private::find_reference_max_dose ()
         if (level1 > maxlevel1) maxlevel1 = level1;         
     } 
     this->dose_max = maxlevel1;
+
+    lprintf ("Gamma dose max is %f\n", this->dose_max);
 }
 
 void 
