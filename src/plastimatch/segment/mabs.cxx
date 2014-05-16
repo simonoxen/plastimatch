@@ -393,6 +393,20 @@ Mabs::load_process_dir_list (const std::string& dir)
     }
 }
 
+bool
+Mabs::check_seg_checkpoint (std::string folder)
+{
+
+    std::string seg_checkpoint_fn = string_format (
+        "%s/checkpoint.txt", folder.c_str());
+    if (file_exists (seg_checkpoint_fn)) {
+        lprintf ("Segmentation complete for %s\n",
+            folder.c_str());
+        return true;
+    }
+    else {return false;}
+}
+
 /* The following variables should be set before running this:
    d_ptr->ref_rtds           the fixed image and its structure set
    d_ptr->atlas_list         list of images that should be registred
@@ -1296,21 +1310,21 @@ Mabs::prepare_staple_segmentation (const std::string& atlas_id)
         std::string warped_structure_fn = string_format (
             "%s/structures/%s.nrrd", current_dir.c_str(),
             mapped_name.c_str());
-        Plm_image::Pointer warped_structures = 
+        Plm_image::Pointer warped_structure = 
             plm_image_load_native (warped_structure_fn);
        
 
-        if (warped_structures) {
+        if (warped_structure) {
             /* Make a new staple object if needed */
             Mabs_staple *staple;
             std::map<std::string, Mabs_staple*>::const_iterator staple_it 
                 = d_ptr->staple_map.find (mapped_name);
             if (staple_it == d_ptr->staple_map.end()) {
                 staple = new Mabs_staple;
-                staple->add_input_structure (warped_structures);
+                staple->add_input_structure (warped_structure);
                 d_ptr->staple_map[mapped_name] = staple;
             } else {
-                d_ptr->staple_map[mapped_name]->add_input_structure (warped_structures);
+                d_ptr->staple_map[mapped_name]->add_input_structure (warped_structure);
             }
         }
 
@@ -1334,7 +1348,7 @@ Mabs::staple_segmentation_label ()
     make_directory (d_ptr->segmentation_training_dir.c_str());
 
     /* Get output image for each label */
-    lprintf ("Extracting and saving final contour\n");
+    lprintf ("Extracting and saving final contours\n");
     for (std::map<std::string, Mabs_staple*>::const_iterator staple_it 
              = d_ptr->staple_map.begin(); 
          staple_it != d_ptr->staple_map.end(); staple_it++)
@@ -1342,9 +1356,14 @@ Mabs::staple_segmentation_label ()
         const std::string& mapped_name = staple_it->first;
         std::string atl_name = basename (d_ptr->output_dir);
 
-        std::string ref_stru_fn;
-        ref_stru_fn = string_format ("%s/%s/structures/%s.nrrd",
+        std::string ref_stru_fn = string_format ("%s/%s/structures/%s.nrrd",
             d_ptr->prealign_dir.c_str(), atl_name.c_str(), mapped_name.c_str());
+
+        std::string final_segmentation_img_fn = string_format (
+            "%s/%s_staple.nrrd", 
+            d_ptr->segmentation_training_dir.c_str(), 
+            mapped_name.c_str());
+
         Plm_image::Pointer ref_stru = 
             plm_image_load_native (ref_stru_fn);
 
@@ -1352,12 +1371,9 @@ Mabs::staple_segmentation_label ()
             continue;
         }
 
+        printf("Structure %s \n", final_segmentation_img_fn.c_str());
         staple_it->second->run();
 
-        std::string final_segmentation_img_fn = string_format (
-            "%s/%s_staple.nrrd", 
-            d_ptr->segmentation_training_dir.c_str(), 
-            mapped_name.c_str());
         itk_image_save (staple_it->second->output_img->itk_uchar(), final_segmentation_img_fn.c_str());
         
         /* Compute Dice, etc. */
@@ -1455,26 +1471,31 @@ Mabs::run_segmentation ()
 
     /* Check if this segmentation is already complete.
        We might be able to skip it. */
-    std::string curr_output_dir;
-    if (d_ptr->parms->fusion_criteria == "gaussian") {
-        curr_output_dir = string_format (
+    std::string gaussian_seg_checkpoint_fn = "";
+    std::string staple_seg_checkpoint_fn = "";
+
+    /* Gaussian checkpoint */
+    if (d_ptr->parms->fusion_criteria.find("gaussian") != std::string::npos) {
+        std::string curr_output_dir = string_format (
             "%s/segmentations/%s/rho_%f_sig_%f_ms_%f",
             d_ptr->output_dir.c_str(), d_ptr->registration_id.c_str(),
             d_ptr->rho, d_ptr->sigma, d_ptr->minsim);
+
+        if (!this->check_seg_checkpoint(curr_output_dir)) {
+            gaussian_seg_checkpoint_fn = string_format ("%s/checkpoint.txt",
+                curr_output_dir.c_str());
+        }
     }
 
-    else if (d_ptr->parms->fusion_criteria == "staple"){
-        curr_output_dir = string_format (
+    /* Staple checkpoint */
+    if (d_ptr->parms->fusion_criteria.find("staple") != std::string::npos) {
+        std::string curr_output_dir = string_format (
             "%s/segmentations/%s/staple",
             d_ptr->output_dir.c_str(), d_ptr->registration_id.c_str());
-    }
-
-    std::string seg_checkpoint_fn = string_format (
-        "%s/checkpoint.txt", curr_output_dir.c_str());
-    if (file_exists (seg_checkpoint_fn)) {
-        lprintf ("Segmentation complete for %s\n",
-            curr_output_dir.c_str());
-        return;
+        if (!this->check_seg_checkpoint(curr_output_dir)) {
+            staple_seg_checkpoint_fn = string_format ("%s/checkpoint.txt",
+                curr_output_dir.c_str());
+        }
     }
 
     /* Loop through images in the atlas */
@@ -1483,22 +1504,27 @@ Mabs::run_segmentation ()
          atl_it != d_ptr->atlas_list.end(); atl_it++)
     {
         std::string atlas_id = basename (*atl_it);
-        if (d_ptr->parms->fusion_criteria == "gaussian") {
+        
+        /* If gaussian is chosen (alone or with staple) and its segmentations aren't already present run its code */
+        if (d_ptr->parms->fusion_criteria.find("gaussian") != std::string::npos && gaussian_seg_checkpoint_fn != "") {
             gaussian_segmentation_vote (atlas_id);
         }
-        else if (d_ptr->parms->fusion_criteria == "staple") {
+        /* If staple is chosen (alone or with gaussian) and its segmentations aren't already present run its code */
+        if (d_ptr->parms->fusion_criteria.find("staple") != std::string::npos && staple_seg_checkpoint_fn != "") {
             prepare_staple_segmentation (atlas_id);
         }
     }
     
-    if (d_ptr->parms->fusion_criteria == "gaussian") {
+    /* If gaussian is chosen (alone or with staple) and its segmentations aren't already present run its code */
+    if (d_ptr->parms->fusion_criteria.find("gaussian") != std::string::npos && gaussian_seg_checkpoint_fn != "") {
         /* Threshold images based on weight */
         gaussian_segmentation_label ();
 
         /* Clear out internal structure */
         d_ptr->clear_vote_map ();
     }
-    else if (d_ptr->parms->fusion_criteria == "staple") {
+    /* If staple is chosen (alone or with gaussian) and its segmentations aren't already present run its code */
+    if (d_ptr->parms->fusion_criteria.find("staple") != std::string::npos && staple_seg_checkpoint_fn != "") {
         /* Threshold images */
         staple_segmentation_label ();
 
@@ -1506,9 +1532,10 @@ Mabs::run_segmentation ()
         d_ptr->clear_staple_map ();
     }
 
-    /* Create checkpoint file which means that this segmentation
+    /* Create checkpoint files which means that this segmentation
        is complete */
-    touch_file (seg_checkpoint_fn);
+    if (gaussian_seg_checkpoint_fn!="") touch_file (gaussian_seg_checkpoint_fn);
+    if (staple_seg_checkpoint_fn!="") touch_file (staple_seg_checkpoint_fn);
 
 }
 
@@ -1531,43 +1558,34 @@ Mabs::run_segmentation_loop ()
     {
         d_ptr->registration_id = basename (*reg_it);
 
-        if (d_ptr->parms->fusion_criteria == "gaussian") {
 
-            /* Loop through each training parameter: rho */
-            const std::list<float>& rho_list = rho_range.get_range();
-            std::list<float>::const_iterator rho_it;
-            for (rho_it = rho_list.begin(); rho_it != rho_list.end(); rho_it++) 
+        /* Loop through each training parameter: rho */
+        const std::list<float>& rho_list = rho_range.get_range();
+        std::list<float>::const_iterator rho_it;
+        for (rho_it = rho_list.begin(); rho_it != rho_list.end(); rho_it++) 
+        {
+            d_ptr->rho = *rho_it;
+         
+            /* Loop through each training parameter: sigma */
+            const std::list<float>& sigma_list = sigma_range.get_range();
+            std::list<float>::const_iterator sigma_it;
+            for (sigma_it = sigma_list.begin(); 
+                 sigma_it != sigma_list.end(); sigma_it++) 
             {
-                d_ptr->rho = *rho_it;
-
-                /* Loop through each training parameter: sigma */
-                const std::list<float>& sigma_list = sigma_range.get_range();
-                std::list<float>::const_iterator sigma_it;
-                for (sigma_it = sigma_list.begin(); 
-                     sigma_it != sigma_list.end(); sigma_it++) 
+                d_ptr->sigma = *sigma_it;
+                    
+                /* Loop through each training parameter: minimum similarity */
+                const std::list<float>& minsim_list = minsim_range.get_range();
+                std::list<float>::const_iterator minsim_it;
+                for (minsim_it = minsim_list.begin(); 
+                     minsim_it != minsim_list.end(); minsim_it++) 
                 {
-                    d_ptr->sigma = *sigma_it;
+                    d_ptr->minsim = *minsim_it;
 
-                    /* Loop through each training parameter: minimum similarity */
-                    const std::list<float>& minsim_list = minsim_range.get_range();
-                    std::list<float>::const_iterator minsim_it;
-                    for (minsim_it = minsim_list.begin(); 
-                         minsim_it != minsim_list.end(); minsim_it++) 
-                    {
-                        d_ptr->minsim = *minsim_it;
-
-                        run_segmentation ();
-                    }
+                    run_segmentation ();
                 }
             }
         }
-
-        else if (d_ptr->parms->fusion_criteria == "staple") {
-
-            run_segmentation ();
-
-        }
-
     }
 }
 

@@ -270,6 +270,11 @@ Mabs_parms::set_key_value (
             else if (val == "staple" || val == "STAPLE" || val == "Staple") {
                 this->fusion_criteria = "staple";
             }
+
+            else if (val == "gaussian,staple" || val == "GAUSSIAN,STAPLE" || val == "Gaussian,Staple" ||
+                     val == "staple,gaussian" || val == "STAPLE,GAUSSIAN" || val == "Staple,Gaussian") {
+                this->fusion_criteria = "gaussian_and_staple";
+            }
         }
         else if (key == "distance_map_algorithm") {
             this->distance_map_algorithm = val;
