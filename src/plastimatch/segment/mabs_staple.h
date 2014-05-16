@@ -17,11 +17,14 @@ public:
     Mabs_staple();
     ~Mabs_staple();
     void add_input_structure(Plm_image::Pointer&);
+    void set_confidence_weight(float confidence_weight);
     void run();
 
 public:
     std::list<Plm_image::Pointer> structures;
+    
     int foreground_val;
+    float confidence_weight;
 
     Plm_image::Pointer output_img;
 

@@ -11,6 +11,7 @@
 Mabs_staple::Mabs_staple() {
 
     this->foreground_val = 1;
+    this->confidence_weight = 1.0;
 
 }
 
@@ -29,6 +30,12 @@ Mabs_staple::add_input_structure(Plm_image::Pointer& structure) {
 
 }
 
+void
+Mabs_staple::set_confidence_weight(float confidence_weight) {
+
+    this->confidence_weight = confidence_weight;
+
+}
 
 void
 Mabs_staple::run() {
@@ -48,6 +55,7 @@ Mabs_staple::run() {
     }
 
     staple->SetForegroundValue(this->foreground_val);
+    if (this->confidence_weight != 1.0) staple->SetConfidenceWeight((double) this->confidence_weight);
     staple->Update();
 
     this->output_img = Plm_image::New(staple->GetOutput());

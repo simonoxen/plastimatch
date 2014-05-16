@@ -1321,6 +1321,7 @@ Mabs::prepare_staple_segmentation (const std::string& atlas_id)
                 = d_ptr->staple_map.find (mapped_name);
             if (staple_it == d_ptr->staple_map.end()) {
                 staple = new Mabs_staple;
+                staple->set_confidence_weight(d_ptr->parms->confidence_weight);
                 staple->add_input_structure (warped_structure);
                 d_ptr->staple_map[mapped_name] = staple;
             } else {

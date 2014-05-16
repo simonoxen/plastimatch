@@ -109,6 +109,8 @@ Mabs_parms::Mabs_parms ()
     this->sigma_values = "L 1.7:1:1.7";
     this->threshold_values = "0.5";
 
+    this->confidence_weight = 1.0;
+
     this->write_distance_map_files = true;
     this->write_thresholded_files = true;
     this->write_weight_files = true;
@@ -290,6 +292,9 @@ Mabs_parms::set_key_value (
         }
         else if (key == "threshold_values") {
             this->threshold_values = val;
+        }
+        else if (key == "confidence_weight") {
+            sscanf (val.c_str(), "%g", &this->confidence_weight);
         }
         else if (key == "training_dir") {
             this->training_dir = val;
