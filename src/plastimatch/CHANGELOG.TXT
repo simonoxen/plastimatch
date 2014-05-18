@@ -1,5 +1,8 @@
-Version 1.5.16 (build @PLASTIMATCH_SVN_VERSION@)
+Version 1.5.17 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
+
+Version 1.5.16 (build 4659)
+Sun May 18 16:06:34 EDT 2014
 * Many mabs updates
 * Many proton dose calculation updates
 * Improve handling of DICOM slope/offset on export
