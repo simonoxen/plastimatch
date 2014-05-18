@@ -36,7 +36,7 @@ if ($run_cmake) {
     chdir ${src_dir};
     system ("svn update");
     chdir ${build_dir};
-    system ("cmake .");
+    system ("cmake \"${src_dir}\"");
 }
 if ($make_tarball) {
     chdir ${build_dir};
