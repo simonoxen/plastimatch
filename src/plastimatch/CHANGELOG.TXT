@@ -1,5 +1,14 @@
 Version 1.5.16 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
+* Many mabs updates
+* Many proton dose calculation updates
+* Improve handling of DICOM slope/offset on export
+* DICOM image loading no longer uses ITK when DCMTK is present
+* DICOM SRO export fixes
+* Let plastimatch stats use DICOM input
+* Let plastimatch gamma work without creating output file
+* Add noise option to plastimatch synth
+* Add min_its and convergence_tol options to lbfgsb optimizer
 
 Version 1.5.15 (build 4523)
 Sun Dec 15 14:00:47 EST 2013
