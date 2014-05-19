@@ -63,7 +63,7 @@ public:
     std::string sigma_values;
     std::string threshold_values;
 
-    float confidence_weight;
+    std::string confidence_weight;
 
     bool write_distance_map_files;
     bool write_thresholded_files;
@@ -86,6 +86,7 @@ public:
     float optimization_result_seg_rho;
     float optimization_result_seg_sigma;
     float optimization_result_seg_minsim;
+    float optimization_result_confidence_weight;
     std::string optimization_result_seg_thresh;
 
     /* misc */

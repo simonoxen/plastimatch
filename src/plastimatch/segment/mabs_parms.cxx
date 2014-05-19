@@ -122,6 +122,7 @@ Mabs_parms::Mabs_parms ()
     this->optimization_result_seg_rho = 1.0;
     this->optimization_result_seg_sigma = 30.;
     this->optimization_result_seg_minsim = 0.3;
+    this->optimization_result_confidence_weight = 1.0;
     this->optimization_result_seg_thresh = "0.4";
 
     /* misc */
@@ -294,7 +295,7 @@ Mabs_parms::set_key_value (
             this->threshold_values = val;
         }
         else if (key == "confidence_weight") {
-            sscanf (val.c_str(), "%g", &this->confidence_weight);
+            this->confidence_weight = val;
         }
         else if (key == "training_dir") {
             this->training_dir = val;
@@ -377,6 +378,9 @@ Mabs_parms::set_key_value (
         }
         else if (key == "gaussian_weighting_voting_minsim") {
             sscanf (val.c_str(), "%g", &this->optimization_result_seg_minsim);
+        }
+        else if (key == "optimization_result_confidence_weight") {
+            sscanf (val.c_str(), "%g", &this->optimization_result_confidence_weight);
         }
         else if (key == "gaussian_weighting_voting_thresh") {
             this->optimization_result_seg_thresh = val;

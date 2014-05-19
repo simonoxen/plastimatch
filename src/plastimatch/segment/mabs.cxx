@@ -104,6 +104,7 @@ public:
     float minsim;
     float rho;
     float sigma;
+    float confidence_weight;
     std::string threshold_values;
 
     /* While segmenting an image, we sometimes loop through 
@@ -1321,7 +1322,7 @@ Mabs::prepare_staple_segmentation (const std::string& atlas_id)
                 = d_ptr->staple_map.find (mapped_name);
             if (staple_it == d_ptr->staple_map.end()) {
                 staple = new Mabs_staple;
-                staple->set_confidence_weight(d_ptr->parms->confidence_weight);
+                staple->set_confidence_weight(d_ptr->confidence_weight);
                 staple->add_input_structure (warped_structure);
                 d_ptr->staple_map[mapped_name] = staple;
             } else {
@@ -1342,8 +1343,9 @@ Mabs::staple_segmentation_label ()
 
     /* Set up files & directories for this job */
     d_ptr->segmentation_training_dir
-        = string_format ("%s/segmentations/%s/staple",
-            d_ptr->output_dir.c_str(), d_ptr->registration_id.c_str());
+        = string_format ("%s/segmentations/%s/staple_confidence_weight_%f",
+            d_ptr->output_dir.c_str(), d_ptr->registration_id.c_str(),
+            d_ptr->confidence_weight);
     lprintf ("segmentation_training_dir: %s\n", 
         d_ptr->segmentation_training_dir.c_str());
     make_directory (d_ptr->segmentation_training_dir.c_str());
@@ -1389,7 +1391,7 @@ Mabs::staple_segmentation_label ()
             d_ptr->ref_id.c_str(),
             d_ptr->registration_id.c_str(),
             mapped_name.c_str(),
-            d_ptr->parms->confidence_weight,
+            d_ptr->confidence_weight,
             stats_string.c_str());
         lprintf ("%s", seg_log_string.c_str());
 
@@ -1492,8 +1494,9 @@ Mabs::run_segmentation ()
     /* Staple checkpoint */
     if (d_ptr->parms->fusion_criteria.find("staple") != std::string::npos) {
         std::string curr_output_dir = string_format (
-            "%s/segmentations/%s/staple",
-            d_ptr->output_dir.c_str(), d_ptr->registration_id.c_str());
+            "%s/segmentations/%s/staple_confidence_weight_%f",
+            d_ptr->output_dir.c_str(), d_ptr->registration_id.c_str(),
+            d_ptr->confidence_weight);
         if (!this->check_seg_checkpoint(curr_output_dir)) {
             staple_seg_checkpoint_fn = string_format ("%s/checkpoint.txt",
                 curr_output_dir.c_str());
@@ -1546,9 +1549,10 @@ void
 Mabs::run_segmentation_loop ()
 {
 
-    Option_range minsim_range, rho_range, sigma_range;
+    Option_range minsim_range, rho_range, sigma_range, confidence_weight_range;
     minsim_range.set_range (d_ptr->parms->minsim_values);
     rho_range.set_range (d_ptr->parms->rho_values);
+    confidence_weight_range.set_range (d_ptr->parms->confidence_weight);
     sigma_range.set_range (d_ptr->parms->sigma_values);
 
     d_ptr->threshold_values = d_ptr->parms->threshold_values;
@@ -1561,30 +1565,41 @@ Mabs::run_segmentation_loop ()
         d_ptr->registration_id = basename (*reg_it);
 
 
-        /* Loop through each training parameter: rho */
-        const std::list<float>& rho_list = rho_range.get_range();
-        std::list<float>::const_iterator rho_it;
-        for (rho_it = rho_list.begin(); rho_it != rho_list.end(); rho_it++) 
+        /* Loop through each training parameter: confidence_weight */
+        const std::list<float>& confidence_weight_list = confidence_weight_range.get_range();
+        std::list<float>::const_iterator confidence_weight_it;
+        for (confidence_weight_it = confidence_weight_list.begin();
+             confidence_weight_it != confidence_weight_list.end();
+             confidence_weight_it++) 
         {
-            d_ptr->rho = *rho_it;
-         
-            /* Loop through each training parameter: sigma */
-            const std::list<float>& sigma_list = sigma_range.get_range();
-            std::list<float>::const_iterator sigma_it;
-            for (sigma_it = sigma_list.begin(); 
-                 sigma_it != sigma_list.end(); sigma_it++) 
-            {
-                d_ptr->sigma = *sigma_it;
-                    
-                /* Loop through each training parameter: minimum similarity */
-                const std::list<float>& minsim_list = minsim_range.get_range();
-                std::list<float>::const_iterator minsim_it;
-                for (minsim_it = minsim_list.begin(); 
-                     minsim_it != minsim_list.end(); minsim_it++) 
-                {
-                    d_ptr->minsim = *minsim_it;
+            d_ptr->confidence_weight = *confidence_weight_it;
 
-                    run_segmentation ();
+            /* Loop through each training parameter: rho */
+            const std::list<float>& rho_list = rho_range.get_range();
+            std::list<float>::const_iterator rho_it;
+            for (rho_it = rho_list.begin(); rho_it != rho_list.end(); rho_it++) 
+            {
+                d_ptr->rho = *rho_it;
+
+         
+                /* Loop through each training parameter: sigma */
+                const std::list<float>& sigma_list = sigma_range.get_range();
+                std::list<float>::const_iterator sigma_it;
+                for (sigma_it = sigma_list.begin(); 
+                     sigma_it != sigma_list.end(); sigma_it++) 
+                {
+                    d_ptr->sigma = *sigma_it;
+                    
+                    /* Loop through each training parameter: minimum similarity */
+                    const std::list<float>& minsim_list = minsim_range.get_range();
+                    std::list<float>::const_iterator minsim_it;
+                    for (minsim_it = minsim_list.begin(); 
+                         minsim_it != minsim_list.end(); minsim_it++) 
+                    {
+                        d_ptr->minsim = *minsim_it;
+
+                        run_segmentation ();
+                    }
                 }
             }
         }
@@ -1820,6 +1835,7 @@ Mabs::segment ()
     d_ptr->sigma = d_ptr->parms->optimization_result_seg_sigma;
     d_ptr->minsim = d_ptr->parms->optimization_result_seg_minsim;
     d_ptr->threshold_values = d_ptr->parms->optimization_result_seg_thresh;
+    d_ptr->confidence_weight = d_ptr->parms->optimization_result_confidence_weight;
     
     run_segmentation ();
 }
