@@ -1384,11 +1384,12 @@ Mabs::staple_segmentation_label ()
             staple_it->second->output_img->itk_uchar());
         std::string seg_log_string = string_format (
             "%s,reg=%s,struct=%s,"
-            "rho=0,sigma=0,minsim=0,thresh=0,"
+            "confidence_weight=%f,"
             "%s\n",
             d_ptr->ref_id.c_str(),
             d_ptr->registration_id.c_str(),
             mapped_name.c_str(),
+            d_ptr->parms->confidence_weight,
             stats_string.c_str());
         lprintf ("%s", seg_log_string.c_str());
 
