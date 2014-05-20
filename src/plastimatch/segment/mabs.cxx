@@ -927,7 +927,15 @@ Mabs::atlas_prealign ()
     logfile_open (logfile_path.c_str(), "a");
 
     /* Parse directory with registration files */
-    this->parse_registration_dir (d_ptr->parms->prealign_registration_config);
+    if (d_ptr->parms->prealign_mode == "disabled") {
+        print_and_exit ("Prealignment not enabled in parameters file!");
+    }
+    else if (d_ptr->parms->prealign_mode == "default") {
+        print_and_exit ("No default prealignment implemented yet!");
+    }
+    else if (d_ptr->parms->prealign_mode == "custom") {
+        this->parse_registration_dir (d_ptr->parms->prealign_registration_config);
+    }
 
     /* Parse convert directory */
     this->load_process_dir_list (d_ptr->convert_dir);

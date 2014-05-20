@@ -74,7 +74,7 @@ public:
 Mabs_parms::Mabs_parms ()
 {
     /* [PREALIGNMENT] */
-    this->prealign_mode="default";
+    this->prealign_mode="disabled";
     this->prealign_reference = "";
     this->prealign_spacing = "";
     this->prealign_registration_config = "";
@@ -154,10 +154,10 @@ Mabs_parms::set_key_value (
     /* [PREALIGNMENT] */
     if (section == "PREALIGN" || section == "PREALIGNMENT") {
         if (key == "mode") {
-            if (val == "DISABLE" || val == "disable" 
-                || val == "Disable" || val == "0")
+            if (val == "DISABLED" || val == "disabled" 
+                || val == "Disabled" || val == "0")
             {
-                this->prealign_mode = "disable";
+                this->prealign_mode = "disabled";
             }
             else if (val == "DEFAULT" || val == "default" || val == "Default") {
                 this->prealign_mode = "default";
