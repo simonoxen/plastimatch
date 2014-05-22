@@ -99,7 +99,7 @@ parse_fn (
     if (!parser->have_option ("output-csv"))
     {
 	throw (dlib::error (
-                "Error.  You must specify an ouput file with --output-csv"));
+                "Error.  You must specify an output file with --output-csv"));
     }
 
     /* Copy values into output struct */

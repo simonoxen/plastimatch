@@ -212,7 +212,7 @@ bspline_state_create (
         }
 
         if (first_iteration) {
-            printf ("Intializing 1st MI Stage\n");
+            printf ("Initializing 1st MI Stage\n");
             for (int i = 0; i < bxf->num_coeff; i++) {
                 bxf->coeff[i] = 0.01f;
             }

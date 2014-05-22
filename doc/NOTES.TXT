@@ -1,3 +1,11 @@
+***** How to delete items from conquest *****
+
+./dgate --deletepatient:patid
+
+Note: supports wildcards, such as:
+
+./dgate --deletepatient:0522*
+
 ***** Subsampling framework *****
 
 legacy vox subsampling      Voxel binning, new voxel center at bin center

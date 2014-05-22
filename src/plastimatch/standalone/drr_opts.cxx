@@ -20,7 +20,7 @@ print_usage (void)
 	"Options:\n"
 	" -A hardware       Either \"cpu\" or \"cuda\" (default=cpu)\n"
 	" -a num            Generate num equally spaced angles\n"
-	" -N ang            Difference between neighboring angles (in degrees)\n"
+	" -N angle          Difference between neighboring angles (in degrees)\n"
 	" -nrm \"x y z\"      Set the normal vector for the panel\n"
 	" -vup \"x y z\"      Set the vup vector (toward top row) for the panel\n"
 	" -g \"sad sid\"      Set the sad, sid (in mm)\n"

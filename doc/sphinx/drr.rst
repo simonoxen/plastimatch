@@ -27,7 +27,7 @@ format.  The command line usage is::
  Options:
   -A hardware       Either "cpu" or "cuda" (default=cpu)
   -a num            Generate num equally spaced angles
-  -N ang            Difference between neighboring angles (in degrees)
+  -N angle          Difference between neighboring angles (in degrees)
   -nrm "x y z"      Set the normal vector for the panel
   -vup "x y z"      Set the vup vector (toward top row) for the panel
   -g "sad sid"      Set the sad, sid (in mm)

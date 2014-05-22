@@ -597,7 +597,7 @@ Itk_registration_private::set_transform ()
 
     if (stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
         std::stringstream ss;
-        ss << "Intial Parameters = " 
+        ss << "Initial Parameters = " 
             << registration->GetTransform()->GetParameters() << "\n";
         lprintf (ss.str().c_str());
     }
