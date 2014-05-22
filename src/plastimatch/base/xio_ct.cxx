@@ -112,6 +112,11 @@ xio_ct_load_header (Xio_ct_header *xch, const char *filename)
 	print_and_exit ("Error parsing pixel size (%s)\n", line1->data);
     }
 
+    /* EPF files have a zero as the second spacing.  Fudge these. */
+    if (xch->spacing[1] == 0.f) {
+        xch->spacing[1] = xch->spacing[0];
+    }
+
     printf ("%g %g %d %d %g %g %g\n", 
 	xch->slice_size[0], xch->slice_size[1], xch->dim[0], xch->dim[1], 
 	xch->spacing[0], xch->spacing[1], xch->z_loc);
