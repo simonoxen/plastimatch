@@ -13,8 +13,15 @@
 #include "congraph.h"
 #include "libdbf.h"
 
-static const char *get_db_version (int version);
+#if defined __cplusplus
+extern "C" {
+#endif
+
 void dbf_file_info (P_DBF *p_dbf);
 void dbf_field_stat (P_DBF *p_dbf);
+
+#if defined __cplusplus
+}
+#endif
 
 #endif

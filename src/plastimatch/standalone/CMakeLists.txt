@@ -4,7 +4,15 @@
 project (src_plastimatch_standalone)
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
-include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/standalone)
+include_directories (AFTER ${DBF_INCLUDE_DIR})
+include_directories (AFTER ${DBFCORE_INCLUDE_DIR})
+
+set (XVI_ARCHIVE_LIBRARIES 
+    ${PLASTIMATCH_LIBS}
+    ${DBF_LIBRARIES}
+    )
+
+message (STATUS ">> ${DBF_LIBRARIES}")
 
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES
@@ -99,6 +107,9 @@ set (VISCOUS_SRC
 set (WED_SRC
   wed_main.cxx
   )
+set (XVI_ARCHIVE_SRC
+    xvi_archive.cxx
+    )
 set (GROUP_ADD_SRC
   group_add.cxx
   )
@@ -127,8 +138,8 @@ set (VF_INVERT_SRC
   vf_invert_main.cxx
   )
 set (XF_TO_EMPIREFMT_SRC
-  xf_to_empirefmt.cxx
-  )
+    xf_to_empirefmt.cxx
+    )
 
 
 if (QT4_FOUND)
@@ -176,14 +187,17 @@ if (ITK_FOUND)
       ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   endif ()
   plm_add_executable (vf_invert "${VF_INVERT_SRC}"
-    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-plm_add_executable (wed "${WED_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-plm_add_executable (group_add "${GROUP_ADD_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+      "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
+      ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+  plm_add_executable (wed "${WED_SRC}" 
+      "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
+      ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+  plm_add_executable (xvi_archive "${XVI_ARCHIVE_SRC}" 
+      "${XVI_ARCHIVE_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
+      ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+  plm_add_executable (group_add "${GROUP_ADD_SRC}" 
+      "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
+      ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 if (COMMENT_OUT)
 plm_add_executable (gamma_thresh "${GAMMA_THRESH_SRC}" 
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 

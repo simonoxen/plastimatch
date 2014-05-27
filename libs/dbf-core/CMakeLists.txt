@@ -31,10 +31,8 @@ set (DBF1_SRC
   dbf_main.h
 )
 
-set (DBF_LIBS dbf dbfcore)
-
 plm_add_static_library (dbfcore "${DBFCORE_LIB_SRC}" "" "" "")
 
 plm_add_executable (dbf1 "${DBF1_SRC}" 
-  "${DBF_LIBS}" "" 
+  "${DBF_LIBRARIES}" "" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})

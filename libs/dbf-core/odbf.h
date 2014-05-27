@@ -15,10 +15,19 @@
 
 #include "dbf.h"
 
+#if defined __cplusplus
+extern "C" {
+#endif
+
 int writeDBFHeader (FILE *fp, P_DBF * p_dbf,
     const char *input, const char *output);
 int writeDBFFooter (FILE *fp, P_DBF *p_dbf,
     const char *filename, const char *export_filename);
 int writeDBFLine (FILE *fp, P_DBF * p_dbf, const unsigned char *value,
     int header_length, const char *input, const char *output);
+
+#if defined __cplusplus
+}
+#endif
+
 #endif

@@ -15,10 +15,19 @@
 
 #include "dbf.h"
 
+#if defined __cplusplus
+extern "C" {
+#endif
+
 int setCSVSep (FILE *fp, P_DBF * p_dbf,
     const char *input, const char *separator);
 int writeCSVHeader (FILE *fp, P_DBF * p_dbf,
     const char *input, const char *output);
 int writeCSVLine (FILE *fp, P_DBF * p_dbf, const unsigned char *value,
     int header_length, const char *input, const char *output);
+
+#if defined __cplusplus
+}
+#endif
+
 #endif

@@ -23,6 +23,14 @@
 
 #include <string.h>
 
+#if defined __cplusplus
+extern "C" {
+#endif
+
 void cp850andASCIIconvert(unsigned char *src);
+
+#if defined __cplusplus
+}
+#endif
 
 #endif

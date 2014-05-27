@@ -82,6 +82,10 @@
 /*! \def VisualFoxPro Code for Visual FoxPro without memo fields */
 #define VisualFoxPro 0x30
 
+#if defined __cplusplus
+extern "C" {
+#endif
+
 /*! \brief Object handle for dBASE file
 
   A pointer of type P_DBF is used by all functions except for \ref dbf_Open
@@ -331,5 +335,12 @@ int dbf_WriteRecord(P_DBF *p_dbf, const char *record, int len);
 	\return 0 no memo, 1 memo, -1 on error
 */
 int dbf_IsMemo(P_DBF *p_dbf);
+
+
+char *dbf_GetRecordData(P_DBF *p_dbf, char *record, int column);
+
+#if defined __cplusplus
+}
+#endif
 
 #endif

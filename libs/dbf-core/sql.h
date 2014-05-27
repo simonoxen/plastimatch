@@ -19,6 +19,10 @@
 
 #include "libdbf.h"
 
+#if defined __cplusplus
+extern "C" {
+#endif
+
 int setNoDrop (FILE *fp, P_DBF *p_dbf,
     const char *input, const char *separator);
 int setNoCreate (FILE *fp, P_DBF *p_dbf,
@@ -36,5 +40,9 @@ int writeSQLFooter(FILE *fp, P_DBF *p_dbf,
 int writeSQLLine(FILE *fp, P_DBF *p_dbf,
     const unsigned char *value, int header_length,
     const char *filename,  const char *export_filename);
+
+#if defined __cplusplus
+}
+#endif
 
 #endif
