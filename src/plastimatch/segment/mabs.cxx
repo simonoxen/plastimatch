@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "itkImageMaskSpatialObject.h"
+
 #include "dir_list.h"
 #include "dice_statistics.h"
 #include "distance_map.h"
@@ -810,12 +812,15 @@ Mabs::atlas_selection ()
         atlas_selector->atlas_dir = d_ptr->parms->atlas_dir;
         atlas_selector->number_of_atlases = (int) d_ptr->process_dir_list.size();
         
-        if (d_ptr->parms->roi_mask_fn.compare("")!=0) { /* Set the mask if defined */
+        if (d_ptr->parms->roi_mask_fn != "") { /* Set the mask if defined */
             Plm_image::Pointer mask_plm = plm_image_load (d_ptr->parms->roi_mask_fn, PLM_IMG_TYPE_ITK_UCHAR);
+            
+            typedef itk::ImageMaskSpatialObject<3> MaskType;
+            atlas_selector->mask = MaskType::New();
             atlas_selector->mask->SetImage(mask_plm->itk_uchar());
             atlas_selector->mask->Update();
         }
-
+        
         atlas_selector->min_hist_sub_value_defined = d_ptr->parms->lower_mi_value_sub_defined;
         atlas_selector->min_hist_sub_value = d_ptr->parms->lower_mi_value_sub;
         atlas_selector->max_hist_sub_value_defined = d_ptr->parms->upper_mi_value_sub_defined;
@@ -824,7 +829,7 @@ Mabs::atlas_selection ()
         atlas_selector->min_hist_atl_value = d_ptr->parms->lower_mi_value_atl;
         atlas_selector->max_hist_atl_value_defined = d_ptr->parms->upper_mi_value_atl_defined;
         atlas_selector->max_hist_atl_value = d_ptr->parms->upper_mi_value_atl;
-                                                                
+        
         /* New selection is required, execute it */
         if (compute_new_ranking) {
             atlas_selector->subject = d_ptr->ref_rtds->get_image();

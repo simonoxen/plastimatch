@@ -52,7 +52,6 @@ Mabs_atlas_selection::Mabs_atlas_selection ()
     this->atlases_from_ranking = -1;
     this->number_of_atlases = -1;
     this->hist_bins = 100;
-    this->mask = MaskType::New();
     this->min_hist_sub_value_defined = false;
     this->min_hist_sub_value=0;
     this->max_hist_sub_value_defined = false;
@@ -350,7 +349,7 @@ Mabs_atlas_selection::compute_nmi (
     /* Set mask if defined */
     if (this->mask)
     {
-       	nmi_metric->SetFixedImageMask(this->mask);	
+       	nmi_metric->SetFixedImageMask(this->mask);
     }
     
     /* Set histogram interval if defined */
@@ -395,7 +394,7 @@ Mabs_atlas_selection::compute_nmi (
     nmi_metric->SetInterpolator(interpolator);
     
     nmi_metric->Initialize();
-    
+
     /* NMI compute */
     return (double) nmi_metric->GetValue(transform->GetParameters());
 }
