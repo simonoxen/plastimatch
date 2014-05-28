@@ -9,7 +9,7 @@
 class Xvi_archive_parms
 {
 public:
-    std::string database_dir;
+    std::string patient_base_dir;
     std::string patient_id;
 };
 

@@ -18,6 +18,7 @@ PLMSYS_API std::string basename (const std::string& fn);
 PLMSYS_API std::string dirname (const std::string& fn);
 PLMSYS_API int extension_is (const char* fname, const char* ext);
 PLMSYS_API void strip_extension (char* filename);
+PLMSYS_API std::string strip_extension (const std::string& filename);
 PLMSYS_API void trim_trailing_slashes (char *pathname);
 PLMSYS_API std::string trim_trailing_slashes (const std::string& pathname);
 PLMSYS_API char* file_util_parent (const char *filename);

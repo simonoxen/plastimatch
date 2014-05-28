@@ -4,15 +4,12 @@
 project (src_plastimatch_standalone)
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
-include_directories (AFTER ${DBF_INCLUDE_DIR})
-include_directories (AFTER ${DBFCORE_INCLUDE_DIR})
+include_directories (AFTER ${INIH_INCLUDE_DIR})
 
 set (XVI_ARCHIVE_LIBRARIES 
     ${PLASTIMATCH_LIBS}
-    ${DBF_LIBRARIES}
+    inih
     )
-
-message (STATUS ">> ${DBF_LIBRARIES}")
 
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES
