@@ -3,52 +3,102 @@
 """
 This script analyzes the seg_dice.csv mabs file and compute statistic on it.
 Author: Paolo Zaffino  (p.zaffino@unicz.it)
-Rev 1
+Rev 2
+
+Usage examples:
+./mabs_stats.py --input seg_dice.csv
+./mabs_stats.py --input seg_dice.csv --structures "brainstem"
+./mabs_stats.py --input seg_dice.csv --thresholds "gaussian_0.4"
+./mabs_stats.py --input seg_dice.csv --structures "brainstem" --thresholds "gaussian_0.4"
+./mabs_stats.py --input seg_dice.csv --structures "brainstem" --thresholds "staple_0.5"
+./mabs_stats.py --input seg_dice.csv --structures "brainstem" --thresholds "staple*"
+./mabs_stats.py --input seg_dice.csv --structures "brainstem left_protid" --thresholds "gaussian_0.4 gaussian_0.5 staple*"
 """
 
 import argparse
+from copy import deepcopy
 import numpy as np
-import sys
 
-## Parser settings
+# Utility function
+def str_or_float(s):
+    try: return float(s)
+    except ValueError: return s
+
+# Parser settings
 parser = argparse.ArgumentParser(description='MABS seg_dice.csv analyzer')
 parser.add_argument('--input', help='Mabs seg_dice.csv file', type=str, required=True)
 parser.add_argument('--structures', help='Subset of structures to analyze. String as "stru1 stru2"', type=str, required=False)
-parser.add_argument('--thresholds', help='Subset of thresholds to analyze. String as "thr1 thr2"', type=str, required=False)
+parser.add_argument('--thresholds', help='Subset of thresholds to analyze. String as "fusiontype_thr1 fusiontype_thr2 fusiontype*"', type=str, required=False)
 args = parser.parse_args()
 
 # Read data from file
-seg_dice = open(args.input)
+seg_dice = open(args.input, "r")
 raw_lines = [l.strip().split(",") for l in seg_dice.readlines()]
 seg_dice.close()
 
-# Structure of the list (variable, index):
-#
-# atlas 0, parms 1, struct 2, rho 3, sigma 4, 5th_percsim 5, thresh 6, dice 7, tp 8
-# tn 9, fp 10, fn 11, hd 12, 95hd 13, ahd 14, bhd 15, 95bhd 16, abhd 17
-
-# Remove variable name from data, keep just the values
-data_as_str = []
+# Make a list of all the patients
+patients=[]
 for line in raw_lines:
-    data_as_str.append([s.split("=")[-1] for s in line])
+    if line[0] not in patients: patients.append(line[0])
 
-# Leave string type as string, and convert numbers in float 
-data = []
-for d in data_as_str:
-    item = []
-    for ind, itm in enumerate(d):
-        if ind < 3: item.append(itm)
-        else: item.append(float(itm))
-    data.append(item)
+# Organize the data
+data=dict()
+for patient in patients:
+    data[patient]=[]
 
-# Seek which structures and thresholds are present inside the file
-thresholds = set([i[6] for i in data])
+for line in raw_lines:
+    patient = line[0]
+    line_dict = dict()
+    for field in line[1:]:
+        key, value = field.split("=")
+        key, value = key.strip(), str_or_float(value.strip())
+        line_dict[key]=value
+    data[patient].append(deepcopy(line_dict))
+
+# Extract structures and thresholds
+structures = []
+thresholds = []
+
+for patient in patients:
+    patient_data = data[patient]
+    for entry in patient_data:
+        if entry["struct"] not in structures:
+            structures.append(entry["struct"])
+        if "thresh" in entry and "gaussian_%f" % entry["thresh"] not in thresholds:
+            thresholds.append("gaussian_%f" % entry["thresh"])
+        if "confidence_weight" in entry and "staple_%f" % entry["confidence_weight"] not in thresholds:
+             thresholds.append("staple_%f" % entry["confidence_weight"])
+            
+structures = set(structures)
+thresholds = set(thresholds)
+
+# Filter data using input parameters
 if args.thresholds != None:
-    selected_thresholds = thresholds.intersection([float(i) for i in args.thresholds.split(" ")])
+    args_thresholds_splitted = args.thresholds.split(" ")
+    filtered_thresholds = []
+    
+    # Check for "full range" thresholds (something like "staple*" or "gaussian*")
+    full_range_thresholds = []
+    for arg in args_thresholds_splitted:
+        if "*" in arg:
+            fusion_criterion = arg.split("*")[0]
+            if fusion_criterion not in full_range_thresholds: full_range_thresholds.append(fusion_criterion)
+    
+    # Set the "well defined" thresholds
+    for input_threshold in args_thresholds_splitted:
+        if len(input_threshold.split("_")) == 2:
+            fusion, thr = input_threshold.split("_")[0], float(input_threshold.split("_")[1])
+            filtered_thresholds.append("%s_%f" % (fusion, thr))
+    
+    # Set the "full range" thresholds
+    for full_range_of_threshold in full_range_thresholds:
+        for threshold in thresholds:
+            if full_range_of_threshold in threshold: filtered_thresholds.append(threshold)
+    
+    selected_thresholds = thresholds.intersection(filtered_thresholds)
 else:
     selected_thresholds = thresholds
 
-structures = set([i[2] for i in data])
 if args.structures != None:
     selected_structures = structures.intersection(args.structures.split(" "))
 else:
@@ -66,46 +116,58 @@ else:
 for structure in structures:
     vars()["stats_%s" % structure] = {}
     for threshold in thresholds:
-        threshold_str = str(threshold).replace(".", "")
-        vars()["stats_%s" % structure]["dice_%s" % threshold_str] = []
-        vars()["stats_%s" % structure]["b_avg_dist_%s" % threshold_str] = []
-        vars()["stats_%s" % structure]["b_95_dist_%s" % threshold_str] = []
+        thr = str(threshold).replace(".", "")
+        vars()["stats_%s" % structure]["dice_%s" % thr] = []
+        vars()["stats_%s" % structure]["b_avg_dist_%s" % thr] = []
+        vars()["stats_%s" % structure]["b_95_dist_%s" % thr] = []
 
 # Insert data inside the structure
-for d in data:
-    threshold_str = str(d[6]).replace(".", "")
-    vars()["stats_%s" % d[2]]["dice_%s" % threshold_str].append(d[7])
-    vars()["stats_%s" % d[2]]["b_avg_dist_%s" % threshold_str].append(d[17])
-    vars()["stats_%s" % d[2]]["b_95_dist_%s" % threshold_str].append(d[16])
+for patient in patients:
+    patient_data = data[patient]
+    for entry in patient_data:
+        if "thresh" in entry:
+            thr = "gaussian_%f" % entry["thresh"]
+        elif "confidence_weight" in entry:
+            thr = "staple_%f" % entry["confidence_weight"]
+        thr = thr.replace(".", "")
+        stru = entry["struct"]
+        dice = entry["dice"]
+        b_avg_dist = entry["abhd"]
+        b_95_dist = entry["95bhd"]
+        
+        vars()["stats_%s" % stru]["dice_%s" % thr].append(dice)
+        vars()["stats_%s" % stru]["b_avg_dist_%s" % thr].append(b_avg_dist)
+        vars()["stats_%s" % stru]["b_95_dist_%s" % thr].append(b_95_dist)
 
 # Medians and percentiles
-for d in data:
-    threshold_str = str(d[6]).replace(".", "")
-    vars()["median_dice_%s_%s" % (d[2], threshold_str)] = np.median(vars()["stats_%s" % d[2]]["dice_%s" % threshold_str])
-    vars()["95th_perc_dice_%s_%s" % (d[2], threshold_str)] = np.percentile(vars()["stats_%s" % d[2]]["dice_%s" % threshold_str], 95)
-    vars()["5th_perc_dice_%s_%s" % (d[2], threshold_str)] = np.percentile(vars()["stats_%s" % d[2]]["dice_%s" % threshold_str], 5)
+for structure in structures:
+    for threshold in thresholds:
+        thr = str(threshold).replace(".", "")
+        vars()["median_dice_%s_%s" % (structure, thr)] = np.median(vars()["stats_%s" % structure]["dice_%s" % thr])
+        vars()["95th_perc_dice_%s_%s" % (structure, thr)] = np.percentile(vars()["stats_%s" % structure]["dice_%s" % thr], 95)
+        vars()["5th_perc_dice_%s_%s" % (structure, thr)] = np.percentile(vars()["stats_%s" % structure]["dice_%s" % thr], 5)
 
-    vars()["median_b_avg_dist_%s_%s" % (d[2], threshold_str)] = np.median(vars()["stats_%s" % d[2]]["b_avg_dist_%s" % threshold_str])
-    vars()["95th_perc_b_avg_dist_%s_%s" % (d[2], threshold_str)] = np.percentile(vars()["stats_%s" % d[2]]["b_avg_dist_%s" % threshold_str], 95)
-    vars()["5th_perc_b_avg_dist_%s_%s" % (d[2], threshold_str)] = np.percentile(vars()["stats_%s" % d[2]]["b_avg_dist_%s" % threshold_str], 5)
+        vars()["median_b_avg_dist_%s_%s" % (structure, thr)] = np.median(vars()["stats_%s" % structure]["b_avg_dist_%s" % thr])
+        vars()["95th_perc_b_avg_dist_%s_%s" % (structure, thr)] = np.percentile(vars()["stats_%s" % structure]["b_avg_dist_%s" % thr], 95)
+        vars()["5th_perc_b_avg_dist_%s_%s" % (structure, thr)] = np.percentile(vars()["stats_%s" % structure]["b_avg_dist_%s" % thr], 5)
 
-    vars()["median_b_95_dist_%s_%s" % (d[2], threshold_str)] = np.median(vars()["stats_%s" % d[2]]["b_95_dist_%s" % threshold_str])
-    vars()["95th_perc_b_95_dist_%s_%s" % (d[2], threshold_str)] = np.percentile(vars()["stats_%s" % d[2]]["b_95_dist_%s" % threshold_str], 95)
-    vars()["5th_perc_b_95_dist_%s_%s" % (d[2], threshold_str)] = np.percentile(vars()["stats_%s" % d[2]]["b_95_dist_%s" % threshold_str], 5)
+        vars()["median_b_95_dist_%s_%s" % (structure, thr)] = np.median(vars()["stats_%s" % structure]["b_95_dist_%s" % thr])
+        vars()["95th_perc_b_95_dist_%s_%s" % (structure, thr)] = np.percentile(vars()["stats_%s" % structure]["b_95_dist_%s" % thr], 95)
+        vars()["5th_perc_b_95_dist_%s_%s" % (structure, thr)] = np.percentile(vars()["stats_%s" % structure]["b_95_dist_%s" % thr], 5)
 
 # Print results
 for structure in selected_structures:
     for threshold in selected_thresholds:
-        threshold_str = str(threshold).replace(".", "")
+        thr = str(threshold).replace(".", "")
         print("Structure = %s" % structure)
         print("  threshold = %s" % threshold)
-        print("    dice = median %f  5th_perc %f  95th_perc %f" % (vars()["median_dice_%s_%s" % (structure, threshold_str)],
-            vars()["5th_perc_dice_%s_%s" % (structure, threshold_str)],
-            vars()["95th_perc_dice_%s_%s" % (structure, threshold_str)]))
-        print("    average boundary distance = median %f  5th_perc %f  95th_perc %f" % (vars()["median_b_avg_dist_%s_%s" % (structure, threshold_str)],
-            vars()["5th_perc_b_avg_dist_%s_%s" % (structure, threshold_str)],
-            vars()["95th_perc_b_avg_dist_%s_%s" % (structure, threshold_str)]))
-        print("    95th percentile boundary distance = median %f  5th_perc %f  95th_perc %f" % (vars()["median_b_95_dist_%s_%s" % (structure, threshold_str)],
-            vars()["5th_perc_b_95_dist_%s_%s" % (structure, threshold_str)],
-            vars()["95th_perc_b_95_dist_%s_%s" % (structure, threshold_str)]))
+        print("    dice = median %f  5th_perc %f  95th_perc %f" % (vars()["median_dice_%s_%s" % (structure, thr)],
+            vars()["5th_perc_dice_%s_%s" % (structure, thr)],
+            vars()["95th_perc_dice_%s_%s" % (structure, thr)]))
+        print("    average boundary distance = median %f  5th_perc %f  95th_perc %f" % (vars()["median_b_avg_dist_%s_%s" % (structure, thr)],
+            vars()["5th_perc_b_avg_dist_%s_%s" % (structure, thr)],
+            vars()["95th_perc_b_avg_dist_%s_%s" % (structure, thr)]))
+        print("    95th percentile boundary distance = median %f  5th_perc %f  95th_perc %f" % (vars()["median_b_95_dist_%s_%s" % (structure, thr)],
+            vars()["5th_perc_b_95_dist_%s_%s" % (structure, thr)],
+            vars()["95th_perc_b_95_dist_%s_%s" % (structure, thr)]))
 
