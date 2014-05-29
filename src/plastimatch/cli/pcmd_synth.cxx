@@ -153,7 +153,7 @@ parse_fn (
     parser->add_long_option ("", "pattern",
         "synthetic pattern to create: {"
         "donut, dose, gauss, grid, lung, noise, rect, sphere, "
-        "xramp, yramp, zramp}, default is gauss", 
+        "xramp, yramp, zramp, cylinder}, default is gauss", 
         1, "gauss");
 
     /* Image size */
@@ -225,6 +225,12 @@ parse_fn (
         "mean intensity of gaussian noise", 1, "0.0");
     parser->add_long_option ("", "noise-std", 
         "standard deviation of gaussian noise", 1, "1.0");
+
+	/* Cylinder options */
+	parser->add_long_option ("", "cylinder-center", 
+		"location of cylinder center in mm \"x [y z]\"", 1, "0 0 0");
+	parser->add_long_option ("", "cylinder-radius", 
+		"size of cylinder in mm \"x [y z]\"", 1, "50 50 0");	
 
     /* Metadata options */
     parser->add_long_option ("", "metadata",
@@ -302,6 +308,9 @@ parse_fn (
     else if (arg == "noise") {
         sm_parms->pattern = PATTERN_NOISE;
     }
+	else if (arg == "cylinder") {
+		sm_parms->pattern = PATTERN_CYLINDER;
+	}
     else {
         throw (dlib::error ("Error. Unknown --pattern argument: " + arg));
     }
@@ -466,6 +475,10 @@ parse_fn (
         throw (dlib::error ("Error. Option --noise-std must have "
                 "a floating point argument\n"));
     }
+
+	/* Cylinder options */
+	parser->assign_float_13 (sm_parms->cylinder_center, "cylinder-center");
+	parser->assign_float_13 (sm_parms->cylinder_radius, "cylinder-radius");
 
     /* Metadata options */
     for (unsigned int i = 0; i < parser->option("metadata").count(); i++) {
