@@ -17,4 +17,13 @@ itk_dicom_save (
     Rt_study_metadata *rsm                /* In/out: slice uids get set */
 );
 
+void
+itk_dicom_save (
+	ShortImageType::Pointer short_img,    /* Input: image to write */
+	const char *dir_name,                 /* Input: name of output dir */
+	Rt_study_metadata *rsm,                /* In/out: slice uids get set */
+	const char* patientName,	/*YKP. only valid when rsm is null*/
+	const char* patientID/*YKP. only valid when rsm is null*/
+);
+
 #endif

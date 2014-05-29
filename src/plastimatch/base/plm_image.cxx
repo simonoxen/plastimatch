@@ -464,6 +464,58 @@ Plm_image::save_short_dicom (
     }
 }
 
+
+//YKTEMP: to easily distinguish CBCT DICOM images
+void
+Plm_image::save_short_dicom (
+							 const char* fname, 
+							 Rt_study_metadata *rsm,
+							 const char* patientID,
+							 const char* patientName
+							 )
+{
+	switch (this->m_type) {
+	case PLM_IMG_TYPE_ITK_UCHAR:
+		itk_image_save_short_dicom (this->m_itk_uchar, fname, rsm, patientID, patientName);
+		break;
+	case PLM_IMG_TYPE_ITK_SHORT:
+		itk_image_save_short_dicom (this->m_itk_short, fname, rsm, patientID, patientName);
+		break;
+	case PLM_IMG_TYPE_ITK_USHORT:
+		itk_image_save_short_dicom (this->m_itk_ushort, fname, rsm, patientID, patientName);
+		break;
+	case PLM_IMG_TYPE_ITK_ULONG:
+		itk_image_save_short_dicom (this->m_itk_uint32, fname, rsm, patientID, patientName);
+		break;
+	case PLM_IMG_TYPE_ITK_FLOAT:
+		itk_image_save_short_dicom (this->m_itk_float, fname, rsm, patientID, patientName);
+		break;
+	case PLM_IMG_TYPE_GPUIT_UCHAR:
+		this->convert_to_itk_uchar ();
+		itk_image_save_short_dicom (this->m_itk_uchar, fname, rsm, patientID, patientName);
+		break;
+	case PLM_IMG_TYPE_GPUIT_SHORT:
+		this->convert_to_itk_short ();
+		itk_image_save_short_dicom (this->m_itk_short, fname, rsm, patientID, patientName); //YKTEMP: it seems to be a bug!
+		break;
+	case PLM_IMG_TYPE_GPUIT_UINT32:
+		this->convert_to_itk_uint32 ();
+		itk_image_save_short_dicom (this->m_itk_uint32, fname, rsm, patientID, patientName);
+		break;
+	case PLM_IMG_TYPE_GPUIT_FLOAT:
+		this->convert_to_itk_float ();
+		itk_image_save_short_dicom (this->m_itk_float, fname, rsm, patientID, patientName);
+		break;
+	case PLM_IMG_TYPE_GPUIT_UINT16:
+	default:
+		print_and_exit ("Unhandled image type in Plm_image::save_short_dicom"
+			" (type = %d)\n", this->m_type);
+		break;
+	}
+}
+
+
+
 void
 Plm_image::save_image (const char* fname)
 {
