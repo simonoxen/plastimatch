@@ -28,6 +28,7 @@
 #include "path_util.h"
 #include "plm_clp.h"
 #include "print_and_exit.h"
+#include "rt_study.h"
 #include "string_util.h"
 #include "xvi_archive.h"
 
@@ -166,9 +167,25 @@ do_xvi_archive (Xvi_archive_parms *parms)
 
         /* Load the INI file */
         INIReader recon_ini (recon_ini_fn);
-        printf ("Name = %s^%s\n", 
+        printf ("name = %s^%s\n", 
             recon_ini.Get ("IDENTIFICATION", "LastName", "").c_str(),
             recon_ini.Get ("IDENTIFICATION", "FirstName", "").c_str());
+
+        /* Load the INI.XVI file */
+        INIReader recon_xvi (recon_xvi_fn);
+        printf ("xform = %s\n", recon_xvi.Get ("ALIGNMENT", 
+                "OnlineToRefTransformCorrection", "").c_str());
+
+        /* Load the .SCAN */
+        Rt_study rt_study;
+        rt_study.load_image (scan_fn);
+        
+        /* Write the DICOM image */
+        rt_study.save_dicom ("cbct_output");
+
+        /* Create the DICOM SRO */
+
+        break;
     }
 
 #if defined (commentout)
