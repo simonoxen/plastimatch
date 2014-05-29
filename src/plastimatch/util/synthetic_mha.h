@@ -24,7 +24,8 @@ enum Pattern_type {
     PATTERN_XRAMP,
     PATTERN_YRAMP,
     PATTERN_ZRAMP,
-    PATTERN_NOISE
+    PATTERN_NOISE,
+	PATTERN_CYLINDER
 };
 
 class Synthetic_mha_parms_private;
@@ -64,6 +65,8 @@ public:
     float lung_tumor_pos[3];
     float noise_mean;
     float noise_std;
+	float cylinder_radius[3];
+	float cylinder_center[3];
     
     int num_multi_sphere;
 

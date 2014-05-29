@@ -46,6 +46,8 @@ Synthetic_mha_parms::Synthetic_mha_parms ()
         donut_center[i] = 0.0f;
         lung_tumor_pos[i] = 0.0f;
         dose_center[i] = 0.0f;
+		cylinder_center[i] = 0.0f;
+		cylinder_radius[i] = 0.0f;
     }
     background = -1000.0f;
     foreground = 0.0f;
@@ -476,6 +478,35 @@ synth_noise (
     *intens = parms->noise_mean + (float) r;
 }
 
+
+static void 
+synth_cylinder (
+			 float *intens, 
+			 unsigned char *label,
+			 const FloatPoint3DType& phys, 
+			 const Synthetic_mha_parms *parms
+			 )
+{
+	float f = 0;
+	for (int d = 0; d < 2; d++) {
+		float f1 = phys[d] - parms->cylinder_center[d];
+		f1 = f1 / parms->cylinder_radius[d];
+		f += f1 * f1;
+	}
+	if (f > 1.0) {
+		*intens 
+			= (1 - parms->background_alpha) * (*intens) 
+			+ parms->background_alpha * parms->background;
+		*label = 0;
+	} else {
+		*intens 
+			= (1 - parms->foreground_alpha) * (*intens) 
+			+ parms->foreground_alpha * parms->foreground;
+		*label = 1;
+	}	
+}
+
+
 void
 synthetic_mha (
     Rt_study *rtds,
@@ -617,6 +648,9 @@ synthetic_mha (
         case PATTERN_NOISE:
             synth_noise (&intens, &label_uchar, phys, parms);
             break;
+		case PATTERN_CYLINDER:
+			synth_cylinder (&intens, &label_uchar, phys, parms);
+			break;
         default:
             intens = 0.0f;
             label_uchar = 0;
