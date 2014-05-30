@@ -40,87 +40,6 @@
 #define DEFAULT_PATIENT_DIRECTORY ""
 #endif
 
-#if defined (commentout)
-int 
-get_column_idx (
-    P_DBF *p_dbf, 
-    const char* column_name)
-{
-    int columns = dbf_NumCols(p_dbf);
-    
-    for (int i = 0; i < columns; i++) {
-        const char* field_name = dbf_ColumnName(p_dbf, i);
-        if (!strcmp (field_name, column_name)) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-void
-do_xvi_archive___old (Xvi_archive_parms *parms)
-{
-    int rc;
-    P_DBF *p_dbf;
-
-    std::string patient_dbf_fn = compose_filename (
-        parms->database_dir, "PATIENT.DBF");
-
-    /* Open the patient database */
-    if (NULL == (p_dbf = dbf_Open (patient_dbf_fn.c_str()))) {
-        print_and_exit ("Could not open dBASE file '%s'.\n", 
-            patient_dbf_fn.c_str());
-    }
-
-    /* Get basic field info */
-    int record_length = dbf_RecordLength(p_dbf);
-    int num_records = dbf_NumRows (p_dbf);
-    printf ("Found %d records of length %d.\n", num_records, record_length);
-
-    int dbid_column_idx = get_column_idx (p_dbf, "DBID");
-    int id_column_idx = get_column_idx (p_dbf, "ID");
-    int dbid_len = dbf_ColumnSize (p_dbf, dbid_column_idx);
-    int id_len = dbf_ColumnSize (p_dbf, id_column_idx);
-    printf ("DBID: Column = %d, Len = %d\n", dbid_column_idx, dbid_len);
-    printf ("ID: Column = %d, Len = %d\n", id_column_idx, id_len);
-
-    /* Is this needed? */
-    int start_record = 1;
-    rc = dbf_SetRecordOffset (p_dbf, start_record);
-    if (rc < 0) {
-        print_and_exit ("Can't set start record.\n");
-    }
-
-    /* Loop through rows */
-    char *record = new char[record_length + 1];
-    char *id = new char[dbf_ColumnSize(p_dbf,id_column_idx) + 1];
-    char *dbid = new char[dbf_ColumnSize(p_dbf,dbid_column_idx) + 1];
-    char *record_data;
-    for (int i = 1; i <= num_records; i++) {
-        rc = dbf_ReadRecord (p_dbf, (char*) record, record_length);
-        if (rc < 0) {
-            printf ("Error reading record %d (rc = %d)\n", i, rc);
-            break;
-        }
-        record_data = dbf_GetRecordData (p_dbf, record, id_column_idx);
-        memcpy (id, record_data, id_len);
-        id[id_len] = 0;
-
-        if (0 == strncmp (record_data, parms->patient_id.c_str(), strlen(parms->patient_id.c_str()))) {
-            record_data = dbf_GetRecordData (p_dbf, record, dbid_column_idx);
-            memcpy (dbid, record_data, dbid_len);
-            dbid[dbid_len] = 0;
-            printf ("ID %s -> DBID %s\n", id, dbid);
-        }
-    }
-    delete record;
-    delete id;
-    delete dbid;
-
-    dbf_Close(p_dbf);
-}
-#endif
-
 void
 do_xvi_archive (Xvi_archive_parms *parms)
 {
@@ -181,73 +100,14 @@ do_xvi_archive (Xvi_archive_parms *parms)
         rt_study.load_image (scan_fn);
         
         /* Write the DICOM image */
+        printf ("SAVING!!!!?\n");
+        printf ("TYPE = %s\n", plm_image_type_string (rt_study.get_image()->m_type));
         rt_study.save_dicom ("cbct_output");
 
         /* Create the DICOM SRO */
 
         break;
     }
-
-#if defined (commentout)
-    int rc;
-    P_DBF *p_dbf;
-
-    std::string patient_dbf_fn = compose_filename (
-        parms->database_dir, "PATIENT.DBF");
-
-    /* Open the patient database */
-    if (NULL == (p_dbf = dbf_Open (patient_dbf_fn.c_str()))) {
-        print_and_exit ("Could not open dBASE file '%s'.\n", 
-            patient_dbf_fn.c_str());
-    }
-
-    /* Get basic field info */
-    int record_length = dbf_RecordLength(p_dbf);
-    int num_records = dbf_NumRows (p_dbf);
-    printf ("Found %d records of length %d.\n", num_records, record_length);
-
-    int dbid_column_idx = get_column_idx (p_dbf, "DBID");
-    int id_column_idx = get_column_idx (p_dbf, "ID");
-    int dbid_len = dbf_ColumnSize (p_dbf, dbid_column_idx);
-    int id_len = dbf_ColumnSize (p_dbf, id_column_idx);
-    printf ("DBID: Column = %d, Len = %d\n", dbid_column_idx, dbid_len);
-    printf ("ID: Column = %d, Len = %d\n", id_column_idx, id_len);
-
-    /* Is this needed? */
-    int start_record = 1;
-    rc = dbf_SetRecordOffset (p_dbf, start_record);
-    if (rc < 0) {
-        print_and_exit ("Can't set start record.\n");
-    }
-
-    /* Loop through rows */
-    char *record = new char[record_length + 1];
-    char *id = new char[dbf_ColumnSize(p_dbf,id_column_idx) + 1];
-    char *dbid = new char[dbf_ColumnSize(p_dbf,dbid_column_idx) + 1];
-    char *record_data;
-    for (int i = 1; i <= num_records; i++) {
-        rc = dbf_ReadRecord (p_dbf, (char*) record, record_length);
-        if (rc < 0) {
-            printf ("Error reading record %d (rc = %d)\n", i, rc);
-            break;
-        }
-        record_data = dbf_GetRecordData (p_dbf, record, id_column_idx);
-        memcpy (id, record_data, id_len);
-        id[id_len] = 0;
-
-        if (0 == strncmp (record_data, parms->patient_id.c_str(), strlen(parms->patient_id.c_str()))) {
-            record_data = dbf_GetRecordData (p_dbf, record, dbid_column_idx);
-            memcpy (dbid, record_data, dbid_len);
-            dbid[dbid_len] = 0;
-            printf ("ID %s -> DBID %s\n", id, dbid);
-        }
-    }
-    delete record;
-    delete id;
-    delete dbid;
-
-    dbf_Close(p_dbf);
-#endif
 }
 
 static void
