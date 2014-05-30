@@ -404,7 +404,7 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
 
     s = std::string ("0");
     for (int i = 1; i < dose_volume->dim[2]; i++) {
-	s += string_format ("\\%g", i * dose_volume->spacing[2]);
+	s += string_format ("\\%g", dose_volume->direction_cosines[8] * i * dose_volume->spacing[2]);
     }
     dataset->putAndInsertString (DCM_GridFrameOffsetVector, s.c_str());
     
