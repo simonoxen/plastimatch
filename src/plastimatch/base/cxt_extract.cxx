@@ -66,7 +66,8 @@ run_marching_squares (
     const UCharImage2DType::Pointer uchar_slice,
     unsigned int slice_no,
     const OriginType& origin,
-    const SpacingType& spacing
+    const SpacingType& spacing,
+    const DirectionType& direction
 )
 {
     typedef itk::ContourExtractor2DImageFilter<UCharImage2DType> 
@@ -111,9 +112,9 @@ run_marching_squares (
 	/* Loop through vertices of this output contour */
 	for (unsigned int k = 0; k < vertices->Size(); k++) {
 	    const VertexType& vertex = vertices->ElementAt (k);
-	    curr_polyline->x[k] = origin[0] + vertex[0] * spacing[0];
-	    curr_polyline->y[k] = origin[1] + vertex[1] * spacing[1];
-	    curr_polyline->z[k] = origin[2] + slice_no * spacing[2];
+	    curr_polyline->x[k] = origin[0] + direction[0][0] * vertex[0] * spacing[0] + direction[0][1] *vertex[1] * spacing[1] + direction[0][2]* slice_no * spacing[2];
+	    curr_polyline->y[k] = origin[1] + direction[1][0] * vertex[0] * spacing[0] + direction[1][1] *vertex[1] * spacing[1] + direction[1][2]* slice_no * spacing[2];
+	    curr_polyline->z[k] = origin[2] + direction[2][0] * vertex[0] * spacing[0] + direction[2][1] *vertex[1] * spacing[1] + direction[2][2]* slice_no * spacing[2];
 	}
     }
 }
@@ -212,7 +213,7 @@ cxt_extract (
 	    uchar_slice = and_filter->GetOutput ();
 
 	    run_marching_squares (curr_structure, uchar_slice, slice_no,
-		image->GetOrigin(), image->GetSpacing());
+		image->GetOrigin(), image->GetSpacing(), image->GetDirection());
 
 	}
 	slice_it.NextSlice();
@@ -308,7 +309,7 @@ cxt_extract (
 		uchar_slice = and_filter->GetOutput ();
 
 		run_marching_squares (curr_structure, uchar_slice, slice_no,
-		    image->GetOrigin(), image->GetSpacing());
+            image->GetOrigin(), image->GetSpacing(), image->GetDirection());
 	    }
 	}
     }

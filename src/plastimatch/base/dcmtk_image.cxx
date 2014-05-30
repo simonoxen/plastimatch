@@ -484,7 +484,7 @@ Dcmtk_rt_study::save_image (
     dsd.slice_int16 = new int16_t[dsd.slice_size];
     float *dc = dsd.vol->direction_cosines.get();
     dsd.iop.format ("%f\\%f\\%f\\%f\\%f\\%f",
-        dc[0], dc[1], dc[2], dc[3], dc[4], dc[5]);
+        dc[0], dc[3], dc[6], dc[1], dc[4], dc[7]);
 
     Plm_image_header pih (dsd.vol.get());
     d_ptr->dicom_metadata->set_image_header (pih);

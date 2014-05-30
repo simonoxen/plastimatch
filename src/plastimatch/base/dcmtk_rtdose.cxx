@@ -361,12 +361,12 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
     dataset->putAndInsertString (DCM_PatientOrientation, "L/P");
     dataset->putAndInsertString (DCM_ImagePositionPatient, s.c_str());
     s = string_format ("%g\\%g\\%g\\%g\\%g\\%g",
-	dose_volume->direction_cosines[0],
-	dose_volume->direction_cosines[1],
-	dose_volume->direction_cosines[2],
-	dose_volume->direction_cosines[3],
-	dose_volume->direction_cosines[4],
-	dose_volume->direction_cosines[5]);
+    dose_volume->direction_cosines[0],
+    dose_volume->direction_cosines[3],
+    dose_volume->direction_cosines[6],
+    dose_volume->direction_cosines[1],
+    dose_volume->direction_cosines[4],
+    dose_volume->direction_cosines[7]);
     dataset->putAndInsertString (DCM_ImageOrientationPatient, s.c_str());
     dataset->putAndInsertString (DCM_FrameOfReferenceUID, 
         d_ptr->dicom_metadata->get_frame_of_reference_uid());
