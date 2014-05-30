@@ -37,6 +37,7 @@ public:
     float similarity_percent_threshold;
     int atlases_from_ranking; // -1 if it is not defined
     int mi_histogram_bins;
+    float percentage_nmi_random_sample; // -1 if it is not defined
     std::string roi_mask_fn;
     std::string selection_reg_parms_fn;
     bool lower_mi_value_sub_defined;

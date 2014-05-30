@@ -806,6 +806,7 @@ Mabs::atlas_selection ()
         atlas_selector->max_random_atlases = d_ptr->parms->max_random_atlases;
         atlas_selector->min_random_atlases = d_ptr->parms->min_random_atlases;
         atlas_selector->hist_bins = d_ptr->parms->mi_histogram_bins;
+        atlas_selector->percentage_nmi_random_sample = d_ptr->parms->percentage_nmi_random_sample;
         atlas_selector->atlases_from_ranking = d_ptr->parms->atlases_from_ranking;
         atlas_selector->precomputed_ranking_fn = d_ptr->parms->precomputed_ranking_fn;
         atlas_selector->subject_id = patient_id;

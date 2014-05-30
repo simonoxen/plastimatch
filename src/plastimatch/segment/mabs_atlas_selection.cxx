@@ -52,6 +52,7 @@ Mabs_atlas_selection::Mabs_atlas_selection ()
     this->atlases_from_ranking = -1;
     this->number_of_atlases = -1;
     this->hist_bins = 100;
+    this->percentage_nmi_random_sample = -1;
     this->min_hist_sub_value_defined = false;
     this->min_hist_sub_value=0;
     this->max_hist_sub_value_defined = false;
@@ -350,6 +351,24 @@ Mabs_atlas_selection::compute_nmi (
     if (this->mask)
     {
        	nmi_metric->SetFixedImageMask(this->mask);
+    }
+
+    /* Set number of random sample if defined */
+    if (this->percentage_nmi_random_sample != -1) { /* User set this value */
+        if (this->percentage_nmi_random_sample <= 0 ||
+            this->percentage_nmi_random_sample > 1) { /* The set value is not in the range */
+            printf("Percentage nmi random sample not set properly. " 
+                   "User setting will be ignored and the default value will be used\n");
+        }
+
+        else { /* The set value is in the range, apply it */
+            unsigned long number_of_img_voxels =
+                img1->itk_short()->GetLargestPossibleRegion().GetNumberOfPixels();
+            unsigned long number_spatial_samples =
+                static_cast<unsigned long> (number_of_img_voxels * this->percentage_nmi_random_sample);
+            nmi_metric->SetNumberOfSpatialSamples(number_spatial_samples);
+        }
+
     }
     
     /* Set histogram interval if defined */

@@ -42,10 +42,11 @@ public:
     std::string selection_reg_parms_fn;
     std::string atlas_dir;
     float similarity_percent_threshold;
-    int atlases_from_ranking; // -1 if this paramter is not defined
+    int atlases_from_ranking; // -1 if this parameter is not defined
     int number_of_atlases;
     Plm_image::Pointer atlas;
     int hist_bins;
+    float percentage_nmi_random_sample; // -1 if this parameter is not defined
     MaskTypePointer mask;
     bool min_hist_sub_value_defined;
     int min_hist_sub_value;

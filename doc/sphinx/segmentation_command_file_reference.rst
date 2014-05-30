@@ -70,6 +70,12 @@ All the possible parameters are listed below:
      - 100
      - as usual for mi histogram bins setting
      - Set the number of histogram bins to use for nmi computation
+   * - percentage_nmi_random_sample
+     - ATLAS-SELECTION
+     - not set by plastimatch, itk default value is used
+     - between 0 (not included) and 1 (included)
+     - Set the number of random voxels to use for NMI computation.
+       The final value is equal to the number of voxels of fixe images time the set value.
    * - roi_mask
      - ATLAS-SELECTION
      - not set

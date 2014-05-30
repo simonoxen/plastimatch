@@ -85,6 +85,7 @@ Mabs_parms::Mabs_parms ()
     this->similarity_percent_threshold = 0.40;
     this->atlases_from_ranking = -1;
     this->mi_histogram_bins = 100;
+    this->percentage_nmi_random_sample = -1;
     this->roi_mask_fn = "";
     this->selection_reg_parms_fn = "";
     this->lower_mi_value_sub_defined=false;
@@ -224,6 +225,9 @@ Mabs_parms::set_key_value (
         }
         else if (key == "mi_histogram_bins") {
             sscanf (val.c_str(), "%d", &this->mi_histogram_bins);
+        }
+        else if (key == "percentage_nmi_random_sample") {
+            sscanf (val.c_str(), "%g", &this->percentage_nmi_random_sample);
         }
         else if (key == "roi_mask_fn" || key == "roi_mask") {
             this->roi_mask_fn = val;
