@@ -113,7 +113,7 @@ bspline_xform_save (Bspline_xform* bxf, const char* filename)
 {
     FILE* fp;
 
-    make_directory_recursive (filename);
+    make_parent_directories (filename);
     fp = fopen (filename, "wb");
     if (!fp) return;
 

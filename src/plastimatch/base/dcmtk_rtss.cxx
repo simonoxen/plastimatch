@@ -258,7 +258,7 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
     /* Prepare output file */
     Pstring rtss_fn;
     rtss_fn.format ("%s/rtss.dcm", dicom_dir);
-    make_directory_recursive (rtss_fn);
+    make_parent_directories (rtss_fn);
 
     /* Prepare dcmtk */
     DcmFileFormat fileformat;

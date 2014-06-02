@@ -186,7 +186,7 @@ Pointset<T>::save_fcsv (const char *fn)
     FILE *fp;
 
     printf ("Trying to save: %s\n", (const char*) fn);
-    make_directory_recursive (fn);
+    make_parent_directories (fn);
     fp = fopen (fn, "w");
     if (!fp) return;
 
@@ -237,7 +237,7 @@ Pointset<T>::save_txt (const char *fn)
     FILE *fp;
 
     printf ("Trying to save: %s\n", (const char*) fn);
-    make_directory_recursive (fn);
+    make_parent_directories (fn);
     fp = fopen (fn, "w");
     if (!fp) return;
 

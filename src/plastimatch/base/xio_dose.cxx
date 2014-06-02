@@ -344,7 +344,7 @@ xio_dose_save (
     double ox; double oy; double oz;
     int nx; int ny; int nz;
 
-    make_directory_recursive (filename);
+    make_parent_directories (filename);
     fp = fopen (filename, "wb");
     if (!fp) {
 	print_and_exit ("Error opening file %s for write\n", filename);

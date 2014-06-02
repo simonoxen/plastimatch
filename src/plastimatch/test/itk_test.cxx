@@ -26,7 +26,7 @@ my_itk_image_save (T image, const char* fname)
     typename WriterType::Pointer writer = WriterType::New();
     writer->SetInput (image);
     writer->SetFileName (fname);
-    make_directory_recursive (fname);
+    make_parent_directories (fname);
 
 //    printf ("Maybe gonna update...\n");
     if (extension_is (fname, "nrrd")) {

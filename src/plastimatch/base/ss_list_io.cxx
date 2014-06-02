@@ -65,7 +65,7 @@ ss_list_save (Rtss* cxt, const char* ss_list_fn)
 {
     FILE *fp;
 	
-    make_directory_recursive (ss_list_fn);
+    make_parent_directories (ss_list_fn);
     fp = fopen (ss_list_fn, "wb");
     if (!fp) {
 	print_and_exit (
@@ -92,7 +92,7 @@ ss_list_save_colormap (Rtss* cxt, const char* colormap_fn)
     int color_no;
     FILE *fp;
 	
-    make_directory_recursive (colormap_fn);
+    make_parent_directories (colormap_fn);
     fp = fopen (colormap_fn, "wb");
     if (!fp) {
 	print_and_exit (

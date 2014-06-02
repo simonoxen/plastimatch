@@ -130,7 +130,7 @@ Dlib_trainer::save_csv (const Pstring& out_csv_fn)
 {
     /* Save the output file */
     printf ("Saving csv...\n");
-    make_directory_recursive (out_csv_fn);
+    make_parent_directories (out_csv_fn);
     FILE *fp = fopen (out_csv_fn, "w");
     std::vector<Dlib_trainer::Dense_sample_type>::iterator s_it
 	= this->m_samples.begin();
@@ -151,7 +151,7 @@ Dlib_trainer::save_csv (const Pstring& out_csv_fn)
 void
 Dlib_trainer::save_net (const Pstring& out_net_fn)
 {
-    make_directory_recursive (out_net_fn.c_str());
+    make_parent_directories (out_net_fn.c_str());
     std::ofstream fout ((const char*) out_net_fn, std::ios::binary);
     serialize (m_krr_df, fout);
     fout.close();

@@ -301,7 +301,7 @@ xio_structures_save (
 
     /* Write contournames */
     sprintf (fn, "%s/%s", output_dir, "contournames");
-    make_directory_recursive (fn);
+    make_parent_directories (fn);
     fp = fopen (fn, "w");
     if (!fp) {
 	print_and_exit ("Error opening output file %s\n", fn);

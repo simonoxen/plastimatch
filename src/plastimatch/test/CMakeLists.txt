@@ -67,10 +67,13 @@ if (PLM_CONFIG_BUILD_TEST_PROGRAMS)
 	    ${BUILD_ALWAYS} ${INSTALL_NEVER})
     endif ()
 
-    # Test executable -- itk
+    # Test executables -- itk required
     if (ITK_FOUND)
 	plm_add_executable (itk_test itk_test.cxx
 	    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+	    ${BUILD_ALWAYS} ${INSTALL_NEVER})
+	plm_add_executable (itk_test_directions itk_test_directions.cxx
+	    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
 	    ${BUILD_ALWAYS} ${INSTALL_NEVER})
     endif ()
 

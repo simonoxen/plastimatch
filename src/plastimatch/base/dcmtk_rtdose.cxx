@@ -285,7 +285,7 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
 
     /* Prepare output file */
     std::string filename = string_format ("%s/dose.dcm", dicom_dir);
-    make_directory_recursive (filename);
+    make_parent_directories (filename);
 
     /* Prepare dcmtk */
     DcmFileFormat fileformat;

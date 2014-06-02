@@ -210,7 +210,7 @@ pfm_save (Proj_image *proj, const char* img_filename)
 {
     FILE* fp;
     
-    make_directory_recursive (img_filename);
+    make_parent_directories (img_filename);
     fp = fopen (img_filename, "wb");
     if (!fp) {
         fprintf (stderr, "Can't open file %s for write\n", img_filename);
@@ -233,7 +233,7 @@ pgm_save (Proj_image *proj, const char* img_filename)
     FILE* fp;
     int i;
     
-    make_directory_recursive (img_filename);
+    make_parent_directories (img_filename);
     fp = fopen (img_filename, "wb");
     if (!fp) {
         fprintf (stderr, "Can't open file %s for write\n", img_filename);

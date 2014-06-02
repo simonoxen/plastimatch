@@ -1,3 +1,47 @@
+***** ITK and plastimatch direction cosines *****
+
+There are two ways to have a rotated volume.  The direction cosines 
+of the volume might be inherently rotated, or there might be a rigid 
+transform associated with it.
+
+ITK direction cosines are stored in the columns of the array.
+In other words, if the (DICOM) orientations are A, B, and C 
+for the i (fastest), j, and k (slowest) indices, then ITK stores 
+them like this:
+
+  itk_dc[0][0] = A[0];
+  itk_dc[0][1] = B[0];
+  itk_dc[0][2] = C[0];
+  itk_dc[1][0] = A[1];
+  itk_dc[1][1] = B[1];
+  itk_dc[1][2] = C[1];
+  itk_dc[2][0] = A[2];
+  itk_dc[2][1] = B[2];
+  itk_dc[2][2] = C[2];
+
+The plastimatch direction cosines are stored in a one-dimensional
+array, also by columns.  
+
+  dc[0] = A[0];
+  dc[1] = B[0];
+  dc[2] = C[0];
+  dc[3] = A[1];
+  dc[4] = B[1];
+  dc[5] = C[1];
+  dc[6] = A[2];
+  dc[7] = B[2];
+  dc[8] = C[2];
+
+These are then converted into the "step" and "proj" matrices.
+
+  step[0] = spacing[0] * dc[0];
+  step[1] = spacing[1] * dc[1];
+  step[2] = spacing[2] * dc[2];
+  step[3] = spacing[0] * dc[3];
+  ...
+  step[8] = spacing[2] * dc[8];
+
+
 ***** How to delete items from conquest *****
 
 ./dgate --deletepatient:patid

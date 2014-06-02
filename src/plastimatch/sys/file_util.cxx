@@ -78,7 +78,7 @@ file_size (const char *filename)
 void 
 touch_file (const std::string& filename)
 {
-    make_directory_recursive (filename);
+    make_parent_directories (filename);
     FILE *fp = fopen (filename.c_str(), "w");
     fclose (fp);
 }
@@ -119,7 +119,7 @@ make_directory (const char *dirname)
 }
 
 void
-make_directory_recursive (const char *dirname)
+make_parent_directories (const char *dirname)
 {
     char *p, *tmp;
 
@@ -139,16 +139,23 @@ make_directory_recursive (const char *dirname)
 }
 
 void
+make_parent_directories (const std::string& dirname)
+{
+    make_parent_directories (dirname.c_str());
+}
+
+void
 make_directory_recursive (const std::string& dirname)
 {
-    make_directory_recursive (dirname.c_str());
+    make_parent_directories (dirname);
+    make_directory (dirname.c_str());
 }
 
 FILE*
 plm_fopen (const char *path, const char *mode)
 {
     if (mode && (mode[0] == 'w' || mode[0] == 'a')) {
-        make_directory_recursive (path);
+        make_parent_directories (path);
     }
     return fopen (path, mode);
 }

@@ -18,7 +18,8 @@ PLMSYS_API void touch_file (const std::string& filename);
 PLMSYS_API void copy_file (const std::string& dst_fn, 
     const std::string& src_fn);
 PLMSYS_C_API void make_directory (const char *dirname);
-PLMSYS_API void make_directory_recursive (const char *dirname);
+PLMSYS_API void make_parent_directories (const char *dirname);
+PLMSYS_API void make_parent_directories (const std::string& dirname);
 PLMSYS_API void make_directory_recursive (const std::string& dirname);
 PLMSYS_C_API FILE* make_tempfile (void);
 PLMSYS_C_API char* plm_getcwd (char* s, int len);

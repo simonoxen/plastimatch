@@ -530,7 +530,7 @@ Dcmtk_rt_study::save_image (
         float z_loc = dsd.vol->offset[2] + k * dsd.vol->spacing[2];
         dsd.instance_no = k;
         dsd.fn.format ("%s/image%03d.dcm", dicom_dir, (int) k);
-        make_directory_recursive (dsd.fn);
+        make_parent_directories (dsd.fn);
         dsd.sthk.format ("%f", dsd.vol->spacing[2]);
         dsd.sloc.format ("%f", z_loc);
         dsd.ipp.format ("%f\\%f\\%f", dsd.vol->offset[0], dsd.vol->offset[1], 

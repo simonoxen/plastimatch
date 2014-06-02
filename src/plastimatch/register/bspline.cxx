@@ -320,7 +320,7 @@ dump_gradient (Bspline_xform* bxf, Bspline_score* ssd, const char* fn)
     int i;
     FILE* fp;
 
-    make_directory_recursive (fn);
+    make_parent_directories (fn);
     fp = fopen (fn, "wb");
     for (i = 0; i < bxf->num_coeff; i++) {
         fprintf (fp, "%20.20f\n", ssd->grad[i]);

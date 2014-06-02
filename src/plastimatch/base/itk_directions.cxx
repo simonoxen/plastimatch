@@ -10,11 +10,7 @@ itk_direction_from_dc (DirectionType* itk_dc, const Direction_cosines& dc)
 {
     for (unsigned int d1 = 0; d1 < 3; d1++) {
 	for (unsigned int d2 = 0; d2 < 3; d2++) {
-#if defined (PLM_CONFIG_ALT_DCOS)
-	    (*itk_dc)[d2][d1] = dc[d1*3+d2];
-#else
 	    (*itk_dc)[d1][d2] = dc[d1*3+d2];
-#endif
 	}
     }
 }
@@ -27,11 +23,7 @@ itk_direction_from_dc (
 {
     for (unsigned int d1 = 0; d1 < 3; d1++) {
 	for (unsigned int d2 = 0; d2 < 3; d2++) {
-#if defined (PLM_CONFIG_ALT_DCOS)
-	    (*itk_direction)[d2][d1] = dc[d1*3+d2];
-#else
 	    (*itk_direction)[d1][d2] = dc[d1*3+d2];
-#endif
 	}
     }
 }
@@ -44,11 +36,7 @@ dc_from_itk_direction (
 {
     for (unsigned int d1 = 0; d1 < 3; d1++) {
 	for (unsigned int d2 = 0; d2 < 3; d2++) {
-#if defined (PLM_CONFIG_ALT_DCOS)
-	    dc[d1*3+d2] = (*itk_direction)[d2][d1];
-#else
 	    dc[d1*3+d2] = (*itk_direction)[d1][d2];
-#endif
 	}
     }
 }

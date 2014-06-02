@@ -265,7 +265,7 @@ cxt_save (
     FILE *fp;
 
     /* Prepare output directory */
-    make_directory_recursive (cxt_fn);
+    make_parent_directories (cxt_fn);
 
     fp = fopen (cxt_fn, "wb");
     if (!fp) {

@@ -104,7 +104,7 @@ proj_matrix_save (
     if (!fn) return;
     if (!pmat) return;
 
-    make_directory_recursive (fn);
+    make_parent_directories (fn);
     fp = fopen (fn, "w");
     if (!fp) {
 	fprintf (stderr, "Error opening %s for write\n", fn);

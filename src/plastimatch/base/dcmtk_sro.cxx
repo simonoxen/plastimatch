@@ -34,7 +34,7 @@ Dcmtk_sro::save (
 
     /* Prepare output file */
     std::string sro_fn = string_format ("%s/sro.dcm", dicom_dir.c_str());
-    make_directory_recursive (sro_fn);
+    make_parent_directories (sro_fn);
 
     /* Prepare dcmtk */
     OFCondition ofc;

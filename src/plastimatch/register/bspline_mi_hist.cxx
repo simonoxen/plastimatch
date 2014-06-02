@@ -400,7 +400,7 @@ Bspline_mi_hist_set::dump_hist (int it, const std::string& prefix)
     buf = string_format ("hist_fix_%02d.csv", it);
     //sprintf (buf, "hist_fix_%02d.csv", it);
     fn = prefix + buf;
-    make_directory_recursive (fn.c_str());
+    make_parent_directories (fn.c_str());
     fp = fopen (fn.c_str(), "wb");
     if (!fp) return;
     for (plm_long i = 0; i < this->fixed.bins; i++) {
@@ -411,7 +411,7 @@ Bspline_mi_hist_set::dump_hist (int it, const std::string& prefix)
     //sprintf (buf, "hist_mov_%02d.csv", it);
     buf = string_format ("hist_mov_%02d.csv", it);
     fn = prefix + buf;
-    make_directory_recursive (fn.c_str());
+    make_parent_directories (fn.c_str());
     fp = fopen (fn.c_str(), "wb");
     if (!fp) return;
     for (i = 0; i < this->moving.bins; i++) {
@@ -422,7 +422,7 @@ Bspline_mi_hist_set::dump_hist (int it, const std::string& prefix)
     //sprintf (buf, "hist_jnt_%02d.csv", it);
     buf = string_format ("hist_jnt_%02d.csv", it);
     fn = prefix + buf;
-    make_directory_recursive (fn.c_str());
+    make_parent_directories (fn.c_str());
     fp = fopen (fn.c_str(), "wb");
     if (!fp) return;
     for (i = 0, v = 0; i < this->fixed.bins; i++) {
