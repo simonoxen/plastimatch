@@ -107,9 +107,7 @@ public:
     bool load_native_nki (const char* fname);
 
     /* Saving */
-    void save_short_dicom (const char* fname, Rt_study_metadata *rsm);
-	void save_short_dicom (const char* fname, Rt_study_metadata *rsm, const char* patientID, const char* patientName);//YKTEMP
-
+    void save_short_dicom (const char* fname, Rt_study_metadata *rsm);	
     void save_image (const char* fname);
     void save_image (const Pstring& fname);
     void save_image (const std::string& fname);
