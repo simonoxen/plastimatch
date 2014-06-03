@@ -98,21 +98,6 @@ itk_image_save_short_dicom (
     itk_dicom_save (short_img, dir_name, rsm);
 }
 
-//YKTEMP: to simply distinguish CBCT DICOM images
-template<class T> 
-void
-itk_image_save_short_dicom (
-							T image, 
-							const char* dir_name, 
-							Rt_study_metadata *rsm,
-							const char* patientID,
-							const char* patientName
-							)
-{
-	ShortImageType::Pointer short_img = cast_short (image);
-	itk_dicom_save (short_img, dir_name, rsm, patientID, patientName);
-}
-
 
 template<class T> 
 void
@@ -177,11 +162,4 @@ template PLMBASE_API void itk_image_save_short_dicom (UShortImageType::Pointer, 
 template PLMBASE_API void itk_image_save_short_dicom (UInt32ImageType::Pointer, const char*, Rt_study_metadata *rsm);
 template PLMBASE_API void itk_image_save_short_dicom (FloatImageType::Pointer, const char*, Rt_study_metadata *rsm);
 
-
-//YKTEMP
-template PLMBASE_API void itk_image_save_short_dicom (UCharImageType::Pointer, const char*, Rt_study_metadata *rsm, const char* patientID, const char* patientName);
-template PLMBASE_API void itk_image_save_short_dicom (ShortImageType::Pointer, const char*, Rt_study_metadata *rsm, const char* patientID, const char* patientName);
-template PLMBASE_API void itk_image_save_short_dicom (UShortImageType::Pointer, const char*, Rt_study_metadata *rsm, const char* patientID, const char* patientName);
-template PLMBASE_API void itk_image_save_short_dicom (UInt32ImageType::Pointer, const char*, Rt_study_metadata *rsm, const char* patientID, const char* patientName);
-template PLMBASE_API void itk_image_save_short_dicom (FloatImageType::Pointer, const char*, Rt_study_metadata *rsm, const char* patientID, const char* patientName);
 
