@@ -181,6 +181,18 @@ Rt_study_metadata::set_study_uid (const char* uid)
     d_ptr->study_uid = uid;
 }
 
+void
+Rt_study_metadata::set_patient_name (const std::string& name)
+{
+    d_ptr->image_metadata.set_metadata (0x0010, 0x0010, name.c_str());
+}
+
+void
+Rt_study_metadata::set_patient_id (const std::string& id)
+{
+    d_ptr->image_metadata.set_metadata (0x0010, 0x0020, id.c_str());
+}
+
 const Plm_image_header*
 Rt_study_metadata::get_image_header () const
 {

@@ -7,6 +7,8 @@
 #include "itk_image_save.h"
 #include "logfile.h"
 #include "path_util.h"
+#include "plm_image.h"
+#include "rt_study_metadata.h"
 #include "string_util.h"
 
 typedef itk::Image < float, 3 > FloatImageType;
@@ -93,4 +95,11 @@ int main
 //    itk_image_save (tmp, "foo.mha");
 //    itk_image_save_float (tmp, "foo.mha");
     my_itk_image_save (tmp, "foo.mha");
+
+    Plm_image::Pointer pli = Plm_image::New (image);
+    Rt_study_metadata rsm;
+    rsm.set_patient_name ("Hello^World");
+    rsm.set_patient_id ("ANON^Hello");
+
+    pli->save_short_dicom ("itk_dicom", &rsm);
 }
