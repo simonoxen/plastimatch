@@ -3,7 +3,7 @@
 """
 This script analyzes the seg_dice.csv mabs file and compute statistic on it.
 Author: Paolo Zaffino  (p.zaffino@unicz.it)
-Rev 2
+Rev 3
 
 Usage examples:
 ./mabs_stats.py --input seg_dice.csv
@@ -67,7 +67,7 @@ for patient in patients:
         if "thresh" in entry and "gaussian_%f" % entry["thresh"] not in thresholds:
             thresholds.append("gaussian_%f" % entry["thresh"])
         if "confidence_weight" in entry and "staple_%f" % entry["confidence_weight"] not in thresholds:
-             thresholds.append("staple_%f" % entry["confidence_weight"])
+             thresholds.append("staple_%.9f" % entry["confidence_weight"])
             
 structures = set(structures)
 thresholds = set(thresholds)
@@ -88,7 +88,7 @@ if args.thresholds != None:
     for input_threshold in args_thresholds_splitted:
         if len(input_threshold.split("_")) == 2:
             fusion, thr = input_threshold.split("_")[0], float(input_threshold.split("_")[1])
-            filtered_thresholds.append("%s_%f" % (fusion, thr))
+            filtered_thresholds.append("%s_%.9f" % (fusion, thr))
     
     # Set the "full range" thresholds
     for full_range_of_threshold in full_range_thresholds:
@@ -128,7 +128,7 @@ for patient in patients:
         if "thresh" in entry:
             thr = "gaussian_%f" % entry["thresh"]
         elif "confidence_weight" in entry:
-            thr = "staple_%f" % entry["confidence_weight"]
+            thr = "staple_%.9f" % entry["confidence_weight"]
         thr = thr.replace(".", "")
         stru = entry["struct"]
         dice = entry["dice"]
@@ -161,13 +161,16 @@ for structure in selected_structures:
         thr = str(threshold).replace(".", "")
         print("Structure = %s" % structure)
         print("  threshold = %s" % threshold)
-        print("    dice = median %f  5th_perc %f  95th_perc %f" % (vars()["median_dice_%s_%s" % (structure, thr)],
+        dice_string = "    dice = median %f  5th_perc %f  95th_perc %f" % (vars()["median_dice_%s_%s" % (structure, thr)],
             vars()["5th_perc_dice_%s_%s" % (structure, thr)],
-            vars()["95th_perc_dice_%s_%s" % (structure, thr)]))
-        print("    average boundary distance = median %f  5th_perc %f  95th_perc %f" % (vars()["median_b_avg_dist_%s_%s" % (structure, thr)],
+            vars()["95th_perc_dice_%s_%s" % (structure, thr)])
+        print(dice_string)
+        avg_distance_string = "    average boundary distance = median %f  5th_perc %f  95th_perc %f" % (vars()["median_b_avg_dist_%s_%s" % (structure, thr)],
             vars()["5th_perc_b_avg_dist_%s_%s" % (structure, thr)],
-            vars()["95th_perc_b_avg_dist_%s_%s" % (structure, thr)]))
-        print("    95th percentile boundary distance = median %f  5th_perc %f  95th_perc %f" % (vars()["median_b_95_dist_%s_%s" % (structure, thr)],
+            vars()["95th_perc_b_avg_dist_%s_%s" % (structure, thr)])
+        print(avg_distance_string)
+        max_distance_string = "    95th percentile boundary distance = median %f  5th_perc %f  95th_perc %f" % (vars()["median_b_95_dist_%s_%s" % (structure, thr)],
             vars()["5th_perc_b_95_dist_%s_%s" % (structure, thr)],
-            vars()["95th_perc_b_95_dist_%s_%s" % (structure, thr)]))
+            vars()["95th_perc_b_95_dist_%s_%s" % (structure, thr)])
+        print(max_distance_string)
 

@@ -1357,7 +1357,7 @@ Mabs::staple_segmentation_label ()
 
     /* Set up files & directories for this job */
     d_ptr->segmentation_training_dir
-        = string_format ("%s/segmentations/%s/staple_confidence_weight_%f",
+        = string_format ("%s/segmentations/%s/staple_confidence_weight_%.9f",
             d_ptr->output_dir.c_str(), d_ptr->registration_id.c_str(),
             d_ptr->confidence_weight);
     lprintf ("segmentation_training_dir: %s\n", 
@@ -1400,7 +1400,7 @@ Mabs::staple_segmentation_label ()
             staple_it->second->output_img->itk_uchar());
         std::string seg_log_string = string_format (
             "%s,reg=%s,struct=%s,"
-            "confidence_weight=%f,"
+            "confidence_weight=%.9f,"
             "%s\n",
             d_ptr->ref_id.c_str(),
             d_ptr->registration_id.c_str(),
@@ -1508,7 +1508,7 @@ Mabs::run_segmentation ()
     /* Staple checkpoint */
     if (d_ptr->parms->fusion_criteria.find("staple") != std::string::npos) {
         std::string curr_output_dir = string_format (
-            "%s/segmentations/%s/staple_confidence_weight_%f",
+            "%s/segmentations/%s/staple_confidence_weight_%.9f",
             d_ptr->output_dir.c_str(), d_ptr->registration_id.c_str(),
             d_ptr->confidence_weight);
         if (!this->check_seg_checkpoint(curr_output_dir)) {
