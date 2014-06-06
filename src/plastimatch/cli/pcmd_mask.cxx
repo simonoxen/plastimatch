@@ -59,8 +59,9 @@ mask_main (Mask_parms* parms)
 	img->m_itk_uint32 = mask_image (img->m_itk_uint32, mask, 
 	    parms->mask_operation, parms->mask_value);
 	break;
+    case PLM_IMG_TYPE_GPUIT_FLOAT:
     case PLM_IMG_TYPE_ITK_FLOAT:
-	img->m_itk_float = mask_image (img->m_itk_float, mask, 
+	img->m_itk_float = mask_image (img->itk_float(), mask, 
 	    parms->mask_operation, parms->mask_value);
 	break;
     default:
