@@ -134,7 +134,7 @@ public:
     float max_step;
     float min_step;
     float rsg_grad_tol;
-    int translation_scale_factor;
+    float translation_scale_factor;
     /*OnePlusOne evvolutionary optimizer*/
     float opo_epsilon;
     float opo_initial_search_rad;

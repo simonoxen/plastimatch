@@ -636,7 +636,7 @@ Registration_parms::set_key_value (
     }
     else if (key == "translation_scale_factor") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
-        if (sscanf (val.c_str(), "%d", &stage->translation_scale_factor) != 1) {
+        if (sscanf (val.c_str(), "%g", &stage->translation_scale_factor) != 1) {
             goto error_exit;
         }
     }

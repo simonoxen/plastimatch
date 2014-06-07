@@ -68,10 +68,10 @@ Stage_parms::Stage_parms ()
     /* LBGFGB optimizer */
     pgtol = 1.0e-5;
     /* Versor & RSG optimizer */
-    max_step = 10.0;
-    min_step = 0.5;
+    max_step = 1.00;
+    min_step = 0.001;
     rsg_grad_tol = 0.0001;
-    translation_scale_factor = 100;
+    translation_scale_factor = 1000.0;
     /*OnePlusOne evolutionary optimizer*/
     opo_initial_search_rad=1.01;
     opo_epsilon=1e-7;

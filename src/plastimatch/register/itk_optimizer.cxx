@@ -493,8 +493,8 @@ set_optimization_scales_versor (
 	rotation_scale = 1.0;
 	translation_scale = 1.0;
     } else {
-        rotation_scale = 1.0 * (double) stage->translation_scale_factor;
-        translation_scale = 1.0;
+        rotation_scale = 1.0;
+        translation_scale = 1.0 / (double) stage->translation_scale_factor;
     }
 
     optimizerScales[0] = rotation_scale;
