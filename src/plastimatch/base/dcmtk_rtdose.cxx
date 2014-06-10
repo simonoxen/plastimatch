@@ -467,8 +467,8 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
         && dose_metadata->get_metadata(0x3004, 0x0004) == "ERROR")
     {
 	dose_copy->convert (PT_INT32);
-        dataset->putAndInsertSint16Array (DCM_PixelData, 
-            (Sint16*) dose_copy->img, 2*dose_copy->npix);
+        dataset->putAndInsertUint16Array (DCM_PixelData, 
+            (Uint16*) dose_copy->img, 2*dose_copy->npix);
     } else {
 	dose_copy->convert (PT_UINT32);
         dataset->putAndInsertUint16Array (DCM_PixelData, 

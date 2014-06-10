@@ -191,6 +191,7 @@ astroid_dose_create_volume (
     } else {
 	v = new Volume (adh->dim, adh->offset, adh->spacing, 0,
 	    PT_INT32, 1);
+        std::cout<<"Reading cube as int32"<<std::endl;
     }
     pli->set_volume (v);
 
@@ -209,19 +210,24 @@ astroid_dose_load (
     Astroid_dose_header adh;
     
     astroid_dose_load_header(&adh, filename);
-    astroid_dose_create_volume(pli, &adh);
-    astroid_dose_load_cube(pli, &adh, filename);
     
+    // If metadat not set, dose is usually "EFFECTIVE" (Gy(RBE))
+    // If it is an "ERROR' type (dose difference) read as int32 instead of uint32 
     std::cout<<"Metadata " << meta->get_metadata(0x3004, 0x0004) << std::endl;
     if (meta->get_metadata(0x3004, 0x0004) == ""){
         if(adh.dose_type==""){
             /* Standard is Gy RBE */
             adh.dose_type = "EFFECTIVE";
-    std::cout<<"setting to effective " << std::endl;
+            std::cout<<"setting dose type to effective " << std::endl;
         }
         meta->set_metadata(0x3004, 0x0004, adh.dose_type);
     }
-
+    else {
+        adh.dose_type = meta->get_metadata(0x3004, 0x0004);
+    }
+    
+    astroid_dose_create_volume(pli, &adh);
+    astroid_dose_load_cube(pli, &adh, filename);
 }
 
 void
