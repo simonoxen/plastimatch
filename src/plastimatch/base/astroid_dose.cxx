@@ -103,14 +103,14 @@ astroid_dose_load_header (Astroid_dose_header *adh, const char *filename)
     adh->offset[2] = topy;
 
     if (fgets(line2, sizeof(line2), fp)) {
-	/* Remove newline if exists */
-	unsigned int len = strlen(line2);
-	if (line2[len - 1] == '\n') line2[len - 1] = '\0';
+        /* Remove newline if exists */
+        unsigned int len = strlen(line2);
+        if (line2[len - 1] == '\n') line2[len - 1] = '\0';
 
-	adh->dose_type = line2;
-    } else {
-	/* Standard is Gy RBE */
-	adh->dose_type = "EFFECTIVE";
+        adh->dose_type = line2;
+    } 
+    else {
+        adh->dose_type = "";
     }
 
     fclose (fp);
@@ -211,8 +211,17 @@ astroid_dose_load (
     astroid_dose_load_header(&adh, filename);
     astroid_dose_create_volume(pli, &adh);
     astroid_dose_load_cube(pli, &adh, filename);
+    
+    std::cout<<"Metadata " << meta->get_metadata(0x3004, 0x0004) << std::endl;
+    if (meta->get_metadata(0x3004, 0x0004) == ""){
+        if(adh.dose_type==""){
+            /* Standard is Gy RBE */
+            adh.dose_type = "EFFECTIVE";
+    std::cout<<"setting to effective " << std::endl;
+        }
+        meta->set_metadata(0x3004, 0x0004, adh.dose_type);
+    }
 
-    meta->set_metadata(0x3004, 0x0004, adh.dose_type);
 }
 
 void

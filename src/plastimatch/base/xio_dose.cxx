@@ -309,7 +309,9 @@ xio_dose_load (
 
     /* GCS FIX: The below seems to be hard coded for pXiO? */
     /* XiO dose is in Gy RBE */
-    meta->set_metadata(0x3004, 0x0004, "EFFECTIVE");
+    if (meta->get_metadata(0x3004, 0x0004) == ""){
+        meta->set_metadata(0x3004, 0x0004, "EFFECTIVE");
+    }
 }
 
 void
