@@ -11,6 +11,7 @@
 #include "bspline.h"
 #include "bspline_interpolate.h"
 #include "bspline_landmarks.h"
+#include "bspline_parms.h"
 #include "bspline_xform.h"
 #include "direction_matrices.h"
 #include "file_util.h"

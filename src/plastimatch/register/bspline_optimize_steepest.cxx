@@ -14,6 +14,7 @@
 #include "bspline.h"
 #include "bspline_cuda.h"
 #include "bspline_optimize_steepest.h"
+#include "bspline_parms.h"
 #include "bspline_xform.h"
 #include "logfile.h"
 

@@ -7,10 +7,11 @@
 #include <math.h>
 
 #include "bspline.h"
+#include "bspline_interpolate.h"
 #include "bspline_landmarks.h"
 #include "bspline_optimize.h"
 #include "bspline_regularize.h"
-#include "bspline_interpolate.h"
+#include "bspline_parms.h"
 #include "logfile.h"
 #include "plm_bspline.h"
 #include "plm_image_header.h"

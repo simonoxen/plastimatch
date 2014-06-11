@@ -18,6 +18,7 @@
 #endif
 #include "bspline_correspond.h"
 #include "bspline_interpolate.h"
+#include "bspline_parms.h"
 #include "bspline_xform.h"
 #include "compiler_warnings.h"
 #include "interpolate.h"

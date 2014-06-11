@@ -5,13 +5,7 @@
 #define _bspline_opts_h_
 
 #include "bspline.h"
-
-//#define OPTION_INTEGER_SPACING_STRING "integer-spacing"
-//#define OPTION_INTEGER_SPACING 's'
-//#define OPTION_RESOLUTION 'r'
-//#define OPTION_OUTPUT_FILE 'O'
-//#define OPTION_ALGORITHM 'a'
-//#define OPTION_MAX_ITS 'm'
+#include "bspline_parms.h"
 
 class Bspline_options
 {

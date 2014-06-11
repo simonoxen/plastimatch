@@ -6,6 +6,7 @@
 
 #include "plm_config.h"
 #include "bspline.h"
+#include "bspline_parms.h"
 
 #define CHECK_GRAD_PROCESS_FWD        1
 #define CHECK_GRAD_PROCESS_BKD        2
