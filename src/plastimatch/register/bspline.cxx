@@ -129,8 +129,7 @@ bspline_state_create (
     Bspline_landmarks* blm = parms->blm;
 
     memset (bst, 0, sizeof (Bspline_state));
-    bst->ssd.grad = (float*) malloc (bxf->num_coeff * sizeof(float));
-    memset (bst->ssd.grad, 0, bxf->num_coeff * sizeof(float));
+    bst->ssd.set_num_coeff (bxf->num_coeff);
 
     if (reg_parms->lambda > 0.0f) {
         rst->fixed = parms->fixed;
@@ -342,10 +341,6 @@ bspline_state_destroy (
 )
 {
     Reg_parms* reg_parms = parms->reg_parms;
-
-    if (bst->ssd.grad) {
-        free (bst->ssd.grad);
-    }
 
     if (reg_parms->lambda > 0.0f) {
         bspline_regularize_destroy (reg_parms, &bst->rst, bxf);
@@ -613,6 +608,9 @@ bspline_score (Bspline_optimize_data *bod)
     Volume* moving_roi = parms->moving_roi;
     bool have_roi = fixed_roi || moving_roi;
     bool have_histogram_minmax_val=(parms->mi_fixed_image_minVal!=0)||(parms->mi_fixed_image_maxVal!=0)||(parms->mi_moving_image_minVal!=0)||(parms->mi_moving_image_maxVal!=0);
+
+    /* Zero out the score for this iteration */
+    bst->ssd.reset_score ();
 
     /* CPU Implementations */
     if (parms->threading == BTHR_CPU) {

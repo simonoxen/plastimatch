@@ -119,9 +119,7 @@ bspline_score_i_mse (
 
     // Zero out accumulators
     int num_vox = 0;
-    ssd->smetric = 0;
     score_tile = 0;
-    memset(ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset(cond_x, 0, cond_size);
     memset(cond_y, 0, cond_size);
     memset(cond_z, 0, cond_size);
@@ -343,10 +341,7 @@ bspline_score_h_mse (
     timer->start ();
 
     // Zero out accumulators
-    ssd->smetric = 0;
-    ssd->num_vox = 0;
     score_tile = 0;
-    memset(ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset(cond_x, 0, cond_size);
     memset(cond_y, 0, cond_size);
     memset(cond_z, 0, cond_size);
@@ -582,9 +577,7 @@ bspline_score_g_mse (
 
     // Zero out accumulators
     int num_vox = 0;
-    ssd->smetric = 0;
     score_tile = 0;
-    memset(ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset(cond_x, 0, cond_size);
     memset(cond_y, 0, cond_size);
     memset(cond_z, 0, cond_size);
@@ -814,9 +807,6 @@ bspline_score_c_mse_no_dcos (
         it++;
     }
 
-    ssd->num_vox = 0;
-    ssd->smetric = 0.0f;
-    memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     LOOP_THRU_ROI_Z (rijk, fijk, bxf) {
         p[2] = REGION_INDEX_Z (rijk, bxf);
         q[2] = REGION_OFFSET_Z (rijk, bxf);
@@ -967,10 +957,6 @@ bspline_score_c_mse (
 
     Plm_timer* timer = new Plm_timer;
     timer->start ();
-
-    ssd->num_vox = 0;
-    ssd->smetric = 0.0f;
-    memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
 
     /* GCS FIX: region of interest is not used */
     LOOP_Z (fijk, fxyz, fixed) {

@@ -15,12 +15,18 @@ public:
     float smetric;       /* Similarity metric */
     plm_long num_vox;    /* Number of voxel with correspondence */
 
+    plm_long num_coeff;  /* Size of gradient vector = num coefficents */
     float* grad;         /* Gradient score wrt control coeff */
 
     double time_smetric;   /* Time to compute similarity metric */
     double time_rmetric;   /* Time to compute regularization metric */
 public:
     Bspline_score ();
+    ~Bspline_score ();
+
+public:
+    void set_num_coeff (plm_long num_coeff);
+    void reset_score ();
 };
 
 #endif

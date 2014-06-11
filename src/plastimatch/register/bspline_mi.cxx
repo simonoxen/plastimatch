@@ -119,21 +119,21 @@ clamp_quadratic_interpolate_inline (
     maqs[2] = mari + 1;
 
     if (maqs[0] < 0) {
-    maqs[0] = 0;
-    if (maqs[1] < 0) {
-        maqs[1] = 0;
-        if (maqs[2] < 0) {
-        maqs[2] = 0;
+        maqs[0] = 0;
+        if (maqs[1] < 0) {
+            maqs[1] = 0;
+            if (maqs[2] < 0) {
+                maqs[2] = 0;
+            }
         }
-    }
     } else if (maqs[2] >= dmax) {
-    maqs[2] = dmax - 1;
-    if (maqs[1] >= dmax) {
-        maqs[1] = dmax - 1;
-        if (maqs[0] >= dmax) {
-        maqs[0] = dmax - 1;
+        maqs[2] = dmax - 1;
+        if (maqs[1] >= dmax) {
+            maqs[1] = dmax - 1;
+            if (maqs[0] >= dmax) {
+                maqs[0] = dmax - 1;
+            }
         }
-    }
     }
 }
 
@@ -159,23 +159,23 @@ clamp_quadratic_interpolate_grad_inline (
     maqs[2] = mari + 1;
 
     if (maqs[0] < 0) {
-    faqs[0] = faqs[1] = faqs[2] = 0.0f; /* No gradient at image boundary */
-    maqs[0] = 0;
-    if (maqs[1] < 0) {
-        maqs[1] = 0;
-        if (maqs[2] < 0) {
-        maqs[2] = 0;
+        faqs[0] = faqs[1] = faqs[2] = 0.0f; /* No gradient at image boundary */
+        maqs[0] = 0;
+        if (maqs[1] < 0) {
+            maqs[1] = 0;
+            if (maqs[2] < 0) {
+                maqs[2] = 0;
+            }
         }
-    }
     } else if (maqs[2] >= dmax) {
-    faqs[0] = faqs[1] = faqs[2] = 0.0f; /* No gradient at image boundary */
-    maqs[2] = dmax - 1;
-    if (maqs[1] >= dmax) {
-        maqs[1] = dmax - 1;
-        if (maqs[0] >= dmax) {
-        maqs[0] = dmax - 1;
+        faqs[0] = faqs[1] = faqs[2] = 0.0f; /* No gradient at image boundary */
+        maqs[2] = dmax - 1;
+        if (maqs[1] >= dmax) {
+            maqs[1] = dmax - 1;
+            if (maqs[0] >= dmax) {
+                maqs[0] = dmax - 1;
+            }
         }
-    }
     }
 }
 
@@ -264,7 +264,7 @@ bspline_mi_hist_add (
     float fxs[2];
 
     bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, 
-    f_val, m_val);
+        f_val, m_val);
 
     fxs[0] *= amt;
     fxs[1] *= amt;
@@ -351,14 +351,14 @@ compute_dS_dP (
     const float j_hist_thresh = 0.0001f;
 
     if (debug) {
-    fprintf (stderr, "j=[%ld %ld] (%g %g), "
-         "f=[%ld] (%g), "
-         "m=[%ld %ld] (%g %g), "
-         "fxs = (%g %g)\n",
-         j_idxs[0], j_idxs[1], j_hist[j_idxs[0]], j_hist[j_idxs[1]],
-         f_idxs[0], f_hist[f_idxs[0]],
-         m_idxs[0], m_idxs[1], m_hist[m_idxs[0]], m_hist[m_idxs[1]],
-         fxs[0], fxs[1]);
+        fprintf (stderr, "j=[%ld %ld] (%g %g), "
+            "f=[%ld] (%g), "
+            "m=[%ld %ld] (%g %g), "
+            "fxs = (%g %g)\n",
+            j_idxs[0], j_idxs[1], j_hist[j_idxs[0]], j_hist[j_idxs[1]],
+            f_idxs[0], f_hist[f_idxs[0]],
+            m_idxs[0], m_idxs[1], m_hist[m_idxs[0]], m_hist[m_idxs[1]],
+            fxs[0], fxs[1]);
     }
 
     if (j_hist[j_idxs[0]] < j_hist_thresh) {
@@ -713,7 +713,7 @@ bspline_mi_hist_add_pvi_8_omp_crits (
     // Calculate fixed histogram bin and increment it
     idx_fbin = floor ((f_img[fv] - mi_hist->fixed.offset) / mi_hist->fixed.delta);
 
-    #pragma omp critical (fixed_histogram)
+#pragma omp critical (fixed_histogram)
     {
         f_hist[idx_fbin]++;
     }
@@ -728,14 +728,14 @@ bspline_mi_hist_add_pvi_8_omp_crits (
         idx_jbin = offset_fbin + idx_mbin;
 
         if (idx_mbin != mi_hist->moving.big_bin) {
-            #pragma omp critical (moving_histogram)
+#pragma omp critical (moving_histogram)
             {
                 m_hist[idx_mbin] += w[idx_pv];
             }
         }
 
         if (idx_jbin != mi_hist->joint.big_bin) {
-            #pragma omp critical (joint_histogram)
+#pragma omp critical (joint_histogram)
             {
                 j_hist[idx_jbin] += w[idx_pv];
             }
@@ -1350,17 +1350,15 @@ bspline_score_i_mi (
     Plm_timer* timer = new Plm_timer;
     timer->start ();
 
-    memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
     memset (m_hist, 0, mi_hist->moving.bins * sizeof(double));
     memset (j_hist, 0, mi_hist->fixed.bins * mi_hist->moving.bins * sizeof(double));
     memset(cond_x, 0, cond_size);
     memset(cond_y, 0, cond_size);
     memset(cond_z, 0, cond_size);
-    ssd->num_vox = 0;
 
 #pragma omp parallel
-    #pragma omp master
+#pragma omp master
     {
         num_threads = omp_get_num_threads ();
         f_hist_omp = (double*) malloc (num_threads * sizeof (double) * mi_hist->fixed.bins);
@@ -1431,8 +1429,8 @@ bspline_score_i_mi (
                     /* Add to histogram */
 
                     bspline_mi_hist_add_pvi_8_omp_v2 (
-                            mi_hist, f_hist_omp, m_hist_omp, j_hist_omp,
-                            fixed, moving, fv, mvf, li_1, li_2, thread_num);
+                        mi_hist, f_hist_omp, m_hist_omp, j_hist_omp,
+                        fixed, moving, fv, mvf, li_1, li_2, thread_num);
                 }
             }
         }   // tile
@@ -1611,14 +1609,14 @@ bspline_score_i_mi (
          * Let's put each one in the proper slot within the control
          * point bin its belogs to */
         bspline_sort_sets (cond_x, cond_y, cond_z,
-        sets_x, sets_y, sets_z,
-        pidx, bxf);
+            sets_x, sets_y, sets_z,
+            pidx, bxf);
     }   // openmp
 
     /* Now we have a ton of bins and each bin's 64 slots are full.
      * Let's sum each bin's 64 slots.  The result with be dc_dp. */
     bspline_make_grad (cond_x, cond_y, cond_z,
-    bxf, ssd);
+        bxf, ssd);
 
     free (cond_x);
     free (cond_y);
@@ -1710,14 +1708,12 @@ bspline_score_h_mi (
     Plm_timer* timer = new Plm_timer;
     timer->start ();
 
-    memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
     memset (m_hist, 0, mi_hist->moving.bins * sizeof(double));
     memset (j_hist, 0, mi_hist->fixed.bins * mi_hist->moving.bins * sizeof(double));
     memset(cond_x, 0, cond_size);
     memset(cond_y, 0, cond_size);
     memset(cond_z, 0, cond_size);
-    ssd->num_vox = 0;
 
     /* PASS 1 - Accumulate histogram */
     LOOP_Z (fijk, fxyz, fixed) {
@@ -1984,14 +1980,12 @@ bspline_score_g_mi (
     Plm_timer* timer = new Plm_timer;
     timer->start ();
 
-    memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
     memset (m_hist, 0, mi_hist->moving.bins * sizeof(double));
     memset (j_hist, 0, mi_hist->fixed.bins * mi_hist->moving.bins * sizeof(double));
     memset(cond_x, 0, cond_size);
     memset(cond_y, 0, cond_size);
     memset(cond_z, 0, cond_size);
-    ssd->num_vox = 0;
 
     /* PASS 1 - Accumulate histogram */
     LOOP_Z (fijk, fxyz, fixed) {
@@ -2226,14 +2220,12 @@ bspline_score_f_mi (
     Plm_timer* timer = new Plm_timer;
     timer->start ();
 
-    memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
     memset (m_hist, 0, mi_hist->moving.bins * sizeof(double));
     memset (j_hist, 0, mi_hist->fixed.bins * mi_hist->moving.bins * sizeof(double));
     memset(cond_x, 0, cond_size);
     memset(cond_y, 0, cond_size);
     memset(cond_z, 0, cond_size);
-    ssd->num_vox = 0;
 
     /* PASS 1 - Accumulate histogram */
 #pragma omp parallel for
@@ -2293,7 +2285,7 @@ bspline_score_f_mi (
                     /* Add to histogram */
 
                     bspline_mi_hist_add_pvi_8_omp_crits (mi_hist, fixed, moving, 
-                                                   fv, mvf, li_1, li_2);
+                        fv, mvf, li_1, li_2);
                 }
             }
         }   // tile
@@ -2438,7 +2430,7 @@ bspline_score_f_mi (
 
                     /* Update condensed tile sets */
                     bspline_update_sets_b (sets_x, sets_y, sets_z,
-                                         q, dc_dv, bxf);
+                        q, dc_dv, bxf);
                 }
             }
         }   // tile
@@ -2447,14 +2439,14 @@ bspline_score_f_mi (
          * Let's put each one in the proper slot within the control
          * point bin its belogs to */
         bspline_sort_sets (cond_x, cond_y, cond_z,
-                           sets_x, sets_y, sets_z,
-                           pidx, bxf);
+            sets_x, sets_y, sets_z,
+            pidx, bxf);
     }   // openmp
 
     /* Now we have a ton of bins and each bin's 64 slots are full.
      * Let's sum each bin's 64 slots.  The result with be dc_dp. */
     bspline_make_grad (cond_x, cond_y, cond_z,
-                       bxf, ssd);
+        bxf, ssd);
 
     free (cond_x);
     free (cond_y);
@@ -2527,14 +2519,12 @@ bspline_score_e_mi (
     Plm_timer* timer = new Plm_timer;
     timer->start ();
 
-    memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
     memset (m_hist, 0, mi_hist->moving.bins * sizeof(double));
     memset (j_hist, 0, mi_hist->fixed.bins * mi_hist->moving.bins * sizeof(double));
     memset(cond_x, 0, cond_size);
     memset(cond_y, 0, cond_size);
     memset(cond_z, 0, cond_size);
-    ssd->num_vox = 0;
 
     /* -- OpenMP locks for histograms --------------------- */
     f_locks = (omp_lock_t*) malloc (mi_hist->fixed.bins * sizeof(omp_lock_t));
@@ -2615,8 +2605,8 @@ bspline_score_e_mi (
                     /* Add to histogram */
 
                     bspline_mi_hist_add_pvi_8_omp (mi_hist, fixed, moving, 
-            fv, mvf, li_1, li_2,
-            f_locks, m_locks, j_locks);
+                        fv, mvf, li_1, li_2,
+                        f_locks, m_locks, j_locks);
 #if defined (commentout)
 #endif
                 }
@@ -2778,14 +2768,14 @@ bspline_score_e_mi (
          * Let's put each one in the proper slot within the control
          * point bin its belogs to */
         bspline_sort_sets (cond_x, cond_y, cond_z,
-        sets_x, sets_y, sets_z,
-        pidx, bxf);
+            sets_x, sets_y, sets_z,
+            pidx, bxf);
     }   // openmp
 
     /* Now we have a ton of bins and each bin's 64 slots are full.
      * Let's sum each bin's 64 slots.  The result with be dc_dp. */
     bspline_make_grad (cond_x, cond_y, cond_z,
-    bxf, ssd);
+        bxf, ssd);
 
     free (cond_x);
     free (cond_y);
@@ -2886,14 +2876,12 @@ bspline_score_d_mi (
     Plm_timer* timer = new Plm_timer;
     timer->start ();
 
-    memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
     memset (m_hist, 0, mi_hist->moving.bins * sizeof(double));
     memset (j_hist, 0, mi_hist->fixed.bins * mi_hist->moving.bins * sizeof(double));
     memset(cond_x, 0, cond_size);
     memset(cond_y, 0, cond_size);
     memset(cond_z, 0, cond_size);
-    ssd->num_vox = 0;
 
     /* PASS 1 - Accumulate histogram */
     LOOP_THRU_ROI_Z (rijk, fijk, bxf) {
@@ -3171,11 +3159,9 @@ bspline_score_c_mi (
     Plm_timer* timer = new Plm_timer;
     timer->start ();
 
-    memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
     memset (m_hist, 0, mi_hist->moving.bins * sizeof(double));
     memset (j_hist, 0, mi_hist->fixed.bins * mi_hist->moving.bins * sizeof(double));
-    ssd->num_vox = 0;
 
     /* PASS 1 - Accumulate histogram */
     LOOP_Z (fijk, fxyz, fixed) {
@@ -3404,19 +3390,17 @@ bspline_score_c_mi_no_dcos (
     char debug_fn[1024];
     static int it = 0;
     if (parms->debug) {
-    sprintf (debug_fn, "dump_mi_%02d.txt", it++);
-    fp = fopen (debug_fn, "w");
+        sprintf (debug_fn, "dump_mi_%02d.txt", it++);
+        fp = fopen (debug_fn, "w");
     }
 #endif
 
     Plm_timer* timer = new Plm_timer;
     timer->start ();
 
-    memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
     memset (m_hist, 0, mi_hist->moving.bins * sizeof(double));
     memset (j_hist, 0, mi_hist->fixed.bins * mi_hist->moving.bins * sizeof(double));
-    ssd->num_vox = 0;
 
     /* PASS 1 - Accumulate histogram */
     LOOP_THRU_ROI_Z (rijk, fijk, bxf) {
@@ -3551,9 +3535,9 @@ bspline_score_c_mi_no_dcos (
 
                 /* Find correspondence in moving image */
                 rc = bspline_find_correspondence (
-                        mxyz, mijk,
-                        fxyz, dxyz,
-                        moving
+                    mxyz, mijk,
+                    fxyz, dxyz,
+                    moving
                 );
 
                 /* If voxel is not inside moving image */
