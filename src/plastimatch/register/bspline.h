@@ -10,6 +10,7 @@
 
 #include "bspline_mi_hist.h"
 #include "bspline_regularize_state.h"
+#include "bspline_score.h"
 
 /* JAS 2011.07.23
  * The following is a fix that allows us to more selectively enforce
@@ -36,32 +37,6 @@ class Volume;
 /* -----------------------------------------------------------------------
    Types
    ----------------------------------------------------------------------- */
-class Bspline_score {
-public:
-    float score;         /* Total Score (sent to optimizer) */
-    float lmetric;       /* Landmark metric */
-    float rmetric;       /* Regularization metric */
-    float smetric;       /* Similarity metric */
-    plm_long num_vox;    /* Number of voxel with correspondence */
-
-    float* grad;         /* Gradient score wrt control coeff */
-
-    double time_smetric;   /* Time to compute similarity metric */
-    double time_rmetric;   /* Time to compute regularization metric */
-public:
-    Bspline_score () {
-        this->score = 0;
-        this->lmetric = 0;
-        this->rmetric = 0;
-        this->smetric = 0;
-        this->num_vox = 0;
-        this->grad = 0;
-
-        this->time_smetric = 0;
-        this->time_rmetric = 0;
-    }
-};
-
 class Bspline_state {
 public:
     int it;              /* Number of iterations */

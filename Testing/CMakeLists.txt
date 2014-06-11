@@ -59,6 +59,7 @@ set (CONFIG_FILE_LIST
   "plm-bsp-landmark-a.txt"
   "plm-bsp-landmark-b.txt"
   "plm-reg-bspline-double.txt"
+  "plm-reg-itk-translation.txt"
   "plm-reg-roi-a.txt"
   "plm-reg-roi-b.txt"
   "plm-reg-roi-c.txt"
@@ -2166,7 +2167,7 @@ set_tests_properties (plm-reg-align-center-check PROPERTIES
 plm_add_test (
   "plm-reg-itk-translation"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-reg-itk-translation.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-translation.txt"
   )
 plm_add_test (
   "plm-reg-itk-translation-stats"

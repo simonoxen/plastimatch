@@ -33,6 +33,7 @@ set (PLMREGISTER_LIBRARY_SRC
   bspline_optimize_nlopt.cxx
   bspline_optimize_steepest.cxx
   bspline_parms.cxx bspline_parms.h
+  bspline_score.cxx bspline_score.h 
   bspline_regularize.cxx
   bspline_regularize_analytic.cxx
   bspline_regularize_numeric.cxx
