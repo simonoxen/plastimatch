@@ -11,6 +11,7 @@
 
 class Plm_image;
 class Registration_parms;
+class Shared_parms;
 class Stage_parms;
 
 class PLMREGISTER_API Registration_data {
@@ -34,6 +35,7 @@ public:
     ~Registration_data ();
     void load_global_input_files (Registration_parms* regp);
     void load_stage_input_files (Stage_parms* regp);
+    void load_shared_input_files (const Shared_parms* shared);
 };
 
 #endif

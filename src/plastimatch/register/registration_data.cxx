@@ -28,7 +28,6 @@ void
 Registration_data::load_global_input_files (Registration_parms* regp)
 {
     Plm_image_type image_type = PLM_IMG_TYPE_ITK_FLOAT;
-    Shared_parms *shared = regp->get_shared_parms();
 
     /* Load images */
     logfile_printf ("Loading fixed image: %s\n", 
@@ -41,6 +40,18 @@ Registration_data::load_global_input_files (Registration_parms* regp)
     this->moving_image = Plm_image::New (new Plm_image (
             regp->get_moving_fn(), image_type));
 
+    this->load_shared_input_files (regp->get_shared_parms());
+}
+
+void
+Registration_data::load_stage_input_files (Stage_parms* stage)
+{
+    this->load_shared_input_files (stage->get_shared_parms());
+}
+
+void
+Registration_data::load_shared_input_files (const Shared_parms* shared)
+{
     /* load "global" rois */
     if (shared->fixed_roi_fn != "") {
         logfile_printf ("Loading fixed roi: %s\n", 
@@ -84,25 +95,5 @@ Registration_data::load_global_input_files (Registration_parms* regp)
         moving_landmarks = new Labeled_pointset;
         fixed_landmarks->set_ras (shared->fixed_landmarks_list.c_str());
         moving_landmarks->set_ras (shared->moving_landmarks_list.c_str());
-    }
-}
-
-void
-Registration_data::load_stage_input_files (Stage_parms* stage)
-{
-    Shared_parms *shared = stage->get_shared_parms();
-
-    if (shared->fixed_roi_fn != "") {
-        logfile_printf ("Loading fixed roi: %s\n", 
-            shared->fixed_roi_fn.c_str());
-        this->fixed_roi = Plm_image::New (new Plm_image (
-                shared->fixed_roi_fn, PLM_IMG_TYPE_ITK_UCHAR));
-    }
-
-    if (shared->moving_roi_fn != "") {
-        logfile_printf ("Loading moving roi: %s\n", 
-            shared->moving_roi_fn.c_str());
-        this->moving_roi = Plm_image::New (new Plm_image (
-                shared->moving_roi_fn, PLM_IMG_TYPE_ITK_UCHAR));
     }
 }
