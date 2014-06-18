@@ -236,22 +236,6 @@ Registration_parms::set_key_value (
         if (!section_global) goto key_only_allowed_in_section_global;
         strncpy (this->log_fn, val.c_str(), _MAX_PATH);
     }
-    else if (key == "fixed_landmarks") {
-        if (!section_global) goto key_only_allowed_in_section_stage;
-        this->fixed_landmarks_fn = val;
-    }
-    else if (key == "moving_landmarks") {
-        if (!section_global) goto key_only_allowed_in_section_stage;
-        this->moving_landmarks_fn = val;
-    }
-    else if (key == "fixed_landmark_list") {
-        if (!section_global) goto key_only_allowed_in_section_stage;
-        this->fixed_landmarks_list = val;
-    }
-    else if (key == "moving_landmark_list") {
-        if (!section_global) goto key_only_allowed_in_section_stage;
-        this->moving_landmarks_list = val;
-    }
 
     /* The following keywords are allowed either globally or in stages */
     else if (key == "background_val"
@@ -362,14 +346,25 @@ Registration_parms::set_key_value (
             goto key_not_allowed_in_section_process;
         }
     }
+    else if (key == "fixed_landmarks") {
+        if (section_process) goto key_not_allowed_in_section_process;
+        shared->fixed_landmarks_fn = val;
+    }
+    else if (key == "moving_landmarks") {
+        if (section_process) goto key_not_allowed_in_section_process;
+        shared->moving_landmarks_fn = val;
+    }
+    else if (key == "fixed_landmark_list") {
+        if (section_process) goto key_not_allowed_in_section_process;
+        shared->fixed_landmarks_list = val;
+    }
+    else if (key == "moving_landmark_list") {
+        if (section_process) goto key_not_allowed_in_section_process;
+        shared->moving_landmarks_list = val;
+    }
     else if (key == "warped_landmarks") {
-        if (section_global) {
-            this->warped_landmarks_fn = val;
-        } else if (section_stage) {
-            stage->warped_landmarks_fn = val;
-        } else {
-            goto key_not_allowed_in_section_process;
-        }
+        if (section_process) goto key_not_allowed_in_section_process;
+        shared->warped_landmarks_fn = val;
     }
 
     /* The following keywords are only allowed in stages */

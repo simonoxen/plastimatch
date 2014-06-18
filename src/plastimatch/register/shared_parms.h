@@ -22,6 +22,13 @@ public:
     /* Subsampling */
     bool legacy_subsampling;
 
+    /* Landmarks */
+    std::string warped_landmarks_fn;
+    std::string fixed_landmarks_fn;
+    std::string moving_landmarks_fn;
+    std::string fixed_landmarks_list;
+    std::string moving_landmarks_list;
+
 public:
     void copy (const Shared_parms *s);
 };

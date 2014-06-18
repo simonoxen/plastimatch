@@ -56,34 +56,34 @@ Registration_data::load_global_input_files (Registration_parms* regp)
     }
 
     /* Load landmarks */
-    if (regp->fixed_landmarks_fn.not_empty()) {
-        if (regp->moving_landmarks_fn.not_empty()) {
+    if (shared->fixed_landmarks_fn != "") {
+        if (shared->moving_landmarks_fn != "") {
             logfile_printf ("Loading fixed landmarks: %s\n", 
-                (const char*) regp->fixed_landmarks_fn);
+                shared->fixed_landmarks_fn.c_str());
             fixed_landmarks = new Labeled_pointset;
             fixed_landmarks->load_fcsv (
-                (const char*) regp->fixed_landmarks_fn);
+                shared->fixed_landmarks_fn.c_str());
             logfile_printf ("Loading moving landmarks: %s\n", 
-                (const char*) regp->moving_landmarks_fn);
+                shared->moving_landmarks_fn.c_str());
             moving_landmarks = new Labeled_pointset;
             moving_landmarks->load_fcsv (
-                (const char*) regp->moving_landmarks_fn);
+                shared->moving_landmarks_fn.c_str());
         } else {
             print_and_exit (
                 "Sorry, you need to specify both fixed and moving landmarks");
         }
     }
-    else if (regp->moving_landmarks_fn.not_empty()) {
+    else if (shared->moving_landmarks_fn != "") {
         print_and_exit (
             "Sorry, you need to specify both fixed and moving landmarks");
     }
-    else if (regp->fixed_landmarks_list.not_empty()) {
-        if (regp->moving_landmarks_list.not_empty()) {
-            fixed_landmarks = new Labeled_pointset;
-            moving_landmarks = new Labeled_pointset;
-            fixed_landmarks->set_ras (regp->fixed_landmarks_list);
-            moving_landmarks->set_ras (regp->moving_landmarks_list);
-        }
+    else if (shared->fixed_landmarks_list != ""
+        && shared->moving_landmarks_list != "")
+    {
+        fixed_landmarks = new Labeled_pointset;
+        moving_landmarks = new Labeled_pointset;
+        fixed_landmarks->set_ras (shared->fixed_landmarks_list.c_str());
+        moving_landmarks->set_ras (shared->moving_landmarks_list.c_str());
     }
 }
 

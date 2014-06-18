@@ -188,7 +188,7 @@ public:
     std::list<std::string> xf_out_fn;
     char vf_out_fn[_MAX_PATH];
     std::string debug_dir;
-    Pstring warped_landmarks_fn;
+
 public:
     Stage_type get_stage_type ();
     Shared_parms *get_shared_parms ();

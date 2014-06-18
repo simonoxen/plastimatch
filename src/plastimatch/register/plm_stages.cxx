@@ -162,7 +162,7 @@ save_output (
     float default_value, 
     const char *img_out_fn,
     const char *vf_out_fn,
-    const char *warped_landmarks_fn
+    const std::string& warped_landmarks_fn
 )
 {
     /* Handle null xf, make it zero translation */
@@ -221,7 +221,7 @@ save_output (
             Labeled_pointset warped_pointset;
             logfile_printf ("Saving warped landmarks...\n");
             pointset_warp (&warped_pointset, regd->moving_landmarks, vf);
-            warped_pointset.save (warped_landmarks_fn);
+            warped_pointset.save (warped_landmarks_fn.c_str());
         }
         if (vf_out_fn[0]) {
             logfile_printf ("Saving vf...\n");
@@ -238,6 +238,8 @@ do_registration_stage (
     Stage_parms* stage            /* Input */
 )
 {
+    const Shared_parms *shared = stage->get_shared_parms();
+
     Xform::Pointer xf_out = Xform::New ();
     lprintf ("[1] xf_in->m_type = %d, xf_out->m_type = %d\n", 
         xf_in->m_type, xf_out->m_type);
@@ -285,7 +287,7 @@ do_registration_stage (
     save_output (regd, xf_out, stage->xf_out_fn, stage->xf_out_itk, 
         stage->img_out_fmt, stage->img_out_type, 
         stage->default_value, stage->img_out_fn, stage->vf_out_fn,
-        stage->warped_landmarks_fn.c_str());
+        shared->warped_landmarks_fn);
 
     return xf_out;
 }
@@ -425,6 +427,7 @@ do_registration (Registration_parms* regp)
     Registration_data regd;
     Xform::Pointer xf_out = Xform::New ();
     Plm_timer timer1, timer2, timer3;
+    const Shared_parms* shared = regp->get_shared_parms ();
 
     /* Start logging */
     logfile_open (regp->log_fn);
@@ -455,7 +458,7 @@ do_registration (Registration_parms* regp)
         save_output (&regd, xf_out, regp->xf_out_fn, regp->xf_out_itk, 
             regp->img_out_fmt, regp->img_out_type, 
             regp->default_value, regp->img_out_fn, 
-            regp->vf_out_fn, regp->warped_landmarks_fn.c_str());
+            regp->vf_out_fn, shared->warped_landmarks_fn.c_str());
 
         timer3.stop();
     

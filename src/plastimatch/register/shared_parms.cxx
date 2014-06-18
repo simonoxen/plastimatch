@@ -9,8 +9,7 @@ Shared_parms::Shared_parms ()
 {
     this->fixed_roi_enable = true;
     this->moving_roi_enable = true;
-    this->fixed_roi_fn = "";
-    this->moving_roi_fn = "";
+
     /* At some future date, this will be changed to "false" */
     // this->legacy_subsampling = false;
     this->legacy_subsampling = true;

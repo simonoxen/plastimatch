@@ -4,9 +4,9 @@ moving=@PLM_BUILD_TESTING_DIR@/sphere-2.mha
 fixed_landmarks=@PLM_TESTING_DATA_DIR@/fiducials-rect-2.fcsv
 moving_landmarks=@PLM_TESTING_DATA_DIR@/fiducials-rect-3.fcsv
 
-vf_out=@PLM_BUILD_TESTING_DIR@/plm-reg-bsp-landmark-a-vf.mha
-xform_out=@PLM_BUILD_TESTING_DIR@/plm-reg-bsp-landmark-a-xf.txt
-img_out=@PLM_BUILD_TESTING_DIR@/plm-reg-bsp-landmark-a-img.mha
+vf_out=@PLM_BUILD_TESTING_DIR@/plm-bsp-landmark-a-vf.mha
+xform_out=@PLM_BUILD_TESTING_DIR@/plm-bsp-landmark-a-xf.txt
+img_out=@PLM_BUILD_TESTING_DIR@/plm-bsp-landmark-a-img.mha
 warped_landmarks=@PLM_BUILD_TESTING_DIR@/plm-bsp-landmark-a-warped.fcsv
 
 [STAGE]
