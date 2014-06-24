@@ -105,6 +105,7 @@ public:
     int stage_no;
     /* Stage resume? */
     bool resume_stage;
+    bool finalize_stage;
     /* Generic optimization parms */
     int xform_type;
     int optim_type;

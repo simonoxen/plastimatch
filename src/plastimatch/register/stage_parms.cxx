@@ -35,8 +35,9 @@ Stage_parms::Stage_parms ()
 
     /* Stage # */
     stage_no = -1;
-    /* Stage resume? */
+    /* Stuff for resuming stage */
     resume_stage = false;
+    finalize_stage = false;
     /* Generic optimization parms */
     xform_type = STAGE_TRANSFORM_VERSOR;
     optim_type = OPTIMIZATION_VERSOR;
@@ -243,8 +244,9 @@ Stage_parms::Stage_parms (const Stage_parms& s)
     xf_out_fn.clear ();
     *vf_out_fn = 0;
 
-    /* ...and don't to resume unless specifically requested */
+    /* ...and don't to resume/finalize unless specifically requested */
     resume_stage = false;
+    finalize_stage = false;
 }
 
 Stage_parms::~Stage_parms ()
