@@ -13,6 +13,7 @@
 #include "plm_image_type.h"
 #include "plm_path.h"
 #include "pstring.h"
+#include "smart_pointer.h"
 #include "threading.h"
 
 class Plm_image;
@@ -22,6 +23,7 @@ class Stage_parms;
 
 class PLMREGISTER_API Registration_parms {
 public:
+    SMART_POINTER_SUPPORT (Registration_parms);
     Registration_parms_private *d_ptr;
 public:
     int num_stages;

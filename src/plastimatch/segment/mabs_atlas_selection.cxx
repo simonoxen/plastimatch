@@ -22,10 +22,10 @@
 #include "path_util.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
-#include "plm_stages.h"
 #include "plm_warp.h"
 #include "print_and_exit.h"
 #include "string_util.h"
+#include "registration.h"
 #include "registration_parms.h"
 #include "registration_data.h"
 #include "rt_study.h"
@@ -238,26 +238,19 @@ Mabs_atlas_selection::compute_general_similarity_value()
 double
 Mabs_atlas_selection::compute_similarity_value_post()
 {
-    
-    Registration_parms* regp = new Registration_parms;
-    Registration_data* regd = new Registration_data;
+    Registration reg;
+    Registration_parms::Pointer regp = reg.get_registration_parms ();
+    Registration_data::Pointer regd = reg.get_registration_data ();
 
-    regp->parse_command_file(this->selection_reg_parms_fn.c_str());
-    
-    regd->fixed_image = this->subject;
-    regd->moving_image = this->atlas;
-
-    /* Make sure to have just the right inputs */
-    regd->fixed_landmarks = NULL;
-    regd->moving_landmarks = NULL;
+    reg.set_command_file (this->selection_reg_parms_fn);
+    reg.set_fixed_image (this->subject);
+    reg.set_moving_image (this->atlas);
+    Xform::Pointer xf = reg.do_registration_pure ();
 
     Plm_image::Pointer deformed_atlas = Plm_image::New ();
     Plm_image_header fixed_pih (regd->fixed_image);
-
-    Xform::Pointer xf = do_registration_pure (regd, regp);
     plm_warp (deformed_atlas, 0, xf, &fixed_pih, 
-        regd->moving_image,
-        regp->default_value, 0, 1);
+        this->atlas, regp->default_value, 0, 1);
    
     double similarity_value_post = 0;
     if (this->atlas_selection_criteria == "nmi-post") {
@@ -270,9 +263,6 @@ Mabs_atlas_selection::compute_similarity_value_post()
         lprintf("MSE post = %g \n", similarity_value_post);
     }
    
-    delete regd;
-    delete regp;
-
     return similarity_value_post;
 }
 
@@ -288,27 +278,21 @@ Mabs_atlas_selection::compute_similarity_value_ratio()
         similarity_value_pre = this->compute_mse(this->subject, this->atlas);
    
     lprintf("Similarity value pre = %g \n", similarity_value_pre);
-    
-    Registration_parms* regp = new Registration_parms;
-    Registration_data* regd = new Registration_data;
 
-    regp->parse_command_file(this->selection_reg_parms_fn.c_str());
-    
-    regd->fixed_image = this->subject;
-    regd->moving_image = this->atlas;
+    Registration reg;
+    Registration_parms::Pointer regp = reg.get_registration_parms ();
+    Registration_data::Pointer regd = reg.get_registration_data ();
 
-    /* Make sure to have just the right inputs */
-    regd->fixed_landmarks = NULL;
-    regd->moving_landmarks = NULL;
+    reg.set_command_file (this->selection_reg_parms_fn);
+    reg.set_fixed_image (this->subject);
+    reg.set_moving_image (this->atlas);
+    Xform::Pointer xf = reg.do_registration_pure ();
 
     Plm_image::Pointer deformed_atlas = Plm_image::New ();
     Plm_image_header fixed_pih (regd->fixed_image);
-
-    Xform::Pointer xf = do_registration_pure (regd, regp);
     plm_warp (deformed_atlas, 0, xf, &fixed_pih, 
-        regd->moving_image,
-        regp->default_value, 0, 1);
-    
+        this->atlas, regp->default_value, 0, 1);
+
     double similarity_value_post = 0;
 
     if (this->atlas_selection_criteria == "nmi-ratio")
@@ -317,9 +301,6 @@ Mabs_atlas_selection::compute_similarity_value_ratio()
         similarity_value_post = this->compute_mse (this->subject, deformed_atlas);
    
     lprintf("Similarity value post = %g \n", similarity_value_post);
-    
-    delete regd;
-    delete regp;
 
     return ((similarity_value_post/similarity_value_pre)-1) * similarity_value_post;
 }

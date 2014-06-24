@@ -25,7 +25,7 @@ Registration_data::~Registration_data ()
 }
 
 void
-Registration_data::load_global_input_files (Registration_parms* regp)
+Registration_data::load_global_input_files (Registration_parms::Pointer& regp)
 {
     Plm_image_type image_type = PLM_IMG_TYPE_ITK_FLOAT;
 

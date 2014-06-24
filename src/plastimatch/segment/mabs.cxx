@@ -28,10 +28,10 @@
 #include "path_util.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
-#include "plm_stages.h"
 #include "plm_timer.h"
 #include "plm_warp.h"
 #include "print_and_exit.h"
+#include "registration.h"
 #include "registration_data.h"
 #include "registration_parms.h"
 #include "rt_study.h"
@@ -503,30 +503,33 @@ Mabs::run_registration_loop ()
             lprintf ("Processing command file: %s\n", command_file.c_str());
             std::string command_string = slurp_file (command_file);
 
+            Registration reg;
+            Registration_parms::Pointer regp = reg.get_registration_parms ();
+            Registration_data::Pointer regd = reg.get_registration_data ();
+
             /* Parse the registration command string */
-            Registration_parms *regp = new Registration_parms;
-            int rc = regp->set_command_string (command_string);
+            int rc = reg.set_command_string (command_string);
             if (rc) {
                 lprintf ("Skipping command file \"%s\" "
                     "due to parse error.\n", command_file.c_str());
-                delete regp;
                 continue;
             }
 
-            /* Manually set input files */
-            Registration_data *regd = new Registration_data;
-            regd->fixed_image = Plm_image::New ();
-            regd->fixed_image->set_itk (
+            /* Set input files */
+            Plm_image::Pointer fixed_image = Plm_image::New ();
+            fixed_image->set_itk (
                 d_ptr->ref_rtds->get_image()->itk_float());
-            regd->moving_image = Plm_image::New ();
-            regd->moving_image->set_itk (
+            reg.set_fixed_image (fixed_image);
+            Plm_image::Pointer moving_image = Plm_image::New ();
+            moving_image->set_itk (
                 rtds.get_image()->itk_float());
+            reg.set_moving_image (moving_image);
 
             /* Run the registration */
             lprintf ("DO_REGISTRATION_PURE\n");
             lprintf ("regp->num_stages = %d\n", regp->num_stages);
             timer.start();
-            Xform::Pointer xf_out = do_registration_pure (regd, regp);
+            Xform::Pointer xf_out = reg.do_registration_pure ();
             d_ptr->time_reg += timer.report();
 
             /* Warp the output image */
@@ -539,9 +542,6 @@ Mabs::run_registration_loop ()
                 regp->default_value, 0, 1);
             d_ptr->time_warp_img += timer.report();
             
-            /* We're done with this */
-            delete regp;
-
             /* Warp the structures */
             lprintf ("Warp structures...\n");
             Plm_image_header source_pih (rtds.get_image().get());
@@ -572,9 +572,6 @@ Mabs::run_registration_loop ()
                 }
                 d_ptr->time_io += timer.report();
             }
-
-            /* We're done with these */
-            delete regd;
 
             /* Loop through structures for this atlas image */
             lprintf ("Process structures...\n");

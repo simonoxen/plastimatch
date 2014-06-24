@@ -17,10 +17,10 @@
 #include "plm_bspline.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
-#include "plm_stages.h"
 #include "plm_timer.h"
 #include "plm_warp.h"
 #include "pointset_warp.h"
+#include "registration.h"
 #include "registration_data.h"
 #include "registration_parms.h"
 #include "shared_parms.h"
@@ -28,7 +28,65 @@
 #include "volume.h"
 #include "xform.h"
 
-#define FIXME_BACKGROUND_MAX (-1200)
+class Registration_private
+{
+public:
+    Registration_data::Pointer rdata;
+    Registration_parms::Pointer rparms;
+public:
+    Registration_private () {
+        rdata = Registration_data::New ();
+        rparms = Registration_parms::New ();
+    }
+    ~Registration_private () {
+    }
+};
+
+Registration::Registration ()
+{
+    d_ptr = new Registration_private;
+}
+
+Registration::~Registration ()
+{
+    delete d_ptr;
+}
+
+int
+Registration::set_command_file (const std::string& command_file)
+{
+    return d_ptr->rparms->parse_command_file (command_file.c_str());
+}
+
+int
+Registration::set_command_string (const std::string& command_string)
+{
+    return d_ptr->rparms->set_command_string (command_string);
+}
+
+void
+Registration::set_fixed_image (Plm_image::Pointer& fixed)
+{
+    d_ptr->rdata->fixed_image = fixed;
+}
+
+void
+Registration::set_moving_image (Plm_image::Pointer& moving)
+{
+    d_ptr->rdata->moving_image = moving;
+}
+
+Registration_data::Pointer
+Registration::get_registration_data ()
+{
+    return d_ptr->rdata;
+}
+
+Registration_parms::Pointer
+Registration::get_registration_parms ()
+{
+    return d_ptr->rparms;
+}
 
 
 /* This helps speed up the registration, by setting the bounding box to the 
@@ -36,7 +94,7 @@
    of the fixed_roi (if one is used), or by eliminating excess air 
    by thresholding */
 static void
-set_fixed_image_region_global (Registration_data* regd)
+set_fixed_image_region_global (Registration_data::Pointer& regd)
 {
     int use_magic_value = 1;
 
@@ -110,6 +168,7 @@ set_fixed_image_region_global (Registration_data* regd)
         int first = 1;
         for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
             float c = it.Get();
+#define FIXME_BACKGROUND_MAX (-1200)
             if (c > FIXME_BACKGROUND_MAX) {
                 FloatImageType::RegionType::IndexType idx = it.GetIndex();
                 if (first) {
@@ -232,8 +291,8 @@ save_output (
 
 static Xform::Pointer
 do_registration_stage (
-    Registration_parms* regp,     /* Input */
-    Registration_data* regd,      /* Input */
+    Registration_parms::Pointer& regp,     /* Input */
+    Registration_data::Pointer& regd,      /* Input */
     const Xform::Pointer& xf_in,  /* Input */
     Stage_parms* stage            /* Input */
 )
@@ -247,44 +306,44 @@ do_registration_stage (
     /* Run registration */
     if (stage->optim_type == OPTIMIZATION_DEMONS) {
         if (stage->impl_type == IMPLEMENTATION_ITK) {
-            xf_out = do_itk_demons_stage (regd, xf_in, stage);
+            xf_out = do_itk_demons_stage (regd.get(), xf_in, stage);
         } else {
-            xf_out = do_gpuit_demons_stage (regd, xf_in, stage);
+            xf_out = do_gpuit_demons_stage (regd.get(), xf_in, stage);
         }
     }
     else if (stage->xform_type == STAGE_TRANSFORM_BSPLINE) {
         if (stage->impl_type == IMPLEMENTATION_ITK) {
-            xf_out = do_itk_registration_stage (regd, xf_in, stage);
+            xf_out = do_itk_registration_stage (regd.get(), xf_in, stage);
         } else {
-            xf_out = do_gpuit_bspline_stage (regp, regd, xf_in, stage);
+            xf_out = do_gpuit_bspline_stage (regp.get(), regd.get(), xf_in, stage);
         }
     }
     else if (stage->xform_type == STAGE_TRANSFORM_ALIGN_CENTER) {
-        xf_out = do_itk_registration_stage (regd, xf_in, stage);
+        xf_out = do_itk_registration_stage (regd.get(), xf_in, stage);
         lprintf ("Centering done\n");
     }
     else if (stage->xform_type == STAGE_TRANSFORM_TRANSLATION) {
         if (stage->impl_type == IMPLEMENTATION_ITK) {
-            xf_out = do_itk_registration_stage (regd, xf_in, stage);
+            xf_out = do_itk_registration_stage (regd.get(), xf_in, stage);
         } else if (stage->impl_type == IMPLEMENTATION_PLASTIMATCH) {
-            xf_out = native_translation_stage (regd, xf_in, stage);
+            xf_out = native_translation_stage (regd.get(), xf_in, stage);
         } else {
             if (stage->optim_type == OPTIMIZATION_GRID_SEARCH) {
-                xf_out = native_translation_stage (regd, xf_in, stage);
+                xf_out = native_translation_stage (regd.get(), xf_in, stage);
             } else {
-                xf_out = do_itk_registration_stage (regd, xf_in, stage);
+                xf_out = do_itk_registration_stage (regd.get(), xf_in, stage);
             }
         }
     }
     else {
-        xf_out = do_itk_registration_stage (regd, xf_in, stage);
+        xf_out = do_itk_registration_stage (regd.get(), xf_in, stage);
     }
 
     lprintf ("[2] xf_out->m_type = %d, xf_in->m_type = %d\n", 
         xf_out->m_type, xf_in->m_type);
 
     /* Save intermediate output */
-    save_output (regd, xf_out, stage->xf_out_fn, stage->xf_out_itk, 
+    save_output (regd.get(), xf_out, stage->xf_out_fn, stage->xf_out_itk, 
         stage->img_out_fmt, stage->img_out_type, 
         stage->default_value, stage->img_out_fn, stage->vf_out_fn,
         shared->warped_landmarks_fn);
@@ -304,7 +363,9 @@ set_auto_subsampling (float subsample_rate[], Plm_image *pli)
 }
 
 static void
-set_automatic_parameters (Registration_data* regd, Registration_parms* regp)
+set_automatic_parameters (
+    Registration_data::Pointer& regd, 
+    Registration_parms::Pointer& regp)
 {
     std::list<Stage_parms*>& stages = regp->get_stages();
     std::list<Stage_parms*>::iterator it;
@@ -320,7 +381,7 @@ set_automatic_parameters (Registration_data* regd, Registration_parms* regp)
 }
 
 static void
-check_output_resolution (Xform::Pointer& xf_out, Registration_data* regd)
+check_output_resolution (Xform::Pointer& xf_out, Registration_data::Pointer& regd)
 {
     Volume *fixed = regd->fixed_image->get_vol ();
     int ss[3];
@@ -357,11 +418,11 @@ check_output_resolution (Xform::Pointer& xf_out, Registration_data* regd)
 }
 
 Xform::Pointer
-do_registration_pure (
-    Registration_data* regd,
-    Registration_parms* regp
-)
+Registration::do_registration_pure ()
 {
+    Registration_data::Pointer regd = d_ptr->rdata;
+    Registration_parms::Pointer regp = d_ptr->rparms;
+    
     Xform::Pointer xf_in = Xform::New ();
     Xform::Pointer xf_out = Xform::New ();
     Xform::Pointer xf_tmp;
@@ -422,9 +483,11 @@ do_registration_pure (
 }
 
 void
-do_registration (Registration_parms* regp)
+Registration::do_registration ()
 {
-    Registration_data regd;
+    Registration_data::Pointer regd = d_ptr->rdata;
+    Registration_parms::Pointer regp = d_ptr->rparms;
+
     Xform::Pointer xf_out = Xform::New ();
     Plm_timer timer1, timer2, timer3;
     const Shared_parms* shared = regp->get_shared_parms ();
@@ -444,18 +507,18 @@ do_registration (Registration_parms* regp)
         }
 
         timer1.start();
-        regd.load_global_input_files (regp);
+        regd->load_global_input_files (regp);
         timer1.stop();
     
         timer2.start();
         //do_registration_pure (&xf_out, &regd, regp);
-        xf_out = do_registration_pure (&regd, regp);
+        xf_out = this->do_registration_pure ();
         timer2.stop();
 
         /* RMK: If no stages, we still generate output (same as input) */
     
         timer3.start();
-        save_output (&regd, xf_out, regp->xf_out_fn, regp->xf_out_itk, 
+        save_output (regd.get(), xf_out, regp->xf_out_fn, regp->xf_out_itk, 
             regp->img_out_fmt, regp->img_out_type, 
             regp->default_value, regp->img_out_fn, 
             regp->vf_out_fn, shared->warped_landmarks_fn.c_str());

@@ -56,11 +56,11 @@ set (PLMREGISTER_LIBRARY_SRC
   landmark_warp.cxx 
   native_translation.cxx
   plm_bspline.cxx
-  plm_stages.cxx
   process_parms.cxx
   rbf_cluster.cxx
   rbf_gauss.cxx
   rbf_wendland.cxx
+  registration.cxx registration.h
   registration_data.cxx
   registration_parms.cxx
   shared_parms.cxx

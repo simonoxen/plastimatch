@@ -65,7 +65,7 @@ Process_parms::set_key_value (const std::string& key, const std::string& value)
 }
 
 void 
-Process_parms::execute_process (Registration_data *regd) const
+Process_parms::execute_process (Registration_data::Pointer& regd) const
 {
     if (d_ptr->action == "adjust") {
         lprintf ("*** Executing adjust process ***\n");

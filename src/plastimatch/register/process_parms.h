@@ -10,10 +10,10 @@
 #include <ctype.h>
 #include <stdlib.h>
 
+#include "registration_data.h"
 #include "smart_pointer.h"
 
 class Process_parms_private;
-class Registration_data;
 
 class PLMREGISTER_API Process_parms {
 public:
@@ -26,7 +26,7 @@ public:
 public:
     void set_action (const std::string& action);
     void set_key_value (const std::string& key, const std::string& value);
-    void execute_process (Registration_data* regd) const;
+    void execute_process (Registration_data::Pointer& regd) const;
 };
 
 #endif
