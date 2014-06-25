@@ -18,6 +18,7 @@
 #include "dcmtk_series.h"
 #include "file_util.h"
 #include "logfile.h"
+#include "path_util.h"
 #include "plm_image.h"
 #include "print_and_exit.h"
 #include "rt_study_metadata.h"
@@ -109,11 +110,13 @@ Dcmtk_loader::insert_directory (const char* dir)
     OFBool recurse = OFFalse;
     OFList<OFString> input_files;
 
-    OFStandard::searchDirectoryRecursively (
-	dir, input_files, "", "", recurse);
+    /* On windows, searchDirectoryRecursively doesn't work 
+       if the path is like c:/dir/dir; instead it must be c:\dir\dir */
+    std::string fixed_path = make_windows_slashes (std::string(dir));
 
-    /* GCS FIX: I found on windows this method doesn't work 
-       if the path is like c:/dir/dir, it must be c:\dir\dir */
+    OFStandard::searchDirectoryRecursively (
+	fixed_path.c_str(), input_files, "", "", recurse);
+
     OFListIterator(OFString) if_iter = input_files.begin();
     OFListIterator(OFString) if_last = input_files.end();
     while (if_iter != if_last) {
@@ -142,7 +145,6 @@ Dcmtk_loader::debug (void) const
 	const std::string& key = (*it).first;
 	const Dcmtk_series *ds = (*it).second;
 	UNUSED_VARIABLE (ds);
-	printf ("SeriesInstanceUID = %s\n", key.c_str());
 	ds->debug ();
     }
 }

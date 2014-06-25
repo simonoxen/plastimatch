@@ -30,47 +30,6 @@
 static void
 load_input_files (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms)
 {
-#if defined (commentout)
-    if (parms->input_fn.not_empty ()) {
-        switch (file_type) {
-        case PLM_FILE_FMT_NO_FILE:
-            print_and_exit ("Could not open input file %s for read\n",
-                (const char*) parms->input_fn);
-            break;
-        case PLM_FILE_FMT_UNKNOWN:
-        case PLM_FILE_FMT_IMG:
-            rtds->load_image (parms->input_fn);
-            break;
-        case PLM_FILE_FMT_DICOM_DIR:
-            rtds->load_dicom_dir ((const char*) parms->input_fn);
-            break;
-        case PLM_FILE_FMT_XIO_DIR:
-            rtds->load_xio ((const char*) parms->input_fn);
-            break;
-        case PLM_FILE_FMT_DIJ:
-            print_and_exit (
-                "Warping dij files requires ctatts_in, dif_in files\n");
-            break;
-        case PLM_FILE_FMT_DICOM_RTSS:
-            rtds->load_dicom_rtss ((const char*) parms->input_fn);
-            break;
-        case PLM_FILE_FMT_DICOM_DOSE:
-            rtds->load_dicom_dose ((const char*) parms->input_fn);
-            break;
-        case PLM_FILE_FMT_CXT:
-            rtds->load_cxt (parms->input_fn);
-            break;
-        case PLM_FILE_FMT_SS_IMG_VEC:
-        default:
-            print_and_exit (
-                "Sorry, don't know how to convert/warp input type %s (%s)\n",
-                plm_file_format_string (file_type),
-                (const char*) parms->input_fn);
-            break;
-        }
-    }
-#endif
-
     if (parms->input_fn.not_empty ()) {
         rtds->load (parms->input_fn.c_str(), file_type);
     }

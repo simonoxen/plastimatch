@@ -2,6 +2,8 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmsys_config.h"
+#include <algorithm>
+#include <string>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -155,5 +157,17 @@ std::string
 compose_filename (const std::string& a, const std::string& b)
 {
     return compose_filename (a.c_str(), b.c_str());
+}
+
+std::string 
+make_windows_slashes (const std::string& s)
+{
+#if (_WIN32)
+    std::string t = s;
+    std::replace(t.begin(), t.end(), '/', '\\');
+    return t;
+#else
+    return s;
+#endif
 }
 

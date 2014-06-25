@@ -28,5 +28,6 @@ PLMSYS_API std::string strip_leading_dir (const std::string& fn);
 PLMSYS_API std::string compose_filename (const std::string& a, 
     const std::string& b);
 PLMSYS_API std::string compose_filename (const char *a, const char *b);
+PLMSYS_API std::string make_windows_slashes (const std::string& s);
 
 #endif
