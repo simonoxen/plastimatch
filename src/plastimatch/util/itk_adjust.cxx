@@ -9,6 +9,7 @@
 #include "itk_image_clone.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
+#include "string_util.h"
 
 FloatImageType::Pointer
 itk_adjust (FloatImageType::Pointer image_in, const Adjustment_list& al)
@@ -89,6 +90,34 @@ itk_adjust (FloatImageType::Pointer image_in, const Adjustment_list& al)
     return image_out;
 }
 
+static void 
+get_next_number (int& rc, float& f, const char*& c)
+{
+    int n;
+
+    /* Skip whitespace */
+    while (isspace(*c)) ++c;
+
+    if (string_starts_with (c, "inf")) {
+        rc = 1;
+        f = std::numeric_limits<float>::max();
+        c += 3;
+    } else if (string_starts_with (c, "-inf")) {
+        rc = 1;
+        f = -std::numeric_limits<float>::max();
+        c += 4;
+    } else {
+        rc = sscanf (c, " %f %n", &f, &n);
+        if (rc >= 1) {
+            c += n;
+        }
+    }
+
+    /* Skip trailing comma */
+    while (*c == ',') ++c;
+}
+
+
 FloatImageType::Pointer
 itk_adjust (FloatImageType::Pointer image_in, const std::string& adj_string)
 {
@@ -97,10 +126,14 @@ itk_adjust (FloatImageType::Pointer image_in, const std::string& adj_string)
     bool have_curve = false;
 
     while (1) {
-        int n;
+        int rc;
         float f1, f2;
-        int rc = sscanf (c, " %f , %f %n", &f1, &f2, &n);
-        if (rc < 2) {
+        get_next_number (rc, f1, c);
+        if (rc < 1) {
+            break;
+        }
+        get_next_number (rc, f2, c);
+        if (rc < 1) {
             break;
         }
         have_curve = true;
@@ -115,10 +148,6 @@ itk_adjust (FloatImageType::Pointer image_in, const std::string& adj_string)
         }
         /* Append (x,y) pair to list */
         al.push_back (std::make_pair (f1, f2));
-
-        /* Look for next pair in string */
-        c += n;
-        if (*c == ',') c++;
     }
 
     if (!have_curve) {
