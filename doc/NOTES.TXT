@@ -1,3 +1,25 @@
+***** Restartable registration *****
+
+Here is how it looks using ITK methodology
+
+reg_func:
+  halt_sem.Down();
+  // do registration
+  halt_sem.Up ();
+
+start_registration:
+  halt_sem.Initialize (1);
+  id = spawn thread(reg_func);
+  return;
+
+halt_registration:
+  halt_sem.Down();
+  return;
+
+wait_for_complete:
+  threader.TerminateThread (id)
+
+
 ***** ITK and plastimatch direction cosines *****
 
 There are two ways to have a rotated volume.  The direction cosines 

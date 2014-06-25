@@ -2,9 +2,9 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmsegment_config.h"
-#include "itkImageRegionIterator.h"
 #include "dlib/data_io.h"
 #include "dlib/svm.h"
+#include "itkImageRegionIterator.h"
 
 #include "autolabel.h"
 #include "autolabel_ransac_est.h"

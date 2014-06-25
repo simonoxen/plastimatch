@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "itkImageRegionConstIteratorWithIndex.h"
+#include "itkMultiThreader.h"
+#include "itkSemaphore.h"
 
 #include "bspline_xform.h"
 #include "gpuit_demons.h"
@@ -33,12 +35,34 @@ class Registration_private
 public:
     Registration_data::Pointer rdata;
     Registration_parms::Pointer rparms;
+
+
+    Xform::Pointer xf_in;
+    Xform::Pointer xf_out;
+
+    itk::MultiThreader::Pointer threader;
+    itk::Semaphore::Pointer semaphore;
+    int thread_no;
+    bool registration_running;
+    bool time_to_quit;
+
 public:
     Registration_private () {
         rdata = Registration_data::New ();
         rparms = Registration_parms::New ();
+        xf_in = Xform::New ();
+        xf_out = Xform::New ();
+
+        threader = itk::MultiThreader::New ();
+        semaphore = itk::Semaphore::New ();
+        semaphore->Initialize (1);
+        thread_no = -1;
+        registration_running = false;
+        time_to_quit = false;
     }
     ~Registration_private () {
+        this->time_to_quit = true;
+        // do something more here ... wait for running threads to exit
     }
 };
 
@@ -417,8 +441,152 @@ check_output_resolution (Xform::Pointer& xf_out, Registration_data::Pointer& reg
     }
 }
 
+void
+Registration::load_global_inputs ()
+{
+    d_ptr->rdata->load_global_input_files (d_ptr->rparms);
+}
+
+void
+Registration::run_main_thread ()
+{
+    Registration_data::Pointer regd = d_ptr->rdata;
+    Registration_parms::Pointer regp = d_ptr->rparms;
+    
+    /* Load initial guess of xform */
+    if (regp->xf_in_fn[0]) {
+        d_ptr->xf_out = xform_load (regp->xf_in_fn);
+    }
+
+    /* Set fixed image region */
+    set_fixed_image_region_global (regd);
+
+    /* Set automatic parameters based on image size */
+    set_automatic_parameters (regd, regp);
+
+
+
+    std::list<Stage_parms*>& stages = regp->get_stages();
+    std::list<Stage_parms*>::iterator it;
+    for (it = stages.begin(); it != stages.end(); it++) {
+        Stage_parms* sp = *it;
+
+        if (sp->get_stage_type() == STAGE_TYPE_PROCESS) {
+
+#if defined (commentout)
+            int non_zero, num_vox;
+            double min_val, max_val, avg;
+            itk_image_stats (regd->moving_image->itk_float (),
+                &min_val, &max_val, &avg, &non_zero, &num_vox);
+            printf ("min = %g, max = %g\n", min_val, max_val);
+#endif
+
+            const Process_parms::Pointer& pp = sp->get_process_parms ();
+            pp->execute_process (regd);
+
+#if defined (commentout)
+            itk_image_stats (regd->moving_image->itk_float (),
+                &min_val, &max_val, &avg, &non_zero, &num_vox);
+            printf ("min = %g, max = %g\n", min_val, max_val);
+#endif
+
+        } else if (sp->get_stage_type() == STAGE_TYPE_REGISTER) {
+
+            d_ptr->semaphore->Down ();
+
+            /* Swap xf_in and xf_out.  Memory for previous xf_in 
+               gets released at this time. */
+            d_ptr->xf_in = d_ptr->xf_out;
+
+            /* Load stage images */
+            regd->load_stage_input_files (sp);
+
+            /* Run registation, results are stored in xf_out */
+            d_ptr->xf_out = do_registration_stage (
+                regp, regd, d_ptr->xf_in, sp);
+
+            d_ptr->semaphore->Up ();
+            if (d_ptr->time_to_quit) {
+                break;
+            }
+        } 
+    }
+
+    /* JAS 2012.03.29 - for GPUIT Bspline
+     * make output match input resolution - not final stage resolution */
+    check_output_resolution (d_ptr->xf_out, regd);
+}
+
+static 
+ITK_THREAD_RETURN_TYPE
+registration_main_thread (void* param)
+{
+    itk::MultiThreader::ThreadInfoStruct *info 
+        = (itk::MultiThreader::ThreadInfoStruct*) param;
+    Registration* reg = (Registration*) info->UserData;
+
+    reg->d_ptr->registration_running = true;
+    reg->run_main_thread ();
+    reg->d_ptr->registration_running = false;
+
+    return ITK_THREAD_RETURN_VALUE;
+}
+
+void 
+Registration::start_registration ()
+{
+    if (d_ptr->registration_running) {
+        d_ptr->semaphore->Up ();
+    } else {
+        d_ptr->time_to_quit = false;
+        d_ptr->semaphore->Initialize (1);
+        d_ptr->thread_no = d_ptr->threader->SpawnThread (
+            registration_main_thread, (void*) this);
+        d_ptr->registration_running = true;
+    }
+}
+
+void 
+Registration::pause_registration ()
+{
+    d_ptr->semaphore->Down ();
+}
+
+void 
+Registration::wait_for_complete ()
+{
+    d_ptr->threader->TerminateThread (d_ptr->thread_no);
+}
+
+Xform::Pointer 
+Registration::get_current_xform ()
+{
+    return d_ptr->xf_out;
+}
+
+void 
+Registration::save_global_outputs ()
+{
+    Registration_data::Pointer regd = d_ptr->rdata;
+    Registration_parms::Pointer regp = d_ptr->rparms;
+    const Shared_parms* shared = regp->get_shared_parms ();
+
+    save_output (regd.get(), d_ptr->xf_out, regp->xf_out_fn, regp->xf_out_itk, 
+        regp->img_out_fmt, regp->img_out_type, 
+        regp->default_value, regp->img_out_fn, 
+        regp->vf_out_fn, shared->warped_landmarks_fn.c_str());
+}
+
 Xform::Pointer
 Registration::do_registration_pure ()
+{
+    this->start_registration ();
+    this->wait_for_complete ();
+    return this->get_current_xform ();
+}
+
+Xform::Pointer
+Registration::do_registration_pure_old ()
 {
     Registration_data::Pointer regd = d_ptr->rdata;
     Registration_parms::Pointer regp = d_ptr->rparms;
@@ -483,7 +651,7 @@ Registration::do_registration_pure ()
 }
 
 void
-Registration::do_registration ()
+Registration::do_registration_old ()
 {
     Registration_data::Pointer regd = d_ptr->rdata;
     Registration_parms::Pointer regp = d_ptr->rparms;
@@ -542,4 +710,51 @@ Registration::do_registration ()
         logfile_printf ("Finished!\n");
         logfile_close ();
     }
+}
+
+void
+Registration::do_registration ()
+{
+    Registration_data::Pointer regd = d_ptr->rdata;
+    Registration_parms::Pointer regp = d_ptr->rparms;
+
+    Xform::Pointer xf_out = Xform::New ();
+    Plm_timer timer1, timer2, timer3;
+    const Shared_parms* shared = regp->get_shared_parms ();
+
+    /* Start logging */
+    logfile_open (regp->log_fn);
+
+    timer1.start();
+    this->load_global_inputs ();
+    timer1.stop();
+    
+    timer2.start();
+    this->start_registration ();
+    this->wait_for_complete ();
+    xf_out = this->get_current_xform ();
+    timer2.stop();
+
+    /* RMK: If no stages, we still generate output (same as input) */
+    
+    timer3.start();
+    this->save_global_outputs ();
+    timer3.stop();
+    
+    logfile_open (regp->log_fn);
+    logfile_printf (
+        "Load:   %g\n"
+        "Run:    %g\n"
+        "Save:   %g\n"
+        "Total:  %g\n",
+        (double) timer1.report(),
+        (double) timer2.report(),
+        (double) timer3.report(),
+        (double) timer1.report() + 
+        (double) timer2.report() + 
+        (double) timer3.report());
+    
+    /* Done logging */
+    logfile_printf ("Finished!\n");
+    logfile_close ();
 }

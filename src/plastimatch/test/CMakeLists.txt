@@ -54,6 +54,9 @@ if (PLM_CONFIG_BUILD_TEST_PROGRAMS)
     plm_add_executable (dlib_test dlib_test.cxx
 	"${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
 	${BUILD_ALWAYS} ${INSTALL_NEVER})
+      #plm_add_executable (dlib_thread_test dlib_thread_test.cxx
+      #"${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
+      #${BUILD_ALWAYS} ${INSTALL_NEVER})
 
     # Test executable -- gabor_test
     plm_add_executable (gabor_test gabor_test.cxx 
@@ -61,18 +64,21 @@ if (PLM_CONFIG_BUILD_TEST_PROGRAMS)
 	${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 
     # Test executable -- gdcm
-    if (ITK_FOUND AND GDCM_VERSION_1)
+    if (ITK_FOUND AND GDCM_VERSION_1 AND NOT PLM_DCM_USE_DCMTK)
 	plm_add_executable (gdcm1_test gdcm1_test.cxx
 	    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
 	    ${BUILD_ALWAYS} ${INSTALL_NEVER})
     endif ()
 
-    # Test executables -- itk required
+    # Test executables -- itk
     if (ITK_FOUND)
 	plm_add_executable (itk_test itk_test.cxx
 	    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
 	    ${BUILD_ALWAYS} ${INSTALL_NEVER})
 	plm_add_executable (itk_test_directions itk_test_directions.cxx
+	    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
+	    ${BUILD_ALWAYS} ${INSTALL_NEVER})
+	plm_add_executable (itk_test_threads itk_thread_test.cxx
 	    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
 	    ${BUILD_ALWAYS} ${INSTALL_NEVER})
     endif ()
