@@ -634,7 +634,11 @@ bspline_score (Bspline_optimize_data *bod)
                 bspline_score_i_mse (bod);
                 break;
             default:
+#if (OPENMP_FOUND)
                 bspline_score_g_mse (bod);
+#else
+                bspline_score_h_mse (bod);
+#endif
                 break;
             }
         } /* end MSE */
