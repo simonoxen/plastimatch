@@ -12,7 +12,7 @@ class Thread_struct
 public:
     itk::SimpleMutexLock mutex;
     itk::ConditionVariable::Pointer condition;
-    int semaphore;
+    bool semaphore_available;
     int j;
     bool die;
 public:
@@ -20,25 +20,30 @@ public:
         condition = itk::ConditionVariable::New(); 
         die = false;
         j = 30;
-        semaphore = 1;
+        semaphore_available = true;
+        mutex.Unlock ();
     }
     ~Thread_struct () {
     }
     void release_semaphore ()
     {
         mutex.Lock();
-        ++semaphore;
+        semaphore_available = true;
         condition->Signal();
+#if defined (commentout)
+#endif
         mutex.Unlock();
     }
     void grab_semaphore ()
     {
         mutex.Lock();
-        if (semaphore == 0) {
+        if (semaphore_available == false) {
             condition->Wait (&mutex);
-        }  
-        --semaphore;
+        }
+        semaphore_available = false;
         mutex.Unlock();
+#if defined (commentout)
+#endif
     }
 };
 
@@ -50,10 +55,11 @@ thread_func (void* param)
         = (itk::MultiThreader::ThreadInfoStruct*) param;
     Thread_struct* ts = (Thread_struct*) info->UserData;
     while (1) {
+        //printf ("Child: %d\n", ts->semaphore_available);
         ts->grab_semaphore ();
         plm_sleep (300);
+        printf ("Child execute\n");
         ++ ts->j;
-        printf ("Child: %d\n", ts->j);
         ts->release_semaphore ();
         if (ts->die) {
             break;
@@ -74,11 +80,14 @@ int main ()
         plm_sleep (770);
         printf ("Parent.\n");
     }
+    printf ("Parent: %d\n", ts.semaphore_available);
     ts.grab_semaphore ();
-    for (int i = 0; i < 8; i++) {
+    printf ("Parent only.\n");
+    for (int i = 0; i < 15; i++) {
         plm_sleep (70);
         printf ("Parent.\n");
     }
+    printf ("End parent only.\n");
     ts.release_semaphore ();
     for (int i = 0; i < 3; i++) {
         plm_sleep (770);

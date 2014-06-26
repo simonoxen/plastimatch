@@ -37,10 +37,11 @@ int main ()
     }
     
     r.load_global_inputs ();
+//    r.load_global_inputs ();
 
+#if defined (commentout)
     r.set_fixed_image (fixed);
     r.set_moving_image (moving);
-#if defined (commentout)
 #endif
 
     printf ("Calling start_registration\n");
