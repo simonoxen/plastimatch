@@ -1103,7 +1103,7 @@ Mabs::compute_dmap (
 
     /* Truncate the dmap.  This is to save disk space. 
        Maybe we won't need this if we can crop. */
-    Adjustment_list al;
+    Float_pair_list al;
     al.push_back (std::make_pair (
             -std::numeric_limits<float>::max(), 0));
     al.push_back (std::make_pair (-400, -400));

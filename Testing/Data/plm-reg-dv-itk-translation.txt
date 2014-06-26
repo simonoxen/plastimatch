@@ -16,3 +16,4 @@ max_its=5
 convergence_tol=3
 grad_tol=0.1
 res=2 2 2
+max_step=10

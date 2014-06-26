@@ -5,14 +5,14 @@
 #include <limits>
 #include "itkImageRegionIterator.h"
 
+#include "float_pair_list.h"
 #include "itk_adjust.h"
 #include "itk_image_clone.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
-#include "string_util.h"
 
 FloatImageType::Pointer
-itk_adjust (FloatImageType::Pointer image_in, const Adjustment_list& al)
+itk_adjust (FloatImageType::Pointer image_in, const Float_pair_list& al)
 {
     FloatImageType::Pointer image_out = itk_image_clone (image_in);
 
@@ -23,8 +23,8 @@ itk_adjust (FloatImageType::Pointer image_in, const Adjustment_list& al)
     /* Special processing for end caps */
     float left_slope = 1.0;
     float right_slope = 1.0;
-    Adjustment_list::const_iterator ait_start = al.begin();
-    Adjustment_list::const_iterator ait_end = al.end();
+    Float_pair_list::const_iterator ait_start = al.begin();
+    Float_pair_list::const_iterator ait_end = al.end();
     if (ait_start->first == -std::numeric_limits<float>::max()) {
         left_slope = ait_start->second;
         ait_start++;
@@ -36,7 +36,7 @@ itk_adjust (FloatImageType::Pointer image_in, const Adjustment_list& al)
 
     /* Debug adjustment lists */
 #if defined (commentout)
-    Adjustment_list::const_iterator it_d = ait_start;
+    Float_pair_list::const_iterator it_d = ait_start;
     while (it_d != ait_end) {
         printf ("[%f,%f]\n", it_d->first, it_d->second);
         it_d ++;
@@ -61,8 +61,8 @@ itk_adjust (FloatImageType::Pointer image_in, const Adjustment_list& al)
             goto found_vout;
         }
         else if (ait_start != ait_end) {
-            Adjustment_list::const_iterator ait = ait_start;
-            Adjustment_list::const_iterator prev = ait_start;
+            Float_pair_list::const_iterator ait = ait_start;
+            Float_pair_list::const_iterator prev = ait_start;
             ait++;
             do {
                 /* Case 2 */
@@ -90,67 +90,12 @@ itk_adjust (FloatImageType::Pointer image_in, const Adjustment_list& al)
     return image_out;
 }
 
-static void 
-get_next_number (int& rc, float& f, const char*& c)
-{
-    int n;
-
-    /* Skip whitespace */
-    while (isspace(*c)) ++c;
-
-    if (string_starts_with (c, "inf")) {
-        rc = 1;
-        f = std::numeric_limits<float>::max();
-        c += 3;
-    } else if (string_starts_with (c, "-inf")) {
-        rc = 1;
-        f = -std::numeric_limits<float>::max();
-        c += 4;
-    } else {
-        rc = sscanf (c, " %f %n", &f, &n);
-        if (rc >= 1) {
-            c += n;
-        }
-    }
-
-    /* Skip trailing comma */
-    while (*c == ',') ++c;
-}
-
-
 FloatImageType::Pointer
 itk_adjust (FloatImageType::Pointer image_in, const std::string& adj_string)
 {
-    Adjustment_list al;
-    const char* c = adj_string.c_str();
-    bool have_curve = false;
+    Float_pair_list al = parse_float_pairs (adj_string);
 
-    while (1) {
-        int rc;
-        float f1, f2;
-        get_next_number (rc, f1, c);
-        if (rc < 1) {
-            break;
-        }
-        get_next_number (rc, f2, c);
-        if (rc < 1) {
-            break;
-        }
-        have_curve = true;
-
-        /* Look for end-caps */
-        if (!is_number(f1)) {
-            if (al.size() == 0) {
-                f1 = -std::numeric_limits<float>::max();
-            } else {
-                f1 = std::numeric_limits<float>::max();
-            }
-        }
-        /* Append (x,y) pair to list */
-        al.push_back (std::make_pair (f1, f2));
-    }
-
-    if (!have_curve) {
+    if (al.empty()) {
         print_and_exit ("Error: couldn't parse adjust string: %s\n",
             adj_string.c_str());
     }
@@ -165,11 +110,11 @@ itk_auto_adjust (FloatImageType::Pointer image_in)
 
     FloatImageType::RegionType rg = image_in->GetLargestPossibleRegion ();
     FloatIteratorType it (image_in, rg);
-    Adjustment_list::const_iterator ait;
+    Float_pair_list::const_iterator ait;
 
     /* GCS: This is just something for spark, works for CT image differencing
        -- make a better method later */
-    Adjustment_list al;
+    Float_pair_list al;
     al.push_back (std::make_pair (-std::numeric_limits<float>::max(), 0.0));
     al.push_back (std::make_pair (-200.0,0));
     al.push_back (std::make_pair (0.0,127.5));

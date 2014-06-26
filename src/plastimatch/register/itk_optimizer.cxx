@@ -366,8 +366,9 @@ set_optimization_rsg (RegistrationType::Pointer registration,
 
 
 void
-set_optimization_oneplusone(RegistrationType::Pointer registration,
-                           Stage_parms* stage)
+set_optimization_oneplusone (
+    RegistrationType::Pointer registration,
+    Stage_parms* stage)
 {
   OnePlusOneOptimizerType::Pointer optimizer = OnePlusOneOptimizerType::New();
   optimizer->SetNormalVariateGenerator(OptimizerNormalGeneratorType::New() );

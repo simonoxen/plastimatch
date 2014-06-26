@@ -2889,12 +2889,9 @@ plm_add_test (
 plmtest_check_interval (
   "plm-reg-multi-a-check"
   "${PLM_BUILD_TESTING_DIR}/plm-reg-multi-a-stats.stdout.txt"
-##  "Max: *([-0-9.]*)"
-##  "-19.82"
-##  "-19.80"
-  "Max: *([-0-9.]*)"
-  "2.5"
-  "2.8"
+  "Mean: *([-0-9.]*)"
+  "-22"
+  "-18"
   )
 set_tests_properties (plm-reg-multi-a PROPERTIES 
   DEPENDS "rect-2;sphere-2")

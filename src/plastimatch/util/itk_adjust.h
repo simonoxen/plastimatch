@@ -8,10 +8,9 @@
 #include <list>
 #include <utility>
 #include "itk_image_type.h"
+#include "float_pair_list.h"
 
-typedef std::list< std::pair< float, float > > Adjustment_list;
-
-PLMUTIL_API FloatImageType::Pointer itk_adjust (FloatImageType::Pointer image, const Adjustment_list& al);
+PLMUTIL_API FloatImageType::Pointer itk_adjust (FloatImageType::Pointer image, const Float_pair_list& al);
 PLMUTIL_API FloatImageType::Pointer itk_adjust (FloatImageType::Pointer image, const std::string& adj_string);
 PLMUTIL_API FloatImageType::Pointer itk_auto_adjust (FloatImageType::Pointer image);
 

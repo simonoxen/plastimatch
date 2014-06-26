@@ -15,6 +15,7 @@ convergence_tol=3
 grad_tol=0.1
 res=2 2 2
 img_out=plm-reg-itk-rigid-a-intermediate-img.mha
+max_step=10
 
 [STAGE]
 xform=rigid
