@@ -2,10 +2,14 @@
 #include "itkConditionVariable.h"
 #include "itkMultiThreader.h"
 #include "itkMutexLock.h"
-#include "itkMutexLockHolder.h"
-#include "plm_sleep.h"
 
-itk::SimpleMutexLock *sfml;
+#if _WIN32
+#include <windows.h>
+#define plm_sleep(x) Sleep(x)
+#else
+#include <unistd.h>
+#define plm_sleep(x) usleep(1000*x)
+#endif
 
 class Thread_struct
 {
@@ -13,37 +17,30 @@ public:
     itk::SimpleMutexLock mutex;
     itk::ConditionVariable::Pointer condition;
     bool semaphore_available;
-    int j;
     bool die;
 public:
     Thread_struct () {
-        condition = itk::ConditionVariable::New(); 
-        die = false;
-        j = 30;
-        semaphore_available = true;
-        mutex.Unlock ();
+        this->condition = itk::ConditionVariable::New(); 
+        this->die = false;
+        this->semaphore_available = true;
     }
     ~Thread_struct () {
     }
     void release_semaphore ()
     {
-        mutex.Lock();
-        semaphore_available = true;
-        condition->Signal();
-#if defined (commentout)
-#endif
-        mutex.Unlock();
+        this->mutex.Lock();
+        this->semaphore_available = true;
+        this->condition->Signal ();
+        this->mutex.Unlock();
     }
     void grab_semaphore ()
     {
-        mutex.Lock();
-        if (semaphore_available == false) {
-            condition->Wait (&mutex);
+        this->mutex.Lock();
+        while (this->semaphore_available == false) {
+            this->condition->Wait (&mutex);
         }
-        semaphore_available = false;
-        mutex.Unlock();
-#if defined (commentout)
-#endif
+        this->semaphore_available = false;
+        this->mutex.Unlock();
     }
 };
 
@@ -54,12 +51,11 @@ thread_func (void* param)
     itk::MultiThreader::ThreadInfoStruct *info 
         = (itk::MultiThreader::ThreadInfoStruct*) param;
     Thread_struct* ts = (Thread_struct*) info->UserData;
+
     while (1) {
-        //printf ("Child: %d\n", ts->semaphore_available);
         ts->grab_semaphore ();
         plm_sleep (300);
         printf ("Child execute\n");
-        ++ ts->j;
         ts->release_semaphore ();
         if (ts->die) {
             break;
@@ -73,31 +69,32 @@ int main ()
     Thread_struct ts;
 
     itk::MultiThreader::Pointer threader = itk::MultiThreader::New();
-
-    printf ("Gonna Spawn...\n");
     int thread_no = threader->SpawnThread (thread_func, (void*) &ts);
+
+    /* Parent and child execute simultaneously */
     for (int i = 0; i < 3; i++) {
         plm_sleep (770);
-        printf ("Parent.\n");
+        printf ("Parent execute\n");
     }
-    printf ("Parent: %d\n", ts.semaphore_available);
+
+    /* Only parent executes */
     ts.grab_semaphore ();
-    printf ("Parent only.\n");
+    printf (">>> Parent only\n");
     for (int i = 0; i < 15; i++) {
         plm_sleep (70);
-        printf ("Parent.\n");
+        printf ("Parent execute\n");
     }
-    printf ("End parent only.\n");
+    printf (">>> End parent only\n");
     ts.release_semaphore ();
+
+    /* Parent and child execute simultaneously */
     for (int i = 0; i < 3; i++) {
         plm_sleep (770);
-        printf ("Parent.\n");
+        printf ("Parent execute\n");
     }
 
     ts.die = true;
-    printf ("Gonna wait..\n");
     threader->TerminateThread (thread_no);
 
-    printf ("final j = %d\n", ts.j);
     return 0;
 }
