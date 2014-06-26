@@ -1,25 +1,44 @@
 #include <stdio.h>
+#include "itkConditionVariable.h"
 #include "itkMultiThreader.h"
-#include "itkSemaphore.h"
-#include "itkSimpleFastMutexLock.h"
+#include "itkMutexLock.h"
+#include "itkMutexLockHolder.h"
 #include "plm_sleep.h"
 
-itk::SimpleFastMutexLock *sfml;
+itk::SimpleMutexLock *sfml;
 
 class Thread_struct
 {
 public:
-    itk::Semaphore::Pointer semaphore;
+    itk::SimpleMutexLock mutex;
+    itk::ConditionVariable::Pointer condition;
+    int semaphore;
     int j;
     bool die;
 public:
     Thread_struct () {
+        condition = itk::ConditionVariable::New(); 
         die = false;
         j = 30;
-        semaphore = itk::Semaphore::New ();
-        semaphore->Initialize (1);
+        semaphore = 1;
     }
     ~Thread_struct () {
+    }
+    void release_semaphore ()
+    {
+        mutex.Lock();
+        ++semaphore;
+        condition->Signal();
+        mutex.Unlock();
+    }
+    void grab_semaphore ()
+    {
+        mutex.Lock();
+        if (semaphore == 0) {
+            condition->Wait (&mutex);
+        }  
+        --semaphore;
+        mutex.Unlock();
     }
 };
 
@@ -31,11 +50,11 @@ thread_func (void* param)
         = (itk::MultiThreader::ThreadInfoStruct*) param;
     Thread_struct* ts = (Thread_struct*) info->UserData;
     while (1) {
-        ts->semaphore->Down ();
+        ts->grab_semaphore ();
         plm_sleep (300);
         ++ ts->j;
         printf ("Child: %d\n", ts->j);
-        ts->semaphore->Up ();
+        ts->release_semaphore ();
         if (ts->die) {
             break;
         }
@@ -55,12 +74,12 @@ int main ()
         plm_sleep (770);
         printf ("Parent.\n");
     }
-    ts.semaphore->Down();
+    ts.grab_semaphore ();
     for (int i = 0; i < 8; i++) {
-        plm_sleep (770);
+        plm_sleep (70);
         printf ("Parent.\n");
     }
-    ts.semaphore->Up();
+    ts.release_semaphore ();
     for (int i = 0; i < 3; i++) {
         plm_sleep (770);
         printf ("Parent.\n");

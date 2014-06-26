@@ -27,7 +27,6 @@ int main ()
     synthetic_mha (&rtds, &sm_parms);
     fixed = rtds.get_image();
     }
-    
     Plm_image::Pointer moving;
     {
     Rt_study rtds;
