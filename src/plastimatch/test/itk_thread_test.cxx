@@ -1,8 +1,8 @@
 #include <stdio.h>
-#include <windows.h>
 #include "itkMultiThreader.h"
 #include "itkSemaphore.h"
 #include "itkSimpleFastMutexLock.h"
+#include "plm_sleep.h"
 
 itk::SimpleFastMutexLock *sfml;
 
@@ -32,7 +32,7 @@ thread_func (void* param)
     Thread_struct* ts = (Thread_struct*) info->UserData;
     while (1) {
         ts->semaphore->Down ();
-        Sleep (300);
+        plm_sleep (300);
         ++ ts->j;
         printf ("Child: %d\n", ts->j);
         ts->semaphore->Up ();
@@ -52,17 +52,17 @@ int main ()
     printf ("Gonna Spawn...\n");
     int thread_no = threader->SpawnThread (thread_func, (void*) &ts);
     for (int i = 0; i < 3; i++) {
-        Sleep (770);
+        plm_sleep (770);
         printf ("Parent.\n");
     }
     ts.semaphore->Down();
     for (int i = 0; i < 8; i++) {
-        Sleep (770);
+        plm_sleep (770);
         printf ("Parent.\n");
     }
     ts.semaphore->Up();
     for (int i = 0; i < 3; i++) {
-        Sleep (770);
+        plm_sleep (770);
         printf ("Parent.\n");
     }
 
