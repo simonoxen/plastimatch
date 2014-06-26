@@ -35,10 +35,10 @@ if "%COMPUTERNAME%"=="COTTONTAIL" (
 ) else if "%COMPUTERNAME%"=="GALL" (
   echo Setting for GALL
 
-  @rem  SET ITK_PATH=%HOME%\build\vs2008\itk-3.20.1\bin\Release
-  @rem  SET PLASTIMATCH_BASE=%HOME%\build\vs2008\plastimatch-3.20.1-dcmtk
-  SET ITK_PATH=%HOME%\build\vs2010-64\itk-3.20.1\bin\Release
-  SET PLASTIMATCH_BASE=%HOME%\build\vs2010-64\plastimatch-3.20.1
+  SET ITK_PATH=%HOME%\build\vs2008\itk-3.20.1\bin\Release
+  SET PLASTIMATCH_BASE=%HOME%\build\vs2008\plastimatch-3.20.1-dcmtk
+  @rem SET ITK_PATH=%HOME%\build\vs2010-64\itk-3.20.1\bin\Release
+  @rem SET PLASTIMATCH_BASE=%HOME%\build\vs2010-64\plastimatch-3.20.1
   @rem SET FFTW_PATH=%HOME%\build\fftw-3.2.2
   SET FFTW_PATH=%HOME%\build\fftw-64
   SET QT_PATH=C:\QT\4.7.4\bin

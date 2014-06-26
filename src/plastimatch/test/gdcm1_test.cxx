@@ -17,7 +17,7 @@ main (int argc, char *argv[])
     }
 
 #if GDCM_VERSION_1
-    gdcm1_series_test (dicom_dir);
+//    gdcm1_series_test (dicom_dir);
 #endif
     return 0;
 }
