@@ -158,6 +158,11 @@ if (PLM_CONFIG_BUILD_TEST_PROGRAMS)
 	    ${BUILD_ALWAYS} ${INSTALL_NEVER})
     endif ()
 
+    # Test executable -- plm
+    plm_add_executable (plm_restart_test plm_restart_test.cxx
+	"${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+	${BUILD_ALWAYS} ${INSTALL_NEVER})
+
     # Test executable -- sizeof
     plm_add_executable (sizeof_test sizeof_test.cxx
 	"${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 

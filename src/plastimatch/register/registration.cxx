@@ -464,8 +464,6 @@ Registration::run_main_thread ()
     /* Set automatic parameters based on image size */
     set_automatic_parameters (regd, regp);
 
-
-
     std::list<Stage_parms*>& stages = regp->get_stages();
     std::list<Stage_parms*>::iterator it;
     for (it = stages.begin(); it != stages.end(); it++) {
@@ -502,6 +500,8 @@ Registration::run_main_thread ()
             regd->load_stage_input_files (sp);
 
             /* Run registation, results are stored in xf_out */
+            printf ("Doing registration stage\n");
+
             d_ptr->xf_out = do_registration_stage (
                 regp, regd, d_ptr->xf_in, sp);
 
@@ -525,6 +525,7 @@ registration_main_thread (void* param)
         = (itk::MultiThreader::ThreadInfoStruct*) param;
     Registration* reg = (Registration*) info->UserData;
 
+    printf ("Inside registration worker thread\n");
     reg->d_ptr->registration_running = true;
     reg->run_main_thread ();
     reg->d_ptr->registration_running = false;
@@ -540,9 +541,9 @@ Registration::start_registration ()
     } else {
         d_ptr->time_to_quit = false;
         d_ptr->semaphore->Initialize (1);
+        printf ("Launching registration worker thread\n");
         d_ptr->thread_no = d_ptr->threader->SpawnThread (
             registration_main_thread, (void*) this);
-        d_ptr->registration_running = true;
     }
 }
 
