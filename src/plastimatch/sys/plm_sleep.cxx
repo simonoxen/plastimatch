@@ -16,6 +16,6 @@ plm_sleep (int milliseconds)
 #if (_WIN32)
     Sleep (milliseconds);
 #else
-    usleep (1000 * microseconds);
+    usleep (1000 * milliseconds);
 #endif
 }
