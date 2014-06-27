@@ -6,7 +6,6 @@
 #include <string.h>
 #include "itkImageRegionConstIteratorWithIndex.h"
 #include "itkMultiThreader.h"
-#include "itkSemaphore.h"
 
 #include "bspline_xform.h"
 #include "gpuit_demons.h"
@@ -41,7 +40,7 @@ public:
     Xform::Pointer xf_out;
 
     itk::MultiThreader::Pointer threader;
-    itk::Semaphore::Pointer semaphore;
+    //itk::Semaphore::Pointer semaphore;
     int thread_no;
     bool registration_running;
     bool time_to_quit;
@@ -54,8 +53,8 @@ public:
         xf_out = Xform::New ();
 
         threader = itk::MultiThreader::New ();
-        semaphore = itk::Semaphore::New ();
-        semaphore->Initialize (1);
+        //semaphore = itk::Semaphore::New ();
+        //semaphore->Initialize (1);
         thread_no = -1;
         registration_running = false;
         time_to_quit = false;
@@ -490,7 +489,7 @@ Registration::run_main_thread ()
 
         } else if (sp->get_stage_type() == STAGE_TYPE_REGISTER) {
 
-            d_ptr->semaphore->Down ();
+            //d_ptr->semaphore->Down ();
 
             /* Swap xf_in and xf_out.  Memory for previous xf_in 
                gets released at this time. */
@@ -505,7 +504,7 @@ Registration::run_main_thread ()
             d_ptr->xf_out = do_registration_stage (
                 regp, regd, d_ptr->xf_in, sp);
 
-            d_ptr->semaphore->Up ();
+            //d_ptr->semaphore->Up ();
             if (d_ptr->time_to_quit) {
                 break;
             }
@@ -537,10 +536,10 @@ void
 Registration::start_registration ()
 {
     if (d_ptr->registration_running) {
-        d_ptr->semaphore->Up ();
+        //d_ptr->semaphore->Up ();
     } else {
         d_ptr->time_to_quit = false;
-        d_ptr->semaphore->Initialize (1);
+        //d_ptr->semaphore->Initialize (1);
         printf ("Launching registration worker thread\n");
         d_ptr->thread_no = d_ptr->threader->SpawnThread (
             registration_main_thread, (void*) this);
@@ -550,7 +549,7 @@ Registration::start_registration ()
 void 
 Registration::pause_registration ()
 {
-    d_ptr->semaphore->Down ();
+    //d_ptr->semaphore->Down ();
 }
 
 void 
