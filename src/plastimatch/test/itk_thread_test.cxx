@@ -30,8 +30,8 @@ public:
     {
         this->mutex.Lock();
         this->semaphore_available = true;
-        this->condition->Signal ();
         this->mutex.Unlock();
+        this->condition->Signal ();
     }
     void grab_semaphore ()
     {

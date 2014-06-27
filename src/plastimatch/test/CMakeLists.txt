@@ -54,9 +54,9 @@ if (PLM_CONFIG_BUILD_TEST_PROGRAMS)
     plm_add_executable (dlib_test dlib_test.cxx
 	"${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
 	${BUILD_ALWAYS} ${INSTALL_NEVER})
-      #plm_add_executable (dlib_thread_test dlib_thread_test.cxx
-      #"${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-      #${BUILD_ALWAYS} ${INSTALL_NEVER})
+    plm_add_executable (dlib_thread_test dlib_thread_test.cxx
+      "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
+      ${BUILD_ALWAYS} ${INSTALL_NEVER})
 
     # Test executable -- gabor_test
     plm_add_executable (gabor_test gabor_test.cxx 

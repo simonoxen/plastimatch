@@ -22,6 +22,7 @@ set (PLMSYS_LIBRARY_SRC
   compiler_warnings.h
   delayload.c delayload.h
   dir_list.cxx dir_list.h
+  dlib_threads.cxx dlib_threads.h 
   file_util.cxx file_util.h
   logfile.cxx logfile.h
   option_range.cxx option_range.h 

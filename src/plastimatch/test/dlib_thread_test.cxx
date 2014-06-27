@@ -1,23 +1,61 @@
 #include <stdio.h>
 #include "dlib_threads.h"
 
-class Struct {
-public:
-//    dlib::thread_function *tf;
-};
+#if _WIN32
+#include <windows.h>
+#define plm_sleep(x) Sleep(x)
+#else
+#include <unistd.h>
+#define plm_sleep(x) usleep(1000*x)
+#endif
+
+
+bool time_to_die = false;
 
 void thread_func (void* param)
 {
-    int* i = (int*) param;
-    ++*i;
+    Dlib_semaphore *s = (Dlib_semaphore *) param;
+    
+    while (1) {
+        s->grab_semaphore ();
+        plm_sleep (300);
+        printf ("Child execute\n");
+        s->release_semaphore ();
+        if (time_to_die) {
+            break;
+        }
+    }
 }
 
 int main ()
 {
-//    Struct s;
-    int j = 0;
-//    s.thread_function = new dlib::thread_function (thread_func, (void*) &j);
-//    delete s.thread_function;
-    printf ("j = %d\n", j);
+    Dlib_semaphore s;
+
+    Dlib_thread_function tf (thread_func, &s);
+
+    /* Parent and child execute simultaneously */
+    for (int i = 0; i < 3; i++) {
+        plm_sleep (770);
+        printf ("Parent execute\n");
+    }
+
+    /* Only parent executes */
+    s.grab_semaphore ();
+    printf (">>> Parent only\n");
+    for (int i = 0; i < 15; i++) {
+        plm_sleep (70);
+        printf ("Parent execute\n");
+    }
+    printf (">>> End parent only\n");
+    s.release_semaphore ();
+
+    /* Parent and child execute simultaneously */
+    for (int i = 0; i < 3; i++) {
+        plm_sleep (770);
+        printf ("Parent execute\n");
+    }
+
+    time_to_die = true;
+
     return 0;
 }
