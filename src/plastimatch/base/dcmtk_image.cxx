@@ -526,15 +526,19 @@ Dcmtk_rt_study::save_image (
     }
 
     for (plm_long k = 0; k < dsd.vol->dim[2]; k++) {
-        /* GCS FIX: direction cosines */
-        float z_loc = dsd.vol->offset[2] + k * dsd.vol->spacing[2];
+        /* GCS FIX #2:  This is possibly correct.  Not 100% sure. */
+        float z_loc = dsd.vol->offset[2] + dc[8] * k * dsd.vol->spacing[2];
+        printf ("z_loc = %f\n", z_loc);
         dsd.instance_no = k;
         dsd.fn.format ("%s/image%03d.dcm", dicom_dir, (int) k);
         make_parent_directories (dsd.fn);
         dsd.sthk.format ("%f", dsd.vol->spacing[2]);
         dsd.sloc.format ("%f", z_loc);
-        dsd.ipp.format ("%f\\%f\\%f", dsd.vol->offset[0], dsd.vol->offset[1], 
-            dsd.vol->offset[2] + k * dsd.vol->spacing[2]);
+        /* GCS FIX #2:  "Ditto" */
+        dsd.ipp.format ("%f\\%f\\%f", 
+            dsd.vol->offset[0] + dc[2] * k * dsd.vol->spacing[2],
+            dsd.vol->offset[1] + dc[5] * k * dsd.vol->spacing[2],
+            dsd.vol->offset[2] + dc[8] * k * dsd.vol->spacing[2]);
         dcmtk_uid (dsd.slice_uid, PLM_UID_PREFIX);
 
         dsd.slice_float = &((float*)dsd.vol->img)[k*dsd.slice_size];
