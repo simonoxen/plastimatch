@@ -27,7 +27,7 @@ void
 vf_regularize_numerical (
     Bspline_score *bscore, 
     const Reg_parms *parms, 
-    const Bspline_regularize_state *rst,
+    const Bspline_regularize *rst,
     const Bspline_xform* bxf,
     const Volume* vol
 )
@@ -312,7 +312,7 @@ void
 bspline_regularize_numeric_a (
     Bspline_score *bscore, 
     const Reg_parms *parms, 
-    const Bspline_regularize_state *rst,
+    const Bspline_regularize *rst,
     const Bspline_xform* bxf
 )
 {
@@ -324,7 +324,7 @@ bspline_regularize_numeric_a (
 
 void
 bspline_regularize_numeric_a_init (
-    Bspline_regularize_state* rst,
+    Bspline_regularize* rst,
     Bspline_xform* bxf
 )
 {
@@ -332,7 +332,7 @@ bspline_regularize_numeric_a_init (
 
 void
 bspline_regularize_numeric_a_destroy (
-    Bspline_regularize_state* rst,
+    Bspline_regularize* rst,
     Bspline_xform* bxf
 )
 {
@@ -756,7 +756,7 @@ void
 bspline_regularize_numeric_d (
     Bspline_score *bscore, 
     const Reg_parms *parms, 
-    const Bspline_regularize_state *rst,
+    const Bspline_regularize *rst,
     const Bspline_xform* bxf
 )
 {
@@ -851,7 +851,7 @@ bspline_regularize_numeric_d (
 
 void
 bspline_regularize_numeric_d_init (
-    Bspline_regularize_state* rst,
+    Bspline_regularize* rst,
     Bspline_xform* bxf
 )
 {
@@ -860,7 +860,7 @@ bspline_regularize_numeric_d_init (
 
 void
 bspline_regularize_numeric_d_destroy (
-    Bspline_regularize_state* rst,
+    Bspline_regularize* rst,
     Bspline_xform* bxf
 )
 {

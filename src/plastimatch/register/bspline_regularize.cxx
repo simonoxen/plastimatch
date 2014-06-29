@@ -12,7 +12,7 @@
 void
 bspline_regularize_initialize (
     Reg_parms* reg_parms,
-    Bspline_regularize_state* rst,
+    Bspline_regularize* rst,
     Bspline_xform* bxf
 )
 {
@@ -22,7 +22,7 @@ bspline_regularize_initialize (
         break;
     case 'b':
     case 'c':
-        vf_regularize_analytic_init (rst, bxf);
+        rst->vf_regularize_analytic_init (bxf);
         break;
     case 'd':
 	bspline_regularize_numeric_d_init (rst, bxf);
@@ -39,7 +39,7 @@ bspline_regularize_initialize (
 void
 bspline_regularize_destroy (
     Reg_parms* reg_parms,
-    Bspline_regularize_state* rst,
+    Bspline_regularize* rst,
     Bspline_xform* bxf
 )
 {
@@ -49,7 +49,7 @@ bspline_regularize_destroy (
         break;
     case 'b':
     case 'c':
-        vf_regularize_analytic_destroy (rst);
+        rst->vf_regularize_analytic_destroy ();
         break;
     case 'd':
 	bspline_regularize_numeric_d_destroy (rst, bxf);
@@ -66,7 +66,7 @@ bspline_regularize_destroy (
 void
 bspline_regularize (
     Bspline_score *bspline_score,    /* Gets updated */
-    Bspline_regularize_state* rst,
+    Bspline_regularize* rst,
     const Reg_parms* reg_parms,
     const Bspline_xform* bxf
 )

@@ -125,7 +125,7 @@ bspline_state_create (
 {
     Bspline_state *bst = (Bspline_state*) malloc (sizeof (Bspline_state));
     Reg_parms* reg_parms = parms->reg_parms;
-    Bspline_regularize_state* rst = &bst->rst;
+    Bspline_regularize* rst = &bst->rst;
     Bspline_landmarks* blm = parms->blm;
 
     memset (bst, 0, sizeof (Bspline_state));

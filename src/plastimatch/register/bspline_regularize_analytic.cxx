@@ -407,8 +407,7 @@ region_smoothness (
 
 
 void
-vf_regularize_analytic_init (
-    Bspline_regularize_state* rst,
+Bspline_regularize::vf_regularize_analytic_init (
     const Bspline_xform* bxf)
 {
     double X[256];                      /* 16 x 16 matrix */
@@ -416,101 +415,99 @@ vf_regularize_analytic_init (
     double Z[256];                      /* 16 x 16 matrix */
     double gs[3];
 
-    rst->cond = (double*)malloc(3*64*bxf->num_knots*sizeof(double));
+    this->cond = (double*)malloc(3*64*bxf->num_knots*sizeof(double));
 
     gs[0] = (double)bxf->grid_spac[0];
     gs[1] = (double)bxf->grid_spac[1];
     gs[2] = (double)bxf->grid_spac[2];
 
-    rst->QX_mats = (double*)malloc (3 * 16 * sizeof (double));
-    rst->QY_mats = (double*)malloc (3 * 16 * sizeof (double));
-    rst->QZ_mats = (double*)malloc (3 * 16 * sizeof (double));
+    this->QX_mats = (double*)malloc (3 * 16 * sizeof (double));
+    this->QY_mats = (double*)malloc (3 * 16 * sizeof (double));
+    this->QZ_mats = (double*)malloc (3 * 16 * sizeof (double));
 
-    memset (rst->QX_mats, 0, 3*16*sizeof(double));
-    memset (rst->QY_mats, 0, 3*16*sizeof(double));
-    memset (rst->QZ_mats, 0, 3*16*sizeof(double));
+    memset (this->QX_mats, 0, 3*16*sizeof(double));
+    memset (this->QY_mats, 0, 3*16*sizeof(double));
+    memset (this->QZ_mats, 0, 3*16*sizeof(double));
 
-    rst->QX = (double**)malloc (3 * sizeof (double*));
-    rst->QY = (double**)malloc (3 * sizeof (double*));
-    rst->QZ = (double**)malloc (3 * sizeof (double*));
+    this->QX = (double**)malloc (3 * sizeof (double*));
+    this->QY = (double**)malloc (3 * sizeof (double*));
+    this->QZ = (double**)malloc (3 * sizeof (double*));
 
     /* 4x4 matrices */
-    rst->QX[0] = rst->QX_mats;
-    rst->QX[1] = rst->QX[0] + 16;
-    rst->QX[2] = rst->QX[1] + 16;
+    this->QX[0] = this->QX_mats;
+    this->QX[1] = this->QX[0] + 16;
+    this->QX[2] = this->QX[1] + 16;
 
-    rst->QY[0] = rst->QY_mats;
-    rst->QY[1] = rst->QY[0] + 16;
-    rst->QY[2] = rst->QY[1] + 16;
+    this->QY[0] = this->QY_mats;
+    this->QY[1] = this->QY[0] + 16;
+    this->QY[2] = this->QY[1] + 16;
 
-    rst->QZ[0] = rst->QZ_mats;
-    rst->QZ[1] = rst->QZ[0] + 16;
-    rst->QZ[2] = rst->QZ[1] + 16;
+    this->QZ[0] = this->QZ_mats;
+    this->QZ[1] = this->QZ[0] + 16;
+    this->QZ[2] = this->QZ[1] + 16;
 
-    init_analytic (rst->QX, rst->QY, rst->QZ, bxf);
+    init_analytic (this->QX, this->QY, this->QZ, bxf);
 
     /* The below should probably be wrapped into init_analytic() */
-    rst->V_mats = (double*)malloc (6*4096 * sizeof (double));
-    rst->V = (double**)malloc (6 * sizeof (double*));
+    this->V_mats = (double*)malloc (6*4096 * sizeof (double));
+    this->V = (double**)malloc (6 * sizeof (double*));
 
     /* The six 64 x 64 V matrices */
-    rst->V[0] = rst->V_mats;
-    rst->V[1] = rst->V[0] + 4096;
-    rst->V[2] = rst->V[1] + 4096;
-    rst->V[3] = rst->V[2] + 4096;
-    rst->V[4] = rst->V[3] + 4096;
-    rst->V[5] = rst->V[4] + 4096;
+    this->V[0] = this->V_mats;
+    this->V[1] = this->V[0] + 4096;
+    this->V[2] = this->V[1] + 4096;
+    this->V[3] = this->V[2] + 4096;
+    this->V[4] = this->V[3] + 4096;
+    this->V[5] = this->V[4] + 4096;
 
-    eval_integral (X, rst->QX[2], gs[0]);
-    eval_integral (Y, rst->QY[0], gs[1]);
-    eval_integral (Z, rst->QZ[0], gs[2]);
-    get_Vmatrix (rst->V[0], X, Y, Z);
+    eval_integral (X, this->QX[2], gs[0]);
+    eval_integral (Y, this->QY[0], gs[1]);
+    eval_integral (Z, this->QZ[0], gs[2]);
+    get_Vmatrix (this->V[0], X, Y, Z);
 
-    eval_integral (X, rst->QX[0], gs[0]);
-    eval_integral (Y, rst->QY[2], gs[1]);
-    eval_integral (Z, rst->QZ[0], gs[2]);
-    get_Vmatrix (rst->V[1], X, Y, Z);
+    eval_integral (X, this->QX[0], gs[0]);
+    eval_integral (Y, this->QY[2], gs[1]);
+    eval_integral (Z, this->QZ[0], gs[2]);
+    get_Vmatrix (this->V[1], X, Y, Z);
 
-    eval_integral (X, rst->QX[0], gs[0]);
-    eval_integral (Y, rst->QY[0], gs[1]);
-    eval_integral (Z, rst->QZ[2], gs[2]);
-    get_Vmatrix (rst->V[2], X, Y, Z);
+    eval_integral (X, this->QX[0], gs[0]);
+    eval_integral (Y, this->QY[0], gs[1]);
+    eval_integral (Z, this->QZ[2], gs[2]);
+    get_Vmatrix (this->V[2], X, Y, Z);
 
-    eval_integral (X, rst->QX[1], gs[0]);
-    eval_integral (Y, rst->QY[1], gs[1]);
-    eval_integral (Z, rst->QZ[0], gs[2]);
-    get_Vmatrix (rst->V[3], X, Y, Z);
+    eval_integral (X, this->QX[1], gs[0]);
+    eval_integral (Y, this->QY[1], gs[1]);
+    eval_integral (Z, this->QZ[0], gs[2]);
+    get_Vmatrix (this->V[3], X, Y, Z);
 
-    eval_integral (X, rst->QX[1], gs[0]);
-    eval_integral (Y, rst->QY[0], gs[1]);
-    eval_integral (Z, rst->QZ[1], gs[2]);
-    get_Vmatrix (rst->V[4], X, Y, Z);
+    eval_integral (X, this->QX[1], gs[0]);
+    eval_integral (Y, this->QY[0], gs[1]);
+    eval_integral (Z, this->QZ[1], gs[2]);
+    get_Vmatrix (this->V[4], X, Y, Z);
 
-    eval_integral (X, rst->QX[0], gs[0]);
-    eval_integral (Y, rst->QY[1], gs[1]);
-    eval_integral (Z, rst->QZ[1], gs[2]);
-    get_Vmatrix (rst->V[5], X, Y, Z);
+    eval_integral (X, this->QX[0], gs[0]);
+    eval_integral (Y, this->QY[1], gs[1]);
+    eval_integral (Z, this->QZ[1], gs[2]);
+    get_Vmatrix (this->V[5], X, Y, Z);
 
     printf ("Regularizer initialized\n");
 }
 
 void
-vf_regularize_analytic_destroy (
-    Bspline_regularize_state* rst
-)
+Bspline_regularize::vf_regularize_analytic_destroy ()
 {
-    free (rst->cond);
+    free (this->cond);
 
-    free (rst->QX);
-    free (rst->QY);
-    free (rst->QZ);
+    free (this->QX);
+    free (this->QY);
+    free (this->QZ);
 
-    free (rst->QX_mats);
-    free (rst->QY_mats);
-    free (rst->QZ_mats);
+    free (this->QX_mats);
+    free (this->QY_mats);
+    free (this->QZ_mats);
 
-    free (rst->V_mats);
-    free (rst->V);
+    free (this->V_mats);
+    free (this->V);
 }
 
 
@@ -520,7 +517,7 @@ void
 vf_regularize_analytic_omp (
     Bspline_score *bspline_score, 
     const Reg_parms* reg_parms,
-    const Bspline_regularize_state* rst,
+    const Bspline_regularize* rst,
     const Bspline_xform* bxf)
 {
     plm_long i, n;
@@ -570,7 +567,7 @@ void
 vf_regularize_analytic (
     Bspline_score *bspline_score, 
     const Reg_parms* reg_parms,
-    const Bspline_regularize_state* rst,
+    const Bspline_regularize* rst,
     const Bspline_xform* bxf)
 {
     plm_long i, n;

@@ -9,7 +9,7 @@
 #include <string>
 
 #include "bspline_mi_hist.h"
-#include "bspline_regularize_state.h"
+#include "bspline_regularize.h"
 #include "bspline_score.h"
 
 /* JAS 2011.07.23
@@ -43,7 +43,7 @@ public:
     int feval;           /* Number of function evaluations */
     Bspline_score ssd;   /* Score and Gradient  */
     void* dev_ptrs;      /* GPU Device Pointers */
-    Bspline_regularize_state rst;   /* Analytic regularization */
+    Bspline_regularize rst;   /* Analytic regularization */
     Bspline_mi_hist_set *mi_hist;   /* MI histograms */
 };
 
