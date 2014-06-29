@@ -136,9 +136,6 @@
 
 #if defined(__BORLANDC__) || defined(_MSC_VER)
 #define snprintf _snprintf
-#ifndef va_copy
-#define va_copy(d,s) ((d) = (s))
-#endif
 #endif
 
 

@@ -13,6 +13,7 @@
 #include <string.h>
 #include <iterator>
 
+#include "plm_va_copy.h"
 #include "string_util.h"
 
 bool
