@@ -26,8 +26,10 @@ public:
     Dlib_semaphore ();
     ~Dlib_semaphore ();
 public:
-    void grab_semaphore ();
-    void release_semaphore ();
+    void master_grab_resource ();
+    void master_release_resource ();
+    void slave_grab_resource ();
+    void slave_release_resource ();
 };
 
 #endif

@@ -33,11 +33,14 @@ class Dlib_semaphore_private
 {
 public:
     dlib::mutex rm;
-    dlib::signaler rs;
-    bool semaphore_available;
+    dlib::signaler master_rs;
+    dlib::signaler slave_rs;
+    bool slave_active;
+    bool slave_waits;
 public:
-    Dlib_semaphore_private () : rs (rm) {
-        semaphore_available = true;
+    Dlib_semaphore_private () : master_rs (rm), slave_rs (rm) {
+        slave_active = false;
+        slave_waits = false;
     }
 };
 
@@ -52,23 +55,43 @@ Dlib_semaphore::~Dlib_semaphore ()
 }
 
 void
-Dlib_semaphore::grab_semaphore ()
-{
+Dlib_semaphore::master_grab_resource ()
+ {
     d_ptr->rm.lock ();
-    while (d_ptr->semaphore_available == false) {
-        d_ptr->rs.wait ();
+    d_ptr->slave_waits = true;
+    while (d_ptr->slave_active) {
+        d_ptr->master_rs.wait ();
     }
-    d_ptr->semaphore_available = false;
     d_ptr->rm.unlock ();
 }
 
 void
-Dlib_semaphore::release_semaphore ()
+Dlib_semaphore::master_release_resource ()
 {
     d_ptr->rm.lock ();
-    d_ptr->semaphore_available = true;
+    d_ptr->slave_waits = false;
+    d_ptr->slave_rs.signal ();
     d_ptr->rm.unlock ();
-    d_ptr->rs.signal ();
+}
+
+void
+Dlib_semaphore::slave_grab_resource ()
+ {
+    d_ptr->rm.lock ();
+    while (d_ptr->slave_waits) {
+        d_ptr->slave_rs.wait ();
+    }
+    d_ptr->slave_active = true;
+    d_ptr->rm.unlock ();
+}
+
+void
+Dlib_semaphore::slave_release_resource ()
+{
+    d_ptr->rm.lock ();
+    d_ptr->slave_active = false;
+    d_ptr->master_rs.signal ();
+    d_ptr->rm.unlock ();
 }
 
 #include "dlib/threads/multithreaded_object_extension.cpp"

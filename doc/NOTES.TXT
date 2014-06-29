@@ -1,3 +1,43 @@
+***** Restartable registration (second try) *****
+
+After a lot of effort, I learned that you can't simply code up 
+something like suggested on the ITK web site to create a semaphore
+from a condition variable [1].  Doing so does not work, because the 
+condition variable does not guarantee that the signalee gets the 
+resource before the signaller can re-grab.  N.b. that the DLIB 
+implementation has the same problem.
+
+Therefore instead, let's try a producer-consumer style solution, 
+with two locks.
+
+master_grab:
+  mutex.lock
+    slave_waits = true
+    master_waits = true
+    while master_waits == true
+      master_sema.wait       // wait for slave to finish
+  mutex.unlock
+
+master_release:
+  mutex.lock
+    slave_waits = false
+    slave_sema.signal      // wake up slave
+  mutex.unlock
+
+slave_grab:
+  mutex.lock
+    while slave_waits == true
+      slave_sema.wait      // slave waits to get woken up
+  mutex.unlock
+
+slave_release:
+  mutex.lock
+    master_waits = false;
+    master_sema.wait      // slave waits to get woken up
+  mutex.unlock
+
+http://itk.org/migrationv4/index.php?action=artikel&cat=3&id=108&artlang=en
+
 ***** Restartable registration *****
 
 Here is how it looks using ITK methodology

@@ -17,13 +17,13 @@ void thread_func (void* param)
     Dlib_semaphore *s = (Dlib_semaphore *) param;
     
     while (1) {
-        s->grab_semaphore ();
+        s->slave_grab_resource ();
         plm_sleep (300);
         printf ("Child execute\n");
-        s->release_semaphore ();
         if (time_to_die) {
             break;
         }
+        s->slave_release_resource ();
     }
 }
 
@@ -40,14 +40,15 @@ int main ()
     }
 
     /* Only parent executes */
-    s.grab_semaphore ();
+    printf ("Parent tries to grab...\n");
+    s.master_grab_resource ();
     printf (">>> Parent only\n");
     for (int i = 0; i < 15; i++) {
         plm_sleep (70);
         printf ("Parent execute\n");
     }
     printf (">>> End parent only\n");
-    s.release_semaphore ();
+    s.master_release_resource ();
 
     /* Parent and child execute simultaneously */
     for (int i = 0; i < 3; i++) {
