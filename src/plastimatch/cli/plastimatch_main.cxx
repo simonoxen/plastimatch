@@ -26,6 +26,7 @@
 #include "pcmd_header.h"
 #include "pcmd_jacobian.h"
 #include "pcmd_probe.h"
+#include "pcmd_register.h"
 #include "pcmd_resample.h"
 #include "pcmd_scale.h"
 //#include "pcmd_script.h"
@@ -43,7 +44,6 @@
 #include "plm_exception.h"
 #include "plm_version.h"
 #include "print_and_exit.h"
-#include "registration.h"
 
 static void
 print_version (void)
@@ -106,29 +106,6 @@ print_usage (int return_code)
         "  plastimatch command\n"
     );
     exit (return_code);
-}
-
-void
-do_command_register (int argc, char* argv[])
-{
-    char *command_filename;
-
-    if (!strcmp (argv[1], "register")) {
-        if (argc > 2) {
-            command_filename = argv[2];
-        } else {
-            printf ("Usage: plastimatch register command_file\n");
-            exit (1);
-        }
-    } else {
-        command_filename = argv[1];
-    }
-
-    Registration reg;
-    if (reg.set_command_file (command_filename) < 0) {
-        print_usage (1);
-    }
-    reg.do_registration ();
 }
 
 void

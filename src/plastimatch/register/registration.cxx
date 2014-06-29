@@ -8,6 +8,7 @@
 #include "itkMultiThreader.h"
 
 #include "bspline_xform.h"
+#include "dlib_threads.h"
 #include "gpuit_demons.h"
 #include "itk_demons.h"
 #include "itk_image_save.h"
@@ -40,7 +41,7 @@ public:
     Xform::Pointer xf_out;
 
     itk::MultiThreader::Pointer threader;
-    //itk::Semaphore::Pointer semaphore;
+    Dlib_semaphore semaphore;
     int thread_no;
     bool registration_running;
     bool time_to_quit;
@@ -53,8 +54,6 @@ public:
         xf_out = Xform::New ();
 
         threader = itk::MultiThreader::New ();
-        //semaphore = itk::Semaphore::New ();
-        //semaphore->Initialize (1);
         thread_no = -1;
         registration_running = false;
         time_to_quit = false;
@@ -489,7 +488,8 @@ Registration::run_main_thread ()
 
         } else if (sp->get_stage_type() == STAGE_TYPE_REGISTER) {
 
-            //d_ptr->semaphore->Down ();
+            /* Check if parent wants us to pause */
+            d_ptr->semaphore.slave_grab_resource ();
 
             /* Swap xf_in and xf_out.  Memory for previous xf_in 
                gets released at this time. */
@@ -504,7 +504,10 @@ Registration::run_main_thread ()
             d_ptr->xf_out = do_registration_stage (
                 regp, regd, d_ptr->xf_in, sp);
 
-            //d_ptr->semaphore->Up ();
+            /* Tell the parent thread that we finished a stage, 
+               so it can wake up if needed. */
+            d_ptr->semaphore.slave_release_resource ();
+
             if (d_ptr->time_to_quit) {
                 break;
             }
@@ -527,6 +530,7 @@ registration_main_thread (void* param)
     printf ("Inside registration worker thread\n");
     reg->d_ptr->registration_running = true;
     reg->run_main_thread ();
+    printf ("** Registration worker thread finished.\n");
     reg->d_ptr->registration_running = false;
 
     return ITK_THREAD_RETURN_VALUE;
@@ -536,10 +540,12 @@ void
 Registration::start_registration ()
 {
     if (d_ptr->registration_running) {
-        //d_ptr->semaphore->Up ();
+        /* If the registration is already running, we should wake 
+           wake up any frozen jobs */
+        d_ptr->semaphore.master_release_resource ();
     } else {
+        /* Otherwise, start a new job */
         d_ptr->time_to_quit = false;
-        //d_ptr->semaphore->Initialize (1);
         printf ("Launching registration worker thread\n");
         d_ptr->thread_no = d_ptr->threader->SpawnThread (
             registration_main_thread, (void*) this);
@@ -549,7 +555,7 @@ Registration::start_registration ()
 void 
 Registration::pause_registration ()
 {
-    //d_ptr->semaphore->Down ();
+    d_ptr->semaphore.master_grab_resource ();
 }
 
 void 

@@ -14,7 +14,10 @@ int main ()
         "moving=c:/tmp/moving.mha\n"
         "[STAGE]\n"
         "xform=bspline\n"
+#if defined (commentout)
         "max_its=1\n"
+#endif
+        "max_its=100\n"
         "[STAGE]\n"
         ;
     r.set_command_string (s);
@@ -36,28 +39,29 @@ int main ()
     moving = rtds.get_image();
     }
     
+#if defined (commentout)
     r.load_global_inputs ();
 //    r.load_global_inputs ();
+#endif
 
-#if defined (commentout)
     r.set_fixed_image (fixed);
     r.set_moving_image (moving);
-#endif
 
     printf ("Calling start_registration\n");
 
-#if defined (commentout)    
     r.start_registration ();
     plm_sleep (1000);
     printf (">>> PAUSE\n");
     r.pause_registration ();
+    printf (">>> PAUSE RETURNED\n");
     plm_sleep (3000);
     printf (">>> PAUSE COMPLETE\n");
     r.start_registration ();
     r.wait_for_complete ();
-#endif
 
+#if defined (commentout)    
     r.do_registration_pure_old ();
+#endif
 
     return 0;
 }
