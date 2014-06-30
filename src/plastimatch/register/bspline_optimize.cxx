@@ -21,6 +21,20 @@
 #include "logfile.h"
 #include "plm_math.h"
 
+Bspline_optimize::Bspline_optimize ()
+{
+    bxf = 0;
+    bst = 0;
+    parms = 0;
+    fixed = 0;
+    moving = 0;
+    moving_grad = 0;
+}
+
+Bspline_optimize::~Bspline_optimize ()
+{
+}
+
 static void
 log_parms (Bspline_parms* parms)
 {

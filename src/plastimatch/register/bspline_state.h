@@ -5,15 +5,23 @@
 #define _bspline_state_h_
 
 #include "plmregister_config.h"
-#include "plm_int.h"
 #include <string>
 
 #include "bspline_mi_hist.h"
 #include "bspline_regularize.h"
 #include "bspline_score.h"
+#include "plm_int.h"
+#include "smart_pointer.h"
+
+class Bspline_state_private;
 
 class Bspline_state {
 public:
+    SMART_POINTER_SUPPORT (Bspline_state);
+    Bspline_state_private *d_ptr;
+public:
+    Bspline_state ();
+    ~Bspline_state ();
 public:
     int it;              /* Number of iterations */
     int feval;           /* Number of function evaluations */
@@ -21,9 +29,6 @@ public:
     void* dev_ptrs;      /* GPU Device Pointers */
     Bspline_regularize rst;   /* Analytic regularization */
     Bspline_mi_hist_set *mi_hist;   /* MI histograms */
-public:
-    Bspline_state ();
-    ~Bspline_state ();
 };
 
 PLMREGISTER_C_API Bspline_state* bspline_state_create (
