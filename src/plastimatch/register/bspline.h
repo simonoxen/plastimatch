@@ -8,17 +8,12 @@
 #include "plm_int.h"
 #include <string>
 
-#include "bspline_mi_hist.h"
-#include "bspline_regularize.h"
-#include "bspline_score.h"
-
-class Bspline_landmarks;
 class Bspline_mi_hist_set;
 class Bspline_optimize;
 class Bspline_parms;
+class Bspline_score;
 class Bspline_state;
 class Bspline_xform;
-class Reg_parms;
 class Volume;
 
 PLMREGISTER_C_API Volume* bspline_compute_vf (const Bspline_xform* bxf);

@@ -12,12 +12,11 @@
 #include "bspline.h"
 #include "bspline_regularize.h"
 #include "bspline_regularize_analytic.h"
+#include "bspline_score.h"
 #include "bspline_xform.h"
 #include "plm_math.h"
 #include "plm_timer.h"
 #include "volume.h"
-
-//#define DEBUG
 
 void
 print_matrix (double* mat, int m, int n)

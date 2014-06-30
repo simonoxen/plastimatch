@@ -11,6 +11,7 @@
 #include "bspline_macros.h"
 #include "bspline_regularize.h"
 #include "bspline_regularize_numeric.h"
+#include "bspline_score.h"
 #include "bspline_xform.h"
 #include "logfile.h"
 #include "plm_math.h"
