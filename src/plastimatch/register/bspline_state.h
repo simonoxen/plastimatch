@@ -14,6 +14,7 @@
 #include "smart_pointer.h"
 
 class Bspline_state_private;
+class Bspline_parms;
 
 class PLMREGISTER_API Bspline_state {
 public:
