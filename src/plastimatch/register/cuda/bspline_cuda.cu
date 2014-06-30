@@ -13,6 +13,7 @@
 #include "bspline_cuda.h"
 #include "bspline_cuda_kernels.h"
 #include "bspline_mi_hist.h"
+#include "bspline_state.h"
 #include "bspline_xform.h"
 #include "cuda_util.h"
 #include "cuda_mem.h"

@@ -22,6 +22,7 @@
 #include "bspline_macros.h"
 #include "bspline_mse.h"
 #include "bspline_parms.h"
+#include "bspline_state.h"
 #include "file_util.h"
 #include "interpolate.h"
 #include "interpolate_macros.h"

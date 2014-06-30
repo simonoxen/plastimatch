@@ -11,6 +11,7 @@
 #include "bspline.h"
 #include "bspline_mi.h"
 #include "bspline_parms.h"
+#include "bspline_state.h"
 #include "bspline_xform.h"
 #include "mha_io.h"
 #include "plm_clp.h"

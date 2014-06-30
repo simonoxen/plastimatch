@@ -12,6 +12,7 @@
 #include "bspline.h"
 #include "bspline_optimize_lbfgsb.h"
 #include "bspline_parms.h"
+#include "bspline_state.h"
 #include "bspline_xform.h"
 #include "logfile.h"
 #include "plm_math.h"

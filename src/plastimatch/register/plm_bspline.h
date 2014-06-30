@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _gpuit_bspline_h_
-#define _gpuit_bspline_h_
+#ifndef _plm_bspline_h_
+#define _plm_bspline_h_
 
 #include "plmregister_config.h"
 #include "xform.h"

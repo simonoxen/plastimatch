@@ -30,6 +30,7 @@
 class Bspline_landmarks;
 class Bspline_mi_hist_set;
 class Bspline_parms;
+class Bspline_state;
 class Bspline_xform;
 class Reg_parms;
 class Volume;
@@ -37,19 +38,9 @@ class Volume;
 /* -----------------------------------------------------------------------
    Types
    ----------------------------------------------------------------------- */
-class Bspline_state {
-public:
-    int it;              /* Number of iterations */
-    int feval;           /* Number of function evaluations */
-    Bspline_score ssd;   /* Score and Gradient  */
-    void* dev_ptrs;      /* GPU Device Pointers */
-    Bspline_regularize rst;   /* Analytic regularization */
-    Bspline_mi_hist_set *mi_hist;   /* MI histograms */
-};
-
 class Bspline_optimize_data {
 public:
-    Bspline_xform* bxf;
+    Bspline_xform *bxf;
     Bspline_state *bst;
     Bspline_parms *parms;
     Volume *fixed;
