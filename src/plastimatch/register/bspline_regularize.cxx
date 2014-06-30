@@ -10,22 +10,21 @@
 #include "print_and_exit.h"
 
 void
-bspline_regularize_initialize (
+Bspline_regularize::initialize (
     Reg_parms* reg_parms,
-    Bspline_regularize* rst,
     Bspline_xform* bxf
 )
 {
     switch (reg_parms->implementation) {
     case 'a':
-	bspline_regularize_numeric_a_init (rst, bxf);
+	bspline_regularize_numeric_a_init (this, bxf);
         break;
     case 'b':
     case 'c':
-        rst->vf_regularize_analytic_init (bxf);
+        this->vf_regularize_analytic_init (bxf);
         break;
     case 'd':
-	bspline_regularize_numeric_d_init (rst, bxf);
+	bspline_regularize_numeric_d_init (this, bxf);
         break;
     default:
         print_and_exit (
@@ -37,22 +36,21 @@ bspline_regularize_initialize (
 }
 
 void
-bspline_regularize_destroy (
+Bspline_regularize::destroy (
     Reg_parms* reg_parms,
-    Bspline_regularize* rst,
     Bspline_xform* bxf
 )
 {
     switch (reg_parms->implementation) {
     case 'a':
-	bspline_regularize_numeric_a_destroy (rst, bxf);
+	bspline_regularize_numeric_a_destroy (this, bxf);
         break;
     case 'b':
     case 'c':
-        rst->vf_regularize_analytic_destroy ();
+        this->vf_regularize_analytic_destroy ();
         break;
     case 'd':
-	bspline_regularize_numeric_d_destroy (rst, bxf);
+	bspline_regularize_numeric_d_destroy (this, bxf);
         break;
     default:
         print_and_exit (
@@ -64,29 +62,28 @@ bspline_regularize_destroy (
 }
 
 void
-bspline_regularize (
+Bspline_regularize::compute_score (
     Bspline_score *bspline_score,    /* Gets updated */
-    Bspline_regularize* rst,
     const Reg_parms* reg_parms,
     const Bspline_xform* bxf
 )
 {
     switch (reg_parms->implementation) {
     case 'a':
-        bspline_regularize_numeric_a (bspline_score, reg_parms, rst, bxf);
+        bspline_regularize_numeric_a (bspline_score, reg_parms, this, bxf);
         break;
     case 'b':
-        vf_regularize_analytic (bspline_score, reg_parms, rst, bxf);
+        vf_regularize_analytic (bspline_score, reg_parms, this, bxf);
         break;
     case 'c':
 #if (OPENMP_FOUND)
-        vf_regularize_analytic_omp (bspline_score, reg_parms, rst, bxf);
+        vf_regularize_analytic_omp (bspline_score, reg_parms, this, bxf);
 #else
-        vf_regularize_analytic (bspline_score, reg_parms, rst, bxf);
+        vf_regularize_analytic (bspline_score, reg_parms, this, bxf);
 #endif
         break;
     case 'd':
-        bspline_regularize_numeric_d (bspline_score, reg_parms, rst, bxf);
+        bspline_regularize_numeric_d (bspline_score, reg_parms, this, bxf);
         break;
     default:
         print_and_exit (

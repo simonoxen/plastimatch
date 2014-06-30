@@ -134,7 +134,7 @@ bspline_state_create (
     if (reg_parms->lambda > 0.0f) {
         rst->fixed = parms->fixed;
         rst->moving = parms->moving;
-        bspline_regularize_initialize (reg_parms, rst, bxf);
+        rst->initialize (reg_parms, bxf);
     }
 
     /* Initialize MI histograms */
@@ -343,7 +343,7 @@ bspline_state_destroy (
     Reg_parms* reg_parms = parms->reg_parms;
 
     if (reg_parms->lambda > 0.0f) {
-        bspline_regularize_destroy (reg_parms, &bst->rst, bxf);
+        bst->rst.destroy (reg_parms, bxf);
     }
 
 #if (CUDA_FOUND)
@@ -756,7 +756,7 @@ bspline_score (Bspline_optimize_data *bod)
 
     /* Regularize */
     if (reg_parms->lambda > 0.0f) {
-        bspline_regularize (&bst->ssd, &bst->rst, reg_parms, bxf);
+        bst->rst.compute_score (&bst->ssd, reg_parms, bxf);
     }
 
     /* Compute landmark score/gradient to image score/gradient */

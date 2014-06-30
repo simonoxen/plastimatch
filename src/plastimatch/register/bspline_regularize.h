@@ -7,6 +7,7 @@
 #include "plmregister_config.h"
 #include "volume.h"
 
+class Bspline_regularize_private;
 class Bspline_score;
 class Bspline_xform;
 
@@ -22,7 +23,10 @@ public:
     }
 };
 
-class Bspline_regularize {
+class PLMREGISTER_API Bspline_regularize {
+public:
+    SMART_POINTER_SUPPORT (Bspline_regularize);
+    Bspline_regularize_private *d_ptr;
 public:
     Bspline_regularize ();
     ~Bspline_regularize ();
@@ -42,26 +46,24 @@ public:
     double** V;
     double* cond;
 public:
+    void initialize (
+        Reg_parms* reg_parms,
+        Bspline_xform* bxf
+    );
+    void destroy (
+        Reg_parms* reg_parms,
+        Bspline_xform* bxf
+    );
+    void compute_score (
+        Bspline_score* bsp_score,    /* Gets updated */
+        const Reg_parms* reg_parms,
+        const Bspline_xform* bxf
+    );
+
+public:
     void vf_regularize_analytic_init (
         const Bspline_xform* bxf);
     void vf_regularize_analytic_destroy ();
 };
-
-PLMREGISTER_API void bspline_regularize_initialize (
-    Reg_parms* reg_parms,
-    Bspline_regularize* rst,
-    Bspline_xform* bxf
-);
-PLMREGISTER_API void bspline_regularize_destroy (
-    Reg_parms* reg_parms,
-    Bspline_regularize* rst,
-    Bspline_xform* bxf
-);
-PLMREGISTER_API void bspline_regularize (
-    Bspline_score* bsp_score,    /* Gets updated */
-    Bspline_regularize* rst,
-    const Reg_parms* reg_parms,
-    const Bspline_xform* bxf
-);
 
 #endif
