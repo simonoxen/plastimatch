@@ -646,9 +646,9 @@ CUDA_bspline_mi_a (
     Bspline_optimize *bod
 )
 {
-    Bspline_parms *parms = bod->parms;
-    Bspline_state *bst = bod->bst;
-    Bspline_xform *bxf = bod->bxf;
+    Bspline_parms *parms = bod->get_bspline_parms ();
+    Bspline_state *bst = bod->get_bspline_state ();
+    Bspline_xform *bxf = bod->get_bspline_xform ();
 
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
@@ -787,9 +787,9 @@ CUDA_bspline_mse_j (
     Bspline_optimize *bod
 )
 {
-    Bspline_parms *parms = bod->parms;
-    Bspline_state *bst = bod->bst;
-    Bspline_xform *bxf = bod->bxf;
+    Bspline_parms *parms = bod->get_bspline_parms ();
+    Bspline_state *bst = bod->get_bspline_state ();
+    Bspline_xform *bxf = bod->get_bspline_xform ();
 
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;

@@ -440,9 +440,9 @@ report_score (
 void
 bspline_score (Bspline_optimize *bod)
 {
-    Bspline_parms *parms = bod->parms;
-    Bspline_state *bst   = bod->bst;
-    Bspline_xform *bxf   = bod->bxf;
+    Bspline_parms *parms = bod->get_bspline_parms ();
+    Bspline_state *bst = bod->get_bspline_state ();
+    Bspline_xform *bxf = bod->get_bspline_xform ();
 
     Reg_parms* reg_parms = parms->reg_parms;
     Bspline_landmarks* blm = parms->blm;

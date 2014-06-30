@@ -15,13 +15,14 @@
 
 class Bspline_state_private;
 
-class Bspline_state {
+class PLMREGISTER_API Bspline_state {
 public:
     SMART_POINTER_SUPPORT (Bspline_state);
     Bspline_state_private *d_ptr;
 public:
     Bspline_state ();
     ~Bspline_state ();
+    void initialize (Bspline_xform *bxf, Bspline_parms *parms);
 public:
     int it;              /* Number of iterations */
     int feval;           /* Number of function evaluations */
@@ -31,6 +32,7 @@ public:
     Bspline_mi_hist_set *mi_hist;   /* MI histograms */
 };
 
+#if defined (commentout)
 PLMREGISTER_C_API Bspline_state* bspline_state_create (
     Bspline_xform *bxf, 
     Bspline_parms *parms
@@ -40,5 +42,6 @@ PLMREGISTER_C_API void bspline_state_destroy (
     Bspline_parms *parms,
     Bspline_xform *bxf
 );
+#endif
 
 #endif

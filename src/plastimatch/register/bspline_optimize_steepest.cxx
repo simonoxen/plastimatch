@@ -29,9 +29,10 @@ bspline_optimize_steepest_trace (
     Bspline_optimize *bod
 )
 {
-    Bspline_xform *bxf = bod->bxf;
-    Bspline_state *bst = bod->bst;
-    Bspline_parms *parms = bod->parms;
+    Bspline_parms *parms = bod->get_bspline_parms ();
+    Bspline_state *bst = bod->get_bspline_state ();
+    Bspline_xform *bxf = bod->get_bspline_xform ();
+
     Bspline_score* ssd = &bst->ssd;
     int i;
     float alpha = 1.0f;
@@ -216,9 +217,9 @@ bspline_optimize_steepest_trust (
     Bspline_optimize *bod
 )
 {
-    Bspline_xform *bxf = bod->bxf;
-    Bspline_state *bst = bod->bst;
-    Bspline_parms *parms = bod->parms;
+    Bspline_parms *parms = bod->get_bspline_parms ();
+    Bspline_state *bst = bod->get_bspline_state ();
+    Bspline_xform *bxf = bod->get_bspline_xform ();
     Bspline_score* ssd = &bst->ssd;
     int i;
     float alpha = 1.0f;
@@ -355,9 +356,9 @@ bspline_optimize_steepest_naive (
     Bspline_optimize *bod
 )
 {
-    Bspline_xform *bxf = bod->bxf;
-    Bspline_state *bst = bod->bst;
-    Bspline_parms *parms = bod->parms;
+    Bspline_parms *parms = bod->get_bspline_parms ();
+    Bspline_state *bst = bod->get_bspline_state ();
+    Bspline_xform *bxf = bod->get_bspline_xform ();
     Bspline_score* ssd = &bst->ssd;
     int i;
     //    float a = 0.003f;

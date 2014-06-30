@@ -26,26 +26,28 @@ evaluate (
     const lbfgsfloatval_t step)
 {
     Bspline_optimize *bod = (Bspline_optimize*) instance;
+    Bspline_xform *bxf = bod->get_bspline_xform ();
+    Bspline_state *bst = bod->get_bspline_state ();
     int i;
     
     /* Copy x in */
-    for (i = 0; i < bod->bxf->num_coeff; i++) {
-	bod->bxf->coeff[i] = (float) x[i];
+    for (i = 0; i < bxf->num_coeff; i++) {
+	bxf->coeff[i] = (float) x[i];
     }
 
     /* Compute cost and gradient */
     bspline_score (bod);
 
     /* Copy gradient out */
-    for (i = 0; i < bod->bxf->num_coeff; i++) {
-	g[i] = (lbfgsfloatval_t) bod->bst->ssd.grad[i];
+    for (i = 0; i < bxf->num_coeff; i++) {
+	g[i] = (lbfgsfloatval_t) bst->ssd.grad[i];
     }
 
     /* Increment num function evals */
-    bod->bst->feval ++;
+    bst->feval ++;
 
     /* Return cost */
-    return (lbfgsfloatval_t) bod->bst->ssd.score;
+    return (lbfgsfloatval_t) bst->ssd.score;
 }
 
 static int
@@ -63,13 +65,15 @@ progress(
 )
 {
     Bspline_optimize *bod = (Bspline_optimize*) instance;
+    Bspline_parms *parms = bod->get_bspline_parms ();
+    Bspline_state *bst = bod->get_bspline_state ();
 
     logfile_printf (
 	"                      XN %9.3f GN %9.3f ST %9.3f\n", 
 	xnorm, gnorm, step);
-    bod->bst->it = k;
-    if (bod->bst->it > bod->parms->max_its
-	|| bod->bst->feval > bod->parms->max_feval) {
+    bst->it = k;
+    if (bst->it > parms->max_its
+	|| bst->feval > parms->max_feval) {
 	return 1;
     }
     return 0;
@@ -83,18 +87,21 @@ bspline_optimize_liblbfgs (Bspline_optimize *bod)
     lbfgs_parameter_t param;
     lbfgsfloatval_t *x;
 
-    x = lbfgs_malloc (bod->bxf->num_coeff);
+    Bspline_state *bst = bod->get_bspline_state ();
+    Bspline_xform *bxf = bod->get_bspline_xform ();
+
+    x = lbfgs_malloc (bxf->num_coeff);
 
     /* Convert x0 from float to lbfgsfloatval_t */
-    for (i = 0; i < bod->bxf->num_coeff; i++) {
-	x[i] = (lbfgsfloatval_t) bod->bxf->coeff[i];
+    for (i = 0; i < bxf->num_coeff; i++) {
+	x[i] = (lbfgsfloatval_t) bxf->coeff[i];
     }
 
     /* Set default parameters */
     lbfgs_parameter_init (&param);
 
     /* Run the optimizer */
-    rc = lbfgs (bod->bxf->num_coeff, x, &fx, 
+    rc = lbfgs (bxf->num_coeff, x, &fx, 
 	evaluate, progress, (void*) bod, &param);
 
     (void) rc;  /* Suppress compiler warning */

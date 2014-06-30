@@ -21,11 +21,18 @@
 #include "logfile.h"
 #include "plm_math.h"
 
+class Bspline_optimize_private 
+{
+public:
+    Bspline_state::Pointer bst;
+    Bspline_xform *bxf;
+    Bspline_parms *parms;
+};
+
 Bspline_optimize::Bspline_optimize ()
 {
-    bxf = 0;
-    bst = 0;
-    parms = 0;
+    d_ptr = new Bspline_optimize_private;
+
     fixed = 0;
     moving = 0;
     moving_grad = 0;
@@ -33,6 +40,17 @@ Bspline_optimize::Bspline_optimize ()
 
 Bspline_optimize::~Bspline_optimize ()
 {
+    delete d_ptr;
+}
+
+void 
+Bspline_optimize::initialize (Bspline_xform *bxf, Bspline_parms *parms)
+{
+    d_ptr->parms = parms;
+    d_ptr->bst = Bspline_state::New ();
+    d_ptr->bxf = bxf;
+
+    d_ptr->bst->initialize (bxf, parms);
 }
 
 static void
@@ -61,7 +79,7 @@ bspline_optimize_select (
     Bspline_optimize *bod
 )
 {
-    Bspline_parms *parms = bod->parms;
+    Bspline_parms *parms = bod->get_bspline_parms ();
 
     switch (parms->optimization) {
     case BOPT_LBFGSB:
@@ -111,30 +129,41 @@ bspline_optimize_select (
 
 void
 bspline_optimize (
-    Bspline_xform* bxf, 
-    Bspline_state **bst_in, 
+    Bspline_xform *bxf, 
     Bspline_parms *parms
 )
 {
     Bspline_optimize bod;
-    bod.bxf = bxf;
-    bod.parms = parms;
+    bod.initialize (bxf, parms);
 
-    bod.bst = bspline_state_create (bxf, parms);
     log_parms (parms);
     log_bxf_header (bxf);
 
+    /* GCS FIX -- this should move into Bspline_state() constructor */
     /* Initialize histograms */
     if (parms->metric == BMET_MI) {
-        bod.bst->mi_hist->initialize (parms->fixed, parms->moving);
+        bod.get_bspline_state()->mi_hist->initialize (
+            parms->fixed, parms->moving);
     }
 
     /* Do the optimization */
     bspline_optimize_select (&bod);
+}
 
-    if (bst_in) {
-        *bst_in = bod.bst;
-    } else {
-        bspline_state_destroy (bod.bst, parms, bxf);
-    }
+Bspline_parms* 
+Bspline_optimize::get_bspline_parms ()
+{
+    return d_ptr->parms;
+}
+
+Bspline_state* 
+Bspline_optimize::get_bspline_state ()
+{
+    return d_ptr->bst.get();
+}
+
+Bspline_xform*
+Bspline_optimize::get_bspline_xform ()
+{
+    return d_ptr->bxf;
 }

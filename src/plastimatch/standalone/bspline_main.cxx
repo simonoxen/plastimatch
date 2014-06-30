@@ -101,7 +101,7 @@ main (int argc, char* argv[])
 
     /* Run the optimization */
     printf ("Running optimization.\n");
-    bspline_optimize (bxf, 0, parms);
+    bspline_optimize (bxf, parms);
     printf ("Done running optimization.\n");
 
     /* Save output transform */

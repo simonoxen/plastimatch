@@ -7,7 +7,11 @@
 #include "plmregister_config.h"
 #include "plm_int.h"
 
-class PLMREGISTER_API Bspline_score {
+class PLMREGISTER_API Bspline_score
+{
+public:
+    Bspline_score ();
+    ~Bspline_score ();
 public:
     float score;         /* Total Score (sent to optimizer) */
     float lmetric;       /* Landmark metric */
@@ -20,10 +24,6 @@ public:
 
     double time_smetric;   /* Time to compute similarity metric */
     double time_rmetric;   /* Time to compute regularization metric */
-public:
-    Bspline_score ();
-    ~Bspline_score ();
-
 public:
     void set_num_coeff (plm_long num_coeff);
     void reset_score ();

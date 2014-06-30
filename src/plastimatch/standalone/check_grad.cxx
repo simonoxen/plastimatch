@@ -91,7 +91,6 @@ check_gradient (
     plm_long roi_offset[3];
 
     Bspline_optimize bod;
-    Bspline_state *bst;
     Bspline_xform *bxf;
     Bspline_parms *parms = new Bspline_parms;
 
@@ -126,12 +125,8 @@ check_gradient (
             }
         }
     }
-    bst = bspline_state_create (bxf, parms);
-
-    /* Fixate items into bod structure */
-    bod.bxf = bxf;
-    bod.bst = bst;
-    bod.parms = parms;
+    bod.initialize (bxf, parms);
+    Bspline_state *bst = bod.get_bspline_state ();
 
     /* Create scratch variables */
     x = (float*) malloc (sizeof(float) * bxf->num_coeff);
@@ -144,7 +139,7 @@ check_gradient (
     }
 
     if (parms->metric == BMET_MI) {
-        bod.bst->mi_hist->initialize (parms->fixed, parms->moving);
+        bst->mi_hist->initialize (parms->fixed, parms->moving);
     }
 
     /* Get score and gradient */
@@ -216,7 +211,6 @@ check_gradient (
     free (x);
     free (grad);
     free (grad_fd);
-    bspline_state_destroy (bst, parms, bxf);
     delete parms;
     delete bxf;
 }

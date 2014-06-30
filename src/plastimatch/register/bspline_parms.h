@@ -8,6 +8,7 @@
 #include <string>
 #include "bspline_mi_hist.h"
 #include "double_align8.h"
+#include "smart_pointer.h"
 
 enum BsplineOptimization {
     BOPT_LBFGSB,
@@ -33,6 +34,11 @@ class Reg_parms;
 
 class PLMREGISTER_API Bspline_parms
 {
+public:
+    SMART_POINTER_SUPPORT (Bspline_parms);
+public:
+    Bspline_parms ();
+    ~Bspline_parms ();
 public:
     enum BsplineThreading threading;
     enum BsplineOptimization optimization;
@@ -76,10 +82,6 @@ public:
     float rbf_radius;            /* Radius of RBF; if rbf_radius>0, RBF are used */
     float rbf_young_modulus;     /* Penalty for the large 2nd derivative of RBF vector field */
     char* xpm_hist_dump;         /* Pointer to base string of hist dumps */
-
-public:
-    Bspline_parms ();
-    ~Bspline_parms ();
 };
 
 #endif

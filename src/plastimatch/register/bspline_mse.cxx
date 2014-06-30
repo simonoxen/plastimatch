@@ -41,9 +41,9 @@ bspline_score_normalize (
     double raw_score
 )
 {
-    Bspline_state *bst = bod->bst;
+    Bspline_state *bst = bod->get_bspline_state ();
+    Bspline_xform *bxf = bod->get_bspline_xform ();
     Bspline_score* ssd = &bst->ssd;
-    Bspline_xform *bxf = bod->bxf;
 
     const int MIN_VOX = 1;
 
@@ -78,9 +78,9 @@ bspline_score_i_mse (
     Bspline_optimize *bod
 )
 {
-    Bspline_parms *parms = bod->parms;
-    Bspline_state *bst = bod->bst;
-    Bspline_xform *bxf = bod->bxf;
+    Bspline_parms *parms = bod->get_bspline_parms ();
+    Bspline_state *bst = bod->get_bspline_state ();
+    Bspline_xform *bxf = bod->get_bspline_xform ();
 
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
@@ -314,9 +314,9 @@ bspline_score_h_mse (
     Bspline_optimize *bod
 )
 {
-    Bspline_parms *parms = bod->parms;
-    Bspline_state *bst = bod->bst;
-    Bspline_xform *bxf = bod->bxf;
+    Bspline_parms *parms = bod->get_bspline_parms ();
+    Bspline_state *bst = bod->get_bspline_state ();
+    Bspline_xform *bxf = bod->get_bspline_xform ();
 
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
@@ -539,9 +539,9 @@ bspline_score_g_mse (
     Bspline_optimize *bod
 )
 {
-    Bspline_parms *parms = bod->parms;
-    Bspline_state *bst = bod->bst;
-    Bspline_xform *bxf = bod->bxf;
+    Bspline_parms *parms = bod->get_bspline_parms ();
+    Bspline_state *bst = bod->get_bspline_state ();
+    Bspline_xform *bxf = bod->get_bspline_xform ();
 
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
@@ -761,9 +761,9 @@ bspline_score_c_mse_no_dcos (
     Bspline_optimize *bod
 )
 {
-    Bspline_parms *parms = bod->parms;
-    Bspline_state *bst = bod->bst;
-    Bspline_xform *bxf = bod->bxf;
+    Bspline_parms *parms = bod->get_bspline_parms ();
+    Bspline_state *bst = bod->get_bspline_state ();
+    Bspline_xform *bxf = bod->get_bspline_xform ();
 
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
@@ -904,9 +904,9 @@ bspline_score_c_mse (
     Bspline_optimize *bod
 )
 {
-    Bspline_parms *parms = bod->parms;
-    Bspline_state *bst = bod->bst;
-    Bspline_xform *bxf = bod->bxf;
+    Bspline_parms *parms = bod->get_bspline_parms ();
+    Bspline_state *bst = bod->get_bspline_state ();
+    Bspline_xform *bxf = bod->get_bspline_xform ();
 
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;

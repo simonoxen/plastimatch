@@ -101,7 +101,7 @@ Plm_bspline::run_stage ()
     Bspline_parms *bsp_parms = &d_ptr->bsp_parms;
 
     /* Run bspline optimization */
-    bspline_optimize (xf_out->get_gpuit_bsp(), 0, bsp_parms);
+    bspline_optimize (xf_out->get_gpuit_bsp(), bsp_parms);
 }
 
 void
@@ -118,7 +118,7 @@ Plm_bspline::initialize ()
 
     logfile_printf ("Converting fixed\n");
     Volume::Pointer& fixed = regd->fixed_image->get_volume_float ();
-    logfile_printf ("Converting movingn");
+    logfile_printf ("Converting moving\n");
     Volume::Pointer& moving = regd->moving_image->get_volume_float ();
     logfile_printf ("Done.\n");
 

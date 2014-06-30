@@ -48,8 +48,8 @@ public:
 
 Nocedal_optimizer::Nocedal_optimizer (Bspline_optimize *bod)
 {
-    Bspline_xform *bxf = bod->bxf;
-    Bspline_parms *parms = bod->parms;
+    Bspline_parms *parms = bod->get_bspline_parms ();
+    Bspline_xform *bxf = bod->get_bspline_xform ();
 
     int nmax = bxf->num_coeff;
     int mmax = 20;
@@ -153,9 +153,9 @@ bspline_optimize_lbfgsb (
     Bspline_optimize *bod
 )
 {
-    Bspline_xform *bxf = bod->bxf;
-    Bspline_state *bst = bod->bst;
-    Bspline_parms *parms = bod->parms;
+    Bspline_parms *parms = bod->get_bspline_parms ();
+    Bspline_state *bst = bod->get_bspline_state ();
+    Bspline_xform *bxf = bod->get_bspline_xform ();
     Bspline_score* ssd = &bst->ssd;
     FILE *fp = 0;
     double old_best_score = DBL_MAX;
