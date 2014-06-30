@@ -9,6 +9,14 @@
 #include "bspline_xform.h"
 #include "print_and_exit.h"
 
+Bspline_regularize::Bspline_regularize ()
+{
+}
+
+Bspline_regularize::~Bspline_regularize ()
+{
+}
+
 void
 Bspline_regularize::initialize (
     Reg_parms* reg_parms,
