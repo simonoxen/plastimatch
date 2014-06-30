@@ -12,7 +12,7 @@ class Bspline_parms;
 class Bspline_state;
 class Bspline_xform;
 
-class Bspline_optimize {
+class PLMREGISTER_API Bspline_optimize {
 public:
     SMART_POINTER_SUPPORT (Bspline_optimize);
     Bspline_optimize_private *d_ptr;
