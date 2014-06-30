@@ -6,8 +6,8 @@
 
 #include <stdio.h>
 
-class Bspline_optimize_data;
+class Bspline_optimize;
 
-PLMREGISTER_C_API void bspline_optimize_lbfgsb (Bspline_optimize_data *bod);
+PLMREGISTER_C_API void bspline_optimize_lbfgsb (Bspline_optimize *bod);
 
 #endif

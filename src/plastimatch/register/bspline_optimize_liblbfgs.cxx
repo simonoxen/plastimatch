@@ -9,6 +9,7 @@
 #include <math.h>
 
 #include "bspline.h"
+#include "bspline_optimize.h"
 #include "bspline_optimize_liblbfgs.h"
 #include "bspline_parms.h"
 #include "bspline_state.h"
@@ -24,7 +25,7 @@ evaluate (
     const int n,
     const lbfgsfloatval_t step)
 {
-    Bspline_optimize_data *bod = (Bspline_optimize_data*) instance;
+    Bspline_optimize *bod = (Bspline_optimize*) instance;
     int i;
     
     /* Copy x in */
@@ -61,7 +62,7 @@ progress(
     int ls                        /* feval within this iteration */
 )
 {
-    Bspline_optimize_data *bod = (Bspline_optimize_data*) instance;
+    Bspline_optimize *bod = (Bspline_optimize*) instance;
 
     logfile_printf (
 	"                      XN %9.3f GN %9.3f ST %9.3f\n", 
@@ -75,7 +76,7 @@ progress(
 }
 
 void
-bspline_optimize_liblbfgs (Bspline_optimize_data *bod)
+bspline_optimize_liblbfgs (Bspline_optimize *bod)
 {
     int i, rc;
     lbfgsfloatval_t fx;

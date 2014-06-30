@@ -19,6 +19,7 @@
 #include "bspline_macros.h"
 #include "bspline_mi.h"
 #include "bspline_mi_hist.h"
+#include "bspline_optimize.h"
 #include "bspline_parms.h"
 #include "bspline_state.h"
 #include "file_util.h"
@@ -1316,7 +1317,7 @@ bspline_mi_pvi_6_dc_dv (
 #if (OPENMP_FOUND)
 void
 bspline_score_i_mi (
-    Bspline_optimize_data *bod
+    Bspline_optimize *bod
 )
 {
     Bspline_parms *parms = bod->parms;
@@ -1646,7 +1647,7 @@ bspline_score_i_mi (
  */
 void
 bspline_score_h_mi (
-    Bspline_optimize_data *bod
+    Bspline_optimize *bod
 )
 {
     Bspline_parms *parms = bod->parms;
@@ -1926,7 +1927,7 @@ bspline_score_h_mi (
  */
 void
 bspline_score_g_mi (
-    Bspline_optimize_data *bod
+    Bspline_optimize *bod
 )
 {
     Bspline_parms *parms = bod->parms;
@@ -2181,7 +2182,7 @@ bspline_score_g_mi (
 #if (OPENMP_FOUND)
 void
 bspline_score_f_mi (
-    Bspline_optimize_data *bod
+    Bspline_optimize *bod
 )
 {
     Bspline_parms *parms = bod->parms;
@@ -2479,7 +2480,7 @@ bspline_score_f_mi (
 #if (OPENMP_FOUND)
 void
 bspline_score_e_mi (
-    Bspline_optimize_data *bod
+    Bspline_optimize *bod
 )
 {
     Bspline_parms *parms = bod->parms;
@@ -2820,7 +2821,7 @@ bspline_score_e_mi (
  */
 void
 bspline_score_d_mi (
-    Bspline_optimize_data *bod
+    Bspline_optimize *bod
 )
 {
     Bspline_parms *parms = bod->parms;
@@ -3108,7 +3109,7 @@ bspline_score_d_mi (
 /* Mutual information version of implementation "C" */
 void
 bspline_score_c_mi (
-    Bspline_optimize_data *bod
+    Bspline_optimize *bod
 )
 {
     Bspline_parms *parms = bod->parms;
@@ -3349,7 +3350,7 @@ bspline_score_c_mi (
 /* Mutual information version of implementation "C" */
 void
 bspline_score_c_mi_no_dcos (
-    Bspline_optimize_data *bod
+    Bspline_optimize *bod
 )
 {
     Bspline_parms *parms = bod->parms;

@@ -42,6 +42,7 @@
 #include "bspline_mi.h"
 #include "bspline_mi_hist.h"
 #include "bspline_mse.h"
+#include "bspline_optimize.h"
 #include "bspline_parms.h"
 #include "bspline_regularize.h"
 #include "bspline_state.h"
@@ -437,7 +438,7 @@ report_score (
 
 
 void
-bspline_score (Bspline_optimize_data *bod)
+bspline_score (Bspline_optimize *bod)
 {
     Bspline_parms *parms = bod->parms;
     Bspline_state *bst   = bod->bst;

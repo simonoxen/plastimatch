@@ -21,6 +21,7 @@
 #include "bspline_interpolate.h"
 #include "bspline_macros.h"
 #include "bspline_mse.h"
+#include "bspline_optimize.h"
 #include "bspline_parms.h"
 #include "bspline_state.h"
 #include "file_util.h"
@@ -36,7 +37,7 @@
 
 void
 bspline_score_normalize (
-    Bspline_optimize_data *bod,
+    Bspline_optimize *bod,
     double raw_score
 )
 {
@@ -74,7 +75,7 @@ bspline_score_normalize (
 ///////////////////////////////////////////////////////////////////////////////
 void
 bspline_score_i_mse (
-    Bspline_optimize_data *bod
+    Bspline_optimize *bod
 )
 {
     Bspline_parms *parms = bod->parms;
@@ -310,7 +311,7 @@ bspline_score_i_mse (
 ///////////////////////////////////////////////////////////////////////////////
 void
 bspline_score_h_mse (
-    Bspline_optimize_data *bod
+    Bspline_optimize *bod
 )
 {
     Bspline_parms *parms = bod->parms;
@@ -535,7 +536,7 @@ bspline_score_h_mse (
 ///////////////////////////////////////////////////////////////////////////////
 void
 bspline_score_g_mse (
-    Bspline_optimize_data *bod
+    Bspline_optimize *bod
 )
 {
     Bspline_parms *parms = bod->parms;
@@ -757,7 +758,7 @@ bspline_score_g_mse (
    ----------------------------------------------------------------------- */
 void
 bspline_score_c_mse_no_dcos (
-    Bspline_optimize_data *bod
+    Bspline_optimize *bod
 )
 {
     Bspline_parms *parms = bod->parms;
@@ -900,7 +901,7 @@ bspline_score_c_mse_no_dcos (
    ----------------------------------------------------------------------- */
 void
 bspline_score_c_mse (
-    Bspline_optimize_data *bod
+    Bspline_optimize *bod
 )
 {
     Bspline_parms *parms = bod->parms;

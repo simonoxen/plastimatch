@@ -31,7 +31,7 @@
 #define GPU_MAX_BINS 32
 
 class Bspline_mi_hist_set;
-class Bspline_optimize_data;
+class Bspline_optimize;
 class Bspline_parms;
 class Bspline_state;
 class Bspline_xform;
@@ -130,13 +130,13 @@ extern "C" {
     PLMREGISTERCUDA_API
     DELAYLOAD_WRAP (
     void CUDA_bspline_mi_a,
-        Bspline_optimize_data *bod
+        Bspline_optimize *bod
     );
 
     PLMREGISTERCUDA_API
     DELAYLOAD_WRAP (
     void CUDA_bspline_mse_j,
-        Bspline_optimize_data *bod
+        Bspline_optimize *bod
     );
 
     //

@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include "bspline.h"
+#include "bspline_optimize.h"
 #include "bspline_optimize_lbfgsb.h"
 #include "bspline_parms.h"
 #include "bspline_state.h"
@@ -29,7 +30,7 @@ public:
     integer n, m, iprint, *nbd, *iwa, isave[44];
     doublereal f, factr, pgtol, *x, *l, *u, *g, *wa, dsave[29];
 public:
-    Nocedal_optimizer (Bspline_optimize_data *bod);
+    Nocedal_optimizer (Bspline_optimize *bod);
     ~Nocedal_optimizer () {
         free (nbd);
         free (iwa);
@@ -45,7 +46,7 @@ public:
     }
 };
 
-Nocedal_optimizer::Nocedal_optimizer (Bspline_optimize_data *bod)
+Nocedal_optimizer::Nocedal_optimizer (Bspline_optimize *bod)
 {
     Bspline_xform *bxf = bod->bxf;
     Bspline_parms *parms = bod->parms;
@@ -149,7 +150,7 @@ Nocedal_optimizer::Nocedal_optimizer (Bspline_optimize_data *bod)
 
 void
 bspline_optimize_lbfgsb (
-    Bspline_optimize_data *bod
+    Bspline_optimize *bod
 )
 {
     Bspline_xform *bxf = bod->bxf;

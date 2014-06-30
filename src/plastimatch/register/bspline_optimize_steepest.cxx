@@ -13,6 +13,7 @@
 
 #include "bspline.h"
 #include "bspline_cuda.h"
+#include "bspline_optimize.h"
 #include "bspline_optimize_steepest.h"
 #include "bspline_parms.h"
 #include "bspline_state.h"
@@ -25,7 +26,7 @@
 */
 void
 bspline_optimize_steepest_trace (
-    Bspline_optimize_data *bod
+    Bspline_optimize *bod
 )
 {
     Bspline_xform *bxf = bod->bxf;
@@ -212,7 +213,7 @@ bspline_optimize_steepest_trace (
 */
 void
 bspline_optimize_steepest_trust (
-    Bspline_optimize_data *bod
+    Bspline_optimize *bod
 )
 {
     Bspline_xform *bxf = bod->bxf;
@@ -351,7 +352,7 @@ bspline_optimize_steepest_trust (
    doing any sort of line search. */
 void
 bspline_optimize_steepest_naive (
-    Bspline_optimize_data *bod
+    Bspline_optimize *bod
 )
 {
     Bspline_xform *bxf = bod->bxf;
@@ -437,7 +438,7 @@ bspline_optimize_steepest_naive (
 
 void
 bspline_optimize_steepest (
-    Bspline_optimize_data *bod
+    Bspline_optimize *bod
 )
 {
     const int USE_NAIVE = 0;

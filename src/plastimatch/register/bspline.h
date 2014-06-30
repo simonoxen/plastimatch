@@ -14,38 +14,16 @@
 
 class Bspline_landmarks;
 class Bspline_mi_hist_set;
+class Bspline_optimize;
 class Bspline_parms;
 class Bspline_state;
 class Bspline_xform;
 class Reg_parms;
 class Volume;
 
-/* -----------------------------------------------------------------------
-   Types
-   ----------------------------------------------------------------------- */
-class Bspline_optimize_data {
-public:
-    Bspline_xform *bxf;
-    Bspline_state *bst;
-    Bspline_parms *parms;
-    Volume *fixed;
-    Volume *moving;
-    Volume *moving_grad;
-public:
-    Bspline_optimize_data () {
-        bxf = 0;
-        bst = 0;
-        parms = 0;
-        fixed = 0;
-        moving = 0;
-        moving_grad = 0;
-    }
-};
-
-
 PLMREGISTER_C_API Volume* bspline_compute_vf (const Bspline_xform* bxf);
 void bspline_display_coeff_stats (Bspline_xform* bxf);
-PLMREGISTER_C_API void bspline_score (Bspline_optimize_data *bod);
+PLMREGISTER_C_API void bspline_score (Bspline_optimize *bod);
 void bspline_update_grad (
     Bspline_state *bst, 
     Bspline_xform* bxf, 

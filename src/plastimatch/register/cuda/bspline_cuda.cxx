@@ -18,6 +18,7 @@
 #endif
 #include "bspline_correspond.h"
 #include "bspline_interpolate.h"
+#include "bspline_optimize.h"
 #include "bspline_parms.h"
 #include "bspline_state.h"
 #include "bspline_xform.h"
@@ -642,7 +643,7 @@ CPU_MI_Grad (Bspline_mi_hist_set *mi_hist, // OUTPUT: Histograms
 
 void
 CUDA_bspline_mi_a (
-    Bspline_optimize_data *bod
+    Bspline_optimize *bod
 )
 {
     Bspline_parms *parms = bod->parms;
@@ -783,7 +784,7 @@ CUDA_bspline_mi_a (
 
 void
 CUDA_bspline_mse_j (
-    Bspline_optimize_data *bod
+    Bspline_optimize *bod
 )
 {
     Bspline_parms *parms = bod->parms;

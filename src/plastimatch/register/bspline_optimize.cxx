@@ -44,7 +44,7 @@ log_bxf_header (Bspline_xform* bxf)
 
 static void
 bspline_optimize_select (
-    Bspline_optimize_data *bod
+    Bspline_optimize *bod
 )
 {
     Bspline_parms *parms = bod->parms;
@@ -102,7 +102,7 @@ bspline_optimize (
     Bspline_parms *parms
 )
 {
-    Bspline_optimize_data bod;
+    Bspline_optimize bod;
     bod.bxf = bxf;
     bod.parms = parms;
 

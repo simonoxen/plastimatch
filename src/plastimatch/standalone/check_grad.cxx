@@ -10,6 +10,7 @@
 
 #include "bspline.h"
 #include "bspline_mi.h"
+#include "bspline_optimize.h"
 #include "bspline_parms.h"
 #include "bspline_state.h"
 #include "bspline_xform.h"
@@ -89,7 +90,7 @@ check_gradient (
 
     plm_long roi_offset[3];
 
-    Bspline_optimize_data bod;
+    Bspline_optimize bod;
     Bspline_state *bst;
     Bspline_xform *bxf;
     Bspline_parms *parms = new Bspline_parms;

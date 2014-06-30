@@ -6,15 +6,15 @@
 
 #include "plmregister_config.h"
 
-class Bspline_optimize_data;
+class Bspline_optimize;
 class Bspline_parms;
 
-PLMREGISTER_C_API void bspline_score_c_mi (Bspline_optimize_data *bod);
-PLMREGISTER_C_API void bspline_score_d_mi (Bspline_optimize_data *bod);
-PLMREGISTER_C_API void bspline_score_e_mi (Bspline_optimize_data *bod);
-PLMREGISTER_C_API void bspline_score_f_mi (Bspline_optimize_data *bod);
-PLMREGISTER_C_API void bspline_score_g_mi (Bspline_optimize_data *bod);
-PLMREGISTER_C_API void bspline_score_h_mi (Bspline_optimize_data *bod);
-PLMREGISTER_C_API void bspline_score_i_mi (Bspline_optimize_data *bod);
+PLMREGISTER_C_API void bspline_score_c_mi (Bspline_optimize *bod);
+PLMREGISTER_C_API void bspline_score_d_mi (Bspline_optimize *bod);
+PLMREGISTER_C_API void bspline_score_e_mi (Bspline_optimize *bod);
+PLMREGISTER_C_API void bspline_score_f_mi (Bspline_optimize *bod);
+PLMREGISTER_C_API void bspline_score_g_mi (Bspline_optimize *bod);
+PLMREGISTER_C_API void bspline_score_h_mi (Bspline_optimize *bod);
+PLMREGISTER_C_API void bspline_score_i_mi (Bspline_optimize *bod);
 
 #endif
