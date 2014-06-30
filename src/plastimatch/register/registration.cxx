@@ -36,14 +36,13 @@ public:
     Registration_data::Pointer rdata;
     Registration_parms::Pointer rparms;
 
-
     Xform::Pointer xf_in;
     Xform::Pointer xf_out;
 
     itk::MultiThreader::Pointer threader;
-    Dlib_semaphore semaphore;
+    Dlib_master_slave master_slave;
+    Dlib_semaphore worker_running;
     int thread_no;
-    bool registration_running;
     bool time_to_quit;
 
 public:
@@ -55,7 +54,6 @@ public:
 
         threader = itk::MultiThreader::New ();
         thread_no = -1;
-        registration_running = false;
         time_to_quit = false;
     }
     ~Registration_private () {
@@ -489,7 +487,7 @@ Registration::run_main_thread ()
         } else if (sp->get_stage_type() == STAGE_TYPE_REGISTER) {
 
             /* Check if parent wants us to pause */
-            d_ptr->semaphore.slave_grab_resource ();
+            d_ptr->master_slave.slave_grab_resource ();
 
             /* Swap xf_in and xf_out.  Memory for previous xf_in 
                gets released at this time. */
@@ -506,7 +504,7 @@ Registration::run_main_thread ()
 
             /* Tell the parent thread that we finished a stage, 
                so it can wake up if needed. */
-            d_ptr->semaphore.slave_release_resource ();
+            d_ptr->master_slave.slave_release_resource ();
 
             if (d_ptr->time_to_quit) {
                 break;
@@ -517,6 +515,9 @@ Registration::run_main_thread ()
     /* JAS 2012.03.29 - for GPUIT Bspline
      * make output match input resolution - not final stage resolution */
     check_output_resolution (d_ptr->xf_out, regd);
+
+    /* Done. */
+    d_ptr->worker_running.release ();
 }
 
 static 
@@ -528,10 +529,8 @@ registration_main_thread (void* param)
     Registration* reg = (Registration*) info->UserData;
 
     printf ("Inside registration worker thread\n");
-    reg->d_ptr->registration_running = true;
     reg->run_main_thread ();
     printf ("** Registration worker thread finished.\n");
-    reg->d_ptr->registration_running = false;
 
     return ITK_THREAD_RETURN_VALUE;
 }
@@ -539,29 +538,30 @@ registration_main_thread (void* param)
 void 
 Registration::start_registration ()
 {
-    if (d_ptr->registration_running) {
-        /* If the registration is already running, we should wake 
-           wake up any frozen jobs */
-        d_ptr->semaphore.master_release_resource ();
-    } else {
-        /* Otherwise, start a new job */
-        d_ptr->time_to_quit = false;
-        printf ("Launching registration worker thread\n");
-        d_ptr->thread_no = d_ptr->threader->SpawnThread (
-            registration_main_thread, (void*) this);
-    }
+    /* Otherwise, start a new job */
+    d_ptr->time_to_quit = false;
+    printf ("Launching registration worker thread\n");
+    d_ptr->worker_running.grab ();
+    d_ptr->thread_no = d_ptr->threader->SpawnThread (
+        registration_main_thread, (void*) this);
 }
 
 void 
 Registration::pause_registration ()
 {
-    d_ptr->semaphore.master_grab_resource ();
+    d_ptr->master_slave.master_grab_resource ();
+}
+
+void 
+Registration::resume_registration ()
+{
+    d_ptr->master_slave.master_release_resource ();
 }
 
 void 
 Registration::wait_for_complete ()
 {
-    d_ptr->threader->TerminateThread (d_ptr->thread_no);
+    d_ptr->worker_running.grab ();
 }
 
 Xform::Pointer 

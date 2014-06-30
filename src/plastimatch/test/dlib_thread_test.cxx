@@ -14,7 +14,7 @@ bool time_to_die = false;
 
 void thread_func (void* param)
 {
-    Dlib_semaphore *s = (Dlib_semaphore *) param;
+    Dlib_master_slave *s = (Dlib_master_slave *) param;
     
     while (1) {
         s->slave_grab_resource ();
@@ -29,7 +29,7 @@ void thread_func (void* param)
 
 int main ()
 {
-    Dlib_semaphore s;
+    Dlib_master_slave s;
 
     Dlib_thread_function tf (thread_func, &s);
 

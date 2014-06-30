@@ -26,7 +26,6 @@ public:
     Volume *fixed;
     Volume *moving;
     Volume *moving_grad;
-public:
 };
 
 PLMREGISTER_C_API void bspline_optimize (

@@ -10,14 +10,20 @@ int main ()
     Registration r;
     std::string s = 
         "[GLOBAL]\n"
+#if defined (commentout)
         "fixed=c:/tmp/fixed.mha\n"
         "moving=c:/tmp/moving.mha\n"
+        "fixed=/home/gcs6/tmp/fixed.mha\n"
+        "moving=/home/gcs6/tmp/moving.mha\n"
+#endif
+        "fixed=/home/gcs6/tmp/fixed_1.mha\n"
+        "moving=/home/gcs6/tmp/moving_1.mha\n"
         "[STAGE]\n"
         "xform=bspline\n"
-#if defined (commentout)
         "max_its=1\n"
-#endif
+#if defined (commentout)
         "max_its=100\n"
+#endif
         "[STAGE]\n"
         ;
     r.set_command_string (s);
@@ -39,9 +45,11 @@ int main ()
     moving = rtds.get_image();
     }
     
+//    fixed->save_image ("/home/gcs6/tmp/fixed_1.mha");
+//    moving->save_image ("/home/gcs6/tmp/moving_1.mha");
+
 #if defined (commentout)
     r.load_global_inputs ();
-//    r.load_global_inputs ();
 #endif
 
     r.set_fixed_image (fixed);
@@ -49,6 +57,7 @@ int main ()
 
     printf ("Calling start_registration\n");
 
+#if defined (commentout)    
     r.start_registration ();
     plm_sleep (1000);
     printf (">>> PAUSE\n");
@@ -56,11 +65,12 @@ int main ()
     printf (">>> PAUSE RETURNED\n");
     plm_sleep (3000);
     printf (">>> PAUSE COMPLETE\n");
-    r.start_registration ();
+    r.resume_registration ();
     r.wait_for_complete ();
+#endif
 
-#if defined (commentout)    
     r.do_registration_pure_old ();
+#if defined (commentout)    
 #endif
 
     return 0;

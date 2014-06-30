@@ -38,6 +38,7 @@ public:
     void load_global_inputs ();
     void start_registration ();
     void pause_registration ();
+    void resume_registration ();
     void wait_for_complete ();
 
     Xform::Pointer get_current_xform ();

@@ -6,6 +6,9 @@
 #include "dlib/threads.h"
 #include "dlib_threads.h"
 
+/* -----------------------------------------------------------------------
+   Dlib_thread_function 
+   ----------------------------------------------------------------------- */
 class Dlib_thread_function_private
 {
 public:
@@ -29,24 +32,23 @@ Dlib_thread_function::~Dlib_thread_function ()
 }
 
 
+/* -----------------------------------------------------------------------
+   Dlib_semaphore
+   ----------------------------------------------------------------------- */
 class Dlib_semaphore_private
 {
 public:
     dlib::mutex rm;
-    dlib::signaler master_rs;
-    dlib::signaler slave_rs;
-    bool slave_active;
-    bool slave_waits;
+    dlib::signaler rs;
+    bool grabbed;
 public:
-    Dlib_semaphore_private () : master_rs (rm), slave_rs (rm) {
-        slave_active = false;
-        slave_waits = false;
-    }
+    Dlib_semaphore_private() : rs(rm) {}
 };
 
-Dlib_semaphore::Dlib_semaphore ()
+Dlib_semaphore::Dlib_semaphore (bool grabbed)
 {
     d_ptr = new Dlib_semaphore_private;
+    d_ptr->grabbed = grabbed;
 }
 
 Dlib_semaphore::~Dlib_semaphore ()
@@ -55,7 +57,56 @@ Dlib_semaphore::~Dlib_semaphore ()
 }
 
 void
-Dlib_semaphore::master_grab_resource ()
+Dlib_semaphore::grab ()
+{
+    d_ptr->rm.lock ();
+    while (d_ptr->grabbed == true) {
+        d_ptr->rs.wait ();
+    }
+    d_ptr->grabbed = true;
+    d_ptr->rm.unlock ();
+}
+
+void
+Dlib_semaphore::release ()
+{
+    d_ptr->rm.lock ();
+    d_ptr->grabbed = false;
+    d_ptr->rs.signal ();
+    d_ptr->rm.unlock ();
+}
+
+
+/* -----------------------------------------------------------------------
+   Dlib_master_slave
+   ----------------------------------------------------------------------- */
+class Dlib_master_slave_private
+{
+public:
+    dlib::mutex rm;
+    dlib::signaler master_rs;
+    dlib::signaler slave_rs;
+    bool slave_active;
+    bool slave_waits;
+public:
+    Dlib_master_slave_private () : master_rs (rm), slave_rs (rm) {
+        slave_active = false;
+        slave_waits = false;
+    }
+};
+
+Dlib_master_slave::Dlib_master_slave ()
+{
+    d_ptr = new Dlib_master_slave_private;
+}
+
+Dlib_master_slave::~Dlib_master_slave ()
+{
+    delete d_ptr;
+}
+
+void
+Dlib_master_slave::master_grab_resource ()
  {
     d_ptr->rm.lock ();
     d_ptr->slave_waits = true;
@@ -66,7 +117,7 @@ Dlib_semaphore::master_grab_resource ()
 }
 
 void
-Dlib_semaphore::master_release_resource ()
+Dlib_master_slave::master_release_resource ()
 {
     d_ptr->rm.lock ();
     d_ptr->slave_waits = false;
@@ -75,7 +126,7 @@ Dlib_semaphore::master_release_resource ()
 }
 
 void
-Dlib_semaphore::slave_grab_resource ()
+Dlib_master_slave::slave_grab_resource ()
  {
     d_ptr->rm.lock ();
     while (d_ptr->slave_waits) {
@@ -86,7 +137,7 @@ Dlib_semaphore::slave_grab_resource ()
 }
 
 void
-Dlib_semaphore::slave_release_resource ()
+Dlib_master_slave::slave_release_resource ()
 {
     d_ptr->rm.lock ();
     d_ptr->slave_active = false;
