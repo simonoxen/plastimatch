@@ -13,26 +13,34 @@ int main ()
 #if defined (commentout)
         "fixed=c:/tmp/fixed.mha\n"
         "moving=c:/tmp/moving.mha\n"
-        "fixed=/home/gcs6/tmp/fixed.mha\n"
+        "fixed=/home/gcs6/tmp/fixed_1.mha\n"
         "moving=/home/gcs6/tmp/moving.mha\n"
 #endif
-        "fixed=/home/gcs6/tmp/fixed_1.mha\n"
+        "fixed=/home/gcs6/tmp/fixed.mha\n"
         "moving=/home/gcs6/tmp/moving_1.mha\n"
         "[STAGE]\n"
         "xform=bspline\n"
         "max_its=1\n"
+        "flavor=c\n"
 #if defined (commentout)
         "max_its=100\n"
 #endif
+
         "[STAGE]\n"
         ;
     r.set_command_string (s);
 
     Plm_image::Pointer fixed;
+    float origin[3];
+
+    for (int i = 0; i < 3; i++) origin[i] = -245.5;   /* Fast */
+    for (int i = 0; i < 3; i++) origin[i] = 0;        /* Slow */
+
     {
     Rt_study rtds;
     Synthetic_mha_parms sm_parms;
     sm_parms.pattern = PATTERN_RECT;
+    for (int i = 0; i < 3; i++) {sm_parms.origin[i] = origin[i];}
     synthetic_mha (&rtds, &sm_parms);
     fixed = rtds.get_image();
     }
@@ -41,6 +49,7 @@ int main ()
     Rt_study rtds;
     Synthetic_mha_parms sm_parms;
     sm_parms.pattern = PATTERN_SPHERE;
+    for (int i = 0; i < 3; i++) {sm_parms.origin[i] = origin[i];}
     synthetic_mha (&rtds, &sm_parms);
     moving = rtds.get_image();
     }

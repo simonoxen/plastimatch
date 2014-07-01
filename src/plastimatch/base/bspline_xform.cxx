@@ -148,23 +148,11 @@ bspline_xform_save (Bspline_xform* bxf, const char* filename)
         direction_cosines[8]);
     /* No need to save grid_spac */
 
-#if defined (commentout)
-    {
-        /* This dumps in native, interleaved format */
-        for (i = 0; i < bxf->num_coeff; i++) {
-            fprintf (fp, "%6.3f\n", bxf->coeff[i]);
-        }
-    }
-#endif
-
     /* This dumps in itk-like planar format */
-    {
-        int i, j;
-        for (i = 0; i < 3; i++) {
-            for (j = 0; j < bxf->num_coeff / 3; j++) {
-                //fprintf (fp, "%6.3f\n", bxf->coeff[j*3 + i]);
-                fprintf (fp, "%.20f\n", bxf->coeff[j*3 + i]);
-            }
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < bxf->num_coeff / 3; j++) {
+            //fprintf (fp, "%6.3f\n", bxf->coeff[j*3 + i]);
+            fprintf (fp, "%.20f\n", bxf->coeff[j*3 + i]);
         }
     }           
 
@@ -252,8 +240,8 @@ bspline_xform_load (const char* filename)
     /* JAS 2012.03.29 : check for direction cosines
      * we must be careful because older plastimatch xforms do not have this */
     rc = fscanf (fp, "direction_cosines = %f %f %f %f %f %f %f %f %f\n",
-            &dc[0], &dc[1], &dc[2], &dc[3], &dc[4],
-            &dc[5], &dc[6], &dc[7], &dc[8]);
+        &dc[0], &dc[1], &dc[2], &dc[3], &dc[4],
+        &dc[5], &dc[6], &dc[7], &dc[8]);
     if (rc != 9) {
         dc[0] = 1.; dc[3] = 0.; dc[6] = 0.;
         dc[1] = 0.; dc[4] = 1.; dc[7] = 0.;
@@ -266,15 +254,12 @@ bspline_xform_load (const char* filename)
         roi_offset, roi_dim, vox_per_rgn, dc);
 
     /* This loads from itk-like planar format */
-    {
-        int i, j;
-        for (i = 0; i < 3; i++) {
-            for (j = 0; j < bxf->num_coeff / 3; j++) {
-                rc = fscanf (fp, "%f\n", &bxf->coeff[j*3 + i]);
-                if (rc != 1) {
-                    logfile_printf ("Error parsing input xform (idx = %d,%d): %s\n", i, j, filename);
-                    goto free_exit;
-                }
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < bxf->num_coeff / 3; j++) {
+            rc = fscanf (fp, "%f\n", &bxf->coeff[j*3 + i]);
+            if (rc != 1) {
+                logfile_printf ("Error parsing input xform (idx = %d,%d): %s\n", i, j, filename);
+                goto free_exit;
             }
         }
     }
@@ -282,7 +267,7 @@ bspline_xform_load (const char* filename)
     fclose (fp);
     return bxf;
 
-  free_exit:
+free_exit:
     fclose (fp);
     delete bxf;
     return 0;
@@ -367,16 +352,6 @@ bspline_xform_dump_luts (Bspline_xform* bxf)
         }
     }
     fclose (fp);
-}
-
-void
-bspline_xform_set_coefficients (Bspline_xform* bxf, float val)
-{
-    int i;
-
-    for (i = 0; i < bxf->num_coeff; i++) {
-        bxf->coeff[i] = val;
-    }
 }
 
 void
@@ -634,16 +609,20 @@ bspline_xform_extend (
     }
 }
 
+void
+Bspline_xform::fill_coefficients (float val)
+{
+    int i;
+
+    for (i = 0; i < this->num_coeff; i++) {
+        this->coeff[i] = val;
+    }
+}
+
 /* Set volume header from B-spline Xform */
 void 
 Bspline_xform::get_volume_header (Volume_header *vh)
 {
-#if 0
-    vh->set_dim (this->img_dim);
-    vh->set_origin (this->img_origin);
-    vh->set_spacing (this->img_spacing);
-#endif
-
     vh->set (this->img_dim, this->img_origin, this->img_spacing, 
         this->dc.get());
 }

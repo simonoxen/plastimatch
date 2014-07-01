@@ -37,9 +37,9 @@ public:
     float* coeff;                /* Coefficients.  Vector directions interleaved. */
 
     /* Aligned grid (3D) LUTs */
-    plm_long* cidx_lut;            /* Lookup volume for region number */
-    plm_long* c_lut;               /* Lookup table for control point indices */
-    plm_long* qidx_lut;            /* Lookup volume for region offset */
+    plm_long* cidx_lut;          /* Lookup volume for region number */
+    plm_long* c_lut;             /* Lookup table for control point indices */
+    plm_long* qidx_lut;          /* Lookup volume for region offset */
     float* q_lut;                /* Lookup table for influence multipliers */
 
     /* Non-aligned grid (1D) LUTs */
@@ -56,6 +56,7 @@ public:
     float* q_xyd2z_lut;          /* LUT for influence of N1*N2*(d2N3/dz2) */
 
 public:
+    void fill_coefficients (float val);
     void get_volume_header (Volume_header *vh);
 };
 
