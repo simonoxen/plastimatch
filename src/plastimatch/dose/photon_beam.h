@@ -1,27 +1,26 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _ion_beam_h_
-#define _ion_beam_h_
+#ifndef _photon_beam_h_
+#define _photon_beam_h_
 
 #include "plmdose_config.h"
 #include <string>
-#include "ion_sobp.h"
+#include "photon_sobp.h"
 
-class Ion_beam_private;
-class Ion_sobp;
+class Photon_beam_private;
+class Photon_sobp;
 
 /*! \brief 
- * The Ion_beam class encapsulates a single SOBP Ion beam, including 
+ * The Photon_beam class encapsulates a single SOBP Photon beam, including 
  * its associated aperture and range compensator.
  */
-class PLMDOSE_API Ion_beam {
+class PLMDOSE_API Photon_beam {
 public:
-    Ion_beam ();
-	Ion_beam (Particle_type);
-    ~Ion_beam ();
+    Photon_beam ();
+    ~Photon_beam ();
 public:
-    Ion_beam_private *d_ptr;
+    Photon_beam_private *d_ptr;
 
 public:
     /*! \name Inputs */
@@ -70,7 +69,7 @@ public:
     double get_sobp_maximum_depth ();
 
 	/*! \brief Get Sobp */
-	Ion_sobp::Pointer get_sobp();
+	Photon_sobp::Pointer get_sobp();
 
     /*! \brief Set proximal margin; this is subtracted from the 
       minimum depth */

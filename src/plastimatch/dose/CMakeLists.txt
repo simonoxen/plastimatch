@@ -24,6 +24,13 @@ set (PLMDOSE_LIBRARY_SRC
   ion_sobp.cxx
   lookup_range.cxx
   lookup_stop.cxx
+  photon_beam.cxx
+  photon_depth_dose.cxx
+  photon_dose.cxx
+  photon_parms.cxx
+  photon_plan.cxx
+  photon_plan_p.cxx
+  photon_sobp.cxx
   sigma_spread.cxx
   wed_parms.cxx
   )

@@ -7,12 +7,12 @@
 #include <string.h>
 
 #include "aperture.h"
-#include "ion_beam.h"
-#include "ion_dose.h"
-#include "ion_plan.h"
-#include "ion_plan_p.h"
-#include "ion_pristine_peak.h"
-#include "ion_sobp.h"
+#include "photon_beam.h"
+#include "photon_dose.h"
+#include "photon_plan.h"
+#include "photon_plan_p.h"
+#include "photon_depth_dose.h"
+#include "photon_sobp.h"
 #include "plm_image.h"
 #include "proj_matrix.h"
 #include "ray_data.h"
@@ -21,11 +21,11 @@
 #include "volume.h"
 #include "volume_macros.h"
 
-Ion_plan::Ion_plan ()
+Photon_plan::Photon_plan ()
 {
     printf ("*** Creating proton scene ***\n");
-    this->d_ptr = new Ion_plan_private;
-    this->beam = new Ion_beam;
+    this->d_ptr = new Photon_plan_private;
+    this->beam = new Photon_beam;
     this->rpl_vol = 0;
     if (this->beam->get_flavor() == 'f')
     {
@@ -34,7 +34,7 @@ Ion_plan::Ion_plan ()
     }
 }
 
-Ion_plan::~Ion_plan ()
+Photon_plan::~Photon_plan ()
 {
     delete this->d_ptr;
     delete this->beam;
@@ -44,25 +44,25 @@ Ion_plan::~Ion_plan ()
 }
 
 void
-Ion_plan::set_smearing (float smearing)
+Photon_plan::set_smearing (float smearing)
 {
     d_ptr->smearing = smearing;
 }
 
 void
-Ion_plan::set_step_length (double step_length)
+Photon_plan::set_step_length (double step_length)
 {
     d_ptr->step_length = step_length;
 }
 
 double 
-Ion_plan::get_step_length()
+Photon_plan::get_step_length()
 {
 	return d_ptr->step_length;
 }
 
 bool
-Ion_plan::init ()
+Photon_plan::init ()
 {
     if (!this->beam) return false;
     if (!this->get_patient()) return false;
@@ -165,13 +165,13 @@ Ion_plan::init ()
 }
 
 void
-Ion_plan::set_patient (Plm_image::Pointer& ct_vol)
+Photon_plan::set_patient (Plm_image::Pointer& ct_vol)
 {
     d_ptr->patient = ct_vol;
 }
 
 void
-Ion_plan::set_patient (ShortImageType::Pointer& ct_vol)
+Photon_plan::set_patient (ShortImageType::Pointer& ct_vol)
 {
     d_ptr->patient->set_itk (ct_vol);
 
@@ -180,31 +180,31 @@ Ion_plan::set_patient (ShortImageType::Pointer& ct_vol)
 }
 
 void
-Ion_plan::set_patient (FloatImageType::Pointer& ct_vol)
+Photon_plan::set_patient (FloatImageType::Pointer& ct_vol)
 {
     d_ptr->patient->set_itk (ct_vol);
 }
 
 void
-Ion_plan::set_patient (Volume* ct_vol)
+Photon_plan::set_patient (Volume* ct_vol)
 {
     d_ptr->patient->set_volume (ct_vol);
 }
 
 Volume::Pointer
-Ion_plan::get_patient_volume ()
+Photon_plan::get_patient_volume ()
 {
     return d_ptr->patient->get_volume_float ();
 }
 
 Plm_image *
-Ion_plan::get_patient ()
+Photon_plan::get_patient ()
 {
     return d_ptr->patient.get();
 }
 
 void
-Ion_plan::set_target (const std::string& target_fn)
+Photon_plan::set_target (const std::string& target_fn)
 {
     d_ptr->target = Plm_image::New (new Plm_image (target_fn));
 
@@ -213,7 +213,7 @@ Ion_plan::set_target (const std::string& target_fn)
 }
 
 void
-Ion_plan::set_target (UCharImageType::Pointer& target_vol)
+Photon_plan::set_target (UCharImageType::Pointer& target_vol)
 {
     d_ptr->target->set_itk (target_vol);
 
@@ -222,19 +222,19 @@ Ion_plan::set_target (UCharImageType::Pointer& target_vol)
 }
 
 void
-Ion_plan::set_target (FloatImageType::Pointer& target_vol)
+Photon_plan::set_target (FloatImageType::Pointer& target_vol)
 {
     d_ptr->target->set_itk (target_vol);
 }
 
 Plm_image::Pointer&
-Ion_plan::get_target ()
+Photon_plan::get_target ()
 {
     return d_ptr->target;
 }
 
 void
-Ion_plan::compute_beam_modifiers ()
+Photon_plan::compute_beam_modifiers ()
 {
     /* Compute the aperture and compensator */
     this->rpl_vol->compute_beam_modifiers (
@@ -245,49 +245,49 @@ Ion_plan::compute_beam_modifiers ()
 }
 
 void
-Ion_plan::apply_beam_modifiers ()
+Photon_plan::apply_beam_modifiers ()
 {
     this->rpl_vol->apply_beam_modifiers ();
 }
 
 Aperture::Pointer&
-Ion_plan::get_aperture () 
+Photon_plan::get_aperture () 
 {
     return d_ptr->ap;
 }
 
 const Aperture::Pointer&
-Ion_plan::get_aperture () const
+Photon_plan::get_aperture () const
 {
     return d_ptr->ap;
 }
 
 bool
-Ion_plan::get_debug (void) const
+Photon_plan::get_debug (void) const
 {
     return d_ptr->debug;
 }
 
 void
-Ion_plan::set_source_size(float source_size)
+Photon_plan::set_source_size(float source_size)
 {
 	d_ptr->source_size = source_size;
 }
 
 float
-Ion_plan::get_source_size()
+Photon_plan::get_source_size()
 {
 	return d_ptr->source_size;
 }
 
 void
-Ion_plan::set_debug (bool debug)
+Photon_plan::set_debug (bool debug)
 {
     d_ptr->debug = debug;
 }
 
 void
-Ion_plan::set_beam_depth (float z_min, float z_max, float z_step)
+Photon_plan::set_beam_depth (float z_min, float z_max, float z_step)
 {
     d_ptr->z_min = z_min;
     d_ptr->z_max = z_max;
@@ -295,22 +295,22 @@ Ion_plan::set_beam_depth (float z_min, float z_max, float z_step)
 }
 
 Plm_image::Pointer
-Ion_plan::get_dose ()
+Photon_plan::get_dose ()
 {
     return d_ptr->dose;
 }
 
 FloatImageType::Pointer
-Ion_plan::get_dose_itk ()
+Photon_plan::get_dose_itk ()
 {
     return d_ptr->dose->itk_float();
 }
 
 void
-Ion_plan::debug ()
+Photon_plan::debug ()
 {
     Aperture::Pointer& ap = d_ptr->ap;
-    Ion_beam* beam = this->beam;
+    Photon_beam* beam = this->beam;
 
     printf ("BEAM\n");
     printf ("  -- [POS] Source :   %g %g %g\n", 
@@ -346,9 +346,9 @@ display_progress (
 }
 
 void
-Ion_plan::compute_dose ()
+Photon_plan::compute_dose ()
 {
-    Ion_beam* beam = this->beam;
+    Photon_beam* beam = this->beam;
     Volume::Pointer ct_vol = this->get_patient_volume ();
     Rpl_volume* rpl_vol = this->rpl_vol;
 
@@ -389,11 +389,11 @@ Ion_plan::compute_dose ()
 			this->sigma_vol_lg = new Rpl_volume;
 		}
 
-		std::vector<const Ion_pristine_peak*> peaks = this->beam->get_sobp()->getPeaks();
+		std::vector<const Photon_depth_dose*> peaks = this->beam->get_sobp()->getPeaks();
 
-		std::vector<const Ion_pristine_peak*>::const_iterator it = peaks.begin();
+		std::vector<const Photon_depth_dose*>::const_iterator it = peaks.begin();
 		for (it = peaks.begin (); it <peaks.end(); it++) {
-			const Ion_pristine_peak *ppp = *it;
+			const Photon_depth_dose *ppp = *it;
 			printf("\nBuilding dose matrix for %lg MeV beamlets - ", ppp->E0);
 
 			/* sigma_vol is reinitialized */
@@ -455,7 +455,7 @@ Ion_plan::compute_dose ()
 				if (this->beam->get_flavor() == 'h') // Shackleford's algorithm
 				{
 					int radius_sample = 4;
-					int theta_sample = 6;
+					int theta_sample = 8;
 					std::vector<double> xy_grid (2*(radius_sample * theta_sample),0); // contains the xy coordinates of the sectors in the plane; the central pixel is not included in this vector. 
 					std::vector<double> area (radius_sample, 0); // contains the areas of the sectors
 
@@ -504,10 +504,10 @@ Ion_plan::compute_dose ()
 	}
 	if (this->beam->get_flavor() != 'f' && this->beam->get_flavor() != 'g' && this->beam->get_flavor() != 'h') // pull algorithm
 		{     
-			if (this->get_debug()) {
+			/*if (this->get_debug()) {
 				rpl_vol->save ("beam_debug/depth_vol.mha");
 				beam->dump ("beam_debug");
-			}
+			} */
 
 			/* scan through patient CT Volume */
 			plm_long ct_ijk[3];
@@ -571,7 +571,7 @@ Ion_plan::compute_dose ()
 }
 
 void 
-Ion_plan::dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volume)
+Photon_plan::dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volume)
 {
     /* we want to add extra margins around our volume take into account the dose that will be scattered outside of the rpl_volume */
     /* A 3 sigma margin is applied to the front_back volume, and the size of our volume will be the projection of this shape on the back_clipping_plane */
