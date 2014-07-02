@@ -7,7 +7,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "Photon_depth_dose.h"
+#include "photon_depth_dose.h"
 
 Photon_depth_dose::Photon_depth_dose ()
 {
