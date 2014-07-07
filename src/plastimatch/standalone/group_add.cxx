@@ -226,29 +226,24 @@ main (int argc, char* argv[])
 
   //Added the voxels from each image into the added image
   for (std::vector<group_add_parms>::iterator it = parms_vec->begin(); it != parms_vec->end();++it)  {
-    
     input_image->load_native(it->file);
     image_header.set_from_plm_image(input_image);
 
     image_header.get_dim(image_dim);
     image_header.get_spacing(spacing);
     image_header.get_origin(origin);
+   
+    plm_long n_voxels = image_dim[0]*image_dim[1]*image_dim[2];
 
-    //Image to floats
-    FloatImageType::Pointer img = input_image->m_itk_float;
-    FloatImageType::RegionType rg = img->GetLargestPossibleRegion ();
-    FloatIteratorType image_it (img, rg);
+    Volume::Pointer& input_volume = input_image->get_volume_float();
 
+    float *in_img = (float*) input_volume->img;
     resize_3d_vect(input_vect,image_dim);
-    
-    int zz = 0;
+
     plm_long ijk[3];
-    for (image_it.GoToBegin(); !image_it.IsAtEnd(); ++image_it) {
-
+    for (plm_long zz=0; zz!=n_voxels; ++zz)  {
       COORDS_FROM_INDEX(ijk,zz,image_dim);
-      input_vect[ ijk[0] ][ ijk[1] ][ ijk[2] ] = image_it.Get();
-
-      zz++;
+      input_vect[ ijk[0] ][ ijk[1] ][ ijk[2] ] = in_img[zz];
     }
 
     float x_low,x_high,y_low,y_high,z_low,z_high;
