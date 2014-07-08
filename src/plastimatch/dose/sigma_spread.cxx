@@ -288,6 +288,10 @@ void length_to_sigma_photon(std::vector<float>* p_sigma, std::vector<float>* p_d
 void
 compute_dose_ray_desplanques(Volume* dose_volume, Volume::Pointer ct_vol, Rpl_volume* rpl_volume, Rpl_volume* sigma_volume, Rpl_volume* ct_rpl_volume, Ion_beam* beam, Volume::Pointer final_dose_volume, const Ion_pristine_peak* ppp)
 {
+	if (ppp->weight <= 0)
+		{
+			return;
+		}
     int ijk_idx[3] = {0,0,0};
     int ijk_travel[3] = {0,0,0};
     double xyz_travel[3] = {0.0,0.0,0.0};
@@ -305,6 +309,12 @@ compute_dose_ray_desplanques(Volume* dose_volume, Volume::Pointer ct_vol, Rpl_vo
     double aperture_bev[3] = {0.0f, 0.0f, 0.0f}; // coordinates of intersection with the aperture in the bev frame
     double distance = 0; // distance from the aperture to the POI
     double tmp[3] = {0.0f, 0.0f, 0.0f};
+
+	double PB_density = 1/(rpl_volume->get_aperture()->get_spacing(0) * rpl_volume->get_aperture()->get_spacing(1));
+
+	double dose_norm = 0; // factor that normalize dose to be = 1 at max.
+	dose_norm = get_dose_norm('f', ppp->E0, PB_density); //the Hong algorithm has no PB density, everything depends on the number of sectors
+
 
     double ct_density = 0;
     double sigma = 0;
@@ -417,7 +427,9 @@ compute_dose_ray_desplanques(Volume* dose_volume, Volume::Pointer ct_vol, Rpl_vo
                             {
 								off_axis_factor = double_gaussian_interpolation(xyz_ray_center, xyz_travel,sigma, (double*) dose_volume->spacing);
                             }
-                            img[idx] += central_axis_dose * off_axis_factor * (float) ppp->weight; // SOBP is weighted by the weight of the pristine peak
+							printf("1");
+                            img[idx] += central_axis_dose * off_axis_factor * (float) ppp->weight / dose_norm; // SOBP is weighted by the weight of the pristine peak
+							printf("2");
 						}
                     }
                 }
@@ -716,6 +728,12 @@ compute_dose_ray_sharp(Volume::Pointer ct_vol, Rpl_volume* rpl_volume, Rpl_volum
     int r_over_sigma_round = 0;
     float off_axis_factor = 0;
 
+	double PB_density = 1/(rpl_volume->get_aperture()->get_spacing(0) * rpl_volume->get_aperture()->get_spacing(1));
+
+	double dose_norm = 0; // factor that normalize dose to be = 1 at max.
+	dose_norm = get_dose_norm('g', ppp->E0, PB_density); //the Hong algorithm has no PB density, everything depends on the number of sectors
+
+
     int idx2d_sm = 0;
 	int idx2d_lg = 0;
     int idx3d_sm = 0;
@@ -853,7 +871,7 @@ compute_dose_ray_sharp(Volume::Pointer ct_vol, Rpl_volume* rpl_volume, Rpl_volum
 									off_axis_factor = double_gaussian_interpolation(central_ray_xyz, travel_ray_xyz, sigma, lateral_step);
 								}
 
-								rpl_dose_img[idx3d_travel] += central_axis_dose * off_axis_factor * (float) ppp->weight; // SOBP is weighted by the weight of the pristine peak
+								rpl_dose_img[idx3d_travel] += central_axis_dose * off_axis_factor * (float) ppp->weight  / dose_norm; // SOBP is weighted by the weight of the pristine peak
                             } //for j1
                         } //for i1
                     } // else
@@ -1043,6 +1061,10 @@ void compute_dose_ray_shackleford(Volume::Pointer dose_vol, Ion_plan* plan, cons
 	double tmp_xy[4] = {0,0,0,1};
 	double tmp_cst = 0;
 
+	double dose_norm = 0; // factor that normalize dose to be = 1 at max.
+	dose_norm = get_dose_norm('h', ppp->E0, 1); //the Hong algorithm has no PB density, everything depends on the number of sectors
+
+
 	int idx = 0;
 	
 	int ct_dim[3] = {dose_vol->dim[0], dose_vol->dim[1], dose_vol->dim[2]};
@@ -1119,7 +1141,7 @@ void compute_dose_ray_shackleford(Volume::Pointer dose_vol, Ion_plan* plan, cons
 									central_sector_dose = plan->beam->lookup_sobp_dose((float) rg_length)* (1/(sigma_travel*sqrt(2*M_PI)));
 									radius = vec3_dist(xyz, xyz_travel);
 									r_s = radius/sigma_travel;
-									dose_img[idx] += central_sector_dose * get_off_axis(r_s) * (*area)[i] * sigma_3 * sigma_3 * ppp->weight; // * is normalized to a radius =1, need to be adapted to a 3_sigma radius circle
+									dose_img[idx] += central_sector_dose * get_off_axis(r_s) * (*area)[i] * sigma_3 * sigma_3 * ppp->weight / dose_norm; // * is normalized to a radius =1, need to be adapted to a 3_sigma radius circle
 								}
 							}
 						}
@@ -1367,6 +1389,30 @@ void dose_volume_reconstruction(Rpl_volume* rpl_dose_vol, Volume::Pointer dose_v
 				dose_img[idx] += dose;
 			}
 		}
+	}
+}
+
+double get_dose_norm(char flavor, double energy, double PB_density)
+{
+	if (flavor == 'a')
+	{
+		return 1; // to be defined
+	}
+	else if (flavor == 'f')
+	{
+		return PB_density * (30.5363 + 0.21570 * energy - 0.003356 * energy * energy + 0.00000917 * energy * energy * energy);
+	}
+	else if (flavor == 'g')
+	{
+		return PB_density * (1470.843 - 8.43943 * energy - 0.005703 * energy * energy + 0.000076755 * energy * energy * energy);
+	}
+	else if (flavor == 'h')
+	{
+		return 71.5177 - 0.41466 * energy + 0.014798 * energy*energy -0.00004280 * energy*energy*energy;
+	}
+	else
+	{
+		return 1;
 	}
 }
 

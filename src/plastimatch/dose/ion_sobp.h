@@ -85,6 +85,7 @@ public:
 	std::vector<const Ion_pristine_peak*> getPeaks();
     /* Weight optimizer */
     void Optimizer();
+	void Optimizer2();
 
 };
 
@@ -93,5 +94,8 @@ double cost_function_calculation(std::vector<std::vector<double> > depth_dose, s
 
 /* declaration of a matrix that contains the alpha and p parameters of the particles (Range = f(E, alpha, p) */
 extern const double particle_parameters[][2];
+
+/* declaration of a matrix that contains the depth of the max for each energy */
+extern const int max_depth_proton[];
 
 #endif

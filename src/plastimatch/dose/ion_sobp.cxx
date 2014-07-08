@@ -249,7 +249,7 @@ Ion_sobp::optimize ()
         d_ptr->prescription_dmin,
         d_ptr->prescription_dmax,
         d_ptr->eres);
-    this->Optimizer();
+    this->Optimizer2();
 }
 
 float
@@ -759,6 +759,7 @@ Ion_sobp::getPeaks()
 
 void Ion_sobp::Optimizer() // the optimizer to get the optimized weights of the beams, optimized by a cost function (see below)
 {
+	double E_max = 0;
 	/* Create function object (for function to be minimized) */
     cost_function cf;
 
@@ -786,7 +787,16 @@ void Ion_sobp::Optimizer() // the optimizer to get the optimized weights of the 
 	for (int j = 0; j < d_ptr->num_samples; j++)
 	{
 		cf.depth_dose[0][j] = bragg_curve((double)energies[0],1,(double)d_ptr->d_lut[j]);
+		if (cf.depth_dose[0][j] > E_max)
+		{
+			E_max = cf.depth_dose[0][j];
+		}
 	}
+	for (int j = 0; j < d_ptr->num_samples; j++) // we normalize the depth dose curve to 1
+	{
+		cf.depth_dose[0][j] = cf.depth_dose[0][j] / E_max;
+	}
+
 
 	for (int i=1; i < cf.num_peaks-1; i++)
     {
@@ -794,9 +804,19 @@ void Ion_sobp::Optimizer() // the optimizer to get the optimized weights of the 
         printf("%d ",energies[i]);
 		
 		cf.depth_dose.push_back(init_vector);
+		E_max = 0;
+
 		for (int j = 0; j < d_ptr->num_samples; j++)
 		{
 			cf.depth_dose[i][j] = bragg_curve(energies[i],1,d_ptr->d_lut[j]);
+			if (cf.depth_dose[i][j] > E_max)
+			{
+				E_max = cf.depth_dose[i][j];
+			}
+		}
+		for (int j = 0; j < d_ptr->num_samples; j++) // we normalize the depth dose curve to 1
+		{
+			cf.depth_dose[i][j] = cf.depth_dose[i][j] / E_max;
 		}
     }
 
@@ -837,8 +857,8 @@ void Ion_sobp::Optimizer() // the optimizer to get the optimized weights of the 
     nm.set_max_iterations (1000000);
 
 	/* Set the starting point */
-	vnl_vector<double> x(cf.num_peaks, 0.05);
-	const vnl_vector<double> y(cf.num_peaks, 0.5);
+	vnl_vector<double> x(cf.num_peaks, 1.0 / (double) cf.num_peaks);
+	const vnl_vector<double> y(cf.num_peaks, 0.01 / (double) cf.num_peaks);
 
 	/* Run the optimizer */
     nm.minimize (x,y);
@@ -859,6 +879,104 @@ void Ion_sobp::Optimizer() // the optimizer to get the optimized weights of the 
 	this->generate();
 }
 
+void Ion_sobp::Optimizer2() // the optimizer to get the optimized weights of the beams, optimized by a cost function (see below)
+{
+	double dose_max = 0;
+	/* Create function object (for function to be minimized) */
+
+	int num_samples = d_ptr->num_samples;
+	int num_peaks = d_ptr->num_peaks;
+	std::vector<double> weight (num_peaks, 0);
+	int depth_max = 0;
+	
+	std::vector<int> energies (num_peaks,0);
+	std::vector<double> init_vector (num_samples,0);
+	std::vector< std::vector<double> > depth_dose (num_peaks, init_vector);
+
+	printf("\n %d Mono-energetic BP used: ", num_peaks);
+
+	for (int i = 0; i < num_peaks; i++)
+	{
+		energies[i]= d_ptr->E_min + i * d_ptr->eres;
+		printf("%d ", energies[i]);
+	}
+
+	for (int i = 0; i < d_ptr->num_peaks; i++)
+	{
+		dose_max = 0;
+
+		for (int j = 0; j < num_samples; j++)
+		{
+			depth_dose[i][j] = bragg_curve((double)energies[i],1,(double)d_ptr->d_lut[j]);
+		
+			if (depth_dose[i][j] > dose_max)
+			{
+				dose_max = depth_dose[i][j];
+			}
+		}
+
+		for (int j = 0; j < num_samples; j++)
+		{
+			depth_dose[i][j] = depth_dose[i][j] / dose_max;
+		}
+	}
+
+	for (int i = num_peaks -1 ; i >= 0; i--)
+	{
+		if (i == num_peaks - 1)
+		{
+			weight[i] = 1.0;
+		}
+		else
+		{
+			depth_max = max_depth_proton[ energies[i] ];
+			weight[i] = 1.0 - d_ptr->e_lut[depth_max];
+			if (weight[i] < 0)
+			{
+				weight[i] = 0;
+			}
+		}
+
+		for (int j = 0; j < num_samples; j++)
+		{
+			d_ptr->e_lut[j] += weight[i] * depth_dose[i][j];
+		}
+	}
+
+	for (int i = 0; i < 100; i++)
+	{
+		for (int i = 0; i < num_peaks; i++)
+	{
+		depth_max = max_depth_proton[ energies[i] ];
+		weight[i] = weight[i] / d_ptr->e_lut[depth_max];
+	}
+
+	for (int j = 0 ; j < num_samples; j++)
+	{
+		d_ptr->e_lut[j] = 0;
+		for (int i = 0; i < num_peaks; i++)
+		{
+			d_ptr->e_lut[j] += weight[i] * depth_dose[i][j];
+		}
+	}
+	}
+
+	while (!d_ptr->peaks.empty())
+	{
+		d_ptr->peaks.pop_back();
+	}
+
+	for(int i = 0; i < d_ptr->num_peaks; i++)
+	{
+		this->add((double)energies[i],1, d_ptr->dres, (double)d_ptr->dend, weight[i]);
+		d_ptr->sobp_weight.push_back(weight[i]);
+	}
+
+	d_ptr->num_samples = d_ptr->peaks[0]->num_samples;
+
+	//this->generate();
+}
+
 double cost_function_calculation(std::vector<std::vector<double> > depth_dose, std::vector<double> weights, int num_peaks, int num_samples, std::vector<int> depth_in, std::vector<int> depth_out) // cost function to be optimized in order to find the best weights and fit a perfect sobp
 {
 	std::vector<double> diff (num_samples, 0);
@@ -875,13 +993,13 @@ double cost_function_calculation(std::vector<std::vector<double> > depth_dose, s
         {
             sum = sum + weights[k]*depth_dose[k][j];
         }
-        diff[j] = depth_in[j] * fabs(sum-30); // first parameters: the difference sqrt(standard deviation) between the curve and the perfect sobp, in the sobp area
+        diff[j] = depth_in[j] * fabs(sum-1); // first parameters: the difference sqrt(standard deviation) between the curve and the perfect sobp, in the sobp area
         if (diff[j] > sobp_max)
         {
             sobp_max = diff[j];					// second parameters: the max difference between the curve and the perfect sobp, in the sobp area
         }
 
-		excess[j] = depth_out[j] * (sum-30);// first parameters: the excess difference sqrt(standard deviation) between the curve and the perfect sobp, out of the sobp area (we want it far lower that the sobp flat region
+		excess[j] = depth_out[j] * (sum-1);// first parameters: the excess difference sqrt(standard deviation) between the curve and the perfect sobp, out of the sobp area (we want it far lower that the sobp flat region
         if (excess[j] < 0)
         {
              excess[j] = 0;
@@ -920,4 +1038,208 @@ extern const double particle_parameters[][2] = {
     0.0022, 1.77,   //C
     0.00,   0.00,   //N not used for ion therapy - set to 0
     0.0022, 1.77    //O
+};
+
+extern const int max_depth_proton[] = {
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	1,
+	1,
+	1,
+	1,
+	2,
+	2,
+	2,
+	3,
+	3,
+	3,
+	4,
+	4,
+	4,
+	5,
+	5,
+	6,
+	6,
+	7,
+	7,
+	8,
+	8,
+	9,
+	9,
+	10,
+	10,
+	11,
+	12,
+	12,
+	13,
+	14,
+	14,
+	15,
+	15,
+	16,
+	17,
+	17,
+	18,
+	19,
+	20,
+	20,
+	21,
+	22,
+	23,
+	24,
+	24,
+	25,
+	26,
+	27,
+	28,
+	29,
+	30,
+	30,
+	31,
+	32,
+	33,
+	34,
+	35,
+	36,
+	37,
+	38,
+	39,
+	40,
+	41,
+	42,
+	43,
+	44,
+	45,
+	46,
+	47,
+	49,
+	50,
+	51,
+	52,
+	53,
+	54,
+	55,	
+	57,
+	58,	
+	59,
+	60,
+	61,
+	63,
+	64,
+	65,
+	66,
+	68,
+	69,
+	70,
+	72,
+	73,
+	74,
+	76,
+	77,
+	78,
+	80,
+	81,
+	82,
+	84,
+	85,	
+	87,
+	88,
+	89,
+	91,
+	92,
+	94,
+	95,
+	97,
+	98,
+	100,
+	101,
+	103,
+	104,
+	106,
+	107,
+	109,
+	111,
+	112,
+	114,
+	115,
+	117,
+	119,
+	120,
+	122,
+	124,
+	125,
+	127,
+	129,
+	130,
+	132,
+	134,
+	135,
+	137,
+	139,
+	141,
+	142,
+	144,
+	146,
+	148,	
+	149,
+	151,
+	153,
+	155,
+	157,
+	159,
+	160,
+	162,
+	164,
+	166,
+	168,
+	170,
+	172,
+	174,
+	176,
+	178,
+	179,
+	181,
+	183,
+	185,
+	187,
+	189,
+	191,
+	193,
+	195,
+	197,
+	199,
+	201,
+	204,
+	206,
+	208,
+	210,
+	212,
+	214,
+	216,
+	218,
+	220,
+	222,
+	225,
+	227,
+	229,
+	231,
+	233,
+	235,
+	238,
+	240,
+	242,
+	244,
+	247,
+	249,
+	251,
+	253,
+	256,
+	258,
 };

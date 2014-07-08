@@ -44,6 +44,8 @@ void copy_rpl_density(std::vector<double>* CT_density_vol, Rpl_volume* rpl_dose_
 void dose_volume_reconstruction(Rpl_volume* rpl_dose_vol,Volume::Pointer dose_vol, Ion_plan* plan);
 void dose_volume_reconstruction(Rpl_volume* rpl_dose_vol,Volume::Pointer dose_vol, Photon_plan* plan);
 
+double get_dose_norm(char flavor, double energy, double PB_density);
+
 void build_hong_grid(std::vector<double>* area, std::vector<double>* xy_grid, int radius_sample, int theta_sample);
 
 void find_ijk_pixel(int* ijk_idx, double* xyz_ray_center, Volume* dose_volume);

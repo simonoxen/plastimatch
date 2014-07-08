@@ -402,13 +402,13 @@ Ion_plan::compute_dose ()
 				sigma_img[l] = 0;
 			}
 			*sigma_max = 0;
-
 			convert_radiologic_length_to_sigma(this, ppp->E0, sigma_max);
 
 			if (this->beam->get_flavor() == 'f') // Desplanques' algorithm
 		    {
 				dose_volume_create(dose_volume_tmp, sigma_max, this->sigma_vol);
 				compute_dose_ray_desplanques(dose_volume_tmp, ct_vol, rpl_vol, sigma_vol, ct_vol_density, this->beam, dose_vol, ppp);
+				printf("ok");
 			}
 			else if(this->beam->get_flavor() == 'g' || this->beam->get_flavor() == 'h')
 			{
@@ -504,10 +504,10 @@ Ion_plan::compute_dose ()
 	}
 	if (this->beam->get_flavor() != 'f' && this->beam->get_flavor() != 'g' && this->beam->get_flavor() != 'h') // pull algorithm
 		{     
-			if (this->get_debug()) {
+			/* if (this->get_debug()) {
 				rpl_vol->save ("beam_debug/depth_vol.mha");
 				beam->dump ("beam_debug");
-			}
+			}*/
 
 			/* scan through patient CT Volume */
 			plm_long ct_ijk[3];
