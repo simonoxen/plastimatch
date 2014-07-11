@@ -122,7 +122,7 @@ create_matrix_and_drr (
 		    options->image_resolution[1] };
 
     /* Set physical size of imager in mm */
-    int isize[2];
+    float isize[2];
     isize[0] = options->image_size[0];
     isize[1] = options->image_size[1];
 
