@@ -49,7 +49,7 @@ public:
         e_lut = new float[0];
         dres = 1.0;
         num_samples = 0;
-	eres = 1.0;
+	eres = 2.0;
 	num_peaks = 0;
 	E_min = 0;
 	E_max = 0;
@@ -248,7 +248,7 @@ Ion_sobp::optimize ()
     this->SetMinMaxDepths(
         d_ptr->prescription_dmin,
         d_ptr->prescription_dmax,
-        d_ptr->eres);
+        d_ptr->dres);
     this->Optimizer2();
 }
 
@@ -706,7 +706,7 @@ void Ion_sobp::SetMinMaxDepths(float new_z_min, float new_z_max, float new_step)
 		}
 
 		d_ptr->E_min = int(pow((d_ptr->dmin/(10*d_ptr->alpha)),(1/d_ptr->p)));
-		d_ptr->E_max = int(pow((d_ptr->dmax/(10*d_ptr->alpha)),(1/d_ptr->p)))+1;
+		d_ptr->E_max = int(pow((d_ptr->dmax/(10*d_ptr->alpha)),(1/d_ptr->p)))+d_ptr->eres;
 		d_ptr->dend = d_ptr->dmax + 20;
 		d_ptr->num_peaks = (int)(((d_ptr->E_max-d_ptr->E_min-1)/d_ptr->eres)+2);
 
@@ -942,6 +942,8 @@ void Ion_sobp::Optimizer2() // the optimizer to get the optimized weights of the
 			d_ptr->e_lut[j] += weight[i] * depth_dose[i][j];
 		}
 	}
+	for (int i = 0; i < num_peaks; i++)
+	{printf("first run: %d %lg\n", i, weight[i]);}
 
 	for (int i = 0; i < 100; i++)
 	{
@@ -973,6 +975,10 @@ void Ion_sobp::Optimizer2() // the optimizer to get the optimized weights of the
 	}
 
 	d_ptr->num_samples = d_ptr->peaks[0]->num_samples;
+
+	for(int i = 0; i < d_ptr->num_samples; i++)
+	{ printf("\n %d %lg", i, d_ptr->e_lut[i]);
+	}
 
 	//this->generate();
 }

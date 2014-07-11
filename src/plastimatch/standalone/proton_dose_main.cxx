@@ -16,7 +16,6 @@
 int
 main (int argc, char* argv[])
 {
-    
     time_t tbegin, tend;
     double texec =0.;
     tbegin = time(NULL);

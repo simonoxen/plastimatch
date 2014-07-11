@@ -408,7 +408,7 @@ Photon_plan::compute_dose ()
 			if (this->beam->get_flavor() == 'f') // Desplanques' algorithm
 		    {
 				dose_volume_create(dose_volume_tmp, sigma_max, this->sigma_vol);
-				compute_dose_ray_desplanques(dose_volume_tmp, ct_vol, rpl_vol, sigma_vol, ct_vol_density, this->beam, dose_vol, ppp);
+				compute_dose_ray_desplanques(dose_volume_tmp, ct_vol, rpl_vol, sigma_vol, ct_vol_density, this->beam, dose_vol, ppp, 1);
 			}
 			else if(this->beam->get_flavor() == 'g' || this->beam->get_flavor() == 'h')
 			{
@@ -448,7 +448,7 @@ Photon_plan::compute_dose ()
 					this->rpl_dose_vol->compute_rpl_ct();
 
 					/* dose calculation in the rpl_dose_volume */
-					compute_dose_ray_sharp(ct_vol, rpl_vol, sigma_vol, ct_vol_density, this->beam, rpl_dose_vol, d_ptr->ap, ppp, margins);
+					compute_dose_ray_sharp(ct_vol, rpl_vol, sigma_vol, ct_vol_density, this->beam, rpl_dose_vol, d_ptr->ap, ppp, margins, 1);
 					dose_volume_reconstruction(rpl_dose_vol, dose_vol, this);
 				}
 
@@ -496,7 +496,7 @@ Photon_plan::compute_dose ()
 					convert_radiologic_length_to_sigma_lg(this, ppp->E0, sigma_max);
 
 					build_hong_grid(&area, &xy_grid, radius_sample, theta_sample);
-					compute_dose_ray_shackleford(dose_vol, this, ppp, &area, &xy_grid, radius_sample, theta_sample);
+					compute_dose_ray_shackleford(dose_vol, this, ppp, &area, &xy_grid, radius_sample, theta_sample, 1);
 				}
 			}
 			printf("dose computed\n");

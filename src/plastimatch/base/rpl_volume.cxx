@@ -614,6 +614,49 @@ Rpl_volume::compute_rpl_ct ()
 }
 
 void 
+Rpl_volume::compute_void_rpl ()
+{
+    int ires[2];
+
+    /* A couple of abbreviations */
+    Proj_volume *proj_vol = d_ptr->proj_vol;
+    const double *src = proj_vol->get_src();
+    ires[0] = d_ptr->proj_vol->get_image_dim (0);
+    ires[1] = d_ptr->proj_vol->get_image_dim (1);
+    unsigned char *ap_img = 0;
+    if (d_ptr->aperture->have_aperture_image()) {
+        Volume::Pointer ap_vol = d_ptr->aperture->get_aperture_volume ();
+        ap_img = (unsigned char*) ap_vol->img;
+    }
+    Volume *ct_vol = d_ptr->ct->get_vol();
+
+    /* We don't need to do the first pass, as it was already done for the real rpl_volume */
+
+    /* Ahh.  Now we can set the clipping planes and allocate the 
+       actual volume. */
+    double clipping_dist[2] = {
+        d_ptr->front_clipping_dist, d_ptr->back_clipping_dist};
+    d_ptr->proj_vol->set_clipping_dist (clipping_dist);
+    d_ptr->proj_vol->allocate ();
+    
+    /* Scan through the aperture -- second pass */
+    for (int r = 0; r < ires[1]; r++) {
+        for (int c = 0; c < ires[0]; c++) {
+
+            /* Compute index of aperture pixel */
+            plm_long ap_idx = r * ires[0] + c;
+
+            /* Make some aliases */
+            Ray_data *ray_data = &d_ptr->ray_data[ap_idx];
+            /* Compute intersection with front clipping plane */
+            vec3_scale3 (ray_data->cp, ray_data->ray, 
+                d_ptr->front_clipping_dist);
+            vec3_add2 (ray_data->cp, ray_data->p2);
+        }
+    }
+}
+
+void 
 Rpl_volume::compute_rpl ()
 {
     int ires[2];

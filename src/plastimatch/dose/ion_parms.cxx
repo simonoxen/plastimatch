@@ -521,11 +521,12 @@ Ion_parms::parse_args (int argc, char** argv)
     /* set beam & aperture parameters */
     d_ptr->plan->beam->set_flavor(this->flavor);
     d_ptr->plan->beam->set_detail(this->detail);
+	d_ptr->plan->beam->set_source_size(d_ptr->source_size);
+
     d_ptr->plan->beam->set_source_position (d_ptr->src);
     d_ptr->plan->beam->set_isocenter_position (d_ptr->isocenter);
     d_ptr->plan->get_aperture()->set_distance (d_ptr->ap_offset);
     d_ptr->plan->get_aperture()->set_dim (d_ptr->ires);
-	d_ptr->plan->set_source_size(d_ptr->source_size);
     d_ptr->plan->get_aperture()->set_spacing (d_ptr->ap_spacing);
     if (d_ptr->ap_have_origin) {
         d_ptr->plan->get_aperture()->set_origin (d_ptr->ap_origin);

@@ -22,10 +22,14 @@ public:
     Ion_sobp::Pointer sobp;
     std::string debug_dir;
 
+	float beamWeight;
+
     float prescription_d_min;
     float prescription_d_max;
     float proximal_margin;
     float distal_margin;
+
+	float source_size;
 
 #if defined (commentout)
     double E0;                      /* initial ion energy (MeV) */
@@ -53,10 +57,15 @@ public:
 
         this->debug_dir = "";
 
+		this->beamWeight = 1.0f;
+
         this->prescription_d_min = 0.;
         this->prescription_d_max = 0.;
         this->proximal_margin = 0.;
         this->distal_margin = 0.;
+
+		this->source_size = 0.0f;
+
 
 #if defined (commentout)
         this->E0 = 0.0;
@@ -184,6 +193,18 @@ Ion_beam::set_flavor (char flavor)
     d_ptr->flavor = flavor;
 }
 
+float
+Ion_beam::get_beamWeight (void) const
+{
+    return d_ptr->beamWeight;
+}
+
+void
+Ion_beam::set_beamWeight (float beamWeight)
+{
+    d_ptr->beamWeight = beamWeight;
+}
+
 double 
 Ion_beam::get_sobp_maximum_depth ()
 {
@@ -216,6 +237,18 @@ Ion_beam::set_sobp_prescription_min_max (float d_min, float d_max)
     d_ptr->sobp->set_prescription_min_max (
         d_ptr->prescription_d_min - d_ptr->proximal_margin,
         d_ptr->prescription_d_max + d_ptr->distal_margin);
+}
+
+void
+Ion_beam::set_source_size(float source_size)
+{
+	d_ptr->source_size = source_size;
+}
+
+float
+Ion_beam::get_source_size()
+{
+	return d_ptr->source_size;
 }
 
 void

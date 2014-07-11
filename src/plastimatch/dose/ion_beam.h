@@ -72,6 +72,11 @@ public:
 	/*! \brief Get Sobp */
 	Ion_sobp::Pointer get_sobp();
 
+	/*! \brief Get "beamWeight" parameter of dose calculation algorithm */
+    float get_beamWeight () const;
+    /*! \brief Set "beamWeight" parameter of dose calculation algorithm */
+    void set_beamWeight (float beamWeight);
+
     /*! \brief Set proximal margin; this is subtracted from the 
       minimum depth */
     void set_proximal_margin (float proximal_margin);
@@ -81,6 +86,12 @@ public:
     /*! \brief Set SOBP range and modulation for prescription 
       as minimum and maximum depth (in mm) */
     void set_sobp_prescription_min_max (float d_min, float d_max);
+
+	/* Set source size in mm */
+	void set_source_size(float source_size);
+
+	/* Get source size in mm */
+	float get_source_size();
 
     /*! \brief Request debugging information to be written to directory */
     void set_debug (const std::string& dir);

@@ -70,10 +70,10 @@ public:
     void set_beam_depth (float z_min, float z_max, float z_step);
 
 	/* Set source size in mm */
-	void set_source_size(float source_size);
+	void set_normalization_dose(float normalization_dose);
 
 	/* Get source size in mm */
-	float get_source_size();
+	float get_normalization_dose();
 
     /* Create a dose_volume in the beam frame */
     void dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volume);
@@ -98,7 +98,6 @@ public:
 	Rpl_volume* rpl_vol_lg;
 	Rpl_volume* ct_vol_density_lg;
 	Rpl_volume* sigma_vol_lg;
-
 };
 
 #endif

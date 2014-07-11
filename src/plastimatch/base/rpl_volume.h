@@ -63,6 +63,7 @@ public:
     double get_min_wed ();
 
     void compute_rpl ();
+	void compute_void_rpl ();
     void compute_rpl_ct ();
     void compute_rpl_rglength ();
     void compute (Volume *ct_vol);
