@@ -544,7 +544,7 @@ Mabs::run_registration_loop ()
             
             /* Warp the structures */
             lprintf ("Warp structures...\n");
-            Plm_image_header source_pih (rtds.get_image().get());
+            Plm_image_header source_pih (rtds.get_image());
             timer.start();
             //rtss->warp (xf_out, &fixed_pih);
             Segmentation::Pointer warped_rtss 

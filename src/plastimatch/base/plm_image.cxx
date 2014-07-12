@@ -1196,6 +1196,9 @@ Plm_image::convert_to_itk (void)
     case PLM_IMG_TYPE_GPUIT_FLOAT:
 	this->convert_to_itk_float ();
 	break;
+    case PLM_IMG_TYPE_GPUIT_UCHAR_VEC:
+        this->convert_to_itk_uchar_vec ();
+        break;
     case PLM_IMG_TYPE_GPUIT_FLOAT_FIELD:
     default:
 	print_and_exit (
