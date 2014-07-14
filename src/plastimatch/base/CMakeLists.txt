@@ -35,6 +35,7 @@ set (PLMBASE_LIBRARY_SRC
   itk_dicom_save.cxx
   itk_directions.cxx
   itk_image.cxx
+  itk_image_accumulate.cxx
   itk_image_cast.cxx
   itk_image_clone.cxx
   itk_image_create.cxx
