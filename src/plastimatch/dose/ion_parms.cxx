@@ -520,7 +520,8 @@ Ion_parms::parse_args (int argc, char** argv)
         return false;
     }
 
-    if (d_ptr->have_manual_peaks == false && d_ptr->have_prescription == false) {
+    if (d_ptr->have_manual_peaks == false && d_ptr->have_prescription == false
+        && d_ptr->target_fn == "") {
         fprintf (stderr, "\n** ERROR: No prescription made, please use the functions prescription_min & prescription_max, or manually created peaks .\n");
         return false;
     }
