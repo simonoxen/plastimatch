@@ -35,6 +35,8 @@ public:
     ~Ion_sobp ();
 
     void set_resolution (double dres, int num_samples);
+	void set_energyResolution(double eres);
+	double get_energyResolution();
 
 	/* set the type of particle (proton, helium ions, carbon ions...)*/
     void SetParticleType(Particle_type particle_type);

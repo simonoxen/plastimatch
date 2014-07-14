@@ -37,7 +37,7 @@ public:
     double dres;                    /* spatial resolution of bragg curve (mm)*/
     double dmax;                    /* maximum w.e.d. (mm) */
     int num_samples;                /* # of discrete bragg curve samples */
-    double weight;
+    double weight;					/* weight of the beam */
 #endif
 
 public:
