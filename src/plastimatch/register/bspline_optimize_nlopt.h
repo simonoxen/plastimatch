@@ -9,11 +9,11 @@
 #include "nlopt.h"
 #endif
 
-class Bspline_optimize_data;
+class Bspline_optimize;
 
 #if (NLOPT_FOUND)
 PLMREGISTER_C_API void bspline_optimize_nlopt (
-        Bspline_optimize_data *bod,
+        Bspline_optimize *bod,
         nlopt_algorithm algorithm
 );
 #endif

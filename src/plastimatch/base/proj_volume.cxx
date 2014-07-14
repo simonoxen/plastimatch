@@ -241,6 +241,12 @@ Proj_volume::get_vol ()
     return d_ptr->vol;
 }
 
+const Volume*
+Proj_volume::get_vol () const
+{
+    return d_ptr->vol;
+}
+
 void
 Proj_volume::save (const char *filename)
 {

@@ -55,7 +55,7 @@ public:
     void set_smearing (float smearing);
     void set_step_length (double ray_step);
 
-	double get_step_length();
+    double get_step_length();
 
     /* Return the state of the debug flag, which generates debug 
        information on the console */
@@ -69,11 +69,11 @@ public:
     /* Set beam depth, in mm */
     void set_beam_depth (float z_min, float z_max, float z_step);
 
-	/* Set source size in mm */
-	void set_normalization_dose(float normalization_dose);
+    /* Set source size in mm */
+    void set_normalization_dose(float normalization_dose);
 
-	/* Get source size in mm */
-	float get_normalization_dose();
+    /* Get source size in mm */
+    float get_normalization_dose();
 
     /* Create a dose_volume in the beam frame */
     void dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volume);
@@ -81,9 +81,7 @@ public:
     /* Compute dose */
     void compute_dose ();
 
-    //void compute_dose_push();
-
-    /* Return dose to caller */
+    /* Get outputs */
     Plm_image::Pointer get_dose ();
     FloatImageType::Pointer get_dose_itk ();
 
@@ -94,10 +92,10 @@ public:
     Rpl_volume* sigma_vol;  // contains the sigma (lateral spread of the pencil beam - used to calculate the off-axis term) along the ray
     Rpl_volume* rpl_dose_vol; // contains the dose vol for Sp algorithm
 	
-	/* larger volumes for Sf algorithm */
-	Rpl_volume* rpl_vol_lg;
-	Rpl_volume* ct_vol_density_lg;
-	Rpl_volume* sigma_vol_lg;
+    /* larger volumes for Sf algorithm */
+    Rpl_volume* rpl_vol_lg;
+    Rpl_volume* ct_vol_density_lg;
+    Rpl_volume* sigma_vol_lg;
 };
 
 #endif

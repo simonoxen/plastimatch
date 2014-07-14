@@ -141,6 +141,12 @@ Rpl_volume::get_aperture ()
     return d_ptr->aperture;
 }
 
+const Aperture::Pointer& 
+Rpl_volume::get_aperture () const
+{
+    return d_ptr->aperture;
+}
+
 void 
 Rpl_volume::set_aperture (Aperture::Pointer& ap)
 {
@@ -387,7 +393,7 @@ void Rpl_volume::set_front_clipping_plane(double front_clip)
     d_ptr->front_clipping_dist = front_clip;
 }
 
-double Rpl_volume::get_front_clipping_plane()
+double Rpl_volume::get_front_clipping_plane() const
 {
     return d_ptr->front_clipping_dist;
 }
@@ -396,7 +402,7 @@ void Rpl_volume::set_back_clipping_plane(double back_clip)
 {
     d_ptr->back_clipping_dist = back_clip;
 }
-double Rpl_volume::get_back_clipping_plane()
+double Rpl_volume::get_back_clipping_plane() const
 {
     return d_ptr->back_clipping_dist;
 }
@@ -1601,6 +1607,12 @@ Rpl_volume::compute_aperture (
 
 Volume* 
 Rpl_volume::get_vol ()
+{
+    return d_ptr->proj_vol->get_vol ();
+}
+
+const Volume*
+Rpl_volume::get_vol () const
 {
     return d_ptr->proj_vol->get_vol ();
 }

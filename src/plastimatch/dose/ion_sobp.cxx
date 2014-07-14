@@ -522,19 +522,18 @@ void Ion_sobp::printparameters()  // return on the command line the parameters o
 
 void Ion_sobp::print_sobp_curve()
 {
-	printf("\n print sobp curve : \n");
-	if (d_ptr->num_samples != 0)
-	{
-		for ( int i = 0; i < d_ptr->num_samples ; i++)
-		{
-			printf("\n %f : %f", d_ptr->d_lut[i], d_ptr->e_lut[i]);
-		}
-	}
-	else
-	{
-		printf(" void sobp curve");
-	}
-	printf("\n");
+    printf("\n print sobp curve : \n");
+    if (d_ptr->num_samples != 0)
+    {
+        for ( int i = 0; i < d_ptr->num_samples ; i++)
+        {
+            printf(" %f : %f\n", d_ptr->d_lut[i], d_ptr->e_lut[i]);
+        }
+    }
+    else
+    {
+        printf(" void sobp curve\n");
+    }
 }
 
 void Ion_sobp::SetMinMaxEnergies(int new_E_min, int new_E_max) // set the sobp parameters by introducing the min and max energies
@@ -759,86 +758,86 @@ Ion_sobp::getPeaks()
 
 void Ion_sobp::Optimizer() // the optimizer to get the optimized weights of the beams, optimized by a cost function (see below)
 {
-	double E_max = 0;
-	/* Create function object (for function to be minimized) */
+    double E_max = 0;
+    /* Create function object (for function to be minimized) */
     cost_function cf;
 
-	cf.num_samples = d_ptr->num_samples;
-	cf.num_peaks = d_ptr->num_peaks;
+    cf.num_samples = d_ptr->num_samples;
+    cf.num_peaks = d_ptr->num_peaks;
 	
-	for (int i = 0; i < d_ptr->num_peaks; i++)
-	{
-		cf.weights.push_back(0);
-	}
-	
-	std::vector<int> energies (d_ptr->num_peaks,0);
-	std::vector<double> init_vector (d_ptr->num_samples,0);
-
-
-	cf.depth_dose.push_back(init_vector);
-
-	printf("\n %d Mono-energetic BP used: ", cf.num_peaks);
-
-	energies[0]= d_ptr->E_min;
-	printf("%d ", energies[0]);
-
-	cf.depth_dose[0][0] = bragg_curve((double)energies[0],1,0);  // creation of the matrix gathering all the depth dose of the BP constituting the sobp
-
-	for (int j = 0; j < d_ptr->num_samples; j++)
-	{
-		cf.depth_dose[0][j] = bragg_curve((double)energies[0],1,(double)d_ptr->d_lut[j]);
-		if (cf.depth_dose[0][j] > E_max)
-		{
-			E_max = cf.depth_dose[0][j];
-		}
-	}
-	for (int j = 0; j < d_ptr->num_samples; j++) // we normalize the depth dose curve to 1
-	{
-		cf.depth_dose[0][j] = cf.depth_dose[0][j] / E_max;
-	}
-
-
-	for (int i=1; i < cf.num_peaks-1; i++)
+    for (int i = 0; i < d_ptr->num_peaks; i++)
     {
-		energies[i]=energies[i-1]+d_ptr->eres;
-        printf("%d ",energies[i]);
-		
-		cf.depth_dose.push_back(init_vector);
-		E_max = 0;
+        cf.weights.push_back(0);
+    }
+	
+    std::vector<int> energies (d_ptr->num_peaks,0);
+    std::vector<double> init_vector (d_ptr->num_samples,0);
 
-		for (int j = 0; j < d_ptr->num_samples; j++)
-		{
-			cf.depth_dose[i][j] = bragg_curve(energies[i],1,d_ptr->d_lut[j]);
-			if (cf.depth_dose[i][j] > E_max)
-			{
-				E_max = cf.depth_dose[i][j];
-			}
-		}
-		for (int j = 0; j < d_ptr->num_samples; j++) // we normalize the depth dose curve to 1
-		{
-			cf.depth_dose[i][j] = cf.depth_dose[i][j] / E_max;
-		}
+
+    cf.depth_dose.push_back(init_vector);
+
+    printf(" %d Mono-energetic BP used: \n", cf.num_peaks);
+
+    energies[0]= d_ptr->E_min;
+    printf("%d ", energies[0]);
+
+    cf.depth_dose[0][0] = bragg_curve((double)energies[0],1,0);  // creation of the matrix gathering all the depth dose of the BP constituting the sobp
+
+    for (int j = 0; j < d_ptr->num_samples; j++)
+    {
+        cf.depth_dose[0][j] = bragg_curve((double)energies[0],1,(double)d_ptr->d_lut[j]);
+        if (cf.depth_dose[0][j] > E_max)
+        {
+            E_max = cf.depth_dose[0][j];
+        }
+    }
+    for (int j = 0; j < d_ptr->num_samples; j++) // we normalize the depth dose curve to 1
+    {
+        cf.depth_dose[0][j] = cf.depth_dose[0][j] / E_max;
     }
 
-	energies[cf.num_peaks-1]= d_ptr->E_max;
-	printf("%d \n", energies[cf.num_peaks-1]);
 
-	cf.depth_dose.push_back(init_vector);
-	for (int j = 0; j < d_ptr->num_samples; j++)
-	{
-		cf.depth_dose[cf.num_peaks-1][j] = bragg_curve(energies[cf.num_peaks-1],1,d_ptr->d_lut[j]);
-	}
-
-
-	for (int i = 0; i < d_ptr->num_samples ; i++) // creation of the two intervals that represents the inner part of the sobp and the outer part
+    for (int i=1; i < cf.num_peaks-1; i++)
     {
-		cf.depth_in.push_back(0);
-		cf.depth_out.push_back(0);
+        energies[i]=energies[i-1]+d_ptr->eres;
+        printf("%d ",energies[i]);
+		
+        cf.depth_dose.push_back(init_vector);
+        E_max = 0;
 
-		if (d_ptr->d_lut[i]>=d_ptr->dmin && d_ptr->d_lut[i]<=d_ptr->dmax)
+        for (int j = 0; j < d_ptr->num_samples; j++)
         {
-                cf.depth_in[i] = 1;
-                cf.depth_out[i] = 0;
+            cf.depth_dose[i][j] = bragg_curve(energies[i],1,d_ptr->d_lut[j]);
+            if (cf.depth_dose[i][j] > E_max)
+            {
+                E_max = cf.depth_dose[i][j];
+            }
+        }
+        for (int j = 0; j < d_ptr->num_samples; j++) // we normalize the depth dose curve to 1
+        {
+            cf.depth_dose[i][j] = cf.depth_dose[i][j] / E_max;
+        }
+    }
+
+    energies[cf.num_peaks-1]= d_ptr->E_max;
+    printf("%d \n", energies[cf.num_peaks-1]);
+
+    cf.depth_dose.push_back(init_vector);
+    for (int j = 0; j < d_ptr->num_samples; j++)
+    {
+        cf.depth_dose[cf.num_peaks-1][j] = bragg_curve(energies[cf.num_peaks-1],1,d_ptr->d_lut[j]);
+    }
+
+
+    for (int i = 0; i < d_ptr->num_samples ; i++) // creation of the two intervals that represents the inner part of the sobp and the outer part
+    {
+        cf.depth_in.push_back(0);
+        cf.depth_out.push_back(0);
+
+        if (d_ptr->d_lut[i]>=d_ptr->dmin && d_ptr->d_lut[i]<=d_ptr->dmax)
+        {
+            cf.depth_in[i] = 1;
+            cf.depth_out[i] = 0;
         }
         else
         {
@@ -847,7 +846,7 @@ void Ion_sobp::Optimizer() // the optimizer to get the optimized weights of the 
         }
     }	
 
-	/* Create optimizer object */
+    /* Create optimizer object */
     vnl_amoeba nm (cf);
 
 
@@ -856,131 +855,131 @@ void Ion_sobp::Optimizer() // the optimizer to get the optimized weights of the 
     nm.set_f_tolerance (0.0000001);
     nm.set_max_iterations (1000000);
 
-	/* Set the starting point */
-	vnl_vector<double> x(cf.num_peaks, 1.0 / (double) cf.num_peaks);
-	const vnl_vector<double> y(cf.num_peaks, 0.01 / (double) cf.num_peaks);
+    /* Set the starting point */
+    vnl_vector<double> x(cf.num_peaks, 1.0 / (double) cf.num_peaks);
+    const vnl_vector<double> y(cf.num_peaks, 0.01 / (double) cf.num_peaks);
 
-	/* Run the optimizer */
+    /* Run the optimizer */
     nm.minimize (x,y);
 
-	while (!d_ptr->peaks.empty())
-	{
-		d_ptr->peaks.pop_back();
-	}
+    while (!d_ptr->peaks.empty())
+    {
+        d_ptr->peaks.pop_back();
+    }
 
-	for(int i = 0; i < d_ptr->num_peaks; i++)
-	{
-		this->add((double)energies[i],1, d_ptr->dres, (double)d_ptr->dend, cf.weights[i]);
-		d_ptr->sobp_weight.push_back(cf.weights[i]);
-	}
+    for(int i = 0; i < d_ptr->num_peaks; i++)
+    {
+        this->add((double)energies[i],1, d_ptr->dres, (double)d_ptr->dend, cf.weights[i]);
+        d_ptr->sobp_weight.push_back(cf.weights[i]);
+    }
 
-	d_ptr->num_samples = d_ptr->peaks[0]->num_samples;
+    d_ptr->num_samples = d_ptr->peaks[0]->num_samples;
 
-	this->generate();
+    this->generate();
 }
 
 void Ion_sobp::Optimizer2() // the optimizer to get the optimized weights of the beams, optimized by a cost function (see below)
 {
-	double dose_max = 0;
-	/* Create function object (for function to be minimized) */
+    double dose_max = 0;
+    /* Create function object (for function to be minimized) */
 
-	int num_samples = d_ptr->num_samples;
-	int num_peaks = d_ptr->num_peaks;
-	std::vector<double> weight (num_peaks, 0);
-	int depth_max = 0;
+    int num_samples = d_ptr->num_samples;
+    int num_peaks = d_ptr->num_peaks;
+    std::vector<double> weight (num_peaks, 0);
+    int depth_max = 0;
 	
-	std::vector<int> energies (num_peaks,0);
-	std::vector<double> init_vector (num_samples,0);
-	std::vector< std::vector<double> > depth_dose (num_peaks, init_vector);
+    std::vector<int> energies (num_peaks,0);
+    std::vector<double> init_vector (num_samples,0);
+    std::vector< std::vector<double> > depth_dose (num_peaks, init_vector);
 
-	printf("\n %d Mono-energetic BP used: ", num_peaks);
+    printf(" %d Mono-energetic BP used: \n", num_peaks);
 
-	for (int i = 0; i < num_peaks; i++)
-	{
-		energies[i]= d_ptr->E_min + i * d_ptr->eres;
-		printf("%d ", energies[i]);
-	}
+    for (int i = 0; i < num_peaks; i++)
+    {
+        energies[i]= d_ptr->E_min + i * d_ptr->eres;
+        printf("%d ", energies[i]);
+    }
 
-	for (int i = 0; i < d_ptr->num_peaks; i++)
-	{
-		dose_max = 0;
+    for (int i = 0; i < d_ptr->num_peaks; i++)
+    {
+        dose_max = 0;
 
-		for (int j = 0; j < num_samples; j++)
-		{
-			depth_dose[i][j] = bragg_curve((double)energies[i],1,(double)d_ptr->d_lut[j]);
+        for (int j = 0; j < num_samples; j++)
+        {
+            depth_dose[i][j] = bragg_curve((double)energies[i],1,(double)d_ptr->d_lut[j]);
 		
-			if (depth_dose[i][j] > dose_max)
-			{
-				dose_max = depth_dose[i][j];
-			}
-		}
+            if (depth_dose[i][j] > dose_max)
+            {
+                dose_max = depth_dose[i][j];
+            }
+        }
 
-		for (int j = 0; j < num_samples; j++)
-		{
-			depth_dose[i][j] = depth_dose[i][j] / dose_max;
-		}
-	}
+        for (int j = 0; j < num_samples; j++)
+        {
+            depth_dose[i][j] = depth_dose[i][j] / dose_max;
+        }
+    }
 
-	for (int i = num_peaks -1 ; i >= 0; i--)
+    for (int i = num_peaks -1 ; i >= 0; i--)
+    {
+        if (i == num_peaks - 1)
+        {
+            weight[i] = 1.0;
+        }
+        else
+        {
+            depth_max = max_depth_proton[ energies[i] ];
+            weight[i] = 1.0 - d_ptr->e_lut[depth_max];
+            if (weight[i] < 0)
+            {
+                weight[i] = 0;
+            }
+        }
+
+        for (int j = 0; j < num_samples; j++)
+        {
+            d_ptr->e_lut[j] += weight[i] * depth_dose[i][j];
+        }
+    }
+    for (int i = 0; i < num_peaks; i++)
+    {printf("first run: %d %lg\n", i, weight[i]);}
+
+    for (int i = 0; i < 100; i++)
+    {
+        for (int i = 0; i < num_peaks; i++)
 	{
-		if (i == num_peaks - 1)
-		{
-			weight[i] = 1.0;
-		}
-		else
-		{
-			depth_max = max_depth_proton[ energies[i] ];
-			weight[i] = 1.0 - d_ptr->e_lut[depth_max];
-			if (weight[i] < 0)
-			{
-				weight[i] = 0;
-			}
-		}
-
-		for (int j = 0; j < num_samples; j++)
-		{
-			d_ptr->e_lut[j] += weight[i] * depth_dose[i][j];
-		}
-	}
-	for (int i = 0; i < num_peaks; i++)
-	{printf("first run: %d %lg\n", i, weight[i]);}
-
-	for (int i = 0; i < 100; i++)
-	{
-		for (int i = 0; i < num_peaks; i++)
-	{
-		depth_max = max_depth_proton[ energies[i] ];
-		weight[i] = weight[i] / d_ptr->e_lut[depth_max];
+            depth_max = max_depth_proton[ energies[i] ];
+            weight[i] = weight[i] / d_ptr->e_lut[depth_max];
 	}
 
 	for (int j = 0 ; j < num_samples; j++)
 	{
-		d_ptr->e_lut[j] = 0;
-		for (int i = 0; i < num_peaks; i++)
-		{
-			d_ptr->e_lut[j] += weight[i] * depth_dose[i][j];
-		}
+            d_ptr->e_lut[j] = 0;
+            for (int i = 0; i < num_peaks; i++)
+            {
+                d_ptr->e_lut[j] += weight[i] * depth_dose[i][j];
+            }
 	}
-	}
+    }
 
-	while (!d_ptr->peaks.empty())
-	{
-		d_ptr->peaks.pop_back();
-	}
+    while (!d_ptr->peaks.empty())
+    {
+        d_ptr->peaks.pop_back();
+    }
 
-	for(int i = 0; i < d_ptr->num_peaks; i++)
-	{
-		this->add((double)energies[i],1, d_ptr->dres, (double)d_ptr->dend, weight[i]);
-		d_ptr->sobp_weight.push_back(weight[i]);
-	}
+    for(int i = 0; i < d_ptr->num_peaks; i++)
+    {
+        this->add((double)energies[i],1, d_ptr->dres, (double)d_ptr->dend, weight[i]);
+        d_ptr->sobp_weight.push_back(weight[i]);
+    }
 
-	d_ptr->num_samples = d_ptr->peaks[0]->num_samples;
+    d_ptr->num_samples = d_ptr->peaks[0]->num_samples;
 
-	for(int i = 0; i < d_ptr->num_samples; i++)
-	{ printf("\n %d %lg", i, d_ptr->e_lut[i]);
-	}
+    for(int i = 0; i < d_ptr->num_samples; i++) { 
+        printf(" %d %lg\n", i, d_ptr->e_lut[i]);
+    }
 
-	//this->generate();
+    //this->generate();
 }
 
 double cost_function_calculation(std::vector<std::vector<double> > depth_dose, std::vector<double> weights, int num_peaks, int num_samples, std::vector<int> depth_in, std::vector<int> depth_out) // cost function to be optimized in order to find the best weights and fit a perfect sobp

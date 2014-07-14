@@ -271,12 +271,12 @@ void Photon_sobp::print_sobp_curve()
 	{
 		for ( int i = 0; i < d_ptr->num_samples ; i++)
 		{
-			printf("\n %f : %f", d_ptr->d_lut[i], d_ptr->e_lut[i]);
+			printf(" %f : %f\n", d_ptr->d_lut[i], d_ptr->e_lut[i]);
 		}
 	}
 	else
 	{
-		printf(" void sobp curve");
+		printf(" void sobp curve\n");
 	}
 	printf("\n");
 }
@@ -503,66 +503,66 @@ Photon_sobp::getPeaks()
 
 void Photon_sobp::Optimizer() // the optimizer to get the optimized weights of the beams, optimized by a cost function (see below)
 {
-	/* Create function object (for function to be minimized) */
+    /* Create function object (for function to be minimized) */
     cost_function cf;
 
-	cf.num_samples = d_ptr->num_samples;
-	cf.num_peaks = d_ptr->num_peaks;
+    cf.num_samples = d_ptr->num_samples;
+    cf.num_peaks = d_ptr->num_peaks;
 	
-	for (int i = 0; i < d_ptr->num_peaks; i++)
-	{
-		cf.weights.push_back(0);
-	}
-	
-	std::vector<int> energies (d_ptr->num_peaks,0);
-	std::vector<double> init_vector (d_ptr->num_samples,0);
-
-
-	cf.depth_dose.push_back(init_vector);
-
-	printf("\n %d Mono-energetic BP used: ", cf.num_peaks);
-
-	energies[0]= d_ptr->E_min;
-	printf("%d ", energies[0]);
-
-	cf.depth_dose[0][0] = photon_curve((double)energies[0]);  // creation of the matrix gathering all the depth dose of the BP constituting the sobp
-	// photon_curve(d);
-	for (int j = 0; j < d_ptr->num_samples; j++)
-	{
-		cf.depth_dose[0][j] = photon_curve((double)energies[0]);
-	}
-
-	for (int i=1; i < cf.num_peaks-1; i++)
+    for (int i = 0; i < d_ptr->num_peaks; i++)
     {
-		energies[i]=energies[i-1]+d_ptr->eres;
-        printf("%d ",energies[i]);
-		
-		cf.depth_dose.push_back(init_vector);
-		for (int j = 0; j < d_ptr->num_samples; j++)
-		{
-			cf.depth_dose[i][j] = photon_curve((double)energies[i]);
-		}
+        cf.weights.push_back(0);
+    }
+	
+    std::vector<int> energies (d_ptr->num_peaks,0);
+    std::vector<double> init_vector (d_ptr->num_samples,0);
+
+
+    cf.depth_dose.push_back(init_vector);
+
+    printf(" %d Mono-energetic BP used:\n", cf.num_peaks);
+
+    energies[0]= d_ptr->E_min;
+    printf("%d ", energies[0]);
+
+    cf.depth_dose[0][0] = photon_curve((double)energies[0]);  // creation of the matrix gathering all the depth dose of the BP constituting the sobp
+    // photon_curve(d);
+    for (int j = 0; j < d_ptr->num_samples; j++)
+    {
+        cf.depth_dose[0][j] = photon_curve((double)energies[0]);
     }
 
-	energies[cf.num_peaks-1]= d_ptr->E_max;
-	printf("%d \n", energies[cf.num_peaks-1]);
-
-	cf.depth_dose.push_back(init_vector);
-	for (int j = 0; j < d_ptr->num_samples; j++)
-	{
-		cf.depth_dose[cf.num_peaks-1][j] = photon_curve((double)energies[cf.num_peaks-1]);
-	}
-
-
-	for (int i = 0; i < d_ptr->num_samples ; i++) // creation of the two intervals that represents the inner part of the sobp and the outer part
+    for (int i=1; i < cf.num_peaks-1; i++)
     {
-		cf.depth_in.push_back(0);
-		cf.depth_out.push_back(0);
-
-		if (d_ptr->d_lut[i]>=d_ptr->dmin && d_ptr->d_lut[i]<=d_ptr->dmax)
+        energies[i]=energies[i-1]+d_ptr->eres;
+        printf("%d ",energies[i]);
+		
+        cf.depth_dose.push_back(init_vector);
+        for (int j = 0; j < d_ptr->num_samples; j++)
         {
-                cf.depth_in[i] = 1;
-                cf.depth_out[i] = 0;
+            cf.depth_dose[i][j] = photon_curve((double)energies[i]);
+        }
+    }
+
+    energies[cf.num_peaks-1]= d_ptr->E_max;
+    printf("%d \n", energies[cf.num_peaks-1]);
+
+    cf.depth_dose.push_back(init_vector);
+    for (int j = 0; j < d_ptr->num_samples; j++)
+    {
+        cf.depth_dose[cf.num_peaks-1][j] = photon_curve((double)energies[cf.num_peaks-1]);
+    }
+
+
+    for (int i = 0; i < d_ptr->num_samples ; i++) // creation of the two intervals that represents the inner part of the sobp and the outer part
+    {
+        cf.depth_in.push_back(0);
+        cf.depth_out.push_back(0);
+
+        if (d_ptr->d_lut[i]>=d_ptr->dmin && d_ptr->d_lut[i]<=d_ptr->dmax)
+        {
+            cf.depth_in[i] = 1;
+            cf.depth_out[i] = 0;
         }
         else
         {
@@ -571,7 +571,7 @@ void Photon_sobp::Optimizer() // the optimizer to get the optimized weights of t
         }
     }	
 
-	/* Create optimizer object */
+    /* Create optimizer object */
     vnl_amoeba nm (cf);
 
 
@@ -580,39 +580,39 @@ void Photon_sobp::Optimizer() // the optimizer to get the optimized weights of t
     nm.set_f_tolerance (0.0000001);
     nm.set_max_iterations (1000000);
 
-	/* Set the starting point */
-	vnl_vector<double> x(cf.num_peaks, 0.05);
-	const vnl_vector<double> y(cf.num_peaks, 0.5);
+    /* Set the starting point */
+    vnl_vector<double> x(cf.num_peaks, 0.05);
+    const vnl_vector<double> y(cf.num_peaks, 0.5);
 
-	/* Run the optimizer */
+    /* Run the optimizer */
     nm.minimize (x,y);
 
-	while (!d_ptr->peaks.empty())
-	{
-		d_ptr->peaks.pop_back();
-	}
+    while (!d_ptr->peaks.empty())
+    {
+        d_ptr->peaks.pop_back();
+    }
 
-	for(int i = 0; i < d_ptr->num_peaks; i++)
-	{
-		this->add((double)energies[i],1, d_ptr->dres, (double)d_ptr->dend, cf.weights[i]);
-		d_ptr->sobp_weight.push_back(cf.weights[i]);
-	}
+    for(int i = 0; i < d_ptr->num_peaks; i++)
+    {
+        this->add((double)energies[i],1, d_ptr->dres, (double)d_ptr->dend, cf.weights[i]);
+        d_ptr->sobp_weight.push_back(cf.weights[i]);
+    }
 
-	d_ptr->num_samples = d_ptr->peaks[0]->num_samples;
+    d_ptr->num_samples = d_ptr->peaks[0]->num_samples;
 
-	this->generate();
+    this->generate();
 }
 
 double cost_function_calculation_photon(std::vector<std::vector<double> > depth_dose, std::vector<double> weights, int num_peaks, int num_samples, std::vector<int> depth_in, std::vector<int> depth_out) // cost function to be optimized in order to find the best weights and fit a perfect sobp
 {
-	std::vector<double> diff (num_samples, 0);
-	std::vector<double> excess (num_samples, 0);
-	std::vector<double> f (num_samples, 0);
-	double f_tot = 0;
-	double sobp_max = 0;
-	double sum = 0;
+    std::vector<double> diff (num_samples, 0);
+    std::vector<double> excess (num_samples, 0);
+    std::vector<double> f (num_samples, 0);
+    double f_tot = 0;
+    double sobp_max = 0;
+    double sum = 0;
 
-	for (int j = 0; j < num_samples; j++) // we fit the curve on all the depth
+    for (int j = 0; j < num_samples; j++) // we fit the curve on all the depth
     {
         sum = 0;
         for (int k = 0; k < num_peaks; k++)
@@ -625,30 +625,30 @@ double cost_function_calculation_photon(std::vector<std::vector<double> > depth_
             sobp_max = diff[j];					// second parameters: the max difference between the curve and the perfect sobp, in the sobp area
         }
 
-		excess[j] = depth_out[j] * (sum-30);// first parameters: the excess difference sqrt(standard deviation) between the curve and the perfect sobp, out of the sobp area (we want it far lower that the sobp flat region
+        excess[j] = depth_out[j] * (sum-30);// first parameters: the excess difference sqrt(standard deviation) between the curve and the perfect sobp, out of the sobp area (we want it far lower that the sobp flat region
         if (excess[j] < 0)
         {
-             excess[j] = 0;
+            excess[j] = 0;
         }
         f[j]= 0.05 * diff[j]*diff[j] + 0.1 * excess[j] * excess[j]; // this 3 parameters are assessed, and weighted by 3 coefficient (to be optimized to get a beautiful sobp) and the value of the global function is returned
         f_tot = f_tot+f[j];
-	}
+    }
 
-	f_tot += 0.005 * sobp_max * num_samples;
+    f_tot += 0.005 * sobp_max * num_samples;
 
-	for(int i=0; i < num_peaks; i++)
-	{
-		if (weights[i] < 0)
-		{
-			f_tot = 2* f_tot;
-		}
-	}
-	/*printf("\n f_tot = %lg", f_tot);
-	for (int i = 0; i < num_peaks; i++)
-	{
-		printf (" %lg ", weights[i]);
-	}*/
+    for(int i=0; i < num_peaks; i++)
+    {
+        if (weights[i] < 0)
+        {
+            f_tot = 2* f_tot;
+        }
+    }
+    /*printf("\n f_tot = %lg", f_tot);
+      for (int i = 0; i < num_peaks; i++)
+      {
+      printf (" %lg ", weights[i]);
+      }*/
 
-	return f_tot; //we return the fcost value
+    return f_tot; //we return the fcost value
 }
 

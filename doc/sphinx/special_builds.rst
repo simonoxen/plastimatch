@@ -41,6 +41,21 @@ Coverage (gcov) build
 
     ctest -D NightlyCoverage
 
+Profile (gprof) build
+---------------------
+#. Set CMAKE_BUILD_TYPE to "Debug"
+
+#. Set CMAKE_C_FLAGS to "-pg"
+
+#. Set CMAKE_CXX_FLAGS to "-pg"
+
+#. Set CMAKE_EXE_LINKER_FLAGS to "-pg"
+
+#. Run "program args"
+
+#. Run "gprof program"
+
+
 Memcheck (valgrind) build
 -------------------------
 #. Build ITK in debug mode (optional, but recommended).

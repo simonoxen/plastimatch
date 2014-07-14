@@ -48,6 +48,7 @@ public:
     double get_step_length ();
     const double* get_ul_room ();
     Volume *get_vol ();
+    const Volume *get_vol () const;
 
     void allocate ();
     void save (const char* filename);

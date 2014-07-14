@@ -26,9 +26,13 @@ public:
 
     /* [SETTINGS] */
     std::string target_fn;
-    std::string output_dose_fn;
     std::string output_aperture_fn;
+    std::string output_dose_fn;
+    std::string output_proj_dose_fn;
+    std::string output_proj_img_fn;
     std::string output_range_compensator_fn;
+    std::string output_sigma_fn;
+    std::string output_wed_fn;
 
     /* [BEAM] */
     float src[3];
@@ -46,7 +50,7 @@ public:
     bool ap_have_origin;
     float ap_origin[2];
     float ap_spacing[2];
-	float source_size;
+    float source_size;
     float smearing;
     float proximal_margin;
     float distal_margin;
@@ -89,13 +93,13 @@ public:
         this->ap_origin[1] = 0.;
         this->ap_spacing[0] = 1.;
         this->ap_spacing[1] = 1.;
-		this->source_size = 0.38;
+        this->source_size = 0.38;
         this->smearing = 0.;
         this->proximal_margin = 0.;
         this->distal_margin = 0.;
 
         this->have_manual_peaks = false;
-		this->have_prescription = false;
+        this->have_prescription = false;
         this->E0 = 0.;
         this->spread = 0.;
 
@@ -203,11 +207,23 @@ Ion_parms::set_key_val (
         else if (!strcmp (key, "aperture_out")) {
             d_ptr->output_aperture_fn = val;
         }
+        else if (!strcmp (key, "dose_out")) {
+            d_ptr->output_dose_fn = val;
+        }
+        else if (!strcmp (key, "proj_dose_out")) {
+            d_ptr->output_proj_dose_fn = val;
+        }
+        else if (!strcmp (key, "proj_img_out")) {
+            d_ptr->output_proj_img_fn = val;
+        }
         else if (!strcmp (key, "range_compensator_out")) {
             d_ptr->output_range_compensator_fn = val;
         }
-        else if (!strcmp (key, "dose_out")) {
-            d_ptr->output_dose_fn = val;
+        else if (!strcmp (key, "sigma_out")) {
+            d_ptr->output_sigma_fn = val;
+        }
+        else if (!strcmp (key, "wed_out")) {
+            d_ptr->output_wed_fn = val;
         }
         else {
             goto error_exit;
@@ -274,13 +290,6 @@ Ion_parms::set_key_val (
                 goto error_exit;
             }
         }
-#if defined (commentout)
-        else if (!strcmp (key, "center")) {
-            if (sscanf (val, "%f %f", &d_ptr->ic[0], &d_ptr->ic[1]) != 2) {
-                goto error_exit;
-            }
-        }
-#endif
         else if (!strcmp (key, "offset")) {
             if (sscanf (val, "%f", &d_ptr->ap_offset) != 1) {
                 goto error_exit;
@@ -506,22 +515,22 @@ Ion_parms::parse_args (int argc, char** argv)
         return false;
     }
 
-	if (d_ptr->have_manual_peaks == true && d_ptr->have_prescription == true) {
-		fprintf (stderr, "\n** ERROR: SOBP generation from prescribed distance and manual peaks insertion are incompatible. Please select only one of the two options.\n");
-		return false;
-	}
+    if (d_ptr->have_manual_peaks == true && d_ptr->have_prescription == true) {
+        fprintf (stderr, "\n** ERROR: SOBP generation from prescribed distance and manual peaks insertion are incompatible. Please select only one of the two options.\n");
+        return false;
+    }
 
-	if (d_ptr->have_manual_peaks == false && d_ptr->have_prescription == false) {
-		fprintf (stderr, "\n** ERROR: No prescription made, please use the functions prescription_min & prescription_max, or manually created peaks .\n");
-		return false;
-	}
+    if (d_ptr->have_manual_peaks == false && d_ptr->have_prescription == false) {
+        fprintf (stderr, "\n** ERROR: No prescription made, please use the functions prescription_min & prescription_max, or manually created peaks .\n");
+        return false;
+    }
 
     d_ptr->plan->set_patient (ct);
 
     /* set beam & aperture parameters */
     d_ptr->plan->beam->set_flavor(this->flavor);
     d_ptr->plan->beam->set_detail(this->detail);
-	d_ptr->plan->beam->set_source_size(d_ptr->source_size);
+    d_ptr->plan->beam->set_source_size(d_ptr->source_size);
 
     d_ptr->plan->beam->set_source_position (d_ptr->src);
     d_ptr->plan->beam->set_isocenter_position (d_ptr->isocenter);
@@ -595,11 +604,43 @@ Ion_parms::parse_args (int argc, char** argv)
         ap->save_image (d_ptr->output_aperture_fn);
         Plm_image::Pointer& rc = rpl_vol->get_aperture()->get_range_compensator_image();
         rc->save_image (d_ptr->output_range_compensator_fn);
-        }
+    }
 
     /* Save dose output */
     Plm_image::Pointer dose = d_ptr->plan->get_dose ();
     dose->save_image (d_ptr->output_dose_fn.c_str());
+
+    /* Save projected density volume */
+    if (d_ptr->output_proj_img_fn != "") {
+        Rpl_volume* proj_img = d_ptr->plan->ct_vol_density;
+        if (proj_img) {
+            proj_img->save (d_ptr->output_proj_img_fn);
+        }
+    }
+
+    /* Save projected dose volume */
+    if (d_ptr->output_proj_dose_fn != "") {
+        Rpl_volume* proj_dose = d_ptr->plan->rpl_dose_vol;
+        if (proj_dose) {
+            proj_dose->save (d_ptr->output_proj_dose_fn);
+        }
+    }
+
+    /* Save sigma volume */
+    if (d_ptr->output_sigma_fn != "") {
+        Rpl_volume* sigma_img = d_ptr->plan->sigma_vol;
+        if (sigma_img) {
+            sigma_img->save (d_ptr->output_sigma_fn);
+        }
+    }
+
+    /* Save wed volume */
+    if (d_ptr->output_wed_fn != "") {
+        Rpl_volume* rpl_vol = d_ptr->plan->rpl_vol;
+        if (rpl_vol) {
+            rpl_vol->save (d_ptr->output_wed_fn);
+        }
+    }
 
     printf ("done.  \n\n");
     return true;

@@ -26,13 +26,14 @@ void convert_radiologic_length_to_sigma_lg(Ion_plan* ion_plan, float energy, flo
 void convert_radiologic_length_to_sigma(Photon_plan* ion_plan, float energy, float* sigma_max); // compute the sigma_vol and return sigma_max
 void convert_radiologic_length_to_sigma_lg(Photon_plan* ion_plan, float energy, float* sigma_max); // compute the sigma_vol and return sigma_max for larger volumes
 
-void length_to_sigma(std::vector<float>* p_sigma, std::vector<float>* p_density, float spacing_z,float* sigma_max, float energy, float source_size);
+void length_to_sigma_slow(std::vector<float>* p_sigma, const std::vector<float>* p_density, float spacing_z,float* sigma_max, float energy, float source_size);
+void length_to_sigma(std::vector<float>* p_sigma, const std::vector<float>* p_density, float spacing_z,float* sigma_max, float energy, float source_size);
 void length_to_sigma_photon(std::vector<float>* p_sigma, std::vector<float>* p_density, float spacing_z,float* sigma_max, float energy, float source_size);
 
 void compute_dose_ray_desplanques(Volume* dose_volume, Volume::Pointer ct_vol, Rpl_volume* rpl_vol, Rpl_volume* sigma_vol, Rpl_volume* ct_vol_density, Ion_beam* beam, Volume::Pointer final_dose_volume, const Ion_pristine_peak* ppp, float normalization_dose);
 void compute_dose_ray_desplanques(Volume* dose_volume, Volume::Pointer ct_vol, Rpl_volume* rpl_vol, Rpl_volume* sigma_vol, Rpl_volume* ct_vol_density, Photon_beam* beam, Volume::Pointer final_dose_volume, const Photon_depth_dose* ppp, float normalization_dose);
 
-void compute_dose_ray_sharp(Volume::Pointer ct_vol, Rpl_volume* rpl_vol, Rpl_volume* sigma_vol, Rpl_volume* ct_vol_density, Ion_beam* beam, Rpl_volume* rpl_dose_volume, Aperture::Pointer ap, const Ion_pristine_peak* ppp, int* margins, float normalization_dose);
+void compute_dose_ray_sharp (const Volume::Pointer ct_vol, const Rpl_volume* rpl_vol, const Rpl_volume* sigma_vol, const Rpl_volume* ct_vol_density, const Ion_beam* beam, Rpl_volume* rpl_dose_volume, const Aperture::Pointer ap, const Ion_pristine_peak* ppp, const int* margins, float normalization_dose);
 void compute_dose_ray_sharp(Volume::Pointer ct_vol, Rpl_volume* rpl_vol, Rpl_volume* sigma_vol, Rpl_volume* ct_vol_density, Photon_beam* beam, Rpl_volume* rpl_dose_volume, Aperture::Pointer ap, const Photon_depth_dose* ppp, int* margins, float normalization_dose);
 
 void compute_dose_ray_shackleford(Volume::Pointer dose_volume, Ion_plan* plan, const Ion_pristine_peak* ppp, std::vector<double>* area, std::vector<double>* xy_grid, int radius_sample, int theta_sample);

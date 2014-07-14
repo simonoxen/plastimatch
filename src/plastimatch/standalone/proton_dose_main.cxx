@@ -7,27 +7,23 @@
 #include <math.h>
 #include <ctime>
 
-#include "plm_math.h"
 #include "ion_dose.h"
 #include "ion_parms.h"
 #include "ion_plan.h"
+#include "plm_math.h"
+#include "plm_timer.h"
 #include "volume.h"
 
 int
 main (int argc, char* argv[])
 {
-    time_t tbegin, tend;
-    double texec =0.;
-    tbegin = time(NULL);
-
+    Plm_timer timer;
     Ion_parms parms;
+    timer.start ();
     if (!parms.parse_args (argc, argv)) {
         return 1;
     }
 
-    tend = time(NULL);
-    texec = difftime(tend,tbegin);
-    printf("Execution time : %lg secondes.\n",texec);
-
+    printf("Execution time : %f secondes.\n", timer.report ());
     return 0;
 }

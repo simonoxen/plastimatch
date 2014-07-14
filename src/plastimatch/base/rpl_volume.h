@@ -38,15 +38,17 @@ public:
     void set_ct_volume (Plm_image::Pointer& ct_volume);
 
     Aperture::Pointer& get_aperture ();
+    const Aperture::Pointer& get_aperture () const;
     void set_aperture (Aperture::Pointer& ap);
 
     Volume* get_vol ();
-    Proj_volume *get_proj_volume ();
+    const Volume* get_vol () const;
+    Proj_volume* get_proj_volume ();
 
     double get_rgdepth (int ap_ij[2], double dist);
     double get_rgdepth (double ap_ij[2], double dist);
     double get_rgdepth (const double *xyz);
-	double get_rgdepth2 (const double *xyz);
+    double get_rgdepth2 (const double *xyz);
 
     void set_ct (const Plm_image::Pointer& ct_volume);
     Plm_image::Pointer get_ct();
@@ -55,15 +57,15 @@ public:
     void set_ray(Ray_data *ray);
     Ray_data* get_Ray_data();
     void set_front_clipping_plane(double front_clip);
-    double get_front_clipping_plane();
+    double get_front_clipping_plane () const;
     void set_back_clipping_plane(double back_clip);
-    double get_back_clipping_plane();
+    double get_back_clipping_plane () const;
 
     double get_max_wed ();
     double get_min_wed ();
 
     void compute_rpl ();
-	void compute_void_rpl ();
+    void compute_void_rpl ();
     void compute_rpl_ct ();
     void compute_rpl_rglength ();
     void compute (Volume *ct_vol);
@@ -81,7 +83,7 @@ public:
     void save (const std::string& filename);
     void save (const char* filename);
 
-	void compute_ray_data ();
+    void compute_ray_data ();
 
 protected:
 

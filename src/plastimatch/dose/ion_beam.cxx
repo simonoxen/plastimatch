@@ -16,20 +16,20 @@ public:
     double isocenter[3];
     int detail;
     char flavor;
-	Particle_type part;
+    Particle_type part;
 
 public:
     Ion_sobp::Pointer sobp;
     std::string debug_dir;
 
-	float beamWeight;
+    float beamWeight;
 
     float prescription_d_min;
     float prescription_d_max;
     float proximal_margin;
     float distal_margin;
 
-	float source_size;
+    float source_size;
 
 #if defined (commentout)
     double E0;                      /* initial ion energy (MeV) */
@@ -51,20 +51,20 @@ public:
         this->isocenter[2] = 0.f;
         this->detail = 1;
         this->flavor = 'a';
-		this->part = part;
+        this->part = part;
 
-		this->sobp = Ion_sobp::New(new Ion_sobp(part));
+        this->sobp = Ion_sobp::New(new Ion_sobp(part));
 
         this->debug_dir = "";
 
-		this->beamWeight = 1.0f;
+        this->beamWeight = 1.0f;
 
         this->prescription_d_min = 0.;
         this->prescription_d_max = 0.;
         this->proximal_margin = 0.;
         this->distal_margin = 0.;
 
-		this->source_size = 0.0f;
+        this->source_size = 0.0f;
 
 
 #if defined (commentout)
