@@ -1001,7 +1001,7 @@ compute_dose_ray_sharp (
                 rg_length = rpl_img[idx3d_sm];
                 central_axis_dose = ppp->lookup_energy(rg_length);
 
-                if (central_axis_dose <=0) 
+                if (central_axis_dose <= 0) 
                 {
                     continue;
                 } // no dose on the axis, no dose scattered
@@ -1019,10 +1019,10 @@ compute_dose_ray_sharp (
                 if (j_min < 0 ) {j_min = 0;}
                 j_max = ap_ij_lg[1] + (int) ceil(sigma_x3 / lateral_minimal_step[k]);
                 if (j_max > dim_lg[1]-1 ) {j_max = dim_lg[1]-1;}
-    
-                for (int i1 = i_min; i1 <= i_max; i1++){
-                    for (int j1 = j_min; j1 <= j_max; j1++){
-                                
+
+                for (int i1 = i_min; i1 <= i_max; i1++) {
+                    for (int j1 = j_min; j1 <= j_max; j1++) {
+
                         idx3d_travel = k * dim_lg[0]*dim_lg[1] + j1 * dim_lg[0] + i1;
 
                         travel_ray_xyz[0] = xyz_coor_vol[idx3d_travel][0];
@@ -1049,7 +1049,6 @@ compute_dose_ray_sharp (
             } // for k
         } // ap_ij[1]
     } // ap_ij[0]
-    return;
 }
 
 void 
@@ -1640,13 +1639,14 @@ double distance(const std::vector< std::vector<double> >& v, int i1, int i2)
 
 double double_gaussian_interpolation(double* gaussian_center, double* pixel_center, double sigma, double* spacing)
 {
-    double x1 = pixel_center[0] - 0.5;
-    double x2 = x1 + 1;
-    double y1 = pixel_center[1] - 0.5;
-    double y2 = y1 + 1;
+    double x1 = pixel_center[0] - 0.5 * spacing[0];
+    double x2 = x1 + spacing[0];
+    double y1 = pixel_center[1] - 0.5 * spacing[1];
+    double y2 = y1 + spacing[1];
 
-    double z = .25 *( erf_gauss((gaussian_center[0]-x1)/(sigma*1.4142135)) + erf_gauss((x2-gaussian_center[0])/(sigma*1.4142135)))
-        *( erf_gauss((gaussian_center[1]-y1)/(sigma*1.4142135)) + erf_gauss((y2-gaussian_center[1])/(sigma*1.4142135)));
+    double z = .25 
+        * (erf_gauss((x2-gaussian_center[0])/(sigma*1.4142135)) - erf_gauss((x1-gaussian_center[0])/(sigma*1.4142135)))
+        * (erf_gauss((y2-gaussian_center[1])/(sigma*1.4142135)) - erf_gauss((y1-gaussian_center[1])/(sigma*1.4142135)));
     return z;
 }
 
