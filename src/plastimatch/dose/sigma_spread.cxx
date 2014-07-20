@@ -1580,11 +1580,14 @@ double get_dose_norm(char flavor, double energy, double PB_density)
     }
     else if (flavor == 'g')
     {
-        if (energy > 100) {
-            return PB_density * (2699.78 - 52.8566 * energy - 0.3835 * energy * energy - 8.253e-4 * energy * energy * energy);
-        } else {
-            return PB_density * (704.148 - 15.95 * energy - 0.2159 * energy * energy - 8.611e-4 * energy * energy * energy);
-        }
+      if (energy >= 70)
+      {
+        return 60.87 -0.2212*energy + 0.0001536 * energy * energy;
+      }
+      else
+      {
+        return 156.735 -4.4787 * energy + .060607 * energy * energy -0.000275 * energy * energy * energy;
+      }
     }
     else if (flavor == 'h')
     {

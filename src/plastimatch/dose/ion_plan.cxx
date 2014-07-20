@@ -408,8 +408,8 @@ Ion_plan::compute_dose ()
         printf ("More setup\n");
         std::vector<const Ion_pristine_peak*> peaks = this->beam->get_sobp()->getPeaks();
 
-        std::vector<const Ion_pristine_peak*>::const_iterator it = peaks.begin();
-        for (it = peaks.begin (); it <peaks.end(); it++) {
+        std::vector<const Ion_pristine_peak*>::const_reverse_iterator it;
+        for (it = peaks.rbegin (); it <peaks.rend(); it++) {
             const Ion_pristine_peak *ppp = *it;
             printf("Building dose matrix for %lg MeV beamlets - \n", ppp->E0);
             timer.start ();
@@ -490,7 +490,7 @@ Ion_plan::compute_dose ()
                 new_center[1] = this->rpl_vol->get_aperture()->get_center(1) + margins[1];
 
                 int radius_sample = 4;
-                int theta_sample = 6;
+                int theta_sample = 8;
                 std::vector<double> xy_grid (2*(radius_sample * theta_sample),0); // contains the xy coordinates of the sectors in the plane; the central pixel is not included in this vector. 
                 std::vector<double> area (radius_sample, 0); // contains the areas of the sectors
 

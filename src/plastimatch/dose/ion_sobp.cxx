@@ -49,7 +49,7 @@ public:
         e_lut = new float[0];
         dres = 1.0;
         num_samples = 0;
-		eres = 1.0;
+		eres = 2.0;
 		num_peaks = 0;
 		E_min = 0;
 		E_max = 0;
