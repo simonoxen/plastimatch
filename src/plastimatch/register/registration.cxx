@@ -562,6 +562,7 @@ void
 Registration::wait_for_complete ()
 {
     d_ptr->worker_running.grab ();
+    d_ptr->worker_running.release ();
 }
 
 Xform::Pointer 

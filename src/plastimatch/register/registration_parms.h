@@ -64,6 +64,7 @@ public:
     const std::string& get_fixed_fn ();
     const std::string& get_moving_fn ();
     Shared_parms* get_shared_parms ();
+    void delete_all_stages ();
     std::list<Stage_parms*>& get_stages ();
     Stage_parms* append_stage ();
     Stage_parms* append_process_stage ();

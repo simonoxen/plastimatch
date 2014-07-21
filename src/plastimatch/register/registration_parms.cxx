@@ -37,11 +37,15 @@ public:
         shared = new Shared_parms;
     }
     ~Registration_parms_private () {
+        delete_all_stages ();
+        delete shared;
+    }
+    void delete_all_stages () {
         std::list<Stage_parms*>::iterator it;
         for (it = stages.begin(); it != stages.end(); it++) {
             delete *it;
         }
-        delete shared;
+        stages.clear ();
     }
 };
 
@@ -978,6 +982,7 @@ Registration_parms::set_command_string (
     const std::string& command_string
 )
 {
+    this->delete_all_stages ();
     Registration_parms_parser rpp (this);
     return rpp.parse_config_string (command_string);
 }
@@ -1073,6 +1078,13 @@ Shared_parms*
 Registration_parms::get_shared_parms ()
 {
     return d_ptr->shared;
+}
+
+void
+Registration_parms::delete_all_stages ()
+{
+    d_ptr->delete_all_stages ();
+    this->num_stages = 0;
 }
 
 std::list<Stage_parms*>& 
