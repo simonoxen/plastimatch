@@ -1232,7 +1232,6 @@ void compute_dose_ray_shackleford(Volume::Pointer dose_vol, Ion_plan* plan, cons
 
     double dose_norm = get_dose_norm('h', ppp->E0, 1); //the Hong algorithm has no PB density, everything depends on the number of sectors
 
-
     int idx = 0;
 	
     int ct_dim[3] = {dose_vol->dim[0], dose_vol->dim[1], dose_vol->dim[2]};
@@ -1248,11 +1247,12 @@ void compute_dose_ray_shackleford(Volume::Pointer dose_vol, Ion_plan* plan, cons
     double central_sector_dose = 0;
     double radius = 0;
     double theta = 0;
-    double r_s = 0;
+    double dr = 0;
 
-    vec3_copy(vec_ud, plan->get_aperture()->pdn);
+    vec3_copy(vec_ud, plan->rpl_vol->get_proj_volume()->get_incr_c());
     vec3_normalize1(vec_ud);
-    vec3_copy(vec_rl, plan->get_aperture()->prt);
+
+    vec3_copy(vec_rl, plan->rpl_vol->get_proj_volume()->get_incr_r());
     vec3_normalize1(vec_rl);
 
     for (ijk[0] = 0; ijk[0] < ct_dim[0]; ijk[0]++){
@@ -1260,13 +1260,13 @@ void compute_dose_ray_shackleford(Volume::Pointer dose_vol, Ion_plan* plan, cons
             for (ijk[2] = 0; ijk[2] < ct_dim[2]; ijk[2]++){
                 idx = ijk[0] + ct_dim[0] * (ijk[1] + ct_dim[1] * ijk[2]);
 
-                if (ct_img[idx] <= -1000) {continue;} // if this pixel is in the air, no dose delivered
+                //if (ct_img[idx] <= -1000) {continue;} // if this pixel is in the air, no dose delivered
 
                 /* calculation of the pixel coordinates in the room coordinates */
                 xyz[0] = (double) dose_vol->offset[0] + ijk[0] * dose_vol->spacing[0];
                 xyz[1] = (double) dose_vol->offset[1] + ijk[1] * dose_vol->spacing[1];
                 xyz[2] = (double) dose_vol->offset[2] + ijk[2] * dose_vol->spacing[2]; // xyz[3] always = 1.0
-				
+
                 sigma_3 = 3 * plan->sigma_vol_lg->get_rgdepth(xyz);
                 if (sigma_3 <= 0)
                 {
@@ -1278,6 +1278,7 @@ void compute_dose_ray_shackleford(Volume::Pointer dose_vol, Ion_plan* plan, cons
                     {
                         for (int j =0; j < theta_sample; j++)
                         {
+
                             vec3_copy(xyz_travel, xyz);
 
                             /* calculation of the center of the sector */
@@ -1308,8 +1309,8 @@ void compute_dose_ray_shackleford(Volume::Pointer dose_vol, Ion_plan* plan, cons
                                 {
                                     central_sector_dose = plan->beam->lookup_sobp_dose((float) rg_length)* (1/(sigma_travel*sqrt(2*M_PI)));
                                     radius = vec3_dist(xyz, xyz_travel);
-                                    r_s = radius/sigma_travel;
-                                    dose_img[idx] += plan->get_normalization_dose() * plan->beam->get_beamWeight() * central_sector_dose * get_off_axis(r_s) * (*area)[i] * sigma_3 * sigma_3 * ppp->weight / dose_norm; // * is normalized to a radius =1, need to be adapted to a 3_sigma radius circle
+                                    dr = sigma_3 / (2* radius_sample);
+                                    dose_img[idx] += plan->get_normalization_dose() * plan->beam->get_beamWeight() * central_sector_dose * get_off_axis(radius, dr, sigma_3/3) * ppp->weight / dose_norm; // * is normalized to a radius =1, need to be adapted to a 3_sigma radius circle
                                 }
                             }
                         }
@@ -1344,6 +1345,7 @@ void compute_dose_ray_shackleford(Volume::Pointer dose_vol, Photon_plan* plan, c
     double radius = 0;
     double theta = 0;
     double r_s = 0;
+    double dr;
 
     vec3_copy(vec_ud, plan->get_aperture()->pdn);
     vec3_normalize1(vec_ud);
@@ -1404,7 +1406,8 @@ void compute_dose_ray_shackleford(Volume::Pointer dose_vol, Photon_plan* plan, c
                                     central_sector_dose = plan->beam->lookup_sobp_dose((float) rg_length)* (1/(sigma_travel*sqrt(2*M_PI)));
                                     radius = vec3_dist(xyz, xyz_travel);
                                     r_s = radius/sigma_travel;
-                                    dose_img[idx] += normalization_dose * central_sector_dose * get_off_axis(r_s) * (*area)[i] * sigma_3 * sigma_3 * ppp->weight; // * is normalized to a radius =1, need to be adapted to a 3_sigma radius circle
+                                    dr = sigma_3 / (2 * radius_sample);
+                                    dose_img[idx] += normalization_dose * central_sector_dose * get_off_axis(r_s, dr, sigma_3/3) * (*area)[i] * sigma_3 * sigma_3 * ppp->weight; // * is normalized to a radius =1, need to be adapted to a 3_sigma radius circle
                                 }
                             }
                         }
@@ -1591,7 +1594,14 @@ double get_dose_norm(char flavor, double energy, double PB_density)
     }
     else if (flavor == 'h')
     {
-        return 71.5177 - 0.41466 * energy + 0.014798 * energy*energy -0.00004280 * energy*energy*energy;
+      if (energy >= 100)
+      {
+        return 88.84 -0.3574*energy + .00001284 * energy * energy + 0.000001468 * energy * energy * energy;
+      }
+      else
+      {
+        return 303.34 -7.7026 * energy + .09067 * energy * energy - 0.0003862 * energy * energy * energy;
+      }
     }
     else
     {
@@ -1770,35 +1780,9 @@ double getstop (double energy)
         (energy-energy_lo) * (stop_hi-stop_lo) / (energy_hi-energy_lo);
 }
 
-double get_off_axis(double r_s)
+double get_off_axis(double radius, double dr, double sigma)
 {
-    double r_s_1 = 0;
-    double r_s_2 = 0;
-    double off_axis1 = 0;
-    double off_axis2 = 0;
-
-    int i=0;
-
-    if (r_s >0)
-    {
-        while (r_s >= r_s_1)
-        {
-            r_s_1 = lookup_off_axis[i][0];
-            off_axis1 = lookup_off_axis[i][1];
-
-            if (r_s >= r_s_1)
-            {
-                r_s_2 = r_s_1;
-                off_axis2 = off_axis1;
-            }
-            i++;
-        }
-        return (off_axis2+(r_s-r_s_2)*(off_axis1-off_axis2)/(r_s_1-r_s_2));
-    }
-    else
-    {
-        return 0;
-    }
+    return M_PI / 8.0 * sigma * ( exp(- (radius - dr)*(radius -dr) / (2 * sigma * sigma)) -  exp(- (radius + dr)*(radius + dr) / (2 * sigma * sigma)));
 }
 
 const double lookup_range_water[][2] ={

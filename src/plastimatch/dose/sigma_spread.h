@@ -62,6 +62,6 @@ float WER_interpolation(float density);
 
 double getrange(double energy);
 double getstop(double energy);
-double get_off_axis(double r2_s2);
+double get_off_axis(double radius, double dr, double sigma);
 
 #endif
