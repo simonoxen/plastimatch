@@ -15,18 +15,23 @@
 Unspecified future release
 
 *  Autolabel (la,tsv1,tsv2)
-*  Command parsing improvements (command file, command line, python)
+*  Command parsing improvements (command file, command line, python/swig)
 *  Copy-free conversion between itk and native volumes
 *  CUDA demons
+** (What is wrong with current one?)
 *  Multi-value registration
+*  RTK wrapping
 *  DRR/FDK dicom
 *  Evaluate native vs itk jacobian
 *  Irregular slice spacing
-*  MSVC express multicore strategy
+*  MSVC express multicore strategy (done -- use MSVC 2013)
 *  Native translation registration (partly done, needs mi)
 *  Native rigid registration
 *  Normalized MI
 *  Proton/photon/electron dose calculation
+** Add multi-beam to command file
+** Remove duplication of code for photons
 *  RTOG support
 *  RTPLAN support
 *  Standalone GUI
+*  Superbuild

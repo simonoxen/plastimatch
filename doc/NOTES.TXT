@@ -1,3 +1,25 @@
+***** Programmability redux *****
+
+Option 1) Internal programmability, with lua
+Effort: medium
+Pro: Convenient
+Con: Lua not popular
+
+Option 2) Internal programmability, with internal language
+Effort: medium-high
+Pro: Convenient for existing users, not so difficult to implement
+Con: Custom languages are lame
+
+Option 3) External wrapping, a la VTK
+Effort: medium
+Pro: Python popular
+Con: 
+
+Option 4) External wrapping with Swig
+Effort: medium
+Pro: Python popular, other languages supported
+Con: 
+
 ***** Restartable registration (second try) *****
 
 After a lot of effort, I learned that you can't simply code up 
@@ -123,6 +145,7 @@ dim resample                Choose by number of voxels
 res,res_vox,ss
 res_mm
 res_pct
+res_dim
 
 ***** When is itk vs native resample used? *****
 

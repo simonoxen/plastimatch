@@ -19,6 +19,7 @@
 
 #include "parameter_parser.h"
 #include "plm_path.h"
+#include "plm_return_code.h"
 #include "print_and_exit.h"
 #include "registration_parms.h"
 #include "shared_parms.h"
@@ -829,72 +830,57 @@ Registration_parms::set_key_value (
             goto error_exit;
         }
     }   
-    else if (key == "res" || key == "ss") {
+    else if (key == "res_vox" || key == "res" || key == "ss") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
-        stage->subsampling_type = SUBSAMPLING_VOXEL_RATE;
-        if (sscanf (val.c_str(), "%g %g %g", 
-                &(stage->fixed_subsample_rate[0]), 
-                &(stage->fixed_subsample_rate[1]), 
-                &(stage->fixed_subsample_rate[2])) != 3) {
+        Plm_return_code rc = stage->set_resample (val);
+        if (rc != PLM_SUCCESS) {
             goto error_exit;
         }
-        stage->moving_subsample_rate[0] = stage->fixed_subsample_rate[0];
-        stage->moving_subsample_rate[1] = stage->fixed_subsample_rate[1];
-        stage->moving_subsample_rate[2] = stage->fixed_subsample_rate[2];
+        stage->resample_type = RESAMPLE_VOXEL_RATE;
     }
-    else if (key == "ss_fixed" || key == "fixed_ss") {
+    else if (key == "res_vox_fixed" 
+        || key == "ss_fixed" || key == "fixed_ss")
+    {
         if (!section_stage) goto key_only_allowed_in_section_stage;
-        if (sscanf (val.c_str(), "%g %g %g", 
-                &(stage->fixed_subsample_rate[0]), 
-                &(stage->fixed_subsample_rate[1]), 
-                &(stage->fixed_subsample_rate[2])) != 3) {
+        Plm_return_code rc = stage->set_resample_fixed (val);
+        if (rc != PLM_SUCCESS) {
             goto error_exit;
         }
-        if (stage->subsampling_type == SUBSAMPLING_AUTO) {
-            stage->moving_subsample_rate[0] = stage->fixed_subsample_rate[0];
-            stage->moving_subsample_rate[1] = stage->fixed_subsample_rate[1];
-            stage->moving_subsample_rate[2] = stage->fixed_subsample_rate[2];
-        }
-        stage->subsampling_type = SUBSAMPLING_VOXEL_RATE;
+        stage->resample_type = RESAMPLE_VOXEL_RATE;
     }
-    else if (key == "ss_moving" || key == "moving_ss") {
+    else if (key == "res_vox_moving" 
+        || key == "ss_moving" || key == "moving_ss")
+    {
         if (!section_stage) goto key_only_allowed_in_section_stage;
-        if (sscanf (val.c_str(), "%g %g %g", 
-                &(stage->moving_subsample_rate[0]), 
-                &(stage->moving_subsample_rate[1]), 
-                &(stage->moving_subsample_rate[2])) != 3) {
+        Plm_return_code rc = stage->set_resample_moving (val);
+        if (rc != PLM_SUCCESS) {
             goto error_exit;
         }
-        if (stage->subsampling_type == SUBSAMPLING_AUTO) {
-            stage->fixed_subsample_rate[0] = stage->moving_subsample_rate[0];
-            stage->fixed_subsample_rate[1] = stage->moving_subsample_rate[1];
-            stage->fixed_subsample_rate[2] = stage->moving_subsample_rate[2];
-        }
-        stage->subsampling_type = SUBSAMPLING_VOXEL_RATE;
+        stage->resample_type = RESAMPLE_VOXEL_RATE;
     }
-    else if (key == "sampling_rate" || key == "sr") {
+    else if (key == "res_mm") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
-        stage->subsampling_type = SUBSAMPLING_VOXEL_RATE;
-        if (sscanf (val.c_str(), "%g %g %g", 
-                &(stage->fixed_subsample_rate[0]), 
-                &(stage->fixed_subsample_rate[1]), 
-                &(stage->fixed_subsample_rate[2])) != 3) {
+        Plm_return_code rc = stage->set_resample (val);
+        if (rc != PLM_SUCCESS) {
             goto error_exit;
         }
-        stage->moving_subsample_rate[0] = stage->fixed_subsample_rate[0];
-        stage->moving_subsample_rate[1] = stage->fixed_subsample_rate[1];
-        stage->moving_subsample_rate[2] = stage->fixed_subsample_rate[2];
+        stage->resample_type = RESAMPLE_MM;
     }
-    else if (key == "num_grid") {
-        /* Obsolete */
+    else if (key == "res_mm_fixed") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
-        if (sscanf (val.c_str(), "%d %d %d", 
-                &(stage->num_grid[0]), 
-                &(stage->num_grid[1]), 
-                &(stage->num_grid[2])) != 3) {
+        Plm_return_code rc = stage->set_resample_fixed (val);
+        if (rc != PLM_SUCCESS) {
             goto error_exit;
         }
-        stage->grid_method = 0;
+        stage->resample_type = RESAMPLE_MM;
+    }
+    else if (key == "res_mm_moving") {
+        if (!section_stage) goto key_only_allowed_in_section_stage;
+        Plm_return_code rc = stage->set_resample_moving (val);
+        if (rc != PLM_SUCCESS) {
+            goto error_exit;
+        }
+        stage->resample_type = RESAMPLE_MM;
     }
     else if (key == "grid_spac"
         || key == "grid_spacing")
@@ -906,7 +892,6 @@ Registration_parms::set_key_value (
                 &(stage->grid_spac[2])) != 3) {
             goto error_exit;
         }
-        stage->grid_method = 1;
     }
     else if (key == "histo_equ") {
         if (!section_stage) goto key_only_allowed_in_section_stage;

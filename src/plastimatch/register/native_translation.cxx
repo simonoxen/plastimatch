@@ -246,14 +246,14 @@ native_translation_stage (
     moving->convert (PT_FLOAT);             /* Maybe not necessary? */
 
     lprintf ("SUBSAMPLE: (%g %g %g), (%g %g %g)\n", 
-	stage->fixed_subsample_rate[0], stage->fixed_subsample_rate[1], 
-	stage->fixed_subsample_rate[2], stage->moving_subsample_rate[0], 
-	stage->moving_subsample_rate[1], stage->moving_subsample_rate[2]
+	stage->resample_rate_fixed[0], stage->resample_rate_fixed[1], 
+	stage->resample_rate_fixed[2], stage->resample_rate_moving[0], 
+	stage->resample_rate_moving[1], stage->resample_rate_moving[2]
     );
     moving_ss = volume_subsample_vox_legacy (
-        moving, stage->moving_subsample_rate);
+        moving, stage->resample_rate_moving);
     fixed_ss = volume_subsample_vox_legacy (
-        fixed, stage->fixed_subsample_rate);
+        fixed, stage->resample_rate_fixed);
 
     /* Transform input xform to gpuit vector field */
     if (xf_in->get_type() == STAGE_TRANSFORM_NONE) {

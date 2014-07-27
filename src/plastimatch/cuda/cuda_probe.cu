@@ -11,9 +11,14 @@
 int
 cuda_probe (void)
 {
-    int devicecount;
+    int devicecount = -1;
     printf ("Testing for CUDA...\n");
-    cudaGetDeviceCount (&devicecount);
+    cudaError_t rc = cudaGetDeviceCount (&devicecount);
+    if (rc != cudaSuccess) {
+	printf("Call to cudaGetDeviceCount() returned failure (%d)\n",
+            (int) rc);
+	return 0;
+    }
 
     if (devicecount == 0) {
 	printf("Suitable CUDA environment not detected!\n");

@@ -27,33 +27,26 @@ public:
     Registration_data::Pointer get_registration_data ();
     Registration_parms::Pointer get_registration_parms ();
 
-    /* Old API, to be removed */
+    /* Old API */
     void do_registration_old ();
     Xform::Pointer do_registration_pure_old ();
 
-    void do_registration ();
-    Xform::Pointer do_registration_pure ();
-
-    /* New API, to be implemented */
+    /* New API */
     void load_global_inputs ();
     void start_registration ();
     void pause_registration ();
     void resume_registration ();
     void wait_for_complete ();
 
+    /* Wrapper around new API, to emulate old API */
+    void do_registration ();
+    Xform::Pointer do_registration_pure ();
+
     Xform::Pointer get_current_xform ();
     void save_global_outputs ();
 
-    /* Internal functions */
+    /* This is called by worker thread */
     void run_main_thread ();
 };
-
-#if defined (commentout)
-PLMREGISTER_API Xform::Pointer do_registration_pure (
-    Registration_data* regd,
-    Registration_parms* regp
-);
-PLMREGISTER_API void do_registration (Registration_parms* regp);
-#endif
 
 #endif

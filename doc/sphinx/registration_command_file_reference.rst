@@ -293,15 +293,7 @@ specific parameters are available.
      -
      -
      - Alias for "ss"
-   * - rsg_grad_tol
-     - any+{rsg, versor}+itk
-     - 0.001
-     - score per unit parameter
-     - Gradient magnitude tolerance for RSG and Versor optimizers.
-       The optimizer can be asked to stop when the cost function is 
-       in a stable region where the gradient magnitude is smaller 
-       than this value.
-   * - ss
+   * - res_vox
      - any+any+any
      - automatic
      - voxels
@@ -311,6 +303,19 @@ specific parameters are available.
        or three integers (for anisotropic subsampling).
        In automatic mode, image is subsampled to the maximum rate 
        which yields less than 100 voxels in each dimension. 
+   * - rsg_grad_tol
+     - any+{rsg, versor}+itk
+     - 0.001
+     - score per unit parameter
+     - Gradient magnitude tolerance for RSG and Versor optimizers.
+       The optimizer can be asked to stop when the cost function is 
+       in a stable region where the gradient magnitude is smaller 
+       than this value.
+   * - ss
+     -
+     -
+     -
+     - Alias for "res_vox"
    * - ss_fixed
      - any+any+any
      - automatic

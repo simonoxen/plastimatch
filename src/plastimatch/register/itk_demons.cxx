@@ -90,9 +90,9 @@ static void set_and_subsample_masks(Registration_data* regd,Stage_parms* stage )
       MaskType::Pointer fixedSpatialObjectMask = MaskType::New();
       UCharImageType::Pointer fixed_mask
         = subsample_image (regd->fixed_roi->itk_uchar(),
-        stage->fixed_subsample_rate[0],
-        stage->fixed_subsample_rate[1],
-        stage->fixed_subsample_rate[2],
+        stage->resample_rate_fixed[0],
+        stage->resample_rate_fixed[1],
+        stage->resample_rate_fixed[2],
         0);
       fixedSpatialObjectMask->SetImage(fixed_mask);
       fixedSpatialObjectMask->Update();
@@ -103,9 +103,9 @@ static void set_and_subsample_masks(Registration_data* regd,Stage_parms* stage )
       MaskType::Pointer movingSpatialObjectMask = MaskType::New();
       UCharImageType::Pointer moving_mask
         = subsample_image (regd->moving_roi->itk_uchar(),
-        stage->fixed_subsample_rate[0],
-        stage->fixed_subsample_rate[1],
-        stage->fixed_subsample_rate[2],
+        stage->resample_rate_fixed[0],
+        stage->resample_rate_fixed[1],
+        stage->resample_rate_fixed[2],
         0);
       movingSpatialObjectMask->SetImage(moving_mask);
       movingSpatialObjectMask->Update();
@@ -131,15 +131,15 @@ do_demons_stage_internal (Registration_data* regd,
     /* Subsample fixed & moving images */
     FloatImageType::Pointer fixed_ss
     = subsample_image (regd->fixed_image->itk_float(),
-        stage->fixed_subsample_rate[0],
-        stage->fixed_subsample_rate[1],
-        stage->fixed_subsample_rate[2],
+        stage->resample_rate_fixed[0],
+        stage->resample_rate_fixed[1],
+        stage->resample_rate_fixed[2],
         stage->default_value);
     FloatImageType::Pointer moving_ss
     = subsample_image (regd->moving_image->itk_float(),
-        stage->moving_subsample_rate[0],
-        stage->moving_subsample_rate[1],
-        stage->moving_subsample_rate[2],
+        stage->resample_rate_moving[0],
+        stage->resample_rate_moving[1],
+        stage->resample_rate_moving[2],
         stage->default_value);
 
     if(stage->histoeq)

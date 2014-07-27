@@ -632,15 +632,15 @@ itk_registration_stage (
     /* Subsample fixed & moving images */
     FloatImageType::Pointer fixed_ss = subsample_image (
         regd->fixed_image->itk_float(), 
-        stage->fixed_subsample_rate[0], 
-        stage->fixed_subsample_rate[1], 
-        stage->fixed_subsample_rate[2], 
+        stage->resample_rate_fixed[0], 
+        stage->resample_rate_fixed[1], 
+        stage->resample_rate_fixed[2], 
         stage->default_value);
     FloatImageType::Pointer moving_ss = subsample_image (
         regd->moving_image->itk_float(), 
-        stage->moving_subsample_rate[0], 
-        stage->moving_subsample_rate[1], 
-        stage->moving_subsample_rate[2], 
+        stage->resample_rate_moving[0], 
+        stage->resample_rate_moving[1], 
+        stage->resample_rate_moving[2], 
         stage->default_value);
 
     irp.registration->SetFixedImage (fixed_ss);

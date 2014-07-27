@@ -943,8 +943,18 @@ if (WIN32 AND NOT CYGWIN AND NOT MINGW)
   set (PLM_PLASTIMATCH_TESTING_PATH 
     ${CMAKE_CURRENT_BINARY_DIR}/Testing/Release)
   set (PLM_FFTW_PATH ${FFTW_DIR})
-  set (PLM_ITK_LIBRARY_PATH_HACK 
-    -DITK_LIBRARY_PATH=${ITK_LIBRARY_DIRS}/Release)
+  # At some point in time (presumably around ITK 4.1), ITK stopped 
+  # creating the variable ITK_LIBRARY_DIRS.  Therefore, we have to 
+  # use another method to find the ITK directory needed to run tests.
+  if (${ITK_VERSION} VERSION_LESS "4.1")
+    set (PLM_ITK_LIBRARY_PATH_HACK 
+      -DITK_LIBRARY_PATH=${ITK_LIBRARY_DIRS}/Release)
+  else ()
+    string (REGEX REPLACE "/[^/]*$" "" ITK_LIBRARY_DIRS_41
+      "${ITK_CONFIG_TARGETS_FILE}")
+    set (PLM_ITK_LIBRARY_PATH_HACK 
+      -DITK_LIBRARY_PATH=${ITK_LIBRARY_DIRS_41}/bin/Release)
+  endif ()
   set (PLM_PLASTIMATCH_PATH_HACK 
      -DPLM_PLASTIMATCH_PATH=${PLM_PLASTIMATCH_PATH})
   set (PLM_FFTW_PATH_HACK 

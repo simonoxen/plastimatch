@@ -49,14 +49,14 @@ Stage_parms::Stage_parms ()
     regularization_type = REGULARIZATION_BSPLINE_ANALYTIC;
     demons_gradient_type = SYMMETRIC;
     regularization_lambda = 0.0f;
-    /* Image subsampling */
-    subsampling_type = SUBSAMPLING_AUTO;
-    fixed_subsample_rate[0] = 4;
-    fixed_subsample_rate[1] = 4;
-    fixed_subsample_rate[2] = 1;
-    moving_subsample_rate[0] = 4;
-    moving_subsample_rate[1] = 4;
-    moving_subsample_rate[2] = 1;
+    /* Image resample */
+    resample_type = RESAMPLE_AUTO;
+    resample_rate_fixed[0] = 4;
+    resample_rate_fixed[1] = 4;
+    resample_rate_fixed[2] = 1;
+    resample_rate_moving[0] = 4;
+    resample_rate_moving[1] = 4;
+    resample_rate_moving[2] = 1;
     /* Intensity values for air */
     background_max = -999.0;
     default_value = 0.0;
@@ -88,7 +88,9 @@ Stage_parms::Stage_parms ()
     mi_num_spatial_samples = -1;
     mi_num_spatial_samples_pct = 0.3;
     mi_histogram_type = HIST_EQSP;
-    /*Setting values to zero by default. In this case minVal and maxVal will be calculated from image*/
+    /* MI threshold values */
+    /*Setting values to zero by default. In this case minVal and 
+      maxVal will be calculated from image*/
     mi_fixed_image_minVal=0;
     mi_fixed_image_maxVal=0;
     mi_moving_image_minVal=0;
@@ -109,13 +111,9 @@ Stage_parms::Stage_parms ()
     /* ITK amoeba */
     amoeba_parameter_tol = 1.0;
     /* Bspline parms */
-    num_grid[0] = 10;
-    num_grid[1] = 10;
-    num_grid[2] = 10;
     grid_spac[0] = 20.;
     grid_spac[1] = 20.;
     grid_spac[2] = 20.; 
-    grid_method = 1;     // by default goes to the absolute spacing
     histoeq = false;         // by default, don't do it
     thresh_mean_intensity=false;
     num_matching_points=500;
@@ -152,14 +150,14 @@ Stage_parms::Stage_parms (const Stage_parms& s)
     metric_type = s.metric_type;
     regularization_type = s.regularization_type;
     regularization_lambda = s.regularization_lambda;
-    /* Image subsampling */
-    subsampling_type = s.subsampling_type;
-    fixed_subsample_rate[0] = s.fixed_subsample_rate[0];
-    fixed_subsample_rate[1] = s.fixed_subsample_rate[1];
-    fixed_subsample_rate[2] = s.fixed_subsample_rate[2];
-    moving_subsample_rate[0] = s.moving_subsample_rate[0];
-    moving_subsample_rate[1] = s.moving_subsample_rate[1];
-    moving_subsample_rate[2] = s.moving_subsample_rate[2];
+    /* Image resample */
+    resample_type = s.resample_type;
+    resample_rate_fixed[0] = s.resample_rate_fixed[0];
+    resample_rate_fixed[1] = s.resample_rate_fixed[1];
+    resample_rate_fixed[2] = s.resample_rate_fixed[2];
+    resample_rate_moving[0] = s.resample_rate_moving[0];
+    resample_rate_moving[1] = s.resample_rate_moving[1];
+    resample_rate_moving[2] = s.resample_rate_moving[2];
     /* Intensity values for air */
     background_max = s.background_max;
     default_value = s.default_value;
@@ -194,7 +192,7 @@ Stage_parms::Stage_parms (const Stage_parms& s)
     mi_num_spatial_samples = s.mi_num_spatial_samples;
     mi_num_spatial_samples_pct = s.mi_num_spatial_samples_pct;
     mi_histogram_type = s.mi_histogram_type;
-    /*Setting values to zero by default. In this case minVal and maxVal will be calculated from image*/
+    /* MI threshold values */
     mi_fixed_image_minVal = s.mi_fixed_image_minVal;
     mi_fixed_image_maxVal = s.mi_fixed_image_maxVal;
     mi_moving_image_minVal = s.mi_moving_image_minVal;
@@ -216,13 +214,9 @@ Stage_parms::Stage_parms (const Stage_parms& s)
     /* ITK amoeba */
     amoeba_parameter_tol = s.amoeba_parameter_tol;
     /* Bspline parms */
-    num_grid[0] = s.num_grid[0];
-    num_grid[1] = s.num_grid[1];
-    num_grid[2] = s.num_grid[2];
     grid_spac[0] = s.grid_spac[0];
     grid_spac[1] = s.grid_spac[1];
     grid_spac[2] = s.grid_spac[2];
-    grid_method = s.grid_method;
     histoeq = s.histoeq;
     thresh_mean_intensity= s.thresh_mean_intensity;
     num_matching_points= s.num_matching_points;
@@ -289,4 +283,53 @@ Stage_parms::set_process_parms (const Process_parms::Pointer& pp)
 {
     d_ptr->stage_type = STAGE_TYPE_PROCESS;
     d_ptr->process_parms = pp;
+}
+
+Plm_return_code
+Stage_parms::set_resample (const std::string& s)
+{
+    if (sscanf (s.c_str(), "%g %g %g", 
+            &(this->resample_rate_fixed[0]), 
+            &(this->resample_rate_fixed[1]), 
+            &(this->resample_rate_fixed[2])) != 3) {
+        return PLM_ERROR;
+    }
+    this->resample_rate_moving[0] = this->resample_rate_fixed[0];
+    this->resample_rate_moving[1] = this->resample_rate_fixed[1];
+    this->resample_rate_moving[2] = this->resample_rate_fixed[2];
+    return PLM_SUCCESS;
+}
+
+Plm_return_code
+Stage_parms::set_resample_fixed (const std::string& s)
+{
+    if (sscanf (s.c_str(), "%g %g %g", 
+            &(this->resample_rate_fixed[0]), 
+            &(this->resample_rate_fixed[1]), 
+            &(this->resample_rate_fixed[2])) != 3) {
+        return PLM_ERROR;
+    }
+    if (this->resample_type == RESAMPLE_AUTO) {
+        this->resample_rate_moving[0] = this->resample_rate_fixed[0];
+        this->resample_rate_moving[1] = this->resample_rate_fixed[1];
+        this->resample_rate_moving[2] = this->resample_rate_fixed[2];
+    }
+    return PLM_SUCCESS;
+}
+
+Plm_return_code
+Stage_parms::set_resample_moving (const std::string& s)
+{
+    if (sscanf (s.c_str(), "%g %g %g", 
+            &(this->resample_rate_moving[0]), 
+            &(this->resample_rate_moving[1]), 
+            &(this->resample_rate_moving[2])) != 3) {
+        return PLM_ERROR;
+    }
+    if (this->resample_type == RESAMPLE_AUTO) {
+        this->resample_rate_fixed[0] = this->resample_rate_moving[0];
+        this->resample_rate_fixed[1] = this->resample_rate_moving[1];
+        this->resample_rate_fixed[2] = this->resample_rate_moving[2];
+    }
+    return PLM_SUCCESS;
 }

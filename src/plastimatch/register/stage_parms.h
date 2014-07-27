@@ -14,6 +14,7 @@
 #include "bspline_mi_hist.h"    /* for enums */
 #include "plm_image_type.h"
 #include "plm_path.h"
+#include "plm_return_code.h"
 #include "process_parms.h"
 #include "pstring.h"
 #include "threading.h"
@@ -67,11 +68,12 @@ enum Registration_metric_type {
     METRIC_GM
 };
 
-enum Subsampling_type {
-    SUBSAMPLING_AUTO,
-    SUBSAMPLING_VOXEL_RATE,           /* res, ss */
-    SUBSAMPLING_MM_RATE,              /* sampling_rate, sr */
-    SUBSAMPLING_PCT_RATE
+enum Resample_type {
+    RESAMPLE_AUTO,
+    RESAMPLE_VOXEL_RATE,           /* res, res_vox, ss */
+    RESAMPLE_MM,                   /* res_mm */
+    RESAMPLE_PCT,                  /* res_pct */
+    RESAMPLE_DIM                   /* res_dim */
 };
 
 enum Regularization_type {
@@ -116,10 +118,12 @@ public:
     Registration_metric_type metric_type;
     Regularization_type regularization_type;
     float regularization_lambda;
-    /* Image subsampling */
-    Subsampling_type subsampling_type;
-    float fixed_subsample_rate[3];     /* voxels for res, mm for sr */
-    float moving_subsample_rate[3];
+    /* Image resampling */
+    /* The units of fixed_resampling_rate are: voxels for res_vox, 
+       mm for res_mm, pct for res_pct, voxels for res_dim */
+    Resample_type resample_type;
+    float resample_rate_fixed[3];
+    float resample_rate_moving[3];
     /* Intensity values for air */
     float background_max;              /* Threshold to find the valid region */
     float default_value;               /* Replacement when out-of-view */
@@ -173,9 +177,7 @@ public:
     /* ITK amoeba */
     float amoeba_parameter_tol;
     /* Bspline parms */
-    int num_grid[3];     // number of grid points in x,y,z directions
     float grid_spac[3];  // absolute grid spacing in mm in x,y,z directions
-    int grid_method;     // num control points (0) or absolute spacing (1)
     /* Native grid search */
     float gridsearch_min_overlap[3];
     /* Landmarks */
@@ -197,6 +199,10 @@ public:
     Process_parms::Pointer get_process_parms ();
     const Process_parms::Pointer get_process_parms () const;
     void set_process_parms (const Process_parms::Pointer&);
+
+    Plm_return_code set_resample (const std::string& s);
+    Plm_return_code set_resample_fixed (const std::string& s);
+    Plm_return_code set_resample_moving (const std::string& s);
 };
 
 #endif

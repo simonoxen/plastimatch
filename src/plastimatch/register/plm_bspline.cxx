@@ -133,12 +133,6 @@ Plm_bspline::initialize ()
         m_roi = regd->moving_roi->get_volume_uchar();
     }
 
-    /* Confirm grid method.  This should go away? */
-    if (stage->grid_method != 1) {
-        logfile_printf ("Sorry, GPUIT B-Splines must use grid method #1\n");
-        exit (-1);
-    }
-
     /* Note: Image subregion registration not yet supported */
 
     /* Convert images to gpuit format */
@@ -147,14 +141,14 @@ Plm_bspline::initialize ()
 
     /* Subsample images */
     logfile_printf ("SUBSAMPLE: (%g %g %g), (%g %g %g)\n", 
-        stage->fixed_subsample_rate[0], stage->fixed_subsample_rate[1], 
-        stage->fixed_subsample_rate[2], stage->moving_subsample_rate[0], 
-        stage->moving_subsample_rate[1], stage->moving_subsample_rate[2]
+        stage->resample_rate_fixed[0], stage->resample_rate_fixed[1], 
+        stage->resample_rate_fixed[2], stage->resample_rate_moving[0], 
+        stage->resample_rate_moving[1], stage->resample_rate_moving[2]
     );
     d_ptr->moving_ss = volume_subsample_vox_legacy (
-        moving, stage->moving_subsample_rate);
+        moving, stage->resample_rate_moving);
     d_ptr->fixed_ss = volume_subsample_vox_legacy (
-        fixed, stage->fixed_subsample_rate);
+        fixed, stage->resample_rate_fixed);
 
     //Set parameter values for min/max histogram values
     bsp_parms->mi_fixed_image_minVal = stage->mi_fixed_image_minVal;
@@ -207,11 +201,11 @@ Plm_bspline::initialize ()
     /* Subsample rois (if we are using them) */
     if (m_roi) {
         d_ptr->m_roi_ss = volume_subsample_vox_legacy_nn (
-            m_roi, stage->moving_subsample_rate);
+            m_roi, stage->resample_rate_moving);
     }
     if (f_roi) {
         d_ptr->f_roi_ss = volume_subsample_vox_legacy_nn (
-            f_roi, stage->fixed_subsample_rate);
+            f_roi, stage->resample_rate_fixed);
     }
 
     logfile_printf ("moving_ss size = %d %d %d\n", 

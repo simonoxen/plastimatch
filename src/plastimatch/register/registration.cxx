@@ -372,7 +372,7 @@ do_registration_stage (
 }
 
 static void
-set_auto_subsampling (float subsample_rate[], Plm_image *pli)
+set_auto_resample (float subsample_rate[], Plm_image *pli)
 {
     Plm_image_header pih (pli);
 
@@ -391,11 +391,11 @@ set_automatic_parameters (
     std::list<Stage_parms*>::iterator it;
     for (it = stages.begin(); it != stages.end(); it++) {
         Stage_parms* sp = *it;
-        if (sp->subsampling_type == SUBSAMPLING_AUTO) {
-            set_auto_subsampling (
-                sp->fixed_subsample_rate, regd->fixed_image.get());
-            set_auto_subsampling (
-                sp->moving_subsample_rate, regd->moving_image.get());
+        if (sp->resample_type == RESAMPLE_AUTO) {
+            set_auto_resample (
+                sp->resample_rate_fixed, regd->fixed_image.get());
+            set_auto_resample (
+                sp->resample_rate_moving, regd->moving_image.get());
         }
     }
 }
