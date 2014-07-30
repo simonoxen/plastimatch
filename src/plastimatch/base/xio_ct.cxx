@@ -48,8 +48,16 @@ xio_ct_load_header (Xio_ct_header *xch, const char *filename)
 
     bs = bsopen ((bNread) fread, fp);
 
-    /* Skip 5 lines */
+    /* Get version */
     bsreadln (line1, bs, '\n');
+    int xio_ct_version;
+    rc = sscanf ((const char*) line1, "%x", &xio_ct_version);
+    if (rc != 1) {
+	/* Couldn't parse version string -- default to oldest format. */
+	xio_ct_version = 0x00071015;
+    }
+
+    /* Skip 5 lines */
     bsreadln (line1, bs, '\n');
     bsreadln (line1, bs, '\n');
     bsreadln (line1, bs, '\n');
@@ -65,6 +73,7 @@ xio_ct_load_header (Xio_ct_header *xch, const char *filename)
 	print_and_exit ("Error parsing slice location (%s)\n", line1->data);
     }
 
+    /* Skip 3 lines */
     bsreadln (line1, bs, '\n');
     bsreadln (line1, bs, '\n');
     bsreadln (line1, bs, '\n');
@@ -91,6 +100,7 @@ xio_ct_load_header (Xio_ct_header *xch, const char *filename)
 	print_and_exit ("Error parsing image resolution (%s)\n", line1->data);
     }
 
+    /* Skip 9 lines */
     bsreadln (line1, bs, '\n');
     bsreadln (line1, bs, '\n');
     bsreadln (line1, bs, '\n');
@@ -164,6 +174,15 @@ xio_ct_load_image (
 
     /* Switch big-endian to native */
     endian2_big_to_native ((void*) slice_img, v->dim[0] * v->dim[1]);
+
+    /* Some older versions of xio set invalid pixels to -32768, while 
+       newer versions use -1030.  Seemingly... not enough test data
+       to be sure.  Anyway, fudge the values so it looks good. */
+    for (int i = 0; i < v->dim[0] * v->dim[1]; i++) {
+        if (slice_img[i] < -1030) {
+            slice_img[i] = -1030;
+        }
+    }
 
     fclose (fp);
 }

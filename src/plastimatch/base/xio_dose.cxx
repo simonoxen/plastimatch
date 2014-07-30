@@ -49,7 +49,7 @@ xio_dose_load_header (Xio_dose_header *xdh, const char *filename)
     int rc;
     int dummy;
     /* Header info */
-    Xio_version xio_dose_version;
+    int xio_dose_version;
     int xio_dose_datatype;
     int xio_sources;
     double xio_dose_scalefactor, xio_dose_weight;
@@ -72,26 +72,16 @@ xio_dose_load_header (Xio_dose_header *xdh, const char *filename)
     /* XiO file format version */
     fgets (line1, sizeof(line1), fp);
 
-    if (!strncmp (line1, "004f101e", strlen ("004f101e"))) {
-        xio_dose_version = XIO_VERSION_4_2_1;
-    } else if (!strncmp (line1, "0062101e", strlen ("0062101e"))) {
-        xio_dose_version = XIO_VERSION_4_33_02;
-    } else if (!strncmp (line1, "006a101e", strlen ("006a101e"))) {
-	/* ?? */
-        xio_dose_version = XIO_VERSION_4_33_02;
-    } else if (!strncmp (line1, "006d101e", strlen ("006d101e"))) {
-        xio_dose_version = XIO_VERSION_4_5_0;
-    } else {
-	/* ?? */
-	xio_dose_version = XIO_VERSION_4_5_0;
+    rc = sscanf ((const char*) line1, "%x", &xio_dose_version);
+    if (rc != 1) {
+	/* Couldn't parse version string -- default to oldest known format. */
+	xio_dose_version = 0x0037101e;
     }
 
     /* Skip line */
     fgets (line1, sizeof(line1), fp);
 
-    if (xio_dose_version == XIO_VERSION_4_33_02 
-	|| xio_dose_version == XIO_VERSION_4_5_0)
-    {
+    if (xio_dose_version >= 0x0062101e) {
 	/* Skip line */
 	fgets (line1, sizeof(line1), fp);
     }
