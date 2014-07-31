@@ -228,14 +228,14 @@ Ion_pristine_peak::lookup_energy (float depth) const
     }
 
     /* Use index to lookup and interpolate energy */
-    if (i >= 0 || i < this->num_samples) {
-        // linear interpolation
+    if (i >= 0 && i < this->num_samples-1) {
+        /* linear interpolation */
         energy = this->e_lut[i]
             + (depth - this->d_lut[i])
             * ((this->e_lut[i+1] - this->e_lut[i]) 
                 / (this->d_lut[i+1] - this->d_lut[i]));
     } else {
-        // we wen't past the end of the lookup table
+        /* we went past the end of the lookup table */
         energy = 0.0f;
     }
 
