@@ -183,7 +183,6 @@ Ion_pristine_peak::generate ()
         d_lut[i] = d;
         e_lut[i] = bragg_curve (this->E0, this->spread, d);
     }
-
     return true;
 #else
     printf ("ERROR: No specfun found.\n");

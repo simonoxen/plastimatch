@@ -1542,6 +1542,8 @@ Rpl_volume::compute_beam_modifiers (
     d_ptr->max_wed = max_wed_print;
     d_ptr->min_wed = min_wed_print;
 
+    printf("\n min & max: %lg %lg\n", d_ptr->min_wed, d_ptr->max_wed);
+
     //End extra code //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 }

@@ -113,6 +113,7 @@ Ion_parms::Ion_parms ()
 
     this->threading = THREADING_CPU_OPENMP;
     this->flavor = 'a';
+    this->homo_approx = 'n';
 
     this->debug = 0;
     this->detail = 0;
@@ -149,6 +150,13 @@ Ion_parms::set_key_val (
         if (!strcmp (key, "flavor")) {
             if (strlen (val) >= 1) {
                 this->flavor = val[0];
+            } else {
+                goto error_exit;
+            } 
+        }
+        else if (!strcmp (key, "homo_approx")) {
+            if (strlen (val) >= 1) {
+              this->homo_approx = val[0];
             } else {
                 goto error_exit;
             } 
@@ -530,6 +538,7 @@ Ion_parms::parse_args (int argc, char** argv)
 
     /* set beam & aperture parameters */
     d_ptr->plan->beam->set_flavor(this->flavor);
+    d_ptr->plan->beam->set_homo_approx(this->homo_approx);
     d_ptr->plan->beam->set_detail(this->detail);
     d_ptr->plan->beam->set_source_size(d_ptr->source_size);
 

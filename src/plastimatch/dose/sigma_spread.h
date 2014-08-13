@@ -21,13 +21,12 @@ extern const double lookup_off_axis[][2];
 
 class Ion_beam;
 
-void convert_radiologic_length_to_sigma(Ion_plan* ion_plan, float energy, float* sigma_max); // compute the sigma_vol and return sigma_max
-void convert_radiologic_length_to_sigma_lg(Ion_plan* ion_plan, float energy, float* sigma_max); // compute the sigma_vol and return sigma_max for larger volumes
-void convert_radiologic_length_to_sigma(Photon_plan* ion_plan, float energy, float* sigma_max); // compute the sigma_vol and return sigma_max
-void convert_radiologic_length_to_sigma_lg(Photon_plan* ion_plan, float energy, float* sigma_max); // compute the sigma_vol and return sigma_max for larger volumes
+void convert_radiologic_length_to_sigma(Ion_plan* ion_plan, float energy, float* sigma_max, std::string size); // compute the sigma_vol and return sigma_max for larger volumes
+void convert_radiologic_length_to_sigma(Photon_plan* ion_plan, float energy, float* sigma_max, std::string size); // compute the sigma_vol and return sigma_max
 
-void length_to_sigma_slow(std::vector<float>* p_sigma, const std::vector<float>* p_density, float spacing_z,float* sigma_max, float energy, float source_size);
-void length_to_sigma(std::vector<float>* p_sigma, const std::vector<float>* p_density, float spacing_z,float* sigma_max, float energy, float source_size);
+void length_to_sigma_hetero(std::vector<float>* p_sigma, const std::vector<float>* p_density, float spacing_z,float* sigma_max, float energy, float source_size);
+void length_to_sigma_homo(Rpl_volume* sigma_vol, Rpl_volume* rpl_vol, float* sigma_max, float energy, float sourcesize);
+
 void length_to_sigma_photon(std::vector<float>* p_sigma, std::vector<float>* p_density, float spacing_z,float* sigma_max, float energy, float source_size);
 
 void compute_dose_ray_desplanques(Volume* dose_volume, Volume::Pointer ct_vol, Rpl_volume* rpl_vol, Rpl_volume* sigma_vol, Rpl_volume* ct_vol_density, Ion_beam* beam, Volume::Pointer final_dose_volume, const Ion_pristine_peak* ppp, float normalization_dose);
@@ -51,7 +50,7 @@ void build_hong_grid(std::vector<double>* area, std::vector<double>* xy_grid, in
 
 void find_ijk_pixel(int* ijk_idx, double* xyz_ray_center, Volume* dose_volume);
 void find_xyz_center_entrance(double* xyz_ray_center, double* ray, float z_axis_offset);
-void find_xyz_center(double* xyz_ray_center, double* ray, float z_axis_offset, int k);
+void find_xyz_center(double* xyz_ray_center, double* ray, float z_axis_offset, int k, float z_spacing);
 void find_xyz_from_ijk(double* xyz, Volume* volume, int* ijk);
 double distance(const std::vector< std::vector <double> >&, int, int);
 double double_gaussian_interpolation(double* gaussian_center, double* pixel_center, double sigma, double* spacing);

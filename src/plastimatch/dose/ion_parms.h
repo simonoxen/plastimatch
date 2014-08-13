@@ -38,6 +38,7 @@ public:
     int debug;            /* 1 = debug mode */
     int detail;           /* 0 = full detail */
     char flavor;          /* Which algorithm? */
+    char homo_approx;     /* Sigma approximation for homogeneous volume */
     float ray_step;       /* Uniform ray step size (mm) */
     float scale;          /* scale dose intensity */
                           /* 1 = only consider voxels in beam path */

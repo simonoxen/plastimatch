@@ -16,6 +16,7 @@ public:
     double isocenter[3];
     int detail;
     char flavor;
+    char homo_approx;
     Particle_type part;
 
 public:
@@ -51,6 +52,7 @@ public:
         this->isocenter[2] = 0.f;
         this->detail = 1;
         this->flavor = 'a';
+        this->homo_approx = 'n';
         this->part = part;
 
         this->sobp = Ion_sobp::New(new Ion_sobp(part));
@@ -191,6 +193,18 @@ void
 Ion_beam::set_flavor (char flavor)
 {
     d_ptr->flavor = flavor;
+}
+
+char 
+Ion_beam::get_homo_approx () const
+{
+    return d_ptr->homo_approx;
+}
+    
+void 
+Ion_beam::set_homo_approx (char homo_approx)
+{
+  d_ptr->homo_approx = homo_approx;
 }
 
 float

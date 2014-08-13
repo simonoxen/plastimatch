@@ -10,162 +10,182 @@
 #include "ray_data.h"
 #include "ray_trace.h"
 
-void 
-convert_radiologic_length_to_sigma (
-    Ion_plan* ion_plan, 
-    float energy, 
-    float* sigma_max
-)
+void convert_radiologic_length_to_sigma(Ion_plan* ion_plan, float energy, float* sigma_max, std::string size) //Rpl_volume* sigma_vol, Rpl_volume* ct_vol, float energy, float spacing_z, float* sigma_max)
 {
     /* Now we only have a rpl_volume without compensator, from which we need to compute the sigma along this ray */
     /* we extract a ray, we apply the sigma_function given the y0 according to the Hong algorithm and we put it back in the volum */
     /* at the end we have transformed our rpl_volume (not cumulative) in a sigma (in reality y0) volume */
 
-    float *sigma_img = (float*) ion_plan->sigma_vol->get_vol()->img;
-    float *ct_img = (float*) ion_plan->ct_vol_density->get_vol()->img;
-    float *ct_rglength = (float*) ion_plan->rpl_vol->get_vol()->img;
+    Rpl_volume* sigma_vol;
+    Rpl_volume* ct;
+    Rpl_volume* rglength;
 
-    plm_long ires[3] = {
-        ion_plan->sigma_vol->get_vol()->dim[0], 
-        ion_plan->sigma_vol->get_vol()->dim[1], 
-        ion_plan->sigma_vol->get_vol()->dim[2]
-    };
-    std::vector<float> french_fries_sigma (ires[2],0);
-    std::vector<float> french_fries_density (ires[2],0);
-
-    for (int apert_idx = 0; apert_idx < ires[0]*ires[1]; apert_idx++)
-    {   
-        for (int s = 0; s < ires[2]; s++)
-        {
-            french_fries_sigma[s] = ct_rglength[ires[0]*ires[1]*s + apert_idx]; // the sigma fries is initialized with density
-            french_fries_density[s] = ct_img[ires[0]*ires[1]*s + apert_idx];
-        }
-
-        length_to_sigma (&french_fries_sigma,&french_fries_density, ion_plan->sigma_vol->get_vol()->spacing[2], sigma_max, energy, ion_plan->beam->get_source_size());
-
-#if defined (commentout)
-        for (std::vector<float>::iterator it = french_fries_sigma.begin();
-             it != french_fries_sigma.end(); it++)
-        {
-            printf ("PS %g\n", *it);
-        }
-#endif
-
-        for (int s = 0; s < ires[2]; s++)
-        {
-            sigma_img[ires[0]*ires[1]*s + apert_idx] = french_fries_sigma[s];
-        }
+    if (size == "small")
+    {
+        sigma_vol = ion_plan->sigma_vol;
+        ct = ion_plan->ct_vol_density;
+        rglength = ion_plan->rpl_vol;
     }
-    printf("sigma_max = %lg\n", *sigma_max);
-}
-
-void convert_radiologic_length_to_sigma(Photon_plan* ion_plan, float energy, float* sigma_max)
-{
-    /* Now we only have a rpl_volume without compensator, from which we need to compute the sigma along this ray */
-    /* we extract a ray, we apply the sigma_function given the y0 according to the Hong algorithm and we put it back in the volum */
-    /* at the end we have transformed our rpl_volume (not cumulative) in a sigma (in reality y0) volume */
-
-    float *sigma_img = (float*) ion_plan->sigma_vol->get_vol()->img;
-    float *ct_img = (float*) ion_plan->ct_vol_density->get_vol()->img;
-    float *ct_rglength = (float*) ion_plan->rpl_vol->get_vol()->img;
-
-    plm_long ires[3] = {
-        ion_plan->sigma_vol->get_vol()->dim[0], 
-        ion_plan->sigma_vol->get_vol()->dim[1], 
-        ion_plan->sigma_vol->get_vol()->dim[2]};
-
-    std::vector<float> french_fries_sigma (ires[2],0);
-    std::vector<float> french_fries_density (ires[2],0);
-
-    for (int apert_idx = 0; apert_idx < ires[0]*ires[1]; apert_idx++)
-    {   
-        for (int s = 0; s < ires[2]; s++)
-        {
-            french_fries_sigma[s] = ct_rglength[ires[0]*ires[1]*s + apert_idx]; // the sigma fries is initialized with density
-            french_fries_density[s] = ct_img[ires[0]*ires[1]*s + apert_idx];
-        }
-
-        length_to_sigma_photon(&french_fries_sigma,&french_fries_density, ion_plan->sigma_vol->get_vol()->spacing[2], sigma_max, energy, ion_plan->get_source_size());
-
-        for (int s = 0; s < ires[2]; s++)
-        {
-            sigma_img[ires[0]*ires[1]*s + apert_idx] = french_fries_sigma[s];
-        }
+    else if (size == "large")
+    {
+        sigma_vol = ion_plan->sigma_vol_lg;
+        ct = ion_plan->ct_vol_density_lg;
+        rglength = ion_plan->rpl_vol_lg;
     }
-    printf("sigma_max = %lg\n", *sigma_max);
-}
+    else
+    {
+      printf("error: size of convert_radiologic_length-to-sigma must be \"small\" or \"large\" \n");
+      return;
+    }
 
-void convert_radiologic_length_to_sigma_lg(Ion_plan* ion_plan, float energy, float* sigma_max) //Rpl_volume* sigma_vol, Rpl_volume* ct_vol, float energy, float spacing_z, float* sigma_max)
-{
-    /* Now we only have a rpl_volume without compensator, from which we need to compute the sigma along this ray */
-    /* we extract a ray, we apply the sigma_function given the y0 according to the Hong algorithm and we put it back in the volum */
-    /* at the end we have transformed our rpl_volume (not cumulative) in a sigma (in reality y0) volume */
+    float *sigma_img = (float*) sigma_vol->get_vol()->img;
+    float *ct_img = (float*) ct->get_vol()->img;
+    float *ct_rglength = (float*) rglength->get_vol()->img;
 
-    float *sigma_img = (float*) ion_plan->sigma_vol_lg->get_vol()->img;
-    float *ct_img = (float*) ion_plan->ct_vol_density_lg->get_vol()->img;
-    float *ct_rglength = (float*) ion_plan->rpl_vol_lg->get_vol()->img;
+    plm_long ires[3] = {sigma_vol->get_vol()->dim[0], sigma_vol->get_vol()->dim[1], sigma_vol->get_vol()->dim[2]};
 
-    plm_long ires[3] = {
-        ion_plan->sigma_vol_lg->get_vol()->dim[0], 
-        ion_plan->sigma_vol_lg->get_vol()->dim[1], 
-        ion_plan->sigma_vol_lg->get_vol()->dim[2]
-    };
+    if (ion_plan->beam->get_homo_approx() == 'y')
+    {
+        length_to_sigma_homo(sigma_vol, rglength, sigma_max, energy, ion_plan->beam->get_source_size());
+    }
+    else
+    {
+        std::vector<float> french_fries_sigma (ires[2],0);
+        std::vector<float> french_fries_density (ires[2],0);
 
-    std::vector<float> french_fries_sigma (ires[2],0);
-    std::vector<float> french_fries_density (ires[2],0);
+        for (int apert_idx = 0; apert_idx < ires[0]*ires[1]; apert_idx++)
+        {   
+            for (int s = 0; s < ires[2]; s++)
+            {
+                french_fries_sigma[s] = ct_rglength[ires[0]*ires[1]*s + apert_idx]; // the sigma fries is initialized with density
+                french_fries_density[s] = ct_img[ires[0]*ires[1]*s + apert_idx];
+            }
 
-    for (int apert_idx = 0; apert_idx < ires[0]*ires[1]; apert_idx++)
-    {   
-        for (int s = 0; s < ires[2]; s++)
-        {
-            french_fries_sigma[s] = ct_rglength[ires[0]*ires[1]*s + apert_idx]; // the sigma fries is initialized with density
-            french_fries_density[s] = ct_img[ires[0]*ires[1]*s + apert_idx];
-        }
-
-        length_to_sigma(&french_fries_sigma,&french_fries_density, ion_plan->sigma_vol_lg->get_vol()->spacing[2], sigma_max, energy, ion_plan->beam->get_source_size());
-        for (int s = 0; s < ires[2]; s++)
-        {
-            sigma_img[ires[0]*ires[1]*s + apert_idx] = french_fries_sigma[s];
+            length_to_sigma_hetero(&french_fries_sigma,&french_fries_density, sigma_vol->get_vol()->spacing[2], sigma_max, energy, ion_plan->beam->get_source_size());
+            for (int s = 0; s < ires[2]; s++)
+            {
+                sigma_img[ires[0]*ires[1]*s + apert_idx] = french_fries_sigma[s];
+            }
         }
     }
     printf("new sigma_max = %lg\n", *sigma_max);
 }
 
-void convert_radiologic_length_to_sigma_lg(Photon_plan* ion_plan, float energy, float* sigma_max) //Rpl_volume* sigma_vol, Rpl_volume* ct_vol, float energy, float spacing_z, float* sigma_max)
+void convert_radiologic_length_to_sigma(Photon_plan* photon_plan, float energy, float* sigma_max, std::string size) //Rpl_volume* sigma_vol, Rpl_volume* ct_vol, float energy, float spacing_z, float* sigma_max)
 {
     /* Now we only have a rpl_volume without compensator, from which we need to compute the sigma along this ray */
     /* we extract a ray, we apply the sigma_function given the y0 according to the Hong algorithm and we put it back in the volum */
     /* at the end we have transformed our rpl_volume (not cumulative) in a sigma (in reality y0) volume */
 
-    float *sigma_img = (float*) ion_plan->sigma_vol_lg->get_vol()->img;
-	float *ct_img = (float*) ion_plan->ct_vol_density_lg->get_vol()->img;
-	float *ct_rglength = (float*) ion_plan->rpl_vol_lg->get_vol()->img;
+    Rpl_volume* sigma_vol;
+    Rpl_volume* ct;
+    Rpl_volume* rglength;
 
-    int ires[3] = {ion_plan->sigma_vol_lg->get_vol()->dim[0], ion_plan->sigma_vol_lg->get_vol()->dim[1], ion_plan->sigma_vol_lg->get_vol()->dim[2]};
-
-    std::vector<float> french_fries_sigma (ires[2],0);
-    std::vector<float> french_fries_density (ires[2],0);
-
-    for (int apert_idx = 0; apert_idx < ires[0]*ires[1]; apert_idx++)
-    {   
-        for (int s = 0; s < ires[2]; s++)
-        {
-            french_fries_sigma[s] = ct_rglength[ires[0]*ires[1]*s + apert_idx]; // the sigma fries is initialized with density
-            french_fries_density[s] = ct_img[ires[0]*ires[1]*s + apert_idx];
-        }
-
-		length_to_sigma_photon(&french_fries_sigma,&french_fries_density, ion_plan->sigma_vol_lg->get_vol()->spacing[2], sigma_max, energy, ion_plan->get_source_size());
-
-        for (int s = 0; s < ires[2]; s++)
-        {
-            sigma_img[ires[0]*ires[1]*s + apert_idx] = french_fries_sigma[s];
-        }
+    if (size == "small")
+    {
+        sigma_vol = photon_plan->sigma_vol;
+        ct = photon_plan->ct_vol_density;
+        rglength = photon_plan->rpl_vol;
     }
+    else if (size == "large")
+    {
+        sigma_vol = photon_plan->sigma_vol_lg;
+        ct = photon_plan->ct_vol_density_lg;
+        rglength = photon_plan->rpl_vol_lg;
+    }
+    else
+    {
+      printf("error: size of convert_radiologic_length-to-sigma must be \"small\" or \"large\" \n");
+      return;
+    }
+
+    float *sigma_img = (float*) sigma_vol->get_vol()->img;
+    float *ct_img = (float*) ct->get_vol()->img;
+    float *ct_rglength = (float*) rglength->get_vol()->img;
+
+    plm_long ires[3] = {sigma_vol->get_vol()->dim[0], sigma_vol->get_vol()->dim[1], sigma_vol->get_vol()->dim[2]};
+
+    /* if (photon_plan->beam->get_homo_approx() == 'y')
+    {
+        length_to_sigma_homo(sigma_vol, rglength, sigma_max, energy, ion_plan->beam->get_source_size());
+    }
+    else
+    {*/
+        std::vector<float> french_fries_sigma (ires[2],0);
+        std::vector<float> french_fries_density (ires[2],0);
+
+        for (int apert_idx = 0; apert_idx < ires[0]*ires[1]; apert_idx++)
+        {   
+            for (int s = 0; s < ires[2]; s++)
+            {
+                french_fries_sigma[s] = ct_rglength[ires[0]*ires[1]*s + apert_idx]; // the sigma fries is initialized with density
+                french_fries_density[s] = ct_img[ires[0]*ires[1]*s + apert_idx];
+            }
+
+            length_to_sigma_hetero(&french_fries_sigma,&french_fries_density, sigma_vol->get_vol()->spacing[2], sigma_max, energy, 0);
+            for (int s = 0; s < ires[2]; s++)
+            {
+                sigma_img[ires[0]*ires[1]*s + apert_idx] = french_fries_sigma[s];
+            }
+        }
+    /* } */
     printf("new sigma_max = %lg\n", *sigma_max);
 }
 
 void 
-length_to_sigma (
+length_to_sigma_homo(Rpl_volume* sigma_vol, Rpl_volume* rpl_vol, float* sigma_max, float energy, float sourcesize)
+{
+    float* sigma_volume = (float*) sigma_vol->get_vol()->img;
+    float* rpl_volume = (float*) rpl_vol->get_vol()->img;
+
+    double sigma_range_compensator = 0;
+
+    double sigma_source = 0;
+    double x_over_range = 0;
+
+    /*  Hong method to calculate the sigma value for homogeneous */
+    int dim = sigma_vol->get_vol()->dim[0] * sigma_vol->get_vol()->dim[1] * sigma_vol->get_vol()->dim[2];
+
+    /* Range value extracted from a fit based on 1-250MeV from the NIST data - ranges in mm*/
+    double range = -1.273 + 0.19685 * energy + 0.006274 * energy * energy - 3.99E-6 * energy * energy * energy;
+    
+    /* Sigma0 value from the Hong fit - See paper Hong "A pencil beam algorithm for proton dose calculation" - sigma in mm: x10*/
+    double sigma0 = 0.02275 * range + 1.2085E-6 * range * range;
+
+    sigma_source = 0; // to be calculated!!
+    sigma_range_compensator = 0; // to be calculated!!
+
+    /* Calculation of the sigma values from the medium equivalent depth */
+    for (int i = 0; i < dim; i++)
+    {
+        if (rpl_volume[i] <= 0) 
+        {
+            sigma_volume[i] = sqrt( sigma_source * sigma_source + sigma_range_compensator * sigma_range_compensator);
+        }
+        else if (rpl_volume[i] >= range)
+        {
+            sigma_volume[i] = sqrt( sigma_source * sigma_source + sigma_range_compensator * sigma_range_compensator + sigma0 * sigma0);
+        }
+        else
+        {
+            x_over_range = rpl_volume[i] / range;
+            /* sigma = y0 * Hong (x/range)*/
+            sigma_volume[i] = sigma0 * x_over_range * ( 0.26232 + 0.64298 * x_over_range + 0.0952393 * x_over_range * x_over_range);
+
+            /* sigma = sum of sigmas */
+            sigma_volume[i] = sqrt( sigma_source * sigma_source + sigma_range_compensator * sigma_range_compensator + sigma_volume[i] * sigma_volume[i]);
+        }
+
+        if (*sigma_max < sigma_volume[i])
+        {
+            *sigma_max = sigma_volume[i];
+        }
+    }
+    printf("sigma_max = %lg\n", *sigma_max);
+}
+
+void 
+length_to_sigma_hetero (
     std::vector<float>* p_sigma, 
     const std::vector<float>* p_density, 
     float spacing_z, 
@@ -280,8 +300,8 @@ length_to_sigma (
         }
         
         // We have reached the POI pixel and we can store the y0 value
-        sigma_source = sourcesize * ((20 + POI_depth) / 187);
-        sigma_range_compensator = 0.331 * 0.00313 * (20 + POI_depth + 4.4); // 4.4 is the fraction of the RC - effective scattering depth on 13cm
+        sigma_source = sourcesize; // * ((20 + POI_depth) / 187);
+        sigma_range_compensator = 0; //0.331 * 0.00313 * (20 + POI_depth + 4.4); // 4.4 is the fraction of the RC - effective scattering depth on 13cm
         sigma_patient = 14.10f *(1.0f+1.0f/9.0f*log10(inverse_rad_length_integrated))* (float) sqrt(sum); // in cm
         (*p_sigma)[i] = 10 * ( //*10 because sigma is used later in mm
             sqrt(sigma_source * sigma_source + sigma_range_compensator * sigma_range_compensator + sigma_patient * sigma_patient));
@@ -289,138 +309,6 @@ length_to_sigma (
         if (*sigma_max < (*p_sigma)[i])
         {
             *sigma_max = (*p_sigma)[i];
-        }
-    }
-}
-
-void 
-length_to_sigma_slow (
-    std::vector<float>* p_sigma, 
-    const std::vector<float>* p_density, 
-    float spacing_z, 
-    float* sigma_max, 
-    float energy, 
-    float sourcesize
-)
-{
-    std::vector<float> tmp_rglength (p_sigma->size(), 0);
-    int first_non_null_loc = 0;
-    spacing_z = spacing_z/10; // converted to cm (the Highland formula is in cm!)
-
-    /* initializiation of all the french_fries, except sigma, which is the output and calculate later */
-    for(int i = 0; i < (int) p_sigma->size();i++)
-    {
-        if(i == 0)
-        {
-            tmp_rglength[i] = (*p_sigma)[i]; // remember that at this point french_fries_sigma is only a rglngth function without compensator
-            (*p_sigma)[i] = 0;
-        } 
-        else 
-        {
-            tmp_rglength[i] = (*p_sigma)[i]-(*p_sigma)[i-1]; // rglength in the pixel
-            (*p_sigma)[i] = 0;
-        }
-    }
-
-    //We can now compute the sigma french_fries!!!!
-
-    /* Step 1: the sigma is filled with zeros, so we let them at 0 as long as rg_length is 0, meaning the ray is out of the volume */
-    /* we mark the first pixel in the volume, and the calculations will start with this one */
-    for (int i = 0; i < (int) p_sigma->size(); i++)
-    {
-        if (tmp_rglength[i] > 0)
-        {
-            first_non_null_loc = i;
-            break;
-        }
-        if (i == p_sigma->size())
-        {
-            first_non_null_loc = p_sigma->size()-1;
-            printf("\n the french_fries is completely zeroed, the ray seems to not intersect the volume\n");
-            return;
-        }
-    }
-
-    /* Step 2: Each pixel in the volume will receive its sigma (in reality y0) value, according to the differential Highland formula */
-
-    float energy_callback = energy;
-    float mc2 = 939.4f;          /* proton mass at rest (MeV) */
-    float c = 299792458.0f;        /* speed of light (m/s2) */
-
-    float p = 0.0;              /* Proton momentum (passed in)          */
-    float v = 0.0;              /* Proton velocity (passed in)          */
-    float stop = 0;		/* stopping power energy (MeV.cm2/g) */
-	
-    float sum = 0.0;		/* integration expressions, right part of equation */
-    float function_to_be_integrated; /* right term to be integrated in the Highland equation */
-    float inverse_rad_length_integrated = 0; /* and left part */
-    float y0 = 0;               /* y0 value used to update the french_fries values */
-    float inv_rad_length;       /* 1/rad_length - used in the integration */
-    float step;                 /* step of integration, will depends on the radiologic length */
-
-    float POI_depth;            /* depth of the point of interest (where is calculated the sigma value)in cm - centered at the pixel center*/
-    float pixel_depth;          /* depth of the contributing pixel to total sigma (in cm) - center between 2 pixels, the difference in rglength comes from the center of the previous pixel to the center of this pixel*/
-    double sigma_source;
-    double sigma_range_compensator;
-    double sigma_patient;
-
-    for (int i = first_non_null_loc; i < (int) p_sigma->size(); i++)
-    {
-        energy = energy_callback; // we reset the parameters for each sigma calculation
-        sum = 0;
-        inverse_rad_length_integrated = 0;
-
-        POI_depth = (float) (i+0.5)*spacing_z;
-
-        /*integration */
-        for (int j = first_non_null_loc; j <= i && energy > 0;j++)
-        {
-
-            /* p & v are updated */
-
-            p= sqrt(2*energy*mc2+energy*energy)/c; // in MeV.s.m-1
-            v= c*sqrt(1-pow((mc2/(energy+mc2)),2)); //in m.s-1
-
-            if (i == j)
-            {
-                pixel_depth = (j+.25f)*spacing_z; // we integrate only up to the voxel center, not the whole pixel
-                step = spacing_z/2;
-            }
-            else
-            {
-                pixel_depth = (j+0.5f)*spacing_z;
-                step = spacing_z;
-            }
-            
-            inv_rad_length = 1.0f / LR_interpolation((*p_density)[j]);
-
-            function_to_be_integrated = (pow(((POI_depth - pixel_depth)/(p*v)),2) * inv_rad_length); //i in cm
-            sum += function_to_be_integrated*step;
-
-            inverse_rad_length_integrated += step * inv_rad_length;
-
-            /* energy is updated after passing through dz */
-            
-            stop = (float) getstop(energy)* WER_interpolation((*p_density)[j]) * (*p_density)[j]; // dE/dx_mat = dE /dx_watter * WER * density (lut in g/cm2)
-            energy = energy - stop*step;
-        }
-
-        if (energy  <= 0) // sigma formula is not defined anymore
-        {
-            return; // we can exit as the rest of the french_fries_sigma equals already 0
-        }
-        else // that means we reach the POI pixel and we can store the y0 value
-        {
-            sigma_source = sourcesize * ((20 + POI_depth) / 187);
-            sigma_range_compensator = 0.331 * 0.00313 * (20 + POI_depth + 4.4); // 4.4 is the fraction of the RC - effective scattering depth on 13cm
-            sigma_patient = 14.10f *(1.0f+1.0f/9.0f*log10(inverse_rad_length_integrated))* (float) sqrt(sum); // in cm
-            (*p_sigma)[i] = 10* ( //*10 because sigma is used later in mm
-                sqrt(sigma_source * sigma_source + sigma_range_compensator * sigma_range_compensator + sigma_patient * sigma_patient));
-
-            if (*sigma_max < (*p_sigma)[i])
-            {
-                *sigma_max = (*p_sigma) [i];
-            }
         }
     }
 }
@@ -453,6 +341,7 @@ compute_dose_ray_desplanques(Volume* dose_volume, Volume::Pointer ct_vol, Rpl_vo
     int ijk_travel[3] = {0,0,0};
     double xyz_travel[3] = {0.0,0.0,0.0};
 
+    double spacing[3] = { (double) (dose_volume->spacing[0]), (double) (dose_volume->spacing[1]), (double) (dose_volume->spacing[2])};
     int ap_ij[2] = {1,0};
     int dim[2] = {0,0};
 
@@ -463,15 +352,12 @@ compute_dose_ray_desplanques(Volume* dose_volume, Volume::Pointer ct_vol, Rpl_vo
 
     double entrance_bev[3] = {0.0f, 0.0f, 0.0f}; // coordinates of intersection with the volume in the bev frame
     double entrance_length = 0;
-    double aperture_bev[3] = {0.0f, 0.0f, 0.0f}; // coordinates of intersection with the aperture in the bev frame
     double distance = 0; // distance from the aperture to the POI
     double tmp[3] = {0.0f, 0.0f, 0.0f};
 
     double PB_density = 1/(rpl_volume->get_aperture()->get_spacing(0) * rpl_volume->get_aperture()->get_spacing(1));
 
-    double dose_norm = 0; // factor that normalize dose to be = 1 at max.
-    dose_norm = get_dose_norm('f', ppp->E0, PB_density); //the Hong algorithm has no PB density, everything depends on the number of sectors
-
+    double dose_norm = get_dose_norm('f', ppp->E0, PB_density); //the Hong algorithm has no PB density, everything depends on the number of sectors
 
     double ct_density = 0;
     double sigma = 0;
@@ -506,7 +392,7 @@ compute_dose_ray_desplanques(Volume* dose_volume, Volume::Pointer ct_vol, Rpl_vo
     double dist = 0;
     int offset_step = 0;
 
-    for (int i = 0; i < dim[0]*dim[1];i++)
+    for (int i = 0; i < dim[0]*dim[1]; i++)
     {
         Ray_data* ray_data = &rpl_volume->get_Ray_data()[i];
 
@@ -528,10 +414,10 @@ compute_dose_ray_desplanques(Volume* dose_volume, Volume::Pointer ct_vol, Rpl_vo
 
         if (ray_bev[2]  > DRR_BOUNDARY_TOLERANCE)
         {
-            for(int k = 0; k < dose_volume->dim[2];k++)
+          for(int k = 0; k < dose_volume->dim[2] ;k++)
             {
-                find_xyz_center(xyz_ray_center, ray_bev, vec3_len(entrance_bev),k);
-                distance = vec3_dist(entrance_bev, xyz_ray_center);
+                find_xyz_center(xyz_ray_center, ray_bev, dose_volume->offset[2],k, dose_volume->spacing[2]);
+                distance = vec3_dist(xyz_ray_center, entrance_bev);
 
                 ct_density = ct_rpl_volume->get_rgdepth(ap_ij, distance);
 				
@@ -568,25 +454,24 @@ compute_dose_ray_desplanques(Volume* dose_volume, Volume::Pointer ct_vol, Rpl_vo
                                 continue;
                             }
                             idx = i2 + (dose_volume->dim[0] * (j2 + dose_volume->dim[1] * k));
-
                             ijk_travel[0] = i2;
                             ijk_travel[1] = j2;
                             ijk_travel[2] = k;
 
                             find_xyz_from_ijk(xyz_travel,dose_volume,ijk_travel);
                             
-                            radius = vec3_dist(xyz_travel,xyz_ray_center);                            
+                            radius = vec3_dist(xyz_travel,xyz_ray_center); 
                             if (sigma == 0)
                             {
                                 off_axis_factor = 1;
                             }
-                            else if (radius / sigma >=3)
+                            else if (radius > sqrt(0.25 * spacing[0] * spacing [0] + 0.25 * spacing[1] * spacing[1]) + 3 * sigma )
                             {
                                 off_axis_factor = 0;
                             }
                             else
                             {
-                                off_axis_factor = double_gaussian_interpolation(xyz_ray_center, xyz_travel,sigma, (double*) dose_volume->spacing);
+                                off_axis_factor = double_gaussian_interpolation(xyz_ray_center, xyz_travel,sigma, spacing);
                             }
                             img[idx] += normalization_dose * beam->get_beamWeight() * central_axis_dose * off_axis_factor * (float) ppp->weight / dose_norm; // SOBP is weighted by the weight of the pristine peak
                         }
@@ -599,6 +484,12 @@ compute_dose_ray_desplanques(Volume* dose_volume, Volume::Pointer ct_vol, Rpl_vo
             printf("Ray[%d] is not directed forward: z,x,y (%lg, %lg, %lg) \n", i, ray_data->ray[0], ray_data->ray[1], ray_data->ray[2]);
         }
     }
+
+    /* for (int i = 20; i < 116; i++)
+    {
+        idx = i + (dose_volume->dim[0] * (8 + dose_volume->dim[1] * 55));
+        printf ("%d: %lg\n", i, img[idx]);
+    } */
 
     float* final_dose_img = (float*) final_dose_volume->img;
 
@@ -739,7 +630,7 @@ compute_dose_ray_desplanques(Volume* dose_volume, Volume::Pointer ct_vol, Rpl_vo
         {
             for(int k = 0; k < dose_volume->dim[2];k++)
             {
-                find_xyz_center(xyz_ray_center, ray_bev, vec3_len(entrance_bev),k);
+              find_xyz_center(xyz_ray_center, ray_bev, vec3_len(entrance_bev),k, dose_volume->spacing[2]);
                 distance = vec3_dist(entrance_bev, xyz_ray_center);
 
                 ct_density = ct_rpl_volume->get_rgdepth(ap_ij, distance);
@@ -1049,6 +940,7 @@ compute_dose_ray_sharp (
             } // for k
         } // ap_ij[1]
     } // ap_ij[0]
+    
 }
 
 void 
@@ -1319,6 +1211,9 @@ void compute_dose_ray_shackleford(Volume::Pointer dose_vol, Ion_plan* plan, cons
             }
         }
     }
+    plan->sigma_vol->save("d1.mha");
+    plan->sigma_vol_lg->save("d2.mha");
+
 }
 
 void compute_dose_ray_shackleford(Volume::Pointer dose_vol, Photon_plan* plan, const Photon_depth_dose* ppp, std::vector<double>* area, std::vector<double>* xy_grid, int radius_sample, int theta_sample, float normalization_dose)
@@ -1441,7 +1336,7 @@ calculate_rpl_coordinates_xyz(std::vector<std:: vector<double> >* xyz_coordinate
             ray_bev[1] = vec3_dot(ray_data->ray, rpl_volume->get_aperture()->pdn);
             ray_bev[2] = -vec3_dot(ray_data->ray, rpl_volume->get_proj_volume()->get_nrm()); // ray_beam_eye_view is already normalized
 
-            find_xyz_center(aperture, ray_bev, rpl_volume->get_aperture()->get_distance(),0);
+            find_xyz_center(aperture, ray_bev, rpl_volume->get_aperture()->get_distance(),0, rpl_volume->get_vol()->spacing[2]);
             find_xyz_center_entrance(entrance, ray_bev, rpl_volume->get_front_clipping_plane()-rpl_volume->get_aperture()->get_distance());
             vec3_add2(entrance, aperture);
 
@@ -1610,11 +1505,11 @@ double get_dose_norm(char flavor, double energy, double PB_density)
 }
 
 void 
-find_xyz_center(double* xyz_ray_center, double* ray, float z_axis_offset, int k)
+find_xyz_center(double* xyz_ray_center, double* ray, float z_axis_offset, int k, float z_spacing)
 {
     float alpha = 0.0f;
 
-    xyz_ray_center[2] = z_axis_offset+(double)k;
+    xyz_ray_center[2] = z_axis_offset+(double)k * z_spacing;
 
     alpha = xyz_ray_center[2] /(double) ray[2];
     xyz_ray_center[0] = alpha * ray[0];
@@ -1660,6 +1555,7 @@ double double_gaussian_interpolation(double* gaussian_center, double* pixel_cent
     double x2 = x1 + spacing[0];
     double y1 = pixel_center[1] - 0.5 * spacing[1];
     double y2 = y1 + spacing[1];
+    //printf("\n %lg %lg %lg %lg %lg %lg %lg\n", spacing[0], spacing[1], spacing[2] , x1, x2, y1, y2);
 
     double z = .25 
         * (erf_gauss((x2-gaussian_center[0])/(sigma*1.4142135)) - erf_gauss((x1-gaussian_center[0])/(sigma*1.4142135)))

@@ -66,6 +66,11 @@ public:
     /*! \brief Set "flavor" parameter of dose calculation algorithm */
     void set_flavor (char flavor);
 
+    /*! \brief Get "homo_approx" parameter of dose calculation algorithm */
+    char get_homo_approx () const;
+    /*! \brief Set "homo_approx" parameter of dose calculation algorithm */
+    void set_homo_approx (char homo_approx);
+
     /*! \brief Get maximum depth (in mm) in SOBP curve */
     double get_sobp_maximum_depth ();
 

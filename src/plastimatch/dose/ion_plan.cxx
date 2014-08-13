@@ -237,6 +237,7 @@ Ion_plan::get_target ()
 void
 Ion_plan::compute_beam_modifiers ()
 {
+  printf("\n aa\n");
     /* Compute the aperture and compensator */
     this->rpl_vol->compute_beam_modifiers (
         d_ptr->target->get_vol(), 0);
@@ -379,7 +380,7 @@ Ion_plan::compute_dose ()
         printf ("Computing rpl_ct\n");
         this->ct_vol_density->compute_rpl_ct ();
 
-        printf ("Computing_vold_rpl\n");
+        printf ("Computing_void_rpl\n");
         this->sigma_vol->compute_void_rpl();
 
         Rpl_volume* rpl_vol = this->rpl_vol;
@@ -413,7 +414,7 @@ Ion_plan::compute_dose ()
             const Ion_pristine_peak *ppp = *it;
             printf("Building dose matrix for %lg MeV beamlets - \n", ppp->E0);
             timer.start ();
-            convert_radiologic_length_to_sigma(this, ppp->E0, sigma_max);
+            convert_radiologic_length_to_sigma(this, ppp->E0, sigma_max, "small");
             time_sigma_conv += timer.report ();
 
             if (this->beam->get_flavor() == 'f') // Desplanques' algorithm
@@ -528,7 +529,7 @@ Ion_plan::compute_dose ()
                 this->sigma_vol_lg->set_back_clipping_plane(this->rpl_vol_lg->get_back_clipping_plane());
                 this->sigma_vol_lg->compute_rpl_rglength();
 
-                convert_radiologic_length_to_sigma_lg(this, ppp->E0, sigma_max);
+                convert_radiologic_length_to_sigma(this, ppp->E0, sigma_max, "large");
 
                 build_hong_grid(&area, &xy_grid, radius_sample, theta_sample);
                 compute_dose_ray_shackleford(dose_vol, this, ppp, &area, &xy_grid, radius_sample, theta_sample);
@@ -635,14 +636,16 @@ Ion_plan::dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* 
     dose_volume->set_origin(first_pixel);
     for (int i = 0; i < 3; i++)
     {
-        dose_volume->spacing[i]=1.0f;
         dose_volume->offset[i] = first_pixel[i];
         if (i != 2)
-        {
+        {   
+            dose_volume->spacing[i] = 1;
+            // dose_volume->spacing[i] = volume->get_aperture()->get_spacing(i); would be better...? pblm of lost lateral scattering for high resolution....
             dose_volume->dim[i] = (plm_long) (2*abs(first_pixel[i]/dose_volume->spacing[i])+1);
         }
         else
         {
+            dose_volume->spacing[i] = volume->get_proj_volume()->get_step_length();
             dose_volume->dim[i] = (plm_long) ((volume->get_back_clipping_plane() - volume->get_front_clipping_plane())/dose_volume->spacing[i] + 1);
         }
     }

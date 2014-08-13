@@ -403,7 +403,7 @@ Photon_plan::compute_dose ()
 			}
 			*sigma_max = 0;
 
-			convert_radiologic_length_to_sigma(this, ppp->E0, sigma_max);
+			convert_radiologic_length_to_sigma(this, ppp->E0, sigma_max, "small");
 
 			if (this->beam->get_flavor() == 'f') // Desplanques' algorithm
 		    {
@@ -493,7 +493,7 @@ Photon_plan::compute_dose ()
 					this->sigma_vol_lg->set_back_clipping_plane(this->rpl_vol_lg->get_back_clipping_plane());
 					this->sigma_vol_lg->compute_rpl_rglength();
 
-					convert_radiologic_length_to_sigma_lg(this, ppp->E0, sigma_max);
+					convert_radiologic_length_to_sigma(this, ppp->E0, sigma_max, "large");
 
 					build_hong_grid(&area, &xy_grid, radius_sample, theta_sample);
 					compute_dose_ray_shackleford(dose_vol, this, ppp, &area, &xy_grid, radius_sample, theta_sample, 1);
