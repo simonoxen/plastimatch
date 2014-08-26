@@ -33,6 +33,7 @@ set (PLASTIMATCH_SRC
   pcmd_dmap.cxx
   pcmd_drr.cxx 
   pcmd_dvh.cxx 
+  pcmd_filter.cxx
   pcmd_gamma.cxx
   pcmd_header.cxx 
   pcmd_jacobian.cxx

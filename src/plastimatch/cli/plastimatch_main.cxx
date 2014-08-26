@@ -20,11 +20,12 @@
 #include "pcmd_dmap.h"
 #include "pcmd_drr.h"
 #include "pcmd_dvh.h"
+#include "pcmd_filter.h"
 #include "pcmd_gamma.h"
-#include "pcmd_mabs.h"
-#include "pcmd_mask.h"
 #include "pcmd_header.h"
 #include "pcmd_jacobian.h"
+#include "pcmd_mabs.h"
+#include "pcmd_mask.h"
 #include "pcmd_probe.h"
 #include "pcmd_register.h"
 #include "pcmd_resample.h"
@@ -76,28 +77,29 @@ print_usage (int return_code)
 //        "  drr         "
         "  dvh         "
         "  fill        "
+        "  filter      "
         "  gamma       "
-        "  header      "
         "\n"
+        "  header      "
         "  jacobian    "
         "  mabs        "
         "  mask        "
         "  probe       "
-        "  register    "
         "\n"
+        "  register    "
         "  resample    "
         "  scale       "
         "  segment     "
 //        "  sift        "
         "  stats       "
-        "  synth       "
         "\n"
+        "  synth       "
         "  synth-vf    "
         "  threshold   "
         "  thumbnail   "
         "  union       "
-        "  warp        "
         "\n"
+        "  warp        "
         "  xf-convert  "
 //        "  xio-dvh     "
         "\n"
@@ -175,6 +177,9 @@ do_command (int argc, char* argv[])
     else if (!strcmp (command, "fill")) {
         /* fill and mask are the same */
         do_command_mask (argc, argv);
+    }
+    else if (!strcmp (command, "filter")) {
+        do_command_filter (argc, argv);
     }
     else if (!strcmp (command, "gamma")) {
         do_command_gamma (argc, argv);
