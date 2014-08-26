@@ -145,13 +145,16 @@ parse_fn (
 
     /* Metadata options */
     parser->add_long_option ("", "metadata",
-        "patient metadata (you may use this option multiple times)", 1, "");
+        "patient metadata (you may use this option multiple times), "
+        "option written as \"XXXX,YYYY=string\"", 1, "");
     parser->add_long_option ("", "patient-id",
         "patient id metadata: string", 1);
     parser->add_long_option ("", "patient-name",
         "patient name metadata: string", 1);
     parser->add_long_option ("", "patient-pos",
         "patient position metadata: one of {hfs,hfp,ffs,ffp}", 1, "hfs");
+    parser->add_long_option ("", "series-description",
+        "series description metadata: string", 1);
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -317,6 +320,11 @@ parse_fn (
         std::transform (arg.begin(), arg.end(), arg.begin(), 
             (int(*)(int)) toupper);
         std::string metadata_string = "0018,5100=" + arg;
+        parms->m_metadata.push_back (metadata_string);
+    }
+    if (parser->option ("series-description")) {
+        std::string arg = parser->get_string ("series-description");
+        std::string metadata_string = "0008,103e=" + arg;
         parms->m_metadata.push_back (metadata_string);
     }
 }
