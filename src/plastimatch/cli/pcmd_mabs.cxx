@@ -11,6 +11,7 @@
 class Mabs_parms_pcmd {
 public:
     bool atlas_selection;
+    bool train_atlas_selection;
     bool convert;
     bool prealign;
     bool train_registration;
@@ -24,6 +25,7 @@ public:
 public:
     Mabs_parms_pcmd () {
         atlas_selection = false;
+        train_atlas_selection = false;
         convert = false;
         prealign = false;
         train = false;
@@ -53,6 +55,8 @@ parse_fn (
     /* Parameters */
     parser->add_long_option ("", "atlas-selection", 
         "run just atlas selection", 0);
+    parser->add_long_option ("", "train-atlas-selection", 
+        "run just train atlas selection", 0);
     parser->add_long_option ("", "convert", 
         "pre-process atlas", 0);
     parser->add_long_option ("", "pre-align", 
@@ -88,6 +92,9 @@ parse_fn (
     /* Parameters */
     if (parser->have_option ("atlas-selection")) {
         parms->atlas_selection = true;
+    }
+    if (parser->have_option ("train-atlas-selection")) {
+        parms->train_atlas_selection = true;
     }
     if (parser->have_option ("convert")) {
         parms->convert = true;
@@ -125,8 +132,8 @@ do_command_mabs (int argc, char *argv[])
     Mabs mabs;
     mabs.set_parms (&mabs_parms);
 
-    if (parms.atlas_selection) {
-        mabs.atlas_selection ();
+    if (parms.train_atlas_selection) {
+        mabs.train_atlas_selection ();
     }
     else if (parms.convert) {
         mabs.atlas_convert ();
@@ -140,7 +147,9 @@ do_command_mabs (int argc, char *argv[])
     else if (parms.train) {
         mabs.train ();
     }
-    else {
+    else { // can be mabs.atlas_selection() or mabs.segment()
+        
+        /* Set parameters */
         if (parms.input_fn != "") {
             mabs.set_segment_input (parms.input_fn);
         }
@@ -150,6 +159,13 @@ do_command_mabs (int argc, char *argv[])
         if (parms.output_dicom_dir != "") {
             mabs.set_segment_output_dicom (parms.output_dicom_dir);
         }
-        mabs.segment ();
+        
+        /* Run function */
+        if (parms.atlas_selection) {
+            mabs.atlas_selection ();
+        }
+        else {
+            mabs.segment ();
+        }
     }
 }

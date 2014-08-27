@@ -48,6 +48,7 @@ public:
     void set_segment_output_dicom (const std::string& output_dicom_dir);
 
     void atlas_selection ();
+    void train_atlas_selection ();
     void atlas_convert ();
     void atlas_prealign ();
     void train_registration ();

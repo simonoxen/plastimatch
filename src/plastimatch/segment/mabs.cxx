@@ -92,7 +92,9 @@ public:
 
     /* Select atlas parameters */
     std::map<std::string, std::list<std::pair<std::string, double> > 
-             > selected_atlases;
+             > selected_atlases_train;
+
+    std::list<std::pair<std::string, double> > selected_atlases;
 
     /* Prealign parameters */
     bool prealign_resample;
@@ -720,6 +722,7 @@ Mabs::atlas_convert ()
     lprintf ("MABS prep complete\n");
 }
 
+
 void
 Mabs::atlas_selection ()
 {
@@ -731,20 +734,174 @@ Mabs::atlas_selection ()
     this->load_process_dir_list (d_ptr->prealign_dir);
 
     /* Define stuff to save ranking */
-    std::map<std::string, std::list<std::pair<std::string, double> > > ranked_atlases; // Only ranked, not selected
+    std::list<std::pair<std::string, double> > ranked_atlases; // Only ranked, not selected
     
     std::string atlas_ranking_file_name = 
-        string_format ("%s/atlas_ranking.txt", d_ptr->atlas_train_dir.c_str());
+        string_format ("%s/atlas_ranking.txt", d_ptr->segment_outdir_base.c_str());
+   
+    bool compute_new_ranking = true;
+
+    /* Check if a precomputed ranking (not specified by user) can be used */
+    if (is_directory(d_ptr->segment_outdir_base.c_str()) &&
+        file_exists(atlas_ranking_file_name.c_str()) &&
+        d_ptr->parms->atlases_from_ranking != -1) {
+        
+        compute_new_ranking = false;
+    }
+
+    /* Create atlas-train directory */
+    if (compute_new_ranking) {
+        make_directory(d_ptr->segment_outdir_base.c_str());
+    }
+
+    /* Open log file for atlas selection */
+    std::string atlas_selection_log_file_name = string_format ("%s/log_atlas_seletion.txt",
+        d_ptr->segment_outdir_base.c_str());
+    
+    FILE *atlas_selection_log_file = plm_fopen (atlas_selection_log_file_name.c_str(), "w");
+    
+    if (atlas_selection_log_file == NULL) {
+        printf("Error opening atlas selection log file!\n");
+        exit(1);
+    }
+
+    /* Create object and set the parameters */
+    Mabs_atlas_selection* atlas_selector = new Mabs_atlas_selection();
+    atlas_selector->atlas_selection_criteria = d_ptr->parms->atlas_selection_criteria;
+    atlas_selector->selection_reg_parms_fn = d_ptr->parms->selection_reg_parms_fn;
+    atlas_selector->similarity_percent_threshold = d_ptr->parms->similarity_percent_threshold;
+    atlas_selector->max_random_atlases = d_ptr->parms->max_random_atlases;
+    atlas_selector->min_random_atlases = d_ptr->parms->min_random_atlases;
+    atlas_selector->hist_bins = d_ptr->parms->mi_histogram_bins;
+    atlas_selector->percentage_nmi_random_sample = d_ptr->parms->percentage_nmi_random_sample;
+    atlas_selector->atlases_from_ranking = d_ptr->parms->atlases_from_ranking;
+    atlas_selector->precomputed_ranking_fn = d_ptr->parms->precomputed_ranking_fn;
+    atlas_selector->subject_id = d_ptr->segment_input_fn.c_str();
+    atlas_selector->atlas_dir = d_ptr->parms->atlas_dir;
+    atlas_selector->number_of_atlases = (int) d_ptr->process_dir_list.size();
+        
+    if (d_ptr->parms->roi_mask_fn != "") { /* Set the mask if defined */
+        Plm_image::Pointer mask_plm = plm_image_load (d_ptr->parms->roi_mask_fn, PLM_IMG_TYPE_ITK_UCHAR);
+            
+        typedef itk::ImageMaskSpatialObject<3> MaskType;
+        atlas_selector->mask = MaskType::New();
+        atlas_selector->mask->SetImage(mask_plm->itk_uchar());
+        atlas_selector->mask->Update();
+    }
+        
+    atlas_selector->min_hist_sub_value_defined = d_ptr->parms->lower_mi_value_sub_defined;
+    atlas_selector->min_hist_sub_value = d_ptr->parms->lower_mi_value_sub;
+    atlas_selector->max_hist_sub_value_defined = d_ptr->parms->upper_mi_value_sub_defined;
+    atlas_selector->max_hist_sub_value = d_ptr->parms->upper_mi_value_sub;
+    atlas_selector->min_hist_atl_value_defined = d_ptr->parms->lower_mi_value_atl_defined;
+    atlas_selector->min_hist_atl_value = d_ptr->parms->lower_mi_value_atl;
+    atlas_selector->max_hist_atl_value_defined = d_ptr->parms->upper_mi_value_atl_defined;
+    atlas_selector->max_hist_atl_value = d_ptr->parms->upper_mi_value_atl;
+        
+    /* New selection is required, execute it */
+    if (compute_new_ranking) {
+        atlas_selector->subject = plm_image_load_native(atlas_selector->subject_id);
+        atlas_selector->atlas_dir_list = d_ptr->process_dir_list;
+        atlas_selector->run_selection();
+    }
+
+    /* Use a precomputed ranking */
+    else if (!compute_new_ranking) {
+        atlas_selector->precomputed_ranking_fn = atlas_ranking_file_name.c_str();
+        atlas_selector->atlases_from_ranking = d_ptr->parms->atlases_from_ranking;
+        atlas_selector->precomputed_ranking();
+    }
+
+    /* Write into the log file preliminary information about the selection process */
+    fprintf(atlas_selection_log_file,
+        "Patient = %s, initial atlases = %d, selection criteria = %s \n",
+        atlas_selector->subject_id.c_str(),
+        atlas_selector->number_of_atlases,
+        atlas_selector->atlas_selection_criteria.c_str());
+        
+    if (!compute_new_ranking) {
+        fprintf(atlas_selection_log_file,
+            "SELECTION MADE USING A PRECOMPUTED RANKING\n");   
+    }
+        
+    /* Print into the log file information about the selection process */
+    fprintf(atlas_selection_log_file,
+        "Selected atlases for patient %s: (%d) \n",
+        atlas_selector->subject_id.c_str(),
+        (int) atlas_selector->selected_atlases.size());
+       
+    for (std::list<std::pair<std::string, double> >::iterator it_selected_atlases =
+         atlas_selector->selected_atlases.begin();
+         it_selected_atlases != atlas_selector->selected_atlases.end();
+         it_selected_atlases++) {
+        
+        fprintf(atlas_selection_log_file,
+            "Atlas %s with score value equal to %f \n",
+            it_selected_atlases->first.c_str(),
+            it_selected_atlases->second);
+    }
+         
+    /* Close log file */
+    fclose(atlas_selection_log_file);
+       
+    /* Fill the structures */
+    d_ptr->selected_atlases.assign(atlas_selector->selected_atlases.begin(),
+                                   atlas_selector->selected_atlases.end());
+
+    ranked_atlases.assign(atlas_selector->ranked_atlases.begin(),
+                          atlas_selector->ranked_atlases.end());
+   
+    /* Write the new ranking */
+    if (compute_new_ranking) {
+
+        FILE *ranking_file = fopen (atlas_ranking_file_name.c_str(), "w");
+       
+        fprintf(ranking_file, "%s: ", atlas_selector->subject_id.c_str());
+            
+        /* Cycle over atlases */
+        for (std::list<std::pair<std::string, double> >::iterator it_list = ranked_atlases.begin();
+             it_list != ranked_atlases.end(); it_list++) {
+            fprintf(ranking_file, "%s ", it_list->first.c_str());
+        }
+
+        fclose(ranking_file);
+    }
+
+    /* Delete object */
+    delete atlas_selector;
+
+    /* Stop timer */
+    d_ptr->time_atlas_selection += timer.report();
+
+    printf("Atlas selection done! \n");
+}
+
+
+void
+Mabs::train_atlas_selection ()
+{
+    /* Create and start timer */
+    Plm_timer timer;
+    timer.start();
+
+    /* Parse atlas directory */
+    this->load_process_dir_list (d_ptr->prealign_dir);
+
+    /* Define stuff to save ranking */
+    std::map<std::string, std::list<std::pair<std::string, double> > > train_ranked_atlases; // Only ranked, not selected
+    
+    std::string train_atlas_ranking_file_name = 
+        string_format ("%s/train_atlas_ranking.txt", d_ptr->atlas_train_dir.c_str());
    
     bool compute_new_ranking = true;
 
     /* Check if a precomputed ranking (not specified by user) can be used */
     if (is_directory(d_ptr->atlas_train_dir.c_str()) &&
-        file_exists(atlas_ranking_file_name.c_str()) &&
+        file_exists(train_atlas_ranking_file_name.c_str()) &&
         d_ptr->parms->atlases_from_ranking != -1) {
         
         /* Count lines */
-        FILE *count_lines_file = fopen (atlas_ranking_file_name.c_str(), "r");
+        FILE *count_lines_file = fopen (train_atlas_ranking_file_name.c_str(), "r");
         char ch;
         int lines_number = 1; /* The last line doesn't have \n */
         
@@ -766,13 +923,13 @@ Mabs::atlas_selection ()
     }
 
     /* Open log file for atlas selection */
-    std::string atlas_selection_log_file_name = string_format ("%s/log_atlas_seletion.txt",
+    std::string train_atlas_selection_log_file_name = string_format ("%s/log_train_atlas_seletion.txt",
         d_ptr->atlas_train_dir.c_str());
     
-    FILE *atlas_selection_log_file = plm_fopen (atlas_selection_log_file_name.c_str(), "w");
+    FILE *train_atlas_selection_log_file = plm_fopen (train_atlas_selection_log_file_name.c_str(), "w");
     
-    if (atlas_selection_log_file == NULL) {
-        printf("Error opening atlas selection log file!\n");
+    if (train_atlas_selection_log_file == NULL) {
+        printf("Error opening train atlas selection log file!\n");
         exit(1);
     }
 
@@ -796,105 +953,105 @@ Mabs::atlas_selection ()
         }
         
         /* Create object and set the parameters */
-        Mabs_atlas_selection* atlas_selector = new Mabs_atlas_selection();
-        atlas_selector->atlas_selection_criteria = d_ptr->parms->atlas_selection_criteria;
-        atlas_selector->selection_reg_parms_fn = d_ptr->parms->selection_reg_parms_fn;
-        atlas_selector->similarity_percent_threshold = d_ptr->parms->similarity_percent_threshold;
-        atlas_selector->max_random_atlases = d_ptr->parms->max_random_atlases;
-        atlas_selector->min_random_atlases = d_ptr->parms->min_random_atlases;
-        atlas_selector->hist_bins = d_ptr->parms->mi_histogram_bins;
-        atlas_selector->percentage_nmi_random_sample = d_ptr->parms->percentage_nmi_random_sample;
-        atlas_selector->atlases_from_ranking = d_ptr->parms->atlases_from_ranking;
-        atlas_selector->precomputed_ranking_fn = d_ptr->parms->precomputed_ranking_fn;
-        atlas_selector->subject_id = patient_id;
-        atlas_selector->atlas_dir = d_ptr->parms->atlas_dir;
-        atlas_selector->number_of_atlases = (int) d_ptr->process_dir_list.size();
+        Mabs_atlas_selection* train_atlas_selector = new Mabs_atlas_selection();
+        train_atlas_selector->atlas_selection_criteria = d_ptr->parms->atlas_selection_criteria;
+        train_atlas_selector->selection_reg_parms_fn = d_ptr->parms->selection_reg_parms_fn;
+        train_atlas_selector->similarity_percent_threshold = d_ptr->parms->similarity_percent_threshold;
+        train_atlas_selector->max_random_atlases = d_ptr->parms->max_random_atlases;
+        train_atlas_selector->min_random_atlases = d_ptr->parms->min_random_atlases;
+        train_atlas_selector->hist_bins = d_ptr->parms->mi_histogram_bins;
+        train_atlas_selector->percentage_nmi_random_sample = d_ptr->parms->percentage_nmi_random_sample;
+        train_atlas_selector->atlases_from_ranking = d_ptr->parms->atlases_from_ranking;
+        train_atlas_selector->precomputed_ranking_fn = d_ptr->parms->precomputed_ranking_fn;
+        train_atlas_selector->subject_id = patient_id;
+        train_atlas_selector->atlas_dir = d_ptr->parms->atlas_dir;
+        train_atlas_selector->number_of_atlases = (int) d_ptr->process_dir_list.size();
         
         if (d_ptr->parms->roi_mask_fn != "") { /* Set the mask if defined */
             Plm_image::Pointer mask_plm = plm_image_load (d_ptr->parms->roi_mask_fn, PLM_IMG_TYPE_ITK_UCHAR);
             
             typedef itk::ImageMaskSpatialObject<3> MaskType;
-            atlas_selector->mask = MaskType::New();
-            atlas_selector->mask->SetImage(mask_plm->itk_uchar());
-            atlas_selector->mask->Update();
+            train_atlas_selector->mask = MaskType::New();
+            train_atlas_selector->mask->SetImage(mask_plm->itk_uchar());
+            train_atlas_selector->mask->Update();
         }
         
-        atlas_selector->min_hist_sub_value_defined = d_ptr->parms->lower_mi_value_sub_defined;
-        atlas_selector->min_hist_sub_value = d_ptr->parms->lower_mi_value_sub;
-        atlas_selector->max_hist_sub_value_defined = d_ptr->parms->upper_mi_value_sub_defined;
-        atlas_selector->max_hist_sub_value = d_ptr->parms->upper_mi_value_sub;
-        atlas_selector->min_hist_atl_value_defined = d_ptr->parms->lower_mi_value_atl_defined;
-        atlas_selector->min_hist_atl_value = d_ptr->parms->lower_mi_value_atl;
-        atlas_selector->max_hist_atl_value_defined = d_ptr->parms->upper_mi_value_atl_defined;
-        atlas_selector->max_hist_atl_value = d_ptr->parms->upper_mi_value_atl;
+        train_atlas_selector->min_hist_sub_value_defined = d_ptr->parms->lower_mi_value_sub_defined;
+        train_atlas_selector->min_hist_sub_value = d_ptr->parms->lower_mi_value_sub;
+        train_atlas_selector->max_hist_sub_value_defined = d_ptr->parms->upper_mi_value_sub_defined;
+        train_atlas_selector->max_hist_sub_value = d_ptr->parms->upper_mi_value_sub;
+        train_atlas_selector->min_hist_atl_value_defined = d_ptr->parms->lower_mi_value_atl_defined;
+        train_atlas_selector->min_hist_atl_value = d_ptr->parms->lower_mi_value_atl;
+        train_atlas_selector->max_hist_atl_value_defined = d_ptr->parms->upper_mi_value_atl_defined;
+        train_atlas_selector->max_hist_atl_value = d_ptr->parms->upper_mi_value_atl;
         
         /* New selection is required, execute it */
         if (compute_new_ranking) {
-            atlas_selector->subject = d_ptr->ref_rtds->get_image();
-            atlas_selector->atlas_dir_list = d_ptr->process_dir_list;
-            atlas_selector->run_selection();
+            train_atlas_selector->subject = d_ptr->ref_rtds->get_image();
+            train_atlas_selector->atlas_dir_list = d_ptr->process_dir_list;
+            train_atlas_selector->run_selection();
         }
 
         /* Use a precomputed ranking */
         else if (!compute_new_ranking) {
-            atlas_selector->precomputed_ranking_fn = atlas_ranking_file_name.c_str();
-            atlas_selector->atlases_from_ranking = d_ptr->parms->atlases_from_ranking;
-            atlas_selector->precomputed_ranking();
+            train_atlas_selector->precomputed_ranking_fn = train_atlas_ranking_file_name.c_str();
+            train_atlas_selector->atlases_from_ranking = d_ptr->parms->atlases_from_ranking;
+            train_atlas_selector->precomputed_ranking();
         }
 
         /* Write into the log file preliminary information about the selection process */
-        fprintf(atlas_selection_log_file,
+        fprintf(train_atlas_selection_log_file,
             "Patient = %s, initial atlases = %d, selection criteria = %s \n",
-            atlas_selector->subject_id.c_str(),
-            atlas_selector->number_of_atlases,
-            atlas_selector->atlas_selection_criteria.c_str());
+            train_atlas_selector->subject_id.c_str(),
+            train_atlas_selector->number_of_atlases,
+            train_atlas_selector->atlas_selection_criteria.c_str());
         
         if (!compute_new_ranking) {
-            fprintf(atlas_selection_log_file,
+            fprintf(train_atlas_selection_log_file,
                 "SELECTION MADE USING A PRECOMPUTED RANKING\n");   
         }
         
         /* Print into the log file information about the selection process */
-        fprintf(atlas_selection_log_file,
+        fprintf(train_atlas_selection_log_file,
             "Selected atlases for patient %s: (%d) \n",
-            atlas_selector->subject_id.c_str(),
-            (int) atlas_selector->selected_atlases.size());
+            train_atlas_selector->subject_id.c_str(),
+            (int) train_atlas_selector->selected_atlases.size());
        
         for (std::list<std::pair<std::string, double> >::iterator it_selected_atlases =
-                 atlas_selector->selected_atlases.begin();
-             it_selected_atlases != atlas_selector->selected_atlases.end();
+                 train_atlas_selector->selected_atlases.begin();
+             it_selected_atlases != train_atlas_selector->selected_atlases.end();
              it_selected_atlases++) {
         
-            fprintf(atlas_selection_log_file,
+            fprintf(train_atlas_selection_log_file,
                 "Atlas %s with score value equal to %f \n",
                 it_selected_atlases->first.c_str(),
                 it_selected_atlases->second);
         }
          
-        fprintf(atlas_selection_log_file, "\n");
+        fprintf(train_atlas_selection_log_file, "\n");
         
         /* Fill the map structures */
-        d_ptr->selected_atlases.insert(std::make_pair(atlas_selector->subject_id,
-                atlas_selector->selected_atlases));
+        d_ptr->selected_atlases_train.insert(std::make_pair(train_atlas_selector->subject_id,
+                train_atlas_selector->selected_atlases));
 
-        ranked_atlases.insert(std::make_pair(atlas_selector->subject_id,
-                atlas_selector->ranked_atlases));
+        train_ranked_atlases.insert(std::make_pair(train_atlas_selector->subject_id,
+                train_atlas_selector->ranked_atlases));
 
         /* Delete object */
-        delete atlas_selector;
+        delete train_atlas_selector;
     }
 
     /* Close log file */
-    fclose(atlas_selection_log_file);
+    fclose(train_atlas_selection_log_file);
     
     /* Write the new ranking */
     if (compute_new_ranking) {
 
-        FILE *ranking_file = fopen (atlas_ranking_file_name.c_str(), "w");
+        FILE *ranking_file = fopen (train_atlas_ranking_file_name.c_str(), "w");
        
         /* Cycle over reference images */
         std::map<std::string, std::list<std::pair<std::string, double> > >::iterator it_map;
-        for (it_map = ranked_atlases.begin(); it_map != ranked_atlases.end(); it_map++) {
+        for (it_map = train_ranked_atlases.begin(); it_map != train_ranked_atlases.end(); it_map++) {
             
             fprintf(ranking_file, "%s: ", it_map->first.c_str());
             
@@ -905,7 +1062,7 @@ Mabs::atlas_selection ()
             }
 
             /* If it is not the last subject write on a new line */
-            if (it_map != (--ranked_atlases.end()))
+            if (it_map != (--train_ranked_atlases.end()))
                 fprintf(ranking_file, "\n");
         }
         
@@ -915,7 +1072,7 @@ Mabs::atlas_selection ()
     /* Stop timer */
     d_ptr->time_atlas_selection += timer.report();
 
-    printf("Atlas selection done! \n");
+    printf("Train atlas selection done! \n");
 }
 
 void
@@ -1128,7 +1285,7 @@ void
 Mabs::gaussian_segmentation_vote (const std::string& atlas_id)
 {
     Plm_timer timer;
-    
+   
     /* Set up files & directories for this job */
     std::string atlas_input_path;
     atlas_input_path = string_format ("%s/%s",
@@ -1378,17 +1535,18 @@ Mabs::staple_segmentation_label ()
             d_ptr->segmentation_training_dir.c_str(), 
             mapped_name.c_str());
 
-        Plm_image::Pointer ref_stru = 
-            plm_image_load_native (ref_stru_fn);
-
-        if (!ref_stru) {
-            continue;
-        }
-
         printf("Structure %s \n", final_segmentation_img_fn.c_str());
         staple_it->second->run();
 
         itk_image_save (staple_it->second->output_img->itk_uchar(), final_segmentation_img_fn.c_str());
+
+        Plm_image::Pointer ref_stru = 
+            plm_image_load_native (ref_stru_fn);
+
+        if (!ref_stru) {
+            /* User is not running train, so no statistics */
+            continue;
+        }
         
         /* Compute Dice, etc. */
         std::string stats_string = d_ptr->stats.compute_statistics (
@@ -1491,6 +1649,7 @@ Mabs::run_segmentation ()
 
     /* Gaussian checkpoint */
     if (d_ptr->parms->fusion_criteria.find("gaussian") != std::string::npos) {
+        
         std::string curr_output_dir = string_format (
             "%s/segmentations/%s/rho_%f_sig_%f_ms_%f",
             d_ptr->output_dir.c_str(), d_ptr->registration_id.c_str(),
@@ -1713,10 +1872,10 @@ Mabs::train_internal ()
     /* Parse atlas directory */
     this->load_process_dir_list (d_ptr->prealign_dir);
  
-    /* If setted, run atlas selection */
+    /* If set, run train atlas selection */
     if (d_ptr->parms->enable_atlas_selection)
     {
-        this->atlas_selection();
+        this->train_atlas_selection();
     }
    
     /* Loop through atlas_dir, choosing reference images to segment */
@@ -1747,22 +1906,25 @@ Mabs::train_internal ()
         d_ptr->time_io += timer.report();
         
         /* Use the atlases coming from the selection step */
-        if (!d_ptr->selected_atlases.empty())
+        if (!d_ptr->selected_atlases_train.empty())
         {
             /* Extract from map structure only the atlases 
                choosen for the current patient*/
-            std::list<std::string> atlases_for_subject;
+            std::list<std::string> atlases_for_train_subject;
             std::list<std::pair<std::string, double> >::iterator atl_it;
-            for (atl_it = d_ptr->selected_atlases[patient_id].begin();
-                atl_it != d_ptr->selected_atlases[patient_id].end(); atl_it++)
+            for (atl_it = d_ptr->selected_atlases_train[patient_id].begin();
+                atl_it != d_ptr->selected_atlases_train[patient_id].end(); atl_it++)
             {
                 std::string complete_atlas_path = string_format("%s/%s",
                     d_ptr->prealign_dir.c_str(), atl_it->first.c_str());
-                atlases_for_subject.push_back(complete_atlas_path);
+                atlases_for_train_subject.push_back(complete_atlas_path);
             }
             
             /* Assign the selected atlases */
-            d_ptr->atlas_list = atlases_for_subject;
+            d_ptr->atlas_list = atlases_for_train_subject;
+        }
+        else {
+            print_and_exit ("Train atlas selection not working properly!\n");
         }
 
         /* Run the segmentation */
@@ -1820,6 +1982,35 @@ Mabs::segment ()
     /* Set atlas_list */
     d_ptr->atlas_list = d_ptr->process_dir_list;
 
+    /* If set, run atlas selection */
+    if (d_ptr->parms->enable_atlas_selection)
+    {
+        this->atlas_selection();
+
+        /* Use the atlases coming from the selection step */
+        if (!d_ptr->selected_atlases.empty())
+        {
+            /* Extract from map structure only the atlases 
+               choosen for the current patient*/
+            std::list<std::string> atlases_for_subject;
+            std::list<std::pair<std::string, double> >::iterator atl_it;
+            for (atl_it = d_ptr->selected_atlases.begin();
+                atl_it != d_ptr->selected_atlases.end(); atl_it++)
+            {
+                std::string complete_atlas_path = string_format("%s/%s",
+                    d_ptr->prealign_dir.c_str(), atl_it->first.c_str());
+                atlases_for_subject.push_back(complete_atlas_path);
+            }
+            
+            /* Assign the selected atlases */
+            d_ptr->atlas_list = atlases_for_subject;
+        }
+
+        else {
+            print_and_exit ("Atlas selection not working properly!\n");
+        }
+    }
+
     /* Set output dir for this test case */
     d_ptr->output_dir = d_ptr->segment_outdir_base;
 
@@ -1841,7 +2032,12 @@ Mabs::segment ()
        2) need better default values for rho, etc.
        3) need to read optimized values of rho, etc.
     */
-    d_ptr->registration_id = d_ptr->parms->optimization_result_reg;
+    if (d_ptr->parms->optimization_result_reg != "") {
+        d_ptr->registration_id = d_ptr->parms->optimization_result_reg;
+    }
+    else {
+        d_ptr->registration_id = d_ptr->parms->registration_config.c_str(); 
+    }
     d_ptr->rho = d_ptr->parms->optimization_result_seg_rho;
     d_ptr->sigma = d_ptr->parms->optimization_result_seg_sigma;
     d_ptr->minsim = d_ptr->parms->optimization_result_seg_minsim;
