@@ -120,9 +120,9 @@ Mabs_parms::Mabs_parms ()
 
     /* [OPTIMIZATION-RESULT] */
     this->optimization_result_reg = "";
-    this->optimization_result_seg_rho = 1.0;
-    this->optimization_result_seg_sigma = 30.;
-    this->optimization_result_seg_minsim = 0.3;
+    this->optimization_result_seg_rho = 0.5;
+    this->optimization_result_seg_sigma = 1.5;
+    this->optimization_result_seg_minsim = 0.25;
     this->optimization_result_confidence_weight = 1.0;
     this->optimization_result_seg_thresh = "0.4";
 
