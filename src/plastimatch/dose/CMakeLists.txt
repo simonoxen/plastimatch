@@ -15,23 +15,16 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 ##-----------------------------------------------------------------------------
 set (PLMDOSE_LIBRARY_SRC
   bragg_curve.cxx
+  dose_volume_functions.cxx
   ion_beam.cxx
   ion_dose.cxx
   ion_parms.cxx
   ion_plan.cxx
   ion_plan_p.cxx
   ion_pristine_peak.cxx
+  ion_sigma.cxx
   ion_sobp.cxx
-  lookup_range.cxx
-  lookup_stop.cxx
-  photon_beam.cxx
-  photon_depth_dose.cxx
-  photon_dose.cxx
-  photon_parms.cxx
-  photon_plan.cxx
-  photon_plan_p.cxx
-  photon_sobp.cxx
-  sigma_spread.cxx
+  radiation_lut.cxx
   wed_parms.cxx
   )
 

@@ -620,49 +620,6 @@ Rpl_volume::compute_rpl_ct ()
 }
 
 void 
-Rpl_volume::compute_void_rpl ()
-{
-    int ires[2];
-
-    /* A couple of abbreviations */
-    Proj_volume *proj_vol = d_ptr->proj_vol;
-    const double *src = proj_vol->get_src();
-    ires[0] = d_ptr->proj_vol->get_image_dim (0);
-    ires[1] = d_ptr->proj_vol->get_image_dim (1);
-    unsigned char *ap_img = 0;
-    if (d_ptr->aperture->have_aperture_image()) {
-        Volume::Pointer ap_vol = d_ptr->aperture->get_aperture_volume ();
-        ap_img = (unsigned char*) ap_vol->img;
-    }
-    Volume *ct_vol = d_ptr->ct->get_vol();
-
-    /* We don't need to do the first pass, as it was already done for the real rpl_volume */
-
-    /* Ahh.  Now we can set the clipping planes and allocate the 
-       actual volume. */
-    double clipping_dist[2] = {
-        d_ptr->front_clipping_dist, d_ptr->back_clipping_dist};
-    d_ptr->proj_vol->set_clipping_dist (clipping_dist);
-    d_ptr->proj_vol->allocate ();
-    
-    /* Scan through the aperture -- second pass */
-    for (int r = 0; r < ires[1]; r++) {
-        for (int c = 0; c < ires[0]; c++) {
-
-            /* Compute index of aperture pixel */
-            plm_long ap_idx = r * ires[0] + c;
-
-            /* Make some aliases */
-            Ray_data *ray_data = &d_ptr->ray_data[ap_idx];
-            /* Compute intersection with front clipping plane */
-            vec3_scale3 (ray_data->cp, ray_data->ray, 
-                d_ptr->front_clipping_dist);
-            vec3_add2 (ray_data->cp, ray_data->p2);
-        }
-    }
-}
-
-void 
 Rpl_volume::compute_rpl ()
 {
     int ires[2];
@@ -752,7 +709,64 @@ Rpl_volume::compute_rpl ()
 }
 
 void 
-Rpl_volume::compute_rpl_rglength ()
+Rpl_volume::compute_rpl_void ()
+{
+    int ires[2];
+
+    /* A couple of abbreviations */
+    Proj_volume *proj_vol = d_ptr->proj_vol;
+    const double *src = proj_vol->get_src();
+    ires[0] = d_ptr->proj_vol->get_image_dim (0);
+    ires[1] = d_ptr->proj_vol->get_image_dim (1);
+    unsigned char *ap_img = 0;
+    float *rc_img = 0;
+    if (d_ptr->aperture->have_aperture_image()) {
+        Volume::Pointer ap_vol = d_ptr->aperture->get_aperture_volume ();
+        ap_img = (unsigned char*) ap_vol->img;
+    }
+    if (d_ptr->aperture->have_range_compensator_image()) {
+        Volume::Pointer rc_vol 
+            = d_ptr->aperture->get_range_compensator_volume ();
+        rc_img = (float*) rc_vol->img;
+    }
+    Volume *ct_vol = d_ptr->ct->get_vol();
+
+    /* Preprocess data by clipping against volume */
+    this->compute_ray_data ();
+
+    if (d_ptr->front_clipping_dist == DBL_MAX) {
+        print_and_exit ("Sorry, total failure intersecting volume\n");
+    }
+
+    lprintf ("FPD = %f, BPD = %f\n", 
+        d_ptr->front_clipping_dist, d_ptr->back_clipping_dist);
+
+    /* Ahh.  Now we can set the clipping planes and allocate the 
+       actual volume. */
+    double clipping_dist[2] = {
+        d_ptr->front_clipping_dist, d_ptr->back_clipping_dist};
+    d_ptr->proj_vol->set_clipping_dist (clipping_dist);
+    d_ptr->proj_vol->allocate ();
+    
+    /* Scan through the aperture -- second pass */
+    for (int r = 0; r < ires[1]; r++) {
+        for (int c = 0; c < ires[0]; c++) {
+
+            /* Compute index of aperture pixel */
+            plm_long ap_idx = r * ires[0] + c;
+
+            /* Make some aliases */
+            Ray_data *ray_data = &d_ptr->ray_data[ap_idx];
+            /* Compute intersection with front clipping plane */
+            vec3_scale3 (ray_data->cp, ray_data->ray, 
+                d_ptr->front_clipping_dist);
+            vec3_add2 (ray_data->cp, ray_data->p2);
+        }
+    }
+}
+
+void 
+Rpl_volume::compute_rpl_rglength_wo_rg_compensator ()
 {
     int ires[2];
 
@@ -826,6 +840,56 @@ Rpl_volume::compute_rpl_rglength ()
     }
 
     /* Now we only have a rpl_volume without compensator, from which we need to compute the sigma along this ray */
+}
+
+double Rpl_volume::compute_farthest_penetrating_ray_on_nrm(float range)
+{
+    int dim[3] = { this->get_vol()->dim[0], this->get_vol()->dim[1], this->get_vol()->dim[2]};
+    int idx = 0;
+    double POI[3] = {0.0, 0.0, 0.0};
+    double tmp[3] = {0.0, 0.0, 0.0};
+    double nrm[3] = {0.0, 0.0, 0.0};
+
+    double dist = 0;
+    double max_dist = 0;
+    double offset = vec3_dist(this->get_proj_volume()->get_src(), this->get_proj_volume()->get_iso()) - this->get_aperture()->get_distance();
+
+    float* img = (float*) this->get_vol()->img;
+
+    for (int apert_idx = 0; apert_idx < dim[0] * dim[1]; apert_idx++)
+    {
+        Ray_data* ray_data = (Ray_data*) &this->get_Ray_data()[apert_idx];
+        for (int s = 0; s < dim[2]; s++)
+        {
+            idx = s * dim[0] * dim[1] + apert_idx;
+
+            if (img[idx] > range)
+            {
+                /* calculation of the length projected on the nrm axis, from the aperture */
+                vec3_copy(POI, ray_data->cp);
+                vec3_copy(tmp, ray_data->ray);
+                vec3_scale2(tmp, (double)s * this->get_vol()->spacing[2]);
+                vec3_add2(POI, tmp);
+                
+                dist = -vec3_dot(POI, this->get_proj_volume()->get_nrm());
+                dist = offset + dist;
+                if (dist > max_dist)
+                {
+                    max_dist = dist;
+                }
+                break;
+            }
+        }
+    }
+    if (max_dist == 0)
+    {
+        printf("Error: All the rays miss the volume!! No max range defined.\n");
+    }
+    else
+    {
+      printf("position of the maximal range on the z axis: z = %lg\n", max_dist);
+    }
+    return max_dist;
 }
 
 Volume*

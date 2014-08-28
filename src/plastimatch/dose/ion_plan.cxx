@@ -7,18 +7,21 @@
 #include <string.h>
 
 #include "aperture.h"
+#include "dose_volume_functions.h"
 #include "ion_beam.h"
 #include "ion_dose.h"
 #include "ion_plan.h"
 #include "ion_plan_p.h"
 #include "ion_pristine_peak.h"
+#include "ion_sigma.h"
 #include "ion_sobp.h"
 #include "plm_image.h"
 #include "plm_timer.h"
 #include "proj_matrix.h"
+#include "proj_volume.h"
+#include "radiation_lut.h"
 #include "ray_data.h"
 #include "rpl_volume.h"
-#include "sigma_spread.h"
 #include "volume.h"
 #include "volume_macros.h"
 
@@ -237,7 +240,6 @@ Ion_plan::get_target ()
 void
 Ion_plan::compute_beam_modifiers ()
 {
-  printf("\n aa\n");
     /* Compute the aperture and compensator */
     this->rpl_vol->compute_beam_modifiers (
         d_ptr->target->get_vol(), 0);
@@ -362,6 +364,7 @@ Ion_plan::compute_dose ()
     UNUSED_VARIABLE (dose_img_tmp);
 
     float margin = 0;
+    double range = 0;
     int margins[2] = {0,0};
     int new_dim[2]={0,0};
     double new_center[2]={0,0};
@@ -381,19 +384,12 @@ Ion_plan::compute_dose ()
         this->ct_vol_density->compute_rpl_ct ();
 
         printf ("Computing_void_rpl\n");
-        this->sigma_vol->compute_void_rpl();
+        this->sigma_vol->compute_rpl_rglength_wo_rg_compensator(); // we compute the rglength in the sigma_volume, without the range compensator as it will be added by a different process
 
         Rpl_volume* rpl_vol = this->rpl_vol;
         Rpl_volume* sigma_vol = this->sigma_vol;
 
         float* sigma_img = (float*) sigma_vol->get_vol()->img;
-
-        /* sigma_vol is reinitialized */
-        for (int l = 0; l < sigma_vol->get_vol()->dim[0] * sigma_vol->get_vol()->dim[1] * sigma_vol->get_vol()->dim[2]; l++)
-        {
-            sigma_img[l] = 0;
-        }
-        *sigma_max = 0;
 
         /* building the sigma_dose_vol */
         if (this->beam->get_flavor() == 'g') {
@@ -414,16 +410,16 @@ Ion_plan::compute_dose ()
             const Ion_pristine_peak *ppp = *it;
             printf("Building dose matrix for %lg MeV beamlets - \n", ppp->E0);
             timer.start ();
-            convert_radiologic_length_to_sigma(this, ppp->E0, sigma_max, "small");
+            compute_sigmas(this, ppp->E0, sigma_max, "small");
             time_sigma_conv += timer.report ();
 
             if (this->beam->get_flavor() == 'f') // Desplanques' algorithm
             {
-                dose_volume_create(dose_volume_tmp, sigma_max, this->sigma_vol);
+                range = 10 * getrange(ppp->E0); // range in mm
+                dose_volume_create(dose_volume_tmp, sigma_max, this->rpl_vol, range);
                 compute_dose_ray_desplanques(dose_volume_tmp, ct_vol, rpl_vol, sigma_vol, ct_vol_density, this->beam, dose_vol, ppp, this->get_normalization_dose());
-                printf("ok\n");
             }
-            else if (this->beam->get_flavor() == 'g')
+            else if (this->beam->get_flavor() == 'g') // Sharp's algorithm
             {
                 timer.start ();
                 if (*sigma_max > biggest_sigma_ever)
@@ -461,9 +457,8 @@ Ion_plan::compute_dose ()
                     this->rpl_dose_vol->set_front_clipping_plane(this->rpl_vol->get_front_clipping_plane());
                     this->rpl_dose_vol->set_back_clipping_plane(this->rpl_vol->get_back_clipping_plane());
                 }
-
                 /* update the dose_vol with the CT values before to calculate the dose */
-                this->rpl_dose_vol->compute_void_rpl();
+                this->rpl_dose_vol->compute_rpl_void();
                 time_dose_misc += timer.report ();
 
                 /* dose calculation in the rpl_dose_volume */
@@ -474,7 +469,7 @@ Ion_plan::compute_dose ()
                 time_dose_calc += timer.report ();
 
                 timer.start ();
-                dose_volume_reconstruction(rpl_dose_vol, dose_vol, this);
+                dose_volume_reconstruction(rpl_dose_vol, dose_vol);
                 time_dose_reformat += timer.report ();
             }
 
@@ -527,9 +522,9 @@ Ion_plan::compute_dose ()
                 this->sigma_vol_lg->compute_ray_data();
                 this->sigma_vol_lg->set_front_clipping_plane(this->rpl_vol_lg->get_front_clipping_plane());
                 this->sigma_vol_lg->set_back_clipping_plane(this->rpl_vol_lg->get_back_clipping_plane());
-                this->sigma_vol_lg->compute_rpl_rglength();
-
-                convert_radiologic_length_to_sigma(this, ppp->E0, sigma_max, "large");
+                this->sigma_vol_lg->compute_rpl_rglength_wo_rg_compensator();
+               
+                compute_sigmas(this, ppp->E0, sigma_max, "large");
 
                 build_hong_grid(&area, &xy_grid, radius_sample, theta_sample);
                 compute_dose_ray_shackleford(dose_vol, this, ppp, &area, &xy_grid, radius_sample, theta_sample);
@@ -610,7 +605,7 @@ Ion_plan::compute_dose ()
 }
 
 void 
-Ion_plan::dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volume)
+Ion_plan::dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volume, double range)
 {
     /* we want to add extra margins around our volume take into account the dose that will be scattered outside of the rpl_volume */
     /* A 3 sigma margin is applied to the front_back volume, and the size of our volume will be the projection of this shape on the back_clipping_plane */
@@ -619,14 +614,15 @@ Ion_plan::dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* 
     float proj_pixel[3]; // coordinates of the ap_ul_pixel + 3 sigma margins on the back clipping plane
     float first_pixel[3]; // coordinates of the first_pixel of the volume to be created
     float sigma_margins = 3 * *sigma_max;
+    double back_clip_useful = volume->compute_farthest_penetrating_ray_on_nrm(range) +10; // after this the volume will be void, the particules will not go farther + 2mm of margins
 
     ap_ul_pixel[0] = -volume->get_aperture()->get_center()[0]*volume->get_aperture()->get_spacing()[0];
     ap_ul_pixel[1] = -volume->get_aperture()->get_center()[1]*volume->get_aperture()->get_spacing()[1];
     ap_ul_pixel[2] = volume->get_aperture()->get_distance();
 
-    proj_pixel[0] = (ap_ul_pixel[0] - sigma_margins)*(volume->get_back_clipping_plane() + volume->get_aperture()->get_distance()) / volume->get_aperture()->get_distance();
-    proj_pixel[1] = (ap_ul_pixel[1] - sigma_margins)*(volume->get_back_clipping_plane() + volume->get_aperture()->get_distance()) / volume->get_aperture()->get_distance();
-    proj_pixel[2] = volume->get_back_clipping_plane()+volume->get_aperture()->get_distance();
+    proj_pixel[0] = (ap_ul_pixel[0] - sigma_margins)*(back_clip_useful + volume->get_aperture()->get_distance()) / volume->get_aperture()->get_distance();
+    proj_pixel[1] = (ap_ul_pixel[1] - sigma_margins)*(back_clip_useful + volume->get_aperture()->get_distance()) / volume->get_aperture()->get_distance();
+    proj_pixel[2] = back_clip_useful + volume->get_aperture()->get_distance();
 
     /* We build a matrix that starts from the proj_pixel projection on the front_clipping_plane */
     first_pixel[0] = floor(proj_pixel[0]);
@@ -640,21 +636,18 @@ Ion_plan::dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* 
         if (i != 2)
         {   
             dose_volume->spacing[i] = 1;
-            // dose_volume->spacing[i] = volume->get_aperture()->get_spacing(i); would be better...? pblm of lost lateral scattering for high resolution....
+            //dose_volume->spacing[i] = volume->get_aperture()->get_spacing(i); would be better...? pblm of lost lateral scattering for high resolution....
             dose_volume->dim[i] = (plm_long) (2*abs(first_pixel[i]/dose_volume->spacing[i])+1);
         }
         else
         {
             dose_volume->spacing[i] = volume->get_proj_volume()->get_step_length();
-            dose_volume->dim[i] = (plm_long) ((volume->get_back_clipping_plane() - volume->get_front_clipping_plane())/dose_volume->spacing[i] + 1);
+            dose_volume->dim[i] = (plm_long) ((back_clip_useful - volume->get_front_clipping_plane())/dose_volume->spacing[i] + 1);
         }
     }
 
-    for(int i = 0; i < 9; i++)
-    {
-        dose_volume->direction_cosines[i] = volume->get_vol()->direction_cosines[i];
-    }
     dose_volume->npix = dose_volume->dim[0]*dose_volume->dim[1]*dose_volume->dim[2];
+    printf("dim: %d %d %d; offset %lg %lg %lg; sp: %lg %lg %lg\n", dose_volume->dim[0], dose_volume->dim[1], dose_volume->dim[2], dose_volume->offset[0], dose_volume->offset[1], dose_volume->offset[2], dose_volume->spacing[0], dose_volume->spacing[1], dose_volume->spacing[2]);
     dose_volume->create(dose_volume->dim,dose_volume->offset,dose_volume->spacing,dose_volume->direction_cosines,PT_FLOAT,1);
 }
 

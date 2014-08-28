@@ -76,7 +76,7 @@ public:
     float get_normalization_dose();
 
     /* Create a dose_volume in the beam frame */
-    void dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volume);
+    void dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volume, double range);
 
     /* Compute dose */
     void compute_dose ();

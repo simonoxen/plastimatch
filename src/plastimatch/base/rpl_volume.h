@@ -65,10 +65,13 @@ public:
     double get_min_wed ();
 
     void compute_rpl ();
-    void compute_void_rpl ();
     void compute_rpl_ct ();
-    void compute_rpl_rglength ();
+    void compute_rpl_void ();
+    void compute_rpl_rglength_wo_rg_compensator ();
     void compute (Volume *ct_vol);
+
+    double compute_farthest_penetrating_ray_on_nrm(float range); // return the distance from aperture to the farthest which rg_lenght > range
+
     Volume* create_wed_volume ();
     void compute_wed_volume (Volume *wed_vol, Volume *in_vol, float background);
     Volume* create_dew_volume ();
