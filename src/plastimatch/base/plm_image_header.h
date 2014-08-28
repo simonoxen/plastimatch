@@ -67,12 +67,15 @@ public:
 
 public:
     int Size (int d) const { return m_region.GetSize()[d]; }
-    int dim (int d) const { return m_region.GetSize()[d]; }
     const SizeType& GetSize (void) const { return m_region.GetSize (); }
 public:
     /*! \brief Return true if the two headers are the same. Tolerance can be specified via using digits (=number of digits used for rounding values) */
     static bool compare (Plm_image_header *pli1, Plm_image_header *pli2,int digits=5);
     static double plm_round(double val, int digits);
+
+    int dim (int d) const { return m_region.GetSize()[d]; }
+    float origin (int d) const { return m_origin[d]; }
+    float spacing (int d) const { return m_spacing[d]; }
 
 public:
     void set_dim (const plm_long dim[3]);

@@ -49,6 +49,7 @@ public:
     float foreground_alpha;
     bool m_want_ss_img;
     bool m_want_dose_img;
+    bool image_normalize;
 
     float gauss_center[3];
     float gauss_std[3];

@@ -44,6 +44,7 @@ public:
     Plm_image (CharImageType::Pointer img);
     Plm_image (ShortImageType::Pointer img);
     Plm_image (FloatImageType::Pointer img);
+    Plm_image (Volume::Pointer& vol);
     Plm_image (Volume *vol);
     Plm_image (Plm_image_type type, const Plm_image_header& pih);
     ~Plm_image ();

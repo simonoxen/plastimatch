@@ -55,6 +55,7 @@ Synthetic_mha_parms::Synthetic_mha_parms ()
     foreground_alpha = 1.0f;
     m_want_ss_img = false;
     m_want_dose_img = false;
+    image_normalize = false;
     rect_size[0] = -50.0f;
     rect_size[1] = +50.0f;
     rect_size[2] = -50.0f;
@@ -648,9 +649,9 @@ synthetic_mha (
         case PATTERN_NOISE:
             synth_noise (&intens, &label_uchar, phys, parms);
             break;
-		case PATTERN_CYLINDER:
-			synth_cylinder (&intens, &label_uchar, phys, parms);
-			break;
+        case PATTERN_CYLINDER:
+            synth_cylinder (&intens, &label_uchar, phys, parms);
+            break;
         default:
             intens = 0.0f;
             label_uchar = 0;
@@ -684,6 +685,19 @@ synthetic_mha (
             }
             dose_img_it.Set (dose);
             ++dose_img_it;
+        }
+    }
+
+    /* Normalize if requested */
+    if (parms->image_normalize) {
+        float sum = 0.f;
+        for (it_out.GoToBegin(); !it_out.IsAtEnd(); ++it_out) {
+            sum += it_out.Get();
+        }
+        if (sum > 1e-10) {
+            for (it_out.GoToBegin(); !it_out.IsAtEnd(); ++it_out) {
+                it_out.Set(it_out.Get() / sum);
+            }
         }
     }
 

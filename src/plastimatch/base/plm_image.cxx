@@ -84,6 +84,11 @@ Plm_image::Plm_image (Plm_image_type type, const Plm_image_header& pih)
     this->init ();
     this->create (type, pih);
 }
+Plm_image::Plm_image (Volume::Pointer& vol)
+{
+    this->init ();
+    this->set_volume (vol);
+}
 Plm_image::Plm_image (Volume *vol)
 {
     this->init ();

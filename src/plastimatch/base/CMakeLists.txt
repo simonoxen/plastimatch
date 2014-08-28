@@ -38,6 +38,7 @@ set (PLMBASE_LIBRARY_SRC
   itk_image_accumulate.cxx
   itk_image_cast.cxx
   itk_image_clone.cxx
+#  itk_image_conv.cxx (broken)
   itk_image_create.cxx
   itk_image_load.txx
   itk_image_load_char.cxx
@@ -101,6 +102,7 @@ set (PLMBASE_LIBRARY_SRC
   vf_jacobian.cxx
   vf_stats.cxx
   vf.cxx
+  volume_conv.cxx
   volume_header.cxx
   volume_limit.cxx
   volume_resample.cxx

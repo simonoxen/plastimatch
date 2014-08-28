@@ -3,16 +3,74 @@
    ----------------------------------------------------------------------- */
 #include "plmcli_config.h"
 
+#include "itk_image_stats.h"
 #include "logfile.h"
 #include "plm_clp.h"
 #include "plm_image.h"
+#include "plm_image_header.h"
 #include "plm_math.h"
 #include "pcmd_filter.h"
 #include "print_and_exit.h"
+#include "rt_study.h"
+#include "synthetic_mha.h"
+#include "volume_conv.h"
+
+static Plm_image::Pointer
+create_gauss_kernel (const Filter_parms *parms, const Plm_image::Pointer& img)
+{
+    Rt_study rt_study;
+    Synthetic_mha_parms smp;
+    Plm_image_header pih (img);
+    int ker_width[3], ker_half_width[3];
+
+    for (int i = 0; i < 3; i++) {
+        ker_half_width[i] = 2 * parms->gauss_width / pih.spacing(i);
+        ker_width[i] = 2 * ker_half_width[i] + 1;
+        smp.dim[i] = ker_width[i];
+        smp.origin[i] = - pih.spacing(i) * ker_half_width[i];
+        smp.spacing[i] = pih.spacing(i);
+        smp.gauss_center[i] = 0.f;
+        smp.gauss_std[i] = parms->gauss_width;
+    }
+    smp.pattern = PATTERN_GAUSS;
+    smp.background = 0;
+    smp.foreground = 1;
+    smp.image_normalize = true;
+    smp.m_want_ss_img = false;
+    smp.m_want_dose_img = false;
+
+    synthetic_mha (&rt_study, &smp);
+    return rt_study.get_image();
+}
 
 static void
 filter_main (Filter_parms* parms)
 {
+    Plm_image::Pointer img = Plm_image::New (parms->in_image_fn);
+    if (!img) {
+        print_and_exit ("Sorry, couldn't load input image\n");
+    }
+
+    Plm_image::Pointer ker = create_gauss_kernel (parms, img);
+
+    Volume::Pointer volume_out = volume_conv (
+        img->get_volume_float(), ker->get_volume_float());
+
+    Plm_image::Pointer img_out = Plm_image::New (volume_out);
+    
+    double min_val, max_val, avg;
+    int non_zero, num_vox;
+    itk_image_stats (img_out->itk_float(), &min_val, &max_val, 
+        &avg, &non_zero, &num_vox);
+
+    lprintf ("Filter result: MIN %g AVG %g MAX %g NONZERO: (%d / %d)\n",
+        min_val, avg, max_val, non_zero, num_vox);
+
+    if (parms->out_image_fn == "") {
+        lprintf ("Warning: No output file specified.\n");
+    } else {
+        img_out->save_image (parms->out_image_fn);
+    }
 }
 
 static void
@@ -37,10 +95,17 @@ parse_fn (
     /* Output files */
     parser->add_long_option ("", "output", "output image filename", 1, "");
 
+    /* Main pattern */
+    parser->add_long_option ("", "pattern",
+        "filter type: {"
+        "gauss, kernel"
+        "}, default is gauss", 
+        1, "gauss");
+
     /* Filter options */
     parser->add_long_option ("", "kernel", "kernel image filename", 1, "");
     parser->add_long_option ("", "gauss-width",
-        "the width (in mm) of a uniform Gaussian smoothing filter", 1, "10.");
+        "the width (in mm) of a uniform Gaussian smoothing filter", 1, "");
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -61,11 +126,28 @@ parse_fn (
         parms->out_image_fn = parser->get_string("output");
     }
 
+    /* Main pattern */
+    std::string arg = parser->get_string ("pattern");
+    if (arg == "gauss") {
+        parms->filter_type = Filter_parms::FILTER_TYPE_GAUSSIAN;
+    }
+    else if (arg == "kernel") {
+        parms->filter_type = Filter_parms::FILTER_TYPE_KERNEL;
+    }
+    /* Don't throw an exception if --pattern is not specified, instead
+       try to infer */
+
     /* Filter options */
     if (parser->option ("kernel")) {
+        if (parms->filter_type != Filter_parms::FILTER_TYPE_UNDEFINED) {
+            parms->filter_type = Filter_parms::FILTER_TYPE_KERNEL;
+        }
         parms->out_image_fn = parser->get_string("kernel");
     }
     if (parser->option ("gauss-width")) {
+        if (parms->filter_type != Filter_parms::FILTER_TYPE_UNDEFINED) {
+            parms->filter_type = Filter_parms::FILTER_TYPE_GAUSSIAN;
+        }
         parms->gauss_width = parser->get_float("gauss-width");
     }
 }
