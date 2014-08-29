@@ -65,6 +65,7 @@ public:
     double get_min_wed ();
 
     void compute_rpl ();
+    void compute_rpl_RSP();
     void compute_rpl_ct ();
     void compute_rpl_void ();
     void compute_rpl_rglength_wo_rg_compensator ();
