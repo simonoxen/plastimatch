@@ -90,6 +90,27 @@ create_dew_volume (Wed_Parms* parms, Ion_plan *scene)
     return new Volume (dew_dims, dew_off, dew_ps, NULL, PT_FLOAT, 1);
 }
 
+static Volume*
+create_proj_sinogram_volume (Wed_Parms* parms, Volume *proj_wed_vol)
+{
+    float proj_wed_off[3];
+    proj_wed_off[0] = proj_wed_vol->offset[0];
+    proj_wed_off[1] = proj_wed_vol->offset[1];
+    proj_wed_off[2] = proj_wed_vol->offset[2];
+
+    float proj_wed_ps[3];
+    proj_wed_ps[0] = proj_wed_vol->spacing[0];
+    proj_wed_ps[1] = proj_wed_vol->spacing[1];
+    proj_wed_ps[2] = proj_wed_vol->spacing[2];
+
+    plm_long proj_wed_dims[3];
+    proj_wed_dims[0] = proj_wed_vol->dim[0];
+    proj_wed_dims[1] = proj_wed_vol->dim[1];
+    proj_wed_dims[2] = parms->sinogram_res;
+
+    return new Volume (proj_wed_dims, proj_wed_off, proj_wed_ps, NULL, PT_FLOAT, 1);
+}
+
 void
 wed_ct_compute (
     const char* out_fn,
@@ -139,9 +160,71 @@ wed_ct_compute (
 
     if (parms->mode==3)  {
         Volume* proj_wed_vol;
-        proj_wed_vol = rpl_vol->create_proj_wed_volume ();
-        rpl_vol->compute_proj_wed_volume (proj_wed_vol, background);
-        Plm_image(proj_wed_vol).save_image(out_fn);
+        Volume* sinogram_vol;
+	
+        proj_wed_vol = rpl_vol->create_proj_wed_volume();
+
+	if (parms->sinogram!=0)  {
+	  sinogram_vol = create_proj_sinogram_volume(parms, proj_wed_vol);
+
+	  float *sin_img = (float*) sinogram_vol->img;
+	  float *proj_img = (float*) proj_wed_vol->img;
+	  float sin_array[sinogram_vol->dim[0]][sinogram_vol->dim[1]][sinogram_vol->dim[2]];
+	  float proj_array[proj_wed_vol->dim[0]][proj_wed_vol->dim[1]][proj_wed_vol->dim[2]];
+	  plm_long ijk[3];
+	  plm_long n_voxels_sin = sinogram_vol->dim[0]*sinogram_vol->dim[1]*sinogram_vol->dim[2];
+	  plm_long n_voxels_proj = proj_wed_vol->dim[0]*proj_wed_vol->dim[1]*proj_wed_vol->dim[2];
+
+	  //Loop over angles determined by the resolution, and calcaulate a projective
+	  //volume for each.  Then fill the sinogram volume with each slice.
+	  int angles = parms->sinogram_res;
+
+	  float src[3] = {parms->src[0], parms->src[1], parms->src[2]};
+	  float iso[3] = {parms->isocenter[0], parms->isocenter[1], parms->isocenter[2]};
+
+	  float src2[3] = {0, 0, parms->src[2]};
+	  float radius[2] = {src[0]-iso[0], src[1]-iso[1]};
+	  float radius_len = sqrt( (src[0]-iso[0])*(src[0]-iso[0]) + (src[1]-iso[1])*(src[1]-iso[1]));
+
+	  float init_angle = atan2(radius[1],radius[0]);
+	  float angle = 0;
+
+	  for (int i=0; i!=angles; ++i)  {
+	    angle = init_angle + ( i / (float) parms->sinogram_res)*2.*M_PI;
+	    src2[0] = cos(angle)*radius_len + iso[0];
+	    src2[1] = sin(angle)*radius_len + iso[1];
+
+	    scene->beam->set_source_position (src2);
+	    scene->init();
+	    rpl_vol = scene->rpl_vol;
+	    rpl_vol->compute_proj_wed_volume (proj_wed_vol, background);
+
+	    //Fill proj array with voxel values.
+	    for (plm_long zz=0; zz!=n_voxels_proj; ++zz)  {
+	      COORDS_FROM_INDEX(ijk,zz,proj_wed_vol->dim);
+	      proj_array[ ijk[0] ][ ijk[1] ][ ijk[2] ] = proj_img[zz];
+	    }
+	
+	    for (int j=0; j!=proj_wed_vol->dim[0]; ++j)  {
+	      for (int k=0; k!=proj_wed_vol->dim[1]; ++k)  {
+		sin_array[j][k][i] = proj_array[j][k][0];
+	      }
+	    }
+	  }
+	  //Fill sinogram image with voxel values from assembled array.
+	  for (plm_long zz=0; zz!=n_voxels_sin; ++zz)  {
+	    COORDS_FROM_INDEX(ijk,zz,sinogram_vol->dim);
+	    sin_img[zz] = sin_array[ ijk[0] ][ ijk[1] ][ ijk[2] ];
+	  }
+
+	  Plm_image(sinogram_vol).save_image(out_fn);
+
+	}
+
+	else {
+	  rpl_vol->compute_proj_wed_volume (proj_wed_vol, background);
+	  Plm_image(proj_wed_vol).save_image(out_fn);
+	}       
     }
 }
 

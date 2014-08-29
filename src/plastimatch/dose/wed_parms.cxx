@@ -58,6 +58,9 @@ Wed_Parms::Wed_Parms ()
     this->dew_spacing[0] = -999.;
     this->dew_spacing[1] = -999.;
     this->dew_spacing[2] = -999.;
+
+    this->sinogram = 0;
+    this->sinogram_res = 360;
 }
 
 Wed_Parms::~Wed_Parms ()
@@ -326,6 +329,22 @@ Wed_Parms::set_key_val (
         }
         break;
 
+        /* [PROJECTION VOLUME] */
+    case 5:
+        if (!strcmp (key, "sinogram")) {
+            if (sscanf (val, "%f", &(this->sinogram)) != 1) {
+                goto error_exit;
+            }
+
+        }
+        else if (!strcmp (key, "resolution")) {
+	    if (sscanf (val, "%i", &(this->sinogram_res)) != 1) {
+	      goto error_exit;
+            }
+        }
+
+        break;
+
     }
     return 0;
 
@@ -389,6 +408,12 @@ Wed_Parms::parse_config (
                 || buf.find ("[dew volume]") != std::string::npos)
             {
                 section = 4;
+                continue;
+            }
+            else if (buf.find ("[PROJECTION VOLUME]") != std::string::npos
+                || buf.find ("[projective volume]") != std::string::npos)
+            {
+                section = 5;
                 continue;
             }
             else {

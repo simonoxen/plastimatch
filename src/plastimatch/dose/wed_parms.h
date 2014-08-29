@@ -56,6 +56,11 @@ public:
     float dew_dim[3];
     float dew_origin[3];
     float dew_spacing[3];
+
+    /* [PROJ VOLUME] */
+    float sinogram;
+    int sinogram_res;
+
 };
 
 #endif
