@@ -28,6 +28,12 @@ Autolabel_thumbnailer::set_input_image (const char* fn)
     thumb->set_thumbnail_spacing (25.0f);
 }
 
+void
+Autolabel_thumbnailer::set_input_image (const std::string& fn)
+{
+    this->set_input_image (fn.c_str());
+}
+
 Dlib_trainer::Dense_sample_type 
 Autolabel_thumbnailer::make_sample (float slice_loc)
 {

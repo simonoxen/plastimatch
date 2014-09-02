@@ -300,6 +300,7 @@ endif ()
 ## Create synthetic images
 ##   black-1           All black, slightly different geometry
 ##   donut-1           Centered donut
+##   gabor-00 through gabor-40   Full set of Gabor filters
 ##   gauss-1           Centered gauss
 ##   gauss-2           Off-center gauss
 ##   gauss-3           Inverted gauss
@@ -343,6 +344,11 @@ plm_add_test (
   "donut-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_BUILD_TESTING_DIR}/donut-1.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/donut-ss-1.mha;--output-type;float;--pattern;donut;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--donut-radius;10 10 10;--background;-1000;--foreground;0;--output-dicom;${PLM_BUILD_TESTING_DIR}/donut-1-dicom"
+  )
+plm_add_test (
+  "gabor-00"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/gabor-00.mha;--pattern;gabor;--origin;-5 -5 -5;--dim;11 11 11;--spacing;1 1 1;--gabor-uv;0 0;--gauss-center;0 0 0;--gauss-std;3 3 3;--background;0;--foreground;1"
   )
 plm_add_test (
   "gauss-1"

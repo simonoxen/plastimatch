@@ -70,6 +70,7 @@ public:
     void load_fcsv (const char *fn);
     void save (const char *fn);
     void save_fcsv (const char *fn);
+    void save_fcsv (const std::string& fn);
     void save_txt (const char *fn);
     void set_ras (const Pstring& p);
 

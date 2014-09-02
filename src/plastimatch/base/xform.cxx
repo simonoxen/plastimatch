@@ -1156,10 +1156,11 @@ xform_itk_bsp_to_itk_vf (Xform* xf_in, const Plm_image_header* pih)
 }
 
 static DeformationFieldType::Pointer 
-xform_itk_vf_to_itk_vf (DeformationFieldType::Pointer vf, Plm_image_header* pih)
+xform_itk_vf_to_itk_vf (
+    const DeformationFieldType::Pointer& vf, 
+    Plm_image_header* pih)
 {
-    vf = vector_resample_image (vf, pih);
-    return vf;
+    return vector_resample_image (vf, (const Plm_image_header*) pih);
 }
 
 /* Here what we're going to do is use GPUIT library to interpolate the 

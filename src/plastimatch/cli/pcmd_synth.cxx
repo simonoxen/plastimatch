@@ -152,8 +152,9 @@ parse_fn (
     /* Main pattern */
     parser->add_long_option ("", "pattern",
         "synthetic pattern to create: {"
-        "donut, dose, gauss, grid, lung, noise, rect, sphere, "
-        "xramp, yramp, zramp, cylinder}, default is gauss", 
+        "cylinder, donut, dose, gabor, gauss, grid, lung, noise, "
+        "rect, sphere, xramp, yramp, zramp"
+        "}, default is gauss", 
         1, "gauss");
 
     /* Image size */
@@ -184,6 +185,11 @@ parse_fn (
     parser->add_long_option ("", "donut-rings", 
         "number of donut rings (2 rings for traditional donut)", 1, "2");
         
+    /* Gabor options */
+    parser->add_long_option ("", "gabor-uv", 
+        "integer index of gabor pattern (within triangular region "
+        "\"0,0\", \"0,3\", and \"3,0\")", 1, "0 0");
+
     /* Gaussian options */
     parser->add_long_option ("", "gauss-center", 
         "location of Gaussian center in mm \"x [y z]\"", 1, "0 0 0");
@@ -226,11 +232,11 @@ parse_fn (
     parser->add_long_option ("", "noise-std", 
         "standard deviation of gaussian noise", 1, "1.0");
 
-	/* Cylinder options */
-	parser->add_long_option ("", "cylinder-center", 
-		"location of cylinder center in mm \"x [y z]\"", 1, "0 0 0");
-	parser->add_long_option ("", "cylinder-radius", 
-		"size of cylinder in mm \"x [y z]\"", 1, "50 50 0");	
+    /* Cylinder options */
+    parser->add_long_option ("", "cylinder-center", 
+        "location of cylinder center in mm \"x [y z]\"", 1, "0 0 0");
+    parser->add_long_option ("", "cylinder-radius", 
+        "size of cylinder in mm \"x [y z]\"", 1, "50 50 0");	
 
     /* Metadata options */
     parser->add_long_option ("", "metadata",
@@ -308,9 +314,12 @@ parse_fn (
     else if (arg == "noise") {
         sm_parms->pattern = PATTERN_NOISE;
     }
-	else if (arg == "cylinder") {
-		sm_parms->pattern = PATTERN_CYLINDER;
-	}
+    else if (arg == "cylinder") {
+        sm_parms->pattern = PATTERN_CYLINDER;
+    }
+    else if (arg == "gabor") {
+        sm_parms->pattern = PATTERN_GABOR;
+    }
     else {
         throw (dlib::error ("Error. Unknown --pattern argument: " + arg));
     }
@@ -476,9 +485,12 @@ parse_fn (
                 "a floating point argument\n"));
     }
 
-	/* Cylinder options */
-	parser->assign_float_13 (sm_parms->cylinder_center, "cylinder-center");
-	parser->assign_float_13 (sm_parms->cylinder_radius, "cylinder-radius");
+    /* Cylinder options */
+    parser->assign_float_13 (sm_parms->cylinder_center, "cylinder-center");
+    parser->assign_float_13 (sm_parms->cylinder_radius, "cylinder-radius");
+
+    /* Gabor options */
+    parser->assign_int_2 (sm_parms->gabor_uv, "gabor-uv");
 
     /* Metadata options */
     for (unsigned int i = 0; i < parser->option("metadata").count(); i++) {

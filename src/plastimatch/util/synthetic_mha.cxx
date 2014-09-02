@@ -12,6 +12,7 @@
 #include "itk_directions.h"
 #include "itk_image_type.h"
 #include "itk_point.h"
+#include "logfile.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "plm_math.h"
@@ -20,10 +21,11 @@
 #include "segmentation.h"
 #include "synthetic_mha.h"
 
-
 class Synthetic_mha_parms_private {
 public:
     vnl_random v;
+    float gabor_freq;
+    float gabor_proj[3];
 };
 
 
@@ -46,8 +48,8 @@ Synthetic_mha_parms::Synthetic_mha_parms ()
         donut_center[i] = 0.0f;
         lung_tumor_pos[i] = 0.0f;
         dose_center[i] = 0.0f;
-		cylinder_center[i] = 0.0f;
-		cylinder_radius[i] = 0.0f;
+        cylinder_center[i] = 0.0f;
+        cylinder_radius[i] = 0.0f;
     }
     background = -1000.0f;
     foreground = 0.0f;
@@ -55,7 +57,7 @@ Synthetic_mha_parms::Synthetic_mha_parms ()
     foreground_alpha = 1.0f;
     m_want_ss_img = false;
     m_want_dose_img = false;
-    image_normalize = false;
+    image_normalization = NORMALIZATION_NONE;
     rect_size[0] = -50.0f;
     rect_size[1] = +50.0f;
     rect_size[2] = -50.0f;
@@ -79,6 +81,8 @@ Synthetic_mha_parms::Synthetic_mha_parms ()
     num_multi_sphere = 33;
     noise_mean = 0;
     noise_std = 1.f;
+    gabor_uv[0] = 0;
+    gabor_uv[1] = 1;
 }
 
 Synthetic_mha_parms::~Synthetic_mha_parms ()
@@ -482,31 +486,60 @@ synth_noise (
 
 static void 
 synth_cylinder (
-			 float *intens, 
-			 unsigned char *label,
-			 const FloatPoint3DType& phys, 
-			 const Synthetic_mha_parms *parms
-			 )
+    float *intens, 
+    unsigned char *label,
+    const FloatPoint3DType& phys, 
+    const Synthetic_mha_parms *parms
+)
 {
-	float f = 0;
-	for (int d = 0; d < 2; d++) {
-		float f1 = phys[d] - parms->cylinder_center[d];
-		f1 = f1 / parms->cylinder_radius[d];
-		f += f1 * f1;
-	}
-	if (f > 1.0) {
-		*intens 
-			= (1 - parms->background_alpha) * (*intens) 
-			+ parms->background_alpha * parms->background;
-		*label = 0;
-	} else {
-		*intens 
-			= (1 - parms->foreground_alpha) * (*intens) 
-			+ parms->foreground_alpha * parms->foreground;
-		*label = 1;
-	}	
+    float f = 0;
+    for (int d = 0; d < 2; d++) {
+        float f1 = phys[d] - parms->cylinder_center[d];
+        f1 = f1 / parms->cylinder_radius[d];
+        f += f1 * f1;
+    }
+    if (f > 1.0) {
+        *intens 
+            = (1 - parms->background_alpha) * (*intens) 
+            + parms->background_alpha * parms->background;
+        *label = 0;
+    } else {
+        *intens 
+            = (1 - parms->foreground_alpha) * (*intens) 
+            + parms->foreground_alpha * parms->foreground;
+        *label = 1;
+    }	
 }
 
+static void 
+synth_gabor (
+    float *intens, 
+    unsigned char *label,
+    const FloatPoint3DType& phys, 
+    const Synthetic_mha_parms *parms
+)
+{
+    /* Do gaussian first */
+    float f = 0;
+    float rel[3];
+    for (int d = 0; d < 3; d++) {
+        rel[d] = phys[d] - parms->gauss_center[d];
+        float f1 = rel[d] / parms->gauss_std[d];
+        f += f1 * f1;
+    }
+    f = exp (-0.5 * f);            /* f \in (0,1] */
+
+    *intens = (1 - f) * parms->background + f * parms->foreground;
+    *label = (f > 0.2) ? 1 : 0;
+
+    /* Then modulate by cos */
+    float proj_dist = 0.f;
+    for (int d = 0; d < 3; d++) {
+        proj_dist += rel[d] * parms->d_ptr->gabor_proj[d];
+    }
+    /* GCS FIX : Another hack.  Look up actual Gabor equation. */
+    *intens *= cos(1.5 * M_PI * proj_dist / parms->d_ptr->gabor_freq);
+}
 
 void
 synthetic_mha (
@@ -602,6 +635,51 @@ synthetic_mha (
         dose_img_it.GoToBegin();
     }
 
+    /* Figure out Gabor projection vector -- n.b. it is a horrible hack */
+    if (parms->pattern == PATTERN_GABOR) {
+        switch (parms->gabor_uv[0]) {
+        case 0:
+            parms->d_ptr->gabor_proj[0] = 1.0
+                * cos(parms->gabor_uv[1] * M_PI_4);
+            parms->d_ptr->gabor_proj[1] = 1.0
+                * sin(parms->gabor_uv[1] * M_PI_4);
+            parms->d_ptr->gabor_proj[2] = 0.0;
+            break;
+        case 1:
+            parms->d_ptr->gabor_proj[0] = M_SQRT3_OVER_2
+                * cos((0.125 + parms->gabor_uv[1]) * M_PI_3);
+            parms->d_ptr->gabor_proj[1] = M_SQRT3_OVER_2
+                * sin((0.125 + parms->gabor_uv[1]) * M_PI_3);
+            parms->d_ptr->gabor_proj[2] = 0.5;
+            break;
+        case 2:
+            parms->d_ptr->gabor_proj[0] = 0.5
+                * cos(parms->gabor_uv[1] * M_PI_2);
+            parms->d_ptr->gabor_proj[1] = 0.5
+                * sin(parms->gabor_uv[1] * M_PI_2);
+            parms->d_ptr->gabor_proj[2] = M_SQRT3_OVER_2;
+            break;
+        case 3:
+        default:
+            parms->d_ptr->gabor_proj[0] = 0.0;
+            parms->d_ptr->gabor_proj[1] = 0.0;
+            parms->d_ptr->gabor_proj[2] = 1.0;
+            break;
+        }
+        lprintf ("Gabor: %d %d -> (%f %f %f)\n", 
+            parms->gabor_uv[0],
+            parms->gabor_uv[1],
+            parms->d_ptr->gabor_proj[0],
+            parms->d_ptr->gabor_proj[1],
+            parms->d_ptr->gabor_proj[2]);
+        float sum = 0.f;
+        for (int d = 0; d < 3; d++) {
+            sum += parms->gauss_std[d] * parms->gauss_std[d];
+        }
+        parms->d_ptr->gabor_freq = sqrt(sum);
+        parms->image_normalization = Synthetic_mha_parms::NORMALIZATION_GABOR;
+    }
+
     /* Iterate through image, setting values */
     typedef itk::ImageRegionIteratorWithIndex< FloatImageType > IteratorType;
     IteratorType it_out (im_out, im_out->GetLargestPossibleRegion());
@@ -652,6 +730,9 @@ synthetic_mha (
         case PATTERN_CYLINDER:
             synth_cylinder (&intens, &label_uchar, phys, parms);
             break;
+        case PATTERN_GABOR:
+            synth_gabor (&intens, &label_uchar, phys, parms);
+            break;
         default:
             intens = 0.0f;
             label_uchar = 0;
@@ -689,7 +770,7 @@ synthetic_mha (
     }
 
     /* Normalize if requested */
-    if (parms->image_normalize) {
+    if (parms->image_normalization == Synthetic_mha_parms::NORMALIZATION_SUM_ONE) {
         float sum = 0.f;
         for (it_out.GoToBegin(); !it_out.IsAtEnd(); ++it_out) {
             sum += it_out.Get();
@@ -697,6 +778,76 @@ synthetic_mha (
         if (sum > 1e-10) {
             for (it_out.GoToBegin(); !it_out.IsAtEnd(); ++it_out) {
                 it_out.Set(it_out.Get() / sum);
+            }
+        }
+    }
+    else if (parms->image_normalization == Synthetic_mha_parms::NORMALIZATION_SUM_SQR_ONE) {
+        float sum = 0.f;
+        for (it_out.GoToBegin(); !it_out.IsAtEnd(); ++it_out) {
+            float v = it_out.Get();
+            sum += v * v;
+        }
+        sum = sqrt(sum);
+        if (sum > 1e-10) {
+            for (it_out.GoToBegin(); !it_out.IsAtEnd(); ++it_out) {
+                it_out.Set(it_out.Get() / sum);
+            }
+        }
+    }
+    else if (parms->image_normalization == Synthetic_mha_parms::NORMALIZATION_ZERO_MEAN_STD_ONE) {
+        /* GCS FIX: I should really compute in a single pass.
+           Oh God almighty, when did I get so lazy? */
+        int num_vox = 0;
+        float sum_1 = 0.f, sum_2 = 0.f;
+        for (it_out.GoToBegin(); !it_out.IsAtEnd(); ++it_out) {
+            float v = it_out.Get();
+            sum_1 += v;
+            num_vox ++;
+        }
+        sum_1 = sum_1 / num_vox;
+        for (it_out.GoToBegin(); !it_out.IsAtEnd(); ++it_out) {
+            float v = it_out.Get() - sum_1;
+            it_out.Set(v);
+            sum_2 += v * v;
+        }
+        sum_2 = sqrt(sum_2);
+        if (sum_2 > 1e-10) {
+            for (it_out.GoToBegin(); !it_out.IsAtEnd(); ++it_out) {
+                it_out.Set(it_out.Get() / sum_2);
+            }
+        }
+    }
+    else if (parms->image_normalization == Synthetic_mha_parms::NORMALIZATION_GABOR) {
+        float sum_lo_1 = 0.f, sum_hi_1 = 0.f;
+        float sum_lo_2 = 0.f, sum_hi_2 = 0.f;
+        for (it_out.GoToBegin(); !it_out.IsAtEnd(); ++it_out) {
+            float v = it_out.Get();
+            if (v < 0) {
+                sum_lo_1 += v;
+                sum_lo_2 += v * v;
+            } else if (v > 0) {
+                sum_hi_1 += v;
+                sum_hi_2 += v * v;
+            }
+        }
+        sum_lo_2 = M_SQRT1_2 * sqrt(sum_lo_2);
+        sum_hi_2 = M_SQRT1_2 * sqrt(sum_hi_2);
+        float sum_lo_3 = 0.f, sum_hi_3 = 0.f;
+        if (sum_lo_2 > 1e-10 && sum_hi_2 > 1e-10) {
+            if (sum_lo_2 < sum_hi_2) {
+                sum_lo_2 = sum_hi_2 * -sum_lo_1 / sum_hi_1;
+            } else {
+                sum_hi_2 = sum_lo_2 * -sum_hi_1 / sum_lo_1;
+            }
+            for (it_out.GoToBegin(); !it_out.IsAtEnd(); ++it_out) {
+                float v = it_out.Get();
+                if (v < 0) {
+                    it_out.Set(v / sum_lo_2);
+                    sum_lo_3 += v / sum_lo_2;
+                } else if (v > 0) {
+                    it_out.Set(v / sum_hi_2);
+                    sum_hi_3 += v / sum_hi_2;
+                }
             }
         }
     }

@@ -5,13 +5,14 @@
 #include <iostream>
 
 #include "autolabel.h"
+#include "autolabel_parms.h"
 #include "plm_clp.h"
 #include "pstring.h"
 
 static void
 usage_fn (dlib::Plm_clp* parser, int argc, char *argv[])
 {
-    std::cout << "Usage: plastimatch autolabel [options]\n";
+    std::cout << "Usage: plastimatch autolabel [options] command_file\n";
     parser->print_options (std::cout);
     std::cout << std::endl;
 }
@@ -47,6 +48,9 @@ parse_fn (
 
     /* Handle --help, --version */
     parser->check_default_options ();
+
+    /* Get filename of command file */
+    parms->cmd_file_fn = (*parser)[0].c_str();
 
     /* Check that an input file was given */
     parser->check_required ("input");

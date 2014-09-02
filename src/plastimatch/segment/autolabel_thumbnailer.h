@@ -20,6 +20,7 @@ public:
     Thumbnail *thumb;
 public:
     void set_input_image (const char* fn);
+    void set_input_image (const std::string& fn);
     Dlib_trainer::Dense_sample_type make_sample (float slice_loc);
 };
 

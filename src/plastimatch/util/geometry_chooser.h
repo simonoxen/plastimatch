@@ -40,9 +40,7 @@ public:
       from the specified filename. */
     void set_reference_image (const char* image_fn);
     /*! \brief Set the reference image as an ITK image. */
-    void set_reference_image (const UCharImageType::Pointer image);
-    void set_reference_image (const FloatImageType::Pointer image);
-    void set_reference_image (const DeformationFieldType::Pointer image);
+    template<class T> void set_reference_image (const T& image);
     /*! \brief Set the compare image.  The image will be loaded
       from the specified filename. */
     void set_compare_image (const char* image_fn);
@@ -52,9 +50,9 @@ public:
     /*! \brief Set the fixed image.  The image will be loaded
       from the specified filename. */
     void set_fixed_image (const char* image_fn);
+    void set_fixed_image (const std::string& image_fn);
     /*! \brief Set the fixed image as an ITK image. */
-    void set_fixed_image (const UCharImageType::Pointer image);
-    void set_fixed_image (const FloatImageType::Pointer image);
+    template<class T> void set_fixed_image (const T& image);
     /*! \brief Set the image dimension (number of voxels) manually. */
     void set_dim (const plm_long dim[3]);
     /*! \brief Set the image origin manually. */

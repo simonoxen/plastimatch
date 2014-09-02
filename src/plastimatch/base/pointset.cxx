@@ -232,6 +232,13 @@ Pointset<T>::save_fcsv (const char *fn)
 
 template<class T>
 void
+Pointset<T>::save_fcsv (const std::string& fn)
+{
+    this->save_fcsv (fn.c_str());
+}
+
+template<class T>
+void
 Pointset<T>::save_txt (const char *fn)
 {
     FILE *fp;

@@ -36,6 +36,9 @@ public:
     int parse_config_file (
         const char* config_fn
     );
+    int parse_config_file (
+        const std::string& config_fn
+    );
 };
 
 #endif

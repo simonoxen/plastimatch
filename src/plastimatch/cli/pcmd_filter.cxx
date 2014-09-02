@@ -16,6 +16,36 @@
 #include "volume_conv.h"
 
 static Plm_image::Pointer
+create_gabor_kernel (const Filter_parms *parms, const Plm_image::Pointer& img)
+{
+    Rt_study rt_study;
+    Synthetic_mha_parms smp;
+    Plm_image_header pih (img);
+    int ker_width[3], ker_half_width[3];
+
+    for (int i = 0; i < 3; i++) {
+        ker_half_width[i] = 2 * parms->gauss_width / pih.spacing(i);
+        ker_width[i] = 2 * ker_half_width[i] + 1;
+        smp.dim[i] = ker_width[i];
+        smp.origin[i] = - pih.spacing(i) * ker_half_width[i];
+        smp.spacing[i] = pih.spacing(i);
+        smp.gauss_center[i] = 0.f;
+        smp.gauss_std[i] = parms->gauss_width;
+    }
+    smp.gabor_uv[0] = parms->gabor_uv[0];
+    smp.gabor_uv[1] = parms->gabor_uv[1];
+    smp.pattern = PATTERN_GABOR;
+    smp.background = 0;
+    smp.foreground = 1;
+    smp.image_normalization = Synthetic_mha_parms::NORMALIZATION_GABOR;
+    smp.m_want_ss_img = false;
+    smp.m_want_dose_img = false;
+
+    synthetic_mha (&rt_study, &smp);
+    return rt_study.get_image();
+}
+
+static Plm_image::Pointer
 create_gauss_kernel (const Filter_parms *parms, const Plm_image::Pointer& img)
 {
     Rt_study rt_study;
@@ -35,7 +65,7 @@ create_gauss_kernel (const Filter_parms *parms, const Plm_image::Pointer& img)
     smp.pattern = PATTERN_GAUSS;
     smp.background = 0;
     smp.foreground = 1;
-    smp.image_normalize = true;
+    smp.image_normalization = Synthetic_mha_parms::NORMALIZATION_SUM_ONE;
     smp.m_want_ss_img = false;
     smp.m_want_dose_img = false;
 
@@ -51,7 +81,26 @@ filter_main (Filter_parms* parms)
         print_and_exit ("Sorry, couldn't load input image\n");
     }
 
-    Plm_image::Pointer ker = create_gauss_kernel (parms, img);
+    Plm_image::Pointer ker;
+
+    if (parms->filter_type == Filter_parms::FILTER_TYPE_GABOR)
+    {
+        ker = create_gabor_kernel (parms, img);
+    }
+    else if (parms->filter_type == Filter_parms::FILTER_TYPE_GAUSSIAN)
+    {
+        ker = create_gauss_kernel (parms, img);
+    }
+    else if (parms->filter_type = Filter_parms::FILTER_TYPE_KERNEL)
+    {
+        /* Not yet implemented */
+    }
+    lprintf ("kernel size: %d %d %d\n",
+        ker->dim(0), ker->dim(1), ker->dim(2));
+
+    if (parms->out_kernel_fn != "") {
+        ker->save_image (parms->out_kernel_fn);
+    }
 
     Volume::Pointer volume_out = volume_conv (
         img->get_volume_float(), ker->get_volume_float());
@@ -94,11 +143,13 @@ parse_fn (
 
     /* Output files */
     parser->add_long_option ("", "output", "output image filename", 1, "");
+    parser->add_long_option ("", "output-kernel", 
+        "output kernel filename", 1, "");
 
     /* Main pattern */
     parser->add_long_option ("", "pattern",
         "filter type: {"
-        "gauss, kernel"
+        "gabor, gauss, kernel"
         "}, default is gauss", 
         1, "gauss");
 
@@ -106,6 +157,9 @@ parse_fn (
     parser->add_long_option ("", "kernel", "kernel image filename", 1, "");
     parser->add_long_option ("", "gauss-width",
         "the width (in mm) of a uniform Gaussian smoothing filter", 1, "");
+    parser->add_long_option ("", "gabor-uv", 
+        "integer index of gabor pattern (within triangular region "
+        "\"0,0\", \"0,3\", and \"3,0\")", 1, "0 0");
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -125,31 +179,33 @@ parse_fn (
     if (parser->option ("output")) {
         parms->out_image_fn = parser->get_string("output");
     }
+    if (parser->option ("output-kernel")) {
+        parms->out_kernel_fn = parser->get_string("output-kernel");
+    }
 
     /* Main pattern */
     std::string arg = parser->get_string ("pattern");
-    if (arg == "gauss") {
+    if (arg == "gabor") {
+        parms->filter_type = Filter_parms::FILTER_TYPE_GABOR;
+    }
+    else if (arg == "gauss") {
         parms->filter_type = Filter_parms::FILTER_TYPE_GAUSSIAN;
     }
     else if (arg == "kernel") {
         parms->filter_type = Filter_parms::FILTER_TYPE_KERNEL;
     }
-    /* Don't throw an exception if --pattern is not specified, instead
-       try to infer */
+    else {
+        throw (dlib::error ("Error. Unknown --pattern argument: " + arg));
+    }
 
     /* Filter options */
     if (parser->option ("kernel")) {
-        if (parms->filter_type != Filter_parms::FILTER_TYPE_UNDEFINED) {
-            parms->filter_type = Filter_parms::FILTER_TYPE_KERNEL;
-        }
         parms->out_image_fn = parser->get_string("kernel");
     }
     if (parser->option ("gauss-width")) {
-        if (parms->filter_type != Filter_parms::FILTER_TYPE_UNDEFINED) {
-            parms->filter_type = Filter_parms::FILTER_TYPE_GAUSSIAN;
-        }
         parms->gauss_width = parser->get_float("gauss-width");
     }
+    parser->assign_int_2 (parms->gabor_uv, "gabor-uv");
 }
 
 void

@@ -7,6 +7,7 @@
 #include "itkImageRegionIterator.h"
 
 #include "autolabel.h"
+#include "autolabel_parms.h"
 #include "autolabel_ransac_est.h"
 #include "autolabel_thumbnailer.h"
 #include "compiler_warnings.h"
@@ -42,13 +43,13 @@ autolabel_la1 (Autolabel_parms *parms)
 
     /* Load input image */
     Autolabel_thumbnailer thumb;
-    thumb.set_input_image ((const char*) parms->input_fn);
+    thumb.set_input_image (parms->input_fn);
 
     /* Open output file (txt format) */
-    fp = fopen ((const char*) parms->output_csv_fn, "w");
+    fp = fopen (parms->output_csv_fn.c_str(), "w");
     if (!fp) {
         print_and_exit ("Failure to open file for write: %s\n", 
-            (const char*) parms->output_csv_fn);
+            parms->output_csv_fn.c_str());
     }
 
 
@@ -93,13 +94,13 @@ autolabel_tsv1 (Autolabel_parms *parms)
 
     /* Load input image */
     Autolabel_thumbnailer thumb;
-    thumb.set_input_image ((const char*) parms->input_fn);
+    thumb.set_input_image (parms->input_fn);
 
     /* Open output file (txt format) */
-    fp = fopen ((const char*) parms->output_csv_fn, "w");
+    fp = fopen (parms->output_csv_fn.c_str(), "w");
     if (!fp) {
         print_and_exit ("Failure to open file for write: %s\n", 
-            (const char*) parms->output_csv_fn);
+            parms->output_csv_fn.c_str());
     }
 
     /* Create a vector to hold the results */
@@ -151,7 +152,7 @@ autolabel_tsv2 (Autolabel_parms *parms)
 
     /* Load input image */
     Autolabel_thumbnailer thumb;
-    thumb.set_input_image ((const char*) parms->input_fn);
+    thumb.set_input_image (parms->input_fn);
 
     /* Loop through slices, and predict location for each slice */
     Plm_image_header pih (thumb.pli);
@@ -169,7 +170,7 @@ autolabel_tsv2 (Autolabel_parms *parms)
     }
 
     /* Save the pointset output to a file */
-    if (parms->output_fcsv_fn.not_empty()) {
+    if (parms->output_fcsv_fn != "") {
         points.save_fcsv (parms->output_fcsv_fn);
     }
 }
@@ -177,6 +178,8 @@ autolabel_tsv2 (Autolabel_parms *parms)
 void
 autolabel (Autolabel_parms *parms)
 {
+    parms->parse_command_file ();
+
     if (parms->task == "la1") {
         autolabel_la1 (parms);
     }

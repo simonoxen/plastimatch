@@ -2,8 +2,12 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
+#if (OPENMP_FOUND)
+#include <omp.h>
+#endif
 
 #include "clamp.h"
+#include "logfile.h"
 #include "plm_int.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
@@ -26,6 +30,7 @@ pixel_conv (
     plm_long ijk_ker[3];  /* kernel ijk of kernel */
     plm_long ijk_in[3];      /* image ijk of kernel overlaid */
     plm_long out_v = volume_index (dim_in, ijk_out);
+
     for (ijk_ker[2] = 0; ijk_ker[2] < dim_ker[2]; ijk_ker[2]++) {
         ijk_in[2] = ijk_out[2] + ijk_ker[2] - ker_hw[2];
         CLAMP (ijk_in[2], 0, dim_in[2]-1);
@@ -61,8 +66,10 @@ volume_conv (
         ker_hw[d] = dim_ker[d] / 2;
     }
 
-    plm_long ijk_out[3];
-    for (ijk_out[2] = 0; ijk_out[2] < vol_in->dim[2]; ijk_out[2]++) {
+#pragma omp parallel for 
+    LOOP_Z_OMP (k, vol_in) {
+        plm_long ijk_out[3];
+        ijk_out[2] = k;
         for (ijk_out[1] = 0; ijk_out[1] < vol_in->dim[1]; ijk_out[1]++) {
             for (ijk_out[0] = 0; ijk_out[0] < vol_in->dim[0]; ijk_out[0]++) {
                 pixel_conv (img_out, img_in, img_ker, dim_in, dim_ker, 

@@ -119,3 +119,11 @@ Parameter_parser::parse_config_file (
 
     return this->parse_config_string (buffer.str());
 }
+
+int
+Parameter_parser::parse_config_file (
+    const std::string& config_fn
+)
+{
+    return this->parse_config_file (config_fn.c_str());
+}

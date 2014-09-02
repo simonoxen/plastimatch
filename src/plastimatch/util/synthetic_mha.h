@@ -25,7 +25,8 @@ enum Pattern_type {
     PATTERN_YRAMP,
     PATTERN_ZRAMP,
     PATTERN_NOISE,
-    PATTERN_CYLINDER
+    PATTERN_CYLINDER,
+    PATTERN_GABOR
 };
 
 class Synthetic_mha_parms_private;
@@ -33,6 +34,14 @@ class Synthetic_mha_parms_private;
 class PLMUTIL_API Synthetic_mha_parms {
 public:
     Synthetic_mha_parms_private *d_ptr;
+public:
+    enum Image_normalization {
+        NORMALIZATION_NONE,
+        NORMALIZATION_SUM_ONE,
+        NORMALIZATION_SUM_SQR_ONE,
+        NORMALIZATION_ZERO_MEAN_STD_ONE,
+        NORMALIZATION_GABOR
+    };
 public:
     int output_type;
     Pattern_type pattern;
@@ -47,9 +56,10 @@ public:
     float foreground;
     float background_alpha;
     float foreground_alpha;
+
     bool m_want_ss_img;
     bool m_want_dose_img;
-    bool image_normalize;
+    Image_normalization image_normalization;
 
     float gauss_center[3];
     float gauss_std[3];
@@ -68,6 +78,7 @@ public:
     float noise_std;
     float cylinder_radius[3];
     float cylinder_center[3];
+    int gabor_uv[2];
     
     int num_multi_sphere;
 

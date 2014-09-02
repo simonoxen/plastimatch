@@ -31,9 +31,9 @@
 static bool global_debug = false;
 #endif
 
-float lookup_attenuation_weq (float density);
-float lookup_RSP_weq (float CT_HU);
-float lookup_attenuation (float density);
+static float lookup_attenuation_weq (float density);
+static float lookup_RSP_weq (float CT_HU);
+static float lookup_attenuation (float density);
 extern const double lookup_RSP[][2];
 
 static void rpl_ray_trace_callback (

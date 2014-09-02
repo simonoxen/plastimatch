@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "direction_cosines.h"
+#include "geometry_chooser.h"
 #include "itk_image_load.h"
 #include "itk_image_save.h"
 #include "itk_resample.h"
@@ -16,13 +17,12 @@
 #include "plm_image_header.h"
 #include "plm_image_type.h"
 #include "print_and_exit.h"
-#include "pstring.h"
 
 class Resample_parms {
 public:
-    Pstring input_fn;
-    Pstring output_fn;
-    Pstring fixed_fn;
+    std::string input_fn;
+    std::string output_fn;
+    std::string fixed_fn;
     Plm_image_type output_type;
     plm_long dim[3];
     bool m_have_dim;
@@ -38,6 +38,7 @@ public:
     bool have_default_val;
     int adjust;
     bool interp_lin;
+    Geometry_chooser gchooser;
 public:
     Resample_parms () {
 	output_type = PLM_IMG_TYPE_UNDEFINED;
@@ -60,40 +61,32 @@ public:
 
 /* Return true if geometry was deduced, else false */
 static bool
-deduce_geometry (Plm_image_header *pih, const Resample_parms* parms)
+deduce_geometry (Resample_parms* parms)
 {
+    bool have_geometry = false;
+
     /* use the spacing of user-supplied fixed image */
-    if (parms->fixed_fn.not_empty()) {
-	Plm_file_format ff = plm_file_format_deduce (
-	    (const char*) parms->fixed_fn);
-	if (ff == PLM_FILE_FMT_VF) {
-	    DeformationFieldType::Pointer fixed	= itk_image_load_float_field (
-		(const char*) parms->fixed_fn);
-	    pih->set_from_itk_image (fixed);
-	}
-	else {
-	    /* Hope for the best... */
-	    FloatImageType::Pointer fixed = itk_image_load_float (
-		(const char*) parms->fixed_fn, 0);
-	    pih->set_from_itk_image (fixed);
-	}
-	return true;
+    if (parms->fixed_fn != "") {
+        parms->gchooser.set_fixed_image (parms->fixed_fn);
+	have_geometry = true;
     }
     /* use user specified geometry */
-    else if (parms->m_have_dim && parms->m_have_origin 
-	&& parms->m_have_spacing)
-    {
-	if (parms->m_have_direction_cosines) {
-	    pih->set_from_gpuit (parms->dim, parms->origin, parms->spacing, 
-		parms->m_dc);
-	} else {
-	    pih->set_from_gpuit (parms->dim, parms->origin, parms->spacing, 0);
-	}
-	return true;
+    if (parms->m_have_dim) {
+        parms->gchooser.set_dim (parms->dim);
+	have_geometry = true;
+    } 
+    if (parms->m_have_origin) {
+        parms->gchooser.set_origin (parms->origin);
+	have_geometry = true;
     }
-
-    /* else, we failed */
-    return false;
+    if (parms->m_have_spacing) {
+        parms->gchooser.set_spacing (parms->spacing);
+	have_geometry = true;
+    } 
+    if (parms->m_have_direction_cosines) {
+        parms->gchooser.set_direction_cosines (parms->m_dc.get());
+    }
+    return have_geometry;
 }
 
 template<class T>
@@ -105,11 +98,11 @@ do_resample_itk (Resample_parms* parms, T img)
 	    parms->subsample[2], parms->default_val);
     }
 
-    Plm_image_header pih;
-    if (deduce_geometry (&pih, parms)) {
+    if (deduce_geometry (parms)) {
 	/* Return resampled image */
-	return resample_image (img, &pih, parms->default_val, 
-	    parms->interp_lin);
+        parms->gchooser.set_reference_image (img);
+	return resample_image (img, parms->gchooser.get_geometry(), 
+            parms->default_val, parms->interp_lin);
     } else {
 	/* Return original image */
 	return img;
@@ -120,19 +113,20 @@ void
 resample_main_itk_vf (Resample_parms* parms)
 {
     DeformationFieldType::Pointer vector_field 
-	= itk_image_load_float_field ((const char*) parms->input_fn);
+	= itk_image_load_float_field (parms->input_fn);
 
     if (parms->m_have_subsample) {
 	print_and_exit ("Error. Subsample not supported for vector field.\n");
 	exit (-1);
     }
 
-    Plm_image_header pih;
-    if (deduce_geometry (&pih, parms)) {
+    if (deduce_geometry (parms)) {
 	/* Resample image */
-	vector_field = vector_resample_image (vector_field, &pih);
+        parms->gchooser.set_reference_image (vector_field);
+	vector_field = vector_resample_image (vector_field, 
+            parms->gchooser.get_geometry());
     }
-    itk_image_save (vector_field, (const char*) parms->output_fn);
+    itk_image_save (vector_field, parms->output_fn);
 }
 
 void
@@ -142,7 +136,7 @@ resample_main (Resample_parms* parms)
 
     Plm_file_format file_format;
 
-    file_format = plm_file_format_deduce ((const char*) parms->input_fn);
+    file_format = plm_file_format_deduce (parms->input_fn);
 
     /* Vector fields are templated differently, so do them separately */
     if (file_format == PLM_FILE_FMT_VF) {
@@ -150,7 +144,7 @@ resample_main (Resample_parms* parms)
 	return;
     }
 
-    plm_image.load_native ((const char*) parms->input_fn);
+    plm_image.load_native (parms->input_fn);
 
     if (parms->output_type == PLM_IMG_TYPE_UNDEFINED) {
 	parms->output_type = plm_image.m_type;
@@ -182,9 +176,7 @@ resample_main (Resample_parms* parms)
 	break;
     }
 
-    plm_image.convert_and_save (
-	(const char*) parms->output_fn, 
-	parms->output_type);
+    plm_image.convert_and_save (parms->output_fn, parms->output_type);
 }
 
 static void

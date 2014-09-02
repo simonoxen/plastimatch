@@ -15,6 +15,7 @@ class Slice_index;
    Function prototypes
    ----------------------------------------------------------------------- */
 template<class T> void itk_image_save (T img_ptr, const char* fname);
+template<class T> void itk_image_save (T img_ptr, const std::string& fname);
 template<class T> void itk_image_save_short_dicom (T image, const char* dir_name, Rt_study_metadata *);
 
 template<class T> PLMBASE_API void itk_image_save_char (T img_ptr, const char* fname);

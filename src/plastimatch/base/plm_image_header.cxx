@@ -424,6 +424,15 @@ Plm_image_header::get_image_center (float center[3]) const
     }
 }
 
+void 
+Plm_image_header::get_image_extent (float extent[3]) const
+{
+    int d;
+    for (d = 0; d < 3; d++) {
+	extent[d] = this->m_spacing[d] * (this->Size(d) - 1);
+    }
+}
+
 double 
 Plm_image_header::plm_round(double val, int digits)
 {

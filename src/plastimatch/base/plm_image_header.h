@@ -161,7 +161,9 @@ public:
     FloatPoint3DType get_index (const FloatPoint3DType& pos) const;
     FloatPoint3DType get_position (const float index[3]) const;
     void get_image_center (float center[3]) const;
-
+    /*! \brief Get the physical size of the image, from first voxel center
+      to last voxel center.  Size is zero if only one voxel. */
+    void get_image_extent (float extent[3]) const;
 };
 
 /* -----------------------------------------------------------------------

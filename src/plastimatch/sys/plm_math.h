@@ -28,8 +28,20 @@
 #ifndef M_SQRT1_2
 #define M_SQRT1_2       0.70710678118654752440  /* 1/sqrt(2) */
 #endif
+#ifndef M_SQRT3_OVER_2
+#define M_SQRT3_OVER_2  0.866025403784439       /* sqrt(3)/2 - nonstandard */
+#endif
 #ifndef M_SQRT2PI
 #define M_SQRT2PI       2.50662827463100        /* sqrt(2*pi) - nonstandard */
+#endif
+#ifndef M_PI_2
+#define M_PI_2		1.57079632679489661923	/* pi/2 */
+#endif
+#ifndef M_PI_3
+#define M_PI_3		1.04719755119660        /* pi/3 - nonstandard */
+#endif
+#ifndef M_PI_4
+#define M_PI_4		0.78539816339744830962	/* pi/4 */
 #endif
 
 /* Returns integer data type */

@@ -23,10 +23,12 @@ set (PLMSEGMENT_LIBRARY_DEPENDENCIES
 
 set (PLMSEGMENT_LIBRARY_SRC
   autolabel.cxx
+  autolabel_feature.cxx
+  autolabel_parms.cxx
+  autolabel_ransac_est.cxx
   autolabel_task.cxx
   autolabel_thumbnailer.cxx
   autolabel_trainer.cxx
-  autolabel_ransac_est.cxx
   dlib_trainer.cxx
   mabs.cxx
   mabs_atlas_selection.cxx
