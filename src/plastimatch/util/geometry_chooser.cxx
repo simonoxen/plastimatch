@@ -218,12 +218,12 @@ Geometry_chooser::get_geometry ()
 }
 
 /* Explicit instantiations */
-template PLMBASE_API void Geometry_chooser::set_fixed_image<UCharImageType::Pointer> (const UCharImageType::Pointer&);
-template PLMBASE_API void Geometry_chooser::set_fixed_image<FloatImageType::Pointer> (const FloatImageType::Pointer&);
-template PLMBASE_API void Geometry_chooser::set_fixed_image<DeformationFieldType::Pointer> (const DeformationFieldType::Pointer&);
-template PLMBASE_API void Geometry_chooser::set_reference_image<UCharImageType::Pointer> (const UCharImageType::Pointer&);
-template PLMBASE_API void Geometry_chooser::set_reference_image<ShortImageType::Pointer> (const ShortImageType::Pointer&);
-template PLMBASE_API void Geometry_chooser::set_reference_image<UInt32ImageType::Pointer> (const UInt32ImageType::Pointer&);
-template PLMBASE_API void Geometry_chooser::set_reference_image<Int32ImageType::Pointer> (const Int32ImageType::Pointer&);
-template PLMBASE_API void Geometry_chooser::set_reference_image<FloatImageType::Pointer> (const FloatImageType::Pointer&);
-template PLMBASE_API void Geometry_chooser::set_reference_image<DeformationFieldType::Pointer> (const DeformationFieldType::Pointer&);
+template PLMUTIL_API void Geometry_chooser::set_fixed_image<UCharImageType::Pointer> (const UCharImageType::Pointer&);
+template PLMUTIL_API void Geometry_chooser::set_fixed_image<FloatImageType::Pointer> (const FloatImageType::Pointer&);
+template PLMUTIL_API void Geometry_chooser::set_fixed_image<DeformationFieldType::Pointer> (const DeformationFieldType::Pointer&);
+template PLMUTIL_API void Geometry_chooser::set_reference_image<UCharImageType::Pointer> (const UCharImageType::Pointer&);
+template PLMUTIL_API void Geometry_chooser::set_reference_image<ShortImageType::Pointer> (const ShortImageType::Pointer&);
+template PLMUTIL_API void Geometry_chooser::set_reference_image<UInt32ImageType::Pointer> (const UInt32ImageType::Pointer&);
+template PLMUTIL_API void Geometry_chooser::set_reference_image<Int32ImageType::Pointer> (const Int32ImageType::Pointer&);
+template PLMUTIL_API void Geometry_chooser::set_reference_image<FloatImageType::Pointer> (const FloatImageType::Pointer&);
+template PLMUTIL_API void Geometry_chooser::set_reference_image<DeformationFieldType::Pointer> (const DeformationFieldType::Pointer&);
