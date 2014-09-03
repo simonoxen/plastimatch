@@ -94,11 +94,6 @@ itk_dicom_save (
 {
     typedef itk::NumericSeriesFileNames NamesGeneratorType;
     const int export_as_ct = 1;
-    /* DICOM date string looks like this: 20110601
-       DICOM time string looks like this: 203842 or 203842.805219
-    */
-    std::string current_date, current_time;
-    dicom_get_date_time (&current_date, &current_time);
 
     itksys::SystemTools::MakeDirectory (dir_name);
 
@@ -113,8 +108,8 @@ itk_dicom_save (
 
     /* Set up a few things in referenced_dicom_dir */
     if (rsm) {
-	rsm->set_image_header (short_img);
-	rsm->reset_slice_uids ();
+        rsm->set_image_header (short_img);
+        rsm->reset_slice_uids ();
     }
 
     /* PLM (input) metadata */
@@ -122,6 +117,20 @@ itk_dicom_save (
     if (rsm) {
         meta = rsm->get_image_metadata ();
         study_meta = rsm->get_image_metadata ();
+    }
+    
+    /* DICOM date string looks like this: 20110601
+       DICOM time string looks like this: 203842 or 203842.805219 */
+    std::string current_date, current_time;
+    /* Get date and time from original set if available - otherwise get current values */
+    if (meta) {
+        std::cout<<"date and time from meta"<<std::endl;
+        current_date = meta->get_metadata (0x0008, 0x0012);
+        current_time = meta->get_metadata (0x0008, 0x0013);
+    }
+    else{
+        std::cout<<"date and time from today"<<std::endl;
+        dicom_get_date_time (&current_date, &current_time);
     }
 
     /* ITK (output) metadata */

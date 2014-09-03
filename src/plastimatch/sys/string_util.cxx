@@ -290,3 +290,12 @@ bool string_value_true (const std::string& s)
     std::string t = make_lowercase (s);
     return t == "1" || t == "true" || t == "on";
 }
+
+// compiler does not recognize the std::to_string (c++11), so made our own
+template <typename T>
+std::string PLM_to_string(T value)
+{
+	std::ostringstream os ;
+	os << value ;
+	return os.str() ;
+}
