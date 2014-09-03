@@ -729,7 +729,7 @@ Registration_parms::set_key_value (
             goto error_exit;
         }
     }
-    else if (key == "demons_std_deformation_field") {
+    else if ((key == "demons_std_deformation_field" || (key == "demons_std")) {
         if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &stage->demons_std) != 1) {
             goto error_exit;
@@ -785,6 +785,12 @@ Registration_parms::set_key_value (
     else if (key == "num_approx_terms_log_demons") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%d", &stage->num_approx_terms_log_demons) != 1) {
+            goto error_exit;
+        }
+    }
+    else if (key == "demons_acceleration") {
+        if (!section_stage) goto key_only_allowed_in_section_stage;
+        if (sscanf (val.c_str(), "%g", &stage->demons_acceleration) != 1) {
             goto error_exit;
         }
     }
