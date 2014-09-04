@@ -1923,9 +1923,6 @@ Mabs::train_internal ()
             /* Assign the selected atlases */
             d_ptr->atlas_list = atlases_for_train_subject;
         }
-        else {
-            print_and_exit ("Train atlas selection not working properly!\n");
-        }
 
         /* Run the segmentation */
         this->run_registration_loop ();
