@@ -71,7 +71,7 @@ Ion_plan::init ()
     if (!this->beam) return false;
     if (!this->get_patient()) return false;
 
-    this->rpl_vol = new Rpl_volume;
+    if (!this->rpl_vol) {this->rpl_vol = new Rpl_volume;}
     this->rpl_vol->set_geometry (
         this->beam->get_source_position(),
         this->beam->get_isocenter_position(),
@@ -647,7 +647,7 @@ Ion_plan::dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* 
     }
 
     dose_volume->npix = dose_volume->dim[0]*dose_volume->dim[1]*dose_volume->dim[2];
-    printf("dim: %d %d %d; offset %lg %lg %lg; sp: %lg %lg %lg\n", dose_volume->dim[0], dose_volume->dim[1], dose_volume->dim[2], dose_volume->offset[0], dose_volume->offset[1], dose_volume->offset[2], dose_volume->spacing[0], dose_volume->spacing[1], dose_volume->spacing[2]);
+    printf("dim: %d %d %d; offset %lg %lg %lg; sp: %lg %lg %lg\n", (int) dose_volume->dim[0], (int) dose_volume->dim[1], (int) dose_volume->dim[2], dose_volume->offset[0], dose_volume->offset[1], dose_volume->offset[2], dose_volume->spacing[0], dose_volume->spacing[1], dose_volume->spacing[2]);
     dose_volume->create(dose_volume->dim,dose_volume->offset,dose_volume->spacing,dose_volume->direction_cosines,PT_FLOAT,1);
 }
 
