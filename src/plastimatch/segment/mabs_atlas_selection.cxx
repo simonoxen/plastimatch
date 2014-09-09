@@ -347,9 +347,10 @@ Mabs_atlas_selection::compute_nmi (
                 img1->itk_short()->GetLargestPossibleRegion().GetNumberOfPixels();
             unsigned long number_spatial_samples =
                 static_cast<unsigned long> (number_of_img_voxels * this->percentage_nmi_random_sample);
+#if defined (ITK_USE_OPTIMIZED_REGISTRATION_METHODS) || (ITK_VERSION_MAJOR >= 4)
             nmi_metric->SetNumberOfSpatialSamples(number_spatial_samples);
+#endif
         }
-
     }
     
     /* Set histogram interval if defined */
