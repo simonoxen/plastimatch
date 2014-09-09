@@ -1,20 +1,16 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _native_translation_h_
-#define _native_translation_h_
+#ifndef _translation_score_h_
+#define _translation_score_h_
 
 #include "plmregister_config.h"
-#include "xform.h"
+#include "volume.h"
 
-class Registration_data;
-class Xform;
-class Stage_parms;
-
-Xform::Pointer
-native_translation_stage (
-    Registration_data* regd,
-    const Xform::Pointer& xf_in,
-    Stage_parms* stage);
+float
+translation_score (
+    const Volume::Pointer& fixed,
+    const Volume::Pointer& moving,
+    const float dxyz[3]);
 
 #endif

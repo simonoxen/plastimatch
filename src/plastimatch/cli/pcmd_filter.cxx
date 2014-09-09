@@ -91,7 +91,7 @@ filter_main (Filter_parms* parms)
     {
         ker = create_gauss_kernel (parms, img);
     }
-    else if (parms->filter_type = Filter_parms::FILTER_TYPE_KERNEL)
+    else if (parms->filter_type == Filter_parms::FILTER_TYPE_KERNEL)
     {
         /* Not yet implemented */
     }

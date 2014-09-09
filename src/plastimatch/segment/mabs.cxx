@@ -1871,13 +1871,16 @@ Mabs::train_internal ()
 
     /* Parse atlas directory */
     this->load_process_dir_list (d_ptr->prealign_dir);
+    lprintf ("Loaded %d cases from %s\n",
+        d_ptr->process_dir_list.size(),
+        d_ptr->prealign_dir.c_str());
  
     /* If set, run train atlas selection */
     if (d_ptr->parms->enable_atlas_selection)
     {
         this->train_atlas_selection();
     }
-   
+ 
     /* Loop through atlas_dir, choosing reference images to segment */
     for (std::list<std::string>::iterator it = d_ptr->process_dir_list.begin();
          it != d_ptr->process_dir_list.end(); it++)

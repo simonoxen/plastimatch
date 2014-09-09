@@ -55,7 +55,6 @@ set (PLMREGISTER_LIBRARY_SRC
   itk_registration_observer.cxx
   itk_tps.cxx
   landmark_warp.cxx 
-  native_translation.cxx
   plm_bspline.cxx
   process_parms.cxx
   rbf_cluster.cxx
@@ -66,6 +65,8 @@ set (PLMREGISTER_LIBRARY_SRC
   registration_parms.cxx
   shared_parms.cxx
   stage_parms.cxx
+  translation_optimize.cxx
+  translation_score.cxx
   )
 
 if (OPENCL_FOUND)

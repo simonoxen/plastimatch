@@ -83,7 +83,7 @@ int main
                 proj_ijk[2] = PROJECT_Z (xyz, v->proj);
 
                 printf ("[%d %d %d] %f %f %f -> [%f %f %f]\n", 
-                    ijk[0], ijk[1], ijk[2], 
+                    (int) ijk[0], (int) ijk[1], (int) ijk[2], 
                     xyz[0], xyz[1], xyz[2], 
                     proj_ijk[0], proj_ijk[1], proj_ijk[2]);
             }

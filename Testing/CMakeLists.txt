@@ -72,6 +72,7 @@ set (CONFIG_FILE_LIST
   "plm-reg-itk-rigid-b.txt"
   "plm-reg-itk-bspline.txt"
   "plm-reg-process-a.txt"
+  "plm-reg-trans-a.txt"
 )
 foreach (CONFIG_FILE ${CONFIG_FILE_LIST})
   configure_file ("${PLM_TESTING_DATA_DIR}/${CONFIG_FILE}"
@@ -3001,6 +3002,32 @@ set_tests_properties (plm-reg-process-a-stats PROPERTIES
   DEPENDS plm-reg-process-a)
 set_tests_properties (plm-reg-process-a-check PROPERTIES 
   DEPENDS plm-reg-process-a-stats)
+
+## -------------------------------------------------------------------------
+## plastimatch register (group 10)
+##   plm-reg-trans-a   Native translation with grid search
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-reg-trans-a"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-trans-a.txt"
+  )
+plm_add_test (
+  "plm-reg-trans-a-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-reg-trans-a.mha"
+  )
+plmtest_check_interval ("plm-reg-trans-a-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-trans-a-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-661.35"
+  "-661.25"
+  )
+set_property (TEST plm-reg-trans-a APPEND PROPERTY DEPENDS gauss-1)
+set_tests_properties (plm-reg-trans-a-stats PROPERTIES 
+  DEPENDS plm-reg-trans-a)
+set_tests_properties (plm-reg-trans-a-check PROPERTIES 
+  DEPENDS plm-reg-trans-a-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch compose
