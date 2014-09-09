@@ -34,6 +34,6 @@ PLMSYS_API size_t ci_find (const std::string& str1, const std::string& str2);
 PLMSYS_API bool string_value_true (const char* s);
 PLMSYS_API bool string_value_true (const std::string& s);
 
-PLMSYS_API template <typename T> std::string PLM_to_string(T value);
+template <typename T> PLMSYS_API std::string PLM_to_string(T value);
 
 #endif
