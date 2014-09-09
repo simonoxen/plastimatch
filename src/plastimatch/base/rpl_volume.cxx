@@ -24,6 +24,7 @@
 #include "volume_limit.h"
 #include "volume_macros.h"
 #include "print_and_exit.h"
+#include "wed_parms.h"
 
 //#define VERBOSE 1
 
@@ -632,6 +633,7 @@ Rpl_volume::compute_rpl ()
 {
     int ires[2];
 
+
     /* A couple of abbreviations */
     Proj_volume *proj_vol = d_ptr->proj_vol;
     const double *src = proj_vol->get_src();
@@ -663,10 +665,10 @@ Rpl_volume::compute_rpl ()
     /* Ahh.  Now we can set the clipping planes and allocate the 
        actual volume. */
     double clipping_dist[2] = {
-        d_ptr->front_clipping_dist, d_ptr->back_clipping_dist};
+      d_ptr->front_clipping_dist, d_ptr->back_clipping_dist};
     d_ptr->proj_vol->set_clipping_dist (clipping_dist);
     d_ptr->proj_vol->allocate ();
-    
+ 
     /* Scan through the aperture -- second pass */
     for (int r = 0; r < ires[1]; r++) {
         for (int c = 0; c < ires[0]; c++) {
@@ -1067,14 +1069,10 @@ Rpl_volume::compute_proj_wed_volume (
 }
 
 Volume*
-Rpl_volume::create_wed_volume ()
+Rpl_volume::create_wed_volume (Wed_Parms* parms)
 {
-//    Rpl_volume* rpl_vol = scene->rpl_vol;
 
-    float wed_off[3] = {0.0f, 0.0f, 0.0f};
-    float wed_ps[3] = {1.0f, 1.0f, 1.0f};
-
-    /* water equivalent depth volume has the same x,y dimensions as the rpl
+   /* water equivalent depth volume has the same x,y dimensions as the rpl
      * volume. Note: this means the wed x,y dimensions are equal to the
      * aperture dimensions and the z-dimension is equal to the sampling
      * resolution chosen for the rpl */
@@ -1084,6 +1082,20 @@ Rpl_volume::create_wed_volume ()
     wed_dims[0] = vol->dim[0];
     wed_dims[1] = vol->dim[1];
     wed_dims[2] = vol->dim[2];
+
+    /////////////////////////////
+    //Should be insenstive to aperture rotation?
+    /*
+    Proj_volume *proj_vol = d_ptr->proj_vol;
+    double iso_src_vec[3];   //vector from isocenter to source
+    proj_vol->get_proj_matrix()->get_nrm(iso_src_vec);
+    */
+
+    float xoff = -(vol->dim[0] - parms->ic[0]);
+    float yoff = -(vol->dim[1] - parms->ic[1]);
+
+    float wed_off[3] = {xoff, yoff, 0.0f};
+    float wed_ps[3] = {1.0f, 1.0f, 1.0f};
 
     return new Volume (wed_dims, wed_off, wed_ps, NULL, PT_FLOAT, 1);
 }
@@ -1444,15 +1456,15 @@ Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float backgrou
                     else {
                         dummy_lin_ex = ray_rad_len[i]-floor(ray_rad_len[i]);
 
-                        wijk[0] = (ray_lookup[i][0] - 1)/wed_vol->spacing[0];
-                        wijk[1] = (ray_lookup[i][1] - 1)/wed_vol->spacing[1];
+			wijk[0] = (ray_lookup[i][0] - 1)/wed_vol->spacing[0];
+			wijk[1] = (ray_lookup[i][1] - 1)/wed_vol->spacing[1];
 
                         //	    wijk[0] = ray_lookup[i][0] - 1;
                         //	    wijk[1] = ray_lookup[i][1] - 1;
 
                         //Needed if dew dimensions are not automatically set by wed in wed_main.
-                        //	    	    wijk[0] = ((ray_lookup[i][0] - 1) - wed_vol->offset[0])/wed_vol->spacing[0];
-                        //	    	    wijk[1] = ((ray_lookup[i][1] - 1) - wed_vol->offset[1])/wed_vol->spacing[1];
+			//			wijk[0] = ((ray_lookup[i][0] - 1) - wed_vol->offset[0])/wed_vol->spacing[0];
+			//			wijk[1] = ((ray_lookup[i][1] - 1) - wed_vol->offset[1])/wed_vol->spacing[1];
 
                         if (wijk[0] < 0 || wijk[0] >= wed_vol->dim[0]) {break;}
                         if (wijk[1] < 0 || wijk[1] >= wed_vol->dim[1]) {break;}

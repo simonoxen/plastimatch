@@ -16,7 +16,7 @@
 #include "rpl_volume.h"
 #include "volume.h"
 #include "volume_limit.h"
-#include "wed_parms.h"
+
 
 typedef struct callback_data Callback_data;
 struct callback_data {
@@ -126,7 +126,7 @@ wed_ct_compute (
 
     if (parms->mode==0)  {
         Volume* wed_vol;
-	wed_vol = rpl_vol->create_wed_volume ();
+	wed_vol = rpl_vol->create_wed_volume (parms);
         rpl_vol->compute_wed_volume (wed_vol, ct_vol->get_volume_float().get(), 
             background);
         Plm_image(wed_vol).save_image(out_fn);
@@ -195,7 +195,7 @@ wed_ct_compute (
                 src2[1] = sin(angle)*radius_len + iso[1];
 
                 scene->beam->set_source_position (src2);
-                scene->init();
+		scene->init();
                 rpl_vol = scene->rpl_vol;
                 rpl_vol->compute_proj_wed_volume (proj_wed_vol, background);
 
@@ -340,9 +340,21 @@ wed_ct_initialize(Wed_Parms *parms)
     if (parms->have_ic) {
 
         if (parms->mode==1)  {
+
+	  //If center is not defined in config file (in general,
+	  //it shouldn't be), then default values should be reset
+	  if ((parms->ic[0]==-99.5)&&(parms->ic[2]==-99.5))  {
+	    Volume *wed_vol = dose_vol->get_volume_float().get();
+	    parms->ic[0] = wed_vol->offset[0] + wed_vol->dim[0];
+	    parms->ic[1] = wed_vol->offset[1] + wed_vol->dim[1];
+	  }
+
+	  //else set it at the center
+	  else {
             ap_center[0] = parms->ic[0]+1.*parms->ap_spacing[0];
             ap_center[1] = parms->ic[1]+1.*parms->ap_spacing[1];
             scene.get_aperture()->set_center (ap_center);
+	  }
         }
 
         else {
@@ -371,6 +383,7 @@ wed_ct_initialize(Wed_Parms *parms)
         fprintf (stderr, "ERROR: Unable to initilize scene.\n");
         return -1;
     }
+
     scene.debug ();
 
     /* Save rpl volume if requested */
