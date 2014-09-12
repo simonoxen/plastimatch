@@ -17,29 +17,7 @@ project (PLM_Testing)
 ## -------------------------------------------------------------------------
 option (PLM_REDUCED_TESTS 
   "Run fewer tests (used when debugging tests)" OFF)
-option (PLM_DOWNLOAD_HEADPHANTOM
-  "Additional testing data (download from internet)" OFF)
-option (PLM_DOWNLOAD_DICOMRT_AW
-  "Additional testing data (download from internet)" OFF)
-option (PLM_DOWNLOAD_DICOMRT_CERR
-  "Additional testing data (download from internet)" OFF)
-option (PLM_DOWNLOAD_DICOMRT_CORVUS
-  "Additional testing data (download from internet)" OFF)
-option (PLM_DOWNLOAD_DICOMRT_IRREGULAR
-  "Additional testing data (download from internet)" OFF)
-option (PLM_DOWNLOAD_DICOMRT_PINNACLE 
-  "Additional testing data (download from internet)" OFF)
-option (PLM_DOWNLOAD_DICOMRT_XIO 
-  "Additional testing data (download from internet)" OFF)
-option (PLM_DOWNLOAD_DICOMRT_33_STRUCTURES
-  "Additional testing data (download from internet)" OFF)
-option (PLM_DOWNLOAD_RTOG_CORVUS
-  "Additional testing data (download from internet)" OFF)
-option (PLM_DOWNLOAD_FDK_VARIAN 
-  "Additional testing data (download from internet)" OFF)
-option (PLM_DOWNLOAD_XIO 
-  "Additional testing data (download from internet)" OFF)
-option (PLM_DOWNLOAD_XIO_IRREGULAR 
+option (PLM_DOWNLOAD_TEST_DATA
   "Additional testing data (download from internet)" OFF)
 
 ##-----------------------------------------------------------------------------
@@ -73,6 +51,7 @@ set (CONFIG_FILE_LIST
   "plm-reg-itk-bspline.txt"
   "plm-reg-process-a.txt"
   "plm-reg-trans-a.txt"
+  "plm-reg-trans-b.txt"
 )
 foreach (CONFIG_FILE ${CONFIG_FILE_LIST})
   configure_file ("${PLM_TESTING_DATA_DIR}/${CONFIG_FILE}"
@@ -141,77 +120,57 @@ macro (plm_download_and_extract DOWNLOAD_URL DOWNLOAD_FILENAME DOWNLOAD_DIR)
   endif ()
 endmacro ()
 
-if (PLM_DOWNLOAD_HEADPHANTOM)
+if (PLM_DOWNLOAD_TEST_DATA)
   plm_download_and_extract (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1929/headphantom.tar.gz"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/headphantom.tar.gz"
     "${PLM_BUILD_TESTING_DIR}/headphantom")
-endif ()
 
-if (PLM_DOWNLOAD_DICOMRT_AW)
   plm_download_and_extract (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1613/foot-dicomrt-aw-4.4.tar.gz"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/foot-dicomrt-aw-4.4.tar.gz"
     "${PLM_BUILD_TESTING_DIR}/foot-dicomrt-aw-4.4")
-endif ()
 
-if (PLM_DOWNLOAD_DICOMRT_CERR)
   plm_download_and_extract (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1632/chest-phantom-dicomrt-CERR4pt0beta2_25_Jan_2011.tar.gz"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/chest-phantom-dicomrt-CERR4pt0beta2_25_Jan_2011.tar.gz"
     "${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-CERR4pt0beta2_25_Jan_2011")
-endif ()
 
-if (PLM_DOWNLOAD_DICOMRT_CORVUS)
   plm_download_and_extract (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/2160/dicomrt-corvus-6.2.2.tar.gz"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/dicomrt-corvus-6.2.2.tar.gz"
     "${PLM_BUILD_TESTING_DIR}/dicomrt-corvus-6.2.2")
-endif ()
 
-if (PLM_DOWNLOAD_DICOMRT_IRREGULAR)
   plm_download_and_extract (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/2162/dicomrt_xio-4.60-irregular-spacing.tar.gz"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/dicomrt_xio-4.60-irregular-spacing.tar.gz"
     "${PLM_BUILD_TESTING_DIR}/xio-4.60-irregular-spacing")
-endif ()
 
-if (PLM_DOWNLOAD_DICOMRT_PINNACLE)
   plm_download_and_extract (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1187/rando-dicomrt-pinnacle3-8.2g.tar.gz"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/rando-dicomrt-pinnacle3-8.2g.tar.gz"
     "${PLM_BUILD_TESTING_DIR}/rando-dicomrt-pinnacle3-8.2g")
-endif ()
 
-if (PLM_DOWNLOAD_DICOMRT_XIO)
   plm_download_and_extract (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/934/chest-phantom-dicomrt-xio-4.33.02.tar.gz"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/chest-phantom-dicomrt-xio-4.33.02.tar.gz"
     "${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02")
-endif ()
 
-if (PLM_DOWNLOAD_DICOMRT_33_STRUCTURES)
   plm_download_and_extract (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/2227/dicomrt-33-structures.tar.gz"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/dicomrt-33-structures.tar.gz"
     "${PLM_BUILD_TESTING_DIR}/dicomrt-33-structures")
-endif ()
 
-if (PLM_DOWNLOAD_FDK_VARIAN)
   plm_download_and_extract (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1127/varian-catphan.tar.gz"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/varian-catphan.tar.gz"
     "${PLM_BUILD_TESTING_DIR}/varian-catphan")
-endif ()
 
-if (PLM_DOWNLOAD_RTOG_CORVUS)
   plm_download_and_extract (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/2159/rtog-corvus-6.2.2.tar.gz"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/rtog-corvus-6.2.2.tar.gz"
     "${PLM_BUILD_TESTING_DIR}/rtog-corvus-6.2.2")
-endif ()
 
-if (PLM_DOWNLOAD_XIO)
   plm_download_and_extract (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/939/chest-phantom-xio-4.33.02.tar.gz"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/chest-phantom-xio-4.33.02.tar.gz"
@@ -1798,12 +1757,12 @@ set_tests_properties (plm-convert-cxt-check PROPERTIES
 plm_add_test (
   "plm-convert-xio-a"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-xio-4.33.02;--output-img;${PLM_BUILD_TESTING_DIR}/chest-phantom-xio-a.mha;--output-xio;${PLM_BUILD_TESTING_DIR}/plm-convert-xio-a-xio-output;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-xio-a-dicom;--output-dose-img;${PLM_BUILD_TESTING_DIR}/chest-phantom-xio-dose-a.mha"
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-xio-4.33.02;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-xio-a.mha;--output-xio;${PLM_BUILD_TESTING_DIR}/plm-convert-xio-a-xio-output;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-xio-a-dicom;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-xio-a-dose.mha"
   )
 plm_add_test (
   "plm-convert-xio-a-stats"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;${PLM_BUILD_TESTING_DIR}/chest-phantom-xio-a.mha"
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-convert-xio-a.mha"
   )
 plmtest_check_interval ("plm-convert-xio-a-check"
   "${PLM_BUILD_TESTING_DIR}/plm-convert-xio-a-stats.stdout.txt"
@@ -1819,12 +1778,12 @@ set_tests_properties (plm-convert-xio-a-check PROPERTIES
 plm_add_test (
   "plm-convert-xio-b"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-xio-4.33.02/20080627A/plan/TRAINING4FLD;--output-img;${PLM_BUILD_TESTING_DIR}/chest-phantom-xio-b.mha;--output-xio;${PLM_BUILD_TESTING_DIR}/plm-convert-xio-b-xio-output;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-xio-b-dicom"
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-xio-4.33.02/20080627A/plan/TRAINING4FLD;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-xio-b.mha;--output-xio;${PLM_BUILD_TESTING_DIR}/plm-convert-xio-b-xio-output;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-xio-b-dicom"
   )
 plm_add_test (
   "plm-convert-xio-b-stats"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;${PLM_BUILD_TESTING_DIR}/chest-phantom-xio-b.mha"
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-convert-xio-b.mha"
   )
 plmtest_check_interval ("plm-convert-xio-b-check"
   "${PLM_BUILD_TESTING_DIR}/plm-convert-xio-b-stats.stdout.txt"
@@ -3005,7 +2964,8 @@ set_tests_properties (plm-reg-process-a-check PROPERTIES
 
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 10)
-##   plm-reg-trans-a   Native translation with grid search
+##   plm-reg-trans-a   Native translation with grid search (legacy form)
+##   plm-reg-trans-b   Native translation with grid search (new form)
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-reg-trans-a"
@@ -3028,6 +2988,28 @@ set_tests_properties (plm-reg-trans-a-stats PROPERTIES
   DEPENDS plm-reg-trans-a)
 set_tests_properties (plm-reg-trans-a-check PROPERTIES 
   DEPENDS plm-reg-trans-a-stats)
+
+plm_add_test (
+  "plm-reg-trans-b"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-trans-b.txt"
+  )
+plm_add_test (
+  "plm-reg-trans-b-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-reg-trans-b.mha"
+  )
+plmtest_check_interval ("plm-reg-trans-b-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-trans-b-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-661.35"
+  "-661.25"
+  )
+set_property (TEST plm-reg-trans-b APPEND PROPERTY DEPENDS gauss-1)
+set_tests_properties (plm-reg-trans-b-stats PROPERTIES 
+  DEPENDS plm-reg-trans-b)
+set_tests_properties (plm-reg-trans-b-check PROPERTIES 
+  DEPENDS plm-reg-trans-b-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch compose
