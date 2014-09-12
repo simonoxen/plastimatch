@@ -85,39 +85,51 @@ include (nvcc-check)
 #   When developing, it is sometimes nice to turn this off in order
 #   to speed up the build processes (since you only have 1 GPU in your machine).
 set (PLM_CUDA_ALL_DEVICES ON CACHE BOOL 
-  "Generate GPU code for all compute capabilities?")
+    "Generate GPU code for all compute capabilities?")
 if (PLM_CUDA_ALL_DEVICES)
-  message (STATUS "CUDA Build Level: ALL Compute Capabilities")
+    message (STATUS "CUDA Build Level: ALL Compute Capabilities")
 
-  message (STATUS "  >> Generation 1: [X]")
-  set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
-        -gencode arch=compute_10,code=sm_10
-        -gencode arch=compute_11,code=sm_11
-        -gencode arch=compute_12,code=sm_12
-        -gencode arch=compute_13,code=sm_13
-    )
+    if(CUDA_VERSION_MAJOR LESS "6")
+	message (STATUS "  >> Generation 1: [X]")
+	set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
+            -gencode arch=compute_10,code=sm_10
+            -gencode arch=compute_11,code=sm_11
+            -gencode arch=compute_12,code=sm_12
+            -gencode arch=compute_13,code=sm_13
+	    )
+    else()
+	message (STATUS "  >> Generation 1: [ ]")
+    endif()
+    if(CUDA_VERSION_MAJOR GREATER "2")
+	message (STATUS "  >> Generation 2: [X]")
+	set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
+            -gencode arch=compute_20,code=sm_20
+	    )
+    else()
+	message (STATUS "  >> Generation 2: [ ]")
+    endif()
 
-if(CUDA_VERSION_MAJOR GREATER "2")
-  message (STATUS "  >> Generation 2: [X]")
-    set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
-        -gencode arch=compute_20,code=sm_20
-    )
-else()
-  message (STATUS "  >> Generation 2: [ ]")
-endif()
+    if(CUDA_VERSION_MAJOR GREATER "4")
+	message (STATUS "  >> Generation 3: [X]")
+	set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
+            -gencode arch=compute_30,code=sm_30
+	    )
+    else()
+	message (STATUS "  >> Generation 3: [ ]")
+    endif()
 
-if(CUDA_VERSION_MAJOR GREATER "4")
-  message (STATUS "  >> Generation 3: [X]")
-    set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
-        -gencode arch=compute_30,code=sm_30
-    )
-else()
-  message (STATUS "  >> Generation 3: [ ]")
-endif()
+    if(CUDA_VERSION_MAJOR GREATER "5")
+	message (STATUS "  >> Generation 5: [X]")
+	set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
+	    -gencode arch=compute_50,code=sm_50
+	    -gencode arch=compute_50,code=compute_50
+	    )
+    else()
+	message (STATUS "  >> Generation 5: [ ]")
+    endif()
 
-
-  #MESSAGE(STATUS "<<-->>: CUDA_NVCC_FLAGS set to \"${CUDA_NVCC_FLAGS}\"")
+    #MESSAGE(STATUS "<<-->>: CUDA_NVCC_FLAGS set to \"${CUDA_NVCC_FLAGS}\"")
 else ()
-  message (STATUS "CUDA Build Level: Build system Compute Capability ONLY!")
+    message (STATUS "CUDA Build Level: Build system Compute Capability ONLY!")
 endif ()
 
