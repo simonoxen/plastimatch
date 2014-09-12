@@ -33,6 +33,11 @@ RIRE
 
   Brain MRI images with ground truth registrations
 
+SpineWeb
+  http://spineweb.digitalimaginggroup.ca
+
+  MR and CT of vertebrae
+
 MIDAS
   http://www.insight-journal.org/midas/
 

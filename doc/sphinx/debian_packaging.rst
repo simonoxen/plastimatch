@@ -1,21 +1,21 @@
-Packaging plastimatch
-=====================
+Debian packaging
+================
 This section describes the recommended build configuration for 
-building and packaging the official plastimatch tarballs 
-and binaries.
-
-Making tarball and debian package
----------------------------------
-This is done on wormwood.  
+building and packaging the official source tarballs 
+and debian packages.
 
 Setting up a build system for the first time
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
+--------------------------------------------
 #. Set DEBEMAIL and DEBFULLNAME environment variables (see http://www.debian.org/doc/manuals/maint-guide/first.en.html)
 
 #. Install the requisite packages::
 
-     sudo apt-get install devscripts pbuilder debhelper
+     sudo apt-get install devscripts pbuilder debhelper gcc-4.9
+
+   Note: devscripts must be 2.14.2 or higher, gcc must be 4.9 or higher.
+   To set up gcc, you might need to do something like this:
+
+      http://lektiondestages.blogspot.com/2013/05/installing-and-switching-gccg-versions.html
 
 #. Make and register ssh keys::
 
@@ -29,7 +29,7 @@ Setting up a build system for the first time
 
    Then go to https://alioth.debian.org/account/editsshkeys.php to register the public key.  Wait up to one hour for the key to be registered.
 
-#. Download the debian-med repository::
+#. Download the relevant directory from the debian-med repository::
 
      debcheckout --user <username> svn://svn.debian.org/debian-med/trunk/packages/<package> <package>
 
@@ -48,7 +48,7 @@ Setting up a build system for the first time
 
 
 Step 1: Preliminary testing
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------
 The preliminary testing will make sure that the tarball will 
 build under debian in step 3.
 
@@ -79,8 +79,7 @@ build under debian in step 3.
       ctest -j 4
 
 Step 2: Build the tarball
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
+-------------------------
 #. Make sure the changelog is up-to-date
 #. Update source into plastimatch-pristene
 #. Run make package_source
@@ -98,8 +97,7 @@ Then, do a few small things to get ready for next time
 #. Bump version number in doc/sphinx/conf.py
 
 Step 3: Build the debian package
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
+--------------------------------
 #. Commit changes to debian files
 
 #. Clean up files from previous version::
@@ -109,7 +107,7 @@ Step 3: Build the debian package
 #. Repackage tarball::
 
      cd trunk
-     ./debian/get-orig-source
+     uscan --verbose --force-download
 
 #. Test out by running debuild::
 
@@ -119,33 +117,14 @@ Step 3: Build the debian package
 
      run_pbuilder.pl
 
-Building a windows binary
--------------------------
-The Windows build uses the MSVC 2008 express compiler.  
-This means 32-bit (only), and no OpenMP.
 
-Third party libraries to be used::
+Rebuilding an existing debian source package
+--------------------------------------------
+Like this::
 
-  CUDA            3.0.14
-  DCMTK           3.6.0             (If mondoshot is built)
-  FFTW            3.2.2
-  ITK             3.20.1
-  wxWidgets       2.8.12            (If mondoshot is built)
+ apt-get source foo
+ cd foo-0.0.1
+ sudo apt-get build-dep foo
+ debuild -i -us -uc -b
 
-Configuration settings::
-
-  BUILD_SHARED                  ON      (this is not default)
-  PLM_CONFIG_USE_SS_IMAGE_VEC   ON      (this is default)
-  PLM_CUDA_ALL_DEVICES          ON      (this is default)
-  PLM_INSTALL_RPATH             OFF     (this is default)
-
-#. Build/install all required 3rd party libraries.
-#. Double check CPACK version number (at bottom of CMakeLists.txt)
-#. Verify that svn is not modified (i.e. do svn update; svn diff)
-#. Build plastimatch (start with a fresh cmake)
-#. Run test cases, make sure all pass
-#. Build package
-#. Test package for missing dlls by making sure plastimatch runs
-
-Windows binaries should not include the 3D Slicer plugins.  
-Those will be handled by the Slicer extension system.
+See: https://wiki.debian.org/HowToPackageForDebian

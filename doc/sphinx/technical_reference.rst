@@ -5,7 +5,8 @@ Technical reference
    :maxdepth: 2
 
    utility_programs
-   packaging
+   debian_packaging
+   windows_packaging
    special_builds
    api
    mutual_information
