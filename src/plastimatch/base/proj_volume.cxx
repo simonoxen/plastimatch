@@ -29,6 +29,10 @@ public:
             incr_r[d] = 0.;
         }
     }
+    ~Proj_volume_private () {
+        delete vol;
+        delete pmat;
+    }
 public:
     Volume *vol;
     Proj_matrix *pmat;

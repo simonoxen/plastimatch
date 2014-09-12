@@ -58,7 +58,6 @@ Volume::Volume (
     enum Volume_pixel_type vox_type, 
     int vox_planes
 ) {
-    init ();
     create (dim, offset, spacing, direction_cosines, vox_type, 
         vox_planes);
 }
@@ -68,7 +67,6 @@ Volume::Volume (
     enum Volume_pixel_type vox_type, 
     int vox_planes
 ) {
-    init ();
     create (vh, vox_type, vox_planes);
 }
 
@@ -144,6 +142,7 @@ Volume::create (
     int vox_planes
 )
 {
+    init ();
     for (int i = 0; i < 3; i++) {
 	this->dim[i] = dim[i];
 	this->offset[i] = offset[i];
