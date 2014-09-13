@@ -28,19 +28,21 @@
 #define STAGE_TRANSFORM_VECTOR_FIELD        6
 #define STAGE_TRANSFORM_ALIGN_CENTER        7
 
-#define OPTIMIZATION_NO_REGISTRATION        0
-#define OPTIMIZATION_AMOEBA                 1
-#define OPTIMIZATION_RSG                    2
-#define OPTIMIZATION_VERSOR                 3
-#define OPTIMIZATION_LBFGS                  4
-#define OPTIMIZATION_LBFGSB                 5
-#define OPTIMIZATION_DEMONS                 6
-#define OPTIMIZATION_STEEPEST               7
-#define OPTIMIZATION_QUAT                   8
-#define OPTIMIZATION_LIBLBFGS               9
-#define OPTIMIZATION_ONEPLUSONE            10
-#define OPTIMIZATION_FRPR                  11
-#define OPTIMIZATION_GRID_SEARCH           12
+enum Optimization_type {
+    OPTIMIZATION_NO_REGISTRATION,
+    OPTIMIZATION_AMOEBA,
+    OPTIMIZATION_RSG,
+    OPTIMIZATION_VERSOR,
+    OPTIMIZATION_LBFGS,
+    OPTIMIZATION_LBFGSB,
+    OPTIMIZATION_DEMONS,
+    OPTIMIZATION_STEEPEST,
+    OPTIMIZATION_QUAT,
+    OPTIMIZATION_LIBLBFGS,
+    OPTIMIZATION_ONEPLUSONE,
+    OPTIMIZATION_FRPR,
+    OPTIMIZATION_GRID_SEARCH
+};
 
 #define IMPLEMENTATION_NONE                 0
 #define IMPLEMENTATION_ITK                  1
@@ -90,6 +92,11 @@ enum Demons_gradient_type {
     MAPPED_MOVING
 };
 
+enum Gridsearch_strategy_type {
+    GRIDSEARCH_STRATEGY_GLOBAL,
+    GRIDSEARCH_STRATEGY_LOCAL
+};
+
 class Plm_image;
 class Process_parms;
 class Shared_parms;
@@ -110,7 +117,7 @@ public:
     bool finalize_stage;
     /* Generic optimization parms */
     int xform_type;
-    int optim_type;
+    Optimization_type optim_type;
     int impl_type;
     int optim_subtype;       /* used for demons types (diffeomorphic, etc.) */
     char alg_flavor;
@@ -179,6 +186,7 @@ public:
     /* Bspline parms */
     float grid_spac[3];  // absolute grid spacing in mm in x,y,z directions
     /* Native grid search */
+    Gridsearch_strategy_type gridsearch_strategy;
     float gridsearch_min_overlap[3];
     /* Landmarks */
     float landmark_stiffness; //strength of attraction between landmarks

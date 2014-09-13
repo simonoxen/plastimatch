@@ -6,7 +6,7 @@ img_out=@PLM_BUILD_TESTING_DIR@/plm-reg-trans-a.mha
 [STAGE]
 xform=translation
 impl=plastimatch
-optim=gridsearch
+optim=grid_search
 gridsearch_strategy=global
 gridsearch_min_overlap=0.8 0.8 0.8
 res=1 1 1
@@ -14,7 +14,6 @@ res=1 1 1
 [STAGE]
 xform=translation
 impl=plastimatch
-optim=local_gridsearch
-gridsearch_strategy=global
-gridsearch_min_overlap=0.8 0.8 0.8
+optim=grid_search
+gridsearch_strategy=local
 res=1 1 1

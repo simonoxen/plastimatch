@@ -608,6 +608,9 @@ Itk_registration_private::set_optimization ()
     case OPTIMIZATION_LBFGSB:
 	set_optimization_lbfgsb(registration,stage);
 	break;
+    default:
+        print_and_exit ("Unknown optimizer used in ITK optimization\n");
+        break;
     }
     switch (stage->xform_type) {
     case STAGE_TRANSFORM_TRANSLATION:

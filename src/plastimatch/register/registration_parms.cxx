@@ -373,6 +373,15 @@ Registration_parms::set_key_value (
     }
 
     /* The following keywords are only allowed in stages */
+    else if (key == "flavor" || key == "alg_flavor") {
+        if (!section_stage) goto key_only_allowed_in_section_stage;
+        if (val.length() >= 1) {
+            stage->alg_flavor = val[0];
+        }
+        else {
+            goto error_exit;
+        }
+    }
     else if (key == "resume") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
         if (string_value_true (val)) {
@@ -414,16 +423,14 @@ Registration_parms::set_key_value (
         else if (val == "amoeba") {
             stage->optim_type = OPTIMIZATION_AMOEBA;
         }
-        else if (val == "oneplusone") {
-            stage->optim_type = OPTIMIZATION_ONEPLUSONE;
+        else if (val == "demons") {
+            stage->optim_type = OPTIMIZATION_DEMONS;
         }
         else if (val == "frpr") {
             stage->optim_type = OPTIMIZATION_FRPR;
         }
-        else if (val == "demons") {
-            stage->optim_type = OPTIMIZATION_DEMONS;
-        }
-        else if (val == "grid") {
+        else if (val == "grid" || val == "grid_search"
+            || val == "gridsearch") {
             stage->optim_type = OPTIMIZATION_GRID_SEARCH;
         }
         else if (val == "lbfgs") {
@@ -437,6 +444,9 @@ Registration_parms::set_key_value (
         }
         else if (val == "nocedal") {
             stage->optim_type = OPTIMIZATION_LBFGSB;
+        }
+        else if (val == "oneplusone") {
+            stage->optim_type = OPTIMIZATION_ONEPLUSONE;
         }
         else if (val == "rsg") {
             stage->optim_type = OPTIMIZATION_RSG;
@@ -504,17 +514,6 @@ Registration_parms::set_key_value (
 #else
             stage->threading_type = THREADING_CPU_SINGLE;
 #endif
-        }
-        else {
-            goto error_exit;
-        }
-    }
-    else if (key == "alg_flavor"
-        || key == "flavor")
-    {
-        if (!section_stage) goto key_only_allowed_in_section_stage;
-        if (val.length() >= 1) {
-            stage->alg_flavor = val[0];
         }
         else {
             goto error_exit;
@@ -821,6 +820,18 @@ Registration_parms::set_key_value (
                 &(stage->gridsearch_min_overlap[0]), 
                 &(stage->gridsearch_min_overlap[1]), 
                 &(stage->gridsearch_min_overlap[2])) != 3) {
+            goto error_exit;
+        }
+    }
+    else if (key == "gridsearch_strategy") {
+        if (!section_stage) goto key_only_allowed_in_section_stage;
+        if (val == "global") {
+            stage->gridsearch_strategy = GRIDSEARCH_STRATEGY_GLOBAL;
+        }
+        else if (val == "local") {
+            stage->gridsearch_strategy = GRIDSEARCH_STRATEGY_LOCAL;
+        }
+        else {
             goto error_exit;
         }
     }
