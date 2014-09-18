@@ -161,6 +161,7 @@ bspline_optimize_lbfgsb (
     double old_best_score = DBL_MAX;
     double best_score = DBL_MAX;
     float *best_coeff = (float*) malloc (sizeof(float) * bxf->num_coeff);
+    float *lss_coeff = (float*) malloc (sizeof(float) * bxf->num_coeff);
 
     Nocedal_optimizer optimizer (bod);
 
@@ -170,6 +171,12 @@ bspline_optimize_lbfgsb (
 
     if (parms->debug) {
         fp = fopen ("scores.txt", "w");
+    }
+
+    /* The lss_coeff array keeps track of the coefficient values at 
+       the start of a line search. */
+    for (int i = 0; i < bxf->num_coeff; i++) {
+        lss_coeff[i] = bxf->coeff[i];
     }
 
     while (1) {
@@ -184,6 +191,14 @@ bspline_optimize_lbfgsb (
                 bxf->coeff[i] = (float) optimizer.x[i];
             }
 
+            /* Compute line search distance */
+            float ls_dist = 0.f;
+            for (int i = 0; i < bxf->num_coeff; i++) {
+                float d = lss_coeff[i] - bxf->coeff[i];
+                ls_dist += d*d;
+            }
+            ls_dist = sqrt (ls_dist);
+
             /* Compute cost and gradient */
             bspline_score (bod);
 
@@ -197,6 +212,8 @@ bspline_optimize_lbfgsb (
 
             /* Give a little feedback to the user */
             bspline_display_coeff_stats (bxf);
+            logfile_printf ("         "
+                "LSD %6.2f\n", ls_dist);
 
             /* Save some debugging information */
             bspline_save_debug_state (parms, bst, bxf);
@@ -228,11 +245,16 @@ bspline_optimize_lbfgsb (
             }
             old_best_score = ssd->score;
 
+            /* Update line search start location */
+            printf ("Update lss_coeff\n");
+            for (int i = 0; i < bxf->num_coeff; i++) {
+                lss_coeff[i] = (float) optimizer.x[i];
+            }
+
             /* Check iterations */
             if (bst->it >= parms->max_its) {
                 break;
             }
-
             bst->it ++;
 
         } else {
@@ -249,4 +271,5 @@ bspline_optimize_lbfgsb (
         bxf->coeff[i] = best_coeff[i];
     }
     free (best_coeff);
+    free (lss_coeff);
 }

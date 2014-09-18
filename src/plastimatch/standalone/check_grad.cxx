@@ -42,8 +42,8 @@ public:
     Check_grad_process process;
     int random;
     float random_range[2];
-
-    bool debug;
+    int control_point_index;
+    std::string debug_dir;
 
     char bsp_implementation;
     BsplineThreading bsp_threading;
@@ -68,7 +68,8 @@ public:
 	random = 0;
 	random_range[0] = 0;
 	random_range[1] = 0;
-        debug = false;
+        control_point_index = 514;  // -1;
+        debug_dir = "";
         bsp_implementation = '0';
         bsp_threading = BTHR_CPU;
         bsp_metric = BMET_MSE;
@@ -85,11 +86,8 @@ check_gradient (
     int i, j;
     float *x, *grad, *grad_fd;
     float score;
-
     FILE *fp;
-
     plm_long roi_offset[3];
-
     Bspline_optimize bod;
     Bspline_xform *bxf;
     Bspline_parms *parms = new Bspline_parms;
@@ -98,6 +96,14 @@ check_gradient (
     parms->fixed = fixed;
     parms->moving = moving;
     parms->moving_grad = moving_grad;
+    parms->implementation = options->bsp_implementation;
+
+    /* Set extra debug stuff, if desired */
+    if (options->debug_dir != "") {
+        parms->debug = 1;
+        parms->debug_dir = options->debug_dir;
+        parms->debug_stage = 0;
+    }
 
     /* Allocate memory and build lookup tables */
     printf ("Allocating lookup tables\n");
@@ -144,6 +150,9 @@ check_gradient (
 
     /* Get score and gradient */
     bspline_score (&bod);
+    if (parms->debug) {
+        bspline_save_debug_state (parms, bst, bxf);
+    }
 
     /* Save a copy of score and gradient */
     for (i = 0; i < bxf->num_coeff; i++) {
@@ -158,12 +167,12 @@ check_gradient (
     }
     if (options->process == CHECK_GRAD_PROCESS_LINE) {
         /* For each step along line */
-        for (i = options->line_range[0]; i < options->line_range[1]; i++) {
+        for (i = options->line_range[0]; i <= options->line_range[1]; i++) {
             bst->it = i;
 
             /* Already computed for i = 0 */
             if (i == 0) {
-                fprintf (fp, "%4d, %12.12f\n", i, score);
+                fprintf (fp, "%4d,%12.12f\n", i, score);
                 continue;
             }
 
@@ -174,9 +183,12 @@ check_gradient (
 
             /* Get score */
             bspline_score (&bod);
+            if (parms->debug) {
+                bspline_save_debug_state (parms, bst, bxf);
+            }
         
             /* Compute difference between grad and grad_fd */
-            fprintf (fp, "%4d, %12.12f\n", i, bst->ssd.score);
+            fprintf (fp, "%4d,%12.12f\n", i, bst->ssd.score);
 
             // JAS 04.19.2010
             // This loop could take a while to exit.  This will
@@ -188,6 +200,14 @@ check_gradient (
     } else {
         /* Loop through directions */
         for (i = 0; i < bxf->num_coeff; i++) {
+            bst->it = i;
+
+            if (options->control_point_index >= 0) {
+                if (i != options->control_point_index) {
+                    continue;
+                }
+            }
+
             /* Take a step in this direction */
             for (j = 0; j < bxf->num_coeff; j++) {
                 bxf->coeff[j] = x[j];
@@ -196,12 +216,15 @@ check_gradient (
 
             /* Get score */
             bspline_score (&bod);
+            if (parms->debug) {
+                bspline_save_debug_state (parms, bst, bxf);
+            }
         
             /* Stash score difference in grad_fd */
             grad_fd[i] = (bst->ssd.score - score) / options->step_size;
 
             /* Compute difference between grad and grad_fd */
-            fprintf (fp, "%12.12f %12.12f\n", grad[i], grad_fd[i]);
+            fprintf (fp, "%12.12f,%12.12f\n", grad[i], grad_fd[i]);
         }
     }
 
@@ -277,8 +300,8 @@ parse_fn (
 	"input bspline transform", 1, "");
     parser->add_long_option ("O", "output",
 	"output file", 1, "");
-    parser->add_long_option ("", "debug", 
-        "create various debug files", 0, "");
+    parser->add_long_option ("", "debug-dir", 
+        "create various debug files", 1, "");
     parser->add_long_option ("H", "histogram-prefix", 
         "create MI histograms files with the specified prefix", 1, "");
 
@@ -330,23 +353,23 @@ parse_fn (
     }
     parms->step_size = parser->get_float ("step");
     parser->assign_int_2 (parms->line_range, "line-range");
-    if (parser->option ("random-start")) {
+    if (parser->have_option ("random-start")) {
         parser->assign_float_2 (parms->random_range, "random-start");
     }
 
     /* Copy input filenames to parms struct */
     parms->fixed_fn = (*parser)[0];
     parms->moving_fn = (*parser)[1];
-    if (parser->option ("input-xform")) {
+    if (parser->have_option ("input-xform")) {
         parms->input_xf_fn = parser->get_string("input-xform");
     }
-    if (parser->option ("output")) {
+    if (parser->have_option ("output")) {
         parms->output_fn = parser->get_string("output");
     }
-    if (parser->option ("debug")) {
-        parms->debug = true;
+    if (parser->have_option ("debug-dir")) {
+        parms->debug_dir = parser->get_string ("debug-dir");
     }
-    if (parser->option ("histogram-prefix")) {
+    if (parser->have_option ("histogram-prefix")) {
         parms->xpm_hist_prefix 
             = parser->get_string("histogram-prefix").c_str();
     }

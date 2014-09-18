@@ -112,9 +112,9 @@ bspline_score_i_mse (
     timer->start ();
 
     if (parms->debug) {
-        char buf[1024];
-        sprintf (buf, "corr_mse_%02d.txt", it);
-        std::string fn = parms->debug_dir + "/" + buf;
+        std::string fn = string_format ("%s/%02d_corr_mse_%03d_%03d.csv",
+            parms->debug_dir.c_str(), parms->debug_stage, bst->it, 
+            bst->feval);
         corr_fp = plm_fopen (fn.c_str(), "wb");
         it ++;
     }
@@ -351,9 +351,9 @@ bspline_score_h_mse (
     FILE* corr_fp = 0;
 
     if (parms->debug) {
-        char buf[1024];
-        sprintf (buf, "corr_mse_%02d.txt", it);
-        std::string fn = parms->debug_dir + "/" + buf;
+        std::string fn = string_format ("%s/%02d_corr_mse_%03d_%03d.csv",
+            parms->debug_dir.c_str(), parms->debug_stage, bst->it, 
+            bst->feval);
         corr_fp = plm_fopen (fn.c_str(), "wb");
         it ++;
     }
@@ -570,9 +570,9 @@ bspline_score_g_mse (
     timer->start ();
 
     if (parms->debug) {
-        char buf[1024];
-        sprintf (buf, "corr_mse_%02d.txt", it);
-        std::string fn = parms->debug_dir + "/" + buf;
+        std::string fn = string_format ("%s/%02d_corr_mse_%03d_%03d.csv",
+            parms->debug_dir.c_str(), parms->debug_stage, bst->it, 
+            bst->feval);
         corr_fp = plm_fopen (fn.c_str(), "wb");
         it ++;
     }
@@ -751,149 +751,6 @@ bspline_score_g_mse (
 }
 
 /* -----------------------------------------------------------------------
-   FUNCTION: bspline_score_c_mse_no_dcos()
-
-   This is the older "fast" single-threaded MSE implementation, without 
-   direction cosine support.
-   ----------------------------------------------------------------------- */
-void
-bspline_score_c_mse_no_dcos (
-    Bspline_optimize *bod
-)
-{
-    Bspline_parms *parms = bod->get_bspline_parms ();
-    Bspline_state *bst = bod->get_bspline_state ();
-    Bspline_xform *bxf = bod->get_bspline_xform ();
-
-    Volume *fixed = parms->fixed;
-    Volume *moving = parms->moving;
-    Volume *moving_grad = parms->moving_grad;
-
-    Bspline_score* ssd = &bst->ssd;
-    plm_long rijk[3];             /* Indices within fixed image region (vox) */
-    plm_long fijk[3], fv;         /* Indices within fixed image (vox) */
-    float mijk[3];           /* Indices within moving image (vox) */
-    float fxyz[3];           /* Position within fixed image (mm) */
-    float mxyz[3];           /* Position within moving image (mm) */
-    plm_long mijk_f[3], mvf;      /* Floor */
-    plm_long mijk_r[3], mvr;      /* Round */
-    plm_long p[3];
-    plm_long q[3];
-    float diff;
-    float dc_dv[3];
-    float li_1[3];           /* Fraction of interpolant in lower index */
-    float li_2[3];           /* Fraction of interpolant in upper index */
-    float* f_img = (float*) fixed->img;
-    float* m_img = (float*) moving->img;
-    float* m_grad = (float*) moving_grad->img;
-    float dxyz[3];
-    plm_long pidx, qidx;
-    float m_val;
-
-    /* GCS: Oct 5, 2009.  We have determined that sequential accumulation
-       of the score requires double precision.  However, reduction 
-       accumulation does not. */
-    double score_acc = 0.;
-
-    static int it = 0;
-    FILE* fp = 0;
-
-    Plm_timer* timer = new Plm_timer;
-    timer->start ();
-
-    if (parms->debug) {
-        char buf[1024];
-        sprintf (buf, "dc_dv_mse_%02d.txt", it);
-        std::string fn = parms->debug_dir + "/" + buf;
-        fp = plm_fopen (fn.c_str(), "wb");
-        it++;
-    }
-
-    LOOP_THRU_ROI_Z (rijk, fijk, bxf) {
-        p[2] = REGION_INDEX_Z (rijk, bxf);
-        q[2] = REGION_OFFSET_Z (rijk, bxf);
-        fxyz[2] = GET_WORLD_COORD_Z_NO_DCOS (fijk, bxf);
-
-        LOOP_THRU_ROI_Y (rijk, fijk, bxf) {
-            p[1] = REGION_INDEX_Y (rijk, bxf);
-            q[1] = REGION_OFFSET_Y (rijk, bxf);
-            fxyz[1] = GET_WORLD_COORD_Y_NO_DCOS (fijk, bxf);
-
-            LOOP_THRU_ROI_X (rijk, fijk, bxf) {
-                int rc;
-                p[0] = REGION_INDEX_X (rijk, bxf);
-                q[0] = REGION_OFFSET_X (rijk, bxf);
-                fxyz[0] = GET_WORLD_COORD_X_NO_DCOS (fijk, bxf);
-
-                /* Get B-spline deformation vector */
-                pidx = volume_index (bxf->rdims, p);
-                qidx = volume_index (bxf->vox_per_rgn, q);
-                bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
-
-                /* Compute moving image coordinate of fixed image voxel */
-                rc = bspline_find_correspondence (mxyz, mijk, fxyz, 
-                    dxyz, moving);
-
-                /* If voxel is not inside moving image */
-                if (!rc) {
-                    continue;
-                }
-
-                /* Compute interpolation fractions */
-                li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
-
-                /* Find linear index of "corner voxel" in moving image */
-                mvf = volume_index (moving->dim, mijk_f);
-
-                /* Compute moving image intensity using linear interpolation */
-                /* Macro is slightly faster than function */
-                LI_VALUE (m_val, 
-                    li_1[0], li_2[0],
-                    li_1[1], li_2[1],
-                    li_1[2], li_2[2],
-                    mvf, m_img, moving);
-
-                /* Compute linear index of fixed image voxel */
-                fv = volume_index (fixed->dim, fijk);
-
-                /* Compute intensity difference */
-                diff = m_val - f_img[fv];
-
-                /* Compute spatial gradient using nearest neighbors */
-                mvr = volume_index (moving->dim, mijk_r);
-                dc_dv[0] = diff * m_grad[3*mvr+0];  /* x component */
-                dc_dv[1] = diff * m_grad[3*mvr+1];  /* y component */
-                dc_dv[2] = diff * m_grad[3*mvr+2];  /* z component */
-                bspline_update_grad_b (&bst->ssd, bxf, pidx, qidx, dc_dv);
-        
-                if (parms->debug) {
-                    fprintf (fp, "%u %u %u %g %g %g [%g]\n", 
-                        (unsigned int) rijk[0], 
-                        (unsigned int) rijk[1], 
-                        (unsigned int) rijk[2], 
-                        dc_dv[0], dc_dv[1], dc_dv[2],
-                        diff);
-                }
-
-                score_acc += diff * diff;
-                ssd->num_vox++;
-
-            } /* LOOP_THRU_ROI_X */
-        } /* LOOP_THRU_ROI_Y */
-    } /* LOOP_THRU_ROI_Z */
-
-    if (parms->debug) {
-        fclose (fp);
-    }
-
-    /* Normalize score for MSE */
-    bspline_score_normalize (bod, score_acc);
-
-    ssd->time_smetric = timer->report ();
-    delete timer;
-}
-
-/* -----------------------------------------------------------------------
    FUNCTION: bspline_score_c_mse()
 
    This is the older "fast" single-threaded MSE implementation, modified 
@@ -937,24 +794,28 @@ bspline_score_c_mse (
     double score_acc = 0.;
 
     static int it = 0;
+    FILE* val_fp = 0;
     FILE* dc_dv_fp = 0;
     FILE* corr_fp = 0;
 
     if (parms->debug) {
         std::string fn;
-        char buf[1024];
 
-        sprintf (buf, "dc_dv_mse_%02d.txt", it);
-        fn = parms->debug_dir + "/" + buf;
+        fn = string_format ("%s/%02d_dc_dv_mse_%03d_%03d.csv",
+            parms->debug_dir.c_str(), parms->debug_stage, bst->it, 
+            bst->feval);
         dc_dv_fp = plm_fopen (fn.c_str(), "wb");
 
-        sprintf (buf, "corr_mse_%02d.txt", it);
-        fn = parms->debug_dir + "/" + buf;
+        fn = string_format ("%s/%02d_val_mse_%03d_%03d.csv",
+            parms->debug_dir.c_str(), parms->debug_stage, bst->it, 
+            bst->feval);
+        val_fp = plm_fopen (fn.c_str(), "wb");
+
+        fn = string_format ("%s/%02d_corr_mse_%03d_%03d.csv",
+            parms->debug_dir.c_str(), parms->debug_stage, bst->it, 
+            bst->feval);
         corr_fp = plm_fopen (fn.c_str(), "wb");
         it ++;
-
-        fn = string_format ("%s/moving_grad.mha", parms->debug_dir.c_str());
-        write_mha (fn.c_str(), moving_grad);
     }
 
     Plm_timer* timer = new Plm_timer;
@@ -1028,11 +889,19 @@ bspline_score_c_mse (
                 bspline_update_grad_b (&bst->ssd, bxf, pidx, qidx, dc_dv);
         
                 if (parms->debug) {
+                    fprintf (val_fp, 
+                        "%u %u %u %g %g %g\n", 
+                        (unsigned int) fijk[0], 
+                        (unsigned int) fijk[1], 
+                        (unsigned int) fijk[2], 
+                        f_img[fv], m_val, diff);
                     fprintf (dc_dv_fp, 
                         "%u %u %u %g %g %g %g\n", 
-                        (unsigned int) fijk[0], (unsigned int) fijk[1], 
-                        (unsigned int) fijk[2], diff, dc_dv[0], 
-                        dc_dv[1], dc_dv[2]);
+                        (unsigned int) fijk[0], 
+                        (unsigned int) fijk[1], 
+                        (unsigned int) fijk[2], 
+                        diff, 
+                        dc_dv[0], dc_dv[1], dc_dv[2]);
                 }
 
                 score_acc += diff * diff;
@@ -1043,6 +912,7 @@ bspline_score_c_mse (
     } /* LOOP_THRU_ROI_Z */
 
     if (parms->debug) {
+        fclose (val_fp);
         fclose (dc_dv_fp);
         fclose (corr_fp);
     }

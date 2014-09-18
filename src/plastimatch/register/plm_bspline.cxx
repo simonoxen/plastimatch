@@ -13,6 +13,7 @@
 #include "bspline_regularize.h"
 #include "bspline_parms.h"
 #include "logfile.h"
+#include "mha_io.h"
 #include "plm_bspline.h"
 #include "plm_image_header.h"
 #include "plm_image.h"
@@ -22,6 +23,7 @@
 #include "registration_parms.h"
 #include "shared_parms.h"
 #include "stage_parms.h"
+#include "string_util.h"
 #include "volume.h"
 #include "volume_header.h"
 #include "volume_resample.h"
@@ -357,6 +359,12 @@ Plm_bspline::initialize ()
         bsp_parms->debug_stage = stage->stage_no;
         logfile_printf ("Set debug directory to %s (%d)\n", 
             bsp_parms->debug_dir.c_str(), bsp_parms->debug_stage);
+
+        /* Write moving grad */
+        std::string fn;
+        fn = string_format ("%s/%02d_moving_grad.mha", 
+            bsp_parms->debug_dir.c_str(), bsp_parms->debug_stage);
+        write_mha (fn.c_str(), d_ptr->moving_grad.get());
     }
 }
 
