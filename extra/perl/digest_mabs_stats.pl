@@ -1,10 +1,13 @@
 #! /usr/bin/perl
+use Getopt::Long;
+
+my $display_failures = 0;
 
 sub digest_file {
     my ($fn, $reghash, $seghash) = @_;
     open (FP, "<$fn") or die "Couldn't open file $fn for read";
     while (<FP>) {
-	($target,$_) = split (',',$_,2);
+	($target,$atlas,$_) = split (',',$_,3);
 	$reg = "";
 	$structure = "";
 	$rho = -1;
@@ -89,6 +92,9 @@ sub digest_file {
 	    $hd95_sum = $hd95;
 	}
 	$reghash->{$reg_key} = "$num,$dice_sum,$hd95_sum";
+	if ($display_failures && $dice < 1.1) {
+	    print "$dice $reg $target $atlas $structure\n";
+	}
 	
 	# For segmentation evaluation
 	if ($thresh > -1) {
@@ -123,10 +129,14 @@ sub digest_file {
 ###########################################################################
 ##  MAIN
 ###########################################################################
+$usage = "Usage: digest_mabs_stats.pl [options] dice_file | training_dir\n";
 
 if ($#ARGV < 0) {
-    die "Usage: digest_mabs_stats.pl dice_file | training_dir\n";
+    die $usage;
 }
+
+GetOptions ("display-failures" => \$display_failures)
+    or die $usage;
 
 $dice_source = shift;
 
@@ -160,6 +170,10 @@ if (-f $dice_source) {
     closedir DIR;
 } else {
     die "Can't open \"$dice_source\" for parsing";
+}
+
+if ($display_failures) {
+    exit;
 }
 
 $best_reg = "";
@@ -207,8 +221,8 @@ foreach $parms (sort keys %seg_dice_hash) {
 	$best_seg_score = $avg_dice;
     }
 }
-print "seg: $best_seg,$best_seg_score\n";
 if (-d $dice_source && $best_seg ne "") {
+    print "seg: $best_seg,$best_seg_score\n";
     ## Update training file
     ($rho,$sigma,$minsim,$thresh) = split (',', $best_seg);
 
