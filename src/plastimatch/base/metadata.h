@@ -8,30 +8,11 @@
 #include <map>
 #include <string>
 
-#if defined (commentout)
-namespace gdcm {
-    class File;
-};
-#endif
-
 class PLMBASE_API Metadata
 {
 public:
     Metadata ();
     ~Metadata ();
-
-public:
-#if defined (commentout)
-    /* GCS: This is idiotic, but I guess it is what it is.  To avoid string 
-       copying, and simultaneously to return the empty string in the 
-       event that a key does not exist in the map, I need the equivalent 
-       of the string literal "" for std::string.  So here is where it is 
-       defined.  N.b. I looked into the possibility of returning 
-       std::string and using return value optimization, but that is 
-       apparently not possible due to the fact that different strings 
-       are returned depending whether the key is found or not. */
-    static std::string KEY_NOT_FOUND;
-#endif
 
 public:
     /* GCS: Note use of unsigned short instead of uint16_t, because of 
@@ -51,11 +32,11 @@ public:
     void
     set_metadata (unsigned short key1, unsigned short key2,
         const std::string& val);
-
     void set_parent (Metadata *parent) {
         m_parent = parent;
     }
     void create_anonymous ();
+    void print_metadata () const;
 
 public:
     Metadata *m_parent;

@@ -7,15 +7,10 @@
 #include <string.h>
 #include <gdcmFile.h>
 
-#include "bstrlib.h"
 #include "dicom_util.h"
+#include "logfile.h"
 #include "make_string.h"
 #include "metadata.h"
-
-#if defined (commentout)
-std::string Metadata::KEY_NOT_FOUND = "";
-static std::string KEY_NOT_FOUND = "PLM_KEY_NOT_FOUND";
-#endif
 
 static std::string KEY_NOT_FOUND = "";
 
@@ -114,6 +109,16 @@ Metadata::set_metadata (unsigned short key1, unsigned short key2,
     const std::string& val)
 {
     set_metadata (make_key (key1, key2), val);
+}
+
+void
+Metadata::print_metadata () const
+{
+    std::map<std::string, std::string>::const_iterator it;
+    lprintf ("Metadata\n");
+    for (it = m_data.begin(); it != m_data.end(); it++) {
+        lprintf ("%s | %s\n", it->first.c_str(), it->second.c_str());
+    }
 }
 
 #if defined (commentout)
