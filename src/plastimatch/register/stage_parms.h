@@ -97,6 +97,11 @@ enum Gridsearch_strategy_type {
     GRIDSEARCH_STRATEGY_LOCAL
 };
 
+enum Gridsearch_step_size_type {
+    GRIDSEARCH_STEP_SIZE_AUTO,
+    GRIDSEARCH_STEP_SIZE_MANUAL
+};
+
 class Plm_image;
 class Process_parms;
 class Shared_parms;
@@ -188,6 +193,8 @@ public:
     /* Native grid search */
     Gridsearch_strategy_type gridsearch_strategy;
     float gridsearch_min_overlap[3];
+    Gridsearch_step_size_type gridsearch_step_size_type;
+    float gridsearch_step_size[3];
     /* Landmarks */
     float landmark_stiffness; //strength of attraction between landmarks
     char landmark_flavor;

@@ -8,3 +8,4 @@ xform=translation
 impl=plastimatch
 gridsearch_min_overlap=0.8 0.8 0.8
 res=1 1 1
+stages=2

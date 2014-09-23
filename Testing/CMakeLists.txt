@@ -3002,8 +3002,8 @@ plm_add_test (
 plmtest_check_interval ("plm-reg-trans-b-check"
   "${PLM_BUILD_TESTING_DIR}/plm-reg-trans-b-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "-661.35"
-  "-661.25"
+  "-661.75"
+  "-661.65"
   )
 set_property (TEST plm-reg-trans-b APPEND PROPERTY DEPENDS gauss-1)
 set_tests_properties (plm-reg-trans-b-stats PROPERTIES 

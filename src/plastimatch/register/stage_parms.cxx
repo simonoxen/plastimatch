@@ -123,6 +123,10 @@ Stage_parms::Stage_parms ()
     gridsearch_min_overlap[0] = 0.5;
     gridsearch_min_overlap[1] = 0.5;
     gridsearch_min_overlap[2] = 0.5;
+    gridsearch_step_size_type = GRIDSEARCH_STEP_SIZE_AUTO;
+    gridsearch_step_size[0] = 10;
+    gridsearch_step_size[1] = 10;
+    gridsearch_step_size[2] = 10;
     /* Landmarks */
     landmark_stiffness = 1.0;
     landmark_flavor = 'a';
