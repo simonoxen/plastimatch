@@ -16,9 +16,9 @@ class Bspline_state;
 class Bspline_xform;
 class Volume;
 
-PLMREGISTER_C_API Volume* bspline_compute_vf (const Bspline_xform* bxf);
+PLMREGISTER_API Volume* bspline_compute_vf (const Bspline_xform* bxf);
 void bspline_display_coeff_stats (Bspline_xform* bxf);
-PLMREGISTER_C_API void bspline_score (Bspline_optimize *bod);
+PLMREGISTER_API void bspline_score (Bspline_optimize *bod);
 void bspline_update_grad (
     Bspline_state *bst, 
     Bspline_xform* bxf, 
@@ -41,7 +41,7 @@ void report_score (
 
 /* Debugging routines */
 void dump_gradient (Bspline_xform* bxf, Bspline_score* ssd, char* fn);
-void bspline_save_debug_state (
+PLMREGISTER_API void bspline_save_debug_state (
     Bspline_parms *parms, 
     Bspline_state *bst, 
     Bspline_xform* bxf
