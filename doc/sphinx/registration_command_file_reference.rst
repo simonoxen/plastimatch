@@ -2,38 +2,58 @@
 
 Registration command file reference
 -----------------------------------
+The registration 
+command file uses the "ini file" format.  There are two 
+possible sections: GLOBAL, and STAGE.  There should be exactly 
+one GLOBAL section, and there can be multiple STAGE sections.
 
-The parameter file has two sections: a GLOBAL section at the top of
-the file, and one or more STAGE section. Parameters such as input
-files are put only in the GLOBAL section. Output files can be put in
-the GLOBAL section or any STAGE section (which will write out
-intermediate output).
+In general, the GLOBAL section defines the input files and 
+output files for a single registration.  Each STAGE section 
+defines a single processing stage within a registration 
+pipeline.  
+
+Global options
+==============
+The GLOBAL section has only a limited set of allowed parameters.
+However, some GLOBAL parameters are also allowed in a STAGE section, 
+as noted below.
 
 .. list-table::
    :widths: 20 20 60
    :header-rows: 1
 
    * - option
-     - stage
+     - type
      - value
    * - fixed
      - GLOBAL
-     - Filename of fixed image
+     - Filename of fixed (reference) image
    * - moving
      - GLOBAL
-     - Filename of moving image
-   * - fixed_mask
-     - GLOBAL
+     - Filename of moving (target) image
+   * - fixed_roi
+     - GLOBAL, STAGE
      - Filename of a binary mask for the fixed image; 
        only pixels which are non-zero in this image will contribute 
        to the registration result
-   * - moving_mask
-     - GLOBAL
+   * - moving_roi
+     - GLOBAL, STAGE
      - Filename of a binary mask for the moving image;
        only pixels which are non-zero in this image will contribute 
        to the registration result
-   * - xform_in
+   * - fixed_landmarks
      - GLOBAL, STAGE
+     - Filename of a list of landmark locations within the fixed image
+       which can be used to guide the registration
+   * - moving_landmarks
+     - GLOBAL, STAGE
+     - Filename of a list of landmark locations within the moving image
+       which can be used to guide the registration
+   * - warped_landmarks
+     - GLOBAL, STAGE
+     - Filename of output landmarks, warped by the registration result
+   * - xform_in
+     - GLOBAL
      - Initial guess for transform
    * - xform_out
      - GLOBAL, STAGE
@@ -55,59 +75,69 @@ intermediate output).
      - Data type of the output image.  Either “auto” (default), or 
        an image type string: char, uchar, short, ushort, int, uint, 
        float, or double.
-   * - background_max
-     - GLOBAL
-     - -1200.0 (default) Units: image intensity
-       This is a threshold value that is used to automatically 
-       determine the registration region of interest.
 
-Optimization parameters.  There are three key parameters that decide
-which algorithm is used for optimization. One additional parameter( optim_subtype) is
-only available for ITK demons and determines which ITK demons algorithm is used: 
+Stage options
+=============
+Each STAGE section generates a computational stage within a 
+computational sequence.  Therefore, a command file with 
+three STAGE sections will have three registration stages.
+The stages are executed in the same order as they appear in the 
+command file.  The registration result from a previous stage 
+is passed as the starting point to the next stage.
+After all three stages are complete, the output files are generated.
+
+As a general rule, all parameters are optional.  When they are specified, 
+they are used.  When they are not specified, they are set automatically.
+There are different ways they are automatically set.
+
+* Any parameters not specified in the first stage are given default values.
+* Any parameters not specified in subsequent stages are given the 
+  same value they had in the previous stage.
+* Some parameters can have a value of "auto."  That means the value 
+  can be chosen dynamically based on registration inputs 
+  or optimization results.
+
+A registration stage is classified according to its transform (xform), 
+its implementation, and its optimizer.  Only certain combinations 
+are possible, as shown in the following table.
 
 .. list-table::
-   :widths: 20 40 40 40
+   :widths: 20 40 40
    :header-rows: 1
 
    * - xform
-     - optim
      - impl
-     - optim_subtype
+     - optim
    * - align_center
+     - itk
      - N/A
-     - itk
-     - ---
    * - translation
-     - rsg, amoeba
      - itk
-     - ---
-   * - rigid
-     - versor, amoeba
+     - amoeba, rsg
+   * - 
+     - plastimatch
+     - grid_search
+   * - rigid (default)
      - itk
-     - ---
+     - amoeba, versor (default)
    * - affine
-     - rsg, amoeba
      - itk
-     - ---
-   * - vf
-     - demons
-     - plastimatch, itk
-     - fsf(default),diffeomorphic,log_domain,sym_log_domain (only for impl=ITK) 
+     - amoeba, rsg
    * - bspline
-     - steepest, lbfgs, lbfgsb
-     - plastimatch, itk
-     - ---
-
-Notes:
-
-#. Default values are: xform=rigid, optim=versor, impl=plastimatch.
-#. Amoeba is reported not to work well.
-#. B-spline with steepest descent optimization is only supported on
-   plastimatch implementation.
-#. B-spline with lbfgs optimization is only supported on itk implementation.
+     - itk
+     - lbfgs, lbfgsb
+   * - 
+     - plastimatch (default)
+     - lbfgsb (default), steepest
+   * - vf
+     - itk
+     - demons
+   * - 
+     - plastimatch
+     - demons
 
 The following specific parameters are used to refine the optimization.
-Depending on the choice of xform, optim, and impl, a different set of
+Depending on the choice of xform, impl, and optim a different set of
 specific parameters are available. 
 
 .. list-table::
@@ -119,17 +149,23 @@ specific parameters are available.
      - default
      - units
      - description
-   * - background_val
+   * - background_max
      - any+any+any
      - -999.0
      - image intensity
-     - (needs description)
+     - This is a threshold value that is used to automatically 
+       determine the registration region of interest.
    * - convergence_tol
      - any+not demons+any
      - 1e-6
      - score
      - Stop optimization if change in score between iterations 
        falls below this value
+   * - default_value
+     - any+any+any
+     - -999.0
+     - image intensity
+     - (needs description)
    * - demons_acceleration
      - vf+demons+plastimatch
      - 1.0
@@ -154,7 +190,8 @@ specific parameters are available.
      - vf+demons+itk
      - symmetric
      - enumeration
-     - Type of gradient that will be used to compute update force, choose from {symmetric,fixed,warped_moving,mapped_moving}
+     - Type of gradient that will be used to compute update force, choose 
+       from {symmetric, fixed, warped_moving, mapped_moving}
    * - demons_smooth_update_field
      - vf+demons+itk
      - false
@@ -180,27 +217,6 @@ specific parameters are available.
      - 1
      - mm
      - maximum update step length. 0 implies no restriction 
-   * - histoeq
-     - vf+demons+itk
-     - 0
-     - boolean
-     - specify whether or not to equalize intensity histograms before 
-       registration
-   * - num_hist_levels_equal
-     - vf+demons+itk
-     - 1000
-     - unsigned int
-     - set number of histogram levels for histogram equalization
-   * - num_matching_points
-     - vf+demons+itk
-     - 500
-     - unsigned int
-     - set number of histogram levels for histogram equalization
-   * - thresh_mean_intensity
-     - vf+demons+itk
-     - 0
-     - boolean
-     - Set the threshold at mean intensity flag. If true, only source (reference) pixels which are greater than the mean source (reference) intensity is used in the histogram matching. If false, all pixels are used.
    * - grad_tol
      - any+{lbfgs}+itk
      - 1.5
@@ -208,15 +224,6 @@ specific parameters are available.
      - Gradient convergence tolerance for LBFGS optimizer.
        The optimizer can be asked to stop when the gradient
        magnitude is below this number.
-   * - pgtol
-     - any+{lbfgsb}+any
-     - 1e-5
-     - score per unit parameter
-     - Projected gradient tolerance for LBFGSB optimizer.
-       The optimizer can be asked to stop when the projected gradient
-       is below this number.  The projected gradient is defined 
-       as max{proj g_i | i = 1, ..., n} 
-       where proj g_i is the ith component of the projected gradient.
    * - grid_spac
      - bspline+any+any
      - [20 20 20]
@@ -224,11 +231,41 @@ specific parameters are available.
      - Spacing between control points in B-spline grid. 
        The minimum spacing is 4*(Pixel Size); if a smaller size is 
        specified, it will be adjusted upward.
+   * - gridsearch_min_overlap
+     - translation+grid_search +plastimatch
+     - [0.5 0.5 0.5]
+     - percent
+     - Minimum amount of overlap required during grid search.  
+       The smaller of the two images must overlap the larger image 
+       by at least this amount in three dimensions.
+   * - histoeq
+     - vf+demons+itk
+     - 0
+     - boolean
+     - specify whether or not to equalize intensity histograms before 
+       registration
+   * - mattes_fixed_minVal, mattes_fixed_maxVal
+     - bspline+any+itk
+     - 0
+     - image intensity
+     - Min and max intensity values of intensity range for fixed image 
+       used for MI calculation.
+       If values are not set by user min and max values will be calculated 
+       from images. Only used for optimized version of itk implementation.
+   * - mattes_moving_minVal, mattes_moving_maxVal
+     - bspline+any+itk
+     - 0
+     - image intensity
+     - Min and max intensity values of intensity range for moving image 
+       used for MI calculation.
+       If values are not set by user min and max values will be calculated 
+       from images. Only used for optimized version of itk implementation.
    * - max_its
      - any+any+any
      - 25
      - iterations
-     - (needs description)
+     - Maximum number of iterations (or sometimes function evaluations) 
+       performed within a stage.
    * - max_step
      - any+{versor, rsg}+itk
      - 10.0
@@ -239,25 +276,13 @@ specific parameters are available.
      - mse
      - string
      - Cost function metric to be optimized.  
-       The choices are {mse, mi, mattes} when impl=itk, and {mse, mi} 
+       The choices are {mse, mi, nmi, mattes} when impl=itk, and {mse, mi} 
        when impl=plastimatch.
    * - mi_histogram_bins
      - any+any+any
      - 20
      - number of histogram bins
      - Only used for plastimatch mi metric, and itk mattes metric.
-   * - mattes_fixed_minVal, mattes_fixed_maxVal
-     - bspline+any+itk
-     - 0
-     - image intensity
-     - Min and max intensity values of intensity range for fixed image used for MI calculation.
-       If values are not set by user min and max values will be calculated from images. Only used for optimized version of itk implementation.
-   * - mattes_moving_minVal, mattes_moving_maxVal
-     - bspline+any+itk
-     - 0
-     - image intensity
-     - Min and max intensity values of intensity range for moving image used for MI calculation.
-       If values are not set by user min and max values will be calculated from images. Only used for optimized version of itk implementation.
    * - min_its
      - any+any+any
      - 2
@@ -268,6 +293,16 @@ specific parameters are available.
      - 0.5
      - scaled parameters
      - (needs description)
+   * - num_hist_levels_equal
+     - vf+demons+itk
+     - 1000
+     - unsigned int
+     - set number of histogram levels for histogram equalization
+   * - num_matching_points
+     - vf+demons+itk
+     - 500
+     - unsigned int
+     - set number of histogram levels for histogram equalization
    * - num_samples
      - any+any+itk
      - -1
@@ -281,6 +316,34 @@ specific parameters are available.
      - percent
      - Percent of voxels to randomly sample to score the cost function. 
        Only used for itk mattes metric.
+   * - num_substages
+     - translation+grid_search +plastimatch
+     - 1
+     - stages
+     - Number of times to refine the grid search.  By default, the 
+       first search is global, and the subsequent searches refine the 
+       result within a local region.
+   * - optim_subtype
+     - vf+demons+itk
+     - fsf
+     - string
+     - Demons algorithm subtype used in ITK implementation.
+       Values are {fsf(default), diffeomorphic, log_domain, sym_log_domain}.
+   * - pgtol
+     - any+{lbfgsb}+any
+     - 1e-5
+     - score per unit parameter
+     - Projected gradient tolerance for LBFGSB optimizer.
+       The optimizer can be asked to stop when the projected gradient
+       is below this number.  The projected gradient is defined 
+       as max{proj g_i | i = 1, ..., n} 
+       where proj g_i is the ith component of the projected gradient.
+   * - regularization
+     - bspline+any+plastimatch
+     - analytic
+     - string
+     - Implmentation variant for plastimatch B-spline regularization.
+       Choices are { analytic, numeric, semi_analytic }.
    * - regularization_lambda
      - bspline+any+plastimatch
      - 0
@@ -334,3 +397,17 @@ specific parameters are available.
        The choices are {cuda, opencl, openmp, single}.  
        If an unsupported threading choice is made (such as cuda with 
        demons), the nearest valid choice will be used.
+   * - thresh_mean_intensity
+     - vf+demons+itk
+     - 0
+     - boolean
+     - Set the threshold at mean intensity flag. If true, only source 
+       (reference) pixels which are greater than the mean source 
+       (reference) intensity is used in the histogram matching. 
+       If false, all pixels are used.
+   * - translation_scale_factor
+     - any+{rigid, affine}+itk
+     - 1000
+     - ratio
+     - Sets the relative scale of translation when compared to 
+       rotation, scaling, and shearing.
