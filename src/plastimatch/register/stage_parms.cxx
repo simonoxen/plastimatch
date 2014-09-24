@@ -35,9 +35,11 @@ Stage_parms::Stage_parms ()
 
     /* Stage # */
     stage_no = -1;
-    /* Stuff for resuming stage */
+    /* Stage resume? */
     resume_stage = false;
     finalize_stage = false;
+    /* Number of substages */
+    num_substages = 1;
     /* Generic optimization parms */
     xform_type = STAGE_TRANSFORM_VERSOR;
     optim_type = OPTIMIZATION_VERSOR;
@@ -146,6 +148,10 @@ Stage_parms::Stage_parms (const Stage_parms& s)
 
     /* Stage # */
     stage_no = s.stage_no;
+    /* Stage resume? */
+    /* ** Do not copy */
+    /* Number of substages */
+    num_substages = s.num_substages;
     /* Generic optimization parms */
     xform_type = s.xform_type;
     optim_type = s.optim_type;
@@ -254,7 +260,7 @@ Stage_parms::~Stage_parms ()
 }
 
 Stage_type 
-Stage_parms::get_stage_type ()
+Stage_parms::get_stage_type () const
 {
     return d_ptr->stage_type;
 }

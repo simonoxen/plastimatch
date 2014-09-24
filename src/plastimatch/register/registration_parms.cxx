@@ -33,6 +33,7 @@ public:
     std::string fixed_fn;
     std::list<Stage_parms*> stages;
     Shared_parms *shared;
+    Stage_parms auto_parms;
 public:
     Registration_parms_private () {
         shared = new Shared_parms;
@@ -373,6 +374,12 @@ Registration_parms::set_key_value (
     }
 
     /* The following keywords are only allowed in stages */
+    else if (key == "num_substages") {
+        if (!section_stage) goto key_only_allowed_in_section_stage;
+        if (sscanf (val.c_str(), "%d", &stage->num_substages) != 1) {
+            goto error_exit;
+        }
+    }
     else if (key == "flavor" || key == "alg_flavor") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
         if (val.length() >= 1) {
@@ -833,6 +840,11 @@ Registration_parms::set_key_value (
         }
         else {
             goto error_exit;
+        }
+    }
+    else if (key == "stages") {
+        if (!section_stage) goto key_only_allowed_in_section_stage;
+        if (val == "global") {
         }
     }
     else if (key == "landmark_stiffness") {

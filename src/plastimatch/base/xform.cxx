@@ -35,7 +35,7 @@
 static void
 itk_bsp_set_grid_img (Xform *xf,
     const Plm_image_header* pih,
-    float* grid_spac);
+    const float* grid_spac);
 static void load_gpuit_bsp (Xform *xf, const char* fn);
 static void itk_xform_load (Xform *xf, const char* fn);
 
@@ -655,7 +655,7 @@ bsp_grid_from_img_grid (
     BsplineTransformType::RegionType& bsp_region,       /* Output */
     BsplineTransformType::DirectionType& bsp_direction, /* Output */
     const Plm_image_header* pih,                        /* Input */
-    float* grid_spac)                                   /* Input */
+    const float* grid_spac)                                   /* Input */
 {
     BsplineTransformType::RegionType::SizeType bsp_size;
 
@@ -682,7 +682,7 @@ static void
 itk_bsp_set_grid_img (
     Xform *xf,
     const Plm_image_header* pih,
-    float* grid_spac)
+    const float* grid_spac)
 {
     BsplineTransformType::OriginType bsp_origin;
     BsplineTransformType::SpacingType bsp_spacing;
@@ -703,7 +703,7 @@ xform_trn_to_itk_bsp_bulk (
     Xform *xf_out, 
     const Xform* xf_in,
     const Plm_image_header* pih,
-    float* grid_spac)
+    const float* grid_spac)
 {
     xform_itk_bsp_init_default (xf_out);
     itk_bsp_set_grid_img (xf_out, pih, grid_spac);
@@ -715,7 +715,7 @@ xform_vrs_to_itk_bsp_bulk (
     Xform *xf_out, 
     const Xform* xf_in,
     const Plm_image_header* pih,
-    float* grid_spac)
+    const float* grid_spac)
 {
     xform_itk_bsp_init_default (xf_out);
     itk_bsp_set_grid_img (xf_out, pih, grid_spac);
@@ -727,7 +727,7 @@ xform_quat_to_itk_bsp_bulk (
     Xform *xf_out, 
     const Xform* xf_in,
     const Plm_image_header* pih,
-    float* grid_spac)
+    const float* grid_spac)
 {
     xform_itk_bsp_init_default (xf_out);
     itk_bsp_set_grid_img (xf_out, pih, grid_spac);
@@ -739,7 +739,7 @@ xform_aff_to_itk_bsp_bulk (
     Xform *xf_out, 
     const Xform* xf_in,
     const Plm_image_header* pih,
-    float* grid_spac)
+    const float* grid_spac)
 {
     xform_itk_bsp_init_default (xf_out);
     itk_bsp_set_grid_img (xf_out, pih, grid_spac);
@@ -751,7 +751,7 @@ static void
 xform_any_to_itk_bsp_nobulk (
     Xform *xf_out, Xform* xf_in,
     const Plm_image_header* pih,
-    float* grid_spac)
+    const float* grid_spac)
 {
     int d;
     Xform xf_tmp;
@@ -911,7 +911,7 @@ xform_itk_bsp_to_itk_bsp (
     Xform *xf_out, 
     const Xform* xf_in,
     const Plm_image_header* pih,
-    float* grid_spac)
+    const float* grid_spac)
 {
     BsplineTransformType::Pointer bsp_old = xf_in->get_itk_bsp();
 
@@ -1076,7 +1076,7 @@ xform_gpuit_bsp_to_itk_bsp (
     const Xform* xf_in,
     const Plm_image_header* pih,
     const ImageRegionType* roi, /* Not yet used */
-    float* grid_spac)
+    const float* grid_spac)
 {
     Xform xf_tmp;
 
@@ -1248,7 +1248,7 @@ xform_gpuit_vf_to_itk_vf (
    Conversion to gpuit_bsp
    ----------------------------------------------------------------------- */
 static Bspline_xform*
-create_gpuit_bxf (Plm_image_header* pih, float* grid_spac)
+create_gpuit_bxf (Plm_image_header* pih, const float* grid_spac)
 {
     int d;
     Bspline_xform* bxf = new Bspline_xform;
@@ -1285,7 +1285,7 @@ void
 xform_any_to_gpuit_bsp (
     Xform* xf_out, Xform* xf_in, 
     Plm_image_header* pih, 
-    float* grid_spac)
+    const float* grid_spac)
 {
     Xform xf_tmp;
     ImageRegionType roi;
@@ -1319,7 +1319,7 @@ xform_gpuit_bsp_to_gpuit_bsp (
     Xform* xf_out, 
     Xform* xf_in, 
     Plm_image_header* pih, 
-    float* grid_spac
+    const float* grid_spac
 )
 {
     Xform xf_tmp;
@@ -1352,7 +1352,7 @@ xform_gpuit_vf_to_gpuit_bsp (
     Xform* xf_out, 
     Xform* xf_in, 
     Plm_image_header* pih, 
-    float* grid_spac
+    const float* grid_spac
 )
 {
     /* Convert gpuit_vf to itk_vf, then convert itk_vf to gpuit_bsp */
@@ -1584,7 +1584,7 @@ xform_to_itk_bsp (
     Xform *xf_out, 
     const Xform *xf_in, 
     Plm_image_header* pih,
-    float* grid_spac
+    const float* grid_spac
 )
 {
     BsplineTransformType::Pointer bsp;
@@ -1632,7 +1632,7 @@ Xform::Pointer
 xform_to_itk_bsp (
     const Xform::Pointer& xf_in, 
     Plm_image_header* pih,
-    float* grid_spac
+    const float* grid_spac
 )
 {
     Xform::Pointer xf_out = Xform::New ();
@@ -1644,7 +1644,7 @@ void
 xform_to_itk_bsp_nobulk (
     Xform *xf_out, Xform *xf_in, 
     Plm_image_header* pih,
-    float* grid_spac)
+    const float* grid_spac)
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:
@@ -1688,7 +1688,7 @@ Xform::Pointer
 xform_to_itk_bsp_nobulk (
     const Xform::Pointer& xf_in, 
     Plm_image_header* pih,
-    float* grid_spac
+    const float* grid_spac
 )
 {
     Xform::Pointer xf_out = Xform::New ();
@@ -1758,7 +1758,7 @@ xform_to_itk_vf (const Xform::Pointer& xf_in, Plm_image_header* pih)
 
 void
 xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih, 
-    float* grid_spac)
+    const float* grid_spac)
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:

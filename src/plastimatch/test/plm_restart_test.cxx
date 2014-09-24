@@ -78,8 +78,8 @@ int main ()
     r.wait_for_complete ();
 #endif
 
-    r.do_registration_pure_old ();
 #if defined (commentout)    
+    r.do_registration_pure_old ();
 #endif
 
     return 0;

@@ -293,7 +293,9 @@ volume_resample_nn (
 }
 
 Volume::Pointer
-volume_subsample_vox (const Volume::Pointer& vol_in, float* sampling_rate)
+volume_subsample_vox (
+    const Volume::Pointer& vol_in, 
+    const float* sampling_rate)
 {
     int d;
     plm_long dim[3];
@@ -311,7 +313,9 @@ volume_subsample_vox (const Volume::Pointer& vol_in, float* sampling_rate)
 }
 
 Volume::Pointer
-volume_subsample_vox_nn (const Volume::Pointer& vol_in, float* sampling_rate)
+volume_subsample_vox_nn (
+    const Volume::Pointer& vol_in, 
+    const float* sampling_rate)
 {
     int d;
     plm_long dim[3];
@@ -331,7 +335,7 @@ volume_subsample_vox_nn (const Volume::Pointer& vol_in, float* sampling_rate)
 Volume::Pointer
 volume_subsample_vox_legacy (
     const Volume::Pointer& vol_in, 
-    float* sampling_rate)
+    const float* sampling_rate)
 {
     int d;
     plm_long dim[3];
@@ -353,7 +357,7 @@ volume_subsample_vox_legacy (
 Volume::Pointer
 volume_subsample_vox_legacy_nn (
     const Volume::Pointer& vol_in, 
-    float* sampling_rate)
+    const float* sampling_rate)
 {
     int d;
     plm_long dim[3];

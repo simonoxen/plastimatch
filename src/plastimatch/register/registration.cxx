@@ -309,15 +309,14 @@ save_output (
     }
 }
 
-static Xform::Pointer
-do_registration_stage (
-    Registration_parms::Pointer& regp,     /* Input */
-    Registration_data::Pointer& regd,      /* Input */
-    const Xform::Pointer& xf_in,  /* Input */
+Xform::Pointer
+Registration::do_registration_stage (
     Stage_parms* stage            /* Input */
 )
 {
-    const Shared_parms *shared = stage->get_shared_parms();
+    Registration_data::Pointer regd = d_ptr->rdata;
+    Registration_parms::Pointer regp = d_ptr->rparms;
+    const Xform::Pointer& xf_in = d_ptr->xf_in;
 
     Xform::Pointer xf_out = Xform::New ();
     lprintf ("[1] xf_in->m_type = %d, xf_out->m_type = %d\n", 
@@ -335,7 +334,8 @@ do_registration_stage (
         if (stage->impl_type == IMPLEMENTATION_ITK) {
             xf_out = do_itk_registration_stage (regd.get(), xf_in, stage);
         } else {
-            xf_out = do_gpuit_bspline_stage (regp.get(), regd.get(), xf_in, stage);
+            xf_out = do_gpuit_bspline_stage (regp.get(), regd.get(), 
+                xf_in, stage);
         }
     }
     else if (stage->xform_type == STAGE_TRANSFORM_ALIGN_CENTER) {
@@ -361,12 +361,6 @@ do_registration_stage (
 
     lprintf ("[2] xf_out->m_type = %d, xf_in->m_type = %d\n", 
         xf_out->m_type, xf_in->m_type);
-
-    /* Save intermediate output */
-    save_output (regd.get(), xf_out, stage->xf_out_fn, stage->xf_out_itk, 
-        stage->img_out_fmt, stage->img_out_type, 
-        stage->default_value, stage->img_out_fn, stage->vf_out_fn,
-        shared->warped_landmarks_fn);
 
     return xf_out;
 }
@@ -463,9 +457,9 @@ Registration::run_main_thread ()
     std::list<Stage_parms*>& stages = regp->get_stages();
     std::list<Stage_parms*>::iterator it;
     for (it = stages.begin(); it != stages.end(); it++) {
-        Stage_parms* sp = *it;
-
-        if (sp->get_stage_type() == STAGE_TYPE_PROCESS) {
+        Stage_parms* stage = *it;
+        const Shared_parms *shared = stage->get_shared_parms();
+        if (stage->get_stage_type() == STAGE_TYPE_PROCESS) {
 
 #if defined (commentout)
             int non_zero, num_vox;
@@ -475,7 +469,7 @@ Registration::run_main_thread ()
             printf ("min = %g, max = %g\n", min_val, max_val);
 #endif
 
-            const Process_parms::Pointer& pp = sp->get_process_parms ();
+            const Process_parms::Pointer& pp = stage->get_process_parms ();
             pp->execute_process (regd);
 
 #if defined (commentout)
@@ -484,23 +478,34 @@ Registration::run_main_thread ()
             printf ("min = %g, max = %g\n", min_val, max_val);
 #endif
 
-        } else if (sp->get_stage_type() == STAGE_TYPE_REGISTER) {
+        } else if (stage->get_stage_type() == STAGE_TYPE_REGISTER) {
 
             /* Check if parent wants us to pause */
             d_ptr->master_slave.slave_grab_resource ();
 
-            /* Swap xf_in and xf_out.  Memory for previous xf_in 
-               gets released at this time. */
-            d_ptr->xf_in = d_ptr->xf_out;
-
             /* Load stage images */
-            regd->load_stage_input_files (sp);
+            regd->load_stage_input_files (stage);
 
             /* Run registation, results are stored in xf_out */
             printf ("Doing registration stage\n");
 
-            d_ptr->xf_out = do_registration_stage (
-                regp, regd, d_ptr->xf_in, sp);
+            for (int substage = 0; substage < stage->num_substages; 
+                 substage++)
+            {
+                /* Swap xf_in and xf_out.  Memory for previous xf_in 
+                   gets released at this time. */
+                d_ptr->xf_in = d_ptr->xf_out;
+
+                /* Do the registration */
+                d_ptr->xf_out = this->do_registration_stage (stage);
+            }
+
+            /* Save intermediate output */
+            save_output (regd.get(), d_ptr->xf_out, 
+                stage->xf_out_fn, stage->xf_out_itk, 
+                stage->img_out_fmt, stage->img_out_type, 
+                stage->default_value, stage->img_out_fn, 
+                stage->vf_out_fn, shared->warped_landmarks_fn);
 
             /* Tell the parent thread that we finished a stage, 
                so it can wake up if needed. */
@@ -509,7 +514,7 @@ Registration::run_main_thread ()
             if (d_ptr->time_to_quit) {
                 break;
             }
-        } 
+        }
     }
 
     /* JAS 2012.03.29 - for GPUIT Bspline
@@ -592,142 +597,13 @@ Registration::do_registration_pure ()
     return this->get_current_xform ();
 }
 
-Xform::Pointer
-Registration::do_registration_pure_old ()
-{
-    Registration_data::Pointer regd = d_ptr->rdata;
-    Registration_parms::Pointer regp = d_ptr->rparms;
-    
-    Xform::Pointer xf_in = Xform::New ();
-    Xform::Pointer xf_out = Xform::New ();
-    Xform::Pointer xf_tmp;
-
-    /* Load initial guess of xform */
-    if (regp->xf_in_fn[0]) {
-        xf_out = xform_load (regp->xf_in_fn);
-    }
-
-    /* Set fixed image region */
-    set_fixed_image_region_global (regd);
-
-    /* Set automatic parameters based on image size */
-    set_automatic_parameters (regd, regp);
-
-    std::list<Stage_parms*>& stages = regp->get_stages();
-    std::list<Stage_parms*>::iterator it;
-    for (it = stages.begin(); it != stages.end(); it++) {
-        Stage_parms* sp = *it;
-
-        if (sp->get_stage_type() == STAGE_TYPE_PROCESS) {
-
-#if defined (commentout)
-            int non_zero, num_vox;
-            double min_val, max_val, avg;
-            itk_image_stats (regd->moving_image->itk_float (),
-                &min_val, &max_val, &avg, &non_zero, &num_vox);
-            printf ("min = %g, max = %g\n", min_val, max_val);
-#endif
-
-            const Process_parms::Pointer& pp = sp->get_process_parms ();
-            pp->execute_process (regd);
-
-#if defined (commentout)
-            itk_image_stats (regd->moving_image->itk_float (),
-                &min_val, &max_val, &avg, &non_zero, &num_vox);
-            printf ("min = %g, max = %g\n", min_val, max_val);
-#endif
-
-        } else if (sp->get_stage_type() == STAGE_TYPE_REGISTER) {
-            /* Swap xf_in and xf_out.  Memory for previous xf_in 
-               gets released at this time. */
-            xf_in = xf_out;
-
-            /* Load stage images */
-            regd->load_stage_input_files (sp);
-
-            /* Run registation, results are stored in xf_out */
-            xf_out = do_registration_stage (regp, regd, xf_in, sp);
-        } 
-    }
-
-    /* JAS 2012.03.29 - for GPUIT Bspline
-     * make output match input resolution - not final stage resolution */
-    check_output_resolution (xf_out, regd);
-
-    return xf_out;
-}
-
-void
-Registration::do_registration_old ()
-{
-    Registration_data::Pointer regd = d_ptr->rdata;
-    Registration_parms::Pointer regp = d_ptr->rparms;
-
-    Xform::Pointer xf_out = Xform::New ();
-    Plm_timer timer1, timer2, timer3;
-    const Shared_parms* shared = regp->get_shared_parms ();
-
-    /* Start logging */
-    logfile_open (regp->log_fn);
-
-    /* Load images */
-    // printf ("Performing < %i > registrations.\n", regp->num_jobs);
-    for (regp->job_idx=0; regp->job_idx < regp->num_jobs; regp->job_idx++) {
-
-        if (regp->num_jobs > 1) {
-            regp->set_job_paths ();
-            if (regp->get_fixed_fn() == regp->get_moving_fn()) {
-                continue;
-            }
-        }
-
-        timer1.start();
-        regd->load_global_input_files (regp);
-        timer1.stop();
-    
-        timer2.start();
-        //do_registration_pure (&xf_out, &regd, regp);
-        xf_out = this->do_registration_pure ();
-        timer2.stop();
-
-        /* RMK: If no stages, we still generate output (same as input) */
-    
-        timer3.start();
-        save_output (regd.get(), xf_out, regp->xf_out_fn, regp->xf_out_itk, 
-            regp->img_out_fmt, regp->img_out_type, 
-            regp->default_value, regp->img_out_fn, 
-            regp->vf_out_fn, shared->warped_landmarks_fn.c_str());
-
-        timer3.stop();
-    
-        logfile_open (regp->log_fn);
-        logfile_printf (
-            "Load:   %g\n"
-            "Run:    %g\n"
-            "Save:   %g\n"
-            "Total:  %g\n",
-            (double) timer1.report(),
-            (double) timer2.report(),
-            (double) timer3.report(),
-            (double) timer1.report() + 
-            (double) timer2.report() + 
-            (double) timer3.report());
-    
-        /* Done logging */
-        logfile_printf ("Finished!\n");
-        logfile_close ();
-    }
-}
-
 void
 Registration::do_registration ()
 {
     Registration_data::Pointer regd = d_ptr->rdata;
     Registration_parms::Pointer regp = d_ptr->rparms;
-
     Xform::Pointer xf_out = Xform::New ();
     Plm_timer timer1, timer2, timer3;
-    const Shared_parms* shared = regp->get_shared_parms ();
 
     /* Start logging */
     logfile_open (regp->log_fn);

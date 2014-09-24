@@ -21,7 +21,7 @@ Xform::Pointer
 do_gpuit_demons_stage_internal (
     Registration_data* regd, 
     const Xform::Pointer& xf_in, 
-    Stage_parms* stage)
+    const Stage_parms* stage)
 {
     Xform::Pointer xf_out = Xform::New ();
     int d;
@@ -85,7 +85,7 @@ Xform::Pointer
 do_gpuit_demons_stage (
     Registration_data* regd, 
     const Xform::Pointer& xf_in,
-    Stage_parms* stage)
+    const Stage_parms* stage)
 {
     return do_gpuit_demons_stage_internal (regd, xf_in, stage);
 }

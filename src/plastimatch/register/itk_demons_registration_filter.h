@@ -15,7 +15,7 @@ struct itk_demons_registration_filter
         PDEDeformableRegistrationFilterType::Pointer m_demons_filter;
 
     public:
-        virtual void update_specific_parameters(Stage_parms* parms)=0;
+        virtual void update_specific_parameters (const Stage_parms* parms)=0;
         virtual ~itk_demons_registration_filter(){};
 
         PDEDeformableRegistrationFilterType::Pointer get_demons_filter_impl()

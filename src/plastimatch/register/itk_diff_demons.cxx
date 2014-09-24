@@ -14,7 +14,7 @@ itk_diffeomorphic_demons_filter::~itk_diffeomorphic_demons_filter()
 {
 }
 
-void itk_diffeomorphic_demons_filter::update_specific_parameters(Stage_parms* stage)
+void itk_diffeomorphic_demons_filter::update_specific_parameters(const Stage_parms* stage)
 {
     //Setting gradient type
     DiffeomorphicDemonsFilterType* diff_demons_filter=dynamic_cast<DiffeomorphicDemonsFilterType*>(m_demons_filter.GetPointer());

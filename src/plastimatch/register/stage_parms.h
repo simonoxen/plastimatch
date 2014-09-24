@@ -120,6 +120,8 @@ public:
     /* Stage resume? */
     bool resume_stage;
     bool finalize_stage;
+    /* Number of substages */
+    int num_substages;
     /* Generic optimization parms */
     int xform_type;
     Optimization_type optim_type;
@@ -208,7 +210,7 @@ public:
     std::string debug_dir;
 
 public:
-    Stage_type get_stage_type ();
+    Stage_type get_stage_type () const;
     Shared_parms *get_shared_parms ();
     const Shared_parms *get_shared_parms () const;
     Process_parms::Pointer get_process_parms ();

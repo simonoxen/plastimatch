@@ -148,16 +148,16 @@ PLMBASE_API DeformationFieldType::Pointer xform_gpuit_vf_to_itk_vf (
     Plm_image_header* pih    /* Input, can be null */
 );
 PLMBASE_API void xform_to_itk_bsp (Xform *xf_out, const Xform *xf_in, 
-    Plm_image_header* pih, float* grid_spac);
-PLMBASE_API void xform_to_itk_bsp_nobulk (Xform *xf_out, Xform *xf_in, Plm_image_header* pih, float* grid_spac);
+    Plm_image_header* pih, const float* grid_spac);
+PLMBASE_API void xform_to_itk_bsp_nobulk (Xform *xf_out, Xform *xf_in, Plm_image_header* pih, const float* grid_spac);
 PLMBASE_API void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, Plm_image_header* pih);
 PLMBASE_API void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, FloatImageType::Pointer image);
-PLMBASE_API void xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih, float* grid_spac);
+PLMBASE_API void xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih, const float* grid_spac);
 PLMBASE_API void xform_to_gpuit_vf (Xform* xf_out, const Xform *xf_in, const Plm_image_header* pih);
 
 PLMBASE_API Xform::Pointer xform_to_itk_bsp (const Xform::Pointer& xf_in, 
-    Plm_image_header* pih, float* grid_spac);
-PLMBASE_API Xform::Pointer xform_to_itk_bsp_nobulk (const Xform::Pointer& xf_in, Plm_image_header* pih, float* grid_spac);
+    Plm_image_header* pih, const float* grid_spac);
+PLMBASE_API Xform::Pointer xform_to_itk_bsp_nobulk (const Xform::Pointer& xf_in, Plm_image_header* pih, const float* grid_spac);
 PLMBASE_API Xform::Pointer xform_to_itk_vf (const Xform::Pointer& xf_in, Plm_image_header* pih);
 PLMBASE_API Xform::Pointer xform_to_gpuit_bsp (const Xform::Pointer& xf_in, Plm_image_header* pih, float* grid_spac);
 PLMBASE_API Xform::Pointer xform_to_gpuit_vf (const Xform::Pointer& xf_in, const Plm_image_header* pih);

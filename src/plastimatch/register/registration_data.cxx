@@ -12,16 +12,29 @@
 #include "shared_parms.h"
 #include "stage_parms.h"
 
+class Registration_data_private
+{
+public:
+    Stage_parms auto_parms;
+public:
+    Registration_data_private () {
+    }
+    ~Registration_data_private () {
+    }
+};
+
 Registration_data::Registration_data ()
 {
     fixed_landmarks = 0;
     moving_landmarks = 0;
+    d_ptr = new Registration_data_private;
 }
 
 Registration_data::~Registration_data ()
 {
     if (fixed_landmarks) delete fixed_landmarks;
     if (moving_landmarks) delete moving_landmarks;
+    delete d_ptr;
 }
 
 void
@@ -44,7 +57,7 @@ Registration_data::load_global_input_files (Registration_parms::Pointer& regp)
 }
 
 void
-Registration_data::load_stage_input_files (Stage_parms* stage)
+Registration_data::load_stage_input_files (const Stage_parms* stage)
 {
     this->load_shared_input_files (stage->get_shared_parms());
 }
@@ -96,4 +109,10 @@ Registration_data::load_shared_input_files (const Shared_parms* shared)
         fixed_landmarks->set_ras (shared->fixed_landmarks_list.c_str());
         moving_landmarks->set_ras (shared->moving_landmarks_list.c_str());
     }
+}
+
+Stage_parms*
+Registration_data::get_auto_parms ()
+{
+    return &d_ptr->auto_parms;
 }

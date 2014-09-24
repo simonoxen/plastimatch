@@ -8,6 +8,7 @@
 #include "itkExceptionObject.h"
 #include "itkImageRegistrationMethod.h"
 #include "itk_image_type.h"
+#include "stage_parms.h"
 
 class Registration_data;
 class Stage_parms;

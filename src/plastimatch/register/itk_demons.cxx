@@ -82,7 +82,10 @@ public:
 };
 
 //*Setting fixed and moving image masks if available
-static void set_and_subsample_masks(Registration_data* regd,Stage_parms* stage )
+static void 
+set_and_subsample_masks (
+    Registration_data* regd,
+    const Stage_parms* stage)
 {
     /* Subsample fixed & moving images */
     if(regd->fixed_roi)
@@ -114,7 +117,7 @@ static void set_and_subsample_masks(Registration_data* regd,Stage_parms* stage )
 }
 
 //*Setting fixed and moving image masks if available
-static void set_general_parameters(Stage_parms* stage )
+static void set_general_parameters (const Stage_parms* stage)
 {
     m_filter->SetNumberOfIterations (stage->max_its);
     m_filter->SetStandardDeviations (stage->demons_std);
@@ -123,10 +126,11 @@ static void set_general_parameters(Stage_parms* stage )
 }
 
 static void
-do_demons_stage_internal (Registration_data* regd,
+do_demons_stage_internal (
+    Registration_data* regd,
     Xform *xf_out, 
     Xform *xf_in,
-    Stage_parms* stage)
+    const Stage_parms* stage)
 {
     /* Subsample fixed & moving images */
     FloatImageType::Pointer fixed_ss
@@ -186,7 +190,7 @@ Xform::Pointer
 do_itk_demons_stage (
     Registration_data* regd,
     const Xform::Pointer& xf_in,
-    Stage_parms* stage)
+    const Stage_parms* stage)
 {
     Xform::Pointer xf_out = Xform::New ();
     itk_demons_registration_filter* demons_filter = NULL;

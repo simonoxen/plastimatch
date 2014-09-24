@@ -22,7 +22,7 @@ class itk_diffeomorphic_demons_filter: public itk_demons_registration_filter
 public:
     itk_diffeomorphic_demons_filter();
     ~itk_diffeomorphic_demons_filter();
-    void update_specific_parameters(Stage_parms* stage);
+    void update_specific_parameters(const Stage_parms* stage);
 };
 
 #endif

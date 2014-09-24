@@ -32,7 +32,7 @@ itk_fsf_demons_filter::~itk_fsf_demons_filter()
 {
 }
 
-void itk_fsf_demons_filter::update_specific_parameters(Stage_parms* stage)
+void itk_fsf_demons_filter::update_specific_parameters(const Stage_parms* stage)
 
 {
     FastSymForcesDemonsFilterType* fsf_demons_filter=dynamic_cast<FastSymForcesDemonsFilterType*>(m_demons_filter.GetPointer());

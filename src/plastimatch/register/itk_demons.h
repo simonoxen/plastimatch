@@ -13,6 +13,6 @@ class Stage_parms;
 
 Xform::Pointer
 do_itk_demons_stage (Registration_data* regd, 
-    const Xform::Pointer& xf_in, Stage_parms* stage);
+    const Xform::Pointer& xf_in, const Stage_parms* stage);
 
 #endif

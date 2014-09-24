@@ -61,7 +61,7 @@ typedef itk::LinearInterpolateImageFunction <
 static void
 itk_align_center (
     Registration_data* regd, Xform *xf_out, 
-    const Xform *xf_in, Stage_parms* stage);
+    const Xform *xf_in, const Stage_parms* stage);
 
 Itk_registration_private::Itk_registration_private (
     Registration_data* regd, 
@@ -690,7 +690,7 @@ itk_registration_stage (
 static void
 itk_align_center (
     Registration_data* regd, Xform *xf_out, 
-    const Xform *xf_in, Stage_parms* stage)
+    const Xform *xf_in, const Stage_parms* stage)
 {
     float fixed_center[3];
     float moving_center[3];

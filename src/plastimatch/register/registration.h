@@ -27,10 +27,6 @@ public:
     Registration_data::Pointer get_registration_data ();
     Registration_parms::Pointer get_registration_parms ();
 
-    /* Old API */
-    void do_registration_old ();
-    Xform::Pointer do_registration_pure_old ();
-
     /* New API */
     void load_global_inputs ();
     void start_registration ();
@@ -47,6 +43,9 @@ public:
 
     /* This is called by worker thread */
     void run_main_thread ();
+
+protected:
+    Xform::Pointer do_registration_stage (Stage_parms* stage);
 };
 
 #endif

@@ -28,7 +28,7 @@ class itk_fsf_demons_filter: public itk_demons_registration_filter
     public:
         itk_fsf_demons_filter();
         ~itk_fsf_demons_filter();
-        void update_specific_parameters(Stage_parms* stage);
+        void update_specific_parameters(const Stage_parms* stage);
 };
 
 #endif

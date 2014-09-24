@@ -21,12 +21,12 @@ PLMBASE_API Volume::Pointer volume_resample_nn (
     const float* spacing
 );
 PLMBASE_API Volume::Pointer volume_subsample_vox (
-    const Volume::Pointer& vol_in, float* sampling_rate);
+    const Volume::Pointer& vol_in, const float* sampling_rate);
 PLMBASE_API Volume::Pointer volume_subsample_vox_nn (
-    const Volume::Pointer& vol_in, float* sampling_rate);
+    const Volume::Pointer& vol_in, const float* sampling_rate);
 PLMBASE_API Volume::Pointer volume_subsample_vox_legacy (
-    const Volume::Pointer& vol_in, float* sampling_rate);
+    const Volume::Pointer& vol_in, const float* sampling_rate);
 PLMBASE_API Volume::Pointer volume_subsample_vox_legacy_nn (
-    const Volume::Pointer& vol_in, float* sampling_rate);
+    const Volume::Pointer& vol_in, const float* sampling_rate);
 
 #endif

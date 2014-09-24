@@ -14,7 +14,7 @@ itk_log_domain_demons_filter::~itk_log_domain_demons_filter()
 {
 }
 
-void itk_log_domain_demons_filter::update_specific_parameters(Stage_parms* stage)
+void itk_log_domain_demons_filter::update_specific_parameters(const Stage_parms* stage)
 {
     LogDomainDemonsFilterType* log_filter=dynamic_cast<LogDomainDemonsFilterType*>(m_demons_filter.GetPointer());
     log_filter->SetNumberOfBCHApproximationTerms(stage->num_approx_terms_log_demons);

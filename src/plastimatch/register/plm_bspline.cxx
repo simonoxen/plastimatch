@@ -33,7 +33,7 @@ class Plm_bspline_private {
 public:
     Registration_parms *regp;
     Registration_data *regd;
-    Stage_parms *stage;
+    const Stage_parms *stage;
     Xform *xf_in;
     Xform::Pointer xf_out;
     Bspline_parms bsp_parms;
@@ -52,7 +52,7 @@ public:
 Plm_bspline::Plm_bspline (
     Registration_parms *regp,
     Registration_data *regd,
-    Stage_parms *stage,
+    const Stage_parms *stage,
     Xform *xf_in)
 {
     d_ptr = new Plm_bspline_private;
@@ -110,8 +110,8 @@ void
 Plm_bspline::initialize ()
 {
     Registration_data *regd = d_ptr->regd;
-    Stage_parms *stage = d_ptr->stage;
-    Shared_parms *shared = d_ptr->stage->get_shared_parms();
+    const Stage_parms *stage = d_ptr->stage;
+    const Shared_parms *shared = d_ptr->stage->get_shared_parms();
     Xform *xf_in = d_ptr->xf_in;
     Xform *xf_out = d_ptr->xf_out.get();
     Bspline_parms *bsp_parms = &d_ptr->bsp_parms;
@@ -378,7 +378,7 @@ do_gpuit_bspline_stage (
     Registration_parms* regp, 
     Registration_data* regd, 
     const Xform::Pointer& xf_in,
-    Stage_parms* stage)
+    const Stage_parms* stage)
 {
     Xform::Pointer xf_out = Xform::New ();
     Plm_bspline pb (regp, regd, stage, xf_in.get());

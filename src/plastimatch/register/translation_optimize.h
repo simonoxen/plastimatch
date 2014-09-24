@@ -15,6 +15,6 @@ Xform::Pointer
 translation_stage (
     Registration_data* regd,
     const Xform::Pointer& xf_in,
-    Stage_parms* stage);
+    const Stage_parms* stage);
 
 #endif

@@ -20,7 +20,7 @@ public:
     Plm_bspline (
         Registration_parms *regp, 
         Registration_data *regd, 
-        Stage_parms *stage, 
+        const Stage_parms *stage, 
         Xform *xf_in);
     ~Plm_bspline ();
 
@@ -36,6 +36,6 @@ do_gpuit_bspline_stage (
     Registration_parms* regp, 
     Registration_data* regd, 
     const Xform::Pointer& xf_in, 
-    Stage_parms* stage);
+    const Stage_parms* stage);
 
 #endif
