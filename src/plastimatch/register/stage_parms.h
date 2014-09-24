@@ -93,6 +93,7 @@ enum Demons_gradient_type {
 };
 
 enum Gridsearch_strategy_type {
+    GRIDSEARCH_STRATEGY_AUTO,
     GRIDSEARCH_STRATEGY_GLOBAL,
     GRIDSEARCH_STRATEGY_LOCAL
 };

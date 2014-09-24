@@ -78,7 +78,7 @@ gridsearch_translation (
         best_translation[0], best_translation[1], best_translation[2], 
         best_score);
 
-    /* Compute search locations */
+    /* Compute search range */
     int num_steps[3] = { 0, 0, 0 };
     float search_step[3] = { 0.f, 0.f, 0.f };
     float max_range = 0.f;
@@ -88,9 +88,17 @@ gridsearch_translation (
             max_range = search_range;
         }
     }
-    float nominal_step = max_range / 5;
 
-    if (stage->gridsearch_strategy == GRIDSEARCH_STRATEGY_GLOBAL) {
+    /* Identify search strategy, and compute step size */
+    Gridsearch_strategy_type strategy = stage->gridsearch_strategy;
+    if (strategy == GRIDSEARCH_STRATEGY_AUTO) {
+        strategy = auto_parms->gridsearch_strategy;
+    }
+    if (strategy == GRIDSEARCH_STRATEGY_GLOBAL || 
+        strategy == GRIDSEARCH_STRATEGY_AUTO)
+    {
+        lprintf ("Global grid search\n");
+        float nominal_step = max_range / 5;
         for (int d = 0; d < 3; d++) {
             float search_range = search_max[d] - search_min[d];
             num_steps[d] = ROUND_INT (search_range / nominal_step) + 1;
@@ -100,11 +108,11 @@ gridsearch_translation (
         }
     }
     else {
+        lprintf ("Local grid search\n");
         for (int d = 0; d < 3; d++) {
             num_steps[d] = 4;
             if (stage->gridsearch_step_size_type == GRIDSEARCH_STEP_SIZE_AUTO)
             {
-                //search_step[d] = 0.6 * nominal_step;
                 search_step[d] = auto_parms->gridsearch_step_size[d];
             } else {
                 search_step[d] = stage->gridsearch_step_size[d];
@@ -112,6 +120,8 @@ gridsearch_translation (
             search_min[d] = best_translation[d] - 1.5 * search_step[d];
         }
     }
+
+    /* Update auto parms */
     auto_parms->gridsearch_strategy = GRIDSEARCH_STRATEGY_LOCAL;
     for (int d = 0; d < 3; d++) {
         auto_parms->gridsearch_step_size[d] = 0.6 * search_step[d];

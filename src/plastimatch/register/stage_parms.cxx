@@ -121,7 +121,7 @@ Stage_parms::Stage_parms ()
     num_matching_points=500;
     num_hist_levels=1000;
     /* Native grid search */
-    gridsearch_strategy = GRIDSEARCH_STRATEGY_GLOBAL;
+    gridsearch_strategy = GRIDSEARCH_STRATEGY_AUTO;
     gridsearch_min_overlap[0] = 0.5;
     gridsearch_min_overlap[1] = 0.5;
     gridsearch_min_overlap[2] = 0.5;
