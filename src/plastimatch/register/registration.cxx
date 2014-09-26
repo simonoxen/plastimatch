@@ -323,26 +323,12 @@ Registration::do_registration_stage (
         xf_in->m_type, xf_out->m_type);
 
     /* Run registration */
-    if (stage->optim_type == OPTIMIZATION_DEMONS) {
-        if (stage->impl_type == IMPLEMENTATION_ITK) {
-            xf_out = do_itk_demons_stage (regd.get(), xf_in, stage);
-        } else {
-            xf_out = do_gpuit_demons_stage (regd.get(), xf_in, stage);
-        }
-    }
-    else if (stage->xform_type == STAGE_TRANSFORM_BSPLINE) {
-        if (stage->impl_type == IMPLEMENTATION_ITK) {
-            xf_out = do_itk_registration_stage (regd.get(), xf_in, stage);
-        } else {
-            xf_out = do_gpuit_bspline_stage (regp.get(), regd.get(), 
-                xf_in, stage);
-        }
-    }
-    else if (stage->xform_type == STAGE_TRANSFORM_ALIGN_CENTER) {
+    switch (stage->xform_type) {
+    case STAGE_TRANSFORM_ALIGN_CENTER:
         xf_out = do_itk_registration_stage (regd.get(), xf_in, stage);
         lprintf ("Centering done\n");
-    }
-    else if (stage->xform_type == STAGE_TRANSFORM_TRANSLATION) {
+        break;
+    case STAGE_TRANSFORM_TRANSLATION:
         if (stage->impl_type == IMPLEMENTATION_ITK) {
             xf_out = do_itk_registration_stage (regd.get(), xf_in, stage);
         } else if (stage->impl_type == IMPLEMENTATION_PLASTIMATCH) {
@@ -354,9 +340,28 @@ Registration::do_registration_stage (
                 xf_out = do_itk_registration_stage (regd.get(), xf_in, stage);
             }
         }
-    }
-    else {
+        break;
+    case STAGE_TRANSFORM_NONE:
+    case STAGE_TRANSFORM_VERSOR:
+    case STAGE_TRANSFORM_QUATERNION:
+    case STAGE_TRANSFORM_AFFINE:
         xf_out = do_itk_registration_stage (regd.get(), xf_in, stage);
+        break;
+    case STAGE_TRANSFORM_BSPLINE:
+        if (stage->impl_type == IMPLEMENTATION_ITK) {
+            xf_out = do_itk_registration_stage (regd.get(), xf_in, stage);
+        } else {
+            xf_out = do_gpuit_bspline_stage (regp.get(), regd.get(), 
+                xf_in, stage);
+        }
+        break;
+    case STAGE_TRANSFORM_VECTOR_FIELD:
+        if (stage->impl_type == IMPLEMENTATION_ITK) {
+            xf_out = do_itk_demons_stage (regd.get(), xf_in, stage);
+        } else {
+            xf_out = do_gpuit_demons_stage (regd.get(), xf_in, stage);
+        }
+        break;
     }
 
     lprintf ("[2] xf_out->m_type = %d, xf_in->m_type = %d\n", 

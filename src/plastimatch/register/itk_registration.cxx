@@ -591,6 +591,9 @@ Itk_registration_private::set_transform ()
     case STAGE_TRANSFORM_ALIGN_CENTER:
         set_transform_versor(registration, xf_out, xf_in, stage);
         break;
+    default:
+        print_and_exit ("Error: unknown case in set_transform()\n");
+        break;
     }
     registration->SetInitialTransformParameters (
         registration->GetTransform()->GetParameters());

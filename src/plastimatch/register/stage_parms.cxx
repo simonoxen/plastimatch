@@ -156,6 +156,7 @@ Stage_parms::Stage_parms (const Stage_parms& s)
     xform_type = s.xform_type;
     optim_type = s.optim_type;
     impl_type = s.impl_type;
+    optim_subtype = s.optim_subtype;
     alg_flavor = s.alg_flavor;
     threading_type = s.threading_type;
     metric_type = s.metric_type;

@@ -161,7 +161,7 @@ do_demons_stage_internal (
     m_filter->SetFixedImage (fixed_ss);
 
     /* Get vector field of matching resolution */
-    if (xf_in->m_type != STAGE_TRANSFORM_NONE) {
+    if (xf_in->m_type != XFORM_NONE) {
 	xform_to_itk_vf (xf_out, xf_in, fixed_ss);
 
     //Set initial deformation field

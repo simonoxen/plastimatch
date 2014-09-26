@@ -19,14 +19,16 @@
 #include "pstring.h"
 #include "threading.h"
 
-#define STAGE_TRANSFORM_NONE                0
-#define STAGE_TRANSFORM_TRANSLATION         1
-#define STAGE_TRANSFORM_VERSOR              2
-#define STAGE_TRANSFORM_QUATERNION          3
-#define STAGE_TRANSFORM_AFFINE              4
-#define STAGE_TRANSFORM_BSPLINE             5
-#define STAGE_TRANSFORM_VECTOR_FIELD        6
-#define STAGE_TRANSFORM_ALIGN_CENTER        7
+enum Stage_transform_type {
+    STAGE_TRANSFORM_NONE,
+    STAGE_TRANSFORM_ALIGN_CENTER,
+    STAGE_TRANSFORM_TRANSLATION,
+    STAGE_TRANSFORM_VERSOR,
+    STAGE_TRANSFORM_QUATERNION,
+    STAGE_TRANSFORM_AFFINE,
+    STAGE_TRANSFORM_BSPLINE,
+    STAGE_TRANSFORM_VECTOR_FIELD
+};
 
 enum Optimization_type {
     OPTIMIZATION_NO_REGISTRATION,
@@ -124,7 +126,7 @@ public:
     /* Number of substages */
     int num_substages;
     /* Generic optimization parms */
-    int xform_type;
+    Stage_transform_type xform_type;
     Optimization_type optim_type;
     int impl_type;
     int optim_subtype;       /* used for demons types (diffeomorphic, etc.) */

@@ -628,5 +628,8 @@ Itk_registration_private::set_optimization ()
     case STAGE_TRANSFORM_BSPLINE:
 	/* LBFGS/LBFGSB only. No optimizer scales. */
 	break;
+    default:
+        print_and_exit ("Unknown xform type used in ITK optimization\n");
+        break;
     }
 }
