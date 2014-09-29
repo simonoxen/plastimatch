@@ -16,6 +16,7 @@
 #include "rpl_volume.h"
 #include "volume.h"
 #include "volume_limit.h"
+#include "wed_parms.h"
 
 
 typedef struct callback_data Callback_data;
@@ -126,7 +127,9 @@ wed_ct_compute (
 
     if (parms->mode==0)  {
         Volume* wed_vol;
+#if defined (commentout)
 	wed_vol = rpl_vol->create_wed_volume (parms);
+#endif
         rpl_vol->compute_wed_volume (wed_vol, ct_vol->get_volume_float().get(), 
             background);
         Plm_image(wed_vol).save_image(out_fn);

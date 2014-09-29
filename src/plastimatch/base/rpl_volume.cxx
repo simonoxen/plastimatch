@@ -24,7 +24,9 @@
 #include "volume_limit.h"
 #include "volume_macros.h"
 #include "print_and_exit.h"
+#if defined (commentout)
 #include "wed_parms.h"
+#endif
 
 //#define VERBOSE 1
 
@@ -1068,6 +1070,7 @@ Rpl_volume::compute_proj_wed_volume (
 
 }
 
+#if defined (commentout)
 Volume*
 Rpl_volume::create_wed_volume (Wed_Parms* parms)
 {
@@ -1099,6 +1102,7 @@ Rpl_volume::create_wed_volume (Wed_Parms* parms)
 
     return new Volume (wed_dims, wed_off, wed_ps, NULL, PT_FLOAT, 1);
 }
+#endif
 
 void 
 Rpl_volume::compute_wed_volume (
