@@ -422,13 +422,13 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
             c_item->putAndInsertString (DCM_NumberOfContourPoints, tmp);
 
 	    /* ContourData */
-            tmp.format ("%g\\%g\\%g", 
+            tmp.format ("%.8g\\%.8g\\%.8g", 
                 curr_contour->x[0],
                 curr_contour->y[0],
                 curr_contour->z[0]);
 	    for (int k = 1; k < curr_contour->num_vertices; k++) {
                 Pstring tmp2;
-                tmp2.format ("\\%g\\%g\\%g",
+                tmp2.format ("\\%.8g\\%.8g\\%.8g",
 		    curr_contour->x[k],
 		    curr_contour->y[k],
 		    curr_contour->z[k]);
