@@ -9,9 +9,6 @@
 #include "aperture.h"
 #include "plm_image.h"
 #include "ray_trace_callback.h"
-#if defined (commentout)
-#include "wed_parms.h"
-#endif
 
 class Proj_volume;
 class Ray_data;
@@ -76,11 +73,7 @@ public:
 
     double compute_farthest_penetrating_ray_on_nrm(float range); // return the distance from aperture to the farthest which rg_lenght > range
 
-#if defined (commentout)
-    Volume* create_wed_volume (Wed_Parms* parms);
-#endif
     void compute_wed_volume (Volume *wed_vol, Volume *in_vol, float background);
-    Volume* create_dew_volume ();
     void compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float background);
     Volume* create_proj_wed_volume ();
     void compute_proj_wed_volume (Volume *proj_wed_vol, float background);

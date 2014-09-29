@@ -24,9 +24,6 @@
 #include "volume_limit.h"
 #include "volume_macros.h"
 #include "print_and_exit.h"
-#if defined (commentout)
-#include "wed_parms.h"
-#endif
 
 //#define VERBOSE 1
 
@@ -1070,40 +1067,6 @@ Rpl_volume::compute_proj_wed_volume (
 
 }
 
-#if defined (commentout)
-Volume*
-Rpl_volume::create_wed_volume (Wed_Parms* parms)
-{
-
-   /* water equivalent depth volume has the same x,y dimensions as the rpl
-     * volume. Note: this means the wed x,y dimensions are equal to the
-     * aperture dimensions and the z-dimension is equal to the sampling
-     * resolution chosen for the rpl */
-    plm_long wed_dims[3];
-
-    Volume *vol = this->get_vol ();
-    wed_dims[0] = vol->dim[0];
-    wed_dims[1] = vol->dim[1];
-    wed_dims[2] = vol->dim[2];
-
-    /////////////////////////////
-    //Should be insenstive to aperture rotation?
-    /*
-    Proj_volume *proj_vol = d_ptr->proj_vol;
-    double iso_src_vec[3];   //vector from isocenter to source
-    proj_vol->get_proj_matrix()->get_nrm(iso_src_vec);
-    */
-
-    float xoff = -(vol->dim[0] - parms->ic[0]);
-    float yoff = -(vol->dim[1] - parms->ic[1]);
-
-    float wed_off[3] = {xoff, yoff, 0.0f};
-    float wed_ps[3] = {1.0f, 1.0f, 1.0f};
-
-    return new Volume (wed_dims, wed_off, wed_ps, NULL, PT_FLOAT, 1);
-}
-#endif
-
 void 
 Rpl_volume::compute_wed_volume (
     Volume *wed_vol, Volume *in_vol, float background)
@@ -1260,13 +1223,6 @@ Rpl_volume::compute_wed_volume (
             }
         }
     }
-}
-
-Volume*
-Rpl_volume::create_dew_volume ()
-{
-  //Implement later
-  return NULL;
 }
 
 void 

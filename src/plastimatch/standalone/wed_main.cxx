@@ -18,6 +18,8 @@
 #include "volume_limit.h"
 #include "wed_parms.h"
 
+#include "create_wed_volumes.cxx"
+
 
 typedef struct callback_data Callback_data;
 struct callback_data {
@@ -55,63 +57,6 @@ skin_ct (Volume* ct_volume, Volume* skin_volume, float background)
   return 0;
 }
 
-static Volume*
-create_dew_volume (Wed_Parms* parms, Ion_plan *scene)
-{
-    Volume::Pointer patient_vol = scene->get_patient_volume();
-
-    float dew_off[3];
-    dew_off[0] = patient_vol->offset[0];
-    dew_off[1] = patient_vol->offset[1];
-    dew_off[2] = patient_vol->offset[2];
-
-    float dew_ps[3];
-    dew_ps[0] = patient_vol->spacing[0];
-    dew_ps[1] = patient_vol->spacing[1];
-    dew_ps[2] = patient_vol->spacing[2];
-
-    plm_long dew_dims[3];
-    dew_dims[0] = patient_vol->dim[0];
-    dew_dims[1] = patient_vol->dim[1];
-    dew_dims[2] = patient_vol->dim[2];
-
-    //If output volume dimensions were set in .cfg file, use these.
-    if (parms->dew_dim[0]!=-999.) {dew_dims[0]=parms->dew_dim[0];}
-    if (parms->dew_dim[1]!=-999.) {dew_dims[1]=parms->dew_dim[1];}
-    if (parms->dew_dim[2]!=-999.) {dew_dims[2]=parms->dew_dim[2];}
-
-    if (parms->dew_origin[0]!=-999.) {dew_off[0]=parms->dew_origin[0];}
-    if (parms->dew_origin[1]!=-999.) {dew_off[1]=parms->dew_origin[1];}
-    if (parms->dew_origin[2]!=-999.) {dew_off[2]=parms->dew_origin[2];}
-
-    if (parms->dew_spacing[0]!=-999.) {dew_ps[0]=parms->dew_spacing[0];}
-    if (parms->dew_spacing[1]!=-999.) {dew_ps[1]=parms->dew_spacing[1];}
-    if (parms->dew_spacing[2]!=-999.) {dew_ps[2]=parms->dew_spacing[2];}
-
-    return new Volume (dew_dims, dew_off, dew_ps, NULL, PT_FLOAT, 1);
-}
-
-static Volume*
-create_proj_sinogram_volume (Wed_Parms* parms, Volume *proj_wed_vol)
-{
-    float proj_wed_off[3];
-    proj_wed_off[0] = proj_wed_vol->offset[0];
-    proj_wed_off[1] = proj_wed_vol->offset[1];
-    proj_wed_off[2] = proj_wed_vol->offset[2];
-
-    float proj_wed_ps[3];
-    proj_wed_ps[0] = proj_wed_vol->spacing[0];
-    proj_wed_ps[1] = proj_wed_vol->spacing[1];
-    proj_wed_ps[2] = proj_wed_vol->spacing[2];
-
-    plm_long proj_wed_dims[3];
-    proj_wed_dims[0] = proj_wed_vol->dim[0];
-    proj_wed_dims[1] = proj_wed_vol->dim[1];
-    proj_wed_dims[2] = parms->sinogram_res;
-
-    return new Volume (proj_wed_dims, proj_wed_off, proj_wed_ps, NULL, PT_FLOAT, 1);
-}
-
 void
 wed_ct_compute (
     const char* out_fn,
@@ -127,9 +72,7 @@ wed_ct_compute (
 
     if (parms->mode==0)  {
         Volume* wed_vol;
-#if defined (commentout)
-	wed_vol = rpl_vol->create_wed_volume (parms);
-#endif
+	wed_vol = create_wed_volume (parms, rpl_vol);
         rpl_vol->compute_wed_volume (wed_vol, ct_vol->get_volume_float().get(), 
             background);
         Plm_image(wed_vol).save_image(out_fn);
@@ -247,9 +190,16 @@ wed_ct_compute (
 int
 wed_ct_initialize(Wed_Parms *parms)
 {
+
     Plm_image::Pointer dose_vol;
     Ion_plan scene;
     float background[4];
+
+    /*
+    for (int i=0; i=100000000;++i)  {
+      scene.init ();
+    }
+    */
 
     //Background value for wed ct output
     background[0] = -1000.;
@@ -379,6 +329,8 @@ wed_ct_initialize(Wed_Parms *parms)
     } 
 
     scene.set_step_length(parms->ray_step);
+
+
 
     /* Try to setup the scene with the provided parameters.
        This function computes the rpl volume. */
