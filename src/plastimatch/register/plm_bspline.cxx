@@ -21,6 +21,7 @@
 #include "print_and_exit.h"
 #include "registration_data.h"
 #include "registration_parms.h"
+#include "registration_resample.h"
 #include "shared_parms.h"
 #include "stage_parms.h"
 #include "string_util.h"
@@ -142,15 +143,14 @@ Plm_bspline::initialize ()
     moving->convert (PT_FLOAT);             /* Maybe not necessary? */
 
     /* Subsample images */
-    logfile_printf ("SUBSAMPLE: (%g %g %g), (%g %g %g)\n", 
-        stage->resample_rate_fixed[0], stage->resample_rate_fixed[1], 
-        stage->resample_rate_fixed[2], stage->resample_rate_moving[0], 
-        stage->resample_rate_moving[1], stage->resample_rate_moving[2]
-    );
+#if defined (commentout)
     d_ptr->moving_ss = volume_subsample_vox_legacy (
         moving, stage->resample_rate_moving);
     d_ptr->fixed_ss = volume_subsample_vox_legacy (
         fixed, stage->resample_rate_fixed);
+#endif
+    d_ptr->moving_ss = registration_resample_volume (moving, stage);
+    d_ptr->fixed_ss = registration_resample_volume (fixed, stage);
 
     //Set parameter values for min/max histogram values
     bsp_parms->mi_fixed_image_minVal = stage->mi_fixed_image_minVal;

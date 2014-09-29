@@ -26,6 +26,7 @@ option (PLM_DOWNLOAD_TEST_DATA
 set (CONFIG_FILE_LIST
   "plm-bsp-single-c.txt"
   "plm-bsp-cuda.txt"
+  "plm-bsp-rect.txt"
   "plm-bsp-resume.txt"
   "plm-bsp-logfile.txt"
   "plm-bsp-dcos-a.txt"
@@ -52,6 +53,7 @@ set (CONFIG_FILE_LIST
   "plm-reg-process-a.txt"
   "plm-reg-trans-a.txt"
   "plm-reg-trans-b.txt"
+  "plm-reg-autores-a.txt"
 )
 foreach (CONFIG_FILE ${CONFIG_FILE_LIST})
   configure_file ("${PLM_TESTING_DATA_DIR}/${CONFIG_FILE}"
@@ -2552,7 +2554,7 @@ set_tests_properties (plm-reg-bspline-char-output-check PROPERTIES
 plm_add_test (
   "plm-bsp-rect"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-bsp-rect.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-rect.txt"
   )
 set_tests_properties (plm-bsp-rect PROPERTIES DEPENDS "rect-2;rect-3")
 
@@ -3010,6 +3012,33 @@ set_tests_properties (plm-reg-trans-b-stats PROPERTIES
   DEPENDS plm-reg-trans-b)
 set_tests_properties (plm-reg-trans-b-check PROPERTIES 
   DEPENDS plm-reg-trans-b-stats)
+
+## -------------------------------------------------------------------------
+## plastimatch register (group 11)
+##   plm-reg-autores-a    Manually set sampling rate using mm
+##   plm-reg-autores-b    Manually set sampling rate using pct
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-reg-autores-a"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-autores-a.txt"
+  )
+plm_add_test (
+  "plm-reg-autores-a-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-reg-autores-a.mha"
+  )
+plmtest_check_interval ("plm-reg-autores-a-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-autores-a-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-661.75"
+  "-661.65"
+  )
+set_property (TEST plm-reg-autores-a APPEND PROPERTY DEPENDS gauss-1)
+set_tests_properties (plm-reg-autores-a-stats PROPERTIES 
+  DEPENDS plm-reg-autores-a)
+set_tests_properties (plm-reg-autores-a-check PROPERTIES 
+  DEPENDS plm-reg-autores-a-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch compose
