@@ -422,6 +422,12 @@ template PLMBASE_API void
 Plm_image::convert_itk_to_gpuit<UCharImageType::Pointer,float> (
     UCharImageType::Pointer);
 template PLMBASE_API void
+Plm_image::convert_itk_to_gpuit<CharImageType::Pointer,float> (
+    CharImageType::Pointer);
+template PLMBASE_API void
+Plm_image::convert_itk_to_gpuit<UShortImageType::Pointer,float> (
+    UShortImageType::Pointer);
+template PLMBASE_API void
 Plm_image::convert_itk_to_gpuit<ShortImageType::Pointer,float> (
     ShortImageType::Pointer);
 template PLMBASE_API void
@@ -433,3 +439,6 @@ Plm_image::convert_itk_to_gpuit<Int32ImageType::Pointer,float> (
 template PLMBASE_API void
 Plm_image::convert_itk_to_gpuit<FloatImageType::Pointer,float> (
     FloatImageType::Pointer);
+template PLMBASE_API void
+Plm_image::convert_itk_to_gpuit<DoubleImageType::Pointer,float> (
+    DoubleImageType::Pointer);

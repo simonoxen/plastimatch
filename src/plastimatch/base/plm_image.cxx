@@ -1314,7 +1314,19 @@ Plm_image::convert_to_gpuit_float ()
 	this->convert_itk_to_gpuit<UCharImageType::Pointer,float> (
             this->m_itk_uchar);
 	/* Free itk data */
-	this->m_itk_short = 0;
+	this->m_itk_uchar = 0;
+	break;
+    case PLM_IMG_TYPE_ITK_CHAR:
+	this->convert_itk_to_gpuit<CharImageType::Pointer,float> (
+            this->m_itk_char);
+	/* Free itk data */
+	this->m_itk_char = 0;
+	break;
+    case PLM_IMG_TYPE_ITK_USHORT:
+	this->convert_itk_to_gpuit<UShortImageType::Pointer,float> (
+            this->m_itk_ushort);
+	/* Free itk data */
+	this->m_itk_ushort = 0;
 	break;
     case PLM_IMG_TYPE_ITK_SHORT:
 	this->convert_itk_to_gpuit<ShortImageType::Pointer,float> (
@@ -1339,6 +1351,12 @@ Plm_image::convert_to_gpuit_float ()
             this->m_itk_float);
 	/* Free itk data */
 	this->m_itk_float = 0;
+	break;
+    case PLM_IMG_TYPE_ITK_DOUBLE:
+	this->convert_itk_to_gpuit<DoubleImageType::Pointer,float> (
+            this->m_itk_double);
+	/* Free itk data */
+	this->m_itk_double = 0;
 	break;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
     case PLM_IMG_TYPE_GPUIT_SHORT:
