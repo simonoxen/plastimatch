@@ -70,7 +70,19 @@ create_dew_volume (Wed_Parms* parms, Ion_plan *scene)
     return new Volume (dew_dims, dew_off, dew_ps, NULL, PT_FLOAT, 1);
 }
 
+Volume* create_proj_wed_volume (Rpl_volume* rpl_vol)
+{
+    float proj_wed_off[3] = {0.0f, 0.0f, 0.0f};
+    float proj_wed_ps[3] = {1.0f, 1.0f, 1.0f};
+    plm_long proj_wed_dims[3];
 
+    Volume *vol = rpl_vol->get_vol ();
+    proj_wed_dims[0] = vol->dim[0];
+    proj_wed_dims[1] = vol->dim[1];
+    proj_wed_dims[2] = 1;
+
+    return new Volume (proj_wed_dims, proj_wed_off, proj_wed_ps, NULL, PT_FLOAT, 1);
+}
 
 Volume* create_proj_sinogram_volume (Wed_Parms* parms, Volume *proj_wed_vol)
 {

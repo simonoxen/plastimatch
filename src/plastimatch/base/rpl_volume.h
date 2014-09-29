@@ -75,7 +75,6 @@ public:
 
     void compute_wed_volume (Volume *wed_vol, Volume *in_vol, float background);
     void compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float background);
-    Volume* create_proj_wed_volume ();
     void compute_proj_wed_volume (Volume *proj_wed_vol, float background);
     void compute_beam_modifiers (Volume *seg_vol, float background);
     void compute_aperture (Volume *tgt_vol, float background);

@@ -108,7 +108,7 @@ wed_ct_compute (
         Volume* proj_wed_vol;
         Volume* sinogram_vol;
 	
-        proj_wed_vol = rpl_vol->create_proj_wed_volume();
+        proj_wed_vol = create_proj_wed_volume(rpl_vol);
 
 	if (parms->sinogram!=0)  {
             sinogram_vol = create_proj_sinogram_volume(parms, proj_wed_vol);

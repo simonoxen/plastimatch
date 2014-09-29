@@ -990,21 +990,6 @@ double Rpl_volume::compute_farthest_penetrating_ray_on_nrm(float range)
     return max_dist;
 }
 
-Volume*
-Rpl_volume::create_proj_wed_volume ()
-{
-    float proj_wed_off[3] = {0.0f, 0.0f, 0.0f};
-    float proj_wed_ps[3] = {1.0f, 1.0f, 1.0f};
-    plm_long proj_wed_dims[3];
-
-    Volume *vol = this->get_vol ();
-    proj_wed_dims[0] = vol->dim[0];
-    proj_wed_dims[1] = vol->dim[1];
-    proj_wed_dims[2] = 1;
-
-    return new Volume (proj_wed_dims, proj_wed_off, proj_wed_ps, NULL, PT_FLOAT, 1);
-}
-
 void 
 Rpl_volume::compute_proj_wed_volume (
     Volume *proj_wed_vol, float background)
