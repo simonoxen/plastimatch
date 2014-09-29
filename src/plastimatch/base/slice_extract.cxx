@@ -99,6 +99,7 @@ slice_extract
 	std::cout << "ExceptionObject caught a !" << std::endl; 
 	std::cout << err << std::endl; 
     }
+
     return out_img;
 }
 
