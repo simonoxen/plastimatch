@@ -71,6 +71,8 @@ Ion_plan::init ()
     if (!this->beam) return false;
     if (!this->get_patient()) return false;
 
+	this->aperture_vol = new Rpl_volume;
+
     if (!this->rpl_vol) {this->rpl_vol = new Rpl_volume;}
     this->rpl_vol->set_geometry (
         this->beam->get_source_position(),
@@ -364,8 +366,8 @@ Ion_plan::compute_dose ()
     UNUSED_VARIABLE (dose_img_tmp);
 
     float margin = 0;
+	int margins[2] = {0,0};
     double range = 0;
-    int margins[2] = {0,0};
     int new_dim[2]={0,0};
     double new_center[2]={0,0};
     double biggest_sigma_ever = 0;
@@ -410,7 +412,7 @@ Ion_plan::compute_dose ()
             const Ion_pristine_peak *ppp = *it;
             printf("Building dose matrix for %lg MeV beamlets - \n", ppp->E0);
             timer.start ();
-            compute_sigmas(this, ppp->E0, sigma_max, "small");
+			compute_sigmas(this, ppp->E0, sigma_max, "small", margins);
             time_sigma_conv += timer.report ();
 
             if (this->beam->get_flavor() == 'f') // Desplanques' algorithm
@@ -498,7 +500,7 @@ Ion_plan::compute_dose ()
                 this->rpl_vol_lg->set_ct(this->rpl_vol->get_ct());
                 this->rpl_vol_lg->set_ct_limit(this->rpl_vol->get_ct_limit());
                 this->rpl_vol_lg->compute_ray_data();
-                this->rpl_vol_lg->compute_rpl();
+				this->rpl_vol_lg->compute_rpl();
 
                 this->ct_vol_density_lg->get_aperture()->set_center(new_center);
                 this->ct_vol_density_lg->get_aperture()->set_dim(new_dim);
@@ -514,6 +516,7 @@ Ion_plan::compute_dose ()
 
                 this->sigma_vol_lg->get_aperture()->set_center(new_center);
                 this->sigma_vol_lg->get_aperture()->set_dim(new_dim);
+				
                 this->sigma_vol_lg->get_aperture()->set_distance(this->rpl_vol->get_aperture()->get_distance());
                 this->sigma_vol_lg->get_aperture()->set_spacing(this->rpl_vol->get_aperture()->get_spacing());
                 this->sigma_vol_lg->set_geometry (this->beam->get_source_position(), this->beam->get_isocenter_position(), this->get_aperture()->vup, this->get_aperture()->get_distance(), this->rpl_vol_lg->get_aperture()->get_dim(), this->rpl_vol_lg->get_aperture()->get_center(), this->get_aperture()->get_spacing(), this->get_step_length());
@@ -523,8 +526,30 @@ Ion_plan::compute_dose ()
                 this->sigma_vol_lg->set_front_clipping_plane(this->rpl_vol_lg->get_front_clipping_plane());
                 this->sigma_vol_lg->set_back_clipping_plane(this->rpl_vol_lg->get_back_clipping_plane());
                 this->sigma_vol_lg->compute_rpl_rglength_wo_rg_compensator();
-               
-                compute_sigmas(this, ppp->E0, sigma_max, "large");
+
+				if (this->get_aperture()->have_aperture_image() == true)
+				{
+					this->aperture_vol = new Rpl_volume;
+
+					this->aperture_vol->get_aperture()->set_center(this->get_aperture()->get_center());
+					this->aperture_vol->get_aperture()->set_dim(this->get_aperture()->get_dim());
+				
+					this->aperture_vol->get_aperture()->set_distance(this->rpl_vol->get_aperture()->get_distance());
+					this->aperture_vol->get_aperture()->set_spacing(this->rpl_vol->get_aperture()->get_spacing());
+
+					this->aperture_vol->set_geometry (this->beam->get_source_position(), this->beam->get_isocenter_position(), this->get_aperture()->vup, this->get_aperture()->get_distance(), this->rpl_vol->get_aperture()->get_dim(), this->rpl_vol->get_aperture()->get_center(), this->get_aperture()->get_spacing(), this->get_step_length());
+
+					this->aperture_vol->set_ct(this->rpl_vol->get_ct());
+					this->aperture_vol->set_ct_limit(this->rpl_vol->get_ct_limit());
+					this->aperture_vol->compute_ray_data();
+					this->aperture_vol->set_front_clipping_plane(this->rpl_vol->get_front_clipping_plane());
+					this->aperture_vol->set_back_clipping_plane(this->rpl_vol->get_back_clipping_plane());
+					this->aperture_vol->compute_rpl_void();
+
+					this->aperture_vol->compute_volume_aperture(this->get_aperture());
+				}
+
+                compute_sigmas(this, ppp->E0, sigma_max, "large", margins);				
 
                 build_hong_grid(&area, &xy_grid, radius_sample, theta_sample);
                 compute_dose_ray_shackleford(dose_vol, this, ppp, &area, &xy_grid, radius_sample, theta_sample);
@@ -538,6 +563,28 @@ Ion_plan::compute_dose ()
            rpl_vol->save ("beam_debug/depth_vol.mha");
            beam->dump ("beam_debug");
            }*/
+
+		/* Create 3D aperture volume */
+		if (this->get_aperture()->have_aperture_image() == true)
+		{
+			this->aperture_vol = new Rpl_volume;
+			this->aperture_vol->get_aperture()->set_center(this->get_aperture()->get_center());
+			this->aperture_vol->get_aperture()->set_dim(this->get_aperture()->get_dim());
+			
+			this->aperture_vol->get_aperture()->set_distance(this->rpl_vol->get_aperture()->get_distance());
+			this->aperture_vol->get_aperture()->set_spacing(this->rpl_vol->get_aperture()->get_spacing());
+			
+			this->aperture_vol->set_geometry (this->beam->get_source_position(), this->beam->get_isocenter_position(), this->get_aperture()->vup, this->get_aperture()->get_distance(), this->rpl_vol->get_aperture()->get_dim(), this->rpl_vol->get_aperture()->get_center(), this->get_aperture()->get_spacing(), this->get_step_length());
+
+			this->aperture_vol->set_ct(this->rpl_vol->get_ct());
+			this->aperture_vol->set_ct_limit(this->rpl_vol->get_ct_limit());
+			this->aperture_vol->compute_ray_data();
+			this->aperture_vol->set_front_clipping_plane(this->rpl_vol->get_front_clipping_plane());
+			this->aperture_vol->set_back_clipping_plane(this->rpl_vol->get_back_clipping_plane());
+			this->aperture_vol->compute_rpl_void();
+
+			this->aperture_vol->compute_volume_aperture(this->get_aperture());
+		}
 
         /* scan through patient CT Volume */
         plm_long ct_ijk[3];
@@ -567,6 +614,12 @@ Ion_plan::compute_dose ()
                             (int) ct_ijk[0], (int) ct_ijk[1], (int) ct_ijk[2], 
                             ct_xyz[0], ct_xyz[1], ct_xyz[2]);
                     }
+
+					if (this->get_aperture()->have_aperture_image() == true && this->aperture_vol->get_rgdepth(ct_xyz) < .999)
+					{
+						continue;
+					}
+
                     switch (beam->get_flavor()) {
                     case 'a':
                         dose = dose_direct (ct_xyz, this);
@@ -613,6 +666,15 @@ Ion_plan::dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* 
     float ap_ul_pixel[3]; // coordinates in the BEV (rpl_volume) volume
     float proj_pixel[3]; // coordinates of the ap_ul_pixel + 3 sigma margins on the back clipping plane
     float first_pixel[3]; // coordinates of the first_pixel of the volume to be created
+	plm_long dim[3] = {0,0,0};
+	float offset[3] = {0,0,0};
+	float spacing[3] = {0,0,0};
+	plm_long npix = 0;
+	const float dc[9] = {
+		dose_volume->get_direction_cosines()[0], dose_volume->get_direction_cosines()[1], dose_volume->get_direction_cosines()[2], 
+		dose_volume->get_direction_cosines()[3], dose_volume->get_direction_cosines()[4], dose_volume->get_direction_cosines()[5], 
+		dose_volume->get_direction_cosines()[6], dose_volume->get_direction_cosines()[7], dose_volume->get_direction_cosines()[8]};
+
     float sigma_margins = 3 * *sigma_max;
     double back_clip_useful = volume->compute_farthest_penetrating_ray_on_nrm(range) +10; // after this the volume will be void, the particules will not go farther + 2mm of margins
 
@@ -629,25 +691,24 @@ Ion_plan::dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* 
     first_pixel[1] = floor(proj_pixel[1]);
     first_pixel[2] = floor(volume->get_front_clipping_plane() +volume->get_aperture()->get_distance());
 
-    dose_volume->set_origin(first_pixel);
     for (int i = 0; i < 3; i++)
     {
-        dose_volume->offset[i] = first_pixel[i];
+        offset[i] = first_pixel[i];
         if (i != 2)
         {   
-            dose_volume->spacing[i] = 1;
-            //dose_volume->spacing[i] = volume->get_aperture()->get_spacing(i); would be better...? pblm of lost lateral scattering for high resolution....
-            dose_volume->dim[i] = (plm_long) (2*abs(first_pixel[i]/dose_volume->spacing[i])+1);
+            spacing[i] = 1;
+            //spacing[i] = volume->get_aperture()->get_spacing(i); would be better...? pblm of lost lateral scattering for high resolution....
+            dim[i] = (plm_long) (2*abs(first_pixel[i]/spacing[i])+1);
         }
         else
         {
-            dose_volume->spacing[i] = volume->get_proj_volume()->get_step_length();
-            dose_volume->dim[i] = (plm_long) ((back_clip_useful - volume->get_front_clipping_plane())/dose_volume->spacing[i] + 1);
+            spacing[i] = volume->get_proj_volume()->get_step_length();
+            dim[i] = (plm_long) ((back_clip_useful - volume->get_front_clipping_plane())/spacing[i] + 1);
         }
     }
 
-    dose_volume->npix = dose_volume->dim[0]*dose_volume->dim[1]*dose_volume->dim[2];
-    printf("dim: %d %d %d; offset %lg %lg %lg; sp: %lg %lg %lg\n", (int) dose_volume->dim[0], (int) dose_volume->dim[1], (int) dose_volume->dim[2], dose_volume->offset[0], dose_volume->offset[1], dose_volume->offset[2], dose_volume->spacing[0], dose_volume->spacing[1], dose_volume->spacing[2]);
-    dose_volume->create(dose_volume->dim,dose_volume->offset,dose_volume->spacing,dose_volume->direction_cosines,PT_FLOAT,1);
+    npix = dim[0]*dim[1]*dim[2];
+
+	dose_volume->create(dim, offset, spacing, dc, PT_FLOAT,1);
 }
 

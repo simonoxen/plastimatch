@@ -77,7 +77,7 @@ public:
         return volume_index (this->dim, i, j, k);
     }
     void create (
-        const plm_long dim[3], 
+        const plm_long new_dim[3], 
         const float offset[3], 
         const float spacing[3], 
         const float direction_cosines[9], 

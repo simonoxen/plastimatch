@@ -84,6 +84,7 @@ Volume::~Volume ()
 void
 Volume::init ()
 {
+	
     for (int d = 0; d < 3; d++) {
         dim[d] = 0;
         offset[d] = 0;
@@ -134,7 +135,7 @@ Volume::allocate (void)
 
 void 
 Volume::create (
-    const plm_long dim[3], 
+    const plm_long new_dim[3], 
     const float offset[3], 
     const float spacing[3], 
     const float direction_cosines[9], 
@@ -144,7 +145,7 @@ Volume::create (
 {
     init ();
     for (int i = 0; i < 3; i++) {
-	this->dim[i] = dim[i];
+	this->dim[i] = new_dim[i];
 	this->offset[i] = offset[i];
 	this->spacing[i] = spacing[i];
     }

@@ -868,33 +868,42 @@ Rpl_volume::compute_rpl_rglength_wo_rg_compensator ()
 {
     int ires[2];
 
+
     /* A couple of abbreviations */
     Proj_volume *proj_vol = d_ptr->proj_vol;
     const double *src = proj_vol->get_src();
     ires[0] = d_ptr->proj_vol->get_image_dim (0);
     ires[1] = d_ptr->proj_vol->get_image_dim (1);
-
     unsigned char *ap_img = 0;
+    float *rc_img = 0;
     if (d_ptr->aperture->have_aperture_image()) {
         Volume::Pointer ap_vol = d_ptr->aperture->get_aperture_volume ();
         ap_img = (unsigned char*) ap_vol->img;
     }
-    if (d_ptr->aperture->have_range_compensator_image()) { // we'll need the compensator for sigma source!!
+    if (d_ptr->aperture->have_range_compensator_image()) {
         Volume::Pointer rc_vol 
             = d_ptr->aperture->get_range_compensator_volume ();
-        UNUSED_VARIABLE (rc_vol);
+        rc_img = (float*) rc_vol->img;
     }
     Volume *ct_vol = d_ptr->ct->get_vol();
-    
-    /* We don't need to do the first pass, as it was already done for the real rpl_volume */
+
+    /* Preprocess data by clipping against volume */
+    this->compute_ray_data ();
+
+    if (d_ptr->front_clipping_dist == DBL_MAX) {
+        print_and_exit ("Sorry, total failure intersecting volume\n");
+    }
+
+    lprintf ("FPD = %f, BPD = %f\n", 
+        d_ptr->front_clipping_dist, d_ptr->back_clipping_dist);
 
     /* Ahh.  Now we can set the clipping planes and allocate the 
        actual volume. */
     double clipping_dist[2] = {
-        d_ptr->front_clipping_dist, d_ptr->back_clipping_dist};
+      d_ptr->front_clipping_dist, d_ptr->back_clipping_dist};
     d_ptr->proj_vol->set_clipping_dist (clipping_dist);
     d_ptr->proj_vol->allocate ();
-    
+ 
     /* Scan through the aperture -- second pass */
     for (int r = 0; r < ires[1]; r++) {
         for (int c = 0; c < ires[0]; c++) {
@@ -931,12 +940,11 @@ Rpl_volume::compute_rpl_rglength_wo_rg_compensator ()
                 rpl_ray_trace_callback, /* I: callback */
                 &d_ptr->ct_limit,  /* I: CT bounding region */
                 src,               /* I: @ source */
-                0,                 /* I: range compensator thickness set to 0, we exclude the range compensator from rpl as in the Hong algorithm*/
+                0,            /* I: range compensator thickness */
                 ires               /* I: ray cast resolution */
             );
         }
     }
-
     /* Now we only have a rpl_volume without compensator, from which we need to compute the sigma along this ray */
 }
 
@@ -1664,6 +1672,35 @@ Rpl_volume::compute_beam_modifiers (
 
     //End extra code //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+}
+
+void
+Rpl_volume::compute_volume_aperture(Aperture::Pointer ap)
+{
+	int dim[3] = {(int) this->get_vol()->dim[0], (int) this->get_vol()->dim[1], (int) this->get_vol()->dim[2]};
+	
+	float* ap_vol_img = (float*) this->get_vol()->img;
+
+	Volume::Pointer ap_vol = ap->get_aperture_volume ();
+    unsigned char *ap_img = (unsigned char*) ap_vol->img;
+
+	int idx = 0;
+
+	for(int i = 0; i < dim[0] * dim[1]; i++)
+	{
+		for(int j = 0; j < dim[2]; j++)
+		{
+			idx = j * dim[0] * dim[1] + i;
+			if (ap_img[i] == 1)
+			{
+				ap_vol_img[idx] = 1;
+			}
+			else
+			{
+				ap_vol_img[idx] = 0;
+			}
+		}
+	}
 }
 
 void 

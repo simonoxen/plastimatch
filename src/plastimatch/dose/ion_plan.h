@@ -96,6 +96,7 @@ public:
     Rpl_volume* rpl_vol_lg;
     Rpl_volume* ct_vol_density_lg;
     Rpl_volume* sigma_vol_lg;
+	Rpl_volume* aperture_vol;
 };
 
 #endif

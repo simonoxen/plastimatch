@@ -889,7 +889,7 @@ compute_dose_ray_desplanques(Volume* dose_volume, Volume::Pointer ct_vol, Rpl_vo
 
     for (int i = 0; i < dim[0]*dim[1]; i++)
     {
-        Ray_data* ray_data = &rpl_volume->get_Ray_data()[i];
+		Ray_data* ray_data = &rpl_volume->get_Ray_data()[i];
 
         ap_ij[1] = i / dim[0];
         ap_ij[0] = i- ap_ij[1]*dim[0];
@@ -1279,6 +1279,7 @@ void compute_dose_ray_shackleford(Volume::Pointer dose_vol, Ion_plan* plan, cons
                             vec3_add2(xyz_travel,tmp_xy);
 							
                             rg_length = plan->rpl_vol->get_rgdepth(xyz_travel);
+							
                             if (rg_length <= 0)
                             {
                                 continue;
@@ -1287,17 +1288,18 @@ void compute_dose_ray_shackleford(Volume::Pointer dose_vol, Ion_plan* plan, cons
                             {
                                 /* the dose from that sector is summed */
                                 sigma_travel = plan->sigma_vol->get_rgdepth(xyz_travel);
-                                if (sigma_travel <= 0) 
+								radius = vec3_dist(xyz, xyz_travel);
+								
+								if (sigma_travel < radius / 3 || (plan->get_aperture()->have_aperture_image() == true && plan->aperture_vol->get_rgdepth(xyz_travel) < 0.999)) 
                                 {
                                     continue;
                                 }
                                 else
                                 {
                                     central_sector_dose = plan->beam->lookup_sobp_dose((float) rg_length)* (1/(sigma_travel*sqrt(2*M_PI)));
-                                    radius = vec3_dist(xyz, xyz_travel);
                                     dr = sigma_3 / (2* radius_sample);
                                     dose_img[idx] += plan->get_normalization_dose() * plan->beam->get_beamWeight() * central_sector_dose * get_off_axis(radius, dr, sigma_3/3) * ppp->weight / dose_norm; // * is normalized to a radius =1, need to be adapted to a 3_sigma radius circle
-                                }
+								}
                             }
                         }
                     }

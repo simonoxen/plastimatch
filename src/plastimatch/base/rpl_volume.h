@@ -79,6 +79,8 @@ public:
     void compute_beam_modifiers (Volume *seg_vol, float background);
     void compute_aperture (Volume *tgt_vol, float background);
 
+	void compute_volume_aperture(Aperture::Pointer ap);
+
     void apply_beam_modifiers ();
 
     void save (const std::string& filename);

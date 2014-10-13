@@ -9,7 +9,7 @@
 #include "ray_data.h"
 #include "rpl_volume.h"
 
-void compute_sigmas(Ion_plan* ion_plan, float energy, float* sigma_max, std::string size) //Rpl_volume* sigma_vol, Rpl_volume* ct_vol, float energy, float spacing_z, float* sigma_max)
+void compute_sigmas(Ion_plan* ion_plan, float energy, float* sigma_max, std::string size, int* margins) //Rpl_volume* sigma_vol, Rpl_volume* ct_vol, float energy, float spacing_z, float* sigma_max)
 {
     /* We compute the sigmas for source, range compensator and patient as described in the Hong's paper */
     /* First we set the volume in which the sigmas have to be calculated: the normal rpl_sigma_volume,  */
@@ -24,6 +24,8 @@ void compute_sigmas(Ion_plan* ion_plan, float energy, float* sigma_max, std::str
         sigma_vol = ion_plan->sigma_vol;
         ct_vol = ion_plan->ct_vol_density;
         rgl_vol = ion_plan->rpl_vol;
+		margins[0] = 0;
+		margins[1] = 0;
     }
     else if (size == "large")
     {
@@ -42,7 +44,6 @@ void compute_sigmas(Ion_plan* ion_plan, float energy, float* sigma_max, std::str
 
     /* sigma^2 patient */
     compute_sigma_pt(sigma_vol, rgl_vol, ct_vol, ion_plan, energy);
-
     /* + sigma^2 source */
     if (ion_plan->beam->get_source_size() > 0)
     {            
@@ -56,7 +57,7 @@ void compute_sigmas(Ion_plan* ion_plan, float energy, float* sigma_max, std::str
     /* + sigma^2 range compensator */
     if (ion_plan->get_aperture()->have_range_compensator_image() && energy > 1)
     {            
-        compute_sigma_range_compensator(sigma_vol, rgl_vol, ion_plan, energy);
+        compute_sigma_range_compensator(sigma_vol, rgl_vol, ion_plan, energy, margins);
     }
     else
     {
@@ -168,7 +169,6 @@ float compute_sigma_pt_hetero(Rpl_volume* sigma_vol, Rpl_volume* rgl_vol, Rpl_vo
     {
         ap_img = (unsigned char*) rgl_vol->get_aperture()->get_aperture_volume()->img;
     }
-
     int dim[3] = { sigma_vol->get_vol()->dim[0], sigma_vol->get_vol()->dim[1], sigma_vol->get_vol()->dim[2]};
 
     std::vector<float> sigma_ray (dim[2],0);
@@ -192,19 +192,20 @@ float compute_sigma_pt_hetero(Rpl_volume* sigma_vol, Rpl_volume* rgl_vol, Rpl_vo
     float pixel_depth = 0.0;                        /* depth of the contributing pixel to total sigma (in cm) - center between 2 pixels, the difference in rglength comes from the center of the previous pixel to the center of this pixel */
     float step = 0.0;                               /* step of integration, will depends on the radiologic length */
     /* initializiation of all the rays on which the integration will be done */
-    for (int apert_idx = 0; apert_idx < dim[0] * dim[1]; apert_idx++)
+	printf("sigma_img: %d %d %d\n", sigma_vol->get_vol()->dim[0], sigma_vol->get_vol()->dim[1], sigma_vol->get_vol()->dim[2]);
+	printf("dim: %d %d %d\n", dim[0], dim[1], dim[2]);
+	
+	for (int apert_idx = 0; apert_idx < dim[0] * dim[1]; apert_idx++)
     {   
         if (!rgl_vol->get_aperture()->have_aperture_image() || (rgl_vol->get_aperture()->have_aperture_image() && ap_img[apert_idx] > 0))
         {
             int first_non_null_loc = 0;
-
             for (int s = 0; s < dim[2]; s++)
             {
                 idx = dim[0]*dim[1]*s + apert_idx;
-            
                 range_length_ray[s] = sigma_img[idx];   // at this point sigma is still a range_length volume without range compensator
-                sigma_ray[s] = 0;
-                density_ray[s] = ct_img[idx];           // the density ray is initialized with density
+				sigma_ray[s] = 0;
+				density_ray[s] = ct_img[idx];           // the density ray is initialized with density
             }
     
             //Now we can compute the sigma rays!!!!
@@ -238,6 +239,7 @@ float compute_sigma_pt_hetero(Rpl_volume* sigma_vol, Rpl_volume* rgl_vol, Rpl_vo
                 p = sqrt(2*E*mc2+E*E)/c; // in MeV.s.m-1
                 v = c*sqrt(1-pow((mc2/(E+mc2)),2)); //in m.s-1
                 pv_cache[s] = p * v;
+
                 inv_rad_len[s] = 1.0f / LR_interpolation(density_ray[s]);
                 stop_cache[s] = getstop (E) * WER_interpolation(density_ray[s]) * density_ray[s]; // dE/dx_mat = dE /dx_watter * WER * density (lut in g/cm2)
 
@@ -248,7 +250,7 @@ float compute_sigma_pt_hetero(Rpl_volume* sigma_vol, Rpl_volume* rgl_vol, Rpl_vo
 
                 E = energy;
                 /*integration */
-                for (int t = first_non_null_loc; t <= s && energy > 0;t++)
+                for (int t = first_non_null_loc; t <= s && E > 0.1;t++) // 0.1 cut off energy, if set to 0, the very small energies create a  singularity and a giant/wrong sigma
                 {
                     if (t == s)
                     {
@@ -272,8 +274,8 @@ float compute_sigma_pt_hetero(Rpl_volume* sigma_vol, Rpl_volume* rgl_vol, Rpl_vo
         
                 // We have reached the POI pixel and we can store the y0 value
                 sigma_ray[s] = 141.0f *(1.0f+1.0f/9.0f*log10(inverse_rad_length_integrated))* (float) sqrt(sum); // in mm
-
-                if (E <= 0) // sigma formula is not defined anymore
+				
+                if (E < 0.25) // sigma formula is not defined anymore
                 {
                     break;
                 }
@@ -359,7 +361,7 @@ void compute_sigma_source(Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Ion_pla
     printf("Sigma source computed - sigma_source_max = %lg mm.\n", sigma_max);
 }
 
-void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Ion_plan* ion_plan, float energy)
+void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Ion_plan* ion_plan, float energy, int* margins)
 {
     /* Method of the Hong's algorithm - See Hong's paper */
     /* The range compensator is supposed to be made of lucite and placed right after the aperture*/
@@ -400,6 +402,9 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
     int dim[3] = { sigma_vol->get_vol()->dim[0], sigma_vol->get_vol()->dim[1], sigma_vol->get_vol()->dim[2]};
 
     int idx = 0;
+	int idx2d_sm = 0;
+	int idx2d_lg = 0;
+	int ijk[3] = {0,0,0};
     double proj = 0; // projection factor of the ray on the z axis
     double dist_cp = 0; // distance cp - source for the ray
 
@@ -415,61 +420,137 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
     /* MD Fix: Why ion_plan->ap->nrm is incorrect at this point??? */
     double nrm[3] = {0,0,0};
 
-    for (int i = 0; i < dim[0] * dim[1]; i++)
-    {
-        /* calculation of sigma_srm, see graph A3 from the Hong's paper */
-      if (!rpl_volume->get_aperture()->have_aperture_image() || (rpl_volume->get_aperture()->have_aperture_image() && ap_img[i] > 0))
-        {
-            rc_over_range = rc_img[i] / range; // energy is >1, so range > 0
-            sigma_srm = sigma0 * rc_over_range * ( 0.26232 + 0.64298 * rc_over_range + 0.0952393 * rc_over_range * rc_over_range);
+	if (margins[0] == 0 && margins[1] == 0)
+	{
+		for (int i = 0; i < dim[0] * dim[1]; i++)
+			{
+			/* calculation of sigma_srm, see graph A3 from the Hong's paper */
+			if (!rpl_volume->get_aperture()->have_aperture_image() || (rpl_volume->get_aperture()->have_aperture_image() && ap_img[i] > 0))
+			{
+	            rc_over_range = rc_img[i] / range; // energy is >1, so range > 0
+	
+				if (rc_over_range < 1)
+				{
+					sigma_srm = sigma0 * rc_over_range * ( 0.26232 + 0.64298 * rc_over_range + 0.0952393 * rc_over_range * rc_over_range);
 
-            /* calculation of rc_eff - see Hong's paper graph A3 - linear interpolation of the curve */
-            rc_eff = get_rc_eff(rc_over_range);
+					/* calculation of rc_eff - see Hong's paper graph A3 - linear interpolation of the curve */
+					rc_eff = get_rc_eff(rc_over_range);
         
-            Ray_data* ray_data = &sigma_vol->get_Ray_data()[i];
-        
-            /* MD Fix: Why ion_plan->ap->nrm is incorrect at this point??? */
-            vec3_sub3(nrm, ion_plan->beam->get_source_position(), ion_plan->beam->get_isocenter_position());
-            vec3_normalize1(nrm);
-        
-            proj = -vec3_dot(ray_data->ray, nrm);
-            dist_cp = vec3_dist(ray_data->cp, ion_plan->beam->get_source_position()) * proj;
+					Ray_data* ray_data = &sigma_vol->get_Ray_data()[i];
+	        
+					/* MD Fix: Why ion_plan->ap->nrm is incorrect at this point??? */
+					vec3_sub3(nrm, ion_plan->beam->get_source_position(), ion_plan->beam->get_isocenter_position());
+					vec3_normalize1(nrm);
+	        
+					proj = -vec3_dot(ray_data->ray, nrm);
+					dist_cp = vec3_dist(ray_data->cp, ion_plan->beam->get_source_position()) * proj;
+	
+					for (int j = 0; j < dim[2]; j++)
+					{
+						idx = dim[0]*dim[1]*j + i;
+						if ( rgl_img[idx] < range +10) // +10 because we calculate sigma_rg_compensator a little bit farther after the range to be sure (+1 cm)
+						{
+							z_POI = proj * (dist_cp + (float) j * sigma_vol->get_vol()->spacing[2]);
+							z_eff = ion_plan->get_aperture()->get_distance() + proj * rc_eff;
+	            
+							/* sigma = sigma_srm * (z_POI- z_eff) */
+							if (z_POI - z_eff >= 0)
+							{
+								sigma = sigma_srm * (z_POI - z_eff);
+							}
+							else
+							{
+								sigma = 0;
+								printf("Warning: the image volume intersect the range compensator - in this area the sigma_range compensator will be null.\n");
+							}
+	               
+							sigma_img[idx] += sigma * sigma; // we return the square of sigma_source for the quadratic sum, added to the sigma patient already contained in the sigma volume
 
-            for (int j = 0; j < dim[2]; j++)
-            {
-                idx = dim[0]*dim[1]*j + i;
-                if ( rgl_img[idx] < range +10) // +10 because we calculate sigma_rg_compensator a little bit farther after the range to be sure (+1 cm)
-                {
-                    z_POI = proj * (dist_cp + (float) j * sigma_vol->get_vol()->spacing[2]);
-                    z_eff = ion_plan->get_aperture()->get_distance() + proj * rc_eff;
-            
-                    /* sigma = sigma_srm * (z_POI- z_eff) */
-                    if (z_POI - z_eff >= 0)
-                    {
-                        sigma = sigma_srm * (z_POI - z_eff);
-                    }
-                    else
-                    {
-                        sigma = 0;
-                        printf("Warning: the image volume intersect the range compensator - in this area the sigma_range compensator will be null.\n");
-                    }
-               
-                    sigma_img[idx] += sigma * sigma; // we return the square of sigma_source for the quadratic sum, added to the sigma patient already contained in the sigma volume
+							/* We update sigma_max */
+							if (sigma_max < sigma)
+							{
+								sigma_max = sigma;
+							}
+						}
+						else
+						{
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+	else // if margins != 0 we deal with a large volume containing margins
+	{
+		for(int j = margins[1]; j < dim[1] - margins[1]; j++)
+		{
+			ijk[1] = j - margins[1];
+			for (int i = margins[0]; i < dim[0] - margins[0]; i++)
+			{
+				ijk[0] = i - margins[0];
+				idx2d_sm = ijk[1] * (dim[0] - 2 * margins[0]) + ijk[0];
+				idx2d_lg = j * dim[0] + i;
 
-                    /* We update sigma_max */
-                    if (sigma_max < sigma)
-                    {
-                        sigma_max = sigma;
-                    }
-                }
-                else
-                {
-                    break;
-                }
-            }
-        }
-    }
-    printf("Sigma range compensator computed - sigma_rc_max = %lg mm.\n", sigma_max);
+				/* calculation of sigma_srm, see graph A3 from the Hong's paper */
+				if (!rpl_volume->get_aperture()->have_aperture_image() || (rpl_volume->get_aperture()->have_aperture_image() && ap_img[idx2d_sm] > 0))
+				{
+					rc_over_range = rc_img[idx2d_sm] / range; // energy is >1, so range > 0
+					if (rc_over_range < 1)
+					{
+						sigma_srm = sigma0 * rc_over_range * ( 0.26232 + 0.64298 * rc_over_range + 0.0952393 * rc_over_range * rc_over_range);
+
+						/* calculation of rc_eff - see Hong's paper graph A3 - linear interpolation of the curve */
+						rc_eff = get_rc_eff(rc_over_range);
+        
+						Ray_data* ray_data = &sigma_vol->get_Ray_data()[idx2d_lg];
+	        
+						/* MD Fix: Why ion_plan->ap->nrm is incorrect at this point??? */
+						vec3_sub3(nrm, ion_plan->beam->get_source_position(), ion_plan->beam->get_isocenter_position());
+						vec3_normalize1(nrm);
+	        
+						proj = -vec3_dot(ray_data->ray, nrm);
+						dist_cp = vec3_dist(ray_data->cp, ion_plan->beam->get_source_position()) * proj;
+
+						for (int k = 0; k < dim[2]; k++)
+						{
+							idx = dim[0]*dim[1]*k + idx2d_lg;
+							if ( (rgl_img[idx] + rc_img[idx2d_sm]) < range +10) // +10 because we calculate sigma_rg_compensator a little bit farther after the range to be sure (+1 cm)
+							{
+								z_POI = proj * (dist_cp + (float) k * sigma_vol->get_vol()->spacing[2]);
+								z_eff = ion_plan->get_aperture()->get_distance() + proj * rc_eff;
+		            
+								/* sigma = sigma_srm * (z_POI- z_eff) */
+								if (z_POI - z_eff >= 0)
+								{
+									sigma = sigma_srm * (z_POI - z_eff);
+								}
+								else
+								{
+									sigma = 0;
+									printf("Warning: the image volume intersect the range compensator - in this area the sigma_range compensator will be null.\n");
+								}
+								
+								sigma_img[idx] += sigma * sigma; // we return the square of sigma_source for the quadratic sum, added to the sigma patient already contained in the sigma volume
+
+								/* We update sigma_max */
+								if (sigma_max < sigma)
+								{
+									sigma_max = sigma;
+								}
+							}
+							else
+							{
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	printf("Sigma range compensator computed - sigma_rc_max = %lg mm.\n", sigma_max);
 }
 
 double get_rc_eff(double rc_over_range) /* Values from the table A3 of the Hong's algorithm */
