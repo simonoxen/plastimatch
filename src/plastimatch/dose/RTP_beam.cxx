@@ -8,9 +8,9 @@
 #include <math.h>
 
 #include "bragg_curve.h"
-#include "ion_beam.h"
+#include "RTP_beam.h"
 
-class Ion_beam_private {
+class RTP_beam_private {
 public:
     double source[3];
     double isocenter[3];
@@ -20,7 +20,7 @@ public:
     Particle_type part;
 
 public:
-    Ion_sobp::Pointer sobp;
+    RTP_sobp::Pointer sobp;
     std::string debug_dir;
 
     float beamWeight;
@@ -42,7 +42,7 @@ public:
 #endif
 
 public:
-    Ion_beam_private (Particle_type part)
+    RTP_beam_private (Particle_type part)
     {
         this->source[0] = -1000.f;
         this->source[1] = 0.f;
@@ -55,7 +55,7 @@ public:
         this->homo_approx = 'n';
         this->part = part;
 
-        this->sobp = Ion_sobp::New(new Ion_sobp(part));
+        this->sobp = RTP_sobp::New(new RTP_sobp(part));
 
         this->debug_dir = "";
 
@@ -80,23 +80,23 @@ public:
     }
 };
 
-Ion_beam::Ion_beam ()
+RTP_beam::RTP_beam ()
 {
-    this->d_ptr = new Ion_beam_private(PARTICLE_TYPE_P);
+    this->d_ptr = new RTP_beam_private(PARTICLE_TYPE_P);
 }
 
-Ion_beam::Ion_beam (Particle_type part)
+RTP_beam::RTP_beam (Particle_type part)
 {
-    this->d_ptr = new Ion_beam_private(part);
+    this->d_ptr = new RTP_beam_private(part);
 }
 
-Ion_beam::~Ion_beam ()
+RTP_beam::~RTP_beam ()
 {
     delete this->d_ptr;
 }
 
 bool
-Ion_beam::load (const char* fn)
+RTP_beam::load (const char* fn)
 {
     FILE* fp = fopen (fn, "r");
     char linebuf[128];
@@ -116,19 +116,19 @@ Ion_beam::load (const char* fn)
 }
 
 const double*
-Ion_beam::get_source_position ()
+RTP_beam::get_source_position ()
 {
     return d_ptr->source;
 }
 
 double
-Ion_beam::get_source_position (int dim)
+RTP_beam::get_source_position (int dim)
 {
     return d_ptr->source[dim];
 }
 
 void
-Ion_beam::set_source_position (const float* position)
+RTP_beam::set_source_position (const float* position)
 {
     for (int d = 0; d < 3; d++) {
         d_ptr->source[d] = position[d];
@@ -136,7 +136,7 @@ Ion_beam::set_source_position (const float* position)
 }
 
 void
-Ion_beam::set_source_position (const double* position)
+RTP_beam::set_source_position (const double* position)
 {
     for (int d = 0; d < 3; d++) {
         d_ptr->source[d] = position[d];
@@ -144,19 +144,19 @@ Ion_beam::set_source_position (const double* position)
 }
 
 const double*
-Ion_beam::get_isocenter_position ()
+RTP_beam::get_isocenter_position ()
 {
     return d_ptr->isocenter;
 }
 
 double
-Ion_beam::get_isocenter_position (int dim)
+RTP_beam::get_isocenter_position (int dim)
 {
     return d_ptr->isocenter[dim];
 }
 
 void
-Ion_beam::set_isocenter_position (const float* position)
+RTP_beam::set_isocenter_position (const float* position)
 {
     for (int d = 0; d < 3; d++) {
         d_ptr->isocenter[d] = position[d];
@@ -164,7 +164,7 @@ Ion_beam::set_isocenter_position (const float* position)
 }
 
 void
-Ion_beam::set_isocenter_position (const double* position)
+RTP_beam::set_isocenter_position (const double* position)
 {
     for (int d = 0; d < 3; d++) {
         d_ptr->isocenter[d] = position[d];
@@ -172,61 +172,61 @@ Ion_beam::set_isocenter_position (const double* position)
 }
 
 int
-Ion_beam::get_detail (void) const
+RTP_beam::get_detail (void) const
 {
     return d_ptr->detail;
 }
 
 void
-Ion_beam::set_detail (int detail)
+RTP_beam::set_detail (int detail)
 {
     d_ptr->detail = detail;
 }
 
 char
-Ion_beam::get_flavor (void) const
+RTP_beam::get_flavor (void) const
 {
     return d_ptr->flavor;
 }
 
 void
-Ion_beam::set_flavor (char flavor)
+RTP_beam::set_flavor (char flavor)
 {
     d_ptr->flavor = flavor;
 }
 
 char 
-Ion_beam::get_homo_approx () const
+RTP_beam::get_homo_approx () const
 {
     return d_ptr->homo_approx;
 }
     
 void 
-Ion_beam::set_homo_approx (char homo_approx)
+RTP_beam::set_homo_approx (char homo_approx)
 {
   d_ptr->homo_approx = homo_approx;
 }
 
 float
-Ion_beam::get_beamWeight (void) const
+RTP_beam::get_beamWeight (void) const
 {
     return d_ptr->beamWeight;
 }
 
 void
-Ion_beam::set_beamWeight (float beamWeight)
+RTP_beam::set_beamWeight (float beamWeight)
 {
     d_ptr->beamWeight = beamWeight;
 }
 
 double 
-Ion_beam::get_sobp_maximum_depth ()
+RTP_beam::get_sobp_maximum_depth ()
 {
     return d_ptr->sobp->get_maximum_depth ();
 }
 
 void
-Ion_beam::set_proximal_margin (float proximal_margin)
+RTP_beam::set_proximal_margin (float proximal_margin)
 {
     d_ptr->proximal_margin = proximal_margin;
     d_ptr->sobp->set_prescription_min_max (
@@ -235,7 +235,7 @@ Ion_beam::set_proximal_margin (float proximal_margin)
 }
 
 void
-Ion_beam::set_distal_margin (float distal_margin)
+RTP_beam::set_distal_margin (float distal_margin)
 {
     d_ptr->distal_margin = distal_margin;
     d_ptr->sobp->set_prescription_min_max (
@@ -244,7 +244,7 @@ Ion_beam::set_distal_margin (float distal_margin)
 }
 
 void 
-Ion_beam::set_sobp_prescription_min_max (float d_min, float d_max)
+RTP_beam::set_sobp_prescription_min_max (float d_min, float d_max)
 {
     d_ptr->prescription_d_min = d_min;
     d_ptr->prescription_d_max = d_max;
@@ -254,25 +254,25 @@ Ion_beam::set_sobp_prescription_min_max (float d_min, float d_max)
 }
 
 void
-Ion_beam::set_source_size(float source_size)
+RTP_beam::set_source_size(float source_size)
 {
 	d_ptr->source_size = source_size;
 }
 
 float
-Ion_beam::get_source_size()
+RTP_beam::get_source_size()
 {
 	return d_ptr->source_size;
 }
 
 void
-Ion_beam::set_debug (const std::string& dir)
+RTP_beam::set_debug (const std::string& dir)
 {
     d_ptr->debug_dir = dir;
 }
 
 bool
-Ion_beam::load_xio (const char* fn)
+RTP_beam::load_xio (const char* fn)
 {
 #if defined (commentout)
     int i, j;
@@ -325,7 +325,7 @@ Ion_beam::load_xio (const char* fn)
 }
 
 bool
-Ion_beam::load_txt (const char* fn)
+RTP_beam::load_txt (const char* fn)
 {
 #if defined (commentout)
     char linebuf[128];
@@ -358,7 +358,7 @@ Ion_beam::load_txt (const char* fn)
 }
 
 void
-Ion_beam::add_peak (
+RTP_beam::add_peak (
     double E0,                      /* initial ion energy (MeV) */
     double spread,                  /* beam energy sigma (MeV) */
     double dres,                    /* spatial resolution of bragg curve (mm)*/
@@ -369,7 +369,7 @@ Ion_beam::add_peak (
 }
 
 float
-Ion_beam::lookup_sobp_dose (
+RTP_beam::lookup_sobp_dose (
     float depth
 )
 {
@@ -377,25 +377,25 @@ Ion_beam::lookup_sobp_dose (
 }
 
 void
-Ion_beam::optimize_sobp ()
+RTP_beam::optimize_sobp ()
 {
     d_ptr->sobp->optimize ();
 }
 
 bool
-Ion_beam::generate ()
+RTP_beam::generate ()
 {
     return d_ptr->sobp->generate ();
 }
 
 void
-Ion_beam::dump (const char* dir)
+RTP_beam::dump (const char* dir)
 {
     d_ptr->sobp->dump (dir);
 }
 
-Ion_sobp::Pointer
-Ion_beam::get_sobp()
+RTP_sobp::Pointer
+RTP_beam::get_sobp()
 {
 	return d_ptr->sobp;
 }

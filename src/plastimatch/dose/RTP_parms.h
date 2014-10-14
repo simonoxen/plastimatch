@@ -1,31 +1,31 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _ion_parms_h_
-#define _ion_parms_h_
+#ifndef _RTP_parms_h_
+#define _RTP_parms_h_
 
 #include "plmdose_config.h"
 #include <string>
 #include "plm_path.h"
-#include "ion_plan.h"
+#include "RTP_plan.h"
 #include "threading.h"
 
 class Plm_image;
-class Ion_parms_private;
-class Ion_plan;
+class RTP_parms_private;
+class RTP_plan;
 
-class PLMDOSE_API Ion_parms
+class PLMDOSE_API RTP_parms
 {
 public:
-    Ion_parms_private *d_ptr;
+    RTP_parms_private *d_ptr;
 public:
-    Ion_parms ();
-    ~Ion_parms ();
+    RTP_parms ();
+    ~RTP_parms ();
 
     bool parse_args (int argc, char** argv);
 
 public:
-    Ion_plan::Pointer& get_plan ();
+    RTP_plan::Pointer& get_plan ();
 
 protected:
     void handle_end_of_section (int section);

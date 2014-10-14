@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _radiation_lut_h_
-#define _radiation_lut_h_
+#ifndef _RTP_lut_h_
+#define _RTP_lut_h_
 
 #include <math.h>
 

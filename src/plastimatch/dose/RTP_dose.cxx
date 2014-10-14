@@ -22,19 +22,19 @@
 
 #include "aperture.h"
 #include "dose_volume_functions.h"
-#include "ion_sobp.h"
+#include "RTP_sobp.h"
 #include "interpolate.h"
 #include "plm_image.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
 #include "proj_matrix.h"
-#include "ion_beam.h"
-#include "ion_dose.h"
-#include "ion_parms.h"
-#include "ion_plan.h"
-#include "ion_pristine_peak.h"
+#include "RTP_beam.h"
+#include "RTP_dose.h"
+#include "RTP_parms.h"
+#include "RTP_plan.h"
+#include "RTP_depth_dose.h"
 #include "proj_volume.h"
-#include "radiation_lut.h"
+#include "RTP_lut.h"
 #include "ray_data.h"
 #include "ray_trace.h"
 #include "rpl_volume.h"
@@ -146,7 +146,7 @@ debug_voxel (
 static double
 highland (
     double rgdepth,
-    Ion_beam* beam
+    RTP_beam* beam
 )
 {
 #if defined (commentout)
@@ -183,7 +183,7 @@ highland (
 static double
 highland_maxime_aperture_theta0 (
     double rgdepth,
-    Ion_beam* beam
+    RTP_beam* beam
 )
 {
     float energy = 158.6;		/*Beam energy (MeV)*/
@@ -232,7 +232,7 @@ highland_maxime_aperture_theta0 (
 static double
 highland_maxime_patient_theta_pt (
     double rgdepth,
-    Ion_beam* beam
+    RTP_beam* beam
 )
 {
     float energy = 85;		/*Beam energy (MeV)*/
@@ -332,7 +332,7 @@ off_axis_maxime (
 double
 dose_direct (
     double* ct_xyz,             /* voxel to dose */
-    const Ion_plan* scene
+    const RTP_plan* scene
 )
 {
     /* Find radiological depth at voxel ct_xyz */
@@ -356,7 +356,7 @@ dose_direct (
 double
 dose_debug (
     double* ct_xyz,             /* voxel to dose */
-    const Ion_plan* scene
+    const RTP_plan* scene
 )
 {
 #if defined (commentout)
@@ -372,11 +372,11 @@ double
 dose_scatter (
     double* ct_xyz,
     plm_long* ct_ijk,            // DEBUG
-    const Ion_plan* scene
+    const RTP_plan* scene
 )
 {
     const Aperture::Pointer& ap = scene->get_aperture();
-    Ion_beam*  beam    = scene->beam;
+    RTP_beam*  beam    = scene->beam;
     Rpl_volume*   rpl_vol = scene->rpl_vol;
 
     double rgdepth;
@@ -533,11 +533,11 @@ double
 dose_hong (
     double* ct_xyz,
     plm_long* ct_ijk,            // DEBUG
-    const Ion_plan* scene
+    const RTP_plan* scene
 )
 {
     const Aperture::Pointer& ap = scene->get_aperture();
-    Ion_beam* beam = scene->beam;
+    RTP_beam* beam = scene->beam;
     Rpl_volume* rpl_vol = scene->rpl_vol;
 
     double rgdepth;
@@ -691,11 +691,11 @@ double /* to be implemented */
 dose_hong_maxime (
     double* ct_xyz,
     plm_long* ct_ijk,            // DEBUG
-    const Ion_plan* scene
+    const RTP_plan* scene
 )
 {
     const Aperture::Pointer& ap = scene->get_aperture();
-    Ion_beam* beam = scene->beam;
+    RTP_beam* beam = scene->beam;
     Rpl_volume* rpl_vol = scene->rpl_vol;
 
     double rgdepth;
@@ -816,7 +816,7 @@ dose_hong_maxime (
 double
 dose_hong_sharp (
     double* ct_xyz,             /* voxel to dose */
-    const Ion_plan* scene
+    const RTP_plan* scene
 )
 {
     double value = scene->rpl_dose_vol->get_rgdepth(ct_xyz);
@@ -826,7 +826,7 @@ dose_hong_sharp (
 }
 
 void
-compute_dose_ray_desplanques(Volume* dose_volume, Volume::Pointer ct_vol, Rpl_volume* rpl_volume, Rpl_volume* sigma_volume, Rpl_volume* ct_rpl_volume, Ion_beam* beam, Volume::Pointer final_dose_volume, const Ion_pristine_peak* ppp, float normalization_dose)
+compute_dose_ray_desplanques(Volume* dose_volume, Volume::Pointer ct_vol, Rpl_volume* rpl_volume, Rpl_volume* sigma_volume, Rpl_volume* ct_rpl_volume, RTP_beam* beam, Volume::Pointer final_dose_volume, const RTP_depth_dose* ppp, float normalization_dose)
 {
     if (ppp->weight <= 0)
     {
@@ -1045,10 +1045,10 @@ compute_dose_ray_sharp (
     const Rpl_volume* rpl_volume, 
     const Rpl_volume* sigma_volume, 
     const Rpl_volume* ct_rpl_volume, 
-    const Ion_beam* beam, 
+    const RTP_beam* beam, 
     Rpl_volume* rpl_dose_volume, 
     const Aperture::Pointer ap, 
-    const Ion_pristine_peak* ppp, 
+    const RTP_depth_dose* ppp, 
     const int* margins, 
     float normalization_dose
 )
@@ -1208,7 +1208,7 @@ compute_dose_ray_sharp (
     } // ap_ij[0]   
 }
 
-void compute_dose_ray_shackleford(Volume::Pointer dose_vol, Ion_plan* plan, const Ion_pristine_peak* ppp, std::vector<double>* area, std::vector<double>* xy_grid, int radius_sample, int theta_sample)
+void compute_dose_ray_shackleford(Volume::Pointer dose_vol, RTP_plan* plan, const RTP_depth_dose* ppp, std::vector<double>* area, std::vector<double>* xy_grid, int radius_sample, int theta_sample)
 {
     int ijk[3] = {0,0,0};
     double xyz[4] = {0,0,0,1};

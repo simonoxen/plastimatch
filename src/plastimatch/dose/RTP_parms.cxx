@@ -10,19 +10,19 @@
 #include <string.h>
 
 #include "aperture.h"
-#include "ion_beam.h"
-#include "ion_parms.h"
-#include "ion_plan.h"
+#include "RTP_beam.h"
+#include "RTP_parms.h"
+#include "RTP_plan.h"
 #include "plm_image.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
 #include "rpl_volume.h"
 #include "string_util.h"
 
-class Ion_parms_private {
+class RTP_parms_private {
 public:
     /* Plan */
-    Ion_plan::Pointer plan;
+    RTP_plan::Pointer plan;
 
     /* [SETTINGS] */
     std::string target_fn;
@@ -64,7 +64,7 @@ public:
     std::string ap_filename;
     std::string rc_filename;
 public:
-    Ion_parms_private () {
+    RTP_parms_private () {
         /* GCS FIX: Copy-paste with wed_parms.cxx */
         this->src[0] = -1000.f;
         this->src[1] = 0.f;
@@ -103,13 +103,13 @@ public:
         this->E0 = 0.;
         this->spread = 0.;
 
-        this->plan = Ion_plan::New ();
+        this->plan = RTP_plan::New ();
     }
 };
 
-Ion_parms::Ion_parms ()
+RTP_parms::RTP_parms ()
 {
-    this->d_ptr = new Ion_parms_private;
+    this->d_ptr = new RTP_parms_private;
 
     this->threading = THREADING_CPU_OPENMP;
     this->flavor = 'a';
@@ -121,7 +121,7 @@ Ion_parms::Ion_parms ()
     this->scale = 1.0f;
 }
 
-Ion_parms::~Ion_parms ()
+RTP_parms::~RTP_parms ()
 {
 }
 
@@ -137,7 +137,7 @@ print_usage (void)
 }
 
 int
-Ion_parms::set_key_val (
+RTP_parms::set_key_val (
     const char* key, 
     const char* val, 
     int section
@@ -383,7 +383,7 @@ Ion_parms::set_key_val (
 }
 
 void
-Ion_parms::handle_end_of_section (int section)
+RTP_parms::handle_end_of_section (int section)
 {
     switch (section) {
     case 0:
@@ -405,14 +405,14 @@ Ion_parms::handle_end_of_section (int section)
     }
 }
 
-Ion_plan::Pointer& 
-Ion_parms::get_plan ()
+RTP_plan::Pointer& 
+RTP_parms::get_plan ()
 {
     return d_ptr->plan;
 }
 
 void
-Ion_parms::parse_config (
+RTP_parms::parse_config (
     const char* config_fn
 )
 {
@@ -483,7 +483,7 @@ Ion_parms::parse_config (
 }
 
 bool
-Ion_parms::parse_args (int argc, char** argv)
+RTP_parms::parse_args (int argc, char** argv)
 {
     int i;
     for (i=1; i<argc; i++) {

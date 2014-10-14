@@ -8,9 +8,9 @@
 #include <math.h>
 
 #include "bragg_curve.h"
-#include "ion_pristine_peak.h"
+#include "RTP_depth_dose.h"
 
-Ion_pristine_peak::Ion_pristine_peak ()
+RTP_depth_dose::RTP_depth_dose ()
 {
     this->d_lut = NULL;
     this->e_lut = NULL;
@@ -24,7 +24,7 @@ Ion_pristine_peak::Ion_pristine_peak ()
     this->num_samples = 0;
 }
 
-Ion_pristine_peak::Ion_pristine_peak (
+RTP_depth_dose::RTP_depth_dose (
     double E0, double spread, double dres, double dmax, double weight)
 {
     this->d_lut = NULL;
@@ -39,7 +39,7 @@ Ion_pristine_peak::Ion_pristine_peak (
     this->generate();
 }
 
-Ion_pristine_peak::~Ion_pristine_peak ()
+RTP_depth_dose::~RTP_depth_dose ()
 {
     if (this->d_lut) {
         free (this->d_lut);
@@ -50,7 +50,7 @@ Ion_pristine_peak::~Ion_pristine_peak ()
 }
 
 bool
-Ion_pristine_peak::load (const char* fn)
+RTP_depth_dose::load (const char* fn)
 {
     FILE* fp = fopen (fn, "r");
     char linebuf[128];
@@ -70,7 +70,7 @@ Ion_pristine_peak::load (const char* fn)
 }
 
 bool
-Ion_pristine_peak::load_xio (const char* fn)
+RTP_depth_dose::load_xio (const char* fn)
 {
     int i, j;
     char* ptoken;
@@ -121,7 +121,7 @@ Ion_pristine_peak::load_xio (const char* fn)
 }
 
 bool
-Ion_pristine_peak::load_txt (const char* fn)
+RTP_depth_dose::load_txt (const char* fn)
 {
     char linebuf[128];
     FILE* fp = fopen (fn, "r");
@@ -152,7 +152,7 @@ Ion_pristine_peak::load_txt (const char* fn)
 }
 
 bool
-Ion_pristine_peak::generate ()
+RTP_depth_dose::generate ()
 {
     int i;
     double d;
@@ -191,7 +191,7 @@ Ion_pristine_peak::generate ()
 }
 
 void
-Ion_pristine_peak::dump (const char* fn) const
+RTP_depth_dose::dump (const char* fn) const
 {
     FILE* fp = fopen (fn, "w");
 
@@ -203,7 +203,7 @@ Ion_pristine_peak::dump (const char* fn) const
 }
 
 float
-Ion_pristine_peak::lookup_energy (float depth) const
+RTP_depth_dose::lookup_energy (float depth) const
 {	
     int i;
     float energy = 0.0f;

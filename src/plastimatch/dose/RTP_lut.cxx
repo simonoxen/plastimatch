@@ -2,7 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 
-#include "radiation_lut.h"
+#include "RTP_lut.h"
 
 float LR_interpolation(float density)
 {

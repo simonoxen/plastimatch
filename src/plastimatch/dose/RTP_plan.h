@@ -1,34 +1,34 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _ion_plan_h_
-#define _ion_plan_h_
+#ifndef _RTP_plan_h_
+#define _RTP_plan_h_
 
 #include "plmdose_config.h"
 #include "aperture.h"
 #include "smart_pointer.h"
 
-class Ion_beam;
-class Ion_plan_private;
+class RTP_beam;
+class RTP_plan_private;
 class Plm_image;
 class Proj_matrix;
 class Volume;
 
 class Rpl_volume;
 
-class PLMDOSE_API Ion_plan {
+class PLMDOSE_API RTP_plan {
 public:
-    SMART_POINTER_SUPPORT (Ion_plan);
+    SMART_POINTER_SUPPORT (RTP_plan);
 public:
-    Ion_plan_private *d_ptr;
+    RTP_plan_private *d_ptr;
 public:
-    Ion_plan ();
-    ~Ion_plan ();
+    RTP_plan ();
+    ~RTP_plan ();
 
     bool init ();
 
     /* Set the CT volume for dose calculation.
-       The Ion_plan takes ownership of this CT. */
+       The RTP_plan takes ownership of this CT. */
     //void set_patient (Plm_image*);
     void set_patient (Plm_image::Pointer&);
     void set_patient (ShortImageType::Pointer&);
@@ -86,7 +86,7 @@ public:
     FloatImageType::Pointer get_dose_itk ();
 
 public:
-    Ion_beam *beam;
+    RTP_beam *beam;
     Rpl_volume* rpl_vol; // contains the radiologic path length along a ray
     Rpl_volume* ct_vol_density; // contains the ct_density along the ray
     Rpl_volume* sigma_vol;  // contains the sigma (lateral spread of the pencil beam - used to calculate the off-axis term) along the ray

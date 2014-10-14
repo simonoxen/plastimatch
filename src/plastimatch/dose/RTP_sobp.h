@@ -11,8 +11,8 @@
    will derive the class for proton and other ions.
    ----------------------------------------------------------------------- */
 
-#ifndef _ion_sobp_h_
-#define _ion_sobp_h_
+#ifndef _RTP_sobp_h_
+#define _RTP_sobp_h_
 
 #include <stdio.h>
 #include <vector>
@@ -22,17 +22,17 @@
 
 enum Particle_type {PARTICLE_TYPE_P=1, PARTICLE_TYPE_HE=2, PARTICLE_TYPE_LI=3, PARTICLE_TYPE_BE=4, PARTICLE_TYPE_B=5, PARTICLE_TYPE_C=6, PARTICLE_TYPE_O=8};
 
-class Ion_pristine_peak;
-class Ion_sobp_private;
+class RTP_depth_dose;
+class RTP_sobp_private;
 
-class PLMDOSE_API Ion_sobp {
+class PLMDOSE_API RTP_sobp {
 public:
-    SMART_POINTER_SUPPORT (Ion_sobp);
-    Ion_sobp_private *d_ptr;
+    SMART_POINTER_SUPPORT (RTP_sobp);
+    RTP_sobp_private *d_ptr;
 public:
-    Ion_sobp ();
-	Ion_sobp (Particle_type part);
-    ~Ion_sobp ();
+    RTP_sobp ();
+	RTP_sobp (Particle_type part);
+    ~RTP_sobp ();
 
     void set_resolution (double dres, int num_samples);
 	void set_energyResolution(double eres);
@@ -42,7 +42,7 @@ public:
     void SetParticleType(Particle_type particle_type);
 
     /* Add a pristine peak to a sobp */
-    void add (Ion_pristine_peak* pristine_peak);
+    void add (RTP_depth_dose* depth_dose);
     void add (double E0, double spread, double dres, double dmax, 
         double weight);
 
@@ -84,7 +84,7 @@ public:
     /* set energy step */
     void SetDepthStep(float new_step);	
 	/* get peaks - not a pointer */
-	std::vector<const Ion_pristine_peak*> getPeaks();
+	std::vector<const RTP_depth_dose*> getPeaks();
     /* Weight optimizer */
     void Optimizer();
 	void Optimizer2();

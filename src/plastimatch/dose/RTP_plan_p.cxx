@@ -2,10 +2,10 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
-#include "ion_plan.h"
-#include "ion_plan_p.h"
+#include "RTP_plan.h"
+#include "RTP_plan_p.h"
 
-Ion_plan_private::Ion_plan_private ()
+RTP_plan_private::RTP_plan_private ()
 {
     debug = false;
     step_length = 0.;
@@ -16,6 +16,6 @@ Ion_plan_private::Ion_plan_private ()
 	normalization_dose = 1.0;
 }
 
-Ion_plan_private::~Ion_plan_private ()
+RTP_plan_private::~RTP_plan_private ()
 {
 }

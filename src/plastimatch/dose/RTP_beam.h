@@ -1,27 +1,27 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _ion_beam_h_
-#define _ion_beam_h_
+#ifndef _RTP_beam_h_
+#define _RTP_beam_h_
 
 #include "plmdose_config.h"
 #include <string>
-#include "ion_sobp.h"
+#include "RTP_sobp.h"
 
-class Ion_beam_private;
-class Ion_sobp;
+class RTP_beam_private;
+class RTP_sobp;
 
 /*! \brief 
- * The Ion_beam class encapsulates a single SOBP Ion beam, including 
+ * The RTP_beam class encapsulates a single SOBP RTP beam, including 
  * its associated aperture and range compensator.
  */
-class PLMDOSE_API Ion_beam {
+class PLMDOSE_API RTP_beam {
 public:
-    Ion_beam ();
-	Ion_beam (Particle_type);
-    ~Ion_beam ();
+    RTP_beam ();
+	RTP_beam (Particle_type);
+    ~RTP_beam ();
 public:
-    Ion_beam_private *d_ptr;
+    RTP_beam_private *d_ptr;
 
 public:
     /*! \name Inputs */
@@ -75,7 +75,7 @@ public:
     double get_sobp_maximum_depth ();
 
 	/*! \brief Get Sobp */
-	Ion_sobp::Pointer get_sobp();
+	RTP_sobp::Pointer get_sobp();
 
 	/*! \brief Get "beamWeight" parameter of dose calculation algorithm */
     float get_beamWeight () const;

@@ -11,8 +11,8 @@
 #include "file_util.h"
 #include "path_util.h"
 #include "print_and_exit.h"
-#include "ion_pristine_peak.h"
-#include "ion_sobp.h"
+#include "RTP_depth_dose.h"
+#include "RTP_sobp.h"
 #include "bragg_curve.h"
 #include "string_util.h"
 
@@ -42,9 +42,9 @@ public:
     }
 };
 
-class Ion_sobp_private {
+class RTP_sobp_private {
 public:
-    Ion_sobp_private (Particle_type part) {
+    RTP_sobp_private (Particle_type part) {
         d_lut = new float[0];
         e_lut = new float[0];
         dres = 1.0;
@@ -120,13 +120,13 @@ public:
 	    }
         }
     }
-    ~Ion_sobp_private () {
+    ~RTP_sobp_private () {
         if (d_lut) delete[] d_lut;
         if (e_lut) delete[] e_lut;
         /* GCS FIX: This leaks memory in "peaks" */
     }
 public:
-    std::vector<const Ion_pristine_peak*> peaks;
+    std::vector<const RTP_depth_dose*> depth_dose;
 
     float* d_lut;                   /* depth array (mm) */
     float* e_lut;                   /* energy array (MeV) */
@@ -153,32 +153,32 @@ public:
     float prescription_dmax;
 };
 
-Ion_sobp::Ion_sobp ()
+RTP_sobp::RTP_sobp ()
 {
-    d_ptr = new Ion_sobp_private(PARTICLE_TYPE_P);
+    d_ptr = new RTP_sobp_private(PARTICLE_TYPE_P);
 }
 
-Ion_sobp::Ion_sobp (Particle_type part)
+RTP_sobp::RTP_sobp (Particle_type part)
 {
-    d_ptr = new Ion_sobp_private(part);
+    d_ptr = new RTP_sobp_private(part);
 }
 
 
-Ion_sobp::~Ion_sobp ()
+RTP_sobp::~RTP_sobp ()
 {
     delete d_ptr;
 }
 
 void
-Ion_sobp::add (Ion_pristine_peak* pristine_peak)
+RTP_sobp::add (RTP_depth_dose* depth_dose)
 {
-    d_ptr->peaks.push_back (pristine_peak);
+    d_ptr->depth_dose.push_back (depth_dose);
 
     /* GCS FIX: This should probably update the max depth too */
 }
 
 void
-Ion_sobp::add (double E0, double spread, double dres, double dmax, 
+RTP_sobp::add (double E0, double spread, double dres, double dmax, 
     double weight)
 {
     switch(d_ptr->particle_type)
@@ -188,9 +188,9 @@ Ion_sobp::add (double E0, double spread, double dres, double dmax,
             printf ("Adding peak to sobp (%f, %f, %f) [%f, %f]\n", 
 		(float) E0, (float) spread, (float) weight,
 		(float) dres, (float) dmax);
-	    Ion_pristine_peak *peak = new Ion_pristine_peak (
+	    RTP_depth_dose *depth_dose = new RTP_depth_dose (
 		E0, spread, dres, dmax, weight);
-		d_ptr->peaks.push_back (peak);
+		d_ptr->depth_dose.push_back (depth_dose);
 
 	/* Update maximum */
 	if (dmax > d_ptr->dmax) {
@@ -236,27 +236,27 @@ Ion_sobp::add (double E0, double spread, double dres, double dmax,
 }
 
 void
-Ion_sobp::set_prescription_min_max (float d_min, float d_max)
+RTP_sobp::set_prescription_min_max (float d_min, float d_max)
 {
     d_ptr->prescription_dmin = d_min;
     d_ptr->prescription_dmax = d_max;
 }
 
 void 
-Ion_sobp::set_energyResolution(double eres)
+RTP_sobp::set_energyResolution(double eres)
 {
 	d_ptr->eres = eres;
 	d_ptr->num_peaks = (int) ((d_ptr->E_max - d_ptr->E_min)/ d_ptr->eres + 1);
 }
 
 double 
-Ion_sobp::get_energyResolution()
+RTP_sobp::get_energyResolution()
 {
 	return d_ptr->eres;
 }
 
 void
-Ion_sobp::optimize ()
+RTP_sobp::optimize ()
 {	
     this->SetMinMaxDepths(
         d_ptr->prescription_dmin,
@@ -266,7 +266,7 @@ Ion_sobp::optimize ()
 }
 
 float
-Ion_sobp::lookup_energy (
+RTP_sobp::lookup_energy (
     float depth
 )
 {	
@@ -307,12 +307,12 @@ Ion_sobp::lookup_energy (
 }
 
 bool
-Ion_sobp::generate ()
+RTP_sobp::generate ()
 {
-    std::vector<const Ion_pristine_peak*>::const_iterator it 
-        = d_ptr->peaks.begin();
-    while (it != d_ptr->peaks.end ()) {
-        const Ion_pristine_peak *ppp = *it;
+    std::vector<const RTP_depth_dose*>::const_iterator it 
+        = d_ptr->depth_dose.begin();
+    while (it != d_ptr->depth_dose.end ()) {
+        const RTP_depth_dose *ppp = *it;
 
         /* Construct the data structure first time through */
         if (!d_ptr->d_lut || d_ptr->num_samples != ppp->num_samples) {
@@ -351,7 +351,7 @@ Ion_sobp::generate ()
 }
 
 void
-Ion_sobp::dump (const char* dir)
+RTP_sobp::dump (const char* dir)
 {
     std::string dirname = dir;
 
@@ -364,9 +364,9 @@ Ion_sobp::dump (const char* dir)
     fclose (fp);
 
     /* Dump pristine peaks */
-    std::vector<const Ion_pristine_peak*>::const_iterator it 
-        = d_ptr->peaks.begin();
-    while (it != d_ptr->peaks.end ()) {
+    std::vector<const RTP_depth_dose*>::const_iterator it 
+        = d_ptr->depth_dose.begin();
+    while (it != d_ptr->depth_dose.end ()) {
         std::string fn = string_format ("%s/pristine_%4.2f.txt", dir, 
             (float) (*it)->E0);
         (*it)->dump (fn.c_str());
@@ -374,7 +374,7 @@ Ion_sobp::dump (const char* dir)
     }
 }
 
-void Ion_sobp::SetParticleType(Particle_type particle_type)
+void RTP_sobp::SetParticleType(Particle_type particle_type)
 {
 	switch(particle_type)
 	{
@@ -475,7 +475,7 @@ void Ion_sobp::SetParticleType(Particle_type particle_type)
 	}
 }
 
-void Ion_sobp::printparameters()  // return on the command line the parameters of the sobp to be build
+void RTP_sobp::printparameters()  // return on the command line the parameters of the sobp to be build
 {
 	printf("\nParticle type : ");
 	switch(d_ptr->particle_type)
@@ -533,7 +533,7 @@ void Ion_sobp::printparameters()  // return on the command line the parameters o
 	printf("z_end : %3.2f mm\n\n",d_ptr->dend);
 }
 
-void Ion_sobp::print_sobp_curve()
+void RTP_sobp::print_sobp_curve()
 {
 	printf("\n print sobp curve : \n");
 	if (d_ptr->num_samples != 0)
@@ -550,7 +550,7 @@ void Ion_sobp::print_sobp_curve()
 	printf("\n");
 }
 
-void Ion_sobp::SetMinMaxEnergies(int new_E_min, int new_E_max) // set the sobp parameters by introducing the min and max energies
+void RTP_sobp::SetMinMaxEnergies(int new_E_min, int new_E_max) // set the sobp parameters by introducing the min and max energies
 {
 	if (new_E_max <= 0 || new_E_min <= 0)
 	{
@@ -597,7 +597,7 @@ void Ion_sobp::SetMinMaxEnergies(int new_E_min, int new_E_max) // set the sobp p
 	}
 }
 
-void Ion_sobp::SetMinMaxEnergies(int new_E_min, int new_E_max, int new_step) // set the sobp parameters by introducing the min and max energies
+void RTP_sobp::SetMinMaxEnergies(int new_E_min, int new_E_max, int new_step) // set the sobp parameters by introducing the min and max energies
 {
 	if (new_E_max <= 0 || new_E_min <= 0 || new_step < 0)
 	{
@@ -647,7 +647,7 @@ void Ion_sobp::SetMinMaxEnergies(int new_E_min, int new_E_max, int new_step) // 
 	}
 }
 
-void Ion_sobp::SetMinMaxDepths(float new_z_min, float new_z_max) // set the sobp parameters by introducing the proximal and distal distances
+void RTP_sobp::SetMinMaxDepths(float new_z_min, float new_z_max) // set the sobp parameters by introducing the proximal and distal distances
 {
 	if (new_z_max <= 0 || new_z_min <= 0)
 		{
@@ -696,7 +696,7 @@ void Ion_sobp::SetMinMaxDepths(float new_z_min, float new_z_max) // set the sobp
 	}
 }
 
-void Ion_sobp::SetMinMaxDepths(float new_z_min, float new_z_max, float new_step) // set the sobp parameters by introducing the proximal and distal distances
+void RTP_sobp::SetMinMaxDepths(float new_z_min, float new_z_max, float new_step) // set the sobp parameters by introducing the proximal and distal distances
 {
 	if (new_z_max <= 0 || new_z_min <= 0)
 		{
@@ -747,30 +747,30 @@ void Ion_sobp::SetMinMaxDepths(float new_z_min, float new_z_max, float new_step)
 	}
 }
 
-void Ion_sobp::SetEnergyStep(int new_step)
+void RTP_sobp::SetEnergyStep(int new_step)
 {
 	SetMinMaxEnergies(d_ptr->E_min, d_ptr->E_max, new_step);
 }
 
-void Ion_sobp::SetDepthStep(float new_step)
+void RTP_sobp::SetDepthStep(float new_step)
 {
 	SetMinMaxDepths(d_ptr->dmin, d_ptr->dmax, new_step);
 }
 
-float Ion_sobp::get_maximum_depth()
+float RTP_sobp::get_maximum_depth()
 {
 	return d_ptr->dmax;
 }
 
-std::vector<const Ion_pristine_peak*>
-Ion_sobp::getPeaks()
+std::vector<const RTP_depth_dose*>
+RTP_sobp::getPeaks()
 {
-	return d_ptr->peaks;
+	return d_ptr->depth_dose;
 }
 
 
 
-void Ion_sobp::Optimizer() // the optimizer to get the optimized weights of the beams, optimized by a cost function (see below)
+void RTP_sobp::Optimizer() // the optimizer to get the optimized weights of the beams, optimized by a cost function (see below)
 {
 	double E_max = 0;
 	/* Create function object (for function to be minimized) */
@@ -876,9 +876,9 @@ void Ion_sobp::Optimizer() // the optimizer to get the optimized weights of the 
 	/* Run the optimizer */
     nm.minimize (x,y);
 
-	while (!d_ptr->peaks.empty())
+	while (!d_ptr->depth_dose.empty())
 	{
-		d_ptr->peaks.pop_back();
+		d_ptr->depth_dose.pop_back();
 	}
 
 	for(int i = 0; i < d_ptr->num_peaks; i++)
@@ -887,12 +887,12 @@ void Ion_sobp::Optimizer() // the optimizer to get the optimized weights of the 
 		d_ptr->sobp_weight.push_back(cf.weights[i]);
 	}
 
-	d_ptr->num_samples = d_ptr->peaks[0]->num_samples;
+	d_ptr->num_samples = d_ptr->depth_dose[0]->num_samples;
 
 	this->generate();
 }
 
-void Ion_sobp::Optimizer2() // the optimizer to get the optimized weights of the beams, optimized by a cost function (see below)
+void RTP_sobp::Optimizer2() // the optimizer to get the optimized weights of the beams, optimized by a cost function (see below)
 {
 	double dose_max = 0;
 	/* Create function object (for function to be minimized) */
@@ -974,9 +974,9 @@ void Ion_sobp::Optimizer2() // the optimizer to get the optimized weights of the
 	}
 	}
 
-	while (!d_ptr->peaks.empty())
+	while (!d_ptr->depth_dose.empty())
 	{
-		d_ptr->peaks.pop_back();
+		d_ptr->depth_dose.pop_back();
 	}
 
 	for(int i = 0; i < d_ptr->num_peaks; i++)
@@ -985,7 +985,7 @@ void Ion_sobp::Optimizer2() // the optimizer to get the optimized weights of the
 		d_ptr->sobp_weight.push_back(weight[i]);
 	}
 
-	d_ptr->num_samples = d_ptr->peaks[0]->num_samples;
+	d_ptr->num_samples = d_ptr->depth_dose[0]->num_samples;
 
 	//this->generate();
 }

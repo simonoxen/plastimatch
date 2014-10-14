@@ -8,28 +8,28 @@
 
 #include "aperture.h"
 #include "dose_volume_functions.h"
-#include "ion_beam.h"
-#include "ion_dose.h"
-#include "ion_plan.h"
-#include "ion_plan_p.h"
-#include "ion_pristine_peak.h"
-#include "ion_sigma.h"
-#include "ion_sobp.h"
+#include "RTP_beam.h"
+#include "RTP_dose.h"
+#include "RTP_plan.h"
+#include "RTP_plan_p.h"
+#include "RTP_depth_dose.h"
+#include "RTP_sigma.h"
+#include "RTP_sobp.h"
 #include "plm_image.h"
 #include "plm_timer.h"
 #include "proj_matrix.h"
 #include "proj_volume.h"
-#include "radiation_lut.h"
+#include "RTP_lut.h"
 #include "ray_data.h"
 #include "rpl_volume.h"
 #include "volume.h"
 #include "volume_macros.h"
 
-Ion_plan::Ion_plan ()
+RTP_plan::RTP_plan ()
 {
     printf ("*** Creating proton scene ***\n");
-    this->d_ptr = new Ion_plan_private;
-    this->beam = new Ion_beam;
+    this->d_ptr = new RTP_plan_private;
+    this->beam = new RTP_beam;
     this->rpl_vol = 0;
     if (this->beam->get_flavor() == 'f')
     {
@@ -38,7 +38,7 @@ Ion_plan::Ion_plan ()
     }
 }
 
-Ion_plan::~Ion_plan ()
+RTP_plan::~RTP_plan ()
 {
     delete this->d_ptr;
     delete this->beam;
@@ -48,25 +48,25 @@ Ion_plan::~Ion_plan ()
 }
 
 void
-Ion_plan::set_smearing (float smearing)
+RTP_plan::set_smearing (float smearing)
 {
     d_ptr->smearing = smearing;
 }
 
 void
-Ion_plan::set_step_length (double step_length)
+RTP_plan::set_step_length (double step_length)
 {
     d_ptr->step_length = step_length;
 }
 
 double 
-Ion_plan::get_step_length()
+RTP_plan::get_step_length()
 {
     return d_ptr->step_length;
 }
 
 bool
-Ion_plan::init ()
+RTP_plan::init ()
 {
     if (!this->beam) return false;
     if (!this->get_patient()) return false;
@@ -171,13 +171,13 @@ Ion_plan::init ()
 }
 
 void
-Ion_plan::set_patient (Plm_image::Pointer& ct_vol)
+RTP_plan::set_patient (Plm_image::Pointer& ct_vol)
 {
     d_ptr->patient = ct_vol;
 }
 
 void
-Ion_plan::set_patient (ShortImageType::Pointer& ct_vol)
+RTP_plan::set_patient (ShortImageType::Pointer& ct_vol)
 {
     d_ptr->patient->set_itk (ct_vol);
 
@@ -186,31 +186,31 @@ Ion_plan::set_patient (ShortImageType::Pointer& ct_vol)
 }
 
 void
-Ion_plan::set_patient (FloatImageType::Pointer& ct_vol)
+RTP_plan::set_patient (FloatImageType::Pointer& ct_vol)
 {
     d_ptr->patient->set_itk (ct_vol);
 }
 
 void
-Ion_plan::set_patient (Volume* ct_vol)
+RTP_plan::set_patient (Volume* ct_vol)
 {
     d_ptr->patient->set_volume (ct_vol);
 }
 
 Volume::Pointer
-Ion_plan::get_patient_volume ()
+RTP_plan::get_patient_volume ()
 {
     return d_ptr->patient->get_volume_float ();
 }
 
 Plm_image *
-Ion_plan::get_patient ()
+RTP_plan::get_patient ()
 {
     return d_ptr->patient.get();
 }
 
 void
-Ion_plan::set_target (const std::string& target_fn)
+RTP_plan::set_target (const std::string& target_fn)
 {
     d_ptr->target = Plm_image::New (new Plm_image (target_fn));
 
@@ -219,7 +219,7 @@ Ion_plan::set_target (const std::string& target_fn)
 }
 
 void
-Ion_plan::set_target (UCharImageType::Pointer& target_vol)
+RTP_plan::set_target (UCharImageType::Pointer& target_vol)
 {
     d_ptr->target->set_itk (target_vol);
 
@@ -228,19 +228,19 @@ Ion_plan::set_target (UCharImageType::Pointer& target_vol)
 }
 
 void
-Ion_plan::set_target (FloatImageType::Pointer& target_vol)
+RTP_plan::set_target (FloatImageType::Pointer& target_vol)
 {
     d_ptr->target->set_itk (target_vol);
 }
 
 Plm_image::Pointer&
-Ion_plan::get_target ()
+RTP_plan::get_target ()
 {
     return d_ptr->target;
 }
 
 void
-Ion_plan::compute_beam_modifiers ()
+RTP_plan::compute_beam_modifiers ()
 {
     /* Compute the aperture and compensator */
     this->rpl_vol->compute_beam_modifiers (
@@ -251,49 +251,49 @@ Ion_plan::compute_beam_modifiers ()
 }
 
 void
-Ion_plan::apply_beam_modifiers ()
+RTP_plan::apply_beam_modifiers ()
 {
     this->rpl_vol->apply_beam_modifiers ();
 }
 
 Aperture::Pointer&
-Ion_plan::get_aperture () 
+RTP_plan::get_aperture () 
 {
     return d_ptr->ap;
 }
 
 const Aperture::Pointer&
-Ion_plan::get_aperture () const
+RTP_plan::get_aperture () const
 {
     return d_ptr->ap;
 }
 
 bool
-Ion_plan::get_debug (void) const
+RTP_plan::get_debug (void) const
 {
     return d_ptr->debug;
 }
 
 void
-Ion_plan::set_normalization_dose(float normalization_dose)
+RTP_plan::set_normalization_dose(float normalization_dose)
 {
 	d_ptr->normalization_dose = normalization_dose;
 }
 
 float
-Ion_plan::get_normalization_dose()
+RTP_plan::get_normalization_dose()
 {
 	return d_ptr->normalization_dose;
 }
 
 void
-Ion_plan::set_debug (bool debug)
+RTP_plan::set_debug (bool debug)
 {
     d_ptr->debug = debug;
 }
 
 void
-Ion_plan::set_beam_depth (float z_min, float z_max, float z_step)
+RTP_plan::set_beam_depth (float z_min, float z_max, float z_step)
 {
     d_ptr->z_min = z_min;
     d_ptr->z_max = z_max;
@@ -301,22 +301,22 @@ Ion_plan::set_beam_depth (float z_min, float z_max, float z_step)
 }
 
 Plm_image::Pointer
-Ion_plan::get_dose ()
+RTP_plan::get_dose ()
 {
     return d_ptr->dose;
 }
 
 FloatImageType::Pointer
-Ion_plan::get_dose_itk ()
+RTP_plan::get_dose_itk ()
 {
     return d_ptr->dose->itk_float();
 }
 
 void
-Ion_plan::debug ()
+RTP_plan::debug ()
 {
     Aperture::Pointer& ap = d_ptr->ap;
-    Ion_beam* beam = this->beam;
+    RTP_beam* beam = this->beam;
 
     printf ("BEAM\n");
     printf ("  -- [POS] Source :   %g %g %g\n", 
@@ -352,10 +352,10 @@ display_progress (
 }
 
 void
-Ion_plan::compute_dose ()
+RTP_plan::compute_dose ()
 {
     printf ("-- compute_dose entry --\n");
-    Ion_beam* beam = this->beam;
+    RTP_beam* beam = this->beam;
     Volume::Pointer ct_vol = this->get_patient_volume ();
     Volume::Pointer dose_vol = ct_vol->clone_empty ();
     float* dose_img = (float*) dose_vol->img;
@@ -405,11 +405,11 @@ Ion_plan::compute_dose ()
         }
 
         printf ("More setup\n");
-        std::vector<const Ion_pristine_peak*> peaks = this->beam->get_sobp()->getPeaks();
+        std::vector<const RTP_depth_dose*> peaks = this->beam->get_sobp()->getPeaks();
 
-        std::vector<const Ion_pristine_peak*>::const_reverse_iterator it;
+        std::vector<const RTP_depth_dose*>::const_reverse_iterator it;
         for (it = peaks.rbegin (); it <peaks.rend(); it++) {
-            const Ion_pristine_peak *ppp = *it;
+            const RTP_depth_dose *ppp = *it;
             printf("Building dose matrix for %lg MeV beamlets - \n", ppp->E0);
             timer.start ();
 			compute_sigmas(this, ppp->E0, sigma_max, "small", margins);
@@ -658,7 +658,7 @@ Ion_plan::compute_dose ()
 }
 
 void 
-Ion_plan::dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volume, double range)
+RTP_plan::dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volume, double range)
 {
     /* we want to add extra margins around our volume take into account the dose that will be scattered outside of the rpl_volume */
     /* A 3 sigma margin is applied to the front_back volume, and the size of our volume will be the projection of this shape on the back_clipping_plane */
