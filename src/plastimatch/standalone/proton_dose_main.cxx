@@ -7,9 +7,9 @@
 #include <math.h>
 #include <ctime>
 
-#include "ion_dose.h"
-#include "ion_parms.h"
-#include "ion_plan.h"
+#include "RTP_dose.h"
+#include "RTP_parms.h"
+#include "RTP_plan.h"
 #include "plm_math.h"
 #include "plm_timer.h"
 #include "volume.h"
@@ -18,7 +18,7 @@ int
 main (int argc, char* argv[])
 {
     Plm_timer timer;
-    Ion_parms parms;
+    RTP_parms parms;
     timer.start ();
     if (!parms.parse_args (argc, argv)) {
         return 1;

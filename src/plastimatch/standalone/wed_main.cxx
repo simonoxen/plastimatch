@@ -7,8 +7,8 @@
 #include <math.h>
 
 #include "aperture.h"
-#include "ion_beam.h"
-#include "ion_plan.h"
+#include "RTP_beam.h"
+#include "RTP_plan.h"
 #include "plm_image.h"
 #include "plm_math.h"
 #include "proj_volume.h"
@@ -64,7 +64,7 @@ wed_ct_compute (
     Plm_image::Pointer& ct_vol,  // This is not always ct, 
                                  //  sometimes it is dose or 
                                  //  sometimes it is target mask.
-    Ion_plan *scene,
+    RTP_plan *scene,
     float background
 )
 {
@@ -115,7 +115,7 @@ wed_ct_compute (
 
             float *sin_img = (float*) sinogram_vol->img;
             float *proj_img = (float*) proj_wed_vol->img;
-            plm_long ijk[3];
+			plm_long ijk[3] = {0,0,0};
             plm_long n_voxels_sin = sinogram_vol->dim[0]*sinogram_vol->dim[1]*sinogram_vol->dim[2];
             plm_long n_voxels_proj = proj_wed_vol->dim[0]*proj_wed_vol->dim[1]*proj_wed_vol->dim[2];
             float *sin_array = new float[n_voxels_sin];
@@ -179,7 +179,7 @@ void
 wed_ct_compute (
     const char* out_fn,
     Wed_Parms* parms,
-    Ion_plan *scene,
+    RTP_plan *scene,
     float background
 )
 {
@@ -192,7 +192,7 @@ wed_ct_initialize(Wed_Parms *parms)
 {
 
     Plm_image::Pointer dose_vol;
-    Ion_plan scene;
+    RTP_plan scene;
     float background[4];
 
     /*
