@@ -99,6 +99,10 @@ Xio_studyset::Xio_studyset (const char *input_dir)
     for (int i = 0; i < best_chunk_len; i++) {
 	slices.push_back(all_slices[best_chunk_start + i]);
     }
+
+    // Initialize pixel spacing to zero.  This get set when the 
+    // CT is loaded
+    this->ct_pixel_spacing[0] = this->ct_pixel_spacing[1] = 0.f;
 }
 
 Xio_studyset::~Xio_studyset ()

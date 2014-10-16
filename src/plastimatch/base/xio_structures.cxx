@@ -115,8 +115,11 @@ add_cms_contournames (Rtss *rtss, const char *filename)
 }
 
 static void
-add_cms_structure (Rtss *rtss, const char *filename, 
-		   float z_loc)
+add_cms_structure (
+    Rtss *rtss, 
+    const Xio_studyset& studyset,
+    const char *filename, 
+    float z_loc)
 {
     FILE *fp;
     char buf[1024];
@@ -207,8 +210,15 @@ add_cms_structure (Rtss *rtss, const char *filename,
 				    filename, &buf[line_loc]);
 		}
 
-		curr_polyline->x[point_idx] = x;
-		curr_polyline->y[point_idx] = -y;
+                /* GCS 2014-10-16.  As reported by Thomas Botticello 
+                   and others, the XiO structures are off by 1/2 pixel.
+                   This adjustment must be done before coourdinate 
+                   transformation xio to dicom (e.g. prone).
+                */
+		curr_polyline->x[point_idx] = x 
+                    - 0.5 * studyset.ct_pixel_spacing[0];
+		curr_polyline->y[point_idx] = -y
+                    + 0.5 * studyset.ct_pixel_spacing[1];
 		curr_polyline->z[point_idx] = z_loc;
 		point_idx ++;
 		line_loc += this_loc;
@@ -243,7 +253,9 @@ xio_structures_load (
     for (int i = 0; i < studyset.number_slices; i++) {
 	contour_file = studyset.studyset_dir 
 	    + "/" + studyset.slices[i].filename_contours;
-	add_cms_structure (rtss, contour_file.c_str(), 
+	add_cms_structure (
+            rtss, studyset, 
+            contour_file.c_str(), 
 	    studyset.slices[i].location);
     }
 

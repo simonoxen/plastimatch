@@ -40,6 +40,7 @@ public:
     std::string studyset_dir;
     int number_slices;
     float thickness;
+    float ct_pixel_spacing[2];
     std::vector<Xio_studyset_slice> slices;
     
 public:

@@ -11,7 +11,7 @@ class Slice_index;
 class Xio_ct_transform;
 class Xio_studyset;
 
-PLMBASE_API void xio_ct_load (Plm_image *plm, const Xio_studyset *xio_studyset);
+PLMBASE_API void xio_ct_load (Plm_image *plm, Xio_studyset *xio_studyset);
 PLMBASE_API void xio_ct_apply_transform (Plm_image *plm, Xio_ct_transform *transform);
 
 #endif

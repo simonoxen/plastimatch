@@ -221,7 +221,7 @@ xio_ct_create_volume (
 }
 
 void
-xio_ct_load (Plm_image *pli, const Xio_studyset *studyset)
+xio_ct_load (Plm_image *pli, Xio_studyset *studyset)
 {
     int i;
 
@@ -241,6 +241,11 @@ xio_ct_load (Plm_image *pli, const Xio_studyset *studyset)
 	    xio_ct_load_image (pli, i, ct_file.c_str());
 	}
     }
+
+    /* The code that loads the structure set needs the ct 
+       pixel spacing too, so save that. */
+    studyset->ct_pixel_spacing[0] = xch.spacing[0];
+    studyset->ct_pixel_spacing[1] = xch.spacing[1];
 }
 
 void

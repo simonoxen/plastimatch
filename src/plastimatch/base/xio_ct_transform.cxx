@@ -166,6 +166,5 @@ Xio_ct_transform::set_from_rdd (
 	this->direction_cosines[4] = -1.0f;
 	this->direction_cosines[8] = -1.0f;
     }
-
 }
 
