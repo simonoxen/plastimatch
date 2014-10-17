@@ -8,8 +8,8 @@
 
 enum Plm_return_code
 {
-    PLM_UNINITIALIZE,
-    PLM_SUCCESS,
+    PLM_UNINITIALIZED,    /* Do not use */
+    PLM_SUCCESS,          /* General success */
     PLM_ERROR             /* Unspecified error */
 };
 

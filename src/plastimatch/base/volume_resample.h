@@ -29,4 +29,10 @@ PLMBASE_API Volume::Pointer volume_subsample_vox_legacy (
 PLMBASE_API Volume::Pointer volume_subsample_vox_legacy_nn (
     const Volume::Pointer& vol_in, const float* sampling_rate);
 
+PLMBASE_API Volume::Pointer volume_resample_spacing (
+    const Volume::Pointer& vol_in, const float spacing[3]);
+
+PLMBASE_API Volume::Pointer volume_resample_percent (
+    const Volume::Pointer& vol_in, const float percent[3]);
+
 #endif

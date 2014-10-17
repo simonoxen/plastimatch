@@ -74,19 +74,33 @@ string_util_rtrim_whitespace (char *s)
     }
 }
 
-int
+Plm_return_code
 parse_int13 (int *arr, const char *string)
 {
     int rc;
     rc = sscanf (string, "%d %d %d", &arr[0], &arr[1], &arr[2]);
     if (rc == 3) {
-        return 0;
+        return PLM_SUCCESS;
     } else if (rc == 1) {
         arr[1] = arr[2] = arr[0];
-        return 0;
+        return PLM_SUCCESS;
     } else {
-        /* Failure */
-        return 1;
+        return PLM_ERROR;
+    }
+}
+
+Plm_return_code
+parse_float13 (float *arr, const char *string)
+{
+    int rc;
+    rc = sscanf (string, "%g %g %g", &arr[0], &arr[1], &arr[2]);
+    if (rc == 3) {
+        return PLM_SUCCESS;
+    } else if (rc == 1) {
+        arr[1] = arr[2] = arr[0];
+        return PLM_SUCCESS;
+    } else {
+        return PLM_ERROR;
     }
 }
 

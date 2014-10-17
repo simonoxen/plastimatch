@@ -76,14 +76,7 @@ Bspline_state::Bspline_state ()
 
 Bspline_state::~Bspline_state ()
 {
-    Reg_parms* reg_parms = d_ptr->parms->reg_parms;
-
-    if (reg_parms->lambda > 0.0f) {
-        rst.destroy (reg_parms, d_ptr->bxf);
-    }
-
     bspline_cuda_state_destroy (this, d_ptr->parms, d_ptr->bxf);
-
     delete d_ptr;
 }
 

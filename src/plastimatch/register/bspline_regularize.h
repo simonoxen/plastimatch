@@ -31,9 +31,19 @@ public:
     Bspline_regularize ();
     ~Bspline_regularize ();
 public:
-    /* carry volume addresses here for now */
+    /* all methods */
+    Reg_parms *reg_parms;
     Volume* fixed;
     Volume* moving;
+    Bspline_xform *bxf;
+
+    /* numeric methods */
+    float* q_dxdyz_lut;          /* LUT for influence of dN1/dx*dN2/dy*N3 */
+    float* q_xdydz_lut;          /* LUT for influence of N1*dN2/dy*dN3/dz */
+    float* q_dxydz_lut;          /* LUT for influence of dN1/dx*N2*dN3/dz */
+    float* q_d2xyz_lut;          /* LUT for influence of (d2N1/dx2)*N2*N3 */
+    float* q_xd2yz_lut;          /* LUT for influence of N1*(d2N2/dy2)*N3 */
+    float* q_xyd2z_lut;          /* LUT for influence of N1*N2*(d2N3/dz2) */
 
     /* analytic methods */
     double* QX_mats;    /* Three 4x4 matrices */
@@ -50,20 +60,60 @@ public:
         Reg_parms* reg_parms,
         Bspline_xform* bxf
     );
-    void destroy (
-        Reg_parms* reg_parms,
-        Bspline_xform* bxf
-    );
     void compute_score (
         Bspline_score* bsp_score,    /* Gets updated */
         const Reg_parms* reg_parms,
         const Bspline_xform* bxf
     );
 
-public:
-    void vf_regularize_analytic_init (
+protected:
+    void numeric_init (
         const Bspline_xform* bxf);
-    void vf_regularize_analytic_destroy ();
+    void compute_score_numeric (
+        Bspline_score *bscore, 
+        const Reg_parms *parms, 
+        const Bspline_regularize *rst,
+        const Bspline_xform* bxf);
+
+    void analytic_init (
+        const Bspline_xform* bxf);
+    void compute_score_analytic (
+        Bspline_score *bspline_score, 
+        const Reg_parms* reg_parms,
+        const Bspline_regularize* rst,
+        const Bspline_xform* bxf);
+    void compute_score_analytic_omp (
+        Bspline_score *bspline_score, 
+        const Reg_parms* reg_parms,
+        const Bspline_regularize* rst,
+        const Bspline_xform* bxf);
+
+    void semi_analytic_init (
+        const Bspline_xform* bxf);
+    void create_qlut_grad (
+        const Bspline_xform* bxf,
+        const float img_spacing[3],
+        const plm_long vox_per_rgn[3]);
+    void hessian_component (
+        float out[3], 
+        const Bspline_xform* bxf, 
+        plm_long p[3], 
+        plm_long qidx, 
+        int derive1, 
+        int derive2);
+    void hessian_update_grad (
+        Bspline_score *bscore, 
+        const Bspline_xform* bxf, 
+        plm_long p[3], 
+        plm_long qidx, 
+        float dc_dv[3], 
+        int derive1, 
+        int derive2);
+    void compute_score_semi_analytic (
+        Bspline_score *bscore, 
+        const Reg_parms *parms, 
+        const Bspline_regularize *rst,
+        const Bspline_xform* bxf);
 };
 
 #endif

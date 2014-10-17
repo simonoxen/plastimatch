@@ -9,9 +9,11 @@
 #include "interpolate.h"
 #include "interpolate_macros.h"
 #include "logfile.h"
+#include "mha_io.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "registration_data.h"
+#include "registration_resample.h"
 #include "stage_parms.h"
 #include "translation_optimize.h"
 #include "translation_score.h"
@@ -179,6 +181,7 @@ translation_stage (
     fixed->convert (PT_FLOAT);              /* Maybe not necessary? */
     moving->convert (PT_FLOAT);             /* Maybe not necessary? */
 
+#if defined (commentout)
     lprintf ("SUBSAMPLE: (%g %g %g), (%g %g %g)\n", 
 	stage->resample_rate_fixed[0], stage->resample_rate_fixed[1], 
 	stage->resample_rate_fixed[2], stage->resample_rate_moving[0], 
@@ -188,6 +191,17 @@ translation_stage (
         moving, stage->resample_rate_moving);
     fixed_ss = volume_subsample_vox_legacy (
         fixed, stage->resample_rate_fixed);
+#endif
+    moving_ss = registration_resample_volume (
+        moving, stage, stage->resample_rate_moving);
+    fixed_ss = registration_resample_volume (
+        fixed, stage, stage->resample_rate_fixed);
+#if defined (commentout)
+    moving->debug();
+    moving_ss->debug();
+    write_mha ("moving.mha", moving.get());
+    write_mha ("moving_ss.mha", moving_ss.get());
+#endif
 
     /* Transform input xform to itk translation */
     xform_to_trn (xf_out.get(), xf_in.get(), &pih);

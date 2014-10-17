@@ -911,6 +911,30 @@ Registration_parms::set_key_value (
         }
         stage->resample_type = RESAMPLE_MM;
     }
+    else if (key == "res_pct") {
+        if (!section_stage) goto key_only_allowed_in_section_stage;
+        Plm_return_code rc = stage->set_resample (val);
+        if (rc != PLM_SUCCESS) {
+            goto error_exit;
+        }
+        stage->resample_type = RESAMPLE_PCT;
+    }
+    else if (key == "res_pct_fixed") {
+        if (!section_stage) goto key_only_allowed_in_section_stage;
+        Plm_return_code rc = stage->set_resample_fixed (val);
+        if (rc != PLM_SUCCESS) {
+            goto error_exit;
+        }
+        stage->resample_type = RESAMPLE_PCT;
+    }
+    else if (key == "res_pct_moving") {
+        if (!section_stage) goto key_only_allowed_in_section_stage;
+        Plm_return_code rc = stage->set_resample_moving (val);
+        if (rc != PLM_SUCCESS) {
+            goto error_exit;
+        }
+        stage->resample_type = RESAMPLE_PCT;
+    }
     else if (key == "grid_spac"
         || key == "grid_spacing")
     {

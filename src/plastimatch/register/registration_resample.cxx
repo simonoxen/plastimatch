@@ -12,12 +12,13 @@
 Volume::Pointer
 registration_resample_volume (
     const Volume::Pointer& vol,
-    const Stage_parms* stage
+    const Stage_parms* stage,
+    const float resample_rate[3]
 )
 {
     const Shared_parms *shared = stage->get_shared_parms ();
 
-    lprintf ("SUBSAMPLE %d %d: (%g %g %g), (%g %g %g)\n", 
+    lprintf ("RESAMPLE %d %d: (%g %g %g), (%g %g %g)\n", 
         stage->resample_type,
         shared->legacy_subsampling,
         stage->resample_rate_fixed[0], stage->resample_rate_fixed[1], 
@@ -28,12 +29,16 @@ registration_resample_volume (
     switch (stage->resample_type) {
     case RESAMPLE_VOXEL_RATE:
         if (shared->legacy_subsampling) {
-            return volume_subsample_vox_legacy (
-                vol, stage->resample_rate_moving);
+            return volume_subsample_vox_legacy (vol, resample_rate);
         } else {
-            return volume_subsample_vox (
-                vol, stage->resample_rate_moving);
+            return volume_subsample_vox (vol, resample_rate);
         }
+        break;
+    case RESAMPLE_MM:
+        return volume_resample_spacing (vol, resample_rate);
+        break;
+    case RESAMPLE_PCT:
+        return volume_resample_percent (vol, resample_rate);
         break;
     default:
         print_and_exit ("Unhandled resample_type %d "

@@ -406,7 +406,7 @@ region_smoothness (
 
 
 void
-Bspline_regularize::vf_regularize_analytic_init (
+Bspline_regularize::analytic_init (
     const Bspline_xform* bxf)
 {
     double X[256];                      /* 16 x 16 matrix */
@@ -492,28 +492,10 @@ Bspline_regularize::vf_regularize_analytic_init (
     printf ("Regularizer initialized\n");
 }
 
-void
-Bspline_regularize::vf_regularize_analytic_destroy ()
-{
-    free (this->cond);
-
-    free (this->QX);
-    free (this->QY);
-    free (this->QZ);
-
-    free (this->QX_mats);
-    free (this->QY_mats);
-    free (this->QZ_mats);
-
-    free (this->V_mats);
-    free (this->V);
-}
-
-
 /* flavor 'c' */
 #if (OPENMP_FOUND)
 void
-vf_regularize_analytic_omp (
+Bspline_regularize::compute_score_analytic_omp (
     Bspline_score *bspline_score, 
     const Reg_parms* reg_parms,
     const Bspline_regularize* rst,
@@ -563,7 +545,7 @@ vf_regularize_analytic_omp (
 
 /* flavor 'b' */
 void
-vf_regularize_analytic (
+Bspline_regularize::compute_score_analytic (
     Bspline_score *bspline_score, 
     const Reg_parms* reg_parms,
     const Bspline_regularize* rst,

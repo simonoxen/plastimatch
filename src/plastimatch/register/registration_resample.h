@@ -11,7 +11,8 @@
 Volume::Pointer
 registration_resample_volume (
     const Volume::Pointer& vol,
-    const Stage_parms* stage
+    const Stage_parms* stage,
+    const float resample_rate[3]
 );
 
 #endif

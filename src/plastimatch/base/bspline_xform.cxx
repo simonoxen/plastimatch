@@ -49,13 +49,6 @@ Bspline_xform::Bspline_xform ()
     this->bx_lut = 0;
     this->by_lut = 0;
     this->bz_lut = 0;
-
-    this->q_dxdyz_lut = 0;
-    this->q_xdydz_lut = 0;
-    this->q_dxydz_lut = 0;
-    this->q_d2xyz_lut = 0;
-    this->q_xd2yz_lut = 0;
-    this->q_xyd2z_lut = 0;
 }
 
 Bspline_xform::~Bspline_xform ()

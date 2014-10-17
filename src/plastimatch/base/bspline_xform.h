@@ -47,14 +47,6 @@ public:
     float *by_lut;               /* LUT for influence multiplier in y dir */
     float *bz_lut;               /* LUT for influence multiplier in z dir */
 
-    /* Used by bspline_regularize.c */
-    float* q_dxdyz_lut;          /* LUT for influence of dN1/dx*dN2/dy*N3 */
-    float* q_xdydz_lut;          /* LUT for influence of N1*dN2/dy*dN3/dz */
-    float* q_dxydz_lut;          /* LUT for influence of dN1/dx*N2*dN3/dz */
-    float* q_d2xyz_lut;          /* LUT for influence of (d2N1/dx2)*N2*N3 */
-    float* q_xd2yz_lut;          /* LUT for influence of N1*(d2N2/dy2)*N3 */
-    float* q_xyd2z_lut;          /* LUT for influence of N1*N2*(d2N3/dz2) */
-
 public:
     void fill_coefficients (float val);
     void get_volume_header (Volume_header *vh);

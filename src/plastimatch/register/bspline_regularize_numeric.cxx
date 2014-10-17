@@ -1,6 +1,10 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+/* -----------------------------------------------------------------------
+   This file contains logic for both numeric ('a') and 
+   semi-analytic ('d') methods.
+   ----------------------------------------------------------------------- */
 #include "plmregister_config.h"
 #include <math.h>
 #include <stdio.h>
@@ -20,12 +24,9 @@
 #include "volume_macros.h"
 #include "volume.h"
 
-/* Prototypes */
-static void bspline_xform_free_qlut_grad (Bspline_xform* bxf);
-
 /* Flavor 'a' */
-void
-vf_regularize_numerical (
+static void
+compute_score_numeric_internal (
     Bspline_score *bscore, 
     const Reg_parms *parms, 
     const Bspline_regularize *rst,
@@ -310,42 +311,32 @@ vf_regularize_numerical (
 }
 
 void
-bspline_regularize_numeric_a (
+Bspline_regularize::compute_score_numeric (
     Bspline_score *bscore, 
     const Reg_parms *parms, 
     const Bspline_regularize *rst,
-    const Bspline_xform* bxf
-)
+    const Bspline_xform* bxf)
 {
     Volume *vf = bspline_compute_vf (bxf);
     bscore->rmetric = 0.0;
-    vf_regularize_numerical (bscore, parms, rst, bxf, vf);
+    compute_score_numeric_internal (bscore, parms, rst, bxf, vf);
     delete vf;
 }
 
 void
-bspline_regularize_numeric_a_init (
-    Bspline_regularize* rst,
-    Bspline_xform* bxf
-)
-{
-}
-
-void
-bspline_regularize_numeric_a_destroy (
-    Bspline_regularize* rst,
-    Bspline_xform* bxf
+Bspline_regularize::numeric_init (
+    const Bspline_xform* bxf
 )
 {
 }
 
 /* Flavor 'd' */
-static
-void bspline_xform_create_qlut_grad 
+void 
+Bspline_regularize::create_qlut_grad 
 (
-    Bspline_xform* bxf,         /* Output: bxf with new LUTs */
-    float img_spacing[3],       /* Image spacing (in mm) */
-    plm_long vox_per_rgn[3])         /* Knot spacing (in vox) */
+    const Bspline_xform* bxf,         /* Output: bxf with new LUTs */
+    const float img_spacing[3],       /* Image spacing (in mm) */
+    const plm_long vox_per_rgn[3])         /* Knot spacing (in vox) */
 {
     plm_long i, j, k, p;
     int tx, ty, tz;
@@ -359,23 +350,23 @@ void bspline_xform_create_qlut_grad
 	* 64;
     logfile_printf("Creating gradient multiplier LUTs, %d bytes each\n", q_lut_size);
 
-    bxf->q_dxdyz_lut = (float*) malloc ( q_lut_size );
-    if (!bxf->q_dxdyz_lut) print_and_exit ("Error allocating memory for q_grad_lut\n");
+    this->q_dxdyz_lut = (float*) malloc ( q_lut_size );
+    if (!this->q_dxdyz_lut) print_and_exit ("Error allocating memory for q_grad_lut\n");
 	
-    bxf->q_xdydz_lut = (float*) malloc ( q_lut_size );
-    if (!bxf->q_xdydz_lut) print_and_exit ("Error allocating memory for q_grad_lut\n");
+    this->q_xdydz_lut = (float*) malloc ( q_lut_size );
+    if (!this->q_xdydz_lut) print_and_exit ("Error allocating memory for q_grad_lut\n");
 
-    bxf->q_dxydz_lut = (float*) malloc ( q_lut_size );
-    if (!bxf->q_dxydz_lut) print_and_exit ("Error allocating memory for q_grad_lut\n");
+    this->q_dxydz_lut = (float*) malloc ( q_lut_size );
+    if (!this->q_dxydz_lut) print_and_exit ("Error allocating memory for q_grad_lut\n");
 	
-    bxf->q_d2xyz_lut = (float*) malloc ( q_lut_size );
-    if (!bxf->q_d2xyz_lut) print_and_exit ("Error allocating memory for q_grad_lut\n");
+    this->q_d2xyz_lut = (float*) malloc ( q_lut_size );
+    if (!this->q_d2xyz_lut) print_and_exit ("Error allocating memory for q_grad_lut\n");
 
-    bxf->q_xd2yz_lut = (float*) malloc ( q_lut_size );
-    if (!bxf->q_xd2yz_lut) print_and_exit ("Error allocating memory for q_grad_lut\n");
+    this->q_xd2yz_lut = (float*) malloc ( q_lut_size );
+    if (!this->q_xd2yz_lut) print_and_exit ("Error allocating memory for q_grad_lut\n");
 
-    bxf->q_xyd2z_lut = (float*) malloc ( q_lut_size );
-    if (!bxf->q_xyd2z_lut) print_and_exit ("Error allocating memory for q_grad_lut\n");
+    this->q_xyd2z_lut = (float*) malloc ( q_lut_size );
+    if (!this->q_xyd2z_lut) print_and_exit ("Error allocating memory for q_grad_lut\n");
 
     A = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[0] * 4);
     B = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[1] * 4);
@@ -458,13 +449,13 @@ void bspline_xform_create_qlut_grad
 		    for (ty = 0; ty < 4; ty++) {
 			for (tx = 0; tx < 4; tx++) {
 				
-			    bxf->q_dxdyz_lut[p] = Ax[i*4+tx] * By[j*4+ty] * C[k*4+tz];
-			    bxf->q_xdydz_lut[p] = A[i*4+tx] * By[j*4+ty] * Cz[k*4+tz];
-			    bxf->q_dxydz_lut[p] = Ax[i*4+tx] * B[j*4+ty] * Cz[k*4+tz];
+			    this->q_dxdyz_lut[p] = Ax[i*4+tx] * By[j*4+ty] * C[k*4+tz];
+			    this->q_xdydz_lut[p] = A[i*4+tx] * By[j*4+ty] * Cz[k*4+tz];
+			    this->q_dxydz_lut[p] = Ax[i*4+tx] * B[j*4+ty] * Cz[k*4+tz];
 
-			    bxf->q_d2xyz_lut[p] = Axx[i*4+tx] * B[j*4+ty] * C[k*4+tz];
-			    bxf->q_xd2yz_lut[p] = A[i*4+tx] * Byy[j*4+ty] * C[k*4+tz];
-			    bxf->q_xyd2z_lut[p] = A[i*4+tx] * B[j*4+ty] * Czz[k*4+tz];
+			    this->q_d2xyz_lut[p] = Axx[i*4+tx] * B[j*4+ty] * C[k*4+tz];
+			    this->q_xd2yz_lut[p] = A[i*4+tx] * Byy[j*4+ty] * C[k*4+tz];
+			    this->q_xyd2z_lut[p] = A[i*4+tx] * B[j*4+ty] * Czz[k*4+tz];
 
 			    p++;
 			}
@@ -478,20 +469,6 @@ void bspline_xform_create_qlut_grad
     free (A);
     free (Ax); free(By); free(Cz); free(Axx); free(Byy); free(Czz);
 }
-
-static
-void
-bspline_xform_free_qlut_grad (Bspline_xform* bxf)
-{
-    free (bxf->q_dxdyz_lut);
-    free (bxf->q_dxydz_lut);
-    free (bxf->q_xdydz_lut);
-    free (bxf->q_d2xyz_lut);
-    free (bxf->q_xd2yz_lut);
-    free (bxf->q_xyd2z_lut);
-}
-
-
 
 #define USE_FAST_CODE 1
 
@@ -573,7 +550,7 @@ with respect to variables derive1 and derive2 (0,1,2<->x,y,z),
 or (derive1,derive2)th element of the Hessian of the i-th component of the vector field 
 */
 void
-bspline_regularize_hessian_component (
+Bspline_regularize::hessian_component (
     float out[3], 
     const Bspline_xform* bxf, 
     plm_long p[3], 
@@ -586,18 +563,18 @@ bspline_regularize_hessian_component (
     int cidx;
     float* q_lut = 0;
 
-    if (derive1==0 && derive2==0) q_lut = &bxf->q_d2xyz_lut[qidx*64];
-    if (derive1==1 && derive2==1) q_lut = &bxf->q_xd2yz_lut[qidx*64];
-    if (derive1==2 && derive2==2) q_lut = &bxf->q_xyd2z_lut[qidx*64];
+    if (derive1==0 && derive2==0) q_lut = &this->q_d2xyz_lut[qidx*64];
+    if (derive1==1 && derive2==1) q_lut = &this->q_xd2yz_lut[qidx*64];
+    if (derive1==2 && derive2==2) q_lut = &this->q_xyd2z_lut[qidx*64];
 
-    if (derive1==0 && derive2==1) q_lut = &bxf->q_dxdyz_lut[qidx*64];
-    if (derive1==1 && derive2==0) q_lut = &bxf->q_dxdyz_lut[qidx*64];
+    if (derive1==0 && derive2==1) q_lut = &this->q_dxdyz_lut[qidx*64];
+    if (derive1==1 && derive2==0) q_lut = &this->q_dxdyz_lut[qidx*64];
 	
-    if (derive1==0 && derive2==2) q_lut = &bxf->q_dxydz_lut[qidx*64];
-    if (derive1==2 && derive2==0) q_lut = &bxf->q_dxydz_lut[qidx*64];
+    if (derive1==0 && derive2==2) q_lut = &this->q_dxydz_lut[qidx*64];
+    if (derive1==2 && derive2==0) q_lut = &this->q_dxydz_lut[qidx*64];
 
-    if (derive1==1 && derive2==2) q_lut = &bxf->q_xdydz_lut[qidx*64];
-    if (derive1==2 && derive2==1) q_lut = &bxf->q_xdydz_lut[qidx*64];
+    if (derive1==1 && derive2==2) q_lut = &this->q_xdydz_lut[qidx*64];
+    if (derive1==2 && derive2==1) q_lut = &this->q_xdydz_lut[qidx*64];
 
     out[0] = out[1] = out[2] = 0;
     m = 0;
@@ -648,32 +625,31 @@ bspline_regularize_hessian_component_b (
 }
 
 void
-bspline_regularize_hessian_update_grad (
+Bspline_regularize::hessian_update_grad (
     Bspline_score *bscore, 
     const Bspline_xform* bxf, 
     plm_long p[3], 
     plm_long qidx, 
     float dc_dv[3], 
     int derive1, 
-    int derive2
-)
+    int derive2)
 {
     int i, j, k, m;
     int cidx;
     float* q_lut = 0;
 
-    if (derive1==0 && derive2==0) q_lut = &bxf->q_d2xyz_lut[qidx*64];
-    if (derive1==1 && derive2==1) q_lut = &bxf->q_xd2yz_lut[qidx*64];
-    if (derive1==2 && derive2==2) q_lut = &bxf->q_xyd2z_lut[qidx*64];
+    if (derive1==0 && derive2==0) q_lut = &this->q_d2xyz_lut[qidx*64];
+    if (derive1==1 && derive2==1) q_lut = &this->q_xd2yz_lut[qidx*64];
+    if (derive1==2 && derive2==2) q_lut = &this->q_xyd2z_lut[qidx*64];
 
-    if (derive1==0 && derive2==1) q_lut = &bxf->q_dxdyz_lut[qidx*64];
-    if (derive1==1 && derive2==0) q_lut = &bxf->q_dxdyz_lut[qidx*64];
+    if (derive1==0 && derive2==1) q_lut = &this->q_dxdyz_lut[qidx*64];
+    if (derive1==1 && derive2==0) q_lut = &this->q_dxdyz_lut[qidx*64];
 	
-    if (derive1==0 && derive2==2) q_lut = &bxf->q_dxydz_lut[qidx*64];
-    if (derive1==2 && derive2==0) q_lut = &bxf->q_dxydz_lut[qidx*64];
+    if (derive1==0 && derive2==2) q_lut = &this->q_dxydz_lut[qidx*64];
+    if (derive1==2 && derive2==0) q_lut = &this->q_dxydz_lut[qidx*64];
 
-    if (derive1==1 && derive2==2) q_lut = &bxf->q_xdydz_lut[qidx*64];
-    if (derive1==2 && derive2==1) q_lut = &bxf->q_xdydz_lut[qidx*64];
+    if (derive1==1 && derive2==2) q_lut = &this->q_xdydz_lut[qidx*64];
+    if (derive1==2 && derive2==1) q_lut = &this->q_xdydz_lut[qidx*64];
 
     m = 0;
     for (k = 0; k < 4; k++) {
@@ -754,7 +730,7 @@ update_score_and_grad (
 #endif
 
 void
-bspline_regularize_numeric_d (
+Bspline_regularize::compute_score_semi_analytic (
     Bspline_score *bscore, 
     const Reg_parms *parms, 
     const Bspline_regularize *rst,
@@ -797,22 +773,22 @@ bspline_regularize_numeric_d (
 #if defined (USE_FAST_CODE)
 		grad_score += update_score_and_grad (
 		    bscore, bxf, p, qidx, grad_coeff, 1,
-		    &bxf->q_d2xyz_lut[qidx*64]);
+		    &this->q_d2xyz_lut[qidx*64]);
 		grad_score += update_score_and_grad (
 		    bscore, bxf, p, qidx, grad_coeff, 1,
-		    &bxf->q_xd2yz_lut[qidx*64]);
+		    &this->q_xd2yz_lut[qidx*64]);
 		grad_score += update_score_and_grad (
 		    bscore, bxf, p, qidx, grad_coeff, 1,
-		    &bxf->q_xyd2z_lut[qidx*64]);
+		    &this->q_xyd2z_lut[qidx*64]);
 		grad_score += update_score_and_grad (
 		    bscore, bxf, p, qidx, grad_coeff, 2,
-		    &bxf->q_dxdyz_lut[qidx*64]);
+		    &this->q_dxdyz_lut[qidx*64]);
 		grad_score += update_score_and_grad (
 		    bscore, bxf, p, qidx, grad_coeff, 2,
-		    &bxf->q_dxydz_lut[qidx*64]);
+		    &this->q_dxydz_lut[qidx*64]);
 		grad_score += update_score_and_grad (
 		    bscore, bxf, p, qidx, grad_coeff, 2,
-		    &bxf->q_xdydz_lut[qidx*64]);
+		    &this->q_xdydz_lut[qidx*64]);
 #else
 		for (int d1=0;d1<3;d1++) {
 		    for (int d2=d1;d2<3;d2++) { //six different components only
@@ -851,19 +827,9 @@ bspline_regularize_numeric_d (
 }
 
 void
-bspline_regularize_numeric_d_init (
-    Bspline_regularize* rst,
-    Bspline_xform* bxf
+Bspline_regularize::semi_analytic_init (
+    const Bspline_xform* bxf
 )
 {
-    bspline_xform_create_qlut_grad (bxf, bxf->img_spacing, bxf->vox_per_rgn);
-}
-
-void
-bspline_regularize_numeric_d_destroy (
-    Bspline_regularize* rst,
-    Bspline_xform* bxf
-)
-{
-    bspline_xform_free_qlut_grad (bxf);
+    this->create_qlut_grad (bxf, bxf->img_spacing, bxf->vox_per_rgn);
 }

@@ -149,8 +149,10 @@ Plm_bspline::initialize ()
     d_ptr->fixed_ss = volume_subsample_vox_legacy (
         fixed, stage->resample_rate_fixed);
 #endif
-    d_ptr->moving_ss = registration_resample_volume (moving, stage);
-    d_ptr->fixed_ss = registration_resample_volume (fixed, stage);
+    d_ptr->moving_ss = registration_resample_volume (
+        moving, stage, stage->resample_rate_moving);
+    d_ptr->fixed_ss = registration_resample_volume (
+        fixed, stage, stage->resample_rate_fixed);
 
     //Set parameter values for min/max histogram values
     bsp_parms->mi_fixed_image_minVal = stage->mi_fixed_image_minVal;

@@ -33,5 +33,11 @@ Unspecified future release
 ** Remove duplication of code for photons
 *  RTOG support
 *  RTPLAN support
+*  Scripting
 *  Standalone GUI
 *  Superbuild
+
+Cleanup
+
+*  Better handling of ??_parms class
+*  Rename volume::offset -> volume::origin

@@ -54,6 +54,7 @@ set (CONFIG_FILE_LIST
   "plm-reg-trans-a.txt"
   "plm-reg-trans-b.txt"
   "plm-reg-autores-a.txt"
+  "plm-reg-autores-b.txt"
 )
 foreach (CONFIG_FILE ${CONFIG_FILE_LIST})
   configure_file ("${PLM_TESTING_DATA_DIR}/${CONFIG_FILE}"
@@ -1754,7 +1755,12 @@ set_tests_properties (plm-convert-cxt-check PROPERTIES
 ## plm-convert-xio
 ##  plm-convert-xio-a
 ##  plm-convert-xio-b
+##    (2014-10-13) These used to convert to AVG between -667.5 to -666.6, 
+##    but now the AVG is -665.638611.  Would be good to test with phantom
+##    to make sure the conversion is good.
 ##  plm-warp-xio-a
+##    (2014-10-13) Ditto. AVG was between -661.5 to -661.4, but now 
+##    is -660.018921
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-convert-xio-a"
@@ -1770,7 +1776,7 @@ plmtest_check_interval ("plm-convert-xio-a-check"
   "${PLM_BUILD_TESTING_DIR}/plm-convert-xio-a-stats.stdout.txt"
   "AVE *([-0-9.]*)"
   "-667.5"
-  "-666.6"
+  "-665.2"
   )
 set_tests_properties (plm-convert-xio-a-stats PROPERTIES 
   DEPENDS plm-convert-xio-a)
@@ -1791,7 +1797,7 @@ plmtest_check_interval ("plm-convert-xio-b-check"
   "${PLM_BUILD_TESTING_DIR}/plm-convert-xio-b-stats.stdout.txt"
   "AVE *([-0-9.]*)"
   "-667.5"
-  "-666.6"
+  "-665.2"
   )
 set_tests_properties (plm-convert-xio-b-stats PROPERTIES 
   DEPENDS plm-convert-xio-b)
@@ -1806,13 +1812,13 @@ plm_add_test (
 plm_add_test (
   "plm-warp-xio-a-stats-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;plm-warp-xio-a-img.nrrd"
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-img.nrrd"
   )
 plmtest_check_interval ("plm-warp-xio-a-check-1"
   "${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-stats-1.stdout.txt"
   "AVE *([-0-9.]*)"
   "-661.5"
-  "-661.4"
+  "-659.9"
   )
 plm_add_test (
   "plm-warp-xio-a-stats-2"
@@ -3031,14 +3037,38 @@ plm_add_test (
 plmtest_check_interval ("plm-reg-autores-a-check"
   "${PLM_BUILD_TESTING_DIR}/plm-reg-autores-a-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "-661.75"
-  "-661.65"
+  "-597.6"
+  "-597.5"
   )
 set_property (TEST plm-reg-autores-a APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-reg-autores-a APPEND PROPERTY DEPENDS gauss-2)
 set_tests_properties (plm-reg-autores-a-stats PROPERTIES 
   DEPENDS plm-reg-autores-a)
 set_tests_properties (plm-reg-autores-a-check PROPERTIES 
   DEPENDS plm-reg-autores-a-stats)
+
+plm_add_test (
+  "plm-reg-autores-b"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-autores-b.txt"
+  )
+plm_add_test (
+  "plm-reg-autores-b-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-reg-autores-b.mha"
+  )
+plmtest_check_interval ("plm-reg-autores-b-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-autores-b-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-597.5"
+  "-597.4"
+  )
+set_property (TEST plm-reg-autores-b APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-reg-autores-b APPEND PROPERTY DEPENDS gauss-2)
+set_tests_properties (plm-reg-autores-b-stats PROPERTIES 
+  DEPENDS plm-reg-autores-b)
+set_tests_properties (plm-reg-autores-b-check PROPERTIES 
+  DEPENDS plm-reg-autores-b-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch compose

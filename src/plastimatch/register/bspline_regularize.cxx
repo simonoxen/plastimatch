@@ -4,61 +4,83 @@
 #include "plmregister_config.h"
 
 #include "bspline_regularize.h"
-#include "bspline_regularize_analytic.h"
-#include "bspline_regularize_numeric.h"
-#include "bspline_xform.h"
 #include "print_and_exit.h"
 
 Bspline_regularize::Bspline_regularize ()
 {
+    /* all methods */
+    this->reg_parms = 0;
+    this->fixed = 0;
+    this->moving = 0;
+    this->bxf = 0;
+
+    /* semi-analytic method */
+    this->q_dxdyz_lut = 0;
+    this->q_xdydz_lut = 0;
+    this->q_dxydz_lut = 0;
+    this->q_d2xyz_lut = 0;
+    this->q_xd2yz_lut = 0;
+    this->q_xyd2z_lut = 0;
+
+    /* analytic method */
+    this->QX_mats = 0;
+    this->QY_mats = 0;
+    this->QZ_mats = 0;
+    this->QX = 0;
+    this->QY = 0;
+    this->QZ = 0;
+    this->V_mats = 0;
+    this->V = 0;
+    this->cond = 0;
 }
 
 Bspline_regularize::~Bspline_regularize ()
 {
+    if (!reg_parms) {
+        return;
+    }
+
+    /* Don't free reg_parms, fixed, moving, bxf; you don't own them */
+
+    /* Semi-analytic method has LUTs to free */
+    free (this->q_dxdyz_lut);
+    free (this->q_xdydz_lut);
+    free (this->q_dxydz_lut);
+    free (this->q_d2xyz_lut);
+    free (this->q_xd2yz_lut);
+    free (this->q_xyd2z_lut);
+
+    /* Numeric method has Q matrices to free */
+    free (this->QX_mats);
+    free (this->QY_mats);
+    free (this->QZ_mats);
+    free (this->QX);
+    free (this->QY);
+    free (this->QZ);
+    free (this->V_mats);
+    free (this->V);
+    free (this->cond);
 }
 
 void
 Bspline_regularize::initialize (
-    Reg_parms* reg_parms,
+    Reg_parms *reg_parms,
     Bspline_xform* bxf
 )
 {
-    switch (reg_parms->implementation) {
-    case 'a':
-	bspline_regularize_numeric_a_init (this, bxf);
-        break;
-    case 'b':
-    case 'c':
-        this->vf_regularize_analytic_init (bxf);
-        break;
-    case 'd':
-	bspline_regularize_numeric_d_init (this, bxf);
-        break;
-    default:
-        print_and_exit (
-            "Error: unknown reg_parms->implementation (%c)\n",
-            reg_parms->implementation
-        );
-        break;
-    }
-}
+    this->reg_parms = reg_parms;
+    this->bxf = bxf;
 
-void
-Bspline_regularize::destroy (
-    Reg_parms* reg_parms,
-    Bspline_xform* bxf
-)
-{
     switch (reg_parms->implementation) {
     case 'a':
-	bspline_regularize_numeric_a_destroy (this, bxf);
+	this->numeric_init (bxf);
         break;
     case 'b':
     case 'c':
-        this->vf_regularize_analytic_destroy ();
+        this->analytic_init (bxf);
         break;
     case 'd':
-	bspline_regularize_numeric_d_destroy (this, bxf);
+	this->semi_analytic_init (bxf);
         break;
     default:
         print_and_exit (
@@ -78,20 +100,20 @@ Bspline_regularize::compute_score (
 {
     switch (reg_parms->implementation) {
     case 'a':
-        bspline_regularize_numeric_a (bspline_score, reg_parms, this, bxf);
+        this->compute_score_numeric (bspline_score, reg_parms, this, bxf);
         break;
     case 'b':
-        vf_regularize_analytic (bspline_score, reg_parms, this, bxf);
+        this->compute_score_analytic (bspline_score, reg_parms, this, bxf);
         break;
     case 'c':
 #if (OPENMP_FOUND)
-        vf_regularize_analytic_omp (bspline_score, reg_parms, this, bxf);
+        this->compute_score_analytic_omp (bspline_score, reg_parms, this, bxf);
 #else
-        vf_regularize_analytic (bspline_score, reg_parms, this, bxf);
+        this->compute_score_analytic (bspline_score, reg_parms, this, bxf);
 #endif
         break;
     case 'd':
-        bspline_regularize_numeric_d (bspline_score, reg_parms, this, bxf);
+        this->compute_score_semi_analytic (bspline_score, reg_parms, this, bxf);
         break;
     default:
         print_and_exit (

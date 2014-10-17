@@ -8,6 +8,7 @@
 
 #include "shared_parms.h"
 #include "stage_parms.h"
+#include "string_util.h"
 
 class Stage_parms_private
 {
@@ -300,11 +301,9 @@ Stage_parms::set_process_parms (const Process_parms::Pointer& pp)
 Plm_return_code
 Stage_parms::set_resample (const std::string& s)
 {
-    if (sscanf (s.c_str(), "%g %g %g", 
-            &(this->resample_rate_fixed[0]), 
-            &(this->resample_rate_fixed[1]), 
-            &(this->resample_rate_fixed[2])) != 3) {
-        return PLM_ERROR;
+    Plm_return_code rc = parse_float13 (this->resample_rate_fixed, s.c_str());
+    if (rc != PLM_SUCCESS) {
+        return rc;
     }
     this->resample_rate_moving[0] = this->resample_rate_fixed[0];
     this->resample_rate_moving[1] = this->resample_rate_fixed[1];
@@ -315,11 +314,9 @@ Stage_parms::set_resample (const std::string& s)
 Plm_return_code
 Stage_parms::set_resample_fixed (const std::string& s)
 {
-    if (sscanf (s.c_str(), "%g %g %g", 
-            &(this->resample_rate_fixed[0]), 
-            &(this->resample_rate_fixed[1]), 
-            &(this->resample_rate_fixed[2])) != 3) {
-        return PLM_ERROR;
+    Plm_return_code rc = parse_float13 (this->resample_rate_fixed, s.c_str());
+    if (rc != PLM_SUCCESS) {
+        return rc;
     }
     if (this->resample_type == RESAMPLE_AUTO) {
         this->resample_rate_moving[0] = this->resample_rate_fixed[0];
@@ -332,11 +329,9 @@ Stage_parms::set_resample_fixed (const std::string& s)
 Plm_return_code
 Stage_parms::set_resample_moving (const std::string& s)
 {
-    if (sscanf (s.c_str(), "%g %g %g", 
-            &(this->resample_rate_moving[0]), 
-            &(this->resample_rate_moving[1]), 
-            &(this->resample_rate_moving[2])) != 3) {
-        return PLM_ERROR;
+    Plm_return_code rc = parse_float13 (this->resample_rate_moving, s.c_str());
+    if (rc != PLM_SUCCESS) {
+        return rc;
     }
     if (this->resample_type == RESAMPLE_AUTO) {
         this->resample_rate_fixed[0] = this->resample_rate_moving[0];
