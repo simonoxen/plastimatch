@@ -486,7 +486,8 @@ Rt_study::set_user_metadata (std::vector<std::string>& metadata)
 bool
 Rt_study::have_image ()
 {
-    return (bool) d_ptr->m_img;
+    return (bool) d_ptr->m_img 
+        && d_ptr->m_img->m_type != PLM_IMG_TYPE_UNDEFINED;
 }
 
 Plm_image::Pointer

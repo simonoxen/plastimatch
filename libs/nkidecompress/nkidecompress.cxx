@@ -208,7 +208,7 @@ int nki_private_decompress(short int *dest, signed char *src, int size)
 
         if (iCRC != pHeader->iCompressedCRC)
         { //OperatorConsole.printf("NKI decompression: the file is corrupted\n");
-            //retvalue=0;
+            retvalue=0;
         }
         else
         { //OperatorConsole.printf("NKI private decompression: internal error\n"); 

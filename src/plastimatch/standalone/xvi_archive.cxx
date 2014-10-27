@@ -98,15 +98,21 @@ do_xvi_archive (Xvi_archive_parms *parms)
         /* Load the .SCAN */
         Rt_study rt_study;
         rt_study.load_image (scan_fn);
-        
+
+        if (!rt_study.have_image()) {
+            printf ("ERROR: decompression failure with patient %s\n",
+                parms->patient_id.c_str());
+            exit (1);
+        }
+
         /* Write the DICOM image */
-        printf ("SAVING!!!!?\n");
-        printf ("TYPE = %s\n", plm_image_type_string (rt_study.get_image()->m_type));
-        rt_study.save_dicom ("cbct_output");
+        std::string output_dir = string_format (
+            "cbct_output//%s", image_list.entries[i]);
+        rt_study.save_dicom (output_dir);
 
         /* Create the DICOM SRO */
 
-        break;
+        //break;
     }
 }
 
