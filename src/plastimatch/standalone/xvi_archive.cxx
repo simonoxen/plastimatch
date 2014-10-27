@@ -112,7 +112,7 @@ do_xvi_archive (Xvi_archive_parms *parms)
 
         /* Write the DICOM image */
         std::string output_dir = string_format (
-            "cbct_output//%s", image_list.entries[i]);
+            "cbct_output/%s", image_list.entries[i]);
         rt_study.save_dicom (output_dir);
 
         /* Create the DICOM SRO */
