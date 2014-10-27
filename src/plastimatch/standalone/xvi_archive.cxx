@@ -53,6 +53,11 @@ do_xvi_archive (Xvi_archive_parms *parms)
 
     Dir_list image_list (patient_images_dir);
 
+
+    if (image_list.num_entries == 0) {
+        printf ("Error.  No images found.\n");
+    }
+
     /* For potential CBCT image */
     for (int i = 0; i < image_list.num_entries; i++) {
         if (image_list.entries[i][0] == '.') {
