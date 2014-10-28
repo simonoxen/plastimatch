@@ -189,9 +189,11 @@ if (ITK_FOUND)
   plm_add_executable (wed "${WED_SRC}" 
       "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
       ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-  plm_add_executable (xvi_archive "${XVI_ARCHIVE_SRC}" 
-      "${XVI_ARCHIVE_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
-      ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+  if (PLM_DCM_USE_DCMTK)
+      plm_add_executable (xvi_archive "${XVI_ARCHIVE_SRC}" 
+	  "${XVI_ARCHIVE_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
+	  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+  endif ()
   plm_add_executable (group_add "${GROUP_ADD_SRC}" 
       "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
       ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
