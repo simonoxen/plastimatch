@@ -246,7 +246,7 @@ string_format_va (const char *fmt, va_list ap)
         str.resize(size);
         va_list ap_copy;
         va_copy (ap_copy, ap);
-        int n = vsnprintf((char *)str.c_str(), size-1, fmt, ap_copy);
+        int n = vsnprintf((char *)str.c_str(), size, fmt, ap_copy);
         va_end (ap_copy);
         if (n > -1 && n < size) {
             str = std::string (str.c_str());  /* Strip excess padding */
