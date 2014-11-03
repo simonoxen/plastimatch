@@ -560,18 +560,6 @@ Rt_study::get_dose ()
     return d_ptr->m_dose;
 }
 
-void 
-Rt_study::set_plan(Rt_plan::Pointer rt_plan)
-{
-	d_ptr->m_plan = rt_plan;
-}
-
-Rt_plan::Pointer
-Rt_study::get_plan()
-{
-	return d_ptr->m_plan;
-}
-
 bool
 Rt_study::have_rtss ()
 {

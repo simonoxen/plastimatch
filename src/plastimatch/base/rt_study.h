@@ -11,7 +11,6 @@
 #include "plm_file_format.h"
 #include "plm_image.h"
 #include "plm_image_type.h"
-#include "rt_plan.h"
 #include "rt_study_metadata.h"
 #include "segmentation.h"
 
@@ -85,9 +84,6 @@ public:
     void set_dose (Volume *vol);
     void set_dose (const Plm_image::Pointer& pli);
     Plm_image::Pointer get_dose ();
-
-	void set_plan(Rt_plan::Pointer rt_plan);
-	Rt_plan::Pointer get_plan();
 
     bool have_rtss ();
     Segmentation::Pointer get_rtss ();
