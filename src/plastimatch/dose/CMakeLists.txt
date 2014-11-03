@@ -16,15 +16,14 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 set (PLMDOSE_LIBRARY_SRC
   bragg_curve.cxx
   dose_volume_functions.cxx
-  RTP_beam.cxx
-  RTP_dose.cxx
-  RTP_parms.cxx
-  RTP_plan.cxx
-  RTP_plan_p.cxx
-  RTP_depth_dose.cxx
-  RTP_sigma.cxx
-  RTP_sobp.cxx
-  RTP_lut.cxx
+  rt_beam.cxx
+  rt_depth_dose.cxx
+  rt_dose.cxx
+  rt_lut.cxx
+  rt_parms.cxx
+  rt_plan.cxx  
+  rt_sigma.cxx
+  rt_sobp.cxx  
   wed_parms.cxx
   )
 

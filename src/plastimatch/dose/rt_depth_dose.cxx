@@ -8,23 +8,23 @@
 #include <math.h>
 
 #include "bragg_curve.h"
-#include "RTP_depth_dose.h"
+#include "Rt_depth_dose.h"
 
-RTP_depth_dose::RTP_depth_dose ()
+Rt_depth_dose::Rt_depth_dose ()
 {
     this->d_lut = NULL;
     this->e_lut = NULL;
 
-    this->E0 = 0.0;
-    this->spread = 0.0;
+    this->E0 = 100.0;
+    this->spread = 1.0;
     this->dres = 1.0;
-    this->dmax = 0.0;
+    this->dmax = 400.0;
     this->weight = 1.0;
 
-    this->num_samples = 0;
+    this->num_samples = 400;
 }
 
-RTP_depth_dose::RTP_depth_dose (
+Rt_depth_dose::Rt_depth_dose (
     double E0, double spread, double dres, double dmax, double weight)
 {
     this->d_lut = NULL;
@@ -39,7 +39,7 @@ RTP_depth_dose::RTP_depth_dose (
     this->generate();
 }
 
-RTP_depth_dose::~RTP_depth_dose ()
+Rt_depth_dose::~Rt_depth_dose ()
 {
     if (this->d_lut) {
         free (this->d_lut);
@@ -50,7 +50,7 @@ RTP_depth_dose::~RTP_depth_dose ()
 }
 
 bool
-RTP_depth_dose::load (const char* fn)
+Rt_depth_dose::load (const char* fn)
 {
     FILE* fp = fopen (fn, "r");
     char linebuf[128];
@@ -70,7 +70,7 @@ RTP_depth_dose::load (const char* fn)
 }
 
 bool
-RTP_depth_dose::load_xio (const char* fn)
+Rt_depth_dose::load_xio (const char* fn)
 {
     int i, j;
     char* ptoken;
@@ -121,7 +121,7 @@ RTP_depth_dose::load_xio (const char* fn)
 }
 
 bool
-RTP_depth_dose::load_txt (const char* fn)
+Rt_depth_dose::load_txt (const char* fn)
 {
     char linebuf[128];
     FILE* fp = fopen (fn, "r");
@@ -152,7 +152,7 @@ RTP_depth_dose::load_txt (const char* fn)
 }
 
 bool
-RTP_depth_dose::generate ()
+Rt_depth_dose::generate ()
 {
     int i;
     double d;
@@ -191,7 +191,7 @@ RTP_depth_dose::generate ()
 }
 
 void
-RTP_depth_dose::dump (const char* fn) const
+Rt_depth_dose::dump (const char* fn) const
 {
     FILE* fp = fopen (fn, "w");
 
@@ -203,7 +203,7 @@ RTP_depth_dose::dump (const char* fn) const
 }
 
 float
-RTP_depth_dose::lookup_energy (float depth) const
+Rt_depth_dose::lookup_energy (float depth) const
 {	
     int i;
     float energy = 0.0f;

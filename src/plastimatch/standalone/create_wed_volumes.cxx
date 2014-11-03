@@ -35,7 +35,7 @@ Volume* create_wed_volume (Wed_Parms* parms, Rpl_volume* rpl_vol)
 }
 
 static Volume*
-create_dew_volume (Wed_Parms* parms, RTP_plan *scene)
+create_dew_volume (Wed_Parms* parms, Rt_plan *scene)
 {
     Volume::Pointer patient_vol = scene->get_patient_volume();
 

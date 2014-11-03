@@ -5,6 +5,9 @@
 #define _dose_volume_functions_h_
 
 #include "rpl_volume.h"
+#include "volume.h"
+
+void dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volume, double range);
 
 void calculate_rpl_coordinates_xyz(std::vector<std::vector<double> >* xyz_coordinates_volume, Rpl_volume* rpl_volume);
 void copy_rpl_density(std::vector<double>* CT_density_vol, Rpl_volume* rpl_dose_volume);

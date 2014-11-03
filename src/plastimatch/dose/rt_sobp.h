@@ -11,28 +11,28 @@
    will derive the class for proton and other ions.
    ----------------------------------------------------------------------- */
 
-#ifndef _RTP_sobp_h_
-#define _RTP_sobp_h_
+#ifndef _Rt_sobp_h_
+#define _Rt_sobp_h_
 
 #include <stdio.h>
 #include <vector>
 #include "plmdose_config.h"
 #include "plm_config.h"
+#include "rt_lut.h"
+#include "rt_plan.h"
 #include "smart_pointer.h"
 
-enum Particle_type {PARTICLE_TYPE_P=1, PARTICLE_TYPE_HE=2, PARTICLE_TYPE_LI=3, PARTICLE_TYPE_BE=4, PARTICLE_TYPE_B=5, PARTICLE_TYPE_C=6, PARTICLE_TYPE_O=8};
+class Rt_depth_dose;
+class Rt_sobp_private;
 
-class RTP_depth_dose;
-class RTP_sobp_private;
-
-class PLMDOSE_API RTP_sobp {
+class PLMDOSE_API Rt_sobp {
 public:
-    SMART_POINTER_SUPPORT (RTP_sobp);
-    RTP_sobp_private *d_ptr;
+    SMART_POINTER_SUPPORT (Rt_sobp);
+    Rt_sobp_private *d_ptr;
 public:
-    RTP_sobp ();
-	RTP_sobp (Particle_type part);
-    ~RTP_sobp ();
+    Rt_sobp ();
+	Rt_sobp (Particle_type part);
+    ~Rt_sobp ();
 
     void set_resolution (double dres, int num_samples);
 	void set_energyResolution(double eres);
@@ -42,7 +42,7 @@ public:
     void SetParticleType(Particle_type particle_type);
 
     /* Add a pristine peak to a sobp */
-    void add (RTP_depth_dose* depth_dose);
+    void add (Rt_depth_dose* depth_dose);
     void add (double E0, double spread, double dres, double dmax, 
         double weight);
 
@@ -71,6 +71,43 @@ public:
     /* print sobp curve */
     void print_sobp_curve();
 
+	/* Set private members */
+	void set_dose_lut(float* d_lut, float* e_lut, int num_samples);
+	float* get_d_lut();
+	float* get_e_lut();
+	void set_dres(double dres);
+	double get_dres();
+	void set_num_samples(int num_samples);
+	int get_num_samples();
+	void set_eres(int eres);
+	int get_eres();
+	void set_num_peaks(int num_peaks);
+	int get_num_peaks();
+	void set_E_min(int E_min);
+	int get_E_min();
+	void set_E_max(int E_max);
+	int get_E_max();
+	void set_dmin(float dmin);
+	float get_dmin();
+	void set_dmax(float dmax);
+	float get_dmax();
+	void set_dend(float dend);
+	float get_dend();
+	void set_particle_type(Particle_type particle_type);
+	Particle_type get_particle_type();
+	void set_p(double p);
+	double get_p();
+	void set_alpha(double alpha);
+	double get_alpha();
+	void set_prescription_min(float prescription_min);
+	float get_prescription_min();
+	void set_prescription_max(float prescription_max);
+	float get_prescription_max();
+	void add_weight(double sobp_weight);
+	std::vector<double> get_weight();
+	std::vector<const Rt_depth_dose*> get_depth_dose();
+	void add_depth_dose(const Rt_depth_dose* depth_dose);
+
     /* set the minimal and maximal energy to buld the sobp peak */
     void SetMinMaxEnergies(int new_E_min, int new_E_max);
     /* set the minimal and maximal energy to buld the sobp peak and energy step */
@@ -84,7 +121,7 @@ public:
     /* set energy step */
     void SetDepthStep(float new_step);	
 	/* get peaks - not a pointer */
-	std::vector<const RTP_depth_dose*> getPeaks();
+	std::vector<const Rt_depth_dose*> getPeaks();
     /* Weight optimizer */
     void Optimizer();
 	void Optimizer2();

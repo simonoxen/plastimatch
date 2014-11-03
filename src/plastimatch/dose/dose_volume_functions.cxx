@@ -6,6 +6,60 @@
 #include "proj_volume.h"
 #include "ray_data.h"
 
+void dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volume, double range)
+{
+    /* we want to add extra margins around our volume take into account the dose that will be scattered outside of the rpl_volume */
+    /* A 3 sigma margin is applied to the front_back volume, and the size of our volume will be the projection of this shape on the back_clipping_plane */
+    
+    float ap_ul_pixel[3]; // coordinates in the BEV (rpl_volume) volume
+    float proj_pixel[3]; // coordinates of the ap_ul_pixel + 3 sigma margins on the back clipping plane
+    float first_pixel[3]; // coordinates of the first_pixel of the volume to be created
+	plm_long dim[3] = {0,0,0};
+	float offset[3] = {0,0,0};
+	float spacing[3] = {0,0,0};
+	plm_long npix = 0;
+	const float dc[9] = {
+		dose_volume->get_direction_cosines()[0], dose_volume->get_direction_cosines()[1], dose_volume->get_direction_cosines()[2], 
+		dose_volume->get_direction_cosines()[3], dose_volume->get_direction_cosines()[4], dose_volume->get_direction_cosines()[5], 
+		dose_volume->get_direction_cosines()[6], dose_volume->get_direction_cosines()[7], dose_volume->get_direction_cosines()[8]};
+
+    float sigma_margins = 3 * *sigma_max;
+    double back_clip_useful = volume->compute_farthest_penetrating_ray_on_nrm(range) +10; // after this the volume will be void, the particules will not go farther + 2mm of margins
+
+    ap_ul_pixel[0] = -volume->get_aperture()->get_center()[0]*volume->get_aperture()->get_spacing()[0];
+    ap_ul_pixel[1] = -volume->get_aperture()->get_center()[1]*volume->get_aperture()->get_spacing()[1];
+    ap_ul_pixel[2] = volume->get_aperture()->get_distance();
+
+    proj_pixel[0] = (ap_ul_pixel[0] - sigma_margins)*(back_clip_useful + volume->get_aperture()->get_distance()) / volume->get_aperture()->get_distance();
+    proj_pixel[1] = (ap_ul_pixel[1] - sigma_margins)*(back_clip_useful + volume->get_aperture()->get_distance()) / volume->get_aperture()->get_distance();
+    proj_pixel[2] = back_clip_useful + volume->get_aperture()->get_distance();
+
+    /* We build a matrix that starts from the proj_pixel projection on the front_clipping_plane */
+    first_pixel[0] = floor(proj_pixel[0]);
+    first_pixel[1] = floor(proj_pixel[1]);
+    first_pixel[2] = floor(volume->get_front_clipping_plane() +volume->get_aperture()->get_distance());
+
+    for (int i = 0; i < 3; i++)
+    {
+        offset[i] = first_pixel[i];
+        if (i != 2)
+        {   
+            spacing[i] = 1;
+            //spacing[i] = volume->get_aperture()->get_spacing(i); would be better...? pblm of lost lateral scattering for high resolution....
+            dim[i] = (plm_long) (2*abs(first_pixel[i]/spacing[i])+1);
+        }
+        else
+        {
+            spacing[i] = volume->get_proj_volume()->get_step_length();
+            dim[i] = (plm_long) ((back_clip_useful - volume->get_front_clipping_plane())/spacing[i] + 1);
+        }
+    }
+
+    npix = dim[0]*dim[1]*dim[2];
+
+	dose_volume->create(dim, offset, spacing, dc, PT_FLOAT,1);
+}
+
 void
 calculate_rpl_coordinates_xyz(std::vector<std:: vector<double> >* xyz_coordinates_volume, Rpl_volume* rpl_volume)
 {

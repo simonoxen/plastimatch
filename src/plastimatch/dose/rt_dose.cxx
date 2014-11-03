@@ -22,22 +22,22 @@
 
 #include "aperture.h"
 #include "dose_volume_functions.h"
-#include "RTP_sobp.h"
 #include "interpolate.h"
 #include "plm_image.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
 #include "proj_matrix.h"
-#include "RTP_beam.h"
-#include "RTP_dose.h"
-#include "RTP_parms.h"
-#include "RTP_plan.h"
-#include "RTP_depth_dose.h"
 #include "proj_volume.h"
-#include "RTP_lut.h"
 #include "ray_data.h"
 #include "ray_trace.h"
 #include "rpl_volume.h"
+#include "Rt_beam.h"
+#include "Rt_depth_dose.h"
+#include "Rt_dose.h"
+#include "Rt_lut.h"
+#include "Rt_parms.h"
+#include "Rt_plan.h"
+#include "Rt_sobp.h"
 #include "threading.h"
 #include "volume.h"
 
@@ -146,7 +146,7 @@ debug_voxel (
 static double
 highland (
     double rgdepth,
-    RTP_beam* beam
+    Rt_beam* beam
 )
 {
 #if defined (commentout)
@@ -183,7 +183,7 @@ highland (
 static double
 highland_maxime_aperture_theta0 (
     double rgdepth,
-    RTP_beam* beam
+    Rt_beam* beam
 )
 {
     float energy = 158.6;		/*Beam energy (MeV)*/
@@ -232,7 +232,7 @@ highland_maxime_aperture_theta0 (
 static double
 highland_maxime_patient_theta_pt (
     double rgdepth,
-    RTP_beam* beam
+    Rt_beam* beam
 )
 {
     float energy = 85;		/*Beam energy (MeV)*/
@@ -332,11 +332,11 @@ off_axis_maxime (
 double
 dose_direct (
     double* ct_xyz,             /* voxel to dose */
-    const RTP_plan* scene
+    Rt_beam* beam
 )
 {
     /* Find radiological depth at voxel ct_xyz */
-    double rgdepth = scene->rpl_vol->get_rgdepth (ct_xyz); 
+    double rgdepth = beam->rpl_vol->get_rgdepth (ct_xyz); 
 
     /* The voxel was not hit directly by the beam */
     if (rgdepth <= 0.0f) {
@@ -346,25 +346,25 @@ dose_direct (
 #if defined (commentout)
     printf ("RGD [%g %g %g] = %f, %f\n", 
         ct_xyz[0], ct_xyz[1], ct_xyz[2], rgdepth,
-        scene->beam->lookup_sobp_dose (rgdepth));
+        beam->beam->lookup_sobp_dose (rgdepth));
 #endif
 
     /* return the dose at this radiographic depth */
-    return (double) scene->beam->lookup_sobp_dose ((float)rgdepth);
+    return (double) beam->lookup_sobp_dose ((float)rgdepth);
 }
 
 double
 dose_debug (
     double* ct_xyz,             /* voxel to dose */
-    const RTP_plan* scene
+    Rt_beam* beam
 )
 {
 #if defined (commentout)
-    return rpl_volume_get_rgdepth (scene->rpl_vol, ct_xyz);
+    return rpl_volume_get_rgdepth (beam->rpl_vol, ct_xyz);
 #endif
 
     /* Find radiological depth at voxel ct_xyz */
-    return scene->rpl_vol->get_rgdepth (ct_xyz);
+    return beam->rpl_vol->get_rgdepth (ct_xyz);
 }
 
 /* Accounts for small angle scattering due to Columbic interactions */
@@ -372,12 +372,11 @@ double
 dose_scatter (
     double* ct_xyz,
     plm_long* ct_ijk,            // DEBUG
-    const RTP_plan* scene
+    Rt_beam* beam
 )
 {
-    const Aperture::Pointer& ap = scene->get_aperture();
-    RTP_beam*  beam    = scene->beam;
-    Rpl_volume*   rpl_vol = scene->rpl_vol;
+    const Aperture::Pointer& ap = beam->get_aperture();
+    Rpl_volume*   rpl_vol = beam->rpl_vol;
 
     double rgdepth;
     double sigma;
@@ -533,12 +532,11 @@ double
 dose_hong (
     double* ct_xyz,
     plm_long* ct_ijk,            // DEBUG
-    const RTP_plan* scene
+    Rt_beam* beam
 )
 {
-    const Aperture::Pointer& ap = scene->get_aperture();
-    RTP_beam* beam = scene->beam;
-    Rpl_volume* rpl_vol = scene->rpl_vol;
+    const Aperture::Pointer& ap = beam->get_aperture();
+    Rpl_volume* rpl_vol = beam->rpl_vol;
 
     double rgdepth;
     double sigma;
@@ -691,12 +689,11 @@ double /* to be implemented */
 dose_hong_maxime (
     double* ct_xyz,
     plm_long* ct_ijk,            // DEBUG
-    const RTP_plan* scene
+    Rt_beam* beam
 )
 {
-    const Aperture::Pointer& ap = scene->get_aperture();
-    RTP_beam* beam = scene->beam;
-    Rpl_volume* rpl_vol = scene->rpl_vol;
+    const Aperture::Pointer& ap = beam->get_aperture();
+    Rpl_volume* rpl_vol = beam->rpl_vol;
 
     double rgdepth;
     double sigma;
@@ -816,17 +813,17 @@ dose_hong_maxime (
 double
 dose_hong_sharp (
     double* ct_xyz,             /* voxel to dose */
-    const RTP_plan* scene
+    Rt_beam* beam
 )
 {
-    double value = scene->rpl_dose_vol->get_rgdepth(ct_xyz);
+    double value = beam->rpl_dose_vol->get_rgdepth(ct_xyz);
     /* return the dose at this radiographic depth */
     if (value < 0) {return 0;}
     else {return value;}
 }
 
 void
-compute_dose_ray_desplanques(Volume* dose_volume, Volume::Pointer ct_vol, Rpl_volume* rpl_volume, Rpl_volume* sigma_volume, Rpl_volume* ct_rpl_volume, RTP_beam* beam, Volume::Pointer final_dose_volume, const RTP_depth_dose* ppp, float normalization_dose)
+compute_dose_ray_desplanques(Volume* dose_volume, Volume::Pointer ct_vol, Rpl_volume* rpl_volume, Rpl_volume* sigma_volume, Rpl_volume* ct_rpl_volume, Rt_beam* beam, Volume::Pointer final_dose_volume, const Rt_depth_dose* ppp, float normalization_dose)
 {
     if (ppp->weight <= 0)
     {
@@ -1045,10 +1042,10 @@ compute_dose_ray_sharp (
     const Rpl_volume* rpl_volume, 
     const Rpl_volume* sigma_volume, 
     const Rpl_volume* ct_rpl_volume, 
-    const RTP_beam* beam, 
+    const Rt_beam* beam, 
     Rpl_volume* rpl_dose_volume, 
     const Aperture::Pointer ap, 
-    const RTP_depth_dose* ppp, 
+    const Rt_depth_dose* ppp, 
     const int* margins, 
     float normalization_dose
 )
@@ -1208,7 +1205,7 @@ compute_dose_ray_sharp (
     } // ap_ij[0]   
 }
 
-void compute_dose_ray_shackleford(Volume::Pointer dose_vol, RTP_plan* plan, const RTP_depth_dose* ppp, std::vector<double>* area, std::vector<double>* xy_grid, int radius_sample, int theta_sample)
+void compute_dose_ray_shackleford(Volume::Pointer dose_vol, Rt_plan* plan, const Rt_depth_dose* ppp, std::vector<double>* area, std::vector<double>* xy_grid, int radius_sample, int theta_sample)
 {
     int ijk[3] = {0,0,0};
     double xyz[4] = {0,0,0,1};
@@ -1235,10 +1232,10 @@ void compute_dose_ray_shackleford(Volume::Pointer dose_vol, RTP_plan* plan, cons
     double theta = 0;
     double dr = 0;
 
-    vec3_copy(vec_ud, plan->rpl_vol->get_proj_volume()->get_incr_c());
+    vec3_copy(vec_ud, plan->beam->rpl_vol->get_proj_volume()->get_incr_c());
     vec3_normalize1(vec_ud);
 
-    vec3_copy(vec_rl, plan->rpl_vol->get_proj_volume()->get_incr_r());
+    vec3_copy(vec_rl, plan->beam->rpl_vol->get_proj_volume()->get_incr_r());
     vec3_normalize1(vec_rl);
 
     for (ijk[0] = 0; ijk[0] < ct_dim[0]; ijk[0]++){
@@ -1253,7 +1250,7 @@ void compute_dose_ray_shackleford(Volume::Pointer dose_vol, RTP_plan* plan, cons
                 xyz[1] = (double) dose_vol->offset[1] + ijk[1] * dose_vol->spacing[1];
                 xyz[2] = (double) dose_vol->offset[2] + ijk[2] * dose_vol->spacing[2]; // xyz[3] always = 1.0
 
-                sigma_3 = 3 * plan->sigma_vol_lg->get_rgdepth(xyz);
+                sigma_3 = 3 * plan->beam->sigma_vol_lg->get_rgdepth(xyz);
                 if (sigma_3 <= 0)
                 {
                     continue;
@@ -1278,7 +1275,7 @@ void compute_dose_ray_shackleford(Volume::Pointer dose_vol, RTP_plan* plan, cons
                             vec3_scale2(tmp_xy, tmp_cst);
                             vec3_add2(xyz_travel,tmp_xy);
 							
-                            rg_length = plan->rpl_vol->get_rgdepth(xyz_travel);
+                            rg_length = plan->beam->rpl_vol->get_rgdepth(xyz_travel);
 							
                             if (rg_length <= 0)
                             {
@@ -1287,10 +1284,10 @@ void compute_dose_ray_shackleford(Volume::Pointer dose_vol, RTP_plan* plan, cons
                             else
                             {
                                 /* the dose from that sector is summed */
-                                sigma_travel = plan->sigma_vol->get_rgdepth(xyz_travel);
+                                sigma_travel = plan->beam->sigma_vol->get_rgdepth(xyz_travel);
 								radius = vec3_dist(xyz, xyz_travel);
 								
-								if (sigma_travel < radius / 3 || (plan->get_aperture()->have_aperture_image() == true && plan->aperture_vol->get_rgdepth(xyz_travel) < 0.999)) 
+								if (sigma_travel < radius / 3 || (plan->beam->get_aperture()->have_aperture_image() == true && plan->beam->aperture_vol->get_rgdepth(xyz_travel) < 0.999)) 
                                 {
                                     continue;
                                 }

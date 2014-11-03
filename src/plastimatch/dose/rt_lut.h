@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _RTP_lut_h_
-#define _RTP_lut_h_
+#ifndef _Rt_lut_h_
+#define _Rt_lut_h_
 
 #include <math.h>
 
@@ -16,5 +16,8 @@ extern const double lookup_proton_range_water[][2];
 extern const double lookup_proton_stop_water[][2];
 
 extern const double lookup_off_axis[][2];
+
+extern const int max_depth_proton[];
+extern const double particle_parameters[][2];
 
 #endif

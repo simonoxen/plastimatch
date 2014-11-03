@@ -2,14 +2,13 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 
-#include "RTP_sigma.h"
-
-#include "RTP_beam.h"
-#include "RTP_lut.h"
 #include "ray_data.h"
 #include "rpl_volume.h"
+#include "rt_beam.h"
+#include "rt_lut.h"
+#include "rt_sigma.h"
 
-void compute_sigmas(RTP_plan* plan, float energy, float* sigma_max, std::string size, int* margins) //Rpl_volume* sigma_vol, Rpl_volume* ct_vol, float energy, float spacing_z, float* sigma_max)
+void compute_sigmas(Rt_plan* plan, float energy, float* sigma_max, std::string size, int* margins) //Rpl_volume* sigma_vol, Rpl_volume* ct_vol, float energy, float spacing_z, float* sigma_max)
 {
     /* We compute the sigmas for source, range compensator and patient as described in the Hong's paper */
     /* First we set the volume in which the sigmas have to be calculated: the normal rpl_sigma_volume,  */
@@ -21,17 +20,17 @@ void compute_sigmas(RTP_plan* plan, float energy, float* sigma_max, std::string 
 
     if (size == "small")
     {
-        sigma_vol = plan->sigma_vol;
-        ct_vol = plan->ct_vol_density;
-        rgl_vol = plan->rpl_vol;
+        sigma_vol = plan->beam->sigma_vol;
+        ct_vol = plan->beam->ct_vol_density;
+        rgl_vol = plan->beam->rpl_vol;
 		margins[0] = 0;
 		margins[1] = 0;
     }
     else if (size == "large")
     {
-        sigma_vol = plan->sigma_vol_lg;
-        ct_vol = plan->ct_vol_density_lg;
-        rgl_vol = plan->rpl_vol_lg;
+        sigma_vol = plan->beam->sigma_vol_lg;
+        ct_vol = plan->beam->ct_vol_density_lg;
+        rgl_vol = plan->beam->rpl_vol_lg;
     }
     else
     {
@@ -55,7 +54,7 @@ void compute_sigmas(RTP_plan* plan, float energy, float* sigma_max, std::string 
     }    
 
     /* + sigma^2 range compensator */
-    if (plan->get_aperture()->have_range_compensator_image() && energy > 1)
+    if (plan->beam->get_aperture()->have_range_compensator_image() && energy > 1)
     {            
         compute_sigma_range_compensator(sigma_vol, rgl_vol, plan, energy, margins);
     }
@@ -79,9 +78,10 @@ void compute_sigmas(RTP_plan* plan, float energy, float* sigma_max, std::string 
         }
     }
     printf("Global sigma computed - Global sigma_max = %lg mm.\n", *sigma_max);
+	return;
 }
 
-void compute_sigma_pt(Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rpl_volume* ct_vol, RTP_plan* plan, float energy)
+void compute_sigma_pt(Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rpl_volume* ct_vol, Rt_plan* plan, float energy)
 {
     float sigma_max = 0;
 
@@ -95,6 +95,7 @@ void compute_sigma_pt(Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rpl_volume*
     }
 
     printf("Sigma patient computed - sigma_pt_max = %lg mm.\n", sigma_max);
+	return;
 }
 
 float compute_sigma_pt_homo(Rpl_volume* sigma_vol, Rpl_volume* rpl_vol, float energy)
@@ -306,14 +307,14 @@ float compute_sigma_pt_hetero(Rpl_volume* sigma_vol, Rpl_volume* rgl_vol, Rpl_vo
     return sigma_max;
 }
 
-void compute_sigma_source(Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, RTP_plan* plan, float energy)
+void compute_sigma_source(Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rt_plan* plan, float energy)
 {
     /* Method of the Hong's algorithm - See Hong's paper */
 
     float* sigma_img = (float*) sigma_vol->get_vol()->img;
     float* rgl_img = (float*) rpl_volume->get_vol()->img;
 
-    unsigned char* ap_img = (unsigned char*) plan->get_aperture()->get_aperture_volume()->img;
+    unsigned char* ap_img = (unsigned char*) plan->beam->get_aperture()->get_aperture_volume()->img;
 
     int idx = 0;
     double proj = 0; // projection factor of the ray on the z axis
@@ -343,7 +344,7 @@ void compute_sigma_source(Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, RTP_pla
                 if ( rgl_img[idx] < range +10) // +10 because we calculate sigma_src a little bit farther after the range to be sure (+1 cm)
                 {
                     idx = dim[0]*dim[1]*j + i;
-                    sigma = plan->beam->get_source_size() * ((dist_cp + proj * (float) j * sigma_vol->get_vol()->spacing[2])/ plan->get_aperture()->get_distance() - 1);
+                    sigma = plan->beam->get_source_size() * ((dist_cp + proj * (float) j * sigma_vol->get_vol()->spacing[2])/ plan->beam->get_aperture()->get_distance() - 1);
                     sigma_img[idx] += sigma * sigma; // we return the square of sigma_source for the quadratic sum, added to the sigma patient already contained in the sigma volume
                     /* We update sigma_max */
                     if (sigma_max < sigma)
@@ -359,9 +360,10 @@ void compute_sigma_source(Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, RTP_pla
         }
     }
     printf("Sigma source computed - sigma_source_max = %lg mm.\n", sigma_max);
+	return;
 }
 
-void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, RTP_plan* plan, float energy, int* margins)
+void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rt_plan* plan, float energy, int* margins)
 {
     /* Method of the Hong's algorithm - See Hong's paper */
     /* The range compensator is supposed to be made of lucite and placed right after the aperture*/
@@ -391,12 +393,12 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
     
     float* sigma_img = (float*) sigma_vol->get_vol()->img;
     float* rgl_img = (float*) rpl_volume->get_vol()->img;
-    float* rc_img = (float*) plan->get_aperture()->get_range_compensator_volume ()->img;
+    float* rc_img = (float*) plan->beam->get_aperture()->get_range_compensator_volume ()->img;
 
     unsigned char* ap_img;
     if (rpl_volume->get_aperture()->have_aperture_image())
     {
-        ap_img = (unsigned char*) plan->get_aperture()->get_aperture_volume()->img;
+        ap_img = (unsigned char*) plan->beam->get_aperture()->get_aperture_volume()->img;
     }
     
     int dim[3] = { sigma_vol->get_vol()->dim[0], sigma_vol->get_vol()->dim[1], sigma_vol->get_vol()->dim[2]};
@@ -451,7 +453,7 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
 						if ( rgl_img[idx] < range +10) // +10 because we calculate sigma_rg_compensator a little bit farther after the range to be sure (+1 cm)
 						{
 							z_POI = proj * (dist_cp + (float) j * sigma_vol->get_vol()->spacing[2]);
-							z_eff = plan->get_aperture()->get_distance() + proj * rc_eff;
+							z_eff = plan->beam->get_aperture()->get_distance() + proj * rc_eff;
 	            
 							/* sigma = sigma_srm * (z_POI- z_eff) */
 							if (z_POI - z_eff >= 0)
@@ -518,7 +520,7 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
 							if ( (rgl_img[idx] + rc_img[idx2d_sm]) < range +10) // +10 because we calculate sigma_rg_compensator a little bit farther after the range to be sure (+1 cm)
 							{
 								z_POI = proj * (dist_cp + (float) k * sigma_vol->get_vol()->spacing[2]);
-								z_eff = plan->get_aperture()->get_distance() + proj * rc_eff;
+								z_eff = plan->beam->get_aperture()->get_distance() + proj * rc_eff;
 		            
 								/* sigma = sigma_srm * (z_POI- z_eff) */
 								if (z_POI - z_eff >= 0)
@@ -551,6 +553,7 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
 	}
 	
 	printf("Sigma range compensator computed - sigma_rc_max = %lg mm.\n", sigma_max);
+	return;
 }
 
 double get_rc_eff(double rc_over_range) /* Values from the table A3 of the Hong's algorithm */

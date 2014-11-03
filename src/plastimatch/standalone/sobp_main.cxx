@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "RTP_sobp.h"
+#include "rt_sobp.h"
 
 int main (int argc, char* argv[])
 {
@@ -66,7 +66,7 @@ int main (int argc, char* argv[])
 		printf("Ions data are not ready yet - beam switched to proton beams");
 	}
 
-	RTP_sobp sobp(particle_type);
+	Rt_sobp sobp(particle_type);
 
     // construction of the sobp using the proximal and distal limits
     if (argv[2][0]=='d')

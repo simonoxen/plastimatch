@@ -7,18 +7,18 @@
 #include <math.h>
 #include <ctime>
 
-#include "RTP_dose.h"
-#include "RTP_parms.h"
-#include "RTP_plan.h"
 #include "plm_math.h"
 #include "plm_timer.h"
+#include "rt_dose.h"
+#include "rt_parms.h"
+#include "rt_plan.h"
 #include "volume.h"
 
 int
 main (int argc, char* argv[])
 {
     Plm_timer timer;
-    RTP_parms parms;
+    Rt_parms parms;
     timer.start ();
     if (!parms.parse_args (argc, argv)) {
         return 1;
