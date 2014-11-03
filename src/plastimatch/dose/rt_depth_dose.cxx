@@ -8,7 +8,7 @@
 #include <math.h>
 
 #include "bragg_curve.h"
-#include "Rt_depth_dose.h"
+#include "rt_depth_dose.h"
 
 Rt_depth_dose::Rt_depth_dose ()
 {

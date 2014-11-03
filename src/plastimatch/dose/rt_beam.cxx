@@ -8,8 +8,8 @@
 #include <math.h>
 
 #include "bragg_curve.h"
-#include "Rt_beam.h"
-#include "Rt_plan.h"
+#include "rt_beam.h"
+#include "rt_plan.h"
 
 class Rt_beam_private {
 public:

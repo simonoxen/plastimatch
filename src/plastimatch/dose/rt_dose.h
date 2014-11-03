@@ -5,8 +5,8 @@
 #define _Rt_dose_h_
 
 #include "aperture.h"
-#include "Rt_depth_dose.h"
-#include "Rt_plan.h"
+#include "rt_depth_dose.h"
+#include "rt_plan.h"
 #include "plmdose_config.h"
 #include "plm_image.h"
 

@@ -9,7 +9,7 @@
 
 #include "aperture.h"
 #include "rpl_volume.h"
-#include "Rt_sobp.h"
+#include "rt_sobp.h"
 
 class Rt_beam_private;
 class Rt_sobp;
