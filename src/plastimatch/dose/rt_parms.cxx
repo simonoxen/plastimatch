@@ -876,6 +876,16 @@ Rt_parms::parse_args (int argc, char** argv)
 			total_dose_img[j] += beam_dose_img[j];
 		}
 	}
+	/* Dose max */
+	double dose_maxmax =0;
+	for (int j = 0; j < dim[0] * dim[1] * dim[2]; j++)
+	{
+		if (total_dose_img[j] > dose_maxmax)
+		{
+			dose_maxmax = total_dose_img[j];
+		}
+	}
+	printf("\n dose max: %lg\n", dose_maxmax);
 
 	/* Save dose output */
 

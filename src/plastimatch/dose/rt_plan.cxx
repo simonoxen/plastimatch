@@ -506,7 +506,6 @@ Rt_plan::compute_dose ()
 				}
 
                 compute_sigmas(this, ppp->E0, sigma_max, "large", margins);				
-
                 build_hong_grid(&area, &xy_grid, radius_sample, theta_sample);
                 compute_dose_ray_shackleford(dose_vol, this, ppp, &area, &xy_grid, radius_sample, theta_sample);
             }

@@ -40,7 +40,6 @@ void compute_sigmas(Rt_plan* plan, float energy, float* sigma_max, std::string s
 
     /* Now that the volumes were defined, we can compute the sigmas in them and do the quadratic sigmas sum */
 
-
     /* sigma^2 patient */
     compute_sigma_pt(sigma_vol, rgl_vol, ct_vol, plan, energy);
     /* + sigma^2 source */
@@ -52,7 +51,6 @@ void compute_sigmas(Rt_plan* plan, float energy, float* sigma_max, std::string s
     {
         printf("Sigma source computed - sigma_src_max = 0 mm. (Source size <= 0)\n");
     }    
-
     /* + sigma^2 range compensator */
     if (plan->beam->get_aperture()->have_range_compensator_image() && energy > 1)
     {            
@@ -62,7 +60,6 @@ void compute_sigmas(Rt_plan* plan, float energy, float* sigma_max, std::string s
     {
         printf("Sigma range compensator computed - sigma_rc_max = 0 mm. (No range compensator or the energy is too small)\n");
     } 
-    
     /* Last step: sigma = sqrt(sigma_pt^2 + sigma_src^2 + sigma_rc^2), at this point sigma_vol contains the sum of the sigmas' square */
     /* We update also the value of sigma_max */
     float* sigma_img = (float*) sigma_vol->get_vol()->img;
@@ -104,8 +101,13 @@ float compute_sigma_pt_homo(Rpl_volume* sigma_vol, Rpl_volume* rpl_vol, float en
 
     /* At this time, sigma_vol contains the range length, WITHOUT range compensator */
     float* sigma_volume = (float*) sigma_vol->get_vol()->img;
-    unsigned char* ap_img = (unsigned char*) rpl_vol->get_aperture()->get_aperture_volume()->img;
 
+	unsigned char* ap_img = NULL;
+	
+	if (rpl_vol->get_aperture()->have_aperture_image())
+	{
+		ap_img = (unsigned char*) rpl_vol->get_aperture()->get_aperture_volume()->img;
+	}
 
     int dim = sigma_vol->get_vol()->dim[0] * sigma_vol->get_vol()->dim[1] * sigma_vol->get_vol()->dim[2];
 
@@ -117,6 +119,7 @@ float compute_sigma_pt_homo(Rpl_volume* sigma_vol, Rpl_volume* rpl_vol, float en
     
     /* Sigma0 value from the Hong fit - See paper Hong "A pencil beam algorithm for proton dose calculation" - sigma in mm: x10 */
     double sigma0 = 0.02275 * range + 1.2085E-6 * range * range;
+
 
     /* Calculation of the sigma values from the medium equivalent depth  */
     for (int i = 0; i < dim; i++)
