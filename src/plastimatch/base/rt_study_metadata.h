@@ -46,7 +46,9 @@ public:
     void set_study_time (const char* time);
     const char* get_study_uid () const;
     void set_study_uid (const char* uid);
+    const std::string& get_patient_name ();
     void set_patient_name (const std::string& name);
+    const std::string& get_patient_id ();
     void set_patient_id (const std::string& id);
 
     const Plm_image_header* get_image_header () const;

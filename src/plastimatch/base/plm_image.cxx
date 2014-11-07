@@ -383,12 +383,6 @@ bool
 Plm_image::load_native_dicom (const char* fname)
 {
 #if PLM_DCM_USE_DCMTK
-#if defined (commentout)
-    /* GCS FIX: This should load using dcmtk! */
-    this->m_itk_short = itk_image_load_short (fname, 0);
-    this->m_original_type = PLM_IMG_TYPE_ITK_SHORT;
-    this->m_type = PLM_IMG_TYPE_ITK_SHORT;
-#endif
 
     Dcmtk_loader dicom_loader (fname);
     dicom_loader.parse_directory ();

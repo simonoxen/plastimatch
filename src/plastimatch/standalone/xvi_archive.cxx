@@ -77,6 +77,11 @@ do_xvi_archive (Xvi_archive_parms *parms)
         printf ("Error.  No reference CT loaded.\n");
         return;
     }
+    Rt_study_metadata::Pointer& reference_meta = 
+        reference_study.get_rt_study_metadata ();
+    printf ("Reference Meta: %s %s\n",
+        reference_meta->get_patient_name().c_str(),
+        reference_meta->get_patient_id().c_str());
 
     Dir_list images_dir (patient_images_dir);
     if (images_dir.num_entries == 0) {
@@ -152,6 +157,15 @@ do_xvi_archive (Xvi_archive_parms *parms)
         /* Write the DICOM image */
         std::string output_dir = string_format (
             "cbct_output/%s", images_dir.entries[i]);
+
+        Rt_study_metadata::Pointer& cbct_meta 
+            = cbct_study.get_rt_study_metadata ();
+        if (parms->patient_id_override != "") {
+            cbct_meta->set_patient_id (parms->patient_id_override);
+        } else {
+            cbct_meta->set_patient_id (parms->patient_id);
+        }
+        cbct_meta->set_patient_name (patient_name);
         cbct_study.save_dicom (output_dir);
 
         /* Create the DICOM SRO */
@@ -216,6 +230,10 @@ parse_fn (
     parser->add_long_option ("", "patient-directory", 
         "base directory containing patient images", 1, 
         DEFAULT_PATIENT_DIRECTORY);
+
+    /* Other options */
+    parser->add_long_option ("", "patient-id-override", 
+        "set the patient id", 1);
     
     /* Parse options */
     parser->parse (argc,argv);
@@ -234,6 +252,9 @@ parse_fn (
         throw (dlib::error (
                 "Error.  The use of --patient-directory is needed"));
     }
+
+    /* Other options */
+    parms->patient_id_override = parser->get_string("patient-id-override");
 
     parms->patient_id = (*parser)[0];
 }

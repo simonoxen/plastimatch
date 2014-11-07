@@ -181,10 +181,22 @@ Rt_study_metadata::set_study_uid (const char* uid)
     d_ptr->study_uid = uid;
 }
 
+const std::string& 
+Rt_study_metadata::get_patient_name ()
+{
+    return d_ptr->image_metadata.get_metadata (0x0010, 0x0010);
+}
+
 void
 Rt_study_metadata::set_patient_name (const std::string& name)
 {
     d_ptr->image_metadata.set_metadata (0x0010, 0x0010, name.c_str());
+}
+
+const std::string& 
+Rt_study_metadata::get_patient_id ()
+{
+    return d_ptr->image_metadata.get_metadata (0x0010, 0x0020);
 }
 
 void
